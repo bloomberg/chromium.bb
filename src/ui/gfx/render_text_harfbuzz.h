@@ -81,14 +81,25 @@ struct GFX_EXPORT TextRunHarfBuzz {
     FontParams& operator=(const FontParams& other);
     bool operator==(const FontParams& other) const;
 
-    // Populate |render_params|, |font_size| and |baseline_offset| based on
+    // Populates |render_params|, |font_size| and |baseline_offset| based on
     // |font|.
     void ComputeRenderParamsFontSizeAndBaselineOffset();
 
-    // Populate |font|, |skia_face|, and |render_params|. Return false if
-    // |skia_face| is nullptr.
-    bool SetFontAndRenderParams(const Font& font,
-                                const FontRenderParams& render_params);
+    // Populates |font|, |skia_face|, and |render_params|. Returns false if
+    // |skia_face| is nullptr. Takes |font|'s family name and rematches this
+    // family and the run's weight and style properties to find a new font.
+    bool SetRenderParamsRematchFont(const Font& font,
+                                    const FontRenderParams& render_params);
+
+    // Populates |font|, |skia_face|, and |render_params|. Returns false if
+    // |skia_face| is nullptr. Does not perform rematching but extracts an
+    // SkTypeface from the underlying PlatformFont of font. Use this method when
+    // configuring the |TextRunHarfBuzz| for shaping with fallback fonts, where
+    // it is important to keep the underlying font handle of platform font and
+    // not perform rematching as in |SetRenderParamsRematchFont|.
+    bool SetRenderParamsOverrideSkiaFaceFromFont(
+        const Font& font,
+        const FontRenderParams& render_params);
 
     struct Hash {
       size_t operator()(const FontParams& key) const;
@@ -207,8 +218,6 @@ class GFX_EXPORT RenderTextHarfBuzz : public RenderText {
   ~RenderTextHarfBuzz() override;
 
   // RenderText:
-  std::unique_ptr<RenderText> CreateInstanceOfSameType() const override;
-  bool MultilineSupported() const override;
   const base::string16& GetDisplayText() override;
   Size GetStringSize() override;
   SizeF GetStringSizeF() override;
@@ -217,7 +226,6 @@ class GFX_EXPORT RenderTextHarfBuzz : public RenderText {
   SelectionModel FindCursorPosition(const Point& point,
                                     const Point& drag_origin) override;
   bool IsSelectionSupported() const override;
-  std::vector<FontSpan> GetFontSpansForTesting() override;
   std::vector<Rect> GetSubstringBounds(const Range& range) override;
   RangeF GetCursorSpan(const Range& text_range) override;
   size_t GetLineContainingCaret(const SelectionModel& caret) override;
@@ -237,13 +245,12 @@ class GFX_EXPORT RenderTextHarfBuzz : public RenderText {
   SelectionModel AdjacentLineSelectionModel(
       const SelectionModel& selection,
       VisualCursorDirection direction) override;
-  size_t TextIndexToDisplayIndex(size_t index) override;
-  size_t DisplayIndexToTextIndex(size_t index) override;
   bool IsValidCursorIndex(size_t index) override;
   void OnLayoutTextAttributeChanged(bool text_changed) override;
   void OnDisplayTextAttributeChanged() override;
   void EnsureLayout() override;
-  void DrawVisualText(internal::SkiaTextRenderer* renderer) override;
+  void DrawVisualText(internal::SkiaTextRenderer* renderer,
+                      const Range& selection) override;
 
  private:
   friend class test::RenderTextTestApi;

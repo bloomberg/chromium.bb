@@ -718,6 +718,13 @@ SkBlitter* SkBlitter::Choose(const SkPixmap& device,
         p->setColor(0x00000000);
     }
 
+#ifndef SK_SUPPORT_LEGACY_COLORFILTER_NO_SHADER
+    if (paint->getColorFilter()) {
+        SkPaintPriv::RemoveColorFilter(paint.writable(), device.colorSpace());
+    }
+    SkASSERT(!paint->getColorFilter());
+#endif
+
     if (drawCoverage) {
         if (device.colorType() == kAlpha_8_SkColorType) {
             SkASSERT(!paint->getShader());

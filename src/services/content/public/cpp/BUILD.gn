@@ -35,24 +35,11 @@ component("cpp") {
   ]
 
   deps = []
-  if (toolkit_views) {
+  if (toolkit_views && !is_chromecast) {
     deps += [ "//ui/views" ]
   }
 
   if (use_aura) {
     deps += [ "//ui/aura" ]
   }
-}
-
-source_set("manifest") {
-  sources = [
-    "manifest.cc",
-    "manifest.h",
-  ]
-
-  deps = [
-    "//base",
-    "//services/content/public/mojom",
-    "//services/service_manager/public/cpp",
-  ]
 }

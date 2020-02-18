@@ -55,6 +55,16 @@ Polymer({
       type: Boolean,
       value: false,
     },
+
+    /**
+     * Whether the user can submit a login request.
+     * @private
+     */
+    canSubmit_: {
+      type: Boolean,
+      computed:
+          'computeCanSubmit_(parameters.attemptsLeft, processingCompletion_)',
+    },
   },
 
   /**
@@ -83,6 +93,16 @@ Polymer({
   },
 
   /**
+   * Returns whether the user can make more attempts to log in.
+   * @param {OobeTypes.SecurityTokenPinDialogParameters} parameters
+   * @return {boolean}
+   * @private
+   */
+  computeCanSubmit_: function(attemptsLeft, processingCompletion) {
+    return attemptsLeft != 0 && !processingCompletion;
+  },
+
+  /**
    * Invoked when the "Back" button is clicked.
    * @private
    */
@@ -91,14 +111,14 @@ Polymer({
   },
 
   /**
-   * Invoked when the "Next" button is clicked.
+   * Invoked when the "Next" button is clicked or Enter is pressed.
    * @private
    */
-  onNextClicked_: function() {
+  onSubmit_: function() {
     if (this.processingCompletion_) {
-      // Race condition: This could happen if Polymer hasn't yet updated the
-      // "disabled" state of the "Next" button before the user clicked on it for
-      // the second time.
+      // Race condition: This could happen if the previous request has not yet
+      // been completed before the next one is sent (for example by pressing
+      // Enter twice)
       return;
     }
     this.processingCompletion_ = true;
@@ -114,6 +134,7 @@ Polymer({
     this.$.pinKeyboard.value = '';
     this.processingCompletion_ = false;
     this.userEdited_ = false;
+    this.$.pinKeyboard.focusInput();
   },
 
   /**
@@ -125,31 +146,28 @@ Polymer({
   },
 
   /**
-   * Returns whether an error message should be displayed to the user.
+   * Returns whether the error label should be shown.
    * @param {OobeTypes.SecurityTokenPinDialogParameters} parameters
    * @param {boolean} userEdited
    * @return {boolean}
    * @private
    */
-  hasError_: function(parameters, userEdited) {
-    if (!parameters)
-      return false;
-    if (parameters.attemptsLeft != -1)
-      return true;
-    return parameters.errorLabel !=
+  isErrorLabelVisible_: function(parameters, userEdited) {
+    return parameters &&
+        parameters.errorLabel !==
         OobeTypes.SecurityTokenPinDialogErrorType.NONE &&
         !userEdited;
   },
 
   /**
-   * Returns whether the error label should be shown.
-   * @param {string} errorLabelId
+   * Returns a string for a11y whether there is an error.
+   * @param {OobeTypes.SecurityTokenPinDialogParameters} parameters
    * @param {boolean} userEdited
-   * @return {boolean}
+   * @return {string}
    * @private
    */
-  isErrorLabelVisible_: function(errorLabelId, userEdited) {
-    return errorLabelId && !userEdited;
+  isAriaInvalid_: function(parameters, userEdited) {
+    return this.isErrorLabelVisible_(parameters, userEdited) ? 'true' : 'false';
   },
 
   /**
@@ -160,5 +178,47 @@ Polymer({
    */
   isAttemptsLeftVisible_: function(parameters) {
     return parameters && parameters.attemptsLeft != -1;
+  },
+
+  /**
+   * Returns whether there is a visible label for the PIN input field
+   * @param {OobeTypes.SecurityTokenPinDialogParameters} parameters
+   * @param {boolean} userEdited
+   * @return {boolean}
+   * @private
+   */
+  isLabelVisible_: function(parameters, userEdited) {
+    return this.isErrorLabelVisible_(parameters, userEdited) ||
+        this.isAttemptsLeftVisible_(parameters);
+  },
+
+  /**
+   * Returns the label to be used for the PIN input field.
+   * @param {string} locale
+   * @param {OobeTypes.SecurityTokenPinDialogParameters} parameters
+   * @param {string} errorLabelId
+   * @param {boolean} userEdited
+   * @return {string}
+   * @private
+   */
+  getLabel_: function(locale, parameters, errorLabelId, userEdited) {
+    if (!this.isLabelVisible_(parameters, userEdited)) {
+      return '';
+    }
+    if (!this.isErrorLabelVisible_(parameters, userEdited) &&
+        this.isAttemptsLeftVisible_(parameters)) {
+      return this.i18n(
+          'securityTokenPinDialogAttemptsLeft', parameters.attemptsLeft);
+    }
+    if (parameters && !parameters.enableUserInput) {
+      return this.i18n(errorLabelId);
+    }
+    if (!this.isAttemptsLeftVisible_(parameters)) {
+      return this.i18nRecursive(
+          locale, 'securityTokenPinDialogErrorRetry', errorLabelId);
+    }
+    return this.i18n(
+        'securityTokenPinDialogErrorRetryAttempts', this.i18n(errorLabelId),
+        parameters.attemptsLeft);
   },
 });

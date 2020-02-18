@@ -15,12 +15,13 @@
 #include "osp/public/presentation/presentation_controller.h"
 #include "osp/public/presentation/presentation_receiver.h"
 #include "osp/public/protocol_connection.h"
-#include "platform/api/logging.h"
+#include "util/logging.h"
 #include "util/std_util.h"
 
-// TODO(issue/27): Address TODOs in this file
+// TODO(crbug.com/openscreen/27): Address TODOs in this file
+
 namespace openscreen {
-namespace presentation {
+namespace osp {
 
 namespace {
 
@@ -291,5 +292,5 @@ Connection* ConnectionManager::GetConnection(uint64_t connection_id) {
   return nullptr;
 }
 
-}  // namespace presentation
+}  // namespace osp
 }  // namespace openscreen

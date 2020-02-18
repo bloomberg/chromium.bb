@@ -20,7 +20,7 @@ import org.chromium.base.test.util.MetricsUtils.HistogramDelta;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
-import org.chromium.chrome.browser.tab_activity_glue.TabDelegateFactoryImpl;
+import org.chromium.chrome.browser.TabbedModeTabDelegateFactory;
 import org.chromium.chrome.browser.tabmodel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabSelectionType;
 import org.chromium.chrome.test.ChromeActivityTestRule;
@@ -57,8 +57,12 @@ public class TabUmaTest {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         mTestServer.stopAndDestroyServer();
+    }
+
+    private TabbedModeTabDelegateFactory createTabDelegateFactory() {
+        return new TabbedModeTabDelegateFactory(mActivityTestRule.getActivity());
     }
 
     /**
@@ -74,9 +78,9 @@ public class TabUmaTest {
                 Tab bgTab = TabBuilder.createForLazyLoad(new LoadUrlParams(mTestUrl))
                                     .setWindow(mActivityTestRule.getActivity().getWindowAndroid())
                                     .setLaunchType(TabLaunchType.FROM_LONGPRESS_BACKGROUND)
+                                    .setDelegateFactory(createTabDelegateFactory())
+                                    .setInitiallyHidden(true)
                                     .build();
-                bgTab.initialize(null, new TabDelegateFactoryImpl(mActivityTestRule.getActivity()),
-                        true, null, false);
                 return bgTab;
             }
         });
@@ -87,11 +91,13 @@ public class TabUmaTest {
         Assert.assertEquals(0, lazyLoadCount.getDelta()); // Sanity check.
 
         // Show the tab and verify that one sample was recorded in the lazy load bucket.
-        TestThreadUtils.runOnUiThreadBlocking(() -> { tab.show(TabSelectionType.FROM_USER); });
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { ((TabImpl) tab).show(TabSelectionType.FROM_USER); });
         Assert.assertEquals(1, lazyLoadCount.getDelta());
 
         // Show the tab again and verify that we didn't record another sample.
-        TestThreadUtils.runOnUiThreadBlocking(() -> { tab.show(TabSelectionType.FROM_USER); });
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { ((TabImpl) tab).show(TabSelectionType.FROM_USER); });
         Assert.assertEquals(1, lazyLoadCount.getDelta());
     }
 
@@ -120,11 +126,11 @@ public class TabUmaTest {
                 Tab bgTab = TabBuilder.createLiveTab(true)
                                     .setWindow(mActivityTestRule.getActivity().getWindowAndroid())
                                     .setLaunchType(TabLaunchType.FROM_LONGPRESS_BACKGROUND)
+                                    .setDelegateFactory(createTabDelegateFactory())
+                                    .setInitiallyHidden(true)
                                     .build();
-                bgTab.initialize(null, new TabDelegateFactoryImpl(mActivityTestRule.getActivity()),
-                        true, null, false);
                 bgTab.loadUrl(new LoadUrlParams(mTestUrl));
-                bgTab.show(TabSelectionType.FROM_USER);
+                ((TabImpl) bgTab).show(TabSelectionType.FROM_USER);
                 return bgTab;
             }
         });
@@ -139,13 +145,13 @@ public class TabUmaTest {
                 Tab bgTab = TabBuilder.createLiveTab(true)
                                     .setWindow(mActivityTestRule.getActivity().getWindowAndroid())
                                     .setLaunchType(TabLaunchType.FROM_LONGPRESS_BACKGROUND)
+                                    .setDelegateFactory(createTabDelegateFactory())
+                                    .setInitiallyHidden(true)
                                     .build();
-                bgTab.initialize(null, new TabDelegateFactoryImpl(mActivityTestRule.getActivity()),
-                        true, null, false);
                 bgTab.loadUrl(new LoadUrlParams(mTestUrl));
                 // Simulate the renderer being killed by the OS.
                 ChromeTabUtils.simulateRendererKilledForTesting(bgTab, false);
-                bgTab.show(TabSelectionType.FROM_USER);
+                ((TabImpl) bgTab).show(TabSelectionType.FROM_USER);
                 return bgTab;
             }
         });
@@ -160,10 +166,10 @@ public class TabUmaTest {
                 Tab bgTab = TabBuilder.createForLazyLoad(new LoadUrlParams(mTestUrl))
                                     .setWindow(mActivityTestRule.getActivity().getWindowAndroid())
                                     .setLaunchType(TabLaunchType.FROM_LONGPRESS_BACKGROUND)
+                                    .setDelegateFactory(createTabDelegateFactory())
+                                    .setInitiallyHidden(true)
                                     .build();
-                bgTab.initialize(null, new TabDelegateFactoryImpl(mActivityTestRule.getActivity()),
-                        true, null, false);
-                bgTab.show(TabSelectionType.FROM_USER);
+                ((TabImpl) bgTab).show(TabSelectionType.FROM_USER);
                 return bgTab;
             }
         });
@@ -174,9 +180,9 @@ public class TabUmaTest {
         // Show every tab again and make sure we didn't record more samples - this metric should be
         // recorded only on first display.
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            liveBgTab.show(TabSelectionType.FROM_USER);
-            killedBgTab.show(TabSelectionType.FROM_USER);
-            frozenBgTab.show(TabSelectionType.FROM_USER);
+            ((TabImpl) liveBgTab).show(TabSelectionType.FROM_USER);
+            ((TabImpl) killedBgTab).show(TabSelectionType.FROM_USER);
+            ((TabImpl) frozenBgTab).show(TabSelectionType.FROM_USER);
         });
         Assert.assertEquals(1, shownLoadCount.getDelta());
         Assert.assertEquals(1, lostLoadCount.getDelta());

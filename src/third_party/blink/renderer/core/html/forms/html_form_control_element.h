@@ -49,8 +49,8 @@ class CORE_EXPORT HTMLFormControlElement : public HTMLElement,
   ~HTMLFormControlElement() override;
   void Trace(Visitor*) override;
 
-  void formAction(USVStringOrTrustedURL&) const;
-  void setFormAction(const USVStringOrTrustedURL&, ExceptionState&);
+  String formAction() const;
+  void setFormAction(const AtomicString&);
   String formEnctype() const;
   void setFormEnctype(const AtomicString&);
   String formMethod() const;
@@ -95,8 +95,6 @@ class CORE_EXPORT HTMLFormControlElement : public HTMLElement,
 
   bool IsReadOnly() const;
   bool IsDisabledOrReadOnly() const;
-
-  bool IsAutofocusable() const;
 
   bool MayTriggerVirtualKeyboard() const override;
 
@@ -153,13 +151,10 @@ class CORE_EXPORT HTMLFormControlElement : public HTMLElement,
   void DidRecalcStyle(const StyleRecalcChange) override;
 
   virtual void ResetImpl() {}
-  virtual bool SupportsAutofocus() const;
 
  private:
   bool IsFormControlElement() const final { return true; }
   bool AlwaysCreateUserAgentShadowRoot() const override { return true; }
-
-  int tabIndex() const override;
 
   bool IsValidElement() override;
   bool MatchesValidityPseudoClasses() const override;

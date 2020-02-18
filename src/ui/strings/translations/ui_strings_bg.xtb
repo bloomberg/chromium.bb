@@ -7,6 +7,8 @@
 <translation id="1156623771253174079">{SECONDS,plural, =1{Преди 1 минута}other{Преди # минути}}</translation>
 <translation id="1169783199079129864">{MINUTES,plural, =1{1 мин}other{# мин}}</translation>
 <translation id="1181037720776840403">Премахване</translation>
+<translation id="1201402288615127009">Напред</translation>
+<translation id="1218444235442067213"><ph name="APP_NAME" />, приложение Google Play Магазин</translation>
 <translation id="1243314992276662751">Качване</translation>
 <translation id="1266864766717917324">Споделянето на <ph name="CONTENT_TYPE" /> не бе възможно</translation>
 <translation id="1269641567813814718">Win</translation>
@@ -17,7 +19,7 @@
 <translation id="1368832886055348810">Отляво надясно</translation>
 <translation id="1383876407941801731">Търсене</translation>
 <translation id="1398853756734560583">Увеличаване</translation>
-<translation id="1409544243779336081">Препоръка за приложение</translation>
+<translation id="1414271762428216854"><ph name="APP_NAME" />, инсталирано приложение</translation>
 <translation id="1450753235335490080">Споделянето на <ph name="CONTENT_TYPE" /> не е възможно</translation>
 <translation id="1498028757988366001">Тази заявка е сред предишните ви търсения. Изтриването на „<ph name="QUERY" />“ от историята ви ще я премахне за постоянно от профила ви на всичките ви устройства.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 минута и }other{# минути и }}</translation>
@@ -29,8 +31,8 @@
 <translation id="1801827354178857021">Период</translation>
 <translation id="1803208670097017349">{MONTHS,plural, =1{1 месец}other{# месеца}}</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY" /> МБ/сек</translation>
-<translation id="1812519734428420144">Оценка със звезди: <ph name="RATING_SCORE" /></translation>
 <translation id="1830179671306812954">{HOURS,plural, =1{1 час и }other{# часа и }}</translation>
+<translation id="1830308660060964064">Освободихте <ph name="ITEM_TITLE" /></translation>
 <translation id="1842960171412779397">Избиране</translation>
 <translation id="1859234291848436338">Посока на писане</translation>
 <translation id="1860796786778352021">Затваряне на известието</translation>
@@ -40,6 +42,7 @@
 <translation id="1938451708255335766">За да коригирате плътността за показване на прозорците, рестартирайте приложението.</translation>
 <translation id="2006524834898217237">Проверете дали устройството е свързано с интернет.</translation>
 <translation id="208586643495776849">Моля, опитайте отново</translation>
+<translation id="2090963878406559571">За да изпратите номер от <ph name="ORIGIN" /> до телефона си с Android, <ph name="TROUBLESHOOT_LINK" /> в настройките и на двете устройства.</translation>
 <translation id="2141853158323869627">{DAYS,plural, =1{1 д.}other{# д.}}</translation>
 <translation id="2148716181193084225">Днес</translation>
 <translation id="2161656808144014275">Текст</translation>
@@ -51,6 +54,7 @@
 <translation id="2289052229480071835">Докоснете съответните цели на екрана.</translation>
 <translation id="2295140143284145483">Анкета</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> ТБ/сек</translation>
+<translation id="2353636109065292463">Връзката с интернет се проверява</translation>
 <translation id="2388990488038464401">Искате ли да се обадите на този номер от телефона си?</translation>
 <translation id="24452542372838207">Разгъване на известието</translation>
 <translation id="2445449901874883781">Използване на висока плътност</translation>
@@ -65,10 +69,12 @@
 <translation id="2666092431469916601">Най-горе</translation>
 <translation id="2701330563083355633">Споделено от <ph name="DEVICE_NAME" /></translation>
 <translation id="2743387203779672305">Копиране в буферната памет</translation>
+<translation id="2749082172777216925"><ph name="APP_NAME_INFO" />, <ph name="PRICE" /></translation>
 <translation id="2803313416453193357">Отваряне на папката</translation>
 <translation id="2824719307700604149">{YEARS,plural, =1{Преди 1 година}other{Преди # години}}</translation>
 <translation id="2907671656515444832">{DAYS,plural, =1{след 1 д}other{след # д}}</translation>
 <translation id="2931838996092594335">кликвам</translation>
+<translation id="2981684127883932071">Показани са предложения</translation>
 <translation id="3036649622769666520">Отваряне на файлове</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY" /> МБ</translation>
 <translation id="3068711042108640621">Лавицата е вляво</translation>
@@ -81,9 +87,9 @@
 <translation id="3295886253693811851">Извършване на обаждане от</translation>
 <translation id="335581015389089642">Speech</translation>
 <translation id="3389286852084373014">Текстът е твърде голям</translation>
-<translation id="3443810440409579745">Получен раздел.</translation>
 <translation id="3479552764303398839">Не сега</translation>
 <translation id="348799646910989694">Лавицата се скрива автоматично</translation>
+<translation id="3554637740840164787">Фиксирахте <ph name="ITEM_TITLE" /></translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{Остава 1 ден}other{Остават # дни}}</translation>
 <translation id="3600969208114796418">Файл във формат <ph name="SAVEAS_EXTENSION_TYPE" /></translation>
 <translation id="3608915363409716668">Над <ph name="MAXIMUM_VALUE" /></translation>
@@ -105,20 +111,21 @@
 <translation id="4250229828105606438">Eкранна снимка</translation>
 <translation id="4266252015790371705">{MONTHS,plural, =1{Преди 1 месец}other{Преди # месеца}}</translation>
 <translation id="4289300219472526559">Start Speaking</translation>
+<translation id="430191667033048642">Приложението <ph name="MOVED_APP_NAME" /> бе преместено в папката <ph name="FOLDER_NAME" />.</translation>
 <translation id="4316910396681052118">ВСИЧКИ ПРИЛОЖЕНИЯ</translation>
 <translation id="4588090240171750605">Превъртане надясно</translation>
+<translation id="4631891353005174729"><ph name="APP_NAME_TYPE" />, оценка със звезди: <ph name="RATING_SCORE" /></translation>
+<translation id="4648249871170053485"><ph name="APP_NAME" />, препоръка за приложение</translation>
 <translation id="4690510401873698237">Лавицата е най-долу</translation>
 <translation id="4724120544754982507">Център за известия, <ph name="UNREAD_NOTIFICATION_COUNT" /> непрочетени</translation>
 <translation id="4730374152663651037">ЧЕСТО ИЗПОЛЗВАНИ</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{Остава 1 месец}other{Остават # месеца}}</translation>
-<translation id="4841881773802181781">Вмъкване</translation>
-<translation id="4881695831933465202">Отваряне</translation>
 <translation id="4888938634149558681">Обаждане</translation>
 <translation id="4968171027979920686">{SECONDS,plural, =1{1 секунда}other{# секунди}}</translation>
 <translation id="4971687151119236543">Мултимедия, предишният запис</translation>
 <translation id="5046499563572181734">Докоснете тук</translation>
 <translation id="5076340679995252485">&amp;Поставяне</translation>
-<translation id="5137751499640340777">Стартиране на Google Асистент</translation>
+<translation id="5198715732953550718">Приложението <ph name="MOVED_APP_NAME" /> бе комбинирано със <ph name="IN_PLACE_APP" /> и бе създадена нова папка.</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> ПБ</translation>
 <translation id="5266161281976477809">Триъгълник за разкриване на съдържание</translation>
 <translation id="5278860589123563674">Изпращането не бе успешно</translation>
@@ -132,6 +139,7 @@
 <translation id="5574202486608032840">Система <ph name="IDS_SHORT_PRODUCT_OS_NAME" /></translation>
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="5613020302032141669">Стрелка наляво</translation>
+<translation id="5675363643668471212">Елемент в лавицата</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 мин}other{# мин}}</translation>
 <translation id="5763338081255973061">{DAYS,plural, =0{Активно днес}=1{Активно преди 1 ден}other{Активно преди # дни}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 ден и }other{# дни и }}</translation>
@@ -155,6 +163,7 @@
 <translation id="6394627529324717982">Запетая</translation>
 <translation id="6397363302884558537">Stop Speaking</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{Преди 1 сек}other{Преди # сек}}</translation>
+<translation id="6417265370957905582">Google Асистент</translation>
 <translation id="6430678249303439055">Блокиране на всички известия от това приложение</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{Преди 1 секунда}other{Преди # секунди}}</translation>
 <translation id="6539092367496845964">Нещо се обърка. Опитайте пак по-късно.</translation>
@@ -165,7 +174,7 @@
 <translation id="6620110761915583480">Запазване на файл</translation>
 <translation id="6656912866303152668">Проверете дали синхронизацията в Chrome е включена за <ph name="TARGET_DEVICE_NAME" /> и опитайте да изпратите отново.</translation>
 <translation id="6699343763173986273">Мултимедия, следващият запис</translation>
-<translation id="673773751041746814">Изтриване</translation>
+<translation id="6710213216561001401">Предишна</translation>
 <translation id="6779314412797872738">За да изпратите номер оттук до телефона си с Android, <ph name="TROUBLESHOOT_LINK" /> в настройките и на двете устройства.</translation>
 <translation id="6786750046913594791">Затваряне на папката</translation>
 <translation id="6808150112686056157">Мултимедия, стоп</translation>
@@ -183,6 +192,7 @@
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{Остава 1 мин}other{Остават # мин}}</translation>
 <translation id="7319740667687257810">Стартов панел, частичен изглед</translation>
+<translation id="7352651011704765696">Нещо се обърка</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{Преди 1 мин}other{Преди # мин}}</translation>
 <translation id="7389409599945284130">– <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{Остава 1 минута}other{Остават # минути}}</translation>
@@ -192,21 +202,24 @@
 <translation id="7658239707568436148">Отказ</translation>
 <translation id="7781829728241885113">Вчера</translation>
 <translation id="7814458197256864873">&amp;Копиране</translation>
+<translation id="7848989271541991537">Преместено на страница <ph name="PAGE_NUMBER" />, ред <ph name="ROW_NUMBER" />, колона <ph name="COLUMN_NUMBER" />.</translation>
 <translation id="7879499977785298635">Без блокиране</translation>
 <translation id="7907591526440419938">Отваряне на файл</translation>
 <translation id="7969046989155602842">Command</translation>
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{Повече от 1 непрочетено известие}other{Повече от # непрочетени известия}}</translation>
 <translation id="8086866675552927481">{MINUTES,plural, =1{след 1 м}other{след # м}}</translation>
 <translation id="8087772101393322318"><ph name="KEY_MODIFIER_NAME" /> + <ph name="KEY_COMBO_NAME" /></translation>
-<translation id="8098075892845277643">Стартиране на гласова заявка към Google Асистент</translation>
+<translation id="8090736967111090568">Номер от <ph name="ORIGIN" /></translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{Преди 1 час}other{Преди # часа}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{Остава 1 сек}other{Остават # сек}}</translation>
+<translation id="8134065097954893699">Презаредете страницата</translation>
 <translation id="8144660977431427332">Търсенията се извършват с помощта на Google Асистент. <ph name="LEARN_MORE" /></translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, автоматично довършване</translation>
 <translation id="815598010540052116">Превъртане надолу</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8210608804940886430">Страница надолу</translation>
 <translation id="8245914219290430011">Табулатор</translation>
+<translation id="8247998213073982446"><ph name="APP_NAME" />, приложение</translation>
 <translation id="8259556432390118667">Шестнадесетична стойност за цвета</translation>
 <translation id="8328145009876646418">Ляв край</translation>
 <translation id="8331626408530291785">Превъртане нагоре</translation>
@@ -231,12 +244,13 @@
 <translation id="8926951137623668982">Лавицата е винаги скрита</translation>
 <translation id="8996630695507351249">Проверете дали <ph name="TARGET_DEVICE_NAME" /> има връзка с интернет.</translation>
 <translation id="9002566407876343676">отварям</translation>
-<translation id="9039076430527029379">Преместване на страница <ph name="PAGE_NUMBER" />, ред <ph name="ROW_NUMBER" />, колона <ph name="COLUMN_NUMBER" />.</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 сек}other{# сек}}</translation>
 <translation id="9059834730836941392">Свиване на известието</translation>
 <translation id="9150735707954472829">Раздел</translation>
 <translation id="9161053988251441839">ПРЕДЛОЖЕНИ ПРИЛОЖЕНИЯ</translation>
 <translation id="9170848237812810038">&amp;Отмяна</translation>
+<translation id="9178475906033259337">Показан е 1 резултат за „<ph name="QUERY" />“</translation>
 <translation id="932327136139879170">Начална страница</translation>
 <translation id="944069440740578670">Непрочетени известия</translation>
+<translation id="974545358917229949">Показани са <ph name="RESULT_COUNT" /> резултата за „<ph name="QUERY" />“</translation>
 </translationbundle>

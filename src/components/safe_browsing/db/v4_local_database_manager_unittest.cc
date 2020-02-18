@@ -23,7 +23,6 @@
 #include "components/safe_browsing/db/v4_test_util.h"
 #include "components/safe_browsing/features.h"
 #include "content/public/test/browser_task_environment.h"
-#include "content/public/test/test_utils.h"
 #include "crypto/sha2.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
@@ -646,10 +645,7 @@ TEST_F(V4LocalDatabaseManagerTest,
 TEST_F(V4LocalDatabaseManagerTest,
        TestCheckUrlForHCAllowlistWithPrefixMatchButNoFullHashMatch) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatures(
-      {safe_browsing::kRealTimeUrlLookupFetchAllowlist,
-       safe_browsing::kRealTimeUrlLookupEnabled},
-      {});
+  feature_list.InitWithFeatures({safe_browsing::kRealTimeUrlLookupEnabled}, {});
 
   std::string url_safe_no_scheme("example.com/safe/");
   FullHash safe_full_hash(crypto::SHA256HashString(url_safe_no_scheme));
@@ -689,10 +685,7 @@ TEST_F(V4LocalDatabaseManagerTest,
 TEST_F(V4LocalDatabaseManagerTest,
        TestCheckUrlForHCAllowlistWithPrefixMatchAndFullHashMatch) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatures(
-      {safe_browsing::kRealTimeUrlLookupFetchAllowlist,
-       safe_browsing::kRealTimeUrlLookupEnabled},
-      {});
+  feature_list.InitWithFeatures({safe_browsing::kRealTimeUrlLookupEnabled}, {});
 
   std::string url_safe_no_scheme("example.com/safe/");
   FullHash safe_full_hash(crypto::SHA256HashString(url_safe_no_scheme));
@@ -734,10 +727,7 @@ TEST_F(V4LocalDatabaseManagerTest,
 TEST_F(V4LocalDatabaseManagerTest,
        TestCheckUrlForHCAllowlistWithLocalFullHashMatch) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatures(
-      {safe_browsing::kRealTimeUrlLookupFetchAllowlist,
-       safe_browsing::kRealTimeUrlLookupEnabled},
-      {});
+  feature_list.InitWithFeatures({safe_browsing::kRealTimeUrlLookupEnabled}, {});
 
   std::string url_safe_no_scheme("example.com/safe/");
   FullHash safe_full_hash(crypto::SHA256HashString(url_safe_no_scheme));
@@ -770,10 +760,7 @@ TEST_F(V4LocalDatabaseManagerTest,
 // synchronously and callback isn't called.
 TEST_F(V4LocalDatabaseManagerTest, TestCheckUrlForHCAllowlistWithNoMatch) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatures(
-      {safe_browsing::kRealTimeUrlLookupFetchAllowlist,
-       safe_browsing::kRealTimeUrlLookupEnabled},
-      {});
+  feature_list.InitWithFeatures({safe_browsing::kRealTimeUrlLookupEnabled}, {});
 
   std::string url_safe_no_scheme("example.com/safe/");
   FullHash safe_full_hash(crypto::SHA256HashString(url_safe_no_scheme));
@@ -801,13 +788,10 @@ TEST_F(V4LocalDatabaseManagerTest, TestCheckUrlForHCAllowlistWithNoMatch) {
   EXPECT_FALSE(client.callback_called());
 }
 
-// When allowlist is unavailable, all URLS should be considered no-match.
+// When allowlist is unavailable, all URLS should be considered MATCH.
 TEST_F(V4LocalDatabaseManagerTest, TestCheckUrlForHCAllowlistUnavailable) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatures(
-      {safe_browsing::kRealTimeUrlLookupFetchAllowlist,
-       safe_browsing::kRealTimeUrlLookupEnabled},
-      {});
+  feature_list.InitWithFeatures({safe_browsing::kRealTimeUrlLookupEnabled}, {});
 
   // Setup to receive full-hash misses. We won't make URL requests.
   ScopedFakeGetHashProtocolManagerFactory pin(FullHashInfos({}));
@@ -824,7 +808,7 @@ TEST_F(V4LocalDatabaseManagerTest, TestCheckUrlForHCAllowlistUnavailable) {
       /* expected_sb_threat_type= */ SB_THREAT_TYPE_HIGH_CONFIDENCE_ALLOWLIST);
 
   const GURL url_check("https://example.com/safe");
-  EXPECT_EQ(AsyncMatch::NO_MATCH,
+  EXPECT_EQ(AsyncMatch::MATCH,
             v4_local_database_manager_->CheckUrlForHighConfidenceAllowlist(
                 url_check, &client));
 

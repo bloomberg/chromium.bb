@@ -24,18 +24,35 @@ namespace dawn_native { namespace vulkan { namespace external_memory {
 
     Service::~Service() = default;
 
-    bool Service::Supported(VkFormat format,
-                            VkImageType type,
-                            VkImageTiling tiling,
-                            VkImageUsageFlags usage,
-                            VkImageCreateFlags flags) {
+    bool Service::SupportsImportMemory(VkFormat format,
+                                       VkImageType type,
+                                       VkImageTiling tiling,
+                                       VkImageUsageFlags usage,
+                                       VkImageCreateFlags flags) {
         return false;
     }
 
+    bool Service::SupportsCreateImage(const ExternalImageDescriptor* descriptor,
+                                      VkFormat format,
+                                      VkImageUsageFlags usage) {
+        return false;
+    }
+
+    ResultOrError<MemoryImportParams> Service::GetMemoryImportParams(
+        const ExternalImageDescriptor* descriptor,
+        VkImage image) {
+        return DAWN_UNIMPLEMENTED_ERROR("Using null memory service to interop inside Vulkan");
+    }
+
     ResultOrError<VkDeviceMemory> Service::ImportMemory(ExternalMemoryHandle handle,
-                                                        VkDeviceSize allocationSize,
-                                                        uint32_t memoryTypeIndex) {
-        return DAWN_UNIMPLEMENTED_ERROR("Using null semaphore service to interop inside Vulkan");
+                                                        const MemoryImportParams& importParams,
+                                                        VkImage image) {
+        return DAWN_UNIMPLEMENTED_ERROR("Using null memory service to interop inside Vulkan");
+    }
+
+    ResultOrError<VkImage> Service::CreateImage(const ExternalImageDescriptor* descriptor,
+                                                const VkImageCreateInfo& baseCreateInfo) {
+        return DAWN_UNIMPLEMENTED_ERROR("Using null memory service to interop inside Vulkan");
     }
 
 }}}  // namespace dawn_native::vulkan::external_memory

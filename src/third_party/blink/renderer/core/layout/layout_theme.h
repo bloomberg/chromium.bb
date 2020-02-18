@@ -48,8 +48,8 @@ class FontDescription;
 class HTMLInputElement;
 class LengthSize;
 class Locale;
+class LocalFrame;
 class Node;
-class ChromeClient;
 class ThemePainter;
 
 class CORE_EXPORT LayoutTheme : public RefCounted<LayoutTheme> {
@@ -137,20 +137,24 @@ class CORE_EXPORT LayoutTheme : public RefCounted<LayoutTheme> {
   virtual bool SupportsCalendarPicker(const AtomicString&) const;
 
   // Text selection colors.
-  Color ActiveSelectionBackgroundColor() const;
-  Color InactiveSelectionBackgroundColor() const;
-  Color ActiveSelectionForegroundColor() const;
-  Color InactiveSelectionForegroundColor() const;
+  Color ActiveSelectionBackgroundColor(WebColorScheme color_scheme) const;
+  Color InactiveSelectionBackgroundColor(WebColorScheme color_scheme) const;
+  Color ActiveSelectionForegroundColor(WebColorScheme color_scheme) const;
+  Color InactiveSelectionForegroundColor(WebColorScheme color_scheme) const;
   virtual void SetSelectionColors(Color active_background_color,
                                   Color active_foreground_color,
                                   Color inactive_background_color,
                                   Color inactive_foreground_color) {}
 
   // List box selection colors
-  Color ActiveListBoxSelectionBackgroundColor() const;
-  Color ActiveListBoxSelectionForegroundColor() const;
-  Color InactiveListBoxSelectionBackgroundColor() const;
-  Color InactiveListBoxSelectionForegroundColor() const;
+  Color ActiveListBoxSelectionBackgroundColor(
+      WebColorScheme color_scheme) const;
+  Color ActiveListBoxSelectionForegroundColor(
+      WebColorScheme color_scheme) const;
+  Color InactiveListBoxSelectionBackgroundColor(
+      WebColorScheme color_scheme) const;
+  Color InactiveListBoxSelectionForegroundColor(
+      WebColorScheme color_scheme) const;
 
   virtual Color PlatformSpellingMarkerUnderlineColor() const;
   virtual Color PlatformGrammarMarkerUnderlineColor() const;
@@ -182,6 +186,7 @@ class CORE_EXPORT LayoutTheme : public RefCounted<LayoutTheme> {
     return kDefaultCompositionBackgroundColor;
   }
   virtual void PlatformColorsDidChange();
+  virtual void ColorSchemeDidChange();
 
   void SetCaretBlinkInterval(base::TimeDelta);
   virtual base::TimeDelta CaretBlinkInterval() const;
@@ -195,13 +200,6 @@ class CORE_EXPORT LayoutTheme : public RefCounted<LayoutTheme> {
   void SystemFont(CSSValueID system_font_id, FontDescription&);
   virtual Color SystemColor(CSSValueID, WebColorScheme color_scheme) const;
 
-  // Whether the default system font should have its average character width
-  // adjusted to match MS Shell Dlg.
-  virtual bool NeedsHackForTextControlWithFontFamily(
-      const AtomicString&) const {
-    return false;
-  }
-
   virtual int MinimumMenuListSize(const ComputedStyle&) const { return 0; }
 
   virtual void AdjustSliderThumbSize(ComputedStyle&) const;
@@ -209,8 +207,7 @@ class CORE_EXPORT LayoutTheme : public RefCounted<LayoutTheme> {
   virtual int PopupInternalPaddingStart(const ComputedStyle&) const {
     return 0;
   }
-  virtual int PopupInternalPaddingEnd(const ChromeClient*,
-                                      const ComputedStyle&) const {
+  virtual int PopupInternalPaddingEnd(LocalFrame*, const ComputedStyle&) const {
     return 0;
   }
   virtual int PopupInternalPaddingTop(const ComputedStyle&) const { return 0; }
@@ -305,15 +302,23 @@ class CORE_EXPORT LayoutTheme : public RefCounted<LayoutTheme> {
 
  protected:
   // The platform selection color.
-  virtual Color PlatformActiveSelectionBackgroundColor() const;
-  virtual Color PlatformInactiveSelectionBackgroundColor() const;
-  virtual Color PlatformActiveSelectionForegroundColor() const;
-  virtual Color PlatformInactiveSelectionForegroundColor() const;
+  virtual Color PlatformActiveSelectionBackgroundColor(
+      WebColorScheme color_scheme) const;
+  virtual Color PlatformInactiveSelectionBackgroundColor(
+      WebColorScheme color_scheme) const;
+  virtual Color PlatformActiveSelectionForegroundColor(
+      WebColorScheme color_scheme) const;
+  virtual Color PlatformInactiveSelectionForegroundColor(
+      WebColorScheme color_scheme) const;
 
-  virtual Color PlatformActiveListBoxSelectionBackgroundColor() const;
-  virtual Color PlatformInactiveListBoxSelectionBackgroundColor() const;
-  virtual Color PlatformActiveListBoxSelectionForegroundColor() const;
-  virtual Color PlatformInactiveListBoxSelectionForegroundColor() const;
+  virtual Color PlatformActiveListBoxSelectionBackgroundColor(
+      WebColorScheme color_scheme) const;
+  virtual Color PlatformInactiveListBoxSelectionBackgroundColor(
+      WebColorScheme color_scheme) const;
+  virtual Color PlatformActiveListBoxSelectionForegroundColor(
+      WebColorScheme color_scheme) const;
+  virtual Color PlatformInactiveListBoxSelectionForegroundColor(
+      WebColorScheme color_scheme) const;
 
   virtual bool ThemeDrawsFocusRing(const ComputedStyle&) const = 0;
 

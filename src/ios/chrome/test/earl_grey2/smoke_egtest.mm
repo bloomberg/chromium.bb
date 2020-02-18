@@ -12,7 +12,6 @@
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
-#import "ios/chrome/test/earl_grey2/chrome_earl_grey_edo.h"
 #import "ios/testing/earl_grey/app_launch_manager.h"
 #import "ios/testing/earl_grey/earl_grey_test.h"
 #import "ios/web/common/features.h"
@@ -43,10 +42,8 @@
   [[EarlGrey selectElementWithMatcher:newTabButtonMatcher]
       performAction:grey_tap()];
 
-  // Get tab count.
-  NSUInteger tabCount =
-      [[GREYHostApplicationDistantObject sharedInstance] GetMainTabCount];
-  GREYAssertEqual(2, tabCount, @"Expected 2 tabs.");
+  // Wait until tab opened and test if there're 2 tabs in total.
+  [ChromeEarlGrey waitForMainTabCount:2];
 }
 
 // Tests that helpers from chrome_matchers.h are available for use in tests.
@@ -202,12 +199,74 @@
       ensureAppLaunchedWithFeaturesEnabled:
           {kNewOmniboxPopupLayout, web::features::kSlimNavigationManager}
                                   disabled:{}
-                              forceRestart:NO];
+                            relaunchPolicy:NoForceRelaunchAndResetState];
 
   GREYAssertTrue([ChromeEarlGrey isNewOmniboxPopupLayoutEnabled],
                  @"NewOmniboxPopupLayout should be enabled");
   GREYAssertTrue([ChromeEarlGrey isSlimNavigationManagerEnabled],
                  @"SlimNavigationManager should be enabled");
+
+  GREYAssertEqual([ChromeEarlGrey mainTabCount], 1U,
+                  @"Exactly one new tab should be opened.");
+}
+
+// Tests gracefully kill through AppLaunchManager.
+- (void)testAppLaunchManagerForceRelaunchByCleanShutdown {
+  [ChromeEarlGrey openNewTab];
+  [[AppLaunchManager sharedManager] ensureAppLaunchedWithFeaturesEnabled:{}
+      disabled:{}
+      relaunchPolicy:ForceRelaunchByCleanShutdown];
+  [[EarlGrey selectElementWithMatcher:grey_text(@"Restore")]
+      assertWithMatcher:grey_notVisible()];
+  [ChromeEarlGrey waitForMainTabCount:2];
+}
+
+// Tests hard kill(crash) through AppLaunchManager.
+- (void)testAppLaunchManagerForceRelaunchByKilling {
+  [ChromeEarlGrey openNewTab];
+  [[AppLaunchManager sharedManager] ensureAppLaunchedWithFeaturesEnabled:{}
+      disabled:{}
+      relaunchPolicy:ForceRelaunchByKilling];
+  [[EarlGrey selectElementWithMatcher:grey_text(@"Restore")]
+      assertWithMatcher:grey_sufficientlyVisible()];
+  [ChromeEarlGrey waitForMainTabCount:1];
+}
+
+// Tests running resets after relaunch through AppLaunchManager.
+- (void)testAppLaunchManagerNoForceRelaunchAndResetState {
+  [self stopHTTPServer];
+  [self disableMockAuthentication];
+  [ChromeEarlGrey openNewTab];
+  [[AppLaunchManager sharedManager]
+      ensureAppLaunchedWithFeaturesEnabled:{kNewOmniboxPopupLayout}
+                                  disabled:{}
+                            relaunchPolicy:NoForceRelaunchAndResetState];
+  [ChromeEarlGrey waitForMainTabCount:1];
+  // |stopHTTPServer| and |disableMockAuthentication| DCHECK the flags are in
+  // correct states, which can serve as assertion that proper resets are run.
+  [self stopHTTPServer];
+  [self disableMockAuthentication];
+}
+
+// Tests no force relaunch.
+- (void)testAppLaunchManagerNoForceRelaunchAndKeepState {
+  [self stopHTTPServer];
+  [self disableMockAuthentication];
+  [ChromeEarlGrey openNewTab];
+  // No relauch when feature list isn't changed.
+  [[AppLaunchManager sharedManager] ensureAppLaunchedWithFeaturesEnabled:{}
+      disabled:{}
+      relaunchPolicy:NoForceRelaunchAndKeepState];
+  [ChromeEarlGrey waitForMainTabCount:2];
+  [[EarlGrey selectElementWithMatcher:grey_text(@"Restore")]
+      assertWithMatcher:grey_notVisible()];
+}
+
+// Tests backgrounding app and moving app back through AppLaunchManager.
+- (void)testAppLaunchManagerBackgroundAndForegroundApp {
+  [ChromeEarlGrey openNewTab];
+  [[AppLaunchManager sharedManager] backgroundAndForegroundApp];
+  [ChromeEarlGrey waitForMainTabCount:2];
 }
 
 // Tests isCompactWidth method in chrome_earl_grey.h.

@@ -5,7 +5,6 @@
 """Various utility functions and classes not specific to any single area."""
 
 import atexit
-import cStringIO
 import functools
 import json
 import logging
@@ -18,6 +17,10 @@ import time
 import utils
 from . import zip_package
 
+if sys.version_info.major == 2:
+  import cStringIO
+else:
+  import io as cStringIO
 
 # Path to (possibly extracted from zip) cacert.pem bundle file.
 # See get_cacerts_bundle().
@@ -238,50 +241,99 @@ def disable_buffering():
     os.environ['PYTHONUNBUFFERED'] = 'x'
 
 
-def fix_python_cmd(cmd, env=None):
-  """Returns a fixed command line to explicitly invoke python if cmd is running
-  'python' or a '.py' script.
+def add_python_cmd(cmd):
+  """Adds a Python executable to the front of the command if running a .py file.
 
-  This will probe $PATH in `env` to see if there's an available python in the
-  current $PATH (allowing tasks to bring their own python). If there's no python
-  (or python.exe) in $PATH, this will fall back to sys.executable.
+  No-op if arg0 is anything besides a .py file.
 
-  NOTE: This should only be used for python2. If tasks want to include python3,
-  they should make sure that their task explicitly invokes python3.
+  Args:
+    cmd: A list containing the command to be run.
+
+  Returns:
+    |cmd| with a Python executable appended to the front if necessary.
   """
-  if cmd[0] == 'python':
-    cmd = cmd[1:]
-  elif cmd[0].endswith('.py'):
-    pass
-  else:
+  if cmd[0].endswith('.py'):
+    if sys.platform == 'win32':
+      return ['python.exe'] + cmd
+    return ['python'] + cmd
+  return cmd
+
+
+def find_executable(cmd, env=None):
+  """Finds the executable to run the given command via $PATH.
+
+  Automatically appends an appropriate Python executable to the front if arg0 is
+  a .py file before searching.
+
+  Slashes in cmd[0] are normalized to the current platform's default.
+
+  On Windows if cmd[0] has no extension, this will try an .exe and .bat
+  extension. If you want some more-esoteric extension (like .cmd), you need to
+  explicitly include it.
+
+  On POSIX, only files which are accessible to the current uid (as determined by
+  os.access(..., X_OK)) are considered.
+
+  If cmd[0] is an absolute path, $PATH will not be consulted.
+  If cmd[0] is a relative path (i.e. contains a slash), it will be converted to
+    an absolute path (i.e. against $CWD), and $PATH will not be consulted.
+  Otherwise, cmd[0] will be evaluated against $PATH.
+
+  NOTE: due to historical Swarming semantics, this prepends "." to PATH when
+  searching. If we could do this over, it would be better to have the caller
+  specify './executable' when they want something relative to the current
+  directory.
+
+  Args:
+    cmd: A list containing the command to be run.
+    env: The environment to use instead of os.environ.
+
+  Returns:
+    A copy of |cmd| with its arg0 executable changed to the absolute path for
+    the executable found via $PATH. arg0 is left unchanged if it is not found in
+    $PATH. Will not modify the original |cmd| list.
+  """
+  cmd = add_python_cmd(cmd)
+
+  def _is_executable(candidate):
+    return os.path.isfile(candidate) and os.access(candidate, os.X_OK)
+
+  # anti_sep is like os.path.altsep, but it's always defined
+  anti_sep = '/' if os.path.sep == '\\' else '\\'
+  cmd = [cmd[0].replace(anti_sep, os.path.sep)] + cmd[1:]
+
+  # exts are the file extensions to try. If the command already has an extension
+  # or we're not on windows, then we don't try any extensions.
+  has_ext = bool(os.path.splitext(cmd[0])[1])
+  exts = ('',) if sys.platform != 'win32' or has_ext else ('.exe', '.bat')
+
+  def _resolve_extension(candidate):
+    for ext in exts:
+      resolved = candidate + ext
+      if _is_executable(resolved):
+        return resolved
+    return None
+
+  # If the command is absolute or relative to cwd, check it directly and do not
+  # consult $PATH.
+  if os.path.sep in cmd[0]:
+    # abspath is a noop on an already-absolute path
+    resolved = _resolve_extension(os.path.abspath(cmd[0]))
+    if resolved:
+      cmd = [resolved] + cmd[1:]
     return cmd
 
-  # At this point we need to prepend some resolved python to cmd.
-
-  if sys.platform == 'win32':
-    python_exe = 'python.exe'
-    check = os.path.isfile
-  else:
-    python_exe = 'python'
-    def check(candidate):
-      try:
-        return bool(os.stat(candidate).st_mode | os.path.stat.S_IEXEC)
-      except OSError:
-        return False
-
-  found_python = sys.executable
-
+  # We have a non-absolute, non-relative executable, so walk PATH.
   paths = (os.environ if env is None else env).get('PATH', '').split(os.pathsep)
-  for path in paths:
+  for path in ['.'] + paths:
     if path == '':
       continue
-
-    candidate = os.path.join(path, python_exe)
-    if check(candidate):
-      found_python = candidate
+    resolved = _resolve_extension(os.path.join(os.path.abspath(path), cmd[0]))
+    if resolved:
+      cmd = [resolved] + cmd[1:]
       break
 
-  return [found_python] + cmd
+  return cmd
 
 
 def read_json(filepath):
@@ -386,6 +438,8 @@ def force_local_third_party():
   _THIRD_PARTY_FIXED = True
   src = os.path.abspath(zip_package.get_main_script_path())
   root = os.path.dirname(src)
+  sys.path.insert(0, os.path.join(
+      root, 'third_party', 'httplib2', 'python%d' % sys.version_info.major))
   sys.path.insert(0, os.path.join(root, 'third_party', 'pyasn1'))
   sys.path.insert(0, os.path.join(root, 'third_party', 'rsa'))
   sys.path.insert(0, os.path.join(root, 'third_party'))

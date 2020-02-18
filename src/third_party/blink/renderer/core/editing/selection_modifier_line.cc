@@ -36,11 +36,9 @@
 #include "third_party/blink/renderer/core/editing/visible_units.h"
 #include "third_party/blink/renderer/core/layout/api/line_layout_api_shim.h"
 #include "third_party/blink/renderer/core/layout/api/line_layout_block_flow.h"
+#include "third_party/blink/renderer/core/layout/geometry/logical_rect.h"
 #include "third_party/blink/renderer/core/layout/line/root_inline_box.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_line_utils.h"
-#include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_line_box_fragment.h"
-#include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
-#include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
 
 namespace blink {
 
@@ -65,16 +63,17 @@ class AbstractLineBox {
       return GetRootInlineBox().LogicalHeight() &&
              GetRootInlineBox().FirstLeafChild();
     }
-    if (GetLineBoxFragment().IsEmptyLineBox())
+    if (cursor_.IsEmptyLineBox())
       return false;
-    const PhysicalSize physical_size = GetLineBoxFragment().Size();
-    const LogicalSize logical_size = physical_size.ConvertToLogical(
-        GetLineBoxFragment().Style().GetWritingMode());
+    const PhysicalSize physical_size = cursor_.CurrentSize();
+    const LogicalSize logical_size =
+        physical_size.ConvertToLogical(cursor_.CurrentStyle().GetWritingMode());
     if (!logical_size.block_size)
       return false;
     // Use |ClosestLeafChildForPoint| to check if there's any leaf child.
-    return GetLineBoxFragment().ClosestLeafChildForPoint(PhysicalOffset(),
-                                                         false);
+    const bool only_editable_leaves = false;
+    return ClosestLeafChildForPoint(cursor_, PhysicalOffset(),
+                                    only_editable_leaves);
   }
 
   AbstractLineBox PreviousLine() const {
@@ -84,14 +83,9 @@ class AbstractLineBox {
       return previous_root ? AbstractLineBox(*previous_root)
                            : AbstractLineBox();
     }
-    const auto children = ng_box_fragment_->Children();
-    for (wtf_size_t i = ng_child_index_; i;) {
-      --i;
-      if (!children[i]->IsLineBox())
-        continue;
-      return AbstractLineBox(*ng_box_fragment_, i);
-    }
-    return AbstractLineBox();
+    NGInlineCursor previous_line = cursor_;
+    previous_line.MoveToPreviousLine();
+    return previous_line ? AbstractLineBox(previous_line) : AbstractLineBox();
   }
 
   AbstractLineBox NextLine() const {
@@ -100,13 +94,9 @@ class AbstractLineBox {
       const RootInlineBox* next_root = GetRootInlineBox().NextRootBox();
       return next_root ? AbstractLineBox(*next_root) : AbstractLineBox();
     }
-    const auto children = ng_box_fragment_->Children();
-    for (wtf_size_t i = ng_child_index_ + 1; i < children.size(); ++i) {
-      if (!children[i]->IsLineBox())
-        continue;
-      return AbstractLineBox(*ng_box_fragment_, i);
-    }
-    return AbstractLineBox();
+    NGInlineCursor next_line = cursor_;
+    next_line.MoveToNextLine();
+    return next_line ? AbstractLineBox(next_line) : AbstractLineBox();
   }
 
   PhysicalOffset AbsoluteLineDirectionPointToLocalPointInBlock(
@@ -137,23 +127,18 @@ class AbstractLineBox {
       return GetRootInlineBox().ClosestLeafChildForPoint(
           GetBlock().FlipForWritingMode(point), only_editable_leaves);
     }
-    const PhysicalOffset local_physical_point =
-        point - ng_box_fragment_->Children()[ng_child_index_].offset;
-    return GetLineBoxFragment().ClosestLeafChildForPoint(local_physical_point,
-                                                         only_editable_leaves);
+    const PhysicalOffset local_physical_point = point - cursor_.CurrentOffset();
+    return ClosestLeafChildForPoint(cursor_, local_physical_point,
+                                    only_editable_leaves);
   }
 
  private:
   explicit AbstractLineBox(const RootInlineBox& root_inline_box)
       : root_inline_box_(&root_inline_box), type_(Type::kOldLayout) {}
 
-  AbstractLineBox(const NGPhysicalBoxFragment& box_fragment,
-                  wtf_size_t child_index)
-      : ng_box_fragment_(&box_fragment),
-        ng_child_index_(child_index),
-        type_(Type::kLayoutNG) {
-    DCHECK_LT(child_index, box_fragment.Children().size());
-    DCHECK(box_fragment.Children()[child_index]->IsLineBox());
+  explicit AbstractLineBox(const NGInlineCursor& cursor)
+      : cursor_(cursor), type_(Type::kLayoutNG) {
+    DCHECK(cursor_.IsLineBox());
   }
 
   const LayoutBlockFlow& GetBlock() const {
@@ -162,8 +147,7 @@ class AbstractLineBox {
       return *To<LayoutBlockFlow>(
           LineLayoutAPIShim::LayoutObjectFrom(GetRootInlineBox().Block()));
     }
-    DCHECK(ng_box_fragment_->GetLayoutObject());
-    return *To<LayoutBlockFlow>(ng_box_fragment_->GetLayoutObject());
+    return *cursor_.GetLayoutBlockFlow();
   }
 
   LayoutUnit PhysicalBlockOffset() const {
@@ -172,9 +156,8 @@ class AbstractLineBox {
       return GetBlock().FlipForWritingMode(
           GetRootInlineBox().BlockDirectionPointInLine());
     }
-    const PhysicalOffset physical_offset =
-        ng_box_fragment_->Children()[ng_child_index_].offset;
-    return ng_box_fragment_->Style().IsHorizontalWritingMode()
+    const PhysicalOffset physical_offset = cursor_.CurrentOffset();
+    return cursor_.CurrentStyle().IsHorizontalWritingMode()
                ? physical_offset.top
                : physical_offset.left;
   }
@@ -188,17 +171,58 @@ class AbstractLineBox {
     return *root_inline_box_;
   }
 
-  const NGPhysicalLineBoxFragment& GetLineBoxFragment() const {
-    DCHECK(IsLayoutNG());
-    return To<NGPhysicalLineBoxFragment>(
-        *ng_box_fragment_->Children()[ng_child_index_]);
+  static bool IsEditable(const NGInlineCursor& cursor) {
+    const LayoutObject* const layout_object = cursor.CurrentLayoutObject();
+    return layout_object && layout_object->GetNode() &&
+           HasEditableStyle(*layout_object->GetNode());
+  }
+
+  static const LayoutObject* ClosestLeafChildForPoint(
+      const NGInlineCursor& line,
+      const PhysicalOffset& point,
+      bool only_editable_leaves) {
+    const PhysicalSize unit_square(LayoutUnit(1), LayoutUnit(1));
+    const LogicalOffset logical_point = point.ConvertToLogical(
+        line.CurrentStyle().GetWritingMode(), line.CurrentBaseDirection(),
+        line.CurrentSize(), unit_square);
+    const LayoutUnit inline_offset = logical_point.inline_offset;
+    const LayoutObject* closest_leaf_child = nullptr;
+    LayoutUnit closest_leaf_distance;
+    NGInlineCursor cursor(line);
+    for (cursor.MoveToNext(); cursor; cursor.MoveToNext()) {
+      if (!cursor.CurrentLayoutObject())
+        continue;
+      if (!cursor.IsInlineLeaf())
+        continue;
+      if (only_editable_leaves && !IsEditable(cursor))
+        continue;
+
+      const LogicalRect fragment_logical_rect =
+          cursor.CurrentRect().ConvertToLogical(
+              line.CurrentStyle().GetWritingMode(), line.CurrentBaseDirection(),
+              line.CurrentSize(), cursor.CurrentSize());
+      const LayoutUnit inline_min = fragment_logical_rect.offset.inline_offset;
+      const LayoutUnit inline_max = fragment_logical_rect.offset.inline_offset +
+                                    fragment_logical_rect.size.inline_size;
+      if (inline_offset >= inline_min && inline_offset < inline_max)
+        return cursor.CurrentLayoutObject();
+
+      const LayoutUnit distance =
+          inline_offset < inline_min
+              ? inline_min - inline_offset
+              : inline_offset - inline_max + LayoutUnit(1);
+      if (!closest_leaf_child || distance < closest_leaf_distance) {
+        closest_leaf_child = cursor.CurrentLayoutObject();
+        closest_leaf_distance = distance;
+      }
+    }
+    return closest_leaf_child;
   }
 
   enum class Type { kNull, kOldLayout, kLayoutNG };
 
   const RootInlineBox* root_inline_box_ = nullptr;
-  const NGPhysicalBoxFragment* ng_box_fragment_ = nullptr;
-  wtf_size_t ng_child_index_ = 0u;
+  NGInlineCursor cursor_;
   Type type_ = Type::kNull;
 };
 
@@ -213,19 +237,9 @@ AbstractLineBox AbstractLineBox::CreateFor(const VisiblePosition& position) {
   if (adjusted.IsNull())
     return AbstractLineBox();
 
-  if (const NGPaintFragment* line_paint_fragment =
-          NGContainingLineBoxOf(adjusted)) {
-    const NGPhysicalBoxFragment& box_fragment = To<NGPhysicalBoxFragment>(
-        line_paint_fragment->Parent()->PhysicalFragment());
-    const NGPhysicalFragment& line_box_fragment =
-        line_paint_fragment->PhysicalFragment();
-    for (wtf_size_t i = 0; i < box_fragment.Children().size(); ++i) {
-      if (box_fragment.Children()[i].get() == &line_box_fragment)
-        return AbstractLineBox(box_fragment, i);
-    }
-    NOTREACHED();
-    return AbstractLineBox();
-  }
+  const NGInlineCursor& line = NGContainingLineBoxOf(adjusted);
+  if (line)
+    return AbstractLineBox(line);
 
   const InlineBox* box =
       ComputeInlineBoxPositionForInlineAdjustedPosition(adjusted).inline_box;

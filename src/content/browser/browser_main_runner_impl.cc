@@ -10,7 +10,6 @@
 #include "base/debug/leak_annotations.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/run_loop.h"
 #include "base/synchronization/atomic_flag.h"
@@ -28,6 +27,7 @@
 #include "content/public/common/main_function_params.h"
 #include "third_party/skia/include/core/SkGraphics.h"
 #include "ui/base/ime/init/input_method_initializer.h"
+#include "ui/gfx/font_util.h"
 
 #if defined(OS_ANDROID)
 #include "content/browser/android/tracing_controller_android.h"
@@ -36,7 +36,6 @@
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
 #include "ui/base/win/scoped_ole_initializer.h"
-#include "ui/gfx/win/direct_write.h"
 #endif
 
 namespace content {
@@ -91,8 +90,9 @@ int BrowserMainRunnerImpl::Initialize(const MainFunctionParams& parameters) {
     // (Text Services Framework) module can interact with the message pump
     // on Windows 8 Metro mode.
     ole_initializer_.reset(new ui::ScopedOleInitializer);
-    gfx::win::InitializeDirectWrite();
 #endif  // OS_WIN
+
+    gfx::InitializeFonts();
 
     main_loop_.reset(
         new BrowserMainLoop(parameters, std::move(scoped_execution_fence_)));
@@ -100,7 +100,8 @@ int BrowserMainRunnerImpl::Initialize(const MainFunctionParams& parameters) {
     main_loop_->Init();
 
     if (parameters.created_main_parts_closure) {
-      parameters.created_main_parts_closure->Run(main_loop_->parts());
+      std::move(*parameters.created_main_parts_closure)
+          .Run(main_loop_->parts());
       delete parameters.created_main_parts_closure;
     }
 

@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/optional.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/devtools/devtools_toggle_action.h"
@@ -103,11 +104,20 @@ void SelectLastTab(
         TabStripModel::UserGestureDetails(TabStripModel::GestureType::kOther));
 void DuplicateTab(Browser* browser);
 bool CanDuplicateTab(const Browser* browser);
+bool CanDuplicateKeyboardFocusedTab(const Browser* browser);
+bool CanCloseTabsToRight(const Browser* browser);
+bool CanCloseOtherTabs(const Browser* browser);
 content::WebContents* DuplicateTabAt(Browser* browser, int index);
 bool CanDuplicateTabAt(const Browser* browser, int index);
 void MuteSite(Browser* browser);
 void PinTab(Browser* browser);
+void MuteSiteForKeyboardFocusedTab(Browser* browser);
+bool HasKeyboardFocusedTab(const Browser* browser);
+void PinKeyboardFocusedTab(Browser* browser);
+void DuplicateKeyboardFocusedTab(Browser* browser);
 void ConvertPopupToTabbedBrowser(Browser* browser);
+void CloseTabsToRight(Browser* browser);
+void CloseOtherTabs(Browser* browser);
 void Exit();
 void BookmarkCurrentTabIgnoringExtensionOverrides(Browser* browser);
 void BookmarkCurrentTabAllowingExtensionOverrides(Browser* browser);
@@ -116,6 +126,8 @@ void BookmarkAllTabs(Browser* browser);
 bool CanBookmarkAllTabs(const Browser* browser);
 void SaveCreditCard(Browser* browser);
 void MigrateLocalCards(Browser* browser);
+void MaybeShowSaveLocalCardSignInPromo(Browser* browser);
+void CloseSaveLocalCardSignInPromo(Browser* browser);
 void Translate(Browser* browser);
 void ManagePasswordsForPage(Browser* browser);
 void SendTabToSelfFromPageAction(Browser* browser);
@@ -179,6 +191,8 @@ bool CanViewSource(const Browser* browser);
 void CreateBookmarkAppFromCurrentWebContents(Browser* browser,
                                              bool force_shortcut_app);
 bool CanCreateBookmarkApp(const Browser* browser);
+
+base::Optional<int> GetKeyboardFocusedTabIndex(const Browser* browser);
 
 }  // namespace chrome
 

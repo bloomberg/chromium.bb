@@ -8,15 +8,23 @@
 from __future__ import print_function
 
 import os
+import unittest
 
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import cros_sdk_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
+from chromite.lib import retry_util
 from chromite.lib import sudo
+from chromite.scripts import cros_sdk
 
 
+# This long decorator triggers a false positive in the docstring test.
+# https://github.com/PyCQA/pylint/issues/3077
+# pylint: disable=bad-docstring-quotes
+@unittest.skipIf(cros_build_lib.IsInsideChroot(),
+                 'Tests only make sense outside the chroot')
 class CrosSdkPrerequisitesTest(cros_test_lib.TempDirTestCase):
   """Tests for required packages on the host machine.
 
@@ -29,26 +37,61 @@ class CrosSdkPrerequisitesTest(cros_test_lib.TempDirTestCase):
     """Check for commands from the lvm2 package."""
     with sudo.SudoKeepAlive():
       cmd = ['lvs', '--version']
-      result = cros_build_lib.RunCommand(cmd, error_code_ok=True)
+      result = cros_build_lib.run(cmd, error_code_ok=True)
       self.assertEqual(result.returncode, 0)
 
   def testThinProvisioningToolsPresent(self):
     """Check for commands from the thin-provisioning-tools package."""
     with sudo.SudoKeepAlive():
       cmd = ['thin_check', '-V']
-      result = cros_build_lib.RunCommand(cmd, error_code_ok=True)
+      result = cros_build_lib.run(cmd, error_code_ok=True)
       self.assertEqual(result.returncode, 0)
 
   def testLosetupCommandPresent(self):
     """Check for commands from the mount package."""
     with sudo.SudoKeepAlive():
       cmd = ['losetup', '--help']
-      result = cros_build_lib.RunCommand(cmd, error_code_ok=True)
+      result = cros_build_lib.run(cmd, error_code_ok=True)
       self.assertEqual(result.returncode, 0)
 
 
-# TODO(bmgordon): Figure out how to mock out --create and --enter and then
-# add tests that combine those with snapshots.
+class CrosSdkUtilsTest(cros_test_lib.MockTempDirTestCase):
+  """Tests for misc util funcs."""
+
+  def testGetArchStageTarballs(self):
+    """Basic test of GetArchStageTarballs."""
+    self.assertCountEqual([
+        'https://storage.googleapis.com/chromiumos-sdk/cros-sdk-123.tar.xz',
+        'https://storage.googleapis.com/chromiumos-sdk/cros-sdk-123.tbz2',
+    ], cros_sdk.GetArchStageTarballs('123'))
+
+  def testFetchRemoteTarballsEmpty(self):
+    """Test FetchRemoteTarballs with no results."""
+    m = self.PatchObject(retry_util, 'RunCurl')
+    with self.assertRaises(ValueError):
+      cros_sdk.FetchRemoteTarballs(self.tempdir, [], 'tarball')
+    m.return_value = cros_build_lib.CommandResult(stdout=b'Foo: bar\n')
+    with self.assertRaises(ValueError):
+      cros_sdk.FetchRemoteTarballs(self.tempdir, ['gs://x.tar'], 'tarball')
+
+  def testFetchRemoteTarballsSuccess(self):
+    """Test FetchRemoteTarballs with a successful download."""
+    curl = cros_build_lib.CommandResult(stdout=(
+        b'HTTP/1.0 200\n'
+        b'Foo: bar\n'
+        b'Content-Length: 100\n'
+    ))
+    self.PatchObject(retry_util, 'RunCurl', return_value=curl)
+    self.assertEqual(
+        os.path.join(self.tempdir, 'tar'),
+        cros_sdk.FetchRemoteTarballs(self.tempdir, ['gs://x/tar'], 'tarball'))
+
+
+@unittest.skipIf(cros_build_lib.IsInsideChroot(),
+                 'Tests only make sense outside the chroot')
+@unittest.skip(
+    'These are triggering hangs inside lvm when run through run_tests. '
+    'https://crbug.com/764335')
 class CrosSdkSnapshotTest(cros_test_lib.TempDirTestCase):
   """Tests for the snapshot functionality in cros_sdk."""
 
@@ -74,7 +117,7 @@ class CrosSdkSnapshotTest(cros_test_lib.TempDirTestCase):
     cmd.extend(args)
 
     try:
-      result = cros_build_lib.RunCommand(
+      result = cros_build_lib.run(
           cmd, print_cmd=False, capture_output=True, error_code_ok=True,
           combine_stdout_stderr=True)
     except cros_build_lib.RunCommandError as e:

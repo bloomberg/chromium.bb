@@ -3,13 +3,11 @@
 <translationbundle lang="lt">
 <translation id="1276998909102132017">Galerijos vaizdai</translation>
 <translation id="1430915738399379752">Spausdinti</translation>
-<translation id="1462966117743110941">Jūsų fotoaparatas dabar palaiko naujus režimus, o jūsų nuotraukos ir vaizdo įrašai bus pasiekiami atsisiųstų failų aplankuose.</translation>
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1627744224761163218">4 x 4</translation>
 <translation id="1664224225747386870">Nieko neįrašyta</translation>
 <translation id="1862930711583847113">Nepavyko eksportuoti „<ph name="FILE" />“</translation>
 <translation id="1899697626337024495">Nuotraukos skyra</translation>
-<translation id="2008689030244369546">Visiškai nauja išvaizda</translation>
 <translation id="2036868001356139588">Laikmačio trukmė</translation>
 <translation id="2050339315714019657">Stačias</translation>
 <translation id="2064538373111010176"><ph name="CAMERA" /> aktyvus</translation>
@@ -24,6 +22,7 @@
 
         Programos su saugyklos leidimais galės pasiekti jūsų nuotraukas ir vaizdo įrašus.</translation>
 <translation id="3081586908890909590">Perjungti į filmavimo režimą</translation>
+<translation id="313467653172006084">30 KPS</translation>
 <translation id="3183731565330012717">Tinklelio tipas</translation>
 <translation id="3227137524299004712">Mikrofonas</translation>
 <translation id="3259149966178251584">Fotoaparato skyra</translation>
@@ -44,9 +43,7 @@
 <translation id="5671277269877808209">Kvadratas</translation>
 <translation id="5775960006311140197">Eksperto režimas</translation>
 <translation id="5869546221129391014">Tinklelis</translation>
-<translation id="6040143037577758943">Uždaryti</translation>
 <translation id="6073451960410192870">Sustabdyti įrašymą</translation>
-<translation id="6165508094623778733">Sužinokite daugiau</translation>
 <translation id="6197807149213783179">Išsaugoti metaduomenis</translation>
 <translation id="6233780560267770709">3 iš 3</translation>
 <translation id="6243827288366940320">Geriausias įvertinimas</translation>
@@ -65,6 +62,8 @@
 <translation id="7658239707568436148">Atšaukti</translation>
 <translation id="7670511624014457267">60 KPS</translation>
 <translation id="8049189770492311300">Laikmatis</translation>
+<translation id="8067883171444229417">Leisti vaizdo įrašą</translation>
+<translation id="8131740175452115882">Patvirtinti</translation>
 <translation id="8145038249676204903">Perjungti į fotografavimo režimą</translation>
 <translation id="8261506727792406068">Ištrinti</translation>
 <translation id="8428213095426709021">Nustatymai</translation>

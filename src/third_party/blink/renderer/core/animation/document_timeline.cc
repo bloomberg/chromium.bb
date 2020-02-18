@@ -75,12 +75,6 @@ base::TimeTicks CurrentAnimationTime(Document* document) {
 // TODO: Plumb a nominal framerate through and derive this value from that.
 const double DocumentTimeline::kMinimumDelay = 0.04;
 
-DocumentTimeline* DocumentTimeline::Create(Document* document,
-                                           base::TimeDelta origin_time,
-                                           PlatformTiming* timing) {
-  return MakeGarbageCollected<DocumentTimeline>(document, origin_time, timing);
-}
-
 DocumentTimeline* DocumentTimeline::Create(
     ExecutionContext* execution_context,
     const DocumentTimelineOptions* options) {
@@ -112,6 +106,17 @@ DocumentTimeline::DocumentTimeline(Document* document,
 
 bool DocumentTimeline::IsActive() const {
   return document_->GetPage();
+}
+
+// Document-linked animations are initialized with start time of the document
+// timeline current time.
+base::Optional<base::TimeDelta>
+DocumentTimeline::InitialStartTimeForAnimations() {
+  base::Optional<double> current_time_ms = CurrentTime();
+  if (current_time_ms.has_value()) {
+    return base::TimeDelta::FromMillisecondsD(current_time_ms.value());
+  }
+  return base::nullopt;
 }
 
 void DocumentTimeline::AnimationAttached(Animation* animation) {
@@ -182,6 +187,9 @@ void DocumentTimeline::ServiceAnimations(TimingUpdateReason reason) {
   for (const auto& animation : animations_needing_update_)
     DCHECK(!animation->Outdated());
 #endif
+  // Explicitly free the backing store to avoid memory regressions.
+  // TODO(bikineev): Revisit when young generation is done.
+  animations.clear();
 }
 
 void DocumentTimeline::ScheduleNextService() {

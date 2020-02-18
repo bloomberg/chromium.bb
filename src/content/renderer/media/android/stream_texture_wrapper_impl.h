@@ -65,7 +65,7 @@ class CONTENT_EXPORT StreamTextureWrapperImpl
       const base::RepeatingClosure& received_frame_cb,
       const gfx::Size& natural_size,
       scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner,
-      const StreamTextureWrapperInitCB& init_cb) override;
+      StreamTextureWrapperInitCB init_cb) override;
 
   // Should be called when the Video size changes.
   // Can be called from any thread, but runs on |main_task_runner_|.
@@ -99,11 +99,17 @@ class CONTENT_EXPORT StreamTextureWrapperImpl
   void Destroy() override;
 
   void InitializeOnMainThread(const base::RepeatingClosure& received_frame_cb,
-                              const StreamTextureWrapperInitCB& init_cb);
+                              StreamTextureWrapperInitCB init_cb);
 
   void ReallocateVideoFrame();
 
   void SetCurrentFrameInternal(scoped_refptr<media::VideoFrame> video_frame);
+
+  // Sets the ycbcr_info on the |current_frame_|. This is called before the
+  // first frame becomes available, at which point no frames are in use, so
+  // modification of the frame is safe. The same info is re-used for all future
+  // frames.
+  void SetYcbcrInfo(base::Optional<gpu::VulkanYCbCrInfo> ycbcr_info);
 
   bool enable_texture_copy_;
 
@@ -118,6 +124,7 @@ class CONTENT_EXPORT StreamTextureWrapperImpl
 
   base::Lock current_frame_lock_;
   scoped_refptr<media::VideoFrame> current_frame_;
+  base::Optional<gpu::VulkanYCbCrInfo> ycbcr_info_;
 
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;

@@ -19,7 +19,7 @@
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
 #include "storage/browser/blob/blob_storage_context.h"
-#include "storage/browser/fileapi/file_stream_reader.h"
+#include "storage/browser/file_system/file_stream_reader.h"
 #include "storage/browser/test/async_file_test_helper.h"
 #include "storage/browser/test/test_file_system_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -71,6 +71,8 @@ class NativeFileSystemFileHandleImplTest : public testing::Test {
         NativeFileSystemManagerImpl::SharedHandleState(
             allow_grant_, allow_grant_, /*file_system=*/{}));
   }
+
+  void TearDown() override { task_environment_.RunUntilIdle(); }
 
   std::string ReadFile(const FileSystemURL& url) {
     std::unique_ptr<storage::FileStreamReader> reader =

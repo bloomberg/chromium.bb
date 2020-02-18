@@ -4,15 +4,17 @@
 
 #include "content/browser/renderer_host/input/render_widget_host_latency_tracker.h"
 
+#include <memory>
+#include <string>
+
 #include "base/metrics/metrics_hashes.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "build/build_config.h"
-#include "components/rappor/public/rappor_utils.h"
-#include "components/rappor/test_rappor_service.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/input/synthetic_web_input_event_builders.h"
 #include "content/public/browser/native_web_keyboard_event.h"
+#include "content/public/common/content_client.h"
 #include "content/test/test_content_browser_client.h"
 #include "content/test/test_render_view_host.h"
 #include "content/test/test_web_contents.h"
@@ -1285,6 +1287,7 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TouchpadPinchEvents) {
 
   EXPECT_TRUE(HistogramSizeEq("Event.Latency.EventToRender.TouchpadPinch", 1));
   EXPECT_TRUE(HistogramSizeEq("Event.Latency.EndToEnd.TouchpadPinch", 1));
+  EXPECT_TRUE(HistogramSizeEq("Event.Latency.EndToEnd.TouchpadPinch2", 1));
 }
 
 }  // namespace content

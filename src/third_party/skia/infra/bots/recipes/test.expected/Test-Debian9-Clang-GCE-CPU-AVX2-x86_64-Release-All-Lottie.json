@@ -1,7 +1,7 @@
 [
   {
     "cmd": [
-      "python",
+      "vpython",
       "-u",
       "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
       "--json-output",
@@ -16,7 +16,7 @@
   },
   {
     "cmd": [
-      "python",
+      "vpython",
       "-u",
       "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
       "--json-output",
@@ -26,11 +26,15 @@
       "/path/to/tmp/"
     ],
     "infra_step": true,
-    "name": "Get lottie-samples VERSION"
+    "name": "Get lottie-samples VERSION",
+    "~followup_annotations": [
+      "@@@STEP_LOG_LINE@VERSION@42@@@",
+      "@@@STEP_LOG_END@VERSION@@@"
+    ]
   },
   {
     "cmd": [
-      "python",
+      "vpython",
       "-u",
       "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
       "--json-output",
@@ -48,7 +52,7 @@
   },
   {
     "cmd": [
-      "python",
+      "vpython",
       "-u",
       "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
       "--json-output",
@@ -61,7 +65,7 @@
   },
   {
     "cmd": [
-      "python",
+      "vpython",
       "-u",
       "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
       "--json-output",

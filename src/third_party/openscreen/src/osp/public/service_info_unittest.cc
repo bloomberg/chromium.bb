@@ -10,6 +10,7 @@
 #include "platform/base/error.h"
 
 namespace openscreen {
+namespace osp {
 
 TEST(ServiceInfoTest, Compare) {
   const ServiceInfo receiver1{
@@ -51,4 +52,5 @@ TEST(ServiceInfoTest, Update) {
   original.Update("buzz", 1, {{193, 169, 2, 11}, 1234}, {});
   EXPECT_EQ(original, updated);
 }
+}  // namespace osp
 }  // namespace openscreen

@@ -7,8 +7,9 @@
 
 from __future__ import print_function
 
-import distutils.version
+import distutils.version  # pylint: disable=import-error,no-name-in-module
 import errno
+import glob
 import multiprocessing
 import os
 import re
@@ -20,6 +21,7 @@ from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import device
+from chromite.lib import image_lib
 from chromite.lib import osutils
 from chromite.lib import path_util
 from chromite.lib import remote_access
@@ -40,7 +42,7 @@ def VMIsUpdatable(path):
   Returns:
     True if VM is updatable; False otherwise.
   """
-  table = {p.name: p for p in cros_build_lib.GetImageDiskPartitionInfo(path)}
+  table = {p.name: p for p in image_lib.GetImageDiskPartitionInfo(path)}
   # Assume if size of the two root partitions match, the image
   # is updatable.
   return table['ROOT-B'].size == table['ROOT-A'].size
@@ -105,7 +107,7 @@ def CreateVMImage(image=None, board=None, updatable=True, dest_dir=None):
       # Create a temporary directory in chroot to store the VM
       # image. This is to avoid the case where dest_dir is not
       # reachable within chroot.
-      tempdir = cros_build_lib.RunCommand(
+      tempdir = cros_build_lib.run(
           ['mktemp', '-d'],
           capture_output=True,
           enter_chroot=True).output.strip()
@@ -113,8 +115,7 @@ def CreateVMImage(image=None, board=None, updatable=True, dest_dir=None):
 
     msg = 'Failed to create the VM image'
     try:
-      cros_build_lib.RunCommand(cmd, enter_chroot=True,
-                                cwd=constants.SOURCE_ROOT)
+      cros_build_lib.run(cmd, enter_chroot=True, cwd=constants.SOURCE_ROOT)
     except cros_build_lib.RunCommandError as e:
       logging.error('%s: %s', msg, e)
       if tempdir:
@@ -140,6 +141,8 @@ class VM(device.Device):
 
   SSH_PORT = 9222
   IMAGE_FORMAT = 'raw'
+  # kvm_* should match kvm_intel, kvm_amd, etc.
+  NESTED_KVM_GLOB = '/sys/module/kvm_*/parameters/nested'
 
   def __init__(self, opts):
     """Initialize VM.
@@ -156,7 +159,7 @@ class VM(device.Device):
     self.qemu_cpu = opts.qemu_cpu
     self.qemu_smp = opts.qemu_smp
     if self.qemu_smp == 0:
-      self.qemu_smp = min(8, multiprocessing.cpu_count)
+      self.qemu_smp = min(8, multiprocessing.cpu_count())
     self.qemu_hostfwd = opts.qemu_hostfwd
     self.qemu_args = opts.qemu_args
 
@@ -233,7 +236,7 @@ class VM(device.Device):
       QEMU version.
     """
     version_str = self.RunCommand([self.qemu_path, '--version'],
-                                  capture_output=True).output
+                                  capture_output=True, encoding='utf-8').stdout
     # version string looks like one of these:
     # QEMU emulator version 2.0.0 (Debian 2.0.0+dfsg-2ubuntu1.36), Copyright (c)
     # 2003-2008 Fabrice Bellard
@@ -388,6 +391,19 @@ class VM(device.Device):
       os.mkfifo(pipe, 0o600)
     osutils.Touch(self.pidfile)
 
+    # Append 'check' to warn if the requested CPU is not fully supported.
+    if 'check' not in self.qemu_cpu.split(','):
+      self.qemu_cpu += ',check'
+    # Append 'vmx=on' if the host supports nested virtualization. It can be
+    # enabled via 'vmx+' or 'vmx=on' (or similarly disabled) so just test for
+    # the presence of 'vmx'. For more details, see:
+    # https://www.kernel.org/doc/Documentation/virtual/kvm/nested-vmx.txt
+    if 'vmx' not in self.qemu_cpu and self.enable_kvm:
+      for f in glob.glob(self.NESTED_KVM_GLOB):
+        if cros_build_lib.BooleanShellValue(osutils.ReadFile(f).strip(), False):
+          self.qemu_cpu += ',vmx=on'
+          break
+
     qemu_args = [self.qemu_path]
     if self.qemu_bios_path:
       if not os.path.isdir(self.qemu_bios_path):
@@ -401,8 +417,7 @@ class VM(device.Device):
         '-chardev', 'pipe,id=control_pipe,path=%s' % self.kvm_monitor,
         '-serial', 'file:%s' % self.kvm_serial,
         '-mon', 'chardev=control_pipe',
-        # Append 'check' to warn if the requested CPU is not fully supported.
-        '-cpu', self.qemu_cpu + ',check',
+        '-cpu', self.qemu_cpu,
         '-device', 'virtio-net,netdev=eth0',
         '-device', 'virtio-scsi-pci,id=scsi',
         '-device', 'scsi-hd,drive=hd',
@@ -506,7 +521,7 @@ class VM(device.Device):
     # utility-process, 3 renderers.
     _WaitForProc('chrome', 8)
 
-  def WaitForBoot(self):
+  def WaitForBoot(self, sleep=5):
     """Wait for the VM to boot up.
 
     Wait for ssh connection to become active, and wait for all expected chrome
@@ -515,7 +530,7 @@ class VM(device.Device):
     if not os.path.exists(self.vm_dir):
       self.Start()
 
-    super(VM, self).WaitForBoot()
+    super(VM, self).WaitForBoot(sleep=sleep)
 
     # Chrome can take a while to start with software emulation.
     if not self.enable_kvm:

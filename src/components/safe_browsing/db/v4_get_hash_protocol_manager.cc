@@ -352,6 +352,8 @@ void V4GetHashProtocolManager::GetFullHashes(
   pending_hash_requests_[loader].reset(new FullHashCallbackInfo(
       cached_full_hash_infos, prefixes_to_request, std::move(owned_loader),
       full_hash_to_store_and_hash_prefixes, callback, clock_->Now()));
+  UMA_HISTOGRAM_COUNTS_100("SafeBrowsing.V4GetHash.CountOfPrefixes",
+                           prefixes_to_request.size());
 }
 
 void V4GetHashProtocolManager::GetFullHashesWithApis(
@@ -617,8 +619,7 @@ void V4GetHashProtocolManager::ParseMetadata(const ThreatMatch& match,
                                              ThreatMetadata* metadata) {
   // Different threat types will handle the metadata differently.
   if (match.threat_type() == API_ABUSE) {
-    if (!match.has_platform_type() ||
-        match.platform_type() != CHROME_PLATFORM) {
+    if (!match.has_platform_type()) {
       RecordParseGetHashResult(UNEXPECTED_PLATFORM_TYPE_ERROR);
       return;
     }
@@ -770,7 +771,6 @@ void V4GetHashProtocolManager::OnURLLoaderComplete(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   int response_code = 0;
   if (url_loader->ResponseInfo() && url_loader->ResponseInfo()->headers)
     response_code = url_loader->ResponseInfo()->headers->response_code();

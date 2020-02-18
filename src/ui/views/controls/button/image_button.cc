@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/strings/utf_string_conversions.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/gfx/animation/throb_animation.h"
 #include "ui/gfx/canvas.h"
@@ -227,7 +228,7 @@ void ToggleImageButton::SetToggled(bool toggled) {
   toggled_ = toggled;
   SchedulePaint();
 
-  NotifyAccessibilityEvent(ax::mojom::Event::kAriaAttributeChanged, true);
+  NotifyAccessibilityEvent(ax::mojom::Event::kCheckedStateChanged, true);
 }
 
 void ToggleImageButton::SetToggledImage(ButtonState image_state,

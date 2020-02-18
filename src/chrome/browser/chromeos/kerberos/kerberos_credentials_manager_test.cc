@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/kerberos/kerberos_credentials_manager.h"
 
 #include <memory>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -14,6 +15,7 @@
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/test/bind_test_util.h"
+#include "chrome/browser/chromeos/authpolicy/kerberos_files_handler.h"
 #include "chrome/browser/chromeos/login/users/mock_user_manager.h"
 #include "chrome/browser/notifications/notification_display_service_tester.h"
 #include "chrome/common/pref_names.h"
@@ -25,6 +27,7 @@
 #include "components/user_manager/scoped_user_manager.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/test/browser_task_environment.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -36,6 +39,7 @@ constexpr char kPrincipal[] = "kerbeROS_user@examPLE.com";
 constexpr char kNormalizedPrincipal[] = "kerberos_user@EXAMPLE.COM";
 constexpr char kOtherPrincipal[] = "icebear_cloud@example.com";
 constexpr char kNormalizedOtherPrincipal[] = "icebear_cloud@EXAMPLE.COM";
+constexpr char kYetAnotherPrincipal[] = "yet_another_user@example.com";
 constexpr char kBadPrincipal1[] = "";
 constexpr char kBadPrincipal2[] = "kerbeROS_user";
 constexpr char kBadPrincipal3[] = "kerbeROS_user@";
@@ -54,6 +58,58 @@ const bool kRememberPassword = true;
 
 const bool kDontAllowExisting = false;
 const bool kAllowExisting = true;
+
+const int kNoNotification = 0;
+const int kOneNotification = 1;
+
+const int kNoAccount = 0;
+const int kOneAccount = 1;
+const int kTwoAccounts = 2;
+const int kThreeAccounts = 3;
+
+// Fake observer used to test notifications sent by KerberosCredentialsManager
+// on accounts changes.
+class FakeKerberosCredentialsManagerObserver
+    : public KerberosCredentialsManager::Observer {
+ public:
+  FakeKerberosCredentialsManagerObserver() = default;
+  ~FakeKerberosCredentialsManagerObserver() override = default;
+
+  int notifications_count() const { return notifications_count_; }
+
+  int accounts_count_at_last_notification() const {
+    return accounts_count_at_last_notification_;
+  }
+
+  // KerberosCredentialsManager::Observer:
+  void OnAccountsChanged() override {
+    notifications_count_++;
+    accounts_count_at_last_notification_ =
+        KerberosClient::Get()->GetTestInterface()->GetNumberOfAccounts();
+  }
+
+  void Reset() {
+    notifications_count_ = 0;
+    accounts_count_at_last_notification_ = 0;
+  }
+
+ private:
+  // Registers how many times the observer has been notified of account changes.
+  int notifications_count_ = 0;
+  // Registers the number of accounts saved before the most recent
+  // OnAccountsChanged() call.
+  int accounts_count_at_last_notification_ = 0;
+};
+
+class MockKerberosFilesHandler : public KerberosFilesHandler {
+ public:
+  explicit MockKerberosFilesHandler(base::RepeatingClosure get_kerberos_files)
+      : KerberosFilesHandler(get_kerberos_files) {}
+
+  ~MockKerberosFilesHandler() = default;
+
+  MOCK_METHOD(void, DeleteFiles, ());
+};
 
 }  // namespace
 
@@ -80,10 +136,14 @@ class KerberosCredentialsManagerTest : public testing::Test {
 
     mgr_ = std::make_unique<KerberosCredentialsManager>(local_state_.Get(),
                                                         profile_.get());
+
+    mgr_->AddObserver(&observer_);
   }
 
   ~KerberosCredentialsManagerTest() override {
+    mgr_->RemoveObserver(&observer_);
     mgr_.reset();
+    display_service_.reset();
     profile_.reset();
     KerberosClient::Shutdown();
   }
@@ -103,37 +163,79 @@ class KerberosCredentialsManagerTest : public testing::Test {
     return KerberosClient::Get()->GetTestInterface();
   }
 
-  // Gets a callback that sets |actual_error_| to the passed-in error.
+  // Gets a callback that adds the passed-in error to |result_errors_|.
   KerberosCredentialsManager::ResultCallback GetResultCallback() {
-    EXPECT_FALSE(result_error_);
-    EXPECT_FALSE(result_run_loop_);
-    result_run_loop_ = std::make_unique<base::RunLoop>();
+    // If this is the first account addition, sets |result_run_loop_|.
+    if (accounts_addition_count_ == 0) {
+      EXPECT_TRUE(result_errors_.empty());
+      EXPECT_FALSE(result_run_loop_);
+      result_run_loop_ = std::make_unique<base::RunLoop>();
+    }
+    accounts_addition_count_++;
+
     return base::BindOnce(&KerberosCredentialsManagerTest::OnResult,
                           weak_ptr_factory_.GetWeakPtr());
   }
 
   void OnResult(kerberos::ErrorType error) {
-    result_error_ = error;
-    result_run_loop_->Quit();
+    DCHECK_LT(0, accounts_addition_count_);
+    accounts_addition_count_--;
+    result_errors_.insert(error);
+
+    // Stops |result_run_loop_| if all additions are finished.
+    if (accounts_addition_count_ == 0) {
+      result_run_loop_->Quit();
+    }
   }
 
-  void WaitAndVerifyResult(kerberos::ErrorType expected_error) {
+  void WaitAndVerifyResult(std::multiset<kerberos::ErrorType> expected_errors_,
+                           int expected_notifications_count,
+                           int expected_accounts_count) {
+    EXPECT_LT(0, accounts_addition_count_);
     ASSERT_TRUE(result_run_loop_);
     result_run_loop_->Run();
-    ASSERT_TRUE(result_error_);
-    EXPECT_EQ(*result_error_, expected_error);
+
+    EXPECT_EQ(expected_errors_, result_errors_);
+    EXPECT_EQ(expected_notifications_count, observer_.notifications_count());
+    EXPECT_EQ(expected_accounts_count,
+              observer_.accounts_count_at_last_notification());
+
+    EXPECT_EQ(0, accounts_addition_count_);
     result_run_loop_.reset();
-    result_error_.reset();
+    result_errors_.clear();
+    observer_.Reset();
   }
 
   // Calls |mgr_->AddAccountAndAuthenticate()| with |principal_name| and some
-  // default parameters, waits for the result and expects |expected_error|.
+  // default parameters, waits for the result and checks expectations.
   void AddAccountAndAuthenticate(const char* principal_name,
-                                 kerberos::ErrorType expected_error) {
+                                 kerberos::ErrorType expected_error,
+                                 int expected_notifications_count,
+                                 int expected_accounts_count) {
     mgr_->AddAccountAndAuthenticate(principal_name, kUnmanaged, kPassword,
                                     kDontRememberPassword, kConfig,
                                     kAllowExisting, GetResultCallback());
-    WaitAndVerifyResult(expected_error);
+    WaitAndVerifyResult({expected_error}, expected_notifications_count,
+                        expected_accounts_count);
+  }
+
+  void RemoveAccount(const char* principal_name,
+                     kerberos::ErrorType expected_error,
+                     int expected_notifications_count,
+                     int expected_accounts_count) {
+    base::RunLoop run_loop;
+    mgr_->RemoveAccount(
+        principal_name,
+        base::BindLambdaForTesting([&](const kerberos::ErrorType error) {
+          EXPECT_EQ(expected_error, error);
+          run_loop.Quit();
+        }));
+    run_loop.Run();
+
+    EXPECT_EQ(expected_notifications_count, observer_.notifications_count());
+    EXPECT_EQ(expected_accounts_count,
+              observer_.accounts_count_at_last_notification());
+    observer_.Reset();
   }
 
   // Calls |mgr_->ListAccounts()|, waits for the result and expects success.
@@ -168,9 +270,11 @@ class KerberosCredentialsManagerTest : public testing::Test {
   std::unique_ptr<TestingProfile> profile_;
   std::unique_ptr<NotificationDisplayServiceTester> display_service_;
   std::unique_ptr<KerberosCredentialsManager> mgr_;
+  FakeKerberosCredentialsManagerObserver observer_;
 
+  int accounts_addition_count_ = 0;
   std::unique_ptr<base::RunLoop> result_run_loop_;
-  base::Optional<kerberos::ErrorType> result_error_;
+  std::multiset<kerberos::ErrorType> result_errors_;
 
  private:
   base::WeakPtrFactory<KerberosCredentialsManagerTest> weak_ptr_factory_{this};
@@ -208,7 +312,7 @@ TEST_F(KerberosCredentialsManagerTest,
   mgr_->AddAccountAndAuthenticate(kPrincipal, kManaged, kPassword,
                                   kRememberPassword, kConfig,
                                   kDontAllowExisting, GetResultCallback());
-  WaitAndVerifyResult(kerberos::ERROR_NONE);
+  WaitAndVerifyResult({kerberos::ERROR_NONE}, kOneNotification, kOneAccount);
 
   Account account = GetAccount();
   EXPECT_EQ(kNormalizedPrincipal, account.principal_name());
@@ -222,11 +326,16 @@ TEST_F(KerberosCredentialsManagerTest,
        AddAccountAndAuthenticateFailsForBadPrincipal) {
   const kerberos::ErrorType expected_error =
       kerberos::ERROR_PARSE_PRINCIPAL_FAILED;
-  AddAccountAndAuthenticate(kBadPrincipal1, expected_error);
-  AddAccountAndAuthenticate(kBadPrincipal2, expected_error);
-  AddAccountAndAuthenticate(kBadPrincipal3, expected_error);
-  AddAccountAndAuthenticate(kBadPrincipal4, expected_error);
-  AddAccountAndAuthenticate(kBadPrincipal5, expected_error);
+  AddAccountAndAuthenticate(kBadPrincipal1, expected_error, kNoNotification,
+                            kNoAccount);
+  AddAccountAndAuthenticate(kBadPrincipal2, expected_error, kNoNotification,
+                            kNoAccount);
+  AddAccountAndAuthenticate(kBadPrincipal3, expected_error, kNoNotification,
+                            kNoAccount);
+  AddAccountAndAuthenticate(kBadPrincipal4, expected_error, kNoNotification,
+                            kNoAccount);
+  AddAccountAndAuthenticate(kBadPrincipal5, expected_error, kNoNotification,
+                            kNoAccount);
 }
 
 // AddAccountAndAuthenticate calls KerberosClient methods in a certain order.
@@ -237,7 +346,7 @@ TEST_F(KerberosCredentialsManagerTest,
   mgr_->AddAccountAndAuthenticate(kPrincipal, kUnmanaged, kPassword,
                                   kDontRememberPassword, kConfig,
                                   kAllowExisting, GetResultCallback());
-  WaitAndVerifyResult(kerberos::ERROR_NONE);
+  WaitAndVerifyResult({kerberos::ERROR_NONE}, kOneNotification, kOneAccount);
   std::string calls =
       client_test_interface()->StopRecordingAndGetRecordedFunctionCalls();
   EXPECT_EQ(calls, "AddAccount,SetConfig,AcquireKerberosTgt,GetKerberosFiles");
@@ -248,7 +357,7 @@ TEST_F(KerberosCredentialsManagerTest,
   mgr_->AddAccountAndAuthenticate(kPrincipal, kManaged, kNoPassword,
                                   kDontRememberPassword, kConfig,
                                   kAllowExisting, GetResultCallback());
-  WaitAndVerifyResult(kerberos::ERROR_NONE);
+  WaitAndVerifyResult({kerberos::ERROR_NONE}, kOneNotification, kOneAccount);
   calls = client_test_interface()->StopRecordingAndGetRecordedFunctionCalls();
   EXPECT_EQ(calls, "AddAccount,SetConfig,GetKerberosFiles");
 }
@@ -257,24 +366,27 @@ TEST_F(KerberosCredentialsManagerTest,
 // ERROR_DUPLICATE_PRINCIPAL_NAME if |kDontAllowExisting| is passed in.
 TEST_F(KerberosCredentialsManagerTest,
        AddAccountAndAuthenticateRejectExistingAccount) {
-  AddAccountAndAuthenticate(kPrincipal, kerberos::ERROR_NONE);
+  AddAccountAndAuthenticate(kPrincipal, kerberos::ERROR_NONE, kOneNotification,
+                            kOneAccount);
   mgr_->AddAccountAndAuthenticate(kPrincipal, kUnmanaged, kPassword,
                                   kRememberPassword, kConfig,
                                   kDontAllowExisting, GetResultCallback());
-  WaitAndVerifyResult(kerberos::ERROR_DUPLICATE_PRINCIPAL_NAME);
+  WaitAndVerifyResult({kerberos::ERROR_DUPLICATE_PRINCIPAL_NAME},
+                      kOneNotification, kOneAccount);
 }
 
 // AddAccountAndAuthenticate succeeds and overwrites existing accounts if
 // |kAllowExisting| is passed in.
 TEST_F(KerberosCredentialsManagerTest,
        AddAccountAndAuthenticateAllowExistingAccount) {
-  AddAccountAndAuthenticate(kPrincipal, kerberos::ERROR_NONE);
+  AddAccountAndAuthenticate(kPrincipal, kerberos::ERROR_NONE, kOneNotification,
+                            kOneAccount);
   EXPECT_FALSE(GetAccount().password_was_remembered());
 
   mgr_->AddAccountAndAuthenticate(kPrincipal, kUnmanaged, kPassword,
                                   kRememberPassword, kConfig, kAllowExisting,
                                   GetResultCallback());
-  WaitAndVerifyResult(kerberos::ERROR_NONE);
+  WaitAndVerifyResult({kerberos::ERROR_NONE}, kOneNotification, kOneAccount);
 
   // Check change in password_was_remembered() to validate that the account was
   // overwritten.
@@ -290,7 +402,8 @@ TEST_F(KerberosCredentialsManagerTest,
   mgr_->AddAccountAndAuthenticate(kPrincipal, kUnmanaged, kPassword,
                                   kRememberPassword, kInvalidConfig,
                                   kAllowExisting, GetResultCallback());
-  WaitAndVerifyResult(kerberos::ERROR_BAD_CONFIG);
+  WaitAndVerifyResult({kerberos::ERROR_BAD_CONFIG}, kOneNotification,
+                      kNoAccount);
   std::string calls =
       client_test_interface()->StopRecordingAndGetRecordedFunctionCalls();
   EXPECT_EQ(calls, "AddAccount,SetConfig,RemoveAccount");
@@ -302,7 +415,8 @@ TEST_F(KerberosCredentialsManagerTest,
   mgr_->AddAccountAndAuthenticate(kPrincipal, kUnmanaged, kInvalidPassword,
                                   kRememberPassword, kConfig, kAllowExisting,
                                   GetResultCallback());
-  WaitAndVerifyResult(kerberos::ERROR_BAD_PASSWORD);
+  WaitAndVerifyResult({kerberos::ERROR_BAD_PASSWORD}, kOneNotification,
+                      kNoAccount);
   calls = client_test_interface()->StopRecordingAndGetRecordedFunctionCalls();
   EXPECT_EQ(calls, "AddAccount,SetConfig,AcquireKerberosTgt,RemoveAccount");
   EXPECT_EQ(0u, ListAccounts().size());
@@ -311,13 +425,15 @@ TEST_F(KerberosCredentialsManagerTest,
 // AddAccountAndAuthenticate does not remove accounts that already existed.
 TEST_F(KerberosCredentialsManagerTest,
        AddAccountAndAuthenticateDoesNotRemoveExistingAccountOnFailure) {
-  AddAccountAndAuthenticate(kPrincipal, kerberos::ERROR_NONE);
+  AddAccountAndAuthenticate(kPrincipal, kerberos::ERROR_NONE, kOneNotification,
+                            kOneAccount);
 
   client_test_interface()->StartRecordingFunctionCalls();
   mgr_->AddAccountAndAuthenticate(kPrincipal, kUnmanaged, kPassword,
                                   kRememberPassword, kInvalidConfig,
                                   kAllowExisting, GetResultCallback());
-  WaitAndVerifyResult(kerberos::ERROR_BAD_CONFIG);
+  WaitAndVerifyResult({kerberos::ERROR_BAD_CONFIG}, kOneNotification,
+                      kOneAccount);
   std::string calls =
       client_test_interface()->StopRecordingAndGetRecordedFunctionCalls();
   EXPECT_EQ(calls, "AddAccount,SetConfig");
@@ -333,7 +449,8 @@ TEST_F(KerberosCredentialsManagerTest,
   mgr_->AddAccountAndAuthenticate(kPrincipal, kManaged, kPassword,
                                   kRememberPassword, kInvalidConfig,
                                   kAllowExisting, GetResultCallback());
-  WaitAndVerifyResult(kerberos::ERROR_BAD_CONFIG);
+  WaitAndVerifyResult({kerberos::ERROR_BAD_CONFIG}, kOneNotification,
+                      kOneAccount);
   std::string calls =
       client_test_interface()->StopRecordingAndGetRecordedFunctionCalls();
   EXPECT_EQ(calls, "AddAccount,SetConfig");
@@ -349,14 +466,14 @@ TEST_F(KerberosCredentialsManagerTest,
   mgr_->AddAccountAndAuthenticate(kPrincipal, kUnmanaged, kPassword,
                                   kDontRememberPassword, kConfig,
                                   kAllowExisting, GetResultCallback());
-  WaitAndVerifyResult(kerberos::ERROR_NONE);
+  WaitAndVerifyResult({kerberos::ERROR_NONE}, kOneNotification, kOneAccount);
   EXPECT_EQ(kNormalizedPrincipal, mgr_->GetActiveAccount());
 
   // Adding another unmanaged account DOES change the active account.
   mgr_->AddAccountAndAuthenticate(kOtherPrincipal, kUnmanaged, kPassword,
                                   kDontRememberPassword, kConfig,
                                   kAllowExisting, GetResultCallback());
-  WaitAndVerifyResult(kerberos::ERROR_NONE);
+  WaitAndVerifyResult({kerberos::ERROR_NONE}, kOneNotification, kTwoAccounts);
   EXPECT_EQ(kNormalizedOtherPrincipal, mgr_->GetActiveAccount());
 }
 
@@ -369,29 +486,184 @@ TEST_F(KerberosCredentialsManagerTest,
   mgr_->AddAccountAndAuthenticate(kPrincipal, kManaged, kPassword,
                                   kDontRememberPassword, kConfig,
                                   kAllowExisting, GetResultCallback());
-  WaitAndVerifyResult(kerberos::ERROR_NONE);
+  WaitAndVerifyResult({kerberos::ERROR_NONE}, kOneNotification, kOneAccount);
   EXPECT_EQ(kNormalizedPrincipal, mgr_->GetActiveAccount());
 
   // Adding another managed account DOES NOT change the active account.
   mgr_->AddAccountAndAuthenticate(kOtherPrincipal, kManaged, kPassword,
                                   kDontRememberPassword, kConfig,
                                   kAllowExisting, GetResultCallback());
-  WaitAndVerifyResult(kerberos::ERROR_NONE);
+  WaitAndVerifyResult({kerberos::ERROR_NONE}, kOneNotification, kTwoAccounts);
+  EXPECT_EQ(kNormalizedPrincipal, mgr_->GetActiveAccount());
+}
+
+// AddAccountAndAuthenticate attempts to add multiple accounts, all of them
+// fail, and observers are notified once.
+TEST_F(KerberosCredentialsManagerTest,
+       AddAccountAndAuthenticateAddsMultipleAccountsAllFail) {
+  EXPECT_TRUE(mgr_->GetActiveAccount().empty());
+  mgr_->AddAccountAndAuthenticate(kPrincipal, kManaged, kInvalidPassword,
+                                  kDontRememberPassword, kConfig,
+                                  kAllowExisting, GetResultCallback());
+  mgr_->AddAccountAndAuthenticate(kOtherPrincipal, kManaged, kInvalidPassword,
+                                  kDontRememberPassword, kConfig,
+                                  kAllowExisting, GetResultCallback());
+  mgr_->AddAccountAndAuthenticate(kYetAnotherPrincipal, kManaged,
+                                  kInvalidPassword, kDontRememberPassword,
+                                  kConfig, kAllowExisting, GetResultCallback());
+
+  WaitAndVerifyResult(
+      {kerberos::ERROR_BAD_PASSWORD, kerberos::ERROR_BAD_PASSWORD,
+       kerberos::ERROR_BAD_PASSWORD},
+      kOneNotification, kThreeAccounts);
+  EXPECT_TRUE(mgr_->GetActiveAccount().empty());
+}
+
+// AddAccountAndAuthenticate attempts to add multiple accounts, all of them
+// succeed, and observers are notified once.
+TEST_F(KerberosCredentialsManagerTest,
+       AddAccountAndAuthenticateAddsMultipleAccountsAllSucceed) {
+  EXPECT_TRUE(mgr_->GetActiveAccount().empty());
+  mgr_->AddAccountAndAuthenticate(kPrincipal, kManaged, kPassword,
+                                  kDontRememberPassword, kConfig,
+                                  kAllowExisting, GetResultCallback());
+  mgr_->AddAccountAndAuthenticate(kOtherPrincipal, kManaged, kPassword,
+                                  kDontRememberPassword, kConfig,
+                                  kAllowExisting, GetResultCallback());
+  mgr_->AddAccountAndAuthenticate(kYetAnotherPrincipal, kManaged, kPassword,
+                                  kDontRememberPassword, kConfig,
+                                  kAllowExisting, GetResultCallback());
+
+  WaitAndVerifyResult(
+      {kerberos::ERROR_NONE, kerberos::ERROR_NONE, kerberos::ERROR_NONE},
+      kOneNotification, kThreeAccounts);
+  EXPECT_EQ(kNormalizedPrincipal, mgr_->GetActiveAccount());
+}
+
+// AddAccountAndAuthenticate attempts to add multiple accounts, only one
+// succeed, and observers are notified once.
+TEST_F(KerberosCredentialsManagerTest,
+       AddAccountAndAuthenticateAddsMultipleAccountsSingleSuccess) {
+  EXPECT_TRUE(mgr_->GetActiveAccount().empty());
+  mgr_->AddAccountAndAuthenticate(kPrincipal, kManaged, kInvalidPassword,
+                                  kDontRememberPassword, kConfig,
+                                  kAllowExisting, GetResultCallback());
+  mgr_->AddAccountAndAuthenticate(kOtherPrincipal, kManaged, kPassword,
+                                  kDontRememberPassword, kConfig,
+                                  kAllowExisting, GetResultCallback());
+  mgr_->AddAccountAndAuthenticate(kYetAnotherPrincipal, kManaged,
+                                  kInvalidPassword, kDontRememberPassword,
+                                  kConfig, kAllowExisting, GetResultCallback());
+
+  WaitAndVerifyResult({kerberos::ERROR_BAD_PASSWORD, kerberos::ERROR_NONE,
+                       kerberos::ERROR_BAD_PASSWORD},
+                      kOneNotification, kThreeAccounts);
+  EXPECT_EQ(kNormalizedOtherPrincipal, mgr_->GetActiveAccount());
+}
+
+// RemoveAccount fails with ERROR_PARSE_PRINCIPAL_FAILED when a bad principal
+// name is passed in.
+TEST_F(KerberosCredentialsManagerTest, RemoveAccountFailsForBadPrincipal) {
+  const kerberos::ErrorType expected_error =
+      kerberos::ERROR_PARSE_PRINCIPAL_FAILED;
+  RemoveAccount(kBadPrincipal1, expected_error, kNoNotification, kNoAccount);
+  RemoveAccount(kBadPrincipal2, expected_error, kNoNotification, kNoAccount);
+  RemoveAccount(kBadPrincipal3, expected_error, kNoNotification, kNoAccount);
+  RemoveAccount(kBadPrincipal4, expected_error, kNoNotification, kNoAccount);
+  RemoveAccount(kBadPrincipal5, expected_error, kNoNotification, kNoAccount);
+}
+
+// RemoveAccount normalizes |principal_name| before trying to find account.
+TEST_F(KerberosCredentialsManagerTest, RemoveAccountNormalizesPrincipalName) {
+  AddAccountAndAuthenticate(kPrincipal, kerberos::ERROR_NONE, kOneNotification,
+                            kOneAccount);
+  RemoveAccount(kPrincipal, kerberos::ERROR_NONE, kOneNotification, kNoAccount);
+}
+
+// RemoveAccount removes last account, should clear the active principal.
+TEST_F(KerberosCredentialsManagerTest,
+       RemoveAccountRemoveLastAccountClearsActivePrincipal) {
+  AddAccountAndAuthenticate(kPrincipal, kerberos::ERROR_NONE, kOneNotification,
+                            kOneAccount);
+  EXPECT_EQ(kNormalizedPrincipal, mgr_->GetActiveAccount());
+  client_test_interface()->StartRecordingFunctionCalls();
+
+  RemoveAccount(kPrincipal, kerberos::ERROR_NONE, kOneNotification, kNoAccount);
+
+  std::string calls =
+      client_test_interface()->StopRecordingAndGetRecordedFunctionCalls();
+  EXPECT_EQ(calls, "RemoveAccount");
+  EXPECT_TRUE(mgr_->GetActiveAccount().empty());
+}
+
+// RemoveAccount removes last account, should delete kerberos files.
+TEST_F(KerberosCredentialsManagerTest,
+       RemoveAccountRemoveLastAccountDeletesKerberosFiles) {
+  auto files_handler = std::make_unique<MockKerberosFilesHandler>(
+      mgr_->GetGetKerberosFilesCallbackForTesting());
+  EXPECT_CALL(*files_handler, DeleteFiles());
+  mgr_->SetKerberosFilesHandlerForTesting(std::move(files_handler));
+  AddAccountAndAuthenticate(kPrincipal, kerberos::ERROR_NONE, kOneNotification,
+                            kOneAccount);
+
+  RemoveAccount(kPrincipal, kerberos::ERROR_NONE, kOneNotification, kNoAccount);
+}
+
+// RemoveAccount removes active account while another account is available,
+// should set a new active principal.
+TEST_F(KerberosCredentialsManagerTest,
+       RemoveAccountRemoveActiveAccountAnotherAccountAvailable) {
+  AddAccountAndAuthenticate(kPrincipal, kerberos::ERROR_NONE, kOneNotification,
+                            kOneAccount);
+  AddAccountAndAuthenticate(kOtherPrincipal, kerberos::ERROR_NONE,
+                            kOneNotification, kTwoAccounts);
+  EXPECT_EQ(kNormalizedOtherPrincipal, mgr_->GetActiveAccount());
+  client_test_interface()->StartRecordingFunctionCalls();
+
+  RemoveAccount(kOtherPrincipal, kerberos::ERROR_NONE, kOneNotification,
+                kOneAccount);
+
+  std::string calls =
+      client_test_interface()->StopRecordingAndGetRecordedFunctionCalls();
+  EXPECT_EQ(calls, "RemoveAccount,GetKerberosFiles");
+  EXPECT_EQ(kNormalizedPrincipal, mgr_->GetActiveAccount());
+}
+
+// RemoveAccount removes non-active account, no change on active account.
+TEST_F(KerberosCredentialsManagerTest, RemoveAccountNonActiveAccount) {
+  AddAccountAndAuthenticate(kPrincipal, kerberos::ERROR_NONE, kOneNotification,
+                            kOneAccount);
+  AddAccountAndAuthenticate(kOtherPrincipal, kerberos::ERROR_NONE,
+                            kOneNotification, kTwoAccounts);
+  EXPECT_EQ(kNormalizedOtherPrincipal, mgr_->GetActiveAccount());
+
+  client_test_interface()->StartRecordingFunctionCalls();
+  RemoveAccount(kPrincipal, kerberos::ERROR_NONE, kOneNotification,
+                kOneAccount);
+
+  std::string calls =
+      client_test_interface()->StopRecordingAndGetRecordedFunctionCalls();
+  EXPECT_EQ(calls, "RemoveAccount");
+  EXPECT_EQ(kNormalizedOtherPrincipal, mgr_->GetActiveAccount());
+}
+
+// RemoveAccount fails to remove unknown account.
+TEST_F(KerberosCredentialsManagerTest, RemoveAccountFailsUnknownAccount) {
+  AddAccountAndAuthenticate(kPrincipal, kerberos::ERROR_NONE, kOneNotification,
+                            kOneAccount);
+  EXPECT_EQ(kNormalizedPrincipal, mgr_->GetActiveAccount());
+  client_test_interface()->StartRecordingFunctionCalls();
+
+  RemoveAccount(kOtherPrincipal, kerberos::ERROR_UNKNOWN_PRINCIPAL_NAME,
+                kNoNotification, kNoAccount);
+
+  std::string calls =
+      client_test_interface()->StopRecordingAndGetRecordedFunctionCalls();
+  EXPECT_EQ(calls, "RemoveAccount");
   EXPECT_EQ(kNormalizedPrincipal, mgr_->GetActiveAccount());
 }
 
 // TODO(https://crbug.com/952251): Add more tests
-// - AddAccountAndAuthenticate
-//     + On success, calls OnAccountsChanged on observers (in case multiple
-//       accounts are added by the KerberosAccounts policy, only by the last
-//       account, EVEN IF IT FAILS!)
-//     + On success and if it was the active principal, calls GetKerberosFiles.
-// - RemoveAccount
-//     + Normalization like in AddAccountAndAuthenticate
-//     + Calls the RemoveAccount KerberosClient method
-//     + On success and if active principal was removed, sets a new active
-//       principal (empty if no accounts left)
-//     + On success, calls OnAccountsChanged on observers
 // - ClearAccounts
 //     + Normalization like in AddAccountAndAuthenticate
 //     + Calls the ClearAccounts KerberosClient method

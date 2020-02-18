@@ -17,7 +17,7 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
-#include "third_party/blink/public/web/web_presentation_receiver_flags.h"
+#include "third_party/blink/public/common/presentation/presentation_receiver_flags.h"
 
 #if defined(USE_AURA)
 #include "base/threading/thread_task_runner_handle.h"
@@ -280,24 +280,16 @@ bool OffscreenTab::CanDragEnter(
   return false;
 }
 
-bool OffscreenTab::ShouldCreateWebContents(
-    content::WebContents* web_contents,
-    content::RenderFrameHost* opener,
+bool OffscreenTab::IsWebContentsCreationOverridden(
     content::SiteInstance* source_site_instance,
-    int32_t route_id,
-    int32_t main_frame_route_id,
-    int32_t main_frame_widget_route_id,
     content::mojom::WindowContainerType window_container_type,
     const GURL& opener_url,
     const std::string& frame_name,
-    const GURL& target_url,
-    const std::string& partition_id,
-    content::SessionStorageNamespace* session_storage_namespace) {
-  DCHECK_EQ(offscreen_tab_web_contents_.get(), web_contents);
+    const GURL& target_url) {
   // Disallow creating separate WebContentses.  The WebContents implementation
   // uses this to spawn new windows/tabs, which is also not allowed for
   // offscreen tabs.
-  return false;
+  return true;
 }
 
 bool OffscreenTab::EmbedsFullscreenWidget() {
@@ -308,7 +300,7 @@ bool OffscreenTab::EmbedsFullscreenWidget() {
 void OffscreenTab::EnterFullscreenModeForTab(
     WebContents* contents,
     const GURL& origin,
-    const blink::WebFullscreenOptions& options) {
+    const blink::mojom::FullscreenOptions& options) {
   DCHECK_EQ(offscreen_tab_web_contents_.get(), contents);
 
   if (in_fullscreen_mode())
@@ -335,11 +327,11 @@ bool OffscreenTab::IsFullscreenForTabOrPending(const WebContents* contents) {
   return in_fullscreen_mode();
 }
 
-blink::WebDisplayMode OffscreenTab::GetDisplayMode(
+blink::mojom::DisplayMode OffscreenTab::GetDisplayMode(
     const WebContents* contents) {
   DCHECK_EQ(offscreen_tab_web_contents_.get(), contents);
-  return in_fullscreen_mode() ? blink::kWebDisplayModeFullscreen
-                              : blink::kWebDisplayModeBrowser;
+  return in_fullscreen_mode() ? blink::mojom::DisplayMode::kFullscreen
+                              : blink::mojom::DisplayMode::kBrowser;
 }
 
 void OffscreenTab::RequestMediaAccessPermission(

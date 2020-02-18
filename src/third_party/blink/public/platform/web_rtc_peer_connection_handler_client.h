@@ -41,9 +41,9 @@
 
 namespace blink {
 
-class WebRTCICECandidate;
-class WebRTCRtpReceiver;
-class WebRTCRtpTransceiver;
+class RTCIceCandidatePlatform;
+class RTCRtpTransceiverPlatform;
+class RTCRtpReceiverPlatform;
 class WebString;
 
 struct BLINK_PLATFORM_EXPORT WebRTCSctpTransportSnapshot {
@@ -59,7 +59,8 @@ class BLINK_PLATFORM_EXPORT WebRTCPeerConnectionHandlerClient {
   virtual ~WebRTCPeerConnectionHandlerClient();
 
   virtual void NegotiationNeeded() = 0;
-  virtual void DidGenerateICECandidate(scoped_refptr<WebRTCICECandidate>) = 0;
+  virtual void DidGenerateICECandidate(
+      scoped_refptr<RTCIceCandidatePlatform>) = 0;
   virtual void DidFailICECandidate(const WebString& host_candidate,
                                    const WebString& url,
                                    int error_code,
@@ -72,10 +73,12 @@ class BLINK_PLATFORM_EXPORT WebRTCPeerConnectionHandlerClient {
       webrtc::PeerConnectionInterface::IceConnectionState) = 0;
   virtual void DidChangePeerConnectionState(
       webrtc::PeerConnectionInterface::PeerConnectionState) {}
-  virtual void DidAddReceiverPlanB(std::unique_ptr<WebRTCRtpReceiver>) = 0;
-  virtual void DidRemoveReceiverPlanB(std::unique_ptr<WebRTCRtpReceiver>) = 0;
+  virtual void DidAddReceiverPlanB(std::unique_ptr<RTCRtpReceiverPlatform>) = 0;
+  virtual void DidRemoveReceiverPlanB(
+      std::unique_ptr<RTCRtpReceiverPlatform>) = 0;
   virtual void DidModifyTransceivers(
-      WebVector<std::unique_ptr<WebRTCRtpTransceiver>>,
+      WebVector<std::unique_ptr<RTCRtpTransceiverPlatform>>,
+      WebVector<uintptr_t>,
       bool is_remote_description) = 0;
   virtual void DidModifySctpTransport(WebRTCSctpTransportSnapshot) = 0;
   virtual void DidAddRemoteDataChannel(

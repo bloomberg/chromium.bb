@@ -10,7 +10,10 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/resource_type.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/net_adapters.h"
 #include "services/network/public/cpp/resource_request.h"
@@ -18,11 +21,14 @@
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "url/gurl.h"
 
+namespace blink {
+class ThrottlingURLLoader;
+}  // namespace blink
+
 namespace content {
 
 class BrowserContext;
 class ServiceWorkerVersion;
-class ThrottlingURLLoader;
 struct HttpResponseInfoIOBuffer;
 
 // Used only for ServiceWorkerImportedScriptUpdateCheck.
@@ -76,14 +82,14 @@ class CONTENT_EXPORT ServiceWorkerUpdatedScriptLoader final
     // Creates a ThrottlingURLLoader and starts the request.
     // Called on the core thread.
     static std::unique_ptr<ThrottlingURLLoaderCoreWrapper> CreateLoaderAndStart(
-        std::unique_ptr<network::SharedURLLoaderFactoryInfo>
-            loader_factory_info,
+        std::unique_ptr<network::PendingSharedURLLoaderFactory>
+            pending_loader_factory,
         BrowserContextGetter browser_context_getter,
         int32_t routing_id,
         int32_t request_id,
         uint32_t options,
         const network::ResourceRequest& resource_request,
-        network::mojom::URLLoaderClientPtrInfo client,
+        mojo::PendingRemote<network::mojom::URLLoaderClient> client,
         const net::NetworkTrafficAnnotationTag& traffic_annotation);
 
     // Called on the core thread.
@@ -104,19 +110,19 @@ class CONTENT_EXPORT ServiceWorkerUpdatedScriptLoader final
       LoaderOnUI();
       ~LoaderOnUI();
 
-      std::unique_ptr<ThrottlingURLLoader> loader;
-      network::mojom::URLLoaderClientPtr client;
+      std::unique_ptr<blink::ThrottlingURLLoader> loader;
+      mojo::Remote<network::mojom::URLLoaderClient> client;
     };
 
     static void StartInternalOnUI(
-        std::unique_ptr<network::SharedURLLoaderFactoryInfo>
-            loader_factory_info,
+        std::unique_ptr<network::PendingSharedURLLoaderFactory>
+            pending_loader_factory,
         BrowserContextGetter browser_context_getter,
         int32_t routing_id,
         int32_t request_id,
         uint32_t options,
         network::ResourceRequest resource_request,
-        network::mojom::URLLoaderClientPtrInfo client,
+        mojo::PendingRemote<network::mojom::URLLoaderClient> client,
         net::NetworkTrafficAnnotationTag traffic_annotation,
         LoaderOnUI* loader_on_ui);
 
@@ -128,7 +134,7 @@ class CONTENT_EXPORT ServiceWorkerUpdatedScriptLoader final
   static std::unique_ptr<ServiceWorkerUpdatedScriptLoader> CreateAndStart(
       uint32_t options,
       const network::ResourceRequest& original_request,
-      network::mojom::URLLoaderClientPtr client,
+      mojo::PendingRemote<network::mojom::URLLoaderClient> client,
       scoped_refptr<ServiceWorkerVersion> version);
 
   ~ServiceWorkerUpdatedScriptLoader() override;
@@ -173,7 +179,7 @@ class CONTENT_EXPORT ServiceWorkerUpdatedScriptLoader final
   ServiceWorkerUpdatedScriptLoader(
       uint32_t options,
       const network::ResourceRequest& original_request,
-      network::mojom::URLLoaderClientPtr client,
+      mojo::PendingRemote<network::mojom::URLLoaderClient> client,
       scoped_refptr<ServiceWorkerVersion> version);
 
   // Called when |network_consumer_| is ready to be read. Can be called multiple
@@ -202,7 +208,10 @@ class CONTENT_EXPORT ServiceWorkerUpdatedScriptLoader final
 
   // Called when ServiceWorkerCacheWriter::Resume() completes its work.
   // If not all data are received, it continues to download from network.
-  void OnCacheWriterResumed(net::Error error);
+  void OnCacheWriterResumed(
+      scoped_refptr<network::MojoToNetPendingBuffer> pending_network_buffer,
+      uint32_t consumed_bytes,
+      net::Error error);
 
 #if DCHECK_IS_ON()
   void CheckVersionStatusBeforeLoad();
@@ -225,12 +234,13 @@ class CONTENT_EXPORT ServiceWorkerUpdatedScriptLoader final
   // sometimes).
   std::unique_ptr<ThrottlingURLLoaderCoreWrapper> network_loader_;
 
-  mojo::Binding<network::mojom::URLLoaderClient> network_client_binding_;
+  mojo::Receiver<network::mojom::URLLoaderClient> network_client_receiver_{
+      this};
   mojo::ScopedDataPipeConsumerHandle network_consumer_;
   mojo::SimpleWatcher network_watcher_;
 
   // Used for responding with the fetched script to this loader's client.
-  network::mojom::URLLoaderClientPtr client_;
+  mojo::Remote<network::mojom::URLLoaderClient> client_;
   mojo::ScopedDataPipeProducerHandle client_producer_;
 
   // Represents the state of |network_loader_|.
@@ -258,7 +268,8 @@ class CONTENT_EXPORT ServiceWorkerUpdatedScriptLoader final
 
   mojo::SimpleWatcher client_producer_watcher_;
   const base::TimeTicks request_start_;
-  network::mojom::URLLoaderClientRequest network_client_request_;
+  mojo::PendingReceiver<network::mojom::URLLoaderClient>
+      pending_network_client_receiver_;
 
   // This is the data notified by OnBeforeWriteData() which would be sent
   // to |client_|.

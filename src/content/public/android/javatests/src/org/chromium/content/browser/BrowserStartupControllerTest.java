@@ -38,11 +38,9 @@ public class BrowserStartupControllerTest {
         private boolean mServiceManagerStarted;
 
         @Override
-        void prepareToStartBrowserProcess(boolean singleProcess, Runnable completionCallback)
-                throws ProcessInitException {
+        void prepareToStartBrowserProcess(boolean singleProcess, Runnable completionCallback) {
             if (!mLibraryLoadSucceeds) {
-                throw new ProcessInitException(
-                        LoaderErrors.LOADER_ERROR_NATIVE_LIBRARY_LOAD_FAILED);
+                throw new ProcessInitException(LoaderErrors.NATIVE_LIBRARY_LOAD_FAILED);
             } else if (completionCallback != null) {
                 completionCallback.run();
             }
@@ -118,7 +116,7 @@ public class BrowserStartupControllerTest {
     }
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         mController = new TestBrowserStartupController();
         RecordHistogram.setDisabledForTests(true);
         // Setting the static singleton instance field enables more correct testing, since it is

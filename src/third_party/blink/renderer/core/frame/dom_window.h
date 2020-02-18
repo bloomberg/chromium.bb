@@ -37,7 +37,7 @@ class CORE_EXPORT DOMWindow : public EventTargetWithInlineData {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  enum class CrossDocumentAccessFeaturePolicy { kAllowed, kDisallowed };
+  enum class CrossDocumentAccessPolicy { kAllowed, kDisallowed };
 
   ~DOMWindow() override;
 
@@ -57,7 +57,7 @@ class CORE_EXPORT DOMWindow : public EventTargetWithInlineData {
     return frame_;
   }
 
-  // GarbageCollectedFinalized overrides:
+  // GarbageCollected overrides:
   void Trace(blink::Visitor*) override;
 
   virtual bool IsLocalDOMWindow() const = 0;
@@ -98,7 +98,7 @@ class CORE_EXPORT DOMWindow : public EventTargetWithInlineData {
   void postMessage(v8::Isolate*,
                    const ScriptValue& message,
                    const String& target_origin,
-                   Vector<ScriptValue>& transfer,
+                   HeapVector<ScriptValue>& transfer,
                    ExceptionState&);
 
   void postMessage(v8::Isolate*,
@@ -111,10 +111,10 @@ class CORE_EXPORT DOMWindow : public EventTargetWithInlineData {
 
   String SanitizedCrossDomainAccessErrorMessage(
       const LocalDOMWindow* accessing_window,
-      CrossDocumentAccessFeaturePolicy cross_document_access) const;
+      CrossDocumentAccessPolicy cross_document_access) const;
   String CrossDomainAccessErrorMessage(
       const LocalDOMWindow* accessing_window,
-      CrossDocumentAccessFeaturePolicy cross_document_access) const;
+      CrossDocumentAccessPolicy cross_document_access) const;
 
   // FIXME: When this DOMWindow is no longer the active DOMWindow (i.e.,
   // when its document is no longer the document that is displayed in its
@@ -122,8 +122,6 @@ class CORE_EXPORT DOMWindow : public EventTargetWithInlineData {
   // by the document that is currently active in |frame_|.
   // See https://bugs.webkit.org/show_bug.cgi?id=62054
   bool IsCurrentlyDisplayedInFrame() const;
-
-  bool isSecureContext() const;
 
   InputDeviceCapabilitiesConstants* GetInputDeviceCapabilities();
 

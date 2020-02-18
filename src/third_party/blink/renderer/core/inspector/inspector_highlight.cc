@@ -287,19 +287,19 @@ std::unique_ptr<protocol::DictionaryValue> BuildElementInfo(Element* element) {
   if (!layout_object || !containing_view)
     return element_info;
 
-  if (auto* context = element->GetDisplayLockContext()) {
-    if (context->IsLocked()) {
-      // If it's a locked element, use the values from the locked frame rect.
-      // TODO(vmpstr): Verify that these values are correct here.
-      element_info->setString(
-          "nodeWidth",
-          String::Number(context->GetLockedContentLogicalWidth().ToDouble()));
-      element_info->setString(
-          "nodeHeight",
-          String::Number(context->GetLockedContentLogicalHeight().ToDouble()));
-    }
-    return element_info;
-  }
+  // if (auto* context = element->GetDisplayLockContext()) {
+  //  if (context->IsLocked()) {
+  //    // If it's a locked element, use the values from the locked frame rect.
+  //    // TODO(vmpstr): Verify that these values are correct here.
+  //    element_info->setString(
+  //        "nodeWidth",
+  //        String::Number(context->GetLockedContentLogicalWidth().ToDouble()));
+  //    element_info->setString(
+  //        "nodeHeight",
+  //        String::Number(context->GetLockedContentLogicalHeight().ToDouble()));
+  //  }
+  //  return element_info;
+  //}
 
   // layoutObject the getBoundingClientRect() data in the tooltip
   // to be consistent with the rulers (see http://crbug.com/262338).
@@ -448,8 +448,10 @@ InspectorHighlight::InspectorHighlight(
       scale_(1.f) {
   DCHECK(!DisplayLockUtilities::NearestLockedExclusiveAncestor(*node));
   LocalFrameView* frame_view = node->GetDocument().View();
-  if (frame_view)
-    scale_ = 1.f / frame_view->GetChromeClient()->WindowToViewportScalar(1.f);
+  if (frame_view) {
+    scale_ = 1.f / frame_view->GetChromeClient()->WindowToViewportScalar(
+                       &frame_view->GetFrame(), 1.f);
+  }
   AppendPathsForShapeOutside(node, highlight_config);
   AppendNodeHighlight(node, highlight_config);
   auto* text_node = DynamicTo<Text>(node);

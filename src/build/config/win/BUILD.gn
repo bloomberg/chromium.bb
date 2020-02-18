@@ -61,8 +61,11 @@ config("compiler") {
     "/FS",  # Preserve previous PDB behavior.
     "/bigobj",  # Some of our files are bigger than the regular limits.
     "/utf-8",  # Assume UTF-8 by default to avoid code page dependencies.
-    "/Zc:twoPhase",
   ]
+
+  if (is_clang) {
+    cflags += [ "/Zc:twoPhase" ]
+  }
 
   # Force C/C++ mode for the given GN detected file type. This is necessary
   # for precompiled headers where the same source file is compiled in both
@@ -86,7 +89,11 @@ config("compiler") {
     # don't emit the CFG checks themselves, but this enables the functions to
     # be called by code that is built with those checks enabled, such as system
     # libraries.
-    cflags += [ "/guard:cf,nochecks" ]
+    if (!is_debug && !is_component_build) {
+      # CFG isn't needed on debug or component builds, adds a bit of bloat to
+      # .obj files, and caused link errors once - https://crbug.com/1019970
+      cflags += [ "/guard:cf,nochecks" ]
+    }
 
     if (is_component_build) {
       cflags += [
@@ -142,6 +149,9 @@ config("compiler") {
     # (link.exe also writes the current time, but it doesn't have a flag to
     # override that behavior.)
     ldflags += [ "/TIMESTAMP:" + build_timestamp ]
+
+    # Don't look for libpaths in %LIB%, similar to /X in cflags above.
+    ldflags += [ "/lldignoreenv" ]
   }
 
   if (!is_debug && !is_component_build) {

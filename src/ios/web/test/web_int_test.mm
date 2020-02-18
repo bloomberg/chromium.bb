@@ -13,7 +13,7 @@
 #import "ios/web/common/web_view_creation_util.h"
 #import "ios/web/public/test/http_server/http_server.h"
 #import "ios/web/public/test/js_test_util.h"
-#include "ios/web/public/web_state/web_state_observer.h"
+#include "ios/web/public/web_state_observer.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -39,8 +39,6 @@ class IntTestWebStateObserver : public WebStateObserver {
   void PageLoaded(
       web::WebState* web_state,
       web::PageLoadCompletionStatus load_completion_status) override {
-    ASSERT_EQ(load_completion_status == web::PageLoadCompletionStatus::SUCCESS,
-              expected_url_.is_valid());
     page_loaded_ = true;
   }
 

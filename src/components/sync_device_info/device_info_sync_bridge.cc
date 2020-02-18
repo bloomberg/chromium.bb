@@ -8,7 +8,7 @@
 
 #include <algorithm>
 #include <map>
-#include <set>
+#include <unordered_set>
 #include <utility>
 
 #include "base/bind.h"
@@ -34,6 +34,7 @@ using sync_pb::DeviceInfoSpecifics;
 using sync_pb::EntitySpecifics;
 using sync_pb::FeatureSpecificFields;
 using sync_pb::ModelTypeState;
+using sync_pb::SharingSpecificFields;
 
 using Record = ModelTypeStore::Record;
 using RecordList = ModelTypeStore::RecordList;
@@ -42,6 +43,8 @@ using ClientIdToSpecifics =
     std::map<std::string, std::unique_ptr<sync_pb::DeviceInfoSpecifics>>;
 
 namespace {
+
+constexpr base::TimeDelta kExpirationThreshold = base::TimeDelta::FromDays(56);
 
 // Find the timestamp for the last time this |device_info| was edited.
 Time GetLastUpdateTime(const DeviceInfoSpecifics& specifics) {
@@ -52,15 +55,40 @@ Time GetLastUpdateTime(const DeviceInfoSpecifics& specifics) {
   }
 }
 
+base::Optional<DeviceInfo::SharingInfo> SpecificsToSharingInfo(
+    const DeviceInfoSpecifics& specifics) {
+  if (!specifics.has_sharing_fields()) {
+    return base::nullopt;
+  }
+
+  std::set<SharingSpecificFields::EnabledFeatures> enabled_features;
+  for (int i = 0; i < specifics.sharing_fields().enabled_features_size(); ++i) {
+    enabled_features.insert(specifics.sharing_fields().enabled_features(i));
+  }
+  return DeviceInfo::SharingInfo(
+      {specifics.sharing_fields().vapid_fcm_token(),
+       specifics.sharing_fields().vapid_p256dh(),
+       specifics.sharing_fields().vapid_auth_secret()},
+      {specifics.sharing_fields().sender_id_fcm_token(),
+       specifics.sharing_fields().sender_id_p256dh(),
+       specifics.sharing_fields().sender_id_auth_secret()},
+      std::move(enabled_features));
+}
+
 // Converts DeviceInfoSpecifics into a freshly allocated DeviceInfo.
 std::unique_ptr<DeviceInfo> SpecificsToModel(
     const DeviceInfoSpecifics& specifics) {
+  base::SysInfo::HardwareInfo hardware_info;
+  hardware_info.model = specifics.model();
+  hardware_info.manufacturer = specifics.manufacturer();
+
   return std::make_unique<DeviceInfo>(
       specifics.cache_guid(), specifics.client_name(),
       specifics.chrome_version(), specifics.sync_user_agent(),
       specifics.device_type(), specifics.signin_scoped_device_id(),
-      ProtoTimeToTime(specifics.last_updated_timestamp()),
-      specifics.feature_fields().send_tab_to_self_receiving_enabled());
+      hardware_info, ProtoTimeToTime(specifics.last_updated_timestamp()),
+      specifics.feature_fields().send_tab_to_self_receiving_enabled(),
+      SpecificsToSharingInfo(specifics));
 }
 
 // Allocate a EntityData and copies |specifics| into it.
@@ -75,6 +103,7 @@ std::unique_ptr<EntityData> CopyToEntityData(
 // Converts a local DeviceInfo into a freshly allocated DeviceInfoSpecifics.
 std::unique_ptr<DeviceInfoSpecifics> MakeLocalDeviceSpecifics(
     const DeviceInfo& info) {
+  auto hardware_info = info.hardware_info();
   auto specifics = std::make_unique<DeviceInfoSpecifics>();
   specifics->set_cache_guid(info.guid());
   specifics->set_client_name(info.client_name());
@@ -82,6 +111,8 @@ std::unique_ptr<DeviceInfoSpecifics> MakeLocalDeviceSpecifics(
   specifics->set_sync_user_agent(info.sync_user_agent());
   specifics->set_device_type(info.device_type());
   specifics->set_signin_scoped_device_id(info.signin_scoped_device_id());
+  specifics->set_model(hardware_info.model);
+  specifics->set_manufacturer(hardware_info.manufacturer);
   // The local device should have not been updated yet. Set the last updated
   // timestamp to now.
   DCHECK(info.last_updated_timestamp() == base::Time());
@@ -91,6 +122,27 @@ std::unique_ptr<DeviceInfoSpecifics> MakeLocalDeviceSpecifics(
   feature_fields->set_send_tab_to_self_receiving_enabled(
       info.send_tab_to_self_receiving_enabled());
 
+  const base::Optional<DeviceInfo::SharingInfo>& sharing_info =
+      info.sharing_info();
+  if (sharing_info) {
+    SharingSpecificFields* sharing_fields = specifics->mutable_sharing_fields();
+    sharing_fields->set_vapid_fcm_token(
+        sharing_info->vapid_target_info.fcm_token);
+    sharing_fields->set_vapid_p256dh(sharing_info->vapid_target_info.p256dh);
+    sharing_fields->set_vapid_auth_secret(
+        sharing_info->vapid_target_info.auth_secret);
+    sharing_fields->set_sender_id_fcm_token(
+        sharing_info->sender_id_target_info.fcm_token);
+    sharing_fields->set_sender_id_p256dh(
+        sharing_info->sender_id_target_info.p256dh);
+    sharing_fields->set_sender_id_auth_secret(
+        sharing_info->sender_id_target_info.auth_secret);
+    for (sync_pb::SharingSpecificFields::EnabledFeatures feature :
+         sharing_info->enabled_features) {
+      sharing_fields->add_enabled_features(feature);
+    }
+  }
+
   return specifics;
 }
 
@@ -98,17 +150,17 @@ std::unique_ptr<DeviceInfoSpecifics> MakeLocalDeviceSpecifics(
 // parameter is first for binding purposes.
 base::Optional<ModelError> ParseSpecificsOnBackendSequence(
     ClientIdToSpecifics* all_data,
-    std::string* local_session_name,
+    std::string* local_personalizable_device_name,
     std::unique_ptr<ModelTypeStore::RecordList> record_list) {
   DCHECK(all_data);
   DCHECK(all_data->empty());
-  DCHECK(local_session_name);
+  DCHECK(local_personalizable_device_name);
   DCHECK(record_list);
 
-  // For convenience, we get the session name (i.e. local device name) here,
+  // For convenience, we get the user personalized local device name here,
   // since we're running on the backend sequence, because the function is
   // blocking.
-  *local_session_name = GetSessionNameBlocking();
+  *local_personalizable_device_name = GetPersonalizableDeviceNameBlocking();
 
   for (const Record& r : *record_list) {
     std::unique_ptr<DeviceInfoSpecifics> specifics =
@@ -150,12 +202,31 @@ LocalDeviceInfoProvider* DeviceInfoSyncBridge::GetLocalDeviceInfoProvider() {
   return local_device_info_provider_.get();
 }
 
+void DeviceInfoSyncBridge::RefreshLocalDeviceInfo() {
+  SendLocalData();
+}
+
 void DeviceInfoSyncBridge::OnSyncStarting(
     const DataTypeActivationRequest& request) {
   // Store the cache GUID, mainly in case MergeSyncData() is executed later.
   local_cache_guid_ = request.cache_guid;
+
+  // TODO(crbug.com/989340): Call GarbageCollectExpiredCacheGuids() here.
+
   // Add the cache guid to the local prefs.
   device_info_prefs_->AddLocalCacheGuid(local_cache_guid_);
+  // SyncMode determines the client name in GetLocalClientName().
+  sync_mode_ = request.sync_mode;
+
+  if (!change_processor()->IsTrackingMetadata()) {
+    return;
+  }
+
+  // Local device's client name needs to updated if OnSyncStarting is called
+  // after local device has already been initialized since the client name
+  // depends on |sync_mode_|.
+  local_device_info_provider_->UpdateClientName(GetLocalClientName());
+  ReconcileLocalAndStored();
 }
 
 std::unique_ptr<MetadataChangeList>
@@ -170,8 +241,8 @@ base::Optional<ModelError> DeviceInfoSyncBridge::MergeSyncData(
   DCHECK(all_data_.empty());
   DCHECK(!local_cache_guid_.empty());
 
-  local_device_info_provider_->Initialize(local_cache_guid_,
-                                          local_session_name_);
+  local_device_info_provider_->Initialize(
+      local_cache_guid_, GetLocalClientName(), local_hardware_info_);
 
   std::unique_ptr<WriteBatch> batch = store_->CreateWriteBatch();
   for (const auto& change : entity_data) {
@@ -209,6 +280,7 @@ base::Optional<ModelError> DeviceInfoSyncBridge::ApplySyncChanges(
     }
 
     if (change->type() == EntityChange::ACTION_DELETE) {
+      // This should never get exercised as no client issues tombstones.
       has_changes |= DeleteSpecifics(guid, batch.get());
     } else {
       const DeviceInfoSpecifics& specifics =
@@ -349,6 +421,22 @@ bool DeviceInfoSyncBridge::DeleteSpecifics(const std::string& guid,
   }
 }
 
+std::string DeviceInfoSyncBridge::GetLocalClientName() const {
+  // |sync_mode_| may not be ready when this function is called.
+  if (!sync_mode_) {
+    auto device_it = all_data_.find(local_cache_guid_);
+    if (device_it != all_data_.end()) {
+      return device_it->second->client_name();
+    }
+  }
+
+  if (sync_mode_ == SyncMode::kFull) {
+    return local_personalizable_device_name_;
+  }
+
+  return local_hardware_info_.model;
+}
+
 void DeviceInfoSyncBridge::OnStoreCreated(
     const base::Optional<syncer::ModelError>& error,
     std::unique_ptr<ModelTypeStore> store) {
@@ -359,27 +447,43 @@ void DeviceInfoSyncBridge::OnStoreCreated(
 
   store_ = std::move(store);
 
+  base::SysInfo::GetHardwareInfo(
+      base::BindOnce(&DeviceInfoSyncBridge::OnHardwareInfoRetrieved,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
+
+void DeviceInfoSyncBridge::OnHardwareInfoRetrieved(
+    base::SysInfo::HardwareInfo hardware_info) {
+  local_hardware_info_ = std::move(hardware_info);
+
+#if defined(OS_CHROMEOS)
+  // For ChromeOS the returned model values are product code names like Eve. We
+  // want to use generic names like Chromebook.
+  local_hardware_info_.model = GetChromeOSDeviceNameFromType();
+#endif
+
   auto all_data = std::make_unique<ClientIdToSpecifics>();
   ClientIdToSpecifics* all_data_copy = all_data.get();
 
-  auto local_session_name = std::make_unique<std::string>();
-  std::string* local_session_name_copy = local_session_name.get();
+  auto local_personalizable_device_name = std::make_unique<std::string>();
+  std::string* local_personalizable_device_name_copy =
+      local_personalizable_device_name.get();
 
   store_->ReadAllDataAndPreprocess(
       base::BindOnce(&ParseSpecificsOnBackendSequence,
                      base::Unretained(all_data_copy),
-                     base::Unretained(local_session_name_copy)),
+                     base::Unretained(local_personalizable_device_name_copy)),
       base::BindOnce(&DeviceInfoSyncBridge::OnReadAllData,
                      weak_ptr_factory_.GetWeakPtr(), std::move(all_data),
-                     std::move(local_session_name)));
+                     std::move(local_personalizable_device_name)));
 }
 
 void DeviceInfoSyncBridge::OnReadAllData(
     std::unique_ptr<ClientIdToSpecifics> all_data,
-    std::unique_ptr<std::string> local_session_name,
+    std::unique_ptr<std::string> local_personalizable_device_name,
     const base::Optional<syncer::ModelError>& error) {
   DCHECK(all_data);
-  DCHECK(local_session_name);
+  DCHECK(local_personalizable_device_name);
 
   if (error) {
     change_processor()->ReportError(*error);
@@ -387,7 +491,9 @@ void DeviceInfoSyncBridge::OnReadAllData(
   }
 
   all_data_ = std::move(*all_data);
-  local_session_name_ = std::move(*local_session_name);
+
+  local_personalizable_device_name_ =
+      std::move(*local_personalizable_device_name);
 
   store_->ReadAllMetadata(
       base::BindOnce(&DeviceInfoSyncBridge::OnReadAllMetadata,
@@ -438,12 +544,13 @@ void DeviceInfoSyncBridge::OnReadAllMetadata(
   // If sync already enabled (usual case without data corruption), we can
   // initialize the provider immediately.
   local_cache_guid_ = local_cache_guid_in_metadata;
-  local_device_info_provider_->Initialize(local_cache_guid_,
-                                          local_session_name_);
+  local_device_info_provider_->Initialize(
+      local_cache_guid_, GetLocalClientName(), local_hardware_info_);
 
   // This probably isn't strictly needed, but in case the cache_guid has changed
   // we save the new one to prefs.
   device_info_prefs_->AddLocalCacheGuid(local_cache_guid_);
+  ExpireOldEntries();
   ReconcileLocalAndStored();
 }
 
@@ -554,6 +661,33 @@ int DeviceInfoSyncBridge::CountActiveDevices(const Time now) const {
   }
 
   return max_overlapping_sum;
+}
+
+void DeviceInfoSyncBridge::ExpireOldEntries() {
+  const base::Time expiration_threshold =
+      base::Time::Now() - kExpirationThreshold;
+  std::unordered_set<std::string> cache_guids_to_expire;
+  // Just collecting cache guids to expire to avoid modifying |all_data_| via
+  // DeleteSpecifics() while iterating over it.
+  for (const auto& pair : all_data_) {
+    const std::string& cache_guid = pair.first;
+    if (cache_guid != local_cache_guid_ &&
+        GetLastUpdateTime(*pair.second) < expiration_threshold) {
+      cache_guids_to_expire.insert(cache_guid);
+    }
+  }
+
+  if (cache_guids_to_expire.empty()) {
+    return;
+  }
+
+  std::unique_ptr<WriteBatch> batch = store_->CreateWriteBatch();
+  for (const std::string& cache_guid : cache_guids_to_expire) {
+    DeleteSpecifics(cache_guid, batch.get());
+    batch->GetMetadataChangeList()->ClearMetadata(cache_guid);
+    change_processor()->UntrackEntityForStorageKey(cache_guid);
+  }
+  CommitAndNotify(std::move(batch), /*should_notify=*/true);
 }
 
 }  // namespace syncer

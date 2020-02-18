@@ -94,7 +94,7 @@ def EscapeName(name):
   return re.sub(r'[\:|=/#&,]', '_', name)
 
 
-def ComputeTestPath(hist):
+def ComputeTestPath(hist, ignore_grouping_label=False):
   # If a Histogram represents a summary across multiple stories, then its
   # 'stories' diagnostic will contain the names of all of the stories.
   # If a Histogram is not a summary, then its 'stories' diagnostic will contain
@@ -102,7 +102,8 @@ def ComputeTestPath(hist):
   is_summary = list(
       hist.diagnostics.get(reserved_infos.SUMMARY_KEYS.name, []))
 
-  tir_label = GetTIRLabelFromHistogram(hist)
+  grouping_label = GetGroupingLabelFromHistogram(
+      hist) if not ignore_grouping_label else None
 
   is_ref = hist.diagnostics.get(reserved_infos.IS_REFERENCE_BUILD.name)
   if is_ref and len(is_ref) == 1:
@@ -115,21 +116,25 @@ def ComputeTestPath(hist):
     story_name = None
 
   return ComputeTestPathFromComponents(
-      hist.name, tir_label=tir_label, story_name=story_name,
+      hist.name, grouping_label=grouping_label, story_name=story_name,
       is_summary=is_summary, is_ref=is_ref)
 
 
 def ComputeTestPathFromComponents(
-    hist_name, tir_label=None, story_name=None, is_summary=None, is_ref=False):
-  path = hist_name
+    hist_name, grouping_label=None, story_name=None, is_summary=None,
+    is_ref=False, needs_escape=True):
+  path = hist_name or ''
 
-  if tir_label and (
+  if grouping_label and (
       not is_summary or reserved_infos.STORY_TAGS.name in is_summary):
-    path += '/' + tir_label
+    path += '/' + grouping_label
 
   if story_name and not is_summary:
-    escaped_story_name = EscapeName(story_name)
-    path += '/' + escaped_story_name
+    if needs_escape:
+      escaped_story_name = EscapeName(story_name)
+      path += '/' + escaped_story_name
+    else:
+      path += '/' + story_name
     if is_ref:
       path += '_ref'
   elif is_ref:
@@ -138,7 +143,7 @@ def ComputeTestPathFromComponents(
   return path
 
 
-def GetTIRLabelFromHistogram(hist):
+def GetGroupingLabelFromHistogram(hist):
   tags = hist.diagnostics.get(reserved_infos.STORY_TAGS.name) or []
 
   tags_to_use = [t.split(':') for t in tags if ':' in t]

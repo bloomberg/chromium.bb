@@ -8,7 +8,7 @@
 <body>
 
 <div id="container">
-  <div id="locked" rendersubtree="invisible">
+  <div id="locked" rendersubtree="invisible skip-activation">
     locked
     <div id="child">
       child
@@ -28,7 +28,7 @@ async_test(async (t) => {
   t.step(() => { assert_equals(axLocked.childrenCount, 0); });
 
   // Trigger style & layout recalc in the locked subtree with update().
-  await locked.displayLock.update();
+  await locked.updateRendering();
   t.step(() => { assert_equals(axLocked.childrenCount, 0, "After update, nodes in locked subtree are still ignored"); });
 
   await setVisible(locked);

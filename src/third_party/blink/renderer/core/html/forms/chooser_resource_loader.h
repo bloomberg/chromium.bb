@@ -38,6 +38,18 @@ class ChooserResourceLoader {
   // Returns the suggestion picker javascript as a string.
   static Vector<char> GetCalendarPickerJS();
 
+  // Returns the month picker javascript as a string.
+  static Vector<char> GetMonthPickerJS();
+
+  // Returns the time picker stylesheet as a string.
+  static Vector<char> GetTimePickerStyleSheet();
+
+  // Returns the time picker javascript as a string.
+  static Vector<char> GetTimePickerJS();
+
+  // Returns the datetimelocal picker javascript as a string.
+  static Vector<char> GetDateTimeLocalPickerJS();
+
   // Returns the color suggestion picker stylesheet as a string.
   static Vector<char> GetColorSuggestionPickerStyleSheet();
 

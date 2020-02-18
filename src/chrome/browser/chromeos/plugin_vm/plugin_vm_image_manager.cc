@@ -22,8 +22,9 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_key.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/debug_daemon_client.h"
+#include "chromeos/dbus/debug_daemon/debug_daemon_client.h"
 #include "components/download/public/background_service/download_metadata.h"
 #include "components/download/public/background_service/download_service.h"
 #include "components/prefs/pref_service.h"
@@ -52,7 +53,7 @@ void PluginVmImageManager::StartDownload() {
     LOG(ERROR) << "Download of a PluginVm image couldn't be started as"
                << " another PluginVm image is currently being processed "
                << "in state " << GetStateName(state_);
-    OnDownloadFailed();
+    OnDownloadFailed(FailureReason::OPERATION_IN_PROGRESS);
     return;
   }
 
@@ -62,14 +63,14 @@ void PluginVmImageManager::StartDownload() {
   if (!IsPluginVmAllowedForProfile(profile_)) {
     LOG(ERROR) << "Download of PluginVm image cannot be started because "
                << "the user is not allowed to run PluginVm";
-    OnDownloadFailed();
+    OnDownloadFailed(FailureReason::NOT_ALLOWED);
     return;
   }
 
   state_ = State::DOWNLOADING;
   GURL url = GetPluginVmImageDownloadUrl();
   if (url.is_empty()) {
-    OnDownloadFailed();
+    OnDownloadFailed(FailureReason::INVALID_IMAGE_URL);
     return;
   }
   download_service_->StartDownload(GetDownloadParams(url));
@@ -104,7 +105,7 @@ void PluginVmImageManager::OnDownloadCompleted(
   if (!VerifyDownload(info.hash256)) {
     LOG(ERROR) << "Downloaded PluginVm image archive hash doesn't match "
                << "hash specified by the PluginVmImage policy";
-    OnDownloadFailed();
+    OnDownloadFailed(FailureReason::HASH_MISMATCH);
     return;
   }
 
@@ -125,12 +126,12 @@ void PluginVmImageManager::OnDownloadCancelled() {
   state_ = State::NOT_STARTED;
 }
 
-void PluginVmImageManager::OnDownloadFailed() {
+void PluginVmImageManager::OnDownloadFailed(FailureReason reason) {
   state_ = State::DOWNLOAD_FAILED;
   RemoveTemporaryPluginVmImageArchiveIfExists();
   current_download_guid_.clear();
   if (observer_)
-    observer_->OnDownloadFailed();
+    observer_->OnDownloadFailed(reason);
 }
 
 void PluginVmImageManager::StartImport() {
@@ -138,7 +139,7 @@ void PluginVmImageManager::StartImport() {
     LOG(ERROR) << "Importing of PluginVm image couldn't proceed as current "
                << "state is " << GetStateName(state_) << " not "
                << GetStateName(State::DOWNLOADED);
-    OnImported(false);
+    OnImported(FailureReason::LOGIC_ERROR);
     return;
   }
 
@@ -148,6 +149,7 @@ void PluginVmImageManager::StartImport() {
   chromeos::DBusThreadManager::Get()
       ->GetDebugDaemonClient()
       ->StartPluginVmDispatcher(
+          chromeos::ProfileHelper::GetUserIdHashFromProfile(profile_),
           base::BindOnce(&PluginVmImageManager::OnPluginVmDispatcherStarted,
                          weak_ptr_factory_.GetWeakPtr()));
 }
@@ -155,7 +157,7 @@ void PluginVmImageManager::StartImport() {
 void PluginVmImageManager::OnPluginVmDispatcherStarted(bool success) {
   if (!success) {
     LOG(ERROR) << "Failed to start PluginVm dispatcher service";
-    OnImported(false);
+    OnImported(FailureReason::DISPATCHER_NOT_AVAILABLE);
     return;
   }
   GetConciergeClient()->WaitForServiceToBeAvailable(
@@ -166,12 +168,12 @@ void PluginVmImageManager::OnPluginVmDispatcherStarted(bool success) {
 void PluginVmImageManager::OnConciergeAvailable(bool success) {
   if (!success) {
     LOG(ERROR) << "Concierge did not become available";
-    OnImported(false);
+    OnImported(FailureReason::CONCIERGE_NOT_AVAILABLE);
     return;
   }
   if (!GetConciergeClient()->IsDiskImageProgressSignalConnected()) {
     LOG(ERROR) << "Disk image progress signal is not connected";
-    OnImported(false);
+    OnImported(FailureReason::SIGNAL_NOT_CONNECTED);
     return;
   }
   VLOG(1) << "Plugin VM dispatcher service has been started and disk image "
@@ -210,7 +212,7 @@ void PluginVmImageManager::OnFDPrepared(
 
   if (!maybeFd.has_value()) {
     LOG(ERROR) << "Could not open downloaded image archive";
-    OnImported(false);
+    OnImported(FailureReason::COULD_NOT_OPEN_IMAGE);
     return;
   }
 
@@ -235,7 +237,7 @@ void PluginVmImageManager::OnImportDiskImage(
   if (!reply.has_value()) {
     LOG(ERROR) << "Could not retrieve response from ImportDiskImage call to "
                << "concierge";
-    OnImported(false);
+    OnImported(FailureReason::INVALID_IMPORT_RESPONSE);
     return;
   }
 
@@ -249,7 +251,7 @@ void PluginVmImageManager::OnImportDiskImage(
       vm_tools::concierge::DiskImageStatus::DISK_STATUS_IN_PROGRESS) {
     LOG(ERROR) << "Disk image is not in progress. Status: " << response.status()
                << ", " << response.failure_reason();
-    OnImported(false);
+    OnImported(FailureReason::UNEXPECTED_DISK_IMAGE_STATUS);
     return;
   }
 
@@ -287,7 +289,7 @@ void PluginVmImageManager::OnDiskImageProgress(
       LOG(ERROR) << "Disk image status signal has status: " << status
                  << " with error message: " << signal.failure_reason()
                  << " and current progress: " << percent_completed;
-      OnImported(false);
+      OnImported(FailureReason::UNEXPECTED_DISK_IMAGE_STATUS);
       return;
   }
 }
@@ -306,7 +308,7 @@ void PluginVmImageManager::OnFinalDiskImageStatus(
   if (!reply.has_value()) {
     LOG(ERROR) << "Could not retrieve response from DiskImageStatus call to "
                << "concierge";
-    OnImported(false);
+    OnImported(FailureReason::INVALID_DISK_IMAGE_STATUS_RESPONSE);
     return;
   }
 
@@ -316,23 +318,25 @@ void PluginVmImageManager::OnFinalDiskImageStatus(
       vm_tools::concierge::DiskImageStatus::DISK_STATUS_CREATED) {
     LOG(ERROR) << "Disk image is not created. Status: " << response.status()
                << ", " << response.failure_reason();
-    OnImported(false);
+    OnImported(FailureReason::IMAGE_IMPORT_FAILED);
     return;
   }
 
-  OnImported(true);
+  OnImported(base::nullopt);
 }
 
-void PluginVmImageManager::OnImported(bool success) {
+void PluginVmImageManager::OnImported(
+    base::Optional<FailureReason> failure_reason) {
   GetConciergeClient()->RemoveDiskImageObserver(this);
   RemoveTemporaryPluginVmImageArchiveIfExists();
   current_import_command_uuid_.clear();
 
-  if (!success) {
+  if (failure_reason) {
     LOG(ERROR) << "Image import failed";
     state_ = State::IMPORT_FAILED;
-    if (observer_)
-      observer_->OnImportFailed();
+    if (observer_) {
+      observer_->OnImportFailed(*failure_reason);
+    }
 
     return;
   }
@@ -503,7 +507,7 @@ void PluginVmImageManager::OnStartDownload(
   if (start_result == download::DownloadParams::ACCEPTED)
     current_download_guid_ = download_guid;
   else
-    OnDownloadFailed();
+    OnDownloadFailed(FailureReason::DOWNLOAD_FAILED_UNKNOWN);
 }
 
 bool PluginVmImageManager::VerifyDownload(

@@ -8,17 +8,32 @@
 #include <stdint.h>
 
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "content/common/content_export.h"
 
 namespace content {
 
 struct CONTENT_EXPORT BackgroundSyncParameters {
   BackgroundSyncParameters();
+  BackgroundSyncParameters(const BackgroundSyncParameters& other);
   bool operator==(const BackgroundSyncParameters& other) const;
 
   // True if the manager should be disabled and registration attempts should
   // fail.
   bool disable;
+
+#if defined(OS_ANDROID)
+  // True if we should rely on Android's network detection where possible.
+  bool rely_on_android_network_detection;
+#endif
+
+  // If true, we keep the browser awake till all (periodic)sync events fired
+  // have completed. If false, we only keep the browser awake till all ready
+  // (periodic)sync events have been fired.
+  bool keep_browser_awake_till_events_complete;
+
+  // True if the manager should skip checking for permissions.
+  bool skip_permissions_check_for_testing;
 
   // The number of attempts the BackgroundSyncManager will make to fire an
   // event before giving up.

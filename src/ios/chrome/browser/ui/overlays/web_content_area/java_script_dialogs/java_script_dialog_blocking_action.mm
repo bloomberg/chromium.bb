@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "ios/chrome/browser/overlays/public/web_content_area/java_script_dialog_source.h"
 #import "ios/chrome/browser/ui/dialogs/java_script_dialog_blocking_state.h"
-#import "ios/chrome/browser/ui/overlays/web_content_area/java_script_dialogs/java_script_dialog_overlay_mediator.h"
+#import "ios/chrome/browser/ui/overlays/common/alerts/alert_overlay_mediator.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -19,8 +19,8 @@ namespace {
 // Returns the blocking state for |source|'s WebState, or nullptr if the
 // WebState was destroyed.
 JavaScriptDialogBlockingState* GetBlockingState(
-    const JavaScriptDialogSource* source) {
-  web::WebState* web_state = source->web_state();
+    const JavaScriptDialogSource& source) {
+  web::WebState* web_state = source.web_state();
   if (!web_state)
     return nullptr;
   JavaScriptDialogBlockingState::CreateForWebState(web_state);
@@ -28,13 +28,13 @@ JavaScriptDialogBlockingState* GetBlockingState(
 }
 }  // namespace
 
-AlertAction* GetBlockingAlertAction(JavaScriptDialogOverlayMediator* mediator) {
-  const JavaScriptDialogSource* source = mediator.requestSource;
+AlertAction* GetBlockingAlertAction(AlertOverlayMediator* mediator,
+                                    const JavaScriptDialogSource& source) {
   JavaScriptDialogBlockingState* blocking_state = GetBlockingState(source);
   if (!blocking_state || !blocking_state->show_blocking_option())
     return nil;
 
-  __weak JavaScriptDialogOverlayMediator* weakMediator = mediator;
+  __weak AlertOverlayMediator* weakMediator = mediator;
   NSString* action_title =
       l10n_util::GetNSString(IDS_IOS_JAVA_SCRIPT_DIALOG_BLOCKING_BUTTON_TEXT);
   return [AlertAction

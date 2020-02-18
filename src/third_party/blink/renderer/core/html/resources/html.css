@@ -407,7 +407,7 @@ input, textarea, select, button {
     margin: 0__qem;
     font: -webkit-small-control;
     text-rendering: auto; /* FIXME: Remove when tabs work with optimizeLegibility. */
-    color: initial;
+    color: -internal-light-dark-color(black, white);
     letter-spacing: normal;
     word-spacing: normal;
     line-height: normal;
@@ -425,7 +425,7 @@ input[type="hidden" i] {
 input {
     -webkit-appearance: textfield; /* AutoAppearanceFor() should match to this. */
     padding: 1px;
-    background-color: white;
+    background-color: -internal-light-dark-color(white, black);
     border: 2px inset;
     -webkit-rtl-ordering: logical;
     cursor: text;
@@ -498,7 +498,7 @@ select {
 
 textarea {
     -webkit-appearance: textarea; /* AutoAppearanceFor() should match to this. */
-    background-color: white;
+    background-color: -internal-light-dark-color(white, black);
     border: 1px solid;
     -webkit-rtl-ordering: logical;
     flex-direction: column;
@@ -533,6 +533,11 @@ input::-internal-input-suggested {
 input::-internal-input-suggested,
 textarea::-internal-input-suggested {
     font: -webkit-small-control !important;
+    /* Prevent that overflow affects the scrollable area. Without this,
+       LayoutBox::*Scroll{Height,Width}() may determine the scroll width/height
+       from the scrollable area instead of from the overrides in
+       LayoutTextControl{Single,Multi}Line::Scroll{Height,Width}(). */
+    overflow: hidden !important;
 }
 
 input[type="password" i] {
@@ -568,7 +573,7 @@ textarea:-internal-autofill-previewed,
 select:-internal-autofill-previewed {
   background-color: #E8F0FE !important;
   background-image:none !important;
-  color: #000000 !important;
+  color: -internal-light-dark-color(black, white) !important;
 }
 
 input:-internal-autofill-selected,
@@ -576,7 +581,7 @@ textarea:-internal-autofill-selected,
 select:-internal-autofill-selected {
   background-color: #E8F0FE !important;
   background-image:none !important;
-  color: #000000 !important;
+  color: -internal-light-dark-color(black, white) !important;
 }
 
 input[type="radio" i], input[type="checkbox" i] {
@@ -651,7 +656,7 @@ input[type="button" i]:disabled, input[type="submit" i]:disabled, input[type="re
 input[type="file" i]:disabled::-webkit-file-upload-button, button:disabled,
 select:disabled, optgroup:disabled, option:disabled,
 select[disabled]>option {
-    color: GrayText
+    color: -internal-light-dark-color(GrayText, #aaa);
 }
 
 input[type="button" i]:active, input[type="submit" i]:active, input[type="reset" i]:active, input[type="file" i]:active::-webkit-file-upload-button, button:active {
@@ -663,12 +668,12 @@ input[type="button" i]:active:disabled, input[type="submit" i]:active:disabled, 
 }
 
 input:disabled, textarea:disabled {
-    color: #545454;
+    color: -internal-light-dark-color(#545454, #aaa);
     cursor: default;
 }
 
 option:-internal-spatial-navigation-focus {
-    outline: black dashed 1px;
+    outline: -internal-light-dark-color(black, white) dashed 1px;
     outline-offset: -1px;
 }
 
@@ -790,8 +795,8 @@ select {
     border: 1px solid;
     white-space: pre;
     -webkit-rtl-ordering: logical;
-    color: black;
-    background-color: white;
+    color: -internal-light-dark-color(black, white);
+    background-color: -internal-light-dark-color(white, black);
     cursor: default;
 }
 
@@ -855,6 +860,11 @@ select:-internal-list-box hr {
     border-style: none;
     margin-block-start: 0.5em;
     margin-block-end: 0;
+}
+
+select:-internal-list-box:focus option:-internal-multi-select-focus {
+    outline: auto 1px -webkit-focus-ring-color;
+    outline-offset: -1px;
 }
 
 output {
@@ -1146,8 +1156,8 @@ dialog {
     margin: auto;
     border: solid;
     padding: 1em;
-    background: white;
-    color: black
+    background: -internal-light-dark-color(white, black);
+    color: -internal-light-dark-color(black, white);
 }
 
 /* TODO(foolip): In the Fullscreen spec, there's a ::backdrop block with the

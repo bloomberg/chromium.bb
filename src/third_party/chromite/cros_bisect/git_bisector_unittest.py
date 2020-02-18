@@ -25,7 +25,7 @@ from chromite.lib import cros_logging as logging
 class GitMock(partial_mock.PartialCmdMock):
   """Mocks git.RunGit.
 
-  Usage:
+  Examples:
     mock = GitMock('/path/to/git_repository')
     mock.AddRunGitResult(git_command, output=...)
     # call git.RunGit(...)
@@ -48,7 +48,7 @@ class GitMock(partial_mock.PartialCmdMock):
     try:
       return self._results['RunGit'].LookupResult(args, kwargs=kwargs)
     except cros_build_lib.RunCommandError as e:
-      # Copy the logic of error_code_ok from RunCommand.
+      # Copy the logic of error_code_ok from run.
       if kwargs.get('error_code_ok'):
         return e.result
       raise e
@@ -57,7 +57,8 @@ class GitMock(partial_mock.PartialCmdMock):
                       kwargs=None, strict=False, side_effect=None):
     """Adds git command and results."""
     cwd = self.cwd if cwd is None else cwd
-    result = self.CmdResult(returncode, output, error)
+    result = cros_build_lib.CommandResult(
+        returncode=returncode, output=output, error=error)
     if returncode != 0 and not side_effect:
       side_effect = cros_build_lib.RunCommandError('non-zero returncode',
                                                    result)
@@ -144,11 +145,11 @@ class TestGitBisector(cros_test_lib.MockTempDirTestCase):
     options = cros_test_lib.EasyAttr()
     with self.assertRaises(common.MissingRequiredOptionsException) as cm:
       git_bisector.GitBisector(options, self.builder, self.evaluator)
-    exception_message = cm.exception.message
-    self.assertTrue('Missing command line' in exception_message)
-    self.assertTrue('GitBisector' in exception_message)
+    exception_message = str(cm.exception)
+    self.assertIn('Missing command line', exception_message)
+    self.assertIn('GitBisector', exception_message)
     for arg in git_bisector.GitBisector.REQUIRED_ARGS:
-      self.assertTrue(arg in exception_message)
+      self.assertIn(arg, exception_message)
 
   def testCheckCommitFormat(self):
     """Tests CheckCommitFormat()."""
@@ -573,7 +574,6 @@ class TestGitBisector(cros_test_lib.MockTempDirTestCase):
   @staticmethod
   def _DummyMethod():
     """A dummy method for test to call and mock."""
-    pass
 
   def testBuildDeployEvalNoCheckLastEvaluateSpecifyBuildDeploy(self):
     """Tests BuildDeployEval() with customize_build_deploy specified."""

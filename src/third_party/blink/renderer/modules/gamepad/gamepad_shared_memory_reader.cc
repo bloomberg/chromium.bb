@@ -5,18 +5,19 @@
 #include "third_party/blink/renderer/modules/gamepad/gamepad_shared_memory_reader.h"
 
 #include "base/metrics/histogram_macros.h"
+#include "base/trace_event/trace_event.h"
 #include "device/gamepad/public/cpp/gamepads.h"
 #include "device/gamepad/public/mojom/gamepad_hardware_buffer.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
-#include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/platform/interface_provider.h"
-#include "third_party/blink/public/platform/web_gamepad_listener.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/modules/gamepad/gamepad_listener.h"
 
 namespace blink {
 
 GamepadSharedMemoryReader::GamepadSharedMemoryReader(LocalFrame& frame) {
-  frame.GetInterfaceProvider().GetInterface(
+  frame.GetBrowserInterfaceBroker().GetInterface(
       gamepad_monitor_remote_.BindNewPipeAndPassReceiver());
   // See https://bit.ly/2S0zRAS for task types
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
@@ -38,7 +39,7 @@ void GamepadSharedMemoryReader::SendStopMessage() {
   }
 }
 
-void GamepadSharedMemoryReader::Start(blink::WebGamepadListener* listener) {
+void GamepadSharedMemoryReader::Start(blink::GamepadListener* listener) {
   DCHECK(!listener_);
   listener_ = listener;
 

@@ -307,6 +307,8 @@ cs{
         CG{"Kongo (republika)"}
         CI{"Côte d’Ivoire"}
         CZ{"Česká republika"}
+        SZ{"Eswatini"}
+        TL{"Timor-Leste"}
     }
-    Version{"2.1.48.44"}
+    Version{"36"}
 }

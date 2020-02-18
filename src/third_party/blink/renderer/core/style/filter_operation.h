@@ -45,9 +45,7 @@ class SVGResourceClient;
 
 // CSS Filters
 
-class CORE_EXPORT FilterOperation
-    : public GarbageCollectedFinalized<FilterOperation> {
-
+class CORE_EXPORT FilterOperation : public GarbageCollected<FilterOperation> {
  public:
   enum OperationType {
     REFERENCE,  // url(#somefilter)
@@ -278,11 +276,7 @@ struct DowncastTraits<BlurFilterOperation> {
 
 class CORE_EXPORT DropShadowFilterOperation : public FilterOperation {
  public:
-  static DropShadowFilterOperation* Create(const ShadowData& shadow) {
-    return MakeGarbageCollected<DropShadowFilterOperation>(shadow);
-  }
-
-  DropShadowFilterOperation(const ShadowData& shadow)
+  explicit DropShadowFilterOperation(const ShadowData& shadow)
       : FilterOperation(DROP_SHADOW), shadow_(shadow) {}
 
   const ShadowData& Shadow() const { return shadow_; }

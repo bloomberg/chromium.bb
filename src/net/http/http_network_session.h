@@ -27,7 +27,6 @@
 #include "net/base/host_port_pair.h"
 #include "net/base/net_export.h"
 #include "net/http/http_auth_cache.h"
-#include "net/http/http_auth_preferences.h"
 #include "net/http/http_stream_factory.h"
 #include "net/net_buildflags.h"
 #include "net/quic/quic_stream_factory.h"
@@ -44,10 +43,6 @@ namespace trace_event {
 class ProcessMemoryDump;
 }
 }
-
-namespace quic {
-class QuicClock;
-}  // namespace quic
 
 namespace net {
 
@@ -81,6 +76,9 @@ class TransportSecurityState;
 
 // Specifies the maximum HPACK dynamic table size the server is allowed to set.
 const uint32_t kSpdyMaxHeaderTableSize = 64 * 1024;
+
+// The maximum size of header list that the server is allowed to send.
+const uint32_t kSpdyMaxHeaderListSize = 256 * 1024;
 
 // Specifies the maximum concurrent streams server could send (via push).
 const uint32_t kSpdyMaxConcurrentPushedStreams = 1000;
@@ -138,22 +136,13 @@ class NET_EXPORT HttpNetworkSession {
     // If true, HTTPS URLs can be sent to QUIC proxies.
     bool enable_quic_proxies_for_https_urls;
 
-    // QUIC runtime configuration options and active experiments.
-    QuicParams quic_params;
-
     // If non-empty, QUIC will only be spoken to hosts in this list.
     base::flat_set<std::string> quic_host_allowlist;
-
-    // Enable HTTP/0.9 for HTTP/HTTPS on ports other than the default one for
-    // each protocol.
-    bool http_09_on_non_default_ports_enabled;
 
     // If true, idle sockets won't be closed when memory pressure happens.
     bool disable_idle_sockets_close_on_memory_pressure;
 
-    // If authentication APIs that support ambient authentication are allowed
-    // to use the default credentials.
-    HttpAuthPreferences::DefaultCredentials allow_default_credentials;
+    bool key_auth_cache_server_entries_by_network_isolation_key;
   };
 
   // Structure with pointers to the dependencies of the HttpNetworkSession.
@@ -178,15 +167,12 @@ class NET_EXPORT HttpNetworkSession {
     NetLog* net_log;
     SocketPerformanceWatcherFactory* socket_performance_watcher_factory;
     NetworkQualityEstimator* network_quality_estimator;
+    QuicContext* quic_context;
 #if BUILDFLAG(ENABLE_REPORTING)
     ReportingService* reporting_service;
     NetworkErrorLoggingService* network_error_logging_service;
 #endif
 
-    // Source of time for QUIC connections.
-    quic::QuicClock* quic_clock;
-    // Source of entropy for QUIC connections.
-    quic::QuicRandom* quic_random;
     // Optional factory to use for creating QuicCryptoClientStreams.
     QuicCryptoClientStreamFactory* quic_crypto_client_stream_factory;
   };

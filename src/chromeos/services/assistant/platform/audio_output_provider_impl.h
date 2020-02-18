@@ -21,9 +21,13 @@
 #include "libassistant/shared/public/platform_audio_output.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/audio/public/mojom/stream_factory.mojom.h"
 
 namespace chromeos {
+class CrasAudioHandler;
+class PowerManagerClient;
+
 namespace assistant {
 
 class AssistantMediaSession;
@@ -32,6 +36,8 @@ class AudioOutputProviderImpl : public assistant_client::AudioOutputProvider {
  public:
   AudioOutputProviderImpl(
       mojom::Client* client,
+      PowerManagerClient* power_manager_client,
+      CrasAudioHandler* cras_audio_handler,
       AssistantMediaSession* media_session,
       scoped_refptr<base::SequencedTaskRunner> background_task_runner,
       const std::string& device_id);
@@ -63,7 +69,8 @@ class AudioOutputProviderImpl : public assistant_client::AudioOutputProvider {
   VolumeControlImpl volume_control_impl_;
   scoped_refptr<base::SequencedTaskRunner> main_task_runner_;
   scoped_refptr<base::SequencedTaskRunner> background_task_runner_;
-  mojom::AssistantAudioDecoderFactoryPtr audio_decoder_factory_ptr_;
+  mojo::Remote<mojom::AssistantAudioDecoderFactory>
+      audio_decoder_factory_remote_;
   mojom::AssistantAudioDecoderFactory* audio_decoder_factory_;
   std::string device_id_;
   AssistantMediaSession* media_session_;

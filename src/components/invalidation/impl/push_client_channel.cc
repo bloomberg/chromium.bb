@@ -41,8 +41,8 @@ PushClientChannel::~PushClientChannel() {
   push_client_->RemoveObserver(this);
 }
 
-void PushClientChannel::UpdateCredentials(
-    const std::string& email, const std::string& token) {
+void PushClientChannel::UpdateCredentials(const CoreAccountId& account_id,
+                                          const std::string& token) {
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation("puch_client_channel", R"(
         semantics {
@@ -77,7 +77,14 @@ void PushClientChannel::UpdateCredentials(
           }
         }
     )");
-  push_client_->UpdateCredentials(email, token, traffic_annotation);
+
+  // PushClient::UpdateCredentials() expects an email as the first argument.
+  // The current code below is passing the account_id which is created from
+  // a Gaia ID or an email.
+  // TODO(crbug.com/939039): Remove this code once the migration tracked in
+  // this bug is complete.
+  push_client_->UpdateCredentials(account_id.ToString(), token,
+                                  traffic_annotation);
 }
 
 int PushClientChannel::GetInvalidationClientType() {

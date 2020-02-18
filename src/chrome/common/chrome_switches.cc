@@ -137,8 +137,10 @@ const char kCrashOnHangThreads[]            = "crash-on-hang-threads";
 const char kCreateBrowserOnStartupForTests[] =
     "create-browser-on-startup-for-tests";
 
-// Specifies the HTTP endpoint which will be used to serve
+// Specifies the http:// endpoint which will be used to serve
 // devtools://devtools/custom/<path>
+// Or a file:// URL to specify a custom file path to load from for
+// devtools://devtools/bundled/<path>
 const char kCustomDevtoolsFrontend[] = "custom-devtools-frontend";
 
 // Enables a frame context menu item that toggles the frame in and out of glass
@@ -249,9 +251,6 @@ const char kDiskCacheSize[]                 = "disk-cache-size";
 
 const char kDnsLogDetails[]                 = "dns-log-details";
 
-// Enables new UI for net-error page.
-const char kNewNetErrorPageUI[] = "new-net-error-page-ui";
-
 // Requests that a running browser process dump its collected histograms to a
 // given file. The file is overwritten if it exists.
 const char kDumpBrowserHistograms[]         = "dump-browser-histograms";
@@ -344,6 +343,10 @@ const char kForceFirstRun[]                 = "force-first-run";
 
 // Forces Chrome to use a stacked tab strip layout.
 const char kForceStackedTabStripLayout[]    = "force-stacked-tab-strip-layout";
+
+// Forces web-application mode. This hides certain system UI elements and forces
+// the app to be installed if it hasn't been already.
+const char kForceWebAppMode[]               = "force-web-app-mode";
 
 // Specifies which page will be displayed in newly-opened tabs. We need this
 // for testing purposes so that the UI tests don't depend on what comes up for
@@ -584,6 +587,10 @@ const char kStartMaximized[]                = "start-maximized";
 // Starts the stack sampling profiler in the child process.
 const char kStartStackProfiler[]            = "start-stack-profiler";
 
+// Browser test mode for the |kStartStackProfiler| switch. Limits the profile
+// durations to be significantly less than the test timeout.
+const char kStartStackProfilerBrowserTest[] = "browser-test";
+
 // Sets the supervised user ID for any loaded or newly created profile to the
 // given value. Pass an empty string to mark the profile as non-supervised.
 // Used for testing.
@@ -643,6 +650,14 @@ const char kWebRtcRemoteEventLogUploadDelayMs[] =
 // peer connections are active. With this flag, the upload is never suppressed.
 const char kWebRtcRemoteEventLogUploadNoSuppression[] =
     "webrtc-event-log-upload-no-suppression";
+
+// Enables a web-based tab strip. See https://crbug.com/989131. Note this
+// feature only works when the ENABLE_WEBUI_TAB_STRIP buildflag is enabled.
+//
+// This is a command-line switch instead of a base::Feature so that it
+// can be enabled on specific ChromeOS boards. This feature is always
+// disabled by default.
+const char kWebUITabStrip[] = "webui-tab-strip";
 
 // Specify the initial window position: --window-position=x,y
 const char kWindowPosition[]                = "window-position";
@@ -860,12 +875,11 @@ const char kEnableNewAppMenuIcon[] = "enable-new-app-menu-icon";
 const char kGuest[] = "guest";
 #endif
 
-#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID) && \
-    !defined(GOOGLE_CHROME_BUILD)
+#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
 // Enables Machine level user cloud policy on Chromium build. This policy is
 // always enabled on the branded builds.
-const char kEnableMachineLevelUserCloudPolicy[] =
-    "enable-machine-level-user-cloud-policy";
+const char kEnableChromeBrowserCloudManagement[] =
+    "enable-chrome-browser-cloud-management";
 #endif
 
 #if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)

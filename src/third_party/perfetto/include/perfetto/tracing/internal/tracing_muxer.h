@@ -21,14 +21,13 @@
 #include <memory>
 
 #include "perfetto/base/export.h"
+#include "perfetto/tracing/core/forward_decls.h"
 #include "perfetto/tracing/internal/basic_types.h"
 #include "perfetto/tracing/internal/tracing_tls.h"
 #include "perfetto/tracing/platform.h"
-
 namespace perfetto {
 
 class DataSourceBase;
-class DataSourceDescriptor;
 class TraceWriterBase;
 struct TracingInitArgs;
 class TracingSession;
@@ -57,23 +56,6 @@ class PERFETTO_EXPORT TracingMuxer {
     return static_cast<TracingTLS*>(platform_->GetOrCreateThreadLocalObject());
   }
 
-  // Note that the returned object is one per-thread per-data-source-type, NOT
-  // per data-soruce *instance*.
-  DataSourceThreadLocalState* GetOrCreateDataSourceTLS(
-      DataSourceStaticState* static_state) {
-    TracingTLS* root_tls = GetOrCreateTracingTLS();
-    auto* ds_tls = &root_tls->data_sources_tls[static_state->index];
-
-    // The per-type TLS is either zero-initialized or must have been initialized
-    // for this specific data source type. We keep re-initializing as the
-    // initialization is idempotent and not worth the code for extra checks.
-    assert(!ds_tls->static_state || ds_tls->static_state == static_state);
-    ds_tls->static_state = static_state;
-    assert(!ds_tls->root_tls || ds_tls->root_tls == root_tls);
-    ds_tls->root_tls = root_tls;
-    return ds_tls;
-  }
-
   // This method can fail and return false if trying to register more than
   // kMaxDataSources types.
   using DataSourceFactory = std::function<std::unique_ptr<DataSourceBase>()>;
@@ -86,7 +68,8 @@ class PERFETTO_EXPORT TracingMuxer {
   // projects this means "same thread"). Alternatively the client needs to take
   // care of using synchronization primitives to prevent concurrent accesses.
   virtual std::unique_ptr<TraceWriterBase> CreateTraceWriter(
-      DataSourceState*) = 0;
+      DataSourceState*,
+      BufferExhaustedPolicy buffer_exhausted_policy) = 0;
 
   virtual void DestroyStoppedTraceWritersForCurrentThread() = 0;
 

@@ -10,8 +10,10 @@
 #include "base/containers/adapters.h"
 #include "base/i18n/rtl.h"
 #include "base/memory/ptr_util.h"
+#include "base/numerics/ranges.h"
 #include "build/build_config.h"
 #include "components/vector_icons/vector_icons.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -749,6 +751,15 @@ void TreeView::LayoutEditor() {
                    -(empty_editor_size_.height() - font_list_.GetHeight()) / 2);
   // Give a little extra space for editing.
   row_bounds.set_width(row_bounds.width() + 50);
+  // If contained within a ScrollView, make sure the editor doesn't extend past
+  // the viewport bounds.
+  ScrollView* scroll_view = ScrollView::GetScrollViewForContents(this);
+  if (scroll_view) {
+    gfx::Rect content_bounds = scroll_view->GetContentsBounds();
+    row_bounds.set_size(
+        gfx::Size(std::min(row_bounds.width(), content_bounds.width()),
+                  std::min(row_bounds.height(), content_bounds.height())));
+  }
   // Scroll as necessary to ensure that the editor is visible.
   ScrollRectToVisible(row_bounds);
   editor_->SetBoundsRect(row_bounds);
@@ -1052,7 +1063,7 @@ void TreeView::IncrementSelection(IncrementType type) {
   int depth = 0;
   int delta = type == INCREMENT_PREVIOUS ? -1 : 1;
   int row = GetRowForInternalNode(selected_node_, &depth);
-  int new_row = std::min(GetRowCount() - 1, std::max(0, row + delta));
+  int new_row = base::ClampToRange(row + delta, 0, GetRowCount() - 1);
   if (new_row == row)
     return;  // At the end/beginning.
   SetSelectedNode(GetNodeByRow(new_row, &depth)->model_node());

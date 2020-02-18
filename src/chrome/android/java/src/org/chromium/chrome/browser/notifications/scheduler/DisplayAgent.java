@@ -9,13 +9,13 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.drawable.Icon;
+import android.os.Build;
 
 import org.chromium.base.ContextUtils;
-import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
-import org.chromium.base.library_loader.ProcessInitException;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.init.BrowserParts;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.init.EmptyBrowserParts;
@@ -58,11 +58,22 @@ public class DisplayAgent {
      * Contains icon info on the notification.
      */
     private static class IconBundle {
-        // TODO(hesen): Support Android resource ID.
         public final Bitmap bitmap;
+        public final int resourceId;
+
+        public IconBundle() {
+            bitmap = null;
+            resourceId = 0;
+        }
 
         public IconBundle(Bitmap bitmap) {
             this.bitmap = bitmap;
+            this.resourceId = 0;
+        }
+
+        public IconBundle(int resourceId) {
+            this.bitmap = null;
+            this.resourceId = resourceId;
         }
     }
 
@@ -103,9 +114,14 @@ public class DisplayAgent {
     }
 
     @CalledByNative
-    private static void addIconWithBitmap(
-            NotificationData notificationData, @IconType int type, Bitmap bitmap) {
-        notificationData.icons.put(type, new IconBundle(bitmap));
+    private static void addIcon(
+            NotificationData notificationData, @IconType int type, Bitmap bitmap, int resourceId) {
+        assert ((bitmap == null && resourceId != 0) || (bitmap != null && resourceId == 0));
+        if (resourceId != 0) {
+            notificationData.icons.put(type, new IconBundle(resourceId));
+        } else {
+            notificationData.icons.put(type, new IconBundle(bitmap));
+        }
     }
 
     @CalledByNative
@@ -146,13 +162,8 @@ public class DisplayAgent {
             };
 
             // Try to load native.
-            try {
-                ChromeBrowserInitializer.getInstance().handlePreNativeStartup(parts);
-                ChromeBrowserInitializer.getInstance().handlePostNativeStartup(true, parts);
-            } catch (ProcessInitException e) {
-                Log.e(TAG, "Unable to load native library.", e);
-                ChromeApplication.reportStartupErrorAndExit(e);
-            }
+            ChromeBrowserInitializer.getInstance().handlePreNativeStartup(parts);
+            ChromeBrowserInitializer.getInstance().handlePostNativeStartup(true, parts);
         }
     }
 
@@ -168,21 +179,28 @@ public class DisplayAgent {
             case NotificationIntentInterceptor.IntentType.UNKNOWN:
                 break;
             case NotificationIntentInterceptor.IntentType.CONTENT_INTENT:
-                nativeOnUserAction(Profile.getLastUsedProfile(), clientType, UserActionType.CLICK,
-                        guid, ActionButtonType.UNKNOWN_ACTION, null);
+                DisplayAgentJni.get().onUserAction(Profile.getLastUsedProfile(), clientType,
+                        UserActionType.CLICK, guid, ActionButtonType.UNKNOWN_ACTION, null);
+                closeNotification(guid);
                 break;
             case NotificationIntentInterceptor.IntentType.DELETE_INTENT:
-                nativeOnUserAction(Profile.getLastUsedProfile(), clientType, UserActionType.DISMISS,
-                        guid, ActionButtonType.UNKNOWN_ACTION, null);
+                DisplayAgentJni.get().onUserAction(Profile.getLastUsedProfile(), clientType,
+                        UserActionType.DISMISS, guid, ActionButtonType.UNKNOWN_ACTION, null);
                 break;
             case NotificationIntentInterceptor.IntentType.ACTION_INTENT:
                 int actionButtonType = IntentUtils.safeGetIntExtra(
                         intent, EXTRA_ACTION_BUTTON_TYPE, ActionButtonType.UNKNOWN_ACTION);
                 String buttonId = IntentUtils.safeGetStringExtra(intent, EXTRA_ACTION_BUTTON_ID);
-                nativeOnUserAction(Profile.getLastUsedProfile(), clientType,
+                DisplayAgentJni.get().onUserAction(Profile.getLastUsedProfile(), clientType,
                         UserActionType.BUTTON_CLICK, guid, actionButtonType, buttonId);
+                closeNotification(guid);
                 break;
         }
+    }
+
+    private static void closeNotification(String guid) {
+        new NotificationManagerProxyImpl(ContextUtils.getApplicationContext())
+                .cancel(DISPLAY_AGENT_TAG, guid.hashCode());
     }
 
     /**
@@ -216,6 +234,7 @@ public class DisplayAgent {
         // TODO(xingliu): Plumb platform specific data from native.
         // mode and provide correct notification id. Support buttons.
         Context context = ContextUtils.getApplicationContext();
+
         ChromeNotificationBuilder builder =
                 NotificationBuilderFactory.createChromeNotificationBuilder(true /* preferCompat */,
                         platformData.channel, null /* remoteAppPackageName */,
@@ -224,10 +243,25 @@ public class DisplayAgent {
         builder.setContentTitle(notificationData.title);
         builder.setContentText(notificationData.message);
 
-        // TODO(hesen): Support setting small icon from native with Android resource Id.
-        builder.setSmallIcon(R.drawable.ic_chrome);
+        boolean hasSmallIcon = notificationData.icons.containsKey(IconType.SMALL_ICON);
 
-        if (notificationData.icons.containsKey(IconType.LARGE_ICON)) {
+        if (hasSmallIcon && notificationData.icons.get(IconType.SMALL_ICON).bitmap != null
+                && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            // Use bitmap as small icon.
+            Icon smallIcon =
+                    Icon.createWithBitmap(notificationData.icons.get(IconType.SMALL_ICON).bitmap);
+            builder.setSmallIcon(smallIcon);
+        } else {
+            // Use resource Id as small icon, if invalid, use default Chrome icon instead.
+            int resourceId = R.drawable.ic_chrome;
+            if (hasSmallIcon && notificationData.icons.get(IconType.SMALL_ICON).resourceId != 0) {
+                resourceId = notificationData.icons.get(IconType.SMALL_ICON).resourceId;
+            }
+            builder.setSmallIcon(resourceId);
+        }
+
+        if (notificationData.icons.containsKey(IconType.LARGE_ICON)
+                && notificationData.icons.get(IconType.LARGE_ICON).bitmap != null) {
             builder.setLargeIcon(notificationData.icons.get(IconType.LARGE_ICON).bitmap);
         }
 
@@ -283,7 +317,10 @@ public class DisplayAgent {
 
     private DisplayAgent() {}
 
-    private static native void nativeOnUserAction(Profile profile,
-            @SchedulerClientType int clientType, @UserActionType int actionType, String guid,
-            @ActionButtonType int type, String buttonId);
+    @NativeMethods
+    interface Natives {
+        void onUserAction(Profile profile, @SchedulerClientType int clientType,
+                @UserActionType int actionType, String guid, @ActionButtonType int type,
+                String buttonId);
+    }
 }

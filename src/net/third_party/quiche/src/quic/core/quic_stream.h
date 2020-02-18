@@ -136,9 +136,6 @@ class QUIC_EXPORT_PRIVATE QuicStream
 
   virtual ~QuicStream();
 
-  // Not in use currently.
-  void SetFromConfig();
-
   // QuicStreamSequencer::StreamInterface implementation.
   QuicStreamId id() const override { return id_; }
   // Called by the stream subclass after it has consumed the final incoming
@@ -247,9 +244,7 @@ class QUIC_EXPORT_PRIVATE QuicStream
   // sent. If this is not true on deletion of the stream object, the session
   // must keep track of the stream's byte offset until a definitive final value
   // arrives.
-  bool HasFinalReceivedByteOffset() const {
-    return fin_received_ || rst_received_;
-  }
+  bool HasReceivedFinalOffset() const { return fin_received_ || rst_received_; }
 
   // Returns true if the stream has queued data waiting to write.
   bool HasBufferedData() const;
@@ -341,11 +336,8 @@ class QUIC_EXPORT_PRIVATE QuicStream
   // this method or not.
   void SendStopSending(uint16_t code);
 
-  // Invoked when QUIC receives a STOP_SENDING frame for this stream, informing
-  // the application that the peer has sent a STOP_SENDING. The default
-  // implementation is a noop. Is to be overridden by the application-specific
-  // QuicStream class.
-  virtual void OnStopSending(uint16_t code);
+  // Handle received StopSending frame.
+  virtual void OnStopSending(uint16_t /*code*/) {}
 
   // Close the write side of the socket.  Further writes will fail.
   // Can be called by the subclass or internally.
@@ -356,16 +348,6 @@ class QUIC_EXPORT_PRIVATE QuicStream
   bool is_static() const { return is_static_; }
 
  protected:
-  // Sends as many bytes in the first |count| buffers of |iov| to the connection
-  // as the connection will consume. If FIN is consumed, the write side is
-  // immediately closed.
-  // Returns the number of bytes consumed by the connection.
-  // Please note: Returned consumed data is the amount of data saved in send
-  // buffer. The data is not necessarily consumed by the connection. So write
-  // side is closed when FIN is sent.
-  // TODO(fayang): Let WritevData return boolean.
-  QuicConsumedData WritevData(const struct iovec* iov, int iov_count, bool fin);
-
   // Close the read side of the socket.  May cause the stream to be closed.
   // Subclasses and consumers should use StopReading to terminate reading early
   // if expecting a FIN. Can be used directly by subclasses if not expecting a
@@ -437,9 +419,6 @@ class QUIC_EXPORT_PRIVATE QuicStream
              QuicOptional<QuicFlowController> flow_controller,
              QuicFlowController* connection_flow_controller);
 
-  // Subclasses and consumers should use reading_stopped.
-  bool read_side_closed() const { return read_side_closed_; }
-
   // Calls MaybeSendBlocked on the stream's flow controller and the connection
   // level flow controller.  If the stream is flow control blocked by the
   // connection-level flow controller but not by the stream-level flow
@@ -500,10 +479,6 @@ class QUIC_EXPORT_PRIVATE QuicStream
 
   // True if this stream has received a RST_STREAM frame.
   bool rst_received_;
-
-  // Tracks if the session this stream is running under was created by a
-  // server or a client.
-  Perspective perspective_;
 
   QuicOptional<QuicFlowController> flow_controller_;
 

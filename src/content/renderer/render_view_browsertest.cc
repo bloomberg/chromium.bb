@@ -37,7 +37,6 @@
 #include "content/public/browser/web_ui_controller_factory.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/page_zoom.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
 #include "content/public/common/use_zoom_for_dsf_policy.h"
@@ -70,6 +69,7 @@
 #include "third_party/blink/public/common/dom_storage/session_storage_namespace_id.h"
 #include "third_party/blink/public/common/origin_trials/origin_trial_policy.h"
 #include "third_party/blink/public/common/origin_trials/trial_token_validator.h"
+#include "third_party/blink/public/common/page/page_zoom.h"
 #include "third_party/blink/public/mojom/loader/request_context_frame_type.mojom.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_network_provider.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
@@ -425,14 +425,10 @@ class RenderViewImplTest : public RenderViewTest {
     return view()->preferred_size_;
   }
 
-  void SetZoomLevel(double level) { view()->UpdateZoomLevel(level); }
-
-  double GetZoomLevel() { return view()->page_zoom_level(); }
-
   int GetScrollbarWidth() {
     blink::WebView* webview = view()->webview();
     return webview->MainFrameWidget()->Size().width -
-           webview->MainFrame()->VisibleContentRect().width;
+           webview->MainFrame()->ToWebLocalFrame()->VisibleContentRect().width;
   }
 
  private:
@@ -468,6 +464,16 @@ class RenderViewImplScaleFactorTest : public RenderViewImplTest {
   }
 
   void SetDeviceScaleFactor(float dsf) {
+    RenderWidget* widget = view()->GetWidget();
+    WidgetMsg_UpdateVisualProperties msg(
+        widget->routing_id(), MakeVisualPropertiesWithDeviceScaleFactor(dsf));
+    widget->OnMessageReceived(msg);
+
+    ASSERT_EQ(dsf, view()->GetMainRenderFrame()->GetDeviceScaleFactor());
+    ASSERT_EQ(dsf, widget->GetOriginalScreenInfo().device_scale_factor);
+  }
+
+  VisualProperties MakeVisualPropertiesWithDeviceScaleFactor(float dsf) {
     VisualProperties visual_properties;
     visual_properties.screen_info.device_scale_factor = dsf;
     visual_properties.new_size = gfx::Size(100, 100);
@@ -485,10 +491,7 @@ class RenderViewImplScaleFactorTest : public RenderViewImplTest {
         viz::LocalSurfaceIdAllocation(
             viz::LocalSurfaceId(1, 1, base::UnguessableToken::Create()),
             base::TimeTicks::Now());
-    view()->GetWidget()->OnSynchronizeVisualProperties(visual_properties);
-    ASSERT_EQ(dsf, view()->GetWidget()->GetWebScreenInfo().device_scale_factor);
-    ASSERT_EQ(dsf,
-              view()->GetWidget()->GetOriginalScreenInfo().device_scale_factor);
+    return visual_properties;
   }
 
   void TestEmulatedSizeDprDsf(int width, int height, float dpr,
@@ -574,7 +577,8 @@ TEST_F(RenderViewImplTest, IsPinchGestureActivePropagatesToProxies) {
   cc::ApplyViewportChangesArgs args;
   args.page_scale_delta = 1.f;
   args.is_pinch_gesture_active = true;
-  args.browser_controls_delta = 0.f;
+  args.top_controls_delta = 0.f;
+  args.bottom_controls_delta = 0.f;
   args.browser_controls_constraint = cc::BrowserControlsState::kHidden;
   args.scroll_gesture_did_end = false;
 
@@ -618,6 +622,124 @@ TEST_F(RenderViewImplTest, OnNavStateChanged) {
 
   EXPECT_TRUE(render_thread_->sink().GetUniqueMessageMatching(
       FrameHostMsg_UpdateState::ID));
+}
+
+class RenderViewImplEmulatingPopupTest : public RenderViewImplTest {
+ protected:
+  VisualProperties InitialVisualProperties() override {
+    VisualProperties visual_properties =
+        RenderViewImplTest::InitialVisualProperties();
+    visual_properties.screen_info.rect = gfx::Rect(800, 600);
+    return visual_properties;
+  }
+};
+
+// Popup RenderWidgets should inherit emulation params from the parent.
+TEST_F(RenderViewImplEmulatingPopupTest, EmulatingPopupRect) {
+  // Real screen rect set to 800x600.
+  gfx::Rect screen_rect(800, 600);
+  // Real widget and window screen rects.
+  gfx::Rect window_screen_rect(1, 2, 137, 139);
+  gfx::Rect widget_screen_rect(5, 7, 57, 59);
+
+  // Verify screen rect will be set.
+  EXPECT_EQ(gfx::Rect(view()->GetWidget()->GetScreenInfo().rect), screen_rect);
+
+  {
+    // Make a popup widget.
+    blink::WebPagePopup* popup = view()->CreatePopup(frame()->GetWebFrame());
+    RenderWidget* popup_widget =
+        static_cast<RenderWidget*>(popup->GetClientForTesting());
+    ASSERT_TRUE(popup_widget);
+
+    // Set its size.
+    {
+      WidgetMsg_UpdateScreenRects msg(popup_widget->routing_id(),
+                                      widget_screen_rect, window_screen_rect);
+      popup_widget->OnMessageReceived(msg);
+    }
+
+    // The WindowScreenRect, WidgetScreenRect, and ScreenRect are all available
+    // to the popup.
+    EXPECT_EQ(window_screen_rect, gfx::Rect(popup_widget->WindowRect()));
+    EXPECT_EQ(widget_screen_rect, gfx::Rect(popup_widget->ViewRect()));
+    EXPECT_EQ(screen_rect, gfx::Rect(popup_widget->GetScreenInfo().rect));
+
+    // Close and destroy the widget.
+    {
+      WidgetMsg_Close msg(popup_widget->routing_id());
+      popup_widget->OnMessageReceived(msg);
+    }
+  }
+
+  // Enable device emulation on the parent widget.
+  blink::WebDeviceEmulationParams emulation_params;
+  gfx::Rect emulated_widget_rect(150, 160, 980, 1200);
+  // In mobile emulation the WindowScreenRect and ScreenRect are both set to
+  // match the WidgetScreenRect, which we set here.
+  emulation_params.screen_position = blink::WebDeviceEmulationParams::kMobile;
+  emulation_params.view_size = emulated_widget_rect.size();
+  emulation_params.view_position = emulated_widget_rect.origin();
+  {
+    WidgetMsg_EnableDeviceEmulation msg(view()->GetWidget()->routing_id(),
+                                        emulation_params);
+    view()->GetWidget()->OnMessageReceived(msg);
+  }
+
+  {
+    // Make a popup again. It should inherit device emulation params.
+    blink::WebPagePopup* popup = view()->CreatePopup(frame()->GetWebFrame());
+    RenderWidget* popup_widget =
+        static_cast<RenderWidget*>(popup->GetClientForTesting());
+    ASSERT_TRUE(popup_widget);
+
+    // Set its size again.
+    {
+      WidgetMsg_UpdateScreenRects msg(popup_widget->routing_id(),
+                                      widget_screen_rect, window_screen_rect);
+      popup_widget->OnMessageReceived(msg);
+    }
+
+    // This time, the position of the WidgetScreenRect and WindowScreenRect
+    // should be affected by emulation params.
+    // TODO(danakj): This means the popup sees the top level widget at the
+    // emulated position *plus* the real position. Whereas the top level
+    // widget will see itself at the emulation position. Why this inconsistency?
+    int window_x = emulated_widget_rect.x() + window_screen_rect.x();
+    int window_y = emulated_widget_rect.y() + window_screen_rect.y();
+    EXPECT_EQ(window_x, popup_widget->WindowRect().x);
+    EXPECT_EQ(window_y, popup_widget->WindowRect().y);
+
+    int widget_x = emulated_widget_rect.x() + widget_screen_rect.x();
+    int widget_y = emulated_widget_rect.y() + widget_screen_rect.y();
+    EXPECT_EQ(widget_x, popup_widget->ViewRect().x);
+    EXPECT_EQ(widget_y, popup_widget->ViewRect().y);
+
+    // TODO(danakj): Why don't the sizes get changed by emulation? The comments
+    // that used to be in this test suggest that the sizes used to change, and
+    // we were testing for that. But now we only test for positions changing?
+    EXPECT_EQ(window_screen_rect.width(), popup_widget->WindowRect().width);
+    EXPECT_EQ(window_screen_rect.height(), popup_widget->WindowRect().height);
+    EXPECT_EQ(widget_screen_rect.width(), popup_widget->ViewRect().width);
+    EXPECT_EQ(widget_screen_rect.height(), popup_widget->ViewRect().height);
+    EXPECT_EQ(emulated_widget_rect, gfx::Rect(view()->GetWidget()->ViewRect()));
+    EXPECT_EQ(emulated_widget_rect,
+              gfx::Rect(view()->GetWidget()->WindowRect()));
+
+    // TODO(danakj): Why isn't the ScreenRect visible to the popup an emulated
+    // value? The ScreenRect has been changed by emulation as demonstrated
+    // below.
+    EXPECT_EQ(gfx::Rect(800, 600),
+              gfx::Rect(popup_widget->GetScreenInfo().rect));
+    EXPECT_EQ(emulated_widget_rect,
+              gfx::Rect(view()->GetWidget()->GetScreenInfo().rect));
+
+    // Close and destroy the widget.
+    {
+      WidgetMsg_Close msg(popup_widget->routing_id());
+      popup_widget->OnMessageReceived(msg);
+    }
+  }
 }
 
 TEST_F(RenderViewImplTest, OnNavigationHttpPost) {
@@ -723,6 +845,10 @@ TEST_F(RenderViewImplTest, BeginNavigation) {
   auto form_navigation_info = std::make_unique<blink::WebNavigationInfo>();
   form_navigation_info->url_request = blink::WebURLRequest(GetWebUIURL("foo"));
   form_navigation_info->url_request.SetHttpMethod("POST");
+  blink::WebHTTPBody post_body;
+  post_body.Initialize();
+  post_body.AppendData("blah");
+  form_navigation_info->url_request.SetHttpBody(post_body);
   form_navigation_info->url_request.SetRequestorOrigin(requestor_origin);
   form_navigation_info->frame_type =
       network::mojom::RequestContextFrameType::kTopLevel;
@@ -823,6 +949,10 @@ TEST_F(RenderViewImplTest, BeginNavigationForWebUI) {
       blink::WebURLRequest(GURL("data:text/html,foo"));
   data_navigation_info->url_request.SetRequestorOrigin(requestor_origin);
   data_navigation_info->url_request.SetHttpMethod("POST");
+  blink::WebHTTPBody post_body;
+  post_body.Initialize();
+  post_body.AppendData("blah");
+  data_navigation_info->url_request.SetHttpBody(post_body);
   data_navigation_info->frame_type =
       network::mojom::RequestContextFrameType::kTopLevel;
   data_navigation_info->navigation_type =
@@ -859,73 +989,6 @@ TEST_F(RenderViewImplTest, BeginNavigationForWebUI) {
       FrameHostMsg_OpenURL::ID));
 }
 
-class AlwaysForkingRenderViewTest : public RenderViewImplTest {
- public:
-  ContentRendererClient* CreateContentRendererClient() override {
-    return new TestContentRendererClient;
-  }
-
- private:
-  class TestContentRendererClient : public ContentRendererClient {
-   public:
-    bool ShouldFork(blink::WebLocalFrame* frame,
-                    const GURL& url,
-                    const std::string& http_method,
-                    bool is_initial_navigation,
-                    bool is_server_redirect) override {
-      return true;
-    }
-  };
-};
-
-TEST_F(AlwaysForkingRenderViewTest, BeginNavigationDoesNotForkEmptyUrl) {
-  GURL example_url("http://example.com");
-  GURL empty_url("");
-
-  LoadHTMLWithUrlOverride("<body></body", example_url.spec().c_str());
-  EXPECT_EQ(example_url,
-            GURL(frame()->GetWebFrame()->GetDocumentLoader()->GetUrl()));
-
-  // Empty url should never fork.
-  blink::WebURLRequest request(empty_url);
-  request.SetMode(network::mojom::RequestMode::kNavigate);
-  request.SetRedirectMode(network::mojom::RedirectMode::kManual);
-  request.SetRequestContext(blink::mojom::RequestContextType::INTERNAL);
-  request.SetRequestorOrigin(blink::WebSecurityOrigin::Create(example_url));
-  auto navigation_info = std::make_unique<blink::WebNavigationInfo>();
-  navigation_info->url_request = request;
-  navigation_info->frame_type =
-      network::mojom::RequestContextFrameType::kTopLevel;
-  navigation_info->navigation_policy = blink::kWebNavigationPolicyCurrentTab;
-  frame()->BeginNavigation(std::move(navigation_info));
-  EXPECT_FALSE(render_thread_->sink().GetUniqueMessageMatching(
-      FrameHostMsg_OpenURL::ID));
-}
-
-TEST_F(AlwaysForkingRenderViewTest, BeginNavigationDoesNotForkAboutBlank) {
-  GURL example_url("http://example.com");
-  GURL blank_url(url::kAboutBlankURL);
-
-  LoadHTMLWithUrlOverride("<body></body", example_url.spec().c_str());
-  EXPECT_EQ(example_url,
-            GURL(frame()->GetWebFrame()->GetDocumentLoader()->GetUrl()));
-
-  // about:blank should never fork.
-  blink::WebURLRequest request(blank_url);
-  request.SetMode(network::mojom::RequestMode::kNavigate);
-  request.SetRedirectMode(network::mojom::RedirectMode::kManual);
-  request.SetRequestContext(blink::mojom::RequestContextType::INTERNAL);
-  request.SetRequestorOrigin(blink::WebSecurityOrigin::Create(example_url));
-  auto navigation_info = std::make_unique<blink::WebNavigationInfo>();
-  navigation_info->url_request = request;
-  navigation_info->frame_type =
-      network::mojom::RequestContextFrameType::kTopLevel;
-  navigation_info->navigation_policy = blink::kWebNavigationPolicyCurrentTab;
-  frame()->BeginNavigation(std::move(navigation_info));
-  EXPECT_FALSE(render_thread_->sink().GetUniqueMessageMatching(
-      FrameHostMsg_OpenURL::ID));
-}
-
 // This test verifies that when device emulation is enabled, RenderFrameProxy
 // continues to receive the original ScreenInfo and not the emualted
 // ScreenInfo.
@@ -955,8 +1018,7 @@ TEST_F(RenderViewImplScaleFactorTest, DeviceEmulationWithOOPIF) {
 
   // Verify that the system device scale factor has propagated into the
   // RenderFrameProxy.
-  EXPECT_EQ(device_scale,
-            view()->GetWidget()->GetWebScreenInfo().device_scale_factor);
+  EXPECT_EQ(device_scale, view()->GetMainRenderFrame()->GetDeviceScaleFactor());
   EXPECT_EQ(device_scale,
             view()->GetWidget()->GetOriginalScreenInfo().device_scale_factor);
   EXPECT_EQ(device_scale, child_proxy->screen_info().device_scale_factor);
@@ -964,7 +1026,7 @@ TEST_F(RenderViewImplScaleFactorTest, DeviceEmulationWithOOPIF) {
   TestEmulatedSizeDprDsf(640, 480, 3.f, compositor_dsf);
 
   // Verify that the RenderFrameProxy device scale factor is still the same.
-  EXPECT_EQ(3.f, view()->GetWidget()->GetWebScreenInfo().device_scale_factor);
+  EXPECT_EQ(3.f, view()->GetMainRenderFrame()->GetDeviceScaleFactor());
   EXPECT_EQ(device_scale,
             view()->GetWidget()->GetOriginalScreenInfo().device_scale_factor);
   EXPECT_EQ(device_scale, child_proxy->screen_info().device_scale_factor);
@@ -1011,7 +1073,7 @@ TEST_F(RenderViewImplTest, OriginReplicationForSwapOut) {
   child_frame2->SwapOut(kProxyRoutingId + 1, true, replication_state);
   EXPECT_TRUE(web_frame->FirstChild()->NextSibling()->IsWebRemoteFrame());
   EXPECT_TRUE(
-      web_frame->FirstChild()->NextSibling()->GetSecurityOrigin().IsUnique());
+      web_frame->FirstChild()->NextSibling()->GetSecurityOrigin().IsOpaque());
 }
 
 // When we enable --use-zoom-for-dsf, visiting the first web page after opening
@@ -1021,9 +1083,14 @@ TEST_F(RenderViewImplTest, OriginReplicationForSwapOut) {
 TEST_F(RenderViewImplEnableZoomForDSFTest, UpdateDSFAfterSwapIn) {
   const float device_scale = 3.0f;
   SetDeviceScaleFactor(device_scale);
-  EXPECT_EQ(device_scale, view()->GetDeviceScaleFactor());
+  EXPECT_EQ(device_scale, view()->GetMainRenderFrame()->GetDeviceScaleFactor());
 
   LoadHTML("Hello world!");
+
+  // Early grab testing values as the main-frame widget becomes inaccessible
+  // when it swaps out.
+  VisualProperties test_visual_properties =
+      MakeVisualPropertiesWithDeviceScaleFactor(device_scale);
 
   // Swap the main frame out after which it should become a WebRemoteFrame.
   content::FrameReplicationState replication_state =
@@ -1035,30 +1102,24 @@ TEST_F(RenderViewImplEnableZoomForDSFTest, UpdateDSFAfterSwapIn) {
   // Do the remote-to-local transition for the proxy, which is to create a
   // provisional local frame.
   int routing_id = kProxyRoutingId + 1;
-  service_manager::mojom::InterfaceProviderPtr stub_interface_provider;
-  mojo::MakeRequest(&stub_interface_provider);
-  mojo::PendingRemote<blink::mojom::DocumentInterfaceBroker>
-      stub_document_interface_broker_content;
-  ignore_result(
-      stub_document_interface_broker_content.InitWithNewPipeAndPassReceiver());
-  mojo::PendingRemote<blink::mojom::DocumentInterfaceBroker>
-      stub_document_interface_broker_blink;
-  ignore_result(
-      stub_document_interface_broker_blink.InitWithNewPipeAndPassReceiver());
+  mojo::PendingRemote<service_manager::mojom::InterfaceProvider>
+      stub_interface_provider;
+  ignore_result(stub_interface_provider.InitWithNewPipeAndPassReceiver());
   mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
       stub_browser_interface_broker;
   ignore_result(stub_browser_interface_broker.InitWithNewPipeAndPassReceiver());
 
+  // The new frame is initialized with |device_scale| as the device scale
+  // factor.
   mojom::CreateFrameWidgetParams widget_params;
-  widget_params.routing_id = view()->GetRoutingID();
+  widget_params.routing_id = kProxyRoutingId + 2;
+  widget_params.visual_properties = test_visual_properties;
   RenderFrameImpl::CreateFrame(
       routing_id, std::move(stub_interface_provider),
-      std::move(stub_document_interface_broker_content),
-      std::move(stub_document_interface_broker_blink),
       std::move(stub_browser_interface_broker), kProxyRoutingId,
       MSG_ROUTING_NONE, MSG_ROUTING_NONE, MSG_ROUTING_NONE,
       base::UnguessableToken::Create(), replication_state, nullptr,
-      widget_params, FrameOwnerProperties(), /*has_committed_real_load=*/true);
+      &widget_params, FrameOwnerProperties(), /*has_committed_real_load=*/true);
   TestRenderFrame* provisional_frame =
       static_cast<TestRenderFrame*>(RenderFrameImpl::FromRoutingID(routing_id));
   EXPECT_TRUE(provisional_frame);
@@ -1073,7 +1134,7 @@ TEST_F(RenderViewImplEnableZoomForDSFTest, UpdateDSFAfterSwapIn) {
                               CreateCommitNavigationParams());
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_EQ(device_scale, view()->GetDeviceScaleFactor());
+  EXPECT_EQ(device_scale, view()->GetMainRenderFrame()->GetDeviceScaleFactor());
   EXPECT_EQ(device_scale, view()->webview()->ZoomFactorForDeviceScaleFactor());
 
   double device_pixel_ratio;
@@ -1110,30 +1171,20 @@ TEST_F(RenderViewImplTest, DetachingProxyAlsoDestroysProvisionalFrame) {
   // Do the first step of a remote-to-local transition for the child proxy,
   // which is to create a provisional local frame.
   int routing_id = kProxyRoutingId + 1;
-  service_manager::mojom::InterfaceProviderPtr stub_interface_provider;
-  mojo::MakeRequest(&stub_interface_provider);
-  mojo::PendingRemote<blink::mojom::DocumentInterfaceBroker>
-      stub_document_interface_broker_content;
-  ignore_result(
-      stub_document_interface_broker_content.InitWithNewPipeAndPassReceiver());
-  mojo::PendingRemote<blink::mojom::DocumentInterfaceBroker>
-      stub_document_interface_broker_blink;
-  ignore_result(
-      stub_document_interface_broker_blink.InitWithNewPipeAndPassReceiver());
+  mojo::PendingRemote<service_manager::mojom::InterfaceProvider>
+      stub_interface_provider;
+  ignore_result(stub_interface_provider.InitWithNewPipeAndPassReceiver());
   mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
       stub_browser_interface_broker;
   ignore_result(stub_browser_interface_broker.InitWithNewPipeAndPassReceiver());
 
-  mojom::CreateFrameWidgetParams widget_params;
-  widget_params.routing_id = MSG_ROUTING_NONE;
   RenderFrameImpl::CreateFrame(
       routing_id, std::move(stub_interface_provider),
-      std::move(stub_document_interface_broker_content),
-      std::move(stub_document_interface_broker_blink),
       std::move(stub_browser_interface_broker), kProxyRoutingId,
       MSG_ROUTING_NONE, frame()->GetRoutingID(), MSG_ROUTING_NONE,
       base::UnguessableToken::Create(), replication_state, nullptr,
-      widget_params, FrameOwnerProperties(), /*has_committed_real_load=*/true);
+      /*widget_params=*/nullptr, FrameOwnerProperties(),
+      /*has_committed_real_load=*/true);
   {
     TestRenderFrame* provisional_frame = static_cast<TestRenderFrame*>(
         RenderFrameImpl::FromRoutingID(routing_id));
@@ -1526,7 +1577,7 @@ TEST_F(RenderViewImplTest, OnSetTextDirection) {
   }
 }
 
-TEST_F(RenderViewImplTest, DidFailProvisionalLoadWithErrorForCancellation) {
+TEST_F(RenderViewImplTest, DroppedNavigationStaysInViewSourceMode) {
   GetMainFrame()->EnableViewSourceMode(true);
   WebURLError error(net::ERR_ABORTED, GURL("http://foo"));
   WebLocalFrame* web_frame = GetMainFrame();
@@ -1539,7 +1590,7 @@ TEST_F(RenderViewImplTest, DidFailProvisionalLoadWithErrorForCancellation) {
   frame()->Navigate(std::move(common_params), CreateCommitNavigationParams());
 
   // A cancellation occurred.
-  view()->GetMainRenderFrame()->DidFailProvisionalLoad(error, "GET");
+  view()->GetMainRenderFrame()->OnDroppedNavigation();
   // Frame should stay in view-source mode.
   EXPECT_TRUE(web_frame->IsViewSourceModeEnabled());
 }
@@ -1999,7 +2050,6 @@ class RendererErrorPageTest : public RenderViewImplTest {
     void PrepareErrorPage(content::RenderFrame* render_frame,
                           const blink::WebURLError& error,
                           const std::string& http_method,
-                          bool ignoring_cache,
                           std::string* error_html) override {
       if (error_html)
         *error_html = "A suffusion of yellow.";
@@ -2008,7 +2058,6 @@ class RendererErrorPageTest : public RenderViewImplTest {
     void PrepareErrorPageForHttpStatusError(content::RenderFrame* render_frame,
                                             const GURL& unreachable_url,
                                             const std::string& http_method,
-                                            bool ignoring_cache,
                                             int http_status,
                                             std::string* error_html) override {
       if (error_html)
@@ -2345,7 +2394,7 @@ TEST_F(RenderViewImplTest, PreferredSizeZoomed) {
   gfx::Size size = GetPreferredSize();
   EXPECT_EQ(gfx::Size(400 + scrollbar_width, 400), size);
 
-  SetZoomLevel(ZoomFactorToZoomLevel(2.0));
+  EXPECT_TRUE(view()->SetZoomLevel(blink::PageZoomFactorToZoomLevel(2.0)));
   size = GetPreferredSize();
   EXPECT_EQ(gfx::Size(800 + scrollbar_width, 800), size);
 }
@@ -2725,14 +2774,13 @@ TEST_F(RenderViewImplScaleFactorTest, AutoResizeWithoutZoomForDSF) {
   EXPECT_EQ(size_at_1x, size_at_2x);
 }
 
-TEST_F(RenderViewImplScaleFactorTest, ZoomLevelUpdate) {
-  // 0 is the default zoom level, nothing will change.
-  SetZoomLevel(0);
-  EXPECT_NEAR(0.0, GetZoomLevel(), 0.01);
+TEST_F(RenderViewImplTest, ZoomLevelUpdate) {
+  // 0 will use the minimum zoom level, which is the default, nothing will
+  // change.
+  EXPECT_FALSE(view()->SetZoomLevel(0));
 
   // Change the zoom level to 25% and check if the view gets the change.
-  SetZoomLevel(content::ZoomFactorToZoomLevel(0.25));
-  EXPECT_NEAR(content::ZoomFactorToZoomLevel(0.25), GetZoomLevel(), 0.01);
+  EXPECT_TRUE(view()->SetZoomLevel(blink::PageZoomFactorToZoomLevel(0.25)));
 }
 
 #endif

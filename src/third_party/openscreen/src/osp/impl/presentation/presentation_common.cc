@@ -7,7 +7,7 @@
 #include "absl/strings/ascii.h"
 
 namespace openscreen {
-namespace presentation {
+namespace osp {
 
 std::unique_ptr<ProtocolConnection> GetProtocolConnection(
     uint64_t endpoint_id) {
@@ -42,5 +42,5 @@ PresentationID::PresentationID(std::string presentation_id)
   }
 }
 
-}  // namespace presentation
+}  // namespace osp
 }  // namespace openscreen

@@ -20,8 +20,6 @@
 namespace ash {
 namespace {
 
-const int kIndicatorAnimationDurationMs = 1000;
-
 class IndicatorView : public views::View {
  public:
   IndicatorView() = default;
@@ -50,7 +48,7 @@ views::Widget* CreateWidget(const gfx::Rect& bounds,
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
   params.context = Shell::GetRootWindowControllerWithDisplayId(display.id())
                        ->GetRootWindow();
-  params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
+  params.opacity = views::Widget::InitParams::WindowOpacity::kTranslucent;
   params.z_order = ui::ZOrderLevel::kFloatingUIElement;
   widget->set_focus_on_creation(false);
   widget->Init(std::move(params));
@@ -83,7 +81,7 @@ void SharedDisplayEdgeIndicator::Show(const gfx::Rect& src_bounds,
   CreateWidget(src_bounds, src_indicator_);
   CreateWidget(dst_bounds, dst_indicator_);
   animation_.reset(new gfx::ThrobAnimation(this));
-  animation_->SetThrobDuration(kIndicatorAnimationDurationMs);
+  animation_->SetThrobDuration(base::TimeDelta::FromMilliseconds(1000));
   animation_->StartThrobbing(-1 /* infinite */);
 }
 

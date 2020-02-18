@@ -77,14 +77,13 @@ class _RetryDelayStrategy(object):
 class WithRetry(object):
   """Decorator to handle retry on exception.
 
-  Example:
+  Examples:
+    @WithRetry(max_retry=3)
+    def _run():
+      ... do something ...
+    _run()
 
-  @WithRetry(max_retry=3)
-  def _run():
-    ... do something ...
-  _run()
-
-  If _run() raises an exception, it retries at most three times.
+    If _run() raises an exception, it retries at most three times.
 
   Retrying strategy.
 
@@ -126,25 +125,6 @@ class WithRetry(object):
     as 'jitter'. (Often, this helps to avoid consecutive conflicting situation)
     |jitter| is specifies the duration of jitter delay, randomized up to
     50% in either direction.
-
-  Parameter details are as follows:
-
-  max_retry: A positive integer representing how many times to retry the
-    command before giving up.  Worst case, the command is invoked
-    (max_retry + 1) times before failing.
-  handler, exception: Please see above for details.
-  log_all_retries: when True, logs all retries.
-  sleep, backoff_factor, jitter: Please see above for details.
-  raise_first_exception_on_failure: determines which excecption is raised upon
-    failure after retries. If True, the first exception that was encountered.
-    Otherwise, the final one.
-  exception_to_raise: Optional exception type. If given, raises its instance,
-    instead of the one raised from the retry body.
-  status_callback: Optional callback invoked after each call of |functor|. It
-    takes two arguments: |attempt| which is the index of the last attempt
-    (0-based), and |success| representing whether the last attempt was
-    successfully done or not. If the callback raises an exception, no further
-    retry will be made, and the exception will be propagated to the caller.
   """
 
   def __init__(self,
@@ -152,6 +132,30 @@ class WithRetry(object):
                sleep=0, backoff_factor=1, jitter=0,
                raise_first_exception_on_failure=True, exception_to_raise=None,
                status_callback=None):
+    """Initialize.
+
+    Args:
+      max_retry: A positive integer representing how many times to retry the
+          command before giving up.  Worst case, the command is invoked
+          (max_retry + 1) times before failing.
+      handler: Please see above for details.
+      exception: Please see above for details.
+      log_all_retries: when True, logs all retries.
+      sleep: Please see above for details.
+      backoff_factor: Please see above for details.
+      jitter: Please see above for details.
+      raise_first_exception_on_failure: determines which excecption is raised
+          upon failure after retries. If True, the first exception that was
+          encountered. Otherwise, the final one.
+      exception_to_raise: Optional exception type. If given, raises its
+          instance, instead of the one raised from the retry body.
+      status_callback: Optional callback invoked after each call of |functor|.
+          It takes two arguments: |attempt| which is the index of the last
+          attempt (0-based), and |success| representing whether the last attempt
+          was successfully done or not. If the callback raises an exception, no
+          further retry will be made, and the exception will be propagated to
+          the caller.
+    """
     if max_retry < 0:
       raise ValueError('max_retry needs to be zero or more: %d' % max_retry)
     self._max_retry = max_retry
@@ -280,10 +284,10 @@ def RetryException(exception, max_retry, functor, *args, **kwargs):
 
 
 def RetryCommand(functor, max_retry, *args, **kwargs):
-  """Wrapper for RunCommand that will retry a command
+  """Wrapper for run that will retry a command.
 
   Args:
-    functor: RunCommand function to run; retries will only occur on
+    functor: run function to run; retries will only occur on
       RunCommandError exceptions being thrown.
     max_retry: A positive integer representing how many times to retry
       the command before giving up.  Worst case, the command is invoked
@@ -297,14 +301,14 @@ def RetryCommand(functor, max_retry, *args, **kwargs):
     error_check: Optional callback to check the error output.  Return None to
       fall back to |retry_on|, or True/False to set the retry directly.
     log_retries: Whether to log a warning when retriable errors occur.
-    args: Positional args passed to RunCommand; see RunCommand for specifics.
-    kwargs: Optional args passed to RunCommand; see RunCommand for specifics.
+    args: Positional args passed to run; see run for specifics.
+    kwargs: Optional args passed to run; see run for specifics.
 
   Returns:
     A CommandResult object.
 
   Raises:
-    Exception:  Raises RunCommandError on error with optional error_message.
+    RunCommandError: Raised on error.
   """
   values = kwargs.pop('retry_on', None)
   error_check = kwargs.pop('error_check', lambda x: None)
@@ -333,7 +337,7 @@ def RetryCommand(functor, max_retry, *args, **kwargs):
 
 
 def ShouldRetryCommandCommon(exc):
-  """Returns whether any RunCommand should retry on a given exception."""
+  """Returns whether any run should retry on a given exception."""
   if not isinstance(exc, cros_build_lib.RunCommandError):
     return False
   if exc.result.returncode is None:
@@ -344,20 +348,20 @@ def ShouldRetryCommandCommon(exc):
 
 
 def RunCommandWithRetries(max_retry, *args, **kwargs):
-  """Wrapper for RunCommand that will retry a command
+  """Wrapper for run that will retry a command
 
   Args:
-    max_retry: See RetryCommand and RunCommand.
-    *args: See RetryCommand and RunCommand.
-    **kwargs: See RetryCommand and RunCommand.
+    max_retry: See RetryCommand and run.
+    *args: See RetryCommand and run.
+    **kwargs: See RetryCommand and run.
 
   Returns:
     A CommandResult object.
 
   Raises:
-    Exception:  Raises RunCommandError on error with optional error_message.
+    RunCommandError: Raised on error.
   """
-  return RetryCommand(cros_build_lib.RunCommand, max_retry, *args, **kwargs)
+  return RetryCommand(cros_build_lib.run, max_retry, *args, **kwargs)
 
 
 class DownloadError(Exception):
@@ -369,7 +373,7 @@ def RunCurl(curl_args, *args, **kwargs):
 
   Args:
     curl_args: Command line to pass to curl. Must be list of str.
-    *args, **kwargs: See RunCommandWithRetries and RunCommand.
+    *args, **kwargs: See RunCommandWithRetries and run.
       Note that retry_on, error_check, sleep, backoff_factor cannot be
       overwritten.
 

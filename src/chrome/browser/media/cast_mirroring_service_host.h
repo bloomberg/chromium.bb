@@ -19,11 +19,14 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "extensions/buildflags/buildflags.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "ui/gfx/geometry/size.h"
 
-// TODO(https://crbug.com/879012): Remove the build flag. OffscreenTab should
-// not only be defined when extension is enabled.
+// TODO(crbug.com/879012): Remove the build flag. OffscreenTab should not only
+// be defined when extension is enabled.
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/browser/media/offscreen_tab.h"
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
@@ -31,6 +34,7 @@
 namespace content {
 class AudioLoopbackStreamCreator;
 class BrowserContext;
+struct DesktopMediaID;
 class WebContents;
 }  // namespace content
 
@@ -49,17 +53,26 @@ class CastMirroringServiceHost final : public mojom::MirroringServiceHost,
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
                                        public content::WebContentsObserver {
  public:
-  static void GetForTab(content::WebContents* target_contents,
-                        mojom::MirroringServiceHostRequest request);
+  static void GetForTab(
+      content::WebContents* target_contents,
+      mojo::PendingReceiver<mojom::MirroringServiceHost> receiver);
 
-  static void GetForDesktop(content::WebContents* initiator_contents,
-                            const std::string& desktop_stream_id,
-                            mojom::MirroringServiceHostRequest request);
+  // TODO(crbug.com/809249): Remove when the extension-based implementation of
+  // the Cast MRP is removed.
+  static void GetForDesktop(
+      content::WebContents* initiator_contents,
+      const std::string& desktop_stream_id,
+      mojo::PendingReceiver<mojom::MirroringServiceHost> receiver);
 
-  static void GetForOffscreenTab(content::BrowserContext* context,
-                                 const GURL& presentation_url,
-                                 const std::string& presentation_id,
-                                 mojom::MirroringServiceHostRequest request);
+  static void GetForDesktop(
+      const content::DesktopMediaID& media_id,
+      mojo::PendingReceiver<mojom::MirroringServiceHost> receiver);
+
+  static void GetForOffscreenTab(
+      content::BrowserContext* context,
+      const GURL& presentation_url,
+      const std::string& presentation_id,
+      mojo::PendingReceiver<mojom::MirroringServiceHost> receiver);
 
   // |source_media_id| indicates the mirroring source.
   explicit CastMirroringServiceHost(content::DesktopMediaID source_media_id);
@@ -68,9 +81,10 @@ class CastMirroringServiceHost final : public mojom::MirroringServiceHost,
 
   // mojom::MirroringServiceHost implementation.
   void Start(mojom::SessionParametersPtr session_params,
-             mojom::SessionObserverPtr observer,
-             mojom::CastMessageChannelPtr outbound_channel,
-             mojom::CastMessageChannelRequest inbound_channel) override;
+             mojo::PendingRemote<mojom::SessionObserver> observer,
+             mojo::PendingRemote<mojom::CastMessageChannel> outbound_channel,
+             mojo::PendingReceiver<mojom::CastMessageChannel> inbound_channel)
+      override;
 
  private:
   friend class CastMirroringServiceHostBrowserTest;
@@ -84,15 +98,16 @@ class CastMirroringServiceHost final : public mojom::MirroringServiceHost,
   // ResourceProvider implementation.
   void BindGpu(mojo::PendingReceiver<viz::mojom::Gpu> receiver) override;
   void GetVideoCaptureHost(
-      media::mojom::VideoCaptureHostRequest request) override;
+      mojo::PendingReceiver<media::mojom::VideoCaptureHost> receiver) override;
   void GetNetworkContext(
       mojo::PendingReceiver<network::mojom::NetworkContext> receiver) override;
-  void CreateAudioStream(mojom::AudioStreamCreatorClientPtr client,
-                         const media::AudioParameters& params,
-                         uint32_t total_segments) override;
+  void CreateAudioStream(
+      mojo::PendingRemote<mojom::AudioStreamCreatorClient> client,
+      const media::AudioParameters& params,
+      uint32_t total_segments) override;
   void ConnectToRemotingSource(
-      media::mojom::RemoterPtr remoter,
-      media::mojom::RemotingSourceRequest request) override;
+      mojo::PendingRemote<media::mojom::Remoter> remoter,
+      mojo::PendingReceiver<media::mojom::RemotingSource> receiver) override;
 
   // content::WebContentsObserver implementation.
   void WebContentsDestroyed() override;
@@ -117,8 +132,8 @@ class CastMirroringServiceHost final : public mojom::MirroringServiceHost,
   // Describes the media source for this mirroring session.
   content::DesktopMediaID source_media_id_;
 
-  // The binding to this mojom::ResourceProvider implementation.
-  mojo::Binding<mojom::ResourceProvider> resource_provider_binding_;
+  // The receiver to this mojom::ResourceProvider implementation.
+  mojo::Receiver<mojom::ResourceProvider> resource_provider_receiver{this};
 
   // Connection to the remote mojom::MirroringService implementation.
   mojo::Remote<mojom::MirroringService> mirroring_service_;

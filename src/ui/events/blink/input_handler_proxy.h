@@ -108,18 +108,18 @@ class InputHandlerProxy : public cc::InputHandlerClient,
   void DeliverInputForHighLatencyMode() override;
 
   // SynchronousInputHandlerProxy implementation.
-  void SetOnlySynchronouslyAnimateRootFlings(
+  void SetSynchronousInputHandler(
       SynchronousInputHandler* synchronous_input_handler) override;
-  void SynchronouslyAnimate(base::TimeTicks time) override;
   void SynchronouslySetRootScrollOffset(
       const gfx::ScrollOffset& root_offset) override;
   void SynchronouslyZoomBy(float magnify_delta,
                            const gfx::Point& anchor) override;
 
   // SnapFlingClient implementation.
-  bool GetSnapFlingInfo(const gfx::Vector2dF& natural_displacement,
-                        gfx::Vector2dF* initial_offset,
-                        gfx::Vector2dF* target_offset) const override;
+  bool GetSnapFlingInfoAndSetSnapTarget(
+      const gfx::Vector2dF& natural_displacement,
+      gfx::Vector2dF* initial_offset,
+      gfx::Vector2dF* target_offset) const override;
   gfx::Vector2dF ScrollByForSnapFling(const gfx::Vector2dF& delta) override;
   void ScrollEndForSnapFling() override;
   void RequestAnimationForSnapFling() override;
@@ -167,7 +167,8 @@ class InputHandlerProxy : public cc::InputHandlerClient,
                         const cc::InputHandlerScrollResult& scroll_result);
 
   // Whether to use a smooth scroll animation for this event.
-  bool ShouldAnimate(bool has_precise_scroll_deltas) const;
+  bool ShouldAnimate(blink::WebGestureDevice device,
+                     bool has_precise_scroll_deltas) const;
 
   // Update the elastic overscroll controller with |gesture_event|.
   void HandleScrollElasticityOverscroll(
@@ -191,12 +192,7 @@ class InputHandlerProxy : public cc::InputHandlerClient,
   InputHandlerProxyClient* client_;
   cc::InputHandler* input_handler_;
 
-  // When present, Animates are not requested to the InputHandler, but to this
-  // SynchronousInputHandler instead. And all Animate() calls are expected to
-  // happen via the SynchronouslyAnimate() call instead of coming directly from
-  // the InputHandler.
   SynchronousInputHandler* synchronous_input_handler_;
-  bool allow_root_animate_;
 
 #if DCHECK_IS_ON()
   bool expect_scroll_update_end_;

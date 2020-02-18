@@ -4,19 +4,21 @@
 
 package org.chromium.chrome.browser.firstrun;
 
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 
 import org.chromium.base.Log;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.SyncFirstSetupCompleteSource;
 import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
 import org.chromium.chrome.browser.externalauth.UserRecoverableErrorHandler;
-import org.chromium.chrome.browser.preferences.sync.AccountManagementFragment;
 import org.chromium.chrome.browser.services.AndroidEduAndChildAccountHelper;
+import org.chromium.chrome.browser.settings.sync.AccountManagementFragment;
 import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.SigninManager;
-import org.chromium.chrome.browser.util.FeatureUtilities;
+import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.ChildAccountStatus;
+import org.chromium.components.signin.metrics.SigninAccessPoint;
 
 /**
  * A helper to perform all necessary steps for forced sign in.
@@ -66,10 +68,16 @@ public final class ForcedSigninProcessor {
      * This is used to enforce the environment for Android EDU and child accounts.
      */
     private static void processForcedSignIn(@Nullable final Runnable onComplete) {
+        if (FirstRunUtils.canAllowSync()
+                && IdentityServicesProvider.getIdentityManager().hasPrimaryAccount()) {
+            // TODO(https://crbug.com/1044206): Remove this.
+            ProfileSyncService.get().setFirstSetupComplete(SyncFirstSetupCompleteSource.BASIC_FLOW);
+        }
+
         final SigninManager signinManager = IdentityServicesProvider.getSigninManager();
         // By definition we have finished all the checks for first run.
         signinManager.onFirstRunCheckDone();
-        if (!FeatureUtilities.canAllowSync() || !signinManager.isSignInAllowed()) {
+        if (!FirstRunUtils.canAllowSync() || !signinManager.isSignInAllowed()) {
             Log.d(TAG, "Sign in disallowed");
             return;
         }
@@ -78,21 +86,25 @@ public final class ForcedSigninProcessor {
                 Log.d(TAG, "Incorrect number of accounts (%d)", accounts.size());
                 return;
             }
-            signinManager.signIn(accounts.get(0), null, new SigninManager.SignInCallback() {
-                @Override
-                public void onSignInComplete() {
-                    if (onComplete != null) {
-                        onComplete.run();
-                    }
-                }
+            signinManager.signIn(SigninAccessPoint.FORCED_SIGNIN, accounts.get(0),
+                    new SigninManager.SignInCallback() {
+                        @Override
+                        public void onSignInComplete() {
+                            // TODO(https://crbug.com/1044206): Remove this.
+                            ProfileSyncService.get().setFirstSetupComplete(
+                                    SyncFirstSetupCompleteSource.BASIC_FLOW);
+                            if (onComplete != null) {
+                                onComplete.run();
+                            }
+                        }
 
-                @Override
-                public void onSignInAborted() {
-                    if (onComplete != null) {
-                        onComplete.run();
-                    }
-                }
-            });
+                        @Override
+                        public void onSignInAborted() {
+                            if (onComplete != null) {
+                                onComplete.run();
+                            }
+                        }
+                    });
         });
     }
 

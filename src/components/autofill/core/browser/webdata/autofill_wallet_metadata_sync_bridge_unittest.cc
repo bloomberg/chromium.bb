@@ -29,7 +29,7 @@
 #include "components/autofill/core/browser/webdata/autofill_table.h"
 #include "components/autofill/core/browser/webdata/mock_autofill_webdata_backend.h"
 #include "components/autofill/core/common/autofill_constants.h"
-#include "components/sync/base/hash_util.h"
+#include "components/sync/base/client_tag_hash.h"
 #include "components/sync/model/data_batch.h"
 #include "components/sync/model/entity_data.h"
 #include "components/sync/model/mock_model_type_change_processor.h"
@@ -353,7 +353,7 @@ class AutofillWalletMetadataSyncBridgeTest : public testing::Test {
       bool is_deleted = false) {
     auto data = std::make_unique<EntityData>();
     *data->specifics.mutable_wallet_metadata() = specifics;
-    data->client_tag_hash = syncer::GenerateSyncableHash(
+    data->client_tag_hash = syncer::ClientTagHash::FromUnhashed(
         syncer::AUTOFILL_WALLET_METADATA, bridge()->GetClientTag(*data));
     if (is_deleted) {
       // Specifics had to be set in order to generate the client tag. Since
@@ -451,7 +451,7 @@ class AutofillWalletMetadataSyncBridgeTest : public testing::Test {
   int response_version = 0;
   autofill::TestAutofillClock test_clock_;
   ScopedTempDir temp_dir_;
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   testing::NiceMock<MockAutofillWebDataBackend> backend_;
   AutofillTable table_;
   WebDatabase db_;
@@ -1739,7 +1739,7 @@ TEST_P(AutofillWalletMetadataSyncBridgeRemoteChangesTest,
               UnorderedElementsAre(EqualsSpecifics(merged_profile)));
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          AutofillWalletMetadataSyncBridgeRemoteChangesTest,
                          ::testing::Values(INITIAL_SYNC_ADD,
                                            LATER_SYNC_ADD,

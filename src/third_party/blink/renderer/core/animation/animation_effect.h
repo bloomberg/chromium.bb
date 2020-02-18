@@ -67,11 +67,11 @@ class CORE_EXPORT AnimationEffect : public ScriptWrappable {
   friend class EffectStack;
 
  public:
-  class EventDelegate : public GarbageCollectedFinalized<EventDelegate> {
+  class EventDelegate : public GarbageCollected<EventDelegate> {
    public:
     virtual ~EventDelegate() = default;
     virtual bool RequiresIterationEvents(const AnimationEffect&) = 0;
-    virtual void OnEventCondition(const AnimationEffect&) = 0;
+    virtual void OnEventCondition(const AnimationEffect&, Timing::Phase) = 0;
     virtual void Trace(blink::Visitor* visitor) {}
   };
 
@@ -84,19 +84,21 @@ class CORE_EXPORT AnimationEffect : public ScriptWrappable {
   bool IsCurrent() const { return EnsureCalculated().is_current; }
   bool IsInEffect() const { return EnsureCalculated().is_in_effect; }
   bool IsInPlay() const { return EnsureCalculated().is_in_play; }
-  double CurrentIteration() const {
+  base::Optional<double> CurrentIteration() const {
     return EnsureCalculated().current_iteration;
   }
   base::Optional<double> Progress() const {
     return EnsureCalculated().progress;
   }
-  double TimeToForwardsEffectChange() const {
+  AnimationTimeDelta TimeToForwardsEffectChange() const {
     return EnsureCalculated().time_to_forwards_effect_change;
   }
-  double TimeToReverseEffectChange() const {
+  AnimationTimeDelta TimeToReverseEffectChange() const {
     return EnsureCalculated().time_to_reverse_effect_change;
   }
-  double LocalTime() const { return EnsureCalculated().local_time; }
+  double LocalTime() const {
+    return EnsureCalculated().local_time.value_or(NullValue());
+  }
 
   const Timing& SpecifiedTiming() const { return timing_; }
   void UpdateSpecifiedTiming(const Timing&);
@@ -124,7 +126,8 @@ class CORE_EXPORT AnimationEffect : public ScriptWrappable {
   // When AnimationEffect receives a new inherited time via updateInheritedTime
   // it will (if necessary) recalculate timings and (if necessary) call
   // updateChildrenAndEffects.
-  void UpdateInheritedTime(double inherited_time, TimingUpdateReason) const;
+  void UpdateInheritedTime(base::Optional<double> inherited_time,
+                           TimingUpdateReason) const;
   void Invalidate() const { needs_update_ = true; }
   void InvalidateAndNotifyOwner() const;
   bool RequiresIterationEvents() const {
@@ -142,9 +145,9 @@ class CORE_EXPORT AnimationEffect : public ScriptWrappable {
     return AnimationTimeDelta();
   }
 
-  virtual double CalculateTimeToEffectChange(
+  virtual AnimationTimeDelta CalculateTimeToEffectChange(
       bool forwards,
-      double local_time,
+      base::Optional<double> local_time,
       double time_to_next_iteration) const = 0;
 
   const Animation* GetAnimation() const;
@@ -156,7 +159,7 @@ class CORE_EXPORT AnimationEffect : public ScriptWrappable {
 
   mutable Timing::CalculatedTiming calculated_;
   mutable bool needs_update_;
-  mutable double last_update_time_;
+  mutable base::Optional<double> last_update_time_;
   const Timing::CalculatedTiming& EnsureCalculated() const;
 };
 

@@ -27,16 +27,16 @@ namespace {
 
 void RunTaskOnTaskRunner(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    const base::Closure& callback) {
-  task_runner->PostTask(FROM_HERE, callback);
+    base::OnceClosure callback) {
+  task_runner->PostTask(FROM_HERE, std::move(callback));
 }
 
-void StopGpuProcessImpl(const base::Closure& callback,
+void StopGpuProcessImpl(base::OnceClosure callback,
                         content::GpuProcessHost* host) {
   if (host)
-    host->gpu_service()->Stop(callback);
+    host->gpu_service()->Stop(std::move(callback));
   else
-    callback.Run();
+    std::move(callback).Run();
 }
 
 }  // namespace
@@ -91,19 +91,6 @@ const gpu::GpuPreferences GetGpuPreferencesFromCommandLine() {
 
   gpu_preferences.enable_oop_rasterization_ddl =
       command_line->HasSwitch(switches::kEnableOopRasterizationDDL);
-  if (command_line->HasSwitch(switches::kUseVulkan)) {
-    auto value = command_line->GetSwitchValueASCII(switches::kUseVulkan);
-    if (value.empty() || value == switches::kVulkanImplementationNameNative) {
-      gpu_preferences.use_vulkan = gpu::VulkanImplementationName::kNative;
-    } else if (value == switches::kVulkanImplementationNameSwiftshader) {
-      gpu_preferences.use_vulkan = gpu::VulkanImplementationName::kSwiftshader;
-    } else {
-      gpu_preferences.use_vulkan = gpu::VulkanImplementationName::kNone;
-    }
-  } else {
-    gpu_preferences.use_vulkan = gpu::VulkanImplementationName::kNone;
-  }
-
   gpu_preferences.enforce_vulkan_protected_memory =
       command_line->HasSwitch(switches::kEnforceVulkanProtectedMemory);
   gpu_preferences.disable_vulkan_fallback_to_gl_for_testing =
@@ -124,17 +111,17 @@ const gpu::GpuPreferences GetGpuPreferencesFromCommandLine() {
   return gpu_preferences;
 }
 
-void StopGpuProcess(const base::Closure& callback) {
-  content::GpuProcessHost::CallOnIO(
-      content::GPU_PROCESS_KIND_SANDBOXED, false /* force_create */,
-      base::Bind(&StopGpuProcessImpl,
-                 base::Bind(RunTaskOnTaskRunner,
-                            base::ThreadTaskRunnerHandle::Get(), callback)));
+void StopGpuProcess(base::OnceClosure callback) {
+  GpuProcessHost::CallOnIO(
+      GPU_PROCESS_KIND_SANDBOXED, false /* force_create */,
+      base::BindOnce(&StopGpuProcessImpl,
+                     base::BindOnce(RunTaskOnTaskRunner,
+                                    base::ThreadTaskRunnerHandle::Get(),
+                                    std::move(callback))));
 }
 
 gpu::GpuChannelEstablishFactory* GetGpuChannelEstablishFactory() {
-  return content::BrowserMainLoop::GetInstance()
-      ->gpu_channel_establish_factory();
+  return BrowserMainLoop::GetInstance()->gpu_channel_establish_factory();
 }
 
 }  // namespace content

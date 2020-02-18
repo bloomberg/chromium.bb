@@ -34,9 +34,10 @@ class QuicDispatcherPeer;
 class QuicConfig;
 class QuicCryptoServerConfig;
 
-class QuicDispatcher : public QuicTimeWaitListManager::Visitor,
-                       public ProcessPacketInterface,
-                       public QuicBufferedPacketStore::VisitorInterface {
+class QUIC_NO_EXPORT QuicDispatcher
+    : public QuicTimeWaitListManager::Visitor,
+      public ProcessPacketInterface,
+      public QuicBufferedPacketStore::VisitorInterface {
  public:
   // Ideally we'd have a linked_hash_set: the  boolean is unused.
   typedef QuicLinkedHashMap<QuicBlockedWriterInterface*, bool> WriteBlockedList;
@@ -312,11 +313,6 @@ class QuicDispatcher : public QuicTimeWaitListManager::Visitor,
   // Sends public/stateless reset packets with no version and unknown
   // connection ID according to the packet's size.
   void MaybeResetPacketsWithNoVersion(const ReceivedPacketInfo& packet_info);
-
-  void set_new_sessions_allowed_per_event_loop(
-      int16_t new_sessions_allowed_per_event_loop) {
-    new_sessions_allowed_per_event_loop_ = new_sessions_allowed_per_event_loop;
-  }
 
   const QuicConfig* config_;
 

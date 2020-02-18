@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.compositor.bottombar.ephemeraltab;
 
 import android.content.Context;
 import android.graphics.RectF;
+import android.text.TextUtils;
 import android.view.MotionEvent;
 
 import org.chromium.base.SysUtils;
@@ -25,6 +26,8 @@ import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.OverlayPanelEventFilter;
 import org.chromium.chrome.browser.compositor.scene_layer.EphemeralTabSceneLayer;
 import org.chromium.chrome.browser.compositor.scene_layer.SceneOverlayLayer;
+import org.chromium.chrome.browser.ntp.NewTabPage;
+import org.chromium.chrome.browser.ssl.SecurityStateModel;
 import org.chromium.chrome.browser.tab.SadTab;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabLaunchType;
@@ -32,13 +35,11 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
 import org.chromium.chrome.browser.tabmodel.TabSelectionType;
+import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.resources.ResourceManager;
-
-import java.net.MalformedURLException;
-import java.net.URL;
 
 /**
  * The panel containing an ephemeral tab.
@@ -76,10 +77,16 @@ public class EphemeralTabPanel extends OverlayPanel {
 
     /** Animation effect for favicon display. */
     private CompositorAnimator mFaviconAnimation;
+
+    /** Animation effect for security icon display . */
+    private CompositorAnimator mCaptionAnimation;
+
     private final AnimatorUpdateListener mFadeInAnimatorListener =
             animator -> mFaviconOpacity = animator.getAnimatedValue();
     private final AnimatorUpdateListener mFadeOutAnimatorListener =
             animator -> mFaviconOpacity = 1.f - animator.getAnimatedValue();
+    private final AnimatorUpdateListener mSecurityIconAnimationListener = animator
+            -> getBarControl().getCaptionControl().setIconOpacity(animator.getAnimatedValue());
 
     /**
      * Checks if this feature (a.k.a. "Preview page/image") is supported.
@@ -123,19 +130,48 @@ public class EphemeralTabPanel extends OverlayPanel {
     }
 
     private class EphemeralTabPanelContentDelegate extends OverlayContentDelegate {
+        /** Whether the currently loaded page is an error (interstitial) page. */
+        private boolean mIsOnErrorPage;
+
         @Override
         public void onMainFrameLoadStarted(String url, boolean isExternalUrl) {
-            try {
-                String newHost = new URL(url).getHost();
-                String curHost = new URL(mUrl).getHost();
-                if (!newHost.equals(curHost)) {
-                    mUrl = url;
-                    // Resets to default icon if favicon may need updating.
-                    startFaviconAnimation(false);
-                }
-            } catch (MalformedURLException e) {
-                assert false : "Malformed URL should not be passed.";
+            if (TextUtils.equals(mUrl, url)) return;
+
+            if (mIsOnErrorPage && NewTabPage.isNTPUrl(url)) {
+                // "Back to safety" on interstitial page leads to NTP.
+                // We just close the panel in response.
+                closePanel(StateChangeReason.NAVIGATION, true);
+                mUrl = null;
+                return;
             }
+            mUrl = url;
+
+            // Resets to default icon if favicon may need updating.
+            startFaviconAnimation(false);
+        }
+
+        @Override
+        public void onMainFrameNavigation(
+                String url, boolean isExternalUrl, boolean isFailure, boolean isError) {
+            updateCaption();
+            mIsOnErrorPage = isError;
+        }
+
+        @Override
+        public void onTitleUpdated(String title) {
+            getBarControl().setBarText(title);
+        }
+
+        @Override
+        public void onSSLStateUpdated() {
+            if (isNewLayout()) updateCaption();
+        }
+
+        @Override
+        public void onOpenNewTabRequested(String url) {
+            // We never open a separate tab when navigating in an overlay.
+            getWebContents().getNavigationController().loadUrl(new LoadUrlParams(url));
+            requestPanelShow(StateChangeReason.CLICK);
         }
     }
 
@@ -257,6 +293,20 @@ public class EphemeralTabPanel extends OverlayPanel {
         mFaviconAnimation.start();
     }
 
+    private void updateCaption() {
+        if (mCaptionAnimation != null) mCaptionAnimation.cancel();
+        int securityLevel = SecurityStateModel.getSecurityLevelForWebContents(getWebContents());
+        EphemeralTabCaptionControl caption = getBarControl().getCaptionControl();
+        caption.setCaptionText(UrlFormatter.formatUrlForSecurityDisplayOmitScheme(mUrl));
+        caption.setSecurityIcon(EphemeralTabCoordinator.getSecurityIconResource(securityLevel));
+
+        mCaptionAnimation = new CompositorAnimator(getAnimationHandler());
+        mCaptionAnimation.setDuration(BASE_ANIMATION_DURATION_MS);
+        mCaptionAnimation.removeAllListeners();
+        mCaptionAnimation.addUpdateListener(mSecurityIconAnimationListener);
+        mCaptionAnimation.start();
+    }
+
     /**
      * @return Snaptshot value of the favicon opacity.
      */
@@ -343,16 +393,12 @@ public class EphemeralTabPanel extends OverlayPanel {
     @Override
     protected void updatePanelForCloseOrPeek(float percentage) {
         super.updatePanelForCloseOrPeek(percentage);
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.OVERLAY_NEW_LAYOUT)) return;
-
         getBarControl().updateForCloseOrPeek(percentage);
     }
 
     @Override
     protected void updatePanelForMaximization(float percentage) {
         super.updatePanelForMaximization(percentage);
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.OVERLAY_NEW_LAYOUT)) return;
-
         getBarControl().updateForMaximize(percentage);
     }
 

@@ -21,6 +21,7 @@
 #include "gpu/ipc/common/gpu_watchdog_timeout.h"
 #include "ipc/ipc_channel_mojo.h"
 #include "ipc/ipc_sync_message.h"
+#include "mojo/public/cpp/bindings/lib/message_quota_checker.h"
 #include "url/gurl.h"
 
 using base::AutoLock;
@@ -98,10 +99,18 @@ bool GpuChannelHost::Send(IPC::Message* msg) {
   bool signaled =
       pending_sync.done_event->TimedWait(kGpuChannelHostMaxWaitTime);
 
+  base::TimeDelta wait_duration = base::TimeTicks::Now() - start_time;
+
   // Histogram of wait-for-sync time, used for monitoring the GPU watchdog.
-  UMA_HISTOGRAM_CUSTOM_TIMES(
-      "GPU.GPUChannelHostWaitTime", base::TimeTicks::Now() - start_time,
-      base::TimeDelta::FromSeconds(1), kGpuChannelHostMaxWaitTime, 50);
+  UMA_HISTOGRAM_CUSTOM_TIMES("GPU.GPUChannelHostWaitTime2", wait_duration,
+                             base::TimeDelta::FromSeconds(1),
+                             kGpuChannelHostMaxWaitTime, 50);
+
+  // Histogram to measure how long the browser UI thread spends blocked.
+  UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
+      "GPU.GPUChannelHostWaitTime.MicroSeconds", wait_duration,
+      base::TimeDelta::FromMicroseconds(10), base::TimeDelta::FromSeconds(10),
+      50);
 
   // Continue waiting for the event if not signaled
   if (!signaled)
@@ -266,11 +275,13 @@ operator=(OrderingBarrierInfo&&) = default;
 GpuChannelHost::Listener::Listener(
     mojo::ScopedMessagePipeHandle handle,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner)
-    : channel_(IPC::ChannelMojo::Create(std::move(handle),
-                                        IPC::Channel::MODE_CLIENT,
-                                        this,
-                                        io_task_runner,
-                                        base::ThreadTaskRunnerHandle::Get())) {
+    : channel_(IPC::ChannelMojo::Create(
+          std::move(handle),
+          IPC::Channel::MODE_CLIENT,
+          this,
+          io_task_runner,
+          base::ThreadTaskRunnerHandle::Get(),
+          mojo::internal::MessageQuotaChecker::MaybeCreate())) {
   DCHECK(channel_);
   DCHECK(io_task_runner->BelongsToCurrentThread());
   bool result = channel_->Connect();

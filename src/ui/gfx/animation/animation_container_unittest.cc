@@ -11,6 +11,7 @@
 #include "base/test/task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/animation/animation_container_observer.h"
+#include "ui/gfx/animation/animation_test_api.h"
 #include "ui/gfx/animation/linear_animation.h"
 #include "ui/gfx/animation/test_animation_delegate.h"
 
@@ -53,6 +54,8 @@ class TestAnimation : public LinearAnimation {
 
   void AnimateToState(double state) override {}
 
+  using LinearAnimation::duration;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(TestAnimation);
 };
@@ -62,10 +65,11 @@ class TestAnimation : public LinearAnimation {
 class AnimationContainerTest: public testing::Test {
  protected:
   AnimationContainerTest()
-      : task_environment_(base::test::TaskEnvironment::MainThreadType::UI) {}
+      : task_environment_(
+            base::test::SingleThreadTaskEnvironment::MainThreadType::UI) {}
 
  private:
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
 };
 
 // Makes sure the animation ups the ref count of the container and releases it
@@ -140,6 +144,29 @@ TEST_F(AnimationContainerTest, Observer) {
   EXPECT_FALSE(container->is_running());
 
   container->set_observer(NULL);
+}
+
+// Tests that calling SetAnimationRunner() keeps running animations at their
+// current point.
+TEST_F(AnimationContainerTest, AnimationsRunAcrossRunnerChange) {
+  TestAnimationDelegate delegate;
+  auto container = base::MakeRefCounted<AnimationContainer>();
+  AnimationContainerTestApi test_api(container.get());
+  TestAnimation animation(&delegate);
+  animation.SetContainer(container.get());
+
+  animation.Start();
+  test_api.IncrementTime(animation.duration() / 2);
+  EXPECT_FALSE(delegate.finished());
+
+  container->SetAnimationRunner(nullptr);
+  AnimationRunner* runner = container->animation_runner_for_testing();
+  ASSERT_TRUE(runner);
+  ASSERT_FALSE(runner->step_is_null_for_testing());
+  EXPECT_FALSE(delegate.finished());
+
+  test_api.IncrementTime(animation.duration() / 2);
+  EXPECT_TRUE(delegate.finished());
 }
 
 }  // namespace gfx

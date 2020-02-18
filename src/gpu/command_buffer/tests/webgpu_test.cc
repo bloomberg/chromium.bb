@@ -4,7 +4,8 @@
 
 #include "gpu/command_buffer/tests/webgpu_test.h"
 
-#include <dawn/dawn.h>
+#include <dawn/dawn_proc.h>
+#include <dawn/webgpu.h>
 
 #include "base/test/test_simple_task_runner.h"
 #include "build/build_config.h"
@@ -18,6 +19,13 @@
 
 namespace gpu {
 
+namespace {
+
+void OnRequestAdapterCallback(uint32_t adapter_server_id,
+                              const WGPUDeviceProperties& properties) {}
+
+}  // anonymous namespace
+
 WebGPUTest::Options::Options() = default;
 
 WebGPUTest::WebGPUTest() = default;
@@ -25,12 +33,21 @@ WebGPUTest::~WebGPUTest() = default;
 
 bool WebGPUTest::WebGPUSupported() const {
   DCHECK(is_initialized_);  // Did you call WebGPUTest::Initialize?
-  return context_ != nullptr;
+
+  // crbug.com(941685): Vulkan driver crashes on Linux FYI Release (AMD R7 240).
+  // Win7 does not support WebGPU
+  if (GPUTestBotConfig::CurrentConfigMatches("Linux AMD") ||
+      GPUTestBotConfig::CurrentConfigMatches("Win7")) {
+    return false;
+  }
+
+  return true;
 }
 
 bool WebGPUTest::WebGPUSharedImageSupported() const {
-  // Currently WebGPUSharedImage is only implemented on Mac and Linux
-#if (defined(OS_MACOSX) || defined(OS_LINUX)) && BUILDFLAG(USE_DAWN)
+  // Currently WebGPUSharedImage is only implemented on Mac, Linux and Windows
+#if (defined(OS_MACOSX) || defined(OS_LINUX) || defined(OS_WIN)) && \
+    BUILDFLAG(USE_DAWN)
   return true;
 #else
   return false;
@@ -42,6 +59,7 @@ void WebGPUTest::SetUp() {
   gpu_preferences.enable_webgpu = true;
 #if defined(OS_LINUX) && BUILDFLAG(USE_DAWN)
   gpu_preferences.use_vulkan = gpu::VulkanImplementationName::kNative;
+  gpu_preferences.gr_context_type = gpu::GrContextType::kVulkan;
 #endif
   gpu_service_holder_ =
       std::make_unique<viz::TestGpuServiceHolder>(gpu_preferences);
@@ -54,8 +72,7 @@ void WebGPUTest::TearDown() {
 void WebGPUTest::Initialize(const Options& options) {
   is_initialized_ = true;
 
-  // crbug.com(941685): Vulkan driver crashes on Linux FYI Release (AMD R7 240).
-  if (GPUTestBotConfig::CurrentConfigMatches("Linux AMD")) {
+  if (!WebGPUSupported()) {
     return;
   }
 
@@ -72,13 +89,14 @@ void WebGPUTest::Initialize(const Options& options) {
       context_->Initialize(gpu_service_holder_->task_executor(), attributes,
                            options.shared_memory_limits, memory_buffer_manager,
                            image_factory, channel_manager);
-  if (result != ContextResult::kSuccess) {
-    context_ = nullptr;
-    return;
-  }
+  ASSERT_EQ(result, ContextResult::kSuccess);
+
+  ASSERT_TRUE(
+      webgpu()->RequestAdapterAsync(webgpu::PowerPreference::kDefault,
+                                    base::BindOnce(&OnRequestAdapterCallback)));
 
   DawnProcTable procs = webgpu()->GetProcs();
-  dawnSetProcs(&procs);
+  dawnProcSetProcs(&procs);
 }
 
 webgpu::WebGPUInterface* WebGPUTest::webgpu() const {
@@ -93,13 +111,13 @@ void WebGPUTest::RunPendingTasks() {
   context_->GetTaskRunner()->RunPendingTasks();
 }
 
-void WebGPUTest::WaitForCompletion(dawn::Device device) {
+void WebGPUTest::WaitForCompletion(wgpu::Device device) {
   // Insert a fence signal and wait for it to be signaled. The guarantees of
   // Dawn are that all previous operations will have been completed and more
   // importantly the callbacks will have been called.
-  dawn::Queue queue = device.CreateQueue();
-  dawn::FenceDescriptor fence_desc{nullptr, 0};
-  dawn::Fence fence = queue.CreateFence(&fence_desc);
+  wgpu::Queue queue = device.CreateQueue();
+  wgpu::FenceDescriptor fence_desc{nullptr, 0};
+  wgpu::Fence fence = queue.CreateFence(&fence_desc);
 
   queue.Submit(0, nullptr);
   queue.Signal(fence, 1u);

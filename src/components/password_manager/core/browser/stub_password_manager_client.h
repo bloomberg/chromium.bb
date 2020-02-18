@@ -8,10 +8,12 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "components/autofill/core/browser/logging/stub_log_manager.h"
+#include "components/password_manager/core/browser/mock_password_feature_manager.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_manager_metrics_recorder.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/stub_credentials_filter.h"
+#include "testing/gmock/include/gmock/gmock.h"
 
 namespace password_manager {
 
@@ -52,10 +54,13 @@ class StubPasswordManagerClient : public PasswordManagerClient {
   void AutomaticPasswordSave(
       std::unique_ptr<PasswordFormManagerForUI> saved_manager) override;
   PrefService* GetPrefs() const override;
-  PasswordStore* GetPasswordStore() const override;
+  PasswordStore* GetProfilePasswordStore() const override;
+  PasswordStore* GetAccountPasswordStore() const override;
   const GURL& GetLastCommittedEntryURL() const override;
   const CredentialsFilter* GetStoreResultFilter() const override;
   const autofill::LogManager* GetLogManager() const override;
+  const PasswordFeatureManager* GetPasswordFeatureManager() const override;
+  const MockPasswordFeatureManager* GetMockPasswordFeatureManager() const;
 
 #if defined(ON_FOCUS_PING_ENABLED) || \
     defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
@@ -74,6 +79,9 @@ class StubPasswordManagerClient : public PasswordManagerClient {
       const std::string& username,
       const std::vector<std::string>& matching_domains,
       bool password_field_exists) override;
+#endif
+
+#if defined(SYNC_PASSWORD_REUSE_WARNING_ENABLED)
   void LogPasswordReuseDetectedEvent() override;
 #endif
 
@@ -83,9 +91,11 @@ class StubPasswordManagerClient : public PasswordManagerClient {
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
   bool IsIsolationForPasswordSitesEnabled() const override;
   bool IsNewTabPage() const override;
+  FieldInfoManager* GetFieldInfoManager() const override;
 
  private:
   const StubCredentialsFilter credentials_filter_;
+  testing::NiceMock<MockPasswordFeatureManager> password_feature_manager_;
   autofill::StubLogManager log_manager_;
   ukm::SourceId ukm_source_id_;
   base::Optional<PasswordManagerMetricsRecorder> metrics_recorder_;

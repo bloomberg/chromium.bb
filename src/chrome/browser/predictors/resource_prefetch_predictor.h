@@ -25,12 +25,14 @@
 #include "chrome/browser/predictors/navigation_id.h"
 #include "chrome/browser/predictors/resource_prefetch_predictor_tables.h"
 #include "components/history/core/browser/history_db_task.h"
+#include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/history_service_observer.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "content/public/common/resource_type.h"
 #include "net/base/network_isolation_key.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 class PredictorsHandler;
 class Profile;
@@ -60,11 +62,11 @@ struct PreconnectRequest {
   // preconnected URL are expected to use. If a request is issued with a
   // different key, it may not use the preconnected socket. It has no effect
   // when |num_sockets| == 0.
-  PreconnectRequest(const GURL& origin,
+  PreconnectRequest(const url::Origin& origin,
                     int num_sockets,
                     const net::NetworkIsolationKey& network_isolation_key);
 
-  GURL origin;
+  url::Origin origin;
   // A zero-value means that we need to preresolve a host only.
   int num_sockets = 0;
   bool allow_credentials = true;
@@ -192,8 +194,11 @@ class ResourcePrefetchPredictor : public history::HistoryServiceObserver {
                            PopulatePrefetcherRequest);
   FRIEND_TEST_ALL_PREFIXES(ResourcePrefetchPredictorTest, GetRedirectOrigin);
   FRIEND_TEST_ALL_PREFIXES(ResourcePrefetchPredictorTest, GetPrefetchData);
+  FRIEND_TEST_ALL_PREFIXES(
+      ResourcePrefetchPredictorPreconnectToRedirectTargetTest,
+      TestPredictPreconnectOrigins);
   FRIEND_TEST_ALL_PREFIXES(ResourcePrefetchPredictorTest,
-                           TestPredictPreconnectOrigins);
+                           TestPredictPreconnectOrigins_RedirectsToNewOrigin);
   FRIEND_TEST_ALL_PREFIXES(ResourcePrefetchPredictorTest,
                            TestPrecisionRecallHistograms);
   FRIEND_TEST_ALL_PREFIXES(ResourcePrefetchPredictorTest,
@@ -217,6 +222,13 @@ class ResourcePrefetchPredictor : public history::HistoryServiceObserver {
                                 const RedirectDataMap& redirect_data,
                                 url::Origin* redirect_origin);
 
+  // Returns true if a redirect endpoint is available. Appends the redirect
+  // domains to |prediction->requests|. Sets |prediction->host| if it's empty.
+  bool GetRedirectEndpointsForPreconnect(
+      const url::Origin& entry_origin,
+      const RedirectDataMap& redirect_data,
+      PreconnectPrediction* prediction) const;
+
   // Callback for the task to read the predictor database. Takes ownership of
   // all arguments.
   void CreateCaches(std::unique_ptr<RedirectDataMap> host_redirect_data,
@@ -236,9 +248,10 @@ class ResourcePrefetchPredictor : public history::HistoryServiceObserver {
                      const GURL& final_redirect,
                      RedirectDataMap* redirect_data);
 
-  void LearnOrigins(const std::string& host,
-                    const GURL& main_frame_origin,
-                    const std::map<GURL, OriginRequestSummary>& summaries);
+  void LearnOrigins(
+      const std::string& host,
+      const GURL& main_frame_origin,
+      const std::map<url::Origin, OriginRequestSummary>& summaries);
 
   // history::HistoryServiceObserver:
   void OnURLsDeleted(history::HistoryService* history_service,
@@ -266,7 +279,7 @@ class ResourcePrefetchPredictor : public history::HistoryServiceObserver {
   std::unique_ptr<OriginDataMap> origin_data_;
 
   ScopedObserver<history::HistoryService, history::HistoryServiceObserver>
-      history_service_observer_;
+      history_service_observer_{this};
 
   // Indicates if all predictors data should be deleted after the
   // initialization is completed.

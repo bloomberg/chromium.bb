@@ -24,7 +24,19 @@
 #include "ui/views/border.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/vector_icons.h"
-#include "ui/views/window/dialog_client_view.h"
+
+namespace {
+
+std::unique_ptr<views::View> CreateOtherTransportsButton(
+    views::ButtonListener* listener) {
+  auto other_transports_button =
+      std::make_unique<views::MdTextButtonWithDownArrow>(
+          listener,
+          l10n_util::GetStringUTF16(IDS_WEBAUTHN_TRANSPORT_POPUP_LABEL));
+  return other_transports_button;
+}
+
+}  // namespace
 
 // static
 void ShowAuthenticatorRequestDialog(
@@ -54,6 +66,8 @@ AuthenticatorRequestDialogView::AuthenticatorRequestDialogView(
     : content::WebContentsObserver(web_contents),
       model_(std::move(model)),
       sheet_(nullptr),
+      other_transports_button_(
+          DialogDelegate::SetExtraView(CreateOtherTransportsButton(this))),
       web_contents_hidden_(web_contents->GetVisibility() ==
                            content::Visibility::HIDDEN) {
   DCHECK(!model_->should_dialog_be_closed());
@@ -87,15 +101,6 @@ gfx::Size AuthenticatorRequestDialogView::CalculatePreferredSize() const {
   const int width = ChromeLayoutProvider::Get()->GetDistanceMetric(
       DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH);
   return gfx::Size(width, GetHeightForWidth(width));
-}
-
-std::unique_ptr<views::View> AuthenticatorRequestDialogView::CreateExtraView() {
-  auto other_transports_button =
-      std::make_unique<views::MdTextButtonWithDownArrow>(
-          this, l10n_util::GetStringUTF16(IDS_WEBAUTHN_TRANSPORT_POPUP_LABEL));
-  other_transports_button_ = other_transports_button.get();
-  ToggleOtherTransportsButtonVisibility();
-  return other_transports_button;
 }
 
 bool AuthenticatorRequestDialogView::Accept() {
@@ -149,27 +154,6 @@ int AuthenticatorRequestDialogView::GetDialogButtons() const {
   return button_mask;
 }
 
-int AuthenticatorRequestDialogView::GetDefaultDialogButton() const {
-  // The default button is either the `Ok` button or nothing.
-  if (sheet()->model()->IsAcceptButtonVisible())
-    return ui::DIALOG_BUTTON_OK;
-  return ui::DIALOG_BUTTON_NONE;
-}
-
-base::string16 AuthenticatorRequestDialogView::GetDialogButtonLabel(
-    ui::DialogButton button) const {
-  switch (button) {
-    case ui::DIALOG_BUTTON_NONE:
-      break;
-    case ui::DIALOG_BUTTON_OK:
-      return sheet()->model()->GetAcceptButtonLabel();
-    case ui::DIALOG_BUTTON_CANCEL:
-      return sheet()->model()->GetCancelButtonLabel();
-  }
-  NOTREACHED();
-  return base::string16();
-}
-
 bool AuthenticatorRequestDialogView::IsDialogButtonEnabled(
     ui::DialogButton button) const {
   switch (button) {
@@ -199,14 +183,14 @@ views::View* AuthenticatorRequestDialogView::GetInitiallyFocusedView() {
 
   if (sheet()->model()->IsAcceptButtonVisible() &&
       sheet()->model()->IsAcceptButtonEnabled()) {
-    return GetDialogClientView()->ok_button();
+    return GetOkButton();
   }
 
   if (ShouldOtherTransportsButtonBeVisible())
     return other_transports_button_;
 
   if (sheet()->model()->IsCancelButtonVisible())
-    return GetDialogClientView()->cancel_button();
+    return GetCancelButton();
 
   return nullptr;
 }
@@ -330,6 +314,13 @@ void AuthenticatorRequestDialogView::UpdateUIForCurrentSheet() {
   DCHECK(sheet_);
 
   sheet_->ReInitChildViews();
+  DialogDelegate::set_default_button(sheet_->model()->IsAcceptButtonVisible()
+                                         ? ui::DIALOG_BUTTON_OK
+                                         : ui::DIALOG_BUTTON_NONE);
+  DialogDelegate::set_button_label(ui::DIALOG_BUTTON_OK,
+                                   sheet_->model()->GetAcceptButtonLabel());
+  DialogDelegate::set_button_label(ui::DIALOG_BUTTON_CANCEL,
+                                   sheet_->model()->GetCancelButtonLabel());
 
   // Whether to show the `Choose another option` button, or other dialog
   // configuration is delegated to the |sheet_|, and the new sheet likely wants
@@ -344,8 +335,8 @@ void AuthenticatorRequestDialogView::UpdateUIForCurrentSheet() {
 
   // Force re-layout of the entire dialog client view, which includes the sheet
   // content as well as the button row on the bottom.
-  DCHECK(GetDialogClientView());
-  GetDialogClientView()->Layout();
+  // TODO(ellyjones): Why is this necessary?
+  GetWidget()->GetRootView()->Layout();
 
   // The accessibility title is also sourced from the |sheet_|'s step title.
   GetWidget()->UpdateWindowTitle();
@@ -375,10 +366,6 @@ void AuthenticatorRequestDialogView::UpdateUIForCurrentSheet() {
 }
 
 void AuthenticatorRequestDialogView::ToggleOtherTransportsButtonVisibility() {
-  // The button is not yet created when this is called for the first time.
-  if (!other_transports_button_)
-    return;
-
   other_transports_button_->SetVisible(ShouldOtherTransportsButtonBeVisible());
 }
 

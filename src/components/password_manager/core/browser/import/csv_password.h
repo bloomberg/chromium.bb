@@ -21,6 +21,9 @@ class CSVPassword {
   enum class Label { kOrigin, kUsername, kPassword };
   using ColumnMap = base::flat_map<size_t, Label>;
 
+  // Status describes parsing errors.
+  enum class Status { kOK, kSyntaxError, kSemanticError };
+
   // Number of values in the Label enum.
   static constexpr size_t kLabelCount = 3;
 
@@ -31,16 +34,22 @@ class CSVPassword {
   CSVPassword& operator=(CSVPassword&&) = delete;
   ~CSVPassword();
 
-  // Returns whether the associated CSV row can be parsed successfully.
-  // If returning true and |form| is not null, it also stores the parsed result
-  // in |*form|. It does not return base::Optional<PasswordForm> for efficiency
-  // reasons in cases when the parsed form is not needed.
-  bool Parse(autofill::PasswordForm* form) const;
+  // Returns whether the associated CSV row can be parsed successfully. If
+  // returning success, it also stores the parsed result in |*form|.
+  Status Parse(autofill::PasswordForm* form) const;
+  // TryParse() returns the same value as Parse(). However, TryParse() does not
+  // attempt to create and store the corresponding PasswordForm anywhere.
+  // Therefore TryParse() is faster than Parse() and a better choice for only
+  // checking a correctness of a CSV serialization of a credential.
+  Status TryParse() const;
   // Convenience wrapper around Parse() for cases known to be correctly
   // parseable.
   autofill::PasswordForm ParseValid() const;
 
  private:
+  // ParseImpl is the common base of Parse() and TryParse().
+  Status ParseImpl(autofill::PasswordForm* form) const;
+
   // The members |map_| and |row_| are only modified in constructor or
   // operator=().
 

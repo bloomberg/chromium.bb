@@ -32,7 +32,9 @@
 #include "chrome/browser/ui/views/autofill/payments/save_card_icon_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
-#include "chrome/browser/ui/views/toolbar/toolbar_page_action_icon_container_view.h"
+#include "chrome/browser/ui/views/page_action/page_action_icon_container_view.h"
+#include "chrome/browser/ui/views/page_action/page_action_icon_loading_indicator_view.h"
+#include "chrome/browser/ui/views/toolbar/toolbar_account_icon_container_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -58,6 +60,7 @@
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/test/fake_server/fake_server.h"
 #include "components/sync/test/fake_server/fake_server_network_resources.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
@@ -75,9 +78,9 @@
 #include "ui/views/controls/combobox/combobox.h"
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/controls/textfield/textfield.h"
+#include "ui/views/layout/animating_layout_manager.h"
 #include "ui/views/test/widget_test.h"
 #include "ui/views/widget/widget.h"
-#include "ui/views/window/dialog_client_view.h"
 #include "ui/views/window/non_client_view.h"
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
 #include "chrome/browser/ui/views/sync/dice_bubble_sync_promo_view.h"
@@ -107,15 +110,49 @@ const char kResponseGetUploadDetailsSuccess[] =
     "link: "
     "{0}.\",\"template_parameter\":[{\"display_text\":\"Link\",\"url\":\"https:"
     "//www.example.com/\"}]}]},\"context_token\":\"dummy_context_token\"}";
+const char kURLUploadCardRequest[] =
+    "https://payments.google.com/payments/apis-secure/chromepaymentsservice/"
+    "savecard"
+    "?s7e_suffix=chromewallet";
+const char kResponsePaymentsSuccess[] =
+    "{ \"credit_card_id\": \"InstrumentData:1\" }";
 const char kResponsePaymentsFailure[] =
     "{\"error\":{\"code\":\"FAILED_PRECONDITION\",\"user_error_message\":\"An "
     "unexpected error has occurred. Please try again later.\"}}";
-const char kURLUploadCardRequest[] =
-    "https://payments.google.com/payments/apis/chromepaymentsservice/savecard";
 
 const double kFakeGeolocationLatitude = 1.23;
 const double kFakeGeolocationLongitude = 4.56;
 }  // namespace
+
+// Helper to wait until the hover card widget is visible.
+class AnimatingLayoutWaiter : public views::AnimatingLayoutManager::Observer {
+ public:
+  explicit AnimatingLayoutWaiter(
+      views::AnimatingLayoutManager* animating_layout)
+      : animating_layout_(animating_layout) {
+    observer_.Add(animating_layout_);
+  }
+
+  void Wait() {
+    if (!animating_layout_->is_animating())
+      return;
+    run_loop_.Run();
+  }
+
+  // views::AnimatingLayoutManager overrides:
+  void OnLayoutIsAnimatingChanged(views::AnimatingLayoutManager* source,
+                                  bool is_animating) override {
+    if (!is_animating)
+      run_loop_.Quit();
+  }
+
+ private:
+  views::AnimatingLayoutManager* const animating_layout_;
+  ScopedObserver<views::AnimatingLayoutManager,
+                 views::AnimatingLayoutManager::Observer>
+      observer_{this};
+  base::RunLoop run_loop_;
+};
 
 namespace autofill {
 
@@ -137,6 +174,7 @@ class SaveCardBubbleViewsFullFormBrowserTest
     RECEIVED_GET_UPLOAD_DETAILS_RESPONSE,
     SENT_UPLOAD_CARD_REQUEST,
     RECEIVED_UPLOAD_CARD_RESPONSE,
+    SHOW_CARD_SAVED_FEEDBACK,
     STRIKE_CHANGE_COMPLETE,
     BUBBLE_SHOWN,
     BUBBLE_CLOSED
@@ -154,8 +192,8 @@ class SaveCardBubbleViewsFullFormBrowserTest
 
     ProfileSyncServiceFactory::GetAsProfileSyncServiceForProfile(
         browser()->profile())
-        ->OverrideNetworkResourcesForTest(
-            std::make_unique<fake_server::FakeServerNetworkResources>(
+        ->OverrideNetworkForTest(
+            fake_server::CreateFakeServerHttpPostProviderFactory(
                 GetFakeServer()->AsWeakPtr()));
 
     std::string username;
@@ -250,6 +288,12 @@ class SaveCardBubbleViewsFullFormBrowserTest
   }
 
   // CreditCardSaveManager::ObserverForTest:
+  void OnShowCardSavedFeedback() override {
+    if (event_waiter_)
+      event_waiter_->OnEvent(DialogEvent::SHOW_CARD_SAVED_FEEDBACK);
+  }
+
+  // CreditCardSaveManager::ObserverForTest:
   void OnStrikeChangeComplete() override {
     if (event_waiter_)
       event_waiter_->OnEvent(DialogEvent::STRIKE_CHANGE_COMPLETE);
@@ -293,14 +337,6 @@ class SaveCardBubbleViewsFullFormBrowserTest
   }
 
   void SetUpForEditableExpirationDate() {
-    // Enable the EditableExpirationDate experiment.
-    scoped_feature_list_.InitWithFeatures(
-        // Enabled
-        {features::kAutofillUpstreamEditableExpirationDate,
-         features::kAutofillUpstream},
-        // Disabled
-        {});
-
     // Start sync.
     harness_->SetupSync();
   }
@@ -336,6 +372,7 @@ class SaveCardBubbleViewsFullFormBrowserTest
     ResetEventWaiterForSequence({DialogEvent::OFFERED_LOCAL_SAVE});
     SubmitForm();
     WaitForObservedEvent();
+    WaitForAnimationToEnd();
     EXPECT_TRUE(FindViewInBubbleById(DialogViewId::MAIN_CONTENT_VIEW_LOCAL)
                     ->GetVisible());
   }
@@ -348,6 +385,7 @@ class SaveCardBubbleViewsFullFormBrowserTest
          DialogEvent::RECEIVED_GET_UPLOAD_DETAILS_RESPONSE});
     SubmitForm();
     WaitForObservedEvent();
+    WaitForAnimationToEnd();
     EXPECT_TRUE(FindViewInBubbleById(DialogViewId::MAIN_CONTENT_VIEW_UPLOAD)
                     ->GetVisible());
     EXPECT_TRUE(
@@ -576,6 +614,11 @@ class SaveCardBubbleViewsFullFormBrowserTest
                                            net::HTTP_INTERNAL_SERVER_ERROR);
   }
 
+  void SetUploadCardRpcPaymentsSucceeds() {
+    test_url_loader_factory()->AddResponse(kURLUploadCardRequest,
+                                           kResponsePaymentsSuccess);
+  }
+
   void SetUploadCardRpcPaymentsFails() {
     test_url_loader_factory()->AddResponse(kURLUploadCardRequest,
                                            kResponsePaymentsFailure);
@@ -596,7 +639,6 @@ class SaveCardBubbleViewsFullFormBrowserTest
 
   void ClickOnDialogView(views::View* view) {
     GetSaveCardBubbleViews()
-        ->GetDialogClientView()
         ->ResetViewShownTimeStampForTesting();
     views::BubbleFrameView* bubble_frame_view =
         static_cast<views::BubbleFrameView*>(GetSaveCardBubbleViews()
@@ -633,10 +675,10 @@ class SaveCardBubbleViewsFullFormBrowserTest
 
     if (!specified_view) {
       // Many of the save card bubble's inner Views are not child views but
-      // rather contained by its DialogClientView. If we didn't find what we
-      // were looking for, check there as well.
+      // rather contained by the dialog. If we didn't find what we were looking
+      // for, check there as well.
       specified_view =
-          save_card_bubble_views->GetDialogClientView()->GetViewByID(
+          save_card_bubble_views->GetWidget()->GetRootView()->GetViewByID(
               static_cast<int>(view_id));
     }
     if (!specified_view) {
@@ -670,8 +712,8 @@ class SaveCardBubbleViewsFullFormBrowserTest
     SaveCardBubbleViews* save_card_bubble_views = GetSaveCardBubbleViews();
     DCHECK(save_card_bubble_views);
     ResetEventWaiterForSequence({DialogEvent::BUBBLE_CLOSED});
-    ClickOnDialogViewAndWait(
-        save_card_bubble_views->GetBubbleFrameView()->GetCloseButtonForTest());
+    ClickOnDialogViewAndWait(save_card_bubble_views->GetBubbleFrameView()
+                                 ->GetCloseButtonForTesting());
     DCHECK(!GetSaveCardBubbleViews());
   }
 
@@ -688,27 +730,20 @@ class SaveCardBubbleViewsFullFormBrowserTest
   }
 
   SaveCardIconView* GetSaveCardIconView() {
-    if (!browser())
-      return nullptr;
-
-    SaveCardIconView* icon_view = nullptr;
     BrowserView* browser_view =
         BrowserView::GetBrowserViewForBrowser(browser());
+    PageActionIconView* icon =
+        browser_view->toolbar_button_provider()->GetPageActionIconView(
+            PageActionIconType::kSaveCard);
     if (base::FeatureList::IsEnabled(
             features::kAutofillEnableToolbarStatusChip)) {
-      ToolbarPageActionIconContainerView*
-          toolbar_page_action_icon_container_view =
-              browser_view->toolbar()->toolbar_page_action_container();
-      DCHECK(toolbar_page_action_icon_container_view->save_card_icon_view());
-      icon_view =
-          toolbar_page_action_icon_container_view->save_card_icon_view();
+      DCHECK(
+          browser_view->toolbar()->toolbar_account_icon_container()->Contains(
+              icon));
     } else {
-      LocationBarView* location_bar_view = browser_view->GetLocationBarView();
-      DCHECK(location_bar_view->save_credit_card_icon_view());
-      icon_view = location_bar_view->save_credit_card_icon_view();
+      DCHECK(browser_view->GetLocationBarView()->Contains(icon));
     }
-
-    return icon_view;
+    return static_cast<SaveCardIconView*>(icon);
   }
 
   void OpenSettingsFromManageCardsPrompt() {
@@ -766,6 +801,18 @@ class SaveCardBubbleViewsFullFormBrowserTest
 
   void WaitForObservedEvent() { event_waiter_->Wait(); }
 
+  void WaitForAnimationToEnd() {
+    if (base::FeatureList::IsEnabled(
+            features::kAutofillEnableToolbarStatusChip)) {
+      AnimatingLayoutWaiter waiter(static_cast<views::AnimatingLayoutManager*>(
+          BrowserView::GetBrowserViewForBrowser(browser())
+              ->toolbar()
+              ->toolbar_account_icon_container()
+              ->GetLayoutManager()));
+      waiter.Wait();
+    }
+  }
+
   network::TestURLLoaderFactory* test_url_loader_factory() {
     return &test_url_loader_factory_;
   }
@@ -773,8 +820,6 @@ class SaveCardBubbleViewsFullFormBrowserTest
   std::unique_ptr<
       base::CallbackList<void(content::BrowserContext*)>::Subscription>
       will_create_browser_context_services_subscription_;
-
-  base::test::ScopedFeatureList scoped_feature_list_;
 
   std::unique_ptr<ProfileSyncServiceHarness> harness_;
 
@@ -789,6 +834,23 @@ class SaveCardBubbleViewsFullFormBrowserTest
   DISALLOW_COPY_AND_ASSIGN(SaveCardBubbleViewsFullFormBrowserTest);
 };
 
+class SaveCardBubbleViewsFullFormBrowserTestWithEditableExpirationDate
+    : public SaveCardBubbleViewsFullFormBrowserTest {
+ public:
+  SaveCardBubbleViewsFullFormBrowserTestWithEditableExpirationDate() {
+    // Enable the EditableExpirationDate experiment.
+    feature_list_.InitWithFeatures(
+        // Enabled
+        {features::kAutofillUpstreamEditableExpirationDate,
+         features::kAutofillUpstream},
+        // Disabled
+        {});
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
 // TODO(crbug.com/932818): Remove this class after experiment flag is cleaned
 // up. Otherwise we need it because the toolbar is init-ed before each test is
 // set up. Thus need to enable the feature in the general browsertest SetUp().
@@ -800,38 +862,19 @@ class SaveCardBubbleViewsFullFormBrowserTestForStatusChip
   ~SaveCardBubbleViewsFullFormBrowserTestForStatusChip() override {}
 
   void SetUp() override {
-    base::test::ScopedFeatureList scoped_feature_list;
-    scoped_feature_list.InitAndEnableFeature(
-        features::kAutofillEnableToolbarStatusChip);
+    feature_list_.InitWithFeatures(
+        /*enabled_features=*/{features::kAutofillCreditCardUploadFeedback,
+                              features::kAutofillEnableToolbarStatusChip,
+                              features::kAutofillUpstream},
+        /*disabled_features=*/{});
 
     SaveCardBubbleViewsFullFormBrowserTest::SetUp();
   }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
 };
 
-// Tests the local save bubble. Ensures that clicking the [Save] button
-// successfully causes the bubble to go away.
-IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
-                       Local_ClickingSaveClosesBubble) {
-  FillForm();
-  SubmitFormAndWaitForCardLocalSaveBubble();
-
-  // Clicking [Save] should accept and close it.
-  base::HistogramTester histogram_tester;
-  base::UserActionTester user_action_tester;
-  ClickOnDialogViewWithIdAndWait(DialogViewId::OK_BUTTON);
-  // UMA should have recorded bubble acceptance.
-  histogram_tester.ExpectUniqueSample(
-      "Autofill.SaveCreditCardPrompt.Local.FirstShow",
-      AutofillMetrics::SAVE_CARD_PROMPT_END_ACCEPTED, 1);
-
-  // The local save bubble should not be visible, but the card icon should
-  // remain visible for the clickable [Manage cards] option.
-  EXPECT_EQ(nullptr, GetSaveCardBubbleViews());
-  EXPECT_TRUE(GetSaveCardIconView()->GetVisible());
-}
-
-#if defined(OS_WIN) || defined(OS_MACOSX) || \
-    (defined(OS_LINUX) && !defined(OS_CHROMEOS))
 // Tests the local save bubble. Ensures that clicking the [No thanks] button
 // successfully causes the bubble to go away.
 IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
@@ -848,7 +891,6 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
       "Autofill.SaveCreditCardPrompt.Local.FirstShow",
       AutofillMetrics::SAVE_CARD_PROMPT_END_DENIED, 1);
 }
-#endif
 
 // Tests the sign in promo bubble. Ensures that clicking the [Save] button
 // on the local save bubble successfully causes the sign in promo to show.
@@ -878,13 +920,23 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
 }
 #endif
 
+class SaveCardBubbleViewsFullFormBrowserTestWithAutofillUpstream
+    : public SaveCardBubbleViewsFullFormBrowserTest {
+ public:
+  SaveCardBubbleViewsFullFormBrowserTestWithAutofillUpstream() {
+    feature_list_.InitAndEnableFeature(features::kAutofillUpstream);
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
 // Tests the sign in promo bubble. Ensures that the sign-in promo
 // is not shown when the user is signed-in and syncing, even if the local save
 // bubble is shown.
-IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
-                       Local_NoSigninPromoShowsWhenUserIsSyncing) {
-  scoped_feature_list_.InitAndEnableFeature(features::kAutofillUpstream);
-
+IN_PROC_BROWSER_TEST_F(
+    SaveCardBubbleViewsFullFormBrowserTestWithAutofillUpstream,
+    Local_NoSigninPromoShowsWhenUserIsSyncing) {
   // Start sync.
   harness_->SetupSync();
 
@@ -977,56 +1029,30 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
 }
 #endif
 
-// Tests the manage cards bubble. Ensures that it shows up by clicking the
-// credit card icon.
-IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
-                       Local_ClickingIconShowsManageCards) {
-  FillForm();
-  SubmitFormAndWaitForCardLocalSaveBubble();
-
-  // Adding an event observer to the controller so we can wait for the bubble to
-  // show.
-  AddEventObserverToController();
-  ReduceAnimationTime();
-
-#if !defined(OS_CHROMEOS)
-  ResetEventWaiterForSequence(
-      {DialogEvent::BUBBLE_CLOSED, DialogEvent::BUBBLE_SHOWN});
+class SaveCardBubbleViewsFullFormBrowserTestWithoutSplitSettings
+    : public SaveCardBubbleViewsFullFormBrowserTest {
+ public:
+  SaveCardBubbleViewsFullFormBrowserTestWithoutSplitSettings() {
+#if defined(OS_CHROMEOS)
+    feature_list_.InitAndDisableFeature(chromeos::features::kSplitSettings);
+#else
+    feature_list_.InitWithFeatures(
+        /*enabled_features=*/{},
+        /*disabled_features=*/{features::kAutofillCreditCardUploadFeedback,
+                               features::kAutofillEnableToolbarStatusChip});
 #endif
+  }
 
-  // Click [Save] should close the offer-to-save bubble and show "Card saved"
-  // animation -- followed by the sign-in promo (if not on Chrome OS).
-  ClickOnDialogViewWithIdAndWait(DialogViewId::OK_BUTTON);
-
-#if !defined(OS_CHROMEOS)
-  // Wait for and then close the promo.
-  WaitForObservedEvent();
-  ClickOnCloseButton();
-#endif
-
-  // Open up Manage Cards prompt.
-  base::HistogramTester histogram_tester;
-  ResetEventWaiterForSequence({DialogEvent::BUBBLE_SHOWN});
-  ClickOnView(GetSaveCardIconView());
-  WaitForObservedEvent();
-
-  // Bubble should be showing.
-  EXPECT_TRUE(
-      FindViewInBubbleById(DialogViewId::MANAGE_CARDS_VIEW)->GetVisible());
-  histogram_tester.ExpectUniqueSample("Autofill.ManageCardsPrompt.Local",
-                                      AutofillMetrics::MANAGE_CARDS_SHOWN, 1);
-}
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
 
 // TODO(crbug/950007): Remove this test when kSplitSettings is on by default
 // Tests the manage cards bubble. Ensures that clicking the [Manage cards]
 // button redirects properly.
-IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
-                       Local_ManageCardsButtonRedirects) {
-#if defined(OS_CHROMEOS)
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(chromeos::features::kSplitSettings);
-#endif
-
+IN_PROC_BROWSER_TEST_F(
+    SaveCardBubbleViewsFullFormBrowserTestWithoutSplitSettings,
+    Local_ManageCardsButtonRedirects) {
   base::HistogramTester histogram_tester;
   OpenSettingsFromManageCardsPrompt();
 
@@ -1047,15 +1073,28 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
                   Bucket(AutofillMetrics::MANAGE_CARDS_MANAGE_CARDS, 1)));
 }
 
+class SaveCardBubbleViewsFullFormBrowserTestWithSplitSettings
+    : public SaveCardBubbleViewsFullFormBrowserTest {
+ public:
+  SaveCardBubbleViewsFullFormBrowserTestWithSplitSettings() {
+#if defined(OS_CHROMEOS)
+    feature_list_.InitAndEnableFeature(chromeos::features::kSplitSettings);
+#else
+    feature_list_.InitWithFeatures(
+        /*enabled_features=*/{},
+        /*disabled_features=*/{features::kAutofillCreditCardUploadFeedback,
+                               features::kAutofillEnableToolbarStatusChip});
+#endif
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
 // Tests the manage cards bubble. Ensures that clicking the [Manage cards]
 // button redirects properly.
-IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
+IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTestWithSplitSettings,
                        Local_ManageCardsButtonRedirects_WithSplitSettings) {
-#if defined(OS_CHROMEOS)
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(chromeos::features::kSplitSettings);
-#endif
-
   base::HistogramTester histogram_tester;
   OpenSettingsFromManageCardsPrompt();
 
@@ -1068,155 +1107,6 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
       ElementsAre(Bucket(AutofillMetrics::MANAGE_CARDS_SHOWN, 1),
                   Bucket(AutofillMetrics::MANAGE_CARDS_MANAGE_CARDS, 1)));
 }
-
-// Tests the manage cards bubble. Ensures that clicking the [Done]
-// button closes the bubble.
-IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
-                       Local_ManageCardsDoneButtonClosesBubble) {
-  FillForm();
-  SubmitFormAndWaitForCardLocalSaveBubble();
-
-  // Adding an event observer to the controller so we can wait for the bubble to
-  // show.
-  AddEventObserverToController();
-  ReduceAnimationTime();
-
-#if !defined(OS_CHROMEOS)
-  ResetEventWaiterForSequence(
-      {DialogEvent::BUBBLE_CLOSED, DialogEvent::BUBBLE_SHOWN});
-#endif
-
-  // Click [Save] should close the offer-to-save bubble and show "Card saved"
-  // animation -- followed by the sign-in promo (if not on Chrome OS).
-  ClickOnDialogViewWithIdAndWait(DialogViewId::OK_BUTTON);
-
-#if !defined(OS_CHROMEOS)
-  // Wait for and then close the promo.
-  WaitForObservedEvent();
-  ClickOnCloseButton();
-#endif
-
-  // Open up Manage Cards prompt.
-  base::HistogramTester histogram_tester;
-  ResetEventWaiterForSequence({DialogEvent::BUBBLE_SHOWN});
-  ClickOnView(GetSaveCardIconView());
-  WaitForObservedEvent();
-
-  // Click on the [Done] button.
-  ClickOnDialogViewWithIdAndWait(DialogViewId::OK_BUTTON);
-
-  // No bubble should be showing now and metrics should be recorded correctly.
-  EXPECT_EQ(nullptr, GetSaveCardBubbleViews());
-  EXPECT_THAT(
-      histogram_tester.GetAllSamples("Autofill.ManageCardsPrompt.Local"),
-      ElementsAre(Bucket(AutofillMetrics::MANAGE_CARDS_SHOWN, 1),
-                  Bucket(AutofillMetrics::MANAGE_CARDS_DONE, 1)));
-}
-
-// Tests the manage cards bubble. Ensures that sign-in impression is recorded
-// correctly.
-#if !defined(OS_CHROMEOS)
-IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
-                       Local_Metrics_SigninImpressionManageCards) {
-  FillForm();
-  SubmitFormAndWaitForCardLocalSaveBubble();
-
-  // Adding an event observer to the controller so we can wait for the bubble to
-  // show.
-  AddEventObserverToController();
-  ReduceAnimationTime();
-  ResetEventWaiterForSequence(
-      {DialogEvent::BUBBLE_CLOSED, DialogEvent::BUBBLE_SHOWN});
-
-  // Click [Save] should close the offer-to-save bubble
-  // and pop up the sign-in promo.
-  base::UserActionTester user_action_tester;
-  ClickOnDialogViewWithId(DialogViewId::OK_BUTTON);
-  WaitForObservedEvent();
-
-  // Close promo.
-  ClickOnCloseButton();
-
-  // Open up Manage Cards prompt.
-  ResetEventWaiterForSequence({DialogEvent::BUBBLE_SHOWN});
-  ClickOnView(GetSaveCardIconView());
-  WaitForObservedEvent();
-
-  // User actions should have recorded impression.
-  EXPECT_EQ(1, user_action_tester.GetActionCount(
-                   "Signin_Impression_FromManageCardsBubble"));
-}
-#endif
-
-// Tests the Manage Cards bubble. Ensures that signin action is recorded when
-// user accepts footnote promo.
-#if BUILDFLAG(ENABLE_DICE_SUPPORT)
-IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
-                       Local_Metrics_AcceptingFootnotePromoManageCards) {
-  FillForm();
-  SubmitFormAndWaitForCardLocalSaveBubble();
-
-  // Adding an event observer to the controller so we can wait for the bubble to
-  // show.
-  AddEventObserverToController();
-  ReduceAnimationTime();
-  ResetEventWaiterForSequence(
-      {DialogEvent::BUBBLE_CLOSED, DialogEvent::BUBBLE_SHOWN});
-
-  // Click [Save] should close the offer-to-save bubble
-  // and pop up the sign-in promo.
-  base::UserActionTester user_action_tester;
-  ClickOnDialogViewWithId(DialogViewId::OK_BUTTON);
-  WaitForObservedEvent();
-
-  // Close promo.
-  ClickOnCloseButton();
-
-  // Open up Manage Cards prompt.
-  ResetEventWaiterForSequence({DialogEvent::BUBBLE_SHOWN});
-  ClickOnView(GetSaveCardIconView());
-  WaitForObservedEvent();
-
-  // Click on [Sign in] button in footnote.
-  ClickOnDialogView(static_cast<DiceBubbleSyncPromoView*>(
-                        FindViewInBubbleById(DialogViewId::FOOTNOTE_VIEW))
-                        ->GetSigninButtonForTesting());
-
-  // User actions should have recorded impression and click.
-  EXPECT_EQ(1, user_action_tester.GetActionCount(
-                   "Signin_Impression_FromManageCardsBubble"));
-  EXPECT_EQ(1, user_action_tester.GetActionCount(
-                   "Signin_Signin_FromManageCardsBubble"));
-}
-#endif
-
-#if defined(OS_CHROMEOS)
-// Tests the local save bubble. Ensures that the bubble does not have a
-// [No thanks] button (it has an [X] Close button instead.)
-IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
-                       Local_ShouldNotHaveNoThanksButton) {
-  scoped_feature_list_.InitAndDisableFeature(
-      features::kAutofillSaveCardShowNoThanks);
-  FillForm();
-  SubmitFormAndWaitForCardLocalSaveBubble();
-
-  // Assert that the cancel button cannot be found.
-  EXPECT_FALSE(FindViewInBubbleById(DialogViewId::CANCEL_BUTTON));
-}
-
-// Tests the local save bubble. Ensures that the bubble has a
-// [No thanks] button if |kAutofillSaveCardShowNoThanks| experiment is enabled.
-IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
-                       Local_ShouldHaveNoThanksButtonIfExperimentEnabled) {
-  scoped_feature_list_.InitAndEnableFeature(
-      features::kAutofillSaveCardShowNoThanks);
-  FillForm();
-  SubmitFormAndWaitForCardLocalSaveBubble();
-
-  // Assert that the cancel button can be found.
-  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::CANCEL_BUTTON));
-}
-#endif
 
 // Tests the local save bubble. Ensures that the bubble behaves correctly if
 // dismissed and then immediately torn down (e.g. by closing browser window)
@@ -1250,10 +1140,9 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
 // Tests the upload save bubble. Ensures that clicking the [Save] button
 // successfully causes the bubble to go away and sends an UploadCardRequest RPC
 // to Google Payments.
-IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
-                       Upload_ClickingSaveClosesBubble) {
-  scoped_feature_list_.InitAndEnableFeature(features::kAutofillUpstream);
-
+IN_PROC_BROWSER_TEST_F(
+    SaveCardBubbleViewsFullFormBrowserTestWithAutofillUpstream,
+    Upload_ClickingSaveClosesBubble) {
   // Start sync.
   harness_->SetupSync();
 
@@ -1280,15 +1169,16 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
 class SaveCardBubbleViewsSyncTransportFullFormBrowserTest
     : public SaveCardBubbleViewsFullFormBrowserTest {
  protected:
-  SaveCardBubbleViewsSyncTransportFullFormBrowserTest() = default;
-
-  void SetUpInProcessBrowserTestFixture() override {
+  SaveCardBubbleViewsSyncTransportFullFormBrowserTest() {
     // Set up Sync the transport mode, so that sync starts on content-area
     // signins. Also add wallet data type to the list of enabled types.
-    scoped_feature_list_.InitWithFeatures(
+    feature_list_.InitWithFeatures(
         /*enabled_features=*/{features::kAutofillUpstream,
                               features::kAutofillEnableAccountWalletStorage},
         /*disabled_features=*/{});
+  }
+
+  void SetUpInProcessBrowserTestFixture() override {
     test_signin_client_factory_ =
         secondary_account_helper::SetUpSigninClient(test_url_loader_factory());
 
@@ -1311,6 +1201,7 @@ class SaveCardBubbleViewsSyncTransportFullFormBrowserTest
   }
 
  private:
+  base::test::ScopedFeatureList feature_list_;
   secondary_account_helper::ScopedSigninClientFactory
       test_signin_client_factory_;
 
@@ -1379,20 +1270,20 @@ class
     SaveCardBubbleViewsSyncTransportWithEditableCardholderNameFullFormBrowserTest
     : public SaveCardBubbleViewsFullFormBrowserTest {
  protected:
-  SaveCardBubbleViewsSyncTransportWithEditableCardholderNameFullFormBrowserTest() =
-      default;
-
-  void SetUpInProcessBrowserTestFixture() override {
+  SaveCardBubbleViewsSyncTransportWithEditableCardholderNameFullFormBrowserTest() {
     // Set up Sync the transport mode, so that sync starts on content-area
     // signins. Also add wallet data type to the list of enabled types and
     // enable EditableCardholderName experiment.
-    scoped_feature_list_.InitWithFeatures(
+    feature_list_.InitWithFeatures(
         // Enabled
         {features::kAutofillUpstream,
          features::kAutofillUpstreamEditableCardholderName,
          features::kAutofillEnableAccountWalletStorage},
         // Disabled
         {});
+  }
+
+  void SetUpInProcessBrowserTestFixture() override {
     test_signin_client_factory_ =
         secondary_account_helper::SetUpSigninClient(test_url_loader_factory());
 
@@ -1400,6 +1291,7 @@ class
   }
 
  private:
+  base::test::ScopedFeatureList feature_list_;
   secondary_account_helper::ScopedSigninClientFactory
       test_signin_client_factory_;
 
@@ -1444,10 +1336,9 @@ IN_PROC_BROWSER_TEST_F(
 
 // Tests the fully-syncing state. Ensures that the Butter (i) info icon does not
 // appear for fully-syncing users.
-IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
-                       Upload_NotTransportMode_InfoTextIconDoesNotExist) {
-  scoped_feature_list_.InitAndEnableFeature(features::kAutofillUpstream);
-
+IN_PROC_BROWSER_TEST_F(
+    SaveCardBubbleViewsFullFormBrowserTestWithAutofillUpstream,
+    Upload_NotTransportMode_InfoTextIconDoesNotExist) {
   // Start sync.
   harness_->SetupSync();
 
@@ -1459,14 +1350,11 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
   EXPECT_FALSE(FindViewInBubbleById(DialogViewId::UPLOAD_EXPLANATION_TOOLTIP));
 }
 
-#if defined(OS_WIN) || defined(OS_MACOSX) || \
-    (defined(OS_LINUX) && !defined(OS_CHROMEOS))
 // Tests the upload save bubble. Ensures that clicking the [No thanks] button
 // successfully causes the bubble to go away.
-IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
-                       Upload_ClickingNoThanksClosesBubble) {
-  scoped_feature_list_.InitAndEnableFeature(features::kAutofillUpstream);
-
+IN_PROC_BROWSER_TEST_F(
+    SaveCardBubbleViewsFullFormBrowserTestWithAutofillUpstream,
+    Upload_ClickingNoThanksClosesBubble) {
   // Start sync.
   harness_->SetupSync();
 
@@ -1482,56 +1370,12 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
       "Autofill.SaveCreditCardPrompt.Upload.FirstShow",
       AutofillMetrics::SAVE_CARD_PROMPT_END_DENIED, 1);
 }
-#endif
-
-#if defined(OS_CHROMEOS)
-// Tests the upload save bubble. Ensures that the bubble does not have a
-// [No thanks] button (it has an [X] Close button instead.)
-IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
-                       Upload_ShouldNotHaveNoThanksButton) {
-  scoped_feature_list_.InitWithFeatures(
-      // Enabled
-      {features::kAutofillUpstream},
-      // Disabled
-      {features::kAutofillSaveCardShowNoThanks});
-
-  // Start sync.
-  harness_->SetupSync();
-
-  FillForm();
-  SubmitFormAndWaitForCardUploadSaveBubble();
-
-  // Assert that the cancel button cannot be found.
-  EXPECT_FALSE(FindViewInBubbleById(DialogViewId::CANCEL_BUTTON));
-}
-
-// Tests the upload save bubble. Ensures that the bubble has a
-// [No thanks] button if |kAutofillSaveCardShowNoThanks| experiment is enabled.
-IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
-                       Upload_ShouldHaveNoThanksButtonIfExperimentEnabled) {
-  scoped_feature_list_.InitWithFeatures(
-      // Enabled
-      {features::kAutofillSaveCardShowNoThanks, features::kAutofillUpstream},
-      // Disabled
-      {});
-
-  // Start sync.
-  harness_->SetupSync();
-
-  FillForm();
-  SubmitFormAndWaitForCardUploadSaveBubble();
-
-  // Assert that the cancel button can be found.
-  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::CANCEL_BUTTON));
-}
-#endif  // defined(OS_CHROMEOS)
 
 // Tests the upload save bubble. Ensures that clicking the top-right [X] close
 // button successfully causes the bubble to go away.
-IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
-                       Upload_ClickingCloseClosesBubble) {
-  scoped_feature_list_.InitAndEnableFeature(features::kAutofillUpstream);
-
+IN_PROC_BROWSER_TEST_F(
+    SaveCardBubbleViewsFullFormBrowserTestWithAutofillUpstream,
+    Upload_ClickingCloseClosesBubble) {
   // Start sync.
   harness_->SetupSync();
 
@@ -1542,18 +1386,28 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
   ClickOnCloseButton();
 }
 
+class SaveCardBubbleViewsFullFormBrowserTestWithEditableCardholderName
+    : public SaveCardBubbleViewsFullFormBrowserTest {
+ public:
+  SaveCardBubbleViewsFullFormBrowserTestWithEditableCardholderName() {
+    // Enable the EditableCardholderName experiment.
+    feature_list_.InitWithFeatures(
+        // Enabled
+        {features::kAutofillUpstream,
+         features::kAutofillUpstreamEditableCardholderName},
+        // Disabled
+        {});
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
 // Tests the upload save bubble. Ensures that the bubble does not surface the
 // cardholder name textfield if it is not needed.
-IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
-                       Upload_ShouldNotRequestCardholderNameInHappyPath) {
-  // Enable the EditableCardholderName experiment.
-  scoped_feature_list_.InitWithFeatures(
-      // Enabled
-      {features::kAutofillUpstream,
-       features::kAutofillUpstreamEditableCardholderName},
-      // Disabled
-      {});
-
+IN_PROC_BROWSER_TEST_F(
+    SaveCardBubbleViewsFullFormBrowserTestWithEditableCardholderName,
+    Upload_ShouldNotRequestCardholderNameInHappyPath) {
   // Start sync.
   harness_->SetupSync();
 
@@ -1567,16 +1421,8 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
 // Tests the upload save bubble. Ensures that the bubble surfaces a textfield
 // requesting cardholder name if cardholder name is missing.
 IN_PROC_BROWSER_TEST_F(
-    SaveCardBubbleViewsFullFormBrowserTest,
+    SaveCardBubbleViewsFullFormBrowserTestWithEditableCardholderName,
     Upload_SubmittingFormWithMissingNamesRequestsCardholderNameIfExpOn) {
-  // Enable the EditableCardholderName experiment.
-  scoped_feature_list_.InitWithFeatures(
-      // Enabled
-      {features::kAutofillUpstream,
-       features::kAutofillUpstreamEditableCardholderName},
-      // Disabled
-      {});
-
   // Start sync.
   harness_->SetupSync();
 
@@ -1589,16 +1435,8 @@ IN_PROC_BROWSER_TEST_F(
 // Tests the upload save bubble. Ensures that the bubble surfaces a textfield
 // requesting cardholder name if cardholder name is conflicting.
 IN_PROC_BROWSER_TEST_F(
-    SaveCardBubbleViewsFullFormBrowserTest,
+    SaveCardBubbleViewsFullFormBrowserTestWithEditableCardholderName,
     Upload_SubmittingFormWithConflictingNamesRequestsCardholderNameIfExpOn) {
-  // Enable the EditableCardholderName experiment.
-  scoped_feature_list_.InitWithFeatures(
-      // Enabled
-      {features::kAutofillUpstream,
-       features::kAutofillUpstreamEditableCardholderName},
-      // Disabled
-      {});
-
   // Start sync.
   harness_->SetupSync();
 
@@ -1616,16 +1454,8 @@ IN_PROC_BROWSER_TEST_F(
 // Tests the upload save bubble. Ensures that if the cardholder name textfield
 // is empty, the user is not allowed to click [Save] and close the dialog.
 IN_PROC_BROWSER_TEST_F(
-    SaveCardBubbleViewsFullFormBrowserTest,
+    SaveCardBubbleViewsFullFormBrowserTestWithEditableCardholderName,
     Upload_SaveButtonIsDisabledIfNoCardholderNameAndCardholderNameRequested) {
-  // Enable the EditableCardholderName experiment.
-  scoped_feature_list_.InitWithFeatures(
-      // Enabled
-      {features::kAutofillUpstream,
-       features::kAutofillUpstreamEditableCardholderName},
-      // Disabled
-      {});
-
   // Start sync.
   harness_->SetupSync();
 
@@ -1655,16 +1485,8 @@ IN_PROC_BROWSER_TEST_F(
 // Tests the upload save bubble. Ensures that if cardholder name is explicitly
 // requested, filling it and clicking [Save] closes the dialog.
 IN_PROC_BROWSER_TEST_F(
-    SaveCardBubbleViewsFullFormBrowserTest,
+    SaveCardBubbleViewsFullFormBrowserTestWithEditableCardholderName,
     Upload_EnteringCardholderNameAndClickingSaveClosesBubbleIfCardholderNameRequested) {
-  // Enable the EditableCardholderName experiment.
-  scoped_feature_list_.InitWithFeatures(
-      // Enabled
-      {features::kAutofillUpstream,
-       features::kAutofillUpstreamEditableCardholderName},
-      // Disabled
-      {});
-
   // Start sync.
   harness_->SetupSync();
 
@@ -1696,16 +1518,9 @@ IN_PROC_BROWSER_TEST_F(
 // Tests the upload save bubble. Ensures that if cardholder name is explicitly
 // requested, it is prefilled with the name from the user's Google Account.
 IN_PROC_BROWSER_TEST_F(
-    SaveCardBubbleViewsFullFormBrowserTest,
+    SaveCardBubbleViewsFullFormBrowserTestWithEditableCardholderName,
     Upload_RequestedCardholderNameTextfieldIsPrefilledWithFocusName) {
   base::HistogramTester histogram_tester;
-  // Enable the EditableCardholderName experiment.
-  scoped_feature_list_.InitWithFeatures(
-      // Enabled
-      {features::kAutofillUpstream,
-       features::kAutofillUpstreamEditableCardholderName},
-      // Disabled
-      {});
 
   // Start sync.
   harness_->SetupSync();
@@ -1735,16 +1550,10 @@ IN_PROC_BROWSER_TEST_F(
 // requested but the name on the user's Google Account is unable to be fetched
 // for any reason, the textfield is left blank.
 IN_PROC_BROWSER_TEST_F(
-    SaveCardBubbleViewsFullFormBrowserTest,
+    SaveCardBubbleViewsFullFormBrowserTestWithEditableCardholderName,
     Upload_RequestedCardholderNameTextfieldIsNotPrefilledWithFocusNameIfMissing) {
   // Enable the EditableCardholderName experiment.
   base::HistogramTester histogram_tester;
-  scoped_feature_list_.InitWithFeatures(
-      // Enabled
-      {features::kAutofillUpstream,
-       features::kAutofillUpstreamEditableCardholderName},
-      // Disabled
-      {});
 
   // Start sync.
   harness_->SetupSync();
@@ -1770,16 +1579,8 @@ IN_PROC_BROWSER_TEST_F(
 // requested and the user accepts the dialog without changing it, the correct
 // metric is logged.
 IN_PROC_BROWSER_TEST_F(
-    SaveCardBubbleViewsFullFormBrowserTest,
+    SaveCardBubbleViewsFullFormBrowserTestWithEditableCardholderName,
     Upload_CardholderNameRequested_SubmittingPrefilledValueLogsUneditedMetric) {
-  // Enable the EditableCardholderName experiment.
-  scoped_feature_list_.InitWithFeatures(
-      // Enabled
-      {features::kAutofillUpstream,
-       features::kAutofillUpstreamEditableCardholderName},
-      // Disabled
-      {});
-
   // Start sync.
   harness_->SetupSync();
   // Set the user's full name.
@@ -1804,16 +1605,8 @@ IN_PROC_BROWSER_TEST_F(
 // requested and the user accepts the dialog after changing it, the correct
 // metric is logged.
 IN_PROC_BROWSER_TEST_F(
-    SaveCardBubbleViewsFullFormBrowserTest,
+    SaveCardBubbleViewsFullFormBrowserTestWithEditableCardholderName,
     Upload_CardholderNameRequested_SubmittingChangedValueLogsEditedMetric) {
-  // Enable the EditableCardholderName experiment.
-  scoped_feature_list_.InitWithFeatures(
-      // Enabled
-      {features::kAutofillUpstream,
-       features::kAutofillUpstreamEditableCardholderName},
-      // Disabled
-      {});
-
   // Start sync.
   harness_->SetupSync();
   // Set the user's full name.
@@ -1838,21 +1631,32 @@ IN_PROC_BROWSER_TEST_F(
       "Autofill.SaveCardCardholderNameWasEdited", true, 1);
 }
 
+class SaveCardBubbleViewsFullFormBrowserTestWithBlankEditableCardholderName
+    : public SaveCardBubbleViewsFullFormBrowserTest {
+ public:
+  SaveCardBubbleViewsFullFormBrowserTestWithBlankEditableCardholderName() {
+    // Enable the EditableCardholderName and BlankCardholderNameField
+    // experiments.
+    feature_list_.InitWithFeatures(
+        {features::kAutofillUpstream,
+         features::kAutofillUpstreamEditableCardholderName,
+         features::kAutofillUpstreamBlankCardholderNameField},
+        // Disabled
+        {});
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
 // Tests the upload save bubble. Ensures that if cardholder name is explicitly
 // requested but the AutofillUpstreamBlankCardholderNameField experiment is
 // active, the textfield is NOT prefilled even though the user's Google Account
 // name is available.
 IN_PROC_BROWSER_TEST_F(
-    SaveCardBubbleViewsFullFormBrowserTest,
+    SaveCardBubbleViewsFullFormBrowserTestWithBlankEditableCardholderName,
     Upload_CardholderNameNotPrefilledIfBlankNameExperimentEnabled) {
   base::HistogramTester histogram_tester;
-  // Enable the EditableCardholderName and BlankCardholderNameField experiments.
-  scoped_feature_list_.InitWithFeatures(
-      {features::kAutofillUpstream,
-       features::kAutofillUpstreamEditableCardholderName,
-       features::kAutofillUpstreamBlankCardholderNameField},
-      // Disabled
-      {});
 
   // Start sync.
   harness_->SetupSync();
@@ -1884,10 +1688,9 @@ IN_PROC_BROWSER_TEST_F(
 
 // Tests the upload save logic. Ensures that Chrome offers a local save when the
 // data is complete, even if Payments rejects the data.
-IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
-                       Logic_ShouldOfferLocalSaveIfPaymentsDeclines) {
-  scoped_feature_list_.InitAndEnableFeature(features::kAutofillUpstream);
-
+IN_PROC_BROWSER_TEST_F(
+    SaveCardBubbleViewsFullFormBrowserTestWithAutofillUpstream,
+    Logic_ShouldOfferLocalSaveIfPaymentsDeclines) {
   // Start sync.
   harness_->SetupSync();
 
@@ -1911,10 +1714,9 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
 
 // Tests the upload save logic. Ensures that Chrome offers a local save when the
 // data is complete, even if the Payments upload fails unexpectedly.
-IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
-                       Logic_ShouldOfferLocalSaveIfPaymentsFails) {
-  scoped_feature_list_.InitAndEnableFeature(features::kAutofillUpstream);
-
+IN_PROC_BROWSER_TEST_F(
+    SaveCardBubbleViewsFullFormBrowserTestWithAutofillUpstream,
+    Logic_ShouldOfferLocalSaveIfPaymentsFails) {
   // Start sync.
   harness_->SetupSync();
 
@@ -1939,10 +1741,8 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
 // Tests the upload save logic. Ensures that Chrome delegates the offer-to-save
 // call to Payments, and offers to upload save the card if Payments allows it.
 IN_PROC_BROWSER_TEST_F(
-    SaveCardBubbleViewsFullFormBrowserTest,
+    SaveCardBubbleViewsFullFormBrowserTestWithAutofillUpstream,
     Logic_CanOfferToSaveEvenIfNothingFoundIfPaymentsAccepts) {
-  scoped_feature_list_.InitAndEnableFeature(features::kAutofillUpstream);
-
   // Start sync.
   harness_->SetupSync();
 
@@ -1956,11 +1756,9 @@ IN_PROC_BROWSER_TEST_F(
 
 // Tests the upload save logic. Ensures that Chrome offers a upload save for
 // dynamic change form.
-IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
-                       Logic_CanOfferToSaveDynamicForm) {
-  scoped_feature_list_.InitWithFeatures(
-      {features::kAutofillUpstream, features::kAutofillImportDynamicForms}, {});
-
+IN_PROC_BROWSER_TEST_F(
+    SaveCardBubbleViewsFullFormBrowserTestWithAutofillUpstream,
+    Logic_CanOfferToSaveDynamicForm) {
   // Start sync.
   harness_->SetupSync();
 
@@ -1984,10 +1782,8 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
 // call to Payments, and still does not surface the offer to upload save dialog
 // if Payments declines it.
 IN_PROC_BROWSER_TEST_F(
-    SaveCardBubbleViewsFullFormBrowserTest,
+    SaveCardBubbleViewsFullFormBrowserTestWithAutofillUpstream,
     Logic_ShouldNotOfferToSaveIfNothingFoundAndPaymentsDeclines) {
-  scoped_feature_list_.InitAndEnableFeature(features::kAutofillUpstream);
-
   // Start sync.
   harness_->SetupSync();
 
@@ -2009,10 +1805,9 @@ IN_PROC_BROWSER_TEST_F(
 
 // Tests the upload save logic. Ensures that Chrome lets Payments decide whether
 // upload save should be offered, even if CVC is not detected.
-IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
-                       Logic_ShouldAttemptToOfferToSaveIfCvcNotFound) {
-  scoped_feature_list_.InitAndEnableFeature(features::kAutofillUpstream);
-
+IN_PROC_BROWSER_TEST_F(
+    SaveCardBubbleViewsFullFormBrowserTestWithAutofillUpstream,
+    Logic_ShouldAttemptToOfferToSaveIfCvcNotFound) {
   // Start sync.
   harness_->SetupSync();
 
@@ -2026,10 +1821,9 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
 
 // Tests the upload save logic. Ensures that Chrome lets Payments decide whether
 // upload save should be offered, even if the detected CVC is invalid.
-IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
-                       Logic_ShouldAttemptToOfferToSaveIfInvalidCvcFound) {
-  scoped_feature_list_.InitAndEnableFeature(features::kAutofillUpstream);
-
+IN_PROC_BROWSER_TEST_F(
+    SaveCardBubbleViewsFullFormBrowserTestWithAutofillUpstream,
+    Logic_ShouldAttemptToOfferToSaveIfInvalidCvcFound) {
   // Start sync.
   harness_->SetupSync();
 
@@ -2045,10 +1839,9 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
 // Tests the upload save logic. Ensures that Chrome lets Payments decide whether
 // upload save should be offered, even if address/cardholder name is not
 // detected.
-IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
-                       Logic_ShouldAttemptToOfferToSaveIfNameNotFound) {
-  scoped_feature_list_.InitAndEnableFeature(features::kAutofillUpstream);
-
+IN_PROC_BROWSER_TEST_F(
+    SaveCardBubbleViewsFullFormBrowserTestWithAutofillUpstream,
+    Logic_ShouldAttemptToOfferToSaveIfNameNotFound) {
   // Start sync.
   harness_->SetupSync();
 
@@ -2064,10 +1857,9 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
 // Tests the upload save logic. Ensures that Chrome lets Payments decide whether
 // upload save should be offered, even if multiple conflicting names are
 // detected.
-IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
-                       Logic_ShouldAttemptToOfferToSaveIfNamesConflict) {
-  scoped_feature_list_.InitAndEnableFeature(features::kAutofillUpstream);
-
+IN_PROC_BROWSER_TEST_F(
+    SaveCardBubbleViewsFullFormBrowserTestWithAutofillUpstream,
+    Logic_ShouldAttemptToOfferToSaveIfNamesConflict) {
   // Start sync.
   harness_->SetupSync();
 
@@ -2086,10 +1878,9 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
 
 // Tests the upload save logic. Ensures that Chrome lets Payments decide whether
 // upload save should be offered, even if billing address is not detected.
-IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
-                       Logic_ShouldAttemptToOfferToSaveIfAddressNotFound) {
-  scoped_feature_list_.InitAndEnableFeature(features::kAutofillUpstream);
-
+IN_PROC_BROWSER_TEST_F(
+    SaveCardBubbleViewsFullFormBrowserTestWithAutofillUpstream,
+    Logic_ShouldAttemptToOfferToSaveIfAddressNotFound) {
   // Start sync.
   harness_->SetupSync();
 
@@ -2105,10 +1896,9 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
 // Tests the upload save logic. Ensures that Chrome lets Payments decide whether
 // upload save should be offered, even if multiple conflicting billing address
 // postal codes are detected.
-IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
-                       Logic_ShouldAttemptToOfferToSaveIfPostalCodesConflict) {
-  scoped_feature_list_.InitAndEnableFeature(features::kAutofillUpstream);
-
+IN_PROC_BROWSER_TEST_F(
+    SaveCardBubbleViewsFullFormBrowserTestWithAutofillUpstream,
+    Logic_ShouldAttemptToOfferToSaveIfPostalCodesConflict) {
   // Start sync.
   harness_->SetupSync();
 
@@ -2128,10 +1918,9 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
 // Tests UMA logging for the upload save bubble. Ensures that if the user
 // declines upload, Autofill.UploadAcceptedCardOrigin is not logged.
 IN_PROC_BROWSER_TEST_F(
-    SaveCardBubbleViewsFullFormBrowserTest,
+    SaveCardBubbleViewsFullFormBrowserTestWithAutofillUpstream,
     Upload_DecliningUploadDoesNotLogUserAcceptedCardOriginUMA) {
   base::HistogramTester histogram_tester;
-  scoped_feature_list_.InitAndEnableFeature(features::kAutofillUpstream);
 
   // Start sync.
   harness_->SetupSync();
@@ -2152,7 +1941,7 @@ IN_PROC_BROWSER_TEST_F(
 // Tests the upload save bubble. Ensures that the bubble surfaces a pair of
 // dropdowns requesting expiration date if expiration date is missing.
 IN_PROC_BROWSER_TEST_F(
-    SaveCardBubbleViewsFullFormBrowserTest,
+    SaveCardBubbleViewsFullFormBrowserTestWithEditableExpirationDate,
     Upload_SubmittingFormWithMissingExpirationDateRequestsExpirationDate) {
   SetUpForEditableExpirationDate();
   FillFormWithoutExpirationDate();
@@ -2163,7 +1952,7 @@ IN_PROC_BROWSER_TEST_F(
 // Tests the upload save bubble. Ensures that the bubble surfaces a pair of
 // dropdowns requesting expiration date if expiration date is expired.
 IN_PROC_BROWSER_TEST_F(
-    SaveCardBubbleViewsFullFormBrowserTest,
+    SaveCardBubbleViewsFullFormBrowserTestWithEditableExpirationDate,
     Upload_SubmittingFormWithExpiredExpirationDateRequestsExpirationDate) {
   SetUpForEditableExpirationDate();
   FillFormWithSpecificExpirationDate("08", "2000");
@@ -2171,18 +1960,28 @@ IN_PROC_BROWSER_TEST_F(
   VerifyExpirationDateDropdownsAreVisible();
 }
 
+class
+    SaveCardBubbleViewsFullFormBrowserTestWithAutofillUpstreamAndNoEditableExpirationDate
+    : public SaveCardBubbleViewsFullFormBrowserTest {
+ public:
+  SaveCardBubbleViewsFullFormBrowserTestWithAutofillUpstreamAndNoEditableExpirationDate() {
+    // Disable the EditableExpirationDate experiment.
+    feature_list_.InitWithFeatures(
+        // Enabled
+        {features::kAutofillUpstream},
+        // Disabled
+        {features::kAutofillUpstreamEditableExpirationDate});
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
 // Tests the upload save bubble. Ensures that the bubble is not shown when
 // expiration date is passed, but the flag is disabled.
 IN_PROC_BROWSER_TEST_F(
-    SaveCardBubbleViewsFullFormBrowserTest,
+    SaveCardBubbleViewsFullFormBrowserTestWithAutofillUpstreamAndNoEditableExpirationDate,
     Logic_ShouldNotOfferToSaveIfSubmittingExpiredExpirationDateAndExpOff) {
-  // Disable the EditableExpirationDate experiment.
-  scoped_feature_list_.InitWithFeatures(
-      // Enabled
-      {features::kAutofillUpstream},
-      // Disabled
-      {features::kAutofillUpstreamEditableExpirationDate});
-
   // The credit card will not be imported if the expiration date is expired and
   // experiment is off.
   FillFormWithSpecificExpirationDate("08", "2000");
@@ -2193,15 +1992,8 @@ IN_PROC_BROWSER_TEST_F(
 // Tests the upload save bubble. Ensures that the bubble is not shown when
 // expiration date is missing, but the flag is disabled.
 IN_PROC_BROWSER_TEST_F(
-    SaveCardBubbleViewsFullFormBrowserTest,
+    SaveCardBubbleViewsFullFormBrowserTestWithAutofillUpstreamAndNoEditableExpirationDate,
     Logic_ShouldNotOfferToSaveIfMissingExpirationDateAndExpOff) {
-  // Disable the EditableExpirationDate experiment.
-  scoped_feature_list_.InitWithFeatures(
-      // Enabled
-      {features::kAutofillUpstream},
-      // Disabled
-      {features::kAutofillUpstreamEditableExpirationDate});
-
   // The credit card will not be imported if there is no expiration date and
   // experiment is off.
   FillFormWithoutExpirationDate();
@@ -2211,8 +2003,9 @@ IN_PROC_BROWSER_TEST_F(
 
 // Tests the upload save bubble. Ensures that the bubble does not surface the
 // expiration date dropdowns if it is not needed.
-IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
-                       Upload_ShouldNotRequestExpirationDateInHappyPath) {
+IN_PROC_BROWSER_TEST_F(
+    SaveCardBubbleViewsFullFormBrowserTestWithEditableExpirationDate,
+    Upload_ShouldNotRequestExpirationDateInHappyPath) {
   SetUpForEditableExpirationDate();
   FillForm();
   SubmitFormAndWaitForCardUploadSaveBubble();
@@ -2230,7 +2023,7 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
 // Tests the upload save bubble. Ensures that if the expiration date drop down
 // box is changing, [Save] button will change status correctly.
 IN_PROC_BROWSER_TEST_F(
-    SaveCardBubbleViewsFullFormBrowserTest,
+    SaveCardBubbleViewsFullFormBrowserTestWithEditableExpirationDate,
     Upload_SaveButtonStatusResetBetweenExpirationDateSelectionChanges) {
   SetUpForEditableExpirationDate();
   FillFormWithoutExpirationDate();
@@ -2262,7 +2055,7 @@ IN_PROC_BROWSER_TEST_F(
 // Tests the upload save bubble. Ensures that if the user is selecting an
 // expired expiration date, it is not allowed to click [Save].
 IN_PROC_BROWSER_TEST_F(
-    SaveCardBubbleViewsFullFormBrowserTest,
+    SaveCardBubbleViewsFullFormBrowserTestWithEditableExpirationDate,
     Upload_SaveButtonIsDisabledIfExpiredExpirationDateAndExpirationDateRequested) {
   SetUpForEditableExpirationDate();
   FillFormWithoutExpirationDate();
@@ -2288,7 +2081,7 @@ IN_PROC_BROWSER_TEST_F(
 // dropdowns requesting expiration date with year pre-populated if year is valid
 // but month is missing.
 IN_PROC_BROWSER_TEST_F(
-    SaveCardBubbleViewsFullFormBrowserTest,
+    SaveCardBubbleViewsFullFormBrowserTestWithEditableExpirationDate,
     Upload_SubmittingFormWithMissingExpirationDateMonthAndWithValidYear) {
   SetUpForEditableExpirationDate();
   // Submit the form with a year value, but not a month value.
@@ -2306,7 +2099,7 @@ IN_PROC_BROWSER_TEST_F(
 // dropdowns requesting expiration date with month pre-populated if month is
 // detected but year is missing.
 IN_PROC_BROWSER_TEST_F(
-    SaveCardBubbleViewsFullFormBrowserTest,
+    SaveCardBubbleViewsFullFormBrowserTestWithEditableExpirationDate,
     Upload_SubmittingFormWithMissingExpirationDateYearAndWithMonth) {
   SetUpForEditableExpirationDate();
   // Submit the form with a month value, but not a year value.
@@ -2324,7 +2117,7 @@ IN_PROC_BROWSER_TEST_F(
 // dropdowns requesting expiration date if month is missing and year is detected
 // but out of the range of dropdown.
 IN_PROC_BROWSER_TEST_F(
-    SaveCardBubbleViewsFullFormBrowserTest,
+    SaveCardBubbleViewsFullFormBrowserTestWithEditableExpirationDate,
     Upload_SubmittingFormWithExpirationDateMonthAndWithYearIsOutOfRange) {
   SetUpForEditableExpirationDate();
   // Fill form but with an expiration year ten years in the future which is out
@@ -2342,7 +2135,7 @@ IN_PROC_BROWSER_TEST_F(
 // dropdowns requesting expiration date if expiration date month is missing and
 // year is detected but passed.
 IN_PROC_BROWSER_TEST_F(
-    SaveCardBubbleViewsFullFormBrowserTest,
+    SaveCardBubbleViewsFullFormBrowserTestWithEditableExpirationDate,
     Upload_SubmittingFormWithExpirationDateMonthAndYearExpired) {
   SetUpForEditableExpirationDate();
   // Fill form with a valid month but a passed year.
@@ -2360,7 +2153,7 @@ IN_PROC_BROWSER_TEST_F(
 // dropdowns requesting expiration date if expiration date is expired but is
 // current year.
 IN_PROC_BROWSER_TEST_F(
-    SaveCardBubbleViewsFullFormBrowserTest,
+    SaveCardBubbleViewsFullFormBrowserTestWithEditableExpirationDate,
     Upload_SubmittingFormWithExpirationDateMonthAndCurrentYear) {
   SetUpForEditableExpirationDate();
   const base::Time kJune2017 = base::Time::FromDoubleT(1497552271);
@@ -2417,10 +2210,9 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
 
 // Tests StrikeDatabase interaction with the upload save bubble. Ensures that a
 // strike is added if the bubble is ignored.
-IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
-                       StrikeDatabase_Upload_AddStrikeIfBubbleIgnored) {
-  scoped_feature_list_.InitAndEnableFeature(features::kAutofillUpstream);
-
+IN_PROC_BROWSER_TEST_F(
+    SaveCardBubbleViewsFullFormBrowserTestWithAutofillUpstream,
+    StrikeDatabase_Upload_AddStrikeIfBubbleIgnored) {
   TestAutofillClock test_clock;
   test_clock.SetNow(base::Time::Now());
 
@@ -2451,8 +2243,6 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
       /*sample=*/1, /*count=*/1);
 }
 
-#if defined(OS_WIN) || defined(OS_MACOSX) || \
-    (defined(OS_LINUX) && !defined(OS_CHROMEOS))
 // Tests the local save bubble. Ensures that clicking the [No thanks] button
 // successfully causes a strike to be added.
 IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
@@ -2469,16 +2259,12 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
       "Autofill.StrikeDatabase.NthStrikeAdded.CreditCardSave",
       /*sample=*/(1), /*count=*/1);
 }
-#endif
 
-#if defined(OS_WIN) || defined(OS_MACOSX) || \
-    (defined(OS_LINUX) && !defined(OS_CHROMEOS))
 // Tests the upload save bubble. Ensures that clicking the [No thanks] button
 // successfully causes a strike to be added.
-IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
-                       StrikeDatabase_Upload_AddStrikeIfBubbleDeclined) {
-  scoped_feature_list_.InitAndEnableFeature(features::kAutofillUpstream);
-
+IN_PROC_BROWSER_TEST_F(
+    SaveCardBubbleViewsFullFormBrowserTestWithAutofillUpstream,
+    StrikeDatabase_Upload_AddStrikeIfBubbleDeclined) {
   // Start sync.
   harness_->SetupSync();
 
@@ -2494,10 +2280,7 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
       "Autofill.StrikeDatabase.NthStrikeAdded.CreditCardSave",
       /*sample=*/(1), /*count=*/1);
 }
-#endif
 
-#if defined(OS_WIN) || defined(OS_MACOSX) || \
-    (defined(OS_LINUX) && !defined(OS_CHROMEOS))
 // Tests overall StrikeDatabase interaction with the local save bubble. Runs an
 // example of declining the prompt three times and ensuring that the
 // offer-to-save bubble does not appear on the fourth try. Then, ensures that no
@@ -2567,18 +2350,14 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
       "Autofill.SaveCreditCardPrompt.Local.FirstShow",
       AutofillMetrics::SAVE_CARD_ICON_SHOWN_WITHOUT_PROMPT, 1);
 }
-#endif
 
-#if defined(OS_WIN) || defined(OS_MACOSX) || \
-    (defined(OS_LINUX) && !defined(OS_CHROMEOS))
 // Tests overall StrikeDatabase interaction with the upload save bubble. Runs an
 // example of declining the prompt three times and ensuring that the
 // offer-to-save bubble does not appear on the fourth try. Then, ensures that no
 // strikes are added if the card already has max strikes.
-IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
-                       StrikeDatabase_Upload_FullFlowTest) {
-  scoped_feature_list_.InitAndEnableFeature(features::kAutofillUpstream);
-
+IN_PROC_BROWSER_TEST_F(
+    SaveCardBubbleViewsFullFormBrowserTestWithAutofillUpstream,
+    StrikeDatabase_Upload_FullFlowTest) {
   bool controller_observer_set = false;
 
   // Start sync.
@@ -2649,7 +2428,6 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
       "Autofill.SaveCreditCardPrompt.Upload.FirstShow",
       AutofillMetrics::SAVE_CARD_ICON_SHOWN_WITHOUT_PROMPT, 1);
 }
-#endif
 
 // TODO(crbug.com/932818): Remove the condition once the experiment is enabled
 // on ChromeOS.
@@ -2668,7 +2446,6 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTestForStatusChip,
                        ClickingOnCreditCardIconInStatusChipReshowsBubble) {
   FillForm();
   SubmitFormAndWaitForCardLocalSaveBubble();
-
   ClickOnCloseButton();
   AddEventObserverToController();
   ResetEventWaiterForSequence({DialogEvent::BUBBLE_SHOWN});
@@ -2691,7 +2468,8 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTestForStatusChip,
                        MAYBE_ActivateFirstInactiveBubbleForAccessibility) {
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
   ToolbarView* toolbar_view = browser_view->toolbar();
-  EXPECT_FALSE(toolbar_view->toolbar_page_action_container()
+  EXPECT_FALSE(toolbar_view->toolbar_account_icon_container()
+                   ->page_action_icon_container()
                    ->ActivateFirstInactiveBubbleForAccessibility());
 
   FillForm();
@@ -2705,7 +2483,8 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTestForStatusChip,
   EXPECT_TRUE(widget->IsVisible());
   EXPECT_FALSE(widget->IsActive());
 
-  EXPECT_TRUE(toolbar_view->toolbar_page_action_container()
+  EXPECT_TRUE(toolbar_view->toolbar_account_icon_container()
+                  ->page_action_icon_container()
                   ->ActivateFirstInactiveBubbleForAccessibility());
 
   // Ensure the bubble's widget refreshed appropriately.
@@ -2739,6 +2518,381 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTestForStatusChip,
   EXPECT_TRUE(GetSaveCardIconView()->GetVisible());
   EXPECT_FALSE(GetSaveCardBubbleViews());
 }
+
+// Ensures the card saving throbber animation in the status chip behaves
+// correctly during credit card upload process. Also ensures the credit card
+// icon goes away when upload succeeds.
+IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTestForStatusChip,
+                       Feedback_Success) {
+  base::HistogramTester histogram_tester;
+  // Start sync.
+  harness_->SetupSync();
+
+  FillForm();
+  SubmitFormAndWaitForCardUploadSaveBubble();
+
+  // Ensures icon is visible and animation is not.
+  EXPECT_TRUE(GetSaveCardIconView()->GetVisible());
+  EXPECT_FALSE(
+      GetSaveCardIconView()->loading_indicator_for_testing()->IsAnimating());
+
+  ResetEventWaiterForSequence({DialogEvent::SENT_UPLOAD_CARD_REQUEST});
+  ClickOnDialogViewWithIdAndWait(DialogViewId::OK_BUTTON);
+  WaitForObservedEvent();
+
+  // Ensures icon and the animation are visible.
+  EXPECT_TRUE(GetSaveCardIconView()->GetVisible());
+  EXPECT_TRUE(
+      GetSaveCardIconView()->loading_indicator_for_testing()->IsAnimating());
+
+  SetUploadCardRpcPaymentsSucceeds();
+  ResetEventWaiterForSequence({DialogEvent::RECEIVED_UPLOAD_CARD_RESPONSE,
+                               DialogEvent::SHOW_CARD_SAVED_FEEDBACK});
+  WaitForObservedEvent();
+
+  // Ensures icon is not visible.
+  EXPECT_FALSE(GetSaveCardIconView()->GetVisible());
+
+  // UMA should have been logged.
+  histogram_tester.ExpectTotalCount("Autofill.CreditCardUploadFeedback", 1);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.CreditCardUploadFeedback",
+      AutofillMetrics::CREDIT_CARD_UPLOAD_FEEDBACK_LOADING_ANIMATION_SHOWN, 1);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.CreditCardUploadFeedback",
+      AutofillMetrics::CREDIT_CARD_UPLOAD_FEEDBACK_FAILURE_ICON_SHOWN, 0);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.CreditCardUploadFeedback",
+      AutofillMetrics::CREDIT_CARD_UPLOAD_FEEDBACK_FAILURE_BUBBLE_SHOWN, 0);
+}
+
+// Ensures the card saving throbber animation in the status chip behaves
+// correctly during credit card upload process. Also ensures the credit card
+// icon and the save card failure bubble behave correctly when upload failed.
+IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTestForStatusChip,
+                       Feedback_Failure) {
+  base::HistogramTester histogram_tester;
+  // Start sync.
+  harness_->SetupSync();
+
+  FillForm();
+  SubmitFormAndWaitForCardUploadSaveBubble();
+
+  // Ensures icon is visible and animation is not.
+  EXPECT_TRUE(GetSaveCardIconView()->GetVisible());
+  EXPECT_FALSE(
+      GetSaveCardIconView()->loading_indicator_for_testing()->IsAnimating());
+
+  ResetEventWaiterForSequence({DialogEvent::SENT_UPLOAD_CARD_REQUEST});
+  ClickOnDialogViewWithIdAndWait(DialogViewId::OK_BUTTON);
+  WaitForObservedEvent();
+
+  // Ensures icon and the animation are visible.
+  EXPECT_TRUE(GetSaveCardIconView()->GetVisible());
+  EXPECT_TRUE(
+      GetSaveCardIconView()->loading_indicator_for_testing()->IsAnimating());
+
+  SetUploadCardRpcPaymentsFails();
+  ResetEventWaiterForSequence({DialogEvent::RECEIVED_UPLOAD_CARD_RESPONSE,
+                               DialogEvent::STRIKE_CHANGE_COMPLETE,
+                               DialogEvent::SHOW_CARD_SAVED_FEEDBACK});
+  WaitForObservedEvent();
+
+  // Ensures icon is visible and the animation is not animating.
+  EXPECT_TRUE(GetSaveCardIconView()->GetVisible());
+  EXPECT_FALSE(
+      GetSaveCardIconView()->loading_indicator_for_testing()->IsAnimating());
+
+  // UMA should have been logged.
+  histogram_tester.ExpectTotalCount("Autofill.CreditCardUploadFeedback", 2);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.CreditCardUploadFeedback",
+      AutofillMetrics::CREDIT_CARD_UPLOAD_FEEDBACK_LOADING_ANIMATION_SHOWN, 1);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.CreditCardUploadFeedback",
+      AutofillMetrics::CREDIT_CARD_UPLOAD_FEEDBACK_FAILURE_ICON_SHOWN, 1);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.CreditCardUploadFeedback",
+      AutofillMetrics::CREDIT_CARD_UPLOAD_FEEDBACK_FAILURE_BUBBLE_SHOWN, 0);
+
+  // Click on the icon.
+  AddEventObserverToController();
+  ResetEventWaiterForSequence({DialogEvent::BUBBLE_SHOWN});
+  ClickOnView(GetSaveCardIconView());
+  WaitForObservedEvent();
+
+  // UMA should have been logged.
+  histogram_tester.ExpectTotalCount("Autofill.CreditCardUploadFeedback", 3);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.CreditCardUploadFeedback",
+      AutofillMetrics::CREDIT_CARD_UPLOAD_FEEDBACK_LOADING_ANIMATION_SHOWN, 1);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.CreditCardUploadFeedback",
+      AutofillMetrics::CREDIT_CARD_UPLOAD_FEEDBACK_FAILURE_ICON_SHOWN, 1);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.CreditCardUploadFeedback",
+      AutofillMetrics::CREDIT_CARD_UPLOAD_FEEDBACK_FAILURE_BUBBLE_SHOWN, 1);
+}
+
+// Tests the sign in promo bubble. Ensures that clicking the [Save] button
+// on the local save bubble successfully causes the sign in promo to show from
+// the avatar toolbar button.
+IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTestForStatusChip,
+                       Local_ClickingSaveShowsSigninPromo) {
+  FillForm();
+  SubmitFormAndWaitForCardLocalSaveBubble();
+
+  // Adding an event observer to the controller so we can wait for the bubble to
+  // show.
+  AddEventObserverToController();
+  ResetEventWaiterForSequence(
+      {DialogEvent::BUBBLE_CLOSED, DialogEvent::BUBBLE_SHOWN});
+
+  // Click [Save] should close the offer-to-save bubble
+  // and pop up the sign-in promo.
+  ClickOnDialogViewWithId(DialogViewId::OK_BUTTON);
+  WaitForObservedEvent();
+
+  // Ensures the credit card icon is not visible.
+  EXPECT_FALSE(GetSaveCardIconView()->GetVisible());
+  // Sign-in promo should be showing.
+  EXPECT_TRUE(
+      FindViewInBubbleById(DialogViewId::SIGN_IN_PROMO_VIEW)->GetVisible());
+}
+
+// Tests the manage cards bubble. Ensures that it will not pop up after the
+// sign-in promo is closed.
+IN_PROC_BROWSER_TEST_F(
+    SaveCardBubbleViewsFullFormBrowserTestForStatusChip,
+    Local_ClosingSigninPromoDoesNotShowNeitherIconNorManageCardsBubble) {
+  FillForm();
+  SubmitFormAndWaitForCardLocalSaveBubble();
+
+  // Adding an event observer to the controller so we can wait for the bubble to
+  // show.
+  AddEventObserverToController();
+  ResetEventWaiterForSequence(
+      {DialogEvent::BUBBLE_CLOSED, DialogEvent::BUBBLE_SHOWN});
+
+  // Click [Save] should close the offer-to-save bubble
+  // and pop up the sign-in promo.
+  ClickOnDialogViewWithId(DialogViewId::OK_BUTTON);
+  WaitForObservedEvent();
+
+  // Close the sign-in promo.
+  ResetEventWaiterForSequence({DialogEvent::BUBBLE_CLOSED});
+  ClickOnCloseButton();
+  WaitForObservedEvent();
+
+  // Ensures the neither credit card icon nor the manage cards bubble is
+  // showing.
+  EXPECT_FALSE(GetSaveCardIconView()->GetVisible());
+  EXPECT_FALSE(GetSaveCardBubbleViews());
+}
 #endif  // !defined(OS_CHROMEOS)
+
+// TODO(crbug.com/932818): Remove this once the experiment is fully launched.
+class SaveCardBubbleViewsFullFormBrowserTestForManageCard
+    : public SaveCardBubbleViewsFullFormBrowserTest {
+ protected:
+  SaveCardBubbleViewsFullFormBrowserTestForManageCard()
+      : SaveCardBubbleViewsFullFormBrowserTest() {}
+  ~SaveCardBubbleViewsFullFormBrowserTestForManageCard() override {}
+
+  void SetUp() override {
+    feature_list_.InitWithFeatures(
+        /*enabled_features=*/{},
+        /*disabled_features=*/{features::kAutofillCreditCardUploadFeedback,
+                               features::kAutofillEnableToolbarStatusChip});
+
+    SaveCardBubbleViewsFullFormBrowserTest::SetUp();
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+// Tests the local save bubble. Ensures that clicking the [Save] button
+// successfully causes the bubble to go away.
+IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTestForManageCard,
+                       Local_ClickingSaveClosesBubble) {
+  FillForm();
+  SubmitFormAndWaitForCardLocalSaveBubble();
+
+  // Clicking [Save] should accept and close it.
+  base::HistogramTester histogram_tester;
+  base::UserActionTester user_action_tester;
+  ClickOnDialogViewWithIdAndWait(DialogViewId::OK_BUTTON);
+  // UMA should have recorded bubble acceptance.
+  histogram_tester.ExpectUniqueSample(
+      "Autofill.SaveCreditCardPrompt.Local.FirstShow",
+      AutofillMetrics::SAVE_CARD_PROMPT_END_ACCEPTED, 1);
+
+  // The local save bubble should not be visible, but the card icon should
+  // remain visible for the clickable [Manage cards] option.
+  EXPECT_EQ(nullptr, GetSaveCardBubbleViews());
+  EXPECT_TRUE(GetSaveCardIconView()->GetVisible());
+}
+
+// Tests the manage cards bubble. Ensures that sign-in impression is recorded
+// correctly.
+#if !defined(OS_CHROMEOS)
+IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTestForManageCard,
+                       Local_Metrics_SigninImpressionManageCards) {
+  FillForm();
+  SubmitFormAndWaitForCardLocalSaveBubble();
+
+  // Adding an event observer to the controller so we can wait for the bubble to
+  // show.
+  AddEventObserverToController();
+  ReduceAnimationTime();
+  ResetEventWaiterForSequence(
+      {DialogEvent::BUBBLE_CLOSED, DialogEvent::BUBBLE_SHOWN});
+
+  // Click [Save] should close the offer-to-save bubble
+  // and pop up the sign-in promo.
+  base::UserActionTester user_action_tester;
+  ClickOnDialogViewWithId(DialogViewId::OK_BUTTON);
+  WaitForObservedEvent();
+
+  // Close promo.
+  ClickOnCloseButton();
+
+  // Open up Manage Cards prompt.
+  ResetEventWaiterForSequence({DialogEvent::BUBBLE_SHOWN});
+  ClickOnView(GetSaveCardIconView());
+  WaitForObservedEvent();
+
+  // User actions should have recorded impression.
+  EXPECT_EQ(1, user_action_tester.GetActionCount(
+                   "Signin_Impression_FromManageCardsBubble"));
+}
+#endif
+
+// Tests the manage cards bubble. Ensures that it shows up by clicking the
+// credit card icon.
+IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTestForManageCard,
+                       Local_ClickingIconShowsManageCards) {
+  FillForm();
+  SubmitFormAndWaitForCardLocalSaveBubble();
+
+  // Adding an event observer to the controller so we can wait for the bubble to
+  // show.
+  AddEventObserverToController();
+  ReduceAnimationTime();
+
+#if !defined(OS_CHROMEOS)
+  ResetEventWaiterForSequence(
+      {DialogEvent::BUBBLE_CLOSED, DialogEvent::BUBBLE_SHOWN});
+#endif
+
+  // Click [Save] should close the offer-to-save bubble and show "Card saved"
+  // animation -- followed by the sign-in promo (if not on Chrome OS).
+  ClickOnDialogViewWithIdAndWait(DialogViewId::OK_BUTTON);
+
+#if !defined(OS_CHROMEOS)
+  // Wait for and then close the promo.
+  WaitForObservedEvent();
+  ClickOnCloseButton();
+#endif
+
+  // Open up Manage Cards prompt.
+  base::HistogramTester histogram_tester;
+  ResetEventWaiterForSequence({DialogEvent::BUBBLE_SHOWN});
+  ClickOnView(GetSaveCardIconView());
+  WaitForObservedEvent();
+
+  // Bubble should be showing.
+  EXPECT_TRUE(
+      FindViewInBubbleById(DialogViewId::MANAGE_CARDS_VIEW)->GetVisible());
+  histogram_tester.ExpectUniqueSample("Autofill.ManageCardsPrompt.Local",
+                                      AutofillMetrics::MANAGE_CARDS_SHOWN, 1);
+}
+
+// Tests the manage cards bubble. Ensures that clicking the [Done]
+// button closes the bubble.
+IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTestForManageCard,
+                       Local_ManageCardsDoneButtonClosesBubble) {
+  FillForm();
+  SubmitFormAndWaitForCardLocalSaveBubble();
+
+  // Adding an event observer to the controller so we can wait for the bubble to
+  // show.
+  AddEventObserverToController();
+  ReduceAnimationTime();
+
+#if !defined(OS_CHROMEOS)
+  ResetEventWaiterForSequence(
+      {DialogEvent::BUBBLE_CLOSED, DialogEvent::BUBBLE_SHOWN});
+#endif
+
+  // Click [Save] should close the offer-to-save bubble and show "Card saved"
+  // animation -- followed by the sign-in promo (if not on Chrome OS).
+  ClickOnDialogViewWithIdAndWait(DialogViewId::OK_BUTTON);
+
+#if !defined(OS_CHROMEOS)
+  // Wait for and then close the promo.
+  WaitForObservedEvent();
+  ClickOnCloseButton();
+#endif
+
+  // Open up Manage Cards prompt.
+  base::HistogramTester histogram_tester;
+  ResetEventWaiterForSequence({DialogEvent::BUBBLE_SHOWN});
+  ClickOnView(GetSaveCardIconView());
+  WaitForObservedEvent();
+
+  // Click on the [Done] button.
+  ClickOnDialogViewWithIdAndWait(DialogViewId::OK_BUTTON);
+
+  // No bubble should be showing now and metrics should be recorded correctly.
+  EXPECT_EQ(nullptr, GetSaveCardBubbleViews());
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples("Autofill.ManageCardsPrompt.Local"),
+      ElementsAre(Bucket(AutofillMetrics::MANAGE_CARDS_SHOWN, 1),
+                  Bucket(AutofillMetrics::MANAGE_CARDS_DONE, 1)));
+}
+
+// Tests the Manage Cards bubble. Ensures that signin action is recorded when
+// user accepts footnote promo.
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
+IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTestForManageCard,
+                       Local_Metrics_AcceptingFootnotePromoManageCards) {
+  FillForm();
+  SubmitFormAndWaitForCardLocalSaveBubble();
+
+  // Adding an event observer to the controller so we can wait for the bubble to
+  // show.
+  AddEventObserverToController();
+  ReduceAnimationTime();
+  ResetEventWaiterForSequence(
+      {DialogEvent::BUBBLE_CLOSED, DialogEvent::BUBBLE_SHOWN});
+
+  // Click [Save] should close the offer-to-save bubble
+  // and pop up the sign-in promo.
+  base::UserActionTester user_action_tester;
+  ClickOnDialogViewWithId(DialogViewId::OK_BUTTON);
+  WaitForObservedEvent();
+
+  // Close promo.
+  ClickOnCloseButton();
+
+  // Open up Manage Cards prompt.
+  ResetEventWaiterForSequence({DialogEvent::BUBBLE_SHOWN});
+  ClickOnView(GetSaveCardIconView());
+  WaitForObservedEvent();
+
+  // Click on [Sign in] button in footnote.
+  ClickOnDialogView(static_cast<DiceBubbleSyncPromoView*>(
+                        FindViewInBubbleById(DialogViewId::FOOTNOTE_VIEW))
+                        ->GetSigninButtonForTesting());
+
+  // User actions should have recorded impression and click.
+  EXPECT_EQ(1, user_action_tester.GetActionCount(
+                   "Signin_Impression_FromManageCardsBubble"));
+  EXPECT_EQ(1, user_action_tester.GetActionCount(
+                   "Signin_Signin_FromManageCardsBubble"));
+}
+#endif
 
 }  // namespace autofill

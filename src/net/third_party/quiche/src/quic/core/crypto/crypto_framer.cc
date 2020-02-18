@@ -5,6 +5,7 @@
 #include "net/third_party/quiche/src/quic/core/crypto/crypto_framer.h"
 
 #include <string>
+#include <utility>
 
 #include "net/third_party/quiche/src/quic/core/crypto/crypto_protocol.h"
 #include "net/third_party/quiche/src/quic/core/quic_data_reader.h"
@@ -12,9 +13,9 @@
 #include "net/third_party/quiche/src/quic/core/quic_packets.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_fallthrough.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_ptr_util.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_str_cat.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_string_piece.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_endian.h"
 
 namespace quic {
 
@@ -32,7 +33,7 @@ class OneShotVisitor : public CryptoFramerVisitorInterface {
   void OnError(CryptoFramer* /*framer*/) override { error_ = true; }
 
   void OnHandshakeMessage(const CryptoHandshakeMessage& message) override {
-    out_ = QuicMakeUnique<CryptoHandshakeMessage>(message);
+    out_ = std::make_unique<CryptoHandshakeMessage>(message);
   }
 
   bool error() const { return error_; }
@@ -117,7 +118,8 @@ bool CryptoFramer::HasTag(QuicTag tag) const {
 }
 
 void CryptoFramer::ForceHandshake() {
-  QuicDataReader reader(buffer_.data(), buffer_.length(), HOST_BYTE_ORDER);
+  QuicDataReader reader(buffer_.data(), buffer_.length(),
+                        quiche::HOST_BYTE_ORDER);
   for (const std::pair<QuicTag, size_t>& item : tags_and_lengths_) {
     QuicStringPiece value;
     if (reader.BytesRemaining() < item.second) {
@@ -156,7 +158,7 @@ std::unique_ptr<QuicData> CryptoFramer::ConstructHandshakeMessage(
   }
 
   std::unique_ptr<char[]> buffer(new char[len]);
-  QuicDataWriter writer(len, buffer.get(), HOST_BYTE_ORDER);
+  QuicDataWriter writer(len, buffer.get(), quiche::HOST_BYTE_ORDER);
   if (!writer.WriteTag(message.tag())) {
     DCHECK(false) << "Failed to write message tag.";
     return nullptr;
@@ -230,7 +232,7 @@ std::unique_ptr<QuicData> CryptoFramer::ConstructHandshakeMessage(
     }
   }
 
-  return QuicMakeUnique<QuicData>(buffer.release(), len, true);
+  return std::make_unique<QuicData>(buffer.release(), len, true);
 }
 
 void CryptoFramer::Clear() {
@@ -244,7 +246,8 @@ void CryptoFramer::Clear() {
 QuicErrorCode CryptoFramer::Process(QuicStringPiece input) {
   // Add this data to the buffer.
   buffer_.append(input.data(), input.length());
-  QuicDataReader reader(buffer_.data(), buffer_.length(), HOST_BYTE_ORDER);
+  QuicDataReader reader(buffer_.data(), buffer_.length(),
+                        quiche::HOST_BYTE_ORDER);
 
   switch (state_) {
     case STATE_READING_TAG:

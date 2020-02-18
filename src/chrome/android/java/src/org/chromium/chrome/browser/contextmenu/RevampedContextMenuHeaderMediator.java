@@ -16,10 +16,11 @@ import android.graphics.PorterDuffColorFilter;
 import android.graphics.Shader;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
-import android.support.annotation.ColorInt;
-import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.view.View;
+
+import androidx.annotation.ColorInt;
+import androidx.annotation.Nullable;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.metrics.RecordHistogram;
@@ -27,7 +28,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.favicon.IconType;
 import org.chromium.chrome.browser.favicon.LargeIconBridge;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.widget.RoundedIconGenerator;
+import org.chromium.chrome.browser.ui.widget.RoundedIconGenerator;
 import org.chromium.ui.modelutil.PropertyModel;
 
 class RevampedContextMenuHeaderMediator implements View.OnClickListener {
@@ -41,7 +42,7 @@ class RevampedContextMenuHeaderMediator implements View.OnClickListener {
         mContext = context;
         mPlainUrl = params.getUrl();
         mModel = model;
-        mModel.set(RevampedContextMenuHeaderProperties.URL_CLICK_LISTENER, this);
+        mModel.set(RevampedContextMenuHeaderProperties.TITLE_AND_URL_CLICK_LISTENER, this);
 
         if (!params.isImage() && !params.isVideo()) {
             LargeIconBridge iconBridge = new LargeIconBridge(Profile.getLastUsedProfile());
@@ -98,11 +99,19 @@ class RevampedContextMenuHeaderMediator implements View.OnClickListener {
     public void onClick(View v) {
         RecordHistogram.recordBooleanHistogram("ContextMenu.URLClicked", true);
         if (mModel.get(RevampedContextMenuHeaderProperties.URL_MAX_LINES) == Integer.MAX_VALUE) {
-            boolean isEmpty =
+            // URL and title should both be expanded.
+            assert mModel.get(RevampedContextMenuHeaderProperties.TITLE_MAX_LINES)
+                    == Integer.MAX_VALUE;
+
+            final boolean isTitleEmpty =
                     TextUtils.isEmpty(mModel.get(RevampedContextMenuHeaderProperties.TITLE));
-            mModel.set(RevampedContextMenuHeaderProperties.URL_MAX_LINES, isEmpty ? 2 : 1);
+            mModel.set(RevampedContextMenuHeaderProperties.URL_MAX_LINES, isTitleEmpty ? 2 : 1);
+            final boolean isUrlEmpty =
+                    TextUtils.isEmpty(mModel.get(RevampedContextMenuHeaderProperties.URL));
+            mModel.set(RevampedContextMenuHeaderProperties.TITLE_MAX_LINES, isUrlEmpty ? 2 : 1);
         } else {
             mModel.set(RevampedContextMenuHeaderProperties.URL_MAX_LINES, Integer.MAX_VALUE);
+            mModel.set(RevampedContextMenuHeaderProperties.TITLE_MAX_LINES, Integer.MAX_VALUE);
         }
     }
 

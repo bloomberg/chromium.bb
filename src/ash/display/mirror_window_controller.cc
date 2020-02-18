@@ -15,6 +15,7 @@
 #include "ash/host/root_window_transformer.h"
 #include "ash/root_window_settings.h"
 #include "ash/shell.h"
+#include "ash/utility/transformer_util.h"
 #include "ash/window_factory.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -30,6 +31,7 @@
 #include "ui/base/ui_base_switches_util.h"
 #include "ui/compositor/reflector.h"
 #include "ui/display/display_layout.h"
+#include "ui/display/manager/display_layout_store.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/manager/managed_display_info.h"
 #include "ui/display/screen.h"
@@ -249,15 +251,37 @@ void MirrorWindowController::UpdateWindow(
     }
 
     if (features::IsVizDisplayCompositorEnabled()) {
-      // |mirror_size| is the size of the mirror source in physical pixels.
-      // The RootWindowTransformer corrects the scale of the mirrored display
-      // and the location of input events.
-      gfx::Size mirror_size =
-          display_manager->GetDisplayInfo(reflecting_source_id_)
-              .bounds_in_native()
-              .size();
-      aura::Window* mirror_window =
-          mirroring_host_info_map_[display_info.id()]->mirror_window;
+      // |mirror_size| is the size of the compositor of the mirror source in
+      // physical pixels. The RootWindowTransformer corrects the scale of the
+      // mirrored display and the location of input events.
+      ui::Compositor* source_compositor =
+          Shell::GetRootWindowForDisplayId(reflecting_source_id_)
+              ->GetHost()
+              ->compositor();
+      gfx::Size mirror_size = source_compositor->size();
+
+      auto* mirroring_host_info = mirroring_host_info_map_[display_info.id()];
+
+      // The rotation of the source display (internal display) should be undone
+      // in the destination display (external display) if mirror mode is enabled
+      // in tablet mode. This allows the destination display to show in an
+      // orientation independent of the source display.
+      // See https://crbug.com/824417
+      const bool should_undo_rotation = Shell::Get()
+                                            ->display_manager()
+                                            ->layout_store()
+                                            ->forced_mirror_mode_for_tablet();
+      if (!should_undo_rotation) {
+        // Use the rotation from source display without panel orientation
+        // applied instead of the display transform hint in |source_compositor|
+        // so that panel orientation is not applied to the mirror host.
+        mirroring_host_info->ash_host->AsWindowTreeHost()
+            ->SetDisplayTransformHint(DisplayRotationToOverlayTransform(
+                display_manager->GetDisplayInfo(reflecting_source_id_)
+                    .GetActiveRotation()));
+      }
+
+      aura::Window* mirror_window = mirroring_host_info->mirror_window;
       mirror_window->SetBounds(gfx::Rect(mirror_size));
       mirror_window->Show();
       mirror_window->layer()->SetShowReflectedSurface(reflecting_surface_id,

@@ -19,7 +19,7 @@ namespace {
 
 template <typename T>
 class GlobalCacheStorageImpl final
-    : public GarbageCollectedFinalized<GlobalCacheStorageImpl<T>>,
+    : public GarbageCollected<GlobalCacheStorageImpl<T>>,
       public Supplement<T> {
   USING_GARBAGE_COLLECTED_MIXIN(GlobalCacheStorageImpl);
 
@@ -62,10 +62,11 @@ class GlobalCacheStorageImpl final
     }
 
     if (!caches_) {
-      if (!context->GetInterfaceProvider()) {
+      if (&context->GetBrowserInterfaceBroker() ==
+          &GetEmptyBrowserInterfaceBroker()) {
         exception_state.ThrowSecurityError(
-            "Cache storage isn't available on detached context. No interface "
-            "provider.");
+            "Cache storage isn't available on detached context. No browser "
+            "interface broker.");
         return nullptr;
       }
       caches_ = MakeGarbageCollected<CacheStorage>(

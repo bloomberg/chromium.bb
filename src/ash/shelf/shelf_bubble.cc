@@ -13,12 +13,12 @@ namespace {
 
 views::BubbleBorder::Arrow GetArrow(ash::ShelfAlignment alignment) {
   switch (alignment) {
-    case ash::SHELF_ALIGNMENT_BOTTOM:
-    case ash::SHELF_ALIGNMENT_BOTTOM_LOCKED:
+    case ash::ShelfAlignment::kBottom:
+    case ash::ShelfAlignment::kBottomLocked:
       return views::BubbleBorder::BOTTOM_CENTER;
-    case ash::SHELF_ALIGNMENT_LEFT:
+    case ash::ShelfAlignment::kLeft:
       return views::BubbleBorder::LEFT_CENTER;
-    case ash::SHELF_ALIGNMENT_RIGHT:
+    case ash::ShelfAlignment::kRight:
       return views::BubbleBorder::RIGHT_CENTER;
   }
   return views::BubbleBorder::Arrow::NONE;
@@ -32,11 +32,11 @@ ShelfBubble::ShelfBubble(views::View* anchor,
                          ShelfAlignment alignment,
                          SkColor background_color)
     : views::BubbleDialogDelegateView(anchor, GetArrow(alignment)),
-      background_animator_(SHELF_BACKGROUND_DEFAULT,
-                           // Don't pass the Shelf so the translucent color is
-                           // always used.
-                           nullptr,
-                           Shell::Get()->wallpaper_controller()) {
+      background_animator_(
+          /* Don't pass the Shelf so the translucent color is always used. */
+          nullptr,
+          Shell::Get()->wallpaper_controller()) {
+  background_animator_.Init(ShelfBackgroundType::kDefaultBg);
   background_animator_.AddObserver(this);
 
   // Place the bubble in the same display as the anchor.

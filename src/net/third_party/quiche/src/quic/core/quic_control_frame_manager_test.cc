@@ -4,9 +4,10 @@
 
 #include "net/third_party/quiche/src/quic/core/quic_control_frame_manager.h"
 
+#include <utility>
+
 #include "net/third_party/quiche/src/quic/platform/api/quic_expect_bug.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_ptr_util.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_test.h"
 #include "net/third_party/quiche/src/quic/test_tools/quic_test_utils.h"
 
@@ -50,8 +51,8 @@ class QuicControlFrameManagerTest : public QuicTest {
   void Initialize() {
     connection_ = new MockQuicConnection(&helper_, &alarm_factory_,
                                          Perspective::IS_SERVER);
-    session_ = QuicMakeUnique<StrictMock<MockQuicSession>>(connection_);
-    manager_ = QuicMakeUnique<QuicControlFrameManager>(session_.get());
+    session_ = std::make_unique<StrictMock<MockQuicSession>>(connection_);
+    manager_ = std::make_unique<QuicControlFrameManager>(session_.get());
     EXPECT_EQ(0u, QuicControlFrameManagerPeer::QueueSize(manager_.get()));
     EXPECT_FALSE(manager_->HasPendingRetransmission());
     EXPECT_FALSE(manager_->WillingToWrite());
@@ -290,7 +291,6 @@ TEST_F(QuicControlFrameManagerTest, RetransmitWindowUpdateOfDifferentStreams) {
 }
 
 TEST_F(QuicControlFrameManagerTest, TooManyBufferedControlFrames) {
-  SetQuicReloadableFlag(quic_add_upper_limit_of_buffered_control_frames, true);
   Initialize();
   EXPECT_CALL(*connection_, SendControlFrame(_))
       .Times(5)

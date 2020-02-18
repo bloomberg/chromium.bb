@@ -24,8 +24,6 @@ namespace base {
 class Clock;
 }
 
-namespace lookalikes {
-
 // Returns eTLD+1 of |hostname|. This excludes private registries, and returns
 // "blogspot.com" for "test.blogspot.com" (blogspot.com is listed as a private
 // registry). We do this to be consistent with url_formatter's top domain list
@@ -36,9 +34,10 @@ struct DomainInfo {
   // eTLD+1, used for skeleton and edit distance comparison. Must be ASCII.
   // Empty for non-unique domains, localhost or sites whose eTLD+1 is empty.
   const std::string domain_and_registry;
-  // eTLD+1 without the registry part. For "www.google.com", this will be
-  // "google". Used for edit distance comparisons.
-  // Empty for non-unique domains, localhost or sites whose eTLD+1 is empty.
+  // eTLD+1 without the registry part, and with a trailing period. For
+  // "www.google.com", this will be "google.". Used for edit distance
+  // comparisons. Empty for non-unique domains, localhost or sites whose eTLD+1
+  // is empty.
   const std::string domain_without_registry;
 
   // Result of IDN conversion of domain_and_registry field.
@@ -98,7 +97,5 @@ class LookalikeUrlService : public KeyedService {
 
   DISALLOW_COPY_AND_ASSIGN(LookalikeUrlService);
 };
-
-}  // namespace lookalikes
 
 #endif  // CHROME_BROWSER_LOOKALIKES_LOOKALIKE_URL_SERVICE_H_

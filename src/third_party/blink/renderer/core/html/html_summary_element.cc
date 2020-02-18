@@ -36,10 +36,8 @@
 
 namespace blink {
 
-using namespace html_names;
-
 HTMLSummaryElement::HTMLSummaryElement(Document& document)
-    : HTMLElement(kSummaryTag, document) {
+    : HTMLElement(html_names::kSummaryTag, document) {
   SetHasCustomStyleCallbacks();
   EnsureUserAgentShadowRoot();
 }
@@ -98,6 +96,10 @@ static bool IsClickableControl(Node* node) {
 
 bool HTMLSummaryElement::SupportsFocus() const {
   return IsMainSummary() || HTMLElement::SupportsFocus();
+}
+
+int HTMLSummaryElement::DefaultTabIndex() const {
+  return IsMainSummary() ? 0 : -1;
 }
 
 void HTMLSummaryElement::DefaultEventHandler(Event& event) {

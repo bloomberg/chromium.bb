@@ -8,18 +8,18 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 
-FakeMojoPasswordManagerDriver::FakeMojoPasswordManagerDriver()
-    : binding_(this) {}
+FakeMojoPasswordManagerDriver::FakeMojoPasswordManagerDriver() = default;
 
-FakeMojoPasswordManagerDriver::~FakeMojoPasswordManagerDriver() {}
+FakeMojoPasswordManagerDriver::~FakeMojoPasswordManagerDriver() = default;
 
-void FakeMojoPasswordManagerDriver::BindRequest(
-    autofill::mojom::PasswordManagerDriverAssociatedRequest request) {
-  binding_.Bind(std::move(request));
+void FakeMojoPasswordManagerDriver::BindReceiver(
+    mojo::PendingAssociatedReceiver<autofill::mojom::PasswordManagerDriver>
+        receiver) {
+  receiver_.Bind(std::move(receiver));
 }
 
 void FakeMojoPasswordManagerDriver::Flush() {
-  binding_.FlushForTesting();
+  receiver_.FlushForTesting();
 }
 
 // mojom::PasswordManagerDriver:
@@ -43,19 +43,12 @@ void FakeMojoPasswordManagerDriver::PasswordFormSubmitted(
 }
 
 void FakeMojoPasswordManagerDriver::SameDocumentNavigation(
-    const autofill::PasswordForm& password_form) {
+    autofill::mojom::SubmissionIndicatorEvent submission_indication_event) {
   called_same_document_navigation_ = true;
-  password_form_same_document_navigation_ = password_form;
-}
-
-void FakeMojoPasswordManagerDriver::ShowPasswordSuggestions(
-    base::i18n::TextDirection text_direction,
-    const base::string16& typed_username,
-    int options,
-    const gfx::RectF& bounds) {
-  called_show_pw_suggestions_ = true;
-  show_pw_suggestions_username_ = typed_username;
-  show_pw_suggestions_options_ = options;
+  password_form_maybe_submitted_->form_data.submission_event =
+      submission_indication_event;
+  password_form_maybe_submitted_->submission_event =
+      submission_indication_event;
 }
 
 void FakeMojoPasswordManagerDriver::RecordSavePasswordProgress(
@@ -80,6 +73,7 @@ void FakeMojoPasswordManagerDriver::CheckSafeBrowsingReputation(
 void FakeMojoPasswordManagerDriver::ShowManualFallbackForSaving(
     const autofill::PasswordForm& password_form) {
   called_show_manual_fallback_for_saving_count_++;
+  password_form_maybe_submitted_ = password_form;
 }
 
 void FakeMojoPasswordManagerDriver::HideManualFallbackForSaving() {

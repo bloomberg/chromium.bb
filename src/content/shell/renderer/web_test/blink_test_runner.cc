@@ -277,8 +277,16 @@ void BlinkTestRunner::EnableAutoResizeMode(const WebSize& min_size,
 
 void BlinkTestRunner::DisableAutoResizeMode(const WebSize& new_size) {
   content::DisableAutoResizeMode(render_view(), new_size);
-  if (!new_size.IsEmpty())
-    ForceResizeRenderView(render_view(), new_size);
+  ForceResizeRenderView(render_view(), new_size);
+}
+
+void BlinkTestRunner::ResetAutoResizeMode() {
+  // An empty size indicates to keep the size as is. Resetting races with the
+  // browser setting up the new test (one is a mojo IPC (OnSetTestConfiguration)
+  // and one is legacy (OnReset)) so we can not clobber the size here.
+  content::DisableAutoResizeMode(render_view(), gfx::Size());
+  // Does not call ForceResizeRenderView() here intentionally. This is between
+  // tests, and the next test will set up a size.
 }
 
 void BlinkTestRunner::NavigateSecondaryWindow(const GURL& url) {
@@ -317,10 +325,6 @@ void BlinkTestRunner::SimulateWebContentIndexDelete(const std::string& id) {
 
 void BlinkTestRunner::SetDeviceScaleFactor(float factor) {
   content::SetDeviceScaleFactor(render_view(), factor);
-}
-
-float BlinkTestRunner::GetWindowToViewportScale() {
-  return content::GetWindowToViewportScale(render_view());
 }
 
 std::unique_ptr<blink::WebInputEvent>
@@ -665,22 +669,12 @@ blink::WebPlugin* BlinkTestRunner::CreatePluginPlaceholder(
   return placeholder->plugin();
 }
 
-float BlinkTestRunner::GetDeviceScaleFactor() const {
-  return render_view()->GetDeviceScaleFactor();
-}
-
 void BlinkTestRunner::RunIdleTasks(base::OnceClosure callback) {
   SchedulerRunIdleTasks(std::move(callback));
 }
 
 void BlinkTestRunner::ForceTextInputStateUpdate(WebLocalFrame* frame) {
   ForceTextInputStateUpdateForRenderFrame(RenderFrame::FromWebFrame(frame));
-}
-
-void BlinkTestRunner::ExcludeSchemeFromRequestInitiatorSiteLockChecks(
-    const std::string& scheme) {
-  Send(new WebTestHostMsg_ExcludeSchemeFromRequestInitiatorSiteLockChecks(
-      routing_id(), scheme));
 }
 
 // RenderViewObserver  --------------------------------------------------------
@@ -758,7 +752,7 @@ mojom::WebTestBluetoothFakeAdapterSetter&
 BlinkTestRunner::GetBluetoothFakeAdapterSetter() {
   if (!bluetooth_fake_adapter_setter_) {
     RenderThread::Get()->BindHostReceiver(
-        mojo::MakeRequest(&bluetooth_fake_adapter_setter_));
+        bluetooth_fake_adapter_setter_.BindNewPipeAndPassReceiver());
   }
   return *bluetooth_fake_adapter_setter_;
 }
@@ -799,10 +793,6 @@ void BlinkTestRunner::OnSetTestConfiguration(
   ForceResizeRenderView(render_view(),
                         WebSize(local_params->initial_size.width(),
                                 local_params->initial_size.height()));
-
-  // Tests should always start with the browser controls hidden.
-  render_view()->UpdateBrowserControlsState(
-      BROWSER_CONTROLS_STATE_BOTH, BROWSER_CONTROLS_STATE_HIDDEN, false);
 
   WebTestRenderThreadObserver::GetInstance()
       ->test_interfaces()

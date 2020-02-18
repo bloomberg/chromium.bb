@@ -19,6 +19,7 @@
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/shell/browser/shell.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
@@ -98,13 +99,13 @@ class ManifestBrowserTest : public ContentBrowserTest,
     // The IPCs reporting console errors are not FIFO with the manifest IPCs.
     // Waiting for a round-trip channel-associated message will wait until any
     // already enqueued channel-associated IPCs arrive at the browser process.
-    blink::mojom::ManifestManagerAssociatedPtr ptr;
+    mojo::AssociatedRemote<blink::mojom::ManifestManager> remote;
     shell()
         ->web_contents()
         ->GetMainFrame()
         ->GetRemoteAssociatedInterfaces()
-        ->GetInterface(&ptr);
-    ptr.FlushForTesting();
+        ->GetInterface(&remote);
+    remote.FlushForTesting();
     return console_error_count_;
   }
 
@@ -576,7 +577,7 @@ IN_PROC_BROWSER_TEST_F(ManifestBrowserTest, UseCredentialsSendCookies) {
   std::unique_ptr<net::EmbeddedTestServer> custom_embedded_test_server(
       new net::EmbeddedTestServer());
   custom_embedded_test_server->RegisterRequestHandler(
-      base::Bind(&CustomHandleRequestForCookies));
+      base::BindRepeating(&CustomHandleRequestForCookies));
 
   ASSERT_TRUE(custom_embedded_test_server->Start());
 
@@ -636,7 +637,7 @@ IN_PROC_BROWSER_TEST_F(ManifestBrowserTest, NoUseCredentialsNoCookies) {
   std::unique_ptr<net::EmbeddedTestServer> custom_embedded_test_server(
       new net::EmbeddedTestServer());
   custom_embedded_test_server->RegisterRequestHandler(
-      base::Bind(&CustomHandleRequestForNoCookies));
+      base::BindRepeating(&CustomHandleRequestForNoCookies));
 
   ASSERT_TRUE(custom_embedded_test_server->Start());
 

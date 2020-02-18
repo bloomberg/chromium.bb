@@ -62,8 +62,6 @@ ListInfos GetListInfos() {
 #endif
   const bool kSyncAlways = true;
   const bool kSyncNever = false;
-  const bool kSyncRealTimeLookupList =
-      RealTimePolicyEngine::IsFetchAllowlistEnabled();
   return ListInfos({
       ListInfo(kSyncAlways, "IpMalware.store", GetIpMalwareId(),
                SB_THREAT_TYPE_UNUSED),
@@ -93,7 +91,7 @@ ListInfos GetListInfos() {
       ListInfo(kSyncOnlyOnChromeBuilds, "UrlSuspiciousSite.store",
                GetUrlSuspiciousSiteId(), SB_THREAT_TYPE_SUSPICIOUS_SITE),
       ListInfo(kSyncNever, "", GetChromeUrlApiId(), SB_THREAT_TYPE_API_ABUSE),
-      ListInfo(kSyncRealTimeLookupList, "UrlHighConfidenceAllowlist.store",
+      ListInfo(kSyncOnlyOnChromeBuilds, "UrlHighConfidenceAllowlist.store",
                GetUrlHighConfidenceAllowlistId(),
                SB_THREAT_TYPE_HIGH_CONFIDENCE_ALLOWLIST),
   });
@@ -337,7 +335,10 @@ bool V4LocalDatabaseManager::CheckBrowseUrl(const GURL& url,
       CreateStoresToCheckFromSBThreatTypeSet(threat_types),
       std::vector<GURL>(1, url));
 
-  return HandleCheck(std::move(check));
+  bool safe_synchronously = HandleCheck(std::move(check));
+  UMA_HISTOGRAM_BOOLEAN("SafeBrowsing.CheckBrowseUrl.HasLocalMatch",
+                        !safe_synchronously);
+  return safe_synchronously;
 }
 
 bool V4LocalDatabaseManager::CheckDownloadUrl(
@@ -402,8 +403,10 @@ AsyncMatch V4LocalDatabaseManager::CheckUrlForHighConfidenceAllowlist(
   if (!enabled_ || !CanCheckUrl(url) ||
       !AreAllStoresAvailableNow(stores_to_check)) {
     // NOTE(vakh): If Safe Browsing isn't enabled yet, or if the URL isn't a
-    // navigation URL, or if the allowlist isn't ready yet, return NO_MATCH.
-    return AsyncMatch::NO_MATCH;
+    // navigation URL, or if the allowlist isn't ready yet, return MATCH.
+    // The full URL check won't be performed, but hash-based check will still
+    // be done.
+    return AsyncMatch::MATCH;
   }
 
   std::unique_ptr<PendingCheck> check = std::make_unique<PendingCheck>(

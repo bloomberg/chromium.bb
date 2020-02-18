@@ -7,8 +7,18 @@
 
 namespace updater {
 
+// The updater specific app ID.
+extern const char kUpdaterAppId[];
+
+// Chrome's app ID.
+extern const char kChromeAppId[];
+
 // Command line switches.
 //
+
+// COM server.
+extern const char kComServerSwitch[];
+
 // Crash the program for testing purposes.
 extern const char kCrashMeSwitch[];
 
@@ -38,9 +48,6 @@ extern const char kInitDoneNotifierSwitch[];
 // Enables logging.
 extern const char kEnableLoggingSwitch[];
 
-// Specifies the logging level.
-extern const char kLoggingLevelSwitch[];
-
 // Specifies the logging module filter.
 extern const char kLoggingModuleSwitch[];
 
@@ -53,7 +60,7 @@ extern const char kUpdaterJSONDefaultUrl[];
 extern const char kCrashUploadURL[];
 extern const char kCrashStagingUploadURL[];
 
-// Paths.
+// File system paths.
 //
 // The directory name where CRX apps get installed. This is provided for demo
 // purposes, since products installed by this updater will be installed in

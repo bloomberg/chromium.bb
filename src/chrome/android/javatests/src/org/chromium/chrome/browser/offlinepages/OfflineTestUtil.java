@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.offlinepages;
 
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 
 import org.junit.Assert;
 
@@ -35,8 +35,7 @@ public class OfflineTestUtil {
     }
 
     // Gets all the URLs in the request queue.
-    public static SavePageRequest[] getRequestsInQueue()
-            throws TimeoutException, InterruptedException {
+    public static SavePageRequest[] getRequestsInQueue() throws TimeoutException {
         final AtomicReference<SavePageRequest[]> result = new AtomicReference<>();
         final CallbackHelper callbackHelper = new CallbackHelper();
         TestThreadUtils.runOnUiThreadBlocking(() -> {
@@ -50,8 +49,7 @@ public class OfflineTestUtil {
     }
 
     // Gets all available offline pages.
-    public static List<OfflinePageItem> getAllPages()
-            throws TimeoutException, InterruptedException {
+    public static List<OfflinePageItem> getAllPages() throws TimeoutException {
         final AtomicReference<List<OfflinePageItem>> result =
                 new AtomicReference<List<OfflinePageItem>>();
         final CallbackHelper callbackHelper = new CallbackHelper();
@@ -67,8 +65,7 @@ public class OfflineTestUtil {
 
     // Returns a string representation of the requests contained in the RequestCoordinator.
     // For logging out to debug test failures.
-    public static String dumpRequestCoordinatorState()
-            throws TimeoutException, InterruptedException {
+    public static String dumpRequestCoordinatorState() throws TimeoutException {
         final CallbackHelper callbackHelper = new CallbackHelper();
         final AtomicReference<String> result = new AtomicReference<String>();
         TestThreadUtils.runOnUiThreadBlocking(() -> {
@@ -83,8 +80,7 @@ public class OfflineTestUtil {
 
     // Returns the OfflinePageItem with the given clientId, or null if one doesn't exist.
     public static @Nullable OfflinePageItem getPageByClientId(ClientId clientId)
-            throws TimeoutException, InterruptedException {
-        ArrayList<OfflinePageItem> result = new ArrayList<OfflinePageItem>();
+            throws TimeoutException {
         for (OfflinePageItem item : getAllPages()) {
             if (item.getClientId().equals(clientId)) {
                 return item;
@@ -94,8 +90,7 @@ public class OfflineTestUtil {
     }
 
     // Returns all OfflineItems provided by the OfflineContentProvider.
-    public static List<OfflineItem> getOfflineItems()
-            throws TimeoutException, InterruptedException {
+    public static List<OfflineItem> getOfflineItems() throws TimeoutException {
         CallbackHelper finished = new CallbackHelper();
         final AtomicReference<ArrayList<OfflineItem>> result =
                 new AtomicReference<ArrayList<OfflineItem>>();
@@ -109,8 +104,7 @@ public class OfflineTestUtil {
         return result.get();
     }
 
-    public static byte[] getRawThumbnail(long offlineId)
-            throws TimeoutException, InterruptedException {
+    public static byte[] getRawThumbnail(long offlineId) throws TimeoutException {
         final AtomicReference<byte[]> result = new AtomicReference<>();
         final CallbackHelper callbackHelper = new CallbackHelper();
         TestThreadUtils.runOnUiThreadBlocking(() -> {
@@ -124,8 +118,7 @@ public class OfflineTestUtil {
     }
 
     // Waits for the offline model to initialize and returns an OfflinePageBridge.
-    public static OfflinePageBridge getOfflinePageBridge()
-            throws TimeoutException, InterruptedException {
+    public static OfflinePageBridge getOfflinePageBridge() throws TimeoutException {
         final CallbackHelper ready = new CallbackHelper();
         final AtomicReference<OfflinePageBridge> result = new AtomicReference<OfflinePageBridge>();
         PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
@@ -151,8 +144,7 @@ public class OfflineTestUtil {
     }
 
     // Intercepts future HTTP requests for |url| with an offline net error.
-    public static void interceptWithOfflineError(String url)
-            throws TimeoutException, InterruptedException {
+    public static void interceptWithOfflineError(String url) throws TimeoutException {
         final CallbackHelper callbackHelper = new CallbackHelper();
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             nativeInterceptWithOfflineError(url, () -> callbackHelper.notifyCalled());

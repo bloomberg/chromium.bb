@@ -38,8 +38,8 @@ class Alarm {
   // The design requires that Alarm instances not be copied or moved.
   Alarm(const Alarm&) = delete;
   Alarm& operator=(const Alarm&) = delete;
-  Alarm(Alarm&&) = delete;
-  Alarm& operator=(Alarm&&) = delete;
+  Alarm(Alarm&&) noexcept = delete;
+  Alarm& operator=(Alarm&&) noexcept = delete;
 
   // Schedule the |functor| to be invoked at |alarm_time|. If this Alarm was
   // already scheduled, the prior scheduling is canceled. The Functor can be any
@@ -50,6 +50,15 @@ class Alarm {
                        platform::Clock::time_point alarm_time) {
     ScheduleWithTask(platform::TaskRunner::Task(std::move(functor)),
                      alarm_time);
+  }
+
+  // Same as Schedule(), but invoke the functor at the given |delay| after right
+  // now.
+  template <typename Functor>
+  inline void ScheduleFromNow(Functor functor,
+                              platform::Clock::duration delay) {
+    ScheduleWithTask(platform::TaskRunner::Task(std::move(functor)),
+                     now_function_() + delay);
   }
 
   // Cancels an already-scheduled task from running, or no-op.

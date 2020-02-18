@@ -32,6 +32,19 @@ namespace {
 // period will be a no-op.
 constexpr base::TimeDelta kUpdatePrefsDelay = base::TimeDelta::FromSeconds(60);
 
+url::SchemeHostPort NormalizeSchemeHostPort(
+    const url::SchemeHostPort& scheme_host_port) {
+  if (scheme_host_port.scheme() == url::kWssScheme) {
+    return url::SchemeHostPort(url::kHttpsScheme, scheme_host_port.host(),
+                               scheme_host_port.port());
+  }
+  if (scheme_host_port.scheme() == url::kWsScheme) {
+    return url::SchemeHostPort(url::kHttpScheme, scheme_host_port.host(),
+                               scheme_host_port.port());
+  }
+  return scheme_host_port;
+}
+
 }  // namespace
 
 HttpServerProperties::PrefDelegate::~PrefDelegate() = default;
@@ -56,13 +69,15 @@ bool HttpServerProperties::ServerInfo::operator==(
 }
 
 HttpServerProperties::ServerInfoMapKey::ServerInfoMapKey(
-    const url::SchemeHostPort& server,
+    url::SchemeHostPort server,
     const NetworkIsolationKey& network_isolation_key,
     bool use_network_isolation_key)
-    : server(server),
+    : server(std::move(server)),
       network_isolation_key(use_network_isolation_key ? network_isolation_key
                                                       : NetworkIsolationKey()) {
-  // TODO(mmenke):  DCHECK that |server|'s scheme is not ws/wss.
+  // Scheme should have been normalized before this method was called.
+  DCHECK_NE(this->server.scheme(), url::kWsScheme);
+  DCHECK_NE(this->server.scheme(), url::kWssScheme);
 }
 
 HttpServerProperties::ServerInfoMapKey::~ServerInfoMapKey() = default;
@@ -71,6 +86,30 @@ bool HttpServerProperties::ServerInfoMapKey::operator<(
     const ServerInfoMapKey& other) const {
   return std::tie(server, network_isolation_key) <
          std::tie(other.server, other.network_isolation_key);
+}
+
+HttpServerProperties::QuicServerInfoMapKey::QuicServerInfoMapKey(
+    const quic::QuicServerId& server_id,
+    const NetworkIsolationKey& network_isolation_key,
+    bool use_network_isolation_key)
+    : server_id(server_id),
+      network_isolation_key(use_network_isolation_key ? network_isolation_key
+                                                      : NetworkIsolationKey()) {
+}
+
+HttpServerProperties::QuicServerInfoMapKey::~QuicServerInfoMapKey() = default;
+
+bool HttpServerProperties::QuicServerInfoMapKey::operator<(
+    const QuicServerInfoMapKey& other) const {
+  return std::tie(server_id, network_isolation_key) <
+         std::tie(other.server_id, other.network_isolation_key);
+}
+
+// Used in tests.
+bool HttpServerProperties::QuicServerInfoMapKey::operator==(
+    const QuicServerInfoMapKey& other) const {
+  return std::tie(server_id, network_isolation_key) ==
+         std::tie(other.server_id, other.network_isolation_key);
 }
 
 HttpServerProperties::ServerInfoMap::ServerInfoMap()
@@ -136,26 +175,12 @@ HttpServerProperties::~HttpServerProperties() {
   }
 }
 
-url::SchemeHostPort HttpServerProperties::GetNormalizedSchemeHostPort(
-    const GURL& url) {
-  if (url.is_valid()) {
-    if (url.SchemeIs(url::kHttpsScheme) || url.SchemeIs(url::kWssScheme)) {
-      return url::SchemeHostPort(url::kHttpsScheme, url.host_piece(),
-                                 url.EffectiveIntPort());
-    } else if (url.SchemeIs(url::kHttpScheme) || url.SchemeIs(url::kWsScheme)) {
-      return url::SchemeHostPort(url::kHttpScheme, url.host_piece(),
-                                 url.EffectiveIntPort());
-    }
-  }
-  return url::SchemeHostPort(url);
-}
-
 void HttpServerProperties::Clear(base::OnceClosure callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   server_info_map_.Clear();
   broken_alternative_services_.Clear();
   canonical_alt_svc_map_.clear();
-  last_quic_address_ = IPAddress();
+  last_local_address_when_quic_worked_ = IPAddress();
   quic_server_info_map_.Clear();
   canonical_server_info_map_.clear();
 
@@ -200,13 +225,8 @@ bool HttpServerProperties::GetSupportsSpdy(
     const url::SchemeHostPort& server,
     const net::NetworkIsolationKey& network_isolation_key) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  if (server.host().empty())
-    return false;
-
-  auto server_info =
-      server_info_map_.Get(CreateServerInfoKey(server, network_isolation_key));
-  return server_info != server_info_map_.end() &&
-         server_info->second.supports_spdy.value_or(false);
+  return GetSupportsSpdyInternal(NormalizeSchemeHostPort(server),
+                                 network_isolation_key);
 }
 
 void HttpServerProperties::SetSupportsSpdy(
@@ -214,11 +234,413 @@ void HttpServerProperties::SetSupportsSpdy(
     const net::NetworkIsolationKey& network_isolation_key,
     bool supports_spdy) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  SetSupportsSpdyInternal(NormalizeSchemeHostPort(server),
+                          network_isolation_key, supports_spdy);
+}
+
+bool HttpServerProperties::RequiresHTTP11(
+    const url::SchemeHostPort& server,
+    const net::NetworkIsolationKey& network_isolation_key) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  return RequiresHTTP11Internal(NormalizeSchemeHostPort(server),
+                                network_isolation_key);
+}
+
+void HttpServerProperties::SetHTTP11Required(
+    const url::SchemeHostPort& server,
+    const net::NetworkIsolationKey& network_isolation_key) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  SetHTTP11RequiredInternal(NormalizeSchemeHostPort(server),
+                            network_isolation_key);
+}
+
+void HttpServerProperties::MaybeForceHTTP11(
+    const url::SchemeHostPort& server,
+    const net::NetworkIsolationKey& network_isolation_key,
+    SSLConfig* ssl_config) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  MaybeForceHTTP11Internal(NormalizeSchemeHostPort(server),
+                           network_isolation_key, ssl_config);
+}
+
+AlternativeServiceInfoVector HttpServerProperties::GetAlternativeServiceInfos(
+    const url::SchemeHostPort& origin,
+    const net::NetworkIsolationKey& network_isolation_key) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  return GetAlternativeServiceInfosInternal(NormalizeSchemeHostPort(origin),
+                                            network_isolation_key);
+}
+
+void HttpServerProperties::SetHttp2AlternativeService(
+    const url::SchemeHostPort& origin,
+    const NetworkIsolationKey& network_isolation_key,
+    const AlternativeService& alternative_service,
+    base::Time expiration) {
+  DCHECK_EQ(alternative_service.protocol, kProtoHTTP2);
+
+  SetAlternativeServices(
+      origin, network_isolation_key,
+      AlternativeServiceInfoVector(
+          /*size=*/1, AlternativeServiceInfo::CreateHttp2AlternativeServiceInfo(
+                          alternative_service, expiration)));
+}
+
+void HttpServerProperties::SetQuicAlternativeService(
+    const url::SchemeHostPort& origin,
+    const NetworkIsolationKey& network_isolation_key,
+    const AlternativeService& alternative_service,
+    base::Time expiration,
+    const quic::ParsedQuicVersionVector& advertised_versions) {
+  DCHECK(alternative_service.protocol == kProtoQUIC);
+
+  SetAlternativeServices(
+      origin, network_isolation_key,
+      AlternativeServiceInfoVector(
+          /*size=*/1,
+          AlternativeServiceInfo::CreateQuicAlternativeServiceInfo(
+              alternative_service, expiration, advertised_versions)));
+}
+
+void HttpServerProperties::SetAlternativeServices(
+    const url::SchemeHostPort& origin,
+    const net::NetworkIsolationKey& network_isolation_key,
+    const AlternativeServiceInfoVector& alternative_service_info_vector) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  SetAlternativeServicesInternal(NormalizeSchemeHostPort(origin),
+                                 network_isolation_key,
+                                 alternative_service_info_vector);
+}
+
+void HttpServerProperties::MarkAlternativeServiceBroken(
+    const AlternativeService& alternative_service,
+    const net::NetworkIsolationKey& network_isolation_key) {
+  broken_alternative_services_.MarkBroken(BrokenAlternativeService(
+      alternative_service, network_isolation_key, use_network_isolation_key_));
+  MaybeQueueWriteProperties();
+}
+
+void HttpServerProperties::
+    MarkAlternativeServiceBrokenUntilDefaultNetworkChanges(
+        const AlternativeService& alternative_service,
+        const net::NetworkIsolationKey& network_isolation_key) {
+  broken_alternative_services_.MarkBrokenUntilDefaultNetworkChanges(
+      BrokenAlternativeService(alternative_service, network_isolation_key,
+                               use_network_isolation_key_));
+  MaybeQueueWriteProperties();
+}
+
+void HttpServerProperties::MarkAlternativeServiceRecentlyBroken(
+    const AlternativeService& alternative_service,
+    const net::NetworkIsolationKey& network_isolation_key) {
+  broken_alternative_services_.MarkRecentlyBroken(BrokenAlternativeService(
+      alternative_service, network_isolation_key, use_network_isolation_key_));
+  MaybeQueueWriteProperties();
+}
+
+bool HttpServerProperties::IsAlternativeServiceBroken(
+    const AlternativeService& alternative_service,
+    const net::NetworkIsolationKey& network_isolation_key) const {
+  return broken_alternative_services_.IsBroken(BrokenAlternativeService(
+      alternative_service, network_isolation_key, use_network_isolation_key_));
+}
+
+bool HttpServerProperties::WasAlternativeServiceRecentlyBroken(
+    const AlternativeService& alternative_service,
+    const net::NetworkIsolationKey& network_isolation_key) {
+  return broken_alternative_services_.WasRecentlyBroken(
+      BrokenAlternativeService(alternative_service, network_isolation_key,
+                               use_network_isolation_key_));
+}
+
+void HttpServerProperties::ConfirmAlternativeService(
+    const AlternativeService& alternative_service,
+    const net::NetworkIsolationKey& network_isolation_key) {
+  bool old_value =
+      IsAlternativeServiceBroken(alternative_service, network_isolation_key);
+  broken_alternative_services_.Confirm(BrokenAlternativeService(
+      alternative_service, network_isolation_key, use_network_isolation_key_));
+  bool new_value =
+      IsAlternativeServiceBroken(alternative_service, network_isolation_key);
+
+  // For persisting, we only care about the value returned by
+  // IsAlternativeServiceBroken. If that value changes, then call persist.
+  if (old_value != new_value)
+    MaybeQueueWriteProperties();
+}
+
+void HttpServerProperties::OnDefaultNetworkChanged() {
+  bool changed = broken_alternative_services_.OnDefaultNetworkChanged();
+  if (changed)
+    MaybeQueueWriteProperties();
+}
+
+std::unique_ptr<base::Value>
+HttpServerProperties::GetAlternativeServiceInfoAsValue() const {
+  const base::Time now = clock_->Now();
+  const base::TimeTicks now_ticks = tick_clock_->NowTicks();
+  std::unique_ptr<base::ListValue> dict_list(new base::ListValue);
+  for (const auto& server_info : server_info_map_) {
+    if (!server_info.second.alternative_services.has_value())
+      continue;
+    std::unique_ptr<base::ListValue> alternative_service_list(
+        new base::ListValue);
+    const ServerInfoMapKey& key = server_info.first;
+    for (const AlternativeServiceInfo& alternative_service_info :
+         server_info.second.alternative_services.value()) {
+      std::string alternative_service_string(
+          alternative_service_info.ToString());
+      AlternativeService alternative_service(
+          alternative_service_info.alternative_service());
+      if (alternative_service.host.empty()) {
+        alternative_service.host = key.server.host();
+      }
+      base::TimeTicks brokenness_expiration_ticks;
+      if (broken_alternative_services_.IsBroken(
+              BrokenAlternativeService(alternative_service,
+                                       server_info.first.network_isolation_key,
+                                       use_network_isolation_key_),
+              &brokenness_expiration_ticks)) {
+        // Convert |brokenness_expiration| from TimeTicks to Time
+        base::Time brokenness_expiration =
+            now + (brokenness_expiration_ticks - now_ticks);
+        base::Time::Exploded exploded;
+        brokenness_expiration.LocalExplode(&exploded);
+        std::string broken_info_string =
+            " (broken until " +
+            base::StringPrintf("%04d-%02d-%02d %0d:%0d:%0d", exploded.year,
+                               exploded.month, exploded.day_of_month,
+                               exploded.hour, exploded.minute,
+                               exploded.second) +
+            ")";
+        alternative_service_string.append(broken_info_string);
+      }
+      alternative_service_list->AppendString(alternative_service_string);
+    }
+    if (alternative_service_list->empty())
+      continue;
+    std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+    dict->SetString("server", key.server.Serialize());
+    dict->SetString("network_isolation_key",
+                    key.network_isolation_key.ToDebugString());
+    dict->Set("alternative_service", std::unique_ptr<base::Value>(
+                                         std::move(alternative_service_list)));
+    dict_list->Append(std::move(dict));
+  }
+  return std::move(dict_list);
+}
+
+bool HttpServerProperties::WasLastLocalAddressWhenQuicWorked(
+    const IPAddress& local_address) const {
+  return !last_local_address_when_quic_worked_.empty() &&
+         last_local_address_when_quic_worked_ == local_address;
+}
+
+bool HttpServerProperties::HasLastLocalAddressWhenQuicWorked() const {
+  return !last_local_address_when_quic_worked_.empty();
+}
+
+void HttpServerProperties::SetLastLocalAddressWhenQuicWorked(
+    IPAddress last_local_address_when_quic_worked) {
+  DCHECK(!last_local_address_when_quic_worked.empty());
+  if (last_local_address_when_quic_worked_ ==
+      last_local_address_when_quic_worked) {
+    return;
+  }
+
+  last_local_address_when_quic_worked_ = last_local_address_when_quic_worked;
+  MaybeQueueWriteProperties();
+}
+
+void HttpServerProperties::ClearLastLocalAddressWhenQuicWorked() {
+  if (last_local_address_when_quic_worked_.empty())
+    return;
+
+  last_local_address_when_quic_worked_ = IPAddress();
+  MaybeQueueWriteProperties();
+}
+
+void HttpServerProperties::SetServerNetworkStats(
+    const url::SchemeHostPort& server,
+    const NetworkIsolationKey& network_isolation_key,
+    ServerNetworkStats stats) {
+  SetServerNetworkStatsInternal(NormalizeSchemeHostPort(server),
+                                network_isolation_key, std::move(stats));
+}
+
+void HttpServerProperties::ClearServerNetworkStats(
+    const url::SchemeHostPort& server,
+    const NetworkIsolationKey& network_isolation_key) {
+  ClearServerNetworkStatsInternal(NormalizeSchemeHostPort(server),
+                                  network_isolation_key);
+}
+
+const ServerNetworkStats* HttpServerProperties::GetServerNetworkStats(
+    const url::SchemeHostPort& server,
+    const NetworkIsolationKey& network_isolation_key) {
+  return GetServerNetworkStatsInternal(NormalizeSchemeHostPort(server),
+                                       network_isolation_key);
+}
+
+void HttpServerProperties::SetQuicServerInfo(
+    const quic::QuicServerId& server_id,
+    const NetworkIsolationKey& network_isolation_key,
+    const std::string& server_info) {
+  QuicServerInfoMapKey key =
+      CreateQuicServerInfoKey(server_id, network_isolation_key);
+  auto it = quic_server_info_map_.Peek(key);
+  bool changed =
+      (it == quic_server_info_map_.end() || it->second != server_info);
+  quic_server_info_map_.Put(key, server_info);
+  UpdateCanonicalServerInfoMap(key);
+  if (changed)
+    MaybeQueueWriteProperties();
+}
+
+const std::string* HttpServerProperties::GetQuicServerInfo(
+    const quic::QuicServerId& server_id,
+    const NetworkIsolationKey& network_isolation_key) {
+  QuicServerInfoMapKey key =
+      CreateQuicServerInfoKey(server_id, network_isolation_key);
+  auto it = quic_server_info_map_.Get(key);
+  if (it != quic_server_info_map_.end()) {
+    // Since |canonical_server_info_map_| should always map to the most
+    // recent host, update it with the one that became MRU in
+    // |quic_server_info_map_|.
+    UpdateCanonicalServerInfoMap(key);
+    return &it->second;
+  }
+
+  // If the exact match for |server_id| wasn't found, check
+  // |canonical_server_info_map_| whether there is server info for a host with
+  // the same canonical host suffix.
+  auto canonical_itr = GetCanonicalServerInfoHost(key);
+  if (canonical_itr == canonical_server_info_map_.end())
+    return nullptr;
+
+  // When search in |quic_server_info_map_|, do not change the MRU order.
+  it = quic_server_info_map_.Peek(
+      CreateQuicServerInfoKey(canonical_itr->second, network_isolation_key));
+  if (it != quic_server_info_map_.end())
+    return &it->second;
+
+  return nullptr;
+}
+
+const HttpServerProperties::QuicServerInfoMap&
+HttpServerProperties::quic_server_info_map() const {
+  return quic_server_info_map_;
+}
+
+size_t HttpServerProperties::max_server_configs_stored_in_properties() const {
+  return max_server_configs_stored_in_properties_;
+}
+
+void HttpServerProperties::SetMaxServerConfigsStoredInProperties(
+    size_t max_server_configs_stored_in_properties) {
+  // Do nothing if the new size is the same as the old one.
+  if (max_server_configs_stored_in_properties_ ==
+      max_server_configs_stored_in_properties) {
+    return;
+  }
+
+  max_server_configs_stored_in_properties_ =
+      max_server_configs_stored_in_properties;
+
+  // MRUCache doesn't allow the capacity of the cache to be changed. Thus create
+  // a new map with the new size and add current elements and swap the new map.
+  quic_server_info_map_.ShrinkToSize(max_server_configs_stored_in_properties_);
+  QuicServerInfoMap temp_map(max_server_configs_stored_in_properties_);
+  // Update the |canonical_server_info_map_| as well, so it stays in sync with
+  // |quic_server_info_map_|.
+  canonical_server_info_map_ = QuicCanonicalMap();
+  for (auto it = quic_server_info_map_.rbegin();
+       it != quic_server_info_map_.rend(); ++it) {
+    temp_map.Put(it->first, it->second);
+    UpdateCanonicalServerInfoMap(it->first);
+  }
+
+  quic_server_info_map_.Swap(temp_map);
+  if (properties_manager_) {
+    properties_manager_->set_max_server_configs_stored_in_properties(
+        max_server_configs_stored_in_properties);
+  }
+}
+
+bool HttpServerProperties::IsInitialized() const {
+  return is_initialized_;
+}
+
+void HttpServerProperties::OnExpireBrokenAlternativeService(
+    const AlternativeService& expired_alternative_service,
+    const NetworkIsolationKey& network_isolation_key) {
+  // Remove every occurrence of |expired_alternative_service| from
+  // |alternative_service_map_|.
+  for (auto map_it = server_info_map_.begin();
+       map_it != server_info_map_.end();) {
+    if (!map_it->second.alternative_services.has_value() ||
+        map_it->first.network_isolation_key != network_isolation_key) {
+      ++map_it;
+      continue;
+    }
+    AlternativeServiceInfoVector* service_info =
+        &map_it->second.alternative_services.value();
+    for (auto it = service_info->begin(); it != service_info->end();) {
+      AlternativeService alternative_service(it->alternative_service());
+      // Empty hostname in map means hostname of key: substitute before
+      // comparing to |expired_alternative_service|.
+      if (alternative_service.host.empty()) {
+        alternative_service.host = map_it->first.server.host();
+      }
+      if (alternative_service == expired_alternative_service) {
+        it = service_info->erase(it);
+        continue;
+      }
+      ++it;
+    }
+    // If an origin has an empty list of alternative services, then remove it
+    // from both |canonical_alt_svc_map_| and
+    // |alternative_service_map_|.
+    if (service_info->empty()) {
+      RemoveAltSvcCanonicalHost(map_it->first.server, network_isolation_key);
+      map_it->second.alternative_services.reset();
+      map_it = server_info_map_.EraseIfEmpty(map_it);
+      continue;
+    }
+    ++map_it;
+  }
+}
+
+base::TimeDelta HttpServerProperties::GetUpdatePrefsDelayForTesting() {
+  return kUpdatePrefsDelay;
+}
+
+bool HttpServerProperties::GetSupportsSpdyInternal(
+    url::SchemeHostPort server,
+    const net::NetworkIsolationKey& network_isolation_key) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK_NE(server.scheme(), url::kWsScheme);
+  DCHECK_NE(server.scheme(), url::kWssScheme);
+  if (server.host().empty())
+    return false;
+
+  auto server_info = server_info_map_.Get(
+      CreateServerInfoKey(std::move(server), network_isolation_key));
+  return server_info != server_info_map_.end() &&
+         server_info->second.supports_spdy.value_or(false);
+}
+
+void HttpServerProperties::SetSupportsSpdyInternal(
+    url::SchemeHostPort server,
+    const net::NetworkIsolationKey& network_isolation_key,
+    bool supports_spdy) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK_NE(server.scheme(), url::kWsScheme);
+  DCHECK_NE(server.scheme(), url::kWssScheme);
   if (server.host().empty())
     return;
 
   auto server_info = server_info_map_.GetOrPut(
-      CreateServerInfoKey(server, network_isolation_key));
+      CreateServerInfoKey(std::move(server), network_isolation_key));
   // If value is already the same as |supports_spdy|, or value is unset and
   // |supports_spdy| is false, don't queue a write.
   bool queue_write =
@@ -229,51 +651,58 @@ void HttpServerProperties::SetSupportsSpdy(
     MaybeQueueWriteProperties();
 }
 
-bool HttpServerProperties::RequiresHTTP11(
-    const url::SchemeHostPort& server,
+bool HttpServerProperties::RequiresHTTP11Internal(
+    url::SchemeHostPort server,
     const net::NetworkIsolationKey& network_isolation_key) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK(server.scheme() != "ws");
-  DCHECK(server.scheme() != "wss");
+  DCHECK_NE(server.scheme(), url::kWsScheme);
+  DCHECK_NE(server.scheme(), url::kWssScheme);
   if (server.host().empty())
     return false;
 
-  auto spdy_info =
-      server_info_map_.Get(CreateServerInfoKey(server, network_isolation_key));
+  auto spdy_info = server_info_map_.Get(
+      CreateServerInfoKey(std::move(server), network_isolation_key));
   return spdy_info != server_info_map_.end() &&
          spdy_info->second.requires_http11.value_or(false);
 }
 
-void HttpServerProperties::SetHTTP11Required(
-    const url::SchemeHostPort& server,
+void HttpServerProperties::SetHTTP11RequiredInternal(
+    url::SchemeHostPort server,
     const net::NetworkIsolationKey& network_isolation_key) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK(server.scheme() != "ws");
-  DCHECK(server.scheme() != "wss");
+  DCHECK_NE(server.scheme(), url::kWsScheme);
+  DCHECK_NE(server.scheme(), url::kWssScheme);
   if (server.host().empty())
     return;
 
-  server_info_map_.GetOrPut(CreateServerInfoKey(server, network_isolation_key))
+  server_info_map_
+      .GetOrPut(CreateServerInfoKey(std::move(server), network_isolation_key))
       ->second.requires_http11 = true;
   // No need to call MaybeQueueWriteProperties(), as this information is not
   // persisted to preferences.
 }
 
-void HttpServerProperties::MaybeForceHTTP11(
-    const url::SchemeHostPort& server,
+void HttpServerProperties::MaybeForceHTTP11Internal(
+    url::SchemeHostPort server,
     const net::NetworkIsolationKey& network_isolation_key,
     SSLConfig* ssl_config) {
-  DCHECK(server.scheme() != "ws");
-  DCHECK(server.scheme() != "wss");
-  if (RequiresHTTP11(server, network_isolation_key)) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK_NE(server.scheme(), url::kWsScheme);
+  DCHECK_NE(server.scheme(), url::kWssScheme);
+  if (RequiresHTTP11(std::move(server), network_isolation_key)) {
     ssl_config->alpn_protos.clear();
     ssl_config->alpn_protos.push_back(kProtoHTTP11);
   }
 }
 
-AlternativeServiceInfoVector HttpServerProperties::GetAlternativeServiceInfos(
+AlternativeServiceInfoVector
+HttpServerProperties::GetAlternativeServiceInfosInternal(
     const url::SchemeHostPort& origin,
     const net::NetworkIsolationKey& network_isolation_key) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK_NE(origin.scheme(), url::kWsScheme);
+  DCHECK_NE(origin.scheme(), url::kWssScheme);
+
   // Copy valid alternative service infos into
   // |valid_alternative_service_infos|.
   AlternativeServiceInfoVector valid_alternative_service_infos;
@@ -340,12 +769,14 @@ AlternativeServiceInfoVector HttpServerProperties::GetAlternativeServiceInfos(
     AlternativeService alternative_service(it->alternative_service());
     if (alternative_service.host.empty()) {
       alternative_service.host = canonical->second.host();
-      if (IsAlternativeServiceBroken(alternative_service)) {
+      if (IsAlternativeServiceBroken(alternative_service,
+                                     network_isolation_key)) {
         ++it;
         continue;
       }
       alternative_service.host = origin.host();
-    } else if (IsAlternativeServiceBroken(alternative_service)) {
+    } else if (IsAlternativeServiceBroken(alternative_service,
+                                          network_isolation_key)) {
       ++it;
       continue;
     }
@@ -366,40 +797,14 @@ AlternativeServiceInfoVector HttpServerProperties::GetAlternativeServiceInfos(
   return valid_alternative_service_infos;
 }
 
-void HttpServerProperties::SetHttp2AlternativeService(
-    const url::SchemeHostPort& origin,
-    const NetworkIsolationKey& network_isolation_key,
-    const AlternativeService& alternative_service,
-    base::Time expiration) {
-  DCHECK_EQ(alternative_service.protocol, kProtoHTTP2);
-
-  SetAlternativeServices(
-      origin, network_isolation_key,
-      AlternativeServiceInfoVector(
-          /*size=*/1, AlternativeServiceInfo::CreateHttp2AlternativeServiceInfo(
-                          alternative_service, expiration)));
-}
-
-void HttpServerProperties::SetQuicAlternativeService(
-    const url::SchemeHostPort& origin,
-    const NetworkIsolationKey& network_isolation_key,
-    const AlternativeService& alternative_service,
-    base::Time expiration,
-    const quic::ParsedQuicVersionVector& advertised_versions) {
-  DCHECK(alternative_service.protocol == kProtoQUIC);
-
-  SetAlternativeServices(
-      origin, network_isolation_key,
-      AlternativeServiceInfoVector(
-          /*size=*/1,
-          AlternativeServiceInfo::CreateQuicAlternativeServiceInfo(
-              alternative_service, expiration, advertised_versions)));
-}
-
-void HttpServerProperties::SetAlternativeServices(
+void HttpServerProperties::SetAlternativeServicesInternal(
     const url::SchemeHostPort& origin,
     const net::NetworkIsolationKey& network_isolation_key,
     const AlternativeServiceInfoVector& alternative_service_info_vector) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK_NE(origin.scheme(), url::kWsScheme);
+  DCHECK_NE(origin.scheme(), url::kWssScheme);
+
   if (alternative_service_info_vector.empty()) {
     RemoveAltSvcCanonicalHost(origin, network_isolation_key);
     // Don't bother moving to front when erasing information.
@@ -486,133 +891,16 @@ void HttpServerProperties::SetAlternativeServices(
     MaybeQueueWriteProperties();
 }
 
-void HttpServerProperties::MarkAlternativeServiceBroken(
-    const AlternativeService& alternative_service) {
-  broken_alternative_services_.MarkBroken(alternative_service);
-  MaybeQueueWriteProperties();
-}
-
-void HttpServerProperties::
-    MarkAlternativeServiceBrokenUntilDefaultNetworkChanges(
-        const AlternativeService& alternative_service) {
-  broken_alternative_services_.MarkBrokenUntilDefaultNetworkChanges(
-      alternative_service);
-  MaybeQueueWriteProperties();
-}
-
-void HttpServerProperties::MarkAlternativeServiceRecentlyBroken(
-    const AlternativeService& alternative_service) {
-  broken_alternative_services_.MarkRecentlyBroken(alternative_service);
-  MaybeQueueWriteProperties();
-}
-
-bool HttpServerProperties::IsAlternativeServiceBroken(
-    const AlternativeService& alternative_service) const {
-  return broken_alternative_services_.IsBroken(alternative_service);
-}
-
-bool HttpServerProperties::WasAlternativeServiceRecentlyBroken(
-    const AlternativeService& alternative_service) {
-  return broken_alternative_services_.WasRecentlyBroken(alternative_service);
-}
-
-void HttpServerProperties::ConfirmAlternativeService(
-    const AlternativeService& alternative_service) {
-  bool old_value = IsAlternativeServiceBroken(alternative_service);
-  broken_alternative_services_.Confirm(alternative_service);
-  bool new_value = IsAlternativeServiceBroken(alternative_service);
-
-  // For persisting, we only care about the value returned by
-  // IsAlternativeServiceBroken. If that value changes, then call persist.
-  if (old_value != new_value)
-    MaybeQueueWriteProperties();
-}
-
-void HttpServerProperties::OnDefaultNetworkChanged() {
-  bool changed = broken_alternative_services_.OnDefaultNetworkChanged();
-  if (changed)
-    MaybeQueueWriteProperties();
-}
-
-std::unique_ptr<base::Value>
-HttpServerProperties::GetAlternativeServiceInfoAsValue() const {
-  const base::Time now = clock_->Now();
-  const base::TimeTicks now_ticks = tick_clock_->NowTicks();
-  std::unique_ptr<base::ListValue> dict_list(new base::ListValue);
-  for (const auto& server_info : server_info_map_) {
-    if (!server_info.second.alternative_services.has_value())
-      continue;
-    std::unique_ptr<base::ListValue> alternative_service_list(
-        new base::ListValue);
-    const ServerInfoMapKey& key = server_info.first;
-    for (const AlternativeServiceInfo& alternative_service_info :
-         server_info.second.alternative_services.value()) {
-      std::string alternative_service_string(
-          alternative_service_info.ToString());
-      AlternativeService alternative_service(
-          alternative_service_info.alternative_service());
-      if (alternative_service.host.empty()) {
-        alternative_service.host = key.server.host();
-      }
-      base::TimeTicks brokenness_expiration_ticks;
-      if (broken_alternative_services_.IsBroken(alternative_service,
-                                                &brokenness_expiration_ticks)) {
-        // Convert |brokenness_expiration| from TimeTicks to Time
-        base::Time brokenness_expiration =
-            now + (brokenness_expiration_ticks - now_ticks);
-        base::Time::Exploded exploded;
-        brokenness_expiration.LocalExplode(&exploded);
-        std::string broken_info_string =
-            " (broken until " +
-            base::StringPrintf("%04d-%02d-%02d %0d:%0d:%0d", exploded.year,
-                               exploded.month, exploded.day_of_month,
-                               exploded.hour, exploded.minute,
-                               exploded.second) +
-            ")";
-        alternative_service_string.append(broken_info_string);
-      }
-      alternative_service_list->AppendString(alternative_service_string);
-    }
-    if (alternative_service_list->empty())
-      continue;
-    std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-    dict->SetString("server", key.server.Serialize());
-    dict->SetString("network_isolation_key",
-                    key.network_isolation_key.ToDebugString());
-    dict->Set("alternative_service", std::unique_ptr<base::Value>(
-                                         std::move(alternative_service_list)));
-    dict_list->Append(std::move(dict));
-  }
-  return std::move(dict_list);
-}
-
-bool HttpServerProperties::GetSupportsQuic(IPAddress* last_address) const {
-  if (last_quic_address_.empty())
-    return false;
-
-  *last_address = last_quic_address_;
-  return true;
-}
-
-void HttpServerProperties::SetSupportsQuic(bool used_quic,
-                                           const IPAddress& address) {
-  IPAddress new_quic_address;
-  if (used_quic)
-    new_quic_address = address;
-
-  if (new_quic_address == last_quic_address_)
-    return;
-
-  last_quic_address_ = new_quic_address;
-  MaybeQueueWriteProperties();
-}
-
-void HttpServerProperties::SetServerNetworkStats(
-    const url::SchemeHostPort& server,
+void HttpServerProperties::SetServerNetworkStatsInternal(
+    url::SchemeHostPort server,
     const NetworkIsolationKey& network_isolation_key,
     ServerNetworkStats stats) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK_NE(server.scheme(), url::kWsScheme);
+  DCHECK_NE(server.scheme(), url::kWssScheme);
+
   auto server_info = server_info_map_.GetOrPut(
-      CreateServerInfoKey(server, network_isolation_key));
+      CreateServerInfoKey(std::move(server), network_isolation_key));
   bool changed = !server_info->second.server_network_stats.has_value() ||
                  server_info->second.server_network_stats.value() != stats;
 
@@ -622,11 +910,11 @@ void HttpServerProperties::SetServerNetworkStats(
   }
 }
 
-void HttpServerProperties::ClearServerNetworkStats(
-    const url::SchemeHostPort& server,
+void HttpServerProperties::ClearServerNetworkStatsInternal(
+    url::SchemeHostPort server,
     const NetworkIsolationKey& network_isolation_key) {
-  auto server_info =
-      server_info_map_.Peek(CreateServerInfoKey(server, network_isolation_key));
+  auto server_info = server_info_map_.Peek(
+      CreateServerInfoKey(std::move(server), network_isolation_key));
   // If stats are empty, nothing to do.
   if (server_info == server_info_map_.end() ||
       !server_info->second.server_network_stats.has_value()) {
@@ -641,11 +929,15 @@ void HttpServerProperties::ClearServerNetworkStats(
   MaybeQueueWriteProperties();
 }
 
-const ServerNetworkStats* HttpServerProperties::GetServerNetworkStats(
-    const url::SchemeHostPort& server,
+const ServerNetworkStats* HttpServerProperties::GetServerNetworkStatsInternal(
+    url::SchemeHostPort server,
     const NetworkIsolationKey& network_isolation_key) {
-  auto server_info =
-      server_info_map_.Get(CreateServerInfoKey(server, network_isolation_key));
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK_NE(server.scheme(), url::kWsScheme);
+  DCHECK_NE(server.scheme(), url::kWssScheme);
+
+  auto server_info = server_info_map_.Get(
+      CreateServerInfoKey(std::move(server), network_isolation_key));
   if (server_info == server_info_map_.end() ||
       !server_info->second.server_network_stats.has_value()) {
     return nullptr;
@@ -653,128 +945,12 @@ const ServerNetworkStats* HttpServerProperties::GetServerNetworkStats(
   return &server_info->second.server_network_stats.value();
 }
 
-void HttpServerProperties::SetQuicServerInfo(
+HttpServerProperties::QuicServerInfoMapKey
+HttpServerProperties::CreateQuicServerInfoKey(
     const quic::QuicServerId& server_id,
-    const std::string& server_info) {
-  auto it = quic_server_info_map_.Peek(server_id);
-  bool changed =
-      (it == quic_server_info_map_.end() || it->second != server_info);
-  quic_server_info_map_.Put(server_id, server_info);
-  UpdateCanonicalServerInfoMap(server_id);
-  if (changed)
-    MaybeQueueWriteProperties();
-}
-
-const std::string* HttpServerProperties::GetQuicServerInfo(
-    const quic::QuicServerId& server_id) {
-  auto it = quic_server_info_map_.Get(server_id);
-  if (it != quic_server_info_map_.end()) {
-    // Since |canonical_server_info_map_| should always map to the most
-    // recent host, update it with the one that became MRU in
-    // |quic_server_info_map_|.
-    UpdateCanonicalServerInfoMap(server_id);
-    return &it->second;
-  }
-
-  // If the exact match for |server_id| wasn't found, check
-  // |canonical_server_info_map_| whether there is server info for a host with
-  // the same canonical host suffix.
-  auto canonical_itr = GetCanonicalServerInfoHost(server_id);
-  if (canonical_itr == canonical_server_info_map_.end())
-    return nullptr;
-
-  // When search in |quic_server_info_map_|, do not change the MRU order.
-  it = quic_server_info_map_.Peek(canonical_itr->second);
-  if (it != quic_server_info_map_.end())
-    return &it->second;
-
-  return nullptr;
-}
-
-const QuicServerInfoMap& HttpServerProperties::quic_server_info_map() const {
-  return quic_server_info_map_;
-}
-
-size_t HttpServerProperties::max_server_configs_stored_in_properties() const {
-  return max_server_configs_stored_in_properties_;
-}
-
-void HttpServerProperties::SetMaxServerConfigsStoredInProperties(
-    size_t max_server_configs_stored_in_properties) {
-  // Do nothing if the new size is the same as the old one.
-  if (max_server_configs_stored_in_properties_ ==
-      max_server_configs_stored_in_properties) {
-    return;
-  }
-
-  max_server_configs_stored_in_properties_ =
-      max_server_configs_stored_in_properties;
-
-  // MRUCache doesn't allow the capacity of the cache to be changed. Thus create
-  // a new map with the new size and add current elements and swap the new map.
-  quic_server_info_map_.ShrinkToSize(max_server_configs_stored_in_properties_);
-  QuicServerInfoMap temp_map(max_server_configs_stored_in_properties_);
-  // Update the |canonical_server_info_map_| as well, so it stays in sync with
-  // |quic_server_info_map_|.
-  canonical_server_info_map_ = CanonicalServerInfoMap();
-  for (auto it = quic_server_info_map_.rbegin();
-       it != quic_server_info_map_.rend(); ++it) {
-    temp_map.Put(it->first, it->second);
-    UpdateCanonicalServerInfoMap(it->first);
-  }
-
-  quic_server_info_map_.Swap(temp_map);
-  if (properties_manager_) {
-    properties_manager_->set_max_server_configs_stored_in_properties(
-        max_server_configs_stored_in_properties);
-  }
-}
-
-bool HttpServerProperties::IsInitialized() const {
-  return is_initialized_;
-}
-
-void HttpServerProperties::OnExpireBrokenAlternativeService(
-    const AlternativeService& expired_alternative_service) {
-  // Remove every occurrence of |expired_alternative_service| from
-  // |alternative_service_map_|.
-  for (auto map_it = server_info_map_.begin();
-       map_it != server_info_map_.end();) {
-    if (!map_it->second.alternative_services.has_value()) {
-      ++map_it;
-      continue;
-    }
-    AlternativeServiceInfoVector* service_info =
-        &map_it->second.alternative_services.value();
-    for (auto it = service_info->begin(); it != service_info->end();) {
-      AlternativeService alternative_service(it->alternative_service());
-      // Empty hostname in map means hostname of key: substitute before
-      // comparing to |expired_alternative_service|.
-      if (alternative_service.host.empty()) {
-        alternative_service.host = map_it->first.server.host();
-      }
-      if (alternative_service == expired_alternative_service) {
-        it = service_info->erase(it);
-        continue;
-      }
-      ++it;
-    }
-    // If an origin has an empty list of alternative services, then remove it
-    // from both |canonical_alt_svc_map_| and
-    // |alternative_service_map_|.
-    if (service_info->empty()) {
-      // TODO(mmenke): Take a NetworkIsolationKey as input and use it here.
-      RemoveAltSvcCanonicalHost(map_it->first.server, NetworkIsolationKey());
-      map_it->second.alternative_services.reset();
-      map_it = server_info_map_.EraseIfEmpty(map_it);
-      continue;
-    }
-    ++map_it;
-  }
-}
-
-base::TimeDelta HttpServerProperties::GetUpdatePrefsDelayForTesting() {
-  return kUpdatePrefsDelay;
+    const NetworkIsolationKey& network_isolation_key) const {
+  return QuicServerInfoMapKey(server_id, network_isolation_key,
+                              use_network_isolation_key_);
 }
 
 HttpServerProperties::ServerInfoMapKey
@@ -812,7 +988,8 @@ HttpServerProperties::GetIteratorWithAlternativeServiceInfo(
     if (alternative_service.host.empty()) {
       alternative_service.host = canonical_server.host();
     }
-    if (!IsAlternativeServiceBroken(alternative_service)) {
+    if (!IsAlternativeServiceBroken(alternative_service,
+                                    network_isolation_key)) {
       return it;
     }
   }
@@ -821,7 +998,7 @@ HttpServerProperties::GetIteratorWithAlternativeServiceInfo(
   return server_info_map_.end();
 }
 
-HttpServerProperties::CanonicalAltSvcMap::const_iterator
+HttpServerProperties::CanonicalMap::const_iterator
 HttpServerProperties::GetCanonicalAltSvcHost(
     const url::SchemeHostPort& server,
     const net::NetworkIsolationKey& network_isolation_key) const {
@@ -839,15 +1016,19 @@ HttpServerProperties::GetCanonicalAltSvcHost(
       CreateServerInfoKey(canonical_server, network_isolation_key));
 }
 
-HttpServerProperties::CanonicalServerInfoMap::const_iterator
+HttpServerProperties::QuicCanonicalMap::const_iterator
 HttpServerProperties::GetCanonicalServerInfoHost(
-    const quic::QuicServerId& server) const {
-  const std::string* canonical_suffix = GetCanonicalSuffix(server.host());
+    const QuicServerInfoMapKey& key) const {
+  const std::string* canonical_suffix =
+      GetCanonicalSuffix(key.server_id.host());
   if (canonical_suffix == nullptr)
     return canonical_server_info_map_.end();
 
-  HostPortPair canonical_pair(*canonical_suffix, server.port());
-  return canonical_server_info_map_.find(canonical_pair);
+  quic::QuicServerId canonical_server_id(*canonical_suffix,
+                                         key.server_id.privacy_mode_enabled(),
+                                         key.server_id.port());
+  return canonical_server_info_map_.find(
+      CreateQuicServerInfoKey(canonical_server_id, key.network_isolation_key));
 }
 
 void HttpServerProperties::RemoveAltSvcCanonicalHost(
@@ -861,12 +1042,15 @@ void HttpServerProperties::RemoveAltSvcCanonicalHost(
 }
 
 void HttpServerProperties::UpdateCanonicalServerInfoMap(
-    const quic::QuicServerId& server) {
-  const std::string* suffix = GetCanonicalSuffix(server.host());
-  if (suffix) {
-    HostPortPair canonical_pair(*suffix, server.port());
-    canonical_server_info_map_[canonical_pair] = server;
-  }
+    const QuicServerInfoMapKey& key) {
+  const std::string* suffix = GetCanonicalSuffix(key.server_id.host());
+  if (!suffix)
+    return;
+  quic::QuicServerId canonical_server(
+      *suffix, key.server_id.privacy_mode_enabled(), key.server_id.port());
+
+  canonical_server_info_map_[CreateQuicServerInfoKey(
+      canonical_server, key.network_isolation_key)] = key.server_id;
 }
 
 const std::string* HttpServerProperties::GetCanonicalSuffix(
@@ -884,7 +1068,7 @@ const std::string* HttpServerProperties::GetCanonicalSuffix(
 
 void HttpServerProperties::OnPrefsLoaded(
     std::unique_ptr<ServerInfoMap> server_info_map,
-    const IPAddress& last_quic_address,
+    const IPAddress& last_local_address_when_quic_worked,
     std::unique_ptr<QuicServerInfoMap> quic_server_info_map,
     std::unique_ptr<BrokenAlternativeServiceList>
         broken_alternative_service_list,
@@ -898,7 +1082,7 @@ void HttpServerProperties::OnPrefsLoaded(
   // service fields).
   if (server_info_map) {
     OnServerInfoLoaded(std::move(server_info_map));
-    OnSupportsQuicLoaded(last_quic_address);
+    OnLastLocalAddressWhenQuicWorkedLoaded(last_local_address_when_quic_worked);
     OnQuicServerInfoMapLoaded(std::move(quic_server_info_map));
     if (recently_broken_alternative_services) {
       DCHECK(broken_alternative_service_list);
@@ -989,8 +1173,9 @@ void HttpServerProperties::OnServerInfoLoaded(
   }
 }
 
-void HttpServerProperties::OnSupportsQuicLoaded(const IPAddress& last_address) {
-  last_quic_address_ = last_address;
+void HttpServerProperties::OnLastLocalAddressWhenQuicWorkedLoaded(
+    const IPAddress& last_local_address_when_quic_worked) {
+  last_local_address_when_quic_worked_ = last_local_address_when_quic_worked;
 }
 
 void HttpServerProperties::OnQuicServerInfoMapLoaded(
@@ -1060,7 +1245,7 @@ void HttpServerProperties::WriteProperties(base::OnceClosure callback) const {
       server_info_map_,
       base::BindRepeating(&HttpServerProperties::GetCanonicalSuffix,
                           base::Unretained(this)),
-      last_quic_address_, quic_server_info_map_,
+      last_local_address_when_quic_worked_, quic_server_info_map_,
       broken_alternative_services_.broken_alternative_service_list(),
       broken_alternative_services_.recently_broken_alternative_services(),
       std::move(callback));

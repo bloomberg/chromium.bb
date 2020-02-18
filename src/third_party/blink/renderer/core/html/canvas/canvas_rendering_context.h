@@ -36,6 +36,7 @@
 #include "third_party/blink/renderer/platform/graphics/color_behavior.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/skia/include/core/SkColorSpace.h"
+#include "third_party/skia/include/core/SkData.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
 
 namespace blink {
@@ -64,7 +65,7 @@ class CORE_EXPORT CanvasRenderingContext : public ScriptWrappable,
   enum ContextType {
     // Do not change assigned numbers of existing items: add new features to the
     // end of the list.
-    kContext2d = 0,
+    kContext2D = 0,
     kContextExperimentalWebgl = 2,
     kContextWebgl = 3,
     kContextWebgl2 = 4,
@@ -86,18 +87,28 @@ class CORE_EXPORT CanvasRenderingContext : public ScriptWrappable,
 
   const CanvasColorParams& ColorParams() const { return color_params_; }
 
-  virtual scoped_refptr<StaticBitmapImage> GetImage(AccelerationHint) const = 0;
+  virtual scoped_refptr<StaticBitmapImage> GetImage(AccelerationHint) = 0;
   virtual ContextType GetContextType() const = 0;
   virtual bool IsComposited() const = 0;
   virtual bool IsAccelerated() const = 0;
   virtual bool IsOriginTopLeft() const {
     // Canvas contexts have the origin of coordinates on the top left corner.
     // Accelerated resources (e.g. GPU textures) have their origin of
-    // coordinates in the uppper left corner.
+    // coordinates in the upper left corner.
     return !IsAccelerated();
   }
   virtual bool ShouldAntialias() const { return false; }
-  virtual void SetIsHidden(bool) = 0;
+  // Indicates whether the entire tab is backgrounded. Passing false
+  // to this method may cause some canvas context implementations to
+  // aggressively discard resources, which is not desired for canvases
+  // which are being rendered to, just not being displayed in the
+  // page.
+  virtual void SetIsInHiddenPage(bool) = 0;
+  // Indicates whether the canvas is being displayed in the page;
+  // i.e., doesn't have display:none, and is visible. The initial
+  // value for all context types is assumed to be false; this will be
+  // called when the context is first displayed.
+  virtual void SetIsBeingDisplayed(bool) = 0;
   virtual bool isContextLost() const { return true; }
   // TODO(fserb): remove SetCanvasGetContextResult.
   virtual void SetCanvasGetContextResult(RenderingContext&) { NOTREACHED(); }
@@ -134,11 +145,9 @@ class CORE_EXPORT CanvasRenderingContext : public ScriptWrappable,
   // of a presentable frame.
   virtual void FinalizeFrame() {}
 
-  void NeedsFinalizeFrame();
-
   // Thread::TaskObserver implementation
   void DidProcessTask(const base::PendingTask&) override;
-  void WillProcessTask(const base::PendingTask&) final {}
+  void WillProcessTask(const base::PendingTask&, bool) final {}
 
   // Canvas2D-specific interface
   virtual bool Is2d() const { return false; }
@@ -165,12 +174,10 @@ class CORE_EXPORT CanvasRenderingContext : public ScriptWrappable,
   virtual void SetFilterQuality(SkFilterQuality) { NOTREACHED(); }
   virtual void Reshape(int width, int height) { NOTREACHED(); }
   virtual void MarkLayerComposited() { NOTREACHED(); }
-  virtual scoped_refptr<Uint8Array> PaintRenderingResultsToDataArray(
-      SourceDrawingBuffer) {
+  virtual sk_sp<SkData> PaintRenderingResultsToDataArray(SourceDrawingBuffer) {
     NOTREACHED();
     return nullptr;
   }
-  virtual void ProvideBackBufferToResourceProvider() const { NOTREACHED(); }
   virtual int ExternallyAllocatedBufferCountPerPixel() {
     NOTREACHED();
     return 0;
@@ -181,7 +188,7 @@ class CORE_EXPORT CanvasRenderingContext : public ScriptWrappable,
   }
 
   // OffscreenCanvas-specific methods
-  virtual void PushFrame() {}
+  virtual bool PushFrame() { return false; }
   virtual ImageBitmap* TransferToImageBitmap(ScriptState*) { return nullptr; }
 
   bool WouldTaintOrigin(CanvasImageSource*);

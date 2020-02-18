@@ -19,6 +19,24 @@ PrinterBasicInfo::PrinterBasicInfo(const PrinterBasicInfo& other) = default;
 
 PrinterBasicInfo::~PrinterBasicInfo() = default;
 
+#if defined(OS_CHROMEOS)
+
+AdvancedCapabilityValue::AdvancedCapabilityValue() = default;
+
+AdvancedCapabilityValue::AdvancedCapabilityValue(
+    const AdvancedCapabilityValue& other) = default;
+
+AdvancedCapabilityValue::~AdvancedCapabilityValue() = default;
+
+AdvancedCapability::AdvancedCapability() = default;
+
+AdvancedCapability::AdvancedCapability(const AdvancedCapability& other) =
+    default;
+
+AdvancedCapability::~AdvancedCapability() = default;
+
+#endif  // defined(OS_CHROMEOS)
+
 PrinterSemanticCapsAndDefaults::PrinterSemanticCapsAndDefaults() = default;
 
 PrinterSemanticCapsAndDefaults::PrinterSemanticCapsAndDefaults(
@@ -33,14 +51,17 @@ PrinterCapsAndDefaults::PrinterCapsAndDefaults(
 
 PrinterCapsAndDefaults::~PrinterCapsAndDefaults() = default;
 
+PrintBackend::PrintBackend(const std::string& locale) : locale_(locale) {}
+
 PrintBackend::~PrintBackend() = default;
 
 // static
 scoped_refptr<PrintBackend> PrintBackend::CreateInstance(
-    const base::DictionaryValue* print_backend_settings) {
+    const base::DictionaryValue* print_backend_settings,
+    const std::string& locale) {
   return g_print_backend_for_test
              ? g_print_backend_for_test
-             : PrintBackend::CreateInstanceImpl(print_backend_settings);
+             : PrintBackend::CreateInstanceImpl(print_backend_settings, locale);
 }
 
 // static

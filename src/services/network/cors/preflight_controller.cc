@@ -19,6 +19,7 @@
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "url/gurl.h"
 
 namespace network {
@@ -77,8 +78,8 @@ std::unique_ptr<ResourceRequest> CreatePreflightRequest(
   std::unique_ptr<ResourceRequest> preflight_request =
       std::make_unique<ResourceRequest>();
 
-  // Algorithm step 1 through 4 of the CORS-preflight fetch,
-  // https://fetch.spec.whatwg.org/#cors-preflight-fetch-0.
+  // Algorithm step 1 through 5 of the CORS-preflight fetch,
+  // https://fetch.spec.whatwg.org/#cors-preflight-fetch.
   preflight_request->url = request.url;
   preflight_request->method = "OPTIONS";
   preflight_request->priority = request.priority;
@@ -89,8 +90,12 @@ std::unique_ptr<ResourceRequest> CreatePreflightRequest(
 
   preflight_request->credentials_mode = mojom::CredentialsMode::kOmit;
   preflight_request->load_flags = RetrieveCacheFlags(request.load_flags);
+  preflight_request->resource_type = request.resource_type;
   preflight_request->fetch_window_id = request.fetch_window_id;
   preflight_request->render_frame_id = request.render_frame_id;
+
+  preflight_request->headers.SetHeader(network::kAcceptHeader,
+                                       kDefaultAcceptHeader);
 
   preflight_request->headers.SetHeader(
       header_names::kAccessControlRequestMethod, request.method);
@@ -116,16 +121,13 @@ std::unique_ptr<ResourceRequest> CreatePreflightRequest(
   // Additional headers that the algorithm in the spec does not require, but
   // it's better that CORS preflight requests have them.
   preflight_request->headers.SetHeader("Sec-Fetch-Mode", "cors");
-  // See also https://github.com/whatwg/fetch/issues/922 for kAcceptHeader.
-  preflight_request->headers.SetHeader(network::kAcceptHeader,
-                                       kDefaultAcceptHeader);
 
   return preflight_request;
 }
 
 std::unique_ptr<PreflightResult> CreatePreflightResult(
     const GURL& final_url,
-    const ResourceResponseHead& head,
+    const mojom::URLResponseHead& head,
     const ResourceRequest& original_request,
     bool tainted,
     base::Optional<CorsErrorStatus>* detected_error_status) {
@@ -189,6 +191,7 @@ class PreflightController::PreflightLoader final {
   PreflightLoader(PreflightController* controller,
                   CompletionCallback completion_callback,
                   const ResourceRequest& request,
+                  WithTrustedHeaderClient with_trusted_header_client,
                   bool tainted,
                   const net::NetworkTrafficAnnotationTag& annotation_tag)
       : controller_(controller),
@@ -199,6 +202,11 @@ class PreflightController::PreflightLoader final {
         CreatePreflightRequest(request, tainted,
                                controller->extra_safelisted_header_names()),
         annotation_tag);
+    uint32_t options = mojom::kURLLoadOptionAsCorsPreflight;
+    if (with_trusted_header_client) {
+      options |= mojom::kURLLoadOptionUseHeaderClient;
+    }
+    loader_->SetURLLoaderFactoryOptions(options);
   }
 
   void Request(mojom::URLLoaderFactory* loader_factory) {
@@ -218,7 +226,7 @@ class PreflightController::PreflightLoader final {
 
  private:
   void HandleRedirect(const net::RedirectInfo& redirect_info,
-                      const network::ResourceResponseHead& response_head,
+                      const network::mojom::URLResponseHead& response_head,
                       std::vector<std::string>* to_be_removed_headers) {
     // Preflight should not allow any redirect.
     FinalizeLoader();
@@ -232,7 +240,7 @@ class PreflightController::PreflightLoader final {
   }
 
   void HandleResponseHeader(const GURL& final_url,
-                            const ResourceResponseHead& head) {
+                            const mojom::URLResponseHead& head) {
     FinalizeLoader();
 
     base::Optional<CorsErrorStatus> detected_error_status;
@@ -310,7 +318,7 @@ PreflightController::CreatePreflightRequestForTesting(
 std::unique_ptr<PreflightResult>
 PreflightController::CreatePreflightResultForTesting(
     const GURL& final_url,
-    const ResourceResponseHead& head,
+    const mojom::URLResponseHead& head,
     const ResourceRequest& original_request,
     bool tainted,
     base::Optional<CorsErrorStatus>* detected_error_status) {
@@ -328,6 +336,7 @@ PreflightController::~PreflightController() = default;
 void PreflightController::PerformPreflightCheck(
     CompletionCallback callback,
     const ResourceRequest& request,
+    WithTrustedHeaderClient with_trusted_header_client,
     bool tainted,
     const net::NetworkTrafficAnnotationTag& annotation_tag,
     mojom::URLLoaderFactory* loader_factory) {
@@ -343,7 +352,8 @@ void PreflightController::PerformPreflightCheck(
   }
 
   auto emplaced_pair = loaders_.emplace(std::make_unique<PreflightLoader>(
-      this, std::move(callback), request, tainted, annotation_tag));
+      this, std::move(callback), request, with_trusted_header_client, tainted,
+      annotation_tag));
   (*emplaced_pair.first)->Request(loader_factory);
 }
 

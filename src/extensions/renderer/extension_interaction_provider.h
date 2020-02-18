@@ -8,12 +8,10 @@
 #include "extensions/renderer/bindings/interaction_provider.h"
 
 #include "base/optional.h"
-#include "third_party/blink/public/web/web_user_gesture_token.h"
 #include "v8/include/v8.h"
 
 namespace blink {
 class WebLocalFrame;
-class WebScopedUserGesture;
 }  // namespace blink
 
 namespace extensions {
@@ -29,9 +27,6 @@ class ExtensionInteractionProvider : public InteractionProvider {
    public:
     ~Token() override;
 
-    // Only valid for WebFrame based tokens.
-    blink::WebUserGestureToken web_frame_token() const { return *frame_token_; }
-
     bool is_for_service_worker() const { return is_for_service_worker_; }
 
    private:
@@ -41,10 +36,6 @@ class ExtensionInteractionProvider : public InteractionProvider {
     Token(bool is_for_service_worker);
 
     bool is_for_service_worker_ = false;
-
-    // Used when this token is for main thread, i.e. when is_for_service_worker_
-    // is false.
-    base::Optional<blink::WebUserGestureToken> frame_token_;
 
     DISALLOW_COPY_AND_ASSIGN(Token);
   };
@@ -81,8 +72,6 @@ class ExtensionInteractionProvider : public InteractionProvider {
 
     // Used for Service Worker based extension Contexts.
     std::unique_ptr<ScopedWorkerInteraction> worker_thread_interaction_;
-    // Used for RenderFrame based extension Contexts.
-    std::unique_ptr<blink::WebScopedUserGesture> main_thread_gesture_;
 
     DISALLOW_COPY_AND_ASSIGN(Scope);
   };

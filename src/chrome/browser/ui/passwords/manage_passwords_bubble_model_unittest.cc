@@ -15,6 +15,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/simple_test_clock.h"
+#include "build/build_config.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/passwords/passwords_model_delegate_mock.h"
@@ -400,6 +401,8 @@ TEST_F(ManagePasswordsBubbleModelTest, EditCredential) {
 }
 
 TEST_F(ManagePasswordsBubbleModelTest, SuppressSignInPromo) {
+  prefs()->SetBoolean(password_manager::prefs::kSignInPasswordPromoRevive,
+                      true);
   prefs()->SetBoolean(password_manager::prefs::kWasSignInPasswordPromoClicked,
                       true);
   PretendPasswordWaiting();
@@ -420,10 +423,13 @@ TEST_F(ManagePasswordsBubbleModelTest, SignInPromoOK) {
                                           pending_password().password_value));
   model()->OnSaveClicked();
 
+#if defined(OS_CHROMEOS)
+  EXPECT_FALSE(model()->ReplaceToShowPromotionIfNeeded());
+#else
   EXPECT_TRUE(model()->ReplaceToShowPromotionIfNeeded());
 
   AccountInfo account;
-  account.account_id = "foo_account_id";
+  account.account_id = CoreAccountId("foo_account_id");
   account.gaia = "foo_gaia_id";
   account.email = "foo@bar.com";
   EXPECT_CALL(*controller(), EnableSync(AccountEq(account), false));
@@ -435,8 +441,10 @@ TEST_F(ManagePasswordsBubbleModelTest, SignInPromoOK) {
       password_manager::metrics_util::CLICKED_SAVE, 1);
   EXPECT_TRUE(prefs()->GetBoolean(
       password_manager::prefs::kWasSignInPasswordPromoClicked));
+#endif
 }
 
+#if !defined(OS_CHROMEOS)
 TEST_F(ManagePasswordsBubbleModelTest, SignInPromoCancel) {
   base::HistogramTester histogram_tester;
   PretendPasswordWaiting();
@@ -471,6 +479,7 @@ TEST_F(ManagePasswordsBubbleModelTest, SignInPromoDismiss) {
   EXPECT_FALSE(prefs()->GetBoolean(
       password_manager::prefs::kWasSignInPasswordPromoClicked));
 }
+#endif  // !defined(OS_CHROMEOS)
 
 class ManagePasswordsBubbleModelManageLinkTest
     : public ManagePasswordsBubbleModelTest,

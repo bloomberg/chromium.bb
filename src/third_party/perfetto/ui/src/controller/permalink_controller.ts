@@ -12,12 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {Draft, produce} from 'immer';
+import {produce} from 'immer';
 import * as uuidv4 from 'uuid/v4';
 
-import {assertExists} from '../base/logging';
+import {assertExists, assertTrue} from '../base/logging';
 import {Actions} from '../common/actions';
-import {EngineConfig, State} from '../common/state';
+import {State} from '../common/state';
 
 import {Controller} from './controller';
 import {globals} from './globals';
@@ -54,26 +54,30 @@ export class PermalinkController extends Controller<'main'> {
   }
 
   private static async createPermalink() {
-    const state = globals.state;
-
-    // Upload each loaded trace.
-    const fileToUrl = new Map<File, string>();
-    for (const engine of Object.values<EngineConfig>(state.engines)) {
-      if (!(engine.source instanceof File)) continue;
-      PermalinkController.updateStatus(`Uploading ${engine.source.name}`);
-      const url = await this.saveTrace(engine.source);
-      fileToUrl.set(engine.source, url);
+    const engines = Object.values(globals.state.engines);
+    assertTrue(engines.length === 1);
+    const engine = engines[0];
+    let dataToUpload: File|ArrayBuffer|undefined = undefined;
+    let traceName = `trace ${engine.id}`;
+    if (engine.source.type === 'FILE') {
+      dataToUpload = engine.source.file;
+      traceName = dataToUpload.name;
+    } else if (engine.source.type === 'ARRAY_BUFFER') {
+      dataToUpload = engine.source.buffer;
+    } else if (engine.source.type !== 'URL') {
+      throw new Error(`Cannot share trace ${JSON.stringify(engine.source)}`);
     }
 
-    // Convert state to use URLs and remove permalink.
-    const uploadState = produce(state, draft => {
-      for (const engine of Object.values<Draft<EngineConfig>>(
-               draft.engines)) {
-        if (!(engine.source instanceof File)) continue;
-        engine.source = fileToUrl.get(engine.source)!;
-      }
-      draft.permalink = {};
-    });
+    let uploadState = globals.state;
+    if (dataToUpload !== undefined) {
+      PermalinkController.updateStatus(`Uploading ${traceName}`);
+      const url = await this.saveTrace(dataToUpload);
+      // Convert state to use URLs and remove permalink.
+      uploadState = produce(globals.state, draft => {
+        draft.engines[engine.id].source = {type: 'URL', url};
+        draft.permalink = {};
+      });
+    }
 
     // Upload state.
     PermalinkController.updateStatus(`Creating permalink...`);
@@ -100,7 +104,7 @@ export class PermalinkController extends Controller<'main'> {
     return hash;
   }
 
-  private static async saveTrace(trace: File): Promise<string> {
+  private static async saveTrace(trace: File|ArrayBuffer): Promise<string> {
     // TODO(hjd): This should probably also be a hash but that requires
     // trace processor support.
     const name = uuidv4();

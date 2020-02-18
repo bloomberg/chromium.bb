@@ -482,6 +482,45 @@ IN_PROC_BROWSER_TEST_F(HTMLCSSSyncScriptNoStatePrefetchBrowserTest,
   WaitForRequestCount(src_server()->GetURL(kPrefetchFont), 0);
 }
 
+// Test and Test Class for lightweight prefetch under the
+// HTML+CSS+SyncScript+Font configuration.
+class HTMLCSSSyncScriptFontNoStatePrefetchBrowserTest
+    : public NoStatePrefetchBrowserTest {
+ public:
+  void SetUp() override {
+    std::map<std::string, std::string> parameters;
+    parameters["skip_other"] = "true";
+    parameters["skip_async_script"] = "true";
+    feature_list_.InitWithFeaturesAndParameters(
+        {{blink::features::kLightweightNoStatePrefetch, parameters}}, {});
+    fonts_feature_list_.InitAndEnableFeature(
+        blink::features::kLightweightNoStatePrefetch_FetchFonts);
+    NoStatePrefetchBrowserTest::SetUp();
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+  base::test::ScopedFeatureList fonts_feature_list_;
+};
+
+// Checks that the expected resource types are fetched via NoState Prefetch.
+IN_PROC_BROWSER_TEST_F(HTMLCSSSyncScriptFontNoStatePrefetchBrowserTest,
+                       PrefetchHTMLCSSSyncScript) {
+  std::unique_ptr<TestPrerender> test_prerender =
+      PrefetchFromFile(kPrefetchPageMultipleResourceTypes,
+                       FINAL_STATUS_NOSTATE_PREFETCH_FINISHED);
+
+  // Verify that the page load did not happen.
+  test_prerender->WaitForLoads(0);
+  WaitForRequestCount(src_server()->GetURL(kPrefetchPageMultipleResourceTypes),
+                      1);
+  WaitForRequestCount(src_server()->GetURL(kPrefetchScript), 1);
+  WaitForRequestCount(src_server()->GetURL(kPrefetchScript2), 0);
+  WaitForRequestCount(src_server()->GetURL(kPrefetchPng), 0);
+  WaitForRequestCount(src_server()->GetURL(kPrefetchCss), 1);
+  WaitForRequestCount(src_server()->GetURL(kPrefetchFont), 1);
+}
+
 // Test and Test Class for lightweight prefetch under the HTML+CSS+Script
 // configuration.
 class HTMLCSSScriptNoStatePrefetchBrowserTest
@@ -490,6 +529,7 @@ class HTMLCSSScriptNoStatePrefetchBrowserTest
   void SetUp() override {
     std::map<std::string, std::string> parameters;
     parameters["skip_other"] = "true";
+    parameters["skip_async_script"] = "false";
     feature_list_.InitWithFeaturesAndParameters(
         {{blink::features::kLightweightNoStatePrefetch, parameters}}, {});
     NoStatePrefetchBrowserTest::SetUp();
@@ -545,7 +585,7 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, PrefetchCookie) {
   content::StoragePartition* storage_partition =
       content::BrowserContext::GetStoragePartitionForSite(
           current_browser()->profile(), url, false);
-  net::CookieOptions options;
+  net::CookieOptions options = net::CookieOptions::MakeAllInclusive();
   base::RunLoop loop;
   storage_partition->GetCookieManagerForBrowserProcess()->GetCookieList(
       url, options, base::BindOnce(GetCookieCallback, loop.QuitClosure()));
@@ -562,10 +602,12 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, PrefetchCookieCrossDomain) {
   std::unique_ptr<TestPrerender> test_prerender =
       PrefetchFromURL(cross_domain_url, FINAL_STATUS_NOSTATE_PREFETCH_FINISHED);
 
+  // While the request is cross-site, it's permitted to set (implicitly) lax
+  // cookies on a cross-site navigation.
   content::StoragePartition* storage_partition =
       content::BrowserContext::GetStoragePartitionForSite(
           current_browser()->profile(), cross_domain_url, false);
-  net::CookieOptions options;
+  net::CookieOptions options = net::CookieOptions::MakeAllInclusive();
   base::RunLoop loop;
   storage_partition->GetCookieManagerForBrowserProcess()->GetCookieList(
       cross_domain_url, options,
@@ -1058,7 +1100,7 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest,
       url, safe_browsing::SB_THREAT_TYPE_URL_MALWARE);
 
   constexpr char kPrefetchCanceledHistogram[] =
-      "SB2.ResourceTypes2.UnsafePrefetchCanceled";
+      "SB2Test.ResourceTypes2.UnsafePrefetchCanceled";
 
   base::RunLoop run_loop;
   bool prefetch_canceled_histogram_added = false;

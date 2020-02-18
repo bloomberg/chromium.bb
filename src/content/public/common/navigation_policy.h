@@ -15,10 +15,8 @@
 
 namespace content {
 
-CONTENT_EXPORT bool IsPerNavigationMojoInterfaceEnabled();
 CONTENT_EXPORT bool IsBackForwardCacheEnabled();
 CONTENT_EXPORT bool IsProactivelySwapBrowsingInstanceEnabled();
-CONTENT_EXPORT bool IsNavigationImmediateResponseBodyEnabled();
 
 // Navigation type that affects the download decision and relevant metrics to be
 // reported at download-discovery time.
@@ -36,10 +34,6 @@ enum class NavigationDownloadType {
 
   // The navigation was initiated on a x-origin opener.
   kOpenerCrossOrigin = 5,
-
-  // The navigation was initiated from or occurred in an iframe with
-  // |WebSandboxFlags::kDownloads| flag set and without user activation.
-  kSandboxNoGesture = 7,
 
   // The navigation was initiated from or occurred in an ad frame without user
   // activation.

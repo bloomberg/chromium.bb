@@ -4,8 +4,6 @@
 
 #include "chromeos/services/ime/input_engine.h"
 
-#include "base/json/json_reader.h"
-#include "base/json/string_escape.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -41,10 +39,9 @@ mojom::KeypressResponseForRulebasedPtr GenerateKeypressResponseForRulebased(
       mojom::KeypressResponseForRulebased::New();
   keypress_response->result = process_key_result.key_handled;
   if (!process_key_result.commit_text.empty()) {
-    std::string commit_text;
-    base::EscapeJSONString(process_key_result.commit_text, false, &commit_text);
     keypress_response->operations.push_back(mojom::OperationForRulebased::New(
-        mojom::OperationMethodForRulebased::COMMIT_TEXT, commit_text));
+        mojom::OperationMethodForRulebased::COMMIT_TEXT,
+        process_key_result.commit_text));
   }
   // Need to add the setComposition operation to the result when the key is
   // handled and commit_text and composition_text are both empty.
@@ -53,13 +50,18 @@ mojom::KeypressResponseForRulebasedPtr GenerateKeypressResponseForRulebased(
   if (!process_key_result.composition_text.empty() ||
       (process_key_result.key_handled &&
        process_key_result.commit_text.empty())) {
-    std::string composition_text;
-    base::EscapeJSONString(process_key_result.composition_text, false,
-                           &composition_text);
     keypress_response->operations.push_back(mojom::OperationForRulebased::New(
-        mojom::OperationMethodForRulebased::SET_COMPOSITION, composition_text));
+        mojom::OperationMethodForRulebased::SET_COMPOSITION,
+        process_key_result.composition_text));
   }
   return keypress_response;
+}
+
+bool IsModifierKey(const std::string& key_code) {
+  return key_code == "AltLeft" || key_code == "AltRight" ||
+         key_code == "ShiftLeft" || key_code == "ShiftRight" ||
+         key_code == "ControlLeft" || key_code == "ControlRight" ||
+         key_code == "CapsLock";
 }
 
 }  // namespace
@@ -98,128 +100,9 @@ bool InputEngine::IsImeSupportedByRulebased(const std::string& ime_spec) {
   return rulebased::Engine::IsImeSupported(GetIdFromImeSpec(ime_spec));
 }
 
-void InputEngine::ProcessText(const std::string& message,
-                              ProcessTextCallback callback) {
-  auto& context = channel_receivers_.current_context();
-  std::string result = Process(message, context.get());
-  std::move(callback).Run(result);
-}
-
 void InputEngine::ProcessMessage(const std::vector<uint8_t>& message,
                                  ProcessMessageCallback callback) {
   NOTIMPLEMENTED();  // Protobuf message is not used in the rulebased engine.
-}
-
-std::string InputEngine::Process(const std::string& message,
-                                 const InputEngineContext* context) {
-  auto& engine = context->engine;
-  if (!engine)
-    return std::string();
-
-  const char kFalseResponse[] = "{\"result\":false}";
-
-  // The request message is in JSON format as:
-  // {
-  //   'method': <string>,  // 'reset' or 'keyEvent'
-  //   'type': <string>,    // 'keydown' or 'keyup'
-  //   'code': <string>,    // e.g. 'KeyA', 'Backspace', etc.
-  //   'shift': <boolean>,
-  //   'altgr': <boolean>,
-  //   'caps': <boolean>,
-  //   'ctrl': <boolean>,
-  //   'alt': <boolean>
-  // }
-  // TODO(shuchen): make parser/writer util class for the JSON-based protocol.
-  int error_code;
-  std::string error_string;
-  std::unique_ptr<base::Value> message_value =
-      base::JSONReader::ReadAndReturnErrorDeprecated(
-          message, base::JSON_PARSE_RFC, &error_code, &error_string);
-  if (!message_value) {
-    LOG(ERROR) << "Read message error: " << error_code << "; " << error_string;
-    return kFalseResponse;
-  }
-  base::Value* method = message_value->FindKey("method");
-  if (!method)
-    return kFalseResponse;
-
-  const std::string& method_str = method->GetString();
-  if (method_str == "countKey") {
-    return std::to_string(engine->process_key_count());
-  }
-
-  if (method_str == "reset") {
-    engine->Reset();
-    return "{\"result\":true}";
-  }
-
-  if (method_str == "keyEvent") {
-    base::Value* type = message_value->FindKey("type");
-    if (!type || type->GetString() != "keydown")
-      return kFalseResponse;
-  }
-
-  base::Value* code = message_value->FindKey("code");
-  base::Value* shift = message_value->FindKey("shift");
-  base::Value* altgr = message_value->FindKey("altgr");
-  base::Value* caps = message_value->FindKey("caps");
-  if (!code || !shift || !altgr || !caps)
-    return kFalseResponse;
-
-  uint8_t modifiers = 0;
-  if (shift->GetBool())
-    modifiers |= rulebased::MODIFIER_SHIFT;
-  if (altgr->GetBool())
-    modifiers |= rulebased::MODIFIER_ALTGR;
-  if (caps->GetBool())
-    modifiers |= rulebased::MODIFIER_CAPSLOCK;
-
-  rulebased::ProcessKeyResult res =
-      engine->ProcessKey(code->GetString(), modifiers);
-
-  // The response message is in JSON format as:
-  // {
-  //   'result': <boolean>,
-  //   'operations': [
-  //     {
-  //       'method': 'commitText|setComposition',
-  //       'arguments': <string>
-  //     }
-  //   ]
-  // }
-  std::string response_str = "{\"result\":";
-  response_str += (res.key_handled ? "true" : "false");
-  std::vector<std::string> ops;
-  if (!res.commit_text.empty()) {
-    std::string commit_text;
-    base::EscapeJSONString(res.commit_text, false, &commit_text);
-    ops.push_back("{\"method\":\"commitText\",\"arguments\":[\"" + commit_text +
-                  "\"]}");
-  }
-  // Need to add the setComposition operation to the result when the key is
-  // handled and commit_text and composition_text are both empty.
-  // That is the case of using Backspace to delete the last character in
-  // composition.
-  if (!res.composition_text.empty() ||
-      (res.key_handled && res.commit_text.empty())) {
-    std::string composition_text;
-    base::EscapeJSONString(res.composition_text, false, &composition_text);
-    ops.push_back("{\"method\":\"setComposition\",\"arguments\":[\"" +
-                  composition_text + "\"]}");
-  }
-  if (ops.empty()) {
-    response_str += "}";
-  } else {
-    response_str += ",\"operations\":[";
-    for (size_t i = 0; i < ops.size(); ++i) {
-      if (i > 0)
-        response_str += ",";
-      response_str += ops[i];
-    }
-    response_str += "]}";
-  }
-
-  return response_str;
 }
 
 void InputEngine::ProcessKeypressForRulebased(
@@ -228,8 +111,29 @@ void InputEngine::ProcessKeypressForRulebased(
   auto& context = channel_receivers_.current_context();
   auto& engine = context.get()->engine;
 
+  // According to the W3C spec, |altKey| is false if the AltGr key
+  // is pressed [1]. However, all rule-based input methods on Chrome OS use
+  // the US QWERTY layout as a base layout, with AltGr implemented at this
+  // layer. This means the right Alt key reports as being a normal Alt key, so
+  // |altKey| is true. Thus, we need to take |altKey| and exclude the
+  // right Alt key to determine the status of the "true" Alt key.
+  // [1] https://www.w3.org/TR/uievents-key/#keys-modifier
+  // TODO(https://crbug.com/1014778): Change the base layouts for the
+  // rule-based input methods so that |altKey| is false when AltGr is pressed.
+  if (keypress_info->code == "AltRight") {
+    isAltRightDown_ = keypress_info->type == "keydown";
+  }
+
+  const bool isAltDown = keypress_info->alt && !isAltRightDown_;
+
+  // - Shift/AltRight/Caps/Ctrl are modifier keys for the characters which the
+  // Mojo service may accept, but don't send the keys themselves to Mojo.
+  // - Ctrl+? and Alt+? are shortcut keys, so don't send them to the rule based
+  // engine.
   if (!engine || keypress_info->type.empty() ||
-      keypress_info->type != "keydown") {
+      keypress_info->type != "keydown" ||
+      (IsModifierKey(keypress_info->code) || keypress_info->ctrl ||
+       isAltDown)) {
     std::move(callback).Run(mojom::KeypressResponseForRulebased::New(
         false, std::vector<mojom::OperationForRulebasedPtr>(0)));
     return;
@@ -253,6 +157,7 @@ void InputEngine::ResetForRulebased() {
   if (engine) {
     engine->Reset();
   }
+  isAltRightDown_ = false;
 }
 
 void InputEngine::GetRulebasedKeypressCountForTesting(

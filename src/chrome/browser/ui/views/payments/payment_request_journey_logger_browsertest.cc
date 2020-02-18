@@ -25,12 +25,12 @@ namespace payments {
 
 using PaymentRequestJourneyLoggerTestBase = PaymentRequestBrowserTestBase;
 
-using PaymentRequestJourneyLoggerSelectedPaymentInstrumentTest =
+using PaymentRequestJourneyLoggerSelectedPaymentAppTest =
     PaymentRequestJourneyLoggerTestBase;
 
-// Tests that the selected instrument metric is correctly logged when the
+// Tests that the selected app metric is correctly logged when the
 // Payment Request is completed with a credit card.
-IN_PROC_BROWSER_TEST_F(PaymentRequestJourneyLoggerSelectedPaymentInstrumentTest,
+IN_PROC_BROWSER_TEST_F(PaymentRequestJourneyLoggerSelectedPaymentAppTest,
                        TestSelectedPaymentMethod) {
   NavigateTo("/payment_request_no_shipping_test.html");
   base::HistogramTester histogram_tester;
@@ -194,14 +194,24 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestJourneyLoggerMultipleShowTest,
   EXPECT_FALSE(buckets[0].min & JourneyLogger::EVENT_COULD_NOT_SHOW);
 }
 
-IN_PROC_BROWSER_TEST_F(PaymentRequestJourneyLoggerMultipleShowTest,
-                       StartNewRequest) {
+class PaymentRequestJourneyLoggerMultipleShowTestWithPaymentHandlersEnabled
+    : public PaymentRequestJourneyLoggerMultipleShowTest {
+ public:
+  PaymentRequestJourneyLoggerMultipleShowTestWithPaymentHandlersEnabled() {
+    // Enable payment handlers, also known as service worker payment apps. The
+    // rest of the test is identical to
+    // "StartNewRequestWithoutPaymentAppsFeature" testcase above.
+    feature_list_.InitAndEnableFeature(features::kServiceWorkerPaymentApps);
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(
+    PaymentRequestJourneyLoggerMultipleShowTestWithPaymentHandlersEnabled,
+    StartNewRequest) {
   NavigateTo("/payment_request_multiple_show_test.html");
-  // Enable payment handlers, also known as service worker payment apps. The
-  // rest of the test is identical to "StartNewRequestWithoutPaymentAppsFeature"
-  // testcase above.
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kServiceWorkerPaymentApps);
 
   base::HistogramTester histogram_tester;
 
@@ -240,74 +250,91 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestJourneyLoggerMultipleShowTest,
   std::vector<base::Bucket> buckets =
       histogram_tester.GetAllSamples("PaymentRequest.Events");
   ASSERT_EQ(2U, buckets.size());
+  base::HistogramBase::Sample shown;
+  base::HistogramBase::Sample could_not_show;
+  // Order of histogram recording is non-deterministic. So use EVENT_SHOWN bit
+  // to differentiate between the two histograms.
+  if (buckets[0].min & JourneyLogger::EVENT_SHOWN) {
+    shown = buckets[0].min;
+    could_not_show = buckets[1].min;
+  } else {
+    shown = buckets[1].min;
+    could_not_show = buckets[0].min;
+  }
   // This is for the first (completed) request.
-  EXPECT_TRUE(buckets[0].min & JourneyLogger::EVENT_SHOWN);
-  EXPECT_TRUE(buckets[0].min & JourneyLogger::EVENT_PAY_CLICKED);
-  EXPECT_TRUE(buckets[0].min &
-              JourneyLogger::EVENT_RECEIVED_INSTRUMENT_DETAILS);
-  EXPECT_FALSE(buckets[0].min & JourneyLogger::EVENT_SKIPPED_SHOW);
-  EXPECT_TRUE(buckets[0].min & JourneyLogger::EVENT_COMPLETED);
-  EXPECT_FALSE(buckets[0].min & JourneyLogger::EVENT_USER_ABORTED);
-  EXPECT_FALSE(buckets[0].min & JourneyLogger::EVENT_OTHER_ABORTED);
-  EXPECT_TRUE(buckets[0].min &
-              JourneyLogger::EVENT_HAD_INITIAL_FORM_OF_PAYMENT);
-  EXPECT_TRUE(buckets[0].min &
-              JourneyLogger::EVENT_HAD_NECESSARY_COMPLETE_SUGGESTIONS);
-  EXPECT_FALSE(buckets[0].min & JourneyLogger::EVENT_REQUEST_SHIPPING);
-  EXPECT_FALSE(buckets[0].min & JourneyLogger::EVENT_REQUEST_PAYER_NAME);
-  EXPECT_FALSE(buckets[0].min & JourneyLogger::EVENT_REQUEST_PAYER_PHONE);
-  EXPECT_FALSE(buckets[0].min & JourneyLogger::EVENT_REQUEST_PAYER_EMAIL);
-  EXPECT_FALSE(buckets[0].min & JourneyLogger::EVENT_CAN_MAKE_PAYMENT_FALSE);
-  EXPECT_FALSE(buckets[0].min & JourneyLogger::EVENT_CAN_MAKE_PAYMENT_TRUE);
-  EXPECT_TRUE(buckets[0].min & JourneyLogger::EVENT_REQUEST_METHOD_BASIC_CARD);
-  EXPECT_FALSE(buckets[0].min & JourneyLogger::EVENT_REQUEST_METHOD_GOOGLE);
-  EXPECT_TRUE(buckets[0].min & JourneyLogger::EVENT_REQUEST_METHOD_OTHER);
-  EXPECT_TRUE(buckets[0].min & JourneyLogger::EVENT_SELECTED_CREDIT_CARD);
-  EXPECT_FALSE(buckets[0].min & JourneyLogger::EVENT_SELECTED_GOOGLE);
-  EXPECT_FALSE(buckets[0].min & JourneyLogger::EVENT_SELECTED_OTHER);
-  EXPECT_FALSE(buckets[0].min & JourneyLogger::EVENT_COULD_NOT_SHOW);
+  EXPECT_TRUE(shown & JourneyLogger::EVENT_SHOWN);
+  EXPECT_TRUE(shown & JourneyLogger::EVENT_PAY_CLICKED);
+  EXPECT_TRUE(shown & JourneyLogger::EVENT_RECEIVED_INSTRUMENT_DETAILS);
+  EXPECT_FALSE(shown & JourneyLogger::EVENT_SKIPPED_SHOW);
+  EXPECT_TRUE(shown & JourneyLogger::EVENT_COMPLETED);
+  EXPECT_FALSE(shown & JourneyLogger::EVENT_USER_ABORTED);
+  EXPECT_FALSE(shown & JourneyLogger::EVENT_OTHER_ABORTED);
+  EXPECT_TRUE(shown & JourneyLogger::EVENT_HAD_INITIAL_FORM_OF_PAYMENT);
+  EXPECT_TRUE(shown & JourneyLogger::EVENT_HAD_NECESSARY_COMPLETE_SUGGESTIONS);
+  EXPECT_FALSE(shown & JourneyLogger::EVENT_REQUEST_SHIPPING);
+  EXPECT_FALSE(shown & JourneyLogger::EVENT_REQUEST_PAYER_NAME);
+  EXPECT_FALSE(shown & JourneyLogger::EVENT_REQUEST_PAYER_PHONE);
+  EXPECT_FALSE(shown & JourneyLogger::EVENT_REQUEST_PAYER_EMAIL);
+  EXPECT_FALSE(shown & JourneyLogger::EVENT_CAN_MAKE_PAYMENT_FALSE);
+  EXPECT_FALSE(shown & JourneyLogger::EVENT_CAN_MAKE_PAYMENT_TRUE);
+  EXPECT_TRUE(shown & JourneyLogger::EVENT_REQUEST_METHOD_BASIC_CARD);
+  EXPECT_FALSE(shown & JourneyLogger::EVENT_REQUEST_METHOD_GOOGLE);
+  EXPECT_TRUE(shown & JourneyLogger::EVENT_REQUEST_METHOD_OTHER);
+  EXPECT_TRUE(shown & JourneyLogger::EVENT_SELECTED_CREDIT_CARD);
+  EXPECT_FALSE(shown & JourneyLogger::EVENT_SELECTED_GOOGLE);
+  EXPECT_FALSE(shown & JourneyLogger::EVENT_SELECTED_OTHER);
+  EXPECT_FALSE(shown & JourneyLogger::EVENT_COULD_NOT_SHOW);
 
   // The second set of events is for the second (never shown) request.
-  EXPECT_FALSE(buckets[1].min & JourneyLogger::EVENT_SHOWN);
-  EXPECT_FALSE(buckets[1].min & JourneyLogger::EVENT_PAY_CLICKED);
-  EXPECT_FALSE(buckets[1].min &
+  EXPECT_FALSE(could_not_show & JourneyLogger::EVENT_SHOWN);
+  EXPECT_FALSE(could_not_show & JourneyLogger::EVENT_PAY_CLICKED);
+  EXPECT_FALSE(could_not_show &
                JourneyLogger::EVENT_RECEIVED_INSTRUMENT_DETAILS);
-  EXPECT_FALSE(buckets[1].min & JourneyLogger::EVENT_SKIPPED_SHOW);
-  EXPECT_FALSE(buckets[1].min & JourneyLogger::EVENT_COMPLETED);
-  EXPECT_FALSE(buckets[1].min & JourneyLogger::EVENT_USER_ABORTED);
-  EXPECT_FALSE(buckets[1].min & JourneyLogger::EVENT_OTHER_ABORTED);
+  EXPECT_FALSE(could_not_show & JourneyLogger::EVENT_SKIPPED_SHOW);
+  EXPECT_FALSE(could_not_show & JourneyLogger::EVENT_COMPLETED);
+  EXPECT_FALSE(could_not_show & JourneyLogger::EVENT_USER_ABORTED);
+  EXPECT_FALSE(could_not_show & JourneyLogger::EVENT_OTHER_ABORTED);
 
   // When the payment apps feature is enabled, the checkout funnel is aborted
   // before checking for initial form of payment and the necessary complete
   // suggestions, because querying for available payment apps is asynchronous.
-  EXPECT_FALSE(buckets[1].min &
+  EXPECT_FALSE(could_not_show &
                JourneyLogger::EVENT_HAD_INITIAL_FORM_OF_PAYMENT);
-  EXPECT_FALSE(buckets[1].min &
+  EXPECT_FALSE(could_not_show &
                JourneyLogger::EVENT_HAD_NECESSARY_COMPLETE_SUGGESTIONS);
 
-  EXPECT_FALSE(buckets[1].min & JourneyLogger::EVENT_REQUEST_SHIPPING);
-  EXPECT_FALSE(buckets[1].min & JourneyLogger::EVENT_REQUEST_PAYER_NAME);
-  EXPECT_FALSE(buckets[1].min & JourneyLogger::EVENT_REQUEST_PAYER_PHONE);
-  EXPECT_FALSE(buckets[1].min & JourneyLogger::EVENT_REQUEST_PAYER_EMAIL);
-  EXPECT_FALSE(buckets[1].min & JourneyLogger::EVENT_CAN_MAKE_PAYMENT_FALSE);
-  EXPECT_FALSE(buckets[1].min & JourneyLogger::EVENT_CAN_MAKE_PAYMENT_TRUE);
-  EXPECT_TRUE(buckets[1].min & JourneyLogger::EVENT_REQUEST_METHOD_BASIC_CARD);
-  EXPECT_FALSE(buckets[1].min & JourneyLogger::EVENT_REQUEST_METHOD_GOOGLE);
-  EXPECT_TRUE(buckets[1].min & JourneyLogger::EVENT_REQUEST_METHOD_OTHER);
-  EXPECT_FALSE(buckets[1].min & JourneyLogger::EVENT_SELECTED_CREDIT_CARD);
-  EXPECT_FALSE(buckets[1].min & JourneyLogger::EVENT_SELECTED_GOOGLE);
-  EXPECT_FALSE(buckets[1].min & JourneyLogger::EVENT_SELECTED_OTHER);
-  EXPECT_TRUE(buckets[1].min & JourneyLogger::EVENT_COULD_NOT_SHOW);
+  EXPECT_FALSE(could_not_show & JourneyLogger::EVENT_REQUEST_SHIPPING);
+  EXPECT_FALSE(could_not_show & JourneyLogger::EVENT_REQUEST_PAYER_NAME);
+  EXPECT_FALSE(could_not_show & JourneyLogger::EVENT_REQUEST_PAYER_PHONE);
+  EXPECT_FALSE(could_not_show & JourneyLogger::EVENT_REQUEST_PAYER_EMAIL);
+  EXPECT_FALSE(could_not_show & JourneyLogger::EVENT_CAN_MAKE_PAYMENT_FALSE);
+  EXPECT_FALSE(could_not_show & JourneyLogger::EVENT_CAN_MAKE_PAYMENT_TRUE);
+  EXPECT_TRUE(could_not_show & JourneyLogger::EVENT_REQUEST_METHOD_BASIC_CARD);
+  EXPECT_FALSE(could_not_show & JourneyLogger::EVENT_REQUEST_METHOD_GOOGLE);
+  EXPECT_TRUE(could_not_show & JourneyLogger::EVENT_REQUEST_METHOD_OTHER);
+  EXPECT_FALSE(could_not_show & JourneyLogger::EVENT_SELECTED_CREDIT_CARD);
+  EXPECT_FALSE(could_not_show & JourneyLogger::EVENT_SELECTED_GOOGLE);
+  EXPECT_FALSE(could_not_show & JourneyLogger::EVENT_SELECTED_OTHER);
+  EXPECT_TRUE(could_not_show & JourneyLogger::EVENT_COULD_NOT_SHOW);
 }
 
-IN_PROC_BROWSER_TEST_F(PaymentRequestJourneyLoggerMultipleShowTest,
-                       StartNewRequestWithoutPaymentAppsFeature) {
+class PaymentRequestJourneyLoggerMultipleShowTestWithPaymentHandlersDisabled
+    : public PaymentRequestJourneyLoggerMultipleShowTest {
+ public:
+  PaymentRequestJourneyLoggerMultipleShowTestWithPaymentHandlersDisabled() {
+    // Disable payment handlers, also known as service worker payment apps. The
+    // rest of the test is identical to "StartNewRequest" testcase above.
+    feature_list_.InitAndDisableFeature(features::kServiceWorkerPaymentApps);
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(
+    PaymentRequestJourneyLoggerMultipleShowTestWithPaymentHandlersDisabled,
+    StartNewRequestWithoutPaymentAppsFeature) {
   NavigateTo("/payment_request_multiple_show_test.html");
-  // Disable payment handlers, also known as service worker payment apps. The
-  // rest of the test is identical to "StartNewRequest" testcase above.
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(
-      features::kServiceWorkerPaymentApps);
 
   base::HistogramTester histogram_tester;
 

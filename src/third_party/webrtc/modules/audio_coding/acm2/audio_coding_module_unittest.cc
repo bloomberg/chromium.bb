@@ -17,7 +17,6 @@
 #include <memory>
 #include <vector>
 
-#include "absl/memory/memory.h"
 #include "api/audio_codecs/audio_encoder.h"
 #include "api/audio_codecs/builtin_audio_decoder_factory.h"
 #include "api/audio_codecs/builtin_audio_encoder_factory.h"
@@ -55,6 +54,7 @@
 #include "test/mock_audio_decoder.h"
 #include "test/mock_audio_encoder.h"
 #include "test/testsupport/file_utils.h"
+#include "test/testsupport/rtc_expect_death.h"
 
 using ::testing::_;
 using ::testing::AtLeast;
@@ -273,8 +273,8 @@ TEST_F(AudioCodingModuleTestOldApi, VerifyOutputFrame) {
 TEST_F(AudioCodingModuleTestOldApi, FailOnZeroDesiredFrequency) {
   AudioFrame audio_frame;
   bool muted;
-  EXPECT_DEATH(acm_->PlayoutData10Ms(0, &audio_frame, &muted),
-               "dst_sample_rate_hz");
+  RTC_EXPECT_DEATH(acm_->PlayoutData10Ms(0, &audio_frame, &muted),
+                   "dst_sample_rate_hz");
 }
 #endif
 
@@ -974,10 +974,6 @@ TEST_F(AcmReceiverBitExactnessOldApi, 48kHzOutputExternalDecoder) {
           fact_(CreateBuiltinAudioDecoderFactory()) {
       // Set expectations on the mock decoder and also delegate the calls to
       // the real decoder.
-      EXPECT_CALL(*mock_decoder_, IncomingPacket(_, _, _, _, _))
-          .Times(AtLeast(1))
-          .WillRepeatedly(
-              Invoke(&pcmu_decoder_, &AudioDecoderPcmU::IncomingPacket));
       EXPECT_CALL(*mock_decoder_, SampleRateHz())
           .Times(AtLeast(1))
           .WillRepeatedly(
@@ -1536,19 +1532,13 @@ TEST_F(AcmSenderBitExactnessNewApi, OpusFromFormat_stereo_20ms_voip) {
   const std::string payload_maybe_sse =
       "4eab2259b6fe24c22dd242a113e0b3d9|"
       "4fc0af0aa06c26454af09832d3ec1b4e";
-  // The neon implementation may differ.
-  const std::string maybe_neon =
-      "1c81121f5d9286a5a865d01dbab22ce8|"
-      "26021bd11a81ed1ee4f85d692a4130a4";
-  const std::string payload_maybe_neon =
-      "839ea60399447268ee0f0262a50b75fd|"
-      "968404a1e18b103985e8454eb1e95142";
   Run(AcmReceiverBitExactnessOldApi::PlatformChecksum(
-          audio_maybe_sse, audio_maybe_sse, maybe_neon,
+          audio_maybe_sse, audio_maybe_sse, "1c81121f5d9286a5a865d01dbab22ce8",
           "11d547f89142e9ef03f37d7ca7f32379",
           "11d547f89142e9ef03f37d7ca7f32379"),
       AcmReceiverBitExactnessOldApi::PlatformChecksum(
-          payload_maybe_sse, payload_maybe_sse, payload_maybe_neon,
+          payload_maybe_sse, payload_maybe_sse,
+          "839ea60399447268ee0f0262a50b75fd",
           "1815fd5589cad0c6f6cf946c76b81aeb",
           "1815fd5589cad0c6f6cf946c76b81aeb"),
       50, test::AcmReceiveTestOldApi::kStereoOutput);
@@ -1649,7 +1639,7 @@ TEST_F(AcmSetBitRateNewApi, OpusFromFormat_48khz_20ms_50kbps) {
 // send surround audio.
 TEST_F(AudioCodingModuleTestOldApi, SendingMultiChannelForMonoInput) {
   constexpr int kSampleRateHz = 48000;
-  constexpr int kSamplesPerChannel = (kSampleRateHz * 10) / 1000;
+  constexpr int kSamplesPerChannel = kSampleRateHz * 10 / 1000;
 
   audio_format_ = SdpAudioFormat({"multiopus",
                                   kSampleRateHz,
@@ -1703,7 +1693,7 @@ TEST_F(AudioCodingModuleTestOldApi, SendingStereoForMonoInput) {
   constexpr int kSampleRateHz = 48000;
   constexpr int kSamplesPerChannel = (kSampleRateHz * 10) / 1000;
 
-  audio_format_ = SdpAudioFormat("opus", kSampleRateHz, 2);
+  audio_format_ = SdpAudioFormat("L16", kSampleRateHz, 2);
 
   RegisterCodec();
 
@@ -1759,7 +1749,7 @@ TEST_F(AcmSenderBitExactnessOldApi, External_Pcmu_20ms) {
   config.num_channels = 1;
   config.payload_type = 0;
   AudioEncoderPcmU encoder(config);
-  auto mock_encoder = absl::make_unique<MockAudioEncoder>();
+  auto mock_encoder = std::make_unique<MockAudioEncoder>();
   // Set expectations on the mock encoder and also delegate the calls to the
   // real encoder.
   EXPECT_CALL(*mock_encoder, SampleRateHz())

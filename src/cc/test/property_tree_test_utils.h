@@ -7,7 +7,6 @@
 
 #include "cc/trees/clip_node.h"
 #include "cc/trees/effect_node.h"
-#include "cc/trees/layer_tree_host_common.h"
 #include "cc/trees/property_tree.h"
 #include "cc/trees/scroll_node.h"
 #include "cc/trees/transform_node.h"
@@ -17,6 +16,8 @@ namespace cc {
 
 class Layer;
 class LayerImpl;
+class PictureLayer;
+class PictureLayerImpl;
 
 // Sets up properties that apply to the root layer.
 void SetupRootProperties(Layer* root);
@@ -27,7 +28,7 @@ void SetupRootProperties(LayerImpl* root);
 void CopyProperties(const Layer* from, Layer* to);
 void CopyProperties(const LayerImpl* from, LayerImpl* to);
 
-// Each of the following methods creates a property node for the layer,
+// Each of the following functions creates a property node for the layer,
 // and sets the new node as the layer's property node of the type.
 // The new property node's parent will be |parent_id| if it's specified.
 // Otherwise the layer's current property node of the corresponding type will
@@ -49,6 +50,20 @@ ScrollNode& CreateScrollNode(Layer*,
                              int parent_id = ScrollTree::kInvalidNodeId);
 ScrollNode& CreateScrollNode(LayerImpl*,
                              int parent_id = ScrollTree::kInvalidNodeId);
+
+// These functions create property nodes not associated with layers.
+TransformNode& CreateTransformNode(PropertyTrees*, int parent_id);
+ClipNode& CreateClipNode(PropertyTrees*, int parent_id, int transform_id);
+EffectNode& CreateEffectNode(PropertyTrees*,
+                             int parent_id,
+                             int transform_id,
+                             int clip_id);
+
+void SetupMaskProperties(LayerImpl* masked_layer, PictureLayerImpl* mask_layer);
+void SetupMaskProperties(Layer* masked_layer, PictureLayer* mask_layer);
+
+PropertyTrees* GetPropertyTrees(const Layer* layer);
+PropertyTrees* GetPropertyTrees(const LayerImpl* layer);
 
 template <typename LayerType>
 TransformNode* GetTransformNode(const LayerType* layer) {
@@ -117,6 +132,34 @@ void SetFilter(const LayerType* layer, const FilterOperations& filters) {
   GetPropertyTrees(layer)->effect_tree.set_needs_update(true);
 }
 
+// This will affect all layers associated with this layer's effect node.
+template <typename LayerType>
+void SetRenderSurfaceReason(const LayerType* layer,
+                            RenderSurfaceReason reason) {
+  auto* effect_node = GetEffectNode(layer);
+  effect_node->render_surface_reason = reason;
+  effect_node->effect_changed = true;
+  GetPropertyTrees(layer)->effect_tree.set_needs_update(true);
+}
+
+// This will affect all layers associated with this layer's effect node.
+template <typename LayerType>
+void SetBackdropFilter(const LayerType* layer,
+                       const FilterOperations& filters) {
+  auto* effect_node = GetEffectNode(layer);
+  effect_node->backdrop_filters = filters;
+  effect_node->effect_changed = true;
+  GetPropertyTrees(layer)->effect_tree.set_needs_update(true);
+}
+
+// This will affect all layers associated with this layer's clip node.
+template <typename LayerType>
+void SetClipRect(const LayerType* layer, const gfx::RectF& clip) {
+  auto* clip_node = GetClipNode(layer);
+  clip_node->clip = clip;
+  GetPropertyTrees(layer)->clip_tree.set_needs_update(true);
+}
+
 // Creates viewport layers and (in layer list mode) paint properties.
 // Convenient overload of the method below that creates a scrolling layer as
 // the outer viewport scroll layer. The inner viewport size will be
@@ -136,15 +179,7 @@ void SetupViewport(LayerImpl* root,
                    const gfx::Size& content_size);
 
 // Returns the RenderSurfaceImpl into which the given layer draws.
-inline RenderSurfaceImpl* GetRenderSurface(const LayerImpl* layer) {
-  auto& effect_tree = GetPropertyTrees(layer)->effect_tree;
-  if (auto* surface = effect_tree.GetRenderSurface(layer->effect_tree_index()))
-    return surface;
-  return effect_tree.GetRenderSurface(GetEffectNode(layer)->target_id);
-}
-
-// TODO(wangxianzhu): Add functions to create property nodes not based on
-// layers when needed.
+RenderSurfaceImpl* GetRenderSurface(const LayerImpl* layer);
 
 }  // namespace cc
 

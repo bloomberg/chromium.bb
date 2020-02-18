@@ -13,6 +13,10 @@
 namespace views {
 class EditableCombobox;
 class ToggleImageButton;
+
+#if defined(PASSWORD_STORE_SELECT_ENABLED)
+class Checkbox;
+#endif  // defined(PASSWORD_STORE_SELECT_ENABLED)
 }  // namespace views
 
 class PasswordSignInPromoView;
@@ -41,7 +45,6 @@ class PasswordPendingView : public PasswordBubbleViewBase,
   void OnContentChanged(views::EditableCombobox* editable_combobox) override;
 
   // PasswordBubbleViewBase:
-  std::unique_ptr<views::View> CreateFootnoteView() override;
   gfx::Size CalculatePreferredSize() const override;
   views::View* GetInitiallyFocusedView() override;
   int GetDialogButtons() const override;
@@ -56,10 +59,12 @@ class PasswordPendingView : public PasswordBubbleViewBase,
 
   // View:
   void AddedToWidget() override;
+  void OnThemeChanged() override;
 
   void TogglePasswordVisibility();
   void UpdateUsernameAndPasswordInModel();
   void ReplaceWithPromo();
+  std::unique_ptr<views::View> CreateFooterView();
 
   // True iff it is an update password bubble on creation. False iff it is a
   // save bubble.
@@ -75,6 +80,10 @@ class PasswordPendingView : public PasswordBubbleViewBase,
 
   // The view for the password value.
   views::EditableCombobox* password_dropdown_;
+
+#if defined(PASSWORD_STORE_SELECT_ENABLED)
+  views::Checkbox* account_store_checkbox_ = nullptr;
+#endif  // defined(PASSWORD_STORE_SELECT_ENABLED)
 
   bool are_passwords_revealed_;
 

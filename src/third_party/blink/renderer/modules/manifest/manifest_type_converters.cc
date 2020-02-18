@@ -8,7 +8,7 @@
 
 #include "third_party/blink/public/common/manifest/manifest.h"
 #include "third_party/blink/public/common/manifest/manifest_mojom_traits.h"
-#include "third_party/blink/public/mojom/manifest/manifest.mojom-blink-forward.h"
+#include "third_party/blink/public/mojom/manifest/manifest.mojom-blink.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -45,12 +45,8 @@ TypeConverter<blink::Manifest, blink::mojom::blink::ManifestPtr>::Convert(
         input->share_target.To<blink::Manifest::ShareTarget>();
   }
 
-  if (!input->file_handler.is_null()) {
-    blink::Manifest::FileHandler file_handler;
-    file_handler.action = input->file_handler->action;
-    for (auto& file : input->file_handler->files)
-      file_handler.files.push_back(file.To<blink::Manifest::FileFilter>());
-    output.file_handler = std::move(file_handler);
+  for (auto& entry : input->file_handlers) {
+    output.file_handlers.push_back(entry.To<blink::Manifest::FileHandler>());
   }
 
   for (auto& related_application : input->related_applications) {
@@ -175,6 +171,25 @@ TypeConverter<blink::Manifest::FileFilter,
 
   for (auto& accept : input->accept)
     output.accept.push_back(blink::WebString(accept).Utf16());
+
+  return output;
+}
+
+blink::Manifest::FileHandler
+TypeConverter<blink::Manifest::FileHandler,
+              blink::mojom::blink::ManifestFileHandlerPtr>::
+    Convert(const blink::mojom::blink::ManifestFileHandlerPtr& input) {
+  blink::Manifest::FileHandler output;
+  if (input.is_null())
+    return output;
+
+  output.name = blink::WebString(input->name).Utf16();
+  output.action = input->action;
+  for (const auto& it : input->accept) {
+    auto& extensions = output.accept[blink::WebString(it.key).Utf16()];
+    for (const auto& extension : it.value)
+      extensions.push_back(blink::WebString(extension).Utf16());
+  }
 
   return output;
 }

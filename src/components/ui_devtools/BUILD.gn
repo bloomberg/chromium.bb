@@ -107,14 +107,12 @@ component("ui_devtools") {
   }
 
   deps = [
-    ":devtools_protocol_encoding",
     ":protocol_generated_sources",
     "//base",
     "//mojo/public/cpp/bindings",
     "//mojo/public/cpp/system",
     "//net",
-    "//services/tracing/public/cpp",
-    "//services/tracing/public/mojom",
+    "//third_party/inspector_protocol:crdtp",
     "//ui/gfx",
   ]
 
@@ -123,6 +121,8 @@ component("ui_devtools") {
     "//services/network/public/cpp",
     "//services/network/public/mojom",
     "//services/service_manager/public/cpp",
+    "//services/tracing/public/cpp",
+    "//services/tracing/public/mojom",
     "//third_party/perfetto/gn:default_deps",
   ]
 }
@@ -134,20 +134,9 @@ static_library("test_support") {
     "ui_devtools_unittest_utils.h",
   ]
   public_deps = [
-    ":devtools_protocol_encoding",
     ":ui_devtools",
     "//testing/gmock",
-  ]
-}
-
-static_library("devtools_protocol_encoding") {
-  sources = [
-    "devtools_protocol_encoding.cc",
-    "devtools_protocol_encoding.h",
-  ]
-  deps = [
-    "//base",
-    "//third_party/inspector_protocol:encoding",
+    "//third_party/inspector_protocol:crdtp",
   ]
 }
 

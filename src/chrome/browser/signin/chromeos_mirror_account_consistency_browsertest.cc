@@ -8,6 +8,7 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_key.h"
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/supervised_user/supervised_user_constants.h"
 #include "chrome/browser/supervised_user/supervised_user_settings_service.h"
@@ -143,37 +144,15 @@ IN_PROC_BROWSER_TEST_F(ChromeOsMirrorAccountConsistencyTest,
                               "consistency_enabled_by_default=false");
 }
 
-class ChromeOsMirrorAccountConsistencyTestWithAccountManagerEnabled
-    : public ChromeOsMirrorAccountConsistencyTest {
- public:
-  ChromeOsMirrorAccountConsistencyTestWithAccountManagerEnabled() = default;
-  ~ChromeOsMirrorAccountConsistencyTestWithAccountManagerEnabled() override =
-      default;
-
-  void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(
-        chromeos::features::kAccountManager);
-    ChromeOsMirrorAccountConsistencyTest::SetUp();
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(
-      ChromeOsMirrorAccountConsistencyTestWithAccountManagerEnabled);
-};
-
-IN_PROC_BROWSER_TEST_F(
-    ChromeOsMirrorAccountConsistencyTestWithAccountManagerEnabled,
-    PRE_TestMirrorRequestChromeOsNotChildAccount) {
+IN_PROC_BROWSER_TEST_F(ChromeOsMirrorAccountConsistencyTest,
+                       PRE_TestMirrorRequestChromeOsNotChildAccount) {
   RegisterUser(account_id_);
   chromeos::StartupUtils::MarkOobeCompleted();
 }
 
-// Mirror is not enabled for non-child accounts.
-IN_PROC_BROWSER_TEST_F(
-    ChromeOsMirrorAccountConsistencyTestWithAccountManagerEnabled,
-    TestMirrorRequestChromeOsNotChildAccount) {
+// Mirror is enabled for non-child accounts.
+IN_PROC_BROWSER_TEST_F(ChromeOsMirrorAccountConsistencyTest,
+                       TestMirrorRequestChromeOsNotChildAccount) {
   // Not a child user.
   LoginUser(account_id_);
 

@@ -9,6 +9,12 @@
 
 namespace quic {
 
+namespace test {
+
+class QuicSentPacketManagerPeer;
+
+}  // namespace test
+
 // This class comprises multiple loss algorithms, each per packet number space.
 class QUIC_EXPORT_PRIVATE UberLossAlgorithm : public LossDetectionInterface {
  public:
@@ -35,14 +41,25 @@ class QUIC_EXPORT_PRIVATE UberLossAlgorithm : public LossDetectionInterface {
   // Returns the earliest time the early retransmit timer should be active.
   QuicTime GetLossTimeout() const override;
 
-  // Increases the loss detection threshold for time loss detection.
-  void SpuriousRetransmitDetected(
-      const QuicUnackedPacketMap& unacked_packets,
-      QuicTime time,
-      const RttStats& rtt_stats,
-      QuicPacketNumber spurious_retransmission) override;
+  // Called to increases time or packet threshold.
+  void SpuriousLossDetected(const QuicUnackedPacketMap& unacked_packets,
+                            const RttStats& rtt_stats,
+                            QuicTime ack_receive_time,
+                            QuicPacketNumber packet_number,
+                            QuicPacketNumber previous_largest_acked) override;
+
+  // Sets reordering_shift for all packet number spaces.
+  void SetReorderingShift(int reordering_shift);
+
+  // Enable adaptive reordering threshold of all packet number spaces.
+  void EnableAdaptiveReorderingThreshold();
+
+  // Enable adaptive time threshold of all packet number spaces.
+  void EnableAdaptiveTimeThreshold();
 
  private:
+  friend class test::QuicSentPacketManagerPeer;
+
   LossDetectionType loss_type_;
   // One loss algorithm per packet number space.
   GeneralLossAlgorithm general_loss_algorithms_[NUM_PACKET_NUMBER_SPACES];

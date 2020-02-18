@@ -47,9 +47,6 @@ class TestSigninClient : public SigninClient {
       base::OnceCallback<void(SignoutDecision)> on_signout_decision_reached,
       signin_metrics::ProfileSignout signout_source_metric) override;
 
-  // Returns the empty string.
-  std::string GetProductVersion() override;
-
   // Wraps the test_url_loader_factory().
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
 
@@ -72,7 +69,6 @@ class TestSigninClient : public SigninClient {
 
   void set_is_signout_allowed(bool value) { is_signout_allowed_ = value; }
 
-  bool is_ready_for_dice_migration() { return is_ready_for_dice_migration_; }
   bool is_dice_migration_completed() { return is_dice_migration_completed_; }
 
   // When |value| is true, network calls posted through DelayNetworkCall() are
@@ -92,7 +88,6 @@ class TestSigninClient : public SigninClient {
       GaiaAuthConsumer* consumer,
       gaia::GaiaSource source) override;
   void PreGaiaLogout(base::OnceClosure callback) override;
-  void SetReadyForDiceMigration(bool ready) override;
   void SetDiceMigrationCompleted() override;
   bool IsNonEnterpriseUser(const std::string& email) override;
 
@@ -106,7 +101,6 @@ class TestSigninClient : public SigninClient {
   bool are_signin_cookies_allowed_;
   bool network_calls_delayed_;
   bool is_signout_allowed_;
-  bool is_ready_for_dice_migration_;
   bool is_dice_migration_completed_;
 
   std::vector<base::OnceClosure> delayed_network_calls_;

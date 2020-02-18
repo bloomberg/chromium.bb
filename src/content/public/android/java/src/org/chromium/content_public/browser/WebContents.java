@@ -7,10 +7,11 @@ package org.chromium.content_public.browser;
 import android.graphics.Rect;
 import android.os.Handler;
 import android.os.Parcelable;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 
-import org.chromium.base.VisibleForTesting;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.ui.OverscrollRefreshHandler;
 import org.chromium.ui.base.EventForwarder;
 import org.chromium.ui.base.ViewAndroidDelegate;
@@ -343,9 +344,9 @@ public interface WebContents extends Parcelable {
     int getThemeColor();
 
     /**
-     * @return Current page load progress on a scale of 0 to 100.
+     * @return Current page load progress on a scale of 0 to 1.
      */
-    int getLoadProgress();
+    float getLoadProgress();
 
     /**
      * Initiate extraction of text, HTML, and other information for clipping puposes (smart clip)
@@ -398,11 +399,6 @@ public interface WebContents extends Parcelable {
      * @param disable True if spatial navigation should never be used.
      */
     void setSpatialNavigationDisabled(boolean disabled);
-
-    /**
-     * Reloads all the Lo-Fi images in this WebContents.
-     */
-    void reloadLoFiImages();
 
     /**
      * Sends a request to download the given image {@link url}.

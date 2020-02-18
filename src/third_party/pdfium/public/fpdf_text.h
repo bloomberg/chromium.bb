@@ -113,6 +113,89 @@ FPDFText_GetFontInfo(FPDF_TEXTPAGE text_page,
                      int* flags);
 
 // Experimental API.
+// Function: FPDFText_GetFontWeight
+//          Get the font weight of a particular character.
+// Parameters:
+//          text_page   -   Handle to a text page information structure.
+//                          Returned by FPDFText_LoadPage function.
+//          index       -   Zero-based index of the character.
+// Return value:
+//          On success, return the font weight of the particular character. If
+//          |text_page| is invalid, if |index| is out of bounds, or if the
+//          character's text object is undefined, return -1.
+//
+FPDF_EXPORT int FPDF_CALLCONV FPDFText_GetFontWeight(FPDF_TEXTPAGE text_page,
+                                                     int index);
+
+// Experimental API.
+// Function: FPDFText_GetTextRenderMode
+//          Get text rendering mode of character.
+// Parameters:
+//          text_page   -   Handle to a text page information structure.
+//                          Returned by FPDFText_LoadPage function.
+//          index       -   Zero-based index of the character.
+// Return Value:
+//          On success, return the render mode value. A valid value is of type
+//          FPDF_TEXT_RENDERMODE. If |text_page| is invalid, if |index| is out
+//          of bounds, or if the text object is undefined, then return -1.
+FPDF_EXPORT FPDF_TEXT_RENDERMODE FPDF_CALLCONV
+FPDFText_GetTextRenderMode(FPDF_TEXTPAGE text_page, int index);
+
+// Experimental API.
+// Function: FPDFText_GetFillColor
+//          Get the fill color of a particular character.
+// Parameters:
+//          text_page      -   Handle to a text page information structure.
+//                             Returned by FPDFText_LoadPage function.
+//          index          -   Zero-based index of the character.
+//          R              -   Pointer to an unsigned int number receiving the
+//                             red value of the fill color.
+//          G              -   Pointer to an unsigned int number receiving the
+//                             green value of the fill color.
+//          B              -   Pointer to an unsigned int number receiving the
+//                             blue value of the fill color.
+//          A              -   Pointer to an unsigned int number receiving the
+//                             alpha value of the fill color.
+// Return value:
+//          Whether the call succeeded. If false, |R|, |G|, |B| and |A| are
+//          unchanged.
+//
+FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV
+FPDFText_GetFillColor(FPDF_TEXTPAGE text_page,
+                      int index,
+                      unsigned int* R,
+                      unsigned int* G,
+                      unsigned int* B,
+                      unsigned int* A);
+
+// Experimental API.
+// Function: FPDFText_GetStrokeColor
+//          Get the stroke color of a particular character.
+// Parameters:
+//          text_page      -   Handle to a text page information structure.
+//                             Returned by FPDFText_LoadPage function.
+//          index          -   Zero-based index of the character.
+//          R              -   Pointer to an unsigned int number receiving the
+//                             red value of the stroke color.
+//          G              -   Pointer to an unsigned int number receiving the
+//                             green value of the stroke color.
+//          B              -   Pointer to an unsigned int number receiving the
+//                             blue value of the stroke color.
+//          A              -   Pointer to an unsigned int number receiving the
+//                             alpha value of the stroke color.
+// Return value:
+//          Whether the call succeeded. If false, |R|, |G|, |B| and |A| are
+//          unchanged.
+//
+FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV
+FPDFText_GetStrokeColor(FPDF_TEXTPAGE text_page,
+                        int index,
+                        unsigned int* R,
+                        unsigned int* G,
+                        unsigned int* B,
+                        unsigned int* A);
+
+// Experimental API.
 // Function: FPDFText_GetCharAngle
 //          Get character rotation angle.
 // Parameters:
@@ -153,6 +236,38 @@ FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV FPDFText_GetCharBox(FPDF_TEXTPAGE text_page,
                                                         double* right,
                                                         double* bottom,
                                                         double* top);
+
+// Experimental API.
+// Function: FPDFText_GetLooseCharBox
+//          Get a "loose" bounding box of a particular character, i.e., covering
+//          the entire glyph bounds, without taking the actual glyph shape into
+//          account.
+// Parameters:
+//          text_page   -   Handle to a text page information structure.
+//                          Returned by FPDFText_LoadPage function.
+//          index       -   Zero-based index of the character.
+//          left        -   Pointer to a double number receiving left position
+//                          of the character box.
+//          right       -   Pointer to a double number receiving right position
+//                          of the character box.
+//          bottom      -   Pointer to a double number receiving bottom position
+//                          of the character box.
+//          top         -   Pointer to a double number receiving top position of
+//                          the character box.
+// Return Value:
+//          On success, return TRUE and fill in |left|, |right|, |bottom|, and
+//          |top|. If |text_page| is invalid, or if |index| is out of bounds,
+//          then return FALSE, and the out parameters remain unmodified.
+// Comments:
+//          All positions are measured in PDF "user space".
+//
+FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV
+FPDFText_GetLooseCharBox(FPDF_TEXTPAGE text_page,
+                         int index,
+                         double* left,
+                         double* right,
+                         double* bottom,
+                         double* top);
 
 // Function: FPDFText_GetCharOrigin
 //          Get origin of a particular character.

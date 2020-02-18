@@ -4,6 +4,7 @@
 
 import("//build/config/android/config.gni")
 import("//build/config/android/rules.gni")
+import("//build/config/locales.gni")
 import("//device/vr/buildflags/buildflags.gni")
 
 android_aidl("common_aidl") {
@@ -80,8 +81,8 @@ android_library("content_java") {
     "//services/shape_detection:shape_detection_java",
     "//services/shape_detection/public/mojom:mojom_java",
     "//skia/public/mojom:mojom_java",
+    "//third_party/android_deps:androidx_annotation_annotation_java",
     "//third_party/android_deps:com_android_support_collections_java",
-    "//third_party/android_deps:com_android_support_support_annotations_java",
     "//third_party/android_deps:com_android_support_support_compat_java",
     "//third_party/blink/public:blink_headers_java",
     "//third_party/blink/public/mojom:android_mojo_bindings_java",
@@ -90,6 +91,7 @@ android_library("content_java") {
     "//third_party/jsr-305:jsr_305_javalib",
     "//ui/android:ui_java",
     "//ui/gfx/geometry/mojom:mojom_java",
+    "//url:origin_java",
   ]
 
   srcjar_deps = [
@@ -129,7 +131,7 @@ android_library("content_java") {
     "java/src/org/chromium/content/browser/ContentApiHelperForM.java",
     "java/src/org/chromium/content/browser/ContentChildProcessConstants.java",
     "java/src/org/chromium/content/browser/ContentClassFactory.java",
-    "java/src/org/chromium/content/browser/ContentFeatureList.java",
+    "java/src/org/chromium/content/browser/ContentFeatureListImpl.java",
     "java/src/org/chromium/content/browser/ContentNfcDelegate.java",
     "java/src/org/chromium/content/browser/ContentUiEventHandler.java",
     "java/src/org/chromium/content/browser/ContentViewStaticsImpl.java",
@@ -228,7 +230,6 @@ android_library("content_java") {
     "java/src/org/chromium/content/browser/selection/MagnifierWrapper.java",
     "java/src/org/chromium/content/browser/selection/MagnifierWrapperImpl.java",
     "java/src/org/chromium/content/browser/selection/PastePopupMenu.java",
-    "java/src/org/chromium/content/browser/selection/SelectionEventProxyImpl.java",
     "java/src/org/chromium/content/browser/selection/SelectionIndicesConverter.java",
     "java/src/org/chromium/content/browser/selection/SelectionInsertionHandleObserver.java",
     "java/src/org/chromium/content/browser/selection/SelectionPopupControllerImpl.java",
@@ -247,6 +248,7 @@ android_library("content_java") {
     "java/src/org/chromium/content_public/browser/ActionModeCallbackHelper.java",
     "java/src/org/chromium/content_public/browser/BrowserStartupController.java",
     "java/src/org/chromium/content_public/browser/BrowserTaskExecutor.java",
+    "java/src/org/chromium/content_public/browser/ContentFeatureList.java",
     "java/src/org/chromium/content_public/browser/ContentViewStatics.java",
     "java/src/org/chromium/content_public/browser/DeviceUtils.java",
     "java/src/org/chromium/content_public/browser/InputMethodManagerWrapper.java",
@@ -295,67 +297,17 @@ android_library("content_java") {
     "java/src/org/chromium/content_public/common/ScreenOrientationConstants.java",
     "java/src/org/chromium/content_public/common/ServiceManagerConnection.java",
     "java/src/org/chromium/content_public/common/UseZoomForDSFPolicy.java",
+    "java/src/org/chromium/content_public/app/ChildProcessServiceFactory.java",
   ]
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
 }
 
 java_strings_grd("content_strings_grd") {
   grd_file = "java/strings/android_content_strings.grd"
-  outputs = [
-    "values/android_content_strings.xml",
-    "values-am/android_content_strings.xml",
-    "values-ar/android_content_strings.xml",
-    "values-bg/android_content_strings.xml",
-    "values-bn/android_content_strings.xml",
-    "values-ca/android_content_strings.xml",
-    "values-cs/android_content_strings.xml",
-    "values-da/android_content_strings.xml",
-    "values-de/android_content_strings.xml",
-    "values-el/android_content_strings.xml",
-    "values-en-rGB/android_content_strings.xml",
-    "values-es/android_content_strings.xml",
-    "values-es-rUS/android_content_strings.xml",
-    "values-et/android_content_strings.xml",
-    "values-fa/android_content_strings.xml",
-    "values-fi/android_content_strings.xml",
-    "values-fr/android_content_strings.xml",
-    "values-gu/android_content_strings.xml",
-    "values-hi/android_content_strings.xml",
-    "values-hr/android_content_strings.xml",
-    "values-hu/android_content_strings.xml",
-    "values-in/android_content_strings.xml",
-    "values-it/android_content_strings.xml",
-    "values-iw/android_content_strings.xml",
-    "values-ja/android_content_strings.xml",
-    "values-kn/android_content_strings.xml",
-    "values-ko/android_content_strings.xml",
-    "values-lt/android_content_strings.xml",
-    "values-lv/android_content_strings.xml",
-    "values-ml/android_content_strings.xml",
-    "values-mr/android_content_strings.xml",
-    "values-ms/android_content_strings.xml",
-    "values-nb/android_content_strings.xml",
-    "values-nl/android_content_strings.xml",
-    "values-pl/android_content_strings.xml",
-    "values-pt-rBR/android_content_strings.xml",
-    "values-pt-rPT/android_content_strings.xml",
-    "values-ro/android_content_strings.xml",
-    "values-ru/android_content_strings.xml",
-    "values-sk/android_content_strings.xml",
-    "values-sl/android_content_strings.xml",
-    "values-sr/android_content_strings.xml",
-    "values-sv/android_content_strings.xml",
-    "values-sw/android_content_strings.xml",
-    "values-ta/android_content_strings.xml",
-    "values-te/android_content_strings.xml",
-    "values-th/android_content_strings.xml",
-    "values-tl/android_content_strings.xml",
-    "values-tr/android_content_strings.xml",
-    "values-uk/android_content_strings.xml",
-    "values-vi/android_content_strings.xml",
-    "values-zh-rCN/android_content_strings.xml",
-    "values-zh-rTW/android_content_strings.xml",
-  ]
+  outputs = [ "values/android_content_strings.xml" ] +
+            process_file_template(
+                android_bundle_locales_as_resources,
+                [ "values-{{source_name_part}}/android_content_strings.xml" ])
 }
 
 java_cpp_enum("content_public_android_java_enums_srcjar") {
@@ -399,7 +351,7 @@ generate_jni("content_jni_headers") {
     "java/src/org/chromium/content/browser/BrowserStartupControllerImpl.java",
     "java/src/org/chromium/content/browser/ChildProcessLauncherHelperImpl.java",
     "java/src/org/chromium/content/browser/ContactsDialogHost.java",
-    "java/src/org/chromium/content/browser/ContentFeatureList.java",
+    "java/src/org/chromium/content/browser/ContentFeatureListImpl.java",
     "java/src/org/chromium/content/browser/ContentNfcDelegate.java",
     "java/src/org/chromium/content/browser/ContentUiEventHandler.java",
     "java/src/org/chromium/content/browser/ContentViewStaticsImpl.java",
@@ -452,11 +404,6 @@ group("jni") {
 android_library("content_javatests") {
   testonly = true
 
-  srcjar_deps = [
-    "//content/shell/android:content_javatests_aidl",
-    "//ui/base:ui_base_cursor_type_java_enums_srcjar",
-  ]
-
   deps = [
     ":content_java",
     "//base:base_java",
@@ -481,8 +428,8 @@ android_library("content_javatests") {
     "//services/device/public/java:geolocation_java_test_support",
     "//services/service_manager/public/java:service_manager_java",
     "//services/test/echo/public/mojom:mojom_java",
+    "//third_party/android_deps:androidx_annotation_annotation_java",
     "//third_party/android_deps:com_android_support_collections_java",
-    "//third_party/android_deps:com_android_support_support_annotations_java",
     "//third_party/android_support_test_runner:rules_java",
     "//third_party/android_support_test_runner:runner_java",
     "//third_party/blink/public:blink_headers_java",
@@ -595,5 +542,9 @@ junit_binary("content_junit_tests") {
     "//third_party/blink/public/mojom:android_mojo_bindings_java",
     "//ui/android:ui_java",
     "//ui/gfx/geometry/mojom:mojom_java",
+  ]
+
+  data_deps = [
+    "//testing/buildbot/filters:content_junit_tests_filters",
   ]
 }

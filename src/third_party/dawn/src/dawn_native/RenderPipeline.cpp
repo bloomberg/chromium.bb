@@ -49,6 +49,10 @@ namespace dawn_native {
                 return DAWN_VALIDATION_ERROR("Setting attribute offset out of bounds");
             }
 
+            if (attribute->offset % 4 != 0) {
+                return DAWN_VALIDATION_ERROR("Attribute offset needs to be a multiple of 4 bytes");
+            }
+
             if ((*attributesSetMask)[attribute->shaderLocation]) {
                 return DAWN_VALIDATION_ERROR("Setting already set attribute");
             }
@@ -57,44 +61,44 @@ namespace dawn_native {
             return {};
         }
 
-        MaybeError ValidateVertexBufferDescriptor(
-            const VertexBufferDescriptor* buffer,
+        MaybeError ValidateVertexBufferLayoutDescriptor(
+            const VertexBufferLayoutDescriptor* buffer,
             std::bitset<kMaxVertexAttributes>* attributesSetMask) {
             DAWN_TRY(ValidateInputStepMode(buffer->stepMode));
-            if (buffer->stride > kMaxVertexBufferStride) {
-                return DAWN_VALIDATION_ERROR("Setting input stride out of bounds");
+            if (buffer->arrayStride > kMaxVertexBufferStride) {
+                return DAWN_VALIDATION_ERROR("Setting arrayStride out of bounds");
             }
 
-            if (buffer->stride % 4 != 0) {
+            if (buffer->arrayStride % 4 != 0) {
                 return DAWN_VALIDATION_ERROR(
-                    "Stride of Vertex buffer needs to be multiple of 4 bytes");
+                    "arrayStride of Vertex buffer needs to be a multiple of 4 bytes");
             }
 
             for (uint32_t i = 0; i < buffer->attributeCount; ++i) {
-                DAWN_TRY(ValidateVertexAttributeDescriptor(&buffer->attributes[i], buffer->stride,
-                                                           attributesSetMask));
+                DAWN_TRY(ValidateVertexAttributeDescriptor(&buffer->attributes[i],
+                                                           buffer->arrayStride, attributesSetMask));
             }
 
             return {};
         }
 
-        MaybeError ValidateVertexInputDescriptor(
-            const VertexInputDescriptor* descriptor,
+        MaybeError ValidateVertexStateDescriptor(
+            const VertexStateDescriptor* descriptor,
             std::bitset<kMaxVertexAttributes>* attributesSetMask) {
             if (descriptor->nextInChain != nullptr) {
                 return DAWN_VALIDATION_ERROR("nextInChain must be nullptr");
             }
             DAWN_TRY(ValidateIndexFormat(descriptor->indexFormat));
 
-            if (descriptor->bufferCount > kMaxVertexBuffers) {
-                return DAWN_VALIDATION_ERROR("Vertex Inputs number exceeds maximum");
+            if (descriptor->vertexBufferCount > kMaxVertexBuffers) {
+                return DAWN_VALIDATION_ERROR("Vertex buffer count exceeds maximum");
             }
 
             uint32_t totalAttributesNum = 0;
-            for (uint32_t i = 0; i < descriptor->bufferCount; ++i) {
-                DAWN_TRY(
-                    ValidateVertexBufferDescriptor(&descriptor->buffers[i], attributesSetMask));
-                totalAttributesNum += descriptor->buffers[i].attributeCount;
+            for (uint32_t i = 0; i < descriptor->vertexBufferCount; ++i) {
+                DAWN_TRY(ValidateVertexBufferLayoutDescriptor(&descriptor->vertexBuffers[i],
+                                                              attributesSetMask));
+                totalAttributesNum += descriptor->vertexBuffers[i].attributeCount;
             }
 
             // Every vertex attribute has a member called shaderLocation, and there are some
@@ -117,22 +121,28 @@ namespace dawn_native {
         }
 
         MaybeError ValidateColorStateDescriptor(const DeviceBase* device,
-                                                const ColorStateDescriptor* descriptor) {
-            if (descriptor->nextInChain != nullptr) {
+                                                const ColorStateDescriptor& descriptor,
+                                                Format::Type fragmentOutputBaseType) {
+            if (descriptor.nextInChain != nullptr) {
                 return DAWN_VALIDATION_ERROR("nextInChain must be nullptr");
             }
-            DAWN_TRY(ValidateBlendOperation(descriptor->alphaBlend.operation));
-            DAWN_TRY(ValidateBlendFactor(descriptor->alphaBlend.srcFactor));
-            DAWN_TRY(ValidateBlendFactor(descriptor->alphaBlend.dstFactor));
-            DAWN_TRY(ValidateBlendOperation(descriptor->colorBlend.operation));
-            DAWN_TRY(ValidateBlendFactor(descriptor->colorBlend.srcFactor));
-            DAWN_TRY(ValidateBlendFactor(descriptor->colorBlend.dstFactor));
-            DAWN_TRY(ValidateColorWriteMask(descriptor->writeMask));
+            DAWN_TRY(ValidateBlendOperation(descriptor.alphaBlend.operation));
+            DAWN_TRY(ValidateBlendFactor(descriptor.alphaBlend.srcFactor));
+            DAWN_TRY(ValidateBlendFactor(descriptor.alphaBlend.dstFactor));
+            DAWN_TRY(ValidateBlendOperation(descriptor.colorBlend.operation));
+            DAWN_TRY(ValidateBlendFactor(descriptor.colorBlend.srcFactor));
+            DAWN_TRY(ValidateBlendFactor(descriptor.colorBlend.dstFactor));
+            DAWN_TRY(ValidateColorWriteMask(descriptor.writeMask));
 
             const Format* format;
-            DAWN_TRY_ASSIGN(format, device->GetInternalFormat(descriptor->format));
+            DAWN_TRY_ASSIGN(format, device->GetInternalFormat(descriptor.format));
             if (!format->IsColor() || !format->isRenderable) {
                 return DAWN_VALIDATION_ERROR("Color format must be color renderable");
+            }
+            if (fragmentOutputBaseType != Format::Type::Other &&
+                fragmentOutputBaseType != format->type) {
+                return DAWN_VALIDATION_ERROR(
+                    "Color format must match the fragment stage output type");
             }
 
             return {};
@@ -167,100 +177,100 @@ namespace dawn_native {
     }  // anonymous namespace
 
     // Helper functions
-    size_t IndexFormatSize(dawn::IndexFormat format) {
+    size_t IndexFormatSize(wgpu::IndexFormat format) {
         switch (format) {
-            case dawn::IndexFormat::Uint16:
+            case wgpu::IndexFormat::Uint16:
                 return sizeof(uint16_t);
-            case dawn::IndexFormat::Uint32:
+            case wgpu::IndexFormat::Uint32:
                 return sizeof(uint32_t);
             default:
                 UNREACHABLE();
         }
     }
 
-    uint32_t VertexFormatNumComponents(dawn::VertexFormat format) {
+    uint32_t VertexFormatNumComponents(wgpu::VertexFormat format) {
         switch (format) {
-            case dawn::VertexFormat::UChar4:
-            case dawn::VertexFormat::Char4:
-            case dawn::VertexFormat::UChar4Norm:
-            case dawn::VertexFormat::Char4Norm:
-            case dawn::VertexFormat::UShort4:
-            case dawn::VertexFormat::Short4:
-            case dawn::VertexFormat::UShort4Norm:
-            case dawn::VertexFormat::Short4Norm:
-            case dawn::VertexFormat::Half4:
-            case dawn::VertexFormat::Float4:
-            case dawn::VertexFormat::UInt4:
-            case dawn::VertexFormat::Int4:
+            case wgpu::VertexFormat::UChar4:
+            case wgpu::VertexFormat::Char4:
+            case wgpu::VertexFormat::UChar4Norm:
+            case wgpu::VertexFormat::Char4Norm:
+            case wgpu::VertexFormat::UShort4:
+            case wgpu::VertexFormat::Short4:
+            case wgpu::VertexFormat::UShort4Norm:
+            case wgpu::VertexFormat::Short4Norm:
+            case wgpu::VertexFormat::Half4:
+            case wgpu::VertexFormat::Float4:
+            case wgpu::VertexFormat::UInt4:
+            case wgpu::VertexFormat::Int4:
                 return 4;
-            case dawn::VertexFormat::Float3:
-            case dawn::VertexFormat::UInt3:
-            case dawn::VertexFormat::Int3:
+            case wgpu::VertexFormat::Float3:
+            case wgpu::VertexFormat::UInt3:
+            case wgpu::VertexFormat::Int3:
                 return 3;
-            case dawn::VertexFormat::UChar2:
-            case dawn::VertexFormat::Char2:
-            case dawn::VertexFormat::UChar2Norm:
-            case dawn::VertexFormat::Char2Norm:
-            case dawn::VertexFormat::UShort2:
-            case dawn::VertexFormat::Short2:
-            case dawn::VertexFormat::UShort2Norm:
-            case dawn::VertexFormat::Short2Norm:
-            case dawn::VertexFormat::Half2:
-            case dawn::VertexFormat::Float2:
-            case dawn::VertexFormat::UInt2:
-            case dawn::VertexFormat::Int2:
+            case wgpu::VertexFormat::UChar2:
+            case wgpu::VertexFormat::Char2:
+            case wgpu::VertexFormat::UChar2Norm:
+            case wgpu::VertexFormat::Char2Norm:
+            case wgpu::VertexFormat::UShort2:
+            case wgpu::VertexFormat::Short2:
+            case wgpu::VertexFormat::UShort2Norm:
+            case wgpu::VertexFormat::Short2Norm:
+            case wgpu::VertexFormat::Half2:
+            case wgpu::VertexFormat::Float2:
+            case wgpu::VertexFormat::UInt2:
+            case wgpu::VertexFormat::Int2:
                 return 2;
-            case dawn::VertexFormat::Float:
-            case dawn::VertexFormat::UInt:
-            case dawn::VertexFormat::Int:
+            case wgpu::VertexFormat::Float:
+            case wgpu::VertexFormat::UInt:
+            case wgpu::VertexFormat::Int:
                 return 1;
             default:
                 UNREACHABLE();
         }
     }
 
-    size_t VertexFormatComponentSize(dawn::VertexFormat format) {
+    size_t VertexFormatComponentSize(wgpu::VertexFormat format) {
         switch (format) {
-            case dawn::VertexFormat::UChar2:
-            case dawn::VertexFormat::UChar4:
-            case dawn::VertexFormat::Char2:
-            case dawn::VertexFormat::Char4:
-            case dawn::VertexFormat::UChar2Norm:
-            case dawn::VertexFormat::UChar4Norm:
-            case dawn::VertexFormat::Char2Norm:
-            case dawn::VertexFormat::Char4Norm:
+            case wgpu::VertexFormat::UChar2:
+            case wgpu::VertexFormat::UChar4:
+            case wgpu::VertexFormat::Char2:
+            case wgpu::VertexFormat::Char4:
+            case wgpu::VertexFormat::UChar2Norm:
+            case wgpu::VertexFormat::UChar4Norm:
+            case wgpu::VertexFormat::Char2Norm:
+            case wgpu::VertexFormat::Char4Norm:
                 return sizeof(char);
-            case dawn::VertexFormat::UShort2:
-            case dawn::VertexFormat::UShort4:
-            case dawn::VertexFormat::UShort2Norm:
-            case dawn::VertexFormat::UShort4Norm:
-            case dawn::VertexFormat::Short2:
-            case dawn::VertexFormat::Short4:
-            case dawn::VertexFormat::Short2Norm:
-            case dawn::VertexFormat::Short4Norm:
-            case dawn::VertexFormat::Half2:
-            case dawn::VertexFormat::Half4:
+            case wgpu::VertexFormat::UShort2:
+            case wgpu::VertexFormat::UShort4:
+            case wgpu::VertexFormat::UShort2Norm:
+            case wgpu::VertexFormat::UShort4Norm:
+            case wgpu::VertexFormat::Short2:
+            case wgpu::VertexFormat::Short4:
+            case wgpu::VertexFormat::Short2Norm:
+            case wgpu::VertexFormat::Short4Norm:
+            case wgpu::VertexFormat::Half2:
+            case wgpu::VertexFormat::Half4:
                 return sizeof(uint16_t);
-            case dawn::VertexFormat::Float:
-            case dawn::VertexFormat::Float2:
-            case dawn::VertexFormat::Float3:
-            case dawn::VertexFormat::Float4:
+            case wgpu::VertexFormat::Float:
+            case wgpu::VertexFormat::Float2:
+            case wgpu::VertexFormat::Float3:
+            case wgpu::VertexFormat::Float4:
                 return sizeof(float);
-            case dawn::VertexFormat::UInt:
-            case dawn::VertexFormat::UInt2:
-            case dawn::VertexFormat::UInt3:
-            case dawn::VertexFormat::UInt4:
-            case dawn::VertexFormat::Int:
-            case dawn::VertexFormat::Int2:
-            case dawn::VertexFormat::Int3:
-            case dawn::VertexFormat::Int4:
+            case wgpu::VertexFormat::UInt:
+            case wgpu::VertexFormat::UInt2:
+            case wgpu::VertexFormat::UInt3:
+            case wgpu::VertexFormat::UInt4:
+            case wgpu::VertexFormat::Int:
+            case wgpu::VertexFormat::Int2:
+            case wgpu::VertexFormat::Int3:
+            case wgpu::VertexFormat::Int4:
                 return sizeof(int32_t);
             default:
                 UNREACHABLE();
         }
     }
 
-    size_t VertexFormatSize(dawn::VertexFormat format) {
+    size_t VertexFormatSize(wgpu::VertexFormat format) {
         return VertexFormatNumComponents(format) * VertexFormatComponentSize(format);
     }
 
@@ -270,7 +280,9 @@ namespace dawn_native {
             return DAWN_VALIDATION_ERROR("nextInChain must be nullptr");
         }
 
-        DAWN_TRY(device->ValidateObject(descriptor->layout));
+        if (descriptor->layout != nullptr) {
+            DAWN_TRY(device->ValidateObject(descriptor->layout));
+        }
 
         // TODO(crbug.com/dawn/136): Support vertex-only pipelines.
         if (descriptor->fragmentStage == nullptr) {
@@ -278,15 +290,15 @@ namespace dawn_native {
         }
 
         std::bitset<kMaxVertexAttributes> attributesSetMask;
-        if (descriptor->vertexInput) {
-            DAWN_TRY(ValidateVertexInputDescriptor(descriptor->vertexInput, &attributesSetMask));
+        if (descriptor->vertexState) {
+            DAWN_TRY(ValidateVertexStateDescriptor(descriptor->vertexState, &attributesSetMask));
         }
 
         DAWN_TRY(ValidatePrimitiveTopology(descriptor->primitiveTopology));
-        DAWN_TRY(ValidatePipelineStageDescriptor(device, &descriptor->vertexStage,
-                                                 descriptor->layout, SingleShaderStage::Vertex));
-        DAWN_TRY(ValidatePipelineStageDescriptor(device, descriptor->fragmentStage,
-                                                 descriptor->layout, SingleShaderStage::Fragment));
+        DAWN_TRY(ValidateProgrammableStageDescriptor(
+            device, &descriptor->vertexStage, descriptor->layout, SingleShaderStage::Vertex));
+        DAWN_TRY(ValidateProgrammableStageDescriptor(
+            device, descriptor->fragmentStage, descriptor->layout, SingleShaderStage::Fragment));
 
         if (descriptor->rasterizationState) {
             DAWN_TRY(ValidateRasterizationStateDescriptor(descriptor->rasterizationState));
@@ -295,7 +307,7 @@ namespace dawn_native {
         if ((descriptor->vertexStage.module->GetUsedVertexAttributes() & ~attributesSetMask)
                 .any()) {
             return DAWN_VALIDATION_ERROR(
-                "Pipeline vertex stage uses inputs not in the input state");
+                "Pipeline vertex stage uses vertex buffers not in the vertex state");
         }
 
         if (!IsValidSampleCount(descriptor->sampleCount)) {
@@ -310,8 +322,12 @@ namespace dawn_native {
             return DAWN_VALIDATION_ERROR("Should have at least one attachment");
         }
 
+        ASSERT(descriptor->fragmentStage != nullptr);
+        const ShaderModuleBase::FragmentOutputBaseTypes& fragmentOutputBaseTypes =
+            descriptor->fragmentStage->module->GetFragmentOutputBaseTypes();
         for (uint32_t i = 0; i < descriptor->colorStateCount; ++i) {
-            DAWN_TRY(ValidateColorStateDescriptor(device, descriptor->colorStates[i]));
+            DAWN_TRY(ValidateColorStateDescriptor(device, descriptor->colorStates[i],
+                                                  fragmentOutputBaseTypes[i]));
         }
 
         if (descriptor->depthStencilState) {
@@ -330,33 +346,32 @@ namespace dawn_native {
     }
 
     bool StencilTestEnabled(const DepthStencilStateDescriptor* mDepthStencilState) {
-        return mDepthStencilState->stencilBack.compare != dawn::CompareFunction::Always ||
-               mDepthStencilState->stencilBack.failOp != dawn::StencilOperation::Keep ||
-               mDepthStencilState->stencilBack.depthFailOp != dawn::StencilOperation::Keep ||
-               mDepthStencilState->stencilBack.passOp != dawn::StencilOperation::Keep ||
-               mDepthStencilState->stencilFront.compare != dawn::CompareFunction::Always ||
-               mDepthStencilState->stencilFront.failOp != dawn::StencilOperation::Keep ||
-               mDepthStencilState->stencilFront.depthFailOp != dawn::StencilOperation::Keep ||
-               mDepthStencilState->stencilFront.passOp != dawn::StencilOperation::Keep;
+        return mDepthStencilState->stencilBack.compare != wgpu::CompareFunction::Always ||
+               mDepthStencilState->stencilBack.failOp != wgpu::StencilOperation::Keep ||
+               mDepthStencilState->stencilBack.depthFailOp != wgpu::StencilOperation::Keep ||
+               mDepthStencilState->stencilBack.passOp != wgpu::StencilOperation::Keep ||
+               mDepthStencilState->stencilFront.compare != wgpu::CompareFunction::Always ||
+               mDepthStencilState->stencilFront.failOp != wgpu::StencilOperation::Keep ||
+               mDepthStencilState->stencilFront.depthFailOp != wgpu::StencilOperation::Keep ||
+               mDepthStencilState->stencilFront.passOp != wgpu::StencilOperation::Keep;
     }
 
     bool BlendEnabled(const ColorStateDescriptor* mColorState) {
-        return mColorState->alphaBlend.operation != dawn::BlendOperation::Add ||
-               mColorState->alphaBlend.srcFactor != dawn::BlendFactor::One ||
-               mColorState->alphaBlend.dstFactor != dawn::BlendFactor::Zero ||
-               mColorState->colorBlend.operation != dawn::BlendOperation::Add ||
-               mColorState->colorBlend.srcFactor != dawn::BlendFactor::One ||
-               mColorState->colorBlend.dstFactor != dawn::BlendFactor::Zero;
+        return mColorState->alphaBlend.operation != wgpu::BlendOperation::Add ||
+               mColorState->alphaBlend.srcFactor != wgpu::BlendFactor::One ||
+               mColorState->alphaBlend.dstFactor != wgpu::BlendFactor::Zero ||
+               mColorState->colorBlend.operation != wgpu::BlendOperation::Add ||
+               mColorState->colorBlend.srcFactor != wgpu::BlendFactor::One ||
+               mColorState->colorBlend.dstFactor != wgpu::BlendFactor::Zero;
     }
 
     // RenderPipelineBase
 
     RenderPipelineBase::RenderPipelineBase(DeviceBase* device,
-                                           const RenderPipelineDescriptor* descriptor,
-                                           bool blueprint)
+                                           const RenderPipelineDescriptor* descriptor)
         : PipelineBase(device,
                        descriptor->layout,
-                       dawn::ShaderStage::Vertex | dawn::ShaderStage::Fragment),
+                       wgpu::ShaderStage::Vertex | wgpu::ShaderStage::Fragment),
           mAttachmentState(device->GetOrCreateAttachmentState(descriptor)),
           mPrimitiveTopology(descriptor->primitiveTopology),
           mSampleMask(descriptor->sampleMask),
@@ -364,31 +379,32 @@ namespace dawn_native {
           mVertexModule(descriptor->vertexStage.module),
           mVertexEntryPoint(descriptor->vertexStage.entryPoint),
           mFragmentModule(descriptor->fragmentStage->module),
-          mFragmentEntryPoint(descriptor->fragmentStage->entryPoint),
-          mIsBlueprint(blueprint) {
-        if (descriptor->vertexInput != nullptr) {
-            mVertexInput = *descriptor->vertexInput;
+          mFragmentEntryPoint(descriptor->fragmentStage->entryPoint) {
+        if (descriptor->vertexState != nullptr) {
+            mVertexState = *descriptor->vertexState;
         } else {
-            mVertexInput = VertexInputDescriptor();
+            mVertexState = VertexStateDescriptor();
         }
 
-        for (uint32_t slot = 0; slot < mVertexInput.bufferCount; ++slot) {
-            if (mVertexInput.buffers[slot].attributeCount == 0) {
+        for (uint32_t slot = 0; slot < mVertexState.vertexBufferCount; ++slot) {
+            if (mVertexState.vertexBuffers[slot].attributeCount == 0) {
                 continue;
             }
 
-            mInputsSetMask.set(slot);
-            mInputInfos[slot].stride = mVertexInput.buffers[slot].stride;
-            mInputInfos[slot].stepMode = mVertexInput.buffers[slot].stepMode;
+            mVertexBufferSlotsUsed.set(slot);
+            mVertexBufferInfos[slot].arrayStride = mVertexState.vertexBuffers[slot].arrayStride;
+            mVertexBufferInfos[slot].stepMode = mVertexState.vertexBuffers[slot].stepMode;
 
             uint32_t location = 0;
-            for (uint32_t i = 0; i < mVertexInput.buffers[slot].attributeCount; ++i) {
-                location = mVertexInput.buffers[slot].attributes[i].shaderLocation;
-                mAttributesSetMask.set(location);
+            for (uint32_t i = 0; i < mVertexState.vertexBuffers[slot].attributeCount; ++i) {
+                location = mVertexState.vertexBuffers[slot].attributes[i].shaderLocation;
+                mAttributeLocationsUsed.set(location);
                 mAttributeInfos[location].shaderLocation = location;
-                mAttributeInfos[location].inputSlot = slot;
-                mAttributeInfos[location].offset = mVertexInput.buffers[slot].attributes[i].offset;
-                mAttributeInfos[location].format = mVertexInput.buffers[slot].attributes[i].format;
+                mAttributeInfos[location].vertexBufferSlot = slot;
+                mAttributeInfos[location].offset =
+                    mVertexState.vertexBuffers[slot].attributes[i].offset;
+                mAttributeInfos[location].format =
+                    mVertexState.vertexBuffers[slot].attributes[i].format;
             }
         }
 
@@ -405,22 +421,22 @@ namespace dawn_native {
             // The values indicate that depth and stencil test are disabled when backends
             // set their own depth stencil states/descriptors according to the values in
             // mDepthStencilState.
-            mDepthStencilState.depthCompare = dawn::CompareFunction::Always;
+            mDepthStencilState.depthCompare = wgpu::CompareFunction::Always;
             mDepthStencilState.depthWriteEnabled = false;
-            mDepthStencilState.stencilBack.compare = dawn::CompareFunction::Always;
-            mDepthStencilState.stencilBack.failOp = dawn::StencilOperation::Keep;
-            mDepthStencilState.stencilBack.depthFailOp = dawn::StencilOperation::Keep;
-            mDepthStencilState.stencilBack.passOp = dawn::StencilOperation::Keep;
-            mDepthStencilState.stencilFront.compare = dawn::CompareFunction::Always;
-            mDepthStencilState.stencilFront.failOp = dawn::StencilOperation::Keep;
-            mDepthStencilState.stencilFront.depthFailOp = dawn::StencilOperation::Keep;
-            mDepthStencilState.stencilFront.passOp = dawn::StencilOperation::Keep;
+            mDepthStencilState.stencilBack.compare = wgpu::CompareFunction::Always;
+            mDepthStencilState.stencilBack.failOp = wgpu::StencilOperation::Keep;
+            mDepthStencilState.stencilBack.depthFailOp = wgpu::StencilOperation::Keep;
+            mDepthStencilState.stencilBack.passOp = wgpu::StencilOperation::Keep;
+            mDepthStencilState.stencilFront.compare = wgpu::CompareFunction::Always;
+            mDepthStencilState.stencilFront.failOp = wgpu::StencilOperation::Keep;
+            mDepthStencilState.stencilFront.depthFailOp = wgpu::StencilOperation::Keep;
+            mDepthStencilState.stencilFront.passOp = wgpu::StencilOperation::Keep;
             mDepthStencilState.stencilReadMask = 0xff;
             mDepthStencilState.stencilWriteMask = 0xff;
         }
 
         for (uint32_t i : IterateBitSet(mAttachmentState->GetColorAttachmentsMask())) {
-            mColorStates[i] = *descriptor->colorStates[i];
+            mColorStates[i] = descriptor->colorStates[i];
         }
 
         // TODO(cwallez@chromium.org): Check against the shader module that the correct color
@@ -437,37 +453,36 @@ namespace dawn_native {
     }
 
     RenderPipelineBase::~RenderPipelineBase() {
-        // Do not uncache the actual cached object if we are a blueprint
-        if (!mIsBlueprint && !IsError()) {
+        if (IsCachedReference()) {
             GetDevice()->UncacheRenderPipeline(this);
         }
     }
 
-    const VertexInputDescriptor* RenderPipelineBase::GetVertexInputDescriptor() const {
+    const VertexStateDescriptor* RenderPipelineBase::GetVertexStateDescriptor() const {
         ASSERT(!IsError());
-        return &mVertexInput;
+        return &mVertexState;
     }
 
-    const std::bitset<kMaxVertexAttributes>& RenderPipelineBase::GetAttributesSetMask() const {
+    const std::bitset<kMaxVertexAttributes>& RenderPipelineBase::GetAttributeLocationsUsed() const {
         ASSERT(!IsError());
-        return mAttributesSetMask;
+        return mAttributeLocationsUsed;
     }
 
     const VertexAttributeInfo& RenderPipelineBase::GetAttribute(uint32_t location) const {
         ASSERT(!IsError());
-        ASSERT(mAttributesSetMask[location]);
+        ASSERT(mAttributeLocationsUsed[location]);
         return mAttributeInfos[location];
     }
 
-    const std::bitset<kMaxVertexBuffers>& RenderPipelineBase::GetInputsSetMask() const {
+    const std::bitset<kMaxVertexBuffers>& RenderPipelineBase::GetVertexBufferSlotsUsed() const {
         ASSERT(!IsError());
-        return mInputsSetMask;
+        return mVertexBufferSlotsUsed;
     }
 
-    const VertexBufferInfo& RenderPipelineBase::GetInput(uint32_t slot) const {
+    const VertexBufferInfo& RenderPipelineBase::GetVertexBuffer(uint32_t slot) const {
         ASSERT(!IsError());
-        ASSERT(mInputsSetMask[slot]);
-        return mInputInfos[slot];
+        ASSERT(mVertexBufferSlotsUsed[slot]);
+        return mVertexBufferInfos[slot];
     }
 
     const ColorStateDescriptor* RenderPipelineBase::GetColorStateDescriptor(
@@ -482,17 +497,17 @@ namespace dawn_native {
         return &mDepthStencilState;
     }
 
-    dawn::PrimitiveTopology RenderPipelineBase::GetPrimitiveTopology() const {
+    wgpu::PrimitiveTopology RenderPipelineBase::GetPrimitiveTopology() const {
         ASSERT(!IsError());
         return mPrimitiveTopology;
     }
 
-    dawn::CullMode RenderPipelineBase::GetCullMode() const {
+    wgpu::CullMode RenderPipelineBase::GetCullMode() const {
         ASSERT(!IsError());
         return mRasterizationState.cullMode;
     }
 
-    dawn::FrontFace RenderPipelineBase::GetFrontFace() const {
+    wgpu::FrontFace RenderPipelineBase::GetFrontFace() const {
         ASSERT(!IsError());
         return mRasterizationState.frontFace;
     }
@@ -507,12 +522,12 @@ namespace dawn_native {
         return mAttachmentState->HasDepthStencilAttachment();
     }
 
-    dawn::TextureFormat RenderPipelineBase::GetColorAttachmentFormat(uint32_t attachment) const {
+    wgpu::TextureFormat RenderPipelineBase::GetColorAttachmentFormat(uint32_t attachment) const {
         ASSERT(!IsError());
         return mColorStates[attachment].format;
     }
 
-    dawn::TextureFormat RenderPipelineBase::GetDepthStencilFormat() const {
+    wgpu::TextureFormat RenderPipelineBase::GetDepthStencilFormat() const {
         ASSERT(!IsError());
         ASSERT(mAttachmentState->HasDepthStencilAttachment());
         return mDepthStencilState.format;
@@ -529,10 +544,10 @@ namespace dawn_native {
         return mAttachmentState.Get();
     }
 
-    std::bitset<kMaxVertexAttributes> RenderPipelineBase::GetAttributesUsingInput(
+    std::bitset<kMaxVertexAttributes> RenderPipelineBase::GetAttributesUsingVertexBuffer(
         uint32_t slot) const {
         ASSERT(!IsError());
-        return attributesUsingInput[slot];
+        return attributesUsingVertexBuffer[slot];
     }
 
     size_t RenderPipelineBase::HashFunc::operator()(const RenderPipelineBase* pipeline) const {
@@ -567,20 +582,21 @@ namespace dawn_native {
                         desc.stencilBack.depthFailOp, desc.stencilBack.passOp);
         }
 
-        // Hash vertex input state
-        HashCombine(&hash, pipeline->mAttributesSetMask);
-        for (uint32_t i : IterateBitSet(pipeline->mAttributesSetMask)) {
+        // Hash vertex state
+        HashCombine(&hash, pipeline->mAttributeLocationsUsed);
+        for (uint32_t i : IterateBitSet(pipeline->mAttributeLocationsUsed)) {
             const VertexAttributeInfo& desc = pipeline->GetAttribute(i);
-            HashCombine(&hash, desc.shaderLocation, desc.inputSlot, desc.offset, desc.format);
+            HashCombine(&hash, desc.shaderLocation, desc.vertexBufferSlot, desc.offset,
+                        desc.format);
         }
 
-        HashCombine(&hash, pipeline->mInputsSetMask);
-        for (uint32_t i : IterateBitSet(pipeline->mInputsSetMask)) {
-            const VertexBufferInfo& desc = pipeline->GetInput(i);
-            HashCombine(&hash, desc.stride, desc.stepMode);
+        HashCombine(&hash, pipeline->mVertexBufferSlotsUsed);
+        for (uint32_t i : IterateBitSet(pipeline->mVertexBufferSlotsUsed)) {
+            const VertexBufferInfo& desc = pipeline->GetVertexBuffer(i);
+            HashCombine(&hash, desc.arrayStride, desc.stepMode);
         }
 
-        HashCombine(&hash, pipeline->mVertexInput.indexFormat);
+        HashCombine(&hash, pipeline->mVertexState.indexFormat);
 
         // Hash rasterization state
         {
@@ -655,34 +671,34 @@ namespace dawn_native {
             }
         }
 
-        // Check vertex input state
-        if (a->mAttributesSetMask != b->mAttributesSetMask) {
+        // Check vertex state
+        if (a->mAttributeLocationsUsed != b->mAttributeLocationsUsed) {
             return false;
         }
 
-        for (uint32_t i : IterateBitSet(a->mAttributesSetMask)) {
+        for (uint32_t i : IterateBitSet(a->mAttributeLocationsUsed)) {
             const VertexAttributeInfo& descA = a->GetAttribute(i);
             const VertexAttributeInfo& descB = b->GetAttribute(i);
             if (descA.shaderLocation != descB.shaderLocation ||
-                descA.inputSlot != descB.inputSlot || descA.offset != descB.offset ||
+                descA.vertexBufferSlot != descB.vertexBufferSlot || descA.offset != descB.offset ||
                 descA.format != descB.format) {
                 return false;
             }
         }
 
-        if (a->mInputsSetMask != b->mInputsSetMask) {
+        if (a->mVertexBufferSlotsUsed != b->mVertexBufferSlotsUsed) {
             return false;
         }
 
-        for (uint32_t i : IterateBitSet(a->mInputsSetMask)) {
-            const VertexBufferInfo& descA = a->GetInput(i);
-            const VertexBufferInfo& descB = b->GetInput(i);
-            if (descA.stride != descB.stride || descA.stepMode != descB.stepMode) {
+        for (uint32_t i : IterateBitSet(a->mVertexBufferSlotsUsed)) {
+            const VertexBufferInfo& descA = a->GetVertexBuffer(i);
+            const VertexBufferInfo& descB = b->GetVertexBuffer(i);
+            if (descA.arrayStride != descB.arrayStride || descA.stepMode != descB.stepMode) {
                 return false;
             }
         }
 
-        if (a->mVertexInput.indexFormat != b->mVertexInput.indexFormat) {
+        if (a->mVertexState.indexFormat != b->mVertexState.indexFormat) {
             return false;
         }
 

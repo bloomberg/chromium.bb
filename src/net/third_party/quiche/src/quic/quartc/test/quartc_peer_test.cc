@@ -4,6 +4,8 @@
 
 #include "net/third_party/quiche/src/quic/quartc/test/quartc_peer.h"
 
+#include <utility>
+
 #include "net/third_party/quiche/src/quic/core/quic_bandwidth.h"
 #include "net/third_party/quiche/src/quic/core/quic_constants.h"
 #include "net/third_party/quiche/src/quic/core/quic_time.h"
@@ -38,11 +40,11 @@ class QuartcPeerTest : public QuicTest {
   }
 
   void CreatePeers(const std::vector<QuartcDataSource::Config>& configs) {
-    client_peer_ = QuicMakeUnique<QuartcPeer>(
+    client_peer_ = std::make_unique<QuartcPeer>(
         simulator_.GetClock(), simulator_.GetAlarmFactory(),
         simulator_.GetRandomGenerator(),
         simulator_.GetStreamSendBufferAllocator(), configs);
-    server_peer_ = QuicMakeUnique<QuartcPeer>(
+    server_peer_ = std::make_unique<QuartcPeer>(
         simulator_.GetClock(), simulator_.GetAlarmFactory(),
         simulator_.GetRandomGenerator(),
         simulator_.GetStreamSendBufferAllocator(), configs);
@@ -52,17 +54,29 @@ class QuartcPeerTest : public QuicTest {
     DCHECK(client_peer_);
     DCHECK(server_peer_);
 
-    server_endpoint_ = QuicMakeUnique<QuartcServerEndpoint>(
+    server_endpoint_ = std::make_unique<QuartcServerEndpoint>(
         simulator_.GetAlarmFactory(), simulator_.GetClock(),
         simulator_.GetRandomGenerator(), server_peer_.get(),
         QuartcSessionConfig());
-    client_endpoint_ = QuicMakeUnique<QuartcClientEndpoint>(
+    client_endpoint_ = std::make_unique<QuartcClientEndpoint>(
         simulator_.GetAlarmFactory(), simulator_.GetClock(),
         simulator_.GetRandomGenerator(), client_peer_.get(),
         QuartcSessionConfig(), server_endpoint_->server_crypto_config());
 
     server_endpoint_->Connect(&server_transport_);
     client_endpoint_->Connect(&client_transport_);
+  }
+
+  void RampUpBandwidth() {
+    // Run long enough for the bandwidth estimate to ramp up.
+    simulator_.RunUntilOrTimeout(
+        [this] {
+          return client_peer_->last_available_bandwidth() ==
+                     client_server_link_.bandwidth() &&
+                 server_peer_->last_available_bandwidth() ==
+                     client_server_link_.bandwidth();
+        },
+        QuicTime::Delta::FromSeconds(60));
   }
 
   SimpleRandom rng_;
@@ -129,9 +143,7 @@ TEST_F(QuartcPeerTest, MaxFrameSizeUnset) {
 
   CreatePeers({config});
   Connect();
-
-  // Run long enough for the bandwidth estimate to ramp up.
-  simulator_.RunFor(QuicTime::Delta::FromSeconds(10));
+  RampUpBandwidth();
 
   // The peers generate frames that fit in one packet.
   EXPECT_LT(client_peer_->received_messages().back().frame.size,
@@ -148,9 +160,7 @@ TEST_F(QuartcPeerTest, MaxFrameSizeLargerThanPacketSize) {
 
   CreatePeers({config});
   Connect();
-
-  // Run long enough for the bandwidth estimate to ramp up.
-  simulator_.RunFor(QuicTime::Delta::FromSeconds(10));
+  RampUpBandwidth();
 
   // The peers generate frames that fit in one packet.
   EXPECT_LT(client_peer_->received_messages().back().frame.size,
@@ -169,9 +179,7 @@ TEST_F(QuartcPeerTest, MaxFrameSizeSmallerThanPacketSize) {
 
   CreatePeers({config});
   Connect();
-
-  // Run long enough for the bandwidth estimate to ramp up.
-  simulator_.RunFor(QuicTime::Delta::FromSeconds(10));
+  RampUpBandwidth();
 
   EXPECT_EQ(client_peer_->received_messages().back().frame.size, 100u);
   EXPECT_EQ(server_peer_->received_messages().back().frame.size, 100u);
@@ -184,9 +192,7 @@ TEST_F(QuartcPeerTest, MaxFrameSizeSmallerThanFrameHeader) {
 
   CreatePeers({config});
   Connect();
-
-  // Run long enough for the bandwidth estimate to ramp up.
-  simulator_.RunFor(QuicTime::Delta::FromSeconds(10));
+  RampUpBandwidth();
 
   // Max frame sizes smaller than the header are ignored, and the frame size is
   // limited by packet size.
@@ -272,10 +278,7 @@ TEST_F(QuartcPeerTest, BandwidthAllocationWithEnoughAvailable) {
 
   CreatePeers({config_1, config_2, config_3});
   Connect();
-
-  // Run for long enough that bandwidth ramps up and meets the requirements of
-  // all three sources.
-  simulator_.RunFor(QuicTime::Delta::FromSeconds(10));
+  RampUpBandwidth();
 
   // The last message from each source should be the size allowed by that
   // source's maximum bandwidth and frame interval.
@@ -325,9 +328,7 @@ TEST_F(QuartcPeerTest, BandwidthAllocationWithoutEnoughAvailable) {
 
   CreatePeers({config_1, config_2, config_3});
   Connect();
-
-  // Run for long enough that bandwidth ramps up to link capacity.
-  simulator_.RunFor(QuicTime::Delta::FromSeconds(10));
+  RampUpBandwidth();
 
   const std::vector<ReceivedMessage>& client_messages =
       client_peer_->received_messages();
@@ -375,6 +376,7 @@ TEST_F(QuartcPeerTest, DisableAndDrainMessages) {
   CreatePeers({config});
   Connect();
 
+  // Note: this time is completely arbitrary, to allow messages to be sent.
   simulator_.RunFor(QuicTime::Delta::FromSeconds(10));
 
   // After these calls, we should observe no new messages.
@@ -386,15 +388,22 @@ TEST_F(QuartcPeerTest, DisableAndDrainMessages) {
   std::map<int32_t, int64_t> last_sent_by_server =
       server_peer_->GetLastSequenceNumbers();
 
+  // Note: this time is completely arbitrary, to allow time for the peers to
+  // generate new messages after being disabled.  The point of the test is that
+  // they should not do that.
   simulator_.RunFor(QuicTime::Delta::FromSeconds(10));
 
-  ASSERT_FALSE(client_peer_->received_messages().empty());
-  EXPECT_EQ(client_peer_->received_messages().back().frame.sequence_number,
-            last_sent_by_server[1]);
-
-  ASSERT_FALSE(server_peer_->received_messages().empty());
-  EXPECT_EQ(server_peer_->received_messages().back().frame.sequence_number,
-            last_sent_by_client[1]);
+  // Messages sent prior to disabling the peers are eventually received.
+  EXPECT_TRUE(simulator_.RunUntilOrTimeout(
+      [this, last_sent_by_client, last_sent_by_server]() mutable -> bool {
+        return !client_peer_->received_messages().empty() &&
+               client_peer_->received_messages().back().frame.sequence_number ==
+                   last_sent_by_server[1] &&
+               !server_peer_->received_messages().empty() &&
+               server_peer_->received_messages().back().frame.sequence_number ==
+                   last_sent_by_client[1];
+      },
+      QuicTime::Delta::FromSeconds(60)));
 }
 
 }  // namespace

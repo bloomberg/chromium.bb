@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/loader/modulescript/worker_module_script_fetcher.h"
 
+#include "services/network/public/mojom/ip_address_space.mojom-blink.h"
 #include "services/network/public/mojom/referrer_policy.mojom-blink.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
@@ -77,7 +78,7 @@ void WorkerModuleScriptFetcher::NotifyFinished(Resource* resource) {
     const KURL request_url = resource->Url();
     const KURL response_url = resource->GetResponse().CurrentRequestUrl();
     if (request_url != response_url &&
-        !global_scope_->GetSecurityOrigin()->IsSameSchemeHostPort(
+        !global_scope_->GetSecurityOrigin()->IsSameOriginWith(
             SecurityOrigin::Create(response_url).get())) {
       error_messages.push_back(ConsoleMessage::Create(
           mojom::ConsoleMessageSource::kSecurity,

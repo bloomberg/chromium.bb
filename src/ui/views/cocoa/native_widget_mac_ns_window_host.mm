@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/base64.h"
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/remote_cocoa/app_shim/mouse_capture.h"
@@ -13,7 +14,7 @@
 #include "components/remote_cocoa/app_shim/native_widget_ns_window_bridge.h"
 #include "components/remote_cocoa/browser/ns_view_ids.h"
 #include "components/remote_cocoa/browser/window.h"
-#include "mojo/public/cpp/bindings/strong_associated_binding.h"
+#include "mojo/public/cpp/bindings/self_owned_associated_receiver.h"
 #include "ui/accelerated_widget_mac/window_resize_helper_mac.h"
 #include "ui/base/cocoa/animation_utils.h"
 #include "ui/base/cocoa/remote_accessibility_api.h"
@@ -36,7 +37,6 @@
 #include "ui/views/widget/native_widget_mac.h"
 #include "ui/views/widget/widget_aura_utils.h"
 #include "ui/views/widget/widget_delegate.h"
-#include "ui/views/window/dialog_client_view.h"
 #include "ui/views/window/dialog_delegate.h"
 #include "ui/views/word_lookup_client.h"
 
@@ -82,6 +82,8 @@ class BridgedNativeWidgetHostDummy
   void OnWindowKeyStatusChanged(bool is_key,
                                 bool is_content_first_responder,
                                 bool full_keyboard_access_enabled) override {}
+  void OnWindowStateRestorationDataChanged(
+      const std::vector<uint8_t>& data) override {}
   void DoDialogButtonAction(ui::DialogButton button) override {}
   void OnFocusWindowToolbar() override {}
   void SetRemoteAccessibilityTokens(
@@ -213,60 +215,6 @@ uint64_t g_last_bridged_native_widget_id = 0;
 
 }  // namespace
 
-// A gfx::CALayerParams may pass the content to be drawn across processes via
-// either an IOSurface (sent as mach port) or a CAContextID (which is an
-// integer). For historical reasons, software compositing uses IOSurfaces.
-// The mojo connection to the app shim process does not support sending mach
-// ports, which results in nothing being drawn when using software compositing.
-// To work around this issue, this structure creates a CALayer that uses the
-// IOSurface as its contents, and hosts this CALayer in a CAContext that is
-// the gfx::CALayerParams is then pointed to.
-// https://crbug.com/942213
-class NativeWidgetMacNSWindowHost::IOSurfaceToRemoteLayerInterceptor {
- public:
-  IOSurfaceToRemoteLayerInterceptor() = default;
-  ~IOSurfaceToRemoteLayerInterceptor() = default;
-
-  void UpdateCALayerParams(gfx::CALayerParams* ca_layer_params) {
-    DCHECK(ca_layer_params->io_surface_mach_port);
-    base::ScopedCFTypeRef<IOSurfaceRef> io_surface(
-        IOSurfaceLookupFromMachPort(ca_layer_params->io_surface_mach_port));
-
-    ScopedCAActionDisabler disabler;
-    // Lazily create |io_surface_layer_| and |ca_context_|.
-    if (!io_surface_layer_) {
-      io_surface_layer_.reset([[CALayer alloc] init]);
-      [io_surface_layer_ setContentsGravity:kCAGravityTopLeft];
-      [io_surface_layer_ setAnchorPoint:CGPointMake(0, 0)];
-    }
-    if (!ca_context_) {
-      CGSConnectionID connection_id = CGSMainConnectionID();
-      ca_context_.reset([[CAContext contextWithCGSConnection:connection_id
-                                                     options:@{}] retain]);
-      [ca_context_ setLayer:io_surface_layer_];
-    }
-
-    // Update |io_surface_layer_| to draw the contents of |ca_layer_params|.
-    id new_contents = static_cast<id>(io_surface.get());
-    [io_surface_layer_ setContents:new_contents];
-    gfx::Size bounds_dip = gfx::ConvertSizeToDIP(ca_layer_params->scale_factor,
-                                                 ca_layer_params->pixel_size);
-    [io_surface_layer_
-        setBounds:CGRectMake(0, 0, bounds_dip.width(), bounds_dip.height())];
-    if ([io_surface_layer_ contentsScale] != ca_layer_params->scale_factor)
-      [io_surface_layer_ setContentsScale:ca_layer_params->scale_factor];
-
-    // Change |ca_layer_params| to use |ca_context_| instead of an IOSurface.
-    ca_layer_params->ca_context_id = [ca_context_ contextId];
-    ca_layer_params->io_surface_mach_port.reset();
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(IOSurfaceToRemoteLayerInterceptor);
-  base::scoped_nsobject<CAContext> ca_context_;
-  base::scoped_nsobject<CALayer> io_surface_layer_;
-};
-
 // static
 NativeWidgetMacNSWindowHost* NativeWidgetMacNSWindowHost::GetFromNativeWindow(
     gfx::NativeWindow native_window) {
@@ -298,8 +246,7 @@ NativeWidgetMacNSWindowHost::NativeWidgetMacNSWindowHost(NativeWidgetMac* owner)
       native_widget_mac_(owner),
       root_view_id_(remote_cocoa::GetNewNSViewId()),
       accessibility_focus_overrider_(this),
-      text_input_host_(new TextInputHost(this)),
-      remote_ns_window_host_binding_(this) {
+      text_input_host_(new TextInputHost(this)) {
   DCHECK(GetIdToWidgetHostImplMap().find(widget_id_) ==
          GetIdToWidgetHostImplMap().end());
   GetIdToWidgetHostImplMap().emplace(widget_id_, this);
@@ -310,17 +257,18 @@ NativeWidgetMacNSWindowHost::~NativeWidgetMacNSWindowHost() {
   DCHECK(children_.empty());
   native_window_mapping_.reset();
   if (application_host_) {
-    remote_ns_window_ptr_.reset();
+    remote_ns_window_remote_.reset();
     application_host_->RemoveObserver(this);
     application_host_ = nullptr;
   }
 
   // Workaround for https://crbug.com/915572
-  if (remote_ns_window_host_binding_.is_bound()) {
-    auto request = remote_ns_window_host_binding_.Unbind();
-    if (request.is_pending()) {
-      mojo::MakeStrongAssociatedBinding(
-          std::make_unique<BridgedNativeWidgetHostDummy>(), std::move(request));
+  if (remote_ns_window_host_receiver_.is_bound()) {
+    auto receiver = remote_ns_window_host_receiver_.Unbind();
+    if (receiver.is_valid()) {
+      mojo::MakeSelfOwnedAssociatedReceiver(
+          std::make_unique<BridgedNativeWidgetHostDummy>(),
+          std::move(receiver));
     }
   }
 
@@ -360,8 +308,8 @@ NativeWidgetMacNSWindowHost::GetNativeViewAccessibleForNSWindow() const {
 
 remote_cocoa::mojom::NativeWidgetNSWindow*
 NativeWidgetMacNSWindowHost::GetNSWindowMojo() const {
-  if (remote_ns_window_ptr_)
-    return remote_ns_window_ptr_.get();
+  if (remote_ns_window_remote_)
+    return remote_ns_window_remote_.get();
   if (in_process_ns_window_bridge_)
     return in_process_ns_window_bridge_.get();
   return nullptr;
@@ -399,17 +347,17 @@ void NativeWidgetMacNSWindowHost::CreateRemoteNSWindow(
             root_view_id_, [in_process_ns_window_ contentView]);
   }
 
-  // Initialize |remote_ns_window_ptr_| to point to a bridge created by
+  // Initialize |remote_ns_window_remote_| to point to a bridge created by
   // |factory|.
-  remote_cocoa::mojom::NativeWidgetNSWindowHostAssociatedPtr host_ptr;
-  remote_ns_window_host_binding_.Bind(
-      mojo::MakeRequest(&host_ptr),
-      ui::WindowResizeHelperMac::Get()->task_runner());
-  remote_cocoa::mojom::TextInputHostAssociatedPtr text_input_host_ptr;
-  text_input_host_->BindRequest(mojo::MakeRequest(&text_input_host_ptr));
+  mojo::PendingAssociatedRemote<remote_cocoa::mojom::TextInputHost>
+      text_input_host_remote;
+  text_input_host_->BindReceiver(
+      text_input_host_remote.InitWithNewEndpointAndPassReceiver());
   application_host_->GetApplication()->CreateNativeWidgetNSWindow(
-      widget_id_, mojo::MakeRequest(&remote_ns_window_ptr_),
-      host_ptr.PassInterface(), text_input_host_ptr.PassInterface());
+      widget_id_, remote_ns_window_remote_.BindNewEndpointAndPassReceiver(),
+      remote_ns_window_host_receiver_.BindNewEndpointAndPassRemote(
+          ui::WindowResizeHelperMac::Get()->task_runner()),
+      std::move(text_input_host_remote));
 
   // Create the window in its process, and attach it to its parent window.
   GetNSWindowMojo()->CreateWindow(std::move(window_create_params));
@@ -428,30 +376,40 @@ void NativeWidgetMacNSWindowHost::InitWindow(const Widget::InitParams& params) {
   widget_type_ = params.type;
   tooltip_manager_ = std::make_unique<TooltipManagerMac>(GetNSWindowMojo());
 
+  if (params.workspace.length()) {
+    std::string restoration_data;
+    if (base::Base64Decode(params.workspace, &restoration_data)) {
+      state_restoration_data_ = std::vector<uint8_t>(restoration_data.begin(),
+                                                     restoration_data.end());
+    } else {
+      DLOG(ERROR) << "Failed to decode a window's state restoration data.";
+    }
+  }
+
   // Initialize the window.
   {
     auto window_params = NativeWidgetNSWindowInitParams::New();
     window_params->modal_type = widget->widget_delegate()->GetModalType();
     window_params->is_translucent =
-        params.opacity == Widget::InitParams::TRANSLUCENT_WINDOW;
+        params.opacity == Widget::InitParams::WindowOpacity::kTranslucent;
     window_params->widget_is_top_level = widget->is_top_level();
     window_params->position_window_in_screen_coords =
         PositionWindowInScreenCoordinates(widget, widget_type_);
 
     // OSX likes to put shadows on most things. However, frameless windows (with
     // styleMask = NSBorderlessWindowMask) default to no shadow. So change that.
-    // SHADOW_TYPE_DROP is used for Menus, which get the same shadow style on
+    // ShadowType::kDrop is used for Menus, which get the same shadow style on
     // Mac.
     switch (params.shadow_type) {
-      case Widget::InitParams::SHADOW_TYPE_NONE:
+      case Widget::InitParams::ShadowType::kNone:
         window_params->has_window_server_shadow = false;
         break;
-      case Widget::InitParams::SHADOW_TYPE_DEFAULT:
+      case Widget::InitParams::ShadowType::kDefault:
         // Controls should get views shadows instead of native shadows.
         window_params->has_window_server_shadow =
             params.type != Widget::InitParams::TYPE_CONTROL;
         break;
-      case Widget::InitParams::SHADOW_TYPE_DROP:
+      case Widget::InitParams::ShadowType::kDrop:
         window_params->has_window_server_shadow = true;
         break;
     }  // No default case, to pick up new types.
@@ -461,6 +419,7 @@ void NativeWidgetMacNSWindowHost::InitWindow(const Widget::InitParams& params) {
     window_params->force_into_collection_cycle =
         widget_type_ == Widget::InitParams::TYPE_WINDOW &&
         params.remove_standard_frame;
+    window_params->state_restoration_data = state_restoration_data_;
 
     GetNSWindowMojo()->InitWindow(std::move(window_params));
   }
@@ -504,7 +463,7 @@ void NativeWidgetMacNSWindowHost::SetBounds(const gfx::Rect& bounds) {
   GetNSWindowMojo()->SetBounds(
       bounds, native_widget_mac_->GetWidget()->GetMinimumSize());
 
-  if (remote_ns_window_ptr_) {
+  if (remote_ns_window_remote_) {
     gfx::Rect window_in_screen =
         gfx::ScreenRectFromNSRect([in_process_ns_window_ frame]);
     gfx::Rect content_in_screen =
@@ -545,8 +504,9 @@ void NativeWidgetMacNSWindowHost::CreateCompositor(
   DCHECK(ViewsDelegate::GetInstance());
 
   // "Infer" must be handled by ViewsDelegate::OnBeforeWidgetInit().
-  DCHECK_NE(Widget::InitParams::INFER_OPACITY, params.opacity);
-  bool translucent = params.opacity == Widget::InitParams::TRANSLUCENT_WINDOW;
+  DCHECK_NE(Widget::InitParams::WindowOpacity::kInferred, params.opacity);
+  bool translucent =
+      params.opacity == Widget::InitParams::WindowOpacity::kTranslucent;
 
   // Create the layer.
   SetLayer(std::make_unique<ui::Layer>(params.layer_type));
@@ -593,8 +553,6 @@ void NativeWidgetMacNSWindowHost::DestroyCompositor() {
     // NativeWidgetNSWindowBridge.
     DCHECK_EQ(this, layer()->owner());
     layer()->CompleteAllAnimations();
-    layer()->SuppressPaint();
-    layer()->set_delegate(nullptr);
   }
   DestroyLayer();
   if (!compositor_)
@@ -667,6 +625,11 @@ gfx::Rect NativeWidgetMacNSWindowHost::GetRestoredBounds() const {
   return window_bounds_in_screen_;
 }
 
+const std::vector<uint8_t>&
+NativeWidgetMacNSWindowHost::GetWindowStateRestorationData() const {
+  return state_restoration_data_;
+}
+
 void NativeWidgetMacNSWindowHost::SetNativeWindowProperty(const char* name,
                                                           void* value) {
   if (value)
@@ -718,42 +681,60 @@ void NativeWidgetMacNSWindowHost::SetParent(
   }
 }
 
-void NativeWidgetMacNSWindowHost::SetAssociationForView(const View* view,
-                                                        NSView* native_view) {
-  DCHECK_EQ(0u, associated_views_.count(view));
-  associated_views_[view] = native_view;
+void NativeWidgetMacNSWindowHost::OnNativeViewHostAttach(const View* view,
+                                                         NSView* native_view) {
+  DCHECK_EQ(0u, attached_native_view_host_views_.count(view));
+  attached_native_view_host_views_[view] = native_view;
   native_widget_mac_->GetWidget()->ReorderNativeViews();
 }
 
-void NativeWidgetMacNSWindowHost::ClearAssociationForView(const View* view) {
-  auto it = associated_views_.find(view);
-  DCHECK(it != associated_views_.end());
-  associated_views_.erase(it);
+void NativeWidgetMacNSWindowHost::OnNativeViewHostDetach(const View* view) {
+  auto it = attached_native_view_host_views_.find(view);
+  DCHECK(it != attached_native_view_host_views_.end());
+  attached_native_view_host_views_.erase(it);
 }
 
 void NativeWidgetMacNSWindowHost::ReorderChildViews() {
   Widget* widget = native_widget_mac_->GetWidget();
   if (!widget->GetRootView())
     return;
-  std::map<NSView*, int> rank;
-  RankNSViewsRecursive(widget->GetRootView(), &rank);
-  if (in_process_ns_window_bridge_)
-    in_process_ns_window_bridge_->SortSubviews(std::move(rank));
+
+  // Get the ordering for the NSViews in |attached_native_view_host_views_|.
+  std::vector<NSView*> attached_subviews;
+  GetAttachedNativeViewHostViewsRecursive(widget->GetRootView(),
+                                          &attached_subviews);
+
+  // Convert to NSView ids that can go over mojo. If need be, create temporary
+  // NSView ids.
+  std::vector<uint64_t> attached_subview_ids;
+  std::list<remote_cocoa::ScopedNSViewIdMapping> temp_ids;
+  for (NSView* subview : attached_subviews) {
+    uint64_t ns_view_id = remote_cocoa::GetIdFromNSView(subview);
+    if (!ns_view_id) {
+      // Subviews that do not already have an id will not work if the target is
+      // in a different process.
+      DCHECK(in_process_ns_window_bridge_);
+      ns_view_id = remote_cocoa::GetNewNSViewId();
+      temp_ids.emplace_back(ns_view_id, subview);
+    }
+    attached_subview_ids.push_back(ns_view_id);
+  }
+  GetNSWindowMojo()->SortSubviews(attached_subview_ids);
 }
 
-void NativeWidgetMacNSWindowHost::RankNSViewsRecursive(
+void NativeWidgetMacNSWindowHost::GetAttachedNativeViewHostViewsRecursive(
     View* view,
-    std::map<NSView*, int>* rank) const {
-  auto it = associated_views_.find(view);
-  if (it != associated_views_.end())
-    rank->emplace(it->second, rank->size());
+    std::vector<NSView*>* order) const {
+  auto found = attached_native_view_host_views_.find(view);
+  if (found != attached_native_view_host_views_.end())
+    order->push_back(found->second);
   for (View* child : view->children())
-    RankNSViewsRecursive(child, rank);
+    GetAttachedNativeViewHostViewsRecursive(child, order);
 }
 
 void NativeWidgetMacNSWindowHost::UpdateLocalWindowFrame(
     const gfx::Rect& frame) {
-  if (!remote_ns_window_ptr_)
+  if (!remote_ns_window_remote_)
     return;
   [in_process_ns_window_ setFrame:gfx::ScreenRectToNSRect(frame)
                           display:NO
@@ -1105,17 +1086,22 @@ void NativeWidgetMacNSWindowHost::OnWindowKeyStatusChanged(
   }
 }
 
+void NativeWidgetMacNSWindowHost::OnWindowStateRestorationDataChanged(
+    const std::vector<uint8_t>& data) {
+  state_restoration_data_ = data;
+  native_widget_mac_->GetWidget()->OnNativeWidgetWorkspaceChanged();
+}
+
 void NativeWidgetMacNSWindowHost::DoDialogButtonAction(
     ui::DialogButton button) {
   views::DialogDelegate* dialog =
       root_view_->GetWidget()->widget_delegate()->AsDialogDelegate();
   DCHECK(dialog);
-  views::DialogClientView* client = dialog->GetDialogClientView();
   if (button == ui::DIALOG_BUTTON_OK) {
-    client->AcceptWindow();
+    dialog->AcceptDialog();
   } else {
     DCHECK_EQ(button, ui::DIALOG_BUTTON_CANCEL);
-    client->CancelWindow();
+    dialog->CancelDialog();
   }
 }
 
@@ -1469,28 +1455,8 @@ void NativeWidgetMacNSWindowHost::UpdateVisualState() {
 // NativeWidgetMacNSWindowHost, AcceleratedWidgetMac:
 
 void NativeWidgetMacNSWindowHost::AcceleratedWidgetCALayerParamsUpdated() {
-  const gfx::CALayerParams* ca_layer_params =
-      compositor_->widget()->GetCALayerParams();
-  if (ca_layer_params) {
-    // Replace IOSurface mach ports with CAContextIDs only when using the
-    // out-of-process bridge (to reduce risk, because this workaround is being
-    // merged to late-life-cycle release branches) and when an IOSurface
-    // mach port has been specified (in practice, when software compositing is
-    // enabled).
-    // https://crbug.com/942213
-    if (remote_ns_window_ptr_ && ca_layer_params->io_surface_mach_port) {
-      gfx::CALayerParams updated_ca_layer_params = *ca_layer_params;
-      if (!io_surface_to_remote_layer_interceptor_) {
-        io_surface_to_remote_layer_interceptor_ =
-            std::make_unique<IOSurfaceToRemoteLayerInterceptor>();
-      }
-      io_surface_to_remote_layer_interceptor_->UpdateCALayerParams(
-          &updated_ca_layer_params);
-      remote_ns_window_ptr_->SetCALayerParams(updated_ca_layer_params);
-    } else {
-      GetNSWindowMojo()->SetCALayerParams(*ca_layer_params);
-    }
-  }
+  if (const auto* ca_layer_params = compositor_->widget()->GetCALayerParams())
+    GetNSWindowMojo()->SetCALayerParams(*ca_layer_params);
 
   // Take this opportunity to update the VSync parameters, if needed.
   if (display_link_) {

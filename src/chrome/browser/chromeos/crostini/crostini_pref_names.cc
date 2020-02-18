@@ -9,6 +9,7 @@
 
 #include "base/values.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
+#include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_registry_simple.h"
 
 namespace crostini {
@@ -23,6 +24,8 @@ const char kCrostiniRegistry[] = "crostini.registry";
 // enabled state for use with Crostini.
 const char kCrostiniSharedUsbDevices[] = "crostini.shared_usb_devices";
 const char kCrostiniContainers[] = "crostini.containers";
+// Dictionary of terminal UI settings such as font style, colors, etc.
+const char kCrostiniTerminalSettings[] = "crostini.terminal_settings";
 const char kVmKey[] = "vm_name";
 const char kContainerKey[] = "container_name";
 
@@ -42,6 +45,12 @@ const char kVmManagementCliAllowedByPolicy[] =
 // TODO(https://crbug.com/983998): The features that have to be implemented.
 const char kUserCrostiniRootAccessAllowedByPolicy[] =
     "crostini.user_root_access_allowed_by_policy";
+// A file path preference representing a user level enterprise policy that
+// specifies Ansible playbook to be applied to the default Crostini container.
+// Value is empty when there is no playbook to be applied specified though
+// policy or playbook specified has already been applied successfully.
+const char kCrostiniAnsiblePlaybookFilePath[] =
+    "crostini.ansible_playbook_file_path";
 
 // A boolean preference controlling Crostini usage reporting.
 const char kReportCrostiniUsageEnabled[] = "crostini.usage_reporting_enabled";
@@ -92,6 +101,11 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry) {
                                 true);
   registry->RegisterBooleanPref(kVmManagementCliAllowedByPolicy, true);
   registry->RegisterBooleanPref(kUserCrostiniRootAccessAllowedByPolicy, true);
+  registry->RegisterFilePathPref(kCrostiniAnsiblePlaybookFilePath,
+                                 base::FilePath());
+  registry->RegisterDictionaryPref(
+      kCrostiniTerminalSettings, base::DictionaryValue(),
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 }
 
 }  // namespace prefs

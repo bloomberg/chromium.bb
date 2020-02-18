@@ -27,6 +27,7 @@
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "components/crx_file/id_util.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
@@ -37,6 +38,9 @@
 #include "components/sync/model/string_ordinal.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "extensions/common/constants.h"
+
+using syncer::UserSelectableOsType;
+using syncer::UserSelectableType;
 
 namespace {
 
@@ -56,7 +60,7 @@ const char* kDefaultPinnedApps10Apps[] = {extension_misc::kGmailAppId,
                                           extension_misc::kGoogleSheetsAppId,
                                           extension_misc::kGoogleSlidesAppId,
                                           extension_misc::kFilesManagerAppId,
-                                          app_list::kInternalAppIdCamera,
+                                          ash::kInternalAppIdCamera,
                                           extension_misc::kGooglePhotosAppId,
                                           arc::kPlayStoreAppId};
 
@@ -149,25 +153,39 @@ bool IsSafeToApplyDefaultPinLayout(Profile* profile) {
   if (!sync_service)
     return true;
 
-  const syncer::UserSelectableTypeSet selected_sync =
-      sync_service->GetUserSettings()->GetSelectedTypes();
+  const syncer::SyncUserSettings* settings = sync_service->GetUserSettings();
 
   // If App sync is not yet started, don't apply default pin apps once synced
   // apps is likely override it. There is a case when App sync is disabled and
   // in last case local cache is available immediately.
-  if (selected_sync.Has(syncer::UserSelectableType::kApps) &&
-      !app_list::AppListSyncableServiceFactory::GetForProfile(profile)
-           ->IsSyncing()) {
-    return false;
+  if (chromeos::features::IsSplitSettingsSyncEnabled()) {
+    if (settings->GetSelectedOsTypes().Has(UserSelectableOsType::kOsApps) &&
+        !app_list::AppListSyncableServiceFactory::GetForProfile(profile)
+             ->IsSyncing()) {
+      return false;
+    }
+  } else {
+    if (settings->GetSelectedTypes().Has(UserSelectableType::kApps) &&
+        !app_list::AppListSyncableServiceFactory::GetForProfile(profile)
+             ->IsSyncing()) {
+      return false;
+    }
   }
 
   // If shelf pin layout rolls preference is not started yet then we cannot say
   // if we rolled layout or not.
-  if (selected_sync.Has(syncer::UserSelectableType::kPreferences) &&
-      !PrefServiceSyncableFromProfile(profile)->IsSyncing()) {
-    return false;
+  if (chromeos::features::IsSplitSettingsSyncEnabled()) {
+    if (settings->GetSelectedOsTypes().Has(
+            UserSelectableOsType::kOsPreferences) &&
+        !PrefServiceSyncableFromProfile(profile)->IsSyncing()) {
+      return false;
+    }
+  } else {
+    if (settings->GetSelectedTypes().Has(UserSelectableType::kPreferences) &&
+        !PrefServiceSyncableFromProfile(profile)->IsSyncing()) {
+      return false;
+    }
   }
-
   return true;
 }
 
@@ -420,6 +438,11 @@ std::vector<ash::ShelfID> GetPinnedAppsFromSync(
   // Contains pins from sync regardless either real app available on device or
   // not.
   std::set<std::string> pins_from_sync_raw;
+
+  // Check that the camera app was pinned by a real app id or mapped internal
+  // app id.
+  bool has_pinned_camera_app = false;
+
   for (const auto& sync_peer : syncable_service->sync_items()) {
     if (!sync_peer.second->item_pin_ordinal.IsValid())
       continue;
@@ -432,12 +455,26 @@ std::vector<ash::ShelfID> GetPinnedAppsFromSync(
       continue;
     }
 
-    // Prevent old app camera pinning.
-    if (IsCameraApp(sync_peer.first))
-      continue;
+    std::string pinned_app_id;
 
-    pin_infos.emplace_back(
-        PinInfo(sync_peer.first, sync_peer.second->item_pin_ordinal));
+    // Map any real camera app id to the internal camera app id.
+    if (IsCameraApp(sync_peer.first) ||
+        sync_peer.first == ash::kInternalAppIdCamera) {
+      // Prevent internal camera app being pinned twice.
+      if (has_pinned_camera_app) {
+        continue;
+      }
+      // Check the validity of internal camera app id.
+      if (!helper->IsValidIDForCurrentUser(ash::kInternalAppIdCamera)) {
+        continue;
+      }
+      has_pinned_camera_app = true;
+      pinned_app_id = ash::kInternalAppIdCamera;
+    } else {
+      pinned_app_id = sync_peer.first;
+    }
+
+    pin_infos.emplace_back(pinned_app_id, sync_peer.second->item_pin_ordinal);
   }
 
   // Make sure Chrome is always pinned.

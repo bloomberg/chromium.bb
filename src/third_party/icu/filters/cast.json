@@ -449,8 +449,8 @@
     },
     "misc": {
       "blacklist": [
-	"currencyNumericCodes",
-	"windowsZones"
+        "currencyNumericCodes",
+        "windowsZones"
       ]
     },
 // Based on the ICU63 version of
@@ -1969,6 +1969,29 @@
         "+/LocaleScript",
         "+/layout",
         "+/Version"
+      ]
+    },
+    {
+      "categories": [
+        "misc"
+      ],
+      "files": {
+        "whitelist": [
+          "supplementalData"
+	]
+      },
+      "rules": [
+        "-/*",
+        "+/calendarData",
+        "+/calendarPreferenceData",
+        "+/cldrVersion",
+        "+/codeMappings",
+        "+/idValidity",
+        "+/measurementData",
+        "+/territoryContainment",
+        "+/timeData",
+        "+/weekData",
+        "+/weekData%variant"
       ]
     },
 // Remove all the Version

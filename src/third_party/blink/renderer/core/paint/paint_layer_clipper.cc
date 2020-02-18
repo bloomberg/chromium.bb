@@ -48,7 +48,6 @@
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
-#include "third_party/blink/renderer/core/page/scrolling/root_scroller_util.h"
 #include "third_party/blink/renderer/core/paint/compositing/compositing_reason_finder.h"
 #include "third_party/blink/renderer/core/paint/object_paint_properties.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
@@ -567,8 +566,9 @@ void PaintLayerClipper::CalculateBackgroundClipRect(
   // accidentally no longer be considered infinite.
   if (parent_clip_rects->Fixed() &&
       &context.root_layer->GetLayoutObject() == layout_view &&
-      output != PhysicalRect(LayoutRect::InfiniteIntRect()))
-    output.Move(layout_view->OffsetForFixedPosition());
+      output != PhysicalRect(LayoutRect::InfiniteIntRect())) {
+    output.Move(layout_view->PixelSnappedOffsetForFixedPosition());
+  }
 }
 
 void PaintLayerClipper::GetOrCalculateClipRects(const ClipRectsContext& context,

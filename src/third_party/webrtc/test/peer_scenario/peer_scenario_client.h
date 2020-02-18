@@ -21,6 +21,7 @@
 #include "api/peer_connection_interface.h"
 #include "api/test/network_emulation_manager.h"
 #include "pc/test/frame_generator_capturer_video_track_source.h"
+#include "test/logging/log_writer.h"
 
 namespace webrtc {
 namespace test {
@@ -47,8 +48,11 @@ class PeerScenarioClient {
         on_ice_gathering_change;
     std::vector<std::function<void(const IceCandidateInterface*)>>
         on_ice_candidate;
-    std::vector<std::function<
-        void(const std::string&, const std::string&, int, const std::string&)>>
+    std::vector<std::function<void(const std::string&,
+                                   int,
+                                   const std::string&,
+                                   int,
+                                   const std::string&)>>
         on_ice_candidate_error;
     std::vector<std::function<void(const std::vector<cricket::Candidate>&)>>
         on_ice_candidates_removed;
@@ -75,7 +79,6 @@ class PeerScenarioClient {
       };
       absl::optional<PulsedNoise> pulsed_noise = PulsedNoise();
     } audio;
-    std::string client_name;
     // The created endpoints can be accessed using the map key as |index| in
     // PeerScenarioClient::endpoint(index).
     std::map<int, EmulatedEndpointConfig> endpoints = {
@@ -102,12 +105,17 @@ class PeerScenarioClient {
     RtpSenderInterface* sender;
   };
 
-  PeerScenarioClient(NetworkEmulationManager* net,
-                     rtc::Thread* signaling_thread,
-                     Config config);
+  PeerScenarioClient(
+      NetworkEmulationManager* net,
+      rtc::Thread* signaling_thread,
+      std::unique_ptr<LogWriterFactoryInterface> log_writer_factory,
+      Config config);
 
   PeerConnectionFactoryInterface* factory() { return pc_factory_.get(); }
-  PeerConnectionInterface* pc() { return peer_connection_.get(); }
+  PeerConnectionInterface* pc() {
+    RTC_DCHECK_RUN_ON(signaling_thread_);
+    return peer_connection_.get();
+  }
   rtc::Thread* thread() { return signaling_thread_; }
   Clock* clock() { return Clock::GetRealTimeClock(); }
 
@@ -140,6 +148,7 @@ class PeerScenarioClient {
  private:
   const std::map<int, EmulatedEndpoint*> endpoints_;
   rtc::Thread* const signaling_thread_;
+  const std::unique_ptr<LogWriterFactoryInterface> log_writer_factory_;
   const std::unique_ptr<rtc::Thread> worker_thread_;
   CallbackHandlers handlers_ RTC_GUARDED_BY(signaling_thread_);
   const std::unique_ptr<PeerConnectionObserver> observer_;
@@ -150,7 +159,8 @@ class PeerScenarioClient {
       RTC_GUARDED_BY(signaling_thread_);
 
   rtc::scoped_refptr<PeerConnectionFactoryInterface> pc_factory_;
-  rtc::scoped_refptr<PeerConnectionInterface> peer_connection_;
+  rtc::scoped_refptr<PeerConnectionInterface> peer_connection_
+      RTC_GUARDED_BY(signaling_thread_);
 };
 
 }  // namespace test

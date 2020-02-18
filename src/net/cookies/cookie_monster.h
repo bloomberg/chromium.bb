@@ -29,6 +29,7 @@
 #include "base/time/time.h"
 #include "net/base/net_export.h"
 #include "net/cookies/canonical_cookie.h"
+#include "net/cookies/cookie_access_delegate.h"
 #include "net/cookies/cookie_constants.h"
 #include "net/cookies/cookie_monster_change_dispatcher.h"
 #include "net/cookies/cookie_store.h"
@@ -164,6 +165,8 @@ class NET_EXPORT CookieMonster : public CookieStore {
                                      const CookieOptions& options,
                                      GetCookieListCallback callback) override;
   void GetAllCookiesAsync(GetAllCookiesCallback callback) override;
+  void GetAllCookiesWithAccessSemanticsAsync(
+      GetAllCookiesWithAccessSemanticsCallback callback) override;
   void DeleteCanonicalCookieAsync(const CanonicalCookie& cookie,
                                   DeleteCallback callback) override;
   void DeleteAllCreatedInTimeRangeAsync(
@@ -299,43 +302,6 @@ class NET_EXPORT CookieMonster : public CookieStore {
     COOKIE_SOURCE_LAST_ENTRY
   };
 
-  // Used to populate a histogram for cookie setting in the "delete equivalent"
-  // step. Measures total attempts to delete an equivalent cookie, and
-  // categorizes the outcome.
-  //
-  // * COOKIE_DELETE_EQUIVALENT_ATTEMPT is incremented each time a cookie is
-  //   set, causing the equivalent deletion algorithm to execute.
-  //
-  // * COOKIE_DELETE_EQUIVALENT_SKIPPING_SECURE is incremented when a non-secure
-  //   cookie is ignored because an equivalent, but secure, cookie already
-  //   exists.
-  //
-  // * COOKIE_DELETE_EQUIVALENT_WOULD_HAVE_DELETED is incremented when a cookie
-  //   is skipped due to `secure` rules (e.g. whenever
-  //   COOKIE_DELETE_EQUIVALENT_SKIPPING_SECURE is incremented), but would have
-  //   caused a deletion without those rules.
-  //
-  //   TODO(mkwst): Now that we've shipped strict secure cookie checks, we don't
-  //   need this value anymore.
-  //
-  // * COOKIE_DELETE_EQUIVALENT_FOUND is incremented each time an equivalent
-  //   cookie is found (and deleted).
-  //
-  // * COOKIE_DELETE_EQUIVALENT_FOUND_WITH_SAME_VALUE is incremented each time
-  //   an equivalent cookie that also shared the same value with the new cookie
-  //   is found (and deleted).
-  //
-  // Please do not reorder or remove entries. New entries must be added to the
-  // end of the list, just before COOKIE_DELETE_EQUIVALENT_LAST_ENTRY.
-  enum CookieDeleteEquivalent {
-    COOKIE_DELETE_EQUIVALENT_ATTEMPT = 0,
-    COOKIE_DELETE_EQUIVALENT_FOUND,
-    COOKIE_DELETE_EQUIVALENT_SKIPPING_SECURE,
-    COOKIE_DELETE_EQUIVALENT_WOULD_HAVE_DELETED,
-    COOKIE_DELETE_EQUIVALENT_FOUND_WITH_SAME_VALUE,
-    COOKIE_DELETE_EQUIVALENT_LAST_ENTRY
-  };
-
   // Record statistics every kRecordStatisticsIntervalSeconds of uptime.
   static const int kRecordStatisticsIntervalSeconds = 10 * 60;
 
@@ -352,6 +318,10 @@ class NET_EXPORT CookieMonster : public CookieStore {
                           SetCookiesCallback callback);
 
   void GetAllCookies(GetAllCookiesCallback callback);
+
+  void AttachAccessSemanticsListForCookieList(
+      GetAllCookiesWithAccessSemanticsCallback callback,
+      const CookieList& cookie_list);
 
   void GetCookieListWithOptions(const GURL& url,
                                 const CookieOptions& options,
@@ -427,18 +397,24 @@ class NET_EXPORT CookieMonster : public CookieStore {
                                 CookieStatusList* included_cookies,
                                 CookieStatusList* excluded_cookies);
 
-  // Delete any cookies that are equivalent to |ecc| (same path, domain, etc).
-  // |source_secure| indicates if the source may override existing secure
-  // cookies.
+  // Possibly delete an existing cookie equivalent to |cookie_being_set| (same
+  // path, domain, and name).
   //
-  // If |skip_httponly| is true, httponly cookies will not be deleted.  The
-  // return value will be true if |skip_httponly| skipped an httponly cookie or
-  // the cookie to delete was Secure and the scheme of |ecc| is insecure.  |key|
-  // is the key to find the cookie in cookies_; see the comment before the
+  // |source_secure| indicates if the source may override existing secure
+  // cookies. If the source is not secure, and there is an existing "equivalent"
+  // cookie that is Secure, that cookie will be preserved, under "Leave Secure
+  // Cookies Alone" (see
+  // https://tools.ietf.org/html/draft-ietf-httpbis-cookie-alone-01).
+  // ("equivalent" here is in quotes because the equivalency check for the
+  // purposes of preserving existing Secure cookies is slightly more inclusive.)
+  //
+  // If |skip_httponly| is true, httponly cookies will not be deleted even if
+  // they are equivalent.
+  // |key| is the key to find the cookie in cookies_; see the comment before the
   // CookieMap typedef for details.
   //
-  // If a cookie is deleted, and its value matches |ecc|'s value, then
-  // |creation_date_to_inherit| will be set to that cookie's creation date.
+  // If a cookie is deleted, and its value matches |cookie_being_set|'s value,
+  // then |creation_date_to_inherit| will be set to that cookie's creation date.
   //
   // The cookie will not be deleted if |*status| is not "include" when calling
   // the function. The function will update |*status| with exclusion reasons if
@@ -447,12 +423,20 @@ class NET_EXPORT CookieMonster : public CookieStore {
   // NOTE: There should never be more than a single matching equivalent cookie.
   void MaybeDeleteEquivalentCookieAndUpdateStatus(
       const std::string& key,
-      const CanonicalCookie& ecc,
+      const CanonicalCookie& cookie_being_set,
       bool source_secure,
       bool skip_httponly,
       bool already_expired,
       base::Time* creation_date_to_inherit,
       CanonicalCookie::CookieInclusionStatus* status);
+
+  // This is only used if the RecentCreationTimeGrantsLegacyCookieSemantics
+  // feature is enabled. It finds an equivalent cookie (based on name, domain,
+  // path) with the same value, if there is any, and returns its creation time,
+  // or the creation time of the |cookie| itself, if there is none.
+  base::Time EffectiveCreationTimeForMaybePreexistingCookie(
+      const std::string& key,
+      const CanonicalCookie& cookie) const;
 
   // Inserts |cc| into cookies_. Returns an iterator that points to the inserted
   // cookie in cookies_. Guarantee: all iterators to cookies_ remain valid.
@@ -528,6 +512,50 @@ class NET_EXPORT CookieMonster : public CookieStore {
 
   bool HasCookieableScheme(const GURL& url);
 
+  // Get the cookie's access semantics (LEGACY or NONLEGACY), considering any
+  // features granting legacy semantics for special conditions (if any are
+  // active and meet the conditions for granting legacy access, pass true for
+  // |legacy_semantics_granted|). If none are active, this then checks for a
+  // value from the cookie access delegate, if it is non-null. Otherwise returns
+  // UNKNOWN.
+  CookieAccessSemantics GetAccessSemanticsForCookie(
+      const CanonicalCookie& cookie,
+      bool legacy_semantics_granted) const;
+
+  // This is called for getting a cookie.
+  CookieAccessSemantics GetAccessSemanticsForCookieGet(
+      const CanonicalCookie& cookie) const;
+
+  // This is called for setting a cookie with the options specified by
+  // |options|. For setting a cookie, a same-site access is lax or better (since
+  // CookieOptions for setting a cookie will never be strict).
+  // |effective_creation_time| is the time that should be used for deciding
+  // whether the RecentCreationTimeGrantsLegacyCookieSemantics feature should
+  // grant legacy semantics. This may differ from the CreationDate() field of
+  // the cookie, if there was a preexisting equivalent cookie (in which case it
+  // is the creation time of that equivalent cookie).
+  CookieAccessSemantics GetAccessSemanticsForCookieSet(
+      const CanonicalCookie& cookie,
+      const CookieOptions& options,
+      base::Time effective_creation_time) const;
+
+  // Looks up the last time a cookie matching the (name, domain, path) of
+  // |cookie| was accessed in a same-site context permitting HttpOnly
+  // cookie access. If there was none, this returns a null base::Time.
+  // Returns null value if RecentHttpSameSiteAccessGrantsLegacyCookieSemantics
+  // is not enabled.
+  base::TimeTicks LastAccessFromHttpSameSiteContext(
+      const CanonicalCookie& cookie) const;
+
+  // Updates |last_http_same_site_accesses_| with the current time if the
+  // |options| are appropriate (same-site and permits HttpOnly access).
+  // |is_set| is true if the access is setting the cookie, false otherwise (e.g.
+  // if getting the cookie). Does nothing if
+  // RecentHttpSameSiteAccessGrantsLegacyCookieSemantics is not enabled.
+  void MaybeRecordCookieAccessWithOptions(const CanonicalCookie& cookie,
+                                          const CookieOptions& options,
+                                          bool is_set);
+
   // Statistics support
 
   // This function should be called repeatedly, and will record
@@ -558,7 +586,6 @@ class NET_EXPORT CookieMonster : public CookieStore {
   base::HistogramBase* histogram_count_;
   base::HistogramBase* histogram_cookie_type_;
   base::HistogramBase* histogram_cookie_source_scheme_;
-  base::HistogramBase* histogram_cookie_delete_equivalent_;
   base::HistogramBase* histogram_time_blocked_on_load_;
 
   CookieMap cookies_;
@@ -611,6 +638,17 @@ class NET_EXPORT CookieMonster : public CookieStore {
   // create a value that compares earlier than any other time value, which is
   // wanted.  Thus this value is not initialized.
   base::Time earliest_access_time_;
+
+  // Records the last access to a cookie (either getting or setting) from a
+  // context that is both same-site and permits HttpOnly access.
+  // The access is considered same-site if it is at least laxly same-site for
+  // set, or strictly same-site for get.
+  // This information is used to determine if the feature
+  // kRecentSameSiteAccessGrantsLegacyCookieSemantics should grant legacy
+  // access semantics to a cookie for subsequent accesses.
+  // This map is not used if that feature is not enabled.
+  std::map<CanonicalCookie::UniqueCookieKey, base::TimeTicks>
+      last_http_same_site_accesses_;
 
   std::vector<std::string> cookieable_schemes_;
 

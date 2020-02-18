@@ -23,7 +23,6 @@ class Connector;
 }  // namespace service_manager
 
 namespace download {
-struct DownloadEntry;
 class DownloadItemImpl;
 
 // Delegate for operations that a DownloadItemImpl can't do for itself.
@@ -93,10 +92,6 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItemImplDelegate {
   // Opens the file associated with this download.
   virtual void OpenDownload(DownloadItemImpl* download);
 
-  // Returns whether this is the most recent download in the rare event where
-  // multiple downloads are associated with the same file path.
-  virtual bool IsMostRecentDownloadItemAtFilePath(DownloadItemImpl* download);
-
   // Shows the download via the OS shell.
   virtual void ShowDownloadInShell(DownloadItemImpl* download);
 
@@ -106,10 +101,6 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItemImplDelegate {
 
   // Called when the download is interrupted.
   virtual void DownloadInterrupted(DownloadItemImpl* download);
-
-  // Get the in progress entry for the download item.
-  virtual base::Optional<DownloadEntry> GetInProgressEntry(
-      DownloadItemImpl* download);
 
   // Whether the download is off the record.
   virtual bool IsOffTheRecord() const;

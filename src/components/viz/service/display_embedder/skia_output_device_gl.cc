@@ -7,41 +7,70 @@
 #include <utility>
 
 #include "base/bind_helpers.h"
+#include "components/viz/service/display/dc_layer_overlay.h"
 #include "gpu/command_buffer/common/swap_buffers_complete_params.h"
 #include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/command_buffer/service/gl_utils.h"
+#include "gpu/command_buffer/service/mailbox_manager.h"
+#include "gpu/command_buffer/service/texture_base.h"
+#include "gpu/command_buffer/service/texture_manager.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/core/SkSurfaceProps.h"
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 #include "third_party/skia/include/gpu/gl/GrGLTypes.h"
 #include "ui/gl/color_space_utils.h"
+#include "ui/gl/dc_renderer_layer_params.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_surface.h"
 #include "ui/gl/gl_version_info.h"
+
 namespace viz {
 
 SkiaOutputDeviceGL::SkiaOutputDeviceGL(
+    gpu::MailboxManager* mailbox_manager,
     scoped_refptr<gl::GLSurface> gl_surface,
     scoped_refptr<gpu::gles2::FeatureInfo> feature_info,
-    const DidSwapBufferCompleteCallback& did_swap_buffer_complete_callback)
-    : SkiaOutputDevice(false /*need_swap_semaphore */,
-                       did_swap_buffer_complete_callback),
-      gl_surface_(gl_surface) {
+    DidSwapBufferCompleteCallback did_swap_buffer_complete_callback)
+    : SkiaOutputDevice(/*need_swap_semaphore=*/false,
+                       std::move(did_swap_buffer_complete_callback)),
+      mailbox_manager_(mailbox_manager),
+      gl_surface_(std::move(gl_surface)) {
   capabilities_.flipped_output_surface = gl_surface_->FlipsVertically();
   capabilities_.supports_post_sub_buffer = gl_surface_->SupportsPostSubBuffer();
   if (feature_info->workarounds()
-          .disable_post_sub_buffers_for_onscreen_surfaces)
+          .disable_post_sub_buffers_for_onscreen_surfaces) {
     capabilities_.supports_post_sub_buffer = false;
-  capabilities_.max_frames_pending = gl_surface->GetBufferCount() - 1;
+  }
+  capabilities_.max_frames_pending = gl_surface_->GetBufferCount() - 1;
+  capabilities_.supports_gpu_vsync = gl_surface_->SupportsGpuVSync();
+  capabilities_.supports_dc_layers = gl_surface_->SupportsDCLayers();
+  capabilities_.supports_dc_video_overlays = gl_surface_->UseOverlaysForVideo();
+#if defined(OS_ANDROID)
+  // TODO(weiliangc): This capability is used to check whether we should do
+  // overlay. Since currently none of the other overlay system is implemented,
+  // only update this for Android.
+  // This output device is never offscreen.
+  capabilities_.supports_surfaceless = gl_surface_->IsSurfaceless();
+#endif
 }
+
+SkiaOutputDeviceGL::~SkiaOutputDeviceGL() = default;
 
 void SkiaOutputDeviceGL::Initialize(GrContext* gr_context,
                                     gl::GLContext* gl_context) {
   DCHECK(gr_context);
   DCHECK(gl_context);
   gr_context_ = gr_context;
+
+  if (gl_surface_->SupportsSwapTimestamps()) {
+    gl_surface_->SetEnableSwapTimestamps();
+
+    // Changes to swap timestamp queries are only picked up when making current.
+    gl_context->ReleaseCurrent(nullptr);
+    gl_context->MakeCurrent(gl_surface_.get());
+  }
 
   gl::CurrentGL* current_gl = gl_context->GetCurrentGL();
   DCHECK(current_gl);
@@ -62,9 +91,7 @@ void SkiaOutputDeviceGL::Initialize(GrContext* gr_context,
   supports_alpha_ = alpha_bits > 0;
 }
 
-SkiaOutputDeviceGL::~SkiaOutputDeviceGL() {}
-
-void SkiaOutputDeviceGL::Reshape(const gfx::Size& size,
+bool SkiaOutputDeviceGL::Reshape(const gfx::Size& size,
                                  float device_scale_factor,
                                  const gfx::ColorSpace& color_space,
                                  bool has_alpha,
@@ -75,25 +102,44 @@ void SkiaOutputDeviceGL::Reshape(const gfx::Size& size,
       gl::ColorSpaceUtils::GetGLSurfaceColorSpace(color_space);
   if (!gl_surface_->Resize(size, device_scale_factor, surface_color_space,
                            has_alpha)) {
-    LOG(FATAL) << "Failed to resize.";
-    // TODO(penghuang): Handle the failure.
+    DLOG(ERROR) << "Failed to resize.";
+    return false;
   }
   SkSurfaceProps surface_props =
       SkSurfaceProps(0, SkSurfaceProps::kLegacyFontHost_InitType);
 
   GrGLFramebufferInfo framebuffer_info;
   framebuffer_info.fFBOID = gl_surface_->GetBackingFramebufferObject();
-  framebuffer_info.fFormat = supports_alpha_ ? GL_RGBA8 : GL_RGB8_OES;
+
+  SkColorType color_type;
+  if (color_space.IsHDR()) {
+    framebuffer_info.fFormat = GL_RGBA16F;
+    color_type = kRGBA_F16_SkColorType;
+  } else if (supports_alpha_) {
+    framebuffer_info.fFormat = GL_RGBA8;
+    color_type = kRGBA_8888_SkColorType;
+  } else {
+    framebuffer_info.fFormat = GL_RGB8_OES;
+    color_type = kRGB_888x_SkColorType;
+  }
+  // TODO(kylechar): We might need to support RGB10A2 for HDR10. HDR10 was only
+  // used with Windows updated RS3 (2017) as a workaround for a DWM bug so it
+  // might not be relevant to support anymore as a result.
+
   GrBackendRenderTarget render_target(size.width(), size.height(), 0, 8,
                                       framebuffer_info);
   auto origin = gl_surface_->FlipsVertically() ? kTopLeft_GrSurfaceOrigin
                                                : kBottomLeft_GrSurfaceOrigin;
-  auto color_type =
-      supports_alpha_ ? kRGBA_8888_SkColorType : kRGB_888x_SkColorType;
   sk_surface_ = SkSurface::MakeFromBackendRenderTarget(
       gr_context_, render_target, origin, color_type,
       color_space.ToSkColorSpace(), &surface_props);
-  DCHECK(sk_surface_);
+  if (!sk_surface_) {
+    LOG(ERROR) << "Couldn't create surface: " << gr_context_->abandoned() << " "
+               << color_type << " " << framebuffer_info.fFBOID << " "
+               << framebuffer_info.fFormat << " " << color_space.ToString()
+               << " " << size.ToString();
+  }
+  return !!sk_surface_;
 }
 
 void SkiaOutputDeviceGL::SwapBuffers(
@@ -153,6 +199,57 @@ void SkiaOutputDeviceGL::SetDrawRectangle(const gfx::Rect& draw_rectangle) {
   gl_surface_->SetDrawRectangle(draw_rectangle);
 }
 
+void SkiaOutputDeviceGL::SetGpuVSyncEnabled(bool enabled) {
+  gl_surface_->SetGpuVSyncEnabled(enabled);
+}
+
+#if defined(OS_WIN)
+void SkiaOutputDeviceGL::SetEnableDCLayers(bool enable) {
+  gl_surface_->SetEnableDCLayers(enable);
+}
+
+void SkiaOutputDeviceGL::ScheduleOverlays(
+    SkiaOutputSurface::OverlayList overlays) {
+  for (auto& dc_layer : overlays) {
+    ui::DCRendererLayerParams params;
+
+    // Get GLImages for DC layer textures.
+    bool success = true;
+    for (size_t i = 0; i < DCLayerOverlay::kNumResources; ++i) {
+      if (i > 0 && dc_layer.mailbox[i].IsZero())
+        break;
+
+      auto image = GetGLImageForMailbox(dc_layer.mailbox[i]);
+      if (!image) {
+        success = false;
+        break;
+      }
+
+      image->SetColorSpace(dc_layer.color_space);
+      params.images[i] = std::move(image);
+    }
+
+    if (!success) {
+      DLOG(ERROR) << "Failed to get GLImage for DC layer.";
+      continue;
+    }
+
+    params.z_order = dc_layer.z_order;
+    params.content_rect = dc_layer.content_rect;
+    params.quad_rect = dc_layer.quad_rect;
+    DCHECK(dc_layer.transform.IsFlat());
+    params.transform = dc_layer.transform;
+    params.is_clipped = dc_layer.is_clipped;
+    params.clip_rect = dc_layer.clip_rect;
+    params.protected_video_type = dc_layer.protected_video_type;
+
+    // Schedule DC layer overlay to be presented at next SwapBuffers().
+    if (!gl_surface_->ScheduleDCLayer(params))
+      DLOG(ERROR) << "ScheduleDCLayer failed";
+  }
+}
+#endif
+
 void SkiaOutputDeviceGL::EnsureBackbuffer() {
   gl_surface_->SetBackbufferAllocation(true);
 }
@@ -167,5 +264,25 @@ SkSurface* SkiaOutputDeviceGL::BeginPaint() {
 }
 
 void SkiaOutputDeviceGL::EndPaint(const GrBackendSemaphore& semaphore) {}
+
+scoped_refptr<gl::GLImage> SkiaOutputDeviceGL::GetGLImageForMailbox(
+    const gpu::Mailbox& mailbox) {
+  // TODO(crbug.com/1005306): Use SharedImageManager to get textures here once
+  // all clients are using SharedImageInterface to create textures.
+  auto* texture_base = mailbox_manager_->ConsumeTexture(mailbox);
+  if (!texture_base)
+    return nullptr;
+
+  if (texture_base->GetType() == gpu::TextureBase::Type::kPassthrough) {
+    gpu::gles2::TexturePassthrough* texture =
+        static_cast<gpu::gles2::TexturePassthrough*>(texture_base);
+    return texture->GetLevelImage(texture->target(), 0);
+  } else {
+    DCHECK_EQ(texture_base->GetType(), gpu::TextureBase::Type::kValidated);
+    gpu::gles2::Texture* texture =
+        static_cast<gpu::gles2::Texture*>(texture_base);
+    return texture->GetLevelImage(texture->target(), 0);
+  }
+}
 
 }  // namespace viz

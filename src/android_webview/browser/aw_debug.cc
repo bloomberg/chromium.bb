@@ -6,9 +6,9 @@
 
 #include <memory>
 
+#include "android_webview/browser_jni_headers/AwDebug_jni.h"
 #include "android_webview/common/crash_reporter/aw_crash_reporter_client.h"
 #include "android_webview/common/crash_reporter/crash_keys.h"
-#include "android_webview/native_jni/AwDebug_jni.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/android/path_utils.h"
@@ -183,6 +183,14 @@ static void JNI_AwDebug_SetNonWhiteListedKeyForTesting(JNIEnv* env) {
   static ::crash_reporter::CrashKeyString<32> crash_key(
       "AW_NONWHITELISTED_DEBUG_KEY");
   crash_key.Set("AW_DEBUG_VALUE");
+}
+
+static void JNI_AwDebug_SetSupportLibraryWebkitVersionCrashKey(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jstring>& version) {
+  static ::crash_reporter::CrashKeyString<32> crash_key(
+      crash_keys::kSupportLibraryWebkitVersion);
+  crash_key.Set(ConvertJavaStringToUTF8(env, version));
 }
 
 }  // namespace android_webview

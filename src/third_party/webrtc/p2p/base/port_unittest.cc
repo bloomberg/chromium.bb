@@ -19,21 +19,18 @@
 #include <utility>
 #include <vector>
 
-#include "absl/memory/memory.h"
 #include "absl/types/optional.h"
 #include "api/candidate.h"
+#include "api/packet_socket_factory.h"
+#include "api/transport/stun.h"
 #include "api/units/time_delta.h"
 #include "p2p/base/basic_packet_socket_factory.h"
 #include "p2p/base/p2p_constants.h"
-#include "p2p/base/packet_socket_factory.h"
 #include "p2p/base/port_allocator.h"
 #include "p2p/base/port_interface.h"
-#include "p2p/base/relay_port.h"
-#include "p2p/base/stun.h"
 #include "p2p/base/stun_port.h"
 #include "p2p/base/stun_server.h"
 #include "p2p/base/tcp_port.h"
-#include "p2p/base/test_relay_server.h"
 #include "p2p/base/test_stun_server.h"
 #include "p2p/base/test_turn_server.h"
 #include "p2p/base/transport_description.h"
@@ -91,12 +88,6 @@ const SocketAddress kLocalAddr2("192.168.1.3", 0);
 const SocketAddress kNatAddr1("77.77.77.77", rtc::NAT_SERVER_UDP_PORT);
 const SocketAddress kNatAddr2("88.88.88.88", rtc::NAT_SERVER_UDP_PORT);
 const SocketAddress kStunAddr("99.99.99.1", STUN_SERVER_PORT);
-const SocketAddress kRelayUdpIntAddr("99.99.99.2", 5000);
-const SocketAddress kRelayUdpExtAddr("99.99.99.3", 5001);
-const SocketAddress kRelayTcpIntAddr("99.99.99.2", 5002);
-const SocketAddress kRelayTcpExtAddr("99.99.99.3", 5003);
-const SocketAddress kRelaySslTcpIntAddr("99.99.99.2", 5004);
-const SocketAddress kRelaySslTcpExtAddr("99.99.99.3", 5005);
 const SocketAddress kTurnUdpIntAddr("99.99.99.4", STUN_SERVER_PORT);
 const SocketAddress kTurnTcpIntAddr("99.99.99.4", 5010);
 const SocketAddress kTurnUdpExtAddr("99.99.99.5", 0);
@@ -113,8 +104,6 @@ constexpr int kTiebreaker2 = 22222;
 
 const char* data = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
 
-constexpr int kGturnUserNameLength = 16;
-
 Candidate GetCandidate(Port* port) {
   RTC_DCHECK_GE(port->Candidates().size(), 1);
   return port->Candidates()[0];
@@ -125,7 +114,7 @@ SocketAddress GetAddress(Port* port) {
 }
 
 std::unique_ptr<IceMessage> CopyStunMessage(const IceMessage& src) {
-  auto dst = absl::make_unique<IceMessage>();
+  auto dst = std::make_unique<IceMessage>();
   ByteBufferWriter buf;
   src.Write(&buf);
   ByteBufferReader read_buf(buf);
@@ -222,8 +211,8 @@ class TestPort : public Port {
                      const rtc::PacketOptions& options,
                      bool payload) {
     if (!payload) {
-      auto msg = absl::make_unique<IceMessage>();
-      auto buf = absl::make_unique<rtc::BufferT<uint8_t>>(
+      auto msg = std::make_unique<IceMessage>();
+      auto buf = std::make_unique<rtc::BufferT<uint8_t>>(
           static_cast<const char*>(data), size);
       ByteBufferReader read_buf(*buf);
       if (!msg->Read(&read_buf)) {
@@ -313,7 +302,7 @@ class TestChannel : public sigslot::has_slots<> {
     c.set_address(remote_address_);
     conn_ = port_->CreateConnection(c, Port::ORIGIN_MESSAGE);
     conn_->SignalDestroyed.connect(this, &TestChannel::OnDestroyed);
-    port_->SendBindingResponse(remote_request_.get(), remote_address_);
+    conn_->SendBindingResponse(remote_request_.get());
     remote_request_.reset();
   }
   void Ping() { Ping(0); }
@@ -411,13 +400,6 @@ class PortTest : public ::testing::Test, public sigslot::has_slots<> {
         nat_socket_factory2_(&nat_factory2_),
         stun_server_(TestStunServer::Create(&main_, kStunAddr)),
         turn_server_(&main_, kTurnUdpIntAddr, kTurnUdpExtAddr),
-        relay_server_(&main_,
-                      kRelayUdpIntAddr,
-                      kRelayUdpExtAddr,
-                      kRelayTcpIntAddr,
-                      kRelayTcpExtAddr,
-                      kRelaySslTcpIntAddr,
-                      kRelaySslTcpExtAddr),
         username_(rtc::CreateRandomString(ICE_UFRAG_LENGTH)),
         password_(rtc::CreateRandomString(ICE_PWD_LENGTH)),
         role_conflict_(false),
@@ -442,13 +424,13 @@ class PortTest : public ::testing::Test, public sigslot::has_slots<> {
                      ntype == NAT_OPEN_CONE, true, ntype != NAT_SYMMETRIC,
                      true);
   }
-  void TestLocalToRelay(RelayType rtype, ProtocolType proto) {
+  void TestLocalToRelay(ProtocolType proto) {
     auto port1 = CreateUdpPort(kLocalAddr1);
     port1->SetIceRole(cricket::ICEROLE_CONTROLLING);
-    auto port2 = CreateRelayPort(kLocalAddr2, rtype, proto, PROTO_UDP);
+    auto port2 = CreateRelayPort(kLocalAddr2, proto, PROTO_UDP);
     port2->SetIceRole(cricket::ICEROLE_CONTROLLED);
-    TestConnectivity("udp", std::move(port1), RelayName(rtype, proto),
-                     std::move(port2), rtype == RELAY_GTURN, true, true, true);
+    TestConnectivity("udp", std::move(port1), RelayName(proto),
+                     std::move(port2), false, true, true, true);
   }
   void TestStunToLocal(NATType ntype) {
     nat_server1_ = CreateNatServer(kNatAddr1, ntype);
@@ -471,15 +453,15 @@ class PortTest : public ::testing::Test, public sigslot::has_slots<> {
                      ntype1 != NAT_SYMMETRIC, ntype2 != NAT_SYMMETRIC,
                      ntype1 + ntype2 < (NAT_PORT_RESTRICTED + NAT_SYMMETRIC));
   }
-  void TestStunToRelay(NATType ntype, RelayType rtype, ProtocolType proto) {
+  void TestStunToRelay(NATType ntype, ProtocolType proto) {
     nat_server1_ = CreateNatServer(kNatAddr1, ntype);
     auto port1 = CreateStunPort(kLocalAddr1, &nat_socket_factory1_);
     port1->SetIceRole(cricket::ICEROLE_CONTROLLING);
-    auto port2 = CreateRelayPort(kLocalAddr2, rtype, proto, PROTO_UDP);
+    auto port2 = CreateRelayPort(kLocalAddr2, proto, PROTO_UDP);
     port2->SetIceRole(cricket::ICEROLE_CONTROLLED);
-    TestConnectivity(StunName(ntype), std::move(port1), RelayName(rtype, proto),
-                     std::move(port2), rtype == RELAY_GTURN,
-                     ntype != NAT_SYMMETRIC, true, true);
+    TestConnectivity(StunName(ntype), std::move(port1), RelayName(proto),
+                     std::move(port2), false, ntype != NAT_SYMMETRIC, true,
+                     true);
   }
   void TestTcpToTcp() {
     auto port1 = CreateTcpPort(kLocalAddr1);
@@ -489,21 +471,21 @@ class PortTest : public ::testing::Test, public sigslot::has_slots<> {
     TestConnectivity("tcp", std::move(port1), "tcp", std::move(port2), true,
                      false, true, true);
   }
-  void TestTcpToRelay(RelayType rtype, ProtocolType proto) {
+  void TestTcpToRelay(ProtocolType proto) {
     auto port1 = CreateTcpPort(kLocalAddr1);
     port1->SetIceRole(cricket::ICEROLE_CONTROLLING);
-    auto port2 = CreateRelayPort(kLocalAddr2, rtype, proto, PROTO_TCP);
+    auto port2 = CreateRelayPort(kLocalAddr2, proto, PROTO_TCP);
     port2->SetIceRole(cricket::ICEROLE_CONTROLLED);
-    TestConnectivity("tcp", std::move(port1), RelayName(rtype, proto),
-                     std::move(port2), rtype == RELAY_GTURN, false, true, true);
+    TestConnectivity("tcp", std::move(port1), RelayName(proto),
+                     std::move(port2), false, false, true, true);
   }
-  void TestSslTcpToRelay(RelayType rtype, ProtocolType proto) {
+  void TestSslTcpToRelay(ProtocolType proto) {
     auto port1 = CreateTcpPort(kLocalAddr1);
     port1->SetIceRole(cricket::ICEROLE_CONTROLLING);
-    auto port2 = CreateRelayPort(kLocalAddr2, rtype, proto, PROTO_SSLTCP);
+    auto port2 = CreateRelayPort(kLocalAddr2, proto, PROTO_SSLTCP);
     port2->SetIceRole(cricket::ICEROLE_CONTROLLED);
-    TestConnectivity("ssltcp", std::move(port1), RelayName(rtype, proto),
-                     std::move(port2), rtype == RELAY_GTURN, false, true, true);
+    TestConnectivity("ssltcp", std::move(port1), RelayName(proto),
+                     std::move(port2), false, false, true, true);
   }
 
   rtc::Network* MakeNetwork(const SocketAddress& addr) {
@@ -539,14 +521,9 @@ class PortTest : public ::testing::Test, public sigslot::has_slots<> {
                             absl::nullopt);
   }
   std::unique_ptr<Port> CreateRelayPort(const SocketAddress& addr,
-                                        RelayType rtype,
                                         ProtocolType int_proto,
                                         ProtocolType ext_proto) {
-    if (rtype == RELAY_TURN) {
-      return CreateTurnPort(addr, &socket_factory_, int_proto, ext_proto);
-    } else {
-      return CreateGturnPort(addr, int_proto, ext_proto);
-    }
+    return CreateTurnPort(addr, &socket_factory_, int_proto, ext_proto);
   }
   std::unique_ptr<TurnPort> CreateTurnPort(const SocketAddress& addr,
                                            PacketSocketFactory* socket_factory,
@@ -568,28 +545,10 @@ class PortTest : public ::testing::Test, public sigslot::has_slots<> {
                             ProtocolAddress(server_addr, int_proto),
                             kRelayCredentials, 0, "", {}, {}, nullptr, nullptr);
   }
-  std::unique_ptr<RelayPort> CreateGturnPort(const SocketAddress& addr,
-                                             ProtocolType int_proto,
-                                             ProtocolType ext_proto) {
-    std::unique_ptr<RelayPort> port = CreateGturnPort(addr);
-    SocketAddress addrs[] = {kRelayUdpIntAddr, kRelayTcpIntAddr,
-                             kRelaySslTcpIntAddr};
-    port->AddServerAddress(ProtocolAddress(addrs[int_proto], int_proto));
-    return port;
-  }
-  std::unique_ptr<RelayPort> CreateGturnPort(const SocketAddress& addr) {
-    // TODO(pthatcher):  Remove GTURN.
-    // Generate a username with length of 16 for Gturn only.
-    std::string username = rtc::CreateRandomString(kGturnUserNameLength);
-    return RelayPort::Create(&main_, &socket_factory_, MakeNetwork(addr), 0, 0,
-                             username, password_);
-    // TODO(?): Add an external address for ext_proto, so that the
-    // other side can connect to this port using a non-UDP protocol.
-  }
   std::unique_ptr<rtc::NATServer> CreateNatServer(const SocketAddress& addr,
                                                   rtc::NATType type) {
-    return absl::make_unique<rtc::NATServer>(type, ss_.get(), addr, addr,
-                                             ss_.get(), addr);
+    return std::make_unique<rtc::NATServer>(type, ss_.get(), addr, addr,
+                                            ss_.get(), addr);
   }
   static const char* StunName(NATType type) {
     switch (type) {
@@ -605,33 +564,18 @@ class PortTest : public ::testing::Test, public sigslot::has_slots<> {
         return "stun(?)";
     }
   }
-  static const char* RelayName(RelayType type, ProtocolType proto) {
-    if (type == RELAY_TURN) {
-      switch (proto) {
-        case PROTO_UDP:
-          return "turn(udp)";
-        case PROTO_TCP:
-          return "turn(tcp)";
-        case PROTO_SSLTCP:
-          return "turn(ssltcp)";
-        case PROTO_TLS:
-          return "turn(tls)";
-        default:
-          return "turn(?)";
-      }
-    } else {
-      switch (proto) {
-        case PROTO_UDP:
-          return "gturn(udp)";
-        case PROTO_TCP:
-          return "gturn(tcp)";
-        case PROTO_SSLTCP:
-          return "gturn(ssltcp)";
-        case PROTO_TLS:
-          return "gturn(tls)";
-        default:
-          return "gturn(?)";
-      }
+  static const char* RelayName(ProtocolType proto) {
+    switch (proto) {
+      case PROTO_UDP:
+        return "turn(udp)";
+      case PROTO_TCP:
+        return "turn(tcp)";
+      case PROTO_SSLTCP:
+        return "turn(ssltcp)";
+      case PROTO_TLS:
+        return "turn(tls)";
+      default:
+        return "turn(?)";
     }
   }
 
@@ -783,7 +727,7 @@ class PortTest : public ::testing::Test, public sigslot::has_slots<> {
   }
 
   std::unique_ptr<IceMessage> CreateStunMessage(int type) {
-    auto msg = absl::make_unique<IceMessage>();
+    auto msg = std::make_unique<IceMessage>();
     msg->SetType(type);
     msg->SetTransactionID("TESTTESTTEST");
     return msg;
@@ -792,16 +736,16 @@ class PortTest : public ::testing::Test, public sigslot::has_slots<> {
       int type,
       const std::string& username) {
     std::unique_ptr<IceMessage> msg = CreateStunMessage(type);
-    msg->AddAttribute(absl::make_unique<StunByteStringAttribute>(
+    msg->AddAttribute(std::make_unique<StunByteStringAttribute>(
         STUN_ATTR_USERNAME, username));
     return msg;
   }
   std::unique_ptr<TestPort> CreateTestPort(const rtc::SocketAddress& addr,
                                            const std::string& username,
                                            const std::string& password) {
-    auto port = absl::make_unique<TestPort>(&main_, "test", &socket_factory_,
-                                            MakeNetwork(addr), 0, 0, username,
-                                            password);
+    auto port =
+        std::make_unique<TestPort>(&main_, "test", &socket_factory_,
+                                   MakeNetwork(addr), 0, 0, username, password);
     port->SignalRoleConflict.connect(this, &PortTest::OnRoleConflict);
     return port;
   }
@@ -819,8 +763,8 @@ class PortTest : public ::testing::Test, public sigslot::has_slots<> {
   std::unique_ptr<TestPort> CreateTestPort(rtc::Network* network,
                                            const std::string& username,
                                            const std::string& password) {
-    auto port = absl::make_unique<TestPort>(&main_, "test", &socket_factory_,
-                                            network, 0, 0, username, password);
+    auto port = std::make_unique<TestPort>(&main_, "test", &socket_factory_,
+                                           network, 0, 0, username, password);
     port->SignalRoleConflict.connect(this, &PortTest::OnRoleConflict);
     return port;
   }
@@ -857,7 +801,6 @@ class PortTest : public ::testing::Test, public sigslot::has_slots<> {
   rtc::BasicPacketSocketFactory nat_socket_factory2_;
   std::unique_ptr<TestStunServer> stun_server_;
   TestTurnServer turn_server_;
-  TestRelayServer relay_server_;
   std::string username_;
   std::string password_;
   bool role_conflict_;
@@ -1034,13 +977,12 @@ class FakePacketSocketFactory : public rtc::PacketSocketFactory {
     return result;
   }
 
-  // TODO(?): |proxy_info| and |user_agent| should be set
-  // per-factory and not when socket is created.
-  AsyncPacketSocket* CreateClientTcpSocket(const SocketAddress& local_address,
-                                           const SocketAddress& remote_address,
-                                           const rtc::ProxyInfo& proxy_info,
-                                           const std::string& user_agent,
-                                           int opts) override {
+  AsyncPacketSocket* CreateClientTcpSocket(
+      const SocketAddress& local_address,
+      const SocketAddress& remote_address,
+      const rtc::ProxyInfo& proxy_info,
+      const std::string& user_agent,
+      const rtc::PacketSocketTcpOptions& opts) override {
     EXPECT_TRUE(next_client_tcp_socket_ != NULL);
     AsyncPacketSocket* result = next_client_tcp_socket_;
     next_client_tcp_socket_ = NULL;
@@ -1122,19 +1064,7 @@ TEST_F(PortTest, TestLocalToSymNat) {
 
 // Flaky: https://code.google.com/p/webrtc/issues/detail?id=3316.
 TEST_F(PortTest, DISABLED_TestLocalToTurn) {
-  TestLocalToRelay(RELAY_TURN, PROTO_UDP);
-}
-
-TEST_F(PortTest, TestLocalToGturn) {
-  TestLocalToRelay(RELAY_GTURN, PROTO_UDP);
-}
-
-TEST_F(PortTest, TestLocalToTcpGturn) {
-  TestLocalToRelay(RELAY_GTURN, PROTO_TCP);
-}
-
-TEST_F(PortTest, TestLocalToSslTcpGturn) {
-  TestLocalToRelay(RELAY_GTURN, PROTO_SSLTCP);
+  TestLocalToRelay(PROTO_UDP);
 }
 
 // Cone NAT -> XXXX
@@ -1159,15 +1089,7 @@ TEST_F(PortTest, TestConeNatToSymNat) {
 }
 
 TEST_F(PortTest, TestConeNatToTurn) {
-  TestStunToRelay(NAT_OPEN_CONE, RELAY_TURN, PROTO_UDP);
-}
-
-TEST_F(PortTest, TestConeNatToGturn) {
-  TestStunToRelay(NAT_OPEN_CONE, RELAY_GTURN, PROTO_UDP);
-}
-
-TEST_F(PortTest, TestConeNatToTcpGturn) {
-  TestStunToRelay(NAT_OPEN_CONE, RELAY_GTURN, PROTO_TCP);
+  TestStunToRelay(NAT_OPEN_CONE, PROTO_UDP);
 }
 
 // Address-restricted NAT -> XXXX
@@ -1192,15 +1114,7 @@ TEST_F(PortTest, TestARNatToSymNat) {
 }
 
 TEST_F(PortTest, TestARNatToTurn) {
-  TestStunToRelay(NAT_ADDR_RESTRICTED, RELAY_TURN, PROTO_UDP);
-}
-
-TEST_F(PortTest, TestARNatToGturn) {
-  TestStunToRelay(NAT_ADDR_RESTRICTED, RELAY_GTURN, PROTO_UDP);
-}
-
-TEST_F(PortTest, TestARNATNatToTcpGturn) {
-  TestStunToRelay(NAT_ADDR_RESTRICTED, RELAY_GTURN, PROTO_TCP);
+  TestStunToRelay(NAT_ADDR_RESTRICTED, PROTO_UDP);
 }
 
 // Port-restricted NAT -> XXXX
@@ -1226,15 +1140,7 @@ TEST_F(PortTest, TestPRNatToSymNat) {
 }
 
 TEST_F(PortTest, TestPRNatToTurn) {
-  TestStunToRelay(NAT_PORT_RESTRICTED, RELAY_TURN, PROTO_UDP);
-}
-
-TEST_F(PortTest, TestPRNatToGturn) {
-  TestStunToRelay(NAT_PORT_RESTRICTED, RELAY_GTURN, PROTO_UDP);
-}
-
-TEST_F(PortTest, TestPRNatToTcpGturn) {
-  TestStunToRelay(NAT_PORT_RESTRICTED, RELAY_GTURN, PROTO_TCP);
+  TestStunToRelay(NAT_PORT_RESTRICTED, PROTO_UDP);
 }
 
 // Symmetric NAT -> XXXX
@@ -1261,15 +1167,7 @@ TEST_F(PortTest, TestSymNatToSymNat) {
 }
 
 TEST_F(PortTest, TestSymNatToTurn) {
-  TestStunToRelay(NAT_SYMMETRIC, RELAY_TURN, PROTO_UDP);
-}
-
-TEST_F(PortTest, TestSymNatToGturn) {
-  TestStunToRelay(NAT_SYMMETRIC, RELAY_GTURN, PROTO_UDP);
-}
-
-TEST_F(PortTest, TestSymNatToTcpGturn) {
-  TestStunToRelay(NAT_SYMMETRIC, RELAY_GTURN, PROTO_TCP);
+  TestStunToRelay(NAT_SYMMETRIC, PROTO_UDP);
 }
 
 // Outbound TCP -> XXXX
@@ -1441,17 +1339,17 @@ TEST_F(PortTest, TestLoopbackCall) {
       CreateStunMessage(STUN_BINDING_REQUEST));
   const StunByteStringAttribute* username_attr =
       msg->GetByteString(STUN_ATTR_USERNAME);
-  modified_req->AddAttribute(absl::make_unique<StunByteStringAttribute>(
+  modified_req->AddAttribute(std::make_unique<StunByteStringAttribute>(
       STUN_ATTR_USERNAME, username_attr->GetString()));
   // To make sure we receive error response, adding tiebreaker less than
   // what's present in request.
-  modified_req->AddAttribute(absl::make_unique<StunUInt64Attribute>(
+  modified_req->AddAttribute(std::make_unique<StunUInt64Attribute>(
       STUN_ATTR_ICE_CONTROLLING, kTiebreaker1 - 1));
   modified_req->AddMessageIntegrity("lpass");
   modified_req->AddFingerprint();
 
   lport->Reset();
-  auto buf = absl::make_unique<ByteBufferWriter>();
+  auto buf = std::make_unique<ByteBufferWriter>();
   WriteStunMessage(*modified_req, buf.get());
   conn1->OnReadPacket(buf->Data(), buf->Length(), /* packet_time_us */ -1);
   ASSERT_TRUE_WAIT(lport->last_stun_msg() != NULL, kDefaultTimeout);
@@ -2053,7 +1951,7 @@ TEST_F(PortTest, TestHandleStunMessage) {
   auto port = CreateTestPort(kLocalAddr2, "rfrag", "rpass");
 
   std::unique_ptr<IceMessage> in_msg, out_msg;
-  auto buf = absl::make_unique<ByteBufferWriter>();
+  auto buf = std::make_unique<ByteBufferWriter>();
   rtc::SocketAddress addr(kLocalAddr1);
   std::string username;
 
@@ -2070,7 +1968,7 @@ TEST_F(PortTest, TestHandleStunMessage) {
 
   // BINDING-RESPONSE without username, with MESSAGE-INTEGRITY and FINGERPRINT.
   in_msg = CreateStunMessage(STUN_BINDING_RESPONSE);
-  in_msg->AddAttribute(absl::make_unique<StunXorAddressAttribute>(
+  in_msg->AddAttribute(std::make_unique<StunXorAddressAttribute>(
       STUN_ATTR_XOR_MAPPED_ADDRESS, kLocalAddr2));
   in_msg->AddMessageIntegrity("rpass");
   in_msg->AddFingerprint();
@@ -2082,7 +1980,7 @@ TEST_F(PortTest, TestHandleStunMessage) {
 
   // BINDING-ERROR-RESPONSE without username, with error, M-I, and FINGERPRINT.
   in_msg = CreateStunMessage(STUN_BINDING_ERROR_RESPONSE);
-  in_msg->AddAttribute(absl::make_unique<StunErrorCodeAttribute>(
+  in_msg->AddAttribute(std::make_unique<StunErrorCodeAttribute>(
       STUN_ATTR_ERROR_CODE, STUN_ERROR_SERVER_ERROR,
       STUN_ERROR_REASON_SERVER_ERROR));
   in_msg->AddFingerprint();
@@ -2102,7 +2000,7 @@ TEST_F(PortTest, TestHandleStunMessageBadUsername) {
   auto port = CreateTestPort(kLocalAddr2, "rfrag", "rpass");
 
   std::unique_ptr<IceMessage> in_msg, out_msg;
-  auto buf = absl::make_unique<ByteBufferWriter>();
+  auto buf = std::make_unique<ByteBufferWriter>();
   rtc::SocketAddress addr(kLocalAddr1);
   std::string username;
 
@@ -2168,7 +2066,7 @@ TEST_F(PortTest, TestHandleStunMessageBadMessageIntegrity) {
   auto port = CreateTestPort(kLocalAddr2, "rfrag", "rpass");
 
   std::unique_ptr<IceMessage> in_msg, out_msg;
-  auto buf = absl::make_unique<ByteBufferWriter>();
+  auto buf = std::make_unique<ByteBufferWriter>();
   rtc::SocketAddress addr(kLocalAddr1);
   std::string username;
 
@@ -2206,7 +2104,7 @@ TEST_F(PortTest, TestHandleStunMessageBadFingerprint) {
   auto port = CreateTestPort(kLocalAddr2, "rfrag", "rpass");
 
   std::unique_ptr<IceMessage> in_msg, out_msg;
-  auto buf = absl::make_unique<ByteBufferWriter>();
+  auto buf = std::make_unique<ByteBufferWriter>();
   rtc::SocketAddress addr(kLocalAddr1);
   std::string username;
 
@@ -2229,7 +2127,7 @@ TEST_F(PortTest, TestHandleStunMessageBadFingerprint) {
 
   // Valid BINDING-RESPONSE, except no FINGERPRINT.
   in_msg = CreateStunMessage(STUN_BINDING_RESPONSE);
-  in_msg->AddAttribute(absl::make_unique<StunXorAddressAttribute>(
+  in_msg->AddAttribute(std::make_unique<StunXorAddressAttribute>(
       STUN_ATTR_XOR_MAPPED_ADDRESS, kLocalAddr2));
   in_msg->AddMessageIntegrity("rpass");
   WriteStunMessage(*in_msg, buf.get());
@@ -2247,7 +2145,7 @@ TEST_F(PortTest, TestHandleStunMessageBadFingerprint) {
 
   // Valid BINDING-ERROR-RESPONSE, except no FINGERPRINT.
   in_msg = CreateStunMessage(STUN_BINDING_ERROR_RESPONSE);
-  in_msg->AddAttribute(absl::make_unique<StunErrorCodeAttribute>(
+  in_msg->AddAttribute(std::make_unique<StunErrorCodeAttribute>(
       STUN_ATTR_ERROR_CODE, STUN_ERROR_SERVER_ERROR,
       STUN_ERROR_REASON_SERVER_ERROR));
   in_msg->AddMessageIntegrity("rpass");
@@ -2396,16 +2294,6 @@ TEST_F(PortTest, TestCandidateFoundation) {
             stunport->Candidates()[0].foundation());
   EXPECT_NE(udpport2->Candidates()[0].foundation(),
             stunport->Candidates()[0].foundation());
-  // Verify GTURN candidate foundation.
-  auto relayport = CreateGturnPort(kLocalAddr1);
-  relayport->AddServerAddress(
-      cricket::ProtocolAddress(kRelayUdpIntAddr, cricket::PROTO_UDP));
-  relayport->PrepareAddress();
-  ASSERT_EQ_WAIT(1U, relayport->Candidates().size(), kDefaultTimeout);
-  EXPECT_NE(udpport1->Candidates()[0].foundation(),
-            relayport->Candidates()[0].foundation());
-  EXPECT_NE(udpport2->Candidates()[0].foundation(),
-            relayport->Candidates()[0].foundation());
   // Verifying TURN candidate foundation.
   auto turnport1 =
       CreateTurnPort(kLocalAddr1, nat_socket_factory1(), PROTO_UDP, PROTO_UDP);
@@ -2467,16 +2355,6 @@ TEST_F(PortTest, TestCandidateRelatedAddress) {
   // Check STUN candidate related address.
   EXPECT_EQ(stunport->Candidates()[0].related_address(),
             stunport->GetLocalAddress());
-  // Verifying the related address for the GTURN candidates.
-  // NOTE: In case of GTURN related address will be equal to the mapped
-  // address, but address(mapped) will not be XOR.
-  auto relayport = CreateGturnPort(kLocalAddr1);
-  relayport->AddServerAddress(
-      cricket::ProtocolAddress(kRelayUdpIntAddr, cricket::PROTO_UDP));
-  relayport->PrepareAddress();
-  ASSERT_EQ_WAIT(1U, relayport->Candidates().size(), kDefaultTimeout);
-  // For Gturn related address is set to "0.0.0.0:0"
-  EXPECT_EQ(rtc::SocketAddress(), relayport->Candidates()[0].related_address());
   // Verifying the related address for TURN candidate.
   // For TURN related address must be equal to the mapped address.
   auto turnport =
@@ -2740,11 +2618,10 @@ TEST_F(PortTest, TestIceLiteConnectivity) {
   // NOTE: Ideally we should't create connection at this stage from lite
   // port, as it should be done only after receiving ping with USE_CANDIDATE.
   // But we need a connection to send a response message.
-  ice_lite_port->CreateConnection(ice_full_port_ptr->Candidates()[0],
-                                  cricket::Port::ORIGIN_MESSAGE);
+  auto* con = ice_lite_port->CreateConnection(
+      ice_full_port_ptr->Candidates()[0], cricket::Port::ORIGIN_MESSAGE);
   std::unique_ptr<IceMessage> request = CopyStunMessage(*msg);
-  ice_lite_port->SendBindingResponse(
-      request.get(), ice_full_port_ptr->Candidates()[0].address());
+  con->SendBindingResponse(request.get());
 
   // Feeding the respone message from litemode to the full mode connection.
   ch1.conn()->OnReadPacket(ice_lite_port->last_stun_buf()->data<char>(),

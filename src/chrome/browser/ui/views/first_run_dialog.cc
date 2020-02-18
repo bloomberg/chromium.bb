@@ -17,6 +17,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/crash/content/app/crashpad.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
@@ -37,8 +38,22 @@
 namespace {
 
 void InitCrashReporterIfEnabled(bool enabled) {
+#if defined(OS_WIN)
   if (enabled)
     breakpad::InitCrashReporter(std::string());
+#elif defined(OS_LINUX)
+  if (!crash_reporter::IsCrashpadEnabled() && enabled) {
+    breakpad::InitCrashReporter(std::string());
+  }
+#endif
+}
+
+std::unique_ptr<views::View> CreateLearnMoreLink(
+    views::LinkListener* listener) {
+  auto link =
+      std::make_unique<views::Link>(l10n_util::GetStringUTF16(IDS_LEARN_MORE));
+  link->set_listener(listener);
+  return link;
 }
 
 }  // namespace
@@ -62,6 +77,9 @@ void FirstRunDialog::Show(Profile* profile) {
 }
 
 FirstRunDialog::FirstRunDialog(Profile* profile) : profile_(profile) {
+  DialogDelegate::set_buttons(ui::DIALOG_BUTTON_OK);
+  DialogDelegate::SetExtraView(CreateLearnMoreLink(this));
+
   set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(
       views::TEXT, views::TEXT));
   views::GridLayout* layout =
@@ -83,7 +101,7 @@ FirstRunDialog::FirstRunDialog(Profile* profile) : profile_(profile) {
                               ChromeLayoutProvider::Get()->GetDistanceMetric(
                                   views::DISTANCE_RELATED_CONTROL_VERTICAL));
   auto report_crashes = std::make_unique<views::Checkbox>(
-      l10n_util::GetStringUTF16(IDS_SETTINGS_ENABLE_LOGGING));
+      l10n_util::GetStringUTF16(IDS_FR_ENABLE_LOGGING));
   // Having this box checked means the user has to opt-out of metrics recording.
   report_crashes->SetChecked(!first_run::IsMetricsReportingOptIn());
   report_crashes_ = layout->AddView(std::move(report_crashes));
@@ -98,13 +116,6 @@ void FirstRunDialog::Done() {
   quit_runloop_.Run();
 }
 
-std::unique_ptr<views::View> FirstRunDialog::CreateExtraView() {
-  auto link =
-      std::make_unique<views::Link>(l10n_util::GetStringUTF16(IDS_LEARN_MORE));
-  link->set_listener(this);
-  return link;
-}
-
 bool FirstRunDialog::Accept() {
   GetWidget()->Hide();
 
@@ -116,10 +127,6 @@ bool FirstRunDialog::Accept() {
 
   Done();
   return true;
-}
-
-int FirstRunDialog::GetDialogButtons() const {
-  return ui::DIALOG_BUTTON_OK;
 }
 
 void FirstRunDialog::WindowClosing() {

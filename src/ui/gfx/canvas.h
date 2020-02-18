@@ -118,8 +118,7 @@ class GFX_EXPORT Canvas {
                             int* width,
                             int* height,
                             int line_height,
-                            int flags,
-                            Typesetter typesetter = Typesetter::DEFAULT);
+                            int flags);
 
   // This is same as SizeStringInt except that fractional size is returned.
   // See comment in GetStringWidthF for its usage.
@@ -128,23 +127,20 @@ class GFX_EXPORT Canvas {
                               float* width,
                               float* height,
                               int line_height,
-                              int flags,
-                              Typesetter typesetter = Typesetter::DEFAULT);
+                              int flags);
 
   // Returns the number of horizontal pixels needed to display the specified
   // |text| with |font_list|.
   static int GetStringWidth(const base::string16& text,
-                            const FontList& font_list,
-                            Typesetter typesetter = Typesetter::DEFAULT);
+                            const FontList& font_list);
 
   // This is same as GetStringWidth except that fractional width is returned.
   // Use this method for the scenario that multiple string widths need to be
   // summed up. This is because GetStringWidth returns the ceiled width and
   // adding multiple ceiled widths could cause more precision loss for certain
-  // platform like Mac where the fractioal width is used.
+  // platform like Mac where the fractional width is used.
   static float GetStringWidthF(const base::string16& text,
-                               const FontList& font_list,
-                               Typesetter typesetter = Typesetter::DEFAULT);
+                               const FontList& font_list);
 
   // Returns the default text alignment to be used when drawing text on a
   // Canvas based on the directionality of the system locale language.
@@ -189,9 +185,6 @@ class GFX_EXPORT Canvas {
   // Adds |path| to the current clip. |do_anti_alias| is true if the clip
   // should be antialiased.
   void ClipPath(const SkPath& path, bool do_anti_alias);
-
-  // Returns true if the current clip is empty.
-  bool IsClipEmpty() const;
 
   // Returns the bounds of the current clip (in local coordinates) in the
   // |bounds| parameter, and returns true if it is non empty.
@@ -437,13 +430,6 @@ class GFX_EXPORT Canvas {
 
   // Apply transformation on the canvas.
   void Transform(const Transform& transform);
-
-  // Draws the given string with a fade gradient at the end.
-  void DrawFadedString(const base::string16& text,
-                       const FontList& font_list,
-                       SkColor color,
-                       const Rect& display_rect,
-                       int flags);
 
   // Note that writing to this bitmap will modify pixels stored in this canvas.
   SkBitmap GetBitmap() const;

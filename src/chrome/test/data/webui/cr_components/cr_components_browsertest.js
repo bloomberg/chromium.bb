@@ -21,16 +21,6 @@ CrComponentsBrowserTest.prototype = {
   get browsePreload() {
     throw 'subclasses should override to load a WebUI page that includes it.';
   },
-
-  /** @override */
-  runAccessibilityChecks: true,
-
-  /** @override */
-  setUp: function() {
-    PolymerTest.prototype.setUp.call(this);
-    // We aren't loading the main document.
-    this.accessibilityAuditConfig.ignoreSelectors('humanLangMissing', 'html');
-  },
 };
 
 /**
@@ -43,7 +33,8 @@ CrComponentsManagedFootnoteTest.prototype = {
   __proto__: CrComponentsBrowserTest.prototype,
 
   /** @override */
-  browsePreload: 'chrome://downloads',
+  browsePreload:
+      'chrome://resources/cr_components/managed_footnote/managed_footnote.html',
 
   /** @override */
   extraLibraries: CrComponentsBrowserTest.prototype.extraLibraries.concat([
@@ -95,8 +86,7 @@ CrComponentsNetworkConfigTest.prototype = {
     '//ui/webui/resources/js/promise_resolver.js',
     '../fake_chrome_event.js',
     '../chromeos/networking_private_constants.js',
-    '../chromeos/fake_networking_private.js',
-    '../chromeos/cr_onc_strings.js',
+    '../chromeos/fake_network_config_mojom.js',
     'network_config_test.js',
   ]),
 };

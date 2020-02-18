@@ -32,14 +32,14 @@ namespace dawn_native { namespace opengl {
         ~NativeSwapChainImpl();
 
         void Init(DawnWSIContextGL* context);
-        DawnSwapChainError Configure(DawnTextureFormat format,
-                                     DawnTextureUsage,
+        DawnSwapChainError Configure(WGPUTextureFormat format,
+                                     WGPUTextureUsage,
                                      uint32_t width,
                                      uint32_t height);
         DawnSwapChainError GetNextTexture(DawnSwapChainNextTexture* nextTexture);
         DawnSwapChainError Present();
 
-        dawn::TextureFormat GetPreferredFormat() const;
+        wgpu::TextureFormat GetPreferredFormat() const;
 
       private:
         PresentCallback mPresentCallback;

@@ -28,7 +28,7 @@ class GetMethodsTest(cros_test_lib.MockTestCase, api_config.ApiConfigMixin):
 
     api_controller.GetMethods(self.request, self.response, self.api_config)
 
-    self.assertItemsEqual(methods, [m.method for m in self.response.methods])
+    self.assertCountEqual(methods, [m.method for m in self.response.methods])
 
   def testValidateOnly(self):
     """Sanity check validate only calls only validate."""

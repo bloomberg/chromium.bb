@@ -12,8 +12,8 @@
 #include "ash/system/audio/unified_volume_slider_controller.h"
 #include "ash/system/unified/unified_system_tray_model.h"
 #include "base/macros.h"
-#include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/geometry/point.h"
+#include "ui/views/animation/animation_delegate_views.h"
 
 namespace gfx {
 class SlideAnimation;
@@ -32,11 +32,12 @@ class UnifiedSystemTrayView;
 
 // Controller class of UnifiedSystemTrayView. Handles events of the view.
 class ASH_EXPORT UnifiedSystemTrayController
-    : public gfx::AnimationDelegate,
+    : public views::AnimationDelegateViews,
       public UnifiedVolumeSliderController::Delegate {
  public:
   UnifiedSystemTrayController(UnifiedSystemTrayModel* model,
-                              UnifiedSystemTrayBubble* bubble = nullptr);
+                              UnifiedSystemTrayBubble* bubble = nullptr,
+                              views::View* owner_view = nullptr);
   ~UnifiedSystemTrayController() override;
 
   // Create the view. The created view is unowned.
@@ -101,10 +102,22 @@ class ASH_EXPORT UnifiedSystemTrayController
   // Close the bubble. Called from a detailed view controller.
   void CloseBubble();
 
+  // Inform UnifiedSystemTrayBubble that UnifiedSystemTrayView is requesting to
+  // relinquish focus.
+  bool FocusOut(bool reverse);
+
+  // Ensure the main view is collapsed. Called from the slider bubble
+  // controller.
+  void EnsureCollapsed();
+
   // Ensure the main view is expanded. Called from the slider bubble controller.
   void EnsureExpanded();
 
-  // gfx::AnimationDelegate:
+  // Collapse the tray without animating if there isn't sufficient space for the
+  // notifications area.
+  void ResetToCollapsedIfRequired();
+
+  // views::AnimationDelegateViews:
   void AnimationEnded(const gfx::Animation* animation) override;
   void AnimationProgressed(const gfx::Animation* animation) override;
   void AnimationCanceled(const gfx::Animation* animation) override;
@@ -120,6 +133,7 @@ class ASH_EXPORT UnifiedSystemTrayController
 
  private:
   friend class UnifiedSystemTrayControllerTest;
+  friend class UnifiedMessageCenterBubbleTest;
 
   // How the expanded state is toggled. The enum is used to back an UMA
   // histogram and should be treated as append-only.
@@ -155,6 +169,10 @@ class ASH_EXPORT UnifiedSystemTrayController
 
   // Return true if UnifiedSystemTray is expanded.
   bool IsExpanded() const;
+
+  // Return true if message center needs to be collapsed due to limited
+  // screen height.
+  bool IsMessageCenterCollapseRequired() const;
 
   // Starts animation to expand or collapse the bubble.
   void StartAnimation(bool expand);

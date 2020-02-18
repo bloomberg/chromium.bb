@@ -4,7 +4,7 @@
 
 #include "ash/shelf/shelf_tooltip_preview_bubble.h"
 
-#include "ash/shelf/shelf_constants.h"
+#include "ash/public/cpp/shelf_config.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/wm/collision_detection/collision_detection_utils.h"
 #include "ash/wm/window_preview_view.h"
@@ -87,8 +87,8 @@ gfx::Rect ShelfTooltipPreviewBubble::GetBubbleBounds() {
   // same purpose. This would allow us to remove this method and the
   // |shelf_alignment_| field.
   gfx::Rect bounds = BubbleDialogDelegateView::GetBubbleBounds();
-  if (shelf_alignment_ == SHELF_ALIGNMENT_BOTTOM ||
-      shelf_alignment_ == SHELF_ALIGNMENT_BOTTOM_LOCKED) {
+  if (shelf_alignment_ == ShelfAlignment::kBottom ||
+      shelf_alignment_ == ShelfAlignment::kBottomLocked) {
     bounds.set_y(bounds.y() - kDistanceToShelf);
   } else {
     bounds.set_x(bounds.x() - kDistanceToShelf);
@@ -109,14 +109,15 @@ bool ShelfTooltipPreviewBubble::ShouldCloseOnMouseExit() {
 }
 
 float ShelfTooltipPreviewBubble::GetMaxPreviewRatio() const {
-  float max_ratio = kShelfTooltipPreviewMinRatio;
+  float max_ratio = ShelfConfig::Get()->shelf_tooltip_preview_min_ratio();
   for (WindowPreview* window : previews_) {
     gfx::Size mirror_size = window->preview_view()->CalculatePreferredSize();
     float ratio = static_cast<float>(mirror_size.width()) /
                   static_cast<float>(mirror_size.height());
     max_ratio = std::max(max_ratio, ratio);
   }
-  return std::min(max_ratio, kShelfTooltipPreviewMaxRatio);
+  return std::min(max_ratio,
+                  ShelfConfig::Get()->shelf_tooltip_preview_max_ratio());
 }
 
 void ShelfTooltipPreviewBubble::DismissAfterDelay() {

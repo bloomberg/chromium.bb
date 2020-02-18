@@ -6,21 +6,25 @@
 #define ASH_ASSISTANT_TEST_ASSISTANT_ASH_TEST_BASE_H_
 
 #include <memory>
+#include <string>
+#include <vector>
 
 #include "ash/assistant/model/assistant_ui_model.h"
 #include "ash/test/ash_test_base.h"
 #include "base/macros.h"
 #include "base/test/scoped_feature_list.h"
 
-namespace app_list {
-class AssistantMainView;
-class AssistantPageView;
-class ContentsView;
-}  // namespace app_list
+namespace views {
+class Textfield;
+class View;
+}  // namespace views
 
 namespace ash {
 
 class AssistantController;
+class AssistantInteractionController;
+class TestAssistantService;
+class AssistantTestApi;
 
 // Helper class to make testing the Assistant Ash UI easier.
 class AssistantAshTestBase : public AshTestBase {
@@ -31,32 +35,103 @@ class AssistantAshTestBase : public AshTestBase {
   void SetUp() override;
   void TearDown() override;
 
+  // Show the Assistant UI. The optional |entry_point| can be used to emulate
+  // the different ways of launching the Assistant.
+  void ShowAssistantUi(
+      AssistantEntryPoint entry_point = AssistantEntryPoint::kUnspecified);
+  // Close the Assistant UI without closing the launcher. The optional
+  // |exit_point| can be used to emulate the different ways of closing the
+  // Assistant.
+  void CloseAssistantUi(
+      AssistantExitPoint exit_point = AssistantExitPoint::kUnspecified);
+  // Close the Assistant UI by closing the launcher.
+  void CloseLauncher();
+
+  void SetTabletMode(bool enable);
+
+  // Change the user setting controlling whether the user prefers voice or
+  // keyboard.
+  void SetPreferVoice(bool value);
+
+  // Return true if the Assistant UI is visible.
+  bool IsVisible();
+
   // Return the actual displayed Assistant main view.
   // Can only be used after |ShowAssistantUi| has been called.
-  const app_list::AssistantMainView* main_view() const;
+  views::View* main_view();
 
   // This is the top-level Assistant specific view.
   // Can only be used after |ShowAssistantUi| has been called.
-  const app_list::AssistantPageView* page_view() const;
+  views::View* page_view();
+
+  // Return the app list view hosting the Assistant page view.
+  // Can only be used after |ShowAssistantUi| has been called.
+  views::View* app_list_view();
 
   // Spoof sending a request to the Assistant service,
   // and receiving |response_text| as a response to display.
   void MockAssistantInteractionWithResponse(const std::string& response_text);
 
-  void ShowAssistantUi(
-      AssistantEntryPoint entry_point = AssistantEntryPoint::kUnspecified);
+  void MockAssistantInteractionWithQueryAndResponse(
+      const std::string& query,
+      const std::string& response_text);
+
+  // Simulate the user entering a query followed by <return>.
+  void SendQueryThroughTextField(const std::string& query);
+
+  // Simulate the user tapping on the given view.
+  // Waits for the event to be processed.
+  void TapOnAndWait(views::View* view);
+
+  // Simulate a mouse click on the given view.
+  // Waits for the event to be processed.
+  void ClickOnAndWait(views::View* view);
+
+  // Returns the current interaction. Returns |base::nullopt| if no interaction
+  // is in progress.
+  base::Optional<chromeos::assistant::mojom::AssistantInteractionMetadata>
+  current_interaction();
+
+  // Create a new App window, and activate it. This will take the focus away
+  // from the Assistant UI (and force it to close).
+  // Returns a pointer to the newly created window.
+  // The window will be destroyed when the test if finished.
+  aura::Window* SwitchToNewAppWindow();
+
+  // Return the window containing the Assistant UI.
+  // Note that this window is shared for all components of the |AppList|.
+  aura::Window* window();
+
+  // Return the text field used for inputting new queries.
+  views::Textfield* input_text_field();
+
+  // Return the mic field used for dictating new queries.
+  views::View* mic_view();
+
+  // Return the greeting label shown when you first open the Assistant.
+  views::View* greeting_label();
+
+  // Return the button to enable voice mode.
+  views::View* voice_input_toggle();
+
+  // Return the button to enable text mode.
+  views::View* keyboard_input_toggle();
+
+  // Show the on-screen keyboard.
+  void ShowKeyboard();
+
+  // Returns if the on-screen keyboard is being displayed.
+  bool IsKeyboardShowing() const;
 
  private:
-  const app_list::ContentsView* contents_view() const;
+  AssistantInteractionController* interaction_controller();
+  TestAssistantService* assistant_service();
 
-  void DisableAnimations();
-
-  void ReenableAnimations();
-
+  std::unique_ptr<AssistantTestApi> test_api_;
   base::test::ScopedFeatureList scoped_feature_list_;
   AssistantController* controller_ = nullptr;
-  std::unique_ptr<ui::ScopedAnimationDurationScaleMode>
-      scoped_animation_duration_;
+
+  std::vector<std::unique_ptr<aura::Window>> windows_;
 
   DISALLOW_COPY_AND_ASSIGN(AssistantAshTestBase);
 };

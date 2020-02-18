@@ -14,8 +14,8 @@
 #include "cc/layers/render_surface_impl.h"
 #include "cc/trees/damage_tracker.h"
 #include "cc/trees/layer_tree_host.h"
-#include "cc/trees/layer_tree_host_common.h"
 #include "cc/trees/layer_tree_impl.h"
+#include "cc/trees/scroll_node.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 
 namespace cc {
@@ -49,6 +49,9 @@ void DebugRectHistory::SaveDebugRectsForCurrentFrame(
 
   if (debug_state.show_non_fast_scrollable_rects)
     SaveNonFastScrollableRects(tree_impl);
+
+  if (debug_state.show_main_thread_scrolling_reason_rects)
+    SaveMainThreadScrollingReasonRects(tree_impl);
 
   if (debug_state.show_layout_shift_regions)
     SaveLayoutShiftRects(hud_layer);
@@ -137,9 +140,8 @@ void DebugRectHistory::SaveScreenSpaceRects(
 }
 
 void DebugRectHistory::SaveTouchEventHandlerRects(LayerTreeImpl* tree_impl) {
-  LayerTreeHostCommon::CallFunctionForEveryLayer(
-      tree_impl,
-      [this](LayerImpl* layer) { SaveTouchEventHandlerRectsCallback(layer); });
+  for (auto* layer : *tree_impl)
+    SaveTouchEventHandlerRectsCallback(layer);
 }
 
 void DebugRectHistory::SaveTouchEventHandlerRectsCallback(LayerImpl* layer) {
@@ -167,19 +169,20 @@ void DebugRectHistory::SaveWheelEventHandlerRects(LayerTreeImpl* tree_impl) {
 
   // Since the wheel event handlers property is on the entire layer tree just
   // mark inner viewport if have listeners.
-  LayerImpl* inner_viewport = tree_impl->InnerViewportScrollLayer();
-  if (!inner_viewport)
+  ScrollNode* inner_scroll = tree_impl->InnerViewportScrollNode();
+  if (!inner_scroll)
     return;
-  debug_rects_.push_back(DebugRect(
-      WHEEL_EVENT_HANDLER_RECT_TYPE,
-      MathUtil::MapEnclosingClippedRect(inner_viewport->ScreenSpaceTransform(),
-                                        gfx::Rect(inner_viewport->bounds()))));
+  debug_rects_.push_back(
+      DebugRect(WHEEL_EVENT_HANDLER_RECT_TYPE,
+                MathUtil::MapEnclosingClippedRect(
+                    tree_impl->property_trees()->transform_tree.ToScreen(
+                        inner_scroll->transform_id),
+                    gfx::Rect(inner_scroll->bounds))));
 }
 
 void DebugRectHistory::SaveScrollEventHandlerRects(LayerTreeImpl* tree_impl) {
-  LayerTreeHostCommon::CallFunctionForEveryLayer(
-      tree_impl,
-      [this](LayerImpl* layer) { SaveScrollEventHandlerRectsCallback(layer); });
+  for (auto* layer : *tree_impl)
+    SaveScrollEventHandlerRectsCallback(layer);
 }
 
 void DebugRectHistory::SaveScrollEventHandlerRectsCallback(LayerImpl* layer) {
@@ -193,9 +196,8 @@ void DebugRectHistory::SaveScrollEventHandlerRectsCallback(LayerImpl* layer) {
 }
 
 void DebugRectHistory::SaveNonFastScrollableRects(LayerTreeImpl* tree_impl) {
-  LayerTreeHostCommon::CallFunctionForEveryLayer(
-      tree_impl,
-      [this](LayerImpl* layer) { SaveNonFastScrollableRectsCallback(layer); });
+  for (auto* layer : *tree_impl)
+    SaveNonFastScrollableRectsCallback(layer);
 }
 
 void DebugRectHistory::SaveNonFastScrollableRectsCallback(LayerImpl* layer) {
@@ -203,6 +205,25 @@ void DebugRectHistory::SaveNonFastScrollableRectsCallback(LayerImpl* layer) {
     debug_rects_.push_back(DebugRect(NON_FAST_SCROLLABLE_RECT_TYPE,
                                      MathUtil::MapEnclosingClippedRect(
                                          layer->ScreenSpaceTransform(), rect)));
+  }
+}
+
+void DebugRectHistory::SaveMainThreadScrollingReasonRects(
+    LayerTreeImpl* tree_impl) {
+  const auto& scroll_tree = tree_impl->property_trees()->scroll_tree;
+  for (auto* layer : *tree_impl) {
+    if (layer->scrollable()) {
+      if (const auto* scroll_node =
+              scroll_tree.Node(layer->scroll_tree_index())) {
+        if (auto reasons = scroll_node->main_thread_scrolling_reasons) {
+          debug_rects_.push_back(DebugRect(
+              MAIN_THREAD_SCROLLING_REASON_RECT_TYPE,
+              MathUtil::MapEnclosingClippedRect(layer->ScreenSpaceTransform(),
+                                                gfx::Rect(layer->bounds())),
+              kTouchActionNone, reasons));
+        }
+      }
+    }
   }
 }
 

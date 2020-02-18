@@ -19,19 +19,19 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_timeouts.h"
 #include "build/build_config.h"
-#include "content/browser/frame_host/navigation_handle_impl.h"
+#include "content/browser/frame_host/navigation_request.h"
 #include "content/browser/interface_provider_filtering.h"
 #include "content/browser/renderer_host/input/timeout_monitor.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/frame_messages.h"
 #include "content/public/browser/javascript_dialog_manager.h"
-#include "content/public/browser/page_visibility_state.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
+#include "content/public/common/page_visibility_state.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -43,6 +43,7 @@
 #include "content/public/test/url_loader_interceptor.h"
 #include "content/shell/browser/shell.h"
 #include "content/test/content_browser_test_utils_internal.h"
+#include "content/test/data/mojo_web_test_helper_test.mojom.h"
 #include "content/test/did_commit_navigation_interceptor.h"
 #include "content/test/frame_host_test_interface.mojom.h"
 #include "content/test/test_content_browser_client.h"
@@ -61,6 +62,7 @@
 #include "services/network/test/test_url_loader_factory.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom-test-utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/blink/public/mojom/choosers/file_chooser.mojom.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -101,10 +103,14 @@ class PrerenderTestContentBrowserClient : public TestContentBrowserClient {
 };
 
 const char kTrustMeUrl[] = "trustme://host/path/";
+const char kTrustMeIfEmbeddingSecureUrl[] =
+    "trustmeifembeddingsecure://host/path/";
 
 // Configure trustme: as a scheme that should cause cookies to be treated as
 // first-party when top-level, and also installs a URLLoaderFactory that
 // makes all requests to it via kTrustMeUrl return a particular iframe.
+// Same for trustmeifembeddingsecure, which does the same if the embedded origin
+// is secure.
 class FirstPartySchemeContentBrowserClient : public TestContentBrowserClient {
  public:
   explicit FirstPartySchemeContentBrowserClient(const GURL& iframe_url)
@@ -113,19 +119,27 @@ class FirstPartySchemeContentBrowserClient : public TestContentBrowserClient {
   ~FirstPartySchemeContentBrowserClient() override = default;
 
   bool ShouldTreatURLSchemeAsFirstPartyWhenTopLevel(
-      base::StringPiece scheme) override {
+      base::StringPiece scheme,
+      bool is_embedded_origin_secure) override {
+    if (is_embedded_origin_secure && scheme == "trustmeifembeddingsecure")
+      return true;
     return scheme == "trustme";
   }
 
   void RegisterNonNetworkNavigationURLLoaderFactories(
       int frame_tree_node_id,
       NonNetworkURLLoaderFactoryMap* factories) override {
-    auto test_url_loader_factory =
+    auto trustme_factory = std::make_unique<network::TestURLLoaderFactory>();
+    auto trustmeifembeddingsecure_factory =
         std::make_unique<network::TestURLLoaderFactory>();
-    test_url_loader_factory->AddResponse(
-        kTrustMeUrl,
-        base::StrCat({"<iframe src=\"", iframe_url_.spec(), "\"></iframe>"}));
-    factories->emplace("trustme", std::move(test_url_loader_factory));
+    std::string response_body =
+        base::StrCat({"<iframe src=\"", iframe_url_.spec(), "\"></iframe>"});
+    trustme_factory->AddResponse(kTrustMeUrl, response_body);
+    trustmeifembeddingsecure_factory->AddResponse(kTrustMeIfEmbeddingSecureUrl,
+                                                  response_body);
+    factories->emplace("trustme", std::move(trustme_factory));
+    factories->emplace("trustmeifembeddingsecure",
+                       std::move(trustmeifembeddingsecure_factory));
   }
 
  private:
@@ -142,6 +156,10 @@ class FirstPartySchemeContentBrowserClient : public TestContentBrowserClient {
 // See https://crbug.com/491535
 class RenderFrameHostImplBrowserTest : public ContentBrowserTest {
  public:
+  RenderFrameHostImplBrowserTest()
+      : https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {}
+  ~RenderFrameHostImplBrowserTest() override {}
+
   // Return an URL for loading a local test file.
   GURL GetFileURL(const base::FilePath::CharType* file_path) {
     base::FilePath path;
@@ -157,11 +175,14 @@ class RenderFrameHostImplBrowserTest : public ContentBrowserTest {
     SetupCrossSiteRedirector(embedded_test_server());
     ASSERT_TRUE(embedded_test_server()->Start());
   }
+  net::EmbeddedTestServer* https_server() { return &https_server_; }
+
+ private:
+  net::EmbeddedTestServer https_server_;
 };
 
 // Test that when creating a new window, the main frame is correctly focused.
-IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
-                       IsFocused_AtLoad) {
+IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest, IsFocused_AtLoad) {
   EXPECT_TRUE(
       NavigateToURL(shell(), GetTestUrl("render_frame_host", "focus.html")));
 
@@ -171,17 +192,16 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
 }
 
 // Test that if the content changes the focused frame, it is correctly exposed.
-IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
-                       IsFocused_Change) {
+IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest, IsFocused_Change) {
   EXPECT_TRUE(
       NavigateToURL(shell(), GetTestUrl("render_frame_host", "focus.html")));
 
   WebContents* web_contents = shell()->web_contents();
 
-  std::string frames[2] = { "frame1", "frame2" };
+  std::string frames[2] = {"frame1", "frame2"};
   for (const std::string& frame : frames) {
-    ExecuteScriptAndGetValue(
-        web_contents->GetMainFrame(), "focus" + frame + "()");
+    ExecuteScriptAndGetValue(web_contents->GetMainFrame(),
+                             "focus" + frame + "()");
 
     // The main frame is not the focused frame in the frame tree but the main
     // frame is focused per RFHI rules because one of its descendant is focused.
@@ -251,8 +271,8 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   EXPECT_EQ(PageVisibilityState::kVisible,
             web_contents->GetMainFrame()->GetVisibilityState());
 
-  new_client.EnableVisibilityOverride(PageVisibilityState::kPrerender);
-  EXPECT_EQ(PageVisibilityState::kPrerender,
+  new_client.EnableVisibilityOverride(PageVisibilityState::kHiddenButPainting);
+  EXPECT_EQ(PageVisibilityState::kHiddenButPainting,
             web_contents->GetMainFrame()->GetVisibilityState());
 
   SetBrowserClientForTesting(old_client);
@@ -263,9 +283,9 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
 IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
                        URLLoaderFactoryNotTrusted) {
   EXPECT_TRUE(NavigateToURL(shell(), embedded_test_server()->GetURL("/echo")));
-  network::mojom::URLLoaderFactoryPtr url_loader_factory;
+  mojo::Remote<network::mojom::URLLoaderFactory> url_loader_factory;
   shell()->web_contents()->GetMainFrame()->CreateNetworkServiceDefaultFactory(
-      mojo::MakeRequest(&url_loader_factory));
+      url_loader_factory.BindNewPipeAndPassReceiver());
 
   std::unique_ptr<network::ResourceRequest> request =
       std::make_unique<network::ResourceRequest>();
@@ -1136,7 +1156,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest, POSTNavigation) {
   http_server.AddDefaultHandlers(GetTestDataFilePath());
   int post_counter = 0;
   http_server.RegisterRequestMonitor(
-      base::Bind(&PostRequestMonitor, &post_counter));
+      base::BindRepeating(&PostRequestMonitor, &post_counter));
   ASSERT_TRUE(http_server.Start());
 
   GURL url(http_server.GetURL("/session_history/form.html"));
@@ -1181,19 +1201,18 @@ class NavigationHandleGrabber : public WebContentsObserver {
   void ReadyToCommitNavigation(NavigationHandle* navigation_handle) override {
     if (navigation_handle->GetURL().path() != "/title2.html")
       return;
-    static_cast<NavigationHandleImpl*>(navigation_handle)
-        ->navigation_request()
+    NavigationRequest::From(navigation_handle)
         ->set_complete_callback_for_testing(
-            base::Bind(&NavigationHandleGrabber::SendingNavigationCommitted,
-                       base::Unretained(this), navigation_handle));
+            base::BindOnce(&NavigationHandleGrabber::SendingNavigationCommitted,
+                           base::Unretained(this), navigation_handle));
   }
 
-  void SendingNavigationCommitted(
+  bool SendingNavigationCommitted(
       NavigationHandle* navigation_handle,
       NavigationThrottle::ThrottleCheckResult result) {
-    if (navigation_handle->GetURL().path() != "/title2.html")
-      return;
-    ExecuteScriptAsync(web_contents(), "document.open();");
+    if (navigation_handle->GetURL().path() == "/title2.html")
+      ExecuteScriptAsync(web_contents(), "document.open();");
+    return false;
   }
 
   void DidFinishNavigation(NavigationHandle* navigation_handle) override {
@@ -1244,7 +1263,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
       static_cast<RenderFrameHostImpl*>(wc->GetMainFrame());
 
   EXPECT_TRUE(main_rfh1->GetSuddenTerminationDisablerState(
-      blink::kBeforeUnloadHandler));
+      blink::mojom::SuddenTerminationDisablerType::kBeforeUnloadHandler));
 
   // Make the renderer crash.
   RenderProcessHost* renderer_process = main_rfh1->GetProcess();
@@ -1254,7 +1273,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   crash_observer.Wait();
 
   EXPECT_FALSE(main_rfh1->GetSuddenTerminationDisablerState(
-      blink::kBeforeUnloadHandler));
+      blink::mojom::SuddenTerminationDisablerType::kBeforeUnloadHandler));
 
   // This should not trigger a DCHECK once the renderer sends up the termination
   // disabler flags.
@@ -1264,7 +1283,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   RenderFrameHostImpl* main_rfh2 =
       static_cast<RenderFrameHostImpl*>(wc->GetMainFrame());
   EXPECT_TRUE(main_rfh2->GetSuddenTerminationDisablerState(
-      blink::kBeforeUnloadHandler));
+      blink::mojom::SuddenTerminationDisablerType::kBeforeUnloadHandler));
 }
 
 // Aborted renderer-initiated navigations that don't destroy the current
@@ -1451,7 +1470,7 @@ IN_PROC_BROWSER_TEST_F(
 
 namespace {
 
-// Allows injecting a fake, test-provided |interface_provider_request| into
+// Allows injecting a fake, test-provided |interface_provider_receiver| into
 // DidCommitProvisionalLoad messages in a given |web_contents| instead of the
 // real one coming from the renderer process.
 class ScopedFakeInterfaceProviderRequestInjector
@@ -1461,18 +1480,19 @@ class ScopedFakeInterfaceProviderRequestInjector
       : DidCommitNavigationInterceptor(web_contents) {}
   ~ScopedFakeInterfaceProviderRequestInjector() override = default;
 
-  // Sets the fake InterfaceProvider |request| to inject into the next incoming
+  // Sets the fake InterfaceProvider |receiver| to inject into the next incoming
   // DidCommitProvisionalLoad message.
-  void set_fake_request_for_next_commit(
-      service_manager::mojom::InterfaceProviderRequest request) {
-    next_fake_request_ = std::move(request);
+  void set_fake_receiver_for_next_commit(
+      mojo::PendingReceiver<service_manager::mojom::InterfaceProvider>
+          receiver) {
+    next_fake_receiver_ = std::move(receiver);
   }
 
   const GURL& url_of_last_commit() const { return url_of_last_commit_; }
 
-  const service_manager::mojom::InterfaceProviderRequest&
-  original_request_of_last_commit() const {
-    return original_request_of_last_commit_;
+  const mojo::PendingReceiver<service_manager::mojom::InterfaceProvider>&
+  original_receiver_of_last_commit() const {
+    return original_receiver_of_last_commit_;
   }
 
  protected:
@@ -1484,24 +1504,25 @@ class ScopedFakeInterfaceProviderRequestInjector
       override {
     url_of_last_commit_ = params->url;
     if (*interface_params) {
-      original_request_of_last_commit_ =
-          std::move((*interface_params)->interface_provider_request);
-      (*interface_params)->interface_provider_request =
-          std::move(next_fake_request_);
+      original_receiver_of_last_commit_ =
+          std::move((*interface_params)->interface_provider_receiver);
+      (*interface_params)->interface_provider_receiver =
+          std::move(next_fake_receiver_);
     }
     return true;
   }
 
  private:
-  service_manager::mojom::InterfaceProviderRequest next_fake_request_;
-  service_manager::mojom::InterfaceProviderRequest
-      original_request_of_last_commit_;
+  mojo::PendingReceiver<service_manager::mojom::InterfaceProvider>
+      next_fake_receiver_;
+  mojo::PendingReceiver<service_manager::mojom::InterfaceProvider>
+      original_receiver_of_last_commit_;
   GURL url_of_last_commit_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedFakeInterfaceProviderRequestInjector);
 };
 
-// Monitors the |document_scoped_interface_provider_binding_| of the given
+// Monitors the |document_scoped_interface_provider_receiver_| of the given
 // |render_frame_host| for incoming interface requests for |interface_name|, and
 // invokes |callback| synchronously just before such a request would be
 // dispatched.
@@ -1512,12 +1533,12 @@ class ScopedInterfaceRequestMonitor
                                 base::StringPiece interface_name,
                                 base::RepeatingClosure callback)
       : rfhi_(static_cast<RenderFrameHostImpl*>(render_frame_host)),
-        impl_(binding().SwapImplForTesting(this)),
+        impl_(receiver().SwapImplForTesting(this)),
         interface_name_(interface_name),
         request_callback_(callback) {}
 
   ~ScopedInterfaceRequestMonitor() override {
-    auto* old_impl = binding().SwapImplForTesting(impl_);
+    auto* old_impl = receiver().SwapImplForTesting(impl_);
     DCHECK_EQ(old_impl, this);
   }
 
@@ -1535,8 +1556,8 @@ class ScopedInterfaceRequestMonitor
   }
 
  private:
-  mojo::Binding<service_manager::mojom::InterfaceProvider>& binding() {
-    return rfhi_->document_scoped_interface_provider_binding_for_testing();
+  mojo::Receiver<service_manager::mojom::InterfaceProvider>& receiver() {
+    return rfhi_->document_scoped_interface_provider_receiver_for_testing();
   }
 
   RenderFrameHostImpl* rfhi_;
@@ -1571,17 +1592,18 @@ class DidFinishNavigationObserver : public WebContentsObserver {
 }  // namespace
 
 // For cross-document navigations, the DidCommitProvisionalLoad message from
-// the renderer process will have its |interface_provider_request| argument set
-// to the request end of a new InterfaceProvider interface connection that will
+// the renderer process will have its |interface_provider_receiver| argument set
+// to the receiver end of a new InterfaceProvider interface connection that will
 // be used by the newly committed document to access services exposed by the
 // RenderFrameHost.
 //
-// This test verifies that even if that |interface_provider_request| already has
-// pending interface requests, the RenderFrameHost binds the InterfaceProvider
-// request in such a way that these pending interface requests are dispatched
-// strictly after WebContentsObserver::DidFinishNavigation has fired, so that
-// the requests will be served correctly in the security context of the newly
-// committed document (i.e. GetLastCommittedURL/Origin will have been updated).
+// This test verifies that even if that |interface_provider_receiver| already
+// has pending interface receivers, the RenderFrameHost binds the
+// InterfaceProvider receiver in such a way that these pending interface
+// receivers are dispatched strictly after
+// WebContentsObserver::DidFinishNavigation has fired, so that the receivers
+// will be served correctly in the security context of the newly committed
+// document (i.e. GetLastCommittedURL/Origin will have been updated).
 IN_PROC_BROWSER_TEST_F(
     RenderFrameHostImplBrowserTest,
     EarlyInterfaceRequestsFromNewDocumentDispatchedAfterNavigationFinished) {
@@ -1592,23 +1614,24 @@ IN_PROC_BROWSER_TEST_F(
   // sure the second navigation will not be cross-process.
   ASSERT_TRUE(NavigateToURL(shell(), first_url));
 
-  // Prepare an InterfaceProviderRequest with pending interface requests.
-  service_manager::mojom::InterfaceProviderPtr
-      interface_provider_with_pending_request;
-  service_manager::mojom::InterfaceProviderRequest
-      interface_provider_request_with_pending_request =
-          mojo::MakeRequest(&interface_provider_with_pending_request);
-  mojom::FrameHostTestInterfacePtr test_interface;
-  interface_provider_with_pending_request->GetInterface(
+  // Prepare an PendingReceiver<InterfaceProvider> with pending interface
+  // requests.
+  mojo::Remote<service_manager::mojom::InterfaceProvider>
+      interface_provider_with_pending_requests;
+  mojo::PendingReceiver<service_manager::mojom::InterfaceProvider>
+      interface_provider_receiver_with_pending_receiver =
+          interface_provider_with_pending_requests.BindNewPipeAndPassReceiver();
+  mojo::Remote<mojom::FrameHostTestInterface> test_interface;
+  interface_provider_with_pending_requests->GetInterface(
       mojom::FrameHostTestInterface::Name_,
-      mojo::MakeRequest(&test_interface).PassMessagePipe());
+      test_interface.BindNewPipeAndPassReceiver().PassPipe());
 
-  // Replace the |interface_provider_request| argument in the next
+  // Replace the |interface_provider_receiver| argument in the next
   // DidCommitProvisionalLoad message coming from the renderer with the
-  // rigged |interface_provider_with_pending_request| from above.
+  // rigged |interface_provider_with_pending_requests| from above.
   ScopedFakeInterfaceProviderRequestInjector injector(shell()->web_contents());
-  injector.set_fake_request_for_next_commit(
-      std::move(interface_provider_request_with_pending_request));
+  injector.set_fake_receiver_for_next_commit(
+      std::move(interface_provider_receiver_with_pending_receiver));
 
   // Expect that by the time the interface request for FrameHostTestInterface is
   // dispatched to the RenderFrameHost, WebContentsObserver::DidFinishNavigation
@@ -1633,7 +1656,7 @@ IN_PROC_BROWSER_TEST_F(
   ASSERT_TRUE(NavigateToURL(shell(), second_url));
   EXPECT_EQ(main_rfh, shell()->web_contents()->GetMainFrame());
   EXPECT_EQ(second_url, injector.url_of_last_commit());
-  EXPECT_TRUE(injector.original_request_of_last_commit().is_pending());
+  EXPECT_TRUE(injector.original_receiver_of_last_commit().is_valid());
 
   // Wait until the interface request for FrameHostTestInterface is dispatched.
   wait_until_interface_request_is_dispatched.Run();
@@ -1654,33 +1677,34 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   const GURL first_url(embedded_test_server()->GetURL("/title1.html"));
   const GURL second_url(embedded_test_server()->GetURL("/title2.html"));
 
-  // Prepare an InterfaceProviderRequest with no pending requests.
-  service_manager::mojom::InterfaceProviderPtr interface_provider;
-  service_manager::mojom::InterfaceProviderRequest interface_provider_request =
-      mojo::MakeRequest(&interface_provider);
+  // Prepare an PendingReceiver<InterfaceProvider> with no pending requests.
+  mojo::Remote<service_manager::mojom::InterfaceProvider> interface_provider;
+  mojo::PendingReceiver<service_manager::mojom::InterfaceProvider>
+      interface_provider_receiver =
+          interface_provider.BindNewPipeAndPassReceiver();
 
-  // Set up a cunning mechnism to replace the |interface_provider_request|
+  // Set up a cunning mechanism to replace the |interface_provider_receiver|
   // argument in next DidCommitProvisionalLoad message with the rigged
-  // |interface_provider_request| from above, whose client end is controlled by
+  // |interface_provider_receiver| from above, whose client end is controlled by
   // this test; then trigger a navigation.
   {
     ScopedFakeInterfaceProviderRequestInjector injector(
         shell()->web_contents());
     test::ScopedInterfaceFilterBypass filter_bypass;
-    injector.set_fake_request_for_next_commit(
-        std::move(interface_provider_request));
+    injector.set_fake_receiver_for_next_commit(
+        std::move(interface_provider_receiver));
 
     ASSERT_TRUE(NavigateToURL(shell(), first_url));
     ASSERT_EQ(first_url, injector.url_of_last_commit());
-    ASSERT_TRUE(injector.original_request_of_last_commit().is_pending());
+    ASSERT_TRUE(injector.original_receiver_of_last_commit().is_valid());
   }
 
-  // Prepare an interface request for FrameHostTestInterface.
-  mojom::FrameHostTestInterfacePtr test_interface;
-  auto test_interface_request = mojo::MakeRequest(&test_interface);
+  // Prepare an interface receiver for FrameHostTestInterface.
+  mojo::Remote<mojom::FrameHostTestInterface> test_interface;
+  auto test_interface_receiver = test_interface.BindNewPipeAndPassReceiver();
 
   // Set up |dispatched_interface_request_callback| that would be invoked if the
-  // interface request for FrameHostTestInterface was ever dispatched to the
+  // interface receiver for FrameHostTestInterface was ever dispatched to the
   // RenderFrameHostImpl.
   base::MockCallback<base::RepeatingClosure>
       dispatched_interface_request_callback;
@@ -1700,9 +1724,8 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   base::MockCallback<base::RepeatingClosure> navigation_finished_callback;
   DidFinishNavigationObserver navigation_finish_observer(
       main_rfh, base::BindLambdaForTesting([&]() {
-        interface_provider->GetInterface(
-            mojom::FrameHostTestInterface::Name_,
-            test_interface_request.PassMessagePipe());
+        interface_provider->GetInterface(mojom::FrameHostTestInterface::Name_,
+                                         test_interface_receiver.PassPipe());
         std::move(navigation_finished_callback).Run();
       }));
 
@@ -1710,10 +1733,13 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   // document, but whose client end is actually controlled by this test, should
   // still be alive and well.
   ASSERT_TRUE(test_interface.is_bound());
-  ASSERT_FALSE(test_interface.encountered_error());
+  ASSERT_TRUE(test_interface.is_connected());
+
+  base::RunLoop run_loop;
+  test_interface.set_disconnect_handler(run_loop.QuitWhenIdleClosure());
 
   // Expect that the GetInterface message will never be dispatched, but the
-  // DidFinishNavigation callback wll be invoked.
+  // DidFinishNavigation callback will be invoked.
   EXPECT_CALL(dispatched_interface_request_callback, Run()).Times(0);
   EXPECT_CALL(navigation_finished_callback, Run());
 
@@ -1723,11 +1749,9 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   // Wait for a connection error on the |test_interface| as a signal, after
   // which it can be safely assumed that no GetInterface message will ever be
   // dispatched from that old InterfaceConnection.
-  base::RunLoop run_loop;
-  test_interface.set_connection_error_handler(run_loop.QuitWhenIdleClosure());
   run_loop.Run();
 
-  EXPECT_TRUE(test_interface.encountered_error());
+  EXPECT_FALSE(test_interface.is_connected());
 }
 
 // Test the edge case where the `window` global object asssociated with the
@@ -1741,21 +1765,23 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   const GURL main_frame_url(embedded_test_server()->GetURL("/title1.html"));
   const GURL subframe_url(embedded_test_server()->GetURL("/title2.html"));
 
-  service_manager::mojom::InterfaceProviderPtr interface_provider;
-  auto stub_interface_provider_request = mojo::MakeRequest(&interface_provider);
-  service_manager::mojom::InterfaceProviderRequest
-      null_interface_provider_request(nullptr);
+  mojo::PendingRemote<service_manager::mojom::InterfaceProvider>
+      interface_provider;
+  auto stub_interface_provider_receiver =
+      interface_provider.InitWithNewPipeAndPassReceiver();
+  mojo::PendingReceiver<service_manager::mojom::InterfaceProvider>
+      null_interface_provider_receiver((mojo::NullReceiver()));
 
-  for (auto* interface_provider_request :
-       {&stub_interface_provider_request, &null_interface_provider_request}) {
-    SCOPED_TRACE(interface_provider_request->is_pending());
+  for (auto* interface_provider_receiver :
+       {&stub_interface_provider_receiver, &null_interface_provider_receiver}) {
+    SCOPED_TRACE(interface_provider_receiver->is_valid());
 
     ASSERT_TRUE(NavigateToURL(shell(), main_frame_url));
 
     ScopedFakeInterfaceProviderRequestInjector injector(
         shell()->web_contents());
-    injector.set_fake_request_for_next_commit(
-        std::move(*interface_provider_request));
+    injector.set_fake_receiver_for_next_commit(
+        std::move(*interface_provider_receiver));
 
     // Must set 'src` before adding the iframe element to the DOM, otherwise it
     // will load `about:blank` as the first real load instead of |subframe_url|.
@@ -1778,7 +1804,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
     ASSERT_EQ(1u, root->child_count());
     FrameTreeNode* child = root->child_at(0u);
 
-    EXPECT_FALSE(injector.original_request_of_last_commit().is_pending());
+    EXPECT_FALSE(injector.original_receiver_of_last_commit().is_valid());
     EXPECT_TRUE(child->has_committed_real_load());
     EXPECT_EQ(subframe_url, child->current_url());
   }
@@ -1841,16 +1867,160 @@ IN_PROC_BROWSER_TEST_F(
 
   TestFrameNavigationObserver commit_observer(child->current_frame_host());
   ScopedFakeInterfaceProviderRequestInjector injector(shell()->web_contents());
-  injector.set_fake_request_for_next_commit(nullptr);
+  injector.set_fake_receiver_for_next_commit(mojo::NullReceiver());
 
   ASSERT_TRUE(ExecuteScript(shell(), kNavigateToThreeScript));
   commit_observer.WaitForCommit();
-
-  EXPECT_FALSE(injector.original_request_of_last_commit().is_pending());
+  EXPECT_FALSE(injector.original_receiver_of_last_commit().is_valid());
 
   EXPECT_TRUE(child->has_committed_real_load());
   EXPECT_EQ(kSubframeURLThree, child->current_url());
   EXPECT_EQ(url::Origin::Create(kMainFrameURL), child->current_origin());
+}
+
+namespace {
+void CheckURLOriginAndNetworkIsolationKey(
+    FrameTreeNode* node,
+    GURL url,
+    url::Origin origin,
+    net::NetworkIsolationKey network_isolation_key) {
+  EXPECT_EQ(url, node->current_url());
+  EXPECT_EQ(origin, node->current_origin());
+  EXPECT_EQ(network_isolation_key,
+            node->current_frame_host()->GetNetworkIsolationKey());
+}
+}  // namespace
+
+IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
+                       NetworkIsolationKeyInitialEmptyDocumentIframe) {
+  GURL main_frame_url(embedded_test_server()->GetURL("/title1.html"));
+  url::Origin main_frame_origin = url::Origin::Create(main_frame_url);
+  net::NetworkIsolationKey expected_main_frame_key =
+      net::NetworkIsolationKey(main_frame_origin, main_frame_origin);
+
+  GURL subframe_url_one("about:blank");
+  GURL subframe_url_two("about:blank#foo");
+  GURL subframe_url_three(
+      embedded_test_server()->GetURL("foo.com", "/title2.html"));
+  url::Origin subframe_origin_three = url::Origin::Create(subframe_url_three);
+  net::NetworkIsolationKey expected_subframe_key_three =
+      net::NetworkIsolationKey(main_frame_origin, subframe_origin_three);
+
+  // Main frame navigation.
+  ASSERT_TRUE(NavigateToURL(shell(), main_frame_url));
+
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+  CheckURLOriginAndNetworkIsolationKey(root, main_frame_url, main_frame_origin,
+                                       expected_main_frame_key);
+
+  // Create iframe.
+  ASSERT_TRUE(ExecuteScript(shell(), R"(
+      var f = document.createElement('iframe');
+      f.id = 'myiframe';
+      document.body.append(f);
+  )"));
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+
+  ASSERT_EQ(1u, root->child_count());
+  FrameTreeNode* child = root->child_at(0u);
+  CheckURLOriginAndNetworkIsolationKey(
+      child, subframe_url_one, main_frame_origin, expected_main_frame_key);
+  EXPECT_EQ(root->current_frame_host()->GetProcess(),
+            child->current_frame_host()->GetProcess());
+
+  // Same-document navigation of iframe.
+  ASSERT_TRUE(ExecuteScript(shell(), R"(
+      let iframe = document.querySelector('#myiframe');
+      iframe.contentWindow.location.hash = 'foo';
+  )"));
+
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+
+  CheckURLOriginAndNetworkIsolationKey(
+      child, subframe_url_two, main_frame_origin, expected_main_frame_key);
+  EXPECT_EQ(root->current_frame_host()->GetProcess(),
+            child->current_frame_host()->GetProcess());
+
+  // Cross-document navigation of iframe.
+  TestFrameNavigationObserver commit_observer(child->current_frame_host());
+  std::string subframe_script_three = JsReplace(
+      "iframe = document.querySelector('#myiframe');"
+      "iframe.contentWindow.location.href = $1;",
+      subframe_url_three);
+  ASSERT_TRUE(ExecuteScript(shell(), subframe_script_three));
+  commit_observer.WaitForCommit();
+
+  CheckURLOriginAndNetworkIsolationKey(child, subframe_url_three,
+                                       subframe_origin_three,
+                                       expected_subframe_key_three);
+  if (AreAllSitesIsolatedForTesting()) {
+    EXPECT_NE(root->current_frame_host()->GetProcess(),
+              child->current_frame_host()->GetProcess());
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
+                       NetworkIsolationKeyInitialEmptyDocumentPopup) {
+  GURL main_frame_url(embedded_test_server()->GetURL("/title1.html"));
+  url::Origin main_frame_origin = url::Origin::Create(main_frame_url);
+  net::NetworkIsolationKey expected_main_frame_key =
+      net::NetworkIsolationKey(main_frame_origin, main_frame_origin);
+
+  GURL popup_url_one("about:blank");
+  GURL popup_url_two("about:blank#foo");
+  GURL popup_url_three(
+      embedded_test_server()->GetURL("foo.com", "/title2.html"));
+  url::Origin popup_origin_three = url::Origin::Create(popup_url_three);
+  net::NetworkIsolationKey expected_popup_key_three =
+      net::NetworkIsolationKey(popup_origin_three, popup_origin_three);
+
+  // Main frame navigation.
+  ASSERT_TRUE(NavigateToURL(shell(), main_frame_url));
+
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+  CheckURLOriginAndNetworkIsolationKey(root, main_frame_url, main_frame_origin,
+                                       expected_main_frame_key);
+
+  // Create popup.
+  WebContentsAddedObserver popup_observer;
+  ASSERT_TRUE(ExecuteScript(shell(), "var w = window.open();"));
+  WebContents* popup = popup_observer.GetWebContents();
+
+  FrameTreeNode* popup_frame =
+      static_cast<RenderFrameHostImpl*>(popup->GetMainFrame())
+          ->frame_tree_node();
+  CheckURLOriginAndNetworkIsolationKey(
+      popup_frame, popup_url_one, main_frame_origin, expected_main_frame_key);
+  EXPECT_EQ(root->current_frame_host()->GetProcess(),
+            popup_frame->current_frame_host()->GetProcess());
+
+  // Same-document navigation of popup.
+  ASSERT_TRUE(ExecuteScript(shell(), "w.location.hash = 'foo';"));
+  EXPECT_TRUE(WaitForLoadStop(popup));
+
+  CheckURLOriginAndNetworkIsolationKey(
+      popup_frame, popup_url_two, main_frame_origin, expected_main_frame_key);
+  EXPECT_EQ(root->current_frame_host()->GetProcess(),
+            popup_frame->current_frame_host()->GetProcess());
+
+  // Cross-document navigation of popup.
+  TestFrameNavigationObserver commit_observer(
+      popup_frame->current_frame_host());
+  ASSERT_TRUE(ExecuteScript(
+      shell(), JsReplace("w.location.href = $1;", popup_url_three)));
+  commit_observer.WaitForCommit();
+
+  CheckURLOriginAndNetworkIsolationKey(popup_frame, popup_url_three,
+                                       popup_origin_three,
+                                       expected_popup_key_three);
+  if (AreAllSitesIsolatedForTesting()) {
+    EXPECT_NE(root->current_frame_host()->GetProcess(),
+              popup_frame->current_frame_host()->GetProcess());
+  }
 }
 
 // Verify that if the UMA histograms are correctly recording if interface
@@ -1863,13 +2033,13 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   const GURL kUrl3(embedded_test_server()->GetURL("/title3.html"));
   const GURL kUrl4(embedded_test_server()->GetURL("/empty.html"));
 
-  // The 31-bit hash of the string "content.mojom:BrowserTarget".
-  const int32_t kHashOfContentMojomBrowserTarget = 0x1730feb8;
+  // The 31-bit hash of the string "content.mojom.MojoWebTestHelper".
+  const int32_t kHashOfContentMojomMojoWebTestHelper = 0x77b7b3d6;
 
-  // Client ends of the fake interface provider requests injected for the first
+  // Client ends of the fake interface provider receivers injected for the first
   // and second navigations.
-  service_manager::mojom::InterfaceProviderPtr interface_provider_1;
-  service_manager::mojom::InterfaceProviderPtr interface_provider_2;
+  mojo::Remote<service_manager::mojom::InterfaceProvider> interface_provider_1;
+  mojo::Remote<service_manager::mojom::InterfaceProvider> interface_provider_2;
 
   base::RunLoop wait_until_connection_error_loop_1;
   base::RunLoop wait_until_connection_error_loop_2;
@@ -1877,9 +2047,9 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   {
     ScopedFakeInterfaceProviderRequestInjector injector(
         shell()->web_contents());
-    injector.set_fake_request_for_next_commit(
-        mojo::MakeRequest(&interface_provider_1));
-    interface_provider_1.set_connection_error_handler(
+    injector.set_fake_receiver_for_next_commit(
+        interface_provider_1.BindNewPipeAndPassReceiver());
+    interface_provider_1.set_disconnect_handler(
         wait_until_connection_error_loop_1.QuitClosure());
     ASSERT_TRUE(NavigateToURL(shell(), kUrl1));
   }
@@ -1887,18 +2057,18 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   {
     ScopedFakeInterfaceProviderRequestInjector injector(
         shell()->web_contents());
-    injector.set_fake_request_for_next_commit(
-        mojo::MakeRequest(&interface_provider_2));
-    interface_provider_2.set_connection_error_handler(
+    injector.set_fake_receiver_for_next_commit(
+        interface_provider_2.BindNewPipeAndPassReceiver());
+    interface_provider_2.set_disconnect_handler(
         wait_until_connection_error_loop_2.QuitClosure());
     ASSERT_TRUE(NavigateToURL(shell(), kUrl2));
   }
 
   // Simulate two interface requests corresponding to the first navigation
   // arrived after the second navigation was committed, hence were dropped.
-  interface_provider_1->GetInterface("content.mojom.BrowserTarget",
+  interface_provider_1->GetInterface(mojom::MojoWebTestHelper::Name_,
                                      CreateDisconnectedMessagePipeHandle());
-  interface_provider_1->GetInterface("content.mojom.BrowserTarget",
+  interface_provider_1->GetInterface(mojom::MojoWebTestHelper::Name_,
                                      CreateDisconnectedMessagePipeHandle());
 
   // RFHI destroys the DroppedInterfaceRequestLogger from navigation `n` on
@@ -1912,11 +2082,11 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
         "RenderFrameHostImpl.DroppedInterfaceRequests", 2, 1);
     histogram_tester.ExpectUniqueSample(
         "RenderFrameHostImpl.DroppedInterfaceRequestName",
-        kHashOfContentMojomBrowserTarget, 2);
+        kHashOfContentMojomMojoWebTestHelper, 2);
   }
 
   // Simulate one interface request dropped for the second URL.
-  interface_provider_2->GetInterface("content.mojom.BrowserTarget",
+  interface_provider_2->GetInterface(mojom::MojoWebTestHelper::Name_,
                                      CreateDisconnectedMessagePipeHandle());
 
   // A final navigation should record the sample from the second URL.
@@ -1927,14 +2097,14 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
         "RenderFrameHostImpl.DroppedInterfaceRequests", 1, 1);
     histogram_tester.ExpectUniqueSample(
         "RenderFrameHostImpl.DroppedInterfaceRequestName",
-        kHashOfContentMojomBrowserTarget, 1);
+        kHashOfContentMojomMojoWebTestHelper, 1);
   }
 
   // Both the DroppedInterfaceRequestLogger for the first and second URLs are
   // destroyed -- even more interfacerequests should not cause any crashes.
-  interface_provider_1->GetInterface("content.mojom.BrowserTarget",
+  interface_provider_1->GetInterface(mojom::MojoWebTestHelper::Name_,
                                      CreateDisconnectedMessagePipeHandle());
-  interface_provider_2->GetInterface("content.mojom.BrowserTarget",
+  interface_provider_2->GetInterface(mojom::MojoWebTestHelper::Name_,
                                      CreateDisconnectedMessagePipeHandle());
 
   // The interface connections should be broken.
@@ -1964,7 +2134,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
 }
 
 // This test makes sure that when a blocked frame commits with a different URL,
-// it doesn't lead to a leaked NavigationHandle.  This is a regression test for
+// it doesn't lead to a leaked NavigationHandle. This is a regression test for
 // https://crbug.com/872803.
 IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
                        ErrorPagesShouldntLeakNavigationHandles) {
@@ -1975,32 +2145,31 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   GURL blocked_url(embedded_test_server()->GetURL(
       "blocked.com", "/frame-ancestors-none.html"));
   WebContents* web_contents = shell()->web_contents();
-  NavigationHandleObserver nav_handle_observer(web_contents, blocked_url);
+  NavigationHandleObserver navigation_observer(web_contents, blocked_url);
   EXPECT_TRUE(NavigateIframeToURL(web_contents, "child0", blocked_url));
 
   // Verify that the NavigationHandle / NavigationRequest didn't leak.
   RenderFrameHostImpl* frame = static_cast<RenderFrameHostImpl*>(
       shell()->web_contents()->GetAllFrames()[1]);
-  EXPECT_EQ(0u, frame->GetNavigationEntryIdsPendingCommit().size());
+  EXPECT_FALSE(frame->HasPendingCommitNavigation());
 
   // TODO(lukasza, clamy): https://crbug.com/784904: Verify that
   // WebContentsObserver::DidFinishNavigation was called with the same
-  // NavigationHandle as WebContentsObserver::DidStartNavigation.  This requires
+  // NavigationHandle as WebContentsObserver::DidStartNavigation. This requires
   // properly matching the commit IPC to the NavigationHandle (ignoring that
   // their URLs do not match - matching instead using navigation id or mojo
   // interface identity).
-  //
-  // Subsequent checks don't make sense before WCO::DidFinishNavigation is
-  // called - this is why ASSERT_TRUE is used here.
-  //   ASSERT_TRUE(nav_handle_observer.has_committed());
-  //   EXPECT_EQ(net::ERR_BLOCKED_BY_RESPONSE,
-  //       nav_handle_observer.net_error_code());
 
-  // TODO(lukasza): https://crbug.com/759184: Verify
-  // |nav_handle_observer.last_committed_url()| below - this should be possible
-  // once we handle frame-ancestors CSP in the browser process and commit it
-  // with the original URL.
-  //   EXPECT_EQ(blocked_url, nav_handle_observer.last_committed_url());
+  // TODO(https://crbug.com/759184): Verify CSP frame-ancestors in the browser
+  // process. Currently, this is done by the renderer process, which commits an
+  // empty document with success instead.
+  //  EXPECT_EQ(blocked_url, navigation_observer.last_committed_url());
+  //  EXPECT_EQ(net::ERR_BLOCKED_BY_RESPONSE,
+  //            navigation_obsever.net_error_code());
+  EXPECT_TRUE(navigation_observer.has_committed());
+  EXPECT_FALSE(navigation_observer.is_error());
+  EXPECT_EQ(GURL("data:,"), navigation_observer.last_committed_url());
+  EXPECT_EQ(net::Error::OK, navigation_observer.net_error_code());
 }
 
 IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
@@ -2118,10 +2287,16 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   EXPECT_EQ(0, process->get_media_stream_count_for_testing());
 }
 
+#if defined(OS_CHROMEOS) || defined(OS_LINUX)
+// ChromeOS and Linux failures are tracked in https://crbug.com/954217
+#define MAYBE_VisibilityScrolledOutOfView DISABLED_VisibilityScrolledOutOfView
+#else
+#define MAYBE_VisibilityScrolledOutOfView VisibilityScrolledOutOfView
+#endif
 // Test that a frame is visible/hidden depending on its WebContents visibility
 // state.
 IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
-                       VisibilityScrolledOutOfView) {
+                       MAYBE_VisibilityScrolledOutOfView) {
   WebContentsImpl* web_contents =
       static_cast<WebContentsImpl*>(shell()->web_contents());
 
@@ -2404,7 +2579,8 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   EXPECT_TRUE(NavigateToURL(shell(), GURL(url::kAboutBlankURL)));
   auto* rfh = static_cast<RenderFrameHostImpl*>(
       shell()->web_contents()->GetMainFrame());
-  blink::mojom::FileChooserPtr chooser = rfh->BindFileChooserForTesting();
+  mojo::Remote<blink::mojom::FileChooser> chooser =
+      rfh->BindFileChooserForTesting();
 
   // Kill the renderer process.
   RenderProcessHostWatcher crash_observer(
@@ -2587,6 +2763,33 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplSameSiteByDefaultCookiesBrowserTest,
   EXPECT_NE(console_observer.messages()[1], console_observer.messages()[2]);
 }
 
+// Test that the SameSite-by-default console warnings are not emitted
+// if the cookie would have been rejected for other reasons.
+// Regression test for https://crbug.com/1027318.
+IN_PROC_BROWSER_TEST_F(RenderFrameHostImplSameSiteByDefaultCookiesBrowserTest,
+                       NoMessagesIfCookieWouldBeRejectedForOtherReasons) {
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+  ConsoleObserverDelegate console_observer(web_contents, "*");
+  web_contents->SetDelegate(&console_observer);
+
+  GURL url = embedded_test_server()->GetURL(
+      "x.com", "/set-cookie?cookiewithpath=1;path=/set-cookie");
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+  url = embedded_test_server()->GetURL("sub.x.com",
+                                       "/set-cookie?cookieforsubdomain=1");
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+
+  ASSERT_EQ(0u, console_observer.messages().size());
+  url = embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(x())");
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+  // No messages appear even though x.com is accessed in a cross-site
+  // context, because the cookies would have been rejected for mismatching path
+  // or domain anyway.
+  EXPECT_EQ(0u, console_observer.messages().size());
+}
+
 IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
                        SchedulerTrackedFeatures) {
   EXPECT_TRUE(
@@ -2594,8 +2797,8 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   RenderFrameHostImpl* main_frame = reinterpret_cast<RenderFrameHostImpl*>(
       shell()->web_contents()->GetMainFrame());
   // Simulate getting 0b1 as a feature vector from the renderer.
-  static_cast<mojom::FrameHost*>(main_frame)
-      ->UpdateActiveSchedulerTrackedFeatures(0b1u);
+  static_cast<blink::mojom::LocalFrameHost*>(main_frame)
+      ->DidChangeActiveSchedulerTrackedFeatures(0b1u);
   DCHECK_EQ(main_frame->scheduler_tracked_features(), 0b1u);
   // Simulate the browser side reporting a feature usage.
   main_frame->OnSchedulerTrackedFeatureUsed(
@@ -2603,8 +2806,8 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   DCHECK_EQ(main_frame->scheduler_tracked_features(), 0b11u);
   // Simulate a feature vector being updated from the renderer with some
   // features being activated and some being deactivated.
-  static_cast<mojom::FrameHost*>(main_frame)
-      ->UpdateActiveSchedulerTrackedFeatures(0b100u);
+  static_cast<blink::mojom::LocalFrameHost*>(main_frame)
+      ->DidChangeActiveSchedulerTrackedFeatures(0b100u);
   DCHECK_EQ(main_frame->scheduler_tracked_features(), 0b110u);
 
   // Navigate away and expect that no values persist the navigation.
@@ -2614,12 +2817,16 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
       NavigateToURL(shell(), embedded_test_server()->GetURL("/title2.html")));
   main_frame = reinterpret_cast<RenderFrameHostImpl*>(
       shell()->web_contents()->GetMainFrame());
-  static_cast<mojom::FrameHost*>(main_frame)
-      ->UpdateActiveSchedulerTrackedFeatures(0b0u);
+  static_cast<blink::mojom::LocalFrameHost*>(main_frame)
+      ->DidChangeActiveSchedulerTrackedFeatures(0b0u);
 }
 
 IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
                        ComputeSiteForCookiesForNavigation) {
+  // Start second server for HTTPS.
+  https_server()->ServeFilesFromSourceDirectory(GetTestDataFilePath());
+  ASSERT_TRUE(https_server()->Start());
+
   GURL url = embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(a(b(d)),c())");
 
@@ -2628,13 +2835,13 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
 
   GURL b_url = embedded_test_server()->GetURL("b.com", "/");
   GURL c_url = embedded_test_server()->GetURL("c.com", "/");
+  GURL secure_url = https_server()->GetURL("/");
   EXPECT_TRUE(NavigateToURL(shell(), url));
 
   {
     WebContentsImpl* wc =
         static_cast<WebContentsImpl*>(shell()->web_contents());
-    RenderFrameHostImpl* main_frame =
-        static_cast<RenderFrameHostImpl*>(wc->GetMainFrame());
+    RenderFrameHostImpl* main_frame = wc->GetMainFrame();
 
     EXPECT_EQ("a.com", main_frame->GetLastCommittedURL().host());
     ASSERT_EQ(2u, main_frame->child_count());
@@ -2771,7 +2978,176 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
                   .GetOrigin());
   }
 
+  // Test trusted scheme that gives first-partiness if the url is secure.
+  GURL trusty_if_secure_url(kTrustMeIfEmbeddingSecureUrl);
+  EXPECT_TRUE(NavigateToURL(shell(), trusty_if_secure_url));
+  {
+    WebContentsImpl* wc =
+        static_cast<WebContentsImpl*>(shell()->web_contents());
+    RenderFrameHostImpl* main_frame =
+        static_cast<RenderFrameHostImpl*>(wc->GetMainFrame());
+    EXPECT_EQ(trusty_if_secure_url.GetOrigin(),
+              main_frame->GetLastCommittedURL().GetOrigin());
+
+    ASSERT_EQ(1u, main_frame->child_count());
+    FrameTreeNode* child_a = main_frame->child_at(0);
+    EXPECT_EQ("a.com", child_a->current_url().host());
+
+    ASSERT_EQ(2u, child_a->child_count());
+    FrameTreeNode* child_aa = child_a->child_at(0);
+    EXPECT_EQ("a.com", child_aa->current_url().host());
+
+    ASSERT_EQ(1u, child_aa->child_count());
+    FrameTreeNode* child_aab = child_aa->child_at(0);
+    EXPECT_EQ("b.com", child_aab->current_url().host());
+
+    ASSERT_EQ(1u, child_aab->child_count());
+    FrameTreeNode* child_aabd = child_aab->child_at(0);
+    EXPECT_EQ("d.com", child_aabd->current_url().host());
+
+    // Main frame navigations are not affected by the special schema.
+    EXPECT_EQ(url.GetOrigin(),
+              main_frame->ComputeSiteForCookiesForNavigation(url).GetOrigin());
+    EXPECT_EQ(
+        b_url.GetOrigin(),
+        main_frame->ComputeSiteForCookiesForNavigation(b_url).GetOrigin());
+    EXPECT_EQ(
+        secure_url.GetOrigin(),
+        main_frame->ComputeSiteForCookiesForNavigation(secure_url).GetOrigin());
+
+    // Child navigation gets the magic scheme iff secure.
+    EXPECT_EQ("", child_aa->current_frame_host()
+                      ->ComputeSiteForCookiesForNavigation(url)
+                      .GetOrigin());
+    EXPECT_EQ("", child_aa->current_frame_host()
+                      ->ComputeSiteForCookiesForNavigation(b_url)
+                      .GetOrigin());
+    EXPECT_EQ(trusty_url.GetOrigin(),
+              child_aa->current_frame_host()
+                  ->ComputeSiteForCookiesForNavigation(secure_url)
+                  .GetOrigin());
+
+    EXPECT_EQ("", child_aabd->current_frame_host()
+                      ->ComputeSiteForCookiesForNavigation(url)
+                      .GetOrigin());
+    EXPECT_EQ("", child_aabd->current_frame_host()
+                      ->ComputeSiteForCookiesForNavigation(b_url)
+                      .GetOrigin());
+    EXPECT_EQ(trusty_url.GetOrigin(),
+              child_aabd->current_frame_host()
+                  ->ComputeSiteForCookiesForNavigation(secure_url)
+                  .GetOrigin());
+  }
+
   SetBrowserClientForTesting(old_client);
+}
+
+IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
+                       ComputeSiteForCookiesForNavigationSandbox) {
+  // Test sandboxed subframe.
+  {
+    GURL url = embedded_test_server()->GetURL(
+        "a.com",
+        "/cross_site_iframe_factory.html?a(a{sandbox-allow-scripts}(a),"
+        "a{sandbox-allow-scripts,sandbox-allow-same-origin}(a))");
+
+    EXPECT_TRUE(NavigateToURL(shell(), url));
+
+    WebContentsImpl* wc =
+        static_cast<WebContentsImpl*>(shell()->web_contents());
+    RenderFrameHostImpl* main_frame = wc->GetMainFrame();
+
+    EXPECT_EQ("a.com", main_frame->GetLastCommittedURL().host());
+
+    ASSERT_EQ(2u, main_frame->child_count());
+    FrameTreeNode* child_a = main_frame->child_at(0);
+    EXPECT_EQ("a.com", child_a->current_url().host());
+    EXPECT_TRUE(
+        child_a->current_frame_host()->GetLastCommittedOrigin().opaque());
+
+    ASSERT_EQ(1u, child_a->child_count());
+    FrameTreeNode* child_aa = child_a->child_at(0);
+    EXPECT_EQ("a.com", child_aa->current_url().host());
+    EXPECT_TRUE(
+        child_aa->current_frame_host()->GetLastCommittedOrigin().opaque());
+
+    FrameTreeNode* child_a2 = main_frame->child_at(1);
+    EXPECT_EQ("a.com", child_a2->current_url().host());
+    EXPECT_FALSE(
+        child_a2->current_frame_host()->GetLastCommittedOrigin().opaque());
+
+    ASSERT_EQ(1u, child_a2->child_count());
+    FrameTreeNode* child_a2a = child_a2->child_at(0);
+    EXPECT_EQ("a.com", child_a2a->current_url().host());
+    EXPECT_FALSE(
+        child_a2a->current_frame_host()->GetLastCommittedOrigin().opaque());
+
+    // |child_aa| frame navigation should be cross-site since its parent is
+    // sandboxed without allow-same-origin
+    EXPECT_TRUE(child_aa->current_frame_host()
+                    ->ComputeSiteForCookiesForNavigation(url)
+                    .is_empty());
+
+    // |child_a2a| frame navigation should be same-site since its sandboxed
+    // parent is sandbox-same-origin.
+    EXPECT_EQ("a.com", child_a2a->current_frame_host()
+                           ->ComputeSiteForCookiesForNavigation(url)
+                           .host());
+  }
+
+  // Test sandboxed main frame.
+  {
+    GURL url =
+        embedded_test_server()->GetURL("a.com", "/csp_sandboxed_frame.html");
+    EXPECT_TRUE(NavigateToURL(shell(), url));
+
+    WebContentsImpl* wc =
+        static_cast<WebContentsImpl*>(shell()->web_contents());
+    RenderFrameHostImpl* main_frame = wc->GetMainFrame();
+    EXPECT_EQ(url, main_frame->GetLastCommittedURL());
+    EXPECT_TRUE(main_frame->GetLastCommittedOrigin().opaque());
+
+    ASSERT_EQ(2u, main_frame->child_count());
+    FrameTreeNode* child_a = main_frame->child_at(0);
+    EXPECT_EQ("a.com", child_a->current_url().host());
+    EXPECT_TRUE(
+        child_a->current_frame_host()->GetLastCommittedOrigin().opaque());
+
+    EXPECT_TRUE(child_a->current_frame_host()
+                    ->ComputeSiteForCookiesForNavigation(url)
+                    .is_empty());
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
+                       ComputeSiteForCookiesForNavigationAboutBlank) {
+  GURL url = embedded_test_server()->GetURL(
+      "a.com", "/page_with_blank_iframe_tree.html");
+
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+
+  WebContentsImpl* wc = static_cast<WebContentsImpl*>(shell()->web_contents());
+  RenderFrameHostImpl* main_frame = wc->GetMainFrame();
+
+  EXPECT_EQ("a.com", main_frame->GetLastCommittedURL().host());
+
+  ASSERT_EQ(1u, main_frame->child_count());
+  FrameTreeNode* child_a = main_frame->child_at(0);
+  EXPECT_TRUE(child_a->current_url().IsAboutBlank());
+  EXPECT_EQ("a.com",
+            child_a->current_frame_host()->GetLastCommittedOrigin().host());
+
+  ASSERT_EQ(1u, child_a->child_count());
+  FrameTreeNode* child_aa = child_a->child_at(0);
+  EXPECT_TRUE(child_aa->current_url().IsAboutBlank());
+  EXPECT_EQ("a.com",
+            child_aa->current_frame_host()->GetLastCommittedOrigin().host());
+
+  // navigating the nested about:blank iframe to a.com is fine, since the origin
+  // is inherited.
+  EXPECT_EQ("a.com", child_aa->current_frame_host()
+                         ->ComputeSiteForCookiesForNavigation(url)
+                         .host());
 }
 
 IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
@@ -2822,6 +3198,24 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   EXPECT_EQ("a.com", child_sd_a_sd->current_frame_host()
                          ->ComputeSiteForCookiesForNavigation(b_url)
                          .host());
+}
+
+IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
+                       ComputeSiteForCookiesFileURL) {
+  GURL main_frame_url = GetFileURL(FILE_PATH_LITERAL("page_with_iframe.html"));
+  GURL subframe_url = GetFileURL(FILE_PATH_LITERAL("title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_frame_url));
+
+  WebContentsImpl* wc = static_cast<WebContentsImpl*>(shell()->web_contents());
+  RenderFrameHostImpl* main_frame =
+      static_cast<RenderFrameHostImpl*>(wc->GetMainFrame());
+  EXPECT_EQ(main_frame_url, main_frame->GetLastCommittedURL());
+  EXPECT_EQ(GURL("file:///"), main_frame->ComputeSiteForCookies());
+
+  ASSERT_EQ(1u, main_frame->child_count());
+  RenderFrameHostImpl* child = main_frame->child_at(0)->current_frame_host();
+  EXPECT_EQ(subframe_url, child->GetLastCommittedURL());
+  EXPECT_EQ(GURL("file:///"), child->ComputeSiteForCookies());
 }
 
 // Make sure a local file and its subresources can be reloaded after a crash. In
@@ -2935,12 +3329,22 @@ class IPAddressSpaceCollector : public DidCommitNavigationInterceptor {
 
 }  // namespace
 
-IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
-                       ComputeMainFrameIPAddressSpace) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      network::features::kBlockNonSecureExternalRequests);
+class RenderFrameHostImplBrowserTestWithNonSecureExternalRequestsBlocked
+    : public RenderFrameHostImplBrowserTest {
+ public:
+  RenderFrameHostImplBrowserTestWithNonSecureExternalRequestsBlocked() {
+    feature_list_.InitAndEnableFeature(
+        network::features::kBlockNonSecureExternalRequests);
+  }
 
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+// TODO(https://crbug.com/1014325): Flaky on multiple bots.
+IN_PROC_BROWSER_TEST_F(
+    RenderFrameHostImplBrowserTestWithNonSecureExternalRequestsBlocked,
+    DISABLED_ComputeMainFrameIPAddressSpace) {
   // TODO(mkwst): `about:`, `file:`, `data:`, `blob:`, and `filesystem:` URLs
   // are all treated as `kUnknown` today. This is ~incorrect, but safe, as their
   // web-facing behavior will be equivalent to "public".
@@ -2971,12 +3375,9 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   }
 }
 
-IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
-                       ComputeIFrameLoopbackIPAddressSpace) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      network::features::kBlockNonSecureExternalRequests);
-
+IN_PROC_BROWSER_TEST_F(
+    RenderFrameHostImplBrowserTestWithNonSecureExternalRequestsBlocked,
+    ComputeIFrameLoopbackIPAddressSpace) {
   {
     IPAddressSpaceCollector collector(shell()->web_contents());
     base::string16 expected_title(base::UTF8ToUTF16("LOADED"));
@@ -3062,6 +3463,179 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
       }
     }
   }
+}
+
+namespace {
+
+// Calls |callback| whenever a DOMContentLoaded is reached in
+// |render_frame_host|.
+class DOMContentLoadedObserver : public WebContentsObserver {
+ public:
+  DOMContentLoadedObserver(WebContents* web_contents,
+                           base::RepeatingClosure callback)
+      : WebContentsObserver(web_contents), callback_(callback) {}
+
+ protected:
+  // WebContentsObserver:
+  void DOMContentLoaded(RenderFrameHost* render_Frame_host) override {
+    callback_.Run();
+  }
+
+ private:
+  base::RepeatingClosure callback_;
+  DISALLOW_COPY_AND_ASSIGN(DOMContentLoadedObserver);
+};
+
+// Calls |callback| whenever a DocumentOnLoad is reached in
+// |render_frame_host|.
+class DocumentOnLoadObserver : public WebContentsObserver {
+ public:
+  DocumentOnLoadObserver(WebContents* web_contents,
+                         base::RepeatingClosure callback)
+      : WebContentsObserver(web_contents), callback_(callback) {}
+
+ protected:
+  // WebContentsObserver:
+  void DocumentOnLoadCompletedInMainFrame() override { callback_.Run(); }
+
+ private:
+  base::RepeatingClosure callback_;
+  DISALLOW_COPY_AND_ASSIGN(DocumentOnLoadObserver);
+};
+
+}  // namespace
+
+IN_PROC_BROWSER_TEST_F(ContentBrowserTest, LoadCallbacks) {
+  net::test_server::ControllableHttpResponse main_document_response(
+      embedded_test_server(), "/main_document");
+  net::test_server::ControllableHttpResponse image_response(
+      embedded_test_server(), "/img");
+
+  EXPECT_TRUE(embedded_test_server()->Start());
+  GURL main_document_url(embedded_test_server()->GetURL("/main_document"));
+
+  WebContents* web_contents = shell()->web_contents();
+  RenderFrameHostImpl* rfhi =
+      static_cast<RenderFrameHostImpl*>(web_contents->GetMainFrame());
+  TestNavigationObserver load_observer(web_contents);
+  base::RunLoop loop_until_dcl;
+  DOMContentLoadedObserver dcl_observer(web_contents,
+                                        loop_until_dcl.QuitClosure());
+  shell()->LoadURL(main_document_url);
+
+  EXPECT_FALSE(rfhi->IsDOMContentLoaded());
+  EXPECT_FALSE(web_contents->IsDocumentOnLoadCompletedInMainFrame());
+
+  main_document_response.WaitForRequest();
+  main_document_response.Send(
+      "HTTP/1.1 200 OK\r\n"
+      "Connection: close\r\n"
+      "Content-Type: text/html; charset=utf-8\r\n"
+      "\r\n"
+      "<img src='/img'>");
+
+  load_observer.WaitForNavigationFinished();
+  EXPECT_FALSE(rfhi->IsDOMContentLoaded());
+  EXPECT_FALSE(web_contents->IsDocumentOnLoadCompletedInMainFrame());
+
+  main_document_response.Done();
+
+  // We should reach DOMContentLoaded, but not onload, since the image resource
+  // is still loading.
+  loop_until_dcl.Run();
+  EXPECT_TRUE(rfhi->is_loading());
+  EXPECT_TRUE(rfhi->IsDOMContentLoaded());
+  EXPECT_FALSE(web_contents->IsDocumentOnLoadCompletedInMainFrame());
+
+  base::RunLoop loop_until_onload;
+  DocumentOnLoadObserver onload_observer(web_contents,
+                                         loop_until_onload.QuitClosure());
+
+  image_response.WaitForRequest();
+  image_response.Done();
+
+  // And now onload() should be reached.
+  loop_until_onload.Run();
+  EXPECT_TRUE(rfhi->IsDOMContentLoaded());
+  EXPECT_TRUE(web_contents->IsDocumentOnLoadCompletedInMainFrame());
+}
+
+IN_PROC_BROWSER_TEST_F(ContentBrowserTest, LoadingStateResetOnNavigation) {
+  net::test_server::ControllableHttpResponse document2_response(
+      embedded_test_server(), "/document2");
+
+  EXPECT_TRUE(embedded_test_server()->Start());
+  GURL url1(embedded_test_server()->GetURL("/title1.html"));
+  GURL url2(embedded_test_server()->GetURL("/document2"));
+
+  WebContents* web_contents = shell()->web_contents();
+  RenderFrameHostImpl* rfhi =
+      static_cast<RenderFrameHostImpl*>(web_contents->GetMainFrame());
+
+  base::RunLoop loop_until_onload;
+  DocumentOnLoadObserver onload_observer(web_contents,
+                                         loop_until_onload.QuitClosure());
+  shell()->LoadURL(url1);
+  loop_until_onload.Run();
+
+  EXPECT_TRUE(rfhi->IsDOMContentLoaded());
+  EXPECT_TRUE(web_contents->IsDocumentOnLoadCompletedInMainFrame());
+
+  // Expect that the loading state will be reset after a navigation.
+
+  TestNavigationObserver navigation_observer(web_contents);
+  shell()->LoadURL(url2);
+
+  document2_response.WaitForRequest();
+  document2_response.Send(
+      "HTTP/1.1 200 OK\r\n"
+      "Content-Type: text/html; charset=utf-8\r\n"
+      "\r\n");
+  navigation_observer.WaitForNavigationFinished();
+
+  EXPECT_FALSE(rfhi->IsDOMContentLoaded());
+  EXPECT_FALSE(web_contents->IsDocumentOnLoadCompletedInMainFrame());
+}
+
+IN_PROC_BROWSER_TEST_F(ContentBrowserTest,
+                       LoadingStateIsNotResetOnFailedNavigation) {
+  net::test_server::ControllableHttpResponse document2_response(
+      embedded_test_server(), "/document2");
+
+  EXPECT_TRUE(embedded_test_server()->Start());
+  GURL url1(embedded_test_server()->GetURL("/title1.html"));
+  GURL url2(embedded_test_server()->GetURL("/document2"));
+
+  WebContents* web_contents = shell()->web_contents();
+  RenderFrameHostImpl* rfhi =
+      static_cast<RenderFrameHostImpl*>(web_contents->GetMainFrame());
+
+  base::RunLoop loop_until_onload;
+  DocumentOnLoadObserver onload_observer(web_contents,
+                                         loop_until_onload.QuitClosure());
+  shell()->LoadURL(url1);
+  loop_until_onload.Run();
+
+  EXPECT_TRUE(rfhi->IsDOMContentLoaded());
+  EXPECT_TRUE(web_contents->IsDocumentOnLoadCompletedInMainFrame());
+
+  // Expect that the loading state will NOT be reset after a cancelled
+  // navigation.
+
+  TestNavigationManager navigation_manager(web_contents, url2);
+  shell()->LoadURL(url2);
+  EXPECT_TRUE(navigation_manager.WaitForRequestStart());
+  navigation_manager.ResumeNavigation();
+  document2_response.WaitForRequest();
+
+  document2_response.Send(
+      "HTTP/1.1 204 No Content\r\n"
+      "Content-Type: text/html; charset=utf-8\r\n"
+      "\r\n");
+  navigation_manager.WaitForNavigationFinished();
+
+  EXPECT_TRUE(rfhi->IsDOMContentLoaded());
+  EXPECT_TRUE(web_contents->IsDocumentOnLoadCompletedInMainFrame());
 }
 
 }  // namespace content

@@ -12,9 +12,11 @@
 #include "base/version.h"
 #include "extensions/browser/computed_hashes.h"
 #include "extensions/browser/content_verifier/content_verifier_key.h"
+#include "extensions/browser/content_verifier_delegate.h"
 #include "extensions/browser/verified_contents.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_id.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "url/gurl.h"
 
@@ -57,19 +59,20 @@ class ContentHash : public base::RefCountedThreadSafe<ContentHash> {
     base::Version extension_version;
 
     // Fetch parameters.
-    network::mojom::URLLoaderFactoryPtrInfo url_loader_factory_ptr_info;
+    mojo::PendingRemote<network::mojom::URLLoaderFactory>
+        url_loader_factory_remote;
     GURL fetch_url;
 
     // The key used to validate verified_contents.json.
     ContentVerifierKey verifier_key;
 
-    FetchKey(
-        const ExtensionId& extension_id,
-        const base::FilePath& extension_root,
-        const base::Version& extension_version,
-        network::mojom::URLLoaderFactoryPtrInfo url_loader_factory_ptr_info,
-        const GURL& fetch_url,
-        ContentVerifierKey verifier_key);
+    FetchKey(const ExtensionId& extension_id,
+             const base::FilePath& extension_root,
+             const base::Version& extension_version,
+             mojo::PendingRemote<network::mojom::URLLoaderFactory>
+                 url_loader_factory_remote,
+             const GURL& fetch_url,
+             ContentVerifierKey verifier_key);
     ~FetchKey();
 
     FetchKey(FetchKey&& other);
@@ -78,7 +81,18 @@ class ContentHash : public base::RefCountedThreadSafe<ContentHash> {
     DISALLOW_COPY_AND_ASSIGN(FetchKey);
   };
 
-  using IsCancelledCallback = base::RepeatingCallback<bool(void)>;
+  // Result of checking tree hash root (typically calculated from block hashes
+  // in computed_hashes.json) against signed hash from verified_contents.json.
+  enum class TreeHashVerificationResult {
+    // Hash is correct.
+    SUCCESS,
+
+    // There is no such file in verified_contents.json.
+    NO_ENTRY,
+
+    // Hash does not match the one from verified_contents.json.
+    HASH_MISMATCH
+  };
 
   // Factory:
   // Returns ContentHash through |created_callback|, the returned values are:
@@ -90,6 +104,7 @@ class ContentHash : public base::RefCountedThreadSafe<ContentHash> {
       base::OnceCallback<void(scoped_refptr<ContentHash> hash,
                               bool was_cancelled)>;
   static void Create(FetchKey key,
+                     ContentVerifierDelegate::VerifierSourceType source_type,
                      const IsCancelledCallback& is_cancelled,
                      CreatedCallback created_callback);
 
@@ -99,13 +114,17 @@ class ContentHash : public base::RefCountedThreadSafe<ContentHash> {
   void ForceBuildComputedHashes(const IsCancelledCallback& is_cancelled,
                                 CreatedCallback created_callback);
 
-  const VerifiedContents& verified_contents() const;
-  const ComputedHashes::Reader& computed_hashes() const;
+  // Returns the result of comparing tree hash |root| for the |relative_path| to
+  // verified_contens.json data.
+  TreeHashVerificationResult VerifyTreeHashRoot(
+      const base::FilePath& relative_path,
+      const std::string* root) const;
 
-  bool has_verified_contents() const {
-    return status_ >= Status::kHasVerifiedContents;
-  }
-  bool succeeded() const { return status_ >= Status::kSucceeded; }
+  const ComputedHashes& computed_hashes() const;
+
+  // Returns whether or not computed_hashes.json (and, if needed,
+  // verified_contents.json too) was read correctly and is ready to use.
+  bool succeeded() const { return succeeded_; }
 
   // If ContentHash creation writes computed_hashes.json, then this returns the
   // FilePaths whose content hash didn't match expected hashes.
@@ -119,42 +138,60 @@ class ContentHash : public base::RefCountedThreadSafe<ContentHash> {
   // for |this| to succeed.
   // TODO(lazyboy): Remove this once https://crbug.com/819832 is fixed.
   bool might_require_computed_hashes_force_creation() const {
-    return !succeeded() && has_verified_contents() &&
+    return !succeeded() && verified_contents_ != nullptr &&
            !did_attempt_creating_computed_hashes_;
   }
+
+  static std::string ComputeTreeHashForContent(const std::string& contents,
+                                               int block_size);
 
  private:
   friend class base::RefCountedThreadSafe<ContentHash>;
 
-  enum class Status {
-    // Retrieving hashes failed.
-    kInvalid,
-    // Retrieved valid verified_contents.json, but there was no
-    // computed_hashes.json.
-    kHasVerifiedContents,
-    // Both verified_contents.json and computed_hashes.json were read
-    // correctly.
-    kSucceeded,
-  };
+  using GetVerifiedContentsCallback = base::OnceCallback<void(
+      FetchKey key,
+      std::unique_ptr<VerifiedContents> verified_contents,
+      bool did_attempt_fetch)>;
 
   ContentHash(const ExtensionId& id,
               const base::FilePath& root,
-              std::unique_ptr<VerifiedContents> verified_contents,
-              std::unique_ptr<ComputedHashes::Reader> computed_hashes);
+              ContentVerifierDelegate::VerifierSourceType source_type,
+              std::unique_ptr<const VerifiedContents> verified_contents,
+              std::unique_ptr<const ComputedHashes> computed_hashes);
   ~ContentHash();
 
+  // Step 1/2: verified_contents.json.
+  static void GetVerifiedContents(
+      FetchKey key,
+      ContentVerifierDelegate::VerifierSourceType source_type,
+      const IsCancelledCallback& is_cancelled,
+      GetVerifiedContentsCallback);
   static void FetchVerifiedContents(FetchKey key,
                                     const IsCancelledCallback& is_cancelled,
-                                    CreatedCallback created_callback);
+                                    GetVerifiedContentsCallback callback);
+  static std::unique_ptr<VerifiedContents> StoreAndRetrieveVerifiedContents(
+      std::unique_ptr<std::string> fetched_contents,
+      const FetchKey& key);
   static void DidFetchVerifiedContents(
-      CreatedCallback created_callback,
-      const IsCancelledCallback& is_cancelled,
+      GetVerifiedContentsCallback callback,
       FetchKey key,
       std::unique_ptr<std::string> fetched_contents);
 
-  static void DispatchFetchFailure(FetchKey key,
-                                   CreatedCallback created_callback,
-                                   const IsCancelledCallback& is_cancelled);
+  // Step 2/2: computed_hashes.json.
+  static void GetComputedHashes(
+      ContentVerifierDelegate::VerifierSourceType source_type,
+      const IsCancelledCallback& is_cancelled,
+      CreatedCallback created_callback,
+      FetchKey key,
+      std::unique_ptr<VerifiedContents> verified_contents,
+      bool did_attempt_fetch);
+
+  static void DispatchFetchFailure(
+      const ExtensionId& extension_id,
+      const base::FilePath& extension_root,
+      ContentVerifierDelegate::VerifierSourceType source_type,
+      CreatedCallback created_callback,
+      const IsCancelledCallback& is_cancelled);
 
   static void RecordFetchResult(bool success);
 
@@ -172,21 +209,34 @@ class ContentHash : public base::RefCountedThreadSafe<ContentHash> {
 
   // Builds computed_hashes. Possibly after creating computed_hashes.json file
   // if necessary.
-  void BuildComputedHashes(bool attempted_fetching_verified_contents,
+  void BuildComputedHashes(bool did_fetch_verified_contents,
                            bool force_build,
                            const IsCancelledCallback& is_cancelled);
 
+  // Helper callback for ComputedHashes::Create. Checks whether we want the hash
+  // of the given resource be in computes_hashes.json or not.
+  bool ShouldComputeHashesForResource(const base::FilePath& relative_unix_path);
+
+  // If needed (|source_type_| is SIGNED_HASHES) checks each hash from
+  // |computed_hashes| against data from verified_contenst.json and returns list
+  // of mismatches. If not needed, just returns empty list.
+  std::set<base::FilePath> GetMismatchedComputedHashes(
+      ComputedHashes::Data* computed_hashes);
+
+  bool has_verified_contents() const { return verified_contents_ != nullptr; }
+
   const ExtensionId extension_id_;
   const base::FilePath extension_root_;
+  ContentVerifierDelegate::VerifierSourceType source_type_;
 
-  Status status_ = Status::kInvalid;
+  bool succeeded_ = false;
 
   bool did_attempt_creating_computed_hashes_ = false;
 
   // TODO(lazyboy): Avoid dynamic allocations here, |this| already supports
   // move.
-  std::unique_ptr<VerifiedContents> verified_contents_;
-  std::unique_ptr<ComputedHashes::Reader> computed_hashes_;
+  std::unique_ptr<const VerifiedContents> verified_contents_;
+  std::unique_ptr<const ComputedHashes> computed_hashes_;
 
   // Paths that were found to have a mismatching hash.
   std::set<base::FilePath> hash_mismatch_unix_paths_;

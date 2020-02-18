@@ -56,6 +56,7 @@ class CrosHealthdClientImpl : public CrosHealthdClient {
     base::ScopedFD fd =
         platform_channel.TakeRemoteEndpoint().TakePlatformHandle().TakeFD();
     writer.AppendFileDescriptor(fd.get());
+    writer.AppendBool(/*is_chrome=*/true);
     cros_healthd_service_proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::BindOnce(
@@ -109,12 +110,6 @@ void CrosHealthdClient::Initialize(dbus::Bus* bus) {
 // static
 void CrosHealthdClient::InitializeFake() {
   new FakeCrosHealthdClient();
-}
-
-// static
-void CrosHealthdClient::InitializeFakeWithMockService(
-    mojo::PendingRemote<cros_healthd::mojom::CrosHealthdService> mock_service) {
-  new FakeCrosHealthdClient(std::move(mock_service));
 }
 
 // static

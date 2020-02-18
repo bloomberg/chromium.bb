@@ -15,19 +15,18 @@
 #include "chrome/common/navigation_corrector.mojom.h"
 #include "chrome/common/network_diagnostics.mojom.h"
 #include "chrome/common/network_easter_egg.mojom.h"
-#include "chrome/common/supervised_user_commands.mojom.h"
 #include "chrome/renderer/net/net_error_helper_core.h"
 #include "chrome/renderer/net/net_error_page_controller.h"
-#include "chrome/renderer/security_interstitials/security_interstitial_page_controller.h"
-#include "chrome/renderer/supervised_user/supervised_user_error_page_controller.h"
-#include "chrome/renderer/supervised_user/supervised_user_error_page_controller_delegate.h"
 #include "components/error_page/common/localized_error.h"
 #include "components/error_page/common/net_error_info.h"
+#include "components/security_interstitials/content/renderer/security_interstitial_page_controller.h"
 #include "components/security_interstitials/core/controller_client.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/public/renderer/render_frame_observer_tracker.h"
 #include "content/public/renderer/render_thread_observer.h"
-#include "mojo/public/cpp/bindings/associated_binding_set.h"
+#include "mojo/public/cpp/bindings/associated_receiver_set.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "net/base/net_errors.h"
 
 class GURL;
@@ -52,8 +51,8 @@ class NetErrorHelper
       public content::RenderThreadObserver,
       public NetErrorHelperCore::Delegate,
       public NetErrorPageController::Delegate,
-      public SecurityInterstitialPageController::Delegate,
-      public SupervisedUserErrorPageControllerDelegate,
+      public security_interstitials::SecurityInterstitialPageController::
+          Delegate,
       public chrome::mojom::NetworkDiagnosticsClient,
       public chrome::mojom::NavigationCorrector {
  public:
@@ -72,14 +71,10 @@ class NetErrorHelper
   void UpdateEasterEggHighScore(int high_score) override;
   void ResetEasterEggHighScore() override;
 
-  // SecurityInterstitialPageController::Delegate implementation
-  void SendCommand(
-      security_interstitials::SecurityInterstitialCommand command) override;
-
-  // SupervisedUserErrorPageControllerDelegate implementation
-  void GoBack() override;
-  void RequestPermission(base::OnceCallback<void(bool)> callback) override;
-  void Feedback() override;
+  // security_interstitials::SecurityInterstitialPageController::Delegate
+  // implementation
+  mojo::AssociatedRemote<security_interstitials::mojom::InterstitialCommands>
+  GetInterface() override;
 
   // RenderFrameObserver implementation.
   void DidStartNavigation(
@@ -102,7 +97,6 @@ class NetErrorHelper
   // loaded immediately.
   void PrepareErrorPage(const error_page::Error& error,
                         bool is_failed_post,
-                        bool is_ignoring_cache,
                         std::string* error_html);
 
   // Returns whether a load for |url| in the |frame| the NetErrorHelper is
@@ -139,7 +133,7 @@ class NetErrorHelper
   void CancelFetchNavigationCorrections() override;
   void SendTrackingRequest(const GURL& tracking_url,
                            const std::string& tracking_request_body) override;
-  void ReloadPage(bool bypass_cache) override;
+  void ReloadFrame() override;
   void DiagnoseError(const GURL& page_url) override;
   void DownloadPageLater() override;
   void SetIsShowingDownloadButton(bool show) override;
@@ -165,9 +159,11 @@ class NetErrorHelper
   void OnTrackingRequestComplete(std::unique_ptr<std::string> response_body);
 
   void OnNetworkDiagnosticsClientRequest(
-      chrome::mojom::NetworkDiagnosticsClientAssociatedRequest request);
+      mojo::PendingAssociatedReceiver<chrome::mojom::NetworkDiagnosticsClient>
+          receiver);
   void OnNavigationCorrectorRequest(
-      chrome::mojom::NavigationCorrectorAssociatedRequest request);
+      mojo::PendingAssociatedReceiver<chrome::mojom::NavigationCorrector>
+          receiver);
 
   // chrome::mojom::NetworkDiagnosticsClient:
   void SetCanShowNetworkDiagnosticsDialog(bool can_show) override;
@@ -185,15 +181,14 @@ class NetErrorHelper
 
   std::unique_ptr<NetErrorHelperCore> core_;
 
-  mojo::AssociatedBindingSet<chrome::mojom::NetworkDiagnosticsClient>
-      network_diagnostics_client_bindings_;
-  chrome::mojom::NetworkDiagnosticsAssociatedPtr remote_network_diagnostics_;
-  mojo::AssociatedBindingSet<chrome::mojom::NavigationCorrector>
-      navigation_corrector_bindings_;
-  chrome::mojom::NetworkEasterEggAssociatedPtr remote_network_easter_egg_;
-
-  supervised_user::mojom::SupervisedUserCommandsAssociatedPtr
-      supervised_user_interface_;
+  mojo::AssociatedReceiverSet<chrome::mojom::NetworkDiagnosticsClient>
+      network_diagnostics_client_receivers_;
+  mojo::AssociatedRemote<chrome::mojom::NetworkDiagnostics>
+      remote_network_diagnostics_;
+  mojo::AssociatedReceiverSet<chrome::mojom::NavigationCorrector>
+      navigation_corrector_receivers_;
+  mojo::AssociatedRemote<chrome::mojom::NetworkEasterEgg>
+      remote_network_easter_egg_;
 
   // Weak factories for vending weak pointers to PageControllers. Weak
   // pointers are invalidated on each commit, to prevent getting messages from
@@ -201,11 +196,9 @@ class NetErrorHelper
   base::WeakPtrFactory<NetErrorPageController::Delegate>
       weak_controller_delegate_factory_{this};
 
-  base::WeakPtrFactory<SecurityInterstitialPageController::Delegate>
+  base::WeakPtrFactory<
+      security_interstitials::SecurityInterstitialPageController::Delegate>
       weak_security_interstitial_controller_delegate_factory_{this};
-
-  base::WeakPtrFactory<SupervisedUserErrorPageControllerDelegate>
-      weak_supervised_user_error_controller_delegate_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(NetErrorHelper);
 };

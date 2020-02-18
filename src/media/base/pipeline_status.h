@@ -6,6 +6,7 @@
 #define MEDIA_BASE_PIPELINE_STATUS_H_
 
 #include <stdint.h>
+#include <iosfwd>
 #include <string>
 
 #include "base/callback.h"
@@ -58,11 +59,21 @@ enum PipelineStatus {
   PIPELINE_STATUS_MAX = DEMUXER_ERROR_DETECTED_HLS,
 };
 
-typedef base::Callback<void(PipelineStatus)> PipelineStatusCB;
+// Returns a string version of the status, unique to each PipelineStatus, and
+// not including any ':'. This makes it suitable for usage in
+// MediaError.message as the UA-specific-error-code.
+MEDIA_EXPORT std::string PipelineStatusToString(PipelineStatus status);
+
+MEDIA_EXPORT std::ostream& operator<<(std::ostream& out, PipelineStatus status);
+
+// TODO(crbug.com/1007799): Delete PipelineStatusCB once all callbacks are
+//                          converted to PipelineStatusCallback.
+using PipelineStatusCB = base::RepeatingCallback<void(PipelineStatus)>;
+using PipelineStatusCallback = base::OnceCallback<void(PipelineStatus)>;
 
 struct PipelineDecoderInfo {
   bool is_platform_decoder = false;
-  bool is_decrypting_demuxer_stream = false;
+  bool has_decrypting_demuxer_stream = false;
   std::string decoder_name;
 };
 
@@ -70,6 +81,8 @@ MEDIA_EXPORT bool operator==(const PipelineDecoderInfo& first,
                              const PipelineDecoderInfo& second);
 MEDIA_EXPORT bool operator!=(const PipelineDecoderInfo& first,
                              const PipelineDecoderInfo& second);
+MEDIA_EXPORT std::ostream& operator<<(std::ostream& out,
+                                      const PipelineDecoderInfo& info);
 
 struct MEDIA_EXPORT PipelineStatistics {
   PipelineStatistics();

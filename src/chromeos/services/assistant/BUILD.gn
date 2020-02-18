@@ -5,7 +5,6 @@
 import("//chromeos/assistant/assistant.gni")
 
 assert(is_chromeos)
-assert(enable_cros_assistant)
 
 component("lib") {
   output_name = "assistant_service"
@@ -28,10 +27,9 @@ component("lib") {
     "fake_assistant_manager_service_impl.h",
     "fake_assistant_settings_manager_impl.cc",
     "fake_assistant_settings_manager_impl.h",
-    "pref_connection_delegate.cc",
-    "pref_connection_delegate.h",
     "service.cc",
     "service.h",
+    "service_context.h",
   ]
 
   deps = [
@@ -50,8 +48,6 @@ component("lib") {
     "//services/device/public/mojom",
     "//services/identity/public/mojom",
     "//services/network/public/cpp:cpp",
-    "//services/preferences/public/cpp",
-    "//services/preferences/public/mojom",
     "//ui/accessibility:ax_assistant",
   ]
 
@@ -66,6 +62,9 @@ component("lib") {
 
   if (enable_cros_libassistant) {
     sources += [
+      "assistant_manager_service_delegate.h",
+      "assistant_manager_service_delegate_impl.cc",
+      "assistant_manager_service_delegate_impl.h",
       "assistant_manager_service_impl.cc",
       "assistant_manager_service_impl.h",
       "assistant_settings_manager_impl.cc",
@@ -74,6 +73,7 @@ component("lib") {
       "chromium_api_delegate.h",
       "chromium_http_connection.cc",
       "chromium_http_connection.h",
+      "cros_platform_api.h",
       "media_session/assistant_media_session.cc",
       "media_session/assistant_media_session.h",
       "platform/audio_device_owner.cc",
@@ -156,23 +156,36 @@ source_set("tests") {
   ]
 
   sources = [
-    "fake_client.cc",
-    "fake_client.h",
     "service_unittest.cc",
+    "test_support/fake_client.cc",
+    "test_support/fake_client.h",
+    "test_support/fully_initialized_assistant_state.cc",
+    "test_support/fully_initialized_assistant_state.h",
   ]
 
   if (enable_cros_libassistant) {
     sources += [
+      "assistant_manager_service_impl_unittest.cc",
+      "platform/audio_input_impl_unittest.cc",
       "platform/audio_output_provider_impl_unittest.cc",
       "platform/network_provider_impl_unittest.cc",
       "platform/power_manager_provider_impl_unittest.cc",
       "platform/system_provider_impl_unittest.cc",
+      "test_support/fake_assistant_manager_service_delegate.cc",
+      "test_support/fake_assistant_manager_service_delegate.h",
+      "test_support/fake_platform_api.cc",
+      "test_support/fake_platform_api.h",
+      "test_support/mock_media_manager.cc",
+      "test_support/mock_media_manager.h",
     ]
 
     deps += [
+      "//chromeos/assistant/internal",
+      "//chromeos/assistant/internal:test_support",
+      "//chromeos/assistant/internal/proto/google3",
       "//chromeos/dbus",
       "//chromeos/services/network_config/public/mojom",
-      "//libassistant/shared/public",
+      "//services/audio/public/cpp:test_support",
       "//services/device/public/cpp:test_support",
     ]
   }

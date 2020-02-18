@@ -63,6 +63,15 @@ class CORE_EXPORT NGBoxFragmentBuilder final
     is_initial_block_size_indefinite_ = size_.block_size == kIndefiniteSize;
   }
 
+  const NGFragmentGeometry& InitialFragmentGeometry() const {
+    DCHECK(initial_fragment_geometry_);
+    return *initial_fragment_geometry_;
+  }
+
+  void SetUnconstrainedIntrinsicBlockSize(
+      LayoutUnit unconstrained_intrinsic_block_size) {
+    unconstrained_intrinsic_block_size_ = unconstrained_intrinsic_block_size;
+  }
   void SetIntrinsicBlockSize(LayoutUnit intrinsic_block_size) {
     intrinsic_block_size_ = intrinsic_block_size;
   }
@@ -86,11 +95,13 @@ class CORE_EXPORT NGBoxFragmentBuilder final
 
   // Add a break token for a child that doesn't yet have any fragments, because
   // its first fragment is to be produced in the next fragmentainer. This will
-  // add a break token for the child, but no fragment.
-  void AddBreakBeforeChild(NGLayoutInputNode child, bool is_forced_break);
-
-  // Prepare for a break token before the specified line.
-  void AddBreakBeforeLine(int line_number);
+  // add a break token for the child, but no fragment. Break appeal should
+  // always be provided for regular in-flow children. For other types of
+  // children it may be omitted, if the break shouldn't affect the appeal of
+  // breaking inside this container.
+  void AddBreakBeforeChild(NGLayoutInputNode child,
+                           base::Optional<NGBreakAppeal> appeal,
+                           bool is_forced_break);
 
   // Add a layout result. This involves appending the fragment and its relative
   // offset to the builder, but also keeping track of out-of-flow positioned
@@ -115,18 +126,44 @@ class CORE_EXPORT NGBoxFragmentBuilder final
   // This will result in a fragment which has an unfinished break token.
   void SetDidBreak() { did_break_ = true; }
 
-  void SetHasForcedBreak() {
-    has_forced_break_ = true;
-    minimal_space_shortage_ = LayoutUnit();
-  }
-
   // Report space shortage, i.e. how much more space would have been sufficient
   // to prevent some piece of content from breaking. This information may be
   // used by the column balancer to stretch columns.
   void PropagateSpaceShortage(LayoutUnit space_shortage) {
     DCHECK_GT(space_shortage, LayoutUnit());
+
+    // Space shortage should only be reported when we already have a tentative
+    // fragmentainer block-size. It's meaningless to talk about space shortage
+    // in the initial column balancing pass, because then we have no
+    // fragmentainer block-size at all, so who's to tell what's too short or
+    // not?
+    DCHECK(!IsInitialColumnBalancingPass());
+
     if (minimal_space_shortage_ > space_shortage)
       minimal_space_shortage_ = space_shortage;
+  }
+  LayoutUnit MinimalSpaceShortage() const { return minimal_space_shortage_; }
+
+  void PropagateTallestUnbreakableBlockSize(LayoutUnit unbreakable_block_size) {
+    // We should only calculate the block-size of the tallest piece of
+    // unbreakable content during the initial column balancing pass, when we
+    // haven't set a tentative fragmentainer block-size yet.
+    DCHECK(IsInitialColumnBalancingPass());
+
+    tallest_unbreakable_block_size_ =
+        std::max(tallest_unbreakable_block_size_, unbreakable_block_size);
+  }
+
+  void SetIsInitialColumnBalancingPass() {
+    // Note that we have no dedicated flag for being in the initial column
+    // balancing pass here. We'll just bump tallest_unbreakable_block_size_ to
+    // 0, so that NGLayoutResult knows that we need to store unbreakable
+    // block-size.
+    DCHECK_EQ(tallest_unbreakable_block_size_, LayoutUnit::Min());
+    tallest_unbreakable_block_size_ = LayoutUnit();
+  }
+  bool IsInitialColumnBalancingPass() const {
+    return tallest_unbreakable_block_size_ >= LayoutUnit();
   }
 
   void SetInitialBreakBefore(EBreakBetween break_before) {
@@ -152,10 +189,6 @@ class CORE_EXPORT NGBoxFragmentBuilder final
   // Return the number of line boxes laid out.
   int LineCount() const { return inline_break_tokens_.size(); }
 
-  // Call when we're setting an undersirable break. It may be possible to avoid
-  // the break if we instead break at an earlier element.
-  void SetHasLastResortBreak() { has_last_resort_break_ = true; }
-
   // Set when we have iterated over all the children. This means that all
   // children have been fully laid out, or have break tokens. No more children
   // left to discover.
@@ -163,6 +196,24 @@ class CORE_EXPORT NGBoxFragmentBuilder final
 
   void SetColumnSpanner(NGBlockNode spanner) { column_spanner_ = spanner; }
   bool FoundColumnSpanner() const { return !!column_spanner_; }
+
+  void SetEarlyBreak(scoped_refptr<const NGEarlyBreak> breakpoint,
+                     NGBreakAppeal appeal) {
+    early_break_ = breakpoint;
+    break_appeal_ = appeal;
+  }
+  bool HasEarlyBreak() const { return early_break_.get(); }
+  const NGEarlyBreak& EarlyBreak() const {
+    DCHECK(early_break_.get());
+    return *early_break_.get();
+  }
+
+  // Set the highest break appeal found so far. This is either:
+  // 1: The highest appeal of a breakpoint found by our container
+  // 2: The appeal of a possible early break inside
+  // 3: The appeal of an actual break inside (to be stored in a break token)
+  void SetBreakAppeal(NGBreakAppeal appeal) { break_appeal_ = appeal; }
+  NGBreakAppeal BreakAppeal() const { return break_appeal_; }
 
   // Offsets are not supposed to be set during fragment construction, so we
   // do not provide a setter here.
@@ -180,8 +231,7 @@ class CORE_EXPORT NGBoxFragmentBuilder final
     return ToBoxFragment(ToLineWritingMode(GetWritingMode()));
   }
 
-  scoped_refptr<const NGLayoutResult> Abort(
-      NGLayoutResult::NGLayoutResultStatus);
+  scoped_refptr<const NGLayoutResult> Abort(NGLayoutResult::EStatus);
 
   NGPhysicalFragment::NGBoxType BoxType() const;
   void SetBoxType(NGPhysicalFragment::NGBoxType box_type) {
@@ -246,9 +296,15 @@ class CORE_EXPORT NGBoxFragmentBuilder final
   // Update whether we have fragmented in this flow.
   void PropagateBreak(const NGLayoutResult&);
 
+  void SetHasForcedBreak() {
+    has_forced_break_ = true;
+    minimal_space_shortage_ = LayoutUnit();
+  }
+
   scoped_refptr<const NGLayoutResult> ToBoxFragment(WritingMode);
 
   const NGFragmentGeometry* initial_fragment_geometry_ = nullptr;
+  LayoutUnit unconstrained_intrinsic_block_size_ = kIndefiniteSize;
   LayoutUnit intrinsic_block_size_;
 
   NGFragmentItemsBuilder* items_builder_ = nullptr;
@@ -266,6 +322,7 @@ class CORE_EXPORT NGBoxFragmentBuilder final
   LayoutUnit consumed_block_size_;
 
   LayoutUnit minimal_space_shortage_ = LayoutUnit::Max();
+  LayoutUnit tallest_unbreakable_block_size_ = LayoutUnit::Min();
 
   // The break-before value on the initial child we cannot honor. There's no
   // valid class A break point before a first child, only *between* siblings.

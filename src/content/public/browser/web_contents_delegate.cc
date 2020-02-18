@@ -119,20 +119,25 @@ bool WebContentsDelegate::OnGoToEntryOffset(int offset) {
   return true;
 }
 
-bool WebContentsDelegate::ShouldCreateWebContents(
-    WebContents* web_contents,
+bool WebContentsDelegate::IsWebContentsCreationOverridden(
+    SiteInstance* source_site_instance,
+    content::mojom::WindowContainerType window_container_type,
+    const GURL& opener_url,
+    const std::string& frame_name,
+    const GURL& target_url) {
+  return false;
+}
+
+WebContents* WebContentsDelegate::CreateCustomWebContents(
     RenderFrameHost* opener,
     SiteInstance* source_site_instance,
-    int32_t route_id,
-    int32_t main_frame_route_id,
-    int32_t main_frame_widget_route_id,
-    content::mojom::WindowContainerType window_container_type,
+    bool is_new_browsing_instance,
     const GURL& opener_url,
     const std::string& frame_name,
     const GURL& target_url,
     const std::string& partition_id,
     SessionStorageNamespace* session_storage_namespace) {
-  return true;
+  return nullptr;
 }
 
 JavaScriptDialogManager* WebContentsDelegate::GetJavaScriptDialogManager(
@@ -169,9 +174,9 @@ bool WebContentsDelegate::IsFullscreenForTabOrPending(
   return false;
 }
 
-blink::WebDisplayMode WebContentsDelegate::GetDisplayMode(
+blink::mojom::DisplayMode WebContentsDelegate::GetDisplayMode(
     const WebContents* web_contents) {
-  return blink::kWebDisplayModeBrowser;
+  return blink::mojom::DisplayMode::kBrowser;
 }
 
 ColorChooser* WebContentsDelegate::OpenColorChooser(
@@ -270,10 +275,10 @@ bool WebContentsDelegate::SaveFrame(const GURL& url, const Referrer& referrer) {
   return false;
 }
 
-blink::WebSecurityStyle WebContentsDelegate::GetSecurityStyle(
+blink::SecurityStyle WebContentsDelegate::GetSecurityStyle(
     WebContents* web_contents,
     SecurityStyleExplanations* security_style_explanations) {
-  return blink::kWebSecurityStyleUnknown;
+  return blink::SecurityStyle::kUnknown;
 }
 
 bool WebContentsDelegate::ShouldAllowRunningInsecureContent(
@@ -288,8 +293,20 @@ int WebContentsDelegate::GetTopControlsHeight() {
   return 0;
 }
 
+int WebContentsDelegate::GetTopControlsMinHeight() {
+  return 0;
+}
+
 int WebContentsDelegate::GetBottomControlsHeight() {
   return 0;
+}
+
+int WebContentsDelegate::GetBottomControlsMinHeight() {
+  return 0;
+}
+
+bool WebContentsDelegate::ShouldAnimateBrowserControlsHeightChanges() {
+  return false;
 }
 
 bool WebContentsDelegate::DoBrowserControlsShrinkRendererSize(
@@ -320,4 +337,11 @@ bool WebContentsDelegate::ShouldShowStaleContentOnEviction(
     WebContents* source) {
   return false;
 }
+
+bool WebContentsDelegate::IsFrameLowPriority(
+    const WebContents* web_contents,
+    const RenderFrameHost* render_frame_host) {
+  return false;
+}
+
 }  // namespace content

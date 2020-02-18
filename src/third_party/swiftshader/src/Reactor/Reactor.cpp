@@ -15,6 +15,8 @@
 #include "Reactor.hpp"
 #include "Debug.hpp"
 
+#include <cmath>
+
 // Define REACTOR_MATERIALIZE_LVALUES_ON_DEFINITION to non-zero to ensure all
 // variables have a stack location obtained throuch alloca().
 #ifndef REACTOR_MATERIALIZE_LVALUES_ON_DEFINITION
@@ -3789,6 +3791,25 @@ namespace rr
 
 	Float::Float(float x)
 	{
+		// C++ does not have a way to write an infinite or NaN literal,
+		// nor does it allow division by zero as a constant expression.
+		// Thus we should not accept inf or NaN as a Reactor Float constant,
+		// as this would typically idicate a bug, and avoids undefined
+		// behavior.
+		//
+		// This also prevents the issue of the LLVM JIT only taking double
+		// values for constructing floating-point constants. During the
+		// conversion from single-precision to double, a signaling NaN can
+		// become a quiet NaN, thus altering its bit pattern. Hence this
+		// assert is also helpful for detecting cases where integers are
+		// being reinterpreted as float and then bitcast to integer again,
+		// which does not guarantee preserving the integer value.
+		//
+		// Should inifinty and NaN constants be required, methods like
+		// infinity(), quiet_NaN(), and signaling_NaN() should be added
+		// to the Float class.
+		ASSERT(std::isfinite(x));
+
 		storeValue(Nucleus::createConstantFloat(x));
 	}
 
@@ -4007,6 +4028,9 @@ namespace rr
 
 	void Float4::constant(float x, float y, float z, float w)
 	{
+		// See Float(float) constructor for the rationale behind this assert.
+		ASSERT(std::isfinite(x) && std::isfinite(y) && std::isfinite(z) && std::isfinite(w));
+
 		double constantVector[4] = {x, y, z, w};
 		storeValue(Nucleus::createConstantVector(constantVector, getType()));
 	}
@@ -4303,26 +4327,6 @@ namespace rr
 		Nucleus::createMaskedStore(base.value, val.value, mask.value, alignment);
 	}
 
-	RValue<Float4> Gather(RValue<Pointer<Float>> base, RValue<Int4> offsets, RValue<Int4> mask, unsigned int alignment, bool zeroMaskedLanes /* = false */)
-	{
-		return RValue<Float4>(Nucleus::createGather(base.value, Float::getType(), offsets.value, mask.value, alignment, zeroMaskedLanes));
-	}
-
-	RValue<Int4> Gather(RValue<Pointer<Int>> base, RValue<Int4> offsets, RValue<Int4> mask, unsigned int alignment, bool zeroMaskedLanes /* = false */)
-	{
-		return RValue<Int4>(Nucleus::createGather(base.value, Int::getType(), offsets.value, mask.value, alignment, zeroMaskedLanes));
-	}
-
-	void Scatter(RValue<Pointer<Float>> base, RValue<Float4> val, RValue<Int4> offsets, RValue<Int4> mask, unsigned int alignment)
-	{
-		Nucleus::createScatter(base.value, val.value, offsets.value, mask.value, alignment);
-	}
-
-	void Scatter(RValue<Pointer<Int>> base, RValue<Int4> val, RValue<Int4> offsets, RValue<Int4> mask, unsigned int alignment)
-	{
-		Nucleus::createScatter(base.value, val.value, offsets.value, mask.value, alignment);
-	}
-
 	void Fence(std::memory_order memoryOrder)
 	{
 		ASSERT_MSG(memoryOrder == std::memory_order_acquire ||
@@ -4333,4 +4337,16 @@ namespace rr
 		Nucleus::createFence(memoryOrder);
 	}
 
+	Bool          CToReactor<bool>::cast(bool v)               { return type(v); }
+	Byte          CToReactor<uint8_t>::cast(uint8_t v)         { return type(v); }
+	SByte         CToReactor<int8_t>::cast(int8_t v)           { return type(v); }
+	Short         CToReactor<int16_t>::cast(int16_t v)         { return type(v); }
+	UShort        CToReactor<uint16_t>::cast(uint16_t v)       { return type(v); }
+	Int           CToReactor<int32_t>::cast(int32_t v)         { return type(v); }
+	UInt          CToReactor<uint32_t>::cast(uint32_t v)       { return type(v); }
+	Float         CToReactor<float>::cast(float v)             { return type(v); }
+	Float4        CToReactor<float[4]>::cast(float v[4])       { return type(v[0], v[1], v[2], v[3]); }
+
+	// TODO: Long has no constructor that takes a uint64_t
+	// Long          CToReactor<uint64_t>::cast(uint64_t v)       { return type(v); }
 }

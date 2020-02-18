@@ -55,6 +55,7 @@ if(${ARCH} STREQUAL "arm")
     sha1-armv4-large.${ASM_EXT}
     sha256-armv4.${ASM_EXT}
     sha512-armv4.${ASM_EXT}
+    vpaes-armv7.${ASM_EXT}
   )
 endif()
 
@@ -121,6 +122,7 @@ perlasm(sha512-586.${ASM_EXT} sha/asm/sha512-586.pl)
 perlasm(sha512-armv4.${ASM_EXT} sha/asm/sha512-armv4.pl)
 perlasm(sha512-armv8.${ASM_EXT} sha/asm/sha512-armv8.pl)
 perlasm(sha512-x86_64.${ASM_EXT} sha/asm/sha512-x86_64.pl)
+perlasm(vpaes-armv7.${ASM_EXT} aes/asm/vpaes-armv7.pl)
 perlasm(vpaes-armv8.${ASM_EXT} aes/asm/vpaes-armv8.pl)
 perlasm(vpaes-x86_64.${ASM_EXT} aes/asm/vpaes-x86_64.pl)
 perlasm(vpaes-x86.${ASM_EXT} aes/asm/vpaes-x86.pl)
@@ -230,7 +232,7 @@ elseif(FIPS_SHARED)
 
   add_custom_command(
     OUTPUT bcm.o
-    COMMAND ld -r -T ${CMAKE_CURRENT_SOURCE_DIR}/fips_shared.lds -o bcm.o --whole-archive $<TARGET_FILE:bcm_library>
+    COMMAND ${CMAKE_LINKER} -r -T ${CMAKE_CURRENT_SOURCE_DIR}/fips_shared.lds -o bcm.o --whole-archive $<TARGET_FILE:bcm_library>
     DEPENDS bcm_library fips_shared.lds
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
   )

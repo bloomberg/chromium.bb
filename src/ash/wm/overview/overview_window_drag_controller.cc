@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "ash/display/mouse_cursor_event_filter.h"
+#include "ash/display/screen_orientation_controller.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/presentation_time_recorder.h"
 #include "ash/screen_util.h"
@@ -56,6 +57,11 @@ constexpr float kMinimumDragDistanceAlreadyInSnapRegionDp = 48.f;
 constexpr float kFlingToCloseVelocityThreshold = 2000.f;
 constexpr float kItemMinOpacity = 0.4f;
 
+// Amount of time we wait to unpause the occlusion tracker after a overview item
+// is finished dragging. Waits a bit longer than the overview item animation.
+constexpr base::TimeDelta kOcclusionPauseDurationForDrag =
+    base::TimeDelta::FromMilliseconds(300);
+
 // The UMA histogram that records presentation time for window dragging
 // operation in overview mode.
 constexpr char kOverviewWindowDragHistogram[] =
@@ -65,7 +71,12 @@ constexpr char kOverviewWindowDragMaxLatencyHistogram[] =
 
 void UnpauseOcclusionTracker() {
   Shell::Get()->overview_controller()->UnpauseOcclusionTracker(
-      kOcclusionPauseDurationForDragMs);
+      kOcclusionPauseDurationForDrag);
+}
+
+bool GetVirtualDesksBarEnabled(OverviewItem* item) {
+  return desks_util::ShouldDesksBarBeCreated() &&
+         item->overview_grid()->IsDesksBarViewActive();
 }
 
 // Returns the scaled-down size of the dragged item that should be used when
@@ -78,7 +89,15 @@ gfx::SizeF GetItemSizeWhenOnDesksBar(OverviewItem* item) {
   const aura::Window* window = item->GetWindow();
   DCHECK(window);
   const float root_height = window->GetRootWindow()->bounds().height();
-  const float scale_factor = DeskPreviewView::GetHeight() / float{root_height};
+  const OverviewGrid* overview_grid = item->overview_grid();
+  DCHECK(overview_grid);
+  const DesksBarView* desks_bar_view = overview_grid->desks_bar_view();
+  if (!desks_bar_view) {
+    DCHECK(!GetVirtualDesksBarEnabled(item));
+    return gfx::SizeF();
+  }
+  const float scale_factor =
+      desks_bar_view->bounds().height() / float{root_height};
   const gfx::SizeF window_size(window->bounds().size());
   gfx::SizeF scaled_size = gfx::ScaleSize(window_size, scale_factor);
   // Add the margins overview mode adds around the window's contents.
@@ -92,11 +111,6 @@ float GetManhattanDistanceX(float point_x, const gfx::RectF& rect) {
 
 float GetManhattanDistanceY(float point_y, const gfx::RectF& rect) {
   return std::max(rect.y() - point_y, point_y - rect.bottom());
-}
-
-bool GetVirtualDesksBarEnabled(OverviewItem* item) {
-  return desks_util::ShouldDesksBarBeCreated() &&
-         item->overview_grid()->IsDesksBarViewActive();
 }
 
 // Runs the given |callback| when this object goes out of scope.
@@ -122,14 +136,15 @@ OverviewWindowDragController::OverviewWindowDragController(
     OverviewItem* item,
     bool is_touch_dragging)
     : overview_session_(overview_session),
-      split_view_controller_(Shell::Get()->split_view_controller()),
       item_(item),
       on_desks_bar_item_size_(GetItemSizeWhenOnDesksBar(item)),
       display_count_(Shell::GetAllRootWindows().size()),
       is_touch_dragging_(is_touch_dragging),
       should_allow_split_view_(ShouldAllowSplitView()),
       virtual_desks_bar_enabled_(GetVirtualDesksBarEnabled(item)) {
-  DCHECK(!Shell::Get()->split_view_controller()->IsDividerAnimating());
+  DCHECK(!Shell::Get()->overview_controller()->IsInStartAnimation());
+  DCHECK(!SplitViewController::Get(Shell::GetPrimaryRootWindow())
+              ->IsDividerAnimating());
 }
 
 OverviewWindowDragController::~OverviewWindowDragController() = default;
@@ -226,15 +241,19 @@ void OverviewWindowDragController::StartNormalDragMode(
   overview_grid->AddDropTargetForDraggingFromOverview(item_);
 
   if (should_allow_split_view_) {
-    overview_session_->SetSplitViewDragIndicatorsIndicatorState(
-        CanSnapInSplitview(item_->GetWindow()) ? IndicatorState::kDragArea
-                                               : IndicatorState::kCannotSnap,
-        gfx::ToRoundedPoint(location_in_screen));
+    overview_session_->SetSplitViewDragIndicatorsDraggedWindow(
+        item_->GetWindow());
+    overview_session_->UpdateSplitViewDragIndicatorsWindowDraggingStates(
+        GetRootWindowBeingDraggedIn(), /*is_dragging=*/true,
+        SplitViewDragIndicators::WindowDraggingState::kFromOverview,
+        SplitViewController::NONE);
+    item_->HideCannotSnapWarning();
 
     // Update the split view divider bar status if necessary. If splitview is
     // active when dragging the overview window, the split divider bar should be
     // placed below the dragged window during dragging.
-    split_view_controller_->OnWindowDragStarted(item_->GetWindow());
+    SplitViewController::Get(Shell::GetPrimaryRootWindow())
+        ->OnWindowDragStarted(item_->GetWindow());
   }
 
   if (virtual_desks_bar_enabled_) {
@@ -291,15 +310,18 @@ void OverviewWindowDragController::ActivateDraggedWindow() {
   // right window, snap the current window to left. If split view is active
   // and the selected window cannot be snapped, exit splitview and activate
   // the selected window, and also exit the overview.
-  SplitViewState split_state = split_view_controller_->state();
-  if (!should_allow_split_view_ || split_state == SplitViewState::kNoSnap) {
+  SplitViewController* split_view_controller =
+      SplitViewController::Get(item_->root_window());
+  SplitViewController::State split_state = split_view_controller->state();
+  if (!should_allow_split_view_ ||
+      split_state == SplitViewController::State::kNoSnap) {
     overview_session_->SelectWindow(item_);
-  } else if (CanSnapInSplitview(item_->GetWindow())) {
-    SnapWindow(split_state == SplitViewState::kLeftSnapped
+  } else if (split_view_controller->CanSnapWindow(item_->GetWindow())) {
+    SnapWindow(split_state == SplitViewController::State::kLeftSnapped
                    ? SplitViewController::RIGHT
                    : SplitViewController::LEFT);
   } else {
-    split_view_controller_->EndSplitView();
+    split_view_controller->EndSplitView();
     overview_session_->SelectWindow(item_);
     ShowAppCannotSnapToast();
   }
@@ -317,8 +339,11 @@ void OverviewWindowDragController::ResetGesture() {
     }
     item_->overview_grid()->RemoveDropTarget();
     if (should_allow_split_view_) {
-      overview_session_->SetSplitViewDragIndicatorsIndicatorState(
-          IndicatorState::kNone, gfx::Point());
+      overview_session_->UpdateSplitViewDragIndicatorsWindowDraggingStates(
+          item_->overview_grid()->root_window(), /*is_dragging=*/false,
+          SplitViewDragIndicators::WindowDraggingState::kNoDrag,
+          SplitViewController::NONE);
+      item_->UpdateCannotSnapWarningVisibility();
     }
   }
   overview_session_->PositionWindows(/*animate=*/true);
@@ -496,14 +521,18 @@ OverviewWindowDragController::CompleteNormalDrag(
     // should be placed above the dragged window after drag ends. Note here the
     // passed parameters |snap_position_| and |location_in_screen| won't be used
     // in this function for this case, but they are passed in as placeholders.
-    split_view_controller_->OnWindowDragEnded(
-        item_->GetWindow(), snap_position_, rounded_screen_point);
+    SplitViewController::Get(Shell::GetPrimaryRootWindow())
+        ->OnWindowDragEnded(item_->GetWindow(), snap_position_,
+                            rounded_screen_point);
 
     // Update window grid bounds and |snap_position_| in case the screen
     // orientation was changed.
     UpdateDragIndicatorsAndOverviewGrid(location_in_screen);
-    overview_session_->SetSplitViewDragIndicatorsIndicatorState(
-        IndicatorState::kNone, rounded_screen_point);
+    overview_session_->UpdateSplitViewDragIndicatorsWindowDraggingStates(
+        GetRootWindowBeingDraggedIn(), /*is_dragging=*/true,
+        SplitViewDragIndicators::WindowDraggingState::kNoDrag,
+        SplitViewController::NONE);
+    item_->UpdateCannotSnapWarningVisibility();
   }
 
   // This function has multiple exit positions, at each we must update the desks
@@ -560,28 +589,20 @@ void OverviewWindowDragController::UpdateDragIndicatorsAndOverviewGrid(
   if (!ShouldUpdateDragIndicatorsOrSnap(location_in_screen))
     return;
 
-  IndicatorState indicator_state;
-  if (CanSnapInSplitview(item_->GetWindow())) {
-    snap_position_ = GetSnapPosition(location_in_screen);
-    switch (snap_position_) {
-      case SplitViewController::NONE:
-        indicator_state = IndicatorState::kDragArea;
-        break;
-      case SplitViewController::LEFT:
-        indicator_state = IndicatorState::kPreviewAreaLeft;
-        break;
-      case SplitViewController::RIGHT:
-        indicator_state = IndicatorState::kPreviewAreaRight;
-        break;
-    }
-  } else {
-    snap_position_ = SplitViewController::NONE;
-    indicator_state = IndicatorState::kCannotSnap;
-  }
-  item_->overview_grid()->RearrangeDuringDrag(item_->GetWindow(),
-                                              indicator_state);
-  overview_session_->SetSplitViewDragIndicatorsIndicatorState(
-      indicator_state, gfx::ToRoundedPoint(location_in_screen));
+  snap_position_ = GetSnapPosition(location_in_screen);
+  overview_session_->UpdateSplitViewDragIndicatorsWindowDraggingStates(
+      GetRootWindowBeingDraggedIn(), /*is_dragging=*/true,
+      SplitViewDragIndicators::WindowDraggingState::kFromOverview,
+      snap_position_);
+  overview_session_->RearrangeDuringDrag(item_->GetWindow());
+}
+
+aura::Window* OverviewWindowDragController::GetRootWindowBeingDraggedIn()
+    const {
+  return is_touch_dragging_
+             ? item_->root_window()
+             : Shell::GetRootWindowForDisplayId(
+                   Shell::Get()->cursor_manager()->GetDisplay().id());
 }
 
 gfx::Rect OverviewWindowDragController::GetWorkAreaOfDisplayBeingDraggedIn()
@@ -595,23 +616,15 @@ gfx::Rect OverviewWindowDragController::GetWorkAreaOfDisplayBeingDraggedIn()
 
 bool OverviewWindowDragController::ShouldUpdateDragIndicatorsOrSnap(
     const gfx::PointF& event_location) {
-  auto snap_position = GetSnapPosition(event_location);
-  const bool inverted = !IsCurrentScreenOrientationPrimary();
-  // Note: in some orientations SplitViewController::LEFT is not physically on
-  // the left/top.
-  const bool on_the_left_or_top =
-      (!inverted && snap_position == SplitViewController::LEFT) ||
-      (inverted && snap_position == SplitViewController::RIGHT);
-
   // Snap the window if it is less than |kDistanceFromEdgeDp| from the edge.
   const bool landscape = IsCurrentScreenOrientationLandscape();
   gfx::Rect area = GetWorkAreaOfDisplayBeingDraggedIn();
   area.Inset(kDistanceFromEdgeDp, kDistanceFromEdgeDp);
   const gfx::Point event_location_i = gfx::ToRoundedPoint(event_location);
-  if ((landscape && (event_location_i.x() < area.x() ||
-                     event_location_i.x() > area.right())) ||
-      (!landscape && (event_location_i.y() < area.y() ||
-                      event_location_i.y() > area.bottom()))) {
+  if (landscape ? event_location_i.x() < area.x() ||
+                      event_location_i.x() > area.right()
+                : event_location_i.y() < area.y() ||
+                      event_location_i.y() > area.bottom()) {
     return true;
   }
 
@@ -629,6 +642,7 @@ bool OverviewWindowDragController::ShouldUpdateDragIndicatorsOrSnap(
     return true;
   }
 
+  const auto snap_position = GetSnapPosition(event_location);
   if (snap_position == SplitViewController::NONE) {
     // If the event started in a snap region, but has since moved out set
     // |started_in_snap_region_| to false. |event_location| is guarenteed to not
@@ -644,7 +658,7 @@ bool OverviewWindowDragController::ShouldUpdateDragIndicatorsOrSnap(
   // physically on the right/bottom side of the device, check that
   // |distance_scalar| is greater than
   // |kMinimumDragDistanceAlreadyInSnapRegionDp|.
-  return on_the_left_or_top
+  return IsPhysicalLeftOrTop(snap_position)
              ? distance_scalar <= -kMinimumDragDistanceAlreadyInSnapRegionDp
              : distance_scalar >= kMinimumDragDistanceAlreadyInSnapRegionDp;
 }
@@ -655,59 +669,31 @@ SplitViewController::SnapPosition OverviewWindowDragController::GetSnapPosition(
   DCHECK(should_allow_split_view_);
   gfx::Rect area = GetWorkAreaOfDisplayBeingDraggedIn();
 
-  const bool is_landscape = IsCurrentScreenOrientationLandscape();
-  const bool is_primary = IsCurrentScreenOrientationPrimary();
-
   // If split view mode is active at the moment, and dragging an overview window
   // to snap it to a position that already has a snapped window in place, we
   // should show the preview window as soon as the window past the split divider
   // bar.
-  if (split_view_controller_->InSplitViewMode()) {
-    const int position = gfx::ToRoundedInt(
-        is_landscape ? location_in_screen.x() : location_in_screen.y());
+  SplitViewController* split_view_controller =
+      SplitViewController::Get(GetRootWindowBeingDraggedIn());
+  if (split_view_controller->InSplitViewMode()) {
+    const int position =
+        gfx::ToRoundedInt(IsCurrentScreenOrientationLandscape()
+                              ? location_in_screen.x() - area.x()
+                              : location_in_screen.y() - area.y());
     SplitViewController::SnapPosition default_snap_position =
-        split_view_controller_->default_snap_position();
+        split_view_controller->default_snap_position();
     // If we're trying to snap to a position that already has a snapped window:
     const bool is_default_snap_position_left_or_top =
-        is_primary == (default_snap_position == SplitViewController::LEFT);
+        IsPhysicalLeftOrTop(default_snap_position);
     const bool is_drag_position_left_or_top =
-        position < split_view_controller_->divider_position();
+        position < split_view_controller->divider_position();
     if (is_default_snap_position_left_or_top == is_drag_position_left_or_top)
       return default_snap_position;
   }
 
-  if (is_landscape) {
-    // The window can be snapped if it reaches close enough to the screen
-    // edge of the screen (on primary axis). The edge insets are a fixed ratio
-    // of the screen plus some padding. This matches the drag indicators ui.
-    const int screen_edge_inset_for_drag =
-        area.width() * kHighlightScreenPrimaryAxisRatio +
-        kHighlightScreenEdgePaddingDp;
-    area.Inset(screen_edge_inset_for_drag, 0);
-    if (location_in_screen.x() <= area.x()) {
-      return is_primary ? SplitViewController::LEFT
-                        : SplitViewController::RIGHT;
-    }
-    if (location_in_screen.x() >= area.right() - 1) {
-      return is_primary ? SplitViewController::RIGHT
-                        : SplitViewController::LEFT;
-    }
-    return SplitViewController::NONE;
-  } else {
-    const int screen_edge_inset_for_drag =
-        area.height() * kHighlightScreenPrimaryAxisRatio +
-        kHighlightScreenEdgePaddingDp;
-    area.Inset(0, screen_edge_inset_for_drag);
-    if (location_in_screen.y() <= area.y()) {
-      return is_primary ? SplitViewController::LEFT
-                        : SplitViewController::RIGHT;
-    }
-    if (location_in_screen.y() >= area.bottom() - 1) {
-      return is_primary ? SplitViewController::RIGHT
-                        : SplitViewController::LEFT;
-    }
-    return SplitViewController::NONE;
-  }
+  return ::ash::GetSnapPosition(
+      GetRootWindowBeingDraggedIn(), item_->GetWindow(),
+      gfx::Point(location_in_screen.x(), location_in_screen.y()));
 }
 
 void OverviewWindowDragController::SnapWindow(
@@ -715,10 +701,16 @@ void OverviewWindowDragController::SnapWindow(
   DCHECK_NE(snap_position, SplitViewController::NONE);
 
   // |item_| will be deleted after SplitViewController::SnapWindow().
-  DCHECK(!Shell::Get()->split_view_controller()->IsDividerAnimating());
-  split_view_controller_->SnapWindow(item_->GetWindow(), snap_position,
-                                     /*use_divider_spawn_animation=*/true);
+  DCHECK(!SplitViewController::Get(Shell::GetPrimaryRootWindow())
+              ->IsDividerAnimating());
+  aura::Window* window = item_->GetWindow();
+  // TODO(crbug.com/970013): Properly implement the multi-display behavior which
+  // involves reparenting |window| to put it on the destination display.
+  SplitViewController::Get(GetRootWindowBeingDraggedIn())
+      ->SnapWindow(window, snap_position,
+                   /*use_divider_spawn_animation=*/true);
   item_ = nullptr;
+  wm::ActivateWindow(window);
 }
 
 }  // namespace ash

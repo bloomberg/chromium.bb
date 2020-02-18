@@ -19,6 +19,7 @@ source_set("helpers") {
     "//base:base",
     "//base/test:test_config",
     "//base/test:test_support",
+    "//gpu/ipc/common",
     "//media:test_support",
     "//media/gpu",
     "//mojo/core/embedder:embedder",
@@ -33,24 +34,6 @@ source_set("helpers") {
   }
   if (use_vaapi) {
     deps += [ "//media/gpu/vaapi" ]
-  }
-}
-
-source_set("render_helpers") {
-  testonly = true
-  sources = [
-    "rendering_helper.cc",
-    "rendering_helper.h",
-    "texture_ref.cc",
-    "texture_ref.h",
-  ]
-  deps = [
-    ":helpers",
-    "//media/gpu",
-    "//ui/gl/init:init",
-  ]
-  if (use_ozone) {
-    deps += [ "//ui/ozone" ]
   }
 }
 
@@ -75,7 +58,6 @@ source_set("frame_file_writer") {
   ]
   deps = [
     ":helpers",
-    ":render_helpers",
     "//media/gpu",
     "//ui/gfx/codec:codec",
   ]
@@ -89,7 +71,6 @@ source_set("decode_helpers") {
   ]
   public_deps = [
     ":helpers",
-    ":render_helpers",
   ]
   deps = [
     "//media/gpu",
@@ -149,27 +130,48 @@ static_library("video_player_test_environment") {
     "//media/test/data/",
   ]
   deps = [
+    ":frame_file_writer",
     ":helpers",
     ":video_player",
     "//media/gpu",
   ]
 }
 
-static_library("image_processor") {
-  testonly = true
-  sources = [
-    "image_processor/image_processor_client.cc",
-    "image_processor/image_processor_client.h",
-  ]
-  deps = [
-    ":helpers",
-    ":render_helpers",
-    "//media:test_support",
-    "//media/gpu",
-    "//testing/gtest",
-    "//third_party/libyuv",
-  ]
-  data = [
-    "//media/test/data/",
-  ]
+if (use_vaapi || use_v4l2_codec) {
+  static_library("image_processor") {
+    testonly = true
+    sources = [
+      "image_processor/image_processor_client.cc",
+      "image_processor/image_processor_client.h",
+    ]
+    deps = [
+      ":helpers",
+      "//media:test_support",
+      "//media/gpu",
+      "//media/gpu/chromeos",
+      "//testing/gtest",
+      "//third_party/libyuv",
+    ]
+    data = [
+      "//media/test/data/",
+    ]
+  }
+}
+
+if (is_linux) {
+  static_library("local_gpu_memory_buffer_manager") {
+    testonly = true
+    sources = [
+      "local_gpu_memory_buffer_manager.cc",
+      "local_gpu_memory_buffer_manager.h",
+    ]
+    deps = [
+      "//base",
+      "//build/config/linux/libdrm",
+      "//gpu/command_buffer/client",
+      "//third_party/minigbm",
+      "//ui/gfx:memory_buffer",
+      "//ui/gfx/geometry",
+    ]
+  }
 }

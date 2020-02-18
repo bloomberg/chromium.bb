@@ -122,6 +122,7 @@ class WebMediaPlayer {
     int frame_id = -1;
     gfx::Rect visible_rect = {};
     base::TimeDelta timestamp = {};
+    base::TimeDelta expected_timestamp = {};
     bool skipped = false;
   };
 
@@ -129,9 +130,6 @@ class WebMediaPlayer {
   enum class SurfaceLayerMode {
     // Always use VideoLayer
     kNever,
-
-    // Use SurfaceLayer only when we switch to Picture-in-Picture.
-    kOnDemand,
 
     // Always use SurfaceLayer for video.
     kAlways,
@@ -147,6 +145,12 @@ class WebMediaPlayer {
   virtual void Seek(double seconds) = 0;
   virtual void SetRate(double) = 0;
   virtual void SetVolume(double) = 0;
+
+  // Set a target value for media pipeline latency for post-decode buffering.
+  // |seconds| is a target value for post-decode buffering latency. As a default
+  // |seconds| may also be NaN, indicating no preference. NaN will also be the
+  // value if the hint is cleared.
+  virtual void SetLatencyHint(double seconds) = 0;
 
   // The associated media element is going to enter Picture-in-Picture. This
   // method should make sure the player is set up for this and has a SurfaceId
@@ -424,6 +428,16 @@ class WebMediaPlayer {
   virtual base::Optional<viz::SurfaceId> GetSurfaceId() {
     return base::nullopt;
   }
+
+  // Provide the media URL, after any redirects are applied.  May return an
+  // empty GURL, which will be interpreted as "use the original URL".
+  virtual GURL GetSrcAfterRedirects() { return GURL(); }
+
+  // Register a request to be notified the next time a video frame is presented
+  // to the compositor. The video frame and its metadata will be surfaced via
+  // WebMediaPlayerClient::OnRequestAnimationFrame().
+  // TODO(https://crbug.com/1022186): Add pointer to spec.
+  virtual void RequestAnimationFrame() {}
 
   virtual base::WeakPtr<WebMediaPlayer> AsWeakPtr() = 0;
 };

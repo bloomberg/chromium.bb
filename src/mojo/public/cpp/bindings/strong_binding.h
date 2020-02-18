@@ -16,7 +16,6 @@
 #include "base/memory/weak_ptr.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/connection_error_callback.h"
-#include "mojo/public/cpp/bindings/filter_chain.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -105,8 +104,8 @@ class StrongBinding {
                 scoped_refptr<base::SequencedTaskRunner> task_runner)
       : impl_(std::move(impl)),
         binding_(impl_.get(), std::move(request), std::move(task_runner)) {
-    binding_.set_connection_error_with_reason_handler(
-        base::Bind(&StrongBinding::OnConnectionError, base::Unretained(this)));
+    binding_.set_connection_error_with_reason_handler(base::BindOnce(
+        &StrongBinding::OnConnectionError, base::Unretained(this)));
   }
 
   ~StrongBinding() {}

@@ -103,6 +103,12 @@ namespace dawn_native { namespace vulkan {
             GET_INSTANCE_PROC(GetPhysicalDeviceSurfacePresentModesKHR);
         }
 
+#ifdef VK_USE_PLATFORM_FUCHSIA
+        if (globalInfo.fuchsiaImagePipeSurface) {
+            GET_INSTANCE_PROC(CreateImagePipeSurfaceFUCHSIA);
+        }
+#endif
+
         return {};
     }
 
@@ -113,7 +119,7 @@ namespace dawn_native { namespace vulkan {
     }
 
     MaybeError VulkanFunctions::LoadDeviceProcs(VkDevice device,
-                                                const VulkanDeviceKnobs& usedKnobs) {
+                                                const VulkanDeviceInfo& deviceInfo) {
         GET_DEVICE_PROC(AllocateCommandBuffers);
         GET_DEVICE_PROC(AllocateDescriptorSets);
         GET_DEVICE_PROC(AllocateMemory);
@@ -234,23 +240,35 @@ namespace dawn_native { namespace vulkan {
         GET_DEVICE_PROC(UpdateDescriptorSets);
         GET_DEVICE_PROC(WaitForFences);
 
-        if (usedKnobs.debugMarker) {
+        if (deviceInfo.debugMarker) {
             GET_DEVICE_PROC(CmdDebugMarkerBeginEXT);
             GET_DEVICE_PROC(CmdDebugMarkerEndEXT);
             GET_DEVICE_PROC(CmdDebugMarkerInsertEXT);
         }
 
-        if (usedKnobs.externalMemoryFD) {
+        if (deviceInfo.externalMemoryFD) {
             GET_DEVICE_PROC(GetMemoryFdKHR);
             GET_DEVICE_PROC(GetMemoryFdPropertiesKHR);
         }
 
-        if (usedKnobs.externalSemaphoreFD) {
+        if (deviceInfo.externalSemaphoreFD) {
             GET_DEVICE_PROC(ImportSemaphoreFdKHR);
             GET_DEVICE_PROC(GetSemaphoreFdKHR);
         }
 
-        if (usedKnobs.swapchain) {
+#if VK_USE_PLATFORM_FUCHSIA
+        if (deviceInfo.externalMemoryZirconHandle) {
+            GET_DEVICE_PROC(GetMemoryZirconHandleFUCHSIA);
+            GET_DEVICE_PROC(GetMemoryZirconHandlePropertiesFUCHSIA);
+        }
+
+        if (deviceInfo.externalSemaphoreZirconHandle) {
+            GET_DEVICE_PROC(ImportSemaphoreZirconHandleFUCHSIA);
+            GET_DEVICE_PROC(GetSemaphoreZirconHandleFUCHSIA);
+        }
+#endif
+
+        if (deviceInfo.swapchain) {
             GET_DEVICE_PROC(CreateSwapchainKHR);
             GET_DEVICE_PROC(DestroySwapchainKHR);
             GET_DEVICE_PROC(GetSwapchainImagesKHR);

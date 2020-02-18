@@ -4,6 +4,7 @@
 
 #include "net/log/net_log.h"
 
+#include "base/no_destructor.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "net/log/net_log_values.h"
@@ -29,11 +30,17 @@ NetLog* NetLog::ThreadSafeObserver::net_log() const {
   return net_log_;
 }
 
-NetLog::NetLog() : last_id_(0), observer_capture_modes_(0) {}
-
-NetLog::~NetLog() {
-  MarkDead();
+// static
+NetLog* NetLog::Get() {
+  static base::NoDestructor<NetLog> instance{util::PassKey<NetLog>()};
+  return instance.get();
 }
+
+NetLog::NetLog(util::PassKey<NetLog>) {}
+NetLog::NetLog(util::PassKey<NetLogWithSource>) {}
+NetLog::NetLog(util::PassKey<TestNetLog>) {}
+
+NetLog::~NetLog() = default;
 
 void NetLog::AddEntry(NetLogEventType type,
                       const NetLogSource& source,
@@ -54,11 +61,6 @@ void NetLog::AddGlobalEntryWithStringParams(NetLogEventType type,
 
 uint32_t NetLog::NextID() {
   return base::subtle::NoBarrier_AtomicIncrement(&last_id_, 1);
-}
-
-bool NetLog::IsCapturing() const {
-  CheckAlive();
-  return GetObserverCaptureModes() != 0;
 }
 
 void NetLog::AddObserver(NetLog::ThreadSafeObserver* observer,
@@ -201,10 +203,6 @@ void NetLog::AddEntryInternal(NetLogEventType type,
         observer->OnAddEntry(entry);
     }
   }
-}
-
-NetLogCaptureModeSet NetLog::GetObserverCaptureModes() const {
-  return base::subtle::NoBarrier_Load(&observer_capture_modes_);
 }
 
 void NetLog::AddEntryWithMaterializedParams(NetLogEventType type,

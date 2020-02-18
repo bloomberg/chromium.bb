@@ -65,6 +65,12 @@ if (!build_with_chromium) {
         "video:sv_loopback",
         "video:video_loopback",
       ]
+      if (!is_asan) {
+        # Do not build :webrtc_lib_link_test because lld complains on some OS
+        # (e.g. when target_os = "mac") when is_asan=true. For more details,
+        # see bugs.webrtc.org/11027#c5.
+        deps += [ ":webrtc_lib_link_test" ]
+      }
       if (is_android) {
         deps += [
           ":android_junit_tests",
@@ -105,7 +111,7 @@ config("common_inherited_config") {
   cflags = []
   ldflags = []
 
-  if (rtc_enable_symbol_export) {
+  if (rtc_enable_symbol_export || is_component_build) {
     defines = [ "WEBRTC_ENABLE_SYMBOL_EXPORT" ]
   }
 
@@ -115,6 +121,10 @@ config("common_inherited_config") {
 
   if (!rtc_builtin_ssl_root_certificates) {
     defines += [ "WEBRTC_EXCLUDE_BUILT_IN_SSL_ROOT_CERTS" ]
+  }
+
+  if (rtc_disable_check_msg) {
+    defines += [ "RTC_DISABLE_CHECK_MSG" ]
   }
 
   # Some tests need to declare their own trace event handlers. If this define is
@@ -253,6 +263,16 @@ config("common_config") {
     defines += [ "WEBRTC_USE_H264" ]
   }
 
+  if (rtc_disable_logging) {
+    defines += [ "RTC_DISABLE_LOGGING" ]
+  }
+
+  if (rtc_disable_trace_events) {
+    defines += [ "RTC_DISABLE_TRACE_EVENTS" ]
+  }
+
+  cflags = []
+
   if (build_with_chromium) {
     defines += [
       # NOTICE: Since common_inherited_config is used in public_configs for our
@@ -264,14 +284,6 @@ config("common_config") {
     ]
   } else {
     if (is_posix || is_fuchsia) {
-      # Enable more warnings: -Wextra is currently disabled in Chromium.
-      cflags = [
-        "-Wextra",
-
-        # Repeat some flags that get overridden by -Wextra.
-        "-Wno-unused-parameter",
-        "-Wno-missing-field-initializers",
-      ]
       cflags_c += [
         # TODO(bugs.webrtc.org/9029): enable commented compiler flags.
         # Some of these flags should also be added to cflags_objc.
@@ -389,8 +401,11 @@ config("common_objc") {
 if (!build_with_chromium) {
   # Target to build all the WebRTC production code.
   rtc_static_library("webrtc") {
-    # Only the root target should depend on this.
-    visibility = [ "//:default" ]
+    # Only the root target and the test should depend on this.
+    visibility = [
+      "//:default",
+      "//:webrtc_lib_link_test",
+    ]
 
     sources = []
     complete_static_lib = true
@@ -399,9 +414,14 @@ if (!build_with_chromium) {
 
     deps = [
       ":webrtc_common",
+      "api:create_peerconnection_factory",
       "api:libjingle_peerconnection_api",
+      "api:rtc_error",
       "api:transport_api",
+      "api/crypto",
       "api/rtc_event_log:rtc_event_log_factory",
+      "api/task_queue",
+      "api/task_queue:default_task_queue_factory",
       "audio",
       "call",
       "common_audio",
@@ -450,8 +470,22 @@ if (!build_with_chromium) {
     }
 
     if (rtc_enable_protobuf) {
-      defines += [ "ENABLE_RTC_EVENT_LOG" ]
       deps += [ "logging:rtc_event_log_proto" ]
+    }
+  }
+
+  if (rtc_include_tests) {
+    rtc_executable("webrtc_lib_link_test") {
+      testonly = true
+
+      sources = [
+        "webrtc_lib_link_test.cc",
+      ]
+      deps = [
+        # NOTE: Don't add deps here. If this test fails to link, it means you
+        # need to add stuff to the webrtc static lib target above.
+        ":webrtc",
+      ]
     }
   }
 }
@@ -488,6 +522,7 @@ if (rtc_include_tests) {
       "api:rtc_api_unittests",
       "api/audio/test:audio_api_unittests",
       "api/audio_codecs/test:audio_codecs_api_unittests",
+      "api/transport:stun_unittest",
       "api/video/test:rtc_api_video_unittests",
       "api/video_codecs/test:video_codecs_api_unittests",
       "call:fake_network_pipe_unittests",
@@ -497,6 +532,7 @@ if (rtc_include_tests) {
       "rtc_base:rtc_base_unittests",
       "rtc_base:rtc_json_unittests",
       "rtc_base:rtc_numerics_unittests",
+      "rtc_base:rtc_operations_chain_unittests",
       "rtc_base:rtc_task_queue_unittests",
       "rtc_base:sigslot_unittest",
       "rtc_base:weak_ptr_unittests",
@@ -536,7 +572,6 @@ if (rtc_include_tests) {
   rtc_test("slow_tests") {
     testonly = true
     deps = [
-      "modules/congestion_controller/goog_cc:goog_cc_slow_tests",
       "rtc_base/task_utils:repeating_task_unittests",
       "test:test_main",
     ]
@@ -651,6 +686,7 @@ if (rtc_include_tests) {
         "sdk/android/tests/src/org/webrtc/FakeMediaCodecWrapper.java",
         "sdk/android/tests/src/org/webrtc/GlGenericDrawerTest.java",
         "sdk/android/tests/src/org/webrtc/HardwareVideoEncoderTest.java",
+        "sdk/android/tests/src/org/webrtc/IceCandidateTest.java",
         "sdk/android/tests/src/org/webrtc/ScalingSettingsTest.java",
         "sdk/android/tests/src/org/webrtc/CryptoOptionsTest.java",
       ]
@@ -682,8 +718,11 @@ if (rtc_include_tests) {
 group("poison_audio_codecs") {
 }
 
-group("poison_software_video_codecs") {
+group("poison_default_task_queue") {
 }
 
-group("poison_default_task_queue") {
+group("poison_rtc_json") {
+}
+
+group("poison_software_video_codecs") {
 }

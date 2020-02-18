@@ -46,6 +46,10 @@ std::string TestPersonalDataManager::SaveImportedCreditCard(
   return imported_credit_card.guid();
 }
 
+void TestPersonalDataManager::AddVPA(const std::string& profile) {
+  num_times_save_vpa_called_++;
+}
+
 void TestPersonalDataManager::AddProfile(const AutofillProfile& profile) {
   std::unique_ptr<AutofillProfile> profile_ptr =
       std::make_unique<AutofillProfile>(profile);
@@ -187,11 +191,7 @@ void TestPersonalDataManager::LoadCreditCards() {
 }
 
 bool TestPersonalDataManager::IsAutofillEnabled() const {
-  // Return the value of autofill_enabled_ if it has been set, otherwise fall
-  // back to the normal behavior of checking the pref_service.
-  if (autofill_enabled_.has_value())
-    return autofill_enabled_.value();
-  return PersonalDataManager::IsAutofillEnabled();
+  return IsAutofillProfileEnabled() || IsAutofillCreditCardEnabled();
 }
 
 bool TestPersonalDataManager::IsAutofillProfileEnabled() const {
@@ -222,8 +222,7 @@ bool TestPersonalDataManager::ShouldSuggestServerCards() const {
   return IsAutofillCreditCardEnabled() && IsAutofillWalletImportEnabled();
 }
 
-std::string TestPersonalDataManager::CountryCodeForCurrentTimezone()
-    const {
+std::string TestPersonalDataManager::CountryCodeForCurrentTimezone() const {
   return timezone_country_code_;
 }
 

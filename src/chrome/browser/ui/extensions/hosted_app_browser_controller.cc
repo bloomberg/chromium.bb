@@ -17,8 +17,10 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/web_applications/web_app_dialog_manager.h"
 #include "chrome/browser/ui/web_applications/web_app_ui_manager_impl.h"
+#include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/components/web_app_ui_manager.h"
+#include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/extensions/api/url_handlers/url_handlers_parser.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
@@ -35,6 +37,7 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
+#include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
 #include "ui/gfx/image/image_skia.h"
 #include "url/gurl.h"
@@ -59,19 +62,17 @@ bool IsSameHostAndPort(const GURL& app_url, const GURL& page_url) {
 void HostedAppBrowserController::SetAppPrefsForWebContents(
     web_app::AppBrowserController* controller,
     content::WebContents* web_contents) {
-  auto* rvh = web_contents->GetRenderViewHost();
-
   web_contents->GetMutableRendererPrefs()->can_accept_load_drops = false;
-  rvh->SyncRendererPrefs();
+  web_contents->SyncRendererPrefs();
 
   if (!controller)
     return;
 
   // All hosted apps should specify an app ID.
-  DCHECK(controller->GetAppId());
+  DCHECK(controller->HasAppId());
   extensions::TabHelper::FromWebContents(web_contents)
       ->SetExtensionApp(ExtensionRegistry::Get(controller->browser()->profile())
-                            ->GetExtensionById(*controller->GetAppId(),
+                            ->GetExtensionById(controller->GetAppId(),
                                                ExtensionRegistry::EVERYTHING));
 
   web_contents->NotifyPreferencesChanged();
@@ -80,10 +81,8 @@ void HostedAppBrowserController::SetAppPrefsForWebContents(
 // static
 void HostedAppBrowserController::ClearAppPrefsForWebContents(
     content::WebContents* web_contents) {
-  auto* rvh = web_contents->GetRenderViewHost();
-
   web_contents->GetMutableRendererPrefs()->can_accept_load_drops = true;
-  rvh->SyncRendererPrefs();
+  web_contents->SyncRendererPrefs();
 
   extensions::TabHelper::FromWebContents(web_contents)
       ->SetExtensionApp(nullptr);
@@ -92,19 +91,15 @@ void HostedAppBrowserController::ClearAppPrefsForWebContents(
 }
 
 HostedAppBrowserController::HostedAppBrowserController(Browser* browser)
-    : AppBrowserController(browser),
-      extension_id_(web_app::GetAppIdFromApplicationName(browser->app_name())),
+    : AppBrowserController(
+          browser,
+          web_app::GetAppIdFromApplicationName(browser->app_name())),
       // If a bookmark app has a URL handler, then it is a PWA.
       // TODO(https://crbug.com/774918): Replace once there is a more explicit
       // indicator of a Bookmark App for an installable website.
-      created_for_installed_pwa_(
-          UrlHandlers::GetUrlHandlers(GetExtension())) {}
+      created_for_installed_pwa_(UrlHandlers::GetUrlHandlers(GetExtension())) {}
 
 HostedAppBrowserController::~HostedAppBrowserController() = default;
-
-base::Optional<std::string> HostedAppBrowserController::GetAppId() const {
-  return extension_id_;
-}
 
 bool HostedAppBrowserController::CreatedForInstalledPwa() const {
   return created_for_installed_pwa_;
@@ -114,80 +109,15 @@ bool HostedAppBrowserController::IsHostedApp() const {
   return true;
 }
 
-bool HostedAppBrowserController::ShouldShowCustomTabBar() const {
+bool HostedAppBrowserController::HasMinimalUiButtons() const {
   const Extension* extension = GetExtension();
-  if (!extension)
+  if (!extension || !extension->from_bookmark())
     return false;
 
-  DCHECK(extension->is_hosted_app());
-
-  content::WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-
-  if (!web_contents)
-    return false;
-
-  GURL launch_url = AppLaunchInfo::GetLaunchWebURL(extension);
-  base::StringPiece launch_scheme = launch_url.scheme_piece();
-
-  bool is_internal_launch_scheme = launch_scheme == kExtensionScheme ||
-                                   launch_scheme == content::kChromeUIScheme;
-
-  // The current page must be secure for us to hide the toolbar. However,
-  // the chrome-extension:// and chrome:// launch URL apps can hide the toolbar,
-  // if the current WebContents URLs are the same as the launch scheme.
-  //
-  // Note that the launch scheme may be insecure, but as long as the current
-  // page's scheme is secure, we can hide the toolbar.
-  base::StringPiece secure_page_scheme =
-      is_internal_launch_scheme ? launch_scheme : url::kHttpsScheme;
-
-  auto should_show_toolbar_for_url = [&](const GURL& url) -> bool {
-    // If the url is unset, it doesn't give a signal as to whether the toolbar
-    // should be shown or not. In lieu of more information, do not show the
-    // toolbar.
-    if (url.is_empty())
-      return false;
-
-    // Page URLs that are not within scope
-    // (https://www.w3.org/TR/appmanifest/#dfn-within-scope) of the app
-    // corresponding to |launch_url| show the toolbar.
-    bool out_of_scope = !IsUrlInAppScope(url);
-
-    if (url.scheme_piece() != secure_page_scheme) {
-      // Some origins are (such as localhost) are considered secure even when
-      // served over non-secure schemes. However, in order to hide the toolbar,
-      // the 'considered secure' origin must also be in the app's scope.
-      return out_of_scope || !InstallableManager::IsOriginConsideredSecure(url);
-    }
-
-    if (IsForSystemWebApp()) {
-      DCHECK_EQ(url.scheme_piece(), content::kChromeUIScheme);
-      return false;
-    }
-
-    return out_of_scope;
-  };
-
-  GURL visible_url = web_contents->GetVisibleURL();
-  GURL last_committed_url = web_contents->GetLastCommittedURL();
-
-  if (last_committed_url.is_empty() && visible_url.is_empty())
-    return should_show_toolbar_for_url(initial_url());
-
-  if (should_show_toolbar_for_url(visible_url) ||
-      should_show_toolbar_for_url(last_committed_url)) {
-    return true;
-  }
-
-  // Insecure external web sites show the toolbar.
-  // Note: IsContentSecure is false until a navigation is committed.
-  if (!last_committed_url.is_empty() && !is_internal_launch_scheme &&
-      !InstallableManager::IsContentSecure(web_contents)) {
-    return true;
-  }
-
-  return false;
+  return web_app::WebAppProvider::Get(browser()->profile())
+             ->registrar()
+             .GetAppEffectiveDisplayMode(GetAppId()) ==
+         blink::mojom::DisplayMode::kMinimalUi;
 }
 
 gfx::ImageSkia HostedAppBrowserController::GetWindowAppIcon() const {
@@ -256,6 +186,10 @@ GURL HostedAppBrowserController::GetAppLaunchURL() const {
 
 bool HostedAppBrowserController::IsUrlInAppScope(const GURL& url) const {
   const Extension* extension = GetExtension();
+
+  if (!extension)
+    return false;
+
   const std::vector<UrlHandlerInfo>* url_handlers =
       UrlHandlers::GetUrlHandlers(extension);
 
@@ -268,7 +202,7 @@ bool HostedAppBrowserController::IsUrlInAppScope(const GURL& url) const {
 
 const Extension* HostedAppBrowserController::GetExtension() const {
   return ExtensionRegistry::Get(browser()->profile())
-      ->GetExtensionById(extension_id_, ExtensionRegistry::EVERYTHING);
+      ->GetExtensionById(GetAppId(), ExtensionRegistry::EVERYTHING);
 }
 
 const Extension* HostedAppBrowserController::GetExtensionForTesting() const {
@@ -287,13 +221,13 @@ base::string16 HostedAppBrowserController::GetFormattedUrlOrigin() const {
 bool HostedAppBrowserController::CanUninstall() const {
   return web_app::WebAppUiManagerImpl::Get(browser()->profile())
       ->dialog_manager()
-      .CanUninstallWebApp(extension_id_);
+      .CanUninstallWebApp(GetAppId());
 }
 
 void HostedAppBrowserController::Uninstall() {
   web_app::WebAppUiManagerImpl::Get(browser()->profile())
       ->dialog_manager()
-      .UninstallWebApp(extension_id_,
+      .UninstallWebApp(GetAppId(),
                        web_app::WebAppDialogManager::UninstallSource::kAppMenu,
                        browser()->window(), base::DoNothing());
 }

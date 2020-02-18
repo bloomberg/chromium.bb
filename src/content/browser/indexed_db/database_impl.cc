@@ -20,7 +20,7 @@
 #include "content/browser/indexed_db/indexed_db_factory_impl.h"
 #include "content/browser/indexed_db/indexed_db_transaction.h"
 #include "content/browser/indexed_db/transaction_impl.h"
-#include "third_party/blink/public/platform/modules/indexeddb/web_idb_database_exception.h"
+#include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
 
 using blink::IndexedDBIndexKeys;
 using blink::IndexedDBKey;
@@ -87,16 +87,11 @@ void DatabaseImpl::RenameObjectStore(int64_t transaction_id,
     return;
   }
 
-  // TODO(dmurph): Fix this to be a preemptive task and handle the error
-  // correctly.
-  // Note: This doesn't schedule a task on the transaction because version
-  // change transactions pre-start in the OpenRequest inside IndexedDBDatabase.
-  leveldb::Status status = connection_->database()->RenameObjectStoreOperation(
-      object_store_id, new_name, transaction);
-  if (!status.ok()) {
-    indexed_db_context_->GetIDBFactory()->OnDatabaseError(
-        origin_, status, "Internal error renaming object store.");
-  }
+  transaction->ScheduleTask(
+      blink::mojom::IDBTaskType::Preemptive,
+      BindWeakOperation(&IndexedDBDatabase::RenameObjectStoreOperation,
+                        connection_->database()->AsWeakPtr(), object_store_id,
+                        new_name));
 }
 
 void DatabaseImpl::CreateTransaction(
@@ -105,7 +100,7 @@ void DatabaseImpl::CreateTransaction(
     int64_t transaction_id,
     const std::vector<int64_t>& object_store_ids,
     blink::mojom::IDBTransactionMode mode,
-    bool relaxed_durability) {
+    blink::mojom::IDBTransactionDurability durability) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!connection_->IsConnected())
     return;
@@ -125,7 +120,8 @@ void DatabaseImpl::CreateTransaction(
       transaction_id,
       std::set<int64_t>(object_store_ids.begin(), object_store_ids.end()), mode,
       new IndexedDBBackingStore::Transaction(
-          connection_->database()->backing_store(), relaxed_durability));
+          connection_->database()->backing_store()->AsWeakPtr(), durability,
+          mode));
   connection_->database()->RegisterAndScheduleTransaction(transaction);
 
   dispatcher_host_->CreateAndBindTransactionImpl(
@@ -191,7 +187,7 @@ void DatabaseImpl::Get(int64_t transaction_id,
                        blink::mojom::IDBDatabase::GetCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!connection_->IsConnected()) {
-    IndexedDBDatabaseError error(blink::kWebIDBDatabaseExceptionUnknownError,
+    IndexedDBDatabaseError error(blink::mojom::IDBException::kUnknownError,
                                  "Not connected.");
     std::move(callback).Run(blink::mojom::IDBDatabaseGetResult::NewErrorResult(
         blink::mojom::IDBError::New(error.code(), error.message())));
@@ -201,17 +197,8 @@ void DatabaseImpl::Get(int64_t transaction_id,
   IndexedDBTransaction* transaction =
       connection_->GetTransaction(transaction_id);
   if (!transaction) {
-    IndexedDBDatabaseError error(blink::kWebIDBDatabaseExceptionUnknownError,
+    IndexedDBDatabaseError error(blink::mojom::IDBException::kUnknownError,
                                  "Unknown transaction.");
-    std::move(callback).Run(blink::mojom::IDBDatabaseGetResult::NewErrorResult(
-        blink::mojom::IDBError::New(error.code(), error.message())));
-    return;
-  }
-
-  if (!connection_->database()->IsObjectStoreIdAndMaybeIndexIdInMetadata(
-          object_store_id, index_id)) {
-    IndexedDBDatabaseError error(blink::kWebIDBDatabaseExceptionUnknownError,
-                                 "Bad request");
     std::move(callback).Run(blink::mojom::IDBDatabaseGetResult::NewErrorResult(
         blink::mojom::IDBError::New(error.code(), error.message())));
     return;
@@ -239,7 +226,7 @@ void DatabaseImpl::GetAll(int64_t transaction_id,
                           blink::mojom::IDBDatabase::GetAllCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!connection_->IsConnected()) {
-    IndexedDBDatabaseError error(blink::kWebIDBDatabaseExceptionUnknownError,
+    IndexedDBDatabaseError error(blink::mojom::IDBException::kUnknownError,
                                  "Not connected.");
     std::move(callback).Run(
         blink::mojom::IDBDatabaseGetAllResult::NewErrorResult(
@@ -250,7 +237,7 @@ void DatabaseImpl::GetAll(int64_t transaction_id,
   IndexedDBTransaction* transaction =
       connection_->GetTransaction(transaction_id);
   if (!transaction) {
-    IndexedDBDatabaseError error(blink::kWebIDBDatabaseExceptionUnknownError,
+    IndexedDBDatabaseError error(blink::mojom::IDBException::kUnknownError,
                                  "Unknown transaction.");
     std::move(callback).Run(
         blink::mojom::IDBDatabaseGetAllResult::NewErrorResult(
@@ -259,7 +246,7 @@ void DatabaseImpl::GetAll(int64_t transaction_id,
   }
 
   if (!connection_->database()->IsObjectStoreIdInMetadata(object_store_id)) {
-    IndexedDBDatabaseError error(blink::kWebIDBDatabaseExceptionUnknownError,
+    IndexedDBDatabaseError error(blink::mojom::IDBException::kUnknownError,
                                  "Bad request");
     std::move(callback).Run(
         blink::mojom::IDBDatabaseGetAllResult::NewErrorResult(
@@ -300,15 +287,12 @@ void DatabaseImpl::SetIndexKeys(
     return;
   }
 
-  // TODO(dmurph): Fix this to be a preemptive task and handle the error
-  // correctly.
-  leveldb::Status status = connection_->database()->SetIndexKeysOperation(
-      object_store_id, std::make_unique<IndexedDBKey>(primary_key), index_keys,
-      transaction);
-  if (!status.ok()) {
-    indexed_db_context_->GetIDBFactory()->OnDatabaseError(
-        origin_, status, "Internal error setting index keys.");
-  }
+  transaction->ScheduleTask(
+      blink::mojom::IDBTaskType::Preemptive,
+      BindWeakOperation(&IndexedDBDatabase::SetIndexKeysOperation,
+                        connection_->database()->AsWeakPtr(), object_store_id,
+                        std::make_unique<IndexedDBKey>(primary_key),
+                        index_keys));
 }
 
 void DatabaseImpl::SetIndexesReady(int64_t transaction_id,
@@ -347,7 +331,7 @@ void DatabaseImpl::OpenCursor(
     blink::mojom::IDBDatabase::OpenCursorCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!connection_->IsConnected()) {
-    IndexedDBDatabaseError error(blink::kWebIDBDatabaseExceptionUnknownError,
+    IndexedDBDatabaseError error(blink::mojom::IDBException::kUnknownError,
                                  "Not connected.");
     std::move(callback).Run(
         blink::mojom::IDBDatabaseOpenCursorResult::NewErrorResult(
@@ -358,7 +342,7 @@ void DatabaseImpl::OpenCursor(
   IndexedDBTransaction* transaction =
       connection_->GetTransaction(transaction_id);
   if (!transaction) {
-    IndexedDBDatabaseError error(blink::kWebIDBDatabaseExceptionUnknownError,
+    IndexedDBDatabaseError error(blink::mojom::IDBException::kUnknownError,
                                  "Unknown transaction.");
     std::move(callback).Run(
         blink::mojom::IDBDatabaseOpenCursorResult::NewErrorResult(
@@ -377,11 +361,6 @@ void DatabaseImpl::OpenCursor(
     mojo::ReportBadMessage(
         "OpenCursor with |Preemptive| task type must be called from a version "
         "change transaction.");
-    return;
-  }
-
-  if (!connection_->database()->IsObjectStoreIdAndMaybeIndexIdInMetadata(
-          object_store_id, index_id)) {
     return;
   }
 
@@ -528,17 +507,11 @@ void DatabaseImpl::CreateIndex(int64_t transaction_id,
     return;
   }
 
-  // TODO(dmurph): Fix this to be a preemptive task and handle the error
-  // correctly.
-  // Note: This doesn't schedule a task on the transaction because the
-  // SetIndexKeys call path isn't asynchronous.
-  leveldb::Status status = connection_->database()->CreateIndexOperation(
-      object_store_id, index_id, name, key_path, unique, multi_entry,
-      transaction);
-  if (!status.ok()) {
-    indexed_db_context_->GetIDBFactory()->OnDatabaseError(
-        origin_, status, "Internal error creating an index.");
-  }
+  transaction->ScheduleTask(
+      blink::mojom::IDBTaskType::Preemptive,
+      BindWeakOperation(&IndexedDBDatabase::CreateIndexOperation,
+                        connection_->database()->AsWeakPtr(), object_store_id,
+                        index_id, name, key_path, unique, multi_entry));
 }
 
 void DatabaseImpl::DeleteIndex(int64_t transaction_id,
@@ -601,7 +574,7 @@ void DatabaseImpl::Abort(int64_t transaction_id) {
 
   connection_->AbortTransactionAndTearDownOnError(
       transaction,
-      IndexedDBDatabaseError(blink::kWebIDBDatabaseExceptionAbortError,
+      IndexedDBDatabaseError(blink::mojom::IDBException::kAbortError,
                              "Transaction aborted by user."));
 }
 

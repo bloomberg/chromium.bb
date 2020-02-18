@@ -42,6 +42,8 @@
 #include "google_apis/gcm/engine/mcs_client.h"
 #include "google_apis/gcm/monitoring/fake_gcm_stats_recorder.h"
 #include "mojo/core/embedder/embedder.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/cert/cert_verifier.h"
 #include "net/dns/host_resolver.h"
 #include "net/http/http_auth_handler_factory.h"
@@ -152,6 +154,8 @@ class MyTestCertVerifier : public net::CertVerifier {
              net::CompletionOnceCallback callback,
              std::unique_ptr<Request>* out_req,
              const net::NetLogWithSource& net_log) override {
+    verify_result->Reset();
+    verify_result->verified_cert = params.certificate();
     return net::OK;
   }
   void SetConfig(const Config& config) override {}
@@ -185,7 +189,8 @@ class MCSProbe {
 
  private:
   void RequestProxyResolvingSocketFactory(
-      network::mojom::ProxyResolvingSocketFactoryRequest request);
+      mojo::PendingReceiver<network::mojom::ProxyResolvingSocketFactory>
+          receiver);
   void CheckIn();
   void InitializeNetworkState();
 
@@ -211,7 +216,7 @@ class MCSProbe {
   std::unique_ptr<network::TestNetworkConnectionTracker>
       network_connection_tracker_;
   std::unique_ptr<net::URLRequestContext> url_request_context_;
-  net::NetLog net_log_;
+  net::NetLog* net_log_;
   std::unique_ptr<net::FileNetLogObserver> logger_;
   MCSProbeAuthPreferences http_auth_preferences_;
 
@@ -225,8 +230,8 @@ class MCSProbe {
   base::Thread file_thread_;
 
   std::unique_ptr<network::NetworkContext> network_context_;
-  network::mojom::NetworkContextPtr network_context_pipe_;
-  network::mojom::URLLoaderFactoryPtr url_loader_factory_;
+  mojo::Remote<network::mojom::NetworkContext> network_context_remote_;
+  mojo::Remote<network::mojom::URLLoaderFactory> url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory_;
 
   std::unique_ptr<base::RunLoop> run_loop_;
@@ -240,6 +245,7 @@ MCSProbe::MCSProbe(const base::CommandLine& command_line)
       server_port_(0),
       network_connection_tracker_(
           network::TestNetworkConnectionTracker::CreateInstance()),
+      net_log_(net::NetLog::Get()),
       file_thread_("FileThread") {
   network_connection_tracker_->SetConnectionType(
       network::mojom::ConnectionType::CONNECTION_ETHERNET);
@@ -336,13 +342,13 @@ void MCSProbe::InitializeNetworkState() {
     logger_ = net::FileNetLogObserver::CreateUnbounded(log_path, nullptr);
     net::NetLogCaptureMode capture_mode =
         net::NetLogCaptureMode::kIncludeSensitive;
-    logger_->StartObserving(&net_log_, capture_mode);
+    logger_->StartObserving(net_log_, capture_mode);
   }
 
   net::URLRequestContextBuilder builder;
-  builder.set_net_log(&net_log_);
+  builder.set_net_log(net_log_);
   builder.set_host_resolver(
-      net::HostResolver::CreateStandaloneResolver(&net_log_));
+      net::HostResolver::CreateStandaloneResolver(net_log_));
   builder.SetHttpAuthHandlerFactory(net::HttpAuthHandlerRegistryFactory::Create(
       &http_auth_preferences_,
       std::vector<std::string>{net::kBasicAuthScheme}));
@@ -356,7 +362,8 @@ void MCSProbe::InitializeNetworkState() {
 
   // Wrap it up with network service APIs.
   network_context_ = std::make_unique<network::NetworkContext>(
-      nullptr /* network_service */, mojo::MakeRequest(&network_context_pipe_),
+      nullptr /* network_service */,
+      network_context_remote_.BindNewPipeAndPassReceiver(),
       url_request_context_.get(),
       /*cors_exempt_header_list=*/std::vector<std::string>());
   auto url_loader_factory_params =
@@ -364,7 +371,7 @@ void MCSProbe::InitializeNetworkState() {
   url_loader_factory_params->process_id = network::mojom::kBrowserProcessId;
   url_loader_factory_params->is_corb_enabled = false;
   network_context_->CreateURLLoaderFactory(
-      mojo::MakeRequest(&url_loader_factory_),
+      url_loader_factory_.BindNewPipeAndPassReceiver(),
       std::move(url_loader_factory_params));
   shared_url_loader_factory_ =
       base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
@@ -376,9 +383,10 @@ void MCSProbe::ErrorCallback() {
 }
 
 void MCSProbe::RequestProxyResolvingSocketFactory(
-    network::mojom::ProxyResolvingSocketFactoryRequest request) {
+    mojo::PendingReceiver<network::mojom::ProxyResolvingSocketFactory>
+        receiver) {
   return network_context_->CreateProxyResolvingSocketFactory(
-      std::move(request));
+      std::move(receiver));
 }
 
 void MCSProbe::CheckIn() {

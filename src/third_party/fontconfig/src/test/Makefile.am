@@ -6,17 +6,22 @@ TEST_EXTENSIONS = \
 AM_TESTS_ENVIRONMENT= \
 	src=${srcdir}; export src; \
 	EXEEXT=${EXEEXT}; export EXEEXT; \
+	LOG_COMPILER=${LOG_COMPILER} ; export LOG_COMPILER; \
 	$(NULL)
 
 BUILT_SOURCES = $(builddir)/out.expected
 
 SH_LOG_COMPILER = sh
+if OS_WIN32
+LOG_COMPILER = ${srcdir}/wrapper-script.sh
+endif
 TESTS=run-test.sh
 
 TESTDATA =			\
 	4x6.pcf			\
 	8x16.pcf		\
 	fonts.conf.in		\
+	test-60-generic.json	\
 	test-90-synthetic.json	\
 	$(NULL)
 
@@ -37,6 +42,11 @@ test_pthread_LDADD = $(top_builddir)/src/libfontconfig.la
 # We don't enable this test by default because it will require config and fonts
 # to meaningfully test anything, and we are not installed yet.
 #TESTS += test-pthread
+
+check_PROGRAMS += test-crbug1004254
+test_crbug1004254_LDADD = $(top_builddir)/src/libfontconfig.la
+# Disabling this for the same reason as above but trying to run in run-test.sh.
+#TESTS += test-crbug1004254
 endif
 check_PROGRAMS += test-bz89617
 test_bz89617_CFLAGS = \
@@ -74,11 +84,7 @@ endif
 check_PROGRAMS += test-bz106618
 test_bz106618_LDADD = $(top_builddir)/src/libfontconfig.la
 
-check_PROGRAMS += test-hash
-test_hash_CFLAGS = -I$(top_builddir) -I$(top_builddir)/src $(UUID_CFLAGS)
-test_hash_LDADD = $(UUID_LIBS)
-TESTS += test-hash
-
+if !OS_WIN32
 check_PROGRAMS += test-bz106632
 test_bz106632_CFLAGS =					\
 	-I$(top_builddir)				\
@@ -90,8 +96,16 @@ test_bz106632_CFLAGS =					\
 	$(NULL)
 test_bz106632_LDADD = $(top_builddir)/src/libfontconfig.la
 TESTS += test-bz106632
+endif
+
+check_PROGRAMS += test-issue107
+test_issue107_LDADD =					\
+	$(top_builddir)/src/libfontconfig.la		\
+	$(NULL)
+TESTS += test-issue107
 
 if !ENABLE_SHARED
+if !OS_WIN32
 check_PROGRAMS += test-issue110
 test_issue110_CFLAGS =					\
 	-I$(top_builddir)				\
@@ -120,9 +134,28 @@ test_d1f48f11_LDADD =					\
 	$(NULL)
 TESTS += test-d1f48f11
 endif
+endif
 
-EXTRA_DIST=run-test.sh run-test-conf.sh $(TESTDATA) out.expected-long-family-names out.expected-no-long-family-names
+check_PROGRAMS += test-bz1744377
+test_bz1744377_LDADD = $(top_builddir)/src/libfontconfig.la
+TESTS += test-bz1744377
 
-CLEANFILES=out out1 out2 fonts.conf out.expected
+check_PROGRAMS += test-issue180
+test_issue180_LDADD = $(top_builddir)/src/libfontconfig.la
+TESTS += test-issue180
+
+EXTRA_DIST=run-test.sh run-test-conf.sh $(LOG_COMPILER) $(TESTDATA) out.expected-long-family-names out.expected-no-long-family-names
+
+CLEANFILES =		\
+	fonts.conf	\
+	out		\
+	out1		\
+	out2		\
+	out.expected	\
+	run*.log	\
+	run*.trs	\
+	test*.log	\
+	test*.trs	\
+	$(NULL)
 
 -include $(top_srcdir)/git.mk

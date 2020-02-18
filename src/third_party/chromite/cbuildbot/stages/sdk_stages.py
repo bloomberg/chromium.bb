@@ -69,7 +69,7 @@ def CreateTarball(source_root, tarball_path, exclude_paths=None):
       extra_env=extra_env)
   # Make sure the regular user has the permission to read.
   cmd = ['chmod', 'a+r', tarball_path]
-  cros_build_lib.SudoRunCommand(cmd)
+  cros_build_lib.sudo_run(cmd)
 
 
 class SDKBuildToolchainsStage(generic_stages.BuilderStage,
@@ -114,6 +114,8 @@ class SDKBuildToolchainsStage(generic_stages.BuilderStage,
     #  /proc/sys/kernel/yama/protected_nonaccess_hardlinks
     #  /proc/sys/fs/protected_hardlinks
     self.CrosSetupToolchains([
+        # TODO(crbug.com/917193): Enable debugging for now.
+        '--debug',
         '--create-packages',
         '--output-dir',
         os.path.join('/', constants.SDK_TOOLCHAINS_OUTPUT),
@@ -279,7 +281,7 @@ class SDKPackageToolchainOverlaysStage(generic_stages.BuilderStage):
         # 0o755 perms; apparently, these things are preserved through
         # tarring/untarring and might cause havoc if overlooked.
         os.chmod(overlay_dir, 0o755)
-        cros_build_lib.SudoRunCommand(['chown', 'root:root', overlay_dir])
+        cros_build_lib.sudo_run(['chown', 'root:root', overlay_dir])
         CreateTarball(overlay_dir,
                       overlay_tarball_template % {'toolchains': toolchains_str})
 
@@ -304,11 +306,11 @@ class SDKTestStage(generic_stages.BuilderStage):
         '--download', '--replace', '--nousepkg', '--url',
         'file://' + tarball_location
     ]
-    cros_build_lib.RunCommand(['true'],
-                              cwd=self._build_root,
-                              enter_chroot=True,
-                              chroot_args=chroot_args,
-                              extra_env=self._portage_extra_env)
+    cros_build_lib.run(['true'],
+                       cwd=self._build_root,
+                       enter_chroot=True,
+                       chroot_args=chroot_args,
+                       extra_env=self._portage_extra_env)
 
     # Inject the toolchain binpkgs from the previous sdk build.  On end user
     # systems, they'd be fetched from the binpkg mirror, but we don't have one
@@ -318,7 +320,7 @@ class SDKTestStage(generic_stages.BuilderStage):
                               pkgdir)
     new_pkgdir = os.path.join(self._build_root, new_chroot_dir, pkgdir)
     osutils.SafeMakedirs(new_pkgdir, sudo=True)
-    cros_build_lib.SudoRunCommand(
+    cros_build_lib.sudo_run(
         ['cp', '-r'] + glob.glob(os.path.join(old_pkgdir, '*')) + [new_pkgdir])
 
     # Now install those toolchains in the new chroot.  We skip the chroot
@@ -352,7 +354,8 @@ class SDKTestStage(generic_stages.BuilderStage):
           build_autotest=True,
           usepkg=False,
           extra_env=self._portage_extra_env,
-          chroot_args=new_chroot_args)
+          chroot_args=new_chroot_args,
+          disable_revdep_logic=True)
 
 
 class SDKUprevStage(generic_stages.BuilderStage):

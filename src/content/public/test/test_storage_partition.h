@@ -55,7 +55,7 @@ class TestStoragePartition : public StoragePartition {
   scoped_refptr<network::SharedURLLoaderFactory>
   GetURLLoaderFactoryForBrowserProcessWithCORBEnabled() override;
 
-  std::unique_ptr<network::SharedURLLoaderFactoryInfo>
+  std::unique_ptr<network::PendingSharedURLLoaderFactory>
   GetURLLoaderFactoryForBrowserProcessIOThread() override;
 
   void set_cookie_manager_for_browser_process(
@@ -66,6 +66,8 @@ class TestStoragePartition : public StoragePartition {
   void CreateRestrictedCookieManager(
       network::mojom::RestrictedCookieManagerRole role,
       const url::Origin& origin,
+      const GURL& site_for_cookies,
+      const url::Origin& top_frame_origin,
       bool is_service_worker,
       int process_id,
       int routing_id,
@@ -178,7 +180,7 @@ class TestStoragePartition : public StoragePartition {
 
   void ClearData(uint32_t remove_mask,
                  uint32_t quota_storage_remove_mask,
-                 const OriginMatcherFunction& origin_matcher,
+                 OriginMatcherFunction origin_matcher,
                  network::mojom::CookieDeletionFilterPtr cookie_deletion_filter,
                  bool perform_storage_cleanup,
                  const base::Time begin,

@@ -31,13 +31,16 @@ if (build_with_chromium) {
 
 config("dawn_public_include_dirs") {
   include_dirs = [
-    "${target_gen_dir}/../..",
+    "${target_gen_dir}/../../src/include",
     "${dawn_root}/src/include",
   ]
 }
 
 config("dawn_internal") {
-  include_dirs = [ "${dawn_root}/src" ]
+  include_dirs = [
+    "${target_gen_dir}/../../src",
+    "${dawn_root}/src",
+  ]
 
   defines = []
   if (dawn_always_assert || dcheck_always_on || is_debug) {
@@ -76,7 +79,7 @@ config("dawn_internal") {
 # This GN file is discovered by all Chromium builds, but common doesn't support
 # all of Chromium's OSes so we explicitly make the target visible only on
 # systems we know Dawn is able to compile on.
-if (is_win || is_linux || is_mac) {
+if (is_win || is_linux || is_mac || is_fuchsia || is_android) {
   static_library("common") {
     sources = [
       "Assert.cpp",
@@ -97,8 +100,11 @@ if (is_win || is_linux || is_mac) {
       "SerialQueue.h",
       "SerialStorage.h",
       "SwapChainUtils.h",
+      "SystemUtils.cpp",
+      "SystemUtils.h",
       "vulkan_platform.h",
       "windows_with_undefs.h",
+      "xlib_with_undefs.h",
     ]
 
     public_configs = [ ":dawn_internal" ]

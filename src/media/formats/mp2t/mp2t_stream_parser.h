@@ -109,8 +109,10 @@ class MEDIA_EXPORT Mp2tStreamParser : public StreamParser {
 
 #if BUILDFLAG(ENABLE_HLS_SAMPLE_AES)
   bool ShouldForceEncryptedParser();
-  std::unique_ptr<EsParser> CreateEncryptedH264Parser(int pes_pid);
-  std::unique_ptr<EsParser> CreateEncryptedAacParser(int pes_pid);
+  std::unique_ptr<EsParser> CreateEncryptedH264Parser(int pes_pid,
+                                                      bool emit_clear_buffers);
+  std::unique_ptr<EsParser> CreateEncryptedAacParser(int pes_pid,
+                                                     bool emit_clear_buffers);
 
   std::unique_ptr<PidState> MakeCatPidState();
   void UnregisterCat();
@@ -122,7 +124,7 @@ class MEDIA_EXPORT Mp2tStreamParser : public StreamParser {
   // Register a default encryption mode to be used for decoder configs. This
   // value is only used in the absence of explicit encryption metadata, as might
   // be the case during an unencrypted portion of a live stream.
-  void RegisterEncryptionMode(EncryptionMode mode);
+  void RegisterEncryptionScheme(EncryptionScheme scheme);
 
   // Register the new KeyID and IV (parsed from CENC-ECM).
   void RegisterNewKeyIdAndIv(const std::string& key_id, const std::string& iv);
@@ -171,7 +173,7 @@ class MEDIA_EXPORT Mp2tStreamParser : public StreamParser {
   TimestampUnroller timestamp_unroller_;
 
 #if BUILDFLAG(ENABLE_HLS_SAMPLE_AES)
-  EncryptionMode initial_encryption_mode_ = EncryptionMode::kUnencrypted;
+  EncryptionScheme initial_encryption_scheme_ = EncryptionScheme::kUnencrypted;
 
   // TODO(jrummell): Rather than store the key_id and iv in a DecryptConfig,
   // provide a better way to access the last values seen in a ECM packet.

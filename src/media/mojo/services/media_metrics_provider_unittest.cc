@@ -13,6 +13,7 @@
 #include "components/ukm/test_ukm_recorder.h"
 #include "media/mojo/services/media_metrics_provider.h"
 #include "media/mojo/services/watch_time_recorder.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -48,11 +49,19 @@ class MediaMetricsProviderTest : public testing::Test {
         base::BindRepeating([]() { return learning::FeatureValue(0); }),
         VideoDecodePerfHistory::SaveCallback(),
         MediaMetricsProvider::GetLearningSessionCallback(),
-        mojo::MakeRequest(&provider_));
+        base::BindRepeating(
+            &MediaMetricsProviderTest::GetRecordAggregateWatchTimeCallback,
+            base::Unretained(this)),
+        provider_.BindNewPipeAndPassReceiver());
     provider_->Initialize(is_mse, scheme);
   }
 
   ukm::SourceId GetSourceId() { return source_id_; }
+
+  MediaMetricsProvider::RecordAggregateWatchTimeCallback
+  GetRecordAggregateWatchTimeCallback() {
+    return base::NullCallback();
+  }
 
   void ResetMetricRecorders() {
     // Ensure cleared global before attempting to create a new TestUkmReporter.
@@ -64,7 +73,7 @@ class MediaMetricsProviderTest : public testing::Test {
   base::TestMessageLoop message_loop_;
   std::unique_ptr<ukm::TestAutoSetUkmRecorder> test_recorder_;
   ukm::SourceId source_id_;
-  mojom::MediaMetricsProviderPtr provider_;
+  mojo::Remote<mojom::MediaMetricsProvider> provider_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaMetricsProviderTest);
 };
@@ -143,43 +152,6 @@ TEST_F(MediaMetricsProviderTest, TestUkm) {
       EXPECT_UKM(UkmEntry::kContainerNameName, container_names::CONTAINER_MOV);
     }
   }
-}
-
-TEST_F(MediaMetricsProviderTest, TestBytesReceivedUMA) {
-  base::HistogramTester histogram_tester;
-  Initialize(false, false, false, kTestOrigin, mojom::MediaURLScheme::kHttp);
-  provider_->AddBytesReceived(1 << 10);
-  provider_.reset();
-  base::RunLoop().RunUntilIdle();
-
-  histogram_tester.ExpectBucketCount("Media.BytesReceived.SRC", 1, 1);
-  histogram_tester.ExpectTotalCount("Media.BytesReceived.MSE", 0);
-  histogram_tester.ExpectTotalCount("Media.BytesReceived.EME", 0);
-  histogram_tester.ExpectTotalCount("Ads.Media.BytesReceived", 0);
-
-  // EME is recorded in before MSE/SRC.
-  Initialize(true, false, false, kTestOrigin, mojom::MediaURLScheme::kHttp);
-  provider_->AddBytesReceived(1 << 10);
-  provider_->SetIsEME();
-  provider_->SetIsAdMedia();
-  provider_.reset();
-  base::RunLoop().RunUntilIdle();
-
-  histogram_tester.ExpectBucketCount("Media.BytesReceived.EME", 1, 1);
-  histogram_tester.ExpectTotalCount("Media.BytesReceived.MSE", 0);
-  histogram_tester.ExpectBucketCount("Ads.Media.BytesReceived", 1, 1);
-  histogram_tester.ExpectBucketCount("Ads.Media.BytesReceived.EME", 1, 1);
-  histogram_tester.ExpectTotalCount("Ads.Media.BytesReceived.MSE", 0);
-
-  Initialize(true, false, false, kTestOrigin, mojom::MediaURLScheme::kHttp);
-  provider_->AddBytesReceived(1 << 10);
-  provider_->SetIsAdMedia();
-  provider_.reset();
-  base::RunLoop().RunUntilIdle();
-
-  histogram_tester.ExpectBucketCount("Media.BytesReceived.MSE", 1, 1);
-  histogram_tester.ExpectBucketCount("Ads.Media.BytesReceived.MSE", 1, 1);
-  histogram_tester.ExpectBucketCount("Ads.Media.BytesReceived", 1, 2);
 }
 
 TEST_F(MediaMetricsProviderTest, TestPipelineUMA) {

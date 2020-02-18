@@ -4,7 +4,6 @@
 
 """Classes and functions for generic network communication over HTTP."""
 
-import cookielib
 import itertools
 import json
 import logging
@@ -14,10 +13,21 @@ import random
 import re
 import socket
 import ssl
+import sys
 import threading
 import time
 import urllib
-import urlparse
+# pylint: disable=ungrouped-imports
+# pylint: disable=no-name-in-module
+if sys.version_info.major == 2:
+  import urlparse
+  urlencode = urllib.urlencode
+else:
+  from urllib import parse as urlparse
+  urlencode = urlparse.urlencode
+
+from utils import tools
+tools.force_local_third_party()
 
 # third_party/
 import requests
@@ -25,6 +35,7 @@ from requests import adapters
 from requests import structures
 import urllib3
 
+from six.moves import http_cookiejar as cookielib
 from utils import authenticators
 from utils import oauth
 from utils import tools
@@ -57,7 +68,7 @@ DEFAULT_CONTENT_TYPE = URL_ENCODED_FORM_CONTENT_TYPE
 # Content type -> function that encodes a request body.
 CONTENT_ENCODERS = {
   URL_ENCODED_FORM_CONTENT_TYPE:
-    urllib.urlencode,
+    urlencode,
   JSON_CONTENT_TYPE:
     lambda x: json.dumps(x, sort_keys=True, separators=(',', ':')),
 }

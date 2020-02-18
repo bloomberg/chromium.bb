@@ -133,10 +133,6 @@ network::mojom::CookieManager* ChromeSigninClient::GetCookieManager() {
       ->GetCookieManagerForBrowserProcess();
 }
 
-std::string ChromeSigninClient::GetProductVersion() {
-  return chrome::GetVersionString();
-}
-
 bool ChromeSigninClient::AreSigninCookiesAllowed() {
   return ProfileAllowsSigninCookies(profile_);
 }
@@ -330,15 +326,6 @@ void ChromeSigninClient::SetDiceMigrationCompleted() {
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
   AccountConsistencyModeManager::GetForProfile(profile_)
       ->SetDiceMigrationCompleted();
-#else
-  NOTREACHED();
-#endif
-}
-
-void ChromeSigninClient::SetReadyForDiceMigration(bool is_ready) {
-#if BUILDFLAG(ENABLE_DICE_SUPPORT)
-  AccountConsistencyModeManager::GetForProfile(profile_)
-      ->SetReadyForDiceMigration(is_ready);
 #else
   NOTREACHED();
 #endif

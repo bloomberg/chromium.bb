@@ -7,6 +7,7 @@
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/environment.h"
+#include "ui/base/ime/constants.h"
 #include "ui/base/ime/ime_bridge.h"
 #include "ui/base/ime/ime_engine_handler_interface.h"
 #include "ui/base/ime/linux/linux_input_method_context_factory.h"
@@ -56,7 +57,9 @@ ui::EventDispatchDetails InputMethodAuraLinux::DispatchKeyEvent(
   if (!GetTextInputClient())
     return DispatchKeyEventPostIME(event);
 
-  if (!event->HasNativeEvent() && sending_key_event()) {
+  auto* properties = event->properties();
+  if (!event->HasNativeEvent() && properties &&
+      properties->find(ui::kPropertyFromVK) != properties->end()) {
     // Faked key events that are sent from input.ime.sendKeyEvents.
     ui::EventDispatchDetails details = DispatchKeyEventPostIME(event);
     if (details.dispatcher_destroyed || details.target_destroyed ||
@@ -411,7 +414,7 @@ void InputMethodAuraLinux::OnPreeditEnd() {
 void InputMethodAuraLinux::OnWillChangeFocusedClient(
     TextInputClient* focused_before,
     TextInputClient* focused) {
-  ConfirmCompositionText(/* reset_engine */ true);
+  ConfirmCompositionText(/* reset_engine */ true, /* keep_selection */ false);
 }
 
 void InputMethodAuraLinux::OnDidChangeFocusedClient(
@@ -448,8 +451,12 @@ ui::EventDispatchDetails InputMethodAuraLinux::SendFakeProcessKeyEvent(
   return details;
 }
 
-void InputMethodAuraLinux::ConfirmCompositionText(bool reset_engine) {
-  InputMethodBase::ConfirmCompositionText(reset_engine);
+void InputMethodAuraLinux::ConfirmCompositionText(bool reset_engine,
+                                                  bool keep_selection) {
+  if (keep_selection) {
+    NOTIMPLEMENTED_LOG_ONCE();
+  }
+  InputMethodBase::ConfirmCompositionText(reset_engine, keep_selection);
   if (reset_engine && GetEngine())
     GetEngine()->Reset();
   ResetContext();

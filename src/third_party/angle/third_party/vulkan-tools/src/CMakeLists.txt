@@ -18,7 +18,7 @@
 # CMake project initialization ---------------------------------------------------------------------------------------------------
 # This section contains pre-project() initialization, and ends with the project() command.
 
-cmake_minimum_required(VERSION 3.4)
+cmake_minimum_required(VERSION 3.10.2)
 
 # Apple: Must be set before enable_language() or project() as it may influence configuration of the toolchain and flags.
 set(CMAKE_OSX_DEPLOYMENT_TARGET "10.12" CACHE STRING "Minimum OS X deployment version")
@@ -27,7 +27,7 @@ project(Vulkan-Tools)
 
 # find_package(), include() and global project settings --------------------------------------------------------------------------
 
-find_package(PythonInterp 3 REQUIRED)
+find_package(PythonInterp 3 QUIET)
 
 # User-interface declarations ----------------------------------------------------------------------------------------------------
 # This section contains variables that affect development GUIs (e.g. CMake GUI and IDEs), such as option(), folders, and variables
@@ -68,6 +68,13 @@ endif()
 # ~~~
 set(VULKAN_HEADERS_INSTALL_DIR "HEADERS-NOTFOUND" CACHE PATH "Absolute path to a Vulkan-Headers install directory")
 set(VULKAN_LOADER_INSTALL_DIR "LOADER-NOTFOUND" CACHE PATH "Absolute path to a Vulkan-Loader install directory")
+if(WIN32 AND "${VULKAN_LOADER_INSTALL_DIR}" STREQUAL "LOADER-NOTFOUND")
+    if(CMAKE_CL_64)
+        set(VULKAN_LOADER_INSTALL_DIR "${CMAKE_CURRENT_SOURCE_DIR}/external/x64")
+    else()
+        set(VULKAN_LOADER_INSTALL_DIR "${CMAKE_CURRENT_SOURCE_DIR}/external/x86")
+    endif()
+endif()
 set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH};${VULKAN_HEADERS_INSTALL_DIR};${VULKAN_LOADER_INSTALL_DIR};
     $ENV{VULKAN_HEADERS_INSTALL_DIR};$ENV{VULKAN_LOADER_INSTALL_DIR})
 
@@ -135,6 +142,16 @@ if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_C_COMPILER_ID MATCHES "Clang")
         set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fvisibility=hidden")
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fvisibility=hidden")
     endif()
+endif()
+
+# Optional codegen target
+if(PYTHONINTERP_FOUND)
+    add_custom_target(VulkanTools_generated_source
+                      COMMAND ${PYTHON_EXECUTABLE} ${PROJECT_SOURCE_DIR}/scripts/generate_source.py
+                              ${VulkanRegistry_DIR} --incremental
+                      )
+else()
+    message("WARNING: VulkanTools_generated_source target requires python 3")
 endif()
 
 if(APPLE)

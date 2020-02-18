@@ -37,10 +37,6 @@ namespace base {
 class SequencedTaskRunner;
 }
 
-namespace service_manager {
-class Connector;
-}
-
 namespace extensions {
 class CrxInstallError;
 class ExtensionService;
@@ -125,7 +121,8 @@ class CrxInstaller : public SandboxedUnpackerClient {
                          const GURL& download_url);
 
   // Convert the specified web app into an extension and install it.
-  void InstallWebApp(const WebApplicationInfo& web_app);
+  // Virtual for testing.
+  virtual void InstallWebApp(const WebApplicationInfo& web_app);
 
   // Update the extension |extension_id| with the unpacked crx in
   // |unpacked_dir|.
@@ -231,9 +228,8 @@ class CrxInstaller : public SandboxedUnpackerClient {
     set_install_flag(kInstallFlagDoNotSync, val);
   }
 
-  void set_installer_callback(InstallerResultCallback callback) {
-    installer_callback_ = std::move(callback);
-  }
+  // Virtual for testing.
+  virtual void set_installer_callback(InstallerResultCallback callback);
 
   bool did_handle_successfully() const { return did_handle_successfully_; }
 
@@ -244,10 +240,6 @@ class CrxInstaller : public SandboxedUnpackerClient {
   // The currently installed version of the extension, for updates. Will be
   // invalid if this isn't an update.
   const base::Version& current_version() const { return current_version_; }
-
-  static void set_connector_for_test(service_manager::Connector* connector) {
-    connector_for_test_ = connector;
-  }
 
  private:
   friend class ::ExtensionServiceTest;
@@ -319,9 +311,6 @@ class CrxInstaller : public SandboxedUnpackerClient {
   // Show re-enable prompt if the update is initiated from the settings page
   // and needs additional permissions.
   void ConfirmReEnable();
-
-  // Returns the connector to the ServiceManager.
-  service_manager::Connector* GetConnector() const;
 
   void set_install_flag(int flag, bool val) {
     if (val)
@@ -494,8 +483,6 @@ class CrxInstaller : public SandboxedUnpackerClient {
 
   // Invoked when the install is completed.
   InstallerResultCallback installer_callback_;
-
-  static service_manager::Connector* connector_for_test_;
 
   DISALLOW_COPY_AND_ASSIGN(CrxInstaller);
 };

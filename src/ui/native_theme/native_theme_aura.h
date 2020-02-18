@@ -59,41 +59,6 @@ class NATIVE_THEME_EXPORT NativeThemeAura : public NativeThemeBase {
                             State state,
                             const gfx::Rect& rect,
                             ColorScheme color_scheme) const override;
-  void PaintCheckbox(cc::PaintCanvas* canvas,
-                     State state,
-                     const gfx::Rect& rect,
-                     const ButtonExtraParams& button,
-                     ColorScheme color_scheme) const override;
-  void PaintRadio(cc::PaintCanvas* canvas,
-                  State state,
-                  const gfx::Rect& rect,
-                  const ButtonExtraParams& button,
-                  ColorScheme color_scheme) const override;
-  void PaintTextField(cc::PaintCanvas* canvas,
-                      State state,
-                      const gfx::Rect& rect,
-                      const TextFieldExtraParams& text,
-                      ColorScheme color_scheme) const override;
-  void PaintButton(cc::PaintCanvas* canvas,
-                   State state,
-                   const gfx::Rect& rect,
-                   const ButtonExtraParams& button,
-                   ColorScheme color_scheme) const override;
-  void PaintSliderTrack(cc::PaintCanvas* canvas,
-                        State state,
-                        const gfx::Rect& rect,
-                        const SliderExtraParams& slider,
-                        ColorScheme color_scheme) const override;
-  void PaintSliderThumb(cc::PaintCanvas* canvas,
-                        State state,
-                        const gfx::Rect& rect,
-                        const SliderExtraParams& slider,
-                        ColorScheme color_scheme) const override;
-  void PaintMenuList(cc::PaintCanvas* canvas,
-                     State state,
-                     const gfx::Rect& rect,
-                     const MenuListExtraParams& menu_list,
-                     ColorScheme color_scheme) const override;
   gfx::Size GetPartSize(Part part,
                         State state,
                         const ExtraParams& extra) const override;
@@ -102,14 +67,6 @@ class NATIVE_THEME_EXPORT NativeThemeAura : public NativeThemeBase {
   gfx::Rect GetNinePatchAperture(Part part) const override;
 
  private:
-  // Paint the common parts of the checkboxes and radio buttons.
-  // borderRadius specifies how rounded the corners should be.
-  SkRect PaintCheckboxRadioCommon(cc::PaintCanvas* canvas,
-                                  State state,
-                                  const gfx::Rect& rect,
-                                  const SkScalar borderRadius,
-                                  ColorScheme color_scheme) const;
-
   static void DrawPartiallyRoundRect(cc::PaintCanvas* canvas,
                                      const gfx::Rect& rect,
                                      const SkScalar upper_left_radius,

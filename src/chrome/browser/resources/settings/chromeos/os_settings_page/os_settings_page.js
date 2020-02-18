@@ -41,9 +41,11 @@ Polymer({
       notify: true,
     },
 
-    showApps: Boolean,
-
     showAndroidApps: Boolean,
+
+    showAppManagement: Boolean,
+
+    showApps: Boolean,
 
     showCrostini: Boolean,
 
@@ -58,12 +60,11 @@ Polymer({
 
     /**
      * Whether the user is in guest mode.
-     * @private{boolean}
+     * @private {boolean}
      */
     isGuestMode_: {
       type: Boolean,
       value: loadTimeData.getBoolean('isGuest'),
-      readOnly: true,
     },
 
     /**

@@ -15,6 +15,7 @@
 #include "content/shell/browser/shell.h"
 #include "net/base/data_url.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "url/gurl.h"
 
@@ -134,6 +135,38 @@ class AccessibilityCanvasActionBrowserTest
     ContentBrowserTest::SetUp();
   }
 };
+
+IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest, DoDefaultAction) {
+  LoadInitialAccessibilityTreeFromHtml(R"HTML(
+      <div id="button" role="button" tabIndex=0>Click</div>
+      <p></p>
+      <script>
+        document.getElementById('button').addEventListener('click', () => {
+          document.querySelector('p').setAttribute('aria-label', 'success');
+        });
+      </script>
+      )HTML");
+
+  BrowserAccessibility* target = FindNode(ax::mojom::Role::kButton, "Click");
+  ASSERT_NE(nullptr, target);
+
+  // Call DoDefaultAction.
+  AccessibilityNotificationWaiter waiter2(
+      shell()->web_contents(), ui::kAXModeComplete, ax::mojom::Event::kClicked);
+  GetManager()->DoDefaultAction(*target);
+  waiter2.WaitForNotification();
+
+  // Ensure that the button was clicked - it should change the paragraph
+  // text to "success".
+  WaitForAccessibilityTreeToContainNodeWithName(shell()->web_contents(),
+                                                "success");
+
+  // When calling DoDefault on a focusable element, the element should get
+  // focused, just like what happens when you click it with the mouse.
+  BrowserAccessibility* focus = GetManager()->GetFocus();
+  ASSERT_NE(nullptr, focus);
+  EXPECT_EQ(target->GetId(), focus->GetId());
+}
 
 IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest, FocusAction) {
   LoadInitialAccessibilityTreeFromHtml(R"HTML(
@@ -418,7 +451,8 @@ IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest, TextareaSetValue) {
   // We should do it with accessibility flags instead. http://crbug.com/672205
 #if !defined(OS_ANDROID)
   // Check that it really does contain two lines.
-  auto start_pos = target->CreatePositionAt(0);
+  auto start_pos =
+      target->CreatePositionAt(0, ax::mojom::TextAffinity::kDownstream);
   auto end_of_line_1 = start_pos->CreateNextLineEndPosition(
       ui::AXBoundaryBehavior::CrossBoundary);
   EXPECT_EQ(5, end_of_line_1->text_offset());
@@ -452,7 +486,8 @@ IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest,
   // We should do it with accessibility flags instead. http://crbug.com/672205
 #if !defined(OS_ANDROID)
   // Check that it really does contain two lines.
-  auto start_pos = target->CreatePositionAt(0);
+  auto start_pos =
+      target->CreatePositionAt(0, ax::mojom::TextAffinity::kDownstream);
   auto end_of_line_1 = start_pos->CreateNextLineEndPosition(
       ui::AXBoundaryBehavior::CrossBoundary);
   EXPECT_EQ(5, end_of_line_1->text_offset());

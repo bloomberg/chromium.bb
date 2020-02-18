@@ -14,7 +14,6 @@
 
 MOCK_METHOD2(ActiveShaderProgram, void(GLuint pipeline, GLuint program));
 MOCK_METHOD1(ActiveTexture, void(GLenum texture));
-MOCK_METHOD0(ApplyFramebufferAttachmentCMAAINTEL, void());
 MOCK_METHOD2(AttachShader, void(GLuint program, GLuint shader));
 MOCK_METHOD2(BeginQuery, void(GLenum target, GLuint id));
 MOCK_METHOD1(BeginTransformFeedback, void(GLenum primitiveMode));
@@ -291,6 +290,7 @@ MOCK_METHOD2(DepthRange, void(GLclampd zNear, GLclampd zFar));
 MOCK_METHOD2(DepthRangef, void(GLclampf zNear, GLclampf zFar));
 MOCK_METHOD2(DetachShader, void(GLuint program, GLuint shader));
 MOCK_METHOD1(Disable, void(GLenum cap));
+MOCK_METHOD1(DisableExtensionANGLE, void(const char* name));
 MOCK_METHOD1(DisableVertexAttribArray, void(GLuint index));
 MOCK_METHOD3(DiscardFramebufferEXT,
              void(GLenum target,
@@ -303,6 +303,12 @@ MOCK_METHOD3(DrawArrays, void(GLenum mode, GLint first, GLsizei count));
 MOCK_METHOD2(DrawArraysIndirect, void(GLenum mode, const void* indirect));
 MOCK_METHOD4(DrawArraysInstancedANGLE,
              void(GLenum mode, GLint first, GLsizei count, GLsizei primcount));
+MOCK_METHOD5(DrawArraysInstancedBaseInstanceANGLE,
+             void(GLenum mode,
+                  GLint first,
+                  GLsizei count,
+                  GLsizei primcount,
+                  GLuint baseinstance));
 MOCK_METHOD1(DrawBuffer, void(GLenum mode));
 MOCK_METHOD2(DrawBuffersARB, void(GLsizei n, const GLenum* bufs));
 MOCK_METHOD4(
@@ -316,6 +322,14 @@ MOCK_METHOD5(DrawElementsInstancedANGLE,
                   GLenum type,
                   const void* indices,
                   GLsizei primcount));
+MOCK_METHOD7(DrawElementsInstancedBaseVertexBaseInstanceANGLE,
+             void(GLenum mode,
+                  GLsizei count,
+                  GLenum type,
+                  const void* indices,
+                  GLsizei primcount,
+                  GLint baseVertex,
+                  GLuint baseInstance));
 MOCK_METHOD6(DrawRangeElements,
              void(GLenum mode,
                   GLuint start,
@@ -330,6 +344,7 @@ MOCK_METHOD2(EGLImageTargetTexture2DOES,
 MOCK_METHOD1(Enable, void(GLenum cap));
 MOCK_METHOD1(EnableVertexAttribArray, void(GLuint index));
 MOCK_METHOD1(EndQuery, void(GLenum target));
+MOCK_METHOD1(EndTilingQCOM, void(GLbitfield preserveMask));
 MOCK_METHOD0(EndTransformFeedback, void());
 MOCK_METHOD2(FenceSync, GLsync(GLenum condition, GLbitfield flags));
 MOCK_METHOD2(FenceSyncAPPLE, GLsync(GLenum condition, GLbitfield flags));
@@ -913,6 +928,13 @@ MOCK_METHOD5(MultiDrawArraysInstancedANGLE,
                   const GLsizei* counts,
                   const GLsizei* instanceCounts,
                   GLsizei drawcount));
+MOCK_METHOD6(MultiDrawArraysInstancedBaseInstanceANGLE,
+             void(GLenum mode,
+                  const GLint* firsts,
+                  const GLsizei* counts,
+                  const GLsizei* instanceCounts,
+                  const GLuint* baseInstances,
+                  GLsizei drawcount));
 MOCK_METHOD5(MultiDrawElementsANGLE,
              void(GLenum mode,
                   const GLsizei* counts,
@@ -925,6 +947,15 @@ MOCK_METHOD6(MultiDrawElementsInstancedANGLE,
                   GLenum type,
                   const GLvoid* const* indices,
                   const GLsizei* instanceCounts,
+                  GLsizei drawcount));
+MOCK_METHOD8(MultiDrawElementsInstancedBaseVertexBaseInstanceANGLE,
+             void(GLenum mode,
+                  const GLsizei* counts,
+                  GLenum type,
+                  const GLvoid* const* indices,
+                  const GLsizei* instanceCounts,
+                  const GLint* baseVertices,
+                  const GLuint* baseInstances,
                   GLsizei drawcount));
 MOCK_METHOD4(
     ObjectLabel,
@@ -1179,6 +1210,12 @@ MOCK_METHOD6(SignalSemaphoreEXT,
                   GLuint numTextureBarriers,
                   const GLuint* textures,
                   const GLenum* dstLayouts));
+MOCK_METHOD5(StartTilingQCOM,
+             void(GLuint x,
+                  GLuint y,
+                  GLuint width,
+                  GLuint height,
+                  GLbitfield preserveMask));
 MOCK_METHOD8(StencilFillPathInstancedNV,
              void(GLsizei numPaths,
                   GLenum pathNameType,

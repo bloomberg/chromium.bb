@@ -5,16 +5,17 @@
 package org.chromium.chrome.browser.autofill_assistant;
 
 import android.content.Context;
-import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.widget.LinearLayout;
 
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
+import androidx.annotation.Nullable;
+
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContent;
 
 /** A LinearLayout that can notify when its size changes. */
 public class SizeListenableLinearLayout extends LinearLayout {
     @Nullable
-    private BottomSheet.ContentSizeListener mListener;
+    private BottomSheetContent.ContentSizeListener mListener;
 
     public SizeListenableLinearLayout(Context context) {
         super(context);
@@ -49,7 +50,7 @@ public class SizeListenableLinearLayout extends LinearLayout {
         }
     }
 
-    void setContentSizeListener(@Nullable BottomSheet.ContentSizeListener listener) {
+    void setContentSizeListener(@Nullable BottomSheetContent.ContentSizeListener listener) {
         mListener = listener;
     }
 }

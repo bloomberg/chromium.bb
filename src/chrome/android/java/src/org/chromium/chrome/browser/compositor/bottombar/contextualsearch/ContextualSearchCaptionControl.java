@@ -9,13 +9,15 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import org.chromium.base.VisibleForTesting;
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.compositor.animation.CompositorAnimator;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelAnimation;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelTextViewInflater;
+import org.chromium.chrome.browser.ui.widget.animation.Interpolators;
 import org.chromium.ui.resources.dynamics.DynamicResourceLoader;
 
 /**
@@ -90,7 +92,10 @@ public class ContextualSearchCaptionControl extends OverlayPanelTextViewInflater
     public ContextualSearchCaptionControl(OverlayPanel panel, Context context, ViewGroup container,
             DynamicResourceLoader resourceLoader, boolean shouldShowExpandedCaption) {
         super(panel, R.layout.contextual_search_caption_view, R.id.contextual_search_caption_view,
-                context, container, resourceLoader, R.dimen.contextual_search_padded_button_width,
+                context, container, resourceLoader,
+                (ChromeFeatureList.isEnabled(ChromeFeatureList.OVERLAY_NEW_LAYOUT)
+                                ? R.dimen.contextual_search_end_padding
+                                : R.dimen.contextual_search_padded_button_width),
                 R.dimen.contextual_search_padded_button_width);
         mShouldShowExpandedCaption = shouldShowExpandedCaption;
     }
@@ -125,6 +130,7 @@ public class ContextualSearchCaptionControl extends OverlayPanelTextViewInflater
      */
     @Override
     public void onUpdateFromPeekToExpand(float percentage) {
+        super.onUpdateFromPeekToExpand(percentage);
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.OVERLAY_NEW_LAYOUT)) {
             if (mHasPeekingCaption) {
                 if (mTransitionAnimator != null) mTransitionAnimator.cancel();
@@ -276,7 +282,7 @@ public class ContextualSearchCaptionControl extends OverlayPanelTextViewInflater
                 OverlayPanelAnimation.BASE_ANIMATION_DURATION_MS, null);
         mTransitionAnimator.addUpdateListener(
                 animator -> mAnimationPercentage = animator.getAnimatedValue());
-        mTransitionAnimator.setInterpolator(CompositorAnimator.FAST_OUT_SLOW_IN_INTERPOLATOR);
+        mTransitionAnimator.setInterpolator(Interpolators.FAST_OUT_SLOW_IN_INTERPOLATOR);
 
         mTransitionAnimator.start();
     }

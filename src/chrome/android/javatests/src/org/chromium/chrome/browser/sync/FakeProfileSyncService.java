@@ -15,8 +15,10 @@ import java.util.Set;
 public class FakeProfileSyncService extends ProfileSyncService {
     private boolean mEngineInitialized;
     private int mNumberOfSyncedDevices;
-    private boolean mPassphraseRequiredForDecryption;
+    private boolean mPassphraseRequiredForPreferredDataTypes;
+    private boolean mTrustedVaultKeyRequiredForPreferredDataTypes;
     private Set<Integer> mChosenTypes = new HashSet<>();
+    private boolean mCanSyncFeatureStart;
 
     public FakeProfileSyncService() {
         super();
@@ -56,11 +58,32 @@ public class FakeProfileSyncService extends ProfileSyncService {
     }
 
     @Override
-    public boolean isPassphraseRequiredForDecryption() {
-        return mPassphraseRequiredForDecryption;
+    public boolean isPassphraseRequiredForPreferredDataTypes() {
+        return mPassphraseRequiredForPreferredDataTypes;
     }
 
-    public void setPassphraseRequiredForDecryption(boolean passphraseRequiredForDecryption) {
-        mPassphraseRequiredForDecryption = passphraseRequiredForDecryption;
+    public void setPassphraseRequiredForPreferredDataTypes(
+            boolean passphraseRequiredForPreferredDataTypes) {
+        mPassphraseRequiredForPreferredDataTypes = passphraseRequiredForPreferredDataTypes;
+    }
+
+    @Override
+    public boolean isTrustedVaultKeyRequiredForPreferredDataTypes() {
+        return mTrustedVaultKeyRequiredForPreferredDataTypes;
+    }
+
+    public void setTrustedVaultKeyRequiredForPreferredDataTypes(
+            boolean trustedVaultKeyRequiredForPreferredDataTypes) {
+        mTrustedVaultKeyRequiredForPreferredDataTypes =
+                trustedVaultKeyRequiredForPreferredDataTypes;
+    }
+
+    @Override
+    public boolean canSyncFeatureStart() {
+        return mCanSyncFeatureStart;
+    }
+
+    public void setCanSyncFeatureStart(boolean canSyncFeatureStart) {
+        mCanSyncFeatureStart = canSyncFeatureStart;
     }
 }

@@ -155,6 +155,20 @@ AudioContext::AudioContext(Document& document,
   }
 
   Initialize();
+
+  // Compute the base latency now and cache the value since it doesn't change
+  // once the context is constructed.  We need the destination to be initialized
+  // so we have to compute it here.
+  //
+  // TODO(hongchan): Due to the incompatible constructor between
+  // AudioDestinationNode and RealtimeAudioDestinationNode, casting directly
+  // from |destination()| is impossible. This is a temporary workaround until
+  // the refactoring is completed.
+  RealtimeAudioDestinationHandler& destination_handler =
+      static_cast<RealtimeAudioDestinationHandler&>(
+          destination()->GetAudioDestinationHandler());
+  base_latency_ = destination_handler.GetFramesPerBuffer() /
+                  static_cast<double>(sampleRate());
 }
 
 void AudioContext::Uninitialize() {
@@ -257,6 +271,21 @@ ScriptPromise AudioContext::resumeContext(ScriptState* script_state) {
   return promise;
 }
 
+bool AudioContext::IsPullingAudioGraph() const {
+  DCHECK(IsMainThread());
+
+  if (!destination())
+    return false;
+
+  RealtimeAudioDestinationHandler& destination_handler =
+      static_cast<RealtimeAudioDestinationHandler&>(
+          destination()->GetAudioDestinationHandler());
+
+  // The realtime context is pulling on the audio graph if the realtime
+  // destination allows it.
+  return destination_handler.IsPullingAudioGraphAllowed();
+}
+
 AudioTimestamp* AudioContext::getOutputTimestamp(
     ScriptState* script_state) const {
   AudioTimestamp* result = AudioTimestamp::Create();
@@ -344,15 +373,7 @@ double AudioContext::baseLatency() const {
   DCHECK(IsMainThread());
   DCHECK(destination());
 
-  // TODO(hongchan): Due to the incompatible constructor between
-  // AudioDestinationNode and RealtimeAudioDestinationNode, casting directly
-  // from |destination()| is impossible. This is a temporary workaround until
-  // the refactoring is completed.
-  RealtimeAudioDestinationHandler& destination_handler =
-      static_cast<RealtimeAudioDestinationHandler&>(
-          destination()->GetAudioDestinationHandler());
-  return destination_handler.GetFramesPerBuffer() /
-         static_cast<double>(sampleRate());
+  return base_latency_;
 }
 
 MediaElementAudioSourceNode* AudioContext::createMediaElementSource(
@@ -530,9 +551,11 @@ void AudioContext::ContextDestroyed(ExecutionContext*) {
 }
 
 bool AudioContext::HasPendingActivity() const {
-  // There's activity only if the context is running.  Suspended contexts are
-  // basically idle with nothing going on.
-  return (ContextState() == kRunning) && BaseAudioContext::HasPendingActivity();
+  // There's activity if the context is is not closed.  Suspended contexts count
+  // as having activity even though they are basically idle with nothing going
+  // on.  However, the can be resumed at any time, so we don't want contexts
+  // going away prematurely.
+  return (ContextState() != kClosed) && BaseAudioContext::HasPendingActivity();
 }
 
 bool AudioContext::HandlePreRenderTasks(const AudioIOPosition* output_position,

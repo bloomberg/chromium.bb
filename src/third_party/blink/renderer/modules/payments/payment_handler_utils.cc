@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/modules/payments/payment_handler_utils.h"
 
+#include "third_party/blink/public/mojom/service_worker/service_worker_error_type.mojom-blink.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 
@@ -45,6 +46,7 @@ void PaymentHandlerUtils::ReportResponseError(
     case ServiceWorkerResponseError::kDataPipeCreationFailed:
     case ServiceWorkerResponseError::kResponseTypeCorsForRequestModeSameOrigin:
     case ServiceWorkerResponseError::kResponseBodyBroken:
+    case ServiceWorkerResponseError::kDisallowedByCorp:
       NOTREACHED();
       error_message = error_message + "an unexpected error occurred.";
       break;

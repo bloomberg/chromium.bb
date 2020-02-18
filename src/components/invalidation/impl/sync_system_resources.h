@@ -23,12 +23,16 @@
 #include "components/invalidation/public/invalidation_export.h"
 #include "components/invalidation/public/invalidator_state.h"
 #include "google/cacheinvalidation/include/system-resources.h"
+#include "google_apis/gaia/core_account_id.h"
 #include "jingle/notifier/base/notifier_options.h"
 
 namespace network {
 class NetworkConnectionTracker;
-class SharedURLLoaderFactoryInfo;
+class PendingSharedURLLoaderFactory;
 }  // namespace network
+
+// TODO(crbug.com/1029481): Part of the legacy implementation of invalidations,
+// scheduled for deletion.
 
 namespace syncer {
 
@@ -119,8 +123,8 @@ class INVALIDATION_EXPORT SyncNetworkChannel
 
   // Subclass should implement UpdateCredentials to pass new token to channel
   // library.
-  virtual void UpdateCredentials(const std::string& email,
-      const std::string& token) = 0;
+  virtual void UpdateCredentials(const CoreAccountId& account_id,
+                                 const std::string& token) = 0;
 
   // Return value from GetInvalidationClientType will be passed to
   // invalidation::CreateInvalidationClient. Subclass should return one of the
@@ -142,8 +146,8 @@ class INVALIDATION_EXPORT SyncNetworkChannel
   static std::unique_ptr<SyncNetworkChannel> CreatePushClientChannel(
       const notifier::NotifierOptions& notifier_options);
   static std::unique_ptr<SyncNetworkChannel> CreateGCMNetworkChannel(
-      std::unique_ptr<network::SharedURLLoaderFactoryInfo>
-          url_loader_factory_info,
+      std::unique_ptr<network::PendingSharedURLLoaderFactory>
+          pending_url_loader_factory,
       network::NetworkConnectionTracker* network_connection_tracker,
       std::unique_ptr<GCMNetworkChannelDelegate> delegate);
 

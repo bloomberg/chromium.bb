@@ -1579,8 +1579,8 @@ bool WriteSourcePrologue(int fd, const std::string& header_filename) {
   static const char prologue[] =
       R"(#include "%s"
 
-#include "platform/api/logging.h"
 #include "third_party/tinycbor/src/src/utf8_p.h"
+#include "util/logging.h"
 
 namespace openscreen {
 namespace msgs {

@@ -38,6 +38,8 @@ class OverviewGridEventHandler : public ui::EventHandler,
   void OnMouseEvent(ui::MouseEvent* event) override;
   void OnGestureEvent(ui::GestureEvent* event) override;
 
+  bool IsFlingInProgressForTesting() const { return !!fling_curve_; }
+
  private:
   // ui::CompositorAnimationObserver:
   void OnAnimationStep(base::TimeTicks timestamp) override;
@@ -52,6 +54,10 @@ class OverviewGridEventHandler : public ui::EventHandler,
   // Cached value of the OverviewGrid that handles a series of gesture scroll
   // events. Guaranteed to be alive during the lifetime of |this|.
   OverviewGrid* grid_;
+
+  // The cumulative scroll offset. This is used so that tiny scrolls will not
+  // make miniscule shifts on the grid, but are not completely ignored.
+  float scroll_offset_x_cumulative_ = 0.f;
 
   // Gesture curve of the current active fling. nullptr while a fling is not
   // active.

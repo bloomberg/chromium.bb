@@ -17,11 +17,11 @@ import * as m from 'mithril';
 import {Actions} from '../common/actions';
 import {timeToString} from '../common/time';
 
+import {randomColor} from './colorizer';
+import {TRACK_SHELL_WIDTH} from './css_constants';
 import {globals} from './globals';
 import {gridlines} from './gridline_helper';
 import {Panel, PanelSize} from './panel';
-import {TRACK_SHELL_WIDTH} from './track_constants';
-import {randomColor} from './colorizer';
 
 const FLAG_WIDTH = 16;
 const MOVIE_WIDTH = 16;
@@ -173,7 +173,7 @@ export class NotesPanel extends Panel {
         if (note.isMovie) {
           globals.frontendLocalState.setVidTimestamp(note.timestamp);
         }
-        globals.dispatch(Actions.selectNote({id: note.id}));
+        globals.makeSelection(Actions.selectNote({id: note.id}));
         return;
       }
     }
@@ -181,7 +181,7 @@ export class NotesPanel extends Panel {
       globals.frontendLocalState.setVidTimestamp(timestamp);
     }
     const color = randomColor();
-    globals.dispatch(Actions.addNote({timestamp, color, isMovie}));
+    globals.makeSelection(Actions.addNote({timestamp, color, isMovie}));
   }
 }
 

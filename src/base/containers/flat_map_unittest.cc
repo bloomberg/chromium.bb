@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/strings/string_piece.h"
 #include "base/test/move_only_int.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -41,11 +42,6 @@ TEST(FlatMap, RangeConstructor) {
   flat_map<int, int> first(std::begin(input_vals), std::end(input_vals));
   EXPECT_THAT(first, ElementsAre(std::make_pair(1, 1), std::make_pair(2, 1),
                                  std::make_pair(3, 1)));
-
-  flat_map<int, int> last(std::begin(input_vals), std::end(input_vals),
-                          KEEP_LAST_OF_DUPES);
-  EXPECT_THAT(last, ElementsAre(std::make_pair(1, 3), std::make_pair(2, 3),
-                                std::make_pair(3, 3)));
 }
 
 TEST(FlatMap, MoveConstructor) {
@@ -68,36 +64,18 @@ TEST(FlatMap, MoveConstructor) {
 TEST(FlatMap, VectorConstructor) {
   using IntPair = std::pair<int, int>;
   using IntMap = flat_map<int, int>;
-  {
-    std::vector<IntPair> vect{{1, 1}, {1, 2}, {2, 1}};
-    IntMap map(std::move(vect));
-    EXPECT_THAT(map, ElementsAre(IntPair(1, 1), IntPair(2, 1)));
-  }
-  {
-    std::vector<IntPair> vect{{1, 1}, {1, 2}, {2, 1}};
-    IntMap map(std::move(vect), KEEP_LAST_OF_DUPES);
-    EXPECT_THAT(map, ElementsAre(IntPair(1, 2), IntPair(2, 1)));
-  }
+  std::vector<IntPair> vect{{1, 1}, {1, 2}, {2, 1}};
+  IntMap map(std::move(vect));
+  EXPECT_THAT(map, ElementsAre(IntPair(1, 1), IntPair(2, 1)));
 }
 
 TEST(FlatMap, InitializerListConstructor) {
-  {
-    flat_map<int, int> cont(
-        {{1, 1}, {2, 2}, {3, 3}, {4, 4}, {5, 5}, {1, 2}, {10, 10}, {8, 8}});
-    EXPECT_THAT(cont, ElementsAre(std::make_pair(1, 1), std::make_pair(2, 2),
-                                  std::make_pair(3, 3), std::make_pair(4, 4),
-                                  std::make_pair(5, 5), std::make_pair(8, 8),
-                                  std::make_pair(10, 10)));
-  }
-  {
-    flat_map<int, int> cont(
-        {{1, 1}, {2, 2}, {3, 3}, {4, 4}, {5, 5}, {1, 2}, {10, 10}, {8, 8}},
-        KEEP_LAST_OF_DUPES);
-    EXPECT_THAT(cont, ElementsAre(std::make_pair(1, 2), std::make_pair(2, 2),
-                                  std::make_pair(3, 3), std::make_pair(4, 4),
-                                  std::make_pair(5, 5), std::make_pair(8, 8),
-                                  std::make_pair(10, 10)));
-  }
+  flat_map<int, int> cont(
+      {{1, 1}, {2, 2}, {3, 3}, {4, 4}, {5, 5}, {1, 2}, {10, 10}, {8, 8}});
+  EXPECT_THAT(cont, ElementsAre(std::make_pair(1, 1), std::make_pair(2, 2),
+                                std::make_pair(3, 3), std::make_pair(4, 4),
+                                std::make_pair(5, 5), std::make_pair(8, 8),
+                                std::make_pair(10, 10)));
 }
 
 TEST(FlatMap, InitializerListAssignment) {
@@ -172,6 +150,33 @@ TEST(FlatMap, SubscriptMoveOnlyKey) {
   // Overwrite existing elements.
   m[MoveOnlyInt(1)] = 44;
   EXPECT_EQ(44, m[MoveOnlyInt(1)]);
+}
+
+// Mapped& at(const Key&)
+// const Mapped& at(const Key&) const
+TEST(FlatMap, AtFunction) {
+  base::flat_map<int, std::string> m = {{1, "a"}, {2, "b"}};
+
+  // Basic Usage.
+  EXPECT_EQ("a", m.at(1));
+  EXPECT_EQ("b", m.at(2));
+
+  // Const reference works.
+  const std::string& const_ref = base::as_const(m).at(1);
+  EXPECT_EQ("a", const_ref);
+
+  // Reference works, can operate on the string.
+  m.at(1)[0] = 'x';
+  EXPECT_EQ("x", m.at(1));
+
+  // Out-of-bounds will CHECK.
+  EXPECT_DEATH_IF_SUPPORTED(m.at(-1), "");
+  EXPECT_DEATH_IF_SUPPORTED({ m.at(-1)[0] = 'z'; }, "");
+
+  // Heterogeneous look-up works.
+  base::flat_map<std::string, int> m2 = {{"a", 1}, {"b", 2}};
+  EXPECT_EQ(1, m2.at(base::StringPiece("a")));
+  EXPECT_EQ(2, base::as_const(m2).at(base::StringPiece("b")));
 }
 
 // insert_or_assign(K&&, M&&)

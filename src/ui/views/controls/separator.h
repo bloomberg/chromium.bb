@@ -20,7 +20,7 @@ class VIEWS_EXPORT Separator : public View {
   METADATA_HEADER(Separator);
 
   // The separator's thickness in dip.
-  static const int kThickness;
+  static constexpr int kThickness = 1;
 
   Separator();
   ~Separator() override;
@@ -33,7 +33,6 @@ class VIEWS_EXPORT Separator : public View {
 
   // Overridden from View:
   gfx::Size CalculatePreferredSize() const override;
-  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   void OnPaint(gfx::Canvas* canvas) override;
 
  private:

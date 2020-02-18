@@ -82,7 +82,7 @@ NGPhysicalBoxFragment::NGPhysicalBoxFragment(
               : kFragmentBox,
           builder->BoxType()),
       baselines_(builder->baselines_) {
-  DCHECK(GetLayoutObject() && GetLayoutObject()->IsBoxModelObject());
+  DCHECK(layout_object_->IsBoxModelObject());
   if (NGFragmentItemsBuilder* items_builder = builder->ItemsBuilder()) {
     has_fragment_items_ = true;
     NGFragmentItems* items =
@@ -123,6 +123,8 @@ NGPhysicalBoxFragment::CloneAsHiddenForPaint() const {
 }
 
 bool NGPhysicalBoxFragment::HasSelfPaintingLayer() const {
+  if (!IsCSSBox())
+    return false;
   SECURITY_DCHECK(GetLayoutObject() && GetLayoutObject()->IsBoxModelObject());
   return (static_cast<const LayoutBoxModelObject*>(GetLayoutObject()))
       ->HasSelfPaintingLayer();
@@ -168,10 +170,10 @@ PhysicalRect NGPhysicalBoxFragment::ScrollableOverflow() const {
   return PhysicalRect({}, Size());
 }
 
-LayoutSize NGPhysicalBoxFragment::ScrolledContentOffset() const {
+LayoutSize NGPhysicalBoxFragment::PixelSnappedScrolledContentOffset() const {
   DCHECK(GetLayoutObject() && GetLayoutObject()->IsBox());
   const LayoutBox* box = ToLayoutBox(GetLayoutObject());
-  return box->ScrolledContentOffset();
+  return box->PixelSnappedScrolledContentOffset();
 }
 
 PhysicalSize NGPhysicalBoxFragment::ScrollSize() const {
@@ -190,12 +192,13 @@ PhysicalRect NGPhysicalBoxFragment::ComputeSelfInkOverflow() const {
     ink_overflow.Expand(style.BoxDecorationOutsets());
     if (NGOutlineUtils::HasPaintedOutline(style,
                                           GetLayoutObject()->GetNode()) &&
-        !NGOutlineUtils::IsInlineOutlineNonpaintingFragment(*this)) {
+        NGOutlineUtils::ShouldPaintOutline(*this)) {
       Vector<PhysicalRect> outline_rects;
       // The result rects are in coordinates of this object's border box.
       AddSelfOutlineRects(
-          &outline_rects, PhysicalOffset(),
-          GetLayoutObject()->OutlineRectsShouldIncludeBlockVisualOverflow());
+          PhysicalOffset(),
+          GetLayoutObject()->OutlineRectsShouldIncludeBlockVisualOverflow(),
+          &outline_rects);
       PhysicalRect rect = UnionRectEvenIfEmpty(outline_rects);
       rect.Inflate(LayoutUnit(style.OutlineOutsetExtent()));
       ink_overflow.Unite(rect);
@@ -205,15 +208,16 @@ PhysicalRect NGPhysicalBoxFragment::ComputeSelfInkOverflow() const {
 }
 
 void NGPhysicalBoxFragment::AddSelfOutlineRects(
-    Vector<PhysicalRect>* outline_rects,
     const PhysicalOffset& additional_offset,
-    NGOutlineType outline_type) const {
-  // TODO(kojii): Needs inline_element_continuation logic from
-  // LayoutBlockFlow::AddOutlineRects?
+    NGOutlineType outline_type,
+    Vector<PhysicalRect>* outline_rects) const {
+  if (!NGOutlineUtils::ShouldPaintOutline(*this))
+    return;
 
-  const LayoutObject* layout_object = GetLayoutObject();
-  DCHECK(layout_object);
-  if (layout_object->IsLayoutInline()) {
+  if (IsInlineBox()) {
+    const LayoutObject* layout_object = GetLayoutObject();
+    DCHECK(layout_object);
+    DCHECK(layout_object->IsLayoutInline());
     Vector<PhysicalRect> blockflow_outline_rects =
         layout_object->OutlineRects(PhysicalOffset(), outline_type);
     // The rectangles returned are offset from the containing block. We need the
@@ -233,12 +237,11 @@ void NGPhysicalBoxFragment::AddSelfOutlineRects(
     }
     return;
   }
-  DCHECK(layout_object->IsBox());
 
   // For anonymous blocks, the children add outline rects.
-  if (!layout_object->IsAnonymous()) {
+  if (!IsAnonymousBlock())
     outline_rects->emplace_back(additional_offset, Size().ToLayoutSize());
-  }
+
   if (outline_type == NGOutlineType::kIncludeBlockVisualOverflow &&
       !HasOverflowClip() && !HasControlClip(*this)) {
     // Tricky code ahead: we pass a 0,0 additional_offset to
@@ -308,7 +311,7 @@ void NGPhysicalBoxFragment::CheckSameForSimplifiedLayout(
   DCHECK_EQ(sub_type_, other.sub_type_);
   DCHECK_EQ(style_variant_, other.style_variant_);
 
-  DCHECK_EQ(has_floating_descendants_, other.has_floating_descendants_);
+  // |has_floating_descendants_for_paint_| can change during simplified layout.
   DCHECK_EQ(has_orthogonal_flow_roots_, other.has_orthogonal_flow_roots_);
   DCHECK_EQ(may_have_descendant_above_block_start_,
             other.may_have_descendant_above_block_start_);

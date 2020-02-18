@@ -11,8 +11,9 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "content/public/browser/browser_thread.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
-#include "mojo/public/cpp/bindings/interface_ptr_set.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
+#include "mojo/public/cpp/bindings/remote.h"
+#include "mojo/public/cpp/bindings/remote_set.h"
 #include "net/proxy_resolution/proxy_config_service.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/network/public/mojom/proxy_config.mojom.h"
@@ -70,7 +71,7 @@ class CastNetworkContexts : public net::ProxyConfigService::Observer,
   // system NetworkContext, if the network service is enabled.
   void OnNetworkServiceCreated(network::mojom::NetworkService* network_service);
 
-  network::mojom::NetworkContextPtr CreateNetworkContext(
+  mojo::Remote<network::mojom::NetworkContext> CreateNetworkContext(
       content::BrowserContext* context,
       bool in_memory,
       const base::FilePath& relative_partition_path);
@@ -109,21 +110,21 @@ class CastNetworkContexts : public net::ProxyConfigService::Observer,
   const std::vector<std::string> cors_exempt_headers_list_;
 
   // The system NetworkContext.
-  network::mojom::NetworkContextPtr system_network_context_;
+  mojo::Remote<network::mojom::NetworkContext> system_network_context_;
 
   // URLLoaderFactory backed by the NetworkContext returned by
   // GetSystemContext(), so consumers don't all need to create their own
   // factory.
   scoped_refptr<URLLoaderFactoryForSystem> system_shared_url_loader_factory_;
-  network::mojom::URLLoaderFactoryPtr system_url_loader_factory_;
+  mojo::Remote<network::mojom::URLLoaderFactory> system_url_loader_factory_;
 
   std::unique_ptr<net::ProxyConfigService> proxy_config_service_;
   // Monitors prefs related to proxy configuration.
   std::unique_ptr<PrefProxyConfigTracker> pref_proxy_config_tracker_impl_;
 
-  mojo::BindingSet<network::mojom::ProxyConfigPollerClient> poller_binding_set_;
-  mojo::InterfacePtrSet<network::mojom::ProxyConfigClient>
-      proxy_config_client_set_;
+  mojo::ReceiverSet<network::mojom::ProxyConfigPollerClient>
+      poller_receiver_set_;
+  mojo::RemoteSet<network::mojom::ProxyConfigClient> proxy_config_client_set_;
 
   DISALLOW_COPY_AND_ASSIGN(CastNetworkContexts);
 };
@@ -131,4 +132,4 @@ class CastNetworkContexts : public net::ProxyConfigService::Observer,
 }  // namespace shell
 }  // namespace chromecast
 
-#endif  // CHROMECAST_BROWSER_URL_REQUEST_CONTEXT_FACTORY_H_
+#endif  // CHROMECAST_BROWSER_CAST_NETWORK_CONTEXTS_H_

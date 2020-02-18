@@ -59,7 +59,7 @@ class CORE_EXPORT DocumentTimeline : public AnimationTimeline {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  class PlatformTiming : public GarbageCollectedFinalized<PlatformTiming> {
+  class PlatformTiming : public GarbageCollected<PlatformTiming> {
    public:
     // Calls DocumentTimeline's wake() method after duration seconds.
     virtual void WakeAfter(base::TimeDelta duration) = 0;
@@ -68,16 +68,13 @@ class CORE_EXPORT DocumentTimeline : public AnimationTimeline {
     virtual void Trace(blink::Visitor* visitor) {}
   };
 
-  static DocumentTimeline* Create(
-      Document*,
-      base::TimeDelta origin_time = base::TimeDelta(),
-      PlatformTiming* = nullptr);
-
   // Web Animations API IDL constructor
   static DocumentTimeline* Create(ExecutionContext*,
                                   const DocumentTimelineOptions*);
 
-  DocumentTimeline(Document*, base::TimeDelta origin_time, PlatformTiming*);
+  DocumentTimeline(Document*,
+                   base::TimeDelta origin_time = base::TimeDelta(),
+                   PlatformTiming* = nullptr);
   ~DocumentTimeline() override = default;
 
   bool IsDocumentTimeline() const final { return true; }
@@ -94,6 +91,7 @@ class CORE_EXPORT DocumentTimeline : public AnimationTimeline {
   void AnimationDetached(Animation*) override {}
 
   bool IsActive() const override;
+  base::Optional<base::TimeDelta> InitialStartTimeForAnimations() override;
   bool HasPendingUpdates() const {
     return !animations_needing_update_.IsEmpty();
   }

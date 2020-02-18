@@ -10,6 +10,7 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/hid_chooser.h"
 #include "content/public/browser/hid_delegate.h"
+#include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
@@ -65,7 +66,7 @@ class HidTest : public ContentBrowserTest {
 }  // namespace
 
 IN_PROC_BROWSER_TEST_F(HidTest, GetDevices) {
-  NavigateToURL(shell(), GetTestUrl(nullptr, "simple_page.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), GetTestUrl(nullptr, "simple_page.html")));
 
   // Three devices are added but only two will have permission granted.
   for (int i = 0; i < 3; i++) {
@@ -86,7 +87,7 @@ IN_PROC_BROWSER_TEST_F(HidTest, GetDevices) {
 }
 
 IN_PROC_BROWSER_TEST_F(HidTest, RequestDevice) {
-  NavigateToURL(shell(), GetTestUrl(nullptr, "simple_page.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), GetTestUrl(nullptr, "simple_page.html")));
 
   EXPECT_CALL(delegate(), CanRequestDevicePermission(_, _))
       .WillOnce(Return(true));
@@ -104,7 +105,7 @@ IN_PROC_BROWSER_TEST_F(HidTest, RequestDevice) {
 }
 
 IN_PROC_BROWSER_TEST_F(HidTest, DisallowRequestDevice) {
-  NavigateToURL(shell(), GetTestUrl(nullptr, "simple_page.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), GetTestUrl(nullptr, "simple_page.html")));
 
   EXPECT_CALL(delegate(), CanRequestDevicePermission(_, _))
       .WillOnce(Return(false));

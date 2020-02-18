@@ -44,6 +44,8 @@ class OnScreenKeyboardDisplayManagerInputPane::VirtualKeyboardInputPane
   }
 
   void TryShowInBackgroundThread(HWND hwnd) {
+    // TODO(crbug.com/1031786): Remove this once TSF fix for input pane policy
+    // is serviced
     DCHECK(!main_task_runner_->BelongsToCurrentThread());
     if (!EnsureInputPanePointersInBackgroundThread(hwnd))
       return;
@@ -51,9 +53,11 @@ class OnScreenKeyboardDisplayManagerInputPane::VirtualKeyboardInputPane
     input_pane2_->TryShow(&res);
   }
 
-  void TryHideInBackgroundThread() {
+  void TryHideInBackgroundThread(HWND hwnd) {
+    // TODO(crbug.com/1031786): Remove this once TSF fix for input pane policy
+    // is serviced
     DCHECK(!main_task_runner_->BelongsToCurrentThread());
-    if (!input_pane2_)
+    if (!EnsureInputPanePointersInBackgroundThread(hwnd))
       return;
     boolean res;
     input_pane2_->TryHide(&res);
@@ -212,7 +216,7 @@ void OnScreenKeyboardDisplayManagerInputPane::DismissVirtualKeyboard() {
       FROM_HERE,
       base::BindOnce(&OnScreenKeyboardDisplayManagerInputPane::
                          VirtualKeyboardInputPane::TryHideInBackgroundThread,
-                     base::RetainedRef(virtual_keyboard_input_pane_)));
+                     base::RetainedRef(virtual_keyboard_input_pane_), hwnd_));
 }
 
 void OnScreenKeyboardDisplayManagerInputPane::AddObserver(

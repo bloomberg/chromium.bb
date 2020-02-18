@@ -90,11 +90,11 @@ bool FixedArray::ContainsOnlySmisOrHoles() {
 }
 
 Object FixedArray::get(int index) const {
-  Isolate* isolate = GetIsolateForPtrCompr(*this);
+  const Isolate* isolate = GetIsolateForPtrCompr(*this);
   return get(isolate, index);
 }
 
-Object FixedArray::get(Isolate* isolate, int index) const {
+Object FixedArray::get(const Isolate* isolate, int index) const {
   DCHECK_LT(static_cast<unsigned>(index), static_cast<unsigned>(length()));
   return TaggedField<Object>::Relaxed_Load(isolate, *this,
                                            OffsetOfElementAt(index));
@@ -183,9 +183,7 @@ void FixedArray::FillWithHoles(int from, int to) {
   }
 }
 
-ObjectSlot FixedArray::data_start() {
-  return RawField(OffsetOfElementAt(0));
-}
+ObjectSlot FixedArray::data_start() { return RawField(OffsetOfElementAt(0)); }
 
 ObjectSlot FixedArray::RawFieldOfElementAt(int index) {
   return RawField(OffsetOfElementAt(index));
@@ -240,7 +238,7 @@ int BinarySearch(T* array, Name name, int valid_entries,
 
   for (; low <= limit; ++low) {
     int sort_index = array->GetSortedKeyIndex(low);
-    Name entry = array->GetKey(sort_index);
+    Name entry = array->GetKey(InternalIndex(sort_index));
     uint32_t current_hash = entry.hash_field();
     if (current_hash != hash) {
       if (search_mode == ALL_ENTRIES && out_insertion_index != nullptr) {
@@ -272,7 +270,7 @@ int LinearSearch(T* array, Name name, int valid_entries,
     int len = array->number_of_entries();
     for (int number = 0; number < len; number++) {
       int sorted_index = array->GetSortedKeyIndex(number);
-      Name entry = array->GetKey(sorted_index);
+      Name entry = array->GetKey(InternalIndex(sorted_index));
       uint32_t current_hash = entry.hash_field();
       if (current_hash > hash) {
         *out_insertion_index = sorted_index;
@@ -286,7 +284,7 @@ int LinearSearch(T* array, Name name, int valid_entries,
     DCHECK_LE(valid_entries, array->number_of_entries());
     DCHECK_NULL(out_insertion_index);  // Not supported here.
     for (int number = 0; number < valid_entries; number++) {
-      if (array->GetKey(number) == name) return number;
+      if (array->GetKey(InternalIndex(number)) == name) return number;
     }
     return T::kNotFound;
   }
@@ -388,11 +386,11 @@ void FixedDoubleArray::FillWithHoles(int from, int to) {
 }
 
 MaybeObject WeakFixedArray::Get(int index) const {
-  Isolate* isolate = GetIsolateForPtrCompr(*this);
+  const Isolate* isolate = GetIsolateForPtrCompr(*this);
   return Get(isolate, index);
 }
 
-MaybeObject WeakFixedArray::Get(Isolate* isolate, int index) const {
+MaybeObject WeakFixedArray::Get(const Isolate* isolate, int index) const {
   DCHECK_LT(static_cast<unsigned>(index), static_cast<unsigned>(length()));
   return TaggedField<MaybeObject>::Relaxed_Load(isolate, *this,
                                                 OffsetOfElementAt(index));
@@ -436,11 +434,11 @@ void WeakFixedArray::CopyElements(Isolate* isolate, int dst_index,
 }
 
 MaybeObject WeakArrayList::Get(int index) const {
-  Isolate* isolate = GetIsolateForPtrCompr(*this);
+  const Isolate* isolate = GetIsolateForPtrCompr(*this);
   return Get(isolate, index);
 }
 
-MaybeObject WeakArrayList::Get(Isolate* isolate, int index) const {
+MaybeObject WeakArrayList::Get(const Isolate* isolate, int index) const {
   DCHECK_LT(static_cast<unsigned>(index), static_cast<unsigned>(capacity()));
   return TaggedField<MaybeObject>::Relaxed_Load(isolate, *this,
                                                 OffsetOfElementAt(index));
@@ -496,7 +494,7 @@ Object ArrayList::Get(int index) const {
   return FixedArray::cast(*this).get(kFirstIndex + index);
 }
 
-Object ArrayList::Get(Isolate* isolate, int index) const {
+Object ArrayList::Get(const Isolate* isolate, int index) const {
   return FixedArray::cast(*this).get(isolate, kFirstIndex + index);
 }
 
@@ -621,7 +619,7 @@ Object TemplateList::get(int index) const {
   return FixedArray::cast(*this).get(kFirstElementIndex + index);
 }
 
-Object TemplateList::get(Isolate* isolate, int index) const {
+Object TemplateList::get(const Isolate* isolate, int index) const {
   return FixedArray::cast(*this).get(isolate, kFirstElementIndex + index);
 }
 

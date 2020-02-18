@@ -6,6 +6,8 @@
 
 #include <stdint.h>
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"
@@ -16,6 +18,7 @@
 #include "content/browser/service_worker/embedded_worker_instance.h"
 #include "content/browser/service_worker/embedded_worker_status.h"
 #include "content/browser/service_worker/service_worker_consts.h"
+#include "content/browser/service_worker/service_worker_container_host.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_job_coordinator.h"
@@ -38,43 +41,58 @@ namespace content {
 typedef ServiceWorkerRegisterJobBase::RegistrationJobType RegistrationJobType;
 
 ServiceWorkerRegisterJob::ServiceWorkerRegisterJob(
-    base::WeakPtr<ServiceWorkerContextCore> context,
+    ServiceWorkerContextCore* context,
     const GURL& script_url,
-    const blink::mojom::ServiceWorkerRegistrationOptions& options)
+    const blink::mojom::ServiceWorkerRegistrationOptions& options,
+    blink::mojom::FetchClientSettingsObjectPtr
+        outside_fetch_client_settings_object)
     : context_(context),
       job_type_(REGISTRATION_JOB),
       scope_(options.scope),
       script_url_(script_url),
       worker_script_type_(options.type),
       update_via_cache_(options.update_via_cache),
+      outside_fetch_client_settings_object_(
+          std::move(outside_fetch_client_settings_object)),
       phase_(INITIAL),
+      is_shutting_down_(false),
       is_promise_resolved_(false),
       should_uninstall_on_failure_(false),
       force_bypass_cache_(false),
       skip_script_comparison_(false),
-      promise_resolved_status_(blink::ServiceWorkerStatusCode::kOk) {}
+      promise_resolved_status_(blink::ServiceWorkerStatusCode::kOk) {
+  DCHECK(context_);
+  DCHECK(outside_fetch_client_settings_object_);
+}
 
 ServiceWorkerRegisterJob::ServiceWorkerRegisterJob(
-    base::WeakPtr<ServiceWorkerContextCore> context,
+    ServiceWorkerContextCore* context,
     ServiceWorkerRegistration* registration,
     bool force_bypass_cache,
-    bool skip_script_comparison)
+    bool skip_script_comparison,
+    blink::mojom::FetchClientSettingsObjectPtr
+        outside_fetch_client_settings_object)
     : context_(context),
       job_type_(UPDATE_JOB),
       scope_(registration->scope()),
       update_via_cache_(registration->update_via_cache()),
+      outside_fetch_client_settings_object_(
+          std::move(outside_fetch_client_settings_object)),
       phase_(INITIAL),
+      is_shutting_down_(false),
       is_promise_resolved_(false),
       should_uninstall_on_failure_(false),
       force_bypass_cache_(force_bypass_cache),
       skip_script_comparison_(skip_script_comparison),
       promise_resolved_status_(blink::ServiceWorkerStatusCode::kOk) {
+  DCHECK(context_);
+  DCHECK(outside_fetch_client_settings_object_);
   internal_.registration = registration;
 }
 
 ServiceWorkerRegisterJob::~ServiceWorkerRegisterJob() {
-  DCHECK(!context_ ||
-         phase_ == INITIAL || phase_ == COMPLETE || phase_ == ABORT)
+  DCHECK(is_shutting_down_ || phase_ == INITIAL || phase_ == COMPLETE ||
+         phase_ == ABORT)
       << "Jobs should only be interrupted during shutdown.";
 }
 
@@ -135,6 +153,10 @@ void ServiceWorkerRegisterJob::Abort() {
   // the jobs from the queue.
 }
 
+void ServiceWorkerRegisterJob::WillShutDown() {
+  is_shutting_down_ = true;
+}
+
 bool ServiceWorkerRegisterJob::Equals(ServiceWorkerRegisterJobBase* job) const {
   if (job->GetType() != job_type_)
     return false;
@@ -167,8 +189,7 @@ ServiceWorkerRegistration* ServiceWorkerRegisterJob::registration() const {
   return internal_.registration.get();
 }
 
-void ServiceWorkerRegisterJob::set_new_version(
-    ServiceWorkerVersion* version) {
+void ServiceWorkerRegisterJob::set_new_version(ServiceWorkerVersion* version) {
   DCHECK(phase_ == UPDATE) << phase_;
   DCHECK(!internal_.new_version.get());
   internal_.new_version = version;
@@ -285,6 +306,10 @@ void ServiceWorkerRegisterJob::ContinueWithUpdate(
   script_url_ = registration()->GetNewestVersion()->script_url();
   worker_script_type_ = registration()->GetNewestVersion()->script_type();
 
+  // If the outgoing referrer is not set, use |script_url_| as referrer.
+  if (outside_fetch_client_settings_object_->outgoing_referrer.is_empty())
+    outside_fetch_client_settings_object_->outgoing_referrer = script_url_;
+
   // TODO(michaeln): If the last update check was less than 24 hours
   // ago, depending on the freshness of the cached worker script we
   // may be able to complete the update job right here.
@@ -340,8 +365,8 @@ void ServiceWorkerRegisterJob::TriggerUpdateCheckInBrowser(
   update_checker_ = std::make_unique<ServiceWorkerUpdateChecker>(
       std::move(resources), script_url_, script_resource_id, version_to_update,
       std::move(loader_factory), force_bypass_cache_,
-      registration()->update_via_cache(), time_since_last_check,
-      context_.get());
+      registration()->update_via_cache(), time_since_last_check, context_,
+      outside_fetch_client_settings_object_.Clone());
   update_checker_->Start(
       base::BindOnce(&ServiceWorkerRegisterJob::OnUpdateCheckFinished,
                      weak_factory_.GetWeakPtr()));
@@ -404,8 +429,8 @@ void ServiceWorkerRegisterJob::RegisterAndContinue() {
 
   blink::mojom::ServiceWorkerRegistrationOptions options(
       scope_, worker_script_type_, update_via_cache_);
-  set_registration(
-      new ServiceWorkerRegistration(options, registration_id, context_));
+  set_registration(new ServiceWorkerRegistration(options, registration_id,
+                                                 context_->AsWeakPtr()));
   AddRegistrationToMatchingProviderHosts(registration());
   UpdateAndContinue();
 }
@@ -473,8 +498,9 @@ void ServiceWorkerRegisterJob::StartWorkerForUpdate() {
   }
 
   // "Let worker be a new ServiceWorker object..." and start the worker.
-  set_new_version(new ServiceWorkerVersion(
-      registration(), script_url_, worker_script_type_, version_id, context_));
+  set_new_version(new ServiceWorkerVersion(registration(), script_url_,
+                                           worker_script_type_, version_id,
+                                           context_->AsWeakPtr()));
   new_version()->set_force_bypass_cache_for_scripts(force_bypass_cache_);
 
   if (need_to_pause_after_download) {
@@ -490,6 +516,9 @@ void ServiceWorkerRegisterJob::StartWorkerForUpdate() {
                                     update_checker_->updated_script_url());
     update_checker_.reset();
   }
+
+  new_version()->set_outside_fetch_client_settings_object(
+      std::move(outside_fetch_client_settings_object_));
 
   new_version()->StartWorker(
       ServiceWorkerMetrics::EventType::INSTALL,
@@ -765,16 +794,18 @@ void ServiceWorkerRegisterJob::ResolvePromise(
 void ServiceWorkerRegisterJob::AddRegistrationToMatchingProviderHosts(
     ServiceWorkerRegistration* registration) {
   DCHECK(registration);
-  for (std::unique_ptr<ServiceWorkerContextCore::ProviderHostIterator> it =
-           context_->GetClientProviderHostIterator(
+  for (std::unique_ptr<ServiceWorkerContextCore::ContainerHostIterator> it =
+           context_->GetClientContainerHostIterator(
                registration->scope().GetOrigin(),
                true /* include_reserved_clients */);
        !it->IsAtEnd(); it->Advance()) {
-    ServiceWorkerProviderHost* host = it->GetProviderHost();
-    if (!ServiceWorkerUtils::ScopeMatches(registration->scope(), host->url())) {
+    ServiceWorkerContainerHost* container_host = it->GetContainerHost();
+    DCHECK(container_host->IsContainerForClient());
+    if (!ServiceWorkerUtils::ScopeMatches(registration->scope(),
+                                          container_host->url())) {
       continue;
     }
-    host->AddMatchingRegistration(registration);
+    container_host->AddMatchingRegistration(registration);
   }
 }
 

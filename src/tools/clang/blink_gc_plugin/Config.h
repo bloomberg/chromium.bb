@@ -114,18 +114,16 @@ class Config {
            name == "ThreadSafeRefCounted";
   }
 
+  static bool IsGCSimpleBase(const std::string& name) {
+    return name == "GarbageCollected";
+  }
+
   static bool IsGCMixinBase(const std::string& name) {
     return name == "GarbageCollectedMixin";
   }
 
-  static bool IsGCFinalizedBase(const std::string& name) {
-    return name == "GarbageCollectedFinalized";
-  }
-
   static bool IsGCBase(const std::string& name) {
-    return name == "GarbageCollected" ||
-           IsGCFinalizedBase(name) ||
-           IsGCMixinBase(name);
+    return IsGCSimpleBase(name) || IsGCMixinBase(name);
   }
 
   static bool IsIterator(const std::string& name) {

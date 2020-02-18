@@ -18,7 +18,7 @@
 #include "net/cookies/cookie_options.h"
 #include "net/cookies/cookie_store.h"
 #include "net/cookies/cookie_util.h"
-#include "services/network/cookie_managers_shared.h"
+#include "services/network/cookie_access_delegate_impl.h"
 #include "services/network/session_cleanup_cookie_store.h"
 #include "url/gurl.h"
 
@@ -38,9 +38,8 @@ CookieManager::ListenerRegistration::ListenerRegistration() {}
 CookieManager::ListenerRegistration::~ListenerRegistration() {}
 
 void CookieManager::ListenerRegistration::DispatchCookieStoreChange(
-    const net::CanonicalCookie& cookie,
-    net::CookieChangeCause cause) {
-  listener->OnCookieChange(cookie, ToCookieChangeCause(cause));
+    const net::CookieChangeInfo& change) {
+  listener->OnCookieChange(change);
 }
 
 CookieManager::CookieManager(
@@ -49,12 +48,18 @@ CookieManager::CookieManager(
     mojom::CookieManagerParamsPtr params)
     : cookie_store_(cookie_store),
       session_cleanup_cookie_store_(std::move(session_cleanup_cookie_store)) {
+  mojom::CookieAccessDelegateType cookie_access_delegate_type =
+      mojom::CookieAccessDelegateType::USE_CONTENT_SETTINGS;
   if (params) {
     ConfigureCookieSettings(*params, &cookie_settings_);
+    cookie_access_delegate_type = params->cookie_access_delegate_type;
     // Don't wait for callback, the work happens synchronously.
     AllowFileSchemeCookies(params->allow_file_scheme_cookies,
                            base::DoNothing());
   }
+  cookie_store_->SetCookieAccessDelegate(
+      std::make_unique<CookieAccessDelegateImpl>(cookie_access_delegate_type,
+                                                 &cookie_settings_));
 }
 
 CookieManager::~CookieManager() {
@@ -62,6 +67,10 @@ CookieManager::~CookieManager() {
     session_cleanup_cookie_store_->DeleteSessionCookies(
         cookie_settings_.CreateDeleteCookieOnExitPredicate());
   }
+  // Make sure we destroy the CookieStore's CookieAccessDelegate, because it
+  // holds a pointer to this CookieManager's CookieSettings, which is about to
+  // be destroyed.
+  cookie_store_->SetCookieAccessDelegate(nullptr);
 }
 
 void CookieManager::AddReceiver(
@@ -71,6 +80,11 @@ void CookieManager::AddReceiver(
 
 void CookieManager::GetAllCookies(GetAllCookiesCallback callback) {
   cookie_store_->GetAllCookiesAsync(std::move(callback));
+}
+
+void CookieManager::GetAllCookiesWithAccessSemantics(
+    GetAllCookiesWithAccessSemanticsCallback callback) {
+  cookie_store_->GetAllCookiesWithAccessSemanticsAsync(std::move(callback));
 }
 
 void CookieManager::GetCookieList(const GURL& url,

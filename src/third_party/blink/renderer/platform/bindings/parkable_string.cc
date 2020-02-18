@@ -10,11 +10,13 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/process/memory.h"
 #include "base/single_thread_task_runner.h"
 #include "base/timer/elapsed_timer.h"
 #include "base/trace_event/trace_event.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/bindings/parkable_string_manager.h"
+#include "third_party/blink/renderer/platform/crypto.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/web_process_memory_dump.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
@@ -184,18 +186,53 @@ enum class ParkableStringImpl::Status : uint8_t {
   kLocked
 };
 
+// static
+std::unique_ptr<ParkableStringImpl::SecureDigest>
+ParkableStringImpl::HashString(StringImpl* string) {
+  DigestValue digest_result;
+  bool ok = ComputeDigest(kHashAlgorithmSha256,
+                          static_cast<const char*>(string->Bytes()),
+                          string->CharactersSizeInBytes(), digest_result);
+
+  // The only case where this can return false in BoringSSL is an allocation
+  // failure of the temporary data required for hashing. In this case, there
+  // is nothing better to do than crashing.
+  if (!ok) {
+    // Don't know the exact size, the SHA256 spec hints at ~64 (block size)
+    // + 32 (digest) bytes.
+    base::TerminateBecauseOutOfMemory(64 + kDigestSize);
+  }
+  // Unless SHA256 is... not 256 bits?
+  DCHECK(digest_result.size() == kDigestSize);
+  return std::make_unique<SecureDigest>(digest_result);
+}
+
+// static
+scoped_refptr<ParkableStringImpl> ParkableStringImpl::MakeNonParkable(
+    scoped_refptr<StringImpl>&& impl) {
+  return base::AdoptRef(new ParkableStringImpl(std::move(impl), nullptr));
+}
+
+// static
+scoped_refptr<ParkableStringImpl> ParkableStringImpl::MakeParkable(
+    scoped_refptr<StringImpl>&& impl,
+    std::unique_ptr<SecureDigest> digest) {
+  DCHECK(!!digest);
+  return base::AdoptRef(
+      new ParkableStringImpl(std::move(impl), std::move(digest)));
+}
+
 ParkableStringImpl::ParkableStringImpl(scoped_refptr<StringImpl>&& impl,
-                                       ParkableState parkable)
+                                       std::unique_ptr<SecureDigest> digest)
     : mutex_(),
       lock_depth_(0),
       state_(State::kUnparked),
       string_(std::move(impl)),
       compressed_(nullptr),
+      digest_(std::move(digest)),
       is_young_(true),
-      may_be_parked_(parkable == ParkableState::kParkable),
       is_8bit_(string_.Is8Bit()),
-      length_(string_.length()),
-      hash_(string_.Impl()->GetHash())
+      length_(string_.length())
 #if DCHECK_IS_ON()
       ,
       owning_thread_(CurrentThread())
@@ -209,12 +246,7 @@ ParkableStringImpl::~ParkableStringImpl() {
   if (!may_be_parked())
     return;
 
-#if DCHECK_IS_ON()
-  {
-    MutexLocker locker(mutex_);
-    DCHECK_EQ(0, lock_depth_);
-  }
-#endif
+  DCHECK_EQ(0, lock_depth_for_testing());
   AsanUnpoisonString(string_);
   DCHECK(state_ == State::kParked || state_ == State::kUnparked);
 
@@ -222,7 +254,7 @@ ParkableStringImpl::~ParkableStringImpl() {
 }
 
 void ParkableStringImpl::Lock() {
-  if (!may_be_parked_)
+  if (!may_be_parked())
     return;
 
   MutexLocker locker(mutex_);
@@ -274,55 +306,6 @@ void ParkableStringImpl::PurgeMemory() {
     compressed_ = nullptr;
 }
 
-bool ParkableStringImpl::Equal(const ParkableStringImpl& rhs) const {
-  // This is called when two strings share the same bucket. Either string can
-  // be parked.
-  //
-  // As a consequence, for a hash collision or true equality, a string can be
-  // unparked in this function, making it expensive (see below).
-  AssertOnValidThread();
-
-  if (this == &rhs)
-    return true;
-
-  // The hash is actually only 24 bits. If collisions become an issue, replace
-  // it either with a stronger one (murmur2 for instance), or switch to SHA256
-  // and don't check for equality.
-  if (GetHash() != rhs.GetHash() || length() != rhs.length())
-    return false;
-
-  // Can be expensive.
-  //
-  // Using the transient version because otherwise a lot of code in
-  // ParkableStringManager becomes more reentrant than it already is, and many
-  // parts of ParkableStringImpl would become mutable.
-  // For instance, ToString() can unpark a string, and that would call into
-  // ParkableStringManager::OnUnparked(), from ParkableStringManager::Add().
-  //
-  // Note that we only get here in two cases:
-  // - Hash collision
-  // - True equality
-  //
-  // Assuming that collisions are rare, unparking for true equality is not too
-  // bad, as the obvious alternative is to compare a cryptographic hash. On
-  // low-end ARM devices, unparking is roughly as expensive as SHA256, but we
-  // only do it for one of the two strings, so this is still expected to be
-  // faster than SHA256, at the cost of more memory (since both strings are held
-  // in memory temporarily).
-  return ToStringTransient() == rhs.ToStringTransient();
-}
-
-bool ParkableStringImpl::Equal(scoped_refptr<StringImpl> string) const {
-  // See above for comments about cost of this function. This is called from
-  // ParkableStringManager::Add() through ParkableStringImplTranslator.
-  AssertOnValidThread();
-
-  if (GetHash() != string->GetHash() || length() != string->length())
-    return false;
-
-  return ToStringTransient() == String(string);
-}
-
 void ParkableStringImpl::MakeYoung() {
   mutex_.AssertAcquired();
   is_young_ = true;
@@ -340,16 +323,6 @@ const String& ParkableStringImpl::ToString() {
   return string_;
 }
 
-String ParkableStringImpl::ToStringTransient() const {
-  AssertOnValidThread();
-  if (!is_parked()) {
-    AsanUnpoisonString(string_);
-    return string_;
-  }
-
-  return UnparkInternal();
-}
-
 unsigned ParkableStringImpl::CharactersSizeInBytes() const {
   AssertOnValidThread();
   return length_ * (is_8bit() ? sizeof(LChar) : sizeof(UChar));
@@ -362,7 +335,7 @@ ParkableStringImpl::AgeOrParkResult ParkableStringImpl::MaybeAgeOrParkString() {
   DCHECK(!is_parked());
 
   Status status = CurrentStatus();
-  if (is_young()) {
+  if (is_young_) {
     if (status == Status::kUnreferencedExternally)
       is_young_ = false;
   } else {
@@ -403,7 +376,7 @@ bool ParkableStringImpl::Park(ParkingMode mode) {
 void ParkableStringImpl::ParkInternal(ParkingMode mode) {
   mutex_.AssertAcquired();
   DCHECK_EQ(State::kUnparked, state_);
-  DCHECK(!is_young());
+  DCHECK(!is_young_);
   DCHECK(CanParkNow());
 
   // Parking can proceed synchronously.
@@ -449,7 +422,7 @@ ParkableStringImpl::Status ParkableStringImpl::CurrentStatus() const {
 }
 
 bool ParkableStringImpl::CanParkNow() const {
-  return CurrentStatus() == Status::kUnreferencedExternally && !is_young();
+  return CurrentStatus() == Status::kUnreferencedExternally && !is_young_;
 }
 
 void ParkableStringImpl::Unpark() {
@@ -643,8 +616,7 @@ ParkableString::ParkableString(scoped_refptr<StringImpl>&& impl) {
   if (is_parkable) {
     impl_ = ParkableStringManager::Instance().Add(std::move(impl));
   } else {
-    impl_ = base::MakeRefCounted<ParkableStringImpl>(
-        std::move(impl), ParkableStringImpl::ParkableState::kNotParkable);
+    impl_ = ParkableStringImpl::MakeNonParkable(std::move(impl));
   }
 }
 

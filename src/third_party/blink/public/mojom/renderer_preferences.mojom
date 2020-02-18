@@ -63,7 +63,6 @@ struct RendererPreferences {
   bool use_custom_colors = true;
 
   // Set to false to not send referrers.
-  // The default value should be in sync with blink::PrivacyPreferences.
   bool enable_referrers = true;
 
   // Set to true to allow third-party sub-content to pop-up HTTP basic auth
@@ -71,7 +70,6 @@ struct RendererPreferences {
   bool allow_cross_origin_auth_prompt = false;
 
   // Set to true to indicate that the preference to set DNT to 1 is enabled.
-  // The default value should be in sync with blink::PrivacyPreferences.
   bool enable_do_not_track = false;
 
   // Whether to allow the use of Encrypted Media Extensions (EME), except for
@@ -89,6 +87,8 @@ struct RendererPreferences {
   uint16 webrtc_udp_min_port = 0;
   uint16 webrtc_udp_max_port = 0;
 
+  array<string> webrtc_local_ips_allowed_urls;
+
   // The user agent given to WebKit when it requests one and the user agent is
   // being overridden for the current navigation.
   string user_agent_override;
@@ -102,9 +102,6 @@ struct RendererPreferences {
 
   // Determines whether plugins are allowed to enter fullscreen mode.
   bool plugin_fullscreen_allowed = true;
-
-  // Country iso of the mobile network for content detection purpose.
-  string network_contry_iso;
 
   [EnableIf=renderer_pref_system_font_family_name]
   string system_font_family_name;

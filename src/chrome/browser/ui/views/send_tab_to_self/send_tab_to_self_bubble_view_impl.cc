@@ -11,7 +11,6 @@
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/toolbar_button_provider.h"
-#include "chrome/browser/ui/views/page_action/omnibox_page_action_icon_container_view.h"
 #include "chrome/browser/ui/views/send_tab_to_self/send_tab_to_self_bubble_device_button.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/send_tab_to_self/target_device_info.h"
@@ -43,6 +42,7 @@ SendTabToSelfBubbleViewImpl::SendTabToSelfBubbleViewImpl(
     : LocationBarBubbleDelegateView(anchor_view, web_contents),
       web_contents_(web_contents),
       controller_(controller) {
+  DialogDelegate::set_buttons(ui::DIALOG_BUTTON_NONE);
   DCHECK(controller);
 }
 
@@ -69,10 +69,6 @@ void SendTabToSelfBubbleViewImpl::WindowClosing() {
     controller_->OnBubbleClosed();
     controller_ = nullptr;
   }
-}
-
-int SendTabToSelfBubbleViewImpl::GetDialogButtons() const {
-  return ui::DIALOG_BUTTON_NONE;
 }
 
 bool SendTabToSelfBubbleViewImpl::Close() {

@@ -37,6 +37,7 @@ case "$OS" in
   Darwin)    exec "${THIS_DIR}/ninja-mac" "$@";;
   CYGWIN*)   exec cmd.exe /c $(cygpath -t windows $0).exe "$@";;
   MINGW*)    cmd.exe //c $0.exe "$@";;
+  MSYS_NT*)  cmd.exe //c $0.exe "$@";;
   *)         echo "Unsupported OS ${OS}"
              print_help
              exit 1;;

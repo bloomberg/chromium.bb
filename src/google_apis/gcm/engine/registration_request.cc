@@ -295,7 +295,8 @@ void RegistrationRequest::OnURLLoadComplete(
                                         source_to_record_, status);
 
   DCHECK(custom_request_handler_.get());
-  custom_request_handler_->ReportUMAs(status);
+  custom_request_handler_->ReportStatusToUMA(status);
+  custom_request_handler_->ReportNetErrorCodeToUMA(source->NetError());
 
   if (ShouldRetryWithStatus(status)) {
     if (retries_left_ > 0) {
@@ -308,7 +309,7 @@ void RegistrationRequest::OnURLLoadComplete(
                                           source_to_record_, status);
 
     DCHECK(custom_request_handler_.get());
-    custom_request_handler_->ReportUMAs(status);
+    custom_request_handler_->ReportStatusToUMA(status);
   }
 
   callback_.Run(status, token);

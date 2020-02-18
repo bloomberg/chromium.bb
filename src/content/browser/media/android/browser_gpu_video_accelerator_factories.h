@@ -28,7 +28,7 @@ class BrowserGpuVideoAcceleratorFactories
   bool IsGpuVideoAcceleratorEnabled() override;
   base::UnguessableToken GetChannelToken() override;
   int32_t GetCommandBufferRouteId() override;
-  bool IsDecoderConfigSupported(
+  Supported IsDecoderConfigSupported(
       media::VideoDecoderImplementation implementation,
       const media::VideoDecoderConfig& config) override;
   std::unique_ptr<media::VideoDecoder> CreateVideoDecoder(
@@ -48,7 +48,6 @@ class BrowserGpuVideoAcceleratorFactories
       media::VideoPixelFormat pixel_format) override;
   gpu::SharedImageInterface* SharedImageInterface() override;
   gpu::GpuMemoryBufferManager* GpuMemoryBufferManager() override;
-  std::unique_ptr<base::SharedMemory> CreateSharedMemory(size_t size) override;
   base::UnsafeSharedMemoryRegion CreateSharedMemoryRegion(size_t size) override;
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() override;
   media::VideoEncodeAccelerator::SupportedProfiles

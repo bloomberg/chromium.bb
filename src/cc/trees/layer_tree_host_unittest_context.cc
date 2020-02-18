@@ -750,8 +750,8 @@ class LayerTreeHostContextTestLostContextAndEvictTextures
   }
 
   void DrawLayersOnThread(LayerTreeHostImpl* impl) override {
-    FakePictureLayerImpl* picture_impl = static_cast<FakePictureLayerImpl*>(
-        impl->active_tree()->root_layer_for_testing());
+    FakePictureLayerImpl* picture_impl =
+        static_cast<FakePictureLayerImpl*>(impl->active_tree()->root_layer());
     EXPECT_TRUE(picture_impl->HighResTiling()
                     ->TileAt(0, 0)
                     ->draw_info()
@@ -829,7 +829,7 @@ class LayerTreeHostContextTestLayersNotified : public LayerTreeHostContextTest {
     // fail before second activation.
     if (num_commits_ >= 2) {
       root_picture = static_cast<FakePictureLayerImpl*>(
-          host_impl->active_tree()->root_layer_for_testing());
+          host_impl->active_tree()->root_layer());
       child_picture = static_cast<FakePictureLayerImpl*>(
           host_impl->active_tree()->LayerById(child_->id()));
       grandchild_picture = static_cast<FakePictureLayerImpl*>(
@@ -983,8 +983,8 @@ class LayerTreeHostContextTestDontUseLostResources
     layer_tree_host()->SetDebugState(debug_state);
 
     scoped_refptr<PaintedScrollbarLayer> scrollbar =
-        PaintedScrollbarLayer::Create(
-            std::unique_ptr<Scrollbar>(new FakeScrollbar), layer->element_id());
+        PaintedScrollbarLayer::Create(base::MakeRefCounted<FakeScrollbar>());
+    scrollbar->SetScrollElementId(layer->element_id());
     scrollbar->SetBounds(gfx::Size(10, 10));
     scrollbar->SetIsDrawable(true);
     root->AddChild(scrollbar);

@@ -149,7 +149,7 @@ void PreloadHelper::DnsPrefetchIfNeeded(
             document, frame);
       }
       WebPrescientNetworking* web_prescient_networking =
-          Platform::Current()->PrescientNetworking();
+          frame ? frame->PrescientNetworking() : nullptr;
       if (web_prescient_networking) {
         web_prescient_networking->PrefetchDNS(params.href.Host());
       }
@@ -188,11 +188,10 @@ void PreloadHelper::PreconnectIfNeeded(
       }
     }
     WebPrescientNetworking* web_prescient_networking =
-        Platform::Current()->PrescientNetworking();
+        frame ? frame->PrescientNetworking() : nullptr;
     if (web_prescient_networking) {
       web_prescient_networking->Preconnect(
-          WebLocalFrameImpl::FromFrame(frame), params.href,
-          params.cross_origin != kCrossOriginAttributeAnonymous);
+          params.href, params.cross_origin != kCrossOriginAttributeAnonymous);
     }
   }
 }
@@ -484,13 +483,16 @@ Resource* PreloadHelper::PrefetchIfNeeded(const LinkLoadParameters& params,
 
     ResourceRequest resource_request(params.href);
 
-    // TODO(domfarolino): When SplitCache is enabled by default and we can
-    // remove this feature check, also remove the exceptions in
-    // net/base/features.h DEPS as well as audit_non_blink_usage.py.
     if (base::FeatureList::IsEnabled(
-            network::features::kPrefetchMainResourceNetworkIsolationKey) &&
-        EqualIgnoringASCIICase(params.as, "document")) {
-      resource_request.SetPrefetchMaybeForTopLevelNavigation(true);
+            network::features::kPrefetchMainResourceNetworkIsolationKey)) {
+      if (EqualIgnoringASCIICase(params.as, "document"))
+        resource_request.SetPrefetchMaybeForTopLevelNavigation(true);
+
+      // If this request was originally a preload header on a prefetch response,
+      // it may have a recursive prefetch token, used by the browser process to
+      // ensure this request is cached correctly.
+      resource_request.SetRecursivePrefetchToken(
+          params.recursive_prefetch_token);
     }
 
     resource_request.SetReferrerPolicy(params.referrer_policy);
@@ -533,7 +535,8 @@ void PreloadHelper::LoadLinksFromHeader(
     MediaPreloadPolicy media_policy,
     const base::Optional<ViewportDescription>& viewport_description,
     std::unique_ptr<AlternateSignedExchangeResourceInfo>
-        alternate_resource_info) {
+        alternate_resource_info,
+    base::Optional<base::UnguessableToken> recursive_prefetch_token) {
   if (header_value.IsEmpty())
     return;
   LinkHeaderSet header_set(header_value);
@@ -547,6 +550,14 @@ void PreloadHelper::LoadLinksFromHeader(
       continue;
 
     LinkLoadParameters params(header, base_url);
+    if (params.rel.IsLinkPreload() && recursive_prefetch_token) {
+      // Only preload headers are expected to have a recursive prefetch token
+      // In response to that token's existence, we treat the request as a
+      // prefetch.
+      params.recursive_prefetch_token = recursive_prefetch_token;
+      params.rel = LinkRelAttribute("prefetch");
+    }
+
     if (alternate_resource_info && params.rel.IsLinkPreload()) {
       DCHECK(document);
       DCHECK(RuntimeEnabledFeatures::SignedExchangeSubresourcePrefetchEnabled(

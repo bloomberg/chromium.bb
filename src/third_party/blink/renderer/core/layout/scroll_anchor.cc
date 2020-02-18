@@ -156,7 +156,7 @@ static const AtomicString UniqueClassnameAmongSiblings(Element* element) {
     if (sibling_element->HasClass() && sibling_element != element) {
       const SpaceSplitString& class_names = sibling_element->ClassNames();
       for (wtf_size_t i = 0; i < class_names.size(); ++i) {
-        classname_filter->Add(class_names[i]);
+        classname_filter->Add(class_names[i].Impl()->ExistingHash());
       }
     }
   }
@@ -166,7 +166,7 @@ static const AtomicString UniqueClassnameAmongSiblings(Element* element) {
     // MayContain allows for false positives, but a false positive is relatively
     // harmless; it just means we have to choose a different classname, or in
     // the worst case a different selector.
-    if (!classname_filter->MayContain(class_names[i])) {
+    if (!classname_filter->MayContain(class_names[i].Impl()->ExistingHash())) {
       return class_names[i];
     }
   }
@@ -291,6 +291,15 @@ ScrollAnchor::ExamineResult ScrollAnchor::Examine(
   LayoutRect candidate_rect = RelativeBounds(candidate, scroller_);
   LayoutRect visible_rect =
       ScrollerLayoutBox(scroller_)->OverflowClipRect(LayoutPoint());
+
+  const ComputedStyle* style = ScrollerLayoutBox(scroller_)->Style();
+  LayoutRectOutsets scroll_padding(
+      MinimumValueForLength(style->ScrollPaddingTop(), visible_rect.Height()),
+      MinimumValueForLength(style->ScrollPaddingRight(), visible_rect.Width()),
+      MinimumValueForLength(style->ScrollPaddingBottom(),
+                            visible_rect.Height()),
+      MinimumValueForLength(style->ScrollPaddingLeft(), visible_rect.Width()));
+  visible_rect.Contract(scroll_padding);
 
   bool occupies_space =
       candidate_rect.Width() > 0 && candidate_rect.Height() > 0;

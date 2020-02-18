@@ -39,6 +39,7 @@ struct TestRuleCondition : public DictionarySource {
   TestRuleCondition& operator=(const TestRuleCondition&);
 
   base::Optional<std::string> url_filter;
+  base::Optional<std::string> regex_filter;
   base::Optional<bool> is_url_filter_case_sensitive;
   base::Optional<std::vector<std::string>> domains;
   base::Optional<std::vector<std::string>> excluded_domains;
@@ -101,6 +102,7 @@ struct TestRuleRedirect : public DictionarySource {
   base::Optional<std::string> extension_path;
   base::Optional<TestRuleTransform> transform;
   base::Optional<std::string> url;
+  base::Optional<std::string> regex_substitution;
 
   std::unique_ptr<base::DictionaryValue> ToValue() const override;
 };

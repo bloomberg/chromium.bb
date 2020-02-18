@@ -22,18 +22,15 @@
 #include "components/invalidation/impl/fcm_invalidation_listener.h"
 #include "components/invalidation/impl/fcm_network_handler.h"
 #include "components/invalidation/impl/fcm_sync_network_channel.h"
-#include "components/invalidation/impl/gcm_invalidation_bridge.h"
 #include "components/invalidation/impl/invalidation_prefs.h"
 #include "components/invalidation/impl/invalidation_service_test_template.h"
-#include "components/invalidation/impl/invalidation_state_tracker.h"
-#include "components/invalidation/impl/invalidator.h"
 #include "components/invalidation/impl/profile_identity_provider.h"
 #include "components/invalidation/public/topic_invalidation_map.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "services/data_decoder/public/cpp/testing_json_parser.h"
+#include "services/data_decoder/public/cpp/test_support/in_process_data_decoder.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -52,6 +49,10 @@ class TestFCMSyncNetworkChannel : public syncer::FCMSyncNetworkChannel {
  public:
   void StartListening() override {}
   void StopListening() override {}
+
+  void RequestDetailedStatus(
+      const base::RepeatingCallback<void(const base::DictionaryValue&)>&
+          callback) override {}
 };
 
 // TODO: Make FCMInvalidationListener class abstract and explicitly make all the
@@ -106,11 +107,17 @@ class MockInstanceID : public InstanceID {
                     const std::map<std::string, std::string>& options,
                     std::set<Flags> flags,
                     GetTokenCallback& callback));
-  MOCK_METHOD4(ValidateToken,
+  void ValidateToken(const std::string& authorized_entity,
+                     const std::string& scope,
+                     const std::string& token,
+                     ValidateTokenCallback callback) override {
+    ValidateToken_(authorized_entity, scope, token, callback);
+  }
+  MOCK_METHOD4(ValidateToken_,
                void(const std::string& authorized_entity,
                     const std::string& scope,
                     const std::string& token,
-                    const ValidateTokenCallback& callback));
+                    ValidateTokenCallback& callback));
 
  protected:
   void DeleteTokenImpl(const std::string& authorized_entity,
@@ -178,10 +185,9 @@ class FCMInvalidationServiceTestDelegate {
         identity_provider_.get(),
         base::BindRepeating(&syncer::FCMNetworkHandler::Create,
                             gcm_driver_.get(), mock_instance_id_driver_.get()),
-        base::BindRepeating(
-            &syncer::PerUserTopicRegistrationManager::Create,
-            identity_provider_.get(), &pref_service_, &url_loader_factory_,
-            base::BindRepeating(&data_decoder::SafeJsonParser::Parse, nullptr)),
+        base::BindRepeating(&syncer::PerUserTopicRegistrationManager::Create,
+                            identity_provider_.get(), &pref_service_,
+                            &url_loader_factory_),
         mock_instance_id_driver_.get(), &pref_service_);
   }
 
@@ -208,7 +214,7 @@ class FCMInvalidationServiceTestDelegate {
   }
 
   base::test::TaskEnvironment task_environment_;
-  data_decoder::TestingJsonParser::ScopedFactoryOverride factory_override_;
+  data_decoder::test::InProcessDataDecoder in_process_data_decoder_;
   std::unique_ptr<gcm::GCMDriver> gcm_driver_;
   std::unique_ptr<MockInstanceIDDriver> mock_instance_id_driver_;
   std::unique_ptr<MockInstanceID> mock_instance_id_;

@@ -5,21 +5,28 @@
 #include "base/command_line.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
+#include "chrome/browser/about_flags.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/unexpire_flags.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/flags_ui/feature_entry_macros.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "ui/base/window_open_disposition.h"
 
 namespace {
 
-const char kSwitchName[] = "unsafely-treat-insecure-origin-as-secure";
+const char kSwitchName[] = "flag-system-test-switch";
+const char kFlagName[] = "flag-system-test-flag-1";
+
+const char kExpiredFlagName[] = "flag-system-test-flag-2";
+const char kExpiredFlagSwitchName[] = "flag-system-test-expired-switch";
 
 // Command line switch containing an invalid origin.
 const char kUnsanitizedCommandLine[] =
@@ -98,6 +105,27 @@ bool IsDropdownEnabled(content::WebContents* contents,
   return result;
 }
 
+bool IsFlagPresent(content::WebContents* contents, const char* experiment_id) {
+  bool result = false;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
+      contents,
+      base::StringPrintf("var k = document.getElementById('%s');"
+                         "window.domAutomationController.send(k != null);",
+                         experiment_id),
+      &result));
+  return result;
+}
+
+void WaitForExperimentalFeatures(content::WebContents* contents) {
+  bool unused;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      contents,
+      "experimentalFeaturesReady.then(() => {"
+      "  window.domAutomationController.send(true);"
+      "});",
+      &unused));
+}
+
 // In these tests, valid origins in the existing command line flag will be
 // appended to the list entered by the user in chrome://flags.
 // The tests are run twice for each bool value: Once with an existing command
@@ -106,7 +134,15 @@ class AboutFlagsBrowserTest : public InProcessBrowserTest,
                               public testing::WithParamInterface<bool> {
  public:
   AboutFlagsBrowserTest() {
-    feature_list_.InitWithFeatures({flags::kUnexpireFlagsM76}, {});
+    about_flags::testing::SetFeatureEntries(
+        {{kFlagName, "name-1", "description-1", -1,
+          ORIGIN_LIST_VALUE_TYPE(kSwitchName, "")},
+         {kExpiredFlagName, "name-2", "description-2", -1,
+          SINGLE_VALUE_TYPE(kExpiredFlagSwitchName)}});
+    flags::testing::SetFlagExpiredPredicate(
+        base::BindLambdaForTesting([&](const std::string& name) -> bool {
+          return expiration_enabled_ && name == kExpiredFlagName;
+        }));
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -114,6 +150,8 @@ class AboutFlagsBrowserTest : public InProcessBrowserTest,
   }
 
  protected:
+  void set_expiration_enabled(bool enabled) { expiration_enabled_ = enabled; }
+
   bool has_initial_command_line() const { return GetParam(); }
 
   std::string GetInitialCommandLine() const {
@@ -129,17 +167,25 @@ class AboutFlagsBrowserTest : public InProcessBrowserTest,
                                       : kSanitizedInput;
   }
 
+  void NavigateToFlagsPage() {
+    ui_test_utils::NavigateToURL(browser(), GURL("chrome://flags"));
+    WaitForExperimentalFeatures(
+        browser()->tab_strip_model()->GetActiveWebContents());
+  }
+
+  bool expiration_enabled_ = true;
+
   base::test::ScopedFeatureList feature_list_;
 };
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          AboutFlagsBrowserTest,
                          ::testing::Values(true, false));
 
 // Goes to chrome://flags page, types text into an ORIGIN_LIST_VALUE field but
 // does not enable the feature.
 IN_PROC_BROWSER_TEST_P(AboutFlagsBrowserTest, PRE_OriginFlagDisabled) {
-  ui_test_utils::NavigateToURL(browser(), GURL("chrome://flags"));
+  NavigateToFlagsPage();
 
   const base::CommandLine::SwitchMap kInitialSwitches =
       base::CommandLine::ForCurrentProcess()->GetSwitches();
@@ -148,40 +194,40 @@ IN_PROC_BROWSER_TEST_P(AboutFlagsBrowserTest, PRE_OriginFlagDisabled) {
       browser()->tab_strip_model()->GetActiveWebContents();
 
   // The page should be populated with the sanitized command line value.
-  EXPECT_EQ(GetSanitizedCommandLine(),
-            GetOriginListText(contents, kSwitchName));
+  EXPECT_EQ(GetSanitizedCommandLine(), GetOriginListText(contents, kFlagName));
 
   // Type a value in the experiment's textarea. Since the flag state is
   // "Disabled" by default, command line shouldn't change.
-  SimulateTextType(contents, kSwitchName, kUnsanitizedInput);
+  SimulateTextType(contents, kFlagName, kUnsanitizedInput);
   EXPECT_EQ(kInitialSwitches,
             base::CommandLine::ForCurrentProcess()->GetSwitches());
 
   // Input should be restored after a page reload.
-  ui_test_utils::NavigateToURL(browser(), GURL("chrome://flags"));
+  NavigateToFlagsPage();
   EXPECT_EQ(GetSanitizedInputAndCommandLine(),
-            GetOriginListText(contents, kSwitchName));
+            GetOriginListText(contents, kFlagName));
 }
 
-IN_PROC_BROWSER_TEST_P(AboutFlagsBrowserTest, OriginFlagDisabled) {
+// Flaky. http://crbug.com/1010678
+IN_PROC_BROWSER_TEST_P(AboutFlagsBrowserTest, DISABLED_OriginFlagDisabled) {
   // Even though the feature is disabled, the switch is set directly via command
   // line.
   EXPECT_EQ(
       GetInitialCommandLine(),
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(kSwitchName));
 
-  ui_test_utils::NavigateToURL(browser(), GURL("chrome://flags"));
+  NavigateToFlagsPage();
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  EXPECT_FALSE(IsDropdownEnabled(contents, kSwitchName));
+  EXPECT_FALSE(IsDropdownEnabled(contents, kFlagName));
   EXPECT_EQ(GetSanitizedInputAndCommandLine(),
-            GetOriginListText(contents, kSwitchName));
+            GetOriginListText(contents, kFlagName));
 }
 
 // Goes to chrome://flags page, types text into an ORIGIN_LIST_VALUE field and
 // enables the feature.
 IN_PROC_BROWSER_TEST_P(AboutFlagsBrowserTest, PRE_OriginFlagEnabled) {
-  ui_test_utils::NavigateToURL(browser(), GURL("chrome://flags"));
+  NavigateToFlagsPage();
 
   const base::CommandLine::SwitchMap kInitialSwitches =
       base::CommandLine::ForCurrentProcess()->GetSwitches();
@@ -190,18 +236,17 @@ IN_PROC_BROWSER_TEST_P(AboutFlagsBrowserTest, PRE_OriginFlagEnabled) {
       browser()->tab_strip_model()->GetActiveWebContents();
 
   // The page should be populated with the sanitized command line value.
-  EXPECT_EQ(GetSanitizedCommandLine(),
-            GetOriginListText(contents, kSwitchName));
+  EXPECT_EQ(GetSanitizedCommandLine(), GetOriginListText(contents, kFlagName));
 
   // Type a value in the experiment's textarea. Since the flag state is
   // "Disabled" by default, command line shouldn't change.
-  SimulateTextType(contents, kSwitchName, kUnsanitizedInput);
+  SimulateTextType(contents, kFlagName, kUnsanitizedInput);
   EXPECT_EQ(kInitialSwitches,
             base::CommandLine::ForCurrentProcess()->GetSwitches());
 
   // Enable the experiment. The behavior is different between ChromeOS and
   // non-ChromeOS.
-  ToggleEnableDropdown(contents, kSwitchName, true);
+  ToggleEnableDropdown(contents, kFlagName, true);
 
 #if !defined(OS_CHROMEOS)
   // On non-ChromeOS, the command line is not modified until restart.
@@ -217,18 +262,13 @@ IN_PROC_BROWSER_TEST_P(AboutFlagsBrowserTest, PRE_OriginFlagEnabled) {
 #endif
 
   // Input should be restored after a page reload.
-  ui_test_utils::NavigateToURL(browser(), GURL("chrome://flags"));
+  NavigateToFlagsPage();
   EXPECT_EQ(GetSanitizedInputAndCommandLine(),
-            GetOriginListText(contents, kSwitchName));
+            GetOriginListText(contents, kFlagName));
 }
 
-#if defined(OS_CHROMEOS) && !defined(NDEBUG)
-// TODO(https://crbug.com/1000714): Re-enable this test.
-#define MAYBE_OriginFlagEnabled DISABLED_OriginFlagEnabled
-#else
-#define MAYBE_OriginFlagEnabled OriginFlagEnabled
-#endif
-IN_PROC_BROWSER_TEST_P(AboutFlagsBrowserTest, MAYBE_OriginFlagEnabled) {
+// Flaky. http://crbug.com/1010678
+IN_PROC_BROWSER_TEST_P(AboutFlagsBrowserTest, DISABLED_OriginFlagEnabled) {
 #if !defined(OS_CHROMEOS)
   // On non-ChromeOS, the command line is modified after restart.
   EXPECT_EQ(
@@ -241,22 +281,68 @@ IN_PROC_BROWSER_TEST_P(AboutFlagsBrowserTest, MAYBE_OriginFlagEnabled) {
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(kSwitchName));
 #endif
 
-  ui_test_utils::NavigateToURL(browser(), GURL("chrome://flags"));
+  NavigateToFlagsPage();
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  EXPECT_TRUE(IsDropdownEnabled(contents, kSwitchName));
+  EXPECT_TRUE(IsDropdownEnabled(contents, kFlagName));
   EXPECT_EQ(GetSanitizedInputAndCommandLine(),
-            GetOriginListText(contents, kSwitchName));
+            GetOriginListText(contents, kFlagName));
 
 #if defined(OS_CHROMEOS)
   // ChromeOS doesn't read chrome://flags values on startup so we explicitly
   // need to disable and re-enable the flag here.
-  ToggleEnableDropdown(contents, kSwitchName, true);
+  ToggleEnableDropdown(contents, kFlagName, true);
 #endif
 
   EXPECT_EQ(
       GetSanitizedInputAndCommandLine(),
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(kSwitchName));
 }
+
+// Crashes on Win.  http://crbug.com/1025213
+#if defined(OS_WIN)
+#define MAYBE_ExpiryHidesFlag DISABLED_ExpiryHidesFlag
+#else
+#define MAYBE_ExpiryHidesFlag ExpiryHidesFlag
+#endif
+IN_PROC_BROWSER_TEST_P(AboutFlagsBrowserTest, MAYBE_ExpiryHidesFlag) {
+  NavigateToFlagsPage();
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_TRUE(IsFlagPresent(contents, kFlagName));
+  EXPECT_FALSE(IsFlagPresent(contents, kExpiredFlagName));
+
+  set_expiration_enabled(false);
+
+  NavigateToFlagsPage();
+  contents = browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_TRUE(IsFlagPresent(contents, kFlagName));
+  EXPECT_TRUE(IsFlagPresent(contents, kExpiredFlagName));
+}
+
+#if !defined(OS_CHROMEOS)
+IN_PROC_BROWSER_TEST_P(AboutFlagsBrowserTest, PRE_ExpiredFlagDoesntApply) {
+  set_expiration_enabled(false);
+  NavigateToFlagsPage();
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_TRUE(IsFlagPresent(contents, kExpiredFlagName));
+  EXPECT_FALSE(IsDropdownEnabled(contents, kExpiredFlagName));
+
+  ToggleEnableDropdown(contents, kExpiredFlagName, true);
+}
+
+// Flaky everywhere: https://crbug.com/1024028
+IN_PROC_BROWSER_TEST_P(AboutFlagsBrowserTest, DISABLED_ExpiredFlagDoesntApply) {
+  set_expiration_enabled(true);
+  NavigateToFlagsPage();
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_FALSE(IsFlagPresent(contents, kExpiredFlagName));
+
+  EXPECT_FALSE(base::CommandLine::ForCurrentProcess()->HasSwitch(
+      kExpiredFlagSwitchName));
+}
+#endif
 
 }  // namespace

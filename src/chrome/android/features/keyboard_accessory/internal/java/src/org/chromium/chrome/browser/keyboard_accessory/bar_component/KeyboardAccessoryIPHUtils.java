@@ -4,13 +4,14 @@
 
 package org.chromium.chrome.browser.keyboard_accessory.bar_component;
 
-import android.support.annotation.StringRes;
 import android.view.View;
+
+import androidx.annotation.StringRes;
 
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.keyboard_accessory.R;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.widget.textbubble.ImageTextBubble;
+import org.chromium.chrome.browser.ui.widget.textbubble.ImageTextBubble;
 import org.chromium.components.feature_engagement.EventConstants;
 import org.chromium.components.feature_engagement.FeatureConstants;
 import org.chromium.components.feature_engagement.Tracker;

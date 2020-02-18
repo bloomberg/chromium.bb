@@ -6,9 +6,10 @@
 
 #include <memory>
 
-#include "platform/api/logging.h"
+#include "util/logging.h"
 
 namespace openscreen {
+namespace osp {
 
 // static
 std::unique_ptr<QuicProtocolConnection> QuicProtocolConnection::FromExisting(
@@ -157,9 +158,11 @@ ServiceConnectionData::ServiceConnectionData(
     std::unique_ptr<QuicConnection> connection,
     std::unique_ptr<ServiceConnectionDelegate> delegate)
     : connection(std::move(connection)), delegate(std::move(delegate)) {}
-ServiceConnectionData::ServiceConnectionData(ServiceConnectionData&&) = default;
+ServiceConnectionData::ServiceConnectionData(ServiceConnectionData&&) noexcept =
+    default;
 ServiceConnectionData::~ServiceConnectionData() = default;
 ServiceConnectionData& ServiceConnectionData::operator=(
-    ServiceConnectionData&&) = default;
+    ServiceConnectionData&&) noexcept = default;
 
+}  // namespace osp
 }  // namespace openscreen

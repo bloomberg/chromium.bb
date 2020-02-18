@@ -81,6 +81,18 @@ bool NetworkTypeIsConfigurable(NetworkType type) {
 
 }  // namespace
 
+bool CanNetworkConnect(
+    chromeos::network_config::mojom::ConnectionStateType connection_state,
+    chromeos::network_config::mojom::NetworkType type,
+    bool connectable) {
+  // Network can be connected to if the network is not connected and:
+  // * The network is connectable or
+  // * The active user is primary and the network is configurable
+  return connection_state == ConnectionStateType::kNotConnected &&
+         (connectable ||
+          (!IsSecondaryUser() && NetworkTypeIsConfigurable(type)));
+}
+
 // A bubble which displays network info.
 class NetworkStateListDetailedView::InfoBubble
     : public views::BubbleDialogDelegateView {
@@ -131,7 +143,7 @@ class NetworkStateListDetailedView::InfoBubble
 
   void OnBeforeBubbleWidgetInit(views::Widget::InitParams* params,
                                 views::Widget* widget) const override {
-    params->shadow_type = views::Widget::InitParams::SHADOW_TYPE_DROP;
+    params->shadow_type = views::Widget::InitParams::ShadowType::kDrop;
     params->shadow_elevation = kBubbleShadowElevation;
     params->name = "NetworkStateListDetailedView::InfoBubble";
   }
@@ -271,22 +283,14 @@ void NetworkStateListDetailedView::HandleViewClicked(views::View* view) {
 
 void NetworkStateListDetailedView::HandleViewClickedImpl(
     NetworkStatePropertiesPtr network) {
-  if (network) {
-    // Attempt a network connection if the network is not connected and:
-    // * The network is connectable or
-    // * The active user is primary and the network is configurable
-    bool can_connect =
-        network->connection_state == ConnectionStateType::kNotConnected &&
-        (network->connectable ||
-         (!IsSecondaryUser() && NetworkTypeIsConfigurable(network->type)));
-    if (can_connect) {
-      Shell::Get()->metrics()->RecordUserMetricsAction(
-          list_type_ == LIST_TYPE_VPN
-              ? UMA_STATUS_AREA_CONNECT_TO_VPN
-              : UMA_STATUS_AREA_CONNECT_TO_CONFIGURED_NETWORK);
-      chromeos::NetworkConnect::Get()->ConnectToNetworkId(network->guid);
-      return;
-    }
+  if (network && CanNetworkConnect(network->connection_state, network->type,
+                                   network->connectable)) {
+    Shell::Get()->metrics()->RecordUserMetricsAction(
+        list_type_ == LIST_TYPE_VPN
+            ? UMA_STATUS_AREA_CONNECT_TO_VPN
+            : UMA_STATUS_AREA_CONNECT_TO_CONFIGURED_NETWORK);
+    chromeos::NetworkConnect::Get()->ConnectToNetworkId(network->guid);
+    return;
   }
   // If the network is no longer available or not connectable or configurable,
   // show the Settings UI.
@@ -398,7 +402,7 @@ views::View* NetworkStateListDetailedView::CreateNetworkInfoView() {
       ipv6_address = device->ipv6_address->ToString();
   }
 
-  std::string ethernet_address, wifi_address;
+  std::string ethernet_address, wifi_address, cellular_address;
   if (list_type_ == LIST_TYPE_NETWORK) {
     const DeviceStateProperties* ethernet =
         model_->GetDevice(NetworkType::kEthernet);
@@ -407,23 +411,29 @@ views::View* NetworkStateListDetailedView::CreateNetworkInfoView() {
     const DeviceStateProperties* wifi = model_->GetDevice(NetworkType::kWiFi);
     if (wifi && wifi->mac_address)
       wifi_address = *wifi->mac_address;
+    const DeviceStateProperties* cellular =
+        model_->GetDevice(NetworkType::kCellular);
+    if (cellular && cellular->mac_address)
+      cellular_address = *cellular->mac_address;
   }
 
   base::string16 bubble_text;
-  auto add_line = [&bubble_text](const std::string& address, int ids) {
-    if (!address.empty()) {
-      if (!bubble_text.empty())
-        bubble_text += base::ASCIIToUTF16("\n");
+  auto maybe_add_mac_address = [&bubble_text](const std::string& address,
+                                              int ids) {
+    if (address.empty())
+      return;
 
-      bubble_text +=
-          l10n_util::GetStringFUTF16(ids, base::UTF8ToUTF16(address));
-    }
+    if (!bubble_text.empty())
+      bubble_text += base::ASCIIToUTF16("\n");
+
+    bubble_text += l10n_util::GetStringFUTF16(ids, base::UTF8ToUTF16(address));
   };
 
-  add_line(ipv4_address, IDS_ASH_STATUS_TRAY_IP_ADDRESS);
-  add_line(ipv6_address, IDS_ASH_STATUS_TRAY_IPV6_ADDRESS);
-  add_line(ethernet_address, IDS_ASH_STATUS_TRAY_ETHERNET_ADDRESS);
-  add_line(wifi_address, IDS_ASH_STATUS_TRAY_WIFI_ADDRESS);
+  maybe_add_mac_address(ipv4_address, IDS_ASH_STATUS_TRAY_IP_ADDRESS);
+  maybe_add_mac_address(ipv6_address, IDS_ASH_STATUS_TRAY_IPV6_ADDRESS);
+  maybe_add_mac_address(ethernet_address, IDS_ASH_STATUS_TRAY_ETHERNET_ADDRESS);
+  maybe_add_mac_address(wifi_address, IDS_ASH_STATUS_TRAY_WIFI_ADDRESS);
+  maybe_add_mac_address(cellular_address, IDS_ASH_STATUS_TRAY_CELLULAR_ADDRESS);
 
   // Avoid an empty bubble in the unlikely event that there is no network
   // information at all.

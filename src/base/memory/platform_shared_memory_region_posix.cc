@@ -6,7 +6,6 @@
 
 #include <fcntl.h>
 #include <sys/mman.h>
-#include <sys/stat.h>
 
 #include "base/files/file.h"
 #include "base/files/file_util.h"
@@ -137,20 +136,6 @@ PlatformSharedMemoryRegion PlatformSharedMemoryRegion::Take(
     const UnguessableToken& guid) {
   CHECK_NE(mode, Mode::kWritable);
   return Take(ScopedFDPair(std::move(handle), ScopedFD()), mode, size, guid);
-}
-
-// static
-PlatformSharedMemoryRegion
-PlatformSharedMemoryRegion::TakeFromSharedMemoryHandle(
-    const SharedMemoryHandle& handle,
-    Mode mode) {
-  CHECK(mode == Mode::kReadOnly || mode == Mode::kUnsafe);
-  if (!handle.IsValid())
-    return {};
-
-  return Take(
-      base::subtle::ScopedFDPair(ScopedFD(handle.GetHandle()), ScopedFD()),
-      mode, handle.GetSize(), handle.GetGUID());
 }
 
 FDPair PlatformSharedMemoryRegion::GetPlatformHandle() const {
@@ -309,22 +294,22 @@ PlatformSharedMemoryRegion PlatformSharedMemoryRegion::Create(Mode mode,
   }
 
   if (readonly_fd.is_valid()) {
-    struct stat stat = {};
-    if (fstat(shm_file.GetPlatformFile(), &stat) != 0) {
+    stat_wrapper_t shm_stat;
+    if (File::Fstat(shm_file.GetPlatformFile(), &shm_stat) != 0) {
       LogCreateError(PlatformSharedMemoryRegion::CreateError::FSTAT_FAILURE);
       DPLOG(ERROR) << "fstat(fd) failed";
       return {};
     }
 
-    struct stat readonly_stat = {};
-    if (fstat(readonly_fd.get(), &readonly_stat) != 0) {
+    stat_wrapper_t readonly_stat;
+    if (File::Fstat(readonly_fd.get(), &readonly_stat) != 0) {
       LogCreateError(PlatformSharedMemoryRegion::CreateError::FSTAT_FAILURE);
       DPLOG(ERROR) << "fstat(readonly_fd) failed";
       return {};
     }
 
-    if (stat.st_dev != readonly_stat.st_dev ||
-        stat.st_ino != readonly_stat.st_ino) {
+    if (shm_stat.st_dev != readonly_stat.st_dev ||
+        shm_stat.st_ino != readonly_stat.st_ino) {
       LogCreateError(PlatformSharedMemoryRegion::CreateError::INODES_MISMATCH);
       LOG(ERROR) << "Writable and read-only inodes don't match; bailing";
       return {};

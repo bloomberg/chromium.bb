@@ -13,6 +13,7 @@
 
 namespace blink {
 
+class DOMTokenList;
 class HTMLElement;
 class LabelsNodeList;
 class ValidityStateFlags;
@@ -50,15 +51,23 @@ class CORE_EXPORT ElementInternals : public ScriptWrappable,
   bool checkValidity(ExceptionState& exception_state);
   bool reportValidity(ExceptionState& exception_state);
   LabelsNodeList* labels(ExceptionState& exception_state);
+  DOMTokenList* states();
+
+  bool HasState(const AtomicString& state) const;
 
   // We need these functions because we are reflecting ARIA attributes.
   // See dom/aria_attributes.idl.
   const AtomicString& FastGetAttribute(const QualifiedName&) const;
   void setAttribute(const QualifiedName& attribute, const AtomicString& value);
 
-  // TODO(meredithl): Fill these in.
   void SetElementAttribute(const QualifiedName& name, Element* element);
   Element* GetElementAttribute(const QualifiedName& name);
+  HeapVector<Member<Element>> GetElementArrayAttribute(
+      const QualifiedName& name,
+      bool is_null);
+  void SetElementArrayAttribute(const QualifiedName&,
+                                HeapVector<Member<Element>>,
+                                bool is_null);
   bool HasAttribute(const QualifiedName& attribute) const;
   const HashMap<QualifiedName, AtomicString>& GetAttributes() const;
 
@@ -97,12 +106,15 @@ class CORE_EXPORT ElementInternals : public ScriptWrappable,
   bool is_disabled_ = false;
   Member<ValidityStateFlags> validity_flags_;
   Member<Element> validation_anchor_;
+
+  Member<DOMTokenList> custom_states_;
+
   HashMap<QualifiedName, AtomicString> accessibility_semantics_map_;
 
   // See
   // https://whatpr.org/html/3917/common-dom-interfaces.html#reflecting-content-attributes-in-idl-attributes:element
-  HeapHashMap<QualifiedName, WeakMember<Element>>
-      explicitly_set_attr_element_map;
+  HeapHashMap<QualifiedName, Member<HeapVector<Member<Element>>>>
+      explicitly_set_attr_elements_map_;
 
   DISALLOW_COPY_AND_ASSIGN(ElementInternals);
 };

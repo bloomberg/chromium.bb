@@ -11,20 +11,20 @@
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/constrained_window/constrained_window_views.h"
+#include "components/password_manager/core/browser/leak_detection_dialog_utils.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/border.h"
 #include "ui/views/bubble/bubble_frame_view.h"
-#include "ui/views/controls/styled_label.h"
-#include "ui/views/layout/box_layout.h"
-
-using views::BoxLayout;
+#include "ui/views/bubble/tooltip_icon.h"
+#include "ui/views/controls/label.h"
+#include "ui/views/layout/fill_layout.h"
 
 namespace {
 
 // Fixed height of the illustration shown on the top of the dialog.
-constexpr int kIllustrationHeight = 120;
+constexpr int kIllustrationHeight = 148;
 
 // Fixed background color of the illustration shown on the top of the dialog in
 // normal mode.
@@ -60,38 +60,15 @@ std::unique_ptr<NonAccessibleImageView> CreateIllustration(
   return image_view;
 }
 
-// Creates the content containing the title and description for the dialog
-// rendered below the illustration.
-std::unique_ptr<views::View> CreateContent(
-    const base::string16& title,
-    const base::string16& description,
-    gfx::Range bold_change_password_range) {
-  auto content = std::make_unique<views::View>();
-  content->SetLayoutManager(std::make_unique<BoxLayout>(
-      BoxLayout::Orientation::kVertical, gfx::Insets(),
-      views::LayoutProvider::Get()->GetDistanceMetric(
-          views::DISTANCE_UNRELATED_CONTROL_VERTICAL)));
-  content->SetBorder(views::CreateEmptyBorder(
-      views::LayoutProvider::Get()->GetDialogInsetsForContentType(
-          views::CONTROL, views::CONTROL)));
-
-  auto title_label = std::make_unique<views::Label>(
-      title, views::style::CONTEXT_DIALOG_TITLE, views::style::STYLE_PRIMARY);
-  title_label->SetMultiLine(true);
-  title_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  content->AddChildView(std::move(title_label));
-
-  auto description_label =
-      std::make_unique<views::StyledLabel>(description, nullptr);
-  if (!bold_change_password_range.is_empty()) {
-    views::StyledLabel::RangeStyleInfo style;
-    style.custom_font = description_label->GetDefaultFontList().Derive(
-        0, gfx::Font::FontStyle::NORMAL, gfx::Font::Weight::BOLD);
-    description_label->AddStyleRange(bold_change_password_range, style);
-  }
-  content->AddChildView(std::move(description_label));
-
-  return content;
+std::unique_ptr<views::TooltipIcon> CreateInfoIcon() {
+  auto explanation_tooltip = std::make_unique<views::TooltipIcon>(
+      password_manager::GetLeakDetectionTooltip());
+  explanation_tooltip->set_bubble_width(
+      ChromeLayoutProvider::Get()->GetDistanceMetric(
+          DISTANCE_BUBBLE_PREFERRED_WIDTH));
+  explanation_tooltip->set_anchor_point_arrow(
+      views::BubbleBorder::Arrow::TOP_RIGHT);
+  return explanation_tooltip;
 }
 
 }  // namespace
@@ -102,6 +79,11 @@ CredentialLeakDialogView::CredentialLeakDialogView(
     : controller_(controller), web_contents_(web_contents) {
   DCHECK(controller);
   DCHECK(web_contents);
+
+  DialogDelegate::set_button_label(ui::DIALOG_BUTTON_OK,
+                                   controller_->GetAcceptButtonLabel());
+  DialogDelegate::set_button_label(ui::DIALOG_BUTTON_CANCEL,
+                                   controller_->GetCancelButtonLabel());
 }
 
 CredentialLeakDialogView::~CredentialLeakDialogView() = default;
@@ -126,12 +108,6 @@ gfx::Size CredentialLeakDialogView::CalculatePreferredSize() const {
                         DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH) -
                     margins().width();
   return gfx::Size(width, GetHeightForWidth(width));
-}
-
-base::string16 CredentialLeakDialogView::GetDialogButtonLabel(
-    ui::DialogButton button) const {
-  return button == ui::DIALOG_BUTTON_OK ? controller_->GetAcceptButtonLabel()
-                                        : controller_->GetCancelButtonLabel();
 }
 
 bool CredentialLeakDialogView::Cancel() {
@@ -162,7 +138,9 @@ bool CredentialLeakDialogView::Close() {
 }
 
 int CredentialLeakDialogView::GetDialogButtons() const {
-  return controller_->ShouldShowCancelButton()
+  // |controller_| can be nullptr when the framework calls this method after a
+  // button click.
+  return controller_ && controller_->ShouldShowCancelButton()
              ? ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL
              : ui::DIALOG_BUTTON_OK;
 }
@@ -172,21 +150,29 @@ bool CredentialLeakDialogView::ShouldShowCloseButton() const {
 }
 
 void CredentialLeakDialogView::OnThemeChanged() {
-  UpdateImageView(image_view_, GetNativeTheme()->ShouldUseDarkColors());
+  GetBubbleFrameView()->SetHeaderView(
+      CreateIllustration(GetNativeTheme()->ShouldUseDarkColors()));
+}
+
+base::string16 CredentialLeakDialogView::GetWindowTitle() const {
+  // |controller_| can be nullptr when the framework calls this method after a
+  // button click.
+  return controller_ ? controller_->GetTitle() : base::string16();
 }
 
 void CredentialLeakDialogView::InitWindow() {
-  SetLayoutManager(std::make_unique<BoxLayout>(
-      views::BoxLayout::Orientation::kVertical, gfx::Insets(),
-      0 /* between_child_spacing */));
-  std::unique_ptr<NonAccessibleImageView> illustration =
-      CreateIllustration(GetNativeTheme()->ShouldUseDarkColors());
-  image_view_ = illustration.get();
-  std::unique_ptr<views::View> content =
-      CreateContent(controller_->GetTitle(), controller_->GetDescription(),
-                    controller_->GetChangePasswordBoldRange());
-  AddChildView(std::move(illustration));
-  AddChildView(std::move(content));
+  SetLayoutManager(std::make_unique<views::FillLayout>());
+  SetBorder(views::CreateEmptyBorder(
+      views::LayoutProvider::Get()->GetDialogInsetsForContentType(
+          views::CONTROL, views::CONTROL)));
+
+  auto description_label = std::make_unique<views::Label>(
+      controller_->GetDescription(), views::style::CONTEXT_LABEL,
+      views::style::STYLE_SECONDARY);
+  description_label->SetMultiLine(true);
+  description_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  AddChildView(std::move(description_label));
+  SetExtraView(CreateInfoIcon());
 }
 
 CredentialLeakPrompt* CreateCredentialLeakPromptView(

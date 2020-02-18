@@ -126,7 +126,7 @@ bool IsManifestSupported(int manifest_version,
 
 }  // namespace
 
-const int Extension::kInitFromValueFlagBits = 14;
+const int Extension::kInitFromValueFlagBits = 15;
 
 const char Extension::kMimeType[] = "application/x-chrome-extension";
 
@@ -182,12 +182,12 @@ scoped_refptr<Extension> Extension::Create(const base::FilePath& path,
 
   if (!InitExtensionID(manifest.get(), path, explicit_id, flags, &error)) {
     *utf8_error = base::UTF16ToUTF8(error);
-    return NULL;
+    return nullptr;
   }
 
   std::vector<InstallWarning> install_warnings;
   if (!manifest->ValidateManifest(utf8_error, &install_warnings)) {
-    return NULL;
+    return nullptr;
   }
 
   scoped_refptr<Extension> extension = new Extension(path, std::move(manifest));
@@ -195,7 +195,7 @@ scoped_refptr<Extension> Extension::Create(const base::FilePath& path,
 
   if (!extension->InitFromValue(flags, &error)) {
     *utf8_error = base::UTF16ToUTF8(error);
-    return NULL;
+    return nullptr;
   }
 
   return extension;
@@ -326,6 +326,33 @@ GURL Extension::GetBaseURLFromExtensionId(const std::string& extension_id) {
                             url::kStandardSchemeSeparator, extension_id}));
 }
 
+// static
+bool Extension::ShouldDisplayInExtensionSettings(Manifest::Type type,
+                                                 Manifest::Location location) {
+  // Don't show for themes since the settings UI isn't really useful for them.
+  if (type == Manifest::TYPE_THEME)
+    return false;
+
+  // Hide component extensions because they are only extensions as an
+  // implementation detail of Chrome.
+  if (Manifest::IsComponentLocation(location) &&
+      !base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kShowComponentExtensionOptions)) {
+    return false;
+  }
+
+  // Unless they are unpacked, never show hosted apps. Note: We intentionally
+  // show packaged apps and platform apps because there are some pieces of
+  // functionality that are only available in chrome://extensions/ but which
+  // are needed for packaged and platform apps. For example, inspecting
+  // background pages. See http://crbug.com/116134.
+  if (!Manifest::IsUnpackedLocation(location) &&
+      type == Manifest::TYPE_HOSTED_APP)
+    return false;
+
+  return true;
+}
+
 bool Extension::OverlapsWithOrigin(const GURL& origin) const {
   if (url() == origin)
     return true;
@@ -361,27 +388,7 @@ bool Extension::ShouldDisplayInNewTabPage() const {
 }
 
 bool Extension::ShouldDisplayInExtensionSettings() const {
-  // Don't show for themes since the settings UI isn't really useful for them.
-  if (is_theme())
-    return false;
-
-  // Hide component extensions because they are only extensions as an
-  // implementation detail of Chrome.
-  if (extensions::Manifest::IsComponentLocation(location()) &&
-      !base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kShowComponentExtensionOptions)) {
-    return false;
-  }
-
-  // Unless they are unpacked, never show hosted apps. Note: We intentionally
-  // show packaged apps and platform apps because there are some pieces of
-  // functionality that are only available in chrome://extensions/ but which
-  // are needed for packaged and platform apps. For example, inspecting
-  // background pages. See http://crbug.com/116134.
-  if (!Manifest::IsUnpackedLocation(location()) && is_hosted_app())
-    return false;
-
-  return true;
+  return Extension::ShouldDisplayInExtensionSettings(GetType(), location());
 }
 
 bool Extension::ShouldExposeViaManagementAPI() const {
@@ -396,7 +403,7 @@ Extension::ManifestData* Extension::GetManifestData(const std::string& key)
   auto iter = manifest_data_.find(key);
   if (iter != manifest_data_.end())
     return iter->second.get();
-  return NULL;
+  return nullptr;
 }
 
 void Extension::SetManifestData(const std::string& key,
@@ -417,11 +424,25 @@ const HashedExtensionId& Extension::hashed_id() const {
   return manifest_->hashed_id();
 }
 
-const std::string Extension::VersionString() const {
+std::string Extension::VersionString() const {
   return version_.GetString();
 }
 
-const std::string Extension::GetVersionForDisplay() const {
+std::string Extension::DifferentialFingerprint() const {
+  std::string fingerprint;
+  // We currently support two sources of differential fingerprints:
+  // server-provided and synthesized. Fingerprints are of the format V.FP, where
+  // V indicates the fingerprint type (1 for SHA256 hash, 2 for app version) and
+  // FP indicates the value. The hash-based FP from the server is more precise
+  // (a hash of the extension CRX), so use that when available, otherwise
+  // synthesize a 2.VERSION fingerprint for use. For more information, see
+  // https://github.com/google/omaha/blob/master/doc/ServerProtocolV3.md#packages--fingerprints
+  return manifest_->GetString(keys::kDifferentialFingerprint, &fingerprint)
+             ? fingerprint
+             : "2." + VersionString();
+}
+
+std::string Extension::GetVersionForDisplay() const {
   if (version_name_.size() > 0)
     return version_name_;
   return VersionString();
@@ -656,11 +677,11 @@ bool Extension::LoadExtent(const char* key,
                            const char* list_error,
                            const char* value_error,
                            base::string16* error) {
-  const base::Value* temp_pattern_value = NULL;
+  const base::Value* temp_pattern_value = nullptr;
   if (!manifest_->Get(key, &temp_pattern_value))
     return true;
 
-  const base::ListValue* pattern_list = NULL;
+  const base::ListValue* pattern_list = nullptr;
   if (!temp_pattern_value->GetAsList(&pattern_list)) {
     *error = base::ASCIIToUTF16(list_error);
     return false;

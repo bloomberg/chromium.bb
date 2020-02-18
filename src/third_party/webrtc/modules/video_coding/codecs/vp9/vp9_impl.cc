@@ -48,7 +48,7 @@ uint8_t kUpdBufIdx[4] = {0, 0, 1, 0};
 int kMaxNumTiles4kVideo = 8;
 
 // Maximum allowed PID difference for differnet per-layer frame-rate case.
-const int kMaxAllowedPidDIff = 30;
+const int kMaxAllowedPidDiff = 30;
 
 constexpr double kLowRateFactor = 1.0;
 constexpr double kHighRateFactor = 2.0;
@@ -266,7 +266,6 @@ void VP9EncoderImpl::SetFecControllerOverride(
 int VP9EncoderImpl::Release() {
   int ret_val = WEBRTC_VIDEO_CODEC_OK;
 
-  encoded_image_.Allocate(0);
   if (encoder_ != nullptr) {
     if (inited_) {
       if (vpx_codec_destroy(encoder_)) {
@@ -1358,16 +1357,13 @@ vpx_svc_ref_frame_config_t VP9EncoderImpl::SetReferences(
       // not supposed to be used for temporal prediction.
       RTC_DCHECK_LT(buf_idx, kNumVp9Buffers - 1);
 
-      // Sanity check that reference picture number is smaller than current
-      // picture number.
-      RTC_DCHECK_LT(ref_buf_[buf_idx].pic_num, curr_pic_num);
-      const size_t pid_diff = curr_pic_num - ref_buf_[buf_idx].pic_num;
+      const int pid_diff = curr_pic_num - ref_buf_[buf_idx].pic_num;
       // Incorrect spatial layer may be in the buffer due to a key-frame.
       const bool same_spatial_layer =
           ref_buf_[buf_idx].spatial_layer_id == sl_idx;
       bool correct_pid = false;
       if (is_flexible_mode_) {
-        correct_pid = pid_diff < kMaxAllowedPidDIff;
+        correct_pid = pid_diff > 0 && pid_diff < kMaxAllowedPidDiff;
       } else {
         // Below code assumes single temporal referecence.
         RTC_DCHECK_EQ(gof_.num_ref_pics[gof_idx], 1);
@@ -1629,10 +1625,20 @@ int VP9DecoderImpl::InitDecode(const VideoCodec* inst, int number_of_cores) {
   vpx_codec_dec_cfg_t cfg;
   memset(&cfg, 0, sizeof(cfg));
 
+#ifdef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
+  // We focus on webrtc fuzzing here, not libvpx itself. Use single thread for
+  // fuzzing, because:
+  //  - libvpx's VP9 single thread decoder is more fuzzer friendly. It detects
+  //    errors earlier than the multi-threads version.
+  //  - Make peak CPU usage under control (not depending on input)
+  cfg.threads = 1;
+  (void)kMaxNumTiles4kVideo;  // unused
+#else
   // We want to use multithreading when decoding high resolution videos. But,
   // since we don't know resolution of input stream at this stage, we always
   // enable it.
   cfg.threads = std::min(number_of_cores, kMaxNumTiles4kVideo);
+#endif
 
   vpx_codec_flags_t flags = 0;
   if (vpx_codec_dec_init(decoder_, vpx_codec_vp9_dx(), &cfg, flags)) {
@@ -1740,7 +1746,8 @@ int VP9DecoderImpl::ReturnFrame(
           img->stride[VPX_PLANE_V] / 2, rtc::KeepRefUntilDone(img_buffer));
       break;
     default:
-      RTC_NOTREACHED();
+      RTC_LOG(LS_ERROR) << "Unsupported bit depth produced by the decoder: "
+                        << img->bit_depth;
       return WEBRTC_VIDEO_CODEC_NO_OUTPUT;
   }
 

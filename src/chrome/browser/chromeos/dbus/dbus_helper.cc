@@ -7,16 +7,18 @@
 #include "base/path_service.h"
 #include "base/system/sys_info.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
+#include "chrome/browser/chromeos/wilco_dtc_supportd/wilco_dtc_supportd_client.h"
 #include "chrome/common/chrome_paths.h"
 #include "chromeos/constants/chromeos_paths.h"
 #include "chromeos/cryptohome/system_salt_getter.h"
 #include "chromeos/dbus/arc_camera_client.h"
 #include "chromeos/dbus/audio/cras_audio_client.h"
-#include "chromeos/dbus/auth_policy/auth_policy_client.h"
+#include "chromeos/dbus/authpolicy/authpolicy_client.h"
 #include "chromeos/dbus/biod/biod_client.h"
 #include "chromeos/dbus/cros_healthd/cros_healthd_client.h"
 #include "chromeos/dbus/cups_proxy/cups_proxy_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/dlcservice/dlcservice_client.h"
 #include "chromeos/dbus/initialize_dbus_client.h"
 #include "chromeos/dbus/kerberos/kerberos_client.h"
 #include "chromeos/dbus/machine_learning/machine_learning_client.h"
@@ -63,6 +65,7 @@ void InitializeDBus() {
   InitializeDBusClient<CrosHealthdClient>(bus);
   InitializeDBusClient<CryptohomeClient>(bus);
   InitializeDBusClient<CupsProxyClient>(bus);
+  InitializeDBusClient<DlcserviceClient>(bus);
   InitializeDBusClient<KerberosClient>(bus);
   InitializeDBusClient<MachineLearningClient>(bus);
   InitializeDBusClient<MediaAnalyticsClient>(bus);
@@ -82,11 +85,13 @@ void InitializeDBus() {
 void InitializeFeatureListDependentDBus() {
   dbus::Bus* bus = DBusThreadManager::Get()->GetSystemBus();
   InitializeDBusClient<bluez::BluezDBusManager>(bus);
+  InitializeDBusClient<WilcoDtcSupportdClient>(bus);
 }
 
 void ShutdownDBus() {
-  // Feature list-dependent D-Bus clients are shut down first because we try to.
+  // Feature list-dependent D-Bus clients are shut down first because we try to
   // shut down in reverse order of initialization (in case of dependencies).
+  WilcoDtcSupportdClient::Shutdown();
   bluez::BluezDBusManager::Shutdown();
 
   // Other D-Bus clients are shut down, also in reverse order of initialization.
@@ -98,6 +103,7 @@ void ShutdownDBus() {
   MediaAnalyticsClient::Shutdown();
   MachineLearningClient::Shutdown();
   KerberosClient::Shutdown();
+  DlcserviceClient::Shutdown();
   CupsProxyClient::Shutdown();
   CryptohomeClient::Shutdown();
   CrosHealthdClient::Shutdown();

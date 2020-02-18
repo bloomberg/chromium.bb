@@ -57,8 +57,7 @@ if (is_android || is_chromeos) {
   } else {
     import("//build/config/android/sdk.gni")
     declare_args() {
-      # Android SDK release. Currently, only "o_mr1" and "p" are publicly
-      # supported.
+      # Which Android SDK to use.
       android_sdk_release = default_android_sdk_release
     }
   }
@@ -72,17 +71,9 @@ if (is_android || is_chromeos) {
     assert(defined(default_android_ndk_major_version))
   }
 
-  if (android_sdk_release == "o_mr1") {
+  if (android_sdk_release == "q") {
     default_android_sdk_root = "//third_party/android_sdk/public"
-    default_android_sdk_version = 27
-    default_android_sdk_build_tools_version = "29.0.2"
-    default_android_sdk_tools_version_suffix = "-26.0.0-dev"
-    public_android_sdk = true
-  }
-
-  if (android_sdk_release == "p") {
-    default_android_sdk_root = "//third_party/android_sdk/public"
-    default_android_sdk_version = 28
+    default_android_sdk_version = 29
     default_android_sdk_build_tools_version = "29.0.2"
     default_android_sdk_tools_version_suffix = "-26.0.0-dev"
     public_android_sdk = true
@@ -179,28 +170,23 @@ if (is_android || is_chromeos) {
     # Mark APKs as android:debuggable="true".
     debuggable_apks = !is_official_build
 
-    # Set to false to disable the Errorprone compiler
-    use_errorprone_java_compiler = true
-
-    # Enables Jacoco Java code coverage. Instruments classes during build to
-    # produce .exec files during runtime
-    jacoco_coverage = false
-
-    # Disables process isolation when building _incremental targets.
-    # Required for Android M+ due to SELinux policies (stronger sandboxing).
-    disable_incremental_isolated_processes = false
+    # Set to false to disable the Errorprone compiler.
+    # Defaults to false for official builds to reduce build times.
+    # Static analysis failures should have been already caught by normal bots.
+    use_errorprone_java_compiler = !is_official_build
 
     # Build incremental targets whenever possible.
-    # Ex. with this arg set to true, the chrome_public_apk target result in
-    # chrome_public_apk_incremental being built.
-    incremental_apk_by_default = false
+    # See //build/android/incremental_install/README.md for more details.
+    incremental_install = false
 
     # When true, updates all android_aar_prebuilt() .info files during gn gen.
     # Refer to android_aar_prebuilt() for more details.
     update_android_aar_prebuilts = false
 
     # Turns off android lint. Useful for prototyping or for faster local builds.
-    disable_android_lint = false
+    # Defaults to true for official builds to reduce build times.
+    # Static analysis failures should have been already caught by normal bots.
+    disable_android_lint = is_official_build
 
     # Location of aapt2 used for app bundles. For now, a more recent version
     # than the one distributed with the Android SDK is required.
@@ -210,12 +196,11 @@ if (is_android || is_chromeos) {
     # Checks that proguard flags have not changed (!is_java_debug only).
     check_android_configuration = false
 
+    # Where to write failed expectations if check_android_configuration is true.
+    android_configuration_failure_dir = "$root_build_dir/failed_expectations"
+
     # Enable the chrome build for devices without touchscreens.
     notouch_build = false
-
-    # Move Trichrome assets to the shared library APK. This will be removed
-    # once P builds are no longer supported. https://crbug.com/943637
-    trichrome_shared_assets = android_sdk_release == "q"
   }
 
   if (notouch_build && defined(extra_keymappings)) {
@@ -234,16 +219,15 @@ if (is_android || is_chromeos) {
       android_sdk_platform_version = android_sdk_version
     }
 
-    # Speed up dexing using dx --incremental.
-    enable_incremental_dx = is_java_debug
+    # Reduce build time by using d8 incremental build.
+    enable_incremental_d8 = true
 
     # Use hashed symbol names to reduce JNI symbol overhead.
     use_hashed_jni_names = !is_java_debug
-  }
 
-  # This should not be used for release builds since dx --incremental is known
-  # to not produce byte-for-byte identical output.
-  assert(!(enable_incremental_dx && !is_java_debug))
+    # For local development, it's nice to not fail builds on warnings.
+    java_warnings_as_errors = !is_java_debug
+  }
 
   # Path to where selected build variables are written to.
   android_build_vars = "$root_build_dir/build_vars.txt"

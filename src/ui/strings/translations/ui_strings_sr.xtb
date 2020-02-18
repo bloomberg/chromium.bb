@@ -7,6 +7,8 @@
 <translation id="1156623771253174079">{SECONDS,plural, =1{Пре 1 минут}one{Пре # минут}few{Пре # минута}other{Пре # минута}}</translation>
 <translation id="1169783199079129864">{MINUTES,plural, =1{1 м}one{# м}few{# м}other{# м}}</translation>
 <translation id="1181037720776840403">Уклони</translation>
+<translation id="1201402288615127009">Даље</translation>
+<translation id="1218444235442067213"><ph name="APP_NAME" />, апликација из Play продавнице</translation>
 <translation id="1243314992276662751">Отпреми</translation>
 <translation id="1266864766717917324">Није успело дељење: <ph name="CONTENT_TYPE" /></translation>
 <translation id="1269641567813814718">Win</translation>
@@ -17,7 +19,7 @@
 <translation id="1368832886055348810">Слева надесно</translation>
 <translation id="1383876407941801731">Претражи</translation>
 <translation id="1398853756734560583">Увећај</translation>
-<translation id="1409544243779336081">Препорука за апликацију</translation>
+<translation id="1414271762428216854"><ph name="APP_NAME" />, инсталирана апликација</translation>
 <translation id="1450753235335490080">Није успело дељење: <ph name="CONTENT_TYPE" /></translation>
 <translation id="1498028757988366001">Ово сте већ тражили раније. Ако избришете „<ph name="QUERY" />“ из историје, трајно ћете га уклонити са налога на свим уређајима.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 минут и }one{# минут и }few{# минута и }other{# минута и }}</translation>
@@ -29,10 +31,10 @@
 <translation id="1801827354178857021">Тачка</translation>
 <translation id="1803208670097017349">{MONTHS,plural, =1{1 месец}one{# месец}few{# месеца}other{# месеци}}</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY" /> MB/s</translation>
-<translation id="1812519734428420144">Оцена у звездицама: <ph name="RATING_SCORE" /></translation>
 <translation id="1830179671306812954">{HOURS,plural, =1{1 сат и }one{# сат и }few{# сата и }other{# сати и }}</translation>
+<translation id="1830308660060964064">Ставка <ph name="ITEM_TITLE" /> је откачена</translation>
 <translation id="1842960171412779397">изабери</translation>
-<translation id="1859234291848436338">Writing Direction (Смер писања)</translation>
+<translation id="1859234291848436338">Смер писања</translation>
 <translation id="1860796786778352021">Затвори обавештење</translation>
 <translation id="1871244248791675517">Ins</translation>
 <translation id="1884435127456172652"><ph name="NUMBER" />%</translation>
@@ -40,6 +42,7 @@
 <translation id="1938451708255335766">Да бисте подесили густину приказа прозора, поново покрените апликацију.</translation>
 <translation id="2006524834898217237">Уверите се да је овај уређај повезан на интернет.</translation>
 <translation id="208586643495776849">Пробајте поново</translation>
+<translation id="2090963878406559571">Да бисте послали број са <ph name="ORIGIN" /> на Android телефон, <ph name="TROUBLESHOOT_LINK" /> за оба уређаја у подешавањима.</translation>
 <translation id="2141853158323869627">{DAYS,plural, =1{1 д}one{# д}few{# д}other{# д}}</translation>
 <translation id="2148716181193084225">Данас</translation>
 <translation id="2161656808144014275">Текст</translation>
@@ -51,6 +54,7 @@
 <translation id="2289052229480071835">Додирните циљна поља за додир на екрану.</translation>
 <translation id="2295140143284145483">Анкета</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
+<translation id="2353636109065292463">Проверава се интернет веза</translation>
 <translation id="2388990488038464401">Желите ли да позовете овај број са телефона?</translation>
 <translation id="24452542372838207">Прошири обавештење</translation>
 <translation id="2445449901874883781">Користи високу густину</translation>
@@ -65,10 +69,12 @@
 <translation id="2666092431469916601">Врх</translation>
 <translation id="2701330563083355633">Дељено са: <ph name="DEVICE_NAME" /></translation>
 <translation id="2743387203779672305">Копирај у меморију</translation>
+<translation id="2749082172777216925"><ph name="APP_NAME_INFO" />, <ph name="PRICE" /></translation>
 <translation id="2803313416453193357">Отворите директоријум</translation>
 <translation id="2824719307700604149">{YEARS,plural, =1{Пре годину дана}one{Пре # годину}few{Пре # године}other{Пре # година}}</translation>
 <translation id="2907671656515444832">{DAYS,plural, =1{за 1 д}one{за # д}few{за # д}other{за # д}}</translation>
 <translation id="2931838996092594335">клик</translation>
+<translation id="2981684127883932071">Приказују се предлози</translation>
 <translation id="3036649622769666520">Отварање датотека</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY" /> MB</translation>
 <translation id="3068711042108640621">Полица на левој страни</translation>
@@ -81,9 +87,9 @@
 <translation id="3295886253693811851">Позовите са уређаја</translation>
 <translation id="335581015389089642">Говор</translation>
 <translation id="3389286852084373014">Текст је превелик</translation>
-<translation id="3443810440409579745">Картица је примљена.</translation>
 <translation id="3479552764303398839">Не сада</translation>
 <translation id="348799646910989694">Полица је аутоматски сакривена</translation>
+<translation id="3554637740840164787">Ставка <ph name="ITEM_TITLE" /> је закачена</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{Још 1 дан}one{Још # дан}few{Још # дана}other{Још # дана}}</translation>
 <translation id="3600969208114796418"><ph name="SAVEAS_EXTENSION_TYPE" /> датотека</translation>
 <translation id="3608915363409716668"><ph name="MAXIMUM_VALUE" />+</translation>
@@ -105,20 +111,21 @@
 <translation id="4250229828105606438">Снимак екрана</translation>
 <translation id="4266252015790371705">{MONTHS,plural, =1{Пре месец дана}one{Пре # месец}few{Пре # месеца}other{Пре # месеци}}</translation>
 <translation id="4289300219472526559">Почните да говорите</translation>
+<translation id="430191667033048642">Апликација <ph name="MOVED_APP_NAME" /> је премештена у директоријум <ph name="FOLDER_NAME" />.</translation>
 <translation id="4316910396681052118">СВЕ АПЛИКАЦИЈЕ</translation>
 <translation id="4588090240171750605">Помери надесно</translation>
+<translation id="4631891353005174729"><ph name="APP_NAME_TYPE" />, оцена у звездицама <ph name="RATING_SCORE" /></translation>
+<translation id="4648249871170053485"><ph name="APP_NAME" />, препоручена апликација</translation>
 <translation id="4690510401873698237">Полица у дну</translation>
 <translation id="4724120544754982507">Центар за обавештења, непрочитаних обавештења: <ph name="UNREAD_NOTIFICATION_COUNT" /></translation>
 <translation id="4730374152663651037">ЧЕСТО КОРИШЋЕНЕ</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{Још 1 месец}one{Још # месец}few{Још # месеца}other{Још # месеци}}</translation>
-<translation id="4841881773802181781">Уметање</translation>
-<translation id="4881695831933465202">Отвори</translation>
 <translation id="4888938634149558681">Позови</translation>
 <translation id="4968171027979920686">{SECONDS,plural, =1{1 секунда}one{# секунда}few{# секунде}other{# секунди}}</translation>
 <translation id="4971687151119236543">Претходна песма медија</translation>
 <translation id="5046499563572181734">Додирните овде</translation>
 <translation id="5076340679995252485">&amp;Налепи</translation>
-<translation id="5137751499640340777">Покрените Google помоћник</translation>
+<translation id="5198715732953550718">Апликација <ph name="MOVED_APP_NAME" /> је комбинована са апликацијом <ph name="IN_PLACE_APP" /> да би се направио нови директоријум.</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5266161281976477809">Троугао за откривање</translation>
 <translation id="5278860589123563674">Слање није успело</translation>
@@ -132,6 +139,7 @@
 <translation id="5574202486608032840"><ph name="IDS_SHORT_PRODUCT_OS_NAME" /> систем</translation>
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="5613020302032141669">Стрелица налево</translation>
+<translation id="5675363643668471212">Ставка на полици</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 мин}one{# мин}few{# мин}other{# мин}}</translation>
 <translation id="5763338081255973061">{DAYS,plural, =0{Последња активност: данас}=1{Последња активност: пре 1 дан}one{Последња активност: пре # дан}few{Последња активност: пре # дана}other{Последња активност: пре # дана}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 дан и }one{# дан и }few{# дана и }other{# дана и }}</translation>
@@ -155,6 +163,7 @@
 <translation id="6394627529324717982">Зарез</translation>
 <translation id="6397363302884558537">Престаните да говорите</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{Пре 1 сек}one{Пре # сек}few{Пре # сек}other{Пре # сек}}</translation>
+<translation id="6417265370957905582">Google помоћник</translation>
 <translation id="6430678249303439055">Блокирај сва обавештења из ове апликације</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{Пре 1 секунду}one{Пре # секунду}few{Пре # секунде}other{Пре # секунди}}</translation>
 <translation id="6539092367496845964">Нешто није у реду. Пробајте поново касније.</translation>
@@ -165,7 +174,7 @@
 <translation id="6620110761915583480">Чување датотеке</translation>
 <translation id="6656912866303152668">Уверите се да је синхронизација за <ph name="TARGET_DEVICE_NAME" /> укључена на Chrome-у и пробајте да пошаљете поново.</translation>
 <translation id="6699343763173986273">Следећа песма медија</translation>
-<translation id="673773751041746814">Брисање</translation>
+<translation id="6710213216561001401">Претходно</translation>
 <translation id="6779314412797872738">Да бисте послали број са овог уређаја на Android телефон, <ph name="TROUBLESHOOT_LINK" /> за оба уређаја у подешавањима.</translation>
 <translation id="6786750046913594791">Затворите директоријум</translation>
 <translation id="6808150112686056157">Заустављање медија</translation>
@@ -183,6 +192,7 @@
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{Још 1 мин}one{Још # мин}few{Још # мин}other{Још # мин}}</translation>
 <translation id="7319740667687257810">Покретач, делимичан приказ</translation>
+<translation id="7352651011704765696">Нешто није у реду</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{Пре 1 мин}one{Пре # мин}few{Пре # мин}other{Пре # мин}}</translation>
 <translation id="7389409599945284130">– <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{Још 1 минут}one{Још # минут}few{Још # минута}other{Још # минута}}</translation>
@@ -192,21 +202,24 @@
 <translation id="7658239707568436148">Откажи</translation>
 <translation id="7781829728241885113">Јуче</translation>
 <translation id="7814458197256864873">&amp;Копирај</translation>
+<translation id="7848989271541991537">Премештено је на <ph name="PAGE_NUMBER" />. страницу, <ph name="ROW_NUMBER" />. ред, <ph name="COLUMN_NUMBER" />. колона.</translation>
 <translation id="7879499977785298635">Не блокирај</translation>
 <translation id="7907591526440419938">Отварање датотеке</translation>
 <translation id="7969046989155602842">Command</translation>
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{Више од 1 непрочитаног обавештења}one{Више од # непрочитаног обавештења}few{Више од # непрочитана обавештења}other{Више од # непрочитаних обавештења}}</translation>
 <translation id="8086866675552927481">{MINUTES,plural, =1{за 1 мин}one{за # мин}few{за # мин}other{за # мин}}</translation>
 <translation id="8087772101393322318"><ph name="KEY_MODIFIER_NAME" />+<ph name="KEY_COMBO_NAME" /></translation>
-<translation id="8098075892845277643">Започните гласовну претрагу у Google помоћнику</translation>
+<translation id="8090736967111090568">Број са <ph name="ORIGIN" /></translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{Пре 1 сат}one{Пре # сат}few{Пре # сата}other{Пре # сати}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{Још 1 сек}one{Још # сек}few{Још # сек}other{Још # сек}}</translation>
+<translation id="8134065097954893699">Поново учитајте ову страницу</translation>
 <translation id="8144660977431427332">Претраге омогућава Google помоћник. <ph name="LEARN_MORE" /></translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, аутоматско довршавање</translation>
 <translation id="815598010540052116">Помери надоле</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8210608804940886430">Страница надоле</translation>
 <translation id="8245914219290430011">Табулатор</translation>
+<translation id="8247998213073982446"><ph name="APP_NAME" />, апликација</translation>
 <translation id="8259556432390118667">Хексадецимална вредност боје</translation>
 <translation id="8328145009876646418">Лева ивица</translation>
 <translation id="8331626408530291785">Помери нагоре</translation>
@@ -231,12 +244,13 @@
 <translation id="8926951137623668982">Полица је увек сакривена</translation>
 <translation id="8996630695507351249">Уверите се да је <ph name="TARGET_DEVICE_NAME" /> повезан на интернет.</translation>
 <translation id="9002566407876343676">отварање</translation>
-<translation id="9039076430527029379">Премести на <ph name="PAGE_NUMBER" />. страницу, <ph name="ROW_NUMBER" />. ред, <ph name="COLUMN_NUMBER" />. колона.</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 сек}one{# сек}few{# сек}other{# сек}}</translation>
 <translation id="9059834730836941392">Скупи обавештење</translation>
 <translation id="9150735707954472829">Картица</translation>
 <translation id="9161053988251441839">ПРЕДЛОЖЕНЕ АПЛИКАЦИЈЕ</translation>
 <translation id="9170848237812810038">&amp;Опозови</translation>
+<translation id="9178475906033259337">Приказује се један резултат за: <ph name="QUERY" /></translation>
 <translation id="932327136139879170">Почетна</translation>
 <translation id="944069440740578670">Непрочитана обавештења</translation>
+<translation id="974545358917229949">Приказују се резултати (<ph name="RESULT_COUNT" />) за: <ph name="QUERY" /></translation>
 </translationbundle>

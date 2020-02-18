@@ -19,9 +19,9 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/arc/policy/arc_policy_util.h"
+#include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/image_decoder.h"
@@ -32,8 +32,10 @@
 #include "chrome/browser/ui/app_list/arc/arc_default_app_list.h"
 #include "chrome/browser/ui/app_list/arc/arc_package_syncable_service.h"
 #include "chrome/browser/ui/app_list/arc/arc_pai_starter.h"
+#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/constants/chromeos_features.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "components/arc/arc_prefs.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/arc_util.h"
@@ -65,6 +67,7 @@ constexpr char kName[] = "name";
 constexpr char kNotificationsEnabled[] = "notifications_enabled";
 constexpr char kPackageName[] = "package_name";
 constexpr char kPackageVersion[] = "package_version";
+constexpr char kPinIndex[] = "pin_index";
 constexpr char kPermissionStates[] = "permission_states";
 constexpr char kSticky[] = "sticky";
 constexpr char kShortcut[] = "shortcut";
@@ -143,7 +146,7 @@ bool InstallIconFromFileThread(const base::FilePath& icon_path,
 void DeleteAppFolderFromFileThread(const base::FilePath& path) {
   DCHECK(path.DirName().BaseName().MaybeAsASCII() == arc::prefs::kArcApps &&
          (!base::PathExists(path) || base::DirectoryExists(path)));
-  const bool deleted = base::DeleteFile(path, true);
+  const bool deleted = base::DeleteFileRecursively(path);
   DCHECK(deleted);
 }
 
@@ -408,6 +411,9 @@ ArcAppListPrefs::ArcAppListPrefs(
 }
 
 ArcAppListPrefs::~ArcAppListPrefs() {
+  for (auto& observer : observer_list_)
+    observer.OnArcAppListPrefsDestroyed();
+
   arc::ArcSessionManager* arc_session_manager = arc::ArcSessionManager::Get();
   if (!arc_session_manager)
     return;
@@ -917,8 +923,9 @@ void ArcAppListPrefs::SetDefaultAppsFilterLevel() {
   // Match this requirement and don't show pre-installed apps for managed users
   // in app list.
   if (arc::policy_util::IsAccountManaged(profile_)) {
-    if (profile_->IsChild()) {
+    if (profile_->IsChild() || chromeos::switches::IsTabletFormFactor()) {
       // For child accounts, filter only optional apps.
+      // For tablet form factor devices, filter only optional apps.
       default_apps_->set_filter_level(
           ArcDefaultAppList::FilterLevel::OPTIONAL_APPS);
     } else {
@@ -1493,6 +1500,18 @@ void ArcAppListPrefs::OnPackageAppListRefreshed(
     AddApp(*app);
   }
 
+  arc::ArcAppScopedPrefUpdate update(prefs_, package_name,
+                                     arc::prefs::kArcPackages);
+  base::DictionaryValue* package_dict = update.Get();
+  if (!apps_to_remove.empty()) {
+    auto* launcher_controller = ChromeLauncherController::instance();
+    if (launcher_controller) {
+      int pin_index =
+          launcher_controller->PinnedItemIndexByAppID(*apps_to_remove.begin());
+      package_dict->SetInteger(kPinIndex, pin_index);
+    }
+  }
+
   for (const auto& app_id : apps_to_remove)
     RemoveApp(app_id);
 }
@@ -1720,6 +1739,12 @@ bool ArcAppListPrefs::IsUnknownPackage(const std::string& package_name) const {
   if (apps_installations_.count(package_name))
     return false;
   return true;
+}
+
+bool ArcAppListPrefs::IsDefaultPackage(const std::string& package_name) const {
+  DCHECK(default_apps_ready_);
+  return default_apps_->HasPackage(package_name) ||
+         default_apps_->HasHiddenPackage(package_name);
 }
 
 void ArcAppListPrefs::OnPackageAdded(

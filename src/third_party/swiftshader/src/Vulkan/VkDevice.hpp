@@ -21,7 +21,7 @@
 #include <memory>
 #include <mutex>
 
-namespace yarn
+namespace marl
 {
 	class Scheduler;
 }
@@ -42,7 +42,7 @@ class Device
 public:
 	static constexpr VkSystemAllocationScope GetAllocationScope() { return VK_SYSTEM_ALLOCATION_SCOPE_DEVICE; }
 
-	Device(const VkDeviceCreateInfo* pCreateInfo, void* mem, PhysicalDevice *physicalDevice, const VkPhysicalDeviceFeatures *enabledFeatures, yarn::Scheduler *scheduler);
+	Device(const VkDeviceCreateInfo* pCreateInfo, void* mem, PhysicalDevice *physicalDevice, const VkPhysicalDeviceFeatures *enabledFeatures, const std::shared_ptr<marl::Scheduler>& scheduler);
 	void destroy(const VkAllocationCallbacks* pAllocator);
 
 	static size_t ComputeRequiredAllocationSize(const VkDeviceCreateInfo* pCreateInfo);
@@ -56,6 +56,7 @@ public:
 	PhysicalDevice *getPhysicalDevice() const { return physicalDevice; }
 	void updateDescriptorSets(uint32_t descriptorWriteCount, const VkWriteDescriptorSet* pDescriptorWrites,
 	                          uint32_t descriptorCopyCount, const VkCopyDescriptorSet* pDescriptorCopies);
+	void getRequirements(VkMemoryDedicatedRequirements* requirements) const;
 	const VkPhysicalDeviceFeatures &getEnabledFeatures() const { return enabledFeatures; }
 	sw::Blitter* getBlitter() const { return blitter.get(); }
 
@@ -72,7 +73,6 @@ public:
 			uint32_t imageView;
 
 			inline bool operator == (const Key& rhs) const;
-			inline bool operator < (const Key& rhs) const;
 
 			struct Hash
 			{
@@ -106,6 +106,7 @@ private:
 	typedef char ExtensionName[VK_MAX_EXTENSION_NAME_SIZE];
 	ExtensionName* extensions = nullptr;
 	const VkPhysicalDeviceFeatures enabledFeatures = {};
+	std::shared_ptr<marl::Scheduler> scheduler;
 };
 
 using DispatchableDevice = DispatchableObject<Device, VkDevice>;
@@ -118,11 +119,6 @@ static inline Device* Cast(VkDevice object)
 inline bool vk::Device::SamplingRoutineCache::Key::operator == (const Key& rhs) const
 {
 	return instruction == rhs.instruction && sampler == rhs.sampler && imageView == rhs.imageView;
-}
-
-inline bool vk::Device::SamplingRoutineCache::Key::operator < (const Key& rhs) const
-{
-	return instruction < rhs.instruction || sampler < rhs.sampler || imageView < rhs.imageView;
 }
 
 inline std::size_t vk::Device::SamplingRoutineCache::Key::Hash::operator() (const Key& key) const noexcept

@@ -321,9 +321,8 @@ bool PepperWebPluginImpl::ExecuteEditCommand(const blink::WebString& name,
       return false;
 
     if (!clipboard_) {
-      blink::Platform::Current()
-          ->GetBrowserInterfaceBrokerProxy()
-          ->GetInterface(clipboard_.BindNewPipeAndPassReceiver());
+      blink::Platform::Current()->GetBrowserInterfaceBroker()->GetInterface(
+          clipboard_.BindNewPipeAndPassReceiver());
     }
     base::string16 markup;
     base::string16 text;
@@ -348,9 +347,8 @@ bool PepperWebPluginImpl::ExecuteEditCommand(const blink::WebString& name,
       return false;
 
     if (!clipboard_) {
-      blink::Platform::Current()
-          ->GetBrowserInterfaceBrokerProxy()
-          ->GetInterface(clipboard_.BindNewPipeAndPassReceiver());
+      blink::Platform::Current()->GetBrowserInterfaceBroker()->GetInterface(
+          clipboard_.BindNewPipeAndPassReceiver());
     }
     base::string16 text;
     clipboard_->ReadText(ui::ClipboardBuffer::kCopyPaste, &text);
@@ -455,6 +453,14 @@ bool PepperWebPluginImpl::GetPrintPresetOptionsFromDocument(
   if (!instance_)
     return false;
   return instance_->GetPrintPresetOptionsFromDocument(preset_options);
+}
+
+bool PepperWebPluginImpl::IsPdfPlugin() {
+  // Re-entrancy may cause JS to try to execute script on the plugin before it
+  // is fully initialized. See: crbug.com/715747.
+  if (!instance_)
+    return false;
+  return instance_->IsPdfPlugin();
 }
 
 bool PepperWebPluginImpl::CanRotateView() {

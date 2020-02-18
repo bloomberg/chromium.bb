@@ -16,9 +16,8 @@
 #include "base/task/post_task.h"
 #include "base/trace_event/trace_config.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/debug_daemon_client.h"
+#include "chromeos/dbus/debug_daemon/debug_daemon_client.h"
 #include "content/public/browser/browser_task_traits.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "services/tracing/public/cpp/perfetto/perfetto_traced_process.h"
 #include "services/tracing/public/cpp/perfetto/system_trace_writer.h"
 #include "services/tracing/public/mojom/constants.mojom.h"
@@ -223,50 +222,11 @@ class CrOSDataSource : public tracing::PerfettoTracedProcess::DataSourceBase {
 
 }  // namespace
 
-CrOSTracingAgent::CrOSTracingAgent()
-    : BaseAgent(tracing::mojom::kSystemTraceEventLabel,
-                tracing::mojom::TraceDataType::STRING,
-                base::kNullProcessId) {
+CrOSTracingAgent::CrOSTracingAgent() {
   tracing::PerfettoTracedProcess::Get()->AddDataSource(
       CrOSDataSource::GetInstance());
 }
 
 CrOSTracingAgent::~CrOSTracingAgent() = default;
-
-// tracing::mojom::Agent. Called by Mojo internals on the UI thread.
-void CrOSTracingAgent::StartTracing(const std::string& config,
-                                    base::TimeTicks coordinator_time,
-                                    Agent::StartTracingCallback callback) {
-  DCHECK(!session_);
-  session_ = std::make_unique<CrOSSystemTracingSession>();
-  session_->StartTracing(
-      config, base::BindOnce(&CrOSTracingAgent::StartTracingCallbackProxy,
-                             base::Unretained(this), std::move(callback)));
-}
-
-void CrOSTracingAgent::StopAndFlush(tracing::mojom::RecorderPtr recorder) {
-  // This may be called even if we are not tracing.
-  if (!session_)
-    return;
-  recorder_ = std::move(recorder);
-  session_->StopTracing(
-      base::BindOnce(&CrOSTracingAgent::RecorderProxy, base::Unretained(this)));
-}
-
-void CrOSTracingAgent::StartTracingCallbackProxy(
-    Agent::StartTracingCallback callback,
-    bool success) {
-  if (!success)
-    session_.reset();
-  std::move(callback).Run(success);
-}
-
-void CrOSTracingAgent::RecorderProxy(
-    const scoped_refptr<base::RefCountedString>& events) {
-  if (events && !events->data().empty())
-    recorder_->AddChunk(events->data());
-  session_.reset();
-  recorder_.reset();
-}
 
 }  // namespace content

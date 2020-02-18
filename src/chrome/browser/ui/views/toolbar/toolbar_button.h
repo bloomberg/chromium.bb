@@ -7,9 +7,10 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "base/optional.h"
 #include "ui/base/theme_provider.h"
+#include "ui/gfx/animation/animation_delegate.h"
+#include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/button/button.h"
@@ -49,22 +50,36 @@ class ToolbarButton : public views::LabelButton,
                 std::unique_ptr<ui::MenuModel> model,
                 TabStripModel* tab_strip_model,
                 bool trigger_menu_on_long_press = true);
-
+  ToolbarButton(const ToolbarButton&) = delete;
+  ToolbarButton& operator=(const ToolbarButton&) = delete;
   ~ToolbarButton() override;
 
   // Set up basic mouseover border behavior.
   // Should be called before first paint.
   void Init();
 
-  void SetHighlightColor(base::Optional<SkColor> color);
+  // Highlights the button by setting the label to given |highlight_text|, using
+  // tinting it using the |hightlight_color| if set. The highlight is displayed
+  // using an animation. If some highlight is already set, it shows the new
+  // highlight directly without any animation. To clear the previous highlight
+  // (also using an animation), call this function with both parameters empty.
+  void SetHighlight(const base::string16& highlight_text,
+                    base::Optional<SkColor> highlight_color);
 
-  // Sets |margin_leading_| when the browser is maximized and updates layout
-  // to make the focus rectangle centered.
+  // Sets the leading margin when the browser is maximized and updates layout to
+  // make the focus rectangle centered.
   void SetLeadingMargin(int margin);
+
+  // Sets the trailing margin when the browser is maximized and updates layout
+  // to make the focus rectangle centered.
+  void SetTrailingMargin(int margin);
 
   // Methods for handling ButtonDropDown-style menus.
   void ClearPendingMenu();
   bool IsMenuShowing() const;
+
+  // Sets |layout_insets_|, see comment there.
+  void SetLayoutInsets(const gfx::Insets& insets);
 
   // views::LabelButton:
   void SetText(const base::string16& text) override;
@@ -106,6 +121,10 @@ class ToolbarButton : public views::LabelButton,
       SkColor dark_extreme,
       SkColor light_extreme);
 
+  // Returns the default border color used for toolbar buttons (when having a
+  // highlight text, see SetHighlight()).
+  static SkColor GetDefaultBorderColor(views::View* host_view);
+
  protected:
   // Returns if menu should be shown. Override this to change default behavior.
   virtual bool ShouldShowMenu();
@@ -116,13 +135,71 @@ class ToolbarButton : public views::LabelButton,
   // Sets |layout_inset_delta_|, see comment there.
   void SetLayoutInsetDelta(const gfx::Insets& insets);
 
+  void UpdateColorsAndInsets();
+
   static constexpr int kDefaultIconSize = 16;
   static constexpr int kDefaultTouchableIconSize = 24;
 
  private:
   friend test::ToolbarButtonTestApi;
 
-  void UpdateHighlightBackgroundAndInsets();
+  class HighlightColorAnimation : gfx::AnimationDelegate {
+   public:
+    explicit HighlightColorAnimation(ToolbarButton* parent);
+    HighlightColorAnimation(const HighlightColorAnimation&) = delete;
+    HighlightColorAnimation& operator=(const HighlightColorAnimation&) = delete;
+    ~HighlightColorAnimation() override;
+
+    // Starts a fade-in animation using the provided |highlight color| or using
+    // a default color if not set.
+    void Show(base::Optional<SkColor> highlight_color);
+
+    // Starts a fade-out animation. A no-op if the fade-out animation is
+    // currently in progress or not shown.
+    void Hide();
+
+    // Returns current text / border / background / ink-drop base color based on
+    // current |highlight_color_| and on the current animation state (which
+    // influences the alpha channel). Returns no value if there is no such color
+    // and we should use the default text color / paint no border / paint no
+    // background / use the default ink-drop base color.
+    base::Optional<SkColor> GetTextColor() const;
+    base::Optional<SkColor> GetBorderColor() const;
+    base::Optional<SkColor> GetBackgroundColor() const;
+    base::Optional<SkColor> GetInkDropBaseColor() const;
+
+    void AnimationEnded(const gfx::Animation* animation) override;
+    void AnimationProgressed(const gfx::Animation* animation) override;
+
+   private:
+    // Returns whether the animation is currently shown. Note that this returns
+    // true even after calling Hide() until the fade-out animation finishes.
+    bool IsShown() const;
+
+    void ClearHighlightColor();
+
+    ToolbarButton* const parent_;
+
+    // A highlight color is used to signal special states. When set this color
+    // is used as a base for background, text, border and ink drops. When not
+    // set, uses the default ToolbarButton ink drop.
+    base::Optional<SkColor> highlight_color_;
+
+    // Animation for showing the highlight color (in border, text, and
+    // background) when it becomes non-empty and hiding it when it becomes empty
+    // again.
+    gfx::SlideAnimation highlight_color_animation_;
+  };
+
+  // Clears the current highlight, i.e. it sets the label to an empty string and
+  // clears the highlight color. If there was a non-empty highlight, previously,
+  // it hides the current highlight using an animation. Otherwise, it is a
+  // no-op.
+  void ClearHighlight();
+
+  // Sets the spacing on the outer side of the label (not the side where the
+  // image is). The spacing is applied only when the label is non-empty.
+  void SetLabelSideSpacing(int spacing);
 
   // Callback for MenuModelAdapter.
   void OnMenuClosed();
@@ -151,25 +228,30 @@ class ToolbarButton : public views::LabelButton,
   // Menu runner to display drop down menu.
   std::unique_ptr<views::MenuRunner> menu_runner_;
 
+  // Layout insets to use. This is used when the ToolbarButton is not actually
+  // hosted inside the toolbar. If not supplied,
+  // |GetLayoutInsets(TOOLBAR_BUTTON)| is used instead which is not appropriate
+  // outside the toolbar.
+  base::Optional<gfx::Insets> layout_insets_;
+
   // Delta from regular toolbar-button insets. This is necessary for buttons
   // that use smaller or larger icons than regular ToolbarButton instances.
   // AvatarToolbarButton for instance uses smaller insets to accommodate for a
   // larger-than-16dp avatar avatar icon outside of touchable mode.
   gfx::Insets layout_inset_delta_;
 
-  // A highlight color is used to signal error states. When set this color is
-  // used as a base for background, text and ink drops. When not set, uses the
-  // default ToolbarButton ink drop.
-  base::Optional<SkColor> highlight_color_;
-
   // Used instead of the standard InkDrop implementation when
   // |views::kInstallableInkDropFeature| is enabled.
   std::unique_ptr<views::InstallableInkDrop> installable_ink_drop_;
 
+  // Class responsible for animating highlight color (calling a callback on
+  // |this| to refresh UI).
+  HighlightColorAnimation highlight_color_animation_;
+
+  base::Optional<SkColor> last_border_color_;
+
   // A factory for tasks that show the dropdown context menu for the button.
   base::WeakPtrFactory<ToolbarButton> show_menu_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(ToolbarButton);
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_TOOLBAR_TOOLBAR_BUTTON_H_

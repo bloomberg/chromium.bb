@@ -12,10 +12,10 @@ import time
 
 import mock
 
+from chromite.cbuildbot import commands
 from chromite.cbuildbot import repository
 from chromite.lib import build_summary
 from chromite.lib import constants
-from chromite.lib import cros_build_lib
 from chromite.lib import cros_sdk_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
@@ -105,7 +105,7 @@ class RunTests(cros_test_lib.RunCommandTestCase):
   def verifyCbuildbot(self, args, expected_cmd, version):
     """Ensure we invoke cbuildbot correctly."""
     self.PatchObject(
-        cros_build_lib, 'GetTargetChromiteApiVersion', autospec=True,
+        commands, 'GetTargetChromiteApiVersion', autospec=True,
         return_value=version)
 
     cbuildbot_launch.Cbuildbot('/cbuildbot_buildroot', '/depot_tools', args)
@@ -139,7 +139,7 @@ class RunTests(cros_test_lib.RunCommandTestCase):
   def testMainMin(self):
     """Test a minimal set of command line options."""
     self.PatchObject(osutils, 'SafeMakedirs', autospec=True)
-    self.PatchObject(cros_build_lib, 'GetTargetChromiteApiVersion',
+    self.PatchObject(commands, 'GetTargetChromiteApiVersion',
                      autospec=True, return_value=(constants.REEXEC_API_MAJOR,
                                                   constants.REEXEC_API_MINOR))
     mock_repo = mock.MagicMock()
@@ -207,7 +207,7 @@ class RunTests(cros_test_lib.RunCommandTestCase):
   def testMainMax(self):
     """Test a larger set of command line options."""
     self.PatchObject(osutils, 'SafeMakedirs', autospec=True)
-    self.PatchObject(cros_build_lib, 'GetTargetChromiteApiVersion',
+    self.PatchObject(commands, 'GetTargetChromiteApiVersion',
                      autospec=True, return_value=(constants.REEXEC_API_MAJOR,
                                                   constants.REEXEC_API_MINOR))
     mock_repo = mock.MagicMock()
@@ -284,9 +284,9 @@ class RunTests(cros_test_lib.RunCommandTestCase):
             '--master-build-id', '123456789',
             '--buildnumber', '314',
             '--previous-build-state',
-            'eyJzdGF0dXMiOiAiZmFpbCIsICJtYXN0ZXJfYnVpbGRfaWQiOiAxMjMxMjMxMj'
-            'MsICJidWlsZF9udW1iZXIiOiAzMTMsICJidWlsZHJvb3RfbGF5b3V0IjogMiwg'
-            'ImJyYW5jaCI6ICJicmFuY2gifQ==',
+            'eyJicmFuY2giOiAiYnJhbmNoIiwgImJ1aWxkX251bWJlciI6IDMxMywgImJ1aWx'
+            'kcm9vdF9sYXlvdXQiOiAyLCAibWFzdGVyX2J1aWxkX2lkIjogMTIzMTIzMTIzLC'
+            'Aic3RhdHVzIjogImZhaWwifQ==',
             '--workspace', '/root/workspace',
             '--cache-dir', '/cache',
             '--ts-mon-task-num', '1',

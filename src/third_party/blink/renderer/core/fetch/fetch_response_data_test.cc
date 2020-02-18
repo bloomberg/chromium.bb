@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/fetch/fetch_response_data.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/mojom/fetch/fetch_api_response.mojom-blink.h"
 #include "third_party/blink/renderer/core/fetch/fetch_header_list.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
 #include "third_party/blink/renderer/platform/blob/blob_data.h"
@@ -54,7 +55,7 @@ TEST_F(FetchResponseDataTest, ToFetchAPIResponseDefaultType) {
   FetchResponseData* internal_response = CreateInternalResponse();
 
   mojom::blink::FetchAPIResponsePtr fetch_api_response =
-      internal_response->PopulateFetchAPIResponse();
+      internal_response->PopulateFetchAPIResponse(KURL());
   EXPECT_EQ(network::mojom::FetchResponseType::kDefault,
             fetch_api_response->response_type);
   CheckHeaders(*fetch_api_response);
@@ -85,7 +86,7 @@ TEST_F(FetchResponseDataTest, ToFetchAPIResponseBasicType) {
       internal_response->CreateBasicFilteredResponse();
 
   mojom::blink::FetchAPIResponsePtr fetch_api_response =
-      basic_response_data->PopulateFetchAPIResponse();
+      basic_response_data->PopulateFetchAPIResponse(KURL());
   EXPECT_EQ(network::mojom::FetchResponseType::kBasic,
             fetch_api_response->response_type);
   CheckHeaders(*fetch_api_response);
@@ -188,7 +189,7 @@ TEST_F(FetchResponseDataTest, ToFetchAPIResponseCorsType) {
       internal_response->CreateCorsFilteredResponse(WebHTTPHeaderSet());
 
   mojom::blink::FetchAPIResponsePtr fetch_api_response =
-      cors_response_data->PopulateFetchAPIResponse();
+      cors_response_data->PopulateFetchAPIResponse(KURL());
   EXPECT_EQ(network::mojom::FetchResponseType::kCors,
             fetch_api_response->response_type);
   CheckHeaders(*fetch_api_response);
@@ -239,7 +240,7 @@ TEST_F(FetchResponseDataTest, ToFetchAPIResponseOpaqueType) {
       internal_response->CreateOpaqueFilteredResponse();
 
   mojom::blink::FetchAPIResponsePtr fetch_api_response =
-      opaque_response_data->PopulateFetchAPIResponse();
+      opaque_response_data->PopulateFetchAPIResponse(KURL());
   EXPECT_EQ(network::mojom::FetchResponseType::kOpaque,
             fetch_api_response->response_type);
   CheckHeaders(*fetch_api_response);
@@ -251,7 +252,7 @@ TEST_F(FetchResponseDataTest, ToFetchAPIResponseOpaqueRedirectType) {
       internal_response->CreateOpaqueRedirectFilteredResponse();
 
   mojom::blink::FetchAPIResponsePtr fetch_api_response =
-      opaque_redirect_response_data->PopulateFetchAPIResponse();
+      opaque_redirect_response_data->PopulateFetchAPIResponse(KURL());
   EXPECT_EQ(network::mojom::FetchResponseType::kOpaqueRedirect,
             fetch_api_response->response_type);
   CheckHeaders(*fetch_api_response);

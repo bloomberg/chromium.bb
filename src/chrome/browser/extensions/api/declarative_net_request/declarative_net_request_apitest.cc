@@ -63,4 +63,11 @@ IN_PROC_BROWSER_TEST_F(DeclarativeNetRequestAPItest, HeaderRemoval) {
   ASSERT_TRUE(RunExtensionTest("header_removal")) << message_;
 }
 
+// TODO(crbug.com/1029233) Restore this test. This is disabled due to
+// flakiness.
+IN_PROC_BROWSER_TEST_F(DeclarativeNetRequestAPItest,
+                       DISABLED_OnRulesMatchedDebug) {
+  ASSERT_TRUE(RunExtensionTest("on_rules_matched_debug")) << message_;
+}
+
 }  // namespace

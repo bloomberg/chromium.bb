@@ -8,12 +8,13 @@
 
 #include "common/utilities.h"
 #include <GLSLANG/ShaderVars.h>
+#include "GLES3/gl3.h"
 #include "common/mathutil.h"
 #include "common/platform.h"
 
 #include <set>
 
-#if defined(ANGLE_ENABLE_WINDOWS_STORE)
+#if defined(ANGLE_ENABLE_WINDOWS_UWP)
 #    include <windows.applicationmodel.core.h>
 #    include <windows.graphics.display.h>
 #    include <wrl.h>
@@ -629,6 +630,24 @@ bool IsTriangleMode(PrimitiveMode drawMode)
     return false;
 }
 
+bool IsPolygonMode(PrimitiveMode mode)
+{
+    switch (mode)
+    {
+        case PrimitiveMode::Points:
+        case PrimitiveMode::Lines:
+        case PrimitiveMode::LineStrip:
+        case PrimitiveMode::LineLoop:
+        case PrimitiveMode::LinesAdjacency:
+        case PrimitiveMode::LineStripAdjacency:
+            return false;
+        default:
+            break;
+    }
+
+    return true;
+}
+
 namespace priv
 {
 const angle::PackedEnumMap<PrimitiveMode, bool> gLineModes = {
@@ -787,8 +806,32 @@ std::string ParseResourceName(const std::string &name, std::vector<unsigned int>
 std::string StripLastArrayIndex(const std::string &name)
 {
     size_t strippedNameLength = name.find_last_of('[');
-    ASSERT(strippedNameLength != std::string::npos && name.back() == ']');
-    return name.substr(0, strippedNameLength);
+    if (strippedNameLength != std::string::npos && name.back() == ']')
+    {
+        return name.substr(0, strippedNameLength);
+    }
+    return name;
+}
+
+bool SamplerNameContainsNonZeroArrayElement(const std::string &name)
+{
+    constexpr char kZERO_ELEMENT[] = "[0]";
+
+    size_t start = 0;
+    while (true)
+    {
+        start = name.find(kZERO_ELEMENT[0], start);
+        if (start == std::string::npos)
+        {
+            break;
+        }
+        if (name.compare(start, strlen(kZERO_ELEMENT), kZERO_ELEMENT) != 0)
+        {
+            return true;
+        }
+        start++;
+    }
+    return false;
 }
 
 const sh::ShaderVariable *FindShaderVarField(const sh::ShaderVariable &var,
@@ -859,7 +902,7 @@ unsigned int ParseArrayIndex(const std::string &name, size_t *nameLengthWithoutA
                 strtoul(name.c_str() + open + 1, /*endptr*/ nullptr, /*radix*/ 10);
 
             // Check if resulting integer is out-of-range or conversion error.
-            if ((subscript <= static_cast<unsigned long>(UINT_MAX)) &&
+            if (angle::base::IsValueInRangeForNumericType<uint32_t>(subscript) &&
                 !(subscript == ULONG_MAX && errno == ERANGE) && !(errno != 0 && subscript == 0))
             {
                 *nameLengthWithoutArrayIndexOut = open;
@@ -1078,7 +1121,7 @@ EGLClientBuffer GLObjectHandleToEGLClientBuffer(GLuint handle)
 
 }  // namespace gl_egl
 
-#if !defined(ANGLE_ENABLE_WINDOWS_STORE)
+#if !defined(ANGLE_ENABLE_WINDOWS_UWP)
 std::string getTempPath()
 {
 #    ifdef ANGLE_PLATFORM_WINDOWS
@@ -1116,7 +1159,7 @@ void writeFile(const char *path, const void *content, size_t size)
     fwrite(content, sizeof(char), size, file);
     fclose(file);
 }
-#endif  // !ANGLE_ENABLE_WINDOWS_STORE
+#endif  // !ANGLE_ENABLE_WINDOWS_UWP
 
 #if defined(ANGLE_PLATFORM_WINDOWS)
 

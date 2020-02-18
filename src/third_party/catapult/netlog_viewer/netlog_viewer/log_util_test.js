@@ -34,7 +34,7 @@ CreateAndLoadLogTask.prototype = {
    * Starts creating the log dump.
    */
   start: function() {
-    log_util.createLogDumpAsync(
+    LogUtil.createLogDumpAsync(
         this.userComments_, this.onLogDumpCreated.bind(this), true);
   },
 
@@ -44,7 +44,7 @@ CreateAndLoadLogTask.prototype = {
    * @param {string} logDumpText Log dump, as a string.
    */
   onLogDumpCreated: function(logDumpText) {
-    expectEquals('Log loaded.', log_util.loadLogFile(logDumpText, 'log.txt'));
+    expectEquals('Log loaded.', LogUtil.loadLogFile(logDumpText, 'log.txt'));
 
     NetInternalsTest.expectStatusViewNodeVisible(LoadedStatusView.MAIN_BOX_ID);
 
@@ -128,7 +128,7 @@ GetNetLogFileContentsAndLoadLogTask.prototype = {
     }
 
     logDumpText = logDumpText.substring(0, logDumpText.length - this.truncate_);
-    expectEquals(expectedResult, log_util.loadLogFile(logDumpText, 'log.txt'));
+    expectEquals(expectedResult, LogUtil.loadLogFile(logDumpText, 'log.txt'));
 
     NetInternalsTest.expectStatusViewNodeVisible(LoadedStatusView.MAIN_BOX_ID);
 
@@ -146,7 +146,6 @@ GetNetLogFileContentsAndLoadLogTask.prototype = {
  * Also checks that the BrowserBridge is disabled.
  */
 function checkViewsAfterLogLoaded() {
-  expectTrue(g_browser.isDisabled());
   var tabVisibilityState = {
     capture: false,
     import: true,
@@ -161,10 +160,8 @@ function checkViewsAfterLogLoaded() {
     'alt-svc': true,
     httpCache: true,
     modules: true,
-    hsts: false,
     prerender: true,
     bandwidth: true,
-    chromeos: false
   };
   NetInternalsTest.checkTabLinkVisibility(tabVisibilityState, false);
 }
@@ -174,7 +171,6 @@ function checkViewsAfterLogLoaded() {
  * browser. Also checks that the BrowserBridge is disabled.
  */
 function checkViewsAfterNetLogFileLoaded() {
-  expectTrue(g_browser.isDisabled());
   var tabVisibilityState = {
     capture: false,
     import: true,
@@ -189,10 +185,7 @@ function checkViewsAfterNetLogFileLoaded() {
     'alt-svc': false,
     httpCache: false,
     modules: false,
-    hsts: false,
     prerender: false,
-    bandwidth: false,
-    chromeos: false
   };
   NetInternalsTest.checkTabLinkVisibility(tabVisibilityState, false);
 }
@@ -212,7 +205,6 @@ function checkActiveView(id) {
  * TODO(mmenke):  Add some checks for the import view.
  */
 TEST_F('NetInternalsTest', 'netInternalsLogUtilExportImport', function() {
-  expectFalse(g_browser.isDisabled());
   NetInternalsTest.expectStatusViewNodeVisible(CaptureStatusView.MAIN_BOX_ID);
 
   var taskQueue = new NetInternalsTest.TaskQueue(true);

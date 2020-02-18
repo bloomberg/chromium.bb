@@ -32,7 +32,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_WIN)
-#include "device/fido/win/authenticator.h"
 #include "device/fido/win/fake_webauthn_api.h"
 #endif  // defined(OS_WIN)
 
@@ -102,7 +101,7 @@ class FidoGetAssertionHandlerTest : public ::testing::Test {
     auto handler = std::make_unique<GetAssertionRequestHandler>(
         nullptr /* connector */, fake_discovery_factory_.get(),
         supported_transports_, std::move(request),
-        get_assertion_cb_.callback());
+        /*allow_skipping_pin_touch=*/true, get_assertion_cb_.callback());
     return handler;
   }
 
@@ -177,11 +176,6 @@ class FidoGetAssertionHandlerTest : public ::testing::Test {
   TestGetAssertionRequestCallback get_assertion_cb_;
   base::flat_set<FidoTransportProtocol> supported_transports_ =
       GetAllTransportProtocols();
-
-#if defined(OS_WIN)
-  device::ScopedFakeWinWebAuthnApi win_webauthn_api_ =
-      device::ScopedFakeWinWebAuthnApi::MakeUnavailable();
-#endif  // defined(OS_WIN)
 };
 
 TEST_F(FidoGetAssertionHandlerTest, TransportAvailabilityInfo) {
@@ -242,7 +236,7 @@ TEST_F(FidoGetAssertionHandlerTest, TestIncompatibleUserVerificationSetting) {
   discovery()->AddDevice(std::move(device));
 
   task_environment_.FastForwardUntilNoTasksRemain();
-  EXPECT_EQ(GetAssertionStatus::kUserConsentButCredentialNotRecognized,
+  EXPECT_EQ(GetAssertionStatus::kAuthenticatorMissingUserVerification,
             get_assertion_callback().status());
 }
 
@@ -265,7 +259,7 @@ TEST_F(FidoGetAssertionHandlerTest,
   discovery()->AddDevice(std::move(device));
 
   task_environment_.FastForwardUntilNoTasksRemain();
-  EXPECT_EQ(GetAssertionStatus::kUserConsentButCredentialNotRecognized,
+  EXPECT_EQ(GetAssertionStatus::kAuthenticatorMissingUserVerification,
             get_assertion_callback().status());
 }
 
@@ -742,10 +736,6 @@ TEST_F(FidoGetAssertionHandlerTest, DeviceFailsImmediately) {
 TEST(GetAssertionRequestHandlerTest, IncorrectTransportType) {
   base::test::TaskEnvironment task_environment{
       base::test::TaskEnvironment::TimeSource::MOCK_TIME};
-#if defined(OS_WIN)
-  device::ScopedFakeWinWebAuthnApi win_webauthn_api_ =
-      device::ScopedFakeWinWebAuthnApi::MakeUnavailable();
-#endif  // defined(OS_WIN)
 
   device::test::VirtualFidoDeviceFactory virtual_device_factory;
   virtual_device_factory.SetSupportedProtocol(device::ProtocolVersion::kCtap2);
@@ -769,7 +759,7 @@ TEST(GetAssertionRequestHandlerTest, IncorrectTransportType) {
       nullptr /* connector */, &virtual_device_factory,
       base::flat_set<FidoTransportProtocol>(
           {FidoTransportProtocol::kUsbHumanInterfaceDevice}),
-      std::move(request), cb.callback());
+      std::move(request), /*allow_skipping_pin_touch=*/true, cb.callback());
 
   task_environment.FastForwardUntilNoTasksRemain();
   EXPECT_FALSE(cb.was_called());
@@ -821,10 +811,10 @@ class TestObserver : public FidoRequestHandlerBase::Observer {
 // on API availability.
 TEST(GetAssertionRequestHandlerWinTest, TestWinUsbDiscovery) {
   base::test::TaskEnvironment task_environment;
-  ScopedFakeWinWebAuthnApi scoped_fake_win_webauthn_api;
   for (const bool enable_api : {false, true}) {
     SCOPED_TRACE(::testing::Message() << "enable_api=" << enable_api);
-    scoped_fake_win_webauthn_api.set_available(enable_api);
+    FakeWinWebAuthnApi api;
+    api.set_available(enable_api);
 
     // Simulate a connected HID device.
     ScopedFakeFidoHidManager fake_hid_manager;
@@ -832,13 +822,14 @@ TEST(GetAssertionRequestHandlerWinTest, TestWinUsbDiscovery) {
 
     TestGetAssertionRequestCallback cb;
     FidoDiscoveryFactory fido_discovery_factory;
+    fido_discovery_factory.set_win_webauthn_api(&api);
     auto handler = std::make_unique<GetAssertionRequestHandler>(
         fake_hid_manager.service_manager_connector(), &fido_discovery_factory,
         base::flat_set<FidoTransportProtocol>(
             {FidoTransportProtocol::kUsbHumanInterfaceDevice}),
         CtapGetAssertionRequest(test_data::kRelyingPartyId,
                                 test_data::kClientDataJson),
-        cb.callback());
+        /*allow_skipping_pin_touch=*/true, cb.callback());
     // Register an observer that disables automatic dispatch. Dispatch to the
     // (unimplemented) fake Windows API would immediately result in an invalid
     // response.

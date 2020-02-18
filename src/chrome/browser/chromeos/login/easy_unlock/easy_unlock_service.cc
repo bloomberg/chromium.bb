@@ -36,7 +36,6 @@
 #include "chromeos/components/proximity_auth/proximity_auth_profile_pref_manager.h"
 #include "chromeos/components/proximity_auth/proximity_auth_system.h"
 #include "chromeos/components/proximity_auth/screenlock_bridge.h"
-#include "chromeos/components/proximity_auth/switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/login/auth/user_context.h"
@@ -306,7 +305,8 @@ EasyUnlockService::GetScreenlockStateHandler() {
   if (!screenlock_state_handler_) {
     screenlock_state_handler_.reset(new EasyUnlockScreenlockStateHandler(
         GetAccountId(), GetHardlockState(),
-        proximity_auth::ScreenlockBridge::Get()));
+        proximity_auth::ScreenlockBridge::Get(),
+        GetProximityAuthPrefManager()));
   }
   return screenlock_state_handler_.get();
 }
@@ -383,7 +383,7 @@ void EasyUnlockService::AttemptAuth(const AccountId& account_id) {
   // attempted. However, we ideally should refactor the auth attempt logic to
   // the proximity_auth component.
   if (proximity_auth_system_)
-    proximity_auth_system_->OnAuthAttempted(account_id);
+    proximity_auth_system_->OnAuthAttempted();
 }
 
 void EasyUnlockService::FinalizeUnlock(bool success) {
@@ -680,8 +680,6 @@ EasyUnlockAuthEvent EasyUnlockService::GetPasswordAuthEvent() const {
         return PASSWORD_ENTRY_PHONE_LOCKED;
       case ScreenlockState::PHONE_NOT_LOCKABLE:
         return PASSWORD_ENTRY_PHONE_NOT_LOCKABLE;
-      case ScreenlockState::PHONE_UNSUPPORTED:
-        return PASSWORD_ENTRY_PHONE_UNSUPPORTED;
       case ScreenlockState::RSSI_TOO_LOW:
         return PASSWORD_ENTRY_RSSI_TOO_LOW;
       case ScreenlockState::PHONE_LOCKED_AND_RSSI_TOO_LOW:

@@ -10,6 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/observer_list.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task/lazy_task_runner.h"
@@ -23,6 +24,7 @@ namespace base {
 
 class Clock;
 class FileDescriptorWatcher;
+class SimpleTaskExecutor;
 class TickClock;
 
 namespace subtle {
@@ -32,10 +34,9 @@ class ScopedTimeClockOverrides;
 namespace test {
 
 // This header exposes SingleThreadTaskEnvironment and TaskEnvironment.
-// TODO(gab): Rename this header to task_environment.h and migrate all users.
 //
 // SingleThreadTaskEnvironment enables the following APIs within its scope:
-//  - (Thread|Sequenced)TaskRunnerHandle on the main thread
+//  - ThreadTaskRunnerHandle & GetContinuationTaskRunner on the main thread
 //  - RunLoop on the main thread
 //
 // TaskEnvironment additionally enables:
@@ -46,7 +47,7 @@ namespace test {
 // Tests should prefer SingleThreadTaskEnvironment over TaskEnvironment when the
 // former is sufficient.
 //
-// Tasks posted to the (Thread|Sequenced)TaskRunnerHandle run synchronously when
+// Tasks posted to the APIs listed above run synchronously when
 // RunLoop::Run(UntilIdle) or TaskEnvironment::RunUntilIdle is called on the
 // main thread.
 //
@@ -152,19 +153,19 @@ class TaskEnvironment {
   };
 
   // List of traits that are valid inputs for the constructor below.
-  struct ValidTrait {
-    ValidTrait(TimeSource);
-    ValidTrait(MainThreadType);
-    ValidTrait(ThreadPoolExecutionMode);
-    ValidTrait(SubclassCreatesDefaultTaskRunner);
-    ValidTrait(ThreadingMode);
+  struct ValidTraits {
+    ValidTraits(TimeSource);
+    ValidTraits(MainThreadType);
+    ValidTraits(ThreadPoolExecutionMode);
+    ValidTraits(SubclassCreatesDefaultTaskRunner);
+    ValidTraits(ThreadingMode);
   };
 
   // Constructor accepts zero or more traits which customize the testing
   // environment.
   template <typename... TaskEnvironmentTraits,
             class CheckArgumentsAreValid = std::enable_if_t<
-                trait_helpers::AreValidTraits<ValidTrait,
+                trait_helpers::AreValidTraits<ValidTraits,
                                               TaskEnvironmentTraits...>::value>>
   NOINLINE explicit TaskEnvironment(TaskEnvironmentTraits... traits)
       : TaskEnvironment(
@@ -180,7 +181,7 @@ class TaskEnvironment {
             trait_helpers::NotATraitTag()) {}
 
   // Waits until no undelayed ThreadPool tasks remain. Then, unregisters the
-  // ThreadPoolInstance and the (Thread|Sequenced)TaskRunnerHandle.
+  // ThreadPoolInstance and the APIs listed in the top level comment.
   virtual ~TaskEnvironment();
 
   // Returns a TaskRunner that schedules tasks on the main thread.
@@ -190,11 +191,11 @@ class TaskEnvironment {
   // always return true if called right after RunUntilIdle.
   bool MainThreadIsIdle() const;
 
-  // Runs tasks until both the (Thread|Sequenced)TaskRunnerHandle and the
-  // ThreadPool's non-delayed queues are empty.
-  // While RunUntilIdle() is quite practical and sometimes even necessary -- for
-  // example, to flush all tasks bound to Unretained() state before destroying
-  // test members -- it should be used with caution per the following warnings:
+  // Runs tasks until both the APIs listed in the top level comment and the
+  // ThreadPool's non-delayed queues are empty. While RunUntilIdle() is quite
+  // practical and sometimes even necessary -- for example, to flush all tasks
+  // bound to Unretained() state before destroying test members -- it should be
+  // used with caution per the following warnings:
   //
   // WARNING #1: This may run long (flakily timeout) and even never return! Do
   //             not use this when repeating tasks such as animated web pages
@@ -223,6 +224,12 @@ class TaskEnvironment {
   // WARNING: This has the same caveat as RunUntilIdle() and is even more likely
   // to spin forever (any RepeatingTimer will cause this).
   void FastForwardUntilNoTasksRemain();
+
+  // Only valid for instances using TimeSource::MOCK_TIME. Advances virtual time
+  // by |delta|. Unlike FastForwardBy, this does not run tasks. Prefer
+  // FastForwardBy() when possible but this can be useful when testing blocked
+  // pending tasks where being idle (required to fast-forward) is not possible.
+  void AdvanceClock(TimeDelta delta);
 
   // Only valid for instances using TimeSource::MOCK_TIME. Returns a
   // TickClock whose time is updated by FastForward(By|UntilNoTasksRemain).
@@ -263,6 +270,23 @@ class TaskEnvironment {
   // For debugging purposes: Dumps information about pending tasks on the main
   // thread.
   void DescribePendingMainThreadTasks() const;
+
+  class DestructionObserver : public CheckedObserver {
+   public:
+    DestructionObserver() = default;
+    ~DestructionObserver() override = default;
+
+    DestructionObserver(const DestructionObserver&) = delete;
+    DestructionObserver& operator=(const DestructionObserver&) = delete;
+
+    virtual void WillDestroyCurrentTaskEnvironment() = 0;
+  };
+
+  // Adds/removes a DestructionObserver to any TaskEnvironment. Observers are
+  // notified when any TaskEnvironment goes out of scope (other than with a move
+  // operation). Must be called on the main thread.
+  static void AddDestructionObserver(DestructionObserver* observer);
+  static void RemoveDestructionObserver(DestructionObserver* observer);
 
  protected:
   explicit TaskEnvironment(TaskEnvironment&& other);
@@ -342,18 +366,15 @@ class TaskEnvironment {
 
   std::unique_ptr<bool> owns_instance_ = std::make_unique<bool>(true);
 
+  // To support base::CurrentThread().
+  std::unique_ptr<SimpleTaskExecutor> simple_task_executor_;
+
   // Used to verify thread-affinity of operations that must occur on the main
   // thread. This is the case for anything that modifies or drives the
   // |sequence_manager_|.
   THREAD_CHECKER(main_thread_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(TaskEnvironment);
-};
-
-// TODO(gab): Mass migrate users and remove this.
-class ScopedTaskEnvironment : public TaskEnvironment {
- public:
-  using TaskEnvironment::TaskEnvironment;
 };
 
 // SingleThreadTaskEnvironment takes the same traits as TaskEnvironment and is

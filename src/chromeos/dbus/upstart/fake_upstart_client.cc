@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "chromeos/dbus/auth_policy/fake_auth_policy_client.h"
+#include "chromeos/dbus/authpolicy/fake_authpolicy_client.h"
 #include "chromeos/dbus/kerberos/fake_kerberos_client.h"
 #include "chromeos/dbus/kerberos/kerberos_client.h"
 #include "chromeos/dbus/media_analytics/fake_media_analytics_client.h"
@@ -40,14 +40,14 @@ void FakeUpstartClient::StartJob(const std::string& job,
                                  const std::vector<std::string>& upstart_env,
                                  VoidDBusMethodCallback callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback), true));
+      FROM_HERE, base::BindOnce(std::move(callback), start_job_result_));
 }
 
 void FakeUpstartClient::StopJob(const std::string& job,
                                 const std::vector<std::string>& upstart_env,
                                 VoidDBusMethodCallback callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback), true));
+      FROM_HERE, base::BindOnce(std::move(callback), stop_job_result_));
 }
 
 void FakeUpstartClient::StartAuthPolicyService() {

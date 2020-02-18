@@ -14,7 +14,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/branding_buildflags.h"
@@ -27,6 +26,8 @@
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/location_bar/location_bar.h"
 #include "chrome/browser/ui/search/instant_test_utils.h"
 #include "chrome/browser/ui/search/local_ntp_browsertest_base.h"
 #include "chrome/browser/ui/search/local_ntp_test_utils.h"
@@ -38,6 +39,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/ntp_tiles/constants.h"
+#include "components/omnibox/browser/omnibox_view.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/interstitial_page.h"
@@ -49,6 +51,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/download_test_observer.h"
+#include "content/public/test/navigation_handle_observer.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_navigation_throttle_inserter.h"
 #include "net/test/embedded_test_server/default_handlers.h"
@@ -89,28 +92,8 @@ content::RenderFrameHost* GetIframe(content::WebContents* tab,
   return nullptr;
 }
 
-bool ContainsDefaultSearchTile(content::RenderFrameHost* iframe) {
-  int num_search_tiles;
-  EXPECT_TRUE(instant_test_utils::GetIntFromJS(
-      iframe,
-      "document.querySelectorAll(\".md-tile["
-      "href='https://www.google.com/']\").length",
-      &num_search_tiles));
-  return num_search_tiles == 1;
-}
-
 class LocalNTPTest : public InProcessBrowserTest {
  public:
-  LocalNTPTest(const std::vector<base::Feature>& enabled_features,
-               const std::vector<base::Feature>& disabled_features) {
-    feature_list_.InitWithFeatures(enabled_features, disabled_features);
-  }
-
-  LocalNTPTest()
-      : LocalNTPTest(
-            /*enabled_features=*/{},
-            /*disabled_features=*/{features::kFirstRunDefaultSearchShortcut}) {}
-
   void SetUpOnMainThread() override {
     // Some tests depend on the prepopulated most visited tiles coming from
     // TopSites, so make sure they are available before running the tests.
@@ -124,9 +107,6 @@ class LocalNTPTest : public InProcessBrowserTest {
     instant_service->UpdateMostVisitedInfo();
     mv_observer.WaitForMostVisitedItems(kDefaultMostVisitedItemCount);
   }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
 };
 
 IN_PROC_BROWSER_TEST_F(LocalNTPTest, EmbeddedSearchAPIOnlyAvailableOnNTP) {
@@ -1059,7 +1039,7 @@ IN_PROC_BROWSER_TEST_P(LocalNTPDarkModeStartupTest, DarkModeApplied) {
   EXPECT_EQ(kDarkModeEnabled, GetIsDarkModeApplied(cl_iframe));
 }
 
-INSTANTIATE_TEST_SUITE_P(, LocalNTPDarkModeStartupTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All, LocalNTPDarkModeStartupTest, testing::Bool());
 
 #endif
 
@@ -1158,112 +1138,6 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest, InterstitialsAreNotNTPs) {
   EXPECT_TRUE(search::IsInstantNTP(active_tab));
 }
 
-class LocalNTPNoSearchShortcutTest : public LocalNTPTest {
- public:
-  LocalNTPNoSearchShortcutTest()
-      : LocalNTPTest({}, {features::kFirstRunDefaultSearchShortcut}) {}
-};
-
-IN_PROC_BROWSER_TEST_F(LocalNTPNoSearchShortcutTest, SearchShortcutHidden) {
-  content::WebContents* active_tab =
-      local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
-
-  local_ntp_test_utils::NavigateToNTPAndWaitUntilLoaded(browser());
-  ASSERT_TRUE(search::IsInstantNTP(active_tab));
-
-  content::RenderFrameHost* iframe = GetIframe(active_tab, "mv-single");
-
-  EXPECT_FALSE(ContainsDefaultSearchTile(iframe));
-}
-
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-class LocalNTPFRESearchShortcutTest : public LocalNTPTest {
- public:
-  LocalNTPFRESearchShortcutTest()
-      : LocalNTPTest({features::kFirstRunDefaultSearchShortcut}, {}) {}
-
-  void SetUpOnMainThread() override {
-    // Make sure TopSites are available before running the tests.
-    InstantService* instant_service =
-        InstantServiceFactory::GetForProfile(browser()->profile());
-    TestInstantServiceObserver mv_observer(instant_service);
-    instant_service->UpdateMostVisitedInfo();
-    mv_observer.WaitForMostVisitedItems(kDefaultMostVisitedItemCount + 1);
-  }
-};
-
-IN_PROC_BROWSER_TEST_F(LocalNTPFRESearchShortcutTest, PRE_SearchShortcutShown) {
-  content::WebContents* active_tab =
-      local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
-  local_ntp_test_utils::NavigateToNTPAndWaitUntilLoaded(browser());
-  ASSERT_TRUE(search::IsInstantNTP(active_tab));
-
-  content::RenderFrameHost* iframe = GetIframe(active_tab, kMostVisitedIframe);
-
-  EXPECT_TRUE(ContainsDefaultSearchTile(iframe));
-}
-
-IN_PROC_BROWSER_TEST_F(LocalNTPFRESearchShortcutTest, SearchShortcutShown) {
-  content::WebContents* active_tab =
-      local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
-  local_ntp_test_utils::NavigateToNTPAndWaitUntilLoaded(browser());
-  ASSERT_TRUE(search::IsInstantNTP(active_tab));
-
-  content::RenderFrameHost* iframe = GetIframe(active_tab, kMostVisitedIframe);
-
-  // Search shortcut is retained across browser restart
-  EXPECT_TRUE(ContainsDefaultSearchTile(iframe));
-}
-
-class LocalNTPExistingProfileSearchShortcutTest : public LocalNTPTest {
- public:
-  LocalNTPExistingProfileSearchShortcutTest() : LocalNTPTest({}, {}) {}
-};
-
-IN_PROC_BROWSER_TEST_F(LocalNTPExistingProfileSearchShortcutTest,
-                       PRE_FRESearchShortcutNotAddedForExistingUsers) {
-  TestInstantServiceObserver observer(
-      InstantServiceFactory::GetForProfile(browser()->profile()));
-
-  content::WebContents* active_tab =
-      local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
-  local_ntp_test_utils::NavigateToNTPAndWaitUntilLoaded(browser());
-  ASSERT_TRUE(search::IsInstantNTP(active_tab));
-  content::RenderFrameHost* iframe = GetIframe(active_tab, kMostVisitedIframe);
-  EXPECT_FALSE(ContainsDefaultSearchTile(iframe));
-
-  // Navigate to a non-NTP URL, which should update most visited tiles.
-  ASSERT_TRUE(embedded_test_server()->Start());
-  GURL url(embedded_test_server()->GetURL("/title2.html"));
-  ui_test_utils::NavigateToURL(browser(), url);
-  ASSERT_FALSE(search::IsInstantNTP(active_tab));
-
-  // Enable the feature to insert the search shortcut for new users.
-  base::test::ScopedFeatureList scoped_feature_list_;
-  scoped_feature_list_.InitAndEnableFeature(
-      features::kFirstRunDefaultSearchShortcut);
-}
-
-IN_PROC_BROWSER_TEST_F(LocalNTPExistingProfileSearchShortcutTest,
-                       FRESearchShortcutNotAddedForExistingUsers) {
-  TestInstantServiceObserver observer(
-      InstantServiceFactory::GetForProfile(browser()->profile()));
-
-  // One new tile (the non-NTP URL "/title2.html") should be added.
-  observer.WaitForMostVisitedItems(kDefaultMostVisitedItemCount + 1);
-
-  content::WebContents* active_tab =
-      local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
-  local_ntp_test_utils::NavigateToNTPAndWaitUntilLoaded(browser());
-  ASSERT_TRUE(search::IsInstantNTP(active_tab));
-
-  content::RenderFrameHost* iframe = GetIframe(active_tab, kMostVisitedIframe);
-
-  // Search shortcut is not added after browser restart
-  EXPECT_FALSE(ContainsDefaultSearchTile(iframe));
-}
-#endif
-
 // This is a regression test for https://crbug.com/946489 and
 // https://crbug.com/963544 which say that clicking a most-visited link from an
 // NTP should 1) have `Sec-Fetch-Site: none` header and 2) have SameSite
@@ -1296,21 +1170,74 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest,
       a.click();
   )";
   content::TestNavigationObserver nav_observer(ntp_tab);
+  content::NavigationHandleObserver handle_observer(ntp_tab, echo_all_url);
   ASSERT_TRUE(content::ExecuteScript(
       ntp_tab, content::JsReplace(kNavScriptTemplate, echo_all_url)));
   nav_observer.Wait();
   ASSERT_TRUE(nav_observer.last_navigation_succeeded());
+  ASSERT_FALSE(handle_observer.is_error());
   ASSERT_FALSE(search::IsInstantNTP(ntp_tab));
 
-  // Extract request headers reported via /echoall test page.
+  // Extract and verify request headers reported via /echoall test page.
   const char* kHeadersExtractionScript =
       "document.getElementsByTagName('pre')[1].innerText;";
   std::string request_headers =
       content::EvalJs(ntp_tab, kHeadersExtractionScript).ExtractString();
-
-  // Verify request headers.
   EXPECT_THAT(request_headers, ::testing::HasSubstr("Sec-Fetch-Site: none"));
   EXPECT_THAT(request_headers, ::testing::HasSubstr("same-site-cookie=1"));
+
+  // Verify other navigation properties.
+  EXPECT_FALSE(nav_observer.last_initiator_origin().has_value());
+  EXPECT_FALSE(handle_observer.is_renderer_initiated());
+  EXPECT_TRUE(ui::PageTransitionCoreTypeIs(ui::PAGE_TRANSITION_AUTO_BOOKMARK,
+                                           handle_observer.page_transition()));
+}
+
+// This is a regression test for https://crbug.com/1020610 - it verifies that
+// NTP navigations do show up as a pending navigation.
+IN_PROC_BROWSER_TEST_F(LocalNTPTest, PendingNavigations) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  // Open an NTP.
+  content::WebContents* ntp_tab = local_ntp_test_utils::OpenNewTab(
+      browser(), GURL(chrome::kChromeUINewTabURL));
+
+  // Inject and click a link to foo.com/hung and wait for the navigation to
+  // start.
+  GURL slow_url(embedded_test_server()->GetURL("/hung"));
+  const char* kNavScriptTemplate = R"(
+      var a = document.createElement('a');
+      a.href = $1;
+      a.innerText = 'Simulated most-visited link';
+      document.body.appendChild(a);
+      a.click();
+  )";
+  content::TestNavigationManager nav_manager(ntp_tab, slow_url);
+  ASSERT_TRUE(content::ExecuteScript(
+      ntp_tab, content::JsReplace(kNavScriptTemplate, slow_url)));
+  ASSERT_TRUE(nav_manager.WaitForRequestStart());
+
+  // Verify that the visible entry points at the |slow_url|.
+  content::NavigationEntry* pending_entry =
+      ntp_tab->GetController().GetPendingEntry();
+  ASSERT_TRUE(pending_entry);
+  content::NavigationEntry* visible_entry =
+      ntp_tab->GetController().GetVisibleEntry();
+  ASSERT_TRUE(visible_entry);
+  content::NavigationEntry* committed_entry =
+      ntp_tab->GetController().GetLastCommittedEntry();
+  ASSERT_TRUE(committed_entry);
+  EXPECT_EQ(visible_entry, pending_entry);
+  EXPECT_EQ(slow_url, visible_entry->GetURL());
+  EXPECT_NE(pending_entry, committed_entry);
+  EXPECT_NE(slow_url, committed_entry->GetURL());
+
+  // Verify that the omnibox displays |slow_url|.
+  OmniboxView* view = browser()->window()->GetLocationBar()->GetOmniboxView();
+  std::string omnibox_text = base::UTF16ToUTF8(view->GetText());
+  EXPECT_THAT(omnibox_text, ::testing::StartsWith(slow_url.host()));
+  EXPECT_THAT(omnibox_text, ::testing::EndsWith(slow_url.path()));
+  EXPECT_THAT(slow_url.spec(), ::testing::EndsWith(omnibox_text));
 }
 
 // Verifies that Chrome won't spawn a separate renderer process for

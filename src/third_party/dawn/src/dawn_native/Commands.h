@@ -58,7 +58,7 @@ namespace dawn_native {
         SetBlendColor,
         SetBindGroup,
         SetIndexBuffer,
-        SetVertexBuffers,
+        SetVertexBuffer,
     };
 
     struct BeginComputePassCmd {};
@@ -66,17 +66,17 @@ namespace dawn_native {
     struct RenderPassColorAttachmentInfo {
         Ref<TextureViewBase> view;
         Ref<TextureViewBase> resolveTarget;
-        dawn::LoadOp loadOp;
-        dawn::StoreOp storeOp;
+        wgpu::LoadOp loadOp;
+        wgpu::StoreOp storeOp;
         dawn_native::Color clearColor;
     };
 
     struct RenderPassDepthStencilAttachmentInfo {
         Ref<TextureViewBase> view;
-        dawn::LoadOp depthLoadOp;
-        dawn::StoreOp depthStoreOp;
-        dawn::LoadOp stencilLoadOp;
-        dawn::StoreOp stencilStoreOp;
+        wgpu::LoadOp depthLoadOp;
+        wgpu::StoreOp depthStoreOp;
+        wgpu::LoadOp stencilLoadOp;
+        wgpu::StoreOp stencilStoreOp;
         float clearDepth;
         uint32_t clearStencil;
     };
@@ -220,9 +220,10 @@ namespace dawn_native {
         uint64_t offset;
     };
 
-    struct SetVertexBuffersCmd {
-        uint32_t startSlot;
-        uint32_t count;
+    struct SetVertexBufferCmd {
+        uint32_t slot;
+        Ref<BufferBase> buffer;
+        uint64_t offset;
     };
 
     // This needs to be called before the CommandIterator is freed so that the Ref<> present in

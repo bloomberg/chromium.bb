@@ -30,7 +30,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/browser_task_environment.h"
-#include "storage/browser/fileapi/external_mount_points.h"
+#include "storage/browser/file_system/external_mount_points.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -122,9 +122,11 @@ void RunUntilUninstallRequestMade(
 }
 
 // Callback used for InstallLinuxPackage
-void RecordInstallResult(CrostiniResult* record_location,
-                         CrostiniResult result) {
-  *record_location = result;
+void ExpectedCrostiniResult(base::OnceClosure quit,
+                            CrostiniResult expected,
+                            CrostiniResult result) {
+  EXPECT_EQ(expected, result);
+  std::move(quit).Run();
 }
 
 // Callback used for GetLinuxPackageInfo.
@@ -205,6 +207,8 @@ class CrostiniPackageServiceTest : public testing::Test {
   }
 
   void TearDown() override {
+    // Complete all CrostiniManager queued tasks before deleting it.
+    base::RunLoop().RunUntilIdle();
     service_.reset();
     notification_display_service_tester_.reset();
     crostini_test_helper_.reset();
@@ -1662,13 +1666,13 @@ TEST_F(CrostiniPackageServiceTest,
 }
 
 TEST_F(CrostiniPackageServiceTest, InstallSendsValidRequest) {
-  CrostiniResult result = CrostiniResult::UNKNOWN_ERROR;
+  base::RunLoop run_loop;
   service_->QueueInstallLinuxPackage(
       kDifferentVmVmName, kDifferentContainerContainerName, package_file_url_,
-      base::BindOnce(&RecordInstallResult, base::Unretained(&result)));
-  base::RunLoop().RunUntilIdle();
+      base::BindOnce(&ExpectedCrostiniResult, run_loop.QuitClosure(),
+                     CrostiniResult::SUCCESS));
+  run_loop.Run();
 
-  EXPECT_EQ(result, CrostiniResult::SUCCESS);
   const vm_tools::cicerone::InstallLinuxPackageRequest& request =
       fake_cicerone_client_->get_most_recent_install_linux_package_request();
 
@@ -1679,24 +1683,22 @@ TEST_F(CrostiniPackageServiceTest, InstallSendsValidRequest) {
 }
 
 TEST_F(CrostiniPackageServiceTest, InstallConvertPathFailure) {
-  CrostiniResult result = CrostiniResult::UNKNOWN_ERROR;
+  base::RunLoop run_loop;
   service_->QueueInstallLinuxPackage(
       kDifferentVmVmName, kDifferentContainerContainerName,
       storage::FileSystemURL::CreateForTest(GURL("invalid")),
-      base::BindOnce(&RecordInstallResult, base::Unretained(&result)));
-  base::RunLoop().RunUntilIdle();
-
-  EXPECT_EQ(result, CrostiniResult::INSTALL_LINUX_PACKAGE_FAILED);
+      base::BindOnce(&ExpectedCrostiniResult, run_loop.QuitClosure(),
+                     CrostiniResult::INSTALL_LINUX_PACKAGE_FAILED));
+  run_loop.Run();
 }
 
 TEST_F(CrostiniPackageServiceTest, InstallDisplaysProgressNotificationOnStart) {
-  CrostiniResult result = CrostiniResult::UNKNOWN_ERROR;
+  base::RunLoop run_loop;
   service_->QueueInstallLinuxPackage(
       kCrostiniDefaultVmName, kCrostiniDefaultContainerName, package_file_url_,
-      base::BindOnce(&RecordInstallResult, base::Unretained(&result)));
-  base::RunLoop().RunUntilIdle();
-
-  EXPECT_EQ(result, CrostiniResult::SUCCESS);
+      base::BindOnce(&ExpectedCrostiniResult, run_loop.QuitClosure(),
+                     CrostiniResult::SUCCESS));
+  run_loop.Run();
 
   EXPECT_THAT(
       Printable(notification_display_service_->GetDisplayedNotificationsForType(
@@ -1890,10 +1892,9 @@ TEST_F(CrostiniPackageServiceTest, InstallNotificationFailsOnVmShutdown) {
 }
 
 TEST_F(CrostiniPackageServiceTest, UninstallsQueuesBehindStartingUpInstall) {
-  CrostiniResult result = CrostiniResult::UNKNOWN_ERROR;
-  service_->QueueInstallLinuxPackage(
-      kCrostiniDefaultVmName, kCrostiniDefaultContainerName, package_file_url_,
-      base::BindOnce(&RecordInstallResult, base::Unretained(&result)));
+  service_->QueueInstallLinuxPackage(kCrostiniDefaultVmName,
+                                     kCrostiniDefaultContainerName,
+                                     package_file_url_, base::DoNothing());
   service_->QueueUninstallApplication(kDefaultAppId);
 
   // Install doesn't show a notification until it gets a response, but uninstall
@@ -1906,15 +1907,15 @@ TEST_F(CrostiniPackageServiceTest, UninstallsQueuesBehindStartingUpInstall) {
 }
 
 TEST_F(CrostiniPackageServiceTest, InstallRunsInFrontOfQueuedUninstall) {
-  CrostiniResult result = CrostiniResult::UNKNOWN_ERROR;
+  base::RunLoop run_loop;
   service_->QueueInstallLinuxPackage(
       kCrostiniDefaultVmName, kCrostiniDefaultContainerName, package_file_url_,
-      base::BindOnce(&RecordInstallResult, base::Unretained(&result)));
+      base::BindOnce(&ExpectedCrostiniResult, run_loop.QuitClosure(),
+                     CrostiniResult::SUCCESS));
   service_->QueueUninstallApplication(kDefaultAppId);
-  base::RunLoop().RunUntilIdle();
+  run_loop.Run();
 
   // Ensure the install started, not the uninstall.
-  EXPECT_EQ(result, CrostiniResult::SUCCESS);
   const vm_tools::cicerone::InstallLinuxPackageRequest& request =
       fake_cicerone_client_->get_most_recent_install_linux_package_request();
   EXPECT_EQ(request.file_path(), kPackageFileContainerPath);
@@ -1927,10 +1928,9 @@ TEST_F(CrostiniPackageServiceTest, InstallRunsInFrontOfQueuedUninstall) {
 }
 
 TEST_F(CrostiniPackageServiceTest, QueuedUninstallRunsAfterCompletedInstall) {
-  CrostiniResult result = CrostiniResult::UNKNOWN_ERROR;
-  service_->QueueInstallLinuxPackage(
-      kCrostiniDefaultVmName, kCrostiniDefaultContainerName, package_file_url_,
-      base::BindOnce(&RecordInstallResult, base::Unretained(&result)));
+  service_->QueueInstallLinuxPackage(kCrostiniDefaultVmName,
+                                     kCrostiniDefaultContainerName,
+                                     package_file_url_, base::DoNothing());
   service_->QueueUninstallApplication(kDefaultAppId);
   StartAndSignalInstall(InstallLinuxPackageProgressSignal::SUCCEEDED);
 

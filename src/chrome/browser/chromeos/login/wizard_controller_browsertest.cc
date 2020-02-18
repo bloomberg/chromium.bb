@@ -37,6 +37,7 @@
 #include "chrome/browser/chromeos/login/screens/mock_demo_preferences_screen.h"
 #include "chrome/browser/chromeos/login/screens/mock_demo_setup_screen.h"
 #include "chrome/browser/chromeos/login/screens/mock_device_disabled_screen_view.h"
+#include "chrome/browser/chromeos/login/screens/mock_enable_adb_sideloading_screen.h"
 #include "chrome/browser/chromeos/login/screens/mock_enable_debugging_screen.h"
 #include "chrome/browser/chromeos/login/screens/mock_eula_screen.h"
 #include "chrome/browser/chromeos/login/screens/mock_network_screen.h"
@@ -503,7 +504,7 @@ class WizardControllerFlowTest : public WizardControllerTest {
     WizardControllerTest::SetUpOnMainThread();
 
     // Make sure that OOBE is run as an "official" build.
-    official_build_override_ = WizardController::ForceOfficialBuildForTesting();
+    branded_build_override_ = WizardController::ForceBrandedBuildForTesting();
 
     WizardController* wizard_controller =
         WizardController::default_controller();
@@ -589,6 +590,16 @@ class WizardControllerFlowTest : public WizardControllerTest {
             mock_wrong_hwid_screen_view_.get(),
             base::BindRepeating(&WizardController::OnWrongHWIDScreenExit,
                                 base::Unretained(wizard_controller))));
+
+    mock_enable_adb_sideloading_screen_view_ =
+        std::make_unique<MockEnableAdbSideloadingScreenView>();
+    ExpectBindUnbind(mock_enable_adb_sideloading_screen_view_.get());
+    mock_enable_adb_sideloading_screen_ = MockScreenExpectLifecycle(
+        std::make_unique<MockEnableAdbSideloadingScreen>(
+            mock_enable_adb_sideloading_screen_view_.get(),
+            base::BindRepeating(
+                &WizardController::OnEnableAdbSideloadingScreenExit,
+                base::Unretained(wizard_controller))));
 
     mock_enable_debugging_screen_view_ =
         std::make_unique<MockEnableDebuggingScreenView>();
@@ -774,6 +785,10 @@ class WizardControllerFlowTest : public WizardControllerTest {
   MockWrongHWIDScreen* mock_wrong_hwid_screen_ = nullptr;
   std::unique_ptr<MockWrongHWIDScreenView> mock_wrong_hwid_screen_view_;
 
+  MockEnableAdbSideloadingScreen* mock_enable_adb_sideloading_screen_ = nullptr;
+  std::unique_ptr<MockEnableAdbSideloadingScreenView>
+      mock_enable_adb_sideloading_screen_view_;
+
   MockEnableDebuggingScreen* mock_enable_debugging_screen_ = nullptr;
   std::unique_ptr<MockEnableDebuggingScreenView>
       mock_enable_debugging_screen_view_;
@@ -794,7 +809,7 @@ class WizardControllerFlowTest : public WizardControllerTest {
  private:
   NetworkPortalDetectorTestImpl* network_portal_detector_ = nullptr;
   network::TestURLLoaderFactory test_url_loader_factory_;
-  std::unique_ptr<base::AutoReset<bool>> official_build_override_;
+  std::unique_ptr<base::AutoReset<bool>> branded_build_override_;
 
   DISALLOW_COPY_AND_ASSIGN(WizardControllerFlowTest);
 };
@@ -1957,12 +1972,12 @@ class WizardControllerBrokenLocalStateTest : public WizardControllerTest {
     WizardControllerTest::SetUpOnMainThread();
 
     // Make sure that OOBE is run as an "official" build.
-    official_build_override_ = WizardController::ForceOfficialBuildForTesting();
+    branded_build_override_ = WizardController::ForceBrandedBuildForTesting();
   }
 
  private:
   std::unique_ptr<PrefService> local_state_;
-  std::unique_ptr<base::AutoReset<bool>> official_build_override_;
+  std::unique_ptr<base::AutoReset<bool>> branded_build_override_;
 
   DISALLOW_COPY_AND_ASSIGN(WizardControllerBrokenLocalStateTest);
 };
@@ -2023,9 +2038,8 @@ class WizardControllerProxyAuthOnSigninTest : public WizardControllerTest {
   DISALLOW_COPY_AND_ASSIGN(WizardControllerProxyAuthOnSigninTest);
 };
 
-// Disabled, see https://crbug.com/504928.
 IN_PROC_BROWSER_TEST_F(WizardControllerProxyAuthOnSigninTest,
-                       DISABLED_ProxyAuthDialogOnSigninScreen) {
+                       ProxyAuthDialogOnSigninScreen) {
   content::WindowedNotificationObserver auth_needed_waiter(
       chrome::NOTIFICATION_AUTH_NEEDED,
       content::NotificationService::AllSources());
@@ -2151,6 +2165,80 @@ IN_PROC_BROWSER_TEST_F(WizardControllerKioskFlowTest,
 
   CheckCurrentScreen(AutoEnrollmentCheckScreenView::kScreenId);
   EXPECT_FALSE(StartupUtils::IsOobeCompleted());
+}
+
+class WizardControllerEnableAdbSideloadingTest
+    : public WizardControllerFlowTest {
+ protected:
+  WizardControllerEnableAdbSideloadingTest() = default;
+
+  template <class T>
+  void SkipToScreen(OobeScreenId screen, T* screen_mock) {
+    EXPECT_CALL(*screen_mock, Show()).Times(1);
+    auto* const wizard_controller = WizardController::default_controller();
+    wizard_controller->AdvanceToScreen(screen);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(WizardControllerEnableAdbSideloadingTest);
+};
+
+IN_PROC_BROWSER_TEST_F(WizardControllerEnableAdbSideloadingTest,
+                       ShowAndEnableSideloading) {
+  CheckCurrentScreen(WelcomeView::kScreenId);
+  WaitUntilJSIsReady();
+
+  EXPECT_CALL(*mock_welcome_screen_, Hide()).Times(1);
+  EXPECT_CALL(*mock_welcome_screen_, SetConfiguration(IsNull())).Times(1);
+  SkipToScreen(EnableAdbSideloadingScreenView::kScreenId,
+               mock_enable_adb_sideloading_screen_);
+  CheckCurrentScreen(EnableAdbSideloadingScreenView::kScreenId);
+
+  test::OobeJS().ClickOnPath(
+      {"adb-sideloading", "enable-adb-sideloading-ok-button"});
+
+  base::RunLoop().RunUntilIdle();
+
+  CheckCurrentScreen(EnableAdbSideloadingScreenView::kScreenId);
+  EXPECT_CALL(*mock_enable_adb_sideloading_screen_, Hide()).Times(1);
+  EXPECT_CALL(*mock_welcome_screen_, SetConfiguration(NotNull())).Times(1);
+  EXPECT_CALL(*mock_welcome_screen_, Show()).Times(1);
+
+  mock_enable_adb_sideloading_screen_->ExitScreen();
+
+  // Let update screen smooth time process (time = 0ms).
+  base::RunLoop().RunUntilIdle();
+
+  CheckCurrentScreen(WelcomeView::kScreenId);
+}
+
+IN_PROC_BROWSER_TEST_F(WizardControllerEnableAdbSideloadingTest,
+                       ShowAndDoNotEnableSideloading) {
+  CheckCurrentScreen(WelcomeView::kScreenId);
+  WaitUntilJSIsReady();
+
+  EXPECT_CALL(*mock_welcome_screen_, Hide()).Times(1);
+  EXPECT_CALL(*mock_welcome_screen_, SetConfiguration(IsNull())).Times(1);
+  SkipToScreen(EnableAdbSideloadingScreenView::kScreenId,
+               mock_enable_adb_sideloading_screen_);
+  CheckCurrentScreen(EnableAdbSideloadingScreenView::kScreenId);
+
+  test::OobeJS().ClickOnPath(
+      {"adb-sideloading", "enable-adb-sideloading-cancel-button"});
+
+  base::RunLoop().RunUntilIdle();
+
+  CheckCurrentScreen(EnableAdbSideloadingScreenView::kScreenId);
+  EXPECT_CALL(*mock_enable_adb_sideloading_screen_, Hide()).Times(1);
+  EXPECT_CALL(*mock_welcome_screen_, SetConfiguration(NotNull())).Times(1);
+  EXPECT_CALL(*mock_welcome_screen_, Show()).Times(1);
+
+  mock_enable_adb_sideloading_screen_->ExitScreen();
+
+  // Let update screen smooth time process (time = 0ms).
+  base::RunLoop().RunUntilIdle();
+
+  CheckCurrentScreen(WelcomeView::kScreenId);
 }
 
 class WizardControllerEnableDebuggingTest : public WizardControllerFlowTest {
@@ -2624,7 +2712,7 @@ class WizardControllerOobeResumeTest : public WizardControllerTest {
     WizardControllerTest::SetUpOnMainThread();
 
     // Make sure that OOBE is run as an "official" build.
-    official_build_override_ = WizardController::ForceOfficialBuildForTesting();
+    branded_build_override_ = WizardController::ForceBrandedBuildForTesting();
 
     WizardController* wizard_controller =
         WizardController::default_controller();
@@ -2659,7 +2747,7 @@ class WizardControllerOobeResumeTest : public WizardControllerTest {
   std::unique_ptr<MockEnrollmentScreenView> mock_enrollment_screen_view_;
   MockEnrollmentScreen* mock_enrollment_screen_;
 
-  std::unique_ptr<base::AutoReset<bool>> official_build_override_;
+  std::unique_ptr<base::AutoReset<bool>> branded_build_override_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WizardControllerOobeResumeTest);
@@ -2731,7 +2819,7 @@ class WizardControllerOobeConfigurationTest : public WizardControllerTest {
     WizardControllerTest::SetUpOnMainThread();
 
     // Make sure that OOBE is run as an "official" build.
-    official_build_override_ = WizardController::ForceOfficialBuildForTesting();
+    branded_build_override_ = WizardController::ForceBrandedBuildForTesting();
 
     // Clear portal list (as it is by default in OOBE).
     NetworkHandler::Get()->network_state_handler()->SetCheckPortalList("");
@@ -2756,7 +2844,7 @@ class WizardControllerOobeConfigurationTest : public WizardControllerTest {
  protected:
   std::unique_ptr<MockWelcomeView> mock_welcome_view_;
   MockWelcomeScreen* mock_welcome_screen_ = nullptr;
-  std::unique_ptr<base::AutoReset<bool>> official_build_override_;
+  std::unique_ptr<base::AutoReset<bool>> branded_build_override_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WizardControllerOobeConfigurationTest);

@@ -6,7 +6,9 @@
 #define UI_BASE_X_X11_DISPLAY_UTIL_H_
 
 #include "base/component_export.h"
+#include "base/time/time.h"
 #include "ui/display/display.h"
+#include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/x11_types.h"
 
 namespace ui {
@@ -27,6 +29,11 @@ std::vector<display::Display> BuildDisplaysFromXRandRInfo(
     int version,
     float scale,
     int64_t* primary_display_index_out);
+
+// Returns the refresh interval of the primary display. If there is no connected
+// primary display, returns the refresh interval of the first connected display.
+COMPONENT_EXPORT(UI_BASE_X)
+base::TimeDelta GetPrimaryDisplayRefreshIntervalFromXrandr(Display* display);
 
 }  // namespace ui
 

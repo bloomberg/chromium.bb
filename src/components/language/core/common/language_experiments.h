@@ -17,9 +17,6 @@ extern const base::Feature kUseHeuristicLanguageModel;
 // Android.
 extern const base::Feature kExplicitLanguageAsk;
 
-// The feature that enables the use of improved geo-language data from ULP.
-extern const base::Feature kImprovedGeoLanguageData;
-
 // This feature controls the activation of the experiment to trigger Translate
 // in India on English pages independent of the user's UI language. The params
 // associated with the experiment dictate which model is used to determine the
@@ -41,9 +38,7 @@ extern const base::Feature kUseButtonTranslateBubbleUi;
 
 // These feature params controls what translate bubble UI to display.
 extern const char kTranslateUIBubbleKey[];
-extern const char kTranslateUIBubbleButtonValue[];
 extern const char kTranslateUIBubbleTabValue[];
-extern const char kTranslateUIBubbleButtonGM2Value[];
 
 enum class OverrideLanguageModel {
   DEFAULT,
@@ -55,9 +50,7 @@ enum class OverrideLanguageModel {
 // Options for the translate desktop UI experiment.
 enum class TranslateUIBubbleModel {
   DEFAULT,
-  BUTTON,
   TAB,
-  BUTTON_GM2,
 };
 
 // Returns which language model to use depending on the state of all Language

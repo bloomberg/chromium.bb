@@ -17,18 +17,12 @@ import {Patch, produce} from 'immer';
 import {assertExists} from '../base/logging';
 import {Remote} from '../base/remote';
 import {DeferredAction, StateActions} from '../common/actions';
-import {Engine} from '../common/engine';
 import {createEmptyState, State} from '../common/state';
-import {
-  createWasmEngine,
-  destroyWasmEngine,
-  WasmEngineProxy
-} from '../common/wasm_engine_proxy';
-
 import {ControllerAny} from './controller';
 
 type PublishKinds = 'OverviewData'|'TrackData'|'Threads'|'QueryResult'|
-    'LegacyTrace'|'SliceDetails'|'Loading'|'Search'|'BufferUsage'|
+    'LegacyTrace'|'SliceDetails'|'CounterDetails'|'HeapProfileDetails'|
+    'HeapProfileFlamegraph'|'FileDownload'|'Loading'|'Search'|'BufferUsage'|
     'RecordingLog'|'SearchResult';
 
 export interface App {
@@ -78,8 +72,14 @@ class Globals implements App {
       if (iter > 100) throw new Error('Controllers are stuck in a livelock');
       const actions = this._queuedActions;
       this._queuedActions = new Array<DeferredAction>();
+
       for (const action of actions) {
-        patches.push(...this.applyAction(action));
+        const originalLength = patches.length;
+        const morePatches = this.applyAction(action);
+        patches.length += morePatches.length;
+        for (let i = 0; i < morePatches.length; ++i) {
+          patches[i + originalLength] = morePatches[i];
+        }
       }
       this._runningControllers = true;
       try {
@@ -89,16 +89,6 @@ class Globals implements App {
       }
     }
     assertExists(this._frontend).send<void>('patchState', [patches]);
-  }
-
-  createEngine(): Engine {
-    const id = new Date().toUTCString();
-    const portAndId = {id, worker: createWasmEngine(id)};
-    return new WasmEngineProxy(portAndId);
-  }
-
-  destroyEngine(id: string): void {
-    destroyWasmEngine(id);
   }
 
   // TODO: this needs to be cleaned up.
@@ -125,7 +115,11 @@ class Globals implements App {
           (StateActions as any)[action.type](draft, action.args);
         },
         (morePatches, _) => {
-          patches.push(...morePatches);
+          const originalLength = patches.length;
+          patches.length += morePatches.length;
+          for (let i = 0; i < morePatches.length; ++i) {
+            patches[i + originalLength] = morePatches[i];
+          }
         });
     return patches;
   }

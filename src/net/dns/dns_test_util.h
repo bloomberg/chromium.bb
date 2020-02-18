@@ -13,10 +13,13 @@
 #include <utility>
 #include <vector>
 
+#include "base/memory/weak_ptr.h"
 #include "base/stl_util.h"
+#include "base/time/time.h"
 #include "net/dns/dns_client.h"
 #include "net/dns/dns_config.h"
 #include "net/dns/dns_response.h"
+#include "net/dns/dns_transaction.h"
 #include "net/dns/dns_util.h"
 #include "net/dns/public/dns_protocol.h"
 
@@ -177,12 +180,31 @@ static const char* const kT4IpAddresses[] = {"172.217.6.195"};
 static const int kT4TTL = 0x0000012b;
 static const unsigned kT4RecordCount = base::size(kT0IpAddresses);
 
+//--------------------------------------------------------------------
+// A well-formed ESNI (TLS 1.3 Encrypted Server Name Indication,
+// draft 4) keys object ("ESNIKeys" member of the ESNIRecord struct from
+// the spec).
+//
+// (This is cribbed from boringssl SSLTest.ESNIKeysDeserialize (CL 37704/13).)
+extern const char kWellFormedEsniKeys[];
+extern const size_t kWellFormedEsniKeysSize;
+
+// Returns a well-formed ESNI keys object identical to kWellFormedEsniKeys,
+// except that the first 0x22 bytes of |custom_data| are written over
+// fields of the keys object in a manner that leaves length prefixes
+// correct and enum members valid, and so that distinct values of
+// |custom_data| result in distinct returned keys.
+std::string GenerateWellFormedEsniKeys(base::StringPiece custom_data = "");
+
 class AddressSorter;
 class DnsClient;
 class IPAddress;
 class URLRequestContext;
 
-// Build a DNS response that includes address records.
+// Builds an address record for the given name and IP.
+DnsResourceRecord BuildTestAddressRecord(std::string name, const IPAddress& ip);
+
+// Builds a DNS response that includes address records.
 std::unique_ptr<DnsResponse> BuildTestDnsResponse(std::string name,
                                                   const IPAddress& ip);
 std::unique_ptr<DnsResponse> BuildTestDnsResponseWithCname(
@@ -211,6 +233,11 @@ struct TestServiceRecord {
 std::unique_ptr<DnsResponse> BuildTestDnsServiceResponse(
     std::string name,
     std::vector<TestServiceRecord> service_records,
+    std::string answer_name = "");
+
+std::unique_ptr<DnsResponse> BuildTestDnsEsniResponse(
+    std::string hostname,
+    std::vector<EsniContent> esni_records,
     std::string answer_name = "");
 
 struct MockDnsClientRule {
@@ -259,7 +286,51 @@ struct MockDnsClientRule {
 
 typedef std::vector<MockDnsClientRule> MockDnsClientRuleList;
 
-// MockDnsClient provides MockTransactionFactory.
+// A DnsTransactionFactory which creates MockTransaction.
+class MockDnsTransactionFactory : public DnsTransactionFactory {
+ public:
+  explicit MockDnsTransactionFactory(MockDnsClientRuleList rules);
+  ~MockDnsTransactionFactory() override;
+
+  std::unique_ptr<DnsTransaction> CreateTransaction(
+      const std::string& hostname,
+      uint16_t qtype,
+      DnsTransactionFactory::CallbackType callback,
+      const NetLogWithSource&,
+      bool secure,
+      DnsConfig::SecureDnsMode secure_dns_mode,
+      URLRequestContext* url_request_context) override;
+
+  void AddEDNSOption(const OptRecordRdata::Opt& opt) override;
+
+  base::TimeDelta GetDelayUntilNextProbeForTest(
+      unsigned doh_server_index) override;
+
+  void StartDohProbes(URLRequestContext* url_request_context,
+                      bool network_change) override;
+
+  void CancelDohProbes() override;
+
+  DnsConfig::SecureDnsMode GetSecureDnsModeForTest() override;
+
+  void CompleteDelayedTransactions();
+  // If there are any pending transactions of the given type,
+  // completes one and returns true. Otherwise, returns false.
+  bool CompleteOneDelayedTransactionOfType(DnsQueryType type)
+      WARN_UNUSED_RESULT;
+
+  bool doh_probes_running() { return doh_probes_running_; }
+
+ private:
+  class MockTransaction;
+  using DelayedTransactionList = std::vector<base::WeakPtr<MockTransaction>>;
+
+  MockDnsClientRuleList rules_;
+  DelayedTransactionList delayed_transactions_;
+  bool doh_probes_running_ = false;
+};
+
+// MockDnsClient provides MockDnsTransactionFactory.
 class MockDnsClient : public DnsClient {
  public:
   MockDnsClient(DnsConfig config, MockDnsClientRuleList rules);
@@ -275,8 +346,8 @@ class MockDnsClient : public DnsClient {
   bool SetConfigOverrides(DnsConfigOverrides config_overrides) override;
   const DnsConfig* GetEffectiveConfig() const override;
   const DnsHosts* GetHosts() const override;
-  void SetRequestContextForProbes(
-      URLRequestContext* url_request_context) override;
+  void ActivateDohProbes(URLRequestContext* url_request_context) override;
+  void CancelDohProbes() override;
   DnsTransactionFactory* GetTransactionFactory() override;
   AddressSorter* GetAddressSorter() override;
   void IncrementInsecureFallbackFailures() override;
@@ -284,9 +355,15 @@ class MockDnsClient : public DnsClient {
   base::Optional<DnsConfig> GetSystemConfigForTesting() const override;
   DnsConfigOverrides GetConfigOverridesForTesting() const override;
   void SetProbeSuccessForTest(unsigned index, bool success) override;
+  void SetTransactionFactoryForTesting(
+      std::unique_ptr<DnsTransactionFactory> factory) override;
 
   // Completes all DnsTransactions that were delayed by a rule.
   void CompleteDelayedTransactions();
+  // If there are any pending transactions of the given type,
+  // completes one and returns true. Otherwise, returns false.
+  bool CompleteOneDelayedTransactionOfType(DnsQueryType type)
+      WARN_UNUSED_RESULT;
 
   void set_max_fallback_failures(int max_fallback_failures) {
     max_fallback_failures_ = max_fallback_failures;
@@ -300,9 +377,9 @@ class MockDnsClient : public DnsClient {
     doh_server_available_ = available;
   }
 
- private:
-  class MockTransactionFactory;
+  MockDnsTransactionFactory* factory() { return factory_.get(); }
 
+ private:
   base::Optional<DnsConfig> BuildEffectiveConfig();
 
   bool insecure_enabled_ = false;
@@ -310,11 +387,12 @@ class MockDnsClient : public DnsClient {
   int max_fallback_failures_ = DnsClient::kMaxInsecureFallbackFailures;
   bool ignore_system_config_changes_ = false;
   bool doh_server_available_ = true;
+  URLRequestContext* probe_context_ = nullptr;
 
   base::Optional<DnsConfig> config_;
   DnsConfigOverrides overrides_;
   base::Optional<DnsConfig> effective_config_;
-  std::unique_ptr<MockTransactionFactory> factory_;
+  std::unique_ptr<MockDnsTransactionFactory> factory_;
   std::unique_ptr<AddressSorter> address_sorter_;
 };
 

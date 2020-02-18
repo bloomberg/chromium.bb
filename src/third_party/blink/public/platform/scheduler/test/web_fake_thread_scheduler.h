@@ -41,6 +41,8 @@ class WebFakeThreadScheduler : public WebThreadScheduler {
   void DidHandleInputEventOnMainThread(const WebInputEvent& web_input_event,
                                        WebInputEventResult result) override;
   void DidAnimateForInputOnCompositorThread() override;
+  void DidScheduleBeginMainFrame() override;
+  void DidRunBeginMainFrame() override;
   void SetRendererHidden(bool hidden) override;
   void SetRendererBackgrounded(bool backgrounded) override;
   void SetSchedulerKeepActive(bool keep_active) override;
@@ -54,9 +56,6 @@ class WebFakeThreadScheduler : public WebThreadScheduler {
   void SetTopLevelBlameContext(
       base::trace_event::BlameContext* blame_context) override;
   void SetRendererProcessType(WebRendererProcessType type) override;
-  WebScopedVirtualTimePauser CreateWebScopedVirtualTimePauser(
-      const char* name,
-      WebScopedVirtualTimePauser::VirtualTaskDuration duration) override;
   void OnMainFrameRequestedForInput() override;
 
  private:

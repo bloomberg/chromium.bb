@@ -320,18 +320,16 @@ bool SysmemBufferCollection::CreateVkImage(
       break;
 
     case fuchsia::sysmem::ColorSpaceType::REC709: {
-      VkFormatFeatureFlags format_features =
-          VK_FORMAT_FEATURE_COSITED_CHROMA_SAMPLES_BIT |
-          VK_FORMAT_FEATURE_MIDPOINT_CHROMA_SAMPLES_BIT |
-          VK_FORMAT_FEATURE_SAMPLED_IMAGE_YCBCR_CONVERSION_LINEAR_FILTER_BIT;
-
       // Currently sysmem doesn't specify location of chroma samples relative to
-      // luma (see MTWN-397). Assume they are cosited with luma.
+      // luma (see fxb/13677). Assume they are cosited with luma. YCbCr info
+      // here must match the values passed for the same buffer in
+      // FuchsiaVideoDecoder. |format_features| are resolved later in the GPU
+      // process before the ycbcr info is passed to Skia.
       *ycbcr_info = gpu::VulkanYCbCrInfo(
           vk_image_info->format, /*external_format=*/0,
           VK_SAMPLER_YCBCR_MODEL_CONVERSION_YCBCR_709,
           VK_SAMPLER_YCBCR_RANGE_ITU_NARROW, VK_CHROMA_LOCATION_COSITED_EVEN,
-          VK_CHROMA_LOCATION_COSITED_EVEN, format_features);
+          VK_CHROMA_LOCATION_COSITED_EVEN, /*format_features=*/0);
       break;
     }
 
@@ -449,6 +447,7 @@ bool SysmemBufferCollection::InitializeInternal(
   DCHECK(buffers_info_.settings.has_image_format_constraints);
 
   buffer_size_ = buffers_info_.settings.buffer_settings.size_bytes;
+  is_protected_ = buffers_info_.settings.buffer_settings.is_secure;
 
   // CreateVkImage() should always be called on the same thread, but it may be
   // different from the thread that called Initialize().
@@ -461,6 +460,7 @@ void SysmemBufferCollection::InitializeImageCreateInfo(
     VkImageCreateInfo* vk_image_info,
     gfx::Size size) {
   *vk_image_info = {VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO};
+  vk_image_info->flags = is_protected_ ? VK_IMAGE_CREATE_PROTECTED_BIT : 0u;
   vk_image_info->imageType = VK_IMAGE_TYPE_2D;
   vk_image_info->format = VkFormatForBufferFormat(format_);
   vk_image_info->extent = VkExtent3D{size.width(), size.height(), 1};

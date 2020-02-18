@@ -8,6 +8,7 @@
 import os
 import os.path
 import random
+import re
 import signal
 import subprocess
 import sys
@@ -39,6 +40,39 @@ def kill(proc, name, timeout_in_seconds=10):
   if thread.is_alive():
     print >> sys.stderr, \
       '%s running after SIGTERM and SIGKILL; good luck!' % name
+
+
+def launch_dbus(env):
+  """Starts a DBus session.
+
+  Works around a bug in GLib where it performs operations which aren't
+  async-signal-safe (in particular, memory allocations) between fork and exec
+  when it spawns subprocesses. This causes threads inside Chrome's browser and
+  utility processes to get stuck, and this harness to hang waiting for those
+  processes, which will never terminate. This doesn't happen on users'
+  machines, because they have an active desktop session and the
+  DBUS_SESSION_BUS_ADDRESS environment variable set, but it can happen on
+  headless environments. This is fixed by glib commit [1], but this workaround
+  will be necessary until the fix rolls into Chromium's CI.
+
+  [1] f2917459f745bebf931bccd5cc2c33aa81ef4d12
+
+  Modifies the passed in environment with at least DBUS_SESSION_BUS_ADDRESS and
+  DBUS_SESSION_BUS_PID set.
+
+  Returns the pid of the dbus-daemon if started, or None otherwise.
+  """
+  if 'DBUS_SESSION_BUS_ADDRESS' in os.environ:
+    return
+  try:
+    dbus_output = subprocess.check_output(['dbus-launch'], env=env).split('\n')
+    for line in dbus_output:
+      m = re.match(r'([^=]+)\=(.+)', line)
+      if m:
+        env[m.group(1)] = m.group(2)
+    return int(env['DBUS_SESSION_BUS_PID'])
+  except (subprocess.CalledProcessError, OSError, KeyError, ValueError) as e:
+    print 'Exception while running dbus_launch: %s' % e
 
 
 # TODO(crbug.com/949194): Encourage setting flags to False.
@@ -131,6 +165,8 @@ def run_executable(
 
       env['DISPLAY'] = display
 
+      dbus_pid = launch_dbus(env)
+
       if use_openbox:
         openbox_proc = subprocess.Popen(
             'openbox', stderr=subprocess.STDOUT, env=env)
@@ -155,6 +191,12 @@ def run_executable(
       kill(xcompmgr_proc, 'xcompmgr')
       kill(weston_proc, 'weston')
       kill(xvfb_proc, 'Xvfb')
+
+      # dbus-daemon is not a subprocess, so we can't SIGTERM+waitpid() on it.
+      # To ensure it exits, use SIGKILL which should be safe since all other
+      # processes that it would have been servicing have exited.
+      if dbus_pid:
+        os.kill(dbus_pid, signal.SIGKILL)
   else:
     return test_env.run_executable(cmd, env, stdoutfile)
 

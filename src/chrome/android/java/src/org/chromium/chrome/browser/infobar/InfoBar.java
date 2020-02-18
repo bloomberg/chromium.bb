@@ -6,23 +6,16 @@ package org.chromium.chrome.browser.infobar;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
-import android.support.annotation.CallSuper;
-import android.support.annotation.ColorRes;
-import android.support.annotation.Nullable;
 import android.view.View;
 import android.widget.TextView;
 
-import org.chromium.base.ApiCompatibilityUtils;
+import androidx.annotation.ColorRes;
+import androidx.annotation.Nullable;
+
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.infobar.InfoBarContainerLayout.Item.InfoBarPriority;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
-import org.chromium.chrome.browser.touchless.dialog.TouchlessDialogProperties;
-import org.chromium.chrome.browser.touchless.dialog.TouchlessDialogProperties.ActionNames;
-import org.chromium.chrome.browser.touchless.dialog.TouchlessDialogProperties.Priority;
-import org.chromium.ui.modaldialog.ModalDialogProperties;
 import org.chromium.ui.modelutil.PropertyModel;
 
 /**
@@ -123,61 +116,11 @@ public abstract class InfoBar implements InfoBarView {
     }
 
     /**
-     * Create a property model for view systems that use this rather than a custom view.
-     * @return A new property model.
-     */
-    @CallSuper
-    protected PropertyModel createModel() {
-        Drawable icon;
-        if (mIconBitmap != null) {
-            icon = new BitmapDrawable(mIconBitmap);
-        } else {
-            icon = ApiCompatibilityUtils.getDrawable(getContext().getResources(), mIconDrawableId);
-        }
-
-        ActionNames names = new ActionNames();
-        names.cancel = R.string.cancel;
-        names.select = R.string.select;
-        names.alt = 0;
-        PropertyModel model =
-                new PropertyModel.Builder(TouchlessDialogProperties.ALL_DIALOG_KEYS)
-                        .with(TouchlessDialogProperties.IS_FULLSCREEN, false)
-                        .with(TouchlessDialogProperties.PRIORITY, Priority.HIGH)
-                        .with(TouchlessDialogProperties.ACTION_NAMES, names)
-                        .with(TouchlessDialogProperties.CANCEL_ACTION,
-                                view -> onCloseButtonClicked())
-                        .with(TouchlessDialogProperties.ALT_ACTION, null)
-                        .with(ModalDialogProperties.TITLE,
-                                mMessage != null ? mMessage.toString() : "")
-                        .with(ModalDialogProperties.TITLE_ICON, icon)
-                        .with(ModalDialogProperties.CONTROLLER,
-                                new ModalDialogProperties.Controller() {
-                                    @Override
-                                    public void onClick(PropertyModel model, int buttonType) {}
-
-                                    @Override
-                                    public void onDismiss(PropertyModel model, int dismissalCause) {
-                                        mContainer.removeInfoBar(InfoBar.this);
-                                    }
-                                })
-                        .build();
-        mModel = model;
-        return model;
-    }
-
-    /**
      * @return The model for this infobar if one was created.
      */
     @Nullable
     PropertyModel getModel() {
         return mModel;
-    }
-
-    /**
-     * @return Whether this InfoBar is supported in touchless mode.
-     */
-    protected boolean supportsTouchlessMode() {
-        return false;
     }
 
     /**
@@ -247,7 +190,7 @@ public abstract class InfoBar implements InfoBarView {
     @InfoBarIdentifier
     public int getInfoBarIdentifier() {
         if (mNativeInfoBarPtr == 0) return InfoBarIdentifier.INVALID;
-        return nativeGetInfoBarIdentifier(mNativeInfoBarPtr);
+        return InfoBarJni.get().getInfoBarIdentifier(mNativeInfoBarPtr, InfoBar.this);
     }
 
     /**
@@ -315,7 +258,7 @@ public abstract class InfoBar implements InfoBarView {
 
     @Override
     public void onLinkClicked() {
-        if (mNativeInfoBarPtr != 0) nativeOnLinkClicked(mNativeInfoBarPtr);
+        if (mNativeInfoBarPtr != 0) InfoBarJni.get().onLinkClicked(mNativeInfoBarPtr, InfoBar.this);
     }
 
     /**
@@ -323,13 +266,15 @@ public abstract class InfoBar implements InfoBarView {
      * @param action The type of action defined in {@link ActionType} in this class.
      */
     protected void onButtonClicked(@ActionType int action) {
-        if (mNativeInfoBarPtr != 0) nativeOnButtonClicked(mNativeInfoBarPtr, action);
+        if (mNativeInfoBarPtr != 0) {
+            InfoBarJni.get().onButtonClicked(mNativeInfoBarPtr, InfoBar.this, action);
+        }
     }
 
     @Override
     public void onCloseButtonClicked() {
         if (mNativeInfoBarPtr != 0 && !mIsDismissed) {
-            nativeOnCloseButtonClicked(mNativeInfoBarPtr);
+            InfoBarJni.get().onCloseButtonClicked(mNativeInfoBarPtr, InfoBar.this);
         }
     }
 
@@ -338,8 +283,12 @@ public abstract class InfoBar implements InfoBarView {
     }
 
     @InfoBarIdentifier
-    private native int nativeGetInfoBarIdentifier(long nativeInfoBarAndroid);
-    private native void nativeOnLinkClicked(long nativeInfoBarAndroid);
-    private native void nativeOnButtonClicked(long nativeInfoBarAndroid, int action);
-    private native void nativeOnCloseButtonClicked(long nativeInfoBarAndroid);
+
+    @NativeMethods
+    interface Natives {
+        int getInfoBarIdentifier(long nativeInfoBarAndroid, InfoBar caller);
+        void onLinkClicked(long nativeInfoBarAndroid, InfoBar caller);
+        void onButtonClicked(long nativeInfoBarAndroid, InfoBar caller, int action);
+        void onCloseButtonClicked(long nativeInfoBarAndroid, InfoBar caller);
+    }
 }

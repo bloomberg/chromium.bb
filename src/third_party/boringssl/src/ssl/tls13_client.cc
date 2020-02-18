@@ -184,7 +184,7 @@ static enum ssl_hs_wait_t do_read_hello_retry_request(SSL_HANDSHAKE *hs) {
   }
 
   ssl->method->next_message(ssl);
-  hs->received_hello_retry_request = true;
+  ssl->s3->used_hello_retry_request = true;
   hs->tls13_state = state_send_second_client_hello;
   // 0-RTT is rejected if we receive a HelloRetryRequest.
   if (hs->in_early_data) {
@@ -269,8 +269,7 @@ static enum ssl_hs_wait_t do_read_server_hello(SSL_HANDSHAKE *hs) {
   }
 
   // Check that the cipher matches the one in the HelloRetryRequest.
-  if (hs->received_hello_retry_request &&
-      hs->new_cipher != cipher) {
+  if (ssl->s3->used_hello_retry_request && hs->new_cipher != cipher) {
     OPENSSL_PUT_ERROR(SSL, SSL_R_WRONG_CIPHER_RETURNED);
     ssl_send_alert(ssl, SSL3_AL_FATAL, SSL_AD_ILLEGAL_PARAMETER);
     return ssl_hs_error;
@@ -594,7 +593,7 @@ static enum ssl_hs_wait_t do_read_server_certificate_verify(
 
 static enum ssl_hs_wait_t do_server_certificate_reverify(
     SSL_HANDSHAKE *hs) {
-  switch (ssl_reverify_peer_cert(hs)) {
+  switch (ssl_reverify_peer_cert(hs, /*send_alert=*/true)) {
     case ssl_verify_ok:
       break;
     case ssl_verify_invalid:
@@ -633,12 +632,16 @@ static enum ssl_hs_wait_t do_send_end_of_early_data(SSL_HANDSHAKE *hs) {
 
   if (ssl->s3->early_data_accepted) {
     hs->can_early_write = false;
-    ScopedCBB cbb;
-    CBB body;
-    if (!ssl->method->init_message(ssl, cbb.get(), &body,
-                                   SSL3_MT_END_OF_EARLY_DATA) ||
-        !ssl_add_message_cbb(ssl, cbb.get())) {
-      return ssl_hs_error;
+    // QUIC omits the EndOfEarlyData message. See draft-ietf-quic-tls-22,
+    // section 8.3.
+    if (ssl->quic_method == nullptr) {
+      ScopedCBB cbb;
+      CBB body;
+      if (!ssl->method->init_message(ssl, cbb.get(), &body,
+                                     SSL3_MT_END_OF_EARLY_DATA) ||
+          !ssl_add_message_cbb(ssl, cbb.get())) {
+        return ssl_hs_error;
+      }
     }
   }
 
@@ -890,10 +893,10 @@ bool tls13_process_new_session_ticket(SSL *ssl, const SSLMessage &msg) {
   }
 
   // Parse out the extensions.
-  bool have_early_data_info = false;
-  CBS early_data_info;
+  bool have_early_data = false;
+  CBS early_data;
   const SSL_EXTENSION_TYPE ext_types[] = {
-      {TLSEXT_TYPE_early_data, &have_early_data_info, &early_data_info},
+      {TLSEXT_TYPE_early_data, &have_early_data, &early_data},
   };
 
   uint8_t alert = SSL_AD_DECODE_ERROR;
@@ -904,10 +907,19 @@ bool tls13_process_new_session_ticket(SSL *ssl, const SSLMessage &msg) {
     return false;
   }
 
-  if (have_early_data_info) {
-    if (!CBS_get_u32(&early_data_info, &session->ticket_max_early_data) ||
-        CBS_len(&early_data_info) != 0) {
+  if (have_early_data) {
+    if (!CBS_get_u32(&early_data, &session->ticket_max_early_data) ||
+        CBS_len(&early_data) != 0) {
       ssl_send_alert(ssl, SSL3_AL_FATAL, SSL_AD_DECODE_ERROR);
+      OPENSSL_PUT_ERROR(SSL, SSL_R_DECODE_ERROR);
+      return false;
+    }
+
+    // QUIC does not use the max_early_data_size parameter and always sets it to
+    // a fixed value. See draft-ietf-quic-tls-22, section 4.5.
+    if (ssl->quic_method != nullptr &&
+        session->ticket_max_early_data != 0xffffffff) {
+      ssl_send_alert(ssl, SSL3_AL_FATAL, SSL_AD_ILLEGAL_PARAMETER);
       OPENSSL_PUT_ERROR(SSL, SSL_R_DECODE_ERROR);
       return false;
     }

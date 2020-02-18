@@ -27,11 +27,12 @@
 
 #include "config.h"
 
-#include <assert.h>
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include "common/attributes.h"
 
 #include "output/output.h"
 #include "output/muxer.h"
@@ -145,10 +146,10 @@ void output_close(MuxerContext *const ctx) {
     free(ctx);
 }
 
-int output_verify(MuxerContext *const ctx, const char *const md5_Str) {
+int output_verify(MuxerContext *const ctx, const char *const md5_str) {
     int res = 0;
     if (ctx->impl->verify)
-        res = ctx->impl->verify(ctx->data, md5_Str);
+        res = ctx->impl->verify(ctx->data, md5_str);
     free(ctx);
     return res;
 }

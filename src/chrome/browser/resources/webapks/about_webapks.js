@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import './strings.m.js';
+
+import {addWebUIListener} from 'chrome://resources/js/cr.m.js';
+import {$, createElementWithClassName} from 'chrome://resources/js/util.m.js';
+
 /**
  * @typedef {{
  *   name: string,
@@ -36,8 +41,6 @@ let WebApkInfo;
  */
 let UpdateStatus;
 
-const UPDATE_TIMEOUT = 60 * 1000;  // milliseconds.
-
 /**
  * Creates and returns an element (with |text| as content) assigning it the
  * |className| class.
@@ -51,17 +54,6 @@ function createElementWithTextAndClass(text, type, className) {
   const element = createElementWithClassName(type, className);
   element.textContent = text;
   return element;
-}
-
-/**
- * Callback from the backend with the information of a WebAPK to display.
- * This will be called once per WebAPK.
- *
- * @param {!WebApkInfo} webApkInfo Object with information about an
- * installed WebAPK.
- */
-function returnWebApkInfo(webApkInfo) {
-  addWebApk(webApkInfo);
 }
 
 /**
@@ -96,7 +88,7 @@ function addWebApkButton(webApkList, text, callback) {
 /**
  * Adds a new entry to the page with the information of a WebAPK.
  *
- * @param {WebApkInfo} webApkInfo Information about an installed WebAPK.
+ * @param {!WebApkInfo} webApkInfo Information about an installed WebAPK.
  */
 function addWebApk(webApkInfo) {
   /** @type {HTMLElement} */ const webApkList = $('webapk-list');
@@ -131,7 +123,9 @@ function addWebApk(webApkInfo) {
       webApkList, 'Check for Updates Less Frequently: ',
       webApkInfo.relaxUpdates.toString());
   addWebApkField(webApkList, 'Owning Browser: ', webApkInfo.backingBrowser);
-  addWebApkField(webApkList, 'Update Status: ', webApkInfo.updateStatus);
+  addWebApkField(
+      webApkList, 'Update Status (Reload page to get new status): ',
+      webApkInfo.updateStatus);
 
   // TODO(ckitagawa): Convert to an enum using mojom handlers.
   if (webApkInfo.updateStatus == 'Not updatable' ||
@@ -145,20 +139,17 @@ function addWebApk(webApkInfo) {
             'The WebAPK will check for an update the next time it launches. ' +
             'If an update is available, the "Update Status" on this page ' +
             'will switch to "Scheduled". The update will be installed once ' +
-            'the WebAPK is closed (this may take a few minutes).');
+            'the WebAPK is closed (this may take a few minutes). Update ' +
+            'requests don\'t work if they are requested right after (< 1 ' +
+            'minute) the completion of the previous update request.');
         chrome.send('requestWebApkUpdate', [webApkInfo.id]);
+        window.location.reload();
       });
-
-  // Prevent updates in the WebAPK server caching window as they will fail.
-  const msSinceLastUpdate = Date.now() - webApkInfo.lastUpdateCompletionTimeMs;
-  if (msSinceLastUpdate < UPDATE_TIMEOUT) {
-    buttonElement.disabled = true;
-    window.setTimeout(() => {
-      buttonElement.disabled = false;
-    }, UPDATE_TIMEOUT - msSinceLastUpdate);
-  }
 }
 
 document.addEventListener('DOMContentLoaded', function() {
+  // Add a WebUI listener for the 'web-apk-info' event emmitted from the
+  // backend. This will be triggered once per WebAPK.
+  addWebUIListener('web-apk-info', addWebApk);
   chrome.send('requestWebApksInfo');
 });

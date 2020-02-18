@@ -20,8 +20,6 @@ namespace {
 
 // Request parameters.
 const char kRequestSigninAll[] = "all_accounts";
-const char kRequestSignoutNoConfirmation[] = "no_confirmation";
-const char kRequestSignoutShowConfirmation[] = "show_confirmation";
 
 // Signin response parameters.
 const char kSigninActionAttrName[] = "action";
@@ -185,16 +183,14 @@ bool DiceHeaderHelper::ShouldBuildRequestHeader(
 }
 
 bool DiceHeaderHelper::IsUrlEligibleForRequestHeader(const GURL& url) {
-  if (account_consistency_ == AccountConsistencyMethod::kDisabled ||
-      account_consistency_ == AccountConsistencyMethod::kMirror) {
+  if (account_consistency_ != AccountConsistencyMethod::kDice)
     return false;
-  }
 
   return gaia::IsGaiaSignonRealm(url.GetOrigin());
 }
 
 std::string DiceHeaderHelper::BuildRequestHeader(
-    const std::string& sync_account_id,
+    const std::string& sync_gaia_id,
     const std::string& device_id) {
   std::vector<std::string> parts;
   parts.push_back(base::StringPrintf("version=%s", kDiceProtocolVersion));
@@ -202,19 +198,15 @@ std::string DiceHeaderHelper::BuildRequestHeader(
                   GaiaUrls::GetInstance()->oauth2_chrome_client_id());
   if (!device_id.empty())
     parts.push_back("device_id=" + device_id);
-  if (!sync_account_id.empty())
-    parts.push_back("sync_account_id=" + sync_account_id);
+  if (!sync_gaia_id.empty())
+    parts.push_back("sync_account_id=" + sync_gaia_id);
 
   // Restrict Signin to Sync account only when fixing auth errors.
   std::string signin_mode = kRequestSigninAll;
   parts.push_back("signin_mode=" + signin_mode);
 
-  // Show the signout confirmation only when Dice is fully enabled.
-  const char* signout_mode_value =
-      (account_consistency_ == AccountConsistencyMethod::kDice)
-          ? kRequestSignoutShowConfirmation
-          : kRequestSignoutNoConfirmation;
-  parts.push_back(base::StringPrintf("signout_mode=%s", signout_mode_value));
+  // Show the signout confirmation when Dice is enabled.
+  parts.push_back("signout_mode=show_confirmation");
 
   return base::JoinString(parts, ",");
 }

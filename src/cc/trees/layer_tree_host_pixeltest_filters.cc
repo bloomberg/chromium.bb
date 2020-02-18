@@ -77,7 +77,7 @@ LayerTreeTest::RendererType const kRendererTypes[] = {
 #endif
 };
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          LayerTreeHostFiltersPixelTest,
                          ::testing::ValuesIn(kRendererTypes));
 
@@ -91,7 +91,7 @@ LayerTreeTest::RendererType const kRendererTypesGpu[] = {
 #endif
 };
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          LayerTreeHostFiltersPixelTestGPU,
                          ::testing::ValuesIn(kRendererTypesGpu));
 
@@ -136,6 +136,26 @@ TEST_P(LayerTreeHostFiltersPixelTest, BackdropFilterBlurRect) {
       (renderer_type() == RENDERER_SOFTWARE)
           ? base::FilePath(FILE_PATH_LITERAL("backdrop_filter_blur_sw.png"))
           : base::FilePath(FILE_PATH_LITERAL("backdrop_filter_blur.png")));
+}
+
+TEST_P(LayerTreeHostFiltersPixelTest, BackdropFilterInvalid) {
+  scoped_refptr<SolidColorLayer> background =
+      CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorWHITE);
+  scoped_refptr<SolidColorLayer> green =
+      CreateSolidColorLayer(gfx::Rect(50, 50, 100, 100), kCSSGreen);
+  scoped_refptr<SolidColorLayer> blur =
+      CreateSolidColorLayer(gfx::Rect(30, 30, 140, 140), SK_ColorTRANSPARENT);
+  background->AddChild(green);
+  background->AddChild(blur);
+
+  // This should be an invalid filter, and result in just the original green.
+  FilterOperations filters;
+  filters.Append(FilterOperation::CreateHueRotateFilter(9e99));
+  blur->SetBackdropFilters(filters);
+
+  RunPixelTest(
+      renderer_type(), background,
+      base::FilePath(FILE_PATH_LITERAL("backdrop_filter_invalid.png")));
 }
 
 TEST_P(LayerTreeHostFiltersPixelTest, BackdropFilterBlurRadius) {
@@ -201,21 +221,24 @@ TEST_P(LayerTreeHostFiltersPixelTest, BackdropFilterBlurRounded) {
                                      16, 18, 20, 22, 30, 40, 50);
   blur->SetBackdropFilterBounds(backdrop_filter_bounds);
 
-#if defined(OS_WIN) || defined(ARCH_CPU_ARM64)
-  // Windows and ARM64 have 436 pixels off by 1: crbug.com/259915
-  float percentage_pixels_large_error = 1.09f;  // 436px / (200*200)
-  float percentage_pixels_small_error = 0.0f;
-  float average_error_allowed_in_bad_pixels = 1.f;
-  int large_error_allowed = 1;
-  int small_error_allowed = 0;
+  // Skia has various algorithms for clipping by a path, depending on the
+  // available hardware, including MSAA techniques. MSAA results vary
+  // substantially by platform; with 4x MSAA, a difference of 1 sample can
+  // cause up to a 25% color difference!
+  // See http://crbug.com/259915
+  int small_error_threshold = 64;  // 25% of 255.
+  // Allow for ~1 perimeter of the clip path to have a small error.
+  float percentage_pixels_small_error = 100.f * (100*4) / (200*200);
+  int large_error_limit = 128;  // Off by two samples in 4 MSAA.
+  float percentage_pixels_large_or_small_error =
+          1.01f * percentage_pixels_small_error;
+  // Divide average error by 4 since we blur most of the result.
+  float average_error_allowed_in_bad_pixels = small_error_threshold / 4.f;
   pixel_comparator_.reset(new FuzzyPixelComparator(
       true,  // discard_alpha
-      percentage_pixels_large_error, percentage_pixels_small_error,
-      average_error_allowed_in_bad_pixels, large_error_allowed,
-      small_error_allowed));
-#else
-  pixel_comparator_ = std::make_unique<FuzzyPixelOffByOneComparator>(false);
-#endif
+      percentage_pixels_large_or_small_error, percentage_pixels_small_error,
+      average_error_allowed_in_bad_pixels, large_error_limit,
+      small_error_threshold));
 
   RunPixelTest(renderer_type(), background,
                (renderer_type() == RENDERER_SOFTWARE)
@@ -226,11 +249,6 @@ TEST_P(LayerTreeHostFiltersPixelTest, BackdropFilterBlurRounded) {
 }
 
 TEST_P(LayerTreeHostFiltersPixelTest, BackdropFilterBlurOutsets) {
-  if (renderer_type() == RENDERER_SKIA_GL ||
-      renderer_type() == RENDERER_SKIA_VK) {
-    // TODO(973696): Implement bounds clipping in skia_renderer.
-    return;
-  }
   scoped_refptr<SolidColorLayer> background = CreateSolidColorLayer(
       gfx::Rect(200, 200), SK_ColorWHITE);
 
@@ -280,52 +298,82 @@ TEST_P(LayerTreeHostFiltersPixelTest, BackdropFilterBlurOutsets) {
       base::FilePath(FILE_PATH_LITERAL("backdrop_filter_blur_outsets.png")));
 }
 
-TEST_P(LayerTreeHostFiltersPixelTestGPU, BackdropFilterBlurOffAxis) {
-  scoped_refptr<SolidColorLayer> background =
-      CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorTRANSPARENT);
+class LayerTreeHostFiltersPixelTestGPULayerList
+    : public LayerTreeHostFiltersPixelTest {
+ public:
+  LayerTreeHostFiltersPixelTestGPULayerList() { SetUseLayerLists(); }
 
-  // This verifies that the perspective of the clear layer (with black border)
-  // does not influence the blending of the green box behind it. Also verifies
-  // that the blur is correctly clipped inside the transformed clear layer.
-  scoped_refptr<SolidColorLayer> green = CreateSolidColorLayer(
-      gfx::Rect(50, 50, 100, 100), kCSSGreen);
-  scoped_refptr<SolidColorLayer> blur = CreateSolidColorLayerWithBorder(
-      gfx::Rect(30, 30, 120, 120), SK_ColorTRANSPARENT, 1, SK_ColorBLACK);
-  background->AddChild(green);
-  background->AddChild(blur);
+  void SetupTree() override {
+    SetInitialRootBounds(gfx::Size(200, 200));
+    LayerTreePixelTest::SetupTree();
 
-  background->SetShouldFlattenTransform(false);
-  background->Set3dSortingContextId(1);
-  green->SetShouldFlattenTransform(false);
-  green->Set3dSortingContextId(1);
-  gfx::Transform background_transform;
-  background_transform.ApplyPerspectiveDepth(200.0);
-  background->SetTransform(background_transform);
+    Layer* root = layer_tree_host()->root_layer();
 
-  blur->SetShouldFlattenTransform(false);
-  blur->Set3dSortingContextId(1);
-  for (size_t i = 0; i < blur->children().size(); ++i)
-    blur->children()[i]->Set3dSortingContextId(1);
+    scoped_refptr<SolidColorLayer> background =
+        CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorTRANSPARENT);
+    CopyProperties(root, background.get());
+    root->AddChild(background);
 
-  gfx::Transform blur_transform;
-  blur_transform.Translate(55.0, 65.0);
-  blur_transform.RotateAboutXAxis(85.0);
-  blur_transform.RotateAboutYAxis(180.0);
-  blur_transform.RotateAboutZAxis(20.0);
-  blur_transform.Translate(-60.0, -60.0);
-  blur->SetTransform(blur_transform);
+    TransformNode& background_transform_node =
+        CreateTransformNode(background.get());
+    background_transform_node.local.ApplyPerspectiveDepth(200.0);
+    background_transform_node.flattens_inherited_transform = true;
+    background_transform_node.sorting_context_id = 1;
 
-  FilterOperations filters;
-  filters.Append(FilterOperation::CreateBlurFilter(
-      2.f, SkBlurImageFilter::kClamp_TileMode));
-  blur->SetBackdropFilters(filters);
-  // TODO(916311): We should be able to set the bounds like this, but the
-  // resulting output is clipped incorrectly.
-  // gfx::RRectF
-  // backdrop_filter_bounds(gfx::RectF(gfx::SizeF(blur->bounds())),0);
-  // blur->SetBackdropFilterBounds(backdrop_filter_bounds);
-  blur->ClearBackdropFilterBounds();
+    // This verifies that the perspective of the clear layer (with black border)
+    // does not influence the blending of the green box behind it. Also verifies
+    // that the blur is correctly clipped inside the transformed clear layer.
+    scoped_refptr<SolidColorLayer> green =
+        CreateSolidColorLayer(gfx::Rect(50, 50, 100, 100), kCSSGreen);
+    CopyProperties(background.get(), green.get());
+    root->AddChild(green);
 
+    std::vector<scoped_refptr<SolidColorLayer>> blur_layers;
+    CreateSolidColorLayerPlusBorders(gfx::Rect(0, 0, 120, 120),
+                                     SK_ColorTRANSPARENT, 1, SK_ColorBLACK,
+                                     blur_layers);
+    CopyProperties(background.get(), blur_layers[0].get());
+    TransformNode& blur_transform_node =
+        CreateTransformNode(blur_layers[0].get(), background_transform_node.id);
+
+    blur_transform_node.local.Translate(55.0, 65.0);
+    blur_transform_node.local.RotateAboutXAxis(85.0);
+    blur_transform_node.local.RotateAboutYAxis(180.0);
+    blur_transform_node.local.RotateAboutZAxis(20.0);
+    blur_transform_node.local.Translate(-60.0, -60.0);
+    blur_transform_node.flattens_inherited_transform = false;
+    blur_transform_node.post_translation = gfx::Vector2dF(30, 30);
+    blur_transform_node.sorting_context_id = 1;
+
+    EffectNode& blur_effect_node = CreateEffectNode(blur_layers[0].get());
+
+    FilterOperations filters;
+    filters.Append(FilterOperation::CreateBlurFilter(
+        2.f, SkBlurImageFilter::kClamp_TileMode));
+    blur_effect_node.backdrop_filters = filters;
+    blur_effect_node.render_surface_reason =
+        RenderSurfaceReason::kBackdropFilter;
+    blur_effect_node.closest_ancestor_with_copy_request_id = 1;
+
+    // TODO(916311): We should be able to set the bounds like this, but the
+    // resulting output is clipped incorrectly.
+    // gfx::RRectF
+    // backdrop_filter_bounds(gfx::RectF(gfx::SizeF(blur->bounds())),0);
+    // blur_effect_node.backdrop_filter_bounds.emplace(backdrop_filter_bounds);
+
+    root->AddChild(blur_layers[0]);
+    for (unsigned i = 1; i < blur_layers.size(); i++) {
+      CopyProperties(blur_layers[0].get(), blur_layers[i].get());
+      root->AddChild(blur_layers[i]);
+    }
+  }
+};
+
+INSTANTIATE_TEST_SUITE_P(PixelResourceTest,
+                         LayerTreeHostFiltersPixelTestGPULayerList,
+                         ::testing::ValuesIn(kRendererTypesGpu));
+
+TEST_P(LayerTreeHostFiltersPixelTestGPULayerList, BackdropFilterBlurOffAxis) {
 #if defined(OS_WIN) || defined(ARCH_CPU_ARM64)
 #if defined(OS_WIN)
   // Windows has 116 pixels off by at most 2: crbug.com/225027
@@ -347,8 +395,8 @@ TEST_P(LayerTreeHostFiltersPixelTestGPU, BackdropFilterBlurOffAxis) {
       small_error_allowed));
 #endif
 
-  RunPixelTest(
-      renderer_type(), background,
+  RunPixelTestWithLayerList(
+      renderer_type(),
       base::FilePath(FILE_PATH_LITERAL("backdrop_filter_blur_off_axis_.png"))
           .InsertBeforeExtensionASCII(GetRendererSuffix()));
 }
@@ -419,7 +467,7 @@ class LayerTreeHostFiltersScaledPixelTest
   float device_scale_factor_;
 };
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          LayerTreeHostFiltersScaledPixelTest,
                          ::testing::ValuesIn(kRendererTypes));
 
@@ -1100,7 +1148,7 @@ class BackdropFilterOffsetTest : public LayerTreeHostFiltersPixelTest {
   float device_scale_factor_ = 1;
 };
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          BackdropFilterOffsetTest,
                          ::testing::ValuesIn(kRendererTypes));
 
@@ -1147,7 +1195,7 @@ class BackdropFilterInvertTest : public LayerTreeHostFiltersPixelTest {
   float device_scale_factor_ = 1;
 };
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          BackdropFilterInvertTest,
                          ::testing::ValuesIn(kRendererTypes));
 

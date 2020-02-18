@@ -8,9 +8,9 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-import android.animation.ValueAnimator;
+import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.areAnimatorsEnabled;
+
 import android.graphics.drawable.ColorDrawable;
-import android.provider.Settings;
 import android.support.test.annotation.UiThreadTest;
 import android.support.test.filters.MediumTest;
 import android.view.View;
@@ -24,11 +24,10 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.CommandLine;
-import org.chromium.base.ContextUtils;
 import org.chromium.base.test.util.CallbackHelper;
-import org.chromium.base.test.util.DisabledTest;
+import org.chromium.base.test.util.DisableIf;
 import org.chromium.chrome.browser.ChromeFeatureList;
-import org.chromium.chrome.browser.util.FeatureUtilities;
+import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ui.DummyUiActivity;
@@ -114,10 +113,12 @@ public class TabListContainerViewBinderTest extends DummyUiActivityTestCase {
 
     @Test
     @MediumTest
+    // clang-format off
     @Features.EnableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION)
-    @DisabledTest
-    // Failed multiple times on Android CFI https://crbug.com/954145
-    public void testShowWithAnimation() throws Exception {
+    @DisableIf.Build(hardware_is = "bullhead", message = "Flaky on CFI bot. " +
+            "https://crbug.com/954145")
+    public void testShowWithAnimation() {
+        // clang-format on
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mContainerModel.set(
                     TabListContainerProperties.VISIBILITY_LISTENER, mMockVisibilityListener);
@@ -125,7 +126,6 @@ public class TabListContainerViewBinderTest extends DummyUiActivityTestCase {
             mContainerModel.set(TabListContainerProperties.ANIMATE_VISIBILITY_CHANGES, true);
             mContainerModel.set(TabListContainerProperties.IS_VISIBLE, true);
         });
-
         assertThat(mStartedShowingCallback.getCallCount(), equalTo(1));
         assertThat(mRecyclerView.getVisibility(), equalTo(View.VISIBLE));
         if (areAnimatorsEnabled()) {
@@ -145,7 +145,7 @@ public class TabListContainerViewBinderTest extends DummyUiActivityTestCase {
     @MediumTest
     @UiThreadTest
     @Features.EnableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION)
-    public void testShowWithoutAnimation() throws Exception {
+    public void testShowWithoutAnimation() {
         mContainerModel.set(
                 TabListContainerProperties.VISIBILITY_LISTENER, mMockVisibilityListener);
 
@@ -162,7 +162,7 @@ public class TabListContainerViewBinderTest extends DummyUiActivityTestCase {
     @Test
     @MediumTest
     @Features.EnableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION)
-    public void testHidesWithAnimation() throws Exception {
+    public void testHidesWithAnimation() {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mContainerModel.set(
                     TabListContainerProperties.VISIBILITY_LISTENER, mMockVisibilityListener);
@@ -200,7 +200,7 @@ public class TabListContainerViewBinderTest extends DummyUiActivityTestCase {
     @MediumTest
     @UiThreadTest
     @Features.EnableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION)
-    public void testHidesWithoutAnimation() throws Exception {
+    public void testHidesWithoutAnimation() {
         mContainerModel.set(
                 TabListContainerProperties.VISIBILITY_LISTENER, mMockVisibilityListener);
 
@@ -222,12 +222,12 @@ public class TabListContainerViewBinderTest extends DummyUiActivityTestCase {
     @Test
     @MediumTest
     @UiThreadTest
-    public void testIsIncognitoSetsBackgroundColor() throws Exception {
+    public void testIsIncognitoSetsBackgroundColor() {
         mContainerModel.set(TabListContainerProperties.IS_INCOGNITO, true);
         assertThat(mRecyclerView.getBackground(), instanceOf(ColorDrawable.class));
         assertThat(((ColorDrawable) mRecyclerView.getBackground()).getColor(),
                 equalTo(ApiCompatibilityUtils.getColor(
-                        mRecyclerView.getResources(), R.color.incognito_modern_primary_color)));
+                        mRecyclerView.getResources(), R.color.dark_primary_color)));
 
         mContainerModel.set(TabListContainerProperties.IS_INCOGNITO, false);
         assertThat(mRecyclerView.getBackground(), instanceOf(ColorDrawable.class));
@@ -239,7 +239,7 @@ public class TabListContainerViewBinderTest extends DummyUiActivityTestCase {
     @Test
     @MediumTest
     @UiThreadTest
-    public void testTopContainerHeightSetsTopMargin() throws Exception {
+    public void testTopContainerHeightSetsTopMargin() {
         assertThat(mRecyclerView.getLayoutParams(), instanceOf(FrameLayout.LayoutParams.class));
         assertThat(
                 ((FrameLayout.LayoutParams) mRecyclerView.getLayoutParams()).topMargin, equalTo(0));
@@ -252,7 +252,7 @@ public class TabListContainerViewBinderTest extends DummyUiActivityTestCase {
     @Test
     @MediumTest
     @UiThreadTest
-    public void testBottomContainerHeightSetsBottomMargin() throws Exception {
+    public void testBottomContainerHeightSetsBottomMargin() {
         assertThat(mRecyclerView.getLayoutParams(), instanceOf(FrameLayout.LayoutParams.class));
         assertThat(((FrameLayout.LayoutParams) mRecyclerView.getLayoutParams()).bottomMargin,
                 equalTo(0));
@@ -266,18 +266,5 @@ public class TabListContainerViewBinderTest extends DummyUiActivityTestCase {
     public void tearDownTest() throws Exception {
         mMCP.destroy();
         super.tearDownTest();
-    }
-
-    /**
-     * Should be the same as {@link ValueAnimator#areAnimatorsEnabled}, which requires API level 26.
-     */
-    private static boolean areAnimatorsEnabled() {
-        // We default to assuming that animations are enabled in case ANIMATOR_DURATION_SCALE is not
-        // defined.
-        final float defaultScale = 1f;
-        float durationScale =
-                Settings.Global.getFloat(ContextUtils.getApplicationContext().getContentResolver(),
-                        Settings.Global.ANIMATOR_DURATION_SCALE, defaultScale);
-        return !(durationScale == 0.0);
     }
 }

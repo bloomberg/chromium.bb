@@ -97,8 +97,7 @@ SendTabToSelfBubbleController::SendTabToSelfBubbleController(
 
 void SendTabToSelfBubbleController::UpdateIcon() {
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents_);
-  browser->window()->GetOmniboxPageActionIconContainer()->UpdatePageActionIcon(
-      PageActionIconType::kSendTabToSelf);
+  browser->window()->UpdatePageActionIcon(PageActionIconType::kSendTabToSelf);
 }
 
 void SendTabToSelfBubbleController::FetchDeviceInfo() {

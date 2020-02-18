@@ -43,17 +43,18 @@ using StrictMockTask =
 class SequenceManagerThreadDelegate : public base::Thread::Delegate {
  public:
   SequenceManagerThreadDelegate() {
-    sequence_manager_ =
+    ui_sequence_manager_ =
         base::sequence_manager::internal::SequenceManagerImpl::CreateUnbound(
             base::sequence_manager::SequenceManager::Settings());
     auto browser_ui_thread_scheduler =
         BrowserUIThreadScheduler::CreateForTesting(
-            sequence_manager_.get(), sequence_manager_->GetRealTimeDomain());
+            ui_sequence_manager_.get(),
+            ui_sequence_manager_->GetRealTimeDomain());
 
     default_task_runner_ =
         browser_ui_thread_scheduler->GetHandle()->GetDefaultTaskRunner();
 
-    sequence_manager_->SetDefaultTaskRunner(default_task_runner_);
+    ui_sequence_manager_->SetDefaultTaskRunner(default_task_runner_);
 
     BrowserTaskExecutor::CreateForTesting(
         std::move(browser_ui_thread_scheduler),
@@ -71,13 +72,14 @@ class SequenceManagerThreadDelegate : public base::Thread::Delegate {
   }
 
   void BindToCurrentThread(base::TimerSlack timer_slack) override {
-    sequence_manager_->BindToMessagePump(
+    ui_sequence_manager_->BindToMessagePump(
         base::MessagePump::Create(base::MessagePumpType::DEFAULT));
-    sequence_manager_->SetTimerSlack(timer_slack);
+    ui_sequence_manager_->SetTimerSlack(timer_slack);
+    BrowserTaskExecutor::BindToUIThreadForTesting();
   }
 
  private:
-  std::unique_ptr<base::sequence_manager::SequenceManager> sequence_manager_;
+  std::unique_ptr<base::sequence_manager::SequenceManager> ui_sequence_manager_;
   scoped_refptr<base::SingleThreadTaskRunner> default_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(SequenceManagerThreadDelegate);
@@ -116,6 +118,7 @@ class BrowserThreadTest : public testing::Test {
 
     BrowserThreadImpl::ResetGlobalsForTesting(BrowserThread::UI);
     BrowserThreadImpl::ResetGlobalsForTesting(BrowserThread::IO);
+    BrowserTaskExecutor::ResetForTesting();
   }
 
   // Prepares this BrowserThreadTest for Release() to be invoked. |on_release|
@@ -284,7 +287,7 @@ TEST_F(BrowserThreadTest, PostTaskAndReply) {
   run_loop.Run();
 }
 
-TEST_F(BrowserThreadTest, RunsTasksInCurrentSequencedDuringShutdown) {
+TEST_F(BrowserThreadTest, RunsTasksInCurrentSequenceDuringShutdown) {
   bool did_shutdown = false;
   base::RunLoop loop;
   UIThreadDestructionObserver observer(&did_shutdown, loop.QuitClosure());

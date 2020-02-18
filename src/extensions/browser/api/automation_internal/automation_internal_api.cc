@@ -391,6 +391,12 @@ AutomationInternalPerformActionFunction::ConvertToAXActionData(
       break;
     case api::automation::ACTION_TYPE_SCROLLTOMAKEVISIBLE:
       action->action = ax::mojom::Action::kScrollToMakeVisible;
+      action->horizontal_scroll_alignment =
+          ax::mojom::ScrollAlignment::kScrollAlignmentCenter;
+      action->vertical_scroll_alignment =
+          ax::mojom::ScrollAlignment::kScrollAlignmentCenter;
+      action->scroll_behavior =
+          ax::mojom::ScrollBehavior::kDoNotScrollIfVisible;
       break;
     case api::automation::ACTION_TYPE_SCROLLBACKWARD:
       action->action = ax::mojom::Action::kScrollBackward;

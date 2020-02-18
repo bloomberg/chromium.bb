@@ -22,6 +22,11 @@ bool RenderWidgetHostDelegate::PreHandleMouseEvent(
   return false;
 }
 
+bool RenderWidgetHostDelegate::HandleMouseEvent(
+    const blink::WebMouseEvent& event) {
+  return false;
+}
+
 bool RenderWidgetHostDelegate::HandleWheelEvent(
     const blink::WebMouseWheelEvent& event) {
   return false;
@@ -82,9 +87,9 @@ bool RenderWidgetHostDelegate::ShouldShowStaleContentOnEviction() {
   return false;
 }
 
-blink::WebDisplayMode RenderWidgetHostDelegate::GetDisplayMode(
+blink::mojom::DisplayMode RenderWidgetHostDelegate::GetDisplayMode(
     RenderWidgetHostImpl* render_widget_host) const {
-  return blink::kWebDisplayModeBrowser;
+  return blink::mojom::DisplayMode::kBrowser;
 }
 
 bool RenderWidgetHostDelegate::HasMouseLock(

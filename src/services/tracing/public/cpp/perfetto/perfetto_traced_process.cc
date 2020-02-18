@@ -33,9 +33,7 @@ namespace {
 std::unique_ptr<SystemProducer> NewSystemProducer(PerfettoTaskRunner* runner,
                                                   const char* socket_name) {
 #if defined(OS_ANDROID)
-  if (base::FeatureList::IsEnabled(features::kEnablePerfettoSystemTracing)) {
-    // TODO(nuskos): We will also need eventually to check that any required
-    // consent has been given before constructing this producer.
+  if (ShouldSetupSystemTracing()) {
     DCHECK(socket_name);
     return std::make_unique<AndroidSystemProducer>(socket_name, runner);
   }
@@ -151,6 +149,18 @@ void PerfettoTracedProcess::ResetTaskRunnerForTesting(
   // call to Get()) which would then PostTask which would create races if we
   // reset the task runner right afterwards.
   DETACH_FROM_SEQUENCE(PerfettoTracedProcess::Get()->sequence_checker_);
+  // Call Get() explicitly. This ensures that we constructed the
+  // PerfettoTracedProcess. On some tests (like cast linux) the DETACH macro is
+  // compiled to nothing, which woud cause this PostTask to access a nullptr the
+  // producer requires a PostTask from inside the constructor.
+  PerfettoTracedProcess::Get();
+  PerfettoTracedProcess::GetTaskRunner()->GetOrCreateTaskRunner()->PostTask(
+      FROM_HERE, base::BindOnce([]() {
+        auto* producer =
+            PerfettoTracedProcess::Get()->SystemProducerForTesting();
+        CHECK(producer);
+        producer->ResetSequenceForTesting();
+      }));
 }
 
 // static

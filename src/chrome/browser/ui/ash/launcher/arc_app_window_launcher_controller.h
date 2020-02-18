@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "base/scoped_observer.h"
 #include "base/time/time.h"
-#include "chrome/browser/chromeos/arc/arc_session_manager.h"
+#include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/ash/launcher/app_window_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/arc_app_shelf_id.h"
@@ -91,6 +91,7 @@ class ArcAppWindowLauncherController : public AppWindowLauncherController,
 
   void RegisterApp(AppWindowInfo* app_window_info);
   void UnregisterApp(AppWindowInfo* app_window_info);
+  void HandlePlayStoreLaunch(AppWindowInfo* app_window_info);
 
   AppWindowInfo* GetAppWindowInfoForTask(int task_id);
   ArcAppWindow* GetAppWindowForTask(int task_id);

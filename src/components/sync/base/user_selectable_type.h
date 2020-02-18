@@ -5,7 +5,8 @@
 #ifndef COMPONENTS_SYNC_BASE_USER_SELECTABLE_TYPE_H_
 #define COMPONENTS_SYNC_BASE_USER_SELECTABLE_TYPE_H_
 
-#include "components/reading_list/features/reading_list_buildflags.h"
+#include <string>
+
 #include "components/sync/base/enum_set.h"
 #include "components/sync/base/model_type.h"
 
@@ -22,12 +23,7 @@ enum class UserSelectableType {
   kHistory,
   kExtensions,
   kApps,
-// TODO(crbug.com/950874): remove this usage of ENABLE_READING_LIST build
-// flag.
-#if BUILDFLAG(ENABLE_READING_LIST)
   kReadingList,
-#endif
-  kWifiConfigurations,
   kTabs,
   kLastType = kTabs
 };
@@ -37,6 +33,8 @@ using UserSelectableTypeSet = EnumSet<UserSelectableType,
                                       UserSelectableType::kLastType>;
 
 const char* GetUserSelectableTypeName(UserSelectableType type);
+UserSelectableType GetUserSelectableTypeFromString(const std::string& type);
+std::string UserSelectableTypeSetToString(UserSelectableTypeSet types);
 ModelTypeSet UserSelectableTypeToAllModelTypes(UserSelectableType type);
 
 ModelType UserSelectableTypeToCanonicalModelType(UserSelectableType type);
@@ -45,6 +43,27 @@ int UserSelectableTypeToHistogramInt(UserSelectableType type);
 constexpr int UserSelectableTypeHistogramNumEntries() {
   return static_cast<int>(ModelType::NUM_ENTRIES);
 }
+
+#if defined(OS_CHROMEOS)
+// Chrome OS provides a separate UI with sync controls for OS data types.
+enum class UserSelectableOsType {
+  kOsApps,
+  kFirstType = kOsApps,
+
+  kOsPreferences,
+  kPrinters,
+  kWifiConfigurations,
+  kLastType = kWifiConfigurations
+};
+
+using UserSelectableOsTypeSet = EnumSet<UserSelectableOsType,
+                                        UserSelectableOsType::kFirstType,
+                                        UserSelectableOsType::kLastType>;
+
+const char* GetUserSelectableOsTypeName(UserSelectableOsType type);
+ModelTypeSet UserSelectableOsTypeToAllModelTypes(UserSelectableOsType type);
+ModelType UserSelectableOsTypeToCanonicalModelType(UserSelectableOsType type);
+#endif  // defined(OS_CHROMEOS)
 
 }  // namespace syncer
 

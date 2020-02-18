@@ -43,6 +43,28 @@ action("gen_buildflags") {
   perfetto_force_dlog_on = perfetto_force_dlog == "on"
   perfetto_force_dlog_off = perfetto_force_dlog == "off"
 
+  # We can't just use (is_linux || is_android) in perfetto.gni because that
+  # doesn't work in Android Mac host builds. We lose the GN notion of OS once
+  # we run the tools/gen_xxx generators.
+  if (enable_perfetto_watchdog) {
+    perfetto_watchdog = "PERFETTO_BUILDFLAG_DEFINE_PERFETTO_OS_ANDROID() || " +
+                        "PERFETTO_BUILDFLAG_DEFINE_PERFETTO_OS_LINUX()"
+  } else {
+    perfetto_watchdog = "0"
+  }
+  if (enable_perfetto_tools) {
+    perfetto_local_symbolizer = "PERFETTO_BUILDFLAG_DEFINE_PERFETTO_OS_LINUX()"
+  } else {
+    perfetto_local_symbolizer = "0"
+  }
+  if (enable_perfetto_trace_processor_httpd) {
+    perfetto_tp_httpd = "PERFETTO_BUILDFLAG_DEFINE_PERFETTO_OS_ANDROID() || " +
+                        "PERFETTO_BUILDFLAG_DEFINE_PERFETTO_OS_LINUX() || " +
+                        "PERFETTO_BUILDFLAG_DEFINE_PERFETTO_OS_MACOSX()"
+  } else {
+    perfetto_tp_httpd = "0"
+  }
+
   response_file_contents = [
     "--flags",  # Keep this marker first.
     "PERFETTO_ANDROID_BUILD=$perfetto_build_with_android",
@@ -50,14 +72,26 @@ action("gen_buildflags") {
     "PERFETTO_STANDALONE_BUILD=$perfetto_build_standalone",
     "PERFETTO_START_DAEMONS=$start_daemons_for_testing",
     "PERFETTO_IPC=$enable_perfetto_ipc",
-    "PERFETTO_WATCHDOG=$enable_perfetto_watchdog",
+    "PERFETTO_WATCHDOG=$perfetto_watchdog",
     "PERFETTO_COMPONENT_BUILD=$perfetto_component_build",
     "PERFETTO_FORCE_DLOG_ON=$perfetto_force_dlog_on",
     "PERFETTO_FORCE_DLOG_OFF=$perfetto_force_dlog_off",
     "PERFETTO_VERSION_GEN=$enable_perfetto_version_gen",
-    "PERFETTO_TP_LINENOISE=$enable_perfetto_trace_processor_linenoise",
-    "PERFETTO_TP_JSON=$enable_perfetto_trace_processor_json",
+    "PERFETTO_TP_SQLITE=$enable_perfetto_trace_processor_sqlite",
     "PERFETTO_TP_PERCENTILE=$enable_perfetto_trace_processor_percentile",
+    "PERFETTO_TP_LINENOISE=$enable_perfetto_trace_processor_linenoise",
+    "PERFETTO_TP_METRICS=$enable_perfetto_trace_processor_metrics",
+    "PERFETTO_TP_FTRACE=$enable_perfetto_trace_processor_ftrace",
+    "PERFETTO_TP_HTTPD=$perfetto_tp_httpd",
+    "PERFETTO_TP_SYSTEM_PROBES=$enable_perfetto_trace_processor_system_probes",
+    "PERFETTO_TP_ANDROID_PROBES=$enable_perfetto_trace_processor_android_probes",
+    "PERFETTO_TP_HEAP_GRAPHS=$enable_perfetto_trace_processor_heap_graphs",
+    "PERFETTO_TP_GRAPHICS=$enable_perfetto_trace_processor_graphics",
+    "PERFETTO_TP_JSON=$enable_perfetto_trace_processor_json",
+    "PERFETTO_TP_JSON_IMPORT=$enable_perfetto_trace_processor_json_import",
+    "PERFETTO_TP_FUCHSIA=$enable_perfetto_trace_processor_fuchsia",
+    "PERFETTO_TP_SYSCALLS=$enable_perfetto_trace_processor_syscalls",
+    "PERFETTO_LOCAL_SYMBOLIZER=$perfetto_local_symbolizer",
   ]
 
   rel_out_path = rebase_path(gen_header_path, "$root_build_dir")
@@ -164,26 +198,39 @@ group("gtest_main") {
   }
 }
 
-# protoc compiler library, for building protoc plugins on the host.
-if (current_toolchain == host_toolchain) {
-  group("protoc_lib") {
+# Full protobuf is just for host tools .No binary shipped on device should
+# depend on this.
+whitelisted_protobuf_full_deps = [
+  "../tools/*",
+  "../src/ipc/protoc_plugin:*",
+  "../src/protozero/protoc_plugin:*",
+  "../src/trace_processor:trace_processor_shell",
+]
+
+group("protoc") {
+  public_deps = [
+    "${perfetto_protobuf_target_prefix}:protoc($host_toolchain)",
+  ]
+}
+
+# protoc compiler library, it's used for building protoc plugins and by
+# trace_processor_shell to dynamically load .proto files for metrics.
+group("protoc_lib") {
+  visibility = whitelisted_protobuf_full_deps
+  if (current_toolchain == host_toolchain) {
     public_deps = [
       "${perfetto_protobuf_target_prefix}:protoc_lib",
-    ]
-  }
-
-  group("protoc") {
-    public_deps = [
-      "${perfetto_protobuf_target_prefix}:protoc",
     ]
   }
 }
 
 group("protobuf_full") {
-  testonly = true
-  public_deps = [
-    "${perfetto_protobuf_target_prefix}:protobuf_full",
-  ]
+  visibility = whitelisted_protobuf_full_deps
+  if (current_toolchain == host_toolchain) {
+    public_deps = [
+      "${perfetto_protobuf_target_prefix}:protobuf_full",
+    ]
+  }
 }
 
 group("protobuf_lite") {
@@ -193,7 +240,7 @@ group("protobuf_lite") {
 }
 
 # The Google C++ Benchmark library.
-# Only avilable in standalone builds.
+# Only available in standalone builds.
 if (enable_perfetto_benchmarks) {
   group("benchmark") {
     testonly = true
@@ -249,7 +296,7 @@ if (enable_perfetto_trace_processor_json) {
 
 if (enable_perfetto_trace_processor_linenoise) {
   # Used by the trace_processor_shell for REPL history.
-  # Only avilable in standalone builds.
+  # Only available in standalone builds.
   group("linenoise") {
     public_deps = [
       "//buildtools:linenoise",

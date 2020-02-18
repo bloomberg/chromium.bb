@@ -12,8 +12,8 @@ import sys
 import unittest
 
 from google.protobuf import empty_pb2
-
 import mock
+
 from chromite.lib.luci import net
 from chromite.lib.luci.prpc import client as prpc_client
 from chromite.lib.luci.prpc import codes
@@ -111,7 +111,7 @@ class PRPCClientTestCase(test_case.TestCase):
     request.side_effect = net.NotFoundError(
         msg='not found',
         status_code=404,
-        response='not found',
+        response=b'not found',
         headers={
             'X-Prpc-Grpc-Code': str(codes.StatusCode.NOT_FOUND[0]),
         },

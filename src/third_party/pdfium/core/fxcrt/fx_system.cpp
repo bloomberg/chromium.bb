@@ -88,14 +88,24 @@ STR_T FXSYS_IntToStr(T value, STR_T str, int radix) {
 
 }  // namespace
 
-int FXSYS_round(float f) {
+int FXSYS_roundf(float f) {
   if (std::isnan(f))
     return 0;
   if (f < static_cast<float>(std::numeric_limits<int>::min()))
     return std::numeric_limits<int>::min();
-  if (f > static_cast<float>(std::numeric_limits<int>::max()))
+  if (f >= static_cast<float>(std::numeric_limits<int>::max()))
     return std::numeric_limits<int>::max();
   return static_cast<int>(round(f));
+}
+
+int FXSYS_round(double d) {
+  if (std::isnan(d))
+    return 0;
+  if (d < static_cast<double>(std::numeric_limits<int>::min()))
+    return std::numeric_limits<int>::min();
+  if (d >= static_cast<double>(std::numeric_limits<int>::max()))
+    return std::numeric_limits<int>::max();
+  return static_cast<int>(round(d));
 }
 
 int32_t FXSYS_atoi(const char* str) {

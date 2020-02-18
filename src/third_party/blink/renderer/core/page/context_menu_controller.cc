@@ -30,6 +30,7 @@
 #include <memory>
 #include <utility>
 
+#include "third_party/blink/public/common/context_menu_data/edit_flags.h"
 #include "third_party/blink/public/platform/web_menu_source_type.h"
 #include "third_party/blink/public/web/web_context_menu_data.h"
 #include "third_party/blink/public/web/web_local_frame_client.h"
@@ -137,44 +138,44 @@ static KURL UrlFromFrame(LocalFrame* frame) {
 }
 
 static int ComputeEditFlags(Document& selected_document, Editor& editor) {
-  int edit_flags = WebContextMenuData::kCanDoNone;
+  int edit_flags = ContextMenuDataEditFlags::kCanDoNone;
   if (editor.CanUndo())
-    edit_flags |= WebContextMenuData::kCanUndo;
+    edit_flags |= ContextMenuDataEditFlags::kCanUndo;
   if (editor.CanRedo())
-    edit_flags |= WebContextMenuData::kCanRedo;
+    edit_flags |= ContextMenuDataEditFlags::kCanRedo;
   if (editor.CanCut())
-    edit_flags |= WebContextMenuData::kCanCut;
+    edit_flags |= ContextMenuDataEditFlags::kCanCut;
   if (editor.CanCopy())
-    edit_flags |= WebContextMenuData::kCanCopy;
+    edit_flags |= ContextMenuDataEditFlags::kCanCopy;
   if (editor.CanPaste())
-    edit_flags |= WebContextMenuData::kCanPaste;
+    edit_flags |= ContextMenuDataEditFlags::kCanPaste;
   if (editor.CanDelete())
-    edit_flags |= WebContextMenuData::kCanDelete;
+    edit_flags |= ContextMenuDataEditFlags::kCanDelete;
   if (editor.CanEditRichly())
-    edit_flags |= WebContextMenuData::kCanEditRichly;
+    edit_flags |= ContextMenuDataEditFlags::kCanEditRichly;
   if (selected_document.IsHTMLDocument() ||
       selected_document.IsXHTMLDocument()) {
-    edit_flags |= WebContextMenuData::kCanTranslate;
+    edit_flags |= ContextMenuDataEditFlags::kCanTranslate;
     if (selected_document.queryCommandEnabled("selectAll", ASSERT_NO_EXCEPTION))
-      edit_flags |= WebContextMenuData::kCanSelectAll;
+      edit_flags |= ContextMenuDataEditFlags::kCanSelectAll;
   }
   return edit_flags;
 }
 
-static WebContextMenuData::InputFieldType ComputeInputFieldType(
+static ContextMenuDataInputFieldType ComputeInputFieldType(
     HitTestResult& result) {
-  if (auto* input = ToHTMLInputElementOrNull(result.InnerNode())) {
+  if (auto* input = DynamicTo<HTMLInputElement>(result.InnerNode())) {
     if (input->type() == input_type_names::kPassword)
-      return WebContextMenuData::kInputFieldTypePassword;
+      return ContextMenuDataInputFieldType::kPassword;
     if (input->type() == input_type_names::kNumber)
-      return WebContextMenuData::kInputFieldTypeNumber;
+      return ContextMenuDataInputFieldType::kNumber;
     if (input->type() == input_type_names::kTel)
-      return WebContextMenuData::kInputFieldTypeTelephone;
+      return ContextMenuDataInputFieldType::kTelephone;
     if (input->IsTextField())
-      return WebContextMenuData::kInputFieldTypePlainText;
-    return WebContextMenuData::kInputFieldTypeOther;
+      return ContextMenuDataInputFieldType::kPlainText;
+    return ContextMenuDataInputFieldType::kOther;
   }
-  return WebContextMenuData::kInputFieldTypeNone;
+  return ContextMenuDataInputFieldType::kNone;
 }
 
 static WebRect ComputeSelectionRect(LocalFrame* selected_frame) {
@@ -188,6 +189,20 @@ static WebRect ComputeSelectionRect(LocalFrame* selected_frame) {
   int right = std::max(focus.X() + focus.Width(), anchor.X() + anchor.Width());
   int bottom =
       std::max(focus.Y() + focus.Height(), anchor.Y() + anchor.Height());
+  // Intersect the selection rect and the visible bounds of the focused_element
+  // to ensure the selection rect is visible.
+  Document* doc = selected_frame->GetDocument();
+  if (doc) {
+    Element* focused_element = doc->FocusedElement();
+    if (focused_element) {
+      IntRect visible_bound = focused_element->VisibleBoundsInVisualViewport();
+      left = std::max(visible_bound.X(), left);
+      top = std::max(visible_bound.Y(), top);
+      right = std::min(visible_bound.MaxX(), right);
+      bottom = std::min(visible_bound.MaxY(), bottom);
+    }
+  }
+
   return WebRect(left, top, right - left, bottom - top);
 }
 
@@ -195,8 +210,8 @@ bool ContextMenuController::ShouldShowContextMenuFromTouch(
     const WebContextMenuData& data) {
   return page_->GetSettings().GetAlwaysShowContextMenuOnTouch() ||
          !data.link_url.IsEmpty() ||
-         data.media_type == WebContextMenuData::kMediaTypeImage ||
-         data.media_type == WebContextMenuData::kMediaTypeVideo ||
+         data.media_type == ContextMenuDataMediaType::kImage ||
+         data.media_type == ContextMenuDataMediaType::kVideo ||
          data.is_editable || !data.selected_text.IsEmpty();
 }
 
@@ -246,11 +261,11 @@ bool ContextMenuController::ShowContextMenu(LocalFrame* frame,
   }
 
   if (IsA<HTMLCanvasElement>(result.InnerNode())) {
-    data.media_type = WebContextMenuData::kMediaTypeCanvas;
+    data.media_type = ContextMenuDataMediaType::kCanvas;
     data.has_image_contents = true;
   } else if (!result.AbsoluteImageURL().IsEmpty()) {
     data.src_url = result.AbsoluteImageURL();
-    data.media_type = WebContextMenuData::kMediaTypeImage;
+    data.media_type = ContextMenuDataMediaType::kImage;
     data.media_flags |= WebContextMenuData::kMediaCanPrint;
 
     // An image can be null for many reasons, like being blocked, no image
@@ -264,21 +279,22 @@ bool ContextMenuController::ShowContextMenu(LocalFrame* frame,
     // We know that if absoluteMediaURL() is not empty or element has a media
     // stream descriptor, then this is a media element.
     HTMLMediaElement* media_element = ToHTMLMediaElement(result.InnerNode());
-    if (IsHTMLVideoElement(*media_element)) {
+    if (IsA<HTMLVideoElement>(*media_element)) {
       // A video element should be presented as an audio element when it has an
       // audio track but no video track.
       if (media_element->HasAudio() && !media_element->HasVideo())
-        data.media_type = WebContextMenuData::kMediaTypeAudio;
+        data.media_type = ContextMenuDataMediaType::kAudio;
       else
-        data.media_type = WebContextMenuData::kMediaTypeVideo;
+        data.media_type = ContextMenuDataMediaType::kVideo;
       if (media_element->SupportsPictureInPicture()) {
         data.media_flags |= WebContextMenuData::kMediaCanPictureInPicture;
         if (PictureInPictureController::IsElementInPictureInPicture(
                 media_element))
           data.media_flags |= WebContextMenuData::kMediaPictureInPicture;
       }
-    } else if (IsA<HTMLAudioElement>(*media_element))
-      data.media_type = WebContextMenuData::kMediaTypeAudio;
+    } else if (IsA<HTMLAudioElement>(*media_element)) {
+      data.media_type = ContextMenuDataMediaType::kAudio;
+    }
 
     data.suggested_filename = media_element->title();
     if (media_element->error())
@@ -299,19 +315,19 @@ bool ContextMenuController::ShowContextMenu(LocalFrame* frame,
     // controls for audio then the player disappears, and there is no way to
     // return it back. Don't set this bit for fullscreen video, since
     // toggling is ignored in that case.
-    if (media_element->IsHTMLVideoElement() && media_element->HasVideo() &&
+    if (IsA<HTMLVideoElement>(media_element) && media_element->HasVideo() &&
         !media_element->IsFullscreen())
       data.media_flags |= WebContextMenuData::kMediaCanToggleControls;
     if (media_element->ShouldShowControls())
       data.media_flags |= WebContextMenuData::kMediaControls;
-  } else if (IsHTMLObjectElement(*result.InnerNode()) ||
-             IsHTMLEmbedElement(*result.InnerNode())) {
+  } else if (IsA<HTMLObjectElement>(*result.InnerNode()) ||
+             IsA<HTMLEmbedElement>(*result.InnerNode())) {
     LayoutObject* object = result.InnerNode()->GetLayoutObject();
     if (object && object->IsLayoutEmbeddedContent()) {
       WebPluginContainerImpl* plugin_view =
           ToLayoutEmbeddedContent(object)->Plugin();
       if (plugin_view) {
-        data.media_type = WebContextMenuData::kMediaTypePlugin;
+        data.media_type = ContextMenuDataMediaType::kPlugin;
 
         WebPlugin* plugin = plugin_view->Plugin();
         data.link_url = plugin->LinkAtPosition(data.mouse_position);
@@ -325,25 +341,25 @@ bool ContextMenuController::ShowContextMenu(LocalFrame* frame,
         WebString text = plugin->SelectionAsText();
         if (!text.IsEmpty()) {
           data.selected_text = text;
-          data.edit_flags |= WebContextMenuData::kCanCopy;
+          data.edit_flags |= ContextMenuDataEditFlags::kCanCopy;
         }
         bool plugin_can_edit_text = plugin->CanEditText();
         if (plugin_can_edit_text) {
           data.is_editable = true;
-          if (!!(data.edit_flags & WebContextMenuData::kCanCopy))
-            data.edit_flags |= WebContextMenuData::kCanCut;
-          data.edit_flags |= WebContextMenuData::kCanPaste;
+          if (!!(data.edit_flags & ContextMenuDataEditFlags::kCanCopy))
+            data.edit_flags |= ContextMenuDataEditFlags::kCanCut;
+          data.edit_flags |= ContextMenuDataEditFlags::kCanPaste;
 
           if (plugin->HasEditableText())
-            data.edit_flags |= WebContextMenuData::kCanSelectAll;
+            data.edit_flags |= ContextMenuDataEditFlags::kCanSelectAll;
 
           if (plugin->CanUndo())
-            data.edit_flags |= WebContextMenuData::kCanUndo;
+            data.edit_flags |= ContextMenuDataEditFlags::kCanUndo;
           if (plugin->CanRedo())
-            data.edit_flags |= WebContextMenuData::kCanRedo;
+            data.edit_flags |= ContextMenuDataEditFlags::kCanRedo;
         }
         // Disable translation for plugins.
-        data.edit_flags &= ~WebContextMenuData::kCanTranslate;
+        data.edit_flags &= ~ContextMenuDataEditFlags::kCanTranslate;
 
         // Figure out the media flags.
         data.media_flags |= WebContextMenuData::kMediaCanSave;

@@ -39,7 +39,7 @@ class ProcessDiceHeaderDelegate {
   // Asks the delegate to enable sync for the |account_id|.
   // Called after the account was seeded in the account tracker service and
   // after the refresh token was fetched and updated in the token service.
-  virtual void EnableSync(const std::string& account_id) = 0;
+  virtual void EnableSync(const CoreAccountId& account_id) = 0;
 
   // Handles a failure in the token exchange (i.e. shows the error to the user).
   virtual void HandleTokenExchangeFailure(
@@ -58,7 +58,6 @@ class DiceResponseHandler : public KeyedService {
                       signin::IdentityManager* identity_manager,
                       AccountReconcilor* account_reconcilor,
                       AboutSigninInternals* about_signin_internals,
-                      signin::AccountConsistencyMethod account_consistency,
                       const base::FilePath& profile_path_);
   ~DiceResponseHandler() override;
 
@@ -120,11 +119,6 @@ class DiceResponseHandler : public KeyedService {
   // Deletes the token fetcher.
   void DeleteTokenFetcher(DiceTokenFetcher* token_fetcher);
 
-  // Returns true if it is acceptable to get a new token for the account.
-  // Always returns true when using kDice.
-  bool CanGetTokenForAccount(const std::string& gaia_id,
-                             const std::string& email);
-
   // Process the Dice signin action.
   void ProcessDiceSigninHeader(
       const std::string& gaia_id,
@@ -155,7 +149,6 @@ class DiceResponseHandler : public KeyedService {
   signin::IdentityManager* identity_manager_;
   AccountReconcilor* account_reconcilor_;
   AboutSigninInternals* about_signin_internals_;
-  signin::AccountConsistencyMethod account_consistency_;
   base::FilePath profile_path_;
   std::vector<std::unique_ptr<DiceTokenFetcher>> token_fetchers_;
 

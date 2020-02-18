@@ -8,13 +8,11 @@
 #include <memory>
 #include <string>
 
-#include "ash/public/mojom/assistant_controller.mojom.h"
 #include "base/component_export.h"
 #include "base/macros.h"
-#include "base/timer/timer.h"
+#include "base/observer_list.h"
 #include "chromeos/services/assistant/assistant_manager_service.h"
 #include "chromeos/services/assistant/fake_assistant_settings_manager_impl.h"
-#include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 
 namespace chromeos {
 namespace assistant {
@@ -31,8 +29,7 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) FakeAssistantManagerServiceImpl
 
   // assistant::AssistantManagerService overrides
   void Start(const base::Optional<std::string>& access_token,
-             bool enable_hotword,
-             base::OnceClosure callback) override;
+             bool enable_hotword) override;
   void Stop() override;
   void SetAccessToken(const std::string& access_token) override;
   void EnableListening(bool enable) override;
@@ -40,18 +37,28 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) FakeAssistantManagerServiceImpl
   void SetArcPlayStoreEnabled(bool enabled) override;
   State GetState() const override;
   AssistantSettingsManager* GetAssistantSettingsManager() override;
+  void AddCommunicationErrorObserver(
+      CommunicationErrorObserver* observer) override {}
+  void RemoveCommunicationErrorObserver(
+      const CommunicationErrorObserver* observer) override {}
+  void AddAndFireStateObserver(StateObserver* observer) override;
+  void RemoveStateObserver(const StateObserver* observer) override;
+  void SyncDeviceAppsStatus() override {}
 
   // mojom::Assistant overrides:
   void StartCachedScreenContextInteraction() override;
   void StartEditReminderInteraction(const std::string& client_id) override;
   void StartMetalayerInteraction(const gfx::Rect& region) override;
-  void StartTextInteraction(const std::string& query, bool allow_tts) override;
+  void StartTextInteraction(const std::string& query,
+                            mojom::AssistantQuerySource source,
+                            bool allow_tts) override;
   void StartVoiceInteraction() override;
   void StartWarmerWelcomeInteraction(int num_warmer_welcome_triggered,
                                      bool allow_tts) override;
   void StopActiveInteraction(bool cancel_conversation) override;
   void AddAssistantInteractionSubscriber(
-      mojom::AssistantInteractionSubscriberPtr subscriber) override;
+      mojo::PendingRemote<mojom::AssistantInteractionSubscriber> subscriber)
+      override;
   void RetrieveNotification(mojom::AssistantNotificationPtr notification,
                             int action_index) override;
   void DismissNotification(
@@ -63,10 +70,18 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) FakeAssistantManagerServiceImpl
   void StopAlarmTimerRinging() override;
   void CreateTimer(base::TimeDelta duration) override;
 
+  // Update the state to the corresponding value, and inform the
+  // |AssistantStateObserver| of the change.
+  void SetStateAndInformObservers(State new_state);
+
  private:
+  // Send out a |AssistantStateObserver::OnStateChange(state)| event if we are
+  // transitioning from a prior state to a later state.
+  void MaybeSendStateChange(State state, State old_state, State target_state);
+
   State state_ = State::STOPPED;
-  base::OnceClosure start_callback_;
   FakeAssistantSettingsManagerImpl assistant_settings_manager_;
+  base::ObserverList<StateObserver> state_observers_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeAssistantManagerServiceImpl);
 };

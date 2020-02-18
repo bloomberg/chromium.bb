@@ -16,7 +16,8 @@
 #include "chrome/browser/chromeos/wilco_dtc_supportd/wilco_dtc_supportd_notification_controller.h"
 #include "chrome/browser/chromeos/wilco_dtc_supportd/wilco_dtc_supportd_web_request_service.h"
 #include "chrome/services/wilco_dtc_supportd/public/mojom/wilco_dtc_supportd.mojom.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/buffer.h"
 
 namespace network {
@@ -39,12 +40,12 @@ class WilcoDtcSupportdBridge final
 
     // Creates a Mojo invitation that requests the remote implementation of the
     // WilcoDtcSupportdServiceFactory interface.
-    // Returns |wilco_dtc_supportd_service_factory_mojo_ptr| - interface pointer
+    // Returns |wilco_dtc_supportd_service_factory_mojo_remote| - remote
     // that points to the remote implementation of the interface,
     // |remote_endpoint_fd| - file descriptor of the remote endpoint to be sent.
     virtual void CreateWilcoDtcSupportdServiceFactoryMojoInvitation(
-        wilco_dtc_supportd::mojom::WilcoDtcSupportdServiceFactoryPtr*
-            wilco_dtc_supportd_service_factory_mojo_ptr,
+        mojo::Remote<wilco_dtc_supportd::mojom::WilcoDtcSupportdServiceFactory>*
+            wilco_dtc_supportd_service_factory_mojo_remote,
         base::ScopedFD* remote_endpoint_fd) = 0;
   };
 
@@ -77,8 +78,8 @@ class WilcoDtcSupportdBridge final
   // returned before the bootstrapping fully completes.
   wilco_dtc_supportd::mojom::WilcoDtcSupportdServiceProxy*
   wilco_dtc_supportd_service_mojo_proxy() {
-    return wilco_dtc_supportd_service_mojo_ptr_
-               ? wilco_dtc_supportd_service_mojo_ptr_.get()
+    return wilco_dtc_supportd_service_mojo_remote_
+               ? wilco_dtc_supportd_service_mojo_remote_.get()
                : nullptr;
   }
 
@@ -120,20 +121,19 @@ class WilcoDtcSupportdBridge final
 
   std::unique_ptr<Delegate> delegate_;
 
-  // Mojo binding that binds |this| as an implementation of the
+  // Mojo receiver that binds |this| as an implementation of the
   // WilcoDtcSupportdClient Mojo interface.
-  mojo::Binding<wilco_dtc_supportd::mojom::WilcoDtcSupportdClient>
-      mojo_self_binding_{this};
+  mojo::Receiver<wilco_dtc_supportd::mojom::WilcoDtcSupportdClient>
+      mojo_self_receiver_{this};
 
   // Current consecutive connection attempt number.
   int connection_attempt_ = 0;
 
-  // Interface pointers to the Mojo services exposed by the wilco_dtc_supportd
-  // daemon.
-  wilco_dtc_supportd::mojom::WilcoDtcSupportdServiceFactoryPtr
-      wilco_dtc_supportd_service_factory_mojo_ptr_;
-  wilco_dtc_supportd::mojom::WilcoDtcSupportdServicePtr
-      wilco_dtc_supportd_service_mojo_ptr_;
+  // Remotes to the Mojo services exposed by the wilco_dtc_supportd daemon.
+  mojo::Remote<wilco_dtc_supportd::mojom::WilcoDtcSupportdServiceFactory>
+      wilco_dtc_supportd_service_factory_mojo_remote_;
+  mojo::Remote<wilco_dtc_supportd::mojom::WilcoDtcSupportdService>
+      wilco_dtc_supportd_service_mojo_remote_;
 
   // The service to perform wilco_dtc_supportd's web requests.
   WilcoDtcSupportdWebRequestService web_request_service_;

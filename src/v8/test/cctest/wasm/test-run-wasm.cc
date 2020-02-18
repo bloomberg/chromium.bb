@@ -49,8 +49,8 @@ WASM_EXEC_TEST(Int32Const_many) {
 WASM_EXEC_TEST(GraphTrimming) {
   // This WebAssembly code requires graph trimming in the TurboFan compiler.
   WasmRunner<int32_t, int32_t> r(execution_tier);
-  BUILD(r, kExprGetLocal, 0, kExprGetLocal, 0, kExprGetLocal, 0, kExprI32RemS,
-        kExprI32Eq, kExprGetLocal, 0, kExprI32DivS, kExprUnreachable);
+  BUILD(r, kExprLocalGet, 0, kExprLocalGet, 0, kExprLocalGet, 0, kExprI32RemS,
+        kExprI32Eq, kExprLocalGet, 0, kExprI32DivS, kExprUnreachable);
   r.Call(1);
 }
 
@@ -1810,18 +1810,18 @@ WASM_EXEC_TEST(CheckMachIntsZero) {
 
   BUILD(r,                               // --
         /**/ kExprLoop, kLocalVoid,      // --
-        /*  */ kExprGetLocal, 0,         // --
+        /*  */ kExprLocalGet, 0,         // --
         /*  */ kExprIf, kLocalVoid,      // --
-        /*    */ kExprGetLocal, 0,       // --
+        /*    */ kExprLocalGet, 0,       // --
         /*    */ kExprI32LoadMem, 0, 0,  // --
         /*    */ kExprIf, kLocalVoid,    // --
         /*      */ kExprI32Const, 127,   // --
         /*      */ kExprReturn,          // --
         /*    */ kExprEnd,               // --
-        /*    */ kExprGetLocal, 0,       // --
+        /*    */ kExprLocalGet, 0,       // --
         /*    */ kExprI32Const, 4,       // --
         /*    */ kExprI32Sub,            // --
-        /*    */ kExprTeeLocal, 0,       // --
+        /*    */ kExprLocalTee, 0,       // --
         /*    */ kExprBr, DEPTH_0,       // --
         /*  */ kExprEnd,                 // --
         /**/ kExprEnd,                   // --
@@ -2012,16 +2012,16 @@ static void TestBuildGraphForSimpleExpression(WasmOpcode opcode) {
   FunctionSig* sig = WasmOpcodes::Signature(opcode);
 
   if (sig->parameter_count() == 1) {
-    byte code[] = {WASM_NO_LOCALS, kExprGetLocal, 0, static_cast<byte>(opcode),
+    byte code[] = {WASM_NO_LOCALS, kExprLocalGet, 0, static_cast<byte>(opcode),
                    WASM_END};
     TestBuildingGraph(&zone, &jsgraph, nullptr, sig, nullptr, code,
                       code + arraysize(code));
   } else {
     CHECK_EQ(2, sig->parameter_count());
     byte code[] = {WASM_NO_LOCALS,
-                   kExprGetLocal,
+                   kExprLocalGet,
                    0,
-                   kExprGetLocal,
+                   kExprLocalGet,
                    1,
                    static_cast<byte>(opcode),
                    WASM_END};
@@ -2508,13 +2508,12 @@ WASM_EXEC_TEST(ReturnCall_IndirectFactorial) {
                                   WASM_I32V(1), WASM_I32V(f_ind_index)));
 
   BUILD(f_ind_fn,
-        WASM_IF_ELSE_I(WASM_I32_LES(WASM_GET_LOCAL(0), WASM_I32V(1)),
-                       WASM_GET_LOCAL(1),
-                       WASM_RETURN_CALL_INDIRECT(
-                           sig_index, WASM_GET_LOCAL(2),
-                           WASM_I32_SUB(WASM_GET_LOCAL(0), WASM_I32V(1)),
-                           WASM_I32_MUL(WASM_GET_LOCAL(0), WASM_GET_LOCAL(1)),
-                           WASM_GET_LOCAL(2))));
+        WASM_IF_ELSE_I(
+            WASM_I32_LES(WASM_GET_LOCAL(0), WASM_I32V(1)), WASM_GET_LOCAL(1),
+            WASM_RETURN_CALL_INDIRECT(
+                sig_index, WASM_I32_SUB(WASM_GET_LOCAL(0), WASM_I32V(1)),
+                WASM_I32_MUL(WASM_GET_LOCAL(0), WASM_GET_LOCAL(1)),
+                WASM_GET_LOCAL(2), WASM_GET_LOCAL(2))));
 
   uint32_t test_values[] = {1, 2, 5, 10, 10000};
 
@@ -2667,7 +2666,7 @@ static void Run_WasmMixedCall_N(ExecutionTier execution_tier, int start) {
 
     // Store the result in a local.
     byte local_index = r.AllocateLocal(ValueTypes::ValueTypeFor(result));
-    ADD_CODE(code, kExprSetLocal, local_index);
+    ADD_CODE(code, kExprLocalSet, local_index);
 
     // Store the result in memory.
     ADD_CODE(code,
@@ -2761,10 +2760,11 @@ void RunMultiReturnSelect(ExecutionTier execution_tier, const T* inputs) {
                                       WASM_GET_LOCAL(3)),
                 WASM_DROP);
         } else {
-          BUILD(r, WASM_CALL_FUNCTION(r1.function_index(), WASM_GET_LOCAL(0),
-                                      WASM_GET_LOCAL(1), WASM_GET_LOCAL(2),
-                                      WASM_GET_LOCAL(3)),
-                kExprSetLocal, 0, WASM_DROP, WASM_GET_LOCAL(0));
+          BUILD(r,
+                WASM_CALL_FUNCTION(r1.function_index(), WASM_GET_LOCAL(0),
+                                   WASM_GET_LOCAL(1), WASM_GET_LOCAL(2),
+                                   WASM_GET_LOCAL(3)),
+                kExprLocalSet, 0, WASM_DROP, WASM_GET_LOCAL(0));
         }
 
         T expected = inputs[k == 0 ? i : j];
@@ -2943,8 +2943,8 @@ WASM_EXEC_TEST(SimpleCallIndirect) {
                                        arraysize(indirect_function_table));
 
   // Build the caller function.
-  BUILD(r, WASM_CALL_INDIRECT2(1, WASM_GET_LOCAL(0), WASM_I32V_2(66),
-                               WASM_I32V_1(22)));
+  BUILD(r, WASM_CALL_INDIRECT(1, WASM_I32V_2(66), WASM_I32V_1(22),
+                              WASM_GET_LOCAL(0)));
 
   CHECK_EQ(88, r.Call(0));
   CHECK_EQ(44, r.Call(1));
@@ -2976,11 +2976,11 @@ WASM_EXEC_TEST(MultipleCallIndirect) {
                                        arraysize(indirect_function_table));
 
   // Build the caller function.
-  BUILD(r, WASM_I32_ADD(
-               WASM_CALL_INDIRECT2(1, WASM_GET_LOCAL(0), WASM_GET_LOCAL(1),
-                                   WASM_GET_LOCAL(2)),
-               WASM_CALL_INDIRECT2(1, WASM_GET_LOCAL(1), WASM_GET_LOCAL(2),
-                                   WASM_GET_LOCAL(0))));
+  BUILD(r,
+        WASM_I32_ADD(WASM_CALL_INDIRECT(1, WASM_GET_LOCAL(1), WASM_GET_LOCAL(2),
+                                        WASM_GET_LOCAL(0)),
+                     WASM_CALL_INDIRECT(1, WASM_GET_LOCAL(2), WASM_GET_LOCAL(0),
+                                        WASM_GET_LOCAL(1))));
 
   CHECK_EQ(5, r.Call(0, 1, 2));
   CHECK_EQ(19, r.Call(0, 1, 9));
@@ -3008,8 +3008,8 @@ WASM_EXEC_TEST(CallIndirect_EmptyTable) {
   r.builder().AddIndirectFunctionTable(nullptr, 0);
 
   // Build the caller function.
-  BUILD(r, WASM_CALL_INDIRECT2(1, WASM_GET_LOCAL(0), WASM_I32V_2(66),
-                               WASM_I32V_1(22)));
+  BUILD(r, WASM_CALL_INDIRECT(1, WASM_I32V_2(66), WASM_I32V_1(22),
+                              WASM_GET_LOCAL(0)));
 
   CHECK_TRAP(r.Call(0));
   CHECK_TRAP(r.Call(1));
@@ -3047,8 +3047,8 @@ WASM_EXEC_TEST(CallIndirect_canonical) {
                                        arraysize(indirect_function_table));
 
   // Build the caller function.
-  BUILD(r, WASM_CALL_INDIRECT2(1, WASM_GET_LOCAL(0), WASM_I32V_2(77),
-                               WASM_I32V_1(11)));
+  BUILD(r, WASM_CALL_INDIRECT(1, WASM_I32V_2(77), WASM_I32V_1(11),
+                              WASM_GET_LOCAL(0)));
 
   CHECK_EQ(88, r.Call(0));
   CHECK_EQ(66, r.Call(1));
@@ -3330,7 +3330,7 @@ static void CompileCallIndirectMany(ExecutionTier tier, ValueType param) {
 
     std::vector<byte> code;
     for (byte p = 0; p < num_params; ++p) {
-      ADD_CODE(code, kExprGetLocal, p);
+      ADD_CODE(code, kExprLocalGet, p);
     }
     ADD_CODE(code, kExprI32Const, 0);
     ADD_CODE(code, kExprCallIndirect, 1, TABLE_ZERO);

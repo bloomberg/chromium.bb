@@ -10,6 +10,7 @@
 #include "ash/shell.h"
 #include "ash/wallpaper/wallpaper_controller_impl.h"
 #include "ash/wallpaper/wallpaper_widget_controller.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "cc/paint/render_surface_filters.h"
 #include "ui/aura/window.h"
 #include "ui/display/display.h"
@@ -33,7 +34,14 @@ namespace {
 // in the compositor.
 class LayerControlView : public views::View {
  public:
-  explicit LayerControlView(views::View* view) {
+  LayerControlView(views::View* view, bool needs_shield) {
+    if (needs_shield) {
+      auto* shield = new views::View();
+      AddChildView(shield);
+      shield->SetPaintToLayer(ui::LAYER_SOLID_COLOR);
+      shield->layer()->SetColor(SK_ColorBLACK);
+      shield->layer()->set_name("WallpaperViewShield");
+    }
     AddChildView(view);
     view->SetPaintToLayer();
   }
@@ -50,14 +58,15 @@ class LayerControlView : public views::View {
     display::ManagedDisplayInfo info =
         Shell::Get()->display_manager()->GetDisplayInfo(display.id());
 
-    DCHECK_EQ(1u, children().size());
-    views::View* child = children().front();
-    child->SetBounds(0, 0, display.size().width(), display.size().height());
-    gfx::Transform transform;
-    // Apply RTL transform explicitly becacuse Views layer code
-    // doesn't handle RTL.  crbug.com/458753.
-    transform.Translate(-child->GetMirroredX(), 0);
-    child->SetTransform(transform);
+    for (auto* child : children()) {
+      // views::View* child = children().front();
+      child->SetBounds(0, 0, display.size().width(), display.size().height());
+      gfx::Transform transform;
+      // Apply RTL transform explicitly becacuse Views layer code
+      // doesn't handle RTL.  crbug.com/458753.
+      transform.Translate(-child->GetMirroredX(), 0);
+      child->SetTransform(transform);
+    }
   }
 
  private:
@@ -128,17 +137,40 @@ void WallpaperView::DrawWallpaper(const gfx::ImageSkia& wallpaper,
                          /*filter=*/true, flags);
     return;
   }
+  bool will_not_fill = width() > dst.width() || height() > dst.height();
+  // When not filling the view, we paint the small_image_ directly to the
+  // canvas.
+  float blur = will_not_fill ? repaint_blur_ : repaint_blur_ * quality;
 
-  float blur = repaint_blur_ * quality;
   // Create the blur and brightness filter to apply to the downsampled image.
-  cc::PaintFlags filter_flags;
   cc::FilterOperations operations;
-  operations.Append(
-      cc::FilterOperation::CreateBrightnessFilter(repaint_opacity_));
+  // In tablet mode, the wallpaper already has a color filter applied in
+  // |OnPaint| so we don't need to darken here.
+  // TODO(crbug.com/944152): Merge this with the color filter in
+  // WallpaperBaseView.
+  if (!Shell::Get()->tablet_mode_controller()->InTabletMode()) {
+    operations.Append(
+        cc::FilterOperation::CreateBrightnessFilter(repaint_opacity_));
+  }
+
   operations.Append(cc::FilterOperation::CreateBlurFilter(
       blur, SkBlurImageFilter::kClamp_TileMode));
   sk_sp<cc::PaintFilter> filter = cc::RenderSurfaceFilters::BuildImageFilter(
       operations, gfx::SizeF(dst.size()), gfx::Vector2dF());
+
+  // If the wallpaper can't fill the desktop, paint it directly to the
+  // canvas so that it can blend the image with the rest of background
+  // correctly.
+  if (blur > 0 && will_not_fill) {
+    cc::PaintFlags filter_flags(flags);
+    filter_flags.setImageFilter(filter);
+    canvas->DrawImageInt(*small_image_, 0, 0, small_image_->width(),
+                         small_image_->height(), dst.x(), dst.y(), dst.width(),
+                         dst.height(),
+                         /*filter=*/true, filter_flags);
+    return;
+  }
+  cc::PaintFlags filter_flags;
   filter_flags.setImageFilter(filter);
 
   gfx::Canvas filtered_canvas(small_image_->size(),
@@ -172,14 +204,17 @@ views::Widget* CreateWallpaperWidget(aura::Window* root_window,
   views::Widget* wallpaper_widget = new views::Widget;
   views::Widget::InitParams params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
-  params.name = "WallpaperView";
+  params.name = "WallpaperViewWidget";
+  params.layer_type = ui::LAYER_NOT_DRAWN;
   if (controller->GetWallpaper().isNull())
-    params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
+    params.opacity = views::Widget::InitParams::WindowOpacity::kTranslucent;
   params.parent = root_window->GetChildById(container_id);
   wallpaper_widget->Init(std::move(params));
   // Owned by views.
   WallpaperView* wallpaper_view = new WallpaperView(blur, opacity);
-  wallpaper_widget->SetContentsView(new LayerControlView(wallpaper_view));
+  wallpaper_widget->SetContentsView(new LayerControlView(
+      wallpaper_view,
+      Shell::Get()->session_controller()->IsUserSessionBlocked()));
   *out_wallpaper_view = wallpaper_view;
   int animation_type =
       controller->ShouldShowInitialAnimation()

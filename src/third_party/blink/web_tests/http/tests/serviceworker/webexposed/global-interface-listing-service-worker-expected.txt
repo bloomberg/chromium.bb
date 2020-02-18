@@ -74,8 +74,10 @@ interface BroadcastChannel : EventTarget
     setter onmessage
     setter onmessageerror
 interface ByteLengthQueuingStrategy
+    attribute @@toStringTag
+    getter highWaterMark
+    getter size
     method constructor
-    method size
 interface CSSSkewX : CSSTransformComponent
     attribute @@toStringTag
     getter ax
@@ -142,12 +144,17 @@ interface CloseEvent : Event
     getter reason
     getter wasClean
     method constructor
+interface CompressionStream
+    attribute @@toStringTag
+    getter readable
+    getter writable
+    method constructor
 interface ContentIndex
     attribute @@toStringTag
     method add
     method constructor
     method delete
-    method getDescriptions
+    method getAll
 interface ContentIndexEvent : ExtendableEvent
     attribute @@toStringTag
     getter id
@@ -158,12 +165,18 @@ interface CookieStore : EventTarget
     method delete
     method get
     method getAll
-    method getChangeSubscriptions
     method set
-    method subscribeToChanges
-interface CountQueuingStrategy
+interface CookieStoreManager
+    attribute @@toStringTag
     method constructor
-    method size
+    method getSubscriptions
+    method subscribe
+    method unsubscribe
+interface CountQueuingStrategy
+    attribute @@toStringTag
+    getter highWaterMark
+    getter size
+    method constructor
 interface Crypto
     attribute @@toStringTag
     getter subtle
@@ -380,6 +393,11 @@ interface DOMStringList
     method constructor
     method contains
     method item
+interface DecompressionStream
+    attribute @@toStringTag
+    getter readable
+    getter writable
+    method constructor
 interface DetectedBarcode
     attribute @@toStringTag
     getter boundingBox
@@ -483,6 +501,7 @@ interface FetchEvent : ExtendableEvent
     getter preloadResponse
     getter request
     getter resultingClientId
+    method addPerformanceEntry
     method constructor
     method respondWith
 interface File : Blob
@@ -732,6 +751,7 @@ interface IDBRequest : EventTarget
 interface IDBTransaction : EventTarget
     attribute @@toStringTag
     getter db
+    getter durability
     getter error
     getter mode
     getter objectStoreNames
@@ -819,8 +839,6 @@ interface Mojo
     static method createDataPipe
     static method createMessagePipe
     static method createSharedBuffer
-    static method getDocumentInterfaceBrokerHandle
-    static method replaceDocumentInterfaceBrokerForTesting
     attribute @@toStringTag
     attribute RESULT_ABORTED
     attribute RESULT_ALREADY_EXISTS
@@ -977,6 +995,7 @@ interface OffscreenCanvasRenderingContext2D
     method fillText
     method getImageData
     method getLineDash
+    method getTransform
     method isPointInPath
     method isPointInStroke
     method lineTo
@@ -1044,11 +1063,15 @@ interface PaymentRequestEvent : ExtendableEvent
     getter instrumentKey
     getter methodData
     getter modifiers
+    getter paymentOptions
     getter paymentRequestId
     getter paymentRequestOrigin
+    getter shippingOptions
     getter topOrigin
     getter total
     method changePaymentMethod
+    method changeShippingAddress
+    method changeShippingOption
     method constructor
     method openWindow
     method respondWith
@@ -1065,6 +1088,7 @@ interface Performance : EventTarget
     method getEntriesByType
     method mark
     method measure
+    method measureMemory
     method now
     method profile
     method setResourceTimingBufferSize
@@ -1119,6 +1143,7 @@ interface PerformanceResourceTiming : PerformanceEntry
     getter serverTiming
     getter transferSize
     getter workerStart
+    getter workerTiming
     method constructor
     method toJSON
 interface PerformanceServerTiming
@@ -1199,6 +1224,10 @@ interface PushSubscriptionOptions
     getter applicationServerKey
     getter userVisibleOnly
     method constructor
+interface QuicTransport
+    attribute @@toStringTag
+    method close
+    method constructor
 interface ReadableStream
     attribute @@toStringTag
     getter locked
@@ -1262,7 +1291,7 @@ interface Response
 interface ScreenManager
     attribute @@toStringTag
     method constructor
-    method requestDisplays
+    method getScreens
 interface SecurityPolicyViolationEvent : Event
     attribute @@toStringTag
     getter blockedURI
@@ -1295,6 +1324,7 @@ interface ServiceWorkerRegistration : EventTarget
     attribute @@toStringTag
     getter active
     getter backgroundFetch
+    getter cookies
     getter index
     getter installing
     getter navigationPreload
@@ -2176,9 +2206,11 @@ interface WebGL2ComputeRenderingContext
     method dispatchCompute
     method dispatchComputeIndirect
     method drawArrays
+    method drawArraysIndirect
     method drawArraysInstanced
     method drawBuffers
     method drawElements
+    method drawElementsIndirect
     method drawElementsInstanced
     method drawRangeElements
     method enable
@@ -3673,7 +3705,6 @@ interface WorkerGlobalScope : EventTarget
     getter self
     method atob
     method btoa
-    method cancelAnimationFrame
     method clearInterval
     method clearTimeout
     method constructor
@@ -3681,7 +3712,6 @@ interface WorkerGlobalScope : EventTarget
     method fetch
     method importScripts
     method queueMicrotask
-    method requestAnimationFrame
     method setInterval
     method setTimeout
     setter onerror
@@ -3724,6 +3754,7 @@ interface WorkerNavigator
     getter storage
     getter usb
     getter userAgent
+    getter wakeLock
     method constructor
 interface WritableStream
     attribute @@toStringTag
@@ -3745,7 +3776,6 @@ interface WritableStreamDefaultWriter
     attribute console
     attribute globalThis
     attribute internals
-    getter TrustedTypesWorkers
     getter clients
     getter cookieStore
     getter onabortpayment
@@ -3768,6 +3798,8 @@ interface WritableStreamDefaultWriter
     getter onpushsubscriptionchange
     getter onsync
     getter registration
+    getter serviceWorker
+    getter trustedTypes
     method gc
     method skipWaiting
     setter cookieStore

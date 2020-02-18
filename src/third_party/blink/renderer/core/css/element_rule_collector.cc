@@ -133,6 +133,7 @@ void ElementRuleCollector::CollectMatchingRulesForList(
       &context_.GetElement(), SelectorChecker::kVisitedMatchEnabled);
   context.scope = match_request.scope;
   context.pseudo_id = pseudo_style_request_.pseudo_id;
+  context.is_from_vtt = match_request.is_from_vtt;
 
   unsigned rejected = 0;
   unsigned fast_rejected = 0;
@@ -350,7 +351,8 @@ void ElementRuleCollector::DidMatchRule(
          dynamic_pseudo == kPseudoIdAfter) &&
         !rule_data->Rule()->Properties().HasProperty(CSSPropertyID::kContent))
       return;
-    style_->SetHasPseudoStyle(dynamic_pseudo);
+    if (!rule_data->Rule()->Properties().IsEmpty())
+      style_->SetHasPseudoElementStyle(dynamic_pseudo);
   } else {
     matched_rules_.push_back(MatchedRule(
         rule_data, result.specificity, cascade_order,

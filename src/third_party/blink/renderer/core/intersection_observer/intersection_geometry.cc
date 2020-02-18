@@ -157,27 +157,6 @@ LayoutObject* GetTargetLayoutObject(const Element& target_element) {
   return target;
 }
 
-// If root_element is non-null, it is treated as the explicit root of an
-// IntersectionObserver; if it is valid, its LayoutObject is returned.
-// If root_element is null, returns the object to be used as the implicit root
-// for a given target.
-//
-//   https://w3c.github.io/IntersectionObserver/#dom-intersectionobserver-root
-LayoutObject* GetRootLayoutObjectForTarget(const Element* root_element,
-                                           LayoutObject* target) {
-  if (!target)
-    return nullptr;
-  if (root_element && !root_element->isConnected())
-    return nullptr;
-  LayoutObject* root =
-      root_element ? root_element->GetLayoutObject() : LocalRootView(*target);
-  if (!root)
-    return nullptr;
-  if (root_element && !IsContainingBlockChainDescendant(target, root))
-    return nullptr;
-  return root;
-}
-
 static const unsigned kConstructorFlagsMask =
     IntersectionGeometry::kShouldReportRootBounds |
     IntersectionGeometry::kShouldComputeVisibility |
@@ -199,6 +178,34 @@ IntersectionGeometry::RootGeometry::RootGeometry(const LayoutObject* root,
   root_to_document_transform = transform_state.AccumulatedTransform();
 }
 
+// If root_element is non-null, it is treated as the explicit root of an
+// IntersectionObserver; if it is valid, its LayoutObject is returned.
+//
+// If root_element is null, returns the object to be used as the implicit root
+// for a given target.
+//
+//   https://w3c.github.io/IntersectionObserver/#dom-intersectionobserver-root
+const LayoutObject* IntersectionGeometry::GetRootLayoutObjectForTarget(
+    const Element* root_element,
+    LayoutObject* target) {
+  if (!root_element)
+    return target ? LocalRootView(*target) : nullptr;
+  if (!root_element->isConnected())
+    return nullptr;
+
+  LayoutObject* root = nullptr;
+  if (RuntimeEnabledFeatures::
+          IntersectionObserverDocumentScrollingElementRootEnabled() &&
+      root_element == root_element->GetDocument().scrollingElement()) {
+    root = root_element->GetDocument().GetLayoutView();
+  } else {
+    root = root_element->GetLayoutObject();
+    if (target && !IsContainingBlockChainDescendant(target, root))
+      root = nullptr;
+  }
+  return root;
+}
+
 IntersectionGeometry::IntersectionGeometry(const Element* root_element,
                                            const Element& target_element,
                                            const Vector<Length>& root_margin,
@@ -210,8 +217,10 @@ IntersectionGeometry::IntersectionGeometry(const Element* root_element,
   if (!root_element)
     flags_ |= kRootIsImplicit;
   LayoutObject* target = GetTargetLayoutObject(target_element);
-  LayoutObject* root = GetRootLayoutObjectForTarget(root_element, target);
-  if (!root || !target)
+  if (!target)
+    return;
+  const LayoutObject* root = GetRootLayoutObjectForTarget(root_element, target);
+  if (!root)
     return;
   RootGeometry root_geometry(root, root_margin);
   ComputeGeometry(root_geometry, root, target, thresholds);
@@ -226,8 +235,11 @@ IntersectionGeometry::IntersectionGeometry(const RootGeometry& root_geometry,
       intersection_ratio_(0),
       threshold_index_(0) {
   LayoutObject* target = GetTargetLayoutObject(target_element);
-  LayoutObject* root = explicit_root.GetLayoutObject();
-  if (!IsContainingBlockChainDescendant(target, root))
+  if (!target)
+    return;
+  const LayoutObject* root =
+      GetRootLayoutObjectForTarget(&explicit_root, target);
+  if (!root)
     return;
   ComputeGeometry(root_geometry, root, target, thresholds);
 }
@@ -258,7 +270,8 @@ void IntersectionGeometry::ComputeGeometry(const RootGeometry& root_geometry,
       // map it down the to absolute coordinates for the target's document.
       intersection_rect_ =
           target->GetDocument().GetLayoutView()->AbsoluteToLocalRect(
-              intersection_rect_, kTraverseDocumentBoundaries);
+              intersection_rect_,
+              kTraverseDocumentBoundaries | kApplyRemoteRootFrameOffset);
     } else {
       // intersection_rect_ is in root's coordinate system; map it up to
       // absolute coordinates for target's containing document (which is the
@@ -348,12 +361,21 @@ bool IntersectionGeometry::ClipToRoot(const LayoutObject* root,
   }
   bool does_intersect = target->MapToVisualRectInAncestorSpace(
       local_ancestor, intersection_rect, static_cast<VisualRectFlags>(flags));
+
+  // Note that this early-return for (!local_ancestor) skips clipping to the
+  // root_rect. That's ok because the only scenario where local_ancestor is
+  // null is an implicit root and running inside an OOPIF, in which case there
+  // can't be any root margin applied to root_rect (root margin is disallowed
+  // for implicit-root cross-origin observation). So the default behavior of
+  // MapToVisualRectInAncestorSpace will have already done the right thing WRT
+  // clipping to the implicit root.
   if (!does_intersect || !local_ancestor)
     return does_intersect;
+
   if (local_ancestor->HasOverflowClip()) {
     intersection_rect.Move(
         -PhysicalOffset(LayoutPoint(local_ancestor->ScrollOrigin()) +
-                        local_ancestor->ScrolledContentOffset()));
+                        local_ancestor->PixelSnappedScrolledContentOffset()));
   }
   LayoutRect root_clip_rect = root_rect.ToLayoutRect();
   // TODO(szager): This flipping seems incorrect because root_rect is already

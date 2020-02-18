@@ -14,6 +14,7 @@ import pwd
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
+from chromite.lib import image_lib
 from chromite.lib import osutils
 from chromite.scripts import cros_oobe_autoconfig
 
@@ -43,14 +44,22 @@ _STATEFUL_OFFSET = 120 * _SECTOR_SIZE
 class SanitizeDomainTests(cros_test_lib.TestCase):
   """Tests for SanitizeDomain()"""
 
-  def testFullASCII(self):
+  def testASCII(self):
     """Tests that ASCII-only domains are not mangled."""
     self.assertEqual(cros_oobe_autoconfig.SanitizeDomain('FoO.cOm'), 'foo.com')
 
-  def testUnicode(self):
+  def testUnicodeCase(self):
+    """Tests that ASCII-only domains are not mangled."""
+    self.assertEqual(cros_oobe_autoconfig.SanitizeDomain(u'föo.com'),
+                     'xn--fo-fka.com')
+    self.assertEqual(cros_oobe_autoconfig.SanitizeDomain(u'fÖo.com'),
+                     'xn--fo-fka.com')
+
+  def testHomographs(self):
     """Tests that a Unicode domain is punycoded."""
+    # "tеѕt.com" looks like "test.com" but isn't!
     self.assertEqual(cros_oobe_autoconfig.SanitizeDomain(
-        't\xd0\xb5\xd1\x95t.com'), 'xn--tt-nlc2k.com')
+        u't\u0435\u0455t.com'), 'xn--tt-nlc2k.com')
 
 
 class PrepareImageTests(cros_test_lib.MockTempDirTestCase):
@@ -70,6 +79,7 @@ class PrepareImageTests(cros_test_lib.MockTempDirTestCase):
         ['/sbin/mkfs.ext4', state],
         # Create the GPT headers and entry for the stateful partition.
         ['cgpt', 'create', self.image],
+        ['cgpt', 'boot', '-p', self.image],
         ['cgpt', 'add', self.image, '-t', 'data',
          '-l', str(constants.CROS_PART_STATEFUL),
          '-b', str(_STATEFUL_OFFSET // _SECTOR_SIZE),
@@ -77,9 +87,10 @@ class PrepareImageTests(cros_test_lib.MockTempDirTestCase):
         # Copy the stateful partition into the GPT image.
         ['dd', 'if=%s' % state, 'of=%s' % self.image, 'conv=notrunc', 'bs=4K',
          'seek=%d' % (_STATEFUL_OFFSET // _BLOCK_SIZE),
-         'count=%s' % (_STATEFUL_SIZE // _BLOCK_SIZE)])
+         'count=%s' % (_STATEFUL_SIZE // _BLOCK_SIZE)],
+        ['sync'])
     for cmd in commands:
-      cros_build_lib.RunCommand(cmd, quiet=True)
+      cros_build_lib.run(cmd, quiet=True)
 
     # Run the preparation script on the image.
     cros_oobe_autoconfig.main([self.image] + list(_TEST_CLI_PARAMETERS)[1:])
@@ -87,8 +98,7 @@ class PrepareImageTests(cros_test_lib.MockTempDirTestCase):
     # Mount the image's stateful partition for inspection.
     self.mount_tmp = os.path.join(self.tempdir, 'mount')
     osutils.SafeMakedirs(self.mount_tmp)
-    self.mount_ctx = osutils.MountImageContext(self.image, self.mount_tmp,
-                                               (1,), ('rw',))
+    self.mount_ctx = image_lib.LoopbackPartitions(self.image, self.mount_tmp)
     self.mount = os.path.join(self.mount_tmp,
                               'dir-%s' % constants.CROS_PART_STATEFUL)
 
@@ -101,20 +111,30 @@ class PrepareImageTests(cros_test_lib.MockTempDirTestCase):
   def testChronosOwned(self):
     """Test that the OOBE autoconfig directory is owned by chronos."""
     with self.mount_ctx:
+      # TODO(mikenichols): Remove unneeded mount call once context
+      # handling is in place, http://crrev/c/1795578
+      _ = self.mount_ctx.Mount((constants.CROS_PART_STATEFUL,))[0]
       chronos_uid = pwd.getpwnam('chronos').pw_uid
       self.assertExists(self.oobe_autoconf_path)
       self.assertEqual(os.stat(self.config_path).st_uid, chronos_uid)
 
   def testConfigContents(self):
     """Test that the config JSON matches the correct data."""
-    with self.mount_ctx, open(self.config_path) as conf:
-      data = json.load(conf)
+    with self.mount_ctx:
+      # TODO(mikenichols): Remove unneeded mount call once context
+      # handling is in place, http://crrev/c/1795578
+      _ = self.mount_ctx.Mount((constants.CROS_PART_STATEFUL,))[0]
+      with open(self.config_path) as fp:
+        data = json.load(fp)
       self.assertEqual(data, _TEST_CONFIG_JSON)
 
   def testDomainContents(self):
     """Test that the domain file matches the correct data."""
-    with self.mount_ctx, open(self.domain_path) as domain:
-      self.assertEqual(domain.read(), _TEST_DOMAIN)
+    with self.mount_ctx:
+      # TODO(mikenichols): Remove unneeded mount call once context
+      # handling is in place, http://crrev/c/1795578
+      _ = self.mount_ctx.Mount((constants.CROS_PART_STATEFUL,))[0]
+      self.assertEqual(osutils.ReadFile(self.domain_path), _TEST_DOMAIN)
 
 
 class GetConfigContentTests(cros_test_lib.MockTestCase):

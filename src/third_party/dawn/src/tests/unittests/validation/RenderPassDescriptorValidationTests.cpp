@@ -16,40 +16,40 @@
 
 #include "common/Constants.h"
 
-#include "utils/DawnHelpers.h"
+#include "utils/WGPUHelpers.h"
 
 namespace {
 
 class RenderPassDescriptorValidationTest : public ValidationTest {
   public:
-    void AssertBeginRenderPassSuccess(const dawn::RenderPassDescriptor* descriptor) {
-        dawn::CommandEncoder commandEncoder = TestBeginRenderPass(descriptor);
+    void AssertBeginRenderPassSuccess(const wgpu::RenderPassDescriptor* descriptor) {
+        wgpu::CommandEncoder commandEncoder = TestBeginRenderPass(descriptor);
         commandEncoder.Finish();
     }
-    void AssertBeginRenderPassError(const dawn::RenderPassDescriptor* descriptor) {
-        dawn::CommandEncoder commandEncoder = TestBeginRenderPass(descriptor);
+    void AssertBeginRenderPassError(const wgpu::RenderPassDescriptor* descriptor) {
+        wgpu::CommandEncoder commandEncoder = TestBeginRenderPass(descriptor);
         ASSERT_DEVICE_ERROR(commandEncoder.Finish());
     }
 
   private:
-    dawn::CommandEncoder TestBeginRenderPass(const dawn::RenderPassDescriptor* descriptor) {
-        dawn::CommandEncoder commandEncoder = device.CreateCommandEncoder();
-        dawn::RenderPassEncoder renderPassEncoder = commandEncoder.BeginRenderPass(descriptor);
+    wgpu::CommandEncoder TestBeginRenderPass(const wgpu::RenderPassDescriptor* descriptor) {
+        wgpu::CommandEncoder commandEncoder = device.CreateCommandEncoder();
+        wgpu::RenderPassEncoder renderPassEncoder = commandEncoder.BeginRenderPass(descriptor);
         renderPassEncoder.EndPass();
         return commandEncoder;
     }
 };
 
-dawn::Texture CreateTexture(dawn::Device& device,
-                            dawn::TextureDimension dimension,
-                            dawn::TextureFormat format,
+wgpu::Texture CreateTexture(wgpu::Device& device,
+                            wgpu::TextureDimension dimension,
+                            wgpu::TextureFormat format,
                             uint32_t width,
                             uint32_t height,
                             uint32_t arrayLayerCount,
                             uint32_t mipLevelCount,
                             uint32_t sampleCount = 1,
-                            dawn::TextureUsage usage = dawn::TextureUsage::OutputAttachment) {
-    dawn::TextureDescriptor descriptor;
+                            wgpu::TextureUsage usage = wgpu::TextureUsage::OutputAttachment) {
+    wgpu::TextureDescriptor descriptor;
     descriptor.dimension = dimension;
     descriptor.size.width = width;
     descriptor.size.height = height;
@@ -63,12 +63,12 @@ dawn::Texture CreateTexture(dawn::Device& device,
     return device.CreateTexture(&descriptor);
 }
 
-dawn::TextureView Create2DAttachment(dawn::Device& device,
+wgpu::TextureView Create2DAttachment(wgpu::Device& device,
                                      uint32_t width,
                                      uint32_t height,
-                                     dawn::TextureFormat format) {
-    dawn::Texture texture = CreateTexture(
-        device, dawn::TextureDimension::e2D, format, width, height, 1, 1);
+                                     wgpu::TextureFormat format) {
+    wgpu::Texture texture =
+        CreateTexture(device, wgpu::TextureDimension::e2D, format, width, height, 1, 1);
     return texture.CreateView();
 }
 
@@ -82,15 +82,15 @@ TEST_F(RenderPassDescriptorValidationTest, Empty) {
 TEST_F(RenderPassDescriptorValidationTest, OneAttachment) {
     // One color attachment
     {
-        dawn::TextureView color = Create2DAttachment(device, 1, 1, dawn::TextureFormat::RGBA8Unorm);
+        wgpu::TextureView color = Create2DAttachment(device, 1, 1, wgpu::TextureFormat::RGBA8Unorm);
         utils::ComboRenderPassDescriptor renderPass({color});
 
         AssertBeginRenderPassSuccess(&renderPass);
     }
     // One depth-stencil attachment
     {
-        dawn::TextureView depthStencil =
-            Create2DAttachment(device, 1, 1, dawn::TextureFormat::Depth24PlusStencil8);
+        wgpu::TextureView depthStencil =
+            Create2DAttachment(device, 1, 1, wgpu::TextureFormat::Depth24PlusStencil8);
         utils::ComboRenderPassDescriptor renderPass({}, depthStencil);
 
         AssertBeginRenderPassSuccess(&renderPass);
@@ -99,46 +99,42 @@ TEST_F(RenderPassDescriptorValidationTest, OneAttachment) {
 
 // Test OOB color attachment indices are handled
 TEST_F(RenderPassDescriptorValidationTest, ColorAttachmentOutOfBounds) {
-    dawn::TextureView color1 = Create2DAttachment(device, 1, 1, dawn::TextureFormat::RGBA8Unorm);
-    dawn::TextureView color2 = Create2DAttachment(device, 1, 1, dawn::TextureFormat::RGBA8Unorm);
-    dawn::TextureView color3 = Create2DAttachment(device, 1, 1, dawn::TextureFormat::RGBA8Unorm);
-    dawn::TextureView color4 = Create2DAttachment(device, 1, 1, dawn::TextureFormat::RGBA8Unorm);
+    wgpu::TextureView color0 = Create2DAttachment(device, 1, 1, wgpu::TextureFormat::RGBA8Unorm);
+    wgpu::TextureView color1 = Create2DAttachment(device, 1, 1, wgpu::TextureFormat::RGBA8Unorm);
+    wgpu::TextureView color2 = Create2DAttachment(device, 1, 1, wgpu::TextureFormat::RGBA8Unorm);
+    wgpu::TextureView color3 = Create2DAttachment(device, 1, 1, wgpu::TextureFormat::RGBA8Unorm);
     // For setting the color attachment, control case
     {
-        utils::ComboRenderPassDescriptor renderPass({color1, color2, color3, color4});
+        utils::ComboRenderPassDescriptor renderPass({color0, color1, color2, color3});
         AssertBeginRenderPassSuccess(&renderPass);
     }
     // For setting the color attachment, OOB
     {
         // We cannot use utils::ComboRenderPassDescriptor here because it only supports at most
         // kMaxColorAttachments(4) color attachments.
-        dawn::RenderPassColorAttachmentDescriptor colorAttachment1;
-        colorAttachment1.attachment = color1;
-        colorAttachment1.resolveTarget = nullptr;
-        colorAttachment1.clearColor = {0.0f, 0.0f, 0.0f, 0.0f};
-        colorAttachment1.loadOp = dawn::LoadOp::Clear;
-        colorAttachment1.storeOp = dawn::StoreOp::Store;
+        std::array<wgpu::RenderPassColorAttachmentDescriptor, 5> colorAttachments;
+        colorAttachments[0].attachment = color0;
+        colorAttachments[0].resolveTarget = nullptr;
+        colorAttachments[0].clearColor = {0.0f, 0.0f, 0.0f, 0.0f};
+        colorAttachments[0].loadOp = wgpu::LoadOp::Clear;
+        colorAttachments[0].storeOp = wgpu::StoreOp::Store;
 
-        dawn::RenderPassColorAttachmentDescriptor colorAttachment2 = colorAttachment1;
-        dawn::RenderPassColorAttachmentDescriptor colorAttachment3 = colorAttachment1;
-        dawn::RenderPassColorAttachmentDescriptor colorAttachment4 = colorAttachment1;
-        colorAttachment2.attachment = color2;
-        colorAttachment3.attachment = color3;
-        colorAttachment4.attachment = color4;
+        colorAttachments[1] = colorAttachments[0];
+        colorAttachments[1].attachment = color1;
 
-        dawn::TextureView color5 =
-            Create2DAttachment(device, 1, 1, dawn::TextureFormat::RGBA8Unorm);
-        dawn::RenderPassColorAttachmentDescriptor colorAttachment5 = colorAttachment1;
-        colorAttachment5.attachment = color5;
+        colorAttachments[2] = colorAttachments[0];
+        colorAttachments[2].attachment = color2;
 
-        dawn::RenderPassColorAttachmentDescriptor* colorAttachments[] = {&colorAttachment1,
-                                                                         &colorAttachment2,
-                                                                         &colorAttachment3,
-                                                                         &colorAttachment4,
-                                                                         &colorAttachment5};
-        dawn::RenderPassDescriptor renderPass;
-        renderPass.colorAttachmentCount = kMaxColorAttachments + 1;
-        renderPass.colorAttachments = colorAttachments;
+        colorAttachments[3] = colorAttachments[0];
+        colorAttachments[3].attachment = color3;
+
+        colorAttachments[4] = colorAttachments[0];
+        colorAttachments[4].attachment =
+            Create2DAttachment(device, 1, 1, wgpu::TextureFormat::RGBA8Unorm);
+
+        wgpu::RenderPassDescriptor renderPass;
+        renderPass.colorAttachmentCount = 5;
+        renderPass.colorAttachments = colorAttachments.data();
         renderPass.depthStencilAttachment = nullptr;
         AssertBeginRenderPassError(&renderPass);
     }
@@ -146,14 +142,14 @@ TEST_F(RenderPassDescriptorValidationTest, ColorAttachmentOutOfBounds) {
 
 // Attachments must have the same size
 TEST_F(RenderPassDescriptorValidationTest, SizeMustMatch) {
-    dawn::TextureView color1x1A = Create2DAttachment(device, 1, 1, dawn::TextureFormat::RGBA8Unorm);
-    dawn::TextureView color1x1B = Create2DAttachment(device, 1, 1, dawn::TextureFormat::RGBA8Unorm);
-    dawn::TextureView color2x2 = Create2DAttachment(device, 2, 2, dawn::TextureFormat::RGBA8Unorm);
+    wgpu::TextureView color1x1A = Create2DAttachment(device, 1, 1, wgpu::TextureFormat::RGBA8Unorm);
+    wgpu::TextureView color1x1B = Create2DAttachment(device, 1, 1, wgpu::TextureFormat::RGBA8Unorm);
+    wgpu::TextureView color2x2 = Create2DAttachment(device, 2, 2, wgpu::TextureFormat::RGBA8Unorm);
 
-    dawn::TextureView depthStencil1x1 =
-        Create2DAttachment(device, 1, 1, dawn::TextureFormat::Depth24PlusStencil8);
-    dawn::TextureView depthStencil2x2 =
-        Create2DAttachment(device, 2, 2, dawn::TextureFormat::Depth24PlusStencil8);
+    wgpu::TextureView depthStencil1x1 =
+        Create2DAttachment(device, 1, 1, wgpu::TextureFormat::Depth24PlusStencil8);
+    wgpu::TextureView depthStencil2x2 =
+        Create2DAttachment(device, 2, 2, wgpu::TextureFormat::Depth24PlusStencil8);
 
     // Control case: all the same size (1x1)
     {
@@ -176,9 +172,9 @@ TEST_F(RenderPassDescriptorValidationTest, SizeMustMatch) {
 
 // Attachments formats must match whether they are used for color or depth-stencil
 TEST_F(RenderPassDescriptorValidationTest, FormatMismatch) {
-    dawn::TextureView color = Create2DAttachment(device, 1, 1, dawn::TextureFormat::RGBA8Unorm);
-    dawn::TextureView depthStencil =
-        Create2DAttachment(device, 1, 1, dawn::TextureFormat::Depth24PlusStencil8);
+    wgpu::TextureView color = Create2DAttachment(device, 1, 1, wgpu::TextureFormat::RGBA8Unorm);
+    wgpu::TextureView depthStencil =
+        Create2DAttachment(device, 1, 1, wgpu::TextureFormat::Depth24PlusStencil8);
 
     // Using depth-stencil for color
     {
@@ -193,24 +189,72 @@ TEST_F(RenderPassDescriptorValidationTest, FormatMismatch) {
     }
 }
 
+// Depth and stencil storeOps must match
+TEST_F(RenderPassDescriptorValidationTest, DepthStencilStoreOpMismatch) {
+    constexpr uint32_t kArrayLayers = 1;
+    constexpr uint32_t kLevelCount = 1;
+    constexpr uint32_t kSize = 32;
+    constexpr wgpu::TextureFormat kColorFormat = wgpu::TextureFormat::RGBA8Unorm;
+    constexpr wgpu::TextureFormat kDepthStencilFormat = wgpu::TextureFormat::Depth24PlusStencil8;
+
+    wgpu::Texture colorTexture = CreateTexture(device, wgpu::TextureDimension::e2D, kColorFormat,
+                                               kSize, kSize, kArrayLayers, kLevelCount);
+    wgpu::Texture depthStencilTexture =
+        CreateTexture(device, wgpu::TextureDimension::e2D, kDepthStencilFormat, kSize, kSize,
+                      kArrayLayers, kLevelCount);
+
+    wgpu::TextureViewDescriptor descriptor;
+    descriptor.dimension = wgpu::TextureViewDimension::e2D;
+    descriptor.baseArrayLayer = 0;
+    descriptor.arrayLayerCount = kArrayLayers;
+    descriptor.baseMipLevel = 0;
+    descriptor.mipLevelCount = kLevelCount;
+    wgpu::TextureView colorTextureView = colorTexture.CreateView(&descriptor);
+    wgpu::TextureView depthStencilView = depthStencilTexture.CreateView(&descriptor);
+
+    // StoreOps mismatch causing the render pass to error
+    {
+        utils::ComboRenderPassDescriptor renderPass({}, depthStencilView);
+        renderPass.cDepthStencilAttachmentInfo.stencilStoreOp = wgpu::StoreOp::Store;
+        renderPass.cDepthStencilAttachmentInfo.depthStoreOp = wgpu::StoreOp::Clear;
+        AssertBeginRenderPassError(&renderPass);
+    }
+
+    // StoreOps match so render pass is a success
+    {
+        utils::ComboRenderPassDescriptor renderPass({}, depthStencilView);
+        renderPass.cDepthStencilAttachmentInfo.stencilStoreOp = wgpu::StoreOp::Store;
+        renderPass.cDepthStencilAttachmentInfo.depthStoreOp = wgpu::StoreOp::Store;
+        AssertBeginRenderPassSuccess(&renderPass);
+    }
+
+    // StoreOps match so render pass is a success
+    {
+        utils::ComboRenderPassDescriptor renderPass({}, depthStencilView);
+        renderPass.cDepthStencilAttachmentInfo.stencilStoreOp = wgpu::StoreOp::Clear;
+        renderPass.cDepthStencilAttachmentInfo.depthStoreOp = wgpu::StoreOp::Clear;
+        AssertBeginRenderPassSuccess(&renderPass);
+    }
+}
+
 // Currently only texture views with arrayLayerCount == 1 are allowed to be color and depth stencil
 // attachments
 TEST_F(RenderPassDescriptorValidationTest, TextureViewLayerCountForColorAndDepthStencil) {
     constexpr uint32_t kLevelCount = 1;
     constexpr uint32_t kSize = 32;
-    constexpr dawn::TextureFormat kColorFormat = dawn::TextureFormat::RGBA8Unorm;
-    constexpr dawn::TextureFormat kDepthStencilFormat = dawn::TextureFormat::Depth24PlusStencil8;
+    constexpr wgpu::TextureFormat kColorFormat = wgpu::TextureFormat::RGBA8Unorm;
+    constexpr wgpu::TextureFormat kDepthStencilFormat = wgpu::TextureFormat::Depth24PlusStencil8;
 
     constexpr uint32_t kArrayLayers = 10;
 
-    dawn::Texture colorTexture = CreateTexture(
-        device, dawn::TextureDimension::e2D, kColorFormat, kSize, kSize, kArrayLayers, kLevelCount);
-    dawn::Texture depthStencilTexture = CreateTexture(
-        device, dawn::TextureDimension::e2D, kDepthStencilFormat, kSize, kSize, kArrayLayers,
-        kLevelCount);
+    wgpu::Texture colorTexture = CreateTexture(device, wgpu::TextureDimension::e2D, kColorFormat,
+                                               kSize, kSize, kArrayLayers, kLevelCount);
+    wgpu::Texture depthStencilTexture =
+        CreateTexture(device, wgpu::TextureDimension::e2D, kDepthStencilFormat, kSize, kSize,
+                      kArrayLayers, kLevelCount);
 
-    dawn::TextureViewDescriptor baseDescriptor;
-    baseDescriptor.dimension = dawn::TextureViewDimension::e2DArray;
+    wgpu::TextureViewDescriptor baseDescriptor;
+    baseDescriptor.dimension = wgpu::TextureViewDimension::e2DArray;
     baseDescriptor.baseArrayLayer = 0;
     baseDescriptor.arrayLayerCount = kArrayLayers;
     baseDescriptor.baseMipLevel = 0;
@@ -218,70 +262,70 @@ TEST_F(RenderPassDescriptorValidationTest, TextureViewLayerCountForColorAndDepth
 
     // Using 2D array texture view with arrayLayerCount > 1 is not allowed for color
     {
-        dawn::TextureViewDescriptor descriptor = baseDescriptor;
+        wgpu::TextureViewDescriptor descriptor = baseDescriptor;
         descriptor.format = kColorFormat;
         descriptor.arrayLayerCount = 5;
 
-        dawn::TextureView colorTextureView = colorTexture.CreateView(&descriptor);
+        wgpu::TextureView colorTextureView = colorTexture.CreateView(&descriptor);
         utils::ComboRenderPassDescriptor renderPass({colorTextureView});
         AssertBeginRenderPassError(&renderPass);
     }
 
     // Using 2D array texture view with arrayLayerCount > 1 is not allowed for depth stencil
     {
-        dawn::TextureViewDescriptor descriptor = baseDescriptor;
+        wgpu::TextureViewDescriptor descriptor = baseDescriptor;
         descriptor.format = kDepthStencilFormat;
         descriptor.arrayLayerCount = 5;
 
-        dawn::TextureView depthStencilView = depthStencilTexture.CreateView(&descriptor);
+        wgpu::TextureView depthStencilView = depthStencilTexture.CreateView(&descriptor);
         utils::ComboRenderPassDescriptor renderPass({}, depthStencilView);
         AssertBeginRenderPassError(&renderPass);
     }
 
     // Using 2D array texture view that covers the first layer of the texture is OK for color
     {
-        dawn::TextureViewDescriptor descriptor = baseDescriptor;
+        wgpu::TextureViewDescriptor descriptor = baseDescriptor;
         descriptor.format = kColorFormat;
         descriptor.baseArrayLayer = 0;
         descriptor.arrayLayerCount = 1;
 
-        dawn::TextureView colorTextureView = colorTexture.CreateView(&descriptor);
+        wgpu::TextureView colorTextureView = colorTexture.CreateView(&descriptor);
         utils::ComboRenderPassDescriptor renderPass({colorTextureView});
         AssertBeginRenderPassSuccess(&renderPass);
     }
 
     // Using 2D array texture view that covers the first layer is OK for depth stencil
     {
-        dawn::TextureViewDescriptor descriptor = baseDescriptor;
+        wgpu::TextureViewDescriptor descriptor = baseDescriptor;
         descriptor.format = kDepthStencilFormat;
         descriptor.baseArrayLayer = 0;
         descriptor.arrayLayerCount = 1;
 
-        dawn::TextureView depthStencilView = depthStencilTexture.CreateView(&descriptor);
+        wgpu::TextureView depthStencilView = depthStencilTexture.CreateView(&descriptor);
         utils::ComboRenderPassDescriptor renderPass({}, depthStencilView);
         AssertBeginRenderPassSuccess(&renderPass);
     }
 
     // Using 2D array texture view that covers the last layer is OK for color
     {
-        dawn::TextureViewDescriptor descriptor = baseDescriptor;
+        wgpu::TextureViewDescriptor descriptor = baseDescriptor;
         descriptor.format = kColorFormat;
         descriptor.baseArrayLayer = kArrayLayers - 1;
         descriptor.arrayLayerCount = 1;
 
-        dawn::TextureView colorTextureView = colorTexture.CreateView(&descriptor);
+        wgpu::TextureView colorTextureView = colorTexture.CreateView(&descriptor);
         utils::ComboRenderPassDescriptor renderPass({colorTextureView});
         AssertBeginRenderPassSuccess(&renderPass);
     }
 
     // Using 2D array texture view that covers the last layer is OK for depth stencil
     {
-        dawn::TextureViewDescriptor descriptor = baseDescriptor;
+        wgpu::TextureViewDescriptor descriptor = baseDescriptor;
         descriptor.format = kDepthStencilFormat;
         descriptor.baseArrayLayer = kArrayLayers - 1;
         descriptor.arrayLayerCount = 1;
 
-        dawn::TextureView depthStencilView = depthStencilTexture.CreateView(&descriptor);
+        wgpu::TextureView depthStencilView = depthStencilTexture.CreateView(&descriptor);
         utils::ComboRenderPassDescriptor renderPass({}, depthStencilView);
         AssertBeginRenderPassSuccess(&renderPass);
     }
@@ -291,19 +335,19 @@ TEST_F(RenderPassDescriptorValidationTest, TextureViewLayerCountForColorAndDepth
 TEST_F(RenderPassDescriptorValidationTest, TextureViewLevelCountForColorAndDepthStencil) {
     constexpr uint32_t kArrayLayers = 1;
     constexpr uint32_t kSize = 32;
-    constexpr dawn::TextureFormat kColorFormat = dawn::TextureFormat::RGBA8Unorm;
-    constexpr dawn::TextureFormat kDepthStencilFormat = dawn::TextureFormat::Depth24PlusStencil8;
+    constexpr wgpu::TextureFormat kColorFormat = wgpu::TextureFormat::RGBA8Unorm;
+    constexpr wgpu::TextureFormat kDepthStencilFormat = wgpu::TextureFormat::Depth24PlusStencil8;
 
     constexpr uint32_t kLevelCount = 4;
 
-    dawn::Texture colorTexture = CreateTexture(
-        device, dawn::TextureDimension::e2D, kColorFormat, kSize, kSize, kArrayLayers, kLevelCount);
-    dawn::Texture depthStencilTexture = CreateTexture(
-        device, dawn::TextureDimension::e2D, kDepthStencilFormat, kSize, kSize, kArrayLayers,
-        kLevelCount);
+    wgpu::Texture colorTexture = CreateTexture(device, wgpu::TextureDimension::e2D, kColorFormat,
+                                               kSize, kSize, kArrayLayers, kLevelCount);
+    wgpu::Texture depthStencilTexture =
+        CreateTexture(device, wgpu::TextureDimension::e2D, kDepthStencilFormat, kSize, kSize,
+                      kArrayLayers, kLevelCount);
 
-    dawn::TextureViewDescriptor baseDescriptor;
-    baseDescriptor.dimension = dawn::TextureViewDimension::e2D;
+    wgpu::TextureViewDescriptor baseDescriptor;
+    baseDescriptor.dimension = wgpu::TextureViewDimension::e2D;
     baseDescriptor.baseArrayLayer = 0;
     baseDescriptor.arrayLayerCount = kArrayLayers;
     baseDescriptor.baseMipLevel = 0;
@@ -311,70 +355,70 @@ TEST_F(RenderPassDescriptorValidationTest, TextureViewLevelCountForColorAndDepth
 
     // Using 2D texture view with mipLevelCount > 1 is not allowed for color
     {
-        dawn::TextureViewDescriptor descriptor = baseDescriptor;
+        wgpu::TextureViewDescriptor descriptor = baseDescriptor;
         descriptor.format = kColorFormat;
         descriptor.mipLevelCount = 2;
 
-        dawn::TextureView colorTextureView = colorTexture.CreateView(&descriptor);
+        wgpu::TextureView colorTextureView = colorTexture.CreateView(&descriptor);
         utils::ComboRenderPassDescriptor renderPass({colorTextureView});
         AssertBeginRenderPassError(&renderPass);
     }
 
     // Using 2D texture view with mipLevelCount > 1 is not allowed for depth stencil
     {
-        dawn::TextureViewDescriptor descriptor = baseDescriptor;
+        wgpu::TextureViewDescriptor descriptor = baseDescriptor;
         descriptor.format = kDepthStencilFormat;
         descriptor.mipLevelCount = 2;
 
-        dawn::TextureView depthStencilView = depthStencilTexture.CreateView(&descriptor);
+        wgpu::TextureView depthStencilView = depthStencilTexture.CreateView(&descriptor);
         utils::ComboRenderPassDescriptor renderPass({}, depthStencilView);
         AssertBeginRenderPassError(&renderPass);
     }
 
     // Using 2D texture view that covers the first level of the texture is OK for color
     {
-        dawn::TextureViewDescriptor descriptor = baseDescriptor;
+        wgpu::TextureViewDescriptor descriptor = baseDescriptor;
         descriptor.format = kColorFormat;
         descriptor.baseMipLevel = 0;
         descriptor.mipLevelCount = 1;
 
-        dawn::TextureView colorTextureView = colorTexture.CreateView(&descriptor);
+        wgpu::TextureView colorTextureView = colorTexture.CreateView(&descriptor);
         utils::ComboRenderPassDescriptor renderPass({colorTextureView});
         AssertBeginRenderPassSuccess(&renderPass);
     }
 
     // Using 2D texture view that covers the first level is OK for depth stencil
     {
-        dawn::TextureViewDescriptor descriptor = baseDescriptor;
+        wgpu::TextureViewDescriptor descriptor = baseDescriptor;
         descriptor.format = kDepthStencilFormat;
         descriptor.baseMipLevel = 0;
         descriptor.mipLevelCount = 1;
 
-        dawn::TextureView depthStencilView = depthStencilTexture.CreateView(&descriptor);
+        wgpu::TextureView depthStencilView = depthStencilTexture.CreateView(&descriptor);
         utils::ComboRenderPassDescriptor renderPass({}, depthStencilView);
         AssertBeginRenderPassSuccess(&renderPass);
     }
 
     // Using 2D texture view that covers the last level is OK for color
     {
-        dawn::TextureViewDescriptor descriptor = baseDescriptor;
+        wgpu::TextureViewDescriptor descriptor = baseDescriptor;
         descriptor.format = kColorFormat;
         descriptor.baseMipLevel = kLevelCount - 1;
         descriptor.mipLevelCount = 1;
 
-        dawn::TextureView colorTextureView = colorTexture.CreateView(&descriptor);
+        wgpu::TextureView colorTextureView = colorTexture.CreateView(&descriptor);
         utils::ComboRenderPassDescriptor renderPass({colorTextureView});
         AssertBeginRenderPassSuccess(&renderPass);
     }
 
     // Using 2D texture view that covers the last level is OK for depth stencil
     {
-        dawn::TextureViewDescriptor descriptor = baseDescriptor;
+        wgpu::TextureViewDescriptor descriptor = baseDescriptor;
         descriptor.format = kDepthStencilFormat;
         descriptor.baseMipLevel = kLevelCount - 1;
         descriptor.mipLevelCount = 1;
 
-        dawn::TextureView depthStencilView = depthStencilTexture.CreateView(&descriptor);
+        wgpu::TextureView depthStencilView = depthStencilTexture.CreateView(&descriptor);
         utils::ComboRenderPassDescriptor renderPass({}, depthStencilView);
         AssertBeginRenderPassSuccess(&renderPass);
     }
@@ -386,19 +430,19 @@ TEST_F(RenderPassDescriptorValidationTest, NonMultisampledColorWithResolveTarget
     static constexpr uint32_t kLevelCount = 1;
     static constexpr uint32_t kSize = 32;
     static constexpr uint32_t kSampleCount = 1;
-    static constexpr dawn::TextureFormat kColorFormat = dawn::TextureFormat::RGBA8Unorm;
+    static constexpr wgpu::TextureFormat kColorFormat = wgpu::TextureFormat::RGBA8Unorm;
 
-    dawn::Texture colorTexture = CreateTexture(
-        device, dawn::TextureDimension::e2D, kColorFormat, kSize, kSize, kArrayLayers,
-        kLevelCount, kSampleCount);
-    dawn::Texture resolveTargetTexture = CreateTexture(
-        device, dawn::TextureDimension::e2D, kColorFormat, kSize, kSize, kArrayLayers,
-        kLevelCount, kSampleCount);
-    dawn::TextureView colorTextureView = colorTexture.CreateView();
-    dawn::TextureView resolveTargetTextureView = resolveTargetTexture.CreateView();
+    wgpu::Texture colorTexture =
+        CreateTexture(device, wgpu::TextureDimension::e2D, kColorFormat, kSize, kSize, kArrayLayers,
+                      kLevelCount, kSampleCount);
+    wgpu::Texture resolveTargetTexture =
+        CreateTexture(device, wgpu::TextureDimension::e2D, kColorFormat, kSize, kSize, kArrayLayers,
+                      kLevelCount, kSampleCount);
+    wgpu::TextureView colorTextureView = colorTexture.CreateView();
+    wgpu::TextureView resolveTargetTextureView = resolveTargetTexture.CreateView();
 
     utils::ComboRenderPassDescriptor renderPass({colorTextureView});
-    renderPass.cColorAttachmentsInfoPtr[0]->resolveTarget = resolveTargetTextureView;
+    renderPass.cColorAttachments[0].resolveTarget = resolveTargetTextureView;
     AssertBeginRenderPassError(&renderPass);
 }
 
@@ -408,11 +452,11 @@ class MultisampledRenderPassDescriptorValidationTest : public RenderPassDescript
         return utils::ComboRenderPassDescriptor({CreateMultisampledColorTextureView()});
     }
 
-    dawn::TextureView CreateMultisampledColorTextureView() {
+    wgpu::TextureView CreateMultisampledColorTextureView() {
         return CreateColorTextureView(kSampleCount);
     }
 
-    dawn::TextureView CreateNonMultisampledColorTextureView() {
+    wgpu::TextureView CreateNonMultisampledColorTextureView() {
         return CreateColorTextureView(1);
     }
 
@@ -420,13 +464,13 @@ class MultisampledRenderPassDescriptorValidationTest : public RenderPassDescript
     static constexpr uint32_t kLevelCount = 1;
     static constexpr uint32_t kSize = 32;
     static constexpr uint32_t kSampleCount = 4;
-    static constexpr dawn::TextureFormat kColorFormat = dawn::TextureFormat::RGBA8Unorm;
+    static constexpr wgpu::TextureFormat kColorFormat = wgpu::TextureFormat::RGBA8Unorm;
 
   private:
-    dawn::TextureView CreateColorTextureView(uint32_t sampleCount) {
-        dawn::Texture colorTexture = CreateTexture(
-            device, dawn::TextureDimension::e2D, kColorFormat, kSize, kSize, kArrayLayers,
-            kLevelCount, sampleCount);
+    wgpu::TextureView CreateColorTextureView(uint32_t sampleCount) {
+        wgpu::Texture colorTexture =
+            CreateTexture(device, wgpu::TextureDimension::e2D, kColorFormat, kSize, kSize,
+                          kArrayLayers, kLevelCount, sampleCount);
 
         return colorTexture.CreateView();
     }
@@ -434,9 +478,9 @@ class MultisampledRenderPassDescriptorValidationTest : public RenderPassDescript
 
 // Tests on the use of multisampled textures as color attachments
 TEST_F(MultisampledRenderPassDescriptorValidationTest, MultisampledColorAttachments) {
-    dawn::TextureView colorTextureView = CreateNonMultisampledColorTextureView();
-    dawn::TextureView resolveTargetTextureView = CreateNonMultisampledColorTextureView();
-    dawn::TextureView multisampledColorTextureView = CreateMultisampledColorTextureView();
+    wgpu::TextureView colorTextureView = CreateNonMultisampledColorTextureView();
+    wgpu::TextureView resolveTargetTextureView = CreateNonMultisampledColorTextureView();
+    wgpu::TextureView multisampledColorTextureView = CreateMultisampledColorTextureView();
 
     // It is allowed to use a multisampled color attachment without setting resolve target.
     {
@@ -454,149 +498,141 @@ TEST_F(MultisampledRenderPassDescriptorValidationTest, MultisampledColorAttachme
 
 // It is not allowed to use a multisampled resolve target.
 TEST_F(MultisampledRenderPassDescriptorValidationTest, MultisampledResolveTarget) {
-    dawn::TextureView multisampledResolveTargetView = CreateMultisampledColorTextureView();
+    wgpu::TextureView multisampledResolveTargetView = CreateMultisampledColorTextureView();
 
     utils::ComboRenderPassDescriptor renderPass = CreateMultisampledRenderPass();
-    renderPass.cColorAttachmentsInfoPtr[0]->resolveTarget = multisampledResolveTargetView;
+    renderPass.cColorAttachments[0].resolveTarget = multisampledResolveTargetView;
     AssertBeginRenderPassError(&renderPass);
 }
 
 // It is not allowed to use a resolve target with array layer count > 1.
 TEST_F(MultisampledRenderPassDescriptorValidationTest, ResolveTargetArrayLayerMoreThanOne) {
     constexpr uint32_t kArrayLayers2 = 2;
-    dawn::Texture resolveTexture = CreateTexture(
-        device, dawn::TextureDimension::e2D, kColorFormat, kSize, kSize, kArrayLayers2,
-        kLevelCount);
-    dawn::TextureView resolveTextureView = resolveTexture.CreateView();
+    wgpu::Texture resolveTexture = CreateTexture(device, wgpu::TextureDimension::e2D, kColorFormat,
+                                                 kSize, kSize, kArrayLayers2, kLevelCount);
+    wgpu::TextureView resolveTextureView = resolveTexture.CreateView();
 
     utils::ComboRenderPassDescriptor renderPass = CreateMultisampledRenderPass();
-    renderPass.cColorAttachmentsInfoPtr[0]->resolveTarget = resolveTextureView;
+    renderPass.cColorAttachments[0].resolveTarget = resolveTextureView;
     AssertBeginRenderPassError(&renderPass);
 }
 
 // It is not allowed to use a resolve target with mipmap level count > 1.
 TEST_F(MultisampledRenderPassDescriptorValidationTest, ResolveTargetMipmapLevelMoreThanOne) {
     constexpr uint32_t kLevelCount2 = 2;
-    dawn::Texture resolveTexture = CreateTexture(
-        device, dawn::TextureDimension::e2D, kColorFormat, kSize, kSize, kArrayLayers,
-        kLevelCount2);
-    dawn::TextureView resolveTextureView = resolveTexture.CreateView();
+    wgpu::Texture resolveTexture = CreateTexture(device, wgpu::TextureDimension::e2D, kColorFormat,
+                                                 kSize, kSize, kArrayLayers, kLevelCount2);
+    wgpu::TextureView resolveTextureView = resolveTexture.CreateView();
 
     utils::ComboRenderPassDescriptor renderPass = CreateMultisampledRenderPass();
-    renderPass.cColorAttachmentsInfoPtr[0]->resolveTarget = resolveTextureView;
+    renderPass.cColorAttachments[0].resolveTarget = resolveTextureView;
     AssertBeginRenderPassError(&renderPass);
 }
 
 // It is not allowed to use a resolve target which is created from a texture whose usage does not
-// include dawn::TextureUsage::OutputAttachment.
+// include wgpu::TextureUsage::OutputAttachment.
 TEST_F(MultisampledRenderPassDescriptorValidationTest, ResolveTargetUsageNoOutputAttachment) {
-    constexpr dawn::TextureUsage kUsage = dawn::TextureUsage::CopyDst | dawn::TextureUsage::CopySrc;
-    dawn::Texture nonColorUsageResolveTexture = CreateTexture(
-        device, dawn::TextureDimension::e2D, kColorFormat, kSize, kSize, kArrayLayers,
-        kLevelCount, 1, kUsage);
-    dawn::TextureView nonColorUsageResolveTextureView = nonColorUsageResolveTexture.CreateView();
+    constexpr wgpu::TextureUsage kUsage = wgpu::TextureUsage::CopyDst | wgpu::TextureUsage::CopySrc;
+    wgpu::Texture nonColorUsageResolveTexture =
+        CreateTexture(device, wgpu::TextureDimension::e2D, kColorFormat, kSize, kSize, kArrayLayers,
+                      kLevelCount, 1, kUsage);
+    wgpu::TextureView nonColorUsageResolveTextureView = nonColorUsageResolveTexture.CreateView();
 
     utils::ComboRenderPassDescriptor renderPass = CreateMultisampledRenderPass();
-    renderPass.cColorAttachmentsInfoPtr[0]->resolveTarget = nonColorUsageResolveTextureView;
+    renderPass.cColorAttachments[0].resolveTarget = nonColorUsageResolveTextureView;
     AssertBeginRenderPassError(&renderPass);
 }
 
 // It is not allowed to use a resolve target which is in error state.
 TEST_F(MultisampledRenderPassDescriptorValidationTest, ResolveTargetInErrorState) {
-    dawn::Texture resolveTexture = CreateTexture(
-        device, dawn::TextureDimension::e2D, kColorFormat, kSize, kSize, kArrayLayers,
-        kLevelCount);
-    dawn::TextureViewDescriptor errorTextureView;
-    errorTextureView.dimension = dawn::TextureViewDimension::e2D;
+    wgpu::Texture resolveTexture = CreateTexture(device, wgpu::TextureDimension::e2D, kColorFormat,
+                                                 kSize, kSize, kArrayLayers, kLevelCount);
+    wgpu::TextureViewDescriptor errorTextureView;
+    errorTextureView.dimension = wgpu::TextureViewDimension::e2D;
     errorTextureView.format = kColorFormat;
     errorTextureView.baseArrayLayer = kArrayLayers + 1;
-    ASSERT_DEVICE_ERROR(
-        dawn::TextureView errorResolveTarget =
-        resolveTexture.CreateView(&errorTextureView));
+    ASSERT_DEVICE_ERROR(wgpu::TextureView errorResolveTarget =
+                            resolveTexture.CreateView(&errorTextureView));
 
     utils::ComboRenderPassDescriptor renderPass = CreateMultisampledRenderPass();
-    renderPass.cColorAttachmentsInfoPtr[0]->resolveTarget = errorResolveTarget;
+    renderPass.cColorAttachments[0].resolveTarget = errorResolveTarget;
     AssertBeginRenderPassError(&renderPass);
 }
 
 // It is allowed to use a multisampled color attachment and a non-multisampled resolve target.
 TEST_F(MultisampledRenderPassDescriptorValidationTest, MultisampledColorWithResolveTarget) {
-    dawn::TextureView resolveTargetTextureView = CreateNonMultisampledColorTextureView();
+    wgpu::TextureView resolveTargetTextureView = CreateNonMultisampledColorTextureView();
 
     utils::ComboRenderPassDescriptor renderPass = CreateMultisampledRenderPass();
-    renderPass.cColorAttachmentsInfoPtr[0]->resolveTarget = resolveTargetTextureView;
+    renderPass.cColorAttachments[0].resolveTarget = resolveTargetTextureView;
     AssertBeginRenderPassSuccess(&renderPass);
 }
 
 // It is not allowed to use a resolve target in a format different from the color attachment.
 TEST_F(MultisampledRenderPassDescriptorValidationTest, ResolveTargetDifferentFormat) {
-    constexpr dawn::TextureFormat kColorFormat2 = dawn::TextureFormat::BGRA8Unorm;
-    dawn::Texture resolveTexture = CreateTexture(
-        device, dawn::TextureDimension::e2D, kColorFormat2, kSize, kSize, kArrayLayers,
-        kLevelCount);
-    dawn::TextureView resolveTextureView = resolveTexture.CreateView();
+    constexpr wgpu::TextureFormat kColorFormat2 = wgpu::TextureFormat::BGRA8Unorm;
+    wgpu::Texture resolveTexture = CreateTexture(device, wgpu::TextureDimension::e2D, kColorFormat2,
+                                                 kSize, kSize, kArrayLayers, kLevelCount);
+    wgpu::TextureView resolveTextureView = resolveTexture.CreateView();
 
     utils::ComboRenderPassDescriptor renderPass = CreateMultisampledRenderPass();
-    renderPass.cColorAttachmentsInfoPtr[0]->resolveTarget = resolveTextureView;
+    renderPass.cColorAttachments[0].resolveTarget = resolveTextureView;
     AssertBeginRenderPassError(&renderPass);
 }
 
 // Tests on the size of the resolve target.
 TEST_F(MultisampledRenderPassDescriptorValidationTest, ColorAttachmentResolveTargetCompatibility) {
     constexpr uint32_t kSize2 = kSize * 2;
-    dawn::Texture resolveTexture = CreateTexture(
-        device, dawn::TextureDimension::e2D, kColorFormat, kSize2, kSize2, kArrayLayers,
-        kLevelCount + 1);
+    wgpu::Texture resolveTexture = CreateTexture(device, wgpu::TextureDimension::e2D, kColorFormat,
+                                                 kSize2, kSize2, kArrayLayers, kLevelCount + 1);
 
-    dawn::TextureViewDescriptor textureViewDescriptor;
+    wgpu::TextureViewDescriptor textureViewDescriptor;
     textureViewDescriptor.nextInChain = nullptr;
-    textureViewDescriptor.dimension = dawn::TextureViewDimension::e2D;
+    textureViewDescriptor.dimension = wgpu::TextureViewDimension::e2D;
     textureViewDescriptor.format = kColorFormat;
     textureViewDescriptor.mipLevelCount = 1;
     textureViewDescriptor.baseArrayLayer = 0;
     textureViewDescriptor.arrayLayerCount = 1;
 
     {
-        dawn::TextureViewDescriptor firstMipLevelDescriptor = textureViewDescriptor;
+        wgpu::TextureViewDescriptor firstMipLevelDescriptor = textureViewDescriptor;
         firstMipLevelDescriptor.baseMipLevel = 0;
 
-        dawn::TextureView resolveTextureView =
-            resolveTexture.CreateView(&firstMipLevelDescriptor);
+        wgpu::TextureView resolveTextureView = resolveTexture.CreateView(&firstMipLevelDescriptor);
 
         utils::ComboRenderPassDescriptor renderPass = CreateMultisampledRenderPass();
-        renderPass.cColorAttachmentsInfoPtr[0]->resolveTarget = resolveTextureView;
+        renderPass.cColorAttachments[0].resolveTarget = resolveTextureView;
         AssertBeginRenderPassError(&renderPass);
     }
 
     {
-        dawn::TextureViewDescriptor secondMipLevelDescriptor = textureViewDescriptor;
+        wgpu::TextureViewDescriptor secondMipLevelDescriptor = textureViewDescriptor;
         secondMipLevelDescriptor.baseMipLevel = 1;
 
-        dawn::TextureView resolveTextureView =
-            resolveTexture.CreateView(&secondMipLevelDescriptor);
+        wgpu::TextureView resolveTextureView = resolveTexture.CreateView(&secondMipLevelDescriptor);
 
         utils::ComboRenderPassDescriptor renderPass = CreateMultisampledRenderPass();
-        renderPass.cColorAttachmentsInfoPtr[0]->resolveTarget = resolveTextureView;
+        renderPass.cColorAttachments[0].resolveTarget = resolveTextureView;
         AssertBeginRenderPassSuccess(&renderPass);
     }
 }
 
 // Tests on the sample count of depth stencil attachment.
 TEST_F(MultisampledRenderPassDescriptorValidationTest, DepthStencilAttachmentSampleCount) {
-    constexpr dawn::TextureFormat kDepthStencilFormat = dawn::TextureFormat::Depth24PlusStencil8;
-    dawn::Texture multisampledDepthStencilTexture = CreateTexture(
-        device, dawn::TextureDimension::e2D, kDepthStencilFormat, kSize, kSize, kArrayLayers,
-        kLevelCount, kSampleCount);
-    dawn::TextureView multisampledDepthStencilTextureView =
+    constexpr wgpu::TextureFormat kDepthStencilFormat = wgpu::TextureFormat::Depth24PlusStencil8;
+    wgpu::Texture multisampledDepthStencilTexture =
+        CreateTexture(device, wgpu::TextureDimension::e2D, kDepthStencilFormat, kSize, kSize,
+                      kArrayLayers, kLevelCount, kSampleCount);
+    wgpu::TextureView multisampledDepthStencilTextureView =
         multisampledDepthStencilTexture.CreateView();
 
     // It is not allowed to use a depth stencil attachment whose sample count is different from the
     // one of the color attachment.
     {
-        dawn::Texture depthStencilTexture = CreateTexture(
-            device, dawn::TextureDimension::e2D, kDepthStencilFormat, kSize, kSize, kArrayLayers,
-            kLevelCount);
-        dawn::TextureView depthStencilTextureView = depthStencilTexture.CreateView();
+        wgpu::Texture depthStencilTexture =
+            CreateTexture(device, wgpu::TextureDimension::e2D, kDepthStencilFormat, kSize, kSize,
+                          kArrayLayers, kLevelCount);
+        wgpu::TextureView depthStencilTextureView = depthStencilTexture.CreateView();
 
         utils::ComboRenderPassDescriptor renderPass(
             {CreateMultisampledColorTextureView()}, depthStencilTextureView);

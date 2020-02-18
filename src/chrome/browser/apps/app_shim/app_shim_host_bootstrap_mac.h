@@ -14,9 +14,11 @@
 #include "base/threading/thread_checker.h"
 #include "chrome/browser/apps/app_shim/app_shim_host_mac.h"
 #include "chrome/common/mac/app_shim.mojom.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/platform/platform_channel_endpoint.h"
 #include "mojo/public/cpp/system/isolated_connection.h"
+#include "url/gurl.h"
 
 class AppShimHostBootstrap : public chrome::mojom::AppShimHostBootstrap {
  public:
@@ -46,20 +48,27 @@ class AppShimHostBootstrap : public chrome::mojom::AppShimHostBootstrap {
 
   // Called in response to connecting (or failing to connect to) an
   // AppShimHost.
-  void OnConnectedToHost(chrome::mojom::AppShimRequest app_shim_request);
-  void OnFailedToConnectToHost(apps::AppShimLaunchResult result);
+  void OnConnectedToHost(
+      mojo::PendingReceiver<chrome::mojom::AppShim> app_shim_receiver);
+  void OnFailedToConnectToHost(chrome::mojom::AppShimLaunchResult result);
 
-  chrome::mojom::AppShimHostRequest GetLaunchAppShimHostRequest();
   base::ProcessId GetAppShimPid() const { return pid_; }
-  const std::string& GetAppId() const { return app_id_; }
-  const base::FilePath& GetProfilePath() const { return profile_path_; }
+
+  mojo::PendingReceiver<chrome::mojom::AppShimHost> GetAppShimHostReceiver();
+  const std::string& GetAppId() const;
+  const GURL& GetAppURL();
+  const base::FilePath& GetProfilePath();
 
   // Indicates the type of launch (by Chrome or from the app).
-  apps::AppShimLaunchType GetLaunchType() const { return launch_type_; }
+  chrome::mojom::AppShimLaunchType GetLaunchType() const;
 
   // If non-empty, holds an array of file paths given as arguments, or dragged
   // onto the app bundle or dock icon.
-  const std::vector<base::FilePath>& GetLaunchFiles() const { return files_; }
+  const std::vector<base::FilePath>& GetLaunchFiles() const;
+
+  // Returns true if this app supports multiple profiles. If so, it will not be
+  // required that GetProfilePath be a valid profile path.
+  bool IsMultiProfile() const;
 
  protected:
   explicit AppShimHostBootstrap(base::ProcessId peer_pid);
@@ -67,27 +76,22 @@ class AppShimHostBootstrap : public chrome::mojom::AppShimHostBootstrap {
   void ChannelError(uint32_t custom_reason, const std::string& description);
 
   // chrome::mojom::AppShimHostBootstrap.
-  void LaunchApp(chrome::mojom::AppShimHostRequest app_shim_host_request,
-                 const base::FilePath& profile_dir,
-                 const std::string& app_id,
-                 apps::AppShimLaunchType launch_type,
-                 const std::vector<base::FilePath>& files,
-                 LaunchAppCallback callback) override;
+  void OnShimConnected(
+      mojo::PendingReceiver<chrome::mojom::AppShimHost> app_shim_host_receiver,
+      chrome::mojom::AppShimInfoPtr app_shim_info,
+      OnShimConnectedCallback callback) override;
 
   mojo::IsolatedConnection bootstrap_mojo_connection_;
   mojo::Receiver<chrome::mojom::AppShimHostBootstrap> host_bootstrap_receiver_{
       this};
 
-  // The arguments from the LaunchApp call, and whether or not it has happened
-  // yet.
-  bool has_received_launch_app_ = false;
+  // The arguments from the OnShimConnected call, and whether or not it has
+  // happened yet. The |app_shim_info_| is non-null if and only if a shim has
+  // connected.
   base::ProcessId pid_ = 0;
-  chrome::mojom::AppShimHostRequest app_shim_host_request_;
-  base::FilePath profile_path_;
-  std::string app_id_;
-  apps::AppShimLaunchType launch_type_;
-  std::vector<base::FilePath> files_;
-  LaunchAppCallback launch_app_callback_;
+  mojo::PendingReceiver<chrome::mojom::AppShimHost> app_shim_host_receiver_;
+  chrome::mojom::AppShimInfoPtr app_shim_info_;
+  OnShimConnectedCallback shim_connected_callback_;
 
   THREAD_CHECKER(thread_checker_);
   DISALLOW_COPY_AND_ASSIGN(AppShimHostBootstrap);

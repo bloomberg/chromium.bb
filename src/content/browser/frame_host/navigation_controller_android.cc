@@ -16,6 +16,7 @@
 #include "content/public/android/content_jni_headers/NavigationControllerImpl_jni.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/ssl_host_state_delegate.h"
+#include "content/public/common/referrer.h"
 #include "content/public/common/resource_request_body_android.h"
 #include "net/base/data_url.h"
 #include "ui/gfx/android/java_bitmap.h"
@@ -112,9 +113,9 @@ NavigationControllerAndroid::NavigationControllerAndroid(
     NavigationControllerImpl* navigation_controller)
     : navigation_controller_(navigation_controller) {
   JNIEnv* env = AttachCurrentThread();
-  obj_.Reset(env,
-             Java_NavigationControllerImpl_create(
-                 env, reinterpret_cast<intptr_t>(this)).obj());
+  obj_.Reset(env, Java_NavigationControllerImpl_create(
+                      env, reinterpret_cast<intptr_t>(this))
+                      .obj());
 }
 
 NavigationControllerAndroid::~NavigationControllerAndroid() {
@@ -282,9 +283,9 @@ void NavigationControllerAndroid::LoadUrl(
   }
 
   if (j_referrer_url) {
-    params.referrer = content::Referrer(
-        GURL(ConvertJavaStringToUTF8(env, j_referrer_url)),
-        static_cast<network::mojom::ReferrerPolicy>(referrer_policy));
+    params.referrer =
+        Referrer(GURL(ConvertJavaStringToUTF8(env, j_referrer_url)),
+                 Referrer::ConvertToPolicy(referrer_policy));
   }
 
   navigation_controller_->LoadURLWithParams(params);
@@ -323,8 +324,7 @@ void NavigationControllerAndroid::GetDirectedNavigationHistory(
   int num_added = 0;
   int increment_value = is_forward ? 1 : -1;
   for (int i = navigation_controller_->GetCurrentEntryIndex() + increment_value;
-       i >= 0 && i < count;
-       i += increment_value) {
+       i >= 0 && i < count; i += increment_value) {
     if (num_added >= max_entries)
       break;
 
@@ -337,10 +337,10 @@ void NavigationControllerAndroid::GetDirectedNavigationHistory(
 void NavigationControllerAndroid::ClearSslPreferences(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
-  content::SSLHostStateDelegate* delegate =
+  SSLHostStateDelegate* delegate =
       navigation_controller_->GetBrowserContext()->GetSSLHostStateDelegate();
   if (delegate)
-    delegate->Clear(base::Callback<bool(const std::string&)>());
+    delegate->Clear(base::NullCallback());
 }
 
 bool NavigationControllerAndroid::GetUseDesktopUserAgent(
@@ -382,8 +382,7 @@ NavigationControllerAndroid::GetEntryAtIndex(JNIEnv* env,
   if (index < 0 || index >= navigation_controller_->GetEntryCount())
     return base::android::ScopedJavaLocalRef<jobject>();
 
-  content::NavigationEntry* entry =
-      navigation_controller_->GetEntryAtIndex(index);
+  NavigationEntry* entry = navigation_controller_->GetEntryAtIndex(index);
   return JNI_NavigationControllerImpl_CreateJavaNavigationEntry(env, entry,
                                                                 index);
 }
@@ -391,7 +390,7 @@ NavigationControllerAndroid::GetEntryAtIndex(JNIEnv* env,
 base::android::ScopedJavaLocalRef<jobject>
 NavigationControllerAndroid::GetVisibleEntry(JNIEnv* env,
                                              const JavaParamRef<jobject>& obj) {
-  content::NavigationEntry* entry = navigation_controller_->GetVisibleEntry();
+  NavigationEntry* entry = navigation_controller_->GetVisibleEntry();
 
   if (!entry)
     return base::android::ScopedJavaLocalRef<jobject>();
@@ -403,7 +402,7 @@ NavigationControllerAndroid::GetVisibleEntry(JNIEnv* env,
 base::android::ScopedJavaLocalRef<jobject>
 NavigationControllerAndroid::GetPendingEntry(JNIEnv* env,
                                              const JavaParamRef<jobject>& obj) {
-  content::NavigationEntry* entry = navigation_controller_->GetPendingEntry();
+  NavigationEntry* entry = navigation_controller_->GetPendingEntry();
 
   if (!entry)
     return base::android::ScopedJavaLocalRef<jobject>();
@@ -423,6 +422,12 @@ jboolean NavigationControllerAndroid::RemoveEntryAtIndex(
     const JavaParamRef<jobject>& obj,
     jint index) {
   return navigation_controller_->RemoveEntryAtIndex(index);
+}
+
+void NavigationControllerAndroid::PruneForwardEntries(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
+  return navigation_controller_->PruneForwardEntries();
 }
 
 ScopedJavaLocalRef<jstring> NavigationControllerAndroid::GetEntryExtraData(

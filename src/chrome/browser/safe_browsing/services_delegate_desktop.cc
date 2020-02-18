@@ -12,7 +12,7 @@
 #include "base/strings/string_util.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
-#include "chrome/browser/safe_browsing/download_protection/binary_upload_service.h"
+#include "chrome/browser/safe_browsing/cloud_content_scanning/binary_upload_service.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/telemetry/telemetry_service.h"
 #include "chrome/common/chrome_switches.h"
@@ -205,24 +205,17 @@ void ServicesDelegateDesktop::StopOnIOThread(bool shutdown) {
   database_manager_->StopOnIOThread(shutdown);
 }
 
-// Only implemented on Android.
-void ServicesDelegateDesktop::CreateTelemetryService(Profile* profile) {}
-
-// Only implemented on Android.
-void ServicesDelegateDesktop::RemoveTelemetryService() {}
-
-// Only meaningful on Android.
-TelemetryService* ServicesDelegateDesktop::GetTelemetryService() const {
-  return nullptr;
-}
-
 void ServicesDelegateDesktop::CreateBinaryUploadService(Profile* profile) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(profile);
   auto it = binary_upload_service_map_.find(profile);
   DCHECK(it == binary_upload_service_map_.end());
-  auto service = std::make_unique<BinaryUploadService>(
-      safe_browsing_service_->GetURLLoaderFactory(), profile);
+  std::unique_ptr<BinaryUploadService> service;
+  if (services_creator_ && services_creator_->CanCreateBinaryUploadService())
+    service = base::WrapUnique(services_creator_->CreateBinaryUploadService());
+  else
+    service = std::make_unique<BinaryUploadService>(
+        safe_browsing_service_->GetURLLoaderFactory(), profile);
   binary_upload_service_map_[profile] = std::move(service);
 }
 

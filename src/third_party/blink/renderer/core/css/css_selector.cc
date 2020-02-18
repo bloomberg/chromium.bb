@@ -188,6 +188,10 @@ PseudoId CSSSelector::GetPseudoId(PseudoType type) {
       return kPseudoIdBefore;
     case kPseudoAfter:
       return kPseudoIdAfter;
+    case kPseudoMarker:
+      return RuntimeEnabledFeatures::CSSMarkerPseudoElementEnabled()
+                 ? kPseudoIdMarker
+                 : kPseudoIdNone;
     case kPseudoBackdrop:
       return kPseudoIdBackdrop;
     case kPseudoScrollbar:
@@ -278,6 +282,7 @@ PseudoId CSSSelector::GetPseudoId(PseudoType type) {
     case kPseudoHost:
     case kPseudoHostContext:
     case kPseudoPart:
+    case kPseudoState:
     case kPseudoShadow:
     case kPseudoFullScreen:
     case kPseudoFullScreenAncestor:
@@ -287,10 +292,12 @@ PseudoId CSSSelector::GetPseudoId(PseudoType type) {
     case kPseudoSpatialNavigationInterest:
     case kPseudoIsHtml:
     case kPseudoListBox:
+    case kPseudoMultiSelectFocus:
     case kPseudoHostHasAppearance:
     case kPseudoSlotted:
     case kPseudoVideoPersistent:
     case kPseudoVideoPersistentAncestor:
+    case kPseudoXrImmersiveDomOverlay:
       return kPseudoIdNone;
   }
 
@@ -314,6 +321,7 @@ const static NameToPseudoStruct kPseudoTypeWithoutArgumentsMap[] = {
     {"-internal-list-box", CSSSelector::kPseudoListBox},
     {"-internal-media-controls-overlay-cast-button",
      CSSSelector::kPseudoWebKitCustomElement},
+    {"-internal-multi-select-focus", CSSSelector::kPseudoMultiSelectFocus},
     {"-internal-shadow-host-has-appearance",
      CSSSelector::kPseudoHostHasAppearance},
     {"-internal-spatial-navigation-focus",
@@ -323,6 +331,8 @@ const static NameToPseudoStruct kPseudoTypeWithoutArgumentsMap[] = {
     {"-internal-video-persistent", CSSSelector::kPseudoVideoPersistent},
     {"-internal-video-persistent-ancestor",
      CSSSelector::kPseudoVideoPersistentAncestor},
+    {"-internal-xr-immersive-dom-overlay",
+     CSSSelector::kPseudoXrImmersiveDomOverlay},
     {"-webkit-any-link", CSSSelector::kPseudoWebkitAnyLink},
     {"-webkit-autofill", CSSSelector::kPseudoAutofill},
     {"-webkit-drag", CSSSelector::kPseudoDrag},
@@ -374,6 +384,7 @@ const static NameToPseudoStruct kPseudoTypeWithoutArgumentsMap[] = {
     {"last-of-type", CSSSelector::kPseudoLastOfType},
     {"left", CSSSelector::kPseudoLeftPage},
     {"link", CSSSelector::kPseudoLink},
+    {"marker", CSSSelector::kPseudoMarker},
     {"no-button", CSSSelector::kPseudoNoButton},
     {"only-child", CSSSelector::kPseudoOnlyChild},
     {"only-of-type", CSSSelector::kPseudoOnlyOfType},
@@ -415,6 +426,7 @@ const static NameToPseudoStruct kPseudoTypeWithArgumentsMap[] = {
     {"nth-of-type", CSSSelector::kPseudoNthOfType},
     {"part", CSSSelector::kPseudoPart},
     {"slotted", CSSSelector::kPseudoSlotted},
+    {"state", CSSSelector::kPseudoState},
     {"where", CSSSelector::kPseudoWhere},
 };
 
@@ -455,6 +467,11 @@ static CSSSelector::PseudoType NameToPseudoType(const AtomicString& name,
   if (match->type == CSSSelector::kPseudoPictureInPicture &&
       !RuntimeEnabledFeatures::CSSPictureInPictureEnabled())
     return CSSSelector::kPseudoUnknown;
+
+  if (match->type == CSSSelector::kPseudoState &&
+      !RuntimeEnabledFeatures::CustomStatePseudoClassEnabled()) {
+    return CSSSelector::kPseudoUnknown;
+  }
 
   return static_cast<CSSSelector::PseudoType>(match->type);
 }
@@ -547,6 +564,7 @@ void CSSSelector::UpdatePseudoType(const AtomicString& value,
     // For pseudo elements
     case kPseudoBackdrop:
     case kPseudoCue:
+    case kPseudoMarker:
     case kPseudoPart:
     case kPseudoPlaceholder:
     case kPseudoResizer:
@@ -574,10 +592,12 @@ void CSSSelector::UpdatePseudoType(const AtomicString& value,
     case kPseudoHostHasAppearance:
     case kPseudoIsHtml:
     case kPseudoListBox:
+    case kPseudoMultiSelectFocus:
     case kPseudoSpatialNavigationFocus:
     case kPseudoSpatialNavigationInterest:
     case kPseudoVideoPersistent:
     case kPseudoVideoPersistentAncestor:
+    case kPseudoXrImmersiveDomOverlay:
       if (mode != kUASheetMode) {
         pseudo_type_ = kPseudoUnknown;
         break;
@@ -645,6 +665,7 @@ void CSSSelector::UpdatePseudoType(const AtomicString& value,
     case kPseudoScope:
     case kPseudoSingleButton:
     case kPseudoStart:
+    case kPseudoState:
     case kPseudoTarget:
     case kPseudoUnknown:
     case kPseudoValid:
@@ -764,6 +785,7 @@ const CSSSelector* CSSSelector::SerializeCompound(
           break;
         }
         case kPseudoLang:
+        case kPseudoState:
           builder.Append('(');
           builder.Append(simple_selector->Argument());
           builder.Append(')');
@@ -1057,6 +1079,7 @@ bool CSSSelector::MatchesPseudoElement() const {
 bool CSSSelector::IsTreeAbidingPseudoElement() const {
   return Match() == CSSSelector::kPseudoElement &&
          (GetPseudoType() == kPseudoBefore || GetPseudoType() == kPseudoAfter ||
+          GetPseudoType() == kPseudoMarker ||
           GetPseudoType() == kPseudoPlaceholder);
 }
 

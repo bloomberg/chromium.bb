@@ -489,9 +489,8 @@ gpu::ContextResult InProcessCommandBuffer::InitializeOnGpuThread(
         base::trace_event::MemoryDumpManager::GetInstance()
             ->GetTracingProcessId();
     memory_tracker = std::make_unique<GpuCommandBufferMemoryTracker>(
-        kInProcessCommandBufferClientId, client_tracing_id,
-        command_buffer_id_.GetUnsafeValue(), params.attribs.context_type,
-        base::ThreadTaskRunnerHandle::Get());
+        command_buffer_id_, client_tracing_id, params.attribs.context_type,
+        base::ThreadTaskRunnerHandle::Get(), /* obserer=*/nullptr);
   }
 
   auto feature_info = base::MakeRefCounted<gles2::FeatureInfo>(
@@ -646,6 +645,11 @@ gpu::ContextResult InProcessCommandBuffer::InitializeOnGpuThread(
         use_virtualized_gl_context_
             ? gl_share_group_->GetSharedContext(surface_.get())
             : nullptr;
+    if (real_context &&
+        (!real_context->MakeCurrent(surface_.get()) ||
+         real_context->CheckStickyGraphicsResetStatus() != GL_NO_ERROR)) {
+      real_context = nullptr;
+    }
     if (!real_context) {
       real_context = gl::init::CreateGLContext(
           gl_share_group_.get(), surface_.get(),
@@ -681,7 +685,8 @@ gpu::ContextResult InProcessCommandBuffer::InitializeOnGpuThread(
       if (!context_state_) {
         context_state_ = base::MakeRefCounted<SharedContextState>(
             gl_share_group_, surface_, real_context,
-            use_virtualized_gl_context_, base::DoNothing());
+            use_virtualized_gl_context_, base::DoNothing(),
+            task_executor_->gpu_preferences().gr_context_type);
         context_state_->InitializeGL(task_executor_->gpu_preferences(),
                                      context_group_->feature_info());
         context_state_->InitializeGrContext(workarounds, params.gr_shader_cache,
@@ -893,16 +898,16 @@ void InProcessCommandBuffer::OnParseError() {
         GpuDriverBugWorkarounds workarounds(
             GetGpuFeatureInfo().enabled_gpu_driver_bug_workarounds);
 
-        // Work around issues with recovery by allowing a new GPU process to
-        // launch.
-        if (workarounds.exit_on_context_lost)
-          gpu_channel_manager_delegate_->MaybeExitOnContextLost();
-
         // Lose all other contexts.
         if (gl::GLContext::LosesAllContextsOnContextLost() ||
             (context_state_ && context_state_->use_virtualized_gl_contexts())) {
           gpu_channel_manager_delegate_->LoseAllContexts();
         }
+
+        // Work around issues with recovery by allowing a new GPU process to
+        // launch.
+        if (workarounds.exit_on_context_lost)
+          gpu_channel_manager_delegate_->MaybeExitOnContextLost();
       }
     }
   }
@@ -1770,6 +1775,16 @@ viz::GpuVSyncCallback InProcessCommandBuffer::GetGpuVSyncCallback() {
   return base::BindRepeating(forward_callback,
                              base::RetainedRef(origin_task_runner_),
                              std::move(handle_gpu_vsync_callback));
+}
+
+base::TimeDelta InProcessCommandBuffer::GetGpuBlockedTimeSinceLastSwap() {
+  // Some examples and tests create InProcessCommandBuffer without
+  // GpuChannelManagerDelegate.
+  if (!gpu_channel_manager_delegate_)
+    return base::TimeDelta::Min();
+
+  return gpu_channel_manager_delegate_->GetGpuScheduler()
+      ->TakeTotalBlockingTime();
 }
 
 void InProcessCommandBuffer::HandleGpuVSyncOnOriginThread(

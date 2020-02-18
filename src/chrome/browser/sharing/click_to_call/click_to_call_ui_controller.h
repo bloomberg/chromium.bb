@@ -11,12 +11,14 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/sharing/sharing_metrics.h"
+#include "base/optional.h"
+#include "chrome/browser/sharing/click_to_call/click_to_call_metrics.h"
 #include "chrome/browser/sharing/sharing_service.h"
 #include "chrome/browser/sharing/sharing_ui_controller.h"
-#include "chrome/browser/ui/page_action/page_action_icon_container.h"
+#include "chrome/browser/ui/page_action/page_action_icon_type.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace content {
 class WebContents;
@@ -29,6 +31,7 @@ class ClickToCallUiController
   static ClickToCallUiController* GetOrCreateFromWebContents(
       content::WebContents* web_contents);
   static void ShowDialog(content::WebContents* web_contents,
+                         const base::Optional<url::Origin>& initiating_origin,
                          const GURL& url,
                          bool hide_default_handler);
 
@@ -39,26 +42,25 @@ class ClickToCallUiController
                         SharingClickToCallEntryPoint entry_point);
 
   // Overridden from SharingUiController:
-  base::string16 GetTitle() override;
+  base::string16 GetTitle(SharingDialogType dialog_type) override;
   PageActionIconType GetIconType() override;
-  int GetRequiredDeviceCapabilities() override;
+  sync_pb::SharingSpecificFields::EnabledFeatures GetRequiredFeature() override;
   void OnDeviceChosen(const syncer::DeviceInfo& device) override;
-  void OnAppChosen(const App& app) override;
+  void OnAppChosen(const SharingApp& app) override;
   void OnDialogClosed(SharingDialog* dialog) override;
   base::string16 GetContentType() const override;
   const gfx::VectorIcon& GetVectorIcon() const override;
   base::string16 GetTextForTooltipAndAccessibleName() const override;
   SharingFeatureName GetFeatureMetricsPrefix() const override;
-  base::string16 GetEducationWindowTitleText() const override;
   void OnHelpTextClicked(SharingDialogType dialog_type) override;
-  int GetHeaderImageId() const override;
+  void OnDialogShown(bool has_devices, bool has_apps) override;
 
  protected:
   explicit ClickToCallUiController(content::WebContents* web_contents);
 
   // Overridden from SharingUiController:
-  SharingDialog* DoShowDialog(BrowserWindow* window) override;
   void DoUpdateApps(UpdateAppsCallback callback) override;
+  SharingDialogData CreateDialogData(SharingDialogType dialog_type) override;
 
  private:
   friend class content::WebContentsUserData<ClickToCallUiController>;
@@ -67,7 +69,8 @@ class ClickToCallUiController
 
   // Sends |phone_number| to |device| as a SharingMessage.
   void SendNumberToDevice(const syncer::DeviceInfo& device,
-                          const std::string& phone_number);
+                          const std::string& phone_number,
+                          SharingClickToCallEntryPoint entry_point);
 
   UKMRecorderCallback ukm_recorder_;
   GURL phone_url_;

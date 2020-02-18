@@ -10,7 +10,7 @@
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/device/generic_sensor/platform_sensor_provider.h"
 #include "services/device/generic_sensor/sensor_impl.h"
 #include "services/device/public/cpp/device_features.h"
@@ -45,8 +45,9 @@ SensorProviderImpl::SensorProviderImpl(
 
 SensorProviderImpl::~SensorProviderImpl() {}
 
-void SensorProviderImpl::Bind(mojom::SensorProviderRequest request) {
-  bindings_.AddBinding(this, std::move(request));
+void SensorProviderImpl::Bind(
+    mojo::PendingReceiver<mojom::SensorProvider> receiver) {
+  receivers_.Add(this, std::move(receiver));
 }
 
 void SensorProviderImpl::GetSensor(mojom::SensorType type,
@@ -91,12 +92,12 @@ void SensorProviderImpl::SensorCreated(
   auto init_params = mojom::SensorInitParams::New();
 
   auto sensor_impl = std::make_unique<SensorImpl>(sensor);
-  init_params->client_request = sensor_impl->GetClient();
+  init_params->client_receiver = sensor_impl->GetClient();
 
-  mojom::SensorPtrInfo sensor_ptr_info;
-  sensor_bindings_.AddBinding(std::move(sensor_impl),
-                              mojo::MakeRequest(&sensor_ptr_info));
-  init_params->sensor = std::move(sensor_ptr_info);
+  mojo::PendingRemote<mojom::Sensor> pending_sensor;
+  sensor_receivers_.Add(std::move(sensor_impl),
+                        pending_sensor.InitWithNewPipeAndPassReceiver());
+  init_params->sensor = std::move(pending_sensor);
 
   init_params->memory = std::move(cloned_handle);
   init_params->buffer_offset = SensorReadingSharedBuffer::GetOffset(type);

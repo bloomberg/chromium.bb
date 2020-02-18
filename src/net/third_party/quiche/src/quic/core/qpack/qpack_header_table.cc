@@ -17,9 +17,14 @@ QpackHeaderTable::QpackHeaderTable()
       dynamic_table_capacity_(0),
       maximum_dynamic_table_capacity_(0),
       max_entries_(0),
-      dropped_entry_count_(0) {}
+      dropped_entry_count_(0),
+      dynamic_table_entry_referenced_(false) {}
 
-QpackHeaderTable::~QpackHeaderTable() = default;
+QpackHeaderTable::~QpackHeaderTable() {
+  for (auto& entry : observers_) {
+    entry.second->Cancel();
+  }
+}
 
 const QpackEntry* QpackHeaderTable::LookupEntry(bool is_static,
                                                 uint64_t index) const {
@@ -131,10 +136,13 @@ const QpackEntry* QpackHeaderTable::InsertEntry(QuicStringPiece name,
   }
 
   // Notify and deregister observers whose threshold is met, if any.
-  while (!observers_.empty() &&
-         observers_.top().required_insert_count <= inserted_entry_count()) {
-    Observer* observer = observers_.top().observer;
-    observers_.pop();
+  while (!observers_.empty()) {
+    auto it = observers_.begin();
+    if (it->first > inserted_entry_count()) {
+      break;
+    }
+    Observer* observer = it->second;
+    observers_.erase(it);
     observer->OnInsertCountReachedThreshold();
   }
 
@@ -188,10 +196,25 @@ void QpackHeaderTable::SetMaximumDynamicTableCapacity(
   max_entries_ = maximum_dynamic_table_capacity / 32;
 }
 
-void QpackHeaderTable::RegisterObserver(Observer* observer,
-                                        uint64_t required_insert_count) {
+void QpackHeaderTable::RegisterObserver(uint64_t required_insert_count,
+                                        Observer* observer) {
   DCHECK_GT(required_insert_count, 0u);
-  observers_.push({observer, required_insert_count});
+  observers_.insert({required_insert_count, observer});
+}
+
+void QpackHeaderTable::UnregisterObserver(uint64_t required_insert_count,
+                                          Observer* observer) {
+  auto it = observers_.lower_bound(required_insert_count);
+  while (it != observers_.end() && it->first == required_insert_count) {
+    if (it->second == observer) {
+      observers_.erase(it);
+      return;
+    }
+    ++it;
+  }
+
+  // |observer| must have been registered.
+  QUIC_NOTREACHED();
 }
 
 uint64_t QpackHeaderTable::draining_index(float draining_fraction) const {
@@ -217,11 +240,6 @@ uint64_t QpackHeaderTable::draining_index(float draining_fraction) const {
   }
 
   return it->InsertionIndex();
-}
-
-bool QpackHeaderTable::ObserverWithThreshold::operator>(
-    const ObserverWithThreshold& other) const {
-  return required_insert_count > other.required_insert_count;
 }
 
 void QpackHeaderTable::EvictDownToCurrentCapacity() {

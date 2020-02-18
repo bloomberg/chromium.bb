@@ -29,6 +29,7 @@
 #include <signal.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <stdbool.h>
 #include <string.h>
 #include <fcntl.h>
 #include <sys/socket.h>
@@ -41,6 +42,8 @@
 #include "wayland-private.h"
 #include "wayland-server-core.h"
 #include "wayland-os.h"
+
+/** \cond INTERNAL */
 
 struct wl_event_loop {
 	int epoll_fd;
@@ -69,6 +72,8 @@ struct wl_event_source_fd {
 	wl_event_loop_fd_func_t func;
 	int fd;
 };
+
+/** \endcond */
 
 static int
 wl_event_source_fd_dispatch(struct wl_event_source *source,
@@ -125,6 +130,30 @@ add_source(struct wl_event_loop *loop,
 	return source;
 }
 
+/** Create a file descriptor event source
+ *
+ * \param loop The event loop that will process the new source.
+ * \param fd The file descriptor to watch.
+ * \param mask A bitwise-or of which events to watch for: \c WL_EVENT_READABLE,
+ * \c WL_EVENT_WRITABLE.
+ * \param func The file descriptor dispatch function.
+ * \param data User data.
+ * \return A new file descriptor event source.
+ *
+ * The given file descriptor is initially watched for the events given in
+ * \c mask. This can be changed as needed with wl_event_source_fd_update().
+ *
+ * If it is possible that program execution causes the file descriptor to be
+ * read while leaving the data in a buffer without actually processing it,
+ * it may be necessary to register the file descriptor source to be re-checked,
+ * see wl_event_source_check(). This will ensure that the dispatch function
+ * gets called even if the file descriptor is not readable or writable
+ * anymore. This is especially useful with IPC libraries that automatically
+ * buffer incoming data, possibly as a side-effect of other operations.
+ *
+ * \sa wl_event_loop_fd_func_t
+ * \memberof wl_event_source
+ */
 WL_EXPORT struct wl_event_source *
 wl_event_loop_add_fd(struct wl_event_loop *loop,
 		     int fd, uint32_t mask,
@@ -145,6 +174,26 @@ wl_event_loop_add_fd(struct wl_event_loop *loop,
 	return add_source(loop, &source->base, mask, data);
 }
 
+/** Update a file descriptor source's event mask
+ *
+ * \param source The file descriptor event source to update.
+ * \param mask The new mask, a bitwise-or of: \c WL_EVENT_READABLE,
+ * \c WL_EVENT_WRITABLE.
+ * \return 0 on success, -1 on failure.
+ *
+ * This changes which events, readable and/or writable, cause the dispatch
+ * callback to be called on.
+ *
+ * File descriptors are usually writable to begin with, so they do not need to
+ * be polled for writable until a write actually fails. When a write fails,
+ * the event mask can be changed to poll for readable and writable, delivering
+ * a dispatch callback when it is possible to write more. Once all data has
+ * been written, the mask can be changed to poll only for readable to avoid
+ * busy-looping on dispatch.
+ *
+ * \sa wl_event_loop_add_fd()
+ * \memberof wl_event_source
+ */
 WL_EXPORT int
 wl_event_source_fd_update(struct wl_event_source *source, uint32_t mask)
 {
@@ -161,10 +210,14 @@ wl_event_source_fd_update(struct wl_event_source *source, uint32_t mask)
 	return epoll_ctl(loop->epoll_fd, EPOLL_CTL_MOD, source->fd, &ep);
 }
 
+/** \cond INTERNAL */
+
 struct wl_event_source_timer {
 	struct wl_event_source base;
 	wl_event_loop_timer_func_t func;
 };
+
+/** \endcond */
 
 static int
 wl_event_source_timer_dispatch(struct wl_event_source *source,
@@ -187,6 +240,19 @@ struct wl_event_source_interface timer_source_interface = {
 	wl_event_source_timer_dispatch,
 };
 
+/** Create a timer event source
+ *
+ * \param loop The event loop that will process the new source.
+ * \param func The timer dispatch function.
+ * \param data User data.
+ * \return A new timer event source.
+ *
+ * The timer is initially disarmed. It needs to be armed with a call to
+ * wl_event_source_timer_update() before it can trigger a dispatch call.
+ *
+ * \sa wl_event_loop_timer_func_t
+ * \memberof wl_event_source
+ */
 WL_EXPORT struct wl_event_source *
 wl_event_loop_add_timer(struct wl_event_loop *loop,
 			wl_event_loop_timer_func_t func,
@@ -206,6 +272,22 @@ wl_event_loop_add_timer(struct wl_event_loop *loop,
 	return add_source(loop, &source->base, WL_EVENT_READABLE, data);
 }
 
+/** Arm or disarm a timer
+ *
+ * \param source The timer event source to modify.
+ * \param ms_delay The timeout in milliseconds.
+ * \return 0 on success, -1 on failure.
+ *
+ * If the timeout is zero, the timer is disarmed.
+ *
+ * If the timeout is non-zero, the timer is set to expire after the given
+ * timeout in milliseconds. When the timer expires, the dispatch function
+ * set with wl_event_loop_add_timer() is called once from
+ * wl_event_loop_dispatch(). If another dispatch is desired after another
+ * expiry, wl_event_source_timer_update() needs to be called again.
+ *
+ * \memberof wl_event_source
+ */
 WL_EXPORT int
 wl_event_source_timer_update(struct wl_event_source *source, int ms_delay)
 {
@@ -221,11 +303,15 @@ wl_event_source_timer_update(struct wl_event_source *source, int ms_delay)
 	return 0;
 }
 
+/** \cond INTERNAL */
+
 struct wl_event_source_signal {
 	struct wl_event_source base;
 	int signal_number;
 	wl_event_loop_signal_func_t func;
 };
+
+/** \endcond */
 
 static int
 wl_event_source_signal_dispatch(struct wl_event_source *source,
@@ -249,6 +335,25 @@ struct wl_event_source_interface signal_source_interface = {
 	wl_event_source_signal_dispatch,
 };
 
+/** Create a POSIX signal event source
+ *
+ * \param loop The event loop that will process the new source.
+ * \param signal_number Number of the signal to watch for.
+ * \param func The signal dispatch function.
+ * \param data User data.
+ * \return A new signal event source.
+ *
+ * This function blocks the normal delivery of the given signal in the calling
+ * thread, and creates a "watch" for it. Signal delivery no longer happens
+ * asynchronously, but by wl_event_loop_dispatch() calling the dispatch
+ * callback function \c func.
+ *
+ * It is the caller's responsibility to ensure that all other threads have
+ * also blocked the signal.
+ *
+ * \sa wl_event_loop_signal_func_t
+ * \memberof wl_event_source
+ */
 WL_EXPORT struct wl_event_source *
 wl_event_loop_add_signal(struct wl_event_loop *loop,
 			 int signal_number,
@@ -275,15 +380,39 @@ wl_event_loop_add_signal(struct wl_event_loop *loop,
 	return add_source(loop, &source->base, WL_EVENT_READABLE, data);
 }
 
+/** \cond INTERNAL */
+
 struct wl_event_source_idle {
 	struct wl_event_source base;
 	wl_event_loop_idle_func_t func;
 };
 
+/** \endcond */
+
 struct wl_event_source_interface idle_source_interface = {
 	NULL,
 };
 
+/** Create an idle task
+ *
+ * \param loop The event loop that will process the new task.
+ * \param func The idle task dispatch function.
+ * \param data User data.
+ * \return A new idle task (an event source).
+ *
+ * Idle tasks are dispatched before wl_event_loop_dispatch() goes to sleep.
+ * See wl_event_loop_dispatch() for more details.
+ *
+ * Idle tasks fire once, and are automatically destroyed right after the
+ * callback function has been called.
+ *
+ * An idle task can be cancelled before the callback has been called by
+ * wl_event_source_remove(). Calling wl_event_source_remove() after or from
+ * within the callback results in undefined behaviour.
+ *
+ * \sa wl_event_loop_idle_func_t
+ * \memberof wl_event_source
+ */
 WL_EXPORT struct wl_event_source *
 wl_event_loop_add_idle(struct wl_event_loop *loop,
 		       wl_event_loop_idle_func_t func,
@@ -307,12 +436,40 @@ wl_event_loop_add_idle(struct wl_event_loop *loop,
 	return &source->base;
 }
 
+/** Mark event source to be re-checked
+ *
+ * \param source The event source to be re-checked.
+ *
+ * This function permanently marks the event source to be re-checked after
+ * the normal dispatch of sources in wl_event_loop_dispatch(). Re-checking
+ * will keep iterating over all such event sources until the dispatch
+ * function for them all returns zero.
+ *
+ * Re-checking is used on sources that may become ready to dispatch as a
+ * side-effect of dispatching themselves or other event sources, including idle
+ * sources. Re-checking ensures all the incoming events have been fully drained
+ * before wl_event_loop_dispatch() returns.
+ *
+ * \memberof wl_event_source
+ */
 WL_EXPORT void
 wl_event_source_check(struct wl_event_source *source)
 {
 	wl_list_insert(source->loop->check_list.prev, &source->link);
 }
 
+/** Remove an event source from its event loop
+ *
+ * \param source The event source to be removed.
+ * \return Zero.
+ *
+ * The event source is removed from the event loop it was created for,
+ * and is effectively destroyed. This invalidates \c source .
+ * The dispatch function of the source will no longer be called through this
+ * source.
+ *
+ * \memberof wl_event_source
+ */
 WL_EXPORT int
 wl_event_source_remove(struct wl_event_source *source)
 {
@@ -343,6 +500,20 @@ wl_event_loop_process_destroy_list(struct wl_event_loop *loop)
 	wl_list_init(&loop->destroy_list);
 }
 
+/** Create a new event loop context
+ *
+ * \return A new event loop context object.
+ *
+ * This creates a new event loop context. Initially this context is empty.
+ * Event sources need to be explicitly added to it.
+ *
+ * Normally the event loop is run by calling wl_event_loop_dispatch() in
+ * a loop until the program terminates. Alternatively, an event loop can be
+ * embedded in another event loop by its file descriptor, see
+ * wl_event_loop_get_fd().
+ *
+ * \memberof wl_event_loop
+ */
 WL_EXPORT struct wl_event_loop *
 wl_event_loop_create(void)
 {
@@ -366,6 +537,19 @@ wl_event_loop_create(void)
 	return loop;
 }
 
+/** Destroy an event loop context
+ *
+ * \param loop The event loop to be destroyed.
+ *
+ * This emits the event loop destroy signal, closes the event loop file
+ * descriptor, and frees \c loop.
+ *
+ * If the event loop has existing sources, those cannot be safely removed
+ * afterwards. Therefore one must call wl_event_source_remove() on all
+ * event sources before destroying the event loop context.
+ *
+ * \memberof wl_event_loop
+ */
 WL_EXPORT void
 wl_event_loop_destroy(struct wl_event_loop *loop)
 {
@@ -376,21 +560,35 @@ wl_event_loop_destroy(struct wl_event_loop *loop)
 	free(loop);
 }
 
-static int
+static bool
 post_dispatch_check(struct wl_event_loop *loop)
 {
 	struct epoll_event ep;
 	struct wl_event_source *source, *next;
-	int n;
+	bool needs_recheck = false;
 
 	ep.events = 0;
-	n = 0;
-	wl_list_for_each_safe(source, next, &loop->check_list, link)
-		n += source->interface->dispatch(source, &ep);
+	wl_list_for_each_safe(source, next, &loop->check_list, link) {
+		int dispatch_result;
 
-	return n;
+		dispatch_result = source->interface->dispatch(source, &ep);
+		if (dispatch_result < 0) {
+			wl_log("Source dispatch function returned negative value!");
+			wl_log("This would previously accidentally suppress a follow-up dispatch");
+		}
+		needs_recheck |= dispatch_result != 0;
+	}
+
+	return needs_recheck;
 }
 
+/** Dispatch the idle sources
+ *
+ * \param loop The event loop whose idle sources are dispatched.
+ *
+ * \sa wl_event_loop_add_idle()
+ * \memberof wl_event_loop
+ */
 WL_EXPORT void
 wl_event_loop_dispatch_idle(struct wl_event_loop *loop)
 {
@@ -404,12 +602,32 @@ wl_event_loop_dispatch_idle(struct wl_event_loop *loop)
 	}
 }
 
+/** Wait for events and dispatch them
+ *
+ * \param loop The event loop whose sources to wait for.
+ * \param timeout The polling timeout in milliseconds.
+ * \return 0 for success, -1 for polling error.
+ *
+ * All the associated event sources are polled. This function blocks until
+ * any event source delivers an event (idle sources excluded), or the timeout
+ * expires. A timeout of -1 disables the timeout, causing the function to block
+ * indefinitely. A timeout of zero causes the poll to always return immediately.
+ *
+ * All idle sources are dispatched before blocking. An idle source is destroyed
+ * when it is dispatched. After blocking, all other ready sources are
+ * dispatched. Then, idle sources are dispatched again, in case the dispatched
+ * events created idle sources. Finally, all sources marked with
+ * wl_event_source_check() are dispatched in a loop until their dispatch
+ * functions all return zero.
+ *
+ * \memberof wl_event_loop
+ */
 WL_EXPORT int
 wl_event_loop_dispatch(struct wl_event_loop *loop, int timeout)
 {
 	struct epoll_event ep[32];
 	struct wl_event_source *source;
-	int i, count, n;
+	int i, count;
 
 	wl_event_loop_dispatch_idle(loop);
 
@@ -427,19 +645,41 @@ wl_event_loop_dispatch(struct wl_event_loop *loop, int timeout)
 
 	wl_event_loop_dispatch_idle(loop);
 
-	do {
-		n = post_dispatch_check(loop);
-	} while (n > 0);
+	while (post_dispatch_check(loop));
 
 	return 0;
 }
 
+/** Get the event loop file descriptor
+ *
+ * \param loop The event loop context.
+ * \return The aggregate file descriptor.
+ *
+ * This function returns the aggregate file descriptor, that represents all
+ * the event sources (idle sources excluded) associated with the given event
+ * loop context. When any event source makes an event available, it will be
+ * reflected in the aggregate file descriptor.
+ *
+ * When the aggregate file descriptor delivers an event, one can call
+ * wl_event_loop_dispatch() on the event loop context to dispatch all the
+ * available events.
+ *
+ * \memberof wl_event_loop
+ */
 WL_EXPORT int
 wl_event_loop_get_fd(struct wl_event_loop *loop)
 {
 	return loop->epoll_fd;
 }
 
+/** Register a destroy listener for an event loop context
+ *
+ * \param loop The event loop context whose destruction to listen for.
+ * \param listener The listener with the callback to be called.
+ *
+ * \sa wl_listener
+ * \memberof wl_event_loop
+ */
 WL_EXPORT void
 wl_event_loop_add_destroy_listener(struct wl_event_loop *loop,
 				   struct wl_listener *listener)
@@ -447,10 +687,18 @@ wl_event_loop_add_destroy_listener(struct wl_event_loop *loop,
 	wl_signal_add(&loop->destroy_signal, listener);
 }
 
+/** Get the listener struct for the specified callback
+ *
+ * \param loop The event loop context to inspect.
+ * \param notify The destroy callback to find.
+ * \return The wl_listener registered to the event loop context with
+ * the given callback pointer.
+ *
+ * \memberof wl_event_loop
+ */
 WL_EXPORT struct wl_listener *
 wl_event_loop_get_destroy_listener(struct wl_event_loop *loop,
 				   wl_notify_func_t notify)
 {
 	return wl_signal_get(&loop->destroy_signal, notify);
 }
-

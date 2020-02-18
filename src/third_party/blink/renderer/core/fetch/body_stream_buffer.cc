@@ -11,7 +11,7 @@
 #include "third_party/blink/renderer/core/fetch/bytes_consumer_tee.h"
 #include "third_party/blink/renderer/core/fetch/readable_stream_bytes_consumer.h"
 #include "third_party/blink/renderer/core/streams/readable_stream.h"
-#include "third_party/blink/renderer/core/streams/readable_stream_default_controller_interface.h"
+#include "third_party/blink/renderer/core/streams/readable_stream_default_controller_with_script_scope.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
 #include "third_party/blink/renderer/platform/bindings/exception_code.h"
@@ -28,7 +28,7 @@
 namespace blink {
 
 class BodyStreamBuffer::LoaderClient final
-    : public GarbageCollectedFinalized<LoaderClient>,
+    : public GarbageCollected<LoaderClient>,
       public ContextLifecycleObserver,
       public FetchDataLoader::Client {
   USING_GARBAGE_COLLECTED_MIXIN(LoaderClient);
@@ -107,9 +107,20 @@ BodyStreamBuffer::BodyStreamBuffer(ScriptState* script_state,
       consumer_(consumer),
       signal_(signal),
       made_from_readable_stream_(false) {
+  // inside_create_stream_ is set to track down the cause of the crash in
+  // https://crbug.com/1007162.
+  // TODO(ricea): Remove it and the CHECK once the cause is found.
+  inside_create_stream_ = true;
+  CHECK(consumer_);
+
   stream_ =
       ReadableStream::CreateWithCountQueueingStrategy(script_state_, this, 0);
   stream_broken_ = !stream_;
+
+  // TODO(ricea): Remove this and the CHECK once https://crbug.com/1007162 is
+  // fixed.
+  inside_create_stream_ = false;
+  CHECK(consumer_);
 
   consumer_->SetClient(this);
   if (signal) {
@@ -416,6 +427,9 @@ void BodyStreamBuffer::GetError() {
 
 void BodyStreamBuffer::CancelConsumer() {
   if (consumer_) {
+    // TODO(ricea): Remove this CHECK once the cause of
+    // https://crbug.com/1007162 is found.
+    CHECK(!inside_create_stream_);
     consumer_->Cancel();
     consumer_ = nullptr;
   }
@@ -529,6 +543,9 @@ BytesConsumer* BodyStreamBuffer::ReleaseHandle(
   if (exception_state.HadException())
     return nullptr;
 
+  // TODO(ricea): Remove this CHECK once the cause of https://crbug.com/1007162
+  // is found.
+  CHECK(!inside_create_stream_);
   BytesConsumer* consumer = consumer_.Release();
 
   CloseAndLockAndDisturb(exception_state);

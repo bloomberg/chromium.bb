@@ -168,7 +168,6 @@ std::ostream& operator<<(std::ostream& os, const InstructionOperand& op) {
           return os << "[immediate:" << imm.indexed_value() << "]";
       }
     }
-    case InstructionOperand::EXPLICIT:
     case InstructionOperand::ALLOCATED: {
       LocationOperand allocated = LocationOperand::cast(op);
       if (op.IsStackSlot()) {
@@ -191,9 +190,6 @@ std::ostream& operator<<(std::ostream& os, const InstructionOperand& op) {
         DCHECK(op.IsSimd128Register());
         os << "[" << Simd128Register::from_code(allocated.register_code())
            << "|R";
-      }
-      if (allocated.IsExplicit()) {
-        os << "|E";
       }
       switch (allocated.representation()) {
         case MachineRepresentation::kNone:
@@ -231,9 +227,6 @@ std::ostream& operator<<(std::ostream& os, const InstructionOperand& op) {
           break;
         case MachineRepresentation::kTagged:
           os << "|t";
-          break;
-        case MachineRepresentation::kCompressedSigned:
-          os << "|cs";
           break;
         case MachineRepresentation::kCompressedPointer:
           os << "|cp";
@@ -292,17 +285,6 @@ void ParallelMove::PrepareInsertAfter(
     }
   }
   if (replacement != nullptr) move->set_source(replacement->source());
-}
-
-ExplicitOperand::ExplicitOperand(LocationKind kind, MachineRepresentation rep,
-                                 int index)
-    : LocationOperand(EXPLICIT, kind, rep, index) {
-  DCHECK_IMPLIES(kind == REGISTER && !IsFloatingPoint(rep),
-                 GetRegConfig()->IsAllocatableGeneralCode(index));
-  DCHECK_IMPLIES(kind == REGISTER && rep == MachineRepresentation::kFloat32,
-                 GetRegConfig()->IsAllocatableFloatCode(index));
-  DCHECK_IMPLIES(kind == REGISTER && (rep == MachineRepresentation::kFloat64),
-                 GetRegConfig()->IsAllocatableDoubleCode(index));
 }
 
 Instruction::Instruction(InstructionCode opcode)
@@ -907,7 +889,6 @@ static MachineRepresentation FilterRepresentation(MachineRepresentation rep) {
     case MachineRepresentation::kFloat32:
     case MachineRepresentation::kFloat64:
     case MachineRepresentation::kSimd128:
-    case MachineRepresentation::kCompressedSigned:
     case MachineRepresentation::kCompressedPointer:
     case MachineRepresentation::kCompressed:
       return rep;

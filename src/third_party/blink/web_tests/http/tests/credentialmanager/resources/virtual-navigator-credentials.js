@@ -24,12 +24,10 @@ class VirtualAuthenticator {
     let ecKey = await window.crypto.subtle.generateKey(
         { name: "ECDSA", namedCurve: "P-256" }, true /* extractable */, ["sign", "verify"]);
     let privateKeyPkcs8 = await window.crypto.subtle.exportKey("pkcs8", ecKey.privateKey);
-    let applicationParameter = await window.crypto.subtle.digest(
-        { name: "SHA-256" }, new TextEncoder("utf-8").encode(rpId));
     let registration = {
       privateKey: new Uint8Array(privateKeyPkcs8),
       keyHandle: keyHandle,
-      applicationParameter: new Uint8Array(applicationParameter),
+      rpId,
       counter: 1,
     };
     let addRegistrationResponse = await this.virtualAuthenticator_.addRegistration(registration);
@@ -53,11 +51,10 @@ class VirtualAuthenticator {
 
 class VirtualAuthenticatorManager {
   constructor() {
-    const docBrokerRemote = new blink.mojom.DocumentInterfaceBrokerRemote(
-      Mojo.getDocumentInterfaceBrokerHandle());
     this.virtualAuthenticatorManager_ = new blink.test.mojom.VirtualAuthenticatorManagerRemote;
-    docBrokerRemote.getVirtualAuthenticatorManager(
-      this.virtualAuthenticatorManager_.$.bindNewPipeAndPassReceiver());
+    Mojo.bindInterface(
+      blink.test.mojom.VirtualAuthenticatorManager.$interfaceName,
+      this.virtualAuthenticatorManager_.$.bindNewPipeAndPassReceiver().handle, "context", true);
   }
 
   async createAuthenticator(options = {}) {

@@ -43,7 +43,7 @@
 #include "extensions/common/extension.h"
 #include "google_apis/drive/drive_api_parser.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
-#include "storage/browser/fileapi/file_system_context.h"
+#include "storage/browser/file_system/file_system_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/leveldatabase/leveldb_chrome.h"
 
@@ -108,7 +108,7 @@ class DriveBackendSyncTest : public testing::Test,
 
     std::unique_ptr<drive::FakeDriveService> drive_service(
         new drive::FakeDriveService);
-    drive_service->Initialize("test@example.com");
+    drive_service->Initialize(CoreAccountId("account_id"));
     ASSERT_TRUE(drive::test_util::SetUpTestEntries(drive_service.get()));
 
     std::unique_ptr<drive::DriveUploaderInterface> uploader(
@@ -125,6 +125,7 @@ class DriveBackendSyncTest : public testing::Test,
         nullptr,  // task_logger
         nullptr,  // notification_manager
         nullptr,  // extension_service
+        nullptr,  // extension_registry
         nullptr,  // identity_manager
         nullptr,  // url_loader_factory
         nullptr,  // drive_service

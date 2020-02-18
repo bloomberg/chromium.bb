@@ -13,6 +13,7 @@
 #include "base/optional.h"
 #include "base/time/clock.h"
 #include "base/time/time.h"
+#include "chromeos/components/sync_wifi/network_identifier.h"
 #include "chromeos/components/sync_wifi/synced_network_updater.h"
 #include "components/sync/model/entity_change.h"
 #include "components/sync/model/metadata_batch.h"
@@ -20,6 +21,8 @@
 #include "components/sync/model/model_type_change_processor.h"
 #include "components/sync/model/mutable_data_batch.h"
 #include "components/sync/protocol/model_type_state.pb.h"
+
+namespace chromeos {
 
 namespace sync_wifi {
 
@@ -31,7 +34,7 @@ std::unique_ptr<syncer::EntityData> GenerateWifiEntityData(
   entity_data->specifics.mutable_wifi_configuration()
       ->mutable_client_only_encrypted_data()
       ->CopyFrom(data);
-  entity_data->name = data.ssid();
+  entity_data->name = NetworkIdentifier::FromProto(data).SerializeToString();
   return entity_data;
 }
 }  // namespace
@@ -75,7 +78,8 @@ base::Optional<syncer::ModelError> WifiConfigurationBridge::ApplySyncChanges(
       if (it != entries_.end()) {
         entries_.erase(it);
         batch->DeleteData(change->storage_key());
-        synced_network_updater_->RemoveNetwork(change->storage_key());
+        synced_network_updater_->RemoveNetwork(
+            NetworkIdentifier::DeserializeFromString(change->storage_key()));
       }
       continue;
     }
@@ -124,9 +128,9 @@ std::string WifiConfigurationBridge::GetClientTag(
 
 std::string WifiConfigurationBridge::GetStorageKey(
     const syncer::EntityData& entity_data) {
-  return entity_data.specifics.wifi_configuration()
-      .client_only_encrypted_data()
-      .ssid();
+  return NetworkIdentifier::FromProto(entity_data.specifics.wifi_configuration()
+                                          .client_only_encrypted_data())
+      .SerializeToString();
 }
 
 void WifiConfigurationBridge::OnStoreCreated(
@@ -187,12 +191,14 @@ void WifiConfigurationBridge::Commit(
                                           weak_ptr_factory_.GetWeakPtr()));
 }
 
-std::vector<std::string> WifiConfigurationBridge::GetAllSsidsForTesting() {
-  std::vector<std::string> ssids;
+std::vector<NetworkIdentifier> WifiConfigurationBridge::GetAllIdsForTesting() {
+  std::vector<NetworkIdentifier> ids;
   for (const auto& entry : entries_)
-    ssids.push_back(entry.second.ssid());
+    ids.push_back(NetworkIdentifier::FromProto(entry.second));
 
-  return ssids;
+  return ids;
 }
 
 }  // namespace sync_wifi
+
+}  // namespace chromeos

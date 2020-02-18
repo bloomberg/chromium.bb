@@ -16,11 +16,13 @@ import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
-import org.chromium.blink_public.web.WebContextMenuMediaType;
+import org.chromium.blink_public.common.ContextMenuDataMediaType;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.contextmenu.ChromeContextMenuItem.Item;
 import org.chromium.chrome.browser.contextmenu.ChromeContextMenuPopulator.ContextMenuGroup;
 import org.chromium.chrome.browser.contextmenu.RevampedContextMenuCoordinator.ListItemType;
+import org.chromium.ui.base.ActivityWindowAndroid;
+import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
 
 import java.util.ArrayList;
@@ -33,17 +35,19 @@ import java.util.List;
 public class RevampedContextMenuCoordinatorTest {
     private RevampedContextMenuCoordinator mCoordinator;
     private Activity mActivity;
+    private WindowAndroid mWindow;
 
     @Before
     public void setUpTest() {
         mActivity = Robolectric.setupActivity(Activity.class);
+        mWindow = new ActivityWindowAndroid(mActivity, false);
         mCoordinator = new RevampedContextMenuCoordinator(0, null);
     }
 
     @Test
     public void testGetItemListWithImageLink() {
         final ContextMenuParams params = new ContextMenuParams(
-                WebContextMenuMediaType.IMAGE, "", "", "", "", "", "", null, false, 0, 0, 0);
+                ContextMenuDataMediaType.IMAGE, "", "", "", "", "", "", null, false, 0, 0, 0);
         List<Pair<Integer, List<ContextMenuItem>>> rawItems = new ArrayList<>();
         // Link items
         List<ContextMenuItem> groupOne = new ArrayList<>();
@@ -62,7 +66,7 @@ public class RevampedContextMenuCoordinatorTest {
         rawItems.add(new Pair<>(ContextMenuGroup.IMAGE, groupTwo));
 
         mCoordinator.initializeHeaderCoordinatorForTesting(mActivity, params);
-        ModelList itemList = mCoordinator.getItemList(mActivity, rawItems, params);
+        ModelList itemList = mCoordinator.getItemList(mWindow, rawItems, params);
 
         assertThat(itemList.get(0).type, equalTo(ListItemType.HEADER));
         assertThat(itemList.get(1).type, equalTo(ListItemType.DIVIDER));
@@ -83,7 +87,7 @@ public class RevampedContextMenuCoordinatorTest {
         // Profile.getLastUsedProfile(), which throws an exception because native isn't initialized.
         // mediaType here doesn't have any effect on what we're testing.
         final ContextMenuParams params = new ContextMenuParams(
-                WebContextMenuMediaType.IMAGE, "", "", "", "", "", "", null, false, 0, 0, 0);
+                ContextMenuDataMediaType.IMAGE, "", "", "", "", "", "", null, false, 0, 0, 0);
         List<Pair<Integer, List<ContextMenuItem>>> rawItems = new ArrayList<>();
         // Link items
         List<ContextMenuItem> groupOne = new ArrayList<>();
@@ -95,7 +99,7 @@ public class RevampedContextMenuCoordinatorTest {
         rawItems.add(new Pair<>(ContextMenuGroup.LINK, groupOne));
 
         mCoordinator.initializeHeaderCoordinatorForTesting(mActivity, params);
-        ModelList itemList = mCoordinator.getItemList(mActivity, rawItems, params);
+        ModelList itemList = mCoordinator.getItemList(mWindow, rawItems, params);
 
         assertThat(itemList.get(0).type, equalTo(ListItemType.HEADER));
         assertThat(itemList.get(1).type, equalTo(ListItemType.DIVIDER));
@@ -108,7 +112,7 @@ public class RevampedContextMenuCoordinatorTest {
     @Test
     public void testGetItemListWithVideo() {
         final ContextMenuParams params = new ContextMenuParams(
-                WebContextMenuMediaType.VIDEO, "", "", "", "", "", "", null, false, 0, 0, 0);
+                ContextMenuDataMediaType.VIDEO, "", "", "", "", "", "", null, false, 0, 0, 0);
         List<Pair<Integer, List<ContextMenuItem>>> rawItems = new ArrayList<>();
         // Video items
         List<ContextMenuItem> groupOne = new ArrayList<>();
@@ -116,7 +120,7 @@ public class RevampedContextMenuCoordinatorTest {
         rawItems.add(new Pair<>(ContextMenuGroup.LINK, groupOne));
 
         mCoordinator.initializeHeaderCoordinatorForTesting(mActivity, params);
-        ModelList itemList = mCoordinator.getItemList(mActivity, rawItems, params);
+        ModelList itemList = mCoordinator.getItemList(mWindow, rawItems, params);
 
         assertThat(itemList.get(0).type, equalTo(ListItemType.HEADER));
         assertThat(itemList.get(1).type, equalTo(ListItemType.DIVIDER));

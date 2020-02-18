@@ -20,23 +20,21 @@ class SaveCardBubbleController;
 class SaveCardIconView : public PageActionIconView {
  public:
   SaveCardIconView(CommandUpdater* command_updater,
-                   PageActionIconView::Delegate* delegate,
-                   const gfx::FontList& font_list);
+                   PageActionIconView::Delegate* delegate);
   ~SaveCardIconView() override;
 
   // PageActionIconView:
   views::BubbleDialogDelegateView* GetBubble() const override;
-  bool Update() override;
+  void UpdateImpl() override;
   base::string16 GetTextForTooltipAndAccessibleName() const override;
 
  protected:
   // PageActionIconView:
   void OnExecuting(PageActionIconView::ExecuteSource execute_source) override;
   const gfx::VectorIcon& GetVectorIcon() const override;
+  const gfx::VectorIcon& GetVectorIconBadge() const override;
 
  private:
-  friend class SaveCardBubbleViewsFullFormBrowserTest;
-
   SaveCardBubbleController* GetController() const;
 
   // gfx::AnimationDelegate:

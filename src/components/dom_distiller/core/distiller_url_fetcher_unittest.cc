@@ -38,7 +38,7 @@ class DistillerURLFetcherTest : public testing::Test {
         std::string(kTestPageAResponse, sizeof(kTestPageAResponse)));
     test_url_loader_factory_.AddResponse(
         GURL(kTestPageB),
-        network::CreateResourceResponseHead(net::HTTP_INTERNAL_SERVER_ERROR),
+        network::CreateURLResponseHead(net::HTTP_INTERNAL_SERVER_ERROR),
         std::string(kTestPageBResponse, sizeof(kTestPageBResponse)),
         network::URLLoaderCompletionStatus(net::OK));
   }
@@ -51,8 +51,8 @@ class DistillerURLFetcherTest : public testing::Test {
     CHECK_EQ(expected_response, response_);
   }
 
-  base::test::TaskEnvironment task_environment_{
-      base::test::TaskEnvironment::MainThreadType::UI};
+  base::test::SingleThreadTaskEnvironment task_environment_{
+      base::test::SingleThreadTaskEnvironment::MainThreadType::UI};
   std::unique_ptr<dom_distiller::DistillerURLFetcher> url_fetcher_;
   network::TestURLLoaderFactory test_url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory>

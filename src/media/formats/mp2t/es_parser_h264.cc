@@ -185,7 +185,7 @@ EsParserH264::EsParserH264(const NewVideoConfigCB& new_video_config_cb,
       next_access_unit_pos_(0)
 #if BUILDFLAG(ENABLE_HLS_SAMPLE_AES)
       ,
-      use_hls_sample_aes_(false),
+      init_encryption_scheme_(EncryptionScheme::kUnencrypted),
       get_decrypt_config_cb_()
 #endif
 {
@@ -194,16 +194,14 @@ EsParserH264::EsParserH264(const NewVideoConfigCB& new_video_config_cb,
 #if BUILDFLAG(ENABLE_HLS_SAMPLE_AES)
 EsParserH264::EsParserH264(const NewVideoConfigCB& new_video_config_cb,
                            const EmitBufferCB& emit_buffer_cb,
-                           bool use_hls_sample_aes,
+                           EncryptionScheme init_encryption_scheme,
                            const GetDecryptConfigCB& get_decrypt_config_cb)
     : es_adapter_(new_video_config_cb, emit_buffer_cb),
       h264_parser_(new H264Parser()),
       current_access_unit_pos_(0),
       next_access_unit_pos_(0),
-      use_hls_sample_aes_(use_hls_sample_aes),
-      get_decrypt_config_cb_(get_decrypt_config_cb) {
-  DCHECK_EQ(!!get_decrypt_config_cb_, use_hls_sample_aes_);
-}
+      init_encryption_scheme_(init_encryption_scheme),
+      get_decrypt_config_cb_(get_decrypt_config_cb) {}
 #endif
 
 EsParserH264::~EsParserH264() {
@@ -360,7 +358,7 @@ bool EsParserH264::ParseFromEsQueue() {
 #if BUILDFLAG(ENABLE_HLS_SAMPLE_AES)
         // With HLS SampleAES, protected blocks in H.264 consist of IDR and non-
         // IDR slices that are more than 48 bytes in length.
-        if (use_hls_sample_aes_ &&
+        if (get_decrypt_config_cb_ && get_decrypt_config_cb_.Run() &&
             nalu.size > kSampleAESMaxUnprotectedNALULength) {
           int64_t nal_begin = nalu.data - es;
           protected_blocks_.Add(nal_begin, nal_begin + nalu.size);
@@ -418,14 +416,9 @@ bool EsParserH264::EmitFrame(int64_t access_unit_pos,
     const H264SPS* sps = h264_parser_->GetSPS(pps->seq_parameter_set_id);
     if (!sps)
       return false;
-    EncryptionScheme scheme = Unencrypted();
+    EncryptionScheme scheme = EncryptionScheme::kUnencrypted;
 #if BUILDFLAG(ENABLE_HLS_SAMPLE_AES)
-    if (use_hls_sample_aes_) {
-      // Note that for SampleAES the (encrypt,skip) pattern is constant.
-      scheme = EncryptionScheme(
-          EncryptionScheme::CIPHER_MODE_AES_CBC,
-          EncryptionPattern(kSampleAESEncryptBlocks, kSampleAESSkipBlocks));
-    }
+    scheme = init_encryption_scheme_;
 #endif
     RCHECK(UpdateVideoDecoderConfig(sps, scheme));
   }
@@ -440,14 +433,12 @@ bool EsParserH264::EmitFrame(int64_t access_unit_pos,
 
 #if BUILDFLAG(ENABLE_HLS_SAMPLE_AES)
   const DecryptConfig* base_decrypt_config = nullptr;
-  if (use_hls_sample_aes_) {
-    DCHECK(get_decrypt_config_cb_);
+  if (get_decrypt_config_cb_)
     base_decrypt_config = get_decrypt_config_cb_.Run();
-  }
 
   std::unique_ptr<uint8_t[]> adjusted_au;
   std::vector<SubsampleEntry> subsamples;
-  if (use_hls_sample_aes_ && base_decrypt_config) {
+  if (base_decrypt_config) {
     adjusted_au = AdjustAUForSampleAES(es, &access_unit_size, protected_blocks_,
                                        &subsamples);
     protected_blocks_.clear();
@@ -464,20 +455,20 @@ bool EsParserH264::EmitFrame(int64_t access_unit_pos,
   stream_parser_buffer->SetDecodeTimestamp(current_timing_desc.dts);
   stream_parser_buffer->set_timestamp(current_timing_desc.pts);
 #if BUILDFLAG(ENABLE_HLS_SAMPLE_AES)
-  if (use_hls_sample_aes_ && base_decrypt_config) {
-    switch (base_decrypt_config->encryption_mode()) {
-      case EncryptionMode::kUnencrypted:
+  if (base_decrypt_config) {
+    switch (base_decrypt_config->encryption_scheme()) {
+      case EncryptionScheme::kUnencrypted:
         // As |base_decrypt_config| is specified, the stream is encrypted,
         // so this shouldn't happen.
         NOTREACHED();
         break;
-      case EncryptionMode::kCenc:
+      case EncryptionScheme::kCenc:
         stream_parser_buffer->set_decrypt_config(
             DecryptConfig::CreateCencConfig(base_decrypt_config->key_id(),
                                             base_decrypt_config->iv(),
                                             subsamples));
         break;
-      case EncryptionMode::kCbcs:
+      case EncryptionScheme::kCbcs:
         // Note that for SampleAES the (encrypt,skip) pattern is constant.
         // If not specified in |base_decrypt_config|, use default values.
         stream_parser_buffer->set_decrypt_config(
@@ -494,7 +485,7 @@ bool EsParserH264::EmitFrame(int64_t access_unit_pos,
 }
 
 bool EsParserH264::UpdateVideoDecoderConfig(const H264SPS* sps,
-                                            const EncryptionScheme& scheme) {
+                                            EncryptionScheme scheme) {
   // Set the SAR to 1 when not specified in the H264 stream.
   int sar_width = (sps->sar_width == 0) ? 1 : sps->sar_width;
   int sar_height = (sps->sar_height == 0) ? 1 : sps->sar_height;

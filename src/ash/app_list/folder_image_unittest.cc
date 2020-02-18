@@ -20,7 +20,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/skia_util.h"
 
-namespace app_list {
+namespace ash {
 
 namespace {
 
@@ -112,7 +112,7 @@ class FolderImageTest
  private:
   DISALLOW_COPY_AND_ASSIGN(FolderImageTest);
 };
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          FolderImageTest,
                          ::testing::Values(ash::AppListConfigType::kShared,
                                            ash::AppListConfigType::kLarge,
@@ -441,4 +441,4 @@ TEST_P(FolderImageTest, GetTargetIconRectInFolderWithFiveItems) {
   }
 }
 
-}  // namespace app_list
+}  // namespace ash

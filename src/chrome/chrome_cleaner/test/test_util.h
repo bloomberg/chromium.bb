@@ -44,6 +44,12 @@ bool SetupTestConfigs();
 // |catalogs| instead of TestUwSCatalog.
 bool SetupTestConfigsWithCatalogs(const PUPData::UwSCatalogs& catalogs);
 
+// Launch Chrome Cleaner unit tests in the given test suite and given list of
+// UwSCatalogs. Returns the exit code.
+int RunChromeCleanerTestSuite(int argc,
+                              char** argv,
+                              const PUPData::UwSCatalogs& catalogs);
+
 // While this class is in scope, Rebooter::IsPostReboot will return true.
 class ScopedIsPostReboot {
  public:
@@ -103,7 +109,8 @@ bool RegisterTestTask(TaskScheduler* task_scheduler,
 // Append switches to the command line that is used to run cleaner or reporter
 // in tests. Switches will disable logs upload, profile reset and other side
 // effects.
-void AppendTestSwitches(base::CommandLine* command_line);
+void AppendTestSwitches(const base::ScopedTempDir& temp_dir,
+                        base::CommandLine* command_line);
 
 // Expect the |expected_path| to be found in expanded disk footprint of |pup|.
 void ExpectDiskFootprint(const PUPData::PUP& pup,

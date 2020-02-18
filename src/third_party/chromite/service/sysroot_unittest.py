@@ -9,6 +9,8 @@ from __future__ import print_function
 
 import os
 
+import mock
+
 from chromite.lib import build_target_util
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
@@ -157,6 +159,33 @@ class CreateTest(cros_test_lib.RunCommandTempDirTestCase):
     config = sysroot.SetupBoardRunConfig(force=True)
     sysroot.Create(self.build_target, config, None)
     delete_patch.assert_called_once()
+
+
+class CreateSimpleChromeSysrootTest(cros_test_lib.MockTempDirTestCase):
+  """Tests for CreateSimpleChromeSysroot."""
+
+  def setUp(self):
+    self.run_mock = self.PatchObject(cros_build_lib, 'RunCommand',
+                                     return_value=True)
+    self.source_root = os.path.join(self.tempdir, 'source_root')
+    osutils.SafeMakedirs(self.source_root)
+    self.PatchObject(constants, 'SOURCE_ROOT', new=self.source_root)
+
+  def testCreateSimpleChromeSysroot(self):
+    # A board for which we will create a simple chrome sysroot.
+    target = 'board'
+    use_flags = ['cros-debug', 'chrome_internal']
+
+    # Call service, verify arguments passed to RunCommand.
+    sysroot.CreateSimpleChromeSysroot(target, use_flags)
+    self.run_mock.assert_called_with(
+        ['cros_generate_sysroot', '--out-dir', mock.ANY, '--board', target,
+         '--deps-only', '--package', 'chromeos-base/chromeos-chrome'],
+        extra_env={'USE': 'cros-debug chrome_internal'},
+        enter_chroot=True,
+        cwd=self.source_root
+    )
+
 
 
 class InstallToolchainTest(cros_test_lib.MockTempDirTestCase):

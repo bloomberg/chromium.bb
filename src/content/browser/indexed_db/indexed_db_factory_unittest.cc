@@ -20,16 +20,18 @@
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/default_clock.h"
+#include "components/services/storage/indexed_db/leveldb/fake_leveldb_factory.h"
+#include "components/services/storage/indexed_db/transactional_leveldb/transactional_leveldb_database.h"
+#include "content/browser/indexed_db/indexed_db_class_factory.h"
 #include "content/browser/indexed_db/indexed_db_connection.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
 #include "content/browser/indexed_db/indexed_db_data_format_version.h"
+#include "content/browser/indexed_db/indexed_db_execution_context_connection_tracker.h"
 #include "content/browser/indexed_db/indexed_db_factory_impl.h"
+#include "content/browser/indexed_db/indexed_db_leveldb_env.h"
 #include "content/browser/indexed_db/indexed_db_origin_state.h"
 #include "content/browser/indexed_db/indexed_db_pre_close_task_queue.h"
 #include "content/browser/indexed_db/indexed_db_transaction.h"
-#include "content/browser/indexed_db/leveldb/fake_leveldb_factory.h"
-#include "content/browser/indexed_db/leveldb/leveldb_env.h"
-#include "content/browser/indexed_db/leveldb/transactional_leveldb_database.h"
 #include "content/browser/indexed_db/mock_indexed_db_callbacks.h"
 #include "content/browser/indexed_db/mock_indexed_db_database_callbacks.h"
 #include "content/public/browser/storage_usage_info.h"
@@ -39,7 +41,7 @@
 #include "storage/browser/test/mock_quota_manager_proxy.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/indexeddb/web_idb_types.h"
-#include "third_party/blink/public/platform/modules/indexeddb/web_idb_database_exception.h"
+#include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -108,6 +110,7 @@ class IndexedDBFactoryTest : public testing::Test {
     }
     if (temp_dir_.IsValid())
       ASSERT_TRUE(temp_dir_.Delete());
+    IndexedDBClassFactory::Get()->SetLevelDBFactoryForTesting(nullptr);
   }
 
   void SetupContext() {
@@ -126,13 +129,13 @@ class IndexedDBFactoryTest : public testing::Test {
         base::SequencedTaskRunnerHandle::Get());
   }
 
-  void SetupContextWithFactories(indexed_db::LevelDBFactory* factory,
-                                 base::Clock* clock) {
+  void SetupContextWithFactories(LevelDBFactory* factory, base::Clock* clock) {
     context_ = base::MakeRefCounted<IndexedDBContextImpl>(
         CreateAndReturnTempDir(&temp_dir_),
         /*special_storage_policy=*/nullptr, quota_manager_proxy_.get(), clock,
         base::SequencedTaskRunnerHandle::Get());
-    context_->SetLevelDBFactoryForTesting(factory);
+    if (factory)
+      IndexedDBClassFactory::Get()->SetLevelDBFactoryForTesting(factory);
   }
 
   // Runs through the upgrade flow to create a basic database connection. There
@@ -147,8 +150,9 @@ class IndexedDBFactoryTest : public testing::Test {
     auto create_transaction_callback =
         base::BindOnce(&CreateAndBindTransactionPlaceholder);
     auto connection = std::make_unique<IndexedDBPendingConnection>(
-        callbacks, db_callbacks, /*child_process_id=*/0, transaction_id,
-        IndexedDBDatabaseMetadata::NO_VERSION,
+        callbacks, db_callbacks,
+        IndexedDBExecutionContextConnectionTracker::Handle::CreateForTesting(),
+        transaction_id, IndexedDBDatabaseMetadata::NO_VERSION,
         std::move(create_transaction_callback));
 
     // Do the first half of the upgrade, and request the upgrade from renderer.
@@ -297,7 +301,7 @@ TEST_F(IndexedDBFactoryTestWithMockTime, PreCloseTasksStart) {
   base::test::ScopedFeatureList feature_list;
   base::SimpleTestClock clock;
   clock.SetNow(base::Time::Now());
-  SetupContextWithFactories(indexed_db::LevelDBFactory::Get(), &clock);
+  SetupContextWithFactories(nullptr, &clock);
 
   const Origin origin = Origin::Create(GURL("http://localhost:81"));
 
@@ -446,8 +450,9 @@ TEST_F(IndexedDBFactoryTest, ContextDestructionClosesConnections) {
   auto create_transaction_callback =
       base::BindOnce(&CreateAndBindTransactionPlaceholder);
   auto connection = std::make_unique<IndexedDBPendingConnection>(
-      callbacks, db_callbacks, /*child_process_id=*/0, transaction_id,
-      IndexedDBDatabaseMetadata::DEFAULT_VERSION,
+      callbacks, db_callbacks,
+      IndexedDBExecutionContextConnectionTracker::Handle::CreateForTesting(),
+      transaction_id, IndexedDBDatabaseMetadata::DEFAULT_VERSION,
       std::move(create_transaction_callback));
   factory()->Open(ASCIIToUTF16("db"), std::move(connection), origin,
                   context()->data_path());
@@ -507,8 +512,9 @@ TEST_F(IndexedDBFactoryTest, ConnectionForceClose) {
   auto create_transaction_callback =
       base::BindOnce(&CreateAndBindTransactionPlaceholder);
   auto connection = std::make_unique<IndexedDBPendingConnection>(
-      callbacks, db_callbacks, /*child_process_id=*/0, transaction_id,
-      IndexedDBDatabaseMetadata::DEFAULT_VERSION,
+      callbacks, db_callbacks,
+      IndexedDBExecutionContextConnectionTracker::Handle::CreateForTesting(),
+      transaction_id, IndexedDBDatabaseMetadata::DEFAULT_VERSION,
       std::move(create_transaction_callback));
   factory()->Open(ASCIIToUTF16("db"), std::move(connection), origin,
                   context()->data_path());
@@ -538,8 +544,9 @@ TEST_F(IndexedDBFactoryTest, DatabaseForceCloseDuringUpgrade) {
   auto create_transaction_callback =
       base::BindOnce(&CreateAndBindTransactionPlaceholder);
   auto connection = std::make_unique<IndexedDBPendingConnection>(
-      callbacks, db_callbacks, /*child_process_id=*/0, transaction_id,
-      IndexedDBDatabaseMetadata::NO_VERSION,
+      callbacks, db_callbacks,
+      IndexedDBExecutionContextConnectionTracker::Handle::CreateForTesting(),
+      transaction_id, IndexedDBDatabaseMetadata::NO_VERSION,
       std::move(create_transaction_callback));
 
   // Do the first half of the upgrade, and request the upgrade from renderer.
@@ -575,8 +582,9 @@ TEST_F(IndexedDBFactoryTest, ConnectionCloseDuringUpgrade) {
   auto create_transaction_callback =
       base::BindOnce(&CreateAndBindTransactionPlaceholder);
   auto connection = std::make_unique<IndexedDBPendingConnection>(
-      callbacks, db_callbacks, /*child_process_id=*/0, transaction_id,
-      IndexedDBDatabaseMetadata::NO_VERSION,
+      callbacks, db_callbacks,
+      IndexedDBExecutionContextConnectionTracker::Handle::CreateForTesting(),
+      transaction_id, IndexedDBDatabaseMetadata::NO_VERSION,
       std::move(create_transaction_callback));
 
   // Do the first half of the upgrade, and request the upgrade from renderer.
@@ -687,7 +695,7 @@ class LookingForQuotaErrorMockCallbacks : public IndexedDBCallbacks {
         error_called_(false) {}
   void OnError(const IndexedDBDatabaseError& error) override {
     error_called_ = true;
-    EXPECT_EQ(blink::kWebIDBDatabaseExceptionQuotaError, error.code());
+    EXPECT_EQ(blink::mojom::IDBException::kQuotaError, error.code());
   }
   bool error_called() const { return error_called_; }
 
@@ -699,7 +707,8 @@ class LookingForQuotaErrorMockCallbacks : public IndexedDBCallbacks {
 };
 
 TEST_F(IndexedDBFactoryTest, QuotaErrorOnDiskFull) {
-  indexed_db::FakeLevelDBFactory fake_ldb_factory;
+  FakeLevelDBFactory fake_ldb_factory(
+      IndexedDBClassFactory::GetLevelDBOptions(), "indexed-db");
   fake_ldb_factory.EnqueueNextOpenLevelDBStateResult(
       nullptr, leveldb::Status::IOError("Disk is full."), true);
   SetupContextWithFactories(&fake_ldb_factory,
@@ -714,7 +723,8 @@ TEST_F(IndexedDBFactoryTest, QuotaErrorOnDiskFull) {
   auto create_transaction_callback =
       base::BindOnce(&CreateAndBindTransactionPlaceholder);
   auto connection = std::make_unique<IndexedDBPendingConnection>(
-      callbacks, dummy_database_callbacks, /*child_process_id=*/0,
+      callbacks, dummy_database_callbacks,
+      IndexedDBExecutionContextConnectionTracker::Handle::CreateForTesting(),
       /*transaction_id=*/1, /*version=*/1,
       std::move(create_transaction_callback));
   factory()->Open(name, std::move(connection), origin, context()->data_path());
@@ -755,8 +765,8 @@ TEST_F(IndexedDBFactoryTest, DatabaseFailedOpen) {
 
   auto connection = std::make_unique<IndexedDBPendingConnection>(
       callbacks, db_callbacks,
-      /*child_process_id=*/0, transaction_id, db_version,
-      std::move(create_transaction_callback));
+      IndexedDBExecutionContextConnectionTracker::Handle::CreateForTesting(),
+      transaction_id, db_version, std::move(create_transaction_callback));
   {
     base::RunLoop loop;
     callbacks->CallOnUpgradeNeeded(
@@ -790,8 +800,8 @@ TEST_F(IndexedDBFactoryTest, DatabaseFailedOpen) {
         base::BindOnce(&CreateAndBindTransactionPlaceholder);
     auto connection = std::make_unique<IndexedDBPendingConnection>(
         failed_open_callbacks, db_callbacks2,
-        /*child_process_id=*/0, transaction_id, db_version,
-        std::move(create_transaction_callback));
+        IndexedDBExecutionContextConnectionTracker::Handle::CreateForTesting(),
+        transaction_id, db_version, std::move(create_transaction_callback));
     factory()->Open(db_name, std::move(connection), origin,
                     context()->data_path());
     EXPECT_TRUE(factory()->IsDatabaseOpen(origin, db_name));
@@ -837,7 +847,9 @@ TEST_F(IndexedDBFactoryTest, DataFormatVersion) {
     auto create_transaction_callback =
         base::BindOnce(&CreateAndBindTransactionPlaceholder);
     auto pending_connection = std::make_unique<IndexedDBPendingConnection>(
-        callbacks, db_callbacks, /*child_process_id=*/0, transaction_id,
+        callbacks, db_callbacks,
+        IndexedDBExecutionContextConnectionTracker::Handle::CreateForTesting(),
+        transaction_id,
         /*version=*/1, std::move(create_transaction_callback));
 
     {

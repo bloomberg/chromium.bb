@@ -7,7 +7,7 @@
 
 #include "third_party/blink/renderer/platform/graphics/contiguous_container.h"
 #include "third_party/blink/renderer/platform/graphics/paint/display_item.h"
-#include "third_party/blink/renderer/platform/graphics/paint/hit_test_display_item.h"
+#include "third_party/blink/renderer/platform/graphics/paint/scrollbar_display_item.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
@@ -19,8 +19,8 @@ struct PaintChunk;
 // each derived display item; the ideal value is the least common multiple.
 // The validity of kDisplayItemAlignment and kMaximumDisplayItemSize are checked
 // in PaintController::CreateAndAppend().
-static const size_t kDisplayItemAlignment = alignof(HitTestDisplayItem);
-static const size_t kMaximumDisplayItemSize = sizeof(HitTestDisplayItem);
+static const size_t kDisplayItemAlignment = alignof(ScrollbarDisplayItem);
+static const size_t kMaximumDisplayItemSize = sizeof(ScrollbarDisplayItem);
 
 // A container for a list of display items.
 class PLATFORM_EXPORT DisplayItemList
@@ -28,10 +28,10 @@ class PLATFORM_EXPORT DisplayItemList
  public:
   DisplayItemList(size_t initial_size_bytes)
       : ContiguousContainer(kMaximumDisplayItemSize, initial_size_bytes) {}
-  DisplayItemList(DisplayItemList&& source) noexcept
+  DisplayItemList(DisplayItemList&& source)
       : ContiguousContainer(std::move(source)) {}
 
-  DisplayItemList& operator=(DisplayItemList&& source) noexcept {
+  DisplayItemList& operator=(DisplayItemList&& source) {
     ContiguousContainer::operator=(std::move(source));
     return *this;
   }

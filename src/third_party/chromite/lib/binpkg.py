@@ -12,13 +12,14 @@
 from __future__ import print_function
 
 import collections
-import cStringIO
+import io
 import math
 import operator
 import os
 import tempfile
 import time
-import urllib2
+
+from six.moves import urllib
 
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
@@ -325,18 +326,18 @@ def _RetryUrlOpen(url, tries=3):
     tries: The number of times to try.
 
   Returns:
-    The result of urllib2.urlopen(url).
+    The result of urllib.request.urlopen(url).
   """
   for i in range(tries):
     try:
-      return urllib2.urlopen(url)
-    except urllib2.HTTPError as e:
+      return urllib.request.urlopen(url)
+    except urllib.error.HTTPError as e:
       if i + 1 >= tries or e.code < 500:
         e.msg += ('\nwhile processing %s' % url)
         raise
       else:
         print('Cannot GET %s: %s' % (url, str(e)))
-    except urllib2.URLError as e:
+    except urllib.error.URLError as e:
       if i + 1 >= tries:
         raise
       else:
@@ -345,11 +346,12 @@ def _RetryUrlOpen(url, tries=3):
     time.sleep(10)
 
 
-def GrabRemotePackageIndex(binhost_url):
+def GrabRemotePackageIndex(binhost_url, **kwargs):
   """Grab the latest binary package database from the specified URL.
 
   Args:
     binhost_url: Base URL of remote packages (PORTAGE_BINHOST).
+    kwargs: Additional RunCommand parameters.
 
   Returns:
     A PackageIndex object, if the Packages file can be retrieved. If the
@@ -360,7 +362,7 @@ def GrabRemotePackageIndex(binhost_url):
   if binhost_url.startswith('http'):
     try:
       f = _RetryUrlOpen(url)
-    except urllib2.HTTPError as e:
+    except urllib.error.HTTPError as e:
       if e.code in HTTP_FORBIDDEN_CODES:
         logging.PrintBuildbotStepWarnings()
         logging.error('Cannot GET %s: %s', url, e)
@@ -372,12 +374,12 @@ def GrabRemotePackageIndex(binhost_url):
   elif binhost_url.startswith('gs://'):
     try:
       gs_context = gs.GSContext()
-      output = gs_context.Cat(url)
+      output = gs_context.Cat(url, encoding='utf-8', **kwargs)
     except (cros_build_lib.RunCommandError, gs.GSNoSuchKey) as e:
       logging.PrintBuildbotStepWarnings()
       logging.error('Cannot GET %s: %s', url, e)
       return None
-    f = cStringIO.StringIO(output)
+    f = io.StringIO(output)
   else:
     return None
   pkgindex.Read(f)
@@ -401,10 +403,12 @@ def GrabLocalPackageIndex(package_path):
 
   # List all debug symbols available in package_path.
   symbols = set()
-  for f in cros_build_lib.ListFiles(package_path):
-    if f.endswith('.debug.tbz2'):
-      f = os.path.relpath(f, package_path)[:-len('.debug.tbz2')]
-      symbols.add(f)
+  for root, _, files in os.walk(package_path):
+    for f in files:
+      if f.endswith('.debug.tbz2'):
+        full_path = os.path.join(root, f)
+        f = os.path.relpath(full_path, package_path)[:-len('.debug.tbz2')]
+        symbols.add(f)
 
   for p in pkgindex.packages:
     # If the Packages file has DEBUG_SYMBOLS set but no debug symbols are

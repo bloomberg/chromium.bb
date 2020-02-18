@@ -9,12 +9,14 @@ from __future__ import print_function
 
 import os
 
+from google.protobuf import json_format
+
 from chromite.api.gen.chromiumos import builder_config_pb2
 from chromite.config import chromeos_config
 from chromite.lib import constants
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
-from google.protobuf import json_format
+
 
 BUILDER_CONFIG_FILENAME = os.path.join(
     constants.SOURCE_ROOT, 'infra/config/generated/builder_configs.cfg')
@@ -98,12 +100,15 @@ class ConfigSkewTest(cros_test_lib.TestCase):
     return [c for c in config.orchestrator.children if c not in exclude]
 
   def _get_old_config(self, name):
-    return self.old_configs[name.replace('-cq', '-paladin')]
+    return self.old_configs.get(name.replace('-cq', '-paladin'))
 
   def _get_old_config_slaves(self, name, exclude=None):
     exclude = exclude or []
-    config = self.old_configs[name]
-    return [c for c in config.slave_configs if c not in exclude]
+    config = self.old_configs.get(name)
+    if config:
+      return [c for c in config.slave_configs if c not in exclude]
+    else:
+      return []
 
   def _to_utf8(self, strings):
     return [string.decode('UTF-8') for string in strings]
@@ -112,20 +117,10 @@ class ConfigSkewTest(cros_test_lib.TestCase):
   def testPostsubmitBuildTargets(self):
     master_postsubmit_children = self._to_utf8(
         self._get_old_config_slaves('master-postsubmit'))
-    # Exclude the special builders that old config is not expected to have.
-    postsubmit_orchestrator_children = self._get_new_config_children(
-        'postsubmit-orchestrator', PS_EXCLUDE_BUILDERS)
 
-    missing_chromeos_config = (list(set(postsubmit_orchestrator_children) -
-                                    set(master_postsubmit_children)))
-    missing_build_targets = (list(set(master_postsubmit_children) -
-                                  set(postsubmit_orchestrator_children)))
-    if missing_chromeos_config:
-      self.fail('Build targets need to be added to chromeos_config.py: %s' %
-                missing_chromeos_config)
-    if missing_build_targets:
-      self.fail('Build targets need to be added to build_targets.star: %s' %
-                missing_build_targets)
+    if master_postsubmit_children:
+      self.fail('Postsubmit build targets should not be in '
+                'chromeos_config.py: %s' % set(master_postsubmit_children))
 
   @cros_test_lib.ConfigSkewTest()
   def testPostsubmitBuildTargetsCriticality(self):
@@ -137,13 +132,13 @@ class ConfigSkewTest(cros_test_lib.TestCase):
       old_config = self._get_old_config(child_name)
       # old_config doesn't exist is caught in another test, don't report here.
       new_critical = new_config.general.critical.value
-      old_critical = old_config.important
       if old_config:
+        old_critical = old_config.important
         if new_critical != old_critical:
           importance_mismatch.update({child_name:
                                       {'chromeos_config.py': old_critical,
                                        'build_targets.star': new_critical}})
-    if len(importance_mismatch) > 0:
+    if importance_mismatch:
       self.fail('Criticality difference in configs: %s' % importance_mismatch)
 
   @cros_test_lib.ConfigSkewTest()
@@ -156,13 +151,13 @@ class ConfigSkewTest(cros_test_lib.TestCase):
       old_config = self._get_old_config(child_name.replace('-cq', '-paladin'))
       # old_config doesn't exist is caught in another test, don't report here.
       new_critical = new_config.general.critical.value
-      old_critical = old_config.important
       if old_config:
+        old_critical = old_config.important
         if new_critical != old_critical:
           importance_mismatch.update({child_name: {
               'chromeos_config.py': old_critical,
               'build_targets.star': new_critical}})
-    if len(importance_mismatch) > 0:
+    if importance_mismatch:
       self.fail('Criticality difference in configs: %s' % importance_mismatch)
 
   @cros_test_lib.ConfigSkewTest()
@@ -175,12 +170,17 @@ class ConfigSkewTest(cros_test_lib.TestCase):
         'cq-orchestrator', PCQ_EXCLUDE_BUILDERS)
     sync_paladin_names = []
     sync_cq_names = []
+    kernel_v4_cq_names = []
     for child in master_cq_children:
       sync_paladin_names.append(child.replace('-paladin', '-cq'))
     for child in cq_orchestrator_children:
       sync_cq_names.append(child.replace('-cq', '-paladin'))
+      # The kernel_v4_* builders will not exist in legacy.
+      if '-kernel-v4_' in child:
+        kernel_v4_cq_names.append(child)
     missing_chromeos_config = (list(set(cq_orchestrator_children) -
-                                    set(sync_paladin_names)))
+                                    set(sync_paladin_names) -
+                                    set(kernel_v4_cq_names)))
     missing_build_targets = list(set(master_cq_children) - set(sync_cq_names))
     if missing_chromeos_config:
       self.fail('Build targets need to be added to chromeos_config.py: %s' %

@@ -40,6 +40,13 @@ void BrowserAccessibilityWin::UpdatePlatformAttributes() {
   GetCOM()->UpdateStep3FireEvents(false);
 }
 
+ui::AXPlatformNode* BrowserAccessibilityWin::GetAXPlatformNode() const {
+  if (!instance_active())
+    return nullptr;
+
+  return GetCOM();
+}
+
 bool BrowserAccessibilityWin::IsNative() const {
   return true;
 }
@@ -60,18 +67,6 @@ gfx::NativeViewAccessible BrowserAccessibilityWin::GetNativeViewAccessible() {
   return GetCOM();
 }
 
-ui::AXPlatformNode* BrowserAccessibilityWin::GetFromNodeID(int32_t id) {
-  if (!instance_active())
-    return nullptr;
-
-  BrowserAccessibility* accessibility = manager_->GetFromID(id);
-  if (!accessibility)
-    return nullptr;
-
-  auto* accessibility_win = ToBrowserAccessibilityWin(accessibility);
-  return accessibility_win->GetCOM();
-}
-
 BrowserAccessibilityComWin* BrowserAccessibilityWin::GetCOM() const {
   DCHECK(browser_accessibility_com_);
   return browser_accessibility_com_;
@@ -86,6 +81,10 @@ const BrowserAccessibilityWin* ToBrowserAccessibilityWin(
     const BrowserAccessibility* obj) {
   DCHECK(!obj || obj->IsNative());
   return static_cast<const BrowserAccessibilityWin*>(obj);
+}
+
+ui::TextAttributeList BrowserAccessibilityWin::ComputeTextAttributes() const {
+  return GetCOM()->AXPlatformNodeWin::ComputeTextAttributes();
 }
 
 }  // namespace content

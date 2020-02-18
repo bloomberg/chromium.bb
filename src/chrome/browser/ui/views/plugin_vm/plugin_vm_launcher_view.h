@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_PLUGIN_VM_PLUGIN_VM_LAUNCHER_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_PLUGIN_VM_PLUGIN_VM_LAUNCHER_VIEW_H_
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_image_manager.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
@@ -26,6 +27,8 @@ class PluginVmLauncherView : public views::BubbleDialogDelegateView,
  public:
   explicit PluginVmLauncherView(Profile* profile);
 
+  static PluginVmLauncherView* GetActiveViewForTesting();
+
   // views::BubbleDialogDelegateView implementation.
   int GetDialogButtons() const override;
   base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
@@ -41,35 +44,37 @@ class PluginVmLauncherView : public views::BubbleDialogDelegateView,
                                  base::TimeDelta elapsed_time) override;
   void OnDownloadCompleted() override;
   void OnDownloadCancelled() override;
-  void OnDownloadFailed() override;
+  void OnDownloadFailed(
+      plugin_vm::PluginVmImageManager::FailureReason reason) override;
   void OnImportProgressUpdated(int percent_completed,
                                base::TimeDelta elapsed_time) override;
   void OnImported() override;
   void OnImportCancelled() override;
-  void OnImportFailed() override;
+  void OnImportFailed(
+      plugin_vm::PluginVmImageManager::FailureReason reason) override;
 
   // Public for testing purposes.
   base::string16 GetBigMessage() const;
   base::string16 GetMessage() const;
 
- protected:
+  void SetFinishedCallbackForTesting(
+      base::OnceCallback<void(bool success)> callback);
+
+ private:
   enum class State {
     START_DOWNLOADING,  // PluginVm image downloading should be started.
     DOWNLOADING,        // PluginVm image downloading is in progress.
     IMPORTING,          // Downloaded PluginVm image importing is in progress.
     FINISHED,           // PluginVm environment setting has been finished.
     ERROR,              // Something unexpected happened.
-    NOT_ALLOWED,        // PluginVm is disallowed on the device.
   };
 
-  State state_ = State::START_DOWNLOADING;
-
   ~PluginVmLauncherView() override;
-  virtual void OnStateUpdated();
+
+  void OnStateUpdated();
   // views::BubbleDialogDelegateView implementation.
   void AddedToWidget() override;
 
- private:
   base::string16 GetDownloadProgressMessage(uint64_t downlaoded_bytes,
                                             int64_t content_length) const;
   // Updates the progress bar and shows a time left message if available.
@@ -91,6 +96,11 @@ class PluginVmLauncherView : public views::BubbleDialogDelegateView,
   views::Label* time_left_message_label_ = nullptr;
   views::ImageView* big_image_ = nullptr;
   base::TimeTicks setup_start_tick_;
+
+  State state_ = State::START_DOWNLOADING;
+  base::Optional<plugin_vm::PluginVmImageManager::FailureReason> reason_;
+
+  base::OnceCallback<void(bool success)> finished_callback_for_testing_;
 
   DISALLOW_COPY_AND_ASSIGN(PluginVmLauncherView);
 };

@@ -22,8 +22,8 @@
 #include "components/prefs/pref_service.h"
 #include "components/session_manager/session_manager_types.h"
 
+using session_manager::SessionState;
 using ::testing::_;
-using namespace session_manager;
 
 namespace ash {
 
@@ -70,7 +70,8 @@ TEST_F(LoginScreenControllerTest, RequestAuthentication) {
       Shell::Get()->session_controller()->GetLastActiveUserPrefService();
   EXPECT_TRUE(prefs->FindPreference(prefs::kQuickUnlockPinSalt));
 
-  std::string pin = "123456";
+  // Use a long PIN (N > 2^64) for the test to ensure that there is no overflow.
+  std::string pin = "12345678901234567890";
   EXPECT_CALL(*client, AuthenticateUserWithPasswordOrPin_(id, pin, true, _));
   base::RunLoop run_loop2;
   controller->AuthenticateUserWithPasswordOrPin(

@@ -3,6 +3,9 @@
 // found in the LICENSE file.
 
 #include "net/third_party/quiche/src/quic/quartc/simulated_packet_transport.h"
+
+#include <utility>
+
 #include "net/third_party/quiche/src/quic/platform/api/quic_str_cat.h"
 
 namespace quic {
@@ -33,7 +36,7 @@ int SimulatedQuartcPacketTransport::Write(const char* buffer,
 
   last_packet_number_ = info.packet_number;
 
-  auto packet = QuicMakeUnique<Packet>();
+  auto packet = std::make_unique<Packet>();
   packet->contents = std::string(buffer, buf_len);
   packet->size = buf_len;
   packet->tx_timestamp = clock_->Now();

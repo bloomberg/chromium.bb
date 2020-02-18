@@ -7,6 +7,7 @@
 #include <unordered_set>
 
 #include "base/auto_reset.h"
+#include "base/callback.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/string_number_conversions.h"
@@ -26,6 +27,15 @@
 namespace password_manager {
 
 namespace {
+
+std::string ComputeClientTag(
+    const sync_pb::PasswordSpecificsData& password_data) {
+  return net::EscapePath(GURL(password_data.origin()).spec()) + "|" +
+         net::EscapePath(password_data.username_element()) + "|" +
+         net::EscapePath(password_data.username_value()) + "|" +
+         net::EscapePath(password_data.password_element()) + "|" +
+         net::EscapePath(password_data.signon_realm());
+}
 
 sync_pb::PasswordSpecifics SpecificsFromPassword(
     const autofill::PasswordForm& password_form) {
@@ -163,9 +173,7 @@ bool AreLocalAndRemotePasswordsEqual(
 }
 
 bool ShouldRecoverPasswordsDuringMerge() {
-  return base::FeatureList::IsEnabled(
-             features::kRecoverPasswordsForSyncUsers) &&
-         !base::FeatureList::IsEnabled(features::kDeleteCorruptedPasswords);
+  return !base::FeatureList::IsEnabled(features::kDeleteCorruptedPasswords);
 }
 
 // A simple class for scoping a password store sync transaction. If the
@@ -202,10 +210,13 @@ class ScopedStoreTransaction {
 
 PasswordSyncBridge::PasswordSyncBridge(
     std::unique_ptr<syncer::ModelTypeChangeProcessor> change_processor,
-    PasswordStoreSync* password_store_sync)
+    PasswordStoreSync* password_store_sync,
+    const base::RepeatingClosure& sync_enabled_or_disabled_cb)
     : ModelTypeSyncBridge(std::move(change_processor)),
-      password_store_sync_(password_store_sync) {
+      password_store_sync_(password_store_sync),
+      sync_enabled_or_disabled_cb_(sync_enabled_or_disabled_cb) {
   DCHECK(password_store_sync_);
+  DCHECK(sync_enabled_or_disabled_cb_);
   // The metadata store could be null if the login database initialization
   // fails.
   if (!password_store_sync_->GetMetadataStore()) {
@@ -279,6 +290,8 @@ base::Optional<syncer::ModelError> PasswordSyncBridge::MergeSyncData(
     base::UmaHistogramCounts10000(
         "Sync.DownloadedPasswordsCountWhenInitialMergeFails",
         entity_data.size());
+  } else {
+    sync_enabled_or_disabled_cb_.Run();
   }
   return error;
 }
@@ -725,14 +738,8 @@ std::string PasswordSyncBridge::GetClientTag(
   DCHECK(entity_data.specifics.has_password())
       << "EntityData does not have password specifics.";
 
-  const sync_pb::PasswordSpecificsData& password_data =
-      entity_data.specifics.password().client_only_encrypted_data();
-
-  return (net::EscapePath(GURL(password_data.origin()).spec()) + "|" +
-          net::EscapePath(password_data.username_element()) + "|" +
-          net::EscapePath(password_data.username_value()) + "|" +
-          net::EscapePath(password_data.password_element()) + "|" +
-          net::EscapePath(password_data.signon_realm()));
+  return ComputeClientTag(
+      entity_data.specifics.password().client_only_encrypted_data());
 }
 
 std::string PasswordSyncBridge::GetStorageKey(
@@ -767,8 +774,16 @@ void PasswordSyncBridge::ApplyStopSyncChanges(
       }
       password_store_sync_->DeleteAndRecreateDatabaseFile();
       password_store_sync_->NotifyLoginsChanged(password_store_changes);
+
+      sync_enabled_or_disabled_cb_.Run();
     }
   }
+}
+
+// static
+std::string PasswordSyncBridge::ComputeClientTagForTesting(
+    const sync_pb::PasswordSpecificsData& password_data) {
+  return ComputeClientTag(password_data);
 }
 
 base::Optional<syncer::ModelError> PasswordSyncBridge::CleanupPasswordStore() {

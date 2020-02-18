@@ -57,9 +57,11 @@ PasswordStoreChangeList AddChangeForForm(const PasswordForm& form) {
       1, PasswordStoreChange(PasswordStoreChange::ADD, form));
 }
 
-PasswordStoreChangeList UpdateChangeForForm(const PasswordForm& form) {
+PasswordStoreChangeList UpdateChangeForForm(const PasswordForm& form,
+                                            const bool password_changed) {
   return PasswordStoreChangeList(
-      1, PasswordStoreChange(PasswordStoreChange::UPDATE, form));
+      1,
+      PasswordStoreChange(PasswordStoreChange::UPDATE, form, password_changed));
 }
 
 PasswordStoreChangeList RemoveChangeForForm(const PasswordForm& form) {
@@ -87,6 +89,7 @@ void GenerateExamplePasswordForm(PasswordForm* form) {
   form->federation_origin =
       url::Origin::Create(GURL("https://accounts.google.com/"));
   form->skip_zero_click = true;
+  form->in_store = PasswordForm::Store::kProfileStore;
 }
 
 // Helper functions to read the value of the first column of an executed
@@ -376,7 +379,8 @@ TEST_F(LoginDatabaseTest, Logins) {
 
   // We update, and check to make sure it matches the
   // old form, and there is only one record.
-  EXPECT_EQ(UpdateChangeForForm(form5), db().UpdateLogin(form5));
+  EXPECT_EQ(UpdateChangeForForm(form5, /*passwordchanged=*/true),
+            db().UpdateLogin(form5));
   // matches
   EXPECT_TRUE(db().GetLogins(PasswordStore::FormDigest(form5), &result));
   EXPECT_EQ(1U, result.size());
@@ -449,6 +453,27 @@ TEST_F(LoginDatabaseTest, RemoveLoginsByPrimaryKey) {
   EXPECT_EQ(RemoveChangeForForm(form), change_list);
   EXPECT_TRUE(db().GetAutofillableLogins(&result));
   EXPECT_EQ(0U, result.size());
+}
+
+TEST_F(LoginDatabaseTest, ShouldNotRecyclePrimaryKeys) {
+  std::vector<std::unique_ptr<PasswordForm>> result;
+
+  // Example password form.
+  PasswordForm form;
+  GenerateExamplePasswordForm(&form);
+
+  // Add the form.
+  PasswordStoreChangeList change_list = db().AddLogin(form);
+  ASSERT_EQ(1U, change_list.size());
+  int primary_key1 = change_list[0].primary_key();
+  change_list.clear();
+  // Delete the form
+  EXPECT_TRUE(db().RemoveLoginByPrimaryKey(primary_key1, &change_list));
+  ASSERT_EQ(1U, change_list.size());
+  // Add it again.
+  change_list = db().AddLogin(form);
+  ASSERT_EQ(1U, change_list.size());
+  EXPECT_NE(primary_key1, change_list[0].primary_key());
 }
 
 TEST_F(LoginDatabaseTest, TestPublicSuffixDomainMatching) {
@@ -532,6 +557,10 @@ TEST_F(LoginDatabaseTest, TestFederatedMatching) {
   EXPECT_TRUE(db().GetAutofillableLogins(&result));
   EXPECT_EQ(2U, result.size());
 
+  // When we retrieve the forms from the store, |in_store| should be set.
+  form.in_store = PasswordForm::Store::kProfileStore;
+  form2.in_store = PasswordForm::Store::kProfileStore;
+
   // Match against desktop.
   PasswordStore::FormDigest form_request = {PasswordForm::Scheme::kHtml,
                                             "https://foo.com/",
@@ -568,6 +597,10 @@ TEST_F(LoginDatabaseTest, TestFederatedMatchingLocalhost) {
 
   EXPECT_EQ(AddChangeForForm(form), db().AddLogin(form));
   EXPECT_EQ(AddChangeForForm(form_with_port), db().AddLogin(form_with_port));
+
+  // When we retrieve the forms from the store, |in_store| should be set.
+  form.in_store = PasswordForm::Store::kProfileStore;
+  form_with_port.in_store = PasswordForm::Store::kProfileStore;
 
   // Match localhost with and without port.
   PasswordStore::FormDigest form_request(PasswordForm::Scheme::kHtml,
@@ -680,6 +713,10 @@ TEST_F(LoginDatabaseTest, TestFederatedMatchingWithoutPSLMatching) {
   EXPECT_TRUE(db().GetAutofillableLogins(&result));
   EXPECT_EQ(2U, result.size());
 
+  // When we retrieve the forms from the store, |in_store| should be set.
+  form.in_store = PasswordForm::Store::kProfileStore;
+  form2.in_store = PasswordForm::Store::kProfileStore;
+
   // Match against the first one.
   PasswordStore::FormDigest form_request = {PasswordForm::Scheme::kHtml,
                                             form.signon_realm, form.origin};
@@ -706,6 +743,9 @@ TEST_F(LoginDatabaseTest, TestFederatedPSLMatching) {
       url::Origin::Create(GURL("https://accounts.google.com/"));
   form.scheme = PasswordForm::Scheme::kHtml;
   EXPECT_EQ(AddChangeForForm(form), db().AddLogin(form));
+
+  // When we retrieve the form from the store, it should have |in_store| set.
+  form.in_store = PasswordForm::Store::kProfileStore;
 
   // Match against.
   PasswordStore::FormDigest form_request = {PasswordForm::Scheme::kHtml,
@@ -1094,6 +1134,9 @@ TEST_F(LoginDatabaseTest, BlacklistedLogins) {
   EXPECT_TRUE(db().GetAutofillableLogins(&result));
   ASSERT_EQ(0U, result.size());
 
+  // When we retrieve the form from the store, it should have |in_store| set.
+  form.in_store = PasswordForm::Store::kProfileStore;
+
   // GetLogins should give the blacklisted result.
   EXPECT_TRUE(db().GetLogins(PasswordStore::FormDigest(form), &result));
   ASSERT_EQ(1U, result.size());
@@ -1192,6 +1235,8 @@ TEST_F(LoginDatabaseTest, UpdateIncompleteCredentials) {
 
   // This time we should have all the info available.
   PasswordForm expected_form(completed_form);
+  // When we retrieve the form from the store, it should have |in_store| set.
+  expected_form.in_store = PasswordForm::Store::kProfileStore;
   EXPECT_EQ(expected_form, *result[0]);
   result.clear();
 }
@@ -1234,8 +1279,12 @@ TEST_F(LoginDatabaseTest, UpdateOverlappingCredentials) {
   // Simulate the user changing their password.
   complete_form.password_value = ASCIIToUTF16("new_password");
   complete_form.date_synced = base::Time::Now();
-  EXPECT_EQ(UpdateChangeForForm(complete_form),
+  EXPECT_EQ(UpdateChangeForForm(complete_form, /*passwordchanged=*/true),
             db().UpdateLogin(complete_form));
+
+  // When we retrieve the forms from the store, |in_store| should be set.
+  complete_form.in_store = PasswordForm::Store::kProfileStore;
+  incomplete_form.in_store = PasswordForm::Store::kProfileStore;
 
   // Both still exist now.
   EXPECT_TRUE(db().GetAutofillableLogins(&result));
@@ -1316,9 +1365,13 @@ TEST_F(LoginDatabaseTest, UpdateLogin) {
   form.skip_zero_click = true;
 
   PasswordStoreChangeList changes = db().UpdateLogin(form);
-  EXPECT_EQ(UpdateChangeForForm(form), changes);
+  EXPECT_EQ(UpdateChangeForForm(form, /*passwordchanged=*/true), changes);
   ASSERT_EQ(1U, changes.size());
   EXPECT_EQ(1, changes[0].primary_key());
+
+  // When we retrieve the form from the store, it should have |in_store| set.
+  form.in_store = PasswordForm::Store::kProfileStore;
+
   std::vector<std::unique_ptr<PasswordForm>> result;
   EXPECT_TRUE(db().GetLogins(PasswordStore::FormDigest(form), &result));
   ASSERT_EQ(1U, result.size());
@@ -1446,28 +1499,41 @@ TEST_F(LoginDatabaseTest, ReportMetricsTest) {
   db().ReportMetrics("", false);
 
   histogram_tester.ExpectUniqueSample(
-      "PasswordManager.TotalAccountsHiRes.ByType.UserCreated."
+      "PasswordManager.AccountsPerSiteHiRes.AutoGenerated."
       "WithoutCustomPassphrase",
-      7, 1);
+      1, 2);
+
   histogram_tester.ExpectBucketCount(
-      "PasswordManager.AccountsPerSite.UserCreated.WithoutCustomPassphrase", 1,
-      3);
+      "PasswordManager.AccountsPerSiteHiRes.UserCreated."
+      "WithoutCustomPassphrase",
+      1, 3);
   histogram_tester.ExpectBucketCount(
-      "PasswordManager.AccountsPerSite.UserCreated.WithoutCustomPassphrase", 2,
+      "PasswordManager.AccountsPerSiteHiRes.UserCreated."
+      "WithoutCustomPassphrase",
+      2, 2);
+
+  histogram_tester.ExpectBucketCount(
+      "PasswordManager.AccountsPerSiteHiRes.Overall.WithoutCustomPassphrase", 1,
+      5);
+  histogram_tester.ExpectBucketCount(
+      "PasswordManager.AccountsPerSiteHiRes.Overall.WithoutCustomPassphrase", 2,
       2);
-  histogram_tester.ExpectBucketCount(
-      "PasswordManager.TimesPasswordUsed.UserCreated.WithoutCustomPassphrase",
-      0, 1);
-  histogram_tester.ExpectBucketCount(
-      "PasswordManager.TimesPasswordUsed.UserCreated.WithoutCustomPassphrase",
-      1, 1);
-  histogram_tester.ExpectBucketCount(
-      "PasswordManager.TimesPasswordUsed.UserCreated.WithoutCustomPassphrase",
-      3, 1);
+
   histogram_tester.ExpectUniqueSample(
       "PasswordManager.TotalAccountsHiRes.ByType.AutoGenerated."
       "WithoutCustomPassphrase",
       2, 1);
+
+  histogram_tester.ExpectUniqueSample(
+      "PasswordManager.TotalAccountsHiRes.ByType.UserCreated."
+      "WithoutCustomPassphrase",
+      7, 1);
+
+  histogram_tester.ExpectUniqueSample(
+      "PasswordManager.TotalAccountsHiRes.ByType.Overall."
+      "WithoutCustomPassphrase",
+      9, 1);
+
   histogram_tester.ExpectUniqueSample(
       "PasswordManager.TotalAccountsHiRes.WithScheme.Android", 2, 1);
   histogram_tester.ExpectUniqueSample(
@@ -1478,15 +1544,38 @@ TEST_F(LoginDatabaseTest, ReportMetricsTest) {
       "PasswordManager.TotalAccountsHiRes.WithScheme.Https", 1, 1);
   histogram_tester.ExpectUniqueSample(
       "PasswordManager.TotalAccountsHiRes.WithScheme.Other", 0, 1);
-  histogram_tester.ExpectUniqueSample(
-      "PasswordManager.AccountsPerSite.AutoGenerated.WithoutCustomPassphrase",
-      1, 2);
+
   histogram_tester.ExpectBucketCount(
       "PasswordManager.TimesPasswordUsed.AutoGenerated.WithoutCustomPassphrase",
       2, 1);
   histogram_tester.ExpectBucketCount(
       "PasswordManager.TimesPasswordUsed.AutoGenerated.WithoutCustomPassphrase",
       4, 1);
+
+  histogram_tester.ExpectBucketCount(
+      "PasswordManager.TimesPasswordUsed.UserCreated.WithoutCustomPassphrase",
+      0, 1);
+  histogram_tester.ExpectBucketCount(
+      "PasswordManager.TimesPasswordUsed.UserCreated.WithoutCustomPassphrase",
+      1, 1);
+  histogram_tester.ExpectBucketCount(
+      "PasswordManager.TimesPasswordUsed.UserCreated.WithoutCustomPassphrase",
+      3, 1);
+
+  histogram_tester.ExpectBucketCount(
+      "PasswordManager.TimesPasswordUsed.Overall.WithoutCustomPassphrase", 0,
+      1);
+  histogram_tester.ExpectBucketCount(
+      "PasswordManager.TimesPasswordUsed.Overall.WithoutCustomPassphrase", 1,
+      1);
+  histogram_tester.ExpectBucketCount(
+      "PasswordManager.TimesPasswordUsed.Overall.WithoutCustomPassphrase", 2,
+      1);
+  // The bucket for 3 and 4 is the same. Thus we expect two samples here.
+  histogram_tester.ExpectBucketCount(
+      "PasswordManager.TimesPasswordUsed.Overall.WithoutCustomPassphrase", 3,
+      2);
+
   histogram_tester.ExpectUniqueSample(
       "PasswordManager.EmptyUsernames.CountInDatabase", 1, 1);
   histogram_tester.ExpectUniqueSample("PasswordManager.InaccessiblePasswords",
@@ -1658,6 +1747,114 @@ TEST_F(LoginDatabaseTest, PasswordReuseMetrics) {
                   kPrefix + "FromHttpsRealm.OnAnyRealmWithDifferentHost"),
               testing::ElementsAre(base::Bucket(3, 1), base::Bucket(4, 1),
                                    base::Bucket(5, 1)));
+}
+
+TEST_F(LoginDatabaseTest, DuplicatesMetrics_NoDuplicates) {
+  // No duplicate.
+  PasswordForm password_form;
+  password_form.signon_realm = "http://example1.com/";
+  password_form.origin = GURL("http://example1.com/");
+  password_form.username_element = ASCIIToUTF16("userelem_1");
+  password_form.username_value = ASCIIToUTF16("username_1");
+  password_form.password_value = ASCIIToUTF16("password_1");
+  ASSERT_EQ(AddChangeForForm(password_form), db().AddLogin(password_form));
+
+  // Different username -> no duplicate.
+  password_form.signon_realm = "http://example2.com/";
+  password_form.origin = GURL("http://example2.com/");
+  password_form.username_value = ASCIIToUTF16("username_1");
+  ASSERT_EQ(AddChangeForForm(password_form), db().AddLogin(password_form));
+  password_form.username_value = ASCIIToUTF16("username_2");
+  ASSERT_EQ(AddChangeForForm(password_form), db().AddLogin(password_form));
+
+  // Blacklisted forms don't count as duplicates (neither against other
+  // blacklisted forms nor against actual saved credentials).
+  password_form.signon_realm = "http://example3.com/";
+  password_form.origin = GURL("http://example3.com/");
+  password_form.username_value = ASCIIToUTF16("username_1");
+  ASSERT_EQ(AddChangeForForm(password_form), db().AddLogin(password_form));
+  password_form.blacklisted_by_user = true;
+  password_form.username_value = ASCIIToUTF16("username_2");
+  ASSERT_EQ(AddChangeForForm(password_form), db().AddLogin(password_form));
+  password_form.username_value = ASCIIToUTF16("username_3");
+  ASSERT_EQ(AddChangeForForm(password_form), db().AddLogin(password_form));
+
+  base::HistogramTester histogram_tester;
+  db().ReportMetrics("", false);
+
+  EXPECT_THAT(histogram_tester.GetAllSamples(
+                  "PasswordManager.CredentialsWithDuplicates"),
+              testing::ElementsAre(base::Bucket(0, 1)));
+  EXPECT_THAT(histogram_tester.GetAllSamples(
+                  "PasswordManager.CredentialsWithMismatchedDuplicates"),
+              testing::ElementsAre(base::Bucket(0, 1)));
+}
+
+TEST_F(LoginDatabaseTest, DuplicatesMetrics_ExactDuplicates) {
+  // Add some PasswordForms that are "exact" duplicates (only the
+  // username_element is different, which doesn't matter).
+  PasswordForm password_form;
+  password_form.signon_realm = "http://example1.com/";
+  password_form.origin = GURL("http://example1.com/");
+  password_form.username_element = ASCIIToUTF16("userelem_1");
+  password_form.username_value = ASCIIToUTF16("username_1");
+  ASSERT_EQ(AddChangeForForm(password_form), db().AddLogin(password_form));
+  password_form.username_element = ASCIIToUTF16("userelem_2");
+  ASSERT_EQ(AddChangeForForm(password_form), db().AddLogin(password_form));
+  // The number of "identical" credentials doesn't matter; we count the *sets*
+  // of duplicates.
+  password_form.username_element = ASCIIToUTF16("userelem_3");
+  ASSERT_EQ(AddChangeForForm(password_form), db().AddLogin(password_form));
+
+  // Similarly, origin doesn't make forms "different" either.
+  password_form.signon_realm = "http://example2.com/";
+  password_form.origin = GURL("http://example2.com/path1");
+  ASSERT_EQ(AddChangeForForm(password_form), db().AddLogin(password_form));
+  password_form.origin = GURL("http://example2.com/path2");
+  ASSERT_EQ(AddChangeForForm(password_form), db().AddLogin(password_form));
+
+  base::HistogramTester histogram_tester;
+  db().ReportMetrics("", false);
+
+  // There should be 2 groups of "exact" duplicates.
+  EXPECT_THAT(histogram_tester.GetAllSamples(
+                  "PasswordManager.CredentialsWithDuplicates"),
+              testing::ElementsAre(base::Bucket(2, 1)));
+  EXPECT_THAT(histogram_tester.GetAllSamples(
+                  "PasswordManager.CredentialsWithMismatchedDuplicates"),
+              testing::ElementsAre(base::Bucket(0, 1)));
+}
+
+TEST_F(LoginDatabaseTest, DuplicatesMetrics_MismatchedDuplicates) {
+  // Mismatched duplicates: Identical except for the password.
+  PasswordForm password_form;
+  password_form.signon_realm = "http://example1.com/";
+  password_form.origin = GURL("http://example1.com/");
+  password_form.username_element = ASCIIToUTF16("userelem_1");
+  password_form.username_value = ASCIIToUTF16("username_1");
+  password_form.password_element = ASCIIToUTF16("passelem_1");
+  password_form.password_value = ASCIIToUTF16("password_1");
+  ASSERT_EQ(AddChangeForForm(password_form), db().AddLogin(password_form));
+  // Note: password_value is not part of the unique key, so we need to change
+  // some other value to be able to insert the duplicate into the DB.
+  password_form.password_element = ASCIIToUTF16("passelem_2");
+  password_form.password_value = ASCIIToUTF16("password_2");
+  ASSERT_EQ(AddChangeForForm(password_form), db().AddLogin(password_form));
+  // The number of "identical" credentials doesn't matter; we count the *sets*
+  // of duplicates.
+  password_form.password_element = ASCIIToUTF16("passelem_3");
+  password_form.password_value = ASCIIToUTF16("password_3");
+  ASSERT_EQ(AddChangeForForm(password_form), db().AddLogin(password_form));
+
+  base::HistogramTester histogram_tester;
+  db().ReportMetrics("", false);
+
+  EXPECT_THAT(histogram_tester.GetAllSamples(
+                  "PasswordManager.CredentialsWithDuplicates"),
+              testing::ElementsAre(base::Bucket(0, 1)));
+  EXPECT_THAT(histogram_tester.GetAllSamples(
+                  "PasswordManager.CredentialsWithMismatchedDuplicates"),
+              testing::ElementsAre(base::Bucket(1, 1)));
 }
 
 TEST_F(LoginDatabaseTest, NoMetadata) {
@@ -2110,7 +2307,7 @@ INSTANTIATE_TEST_SUITE_P(MigrationToVCurrent,
                          testing::Values(9));
 INSTANTIATE_TEST_SUITE_P(MigrationToVCurrent,
                          LoginDatabaseMigrationTestBroken,
-                         testing::Range(1, 4));
+                         testing::Values(1, 2, 3, 24));
 
 class LoginDatabaseUndecryptableLoginsTest : public testing::Test {
  protected:
@@ -2185,6 +2382,9 @@ PasswordForm LoginDatabaseUndecryptableLoginsTest::AddDummyLogin(
     EXPECT_TRUE(s.Run());
     EXPECT_EQ(db.GetLastChangeCount(), 1);
   }
+
+  // When we retrieve the form from the store, |in_store| should be set.
+  form.in_store = PasswordForm::Store::kProfileStore;
 
   return form;
 }

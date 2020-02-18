@@ -126,10 +126,6 @@ bool LitePagePreviewsTriggerOnLocalhost();
 // page hints for the host.
 bool LitePagePreviewsOverridePageHints();
 
-// The maximum number of times that a Lite Page Redirect preview should restart
-// a navigation.
-size_t LitePageRedirectPreviewMaxNavigationRestarts();
-
 // Whether we should preconnect to the lite page redirect server or the origin.
 bool LitePageRedirectPreviewShouldPreconnect();
 
@@ -145,6 +141,12 @@ bool LitePageRedirectPreviewIgnoresOptimizationGuideFilter();
 // only been attempted when a probe to the previews server has completed
 // successfully.
 bool LitePageRedirectOnlyTriggerOnSuccessfulProbe();
+
+// Whether the preview should trigger on API page transitions.
+bool LitePageRedirectTriggerOnAPITransition();
+
+// Whether the preview should trigger on forward/back page transitions.
+bool LitePageRedirectValidateForwardBackTransition();
 
 // The URL to probe on the lite pages server.
 GURL LitePageRedirectProbeURL();
@@ -235,6 +237,15 @@ bool ShouldExcludeMediaSuffix(const GURL& url);
 // Returns true if the logic to detect redirect loops with defer all script
 // preview using a cache is enabled.
 bool DetectDeferRedirectLoopsUsingCache();
+
+// Returns true if the checks to show a preview for the navigation should be
+// overridden.
+bool OverrideShouldShowPreviewCheck();
+
+// Returns true if DeferAllScript should be applied even if the optimization
+// guide decision is unknown. This allows DeferAllScript to be applied if the
+// optimization guide does not yet know if it can be or not.
+bool ApplyDeferWhenOptimizationGuideDecisionUnknown();
 
 }  // namespace params
 

@@ -20,12 +20,6 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gl/progress_reporter.h"
 
-#if defined(USE_X11)
-#include <sys/poll.h>
-#include "ui/base/x/x11_util.h"  // nogncheck
-#include "ui/gfx/x/x11_types.h"  // nogncheck
-#endif                           // defined(USE_X11)
-
 namespace gpu {
 
 // These values are persisted to logs. Entries should not be renumbered and
@@ -64,6 +58,13 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThread : public base::Thread,
   // viz::GpuServiceImpl::~GpuServiceImpl()
   virtual void OnGpuProcessTearDown() = 0;
 
+  // Pause the GPU watchdog to stop the timeout task. If the current heavy task
+  // is not running on the GPU driver, the watchdog can be paused to avoid
+  // unneeded crash.
+  virtual void PauseWatchdog() = 0;
+  // Continue the watchdog after a pause.
+  virtual void ResumeWatchdog() = 0;
+
   virtual void GpuWatchdogHistogram(GpuWatchdogThreadEvent thread_event) = 0;
 
   // For gpu testing only. Return status for the watchdog tests
@@ -92,6 +93,8 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThreadImplV1
   void OnForegrounded() override;
   void OnInitComplete() override {}
   void OnGpuProcessTearDown() override {}
+  void ResumeWatchdog() override {}
+  void PauseWatchdog() override {}
   void GpuWatchdogHistogram(GpuWatchdogThreadEvent thread_event) override;
   bool IsGpuHangDetectedForTesting() override;
 
@@ -111,7 +114,8 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThreadImplV1
     ~GpuWatchdogTaskObserver() override;
 
     // Implements TaskObserver.
-    void WillProcessTask(const base::PendingTask& pending_task) override;
+    void WillProcessTask(const base::PendingTask& pending_task,
+                         bool was_blocked_or_low_priority) override;
     void DidProcessTask(const base::PendingTask& pending_task) override;
 
    private:
@@ -160,11 +164,6 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThreadImplV1
   void OnCheckTimeout();
   // Do not change the function name. It is used for [GPU HANG] carsh reports.
   void DeliberatelyTerminateToRecoverFromHang();
-#if defined(USE_X11)
-  void SetupXServer();
-  void SetupXChangeProp();
-  bool MatchXEventAtom(XEvent* event);
-#endif
 
   void OnAddPowerObserver();
 
@@ -230,10 +229,10 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThreadImplV1
   base::Time check_time_;
   base::TimeTicks check_timeticks_;
 
+  // whether GpuWatchdogThreadEvent::kGpuWatchdogStart has been recorded.
+  bool is_watchdog_start_histogram_recorded = false;
+
 #if defined(USE_X11)
-  XDisplay* display_;
-  gfx::AcceleratedWidget window_;
-  XAtom atom_;
   FILE* tty_file_;
   int host_tty_;
 #endif

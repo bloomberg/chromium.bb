@@ -37,17 +37,19 @@ IOSPaymentInstrument::IOSPaymentInstrument(
     const std::string& app_name,
     UIImage* icon_image,
     id<PaymentRequestUIDelegate> payment_request_ui_delegate)
-    : PaymentInstrument(-1 /* resource id not used */,
-                        PaymentInstrument::Type::NATIVE_MOBILE_APP),
+    : PaymentApp(-1 /* resource id not used */,
+                 PaymentApp::Type::NATIVE_MOBILE_APP),
       method_name_(method_name),
       universal_link_(universal_link),
       app_name_(app_name),
       icon_image_(icon_image),
-      payment_request_ui_delegate_(payment_request_ui_delegate) {}
+      payment_request_ui_delegate_(payment_request_ui_delegate) {
+  app_method_names_.insert(method_name_);
+}
+
 IOSPaymentInstrument::~IOSPaymentInstrument() {}
 
-void IOSPaymentInstrument::InvokePaymentApp(
-    PaymentInstrument::Delegate* delegate) {
+void IOSPaymentInstrument::InvokePaymentApp(PaymentApp::Delegate* delegate) {
   DCHECK(delegate);
   [payment_request_ui_delegate_ paymentInstrument:this
                        launchAppWithUniversalLink:universal_link_
@@ -112,13 +114,23 @@ bool IOSPaymentInstrument::IsValidForModifier(
   return method_name_ == method;
 }
 
-void IOSPaymentInstrument::IsValidForPaymentMethodIdentifier(
-    const std::string& payment_method_identifier,
-    bool* is_valid) const {
-  *is_valid = method_name_ == payment_method_identifier;
+bool IOSPaymentInstrument::HandlesShippingAddress() const {
+  return false;
 }
 
-base::WeakPtr<PaymentInstrument> IOSPaymentInstrument::AsWeakPtr() {
+bool IOSPaymentInstrument::HandlesPayerName() const {
+  return false;
+}
+
+bool IOSPaymentInstrument::HandlesPayerEmail() const {
+  return false;
+}
+
+bool IOSPaymentInstrument::HandlesPayerPhone() const {
+  return false;
+}
+
+base::WeakPtr<PaymentApp> IOSPaymentInstrument::AsWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
 }
 

@@ -5,13 +5,9 @@
 #import "ios/chrome/browser/ui/signin_interaction/signin_interaction_controller_egtest_util.h"
 
 #import "base/test/ios/wait_util.h"
-#include "components/unified_consent/feature.h"
-#import "ios/chrome/browser/ui/authentication/signin_earlgrey_utils.h"
 #include "ios/chrome/grit/ios_strings.h"
-#import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
-#import "ios/chrome/test/earl_grey/chrome_test_case.h"
-#
+#import "ios/testing/earl_grey/earl_grey_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -32,9 +28,7 @@ void TapButtonWithLabelId(int message_id) {
 void VerifyChromeSigninViewVisible() {
   id<GREYMatcher> signin_matcher =
       chrome_test_util::StaticTextWithAccessibilityLabelId(
-          unified_consent::IsUnifiedConsentFeatureEnabled()
-              ? IDS_IOS_ACCOUNT_UNIFIED_CONSENT_SYNC_SUBTITLE
-              : IDS_IOS_ACCOUNT_CONSISTENCY_SETUP_DESCRIPTION);
+          IDS_IOS_ACCOUNT_UNIFIED_CONSENT_SYNC_SUBTITLE);
   [[EarlGrey selectElementWithMatcher:signin_matcher]
       assertWithMatcher:grey_sufficientlyVisible()];
 }

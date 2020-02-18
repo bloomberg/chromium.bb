@@ -27,10 +27,10 @@
 #include "content/public/test/browser_task_environment.h"
 #include "extensions/browser/extension_registry.h"
 #include "storage/browser/blob/shareable_file_reference.h"
-#include "storage/browser/fileapi/async_file_util.h"
-#include "storage/browser/fileapi/external_mount_points.h"
-#include "storage/browser/fileapi/file_system_context.h"
-#include "storage/browser/fileapi/file_system_url.h"
+#include "storage/browser/file_system/async_file_util.h"
+#include "storage/browser/file_system/external_mount_points.h"
+#include "storage/browser/file_system/file_system_context.h"
+#include "storage/browser/file_system/file_system_url.h"
 #include "storage/browser/test/test_file_system_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -74,6 +74,7 @@ class EventLogger {
                        storage::AsyncFileUtil::EntryList file_list,
                        bool has_more) {
     result_.reset(new base::File::Error(error));
+    read_directory_list_ = std::move(file_list);
   }
 
   void OnCreateSnapshotFile(
@@ -88,8 +89,13 @@ class EventLogger {
 
   base::File::Error* result() { return result_.get(); }
 
+  const storage::AsyncFileUtil::EntryList& read_directory_list() {
+    return read_directory_list_;
+  }
+
  private:
   std::unique_ptr<base::File::Error> result_;
+  storage::AsyncFileUtil::EntryList read_directory_list_;
   DISALLOW_COPY_AND_ASSIGN(EventLogger);
 };
 
@@ -287,6 +293,22 @@ TEST_F(FileSystemProviderProviderAsyncFileUtilTest, ReadDirectory) {
 
   ASSERT_TRUE(logger.result());
   EXPECT_EQ(base::File::FILE_OK, *logger.result());
+}
+
+TEST_F(FileSystemProviderProviderAsyncFileUtilTest,
+       ReadDirectory_SanitiseResultsList) {
+  EventLogger logger;
+
+  async_file_util_->ReadDirectory(
+      CreateOperationContext(), root_url_,
+      base::Bind(&EventLogger::OnReadDirectory, base::Unretained(&logger)));
+  base::RunLoop().RunUntilIdle();
+
+  ASSERT_TRUE(logger.result());
+  EXPECT_EQ(base::File::FILE_OK, *logger.result());
+  EXPECT_EQ(1U, logger.read_directory_list().size());
+  EXPECT_EQ(base::FilePath(kFakeFilePath + 1 /* No leading slash. */),
+            logger.read_directory_list()[0].name);
 }
 
 TEST_F(FileSystemProviderProviderAsyncFileUtilTest, Touch) {

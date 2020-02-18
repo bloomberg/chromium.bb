@@ -145,7 +145,7 @@ void SearchGeolocationDisclosureTabHelper::MaybeShowDisclosureForValidUrl(
 
   // Only show disclosure if the DSE geolocation setting is on.
   if (PermissionManager::Get(GetProfile())
-          ->GetPermissionStatus(CONTENT_SETTINGS_TYPE_GEOLOCATION, gurl, gurl)
+          ->GetPermissionStatus(ContentSettingsType::GEOLOCATION, gurl, gurl)
           .content_setting != CONTENT_SETTING_ALLOW) {
     return;
   }
@@ -160,6 +160,10 @@ void SearchGeolocationDisclosureTabHelper::MaybeShowDisclosureForValidUrl(
       TemplateURLServiceFactory::GetForProfile(GetProfile());
   const TemplateURL* template_url =
       template_url_service->GetDefaultSearchProvider();
+  // ShouldShowDisclosureForNavigation() checked explicitly that the default
+  // search |template_url| was non-null, and ShouldShowDisclosureForAPIAccess()
+  // would have also seen an empty DSE origin if it were.
+  DCHECK(template_url);
   base::string16 search_engine_name = template_url->short_name();
   SearchGeolocationDisclosureInfoBarDelegate::Create(web_contents(), gurl,
                                                      search_engine_name);
@@ -182,7 +186,7 @@ bool SearchGeolocationDisclosureTabHelper::ShouldShowDisclosureForAPIAccess(
   if (gIgnoreUrlChecksForTesting)
     return true;
 
-  return service->IsPermissionControlledByDSE(CONTENT_SETTINGS_TYPE_GEOLOCATION,
+  return service->IsPermissionControlledByDSE(ContentSettingsType::GEOLOCATION,
                                               url::Origin::Create(gurl));
 }
 
@@ -214,7 +218,7 @@ void SearchGeolocationDisclosureTabHelper::RecordPreDisclosureMetrics(
           prefs::kSearchGeolocationPreDisclosureMetricsRecorded)) {
     ContentSetting status =
         HostContentSettingsMapFactory::GetForProfile(GetProfile())
-            ->GetContentSetting(gurl, gurl, CONTENT_SETTINGS_TYPE_GEOLOCATION,
+            ->GetContentSetting(gurl, gurl, ContentSettingsType::GEOLOCATION,
                                 std::string());
 
     UMA_HISTOGRAM_BOOLEAN("GeolocationDisclosure.PreDisclosureDSESetting",
@@ -232,7 +236,7 @@ void SearchGeolocationDisclosureTabHelper::RecordPostDisclosureMetrics(
           prefs::kSearchGeolocationPostDisclosureMetricsRecorded)) {
     ContentSetting status =
         HostContentSettingsMapFactory::GetForProfile(GetProfile())
-            ->GetContentSetting(gurl, gurl, CONTENT_SETTINGS_TYPE_GEOLOCATION,
+            ->GetContentSetting(gurl, gurl, ContentSettingsType::GEOLOCATION,
                                 std::string());
 
     UMA_HISTOGRAM_BOOLEAN("GeolocationDisclosure.PostDisclosureDSESetting",

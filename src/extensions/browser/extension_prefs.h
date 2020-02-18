@@ -397,10 +397,9 @@ class ExtensionPrefs : public KeyedService {
   // Sets/Gets the value indicating if an extension should be granted all the
   // requested host permissions without requiring explicit runtime-granted
   // permissions from the user.
-  void SetShouldWithholdPermissions(const ExtensionId& extension_id,
-                                    bool should_withhold);
-  base::Optional<bool> GetShouldWithholdPermissions(
-      const ExtensionId& extension_id) const;
+  void SetWithholdingPermissions(const ExtensionId& extension_id,
+                                 bool should_withhold);
+  bool GetWithholdingPermissions(const ExtensionId& extension_id) const;
 
   // Returns the set of runtime-granted permissions. These are permissions that
   // the user explicitly approved at runtime, rather than install time (such
@@ -495,14 +494,6 @@ class ExtensionPrefs : public KeyedService {
   // Returns information about all the extensions that have delayed install
   // information.
   std::unique_ptr<ExtensionsInfo> GetAllDelayedInstallInfo() const;
-
-  // Returns true if the user repositioned the app on the app launcher via drag
-  // and drop.
-  bool WasAppDraggedByUser(const std::string& extension_id) const;
-
-  // Sets a flag indicating that the user repositioned the app on the app
-  // launcher by drag and dropping it.
-  void SetAppDraggedByUser(const std::string& extension_id);
 
   // Returns true if there is an extension which controls the preference value
   //  for |pref_key| *and* it is specific to incognito mode.
@@ -624,11 +615,23 @@ class ExtensionPrefs : public KeyedService {
   // extension's dictionary, which is keyed on the extension ID.
   void MigrateObsoleteExtensionPrefs();
 
+  // Updates an extension to use the new withholding pref key if it doesn't have
+  // it yet, removing the old key in the process.
+  // TODO(tjudkins): Remove this and the obsolete key in M83.
+  void MigrateToNewWithholdingPref();
+
   // When called before the ExtensionService is created, alerts that are
   // normally suppressed in first run will still trigger.
   static void SetRunAlertsInFirstRunForTest();
 
   void ClearExternalUninstallForTesting(const ExtensionId& id);
+
+  // Returns whether the user has seen the extension checkup on startup.
+  bool HasUserSeenExtensionsCheckupOnStartup();
+
+  // Sets if the user has seen the extension checkup on startup.
+  void SetUserHasSeenExtensionsCheckupOnStartup(
+      bool has_seen_extensions_checkup_on_startup);
 
   static const char kFakeObsoletePrefForTesting[];
 
@@ -781,6 +784,10 @@ class ExtensionPrefs : public KeyedService {
       bool needs_sort_ordinal,
       const syncer::StringOrdinal& suggested_page_ordinal,
       prefs::DictionaryValueUpdate* extension_dict);
+
+  // Returns true if the prefs have any permission withholding setting stored
+  // for a given extension.
+  bool HasWithholdingPermissionsSetting(const ExtensionId& extension_id) const;
 
   content::BrowserContext* browser_context_;
 

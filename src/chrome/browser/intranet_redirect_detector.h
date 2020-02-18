@@ -12,9 +12,10 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "components/pref_registry/pref_registry_syncable.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "services/network/public/cpp/network_connection_tracker.h"
 #include "services/network/public/mojom/host_resolver.mojom.h"
 #include "url/gurl.h"
@@ -77,10 +78,14 @@ class IntranetRedirectDetector
   void OnConnectionChanged(network::mojom::ConnectionType type) override;
 
   // network::mojom::DnsConfigChangeManagerClient
-  void OnSystemDnsConfigChanged() override;
+  void OnDnsConfigChanged() override;
 
   void SetupDnsConfigClient();
   void OnDnsConfigClientConnectionError();
+
+  // Whether the IntranetRedirectDetector is enabled, or, through policy,
+  // disabled.
+  bool IsEnabledByPolicy();
 
   GURL redirect_origin_;
   std::map<network::SimpleURLLoader*, std::unique_ptr<network::SimpleURLLoader>>
@@ -90,8 +95,8 @@ class IntranetRedirectDetector
                           // period that begins at browser start, or the
                           // one-second "no fetching" period that begins after
                           // network switches.
-  mojo::Binding<network::mojom::DnsConfigChangeManagerClient>
-      dns_config_client_binding_{this};
+  mojo::Receiver<network::mojom::DnsConfigChangeManagerClient>
+      dns_config_client_receiver_{this};
   base::WeakPtrFactory<IntranetRedirectDetector> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(IntranetRedirectDetector);

@@ -15,6 +15,7 @@
 #include "ash/wm/workspace/workspace_layout_manager.h"
 #include "ash/wm/workspace_controller.h"
 #include "base/strings/string_number_conversions.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/display/display.h"
@@ -32,12 +33,8 @@ class OverviewGridTest : public AshTestBase {
   ~OverviewGridTest() override = default;
 
   void InitializeGrid(const std::vector<aura::Window*>& windows) {
-    ASSERT_FALSE(grid_);
     aura::Window* root = Shell::GetPrimaryRootWindow();
-    grid_ = std::make_unique<OverviewGrid>(
-        root, windows, nullptr,
-        screen_util::GetDisplayWorkAreaBoundsInParentForActiveDeskContainer(
-            root));
+    grid_ = std::make_unique<OverviewGrid>(root, windows, nullptr);
   }
 
   void CheckAnimationStates(
@@ -81,6 +78,10 @@ class OverviewGridTest : public AshTestBase {
       EXPECT_EQ(expected_end_animations[i],
                 grid_->window_list()[i]->should_animate_when_exiting());
     }
+  }
+
+  SplitViewController* split_view_controller() {
+    return SplitViewController::Get(Shell::GetPrimaryRootWindow());
   }
 
  private:
@@ -220,21 +221,55 @@ TEST_F(OverviewGridTest, WindowWithBackdrop) {
                        {true, false}, {true, true});
 }
 
+TEST_F(OverviewGridTest, PartiallyOffscreenWindow) {
+  UpdateDisplay("400x400");
+  auto window1 = CreateTestWindow(gfx::Rect(100, 100));
+  auto window2 = CreateTestWindow(gfx::Rect(100, 100));
+
+  // Position |window2|'s destination to be partially offscreen. Tests that it
+  // still animates because the onscreen portion is not occluded by |window1|.
+  std::vector<gfx::RectF> target_bounds = {
+      gfx::RectF(100.f, 100.f), gfx::RectF(350.f, 100.f, 100.f, 100.f)};
+  CheckAnimationStates({window1.get(), window2.get()}, target_bounds,
+                       {true, true}, {true, true});
+
+  // Maximize |window1|. |window2| should no longer animate since the parts of
+  // it that are onscreen are fully occluded.
+  WindowState::Get(window1.get())->Maximize();
+  CheckAnimationStates({window1.get(), window2.get()}, target_bounds,
+                       {true, false}, {true, false});
+}
+
+// Tests that windows whose destination is fully offscreen never animate.
+TEST_F(OverviewGridTest, FullyOffscreenWindow) {
+  UpdateDisplay("400x400");
+  auto window1 = CreateTestWindow(gfx::Rect(100, 100));
+  auto window2 = CreateTestWindow(gfx::Rect(100, 100));
+
+  std::vector<gfx::RectF> target_bounds = {
+      gfx::RectF(100.f, 100.f), gfx::RectF(450.f, 450.f, 100.f, 100.f)};
+  CheckAnimationStates({window1.get(), window2.get()}, target_bounds,
+                       {true, false}, {true, false});
+
+  WindowState::Get(window1.get())->Maximize();
+  CheckAnimationStates({window1.get(), window2.get()}, target_bounds,
+                       {true, false}, {true, false});
+}
+
 // Tests that only one window animates when entering overview from splitview
 // double snapped.
-TEST_F(OverviewGridTest, SnappedWindow) {
+TEST_F(OverviewGridTest, DISABLED_SnappedWindow) {
   auto window1 = CreateTestWindow(gfx::Rect(100, 100));
   auto window2 = CreateTestWindow(gfx::Rect(100, 100));
   auto window3 = CreateTestWindow(gfx::Rect(100, 100));
   wm::ActivateWindow(window1.get());
 
   Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
-  Shell::Get()->split_view_controller()->SnapWindow(window1.get(),
-                                                    SplitViewController::LEFT);
+  split_view_controller()->SnapWindow(window1.get(), SplitViewController::LEFT);
 
   // Snap |window2| and check that |window3| is maximized.
-  Shell::Get()->split_view_controller()->SnapWindow(window2.get(),
-                                                    SplitViewController::RIGHT);
+  split_view_controller()->SnapWindow(window2.get(),
+                                      SplitViewController::RIGHT);
   EXPECT_TRUE(WindowState::Get(window3.get())->IsMaximized());
 
   // Tests that |window3| is not animated even though its bounds are larger than

@@ -4,19 +4,20 @@
 
 #include "third_party/blink/renderer/platform/graphics/animation_worklet_mutator_dispatcher_impl.h"
 
+#include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/public/platform/web_thread_type.h"
 #include "third_party/blink/renderer/platform/graphics/animation_worklet_mutator.h"
 #include "third_party/blink/renderer/platform/graphics/compositor_mutator_client.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
+#include "third_party/blink/renderer/platform/scheduler/public/thread_type.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 
@@ -38,12 +39,11 @@ namespace {
 
 std::unique_ptr<Thread> CreateThread(const char* name) {
   return Platform::Current()->CreateThread(
-      ThreadCreationParams(WebThreadType::kTestThread)
-          .SetThreadNameForTest(name));
+      ThreadCreationParams(ThreadType::kTestThread).SetThreadNameForTest(name));
 }
 
 class MockAnimationWorkletMutator
-    : public GarbageCollectedFinalized<MockAnimationWorkletMutator>,
+    : public GarbageCollected<MockAnimationWorkletMutator>,
       public AnimationWorkletMutator {
   USING_GARBAGE_COLLECTED_MIXIN(MockAnimationWorkletMutator);
 

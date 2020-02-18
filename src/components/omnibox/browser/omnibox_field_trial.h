@@ -159,9 +159,9 @@ base::TimeDelta StopTimerFieldTrialDuration();
 // ---------------------------------------------------------
 // For the ZeroSuggestProvider field trial.
 
-// Returns the configured "ZeroSuggestVariant" parameter for
+// Returns the configured "ZeroSuggestVariant" parameter values for
 // |page_classification|.
-std::string GetZeroSuggestVariant(
+std::vector<std::string> GetZeroSuggestVariants(
     metrics::OmniboxEventProto::PageClassification page_classification);
 
 // ---------------------------------------------------------
@@ -389,11 +389,12 @@ bool IsShortBookmarkSuggestionsEnabled();
 // Returns true if either the tab switch suggestions flag is enabled.
 bool IsTabSwitchSuggestionsEnabled();
 
-// Returns true if the feature of reversing the tab switch logic is enabled.
-bool IsTabSwitchLogicReversed();
-
 // Returns true if dedicated rows for tab switch suggestions is enabled.
 bool IsTabSwitchSuggestionsDedicatedRowEnabled();
+
+// Returns true if feature is enabled to not count submatches towards the
+// max suggestion limit.
+bool IsLooseMaxLimitOnDedicatedRowsEnabled();
 
 // Returns true if the #omnibox-pedal-suggestions feature is enabled.
 bool IsPedalSuggestionsEnabled();
@@ -416,13 +417,6 @@ bool IsGroupSuggestionsBySearchVsUrlFeatureEnabled();
 // Returns whether the feature to limit the number of shown URL matches
 // is enabled.
 bool IsMaxURLMatchesFeatureEnabled();
-
-// Returns whether the feature to allow the Omnibox pop-up position to wrap
-// between top and bottom is enabled.
-bool IsOmniboxWrapPopupPositionEnabled();
-
-// Returns whether on device head provider is enabled for incognito mode.
-bool IsOnDeviceHeadProviderEnabledForIncognito();
 
 // ---------------------------------------------------------
 // Clipboard URL suggestions:

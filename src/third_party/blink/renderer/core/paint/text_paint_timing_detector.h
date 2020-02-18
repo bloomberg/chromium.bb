@@ -109,14 +109,13 @@ class CORE_EXPORT TextRecordsManager {
 
   void RemoveVisibleRecord(const LayoutObject&);
   void RemoveInvisibleRecord(const LayoutObject&);
-  inline void RecordInvisibleObject(const LayoutObject& object) {
-    invisible_objects_.insert(&object);
-  }
   void RecordVisibleObject(const LayoutObject&,
                            const uint64_t& visual_size,
                            const FloatRect& element_timing_rect);
+  void RecordInvisibleObject(const LayoutObject& object);
   bool NeedMeausuringPaintTime() const {
-    return !texts_queued_for_paint_time_.IsEmpty();
+    return !texts_queued_for_paint_time_.IsEmpty() ||
+           !size_zero_texts_queued_for_paint_time_.IsEmpty();
   }
   void AssignPaintTimeToQueuedRecords(const base::TimeTicks&);
 
@@ -133,7 +132,6 @@ class CORE_EXPORT TextRecordsManager {
     return invisible_objects_.Contains(&object);
   }
 
-  void CleanUp();
   void CleanUpLargestTextPaint();
 
   bool HasTextElementTiming() const { return text_element_timing_; }
@@ -166,6 +164,11 @@ class CORE_EXPORT TextRecordsManager {
   HashSet<const LayoutObject*> invisible_objects_;
 
   Deque<base::WeakPtr<TextRecord>> texts_queued_for_paint_time_;
+  // These are text records created to notify Element Timing of texts which are
+  // first painted outside of the viewport. These have size 0 for the purpose of
+  // LCP computations, even if the size of the text itself is not 0. They are
+  // considered invisible objects by Largest Contentful Paint.
+  Deque<std::unique_ptr<TextRecord>> size_zero_texts_queued_for_paint_time_;
   base::Optional<LargestTextPaintManager> ltp_manager_;
   Member<TextElementTiming> text_element_timing_;
 
@@ -189,7 +192,7 @@ class CORE_EXPORT TextRecordsManager {
 // See also:
 // https://docs.google.com/document/d/1DRVd4a2VU8-yyWftgOparZF-sf16daf0vfbsHuz2rws/edit#heading=h.lvno2v283uls
 class CORE_EXPORT TextPaintTimingDetector final
-    : public GarbageCollectedFinalized<TextPaintTimingDetector> {
+    : public GarbageCollected<TextPaintTimingDetector> {
   friend class TextPaintTimingDetectorTest;
 
  public:
@@ -202,10 +205,7 @@ class CORE_EXPORT TextPaintTimingDetector final
                             const PropertyTreeState&);
   void OnPaintFinished();
   void LayoutObjectWillBeDestroyed(const LayoutObject&);
-  void StopRecordEntries();
   void StopRecordingLargestTextPaint();
-  bool IsRecording() const { return is_recording_; }
-  inline bool FinishedReportingText() const { return !is_recording_; }
   void ResetCallbackManager(PaintTimingCallbackManager* manager) {
     callback_manager_ = manager;
   }
@@ -230,7 +230,6 @@ class CORE_EXPORT TextPaintTimingDetector final
 
   // Make sure that at most one swap promise is ongoing.
   bool awaiting_swap_promise_ = false;
-  bool is_recording_ = true;
 
   bool need_update_timing_at_frame_end_ = false;
 

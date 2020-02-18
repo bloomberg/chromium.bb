@@ -168,6 +168,7 @@
         'misc/symbolic_constants_common.h',
         'misc/time.cc',
         'misc/time.h',
+        'misc/time_linux.cc',
         'misc/time_win.cc',
         'misc/tri_state.h',
         'misc/uuid.cc',
@@ -395,8 +396,8 @@
         ['OS=="linux" or OS=="android"', {
           'sources': [
             'net/http_transport_socket.cc',
-            'util/process_memory_sanitized.cc',
-            'util/process_memory_sanitized.h',
+            'process/process_memory_sanitized.cc',
+            'process/process_memory_sanitized.h',
           ],
         }, {  # else: OS!="linux"
           'sources!': [
@@ -415,6 +416,7 @@
             ['include', '^linux/'],
             ['include', '^misc/capture_context_linux\\.S$'],
             ['include', '^misc/paths_linux\\.cc$'],
+            ['include', '^misc/time_linux\\.cc$'],
             ['include', '^posix/process_info_linux\\.cc$'],
             ['include', '^process/process_memory_linux\\.cc$'],
             ['include', '^process/process_memory_linux\\.h$'],

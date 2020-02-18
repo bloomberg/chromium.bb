@@ -29,8 +29,6 @@ class TestBrowserThread;
 // - Same APIs as base::test::TaskEnvironment.
 // - content::BrowserThread.
 // - Public APIs of base::test::TaskEnvironment.
-// TODO(gab): Rename this header to browser_task_environment.h and migrate all
-// users.
 //
 // Only tests that need the BrowserThread API should instantiate a
 // BrowserTaskEnvironment. Use base::test::SingleThhreadTaskEnvironment or
@@ -142,7 +140,7 @@ class BrowserTaskEnvironment : public base::test::TaskEnvironment {
   static constexpr MainThreadType IO_MAINLOOP = MainThreadType::IO;
 
   struct ValidTraits {
-    ValidTraits(TaskEnvironment::ValidTrait);
+    ValidTraits(TaskEnvironment::ValidTraits);
     ValidTraits(Options);
   };
 
@@ -200,12 +198,6 @@ class BrowserTaskEnvironment : public base::test::TaskEnvironment {
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(BrowserTaskEnvironment);
-};
-
-// TODO(gab): Mass migrate users and remove this.
-class TestBrowserThreadBundle : public BrowserTaskEnvironment {
- public:
-  using BrowserTaskEnvironment::BrowserTaskEnvironment;
 };
 
 }  // namespace content

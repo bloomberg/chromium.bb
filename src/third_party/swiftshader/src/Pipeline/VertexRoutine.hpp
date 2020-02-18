@@ -27,7 +27,7 @@ namespace vk
 
 namespace sw
 {
-	class VertexRoutinePrototype : public Function<Void(Pointer<Byte>, Pointer<UInt>, Pointer<Byte>, Pointer<Byte>)>
+	class VertexRoutinePrototype : public VertexRoutineFunction
 	{
 	public:
 		VertexRoutinePrototype() : vertex(Arg<0>()), batch(Arg<1>()), task(Arg<2>()), data(Arg<3>()) {}
@@ -55,6 +55,7 @@ namespace sw
 		Pointer<Byte> constants;
 
 		Int clipFlags;
+		Int cullMask;
 
 		SpirvRoutine routine;
 
@@ -62,13 +63,15 @@ namespace sw
 		SpirvShader const * const spirvShader;
 
 	private:
-		virtual void program(Pointer<UInt> &batch) = 0;
+		virtual void program(Pointer<UInt> &batch, UInt& vertexCount) = 0;
 
 		typedef VertexProcessor::State::Input Stream;
 
-		Vector4f readStream(Pointer<Byte> &buffer, UInt &stride, const Stream &stream, Pointer<UInt> &batch);
+		Vector4f readStream(Pointer<Byte> &buffer, UInt &stride, const Stream &stream, Pointer<UInt> &batch,
+		                    bool robustBufferAccess, UInt& robustnessSize, Int baseVertex);
 		void readInput(Pointer<UInt> &batch);
 		void computeClipFlags();
+		void computeCullMask();
 		void writeCache(Pointer<Byte> &vertexCache, Pointer<UInt> &tagCache, Pointer<UInt> &batch);
 		void writeVertex(const Pointer<Byte> &vertex, Pointer<Byte> &cacheEntry);
 	};

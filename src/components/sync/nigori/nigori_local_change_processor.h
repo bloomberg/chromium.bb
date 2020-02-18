@@ -50,6 +50,10 @@ class NigoriLocalChangeProcessor {
   // Informs the Nigori processor of a new or updated Nigori entity.
   virtual void Put(std::unique_ptr<EntityData> entity_data) = 0;
 
+  // Returns true the Nigori entity as tracked by the processor has local
+  // changes. A commit may or may not be in progress at this time.
+  virtual bool IsEntityUnsynced() = 0;
+
   // Returns both the entity metadata and model type state such that the Nigori
   // model takes care of persisting them.
   virtual NigoriMetadataBatch GetMetadata() = 0;
@@ -64,6 +68,12 @@ class NigoriLocalChangeProcessor {
   // Returns the delegate for the controller.
   virtual base::WeakPtr<ModelTypeControllerDelegate>
   GetControllerDelegate() = 0;
+
+  // Returns a boolean representing whether the processor's metadata is
+  // currently up to date and accurately tracking the model type's data. If
+  // false, and ModelReadyToSync() has already been called, then Put and Delete
+  // will no-op and can be omitted by bridge.
+  virtual bool IsTrackingMetadata() = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NigoriLocalChangeProcessor);

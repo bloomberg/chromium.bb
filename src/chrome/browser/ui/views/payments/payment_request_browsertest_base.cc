@@ -497,7 +497,7 @@ void PaymentRequestBrowserTestBase::WaitForOnPersonalDataChanged() {
 }
 
 void PaymentRequestBrowserTestBase::CreatePaymentRequestForTest(
-    payments::mojom::PaymentRequestRequest request,
+    mojo::PendingReceiver<payments::mojom::PaymentRequest> receiver,
     content::RenderFrameHost* render_frame_host) {
   content::WebContents* web_contents =
       content::WebContents::FromRenderFrameHost(render_frame_host);
@@ -509,7 +509,7 @@ void PaymentRequestBrowserTestBase::CreatePaymentRequestForTest(
   delegate_ = delegate.get();
   PaymentRequestWebContentsManager::GetOrCreateForWebContents(web_contents)
       ->CreatePaymentRequest(web_contents->GetMainFrame(), web_contents,
-                             std::move(delegate), std::move(request), this);
+                             std::move(delegate), std::move(receiver), this);
 }
 
 void PaymentRequestBrowserTestBase::ClickOnDialogViewAndWait(
@@ -775,13 +775,15 @@ void PaymentRequestBrowserTestBase::WaitForAnimation(
     PaymentRequestDialogView* dialog_view) {
   ViewStack* view_stack = dialog_view->view_stack_for_testing();
   if (view_stack->slide_in_animator_->IsAnimating()) {
-    view_stack->slide_in_animator_->SetAnimationDuration(1);
+    view_stack->slide_in_animator_->SetAnimationDuration(
+        base::TimeDelta::FromMilliseconds(1));
     view_stack->slide_in_animator_->SetAnimationDelegate(
         view_stack->top(), std::unique_ptr<gfx::AnimationDelegate>(
                                new gfx::TestAnimationDelegate()));
     base::RunLoop().Run();
   } else if (view_stack->slide_out_animator_->IsAnimating()) {
-    view_stack->slide_out_animator_->SetAnimationDuration(1);
+    view_stack->slide_out_animator_->SetAnimationDuration(
+        base::TimeDelta::FromMilliseconds(1));
     view_stack->slide_out_animator_->SetAnimationDelegate(
         view_stack->top(), std::unique_ptr<gfx::AnimationDelegate>(
                                new gfx::TestAnimationDelegate()));

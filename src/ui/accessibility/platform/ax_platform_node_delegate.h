@@ -7,8 +7,10 @@
 
 #include <stdint.h>
 
+#include <map>
 #include <memory>
 #include <new>
+#include <ostream>
 #include <set>
 #include <string>
 #include <utility>
@@ -24,6 +26,7 @@
 #include "ui/accessibility/ax_position.h"
 #include "ui/accessibility/ax_text_boundary.h"
 #include "ui/accessibility/ax_text_utils.h"
+#include "ui/accessibility/ax_tree_id.h"
 #include "ui/accessibility/platform/ax_unique_id.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/native_widget_types.h"
@@ -31,7 +34,8 @@
 namespace gfx {
 
 class Rect;
-}
+
+}  // namespace gfx
 
 namespace ui {
 
@@ -40,6 +44,15 @@ struct AXNodeData;
 struct AXTreeData;
 class AXTree;
 class AXPlatformNode;
+
+using TextAttribute = std::pair<std::string, std::string>;
+using TextAttributeList = std::vector<TextAttribute>;
+
+// A TextAttributeMap is a map between the text offset in UTF-16 characters in
+// the node hypertext and the TextAttributeList that starts at that location.
+// An empty TextAttributeList signifies a return to the default node
+// TextAttributeList.
+using TextAttributeMap = std::map<int, TextAttributeList>;
 
 // An object that wants to be accessible should derive from this class.
 // AXPlatformNode subclasses use this interface to query all of the information
@@ -77,6 +90,10 @@ class AX_EXPORT AXPlatformNodeDelegate {
   // method is only meaningful on macOS.
   virtual gfx::NativeViewAccessible GetNSWindow() = 0;
 
+  // Get the node for this delegate, which may be an AXPlatformNode or it may
+  // be a native accessible object implemented by another class.
+  virtual gfx::NativeViewAccessible GetNativeViewAccessible() = 0;
+
   // Get the parent of the node, which may be an AXPlatformNode or it may
   // be a native accessible object implemented by another class.
   virtual gfx::NativeViewAccessible GetParent() = 0;
@@ -105,7 +122,7 @@ class AX_EXPORT AXPlatformNodeDelegate {
 
   class ChildIterator {
    public:
-    virtual ~ChildIterator() {}
+    virtual ~ChildIterator() = default;
     virtual bool operator==(const ChildIterator& rhs) const = 0;
     virtual bool operator!=(const ChildIterator& rhs) const = 0;
     virtual void operator++() = 0;
@@ -114,6 +131,8 @@ class AX_EXPORT AXPlatformNodeDelegate {
     virtual void operator--(int) = 0;
     virtual gfx::NativeViewAccessible GetNativeViewAccessible() const = 0;
     virtual int GetIndexInParent() const = 0;
+    virtual AXPlatformNodeDelegate& operator*() const = 0;
+    virtual AXPlatformNodeDelegate* operator->() const = 0;
   };
   virtual std::unique_ptr<AXPlatformNodeDelegate::ChildIterator>
   ChildrenBegin() = 0;
@@ -128,6 +147,18 @@ class AX_EXPORT AXPlatformNodeDelegate {
   // Set the selection in the hypertext of this node. Depending on the
   // implementation, this may mean the new selection will span multiple nodes.
   virtual bool SetHypertextSelection(int start_offset, int end_offset) = 0;
+
+  // Compute the text attributes map for the node associated with this
+  // delegate, given a set of default text attributes that apply to the entire
+  // node. A text attribute map associates a list of text attributes with a
+  // given hypertext offset in this node.
+  virtual TextAttributeMap ComputeTextAttributeMap(
+      const TextAttributeList& default_attributes) const = 0;
+
+  // Get the inherited font family name for text attributes. We need this
+  // because inheritance works differently between the different delegate
+  // implementations.
+  virtual std::string GetInheritedFontFamilyName() const = 0;
 
   // Returns the text of this node and all descendant nodes; including text
   // found in embedded objects.
@@ -193,7 +224,17 @@ class AX_EXPORT AXPlatformNodeDelegate {
   // Get whether this node is in web content.
   virtual bool IsWebContent() const = 0;
 
+  // Returns true if the caret or selection is visible on this object.
+  virtual bool HasVisibleCaretOrSelection() const = 0;
+
+  // Get another node from this same tree.
   virtual AXPlatformNode* GetFromNodeID(int32_t id) = 0;
+
+  // Get a node from a different tree using a tree ID and node ID.
+  // Note that this is only guaranteed to work if the other tree is of the
+  // same type, i.e. it won't work between web and views or vice-versa.
+  virtual AXPlatformNode* GetFromTreeIDAndNodeID(const ui::AXTreeID& ax_tree_id,
+                                                 int32_t id) = 0;
 
   // Given a node ID attribute (one where IsNodeIdIntAttribute is true), return
   // a target nodes for which this delegate's node has that relationship
@@ -339,8 +380,22 @@ class AX_EXPORT AXPlatformNodeDelegate {
   // element. The default value should be false if not in testing mode.
   virtual bool ShouldIgnoreHoveredStateForTesting() = 0;
 
+  // Creates a string representation of this delegate's data.
+  std::string ToString() { return GetData().ToString(); }
+
+  // Returns a string representation of the subtree of delegates rooted at this
+  // delegate.
+  std::string SubtreeToString() { return SubtreeToStringHelper(0u); }
+
+  friend std::ostream& operator<<(std::ostream& stream,
+                                  AXPlatformNodeDelegate& delegate) {
+    return stream << delegate.ToString();
+  }
+
  protected:
   AXPlatformNodeDelegate() = default;
+
+  virtual std::string SubtreeToStringHelper(size_t level) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AXPlatformNodeDelegate);

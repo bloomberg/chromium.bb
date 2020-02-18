@@ -10,9 +10,12 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/threading/thread_checker.h"
 #include "media/base/media_export.h"
 #include "media/base/pipeline.h"
+#include "media/base/renderer.h"
+#include "media/base/renderer_factory_selector.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -21,6 +24,15 @@ class SingleThreadTaskRunner;
 namespace media {
 
 class MediaLog;
+
+// Callbacks used for Renderer creation. When the FactoryType is nullopt, the
+// current base one will be created.
+using CreateRendererCB = base::RepeatingCallback<std::unique_ptr<Renderer>(
+    base::Optional<RendererFactoryType>)>;
+using RendererCreatedCB = base::OnceCallback<void(std::unique_ptr<Renderer>)>;
+using AsyncCreateRendererCB =
+    base::RepeatingCallback<void(base::Optional<RendererFactoryType>,
+                                 RendererCreatedCB)>;
 
 // Pipeline runs the media pipeline.  Filters are created and called on the
 // task runner injected into this object. Pipeline works like a state
@@ -68,38 +80,36 @@ class MediaLog;
 // Some annoying differences between the two paths need to be removed first.
 class MEDIA_EXPORT PipelineImpl : public Pipeline {
  public:
-  // Constructs a media pipeline that will execute media tasks on
-  // |media_task_runner|.
+  // Constructs a pipeline that will execute media tasks on |media_task_runner|.
+  // |create_renderer_cb|: to create renderers when starting and resuming.
   PipelineImpl(scoped_refptr<base::SingleThreadTaskRunner> media_task_runner,
                scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
+               CreateRendererCB create_renderer_cb,
                MediaLog* media_log);
   ~PipelineImpl() override;
 
   // Pipeline implementation.
   void Start(StartType start_type,
              Demuxer* demuxer,
-             std::unique_ptr<Renderer> renderer,
              Client* client,
              const PipelineStatusCB& seek_cb) override;
   void Stop() override;
   void Seek(base::TimeDelta time, const PipelineStatusCB& seek_cb) override;
   void Suspend(const PipelineStatusCB& suspend_cb) override;
-  void Resume(std::unique_ptr<Renderer> renderer,
-              base::TimeDelta time,
-              const PipelineStatusCB& seek_cb) override;
+  void Resume(base::TimeDelta time, const PipelineStatusCB& seek_cb) override;
   bool IsRunning() const override;
   bool IsSuspended() const override;
   double GetPlaybackRate() const override;
   void SetPlaybackRate(double playback_rate) override;
   float GetVolume() const override;
   void SetVolume(float volume) override;
+  void SetLatencyHint(base::Optional<base::TimeDelta> latency_hint) override;
   base::TimeDelta GetMediaTime() const override;
   Ranges<base::TimeDelta> GetBufferedTimeRanges() const override;
   base::TimeDelta GetMediaDuration() const override;
   bool DidLoadingProgress() override;
   PipelineStatistics GetStatistics() const override;
-  void SetCdm(CdmContext* cdm_context,
-              const CdmAttachedCB& cdm_attached_cb) override;
+  void SetCdm(CdmContext* cdm_context, CdmAttachedCB cdm_attached_cb) override;
 
   // |enabled_track_ids| contains track ids of enabled audio tracks.
   void OnEnabledAudioTracksChanged(
@@ -132,6 +142,11 @@ class MEDIA_EXPORT PipelineImpl : public Pipeline {
   };
   static const char* GetStateString(State state);
 
+  // Create a Renderer asynchronously. Must be called on the main task runner
+  // and the callback will be called on the main task runner as well.
+  void AsyncCreateRenderer(base::Optional<RendererFactoryType> factory_type,
+                           RendererCreatedCB renderer_created_cb);
+
   // Notifications from RendererWrapper.
   void OnError(PipelineStatus error);
   void OnEnded();
@@ -155,6 +170,7 @@ class MEDIA_EXPORT PipelineImpl : public Pipeline {
 
   // Parameters passed in the constructor.
   const scoped_refptr<base::SingleThreadTaskRunner> media_task_runner_;
+  CreateRendererCB create_renderer_cb_;
   MediaLog* const media_log_;
 
   // Pipeline client. Valid only while the pipeline is running.

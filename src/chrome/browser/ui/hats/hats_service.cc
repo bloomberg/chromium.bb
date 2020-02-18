@@ -7,11 +7,13 @@
 #include <utility>
 
 #include "base/metrics/field_trial_params.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
 #include "base/util/values/values_util.h"
 #include "base/values.h"
 #include "base/version.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -22,6 +24,7 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/version_info/version_info.h"
+#include "net/base/network_change_notifier.h"
 
 namespace {
 // Which survey we're triggering
@@ -56,6 +59,25 @@ std::string GetLastSurveyStartedTime(const std::string& trigger) {
   return trigger + ".last_survey_started_time";
 }
 
+constexpr char kHatsShouldShowSurveyReasonHistogram[] =
+    "Feedback.HappinessTrackingSurvey.ShouldShowSurveyReason";
+
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class ShouldShowSurveyReasons {
+  kYes = 0,
+  kNoOffline = 1,
+  kNoLastSessionCrashed = 2,
+  kNoReceivedSurveyInCurrentMilestone = 3,
+  kNoProfileTooNew = 4,
+  kNoLastSurveyTooRecent = 5,
+  kNoBelowProbabilityLimit = 6,
+  kNoTriggerStringMismatch = 7,
+  kNoNotRegularBrowser = 8,
+  kNoIncognitoDisabled = 9,
+  kMaxValue = kNoIncognitoDisabled,
+};
+
 }  // namespace
 
 HatsService::SurveyMetadata::SurveyMetadata() = default;
@@ -87,9 +109,21 @@ void HatsService::RegisterProfilePrefs(PrefRegistrySimple* registry) {
 void HatsService::LaunchSatisfactionSurvey() {
   if (ShouldShowSurvey(kHatsSurveyTriggerSatisfaction)) {
     Browser* browser = chrome::FindLastActive();
-    // Never show HaTS bubble in Incognito mode.
+    // Never show HaTS bubble for Incognito mode.
     if (browser && browser->is_type_normal() &&
         profiles::IsRegularOrGuestSession(browser)) {
+      // Incognito mode needs to be enabled to create an off-the-record profile
+      // for HaTS dialog.
+      if (IncognitoModePrefs::GetAvailability(profile_->GetPrefs()) ==
+          IncognitoModePrefs::DISABLED) {
+        UMA_HISTOGRAM_ENUMERATION(
+            kHatsShouldShowSurveyReasonHistogram,
+            ShouldShowSurveyReasons::kNoIncognitoDisabled);
+        return;
+      }
+
+      UMA_HISTOGRAM_ENUMERATION(kHatsShouldShowSurveyReasonHistogram,
+                                ShouldShowSurveyReasons::kYes);
       browser->window()->ShowHatsBubble(en_site_id_);
 
       DictionaryPrefUpdate update(profile_->GetPrefs(),
@@ -100,6 +134,9 @@ void HatsService::LaunchSatisfactionSurvey() {
       pref_data->SetPath(
           GetLastSurveyStartedTime(kHatsSurveyTriggerSatisfaction),
           util::TimeToValue(base::Time::Now()));
+    } else {
+      UMA_HISTOGRAM_ENUMERATION(kHatsShouldShowSurveyReasonHistogram,
+                                ShouldShowSurveyReasons::kNoNotRegularBrowser);
     }
   }
 }
@@ -137,16 +174,22 @@ bool HatsService::ShouldShowSurvey(const std::string& trigger) const {
   }
 
   // Survey can not be loaded and shown if there is no network connection.
-  if (net::NetworkChangeNotifier::IsOffline())
+  if (net::NetworkChangeNotifier::IsOffline()) {
+    UMA_HISTOGRAM_ENUMERATION(kHatsShouldShowSurveyReasonHistogram,
+                              ShouldShowSurveyReasons::kNoOffline);
     return false;
+  }
 
   bool consent_given =
       g_browser_process->GetMetricsServicesManager()->IsMetricsConsentGiven();
   if (!consent_given)
     return false;
 
-  if (profile_->GetLastSessionExitType() == Profile::EXIT_CRASHED)
+  if (profile_->GetLastSessionExitType() == Profile::EXIT_CRASHED) {
+    UMA_HISTOGRAM_ENUMERATION(kHatsShouldShowSurveyReasonHistogram,
+                              ShouldShowSurveyReasons::kNoLastSessionCrashed);
     return false;
+  }
 
   const base::DictionaryValue* pref_data =
       profile_->GetPrefs()->GetDictionary(prefs::kHatsSurveyMetadata);
@@ -155,25 +198,46 @@ bool HatsService::ShouldShowSurvey(const std::string& trigger) const {
   if (last_major_version.has_value() &&
       static_cast<uint32_t>(*last_major_version) ==
           version_info::GetVersion().components()[0]) {
+    UMA_HISTOGRAM_ENUMERATION(
+        kHatsShouldShowSurveyReasonHistogram,
+        ShouldShowSurveyReasons::kNoReceivedSurveyInCurrentMilestone);
     return false;
   }
 
   base::Time now = base::Time::Now();
 
-  if ((now - profile_->GetCreationTime()) < kMinimumProfileAge)
+  if ((now - profile_->GetCreationTime()) < kMinimumProfileAge) {
+    UMA_HISTOGRAM_ENUMERATION(kHatsShouldShowSurveyReasonHistogram,
+                              ShouldShowSurveyReasons::kNoProfileTooNew);
     return false;
+  }
 
   base::Optional<base::Time> last_survey_started_time =
       util::ValueToTime(pref_data->FindPath(GetLastSurveyStartedTime(trigger)));
   if (last_survey_started_time.has_value()) {
     base::TimeDelta elapsed_time_since_last_start =
         now - *last_survey_started_time;
-    if (elapsed_time_since_last_start < kMinimumTimeBetweenSurveyStarts)
+    if (elapsed_time_since_last_start < kMinimumTimeBetweenSurveyStarts) {
+      UMA_HISTOGRAM_ENUMERATION(
+          kHatsShouldShowSurveyReasonHistogram,
+          ShouldShowSurveyReasons::kNoLastSurveyTooRecent);
       return false;
+    }
   }
 
-  if (trigger_ != trigger)
+  if (trigger_ != trigger) {
+    UMA_HISTOGRAM_ENUMERATION(
+        kHatsShouldShowSurveyReasonHistogram,
+        ShouldShowSurveyReasons::kNoTriggerStringMismatch);
     return false;
+  }
 
-  return base::RandDouble() < probability_;
+  bool should_show_survey = base::RandDouble() < probability_;
+  if (!should_show_survey) {
+    UMA_HISTOGRAM_ENUMERATION(
+        kHatsShouldShowSurveyReasonHistogram,
+        ShouldShowSurveyReasons::kNoBelowProbabilityLimit);
+  }
+
+  return should_show_survey;
 }

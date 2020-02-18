@@ -218,10 +218,11 @@ def UploadDevInstallerPrebuilts(binhost_bucket, binhost_key, binhost_base_url,
     board: Board type that was built on this machine.
     extra_args: Extra args to pass to prebuilts script.
   """
-  extra_args = ['--prepend-version', constants.CANARY_TYPE]
-  extra_args.extend(['--binhost-base-url', binhost_base_url])
-  extra_args.extend(['--upload', binhost_bucket])
-  extra_args.extend(['--key', binhost_key])
+  extra_args = [
+      '--binhost-base-url', binhost_base_url,
+      '--upload', binhost_bucket,
+      '--key', binhost_key,
+  ]
 
   filename = os.path.join(buildroot, constants.DEFAULT_CHROOT_DIR,
                           'build', board, _BINHOST_PACKAGE_FILE)

@@ -19,15 +19,15 @@
 #include "cc/trees/latency_info_swap_promise.h"
 #include "cc/trees/layer_tree_frame_sink.h"
 #include "cc/trees/layer_tree_host.h"
-#include "cc/trees/layer_tree_host_common.h"
 #include "cc/trees/layer_tree_host_single_thread_client.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/mutator_host.h"
 #include "cc/trees/render_frame_metadata_observer.h"
 #include "cc/trees/scoped_abort_remaining_swap_promises.h"
+#include "cc/trees/scroll_and_scale_set.h"
 #include "components/viz/common/frame_sinks/delay_based_time_source.h"
+#include "components/viz/common/frame_timing_details.h"
 #include "components/viz/common/gpu/context_provider.h"
-#include "ui/gfx/presentation_feedback.h"
 
 namespace cc {
 
@@ -195,8 +195,9 @@ void SingleThreadProxy::DoCommit() {
 
     layer_tree_host_->FinishCommitOnImplThread(host_impl_.get());
 
-    if (scheduler_on_impl_thread_)
+    if (scheduler_on_impl_thread_) {
       scheduler_on_impl_thread_->DidCommit();
+    }
 
     IssueImageDecodeFinishedCallbacks();
     host_impl_->CommitComplete();
@@ -427,6 +428,10 @@ size_t SingleThreadProxy::MainThreadAnimationsCount() const {
   return 0;
 }
 
+bool SingleThreadProxy::HasCustomPropertyAnimations() const {
+  return false;
+}
+
 bool SingleThreadProxy::CurrentFrameHadRAF() const {
   return false;
 }
@@ -529,13 +534,12 @@ void SingleThreadProxy::NotifyImageDecodeRequestFinished() {
 void SingleThreadProxy::DidPresentCompositorFrameOnImplThread(
     uint32_t frame_token,
     std::vector<LayerTreeHost::PresentationTimeCallback> callbacks,
-    const gfx::PresentationFeedback& feedback) {
+    const viz::FrameTimingDetails& details) {
   layer_tree_host_->DidPresentCompositorFrame(frame_token, std::move(callbacks),
-                                              feedback);
+                                              details.presentation_feedback);
 
   if (scheduler_on_impl_thread_) {
-    scheduler_on_impl_thread_->DidPresentCompositorFrame(frame_token,
-                                                         feedback.timestamp);
+    scheduler_on_impl_thread_->DidPresentCompositorFrame(frame_token, details);
   }
 }
 
@@ -576,8 +580,8 @@ void SingleThreadProxy::CompositeImmediately(base::TimeTicks frame_begin_time,
   }
 
   viz::BeginFrameArgs begin_frame_args(viz::BeginFrameArgs::Create(
-      BEGINFRAME_FROM_HERE, viz::BeginFrameArgs::kManualSourceId, 1,
-      frame_begin_time, base::TimeTicks(),
+      BEGINFRAME_FROM_HERE, viz::BeginFrameArgs::kManualSourceId,
+      begin_frame_sequence_number_++, frame_begin_time, base::TimeTicks(),
       viz::BeginFrameArgs::DefaultInterval(), viz::BeginFrameArgs::NORMAL));
 
   // Start the impl frame.
@@ -841,14 +845,6 @@ void SingleThreadProxy::BeginMainFrame(
     return;
   }
 
-  // Queue the LATENCY_BEGIN_FRAME_UI_MAIN_COMPONENT swap promise only once we
-  // know we will commit since QueueSwapPromise itself requests a commit.
-  ui::LatencyInfo new_latency_info(ui::SourceEventType::FRAME);
-  new_latency_info.AddLatencyNumberWithTimestamp(
-      ui::LATENCY_BEGIN_FRAME_UI_MAIN_COMPONENT, begin_frame_args.frame_time);
-  layer_tree_host_->QueueSwapPromise(
-      std::make_unique<LatencyInfoSwapPromise>(new_latency_info));
-
   DoPainting();
 }
 
@@ -868,7 +864,7 @@ void SingleThreadProxy::DoBeginMainFrame(
   layer_tree_host_->WillBeginMainFrame();
   layer_tree_host_->BeginMainFrame(begin_frame_args);
   layer_tree_host_->AnimateLayers(begin_frame_args.frame_time);
-  layer_tree_host_->RequestMainFrameUpdate();
+  layer_tree_host_->RequestMainFrameUpdate(false /* record_cc_metrics */);
 }
 
 void SingleThreadProxy::DoPainting() {
@@ -877,8 +873,10 @@ void SingleThreadProxy::DoPainting() {
   // TODO(enne): SingleThreadProxy does not support cancelling commits yet,
   // search for CommitEarlyOutReason::FINISHED_NO_UPDATES inside
   // thread_proxy.cc
-  if (scheduler_on_impl_thread_)
-    scheduler_on_impl_thread_->NotifyReadyToCommit();
+  if (scheduler_on_impl_thread_) {
+    scheduler_on_impl_thread_->NotifyReadyToCommit(
+        layer_tree_host_->begin_main_frame_metrics());
+  }
 }
 
 void SingleThreadProxy::BeginMainFrameAbortedOnImplThread(

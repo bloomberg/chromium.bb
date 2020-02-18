@@ -108,6 +108,12 @@ Polymer({
      * @private
      */
     sortMethod_: String,
+
+    /** @private */
+    storagePressureFlagEnabled_: {
+      type: Boolean,
+      value: () => loadTimeData.getBoolean('enableStoragePressureUI'),
+    },
   },
 
   /** @private {?settings.LocalDataBrowserProxy} */
@@ -132,14 +138,13 @@ Polymer({
           /** @type {!CustomEvent<!{item: !SiteGroup, index: number}>} */ (e);
       this.selectedItem_ = event.detail;
     });
-    this.addEventListener('site-entry-storage-updated', () => {
-      this.debounce('site-entry-storage-updated', () => {
-        if (this.sortMethods_ &&
-            this.$.sortMethod.value == settings.SortMethod.STORAGE) {
-          this.onSortMethodChanged_();
-        }
-      }, 500);
-    });
+
+    if (this.storagePressureFlagEnabled_) {
+      const sortParam = settings.getQueryParameters().get('sort');
+      if (Object.values(this.sortMethods_).includes(sortParam)) {
+        this.$.sortMethod.value = sortParam;
+      }
+    }
     this.sortMethod_ = this.$.sortMethod.value;
   },
 
@@ -397,7 +402,11 @@ Polymer({
    */
   onConfirmClearData_: function(e) {
     e.preventDefault();
-    this.$.confirmClearData.get().showModal();
+    if (this.storagePressureFlagEnabled_) {
+      this.$.confirmClearDataNew.get().showModal();
+    } else {
+      this.$.confirmClearData.get().showModal();
+    }
   },
 
   /** @private */

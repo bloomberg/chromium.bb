@@ -13,7 +13,8 @@
 #include "build/build_config.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
 #include "device/vr/vr_device_base.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/sensor_provider.mojom.h"
 #include "ui/gfx/geometry/quaternion.h"
 
@@ -39,7 +40,7 @@ static constexpr mojom::SensorType kOrientationSensorType =
 class DEVICE_VR_EXPORT VROrientationDevice : public VRDeviceBase,
                                              public mojom::SensorClient {
  public:
-  VROrientationDevice(mojom::SensorProviderPtr* sensor_provider,
+  VROrientationDevice(mojom::SensorProvider* sensor_provider,
                       base::OnceClosure ready_callback);
   ~VROrientationDevice() override;
 
@@ -76,9 +77,9 @@ class DEVICE_VR_EXPORT VROrientationDevice : public VRDeviceBase,
   base::Optional<gfx::Quaternion> base_pose_;
   gfx::Quaternion latest_pose_;
 
-  mojom::SensorPtr sensor_;
+  mojo::Remote<mojom::Sensor> sensor_;
   std::unique_ptr<SensorReadingSharedBufferReader> shared_buffer_reader_;
-  mojo::Binding<mojom::SensorClient> binding_;
+  mojo::Receiver<mojom::SensorClient> receiver_{this};
 
   std::vector<std::unique_ptr<VROrientationSession>> magic_window_sessions_;
 };

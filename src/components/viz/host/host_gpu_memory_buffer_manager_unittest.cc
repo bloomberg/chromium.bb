@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/memory/unsafe_shared_memory_region.h"
 #include "base/run_loop.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
@@ -74,6 +75,8 @@ class TestGpuService : public mojom::GpuService {
     gfx::GpuMemoryBufferHandle handle;
     handle.id = req.id;
     handle.type = gfx::SHARED_MEMORY_BUFFER;
+    constexpr size_t kBufferSizeBytes = 100;
+    handle.region = base::UnsafeSharedMemoryRegion::Create(kBufferSizeBytes);
 
     DCHECK(req.callback);
     std::move(req.callback).Run(std::move(handle));
@@ -89,28 +92,33 @@ class TestGpuService : public mojom::GpuService {
   void CloseChannel(int32_t client_id) override {}
 #if defined(OS_CHROMEOS)
   void CreateArcVideoDecodeAccelerator(
-      arc::mojom::VideoDecodeAcceleratorRequest vda_request) override {}
+      mojo::PendingReceiver<arc::mojom::VideoDecodeAccelerator> vda_receiver)
+      override {}
 
   void CreateArcVideoEncodeAccelerator(
-      arc::mojom::VideoEncodeAcceleratorRequest vea_request) override {}
+      mojo::PendingReceiver<arc::mojom::VideoEncodeAccelerator> vea_receiver)
+      override {}
 
   void CreateArcVideoProtectedBufferAllocator(
-      arc::mojom::VideoProtectedBufferAllocatorRequest pba_request) override {}
+      mojo::PendingReceiver<arc::mojom::VideoProtectedBufferAllocator>
+          pba_receiver) override {}
 
   void CreateArcProtectedBufferManager(
-      arc::mojom::ProtectedBufferManagerRequest pbm_request) override {}
+      mojo::PendingReceiver<arc::mojom::ProtectedBufferManager> pbm_receiver)
+      override {}
 
   void CreateJpegDecodeAccelerator(
-      chromeos_camera::mojom::MjpegDecodeAcceleratorRequest jda_request)
-      override {}
+      mojo::PendingReceiver<chromeos_camera::mojom::MjpegDecodeAccelerator>
+          jda_receiver) override {}
 
   void CreateJpegEncodeAccelerator(
-      chromeos_camera::mojom::JpegEncodeAcceleratorRequest jea_request)
-      override {}
+      mojo::PendingReceiver<chromeos_camera::mojom::JpegEncodeAccelerator>
+          jea_receiver) override {}
 #endif  // defined(OS_CHROMEOS)
 
   void CreateVideoEncodeAcceleratorProvider(
-      media::mojom::VideoEncodeAcceleratorProviderRequest request) override {}
+      mojo::PendingReceiver<media::mojom::VideoEncodeAcceleratorProvider>
+          receiver) override {}
 
   void CreateGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
                              const gfx::Size& size,
@@ -131,6 +139,11 @@ class TestGpuService : public mojom::GpuService {
   void GetVideoMemoryUsageStats(
       GetVideoMemoryUsageStatsCallback callback) override {}
 
+  void StartPeakMemoryMonitor(uint32_t sequence_num) override {}
+
+  void GetPeakMemoryUsage(uint32_t sequence_num,
+                          GetPeakMemoryUsageCallback callback) override {}
+
 #if defined(OS_WIN)
   void RequestCompleteGpuInfo(
       RequestCompleteGpuInfoCallback callback) override {}
@@ -147,7 +160,7 @@ class TestGpuService : public mojom::GpuService {
 
   void WakeUpGpu() override {}
 
-  void GpuSwitched() override {}
+  void GpuSwitched(gl::GpuPreference active_gpu_heuristic) override {}
 
   void DestroyAllChannels() override {}
 

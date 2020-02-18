@@ -110,8 +110,7 @@ TEST(ProtoConversionTest, ImpressionProtoConversion) {
 
   Impression impression = test::CreateImpression(
       create_time, UserFeedback::kHelpful, ImpressionResult::kPositive,
-      true /*integrated*/, SchedulerTaskTime::kMorning, kGuid,
-      SchedulerClientType::kTest1);
+      true /*integrated*/, kGuid, SchedulerClientType::kTest1);
   client_state.impressions.emplace_back(impression);
   TestClientStateConversion(&client_state);
 
@@ -136,15 +135,6 @@ TEST(ProtoConversionTest, ImpressionProtoConversion) {
     TestClientStateConversion(&client_state);
   }
 
-  // Verify all scheduler task time types.
-  std::vector<SchedulerTaskTime> task_times{SchedulerTaskTime::kUnknown,
-                                            SchedulerTaskTime::kMorning,
-                                            SchedulerTaskTime::kEvening};
-  for (const auto task_start_time : task_times) {
-    first_impression.task_start_time = task_start_time;
-    TestClientStateConversion(&client_state);
-  }
-
   // Verify impression mapping.
   first_impression.impression_mapping[UserFeedback::kClick] =
       ImpressionResult::kNeutral;
@@ -152,6 +142,10 @@ TEST(ProtoConversionTest, ImpressionProtoConversion) {
 
   // Verify custom data.
   first_impression.custom_data = {{"url", "https://www.example.com"}};
+  TestClientStateConversion(&client_state);
+
+  // Verify custom suppression duration.
+  first_impression.custom_suppression_duration = base::TimeDelta::FromDays(3);
   TestClientStateConversion(&client_state);
 }
 
@@ -164,12 +158,10 @@ TEST(ProtoConversionTest, MultipleImpressionConversion) {
 
   Impression impression = test::CreateImpression(
       create_time, UserFeedback::kHelpful, ImpressionResult::kPositive,
-      true /*integrated*/, SchedulerTaskTime::kMorning, "guid1",
-      SchedulerClientType::kUnknown);
+      true /*integrated*/, "guid1", SchedulerClientType::kUnknown);
   Impression other_impression = test::CreateImpression(
       create_time, UserFeedback::kNoFeedback, ImpressionResult::kNegative,
-      false /*integrated*/, SchedulerTaskTime::kEvening, "guid2",
-      SchedulerClientType::kUnknown);
+      false /*integrated*/, "guid2", SchedulerClientType::kUnknown);
   client_state.impressions.emplace_back(std::move(impression));
   client_state.impressions.emplace_back(std::move(other_impression));
   TestClientStateConversion(&client_state);
@@ -207,7 +199,8 @@ TEST(ProtoConversionTest, NotificationEntryConversion) {
   entry.schedule_params.deliver_time_start = entry.create_time;
   entry.schedule_params.deliver_time_end =
       entry.create_time + base::TimeDelta::FromMinutes(10);
-
+  entry.schedule_params.custom_suppression_duration =
+      base::TimeDelta::FromDays(3);
   TestNotificationEntryConversion(&entry);
 }
 

@@ -4,7 +4,6 @@
 
 #include "components/sync/driver/data_type_controller.h"
 
-#include "components/sync/base/data_type_histogram.h"
 #include "components/sync/syncable/user_share.h"
 
 namespace syncer {
@@ -12,11 +11,6 @@ namespace syncer {
 DataTypeController::DataTypeController(ModelType type) : type_(type) {}
 
 DataTypeController::~DataTypeController() {}
-
-// static
-bool DataTypeController::IsUnrecoverableResult(ConfigureResult result) {
-  return (result == UNRECOVERABLE_ERROR);
-}
 
 // static
 bool DataTypeController::IsSuccessfulResult(ConfigureResult result) {

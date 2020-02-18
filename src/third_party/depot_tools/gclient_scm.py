@@ -24,7 +24,6 @@ try:
 except ImportError:  # For Py3 compatibility
   import urllib.parse as urlparse
 
-import download_from_google_storage
 import gclient_utils
 import git_cache
 import scm
@@ -418,16 +417,22 @@ class GitWrapper(SCMWrapper):
 
     self.Print('===Applying patch===')
     self.Print('Revision to patch is %r @ %r.' % (patch_repo, patch_rev))
-    self.Print('Will cherrypick %r .. %r on top of %r.' % (
-        target_rev, patch_rev, base_rev))
     self.Print('Current dir is %r' % self.checkout_path)
     self._Capture(['reset', '--hard'])
-    self._Capture(['fetch', patch_repo, patch_rev])
+    self._Capture(['fetch', '--no-tags', patch_repo, patch_rev])
     patch_rev = self._Capture(['rev-parse', 'FETCH_HEAD'])
 
     if not options.rebase_patch_ref:
       self._Capture(['checkout', patch_rev])
+      # Adjust base_rev to be the first parent of our checked out patch ref;
+      # This will allow us to correctly extend `file_list`, and will show the
+      # correct file-list to programs which do `git diff --cached` expecting to
+      # see the patch diff.
+      base_rev = self._Capture(['rev-parse', patch_rev+'~'])
+
     else:
+      self.Print('Will cherrypick %r .. %r on top of %r.' % (
+          target_rev, patch_rev, base_rev))
       try:
         if scm.GIT.IsAncestor(self.checkout_path, patch_rev, target_rev):
           # If |patch_rev| is an ancestor of |target_rev|, check it out.
@@ -907,10 +912,11 @@ class GitWrapper(SCMWrapper):
       self.Print('________ couldn\'t run status in %s:\n'
                  'The directory does not exist.' % self.checkout_path)
     else:
-      try:
-        merge_base = [self._Capture(['merge-base', 'HEAD', self.remote])]
-      except subprocess2.CalledProcessError:
-        merge_base = []
+      merge_base = []
+      if self.url:
+        _, base_rev = gclient_utils.SplitUrlRevision(self.url)
+        if base_rev:
+          merge_base = [base_rev]
       self._Run(
           ['-c', 'core.quotePath=false', 'diff', '--name-status'] + merge_base,
           options, always_show_header=options.verbose)
@@ -1260,14 +1266,27 @@ class GitWrapper(SCMWrapper):
     return branch
 
   def _Capture(self, args, **kwargs):
+    set_git_dir = 'cwd' not in kwargs
     kwargs.setdefault('cwd', self.checkout_path)
     kwargs.setdefault('stderr', subprocess2.PIPE)
     strip = kwargs.pop('strip', True)
     env = scm.GIT.ApplyEnvVars(kwargs)
+    # If an explicit cwd isn't set, then default to the .git/ subdir so we get
+    # stricter behavior.  This can be useful in cases of slight corruption --
+    # we don't accidentally go corrupting parent git checks too.  See
+    # https://crbug.com/1000825 for an example.
+    if set_git_dir:
+      git_dir = os.path.abspath(os.path.join(self.checkout_path, '.git'))
+      # Depending on how the .gclient file was defined, self.checkout_path
+      # might be set to a unicode string, not a regular string; on Windows
+      # Python2, we can't set env vars to be unicode strings, so we
+      # forcibly cast the value to a string before setting it.
+      env.setdefault('GIT_DIR', str(git_dir))
     ret = subprocess2.check_output(
         ['git'] + args, env=env, **kwargs).decode('utf-8')
     if strip:
       ret = ret.strip()
+    self.Print('Finished running: %s %s' % ('git', ' '.join(args)))
     return ret
 
   def _Checkout(self, options, ref, force=False, quiet=None):
@@ -1317,6 +1336,8 @@ class GitWrapper(SCMWrapper):
       fetch_cmd.append('--prune')
     if options.verbose:
       fetch_cmd.append('--verbose')
+    if not hasattr(options, 'with_tags') or not options.with_tags:
+      fetch_cmd.append('--no-tags')
     elif quiet:
       fetch_cmd.append('--quiet')
     self._Run(fetch_cmd, options, show_header=options.verbose, retry=True)

@@ -19,9 +19,9 @@ import os
 import optparse  # pylint: disable=deprecated-module
 import signal
 import sys
-import urlparse
 
 import six
+from six.moves import urllib
 
 # TODO(build): sort the cbuildbot.constants/lib.constants issue;
 # lib shouldn't have to import from buildbot like this.
@@ -33,6 +33,7 @@ from chromite.lib import gs
 from chromite.lib import osutils
 from chromite.lib import path_util
 from chromite.lib import terminal
+from chromite.utils import attrs_freezer
 
 
 DEVICE_SCHEME_FILE = 'file'
@@ -155,14 +156,14 @@ def ParseDate(value):
 
 def NormalizeUri(value):
   """Normalize a local path or URI."""
-  o = urlparse.urlparse(value)
+  o = urllib.parse.urlparse(value)
   if o.scheme == 'file':
     # Trim off the file:// prefix.
     return VALID_TYPES['path'](value[7:])
   elif o.scheme not in ('', 'gs'):
     o = list(o)
     o[2] = os.path.normpath(o[2])
-    return urlparse.urlunparse(o)
+    return urllib.parse.urlunparse(o)
   else:
     return NormalizeLocalOrGSPath(value)
 
@@ -202,7 +203,7 @@ class DeviceParser(object):
   The last item above is an alias for ssh'ing into a virtual machine on a
   localhost.  It gets translated into 'localhost:9222'.
 
-  Usage:
+  Examples:
     parser = argparse.ArgumentParser()
 
     parser.add_argument(
@@ -294,7 +295,7 @@ class DeviceParser(object):
       value = 'localhost:9222'
     elif value.strip().lower() == 'ssh://:vm:':
       value = 'ssh://localhost:9222'
-    parsed = urlparse.urlparse(value)
+    parsed = urllib.parse.urlparse(value)
     if not parsed.scheme:
       # Default to a file scheme for absolute paths, SSH scheme otherwise.
       if value and value[0] == '/':
@@ -302,7 +303,7 @@ class DeviceParser(object):
       else:
         # urlparse won't provide hostname/username/port unless a scheme is
         # specified so we need to re-parse.
-        parsed = urlparse.urlparse('%s://%s' % (DEVICE_SCHEME_SSH, value))
+        parsed = urllib.parse.urlparse('%s://%s' % (DEVICE_SCHEME_SSH, value))
         scheme = DEVICE_SCHEME_SSH
     else:
       scheme = parsed.scheme.lower()
@@ -400,7 +401,7 @@ VALID_ACTIONS = {
 }
 
 _DEPRECATE_ACTIONS = [None, 'store', 'store_const', 'store_true', 'store_false',
-                      'append', 'append_const', 'count'] + VALID_ACTIONS.keys()
+                      'append', 'append_const', 'count'] + list(VALID_ACTIONS)
 
 
 class _DeprecatedAction(object):
@@ -468,11 +469,7 @@ class FilteringOption(Option):
     parser.AddParsedArg(self, opt, [str(v) for v in value])
 
 
-# TODO: logging.Formatter is not a subclass of object in python
-# 2.6. Make ColoredFormatter explicitly inherit from object so that
-# functions such as super() will not fail. This should be removed
-# after python is upgraded to 2.7 on master2 (crbug.com/409273).
-class ColoredFormatter(logging.Formatter, object):
+class ColoredFormatter(logging.Formatter):
   """A logging formatter that can color the messages."""
 
   _COLOR_MAPPING = {
@@ -492,9 +489,9 @@ class ColoredFormatter(logging.Formatter, object):
     self.color = terminal.Color(enabled=kwargs.pop('enable_color', None))
     super(ColoredFormatter, self).__init__(*args, **kwargs)
 
-  def format(self, record, **kwargs):
+  def format(self, record):
     """Formats |record| with color."""
-    msg = super(ColoredFormatter, self).format(record, **kwargs)
+    msg = super(ColoredFormatter, self).format(record)
     color = self._COLOR_MAPPING.get(record.levelname)
     return msg if not color else self.color.Color(color, msg)
 
@@ -667,21 +664,20 @@ class BaseParser(object):
     return path_util.FindCacheDir()
 
 
-@six.add_metaclass(cros_build_lib.FrozenAttributesClass)
+@six.add_metaclass(attrs_freezer.Class)
 class ArgumentNamespace(argparse.Namespace):
   """Class to mimic argparse.Namespace with value freezing support."""
   _FROZEN_ERR_MSG = 'Option values are frozen, cannot alter %s.'
 
 
 # Note that because optparse.Values is not a new-style class this class
-# must use the mixin FrozenAttributesMixin rather than the metaclass
-# FrozenAttributesClass.
-class OptionValues(cros_build_lib.FrozenAttributesMixin, optparse.Values):
+# must use the mixin rather than the metaclass.
+class OptionValues(attrs_freezer.Mixin, optparse.Values):
   """Class to mimic optparse.Values with value freezing support."""
   _FROZEN_ERR_MSG = 'Option values are frozen, cannot alter %s.'
 
   def __init__(self, defaults, *args, **kwargs):
-    cros_build_lib.FrozenAttributesMixin.__init__(self)
+    attrs_freezer.Mixin.__init__(self)
     optparse.Values.__init__(self, defaults, *args, **kwargs)
 
     # Used by FilteringParser.
@@ -846,8 +842,12 @@ class _ShutDownException(SystemExit):
     self.signal = sig_num
     # Setup a usage message primarily for any code that may intercept it
     # while this exception is crashing back up the stack to us.
-    SystemExit.__init__(self, message)
+    SystemExit.__init__(self, 128 + sig_num)
     self.args = (sig_num, message)
+
+  def __str__(self):
+    """Stringify this exception."""
+    return self.args[1]
 
 
 def _DefaultHandler(signum, _frame):
@@ -867,14 +867,13 @@ def _RestartInChroot(cmd, chroot_args, extra_env):
     extra_env: Dictionary of environmental variables to set inside the
         chroot (or None).
   """
-  return cros_build_lib.RunCommand(cmd, error_code_ok=True,
-                                   enter_chroot=True, chroot_args=chroot_args,
-                                   extra_env=extra_env,
-                                   cwd=constants.SOURCE_ROOT,
-                                   mute_output=False).returncode
+  return cros_build_lib.run(cmd, error_code_ok=True, enter_chroot=True,
+                            chroot_args=chroot_args, extra_env=extra_env,
+                            cwd=constants.SOURCE_ROOT,
+                            mute_output=False).returncode
 
 
-def RunInsideChroot(command, chroot_args=None):
+def RunInsideChroot(command=None, chroot_args=None):
   """Restart the current command inside the chroot.
 
   This method is only valid for any code that is run via ScriptWrapperMain.
@@ -883,6 +882,7 @@ def RunInsideChroot(command, chroot_args=None):
 
   Args:
     command: An instance of CliCommand to be restarted inside the chroot.
+             |command| can be None if you do not wish to modify the log_level.
     chroot_args: List of command-line arguments to pass to cros_sdk, if invoked.
   """
   if cros_build_lib.IsInsideChroot():
@@ -896,7 +896,8 @@ def RunInsideChroot(command, chroot_args=None):
   # chroot.
   if chroot_args is None:
     chroot_args = []
-  chroot_args += ['--log-level', command.options.log_level]
+  if command is not None:
+    chroot_args += ['--log-level', command.options.log_level]
 
   raise ChrootRequiredError(argv, chroot_args)
 

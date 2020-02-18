@@ -47,6 +47,11 @@ class FakeServiceDelegate : public FakeCupsProxyServiceDelegate {
     return installed_printers_.at(printer.id());
   }
 
+  void PrinterInstalled(const Printer& printer) override {
+    DCHECK(base::Contains(installed_printers_, printer.id()));
+    installed_printers_[printer.id()] = true;
+  }
+
   base::Optional<Printer> GetPrinter(const std::string& id) override {
     if (!base::Contains(installed_printers_, id)) {
       return base::nullopt;
@@ -68,7 +73,6 @@ class FakeServiceDelegate : public FakeCupsProxyServiceDelegate {
     }
 
     // Install printer.
-    installed_printers_[printer.id()] = true;
     return std::move(callback).Run(true);
   }
 
@@ -83,8 +87,7 @@ class PrinterInstallerTest : public testing::Test {
  public:
   PrinterInstallerTest() : weak_factory_(this) {
     delegate_ = std::make_unique<FakeServiceDelegate>();
-    printer_installer_ =
-        std::make_unique<PrinterInstaller>(delegate_->GetWeakPtr());
+    printer_installer_ = std::make_unique<PrinterInstaller>(delegate_.get());
   }
 
   ~PrinterInstallerTest() override = default;
@@ -163,6 +166,7 @@ TEST_F(PrinterInstallerTest, SetupPrinterFailure) {
 
   auto ret = RunInstallPrinter(kGenericGUID);
   EXPECT_EQ(ret, InstallPrinterResult::kPrinterInstallationFailure);
+  EXPECT_FALSE(delegate_->IsPrinterInstalled(to_install));
 }
 
 }  // namespace

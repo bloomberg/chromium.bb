@@ -104,6 +104,15 @@ declare_args() {
   clang_use_default_sample_profile = build_with_chromium && is_official_build &&
                                      (is_android || is_desktop_linux)
 
+  # This configuration is used to select a default profile in Chrome OS based on
+  # the microarchitectures we are using. This is only used if
+  # clang_use_default_sample_profile is true and clang_sample_profile_path is
+  # empty.
+  chromeos_afdo_platform = "silvermont"
+
+  # Emit debug information for profiling wile building with clang.
+  clang_emit_debug_info_for_profiling = false
+
   # Turn this on to have the compiler output extra timing information.
   compiler_timing = false
 
@@ -128,6 +137,17 @@ declare_args() {
 
   # By default only the binaries in official builds get build IDs.
   force_local_build_id = false
+
+  # Initialize all local variables with a pattern. This flag will fill
+  # uninitialized floating-point types (and 32-bit pointers) with 0xFF and the
+  # rest with 0xAA. This makes behavior of uninitialized memory bugs consistent,
+  # recognizeble in debugger, and crashes memory accesses by uninitialized
+  # pointers.
+  # TODO(vitalybuka): is_win needs next llvm roll.
+  # 'is_android' breaks content_shell_test_apk on android-kitkat-arm-rel.
+  # 'use_xcode_clang' may call old clang.
+  init_stack_vars =
+      !is_android && !is_win && !use_xcode_clang && !is_official_build
 }
 
 declare_args() {
@@ -591,7 +611,7 @@ config("compiler") {
       # files on Windows (https://crbug.com/871962).
       ldflags += [
         "/opt:lldlto=" + lto_opt_level,
-        "/opt:lldltojobs=8",
+        "/opt:lldltojobs=" + max_jobs_per_link,
 
         # Experimentally determined to yield a reasonable trade-off between
         # build time, run-time performance, and binary size.
@@ -604,7 +624,7 @@ config("compiler") {
       # linker jobs. This is still suboptimal to a potential dynamic
       # resource allocation scheme, but should be good enough.
       if (use_lld) {
-        ldflags += [ "-Wl,--thinlto-jobs=8" ]
+        ldflags += [ "-Wl,--thinlto-jobs=" + max_jobs_per_link ]
 
         # Caching on Chrome OS materially slows the PFQ down; disable it until
         # we can figure out why. (crbug.com/964328)
@@ -620,7 +640,7 @@ config("compiler") {
           ]
         }
       } else {
-        ldflags += [ "-Wl,-plugin-opt,jobs=8" ]
+        ldflags += [ "-Wl,-plugin-opt,jobs=" + max_jobs_per_link ]
       }
 
       if (use_lld) {
@@ -665,7 +685,7 @@ config("compiler") {
   }
 
   if (compiler_timing) {
-    if (is_clang) {
+    if (is_clang && !is_nacl) {
       if (is_win) {
         cflags += [ "/clang:-ftime-trace" ]
       } else {
@@ -1504,24 +1524,43 @@ config("default_warnings") {
           # TODO(https://crbug.com/989932): Evaluate and possibly enable.
           "-Wno-implicit-int-float-conversion",
 
-          # TODO(https://crbug.com/995200): Clean up and enable.
-          "-Wno-xor-used-as-pow",
-
-          # TODO(https://crbug.com/999871): Decide if we want to clean up the
-          # codebase or just disable this.  Doesn't seem super useful, but
-          # also fires in only 4 files.
-          "-Wno-c99-designator",
-
-          # This is a side effect of -Wc99-designator; easier to clean up.
-          "-Wno-reorder-init-list",
-
           # TODO(https://crbug.com/999886): Clean up, enable.
           "-Wno-final-dtor-non-final-class",
+
+          # TODO(https://crbug.com/1016947) Clean up, enable.
+          "-Wno-bitwise-conditional-parentheses",
+
+          # TODO(https://crbug.com/1016945) Clean up, enable.
+          "-Wno-builtin-assume-aligned-alignment",
+
+          # TODO(https://crbug.com/1028110): Evaluate and possible enable.
+          "-Wno-deprecated-copy",
         ]
+
+        if (is_fuchsia) {
+          cflags += [
+            # TODO(https://crbug.com/999871): Clean up, enable.
+            "-Wno-c99-designator",
+          ]
+        }
+        if (is_win) {
+          cflags += [
+            # TODO(https://crbug.com/1002945): Clean up, enable.
+            "-Wno-sizeof-array-div",
+          ]
+        }
+
         cflags_c += [
           # TODO(https://crbug.com/995993): Clean up and enable.
           "-Wno-implicit-fallthrough",
         ]
+
+        if (llvm_force_head_revision) {
+          cflags += [
+            # TODO(https://crbug.com/1031169): Clean up and enable.
+            "-Wno-misleading-indentation",
+          ]
+        }
       }
     }
   }
@@ -1879,11 +1918,7 @@ if (is_win) {
 
     # TODO(thakis): Remove is_clang here, https://crbug.com/598772
     if (!use_lld && !is_clang) {
-      common_optimize_on_ldflags += [
-        # Set the number of LTCG code-gen threads to eight. The default is four.
-        # This gives a 5-10% link speedup.
-        "/cgthreads:8",
-      ]
+      common_optimize_on_ldflags += [ "/cgthreads:" + max_jobs_per_link ]
       if (use_incremental_wpo) {
         # Incremental Link-time code generation.
         common_optimize_on_ldflags += [ "/LTCG:INCREMENTAL" ]
@@ -2027,6 +2062,12 @@ config("no_optimize") {
       "/Ob0",  # Disable all inlining (on by default).
       "/GF",  # Enable string pooling (off by default).
     ]
+
+    if (target_cpu == "arm64") {
+      # Disable omitting frame pointers for no_optimize build because stack
+      # trace on Windows ARM64 relies on it.
+      cflags += [ "/Oy-" ]
+    }
   } else if (is_android && !android_full_debug) {
     # On Android we kind of optimize some things that don't affect debugging
     # much even when optimization is disabled to get the binary size down.
@@ -2153,9 +2194,19 @@ if (is_clang && is_a_target_toolchain) {
   } else if (clang_use_default_sample_profile) {
     assert(build_with_chromium,
            "Our default profiles currently only apply to Chromium")
-    assert(is_android || is_desktop_linux,
+    assert(is_android || is_desktop_linux || is_chromeos,
            "The current platform has no default profile")
-    _clang_sample_profile = "//chrome/android/profiles/afdo.prof"
+    if (is_android || is_desktop_linux) {
+      _clang_sample_profile = "//chrome/android/profiles/afdo.prof"
+    } else {
+      assert(
+          chromeos_afdo_platform == "silvermont" ||
+              chromeos_afdo_platform == "airmont" ||
+              chromeos_afdo_platform == "broadwell",
+          "Only silvermont, airmont and broadwell are valid Chrome OS profiles.")
+      _clang_sample_profile =
+          "//chromeos/profiles/${chromeos_afdo_platform}.afdo.prof"
+    }
   }
 }
 
@@ -2175,10 +2226,18 @@ config("afdo_optimize_size") {
 # config to allow AFDO to be disabled per-target.
 config("afdo") {
   if (is_clang) {
+    cflags = []
+    if (clang_emit_debug_info_for_profiling) {
+      # Add the following flags to generate debug info for profiling.
+      cflags += [ "-gline-tables-only" ]
+      if (!is_nacl) {
+        cflags += [ "-fdebug-info-for-profiling" ]
+      }
+    }
     if (_clang_sample_profile != "") {
       rebased_clang_sample_profile =
           rebase_path(_clang_sample_profile, root_build_dir)
-      cflags = [ "-fprofile-sample-use=${rebased_clang_sample_profile}" ]
+      cflags += [ "-fprofile-sample-use=${rebased_clang_sample_profile}" ]
       inputs = [
         _clang_sample_profile,
       ]
@@ -2465,5 +2524,13 @@ if (is_win || is_android || is_chromeos) {
         chrome_orderfile_path,
       ]
     }
+  }
+}
+
+# Initialize all variables on the stack if needed.
+config("default_init_stack_vars") {
+  cflags = []
+  if (init_stack_vars && is_clang && !is_nacl && !using_sanitizer) {
+    cflags += [ "-ftrivial-auto-var-init=pattern" ]
   }
 }

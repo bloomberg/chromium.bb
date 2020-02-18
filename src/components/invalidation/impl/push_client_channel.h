@@ -24,6 +24,8 @@ namespace syncer {
 
 // A PushClientChannel is an implementation of NetworkChannel that
 // routes messages through a PushClient.
+// TODO(crbug.com/1029481): Part of the legacy implementation of invalidations,
+// scheduled for deletion.
 class INVALIDATION_EXPORT PushClientChannel
     : public SyncNetworkChannel,
       public notifier::PushClientObserver {
@@ -43,7 +45,7 @@ class INVALIDATION_EXPORT PushClientChannel
   // If not connected, connects with the given credentials.  If
   // already connected, the next connection attempt will use the given
   // credentials.
-  void UpdateCredentials(const std::string& email,
+  void UpdateCredentials(const CoreAccountId& account_id,
                          const std::string& token) override;
   int GetInvalidationClientType() override;
 

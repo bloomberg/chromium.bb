@@ -19,6 +19,7 @@
 #include "chrome/browser/ui/views/extensions/extension_context_menu_controller.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_ink_drop_util.h"
 #include "content/public/browser/notification_source.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
@@ -28,6 +29,7 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/image/image_skia_source.h"
+#include "ui/native_theme/native_theme.h"
 #include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/label_button_border.h"
@@ -37,15 +39,6 @@
 #include "ui/views/mouse_constants.h"
 
 using views::LabelButtonBorder;
-
-namespace {
-
-// Toolbar action buttons have no insets because the badges are drawn right at
-// the edge of the view's area. Other badding (such as centering the icon) is
-// handled directly by the Image.
-const int kBorderInset = 0;
-
-}  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
 // ToolbarActionView::Delegate
@@ -67,6 +60,8 @@ ToolbarActionView::ToolbarActionView(
       delegate_(delegate) {
   SetInkDropMode(InkDropMode::ON);
   set_has_ink_drop_action_on_click(true);
+  set_hide_ink_drop_when_showing_context_menu(false);
+  set_show_ink_drop_when_hot_tracked(true);
   SetID(VIEW_ID_BROWSER_ACTION);
   view_controller_->SetDelegate(this);
   SetHorizontalAlignment(gfx::ALIGN_CENTER);
@@ -81,6 +76,8 @@ ToolbarActionView::ToolbarActionView(
   if (delegate_->ShownInsideMenu())
     SetFocusBehavior(FocusBehavior::ALWAYS);
 
+  InstallToolbarButtonHighlightPathGenerator(this);
+
   set_ink_drop_visible_opacity(kToolbarInkDropVisibleOpacity);
 
   UpdateState();
@@ -94,16 +91,9 @@ const char* ToolbarActionView::GetClassName() const {
   return kClassName;
 }
 
-void ToolbarActionView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
-  // TODO(pbos): Consolidate with ToolbarButton::OnBoundsChanged.
-  SetToolbarButtonHighlightPath(this, gfx::Insets());
-
-  MenuButton::OnBoundsChanged(previous_bounds);
-}
-
 gfx::Rect ToolbarActionView::GetAnchorBoundsInScreen() const {
   gfx::Rect bounds = GetBoundsInScreen();
-  bounds.Inset(GetToolbarInkDropInsets(this, gfx::Insets()));
+  bounds.Inset(GetToolbarInkDropInsets(this));
   return bounds;
 }
 
@@ -117,8 +107,10 @@ std::unique_ptr<LabelButtonBorder> ToolbarActionView::CreateDefaultBorder()
     const {
   std::unique_ptr<LabelButtonBorder> border =
       LabelButton::CreateDefaultBorder();
-  border->set_insets(
-      gfx::Insets(kBorderInset, kBorderInset, kBorderInset, kBorderInset));
+  // Toolbar action buttons have no insets because the badges are drawn right at
+  // the edge of the view's area. Other padding (such as centering the icon) is
+  // handled directly by the Image.
+  border->set_insets(gfx::Insets());
   return border;
 }
 
@@ -133,6 +125,11 @@ bool ToolbarActionView::IsTriggerableEvent(const ui::Event& event) {
 }
 
 SkColor ToolbarActionView::GetInkDropBaseColor() const {
+  if (delegate_->ShownInsideMenu()) {
+    return color_utils::GetColorWithMaxContrast(
+        GetNativeTheme()->GetSystemColor(
+            ui::NativeTheme::kColorId_MenuBackgroundColor));
+  }
   return GetToolbarInkDropBaseColor(this);
 }
 
@@ -182,14 +179,13 @@ void ToolbarActionView::UpdateState() {
   SchedulePaint();
 }
 
-void ToolbarActionView::OnMenuButtonClicked(views::Button* sender,
-                                            const gfx::Point& point,
-                                            const ui::Event* event) {
+void ToolbarActionView::ButtonPressed(views::Button* sender,
+                                      const ui::Event& event) {
   if (!view_controller_->IsEnabled(GetCurrentWebContents())) {
     // We should only get a button pressed event with a non-enabled action if
     // the left-click behavior should open the menu.
     DCHECK(view_controller_->DisabledClickOpensMenu());
-    context_menu_controller()->ShowContextMenuForView(this, point,
+    context_menu_controller()->ShowContextMenuForView(this, GetMenuPosition(),
                                                       ui::MENU_SOURCE_NONE);
   } else {
     view_controller_->ExecuteAction(true);
@@ -270,23 +266,6 @@ void ToolbarActionView::ViewHierarchyChanged(
   }
 
   MenuButton::ViewHierarchyChanged(details);
-}
-
-void ToolbarActionView::StateChanged(views::Button::ButtonState old_state) {
-  MenuButton::StateChanged(old_state);
-  if (delegate_->ShownInsideMenu()) {
-    // The following code is necessary to ensure the item is properly
-    // highlighted when using keyboard navigation to select items in the menu.
-    // InkDrops will listen for hover events and highlight accordingly. However,
-    // menu items don't actually get focus so using SetShowHighlightOnFocus()
-    // won't work. The button state is set to STATE_HOVERED, so this code will
-    // ensure the InkDrop actually highlights.
-    views::InkDropState target_state = state() == views::Button::STATE_HOVERED
-                                           ? views::InkDropState::ACTIVATED
-                                           : views::InkDropState::HIDDEN;
-    if (GetInkDrop()->GetTargetInkDropState() != target_state)
-      AnimateInkDrop(target_state, nullptr);
-  }
 }
 
 views::View* ToolbarActionView::GetAsView() {

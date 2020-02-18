@@ -7,14 +7,15 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
-#include "content/browser/frame_host/navigation_handle_impl.h"
 #include "content/browser/frame_host/navigation_request.h"
 #include "content/browser/frame_host/navigator_delegate.h"
 #include "content/common/content_export.h"
+#include "content/common/frame_messages.h"
 #include "content/common/navigation_params.mojom.h"
 #include "content/public/browser/navigation_controller.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
-#include "third_party/blink/public/web/web_triggering_event_info.h"
+#include "third_party/blink/public/common/navigation/triggering_event_info.h"
 #include "ui/base/window_open_disposition.h"
 
 class GURL;
@@ -34,6 +35,7 @@ class FrameNavigationEntry;
 class FrameTreeNode;
 class PrefetchedSignedExchangeCache;
 class RenderFrameHostImpl;
+class WebBundleHandleTracker;
 
 // Implementations of this interface are responsible for performing navigations
 // in a node of the FrameTree. Its lifetime is bound to all FrameTreeNode
@@ -51,14 +53,6 @@ class CONTENT_EXPORT Navigator : public base::RefCounted<Navigator> {
   virtual NavigationController* GetController();
 
   // Notifications coming from the RenderFrameHosts ----------------------------
-
-  // The RenderFrameHostImpl has failed a provisional load.
-  virtual void DidFailProvisionalLoadWithError(
-      RenderFrameHostImpl* render_frame_host,
-      const GURL& url,
-      int error_code,
-      const base::string16& error_description,
-      bool showing_repost_interstitial) {}
 
   // The RenderFrameHostImpl has failed to load the document.
   virtual void DidFailLoadWithError(RenderFrameHostImpl* render_frame_host,
@@ -86,7 +80,8 @@ class CONTENT_EXPORT Navigator : public base::RefCounted<Navigator> {
   // FrameNavigationEntry can't be found or the navigation fails.
   virtual bool StartHistoryNavigationInNewSubframe(
       RenderFrameHostImpl* render_frame_host,
-      mojom::NavigationClientAssociatedPtrInfo* navigation_client);
+      mojo::PendingAssociatedRemote<mojom::NavigationClient>*
+          navigation_client);
 
   // Navigation requests -------------------------------------------------------
 
@@ -106,14 +101,13 @@ class CONTENT_EXPORT Navigator : public base::RefCounted<Navigator> {
       RenderFrameHostImpl* render_frame_host,
       const GURL& url,
       const base::Optional<url::Origin>& initiator_origin,
-      bool uses_post,
-      const scoped_refptr<network::ResourceRequestBody>& body,
+      const scoped_refptr<network::ResourceRequestBody>& post_body,
       const std::string& extra_headers,
       const Referrer& referrer,
       WindowOpenDisposition disposition,
       bool should_replace_current_entry,
       bool user_gesture,
-      blink::WebTriggeringEventInfo triggering_event_info,
+      blink::TriggeringEventInfo triggering_event_info,
       const std::string& href_translate,
       scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory) {}
 
@@ -150,27 +144,20 @@ class CONTENT_EXPORT Navigator : public base::RefCounted<Navigator> {
       mojom::CommonNavigationParamsPtr common_params,
       mojom::BeginNavigationParamsPtr begin_params,
       scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory,
-      mojom::NavigationClientAssociatedPtrInfo navigation_client,
+      mojo::PendingAssociatedRemote<mojom::NavigationClient> navigation_client,
       mojo::PendingRemote<blink::mojom::NavigationInitiator>
           navigation_initiator,
       scoped_refptr<PrefetchedSignedExchangeCache>
-          prefetched_signed_exchange_cache);
+          prefetched_signed_exchange_cache,
+      std::unique_ptr<WebBundleHandleTracker> web_bundle_handle_tracker);
 
   // Used to restart a navigation that was thought to be same-document in
   // cross-document mode.
   virtual void RestartNavigationAsCrossDocument(
       std::unique_ptr<NavigationRequest> navigation_request) {}
 
-  // Used to abort an ongoing renderer-initiated navigation.
-  // Only used with PerNavigationMojoInterface disabled.
-  virtual void OnAbortNavigation(FrameTreeNode* frame_tree_node) {}
-
-  // Cancel a NavigationRequest for |frame_tree_node|. If the request is
-  // renderer-initiated and |inform_renderer| is true, an IPC will be sent to
-  // the renderer process to inform it that the navigation it requested was
-  // cancelled.
-  virtual void CancelNavigation(FrameTreeNode* frame_tree_node,
-                                bool inform_renderer) {}
+  // Cancel a NavigationRequest for |frame_tree_node|.
+  virtual void CancelNavigation(FrameTreeNode* frame_tree_node) {}
 
   // Called when the network stack started handling the navigation request
   // so that the |timestamp| when it happened can be recorded into an histogram.
@@ -185,14 +172,6 @@ class CONTENT_EXPORT Navigator : public base::RefCounted<Navigator> {
   virtual void LogBeforeUnloadTime(
       const base::TimeTicks& renderer_before_unload_start_time,
       const base::TimeTicks& renderer_before_unload_end_time) {}
-
-  // Called when a navigation has failed or the response is 204/205 to discard
-  // the pending entry in order to avoid url spoofs. |expected_pending_entry_id|
-  // is the ID of the pending NavigationEntry at the start of the navigation.
-  // With sufficiently bad interleaving of IPCs, this may no longer be the
-  // pending NavigationEntry, in which case the pending NavigationEntry will not
-  // be discarded.
-  virtual void DiscardPendingEntryIfNeeded(int expected_pending_entry_id) {}
 
  protected:
   friend class base::RefCounted<Navigator>;

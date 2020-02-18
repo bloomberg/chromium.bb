@@ -153,6 +153,7 @@ struct FormData {
   array<ButtonTitleInfo> button_titles;
   url.mojom.Url url;
   url.mojom.Url action;
+  bool is_action_empty;
   url.mojom.Origin main_frame_origin;
   bool is_form_tag;
   bool is_formless_checkout;
@@ -181,10 +182,11 @@ struct FormDataPredictions {
   array<FormFieldDataPredictions> fields;
 };
 
-// autofill::PasswordAndRealm
-struct PasswordAndRealm {
+// autofill::PasswordAndMetadata
+struct PasswordAndMetadata {
   mojo_base.mojom.String16 password;
   string realm;
+  bool uses_account_store;
 };
 
 // autofill::PasswordFormFillData
@@ -196,7 +198,8 @@ struct PasswordFormFillData {
   FormFieldData password_field;
   bool username_may_use_prefilled_placeholder;
   string preferred_realm;
-  map<mojo_base.mojom.String16, PasswordAndRealm> additional_logins;
+  bool uses_account_store;
+  map<mojo_base.mojom.String16, PasswordAndMetadata> additional_logins;
   bool wait_for_username;
   bool has_renderer_ids;
 };
@@ -213,6 +216,7 @@ struct PasswordGenerationUIData {
   int32 max_length;
   mojo_base.mojom.String16 generation_element;
   uint32 generation_element_id;
+  bool is_generation_element_password_type;
   mojo_base.mojom.TextDirection text_direction;
   PasswordForm password_form;
 };
@@ -295,16 +299,23 @@ struct PasswordForm {
   bool only_for_fallback;
 };
 
-// Note: Even though https://crbug.com/628104 is solved, we still can not use a
-// map directly as long as https://crbug.com/914074 is not fixed.
-struct PasswordFormFieldPredictionMap {
-  array<FormFieldData> keys;
-  array<PasswordFormFieldPredictionType> values;
+// autofill::ParsingResult
+struct ParsingResult {
+  uint32 username_renderer_id;
+  uint32 password_renderer_id;
+  uint32 new_password_renderer_id;
+  uint32 confirm_password_renderer_id;
 };
 
-// Note: Even though https://crbug.com/628104 is solved, we still can not use a
-// map directly as long as https://crbug.com/914074 is not fixed.
-struct FormsPredictionsMap {
-  array<FormData> keys;
-  array<PasswordFormFieldPredictionMap> values;
+// Represents the autofill state.
+enum AutofillState {
+  // There are no available suggestions, neither autofill nor autocomplete, for
+  // the input.
+  kNoSuggestions,
+  // There are available autofill suggestions for the input. Autofill fills in
+  // an entire form.
+  kAutofillAvailable,
+  // There are available autocomplete suggestions for the input. Autocomplete
+  // only fills in a single input.
+  kAutocompleteAvailable,
 };

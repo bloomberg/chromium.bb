@@ -23,6 +23,7 @@ suite('CategoryDefaultSetting', function() {
     PolymerTest.clearBody();
     testElement = document.createElement('category-default-setting');
     testElement.subOptionLabel = 'test label';
+    testElement.subOptionMode = 'cookies-session-only';
     document.body.appendChild(testElement);
   });
 
@@ -311,6 +312,6 @@ suite('CategoryDefaultSetting', function() {
 
     return testTristateCategory(
         prefsCookiesSessionOnly, settings.ContentSettingsTypes.COOKIES,
-        settings.ContentSetting.SESSION_ONLY, '#subOptionToggle');
+        settings.ContentSetting.SESSION_ONLY, '#subOptionCookiesToggle');
   });
 });

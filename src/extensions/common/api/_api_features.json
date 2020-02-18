@@ -142,6 +142,10 @@
   "clipboard.setImageData": {
     "dependencies": ["permission:clipboardWrite"]
   },
+  "crashReportPrivate": {
+    "dependencies": ["permission:crashReportPrivate"],
+    "contexts": ["blessed_extension"]
+  },
   "declarativeNetRequest": {
     "dependencies": ["permission:declarativeNetRequest"],
     "contexts": ["blessed_extension"]
@@ -150,6 +154,12 @@
     "dependencies": ["permission:declarativeNetRequest"],
     "contexts": ["blessed_extension"],
     "channel": "trunk"
+  },
+  "declarativeNetRequest.onRuleMatchedDebug": {
+    "dependencies": ["permission:declarativeNetRequest", "permission:declarativeNetRequestFeedback"],
+    "contexts": ["blessed_extension"],
+    "channel": "beta",
+    "location": "unpacked"
   },
   "declarativeNetRequest.setActionCountAsBadgeText": {
     "dependencies": ["permission:declarativeNetRequest"],

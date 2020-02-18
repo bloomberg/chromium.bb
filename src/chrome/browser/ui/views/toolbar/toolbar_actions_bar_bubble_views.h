@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar_bubble_delegate.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/controls/button/button.h"
@@ -27,6 +26,9 @@ class ToolbarActionsBarBubbleViews : public views::BubbleDialogDelegateView,
       views::View* anchor_view,
       bool anchored_to_action,
       std::unique_ptr<ToolbarActionsBarBubbleDelegate> delegate);
+  ToolbarActionsBarBubbleViews(const ToolbarActionsBarBubbleViews&) = delete;
+  ToolbarActionsBarBubbleViews& operator=(const ToolbarActionsBarBubbleViews&) =
+      delete;
   ~ToolbarActionsBarBubbleViews() override;
 
   void Show();
@@ -34,21 +36,20 @@ class ToolbarActionsBarBubbleViews : public views::BubbleDialogDelegateView,
 
   const views::Label* body_text() const { return body_text_; }
   const views::Label* item_list() const { return item_list_; }
-  views::ImageButton* learn_more_button() const { return image_button_; }
+  views::ImageButton* learn_more_button() const { return learn_more_button_; }
 
  private:
   friend class ToolbarActionsBarBubbleViewsTest;
 
+  std::unique_ptr<views::View> CreateExtraInfoView();
+
   // views::BubbleDialogDelegateView:
   base::string16 GetWindowTitle() const override;
   bool ShouldShowCloseButton() const override;
-  std::unique_ptr<views::View> CreateExtraView() override;
   bool Cancel() override;
   bool Accept() override;
   bool Close() override;
   int GetDialogButtons() const override;
-  int GetDefaultDialogButton() const override;
-  base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
   void Init() override;
 
   // views::ButtonListener:
@@ -58,10 +59,8 @@ class ToolbarActionsBarBubbleViews : public views::BubbleDialogDelegateView,
   bool delegate_notified_of_close_ = false;
   views::Label* body_text_ = nullptr;
   views::Label* item_list_ = nullptr;
-  views::ImageButton* image_button_ = nullptr;
+  views::ImageButton* learn_more_button_ = nullptr;
   const bool anchored_to_action_;
-
-  DISALLOW_COPY_AND_ASSIGN(ToolbarActionsBarBubbleViews);
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_TOOLBAR_TOOLBAR_ACTIONS_BAR_BUBBLE_VIEWS_H_

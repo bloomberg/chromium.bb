@@ -12,7 +12,7 @@
 #include "build/build_config.h"
 #include "components/spellcheck/renderer/empty_local_interface_provider.h"
 #include "components/spellcheck/renderer/spellcheck_provider.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/public/web/web_text_checking_completion.h"
@@ -102,6 +102,18 @@ class TestingSpellCheckProvider : public SpellCheckProvider,
                           FillSuggestionListCallback) override;
 #endif
 
+#if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
+  void GetPerLanguageSuggestions(
+      const base::string16& word,
+      GetPerLanguageSuggestionsCallback callback) override;
+  void RequestPartialTextCheck(
+      const base::string16& text,
+      int route_id,
+      const std::vector<SpellCheckResult>& partial_results,
+      bool fill_suggestions,
+      RequestPartialTextCheckCallback callback) override;
+#endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
+
 #if defined(OS_ANDROID)
   void DisconnectSessionBridge() override;
 #endif
@@ -109,8 +121,8 @@ class TestingSpellCheckProvider : public SpellCheckProvider,
   // Message loop (if needed) to deliver the SpellCheckHost request flow.
   std::unique_ptr<base::MessageLoop> loop_;
 
-  // Binding to receive the SpellCheckHost request flow.
-  mojo::Binding<spellcheck::mojom::SpellCheckHost> binding_;
+  // Receiver to receive the SpellCheckHost request flow.
+  mojo::Receiver<spellcheck::mojom::SpellCheckHost> receiver_{this};
 };
 
 // SpellCheckProvider test fixture.

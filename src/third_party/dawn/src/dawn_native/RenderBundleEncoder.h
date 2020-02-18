@@ -26,12 +26,12 @@ namespace dawn_native {
     MaybeError ValidateRenderBundleEncoderDescriptor(
         const DeviceBase* device,
         const RenderBundleEncoderDescriptor* descriptor);
-    class RenderBundleEncoderBase : public RenderEncoderBase {
-      public:
-        RenderBundleEncoderBase(DeviceBase* device,
-                                const RenderBundleEncoderDescriptor* descriptor);
 
-        static RenderBundleEncoderBase* MakeError(DeviceBase* device);
+    class RenderBundleEncoder final : public RenderEncoderBase {
+      public:
+        RenderBundleEncoder(DeviceBase* device, const RenderBundleEncoderDescriptor* descriptor);
+
+        static RenderBundleEncoder* MakeError(DeviceBase* device);
 
         const AttachmentState* GetAttachmentState() const;
 
@@ -40,13 +40,12 @@ namespace dawn_native {
         CommandIterator AcquireCommands();
 
       private:
-        RenderBundleEncoderBase(DeviceBase* device, ErrorTag errorTag);
+        RenderBundleEncoder(DeviceBase* device, ErrorTag errorTag);
 
-        MaybeError ValidateFinish(const RenderBundleDescriptor* descriptor);
+        MaybeError ValidateFinish(CommandIterator* commands, const PassResourceUsage& usages) const;
 
         EncodingContext mEncodingContext;
         Ref<AttachmentState> mAttachmentState;
-        PassResourceUsage mResourceUsage;
     };
 }  // namespace dawn_native
 

@@ -11,6 +11,8 @@
 #include "chrome/chrome_cleaner/engines/common/engine_result_codes.h"
 #include "chrome/chrome_cleaner/os/early_exit.h"
 #include "chrome/chrome_cleaner/os/initializer.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/system/message_pipe.h"
 
 namespace chrome_cleaner {
 
@@ -75,12 +77,12 @@ class SandboxChildProcess::FakeEngineDelegate : public EngineDelegate {
     return privileged_removal_calls_;
   }
 
-  void UnbindRequestsPtrs() {
+  void UnbindRequestsRemotes() {
     if (privileged_scan_calls_) {
-      privileged_scan_calls_->UnbindRequestsPtr();
+      privileged_scan_calls_->UnbindRequestsRemote();
     }
     if (privileged_file_calls_) {
-      privileged_file_calls_->UnbindRequestsPtr();
+      privileged_file_calls_->UnbindRequestsRemote();
     }
   }
 
@@ -102,24 +104,24 @@ SandboxChildProcess::SandboxChildProcess(
 
   mojo::ScopedMessagePipeHandle message_pipe_handle =
       CreateMessagePipeFromCommandLine();
-  mojom::EngineCommandsRequest engine_commands_request(
+  mojo::PendingReceiver<mojom::EngineCommands> engine_commands_receiver(
       std::move(message_pipe_handle));
   base::WaitableEvent event(base::WaitableEvent::ResetPolicy::MANUAL,
                             base::WaitableEvent::InitialState::NOT_SIGNALED);
   mojo_task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(&SandboxChildProcess::BindEngineCommandsRequest,
+      base::BindOnce(&SandboxChildProcess::BindEngineCommandsReceiver,
                      base::Unretained(this),
-                     base::Passed(&engine_commands_request), &event));
+                     base::Passed(&engine_commands_receiver), &event));
   event.Wait();
 }
 
-void SandboxChildProcess::SandboxChildProcess::BindEngineCommandsRequest(
-    mojom::EngineCommandsRequest request,
+void SandboxChildProcess::SandboxChildProcess::BindEngineCommandsReceiver(
+    mojo::PendingReceiver<mojom::EngineCommands> receiver,
     base::WaitableEvent* event) {
   fake_engine_delegate_ = base::MakeRefCounted<FakeEngineDelegate>(event);
   engine_commands_impl_ = std::make_unique<EngineCommandsImpl>(
-      fake_engine_delegate_, std::move(request), mojo_task_runner_,
+      fake_engine_delegate_, std::move(receiver), mojo_task_runner_,
       /*error_handler=*/base::BindOnce(&EarlyExit, kConnectionErrorExitCode));
 }
 
@@ -138,18 +140,18 @@ SandboxChildProcess::GetCleanerEngineRequestsProxy() {
   return fake_engine_delegate_->GetCleanerEngineRequestsProxy();
 }
 
-void SandboxChildProcess::UnbindRequestsPtrs() {
+void SandboxChildProcess::UnbindRequestsRemotes() {
   base::SingleThreadTaskExecutor main_task_executor;
   base::RunLoop run_loop;
   if (GetCleanerEngineRequestsProxy() != nullptr) {
     mojo_task_runner_->PostTask(
         FROM_HERE,
-        base::BindOnce(&CleanerEngineRequestsProxy::UnbindRequestsPtr,
+        base::BindOnce(&CleanerEngineRequestsProxy::UnbindRequestsRemote,
                        GetCleanerEngineRequestsProxy()));
   }
 
   mojo_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&FakeEngineDelegate::UnbindRequestsPtrs,
+      FROM_HERE, base::BindOnce(&FakeEngineDelegate::UnbindRequestsRemotes,
                                 fake_engine_delegate_));
 
   mojo_task_runner_->PostTaskAndReply(FROM_HERE, base::DoNothing(),

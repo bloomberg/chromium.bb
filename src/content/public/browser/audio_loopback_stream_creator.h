@@ -9,6 +9,7 @@
 #include "content/common/content_export.h"
 #include "media/mojo/mojom/audio_data_pipe.mojom.h"
 #include "media/mojo/mojom/audio_input_stream.mojom.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 
 namespace media {
 class AudioParameters;
@@ -30,8 +31,9 @@ class CONTENT_EXPORT AudioLoopbackStreamCreator {
 
   // The callback that is called when the requested stream is created.
   using StreamCreatedCallback = base::RepeatingCallback<void(
-      media::mojom::AudioInputStreamPtr stream,
-      media::mojom::AudioInputStreamClientRequest client_request,
+      mojo::PendingRemote<media::mojom::AudioInputStream> stream,
+      mojo::PendingReceiver<media::mojom::AudioInputStreamClient>
+          client_receiver,
       media::mojom::ReadOnlyAudioDataPipePtr data_pipe)>;
 
   // Creates an InProcessAudioLoopbackStreamCreator that handles creating audio

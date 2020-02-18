@@ -38,12 +38,13 @@
 #include "base/bind_helpers.h"
 #include "base/macros.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
-#include "third_party/blink/public/mojom/loader/request_context_frame_type.mojom-blink.h"
+#include "third_party/blink/public/mojom/loader/request_context_frame_type.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/scheduler/web_scoped_virtual_time_pauser.h"
 #include "third_party/blink/public/web/web_document_loader.h"
 #include "third_party/blink/public/web/web_frame_load_type.h"
 #include "third_party/blink/public/web/web_navigation_type.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/frame_types.h"
 #include "third_party/blink/renderer/core/frame/sandbox_flags.h"
 #include "third_party/blink/renderer/core/loader/frame_loader_state_machine.h"
@@ -57,7 +58,6 @@
 namespace blink {
 
 class ContentSecurityPolicy;
-class Document;
 class DocumentLoader;
 class LocalFrame;
 class Frame;
@@ -160,6 +160,9 @@ class CORE_EXPORT FrameLoader final {
       const FetchClientSettingsObject* fetch_client_settings_object,
       Document* document_for_logging,
       network::mojom::RequestContextFrameType) const;
+  void ReportLegacyTLSVersion(const KURL& url,
+                              bool is_subresource,
+                              bool is_ad_resource);
 
   Frame* Opener();
   void SetOpener(LocalFrame*);
@@ -180,12 +183,23 @@ class CORE_EXPORT FrameLoader final {
   // This will attempt to detach the current document. It will dispatch unload
   // events and abort XHR requests. Returns true if the frame is ready to
   // receive the next document commit, or false otherwise.
-  bool DetachDocument();
+  bool DetachDocument(SecurityOrigin* committing_origin,
+                      base::Optional<Document::UnloadEventTiming>*);
 
   FrameLoaderStateMachine* StateMachine() const { return &state_machine_; }
 
   bool ShouldClose(bool is_reload = false);
-  void DispatchUnloadEvent();
+
+  // Dispatches the Unload event for the current document. If this is due to the
+  // commit of a navigation, both |committing_origin| and the
+  // Optional<Document::UnloadEventTiming>* should be non null.
+  // |committing_origin| is the origin of the document that is being committed.
+  // If it is allowed to access the unload timings of the current document, the
+  // Document::UnloadEventTiming will be created and populated.
+  // If the dispatch of the unload event is not due to a commit, both parameters
+  // should be null.
+  void DispatchUnloadEvent(SecurityOrigin* committing_origin,
+                           base::Optional<Document::UnloadEventTiming>*);
 
   bool AllowPlugins(ReasonForCallingAllowPlugins);
 
@@ -248,10 +262,13 @@ class CORE_EXPORT FrameLoader final {
   std::unique_ptr<TracedValue> ToTracedValue() const;
   void TakeObjectSnapshot() const;
 
-  void WillCommitNavigation();
-
   // Commits the given |document_loader|.
-  void CommitDocumentLoader(DocumentLoader* document_loader);
+  void CommitDocumentLoader(
+      DocumentLoader* document_loader,
+      const base::Optional<Document::UnloadEventTiming>&,
+      bool dispatch_did_start,
+      base::OnceClosure call_before_attaching_new_document,
+      bool dispatch_did_commit);
 
   LocalFrameClient* Client() const;
 
@@ -278,7 +295,6 @@ class CORE_EXPORT FrameLoader final {
   // is either committed or cancelled.
   struct ClientNavigationState {
     KURL url;
-    AtomicString http_method;
     bool is_history_navigation_in_new_frame = false;
   };
   std::unique_ptr<ClientNavigationState> client_navigation_;
@@ -294,6 +310,10 @@ class CORE_EXPORT FrameLoader final {
   WebScopedVirtualTimePauser virtual_time_pauser_;
 
   Member<ContentSecurityPolicy> last_origin_document_csp_;
+
+  // The origins for which a legacy TLS version warning has been printed. The
+  // size of this set is capped, after which no more warnings are printed.
+  HashSet<String> tls_version_warning_origins_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameLoader);
 };

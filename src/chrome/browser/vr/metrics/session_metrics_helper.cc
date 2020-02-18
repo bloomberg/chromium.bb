@@ -7,7 +7,6 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "components/rappor/public/rappor_utils.h"
 #include "components/ukm/content/source_url_recorder.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
@@ -30,36 +29,6 @@ constexpr base::TimeDelta kMinimumHeadsetSessionDuration(
     base::TimeDelta::FromSecondsD(0));
 constexpr base::TimeDelta kMaximumHeadsetSessionGap(
     base::TimeDelta::FromSecondsD(0));
-
-void SendRapporEnteredMode(const GURL& origin, Mode mode) {
-  switch (mode) {
-    case Mode::kVrBrowsingFullscreen:
-      rappor::SampleDomainAndRegistryFromGURL(rappor::GetDefaultService(),
-                                              "VR.FullScreenMode", origin);
-      break;
-    default:
-      break;
-  }
-}
-
-void SendRapporEnteredVideoMode(const GURL& origin, Mode mode) {
-  switch (mode) {
-    case Mode::kVrBrowsingRegular:
-      rappor::SampleDomainAndRegistryFromGURL(rappor::GetDefaultService(),
-                                              "VR.Video.Browser", origin);
-      break;
-    case Mode::kWebXrVrPresentation:
-      rappor::SampleDomainAndRegistryFromGURL(rappor::GetDefaultService(),
-                                              "VR.Video.WebVR", origin);
-      break;
-    case Mode::kVrBrowsingFullscreen:
-      rappor::SampleDomainAndRegistryFromGURL(
-          rappor::GetDefaultService(), "VR.Video.FullScreenMode", origin);
-      break;
-    default:
-      break;
-  }
-}
 
 // Handles the lifetime of the helper which is attached to a WebContents.
 class SessionMetricsHelperData : public base::SupportsUserData::Data {
@@ -90,6 +59,106 @@ device::SessionMode ConvertRuntimeOptionsToSessionMode(
 }
 
 }  // namespace
+
+WebXRSessionTracker::WebXRSessionTracker(
+    std::unique_ptr<ukm::builders::XR_WebXR_Session> entry)
+    : SessionTracker<ukm::builders::XR_WebXR_Session>(std::move(entry)),
+      receiver_(this) {}
+
+WebXRSessionTracker::~WebXRSessionTracker() = default;
+
+void WebXRSessionTracker::RecordRequestedFeatures(
+    const device::mojom::XRSessionOptions& session_options,
+    const std::set<device::mojom::XRSessionFeature>& enabled_features) {
+  using device::mojom::XRSessionFeature;
+  using device::mojom::XRSessionFeatureRequestStatus;
+
+  // Set all features as 'not requested', to begin
+  SetFeatureRequest(XRSessionFeature::REF_SPACE_VIEWER,
+                    XRSessionFeatureRequestStatus::kNotRequested);
+  SetFeatureRequest(XRSessionFeature::REF_SPACE_LOCAL,
+                    XRSessionFeatureRequestStatus::kNotRequested);
+  SetFeatureRequest(XRSessionFeature::REF_SPACE_LOCAL_FLOOR,
+                    XRSessionFeatureRequestStatus::kNotRequested);
+  SetFeatureRequest(XRSessionFeature::REF_SPACE_BOUNDED_FLOOR,
+                    XRSessionFeatureRequestStatus::kNotRequested);
+  SetFeatureRequest(XRSessionFeature::REF_SPACE_UNBOUNDED,
+                    XRSessionFeatureRequestStatus::kNotRequested);
+  // Not currently recording metrics for
+  // XRSessionFeature::DOM_OVERLAY_FOR_HANDHELD_AR
+
+  // Record required feature requests
+  for (auto feature : session_options.required_features) {
+    DCHECK(enabled_features.find(feature) != enabled_features.end());
+    SetFeatureRequest(feature, XRSessionFeatureRequestStatus::kRequired);
+  }
+
+  // Record optional feature requests
+  for (auto feature : session_options.optional_features) {
+    bool enabled = enabled_features.find(feature) != enabled_features.end();
+    SetFeatureRequest(
+        feature, enabled ? XRSessionFeatureRequestStatus::kOptionalAccepted
+                         : XRSessionFeatureRequestStatus::kOptionalRejected);
+  }
+}
+
+void WebXRSessionTracker::ReportFeatureUsed(
+    device::mojom::XRSessionFeature feature) {
+  using device::mojom::XRSessionFeature;
+
+  switch (feature) {
+    case XRSessionFeature::REF_SPACE_VIEWER:
+      ukm_entry_->SetFeatureUse_Viewer(true);
+      break;
+    case XRSessionFeature::REF_SPACE_LOCAL:
+      ukm_entry_->SetFeatureUse_Local(true);
+      break;
+    case XRSessionFeature::REF_SPACE_LOCAL_FLOOR:
+      ukm_entry_->SetFeatureUse_LocalFloor(true);
+      break;
+    case XRSessionFeature::REF_SPACE_BOUNDED_FLOOR:
+      ukm_entry_->SetFeatureUse_BoundedFloor(true);
+      break;
+    case XRSessionFeature::REF_SPACE_UNBOUNDED:
+      ukm_entry_->SetFeatureUse_Unbounded(true);
+      break;
+    case XRSessionFeature::DOM_OVERLAY_FOR_HANDHELD_AR:
+      // Not recording metrics for this feature currently
+      break;
+  }
+}
+
+mojo::PendingRemote<device::mojom::XRSessionMetricsRecorder>
+WebXRSessionTracker::BindMetricsRecorderPipe() {
+  return receiver_.BindNewPipeAndPassRemote();
+}
+
+void WebXRSessionTracker::SetFeatureRequest(
+    device::mojom::XRSessionFeature feature,
+    device::mojom::XRSessionFeatureRequestStatus status) {
+  using device::mojom::XRSessionFeature;
+
+  switch (feature) {
+    case XRSessionFeature::REF_SPACE_VIEWER:
+      ukm_entry_->SetFeatureRequest_Viewer(static_cast<int64_t>(status));
+      break;
+    case XRSessionFeature::REF_SPACE_LOCAL:
+      ukm_entry_->SetFeatureRequest_Local(static_cast<int64_t>(status));
+      break;
+    case XRSessionFeature::REF_SPACE_LOCAL_FLOOR:
+      ukm_entry_->SetFeatureRequest_Local(static_cast<int64_t>(status));
+      break;
+    case XRSessionFeature::REF_SPACE_BOUNDED_FLOOR:
+      ukm_entry_->SetFeatureRequest_Local(static_cast<int64_t>(status));
+      break;
+    case XRSessionFeature::REF_SPACE_UNBOUNDED:
+      ukm_entry_->SetFeatureRequest_Local(static_cast<int64_t>(status));
+      break;
+    case XRSessionFeature::DOM_OVERLAY_FOR_HANDHELD_AR:
+      // Not recording metrics for this feature currently.
+      break;
+  }
+}
 
 // SessionTimer will monitor the time between calls to StartSession and
 // StopSession.  It will combine multiple segments into a single session if they
@@ -199,6 +268,7 @@ SessionMetricsHelper* SessionMetricsHelper::CreateForWebContents(
 
 SessionMetricsHelper::SessionMetricsHelper(content::WebContents* contents,
                                            Mode initial_mode) {
+  DVLOG(2) << __func__;
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(contents);
 
@@ -223,7 +293,9 @@ SessionMetricsHelper::SessionMetricsHelper(content::WebContents* contents,
   UpdateMode();
 }
 
-SessionMetricsHelper::~SessionMetricsHelper() = default;
+SessionMetricsHelper::~SessionMetricsHelper() {
+  DVLOG(2) << __func__;
+}
 
 void SessionMetricsHelper::UpdateMode() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -250,7 +322,8 @@ void SessionMetricsHelper::RecordVrStartAction(VrStartAction action) {
   }
 }
 
-void SessionMetricsHelper::RecordInlineSessionStart(size_t session_id) {
+WebXRSessionTracker* SessionMetricsHelper::RecordInlineSessionStart(
+    size_t session_id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   DCHECK(webxr_inline_session_trackers_.find(session_id) ==
@@ -258,19 +331,21 @@ void SessionMetricsHelper::RecordInlineSessionStart(size_t session_id) {
 
   auto result = webxr_inline_session_trackers_.emplace(
       session_id,
-      std::make_unique<SessionTracker<ukm::builders::XR_WebXR_Session>>(
+      std::make_unique<WebXRSessionTracker>(
           std::make_unique<ukm::builders::XR_WebXR_Session>(
               ukm::GetSourceIdForWebContentsDocument(web_contents()))));
+  auto* tracker = result.first->second.get();
 
   // TODO(https://crbug.com/968546): StartAction is currently not present in
   // XR.WebXR.Session event. Remove this & change the below code with
   // replacement metrics once they are designed:
   // result.first->second->ukm_entry()->SetStartAction(
   //    PresentationStartAction::kOther);
-  // WebVR does not come through this path as it does not have a separate
-  // concept of inline sessions.
-  result.first->second->ukm_entry()->SetIsLegacyWebVR(false).SetMode(
+  // TODO(crbug.com/1021212): Remove IsLegacyWebVR when safe.
+  tracker->ukm_entry()->SetIsLegacyWebVR(false).SetMode(
       static_cast<int64_t>(device::SessionMode::kInline));
+
+  return tracker;
 }
 
 void SessionMetricsHelper::RecordInlineSessionStop(size_t session_id) {
@@ -281,6 +356,7 @@ void SessionMetricsHelper::RecordInlineSessionStop(size_t session_id) {
   if (it == webxr_inline_session_trackers_.end())
     return;
 
+  it->second->SetSessionEnd(base::Time::Now());
   it->second->ukm_entry()->SetDuration(
       it->second->GetRoundedDurationInSeconds());
   it->second->RecordEntry();
@@ -288,20 +364,39 @@ void SessionMetricsHelper::RecordInlineSessionStop(size_t session_id) {
   webxr_inline_session_trackers_.erase(it);
 }
 
+WebXRSessionTracker* SessionMetricsHelper::GetImmersiveSessionTracker() {
+  return webxr_immersive_session_tracker_.get();
+}
+
+WebXRSessionTracker* SessionMetricsHelper::RecordImmersiveSessionStart() {
+  DCHECK(!webxr_immersive_session_tracker_);
+  webxr_immersive_session_tracker_ = std::make_unique<WebXRSessionTracker>(
+      std::make_unique<ukm::builders::XR_WebXR_Session>(
+          ukm::GetSourceIdForWebContentsDocument(web_contents())));
+  return webxr_immersive_session_tracker_.get();
+}
+
+void SessionMetricsHelper::RecordImmersiveSessionStop() {
+  DCHECK(webxr_immersive_session_tracker_);
+  webxr_immersive_session_tracker_->SetSessionEnd(base::Time::Now());
+  webxr_immersive_session_tracker_->ukm_entry()->SetDuration(
+      webxr_immersive_session_tracker_->GetRoundedDurationInSeconds());
+  webxr_immersive_session_tracker_->RecordEntry();
+  webxr_immersive_session_tracker_ = nullptr;
+}
+
 void SessionMetricsHelper::RecordPresentationStartAction(
     PresentationStartAction action,
     const device::mojom::XRRuntimeSessionOptions& options) {
-  bool is_webvr = options.is_legacy_webvr;
   auto xr_session_mode = ConvertRuntimeOptionsToSessionMode(options);
 
   // TODO(https://crbug.com/965729): Ensure we correctly handle AR cases
   // throughout session metrics helper.
-  if (!webxr_immersive_session_tracker_ ||
-      mode_ != Mode::kWebXrVrPresentation) {
+  if (!GetImmersiveSessionTracker() || mode_ != Mode::kWebXrVrPresentation) {
     pending_immersive_session_start_info_ =
-        PendingImmersiveSessionStartInfo{action, is_webvr, xr_session_mode};
+        PendingImmersiveSessionStartInfo{action, xr_session_mode};
   } else {
-    LogPresentationStartAction(action, is_webvr, xr_session_mode);
+    LogPresentationStartAction(action, xr_session_mode);
   }
 }
 
@@ -345,9 +440,8 @@ void SessionMetricsHelper::LogVrStartAction(VrStartAction action) {
 
 void SessionMetricsHelper::LogPresentationStartAction(
     PresentationStartAction action,
-    bool is_legacy_webvr,
     device::SessionMode xr_session_mode) {
-  DCHECK(webxr_immersive_session_tracker_);
+  DCHECK(GetImmersiveSessionTracker());
 
   UMA_HISTOGRAM_ENUMERATION("XR.WebXR.PresentationSession", action);
 
@@ -355,9 +449,9 @@ void SessionMetricsHelper::LogPresentationStartAction(
   // XR.WebXR.Session event. Remove this & change the below code with
   // replacement metrics once they are designed:
   // webxr_immersive_session_tracker_->ukm_entry()->SetStartAction(action);
-  webxr_immersive_session_tracker_->ukm_entry()
-      ->SetIsLegacyWebVR(is_legacy_webvr)
-      .SetMode(static_cast<int64_t>(xr_session_mode));
+  // TODO(crbug.com/1021212): Remove IsLegacyWebVR when safe.
+  GetImmersiveSessionTracker()->ukm_entry()->SetIsLegacyWebVR(false).SetMode(
+      static_cast<int64_t>(xr_session_mode));
 }
 
 void SessionMetricsHelper::SetWebVREnabled(bool is_webvr_presenting) {
@@ -438,10 +532,7 @@ void SessionMetricsHelper::SetVrMode(Mode new_mode) {
     mode_timer_->StartSession(switch_time);
     if (num_videos_playing_ > 0) {
       mode_video_timer_->StartSession(switch_time);
-      SendRapporEnteredVideoMode(origin_, new_mode);
     }
-
-    SendRapporEnteredMode(origin_, new_mode);
   }
 
   mode_ = new_mode;
@@ -513,32 +604,26 @@ void SessionMetricsHelper::OnEnterPresentation() {
       kMinimumHeadsetSessionDuration);
 
   // If we are switching to WebVR presentation, start the new presentation
-  // session.
-  webxr_immersive_session_tracker_ =
-      std::make_unique<SessionTracker<ukm::builders::XR_WebXR_Session>>(
-          std::make_unique<ukm::builders::XR_WebXR_Session>(
-              ukm::GetSourceIdForWebContentsDocument(web_contents())));
+  // session tracker, if it hasn't been started already.
+  if (!GetImmersiveSessionTracker()) {
+    RecordImmersiveSessionStart();
+  }
 
   // TODO(https://crbug.com/967764): Can pending_immersive_session_start_info_
   // be not set? What is the ordering of calls to RecordPresentationStartAction?
   auto start_info = pending_immersive_session_start_info_.value_or(
-      PendingImmersiveSessionStartInfo{PresentationStartAction::kOther, false,
+      PendingImmersiveSessionStartInfo{PresentationStartAction::kOther,
                                        device::SessionMode::kUnknown});
 
-  LogPresentationStartAction(start_info.action, start_info.is_legacy_webvr,
-                             start_info.mode);
+  LogPresentationStartAction(start_info.action, start_info.mode);
 }
 
 void SessionMetricsHelper::OnExitPresentation() {
   // If we are switching off WebVR presentation, then the presentation session
   // is done. As with the page session, do not assume
   // webxr_immersive_session_tracker_ is valid.
-  if (webxr_immersive_session_tracker_) {
-    webxr_immersive_session_tracker_->SetSessionEnd(base::Time::Now());
-    webxr_immersive_session_tracker_->ukm_entry()->SetDuration(
-        webxr_immersive_session_tracker_->GetRoundedDurationInSeconds());
-    webxr_immersive_session_tracker_->RecordEntry();
-    webxr_immersive_session_tracker_ = nullptr;
+  if (GetImmersiveSessionTracker()) {
+    RecordImmersiveSessionStop();
   }
 }
 
@@ -570,7 +655,6 @@ void SessionMetricsHelper::MediaStartedPlaying(
     if (mode_ != Mode::kNoVr) {
       session_video_timer_->StartSession(start_time);
       mode_video_timer_->StartSession(start_time);
-      SendRapporEnteredVideoMode(origin_, mode_);
     }
   }
 
@@ -613,12 +697,8 @@ void SessionMetricsHelper::DidStartNavigation(
       page_session_tracker_ = nullptr;
     }
 
-    if (webxr_immersive_session_tracker_) {
-      webxr_immersive_session_tracker_->SetSessionEnd(base::Time::Now());
-      webxr_immersive_session_tracker_->ukm_entry()->SetDuration(
-          webxr_immersive_session_tracker_->GetRoundedDurationInSeconds());
-      webxr_immersive_session_tracker_->RecordEntry();
-      webxr_immersive_session_tracker_ = nullptr;
+    if (GetImmersiveSessionTracker()) {
+      RecordImmersiveSessionStop();
     }
 
     for (auto& inline_session_tracker : webxr_inline_session_trackers_) {
@@ -677,19 +757,20 @@ void SessionMetricsHelper::DidFinishNavigation(
     last_requested_url_ = GURL();
 
     if (mode_ == Mode::kWebXrVrPresentation) {
-      webxr_immersive_session_tracker_ =
-          std::make_unique<SessionTracker<ukm::builders::XR_WebXR_Session>>(
-              std::make_unique<ukm::builders::XR_WebXR_Session>(
-                  ukm::GetSourceIdForWebContentsDocument(web_contents())));
+      // Start the immersive session tracker if it hasn't already
+      if (!GetImmersiveSessionTracker()) {
+        RecordImmersiveSessionStart();
+      }
       if (pending_immersive_session_start_info_) {
         // TODO(https://crbug.com/968546): StartAction is currently not present
         // in XR.WebXR.Session event. Remove this & change the below code with
         // replacement metrics once they are designed:
         // webxr_immersive_session_tracker_->ukm_entry()->SetStartAction(
         //    pending_immersive_session_start_info_->action);
-        webxr_immersive_session_tracker_->ukm_entry()
-            ->SetIsLegacyWebVR(
-                pending_immersive_session_start_info_->is_legacy_webvr)
+        // TODO(crbug.com/1021212): Remove IsLegacyWebVR when safe.
+        GetImmersiveSessionTracker()
+            ->ukm_entry()
+            ->SetIsLegacyWebVR(false)
             .SetMode(static_cast<int64_t>(
                 pending_immersive_session_start_info_->mode));
         pending_immersive_session_start_info_ = base::nullopt;

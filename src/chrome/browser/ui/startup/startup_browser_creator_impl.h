@@ -87,6 +87,8 @@ class StartupBrowserCreatorImpl {
                            DetermineBrowserOpenBehavior_PostCrash);
   FRIEND_TEST_ALL_PREFIXES(StartupBrowserCreatorImplTest,
                            DetermineBrowserOpenBehavior_NotStartup);
+  FRIEND_TEST_ALL_PREFIXES(StartupBrowserCreatorImplTest,
+                           DetermineStartupTabs_ExtensionCheckupPage);
 
   enum class WelcomeRunType {
     NONE,                // Do not inject the welcome page for this run.
@@ -150,7 +152,8 @@ class StartupBrowserCreatorImpl {
                                    bool is_post_crash_launch,
                                    bool has_incompatible_applications,
                                    bool promotional_tabs_enabled,
-                                   bool welcome_enabled);
+                                   bool welcome_enabled,
+                                   bool serve_extensions_page);
 
   // Begins an asynchronous session restore if current state allows it (e.g.,
   // this is not process startup) and SessionService indicates that one is
@@ -174,9 +177,6 @@ class StartupBrowserCreatorImpl {
   void AddInfoBarsIfNecessary(
       Browser* browser,
       chrome::startup::IsProcessStartup is_process_startup);
-
-  // Records Rappor metrics on startup URLs.
-  void RecordRapporOnStartupURLs(const std::vector<GURL>& urls_to_open);
 
   // Determines how the launch flow should obtain a Browser.
   static BrowserOpenBehavior DetermineBrowserOpenBehavior(

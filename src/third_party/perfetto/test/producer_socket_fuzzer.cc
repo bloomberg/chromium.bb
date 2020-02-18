@@ -37,8 +37,8 @@ class FakeEventListener : public base::UnixSocket::EventListener {
 
   void OnConnect(base::UnixSocket* self, bool connected) override {
     PERFETTO_CHECK(connected && self->is_connected());
-    PERFETTO_CHECK(self->Send(data_, size_, self->fd(),
-                              base::UnixSocket::BlockingMode::kBlocking));
+    self->Send(data_, size_, self->fd(),
+               base::UnixSocket::BlockingMode::kBlocking);
     data_sent_();
   }
 
@@ -63,7 +63,8 @@ int FuzzSharedMemory(const uint8_t* data, size_t size) {
       data, size, task_runner.CreateCheckpoint("data_sent"));
 
   std::unique_ptr<base::UnixSocket> sock = base::UnixSocket::Connect(
-      helper.GetProducerSocketName(), &fake_event_listener, &task_runner);
+      helper.GetProducerSocketName(), &fake_event_listener, &task_runner,
+      base::SockFamily::kUnix, base::SockType::kStream);
 
   task_runner.RunUntilCheckpoint("data_sent");
   return 0;

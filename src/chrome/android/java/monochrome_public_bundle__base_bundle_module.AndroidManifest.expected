@@ -1,12 +1,12 @@
 <?xml version="1.0" ?>
 <manifest
     package="org.chromium.chrome"
-    platformBuildVersionCode="28"
-    platformBuildVersionName="9"
+    platformBuildVersionCode="29"
+    platformBuildVersionName="10"
     tools:ignore="MissingVersion"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
-  <uses-sdk android:minSdkVersion="24" android:targetSdkVersion="28"/>
+  <uses-sdk android:minSdkVersion="24" android:targetSdkVersion="29"/>
   <uses-permission-sdk-23 android:name="android.permission.USE_FINGERPRINT"/>
   <uses-permission-sdk-23 android:name="android.permission.REQUEST_INSTALL_PACKAGES"/>
   <uses-permission-sdk-23 android:name="android.permission.REORDER_TASKS"/>
@@ -181,6 +181,22 @@
         android:excludeFromRecents="true"
         android:exported="true"
         android:icon="@drawable/ic_launcher"
+        android:label="@string/qr_code_share_icon_label"
+        android:name="org.chromium.chrome.browser.share.qrcode.QrCodeShareActivity"
+        android:noHistory="true"
+        android:theme="@android:style/Theme.NoDisplay">
+      <intent-filter>
+        <action android:name="android.intent.action.SEND"/>
+        <category android:name="android.intent.category.DEFAULT"/>
+        <data android:mimeType="text/plain"/>
+      </intent-filter>
+    </activity>
+    <activity
+        android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize"
+        android:enabled="false"
+        android:excludeFromRecents="true"
+        android:exported="true"
+        android:icon="@drawable/ic_launcher"
         android:label="@string/send_tab_to_self_share_activity_title"
         android:name="org.chromium.chrome.browser.send_tab_to_self.SendTabToSelfShareActivity"
         android:noHistory="true"
@@ -227,6 +243,17 @@
         android:theme="@style/Theme.Chromium.Activity"/>
     <activity
         android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize"
+        android:excludeFromRecents="true"
+        android:name="org.chromium.chrome.browser.bookmarks.BookmarkAddActivity"
+        android:theme="@android:style/Theme.NoDisplay"
+        android:windowSoftInputMode="stateHidden">
+      <intent-filter>
+        <action android:name="org.chromium.chrome.ADDBOOKMARK"/>
+        <category android:name="android.intent.category.DEFAULT"/>
+      </intent-filter>
+    </activity>
+    <activity
+        android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize"
         android:exported="false"
         android:label="@string/bookmark_choose_folder"
         android:name="org.chromium.chrome.browser.bookmarks.BookmarkFolderSelectActivity"
@@ -243,13 +270,13 @@
         android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize"
         android:exported="false"
         android:label="@string/preferences"
-        android:name="org.chromium.chrome.browser.preferences.Preferences"
+        android:name="org.chromium.chrome.browser.settings.SettingsActivity"
         android:theme="@style/Theme.Chromium.Preferences"/>
     <activity
         android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize"
         android:exported="false"
         android:label="@string/storage_management_activity_label"
-        android:name="org.chromium.chrome.browser.preferences.website.ManageSpaceActivity"
+        android:name="org.chromium.chrome.browser.settings.website.ManageSpaceActivity"
         android:theme="@style/Theme.Chromium.Preferences.ManageSpace"/>
     <activity
         android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize"
@@ -279,16 +306,6 @@
         android:exported="false"
         android:name="org.chromium.chrome.browser.signin.SigninActivity"
         android:theme="@style/Theme.Chromium.DialogWhenLarge"/>
-    <activity
-        android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize"
-        android:name="org.chromium.chrome.browser.bookmarks.BookmarkAddActivity"
-        android:theme="@style/Theme.Chromium.DialogWhenLarge"
-        android:windowSoftInputMode="stateHidden">
-      <intent-filter>
-        <action android:name="org.chromium.chrome.ADDBOOKMARK"/>
-        <category android:name="android.intent.category.DEFAULT"/>
-      </intent-filter>
-    </activity>
     <activity
         android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize|uiMode"
         android:enableVrMode="@string/gvr_vr_mode_component"
@@ -953,10 +970,6 @@
         android:name="org.chromium.chrome.browser.browserservices.ClearDataDialogActivity"
         android:theme="@style/Theme.Chromium.ClearDataDialogActivity"/>
     <activity
-        android:exported="false"
-        android:name="org.chromium.chrome.browser.incognito.IncognitoDisclosureActivity"
-        android:theme="@style/Theme.Chromium.Activity.Fullscreen.Transparent"/>
-    <activity
         android:exported="true"
         android:name="org.chromium.chrome.browser.browserservices.ManageTrustedWebActivityDataActivity"
         android:theme="@style/Theme.Chromium.Activity.Fullscreen.Transparent">
@@ -983,7 +996,7 @@
     </activity>
     <activity
         android:label="@string/license_activity_title"
-        android:name="com.android.webview.chromium.LicenseActivity"
+        android:name="org.chromium.android_webview.nonembedded.LicenseActivity"
         android:process=":webview_apk">
       <intent-filter>
         <action android:name="android.settings.WEBVIEW_LICENSE"/>
@@ -993,6 +1006,32 @@
           android:name="com.android.settings.PRIMARY_PROFILE_CONTROLLED"
           android:value="true"/>
     </activity>
+    <activity
+        android:label="WebView
+        Crashes"
+        android:launchMode="singleTop"
+        android:name="org.chromium.android_webview.devui.CrashesListActivity"
+        android:process=":webview_apk"
+        android:theme="@style/Theme.DevUi.DayNight"/>
+    <activity
+        android:label="WebView
+        DevTools"
+        android:launchMode="singleTask"
+        android:name="org.chromium.android_webview.devui.MainActivity"
+        android:process=":webview_apk"
+        android:theme="@style/Theme.DevUi.DayNight">
+      <intent-filter>
+        <action android:name="com.android.webview.SHOW_DEV_UI"/>
+        <category android:name="android.intent.category.DEFAULT"/>
+      </intent-filter>
+    </activity>
+    <activity
+        android:label="WebView
+        Flags"
+        android:launchMode="singleTop"
+        android:name="org.chromium.android_webview.devui.FlagsActivity"
+        android:process=":webview_apk"
+        android:theme="@style/Theme.DevUi.DayNight"/>
     <activity
         android:enabled="false"
         android:excludeFromRecents="true"
@@ -1231,9 +1270,6 @@
         android:name="ipc.invalidation.ticl.gcm_upstream_service_class"
         android:value="org.chromium.chrome.browser.services.gcm.InvalidationGcmUpstreamSender"/>
     <meta-data
-        android:name="ipc.invalidation.ticl.listener_service_class"
-        android:value="org.chromium.chrome.browser.invalidation.ChromeInvalidationClientService"/>
-    <meta-data
         android:name="org.chromium.chrome:privileged_process0.ignore_multidex"
         android:value="true"/>
     <meta-data
@@ -1289,7 +1325,7 @@
     <provider
         android:authorities="org.chromium.chrome.LicenseContentProvider"
         android:exported="true"
-        android:name="com.android.webview.chromium.LicenseContentProvider"
+        android:name="org.chromium.android_webview.nonembedded.LicenseContentProvider"
         android:process=":webview_apk"/>
     <receiver
         android:exported="false"
@@ -1300,6 +1336,9 @@
     <receiver
         android:exported="false"
         android:name="com.google.ipc.invalidation.ticl.android2.AndroidInternalScheduler$AlarmReceiver"/>
+    <receiver
+        android:exported="false"
+        android:name="org.chromium.chrome.browser.announcement.AnnouncementNotificationManager$Receiver"/>
     <receiver
         android:exported="false"
         android:name="org.chromium.chrome.browser.bookmarkswidget.BookmarkWidgetProxy"/>
@@ -1348,9 +1387,6 @@
     <receiver
         android:exported="false"
         android:name="org.chromium.chrome.browser.send_tab_to_self.NotificationManager$TimeoutReceiver"/>
-    <receiver
-        android:exported="false"
-        android:name="org.chromium.chrome.browser.sharing.SharingNotificationUtil$ActionReceiver"/>
     <receiver
         android:exported="false"
         android:name="org.chromium.chrome.browser.sharing.click_to_call.ClickToCallMessageHandler$TapReceiver"/>
@@ -1453,6 +1489,11 @@
         android:name="org.chromium.chrome.browser.photo_picker.DecoderService"
         android:process=":decoder_service"/>
     <service
+        android:enabled="false"
+        android:exported="true"
+        android:name="org.chromium.android_webview.services.DeveloperUiService"
+        android:process=":webview_service"/>
+    <service
         android:exported="false"
         android:isolatedProcess="false"
         android:name="org.chromium.content.app.PrivilegedProcessService0"
@@ -1533,13 +1574,6 @@
         <action android:name="android.content.SyncAdapter"/>
       </intent-filter>
       <meta-data android:name="android.content.SyncAdapter" android:resource="@xml/syncadapter"/>
-    </service>
-    <service
-        android:exported="false"
-        android:name="org.chromium.chrome.browser.invalidation.ChromeInvalidationClientService">
-      <intent-filter>
-        <action android:name="com.google.ipc.invalidation.AUTH_TOKEN_REQUEST"/>
-      </intent-filter>
     </service>
     <service
         android:exported="false"
@@ -1999,6 +2033,7 @@
         <action android:name="android.support.customtabs.action.CustomTabsService"/>
         <category android:name="androidx.browser.customtabs.category.ColorSchemeCustomization"/>
         <category android:name="androidx.browser.customtabs.category.NavBarColorCustomization"/>
+        <category android:name="androidx.browser.trusted.category.ImmersiveMode"/>
         <category android:name="androidx.browser.trusted.category.TrustedWebActivities"/>
         <category
             android:name="androidx.browser.trusted.category.TrustedWebActivitySplashScreensV1"/>

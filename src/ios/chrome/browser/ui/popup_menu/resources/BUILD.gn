@@ -114,7 +114,6 @@ imageset("popup_menu_settings") {
 imageset("popup_menu_new_incognito_tab") {
   sources = [
     "popup_menu_new_incognito_tab.imageset/Contents.json",
-    "popup_menu_new_incognito_tab.imageset/popup_menu_new_incognito_tab.png",
     "popup_menu_new_incognito_tab.imageset/popup_menu_new_incognito_tab@2x.png",
     "popup_menu_new_incognito_tab.imageset/popup_menu_new_incognito_tab@3x.png",
   ]
@@ -125,6 +124,14 @@ imageset("popup_menu_translate") {
     "popup_menu_translate.imageset/Contents.json",
     "popup_menu_translate.imageset/popup_menu_translate@2x.png",
     "popup_menu_translate.imageset/popup_menu_translate@3x.png",
+  ]
+}
+
+imageset("popup_menu_downloads") {
+  sources = [
+    "popup_menu_downloads.imageset/Contents.json",
+    "popup_menu_downloads.imageset/popup_menu_downloads@2x.png",
+    "popup_menu_downloads.imageset/popup_menu_downloads@3x.png",
   ]
 }
 
@@ -215,5 +222,13 @@ imageset("popup_menu_help") {
     "popup_menu_help.imageset/popup_menu_help.png",
     "popup_menu_help.imageset/popup_menu_help@2x.png",
     "popup_menu_help.imageset/popup_menu_help@3x.png",
+  ]
+}
+
+imageset("popup_menu_text_zoom") {
+  sources = [
+    "popup_menu_text_zoom.imageset/Contents.json",
+    "popup_menu_text_zoom.imageset/popup_menu_text_zoom@2x.png",
+    "popup_menu_text_zoom.imageset/popup_menu_text_zoom@3x.png",
   ]
 }

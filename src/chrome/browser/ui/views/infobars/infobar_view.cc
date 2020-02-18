@@ -18,6 +18,7 @@
 #include "components/strings/grit/components_strings.h"
 #include "components/vector_icons/vector_icons.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/class_property.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -89,6 +90,11 @@ gfx::Insets GetCloseButtonSpacing() {
 InfoBarView::InfoBarView(std::unique_ptr<infobars::InfoBarDelegate> delegate)
     : infobars::InfoBar(std::move(delegate)),
       views::ExternalFocusTracker(this, nullptr) {
+  // Make Infobar animation aligned to the Compositor.
+  SetNotifier(std::make_unique<
+              gfx::AnimationDelegateNotifier<views::AnimationDelegateViews>>(
+      this, this));
+
   set_owned_by_client();  // InfoBar deletes itself at the appropriate time.
 
   // Clip child layers; without this, buttons won't look correct during
@@ -142,7 +148,7 @@ void InfoBarView::RecalculateHeight() {
     const int margin_height = margins ? margins->height() : 0;
     height = std::max(height, child->height() + margin_height);
   }
-  SetTargetHeight(height + GetSeparatorHeightDip());
+  SetTargetHeight(height + GetSeparatorHeight());
 }
 
 void InfoBarView::Layout() {
@@ -213,7 +219,9 @@ void InfoBarView::OnPaint(gfx::Canvas* canvas) {
   if (ShouldDrawSeparator()) {
     const SkColor color =
         GetColor(ThemeProperties::COLOR_TOOLBAR_CONTENT_AREA_SEPARATOR);
-    BrowserView::Paint1pxHorizontalLine(canvas, color, GetLocalBounds(), false);
+    const gfx::Rect local_bounds = GetLocalBounds();
+    canvas->DrawSharpLine({local_bounds.x(), local_bounds.y()},
+                          {local_bounds.right(), local_bounds.y()}, color);
   }
 }
 
@@ -303,7 +311,7 @@ int InfoBarView::EndX() const {
 }
 
 int InfoBarView::OffsetY(views::View* view) const {
-  return GetSeparatorHeightDip() +
+  return GetSeparatorHeight() +
          std::max((target_height() - view->height()) / 2, 0) -
          (target_height() - height());
 }
@@ -364,24 +372,14 @@ bool InfoBarView::ShouldDrawSeparator() const {
   return parent() && parent()->children().front() != this;
 }
 
-int InfoBarView::GetSeparatorHeightDip() const {
+int InfoBarView::GetSeparatorHeight() const {
   // We only need a separator for infobars after the first; the topmost infobar
   // uses the toolbar as its top separator.
-  //
-  // Ideally the separator would take out 1 px in layout, but since we lay out
-  // in DIPs, we reserve 1 DIP below scale factor 2x, and 0 DIPs at 2 or above.
-  // This way the padding above the infobar content will never be more than 1 px
-  // from its ideal value.
   //
   // This only works because all infobars have padding at the top; if we
   // actually draw all the way to the top, we'd risk drawing a separator atop
   // some infobar content.
-  auto scale_factor = [this]() {
-    auto* widget = GetWidget();
-    // There may be no widget in tests.
-    return widget ? widget->GetCompositor()->device_scale_factor() : 1;
-  };
-  return (ShouldDrawSeparator() && (scale_factor() < 2)) ? 1 : 0;
+  return ShouldDrawSeparator() ? 1 : 0;
 }
 
 SkColor InfoBarView::GetColor(int id) const {

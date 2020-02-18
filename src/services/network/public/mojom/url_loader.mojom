@@ -94,6 +94,14 @@ struct TrustedUrlRequestParams {
   // Whether or not the network isolation key needs to be recomputed on
   // redirects. Typically this is only done for navigations.
   UpdateNetworkIsolationKeyOnRedirect update_network_isolation_key_on_redirect;
+
+  // Whether secure DNS should be disabled for the request.
+  bool disable_secure_dns;
+
+  // Whether a navigation is triggered with a user gesture.
+  // Always true for navigations except the one triggered from a document
+  // without user gesture. Used to determine the `Sec-Fetch-User` header.
+  bool has_user_activation;
 };
 
 // Typemapped to network::ResourceRequest.
@@ -112,25 +120,6 @@ struct URLRequest {
   // done if there really is no way to determine the correct value.
   url.mojom.Url site_for_cookies;
 
-  // A non-null |top_frame_origin| contains the origin of the top frame of the
-  // page making the request. |top_frame_origin| depends on the context making
-  // the request.
-  // - If a page is making the request, it is the origin of the top-level
-  //   frame of the page. This is set for the navigation and subresource
-  //   requests.
-  // - If a dedicated worker is making the request, it is the top-frame
-  //   origin of its creator (which may be a page or a dedicated worker).
-  // - If a shared worker or a service worker is making the request, it is null,
-  //   including for both the main script request and subresource requests.
-  //
-  // In some other cases(?) |top_frame_origin| may be null.
-  //
-  // Note that this is experimental.
-  //
-  // TODO(crbug.com/911299, crbug.com/978968): This field will most likely be
-  // removed at some point.
-  url.mojom.Origin? top_frame_origin;
-
   // Boolean indicating whether SameSite cookies are allowed to be attached
   // to the request. It should be used as additional input to network side
   // checks.
@@ -141,9 +130,55 @@ struct URLRequest {
   // the first-party URL should be updated to the URL on every redirect.
   bool update_first_party_url_on_redirect;
 
-  // The origin of the context which initiated the request, which will be used
-  // for cookie checks like 'First-Party-Only'.
+  // |request_initiator| indicates the origin initiating the resource request.
+  //
+  // |request_initiator| is null for browser-initiated requests (e.g.
+  // navigations initiated via omnibox or bookmarks, internal subresource
+  // requests like fetching the SafeBrowsing data, etc.).
+  //
+  // For all requests initiated via web (both subresource requests and
+  // navigations), |request_initiator| is always set to the origin of the frame
+  // that has initiated the request.  This is true even if the request might
+  // have been initiated by an isolated world (e.g. from a content script of an
+  // extension, with its own, separate origin).  This needs to be true even if
+  // the request might be "proxied" in the browser process on behalf of a web
+  // origin (e.g. as is the case for PaymentRequest API).
+  //
+  // |request_initiator| is consulted in a variety of security features,
+  // including: calculating Sec-Fetch-Site request header, determining if the
+  // request should be subject to CORS, determining if CORB and/or CORP should
+  // block the response, determining if SameSite=strict cookies should be sent,
+  // etc.
+  //
+  // See also:
+  // - |isolated_world_origin|
+  // - URLLoaderFactoryParams::request_initiator_site_lock
   url.mojom.Origin? request_initiator;
+
+  // If this is a subresource request initiated from an isolated world (e.g.
+  // from a content script of a Chrome Extension), then
+  // |isolated_world_origin| indicates the origin of the isolated world.
+  // Otherwise, |isolated_world_origin| is null.
+  //
+  // Example #1: XHR initiated from a content script of chrome-extension://foo
+  // that was injected into a https://example.com web frame:
+  // - |request_initiator| is "https://example.com"
+  // - |isolated_world_origin| is "chrome-extension://foo"
+  //
+  // Example #2: XHR initiated from a Chrome Extension frame (e.g. from an
+  // extension background page):
+  // - |request_initiator| is "chrome-extension://foo"
+  // - |isolated_world_origin| is null (this request is not associated with an
+  //   isolated world)
+  //
+  // |isolated_world_origin| is consulted by OOR-CORS, to determine if this
+  // request might need to be exempt from CORS, based on OriginAccessList.
+  //
+  // TODO(lukasza): https://crbug.com/936310: Attempt to remove
+  // |isolated_world_origin| after removing the global/per-NetworkContext
+  // OriginAccessList and replacing it with per-URLLoaderFactory
+  // OriginAccessList.
+  url.mojom.Origin? isolated_world_origin;
 
   // The referrer to use (may be empty).
   url.mojom.Url referrer;
@@ -268,11 +303,10 @@ struct URLRequest {
   //   created by a frame.
   // - MSG_ROUTING_NONE for nested dedicated workers.
   // - MSG_ROUTING_NONE for subresource requests from a dedicated/shared worker.
+  // - service_worker_route_id from EmbeddedWorkerStartParams for service worker
+  //   main script requests and subresource requests.
   // - The frame tree node ID for navigation requests only. Please do not use
   //   frame tree node ID for other requests.
-  // TODO(nhiroki): Clarify which frame id should be used for service workers.
-  // Probably the render frame id of the frame calling register() or update(),
-  // and MSG_ROUTING_NONE for the soft update.
   int32 render_frame_id;
 
   // True if |frame_id| is the main frame of a RenderView.
@@ -304,10 +338,6 @@ struct URLRequest {
   // Some users, notably blink, has its own cache. This flag is set to exempt
   // some CORS logic for a revalidating request.
   bool is_revalidating;
-
-  // True when the CORS module should *also* use the origin set to the
-  // associated URLLoaderFactory.
-  bool should_also_use_factory_bound_origin_for_cors;
 
   // The profile ID of network conditions to throttle the network request.
   mojo_base.mojom.UnguessableToken? throttling_profile_id;
@@ -356,6 +386,12 @@ struct URLRequest {
 
   // Setting these from an untrusted URLLoader will cause the request to fail.
   TrustedUrlRequestParams? trusted_params;
+
+  // Set for recursive prefetch requests originating from cross-origin
+  // prefetches. These requests take the form of `Link: rel=preload` HTTP
+  // response headers. For more information on these requests see
+  // https://github.com/w3c/resource-hints/issues/77.
+  mojo_base.mojom.UnguessableToken? recursive_prefetch_token;
 };
 
 // URLRequestBody represents body (i.e. upload data) of a HTTP request.
@@ -389,9 +425,9 @@ struct DataElement {
   // TODO(richard.li): Deprecate this once NetworkService is fully shipped.
   string? blob_uuid;
   // For kDataPipe
-  network.mojom.DataPipeGetter? data_pipe_getter;
+  pending_remote<network.mojom.DataPipeGetter>? data_pipe_getter;
   // For kChunkedDataPipe
-  network.mojom.ChunkedDataPipeGetter? chunked_data_pipe_getter;
+  pending_remote<network.mojom.ChunkedDataPipeGetter>? chunked_data_pipe_getter;
 
   uint64 offset;
   uint64 length;
@@ -488,6 +524,6 @@ interface URLLoaderClient {
 // Convenient struct that groups the two communication endpoints most
 // implementations of URLLoaderClient use to communicate with their URLLoader.
 struct URLLoaderClientEndpoints {
-  URLLoader url_loader;
-  URLLoaderClient& url_loader_client;
+  pending_remote<URLLoader> url_loader;
+  pending_receiver<URLLoaderClient> url_loader_client;
 };

@@ -8,6 +8,7 @@
 #include <lmerr.h>
 #include <objbase.h>
 #include <unknwn.h>
+#include <wrl/client.h>
 
 #include <memory>
 
@@ -38,6 +39,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace credential_provider {
+
+constexpr base::FilePath::CharType kCredentialProviderSetupExe[] =
+    FILE_PATH_LITERAL("gcp_setup.exe");
 
 class GcpSetupTest : public ::testing::Test {
  protected:
@@ -348,10 +352,10 @@ TEST_F(GcpSetupTest, LaunchGcpAfterInstall) {
 
   locked_file.Close();
 
-  CComPtr<IGaiaCredentialProvider> provider;
+  Microsoft::WRL::ComPtr<IGaiaCredentialProvider> provider;
   ASSERT_EQ(S_OK,
             CComCreator<CComObject<CGaiaCredentialProvider>>::CreateInstance(
-                nullptr, IID_IGaiaCredentialProvider, (void**)&provider));
+                nullptr, IID_PPV_ARGS(&provider)));
 
   // Make sure newer version exists and old version is gone.
   ExpectAllFilesToExist(true, product_version());
@@ -417,21 +421,18 @@ TEST_F(GcpSetupTest, EnableStats) {
   // Make sure usagestats does not exist.
   base::win::RegKey key;
   EXPECT_EQ(ERROR_SUCCESS,
-            key.Create(HKEY_LOCAL_MACHINE,
-                       credential_provider::kRegUpdaterClientStateAppPath,
+            key.Create(HKEY_LOCAL_MACHINE, kRegUpdaterClientStateAppPath,
                        KEY_ALL_ACCESS | KEY_WOW64_32KEY));
   DWORD value;
-  EXPECT_NE(ERROR_SUCCESS,
-            key.ReadValueDW(credential_provider::kRegUsageStatsName, &value));
+  EXPECT_NE(ERROR_SUCCESS, key.ReadValueDW(kRegUsageStatsName, &value));
 
   // Enable stats.
   base::CommandLine cmdline(base::CommandLine::NO_PROGRAM);
-  cmdline.AppendSwitch(credential_provider::switches::kEnableStats);
+  cmdline.AppendSwitch(switches::kEnableStats);
   EXPECT_EQ(0, EnableStatsCollection(cmdline));
 
   // Stats should be enabled.
-  EXPECT_EQ(ERROR_SUCCESS,
-            key.ReadValueDW(credential_provider::kRegUsageStatsName, &value));
+  EXPECT_EQ(ERROR_SUCCESS, key.ReadValueDW(kRegUsageStatsName, &value));
   EXPECT_EQ(1u, value);
 }
 
@@ -439,21 +440,18 @@ TEST_F(GcpSetupTest, DisableStats) {
   // Make sure usagestats does not exist.
   base::win::RegKey key;
   EXPECT_EQ(ERROR_SUCCESS,
-            key.Create(HKEY_LOCAL_MACHINE,
-                       credential_provider::kRegUpdaterClientStateAppPath,
+            key.Create(HKEY_LOCAL_MACHINE, kRegUpdaterClientStateAppPath,
                        KEY_ALL_ACCESS | KEY_WOW64_32KEY));
   DWORD value;
-  EXPECT_NE(ERROR_SUCCESS,
-            key.ReadValueDW(credential_provider::kRegUsageStatsName, &value));
+  EXPECT_NE(ERROR_SUCCESS, key.ReadValueDW(kRegUsageStatsName, &value));
 
   // Disable stats.
   base::CommandLine cmdline(base::CommandLine::NO_PROGRAM);
-  cmdline.AppendSwitch(credential_provider::switches::kDisableStats);
+  cmdline.AppendSwitch(switches::kDisableStats);
   EXPECT_EQ(0, EnableStatsCollection(cmdline));
 
   // Stats should be disabled.
-  EXPECT_EQ(ERROR_SUCCESS,
-            key.ReadValueDW(credential_provider::kRegUsageStatsName, &value));
+  EXPECT_EQ(ERROR_SUCCESS, key.ReadValueDW(kRegUsageStatsName, &value));
   EXPECT_EQ(0u, value);
 }
 
@@ -461,23 +459,79 @@ TEST_F(GcpSetupTest, EnableDisableStats) {
   // Make sure usagestats does not exist.
   base::win::RegKey key;
   EXPECT_EQ(ERROR_SUCCESS,
-            key.Create(HKEY_LOCAL_MACHINE,
-                       credential_provider::kRegUpdaterClientStateAppPath,
+            key.Create(HKEY_LOCAL_MACHINE, kRegUpdaterClientStateAppPath,
                        KEY_ALL_ACCESS | KEY_WOW64_32KEY));
   DWORD value;
-  EXPECT_NE(ERROR_SUCCESS,
-            key.ReadValueDW(credential_provider::kRegUsageStatsName, &value));
+  EXPECT_NE(ERROR_SUCCESS, key.ReadValueDW(kRegUsageStatsName, &value));
 
   // Enable and disable stats.
   base::CommandLine cmdline(base::CommandLine::NO_PROGRAM);
-  cmdline.AppendSwitch(credential_provider::switches::kEnableStats);
-  cmdline.AppendSwitch(credential_provider::switches::kDisableStats);
+  cmdline.AppendSwitch(switches::kEnableStats);
+  cmdline.AppendSwitch(switches::kDisableStats);
   EXPECT_EQ(0, EnableStatsCollection(cmdline));
 
   // Stats should be disabled.
-  EXPECT_EQ(ERROR_SUCCESS,
-            key.ReadValueDW(credential_provider::kRegUsageStatsName, &value));
+  EXPECT_EQ(ERROR_SUCCESS, key.ReadValueDW(kRegUsageStatsName, &value));
   EXPECT_EQ(0u, value);
+}
+
+TEST_F(GcpSetupTest, WriteUninstallStrings) {
+  base::win::RegKey key;
+
+  ASSERT_EQ(ERROR_SUCCESS,
+            key.Create(HKEY_LOCAL_MACHINE, kRegUpdaterClientStateAppPath,
+                       KEY_ALL_ACCESS | KEY_WOW64_32KEY));
+
+  // Write uninstall strings.
+  base::FilePath file_path =
+      installed_path().Append(FILE_PATH_LITERAL("foo.exe"));
+  ASSERT_EQ(S_OK, WriteUninstallRegistryValues(file_path));
+
+  // Verify uninstall strings.
+  base::string16 uninstall_string;
+  ASSERT_EQ(ERROR_SUCCESS,
+            key.ReadValue(kRegUninstallStringField, &uninstall_string));
+  EXPECT_EQ(uninstall_string, file_path.value());
+
+  base::string16 uninstall_arguments;
+  ASSERT_EQ(ERROR_SUCCESS,
+            key.ReadValue(kRegUninstallArgumentsField, &uninstall_arguments));
+
+  base::CommandLine expected_uninstall_arguments(base::CommandLine::NO_PROGRAM);
+  expected_uninstall_arguments.AppendSwitch(switches::kUninstall);
+
+  EXPECT_EQ(uninstall_arguments,
+            expected_uninstall_arguments.GetCommandLineString());
+}
+
+TEST_F(GcpSetupTest, DoInstallWritesUninstallStrings) {
+  logging::ResetEventSourceForTesting();
+
+  ASSERT_EQ(S_OK,
+            DoInstall(module_path(), product_version(), fakes_for_testing()));
+  ExpectAllFilesToExist(true, product_version());
+
+  base::win::RegKey key;
+
+  ASSERT_EQ(ERROR_SUCCESS,
+            key.Create(HKEY_LOCAL_MACHINE, kRegUpdaterClientStateAppPath,
+                       KEY_ALL_ACCESS | KEY_WOW64_32KEY));
+
+  // Verify uninstall strings.
+  base::string16 uninstall_string;
+  ASSERT_EQ(ERROR_SUCCESS,
+            key.ReadValue(kRegUninstallStringField, &uninstall_string));
+  EXPECT_EQ(uninstall_string,
+            installed_path().Append(kCredentialProviderSetupExe).value());
+
+  base::string16 uninstall_arguments;
+  ASSERT_EQ(ERROR_SUCCESS,
+            key.ReadValue(kRegUninstallArgumentsField, &uninstall_arguments));
+
+  base::CommandLine expected_uninstall_arguments(base::CommandLine::NO_PROGRAM);
+  expected_uninstall_arguments.AppendSwitch(switches::kUninstall);
+  EXPECT_EQ(uninstall_arguments,
+            expected_uninstall_arguments.GetCommandLineString());
 }
 
 // This test checks the expect success / failure of DLL registration when

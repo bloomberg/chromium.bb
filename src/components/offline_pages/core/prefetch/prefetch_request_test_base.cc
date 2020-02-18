@@ -10,6 +10,7 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/mock_entropy_provider.h"
+#include "base/test/task_environment.h"
 #include "components/offline_pages/core/offline_page_feature.h"
 #include "components/offline_pages/core/prefetch/prefetch_server_urls.h"
 #include "net/url_request/url_fetcher_delegate.h"
@@ -21,12 +22,9 @@ const char PrefetchRequestTestBase::kExperimentValueSetInFieldTrial[] =
     "Test Experiment";
 
 PrefetchRequestTestBase::PrefetchRequestTestBase()
-    : task_runner_(new base::TestMockTimeTaskRunner),
-      test_shared_url_loader_factory_(
+    : test_shared_url_loader_factory_(
           base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
-              &test_url_loader_factory_)) {
-  message_loop_.SetTaskRunner(task_runner_);
-}
+              &test_url_loader_factory_)) {}
 
 PrefetchRequestTestBase::~PrefetchRequestTestBase() {}
 
@@ -51,17 +49,17 @@ void PrefetchRequestTestBase::RespondWithNetError(int net_error) {
   network::URLLoaderCompletionStatus completion_status(net_error);
   test_url_loader_factory_.SimulateResponseForPendingRequest(
       GetPendingRequest(0)->request.url, completion_status,
-      network::ResourceResponseHead(), std::string());
+      network::mojom::URLResponseHead::New(), std::string());
 }
 
 void PrefetchRequestTestBase::RespondWithHttpError(
     net::HttpStatusCode http_error) {
   int pending_requests_count = test_url_loader_factory_.NumPending();
-  auto resource_response_head = network::CreateResourceResponseHead(http_error);
+  auto url_response_head = network::CreateURLResponseHead(http_error);
   DCHECK(pending_requests_count > 0);
   test_url_loader_factory_.SimulateResponseForPendingRequest(
       GetPendingRequest(0)->request.url,
-      network::URLLoaderCompletionStatus(net::OK), resource_response_head,
+      network::URLLoaderCompletionStatus(net::OK), std::move(url_response_head),
       std::string());
 }
 
@@ -75,11 +73,11 @@ void PrefetchRequestTestBase::RespondWithHttpErrorAndData(
     net::HttpStatusCode http_error,
     const std::string& data) {
   int pending_requests_count = test_url_loader_factory_.NumPending();
-  auto resource_response_head = network::CreateResourceResponseHead(http_error);
+  auto url_response_head = network::CreateURLResponseHead(http_error);
   DCHECK(pending_requests_count > 0);
   test_url_loader_factory_.SimulateResponseForPendingRequest(
       GetPendingRequest(0)->request.url,
-      network::URLLoaderCompletionStatus(net::OK), resource_response_head,
+      network::URLLoaderCompletionStatus(net::OK), std::move(url_response_head),
       data);
 }
 
@@ -100,11 +98,15 @@ std::string PrefetchRequestTestBase::GetExperiementHeaderValue(
 }
 
 void PrefetchRequestTestBase::RunUntilIdle() {
-  task_runner_->RunUntilIdle();
+  task_environment_.RunUntilIdle();
+}
+
+void PrefetchRequestTestBase::FastForwardBy(base::TimeDelta delta) {
+  task_environment_.FastForwardBy(delta);
 }
 
 void PrefetchRequestTestBase::FastForwardUntilNoTasksRemain() {
-  task_runner_->FastForwardUntilNoTasksRemain();
+  task_environment_.FastForwardUntilNoTasksRemain();
 }
 
 }  // namespace offline_pages

@@ -15,6 +15,12 @@ import java.lang.annotation.Target;
  *
  * Note that @RemovableInRelease implies @CheckDiscard.
  */
-@Target({ElementType.CONSTRUCTOR, ElementType.METHOD, ElementType.TYPE})
+@Target({ElementType.CONSTRUCTOR, ElementType.FIELD, ElementType.METHOD, ElementType.TYPE})
 @Retention(RetentionPolicy.CLASS)
-public @interface CheckDiscard {}
+public @interface CheckDiscard {
+    /**
+     * Describes why the element should be discarded.
+     * @return reason for discarding (crbug links are preferred unless reason is trivial).
+     */
+    String value();
+}

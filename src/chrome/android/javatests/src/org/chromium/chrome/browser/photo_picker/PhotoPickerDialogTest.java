@@ -9,6 +9,8 @@ import android.os.Build;
 import android.support.test.filters.LargeTest;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.Animation.AnimationListener;
 import android.widget.Button;
 
 import org.junit.Assert;
@@ -19,7 +21,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisableIf;
+import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -42,9 +44,11 @@ import java.util.concurrent.TimeUnit;
  * Tests for the PhotoPickerDialog class.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
+@MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP) // See crbug.com/888931 for details.
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class PhotoPickerDialogTest implements PhotoPickerListener, SelectionObserver<PickerBitmap>,
-                                              DecoderServiceHost.ServiceReadyCallback {
+                                              DecoderServiceHost.ServiceReadyCallback,
+                                              AnimationListener {
     // The timeout (in seconds) to wait for the decoder service to be ready.
     private static final long WAIT_TIMEOUT_SECONDS = 30L;
 
@@ -81,6 +85,9 @@ public class PhotoPickerDialogTest implements PhotoPickerListener, SelectionObse
     // A callback that fires when the decoder is ready.
     public final CallbackHelper onDecoderReadyCallback = new CallbackHelper();
 
+    // A callback that fires when a PickerBitmapView is animated in the dialog.
+    public final CallbackHelper onAnimatedCallback = new CallbackHelper();
+
     @Before
     public void setUp() throws Exception {
         mActivityTestRule.startMainActivityOnBlankPage();
@@ -92,6 +99,7 @@ public class PhotoPickerDialogTest implements PhotoPickerListener, SelectionObse
         mTestFiles.add(new PickerBitmap(Uri.parse("e"), 1L, PickerBitmap.TileTypes.PICTURE));
         mTestFiles.add(new PickerBitmap(Uri.parse("f"), 0L, PickerBitmap.TileTypes.PICTURE));
         PickerCategoryView.setTestFiles(mTestFiles);
+        PickerBitmapView.setAnimationListenerForTest(this);
 
         DecoderServiceHost.setReadyCallback(this);
     }
@@ -120,6 +128,18 @@ public class PhotoPickerDialogTest implements PhotoPickerListener, SelectionObse
         mCurrentPhotoSelection = new ArrayList<>(photosSelected);
         onSelectionCallback.notifyCalled();
     }
+
+    // AnimationListener:
+    @Override
+    public void onAnimationStart(Animation animation) {
+        onAnimatedCallback.notifyCalled();
+    }
+
+    @Override
+    public void onAnimationEnd(Animation animation) {}
+
+    @Override
+    public void onAnimationRepeat(Animation animation) {}
 
     private RecyclerView getRecyclerView() {
         return (RecyclerView) mDialog.findViewById(R.id.recycler_view);
@@ -194,7 +214,6 @@ public class PhotoPickerDialogTest implements PhotoPickerListener, SelectionObse
     }
 
     @Test
-    @DisableIf.Build(sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP, message = "crbug.com/888931")
     @LargeTest
     public void testNoSelection() throws Throwable {
         createDialog(false, Arrays.asList("image/*")); // Multi-select = false.
@@ -212,7 +231,6 @@ public class PhotoPickerDialogTest implements PhotoPickerListener, SelectionObse
     }
 
     @Test
-    @DisableIf.Build(sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP, message = "crbug.com/888931")
     @LargeTest
     public void testSingleSelectionPhoto() throws Throwable {
         createDialog(false, Arrays.asList("image/*")); // Multi-select = false.
@@ -221,8 +239,17 @@ public class PhotoPickerDialogTest implements PhotoPickerListener, SelectionObse
 
         // Expected selection count is 1 because clicking on a new view unselects other.
         int expectedSelectionCount = 1;
+
+        // Click the first view.
+        int callCount = onAnimatedCallback.getCallCount();
         clickView(0, expectedSelectionCount);
+        onAnimatedCallback.waitForCallback(callCount, 1);
+
+        // Click the second view.
+        callCount = onAnimatedCallback.getCallCount();
         clickView(1, expectedSelectionCount);
+        onAnimatedCallback.waitForCallback(callCount, 1);
+
         clickDone();
 
         Assert.assertEquals(1, mLastSelectedPhotos.length);
@@ -233,7 +260,6 @@ public class PhotoPickerDialogTest implements PhotoPickerListener, SelectionObse
     }
 
     @Test
-    @DisableIf.Build(sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP, message = "crbug.com/888931")
     @LargeTest
     public void testMultiSelectionPhoto() throws Throwable {
         createDialog(true, Arrays.asList("image/*")); // Multi-select = true.
@@ -242,9 +268,22 @@ public class PhotoPickerDialogTest implements PhotoPickerListener, SelectionObse
 
         // Multi-selection is enabled, so each click is counted.
         int expectedSelectionCount = 1;
+
+        // Click first view.
+        int callCount = onAnimatedCallback.getCallCount();
         clickView(0, expectedSelectionCount++);
+        onAnimatedCallback.waitForCallback(callCount, 1);
+
+        // Click third view.
+        callCount = onAnimatedCallback.getCallCount();
         clickView(2, expectedSelectionCount++);
+        onAnimatedCallback.waitForCallback(callCount, 1);
+
+        // Click fifth view.
+        callCount = onAnimatedCallback.getCallCount();
         clickView(4, expectedSelectionCount++);
+        onAnimatedCallback.waitForCallback(callCount, 1);
+
         clickDone();
 
         Assert.assertEquals(3, mLastSelectedPhotos.length);

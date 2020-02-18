@@ -18,10 +18,10 @@ class GconvStriptTest(cros_test_lib.MockTempDirTestCase):
   """Tests for gconv_strip script."""
 
   def testMultipleStringMatch(self):
-    self.assertEquals(
+    self.assertEqual(
         gconv_strip.MultipleStringMatch(
-            ['hell', 'a', 'z', 'k', 'spec'],
-            'hello_from a very special place'),
+            [b'hell', b'a', b'z', b'k', b'spec'],
+            b'hello_from a very special place'),
         [True, True, False, False, True])
 
   def testModuleRewrite(self):
@@ -42,9 +42,13 @@ module charset_foo   charset_A     USED_MODULE
     osutils.WriteFile(tmp_gconv_module, data)
 
     gmods = gconv_strip.GconvModules(tmp_gconv_module)
-    gmods.Load()
+    self.assertEqual(gmods.Load(), [
+        'BAR', 'CHAR_A', 'EUROPE', 'FOO', 'charset_A', 'charset_B',
+        'charset_bar', 'charset_foo'])
     self.PatchObject(gconv_strip.lddtree, 'ParseELF', return_value={})
-    self.PatchObject(gconv_strip.os, 'lstat')
+    class _StubStat(object):
+      st_size = 0
+    self.PatchObject(gconv_strip.os, 'lstat', return_value=_StubStat)
     self.PatchObject(gconv_strip.os, 'unlink')
     gmods.Rewrite(['charset_A', 'charset_B'], dry_run=False)
 
@@ -60,4 +64,4 @@ module charset_foo   charset_A     USED_MODULE
 """
 
     content = osutils.ReadFile(tmp_gconv_module)
-    self.assertEquals(content, expected)
+    self.assertEqual(content, expected)

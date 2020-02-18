@@ -23,6 +23,7 @@ namespace quic {
 
 class ProofVerifier;
 class QuicServerId;
+class SessionCache;
 
 class QuicSpdyClientBase : public QuicClientBase,
                            public QuicClientPushPromiseIndex::Delegate,
@@ -69,7 +70,8 @@ class QuicSpdyClientBase : public QuicClientBase,
                      QuicConnectionHelperInterface* helper,
                      QuicAlarmFactory* alarm_factory,
                      std::unique_ptr<NetworkHelper> network_helper,
-                     std::unique_ptr<ProofVerifier> proof_verifier);
+                     std::unique_ptr<ProofVerifier> proof_verifier,
+                     std::unique_ptr<SessionCache> session_cache);
   QuicSpdyClientBase(const QuicSpdyClientBase&) = delete;
   QuicSpdyClientBase& operator=(const QuicSpdyClientBase&) = delete;
 
@@ -137,7 +139,11 @@ class QuicSpdyClientBase : public QuicClientBase,
   bool drop_response_body() const { return drop_response_body_; }
 
   // Set the max promise id for the client session.
-  void set_max_allowed_push_id(QuicStreamId max) { max_allowed_push_id_ = max; }
+  void SetMaxAllowedPushId(QuicStreamId max) { max_allowed_push_id_ = max; }
+
+  // Disables the use of the QPACK dynamic table and of blocked streams.
+  // Must be called before InitializeSession().
+  void disable_qpack_dynamic_table() { disable_qpack_dynamic_table_ = true; }
 
  protected:
   int GetNumSentClientHellosFromSession() override;
@@ -215,6 +221,8 @@ class QuicSpdyClientBase : public QuicClientBase,
 
   // The max promise id to set on the client session when created.
   QuicStreamId max_allowed_push_id_;
+
+  bool disable_qpack_dynamic_table_;
 };
 
 }  // namespace quic

@@ -153,6 +153,10 @@ static void decode_block(uint8_t *src, uint8_t *dest, unsigned size,
 
     if (align) {
         uint32_t tmpkey = *key_ptr - key;
+        if (a2 > s) {
+            a2 = s;
+            avpriv_request_sample(NULL, "tiny aligned block\n");
+        }
         memcpy(tmp + align, src, a2);
         xor_block(tmp, tmp, 4, key, &tmpkey);
         memcpy(dest, tmp + align, a2);
@@ -160,8 +164,6 @@ static void decode_block(uint8_t *src, uint8_t *dest, unsigned size,
     }
 
     if (s >= 4) {
-        if (!align)
-            align = 4;
         xor_block(src + a2, dest + a2, s & ~3,
                   key, key_ptr);
         s &= 3;
@@ -216,7 +218,7 @@ static uint8_t *read_vblock(AVIOContext *src, uint32_t *size,
     memcpy(buf, tmp, 4);
 
     if (avio_read(src, buf + 4, n) == n) {
-        decode_block(buf + 4, buf + 4, n, key, k2, align + 4);
+        decode_block(buf + 4, buf + 4, n, key, k2, align);
     } else {
         av_free(buf);
         buf = NULL;
@@ -251,6 +253,9 @@ static uint8_t *read_sb_block(AVIOContext *src, unsigned *size,
         *key = tmpkey;
     }
 
+    if (n < 8)
+        return NULL;
+
     buf = av_malloc(n);
     if (!buf)
         return NULL;
@@ -270,7 +275,7 @@ static uint8_t *read_sb_block(AVIOContext *src, unsigned *size,
     return buf;
 }
 
-static void track_header(VividasDemuxContext *viv, AVFormatContext *s,  uint8_t *buf, int size)
+static int track_header(VividasDemuxContext *viv, AVFormatContext *s,  uint8_t *buf, int size)
 {
     int i,j;
     int64_t off;
@@ -280,7 +285,7 @@ static void track_header(VividasDemuxContext *viv, AVFormatContext *s,  uint8_t 
 
     pb = avio_alloc_context(buf, size, 0, NULL, NULL, NULL, NULL);
     if (!pb)
-        return;
+        return AVERROR(ENOMEM);
 
     ffio_read_varlen(pb); // track_header_len
     avio_r8(pb); // '1'
@@ -371,22 +376,40 @@ static void track_header(VividasDemuxContext *viv, AVFormatContext *s,  uint8_t 
             ffio_read_varlen(pb); // len_3
             num_data = avio_r8(pb);
             for (j = 0; j < num_data; j++) {
-                data_len[j] = ffio_read_varlen(pb);
-                xd_size += data_len[j];
+                uint64_t len = ffio_read_varlen(pb);
+                if (len > INT_MAX/2 - xd_size) {
+                    av_free(pb);
+                    return AVERROR_INVALIDDATA;
+                }
+                data_len[j] = len;
+                xd_size += len;
             }
 
             st->codecpar->extradata_size = 64 + xd_size + xd_size / 255;
-            if (ff_alloc_extradata(st->codecpar, st->codecpar->extradata_size))
-                return;
+            if (ff_alloc_extradata(st->codecpar, st->codecpar->extradata_size)) {
+                av_free(pb);
+                return AVERROR(ENOMEM);
+            }
 
             p = st->codecpar->extradata;
             p[0] = 2;
 
-            for (j = 0; j < num_data - 1; j++)
-                offset += av_xiphlacing(&p[offset], data_len[j]);
+            for (j = 0; j < num_data - 1; j++) {
+                unsigned delta = av_xiphlacing(&p[offset], data_len[j]);
+                if (delta > data_len[j]) {
+                    av_free(pb);
+                    return AVERROR_INVALIDDATA;
+                }
+                offset += delta;
+            }
 
             for (j = 0; j < num_data; j++) {
-                avio_read(pb, &p[offset], data_len[j]);
+                int ret = avio_read(pb, &p[offset], data_len[j]);
+                if (ret < data_len[j]) {
+                    st->codecpar->extradata_size = 0;
+                    av_freep(&st->codecpar->extradata);
+                    break;
+                }
                 offset += data_len[j];
             }
 
@@ -396,50 +419,69 @@ static void track_header(VividasDemuxContext *viv, AVFormatContext *s,  uint8_t 
     }
 
     av_free(pb);
+    return 0;
 }
 
-static void track_index(VividasDemuxContext *viv, AVFormatContext *s, uint8_t *buf, unsigned size)
+static int track_index(VividasDemuxContext *viv, AVFormatContext *s, uint8_t *buf, unsigned size)
 {
     int64_t off;
     int64_t poff;
     int maxnp=0;
     AVIOContext *pb;
     int i;
+    int64_t filesize = avio_size(s->pb);
 
     pb = avio_alloc_context(buf, size, 0, NULL, NULL, NULL, NULL);
     if (!pb)
-        return;
+        return AVERROR(ENOMEM);
 
     ffio_read_varlen(pb); // track_index_len
     avio_r8(pb); // 'c'
     viv->n_sb_blocks = ffio_read_varlen(pb);
+    if (viv->n_sb_blocks * 2 > size)
+        goto error;
     viv->sb_blocks = av_calloc(viv->n_sb_blocks, sizeof(VIV_SB_block));
     if (!viv->sb_blocks) {
         viv->n_sb_blocks = 0;
         av_free(pb);
-        return;
+        return AVERROR(ENOMEM);
     }
 
     off = 0;
     poff = 0;
 
     for (i = 0; i < viv->n_sb_blocks; i++) {
+        uint64_t size_tmp      = ffio_read_varlen(pb);
+        uint64_t n_packets_tmp = ffio_read_varlen(pb);
+
+        if (size_tmp > INT_MAX || n_packets_tmp > INT_MAX)
+            goto error;
+
         viv->sb_blocks[i].byte_offset = off;
         viv->sb_blocks[i].packet_offset = poff;
 
-        viv->sb_blocks[i].size = ffio_read_varlen(pb);
-        viv->sb_blocks[i].n_packets = ffio_read_varlen(pb);
+        viv->sb_blocks[i].size = size_tmp;
+        viv->sb_blocks[i].n_packets = n_packets_tmp;
 
         off += viv->sb_blocks[i].size;
         poff += viv->sb_blocks[i].n_packets;
-
 
         if (maxnp < viv->sb_blocks[i].n_packets)
             maxnp = viv->sb_blocks[i].n_packets;
     }
 
+    if (filesize > 0 && poff > filesize)
+        goto error;
+
     viv->sb_entries = av_calloc(maxnp, sizeof(VIV_SB_entry));
     av_free(pb);
+
+    return 0;
+error:
+    av_free(pb);
+    viv->n_sb_blocks = 0;
+    av_freep(&viv->sb_blocks);
+    return AVERROR_INVALIDDATA;
 }
 
 static void load_sb_block(AVFormatContext *s, VividasDemuxContext *viv, unsigned expected_size)
@@ -498,6 +540,7 @@ static int viv_read_header(AVFormatContext *s)
     uint32_t b22_size = 0;
     uint32_t b22_key = 0;
     uint8_t *buf = 0;
+    int ret;
 
     avio_skip(pb, 9);
 
@@ -529,6 +572,9 @@ static int viv_read_header(AVFormatContext *s)
             break;
 
         block_len = ffio_read_varlen(pb);
+        if (avio_feof(pb) || block_len <= 0)
+            return AVERROR_INVALIDDATA;
+
         block_type = avio_r8(pb);
 
         if (block_type == 22) {
@@ -553,14 +599,18 @@ static int viv_read_header(AVFormatContext *s)
     buf = read_vblock(pb, &v, key, &k2, 0);
     if (!buf)
         return AVERROR(EIO);
-    track_header(viv, s, buf, v);
+    ret = track_header(viv, s, buf, v);
     av_free(buf);
+    if (ret < 0)
+        return ret;
 
     buf = read_vblock(pb, &v, key, &k2, v);
     if (!buf)
         return AVERROR(EIO);
-    track_index(viv, s, buf, v);
+    ret = track_index(viv, s, buf, v);
     av_free(buf);
+    if (ret < 0)
+        return ret;
 
     viv->sb_offset = avio_tell(pb);
     if (viv->n_sb_blocks > 0) {

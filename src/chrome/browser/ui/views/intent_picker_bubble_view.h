@@ -10,14 +10,16 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "chrome/browser/apps/intent_helper/apps_navigation_types.h"
 #include "chrome/browser/ui/browser_dialogs.h"
-#include "chrome/browser/ui/page_action/page_action_icon_container.h"
+#include "chrome/browser/ui/page_action/page_action_icon_type.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_bubble_delegate_view.h"
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/gfx/image/image.h"
 #include "ui/views/controls/button/button.h"
+#include "url/origin.h"
 
 namespace content {
 class WebContents;
@@ -69,17 +71,20 @@ class IntentPickerBubbleView : public LocationBarBubbleDelegateView,
                          IntentPickerResponse intent_picker_cb,
                          content::WebContents* web_contents,
                          bool show_stay_in_chrome,
-                         bool show_remember_selection);
+                         bool show_remember_selection,
+                         const base::Optional<url::Origin>& initiating_origin);
   ~IntentPickerBubbleView() override;
 
-  static views::Widget* ShowBubble(views::View* anchor_view,
-                                   PageActionIconView* icon_view,
-                                   PageActionIconType icon_type,
-                                   content::WebContents* web_contents,
-                                   std::vector<AppInfo> app_info,
-                                   bool show_stay_in_chrome,
-                                   bool show_remember_selection,
-                                   IntentPickerResponse intent_picker_cb);
+  static views::Widget* ShowBubble(
+      views::View* anchor_view,
+      PageActionIconView* icon_view,
+      PageActionIconType icon_type,
+      content::WebContents* web_contents,
+      std::vector<AppInfo> app_info,
+      bool show_stay_in_chrome,
+      bool show_remember_selection,
+      const base::Optional<url::Origin>& initiating_origin,
+      IntentPickerResponse intent_picker_cb);
   static IntentPickerBubbleView* intent_picker_bubble() {
     return intent_picker_bubble_;
   }
@@ -90,14 +95,12 @@ class IntentPickerBubbleView : public LocationBarBubbleDelegateView,
   bool Cancel() override;
   bool Close() override;
   bool ShouldShowCloseButton() const override;
-  int GetDialogButtons() const override;
 
   PageActionIconType icon_type() const { return icon_type_; }
 
  protected:
   // LocationBarBubbleDelegateView overrides:
   base::string16 GetWindowTitle() const override;
-  base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
   void CloseBubble() override;
 
  private:
@@ -121,6 +124,7 @@ class IntentPickerBubbleView : public LocationBarBubbleDelegateView,
       std::vector<AppInfo> app_info,
       bool show_stay_in_chrome,
       bool show_remember_selection,
+      const base::Optional<url::Origin>& initiating_origin,
       IntentPickerResponse intent_picker_cb,
       content::WebContents* web_contents);
 
@@ -205,6 +209,9 @@ class IntentPickerBubbleView : public LocationBarBubbleDelegateView,
 
   // The type of the icon shown in the omnibox.
   const PageActionIconType icon_type_;
+
+  // The origin initiating this picker.
+  const base::Optional<url::Origin> initiating_origin_;
 
   DISALLOW_COPY_AND_ASSIGN(IntentPickerBubbleView);
 };

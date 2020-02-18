@@ -16,10 +16,12 @@
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
 #include "extensions/common/constants.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
-#include "services/service_manager/public/cpp/interface_provider.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 
 using testing::AtLeast;
@@ -36,12 +38,13 @@ class FakeContentTranslateDriver
   ~FakeContentTranslateDriver() override {}
 
   void BindHandle(mojo::ScopedMessagePipeHandle handle) {
-    bindings_.AddBinding(this, translate::mojom::ContentTranslateDriverRequest(
-                                   std::move(handle)));
+    receivers_.Add(
+        this, mojo::PendingReceiver<translate::mojom::ContentTranslateDriver>(
+                  std::move(handle)));
   }
 
   // translate::mojom::ContentTranslateDriver implementation.
-  void RegisterPage(translate::mojom::PagePtr page,
+  void RegisterPage(mojo::PendingRemote<translate::mojom::Page> page,
                     const translate::LanguageDetectionDetails& details,
                     bool page_needs_translation) override {
     called_new_page_ = true;
@@ -60,7 +63,7 @@ class FakeContentTranslateDriver
   bool page_needs_translation_;
 
  private:
-  mojo::BindingSet<translate::mojom::ContentTranslateDriver> bindings_;
+  mojo::ReceiverSet<translate::mojom::ContentTranslateDriver> receivers_;
 };
 
 }  // namespace
@@ -89,8 +92,7 @@ class TestTranslateHelper : public translate::TranslateHelper {
     trans_result_error_type_ = translate::TranslateErrors::NONE;
 
     // Will get new result values via OnPageTranslated.
-    Translate(translate_script, network::mojom::URLLoaderFactoryPtr(),
-              source_lang, target_lang,
+    Translate(translate_script, source_lang, target_lang,
               base::Bind(&TestTranslateHelper::OnPageTranslated,
                          base::Unretained(this)));
   }
@@ -153,16 +155,20 @@ class TranslateHelperBrowserTest : public ChromeRenderViewTest {
     ChromeRenderViewTest::SetUp();
     translate_helper_ = new TestTranslateHelper(view_->GetMainRenderFrame());
 
-    service_manager::InterfaceProvider* remote_interfaces =
-        view_->GetMainRenderFrame()->GetRemoteInterfaces();
-    service_manager::InterfaceProvider::TestApi test_api(remote_interfaces);
-    test_api.SetBinderForName(
-        translate::mojom::ContentTranslateDriver::Name_,
-        base::Bind(&FakeContentTranslateDriver::BindHandle,
-                   base::Unretained(&fake_translate_driver_)));
+    view_->GetMainRenderFrame()
+        ->GetBrowserInterfaceBroker()
+        ->SetBinderForTesting(
+            translate::mojom::ContentTranslateDriver::Name_,
+            base::Bind(&FakeContentTranslateDriver::BindHandle,
+                       base::Unretained(&fake_translate_driver_)));
   }
 
   void TearDown() override {
+    view_->GetMainRenderFrame()
+        ->GetBrowserInterfaceBroker()
+        ->SetBinderForTesting(translate::mojom::ContentTranslateDriver::Name_,
+                              {});
+
     delete translate_helper_;
     ChromeRenderViewTest::TearDown();
   }

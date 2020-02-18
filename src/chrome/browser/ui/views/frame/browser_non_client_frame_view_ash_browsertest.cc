@@ -11,13 +11,13 @@
 #include "ash/public/cpp/frame_header.h"
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller_test_api.h"
 #include "ash/public/cpp/shelf_test_api.h"
+#include "ash/public/cpp/split_view_test_api.h"
 #include "ash/public/cpp/test/shell_test_api.h"
 #include "ash/public/cpp/window_pin_type.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/mojom/constants.mojom.h"
 #include "ash/shell.h"                                  // mash-ok
 #include "ash/wm/overview/overview_controller.h"        // mash-ok
-#include "ash/wm/splitview/split_view_controller.h"     // mash-ok
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"  // mash-ok
 #include "base/bind_helpers.h"
 #include "base/run_loop.h"
@@ -43,26 +43,30 @@
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller_test.h"
 #include "chrome/browser/ui/passwords/passwords_client_ui_delegate.h"
+#include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/browser_actions_bar_browsertest.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view_ash.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
-#include "chrome/browser/ui/views/frame/hosted_app_button_container.h"
-#include "chrome/browser/ui/views/frame/hosted_app_menu_button.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller_ash.h"
 #include "chrome/browser/ui/views/fullscreen_control/fullscreen_control_host.h"
 #include "chrome/browser/ui/views/location_bar/content_setting_image_view.h"
 #include "chrome/browser/ui/views/location_bar/custom_tab_bar_view.h"
 #include "chrome/browser/ui/views/location_bar/zoom_bubble_view.h"
-#include "chrome/browser/ui/views/page_action/omnibox_page_action_icon_container_view.h"
+#include "chrome/browser/ui/views/page_action/page_action_icon_view.h"
 #include "chrome/browser/ui/views/page_info/page_info_bubble_view_base.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/toolbar/app_menu.h"
 #include "chrome/browser/ui/views/toolbar/extension_toolbar_menu_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
+#include "chrome/browser/ui/views/web_apps/web_app_frame_toolbar_view.h"
+#include "chrome/browser/ui/views/web_apps/web_app_menu_button.h"
+#include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
+#include "chrome/browser/web_applications/system_web_app_manager.h"
+#include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/web_application_info.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -78,6 +82,7 @@
 #include "content/public/test/test_navigation_observer.h"
 #include "net/dns/mock_host_resolver.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "third_party/blink/public/common/page/page_zoom.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/test/env_test_helper.h"
 #include "ui/base/class_property.h"
@@ -345,13 +350,30 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
   EXPECT_TRUE(bookmark_bar->GetVisible());
 
   // Minimum window size should grow with the bookmark bar shown.
-  // kMinimumSize window property should get updated.
-  aura::Window* window = browser()->window()->GetNativeWindow();
-  const gfx::Size* min_window_size =
-      window->GetProperty(aura::client::kMinimumSize);
-  ASSERT_NE(nullptr, min_window_size);
-  EXPECT_GT(min_window_size->height(), min_height_no_bookmarks);
-  EXPECT_EQ(*min_window_size, frame_view->GetMinimumSize());
+  gfx::Size min_window_size = frame_view->GetMinimumSize();
+  EXPECT_GT(min_window_size.height(), min_height_no_bookmarks);
+}
+
+IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
+                       SettingsSystemWebAppHasMinimumWindowSize) {
+  // Install the Settings System Web App.
+  web_app::WebAppProvider::Get(browser()->profile())
+      ->system_web_app_manager()
+      .InstallSystemAppsForTesting();
+
+  // Open a settings window.
+  auto* settings_manager = chrome::SettingsWindowManager::GetInstance();
+  settings_manager->ShowOSSettings(browser()->profile());
+  Browser* settings_browser =
+      settings_manager->FindBrowserForProfile(browser()->profile());
+
+  // Try to set the bounds to a tiny value.
+  settings_browser->window()->SetBounds(gfx::Rect(1, 1));
+
+  // The window has a reasonable size.
+  gfx::Rect actual_bounds = settings_browser->window()->GetBounds();
+  EXPECT_LE(300, actual_bounds.width());
+  EXPECT_LE(100, actual_bounds.height());
 }
 
 // This is a regression test that session restore minimized browser should
@@ -725,13 +747,13 @@ IN_PROC_BROWSER_TEST_P(ImmersiveModeBrowserViewTest, TabAndBrowserFullscreen) {
 
 namespace {
 
-class HostedAppNonClientFrameViewAshTest
+class WebAppNonClientFrameViewAshTest
     : public TopChromeMdParamTest<BrowserActionsBarBrowserTest> {
  public:
-  HostedAppNonClientFrameViewAshTest()
+  WebAppNonClientFrameViewAshTest()
       : https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {}
 
-  ~HostedAppNonClientFrameViewAshTest() override = default;
+  ~WebAppNonClientFrameViewAshTest() override = default;
 
   GURL GetAppURL() {
     return https_server_.GetURL("app.com", "/ssl/google.html");
@@ -741,10 +763,10 @@ class HostedAppNonClientFrameViewAshTest
   Browser* app_browser_ = nullptr;
   BrowserView* browser_view_ = nullptr;
   ash::DefaultFrameHeader* frame_header_ = nullptr;
-  HostedAppButtonContainer* hosted_app_button_container_ = nullptr;
+  WebAppFrameToolbarView* web_app_frame_toolbar_ = nullptr;
   const std::vector<ContentSettingImageView*>* content_setting_views_ = nullptr;
   BrowserActionsContainer* browser_actions_container_ = nullptr;
-  views::Button* app_menu_button_ = nullptr;
+  views::Button* web_app_menu_button_ = nullptr;
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     TopChromeMdParamTest<BrowserActionsBarBrowserTest>::SetUpCommandLine(
@@ -767,7 +789,7 @@ class HostedAppNonClientFrameViewAshTest
   void SetUpOnMainThread() override {
     TopChromeMdParamTest<BrowserActionsBarBrowserTest>::SetUpOnMainThread();
 
-    HostedAppButtonContainer::DisableAnimationForTesting();
+    WebAppFrameToolbarView::DisableAnimationForTesting();
 
     // Start secure local server.
     host_resolver()->AddRule("*", "127.0.0.1");
@@ -777,18 +799,19 @@ class HostedAppNonClientFrameViewAshTest
     ASSERT_TRUE(embedded_test_server()->Start());
   }
 
-  // |SetUpHostedApp()| must be called after |SetUpOnMainThread()| to make sure
+  // |SetUpWebApp()| must be called after |SetUpOnMainThread()| to make sure
   // the Network Service process has been setup properly.
-  void SetUpHostedApp() {
-    WebApplicationInfo web_app_info;
-    web_app_info.app_url = GetAppURL();
-    web_app_info.scope = GetAppURL().GetWithoutFilename();
-    web_app_info.theme_color = GetThemeColor();
+  void SetUpWebApp() {
+    auto web_app_info = std::make_unique<WebApplicationInfo>();
+    web_app_info->app_url = GetAppURL();
+    web_app_info->scope = GetAppURL().GetWithoutFilename();
+    web_app_info->theme_color = GetThemeColor();
 
-    const extensions::Extension* app = InstallBookmarkApp(web_app_info);
+    web_app::AppId app_id =
+        web_app::InstallWebApp(browser()->profile(), std::move(web_app_info));
     content::TestNavigationObserver navigation_observer(GetAppURL());
     navigation_observer.StartWatchingNewWebContents();
-    app_browser_ = LaunchAppBrowser(app);
+    app_browser_ = web_app::LaunchWebAppBrowser(browser()->profile(), app_id);
     navigation_observer.WaitForNavigationFinished();
 
     browser_view_ = BrowserView::GetBrowserViewForBrowser(app_browser_);
@@ -796,33 +819,29 @@ class HostedAppNonClientFrameViewAshTest
     frame_header_ =
         static_cast<ash::DefaultFrameHeader*>(frame_view->frame_header_.get());
 
-    hosted_app_button_container_ =
-        frame_view->hosted_app_button_container_for_testing();
-    DCHECK(hosted_app_button_container_);
-    DCHECK(hosted_app_button_container_->GetVisible());
+    web_app_frame_toolbar_ = frame_view->web_app_frame_toolbar_for_testing();
+    DCHECK(web_app_frame_toolbar_);
+    DCHECK(web_app_frame_toolbar_->GetVisible());
 
     content_setting_views_ =
-        &hosted_app_button_container_->GetContentSettingViewsForTesting();
+        &web_app_frame_toolbar_->GetContentSettingViewsForTesting();
     browser_actions_container_ =
-        hosted_app_button_container_->browser_actions_container_;
-    app_menu_button_ = hosted_app_button_container_->app_menu_button_;
+        web_app_frame_toolbar_->browser_actions_container_;
+    web_app_menu_button_ = web_app_frame_toolbar_->web_app_menu_button_;
   }
 
   AppMenu* GetAppMenu() {
-    return hosted_app_button_container_->app_menu_button_->app_menu();
+    return web_app_frame_toolbar_->web_app_menu_button_->app_menu();
   }
 
-  SkColor GetActiveColor() {
-    return hosted_app_button_container_->active_color_;
-  }
+  SkColor GetActiveColor() { return web_app_frame_toolbar_->active_color_; }
 
   bool GetPaintingAsActive() {
-    return hosted_app_button_container_->paint_as_active_;
+    return web_app_frame_toolbar_->paint_as_active_;
   }
 
   PageActionIconView* GetPageActionIcon(PageActionIconType type) {
     return browser_view_->toolbar_button_provider()
-        ->GetOmniboxPageActionIconContainerView()
         ->GetPageActionIconView(type);
   }
 
@@ -859,17 +878,17 @@ class HostedAppNonClientFrameViewAshTest
   net::EmbeddedTestServer https_server_;
   content::ContentMockCertVerifier cert_verifier_;
 
-  DISALLOW_COPY_AND_ASSIGN(HostedAppNonClientFrameViewAshTest);
+  DISALLOW_COPY_AND_ASSIGN(WebAppNonClientFrameViewAshTest);
 };
 
 }  // namespace
 
 // Tests that the page info dialog doesn't anchor in a way that puts it outside
-// of hosted app windows. This is important as some platforms don't support
-// bubble anchor adjustment (see |BubbleDialogDelegateView::CreateBubble()|).
-IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest,
+// of web-app windows. This is important as some platforms don't support bubble
+// anchor adjustment (see |BubbleDialogDelegateView::CreateBubble()|).
+IN_PROC_BROWSER_TEST_P(WebAppNonClientFrameViewAshTest,
                        PageInfoBubblePosition) {
-  SetUpHostedApp();
+  SetUpWebApp();
   // Resize app window to only take up the left half of the screen.
   views::Widget* widget = browser_view_->GetWidget();
   gfx::Size screen_size =
@@ -881,7 +900,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest,
 
   // Show page info dialog (currently PWAs use page info in place of an actual
   // app info dialog).
-  chrome::ExecuteCommand(app_browser_, IDC_HOSTED_APP_MENU_APP_INFO);
+  chrome::ExecuteCommand(app_browser_, IDC_WEB_APP_MENU_APP_INFO);
 
   // Check the bubble anchors inside the main app window even if there's space
   // available outside the main app window.
@@ -892,61 +911,55 @@ IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest,
   EXPECT_TRUE(widget->GetWindowBoundsInScreen().Contains(page_info_bounds));
 }
 
-IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest, FocusableViews) {
-  SetUpHostedApp();
+IN_PROC_BROWSER_TEST_P(WebAppNonClientFrameViewAshTest, FocusableViews) {
+  SetUpWebApp();
   EXPECT_TRUE(browser_view_->contents_web_view()->HasFocus());
   browser_view_->GetFocusManager()->AdvanceFocus(false);
-  EXPECT_TRUE(app_menu_button_->HasFocus());
+  EXPECT_TRUE(web_app_menu_button_->HasFocus());
   browser_view_->GetFocusManager()->AdvanceFocus(false);
   EXPECT_TRUE(browser_view_->contents_web_view()->HasFocus());
 }
 
-IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest,
+IN_PROC_BROWSER_TEST_P(WebAppNonClientFrameViewAshTest,
                        ButtonVisibilityInOverviewMode) {
-  SetUpHostedApp();
-  EXPECT_TRUE(hosted_app_button_container_->GetVisible());
+  SetUpWebApp();
+  EXPECT_TRUE(web_app_frame_toolbar_->GetVisible());
 
   StartOverview();
-  EXPECT_FALSE(hosted_app_button_container_->GetVisible());
+  EXPECT_FALSE(web_app_frame_toolbar_->GetVisible());
   EndOverview();
-  EXPECT_TRUE(hosted_app_button_container_->GetVisible());
+  EXPECT_TRUE(web_app_frame_toolbar_->GetVisible());
 }
 
-// Tests that a web app's theme color is set.
-IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest, ThemeColor) {
-  SetUpHostedApp();
+IN_PROC_BROWSER_TEST_P(WebAppNonClientFrameViewAshTest, FrameThemeColorIsSet) {
+  SetUpWebApp();
   aura::Window* window = browser_view_->GetWidget()->GetNativeWindow();
   EXPECT_EQ(GetThemeColor(), window->GetProperty(ash::kFrameActiveColorKey));
   EXPECT_EQ(GetThemeColor(), window->GetProperty(ash::kFrameInactiveColorKey));
   EXPECT_EQ(gfx::kGoogleGrey200, GetActiveColor());
 }
 
-// Make sure that for hosted apps, the height of the frame doesn't exceed the
+// Make sure that for web apps, the height of the frame doesn't exceed the
 // height of the caption buttons.
-IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest, FrameSize) {
-  SetUpHostedApp();
+IN_PROC_BROWSER_TEST_P(WebAppNonClientFrameViewAshTest, FrameSize) {
+  SetUpWebApp();
   const int inset = GetFrameViewAsh(browser_view_)->GetTopInset(false);
   EXPECT_EQ(inset, views::GetCaptionButtonLayoutSize(
                        views::CaptionButtonLayoutSize::kNonBrowserCaption)
                        .height());
-  EXPECT_GE(inset, app_menu_button_->size().height());
-  EXPECT_GE(inset, hosted_app_button_container_->size().height());
+  EXPECT_GE(inset, web_app_menu_button_->size().height());
+  EXPECT_GE(inset, web_app_frame_toolbar_->size().height());
 }
 
-// Test that the HostedAppButtonContainer is the designated toolbar button
-// provider in this window configuration.
-IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest,
-                       ToolbarButtonProvider) {
-  SetUpHostedApp();
-  EXPECT_EQ(browser_view_->toolbar_button_provider(),
-            hosted_app_button_container_);
+IN_PROC_BROWSER_TEST_P(WebAppNonClientFrameViewAshTest,
+                       IsToolbarButtonProvider) {
+  SetUpWebApp();
+  EXPECT_EQ(browser_view_->toolbar_button_provider(), web_app_frame_toolbar_);
 }
 
-// Test that the manage passwords icon appears in the title bar for hosted app
-// windows.
-IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest,
-                       ManagePasswordsIcon) {
-  SetUpHostedApp();
+IN_PROC_BROWSER_TEST_P(WebAppNonClientFrameViewAshTest,
+                       ShowManagePasswordsIcon) {
+  SetUpWebApp();
   content::WebContents* web_contents =
       app_browser_->tab_strip_model()->GetActiveWebContents();
   PageActionIconView* manage_passwords_icon =
@@ -959,17 +972,15 @@ IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest,
   password_form.username_value = base::ASCIIToUTF16("test");
   password_form.origin = GetAppURL().GetOrigin();
   PasswordsClientUIDelegateFromWebContents(web_contents)
-      ->OnPasswordAutofilled({{password_form.username_value, &password_form}},
-                             password_form.origin, nullptr);
+      ->OnPasswordAutofilled({&password_form}, password_form.origin, nullptr);
   chrome::ManagePasswordsForPage(app_browser_);
   base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(manage_passwords_icon->GetVisible());
 }
 
-// Test that the zoom icon appears in the title bar for hosted app windows.
-IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest, ZoomIcon) {
-  SetUpHostedApp();
+IN_PROC_BROWSER_TEST_P(WebAppNonClientFrameViewAshTest, ShowZoomIcon) {
+  SetUpWebApp();
   content::WebContents* web_contents =
       app_browser_->tab_strip_model()->GetActiveWebContents();
   zoom::ZoomController* zoom_controller =
@@ -980,16 +991,15 @@ IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest, ZoomIcon) {
   EXPECT_FALSE(zoom_icon->GetVisible());
   EXPECT_FALSE(ZoomBubbleView::GetZoomBubble());
 
-  zoom_controller->SetZoomLevel(content::ZoomFactorToZoomLevel(1.5));
+  zoom_controller->SetZoomLevel(blink::PageZoomFactorToZoomLevel(1.5));
   base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(zoom_icon->GetVisible());
   EXPECT_TRUE(ZoomBubbleView::GetZoomBubble());
 }
 
-// Test that the find icon appears in the title bar for hosted app windows.
-IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest, FindIcon) {
-  SetUpHostedApp();
+IN_PROC_BROWSER_TEST_P(WebAppNonClientFrameViewAshTest, ShowFindIcon) {
+  SetUpWebApp();
   PageActionIconView* find_icon = GetPageActionIcon(PageActionIconType::kFind);
 
   EXPECT_TRUE(find_icon);
@@ -1000,9 +1010,8 @@ IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest, FindIcon) {
   EXPECT_TRUE(find_icon->GetVisible());
 }
 
-// Test that the find icon appears in the title bar for hosted app windows.
-IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest, TranslateIcon) {
-  SetUpHostedApp();
+IN_PROC_BROWSER_TEST_P(WebAppNonClientFrameViewAshTest, ShowTranslateIcon) {
+  SetUpWebApp();
   PageActionIconView* translate_icon =
       GetPageActionIcon(PageActionIconType::kTranslate);
 
@@ -1018,55 +1027,55 @@ IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest, TranslateIcon) {
   EXPECT_TRUE(translate_icon->GetVisible());
 }
 
-// Tests that the focus toolbar command focuses the app menu button in web app
+// Tests that the focus toolbar command focuses the app menu button in web-app
 // windows.
-IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest,
+IN_PROC_BROWSER_TEST_P(WebAppNonClientFrameViewAshTest,
                        BrowserCommandFocusToolbarAppMenu) {
-  SetUpHostedApp();
-  EXPECT_FALSE(app_menu_button_->HasFocus());
+  SetUpWebApp();
+  EXPECT_FALSE(web_app_menu_button_->HasFocus());
   chrome::ExecuteCommand(app_browser_, IDC_FOCUS_TOOLBAR);
-  EXPECT_TRUE(app_menu_button_->HasFocus());
+  EXPECT_TRUE(web_app_menu_button_->HasFocus());
 }
 
 // Tests that the focus toolbar command focuses content settings icons before
-// the app menu button when present in web app windows.
-IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest,
+// the app menu button when present in web-app windows.
+IN_PROC_BROWSER_TEST_P(WebAppNonClientFrameViewAshTest,
                        BrowserCommandFocusToolbarGeolocation) {
-  SetUpHostedApp();
+  SetUpWebApp();
   ContentSettingImageView* geolocation_icon = GrantGeolocationPermission();
 
-  EXPECT_FALSE(app_menu_button_->HasFocus());
+  EXPECT_FALSE(web_app_menu_button_->HasFocus());
   EXPECT_FALSE(geolocation_icon->HasFocus());
 
   chrome::ExecuteCommand(app_browser_, IDC_FOCUS_TOOLBAR);
 
-  EXPECT_FALSE(app_menu_button_->HasFocus());
+  EXPECT_FALSE(web_app_menu_button_->HasFocus());
   EXPECT_TRUE(geolocation_icon->HasFocus());
 }
 
-// Tests that the show app menu command opens the app menu for web app windows.
-IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest,
+// Tests that the show app menu command opens the app menu for web-app windows.
+IN_PROC_BROWSER_TEST_P(WebAppNonClientFrameViewAshTest,
                        BrowserCommandShowAppMenu) {
-  SetUpHostedApp();
+  SetUpWebApp();
   EXPECT_EQ(nullptr, GetAppMenu());
   chrome::ExecuteCommand(app_browser_, IDC_SHOW_APP_MENU);
   EXPECT_NE(nullptr, GetAppMenu());
 }
 
-// Tests that the focus next pane command focuses the app menu for web app
+// Tests that the focus next pane command focuses the app menu for web-app
 // windows.
-IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest,
+IN_PROC_BROWSER_TEST_P(WebAppNonClientFrameViewAshTest,
                        BrowserCommandFocusNextPane) {
-  SetUpHostedApp();
-  EXPECT_FALSE(app_menu_button_->HasFocus());
+  SetUpWebApp();
+  EXPECT_FALSE(web_app_menu_button_->HasFocus());
   chrome::ExecuteCommand(app_browser_, IDC_FOCUS_NEXT_PANE);
-  EXPECT_TRUE(app_menu_button_->HasFocus());
+  EXPECT_TRUE(web_app_menu_button_->HasFocus());
 }
 
 // Tests that the custom tab bar is focusable from the keyboard.
-IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest,
+IN_PROC_BROWSER_TEST_P(WebAppNonClientFrameViewAshTest,
                        CustomTabBarIsFocusable) {
-  SetUpHostedApp();
+  SetUpWebApp();
 
   auto* browser_view = BrowserView::GetBrowserViewForBrowser(app_browser_);
 
@@ -1077,27 +1086,26 @@ IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest,
   auto* custom_tab_bar = browser_view->toolbar()->custom_tab_bar();
 
   chrome::ExecuteCommand(app_browser_, IDC_FOCUS_NEXT_PANE);
-  ASSERT_TRUE(app_menu_button_->HasFocus());
+  ASSERT_TRUE(web_app_menu_button_->HasFocus());
 
   EXPECT_FALSE(custom_tab_bar->close_button_for_testing()->HasFocus());
   chrome::ExecuteCommand(app_browser_, IDC_FOCUS_NEXT_PANE);
   EXPECT_TRUE(custom_tab_bar->close_button_for_testing()->HasFocus());
 }
 
-// Tests that the focus previous pane command focuses the app menu for web app
+// Tests that the focus previous pane command focuses the app menu for web-app
 // windows.
-IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest,
+IN_PROC_BROWSER_TEST_P(WebAppNonClientFrameViewAshTest,
                        BrowserCommandFocusPreviousPane) {
-  SetUpHostedApp();
-  EXPECT_FALSE(app_menu_button_->HasFocus());
+  SetUpWebApp();
+  EXPECT_FALSE(web_app_menu_button_->HasFocus());
   chrome::ExecuteCommand(app_browser_, IDC_FOCUS_PREVIOUS_PANE);
-  EXPECT_TRUE(app_menu_button_->HasFocus());
+  EXPECT_TRUE(web_app_menu_button_->HasFocus());
 }
 
 // Tests that a web app's content settings icons can be interacted with.
-IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest,
-                       ContentSettingIcons) {
-  SetUpHostedApp();
+IN_PROC_BROWSER_TEST_P(WebAppNonClientFrameViewAshTest, ContentSettingIcons) {
+  SetUpWebApp();
   for (auto* view : *content_setting_views_)
     EXPECT_FALSE(view->GetVisible());
 
@@ -1124,8 +1132,8 @@ IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest,
 }
 
 // Tests that a web app's browser action icons can be interacted with.
-IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest, BrowserActions) {
-  SetUpHostedApp();
+IN_PROC_BROWSER_TEST_P(WebAppNonClientFrameViewAshTest, BrowserActions) {
+  SetUpWebApp();
   // Even though 2 are visible in the browser, no extension actions should show.
   ToolbarActionsBar* toolbar_actions_bar =
       browser_actions_container_->toolbar_actions_bar();
@@ -1134,7 +1142,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest, BrowserActions) {
   EXPECT_EQ(0u, browser_actions_container_->VisibleBrowserActions());
 
   // Show the menu.
-  SimulateClickOnView(app_menu_button_);
+  SimulateClickOnView(web_app_menu_button_);
 
   // All extension actions should always be showing in the menu.
   EXPECT_EQ(3u, GetAppMenu()
@@ -1149,9 +1157,9 @@ IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest, BrowserActions) {
 }
 
 // Regression test for https://crbug.com/839955
-IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest,
+IN_PROC_BROWSER_TEST_P(WebAppNonClientFrameViewAshTest,
                        ActiveStateOfButtonMatchesWidget) {
-  SetUpHostedApp();
+  SetUpWebApp();
   ash::FrameCaptionButtonContainerView::TestApi test(
       GetFrameViewAsh(browser_view_)->caption_button_container_);
   EXPECT_TRUE(test.size_button()->paint_as_active());
@@ -1272,15 +1280,17 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
   EXPECT_FALSE(frame_view->caption_button_container_->GetVisible());
   EndOverview();
   EXPECT_FALSE(frame_view->caption_button_container_->GetVisible());
-  ash::Shell::Get()->split_view_controller()->SnapWindow(
-      widget->GetNativeWindow(), ash::SplitViewController::LEFT);
+  ash::SplitViewTestApi().SnapWindow(widget->GetNativeWindow(),
+                                     ash::SplitViewTestApi::SnapPosition::LEFT);
   EXPECT_FALSE(frame_view->caption_button_container_->GetVisible());
 }
 
 // Test that for a browser app window, its caption buttons may or may not hide
 // in tablet mode.
+// Disable due to use-of-uninitialized value error on ChromeOS.
+// https://crbug.com/1028336.
 IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
-                       AppHeaderVisibilityInTabletModeTest) {
+                       DISABLED_AppHeaderVisibilityInTabletModeTest) {
   // Create a browser app window.
   Browser::CreateParams params = Browser::CreateParams::CreateForApp(
       "test_browser_app", true /* trusted_source */, gfx::Rect(),
@@ -1308,8 +1318,8 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
   EndOverview();
   EXPECT_TRUE(frame_view2->caption_button_container_->GetVisible());
 
-  ash::Shell::Get()->split_view_controller()->SnapWindow(
-      widget2->GetNativeWindow(), ash::SplitViewController::RIGHT);
+  ash::SplitViewTestApi().SnapWindow(
+      widget2->GetNativeWindow(), ash::SplitViewTestApi::SnapPosition::RIGHT);
   EXPECT_TRUE(frame_view2->caption_button_container_->GetVisible());
 }
 
@@ -1468,10 +1478,10 @@ IN_PROC_BROWSER_TEST_P(HomeLauncherBrowserNonClientFrameViewAshTest,
 }
 
 #define INSTANTIATE_TEST_SUITE(name) \
-  INSTANTIATE_TEST_SUITE_P(, name, ::testing::Values(false, true))
+  INSTANTIATE_TEST_SUITE_P(All, name, ::testing::Values(false, true))
 
 INSTANTIATE_TEST_SUITE(BrowserNonClientFrameViewAshTest);
 INSTANTIATE_TEST_SUITE(ImmersiveModeBrowserViewTest);
-INSTANTIATE_TEST_SUITE(HostedAppNonClientFrameViewAshTest);
+INSTANTIATE_TEST_SUITE(WebAppNonClientFrameViewAshTest);
 INSTANTIATE_TEST_SUITE(BrowserNonClientFrameViewAshBackButtonTest);
 INSTANTIATE_TEST_SUITE(HomeLauncherBrowserNonClientFrameViewAshTest);

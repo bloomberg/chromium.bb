@@ -46,13 +46,13 @@ class TestRenderFrameObserver : public content::RenderFrameObserver {
   void DidStartNavigation(
       const GURL& url,
       base::Optional<blink::WebNavigationType> navigation_type) override {
-    if (test_runner()->shouldDumpFrameLoadCallbacks()) {
+    if (test_runner()->ShouldDumpFrameLoadCallbacks()) {
       WebFrameTestClient::PrintFrameDescription(delegate(),
                                                 render_frame()->GetWebFrame());
       delegate()->PrintMessage(" - DidStartNavigation\n");
     }
 
-    if (test_runner()->shouldDumpUserGestureInFrameLoadCallbacks()) {
+    if (test_runner()->ShouldDumpUserGestureInFrameLoadCallbacks()) {
       PrintFrameUserGestureStatus(delegate(), render_frame()->GetWebFrame(),
                                   " - in DidStartNavigation\n");
     }
@@ -60,15 +60,15 @@ class TestRenderFrameObserver : public content::RenderFrameObserver {
 
   void ReadyToCommitNavigation(
       blink::WebDocumentLoader* document_loader) override {
-    if (test_runner()->shouldDumpFrameLoadCallbacks()) {
+    if (test_runner()->ShouldDumpFrameLoadCallbacks()) {
       WebFrameTestClient::PrintFrameDescription(delegate(),
                                                 render_frame()->GetWebFrame());
       delegate()->PrintMessage(" - ReadyToCommitNavigation\n");
     }
   }
 
-  void DidFailProvisionalLoad(const blink::WebURLError& error) override {
-    if (test_runner()->shouldDumpFrameLoadCallbacks()) {
+  void DidFailProvisionalLoad() override {
+    if (test_runner()->ShouldDumpFrameLoadCallbacks()) {
       WebFrameTestClient::PrintFrameDescription(delegate(),
                                                 render_frame()->GetWebFrame());
       delegate()->PrintMessage(" - didFailProvisionalLoadWithError\n");
@@ -77,7 +77,7 @@ class TestRenderFrameObserver : public content::RenderFrameObserver {
 
   void DidCommitProvisionalLoad(bool is_same_document_navigation,
                                 ui::PageTransition transition) override {
-    if (test_runner()->shouldDumpFrameLoadCallbacks()) {
+    if (test_runner()->ShouldDumpFrameLoadCallbacks()) {
       WebFrameTestClient::PrintFrameDescription(delegate(),
                                                 render_frame()->GetWebFrame());
       delegate()->PrintMessage(" - didCommitLoadForFrame\n");
@@ -85,7 +85,7 @@ class TestRenderFrameObserver : public content::RenderFrameObserver {
   }
 
   void DidFinishDocumentLoad() override {
-    if (test_runner()->shouldDumpFrameLoadCallbacks()) {
+    if (test_runner()->ShouldDumpFrameLoadCallbacks()) {
       WebFrameTestClient::PrintFrameDescription(delegate(),
                                                 render_frame()->GetWebFrame());
       delegate()->PrintMessage(" - didFinishDocumentLoadForFrame\n");
@@ -93,7 +93,7 @@ class TestRenderFrameObserver : public content::RenderFrameObserver {
   }
 
   void DidFinishLoad() override {
-    if (test_runner()->shouldDumpFrameLoadCallbacks()) {
+    if (test_runner()->ShouldDumpFrameLoadCallbacks()) {
       WebFrameTestClient::PrintFrameDescription(delegate(),
                                                 render_frame()->GetWebFrame());
       delegate()->PrintMessage(" - didFinishLoadForFrame\n");
@@ -101,7 +101,7 @@ class TestRenderFrameObserver : public content::RenderFrameObserver {
   }
 
   void DidHandleOnloadEvents() override {
-    if (test_runner()->shouldDumpFrameLoadCallbacks()) {
+    if (test_runner()->ShouldDumpFrameLoadCallbacks()) {
       WebFrameTestClient::PrintFrameDescription(delegate(),
                                                 render_frame()->GetWebFrame());
       delegate()->PrintMessage(" - didHandleOnloadEventsForFrame\n");
@@ -157,8 +157,7 @@ void WebFrameTestProxy::DidAddMessageToConsole(
 
 void WebFrameTestProxy::DownloadURL(
     const blink::WebURLRequest& request,
-    blink::WebLocalFrameClient::CrossOriginRedirects
-        cross_origin_redirect_behavior,
+    network::mojom::RedirectMode cross_origin_redirect_behavior,
     mojo::ScopedMessagePipeHandle blob_url_token) {
   test_client_->DownloadURL(request, cross_origin_redirect_behavior,
                             mojo::ScopedMessagePipeHandle());

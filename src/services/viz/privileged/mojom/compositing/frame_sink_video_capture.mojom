@@ -46,7 +46,8 @@ interface FrameSinkVideoConsumer {
   OnFrameCaptured(mojo_base.mojom.ReadOnlySharedMemoryRegion data,
                   media.mojom.VideoFrameInfo info,
                   gfx.mojom.Rect content_rect,
-                  FrameSinkVideoConsumerFrameCallbacks callbacks);
+                  pending_remote<FrameSinkVideoConsumerFrameCallbacks>
+                      callbacks);
 
   // Indicates that OnFrameCaptured() will not be called again, an end-of-stream
   // signal.
@@ -121,7 +122,7 @@ interface FrameSinkVideoCapturer {
   ChangeTarget(FrameSinkId? frame_sink_id);
 
   // Starts emitting video frames to the given |consumer|.
-  Start(FrameSinkVideoConsumer consumer);
+  Start(pending_remote<FrameSinkVideoConsumer> consumer);
 
   // Stops capturing "soon." Meaning, no new frame captures will be started, but
   // there may already be some in-flight for delivery. Wait for the "end of
@@ -138,7 +139,8 @@ interface FrameSinkVideoCapturer {
   // "on top of" those with lesser values. Specifying the same index as an
   // existing overlay will cause the existing one to be dropped and replaced
   // with a new one.
-  CreateOverlay(int32 stacking_index, FrameSinkVideoCaptureOverlay& request);
+  CreateOverlay(int32 stacking_index,
+                pending_receiver<FrameSinkVideoCaptureOverlay> receiver);
 };
 
 // Control interface for a small image to be composited on top of each captured

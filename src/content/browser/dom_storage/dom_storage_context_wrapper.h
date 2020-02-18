@@ -8,27 +8,24 @@
 #include <map>
 #include <string>
 
+#include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
 #include "base/thread_annotations.h"
-#include "components/services/leveldb/public/mojom/leveldb.mojom.h"
+#include "components/services/storage/public/mojom/local_storage_control.mojom.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/dom_storage_context.h"
 #include "mojo/public/cpp/bindings/message.h"
-#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/dom_storage/session_storage_namespace.mojom.h"
 #include "third_party/blink/public/mojom/dom_storage/storage_area.mojom.h"
 
 namespace base {
 class FilePath;
-}
-
-namespace service_manager {
-class Connector;
 }
 
 namespace storage {
@@ -37,7 +34,6 @@ class SpecialStoragePolicy;
 
 namespace content {
 
-class LocalStorageContextMojo;
 class SessionStorageContextMojo;
 class SessionStorageNamespaceImpl;
 
@@ -64,16 +60,16 @@ class CONTENT_EXPORT DOMStorageContextWrapper
 
   // If |profile_path| is empty, nothing will be saved to disk.
   static scoped_refptr<DOMStorageContextWrapper> Create(
-      service_manager::Connector* connector,
       const base::FilePath& profile_path,
       const base::FilePath& local_partition_path,
       storage::SpecialStoragePolicy* special_storage_policy);
 
   DOMStorageContextWrapper(
-      base::FilePath legacy_local_storage_path,
       scoped_refptr<base::SequencedTaskRunner> mojo_task_runner,
-      LocalStorageContextMojo* mojo_local_storage_context,
-      SessionStorageContextMojo* mojo_session_storage_context);
+      SessionStorageContextMojo* mojo_session_storage_context,
+      mojo::Remote<storage::mojom::LocalStorageControl> local_storage_control);
+
+  storage::mojom::LocalStorageControl* GetLocalStorageControl();
 
   // DOMStorageContext implementation.
   void GetLocalStorageUsage(GetLocalStorageUsageCallback callback) override;
@@ -99,7 +95,6 @@ class CONTENT_EXPORT DOMStorageContextWrapper
 
   void Flush();
 
-  // See mojom::StoragePartitionService interface.
   void OpenLocalStorage(
       const url::Origin& origin,
       mojo::PendingReceiver<blink::mojom::StorageArea> receiver);
@@ -108,9 +103,6 @@ class CONTENT_EXPORT DOMStorageContextWrapper
       const std::string& namespace_id,
       mojo::ReportBadMessageCallback bad_message_callback,
       mojo::PendingReceiver<blink::mojom::SessionStorageNamespace> receiver);
-
-  void SetLocalStorageDatabaseForTesting(
-      mojo::PendingAssociatedRemote<leveldb::mojom::LevelDBDatabase> database);
 
   SessionStorageContextMojo* mojo_session_state() {
     return mojo_session_state_;
@@ -145,9 +137,8 @@ class CONTENT_EXPORT DOMStorageContextWrapper
   void PurgeMemory(PurgeOption purge_option);
 
   // Keep all mojo-ish details together and not bleed them through the public
-  // interface. The |mojo_state_| object is owned by this object, but destroyed
-  // asynchronously on the |mojo_task_runner_|.
-  LocalStorageContextMojo* mojo_state_ = nullptr;
+  // interface. The |mojo_session_state_| object is owned by this object, but
+  // destroyed asynchronously on the |mojo_task_runner_|.
   SessionStorageContextMojo* mojo_session_state_ = nullptr;
   scoped_refptr<base::SequencedTaskRunner> mojo_task_runner_;
 
@@ -165,10 +156,12 @@ class CONTENT_EXPORT DOMStorageContextWrapper
       GUARDED_BY(alive_namespaces_lock_);
   mutable base::Lock alive_namespaces_lock_;
 
-  base::FilePath legacy_localstorage_path_;
-
   // To receive memory pressure signals.
   std::unique_ptr<base::MemoryPressureListener> memory_pressure_listener_;
+
+  // Connection to the partition's LocalStorageControl interface within the
+  // Storage Service.
+  mojo::Remote<storage::mojom::LocalStorageControl> local_storage_control_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(DOMStorageContextWrapper);
 };

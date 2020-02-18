@@ -8,6 +8,7 @@
 
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/event_rewriter_controller.h"
+#include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/tablet_mode.h"
 #include "ash/public/mojom/constants.mojom.h"
 #include "ash/shell.h"
@@ -16,6 +17,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"
 #include "chrome/browser/chromeos/login/configuration_keys.h"
@@ -44,6 +46,7 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/constants/chromeos_constants.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "components/login/base_screen_handler_utils.h"
 #include "components/login/localized_values_builder.h"
@@ -101,8 +104,8 @@ CoreOobeHandler::CoreOobeHandler(JSCallsContainer* js_calls_container)
   // |connector| may be null in tests.
   auto* connector = content::GetSystemConnector();
   if (connector) {
-    connector->BindInterface(ash::mojom::kServiceName,
-                             &cros_display_config_ptr_);
+    connector->Connect(ash::mojom::kServiceName,
+                       cros_display_config_.BindNewPipeAndPassReceiver());
   }
   OobeConfiguration::Get()->AddAndFireObserver(this);
 }
@@ -250,6 +253,19 @@ void CoreOobeHandler::ShowEnableDebuggingScreen() {
   }
 }
 
+void CoreOobeHandler::ShowEnableAdbSideloadingScreen() {
+  // Don't recreate WizardController if it already exists.
+  WizardController* wizard_controller = WizardController::default_controller();
+  if (wizard_controller && !wizard_controller->login_screen_started()) {
+    wizard_controller->AdvanceToScreen(
+        EnableAdbSideloadingScreenView::kScreenId);
+  } else {
+    DCHECK(LoginDisplayHost::default_host());
+    LoginDisplayHost::default_host()->StartWizard(
+        EnableAdbSideloadingScreenView::kScreenId);
+  }
+}
+
 void CoreOobeHandler::ShowActiveDirectoryPasswordChangeScreen(
     const std::string& username) {
   CallJS("cr.ui.Oobe.showActiveDirectoryPasswordChangeScreen", username);
@@ -303,6 +319,10 @@ void CoreOobeHandler::SetVirtualKeyboardShown(bool shown) {
 
 void CoreOobeHandler::SetClientAreaSize(int width, int height) {
   CallJS("cr.ui.Oobe.setClientAreaSize", width, height);
+}
+
+void CoreOobeHandler::SetShelfHeight(int height) {
+  CallJS("cr.ui.Oobe.setShelfHeight", height);
 }
 
 void CoreOobeHandler::HandleInitialized() {
@@ -546,6 +566,26 @@ void CoreOobeHandler::UpdateClientAreaSize() {
   const gfx::Size size =
       display::Screen::GetScreen()->GetPrimaryDisplay().size();
   SetClientAreaSize(size.width(), size.height());
+  SetShelfHeight(ash::ShelfConfig::Get()->shelf_size());
+}
+
+void CoreOobeHandler::SetDialogPaddingMode(
+    CoreOobeView::DialogPaddingMode mode) {
+  std::string padding;
+  switch (mode) {
+    case CoreOobeView::DialogPaddingMode::MODE_AUTO:
+      padding = "auto";
+      break;
+    case CoreOobeView::DialogPaddingMode::MODE_NARROW:
+      padding = "narrow";
+      break;
+    case CoreOobeView::DialogPaddingMode::MODE_WIDE:
+      padding = "wide";
+      break;
+    default:
+      NOTREACHED();
+  }
+  CallJS("cr.ui.Oobe.setDialogPaddingMode", padding);
 }
 
 void CoreOobeHandler::OnOobeConfigurationChanged() {
@@ -586,7 +626,7 @@ void CoreOobeHandler::HandleGetPrimaryDisplayNameForTesting(
   const base::Value* callback_id;
   CHECK(args->Get(0, &callback_id));
 
-  cros_display_config_ptr_->GetDisplayUnitInfoList(
+  cros_display_config_->GetDisplayUnitInfoList(
       false /* single_unified */,
       base::BindOnce(&CoreOobeHandler::GetPrimaryDisplayNameCallback,
                      weak_ptr_factory_.GetWeakPtr(), callback_id->Clone()));

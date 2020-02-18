@@ -4,11 +4,17 @@
 
 // https://gpuweb.github.io/gpuweb/
 
+typedef unsigned long long GPUBufferSize;
+typedef (sequence<double> or GPUColorDict) GPUColor;
+typedef (sequence<unsigned long> or GPUExtent3DDict) GPUExtent3D;
+typedef (sequence<unsigned long> or GPUOrigin2DDict) GPUOrigin2D;
+typedef (sequence<unsigned long> or GPUOrigin3DDict) GPUOrigin3D;
+
 [
-    RuntimeEnabled=WebGPU
+    Exposed(Window WebGPU, Worker WebGPU)
 ] interface GPU {
     [
       RuntimeEnabled=WebGPU,
       CallWith=ScriptState
-    ] Promise<GPUAdapter> requestAdapter(optional GPURequestAdapterOptions options);
+    ] Promise<GPUAdapter> requestAdapter(optional GPURequestAdapterOptions options = {});
 };

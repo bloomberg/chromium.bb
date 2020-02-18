@@ -40,6 +40,9 @@ class CC_EXPORT BrowserControlsOffsetManager {
   float ContentTopOffset() const;
   float TopControlsShownRatio() const;
   float TopControlsHeight() const;
+  float TopControlsMinHeight() const;
+  // The minimum shown ratio top controls can have.
+  float TopControlsMinShownRatio() const;
 
   // The amount of offset of the web content area, calculating from the bottom.
   // Same as the current shown height of the bottom controls.
@@ -47,10 +50,12 @@ class CC_EXPORT BrowserControlsOffsetManager {
   // Similar to TopControlsHeight(), this method should return a static value.
   // The current animated height should be acquired from ContentBottomOffset().
   float BottomControlsHeight() const;
+  float BottomControlsMinHeight() const;
   float BottomControlsShownRatio() const;
+  // The minimum shown ratio bottom controls can have.
+  float BottomControlsMinShownRatio() const;
 
-  bool has_animation() const { return animation_direction_ != NO_ANIMATION; }
-  AnimationDirection animation_direction() { return animation_direction_; }
+  bool HasAnimation();
 
   void UpdateBrowserControlsState(BrowserControlsState constraints,
                                   BrowserControlsState current,
@@ -58,6 +63,8 @@ class CC_EXPORT BrowserControlsOffsetManager {
 
   BrowserControlsState PullConstraintForMainThread(
       bool* out_changed_since_commit);
+
+  void OnBrowserControlsParamsChanged(bool animate_changes);
 
   void ScrollBegin();
   gfx::Vector2dF ScrollBy(const gfx::Vector2dF& pending_delta);
@@ -81,20 +88,10 @@ class CC_EXPORT BrowserControlsOffsetManager {
   void ResetAnimations();
   void SetupAnimation(AnimationDirection direction);
   void StartAnimationIfNecessary();
-  bool IsAnimationComplete(float new_ratio);
   void ResetBaseline();
 
   // The client manages the lifecycle of this.
   BrowserControlsOffsetManagerClient* client_;
-
-  // animation_initialized_ tracks if we've initialized the start and end
-  // times since that must happen at a BeginFrame.
-  bool animation_initialized_;
-  base::TimeTicks animation_start_time_;
-  float animation_start_value_;
-  base::TimeTicks animation_stop_time_;
-  float animation_stop_value_;
-  AnimationDirection animation_direction_;
 
   BrowserControlsState permitted_state_;
 
@@ -118,6 +115,49 @@ class CC_EXPORT BrowserControlsOffsetManager {
   // Used to track whether the constraint has changed and we need up reflect
   // the changes to Blink.
   bool constraint_changed_since_commit_;
+
+  // Class that holds and manages the state of the controls animations.
+  class Animation {
+   public:
+    Animation() = default;
+
+    // Whether the animation is initialized with a direction and start and stop
+    // values.
+    bool IsInitialized() { return initialized_; }
+    bool Direction() { return direction_; }
+    void Initialize(AnimationDirection direction,
+                    float start_value,
+                    float stop_value);
+    // Returns the animated value for the given monotonic time tick if the
+    // animation is initialized. Otherwise, returns -1.
+    float Tick(base::TimeTicks monotonic_time);
+    // Set the minimum and maximum values the animation can have.
+    void SetBounds(float min, float max);
+    void Reset();
+
+   private:
+    bool IsComplete(float value);
+
+    // Whether the animation is running.
+    bool started_ = false;
+    // Whether the animation is initialized by setting start and stop time and
+    // values.
+    bool initialized_ = false;
+    AnimationDirection direction_ = NO_ANIMATION;
+    // Monotonic start and stop times.
+    base::TimeTicks start_time_;
+    base::TimeTicks stop_time_;
+    // Start and stop values.
+    float start_value_ = 0.f;
+    float stop_value_ = 0.f;
+    // Minimum and maximum values the animation can have, used to decide if the
+    // animation is complete.
+    float min_value_ = 0.f;
+    float max_value_ = 1.f;
+  };
+
+  Animation top_controls_animation_;
+  Animation bottom_controls_animation_;
 };
 
 }  // namespace cc

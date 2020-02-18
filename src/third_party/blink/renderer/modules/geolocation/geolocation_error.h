@@ -30,7 +30,7 @@
 
 namespace blink {
 
-class GeolocationError : public GarbageCollectedFinalized<GeolocationError> {
+class GeolocationError final : public GarbageCollected<GeolocationError> {
  public:
   enum ErrorCode { kPermissionDenied, kPositionUnavailable };
 

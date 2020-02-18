@@ -94,4 +94,14 @@ std::string ExtensionsBrowserClient::GetUserAgent() const {
   return std::string();
 }
 
+bool ExtensionsBrowserClient::ShouldSchemeBypassNavigationChecks(
+    const std::string& scheme) const {
+  return false;
+}
+
+bool ExtensionsBrowserClient::ShouldForceWebRequestExtraHeaders(
+    content::BrowserContext* context) const {
+  return false;
+}
+
 }  // namespace extensions

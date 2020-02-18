@@ -27,36 +27,20 @@
 
 #include "perfetto/base/build_config.h"
 #include "perfetto/base/logging.h"
-#include "perfetto/ext/base/paged_memory.h"
 #include "perfetto/ext/base/string_writer.h"
 #include "perfetto/ext/base/utils.h"
 #include "perfetto/trace_processor/trace_processor.h"
+#include "tools/trace_to_text/utils.h"
 
-// When running in Web Assembly, fflush() is a no-op and the stdio buffering
-// sends progress updates to JS only when a write ends with \n.
-#if PERFETTO_BUILDFLAG(PERFETTO_OS_WASM)
-#define PROGRESS_CHAR "\n"
-#else
-#define PROGRESS_CHAR "\r"
-#endif
+#define FILTER_RAW_EVENTS \
+  " where not (name like \"chrome_event.%\" or name like \"track_event.%\")"
 
 namespace perfetto {
 namespace trace_to_text {
 
 namespace {
 
-// Having an empty traceEvents object is necessary for trace viewer to
-// load the json properly.
-const char kTraceHeader[] = R"({
-  "traceEvents": [],
-)";
-
-const char kTraceFooter[] = R"(\n",
-  "controllerTraceDataKey": "systraceController"
-})";
-
 const char kProcessDumpHeader[] =
-    ""
     "\"androidProcessDump\": "
     "\"PROCESS DUMP\\nUSER           PID  PPID     VSZ    RSS WCHAN  "
     "PC S NAME                        COMM                       \\n";
@@ -64,7 +48,6 @@ const char kProcessDumpHeader[] =
 const char kThreadHeader[] = "USER           PID   TID CMD \\n";
 
 const char kSystemTraceEvents[] =
-    ""
     "  \"systemTraceEvents\": \"";
 
 const char kFtraceHeader[] =
@@ -92,6 +75,13 @@ const char kFtraceJsonHeader[] =
     "#                                    ||| /     delay\\n"
     "#           TASK-PID    TGID   CPU#  ||||    TIMESTAMP  FUNCTION\\n"
     "#              | |        |      |   ||||       |         |\\n";
+
+// The legacy trace viewer requires a clock sync marker to tie ftrace and
+// userspace clocks together. Trace processor already aligned these clocks, so
+// we just emit a clock sync for an equality mapping.
+const char kSystemTraceEventsFooter[] =
+    "\\n<...>-12345 (-----) [000] ...1 0.000000: tracing_mark_write: "
+    "trace_event_clock_sync: parent_ts=0\\n\"";
 
 inline void FormatProcess(uint32_t pid,
                           uint32_t ppid,
@@ -124,11 +114,11 @@ inline void FormatThread(uint32_t tid,
 
 class QueryWriter {
  public:
-  QueryWriter(trace_processor::TraceProcessor* tp, std::ostream* output)
+  QueryWriter(trace_processor::TraceProcessor* tp, TraceWriter* trace_writer)
       : tp_(tp),
         buffer_(base::PagedMemory::Allocate(kBufferSize)),
         global_writer_(static_cast<char*>(buffer_.Get()), kBufferSize),
-        output_(output) {}
+        trace_writer_(trace_writer) {}
 
   template <typename Callback>
   bool RunQuery(const std::string& sql, Callback callback) {
@@ -139,9 +129,9 @@ class QueryWriter {
       callback(&iterator, &line_writer);
 
       if (global_writer_.pos() + line_writer.pos() >= global_writer_.size()) {
-        fprintf(stderr, "Writing row %" PRIu32 PROGRESS_CHAR, rows);
+        fprintf(stderr, "Writing row %" PRIu32 "%c", rows, kProgressChar);
         auto str = global_writer_.GetStringView();
-        output_->write(str.data(), static_cast<std::streamsize>(str.size()));
+        trace_writer_->Write(str.data(), str.size());
         global_writer_.reset();
       }
       global_writer_.AppendStringView(line_writer.GetStringView());
@@ -156,7 +146,7 @@ class QueryWriter {
 
     // Flush any dangling pieces in the global writer.
     auto str = global_writer_.GetStringView();
-    output_->write(str.data(), static_cast<std::streamsize>(str.size()));
+    trace_writer_->Write(str.data(), str.size());
     global_writer_.reset();
     return true;
   }
@@ -167,62 +157,42 @@ class QueryWriter {
   trace_processor::TraceProcessor* tp_ = nullptr;
   base::PagedMemory buffer_;
   base::StringWriter global_writer_;
-  std::ostream* output_ = nullptr;
+  TraceWriter* trace_writer_;
 };
 
 }  // namespace
 
 int TraceToSystrace(std::istream* input,
                     std::ostream* output,
+                    bool compress,
                     Keep truncate_keep,
-                    bool wrap_in_json) {
+                    bool full_sort) {
+  std::unique_ptr<TraceWriter> trace_writer(
+      compress ? new DeflateTraceWriter(output) : new TraceWriter(output));
+
   trace_processor::Config config;
+  config.force_full_sort = full_sort;
   std::unique_ptr<trace_processor::TraceProcessor> tp =
       trace_processor::TraceProcessor::CreateInstance(config);
 
-  // 1MB chunk size seems the best tradeoff on a MacBook Pro 2013 - i7 2.8 GHz.
-  constexpr size_t kChunkSize = 1024 * 1024;
-
-// Printing the status update on stderr can be a perf bottleneck. On WASM print
-// status updates more frequently because it can be slower to parse each chunk.
-#if PERFETTO_BUILDFLAG(PERFETTO_OS_WASM)
-  constexpr int kStderrRate = 1;
-#else
-  constexpr int kStderrRate = 128;
-#endif
-  uint64_t file_size = 0;
-
-  for (int i = 0;; i++) {
-    if (i % kStderrRate == 0) {
-      fprintf(stderr, "Loading trace %.2f MB" PROGRESS_CHAR, file_size / 1.0e6);
-      fflush(stderr);
-    }
-
-    std::unique_ptr<uint8_t[]> buf(new uint8_t[kChunkSize]);
-    input->read(reinterpret_cast<char*>(buf.get()), kChunkSize);
-    if (input->bad()) {
-      PERFETTO_ELOG("Failed when reading trace");
-      return 1;
-    }
-
-    auto rsize = input->gcount();
-    if (rsize <= 0)
-      break;
-    file_size += static_cast<uint64_t>(rsize);
-    tp->Parse(std::move(buf), static_cast<size_t>(rsize));
-  }
+  if (!ReadTrace(tp.get(), input))
+    return 1;
   tp->NotifyEndOfFile();
 
-  fprintf(stderr, "Loaded trace" PROGRESS_CHAR);
-  fflush(stderr);
+  *output << "TRACE:\n";
+  return ExtractSystrace(tp.get(), trace_writer.get(),
+                         /*wrapped_in_json=*/false, truncate_keep);
+}
 
+int ExtractSystrace(trace_processor::TraceProcessor* tp,
+                    TraceWriter* trace_writer,
+                    bool wrapped_in_json,
+                    Keep truncate_keep) {
   using Iterator = trace_processor::TraceProcessor::Iterator;
 
-  QueryWriter q_writer(tp.get(), output);
-  if (wrap_in_json) {
-    *output << kTraceHeader;
-
-    *output << kProcessDumpHeader;
+  QueryWriter q_writer(tp, trace_writer);
+  if (wrapped_in_json) {
+    trace_writer->Write(kProcessDumpHeader);
 
     // Write out all the processes in the trace.
     // TODO(lalitm): change this query to actually use ppid when it is exposed
@@ -240,7 +210,7 @@ int TraceToSystrace(std::istream* input,
     if (!q_writer.RunQuery(kPSql, p_callback))
       return 1;
 
-    *output << kThreadHeader;
+    trace_writer->Write(kThreadHeader);
 
     // Write out all the threads in the trace.
     static const char kTSql[] =
@@ -258,28 +228,29 @@ int TraceToSystrace(std::istream* input,
     if (!q_writer.RunQuery(kTSql, t_callback))
       return 1;
 
-    *output << "\",";
-    *output << kSystemTraceEvents;
-    *output << kFtraceJsonHeader;
+    trace_writer->Write("\",\n");
+    trace_writer->Write(kSystemTraceEvents);
+    trace_writer->Write(kFtraceJsonHeader);
   } else {
-    *output << "TRACE:\n";
-    *output << kFtraceHeader;
+    trace_writer->Write(kFtraceHeader);
   }
 
-  fprintf(stderr, "Converting trace events" PROGRESS_CHAR);
+  fprintf(stderr, "Converting ftrace events%c", kProgressChar);
   fflush(stderr);
 
-  static const char kEstimatSql[] = "select count(1) from raw";
+  static const char kEstimateSql[] =
+      "select count(1) from raw" FILTER_RAW_EVENTS;
   uint32_t raw_events = 0;
   auto e_callback = [&raw_events](Iterator* it, base::StringWriter*) {
     raw_events = static_cast<uint32_t>(it->Get(0).long_value);
   };
-  if (!q_writer.RunQuery(kEstimatSql, e_callback))
+  if (!q_writer.RunQuery(kEstimateSql, e_callback))
     return 1;
 
-  auto raw_callback = [wrap_in_json](Iterator* it, base::StringWriter* writer) {
+  auto raw_callback = [wrapped_in_json](Iterator* it,
+                                        base::StringWriter* writer) {
     const char* line = it->Get(0 /* col */).string_value;
-    if (wrap_in_json) {
+    if (wrapped_in_json) {
       for (uint32_t i = 0; line[i] != '\0'; i++) {
         char c = line[i];
         switch (c) {
@@ -321,28 +292,27 @@ int TraceToSystrace(std::istream* input,
   // and threads.
   const uint32_t max_ftrace_events = (140 * 1024 * 1024) / 130;
 
-  char kEndTrunc[100];
-  sprintf(kEndTrunc,
-          "select to_ftrace(id) from raw limit %d "
-          "offset %d",
-          max_ftrace_events, raw_events - max_ftrace_events);
-  char kStartTruncate[100];
-  sprintf(kStartTruncate, "select to_ftrace(id) from raw limit %d",
-          max_ftrace_events);
+  static const char kRawEventsQuery[] =
+      "select to_ftrace(id) from raw" FILTER_RAW_EVENTS;
 
   if (truncate_keep == Keep::kEnd && raw_events > max_ftrace_events) {
-    if (!q_writer.RunQuery(kEndTrunc, raw_callback))
+    char end_truncate[150];
+    sprintf(end_truncate, "%s limit %d offset %d", kRawEventsQuery,
+            max_ftrace_events, raw_events - max_ftrace_events);
+    if (!q_writer.RunQuery(end_truncate, raw_callback))
       return 1;
   } else if (truncate_keep == Keep::kStart) {
-    if (!q_writer.RunQuery(kStartTruncate, raw_callback))
+    char start_truncate[150];
+    sprintf(start_truncate, "%s limit %d", kRawEventsQuery, max_ftrace_events);
+    if (!q_writer.RunQuery(start_truncate, raw_callback))
       return 1;
   } else {
-    if (!q_writer.RunQuery("select to_ftrace(id) from raw", raw_callback))
+    if (!q_writer.RunQuery(kRawEventsQuery, raw_callback))
       return 1;
   }
 
-  if (wrap_in_json)
-    *output << kTraceFooter;
+  if (wrapped_in_json)
+    trace_writer->Write(kSystemTraceEventsFooter);
 
   return 0;
 }

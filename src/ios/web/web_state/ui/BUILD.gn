@@ -10,6 +10,7 @@ source_set("ui") {
     ":crw_web_view_navigation_proxy",
     "//base",
     "//ios/net",
+    "//ios/third_party/webkit",
     "//ios/web:core",
     "//ios/web/browsing_data",
     "//ios/web/common",
@@ -57,6 +58,9 @@ source_set("ui") {
     "crw_web_request_controller.mm",
     "crw_web_view_proxy_impl.h",
     "crw_web_view_proxy_impl.mm",
+    "crw_web_view_scroll_view_delegate_proxy.h",
+    "crw_web_view_scroll_view_delegate_proxy.mm",
+    "crw_web_view_scroll_view_proxy+internal.h",
     "crw_web_view_scroll_view_proxy.mm",
     "crw_wk_ui_handler.h",
     "crw_wk_ui_handler.mm",
@@ -64,8 +68,6 @@ source_set("ui") {
     "js_window_error_manager.h",
     "js_window_error_manager.mm",
   ]
-
-  libs = [ "WebKit.framework" ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
 }
@@ -75,7 +77,9 @@ source_set("crw_web_view_navigation_proxy") {
     "crw_web_view_navigation_proxy.h",
   ]
 
-  libs = [ "WebKit.framework" ]
+  deps = [
+    "//ios/third_party/webkit",
+  ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
 }
@@ -104,6 +108,7 @@ source_set("crw_context_menu_controller") {
 source_set("wk_web_view_configuration_provider") {
   deps = [
     "//base",
+    "//ios/third_party/webkit",
     "//ios/web/common",
     "//ios/web/js_messaging",
     "//ios/web/public",
@@ -116,8 +121,6 @@ source_set("wk_web_view_configuration_provider") {
     "wk_web_view_configuration_provider.mm",
     "wk_web_view_configuration_provider_observer.h",
   ]
-
-  libs = [ "WebKit.framework" ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
 }

@@ -6,19 +6,20 @@ package com.android.webview.chromium;
 
 import android.content.Context;
 import android.os.Build;
-import android.support.annotation.Nullable;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+
+import androidx.annotation.Nullable;
 
 import com.android.webview.chromium.WebViewDelegateFactory.WebViewDelegate;
 
 import org.chromium.android_webview.AwContentsClient;
 import org.chromium.android_webview.AwHistogramRecorder;
 import org.chromium.android_webview.AwRenderProcess;
-import org.chromium.android_webview.AwSafeBrowsingResponse;
 import org.chromium.android_webview.AwWebResourceResponse;
 import org.chromium.android_webview.SafeBrowsingAction;
+import org.chromium.android_webview.safe_browsing.AwSafeBrowsingResponse;
 import org.chromium.base.Callback;
 import org.chromium.base.Log;
 import org.chromium.base.TraceEvent;
@@ -254,13 +255,15 @@ abstract class SharedWebViewContentsClientAdapter extends AwContentsClient {
 
     @Override
     public void onRendererUnresponsive(final AwRenderProcess renderProcess) {
-        if (mWebViewRendererClientAdapter != null)
+        if (mWebViewRendererClientAdapter != null) {
             mWebViewRendererClientAdapter.onRendererUnresponsive(mWebView, renderProcess);
+        }
     }
 
     @Override
     public void onRendererResponsive(final AwRenderProcess renderProcess) {
-        if (mWebViewRendererClientAdapter != null)
+        if (mWebViewRendererClientAdapter != null) {
             mWebViewRendererClientAdapter.onRendererResponsive(mWebView, renderProcess);
+        }
     }
 }

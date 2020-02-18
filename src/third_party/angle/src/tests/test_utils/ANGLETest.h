@@ -16,11 +16,11 @@
 
 #include "angle_test_configs.h"
 #include "common/angleutils.h"
+#include "common/system_utils.h"
 #include "common/vector_utils.h"
 #include "platform/Platform.h"
 #include "util/EGLWindow.h"
 #include "util/shader_utils.h"
-#include "util/system_utils.h"
 #include "util/util_gl.h"
 
 namespace angle
@@ -123,6 +123,15 @@ struct GLColor
     static const GLColor magenta;
 };
 
+struct GLColor16UI
+{
+    constexpr GLColor16UI() : GLColor16UI(0, 0, 0, 0) {}
+    constexpr GLColor16UI(GLushort r, GLushort g, GLushort b, GLushort a) : R(r), G(g), B(b), A(a)
+    {}
+
+    GLushort R, G, B, A;
+};
+
 struct GLColor32F
 {
     constexpr GLColor32F() : GLColor32F(0.0f, 0.0f, 0.0f, 0.0f) {}
@@ -167,6 +176,11 @@ GLColor32F MakeGLColor32F(TR r, TG g, TB b, TA a)
 bool operator==(const GLColor32F &a, const GLColor32F &b);
 std::ostream &operator<<(std::ostream &ostream, const GLColor32F &color);
 GLColor32F ReadColor32F(GLint x, GLint y);
+
+constexpr std::array<GLenum, 6> kCubeFaces = {
+    {GL_TEXTURE_CUBE_MAP_POSITIVE_X, GL_TEXTURE_CUBE_MAP_NEGATIVE_X, GL_TEXTURE_CUBE_MAP_POSITIVE_Y,
+     GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, GL_TEXTURE_CUBE_MAP_POSITIVE_Z,
+     GL_TEXTURE_CUBE_MAP_NEGATIVE_Z}};
 
 }  // namespace angle
 
@@ -223,6 +237,17 @@ GLColor32F ReadColor32F(GLint x, GLint y);
         EXPECT_EQ((a), pixel[3]);                                     \
     } while (0)
 
+#define EXPECT_PIXEL_RGB_EQ_HELPER(x, y, r, g, b, ctype, format, type) \
+    do                                                                 \
+    {                                                                  \
+        ctype pixel[4];                                                \
+        glReadPixels((x), (y), 1, 1, format, type, pixel);             \
+        EXPECT_GL_NO_ERROR();                                          \
+        EXPECT_EQ((r), pixel[0]);                                      \
+        EXPECT_EQ((g), pixel[1]);                                      \
+        EXPECT_EQ((b), pixel[2]);                                      \
+    } while (0)
+
 #define EXPECT_PIXEL_NEAR(x, y, r, g, b, a, abs_error) \
     EXPECT_PIXEL_NEAR_HELPER(x, y, r, g, b, a, abs_error, GLubyte, GL_RGBA, GL_UNSIGNED_BYTE)
 
@@ -234,6 +259,15 @@ GLColor32F ReadColor32F(GLint x, GLint y);
 
 #define EXPECT_PIXEL_8UI(x, y, r, g, b, a) \
     EXPECT_PIXEL_EQ_HELPER(x, y, r, g, b, a, GLubyte, GL_RGBA_INTEGER, GL_UNSIGNED_BYTE)
+
+#define EXPECT_PIXEL_16UI(x, y, r, g, b, a) \
+    EXPECT_PIXEL_EQ_HELPER(x, y, r, g, b, a, GLushort, GL_RGBA, GL_UNSIGNED_SHORT)
+
+#define EXPECT_PIXEL_16UI_COLOR(x, y, color) \
+    EXPECT_PIXEL_16UI(x, y, color.R, color.G, color.B, color.A)
+
+#define EXPECT_PIXEL_RGB_EQUAL(x, y, r, g, b) \
+    EXPECT_PIXEL_RGB_EQ_HELPER(x, y, r, g, b, GLubyte, GL_RGBA, GL_UNSIGNED_BYTE)
 
 // TODO(jmadill): Figure out how we can use GLColor's nice printing with EXPECT_NEAR.
 #define EXPECT_PIXEL_COLOR_NEAR(x, y, angleColor, abs_error) \
@@ -291,6 +325,12 @@ class ANGLETestBase
     virtual void overrideFeaturesVk(angle::FeaturesVk *featuresVulkan) {}
 
     static void ReleaseFixtures();
+
+    bool isSwiftshader() const
+    {
+        return mCurrentParams->eglParameters.deviceType ==
+               EGL_PLATFORM_ANGLE_DEVICE_TYPE_SWIFTSHADER_ANGLE;
+    }
 
   protected:
     void ANGLETestSetUp();
@@ -430,6 +470,14 @@ class ANGLETestBase
         return mCurrentParams->getRenderer() == EGL_PLATFORM_ANGLE_TYPE_VULKAN_ANGLE;
     }
 
+    bool isVulkanSwiftshaderRenderer() const
+    {
+        return mCurrentParams->getRenderer() == EGL_PLATFORM_ANGLE_TYPE_VULKAN_ANGLE &&
+               mCurrentParams->getDeviceType() == EGL_PLATFORM_ANGLE_DEVICE_TYPE_SWIFTSHADER_ANGLE;
+    }
+
+    bool platformSupportsMultithreading() const;
+
   private:
     void checkD3D11SDKLayersMessages();
 
@@ -562,6 +610,7 @@ bool IsOpenGLES();
 bool IsOpenGL();
 bool IsNULL();
 bool IsVulkan();
+bool IsMetal();
 
 // Debug/Release
 bool IsDebug();
@@ -575,5 +624,15 @@ bool IsGLExtensionEnabled(const std::string &extName);
 bool IsGLExtensionRequestable(const std::string &extName);
 
 extern angle::PlatformMethods gDefaultPlatformMethods;
+
+#define ANGLE_SKIP_TEST_IF(COND)                                  \
+    do                                                            \
+    {                                                             \
+        if (COND)                                                 \
+        {                                                         \
+            std::cout << "Test skipped: " #COND "." << std::endl; \
+            return;                                               \
+        }                                                         \
+    } while (0)
 
 #endif  // ANGLE_TESTS_ANGLE_TEST_H_

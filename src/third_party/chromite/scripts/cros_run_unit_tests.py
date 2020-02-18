@@ -68,9 +68,10 @@ def ParseArgs(argv):
 
 def determine_board_packages(sysroot, virtual_packages):
   """Returns a set of the dependencies for the given packages"""
-  deps = cros_extract_deps.ExtractDeps(sysroot, virtual_packages)
-  return set('%s/%s' % (atom['category'], atom['name'])
-             for atom in deps.values())
+  deps, _bdeps = cros_extract_deps.ExtractDeps(
+      sysroot, virtual_packages, include_bdepend=False)
+  return set(
+      '%s/%s' % (atom['category'], atom['name']) for atom in deps.values())
 
 
 def main(argv):

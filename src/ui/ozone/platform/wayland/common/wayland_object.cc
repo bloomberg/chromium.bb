@@ -4,11 +4,13 @@
 
 #include "ui/ozone/platform/wayland/common/wayland_object.h"
 
+#include <gtk-primary-selection-client-protocol.h>
 #include <linux-dmabuf-unstable-v1-client-protocol.h>
 #include <presentation-time-client-protocol.h>
 #include <text-input-unstable-v1-client-protocol.h>
 #include <wayland-client.h>
-#include <xdg-shell-unstable-v5-client-protocol.h>
+#include <wayland-drm-client-protocol.h>
+#include <xdg-shell-client-protocol.h>
 #include <xdg-shell-unstable-v6-client-protocol.h>
 
 namespace wl {
@@ -53,6 +55,28 @@ void delete_data_device(wl_data_device* data_device) {
 
 }  // namespace
 
+const wl_interface*
+    ObjectTraits<gtk_primary_selection_device_manager>::interface =
+        &gtk_primary_selection_device_manager_interface;
+void (*ObjectTraits<gtk_primary_selection_device_manager>::deleter)(
+    gtk_primary_selection_device_manager*) =
+    &gtk_primary_selection_device_manager_destroy;
+
+const wl_interface* ObjectTraits<gtk_primary_selection_device>::interface =
+    &gtk_primary_selection_device_interface;
+void (*ObjectTraits<gtk_primary_selection_device>::deleter)(
+    gtk_primary_selection_device*) = &gtk_primary_selection_device_destroy;
+
+const wl_interface* ObjectTraits<gtk_primary_selection_offer>::interface =
+    &gtk_primary_selection_offer_interface;
+void (*ObjectTraits<gtk_primary_selection_offer>::deleter)(
+    gtk_primary_selection_offer*) = &gtk_primary_selection_offer_destroy;
+
+const wl_interface* ObjectTraits<gtk_primary_selection_source>::interface =
+    &gtk_primary_selection_source_interface;
+void (*ObjectTraits<gtk_primary_selection_source>::deleter)(
+    gtk_primary_selection_source*) = &gtk_primary_selection_source_destroy;
+
 const wl_interface* ObjectTraits<wl_buffer>::interface = &wl_buffer_interface;
 void (*ObjectTraits<wl_buffer>::deleter)(wl_buffer*) = &wl_buffer_destroy;
 
@@ -84,6 +108,9 @@ const wl_interface* ObjectTraits<wl_data_source>::interface =
     &wl_data_source_interface;
 void (*ObjectTraits<wl_data_source>::deleter)(wl_data_source*) =
     &wl_data_source_destroy;
+
+const wl_interface* ObjectTraits<wl_drm>::interface = &wl_drm_interface;
+void (*ObjectTraits<wl_drm>::deleter)(wl_drm*) = &wl_drm_destroy;
 
 const wl_interface* ObjectTraits<wl_display>::interface = &wl_display_interface;
 void (*ObjectTraits<wl_display>::deleter)(wl_display*) = &wl_display_disconnect;
@@ -141,15 +168,26 @@ const wl_interface* ObjectTraits<struct wp_presentation_feedback>::interface =
 void (*ObjectTraits<struct wp_presentation_feedback>::deleter)(
     struct wp_presentation_feedback*) = &wp_presentation_feedback_destroy;
 
-const wl_interface* ObjectTraits<xdg_shell>::interface = &xdg_shell_interface;
-void (*ObjectTraits<xdg_shell>::deleter)(xdg_shell*) = &xdg_shell_destroy;
+const wl_interface* ObjectTraits<xdg_wm_base>::interface =
+    &xdg_wm_base_interface;
+void (*ObjectTraits<xdg_wm_base>::deleter)(xdg_wm_base*) = &xdg_wm_base_destroy;
 
 const wl_interface* ObjectTraits<xdg_surface>::interface =
     &xdg_surface_interface;
 void (*ObjectTraits<xdg_surface>::deleter)(xdg_surface*) = &xdg_surface_destroy;
 
+const wl_interface* ObjectTraits<xdg_toplevel>::interface =
+    &xdg_toplevel_interface;
+void (*ObjectTraits<xdg_toplevel>::deleter)(xdg_toplevel*) =
+    &xdg_toplevel_destroy;
+
 const wl_interface* ObjectTraits<xdg_popup>::interface = &xdg_popup_interface;
 void (*ObjectTraits<xdg_popup>::deleter)(xdg_popup*) = &xdg_popup_destroy;
+
+const wl_interface* ObjectTraits<xdg_positioner>::interface =
+    &xdg_positioner_interface;
+void (*ObjectTraits<xdg_positioner>::deleter)(xdg_positioner*) =
+    &xdg_positioner_destroy;
 
 const wl_interface* ObjectTraits<zwp_linux_dmabuf_v1>::interface =
     &zwp_linux_dmabuf_v1_interface;

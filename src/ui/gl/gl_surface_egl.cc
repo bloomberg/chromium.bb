@@ -20,8 +20,10 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/system/sys_info.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
+#include "ui/events/platform/platform_event_source.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/gpu_fence.h"
 #include "ui/gl/angle_platform_impl.h"
@@ -37,9 +39,9 @@
 #include "ui/gl/sync_control_vsync_provider.h"
 
 #if defined(USE_X11)
-#include "ui/gfx/x/x11.h"
-
+#include "ui/base/x/x11_display_util.h"
 #include "ui/base/x/x11_util_internal.h"  // nogncheck
+#include "ui/gfx/x/x11.h"
 #endif
 
 #if defined(OS_ANDROID)
@@ -80,6 +82,7 @@
 #define EGL_PLATFORM_ANGLE_DEVICE_TYPE_ANGLE 0x3209
 #define EGL_PLATFORM_ANGLE_DEVICE_TYPE_HARDWARE_ANGLE 0x320A
 #define EGL_PLATFORM_ANGLE_DEVICE_TYPE_NULL_ANGLE 0x345E
+#define EGL_PLATFORM_ANGLE_DEVICE_TYPE_SWIFTSHADER_ANGLE 0x3487
 #endif /* EGL_ANGLE_platform_angle */
 
 #ifndef EGL_ANGLE_platform_angle_d3d
@@ -89,6 +92,11 @@
 #define EGL_PLATFORM_ANGLE_DEVICE_TYPE_D3D_WARP_ANGLE 0x320B
 #define EGL_PLATFORM_ANGLE_DEVICE_TYPE_D3D_REFERENCE_ANGLE 0x320C
 #endif /* EGL_ANGLE_platform_angle_d3d */
+
+#ifndef EGL_ANGLE_platform_angle_d3d11on12
+#define EGL_ANGLE_platform_angle_d3d11on12 1
+#define EGL_PLATFORM_ANGLE_D3D11ON12_ANGLE 0x3488
+#endif /* EGL_ANGLE_platform_angle_d3d11on12 */
 
 #ifndef EGL_ANGLE_platform_angle_opengl
 #define EGL_ANGLE_platform_angle_opengl 1
@@ -145,9 +153,12 @@
 #define EGL_FEATURE_COUNT_ANGLE 0x3465
 #define EGL_FEATURE_OVERRIDES_ENABLED_ANGLE 0x3466
 #define EGL_FEATURE_OVERRIDES_DISABLED_ANGLE 0x3467
+#define EGL_FEATURE_ALL_DISABLED_ANGLE 0x3469
 #endif /* EGL_ANGLE_feature_control */
 
 using ui::GetLastEGLErrorString;
+using ui::PlatformEvent;
+using ui::PlatformEventSource;
 
 namespace gl {
 
@@ -191,6 +202,37 @@ struct TraceSwapEventsInitializer {
 
 static base::LazyInstance<TraceSwapEventsInitializer>::Leaky
     g_trace_swap_enabled = LAZY_INSTANCE_INITIALIZER;
+
+#if defined(USE_X11)
+class XrandrIntervalOnlyVSyncProvider : public gfx::VSyncProvider {
+ public:
+  XrandrIntervalOnlyVSyncProvider(Display* display)
+      : display_(display), interval_(base::TimeDelta::FromSeconds(1 / 60.)) {}
+
+  void GetVSyncParameters(UpdateVSyncCallback callback) override {
+    if (++calls_since_last_update_ >= kCallsBetweenUpdates) {
+      calls_since_last_update_ = 0;
+      interval_ = ui::GetPrimaryDisplayRefreshIntervalFromXrandr(display_);
+    }
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(std::move(callback), base::TimeTicks(), interval_));
+  }
+
+  bool GetVSyncParametersIfAvailable(base::TimeTicks* timebase,
+                                     base::TimeDelta* interval) override {
+    return false;
+  }
+  bool SupportGetVSyncParametersIfAvailable() const override { return false; }
+  bool IsHWClock() const override { return false; }
+
+ private:
+  Display* const display_ = nullptr;
+  base::TimeDelta interval_;
+  static const int kCallsBetweenUpdates = 100;
+  int calls_since_last_update_ = kCallsBetweenUpdates;
+};
+#endif
 
 class EGLSyncControlVSyncProvider : public SyncControlVSyncProvider {
  public:
@@ -256,24 +298,13 @@ std::vector<std::string> GetStringVectorFromCommandLine(
 EGLDisplay GetPlatformANGLEDisplay(
     EGLNativeDisplayType native_display,
     EGLenum platform_type,
-    bool warpDevice,
-    bool nullDevice,
     const std::vector<std::string>& enabled_features,
-    const std::vector<std::string>& disabled_features) {
-  std::vector<EGLAttrib> display_attribs;
+    const std::vector<std::string>& disabled_features,
+    const std::vector<EGLAttrib>& extra_display_attribs) {
+  std::vector<EGLAttrib> display_attribs(extra_display_attribs);
 
   display_attribs.push_back(EGL_PLATFORM_ANGLE_TYPE_ANGLE);
   display_attribs.push_back(static_cast<EGLAttrib>(platform_type));
-
-  if (warpDevice) {
-    DCHECK(!nullDevice);
-    display_attribs.push_back(EGL_PLATFORM_ANGLE_DEVICE_TYPE_ANGLE);
-    display_attribs.push_back(EGL_PLATFORM_ANGLE_DEVICE_TYPE_D3D_WARP_ANGLE);
-  } else if (nullDevice) {
-    DCHECK(!warpDevice);
-    display_attribs.push_back(EGL_PLATFORM_ANGLE_DEVICE_TYPE_ANGLE);
-    display_attribs.push_back(EGL_PLATFORM_ANGLE_DEVICE_TYPE_NULL_ANGLE);
-  }
 
 #if defined(USE_X11)
   // ANGLE_NULL doesn't use the visual, and may run without X11 where we can't
@@ -317,51 +348,94 @@ EGLDisplay GetDisplayFromType(
     DisplayType display_type,
     EGLNativeDisplayType native_display,
     const std::vector<std::string>& enabled_angle_features,
-    const std::vector<std::string>& disabled_angle_features) {
+    const std::vector<std::string>& disabled_angle_features,
+    bool disable_all_angle_features) {
+  std::vector<EGLAttrib> extra_display_attribs;
+  if (disable_all_angle_features) {
+    extra_display_attribs.push_back(EGL_FEATURE_ALL_DISABLED_ANGLE);
+    extra_display_attribs.push_back(EGL_TRUE);
+  }
   switch (display_type) {
     case DEFAULT:
     case SWIFT_SHADER:
       return eglGetDisplay(native_display);
     case ANGLE_D3D9:
       return GetPlatformANGLEDisplay(
-          native_display, EGL_PLATFORM_ANGLE_TYPE_D3D9_ANGLE, false, false,
-          enabled_angle_features, disabled_angle_features);
+          native_display, EGL_PLATFORM_ANGLE_TYPE_D3D9_ANGLE,
+          enabled_angle_features, disabled_angle_features,
+          extra_display_attribs);
     case ANGLE_D3D11:
       return GetPlatformANGLEDisplay(
-          native_display, EGL_PLATFORM_ANGLE_TYPE_D3D11_ANGLE, false, false,
-          enabled_angle_features, disabled_angle_features);
+          native_display, EGL_PLATFORM_ANGLE_TYPE_D3D11_ANGLE,
+          enabled_angle_features, disabled_angle_features,
+          extra_display_attribs);
     case ANGLE_D3D11_NULL:
+      extra_display_attribs.push_back(EGL_PLATFORM_ANGLE_DEVICE_TYPE_ANGLE);
+      extra_display_attribs.push_back(
+          EGL_PLATFORM_ANGLE_DEVICE_TYPE_NULL_ANGLE);
       return GetPlatformANGLEDisplay(
-          native_display, EGL_PLATFORM_ANGLE_TYPE_D3D11_ANGLE, false, true,
-          enabled_angle_features, disabled_angle_features);
+          native_display, EGL_PLATFORM_ANGLE_TYPE_D3D11_ANGLE,
+          enabled_angle_features, disabled_angle_features,
+          extra_display_attribs);
     case ANGLE_OPENGL:
       return GetPlatformANGLEDisplay(
-          native_display, EGL_PLATFORM_ANGLE_TYPE_OPENGL_ANGLE, false, false,
-          enabled_angle_features, disabled_angle_features);
+          native_display, EGL_PLATFORM_ANGLE_TYPE_OPENGL_ANGLE,
+          enabled_angle_features, disabled_angle_features,
+          extra_display_attribs);
     case ANGLE_OPENGL_NULL:
+      extra_display_attribs.push_back(EGL_PLATFORM_ANGLE_DEVICE_TYPE_ANGLE);
+      extra_display_attribs.push_back(
+          EGL_PLATFORM_ANGLE_DEVICE_TYPE_NULL_ANGLE);
       return GetPlatformANGLEDisplay(
-          native_display, EGL_PLATFORM_ANGLE_TYPE_OPENGL_ANGLE, false, true,
-          enabled_angle_features, disabled_angle_features);
+          native_display, EGL_PLATFORM_ANGLE_TYPE_OPENGL_ANGLE,
+          enabled_angle_features, disabled_angle_features,
+          extra_display_attribs);
     case ANGLE_OPENGLES:
       return GetPlatformANGLEDisplay(
-          native_display, EGL_PLATFORM_ANGLE_TYPE_OPENGLES_ANGLE, false, false,
-          enabled_angle_features, disabled_angle_features);
+          native_display, EGL_PLATFORM_ANGLE_TYPE_OPENGLES_ANGLE,
+          enabled_angle_features, disabled_angle_features,
+          extra_display_attribs);
     case ANGLE_OPENGLES_NULL:
+      extra_display_attribs.push_back(EGL_PLATFORM_ANGLE_DEVICE_TYPE_ANGLE);
+      extra_display_attribs.push_back(
+          EGL_PLATFORM_ANGLE_DEVICE_TYPE_NULL_ANGLE);
       return GetPlatformANGLEDisplay(
-          native_display, EGL_PLATFORM_ANGLE_TYPE_OPENGLES_ANGLE, false, true,
-          enabled_angle_features, disabled_angle_features);
+          native_display, EGL_PLATFORM_ANGLE_TYPE_OPENGLES_ANGLE,
+          enabled_angle_features, disabled_angle_features,
+          extra_display_attribs);
     case ANGLE_NULL:
       return GetPlatformANGLEDisplay(
-          native_display, EGL_PLATFORM_ANGLE_TYPE_NULL_ANGLE, false, false,
-          enabled_angle_features, disabled_angle_features);
+          native_display, EGL_PLATFORM_ANGLE_TYPE_NULL_ANGLE,
+          enabled_angle_features, disabled_angle_features,
+          extra_display_attribs);
     case ANGLE_VULKAN:
       return GetPlatformANGLEDisplay(
-          native_display, EGL_PLATFORM_ANGLE_TYPE_VULKAN_ANGLE, false, false,
-          enabled_angle_features, disabled_angle_features);
+          native_display, EGL_PLATFORM_ANGLE_TYPE_VULKAN_ANGLE,
+          enabled_angle_features, disabled_angle_features,
+          extra_display_attribs);
     case ANGLE_VULKAN_NULL:
+      extra_display_attribs.push_back(EGL_PLATFORM_ANGLE_DEVICE_TYPE_ANGLE);
+      extra_display_attribs.push_back(
+          EGL_PLATFORM_ANGLE_DEVICE_TYPE_NULL_ANGLE);
       return GetPlatformANGLEDisplay(
-          native_display, EGL_PLATFORM_ANGLE_TYPE_VULKAN_ANGLE, false, true,
-          enabled_angle_features, disabled_angle_features);
+          native_display, EGL_PLATFORM_ANGLE_TYPE_VULKAN_ANGLE,
+          enabled_angle_features, disabled_angle_features,
+          extra_display_attribs);
+    case ANGLE_D3D11on12:
+      extra_display_attribs.push_back(EGL_PLATFORM_ANGLE_D3D11ON12_ANGLE);
+      extra_display_attribs.push_back(EGL_TRUE);
+      return GetPlatformANGLEDisplay(
+          native_display, EGL_PLATFORM_ANGLE_TYPE_D3D11_ANGLE,
+          enabled_angle_features, disabled_angle_features,
+          extra_display_attribs);
+    case ANGLE_SWIFTSHADER:
+      extra_display_attribs.push_back(EGL_PLATFORM_ANGLE_DEVICE_TYPE_ANGLE);
+      extra_display_attribs.push_back(
+          EGL_PLATFORM_ANGLE_DEVICE_TYPE_SWIFTSHADER_ANGLE);
+      return GetPlatformANGLEDisplay(
+          native_display, EGL_PLATFORM_ANGLE_TYPE_VULKAN_ANGLE,
+          enabled_angle_features, disabled_angle_features,
+          extra_display_attribs);
     default:
       NOTREACHED();
       return EGL_NO_DISPLAY;
@@ -394,6 +468,10 @@ const char* DisplayTypeString(DisplayType display_type) {
       return "Vulkan";
     case ANGLE_VULKAN_NULL:
       return "VulkanNull";
+    case ANGLE_D3D11on12:
+      return "D3D11on12";
+    case ANGLE_SWIFTSHADER:
+      return "SwiftShader";
     default:
       NOTREACHED();
       return "Err";
@@ -621,6 +699,7 @@ void GetEGLInitDisplays(bool supports_angle_d3d,
                         bool supports_angle_opengl,
                         bool supports_angle_null,
                         bool supports_angle_vulkan,
+                        bool supports_angle_swiftshader,
                         const base::CommandLine* command_line,
                         std::vector<DisplayType>* init_displays) {
   // SwiftShader does not use the platform extensions
@@ -667,6 +746,8 @@ void GetEGLInitDisplays(bool supports_angle_d3d,
         AddInitDisplay(init_displays, ANGLE_D3D9);
       } else if (requested_renderer == kANGLEImplementationD3D11NULLName) {
         AddInitDisplay(init_displays, ANGLE_D3D11_NULL);
+      } else if (requested_renderer == kANGLEImplementationD3D11on12Name) {
+        AddInitDisplay(init_displays, ANGLE_D3D11on12);
       }
     }
   }
@@ -702,6 +783,12 @@ void GetEGLInitDisplays(bool supports_angle_d3d,
       AddInitDisplay(init_displays, ANGLE_VULKAN);
     } else if (requested_renderer == kANGLEImplementationVulkanNULLName) {
       AddInitDisplay(init_displays, ANGLE_VULKAN_NULL);
+    }
+  }
+
+  if (supports_angle_swiftshader) {
+    if (requested_renderer == kANGLEImplementationSwiftShaderName) {
+      AddInitDisplay(init_displays, ANGLE_SWIFTSHADER);
     }
   }
 
@@ -1003,6 +1090,7 @@ EGLDisplay GLSurfaceEGL::InitializeDisplay(
   bool supports_angle_opengl = false;
   bool supports_angle_null = false;
   bool supports_angle_vulkan = false;
+  bool supports_angle_swiftshader = false;
   // Check for availability of ANGLE extensions.
   if (client_extensions &&
       ExtensionsContain(client_extensions, "EGL_ANGLE_platform_angle")) {
@@ -1014,6 +1102,8 @@ EGLDisplay GLSurfaceEGL::InitializeDisplay(
         ExtensionsContain(client_extensions, "EGL_ANGLE_platform_angle_null");
     supports_angle_vulkan =
         ExtensionsContain(client_extensions, "EGL_ANGLE_platform_angle_vulkan");
+    supports_angle_swiftshader = ExtensionsContain(
+        client_extensions, "EGL_ANGLE_platform_angle_device_type_swiftshader");
   }
 
   if (client_extensions) {
@@ -1024,8 +1114,8 @@ EGLDisplay GLSurfaceEGL::InitializeDisplay(
   std::vector<DisplayType> init_displays;
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   GetEGLInitDisplays(supports_angle_d3d, supports_angle_opengl,
-                     supports_angle_null, supports_angle_vulkan, command_line,
-                     &init_displays);
+                     supports_angle_null, supports_angle_vulkan,
+                     supports_angle_swiftshader, command_line, &init_displays);
 
   std::vector<std::string> enabled_angle_features =
       GetStringVectorFromCommandLine(command_line,
@@ -1034,11 +1124,14 @@ EGLDisplay GLSurfaceEGL::InitializeDisplay(
       GetStringVectorFromCommandLine(command_line,
                                      switches::kDisableANGLEFeatures);
 
+  bool disable_all_angle_features =
+      command_line->HasSwitch(switches::kDisableGpuDriverBugWorkarounds);
+
   for (size_t disp_index = 0; disp_index < init_displays.size(); ++disp_index) {
     DisplayType display_type = init_displays[disp_index];
-    EGLDisplay display =
-        GetDisplayFromType(display_type, g_native_display,
-                           enabled_angle_features, disabled_angle_features);
+    EGLDisplay display = GetDisplayFromType(
+        display_type, g_native_display, enabled_angle_features,
+        disabled_angle_features, disable_all_angle_features);
     if (display == EGL_NO_DISPLAY) {
       LOG(ERROR) << "EGL display query failed with error "
                  << GetLastEGLErrorString();
@@ -1193,6 +1286,36 @@ bool NativeViewGLSurfaceEGL::Initialize(GLSurfaceFormat format) {
     vsync_provider_internal_ =
         std::make_unique<EGLSyncControlVSyncProvider>(surface_);
   }
+
+#if defined(USE_X11)
+  // Query all child windows and store them. ANGLE creates a child window when
+  // eglCreateWidnowSurface is called on X11 and expose events from this window
+  // need to be received by this class.
+  Display* x11_display = GetNativeDisplay();
+  Window root = 0;
+  Window parent = 0;
+  Window* children = nullptr;
+  unsigned num_children = 0;
+  if (XQueryTree(x11_display, window_, &root, &parent, &children,
+                 &num_children)) {
+    for (unsigned int i = 0; i < num_children; ++i) {
+      children_.push_back(children[i]);
+    }
+    if (num_children > 0) {
+      XFree(children);
+    }
+  }
+
+  if (PlatformEventSource* source = PlatformEventSource::GetInstance()) {
+    source->AddPlatformEventDispatcher(this);
+  }
+
+  if (!vsync_provider_external_ && !vsync_provider_internal_) {
+    vsync_provider_internal_ =
+        std::make_unique<XrandrIntervalOnlyVSyncProvider>(x11_display);
+  }
+#endif
+
   presentation_helper_ =
       std::make_unique<GLSurfacePresentationHelper>(GetVSyncProvider());
   return true;
@@ -1288,6 +1411,11 @@ void NativeViewGLSurfaceEGL::Destroy() {
   vsync_provider_internal_ = nullptr;
 
   if (surface_) {
+#if defined(USE_X11)
+    if (PlatformEventSource* source = PlatformEventSource::GetInstance()) {
+      source->RemovePlatformEventDispatcher(this);
+    }
+#endif
     if (!eglDestroySurface(GetDisplay(), surface_)) {
       LOG(ERROR) << "eglDestroySurface failed with error "
                  << GetLastEGLErrorString();
@@ -1766,6 +1894,30 @@ bool NativeViewGLSurfaceEGL::CommitAndClearPendingOverlays() {
   NOTIMPLEMENTED();
 #endif
   return success;
+}
+
+bool NativeViewGLSurfaceEGL::CanDispatchEvent(const PlatformEvent& event) {
+#if defined(USE_X11)
+  // When ANGLE is used for EGL, it creates an X11 child window. Expose events
+  // from this window need to be forwarded to this class.
+  return event->type == Expose &&
+         std::find(children_.begin(), children_.end(), event->xexpose.window) !=
+             children_.end();
+#else
+  return false;
+#endif
+}
+
+uint32_t NativeViewGLSurfaceEGL::DispatchEvent(const PlatformEvent& event) {
+#if defined(USE_X11)
+  XEvent x_event = *event;
+  x_event.xexpose.window = window_;
+
+  Display* x11_display = GetNativeDisplay();
+  XSendEvent(x11_display, window_, x11::False, ExposureMask, &x_event);
+  XFlush(x11_display);
+#endif
+  return ui::POST_DISPATCH_STOP_PROPAGATION;
 }
 
 PbufferGLSurfaceEGL::PbufferGLSurfaceEGL(const gfx::Size& size)

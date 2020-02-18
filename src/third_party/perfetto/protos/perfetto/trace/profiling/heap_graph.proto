@@ -24,6 +24,47 @@ import "protos/perfetto/trace/profiling/profile_common.proto";
 
 package perfetto.protos;
 
+message ObfuscatedMember {
+  optional string obfuscated_name = 1;
+  optional string deobfuscated_name = 2;
+}
+
+message ObfuscatedClass {
+  optional string obfuscated_name = 1;
+  optional string deobfuscated_name = 2;
+  repeated ObfuscatedMember obfuscated_members = 3;
+}
+
+message DeobfuscationMapping {
+  optional string package_name = 1;
+  optional int64 version_code = 2;
+  repeated ObfuscatedClass obfuscated_classes = 3;
+}
+
+message HeapGraphRoot {
+  enum Type {
+    ROOT_UNKNOWN = 0;
+    ROOT_JNI_GLOBAL = 1;
+    ROOT_JNI_LOCAL = 2;
+    ROOT_JAVA_FRAME = 3;
+    ROOT_NATIVE_STACK = 4;
+    ROOT_STICKY_CLASS = 5;
+    ROOT_THREAD_BLOCK = 6;
+    ROOT_MONITOR_USED = 7;
+    ROOT_THREAD_OBJECT = 8;
+    ROOT_INTERNED_STRING = 9;
+    ROOT_FINALIZING = 10;
+    ROOT_DEBUGGER = 11;
+    ROOT_REFERENCE_CLEANUP = 12;
+    ROOT_VM_INTERNAL = 13;
+    ROOT_JNI_MONITOR = 14;
+  };
+  // Objects retained by this root.
+  repeated uint64 object_ids = 1 [packed = true];
+
+  optional Type root_type = 2;
+}
+
 message HeapGraphObject {
   optional uint64 id = 1;
 
@@ -35,17 +76,27 @@ message HeapGraphObject {
 
   // Indices for InternedData.field_names for the name of the field referring
   // to the object.
-  repeated uint64 reference_field_id = 4;
+  repeated uint64 reference_field_id = 4 [packed = true];
 
   // Ids of the Object that is referred to.
-  repeated uint64 reference_object_id = 5;
+  repeated uint64 reference_object_id = 5 [packed = true];
 }
 
 message HeapGraph {
   optional int32 pid = 1;
 
-  // Live objects at the time this dump was taken.
+  // This contains all objects at the time this dump was taken. Some of these
+  // will be live, some of those unreachable (garbage). To find the live
+  // objects, the client needs to build the transitive closure of objects
+  // reachable from |roots|.
+  // All objects not contained within that transitive closure are garbage that
+  // has not yet been collected.
   repeated HeapGraphObject objects = 2;
+
+  // Roots at the time this dump was taken.
+  // All live objects are reachable from the roots. All other objects are
+  // garbage.
+  repeated HeapGraphRoot roots = 7;
 
   // Type names used in managed heap graph.
   repeated InternedString type_names = 3;

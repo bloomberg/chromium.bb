@@ -9,6 +9,7 @@
 
 #include "base/logging.h"
 #include "base/optional.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/http/http_util.h"
 #include "services/network/network_context.h"
 #include "services/network/origin_policy/origin_policy_fetcher.h"
@@ -24,15 +25,16 @@ const char kExemptedOriginPolicyVersion[] = "exception?";
 namespace network {
 
 OriginPolicyManager::OriginPolicyManager(NetworkContext* owner_network_context)
-    : owner_network_context_(owner_network_context),
-      url_loader_factory_(
-          owner_network_context_->CreateUrlLoaderFactoryForNetworkService()) {}
+    : owner_network_context_(owner_network_context) {
+  owner_network_context_->CreateUrlLoaderFactoryForNetworkService(
+      url_loader_factory_.BindNewPipeAndPassReceiver());
+}
 
 OriginPolicyManager::~OriginPolicyManager() {}
 
-void OriginPolicyManager::AddBinding(
-    mojom::OriginPolicyManagerRequest request) {
-  bindings_.AddBinding(this, std::move(request));
+void OriginPolicyManager::AddReceiver(
+    mojo::PendingReceiver<mojom::OriginPolicyManager> receiver) {
+  receivers_.Add(this, std::move(receiver));
 }
 
 void OriginPolicyManager::RetrieveOriginPolicy(

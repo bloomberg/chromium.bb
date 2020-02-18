@@ -9,6 +9,8 @@
 
 #include <limits>
 #include <memory>
+#include <string>
+#include <utility>
 #include <vector>
 
 #include "base/android/jni_android.h"
@@ -19,13 +21,18 @@
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/sessions/tab_restore_service_factory.h"
+#include "chrome/common/url_constants.h"
+#include "components/sessions/content/content_live_tab.h"
 #include "components/sessions/content/content_serialized_navigation_builder.h"
 #include "components/sessions/core/serialized_navigation_entry.h"
 #include "components/sessions/core/session_command.h"
+#include "components/sessions/core/tab_restore_service.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/restore_type.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/referrer.h"
 
 using base::android::ConvertUTF16ToJavaString;
 using base::android::ConvertUTF8ToJavaString;
@@ -129,7 +136,6 @@ void UpgradeNavigationFromV0ToV2(
       LOG(ERROR) << "Failed to read SerializedNavigationEntry from pickle "
                  << "(index=" << i << ", url=" << virtual_url_spec;
     }
-
   }
 
   for (int i = 0; i < entry_count; ++i) {
@@ -374,6 +380,27 @@ WebContents* RestoreContentsFromByteBuffer(void* data,
   return web_contents.release();
 }
 
+void CreateHistoricalTab(content::WebContents* web_contents) {
+  DCHECK(web_contents);
+
+  sessions::TabRestoreService* service =
+      TabRestoreServiceFactory::GetForProfile(
+          Profile::FromBrowserContext(web_contents->GetBrowserContext()));
+  if (!service)
+    return;
+
+  // Exclude internal pages from being marked as recent when they are closed.
+  const GURL& tab_url = web_contents->GetURL();
+  if (tab_url.SchemeIs(content::kChromeUIScheme) ||
+      tab_url.SchemeIs(chrome::kChromeNativeScheme) ||
+      tab_url.SchemeIs(url::kAboutScheme)) {
+    return;
+  }
+
+  // TODO(jcivelli): is the index important?
+  service->CreateHistoricalTab(
+      sessions::ContentLiveTab::GetForWebContents(web_contents), -1);
+}
 }  // anonymous namespace
 
 ScopedJavaLocalRef<jobject> WebContentsState::GetContentsStateAsByteBuffer(
@@ -509,7 +536,7 @@ WebContentsState::CreateSingleNavigationStateAsByteBuffer(
   if (referrer_url) {
     referrer = content::Referrer(
         GURL(base::android::ConvertJavaStringToUTF8(env, referrer_url)),
-        static_cast<network::mojom::ReferrerPolicy>(referrer_policy));
+        content::Referrer::ConvertToPolicy(referrer_policy));
   }
   // TODO(nasko,tedchoc): https://crbug.com/980641: Don't use String to store
   // initiator origin, as it is a lossy format.
@@ -612,5 +639,14 @@ static void JNI_TabState_CreateHistoricalTab(JNIEnv* env,
       WebContentsState::RestoreContentsFromByteBuffer(
           env, state, saved_state_version, true)));
   if (web_contents.get())
-    TabAndroid::CreateHistoricalTabFromContents(web_contents.get());
+    CreateHistoricalTab(web_contents.get());
+}
+
+// static
+static void JNI_TabState_CreateHistoricalTabFromContents(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& jweb_contents) {
+  auto* web_contents = content::WebContents::FromJavaWebContents(jweb_contents);
+  if (web_contents)
+    CreateHistoricalTab(web_contents);
 }

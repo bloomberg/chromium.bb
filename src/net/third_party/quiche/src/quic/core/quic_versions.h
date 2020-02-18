@@ -82,10 +82,9 @@ enum QuicTransportVersion {
   // Version 38 switched to IETF padding frame format and support for NSTP (no
   //            stop waiting frame) connection option.
 
-  QUIC_VERSION_39 = 39,  // Integers and floating numbers are written in big
-                         // endian. Dot not ack acks. Send a connection level
-                         // WINDOW_UPDATE every 20 sent packets which do not
-                         // contain retransmittable frames.
+  // Version 39 writes integers and floating numbers in big endian, stops acking
+  // acks, sends a connection level WINDOW_UPDATE every 20 sent packets which do
+  // not contain retransmittable frames.
 
   // Version 40 was an attempt to convert QUIC to IETF frame format; it was
   //            never shipped due to a bug.
@@ -103,8 +102,11 @@ enum QuicTransportVersion {
 
   QUIC_VERSION_46 = 46,  // Use IETF draft-17 header format with demultiplexing
                          // bit.
-  QUIC_VERSION_47 = 47,  // Allow variable-length QUIC connection IDs.
+  // Version 47 added variable-length QUIC server connection IDs.
   QUIC_VERSION_48 = 48,  // Use CRYPTO frames for the handshake.
+  QUIC_VERSION_49 = 49,  // Client connection IDs, long header lengths, IETF
+                         // header format from draft-ietf-quic-invariants-06.
+  QUIC_VERSION_50 = 50,  // Header protection and initial obfuscators.
   QUIC_VERSION_99 = 99,  // Dumping ground for IETF QUIC changes which are not
                          // yet ready for production.
   // QUIC_VERSION_RESERVED_FOR_NEGOTIATION is sent over the wire as ?a?a?a?a
@@ -117,7 +119,7 @@ enum QuicTransportVersion {
 };
 
 // IETF draft version most closely approximated by TLS + v99.
-static const int kQuicIetfDraftVersion = 22;
+static const int kQuicIetfDraftVersion = 24;
 
 // The crypto handshake protocols that can be used with QUIC.
 enum HandshakeProtocol {
@@ -132,10 +134,12 @@ struct QUIC_EXPORT_PRIVATE ParsedQuicVersion {
   HandshakeProtocol handshake_protocol;
   QuicTransportVersion transport_version;
 
-  ParsedQuicVersion(HandshakeProtocol handshake_protocol,
-                    QuicTransportVersion transport_version);
+  constexpr ParsedQuicVersion(HandshakeProtocol handshake_protocol,
+                              QuicTransportVersion transport_version)
+      : handshake_protocol(handshake_protocol),
+        transport_version(transport_version) {}
 
-  ParsedQuicVersion(const ParsedQuicVersion& other)
+  constexpr ParsedQuicVersion(const ParsedQuicVersion& other)
       : handshake_protocol(other.handshake_protocol),
         transport_version(other.transport_version) {}
 
@@ -158,6 +162,10 @@ struct QUIC_EXPORT_PRIVATE ParsedQuicVersion {
   }
 
   bool KnowsWhichDecrypterToUse() const;
+
+  // Returns whether this version uses keys derived from the Connection ID for
+  // ENCRYPTION_INITIAL keys (instead of NullEncrypter/NullDecrypter).
+  bool UsesInitialObfuscators() const;
 
   // Indicates that this QUIC version does not have an enforced minimum value
   // for flow control values negotiated during the handshake.
@@ -185,6 +193,9 @@ struct QUIC_EXPORT_PRIVATE ParsedQuicVersion {
   // i.e., server will send no more than FLAGS_quic_anti_amplification_factor
   // times received bytes until address can be validated.
   bool SupportsAntiAmplificationLimit() const;
+
+  // Returns true if this version can send coalesced packets.
+  bool CanSendCoalescedPackets() const;
 };
 
 QUIC_EXPORT_PRIVATE ParsedQuicVersion UnsupportedQuicVersion();
@@ -208,8 +219,8 @@ using QuicVersionLabelVector = std::vector<QuicVersionLabel>;
 //
 // See go/new-quic-version for more details on how to roll out new versions.
 static const QuicTransportVersion kSupportedTransportVersions[] = {
-    QUIC_VERSION_99, QUIC_VERSION_48, QUIC_VERSION_47,
-    QUIC_VERSION_46, QUIC_VERSION_43, QUIC_VERSION_39,
+    QUIC_VERSION_99, QUIC_VERSION_50, QUIC_VERSION_49,
+    QUIC_VERSION_48, QUIC_VERSION_46, QUIC_VERSION_43,
 };
 
 // This vector contains all crypto handshake protocols that are supported.
@@ -368,48 +379,25 @@ QUIC_EXPORT_PRIVATE inline bool VersionSupportsMessageFrames(
   return transport_version >= QUIC_VERSION_46;
 }
 
-// Returns true if QuicSpdyStream encodes body using HTTP/3 specification and
-// sends data frame header along with body.
-QUIC_EXPORT_PRIVATE inline bool VersionHasDataFrameHeader(
+// If true, HTTP/3 instead of gQUIC will be used at the HTTP layer.
+// Notable changes are:
+// * Headers stream no longer exists.
+// * PRIORITY, HEADERS are moved from headers stream to HTTP/3 control stream.
+// * PUSH_PROMISE is moved to request stream.
+// * Unidirectional streams will have their first byte as a stream type.
+// * HEADERS frames are compressed using QPACK.
+// * DATA frame has frame headers.
+// * GOAWAY is moved to HTTP layer.
+QUIC_EXPORT_PRIVATE inline bool VersionUsesHttp3(
     QuicTransportVersion transport_version) {
   return transport_version == QUIC_VERSION_99;
-}
-
-// Returns whether |transport_version| has HTTP/3 unidirectional stream type.
-QUIC_EXPORT_PRIVATE inline bool VersionHasStreamType(
-    QuicTransportVersion transport_version) {
-  return transport_version == QUIC_VERSION_99;
-}
-
-// If true:
-// * QuicSpdySession instantiates a QPACK encoder and decoder;
-// * HEADERS frames (containing headers or trailers) are sent on
-//   request/response streams, compressed with QPACK;
-// * trailers must not contain :final-offset key,
-// * PUSH_PROMISE and PRIORITY frames are sent on the request stream,
-// * there is no headers stream.
-// If false:
-// * HEADERS frames (containing headers or trailers) are sent on the headers
-//   stream, compressed with HPACK;
-// * trailers must contain :final-offset key,
-// * PUSH_PROMISE and PRIORITY frames are sent on the headers stream.
-QUIC_EXPORT_PRIVATE inline bool VersionUsesQpack(
-    QuicTransportVersion transport_version) {
-  const bool uses_qpack = (transport_version == QUIC_VERSION_99);
-  if (uses_qpack) {
-    DCHECK(VersionHasDataFrameHeader(transport_version));
-    DCHECK(VersionHasStreamType(transport_version));
-  }
-  return uses_qpack;
 }
 
 // Returns whether the transport_version supports the variable length integer
 // length field as defined by IETF QUIC draft-13 and later.
 QUIC_EXPORT_PRIVATE inline bool QuicVersionHasLongHeaderLengths(
     QuicTransportVersion transport_version) {
-  // TODO(dschinazi) if we enable long header lengths before v99, we need to
-  // add support for fixing up lengths in QuicFramer::BuildDataPacket.
-  return transport_version == QUIC_VERSION_99;
+  return transport_version >= QUIC_VERSION_49;
 }
 
 // Returns whether |transport_version| uses CRYPTO frames for the handshake
@@ -430,6 +418,11 @@ QUIC_EXPORT_PRIVATE inline bool VersionHasIetfQuicFrames(
 // connection ID lengths as described in draft-ietf-quic-invariants-06 and
 // draft-ietf-quic-transport-22.
 QUIC_EXPORT_PRIVATE bool VersionHasLengthPrefixedConnectionIds(
+    QuicTransportVersion transport_version);
+
+// Returns true if this version supports the old Google-style Alt-Svc
+// advertisement format.
+QUIC_EXPORT_PRIVATE bool VersionSupportsGoogleAltSvcFormat(
     QuicTransportVersion transport_version);
 
 // Returns whether this version label supports long header 4-bit encoded

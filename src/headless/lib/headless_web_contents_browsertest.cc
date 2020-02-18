@@ -14,6 +14,7 @@
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "cc/base/switches.h"
+#include "cc/test/pixel_test_utils.h"
 #include "components/viz/common/switches.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
@@ -402,9 +403,15 @@ class HeadlessWebContentsPDFStreamTest
     EXPECT_TRUE(success);
     EXPECT_GT(pdf_data.size(), 0U);
     auto pdf_span = base::make_span(pdf_data.data(), pdf_data.size());
+
     int num_pages;
     EXPECT_TRUE(chrome_pdf::GetPDFDocInfo(pdf_span, &num_pages, nullptr));
     EXPECT_EQ(std::ceil(kDocHeight / kPaperHeight), num_pages);
+
+    base::Optional<bool> tagged = chrome_pdf::IsPDFDocTagged(pdf_span);
+    ASSERT_TRUE(tagged.has_value());
+    EXPECT_FALSE(tagged.value());
+
     FinishAsynchronousTest();
   }
 
@@ -414,6 +421,52 @@ class HeadlessWebContentsPDFStreamTest
 };
 
 HEADLESS_ASYNC_DEVTOOLED_TEST_F(HeadlessWebContentsPDFStreamTest);
+
+class HeadlessWebContentsPDFPageSizeRoundingTest
+    : public HeadlessAsyncDevTooledBrowserTest,
+      public page::Observer {
+ public:
+  void RunDevTooledTest() override {
+    EXPECT_TRUE(embedded_test_server()->Start());
+
+    devtools_client_->GetPage()->AddObserver(this);
+
+    base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
+    devtools_client_->GetPage()->Enable(run_loop.QuitClosure());
+    run_loop.Run();
+
+    devtools_client_->GetPage()->Navigate(
+        embedded_test_server()->GetURL("/red_square.html").spec());
+  }
+
+  void OnLoadEventFired(const page::LoadEventFiredParams&) override {
+    devtools_client_->GetPage()->GetExperimental()->PrintToPDF(
+        page::PrintToPDFParams::Builder()
+            .SetPrintBackground(true)
+            .SetPaperHeight(41)
+            .SetPaperWidth(41)
+            .SetMarginTop(0)
+            .SetMarginBottom(0)
+            .SetMarginLeft(0)
+            .SetMarginRight(0)
+            .Build(),
+        base::BindOnce(
+            &HeadlessWebContentsPDFPageSizeRoundingTest::OnPDFCreated,
+            base::Unretained(this)));
+  }
+
+  void OnPDFCreated(std::unique_ptr<page::PrintToPDFResult> result) {
+    protocol::Binary pdf_data = result->GetData();
+    EXPECT_GT(pdf_data.size(), 0U);
+    auto pdf_span = base::make_span(pdf_data.data(), pdf_data.size());
+    int num_pages;
+    EXPECT_TRUE(chrome_pdf::GetPDFDocInfo(pdf_span, &num_pages, nullptr));
+    EXPECT_THAT(num_pages, testing::Eq(1));
+    FinishAsynchronousTest();
+  }
+};
+
+HEADLESS_ASYNC_DEVTOOLED_TEST_F(HeadlessWebContentsPDFPageSizeRoundingTest);
 #endif
 
 class HeadlessWebContentsSecurityTest
@@ -804,20 +857,16 @@ class HeadlessWebContentsBeginFrameControlViewportTest
       SkBitmap result_bitmap;
       EXPECT_TRUE(DecodePNG(png_data, &result_bitmap));
 
-      EXPECT_EQ(300, result_bitmap.width());
-      EXPECT_EQ(300, result_bitmap.height());
-      SkColor expected_color = SkColorSetRGB(0x00, 0x00, 0xff);
+      // Expext a 300x300 bitmap that is all blue.
+      SkBitmap expected_bitmap;
+      SkImageInfo info;
+      expected_bitmap.allocPixels(
+          SkImageInfo::MakeN32(300, 300, kOpaque_SkAlphaType), /*row_bytes=*/0);
+      expected_bitmap.eraseColor(SkColorSetRGB(0x00, 0x00, 0xff));
 
-      SkColor actual_color = result_bitmap.getColor(100, 100);
-      EXPECT_EQ(expected_color, actual_color);
-      actual_color = result_bitmap.getColor(0, 0);
-      EXPECT_EQ(expected_color, actual_color);
-      actual_color = result_bitmap.getColor(0, 299);
-      EXPECT_EQ(expected_color, actual_color);
-      actual_color = result_bitmap.getColor(299, 0);
-      EXPECT_EQ(expected_color, actual_color);
-      actual_color = result_bitmap.getColor(299, 299);
-      EXPECT_EQ(expected_color, actual_color);
+      EXPECT_TRUE(
+          cc::MatchesBitmap(result_bitmap, expected_bitmap,
+                            cc::ExactPixelComparator(/*discard_alpha=*/false)));
     }
 
     // Post completion to avoid deleting the WebContents on the same callstack

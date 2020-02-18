@@ -163,4 +163,17 @@ public class Features {
     // WebSettingsCompat.setForceDark
     // WebSettingsCompat.getForceDark
     public static final String FORCE_DARK = "FORCE_DARK";
+
+    // Preferences between force dark and media query for dark theme support:
+    //
+    // WebSettingsCompat.setForceDarkBehavior
+    // WebSettingsCompat.getForceDarkBehavior
+    public static final String FORCE_DARK_BEHAVIOR = "FORCE_DARK_BEHAVIOR";
+
+    // WebViewCompat.addWebMessageListener
+    // WebViewCompat.removeWebMessageListener
+    public static final String WEB_MESSAGE_LISTENER = "WEB_MESSAGE_LISTENER";
+
+    // WebViewProviderFactoryAdapter.setSupportLibraryVersion
+    public static final String SET_SUPPORT_LIBRARY_VERSION = "SET_SUPPORT_LIBRARY_VERSION";
 }

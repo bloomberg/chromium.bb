@@ -5,24 +5,31 @@
 #ifndef UI_VIEWS_WIDGET_DESKTOP_AURA_DESKTOP_WINDOW_TREE_HOST_PLATFORM_H_
 #define UI_VIEWS_WIDGET_DESKTOP_AURA_DESKTOP_WINDOW_TREE_HOST_PLATFORM_H_
 
+#include <set>
+#include <vector>
+
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 #include "ui/aura/window_tree_host_platform.h"
+#include "ui/platform_window/extensions/workspace_extension_delegate.h"
 #include "ui/views/views_export.h"
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host.h"
 
 namespace views {
 
-class WindowEventFilter;
-
 class VIEWS_EXPORT DesktopWindowTreeHostPlatform
     : public aura::WindowTreeHostPlatform,
-      public DesktopWindowTreeHost {
+      public DesktopWindowTreeHost,
+      public ui::WorkspaceExtensionDelegate {
  public:
   DesktopWindowTreeHostPlatform(
       internal::NativeWidgetDelegate* native_widget_delegate,
       DesktopNativeWidgetAura* desktop_native_widget_aura);
   ~DesktopWindowTreeHostPlatform() override;
+
+  // Accessor for DesktopNativeWidgetAura::content_window().
+  aura::Window* GetContentWindow();
+  const aura::Window* GetContentWindow() const;
 
   // DesktopWindowTreeHost:
   void Init(const Widget::InitParams& params) override;
@@ -92,15 +99,19 @@ class VIEWS_EXPORT DesktopWindowTreeHostPlatform
 
   // WindowTreeHost:
   gfx::Transform GetRootTransform() const override;
+  void ShowImpl() override;
+  void HideImpl() override;
 
-  // PlatformWindowDelegateBase:
-  void DispatchEvent(ui::Event* event) override;
+  // PlatformWindowDelegate:
   void OnClosed() override;
   void OnWindowStateChanged(ui::PlatformWindowState new_state) override;
   void OnCloseRequest() override;
   void OnActivationChanged(bool active) override;
   base::Optional<gfx::Size> GetMinimumSizeForWindow() override;
   base::Optional<gfx::Size> GetMaximumSizeForWindow() override;
+
+  // ui::WorkspaceExtensionDelegate:
+  void OnWorkspaceChanged() override;
 
  protected:
   // TODO(https://crbug.com/990756): move these methods back to private
@@ -111,8 +122,6 @@ class VIEWS_EXPORT DesktopWindowTreeHostPlatform
   DesktopNativeWidgetAura* desktop_native_widget_aura() {
     return desktop_native_widget_aura_;
   }
-  // Accessor for DesktopNativeWidgetAura::content_window().
-  aura::Window* content_window();
 
   // These are not general purpose methods and must be used with care. Please
   // make sure you understand the rounding direction before using.
@@ -120,14 +129,13 @@ class VIEWS_EXPORT DesktopWindowTreeHostPlatform
   gfx::Rect ToPixelRect(const gfx::Rect& rect_in_dip) const;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(DesktopWindowTreeHostPlatformTest, HitTest);
-
   void Relayout();
-
-  void RemoveNonClientEventFilter();
 
   Widget* GetWidget();
   const Widget* GetWidget() const;
+
+  // Set visibility and fire OnNativeWidgetVisibilityChanged() if it changed.
+  void SetVisible(bool visible);
 
   // There are platform specific properties that Linux may want to add.
   virtual void AddAdditionalInitProperties(
@@ -137,21 +145,22 @@ class VIEWS_EXPORT DesktopWindowTreeHostPlatform
   internal::NativeWidgetDelegate* const native_widget_delegate_;
   DesktopNativeWidgetAura* const desktop_native_widget_aura_;
 
-  // Set to true when Close() is called.
-  bool waiting_for_close_now_ = false;
-
-  bool got_on_closed_ = false;
-
   bool is_active_ = false;
 
   base::string16 window_title_;
 
-#if defined(OS_LINUX)
-  // A handler for events intended for non client area.
-  std::unique_ptr<WindowEventFilter> non_client_window_event_filter_;
-#endif
+  // We can optionally have a parent which can order us to close, or own
+  // children who we're responsible for closing when we CloseNow().
+  DesktopWindowTreeHostPlatform* window_parent_ = nullptr;
+  std::set<DesktopWindowTreeHostPlatform*> window_children_;
 
-  base::WeakPtrFactory<DesktopWindowTreeHostPlatform> weak_factory_{this};
+  // Keep track of PlatformWindow state so that we would react correctly and set
+  // visibility only if the window was minimized or was unminimized from the
+  // normal state.
+  ui::PlatformWindowState old_state_ = ui::PlatformWindowState::kUnknown;
+
+  base::WeakPtrFactory<DesktopWindowTreeHostPlatform> close_widget_factory_{
+      this};
 
   DISALLOW_COPY_AND_ASSIGN(DesktopWindowTreeHostPlatform);
 };

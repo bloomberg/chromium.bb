@@ -12,12 +12,13 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Build;
-import android.support.annotation.IntDef;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.ImageView;
 
-import org.chromium.base.VisibleForTesting;
+import androidx.annotation.IntDef;
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.ui.widget.ViewLookupCachingFrameLayout;
 

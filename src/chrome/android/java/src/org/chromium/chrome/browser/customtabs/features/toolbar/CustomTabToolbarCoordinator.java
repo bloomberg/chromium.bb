@@ -6,38 +6,39 @@ package org.chromium.chrome.browser.customtabs.features.toolbar;
 
 import static org.chromium.chrome.browser.dependency_injection.ChromeCommonQualifiers.APP_CONTEXT;
 
+import android.app.PendingIntent;
 import android.content.Context;
-import android.text.TextUtils;
+import android.content.Intent;
+import android.net.Uri;
 import android.view.View;
 
-import org.chromium.base.metrics.RecordUserAction;
-import org.chromium.chrome.R;
+import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
+import androidx.browser.customtabs.CustomTabsIntent;
+
+import org.chromium.base.Log;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.browserservices.BrowserServicesActivityTabController;
+import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
+import org.chromium.chrome.browser.customtabs.CloseButtonVisibilityManager;
 import org.chromium.chrome.browser.customtabs.CustomButtonParams;
 import org.chromium.chrome.browser.customtabs.CustomTabCompositorContentInitializer;
-import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
-import org.chromium.chrome.browser.customtabs.CustomTabStatusBarColorProvider;
+import org.chromium.chrome.browser.customtabs.CustomTabUmaRecorder;
 import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityNavigationController;
-import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabController;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabProvider;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.fullscreen.FullscreenManager;
-import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
-import org.chromium.chrome.browser.lifecycle.InflationObserver;
-import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabObserverRegistrar;
 import org.chromium.chrome.browser.toolbar.ToolbarManager;
-import org.chromium.chrome.browser.util.ColorUtils;
-import org.chromium.chrome.browser.util.FeatureUtilities;
+import org.chromium.content_public.common.BrowserControlsState;
+import org.chromium.ui.util.TokenHolder;
 
 import javax.inject.Inject;
 import javax.inject.Named;
 
-import androidx.browser.customtabs.CustomTabsIntent;
 import dagger.Lazy;
 
 /**
@@ -54,41 +55,43 @@ import dagger.Lazy;
  * 3. Refactor to MVC.
  */
 @ActivityScope
-public class CustomTabToolbarCoordinator implements InflationObserver {
-
-    private final Lazy<ToolbarManager> mToolbarManager;
-    private final CustomTabIntentDataProvider mIntentDataProvider;
+public class CustomTabToolbarCoordinator {
+    private final BrowserServicesIntentDataProvider mIntentDataProvider;
+    private final @Nullable CustomTabUmaRecorder mUmaRecorder;
     private final CustomTabActivityTabProvider mTabProvider;
     private final CustomTabsConnection mConnection;
     private final ChromeActivity mActivity;
     private final Context mAppContext;
-    private final CustomTabActivityTabController mTabController;
+    private final BrowserServicesActivityTabController mTabController;
     private final Lazy<ChromeFullscreenManager> mFullscreenManager;
     private final CustomTabActivityNavigationController mNavigationController;
-    private final TabObserverRegistrar mTabObserverRegistrar;
-    private final CustomTabStatusBarColorProvider mStatusBarColorProvider;
+    private final CloseButtonVisibilityManager mCloseButtonVisibilityManager;
     private final CustomTabBrowserControlsVisibilityDelegate mVisibilityDelegate;
+    private final CustomTabToolbarColorController mToolbarColorController;
 
-    private int mControlsHidingToken = FullscreenManager.INVALID_TOKEN;
+    @Nullable
+    private ToolbarManager mToolbarManager;
+
+    private int mControlsHidingToken = TokenHolder.INVALID_TOKEN;
     private boolean mInitializedToolbarWithNative;
+    private PendingIntent.OnFinished mCustomButtonClickOnFinished;
+
+    private static final String TAG = "CustomTabToolbarCoor";
 
     @Inject
-    public CustomTabToolbarCoordinator(ActivityLifecycleDispatcher lifecycleDispatcher,
-            Lazy<ToolbarManager> toolbarManager,
-            CustomTabIntentDataProvider intentDataProvider,
-            CustomTabActivityTabProvider tabProvider,
-            CustomTabsConnection connection,
-            ChromeActivity activity,
+    public CustomTabToolbarCoordinator(BrowserServicesIntentDataProvider intentDataProvider,
+            @Nullable CustomTabUmaRecorder umaRecorder, CustomTabActivityTabProvider tabProvider,
+            CustomTabsConnection connection, ChromeActivity activity,
             @Named(APP_CONTEXT) Context appContext,
-            CustomTabActivityTabController tabController,
+            BrowserServicesActivityTabController tabController,
             Lazy<ChromeFullscreenManager> fullscreenManager,
             CustomTabActivityNavigationController navigationController,
-            TabObserverRegistrar tabObserverRegistrar,
-            CustomTabStatusBarColorProvider statusBarColorProvider,
+            CloseButtonVisibilityManager closeButtonVisibilityManager,
             CustomTabBrowserControlsVisibilityDelegate visibilityDelegate,
-            CustomTabCompositorContentInitializer compositorContentInitializer) {
-        mToolbarManager = toolbarManager;
+            CustomTabCompositorContentInitializer compositorContentInitializer,
+            CustomTabToolbarColorController toolbarColorController) {
         mIntentDataProvider = intentDataProvider;
+        mUmaRecorder = umaRecorder;
         mTabProvider = tabProvider;
         mConnection = connection;
         mActivity = activity;
@@ -96,40 +99,33 @@ public class CustomTabToolbarCoordinator implements InflationObserver {
         mTabController = tabController;
         mFullscreenManager = fullscreenManager;
         mNavigationController = navigationController;
-        mTabObserverRegistrar = tabObserverRegistrar;
-        mStatusBarColorProvider = statusBarColorProvider;
+        mCloseButtonVisibilityManager = closeButtonVisibilityManager;
         mVisibilityDelegate = visibilityDelegate;
-        lifecycleDispatcher.register(this);
+        mToolbarColorController = toolbarColorController;
 
         compositorContentInitializer.addCallback(this::onCompositorContentInitialized);
     }
 
-    @Override
-    public void onPreInflationStartup() {}
-
-    @Override
-    public void onPostInflationStartup() {
-        ToolbarManager manager = mToolbarManager.get();
+    /**
+     * Notifies the navigation controller that the ToolbarManager has been created and is ready for
+     * use. ToolbarManager isn't passed directly to the constructor because it's not guaranteed to
+     * be initialized yet.
+     */
+    public void onToolbarInitialized(ToolbarManager manager) {
         assert manager != null : "Toolbar manager not initialized";
+        mToolbarManager = manager;
+        mToolbarColorController.onToolbarInitialized(manager);
+        mCloseButtonVisibilityManager.onToolbarInitialized(manager);
 
-        manager.setCloseButtonDrawable(FeatureUtilities.isNoTouchModeEnabled()
-                ? null
-                : mIntentDataProvider.getCloseButtonDrawable());
         manager.setShowTitle(
                 mIntentDataProvider.getTitleVisibilityState() == CustomTabsIntent.SHOW_PAGE_TITLE);
         if (mConnection.shouldHideDomainForSession(mIntentDataProvider.getSession())) {
             manager.setUrlBarHidden(true);
         }
-        int toolbarColor = mIntentDataProvider.getToolbarColor();
-        manager.onThemeColorChanged(toolbarColor, false);
-        if (!mIntentDataProvider.isOpenedByChrome()) {
-            manager.setShouldUpdateToolbarPrimaryColor(false);
-        }
         if (mIntentDataProvider.isMediaViewer()) {
             manager.setToolbarShadowVisibility(View.GONE);
         }
         showCustomButtonsOnToolbar();
-        observeTabToUpdateColor();
     }
 
     /**
@@ -138,107 +134,59 @@ public class CustomTabToolbarCoordinator implements InflationObserver {
     private void showCustomButtonsOnToolbar() {
         for (CustomButtonParams params : mIntentDataProvider.getCustomButtonsOnToolbar()) {
             View.OnClickListener onClickListener = v -> onCustomButtonClick(params);
-            mToolbarManager.get().addCustomActionButton(params.getIcon(mActivity),
-                    params.getDescription(), onClickListener);
+            mToolbarManager.addCustomActionButton(
+                    params.getIcon(mActivity), params.getDescription(), onClickListener);
         }
     }
 
     private void onCustomButtonClick(CustomButtonParams params) {
         Tab tab = mTabProvider.getTab();
         if (tab == null) return;
-        mIntentDataProvider.sendButtonPendingIntentWithUrlAndTitle(mAppContext, params,
-                tab.getUrl(), tab.getTitle());
-        RecordUserAction.record("CustomTabsCustomActionButtonClick");
 
-        if (mIntentDataProvider.shouldEnableEmbeddedMediaExperience()
-                && TextUtils.equals(params.getDescription(), mActivity.getString(R.string.share))) {
-            RecordUserAction.record("CustomTabsCustomActionButtonClick.DownloadsUI.Share");
+        sendButtonPendingIntentWithUrlAndTitle(params, tab.getUrl(), tab.getTitle());
+
+        if (mUmaRecorder != null) {
+            mUmaRecorder.recordCustomButtonClick(mActivity.getResources(), params);
         }
     }
 
-    private void observeTabToUpdateColor() {
-        mTabObserverRegistrar.registerTabObserver(new EmptyTabObserver() {
-            /** Keeps track of the original color before the preview was shown. */
-            private int mOriginalColor;
-
-            /** True if a change to the toolbar color was made because of a preview. */
-            private boolean mTriggeredPreviewChange;
-
-            @Override
-            public void onPageLoadFinished(Tab tab, String url) {
-                // Update the color when the page load finishes.
-                updateColor(tab);
-            }
-
-            @Override
-            public void didReloadLoFiImages(Tab tab) {
-                // Update the color when the LoFi preview is reloaded.
-                updateColor(tab);
-            }
-
-            @Override
-            public void onUrlUpdated(Tab tab) {
-                // Update the color on every new URL.
-                updateColor(tab);
-            }
-
-            /**
-             * Updates the color of the Activity's status bar and the CCT Toolbar. When a preview is
-             * shown, it should be reset to the default color. If the user later navigates away from
-             * that preview to a non-preview page, reset the color back to the original. This does
-             * not interfere with site-specific theme colors which are disabled when a preview is
-             * being shown.
-             */
-            private void updateColor(Tab tab) {
-                ToolbarManager manager = mToolbarManager.get();
-
-                // Record the original toolbar color in case we need to revert back to it later
-                // after a preview has been shown then the user navigates to another non-preview
-                // page.
-                if (mOriginalColor == 0) mOriginalColor = manager.getPrimaryColor();
-
-                final boolean shouldUpdateOriginal = manager.getShouldUpdateToolbarPrimaryColor();
-                manager.setShouldUpdateToolbarPrimaryColor(true);
-
-                if (tab.isPreview()) {
-                    final int defaultColor = ColorUtils.getDefaultThemeColor(
-                            mActivity.getResources(), false);
-                    manager.onThemeColorChanged(defaultColor, false);
-                    mTriggeredPreviewChange = true;
-                } else if (mOriginalColor != manager.getPrimaryColor() && mTriggeredPreviewChange) {
-                    manager.onThemeColorChanged(mOriginalColor, false);
-                    mTriggeredPreviewChange = false;
-                    mOriginalColor = 0;
-                }
-
-                mStatusBarColorProvider.onToolbarColorChanged();
-                manager.setShouldUpdateToolbarPrimaryColor(shouldUpdateOriginal);
-            }
-        });
+    /**
+     * Sends the pending intent for the custom button on the toolbar with the given {@code params},
+     *         with the given {@code url} as data.
+     * @param params The parameters for the custom button.
+     * @param url The URL to attach as additional data to the {@link PendingIntent}.
+     * @param title The title to attach as additional data to the {@link PendingIntent}.
+     */
+    private void sendButtonPendingIntentWithUrlAndTitle(
+            CustomButtonParams params, String url, String title) {
+        Intent addedIntent = new Intent();
+        addedIntent.setData(Uri.parse(url));
+        addedIntent.putExtra(Intent.EXTRA_SUBJECT, title);
+        try {
+            params.getPendingIntent().send(
+                    mAppContext, 0, addedIntent, mCustomButtonClickOnFinished, null);
+        } catch (PendingIntent.CanceledException e) {
+            Log.e(TAG, "CanceledException while sending pending intent in custom tab");
+        }
     }
 
     private void onCompositorContentInitialized(LayoutManager layoutDriver) {
-        mToolbarManager.get().initializeWithNative(mTabController.getTabModelSelector(),
+        mToolbarManager.initializeWithNative(mTabController.getTabModelSelector(),
                 mFullscreenManager.get().getBrowserVisibilityDelegate(), null, layoutDriver, null,
-                null, null, v -> onCloseButtonClick());
+                null, null, v -> onCloseButtonClick(), null);
         mInitializedToolbarWithNative = true;
     }
 
     private void onCloseButtonClick() {
-        RecordUserAction.record("CustomTabs.CloseButtonClicked");
-        if (mIntentDataProvider.shouldEnableEmbeddedMediaExperience()) {
-            RecordUserAction.record("CustomTabs.CloseButtonClicked.DownloadsUI");
+        if (mUmaRecorder != null) {
+            mUmaRecorder.recordCloseButtonClick();
         }
         mNavigationController.navigateOnClose();
     }
 
-    /**
-     * Sets the hidden state. If set to true, toolbar stays hidden. If set to false, toolbar
-     * behaves normally: appears and disappears while scrolling, etc.
-     */
-    public void setToolbarHidden(boolean hidden) {
-        mVisibilityDelegate.setControlsHidden(hidden);
-        if (hidden) {
+    public void setBrowserControlsState(@BrowserControlsState int controlsState) {
+        mVisibilityDelegate.setControlsState(controlsState);
+        if (controlsState == BrowserControlsState.HIDDEN) {
             mControlsHidingToken = mFullscreenManager.get()
                     .hideAndroidControlsAndClearOldToken(mControlsHidingToken);
         } else {
@@ -267,8 +215,12 @@ public class CustomTabToolbarCoordinator implements InflationObserver {
             assert false;
             return false;
         }
-        mToolbarManager.get().updateCustomActionButton(index, params.getIcon(mActivity),
-                params.getDescription());
+        if (mToolbarManager == null) {
+            return false;
+        }
+
+        mToolbarManager.updateCustomActionButton(
+                index, params.getIcon(mActivity), params.getDescription());
         return true;
     }
 
@@ -278,5 +230,14 @@ public class CustomTabToolbarCoordinator implements InflationObserver {
      */
     public boolean toolbarIsInitialized() {
         return mInitializedToolbarWithNative;
+    }
+
+    /**
+     * Set the callback object for the {@link PendingIntent} which is sent by the custom buttons.
+     */
+    @VisibleForTesting
+    public void setCustomButtonPendingIntentOnFinishedForTesting(
+            PendingIntent.OnFinished onFinished) {
+        mCustomButtonClickOnFinished = onFinished;
     }
 }

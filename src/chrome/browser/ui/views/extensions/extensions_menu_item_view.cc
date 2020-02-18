@@ -8,6 +8,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
+#include "chrome/browser/ui/views/bubble_menu_item_factory.h"
 #include "chrome/browser/ui/views/extensions/extension_context_menu_controller.h"
 #include "chrome/browser/ui/views/extensions/extensions_menu_button.h"
 #include "chrome/grit/generated_resources.h"
@@ -44,29 +45,28 @@ ExtensionsMenuItemView::ExtensionsMenuItemView(
   views::FlexLayout* layout_manager_ =
       SetLayoutManager(std::make_unique<views::FlexLayout>());
   layout_manager_->SetOrientation(views::LayoutOrientation::kHorizontal)
-      .SetCollapseMargins(true)
       .SetIgnoreDefaultMainAxisMargins(true);
 
   AddChildView(primary_action_button_);
   primary_action_button_->SetProperty(
       views::kFlexBehaviorKey, views::FlexSpecification::ForSizeRule(
-                                   views::MinimumFlexSizeRule::kPreferred,
+                                   views::MinimumFlexSizeRule::kScaleToZero,
                                    views::MaximumFlexSizeRule::kUnbounded));
 
   const SkColor icon_color =
       ui::NativeTheme::GetInstanceForNativeUi()->GetSystemColor(
           ui::NativeTheme::kColorId_DefaultIconColor);
 
-  auto pin_button = views::CreateVectorImageButton(this);
-  pin_button->SetID(EXTENSION_PINNING);
+  auto pin_button = CreateBubbleMenuItem(EXTENSION_PINNING, this);
   pin_button->set_ink_drop_base_color(icon_color);
+
   pin_button_ = pin_button.get();
   AddChildView(std::move(pin_button));
 
-  auto context_menu_button = views::CreateVectorImageButton(nullptr);
+  auto context_menu_button =
+      CreateBubbleMenuItem(EXTENSION_CONTEXT_MENU, nullptr);
   views::SetImageFromVectorIcon(context_menu_button.get(), kBrowserToolsIcon,
                                 kSecondaryIconSizeDp, icon_color);
-  context_menu_button->SetID(EXTENSION_CONTEXT_MENU);
   context_menu_button->SetTooltipText(
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_MENU_CONTEXT_MENU_TOOLTIP));
   context_menu_button->SetButtonController(
@@ -77,7 +77,6 @@ ExtensionsMenuItemView::ExtensionsMenuItemView(
 
   context_menu_button_ = context_menu_button.get();
   AddChildView(std::move(context_menu_button));
-
   UpdatePinButton();
 }
 
@@ -88,18 +87,14 @@ void ExtensionsMenuItemView::ButtonPressed(views::Button* sender,
   if (sender->GetID() == EXTENSION_PINNING) {
     model_->SetActionVisibility(controller_->GetId(), !IsPinned());
     return;
+  } else if (sender->GetID() == EXTENSION_CONTEXT_MENU) {
+    // TODO(crbug.com/998298): Cleanup the menu source type.
+    context_menu_controller_->ShowContextMenuForViewImpl(
+        sender, sender->GetMenuPosition(),
+        ui::MenuSourceType::MENU_SOURCE_MOUSE);
+    return;
   }
   NOTREACHED();
-}
-
-void ExtensionsMenuItemView::OnMenuButtonClicked(views::Button* source,
-                                                 const gfx::Point& point,
-                                                 const ui::Event* event) {
-  DCHECK_EQ(source->GetID(), EXTENSION_CONTEXT_MENU);
-
-  // TODO(crbug.com/998298): Cleanup the menu source type.
-  context_menu_controller_->ShowContextMenuForViewImpl(
-      source, point, ui::MenuSourceType::MENU_SOURCE_MOUSE);
 }
 
 void ExtensionsMenuItemView::UpdatePinButton() {
@@ -117,16 +112,6 @@ void ExtensionsMenuItemView::UpdatePinButton() {
   views::SetImageFromVectorIcon(
       pin_button_, IsPinned() ? views::kUnpinIcon : views::kPinIcon,
       kSecondaryIconSizeDp, icon_color);
-  pin_button_->SetVisible(IsPinned() || IsMouseHovered() ||
-                          IsContextMenuRunning());
-}
-
-void ExtensionsMenuItemView::OnMouseEntered(const ui::MouseEvent& event) {
-  UpdatePinButton();
-}
-
-void ExtensionsMenuItemView::OnMouseExited(const ui::MouseEvent& event) {
-  UpdatePinButton();
 }
 
 bool ExtensionsMenuItemView::IsContextMenuRunning() {

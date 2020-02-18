@@ -15,6 +15,7 @@
 #include "media/base/cdm_context.h"
 #include "media/base/channel_layout.h"
 #include "media/base/demuxer_stream.h"
+#include "media/base/media_log_properties.h"
 #include "media/base/moving_average.h"
 #include "media/base/pipeline_status.h"
 #include "media/base/video_decoder.h"
@@ -42,6 +43,13 @@ class MEDIA_EXPORT DecoderStreamTraits<DemuxerStream::AUDIO> {
   using InitCB = AudioDecoder::InitCB;
   using OutputCB = AudioDecoder::OutputCB;
 
+  static const MediaLogProperty kDecoderName =
+      MediaLogProperty::kAudioDecoderName;
+  static const MediaLogProperty kIsPlatformDecoder =
+      MediaLogProperty::kIsPlatformAudioDecoder;
+  static const MediaLogProperty kIsDecryptingDemuxerStream =
+      MediaLogProperty::kIsAudioDecryptingDemuxerStream;
+
   static std::string ToString();
   static bool NeedsBitstreamConversion(DecoderType* decoder);
   static scoped_refptr<OutputType> CreateEOSOutput();
@@ -62,6 +70,7 @@ class MEDIA_EXPORT DecoderStreamTraits<DemuxerStream::AUDIO> {
   void OnDecode(const DecoderBuffer& buffer);
   PostDecodeAction OnDecodeDone(OutputType* buffer);
   void OnStreamReset(DemuxerStream* stream);
+  void OnOutputReady(OutputType* output);
 
  private:
   void OnConfigChanged(const AudioDecoderConfig& config);
@@ -86,6 +95,12 @@ class MEDIA_EXPORT DecoderStreamTraits<DemuxerStream::VIDEO> {
   using DecoderConfigType = VideoDecoderConfig;
   using InitCB = VideoDecoder::InitCB;
   using OutputCB = VideoDecoder::OutputCB;
+  static const MediaLogProperty kDecoderName =
+      MediaLogProperty::kVideoDecoderName;
+  static const MediaLogProperty kIsPlatformDecoder =
+      MediaLogProperty::kIsPlatformVideoDecoder;
+  static const MediaLogProperty kIsDecryptingDemuxerStream =
+      MediaLogProperty::kIsVideoDecryptingDemuxerStream;
 
   static std::string ToString();
   static bool NeedsBitstreamConversion(DecoderType* decoder);
@@ -107,6 +122,7 @@ class MEDIA_EXPORT DecoderStreamTraits<DemuxerStream::VIDEO> {
   void OnDecode(const DecoderBuffer& buffer);
   PostDecodeAction OnDecodeDone(OutputType* buffer);
   void OnStreamReset(DemuxerStream* stream);
+  void OnOutputReady(OutputType* output);
 
  private:
   base::TimeDelta last_keyframe_timestamp_;
@@ -116,6 +132,7 @@ class MEDIA_EXPORT DecoderStreamTraits<DemuxerStream::VIDEO> {
   struct FrameMetadata {
     bool should_drop = false;
     base::TimeDelta duration = kNoTimestamp;
+    base::TimeTicks decode_begin_time;
   };
   base::flat_map<base::TimeDelta, FrameMetadata> frame_metadata_;
 

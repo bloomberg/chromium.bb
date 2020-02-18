@@ -27,6 +27,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 
+using autofill::ParsingResult;
 using autofill::PasswordForm;
 using autofill::PasswordFormFillData;
 using base::ASCIIToUTF16;
@@ -82,8 +83,11 @@ class FakePasswordAutofillAgent
   }
 
   // autofill::mojom::PasswordAutofillAgent:
-  MOCK_METHOD1(FillPasswordForm, void(const autofill::PasswordFormFillData&));
+  MOCK_METHOD1(FillPasswordForm, void(const PasswordFormFillData&));
+  MOCK_METHOD0(InformNoSavedCredentials, void());
   MOCK_METHOD2(FillIntoFocusedField, void(bool, const base::string16&));
+  MOCK_METHOD1(TouchToFillClosed, void(bool));
+  MOCK_METHOD1(AnnotateFieldsWithParsingResult, void(const ParsingResult&));
 
   MOCK_METHOD0(BlacklistedFormFound, void());
 
@@ -92,9 +96,6 @@ class FakePasswordAutofillAgent
     called_set_logging_state_ = true;
     logging_state_active_ = active;
   }
-
-  void AutofillUsernameAndPasswordDataReceived(
-      const autofill::FormsPredictionsMap& predictions) override {}
 
   // Records whether SetLoggingState() gets called.
   bool called_set_logging_state_;
@@ -120,11 +121,11 @@ PasswordFormFillData GetTestPasswordFormFillData() {
   preferred_match.password_value = ASCIIToUTF16("test");
   preferred_match.preferred = true;
 
-  std::map<base::string16, const PasswordForm*> matches;
+  std::vector<const PasswordForm*> matches;
   PasswordForm non_preferred_match = preferred_match;
   non_preferred_match.username_value = ASCIIToUTF16("test1@gmail.com");
   non_preferred_match.password_value = ASCIIToUTF16("test1");
-  matches[non_preferred_match.username_value] = &non_preferred_match;
+  matches.push_back(&non_preferred_match);
 
   return PasswordFormFillData(form_on_page, matches, preferred_match, true);
 }
@@ -241,7 +242,7 @@ TEST_F(ContentPasswordManagerDriverTest, NotInformAboutBlacklistedForm) {
   driver->FillPasswordForm(fill_data);
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          ContentPasswordManagerDriverTest,
                          testing::Values(true, false));
 

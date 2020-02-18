@@ -61,7 +61,8 @@ void ForwardingAudioStreamFactory::Core::CreateInputStream(
     uint32_t shared_memory_count,
     bool enable_agc,
     audio::mojom::AudioProcessingConfigPtr processing_config,
-    mojom::RendererAudioInputStreamFactoryClientPtr renderer_factory_client) {
+    mojo::PendingRemote<mojom::RendererAudioInputStreamFactoryClient>
+        renderer_factory_client) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   // |this| owns |inputs_|, so Unretained is safe.
@@ -95,7 +96,7 @@ void ForwardingAudioStreamFactory::Core::CreateOutputStream(
     const std::string& device_id,
     const media::AudioParameters& params,
     const base::Optional<base::UnguessableToken>& processing_id,
-    media::mojom::AudioOutputStreamProviderClientPtr client) {
+    mojo::PendingRemote<media::mojom::AudioOutputStreamProviderClient> client) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   // |this| owns |outputs_|, so Unretained is safe.
@@ -117,7 +118,8 @@ void ForwardingAudioStreamFactory::Core::CreateLoopbackStream(
     const media::AudioParameters& params,
     uint32_t shared_memory_count,
     bool mute_source,
-    mojom::RendererAudioInputStreamFactoryClientPtr renderer_factory_client) {
+    mojo::PendingRemote<mojom::RendererAudioInputStreamFactoryClient>
+        renderer_factory_client) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(loopback_source);
 
@@ -226,12 +228,12 @@ ForwardingAudioStreamFactory::~ForwardingAudioStreamFactory() {
 
 void ForwardingAudioStreamFactory::LoopbackStreamStarted() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  web_contents()->IncrementCapturerCount(gfx::Size());
+  web_contents()->IncrementCapturerCount(gfx::Size(), /* stay_hidden */ false);
 }
 
 void ForwardingAudioStreamFactory::LoopbackStreamStopped() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  web_contents()->DecrementCapturerCount();
+  web_contents()->DecrementCapturerCount(/* stay_hidden */ false);
 }
 
 void ForwardingAudioStreamFactory::SetMuted(bool muted) {
@@ -315,10 +317,10 @@ audio::mojom::StreamFactory* ForwardingAudioStreamFactory::Core::GetFactory() {
     TRACE_EVENT_INSTANT1(
         "audio", "ForwardingAudioStreamFactory: Binding new factory",
         TRACE_EVENT_SCOPE_THREAD, "group", group_id_.GetLowForSerialization());
-    connector_->BindInterface(audio::mojom::kServiceName,
-                              mojo::MakeRequest(&remote_factory_));
+    connector_->Connect(audio::mojom::kServiceName,
+                        remote_factory_.BindNewPipeAndPassReceiver());
     // Unretained is safe because |this| owns |remote_factory_|.
-    remote_factory_.set_connection_error_handler(base::BindOnce(
+    remote_factory_.set_disconnect_handler(base::BindOnce(
         &ForwardingAudioStreamFactory::Core::ResetRemoteFactoryPtr,
         base::Unretained(this)));
 

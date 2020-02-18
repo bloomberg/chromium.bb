@@ -242,7 +242,8 @@ void SetRefreshTokenForAccount(IdentityManager* identity_manager,
       identity_manager->GetTokenService(),
       identity_manager->GetAccountTrackerService(), identity_manager,
       account_id,
-      token_value.empty() ? "refresh_token_for_" + account_id.id : token_value);
+      token_value.empty() ? "refresh_token_for_" + account_id.ToString()
+                          : token_value);
 }
 
 void SetInvalidRefreshTokenForAccount(IdentityManager* identity_manager,
@@ -308,6 +309,14 @@ void UpdateAccountInfoForAccount(IdentityManager* identity_manager,
               .account_id.empty());
 
   account_tracker_service->SeedAccountInfo(account_info);
+}
+
+void SimulateAccountImageFetch(IdentityManager* identity_manager,
+                               const CoreAccountId& account_id,
+                               const gfx::Image& image) {
+  AccountTrackerService* account_tracker_service =
+      identity_manager->GetAccountTrackerService();
+  account_tracker_service->SetAccountImage(account_id, image);
 }
 
 void SetFreshnessOfAccountsInGaiaCookie(IdentityManager* identity_manager,

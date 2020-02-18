@@ -52,8 +52,8 @@ class CORE_EXPORT InterpolationEffect
   void Trace(Visitor*);
 
  private:
-  class InterpolationRecord
-      : public GarbageCollectedFinalized<InterpolationRecord> {
+  class InterpolationRecord final
+      : public GarbageCollected<InterpolationRecord> {
    public:
     InterpolationRecord(Interpolation* interpolation,
                         scoped_refptr<TimingFunction> easing,

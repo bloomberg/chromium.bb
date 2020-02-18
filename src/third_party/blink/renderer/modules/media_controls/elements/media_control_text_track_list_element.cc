@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/modules/media_controls/elements/media_control_text_track_list_element.h"
 
+#include "third_party/blink/public/strings/grit/blink_strings.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/dom/events/event_dispatch_forbidden_scope.h"
 #include "third_party/blink/renderer/core/dom/text.h"
@@ -57,7 +58,7 @@ MediaControlTextTrackListElement::MediaControlTextTrackListElement(
   setAttribute(html_names::kRoleAttr, "menu");
   setAttribute(html_names::kAriaLabelAttr,
                WTF::AtomicString(GetLocale().QueryString(
-                   WebLocalizedString::kOverflowMenuCaptionsSubmenuTitle)));
+                   IDS_MEDIA_OVERFLOW_MENU_CLOSED_CAPTIONS_SUBMENU_TITLE)));
   SetShadowPseudoId(AtomicString("-internal-media-controls-text-track-list"));
 }
 
@@ -177,12 +178,12 @@ Element* MediaControlTextTrackListElement::CreateTextTrackHeaderItem() {
   header_item->ParserAppendChild(
       Text::Create(GetDocument(),
                    GetLocale().QueryString(
-                       WebLocalizedString::kOverflowMenuCaptionsSubmenuTitle)));
+                       IDS_MEDIA_OVERFLOW_MENU_CLOSED_CAPTIONS_SUBMENU_TITLE)));
   header_item->setAttribute(html_names::kRoleAttr, "button");
   header_item->setAttribute(
       html_names::kAriaLabelAttr,
       AtomicString(GetLocale().QueryString(
-          WebLocalizedString::kAXMediaHideClosedCaptionsMenuButton)));
+          IDS_AX_MEDIA_HIDE_CLOSED_CAPTIONS_MENU_BUTTON)));
   header_item->setTabIndex(0);
   return header_item;
 }

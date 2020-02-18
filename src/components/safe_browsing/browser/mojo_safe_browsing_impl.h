@@ -10,7 +10,8 @@
 #include "components/safe_browsing/browser/url_checker_delegate.h"
 #include "components/safe_browsing/common/safe_browsing.mojom.h"
 #include "ipc/ipc_message.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 
 namespace content {
 class ResourceContext;
@@ -31,7 +32,7 @@ class MojoSafeBrowsingImpl : public mojom::SafeBrowsing {
       content::ResourceContext* resource_context,
       const base::Callback<scoped_refptr<UrlCheckerDelegate>()>&
           delegate_getter,
-      mojom::SafeBrowsingRequest request);
+      mojo::PendingReceiver<mojom::SafeBrowsing> receiver);
 
  private:
   MojoSafeBrowsingImpl(scoped_refptr<UrlCheckerDelegate> delegate,
@@ -39,25 +40,26 @@ class MojoSafeBrowsingImpl : public mojom::SafeBrowsing {
                        content::ResourceContext* resource_context);
 
   // mojom::SafeBrowsing implementation.
-  void CreateCheckerAndCheck(int32_t render_frame_id,
-                             mojom::SafeBrowsingUrlCheckerRequest request,
-                             const GURL& url,
-                             const std::string& method,
-                             const net::HttpRequestHeaders& headers,
-                             int32_t load_flags,
-                             content::ResourceType resource_type,
-                             bool has_user_gesture,
-                             bool originated_from_service_worker,
-                             CreateCheckerAndCheckCallback callback) override;
-  void Clone(mojom::SafeBrowsingRequest request) override;
+  void CreateCheckerAndCheck(
+      int32_t render_frame_id,
+      mojo::PendingReceiver<mojom::SafeBrowsingUrlChecker> receiver,
+      const GURL& url,
+      const std::string& method,
+      const net::HttpRequestHeaders& headers,
+      int32_t load_flags,
+      content::ResourceType resource_type,
+      bool has_user_gesture,
+      bool originated_from_service_worker,
+      CreateCheckerAndCheckCallback callback) override;
+  void Clone(mojo::PendingReceiver<mojom::SafeBrowsing> receiver) override;
 
-  void OnConnectionError();
+  void OnMojoDisconnect();
 
   // This is an instance of SafeBrowserUserData that is set as user-data on
   // |resource_context_|. SafeBrowserUserData owns |this|.
   const void* user_data_key_ = nullptr;
 
-  mojo::BindingSet<mojom::SafeBrowsing> bindings_;
+  mojo::ReceiverSet<mojom::SafeBrowsing> receivers_;
   scoped_refptr<UrlCheckerDelegate> delegate_;
   int render_process_id_ = MSG_ROUTING_NONE;
 

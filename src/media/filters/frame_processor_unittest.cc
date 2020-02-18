@@ -222,8 +222,8 @@ class FrameProcessorTest : public ::testing::TestWithParam<bool> {
 
     do {
       read_callback_called_ = false;
-      stream->Read(base::Bind(&FrameProcessorTest::StoreStatusAndBuffer,
-                              base::Unretained(this)));
+      stream->Read(base::BindOnce(&FrameProcessorTest::StoreStatusAndBuffer,
+                                  base::Unretained(this)));
       base::RunLoop().RunUntilIdle();
     } while (++loop_count < 2 && read_callback_called_ &&
              last_read_status_ == DemuxerStream::kAborted);
@@ -248,8 +248,8 @@ class FrameProcessorTest : public ::testing::TestWithParam<bool> {
 
       do {
         read_callback_called_ = false;
-        stream->Read(base::Bind(&FrameProcessorTest::StoreStatusAndBuffer,
-                                base::Unretained(this)));
+        stream->Read(base::BindOnce(&FrameProcessorTest::StoreStatusAndBuffer,
+                                    base::Unretained(this)));
         base::RunLoop().RunUntilIdle();
         EXPECT_TRUE(read_callback_called_);
       } while (++loop_count < 2 &&
@@ -298,7 +298,7 @@ class FrameProcessorTest : public ::testing::TestWithParam<bool> {
     stream->StartReturningData();
   }
 
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   StrictMock<MockMediaLog> media_log_;
   StrictMock<FrameProcessorTestCallbackHelper> callbacks_;
 
@@ -345,9 +345,9 @@ class FrameProcessorTest : public ::testing::TestWithParam<bool> {
         ASSERT_FALSE(audio_);
         audio_.reset(
             new ChunkDemuxerStream(DemuxerStream::AUDIO, MediaTrack::Id("1")));
-        AudioDecoderConfig decoder_config(kCodecVorbis, kSampleFormatPlanarF32,
-                                          CHANNEL_LAYOUT_STEREO, 1000,
-                                          EmptyExtraData(), Unencrypted());
+        AudioDecoderConfig decoder_config(
+            kCodecVorbis, kSampleFormatPlanarF32, CHANNEL_LAYOUT_STEREO, 1000,
+            EmptyExtraData(), EncryptionScheme::kUnencrypted);
         frame_processor_->OnPossibleAudioConfigUpdate(decoder_config);
         ASSERT_TRUE(
             audio_->UpdateAudioConfig(decoder_config, false, &media_log_));
@@ -1880,6 +1880,39 @@ TEST_P(FrameProcessorTest,
   // group, if any.)
   CheckExpectedRangesByTimestamp(audio_.get(), "{ [0,34) }");
   CheckReadsThenReadStalls(audio_.get(), "0 10 20 30");
+}
+
+TEST_P(FrameProcessorTest,
+       GroupEndTimestampDecreaseWithinMediaSegmentShouldWarn) {
+  // This parse warning requires:
+  // 1) a decode time discontinuity within the set of frames being processed,
+  // 2) the highest frame end time of any frame successfully processed
+  //    before that discontinuity is higher than the highest frame end time of
+  //    all frames processed after that discontinuity.
+  // TODO(wolenetz): Adjust this case once direction on spec is informed by
+  // data. See https://crbug.com/920853 and
+  // https://github.com/w3c/media-source/issues/203.
+  if (use_sequence_mode_) {
+    // Sequence mode modifies the presentation timestamps following a decode
+    // discontinuity such that this scenario should not repro with that mode.
+    DVLOG(1) << "Skipping segments mode variant; inapplicable to this case.";
+    return;
+  }
+
+  InSequence s;
+  AddTestTracks(HAS_VIDEO);
+
+  EXPECT_CALL(callbacks_,
+              OnParseWarning(SourceBufferParseWarning::
+                                 kGroupEndTimestampDecreaseWithinMediaSegment));
+
+  frame_duration_ = Milliseconds(10);
+  EXPECT_CALL(callbacks_, PossibleDurationIncrease(Milliseconds(15)));
+  EXPECT_TRUE(ProcessFrames("", "0K 10K 5|40K"));
+  EXPECT_EQ(Milliseconds(0), timestamp_offset_);
+
+  CheckExpectedRangesByTimestamp(video_.get(), "{ [0,15) }");
+  CheckReadsThenReadStalls(video_.get(), "0 5");
 }
 
 INSTANTIATE_TEST_SUITE_P(SequenceMode, FrameProcessorTest, Values(true));

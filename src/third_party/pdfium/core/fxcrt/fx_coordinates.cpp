@@ -11,6 +11,7 @@
 #include "build/build_config.h"
 #include "core/fxcrt/fx_extension.h"
 #include "core/fxcrt/fx_safe_types.h"
+#include "third_party/base/numerics/safe_conversions.h"
 
 namespace {
 
@@ -127,10 +128,10 @@ void CFX_FloatRect::Union(const CFX_FloatRect& other_rect) {
 
 FX_RECT CFX_FloatRect::GetOuterRect() const {
   FX_RECT rect;
-  rect.left = static_cast<int>(floor(left));
-  rect.bottom = static_cast<int>(ceil(top));
-  rect.right = static_cast<int>(ceil(right));
-  rect.top = static_cast<int>(floor(bottom));
+  rect.left = pdfium::base::saturated_cast<int>(floor(left));
+  rect.bottom = pdfium::base::saturated_cast<int>(ceil(top));
+  rect.right = pdfium::base::saturated_cast<int>(ceil(right));
+  rect.top = pdfium::base::saturated_cast<int>(floor(bottom));
   rect.Normalize();
   return rect;
 }
@@ -264,8 +265,8 @@ FX_RECT CFX_FloatRect::ToFxRect() const {
 }
 
 FX_RECT CFX_FloatRect::ToRoundedFxRect() const {
-  return FX_RECT(FXSYS_round(left), FXSYS_round(top), FXSYS_round(right),
-                 FXSYS_round(bottom));
+  return FX_RECT(FXSYS_roundf(left), FXSYS_roundf(top), FXSYS_roundf(right),
+                 FXSYS_roundf(bottom));
 }
 
 FX_RECT CFX_RectF::GetOuterRect() const {

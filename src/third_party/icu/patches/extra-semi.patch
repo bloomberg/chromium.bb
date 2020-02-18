@@ -1,0 +1,13 @@
+diff --git a/source/i18n/unicode/numberformatter.h b/source/i18n/unicode/numberformatter.h
+index 6d48f18a..42d4687e 100644
+--- a/source/i18n/unicode/numberformatter.h
++++ b/source/i18n/unicode/numberformatter.h
+@@ -2600,7 +2600,7 @@ StringClass FormattedNumber::toDecimalNumber(UErrorCode& status) const {
+     StringByteSink<StringClass> sink(&result);
+     toDecimalNumber(sink, status);
+     return result;
+-};
++}
+ #endif // U_HIDE_DRAFT_API
+ 
+ /**

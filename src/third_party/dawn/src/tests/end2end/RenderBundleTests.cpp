@@ -16,22 +16,22 @@
 
 #include "utils/ComboRenderBundleEncoderDescriptor.h"
 #include "utils/ComboRenderPipelineDescriptor.h"
-#include "utils/DawnHelpers.h"
+#include "utils/WGPUHelpers.h"
 
 constexpr uint32_t kRTSize = 4;
-constexpr RGBA8 kColors[2] = {RGBA8(0, 255, 0, 255), RGBA8(0, 0, 255, 255)};
+const RGBA8 kColors[2] = {RGBA8::kGreen, RGBA8::kBlue};
 
 // RenderBundleTest tests simple usage of RenderBundles to draw. The implementaiton
 // of RenderBundle is shared significantly with render pass execution which is
 // tested in all other rendering tests.
 class RenderBundleTest : public DawnTest {
   protected:
-    void SetUp() override {
-        DawnTest::SetUp();
+    void TestSetUp() override {
+        DawnTest::TestSetUp();
 
         renderPass = utils::CreateBasicRenderPass(device, kRTSize, kRTSize);
 
-        dawn::ShaderModule vsModule =
+        wgpu::ShaderModule vsModule =
             utils::CreateShaderModule(device, utils::SingleShaderStage::Vertex, R"(
                 #version 450
                 layout(location = 0) in vec4 pos;
@@ -39,7 +39,7 @@ class RenderBundleTest : public DawnTest {
                     gl_Position = pos;
                 })");
 
-        dawn::ShaderModule fsModule =
+        wgpu::ShaderModule fsModule =
             utils::CreateShaderModule(device, utils::SingleShaderStage::Fragment, R"(
                 #version 450
                 layout(location = 0) out vec4 fragColor;
@@ -50,54 +50,46 @@ class RenderBundleTest : public DawnTest {
                     fragColor = color;
                 })");
 
-        dawn::BindGroupLayout bgl = utils::MakeBindGroupLayout(
-            device, {{0, dawn::ShaderStage::Fragment, dawn::BindingType::UniformBuffer}});
+        utils::ComboRenderPipelineDescriptor descriptor(device);
+        descriptor.vertexStage.module = vsModule;
+        descriptor.cFragmentStage.module = fsModule;
+        descriptor.primitiveTopology = wgpu::PrimitiveTopology::TriangleStrip;
+        descriptor.cVertexState.vertexBufferCount = 1;
+        descriptor.cVertexState.cVertexBuffers[0].arrayStride = 4 * sizeof(float);
+        descriptor.cVertexState.cVertexBuffers[0].attributeCount = 1;
+        descriptor.cVertexState.cAttributes[0].format = wgpu::VertexFormat::Float4;
+        descriptor.cColorStates[0].format = renderPass.colorFormat;
+
+        pipeline = device.CreateRenderPipeline(&descriptor);
 
         float colors0[] = {kColors[0].r / 255.f, kColors[0].g / 255.f, kColors[0].b / 255.f,
                            kColors[0].a / 255.f};
         float colors1[] = {kColors[1].r / 255.f, kColors[1].g / 255.f, kColors[1].b / 255.f,
                            kColors[1].a / 255.f};
 
-        dawn::Buffer buffer0 = utils::CreateBufferFromData(device, colors0, 4 * sizeof(float),
-                                                           dawn::BufferUsage::Uniform);
-        dawn::Buffer buffer1 = utils::CreateBufferFromData(device, colors1, 4 * sizeof(float),
-                                                           dawn::BufferUsage::Uniform);
+        wgpu::Buffer buffer0 = utils::CreateBufferFromData(device, colors0, 4 * sizeof(float),
+                                                           wgpu::BufferUsage::Uniform);
+        wgpu::Buffer buffer1 = utils::CreateBufferFromData(device, colors1, 4 * sizeof(float),
+                                                           wgpu::BufferUsage::Uniform);
 
-        bindGroups[0] = utils::MakeBindGroup(device, bgl, {{0, buffer0, 0, 4 * sizeof(float)}});
-        bindGroups[1] = utils::MakeBindGroup(device, bgl, {{0, buffer1, 0, 4 * sizeof(float)}});
-
-        dawn::PipelineLayoutDescriptor pipelineLayoutDesc;
-        pipelineLayoutDesc.bindGroupLayoutCount = 1;
-        pipelineLayoutDesc.bindGroupLayouts = &bgl;
-
-        dawn::PipelineLayout pipelineLayout = device.CreatePipelineLayout(&pipelineLayoutDesc);
-
-        utils::ComboRenderPipelineDescriptor descriptor(device);
-        descriptor.layout = pipelineLayout;
-        descriptor.vertexStage.module = vsModule;
-        descriptor.cFragmentStage.module = fsModule;
-        descriptor.primitiveTopology = dawn::PrimitiveTopology::TriangleStrip;
-        descriptor.cVertexInput.bufferCount = 1;
-        descriptor.cVertexInput.cBuffers[0].stride = 4 * sizeof(float);
-        descriptor.cVertexInput.cBuffers[0].attributeCount = 1;
-        descriptor.cVertexInput.cAttributes[0].format = dawn::VertexFormat::Float4;
-        descriptor.cColorStates[0]->format = renderPass.colorFormat;
-
-        pipeline = device.CreateRenderPipeline(&descriptor);
+        bindGroups[0] = utils::MakeBindGroup(device, pipeline.GetBindGroupLayout(0),
+                                             {{0, buffer0, 0, 4 * sizeof(float)}});
+        bindGroups[1] = utils::MakeBindGroup(device, pipeline.GetBindGroupLayout(0),
+                                             {{0, buffer1, 0, 4 * sizeof(float)}});
 
         vertexBuffer = utils::CreateBufferFromData<float>(
-            device, dawn::BufferUsage::Vertex,
+            device, wgpu::BufferUsage::Vertex,
             {// The bottom left triangle
-             -1.0f, -1.0f, 0.0f, 1.0f, 1.0f, 1.0f, 0.0f, 1.0f, -1.0f, 1.0f, 0.0f, 1.0f,
+             -1.0f, 1.0f, 0.0f, 1.0f, 1.0f, -1.0f, 0.0f, 1.0f, -1.0f, -1.0f, 0.0f, 1.0f,
 
              // The top right triangle
-             -1.0f, -1.0f, 0.0f, 1.0f, 1.0f, 1.0f, 0.0f, 1.0f, 1.0f, -1.0f, 0.0f, 1.0f});
+             -1.0f, 1.0f, 0.0f, 1.0f, 1.0f, -1.0f, 0.0f, 1.0f, 1.0f, 1.0f, 0.0f, 1.0f});
     }
 
     utils::BasicRenderPass renderPass;
-    dawn::RenderPipeline pipeline;
-    dawn::Buffer vertexBuffer;
-    dawn::BindGroup bindGroups[2];
+    wgpu::RenderPipeline pipeline;
+    wgpu::Buffer vertexBuffer;
+    wgpu::BindGroup bindGroups[2];
 };
 
 // Basic test of RenderBundle.
@@ -106,23 +98,22 @@ TEST_P(RenderBundleTest, Basic) {
     desc.colorFormatsCount = 1;
     desc.cColorFormats[0] = renderPass.colorFormat;
 
-    dawn::RenderBundleEncoder renderBundleEncoder = device.CreateRenderBundleEncoder(&desc);
+    wgpu::RenderBundleEncoder renderBundleEncoder = device.CreateRenderBundleEncoder(&desc);
 
-    uint64_t zeroOffset = 0;
     renderBundleEncoder.SetPipeline(pipeline);
-    renderBundleEncoder.SetVertexBuffers(0, 1, &vertexBuffer, &zeroOffset);
-    renderBundleEncoder.SetBindGroup(0, bindGroups[0], 0, nullptr);
+    renderBundleEncoder.SetVertexBuffer(0, vertexBuffer);
+    renderBundleEncoder.SetBindGroup(0, bindGroups[0]);
     renderBundleEncoder.Draw(6, 1, 0, 0);
 
-    dawn::RenderBundle renderBundle = renderBundleEncoder.Finish();
+    wgpu::RenderBundle renderBundle = renderBundleEncoder.Finish();
 
-    dawn::CommandEncoder encoder = device.CreateCommandEncoder();
+    wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
 
-    dawn::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPass.renderPassInfo);
+    wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPass.renderPassInfo);
     pass.ExecuteBundles(1, &renderBundle);
     pass.EndPass();
 
-    dawn::CommandBuffer commands = encoder.Finish();
+    wgpu::CommandBuffer commands = encoder.Finish();
     queue.Submit(1, &commands);
 
     EXPECT_PIXEL_RGBA8_EQ(kColors[0], renderPass.color, 1, 3);
@@ -135,36 +126,35 @@ TEST_P(RenderBundleTest, MultipleBundles) {
     desc.colorFormatsCount = 1;
     desc.cColorFormats[0] = renderPass.colorFormat;
 
-    dawn::RenderBundle renderBundles[2];
-    uint64_t zeroOffset = 0;
+    wgpu::RenderBundle renderBundles[2];
     {
-        dawn::RenderBundleEncoder renderBundleEncoder = device.CreateRenderBundleEncoder(&desc);
+        wgpu::RenderBundleEncoder renderBundleEncoder = device.CreateRenderBundleEncoder(&desc);
 
         renderBundleEncoder.SetPipeline(pipeline);
-        renderBundleEncoder.SetVertexBuffers(0, 1, &vertexBuffer, &zeroOffset);
-        renderBundleEncoder.SetBindGroup(0, bindGroups[0], 0, nullptr);
+        renderBundleEncoder.SetVertexBuffer(0, vertexBuffer);
+        renderBundleEncoder.SetBindGroup(0, bindGroups[0]);
         renderBundleEncoder.Draw(3, 1, 0, 0);
 
         renderBundles[0] = renderBundleEncoder.Finish();
     }
     {
-        dawn::RenderBundleEncoder renderBundleEncoder = device.CreateRenderBundleEncoder(&desc);
+        wgpu::RenderBundleEncoder renderBundleEncoder = device.CreateRenderBundleEncoder(&desc);
 
         renderBundleEncoder.SetPipeline(pipeline);
-        renderBundleEncoder.SetVertexBuffers(0, 1, &vertexBuffer, &zeroOffset);
-        renderBundleEncoder.SetBindGroup(0, bindGroups[1], 0, nullptr);
+        renderBundleEncoder.SetVertexBuffer(0, vertexBuffer);
+        renderBundleEncoder.SetBindGroup(0, bindGroups[1]);
         renderBundleEncoder.Draw(3, 1, 3, 0);
 
         renderBundles[1] = renderBundleEncoder.Finish();
     }
 
-    dawn::CommandEncoder encoder = device.CreateCommandEncoder();
+    wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
 
-    dawn::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPass.renderPassInfo);
+    wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPass.renderPassInfo);
     pass.ExecuteBundles(2, renderBundles);
     pass.EndPass();
 
-    dawn::CommandBuffer commands = encoder.Finish();
+    wgpu::CommandBuffer commands = encoder.Finish();
     queue.Submit(1, &commands);
 
     EXPECT_PIXEL_RGBA8_EQ(kColors[0], renderPass.color, 1, 3);
@@ -177,30 +167,29 @@ TEST_P(RenderBundleTest, BundleAndRenderPassCommands) {
     desc.colorFormatsCount = 1;
     desc.cColorFormats[0] = renderPass.colorFormat;
 
-    dawn::RenderBundleEncoder renderBundleEncoder = device.CreateRenderBundleEncoder(&desc);
+    wgpu::RenderBundleEncoder renderBundleEncoder = device.CreateRenderBundleEncoder(&desc);
 
-    uint64_t zeroOffset = 0;
     renderBundleEncoder.SetPipeline(pipeline);
-    renderBundleEncoder.SetVertexBuffers(0, 1, &vertexBuffer, &zeroOffset);
-    renderBundleEncoder.SetBindGroup(0, bindGroups[0], 0, nullptr);
+    renderBundleEncoder.SetVertexBuffer(0, vertexBuffer);
+    renderBundleEncoder.SetBindGroup(0, bindGroups[0]);
     renderBundleEncoder.Draw(3, 1, 0, 0);
 
-    dawn::RenderBundle renderBundle = renderBundleEncoder.Finish();
+    wgpu::RenderBundle renderBundle = renderBundleEncoder.Finish();
 
-    dawn::CommandEncoder encoder = device.CreateCommandEncoder();
+    wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
 
-    dawn::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPass.renderPassInfo);
+    wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPass.renderPassInfo);
     pass.ExecuteBundles(1, &renderBundle);
 
     pass.SetPipeline(pipeline);
-    pass.SetVertexBuffers(0, 1, &vertexBuffer, &zeroOffset);
-    pass.SetBindGroup(0, bindGroups[1], 0, nullptr);
+    pass.SetVertexBuffer(0, vertexBuffer);
+    pass.SetBindGroup(0, bindGroups[1]);
     pass.Draw(3, 1, 3, 0);
 
     pass.ExecuteBundles(1, &renderBundle);
     pass.EndPass();
 
-    dawn::CommandBuffer commands = encoder.Finish();
+    wgpu::CommandBuffer commands = encoder.Finish();
     queue.Submit(1, &commands);
 
     EXPECT_PIXEL_RGBA8_EQ(kColors[0], renderPass.color, 1, 3);

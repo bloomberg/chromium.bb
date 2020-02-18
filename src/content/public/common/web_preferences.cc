@@ -98,7 +98,6 @@ WebPreferences::WebPreferences()
       flash_stage3d_baseline_enabled(false),
       privileged_webgl_extensions_enabled(false),
       webgl_errors_to_console_enabled(true),
-      mock_scrollbars_enabled(false),
       hide_scrollbars(false),
       accelerated_2d_canvas_enabled(false),
       antialiased_2d_canvas_disabled(false),
@@ -165,7 +164,6 @@ WebPreferences::WebPreferences()
 #endif
       spatial_navigation_enabled(false),
       caret_browsing_enabled(false),
-      use_solid_color_scrollbars(false),
       navigate_on_drag_drop(true),
       v8_cache_options(blink::mojom::V8CacheOptions::kDefault),
       record_whole_document(false),
@@ -209,6 +207,7 @@ WebPreferences::WebPreferences()
       scroll_top_left_interop_enabled(true),
       disable_features_depending_on_viz(false),
       disable_accelerated_small_canvases(false),
+      reenable_web_components_v0(false),
 #endif  // defined(OS_ANDROID)
 #if defined(OS_ANDROID)
       default_minimum_page_scale_factor(0.25f),
@@ -225,13 +224,12 @@ WebPreferences::WebPreferences()
       media_controls_enabled(true),
       do_not_update_selection_on_mutating_selection_range(false),
       autoplay_policy(AutoplayPolicy::kDocumentUserActivationRequired),
-      preferred_color_scheme(blink::PreferredColorScheme::kNoPreference),
-      forced_colors(blink::ForcedColors::kNone),
       low_priority_iframes_threshold(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN),
       picture_in_picture_enabled(true),
       translate_service_available(false),
       network_quality_estimator_web_holdback(
-          net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN) {
+          net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN),
+      allow_mixed_content_upgrades(true) {
   standard_font_family_map[kCommonScript] =
       base::ASCIIToUTF16("Times New Roman");
   fixed_font_family_map[kCommonScript] = base::ASCIIToUTF16("Courier New");

@@ -8,6 +8,7 @@
 
 #include "build/build_config.h"
 #include "core/fpdfapi/parser/fpdf_parser_decode.h"
+#include "core/fxcrt/fx_memory_wrappers.h"
 #include "public/cpp/fpdf_scopers.h"
 #include "testing/embedder_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -110,7 +111,13 @@ TEST_F(FPDFParserDecodeEmbedderTest, Bug_555784) {
   UnloadPage(page);
 }
 
-TEST_F(FPDFParserDecodeEmbedderTest, Bug_455199) {
+// TODO(crbug.com/pdfium/11): Fix this test and enable.
+#if defined(_SKIA_SUPPORT_) || defined(_SKIA_SUPPORT_PATHS_)
+#define MAYBE_Bug_455199 DISABLED_Bug_455199
+#else
+#define MAYBE_Bug_455199 Bug_455199
+#endif
+TEST_F(FPDFParserDecodeEmbedderTest, MAYBE_Bug_455199) {
   // Tests object numbers with a value > 01000000.
   // Should open successfully.
   EXPECT_TRUE(OpenDocument("bug_455199.pdf"));

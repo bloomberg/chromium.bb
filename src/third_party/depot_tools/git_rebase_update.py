@@ -57,12 +57,12 @@ def fetch_remotes(branch_tree):
     dest_spec = fetchspec.partition(':')[2]
     remote_name = key.split('.')[1]
     fetchspec_map[dest_spec] = remote_name
-  for parent in branch_tree.itervalues():
+  for parent in branch_tree.values():
     if parent in tag_set:
       fetch_tags = True
     else:
       full_ref = git.run('rev-parse', '--symbolic-full-name', parent)
-      for dest_spec, remote_name in fetchspec_map.iteritems():
+      for dest_spec, remote_name in fetchspec_map.items():
         if fnmatch(full_ref, dest_spec):
           remotes.add(remote_name)
           break
@@ -121,7 +121,7 @@ def remove_empty_branches(branch_tree):
           reparents[down] = (order, parent, old_parent)
 
   # Apply all reparenting recorded, in order.
-  for branch, value in sorted(reparents.iteritems(), key=lambda x:x[1][0]):
+  for branch, value in sorted(reparents.items(), key=lambda x:x[1][0]):
     _, parent, old_parent = value
     if parent in tag_set:
       git.set_branch_config(branch, 'remote', '.')
@@ -134,7 +134,7 @@ def remove_empty_branches(branch_tree):
                                                              old_parent))
 
   # Apply all deletions recorded, in order.
-  for branch, _ in sorted(deletions.iteritems(), key=lambda x: x[1]):
+  for branch, _ in sorted(deletions.items(), key=lambda x: x[1]):
     print(git.run('branch', '-d', branch))
 
 
@@ -272,7 +272,7 @@ def main(args=None):
     fetch_remotes(branch_tree)
 
   merge_base = {}
-  for branch, parent in branch_tree.iteritems():
+  for branch, parent in branch_tree.items():
     merge_base[branch] = git.get_or_create_merge_base(branch, parent)
 
   logging.debug('branch_tree: %s' % pformat(branch_tree))
@@ -320,8 +320,8 @@ def main(args=None):
     else:
       root_branch = git.root()
       if return_branch != 'HEAD':
-        print("%r was merged with its parent, checking out %r instead." %
-              (return_branch, root_branch))
+        print("%s was merged with its parent, checking out %s instead." %
+              (git.unicode_repr(return_branch), git.unicode_repr(root_branch)))
       git.run('checkout', root_branch)
 
     # return_workdir may also not be there any more.

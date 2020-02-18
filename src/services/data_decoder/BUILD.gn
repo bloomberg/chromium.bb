@@ -6,16 +6,14 @@ import("//testing/libfuzzer/fuzzer_test.gni")
 
 source_set("lib") {
   sources = [
-    "bundled_exchanges_parser.cc",
-    "bundled_exchanges_parser.h",
-    "bundled_exchanges_parser_factory.cc",
-    "bundled_exchanges_parser_factory.h",
     "data_decoder_service.cc",
     "data_decoder_service.h",
-    "image_decoder_impl.cc",
-    "image_decoder_impl.h",
     "json_parser_impl.cc",
     "json_parser_impl.h",
+    "web_bundle_parser.cc",
+    "web_bundle_parser.h",
+    "web_bundle_parser_factory.cc",
+    "web_bundle_parser_factory.h",
     "xml_parser.cc",
     "xml_parser.h",
   ]
@@ -35,29 +33,35 @@ source_set("lib") {
     "//mojo/public/cpp/bindings",
     "//net",
     "//skia",
-    "//third_party/blink/public:blink",
-    "//third_party/libxml",
+    "//third_party/libxml:xml_reader",
     "//ui/gfx",
     "//ui/gfx/geometry",
   ]
 
   public_deps = [
     "//services/data_decoder/public/mojom",
-    "//services/service_manager/public/cpp",
   ]
+
+  if (!is_ios) {
+    sources += [
+      "image_decoder_impl.cc",
+      "image_decoder_impl.h",
+    ]
+
+    deps += [ "//third_party/blink/public:blink" ]
+  }
 }
 
 source_set("tests") {
   testonly = true
 
   sources = [
-    "bundled_exchanges_parser_factory_unittest.cc",
-    "bundled_exchanges_parser_unittest.cc",
-    "image_decoder_impl_unittest.cc",
+    "public/cpp/data_decoder_unittest.cc",
     "public/cpp/json_sanitizer_unittest.cc",
-    "public/cpp/safe_bundled_exchanges_parser_unittest.cc",
+    "public/cpp/safe_web_bundle_parser_unittest.cc",
     "public/cpp/safe_xml_parser_unittest.cc",
-    "public/cpp/testing_json_parser_unittest.cc",
+    "web_bundle_parser_factory_unittest.cc",
+    "web_bundle_parser_unittest.cc",
     "xml_parser_unittest.cc",
   ]
 
@@ -70,36 +74,40 @@ source_set("tests") {
     "//base",
     "//base/test:test_support",
     "//components/cbor",
-    "//gin",
-    "//gin:gin_test",
     "//services/data_decoder/public/cpp",
     "//services/data_decoder/public/cpp:test_support",
     "//skia",
     "//testing/gtest",
-    "//third_party/blink/public:blink",
     "//ui/gfx",
   ]
 
-  data_deps = [
-    "//tools/v8_context_snapshot",
-  ]
-
-  configs += [
-    "//tools/v8_context_snapshot:use_v8_context_snapshot",
-    "//v8:external_startup_data",
-  ]
+  if (!is_ios) {
+    sources += [ "image_decoder_impl_unittest.cc" ]
+    deps += [
+      "//gin",
+      "//gin:gin_test",
+      "//third_party/blink/public:blink",
+    ]
+    data_deps = [
+      "//tools/v8_context_snapshot",
+    ]
+    configs += [
+      "//tools/v8_context_snapshot:use_v8_context_snapshot",
+      "//v8:external_startup_data",
+    ]
+  }
 }
 
-fuzzer_test("bundled_exchanges_parser_fuzzer") {
+fuzzer_test("web_bundle_parser_fuzzer") {
   sources = [
-    "bundled_exchanges_parser_fuzzer.cc",
+    "web_bundle_parser_fuzzer.cc",
   ]
   deps = [
     ":lib",
     "//base",
     "//mojo/core/embedder",
   ]
-  seed_corpus = "//services/test/data/bundled_exchanges"
+  seed_corpus = "//services/test/data/web_bundle"
 }
 
 fuzzer_test("xml_parser_fuzzer") {
@@ -109,7 +117,8 @@ fuzzer_test("xml_parser_fuzzer") {
   deps = [
     ":lib",
     "//base",
-    "//third_party/libxml:libxml",
+    "//third_party/libxml:libxml_utils",
+    "//third_party/libxml:xml_reader",
   ]
   dict = "//third_party/libxml/fuzz/xml.dict"
   seed_corpus = "//third_party/libxml/fuzz/seed_corpus"

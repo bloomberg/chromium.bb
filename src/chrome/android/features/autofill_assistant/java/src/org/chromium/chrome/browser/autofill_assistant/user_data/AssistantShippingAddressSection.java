@@ -5,11 +5,13 @@
 package org.chromium.chrome.browser.autofill_assistant.user_data;
 
 import android.content.Context;
-import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+
+import androidx.annotation.DrawableRes;
+import androidx.annotation.Nullable;
 
 import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
@@ -33,7 +35,7 @@ public class AssistantShippingAddressSection
                 context.getResources().getDimensionPixelSize(
                         R.dimen.autofill_assistant_payment_request_title_padding),
                 context.getString(R.string.payments_add_address),
-                context.getString(R.string.payments_add_address), /*canEditItems=*/true);
+                context.getString(R.string.payments_add_address));
         setTitle(context.getString(R.string.payments_shipping_address_label));
     }
 
@@ -90,6 +92,21 @@ public class AssistantShippingAddressSection
 
         TextView methodIncompleteView = summaryView.findViewById(R.id.incomplete_error);
         methodIncompleteView.setVisibility(address.isComplete() ? View.GONE : View.VISIBLE);
+    }
+
+    @Override
+    protected boolean canEditOption(AutofillAddress address) {
+        return true;
+    }
+
+    @Override
+    protected @DrawableRes int getEditButtonDrawable(AutofillAddress address) {
+        return R.drawable.ic_edit_24dp;
+    }
+
+    @Override
+    protected String getEditButtonContentDescription(AutofillAddress address) {
+        return mContext.getString(R.string.payments_edit_address);
     }
 
     void onProfilesChanged(List<PersonalDataManager.AutofillProfile> profiles) {

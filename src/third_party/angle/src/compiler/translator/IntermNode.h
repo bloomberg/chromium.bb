@@ -38,7 +38,7 @@ class TDiagnostics;
 class TIntermTraverser;
 class TIntermAggregate;
 class TIntermBlock;
-class TIntermInvariantDeclaration;
+class TIntermGlobalQualifierDeclaration;
 class TIntermDeclaration;
 class TIntermFunctionPrototype;
 class TIntermFunctionDefinition;
@@ -90,7 +90,10 @@ class TIntermNode : angle::NonCopyable
     virtual TIntermAggregate *getAsAggregate() { return nullptr; }
     virtual TIntermBlock *getAsBlock() { return nullptr; }
     virtual TIntermFunctionPrototype *getAsFunctionPrototypeNode() { return nullptr; }
-    virtual TIntermInvariantDeclaration *getAsInvariantDeclarationNode() { return nullptr; }
+    virtual TIntermGlobalQualifierDeclaration *getAsGlobalQualifierDeclarationNode()
+    {
+        return nullptr;
+    }
     virtual TIntermDeclaration *getAsDeclarationNode() { return nullptr; }
     virtual TIntermSwizzle *getAsSwizzleNode() { return nullptr; }
     virtual TIntermBinary *getAsBinaryNode() { return nullptr; }
@@ -594,7 +597,7 @@ class TIntermAggregate : public TIntermOperator, public TIntermAggregateBase
     static TIntermAggregate *CreateBuiltInFunctionCall(const TFunction &func,
                                                        TIntermSequence *arguments);
     static TIntermAggregate *CreateConstructor(const TType &type, TIntermSequence *arguments);
-    ~TIntermAggregate() {}
+    ~TIntermAggregate() override {}
 
     // Note: only supported for nodes that can be a part of an expression.
     TIntermTyped *deepCopy() const override { return new TIntermAggregate(*this); }
@@ -671,7 +674,7 @@ class TIntermBlock : public TIntermNode, public TIntermAggregateBase
 {
   public:
     TIntermBlock() : TIntermNode() {}
-    ~TIntermBlock() {}
+    ~TIntermBlock() override {}
 
     TIntermBlock *getAsBlock() override { return this; }
     void traverse(TIntermTraverser *it) final;
@@ -703,7 +706,7 @@ class TIntermFunctionPrototype : public TIntermTyped
 {
   public:
     TIntermFunctionPrototype(const TFunction *function);
-    ~TIntermFunctionPrototype() {}
+    ~TIntermFunctionPrototype() override {}
 
     TIntermFunctionPrototype *getAsFunctionPrototypeNode() override { return this; }
     void traverse(TIntermTraverser *it) final;
@@ -773,7 +776,7 @@ class TIntermDeclaration : public TIntermNode, public TIntermAggregateBase
 {
   public:
     TIntermDeclaration() : TIntermNode() {}
-    ~TIntermDeclaration() {}
+    ~TIntermDeclaration() override {}
 
     TIntermDeclaration *getAsDeclarationNode() override { return this; }
     bool visit(Visit visit, TIntermTraverser *it) final;
@@ -801,12 +804,15 @@ class TIntermDeclaration : public TIntermNode, public TIntermAggregateBase
 };
 
 // Specialized declarations for attributing invariance.
-class TIntermInvariantDeclaration : public TIntermNode
+class TIntermGlobalQualifierDeclaration : public TIntermNode
 {
   public:
-    TIntermInvariantDeclaration(TIntermSymbol *symbol, const TSourceLoc &line);
+    TIntermGlobalQualifierDeclaration(TIntermSymbol *symbol, const TSourceLoc &line);
 
-    virtual TIntermInvariantDeclaration *getAsInvariantDeclarationNode() override { return this; }
+    virtual TIntermGlobalQualifierDeclaration *getAsGlobalQualifierDeclarationNode() override
+    {
+        return this;
+    }
     bool visit(Visit visit, TIntermTraverser *it) final;
 
     TIntermSymbol *getSymbol() { return mSymbol; }
@@ -815,15 +821,15 @@ class TIntermInvariantDeclaration : public TIntermNode
     TIntermNode *getChildNode(size_t index) const final;
     bool replaceChildNode(TIntermNode *original, TIntermNode *replacement) override;
 
-    TIntermInvariantDeclaration *deepCopy() const override
+    TIntermGlobalQualifierDeclaration *deepCopy() const override
     {
-        return new TIntermInvariantDeclaration(*this);
+        return new TIntermGlobalQualifierDeclaration(*this);
     }
 
   private:
     TIntermSymbol *mSymbol;
 
-    TIntermInvariantDeclaration(const TIntermInvariantDeclaration &);
+    TIntermGlobalQualifierDeclaration(const TIntermGlobalQualifierDeclaration &);
 };
 
 // For ternary operators like a ? b : c.
@@ -963,7 +969,7 @@ enum class PreprocessorDirective
     Endif,
 };
 
-class TIntermPreprocessorDirective : public TIntermNode
+class TIntermPreprocessorDirective final : public TIntermNode
 {
   public:
     // This could also take an ImmutableString as an argument.

@@ -10,12 +10,6 @@ Tree: v1.2.0
 Revision: bcdbb81201faad37270b03f59a29f2f27cb70312
 Tree link: https://github.com/webcomponents/html-imports/tree/v1.2.0
 
-Name: html-imports
-Repository: https://github.com/webcomponents/html-imports.git
-Tree: v0
-Revision: 5832a3028a3bb6f8f29f0c53b0c8d631efdfa0b4
-Tree link: https://github.com/webcomponents/html-imports/tree/v0
-
 Name: iron-a11y-announcer
 Repository: https://github.com/PolymerElements/iron-a11y-announcer.git
 Tree: v2.1.0
@@ -84,9 +78,9 @@ Tree link: https://github.com/PolymerElements/iron-input/tree/v2.1.3
 
 Name: iron-list
 Repository: https://github.com/PolymerElements/iron-list.git
-Tree: v2.0.19
-Revision: 613dca4aa54ddf6ecf827e2e92ea6dfc4cd58280
-Tree link: https://github.com/PolymerElements/iron-list/tree/v2.0.19
+Tree: v2.0.20
+Revision: 22dd6cc83673a717b12b2d67a5ca9a32b0587ad9
+Tree link: https://github.com/PolymerElements/iron-list/tree/v2.0.20
 
 Name: iron-location
 Repository: https://github.com/PolymerElements/iron-location.git

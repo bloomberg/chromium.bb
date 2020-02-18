@@ -18,7 +18,6 @@
 #include "build/build_config.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/child_process_security_policy_impl.h"
-#include "content/browser/devtools/devtools_frame_trace_recorder.h"
 #include "content/browser/devtools/devtools_manager.h"
 #include "content/browser/devtools/devtools_renderer_channel.h"
 #include "content/browser/devtools/devtools_session.h"
@@ -41,7 +40,6 @@
 #include "content/browser/devtools/protocol/storage_handler.h"
 #include "content/browser/devtools/protocol/target_handler.h"
 #include "content/browser/devtools/protocol/tracing_handler.h"
-#include "content/browser/frame_host/navigation_handle_impl.h"
 #include "content/browser/frame_host/navigation_request.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
@@ -50,6 +48,7 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/browser/web_package/signed_exchange_envelope.h"
 #include "content/common/view_messages.h"
+#include "content/public/browser/back_forward_cache.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -63,6 +62,7 @@
 #include "third_party/blink/public/mojom/devtools/devtools_agent.mojom.h"
 
 #if defined(OS_ANDROID)
+#include "content/browser/devtools/devtools_frame_trace_recorder.h"
 #include "content/browser/renderer_host/compositor_impl_android.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -143,16 +143,16 @@ scoped_refptr<DevToolsAgentHost> RenderFrameDevToolsAgentHost::GetOrCreateFor(
 // static
 scoped_refptr<DevToolsAgentHost>
 RenderFrameDevToolsAgentHost::CreateForCrossProcessNavigation(
-    NavigationHandleImpl* handle) {
+    NavigationRequest* request) {
   // Note that this method does not use FrameTreeNode::current_frame_host(),
   // since it is used while the frame host may not be set as current yet,
   // for example right before commit time. Instead target frame from the
   // navigation handle is used. When this method is invoked it's already known
   // that the navigation will commit to the new frame host.
-  FrameTreeNode* frame_tree_node = handle->frame_tree_node();
+  FrameTreeNode* frame_tree_node = request->frame_tree_node();
   DCHECK(!FindAgentHost(frame_tree_node));
   return new RenderFrameDevToolsAgentHost(frame_tree_node,
-                                          handle->GetRenderFrameHost());
+                                          request->GetRenderFrameHost());
 }
 
 // static
@@ -320,8 +320,7 @@ bool RenderFrameDevToolsAgentHost::AttachSession(DevToolsSession* session) {
           : protocol::TargetHandler::AccessMode::kAutoAttachOnly,
       GetId(), GetRendererChannel(), session->GetRootSession()));
   session->AddHandler(std::make_unique<protocol::PageHandler>(
-      emulation_handler_ptr, &active_file_chooser_interceptor_,
-      session->client()->MayWriteLocalFiles(),
+      emulation_handler_ptr, session->client()->MayWriteLocalFiles(),
       session->client()->MayReadLocalFiles()));
   session->AddHandler(std::make_unique<protocol::SecurityHandler>());
   if (!frame_tree_node_ || !frame_tree_node_->parent()) {
@@ -333,16 +332,13 @@ bool RenderFrameDevToolsAgentHost::AttachSession(DevToolsSession* session) {
 #endif  // !defined(OS_ANDROID)
 
   if (sessions().empty()) {
-    bool use_video_capture_api = true;
 #ifdef OS_ANDROID
-    // Video capture API cannot be used on Android WebView.
+    // With video capture API snapshots happen in TracingHandler. However, the
+    // video capture API cannot be used with Android WebView so
+    // DevToolsFrameTraceRecorder takes snapshots.
     if (!CompositorImpl::IsInitialized())
-      use_video_capture_api = false;
-#endif
-    // When video capture API is used, don't instantiate
-    // DevToolsFrameTraceRecorder. Taking snapshots happens in TracingHandler.
-    if (!use_video_capture_api)
       frame_trace_recorder_ = std::make_unique<DevToolsFrameTraceRecorder>();
+#endif
     UpdateRawHeadersAccess(nullptr, frame_host_);
 #if defined(OS_ANDROID)
     GetWakeLock()->RequestWakeLock();
@@ -354,7 +350,9 @@ bool RenderFrameDevToolsAgentHost::AttachSession(DevToolsSession* session) {
 void RenderFrameDevToolsAgentHost::DetachSession(DevToolsSession* session) {
   // Destroying session automatically detaches in renderer.
   if (sessions().empty()) {
+#if defined(OS_ANDROID)
     frame_trace_recorder_.reset();
+#endif
     UpdateRawHeadersAccess(frame_host_, nullptr);
 #if defined(OS_ANDROID)
     GetWakeLock()->CancelWakeLock();
@@ -389,17 +387,16 @@ RenderFrameDevToolsAgentHost::~RenderFrameDevToolsAgentHost() {
 
 void RenderFrameDevToolsAgentHost::ReadyToCommitNavigation(
     NavigationHandle* navigation_handle) {
-  NavigationHandleImpl* handle =
-      static_cast<NavigationHandleImpl*>(navigation_handle);
+  NavigationRequest* request = NavigationRequest::From(navigation_handle);
   for (auto* tracing : protocol::TracingHandler::ForAgentHost(this))
-    tracing->ReadyToCommitNavigation(handle);
+    tracing->ReadyToCommitNavigation(request);
 
-  if (handle->frame_tree_node() != frame_tree_node_) {
-    if (ShouldForceCreation() && handle->GetRenderFrameHost() &&
-        handle->GetRenderFrameHost()->IsCrossProcessSubframe()) {
+  if (request->frame_tree_node() != frame_tree_node_) {
+    if (ShouldForceCreation() && request->GetRenderFrameHost() &&
+        request->GetRenderFrameHost()->IsCrossProcessSubframe()) {
       // An agent may have been created earlier if auto attach is on.
-      if (!FindAgentHost(handle->frame_tree_node()))
-        CreateForCrossProcessNavigation(handle);
+      if (!FindAgentHost(request->frame_tree_node()))
+        CreateForCrossProcessNavigation(request);
     }
     return;
   }
@@ -408,30 +405,36 @@ void RenderFrameDevToolsAgentHost::ReadyToCommitNavigation(
   // renderer process. To ensure consistent view over protocol, disconnect them
   // right now.
   GetRendererChannel()->ForceDetachWorkerSessions();
-  UpdateFrameHost(handle->GetRenderFrameHost());
+  UpdateFrameHost(request->GetRenderFrameHost());
   // UpdateFrameHost may destruct |this|.
 }
 
 void RenderFrameDevToolsAgentHost::DidFinishNavigation(
     NavigationHandle* navigation_handle) {
-  NavigationHandleImpl* handle =
-      static_cast<NavigationHandleImpl*>(navigation_handle);
-  if (handle->frame_tree_node() != frame_tree_node_)
+  NavigationRequest* request = NavigationRequest::From(navigation_handle);
+  if (request->frame_tree_node() != frame_tree_node_)
     return;
-  navigation_handles_.erase(handle);
-  if (handle->HasCommitted())
+  navigation_requests_.erase(request);
+  if (request->HasCommitted())
     NotifyNavigated();
 
   // UpdateFrameHost may destruct |this|.
   scoped_refptr<RenderFrameDevToolsAgentHost> protect(this);
   UpdateFrameHost(frame_tree_node_->current_frame_host());
 
-  if (navigation_handles_.empty()) {
+  if (navigation_requests_.empty()) {
     for (DevToolsSession* session : sessions())
       session->ResumeSendingMessagesToAgent();
   }
   for (auto* target : protocol::TargetHandler::ForAgentHost(this))
     target->DidFinishNavigation();
+
+  // RenderFrameDevToolsAgentHost is associated with frame_tree_node, while
+  // documents in the back-forward cache share a node, therefore we can't cache
+  // them. TODO(1001087): add support long-term.
+  content::BackForwardCache::DisableForRenderFrameHost(
+      navigation_handle->GetPreviousRenderFrameHostId(),
+      "RenderFrameDevToolsAgentHost");
 }
 
 void RenderFrameDevToolsAgentHost::UpdateFrameHost(
@@ -476,15 +479,14 @@ void RenderFrameDevToolsAgentHost::UpdateFrameHost(
 
 void RenderFrameDevToolsAgentHost::DidStartNavigation(
     NavigationHandle* navigation_handle) {
-  NavigationHandleImpl* handle =
-      static_cast<NavigationHandleImpl*>(navigation_handle);
-  if (handle->frame_tree_node() != frame_tree_node_)
+  NavigationRequest* request = NavigationRequest::From(navigation_handle);
+  if (request->frame_tree_node() != frame_tree_node_)
     return;
-  if (navigation_handles_.empty()) {
+  if (navigation_requests_.empty()) {
     for (DevToolsSession* session : sessions())
       session->SuspendSendingMessagesToAgent();
   }
-  navigation_handles_.insert(handle);
+  navigation_requests_.insert(request);
 }
 
 void RenderFrameDevToolsAgentHost::RenderFrameHostChanged(
@@ -583,10 +585,13 @@ void RenderFrameDevToolsAgentHost::DidDetachInterstitialPage() {
 void RenderFrameDevToolsAgentHost::OnVisibilityChanged(
     content::Visibility visibility) {
 #if defined(OS_ANDROID)
-  if (visibility == content::Visibility::HIDDEN)
-    GetWakeLock()->CancelWakeLock();
-  else
-    GetWakeLock()->RequestWakeLock();
+  if (!sessions().empty()) {
+    if (visibility == content::Visibility::HIDDEN) {
+      GetWakeLock()->CancelWakeLock();
+    } else {
+      GetWakeLock()->RequestWakeLock();
+    }
+  }
 #endif
 }
 
@@ -597,8 +602,21 @@ void RenderFrameDevToolsAgentHost::OnPageScaleFactorChanged(
     input->OnPageScaleFactorChanged(page_scale_factor);
 }
 
+void RenderFrameDevToolsAgentHost::OnNavigationRequestWillBeSent(
+    const NavigationRequest& navigation_request) {
+  const auto& url = navigation_request.common_params().url;
+  std::vector<DevToolsSession*> restricted_sessions;
+  bool is_webui = frame_host_ && frame_host_->web_ui();
+  for (DevToolsSession* session : sessions()) {
+    if (!session->client()->MayAttachToURL(url, is_webui))
+      restricted_sessions.push_back(session);
+  }
+  if (!restricted_sessions.empty())
+    ForceDetachRestrictedSessions(restricted_sessions);
+}
+
 void RenderFrameDevToolsAgentHost::DisconnectWebContents() {
-  navigation_handles_.clear();
+  navigation_requests_.clear();
   SetFrameTreeNode(nullptr);
   // UpdateFrameHost may destruct |this|.
   scoped_refptr<RenderFrameDevToolsAgentHost> protect(this);
@@ -730,9 +748,10 @@ base::TimeTicks RenderFrameDevToolsAgentHost::GetLastActivityTime() {
   return base::TimeTicks();
 }
 
+#if defined(OS_ANDROID)
 void RenderFrameDevToolsAgentHost::SignalSynchronousSwapCompositorFrame(
     RenderFrameHost* frame_host,
-    const DevToolsFrameMetadata& frame_metadata) {
+    const cc::RenderFrameMetadata& frame_metadata) {
   scoped_refptr<RenderFrameDevToolsAgentHost> dtah(FindAgentHost(
       static_cast<RenderFrameHostImpl*>(frame_host)->frame_tree_node()));
   if (dtah) {
@@ -746,7 +765,7 @@ void RenderFrameDevToolsAgentHost::SignalSynchronousSwapCompositorFrame(
 }
 
 void RenderFrameDevToolsAgentHost::SynchronousSwapCompositorFrame(
-    const DevToolsFrameMetadata& frame_metadata) {
+    const cc::RenderFrameMetadata& frame_metadata) {
   for (auto* page : protocol::PageHandler::ForAgentHost(this))
     page->OnSynchronousSwapCompositorFrame(frame_metadata);
 
@@ -760,6 +779,7 @@ void RenderFrameDevToolsAgentHost::SynchronousSwapCompositorFrame(
                                                             frame_metadata);
   }
 }
+#endif
 
 void RenderFrameDevToolsAgentHost::UpdateRendererChannel(bool force) {
   mojo::PendingAssociatedRemote<blink::mojom::DevToolsAgent> agent_remote;
@@ -785,16 +805,18 @@ bool RenderFrameDevToolsAgentHost::IsChildFrame() {
 
 bool RenderFrameDevToolsAgentHost::ShouldAllowSession(
     DevToolsSession* session) {
+  // There's not much we can say if there's not host yet, but we'll
+  // check again when host is updated.
+  if (!frame_host_)
+    return true;
   DevToolsManager* manager = DevToolsManager::GetInstance();
-  if (manager->delegate() && frame_host_) {
-    if (!manager->delegate()->AllowInspectingRenderFrameHost(frame_host_))
-      return false;
-  }
-  const bool is_webui =
-      frame_host_ && (frame_host_->web_ui() || frame_host_->pending_web_ui());
-  if (!session->client()->MayAttachToRenderer(frame_host_, is_webui))
+  if (manager->delegate() &&
+      !manager->delegate()->AllowInspectingRenderFrameHost(frame_host_)) {
     return false;
-  return true;
+  }
+  // Note this may be called before navigation is committed.
+  return session->client()->MayAttachToURL(
+      frame_host_->GetSiteInstance()->GetSiteURL(), frame_host_->web_ui());
 }
 
 void RenderFrameDevToolsAgentHost::UpdateResourceLoaderFactories() {

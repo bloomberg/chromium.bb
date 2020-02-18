@@ -52,6 +52,8 @@ class ExtensionBrowserTest : virtual public InProcessBrowserTest {
     kEventPage,
     // A Service Worker based extension.
     kServiceWorker,
+    // An extension with a persistent background page.
+    kPersistentBackground,
   };
 
  protected:
@@ -111,6 +113,11 @@ class ExtensionBrowserTest : virtual public InProcessBrowserTest {
   // verification; this should be overridden by derived tests which care
   // about install verification.
   virtual bool ShouldEnableInstallVerification();
+
+  // Returns the path of the directory from which to serve resources when they
+  // are prefixed with "_test_resources/".
+  // The default is chrome/test/data/extensions/.
+  virtual base::FilePath GetTestResourcesParentDir();
 
   static const Extension* GetExtensionByPath(const ExtensionSet& extensions,
                                              const base::FilePath& path);

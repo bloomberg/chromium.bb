@@ -43,6 +43,10 @@
 #include "base/files/scoped_file.h"
 #endif  // defined(OS_LINUX)
 
+namespace gfx {
+class GpuMemoryBuffer;
+}
+
 namespace media {
 
 class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
@@ -86,7 +90,8 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
     // Backed by a mojo shared buffer. This should only be used by the
     // MojoSharedBufferVideoFrame subclass.
     STORAGE_MOJO_SHARED_BUFFER = 6,
-    STORAGE_LAST = STORAGE_MOJO_SHARED_BUFFER,
+    STORAGE_GPU_MEMORY_BUFFER = 7,
+    STORAGE_LAST = STORAGE_GPU_MEMORY_BUFFER,
   };
 
   // CB to be called on the mailbox backing this frame when the frame is
@@ -229,6 +234,17 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
       uint8_t* a_data,
       base::TimeDelta timestamp);
 
+  // Wraps |gpu_memory_buffer| along with the mailboxes created from
+  // |gpu_memory_buffer|. |mailbox_holders_release_cb| will be called with a
+  // sync token as the argument when the VideoFrame is to be destroyed.
+  static scoped_refptr<VideoFrame> WrapExternalGpuMemoryBuffer(
+      const gfx::Rect& visible_rect,
+      const gfx::Size& natural_size,
+      std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer,
+      const gpu::MailboxHolder (&mailbox_holders)[kMaxPlanes],
+      ReleaseMailboxCB mailbox_holder_release_cb,
+      base::TimeDelta timestamp);
+
 #if defined(OS_LINUX)
   // Wraps provided dmabufs
   // (https://www.kernel.org/doc/html/latest/driver-api/dma-buf.html) with a
@@ -265,7 +281,7 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   // Wraps |frame|. |visible_rect| must be a sub rect within
   // frame->visible_rect().
   static scoped_refptr<VideoFrame> WrapVideoFrame(
-      const VideoFrame& frame,
+      scoped_refptr<VideoFrame> frame,
       VideoPixelFormat format,
       const gfx::Rect& visible_rect,
       const gfx::Size& natural_size);
@@ -336,6 +352,16 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   // static
   static bool IsStorageTypeMappable(VideoFrame::StorageType storage_type);
 
+  // Returns true if |plane| is a valid plane index for the given |format|.
+  static bool IsValidPlane(VideoPixelFormat format, size_t plane);
+
+  // Returns the pixel size of each subsample for a given |plane| and |format|.
+  // E.g. 2x2 for the U-plane in PIXEL_FORMAT_I420.
+  static gfx::Size SampleSize(VideoPixelFormat format, size_t plane);
+
+  // Returns a human readable string of StorageType.
+  static std::string StorageTypeToString(VideoFrame::StorageType storage_type);
+
   // A video frame wrapping external data may be backed by an unsafe shared
   // memory region. These methods are used to appropriately transform a
   // VideoFrame created with WrapExternalData, WrapExternalYuvaData, etc. The
@@ -379,6 +405,12 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   // Returns the number of native textures.
   size_t NumTextures() const;
 
+  // Returns true if the video frame is backed with GpuMemoryBuffer.
+  bool HasGpuMemoryBuffer() const;
+
+  // Gets the GpuMemoryBuffer backing the VideoFrame.
+  gfx::GpuMemoryBuffer* GetGpuMemoryBuffer() const;
+
   // Returns the color space of this frame's content.
   gfx::ColorSpace ColorSpace() const;
   void set_color_space(const gfx::ColorSpace& color_space) {
@@ -402,7 +434,7 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   const gfx::Size& natural_size() const { return natural_size_; }
 
   int stride(size_t plane) const {
-    DCHECK(IsValidPlane(plane, format()));
+    DCHECK(IsValidPlane(format(), plane));
     DCHECK_LT(plane, layout_.num_planes());
     return layout_.planes()[plane].stride;
   }
@@ -418,12 +450,12 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   // IsMappable() frame type. The memory is owned by VideoFrame object and must
   // not be freed by the caller.
   const uint8_t* data(size_t plane) const {
-    DCHECK(IsValidPlane(plane, format()));
+    DCHECK(IsValidPlane(format(), plane));
     DCHECK(IsMappable());
     return data_[plane];
   }
   uint8_t* data(size_t plane) {
-    DCHECK(IsValidPlane(plane, format()));
+    DCHECK(IsValidPlane(format(), plane));
     DCHECK(IsMappable());
     return data_[plane];
   }
@@ -547,15 +579,12 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
                                     const gfx::Rect& visible_rect,
                                     const gfx::Size& natural_size);
 
-  // Returns true if |plane| is a valid plane index for the given |format|.
-  static bool IsValidPlane(size_t plane, VideoPixelFormat format);
-
   // Returns |dimensions| adjusted to appropriate boundaries based on |format|.
   static gfx::Size DetermineAlignedSize(VideoPixelFormat format,
                                         const gfx::Size& dimensions);
 
   void set_data(size_t plane, uint8_t* ptr) {
-    DCHECK(IsValidPlane(plane, format()));
+    DCHECK(IsValidPlane(format(), plane));
     DCHECK(ptr);
     data_[plane] = ptr;
   }
@@ -568,10 +597,6 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
       const gfx::Size& natural_size,
       base::TimeDelta timestamp,
       bool zero_initialize_memory);
-
-  // Returns the pixel size of each subsample for a given |plane| and |format|.
-  // E.g. 2x2 for the U-plane in PIXEL_FORMAT_I420.
-  static gfx::Size SampleSize(VideoPixelFormat format, size_t plane);
 
   // Return the alignment for the whole frame, calculated as the max of the
   // alignment for each individual plane.
@@ -594,6 +619,10 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
 
   // VideFrameLayout (includes format, coded_size, and strides).
   const VideoFrameLayout layout_;
+
+  // Set by WrapVideoFrame to soft-apply a new set of format, visible rectangle,
+  // and natural size on |wrapped_frame_|
+  scoped_refptr<VideoFrame> wrapped_frame_;
 
   // Storage type for the different planes.
   StorageType storage_type_;  // TODO(mcasas): make const
@@ -629,6 +658,9 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   // case, shm_region_ will refer to this region.
   base::UnsafeSharedMemoryRegion owned_shm_region_;
   base::WritableSharedMemoryMapping owned_shm_mapping_;
+
+  // GPU memory buffer, if this frame is STORAGE_GPU_MEMORY_BUFFER.
+  std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer_;
 
 #if defined(OS_LINUX)
   class DmabufHolder;

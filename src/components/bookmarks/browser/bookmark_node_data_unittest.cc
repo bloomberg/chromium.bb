@@ -278,7 +278,7 @@ TEST_F(BookmarkNodeDataTest, MultipleNodes) {
   EXPECT_TRUE(read_data.GetFirstNode(model(), GetProfilePath()) == nullptr);
 }
 
-TEST_F(BookmarkNodeDataTest, WriteToClipboardURL) {
+TEST_F(BookmarkNodeDataTest, DISABLED_WriteToClipboardURL) {
   BookmarkNodeData data;
   GURL url(GURL("http://foo.com"));
   const base::string16 title(ASCIIToUTF16("blah"));
@@ -292,7 +292,12 @@ TEST_F(BookmarkNodeDataTest, WriteToClipboardURL) {
   EXPECT_EQ(base::UTF8ToUTF16(url.spec()), clipboard_result);
 }
 
-TEST_F(BookmarkNodeDataTest, WriteToClipboardMultipleURLs) {
+#if defined(OS_MACOSX)
+#define MAYBE_WriteToClipboardMultipleURLs DISABLED_WriteToClipboardMultipleURLs
+#else
+#define MAYBE_WriteToClipboardMultipleURLs WriteToClipboardMultipleURLs
+#endif
+TEST_F(BookmarkNodeDataTest, MAYBE_WriteToClipboardMultipleURLs) {
   BookmarkNodeData data;
   const BookmarkNode* root = model()->bookmark_bar_node();
   GURL url(GURL("http://foo.com"));
@@ -322,7 +327,12 @@ TEST_F(BookmarkNodeDataTest, WriteToClipboardMultipleURLs) {
   EXPECT_EQ(combined_text, clipboard_result);
 }
 
-TEST_F(BookmarkNodeDataTest, WriteToClipboardEmptyFolder) {
+#if defined(OS_MACOSX)
+#define MAYBE_WriteToClipboardEmptyFolder DISABLED_WriteToClipboardEmptyFolder
+#else
+#define MAYBE_WriteToClipboardEmptyFolder WriteToClipboardEmptyFolder
+#endif
+TEST_F(BookmarkNodeDataTest, MAYBE_WriteToClipboardEmptyFolder) {
   BookmarkNodeData data;
   const BookmarkNode* root = model()->bookmark_bar_node();
   const BookmarkNode* folder = model()->AddFolder(root, 0, ASCIIToUTF16("g1"));
@@ -357,7 +367,9 @@ TEST_F(BookmarkNodeDataTest, WriteToClipboardFolderWithChildren) {
   EXPECT_EQ(base::ASCIIToUTF16("g1"), clipboard_result);
 }
 
-TEST_F(BookmarkNodeDataTest, WriteToClipboardFolderAndURL) {
+// TODO(https://crbug.com/1010415): This test is flaky on various platforms, fix
+// and re-enable it.
+TEST_F(BookmarkNodeDataTest, DISABLED_WriteToClipboardFolderAndURL) {
   BookmarkNodeData data;
   GURL url(GURL("http://foo.com"));
   const base::string16 title(ASCIIToUTF16("blah"));

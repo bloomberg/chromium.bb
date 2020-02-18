@@ -5,6 +5,8 @@
 module network.mojom;
 
 import "mojo/public/mojom/base/time.mojom";
+import "mojo/public/mojom/base/unguessable_token.mojom";
+import "services/network/public/mojom/content_security_policy.mojom";
 import "services/network/public/mojom/fetch_api.mojom";
 import "services/network/public/mojom/http_raw_request_response_info.mojom";
 import "services/network/public/mojom/ip_endpoint.mojom";
@@ -138,10 +140,6 @@ struct URLResponseHead {
   // the ServiceWorker. Empty if the response isn't from the CacheStorage.
   string cache_storage_cache_name;
 
-  // Effective connection type when the resource was fetched. This is populated
-  // only for responses that correspond to main frame requests.
-  EffectiveConnectionType effective_connection_type;
-
   // Bitmask of status info of the SSL certificate. See cert_status_flags.h for
   // values.
   uint32 cert_status = 0;
@@ -192,6 +190,9 @@ struct URLResponseHead {
   // recorded here.
   AuthChallengeInfo? auth_challenge_info;
 
+  // The parsed content security policy from the response headers.
+  ContentSecurityPolicy? content_security_policy;
+
   // TimeTicks::Now() when the browser received the request from the renderer.
   mojo_base.mojom.TimeTicks request_start;
 
@@ -201,4 +202,9 @@ struct URLResponseHead {
   // Origin Policy associated with this response or nullptr if not applicable.
   // Spec: https://wicg.github.io/origin-policy/
   OriginPolicy? origin_policy;
+
+  // Set by the browser process on cross-origin prefetch responses. This token
+  // is propagated to the renderer and set on recursive prefetch requests
+  // (see corresponding documentation in url_loader.mojom).
+  mojo_base.mojom.UnguessableToken? recursive_prefetch_token;
 };

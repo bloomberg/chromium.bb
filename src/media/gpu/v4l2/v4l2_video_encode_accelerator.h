@@ -12,6 +12,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/containers/circular_deque.h"
 #include "base/containers/queue.h"
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
@@ -20,7 +21,7 @@
 #include "base/optional.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
-#include "media/gpu/image_processor.h"
+#include "media/gpu/chromeos/image_processor.h"
 #include "media/gpu/media_gpu_export.h"
 #include "media/gpu/v4l2/v4l2_device.h"
 #include "media/video/video_encode_accelerator.h"
@@ -73,14 +74,6 @@ class MEDIA_GPU_EXPORT V4L2VideoEncodeAccelerator
     // This is valid only if image processor is used. The buffer associated with
     // this index can be reused in Dequeue().
     base::Optional<size_t> ip_output_buffer_index;
-  };
-
-  // Record for output buffers.
-  struct OutputRecord {
-    OutputRecord();
-    ~OutputRecord();
-
-    std::unique_ptr<BitstreamBufferRef> buffer_ref;
   };
 
   // Store all the information of input frame passed to Encode().
@@ -142,6 +135,9 @@ class MEDIA_GPU_EXPORT V4L2VideoEncodeAccelerator
 
   // Device destruction task.
   void DestroyTask();
+
+  // Try to output bitstream buffers.
+  void PumpBitstreamBuffers();
 
   // Flush all the encoded frames. After all frames is flushed successfully or
   // any error occurs, |flush_callback| will be called to notify client.
@@ -264,6 +260,10 @@ class MEDIA_GPU_EXPORT V4L2VideoEncodeAccelerator
   gfx::Size visible_size_;
   // Layout of device accepted input VideoFrame.
   base::Optional<VideoFrameLayout> device_input_layout_;
+
+  // Stands for whether an input buffer is native graphic buffer.
+  bool native_input_mode_;
+
   // Input allocated size calculated by
   // V4L2Device::AllocatedSizeFromV4L2Format().
   // TODO(crbug.com/914700): Remove this once Client::RequireBitstreamBuffers
@@ -309,12 +309,14 @@ class MEDIA_GPU_EXPORT V4L2VideoEncodeAccelerator
   scoped_refptr<V4L2Queue> input_queue_;
   scoped_refptr<V4L2Queue> output_queue_;
 
-  // Mapping of int index to output buffer record.
-  std::vector<OutputRecord> output_buffer_map_;
-
   // Bitstream buffers ready to be used to return encoded output, as a LIFO
   // since we don't care about ordering.
-  std::vector<std::unique_ptr<BitstreamBufferRef>> encoder_output_queue_;
+  std::vector<std::unique_ptr<BitstreamBufferRef>> bitstream_buffer_pool_;
+
+  // Queue of encoded bitstream V4L2 buffers. We enqueue the encoded buffers
+  // from V4L2 devices, and copy the data to the bitstream buffers passed from
+  // the client via UseOutputBitstreamBuffer().
+  base::circular_deque<V4L2ReadableBufferRef> output_buffer_queue_;
 
   // The completion callback of the Flush() function.
   FlushCallback flush_callback_;
@@ -349,10 +351,9 @@ class MEDIA_GPU_EXPORT V4L2VideoEncodeAccelerator
   base::WeakPtr<Client> client_;
   std::unique_ptr<base::WeakPtrFactory<Client>> client_ptr_factory_;
 
-  // WeakPtr<> pointing to |this| for use in posting tasks from the
-  // image_processor_ back to the child thread.
-  // Tasks posted onto encoder and poll threads can use base::Unretained(this),
-  // as both threads will not outlive this object.
+  // WeakPtr<> pointing to |this| for use in posting tasks to
+  // |encoder_thread_.task_runner()|. It guarantees no task will be executed
+  // after DestroyTask().
   base::WeakPtr<V4L2VideoEncodeAccelerator> weak_this_;
   base::WeakPtrFactory<V4L2VideoEncodeAccelerator> weak_this_ptr_factory_;
 

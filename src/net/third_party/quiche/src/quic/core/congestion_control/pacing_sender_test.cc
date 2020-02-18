@@ -5,12 +5,12 @@
 #include "net/third_party/quiche/src/quic/core/congestion_control/pacing_sender.h"
 
 #include <memory>
+#include <utility>
 
 #include "net/third_party/quiche/src/quic/core/quic_packets.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_flag_utils.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_ptr_util.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_test.h"
 #include "net/third_party/quiche/src/quic/test_tools/mock_clock.h"
 #include "net/third_party/quiche/src/quic/test_tools/quic_test_utils.h"
@@ -43,8 +43,8 @@ class PacingSenderTest : public QuicTest {
   ~PacingSenderTest() override {}
 
   void InitPacingRate(QuicPacketCount burst_size, QuicBandwidth bandwidth) {
-    mock_sender_ = QuicMakeUnique<StrictMock<MockSendAlgorithm>>();
-    pacing_sender_ = QuicMakeUnique<PacingSender>();
+    mock_sender_ = std::make_unique<StrictMock<MockSendAlgorithm>>();
+    pacing_sender_ = std::make_unique<PacingSender>();
     pacing_sender_->set_sender(mock_sender_.get());
     EXPECT_CALL(*mock_sender_, PacingRate(_)).WillRepeatedly(Return(bandwidth));
     EXPECT_CALL(*mock_sender_, BandwidthEstimate())
@@ -280,7 +280,6 @@ TEST_F(PacingSenderTest, InitialBurstNoRttMeasurement) {
 }
 
 TEST_F(PacingSenderTest, FastSending) {
-  SetQuicReloadableFlag(quic_change_default_lumpy_pacing_size_to_two, true);
   // Ensure the pacing sender paces, even when the inter-packet spacing(0.5ms)
   // is less than the pacing granularity(1ms).
   InitPacingRate(10, QuicBandwidth::FromBytesAndTimeDelta(

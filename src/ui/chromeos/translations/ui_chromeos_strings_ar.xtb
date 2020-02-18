@@ -75,11 +75,9 @@
 <translation id="1829129547161959350">بطريق</translation>
 <translation id="183183971458492120">جارٍ تحميل المعلومات...</translation>
 <translation id="1838709767668011582">‏موقع Google</translation>
-<translation id="1839704667838141620">تغيير كيفية مشاركة هذا الملف</translation>
 <translation id="1844692022597038441">هذا الملف غير متاح بلا إنترنت.</translation>
 <translation id="184633654410729720">‏لوحة المفاتيح التايلاندية (Kedmanee)</translation>
 <translation id="1847880352285315359">تم الحفظ</translation>
-<translation id="1864676585353837027">تغيير كيفية مشاركة هذه الملفات</translation>
 <translation id="1864756863218646478">تعذر العثور على الملف.</translation>
 <translation id="1921986354447415460">‏لوحة مفاتيح Turkish-F</translation>
 <translation id="1931134289871235022">السلوفاكية</translation>
@@ -89,7 +87,6 @@
 <translation id="1943097386230153518">تثبيت خدمة جديدة</translation>
 <translation id="1947424002851288782">لوحة المفاتيح الألمانية</translation>
 <translation id="1972984168337863910">توسيع لوحات تعليقات الملفات</translation>
-<translation id="197560921582345123">يمكن التعديل</translation>
 <translation id="1984603991036629094">لوحة المفاتيح الأرمينية الصوتية</translation>
 <translation id="2001796770603320721">‏الإدارة في Drive</translation>
 <translation id="2009067268969781306">سيؤدي تنسيق محرك أقراص إلى حذف جميع البيانات المخزّنة عليه. لا يمكن التراجع عن هذا الإجراء.</translation>
@@ -226,6 +223,7 @@
 <translation id="3645531960514756307">إزالة تثبيت علامة تبويب المجلد</translation>
 <translation id="3678559383040232393">لوحة المفاتيح المالطية</translation>
 <translation id="3685122418104378273">‏يتم إيقاف مزامنة Google Drive بشكل تلقائي، عند استخدام بيانات الجوّال.</translation>
+<translation id="3689865792480713551">إلغاء <ph name="ACTIVITY_DESCRIPTION" /></translation>
 <translation id="3726463242007121105">لا يمكن فتح الجهاز لأن نظام الملفات غير متوافق.</translation>
 <translation id="3741243925913727067">‏يمكنك نسخ الصور والفيديوهات بجهاز الوسائط احتياطيًا على Google Drive.</translation>
 <translation id="3749289110408117711">اسم الملف</translation>
@@ -286,7 +284,6 @@
 <translation id="4522570452068850558">التفاصيل</translation>
 <translation id="4552678318981539154">شراء المزيد من مساحة التخزين</translation>
 <translation id="4559767610552730302">‏تأثير Bokeh</translation>
-<translation id="4568854179928172494">الوقت المُعدل</translation>
 <translation id="4572815280350369984">ملف <ph name="FILE_TYPE" /></translation>
 <translation id="457386861538956877">المزيد...</translation>
 <translation id="4579744207439506346">تمت إضافة <ph name="ENTRY_NAME" /> إلى الاختيار.</translation>
@@ -309,7 +306,7 @@
 <translation id="4747271164117300400">المقدونية</translation>
 <translation id="4749157430980974800">لوحة المفاتيح الجورجية</translation>
 <translation id="4755240240651974342">لوحة المفاتيح الفنلندية</translation>
-<translation id="4759238208242260848">التنزيلات</translation>
+<translation id="4759238208242260848">الملفات التي تم تنزيلها</translation>
 <translation id="4779136857077979611">كرات الأرز</translation>
 <translation id="4784330909746505604">‏عرض تقديمي من PowerPoint</translation>
 <translation id="4788401404269709922"><ph name="NUMBER_OF_KB" /> كيلوبايت</translation>
@@ -392,7 +389,7 @@
 <translation id="5464696796438641524">لوحة المفاتيح البولندية</translation>
 <translation id="5465122519792752163">‏لوحة مفاتيح اللغة النيبالية (InScript)</translation>
 <translation id="5469868506864199649">الإيطالية</translation>
-<translation id="5494920125229734069">تحديد الكل</translation>
+<translation id="5494920125229734069">اختيار الكل</translation>
 <translation id="5500122897333236901">الأيسلندية</translation>
 <translation id="5508696409934741614">نقاط</translation>
 <translation id="5522908512596376669">تم تغيير قائمة الملفات إلى عرض القائمة.</translation>
@@ -411,7 +408,7 @@
 <translation id="5691596662111998220">عذرًا، لم يعد <ph name="FILE_NAME" /> متوفرًا.</translation>
 <translation id="5700087501958648444">معلومات الملف الصوتي</translation>
 <translation id="5731409020711461763">صورة واحدة جديدة</translation>
-<translation id="5752453871435543420">‏النسخ الاحتياطي في السحاب عبر نظام التشغيل Chrome</translation>
+<translation id="5752453871435543420">‏النسخ الاحتياطي في السحابة الإلكترونية عبر نظام التشغيل Chrome</translation>
 <translation id="5756666464756035725">‏QWERTY المجرية</translation>
 <translation id="5771585441665576801">‏التحويل الصوتي (جيا ← γεια)</translation>
 <translation id="5776325638577448643">المحو والتنسيق</translation>
@@ -442,7 +439,7 @@
 <translation id="6012987430370760224">لوحة المفاتيح الماراثية (صوتية)</translation>
 <translation id="6019169947004469866">الاقتصاص</translation>
 <translation id="60357267506638014">‏تخطيط QWERTY للتشيكية</translation>
-<translation id="604001903249547235">النسخ الاحتياطي عبر السحاب.</translation>
+<translation id="604001903249547235">النسخ الاحتياطي عبر السحابة الإلكترونية.</translation>
 <translation id="6040143037577758943">إغلاق</translation>
 <translation id="6054173164583630569">لوحة المفاتيح الفرنسية</translation>
 <translation id="6074825444536523002">‏نموذج Google</translation>
@@ -467,6 +464,7 @@
 <translation id="6339145975392024142">الأمريكية الدولية (الكمبيوتر الشخصي)</translation>
 <translation id="6346310558342052870">تم تقييد عملية الوصول</translation>
 <translation id="6353618411602605519">لوحة المفاتيح الكرواتية</translation>
+<translation id="6356685157277930264">نافذة التعليقات على الملفات</translation>
 <translation id="6358884629796491903">تنين</translation>
 <translation id="637062427944097960">تم فتح هذا الملف على جهاز سطح مكتب آخر. يمكنك الانتقال إلى <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />) للاطلاع عليه.</translation>
 <translation id="6395575651121294044"><ph name="NUMBER_OF_FILES" /> من العناصر</translation>
@@ -507,7 +505,7 @@
 <translation id="6878261347041253038">لوحة المفاتيح الديفانغارية (صوتية)</translation>
 <translation id="6885780034956018177">حلزون</translation>
 <translation id="6896758677409633944">نسخ</translation>
-<translation id="691516599546977041">يتعذَّر الحفظ في <ph name="FOLDER_NAME" />. سيتم حفظ الصور التي تم تعديلها في مجلَّد "التنزيلات".</translation>
+<translation id="691516599546977041">يتعذَّر الحفظ في <ph name="FOLDER_NAME" />. سيتم حفظ الصور التي تم تعديلها في مجلَّد مجلد "المحتوى الذي تم تنزيله".</translation>
 <translation id="6915678159055240887">Chromebox</translation>
 <translation id="6918340160281024199">US Workman</translation>
 <translation id="6930242544192836755">المدة</translation>
@@ -566,6 +564,7 @@
 <translation id="7589661784326793847">انتظر قليلاً</translation>
 <translation id="7603724359189955920">شبكات</translation>
 <translation id="7627790789328695202">عذرًا، <ph name="FILE_NAME" /> موجود من قبل. يمكنك إعادة تسميته وإعادة المحاولة.</translation>
+<translation id="7628656427739290098">اكتملت العملية بنسبة <ph name="PERCENT" />%.</translation>
 <translation id="7649070708921625228">مساعدة</translation>
 <translation id="7654209398114106148">جارٍ نقل <ph name="NUMBER_OF_ITEMS" /> من العناصر...</translation>
 <translation id="7658239707568436148">إلغاء</translation>
@@ -573,13 +572,13 @@
 <translation id="7706319470528945664">لوحة المفاتيح البرتغالية</translation>
 <translation id="7711920809702896782">معلومات الصورة</translation>
 <translation id="7724603315864178912">قص</translation>
-<translation id="7730494089396812859">عرض تفاصيل النسخ الاحتياطي عبر السحاب</translation>
+<translation id="7730494089396812859">عرض تفاصيل النسخ الاحتياطي عبر السحابة الإلكترونية</translation>
 <translation id="7748626145866214022">‏تتوفر مزيد من الخيارات على شريط الإجراءات. يُرجى الضغط على "Alt + A" لتركيز هذا الشريط.</translation>
 <translation id="7765158879357617694">نقل</translation>
 <translation id="7774365994322694683">طائر</translation>
 <translation id="7788080748068240085">لحفظ "<ph name="FILE_NAME" />" بلا إنترنت، يجب توفير مساحة إضافية تبلغ <ph name="TOTAL_FILE_SIZE" />:<ph name="MARKUP_1" />
     <ph name="MARKUP_2" />احرص على إزالة الملفات التي لم تعد بحاجة إلى الدخول إليها بلا إنترنت<ph name="MARKUP_3" />
-    <ph name="MARKUP_4" />احذف الملفات من مجلد التنزيلات<ph name="MARKUP_5" /></translation>
+    <ph name="MARKUP_4" />احذف الملفات من مجلد "المحتوى الذي تم تنزيله"<ph name="MARKUP_5" /></translation>
 <translation id="7794058097940213561">إعداد الجهاز</translation>
 <translation id="7799329977874311193">‏مستند HTML</translation>
 <translation id="7805768142964895445">الحالة</translation>
@@ -591,11 +590,10 @@
 <translation id="7825423931463735974">‏لوحة المفاتيح التاميلية (Tamil99)</translation>
 <translation id="7827012282502221009"><ph name="NUMBER_OF_TB" /> تيرابايت</translation>
 <translation id="7839804798877833423">سيؤدي جلب هذه الملفات إلى استخدام حوالي <ph name="FILE_SIZE" /> من بيانات الجوال.</translation>
-<translation id="7846076177841592234">إلغاء التحديد</translation>
-<translation id="7850851215703745691">‏لم تتم مشاركة ملفات Drive هذه بعد</translation>
+<translation id="7846076177841592234">إلغاء الاختيار</translation>
 <translation id="7853966320808728790">‏BÉPO الفرنسية</translation>
 <translation id="7864662577698025113">إضافة خدمة جديدة</translation>
-<translation id="7873831373602885875">يتعذَّر الحفظ في <ph name="FOLDER_NAME" />. وسيتم حفظ جميع التعديلات في <ph name="DOWNLOADS_FOLDER" /> في مجلَّد "التنزيلات".</translation>
+<translation id="7873831373602885875">يتعذَّر الحفظ في <ph name="FOLDER_NAME" />. وسيتم حفظ جميع التعديلات في <ph name="DOWNLOADS_FOLDER" /> في مجلَّد مجلد "المحتوى الذي تم تنزيله".</translation>
 <translation id="7881969471599061635">إيقاف الترجمات المصاحبة</translation>
 <translation id="78946041517601018">‏مساحات Drive المشتركة</translation>
 <translation id="7896906914454843592">لوحة المفاتيح الأمريكية الموسعة</translation>
@@ -608,7 +606,6 @@
 <translation id="7969525169268594403">السلوفينية</translation>
 <translation id="7982283708762922719">الارتفاع</translation>
 <translation id="7987485481246785146">لوحة مفاتيح اللغة الكردية المدعمة بالعربية</translation>
-<translation id="799923393800005025">يمكن العرض</translation>
 <translation id="8008366997883261463">كلب</translation>
 <translation id="8028993641010258682">الحجم</translation>
 <translation id="8031722894461705849">لوحة المفاتيح السلوفاكية</translation>
@@ -670,15 +667,13 @@
 <translation id="8600173386174225982">تم تغيير قائمة الملف إلى عرض الصور المصغرة.</translation>
 <translation id="8601932370724196034">‏ملف صورة Crostini</translation>
 <translation id="8669949407341943408">جارٍ النقل...</translation>
-<translation id="8671210955687109937">يمكن التعليق</translation>
-<translation id="8686213429977032554">‏لم تتم مشاركة ملف Drive هذا بعد</translation>
 <translation id="8698464937041809063">‏رسم Google</translation>
 <translation id="8714406895390098252">دراجة</translation>
 <translation id="8719721339511222681">تم اختيار <ph name="ENTRY_NAME" />.</translation>
 <translation id="8722421161699219904">لوحة المفاتيح الأمريكية الدولية</translation>
 <translation id="872537912056138402">الكرواتية</translation>
 <translation id="874420130893181774">‏أسلوب إدخال Pinyin التقليدي</translation>
-<translation id="8775404590947523323">يتم حفظ التعديلات تلقائيًا.<ph name="BREAKS" />للاحتفاظ بنسخة من الصورة الأصلية، يجب إلغاء تحديد "استبدال الملف الأصلي"</translation>
+<translation id="8775404590947523323">يتم حفظ التعديلات تلقائيًا.<ph name="BREAKS" />للاحتفاظ بنسخة من الصورة الأصلية، يجب إلغاء اختيار "استبدال الملف الأصلي"</translation>
 <translation id="8803496343472038847">لوحة المفاتيح الصوتية الروسية</translation>
 <translation id="8808686172382650546">قط</translation>
 <translation id="8810671769985673465">تعذّر الضغط، العناصر الموجودة هي: "<ph name="FILE_NAME" />"</translation>

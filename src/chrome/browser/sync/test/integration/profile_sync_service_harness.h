@@ -47,6 +47,9 @@ class ProfileSyncServiceHarness {
   // Signs in to a primary account without actually enabling sync the feature.
   bool SignInPrimaryAccount();
 
+  // This is similar to click the reset button on chrome.google.com/sync.
+  void ResetSyncForPrimaryAccount();
+
 #if !defined(OS_CHROMEOS)
   // Signs out of the primary account. ChromeOS doesn't have the concept of
   // sign-out, so this only exists on other platforms.
@@ -128,7 +131,8 @@ class ProfileSyncServiceHarness {
 
   // Blocks the caller until sync setup is complete, and sync-the-feature is
   // active. Returns true if and only if sync setup completed successfully. Make
-  // sure to call SetupSync() or one of its variants before.
+  // sure to actually start sync setup (usually by calling SetupSync() or one of
+  // its variants) before.
   bool AwaitSyncSetupCompletion();
 
   // Blocks the caller until the sync transport layer is active. Returns true if

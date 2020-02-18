@@ -4,9 +4,10 @@
 
 #include "net/third_party/quiche/src/quic/core/congestion_control/uber_loss_algorithm.h"
 
+#include <utility>
+
 #include "net/third_party/quiche/src/quic/core/congestion_control/rtt_stats.h"
 #include "net/third_party/quiche/src/quic/core/quic_utils.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_ptr_util.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_test.h"
 #include "net/third_party/quiche/src/quic/test_tools/mock_clock.h"
 #include "net/third_party/quiche/src/quic/test_tools/quic_unacked_packet_map_peer.h"
@@ -22,7 +23,7 @@ class UberLossAlgorithmTest : public QuicTest {
  protected:
   UberLossAlgorithmTest() {
     unacked_packets_ =
-        QuicMakeUnique<QuicUnackedPacketMap>(Perspective::IS_CLIENT);
+        std::make_unique<QuicUnackedPacketMap>(Perspective::IS_CLIENT);
     rtt_stats_.UpdateRtt(QuicTime::Delta::FromMilliseconds(100),
                          QuicTime::Delta::Zero(), clock_.Now());
     EXPECT_LT(0, rtt_stats_.smoothed_rtt().ToMicroseconds());
@@ -47,8 +48,8 @@ class UberLossAlgorithmTest : public QuicTest {
                             false, false);
     packet.encryption_level = encryption_level;
     packet.retransmittable_frames.push_back(QuicFrame(frame));
-    unacked_packets_->AddSentPacket(&packet, QuicPacketNumber(),
-                                    NOT_RETRANSMISSION, clock_.Now(), true);
+    unacked_packets_->AddSentPacket(&packet, NOT_RETRANSMISSION, clock_.Now(),
+                                    true);
   }
 
   void AckPackets(const std::vector<uint64_t>& packets_acked) {

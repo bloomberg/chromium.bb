@@ -80,24 +80,25 @@ HFILES=\
 	util/benchmark.h\
 	util/flags.h\
 	util/logging.h\
+	util/malloc_counter.h\
 	util/mix.h\
 	util/mutex.h\
 	util/pcre.h\
-	util/pod_array.h\
-	util/sparse_array.h\
-	util/sparse_set.h\
 	util/strutil.h\
 	util/test.h\
 	util/utf.h\
 	util/util.h\
 	re2/bitmap256.h\
 	re2/filtered_re2.h\
+	re2/pod_array.h\
 	re2/prefilter.h\
 	re2/prefilter_tree.h\
 	re2/prog.h\
 	re2/re2.h\
 	re2/regexp.h\
 	re2/set.h\
+	re2/sparse_array.h\
+	re2/sparse_set.h\
 	re2/stringpiece.h\
 	re2/testing/exhaustive_tester.h\
 	re2/testing/regexp_generator.h\
@@ -213,9 +214,10 @@ obj/so/test/%: obj/so/libre2.$(SOEXT) obj/libre2.a obj/re2/testing/%.o $(TESTOFI
 	@mkdir -p obj/so/test
 	$(CXX) -o $@ obj/re2/testing/$*.o $(TESTOFILES) obj/util/test.o -Lobj/so -lre2 obj/libre2.a $(RE2_LDFLAGS) $(LDFLAGS)
 
+# Filter out dump.o because testing::TempDir() isn't available for it.
 obj/test/regexp_benchmark: obj/libre2.a obj/re2/testing/regexp_benchmark.o $(TESTOFILES) obj/util/benchmark.o
 	@mkdir -p obj/test
-	$(CXX) -o $@ obj/re2/testing/regexp_benchmark.o $(TESTOFILES) obj/util/benchmark.o obj/libre2.a $(RE2_LDFLAGS) $(LDFLAGS)
+	$(CXX) -o $@ obj/re2/testing/regexp_benchmark.o $(filter-out obj/re2/testing/dump.o, $(TESTOFILES)) obj/util/benchmark.o obj/libre2.a $(RE2_LDFLAGS) $(LDFLAGS)
 
 # re2_fuzzer is a target for fuzzers like libFuzzer and AFL. This fake fuzzing
 # is simply a way to check that the target builds and then to run it against a
@@ -276,10 +278,8 @@ install: obj/libre2.a obj/so/libre2.$(SOEXT)
 	ln -sf libre2.$(SOEXTVER00) $(DESTDIR)$(libdir)/libre2.$(SOEXTVER)
 	ln -sf libre2.$(SOEXTVER00) $(DESTDIR)$(libdir)/libre2.$(SOEXT)
 	$(INSTALL_DATA) re2.pc $(DESTDIR)$(libdir)/pkgconfig/re2.pc
-	$(SED_INPLACE) -e "s#@prefix@#${prefix}#" $(DESTDIR)$(libdir)/pkgconfig/re2.pc
-	$(SED_INPLACE) -e "s#@exec_prefix@#${exec_prefix}#" $(DESTDIR)$(libdir)/pkgconfig/re2.pc
-	$(SED_INPLACE) -e "s#@includedir@#${includedir}#" $(DESTDIR)$(libdir)/pkgconfig/re2.pc
-	$(SED_INPLACE) -e "s#@libdir@#${libdir}#" $(DESTDIR)$(libdir)/pkgconfig/re2.pc
+	$(SED_INPLACE) -e "s#@includedir@#$(includedir)#" $(DESTDIR)$(libdir)/pkgconfig/re2.pc
+	$(SED_INPLACE) -e "s#@libdir@#$(libdir)#" $(DESTDIR)$(libdir)/pkgconfig/re2.pc
 
 testinstall: static-testinstall shared-testinstall
 	@echo

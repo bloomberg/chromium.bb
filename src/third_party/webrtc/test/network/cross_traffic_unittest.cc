@@ -22,10 +22,14 @@
 #include "rtc_base/logging.h"
 #include "test/gmock.h"
 #include "test/gtest.h"
+#include "test/network/network_emulation_manager.h"
+#include "test/time_controller/simulated_time_controller.h"
 
 namespace webrtc {
 namespace test {
 namespace {
+
+constexpr uint32_t kTestIpAddress = 0xC0A80011;  // 192.168.0.17
 
 class CountingReceiver : public EmulatedNetworkReceiverInterface {
  public:
@@ -41,8 +45,8 @@ struct TrafficCounterFixture {
   SimulatedClock clock{0};
   CountingReceiver counter;
   TaskQueueForTest task_queue_;
-  EmulatedEndpoint endpoint{/*id=*/1, rtc::IPAddress(), /*is_enabled=*/true,
-                            &task_queue_, &clock};
+  EmulatedEndpoint endpoint{/*id=*/1, rtc::IPAddress(kTestIpAddress),
+                            /*is_enabled=*/true, &task_queue_, &clock};
 };
 
 }  // namespace
@@ -106,6 +110,42 @@ TEST(CrossTrafficTest, RandomWalkCrossTraffic) {
   const auto kExpectedDataSent = kRunTime * config.peak_rate;
   EXPECT_NEAR(fixture.counter.total_packets_size_, kExpectedDataSent.bytes(),
               kExpectedDataSent.bytes() * 0.1);
+}
+
+TEST(TcpMessageRouteTest, DeliveredOnLossyNetwork) {
+  GlobalSimulatedTimeController time(Timestamp::seconds(0));
+  NetworkEmulationManagerImpl net(&time);
+  BuiltInNetworkBehaviorConfig send;
+  // 800 kbps means that the 100 kB message would be delivered in ca 1 second
+  // under ideal conditions and no overhead.
+  send.link_capacity_kbps = 100 * 8;
+  send.loss_percent = 50;
+  send.queue_delay_ms = 100;
+  send.delay_standard_deviation_ms = 20;
+  send.allow_reordering = true;
+  auto ret = send;
+  ret.loss_percent = 10;
+
+  auto* tcp_route =
+      net.CreateTcpRoute(net.CreateRoute({net.CreateEmulatedNode(send)}),
+                         net.CreateRoute({net.CreateEmulatedNode(ret)}));
+  int deliver_count = 0;
+  // 100 kB is more than what fits into a single packet.
+  constexpr size_t kMessageSize = 100000;
+
+  tcp_route->SendMessage(kMessageSize, [&] {
+    RTC_LOG(LS_INFO) << "Received at "
+                     << ToString(time.GetClock()->CurrentTime());
+    deliver_count++;
+  });
+
+  // If there was no loss, we would have delivered the message in ca 1 second,
+  // with 50% it should take much longer.
+  time.AdvanceTime(TimeDelta::seconds(5));
+  ASSERT_EQ(deliver_count, 0);
+  // But given enough time the messsage will be delivered, but only once.
+  time.AdvanceTime(TimeDelta::seconds(60));
+  EXPECT_EQ(deliver_count, 1);
 }
 
 }  // namespace test

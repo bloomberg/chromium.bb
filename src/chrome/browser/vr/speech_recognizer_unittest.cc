@@ -20,6 +20,8 @@
 #include "content/public/browser/speech_recognition_manager.h"
 #include "content/public/browser/speech_recognition_session_config.h"
 #include "content/public/browser/speech_recognition_session_context.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -54,25 +56,27 @@ class FakeSharedURLLoaderFactory : public network::SharedURLLoaderFactory {
 
   // network::mojom::URLLoaderFactory:
 
-  void Clone(network::mojom::URLLoaderFactoryRequest request) override {
-    test_url_loader_factory_.Clone(std::move(request));
+  void Clone(mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver)
+      override {
+    test_url_loader_factory_.Clone(std::move(receiver));
   }
 
-  void CreateLoaderAndStart(network::mojom::URLLoaderRequest loader,
-                            int32_t routing_id,
-                            int32_t request_id,
-                            uint32_t options,
-                            const network::ResourceRequest& request,
-                            network::mojom::URLLoaderClientPtr client,
-                            const net::MutableNetworkTrafficAnnotationTag&
-                                traffic_annotation) override {
+  void CreateLoaderAndStart(
+      mojo::PendingReceiver<network::mojom::URLLoader> loader,
+      int32_t routing_id,
+      int32_t request_id,
+      uint32_t options,
+      const network::ResourceRequest& request,
+      mojo::PendingRemote<network::mojom::URLLoaderClient> client,
+      const net::MutableNetworkTrafficAnnotationTag& traffic_annotation)
+      override {
     test_url_loader_factory_.CreateLoaderAndStart(
         std::move(loader), routing_id, request_id, options, request,
         std::move(client), traffic_annotation);
   }
 
   // network::SharedURLLoaderFactory:
-  std::unique_ptr<network::SharedURLLoaderFactoryInfo> Clone() override {
+  std::unique_ptr<network::PendingSharedURLLoaderFactory> Clone() override {
     NOTREACHED();
     return nullptr;
   }
@@ -88,22 +92,22 @@ class FakeSharedURLLoaderFactory : public network::SharedURLLoaderFactory {
 };
 
 // Returns a SharedURLLoaderFactory that hangs.
-class FakeSharedURLLoaderFactoryInfo
-    : public network::SharedURLLoaderFactoryInfo {
+class FakePendingSharedURLLoaderFactory
+    : public network::PendingSharedURLLoaderFactory {
  public:
-  FakeSharedURLLoaderFactoryInfo() {}
-  ~FakeSharedURLLoaderFactoryInfo() override {}
+  FakePendingSharedURLLoaderFactory() {}
+  ~FakePendingSharedURLLoaderFactory() override {}
 
  protected:
   friend class network::SharedURLLoaderFactory;
 
-  // network::SharedURLLoaderFactoryInfo:
+  // network::PendingSharedURLLoaderFactory:
   scoped_refptr<network::SharedURLLoaderFactory> CreateFactory() override {
     return base::MakeRefCounted<FakeSharedURLLoaderFactory>();
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(FakeSharedURLLoaderFactoryInfo);
+  DISALLOW_COPY_AND_ASSIGN(FakePendingSharedURLLoaderFactory);
 };
 
 class FakeSpeechRecognitionManager : public content::SpeechRecognitionManager {
@@ -260,7 +264,7 @@ class SpeechRecognizerTest : public testing::Test {
         speech_recognizer_(new SpeechRecognizer(
             delegate_.get(),
             ui_.get(),
-            std::make_unique<FakeSharedURLLoaderFactoryInfo>(),
+            std::make_unique<FakePendingSharedURLLoaderFactory>(),
             "en" /* accept_language */,
             "en" /* locale */)) {
     SpeechRecognizer::SetManagerForTest(fake_speech_recognition_manager_.get());

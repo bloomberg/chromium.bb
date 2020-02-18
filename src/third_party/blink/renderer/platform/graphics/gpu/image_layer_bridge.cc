@@ -46,6 +46,11 @@ ImageLayerBridge::~ImageLayerBridge() {
 void ImageLayerBridge::SetImage(scoped_refptr<StaticBitmapImage> image) {
   if (disposed_)
     return;
+  // There could be the case that the current SkImage (encapsulated in the image
+  // parameter of the function) is null, that means that something went wrong
+  // during the creation of the image and we should not try and setImage with it
+  if (image && !image->PaintImageForCurrentFrame().GetSkImage())
+    return;
 
   image_ = std::move(image);
   if (image_) {
@@ -58,16 +63,15 @@ void ImageLayerBridge::SetImage(scoped_refptr<StaticBitmapImage> image) {
       // ensure its opacity is not used.
       layer_->SetForceTextureToOpaque(!image_->CurrentFrameKnownToBeOpaque());
     }
-  }
-  if (!has_presented_since_last_set_image_ && image_ &&
-      image_->IsTextureBacked()) {
-    // If the layer bridge is not presenting, the GrContext may not be getting
-    // flushed regularly.  The flush is normally triggered inside the
-    // m_image->EnsureMailbox() call of
-    // ImageLayerBridge::PrepareTransferableResource. To prevent a potential
-    // memory leak we must flush the GrContext here.
-    image_->PaintImageForCurrentFrame().GetSkImage()->getBackendTexture(
-        true);  // GrContext flush.
+    if (!has_presented_since_last_set_image_ && image_->IsTextureBacked()) {
+      // If the layer bridge is not presenting, the GrContext may not be getting
+      // flushed regularly.  The flush is normally triggered inside the
+      // m_image->EnsureMailbox() call of
+      // ImageLayerBridge::PrepareTransferableResource. To prevent a potential
+      // memory leak we must flush the GrContext here.
+      image_->PaintImageForCurrentFrame().GetSkImage()->getBackendTexture(
+          true);  // GrContext flush.
+    }
   }
   has_presented_since_last_set_image_ = false;
 }
@@ -220,8 +224,8 @@ void ImageLayerBridge::ResourceReleasedGpu(
   if (image && image->IsValid()) {
     DCHECK(image->IsTextureBacked());
     if (token.HasData() && image->ContextProvider() &&
-        image->ContextProvider()->ContextGL()) {
-      image->ContextProvider()->ContextGL()->WaitSyncTokenCHROMIUM(
+        image->ContextProvider()->InterfaceBase()) {
+      image->ContextProvider()->InterfaceBase()->WaitSyncTokenCHROMIUM(
           token.GetConstData());
     }
   }
@@ -242,9 +246,9 @@ cc::Layer* ImageLayerBridge::CcLayer() const {
 }
 
 ImageLayerBridge::RegisteredBitmap::RegisteredBitmap() = default;
-ImageLayerBridge::RegisteredBitmap::RegisteredBitmap(
-    RegisteredBitmap&& other) noexcept = default;
+ImageLayerBridge::RegisteredBitmap::RegisteredBitmap(RegisteredBitmap&& other) =
+    default;
 ImageLayerBridge::RegisteredBitmap& ImageLayerBridge::RegisteredBitmap::
-operator=(RegisteredBitmap&& other) noexcept = default;
+operator=(RegisteredBitmap&& other) = default;
 
 }  // namespace blink

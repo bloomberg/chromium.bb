@@ -155,12 +155,12 @@ bool SVGImage::CurrentFrameHasSingleSecurityOrigin() const {
   // Don't allow foreignObject elements or images that are not known to be
   // single-origin since these can leak cross-origin information.
   for (Node* node = root_element; node; node = FlatTreeTraversal::Next(*node)) {
-    if (IsSVGForeignObjectElement(*node))
+    if (IsA<SVGForeignObjectElement>(*node))
       return false;
-    if (auto* image = ToSVGImageElementOrNull(*node)) {
+    if (auto* image = DynamicTo<SVGImageElement>(*node)) {
       if (!image->CurrentFrameHasSingleSecurityOrigin())
         return false;
-    } else if (auto* fe_image = ToSVGFEImageElementOrNull(*node)) {
+    } else if (auto* fe_image = DynamicTo<SVGFEImageElement>(*node)) {
       if (!fe_image->CurrentFrameHasSingleSecurityOrigin())
         return false;
     }
@@ -676,6 +676,8 @@ void SVGImage::AdvanceAnimationForTesting() {
     base::TimeTicks current_animation_time =
         page_->Animator().Clock().CurrentTime();
     page_->Animator().Clock().ResetTimeForTesting();
+    if (root_element->TimeContainer()->IsStarted())
+      root_element->TimeContainer()->ResetDocumentTime();
     page_->Animator().ServiceScriptedAnimations(
         root_element->GetDocument().Timeline().ZeroTime() +
         base::TimeDelta::FromSecondsD(root_element->getCurrentTime()));
@@ -850,7 +852,7 @@ String SVGImage::FilenameExtension() const {
 }
 
 DarkModeClassification SVGImage::CheckTypeSpecificConditionsForDarkMode(
-    const FloatRect& src_rect,
+    const FloatRect& dest_rect,
     DarkModeImageClassifier* classifier) {
   classifier->SetImageType(DarkModeImageClassifier::ImageType::kSvg);
   return DarkModeClassification::kNotClassified;

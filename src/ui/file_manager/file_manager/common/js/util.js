@@ -219,9 +219,10 @@ util.removeFileOrDirectory = (entry, onSuccess, onError) => {
  * number separators.
  *
  * @param {number} bytes The number of bytes.
+ * @param {number=} addedPrecision The number of precision digits to add.
  * @return {string} Localized string.
  */
-util.bytesToString = bytes => {
+util.bytesToString = (bytes, addedPrecision = 0) => {
   // Translation identifiers for size units.
   const UNITS = [
     'SIZE_BYTES',
@@ -242,12 +243,18 @@ util.bytesToString = bytes => {
     Math.pow(2, 50),
   ];
 
+  // Rounding with precision.
+  const round = (value, decimals) => {
+    const scale = Math.pow(10, decimals);
+    return Math.round(value * scale) / scale;
+  };
+
   const str = (n, u) => {
     return strf(u, n.toLocaleString());
   };
 
   const fmt = (s, u) => {
-    const rounded = Math.round(bytes / s * 10) / 10;
+    const rounded = round(bytes / s, 1 + addedPrecision);
     return str(rounded, u);
   };
 
@@ -256,9 +263,11 @@ util.bytesToString = bytes => {
     return str(bytes, UNITS[0]);
   }
 
-  // Up to 1MB is displayed as rounded up number of KBs.
+  // Up to 1MB is displayed as rounded up number of KBs, or with the desired
+  // number of precision digits.
   if (bytes < STEPS[2]) {
-    const rounded = Math.ceil(bytes / STEPS[1]);
+    const rounded = addedPrecision ? round(bytes / STEPS[1], addedPrecision) :
+                                     Math.ceil(bytes / STEPS[1]);
     return str(rounded, UNITS[1]);
   }
 
@@ -383,6 +392,9 @@ function str(id) {
 function strf(id, var_args) {
   return loadTimeData.getStringF.apply(loadTimeData, arguments);
 }
+
+// Export strf() into the util namespace.
+util.strf = strf;
 
 /**
  * @return {boolean} True if the Files app is running as an open files or a
@@ -1132,6 +1144,7 @@ util.getRootTypeLabel = locationInfo => {
     case VolumeManagerCommon.RootType.PROVIDED:
     case VolumeManagerCommon.RootType.ANDROID_FILES:
     case VolumeManagerCommon.RootType.DOCUMENTS_PROVIDER:
+    case VolumeManagerCommon.RootType.SMB:
       return locationInfo.volumeInfo.label;
     default:
       console.error('Unsupported root type: ' + locationInfo.rootType);
@@ -1147,8 +1160,14 @@ util.getRootTypeLabel = locationInfo => {
  * @return {string} The localized name.
  */
 util.getEntryLabel = (locationInfo, entry) => {
-  if (locationInfo && locationInfo.hasFixedLabel) {
-    return util.getRootTypeLabel(locationInfo);
+  if (locationInfo) {
+    if (locationInfo.hasFixedLabel) {
+      return util.getRootTypeLabel(locationInfo);
+    }
+
+    if (entry.filesystem && entry.filesystem.root === entry) {
+      return util.getRootTypeLabel(locationInfo);
+    }
   }
 
   // Special case for MyFiles/Downloads and MyFiles/PvmDefault.
@@ -1223,21 +1242,6 @@ util.isDropEffectAllowed = (effectAllowed, dropEffect) => {
 };
 
 /**
- * Checks if the specified character is printable ASCII.
- *
- * @param {string} character The input character.
- * @return {boolean} True if |character| is printable ASCII, else false.
- */
-util.isPrintable = character => {
-  if (character.length != 1) {
-    return false;
-  }
-
-  const charCode = character.charCodeAt(0);
-  return charCode >= 32 && charCode <= 126;
-};
-
-/**
  * Verifies the user entered name for file or folder to be created or
  * renamed to. Name restrictions must correspond to File API restrictions
  * (see DOMFilePath::isValidPath). Curernt WebKit implementation is
@@ -1307,20 +1311,15 @@ util.validateExternalDriveName = (name, fileSystem) => {
         strf('ERROR_EXTERNAL_DRIVE_LONG_NAME', lengthLimit[fileSystem]));
   }
 
-  // Checks if name contains only printable ASCII (from ' ' to '~')
+  // Checks if the name contains only alphanumeric characters or allowed special
+  // characters. This needs to stay in sync with cros-disks/filesystem_label.cc
+  // on the ChromeOS side.
+  const validCharRegex = /[a-zA-Z0-9 \!\#\$\%\&\(\)\-\@\^\_\`\{\}\~]/;
   for (let i = 0; i < nameLength; i++) {
-    if (!util.isPrintable(name[i])) {
+    if (!validCharRegex.test(name[i])) {
       return Promise.reject(
           strf('ERROR_EXTERNAL_DRIVE_INVALID_CHARACTER', name[i]));
     }
-  }
-
-  const containsForbiddenCharacters =
-      /[\*\?\.\,\;\:\/\\\|\+\=\<\>\[\]\"\'\t]/.exec(name);
-  if (containsForbiddenCharacters) {
-    return Promise.reject(strf(
-        'ERROR_EXTERNAL_DRIVE_INVALID_CHARACTER',
-        containsForbiddenCharacters[0]));
   }
 
   return Promise.resolve();
@@ -1382,6 +1381,14 @@ util.timeoutPromise = (promise, ms, opt_message) => {
  */
 util.isFeedbackPanelEnabled = () => {
   return loadTimeData.getBoolean('FEEDBACK_PANEL_ENABLED');
+};
+
+/**
+ * Returns true when FilesNG is enabled.
+ * @return {boolean}
+ */
+util.isFilesNg = () => {
+  return loadTimeData.getBoolean('FILES_NG_ENABLED');
 };
 
 /**

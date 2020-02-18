@@ -77,6 +77,7 @@
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "services/network/public/cpp/simple_url_loader_stream_consumer.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
 #include "third_party/blink/public/public_buildflags.h"
 #include "ui/base/page_transition_types.h"
@@ -199,9 +200,19 @@ InfoBarService* DefaultBindingsDelegate::GetInfoBarService() {
 }
 
 std::unique_ptr<base::DictionaryValue> BuildObjectForResponse(
-    const net::HttpResponseHeaders* rh) {
+    const net::HttpResponseHeaders* rh,
+    bool success,
+    int net_error) {
   auto response = std::make_unique<base::DictionaryValue>();
-  response->SetInteger("statusCode", rh ? rh->response_code() : 200);
+  int responseCode = 200;
+  if (rh) {
+    responseCode = rh->response_code();
+  } else if (!success) {
+    // In case of no headers, assume file:// URL and failed to load
+    responseCode = 404;
+  }
+  response->SetInteger("statusCode", responseCode);
+  response->SetInteger("netError", net_error);
 
   auto headers = std::make_unique<base::DictionaryValue>();
   size_t iterator = 0;
@@ -312,7 +323,7 @@ std::string SanitizeFrontendQueryParam(
   // Convert boolean flags to true.
   if (key == "can_dock" || key == "debugFrontend" || key == "experiments" ||
       key == "isSharedWorker" || key == "v8only" || key == "remoteFrontend" ||
-      key == "nodeFrontend" || key == "hasOtherClients")
+      key == "nodeFrontend" || key == "hasOtherClients" || key == "uiDevTools")
     return "true";
 
   // Pass connection endpoints as is.
@@ -372,28 +383,86 @@ GURL SanitizeFrontendURL(const GURL& url,
   return result;
 }
 
+constexpr base::TimeDelta kInitialBackoffDelay =
+    base::TimeDelta::FromMilliseconds(250);
+constexpr base::TimeDelta kMaxBackoffDelay = base::TimeDelta::FromSeconds(10);
+
 }  // namespace
 
 class DevToolsUIBindings::NetworkResourceLoader
     : public network::SimpleURLLoaderStreamConsumer {
  public:
-  NetworkResourceLoader(int stream_id,
-                        DevToolsUIBindings* bindings,
-                        std::unique_ptr<network::SimpleURLLoader> loader,
-                        network::mojom::URLLoaderFactory* url_loader_factory,
-                        const DispatchCallback& callback)
+  class URLLoaderFactoryHolder {
+   public:
+    network::mojom::URLLoaderFactory* get() {
+      return ptr_.get() ? ptr_.get() : refptr_.get();
+    }
+    void operator=(std::unique_ptr<network::mojom::URLLoaderFactory>&& ptr) {
+      ptr_ = std::move(ptr);
+    }
+    void operator=(scoped_refptr<network::SharedURLLoaderFactory>&& refptr) {
+      refptr_ = std::move(refptr);
+    }
+
+   private:
+    std::unique_ptr<network::mojom::URLLoaderFactory> ptr_;
+    scoped_refptr<network::SharedURLLoaderFactory> refptr_;
+  };
+
+  static void Create(int stream_id,
+                     DevToolsUIBindings* bindings,
+                     const network::ResourceRequest& resource_request,
+                     const net::NetworkTrafficAnnotationTag& traffic_annotation,
+                     URLLoaderFactoryHolder url_loader_factory,
+                     const DevToolsUIBindings::DispatchCallback& callback,
+                     base::TimeDelta retry_delay = base::TimeDelta()) {
+    auto resource_loader =
+        std::make_unique<DevToolsUIBindings::NetworkResourceLoader>(
+            stream_id, bindings, resource_request, traffic_annotation,
+            std::move(url_loader_factory), callback, retry_delay);
+    bindings->loaders_.insert(std::move(resource_loader));
+  }
+
+  NetworkResourceLoader(
+      int stream_id,
+      DevToolsUIBindings* bindings,
+      const network::ResourceRequest& resource_request,
+      const net::NetworkTrafficAnnotationTag& traffic_annotation,
+      URLLoaderFactoryHolder url_loader_factory,
+      const DispatchCallback& callback,
+      base::TimeDelta delay)
       : stream_id_(stream_id),
         bindings_(bindings),
-        loader_(std::move(loader)),
-        callback_(callback) {
+        resource_request_(resource_request),
+        traffic_annotation_(traffic_annotation),
+        loader_(network::SimpleURLLoader::Create(
+            std::make_unique<network::ResourceRequest>(resource_request),
+            traffic_annotation)),
+        url_loader_factory_(std::move(url_loader_factory)),
+        callback_(callback),
+        retry_delay_(delay) {
     loader_->SetOnResponseStartedCallback(base::BindOnce(
         &NetworkResourceLoader::OnResponseStarted, base::Unretained(this)));
-    loader_->DownloadAsStream(url_loader_factory, this);
+    timer_.Start(FROM_HERE, delay,
+                 base::BindRepeating(&NetworkResourceLoader::DownloadAsStream,
+                                     base::Unretained(this)));
   }
 
  private:
+  void DownloadAsStream() {
+    loader_->DownloadAsStream(url_loader_factory_.get(), this);
+  }
+
+  base::TimeDelta GetNextExponentialBackoffDelay(const base::TimeDelta& delta) {
+    if (delta.is_zero()) {
+      return kInitialBackoffDelay;
+    } else {
+      return delta * 1.3;
+    }
+  }
+
   void OnResponseStarted(const GURL& final_url,
-                         const network::ResourceResponseHead& response_head) {
+                         const network::mojom::URLResponseHead& response_head) {
     response_headers_ = response_head.headers;
   }
 
@@ -418,9 +487,22 @@ class DevToolsUIBindings::NetworkResourceLoader
   }
 
   void OnComplete(bool success) override {
-    auto response = BuildObjectForResponse(response_headers_.get());
-    callback_.Run(response.get());
-
+    if (!success && loader_->NetError() == net::ERR_INSUFFICIENT_RESOURCES &&
+        retry_delay_ < kMaxBackoffDelay) {
+      const base::TimeDelta delay =
+          GetNextExponentialBackoffDelay(retry_delay_);
+      LOG(WARNING) << "DevToolsUIBindings::NetworkResourceLoader id = "
+                   << stream_id_
+                   << " failed with insufficient resources, retrying in "
+                   << delay << "." << std::endl;
+      NetworkResourceLoader::Create(
+          stream_id_, bindings_, resource_request_, traffic_annotation_,
+          std::move(url_loader_factory_), callback_, delay);
+    } else {
+      auto response = BuildObjectForResponse(response_headers_.get(), success,
+                                             loader_->NetError());
+      callback_.Run(response.get());
+    }
     bindings_->loaders_.erase(bindings_->loaders_.find(this));
   }
 
@@ -428,9 +510,14 @@ class DevToolsUIBindings::NetworkResourceLoader
 
   const int stream_id_;
   DevToolsUIBindings* const bindings_;
+  const network::ResourceRequest resource_request_;
+  const net::NetworkTrafficAnnotationTag traffic_annotation_;
   std::unique_ptr<network::SimpleURLLoader> loader_;
+  URLLoaderFactoryHolder url_loader_factory_;
   DispatchCallback callback_;
   scoped_refptr<net::HttpResponseHeaders> response_headers_;
+  base::OneShotTimer timer_;
+  base::TimeDelta retry_delay_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkResourceLoader);
 };
@@ -500,10 +587,19 @@ void DevToolsUIBindings::FrontendWebContentsObserver::RenderProcessGone(
 #endif
     case base::TERMINATION_STATUS_PROCESS_CRASHED:
     case base::TERMINATION_STATUS_LAUNCH_FAILED:
+    case base::TERMINATION_STATUS_OOM:
+#if defined(OS_WIN)
+    case base::TERMINATION_STATUS_INTEGRITY_FAILURE:
+#endif
       if (devtools_bindings_->agent_host_.get())
         devtools_bindings_->Detach();
       break;
-    default:
+    case base::TERMINATION_STATUS_NORMAL_TERMINATION:
+    case base::TERMINATION_STATUS_STILL_RUNNING:
+#if defined(OS_ANDROID)
+    case base::TERMINATION_STATUS_OOM_PROTECTED:
+#endif
+    case base::TERMINATION_STATUS_MAX_ENUM:
       crashed = false;
       break;
   }
@@ -638,7 +734,7 @@ void DevToolsUIBindings::DispatchProtocolMessage(
 void DevToolsUIBindings::AgentHostClosed(
     content::DevToolsAgentHost* agent_host) {
   DCHECK(agent_host == agent_host_.get());
-  agent_host_ = NULL;
+  agent_host_.reset();
   delegate_->InspectedContentsClosing();
 }
 
@@ -709,6 +805,7 @@ void DevToolsUIBindings::LoadNetworkResource(const DispatchCallback& callback,
   if (!gurl.is_valid()) {
     base::DictionaryValue response;
     response.SetInteger("statusCode", 404);
+    response.SetBoolean("urlValid", false);
     callback.Run(&response);
     return;
   }
@@ -738,22 +835,18 @@ void DevToolsUIBindings::LoadNetworkResource(const DispatchCallback& callback,
           }
         })");
 
-  auto resource_request = std::make_unique<network::ResourceRequest>();
-  resource_request->url = gurl;
+  network::ResourceRequest resource_request;
+  resource_request.url = gurl;
   // TODO(caseq): this preserves behavior of URLFetcher-based implementation.
   // We really need to pass proper first party origin from the front-end.
-  resource_request->site_for_cookies = gurl;
-  resource_request->headers.AddHeadersFromString(headers);
+  resource_request.site_for_cookies = gurl;
+  resource_request.headers.AddHeadersFromString(headers);
 
-  std::unique_ptr<network::mojom::URLLoaderFactory> file_url_loader_factory;
-  scoped_refptr<network::SharedURLLoaderFactory> network_url_loader_factory;
-  std::unique_ptr<network::mojom::URLLoaderFactory> webui_url_loader_factory;
-  network::mojom::URLLoaderFactory* url_loader_factory;
+  NetworkResourceLoader::URLLoaderFactoryHolder url_loader_factory;
   if (gurl.SchemeIsFile()) {
-    file_url_loader_factory = content::CreateFileURLLoaderFactory(
+    url_loader_factory = content::CreateFileURLLoaderFactory(
         base::FilePath() /* profile_path */,
         nullptr /* shared_cors_origin_access_list */);
-    url_loader_factory = file_url_loader_factory.get();
   } else if (content::HasWebUIScheme(gurl)) {
     content::WebContents* target_tab;
 #ifndef NDEBUG
@@ -769,10 +862,9 @@ void DevToolsUIBindings::LoadNetworkResource(const DispatchCallback& callback,
     if (allow_web_ui_scheme) {
       std::vector<std::string> allowed_webui_hosts;
       content::RenderFrameHost* frame_host = web_contents()->GetMainFrame();
-      webui_url_loader_factory = content::CreateWebUIURLLoader(
+      url_loader_factory = content::CreateWebUIURLLoader(
           frame_host, target_tab->GetURL().scheme(),
           std::move(allowed_webui_hosts));
-      url_loader_factory = webui_url_loader_factory.get();
     } else {
       base::DictionaryValue response;
       response.SetInteger("statusCode", 403);
@@ -782,17 +874,12 @@ void DevToolsUIBindings::LoadNetworkResource(const DispatchCallback& callback,
   } else {
     auto* partition = content::BrowserContext::GetStoragePartitionForSite(
         web_contents_->GetBrowserContext(), gurl);
-    network_url_loader_factory =
-        partition->GetURLLoaderFactoryForBrowserProcess();
-    url_loader_factory = network_url_loader_factory.get();
+    url_loader_factory = partition->GetURLLoaderFactoryForBrowserProcess();
   }
 
-  auto simple_url_loader = network::SimpleURLLoader::Create(
-      std::move(resource_request), traffic_annotation);
-  auto resource_loader = std::make_unique<NetworkResourceLoader>(
-      stream_id, this, std::move(simple_url_loader), url_loader_factory,
-      callback);
-  loaders_.insert(std::move(resource_loader));
+  NetworkResourceLoader::Create(stream_id, this, resource_request,
+                                traffic_annotation,
+                                std::move(url_loader_factory), callback);
 }
 
 void DevToolsUIBindings::OpenInNewTab(const std::string& url) {
@@ -1389,7 +1476,7 @@ void DevToolsUIBindings::AttachTo(
 void DevToolsUIBindings::Detach() {
   if (agent_host_.get())
     agent_host_->DetachClient(this);
-  agent_host_ = NULL;
+  agent_host_.reset();
 }
 
 bool DevToolsUIBindings::IsAttachedTo(content::DevToolsAgentHost* agent_host) {

@@ -4,28 +4,25 @@
 
 package org.chromium.chrome.browser;
 
-import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 
-import org.chromium.base.ActivityState;
+import androidx.annotation.Nullable;
+
 import org.chromium.base.ApplicationState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.BuildConfig;
 import org.chromium.base.BuildInfo;
-import org.chromium.base.CommandLine;
 import org.chromium.base.CommandLineInitUtil;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.JNIUtils;
-import org.chromium.base.Log;
 import org.chromium.base.PathUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.annotations.MainDex;
-import org.chromium.base.library_loader.ProcessInitException;
+import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.memory.MemoryPressureMonitor;
 import org.chromium.base.multidex.ChromiumMultiDexInstaller;
 import org.chromium.base.task.AsyncTask;
@@ -42,14 +39,13 @@ import org.chromium.chrome.browser.dependency_injection.ChromeAppComponent;
 import org.chromium.chrome.browser.dependency_injection.ChromeAppModule;
 import org.chromium.chrome.browser.dependency_injection.DaggerChromeAppComponent;
 import org.chromium.chrome.browser.dependency_injection.ModuleFactoryOverrides;
-import org.chromium.chrome.browser.init.InvalidStartupDialog;
+import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.metrics.UmaUtils;
 import org.chromium.chrome.browser.night_mode.SystemNightModeMonitor;
-import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.vr.OnExitVrRequestListener;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.components.embedder_support.application.FontPreloadingWorkaround;
-import org.chromium.components.module_installer.ModuleInstaller;
+import org.chromium.components.module_installer.util.ModuleUtil;
 import org.chromium.ui.base.ResourceBundle;
 
 /**
@@ -58,7 +54,6 @@ import org.chromium.ui.base.ResourceBundle;
  */
 public class ChromeApplication extends Application {
     private static final String COMMAND_LINE_FILE = "chrome-command-line";
-    private static final String TAG = "ChromiumApplication";
     // Public to allow use in ChromeBackupAgent
     public static final String PRIVATE_DATA_DIRECTORY_SUFFIX = "chrome";
 
@@ -96,7 +91,6 @@ public class ChromeApplication extends Application {
             // (see ChildProcessService.java).
             CommandLineInitUtil.initCommandLine(
                     COMMAND_LINE_FILE, ChromeApplication::shouldUseDebugFlags);
-            AppHooks.get().initCommandLine(CommandLine.getInstance());
 
             // Requires command-line flags.
             TraceEvent.maybeEnableEarlyTracing();
@@ -122,7 +116,7 @@ public class ChromeApplication extends Application {
 
             // Record via UMA all modules that have been requested and are currently installed. This
             // will tell us the install penetration of each module over time.
-            ModuleInstaller.getInstance().recordModuleAvailability();
+            ModuleUtil.recordModuleAvailability();
 
             // Set Chrome factory for mapping BackgroundTask classes to TaskIds.
             ChromeBackgroundTaskFactory.setAsDefault();
@@ -130,7 +124,7 @@ public class ChromeApplication extends Application {
 
         // Write installed modules to crash keys. This needs to be done as early as possible so that
         // these values are set before any crashes are reported.
-        ModuleInstaller.getInstance().updateCrashKeys();
+        ModuleUtil.updateCrashKeys();
 
         BuildInfo.setFirebaseAppId(FirebaseConfig.getFirebaseAppId());
 
@@ -146,7 +140,9 @@ public class ChromeApplication extends Application {
         AsyncTask.takeOverAndroidThreadPool();
         JNIUtils.setClassLoader(getClassLoader());
         ResourceBundle.setAvailablePakLocales(
-                LocaleConfig.COMPRESSED_LOCALES, LocaleConfig.UNCOMPRESSED_LOCALES);
+                ProductConfig.COMPRESSED_LOCALES, ProductConfig.UNCOMPRESSED_LOCALES);
+        LibraryLoader.getInstance().setConfiguration(
+                ProductConfig.USE_CHROMIUM_LINKER, ProductConfig.USE_MODERN_LINKER);
 
         if (isBrowserProcess) {
             TraceEvent.end("ChromeApplication.attachBaseContext");
@@ -154,8 +150,7 @@ public class ChromeApplication extends Application {
     }
 
     private static Boolean shouldUseDebugFlags() {
-        return ChromePreferenceManager.getInstance().readBoolean(
-                ChromePreferenceManager.COMMAND_LINE_ON_NON_ROOTED_ENABLED_KEY, false);
+        return FeatureUtilities.isCommandLineOnNonRootedEnabled();
     }
 
     private static boolean isBrowserProcess() {
@@ -176,8 +171,7 @@ public class ChromeApplication extends Application {
         // out-of-date application. Kill old applications in this bad state. See
         // http://crbug.com/658130 for more context and http://b.android.com/56296 for the bug.
         if (ContextUtils.getApplicationAssets() == null) {
-            Log.e(TAG, "getResources() null, closing app.");
-            System.exit(0);
+            throw new RuntimeException("App out of date, getResources() null, closing app.");
         }
     }
 
@@ -201,18 +195,6 @@ public class ChromeApplication extends Application {
         // to the API in the future.
         return (level >= TRIM_MEMORY_RUNNING_LOW && level < TRIM_MEMORY_UI_HIDDEN)
                 || level >= TRIM_MEMORY_MODERATE;
-    }
-
-    /**
-     * Shows an error dialog following a startup error, and then exits the application.
-     * @param e The exception reported by Chrome initialization.
-     */
-    public static void reportStartupErrorAndExit(final ProcessInitException e) {
-        Activity activity = ApplicationStatus.getLastTrackedFocusedActivity();
-        if (ApplicationStatus.getStateForActivity(activity) == ActivityState.DESTROYED) {
-            return;
-        }
-        InvalidStartupDialog.show(activity, e.getErrorCode());
     }
 
     @Override

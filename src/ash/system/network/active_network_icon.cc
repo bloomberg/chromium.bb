@@ -44,8 +44,6 @@ bool IsTrayIcon(network_icon::IconType icon_type) {
 ActiveNetworkIcon::ActiveNetworkIcon(TrayNetworkStateModel* model)
     : model_(model) {
   model_->AddObserver(this);
-  GetNetworkConfigService(
-      remote_cros_network_config_.BindNewPipeAndPassReceiver());
 }
 
 ActiveNetworkIcon::~ActiveNetworkIcon() {
@@ -78,7 +76,8 @@ void ActiveNetworkIcon::GetConnectionStatusStrings(Type type,
   }
   // Check for Activating first since activating networks may be connected.
   if (network && network->type == NetworkType::kCellular &&
-      network->cellular->activation_state == ActivationStateType::kActivating) {
+      network->type_state->get_cellular()->activation_state ==
+          ActivationStateType::kActivating) {
     base::string16 activating_string = l10n_util::GetStringFUTF16(
         IDS_ASH_STATUS_TRAY_NETWORK_ACTIVATING, network_name);
     if (a11y_name)
@@ -320,7 +319,7 @@ void ActiveNetworkIcon::NetworkListChanged() {
 }
 
 void ActiveNetworkIcon::PurgeNetworkIconCache() {
-  remote_cros_network_config_->GetNetworkStateList(
+  model_->cros_network_config()->GetNetworkStateList(
       NetworkFilter::New(FilterType::kVisible, NetworkType::kAll,
                          /*limit=*/0),
       base::BindOnce(

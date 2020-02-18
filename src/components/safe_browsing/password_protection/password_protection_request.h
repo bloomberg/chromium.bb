@@ -19,6 +19,7 @@
 #include "components/safe_browsing/proto/csd.pb.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 class GURL;
@@ -100,6 +101,10 @@ class PasswordProtectionRequest : public base::RefCountedThreadSafe<
 
   PasswordType password_type() const { return password_type_; }
 
+  const std::vector<std::string> matching_domains() const& {
+    return matching_domains_;
+  }
+
   bool is_modal_warning_showing() const { return is_modal_warning_showing_; }
 
   void set_is_modal_warning_showing(bool is_warning_showing) {
@@ -154,7 +159,7 @@ class PasswordProtectionRequest : public base::RefCountedThreadSafe<
   void CheckCachedVerdicts();
 
   // Fill |request_proto_| with appropriate values.
-  void FillRequestProto();
+  void FillRequestProto(bool is_sampled_ping);
 
 #if BUILDFLAG(FULL_SAFE_BROWSING)
   // Collects visual features from the current login page.
@@ -166,6 +171,17 @@ class PasswordProtectionRequest : public base::RefCountedThreadSafe<
   // Called when the visual feature extraction is complete.
   void OnVisualFeatureCollectionDone(
       std::unique_ptr<VisualFeatures> visual_features);
+
+  // Called when the DOM feature extraction is complete.
+  void OnGetDomFeatures(mojom::PhishingDetectorResult result,
+                        const std::string& verdict);
+
+  // Called when the DOM feature extraction times out.
+  void OnGetDomFeatureTimeout();
+
+  // If appropriate, collects visual features, otherwise continues on to sending
+  // the request.
+  void MaybeCollectVisualFeatures();
 #endif
 
   // Initiates network request to Safe Browsing backend.
@@ -177,18 +193,6 @@ class PasswordProtectionRequest : public base::RefCountedThreadSafe<
   // |this| will be destroyed after calling this function.
   void Finish(RequestOutcome outcome,
               std::unique_ptr<LoginReputationClientResponse> response);
-
-#if BUILDFLAG(FULL_SAFE_BROWSING)
-  // Called when the DOM feature extraction is complete.
-  void OnGetDomFeatures(const std::string& verdict);
-
-  // Called when the DOM feature extraction times out.
-  void OnGetDomFeatureTimeout();
-
-  // If appropriate, collects visual features, otherwise continues on to sending
-  // the request.
-  void MaybeCollectVisualFeatures();
-#endif
 
   // WebContents of the password protection event.
   content::WebContents* web_contents_;
@@ -259,7 +263,7 @@ class PasswordProtectionRequest : public base::RefCountedThreadSafe<
   base::TimeTicks visual_feature_start_time_;
 
   // The Mojo pipe used for extracting DOM features from the renderer.
-  safe_browsing::mojom::PhishingDetectorPtr phishing_detector_;
+  mojo::Remote<safe_browsing::mojom::PhishingDetector> phishing_detector_;
 
   // When we start extracting DOM features. Used to compute the duration of DOM
   // feature extraction, which is logged at

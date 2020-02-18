@@ -35,6 +35,7 @@
 #include "compiler/translator/tree_ops/PruneNoOps.h"
 #include "compiler/translator/tree_ops/RegenerateStructNames.h"
 #include "compiler/translator/tree_ops/RemoveArrayLengthMethod.h"
+#include "compiler/translator/tree_ops/RemoveDynamicIndexing.h"
 #include "compiler/translator/tree_ops/RemoveInvariantDeclaration.h"
 #include "compiler/translator/tree_ops/RemovePow.h"
 #include "compiler/translator/tree_ops/RemoveUnreferencedVariables.h"
@@ -384,7 +385,7 @@ TIntermBlock *TCompiler::compileTreeImpl(const char *const shaderStrings[],
 
     TParseContext parseContext(mSymbolTable, mExtensionBehavior, mShaderType, mShaderSpec,
                                compileOptions, !IsDesktopGLSpec(mShaderSpec), &mDiagnostics,
-                               getResources());
+                               getResources(), getOutputType());
 
     parseContext.setFragmentPrecisionHighOnESSL1(mResources.FragmentPrecisionHigh == 1);
 
@@ -484,6 +485,17 @@ void TCompiler::setASTMetadata(const TParseContext &parseContext)
         mGeometryShaderMaxVertices         = parseContext.getGeometryShaderMaxVertices();
         mGeometryShaderInvocations         = parseContext.getGeometryShaderInvocations();
     }
+}
+
+unsigned int TCompiler::getSharedMemorySize() const
+{
+    unsigned int sharedMemSize = 0;
+    for (const sh::ShaderVariable &var : mSharedVariables)
+    {
+        sharedMemSize += var.getExternalSize();
+    }
+
+    return sharedMemSize;
 }
 
 bool TCompiler::validateAST(TIntermNode *root)
@@ -766,8 +778,9 @@ bool TCompiler::checkAndSimplifyAST(TIntermBlock *root,
     {
         ASSERT(!mVariablesCollected);
         CollectVariables(root, &mAttributes, &mOutputVariables, &mUniforms, &mInputVaryings,
-                         &mOutputVaryings, &mUniformBlocks, &mShaderStorageBlocks, &mInBlocks,
-                         mResources.HashFunction, &mSymbolTable, mShaderType, mExtensionBehavior);
+                         &mOutputVaryings, &mSharedVariables, &mUniformBlocks,
+                         &mShaderStorageBlocks, &mInBlocks, mResources.HashFunction, &mSymbolTable,
+                         mShaderType, mExtensionBehavior);
         collectInterfaceBlocks();
         mVariablesCollected = true;
         if (compileOptions & SH_USE_UNUSED_STANDARD_SHARED_BLOCKS)
@@ -888,6 +901,14 @@ bool TCompiler::checkAndSimplifyAST(TIntermBlock *root,
     if (compileOptions & SH_REWRITE_VECTOR_SCALAR_ARITHMETIC)
     {
         if (!VectorizeVectorScalarArithmetic(this, root, &getSymbolTable()))
+        {
+            return false;
+        }
+    }
+
+    if (compileOptions & SH_REMOVE_DYNAMIC_INDEXING_OF_SWIZZLED_VECTOR)
+    {
+        if (!sh::RemoveDynamicIndexingOfSwizzledVector(this, root, &getSymbolTable(), nullptr))
         {
             return false;
         }
@@ -1104,6 +1125,7 @@ void TCompiler::clearResults()
     mUniforms.clear();
     mInputVaryings.clear();
     mOutputVaryings.clear();
+    mSharedVariables.clear();
     mInterfaceBlocks.clear();
     mUniformBlocks.clear();
     mShaderStorageBlocks.clear();
@@ -1348,7 +1370,7 @@ bool TCompiler::initializeOutputVariables(TIntermBlock *root)
     InitVariableList list;
     if (mShaderType == GL_VERTEX_SHADER || mShaderType == GL_GEOMETRY_SHADER_EXT)
     {
-        for (const sh::Varying &var : mOutputVaryings)
+        for (const sh::ShaderVariable &var : mOutputVaryings)
         {
             list.push_back(var);
             if (var.name == "gl_Position")
@@ -1361,7 +1383,7 @@ bool TCompiler::initializeOutputVariables(TIntermBlock *root)
     else
     {
         ASSERT(mShaderType == GL_FRAGMENT_SHADER);
-        for (const sh::OutputVariable &var : mOutputVariables)
+        for (const sh::ShaderVariable &var : mOutputVariables)
         {
             list.push_back(var);
         }

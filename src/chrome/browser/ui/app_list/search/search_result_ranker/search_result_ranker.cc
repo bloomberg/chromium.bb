@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
@@ -26,6 +27,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
+#include "chrome/browser/ui/app_list/search/cros_action_history/cros_action_recorder.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/app_search_result_ranker.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/histogram_util.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/ranking_item_util.h"
@@ -157,12 +159,8 @@ float ReRange(const float score, const float min, const float max) {
 }  // namespace
 
 SearchResultRanker::SearchResultRanker(Profile* profile,
-                                       history::HistoryService* history_service,
-                                       service_manager::Connector* connector)
-    : connector_(connector),
-      history_service_observer_(this),
-      profile_(profile),
-      weak_factory_(this) {
+                                       history::HistoryService* history_service)
+    : history_service_observer_(this), profile_(profile), weak_factory_(this) {
   DCHECK(profile);
   DCHECK(history_service);
   history_service_observer_.Add(history_service);
@@ -181,7 +179,8 @@ SearchResultRanker::~SearchResultRanker() {
   }
 }
 
-void SearchResultRanker::InitializeRankers() {
+void SearchResultRanker::InitializeRankers(
+    SearchController* search_controller) {
   if (app_list_features::IsQueryBasedMixedTypesRankerEnabled()) {
     results_list_boost_coefficient_ = base::GetFieldTrialParamByFeatureAsDouble(
         app_list_features::kEnableQueryBasedMixedTypesRanker,
@@ -207,13 +206,17 @@ void SearchResultRanker::InitializeRankers() {
           "QueryBasedMixedTypesGroup",
           profile_->GetPath().AppendASCII("results_list_group_ranker.pb"),
           config, chromeos::ProfileHelper::IsEphemeralUserProfile(profile_));
-
+    } else if (GetFieldTrialParamByFeatureAsBool(
+                   app_list_features::kEnableQueryBasedMixedTypesRanker,
+                   "use_aggregated_model", false) ||
+               app_list_features::IsAggregatedMlSearchRankingEnabled()) {
+      use_aggregated_search_ranking_inference_ = true;
     } else {
       // Item ranker model.
       const std::string config_json = GetFieldTrialParamValueByFeature(
           app_list_features::kEnableQueryBasedMixedTypesRanker, "config");
       query_mixed_config_converter_ = JsonConfigConverter::Convert(
-          connector_, config_json, "QueryBasedMixedTypes",
+          config_json, "QueryBasedMixedTypes",
           base::BindOnce(
               [](SearchResultRanker* ranker,
                  const RecurrenceRankerConfigProto& default_config,
@@ -260,7 +263,7 @@ void SearchResultRanker::InitializeRankers() {
         app_list_features::kEnableZeroStateMixedTypesRanker, "config");
 
     zero_state_config_converter_ = JsonConfigConverter::Convert(
-        connector_, config_json, "ZeroStateGroups",
+        config_json, "ZeroStateGroups",
         base::BindOnce(
             [](SearchResultRanker* ranker,
                const RecurrenceRankerConfigProto& default_config,
@@ -279,6 +282,9 @@ void SearchResultRanker::InitializeRankers() {
             },
             base::Unretained(this), default_config));
   }
+
+  search_ranking_event_logger_ =
+      std::make_unique<SearchRankingEventLogger>(profile_, search_controller);
 
   app_launch_event_logger_ = std::make_unique<app_list::AppLaunchEventLogger>();
 
@@ -352,6 +358,11 @@ void SearchResultRanker::Rank(Mixer::SortedResults* results) {
             [](const Mixer::SortData& a, const Mixer::SortData& b) {
               return a.score > b.score;
             });
+  std::map<std::string, float> search_ranker_score_map;
+  if (!last_query_.empty() && use_aggregated_search_ranking_inference_) {
+    search_ranking_event_logger_->CreateRankings(results, last_query_.size());
+    search_ranker_score_map = search_ranking_event_logger_->RetrieveRankings();
+  }
 
   std::map<std::string, float> ranking_map;
   if (using_aggregated_app_inference_)
@@ -392,6 +403,9 @@ void SearchResultRanker::Rank(Mixer::SortedResults* results) {
               result.score + rank_it->second * results_list_boost_coefficient_,
               3.0);
         }
+      } else if (!last_query_.empty() &&
+                 use_aggregated_search_ranking_inference_) {
+        result.score = search_ranker_score_map[result.result->id()];
       }
     } else if (model == Model::APPS) {
       if (using_aggregated_app_inference_) {
@@ -474,7 +488,6 @@ void SearchResultRanker::Train(const AppLaunchData& app_launch_data) {
   auto model = ModelForType(app_launch_data.ranking_item_type);
   if (model == Model::MIXED_TYPES) {
     if (app_launch_data.query.empty() && zero_state_group_ranker_) {
-      LogZeroStateLaunchType(app_launch_data.ranking_item_type);
       zero_state_group_ranker_->Record(base::NumberToString(
           static_cast<int>(app_launch_data.ranking_item_type)));
     } else if (results_list_group_ranker_) {
@@ -488,6 +501,26 @@ void SearchResultRanker::Train(const AppLaunchData& app_launch_data) {
   } else if (model == Model::APPS && app_ranker_) {
     app_ranker_->Record(NormalizeAppId(app_launch_data.id));
   }
+
+  if (model == Model::MIXED_TYPES && app_launch_data.query.empty()) {
+    LogZeroStateLaunchType(app_launch_data.ranking_item_type);
+
+    if (zero_state_group_ranker_) {
+      std::vector<std::string> weights;
+      for (const auto& pair : *zero_state_group_ranker_->GetTargetData())
+        weights.push_back(base::StrCat(
+            {pair.first, ":", base::NumberToString(pair.second.last_score)}));
+      VLOG(1) << "Zero state files model weights: ["
+              << base::JoinString(weights, ", ") << "]";
+    }
+  }
+}
+
+void SearchResultRanker::LogSearchResults(
+    const base::string16& trimmed_query,
+    const ash::SearchResultIdWithPositionIndices& results,
+    int launched_index) {
+  search_ranking_event_logger_->Log(trimmed_query, results, launched_index);
 }
 
 void SearchResultRanker::ZeroStateResultsDisplayed(
@@ -552,20 +585,39 @@ void SearchResultRanker::OverrideZeroStateResults(
     if (candidate_override_index == -1)
       continue;
 
+    // TODO(crbug.com/1011221): Remove once the bug re. zero-state drive files
+    // not being shown is resolved.
+    VLOG(1) << "Zero state files override: newtype=" << static_cast<int>(group)
+            << " newpos=" << next_modifiable_index;
     // Override the result at |next_modifiable_index| with
     // |candidate_override_index| by swapping their scores.
     std::swap(result_ptrs[candidate_override_index]->score,
               result_ptrs[next_modifiable_index]->score);
     --next_modifiable_index;
   }
+
+  // TODO(crbug.com/1011221): Remove once the bug re. zero-state drive files not
+  // being shown is resolved.
+  VLOG(1) << "Zero state files setting result scores";
+  for (const auto* result : result_ptrs) {
+    VLOG(1) << "Zero state files result score: type="
+            << static_cast<int>(
+                   RankingItemTypeFromSearchResult(*(result->result)))
+            << " score=" << result->score;
+  }
 }
 
 void SearchResultRanker::OnFilesOpened(
     const std::vector<FileOpenEvent>& file_opens) {
   // Log the open type of file open events
-  for (const auto& file_open : file_opens)
+  for (const auto& file_open : file_opens) {
     UMA_HISTOGRAM_ENUMERATION(kLogFileOpenType,
                               GetTypeFromFileTaskNotifier(file_open.open_type));
+    // TODO(chareszhao): move this outside of SearchResultRanker.
+    CrOSActionRecorder::GetCrosActionRecorder()->RecordAction(
+        {base::StrCat({"FileOpened-", file_open.path.value()})},
+        {{"open_type", static_cast<int>(file_open.open_type)}});
+  }
 }
 
 void SearchResultRanker::OnURLsDeleted(
@@ -616,17 +668,17 @@ void SearchResultRanker::LogZeroStateResultScore(RankingItemType type,
     if (now - time_of_last_omnibox_log_ < kMinTimeBetweenLogs)
       return;
     time_of_last_omnibox_log_ = now;
-    LogZeroStateReceivedScore("OmniboxSearch", score);
+    LogZeroStateReceivedScore("OmniboxSearch", score, 0.0f, 1.0f);
   } else if (type == RankingItemType::kZeroStateFile) {
     if (now - time_of_last_local_file_log_ < kMinTimeBetweenLogs)
       return;
     time_of_last_local_file_log_ = now;
-    LogZeroStateReceivedScore("ZeroStateFile", score);
+    LogZeroStateReceivedScore("ZeroStateFile", score, 0.0f, 1.0f);
   } else if (type == RankingItemType::kDriveQuickAccess) {
     if (now - time_of_last_drive_log_ < kMinTimeBetweenLogs)
       return;
     time_of_last_drive_log_ = now;
-    LogZeroStateReceivedScore("DriveQuickAccess", score);
+    LogZeroStateReceivedScore("DriveQuickAccess", score, -10.0f, 10.0f);
   }
 }
 

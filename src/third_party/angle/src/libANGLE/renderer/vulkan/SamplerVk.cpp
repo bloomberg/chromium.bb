@@ -23,13 +23,7 @@ SamplerVk::~SamplerVk() = default;
 void SamplerVk::onDestroy(const gl::Context *context)
 {
     ContextVk *contextVk = vk::GetImpl(context);
-    contextVk->releaseObject(contextVk->getCurrentQueueSerial(), &mSampler);
-}
-
-const vk::Sampler &SamplerVk::getSampler() const
-{
-    ASSERT(mSampler.valid());
-    return mSampler;
+    mSampler.release(contextVk->getRenderer());
 }
 
 angle::Result SamplerVk::syncState(const gl::Context *context, const bool dirty)
@@ -43,7 +37,7 @@ angle::Result SamplerVk::syncState(const gl::Context *context, const bool dirty)
         {
             return angle::Result::Continue;
         }
-        contextVk->releaseObject(contextVk->getCurrentQueueSerial(), &mSampler);
+        mSampler.release(renderer);
     }
 
     const gl::Extensions &extensions = renderer->getNativeExtensions();
@@ -69,7 +63,16 @@ angle::Result SamplerVk::syncState(const gl::Context *context, const bool dirty)
     samplerInfo.borderColor             = VK_BORDER_COLOR_INT_TRANSPARENT_BLACK;
     samplerInfo.unnormalizedCoordinates = VK_FALSE;
 
-    ANGLE_VK_TRY(contextVk, mSampler.init(contextVk->getDevice(), samplerInfo));
+    if (!gl::IsMipmapFiltered(mState))
+    {
+        // Per the Vulkan spec, GL_NEAREST and GL_LINEAR do not map directly to Vulkan, so
+        // they must be emulated (See "Mapping of OpenGL to Vulkan filter modes")
+        samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST;
+        samplerInfo.minLod     = 0.0f;
+        samplerInfo.maxLod     = 0.25f;
+    }
+
+    ANGLE_VK_TRY(contextVk, mSampler.get().init(contextVk->getDevice(), samplerInfo));
     // Regenerate the serial on a sampler change.
     mSerial = contextVk->generateTextureSerial();
     return angle::Result::Continue;

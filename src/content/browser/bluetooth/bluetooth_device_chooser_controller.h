@@ -33,11 +33,11 @@ class WebBluetoothServiceImpl;
 // GetDevice() twice for the same instance will DCHECK.
 class CONTENT_EXPORT BluetoothDeviceChooserController final {
  public:
-  typedef base::Callback<void(blink::mojom::WebBluetoothRequestDeviceOptionsPtr,
-                              const std::string& device_address)>
-      SuccessCallback;
-  typedef base::Callback<void(blink::mojom::WebBluetoothResult result)>
-      ErrorCallback;
+  using SuccessCallback =
+      base::OnceCallback<void(blink::mojom::WebBluetoothRequestDeviceOptionsPtr,
+                              const std::string& device_address)>;
+  using ErrorCallback =
+      base::OnceCallback<void(blink::mojom::WebBluetoothResult result)>;
 
   enum class TestScanDurationSetting { IMMEDIATE_TIMEOUT, NEVER_TIMEOUT };
 
@@ -48,7 +48,7 @@ class CONTENT_EXPORT BluetoothDeviceChooserController final {
   BluetoothDeviceChooserController(
       WebBluetoothServiceImpl* web_bluetooth_service_,
       RenderFrameHost* render_frame_host,
-      device::BluetoothAdapter* adapter);
+      scoped_refptr<device::BluetoothAdapter> adapter);
   ~BluetoothDeviceChooserController();
 
   // This function performs the following checks before starting a discovery
@@ -70,8 +70,8 @@ class CONTENT_EXPORT BluetoothDeviceChooserController final {
   // once will DCHECK.
   void GetDevice(
       blink::mojom::WebBluetoothRequestDeviceOptionsPtr request_device_options,
-      const SuccessCallback& success_callback,
-      const ErrorCallback& error_callback);
+      SuccessCallback success_callback,
+      ErrorCallback error_callback);
 
   // Adds a device to the chooser. Should only be called after GetDevice and
   // before either of the callbacks are run.
@@ -111,8 +111,8 @@ class CONTENT_EXPORT BluetoothDeviceChooserController final {
   void OnStartDiscoverySessionFailed();
 
   // BluetoothChooser::EventHandler:
-  // Runs error_callback_ if the chooser was cancelled or if we weren't able
-  // to show the chooser. Otherwise runs success_callback_ with
+  // Runs |error_callback_| if the chooser was cancelled or if we weren't able
+  // to show the chooser. Otherwise runs |success_callback_| with
   // |device_address|.
   void OnBluetoothChooserEvent(BluetoothChooser::Event event,
                                const std::string& device_address);
@@ -127,7 +127,7 @@ class CONTENT_EXPORT BluetoothDeviceChooserController final {
   static int64_t scan_duration_;
 
   // The adapter used to get existing devices and start a discovery session.
-  device::BluetoothAdapter* adapter_;
+  scoped_refptr<device::BluetoothAdapter> adapter_;
   // The WebBluetoothServiceImpl that owns this instance.
   WebBluetoothServiceImpl* web_bluetooth_service_;
   // The RenderFrameHost that owns web_bluetooth_service_.

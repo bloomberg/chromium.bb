@@ -16,12 +16,15 @@
 #define DAWNNATIVE_SHADERMODULE_H_
 
 #include "common/Constants.h"
+#include "dawn_native/CachedObject.h"
 #include "dawn_native/Error.h"
+#include "dawn_native/Format.h"
 #include "dawn_native/Forward.h"
-#include "dawn_native/ObjectBase.h"
 #include "dawn_native/PerStage.h"
 
 #include "dawn_native/dawn_platform.h"
+
+#include "spvc/spvc.hpp"
 
 #include <array>
 #include <bitset>
@@ -36,11 +39,9 @@ namespace dawn_native {
     MaybeError ValidateShaderModuleDescriptor(DeviceBase* device,
                                               const ShaderModuleDescriptor* descriptor);
 
-    class ShaderModuleBase : public ObjectBase {
+    class ShaderModuleBase : public CachedObject {
       public:
-        ShaderModuleBase(DeviceBase* device,
-                         const ShaderModuleDescriptor* descriptor,
-                         bool blueprint = false);
+        ShaderModuleBase(DeviceBase* device, const ShaderModuleDescriptor* descriptor);
         ~ShaderModuleBase() override;
 
         static ShaderModuleBase* MakeError(DeviceBase* device);
@@ -51,7 +52,11 @@ namespace dawn_native {
             // The SPIRV ID of the resource.
             uint32_t id;
             uint32_t base_type_id;
-            dawn::BindingType type;
+            wgpu::BindingType type;
+            // Match the defaults in BindGroupLayoutDescriptor
+            wgpu::TextureViewDimension textureDimension = wgpu::TextureViewDimension::Undefined;
+            Format::Type textureComponentType = Format::Type::Float;
+            bool multisampled = false;
             bool used = false;
         };
         using ModuleBindingInfo =
@@ -61,7 +66,12 @@ namespace dawn_native {
         const std::bitset<kMaxVertexAttributes>& GetUsedVertexAttributes() const;
         SingleShaderStage GetExecutionModel() const;
 
-        bool IsCompatibleWithPipelineLayout(const PipelineLayoutBase* layout);
+        // An array to record the basic types (float, int and uint) of the fragment shader outputs
+        // or Format::Type::Other means the fragment shader output is unused.
+        using FragmentOutputBaseTypes = std::array<Format::Type, kMaxColorAttachments>;
+        const FragmentOutputBaseTypes& GetFragmentOutputBaseTypes() const;
+
+        bool IsCompatibleWithPipelineLayout(const PipelineLayoutBase* layout) const;
 
         // Functors necessary for the unordered_set<ShaderModuleBase*>-based cache.
         struct HashFunc {
@@ -71,19 +81,23 @@ namespace dawn_native {
             bool operator()(const ShaderModuleBase* a, const ShaderModuleBase* b) const;
         };
 
+      protected:
+        shaderc_spvc::Context mSpvcContext;
+
       private:
         ShaderModuleBase(DeviceBase* device, ObjectBase::ErrorTag tag);
 
-        bool IsCompatibleWithBindGroupLayout(size_t group, const BindGroupLayoutBase* layout);
+        bool IsCompatibleWithBindGroupLayout(size_t group, const BindGroupLayoutBase* layout) const;
 
         // TODO(cwallez@chromium.org): The code is only stored for deduplication. We could maybe
         // store a cryptographic hash of the code instead?
         std::vector<uint32_t> mCode;
-        bool mIsBlueprint = false;
 
         ModuleBindingInfo mBindingInfo;
         std::bitset<kMaxVertexAttributes> mUsedVertexAttributes;
         SingleShaderStage mExecutionModel;
+
+        FragmentOutputBaseTypes mFragmentOutputFormatBaseTypes;
     };
 
 }  // namespace dawn_native

@@ -10,12 +10,10 @@
 
 #include "base/macros.h"
 #include "base/optional.h"
-#include "base/scoped_observer.h"
 #include "chrome/browser/ui/tabs/tab_change_type.h"
 #include "chrome/browser/ui/tabs/tab_group_id.h"
 #include "ui/base/models/list_selection_model.h"
 
-class TabGroupVisualData;
 class TabStripModel;
 
 namespace content {
@@ -37,14 +35,7 @@ class WebContents;
 ////////////////////////////////////////////////////////////////////////////////
 class TabStripModelChange {
  public:
-  enum Type {
-    kSelectionOnly,
-    kInserted,
-    kRemoved,
-    kMoved,
-    kReplaced,
-    kGroupChanged
-  };
+  enum Type { kSelectionOnly, kInserted, kRemoved, kMoved, kReplaced };
 
   // Base class for all changes.
   // TODO(dfried): would love to change this whole thing into a std::variant,
@@ -145,26 +136,11 @@ class TabStripModelChange {
     int index;
   };
 
-  // A WebContents' group affiliation changed from |old_group| to |new_group|.
-  struct GroupChange : public Delta {
-    // Constructors and destructor required due to Optional.
-    GroupChange();
-    GroupChange(const GroupChange& other);
-    GroupChange& operator=(const GroupChange& other);
-    ~GroupChange() override;
-
-    content::WebContents* contents;
-    int index;
-    base::Optional<TabGroupId> old_group;
-    base::Optional<TabGroupId> new_group;
-  };
-
   TabStripModelChange();
   explicit TabStripModelChange(Insert delta);
   explicit TabStripModelChange(Remove delta);
   explicit TabStripModelChange(Replace delta);
   explicit TabStripModelChange(Move delta);
-  explicit TabStripModelChange(GroupChange delta);
   ~TabStripModelChange();
 
   Type type() const { return type_; }
@@ -172,7 +148,6 @@ class TabStripModelChange {
   const Remove* GetRemove() const;
   const Move* GetMove() const;
   const Replace* GetReplace() const;
-  const GroupChange* GetGroupChange() const;
 
  private:
   TabStripModelChange(Type type, std::unique_ptr<Delta> delta);
@@ -216,11 +191,22 @@ struct TabStripSelectionChange {
   int reason = 0;
 };
 
-// Forbid construction of ScopedObserver with TabStripModel:
-// TabStripModelObserver already implements ScopedObserver's functionality
-// natively.
-template <class U>
-class ScopedObserver<TabStripModel, U> {};
+// Struct to carry changes to tab groups. The tab group model is independent of
+// the tab strip model, so these changes are not bundled with
+// TabStripModelChanges or TabStripSelectionChanges.
+struct TabGroupChange {
+  // A group is created when the first tab is added to it and closed when the
+  // last tab is removed from it. Whenever the set of tabs in the group changes,
+  // a kContentsChange event is fired. Whenever the group's visual data changes,
+  // such as its title or color, a kVisualsChange event is fired.
+  enum Type { kCreated, kContentsChanged, kVisualsChanged, kClosed };
+
+  TabGroupChange(TabGroupId group, Type type);
+  ~TabGroupChange();
+
+  TabGroupId group;
+  Type type;
+};
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -256,7 +242,7 @@ class TabStripModelObserver {
     kCloseAllCompleted = 1,
   };
 
-  // |change| is a series of changes in tabtrip model. |change| consists
+  // |change| is a series of changes in tabstrip model. |change| consists
   // of changes with same type and those changes may have caused selection or
   // activation changes. |selection| is determined by comparing the state of
   // TabStripModel before the |change| and after the |change| are applied.
@@ -266,14 +252,10 @@ class TabStripModelObserver {
                                       const TabStripModelChange& change,
                                       const TabStripSelectionChange& selection);
 
-  // Called when the TabGroupVisualData associated with a group changes. |group|
-  // identifies which group changed. |visual_data| is a pointer to the new
-  // TabGroupVisualData and is valid until either the data associated with
-  // |group| changes again or |group| is destroyed.
-  virtual void OnTabGroupVisualDataChanged(
-      TabStripModel* tab_strip_model,
-      TabGroupId group,
-      const TabGroupVisualData* visual_data);
+  // |change| is a change in the Tab Group model or metadata. These
+  // changes may cause repainting of some Tab Group UI. They are
+  // independent of the tabstrip model and do not affect any tab state.
+  virtual void OnTabGroupChanged(const TabGroupChange& change);
 
   // The specified WebContents at |index| changed in some way. |contents|
   // may be an entirely different object and the old value is no longer
@@ -293,6 +275,10 @@ class TabStripModelObserver {
   // NOTE: This is invoked when a tab becomes blocked/unblocked by a tab modal
   // window.
   virtual void TabBlockedStateChanged(content::WebContents* contents,
+                                      int index);
+
+  // Called when the tab at |index| is added to the group with id |group|.
+  virtual void TabGroupedStateChanged(base::Optional<TabGroupId> group,
                                       int index);
 
   // The TabStripModel now no longer has any tabs. The implementer may

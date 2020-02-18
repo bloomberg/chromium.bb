@@ -12,6 +12,7 @@
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
+#include "ash/shell_delegate.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/model/system_tray_model.h"
 #include "base/bind_helpers.h"
@@ -19,8 +20,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chromeos/components/multidevice/logging/logging.h"
-#include "chromeos/services/multidevice_setup/public/mojom/constants.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/chromeos/devicetype_utils.h"
 #include "ui/message_center/message_center.h"
@@ -74,11 +73,9 @@ MultiDeviceNotificationPresenter::GetMetricValueForNotification(
 }
 
 MultiDeviceNotificationPresenter::MultiDeviceNotificationPresenter(
-    message_center::MessageCenter* message_center,
-    service_manager::Connector* connector)
-    : message_center_(message_center), connector_(connector), binding_(this) {
+    message_center::MessageCenter* message_center)
+    : message_center_(message_center) {
   DCHECK(message_center_);
-  DCHECK(connector_);
 
   Shell::Get()->session_controller()->AddObserver(this);
 
@@ -195,13 +192,12 @@ void MultiDeviceNotificationPresenter::OnNotificationClicked(
 
 void MultiDeviceNotificationPresenter::ObserveMultiDeviceSetupIfPossible() {
   // If already the delegate, there is nothing else to do.
-  if (multidevice_setup_ptr_)
+  if (multidevice_setup_remote_)
     return;
 
   const SessionControllerImpl* session_controller =
       Shell::Get()->session_controller();
 
-  // If no active user is logged in, there is nothing to do.
   if (session_controller->GetSessionState() !=
       session_manager::SessionState::ACTIVE) {
     return;
@@ -213,25 +209,12 @@ void MultiDeviceNotificationPresenter::ObserveMultiDeviceSetupIfPossible() {
   if (!user_session)
     return;
 
-  base::Optional<base::Token> service_instance_group =
-      user_session->user_info.service_instance_group;
-
-  // Cannot proceed if there is no known service instance group.
-  if (!service_instance_group)
-    return;
-
-  connector_->BindInterface(
-      service_manager::ServiceFilter::ByNameInGroup(
-          chromeos::multidevice_setup::mojom::kServiceName,
-          *service_instance_group),
-      &multidevice_setup_ptr_);
+  Shell::Get()->shell_delegate()->BindMultiDeviceSetup(
+      multidevice_setup_remote_.BindNewPipeAndPassReceiver());
 
   // Add this object as the delegate of the MultiDeviceSetup Service.
-  chromeos::multidevice_setup::mojom::AccountStatusChangeDelegatePtr
-      delegate_ptr;
-  binding_.Bind(mojo::MakeRequest(&delegate_ptr));
-  multidevice_setup_ptr_->SetAccountStatusChangeDelegate(
-      std::move(delegate_ptr));
+  multidevice_setup_remote_->SetAccountStatusChangeDelegate(
+      receiver_.BindNewPipeAndPassRemote());
 
   message_center_->AddObserver(this);
 }
@@ -271,8 +254,8 @@ MultiDeviceNotificationPresenter::CreateNotification(
 }
 
 void MultiDeviceNotificationPresenter::FlushForTesting() {
-  if (multidevice_setup_ptr_)
-    multidevice_setup_ptr_.FlushForTesting();
+  if (multidevice_setup_remote_)
+    multidevice_setup_remote_.FlushForTesting();
 }
 
 }  // namespace ash

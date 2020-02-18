@@ -15,6 +15,30 @@
 namespace media {
 namespace test {
 
+namespace {
+// Get the name of the specified video player |event|.
+const char* EventName(VideoPlayerEvent event) {
+  switch (event) {
+    case VideoPlayerEvent::kInitialized:
+      return "Initialized";
+    case VideoPlayerEvent::kFrameDecoded:
+      return "FrameDecoded";
+    case VideoPlayerEvent::kFlushing:
+      return "Flushing";
+    case VideoPlayerEvent::kFlushDone:
+      return "FlushDone";
+    case VideoPlayerEvent::kResetting:
+      return "Resetting";
+    case VideoPlayerEvent::kResetDone:
+      return "ResetDone";
+    case VideoPlayerEvent::kConfigInfo:
+      return "ConfigInfo";
+    default:
+      return "Unknown";
+  }
+}
+}  // namespace
+
 VideoPlayer::VideoPlayer()
     : video_(nullptr),
       video_player_state_(VideoPlayerState::kUninitialized),
@@ -32,10 +56,12 @@ VideoPlayer::~VideoPlayer() {
 // static
 std::unique_ptr<VideoPlayer> VideoPlayer::Create(
     const VideoDecoderClientConfig& config,
+    gpu::GpuMemoryBufferFactory* gpu_memory_buffer_factory,
     std::unique_ptr<FrameRenderer> frame_renderer,
     std::vector<std::unique_ptr<VideoFrameProcessor>> frame_processors) {
   auto video_player = base::WrapUnique(new VideoPlayer());
-  if (!video_player->CreateDecoderClient(config, std::move(frame_renderer),
+  if (!video_player->CreateDecoderClient(config, gpu_memory_buffer_factory,
+                                         std::move(frame_renderer),
                                          std::move(frame_processors))) {
     return nullptr;
   }
@@ -44,6 +70,7 @@ std::unique_ptr<VideoPlayer> VideoPlayer::Create(
 
 bool VideoPlayer::CreateDecoderClient(
     const VideoDecoderClientConfig& config,
+    gpu::GpuMemoryBufferFactory* gpu_memory_buffer_factory,
     std::unique_ptr<FrameRenderer> frame_renderer,
     std::vector<std::unique_ptr<VideoFrameProcessor>> frame_processors) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -51,11 +78,15 @@ bool VideoPlayer::CreateDecoderClient(
   DCHECK(frame_renderer);
   DVLOGF(4);
 
+  // base::Unretained is safe here as we will never receive callbacks after
+  // destroying the video player, since the video decoder client will be
+  // destroyed first.
   EventCallback event_cb =
       base::BindRepeating(&VideoPlayer::NotifyEvent, base::Unretained(this));
 
   decoder_client_ = VideoDecoderClient::Create(
-      event_cb, std::move(frame_renderer), std::move(frame_processors), config);
+      event_cb, gpu_memory_buffer_factory, std::move(frame_renderer),
+      std::move(frame_processors), config);
   if (!decoder_client_) {
     VLOGF(1) << "Failed to create video decoder client";
     return false;
@@ -176,8 +207,11 @@ bool VideoPlayer::WaitForEvent(VideoPlayerEvent event, size_t times) {
     }
 
     // Check whether we've exceeded the maximum time we're allowed to wait.
-    if (time_waiting >= event_timeout_)
+    if (time_waiting >= event_timeout_) {
+      LOG(ERROR) << "Timeout while waiting for '" << EventName(event)
+                 << "' event";
       return false;
+    }
 
     const base::TimeTicks start_time = base::TimeTicks::Now();
     event_cv_.TimedWait(event_timeout_ - time_waiting);

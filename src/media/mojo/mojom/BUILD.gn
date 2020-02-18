@@ -6,6 +6,8 @@ import("//media/media_options.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 
 mojom("mojom") {
+  generate_java = true
+
   # TODO(crbug.com/676224): Conditionally add source files in this list when we
   # support EnabledIf attribute in mojom files.
   sources = [
@@ -15,7 +17,6 @@ mojom("mojom") {
     "audio_logging.mojom",
     "audio_output_stream.mojom",
     "audio_parameters.mojom",
-    "cdm_proxy.mojom",
     "cdm_service.mojom",
     "cdm_storage.mojom",
     "content_decryption_module.mojom",
@@ -72,6 +73,11 @@ mojom("mojom") {
     enabled_features = [ "enable_cast_renderer" ]
   }
 
+  if (enable_cdm_proxy) {
+    enabled_features = [ "enable_cdm_proxy" ]
+    sources += [ "cdm_proxy.mojom" ]
+  }
+
   export_class_attribute_blink = "BLINK_PLATFORM_EXPORT"
   export_define_blink = "BLINK_PLATFORM_IMPLEMENTATION=1"
   export_header_blink = "third_party/blink/public/platform/web_common.h"
@@ -125,7 +131,6 @@ source_set("unit_tests") {
   sources = [
     "audio_decoder_config_mojom_traits_unittest.cc",
     "cdm_key_information_mojom_traits_unittest.cc",
-    "encryption_scheme_mojom_traits_unittest.cc",
     "video_decoder_config_mojom_traits_unittest.cc",
     "video_frame_mojom_traits_unittest.cc",
   ]
@@ -133,6 +138,7 @@ source_set("unit_tests") {
   deps = [
     "//base",
     "//base/test:test_support",
+    "//media:test_support",
     "//media/mojo:test_support",
     "//testing/gmock",
     "//testing/gtest",

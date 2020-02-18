@@ -153,6 +153,13 @@ const base::Feature kEnableGeneralAudienceBrowsing{
 
 // Uses unified IPC QueryableData bindings backend instead of v8 injection.
 const base::Feature kUseQueryableDataBackend{"use_queryable_data_backend",
+                                             base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kEnableSideGesturePassThrough{
+    "enable_side_gesture_pass_through", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Lowers frame rate for headless
+const base::Feature kReduceHeadlessFrameRate{"reduce_headless_frame_rate",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
 // End Chromecast Feature definitions.
@@ -164,6 +171,8 @@ const base::Feature* kFeatures[] = {
     &kDisableIdleSocketsCloseOnMemoryPressure,
     &kEnableGeneralAudienceBrowsing,
     &kUseQueryableDataBackend,
+    &kEnableSideGesturePassThrough,
+    &kReduceHeadlessFrameRate,
 };
 
 // An iterator for a base::DictionaryValue. Use an alias for brevity in loops.

@@ -19,11 +19,12 @@ class TIntermBlock;
 class TSymbolTable;
 
 void CollectVariables(TIntermBlock *root,
-                      std::vector<Attribute> *attributes,
-                      std::vector<OutputVariable> *outputVariables,
-                      std::vector<Uniform> *uniforms,
-                      std::vector<Varying> *inputVaryings,
-                      std::vector<Varying> *outputVaryings,
+                      std::vector<ShaderVariable> *attributes,
+                      std::vector<ShaderVariable> *outputVariables,
+                      std::vector<ShaderVariable> *uniforms,
+                      std::vector<ShaderVariable> *inputVaryings,
+                      std::vector<ShaderVariable> *outputVaryings,
+                      std::vector<ShaderVariable> *sharedVariables,
                       std::vector<InterfaceBlock> *uniformBlocks,
                       std::vector<InterfaceBlock> *shaderStorageBlocks,
                       std::vector<InterfaceBlock> *inBlocks,

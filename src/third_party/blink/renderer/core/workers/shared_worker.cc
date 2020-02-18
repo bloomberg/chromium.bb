@@ -33,6 +33,7 @@
 
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/blink/public/common/blob/blob_utils.h"
+#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/fileapi/public_url_manager.h"
 #include "third_party/blink/renderer/core/messaging/message_channel.h"
@@ -46,8 +47,29 @@
 
 namespace blink {
 
-inline SharedWorker::SharedWorker(ExecutionContext* context)
-    : AbstractWorker(context), is_being_connected_(false) {}
+namespace {
+
+void RecordSharedWorkerUsage(Document* document) {
+  UseCounter::Count(document, WebFeature::kSharedWorkerStart);
+
+  // Don't record the use counter if the frame is same-origin to the top frame,
+  // or if we can't tell whether the frame was ever cross-origin or not.
+  if (!document->TopFrameOrigin() ||
+      document->TopFrameOrigin()->CanAccess(document->GetSecurityOrigin())) {
+    return;
+  }
+
+  UseCounter::Count(document, WebFeature::kThirdPartySharedWorker);
+}
+
+}  // namespace
+
+SharedWorker::SharedWorker(ExecutionContext* context)
+    : AbstractWorker(context),
+      is_being_connected_(false),
+      feature_handle_for_scheduler_(context->GetScheduler()->RegisterFeature(
+          SchedulingPolicy::Feature::kSharedWorker,
+          {SchedulingPolicy::RecordMetricsForBackForwardCache()})) {}
 
 SharedWorker* SharedWorker::Create(ExecutionContext* context,
                                    const String& url,
@@ -55,7 +77,12 @@ SharedWorker* SharedWorker::Create(ExecutionContext* context,
                                    ExceptionState& exception_state) {
   DCHECK(IsMainThread());
 
-  UseCounter::Count(context, WebFeature::kSharedWorkerStart);
+  // We don't currently support nested workers, so workers can only be created
+  // from documents.
+  Document* document = To<Document>(context);
+  DCHECK(document);
+
+  RecordSharedWorkerUsage(document);
 
   SharedWorker* worker = MakeGarbageCollected<SharedWorker>(context);
   worker->UpdateStateIfNeeded();
@@ -64,9 +91,6 @@ SharedWorker* SharedWorker::Create(ExecutionContext* context,
   worker->port_ = channel->port1();
   MessagePortChannel remote_port = channel->port2()->Disentangle();
 
-  // We don't currently support nested workers, so workers can only be created
-  // from documents.
-  Document* document = To<Document>(context);
   if (!document->GetSecurityOrigin()->CanAccessSharedWorkers()) {
     exception_state.ThrowSecurityError(
         "Access to shared workers is denied to origin '" +

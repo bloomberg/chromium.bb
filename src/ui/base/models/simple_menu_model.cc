@@ -17,6 +17,10 @@ namespace ui {
 
 const int kSeparatorId = -1;
 
+// TYPE_TITLE should be rendered as enabled but is non-interactive and cannot be
+// highlighted.
+const int kTitleId = -2;
+
 ////////////////////////////////////////////////////////////////////////////////
 // SimpleMenuModel::Delegate, public:
 
@@ -38,11 +42,6 @@ bool SimpleMenuModel::Delegate::IsItemForCommandIdDynamic(
 }
 
 base::string16 SimpleMenuModel::Delegate::GetLabelForCommandId(
-    int command_id) const {
-  return base::string16();
-}
-
-base::string16 SimpleMenuModel::Delegate::GetMinorTextForCommandId(
     int command_id) const {
   return base::string16();
 }
@@ -140,6 +139,13 @@ void SimpleMenuModel::AddHighlightedItemWithIcon(int command_id,
   Item item(command_id, TYPE_HIGHLIGHTED, label);
   item.icon = gfx::Image(icon);
   AppendItem(std::move(item));
+}
+
+void SimpleMenuModel::AddTitle(const base::string16& label) {
+  // Title items are non-interactive and should not be enabled.
+  Item title_item = Item(kTitleId, TYPE_TITLE, label);
+  title_item.enabled = false;
+  AppendItem(std::move(title_item));
 }
 
 void SimpleMenuModel::AddSeparator(MenuSeparatorType separator_type) {
@@ -399,8 +405,6 @@ base::string16 SimpleMenuModel::GetLabelAt(int index) const {
 }
 
 base::string16 SimpleMenuModel::GetMinorTextAt(int index) const {
-  if (IsItemDynamicAt(index))
-    return delegate_->GetMinorTextForCommandId(GetCommandIdAt(index));
   return items_[ValidateItemIndex(index)].minor_text;
 }
 
@@ -460,6 +464,7 @@ ButtonMenuItemModel* SimpleMenuModel::GetButtonMenuItemAt(int index) const {
 
 bool SimpleMenuModel::IsEnabledAt(int index) const {
   int command_id = GetCommandIdAt(index);
+
   if (!delegate_ || command_id == kSeparatorId || GetButtonMenuItemAt(index))
     return items_[ValidateItemIndex(index)].enabled;
 
@@ -469,8 +474,10 @@ bool SimpleMenuModel::IsEnabledAt(int index) const {
 
 bool SimpleMenuModel::IsVisibleAt(int index) const {
   int command_id = GetCommandIdAt(index);
-  if (!delegate_ || command_id == kSeparatorId || GetButtonMenuItemAt(index))
+  if (!delegate_ || command_id == kSeparatorId || command_id == kTitleId ||
+      GetButtonMenuItemAt(index)) {
     return items_[ValidateItemIndex(index)].visible;
+  }
 
   return delegate_->IsCommandIdVisible(command_id) &&
          items_[ValidateItemIndex(index)].visible;
@@ -542,13 +549,15 @@ void SimpleMenuModel::InsertItemAtIndex(Item item, int index) {
 }
 
 void SimpleMenuModel::ValidateItem(const Item& item) {
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
   if (item.type == TYPE_SEPARATOR) {
     DCHECK_EQ(item.command_id, kSeparatorId);
+  } else if (item.type == TYPE_TITLE) {
+    DCHECK_EQ(item.command_id, kTitleId);
   } else {
     DCHECK_GE(item.command_id, 0);
   }
-#endif  // NDEBUG
+#endif  // DCHECK_IS_ON()
 }
 
 }  // namespace ui

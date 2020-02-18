@@ -1085,6 +1085,19 @@ void GLES2TraceImplementation::MultiDrawArraysInstancedWEBGL(
                                      drawcount);
 }
 
+void GLES2TraceImplementation::MultiDrawArraysInstancedBaseInstanceWEBGL(
+    GLenum mode,
+    const GLint* firsts,
+    const GLsizei* counts,
+    const GLsizei* instance_counts,
+    const GLuint* baseinstances,
+    GLsizei drawcount) {
+  TRACE_EVENT_BINARY_EFFICIENT0(
+      "gpu", "GLES2Trace::MultiDrawArraysInstancedBaseInstanceWEBGL");
+  gl_->MultiDrawArraysInstancedBaseInstanceWEBGL(
+      mode, firsts, counts, instance_counts, baseinstances, drawcount);
+}
+
 void GLES2TraceImplementation::MultiDrawElementsWEBGL(GLenum mode,
                                                       const GLsizei* counts,
                                                       GLenum type,
@@ -1105,6 +1118,24 @@ void GLES2TraceImplementation::MultiDrawElementsInstancedWEBGL(
                                 "GLES2Trace::MultiDrawElementsInstancedWEBGL");
   gl_->MultiDrawElementsInstancedWEBGL(mode, counts, type, offsets,
                                        instance_counts, drawcount);
+}
+
+void GLES2TraceImplementation::
+    MultiDrawElementsInstancedBaseVertexBaseInstanceWEBGL(
+        GLenum mode,
+        const GLsizei* counts,
+        GLenum type,
+        const GLsizei* offsets,
+        const GLsizei* instance_counts,
+        const GLint* basevertices,
+        const GLuint* baseinstances,
+        GLsizei drawcount) {
+  TRACE_EVENT_BINARY_EFFICIENT0(
+      "gpu",
+      "GLES2Trace::MultiDrawElementsInstancedBaseVertexBaseInstanceWEBGL");
+  gl_->MultiDrawElementsInstancedBaseVertexBaseInstanceWEBGL(
+      mode, counts, type, offsets, instance_counts, basevertices, baseinstances,
+      drawcount);
 }
 
 void GLES2TraceImplementation::StencilFunc(GLenum func,
@@ -1848,6 +1879,19 @@ void GLES2TraceImplementation::DispatchComputeIndirect(GLintptr offset) {
   gl_->DispatchComputeIndirect(offset);
 }
 
+void GLES2TraceImplementation::DrawArraysIndirect(GLenum mode,
+                                                  const void* offset) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::DrawArraysIndirect");
+  gl_->DrawArraysIndirect(mode, offset);
+}
+
+void GLES2TraceImplementation::DrawElementsIndirect(GLenum mode,
+                                                    GLenum type,
+                                                    const void* offset) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::DrawElementsIndirect");
+  gl_->DrawElementsIndirect(mode, type, offset);
+}
+
 void GLES2TraceImplementation::GetProgramInterfaceiv(GLuint program,
                                                      GLenum program_interface,
                                                      GLenum pname,
@@ -2130,6 +2174,18 @@ void GLES2TraceImplementation::DrawArraysInstancedANGLE(GLenum mode,
   gl_->DrawArraysInstancedANGLE(mode, first, count, primcount);
 }
 
+void GLES2TraceImplementation::DrawArraysInstancedBaseInstanceANGLE(
+    GLenum mode,
+    GLint first,
+    GLsizei count,
+    GLsizei primcount,
+    GLuint baseinstance) {
+  TRACE_EVENT_BINARY_EFFICIENT0(
+      "gpu", "GLES2Trace::DrawArraysInstancedBaseInstanceANGLE");
+  gl_->DrawArraysInstancedBaseInstanceANGLE(mode, first, count, primcount,
+                                            baseinstance);
+}
+
 void GLES2TraceImplementation::DrawElementsInstancedANGLE(GLenum mode,
                                                           GLsizei count,
                                                           GLenum type,
@@ -2138,6 +2194,20 @@ void GLES2TraceImplementation::DrawElementsInstancedANGLE(GLenum mode,
   TRACE_EVENT_BINARY_EFFICIENT0("gpu",
                                 "GLES2Trace::DrawElementsInstancedANGLE");
   gl_->DrawElementsInstancedANGLE(mode, count, type, indices, primcount);
+}
+
+void GLES2TraceImplementation::DrawElementsInstancedBaseVertexBaseInstanceANGLE(
+    GLenum mode,
+    GLsizei count,
+    GLenum type,
+    const void* indices,
+    GLsizei primcount,
+    GLint basevertex,
+    GLuint baseinstance) {
+  TRACE_EVENT_BINARY_EFFICIENT0(
+      "gpu", "GLES2Trace::DrawElementsInstancedBaseVertexBaseInstanceANGLE");
+  gl_->DrawElementsInstancedBaseVertexBaseInstanceANGLE(
+      mode, count, type, indices, primcount, basevertex, baseinstance);
 }
 
 void GLES2TraceImplementation::VertexAttribDivisorANGLE(GLuint index,
@@ -2573,6 +2643,13 @@ void GLES2TraceImplementation::ProgramPathFragmentInputGenCHROMIUM(
                                            components, coeffs);
 }
 
+void GLES2TraceImplementation::ContextVisibilityHintCHROMIUM(
+    GLboolean visibility) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu",
+                                "GLES2Trace::ContextVisibilityHintCHROMIUM");
+  gl_->ContextVisibilityHintCHROMIUM(visibility);
+}
+
 void GLES2TraceImplementation::CoverageModulationCHROMIUM(GLenum components) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu",
                                 "GLES2Trace::CoverageModulationCHROMIUM");
@@ -2587,12 +2664,6 @@ GLenum GLES2TraceImplementation::GetGraphicsResetStatusKHR() {
 void GLES2TraceImplementation::BlendBarrierKHR() {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::BlendBarrierKHR");
   gl_->BlendBarrierKHR();
-}
-
-void GLES2TraceImplementation::ApplyScreenSpaceAntialiasingCHROMIUM() {
-  TRACE_EVENT_BINARY_EFFICIENT0(
-      "gpu", "GLES2Trace::ApplyScreenSpaceAntialiasingCHROMIUM");
-  gl_->ApplyScreenSpaceAntialiasingCHROMIUM();
 }
 
 void GLES2TraceImplementation::BindFragDataLocationIndexedEXT(

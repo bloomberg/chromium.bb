@@ -4,9 +4,10 @@
 
 package org.chromium.chrome.browser.autofill_assistant.overlay;
 
-import android.graphics.Color;
 import android.graphics.RectF;
-import android.support.annotation.ColorInt;
+import android.support.annotation.Nullable;
+
+import androidx.annotation.ColorInt;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
@@ -46,9 +47,13 @@ public class AssistantOverlayModel extends PropertyModel {
     public static final WritableObjectPropertyKey<Long> TAP_TRACKING_DURATION_MS =
             new WritableObjectPropertyKey<>();
 
+    public static final WritableObjectPropertyKey<AssistantOverlayImage> OVERLAY_IMAGE =
+            new WritableObjectPropertyKey<>();
+
     public AssistantOverlayModel() {
         super(STATE, TOUCHABLE_AREA, RESTRICTED_AREA, VISUAL_VIEWPORT, DELEGATE, BACKGROUND_COLOR,
-                HIGHLIGHT_BORDER_COLOR, TAP_TRACKING_COUNT, TAP_TRACKING_DURATION_MS);
+                HIGHLIGHT_BORDER_COLOR, TAP_TRACKING_COUNT, TAP_TRACKING_DURATION_MS,
+                OVERLAY_IMAGE);
     }
 
     @CalledByNative
@@ -86,41 +91,32 @@ public class AssistantOverlayModel extends PropertyModel {
     }
 
     @CalledByNative
-    private boolean setBackgroundColor(String colorString) {
-        return setColor(BACKGROUND_COLOR, colorString);
+    private void setBackgroundColor(@Nullable @ColorInt Integer color) {
+        set(BACKGROUND_COLOR, color);
     }
 
     @CalledByNative
-    private boolean setHighlightBorderColor(String colorString) {
-        return setColor(HIGHLIGHT_BORDER_COLOR, colorString);
+    private void setHighlightBorderColor(@Nullable @ColorInt Integer color) {
+        set(HIGHLIGHT_BORDER_COLOR, color);
+    }
+
+    @CalledByNative
+    private void setOverlayImage(String imageUrl, int imageSizeInPixels, int imageTopMarginInPixels,
+            int imageBottomMarginInPixels, String text, @Nullable @ColorInt Integer textColor,
+            int textSizeInPixels) {
+        set(OVERLAY_IMAGE,
+                new AssistantOverlayImage(imageUrl, imageSizeInPixels, imageTopMarginInPixels,
+                        imageBottomMarginInPixels, text, textColor, textSizeInPixels));
+    }
+
+    @CalledByNative
+    private void clearOverlayImage() {
+        set(OVERLAY_IMAGE, null);
     }
 
     @CalledByNative
     private void setTapTracking(int count, long durationMs) {
         set(TAP_TRACKING_COUNT, count);
         set(TAP_TRACKING_DURATION_MS, durationMs);
-    }
-
-    /**
-     * Sets the given color property.
-     *
-     * @param property property to set
-     * @param colorString color value as a property. The empty string means use the default color
-     * @return true if the color string was parsed and set properly
-     */
-    private boolean setColor(WritableObjectPropertyKey<Integer> property, String colorString) {
-        if (colorString.isEmpty()) {
-            set(property, null);
-            return true;
-        }
-        @ColorInt
-        int colorInt;
-        try {
-            set(property, Color.parseColor(colorString));
-            return true;
-        } catch (IllegalArgumentException e) {
-            set(property, null);
-            return false;
-        }
     }
 }

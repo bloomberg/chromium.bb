@@ -165,7 +165,7 @@ class WprRecorder(object):
   def _CreateOptions(self):
     options = browser_options.BrowserFinderOptions()
     options.browser_options.wpr_mode = wpr_modes.WPR_RECORD
-    options.output_dir = self._output_dir
+    options.intermediate_dir = self._output_dir
     return options
 
   def _CleanUp(self):
@@ -252,7 +252,7 @@ class WprRecorder(object):
     self._options.pageset_repeat = 1
     self._story_set.wpr_archive_info.AddNewTemporaryRecording()
     self._record_page_test.CustomizeBrowserOptions(self._options)
-    story_runner.Run(
+    story_runner.RunStorySet(
         self._record_page_test,
         self._story_set,
         self._options,

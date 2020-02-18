@@ -19,8 +19,7 @@ class PdfAccessibilityTree;
 // accessibility actions.
 class PdfAXActionTarget : public ui::AXActionTarget {
  public:
-  PdfAXActionTarget(const ui::AXNode& plugin_node,
-                    pdf::PdfAccessibilityTree* tree);
+  PdfAXActionTarget(const ui::AXNode& plugin_node, PdfAccessibilityTree* tree);
   ~PdfAXActionTarget() override;
 
  protected:
@@ -49,12 +48,13 @@ class PdfAXActionTarget : public ui::AXActionTarget {
   bool ScrollToMakeVisibleWithSubFocus(
       const gfx::Rect& rect,
       ax::mojom::ScrollAlignment horizontal_scroll_alignment,
-      ax::mojom::ScrollAlignment vertical_scroll_alignment) const override;
+      ax::mojom::ScrollAlignment vertical_scroll_alignment,
+      ax::mojom::ScrollBehavior scroll_behavior) const override;
   bool ScrollToGlobalPoint(const gfx::Point& point) const override;
 
  private:
   const ui::AXNode& target_plugin_node_;
-  pdf::PdfAccessibilityTree* pdf_accessibility_tree_source_;
+  PdfAccessibilityTree* pdf_accessibility_tree_source_;
 };
 
 }  // namespace pdf

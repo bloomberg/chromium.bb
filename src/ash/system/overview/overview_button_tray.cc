@@ -5,9 +5,9 @@
 #include "ash/system/overview/overview_button_tray.h"
 
 #include "ash/metrics/user_metrics_recorder.h"
+#include "ash/public/cpp/shelf_config.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_controller_impl.h"
-#include "ash/shelf/shelf_constants.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/tray/tray_constants.h"
@@ -35,10 +35,8 @@ OverviewButtonTray::OverviewButtonTray(Shelf* shelf)
     : TrayBackgroundView(shelf),
       icon_(new views::ImageView()),
       scoped_session_observer_(this) {
-  SetInkDropMode(InkDropMode::ON);
-
-  gfx::ImageSkia image =
-      gfx::CreateVectorIcon(kShelfOverviewIcon, kShelfIconColor);
+  gfx::ImageSkia image = gfx::CreateVectorIcon(
+      kShelfOverviewIcon, ShelfConfig::Get()->shelf_icon_color());
   icon_->SetImage(image);
   const int vertical_padding = (kTrayItemSize - image.height()) / 2;
   const int horizontal_padding = (kTrayItemSize - image.width()) / 2;
@@ -99,18 +97,23 @@ bool OverviewButtonTray::PerformAction(const ui::Event& event) {
     // Switch to the second most recently used window (most recent is the
     // current window) if it exists, unless splitview mode is active. Do not
     // switch if we entered overview mode with all windows minimized.
+    const OverviewSession::EnterExitOverviewType enter_exit_type =
+        overview_controller->overview_session()->enter_exit_overview_type();
     if (mru_window_list.size() > 1u &&
-        overview_controller->overview_session()->enter_exit_overview_type() !=
+        enter_exit_type !=
+            OverviewSession::EnterExitOverviewType::kFadeInEnter &&
+        enter_exit_type !=
             OverviewSession::EnterExitOverviewType::kSlideInEnter) {
       aura::Window* new_active_window = mru_window_list[1];
 
-      // In splitview mode, quick switch will only affect the windows on the non
-      // default side. The window which was dragged to either side to begin
-      // splitview will remain untouched. Skip that window if it appears in the
-      // mru list.
+      // In tablet split view mode, quick switch will only affect the windows on
+      // the non default side. The window which was dragged to either side to
+      // begin split view will remain untouched. Skip that window if it appears
+      // in the mru list. Clamshell split view mode is impossible here, as it
+      // implies overview mode, and you cannot quick switch in overview mode.
       SplitViewController* split_view_controller =
-          Shell::Get()->split_view_controller();
-      if (split_view_controller->InSplitViewMode() &&
+          SplitViewController::Get(Shell::GetPrimaryRootWindow());
+      if (split_view_controller->InTabletSplitViewMode() &&
           mru_window_list.size() > 2u) {
         if (mru_window_list[0] ==
                 split_view_controller->GetDefaultSnappedWindow() ||
@@ -129,23 +132,23 @@ bool OverviewButtonTray::PerformAction(const ui::Event& event) {
 
   // If not in overview mode record the time of this tap. A subsequent tap will
   // be checked against this to see if we should quick switch.
-  last_press_event_time_ =
-      Shell::Get()->overview_controller()->InOverviewSession()
-          ? base::nullopt
-          : base::make_optional(event.time_stamp());
+  last_press_event_time_ = overview_controller->InOverviewSession()
+                               ? base::nullopt
+                               : base::make_optional(event.time_stamp());
 
-  OverviewController* controller = Shell::Get()->overview_controller();
-  // Note: Toggling overview mode will fail if there is no window to show, the
-  // screen is locked, a modal dialog is open or is running in kiosk app
-  // session.
-  bool performed;
-  if (controller->InOverviewSession())
-    performed = controller->EndOverview();
+  if (overview_controller->InOverviewSession())
+    overview_controller->EndOverview();
   else
-    performed = controller->StartOverview();
+    overview_controller->StartOverview();
   Shell::Get()->metrics()->RecordUserMetricsAction(UMA_TRAY_OVERVIEW);
-  return performed;
+
+  // The return value doesn't matter here. OnOverviewModeStarting() and
+  // OnOverviewModeEnded() will do the right thing to set the button state.
+  return true;
 }
+
+void OverviewButtonTray::HandlePerformActionResult(bool action_performed,
+                                                   const ui::Event& event) {}
 
 void OverviewButtonTray::OnSessionStateChanged(
     session_manager::SessionState state) {
@@ -192,7 +195,7 @@ void OverviewButtonTray::UpdateIconVisibility() {
   bool should_show =
       Shell::Get()->tablet_mode_controller()->ShouldShowOverviewButton();
 
-  SetVisible(should_show && active_session && !app_mode);
+  SetVisiblePreferred(should_show && active_session && !app_mode);
 }
 
 }  // namespace ash

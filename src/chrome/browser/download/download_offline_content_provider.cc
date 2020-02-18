@@ -15,6 +15,7 @@
 #include "chrome/browser/download/image_thumbnail_request.h"
 #include "chrome/browser/download/offline_item_utils.h"
 #include "chrome/browser/offline_items_collection/offline_content_aggregator_factory.h"
+#include "chrome/browser/profiles/profile.h"
 #include "components/download/public/common/download_item.h"
 #include "content/public/browser/browser_context.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -22,9 +23,9 @@
 #include "ui/display/screen.h"
 
 #if defined(OS_ANDROID)
-#include "chrome/browser/android/download/download_manager_bridge.h"
-#include "chrome/browser/android/download/download_manager_service.h"
-#include "chrome/browser/android/download/download_utils.h"
+#include "chrome/browser/download/android/download_manager_bridge.h"
+#include "chrome/browser/download/android/download_manager_service.h"
+#include "chrome/browser/download/android/download_utils.h"
 #endif
 
 using OfflineItemFilter = offline_items_collection::OfflineItemFilter;
@@ -48,10 +49,6 @@ const base::TimeDelta kCheckExternallyRemovedDownloadsDelay =
 bool ShouldShowDownloadItem(const DownloadItem* item) {
   return !item->IsTemporary() && !item->IsTransient() && !item->IsDangerous() &&
          !item->GetTargetFilePath().empty();
-}
-
-bool FullBrowserStarted() {
-  return g_browser_process != nullptr;
 }
 
 std::unique_ptr<OfflineItemShareInfo> CreateShareInfo(
@@ -132,9 +129,9 @@ DownloadOfflineContentProvider::DownloadOfflineContentProvider(
       name_space_(name_space),
       manager_(nullptr),
       checked_for_externally_removed_downloads_(false),
-      state_(State::UNINITIALIZED) {
+      state_(State::UNINITIALIZED),
+      profile_(nullptr) {
   aggregator_->RegisterProvider(name_space_, this);
-
 #if defined(OS_ANDROID)
   all_download_observer_.reset(new AllDownloadObserver(this));
 #endif
@@ -193,7 +190,7 @@ void DownloadOfflineContentProvider::OnDownloadsInitialized(
 // TODO(shaktisahu) : Pass DownloadOpenSource.
 void DownloadOfflineContentProvider::OpenItem(LaunchLocation location,
                                               const ContentId& id) {
-  DCHECK(FullBrowserStarted());
+  EnsureDownloadCoreServiceStarted();
   if (state_ != State::HISTORY_LOADED) {
     pending_actions_for_full_browser_.push_back(
         base::BindOnce(&DownloadOfflineContentProvider::OpenItem,
@@ -207,7 +204,7 @@ void DownloadOfflineContentProvider::OpenItem(LaunchLocation location,
 }
 
 void DownloadOfflineContentProvider::RemoveItem(const ContentId& id) {
-  DCHECK(FullBrowserStarted());
+  EnsureDownloadCoreServiceStarted();
   if (state_ != State::HISTORY_LOADED) {
     pending_actions_for_full_browser_.push_back(
         base::BindOnce(&DownloadOfflineContentProvider::RemoveItem,
@@ -265,7 +262,7 @@ void DownloadOfflineContentProvider::ResumeDownload(const ContentId& id,
 void DownloadOfflineContentProvider::GetItemById(
     const ContentId& id,
     OfflineContentProvider::SingleItemCallback callback) {
-  DCHECK(FullBrowserStarted());
+  EnsureDownloadCoreServiceStarted();
   if (state_ != State::HISTORY_LOADED) {
     pending_actions_for_full_browser_.push_back(base::BindOnce(
         &DownloadOfflineContentProvider::GetItemById,
@@ -286,7 +283,7 @@ void DownloadOfflineContentProvider::GetItemById(
 
 void DownloadOfflineContentProvider::GetAllItems(
     OfflineContentProvider::MultipleItemCallback callback) {
-  DCHECK(FullBrowserStarted());
+  EnsureDownloadCoreServiceStarted();
   if (state_ != State::HISTORY_LOADED) {
     pending_actions_for_full_browser_.push_back(
         base::BindOnce(&DownloadOfflineContentProvider::GetAllItems,
@@ -339,7 +336,7 @@ void DownloadOfflineContentProvider::GetVisualsForItem(
 void DownloadOfflineContentProvider::GetShareInfoForItem(
     const ContentId& id,
     ShareCallback callback) {
-  DCHECK(FullBrowserStarted());
+  EnsureDownloadCoreServiceStarted();
   if (state_ != State::HISTORY_LOADED) {
     pending_actions_for_full_browser_.push_back(base::BindOnce(
         &DownloadOfflineContentProvider::GetShareInfoForItem,
@@ -366,7 +363,7 @@ void DownloadOfflineContentProvider::OnThumbnailRetrieved(
 void DownloadOfflineContentProvider::RenameItem(const ContentId& id,
                                                 const std::string& name,
                                                 RenameCallback callback) {
-  DCHECK(FullBrowserStarted());
+  EnsureDownloadCoreServiceStarted();
   if (state_ != State::HISTORY_LOADED) {
     pending_actions_for_full_browser_.push_back(base::BindOnce(
         &DownloadOfflineContentProvider::RenameItem,
@@ -425,7 +422,8 @@ void DownloadOfflineContentProvider::RemoveObserver(
   observers_.RemoveObserver(observer);
 }
 
-void DownloadOfflineContentProvider::OnManagerGoingDown() {
+void DownloadOfflineContentProvider::OnManagerGoingDown(
+    SimpleDownloadManagerCoordinator* manager) {
   std::vector<DownloadItem*> all_items;
   GetAllDownloads(&all_items);
 
@@ -456,23 +454,19 @@ void DownloadOfflineContentProvider::OnDownloadUpdated(DownloadItem* item) {
     return;
 
   UpdateDelta update_delta;
-  if (item->GetState() == DownloadItem::COMPLETE) {
-    update_delta.state_changed = completed_downloads_.find(item->GetGuid()) ==
-                                 completed_downloads_.end();
-
+  auto offline_item = OfflineItemUtils::CreateOfflineItem(name_space_, item);
+  if (offline_item.state == OfflineItemState::COMPLETE ||
+      offline_item.state == OfflineItemState::FAILED ||
+      offline_item.state == OfflineItemState::CANCELLED) {
     // TODO(crbug.com/938152): May be move this to DownloadItem.
     // Never call this for completed downloads from history.
-    if (completed_downloads_.find(item->GetGuid()) !=
-        completed_downloads_.end()) {
-      return;
-    }
+    item->RemoveObserver(this);
 
-    completed_downloads_.insert(item->GetGuid());
-
-    AddCompletedDownload(item);
+    update_delta.state_changed = true;
+    if (item->GetState() == DownloadItem::COMPLETE)
+      AddCompletedDownload(item);
   }
 
-  auto offline_item = OfflineItemUtils::CreateOfflineItem(name_space_, item);
   UpdateObservers(offline_item, update_delta);
 }
 
@@ -489,8 +483,8 @@ void DownloadOfflineContentProvider::OnDownloadRemoved(DownloadItem* item) {
     observer.OnItemRemoved(contentId);
 }
 
-void DownloadOfflineContentProvider::OnDownloadDestroyed(DownloadItem* item) {
-  completed_downloads_.erase(item->GetGuid());
+void DownloadOfflineContentProvider::OnProfileCreated(Profile* profile) {
+  profile_ = profile;
 }
 
 void DownloadOfflineContentProvider::AddCompletedDownload(DownloadItem* item) {
@@ -498,18 +492,15 @@ void DownloadOfflineContentProvider::AddCompletedDownload(DownloadItem* item) {
   DownloadManagerBridge::AddCompletedDownload(
       item,
       base::BindOnce(&DownloadOfflineContentProvider::AddCompletedDownloadDone,
-                     weak_ptr_factory_.GetWeakPtr(), item));
+                     weak_ptr_factory_.GetWeakPtr(), item->GetGuid()));
 #endif
 }
 
 void DownloadOfflineContentProvider::AddCompletedDownloadDone(
-    DownloadItem* item,
-    int64_t system_download_id,
-    bool can_resolve) {
+    const std::string& download_guid,
+    int64_t system_download_id) {
 #if defined(OS_ANDROID)
-  if (!can_resolve)
-    return;
-
+  DownloadItem* item = GetDownload(download_guid);
   if (DownloadUtils::IsOmaDownloadDescription(item->GetMimeType())) {
     DownloadManagerService::GetInstance()->HandleOMADownload(
         item, system_download_id);
@@ -548,4 +539,9 @@ void DownloadOfflineContentProvider::CheckForExternallyRemovedDownloads() {
 #if defined(OS_ANDROID)
   manager_->CheckForExternallyRemovedDownloads();
 #endif
+}
+
+void DownloadOfflineContentProvider::EnsureDownloadCoreServiceStarted() {
+  DCHECK(profile_);
+  CHECK(content::BrowserContext::GetDownloadManager(profile_));
 }

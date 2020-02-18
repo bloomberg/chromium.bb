@@ -11,52 +11,10 @@
 namespace gl
 {
 
-bool ValidateDrawElementsBaseVertex(Context *context,
-                                    GLenum mode,
-                                    GLsizei count,
-                                    GLenum type,
-                                    const void *indices,
-                                    GLint basevertex)
-{
-    return true;
-}
-
-bool ValidateDrawElementsInstancedBaseVertex(Context *context,
-                                             GLenum mode,
-                                             GLsizei count,
-                                             GLenum type,
-                                             const void *indices,
-                                             GLsizei instancecount,
-                                             GLint basevertex)
-{
-    return true;
-}
-
-bool ValidateDrawRangeElementsBaseVertex(Context *context,
-                                         GLenum mode,
-                                         GLuint start,
-                                         GLuint end,
-                                         GLsizei count,
-                                         GLenum type,
-                                         const void *indices,
-                                         GLint basevertex)
-{
-    return true;
-}
-
-bool ValidateFramebufferTexture(Context *context,
-                                GLenum target,
-                                GLenum attachment,
-                                TextureID texture,
-                                GLint level)
-{
-    return true;
-}
-
 bool ValidateMultiDrawElementsBaseVertex(Context *context,
-                                         GLenum mode,
+                                         PrimitiveMode mode,
                                          const GLsizei *count,
-                                         GLenum type,
+                                         DrawElementsType type,
                                          const void *const *indices,
                                          GLsizei drawcount,
                                          const GLint *basevertex)

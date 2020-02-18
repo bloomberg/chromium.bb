@@ -15,6 +15,7 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/shell/browser/shell_speech_recognition_manager_delegate.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
+#include "storage/browser/quota/quota_settings.h"
 
 namespace content {
 
@@ -22,6 +23,7 @@ class ShellBrowserContext;
 class ShellBrowserMainParts;
 
 std::string GetShellUserAgent();
+std::string GetShellLanguage();
 blink::UserAgentMetadata GetShellUserAgentMetadata();
 
 class ShellContentBrowserClient : public ContentBrowserClient {
@@ -69,8 +71,6 @@ class ShellContentBrowserClient : public ContentBrowserClient {
       std::unique_ptr<ClientCertificateDelegate> delegate) override;
   SpeechRecognitionManagerDelegate* CreateSpeechRecognitionManagerDelegate()
       override;
-  void OverrideWebkitPrefs(RenderViewHost* render_view_host,
-                           WebPreferences* prefs) override;
   base::FilePath GetFontLookupTableCacheDir() override;
   DevToolsManagerDelegate* GetDevToolsManagerDelegate() override;
   void OpenURL(SiteInstance* site_instance,
@@ -101,7 +101,7 @@ class ShellContentBrowserClient : public ContentBrowserClient {
                         RendererSpawnFlags flags) override;
 #endif
 
-  network::mojom::NetworkContextPtr CreateNetworkContext(
+  mojo::Remote<network::mojom::NetworkContext> CreateNetworkContext(
       BrowserContext* context,
       bool in_memory,
       const base::FilePath& relative_partition_path) override;

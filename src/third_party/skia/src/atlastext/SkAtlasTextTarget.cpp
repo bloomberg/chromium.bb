@@ -73,8 +73,7 @@ void SkAtlasTextTarget::concat(const SkMatrix& matrix) { this->accessCTM()->preC
 
 //////////////////////////////////////////////////////////////////////////////
 
-static const GrColorSpaceInfo kColorSpaceInfo(GrColorType::kRGBA_8888, kPremul_SkAlphaType,
-                                              nullptr);
+static const GrColorInfo kColorInfo(GrColorType::kRGBA_8888, kPremul_SkAlphaType, nullptr);
 static const SkSurfaceProps kProps(
         SkSurfaceProps::kUseDistanceFieldFonts_Flag, kUnknown_SkPixelGeometry);
 
@@ -82,12 +81,11 @@ static const SkSurfaceProps kProps(
 
 class SkInternalAtlasTextTarget : public GrTextTarget, public SkAtlasTextTarget {
 public:
-    SkInternalAtlasTextTarget(sk_sp<SkAtlasTextContext> context,
-                              int width, int height,
+    SkInternalAtlasTextTarget(sk_sp<SkAtlasTextContext> context, int width, int height,
                               void* handle)
-            : GrTextTarget(width, height, kColorSpaceInfo)
+            : GrTextTarget(width, height, kColorInfo)
             , SkAtlasTextTarget(std::move(context), width, height, handle)
-            , fGlyphPainter(kProps, kColorSpaceInfo) {
+            , fGlyphPainter(kProps, kColorInfo) {
         fOpMemoryPool = fContext->internal().grContext()->priv().refOpMemoryPool();
     }
 
@@ -220,7 +218,6 @@ void GrAtlasTextOp::finalizeForTextTarget(uint32_t color, const GrCaps& caps) {
 
 void GrAtlasTextOp::executeForTextTarget(SkAtlasTextTarget* target) {
     FlushInfo flushInfo;
-    SkExclusiveStrikePtr autoGlyphCache;
     auto& context = target->context()->internal();
     auto glyphCache = context.grContext()->priv().getGrStrikeCache();
     auto atlasManager = context.grContext()->priv().getAtlasManager();
@@ -234,10 +231,9 @@ void GrAtlasTextOp::executeForTextTarget(SkAtlasTextTarget* target) {
     for (int i = 0; i < fGeoCount; ++i) {
         // TODO4F: Preserve float colors
         GrTextBlob::VertexRegenerator regenerator(
-                resourceProvider, fGeoData[i].fBlob, fGeoData[i].fRun, fGeoData[i].fSubRun,
+                resourceProvider, fGeoData[i].fBlob, fGeoData[i].fSubRunPtr,
                 fGeoData[i].fViewMatrix, fGeoData[i].fX, fGeoData[i].fY,
-                fGeoData[i].fColor.toBytes_RGBA(), &context, glyphCache, atlasManager,
-                &autoGlyphCache);
+                fGeoData[i].fColor.toBytes_RGBA(), &context, glyphCache, atlasManager);
         bool done = false;
         while (!done) {
             GrTextBlob::VertexRegenerator::Result result;

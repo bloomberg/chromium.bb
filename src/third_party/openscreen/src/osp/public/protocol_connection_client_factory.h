@@ -10,18 +10,22 @@
 #include "osp/public/protocol_connection_client.h"
 
 namespace openscreen {
+
 namespace platform {
-class NetworkRunner;
+class TaskRunner;
 }  // namespace platform
+
+namespace osp {
 
 class ProtocolConnectionClientFactory {
  public:
   static std::unique_ptr<ProtocolConnectionClient> Create(
       MessageDemuxer* demuxer,
       ProtocolConnectionServiceObserver* observer,
-      platform::NetworkRunner* network_runner);
+      platform::TaskRunner* task_runner);
 };
 
+}  // namespace osp
 }  // namespace openscreen
 
 #endif  // OSP_PUBLIC_PROTOCOL_CONNECTION_CLIENT_FACTORY_H_

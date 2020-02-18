@@ -16,6 +16,8 @@
 #include "components/autofill_assistant/browser/access_token_fetcher.h"
 #include "components/autofill_assistant/browser/client.h"
 #include "components/autofill_assistant/browser/controller.h"
+#include "components/autofill_assistant/browser/device_context.h"
+#include "components/autofill_assistant/browser/service.h"
 #include "components/autofill_assistant/browser/website_login_fetcher.h"
 #include "content/public/browser/web_contents_user_data.h"
 
@@ -47,6 +49,7 @@ class ClientAndroid : public Client,
       const base::android::JavaParamRef<jobjectArray>& parameter_names,
       const base::android::JavaParamRef<jobjectArray>& parameter_values,
       const base::android::JavaParamRef<jobject>& jonboarding_coordinator,
+      jboolean jonboarding_shown,
       jlong jservice);
   void DestroyUI(JNIEnv* env,
                  const base::android::JavaParamRef<jobject>& jcaller);
@@ -63,13 +66,21 @@ class ClientAndroid : public Client,
                      jboolean success,
                      const base::android::JavaParamRef<jstring>& access_token);
 
-  void ListDirectActions(
+  void FetchWebsiteActions(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& jcaller,
       const base::android::JavaParamRef<jstring>& jexperiment_ids,
       const base::android::JavaParamRef<jobjectArray>& jargument_names,
       const base::android::JavaParamRef<jobjectArray>& jargument_values,
       const base::android::JavaParamRef<jobject>& jcallback);
+
+  bool HasRunFirstCheck(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& jcaller) const;
+
+  base::android::ScopedJavaLocalRef<jobjectArray> GetDirectActions(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& jcaller);
 
   bool PerformDirectAction(
       JNIEnv* env,
@@ -91,6 +102,7 @@ class ClientAndroid : public Client,
   std::string GetServerUrl() override;
   std::string GetLocale() override;
   std::string GetCountryCode() override;
+  DeviceContext GetDeviceContext() override;
   void Shutdown(Metrics::DropOutReason reason) override;
 
   // Overrides AccessTokenFetcher
@@ -107,7 +119,14 @@ class ClientAndroid : public Client,
   void AttachUI(
       const base::android::JavaParamRef<jobject>& jonboarding_coordinator);
   bool NeedsUI();
-  void OnListDirectActions(const base::android::JavaRef<jobject>& jcallback);
+  void OnFetchWebsiteActions(const base::android::JavaRef<jobject>& jcallback);
+
+  base::android::ScopedJavaLocalRef<jobjectArray>
+  GetDirectActionsAsJavaArrayOfStrings(JNIEnv* env) const;
+
+  base::android::ScopedJavaLocalRef<jobject>
+  ToJavaAutofillAssistantDirectAction(JNIEnv* env,
+                                      const DirectAction& direct_action) const;
 
   // Returns the index of a direct action with that name, to pass to
   // UiDelegate::PerformUserAction() or -1 if not found.

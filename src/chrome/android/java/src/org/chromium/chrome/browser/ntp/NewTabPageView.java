@@ -13,8 +13,9 @@ import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.TraceEvent;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
@@ -22,7 +23,6 @@ import org.chromium.chrome.browser.compositor.layouts.content.InvalidationAwareT
 import org.chromium.chrome.browser.gesturenav.HistoryNavigationDelegateFactory;
 import org.chromium.chrome.browser.gesturenav.HistoryNavigationLayout;
 import org.chromium.chrome.browser.native_page.ContextMenuManager;
-import org.chromium.chrome.browser.ntp.NewTabPage.FakeboxDelegate;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageAdapter;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageRecyclerView;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
@@ -31,9 +31,10 @@ import org.chromium.chrome.browser.suggestions.SuggestionsDependencyFactory;
 import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegate;
 import org.chromium.chrome.browser.suggestions.tile.TileGroup;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabImpl;
+import org.chromium.chrome.browser.ui.widget.displaystyle.UiConfig;
+import org.chromium.chrome.browser.ui.widget.displaystyle.ViewResizer;
 import org.chromium.chrome.browser.util.ViewUtils;
-import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
-import org.chromium.chrome.browser.widget.displaystyle.ViewResizer;
 
 /**
  * The native new tab page, represented by some basic data such as title and url, and an Android
@@ -125,7 +126,7 @@ public class NewTabPageView extends HistoryNavigationLayout {
 
         // Don't store a direct reference to the activity, because it might change later if the tab
         // is reparented.
-        Runnable closeContextMenuCallback = () -> mTab.getActivity().closeContextMenu();
+        Runnable closeContextMenuCallback = () -> ((TabImpl) mTab).getActivity().closeContextMenu();
         mContextMenuManager = new ContextMenuManager(mManager.getNavigationDelegate(),
                 mRecyclerView::setTouchEnabled, closeContextMenuCallback,
                 NewTabPage.CONTEXT_MENU_USER_ACTION_PREFIX);
@@ -133,11 +134,11 @@ public class NewTabPageView extends HistoryNavigationLayout {
         setNavigationDelegate(HistoryNavigationDelegateFactory.create(mTab));
 
         OverviewModeBehavior overviewModeBehavior =
-                tab.getActivity() instanceof ChromeTabbedActivity
-                ? tab.getActivity().getOverviewModeBehavior()
+                ((TabImpl) tab).getActivity() instanceof ChromeTabbedActivity
+                ? ((TabImpl) tab).getActivity().getOverviewModeBehavior()
                 : null;
 
-        mNewTabPageLayout.initialize(manager, tab.getActivity(), overviewModeBehavior,
+        mNewTabPageLayout.initialize(manager, ((TabImpl) tab).getActivity(), overviewModeBehavior,
                 tileGroupDelegate, searchProviderHasLogo, searchProviderIsGoogle, mRecyclerView,
                 mContextMenuManager, mUiConfig);
 

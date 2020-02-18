@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/run_loop.h"
+#include "base/test/gtest_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_clock.h"
@@ -79,54 +80,54 @@ TEST_F(PermissionDecisionAutoBlockerUnitTest, RemoveEmbargoByUrl) {
 
   // Record dismissals for location and notifications in |url1|.
   EXPECT_FALSE(autoblocker()->RecordDismissAndEmbargo(
-      url1, CONTENT_SETTINGS_TYPE_GEOLOCATION));
+      url1, ContentSettingsType::GEOLOCATION, false));
   EXPECT_FALSE(autoblocker()->RecordDismissAndEmbargo(
-      url1, CONTENT_SETTINGS_TYPE_GEOLOCATION));
+      url1, ContentSettingsType::GEOLOCATION, false));
   EXPECT_TRUE(autoblocker()->RecordDismissAndEmbargo(
-      url1, CONTENT_SETTINGS_TYPE_GEOLOCATION));
+      url1, ContentSettingsType::GEOLOCATION, false));
   EXPECT_FALSE(autoblocker()->RecordDismissAndEmbargo(
-      url1, CONTENT_SETTINGS_TYPE_NOTIFICATIONS));
+      url1, ContentSettingsType::NOTIFICATIONS, false));
   EXPECT_FALSE(autoblocker()->RecordDismissAndEmbargo(
-      url1, CONTENT_SETTINGS_TYPE_NOTIFICATIONS));
+      url1, ContentSettingsType::NOTIFICATIONS, false));
   EXPECT_TRUE(autoblocker()->RecordDismissAndEmbargo(
-      url1, CONTENT_SETTINGS_TYPE_NOTIFICATIONS));
+      url1, ContentSettingsType::NOTIFICATIONS, false));
   // Record dismissals for location in |url2|.
   EXPECT_FALSE(autoblocker()->RecordDismissAndEmbargo(
-      url2, CONTENT_SETTINGS_TYPE_GEOLOCATION));
+      url2, ContentSettingsType::GEOLOCATION, false));
   EXPECT_FALSE(autoblocker()->RecordDismissAndEmbargo(
-      url2, CONTENT_SETTINGS_TYPE_GEOLOCATION));
+      url2, ContentSettingsType::GEOLOCATION, false));
   EXPECT_TRUE(autoblocker()->RecordDismissAndEmbargo(
-      url2, CONTENT_SETTINGS_TYPE_GEOLOCATION));
+      url2, ContentSettingsType::GEOLOCATION, false));
 
   // Verify all dismissals recorded above resulted in embargo.
   PermissionResult result =
-      autoblocker()->GetEmbargoResult(url1, CONTENT_SETTINGS_TYPE_GEOLOCATION);
-  EXPECT_EQ(CONTENT_SETTING_BLOCK, result.content_setting);
-  EXPECT_EQ(PermissionStatusSource::MULTIPLE_DISMISSALS, result.source);
-  result = autoblocker()->GetEmbargoResult(url1,
-                                           CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
+      autoblocker()->GetEmbargoResult(url1, ContentSettingsType::GEOLOCATION);
   EXPECT_EQ(CONTENT_SETTING_BLOCK, result.content_setting);
   EXPECT_EQ(PermissionStatusSource::MULTIPLE_DISMISSALS, result.source);
   result =
-      autoblocker()->GetEmbargoResult(url2, CONTENT_SETTINGS_TYPE_GEOLOCATION);
+      autoblocker()->GetEmbargoResult(url1, ContentSettingsType::NOTIFICATIONS);
+  EXPECT_EQ(CONTENT_SETTING_BLOCK, result.content_setting);
+  EXPECT_EQ(PermissionStatusSource::MULTIPLE_DISMISSALS, result.source);
+  result =
+      autoblocker()->GetEmbargoResult(url2, ContentSettingsType::GEOLOCATION);
   EXPECT_EQ(CONTENT_SETTING_BLOCK, result.content_setting);
   EXPECT_EQ(PermissionStatusSource::MULTIPLE_DISMISSALS, result.source);
 
   // Remove the embargo on notifications. Verify it is no longer under embargo,
   // but location still is.
-  autoblocker()->RemoveEmbargoByUrl(url1, CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
+  autoblocker()->RemoveEmbargoByUrl(url1, ContentSettingsType::NOTIFICATIONS);
   result =
-      autoblocker()->GetEmbargoResult(url1, CONTENT_SETTINGS_TYPE_GEOLOCATION);
+      autoblocker()->GetEmbargoResult(url1, ContentSettingsType::GEOLOCATION);
   EXPECT_EQ(CONTENT_SETTING_BLOCK, result.content_setting);
   EXPECT_EQ(PermissionStatusSource::MULTIPLE_DISMISSALS, result.source);
-  result = autoblocker()->GetEmbargoResult(url1,
-                                           CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
+  result =
+      autoblocker()->GetEmbargoResult(url1, ContentSettingsType::NOTIFICATIONS);
   // If not under embargo, GetEmbargoResult() returns a setting of ASK.
   EXPECT_EQ(CONTENT_SETTING_ASK, result.content_setting);
   EXPECT_EQ(PermissionStatusSource::UNSPECIFIED, result.source);
   // Verify |url2|'s embargo is still intact as well.
   result =
-      autoblocker()->GetEmbargoResult(url2, CONTENT_SETTINGS_TYPE_GEOLOCATION);
+      autoblocker()->GetEmbargoResult(url2, ContentSettingsType::GEOLOCATION);
   EXPECT_EQ(CONTENT_SETTING_BLOCK, result.content_setting);
   EXPECT_EQ(PermissionStatusSource::MULTIPLE_DISMISSALS, result.source);
 }
@@ -139,30 +140,30 @@ TEST_F(PermissionDecisionAutoBlockerUnitTest,
 
   // Record dismissals for location.
   EXPECT_FALSE(autoblocker()->RecordDismissAndEmbargo(
-      url, CONTENT_SETTINGS_TYPE_GEOLOCATION));
+      url, ContentSettingsType::GEOLOCATION, false));
   EXPECT_FALSE(autoblocker()->RecordDismissAndEmbargo(
-      url, CONTENT_SETTINGS_TYPE_GEOLOCATION));
+      url, ContentSettingsType::GEOLOCATION, false));
   EXPECT_TRUE(autoblocker()->RecordDismissAndEmbargo(
-      url, CONTENT_SETTINGS_TYPE_GEOLOCATION));
+      url, ContentSettingsType::GEOLOCATION, false));
 
   // Verify location is under embargo.
   PermissionResult result =
-      autoblocker()->GetEmbargoResult(url, CONTENT_SETTINGS_TYPE_GEOLOCATION);
+      autoblocker()->GetEmbargoResult(url, ContentSettingsType::GEOLOCATION);
   EXPECT_EQ(CONTENT_SETTING_BLOCK, result.content_setting);
   EXPECT_EQ(PermissionStatusSource::MULTIPLE_DISMISSALS, result.source);
 
   // Remove embargo and verify this is true.
-  autoblocker()->RemoveEmbargoByUrl(url, CONTENT_SETTINGS_TYPE_GEOLOCATION);
+  autoblocker()->RemoveEmbargoByUrl(url, ContentSettingsType::GEOLOCATION);
   result =
-      autoblocker()->GetEmbargoResult(url, CONTENT_SETTINGS_TYPE_GEOLOCATION);
+      autoblocker()->GetEmbargoResult(url, ContentSettingsType::GEOLOCATION);
   EXPECT_EQ(CONTENT_SETTING_ASK, result.content_setting);
   EXPECT_EQ(PermissionStatusSource::UNSPECIFIED, result.source);
 
   // Record another dismissal and verify location is under embargo again.
-  autoblocker()->RecordDismissAndEmbargo(url,
-                                         CONTENT_SETTINGS_TYPE_GEOLOCATION);
+  autoblocker()->RecordDismissAndEmbargo(url, ContentSettingsType::GEOLOCATION,
+                                         false);
   result =
-      autoblocker()->GetEmbargoResult(url, CONTENT_SETTINGS_TYPE_GEOLOCATION);
+      autoblocker()->GetEmbargoResult(url, ContentSettingsType::GEOLOCATION);
   EXPECT_EQ(CONTENT_SETTING_BLOCK, result.content_setting);
   EXPECT_EQ(PermissionStatusSource::MULTIPLE_DISMISSALS, result.source);
 }
@@ -173,116 +174,116 @@ TEST_F(PermissionDecisionAutoBlockerUnitTest, RemoveCountsByUrl) {
 
   // Record some dismissals.
   EXPECT_FALSE(autoblocker()->RecordDismissAndEmbargo(
-      url1, CONTENT_SETTINGS_TYPE_GEOLOCATION));
+      url1, ContentSettingsType::GEOLOCATION, false));
   EXPECT_EQ(1, autoblocker()->GetDismissCount(
-                   url1, CONTENT_SETTINGS_TYPE_GEOLOCATION));
+                   url1, ContentSettingsType::GEOLOCATION));
 
   EXPECT_FALSE(autoblocker()->RecordDismissAndEmbargo(
-      url1, CONTENT_SETTINGS_TYPE_GEOLOCATION));
+      url1, ContentSettingsType::GEOLOCATION, false));
   EXPECT_EQ(2, autoblocker()->GetDismissCount(
-                   url1, CONTENT_SETTINGS_TYPE_GEOLOCATION));
+                   url1, ContentSettingsType::GEOLOCATION));
 
   EXPECT_TRUE(autoblocker()->RecordDismissAndEmbargo(
-      url1, CONTENT_SETTINGS_TYPE_GEOLOCATION));
+      url1, ContentSettingsType::GEOLOCATION, false));
   EXPECT_EQ(3, autoblocker()->GetDismissCount(
-                   url1, CONTENT_SETTINGS_TYPE_GEOLOCATION));
+                   url1, ContentSettingsType::GEOLOCATION));
 
   EXPECT_FALSE(autoblocker()->RecordDismissAndEmbargo(
-      url2, CONTENT_SETTINGS_TYPE_GEOLOCATION));
+      url2, ContentSettingsType::GEOLOCATION, false));
   EXPECT_EQ(1, autoblocker()->GetDismissCount(
-                   url2, CONTENT_SETTINGS_TYPE_GEOLOCATION));
+                   url2, ContentSettingsType::GEOLOCATION));
 
   EXPECT_FALSE(autoblocker()->RecordDismissAndEmbargo(
-      url1, CONTENT_SETTINGS_TYPE_NOTIFICATIONS));
+      url1, ContentSettingsType::NOTIFICATIONS, false));
   EXPECT_EQ(1, autoblocker()->GetDismissCount(
-                   url1, CONTENT_SETTINGS_TYPE_NOTIFICATIONS));
+                   url1, ContentSettingsType::NOTIFICATIONS));
 
   // Record some ignores.
   EXPECT_FALSE(autoblocker()->RecordIgnoreAndEmbargo(
-      url1, CONTENT_SETTINGS_TYPE_MIDI_SYSEX));
+      url1, ContentSettingsType::MIDI_SYSEX, false));
   EXPECT_EQ(
-      1, autoblocker()->GetIgnoreCount(url1, CONTENT_SETTINGS_TYPE_MIDI_SYSEX));
+      1, autoblocker()->GetIgnoreCount(url1, ContentSettingsType::MIDI_SYSEX));
   EXPECT_FALSE(autoblocker()->RecordIgnoreAndEmbargo(
-      url1, CONTENT_SETTINGS_TYPE_DURABLE_STORAGE));
+      url1, ContentSettingsType::DURABLE_STORAGE, false));
   EXPECT_EQ(1, autoblocker()->GetIgnoreCount(
-                   url1, CONTENT_SETTINGS_TYPE_DURABLE_STORAGE));
+                   url1, ContentSettingsType::DURABLE_STORAGE));
   EXPECT_FALSE(autoblocker()->RecordIgnoreAndEmbargo(
-      url2, CONTENT_SETTINGS_TYPE_GEOLOCATION));
+      url2, ContentSettingsType::GEOLOCATION, false));
   EXPECT_FALSE(autoblocker()->RecordIgnoreAndEmbargo(
-      url2, CONTENT_SETTINGS_TYPE_GEOLOCATION));
-  EXPECT_EQ(2, autoblocker()->GetIgnoreCount(
-                   url2, CONTENT_SETTINGS_TYPE_GEOLOCATION));
+      url2, ContentSettingsType::GEOLOCATION, false));
+  EXPECT_EQ(
+      2, autoblocker()->GetIgnoreCount(url2, ContentSettingsType::GEOLOCATION));
 
   autoblocker()->RemoveCountsByUrl(base::Bind(&FilterGoogle));
 
   // Expect that url1's actions are gone, but url2's remain.
   EXPECT_EQ(0, autoblocker()->GetDismissCount(
-                   url1, CONTENT_SETTINGS_TYPE_GEOLOCATION));
+                   url1, ContentSettingsType::GEOLOCATION));
   EXPECT_EQ(0, autoblocker()->GetDismissCount(
-                   url1, CONTENT_SETTINGS_TYPE_NOTIFICATIONS));
+                   url1, ContentSettingsType::NOTIFICATIONS));
   EXPECT_EQ(
-      0, autoblocker()->GetIgnoreCount(url1, CONTENT_SETTINGS_TYPE_MIDI_SYSEX));
+      0, autoblocker()->GetIgnoreCount(url1, ContentSettingsType::MIDI_SYSEX));
   EXPECT_EQ(0, autoblocker()->GetIgnoreCount(
-                   url1, CONTENT_SETTINGS_TYPE_DURABLE_STORAGE));
+                   url1, ContentSettingsType::DURABLE_STORAGE));
 
   EXPECT_EQ(1, autoblocker()->GetDismissCount(
-                   url2, CONTENT_SETTINGS_TYPE_GEOLOCATION));
-  EXPECT_EQ(2, autoblocker()->GetIgnoreCount(
-                   url2, CONTENT_SETTINGS_TYPE_GEOLOCATION));
+                   url2, ContentSettingsType::GEOLOCATION));
+  EXPECT_EQ(
+      2, autoblocker()->GetIgnoreCount(url2, ContentSettingsType::GEOLOCATION));
 
   // Add some more actions.
   EXPECT_FALSE(autoblocker()->RecordDismissAndEmbargo(
-      url1, CONTENT_SETTINGS_TYPE_GEOLOCATION));
+      url1, ContentSettingsType::GEOLOCATION, false));
   EXPECT_EQ(1, autoblocker()->GetDismissCount(
-                   url1, CONTENT_SETTINGS_TYPE_GEOLOCATION));
+                   url1, ContentSettingsType::GEOLOCATION));
 
   EXPECT_FALSE(autoblocker()->RecordDismissAndEmbargo(
-      url1, CONTENT_SETTINGS_TYPE_NOTIFICATIONS));
+      url1, ContentSettingsType::NOTIFICATIONS, false));
   EXPECT_EQ(1, autoblocker()->GetDismissCount(
-                   url1, CONTENT_SETTINGS_TYPE_NOTIFICATIONS));
+                   url1, ContentSettingsType::NOTIFICATIONS));
 
   EXPECT_FALSE(autoblocker()->RecordDismissAndEmbargo(
-      url2, CONTENT_SETTINGS_TYPE_GEOLOCATION));
+      url2, ContentSettingsType::GEOLOCATION, false));
   EXPECT_EQ(2, autoblocker()->GetDismissCount(
-                   url2, CONTENT_SETTINGS_TYPE_GEOLOCATION));
+                   url2, ContentSettingsType::GEOLOCATION));
 
   EXPECT_FALSE(autoblocker()->RecordIgnoreAndEmbargo(
-      url1, CONTENT_SETTINGS_TYPE_GEOLOCATION));
-  EXPECT_EQ(1, autoblocker()->GetIgnoreCount(
-                   url1, CONTENT_SETTINGS_TYPE_GEOLOCATION));
-  EXPECT_FALSE(autoblocker()->RecordIgnoreAndEmbargo(
-      url1, CONTENT_SETTINGS_TYPE_NOTIFICATIONS));
-  EXPECT_EQ(1, autoblocker()->GetIgnoreCount(
-                   url1, CONTENT_SETTINGS_TYPE_NOTIFICATIONS));
-  EXPECT_FALSE(autoblocker()->RecordIgnoreAndEmbargo(
-      url1, CONTENT_SETTINGS_TYPE_DURABLE_STORAGE));
-  EXPECT_EQ(1, autoblocker()->GetIgnoreCount(
-                   url1, CONTENT_SETTINGS_TYPE_DURABLE_STORAGE));
-  EXPECT_FALSE(autoblocker()->RecordIgnoreAndEmbargo(
-      url2, CONTENT_SETTINGS_TYPE_MIDI_SYSEX));
+      url1, ContentSettingsType::GEOLOCATION, false));
   EXPECT_EQ(
-      1, autoblocker()->GetIgnoreCount(url2, CONTENT_SETTINGS_TYPE_MIDI_SYSEX));
+      1, autoblocker()->GetIgnoreCount(url1, ContentSettingsType::GEOLOCATION));
+  EXPECT_FALSE(autoblocker()->RecordIgnoreAndEmbargo(
+      url1, ContentSettingsType::NOTIFICATIONS, false));
+  EXPECT_EQ(1, autoblocker()->GetIgnoreCount(
+                   url1, ContentSettingsType::NOTIFICATIONS));
+  EXPECT_FALSE(autoblocker()->RecordIgnoreAndEmbargo(
+      url1, ContentSettingsType::DURABLE_STORAGE, false));
+  EXPECT_EQ(1, autoblocker()->GetIgnoreCount(
+                   url1, ContentSettingsType::DURABLE_STORAGE));
+  EXPECT_FALSE(autoblocker()->RecordIgnoreAndEmbargo(
+      url2, ContentSettingsType::MIDI_SYSEX, false));
+  EXPECT_EQ(
+      1, autoblocker()->GetIgnoreCount(url2, ContentSettingsType::MIDI_SYSEX));
 
   // Remove everything and expect that it's all gone.
   autoblocker()->RemoveCountsByUrl(base::Bind(&FilterAll));
 
   EXPECT_EQ(0, autoblocker()->GetDismissCount(
-                   url1, CONTENT_SETTINGS_TYPE_GEOLOCATION));
+                   url1, ContentSettingsType::GEOLOCATION));
   EXPECT_EQ(0, autoblocker()->GetDismissCount(
-                   url1, CONTENT_SETTINGS_TYPE_NOTIFICATIONS));
+                   url1, ContentSettingsType::NOTIFICATIONS));
   EXPECT_EQ(0, autoblocker()->GetDismissCount(
-                   url2, CONTENT_SETTINGS_TYPE_GEOLOCATION));
+                   url2, ContentSettingsType::GEOLOCATION));
 
-  EXPECT_EQ(0, autoblocker()->GetIgnoreCount(
-                   url1, CONTENT_SETTINGS_TYPE_GEOLOCATION));
-  EXPECT_EQ(0, autoblocker()->GetIgnoreCount(
-                   url1, CONTENT_SETTINGS_TYPE_NOTIFICATIONS));
-  EXPECT_EQ(0, autoblocker()->GetIgnoreCount(
-                   url2, CONTENT_SETTINGS_TYPE_GEOLOCATION));
-  EXPECT_EQ(0, autoblocker()->GetIgnoreCount(
-                   url2, CONTENT_SETTINGS_TYPE_DURABLE_STORAGE));
   EXPECT_EQ(
-      0, autoblocker()->GetIgnoreCount(url2, CONTENT_SETTINGS_TYPE_MIDI_SYSEX));
+      0, autoblocker()->GetIgnoreCount(url1, ContentSettingsType::GEOLOCATION));
+  EXPECT_EQ(0, autoblocker()->GetIgnoreCount(
+                   url1, ContentSettingsType::NOTIFICATIONS));
+  EXPECT_EQ(
+      0, autoblocker()->GetIgnoreCount(url2, ContentSettingsType::GEOLOCATION));
+  EXPECT_EQ(0, autoblocker()->GetIgnoreCount(
+                   url2, ContentSettingsType::DURABLE_STORAGE));
+  EXPECT_EQ(
+      0, autoblocker()->GetIgnoreCount(url2, ContentSettingsType::MIDI_SYSEX));
 }
 
 // Check that we do not apply embargo to the plugins content type, as prompts
@@ -292,68 +293,73 @@ TEST_F(PermissionDecisionAutoBlockerUnitTest,
   GURL url("https://www.google.com");
 
   // Check dismisses first.
-  autoblocker()->RecordDismissAndEmbargo(url, CONTENT_SETTINGS_TYPE_PLUGINS);
-  autoblocker()->RecordDismissAndEmbargo(url, CONTENT_SETTINGS_TYPE_PLUGINS);
+  autoblocker()->RecordDismissAndEmbargo(url, ContentSettingsType::PLUGINS,
+                                         false);
+  autoblocker()->RecordDismissAndEmbargo(url, ContentSettingsType::PLUGINS,
+                                         false);
   PermissionResult result =
-      autoblocker()->GetEmbargoResult(url, CONTENT_SETTINGS_TYPE_PLUGINS);
+      autoblocker()->GetEmbargoResult(url, ContentSettingsType::PLUGINS);
 
   EXPECT_EQ(CONTENT_SETTING_ASK, result.content_setting);
   EXPECT_EQ(PermissionStatusSource::UNSPECIFIED, result.source);
   EXPECT_EQ(2,
-            autoblocker()->GetDismissCount(url, CONTENT_SETTINGS_TYPE_PLUGINS));
+            autoblocker()->GetDismissCount(url, ContentSettingsType::PLUGINS));
 
   // The third dismiss would normally embargo, but this shouldn't happen for
   // plugins.
   EXPECT_FALSE(autoblocker()->RecordDismissAndEmbargo(
-      url, CONTENT_SETTINGS_TYPE_PLUGINS));
-  result = autoblocker()->GetEmbargoResult(url, CONTENT_SETTINGS_TYPE_PLUGINS);
+      url, ContentSettingsType::PLUGINS, false));
+  result = autoblocker()->GetEmbargoResult(url, ContentSettingsType::PLUGINS);
 
   EXPECT_EQ(CONTENT_SETTING_ASK, result.content_setting);
   EXPECT_EQ(PermissionStatusSource::UNSPECIFIED, result.source);
   EXPECT_EQ(3,
-            autoblocker()->GetDismissCount(url, CONTENT_SETTINGS_TYPE_PLUGINS));
+            autoblocker()->GetDismissCount(url, ContentSettingsType::PLUGINS));
 
   // Extra one for sanity checking.
   EXPECT_FALSE(autoblocker()->RecordDismissAndEmbargo(
-      url, CONTENT_SETTINGS_TYPE_PLUGINS));
-  result = autoblocker()->GetEmbargoResult(url, CONTENT_SETTINGS_TYPE_PLUGINS);
+      url, ContentSettingsType::PLUGINS, false));
+  result = autoblocker()->GetEmbargoResult(url, ContentSettingsType::PLUGINS);
 
   EXPECT_EQ(CONTENT_SETTING_ASK, result.content_setting);
   EXPECT_EQ(PermissionStatusSource::UNSPECIFIED, result.source);
   EXPECT_EQ(4,
-            autoblocker()->GetDismissCount(url, CONTENT_SETTINGS_TYPE_PLUGINS));
+            autoblocker()->GetDismissCount(url, ContentSettingsType::PLUGINS));
 
   // Check ignores.
-  autoblocker()->RecordIgnoreAndEmbargo(url, CONTENT_SETTINGS_TYPE_PLUGINS);
-  autoblocker()->RecordIgnoreAndEmbargo(url, CONTENT_SETTINGS_TYPE_PLUGINS);
-  autoblocker()->RecordIgnoreAndEmbargo(url, CONTENT_SETTINGS_TYPE_PLUGINS);
-  result = autoblocker()->GetEmbargoResult(url, CONTENT_SETTINGS_TYPE_PLUGINS);
+  autoblocker()->RecordIgnoreAndEmbargo(url, ContentSettingsType::PLUGINS,
+                                        false);
+  autoblocker()->RecordIgnoreAndEmbargo(url, ContentSettingsType::PLUGINS,
+                                        false);
+  autoblocker()->RecordIgnoreAndEmbargo(url, ContentSettingsType::PLUGINS,
+                                        false);
+  result = autoblocker()->GetEmbargoResult(url, ContentSettingsType::PLUGINS);
 
   EXPECT_EQ(CONTENT_SETTING_ASK, result.content_setting);
   EXPECT_EQ(PermissionStatusSource::UNSPECIFIED, result.source);
   EXPECT_EQ(3,
-            autoblocker()->GetIgnoreCount(url, CONTENT_SETTINGS_TYPE_PLUGINS));
+            autoblocker()->GetIgnoreCount(url, ContentSettingsType::PLUGINS));
 
   // The fourth ignore would normally embargo, but this shouldn't happen for
   // plugins.
   EXPECT_FALSE(autoblocker()->RecordIgnoreAndEmbargo(
-      url, CONTENT_SETTINGS_TYPE_PLUGINS));
-  result = autoblocker()->GetEmbargoResult(url, CONTENT_SETTINGS_TYPE_PLUGINS);
+      url, ContentSettingsType::PLUGINS, false));
+  result = autoblocker()->GetEmbargoResult(url, ContentSettingsType::PLUGINS);
 
   EXPECT_EQ(CONTENT_SETTING_ASK, result.content_setting);
   EXPECT_EQ(PermissionStatusSource::UNSPECIFIED, result.source);
   EXPECT_EQ(4,
-            autoblocker()->GetIgnoreCount(url, CONTENT_SETTINGS_TYPE_PLUGINS));
+            autoblocker()->GetIgnoreCount(url, ContentSettingsType::PLUGINS));
 
   // Extra one for sanity checking.
   EXPECT_FALSE(autoblocker()->RecordIgnoreAndEmbargo(
-      url, CONTENT_SETTINGS_TYPE_PLUGINS));
-  result = autoblocker()->GetEmbargoResult(url, CONTENT_SETTINGS_TYPE_PLUGINS);
+      url, ContentSettingsType::PLUGINS, false));
+  result = autoblocker()->GetEmbargoResult(url, ContentSettingsType::PLUGINS);
 
   EXPECT_EQ(CONTENT_SETTING_ASK, result.content_setting);
   EXPECT_EQ(PermissionStatusSource::UNSPECIFIED, result.source);
   EXPECT_EQ(5,
-            autoblocker()->GetIgnoreCount(url, CONTENT_SETTINGS_TYPE_PLUGINS));
+            autoblocker()->GetIgnoreCount(url, ContentSettingsType::PLUGINS));
 }
 
 // Check that GetEmbargoResult returns the correct value when the embargo is set
@@ -364,32 +370,32 @@ TEST_F(PermissionDecisionAutoBlockerUnitTest, CheckEmbargoStatus) {
 
   // Check the default state.
   PermissionResult result =
-      autoblocker()->GetEmbargoResult(url, CONTENT_SETTINGS_TYPE_GEOLOCATION);
+      autoblocker()->GetEmbargoResult(url, ContentSettingsType::GEOLOCATION);
   EXPECT_EQ(CONTENT_SETTING_ASK, result.content_setting);
   EXPECT_EQ(PermissionStatusSource::UNSPECIFIED, result.source);
 
   // Place under embargo and verify.
   EXPECT_FALSE(autoblocker()->RecordDismissAndEmbargo(
-      url, CONTENT_SETTINGS_TYPE_GEOLOCATION));
+      url, ContentSettingsType::GEOLOCATION, false));
   EXPECT_FALSE(autoblocker()->RecordDismissAndEmbargo(
-      url, CONTENT_SETTINGS_TYPE_GEOLOCATION));
+      url, ContentSettingsType::GEOLOCATION, false));
   EXPECT_TRUE(autoblocker()->RecordDismissAndEmbargo(
-      url, CONTENT_SETTINGS_TYPE_GEOLOCATION));
+      url, ContentSettingsType::GEOLOCATION, false));
   result =
-      autoblocker()->GetEmbargoResult(url, CONTENT_SETTINGS_TYPE_GEOLOCATION);
+      autoblocker()->GetEmbargoResult(url, ContentSettingsType::GEOLOCATION);
   EXPECT_EQ(CONTENT_SETTING_BLOCK, result.content_setting);
   EXPECT_EQ(PermissionStatusSource::MULTIPLE_DISMISSALS, result.source);
 
   // Check that the origin is not under embargo for a different permission.
   result =
-      autoblocker()->GetEmbargoResult(url, CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
+      autoblocker()->GetEmbargoResult(url, ContentSettingsType::NOTIFICATIONS);
   EXPECT_EQ(CONTENT_SETTING_ASK, result.content_setting);
   EXPECT_EQ(PermissionStatusSource::UNSPECIFIED, result.source);
 
   // Confirm embargo status during the embargo period.
   clock()->Advance(base::TimeDelta::FromDays(5));
   result =
-      autoblocker()->GetEmbargoResult(url, CONTENT_SETTINGS_TYPE_GEOLOCATION);
+      autoblocker()->GetEmbargoResult(url, ContentSettingsType::GEOLOCATION);
   EXPECT_EQ(CONTENT_SETTING_BLOCK, result.content_setting);
   EXPECT_EQ(PermissionStatusSource::MULTIPLE_DISMISSALS, result.source);
 
@@ -398,31 +404,31 @@ TEST_F(PermissionDecisionAutoBlockerUnitTest, CheckEmbargoStatus) {
   // when removing the date stored as a double from the permission dictionary.
   clock()->Advance(base::TimeDelta::FromHours(3 * 24 + 1));
   result =
-      autoblocker()->GetEmbargoResult(url, CONTENT_SETTINGS_TYPE_GEOLOCATION);
+      autoblocker()->GetEmbargoResult(url, ContentSettingsType::GEOLOCATION);
   EXPECT_EQ(CONTENT_SETTING_ASK, result.content_setting);
   EXPECT_EQ(PermissionStatusSource::UNSPECIFIED, result.source);
 
   // Check embargo is lifted well after the expiry day.
   clock()->Advance(base::TimeDelta::FromDays(1));
   result =
-      autoblocker()->GetEmbargoResult(url, CONTENT_SETTINGS_TYPE_GEOLOCATION);
+      autoblocker()->GetEmbargoResult(url, ContentSettingsType::GEOLOCATION);
   EXPECT_EQ(CONTENT_SETTING_ASK, result.content_setting);
   EXPECT_EQ(PermissionStatusSource::UNSPECIFIED, result.source);
 
   // Place under embargo again and verify the embargo status.
   EXPECT_FALSE(autoblocker()->RecordDismissAndEmbargo(
-      url, CONTENT_SETTINGS_TYPE_NOTIFICATIONS));
+      url, ContentSettingsType::NOTIFICATIONS, false));
   EXPECT_FALSE(autoblocker()->RecordDismissAndEmbargo(
-      url, CONTENT_SETTINGS_TYPE_NOTIFICATIONS));
+      url, ContentSettingsType::NOTIFICATIONS, false));
   EXPECT_TRUE(autoblocker()->RecordDismissAndEmbargo(
-      url, CONTENT_SETTINGS_TYPE_NOTIFICATIONS));
+      url, ContentSettingsType::NOTIFICATIONS, false));
   clock()->Advance(base::TimeDelta::FromDays(1));
   result =
-      autoblocker()->GetEmbargoResult(url, CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
+      autoblocker()->GetEmbargoResult(url, ContentSettingsType::NOTIFICATIONS);
   EXPECT_EQ(CONTENT_SETTING_BLOCK, result.content_setting);
   EXPECT_EQ(PermissionStatusSource::MULTIPLE_DISMISSALS, result.source);
   result =
-      autoblocker()->GetEmbargoResult(url, CONTENT_SETTINGS_TYPE_GEOLOCATION);
+      autoblocker()->GetEmbargoResult(url, ContentSettingsType::GEOLOCATION);
   EXPECT_EQ(CONTENT_SETTING_ASK, result.content_setting);
   EXPECT_EQ(PermissionStatusSource::UNSPECIFIED, result.source);
 }
@@ -439,21 +445,21 @@ TEST_F(PermissionDecisionAutoBlockerUnitTest, TestDismissEmbargoBackoff) {
 
   // Record some dismisses.
   EXPECT_FALSE(autoblocker()->RecordDismissAndEmbargo(
-      url, CONTENT_SETTINGS_TYPE_GEOLOCATION));
+      url, ContentSettingsType::GEOLOCATION, false));
   EXPECT_FALSE(autoblocker()->RecordDismissAndEmbargo(
-      url, CONTENT_SETTINGS_TYPE_GEOLOCATION));
+      url, ContentSettingsType::GEOLOCATION, false));
 
   // A request with < 3 prior dismisses should not be automatically blocked.
   PermissionResult result =
-      autoblocker()->GetEmbargoResult(url, CONTENT_SETTINGS_TYPE_GEOLOCATION);
+      autoblocker()->GetEmbargoResult(url, ContentSettingsType::GEOLOCATION);
   EXPECT_EQ(CONTENT_SETTING_ASK, result.content_setting);
   EXPECT_EQ(PermissionStatusSource::UNSPECIFIED, result.source);
 
   // After the 3rd dismiss subsequent permission requests should be autoblocked.
   EXPECT_TRUE(autoblocker()->RecordDismissAndEmbargo(
-      url, CONTENT_SETTINGS_TYPE_GEOLOCATION));
+      url, ContentSettingsType::GEOLOCATION, false));
   result =
-      autoblocker()->GetEmbargoResult(url, CONTENT_SETTINGS_TYPE_GEOLOCATION);
+      autoblocker()->GetEmbargoResult(url, ContentSettingsType::GEOLOCATION);
   EXPECT_EQ(CONTENT_SETTING_BLOCK, result.content_setting);
   EXPECT_EQ(PermissionStatusSource::MULTIPLE_DISMISSALS, result.source);
 
@@ -461,15 +467,15 @@ TEST_F(PermissionDecisionAutoBlockerUnitTest, TestDismissEmbargoBackoff) {
   // request won't be automatically blocked.
   clock()->Advance(base::TimeDelta::FromDays(8));
   result =
-      autoblocker()->GetEmbargoResult(url, CONTENT_SETTINGS_TYPE_GEOLOCATION);
+      autoblocker()->GetEmbargoResult(url, ContentSettingsType::GEOLOCATION);
   EXPECT_EQ(CONTENT_SETTING_ASK, result.content_setting);
   EXPECT_EQ(PermissionStatusSource::UNSPECIFIED, result.source);
 
   // Record another dismiss, subsequent requests should be autoblocked again.
   EXPECT_TRUE(autoblocker()->RecordDismissAndEmbargo(
-      url, CONTENT_SETTINGS_TYPE_GEOLOCATION));
+      url, ContentSettingsType::GEOLOCATION, false));
   result =
-      autoblocker()->GetEmbargoResult(url, CONTENT_SETTINGS_TYPE_GEOLOCATION);
+      autoblocker()->GetEmbargoResult(url, ContentSettingsType::GEOLOCATION);
   EXPECT_EQ(CONTENT_SETTING_BLOCK, result.content_setting);
   EXPECT_EQ(PermissionStatusSource::MULTIPLE_DISMISSALS, result.source);
 
@@ -477,15 +483,15 @@ TEST_F(PermissionDecisionAutoBlockerUnitTest, TestDismissEmbargoBackoff) {
   // request is let through.
   clock()->Advance(base::TimeDelta::FromDays(8));
   result =
-      autoblocker()->GetEmbargoResult(url, CONTENT_SETTINGS_TYPE_GEOLOCATION);
+      autoblocker()->GetEmbargoResult(url, ContentSettingsType::GEOLOCATION);
   EXPECT_EQ(CONTENT_SETTING_ASK, result.content_setting);
   EXPECT_EQ(PermissionStatusSource::UNSPECIFIED, result.source);
 
   // Record another dismiss, subsequent requests should be autoblocked again.
   EXPECT_TRUE(autoblocker()->RecordDismissAndEmbargo(
-      url, CONTENT_SETTINGS_TYPE_GEOLOCATION));
+      url, ContentSettingsType::GEOLOCATION, false));
   result =
-      autoblocker()->GetEmbargoResult(url, CONTENT_SETTINGS_TYPE_GEOLOCATION);
+      autoblocker()->GetEmbargoResult(url, ContentSettingsType::GEOLOCATION);
   EXPECT_EQ(CONTENT_SETTING_BLOCK, result.content_setting);
   EXPECT_EQ(PermissionStatusSource::MULTIPLE_DISMISSALS, result.source);
 }
@@ -498,23 +504,23 @@ TEST_F(PermissionDecisionAutoBlockerUnitTest, TestIgnoreEmbargoBackoff) {
 
   // Record some ignores.
   EXPECT_FALSE(autoblocker()->RecordIgnoreAndEmbargo(
-      url, CONTENT_SETTINGS_TYPE_MIDI_SYSEX));
+      url, ContentSettingsType::MIDI_SYSEX, false));
   EXPECT_FALSE(autoblocker()->RecordIgnoreAndEmbargo(
-      url, CONTENT_SETTINGS_TYPE_MIDI_SYSEX));
+      url, ContentSettingsType::MIDI_SYSEX, false));
 
   // A request with < 4 prior ignores should not be automatically blocked.
   PermissionResult result =
-      autoblocker()->GetEmbargoResult(url, CONTENT_SETTINGS_TYPE_MIDI_SYSEX);
+      autoblocker()->GetEmbargoResult(url, ContentSettingsType::MIDI_SYSEX);
   EXPECT_EQ(CONTENT_SETTING_ASK, result.content_setting);
   EXPECT_EQ(PermissionStatusSource::UNSPECIFIED, result.source);
 
   // After the 4th ignore subsequent permission requests should be autoblocked.
   EXPECT_FALSE(autoblocker()->RecordIgnoreAndEmbargo(
-      url, CONTENT_SETTINGS_TYPE_MIDI_SYSEX));
+      url, ContentSettingsType::MIDI_SYSEX, false));
   EXPECT_TRUE(autoblocker()->RecordIgnoreAndEmbargo(
-      url, CONTENT_SETTINGS_TYPE_MIDI_SYSEX));
+      url, ContentSettingsType::MIDI_SYSEX, false));
   result =
-      autoblocker()->GetEmbargoResult(url, CONTENT_SETTINGS_TYPE_MIDI_SYSEX);
+      autoblocker()->GetEmbargoResult(url, ContentSettingsType::MIDI_SYSEX);
   EXPECT_EQ(CONTENT_SETTING_BLOCK, result.content_setting);
   EXPECT_EQ(PermissionStatusSource::MULTIPLE_IGNORES, result.source);
 
@@ -522,15 +528,15 @@ TEST_F(PermissionDecisionAutoBlockerUnitTest, TestIgnoreEmbargoBackoff) {
   // request won't be automatically blocked.
   clock()->Advance(base::TimeDelta::FromDays(8));
   result =
-      autoblocker()->GetEmbargoResult(url, CONTENT_SETTINGS_TYPE_MIDI_SYSEX);
+      autoblocker()->GetEmbargoResult(url, ContentSettingsType::MIDI_SYSEX);
   EXPECT_EQ(CONTENT_SETTING_ASK, result.content_setting);
   EXPECT_EQ(PermissionStatusSource::UNSPECIFIED, result.source);
 
   // Record another dismiss, subsequent requests should be autoblocked again.
   EXPECT_TRUE(autoblocker()->RecordIgnoreAndEmbargo(
-      url, CONTENT_SETTINGS_TYPE_MIDI_SYSEX));
+      url, ContentSettingsType::MIDI_SYSEX, false));
   result =
-      autoblocker()->GetEmbargoResult(url, CONTENT_SETTINGS_TYPE_MIDI_SYSEX);
+      autoblocker()->GetEmbargoResult(url, ContentSettingsType::MIDI_SYSEX);
   EXPECT_EQ(CONTENT_SETTING_BLOCK, result.content_setting);
   EXPECT_EQ(PermissionStatusSource::MULTIPLE_IGNORES, result.source);
 
@@ -538,15 +544,79 @@ TEST_F(PermissionDecisionAutoBlockerUnitTest, TestIgnoreEmbargoBackoff) {
   // request is let through.
   clock()->Advance(base::TimeDelta::FromDays(8));
   result =
-      autoblocker()->GetEmbargoResult(url, CONTENT_SETTINGS_TYPE_MIDI_SYSEX);
+      autoblocker()->GetEmbargoResult(url, ContentSettingsType::MIDI_SYSEX);
   EXPECT_EQ(CONTENT_SETTING_ASK, result.content_setting);
   EXPECT_EQ(PermissionStatusSource::UNSPECIFIED, result.source);
 
   // Record another dismiss, subsequent requests should be autoblocked again.
   EXPECT_TRUE(autoblocker()->RecordIgnoreAndEmbargo(
-      url, CONTENT_SETTINGS_TYPE_MIDI_SYSEX));
+      url, ContentSettingsType::MIDI_SYSEX, false));
   result =
-      autoblocker()->GetEmbargoResult(url, CONTENT_SETTINGS_TYPE_MIDI_SYSEX);
+      autoblocker()->GetEmbargoResult(url, ContentSettingsType::MIDI_SYSEX);
   EXPECT_EQ(CONTENT_SETTING_BLOCK, result.content_setting);
   EXPECT_EQ(PermissionStatusSource::MULTIPLE_IGNORES, result.source);
+}
+
+// Test that quiet ui embargo has a different threshold for ignores.
+TEST_F(PermissionDecisionAutoBlockerUnitTest, TestIgnoreEmbargoUsingQuietUi) {
+  GURL url("https://www.google.com");
+  clock()->SetNow(base::Time::Now());
+
+  // Check the default state.
+  PermissionResult result =
+      autoblocker()->GetEmbargoResult(url, ContentSettingsType::NOTIFICATIONS);
+  EXPECT_EQ(CONTENT_SETTING_ASK, result.content_setting);
+  EXPECT_EQ(PermissionStatusSource::UNSPECIFIED, result.source);
+
+  // One quiet ui ignore is not enough to trigger embargo.
+  EXPECT_FALSE(autoblocker()->RecordIgnoreAndEmbargo(
+      url, ContentSettingsType::NOTIFICATIONS, true));
+  result =
+      autoblocker()->GetEmbargoResult(url, ContentSettingsType::NOTIFICATIONS);
+  EXPECT_EQ(CONTENT_SETTING_ASK, result.content_setting);
+  EXPECT_EQ(PermissionStatusSource::UNSPECIFIED, result.source);
+
+  // Loud ui ignores are counted separately.
+  EXPECT_FALSE(autoblocker()->RecordIgnoreAndEmbargo(
+      url, ContentSettingsType::NOTIFICATIONS, false));
+  result =
+      autoblocker()->GetEmbargoResult(url, ContentSettingsType::NOTIFICATIONS);
+  EXPECT_EQ(CONTENT_SETTING_ASK, result.content_setting);
+  EXPECT_EQ(PermissionStatusSource::UNSPECIFIED, result.source);
+
+  // The second quiet ui ignore puts the url under embargo.
+  EXPECT_TRUE(autoblocker()->RecordIgnoreAndEmbargo(
+      url, ContentSettingsType::NOTIFICATIONS, true));
+  result =
+      autoblocker()->GetEmbargoResult(url, ContentSettingsType::NOTIFICATIONS);
+  EXPECT_EQ(CONTENT_SETTING_BLOCK, result.content_setting);
+  EXPECT_EQ(PermissionStatusSource::MULTIPLE_IGNORES, result.source);
+}
+
+// Test that quiet ui embargo has a different threshold for dismisses.
+TEST_F(PermissionDecisionAutoBlockerUnitTest, TestDismissEmbargoUsingQuietUi) {
+  GURL url("https://www.google.com");
+  clock()->SetNow(base::Time::Now());
+
+  // Check the default state.
+  PermissionResult result =
+      autoblocker()->GetEmbargoResult(url, ContentSettingsType::NOTIFICATIONS);
+  EXPECT_EQ(CONTENT_SETTING_ASK, result.content_setting);
+  EXPECT_EQ(PermissionStatusSource::UNSPECIFIED, result.source);
+
+  // One loud ui dismiss does not trigger embargo.
+  EXPECT_FALSE(autoblocker()->RecordDismissAndEmbargo(
+      url, ContentSettingsType::NOTIFICATIONS, false));
+  result =
+      autoblocker()->GetEmbargoResult(url, ContentSettingsType::NOTIFICATIONS);
+  EXPECT_EQ(CONTENT_SETTING_ASK, result.content_setting);
+  EXPECT_EQ(PermissionStatusSource::UNSPECIFIED, result.source);
+
+  // One quiet ui dismiss puts the url under embargo.
+  EXPECT_TRUE(autoblocker()->RecordDismissAndEmbargo(
+      url, ContentSettingsType::NOTIFICATIONS, true));
+  result =
+      autoblocker()->GetEmbargoResult(url, ContentSettingsType::NOTIFICATIONS);
+  EXPECT_EQ(CONTENT_SETTING_BLOCK, result.content_setting);
+  EXPECT_EQ(PermissionStatusSource::MULTIPLE_DISMISSALS, result.source);
 }

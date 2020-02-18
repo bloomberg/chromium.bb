@@ -19,8 +19,8 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.FlakyTest;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager.FullscreenListener;
 import org.chromium.chrome.browser.fullscreen.FullscreenOptions;
-import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -52,13 +52,13 @@ public class FullscreenVideoTest {
     private boolean mIsTabFullscreen;
     private ChromeActivity mActivity;
 
-    private class FullscreenTabObserver extends EmptyTabObserver {
+    private class FullscreenToggleListener implements FullscreenListener {
         @Override
-        public void onEnterFullscreenMode(Tab tab, FullscreenOptions options) {
+        public void onEnterFullscreen(Tab tab, FullscreenOptions options) {
             mIsTabFullscreen = true;
         }
         @Override
-        public void onExitFullscreenMode(Tab tab) {
+        public void onExitFullscreen(Tab tab) {
             mIsTabFullscreen = false;
         }
     }
@@ -77,13 +77,13 @@ public class FullscreenVideoTest {
      */
     @Test
     @FlakyTest(message = "crbug.com/458368")
-    public void testExitFullscreenNotifiesTabObservers() throws InterruptedException {
+    public void testExitFullscreenNotifiesTabObservers() {
         String url = mTestServerRule.getServer().getURL(
                 "/chrome/test/data/android/media/video-fullscreen.html");
         mActivityTestRule.loadUrl(url);
         Tab tab = mActivity.getActivityTab();
-        FullscreenTabObserver observer = new FullscreenTabObserver();
-        tab.addObserver(observer);
+        FullscreenListener listener = new FullscreenToggleListener();
+        mActivity.getFullscreenManager().addListener(listener);
 
         TestTouchUtils.singleClickView(
                 InstrumentationRegistry.getInstrumentation(), tab.getView(), 500, 500);
@@ -102,7 +102,7 @@ public class FullscreenVideoTest {
      */
     @Test
     @MediumTest
-    public void testFullscreenDimensions() throws InterruptedException, TimeoutException {
+    public void testFullscreenDimensions() throws TimeoutException {
         String url =
                 mTestServerRule.getServer().getURL("/content/test/data/media/video-player.html");
         String video = "video";
@@ -111,8 +111,8 @@ public class FullscreenVideoTest {
         mActivityTestRule.loadUrl(url);
 
         final Tab tab = mActivity.getActivityTab();
-        FullscreenTabObserver observer = new FullscreenTabObserver();
-        tab.addObserver(observer);
+        FullscreenListener listener = new FullscreenToggleListener();
+        mActivity.getFullscreenManager().addListener(listener);
 
         // Start playback to guarantee it's properly loaded.
         WebContents webContents = mActivity.getCurrentWebContents();

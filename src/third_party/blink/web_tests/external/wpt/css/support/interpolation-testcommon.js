@@ -11,14 +11,14 @@
     return keyframe === neutralKeyframe;
   }
 
-  // For the CSS interpolation methods, we set the animation duration long
-  // enough that any advancement in time during the test is irrelevant in terms
-  // of the progress. We then set the delay to be negative half the duration, so
-  // we are immediately at the halfway point of the animation. Finally, we use
-  // an easing function that maps halfway to whatever progress we actually want.
+  // For the CSS interpolation methods set the delay to be negative half the
+  // duration, so we are immediately at the halfway point of the animation.
+  // We then use an easing function that maps halfway to whatever progress
+  // we actually want.
 
   var cssAnimationsInterpolation = {
     name: 'CSS Animations',
+    isSupported: function() {return true;},
     supportsProperty: function() {return true;},
     supportsValue: function() {return true;},
     setup: function() {},
@@ -36,14 +36,15 @@
           (isNeutralKeyframe(to) ? '' : `to {${property}:${to};}`) +
         '}';
       target.style.animationName = 'animation' + id;
-      target.style.animationDuration = '2e9s';
-      target.style.animationDelay = '-1e9s';
+      target.style.animationDuration = '100s';
+      target.style.animationDelay = '-50s';
       target.style.animationTimingFunction = createEasing(at);
     },
   };
 
   var cssTransitionsInterpolation = {
     name: 'CSS Transitions',
+    isSupported: function() {return true;},
     supportsProperty: function() {return true;},
     supportsValue: function() {return true;},
     setup: function(property, from, target) {
@@ -54,9 +55,9 @@
     },
     interpolate: function(property, from, to, at, target) {
       // Force a style recalc on target to set the 'from' value.
-      getComputedStyle(target).left;
-      target.style.transitionDuration = '2e9s';
-      target.style.transitionDelay = '-1e9s';
+      getComputedStyle(target).getPropertyValue(property);
+      target.style.transitionDuration = '100s';
+      target.style.transitionDelay = '-50s';
       target.style.transitionTimingFunction = createEasing(at);
       target.style.transitionProperty = property;
       target.style.setProperty(property, isNeutralKeyframe(to) ? '' : to);
@@ -65,6 +66,7 @@
 
   var cssTransitionAllInterpolation = {
     name: 'CSS Transitions with transition: all',
+    isSupported: function() {return true;},
     // The 'all' value doesn't cover custom properties.
     supportsProperty: function(property) {return property.indexOf('--') !== 0;},
     supportsValue: function() {return true;},
@@ -76,9 +78,9 @@
     },
     interpolate: function(property, from, to, at, target) {
       // Force a style recalc on target to set the 'from' value.
-      getComputedStyle(target).left;
-      target.style.transitionDuration = '2e9s';
-      target.style.transitionDelay = '-1e9s';
+      getComputedStyle(target).getPropertyValue(property);
+      target.style.transitionDuration = '100s';
+      target.style.transitionDelay = '-50s';
       target.style.transitionTimingFunction = createEasing(at);
       target.style.transitionProperty = 'all';
       target.style.setProperty(property, isNeutralKeyframe(to) ? '' : to);
@@ -87,6 +89,7 @@
 
   var webAnimationsInterpolation = {
     name: 'Web Animations',
+    isSupported: function() {return 'animate' in Element.prototype;},
     supportsProperty: function(property) {return true;},
     supportsValue: function(value) {return value !== '';},
     setup: function() {},
@@ -97,6 +100,10 @@
       this.interpolateComposite(property, from, 'replace', to, 'replace', at, target);
     },
     interpolateComposite: function(property, from, fromComposite, to, toComposite, at, target) {
+      // This case turns into a test error later on.
+      if (!this.isSupported())
+        return;
+
       // Convert standard properties to camelCase.
       if (!property.startsWith('--')) {
         for (var i = property.length - 2; i > 0; --i) {
@@ -104,8 +111,11 @@
             property = property.substring(0, i) + property[i + 1].toUpperCase() + property.substring(i + 2);
           }
         }
-        if (property === 'offset')
+        if (property === 'offset') {
           property = 'cssOffset';
+        } else if (property === 'float') {
+          property = 'cssFloat';
+        }
       }
       var keyframes = [];
       if (!isNeutralKeyframe(from)) {
@@ -124,11 +134,11 @@
       }
       var animation = target.animate(keyframes, {
         fill: 'forwards',
-        duration: 1,
+        duration: 100 * 1000,
         easing: createEasing(at),
       });
       animation.pause();
-      animation.currentTime = 0.5;
+      animation.currentTime = 50 * 1000;
     },
   };
 
@@ -150,7 +160,7 @@
       return 'steps(1, start)';
     }
     if (y == 0.5) {
-      return 'steps(2, end)';
+      return 'linear';
     }
     // Approximate using a bezier.
     var b = (8 * y - 1) / 6;
@@ -258,8 +268,9 @@
     return expectations.map(function(expectation) {
       var actualTargetContainer = createTargetContainer(testContainer, 'actual');
       var expectedTargetContainer = createTargetContainer(testContainer, 'expected');
-      if (!isNeutralKeyframe(expectation.expect)) {
-        expectedTargetContainer.target.style.setProperty(property, expectation.expect);
+      var expectedStr = expectation.option || expectation.expect;
+      if (!isNeutralKeyframe(expectedStr)) {
+        expectedTargetContainer.target.style.setProperty(property, expectedStr);
       }
       var target = actualTargetContainer.target;
       interpolationMethod.setup(property, from, target);
@@ -269,6 +280,8 @@
       target.measure = function() {
         var expectedValue = getComputedStyle(expectedTargetContainer.target).getPropertyValue(property);
         test(function() {
+          assert_true(interpolationMethod.isSupported(), `${interpolationMethod.name} should be supported`);
+
           if (from && from !== neutralKeyframe) {
             assert_true(CSS.supports(property, from), '\'from\' value should be supported');
           }
@@ -282,7 +295,7 @@
           comparisonFunction(
               getComputedStyle(target).getPropertyValue(property),
               expectedValue);
-        }, `${testText} at (${expectation.at}) should be [${sanitizeUrls(expectedValue)}]`);
+        }, `${testText} at (${expectation.at}) should be [${sanitizeUrls(expectedStr)}]`);
       };
       return target;
     });

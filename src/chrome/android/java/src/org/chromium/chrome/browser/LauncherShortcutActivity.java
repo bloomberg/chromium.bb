@@ -15,11 +15,12 @@ import android.graphics.drawable.Icon;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.StrictMode;
-import android.support.annotation.VisibleForTesting;
+
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge;
+import org.chromium.chrome.browser.incognito.IncognitoUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -71,7 +72,7 @@ public class LauncherShortcutActivity extends Activity {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N_MR1) return;
 
         SharedPreferences preferences = ContextUtils.getAppSharedPreferences();
-        if (PrefServiceBridge.getInstance().isIncognitoModeEnabled()) {
+        if (IncognitoUtils.isIncognitoModeEnabled()) {
             boolean success = LauncherShortcutActivity.addIncognitoLauncherShortcut(context);
 
             // Save a shared preference indicating the incognito shortcut has been added.
@@ -79,7 +80,7 @@ public class LauncherShortcutActivity extends Activity {
                 preferences.edit().putBoolean(INCOGNITO_SHORTCUT_ADDED_PREF, true).apply();
             }
         } else if (preferences.getBoolean(INCOGNITO_SHORTCUT_ADDED_PREF, false)
-                && !PrefServiceBridge.getInstance().isIncognitoModeEnabled()) {
+                && !IncognitoUtils.isIncognitoModeEnabled()) {
             LauncherShortcutActivity.removeIncognitoLauncherShortcut(context);
             preferences.edit().putBoolean(INCOGNITO_SHORTCUT_ADDED_PREF, false).apply();
         }

@@ -5,9 +5,9 @@
 #ifndef UI_EVENTS_OZONE_EVDEV_INPUT_INJECTOR_EVDEV_H_
 #define UI_EVENTS_OZONE_EVDEV_INPUT_INJECTOR_EVDEV_H_
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "ui/events/ozone/evdev/event_dispatch_callback.h"
-#include "ui/events/ozone/evdev/events_ozone_evdev_export.h"
 #include "ui/ozone/public/system_input_injector.h"
 
 namespace ui {
@@ -15,8 +15,7 @@ namespace ui {
 class CursorDelegateEvdev;
 class DeviceEventDispatcherEvdev;
 
-class EVENTS_OZONE_EVDEV_EXPORT InputInjectorEvdev
-    : public SystemInputInjector {
+class COMPONENT_EXPORT(EVDEV) InputInjectorEvdev : public SystemInputInjector {
  public:
   InputInjectorEvdev(std::unique_ptr<DeviceEventDispatcherEvdev> dispatcher,
                      CursorDelegateEvdev* cursor);
@@ -33,10 +32,10 @@ class EVENTS_OZONE_EVDEV_EXPORT InputInjectorEvdev
 
  private:
   // Shared cursor state.
-  CursorDelegateEvdev* cursor_;
+  CursorDelegateEvdev* const cursor_;
 
   // Interface for dispatching events.
-  std::unique_ptr<DeviceEventDispatcherEvdev> dispatcher_;
+  const std::unique_ptr<DeviceEventDispatcherEvdev> dispatcher_;
 
   DISALLOW_COPY_AND_ASSIGN(InputInjectorEvdev);
 };

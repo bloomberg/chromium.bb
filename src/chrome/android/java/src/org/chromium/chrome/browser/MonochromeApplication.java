@@ -7,8 +7,8 @@ package org.chromium.chrome.browser;
 import android.content.Context;
 
 import com.android.webview.chromium.MonochromeLibraryPreloader;
-import com.android.webview.chromium.WebViewApkApplication;
 
+import org.chromium.android_webview.nonembedded.WebViewApkApplication;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.content_public.browser.ChildProcessCreationParams;
@@ -40,6 +40,7 @@ public class MonochromeApplication extends ChromeApplication {
         boolean bindToCaller = false;
         boolean ignoreVisibilityForImportance = false;
         ChildProcessCreationParams.set(getPackageName(), true /* isExternalService */,
-                LibraryProcessType.PROCESS_CHILD, bindToCaller, ignoreVisibilityForImportance);
+                LibraryProcessType.PROCESS_CHILD, bindToCaller, ignoreVisibilityForImportance,
+                null /* privilegedServicesName */, null /* sandboxedServicesName */);
     }
 }

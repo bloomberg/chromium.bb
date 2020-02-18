@@ -95,10 +95,22 @@ struct SyntheticTap;
 struct SyntheticPointerAction;
 
 [Native]
-enum TouchAction;
-
-[Native]
 enum PreferredColorScheme;
 
 [Native]
 enum SystemThemeColor;
+
+[Native]
+struct ContentSecurityPolicy;
+
+[Native]
+struct CSPDirective;
+
+[Native]
+struct CSPSourceList;
+
+[Native]
+struct CSPSource;
+
+[Native]
+struct CSPViolationParams;

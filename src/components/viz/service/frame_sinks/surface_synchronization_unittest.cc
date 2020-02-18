@@ -866,7 +866,7 @@ TEST_F(SurfaceSynchronizationTest, LimitLatencyInfo) {
   const ui::LatencyComponentType latency_type1 =
       ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT;
   const ui::LatencyComponentType latency_type2 =
-      ui::LATENCY_BEGIN_FRAME_UI_MAIN_COMPONENT;
+      ui::LATENCY_COMPONENT_TYPE_LAST;
 
   // Submit a frame with latency info
   ui::LatencyInfo info;
@@ -920,7 +920,7 @@ TEST_F(SurfaceSynchronizationTest,
   const ui::LatencyComponentType latency_type1 =
       ui::INPUT_EVENT_LATENCY_RENDERER_SWAP_COMPONENT;
   const ui::LatencyComponentType latency_type2 =
-      ui::LATENCY_BEGIN_FRAME_UI_MAIN_COMPONENT;
+      ui::LATENCY_COMPONENT_TYPE_LAST;
 
   // Submit a frame with latency info
   ui::LatencyInfo info;
@@ -992,7 +992,7 @@ TEST_F(SurfaceSynchronizationTest,
   const ui::LatencyComponentType latency_type1 =
       ui::INPUT_EVENT_LATENCY_RENDERER_SWAP_COMPONENT;
   const ui::LatencyComponentType latency_type2 =
-      ui::LATENCY_BEGIN_FRAME_UI_MAIN_COMPONENT;
+      ui::LATENCY_COMPONENT_TYPE_LAST;
 
   // Submit a frame with no unresolved dependecy.
   ui::LatencyInfo info;
@@ -1066,7 +1066,7 @@ TEST_F(SurfaceSynchronizationTest,
   const ui::LatencyComponentType latency_type1 =
       ui::INPUT_EVENT_LATENCY_RENDERER_SWAP_COMPONENT;
   const ui::LatencyComponentType latency_type2 =
-      ui::LATENCY_BEGIN_FRAME_UI_MAIN_COMPONENT;
+      ui::LATENCY_COMPONENT_TYPE_LAST;
 
   // Submit a frame with no unresolved dependencies.
   ui::LatencyInfo info;
@@ -1136,7 +1136,7 @@ TEST_F(SurfaceSynchronizationTest, LatencyInfoNotCarriedOVer) {
   const ui::LatencyComponentType latency_type1 =
       ui::INPUT_EVENT_LATENCY_RENDERER_SWAP_COMPONENT;
   const ui::LatencyComponentType latency_type2 =
-      ui::LATENCY_BEGIN_FRAME_UI_MAIN_COMPONENT;
+      ui::LATENCY_COMPONENT_TYPE_LAST;
 
   // Submit a frame with latency info
   ui::LatencyInfo info;
@@ -3087,6 +3087,44 @@ TEST_F(SurfaceSynchronizationTest, LatestInFlightSurfaceConflict) {
                                          MakeDefaultCompositorFrame());
   EXPECT_EQ(GetSurfaceForId(id1),
             GetLatestInFlightSurface(SurfaceRange(base::nullopt, id3)));
+}
+
+// Check that if two different SurfaceIds with the same embed token are
+// embedded, viz doesn't crash. https://crbug.com/1001143
+TEST_F(SurfaceSynchronizationTest,
+       DuplicateAllocationGroupInActivationDependencies) {
+  const SurfaceId parent_id = MakeSurfaceId(kParentFrameSink, 1);
+  const SurfaceId child1_id1 = MakeSurfaceId(kChildFrameSink1, 1);
+  const SurfaceId child1_id2 = MakeSurfaceId(kChildFrameSink1, 2);
+  const SurfaceId child2_id1 = MakeSurfaceId(kChildFrameSink2, 1);
+
+  // Submit a CompositorFrame to |child1_id1| embedding |child2_id1|.
+  CompositorFrame child1_frame =
+      CompositorFrameBuilder()
+          .AddDefaultRenderPass()
+          .SetActivationDependencies({child2_id1})
+          .SetReferencedSurfaces({SurfaceRange(base::nullopt, child2_id1)})
+          .Build();
+  child_support1().SubmitCompositorFrame(child1_id1.local_surface_id(),
+                                         std::move(child1_frame));
+
+  // Submit a CompositorFrame to |parent_id| embedding both |child1_id1| and
+  // |child1_id2|.
+  CompositorFrame parent_frame =
+      CompositorFrameBuilder()
+          .AddDefaultRenderPass()
+          .SetActivationDependencies({child1_id1, child1_id2})
+          .SetReferencedSurfaces({SurfaceRange(base::nullopt, child1_id1),
+                                  SurfaceRange(base::nullopt, child1_id2)})
+          .Build();
+  // This shouldn't crash.
+  parent_support().SubmitCompositorFrame(parent_id.local_surface_id(),
+                                         std::move(parent_frame));
+
+  // When multiple dependencies have the same embed token, only the first one
+  // should be taken into account.
+  EXPECT_EQ(1u, parent_surface()->activation_dependencies().size());
+  EXPECT_EQ(child1_id1, *parent_surface()->activation_dependencies().begin());
 }
 
 }  // namespace viz

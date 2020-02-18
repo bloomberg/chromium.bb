@@ -65,6 +65,10 @@ BatchingMediaLog::~BatchingMediaLog() {
     SendQueuedMediaEvents();
 }
 
+void BatchingMediaLog::OnWebMediaPlayerDestroyedLocked() {
+  event_handler_->OnWebMediaPlayerDestroyed();
+}
+
 void BatchingMediaLog::AddEventLocked(
     std::unique_ptr<media::MediaLogEvent> event) {
   Log(event.get());
@@ -142,20 +146,6 @@ std::string BatchingMediaLog::GetErrorMessageLocked() {
   }
 
   return result.str();
-}
-
-void BatchingMediaLog::RecordRapporWithSecurityOriginLocked(
-    const std::string& metric) {
-  if (!task_runner_->BelongsToCurrentThread()) {
-    // Note that we don't post back to *Locked.
-    task_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce(&BatchingMediaLog::RecordRapporWithSecurityOrigin,
-                       weak_this_, metric));
-    return;
-  }
-
-  GetContentClient()->renderer()->RecordRapporURL(metric, security_origin_);
 }
 
 void BatchingMediaLog::SendQueuedMediaEvents() {

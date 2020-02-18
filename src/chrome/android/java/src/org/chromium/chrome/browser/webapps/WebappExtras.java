@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.webapps;
 
 import android.graphics.Color;
 
-import org.chromium.blink_public.platform.WebDisplayMode;
 import org.chromium.chrome.browser.ShortcutSource;
 import org.chromium.content_public.common.ScreenOrientationValues;
 
@@ -56,13 +55,6 @@ public class WebappExtras {
     public final @ShortcutSource int source;
 
     /**
-     * Theme color of the webapp.
-     * TODO(pkotwicz): Remove this property in favor of
-     * {@link BrowserServicesIntentDataProvider#getToolbarColor()}
-     */
-    public final Integer themeColor;
-
-    /**
      * Background color for webapp's splash screen.
      */
     public final Integer backgroundColor;
@@ -90,16 +82,15 @@ public class WebappExtras {
     public static WebappExtras createEmpty() {
         return new WebappExtras(null /* id */, null /* url */, null /* scopeUrl */,
                 new WebappIcon(), null /* name */, null /* shortName */, WebDisplayMode.UNDEFINED,
-                ScreenOrientationValues.DEFAULT, ShortcutSource.UNKNOWN, null /* themeColor */,
-                null /* backgroundColor */, Color.WHITE /* defaultBackgroundColor */,
-                false /* isIconGenerated */, false /* isIconAdaptive */,
-                false /* shouldForceNavigation */);
+                ScreenOrientationValues.DEFAULT, ShortcutSource.UNKNOWN, null /* backgroundColor */,
+                Color.WHITE /* defaultBackgroundColor */, false /* isIconGenerated */,
+                false /* isIconAdaptive */, false /* shouldForceNavigation */);
     }
 
     public WebappExtras(String id, String url, String scopeUrl, WebappIcon icon, String name,
             String shortName, @WebDisplayMode int displayMode, int orientation, int source,
-            Integer themeColor, Integer backgroundColor, int defaultBackgroundColor,
-            boolean isIconGenerated, boolean isIconAdaptive, boolean shouldForceNavigation) {
+            Integer backgroundColor, int defaultBackgroundColor, boolean isIconGenerated,
+            boolean isIconAdaptive, boolean shouldForceNavigation) {
         this.id = id;
         this.url = url;
         this.scopeUrl = scopeUrl;
@@ -109,7 +100,6 @@ public class WebappExtras {
         this.displayMode = displayMode;
         this.orientation = orientation;
         this.source = source;
-        this.themeColor = themeColor;
         this.backgroundColor = backgroundColor;
         this.defaultBackgroundColor = defaultBackgroundColor;
         this.isIconGenerated = isIconGenerated;

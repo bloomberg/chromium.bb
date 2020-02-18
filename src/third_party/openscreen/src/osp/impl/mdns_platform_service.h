@@ -11,6 +11,7 @@
 #include "platform/api/udp_socket.h"
 
 namespace openscreen {
+namespace osp {
 
 class MdnsPlatformService {
  public:
@@ -36,6 +37,7 @@ class MdnsPlatformService {
       const std::vector<BoundInterface>& registered_interfaces) = 0;
 };
 
+}  // namespace osp
 }  // namespace openscreen
 
 #endif  // OSP_IMPL_MDNS_PLATFORM_SERVICE_H_

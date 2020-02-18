@@ -119,6 +119,7 @@ struct TestConfig {
   bool renegotiate_once = false;
   bool renegotiate_freely = false;
   bool renegotiate_ignore = false;
+  bool renegotiate_explicit = false;
   bool forbid_renegotiation_after_handshake = false;
   int expect_peer_signature_algorithm = 0;
   bool enable_all_curves = false;
@@ -175,8 +176,8 @@ struct TestConfig {
   bool expect_delegated_credential_used = false;
   std::string delegated_credential;
   std::string expect_early_data_reason;
-  bool enable_pq_experiment_signal = false;
-  bool expect_pq_experiment_signal = false;
+  bool expect_hrr = false;
+  bool expect_no_hrr = false;
 
   int argc;
   char **argv;

@@ -75,11 +75,9 @@
 <translation id="1829129547161959350">פינגווין</translation>
 <translation id="183183971458492120">טעינת מידע…</translation>
 <translation id="1838709767668011582">‏אתר שנוצר באמצעות Google Sites</translation>
-<translation id="1839704667838141620">שנה את אופן השיתוף של הקובץ הזה</translation>
 <translation id="1844692022597038441">קובץ זו אינו זמין במצב לא מקוון.</translation>
 <translation id="184633654410729720">‏מקלדת תאילנדית (Kedmanee)</translation>
 <translation id="1847880352285315359">בוצעה שמירה</translation>
-<translation id="1864676585353837027">שנה את אופן השיתוף של הקבצים האלו</translation>
 <translation id="1864756863218646478">הקובץ לא נמצא.</translation>
 <translation id="1921986354447415460">‏מקלדת טורקית-F</translation>
 <translation id="1931134289871235022">סלובקית</translation>
@@ -89,7 +87,6 @@
 <translation id="1943097386230153518">התקנת שירות חדש</translation>
 <translation id="1947424002851288782">מקלדת גרמנית</translation>
 <translation id="1972984168337863910">הרחבת חלוניות המשוב של קבצים</translation>
-<translation id="197560921582345123">יכול לערוך</translation>
 <translation id="1984603991036629094">מקלדת פונטית ארמנית</translation>
 <translation id="2001796770603320721">‏ניהול ב-Drive</translation>
 <translation id="2009067268969781306">פירמוט של התקן אחסון מוחק את כל הנתונים שמאוחסנים בו. לא ניתן לבטל את הפעולה הזו.</translation>
@@ -226,6 +223,7 @@
 <translation id="3645531960514756307">ביטול הצמדת התיקייה</translation>
 <translation id="3678559383040232393">מקלדת מלטית</translation>
 <translation id="3685122418104378273">‏הסנכרון של Google Drive מושבת כברירת מחדל בעת שימוש בנתונים לנייד.</translation>
+<translation id="3689865792480713551">ביטול <ph name="ACTIVITY_DESCRIPTION" />.</translation>
 <translation id="3726463242007121105">לא ניתן לפתוח מכשיר זה מאחר שמערכת הקבצים שלו אינה נתמכת.</translation>
 <translation id="3741243925913727067">‏גבה ב-Google Drive את התמונות והסרטונים שבמכשיר המדיה.</translation>
 <translation id="3749289110408117711">שם קובץ</translation>
@@ -286,7 +284,6 @@
 <translation id="4522570452068850558">פרטים</translation>
 <translation id="4552678318981539154">קנה עוד שטח אחסון</translation>
 <translation id="4559767610552730302">טשטוש</translation>
-<translation id="4568854179928172494">שעת השינוי</translation>
 <translation id="4572815280350369984">קובץ <ph name="FILE_TYPE" /></translation>
 <translation id="457386861538956877">עוד...</translation>
 <translation id="4579744207439506346">הוספת את <ph name="ENTRY_NAME" /> לבחירה</translation>
@@ -468,6 +465,7 @@
 <translation id="6339145975392024142">‏מקלדת ארה"ב בינלאומית (PC)</translation>
 <translation id="6346310558342052870">גישה מוגבלת</translation>
 <translation id="6353618411602605519">מקלדת קרואטית</translation>
+<translation id="6356685157277930264">חלון משוב לגבי קבצים</translation>
 <translation id="6358884629796491903">דרקון</translation>
 <translation id="637062427944097960">הקובץ הזה נפתח בשולחן עבודה שונה. עבור אל <ph name="USER_NAME" />‏ (<ph name="MAIL_ADDRESS" />) כדי לראות אותו.</translation>
 <translation id="6395575651121294044"><ph name="NUMBER_OF_FILES" /> פריטים</translation>
@@ -567,6 +565,7 @@
 <translation id="7589661784326793847">המתן מספר רגעים</translation>
 <translation id="7603724359189955920">רשתות</translation>
 <translation id="7627790789328695202">אופס, <ph name="FILE_NAME" /> כבר קיים. שנה את השם שלו ונסה שוב.</translation>
+<translation id="7628656427739290098">‏‎<ph name="PERCENT" />%‎ הושלמו.</translation>
 <translation id="7649070708921625228">עזרה</translation>
 <translation id="7654209398114106148">מתבצעת העברה של<ph name="NUMBER_OF_ITEMS" /> פריטים…</translation>
 <translation id="7658239707568436148">ביטול</translation>
@@ -593,7 +592,6 @@
 <translation id="7827012282502221009">TB <ph name="NUMBER_OF_TB" /></translation>
 <translation id="7839804798877833423">הבאת קבצים אלה תשתמש בערך ב-<ph name="FILE_SIZE" /> מחבילת הגלישה.</translation>
 <translation id="7846076177841592234">בטל את הבחירה</translation>
-<translation id="7850851215703745691">‏קובצי Drive אלו עדיין לא משותפים</translation>
 <translation id="7853966320808728790">‏BÉPO - צרפתית</translation>
 <translation id="7864662577698025113">הוספת שירות חדש</translation>
 <translation id="7873831373602885875">לא ניתן לשמור בתיקייה <ph name="FOLDER_NAME" />. כל העריכות יישמרו בתיקייה<ph name="DOWNLOADS_FOLDER" /> שנמצאת בתיקיית ההורדות.</translation>
@@ -609,7 +607,6 @@
 <translation id="7969525169268594403">סלובנית</translation>
 <translation id="7982283708762922719">גובה</translation>
 <translation id="7987485481246785146">מקלדת כורדית סורנית המבוססת על ערבית</translation>
-<translation id="799923393800005025">יכול להציג</translation>
 <translation id="8008366997883261463">כלב</translation>
 <translation id="8028993641010258682">גודל</translation>
 <translation id="8031722894461705849">מקלדת סלובקית</translation>
@@ -671,8 +668,6 @@
 <translation id="8600173386174225982">רשימת הקבצים מוצגת עכשיו בתצוגת תמונות ממוזערות.</translation>
 <translation id="8601932370724196034">‏קובץ תמונה Crostini</translation>
 <translation id="8669949407341943408">מעביר...</translation>
-<translation id="8671210955687109937">יכול להגיב</translation>
-<translation id="8686213429977032554">‏קובץ זה של Drive עדיין לא משותף</translation>
 <translation id="8698464937041809063">‏איור של Google</translation>
 <translation id="8714406895390098252">אופניים</translation>
 <translation id="8719721339511222681">בחרת את <ph name="ENTRY_NAME" />.</translation>

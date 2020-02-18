@@ -108,6 +108,35 @@ PlatformFontSkia::PlatformFontSkia(const std::string& font_name,
                   query.weight, gfx::GetFontRenderParams(query, nullptr));
 }
 
+PlatformFontSkia::PlatformFontSkia(
+    sk_sp<SkTypeface> typeface,
+    int font_size_pixels,
+    const base::Optional<FontRenderParams>& params) {
+  DCHECK(typeface);
+
+  SkString family_name;
+  typeface->getFamilyName(&family_name);
+
+  SkFontStyle font_style = typeface->fontStyle();
+  Font::Weight font_weight = FontWeightFromInt(font_style.weight());
+
+  int style = typeface->isItalic() ? Font::ITALIC : Font::NORMAL;
+
+  FontRenderParams actual_render_params;
+  if (!params) {
+    FontRenderParamsQuery query;
+    query.families.push_back(family_name.c_str());
+    query.pixel_size = font_size_pixels;
+    query.weight = font_weight;
+    actual_render_params = gfx::GetFontRenderParams(query, nullptr);
+  } else {
+    actual_render_params = params.value();
+  }
+
+  InitFromDetails(std::move(typeface), family_name.c_str(), font_size_pixels,
+                  style, font_weight, actual_render_params);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // PlatformFontSkia, PlatformFont implementation:
 
@@ -275,6 +304,10 @@ const FontRenderParams& PlatformFontSkia::GetFontRenderParams() {
   return font_render_params_;
 }
 
+sk_sp<SkTypeface> PlatformFontSkia::GetNativeSkTypefaceIfAvailable() const {
+  return sk_sp<SkTypeface>(typeface_);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // PlatformFontSkia, private:
 
@@ -421,6 +454,15 @@ PlatformFont* PlatformFont::CreateFromNameAndSize(const std::string& font_name,
                                                   int font_size) {
   TRACE_EVENT0("fonts", "PlatformFont::CreateFromNameAndSize");
   return new PlatformFontSkia(font_name, font_size);
+}
+
+// static
+PlatformFont* PlatformFont::CreateFromSkTypeface(
+    sk_sp<SkTypeface> typeface,
+    int font_size_pixels,
+    const base::Optional<FontRenderParams>& params) {
+  TRACE_EVENT0("fonts", "PlatformFont::CreateFromSkTypeface");
+  return new PlatformFontSkia(typeface, font_size_pixels, params);
 }
 #endif  // !defined(OS_WIN)
 

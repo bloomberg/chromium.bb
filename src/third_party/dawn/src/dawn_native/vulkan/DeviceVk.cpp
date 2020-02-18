@@ -28,11 +28,13 @@
 #include "dawn_native/vulkan/BufferVk.h"
 #include "dawn_native/vulkan/CommandBufferVk.h"
 #include "dawn_native/vulkan/ComputePipelineVk.h"
+#include "dawn_native/vulkan/DescriptorSetService.h"
 #include "dawn_native/vulkan/FencedDeleter.h"
 #include "dawn_native/vulkan/PipelineLayoutVk.h"
 #include "dawn_native/vulkan/QueueVk.h"
 #include "dawn_native/vulkan/RenderPassCache.h"
 #include "dawn_native/vulkan/RenderPipelineVk.h"
+#include "dawn_native/vulkan/ResourceMemoryAllocatorVk.h"
 #include "dawn_native/vulkan/SamplerVk.h"
 #include "dawn_native/vulkan/ShaderModuleVk.h"
 #include "dawn_native/vulkan/StagingBufferVk.h"
@@ -66,24 +68,31 @@ namespace dawn_native { namespace vulkan {
         DAWN_TRY(functions->LoadDeviceProcs(mVkDevice, mDeviceInfo));
 
         GatherQueueFromDevice();
+        mDescriptorSetService = std::make_unique<DescriptorSetService>(this);
         mDeleter = std::make_unique<FencedDeleter>(this);
         mMapRequestTracker = std::make_unique<MapRequestTracker>(this);
-        mMemoryAllocator = std::make_unique<MemoryAllocator>(this);
         mRenderPassCache = std::make_unique<RenderPassCache>(this);
+        mResourceMemoryAllocator = std::make_unique<ResourceMemoryAllocator>(this);
 
         mExternalMemoryService = std::make_unique<external_memory::Service>(this);
         mExternalSemaphoreService = std::make_unique<external_semaphore::Service>(this);
+
+        DAWN_TRY(PrepareRecordingContext());
 
         return {};
     }
 
     Device::~Device() {
-        // Immediately forget about all pending commands so we don't try to submit them in Tick
-        FreeCommands(&mPendingCommands);
+        // Immediately tag the recording context as unused so we don't try to submit it in Tick.
+        mRecordingContext.used = false;
+        fn.DestroyCommandPool(mVkDevice, mRecordingContext.commandPool, nullptr);
 
-        if (fn.QueueWaitIdle(mQueue) != VK_SUCCESS) {
-            ASSERT(false);
-        }
+        VkResult waitIdleResult = fn.QueueWaitIdle(mQueue);
+        // Ignore the result of QueueWaitIdle: it can return OOM which we can't really do anything
+        // about, Device lost, which means workloads running on the GPU are no longer accessible
+        // (so they are as good as waited on) or success.
+        DAWN_UNUSED(waitIdleResult);
+
         CheckPassedFences();
 
         // Make sure all fences are complete by explicitly waiting on them all
@@ -109,11 +118,14 @@ namespace dawn_native { namespace vulkan {
         Tick();
 
         ASSERT(mCommandsInFlight.Empty());
-        for (auto& commands : mUnusedCommands) {
-            FreeCommands(&commands);
+        for (const CommandPoolAndBuffer& commands : mUnusedCommands) {
+            fn.DestroyCommandPool(mVkDevice, commands.pool, nullptr);
         }
         mUnusedCommands.clear();
 
+        // TODO(jiajie.hu@intel.com): In rare cases, a DAWN_TRY() failure may leave semaphores
+        // untagged for deletion. But for most of the time when everything goes well, these
+        // assertions can be helpful in catching bugs.
         ASSERT(mRecordingContext.waitSemaphores.empty());
         ASSERT(mRecordingContext.signalSemaphores.empty());
 
@@ -124,6 +136,7 @@ namespace dawn_native { namespace vulkan {
 
         // Free services explicitly so that they can free Vulkan objects before vkDestroyDevice
         mDynamicUploader = nullptr;
+        mDescriptorSetService = nullptr;
 
         // Releasing the uploader enqueues buffers to be released.
         // Call Tick() again to clear them before releasing the deleter.
@@ -131,7 +144,6 @@ namespace dawn_native { namespace vulkan {
 
         mDeleter = nullptr;
         mMapRequestTracker = nullptr;
-        mMemoryAllocator = nullptr;
 
         // The VkRenderPasses in the cache can be destroyed immediately since all commands referring
         // to them are guaranteed to be finished executing.
@@ -146,52 +158,52 @@ namespace dawn_native { namespace vulkan {
 
     ResultOrError<BindGroupBase*> Device::CreateBindGroupImpl(
         const BindGroupDescriptor* descriptor) {
-        return new BindGroup(this, descriptor);
+        return BindGroup::Create(this, descriptor);
     }
     ResultOrError<BindGroupLayoutBase*> Device::CreateBindGroupLayoutImpl(
         const BindGroupLayoutDescriptor* descriptor) {
-        return new BindGroupLayout(this, descriptor);
+        return BindGroupLayout::Create(this, descriptor);
     }
     ResultOrError<BufferBase*> Device::CreateBufferImpl(const BufferDescriptor* descriptor) {
-        return new Buffer(this, descriptor);
+        return Buffer::Create(this, descriptor);
     }
-    CommandBufferBase* Device::CreateCommandBuffer(CommandEncoderBase* encoder,
+    CommandBufferBase* Device::CreateCommandBuffer(CommandEncoder* encoder,
                                                    const CommandBufferDescriptor* descriptor) {
-        return new CommandBuffer(encoder, descriptor);
+        return CommandBuffer::Create(encoder, descriptor);
     }
     ResultOrError<ComputePipelineBase*> Device::CreateComputePipelineImpl(
         const ComputePipelineDescriptor* descriptor) {
-        return new ComputePipeline(this, descriptor);
+        return ComputePipeline::Create(this, descriptor);
     }
     ResultOrError<PipelineLayoutBase*> Device::CreatePipelineLayoutImpl(
         const PipelineLayoutDescriptor* descriptor) {
-        return new PipelineLayout(this, descriptor);
+        return PipelineLayout::Create(this, descriptor);
     }
     ResultOrError<QueueBase*> Device::CreateQueueImpl() {
-        return new Queue(this);
+        return Queue::Create(this);
     }
     ResultOrError<RenderPipelineBase*> Device::CreateRenderPipelineImpl(
         const RenderPipelineDescriptor* descriptor) {
-        return new RenderPipeline(this, descriptor);
+        return RenderPipeline::Create(this, descriptor);
     }
     ResultOrError<SamplerBase*> Device::CreateSamplerImpl(const SamplerDescriptor* descriptor) {
-        return new Sampler(this, descriptor);
+        return Sampler::Create(this, descriptor);
     }
     ResultOrError<ShaderModuleBase*> Device::CreateShaderModuleImpl(
         const ShaderModuleDescriptor* descriptor) {
-        return new ShaderModule(this, descriptor);
+        return ShaderModule::Create(this, descriptor);
     }
     ResultOrError<SwapChainBase*> Device::CreateSwapChainImpl(
         const SwapChainDescriptor* descriptor) {
-        return new SwapChain(this, descriptor);
+        return SwapChain::Create(this, descriptor);
     }
     ResultOrError<TextureBase*> Device::CreateTextureImpl(const TextureDescriptor* descriptor) {
-        return new Texture(this, descriptor);
+        return Texture::Create(this, descriptor);
     }
     ResultOrError<TextureViewBase*> Device::CreateTextureViewImpl(
         TextureBase* texture,
         const TextureViewDescriptor* descriptor) {
-        return new TextureView(texture, descriptor);
+        return TextureView::Create(texture, descriptor);
     }
 
     Serial Device::GetCompletedCommandSerial() const {
@@ -206,28 +218,31 @@ namespace dawn_native { namespace vulkan {
         return mLastSubmittedSerial + 1;
     }
 
-    void Device::TickImpl() {
+    MaybeError Device::TickImpl() {
         CheckPassedFences();
         RecycleCompletedCommands();
 
+        mDescriptorSetService->Tick(mCompletedSerial);
         mMapRequestTracker->Tick(mCompletedSerial);
 
         // Uploader should tick before the resource allocator
         // as it enqueues resources to be released.
-        mDynamicUploader->Tick(mCompletedSerial);
+        mDynamicUploader->Deallocate(mCompletedSerial);
 
-        mMemoryAllocator->Tick(mCompletedSerial);
+        mResourceMemoryAllocator->Tick(mCompletedSerial);
 
         mDeleter->Tick(mCompletedSerial);
 
-        if (mPendingCommands.pool != VK_NULL_HANDLE) {
-            SubmitPendingCommands();
+        if (mRecordingContext.used) {
+            DAWN_TRY(SubmitPendingCommands());
         } else if (mCompletedSerial == mLastSubmittedSerial) {
             // If there's no GPU work in flight we still need to artificially increment the serial
             // so that CPU operations waiting on GPU completion can know they don't have to wait.
             mCompletedSerial++;
             mLastSubmittedSerial++;
         }
+
+        return {};
     }
 
     VkInstance Device::GetVkInstance() const {
@@ -253,8 +268,8 @@ namespace dawn_native { namespace vulkan {
         return mMapRequestTracker.get();
     }
 
-    MemoryAllocator* Device::GetMemoryAllocator() const {
-        return mMemoryAllocator.get();
+    DescriptorSetService* Device::GetDescriptorSetService() const {
+        return mDescriptorSetService.get();
     }
 
     FencedDeleter* Device::GetFencedDeleter() const {
@@ -265,40 +280,19 @@ namespace dawn_native { namespace vulkan {
         return mRenderPassCache.get();
     }
 
-    VkCommandBuffer Device::GetPendingCommandBuffer() {
-        if (mPendingCommands.pool == VK_NULL_HANDLE) {
-            mPendingCommands = GetUnusedCommands();
-
-            VkCommandBufferBeginInfo beginInfo;
-            beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-            beginInfo.pNext = nullptr;
-            beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-            beginInfo.pInheritanceInfo = nullptr;
-
-            if (fn.BeginCommandBuffer(mPendingCommands.commandBuffer, &beginInfo) != VK_SUCCESS) {
-                ASSERT(false);
-            }
-        }
-
-        return mPendingCommands.commandBuffer;
-    }
-
     CommandRecordingContext* Device::GetPendingRecordingContext() {
-        if (mRecordingContext.commandBuffer == VK_NULL_HANDLE) {
-            mRecordingContext.commandBuffer = GetPendingCommandBuffer();
-        }
-
+        ASSERT(mRecordingContext.commandBuffer != VK_NULL_HANDLE);
+        mRecordingContext.used = true;
         return &mRecordingContext;
     }
 
-    void Device::SubmitPendingCommands() {
-        if (mPendingCommands.pool == VK_NULL_HANDLE) {
-            return;
+    MaybeError Device::SubmitPendingCommands() {
+        if (!mRecordingContext.used) {
+            return {};
         }
 
-        if (fn.EndCommandBuffer(mPendingCommands.commandBuffer) != VK_SUCCESS) {
-            ASSERT(false);
-        }
+        DAWN_TRY(CheckVkSuccess(fn.EndCommandBuffer(mRecordingContext.commandBuffer),
+                                "vkEndCommandBuffer"));
 
         std::vector<VkPipelineStageFlags> dstStageMasks(mRecordingContext.waitSemaphores.size(),
                                                         VK_PIPELINE_STAGE_ALL_COMMANDS_BIT);
@@ -311,30 +305,34 @@ namespace dawn_native { namespace vulkan {
         submitInfo.pWaitSemaphores = mRecordingContext.waitSemaphores.data();
         submitInfo.pWaitDstStageMask = dstStageMasks.data();
         submitInfo.commandBufferCount = 1;
-        submitInfo.pCommandBuffers = &mPendingCommands.commandBuffer;
+        submitInfo.pCommandBuffers = &mRecordingContext.commandBuffer;
         submitInfo.signalSemaphoreCount =
             static_cast<uint32_t>(mRecordingContext.signalSemaphores.size());
         submitInfo.pSignalSemaphores = mRecordingContext.signalSemaphores.data();
 
-        VkFence fence = GetUnusedFence();
-        if (fn.QueueSubmit(mQueue, 1, &submitInfo, fence) != VK_SUCCESS) {
-            ASSERT(false);
-        }
+        VkFence fence = VK_NULL_HANDLE;
+        DAWN_TRY_ASSIGN(fence, GetUnusedFence());
+        DAWN_TRY(CheckVkSuccess(fn.QueueSubmit(mQueue, 1, &submitInfo, fence), "vkQueueSubmit"));
 
-        mLastSubmittedSerial++;
-        mCommandsInFlight.Enqueue(mPendingCommands, mLastSubmittedSerial);
-        mPendingCommands = CommandPoolAndBuffer();
-        mFencesInFlight.emplace(fence, mLastSubmittedSerial);
-
+        // Enqueue the semaphores before incrementing the serial, so that they can be deleted as
+        // soon as the current submission is finished.
         for (VkSemaphore semaphore : mRecordingContext.waitSemaphores) {
             mDeleter->DeleteWhenUnused(semaphore);
         }
-
         for (VkSemaphore semaphore : mRecordingContext.signalSemaphores) {
             mDeleter->DeleteWhenUnused(semaphore);
         }
 
+        mLastSubmittedSerial++;
+        mFencesInFlight.emplace(fence, mLastSubmittedSerial);
+
+        CommandPoolAndBuffer submittedCommands = {mRecordingContext.commandPool,
+                                                  mRecordingContext.commandBuffer};
+        mCommandsInFlight.Enqueue(submittedCommands, mLastSubmittedSerial);
         mRecordingContext = CommandRecordingContext();
+        DAWN_TRY(PrepareRecordingContext());
+
+        return {};
     }
 
     ResultOrError<VulkanDeviceKnobs> Device::CreateDevice(VkPhysicalDevice physicalDevice) {
@@ -357,6 +355,18 @@ namespace dawn_native { namespace vulkan {
             extensionsToRequest.push_back(kExtensionNameKhrExternalMemoryFD);
             usedKnobs.externalMemoryFD = true;
         }
+        if (mDeviceInfo.externalMemoryDmaBuf) {
+            extensionsToRequest.push_back(kExtensionNameExtExternalMemoryDmaBuf);
+            usedKnobs.externalMemoryDmaBuf = true;
+        }
+        if (mDeviceInfo.imageDrmFormatModifier) {
+            extensionsToRequest.push_back(kExtensionNameExtImageDrmFormatModifier);
+            usedKnobs.imageDrmFormatModifier = true;
+        }
+        if (mDeviceInfo.externalMemoryZirconHandle) {
+            extensionsToRequest.push_back(kExtensionNameFuchsiaExternalMemory);
+            usedKnobs.externalMemoryZirconHandle = true;
+        }
         if (mDeviceInfo.externalSemaphore) {
             extensionsToRequest.push_back(kExtensionNameKhrExternalSemaphore);
             usedKnobs.externalSemaphore = true;
@@ -365,9 +375,17 @@ namespace dawn_native { namespace vulkan {
             extensionsToRequest.push_back(kExtensionNameKhrExternalSemaphoreFD);
             usedKnobs.externalSemaphoreFD = true;
         }
+        if (mDeviceInfo.externalSemaphoreZirconHandle) {
+            extensionsToRequest.push_back(kExtensionNameFuchsiaExternalSemaphore);
+            usedKnobs.externalSemaphoreZirconHandle = true;
+        }
         if (mDeviceInfo.swapchain) {
             extensionsToRequest.push_back(kExtensionNameKhrSwapchain);
             usedKnobs.swapchain = true;
+        }
+        if (mDeviceInfo.maintenance1) {
+            extensionsToRequest.push_back(kExtensionNameKhrMaintenance1);
+            usedKnobs.maintenance1 = true;
         }
 
         // Always require independentBlend because it is a core Dawn feature
@@ -385,8 +403,8 @@ namespace dawn_native { namespace vulkan {
 
         // Find a universal queue family
         {
-            constexpr uint32_t kUniversalFlags =
-                VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT | VK_QUEUE_TRANSFER_BIT;
+            // Note that GRAPHICS and COMPUTE imply TRANSFER so we don't need to check for it.
+            constexpr uint32_t kUniversalFlags = VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT;
             int universalQueueFamily = -1;
             for (unsigned int i = 0; i < mDeviceInfo.queueFamilies.size(); ++i) {
                 if ((mDeviceInfo.queueFamilies[i].queueFlags & kUniversalFlags) ==
@@ -447,9 +465,11 @@ namespace dawn_native { namespace vulkan {
         return const_cast<VulkanFunctions*>(&fn);
     }
 
-    VkFence Device::GetUnusedFence() {
+    ResultOrError<VkFence> Device::GetUnusedFence() {
         if (!mUnusedFences.empty()) {
             VkFence fence = mUnusedFences.back();
+            DAWN_TRY(CheckVkSuccess(fn.ResetFences(mVkDevice, 1, &fence), "vkResetFences"));
+
             mUnusedFences.pop_back();
             return fence;
         }
@@ -460,9 +480,8 @@ namespace dawn_native { namespace vulkan {
         createInfo.flags = 0;
 
         VkFence fence = VK_NULL_HANDLE;
-        if (fn.CreateFence(mVkDevice, &createInfo, nullptr, &fence) != VK_SUCCESS) {
-            ASSERT(false);
-        }
+        DAWN_TRY(CheckVkSuccess(fn.CreateFence(mVkDevice, &createInfo, nullptr, &fence),
+                                "vkCreateFence"));
 
         return fence;
     }
@@ -481,11 +500,7 @@ namespace dawn_native { namespace vulkan {
                 return;
             }
 
-            if (fn.ResetFences(mVkDevice, 1, &fence) != VK_SUCCESS) {
-                ASSERT(false);
-            }
             mUnusedFences.push_back(fence);
-
             mFencesInFlight.pop();
 
             ASSERT(fenceSerial > mCompletedSerial);
@@ -493,63 +508,66 @@ namespace dawn_native { namespace vulkan {
         }
     }
 
-    Device::CommandPoolAndBuffer Device::GetUnusedCommands() {
+    MaybeError Device::PrepareRecordingContext() {
+        ASSERT(!mRecordingContext.used);
+        ASSERT(mRecordingContext.commandBuffer == VK_NULL_HANDLE);
+        ASSERT(mRecordingContext.commandPool == VK_NULL_HANDLE);
+
+        // First try to recycle unused command pools.
         if (!mUnusedCommands.empty()) {
             CommandPoolAndBuffer commands = mUnusedCommands.back();
             mUnusedCommands.pop_back();
-            return commands;
+            DAWN_TRY(CheckVkSuccess(fn.ResetCommandPool(mVkDevice, commands.pool, 0),
+                                    "vkResetCommandPool"));
+
+            mRecordingContext.commandBuffer = commands.commandBuffer;
+            mRecordingContext.commandPool = commands.pool;
+        } else {
+            // Create a new command pool for our commands and allocate the command buffer.
+            VkCommandPoolCreateInfo createInfo;
+            createInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+            createInfo.pNext = nullptr;
+            createInfo.flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT;
+            createInfo.queueFamilyIndex = mQueueFamily;
+
+            DAWN_TRY(CheckVkSuccess(fn.CreateCommandPool(mVkDevice, &createInfo, nullptr,
+                                                         &mRecordingContext.commandPool),
+                                    "vkCreateCommandPool"));
+
+            VkCommandBufferAllocateInfo allocateInfo;
+            allocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+            allocateInfo.pNext = nullptr;
+            allocateInfo.commandPool = mRecordingContext.commandPool;
+            allocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+            allocateInfo.commandBufferCount = 1;
+
+            DAWN_TRY(CheckVkSuccess(fn.AllocateCommandBuffers(mVkDevice, &allocateInfo,
+                                                              &mRecordingContext.commandBuffer),
+                                    "vkAllocateCommandBuffers"));
         }
 
-        CommandPoolAndBuffer commands;
+        // Start the recording of commands in the command buffer.
+        VkCommandBufferBeginInfo beginInfo;
+        beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+        beginInfo.pNext = nullptr;
+        beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+        beginInfo.pInheritanceInfo = nullptr;
 
-        VkCommandPoolCreateInfo createInfo;
-        createInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-        createInfo.pNext = nullptr;
-        createInfo.flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT;
-        createInfo.queueFamilyIndex = mQueueFamily;
-
-        if (fn.CreateCommandPool(mVkDevice, &createInfo, nullptr, &commands.pool) != VK_SUCCESS) {
-            ASSERT(false);
-        }
-
-        VkCommandBufferAllocateInfo allocateInfo;
-        allocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-        allocateInfo.pNext = nullptr;
-        allocateInfo.commandPool = commands.pool;
-        allocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-        allocateInfo.commandBufferCount = 1;
-
-        if (fn.AllocateCommandBuffers(mVkDevice, &allocateInfo, &commands.commandBuffer) !=
-            VK_SUCCESS) {
-            ASSERT(false);
-        }
-
-        return commands;
+        return CheckVkSuccess(fn.BeginCommandBuffer(mRecordingContext.commandBuffer, &beginInfo),
+                              "vkBeginCommandBuffer");
     }
 
     void Device::RecycleCompletedCommands() {
         for (auto& commands : mCommandsInFlight.IterateUpTo(mCompletedSerial)) {
-            if (fn.ResetCommandPool(mVkDevice, commands.pool, 0) != VK_SUCCESS) {
-                ASSERT(false);
-            }
             mUnusedCommands.push_back(commands);
         }
         mCommandsInFlight.ClearUpTo(mCompletedSerial);
     }
 
-    void Device::FreeCommands(CommandPoolAndBuffer* commands) {
-        if (commands->pool != VK_NULL_HANDLE) {
-            fn.DestroyCommandPool(mVkDevice, commands->pool, nullptr);
-            commands->pool = VK_NULL_HANDLE;
-        }
-
-        // Command buffers are implicitly destroyed when the command pool is.
-        commands->commandBuffer = VK_NULL_HANDLE;
-    }
-
     ResultOrError<std::unique_ptr<StagingBufferBase>> Device::CreateStagingBuffer(size_t size) {
         std::unique_ptr<StagingBufferBase> stagingBuffer =
             std::make_unique<StagingBuffer>(size, this);
+        DAWN_TRY(stagingBuffer->Initialize());
         return std::move(stagingBuffer);
     }
 
@@ -558,6 +576,8 @@ namespace dawn_native { namespace vulkan {
                                                BufferBase* destination,
                                                uint64_t destinationOffset,
                                                uint64_t size) {
+        CommandRecordingContext* recordingContext = GetPendingRecordingContext();
+
         // Insert memory barrier to ensure host write operations are made visible before
         // copying from the staging buffer. However, this barrier can be removed (see note below).
         //
@@ -567,15 +587,15 @@ namespace dawn_native { namespace vulkan {
 
         // Insert pipeline barrier to ensure correct ordering with previous memory operations on the
         // buffer.
-        ToBackend(destination)
-            ->TransitionUsageNow(GetPendingRecordingContext(), dawn::BufferUsage::CopyDst);
+        ToBackend(destination)->TransitionUsageNow(recordingContext, wgpu::BufferUsage::CopyDst);
 
         VkBufferCopy copy;
         copy.srcOffset = sourceOffset;
         copy.dstOffset = destinationOffset;
         copy.size = size;
 
-        this->fn.CmdCopyBuffer(GetPendingCommandBuffer(), ToBackend(source)->GetBufferHandle(),
+        this->fn.CmdCopyBuffer(recordingContext->commandBuffer,
+                               ToBackend(source)->GetBufferHandle(),
                                ToBackend(destination)->GetHandle(), 1, &copy);
 
         return {};
@@ -583,6 +603,7 @@ namespace dawn_native { namespace vulkan {
 
     MaybeError Device::ImportExternalImage(const ExternalImageDescriptor* descriptor,
                                            ExternalMemoryHandle memoryHandle,
+                                           VkImage image,
                                            const std::vector<ExternalSemaphoreHandle>& waitHandles,
                                            VkSemaphore* outSignalSemaphore,
                                            VkDeviceMemory* outAllocation,
@@ -594,7 +615,7 @@ namespace dawn_native { namespace vulkan {
         if (!mExternalSemaphoreService->Supported()) {
             return DAWN_VALIDATION_ERROR("External semaphore usage not supported");
         }
-        if (!mExternalMemoryService->Supported(
+        if (!mExternalMemoryService->SupportsImportMemory(
                 VulkanImageFormat(textureDescriptor->format), VK_IMAGE_TYPE_2D,
                 VK_IMAGE_TILING_OPTIMAL,
                 VulkanImageUsage(textureDescriptor->usage,
@@ -608,9 +629,11 @@ namespace dawn_native { namespace vulkan {
                         mExternalSemaphoreService->CreateExportableSemaphore());
 
         // Import the external image's memory
+        external_memory::MemoryImportParams importParams;
+        DAWN_TRY_ASSIGN(importParams,
+                        mExternalMemoryService->GetMemoryImportParams(descriptor, image));
         DAWN_TRY_ASSIGN(*outAllocation,
-                        mExternalMemoryService->ImportMemory(
-                            memoryHandle, descriptor->allocationSize, descriptor->memoryTypeIndex));
+                        mExternalMemoryService->ImportMemory(memoryHandle, importParams, image));
 
         // Import semaphores we have to wait on before using the texture
         for (const ExternalSemaphoreHandle& handle : waitHandles) {
@@ -656,9 +679,23 @@ namespace dawn_native { namespace vulkan {
         std::vector<VkSemaphore> waitSemaphores;
         waitSemaphores.reserve(waitHandles.size());
 
-        // If failed, cleanup
-        if (ConsumedError(ImportExternalImage(descriptor, memoryHandle, waitHandles,
-                                              &signalSemaphore, &allocation, &waitSemaphores))) {
+        // Cleanup in case of a failure, the image creation doesn't acquire the external objects
+        // if a failure happems.
+        Texture* result = nullptr;
+        // TODO(crbug.com/1026480): Consolidate this into a single CreateFromExternal call.
+        if (ConsumedError(Texture::CreateFromExternal(this, descriptor, textureDescriptor,
+                                                      mExternalMemoryService.get()),
+                          &result) ||
+            ConsumedError(ImportExternalImage(descriptor, memoryHandle, result->GetHandle(),
+                                              waitHandles, &signalSemaphore, &allocation,
+                                              &waitSemaphores)) ||
+            ConsumedError(result->BindExternalMemory(descriptor, signalSemaphore, allocation,
+                                                     waitSemaphores))) {
+            // Delete the Texture if it was created
+            if (result != nullptr) {
+                delete result;
+            }
+
             // Clear the signal semaphore
             fn.DestroySemaphore(GetVkDevice(), signalSemaphore, nullptr);
 
@@ -672,7 +709,25 @@ namespace dawn_native { namespace vulkan {
             return nullptr;
         }
 
-        return new Texture(this, descriptor, textureDescriptor, signalSemaphore, allocation,
-                           waitSemaphores);
+        return result;
     }
+
+    ResultOrError<ResourceMemoryAllocation> Device::AllocateMemory(
+        VkMemoryRequirements requirements,
+        bool mappable) {
+        return mResourceMemoryAllocator->Allocate(requirements, mappable);
+    }
+
+    void Device::DeallocateMemory(ResourceMemoryAllocation* allocation) {
+        mResourceMemoryAllocator->Deallocate(allocation);
+    }
+
+    int Device::FindBestMemoryTypeIndex(VkMemoryRequirements requirements, bool mappable) {
+        return mResourceMemoryAllocator->FindBestTypeIndex(requirements, mappable);
+    }
+
+    ResourceMemoryAllocator* Device::GetResourceMemoryAllocatorForTesting() const {
+        return mResourceMemoryAllocator.get();
+    }
+
 }}  // namespace dawn_native::vulkan

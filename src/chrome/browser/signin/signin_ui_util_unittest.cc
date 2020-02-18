@@ -8,12 +8,17 @@
 #include "base/macros.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/metrics/user_action_tester.h"
+#include "base/test/task_environment.h"
+#include "build/build_config.h"
 #include "build/buildflag.h"
+#include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/identity_test_environment_profile_adaptor.h"
-#include "chrome/browser/signin/scoped_account_consistency.h"
 #include "chrome/browser/signin/signin_promo.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
+#include "chrome/test/base/testing_profile_manager.h"
+#include "components/account_id/account_id.h"
 #include "components/google/core/common/google_util.h"
 #include "components/signin/public/base/signin_buildflags.h"
 #include "components/signin/public/identity_manager/account_info.h"
@@ -52,8 +57,12 @@ TEST_F(GetAllowedDomainTest, WithValidPattern) {
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
 
 namespace {
+
 const char kMainEmail[] = "main_email@example.com";
 const char kMainGaiaID[] = "main_gaia_id";
+const char kSecondaryEmail[] = "secondary_email@example.com";
+const char kSecondaryGaiaID[] = "secondary_gaia_id";
+
 class SigninUiUtilTestBrowserWindow : public TestBrowserWindow {
  public:
   SigninUiUtilTestBrowserWindow() = default;
@@ -76,13 +85,14 @@ class SigninUiUtilTestBrowserWindow : public TestBrowserWindow {
 
   DISALLOW_COPY_AND_ASSIGN(SigninUiUtilTestBrowserWindow);
 };
+
 }  // namespace
 
 class DiceSigninUiUtilTest : public BrowserWithTestWindowTest {
  public:
   DiceSigninUiUtilTest()
       : BrowserWithTestWindowTest(
-            content::BrowserTaskEnvironment::IO_MAINLOOP) {}
+            base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
   ~DiceSigninUiUtilTest() override = default;
 
   struct CreateDiceTurnSyncOnHelperParams {
@@ -94,7 +104,7 @@ class DiceSigninUiUtilTest : public BrowserWithTestWindowTest {
     signin_metrics::PromoAction signin_promo_action =
         signin_metrics::PromoAction::PROMO_ACTION_NO_SIGNIN_PROMO;
     signin_metrics::Reason signin_reason = signin_metrics::Reason::REASON_MAX;
-    std::string account_id;
+    CoreAccountId account_id;
     DiceTurnSyncOnHelper::SigninAbortedMode signin_aborted_mode =
         DiceTurnSyncOnHelper::SigninAbortedMode::REMOVE_ACCOUNT;
   };
@@ -105,7 +115,7 @@ class DiceSigninUiUtilTest : public BrowserWithTestWindowTest {
       signin_metrics::AccessPoint signin_access_point,
       signin_metrics::PromoAction signin_promo_action,
       signin_metrics::Reason signin_reason,
-      const std::string& account_id,
+      const CoreAccountId& account_id,
       DiceTurnSyncOnHelper::SigninAbortedMode signin_aborted_mode) {
     create_dice_turn_sync_on_helper_called_ = true;
     create_dice_turn_sync_on_helper_params_.profile = profile;
@@ -160,8 +170,6 @@ class DiceSigninUiUtilTest : public BrowserWithTestWindowTest {
     histogram_tester.ExpectTotalCount(
         "Signin.SigninStartedAccessPoint.NotDefault", 0);
     histogram_tester.ExpectTotalCount(
-        "Signin.SigninStartedAccessPoint.NewAccountPreDice", 0);
-    histogram_tester.ExpectTotalCount(
         "Signin.SigninStartedAccessPoint.NewAccountNoExistingAccount", 0);
     histogram_tester.ExpectTotalCount(
         "Signin.SigninStartedAccessPoint.NewAccountExistingAccount", 0);
@@ -179,8 +187,6 @@ class DiceSigninUiUtilTest : public BrowserWithTestWindowTest {
         histogram_tester.ExpectTotalCount(
             "Signin.SigninStartedAccessPoint.WithDefault", 0);
         histogram_tester.ExpectTotalCount(
-            "Signin.SigninStartedAccessPoint.NewAccountPreDice", 0);
-        histogram_tester.ExpectTotalCount(
             "Signin.SigninStartedAccessPoint.NewAccountNoExistingAccount", 0);
         histogram_tester.ExpectTotalCount(
             "Signin.SigninStartedAccessPoint.NewAccountExistingAccount", 0);
@@ -190,8 +196,6 @@ class DiceSigninUiUtilTest : public BrowserWithTestWindowTest {
             "Signin.SigninStartedAccessPoint.NotDefault", 0);
         histogram_tester.ExpectUniqueSample(
             "Signin.SigninStartedAccessPoint.WithDefault", access_point_, 1);
-        histogram_tester.ExpectTotalCount(
-            "Signin.SigninStartedAccessPoint.NewAccountPreDice", 0);
         histogram_tester.ExpectTotalCount(
             "Signin.SigninStartedAccessPoint.NewAccountNoExistingAccount", 0);
         histogram_tester.ExpectTotalCount(
@@ -203,21 +207,6 @@ class DiceSigninUiUtilTest : public BrowserWithTestWindowTest {
         histogram_tester.ExpectUniqueSample(
             "Signin.SigninStartedAccessPoint.NotDefault", access_point_, 1);
         histogram_tester.ExpectTotalCount(
-            "Signin.SigninStartedAccessPoint.NewAccountPreDice", 0);
-        histogram_tester.ExpectTotalCount(
-            "Signin.SigninStartedAccessPoint.NewAccountNoExistingAccount", 0);
-        histogram_tester.ExpectTotalCount(
-            "Signin.SigninStartedAccessPoint.NewAccountExistingAccount", 0);
-        break;
-      case signin_metrics::PromoAction::PROMO_ACTION_NEW_ACCOUNT_PRE_DICE:
-        histogram_tester.ExpectTotalCount(
-            "Signin.SigninStartedAccessPoint.WithDefault", 0);
-        histogram_tester.ExpectTotalCount(
-            "Signin.SigninStartedAccessPoint.NotDefault", 0);
-        histogram_tester.ExpectUniqueSample(
-            "Signin.SigninStartedAccessPoint.NewAccountPreDice", access_point_,
-            1);
-        histogram_tester.ExpectTotalCount(
             "Signin.SigninStartedAccessPoint.NewAccountNoExistingAccount", 0);
         histogram_tester.ExpectTotalCount(
             "Signin.SigninStartedAccessPoint.NewAccountExistingAccount", 0);
@@ -228,8 +217,6 @@ class DiceSigninUiUtilTest : public BrowserWithTestWindowTest {
             "Signin.SigninStartedAccessPoint.WithDefault", 0);
         histogram_tester.ExpectTotalCount(
             "Signin.SigninStartedAccessPoint.NotDefault", 0);
-        histogram_tester.ExpectTotalCount(
-            "Signin.SigninStartedAccessPoint.NewAccountPreDice", 0);
         histogram_tester.ExpectUniqueSample(
             "Signin.SigninStartedAccessPoint.NewAccountNoExistingAccount",
             access_point_, 1);
@@ -243,8 +230,6 @@ class DiceSigninUiUtilTest : public BrowserWithTestWindowTest {
         histogram_tester.ExpectTotalCount(
             "Signin.SigninStartedAccessPoint.NotDefault", 0);
         histogram_tester.ExpectTotalCount(
-            "Signin.SigninStartedAccessPoint.NewAccountPreDice", 0);
-        histogram_tester.ExpectTotalCount(
             "Signin.SigninStartedAccessPoint.NewAccountNoExistingAccount", 0);
         histogram_tester.ExpectUniqueSample(
             "Signin.SigninStartedAccessPoint.NewAccountExistingAccount",
@@ -253,7 +238,6 @@ class DiceSigninUiUtilTest : public BrowserWithTestWindowTest {
     }
   }
 
-  const ScopedAccountConsistencyDice scoped_account_consistency_;
   signin_metrics::AccessPoint access_point_ =
       signin_metrics::AccessPoint::ACCESS_POINT_BOOKMARK_BUBBLE;
 
@@ -262,7 +246,7 @@ class DiceSigninUiUtilTest : public BrowserWithTestWindowTest {
 };
 
 TEST_F(DiceSigninUiUtilTest, EnableSyncWithExistingAccount) {
-  std::string account_id =
+  CoreAccountId account_id =
       GetIdentityManager()->GetAccountsMutator()->AddOrUpdateAccount(
           kMainGaiaID, kMainEmail, "refresh_token", false,
           signin_metrics::SourceForRefreshTokenOperation::kUnknown);
@@ -316,7 +300,7 @@ TEST_F(DiceSigninUiUtilTest, EnableSyncWithExistingAccount) {
 
 TEST_F(DiceSigninUiUtilTest, EnableSyncWithAccountThatNeedsReauth) {
   AddTab(browser(), GURL("http://example.com"));
-  std::string account_id =
+  CoreAccountId account_id =
       GetIdentityManager()->GetAccountsMutator()->AddOrUpdateAccount(
           kMainGaiaID, kMainEmail, "refresh_token", false,
           signin_metrics::SourceForRefreshTokenOperation::kUnknown);
@@ -499,5 +483,70 @@ TEST_F(DiceSigninUiUtilTest, MergeDiceSigninTab) {
   EXPECT_EQ(1, tab_strip->active_index());
 }
 #endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
+
+TEST_F(DiceSigninUiUtilTest,
+       ShouldShowAnimatedIdentityOnOpeningWindow_ReturnsTrueForMultiProfiles) {
+  const char kSecondProfile[] = "SecondProfile";
+  const base::FilePath profile_path =
+      profile_manager()->profiles_dir().AppendASCII(kSecondProfile);
+  profile_manager()->profile_attributes_storage()->AddProfile(
+      profile_path, base::ASCIIToUTF16(kSecondProfile), std::string(),
+      base::string16(), false, 0, std::string(), EmptyAccountId());
+
+  EXPECT_TRUE(ShouldShowAnimatedIdentityOnOpeningWindow(
+      *profile_manager()->profile_attributes_storage(), profile()));
+}
+
+TEST_F(DiceSigninUiUtilTest,
+       ShouldShowAnimatedIdentityOnOpeningWindow_ReturnsTrueForMultiSignin) {
+  GetIdentityManager()->GetAccountsMutator()->AddOrUpdateAccount(
+      kMainGaiaID, kMainEmail, "refresh_token", false,
+      signin_metrics::SourceForRefreshTokenOperation::kUnknown);
+  GetIdentityManager()->GetAccountsMutator()->AddOrUpdateAccount(
+      kSecondaryGaiaID, kSecondaryEmail, "refresh_token", false,
+      signin_metrics::SourceForRefreshTokenOperation::kUnknown);
+
+  EXPECT_TRUE(ShouldShowAnimatedIdentityOnOpeningWindow(
+      *profile_manager()->profile_attributes_storage(), profile()));
+
+  // The identity can be shown again immediately (which is what happens if there
+  // is multiple windows at startup).
+  RecordAnimatedIdentityTriggered(profile());
+  EXPECT_TRUE(ShouldShowAnimatedIdentityOnOpeningWindow(
+      *profile_manager()->profile_attributes_storage(), profile()));
+}
+
+TEST_F(
+    DiceSigninUiUtilTest,
+    ShouldShowAnimatedIdentityOnOpeningWindow_ReturnsFalseForSingleProfileSingleSignin) {
+  GetIdentityManager()->GetAccountsMutator()->AddOrUpdateAccount(
+      kMainGaiaID, kMainEmail, "refresh_token", false,
+      signin_metrics::SourceForRefreshTokenOperation::kUnknown);
+
+  EXPECT_FALSE(ShouldShowAnimatedIdentityOnOpeningWindow(
+      *profile_manager()->profile_attributes_storage(), profile()));
+}
+
+TEST_F(DiceSigninUiUtilTest,
+       ShouldShowAnimatedIdentityOnOpeningWindow_ReturnsFalseForNewWindow) {
+  GetIdentityManager()->GetAccountsMutator()->AddOrUpdateAccount(
+      kMainGaiaID, kMainEmail, "refresh_token", false,
+      signin_metrics::SourceForRefreshTokenOperation::kUnknown);
+  GetIdentityManager()->GetAccountsMutator()->AddOrUpdateAccount(
+      kSecondaryGaiaID, kSecondaryEmail, "refresh_token", false,
+      signin_metrics::SourceForRefreshTokenOperation::kUnknown);
+  EXPECT_TRUE(ShouldShowAnimatedIdentityOnOpeningWindow(
+      *profile_manager()->profile_attributes_storage(), profile()));
+
+  // Animation is shown once.
+  RecordAnimatedIdentityTriggered(profile());
+
+  // Wait a few seconds.
+  task_environment()->FastForwardBy(base::TimeDelta::FromSeconds(6));
+
+  // Animation is not shown again in a new window.
+  EXPECT_FALSE(ShouldShowAnimatedIdentityOnOpeningWindow(
+      *profile_manager()->profile_attributes_storage(), profile()));
+}
 
 }  // namespace signin_ui_util

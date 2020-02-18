@@ -6,20 +6,38 @@
 
 namespace web_app {
 
-const char* LaunchContainerEnumToStr(LaunchContainer launch_container) {
-  switch (launch_container) {
-    case LaunchContainer::kDefault:
-      return "default";
-    case LaunchContainer::kTab:
-      return "tab";
-    case LaunchContainer::kWindow:
-      return "window";
-  }
-}
+static_assert(Source::kMinValue == 0, "Source enum should be zero based");
 
 bool IsSuccess(InstallResultCode code) {
   return code == InstallResultCode::kSuccessNewInstall ||
          code == InstallResultCode::kSuccessAlreadyInstalled;
+}
+
+DisplayMode ResolveEffectiveDisplayMode(DisplayMode app_display_mode,
+                                        DisplayMode user_display_mode) {
+  switch (user_display_mode) {
+    case DisplayMode::kBrowser:
+      return DisplayMode::kBrowser;
+    case DisplayMode::kUndefined:
+    case DisplayMode::kMinimalUi:
+    case DisplayMode::kFullscreen:
+      NOTREACHED();
+      FALLTHROUGH;
+    case DisplayMode::kStandalone:
+      break;
+  }
+
+  switch (app_display_mode) {
+    case DisplayMode::kBrowser:
+    case DisplayMode::kMinimalUi:
+      return DisplayMode::kMinimalUi;
+    case DisplayMode::kUndefined:
+      NOTREACHED();
+      FALLTHROUGH;
+    case DisplayMode::kStandalone:
+    case DisplayMode::kFullscreen:
+      return DisplayMode::kStandalone;
+  }
 }
 
 }  // namespace web_app

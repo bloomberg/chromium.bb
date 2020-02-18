@@ -10,16 +10,19 @@
 #include <type_traits>
 
 #include "osp/msgs/osp_messages.h"
-#include "platform/api/logging.h"
 #include "platform/base/error.h"
+#include "util/logging.h"
 
 namespace openscreen {
+
+class Error;
+
+namespace osp {
 
 template <typename T>
 using MessageEncodingFunction =
     std::add_pointer_t<bool(const T&, msgs::CborEncodeBuffer*)>;
 
-class Error;
 struct NetworkMetrics;
 
 // Represents an embedder's view of a connection between an Open Screen
@@ -103,6 +106,7 @@ class ProtocolConnectionServiceObserver {
   virtual ~ProtocolConnectionServiceObserver() = default;
 };
 
+}  // namespace osp
 }  // namespace openscreen
 
 #endif  // OSP_PUBLIC_PROTOCOL_CONNECTION_H_

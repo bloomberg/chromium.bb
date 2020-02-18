@@ -5,6 +5,7 @@
 import("//mojo/public/tools/bindings/mojom.gni")
 
 mojom("mojom") {
+  generate_java = true
   sources = [
     "accelerated_widget.mojom",
     "buffer_types.mojom",
@@ -17,6 +18,7 @@ mojom("mojom") {
     "rrect_f.mojom",
     "selection_bound.mojom",
     "swap_result.mojom",
+    "swap_timings.mojom",
     "transform.mojom",
   ]
 

@@ -105,7 +105,7 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
                            int64_t service_worker_registration_id,
                            const std::string& sender_id,
                            const std::string& subscription_id,
-                           const SubscriptionInfoCallback& callback) override;
+                           SubscriptionInfoCallback callback) override;
   void Unsubscribe(blink::mojom::PushUnregistrationReason reason,
                    const GURL& requesting_origin,
                    int64_t service_worker_registration_id,
@@ -134,11 +134,11 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
   void SetMessageCallbackForTesting(const base::Closure& callback);
   void SetUnsubscribeCallbackForTesting(const base::Closure& callback);
   void SetContentSettingChangedCallbackForTesting(
-      const base::Closure& callback);
+      base::RepeatingClosure callback);
   void SetServiceWorkerUnregisteredCallbackForTesting(
-      const base::Closure& callback);
+      base::RepeatingClosure callback);
   void SetServiceWorkerDatabaseWipedCallbackForTesting(
-      const base::Closure& callback);
+      base::RepeatingClosure callback);
 
  private:
   friend class PushMessagingBrowserTest;
@@ -155,12 +155,12 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
                               const GURL& requesting_origin,
                               int64_t service_worker_registration_id,
                               const gcm::IncomingMessage& message,
-                              const base::Closure& message_handled_closure,
+                              base::OnceClosure message_handled_closure,
                               blink::mojom::PushDeliveryStatus status);
 
   void DidHandleMessage(const std::string& app_id,
                         const std::string& push_message_id,
-                        const base::RepeatingClosure& completion_closure,
+                        base::OnceClosure completion_closure,
                         bool did_show_generic_notification);
 
   // Subscribe methods ---------------------------------------------------------
@@ -199,11 +199,11 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
   void DidValidateSubscription(const std::string& app_id,
                                const std::string& sender_id,
                                const GURL& endpoint,
-                               const SubscriptionInfoCallback& callback,
+                               SubscriptionInfoCallback callback,
                                bool is_valid);
 
   void DidGetEncryptionInfo(const GURL& endpoint,
-                            const SubscriptionInfoCallback& callback,
+                            SubscriptionInfoCallback callback,
                             std::string p256dh,
                             std::string auth_secret) const;
 

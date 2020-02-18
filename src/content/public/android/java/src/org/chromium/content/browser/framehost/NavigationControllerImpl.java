@@ -6,7 +6,8 @@ package org.chromium.content.browser.framehost;
 
 import android.graphics.Bitmap;
 
-import org.chromium.base.VisibleForTesting;
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
@@ -272,6 +273,13 @@ import org.chromium.content_public.common.ResourceRequestBody;
     }
 
     @Override
+    public void pruneForwardEntries() {
+        if (mNativeNavigationControllerAndroid == 0) return;
+        NavigationControllerImplJni.get().pruneForwardEntries(
+                mNativeNavigationControllerAndroid, NavigationControllerImpl.this);
+    }
+
+    @Override
     public String getEntryExtraData(int index, String key) {
         if (mNativeNavigationControllerAndroid == 0) return null;
         return NavigationControllerImplJni.get().getEntryExtraData(
@@ -362,6 +370,8 @@ import org.chromium.content_public.common.ResourceRequestBody;
                 long nativeNavigationControllerAndroid, NavigationControllerImpl caller);
         boolean removeEntryAtIndex(
                 long nativeNavigationControllerAndroid, NavigationControllerImpl caller, int index);
+        void pruneForwardEntries(
+                long nativeNavigationControllerAndroid, NavigationControllerImpl caller);
         String getEntryExtraData(long nativeNavigationControllerAndroid,
                 NavigationControllerImpl caller, int index, String key);
         void setEntryExtraData(long nativeNavigationControllerAndroid,

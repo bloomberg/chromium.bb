@@ -14,20 +14,11 @@
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar_theme.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
-#include "third_party/blink/renderer/platform/web_test_support.h"
 
 namespace blink {
 
 SimTest::SimTest() {
   Document::SetThreadedParsingEnabledForTesting(false);
-  // Use the mock theme to get more predictable code paths, this also avoids
-  // the OS callbacks in ScrollAnimatorMac which can schedule frames
-  // unpredictably since the OS will randomly call into blink for
-  // updateScrollerStyleForNewRecommendedScrollerStyle which then does
-  // FrameView::scrollbarStyleChanged and will adjust the scrollbar existence
-  // in the middle of a test.
-  WebTestSupport::SetMockThemeEnabledForTest(true);
-  ScrollbarTheme::SetMockScrollbarsEnabled(true);
   // Threaded animations are usually enabled for blink. However these tests use
   // synchronous compositing, which can not run threaded animations.
   bool was_threaded_animation_enabled =
@@ -39,8 +30,6 @@ SimTest::SimTest() {
 
 SimTest::~SimTest() {
   Document::SetThreadedParsingEnabledForTesting(true);
-  WebTestSupport::SetMockThemeEnabledForTest(false);
-  ScrollbarTheme::SetMockScrollbarsEnabled(false);
   content::TestBlinkWebUnitTestSupport::SetThreadedAnimationEnabled(true);
   WebCache::Clear();
 }
@@ -64,7 +53,7 @@ void SimTest::SetUp() {
 
   web_view_helper_->Initialize(web_frame_client_.get(), web_view_client_.get(),
                                web_widget_client_.get());
-  compositor_->SetWebView(WebView(), *web_widget_client_->layer_tree_view(),
+  compositor_->SetWebView(WebView(), *web_widget_client_->layer_tree_host(),
                           *web_view_client_, *web_widget_client_);
   page_->SetPage(WebView().GetPage());
 }

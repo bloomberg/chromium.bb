@@ -24,13 +24,6 @@ class DisplayPanel extends HTMLElement {
     this.listener_;
 
     /**
-     * True if the panel is not visible.
-     * @type {boolean}
-     * @private
-     */
-    this.hidden_ = true;
-
-    /**
      * True if the panel is collapsed to summary view.
      * @type {boolean}
      * @private
@@ -43,6 +36,8 @@ class DisplayPanel extends HTMLElement {
      * @private
      */
     this.items_ = [];
+
+    this.setAriaHidden_();
   }
 
   /**
@@ -65,13 +60,13 @@ class DisplayPanel extends HTMLElement {
     return `<style>
               :host {
                 max-width: 400px;
+                outline: none;
               }
               #container {
                   align-items: stretch;
                   background-color: #FFF;
-                  box-shadow: -1px -1px rgba(60, 64, 67, 0.15),
-                              0px 2px rgba(60, 64, 67, 0.3),
-                              2px 0px rgba(60, 64, 67, 0.15);
+                  box-shadow: 0px 1px 2px 0px rgba(60, 64, 67, 0.3),
+                              1px 1px 3px 0px rgba(60, 64, 67, 0.15);
                   border-radius: 4px;
                   display: flex;
                   flex-direction: column;
@@ -177,6 +172,7 @@ class DisplayPanel extends HTMLElement {
    */
   panelCollapseFinished(event) {
     this.hidden = true;
+    this.setAttribute('aria-hidden', 'true');
     this.classList.remove('expanding');
     this.classList.add('expandfinished');
     this.removeEventListener('animationend', this.listener_);
@@ -223,6 +219,15 @@ class DisplayPanel extends HTMLElement {
   }
 
   /**
+   * Get an array of panel items that are connected to the DOM.
+   * @return {!Array<PanelItem>}
+   * @private
+   */
+  connectedPanelItems_() {
+    return this.items_.filter(item => item.isConnected);
+  }
+
+  /**
    * Update the summary panel item progress indicator.
    * @public
    */
@@ -232,20 +237,49 @@ class DisplayPanel extends HTMLElement {
     if (this.items_.length == 0) {
       return;
     }
-    for (let i = 0; i < this.items_.length; ++i) {
-      let panel = this.items_[i];
+    let errors = 0, progressCount = 0;
+    const connectedPanels = this.connectedPanelItems_();
+    for (const panel of connectedPanels) {
       // Only sum progress for attached progress panels.
-      if ((panel.panelType === panel.panelTypeProgress) &&
-          panel.parentNode !== null) {
+      if (panel.panelType === panel.panelTypeProgress) {
         total += Number(panel.progress);
+        progressCount++;
+      } else if (panel.panelType === panel.panelTypeError) {
+        errors++;
       }
     }
-    total /= this.items_.length;
+    if (progressCount > 0) {
+      total /= progressCount;
+    }
     const summaryPanel = this.summary_.querySelector('xf-panel-item');
     if (summaryPanel) {
-      // TODO(crbug.com/947388) i18n this string (add setter).
-      summaryPanel.primaryText = total.toFixed(0) + '% complete';
-      summaryPanel.progress = total;
+      // Show either a progress indicator or error count if no operations going.
+      if (progressCount > 0) {
+        // Make sure we have a progress indicator on the summary panel.
+        if (summaryPanel.indicator != 'largeprogress') {
+          summaryPanel.indicator = 'largeprogress';
+        }
+        summaryPanel.primaryText =
+            util.strf('PERCENT_COMPLETE', total.toFixed(0));
+        summaryPanel.progress = total;
+        summaryPanel.setAttribute('count', progressCount);
+        summaryPanel.errorMarkerVisibility =
+            (errors > 0) ? 'visible' : 'hidden';
+      } else if (errors == 0) {
+        if (summaryPanel.indicator != 'status') {
+          summaryPanel.indicator = 'status';
+          summaryPanel.status = 'success';
+          summaryPanel.primaryText = util.strf('PERCENT_COMPLETE', 100);
+        }
+      } else {
+        // Make sure we have a failure indicator on the summary panel.
+        if (summaryPanel.indicator != 'status') {
+          summaryPanel.indicator = 'status';
+          summaryPanel.status = 'failure';
+        }
+        summaryPanel.primaryText =
+            util.strf('ERROR_PROGRESS_SUMMARY_PLURAL', errors);
+      }
     }
   }
 
@@ -254,19 +288,17 @@ class DisplayPanel extends HTMLElement {
    * @public
    */
   updateSummaryPanel() {
-    let summaryHost = this.shadowRoot.querySelector('#summary');
+    const summaryHost = this.shadowRoot.querySelector('#summary');
     let summaryPanel = summaryHost.querySelector('#summary-panel');
 
-    // Work out how many progress panels are being shown.
-    let count = 0;
-    for (let i = 0; i < this.items_.length; ++i) {
-      let panel = this.items_[i];
-      if ((panel.panelType === panel.panelTypeProgress) &&
-          panel.parentNode !== null) {
-        count++;
-      }
+    // Make the display panel available by tab if there are panels to
+    // show and there's an aria-label for use by a screen reader.
+    if (this.hasAttribute('aria-label')) {
+      this.tabIndex = this.items_.length ? 0 : -1;
     }
-    // If there's only one progress panel item active, no need for summary.
+    // Work out how many panel items are being shown.
+    const count = this.connectedPanelItems_().length;
+    // If there's only one panel item active, no need for summary.
     if (count <= 1 && summaryPanel) {
       const button = summaryPanel.primaryButton;
       if (button) {
@@ -278,7 +310,7 @@ class DisplayPanel extends HTMLElement {
       this.panels_.classList.remove('collapsed');
       return;
     }
-    // Show summary panel if there are more than 1 progress panels.
+    // Show summary panel if there are more than 1 panel items.
     if (count > 1 && !summaryPanel) {
       summaryPanel = document.createElement('xf-panel-item');
       summaryPanel.setAttribute('panel-type', 1);
@@ -298,7 +330,6 @@ class DisplayPanel extends HTMLElement {
       }
     }
     if (summaryPanel) {
-      summaryPanel.setAttribute('count', count);
       this.updateProgress();
     }
   }
@@ -317,6 +348,7 @@ class DisplayPanel extends HTMLElement {
     panel.parent = this;
     panel.setAttribute('indicator', 'progress');
     this.items_.push(/** @type {!PanelItem} */ (panel));
+    this.setAriaHidden_();
     return /** @type {!PanelItem} */ (panel);
   }
 
@@ -327,13 +359,21 @@ class DisplayPanel extends HTMLElement {
    */
   attachPanelItem(panel) {
     const displayPanel = panel.parent;
+
     // Only attach the panel if it hasn't been removed.
     const index = displayPanel.items_.indexOf(panel);
     if (index === -1) {
       return;
     }
+
+    // If it's already attached, nothing to do here.
+    if (panel.isConnected) {
+      return;
+    }
+
     displayPanel.panels_.appendChild(panel);
     displayPanel.updateSummaryPanel();
+    this.setAriaHidden_();
   }
 
   /**
@@ -360,7 +400,17 @@ class DisplayPanel extends HTMLElement {
     }
     item.remove();
     this.items_.splice(index, 1);
+    this.setAriaHidden_();
     this.updateSummaryPanel();
+  }
+
+  /**
+   * Set aria-hidden to false if there is no panel.
+   * @private
+   */
+  setAriaHidden_() {
+    const hasItems = this.connectedPanelItems_().length > 0;
+    this.setAttribute('aria-hidden', !hasItems);
   }
 
   /**
@@ -368,12 +418,25 @@ class DisplayPanel extends HTMLElement {
    * @public
    */
   findPanelItemById(id) {
-    for (let item of this.items_) {
+    for (const item of this.items_) {
       if (item.getAttribute('id') === id) {
         return item;
       }
     }
     return null;
+  }
+
+  /**
+   * Remove all panel items.
+   * @public
+   */
+  removeAllPanelItems() {
+    for (const item of this.items_) {
+      item.remove();
+    }
+    this.items_ = [];
+    this.setAriaHidden_();
+    this.updateSummaryPanel();
   }
 }
 

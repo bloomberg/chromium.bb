@@ -46,7 +46,6 @@ QuicConsumedData SimpleSessionNotifier::WriteOrBufferData(
   StreamState& stream_state = stream_map_.find(id)->second;
   const bool had_buffered_data =
       HasBufferedStreamData() || HasBufferedControlFrames();
-  QuicConsumedData total_consumed(0, false);
   QuicStreamOffset offset = stream_state.bytes_sent;
   QUIC_DVLOG(1) << "WriteOrBuffer stream_id: " << id << " [" << offset << ", "
                 << offset + data_length << "), fin: " << (state != NO_FIN);
@@ -127,8 +126,13 @@ void SimpleSessionNotifier::WriteOrBufferPing() {
 }
 
 void SimpleSessionNotifier::NeuterUnencryptedData() {
-  // TODO(nharper): Handle CRYPTO frame case.
   if (QuicVersionUsesCryptoFrames(connection_->transport_version())) {
+    for (const auto& interval : crypto_bytes_transferred_[ENCRYPTION_INITIAL]) {
+      QuicCryptoFrame crypto_frame(ENCRYPTION_INITIAL, interval.min(),
+                                   interval.max() - interval.min());
+      OnFrameAcked(QuicFrame(&crypto_frame), QuicTime::Delta::Zero(),
+                   QuicTime::Zero());
+    }
     return;
   }
   for (const auto& interval : crypto_bytes_transferred_[ENCRYPTION_INITIAL]) {

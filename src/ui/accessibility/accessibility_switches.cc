@@ -24,9 +24,14 @@ const char kEnableExperimentalAccessibilityLabelsDebugging[] =
     "enable-experimental-accessibility-labels-debugging";
 
 // Enables language detection on in-page text content which is then exposed to
-// accessibility technology such as screen readers.
+// assistive technology such as screen readers.
 const char kEnableExperimentalAccessibilityLanguageDetection[] =
     "enable-experimental-accessibility-language-detection";
+
+// Enables language detection for dynamic content which is then exposed to
+// assistive technology such as screen readers.
+const char kEnableExperimentalAccessibilityLanguageDetectionDynamic[] =
+    "enable-experimental-accessibility-language-detection-dynamic";
 
 // Shows setting to enable Switch Access before it has launched.
 const char kEnableExperimentalAccessibilitySwitchAccess[] =
@@ -46,14 +51,14 @@ const char kEnableExperimentalAccessibilityChromeVoxSubNodeLanguageSwitching[] =
     "enable-experimental-accessibility-chromevox-sub-node-language-"
     "switching";
 
-bool AreExperimentalAccessibilityFeaturesEnabled() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      ::switches::kEnableExperimentalAccessibilityFeatures);
-}
-
 bool IsExperimentalAccessibilityLanguageDetectionEnabled() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       ::switches::kEnableExperimentalAccessibilityLanguageDetection);
+}
+
+bool IsExperimentalAccessibilityLanguageDetectionDynamicEnabled() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      ::switches::kEnableExperimentalAccessibilityLanguageDetectionDynamic);
 }
 
 bool IsExperimentalAccessibilitySwitchAccessTextEnabled() {
@@ -62,7 +67,7 @@ bool IsExperimentalAccessibilitySwitchAccessTextEnabled() {
 }
 
 #if defined(OS_WIN)
-// Toggles between IAccessible and UI Automation platform API.
+// Enables UI Automation platform API in addition to the IAccessible API.
 const char kEnableExperimentalUIAutomation[] =
     "enable-experimental-ui-automation";
 #endif

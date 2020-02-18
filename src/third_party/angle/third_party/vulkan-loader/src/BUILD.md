@@ -71,6 +71,15 @@ contains the Vulkan API definition files (registry) that are required to build
 the loader. You must also take note of the headers install directory and pass
 it on the CMake command line for building this repository, as described below.
 
+#### Windows Driver Kit (WDK)
+
+On Windows builds, the loader needs to have a WDK installed. Microsoft provides
+[WDK releases](https://docs.microsoft.com/en-us/windows-hardware/drivers/download-the-wdk),
+including several old releases. The installed WDK must be at least version 1709.
+Take note of the fact that the latest WDK release generally requires the latest
+version of Visual Studio. It may be necessary to use an older WDK with an older
+Visual Studio.
+
 #### Google Test
 
 The loader tests depend on the [Google Test](https://github.com/google/googletest)
@@ -142,6 +151,20 @@ Here is a usage example for this repository:
 - Please use `update_deps.py --help` to list additional options and read the
   internal documentation in `update_deps.py` for further information.
 
+### Generated source code
+
+This repository contains generated source code in the `loader/generated`
+directory which is not intended to be modified directly. Instead, changes should be
+made to the corresponding generator in the `scripts` directory. The source files can
+then be regenerated using `scripts/generate_source.py`:
+
+    python3 scripts/generate_source.py PATH_TO_VULKAN_HEADERS_REGISTRY_DIR
+
+A helper CMake target `VulkanLoader_generated_source` is also provided to simplify
+the invocation of `scripts/generate_source.py` from the build directory:
+
+    cmake --build . --target VulkanLoader_generated_source
+
 ### Build Options
 
 When generating native platform build files through CMake, several options can
@@ -179,12 +202,13 @@ CMake to generate the native platform files.
   - Any Personal Computer version supported by Microsoft
 - Microsoft [Visual Studio](https://www.visualstudio.com/)
   - Versions
-    - [2013 (update 4)](https://www.visualstudio.com/vs/older-downloads/)
     - [2015](https://www.visualstudio.com/vs/older-downloads/)
-    - [2017](https://www.visualstudio.com/vs/downloads/)
+    - [2017](https://www.visualstudio.com/vs/older-downloads/)
+    - [2019](https://www.visualstudio.com/vs/downloads/)
   - The Community Edition of each of the above versions is sufficient, as
     well as any more capable edition.
-- [CMake](http://www.cmake.org/download/) (Version 2.8.11 or better)
+- [Windows Driver Kit](https://docs.microsoft.com/en-us/windows-hardware/drivers/download-the-wdk) 1803 or later
+- [CMake 3.10.2](https://cmake.org/files/v3.10/cmake-3.10.2-win64-x64.zip) is recommended.
   - Use the installer option to add CMake to the system PATH
 - Git Client Support
   - [Git for Windows](http://git-scm.com/download/win) is a popular solution
@@ -202,6 +226,8 @@ work with the solution interactively.
 
 #### Windows Quick Start
 
+Open a developer command prompt and enter:
+
     cd Vulkan-Loader
     mkdir build
     cd build
@@ -212,6 +238,13 @@ The above commands instruct CMake to find and use the default Visual Studio
 installation to generate a Visual Studio solution and projects for the x64
 architecture. The second CMake command builds the Debug (default)
 configuration of the solution.
+
+Note that if you do not wish to use a developer command prompt, you may either
+run either `vcvars64.bat` or `vcvars32.bat` to set the required environment
+variables. You may also define a `WDK_FULL_PATH` variable when first invoking CMake
+like:
+
+    cmake -A x64 --DVULKAN_HEADERS_INSTALL_DIR=absolute_path_to_install_dir -DWDK_BASE="C:/Program Files (x86)/Windows Kits/10/Include/10.0.17763.0" ..
 
 See below for the details.
 
@@ -324,9 +357,12 @@ include:
 
 | Build Platform               | 64-bit Generator              | 32-bit Generator        |
 |------------------------------|-------------------------------|-------------------------|
-| Microsoft Visual Studio 2013 | "Visual Studio 12 2013 Win64" | "Visual Studio 12 2013" |
 | Microsoft Visual Studio 2015 | "Visual Studio 14 2015 Win64" | "Visual Studio 14 2015" |
 | Microsoft Visual Studio 2017 | "Visual Studio 15 2017 Win64" | "Visual Studio 15 2017" |
+| Microsoft Visual Studio 2019 | "Visual Studio 16 2019"       | "Visual Studio 16 2019" |
+
+Note that with Visual Studio 2019, the architecture will need to be specified with the `-A`
+flag for 64-bit builds.
 
 #### Using The Vulkan Loader Library in this Repository on Windows
 
@@ -355,14 +391,16 @@ builds.
 ### Linux Development Environment Requirements
 
 This repository has been built and tested on the two most recent Ubuntu LTS
-versions. Currently, the oldest supported version is Ubuntu 14.04, meaning
-that the minimum supported compiler versions are GCC 4.8.2 and Clang 3.4,
+versions. Currently, the oldest supported version is Ubuntu 16.04, meaning
+that the minimum officially supported C++11 compiler version is GCC 5.4.0,
 although earlier versions may work. It should be straightforward to adapt this
 repository to other Linux distributions.
 
+[CMake 3.10.2](https://cmake.org/files/v3.10/cmake-3.10.2-Linux-x86_64.tar.gz) is recommended.
+
 #### Required Package List
 
-    sudo apt-get install git cmake build-essential libx11-xcb-dev \
+    sudo apt-get install git build-essential libx11-xcb-dev \
         libxkbcommon-dev libwayland-dev libxrandr-dev
 
 ### Linux Build
@@ -576,7 +614,7 @@ Setup Homebrew and components
 
 - Add packages with the following (may need refinement)
 
-      brew install cmake python python3 git
+      brew install python python3 git
 
 ### Clone the Repository
 
@@ -585,6 +623,8 @@ Clone the Vulkan-ValidationLayers repository:
     git clone https://github.com/KhronosGroup/Vulkan-ValidationLayers.git
 
 ### MacOS build
+
+[CMake 3.10.2](https://cmake.org/files/v3.10/cmake-3.10.2-Darwin-x86_64.tar.gz) is recommended.
 
 #### CMake Generators
 

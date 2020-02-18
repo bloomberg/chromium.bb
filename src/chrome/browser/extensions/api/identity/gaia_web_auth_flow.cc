@@ -30,13 +30,9 @@ GaiaWebAuthFlow::GaiaWebAuthFlow(Delegate* delegate,
     : delegate_(delegate),
       profile_(profile),
       account_id_(token_key->account_id) {
-  TRACE_EVENT_ASYNC_BEGIN2("identity",
-                           "GaiaWebAuthFlow",
-                           this,
-                           "extension_id",
-                           token_key->extension_id,
-                           "account_id",
-                           token_key->account_id);
+  TRACE_EVENT_ASYNC_BEGIN2("identity", "GaiaWebAuthFlow", this, "extension_id",
+                           token_key->extension_id, "account_id",
+                           token_key->account_id.ToString());
 
   const char kOAuth2RedirectPathFormat[] = "/%s";
   const char kOAuth2AuthorizeFormat[] =
@@ -94,8 +90,7 @@ void GaiaWebAuthFlow::Start() {
       account_id_,
       base::BindOnce(&GaiaWebAuthFlow::OnUbertokenFetchComplete,
                      base::Unretained(this)),
-      gaia::GaiaSource::kChrome, profile_->GetURLLoaderFactory(),
-      /*bound_to_channel_id=*/false);
+      gaia::GaiaSource::kChrome, profile_->GetURLLoaderFactory());
 }
 
 void GaiaWebAuthFlow::OnUbertokenFetchComplete(GoogleServiceAuthError error,

@@ -21,31 +21,37 @@
 namespace perfetto {
 namespace trace_processor {
 
-Column::Column(const char* name,
-               ColumnType type,
+Column::Column(const Column& column,
                Table* table,
                uint32_t col_idx,
                uint32_t row_map_idx)
-    : string_pool_(table->string_pool_),
-      type_(type),
-      name_(name),
-      table_(table),
-      col_idx_(col_idx),
-      row_map_idx_(row_map_idx) {}
+    : Column(column.name_,
+             column.type_,
+             column.flags_,
+             table,
+             col_idx,
+             row_map_idx,
+             column.sparse_vector_) {}
 
-void Column::FilterInto(FilterOp op, SqlValue value, RowMap* iv) const {
-  // Assume op == kEq.
-  switch (op) {
-    case FilterOp::kLt:
-      iv->RemoveIf([this, value](uint32_t row) { return Get(row) >= value; });
-      break;
-    case FilterOp::kEq:
-      iv->RemoveIf([this, value](uint32_t row) { return Get(row) != value; });
-      break;
-    case FilterOp::kGt:
-      iv->RemoveIf([this, value](uint32_t row) { return Get(row) <= value; });
-      break;
-  }
+Column::Column(const char* name,
+               ColumnType type,
+               uint32_t flags,
+               Table* table,
+               uint32_t col_idx_in_table,
+               uint32_t row_map_idx,
+               void* sparse_vector)
+    : type_(type),
+      sparse_vector_(sparse_vector),
+      name_(name),
+      flags_(flags),
+      table_(table),
+      col_idx_in_table_(col_idx_in_table),
+      row_map_idx_(row_map_idx),
+      string_pool_(table->string_pool_) {}
+
+Column Column::IdColumn(Table* table, uint32_t col_idx, uint32_t row_map_idx) {
+  return Column("id", ColumnType::kId, Flag::kSorted | Flag::kNonNull, table,
+                col_idx, row_map_idx, nullptr);
 }
 
 const RowMap& Column::row_map() const {

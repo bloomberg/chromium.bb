@@ -30,6 +30,12 @@ class TestCase(unittest.TestCase):
     maxDiff = 80 * 66
     artifacts = None
 
+    def set_artifacts(self, artifacts):
+        # We need this setter instead of setting artifacts directly so that
+        # subclasses can override it to be notified when the artifacts
+        # implementation is set.
+        self.artifacts = artifacts
+
 
 class MainTestCase(TestCase):
     prog = None
@@ -39,7 +45,7 @@ class MainTestCase(TestCase):
         for path, contents in list(files.items()):
             dirname = host.dirname(path)
             if dirname:
-                host.maybe_mkdir(dirname)
+                host.maybe_make_directory(dirname)
             host.write_text_file(path, contents)
 
     def _read_files(self, host, tmpdir):

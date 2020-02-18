@@ -24,18 +24,6 @@ static_assert(sizeof(NGPhysicalLineBoxFragment) ==
                   sizeof(SameSizeAsNGPhysicalLineBoxFragment),
               "NGPhysicalLineBoxFragment should stay small");
 
-bool IsInlineLeaf(const NGPhysicalFragment& fragment) {
-  if (fragment.IsText())
-    return true;
-  return fragment.IsBox() && fragment.IsAtomicInline();
-}
-
-bool IsEditableFragment(const NGPhysicalFragment& fragment) {
-  if (!fragment.GetNode())
-    return false;
-  return HasEditableStyle(*fragment.GetNode());
-}
-
 }  // namespace
 
 scoped_refptr<const NGPhysicalLineBoxFragment>
@@ -65,7 +53,7 @@ NGPhysicalLineBoxFragment::NGPhysicalLineBoxFragment(
   DCHECK(!metrics_.IsEmpty() || IsEmptyLineBox());
   base_direction_ = static_cast<unsigned>(builder->base_direction_);
   has_hanging_ = builder->hang_inline_size_ != 0;
-  has_propagated_descendants_ = has_floating_descendants_ ||
+  has_propagated_descendants_ = has_floating_descendants_for_paint_ ||
                                 HasOutOfFlowPositionedDescendants() ||
                                 builder->unpositioned_list_marker_;
 }
@@ -107,9 +95,11 @@ PhysicalRect NGPhysicalLineBoxFragment::ScrollableOverflow(
       }
     }
 
-    // If child has the same style as parent, parent will compute relative
-    // offset.
-    if (&child->Style() != container_style) {
+    // For implementation reasons, text nodes inherit computed style from their
+    // container, including everything, also non-inherited properties. So, if
+    // the container has a relative offset, this will be falsely reflected on
+    // text children. We need to guard against this.
+    if (!child->IsText()) {
       child_scroll_overflow.offset +=
           ComputeRelativeOffset(child->Style(), container_writing_mode,
                                 container_direction, container_physical_size);
@@ -128,110 +118,9 @@ PhysicalRect NGPhysicalLineBoxFragment::ScrollableOverflow(
   return overflow;
 }
 
-const NGPhysicalFragment* NGPhysicalLineBoxFragment::FirstLogicalLeaf() const {
-  if (Children().empty())
-    return nullptr;
-  // TODO(xiaochengh): This isn't correct for mixed Bidi. Fix it. Besides, we
-  // should compute and store it during layout.
-  const TextDirection direction = Style().Direction();
-  const NGPhysicalFragment* runner = this;
-  while (const auto* runner_as_container =
-             DynamicTo<NGPhysicalContainerFragment>(runner)) {
-    if (runner->IsBlockFormattingContextRoot())
-      break;
-    if (runner_as_container->Children().empty())
-      break;
-    runner = direction == TextDirection::kLtr
-                 ? runner_as_container->Children().front().get()
-                 : runner_as_container->Children().back().get();
-  }
-  DCHECK_NE(runner, this);
-  return runner;
-}
-
-const NGPhysicalFragment* NGPhysicalLineBoxFragment::LastLogicalLeaf() const {
-  if (Children().empty())
-    return nullptr;
-  // TODO(xiaochengh): This isn't correct for mixed Bidi. Fix it. Besides, we
-  // should compute and store it during layout.
-  const TextDirection direction = Style().Direction();
-  const NGPhysicalFragment* runner = this;
-  while (const auto* runner_as_container =
-             DynamicTo<NGPhysicalContainerFragment>(runner)) {
-    if (runner->IsBlockFormattingContextRoot())
-      break;
-    if (runner_as_container->Children().empty())
-      break;
-    runner = direction == TextDirection::kLtr
-                 ? runner_as_container->Children().back().get()
-                 : runner_as_container->Children().front().get();
-  }
-  DCHECK_NE(runner, this);
-  return runner;
-}
-
 bool NGPhysicalLineBoxFragment::HasSoftWrapToNextLine() const {
   const auto& break_token = To<NGInlineBreakToken>(*BreakToken());
   return !break_token.IsFinished() && !break_token.IsForcedBreak();
-}
-
-PhysicalOffset NGPhysicalLineBoxFragment::LineStartPoint() const {
-  const LogicalOffset logical_start;  // (0, 0)
-  const PhysicalSize pixel_size(LayoutUnit(1), LayoutUnit(1));
-  return logical_start.ConvertToPhysical(Style().GetWritingMode(),
-                                         BaseDirection(), Size(), pixel_size);
-}
-
-PhysicalOffset NGPhysicalLineBoxFragment::LineEndPoint() const {
-  const LayoutUnit inline_size =
-      NGFragment(Style().GetWritingMode(), *this).InlineSize();
-  const LogicalOffset logical_end(inline_size, LayoutUnit());
-  const PhysicalSize pixel_size(LayoutUnit(1), LayoutUnit(1));
-  return logical_end.ConvertToPhysical(Style().GetWritingMode(),
-                                       BaseDirection(), Size(), pixel_size);
-}
-
-const LayoutObject* NGPhysicalLineBoxFragment::ClosestLeafChildForPoint(
-    const PhysicalOffset& point,
-    bool only_editable_leaves) const {
-  const PhysicalSize unit_square(LayoutUnit(1), LayoutUnit(1));
-  const LogicalOffset logical_point = point.ConvertToLogical(
-      Style().GetWritingMode(), BaseDirection(), Size(), unit_square);
-  const LayoutUnit inline_offset = logical_point.inline_offset;
-  const NGPhysicalFragment* closest_leaf_child = nullptr;
-  LayoutUnit closest_leaf_distance;
-  for (const auto& descendant :
-       NGInlineFragmentTraversal::DescendantsOf(*this)) {
-    const NGPhysicalFragment& fragment = *descendant.fragment;
-    if (!fragment.GetLayoutObject())
-      continue;
-    if (!IsInlineLeaf(fragment) || fragment.IsListMarker())
-      continue;
-    if (only_editable_leaves && !IsEditableFragment(fragment))
-      continue;
-
-    const LogicalSize fragment_logical_size =
-        fragment.Size().ConvertToLogical(Style().GetWritingMode());
-    const LogicalOffset fragment_logical_offset =
-        descendant.offset_to_container_box.ConvertToLogical(
-            Style().GetWritingMode(), BaseDirection(), Size(), fragment.Size());
-    const LayoutUnit inline_min = fragment_logical_offset.inline_offset;
-    const LayoutUnit inline_max = fragment_logical_offset.inline_offset +
-                                  fragment_logical_size.inline_size;
-    if (inline_offset >= inline_min && inline_offset < inline_max)
-      return fragment.GetLayoutObject();
-
-    const LayoutUnit distance =
-        inline_offset < inline_min ? inline_min - inline_offset
-                                   : inline_offset - inline_max + LayoutUnit(1);
-    if (!closest_leaf_child || distance < closest_leaf_distance) {
-      closest_leaf_child = &fragment;
-      closest_leaf_distance = distance;
-    }
-  }
-  if (!closest_leaf_child)
-    return nullptr;
-  return closest_leaf_child->GetLayoutObject();
 }
 
 }  // namespace blink

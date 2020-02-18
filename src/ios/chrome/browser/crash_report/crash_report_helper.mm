@@ -20,7 +20,7 @@
 #include "ios/chrome/browser/crash_report/breakpad_helper.h"
 #import "ios/chrome/browser/crash_report/crash_report_user_application_state.h"
 #import "ios/chrome/browser/web/tab_id_tab_helper.h"
-#include "ios/chrome/browser/web_state_list/all_web_state_observation_forwarder.h"
+#import "ios/chrome/browser/web_state_list/all_web_state_observation_forwarder.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
 #include "ios/web/public/browser_state.h"
@@ -29,7 +29,7 @@
 #import "ios/web/public/navigation/navigation_manager.h"
 #include "ios/web/public/thread/web_thread.h"
 #import "ios/web/public/web_state.h"
-#import "ios/web/public/web_state/web_state_observer_bridge.h"
+#import "ios/web/public/web_state_observer_bridge.h"
 #import "net/base/mac/url_conversions.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

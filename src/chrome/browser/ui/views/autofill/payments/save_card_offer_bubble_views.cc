@@ -42,55 +42,39 @@
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/style/typography.h"
-#include "ui/views/window/dialog_client_view.h"
 
 namespace autofill {
 
 namespace {
 const int kTooltipBubbleWidth = 320;
 const int kTooltipIconSize = 12;
+
+std::unique_ptr<LegalMessageView> CreateLegalMessageView(
+    const LegalMessageLines& message_lines,
+    views::StyledLabelListener* listener) {
+  if (message_lines.empty())
+    return nullptr;
+
+  return std::make_unique<LegalMessageView>(message_lines, listener);
+}
+
 }  // namespace
 
 SaveCardOfferBubbleViews::SaveCardOfferBubbleViews(
     views::View* anchor_view,
     content::WebContents* web_contents,
     SaveCardBubbleController* controller)
-    : SaveCardBubbleViews(anchor_view, web_contents, controller) {}
-
-std::unique_ptr<views::View> SaveCardOfferBubbleViews::CreateExtraView() {
-  // Only show the (i) info icon for upload saves using implicit sync.
-  // GetLegalMessageLines() being empty denotes a local save.
-  if (controller()->GetLegalMessageLines().empty() ||
-      controller()->GetSyncState() !=
-          AutofillSyncSigninState::kSignedInAndWalletSyncTransportEnabled) {
-    return nullptr;
-  }
-
-  // CreateMainContentView() must happen prior to this so that |prefilled_name|
-  // gets populated.
-  auto upload_explanation_tooltip = std::make_unique<
-      views::TooltipIcon>(l10n_util::GetStringUTF16(
-      (cardholder_name_textfield_ &&
-       !cardholder_name_textfield_->GetText().empty())
-          ? IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_AND_CARDHOLDER_NAME_TOOLTIP
-          : IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_TOOLTIP));
-  upload_explanation_tooltip->set_bubble_width(kTooltipBubbleWidth);
-  upload_explanation_tooltip->set_anchor_point_arrow(
-      views::BubbleBorder::Arrow::TOP_RIGHT);
-  upload_explanation_tooltip->SetID(DialogViewId::UPLOAD_EXPLANATION_TOOLTIP);
-  return upload_explanation_tooltip;
+    : SaveCardBubbleViews(anchor_view, web_contents, controller) {
+  DialogDelegate::set_buttons(ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL);
+  legal_message_view_ = DialogDelegate::SetFootnoteView(
+      CreateLegalMessageView(controller->GetLegalMessageLines(), this));
+  if (legal_message_view_)
+    InitFootnoteView(legal_message_view_);
 }
 
-std::unique_ptr<views::View> SaveCardOfferBubbleViews::CreateFootnoteView() {
-  if (controller()->GetLegalMessageLines().empty())
-    return nullptr;
-
-  auto legal_message_view = std::make_unique<LegalMessageView>(
-      controller()->GetLegalMessageLines(), this);
-
-  legal_message_view_ = legal_message_view.get();
-  InitFootnoteView(legal_message_view_);
-  return legal_message_view;
+void SaveCardOfferBubbleViews::Init() {
+  SaveCardBubbleViews::Init();
+  DialogDelegate::SetExtraView(CreateUploadExplanationView());
 }
 
 bool SaveCardOfferBubbleViews::Accept() {
@@ -106,14 +90,6 @@ bool SaveCardOfferBubbleViews::Accept() {
                               : base::string16()});
   }
   return true;
-}
-
-int SaveCardOfferBubbleViews::GetDialogButtons() const {
-  if (features::ShouldShowImprovedUserConsentForCreditCardSave() ||
-      base::FeatureList::IsEnabled(features::kAutofillSaveCardShowNoThanks)) {
-    return ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL;
-  }
-  return ui::DIALOG_BUTTON_OK;
 }
 
 bool SaveCardOfferBubbleViews::IsDialogButtonEnabled(
@@ -321,6 +297,31 @@ SaveCardOfferBubbleViews::CreateRequestExpirationDateView() {
   expiration_date_view->AddChildView(input_row.release());
 
   return expiration_date_view;
+}
+
+std::unique_ptr<views::View>
+SaveCardOfferBubbleViews::CreateUploadExplanationView() {
+  // Only show the (i) info icon for upload saves using implicit sync.
+  // GetLegalMessageLines() being empty denotes a local save.
+  if (controller()->GetLegalMessageLines().empty() ||
+      controller()->GetSyncState() !=
+          AutofillSyncSigninState::kSignedInAndWalletSyncTransportEnabled) {
+    return nullptr;
+  }
+
+  // CreateMainContentView() must happen prior to this so that |prefilled_name|
+  // gets populated.
+  auto upload_explanation_tooltip = std::make_unique<
+      views::TooltipIcon>(l10n_util::GetStringUTF16(
+      (cardholder_name_textfield_ &&
+       !cardholder_name_textfield_->GetText().empty())
+          ? IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_AND_CARDHOLDER_NAME_TOOLTIP
+          : IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_TOOLTIP));
+  upload_explanation_tooltip->set_bubble_width(kTooltipBubbleWidth);
+  upload_explanation_tooltip->set_anchor_point_arrow(
+      views::BubbleBorder::Arrow::TOP_RIGHT);
+  upload_explanation_tooltip->SetID(DialogViewId::UPLOAD_EXPLANATION_TOOLTIP);
+  return upload_explanation_tooltip;
 }
 
 }  // namespace autofill

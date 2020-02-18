@@ -13,7 +13,7 @@ cr.define('settings_sync_account_control', function() {
   }
 
   suite('SyncAccountControl', function() {
-    let peoplePage = null;
+    const peoplePage = null;
     let browserProxy = null;
     let testElement = null;
 
@@ -36,6 +36,8 @@ cr.define('settings_sync_account_control', function() {
     });
 
     setup(function() {
+      assertFalse(loadTimeData.getBoolean('privacySettingsRedesignEnabled'));
+
       browserProxy = new TestSyncBrowserProxy();
       settings.SyncBrowserProxyImpl.instance_ = browserProxy;
 
@@ -44,6 +46,12 @@ cr.define('settings_sync_account_control', function() {
       testElement.syncStatus = {
         signedIn: true,
         signedInUsername: 'foo@foo.com'
+      };
+      testElement.prefs = {
+        signin: {
+          allowed_on_next_startup:
+              {type: chrome.settingsPrivate.PrefType.BOOLEAN, value: true},
+        },
       };
       document.body.appendChild(testElement);
 
@@ -130,7 +138,6 @@ cr.define('settings_sync_account_control', function() {
     });
 
     test('not signed in but has stored accounts', function() {
-      testElement.unifiedConsentEnabled = false;
       testElement.syncStatus = {
         firstSetupInProgress: false,
         signedIn: false,
@@ -224,7 +231,6 @@ cr.define('settings_sync_account_control', function() {
     });
 
     test('signed in, no error', function() {
-      testElement.unifiedConsentEnabled = false;
       testElement.syncStatus = {
         firstSetupInProgress: false,
         signedIn: true,
@@ -260,7 +266,6 @@ cr.define('settings_sync_account_control', function() {
     });
 
     test('signed in, has error', function() {
-      testElement.unifiedConsentEnabled = false;
       testElement.syncStatus = {
         firstSetupInProgress: false,
         signedIn: true,
@@ -275,7 +280,7 @@ cr.define('settings_sync_account_control', function() {
 
       assertTrue(testElement.$$('#sync-icon-container')
                      .classList.contains('sync-problem'));
-      assertTrue(!!testElement.$$('[icon=\'settings:sync-problem\']'));
+      assertTrue(!!testElement.$$('[icon="settings:sync-problem"]'));
       let displayedText =
           userInfo.querySelector('span:not([hidden])').textContent;
       assertFalse(displayedText.includes('barName'));
@@ -327,21 +332,42 @@ cr.define('settings_sync_account_control', function() {
         signedIn: true,
         signedInUsername: 'bar@bar.com',
         statusAction: settings.StatusAction.REAUTHENTICATE,
-        hasError: false,
+        hasError: true,
         hasUnrecoverableError: true,
         disabled: false,
       };
       assertTrue(testElement.$$('#sync-icon-container')
                      .classList.contains('sync-problem'));
-      assertTrue(!!testElement.$$('[icon=\'settings:sync-problem\']'));
+      assertTrue(!!testElement.$$('[icon="settings:sync-problem"]'));
       displayedText = userInfo.querySelector('span:not([hidden])').textContent;
       assertFalse(displayedText.includes('barName'));
       assertFalse(displayedText.includes('fooName'));
       assertTrue(displayedText.includes('Sync isn\'t working'));
+
+      testElement.syncStatus = {
+        firstSetupInProgress: false,
+        signedIn: true,
+        signedInUsername: 'bar@bar.com',
+        statusAction: settings.StatusAction.RETRIEVE_TRUSTED_VAULT_KEYS,
+        hasError: true,
+        hasPasswordsOnlyError: true,
+        hasUnrecoverableError: false,
+        disabled: false,
+      };
+      assertTrue(testElement.$$('#sync-icon-container')
+                     .classList.contains('sync-problem'));
+      assertTrue(!!testElement.$$('[icon="settings:sync-problem"]'));
+      displayedText = userInfo.querySelector('span:not([hidden])').textContent;
+      assertFalse(displayedText.includes('barName'));
+      assertFalse(displayedText.includes('fooName'));
+      assertFalse(displayedText.includes('Sync isn\'t working'));
+      assertTrue(displayedText.includes('Error syncing passwords'));
+      // The sync error button is shown to resolve the error.
+      assertVisible(testElement.$$('#sync-error-button'), true);
+      assertVisible(testElement.$$('#turn-off'), true);
     });
 
     test('signed in, setup in progress', function() {
-      testElement.unifiedConsentEnabled = false;
       testElement.syncStatus = {
         signedIn: true,
         signedInUsername: 'bar@bar.com',
@@ -357,12 +383,6 @@ cr.define('settings_sync_account_control', function() {
       const setupButtons = testElement.$$('#setup-buttons');
 
       assertTrue(userInfo.textContent.includes('barName'));
-      assertFalse(userInfo.textContent.includes('Setup in progress...'));
-      assertVisible(setupButtons, false);
-
-      testElement.unifiedConsentEnabled = true;
-
-      assertTrue(userInfo.textContent.includes('barName'));
       assertTrue(userInfo.textContent.includes('Setup in progress...'));
       assertVisible(setupButtons, true);
     });
@@ -373,7 +393,6 @@ cr.define('settings_sync_account_control', function() {
       const banner = testElement.$$('#banner');
       assertVisible(banner, true);
 
-      testElement.unifiedConsentEnabled = false;
       testElement.syncStatus = {
         firstSetupInProgress: false,
         signedIn: true,
@@ -443,7 +462,6 @@ cr.define('settings_sync_account_control', function() {
 
     test('hide buttons', function() {
       testElement.hideButtons = true;
-      testElement.unifiedConsentEnabled = false;
       testElement.syncStatus = {
         firstSetupInProgress: false,
         signedIn: true,
@@ -480,6 +498,59 @@ cr.define('settings_sync_account_control', function() {
       };
       assertVisible(testElement.$$('#turn-off'), false);
       assertVisible(testElement.$$('#sync-error-button'), false);
+    });
+
+    test('PrivacySettingsRedesignEnabled_False', function() {
+      // Ensure that the sync button is enabled regardless of signin pref.
+      assertTrue(testElement.getPref('signin.allowed_on_next_startup').value);
+      assertFalse(testElement.$$('#sign-in').disabled);
+      testElement.setPrefValue('signin.allowed_on_next_startup', false);
+      Polymer.dom.flush();
+      assertFalse(testElement.$$('#sign-in').disabled);
+    });
+  });
+
+  suite('PrivacySettingsRedesignTests', function() {
+    const peoplePage = null;
+    let browserProxy = null;
+    let testElement = null;
+
+    suiteSetup(function() {
+      loadTimeData.overrideValues({
+        privacySettingsRedesignEnabled: true,
+      });
+    });
+
+    setup(function() {
+      browserProxy = new TestSyncBrowserProxy();
+      settings.SyncBrowserProxyImpl.instance_ = browserProxy;
+
+      PolymerTest.clearBody();
+      testElement = document.createElement('settings-sync-account-control');
+      testElement.syncStatus = {
+        signedIn: true,
+        signedInUsername: 'foo@foo.com'
+      };
+      testElement.prefs = {
+        signin: {
+          allowed_on_next_startup:
+              {type: chrome.settingsPrivate.PrefType.BOOLEAN, value: true},
+        },
+      };
+      document.body.appendChild(testElement);
+      Polymer.dom.flush();
+    });
+
+    teardown(function() {
+      testElement.remove();
+    });
+
+    test('signinButtonDisabled', function() {
+      // Ensure that the sync button is disabled when signin is disabled.
+      assertFalse(testElement.$$('#sign-in').disabled);
+      testElement.setPrefValue('signin.allowed_on_next_startup', false);
+      Polymer.dom.flush();
+      assertTrue(testElement.$$('#sign-in').disabled);
     });
   });
 });

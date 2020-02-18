@@ -9,9 +9,9 @@
 
   <template>
     <oobe-dialog id="signin-frame-dialog" class="gaia-dialog" role="dialog"
-        has-buttons no-header no-footer-padding no-buttons-padding
-        hidden="[[!isSigninFrameDialogVisible_(screenMode_,
-                                               pinDialogParameters_)]]">
+        has-buttons no-header no-footer-padding
+        show-buttons-overlay="[[!navigationEnabled_]]"
+        hidden="[[!isStep_(step_, 'online-gaia', 'gaia-loading')]]">
       <div slot="footer" class="flex layout vertical">
         <div id="signin-frame-container"
             class$="[[getSigninFrameContainerClass_(isLoadingUiShown_)]]">
@@ -19,54 +19,70 @@
         </div>
       </div>
       <div id="gaia-screen-navigation-buttons"
-          slot="bottom-buttons" class="relative flex layout horizontal center">
+          slot="bottom-buttons" class="relative flex layout horizontal">
         <div id="buttons-container" class="flex layout horizontal center">
           <oobe-back-button id="signin-back-button"
               disabled="[[!navigationEnabled_]]"></oobe-back-button>
           <div class="flex">
           </div>
-          <oobe-text-button id="primary-action-button"
-              on-tap="onPrimaryActionButtonClicked_"
-              hidden="[[!primaryActionButtonLabel_]]"
-              disabled="[[!primaryActionButtonEnabled_]]"
-              >[[primaryActionButtonLabel_]]</oobe-text-button>
           <oobe-text-button id="secondary-action-button"
               on-tap="onSecondaryActionButtonClicked_"
               hidden="[[!secondaryActionButtonLabel_]]"
               disabled="[[!secondaryActionButtonEnabled_]]"
               >[[secondaryActionButtonLabel_]]</oobe-text-button>
-        </div>
-        <div id="gaia-screen-buttons-overlay" class="fit"
-            hidden="[[navigationEnabled_]]">
+          <oobe-text-button id="primary-action-button"
+              on-tap="onPrimaryActionButtonClicked_"
+              hidden="[[!primaryActionButtonLabel_]]"
+              disabled="[[!primaryActionButtonEnabled_]]"
+              inverse
+              >[[primaryActionButtonLabel_]]</oobe-text-button>
         </div>
       </div>
     </oobe-dialog>
     <offline-gaia id="offline-gaia" class="gaia-dialog"
-        hidden="[[!isOfflineGaiaVisible_(screenMode_, isLoadingUiShown_,
-                                         pinDialogParameters_)]]">
+        hidden="[[!isStep_(step_, 'offline-gaia')]]">
     </offline-gaia>
     <offline-ad-login id="offline-ad-auth" class="gaia-dialog"
-        hidden="[[!isOfflineAdAuthVisible_(screenMode_, isLoadingUiShown_,
-                                           pinDialogParameters_)]]"
+        hidden="[[!isStep_(step_, 'ad')]]"
         i18n-values="ad-welcome-message:loginWelcomeMessage">
     </offline-ad-login>
     <security-token-pin id="pinDialog" parameters="[[pinDialogParameters_]]"
-        hidden="[[!isPinDialogVisible_(pinDialogParameters_)]]"
+        hidden="[[!isStep_(step_, 'pin')]]"
         on-cancel="onPinDialogCanceled_" on-completed="onPinDialogCompleted_">
     </security-token-pin>
-    <div id="gaia-step-contents" class="step-contents">
-      <div id="gaia-signin-form-container">
-        <saml-interstitial id="saml-interstitial" class="fit gaia-dialog"
-            hidden="[[!isSamlInterstitialVisible_(
-                screenMode_, isLoadingUiShown_, pinDialogParameters_)]]">
-        </saml-interstitial>
+    <oobe-dialog id="saml-interstitial" role="dialog" has-buttons
+        hidden="[[!isStep_(step_, 'saml-interstitial')]]">
+      <hd-iron-icon slot="oobe-icon" icon1x="oobe-32:googleg"
+          icon2x="oobe-64:googleg">
+      </hd-iron-icon>
+      <h1 slot="title">
+        [[i18nDynamic(locale, 'loginWelcomeMessage')]]
+      </h1>
+      <div slot="subtitle" hidden="[[isEmpty_(samlInterstitialDomain_)]]">
+        [[i18nDynamic(locale, 'enterpriseInfoMessage',
+                      samlInterstitialDomain_)]]
       </div>
-    </div>
+      <div slot="footer" class="flex layout vertical">
+        <html-echo hidden="[[isEmpty_(samlInterstitialDomain_)]]"
+            content="[[samlInterstitialMessage_]]"></html-echo>
+        <p>
+          <a href="#" class="oobe-local-link" on-tap="onSamlPageChangeAccount_"
+              id="interstitial-change-account">
+            [[i18nDynamic(locale, 'samlInterstitialChangeAccountLink')]]
+          </a>
+        </p>
+      </div>
+      <div slot="bottom-buttons" class="flex layout horizontal end-justified">
+        <oobe-next-button on-tap="onSamlInterstitialNext_"
+            id="interstitial-next" class="focus-on-show"></oobe-next-button>
+      </div>
+    </oobe-dialog>
     <div id="gaia-loading" class="step-loading gaia-dialog"
-        hidden="[[!isLoadingUiShown_]]">
+        hidden="[[!isStep_(step_, 'loading', 'gaia-loading')]]">
       <throbber-notice i18n-values="text:gaiaLoading"></throbber-notice>
     </div>
     <notification-card id="gaia-whitelist-error" type="fail" class="gaia-dialog"
+        hidden="[[!isStep_(step_, 'whitelist-error')]]"
         i18n-values="button-label:tryAgainButton;
                      link-label:learnMoreButton">
     </notification-card>

@@ -20,7 +20,6 @@ from chromite.cbuildbot.stages import build_stages
 from chromite.cbuildbot.stages import chrome_stages
 from chromite.cbuildbot.stages import completion_stages
 from chromite.cbuildbot.stages import generic_stages
-from chromite.cbuildbot.stages import handle_changes_stages
 from chromite.cbuildbot.stages import release_stages
 from chromite.cbuildbot.stages import report_stages
 from chromite.cbuildbot.stages import scheduler_stages
@@ -32,7 +31,6 @@ from chromite.lib import config_lib
 from chromite.lib import constants
 from chromite.lib import cros_logging as logging
 from chromite.lib import failures_lib
-from chromite.lib import patch as cros_patch
 from chromite.lib import parallel
 from chromite.lib import results_lib
 from chromite.lib import toolchain_util
@@ -71,22 +69,6 @@ class SimpleBuilder(generic_builders.Builder):
   def GetVersionInfo(self):
     """Returns the CrOS version info from the chromiumos-overlay."""
     return manifest_version.VersionInfo.from_repo(self._run.buildroot)
-
-  def _GetChangesUnderTest(self):
-    """Returns the list of GerritPatch changes under test."""
-    changes = set()
-
-    changes_json_list = self._run.attrs.metadata.GetDict().get('changes', [])
-    for change_dict in changes_json_list:
-      change = cros_patch.GerritFetchOnlyPatch.FromAttrDict(change_dict)
-      changes.add(change)
-
-    # Also add the changes from PatchChangeStage, the PatchChangeStage doesn't
-    # write changes into metadata.
-    if self._run.ShouldPatchAfterSync():
-      changes.update(set(self.patch_pool.gerrit_patches))
-
-    return list(changes)
 
   def _RunHWTests(self, builder_run, board):
     """Run hwtest-related stages for the specified board.
@@ -187,19 +169,15 @@ class SimpleBuilder(generic_builders.Builder):
     # paygen can't complete without push_image.
     assert not config.paygen or config.push_image
 
-    changes = self._GetChangesUnderTest()
-    if changes:
-      self._RunStage(report_stages.DetectRelevantChangesStage, board,
-                     changes, builder_run=builder_run)
-
     # While this stage list is run in parallel, the order here dictates the
     # order that things will be shown in the log.  So group things together
     # that make sense when read in order.  Also keep in mind that, since we
     # gather output manually, early slow stages will prevent any output from
     # later stages showing up until it finishes.
-    changes = self._GetChangesUnderTest()
-    stage_list = [
+    early_stage_list = [
         [test_stages.UnitTestStage, board],
+    ]
+    stage_list = [
         [test_stages.DebugInfoTestStage, board],
     ]
 
@@ -207,7 +185,8 @@ class SimpleBuilder(generic_builders.Builder):
     if builder_run.config.compilecheck or builder_run.options.compilecheck:
       board_runattrs = builder_run.GetBoardRunAttrs(board)
       board_runattrs.SetParallel('test_artifacts_uploaded', False)
-      for x in stage_list:
+      stages = early_stage_list + stage_list
+      for x in stages:
         self._RunStage(*x, builder_run=builder_run)
       return
 
@@ -235,6 +214,8 @@ class SimpleBuilder(generic_builders.Builder):
     if config.kernel_afdo_verify:
       stage_list += [[afdo_stages.UploadVettedKernelAFDOStage, board]]
 
+    if config.chrome_afdo_verify:
+      stage_list += [[afdo_stages.UploadVettedChromeAFDOStage, board]]
 
     stage_list += [
         [release_stages.SignerTestStage, board, archive_stage],
@@ -251,15 +232,27 @@ class SimpleBuilder(generic_builders.Builder):
     if config.run_build_configs_export:
       stage_list += [[artifact_stages.BuildConfigsExportStage, board]]
 
-    stage_list += [[artifact_stages.UploadTestArtifactsStage, board]]
+    early_stage_list += [[artifact_stages.UploadTestArtifactsStage, board]]
 
-    stage_objs = [self._GetStageInstance(*x, builder_run=builder_run)
-                  for x in stage_list]
+    early_stage_objs = [
+        self._GetStageInstance(*x, builder_run=builder_run)
+        for x in early_stage_list
+    ]
+
+    stage_objs = [
+        self._GetStageInstance(*x, builder_run=builder_run) for x in stage_list
+    ]
 
     # Build the image first before running the steps.
     with self._build_image_lock:
       self._RunStage(build_stages.BuildImageStage, board,
                      builder_run=builder_run, afdo_use=config.afdo_use)
+
+    # Run UnitTestStage & UploadTestArtifactsStage in a separate pass before
+    # any of the other parallel stages to prevent races with the image
+    # construction in the ArchiveStage.
+    # http://crbug.com/1000374
+    self._RunParallelStages(early_stage_objs)
 
     parallel.RunParallelSteps([
         lambda: self._RunParallelStages(stage_objs + [archive_stage]),
@@ -292,7 +285,6 @@ class SimpleBuilder(generic_builders.Builder):
     self._RunStage(android_stages.AndroidMetadataStage)
     if self._run.config.build_type == constants.PALADIN_TYPE:
       self._RunStage(build_stages.RegenPortageCacheStage)
-    self._RunStage(test_stages.BinhostTestStage)
 
   def RunEarlySyncAndSetupStages(self):
     """Runs through the early sync and board setup stages."""
@@ -307,10 +299,6 @@ class SimpleBuilder(generic_builders.Builder):
     self._RunStage(chrome_stages.SyncChromeStage)
     self._RunStage(android_stages.UprevAndroidStage)
     self._RunStage(android_stages.AndroidMetadataStage)
-
-  def RunBuildTestStages(self):
-    """Runs through the stages to test before building."""
-    self._RunStage(test_stages.BinhostTestStage)
 
   def RunBuildStages(self):
     """Runs through the stages to perform the build and resulting tests."""
@@ -342,6 +330,7 @@ class SimpleBuilder(generic_builders.Builder):
            toolchain_util.CanGenerateAFDOData(board) and \
            toolchain_util.CheckAFDOArtifactExists(
                buildroot=builder_run.buildroot,
+               chrome_root=builder_run.options.chrome_root,
                board=board,
                target='benchmark_afdo'):
           continue
@@ -350,6 +339,7 @@ class SimpleBuilder(generic_builders.Builder):
         if builder_run.config.orderfile_generate and \
            toolchain_util.CheckAFDOArtifactExists(
                buildroot=builder_run.buildroot,
+               chrome_root=builder_run.options.chrome_root,
                board=board,
                target='orderfile_generate'):
           continue
@@ -359,6 +349,7 @@ class SimpleBuilder(generic_builders.Builder):
           # Skip verifying orderfile if it's already verified.
           if toolchain_util.CheckAFDOArtifactExists(
               buildroot=builder_run.buildroot,
+              chrome_root=builder_run.options.chrome_root,
               board=board,
               target='orderfile_verify'):
             continue
@@ -369,10 +360,22 @@ class SimpleBuilder(generic_builders.Builder):
           # Skip verifying kernel AFDO if it's already verified.
           if toolchain_util.CheckAFDOArtifactExists(
               buildroot=builder_run.buildroot,
+              chrome_root=builder_run.options.chrome_root,
               board=board,
               target='kernel_afdo'):
             continue
           self._RunStage(afdo_stages.KernelAFDOUpdateEbuildStage,
+                         board, builder_run=builder_run)
+
+        if builder_run.config.chrome_afdo_verify:
+          # Skip verifying Chrome AFDO if both benchmark and CWP are verified.
+          if toolchain_util.CheckAFDOArtifactExists(
+              buildroot=builder_run.buildroot,
+              chrome_root=builder_run.options.chrome_root,
+              board=board,
+              target='chrome_afdo'):
+            continue
+          self._RunStage(afdo_stages.ChromeAFDOUpdateEbuildStage,
                          board, builder_run=builder_run)
 
         # Run BuildPackages in the foreground, generating or using AFDO data
@@ -412,14 +415,13 @@ class SimpleBuilder(generic_builders.Builder):
   def _RunDefaultTypeBuild(self):
     """Runs through the stages of a non-special-type build."""
     self.RunEarlySyncAndSetupStages()
-    self.RunBuildTestStages()
     self.RunBuildStages()
 
   def RunStages(self):
     """Runs through build process."""
     # TODO(sosa): Split these out into classes.
     if self._run.config.build_type == constants.PRE_CQ_LAUNCHER_TYPE:
-      self._RunStage(sync_stages.PreCQLauncherStage)
+      assert False, 'Pre-CQ no longer supported'
     elif ((self._run.config.build_type == constants.PALADIN_TYPE or
            self._run.config.build_type == constants.CHROME_PFQ_TYPE or
            self._run.config.build_type == constants.ANDROID_PFQ_TYPE) and
@@ -457,22 +459,19 @@ class DistributedBuilder(SimpleBuilder):
     # Determine sync class to use.  CQ overrides PFQ bits so should check it
     # first.
     if self._run.config.pre_cq:
-      sync_stage = self._GetStageInstance(sync_stages.PreCQSyncStage,
-                                          self.patch_pool.gerrit_patches)
-      self.completion_stage_class = completion_stages.PreCQCompletionStage
-      self.patch_pool.gerrit_patches = []
+      assert False, 'Pre-CQ no longer supported'
     elif config_lib.IsCQType(self._run.config.build_type):
+      assert False, 'Legacy CQ no longer supported'
       if self._run.config.do_not_apply_cq_patches:
         sync_stage = self._GetStageInstance(
             sync_stages.MasterSlaveLKGMSyncStage)
-      else:
-        sync_stage = self._GetStageInstance(sync_stages.CommitQueueSyncStage)
-      self.completion_stage_class = completion_stages.CommitQueueCompletionStage
     elif config_lib.IsCanaryType(self._run.config.build_type):
       sync_stage = self._GetStageInstance(
           sync_stages.ManifestVersionedSyncStage)
       self.completion_stage_class = (
           completion_stages.CanaryCompletionStage)
+    elif self._run.config.build_type == constants.CHROME_PFQ_TYPE:
+      assert False, 'Chrome PFQ no longer supported'
     elif (config_lib.IsPFQType(self._run.config.build_type) or
           self._run.config.build_type in (constants.TOOLCHAIN_TYPE,
                                           constants.FULL_TYPE,
@@ -512,23 +511,11 @@ class DistributedBuilder(SimpleBuilder):
     completion_successful = False
     try:
       self._completion_stage.Run()
-      self._HandleChanges()
       completion_successful = True
-    except failures_lib.StepFailure as e:
-      if isinstance(e, completion_stages.ImportantBuilderFailedException):
-        # When ImportantBuilderFailedException is the only exception, the master
-        # build can still submit partial changes (CLs).
-        self._HandleChanges()
-
+    except failures_lib.StepFailure:
       raise
     finally:
       self._Publish(was_build_successful, build_finished, completion_successful)
-
-  def _HandleChanges(self):
-    """Handle changes picked up by the validation_pool in the sync stage."""
-    if config_lib.IsMasterCQ(self._run.config):
-      self._RunStage(handle_changes_stages.CommitQueueHandleChangesStage,
-                     self.sync_stage, self._completion_stage)
 
   def _Publish(self, was_build_successful, build_finished,
                completion_successful):
@@ -559,17 +546,21 @@ class DistributedBuilder(SimpleBuilder):
     finally:
       if self._run.config.master:
         self._RunStage(report_stages.SlaveFailureSummaryStage)
+
+      is_master_release = config_lib.IsCanaryMaster(self._run.config)
+      if is_master_release:
+        if build_finished:
+          self._RunStage(completion_stages.UpdateChromeosLKGMStage)
+        else:
+          logging.info(
+              'Skipping UpdateChromeosLKGMStage, '
+              'build_successful=%d completion_successful=%d '
+              'build_finished=%d', was_build_successful, completion_successful,
+              build_finished)
+
       if self._run.config.push_overlays:
         publish = (was_build_successful and completion_successful and
                    build_finished)
-        if is_master_chrome_pfq:
-          if publish:
-            self._RunStage(completion_stages.UpdateChromeosLKGMStage)
-          else:
-            logging.info('Skipping UpdateChromeosLKGMStage, '
-                         'build_successful=%d completion_successful=%d '
-                         'build_finished=%d', was_build_successful,
-                         completion_successful, build_finished)
         # If this build is master chrome pfq, completion_stage failed,
         # AFDOUpdateChromeEbuildStage passed, and the necessary build stages
         # passed, it means publish is False and we need to stage the
@@ -580,9 +571,13 @@ class DistributedBuilder(SimpleBuilder):
                       was_build_successful and
                       build_finished)
 
-        # CQ no longer publishes uprevs. There is no easy way to disable this
-        # in ChromeOS config, so hack the check here.
-        if not config_lib.IsCQType(self._run.config.build_type):
+        # CQ and Master Chrome PFQ no longer publish uprevs. For Master Chrome
+        # PFQ this is because this duty is being transitioned to the Chrome
+        # PUpr in the PCQ world. See http://go/pupr.
+        # There is no easy way to disable this in ChromeOS config,
+        # so hack the check here.
+        if (not config_lib.IsCQType(self._run.config.build_type) and
+            not is_master_chrome_pfq):
           self._RunStage(completion_stages.PublishUprevChangesStage,
                          self.sync_stage, publish, stage_push)
 

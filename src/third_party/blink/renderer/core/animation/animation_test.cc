@@ -33,6 +33,7 @@
 #include <memory>
 
 #include "base/bits.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/animation/animation_clock.h"
 #include "third_party/blink/renderer/core/animation/css/compositor_keyframe_double.h"
@@ -45,16 +46,28 @@
 #include "third_party/blink/renderer/core/animation/scroll_timeline.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_node_ids.h"
+#include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/dom/events/native_event_listener.h"
 #include "third_party/blink/renderer/core/dom/qualified_name.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
+#include "third_party/blink/renderer/platform/bindings/microtask.h"
+#include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/testing/histogram_tester.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 
 namespace blink {
+
+namespace {
+
+double MillisecondsToSeconds(double milliseconds) {
+  return milliseconds / 1000;
+}
+
+}  // namespace
 
 void ExpectRelativeErrorWithinEpsilon(double expected, double observed) {
   EXPECT_NEAR(1.0, observed / expected, std::numeric_limits<double>::epsilon());
@@ -86,7 +99,7 @@ class AnimationAnimationTestNoCompositing : public RenderingTest {
   KeyframeEffectModelBase* MakeSimpleEffectModel() {
     PropertyHandle PropertyHandleOpacity(GetCSSPropertyOpacity());
     TransitionKeyframe* start_keyframe =
-        TransitionKeyframe::Create(PropertyHandleOpacity);
+        MakeGarbageCollected<TransitionKeyframe>(PropertyHandleOpacity);
     start_keyframe->SetValue(std::make_unique<TypedInterpolationValue>(
         CSSNumberInterpolationType(PropertyHandleOpacity),
         std::make_unique<InterpolableNumber>(1.0)));
@@ -94,15 +107,17 @@ class AnimationAnimationTestNoCompositing : public RenderingTest {
     // Egregious hack: Sideload the compositor value.
     // This is usually set in a part of the rendering process SimulateFrame
     // doesn't call.
-    start_keyframe->SetCompositorValue(CompositorKeyframeDouble::Create(1.0));
+    start_keyframe->SetCompositorValue(
+        MakeGarbageCollected<CompositorKeyframeDouble>(1.0));
     TransitionKeyframe* end_keyframe =
-        TransitionKeyframe::Create(PropertyHandleOpacity);
+        MakeGarbageCollected<TransitionKeyframe>(PropertyHandleOpacity);
     end_keyframe->SetValue(std::make_unique<TypedInterpolationValue>(
         CSSNumberInterpolationType(PropertyHandleOpacity),
         std::make_unique<InterpolableNumber>(0.0)));
     end_keyframe->SetOffset(1.0);
     // Egregious hack: Sideload the compositor value.
-    end_keyframe->SetCompositorValue(CompositorKeyframeDouble::Create(0.0));
+    end_keyframe->SetCompositorValue(
+        MakeGarbageCollected<CompositorKeyframeDouble>(0.0));
 
     TransitionKeyframeVector keyframes;
     keyframes.push_back(start_keyframe);
@@ -164,6 +179,10 @@ class AnimationAnimationTestNoCompositing : public RenderingTest {
   }
 
   bool SimulateFrame(double time_ms) {
+    if (animation->pending())
+      animation->NotifyReady(MillisecondsToSeconds(last_frame_time));
+    SimulateMicrotask();
+
     last_frame_time = time_ms;
     const auto* paint_artifact_compositor =
         GetDocument().GetFrame()->View()->GetPaintArtifactCompositor();
@@ -177,9 +196,11 @@ class AnimationAnimationTestNoCompositing : public RenderingTest {
   }
 
   void SimulateAwaitReady() {
-    // TOOD(crbug/958433): This should trigger a call to the microtask for
-    // applying updates.
     SimulateFrame(last_frame_time);
+  }
+
+  void SimulateMicrotask() {
+    Microtask::PerformCheckpoint(V8PerIsolateData::MainThreadIsolate());
   }
 
   Persistent<DocumentTimeline> timeline;
@@ -348,39 +369,33 @@ TEST_F(AnimationAnimationTestNoCompositing, SetStartTime) {
 }
 
 TEST_F(AnimationAnimationTestNoCompositing, SetStartTimeLimitsAnimation) {
-  // TODO(crbug/958433): Fix to align with spec.
   // Setting the start time is a seek operation, which is not constrained by the
   // normal limits on the animation.
   animation->setStartTime(-50000, false);
   EXPECT_EQ("finished", animation->playState());
   EXPECT_TRUE(animation->Limited());
-  // This value is not to spec. Should be 50s.
-  EXPECT_EQ(30000, animation->currentTime());
+  EXPECT_EQ(50000, animation->currentTime());
   animation->setPlaybackRate(-1);
   EXPECT_EQ("running", animation->playState());
   animation->setStartTime(-100000, false);
   EXPECT_EQ("finished", animation->playState());
-  // This value is not to spec. Should be -100s.
-  EXPECT_EQ(0, animation->currentTime());
+  EXPECT_EQ(-100000, animation->currentTime());
   EXPECT_TRUE(animation->Limited());
 }
 
 TEST_F(AnimationAnimationTestNoCompositing, SetStartTimeOnLimitedAnimation) {
-  // TODO(crbug/958433): Fix to align with spec.
   // The setStartTime method is a seek and thus not constrained by the normal
   // limits on the animation.
   SimulateFrame(30000);
   animation->setStartTime(-10000, false);
   EXPECT_EQ("finished", animation->playState());
-  // This value is not to spec. Should be 40s.
-  EXPECT_EQ(30000, animation->currentTime());
+  EXPECT_EQ(40000, animation->currentTime());
   EXPECT_TRUE(animation->Limited());
 
   animation->setCurrentTime(50000, false);
   EXPECT_EQ(50000, animation->currentTime());
   animation->setStartTime(-40000, false);
-  // This value is not to spec. Should be 70s.
-  EXPECT_EQ(30000, animation->currentTime());
+  EXPECT_EQ(70000, animation->currentTime());
   EXPECT_EQ("finished", animation->playState());
   EXPECT_TRUE(animation->Limited());
 }
@@ -428,10 +443,11 @@ TEST_F(AnimationAnimationTestNoCompositing, StartTimeWithZeroPlaybackRate) {
   animation->setPlaybackRate(0);
   EXPECT_EQ("running", animation->playState());
   SimulateAwaitReady();
-  EXPECT_FALSE(animation->startTime());
+  EXPECT_TRUE(animation->startTime());
 
   SimulateFrame(10000);
   EXPECT_EQ("running", animation->playState());
+  EXPECT_EQ(0, animation->currentTime());
 }
 
 TEST_F(AnimationAnimationTestNoCompositing, PausePlay) {
@@ -564,13 +580,17 @@ TEST_F(AnimationAnimationTestNoCompositing, Reverse) {
 }
 
 TEST_F(AnimationAnimationTestNoCompositing,
-       ReverseDoesNothingWithPlaybackRateZero) {
+       ReverseHoldsCurrentTimeWithPlaybackRateZero) {
   animation->setCurrentTime(10000, false);
   animation->setPlaybackRate(0);
   animation->pause();
   animation->reverse();
-  EXPECT_EQ("paused", animation->playState());
+  SimulateAwaitReady();
+  EXPECT_EQ("running", animation->playState());
   EXPECT_EQ(0, animation->playbackRate());
+  EXPECT_EQ(10000, animation->currentTime());
+
+  SimulateFrame(20000);
   EXPECT_EQ(10000, animation->currentTime());
 }
 
@@ -620,11 +640,11 @@ TEST_F(AnimationAnimationTestNoCompositing, Finish) {
 
 TEST_F(AnimationAnimationTestNoCompositing, FinishAfterEffectEnd) {
   NonThrowableExceptionState exception_state;
+  // OK to set current time out of bounds.
   animation->setCurrentTime(40000, false);
   animation->finish(exception_state);
-  // TODO(crbug/958433): This is not to spec.  Finish should trigger a snap to
-  // the upper boundary.
-  EXPECT_EQ(40000, animation->currentTime());
+  // The finish method triggers a snap to the upper boundary.
+  EXPECT_EQ(30000, animation->currentTime());
 }
 
 TEST_F(AnimationAnimationTestNoCompositing, FinishBeforeStart) {
@@ -1222,7 +1242,7 @@ TEST_F(AnimationAnimationTestCompositing, PreCommitRecordsHistograms) {
   // Now make the playback rate 0. This trips both the invalid animation and
   // unsupported timing parameter reasons.
   animation->setPlaybackRate(0);
-  animation->NotifyCompositorStartTime(100);
+  animation->NotifyReady(100);
   {
     HistogramTester histogram;
     ASSERT_TRUE(animation->PreCommit(0, nullptr, true));
@@ -1347,6 +1367,124 @@ TEST_F(AnimationAnimationTestNoCompositing, ScrollLinkedAnimationCreation) {
   scrollable_area->SetScrollOffset(ScrollOffset(0, 40), kProgrammaticScroll);
   EXPECT_EQ(40, scroll_animation->currentTime(is_null));
   EXPECT_FALSE(is_null);
+}
+
+TEST_F(AnimationAnimationTestNoCompositing,
+       RemoveCanceledAnimationFromActiveSet) {
+  EXPECT_EQ("running", animation->playState());
+  EXPECT_TRUE(animation->Update(kTimingUpdateForAnimationFrame));
+  SimulateFrame(1000);
+  EXPECT_TRUE(animation->Update(kTimingUpdateForAnimationFrame));
+  animation->cancel();
+  EXPECT_EQ("idle", animation->playState());
+  EXPECT_FALSE(animation->Update(kTimingUpdateForAnimationFrame));
+}
+
+TEST_F(AnimationAnimationTestNoCompositing,
+       RemoveFinishedAnimationFromActiveSet) {
+  EXPECT_EQ("running", animation->playState());
+  EXPECT_TRUE(animation->Update(kTimingUpdateForAnimationFrame));
+  SimulateFrame(1000);
+  EXPECT_TRUE(animation->Update(kTimingUpdateForAnimationFrame));
+
+  // Synchronous completion.
+  animation->finish();
+  EXPECT_EQ("finished", animation->playState());
+  EXPECT_FALSE(animation->Update(kTimingUpdateForAnimationFrame));
+
+  // Play creates a new pending finished promise.
+  animation->play();
+  EXPECT_EQ("running", animation->playState());
+  EXPECT_TRUE(animation->Update(kTimingUpdateForAnimationFrame));
+
+  // Asynchronous completion.
+  animation->setCurrentTime(50000, false);
+  EXPECT_EQ("finished", animation->playState());
+  EXPECT_FALSE(animation->Update(kTimingUpdateForAnimationFrame));
+}
+
+TEST_F(AnimationAnimationTestNoCompositing,
+       PendingActivityWithFinishedPromise) {
+  // No pending activity even when running if there is no finished promise
+  // or event listener.
+  EXPECT_EQ("running", animation->playState());
+  SimulateFrame(1000);
+  EXPECT_FALSE(animation->HasPendingActivity());
+
+  // An unresolved finished promise indicates pending activity.
+  ScriptState* script_state =
+      ToScriptStateForMainWorld(GetDocument().GetFrame());
+  animation->finished(script_state);
+  EXPECT_TRUE(animation->HasPendingActivity());
+
+  // Resolving the finished promise clears the pending activity.
+  animation->setCurrentTime(50000, false);
+  EXPECT_EQ("finished", animation->playState());
+  SimulateMicrotask();
+  EXPECT_FALSE(animation->Update(kTimingUpdateForAnimationFrame));
+  EXPECT_FALSE(animation->HasPendingActivity());
+
+  // Playing an already finished animation creates a new pending finished
+  // promise.
+  animation->play();
+  EXPECT_EQ("running", animation->playState());
+  SimulateFrame(2000);
+  EXPECT_TRUE(animation->HasPendingActivity());
+  // Cancel rejects the finished promise and creates a new pending finished
+  // promise.
+  // TODO(crbug.com/960944): Investigate if this should return false to prevent
+  // holding onto the animation indefinitely.
+  animation->cancel();
+  EXPECT_TRUE(animation->HasPendingActivity());
+}
+
+class MockEventListener final : public NativeEventListener {
+ public:
+  MOCK_METHOD2(Invoke, void(ExecutionContext*, Event*));
+};
+
+TEST_F(AnimationAnimationTestNoCompositing,
+       PendingActivityWithFinishedEventListener) {
+  EXPECT_EQ("running", animation->playState());
+  EXPECT_FALSE(animation->HasPendingActivity());
+
+  // Attaching a listener for the finished event indicates pending activity.
+  Persistent<MockEventListener> event_listener =
+      MakeGarbageCollected<MockEventListener>();
+  animation->addEventListener(event_type_names::kFinish, event_listener);
+  EXPECT_TRUE(animation->HasPendingActivity());
+
+  // Synchronous finish clears pending activity.
+  animation->finish();
+  EXPECT_EQ("finished", animation->playState());
+  EXPECT_FALSE(animation->Update(kTimingUpdateForAnimationFrame));
+  EXPECT_TRUE(animation->HasPendingActivity());
+  animation->pending_finished_event_ = nullptr;
+  EXPECT_FALSE(animation->HasPendingActivity());
+
+  // Playing an already finished animation resets the finished state.
+  animation->play();
+  EXPECT_EQ("running", animation->playState());
+  SimulateFrame(2000);
+  EXPECT_TRUE(animation->HasPendingActivity());
+
+  // Finishing the animation asynchronously clears the pending activity.
+  animation->setCurrentTime(50000, false);
+  EXPECT_EQ("finished", animation->playState());
+  SimulateMicrotask();
+  EXPECT_FALSE(animation->Update(kTimingUpdateForAnimationFrame));
+  EXPECT_TRUE(animation->HasPendingActivity());
+  animation->pending_finished_event_ = nullptr;
+  EXPECT_FALSE(animation->HasPendingActivity());
+
+  // Canceling an animation clears the pending activity.
+  animation->play();
+  EXPECT_EQ("running", animation->playState());
+  SimulateFrame(2000);
+  animation->cancel();
+  EXPECT_EQ("idle", animation->playState());
+  EXPECT_FALSE(animation->Update(kTimingUpdateForAnimationFrame));
+  EXPECT_FALSE(animation->HasPendingActivity());
 }
 
 }  // namespace blink

@@ -309,6 +309,16 @@ const struct QuicErrorMapping {
      "quic.window.update.received.on.read.unidirectional.stream"},
     {quic::QUIC_TOO_MANY_BUFFERED_CONTROL_FRAMES,
      "quic.too.many.buffered.control.frames"},
+    {quic::QUIC_TRANSPORT_INVALID_CLIENT_INDICATION,
+     "quic.transport.invalid.client.indication"},
+
+    {quic::QUIC_QPACK_DECOMPRESSION_FAILED, "QUIC.QPACK.DECOMPRESSION.FAILED"},
+    {quic::QUIC_QPACK_ENCODER_STREAM_ERROR, "QUIC.QPACK.ENCODER.STREAM.ERROR"},
+    {quic::QUIC_QPACK_DECODER_STREAM_ERROR, "QUIC.QPACK.DECODER.STREAM.ERROR"},
+
+    {quic::QUIC_STREAM_DATA_BEYOND_CLOSE_OFFSET,
+     "quic.stream.data.beyond.close.offset"},
+    {quic::QUIC_STREAM_MULTIPLE_OFFSET, "quic.stream.multiple.offset"},
 
     // QUIC_INVALID_APPLICATION_CLOSE_DATA was code 101. The code has been
     // deprecated, but to keep the assert below happy, there needs to be

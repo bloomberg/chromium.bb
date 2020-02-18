@@ -6,9 +6,7 @@
 #define ASH_WM_SPLITVIEW_SPLIT_VIEW_UTILS_H_
 
 #include "ash/ash_export.h"
-#include "ash/display/screen_orientation_controller.h"
 #include "ash/wm/splitview/split_view_controller.h"
-#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/transform.h"
 
 namespace aura {
@@ -95,15 +93,21 @@ ASH_EXPORT bool AreMultiDisplayOverviewAndSplitViewEnabled();
 // Returns true if split view mode is supported.
 ASH_EXPORT bool ShouldAllowSplitView();
 
-// Returns true if |window| can be activated and snapped in split screen in
-// tablet mode.
-ASH_EXPORT bool CanSnapInSplitview(aura::Window* window);
-
 // Displays a toast notifying users the application selected for split view is
 // not compatible.
 ASH_EXPORT void ShowAppCannotSnapToast();
 
 ASH_EXPORT bool IsPhysicalLeftOrTop(SplitViewController::SnapPosition position);
+
+// Returns the desired snap position. To be able to get snapped (meaning the
+// return value is not |SplitViewController::NONE|), |window| must first of all
+// satisfy |SplitViewController::CanSnapWindow| on the split view controller for
+// |root_window|, and secondly be dragged near a suitable edge of the work area
+// of |root_window|.
+ASH_EXPORT SplitViewController::SnapPosition GetSnapPosition(
+    aura::Window* root_window,
+    aura::Window* window,
+    const gfx::Point& location_in_screen);
 
 }  // namespace ash
 

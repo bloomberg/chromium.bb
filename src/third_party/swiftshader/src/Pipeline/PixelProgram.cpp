@@ -78,9 +78,9 @@ namespace sw
 		routine.setInputBuiltin(spirvShader, spv::BuiltInPointCoord, [&](const SpirvShader::BuiltinMapping& builtin, Array<SIMD::Float>& value)
 		{
 			assert(builtin.SizeInComponents == 2);
-			value[builtin.FirstComponent+0] = SIMD::Float(0.5f) +
+			value[builtin.FirstComponent+0] = SIMD::Float(0.5f, 1.5f, 0.5f, 1.5f) +
 				SIMD::Float(Float(x) - (*Pointer<Float>(primitive + OFFSET(Primitive, pointCoordX))));
-			value[builtin.FirstComponent+1] = SIMD::Float(0.5f) +
+			value[builtin.FirstComponent+1] = SIMD::Float(0.5f, 0.5f, 1.5f, 1.5f) +
 				SIMD::Float(Float(y) - (*Pointer<Float>(primitive + OFFSET(Primitive, pointCoordY))));
 		});
 
@@ -226,33 +226,16 @@ namespace sw
 			case VK_FORMAT_A2B10G10R10_UNORM_PACK32:
 				for(unsigned int q = 0; q < state.multiSample; q++)
 				{
-					Pointer<Byte> buffer = cBuffer[index] + q * *Pointer<Int>(data + OFFSET(DrawData, colorSliceB[index]));
-					Vector4s color;
+					if(state.multiSampleMask & (1 << q))
+					{
+						Pointer<Byte> buffer = cBuffer[index] + q * *Pointer<Int>(data + OFFSET(DrawData, colorSliceB[index]));
+						Vector4s color;
 
-					if(format == VK_FORMAT_A1R5G5B5_UNORM_PACK16)
-					{
-						color.x = UShort4(c[index].x * Float4(0xFBFF), false);
-						color.y = UShort4(c[index].y * Float4(0xFBFF), false);
-						color.z = UShort4(c[index].z * Float4(0xFBFF), false);
-						color.w = UShort4(c[index].w * Float4(0xFFFF), false);
-					}
-					else if(format == VK_FORMAT_R5G6B5_UNORM_PACK16)
-					{
-						color.x = UShort4(c[index].x * Float4(0xFBFF), false);
-						color.y = UShort4(c[index].y * Float4(0xFDFF), false);
-						color.z = UShort4(c[index].z * Float4(0xFBFF), false);
-						color.w = UShort4(c[index].w * Float4(0xFFFF), false);
-					}
-					else
-					{
 						color.x = convertFixed16(c[index].x, false);
 						color.y = convertFixed16(c[index].y, false);
 						color.z = convertFixed16(c[index].z, false);
 						color.w = convertFixed16(c[index].w, false);
-					}
 
-					if(state.multiSampleMask & (1 << q))
-					{
 						alphaBlend(index, buffer, color, x);
 						writeColor(index, buffer, x, color, sMask[q], zMask[q], cMask[q]);
 					}
@@ -287,11 +270,11 @@ namespace sw
 			case VK_FORMAT_A2B10G10R10_UINT_PACK32:
 				for(unsigned int q = 0; q < state.multiSample; q++)
 				{
-					Pointer<Byte> buffer = cBuffer[index] + q * *Pointer<Int>(data + OFFSET(DrawData, colorSliceB[index]));
-					Vector4f color = c[index];
-
 					if(state.multiSampleMask & (1 << q))
 					{
+						Pointer<Byte> buffer = cBuffer[index] + q * *Pointer<Int>(data + OFFSET(DrawData, colorSliceB[index]));
+						Vector4f color = c[index];
+
 						alphaBlend(index, buffer, color, x);
 						writeColor(index, buffer, x, color, sMask[q], zMask[q], cMask[q]);
 					}

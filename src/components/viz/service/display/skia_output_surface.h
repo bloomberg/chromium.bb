@@ -8,11 +8,21 @@
 #include <memory>
 #include <vector>
 
+#include "build/build_config.h"
 #include "components/viz/common/resources/resource_format.h"
 #include "components/viz/common/resources/resource_id.h"
 #include "components/viz/service/display/external_use_client.h"
 #include "components/viz/service/display/output_surface.h"
+#include "components/viz/service/display/overlay_processor.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
+
+#if defined(OS_WIN)
+#include "components/viz/service/display/dc_layer_overlay.h"
+#endif
+
+#if defined(OS_MACOSX)
+#include "components/viz/service/display/ca_layer_overlay.h"
+#endif
 
 class SkCanvas;
 class SkImage;
@@ -23,6 +33,7 @@ class ColorSpace;
 
 namespace viz {
 
+class OverlayCandidate;
 class ContextLostObserver;
 class CopyOutputRequest;
 
@@ -37,7 +48,20 @@ struct RenderPassGeometry;
 class VIZ_SERVICE_EXPORT SkiaOutputSurface : public OutputSurface,
                                              public ExternalUseClient {
  public:
-  SkiaOutputSurface();
+#if defined(OS_ANDROID)
+  using OverlayList = std::vector<OverlayCandidate>;
+#elif defined(OS_MACOSX)
+  using OverlayList = CALayerOverlayList;
+#elif defined(OS_WIN)
+  using OverlayList = DCLayerOverlayList;
+#elif defined(USE_OZONE)
+  using OverlayList = std::vector<OverlayCandidate>;
+#else
+  // Default.
+  using OverlayList = std::vector<OverlayCandidate>;
+#endif
+
+  explicit SkiaOutputSurface(OutputSurface::Type type);
   ~SkiaOutputSurface() override;
 
   SkiaOutputSurface* AsSkiaOutputSurface() override;
@@ -124,6 +148,17 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurface : public OutputSurface,
                           const gfx::ColorSpace& color_space,
                           std::unique_ptr<CopyOutputRequest> request) = 0;
 
+  // Schedule drawing overlays at next SkiaSwapBuffers() call. Waits on
+  // |sync_tokens| for the overlay textures to be ready before scheduling.
+  virtual void ScheduleOverlays(OverlayList overlays,
+                                std::vector<gpu::SyncToken> sync_tokens) = 0;
+
+#if defined(OS_WIN)
+  // Enables/disables drawing with DC layers. Should be enabled before
+  // ScheduleDCLayers() will be called.
+  virtual void SetEnableDCLayers(bool enable) = 0;
+#endif
+
   // Add context lost observer.
   virtual void AddContextLostObserver(ContextLostObserver* observer) = 0;
 
@@ -134,6 +169,13 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurface : public OutputSurface,
   virtual void ScheduleGpuTaskForTesting(
       base::OnceClosure callback,
       std::vector<gpu::SyncToken> sync_tokens) = 0;
+
+  // Only used for the Android pre-SurfaceControl overlay code path to pass all
+  // promotion hints.
+  virtual void SendOverlayPromotionNotification(
+      std::vector<gpu::SyncToken> sync_tokens,
+      base::flat_set<gpu::Mailbox> promotion_denied,
+      base::flat_map<gpu::Mailbox, gfx::Rect> possible_promotions) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SkiaOutputSurface);

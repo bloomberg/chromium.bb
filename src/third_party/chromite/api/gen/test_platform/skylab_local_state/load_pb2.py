@@ -20,7 +20,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='test_platform.skylab_local_state',
   syntax='proto3',
   serialized_options=_b('ZJgo.chromium.org/chromiumos/infra/proto/go/test_platform/skylab_local_state'),
-  serialized_pb=_b('\n+test_platform/skylab_local_state/load.proto\x12 test_platform.skylab_local_state\x1a-test_platform/skylab_local_state/common.proto\"n\n\x0bLoadRequest\x12\x38\n\x06\x63onfig\x18\x01 \x01(\x0b\x32(.test_platform.skylab_local_state.Config\x12\x13\n\x0bresults_dir\x18\x02 \x01(\t\x12\x10\n\x08\x64ut_name\x18\x03 \x01(\t\"\xb1\x01\n\x0cLoadResponse\x12\x65\n\x14provisionable_labels\x18\x01 \x03(\x0b\x32G.test_platform.skylab_local_state.LoadResponse.ProvisionableLabelsEntry\x1a:\n\x18ProvisionableLabelsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\x42LZJgo.chromium.org/chromiumos/infra/proto/go/test_platform/skylab_local_stateb\x06proto3')
+  serialized_pb=_b('\n+test_platform/skylab_local_state/load.proto\x12 test_platform.skylab_local_state\x1a-test_platform/skylab_local_state/common.proto\"\x82\x01\n\x0bLoadRequest\x12\x38\n\x06\x63onfig\x18\x01 \x01(\x0b\x32(.test_platform.skylab_local_state.Config\x12\x17\n\x0bresults_dir\x18\x02 \x01(\tB\x02\x18\x01\x12\x10\n\x08\x64ut_name\x18\x03 \x01(\t\x12\x0e\n\x06run_id\x18\x04 \x01(\t\"\xc6\x01\n\x0cLoadResponse\x12\x65\n\x14provisionable_labels\x18\x01 \x03(\x0b\x32G.test_platform.skylab_local_state.LoadResponse.ProvisionableLabelsEntry\x12\x13\n\x0bresults_dir\x18\x02 \x01(\t\x1a:\n\x18ProvisionableLabelsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\x42LZJgo.chromium.org/chromiumos/infra/proto/go/test_platform/skylab_local_stateb\x06proto3')
   ,
   dependencies=[test__platform_dot_skylab__local__state_dot_common__pb2.DESCRIPTOR,])
 
@@ -47,10 +47,17 @@ _LOADREQUEST = _descriptor.Descriptor(
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=_b('\030\001'), file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='dut_name', full_name='test_platform.skylab_local_state.LoadRequest.dut_name', index=2,
       number=3, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='run_id', full_name='test_platform.skylab_local_state.LoadRequest.run_id', index=3,
+      number=4, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
@@ -67,8 +74,8 @@ _LOADREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=128,
-  serialized_end=238,
+  serialized_start=129,
+  serialized_end=259,
 )
 
 
@@ -105,8 +112,8 @@ _LOADRESPONSE_PROVISIONABLELABELSENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=360,
-  serialized_end=418,
+  serialized_start=402,
+  serialized_end=460,
 )
 
 _LOADRESPONSE = _descriptor.Descriptor(
@@ -123,6 +130,13 @@ _LOADRESPONSE = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='results_dir', full_name='test_platform.skylab_local_state.LoadResponse.results_dir', index=1,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -135,8 +149,8 @@ _LOADRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=241,
-  serialized_end=418,
+  serialized_start=262,
+  serialized_end=460,
 )
 
 _LOADREQUEST.fields_by_name['config'].message_type = test__platform_dot_skylab__local__state_dot_common__pb2._CONFIG
@@ -170,5 +184,6 @@ _sym_db.RegisterMessage(LoadResponse.ProvisionableLabelsEntry)
 
 
 DESCRIPTOR._options = None
+_LOADREQUEST.fields_by_name['results_dir']._options = None
 _LOADRESPONSE_PROVISIONABLELABELSENTRY._options = None
 # @@protoc_insertion_point(module_scope)

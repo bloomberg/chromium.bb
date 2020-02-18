@@ -42,6 +42,7 @@
 #include "libANGLE/Context_gles_2_0_autogen.h"
 #include "libANGLE/Context_gles_3_0_autogen.h"
 #include "libANGLE/Context_gles_3_1_autogen.h"
+#include "libANGLE/Context_gles_3_2_autogen.h"
 #include "libANGLE/Context_gles_ext_autogen.h"
 #include "libANGLE/Error.h"
 #include "libANGLE/HandleAllocator.h"
@@ -122,6 +123,7 @@ enum class VertexAttribTypeCase
     Invalid        = 0,
     Valid          = 1,
     ValidSize4Only = 2,
+    ValidSize3or4  = 3,
 };
 
 // Helper class for managing cache variables and state changes.
@@ -403,7 +405,6 @@ class Context final : public egl::LabeledObject, angle::NonCopyable, public angl
     void getFloatvImpl(GLenum pname, GLfloat *params);
     void getIntegervImpl(GLenum pname, GLint *params);
     void getInteger64vImpl(GLenum pname, GLint64 *params);
-    void getPointerv(GLenum pname, void **params) const;
 
     // Framebuffers are owned by the Context, so these methods do not pass through
     FramebufferID createFramebuffer();
@@ -437,6 +438,7 @@ class Context final : public egl::LabeledObject, angle::NonCopyable, public angl
     ANGLE_GLES_2_0_CONTEXT_API
     ANGLE_GLES_3_0_CONTEXT_API
     ANGLE_GLES_3_1_CONTEXT_API
+    ANGLE_GLES_3_2_CONTEXT_API
     ANGLE_GLES_EXT_CONTEXT_API
 
     // Consumes an error.
@@ -465,7 +467,10 @@ class Context final : public egl::LabeledObject, angle::NonCopyable, public angl
     size_t getExtensionStringCount() const;
 
     bool isExtensionRequestable(const char *name);
+    bool isExtensionDisablable(const char *name);
     size_t getRequestableExtensionStringCount() const;
+    void setExtensionEnabled(const char *name, bool enabled);
+    void reinitializeAfterExtensionsChanged();
 
     rx::ContextImpl *getImplementation() const { return mImplementation.get(); }
 
@@ -714,6 +719,7 @@ class Context final : public egl::LabeledObject, angle::NonCopyable, public angl
     angle::ObserverBinding mReadFramebufferObserverBinding;
     std::vector<angle::ObserverBinding> mUniformBufferObserverBindings;
     std::vector<angle::ObserverBinding> mSamplerObserverBindings;
+    std::vector<angle::ObserverBinding> mImageObserverBindings;
 
     // Not really a property of context state. The size and contexts change per-api-call.
     mutable angle::ScratchBuffer mScratchBuffer;
@@ -726,7 +732,6 @@ class Context final : public egl::LabeledObject, angle::NonCopyable, public angl
 
     OverlayType mOverlay;
 };
-
 }  // namespace gl
 
 #endif  // LIBANGLE_CONTEXT_H_

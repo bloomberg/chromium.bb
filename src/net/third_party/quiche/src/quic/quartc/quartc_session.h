@@ -70,10 +70,11 @@ class QuartcSession : public QuicSession,
 
   // Return true if transport support message frame.
   bool CanSendMessage() const {
-    return VersionSupportsMessageFrames(connection()->transport_version());
+    return VersionSupportsMessageFrames(transport_version());
   }
 
   void OnCryptoHandshakeEvent(CryptoHandshakeEvent event) override;
+  void SetDefaultEncryptionLevel(EncryptionLevel level) override;
 
   // QuicConnectionVisitorInterface overrides.
   void OnCongestionWindowChange(QuicTime now) override;

@@ -61,13 +61,15 @@ void PendingAppManagerImpl::InstallApps(
 }
 
 void PendingAppManagerImpl::UninstallApps(std::vector<GURL> uninstall_urls,
+                                          ExternalInstallSource install_source,
                                           const UninstallCallback& callback) {
   for (auto& url : uninstall_urls) {
     finalizer()->UninstallExternalWebApp(
-        url, base::BindOnce(
-                 [](const UninstallCallback& callback, const GURL& app_url,
-                    bool uninstalled) { callback.Run(app_url, uninstalled); },
-                 callback, url));
+        url, install_source,
+        base::BindOnce(
+            [](const UninstallCallback& callback, const GURL& app_url,
+               bool uninstalled) { callback.Run(app_url, uninstalled); },
+            callback, url));
   }
 }
 
@@ -96,9 +98,9 @@ void PendingAppManagerImpl::ReleaseWebContents() {
 std::unique_ptr<PendingAppInstallTask>
 PendingAppManagerImpl::CreateInstallationTask(
     ExternalInstallOptions install_options) {
-  return std::make_unique<PendingAppInstallTask>(profile_, registrar(),
-                                                 ui_manager(), finalizer(),
-                                                 std::move(install_options));
+  return std::make_unique<PendingAppInstallTask>(
+      profile_, registrar(), shortcut_manager(), ui_manager(), finalizer(),
+      std::move(install_options));
 }
 
 std::unique_ptr<PendingAppRegistrationTaskBase>
@@ -183,7 +185,7 @@ void PendingAppManagerImpl::MaybeStartNext() {
     // The app is not installed, but it might have been previously uninstalled
     // by the user. If that's the case, don't install it again unless
     // |override_previous_user_uninstall| is true.
-    if (registrar()->WasExternalAppUninstalledByUser(app_id.value()) &&
+    if (finalizer()->WasExternalAppUninstalledByUser(app_id.value()) &&
         !install_options.override_previous_user_uninstall) {
       std::move(front->callback)
           .Run(install_options.url, InstallResultCode::kPreviouslyUninstalled);
@@ -219,6 +221,7 @@ void PendingAppManagerImpl::StartInstallationTask(
 
   url_loader_->LoadUrl(current_install_->task->install_options().url,
                        web_contents_.get(),
+                       WebAppUrlLoader::UrlComparison::kSameOrigin,
                        base::BindOnce(&PendingAppManagerImpl::OnUrlLoaded,
                                       weak_ptr_factory_.GetWeakPtr()));
 }

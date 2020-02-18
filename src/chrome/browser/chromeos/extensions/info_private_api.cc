@@ -17,6 +17,7 @@
 #include "base/values.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
@@ -109,7 +110,7 @@ const char kPropertyFocusHighlightEnabled[] = "a11yFocusHighlightEnabled";
 // Key which corresponds to the select-to-speak A11Y property in JS.
 const char kPropertySelectToSpeakEnabled[] = "a11ySelectToSpeakEnabled";
 
-// Key which corresponds to the switch access A11Y property in JS.
+// Key which corresponds to the Switch Access A11Y property in JS.
 const char kPropertySwitchAccessEnabled[] = "a11ySwitchAccessEnabled";
 
 // Key which corresponds to the send-function-keys property in JS.

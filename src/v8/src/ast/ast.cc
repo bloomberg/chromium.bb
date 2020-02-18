@@ -293,6 +293,10 @@ bool FunctionLiteral::requires_brand_initialization() const {
   return outer->AsClassScope()->brand() != nullptr;
 }
 
+bool FunctionLiteral::private_name_lookup_skips_outer_class() const {
+  return scope()->private_name_lookup_skips_outer_class();
+}
+
 ObjectLiteralProperty::ObjectLiteralProperty(Expression* key, Expression* value,
                                              Kind kind, bool is_computed_name)
     : LiteralProperty(key, value, is_computed_name),
@@ -598,7 +602,7 @@ void ArrayLiteral::BuildBoilerplateDescription(Isolate* isolate) {
     }
 
     if (boilerplate_value->IsUninitialized(isolate)) {
-      boilerplate_value = handle(Smi::kZero, isolate);
+      boilerplate_value = handle(Smi::zero(), isolate);
     }
 
     kind = GetMoreGeneralElementsKind(
@@ -831,20 +835,28 @@ Call::CallType Call::GetCallType() const {
   if (expression()->IsSuperCallReference()) return SUPER_CALL;
 
   Property* property = expression()->AsProperty();
+  bool is_optional_chain = false;
+  if (V8_UNLIKELY(property == nullptr && expression()->IsOptionalChain())) {
+    is_optional_chain = true;
+    property = expression()->AsOptionalChain()->expression()->AsProperty();
+  }
   if (property != nullptr) {
     if (property->IsPrivateReference()) {
       return PRIVATE_CALL;
     }
     bool is_super = property->IsSuperAccess();
+    // `super?.` is not syntactically valid, so a property load cannot be both
+    // super and an optional chain.
+    DCHECK(!is_super || !is_optional_chain);
     if (property->key()->IsPropertyName()) {
-      return is_super ? NAMED_SUPER_PROPERTY_CALL : NAMED_PROPERTY_CALL;
+      if (is_super) return NAMED_SUPER_PROPERTY_CALL;
+      if (is_optional_chain) return NAMED_OPTIONAL_CHAIN_PROPERTY_CALL;
+      return NAMED_PROPERTY_CALL;
     } else {
-      return is_super ? KEYED_SUPER_PROPERTY_CALL : KEYED_PROPERTY_CALL;
+      if (is_super) return KEYED_SUPER_PROPERTY_CALL;
+      if (is_optional_chain) return KEYED_OPTIONAL_CHAIN_PROPERTY_CALL;
+      return KEYED_PROPERTY_CALL;
     }
-  }
-
-  if (expression()->IsResolvedProperty()) {
-    return RESOLVED_PROPERTY_CALL;
   }
 
   return OTHER_CALL;
@@ -886,7 +898,7 @@ Handle<Object> Literal::BuildValue(Isolate* isolate) const {
     case kSmi:
       return handle(Smi::FromInt(smi_), isolate);
     case kHeapNumber:
-      return isolate->factory()->NewNumber(number_, AllocationType::kOld);
+      return isolate->factory()->NewNumber<AllocationType::kOld>(number_);
     case kString:
       return string_->string();
     case kSymbol:

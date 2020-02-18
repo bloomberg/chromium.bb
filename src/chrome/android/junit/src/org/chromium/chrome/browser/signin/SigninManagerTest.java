@@ -29,11 +29,17 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.robolectric.annotation.Config;
 
-import org.chromium.base.ContextUtils;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.JniMocker;
+import org.chromium.chrome.test.DisableNativeTestRule;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.AccountTrackerService;
+import org.chromium.components.signin.identitymanager.CoreAccountId;
+import org.chromium.components.signin.identitymanager.CoreAccountInfo;
+import org.chromium.components.signin.identitymanager.IdentityManager;
+import org.chromium.components.signin.identitymanager.IdentityMutator;
+import org.chromium.components.signin.metrics.SigninAccessPoint;
+import org.chromium.components.signin.metrics.SignoutReason;
 import org.chromium.components.sync.AndroidSyncSettings;
 
 import java.util.concurrent.atomic.AtomicInteger;
@@ -43,13 +49,19 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Config(manifest = Config.NONE)
 public class SigninManagerTest {
     @Rule
-    public JniMocker mocker = new JniMocker();
+    public final JniMocker mocker = new JniMocker();
+
+    @Rule
+    public final DisableNativeTestRule mDisableNative = new DisableNativeTestRule();
 
     @Mock
     SigninManager.Natives mNativeMock;
 
     private AccountTrackerService mAccountTrackerService;
+    private IdentityManager mIdentityManager;
+    private IdentityMutator mIdentityMutator;
     private SigninManager mSigninManager;
+    private CoreAccountInfo mAccount;
 
     @Before
     public void setUp() {
@@ -61,10 +73,19 @@ public class SigninManagerTest {
 
         mAccountTrackerService = mock(AccountTrackerService.class);
 
+        mIdentityMutator = mock(IdentityMutator.class);
+
+        mIdentityManager = spy(
+                new IdentityManager(0 /* nativeIdentityManager */, null /* OAuth2TokenService */));
+
         AndroidSyncSettings androidSyncSettings = mock(AndroidSyncSettings.class);
 
-        mSigninManager = spy(new SigninManager(ContextUtils.getApplicationContext(),
-                0 /* nativeSigninManagerAndroid */, mAccountTrackerService, androidSyncSettings));
+        doReturn(null).when(mIdentityManager).getPrimaryAccountId();
+        mSigninManager = new SigninManager(0 /* nativeSigninManagerAndroid */,
+                mAccountTrackerService, mIdentityManager, mIdentityMutator, androidSyncSettings);
+
+        mAccount = new CoreAccountInfo(new CoreAccountId("gaia-id-user"),
+                AccountManagerFacade.createAccountFromName("user@domain.com"), "gaia-id-user");
     }
 
     @Test
@@ -80,13 +101,13 @@ public class SigninManagerTest {
         // Trigger the sign out flow!
         mSigninManager.signOut(SignoutReason.SIGNOUT_TEST);
 
-        // nativeSignOut should be called *before* clearing any account data.
+        // PrimaryAccountCleared should be called *before* clearing any account data.
         // http://crbug.com/589028
         verify(mNativeMock, never()).wipeProfileData(anyLong(), any());
         verify(mNativeMock, never()).wipeGoogleServiceWorkerCaches(anyLong(), any());
 
         // Simulate native callback to trigger clearing of account data.
-        mSigninManager.onNativeSignOut();
+        mIdentityManager.onPrimaryAccountCleared(mAccount);
 
         // Sign-out should only clear the profile when the user is managed.
         verify(mNativeMock, times(1)).wipeProfileData(anyLong(), any());
@@ -106,13 +127,13 @@ public class SigninManagerTest {
         // Trigger the sign out flow!
         mSigninManager.signOut(SignoutReason.SIGNOUT_TEST);
 
-        // nativeSignOut should be called *before* clearing any account data.
+        // PrimaryAccountCleared should be called *before* clearing any account data.
         // http://crbug.com/589028
         verify(mNativeMock, never()).wipeProfileData(anyLong(), any());
         verify(mNativeMock, never()).wipeGoogleServiceWorkerCaches(anyLong(), any());
 
         // Simulate native callback to trigger clearing of account data.
-        mSigninManager.onNativeSignOut();
+        mIdentityManager.onPrimaryAccountCleared(mAccount);
 
         // Sign-out should only clear the service worker cache when the user is not managed.
         verify(mNativeMock, never()).wipeProfileData(anyLong(), any());
@@ -130,15 +151,15 @@ public class SigninManagerTest {
         doReturn(null).when(mNativeMock).getManagementDomain(anyLong());
 
         // Trigger the sign out flow
-        mSigninManager.signOut(SignoutReason.SIGNOUT_TEST, null, null, true);
+        mSigninManager.signOut(SignoutReason.SIGNOUT_TEST, null, true);
 
-        // nativeSignOut should be called *before* clearing any account data.
+        // PrimaryAccountCleared should be called *before* clearing any account data.
         // http://crbug.com/589028
         verify(mNativeMock, never()).wipeProfileData(anyLong(), any());
         verify(mNativeMock, never()).wipeGoogleServiceWorkerCaches(anyLong(), any());
 
         // Simulate native callback to trigger clearing of account data.
-        mSigninManager.onNativeSignOut();
+        mIdentityManager.onPrimaryAccountCleared(mAccount);
 
         // Sign-out should only clear the service worker cache when the user is not managed.
         verify(mNativeMock, times(1)).wipeProfileData(anyLong(), any());
@@ -153,7 +174,7 @@ public class SigninManagerTest {
         doNothing().when(mNativeMock).wipeGoogleServiceWorkerCaches(anyLong(), any());
 
         // Trigger the sign out flow!
-        mSigninManager.onNativeSignOut();
+        mIdentityManager.onPrimaryAccountCleared(mAccount);
 
         // Sign-out should only clear the profile when the user is managed.
         verify(mNativeMock, times(1)).wipeProfileData(anyLong(), any());
@@ -172,11 +193,11 @@ public class SigninManagerTest {
     @Test
     public void callbackNotifiedOnSignout() {
         doAnswer(invocation -> {
-            mSigninManager.onNativeSignOut();
+            mIdentityManager.onPrimaryAccountCleared(mAccount);
             return null;
         })
-                .when(mNativeMock)
-                .signOut(anyLong(), anyInt());
+                .when(mIdentityMutator)
+                .clearPrimaryAccount(anyInt(), anyInt(), anyInt());
 
         mSigninManager.signOut(SignoutReason.SIGNOUT_TEST);
         assertTrue(mSigninManager.isOperationInProgress());
@@ -184,34 +205,67 @@ public class SigninManagerTest {
         mSigninManager.runAfterOperationInProgress(callCount::incrementAndGet);
         assertEquals(0, callCount.get());
 
-        mSigninManager.onProfileDataWiped();
+        mSigninManager.finishSignOut();
         assertFalse(mSigninManager.isOperationInProgress());
         assertEquals(1, callCount.get());
     }
 
     @Test
     public void callbackNotifiedOnSignin() {
+        CoreAccountInfo account = new CoreAccountInfo(new CoreAccountId("test_at_gmail.com"),
+                new Account("test@gmail.com", AccountManagerFacade.GOOGLE_ACCOUNT_TYPE),
+                "test_at_gmail.com");
+
         // No need to seed accounts to the native code.
         doReturn(true).when(mAccountTrackerService).checkAndSeedSystemAccounts();
         // Request that policy is loaded. It will pause sign-in until onPolicyCheckedBeforeSignIn is
         // invoked.
         doNothing().when(mNativeMock).fetchAndApplyCloudPolicy(anyLong(), any(), any());
 
-        doReturn(true).when(mSigninManager).isSigninSupported();
-        doReturn(true).when(mNativeMock).setPrimaryAccount(anyLong(), any());
-        doNothing().when(mSigninManager).logInSignedInUser();
+        doReturn(account)
+                .when(mIdentityManager)
+                .findExtendedAccountInfoForAccountWithRefreshTokenByEmailAddress(any());
+        doReturn(false).when(mIdentityManager).hasPrimaryAccount();
+        doReturn(true).when(mIdentityMutator).setPrimaryAccount(any());
+        doReturn(account.getId()).when(mIdentityManager).getPrimaryAccountId();
+        doNothing().when(mIdentityMutator).reloadAllAccountsFromSystemWithPrimaryAccount(any());
 
         mSigninManager.onFirstRunCheckDone(); // Allow sign-in.
 
-        Account account = new Account("test@gmail.com", AccountManagerFacade.GOOGLE_ACCOUNT_TYPE);
-        mSigninManager.signIn(account, null, null);
+        mSigninManager.signIn(SigninAccessPoint.UNKNOWN, account.getAccount(), null);
         assertTrue(mSigninManager.isOperationInProgress());
         AtomicInteger callCount = new AtomicInteger(0);
         mSigninManager.runAfterOperationInProgress(callCount::incrementAndGet);
         assertEquals(0, callCount.get());
 
-        mSigninManager.onPolicyFetchedBeforeSignIn();
+        mSigninManager.finishSignInAfterPolicyEnforced();
         assertFalse(mSigninManager.isOperationInProgress());
         assertEquals(1, callCount.get());
+    }
+
+    @Test(expected = AssertionError.class)
+    public void failIfAlreadySignedin() {
+        CoreAccountInfo account = new CoreAccountInfo(new CoreAccountId("test_at_gmail.com"),
+                new Account("test@gmail.com", AccountManagerFacade.GOOGLE_ACCOUNT_TYPE),
+                "test_at_gmail.com");
+
+        // No need to seed accounts to the native code.
+        doReturn(true).when(mAccountTrackerService).checkAndSeedSystemAccounts();
+        // Request that policy is loaded. It will pause sign-in until onPolicyCheckedBeforeSignIn is
+        // invoked.
+        doNothing().when(mNativeMock).fetchAndApplyCloudPolicy(anyLong(), any(), any());
+
+        doReturn(account)
+                .when(mIdentityManager)
+                .findExtendedAccountInfoForAccountWithRefreshTokenByEmailAddress(any());
+        doReturn(true).when(mIdentityManager).hasPrimaryAccount();
+
+        mSigninManager.onFirstRunCheckDone(); // Allow sign-in.
+
+        mSigninManager.signIn(SigninAccessPoint.UNKNOWN, account.getAccount(), null);
+        assertTrue(mSigninManager.isOperationInProgress());
+
+        // The following should throw an assertion error
+        mSigninManager.finishSignInAfterPolicyEnforced();
     }
 }

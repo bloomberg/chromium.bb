@@ -628,13 +628,10 @@ void MediaGalleriesGetMetadataFunction::OnPreferencesInit(
     const std::string& blob_uuid) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  // BlobReader is self-deleting.
-  BlobReader* reader =
-      new BlobReader(GetProfile(), blob_uuid,
-                     base::Bind(&MediaGalleriesGetMetadataFunction::GetMetadata,
-                                this, metadata_type, blob_uuid));
-  reader->SetByteRange(0, net::kMaxBytesToSniff);
-  reader->Start();
+  BlobReader::Read(GetProfile(), blob_uuid,
+                   base::Bind(&MediaGalleriesGetMetadataFunction::GetMetadata,
+                              this, metadata_type, blob_uuid),
+                   0, net::kMaxBytesToSniff);
 }
 
 void MediaGalleriesGetMetadataFunction::GetMetadata(
@@ -713,7 +710,7 @@ void MediaGalleriesGetMetadataFunction::OnSafeMediaMetadataParserDone(
                          std::make_unique<base::ListValue>());
   metadata::AttachedImage* first_image = &attached_images->front();
   content::BrowserContext::CreateMemoryBackedBlob(
-      GetProfile(), first_image->data.c_str(), first_image->data.size(), "",
+      GetProfile(), base::as_bytes(base::make_span(first_image->data)), "",
       base::BindOnce(&MediaGalleriesGetMetadataFunction::ConstructNextBlob,
                      this, std::move(result_dictionary),
                      std::move(attached_images),
@@ -768,7 +765,7 @@ void MediaGalleriesGetMetadataFunction::ConstructNextBlob(
     metadata::AttachedImage* next_image =
         &(*attached_images)[blob_uuids->size()];
     content::BrowserContext::CreateMemoryBackedBlob(
-        GetProfile(), next_image->data.c_str(), next_image->data.size(), "",
+        GetProfile(), base::as_bytes(base::make_span(next_image->data)), "",
         base::BindOnce(&MediaGalleriesGetMetadataFunction::ConstructNextBlob,
                        this, std::move(result_dictionary),
                        std::move(attached_images), std::move(blob_uuids)));

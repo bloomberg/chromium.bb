@@ -11,7 +11,7 @@
 #include "base/strings/string_split.h"
 #include "net/cert/internal/cert_error_params.h"
 #include "net/cert/internal/cert_errors.h"
-#include "net/cert/pem_tokenizer.h"
+#include "net/cert/pem.h"
 #include "net/der/parser.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/boringssl/src/include/openssl/pool.h"
@@ -172,6 +172,16 @@ bool ReadCertChainFromFile(const std::string& file_path_ascii,
   }
 
   return true;
+}
+
+scoped_refptr<ParsedCertificate> ReadCertFromFile(
+    const std::string& file_path_ascii) {
+  ParsedCertificateList chain;
+  if (!ReadCertChainFromFile(file_path_ascii, &chain))
+    return nullptr;
+  if (chain.size() != 1)
+    return nullptr;
+  return chain[0];
 }
 
 bool ReadVerifyCertChainTestFromFile(const std::string& file_path_ascii,

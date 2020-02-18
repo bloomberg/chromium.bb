@@ -10,6 +10,7 @@
 #include "net/third_party/quiche/src/quic/core/quic_utils.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_bug_tracker.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_uint128.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_endian.h"
 
 namespace quic {
 
@@ -50,7 +51,7 @@ bool NullDecrypter::DecryptPacket(uint64_t /*packet_number*/,
                                   size_t* output_length,
                                   size_t max_output_length) {
   QuicDataReader reader(ciphertext.data(), ciphertext.length(),
-                        HOST_BYTE_ORDER);
+                        quiche::HOST_BYTE_ORDER);
   QuicUint128 hash;
 
   if (!ReadHash(&reader, &hash)) {
@@ -77,6 +78,10 @@ std::string NullDecrypter::GenerateHeaderProtectionMask(
 }
 
 size_t NullDecrypter::GetKeySize() const {
+  return 0;
+}
+
+size_t NullDecrypter::GetNoncePrefixSize() const {
   return 0;
 }
 

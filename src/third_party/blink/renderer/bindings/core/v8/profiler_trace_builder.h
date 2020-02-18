@@ -68,8 +68,8 @@ struct ProfilerNodeFrameHash {
 //
 // The trace format is described at:
 // https://wicg.github.io/js-self-profiling/#the-profilertrace-dictionary
-class ProfilerTraceBuilder
-    : public GarbageCollectedFinalized<ProfilerTraceBuilder> {
+class ProfilerTraceBuilder final
+    : public GarbageCollected<ProfilerTraceBuilder> {
  public:
   static ProfilerTrace* FromProfile(ScriptState*,
                                     const v8::CpuProfile* profile,

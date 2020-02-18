@@ -6,16 +6,20 @@
 
 from __future__ import print_function
 
+from chromite.api import api_config
 from chromite.api.controller import dependency
 from chromite.api.gen.chromite.api import depgraph_pb2
 from chromite.lib import cros_test_lib
+from chromite.service import dependency as dependency_service
 
 
-class BoardBuilDependencyTest(cros_test_lib.TestCase):
+class BoardBuilDependencyTest(cros_test_lib.MockTestCase,
+                              api_config.ApiConfigMixin):
   """Unittests for board_build_dependency."""
 
-  def testCreateDepGraphProtoFromJsonMap(self):
-    json_deps = {
+  def setUp(self):
+    self.response = depgraph_pb2.GetBuildDependencyGraphResponse()
+    self.json_deps = {
         'target_board': 'deathstar',
         'package_deps': {
             'commander/darthvader-1.49.3.3': {
@@ -56,18 +60,52 @@ class BoardBuilDependencyTest(cros_test_lib.TestCase):
         },
     }
 
+  def testCreateDepGraphProtoFromJsonMap(self):
+    """Test creating DepGraph protobuf from json map."""
     depgraph_proto = depgraph_pb2.DepGraph()
     dependency.AugmentDepGraphProtoFromJsonMap(
-        json_deps, depgraph_proto)
+        self.json_deps, depgraph_proto)
     self.assertEqual(depgraph_proto.build_target.name, 'deathstar')
     darthvader_dep = None
     for package_dep_info in depgraph_proto.package_deps:
       if package_dep_info.package_info.package_name == 'darthvader':
         darthvader_dep = package_dep_info
     self.assertTrue(darthvader_dep)
-    self.assertEquals(darthvader_dep.dependency_packages[0].category,
-                      'troop')
-    self.assertEquals(darthvader_dep.dependency_packages[0].package_name,
-                      'clone')
-    self.assertEquals(darthvader_dep.dependency_source_paths[0].path,
-                      '/control/room')
+    self.assertEqual(darthvader_dep.dependency_packages[0].category,
+                     'troop')
+    self.assertEqual(darthvader_dep.dependency_packages[0].package_name,
+                     'clone')
+    self.assertEqual(darthvader_dep.dependency_source_paths[0].path,
+                     '/control/room')
+
+  def testGetBuildDependencyGraph(self):
+    """GetBuildDependencyGraph calls helper method with correct args."""
+    patch = self.PatchObject(
+        dependency_service,
+        'GetBuildDependency',
+        return_value=(self.json_deps, self.json_deps))
+    input_proto = depgraph_pb2.GetBuildDependencyGraphRequest()
+    input_proto.build_target.name = 'target'
+    dependency.GetBuildDependencyGraph(input_proto, self.response,
+                                       self.api_config)
+    self.assertEqual(self.response.dep_graph.build_target.name, 'deathstar')
+    patch.assert_called_once()
+
+  def testValidateOnly(self):
+    """Sanity check that a validate only call does not execute any logic."""
+    patch = self.PatchObject(dependency_service, 'GetBuildDependency')
+    input_proto = depgraph_pb2.GetBuildDependencyGraphRequest()
+    input_proto.build_target.name = 'target'
+    dependency.GetBuildDependencyGraph(input_proto, self.response,
+                                       self.validate_only_config)
+    patch.assert_not_called()
+
+  def testMockCall(self):
+    """Test that a mock call does not execute logic, returns mocked value."""
+    patch = self.PatchObject(dependency_service, 'GetBuildDependency')
+    input_proto = depgraph_pb2.GetBuildDependencyGraphRequest()
+    input_proto.build_target.name = 'target'
+    dependency.GetBuildDependencyGraph(input_proto, self.response,
+                                       self.mock_call_config)
+    patch.assert_not_called()
+    self.assertEqual(self.response.dep_graph.build_target.name, 'target_board')

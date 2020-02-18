@@ -30,14 +30,15 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.DeferredStartupHandler;
 import org.chromium.chrome.browser.ShortcutHelper;
+import org.chromium.chrome.browser.document.ChromeIntentUtil;
 import org.chromium.chrome.browser.tab.TabIdManager;
-import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.MultiActivityTestRule;
 import org.chromium.chrome.test.util.ApplicationTestUtils;
-import org.chromium.chrome.test.util.browser.WebappTestHelper;
+import org.chromium.chrome.test.util.browser.webapps.WebappTestHelper;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 /**
  * Tests that WebappActivities are launched correctly.
@@ -98,28 +99,32 @@ public class WebappModeTest {
     }
 
     @Before
-    public void setUp() throws Exception {
-        WebappRegistry.refreshSharedPrefsForTesting();
+    public void setUp() {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            WebappRegistry.refreshSharedPrefsForTesting();
 
-        // Register the webapps so when the data storage is opened, the test doesn't crash. There is
-        // no race condition with the retrieval as AsyncTasks are run sequentially on the background
-        // thread.
-        WebappRegistry.getInstance().register(
-                WEBAPP_1_ID, new WebappRegistry.FetchWebappDataStorageCallback() {
-                    @Override
-                    public void onWebappDataStorageRetrieved(WebappDataStorage storage) {
-                        storage.updateFromShortcutIntent(createIntent(
-                                WEBAPP_1_ID, WEBAPP_1_URL, WEBAPP_1_TITLE, WEBAPP_ICON, true));
-                    }
-                });
-        WebappRegistry.getInstance().register(
-                WEBAPP_2_ID, new WebappRegistry.FetchWebappDataStorageCallback() {
-                    @Override
-                    public void onWebappDataStorageRetrieved(WebappDataStorage storage) {
-                        storage.updateFromShortcutIntent(createIntent(
-                                WEBAPP_1_ID, WEBAPP_1_URL, WEBAPP_1_TITLE, WEBAPP_ICON, true));
-                    }
-                });
+            // Register the webapps so when the data storage is opened, the test doesn't crash.
+            // There is no race condition with the retrieval as AsyncTasks are run sequentially on
+            // the background thread.
+            WebappRegistry.getInstance().register(
+                    WEBAPP_1_ID, new WebappRegistry.FetchWebappDataStorageCallback() {
+                        @Override
+                        public void onWebappDataStorageRetrieved(WebappDataStorage storage) {
+                            WebappInfo webappInfo = WebappInfo.create(createIntent(
+                                    WEBAPP_1_ID, WEBAPP_1_URL, WEBAPP_1_TITLE, WEBAPP_ICON, true));
+                            storage.updateFromWebappInfo(webappInfo);
+                        }
+                    });
+            WebappRegistry.getInstance().register(
+                    WEBAPP_2_ID, new WebappRegistry.FetchWebappDataStorageCallback() {
+                        @Override
+                        public void onWebappDataStorageRetrieved(WebappDataStorage storage) {
+                            WebappInfo webappInfo = WebappInfo.create(createIntent(
+                                    WEBAPP_1_ID, WEBAPP_1_URL, WEBAPP_1_TITLE, WEBAPP_ICON, true));
+                            storage.updateFromWebappInfo(webappInfo);
+                        }
+                    });
+        });
     }
 
     /**
@@ -186,7 +191,7 @@ public class WebappModeTest {
     @Test
     @MediumTest
     @Feature({"Webapps"})
-    public void testBringTabToFront() throws Exception {
+    public void testBringTabToFront() {
         // Start the WebappActivity.
         final WebappActivity firstActivity =
                 startWebappActivity(WEBAPP_1_ID, WEBAPP_1_URL, WEBAPP_1_TITLE, WEBAPP_ICON);
@@ -198,7 +203,7 @@ public class WebappModeTest {
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
 
         // Bring the WebappActivity back via an Intent.
-        Intent intent = IntentUtils.createBringTabToFrontIntent(webappTabId);
+        Intent intent = ChromeIntentUtil.createBringTabToFrontIntent(webappTabId);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         context.startActivity(intent);
 
@@ -257,7 +262,7 @@ public class WebappModeTest {
     @Test
     @MediumTest
     @Feature({"Webapps"})
-    public void testWebappInfoReuse() throws Exception {
+    public void testWebappInfoReuse() {
         Intent intent = createIntent(
                 WebappActivityTestRule.WEBAPP_ID, WEBAPP_2_URL, WEBAPP_2_TITLE, WEBAPP_ICON, true);
         Intent newIntent = createIntent(
@@ -288,7 +293,7 @@ public class WebappModeTest {
     @Test
     //    @MediumTest
     //    @Feature({"Webapps"})
-    public void testSetsHasBeenLaunchedOnFirstLaunch() throws Exception {
+    public void testSetsHasBeenLaunchedOnFirstLaunch() {
         WebappDataStorage storage = WebappRegistry.getInstance().getWebappDataStorage(WEBAPP_1_ID);
         Assert.assertFalse(storage.hasBeenLaunched());
 
@@ -319,7 +324,7 @@ public class WebappModeTest {
                 Activity lastActivity = ApplicationStatus.getLastTrackedFocusedActivity();
                 return isWebappActivityReady(lastActivity);
             }
-        });
+        }, 10000, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
         return (WebappActivity) ApplicationStatus.getLastTrackedFocusedActivity();
     }
 

@@ -6,10 +6,13 @@
 #define COMPONENTS_SYNC_DEVICE_INFO_DEVICE_INFO_H_
 
 #include <memory>
+#include <set>
 #include <string>
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/optional.h"
+#include "base/system/sys_info.h"
 #include "base/time/time.h"
 #include "components/sync/protocol/sync.pb.h"
 
@@ -22,14 +25,54 @@ namespace syncer {
 // A class that holds information regarding the properties of a device.
 class DeviceInfo {
  public:
+  // A struct that holds information regarding to FCM web push.
+  struct SharingTargetInfo {
+    // FCM registration token of device.
+    std::string fcm_token;
+
+    // Public key for Sharing message encryption[RFC8291].
+    std::string p256dh;
+
+    // Auth secret for Sharing message encryption[RFC8291].
+    std::string auth_secret;
+
+    bool operator==(const SharingTargetInfo& other) const;
+  };
+
+  // A struct that holds information regarding to Sharing features.
+  struct SharingInfo {
+    SharingInfo(SharingTargetInfo vapid_target_info,
+                SharingTargetInfo sharing_target_info,
+                std::set<sync_pb::SharingSpecificFields::EnabledFeatures>
+                    enabled_features);
+    SharingInfo(const SharingInfo& other);
+    SharingInfo(SharingInfo&& other);
+    SharingInfo& operator=(const SharingInfo& other);
+    ~SharingInfo();
+
+    // Target info using VAPID key.
+    // TODO(crbug.com/1012226): Deprecate when VAPID migration is over.
+    SharingTargetInfo vapid_target_info;
+
+    // Target info using Sharing sender ID.
+    SharingTargetInfo sender_id_target_info;
+
+    // Set of Sharing features enabled on the device.
+    std::set<sync_pb::SharingSpecificFields::EnabledFeatures> enabled_features;
+
+    bool operator==(const SharingInfo& other) const;
+  };
+
   DeviceInfo(const std::string& guid,
              const std::string& client_name,
              const std::string& chrome_version,
              const std::string& sync_user_agent,
              const sync_pb::SyncEnums::DeviceType device_type,
              const std::string& signin_scoped_device_id,
+             const base::SysInfo::HardwareInfo& hardware_info,
              base::Time last_updated_timestamp,
-             bool send_tab_to_self_receiving_enabled);
+             bool send_tab_to_self_receiving_enabled,
+             const base::Optional<SharingInfo>& sharing_info);
   ~DeviceInfo();
 
   // Sync specific unique identifier for the device. Note if a device
@@ -59,11 +102,16 @@ class DeviceInfo {
   // annotating login scoped refresh token.
   const std::string& signin_scoped_device_id() const;
 
+  const base::SysInfo::HardwareInfo& hardware_info() const;
+
   // Returns the time at which this device was last updated to the sync servers.
   base::Time last_updated_timestamp() const;
 
   // Whether the receiving side of the SendTabToSelf feature is enabled.
   bool send_tab_to_self_receiving_enabled() const;
+
+  // Returns Sharing related info of the device.
+  const base::Optional<SharingInfo>& sharing_info() const;
 
   // Gets the OS in string form.
   std::string GetOSString() const;
@@ -82,6 +130,10 @@ class DeviceInfo {
 
   void set_send_tab_to_self_receiving_enabled(bool new_value);
 
+  void set_sharing_info(const base::Optional<SharingInfo>& sharing_info);
+
+  void set_client_name(const std::string& client_name);
+
   // Converts the |DeviceInfo| values to a JS friendly DictionaryValue,
   // which extension APIs can expose to third party apps.
   std::unique_ptr<base::DictionaryValue> ToValue();
@@ -89,7 +141,7 @@ class DeviceInfo {
  private:
   const std::string guid_;
 
-  const std::string client_name_;
+  std::string client_name_;
 
   const std::string chrome_version_;
 
@@ -105,9 +157,13 @@ class DeviceInfo {
   // and they are also reset when app/extension is uninstalled.
   std::string public_id_;
 
+  base::SysInfo::HardwareInfo hardware_info_;
+
   const base::Time last_updated_timestamp_;
 
   bool send_tab_to_self_receiving_enabled_;
+
+  base::Optional<SharingInfo> sharing_info_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceInfo);
 };

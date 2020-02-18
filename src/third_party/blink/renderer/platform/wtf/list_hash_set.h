@@ -25,6 +25,7 @@
 
 #include <memory>
 #include "third_party/blink/renderer/platform/wtf/allocator/partition_allocator.h"
+#include "third_party/blink/renderer/platform/wtf/conditional_destructor.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 
 namespace WTF {
@@ -76,7 +77,10 @@ template <typename ValueArg,
           typename HashArg = typename DefaultHash<ValueArg>::Hash,
           typename AllocatorArg =
               ListHashSetAllocator<ValueArg, inlineCapacity>>
-class ListHashSet {
+class ListHashSet
+    : public ConditionalDestructor<
+          ListHashSet<ValueArg, inlineCapacity, HashArg, AllocatorArg>,
+          AllocatorArg::kIsGarbageCollected> {
   typedef AllocatorArg Allocator;
   USE_ALLOCATOR(ListHashSet, Allocator);
 
@@ -145,10 +149,10 @@ class ListHashSet {
 
   ListHashSet();
   ListHashSet(const ListHashSet&);
-  ListHashSet(ListHashSet&&) noexcept;
+  ListHashSet(ListHashSet&&);
   ListHashSet& operator=(const ListHashSet&);
-  ListHashSet& operator=(ListHashSet&&) noexcept;
-  ~ListHashSet();
+  ListHashSet& operator=(ListHashSet&&);
+  void Finalize();
 
   void Swap(ListHashSet&);
 
@@ -377,8 +381,8 @@ struct ListHashSetAllocator : public PartitionAllocator {
 
   bool InPool(Node* node) { return node >= Pool() && node < PastPool(); }
 
-  static void TraceValue(typename PartitionAllocator::Visitor* visitor,
-                         Node* node) {}
+  template <typename VisitorDispatcher>
+  static void TraceValue(VisitorDispatcher, Node*) {}
 
  private:
   Node* Pool() { return reinterpret_cast_ptr<Node*>(pool_); }
@@ -447,8 +451,8 @@ class ListHashSetNode : public ListHashSetNodeBase<ValueArg> {
     allocator->Deallocate(this);
   }
 
-  template <typename VisitorDispatcher>
-  void Trace(VisitorDispatcher visitor) {
+  template <typename VisitorDispatcher, typename A = NodeAllocator>
+  std::enable_if_t<A::kIsGarbageCollected> Trace(VisitorDispatcher visitor) {
     // The conservative stack scan can find nodes that have been removed
     // from the set and destructed. We don't need to trace these, and it
     // would be wrong to do so, because the class will not expect the trace
@@ -776,8 +780,7 @@ inline ListHashSet<T, inlineCapacity, U, V>::ListHashSet(
 }
 
 template <typename T, size_t inlineCapacity, typename U, typename V>
-inline ListHashSet<T, inlineCapacity, U, V>::ListHashSet(
-    ListHashSet&& other) noexcept
+inline ListHashSet<T, inlineCapacity, U, V>::ListHashSet(ListHashSet&& other)
     : head_(nullptr), tail_(nullptr) {
   Swap(other);
 }
@@ -792,7 +795,7 @@ ListHashSet<T, inlineCapacity, U, V>::operator=(const ListHashSet& other) {
 
 template <typename T, size_t inlineCapacity, typename U, typename V>
 inline ListHashSet<T, inlineCapacity, U, V>&
-ListHashSet<T, inlineCapacity, U, V>::operator=(ListHashSet&& other) noexcept {
+ListHashSet<T, inlineCapacity, U, V>::operator=(ListHashSet&& other) {
   Swap(other);
   return *this;
 }
@@ -805,14 +808,10 @@ inline void ListHashSet<T, inlineCapacity, U, V>::Swap(ListHashSet& other) {
   allocator_provider_.Swap(other.allocator_provider_);
 }
 
-// For design of the destructor, please refer to
-// [here](https://docs.google.com/document/d/1AoGTvb3tNLx2tD1hNqAfLRLmyM59GM0O-7rCHTT_7_U/)
 template <typename T, size_t inlineCapacity, typename U, typename V>
-inline ListHashSet<T, inlineCapacity, U, V>::~ListHashSet() {
-  // If this is called during GC sweeping, it must not touch other heap objects
-  // such as the ListHashSetNodes that is touching in DeleteAllNodes().
-  if (Allocator::IsSweepForbidden())
-    return;
+inline void ListHashSet<T, inlineCapacity, U, V>::Finalize() {
+  static_assert(!Allocator::kIsGarbageCollected,
+                "GCed collections can't be finalized");
   DeleteAllNodes();
   allocator_provider_.ReleaseAllocator();
 }
@@ -1128,7 +1127,7 @@ void ListHashSet<T, inlineCapacity, U, V>::DeleteAllNodes() {
 template <typename T, size_t inlineCapacity, typename U, typename V>
 template <typename VisitorDispatcher>
 void ListHashSet<T, inlineCapacity, U, V>::Trace(VisitorDispatcher visitor) {
-  static_assert(HashTraits<T>::kWeakHandlingFlag == kNoWeakHandling,
+  static_assert(!IsWeak<T>::value,
                 "HeapListHashSet does not support weakness, consider using "
                 "HeapLinkedHashSet instead.");
   // This marks all the nodes and their contents live that can be accessed

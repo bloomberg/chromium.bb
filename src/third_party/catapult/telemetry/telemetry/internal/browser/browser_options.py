@@ -21,7 +21,6 @@ from telemetry.internal.browser import profile_types
 from telemetry.internal.platform import device_finder
 from telemetry.internal.platform import remote_platform_options
 from telemetry.internal.util import binary_manager
-from telemetry.internal.util import global_hooks
 from telemetry.util import wpr_modes
 
 
@@ -149,9 +148,6 @@ class BrowserFinderOptions(optparse.Values):
 
     # Debugging options
     group = optparse.OptionGroup(parser, 'When things go wrong')
-    group.add_option(
-        '-v', '--verbose', action='count', dest='verbosity',
-        help='Increase verbosity level (repeat as needed)')
     group.add_option('--print-bootstrap-deps',
                      action='store_true',
                      help='Output bootstrap deps list.')
@@ -179,10 +175,14 @@ class BrowserFinderOptions(optparse.Values):
         'test is executed at maximum CPU speed in order to minimize noise '
         '(specially important for dashboards / continuous builds). '
         'This option prevents Telemetry from tweaking such platform settings.')
+    # TODO(crbug.com/1025207): Rename this to --support-apk
     group.add_option(
         '--webview-embedder-apk',
+        action="append",
+        default=[],
         help='When running tests on android webview, more than one apk needs to'
-        ' be installed. The apk running the test is said to embed webview.')
+        ' be installed. The apk running the test is said to embed webview. More'
+        ' than one apk may be specified if needed.')
     parser.add_option_group(group)
 
     # Remote platform options
@@ -196,11 +196,12 @@ class BrowserFinderOptions(optparse.Values):
         'If specified as "android", all available Android devices are '
         'used.')
     group.add_option(
-        '--install-bundle-module', dest='modules_to_install', action='append',
-        default=['base'],
+        '--install-bundle-module',
+        dest='modules_to_install',
+        action='append',
+        default=[],
         help='Specify Android App Bundle modules to install in addition to the '
-             'base module. Ignored on Non-Android platforms or if using a '
-             'standard APK instead of bundles.')
+        'base module. Ignored on Non-Android platforms.')
     parser.add_option_group(group)
 
     # CPU profiling on Android/Linux/ChromeOS.
@@ -256,14 +257,6 @@ class BrowserFinderOptions(optparse.Values):
           continue
         self.__dict__[k] = v
       ret = real_parse(args, self)  # pylint: disable=E1121
-
-      if self.verbosity >= 2:
-        global_hooks.InstallSpyOnPopenArgs()
-        logging.getLogger().setLevel(logging.DEBUG)
-      elif self.verbosity:
-        logging.getLogger().setLevel(logging.INFO)
-      else:
-        logging.getLogger().setLevel(logging.WARNING)
 
       if self.chromium_output_dir:
         os.environ['CHROMIUM_OUTPUT_DIR'] = self.chromium_output_dir
@@ -327,6 +320,17 @@ class BrowserFinderOptions(optparse.Values):
       return ret
     parser.parse_args = ParseArgs
     return parser
+
+  def IsBrowserTypeRelevant(self, browser_type):
+    """Determines if the browser_type is worth initializing.
+
+    This check is used to sidestep any unnecessary work involved with searching
+    for a browser that might not actually be needed. For example, this check
+    could be used to prevent Telemetry from searching for a Clank browser if
+    browser_type is android-weblayer.
+    """
+    return (browser_type == self.browser_type or
+            self.browser_type in ('list', 'any',))
 
   # TODO(eakuefner): Factor this out into OptionBuilder pattern
   def BuildRemotePlatformOptions(self):

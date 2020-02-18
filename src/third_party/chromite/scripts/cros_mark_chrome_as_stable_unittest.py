@@ -8,7 +8,6 @@
 from __future__ import print_function
 
 import base64
-import cStringIO
 import os
 from textwrap import dedent
 
@@ -27,12 +26,6 @@ from chromite.scripts import cros_mark_chrome_as_stable
 
 unstable_data = 'KEYWORDS=~x86 ~arm'
 stable_data = 'KEYWORDS=x86 arm'
-
-
-class _StubCommandResult(object):
-  """Helper for mocking RunCommand results."""
-  def __init__(self, msg):
-    self.output = msg
 
 
 class CrosMarkChromeAsStable(cros_test_lib.MockTempDirTestCase):
@@ -128,7 +121,7 @@ class CrosMarkChromeAsStable(cros_test_lib.MockTempDirTestCase):
     result = {'log': [{'commit': 'deadbeef' * 5}]}
     self.PatchObject(gob_util, 'FetchUrlJson', return_value=result)
     revision = gob_util.GetTipOfTrunkRevision(A_URL)
-    self.assertEquals(revision, 'deadbeef' * 5)
+    self.assertEqual(revision, 'deadbeef' * 5)
 
   def testGetTipOfTrunkVersion(self):
     """Tests if we get the latest version from TOT."""
@@ -137,13 +130,13 @@ class CrosMarkChromeAsStable(cros_test_lib.MockTempDirTestCase):
         A=8
         B=0
         C=256
-        D=0""")
-    result = cStringIO.StringIO(base64.b64encode(TEST_VERSION_CONTENTS))
+        D=0""").encode('utf-8')
+    result = base64.b64encode(TEST_VERSION_CONTENTS)
     self.PatchObject(gob_util, 'FetchUrl', return_value=result)
     # pylint: disable=protected-access
     version = cros_mark_chrome_as_stable._GetSpecificVersionUrl(
         TEST_URL, 'test-revision')
-    self.assertEquals(version, '8.0.256.0')
+    self.assertEqual(version, '8.0.256.0')
 
   def testCheckIfChromeRightForOS(self):
     """Tests if we can find the chromeos build from our mock DEPS."""
@@ -164,14 +157,14 @@ class CrosMarkChromeAsStable(cros_test_lib.MockTempDirTestCase):
     TEST_REFS_JSON = dict((tag, None) for tag in TEST_TAGS)
     TEST_BAD_DEPS_CONTENT = dedent("""\
         buildspec_platforms: 'TRS-80,',
-        """)
+        """).encode('utf-8')
     TEST_GOOD_DEPS_CONTENT = dedent("""\
         buildspec_platforms: 'chromeos,',
-        """)
+        """).encode('utf-8')
 
     self.PatchObject(gob_util, 'FetchUrl', side_effect=(
-        cStringIO.StringIO(base64.b64encode(TEST_BAD_DEPS_CONTENT)),
-        cStringIO.StringIO(base64.b64encode(TEST_GOOD_DEPS_CONTENT)),
+        base64.b64encode(TEST_BAD_DEPS_CONTENT),
+        base64.b64encode(TEST_GOOD_DEPS_CONTENT),
     ))
     self.PatchObject(gob_util, 'FetchUrlJson', side_effect=(TEST_REFS_JSON,))
     release = cros_mark_chrome_as_stable.GetLatestRelease(TEST_URL)
@@ -185,10 +178,10 @@ class CrosMarkChromeAsStable(cros_test_lib.MockTempDirTestCase):
     TEST_REFS_JSON = dict((tag, None) for tag in TEST_TAGS)
     TEST_DEPS_CONTENT = dedent("""\
         buildspec_platforms: 'chromeos,',
-        """)
+        """).encode('utf-8')
 
     self.PatchObject(gob_util, 'FetchUrl', side_effect=(
-        cStringIO.StringIO(base64.b64encode(TEST_DEPS_CONTENT)),
+        base64.b64encode(TEST_DEPS_CONTENT),
     ))
     self.PatchObject(gob_util, 'FetchUrlJson', side_effect=(TEST_REFS_JSON,))
     release = cros_mark_chrome_as_stable.GetLatestRelease(TEST_URL, '7.0.224')
@@ -236,7 +229,7 @@ class CrosMarkChromeAsStable(cros_test_lib.MockTempDirTestCase):
       new_ebuild_path: path to the to be created path
       commit_string_indicator: a string that the commit message must contain
     """
-    self.PatchObject(cros_build_lib, 'RunCommand',
+    self.PatchObject(cros_build_lib, 'run',
                      side_effect=Exception('should not be called'))
     self.PatchObject(portage_util.EBuild, 'GetCrosWorkonVars',
                      return_value=None)

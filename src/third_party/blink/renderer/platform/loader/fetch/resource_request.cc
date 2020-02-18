@@ -29,11 +29,14 @@
 #include <memory>
 
 #include "base/unguessable_token.h"
+#include "services/network/public/mojom/ip_address_space.mojom-blink.h"
+#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/platform/network/encoded_form_data.h"
 #include "third_party/blink/renderer/platform/network/http_names.h"
 #include "third_party/blink/renderer/platform/network/network_utils.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/weborigin/referrer.h"
 
 namespace blink {
 
@@ -88,16 +91,15 @@ std::unique_ptr<ResourceRequest> ResourceRequest::CreateRedirectRequest(
     const KURL& new_url,
     const AtomicString& new_method,
     const KURL& new_site_for_cookies,
-    scoped_refptr<const SecurityOrigin> new_top_frame_origin,
     const String& new_referrer,
     network::mojom::ReferrerPolicy new_referrer_policy,
     bool skip_service_worker) const {
   std::unique_ptr<ResourceRequest> request =
       std::make_unique<ResourceRequest>(new_url);
   request->SetRequestorOrigin(RequestorOrigin());
+  request->SetIsolatedWorldOrigin(IsolatedWorldOrigin());
   request->SetHttpMethod(new_method);
   request->SetSiteForCookies(new_site_for_cookies);
-  request->SetTopFrameOrigin(std::move(new_top_frame_origin));
   String referrer =
       new_referrer.IsEmpty() ? Referrer::NoReferrer() : String(new_referrer);
   // TODO(domfarolino): Stop storing ResourceRequest's generated referrer as a
@@ -131,6 +133,7 @@ std::unique_ptr<ResourceRequest> ResourceRequest::CreateRedirectRequest(
   request->SetFromOriginDirtyStyleSheet(IsFromOriginDirtyStyleSheet());
   request->SetSignedExchangePrefetchCacheEnabled(
       IsSignedExchangePrefetchCacheEnabled());
+  request->SetRecursivePrefetchToken(RecursivePrefetchToken());
 
   return request;
 }
@@ -351,6 +354,16 @@ bool ResourceRequest::IsConditional() const {
 
 void ResourceRequest::SetHasUserGesture(bool has_user_gesture) {
   has_user_gesture_ |= has_user_gesture;
+}
+
+bool ResourceRequest::CanDisplay(const KURL& url) const {
+  if (RequestorOrigin()->CanDisplay(url))
+    return true;
+
+  if (IsolatedWorldOrigin() && IsolatedWorldOrigin()->CanDisplay(url))
+    return true;
+
+  return false;
 }
 
 const CacheControlHeader& ResourceRequest::GetCacheControlHeader() const {

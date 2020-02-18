@@ -60,6 +60,15 @@ class __thisIsHereToForceASemicolonAfterThisMacro;
  private:                                   \
   friend class ::WTF::internal::__thisIsHereToForceASemicolonAfterThisMacro
 
+#define IS_GARBAGE_COLLECTED_CONTAINER_TYPE()         \
+  IS_GARBAGE_COLLECTED_TYPE();                        \
+                                                      \
+ public:                                              \
+  using IsGarbageCollectedCollectionTypeMarker = int; \
+                                                      \
+ private:                                             \
+  friend class ::WTF::internal::__thisIsHereToForceASemicolonAfterThisMacro
+
 #if defined(__clang__)
 #define ANNOTATE_STACK_ALLOCATED \
   __attribute__((annotate("blink_stack_allocated")))
@@ -146,5 +155,21 @@ inline void* operator new(size_t, NotNullTag, void* location) {
   DCHECK(location);
   return location;
 }
+
+#if defined(__clang__) && __has_attribute(uninitialized)
+// Attribute "uninitialized" disables -ftrivial-auto-var-init=pattern for
+// the specified variable.
+//
+// -ftrivial-auto-var-init is security risk mitigation feature, so attribute
+// should not be used "just in case", but only to fix real performance
+// bottlenecks when other approaches do not work. In general the compiler is
+// quite effective at eliminating unneeded initializations introduced by the
+// flag, e.g. when they are followed by actual initialization by a program.
+// However if compiler optimization fails and code refactoring is hard, the
+// attribute can be used as a workaround.
+#define STACK_UNINITIALIZED __attribute__((uninitialized))
+#else
+#define STACK_UNINITIALIZED
+#endif
 
 #endif /* WTF_Allocator_h */

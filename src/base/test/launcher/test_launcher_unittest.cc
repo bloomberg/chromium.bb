@@ -231,7 +231,6 @@ TEST_F(TestLauncherTest, UsingCommandLineFilter) {
                  {"firstTest", "secondTest", "DISABLED_firstTestDisabled"});
   SetUpExpectCalls();
   command_line->AppendSwitchASCII("gtest_filter", "Test*.first*");
-  using ::testing::_;
   std::vector<std::string> tests_names = {"Test.firstTest"};
   using ::testing::_;
   EXPECT_CALL(test_launcher, LaunchChildGTestProcess(
@@ -432,7 +431,7 @@ bool ValidateTestResultObject(const Value* iteration_data,
                   << results->GetList().size();
     return false;
   }
-  const Value& val = results->GetList().at(0);
+  const Value& val = results->GetList()[0];
   if (!val.is_dict()) {
     ADD_FAILURE() << "Unexpected type";
     return false;
@@ -464,7 +463,7 @@ bool ValidateTestResultObject(const Value* iteration_data,
 
   for (unsigned i = 0; i < test_result.test_result_parts.size(); i++) {
     TestResultPart result_part = test_result.test_result_parts.at(i);
-    const Value& part_dict = value->GetList().at(i);
+    const Value& part_dict = value->GetList()[i];
 
     result &= ValidateKeyValue(part_dict, "type", result_part.TypeAsString());
     result &= ValidateKeyValue(part_dict, "file", result_part.file_name);
@@ -493,8 +492,8 @@ bool ValidateStringList(const Optional<Value>& root,
   }
 
   for (unsigned i = 0; i < values.size(); i++) {
-    if (!val->GetList().at(i).is_string() &&
-        val->GetList().at(i).GetString().compare(values.at(i))) {
+    if (!val->GetList()[i].is_string() &&
+        val->GetList()[i].GetString().compare(values.at(i))) {
       ADD_FAILURE() << "Expected list values do not match actual list";
       return false;
     }
@@ -555,7 +554,7 @@ TEST_F(TestLauncherTest, JsonSummary) {
   ASSERT_TRUE(val);
   ASSERT_EQ(2u, val->GetList().size());
   for (size_t i = 0; i < val->GetList().size(); i++) {
-    const Value* iteration_val = &(val->GetList().at(i));
+    const Value* iteration_val = &(val->GetList()[i]);
     ASSERT_TRUE(iteration_val);
     ASSERT_TRUE(iteration_val->is_dict());
     EXPECT_EQ(2u, iteration_val->DictSize());
@@ -702,17 +701,8 @@ TEST_F(UnitTestLauncherDelegateTester, RunMockTests) {
   Value* val = root->FindDictKey("test_locations");
   ASSERT_TRUE(val);
   EXPECT_EQ(4u, val->DictSize());
-  // If path or test location changes, the following expectation
-  // will need to change accordingly.
-  std::string file_name = "../../base/test/launcher/test_launcher_unittest.cc";
-  EXPECT_TRUE(test_launcher_utils::ValidateTestLocation(
-      val, "MockUnitTests.DISABLED_PassTest", file_name, 660));
-  EXPECT_TRUE(test_launcher_utils::ValidateTestLocation(
-      val, "MockUnitTests.DISABLED_FailTest", file_name, 664));
-  EXPECT_TRUE(test_launcher_utils::ValidateTestLocation(
-      val, "MockUnitTests.DISABLED_CrashTest", file_name, 668));
-  EXPECT_TRUE(test_launcher_utils::ValidateTestLocation(
-      val, "MockUnitTests.DISABLED_NoRunTest", file_name, 672));
+
+  EXPECT_TRUE(test_launcher_utils::ValidateTestLocations(val, "MockUnitTests"));
 
   val = root->FindListKey("per_iteration_data");
   ASSERT_TRUE(val);

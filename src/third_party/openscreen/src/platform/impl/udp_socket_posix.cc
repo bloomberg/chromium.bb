@@ -15,10 +15,15 @@
 
 #include <cstring>
 #include <memory>
+#include <sstream>
+#include <string>
+#include <type_traits>
 
 #include "absl/types/optional.h"
-#include "platform/api/logging.h"
+#include "platform/api/task_runner.h"
 #include "platform/base/error.h"
+#include "platform/impl/udp_socket_reader_posix.h"
+#include "util/logging.h"
 
 namespace openscreen {
 namespace platform {
@@ -52,20 +57,46 @@ ErrorOr<int> CreateNonBlockingUdpSocket(int domain) {
 
 UdpSocketPosix::UdpSocketPosix(TaskRunner* task_runner,
                                Client* client,
-                               int fd,
-                               const IPEndpoint& local_endpoint)
-    : UdpSocket(task_runner, client), fd_(fd), local_endpoint_(local_endpoint) {
+                               SocketHandle handle,
+                               const IPEndpoint& local_endpoint,
+                               PlatformClientPosix* platform_client)
+    : task_runner_(task_runner),
+      client_(client),
+      handle_(handle),
+      local_endpoint_(local_endpoint),
+      platform_client_(platform_client) {
+  OSP_DCHECK(task_runner_);
   OSP_DCHECK(local_endpoint_.address.IsV4() || local_endpoint_.address.IsV6());
+
+  if (handle_.fd >= 0) {
+    if (platform_client_) {
+      platform_client_->udp_socket_reader()->OnCreate(this);
+    }
+  }
 }
 
 UdpSocketPosix::~UdpSocketPosix() {
-  close(fd_);
+  Close();
+}
+
+const SocketHandle& UdpSocketPosix::GetHandle() const {
+  return handle_;
 }
 
 // static
 ErrorOr<UdpSocketUniquePtr> UdpSocket::Create(TaskRunner* task_runner,
                                               Client* client,
                                               const IPEndpoint& endpoint) {
+  static std::atomic_bool in_create{false};
+  const bool in_create_local = in_create.exchange(true);
+  OSP_DCHECK_EQ(in_create_local, false)
+      << "Another UdpSocket::Create call is in progress. Calls to this method "
+         "must be seralized.";
+
+  if (in_create_local) {
+    return Error::Code::kAgain;
+  }
+
   int domain;
   switch (endpoint.address.version()) {
     case Version::kV4:
@@ -77,10 +108,14 @@ ErrorOr<UdpSocketUniquePtr> UdpSocket::Create(TaskRunner* task_runner,
   }
   const ErrorOr<int> fd = CreateNonBlockingUdpSocket(domain);
   if (!fd) {
+    in_create = false;
     return fd.error();
   }
-  return UdpSocketUniquePtr(static_cast<UdpSocket*>(
-      new UdpSocketPosix(task_runner, client, fd.value(), endpoint)));
+
+  auto socket = UdpSocketUniquePtr(static_cast<UdpSocket*>(new UdpSocketPosix(
+      task_runner, client, SocketHandle(fd.value()), endpoint)));
+  in_create = false;
+  return socket;
 }
 
 bool UdpSocketPosix::IsIPv4() const {
@@ -99,7 +134,8 @@ IPEndpoint UdpSocketPosix::GetLocalEndpoint() const {
       case UdpSocket::Version::kV4: {
         struct sockaddr_in address;
         socklen_t address_len = sizeof(address);
-        if (getsockname(fd_, reinterpret_cast<struct sockaddr*>(&address),
+        if (getsockname(handle_.fd,
+                        reinterpret_cast<struct sockaddr*>(&address),
                         &address_len) == 0) {
           OSP_DCHECK_EQ(address.sin_family, AF_INET);
           local_endpoint_.address =
@@ -113,7 +149,8 @@ IPEndpoint UdpSocketPosix::GetLocalEndpoint() const {
       case UdpSocket::Version::kV6: {
         struct sockaddr_in6 address;
         socklen_t address_len = sizeof(address);
-        if (getsockname(fd_, reinterpret_cast<struct sockaddr*>(&address),
+        if (getsockname(handle_.fd,
+                        reinterpret_cast<struct sockaddr*>(&address),
                         &address_len) == 0) {
           OSP_DCHECK_EQ(address.sin6_family, AF_INET6);
           local_endpoint_.address =
@@ -129,14 +166,19 @@ IPEndpoint UdpSocketPosix::GetLocalEndpoint() const {
   return local_endpoint_;
 }
 
-Error UdpSocketPosix::Bind() {
+void UdpSocketPosix::Bind() {
+  if (is_closed()) {
+    OnError(Error::Code::kSocketClosedFailure);
+    return;
+  }
+
   // This is effectively a boolean passed to setsockopt() to allow a future
   // bind() on the same socket to succeed, even if the address is already in
   // use. This is pretty much universally the desired behavior.
   const int reuse_addr = 1;
-  if (setsockopt(fd_, SOL_SOCKET, SO_REUSEADDR, &reuse_addr,
+  if (setsockopt(handle_.fd, SOL_SOCKET, SO_REUSEADDR, &reuse_addr,
                  sizeof(reuse_addr)) == -1) {
-    return Error(Error::Code::kSocketOptionSettingFailure, strerror(errno));
+    OnError(Error::Code::kSocketOptionSettingFailure);
   }
 
   switch (local_endpoint_.address.version()) {
@@ -146,11 +188,11 @@ Error UdpSocketPosix::Bind() {
       address.sin_port = htons(local_endpoint_.port);
       local_endpoint_.address.CopyToV4(
           reinterpret_cast<uint8_t*>(&address.sin_addr.s_addr));
-      if (bind(fd_, reinterpret_cast<struct sockaddr*>(&address),
+      if (bind(handle_.fd, reinterpret_cast<struct sockaddr*>(&address),
                sizeof(address)) == -1) {
-        return Error(Error::Code::kSocketBindFailure, strerror(errno));
+        OnError(Error::Code::kSocketBindFailure);
       }
-      return Error::Code::kNone;
+      return;
     }
 
     case UdpSocket::Version::kV6: {
@@ -161,20 +203,24 @@ Error UdpSocketPosix::Bind() {
       local_endpoint_.address.CopyToV6(
           reinterpret_cast<uint8_t*>(&address.sin6_addr));
       address.sin6_scope_id = 0;
-      if (bind(fd_, reinterpret_cast<struct sockaddr*>(&address),
+      if (bind(handle_.fd, reinterpret_cast<struct sockaddr*>(&address),
                sizeof(address)) == -1) {
-        return Error(Error::Code::kSocketBindFailure, strerror(errno));
+        OnError(Error::Code::kSocketBindFailure);
       }
-      return Error::Code::kNone;
+      return;
     }
   }
 
   OSP_NOTREACHED();
-  return Error::Code::kUnknownError;
 }
 
-Error UdpSocketPosix::SetMulticastOutboundInterface(
+void UdpSocketPosix::SetMulticastOutboundInterface(
     NetworkInterfaceIndex ifindex) {
+  if (is_closed()) {
+    OnError(Error::Code::kSocketClosedFailure);
+    return;
+  }
+
   switch (local_endpoint_.address.version()) {
     case UdpSocket::Version::kV4: {
       struct ip_mreqn multicast_properties;
@@ -183,37 +229,43 @@ Error UdpSocketPosix::SetMulticastOutboundInterface(
       multicast_properties.imr_multiaddr.s_addr = INADDR_ANY;
       multicast_properties.imr_ifindex =
           static_cast<IPv4NetworkInterfaceIndex>(ifindex);
-      if (setsockopt(fd_, IPPROTO_IP, IP_MULTICAST_IF, &multicast_properties,
+      if (setsockopt(handle_.fd, IPPROTO_IP, IP_MULTICAST_IF,
+                     &multicast_properties,
                      sizeof(multicast_properties)) == -1) {
-        return Error(Error::Code::kSocketOptionSettingFailure, strerror(errno));
+        OnError(Error::Code::kSocketOptionSettingFailure);
       }
-      return Error::Code::kNone;
+      return;
     }
 
     case UdpSocket::Version::kV6: {
       const auto index = static_cast<IPv6NetworkInterfaceIndex>(ifindex);
-      if (setsockopt(fd_, IPPROTO_IPV6, IPV6_MULTICAST_IF, &index,
+      if (setsockopt(handle_.fd, IPPROTO_IPV6, IPV6_MULTICAST_IF, &index,
                      sizeof(index)) == -1) {
-        return Error(Error::Code::kSocketOptionSettingFailure, strerror(errno));
+        OnError(Error::Code::kSocketOptionSettingFailure);
       }
-      return Error::Code::kNone;
+      return;
     }
   }
 
   OSP_NOTREACHED();
-  return Error::Code::kUnknownError;
 }
 
-Error UdpSocketPosix::JoinMulticastGroup(const IPAddress& address,
-                                         NetworkInterfaceIndex ifindex) {
+void UdpSocketPosix::JoinMulticastGroup(const IPAddress& address,
+                                        NetworkInterfaceIndex ifindex) {
+  if (is_closed()) {
+    OnError(Error::Code::kSocketClosedFailure);
+    return;
+  }
+
   switch (local_endpoint_.address.version()) {
     case UdpSocket::Version::kV4: {
       // Passed as data to setsockopt().  1 means return IP_PKTINFO control data
       // in recvmsg() calls.
       const int enable_pktinfo = 1;
-      if (setsockopt(fd_, IPPROTO_IP, IP_PKTINFO, &enable_pktinfo,
+      if (setsockopt(handle_.fd, IPPROTO_IP, IP_PKTINFO, &enable_pktinfo,
                      sizeof(enable_pktinfo)) == -1) {
-        return Error(Error::Code::kSocketOptionSettingFailure, strerror(errno));
+        OnError(Error::Code::kSocketOptionSettingFailure);
+        return;
       }
       struct ip_mreqn multicast_properties;
       // Appropriate address is set based on |imr_ifindex| when set.
@@ -224,20 +276,22 @@ Error UdpSocketPosix::JoinMulticastGroup(const IPAddress& address,
                     "IPv4 address requires exactly 4 bytes");
       address.CopyToV4(
           reinterpret_cast<uint8_t*>(&multicast_properties.imr_multiaddr));
-      if (setsockopt(fd_, IPPROTO_IP, IP_ADD_MEMBERSHIP, &multicast_properties,
+      if (setsockopt(handle_.fd, IPPROTO_IP, IP_ADD_MEMBERSHIP,
+                     &multicast_properties,
                      sizeof(multicast_properties)) == -1) {
-        return Error(Error::Code::kSocketOptionSettingFailure, strerror(errno));
+        OnError(Error::Code::kSocketOptionSettingFailure);
       }
-      return Error::Code::kNone;
+      return;
     }
 
     case UdpSocket::Version::kV6: {
       // Passed as data to setsockopt().  1 means return IPV6_PKTINFO control
       // data in recvmsg() calls.
       const int enable_pktinfo = 1;
-      if (setsockopt(fd_, IPPROTO_IPV6, IPV6_RECVPKTINFO, &enable_pktinfo,
-                     sizeof(enable_pktinfo)) == -1) {
-        return Error(Error::Code::kSocketOptionSettingFailure, strerror(errno));
+      if (setsockopt(handle_.fd, IPPROTO_IPV6, IPV6_RECVPKTINFO,
+                     &enable_pktinfo, sizeof(enable_pktinfo)) == -1) {
+        OnError(Error::Code::kSocketOptionSettingFailure);
+        return;
       }
       struct ipv6_mreq multicast_properties = {
           {/* filled-in below */},
@@ -249,16 +303,16 @@ Error UdpSocketPosix::JoinMulticastGroup(const IPAddress& address,
           reinterpret_cast<uint8_t*>(&multicast_properties.ipv6mr_multiaddr));
       // Portability note: All platforms support IPV6_JOIN_GROUP, which is
       // synonymous with IPV6_ADD_MEMBERSHIP.
-      if (setsockopt(fd_, IPPROTO_IPV6, IPV6_JOIN_GROUP, &multicast_properties,
+      if (setsockopt(handle_.fd, IPPROTO_IPV6, IPV6_JOIN_GROUP,
+                     &multicast_properties,
                      sizeof(multicast_properties)) == -1) {
-        return Error(Error::Code::kSocketOptionSettingFailure, strerror(errno));
+        OnError(Error::Code::kSocketOptionSettingFailure);
       }
-      return Error::Code::kNone;
+      return;
     }
   }
 
   OSP_NOTREACHED();
-  return Error::Code::kUnknownError;
 }
 
 namespace {
@@ -366,36 +420,79 @@ Error ReceiveMessageInternal(int fd, UdpPacket* packet) {
 
 }  // namespace
 
-ErrorOr<UdpPacket> UdpSocketPosix::ReceiveMessage() {
-  ssize_t bytes_available = recv(fd_, nullptr, 0, MSG_PEEK | MSG_TRUNC);
+void UdpSocketPosix::ReceiveMessage() {
+  // WARNING: This method may be called on a different thread from the thread
+  // calling into all the other methods.
+
+  if (is_closed()) {
+    task_runner_->PostTask([weak_this = weak_factory_.GetWeakPtr()] {
+      if (auto* self = weak_this.get()) {
+        if (auto* client = self->client_) {
+          client->OnRead(self, Error::Code::kSocketClosedFailure);
+        }
+      }
+    });
+    return;
+  }
+
+  ssize_t bytes_available = recv(handle_.fd, nullptr, 0, MSG_PEEK | MSG_TRUNC);
   if (bytes_available == -1) {
-    return ChooseError(errno, Error::Code::kSocketReadFailure);
+    task_runner_->PostTask(
+        [weak_this = weak_factory_.GetWeakPtr(),
+         error =
+             ChooseError(errno, Error::Code::kSocketReadFailure)]() mutable {
+          if (auto* self = weak_this.get()) {
+            if (auto* client = self->client_) {
+              client->OnRead(self, std::move(error));
+            }
+          }
+        });
+    return;
   }
   UdpPacket packet(bytes_available);
   packet.set_socket(this);
   Error result = Error::Code::kUnknownError;
   switch (local_endpoint_.address.version()) {
     case UdpSocket::Version::kV4: {
-      result = ReceiveMessageInternal<sockaddr_in, in_pktinfo>(fd_, &packet);
+      result =
+          ReceiveMessageInternal<sockaddr_in, in_pktinfo>(handle_.fd, &packet);
       break;
     }
     case UdpSocket::Version::kV6: {
-      result = ReceiveMessageInternal<sockaddr_in6, in6_pktinfo>(fd_, &packet);
+      result = ReceiveMessageInternal<sockaddr_in6, in6_pktinfo>(handle_.fd,
+                                                                 &packet);
       break;
     }
     default: {
       OSP_NOTREACHED();
     }
   }
-  return result.ok() ? ErrorOr<UdpPacket>(std::move(packet))
-                     : ErrorOr<UdpPacket>(std::move(result));
+
+  task_runner_->PostTask(
+      [weak_this = weak_factory_.GetWeakPtr(),
+       read_result = result.ok()
+                         ? ErrorOr<UdpPacket>(std::move(packet))
+                         : ErrorOr<UdpPacket>(std::move(result))]() mutable {
+        if (auto* self = weak_this.get()) {
+          if (auto* client = self->client_) {
+            client->OnRead(self, std::move(read_result));
+          }
+        }
+      });
 }
 
 // TODO(yakimakha): Consider changing the interface to accept UdpPacket as
 // an input parameter.
-Error UdpSocketPosix::SendMessage(const void* data,
-                                  size_t length,
-                                  const IPEndpoint& dest) {
+void UdpSocketPosix::SendMessage(const void* data,
+                                 size_t length,
+                                 const IPEndpoint& dest) {
+  if (is_closed()) {
+    if (client_) {
+      client_->OnSendError(this, Error::Code::kSocketClosedFailure);
+    }
+    return;
+  }
+
   struct iovec iov = {const_cast<void*>(data), length};
   struct msghdr msg;
   msg.msg_iov = &iov;
@@ -414,7 +511,7 @@ Error UdpSocketPosix::SendMessage(const void* data,
       dest.address.CopyToV4(reinterpret_cast<uint8_t*>(&sa.sin_addr.s_addr));
       msg.msg_name = &sa;
       msg.msg_namelen = sizeof(sa);
-      num_bytes_sent = sendmsg(fd_, &msg, 0);
+      num_bytes_sent = sendmsg(handle_.fd, &msg, 0);
       break;
     }
 
@@ -427,37 +524,98 @@ Error UdpSocketPosix::SendMessage(const void* data,
       dest.address.CopyToV6(reinterpret_cast<uint8_t*>(&sa.sin6_addr.s6_addr));
       msg.msg_name = &sa;
       msg.msg_namelen = sizeof(sa);
-      num_bytes_sent = sendmsg(fd_, &msg, 0);
+      num_bytes_sent = sendmsg(handle_.fd, &msg, 0);
       break;
     }
   }
 
   if (num_bytes_sent == -1) {
-    return ChooseError(errno, Error::Code::kSocketSendFailure);
+    if (client_) {
+      client_->OnSendError(this,
+                           ChooseError(errno, Error::Code::kSocketSendFailure));
+    }
+    return;
   }
+
   // Sanity-check: UDP datagram sendmsg() is all or nothing.
   OSP_DCHECK_EQ(static_cast<size_t>(num_bytes_sent), length);
-  return Error::Code::kNone;
 }
 
-Error UdpSocketPosix::SetDscp(UdpSocket::DscpMode state) {
+void UdpSocketPosix::SetDscp(UdpSocket::DscpMode state) {
+  if (is_closed()) {
+    OnError(Error::Code::kSocketClosedFailure);
+    return;
+  }
+
   constexpr auto kSettingLevel = IPPROTO_IP;
   uint8_t code_array[1] = {static_cast<uint8_t>(state)};
-  auto code =
-      setsockopt(fd_, kSettingLevel, IP_TOS, code_array, sizeof(uint8_t));
+  auto code = setsockopt(handle_.fd, kSettingLevel, IP_TOS, code_array,
+                         sizeof(uint8_t));
 
   if (code == EBADF || code == ENOTSOCK || code == EFAULT) {
     OSP_VLOG << "BAD SOCKET PROVIDED. CODE: " << code;
-    return Error::Code::kSocketOptionSettingFailure;
+    OnError(Error::Code::kSocketOptionSettingFailure);
   } else if (code == EINVAL) {
     OSP_VLOG << "INVALID DSCP INFO PROVIDED";
-    return Error::Code::kSocketOptionSettingFailure;
+    OnError(Error::Code::kSocketOptionSettingFailure);
   } else if (code == ENOPROTOOPT) {
     OSP_VLOG << "INVALID DSCP SETTING LEVEL PROVIDED: " << kSettingLevel;
-    return Error::Code::kSocketOptionSettingFailure;
+    OnError(Error::Code::kSocketOptionSettingFailure);
+  }
+}
+
+void UdpSocketPosix::OnError(Error::Code error_code) {
+  // The call to Close() may change |errno|, so save it here.
+  const auto original_errno = errno;
+
+  // Close the socket unless the error code represents a transient condition.
+  if (error_code != Error::Code::kNone && error_code != Error::Code::kAgain) {
+    Close();
   }
 
-  return Error::Code::kNone;
+  if (client_) {
+    // Call the thread-safe strerror_r() to get the human-readable form of
+    // |errno|. This is a real mess: 1. Since there seems to be no constant
+    // defined for the maximum buffer size in the standard library, 1024 is
+    // used, as suggested by the man page for strerror_r(). 2. There are two
+    // possible versions of this function: The POSIX one returns int(0) on
+    // success, while the legacy GNU-specific one will provide a non-null char
+    // pointer (that may or may not be within the |buffer|).
+    char buffer[1024];
+    const auto result = strerror_r(original_errno, buffer, sizeof(buffer));
+    const char* errno_str;
+    if (std::is_convertible<decltype(result), int>::value &&
+        !result) {  // Case 1: POSIX strerror_r() success.
+      errno_str = buffer;
+    } else if (std::is_convertible<decltype(result), const char*>::value &&
+               result) {  // Case 2: GNU strerror_r() success.
+      errno_str = reinterpret_cast<const char*>(result);
+    } else {  // Case 3: strerror_r() failed (either version).
+      buffer[0] = '\0';
+      errno_str = buffer;
+    }
+
+    std::stringstream stream;
+    stream << "endpoint: " << local_endpoint_ << ", error: " << errno_str;
+    client_->OnError(this, Error(error_code, stream.str()));
+  }
+}
+
+void UdpSocketPosix::Close() {
+  if (handle_.fd < 0) {
+    return;
+  }
+
+  // Notify the UdpSocketReaderPosix that the socket handle is about to be
+  // closed.
+  if (platform_client_) {
+    platform_client_->udp_socket_reader()->OnDestroy(this);
+  }
+
+  // It's now safe to close the socket, since no other thread (e.g., from
+  // UdpSocketReaderPosix) should be inside ReceiveMessage() at this point.
+  close(handle_.fd);
+  handle_.fd = -1;
 }
 
 }  // namespace platform

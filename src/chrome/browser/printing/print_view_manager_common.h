@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_PRINTING_PRINT_VIEW_MANAGER_COMMON_H_
 #define CHROME_BROWSER_PRINTING_PRINT_VIEW_MANAGER_COMMON_H_
 
+#include "components/printing/common/print.mojom.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "printing/buildflags/buildflags.h"
 
 namespace content {
@@ -15,9 +17,13 @@ class WebContents;
 namespace printing {
 
 // Start printing using the appropriate PrintViewManagerBase subclass.
-void StartPrint(content::WebContents* web_contents,
-                bool print_preview_disabled,
-                bool has_selection);
+// Optionally provide a printing::mojom::PrintRenderer to render print
+// documents.
+void StartPrint(
+    content::WebContents* web_contents,
+    mojo::PendingAssociatedRemote<mojom::PrintRenderer> print_renderer,
+    bool print_preview_disabled,
+    bool has_selection);
 
 // Start printing using the system print dialog.
 void StartBasicPrint(content::WebContents* contents);

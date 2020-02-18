@@ -39,7 +39,6 @@
 #include "net/disk_cache/blockfile/experiments.h"
 #include "net/disk_cache/blockfile/file.h"
 #include "net/disk_cache/blockfile/histogram_macros.h"
-#include "net/disk_cache/blockfile/webfonts_histogram.h"
 #include "net/disk_cache/cache_util.h"
 
 // Provide a BackendImpl object to macros from histogram_macros.h.
@@ -499,7 +498,7 @@ void BackendImpl::SyncOnExternalCacheHit(const std::string& key) {
   if (disabled_)
     return;
 
-  uint32_t hash = base::Hash(key);
+  uint32_t hash = base::PersistentHash(key);
   bool error;
   scoped_refptr<EntryImpl> cache_entry =
       MatchEntry(key, hash, false, Addr(), &error);
@@ -512,7 +511,7 @@ scoped_refptr<EntryImpl> BackendImpl::OpenEntryImpl(const std::string& key) {
     return nullptr;
 
   TimeTicks start = TimeTicks::Now();
-  uint32_t hash = base::Hash(key);
+  uint32_t hash = base::PersistentHash(key);
   Trace("Open hash 0x%x", hash);
 
   bool error;
@@ -521,9 +520,6 @@ scoped_refptr<EntryImpl> BackendImpl::OpenEntryImpl(const std::string& key) {
   if (cache_entry && ENTRY_NORMAL != cache_entry->entry()->Data()->state) {
     // The entry was already evicted.
     cache_entry = nullptr;
-    web_fonts_histogram::RecordEvictedEntry(key);
-  } else if (!cache_entry) {
-    web_fonts_histogram::RecordCacheMiss(key);
   }
 
   int current_size = data_->header.num_bytes / (1024 * 1024);
@@ -548,7 +544,6 @@ scoped_refptr<EntryImpl> BackendImpl::OpenEntryImpl(const std::string& key) {
   CACHE_UMA(HOURS, "AllOpenByUseHours.Hit", 0,
             static_cast<base::HistogramBase::Sample>(use_hours));
   stats_.OnEvent(Stats::OPEN_HIT);
-  web_fonts_histogram::RecordCacheHit(cache_entry.get());
   return cache_entry;
 }
 
@@ -557,7 +552,7 @@ scoped_refptr<EntryImpl> BackendImpl::CreateEntryImpl(const std::string& key) {
     return nullptr;
 
   TimeTicks start = TimeTicks::Now();
-  uint32_t hash = base::Hash(key);
+  uint32_t hash = base::PersistentHash(key);
   Trace("Create hash 0x%x", hash);
 
   scoped_refptr<EntryImpl> parent;
@@ -1461,7 +1456,7 @@ void BackendImpl::AdjustMaxCacheSize(int table_len) {
   if (table_len)
     available += data_->header.num_bytes;
 
-  max_size_ = PreferredCacheSize(available);
+  max_size_ = PreferredCacheSize(available, GetCacheType());
 
   if (!table_len)
     return;

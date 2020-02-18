@@ -73,23 +73,23 @@ class WorkQueueTest : public testing::Test {
  protected:
   Task FakeCancelableTaskWithEnqueueOrder(int enqueue_order,
                                           WeakPtr<Cancelable> weak_ptr) {
-    Task fake_task(
-        PostedTask(BindOnce(&Cancelable::NopTask, weak_ptr), FROM_HERE),
-        TimeTicks(), EnqueueOrder(),
-        EnqueueOrder::FromIntForTesting(enqueue_order));
+    Task fake_task(PostedTask(nullptr, BindOnce(&Cancelable::NopTask, weak_ptr),
+                              FROM_HERE),
+                   TimeTicks(), EnqueueOrder(),
+                   EnqueueOrder::FromIntForTesting(enqueue_order));
     return fake_task;
   }
 
   Task FakeTaskWithEnqueueOrder(int enqueue_order) {
-    Task fake_task(PostedTask(BindOnce(&NopTask), FROM_HERE), TimeTicks(),
-                   EnqueueOrder(),
+    Task fake_task(PostedTask(nullptr, BindOnce(&NopTask), FROM_HERE),
+                   TimeTicks(), EnqueueOrder(),
                    EnqueueOrder::FromIntForTesting(enqueue_order));
     return fake_task;
   }
 
   Task FakeNonNestableTaskWithEnqueueOrder(int enqueue_order) {
-    Task fake_task(PostedTask(BindOnce(&NopTask), FROM_HERE), TimeTicks(),
-                   EnqueueOrder(),
+    Task fake_task(PostedTask(nullptr, BindOnce(&NopTask), FROM_HERE),
+                   TimeTicks(), EnqueueOrder(),
                    EnqueueOrder::FromIntForTesting(enqueue_order));
     fake_task.nestable = Nestable::kNonNestable;
     return fake_task;
@@ -553,6 +553,20 @@ TEST_F(WorkQueueTest, RemoveAllCanceledTasksFromFrontQueueBlockedByFence) {
 
   EnqueueOrder enqueue_order;
   EXPECT_FALSE(work_queue_->GetFrontTaskEnqueueOrder(&enqueue_order));
+}
+
+TEST_F(WorkQueueTest, CollectTasksOlderThan) {
+  work_queue_->Push(FakeTaskWithEnqueueOrder(2));
+  work_queue_->Push(FakeTaskWithEnqueueOrder(3));
+  work_queue_->Push(FakeTaskWithEnqueueOrder(4));
+
+  std::vector<const Task*> result;
+  work_queue_->CollectTasksOlderThan(EnqueueOrder::FromIntForTesting(4),
+                                     &result);
+
+  ASSERT_EQ(2u, result.size());
+  EXPECT_EQ(2u, result[0]->enqueue_order());
+  EXPECT_EQ(3u, result[1]->enqueue_order());
 }
 
 }  // namespace internal

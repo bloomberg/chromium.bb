@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/config/jumbo.gni")
 import("../../pdfium.gni")
 
 config("fuzzer_config") {
@@ -27,6 +26,7 @@ fuzzer_list = [
   "pdf_hint_table_fuzzer",
   "pdf_jpx_fuzzer",
   "pdf_psengine_fuzzer",
+  "pdf_scanlinecompositor_fuzzer",
   "pdf_streamparser_fuzzer",
   "pdf_xml_fuzzer",
   "pdfium_fuzzer",
@@ -66,6 +66,10 @@ if (pdf_enable_v8) {
     }
   }
 }
+if (is_clang) {
+  # Fuzzers that use FuzzedDataProvider can only be built with Clang.
+  fuzzer_list += [ "pdf_nametree_fuzzer" ]
+}
 
 group("fuzzers") {
   testonly = true
@@ -75,7 +79,7 @@ group("fuzzers") {
   }
 }
 
-jumbo_source_set("fuzzer_init") {
+source_set("fuzzer_init") {
   testonly = true
   sources = [
     "pdf_fuzzer_init.cc",
@@ -86,7 +90,7 @@ jumbo_source_set("fuzzer_init") {
   ]
 }
 
-jumbo_source_set("fuzzer_init_public") {
+source_set("fuzzer_init_public") {
   testonly = true
   sources = [
     "pdf_fuzzer_init_public.cc",
@@ -114,7 +118,7 @@ if (is_component_build) {
   }
 }
 
-jumbo_source_set("fuzzer_helper") {
+source_set("fuzzer_helper") {
   testonly = !is_component_build
   sources = [
     "pdfium_fuzzer_helper.cc",
@@ -127,7 +131,7 @@ jumbo_source_set("fuzzer_helper") {
   ]
 }
 
-jumbo_source_set("fuzzer_utils") {
+source_set("fuzzer_utils") {
   # In component builds, the pdfium target (which is not testonly) depends on
   # the fuzzer sources, which may depend on this target, so add testonly only in
   # non-component builds.
@@ -158,7 +162,7 @@ template("pdfium_fuzzer") {
 
     impl_name = target_name + "_impl"
     template_target_name = target_name
-    jumbo_source_set("${target_name}_src") {
+    source_set("${target_name}_src") {
       testonly = true
       sources = [
         "component_fuzzer_template.cc",
@@ -173,7 +177,7 @@ template("pdfium_fuzzer") {
   } else {
     impl_name = target_name + "_src"
   }
-  jumbo_source_set(impl_name) {
+  source_set(impl_name) {
     sources = invoker.sources
     deps = []
     if (defined(invoker.deps)) {
@@ -414,6 +418,20 @@ if (pdf_enable_v8) {
   }
 }
 
+if (is_clang) {
+  pdfium_fuzzer("pdf_nametree_fuzzer") {
+    sources = [
+      "pdf_nametree_fuzzer.cc",
+    ]
+    deps = [
+      "../../core/fpdfapi/page",
+      "../../core/fpdfapi/parser",
+      "../../core/fpdfdoc",
+      "../../third_party:pdfium_base",
+    ]
+  }
+}
+
 pdfium_fuzzer("pdf_cmap_fuzzer") {
   sources = [
     "pdf_cmap_fuzzer.cc",
@@ -517,6 +535,17 @@ pdfium_fuzzer("pdf_psengine_fuzzer") {
   ]
   deps = [
     "../../core/fpdfapi/page",
+    "../../third_party:pdfium_base",
+  ]
+}
+
+pdfium_fuzzer("pdf_scanlinecompositor_fuzzer") {
+  sources = [
+    "pdf_scanlinecompositor_fuzzer.cc",
+  ]
+  deps = [
+    ":fuzzer_utils",
+    "../../core/fxge",
     "../../third_party:pdfium_base",
   ]
 }

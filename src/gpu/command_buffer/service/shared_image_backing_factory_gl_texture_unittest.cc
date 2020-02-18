@@ -30,6 +30,7 @@
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/color_space.h"
+#include "ui/gl/buffer_format_utils.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_image_shared_memory.h"
@@ -461,7 +462,7 @@ TEST_P(SharedImageBackingFactoryGLTextureTest, InitialDataWrongSize) {
 
 TEST_P(SharedImageBackingFactoryGLTextureTest, InvalidFormat) {
   auto mailbox = Mailbox::GenerateForSharedImage();
-  auto format = viz::ResourceFormat::UYVY_422;
+  auto format = viz::ResourceFormat::YUV_420_BIPLANAR;
   gfx::Size size(256, 256);
   auto color_space = gfx::ColorSpace::CreateSRGB();
   uint32_t usage = SHARED_IMAGE_USAGE_GLES2;
@@ -561,7 +562,10 @@ class StubImage : public gl::GLImageStub {
 
   gfx::Size GetSize() override { return size_; }
   unsigned GetInternalFormat() override {
-    return InternalFormatForGpuMemoryBufferFormat(format_);
+    return gl::BufferFormatToGLInternalFormat(format_);
+  }
+  unsigned GetDataType() override {
+    return gl::BufferFormatToGLDataType(format_);
   }
 
   BindOrCopy ShouldBindOrCopy() override { return BIND; }

@@ -4,10 +4,11 @@
 
 #include "osp/impl/service_listener_impl.h"
 
-#include "platform/api/logging.h"
 #include "platform/base/error.h"
+#include "util/logging.h"
 
 namespace openscreen {
+namespace osp {
 namespace {
 
 bool IsTransitionValid(ServiceListener::State from, ServiceListener::State to) {
@@ -202,4 +203,5 @@ void ServiceListenerImpl::MaybeNotifyObservers() {
   }
 }
 
+}  // namespace osp
 }  // namespace openscreen

@@ -27,8 +27,6 @@
 #include "third_party/blink/renderer/core/frame/remote_frame_owner.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
-#include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
-#include "third_party/blink/renderer/core/fullscreen/fullscreen_options.h"
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
 #include "third_party/blink/renderer/core/html/portal/html_portal_element.h"
 #include "third_party/blink/renderer/core/html_names.h"
@@ -57,37 +55,46 @@ FloatRect DeNormalizeRect(const WebFloatRect& normalized, const IntRect& base) {
 }
 }  // namespace
 
-WebRemoteFrame* WebRemoteFrame::Create(WebTreeScopeType scope,
-                                       WebRemoteFrameClient* client) {
-  return WebRemoteFrameImpl::Create(scope, client);
+WebRemoteFrame* WebRemoteFrame::Create(
+    WebTreeScopeType scope,
+    WebRemoteFrameClient* client,
+    InterfaceRegistry* interface_registry,
+    AssociatedInterfaceProvider* associated_interface_provider) {
+  return MakeGarbageCollected<WebRemoteFrameImpl>(
+      scope, client, interface_registry, associated_interface_provider);
 }
 
-WebRemoteFrame* WebRemoteFrame::CreateMainFrame(WebView* web_view,
-                                                WebRemoteFrameClient* client,
-                                                WebFrame* opener) {
-  return WebRemoteFrameImpl::CreateMainFrame(web_view, client, opener);
+WebRemoteFrame* WebRemoteFrame::CreateMainFrame(
+    WebView* web_view,
+    WebRemoteFrameClient* client,
+    InterfaceRegistry* interface_registry,
+    AssociatedInterfaceProvider* associated_interface_provider,
+    WebFrame* opener) {
+  return WebRemoteFrameImpl::CreateMainFrame(
+      web_view, client, interface_registry, associated_interface_provider,
+      opener);
 }
 
 WebRemoteFrame* WebRemoteFrame::CreateForPortal(
     WebTreeScopeType scope,
     WebRemoteFrameClient* client,
+    InterfaceRegistry* interface_registry,
+    AssociatedInterfaceProvider* associated_interface_provider,
     const WebElement& portal_element) {
-  return WebRemoteFrameImpl::CreateForPortal(scope, client, portal_element);
-}
-
-WebRemoteFrameImpl* WebRemoteFrameImpl::Create(WebTreeScopeType scope,
-                                               WebRemoteFrameClient* client) {
-  WebRemoteFrameImpl* frame =
-      MakeGarbageCollected<WebRemoteFrameImpl>(scope, client);
-  return frame;
+  return WebRemoteFrameImpl::CreateForPortal(scope, client, interface_registry,
+                                             associated_interface_provider,
+                                             portal_element);
 }
 
 WebRemoteFrameImpl* WebRemoteFrameImpl::CreateMainFrame(
     WebView* web_view,
     WebRemoteFrameClient* client,
+    InterfaceRegistry* interface_registry,
+    AssociatedInterfaceProvider* associated_interface_provider,
     WebFrame* opener) {
   WebRemoteFrameImpl* frame = MakeGarbageCollected<WebRemoteFrameImpl>(
-      WebTreeScopeType::kDocument, client);
+      WebTreeScopeType::kDocument, client, interface_registry,
+      associated_interface_provider);
   frame->SetOpener(opener);
   Page& page = *static_cast<WebViewImpl*>(web_view)->GetPage();
   // It would be nice to DCHECK that the main frame is not set yet here.
@@ -107,9 +114,11 @@ WebRemoteFrameImpl* WebRemoteFrameImpl::CreateMainFrame(
 WebRemoteFrameImpl* WebRemoteFrameImpl::CreateForPortal(
     WebTreeScopeType scope,
     WebRemoteFrameClient* client,
+    InterfaceRegistry* interface_registry,
+    AssociatedInterfaceProvider* associated_interface_provider,
     const WebElement& portal_element) {
-  WebRemoteFrameImpl* frame =
-      MakeGarbageCollected<WebRemoteFrameImpl>(scope, client);
+  auto* frame = MakeGarbageCollected<WebRemoteFrameImpl>(
+      scope, client, interface_registry, associated_interface_provider);
 
   Element* element = portal_element;
   DCHECK(element->HasTagName(html_names::kPortalTag));
@@ -153,11 +162,6 @@ void WebRemoteFrameImpl::Close() {
   self_keep_alive_.Clear();
 }
 
-WebRect WebRemoteFrameImpl::VisibleContentRect() const {
-  NOTREACHED();
-  return WebRect();
-}
-
 WebView* WebRemoteFrameImpl::View() const {
   if (!GetFrame()) {
     return nullptr;
@@ -177,14 +181,12 @@ WebLocalFrame* WebRemoteFrameImpl::CreateLocalChild(
     const FramePolicy& frame_policy,
     WebLocalFrameClient* client,
     blink::InterfaceRegistry* interface_registry,
-    mojo::ScopedMessagePipeHandle document_interface_broker_handle,
     WebFrame* previous_sibling,
     const WebFrameOwnerProperties& frame_owner_properties,
     FrameOwnerElementType frame_owner_element_type,
     WebFrame* opener) {
   auto* child = MakeGarbageCollected<WebLocalFrameImpl>(
-      scope, client, interface_registry,
-      std::move(document_interface_broker_handle));
+      util::PassKey<WebRemoteFrameImpl>(), scope, client, interface_registry);
   child->SetOpener(opener);
   InsertAfter(child, previous_sibling);
   auto* owner = MakeGarbageCollected<RemoteFrameOwner>(
@@ -202,8 +204,9 @@ void WebRemoteFrameImpl::InitializeCoreFrame(
     FrameOwner* owner,
     const AtomicString& name,
     WindowAgentFactory* window_agent_factory) {
-  SetCoreFrame(MakeGarbageCollected<RemoteFrame>(frame_client_.Get(), page,
-                                                 owner, window_agent_factory));
+  SetCoreFrame(MakeGarbageCollected<RemoteFrame>(
+      frame_client_.Get(), page, owner, window_agent_factory,
+      interface_registry_, associated_interface_provider_));
   GetFrame()->CreateView();
   frame_->Tree().SetName(name);
 }
@@ -214,8 +217,11 @@ WebRemoteFrame* WebRemoteFrameImpl::CreateRemoteChild(
     const FramePolicy& frame_policy,
     FrameOwnerElementType frame_owner_element_type,
     WebRemoteFrameClient* client,
+    blink::InterfaceRegistry* interface_registry,
+    AssociatedInterfaceProvider* associated_interface_provider,
     WebFrame* opener) {
-  WebRemoteFrameImpl* child = WebRemoteFrameImpl::Create(scope, client);
+  auto* child = MakeGarbageCollected<WebRemoteFrameImpl>(
+      scope, client, interface_registry, associated_interface_provider);
   child->SetOpener(opener);
   AppendChild(child);
   auto* owner = MakeGarbageCollected<RemoteFrameOwner>(
@@ -250,25 +256,8 @@ void WebRemoteFrameImpl::SetReplicatedOrigin(
     const WebSecurityOrigin& origin,
     bool is_potentially_trustworthy_opaque_origin) {
   DCHECK(GetFrame());
-  scoped_refptr<SecurityOrigin> security_origin = origin.Get()->IsolatedCopy();
-  security_origin->SetOpaqueOriginIsPotentiallyTrustworthy(
-      is_potentially_trustworthy_opaque_origin);
-  GetFrame()->GetSecurityContext()->SetReplicatedOrigin(security_origin);
-  ApplyReplicatedFeaturePolicyHeader();
-
-  // If the origin of a remote frame changed, the accessibility object for the
-  // owner element now points to a different child.
-  //
-  // TODO(dmazzoni, dcheng): there's probably a better way to solve this.
-  // Run SitePerProcessAccessibilityBrowserTest.TwoCrossSiteNavigations to
-  // ensure an alternate fix works.  http://crbug.com/566222
-  FrameOwner* owner = GetFrame()->Owner();
-  HTMLElement* owner_element = DynamicTo<HTMLFrameOwnerElement>(owner);
-  if (owner_element) {
-    AXObjectCache* cache = owner_element->GetDocument().ExistingAXObjectCache();
-    if (cache)
-      cache->ChildrenChanged(owner_element);
-  }
+  GetFrame()->SetReplicatedOrigin(origin,
+                                  is_potentially_trustworthy_opaque_origin);
 }
 
 void WebRemoteFrameImpl::SetReplicatedSandboxFlags(WebSandboxFlags flags) {
@@ -285,37 +274,15 @@ void WebRemoteFrameImpl::SetReplicatedName(const WebString& name) {
 void WebRemoteFrameImpl::SetReplicatedFeaturePolicyHeaderAndOpenerPolicies(
     const ParsedFeaturePolicy& parsed_header,
     const FeaturePolicy::FeatureState& opener_feature_state) {
-  feature_policy_header_ = parsed_header;
-  if (RuntimeEnabledFeatures::FeaturePolicyForSandboxEnabled()) {
-    DCHECK(opener_feature_state.empty() || frame_->IsMainFrame());
-    if (frame_->OpenerFeatureState().empty()) {
-      frame_->SetOpenerFeatureState(opener_feature_state);
-    }
-  }
-  ApplyReplicatedFeaturePolicyHeader();
-}
-
-void WebRemoteFrameImpl::ApplyReplicatedFeaturePolicyHeader() {
-  const FeaturePolicy* parent_feature_policy = nullptr;
-  if (Parent()) {
-    Frame* parent_frame = GetFrame()->Client()->Parent();
-    parent_feature_policy =
-        parent_frame->GetSecurityContext()->GetFeaturePolicy();
-  }
-  ParsedFeaturePolicy container_policy;
-  if (GetFrame()->Owner())
-    container_policy = GetFrame()->Owner()->GetFramePolicy().container_policy;
-  const FeaturePolicy::FeatureState& opener_feature_state =
-      frame_->OpenerFeatureState();
-  GetFrame()->GetSecurityContext()->InitializeFeaturePolicy(
-      feature_policy_header_, container_policy, parent_feature_policy,
-      opener_feature_state.empty() ? nullptr : &opener_feature_state);
+  DCHECK(GetFrame());
+  GetFrame()->SetReplicatedFeaturePolicyHeaderAndOpenerPolicies(
+      parsed_header, opener_feature_state);
 }
 
 void WebRemoteFrameImpl::AddReplicatedContentSecurityPolicyHeader(
     const WebString& header_value,
-    mojom::ContentSecurityPolicyType type,
-    WebContentSecurityPolicySource source) {
+    network::mojom::ContentSecurityPolicyType type,
+    network::mojom::ContentSecurityPolicySource source) {
   GetFrame()
       ->GetSecurityContext()
       ->GetContentSecurityPolicy()
@@ -346,13 +313,11 @@ void WebRemoteFrameImpl::ForwardResourceTimingToParent(
   HTMLFrameOwnerElement* owner_element =
       To<HTMLFrameOwnerElement>(frame_->Owner());
   DCHECK(owner_element);
+  // TODO(https://crbug.com/900700): Take a Mojo pending receiver for
+  // WorkerTimingContainer for navigation from the calling function.
   DOMWindowPerformance::performance(*parent_frame->GetFrame()->DomWindow())
-      ->AddResourceTiming(info, owner_element->localName());
-}
-
-void WebRemoteFrameImpl::DispatchLoadEventForFrameOwner() {
-  DCHECK(GetFrame()->Owner()->IsLocal());
-  GetFrame()->Owner()->DispatchLoad();
+      ->AddResourceTiming(info, owner_element->localName(),
+                          mojo::NullReceiver() /* worker_timing_receiver */);
 }
 
 void WebRemoteFrameImpl::SetNeedsOcclusionTracking(bool needs_tracking) {
@@ -377,28 +342,6 @@ void WebRemoteFrameImpl::DidStopLoading() {
 
 bool WebRemoteFrameImpl::IsIgnoredForHitTest() const {
   return GetFrame()->IsIgnoredForHitTest();
-}
-
-void WebRemoteFrameImpl::WillEnterFullscreen() {
-  // This should only ever be called when the FrameOwner is local.
-  HTMLFrameOwnerElement* owner_element =
-      To<HTMLFrameOwnerElement>(GetFrame()->Owner());
-
-  // Call |requestFullscreen()| on |ownerElement| to make it the pending
-  // fullscreen element in anticipation of the coming |didEnterFullscreen()|
-  // call.
-  //
-  // PrefixedForCrossProcessDescendant is necessary because:
-  //  - The fullscreen element ready check and other checks should be bypassed.
-  //  - |ownerElement| will need :-webkit-full-screen-ancestor style in addition
-  //    to :-webkit-full-screen.
-  //
-  // TODO(alexmos): currently, this assumes prefixed requests, but in the
-  // future, this should plumb in information about which request type
-  // (prefixed or unprefixed) to use for firing fullscreen events.
-  Fullscreen::RequestFullscreen(
-      *owner_element, FullscreenOptions::Create(),
-      Fullscreen::RequestType::kPrefixedForCrossProcessDescendant);
 }
 
 void WebRemoteFrameImpl::UpdateUserActivationState(
@@ -518,15 +461,20 @@ void WebRemoteFrameImpl::RenderFallbackContent() const {
   // ContentFrame() should detach and free-up the OOPIF process (see
   // https://crbug.com/850223).
   auto* owner = frame_->DeprecatedLocalOwner();
-  DCHECK(IsHTMLObjectElement(owner));
+  DCHECK(IsA<HTMLObjectElement>(owner));
   owner->RenderFallbackContent(frame_);
 }
 
-WebRemoteFrameImpl::WebRemoteFrameImpl(WebTreeScopeType scope,
-                                       WebRemoteFrameClient* client)
+WebRemoteFrameImpl::WebRemoteFrameImpl(
+    WebTreeScopeType scope,
+    WebRemoteFrameClient* client,
+    InterfaceRegistry* interface_registry,
+    AssociatedInterfaceProvider* associated_interface_provider)
     : WebRemoteFrame(scope),
       client_(client),
       frame_client_(MakeGarbageCollected<RemoteFrameClientImpl>(this)),
+      interface_registry_(interface_registry),
+      associated_interface_provider_(associated_interface_provider),
       self_keep_alive_(PERSISTENT_FROM_HERE, this) {
   DCHECK(client);
 }

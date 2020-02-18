@@ -263,9 +263,9 @@ ICULocaleService::validateFallbackLocale() const
 {
     const Locale&     loc    = Locale::getDefault();
     ICULocaleService* ncThis = (ICULocaleService*)this;
-    static UMutex *llock = new UMutex();
+    static UMutex llock;
     {
-        Mutex mutex(llock);
+        Mutex mutex(&llock);
         if (loc != fallbackLocale) {
             ncThis->fallbackLocale = loc;
             LocaleUtility::initNameFromLocale(loc, ncThis->fallbackLocaleName);

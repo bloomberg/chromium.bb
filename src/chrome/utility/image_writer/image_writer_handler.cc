@@ -4,6 +4,8 @@
 
 #include "chrome/utility/image_writer/image_writer_handler.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/optional.h"
@@ -32,9 +34,9 @@ ImageWriterHandler::~ImageWriterHandler() = default;
 void ImageWriterHandler::Write(
     const base::FilePath& image,
     const base::FilePath& device,
-    chrome::mojom::RemovableStorageWriterClientPtr client) {
-  client_ = std::move(client);
-  client_.set_connection_error_handler(
+    mojo::PendingRemote<chrome::mojom::RemovableStorageWriterClient> client) {
+  client_.Bind(std::move(client));
+  client_.set_disconnect_handler(
       base::BindOnce(&ImageWriterHandler::Cancel, base::Unretained(this)));
 
   base::FilePath target_device = device;
@@ -61,15 +63,15 @@ void ImageWriterHandler::Write(
   }
 
   image_writer_->UnmountVolumes(
-      base::Bind(&ImageWriter::Write, image_writer_->AsWeakPtr()));
+      base::BindOnce(&ImageWriter::Write, image_writer_->AsWeakPtr()));
 }
 
 void ImageWriterHandler::Verify(
     const base::FilePath& image,
     const base::FilePath& device,
-    chrome::mojom::RemovableStorageWriterClientPtr client) {
-  client_ = std::move(client);
-  client_.set_connection_error_handler(
+    mojo::PendingRemote<chrome::mojom::RemovableStorageWriterClient> client) {
+  client_.Bind(std::move(client));
+  client_.set_disconnect_handler(
       base::BindOnce(&ImageWriterHandler::Cancel, base::Unretained(this)));
 
   base::FilePath target_device = device;

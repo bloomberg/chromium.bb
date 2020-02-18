@@ -10,7 +10,6 @@ title: test1
 	MediaKeys
 	Nodes
 	Resources
-	ScriptPromises
 	ContextLifecycleStateObservers
 	V8PerContextDatas
 	WorkerGlobalScopes
@@ -19,6 +18,15 @@ title: test1
 	ResourceFetchers
 	AdSubframes
 	DetachedScriptStates
+	V8CallInDetachedWindowByNavigations
+	V8CallInDetachedWindowByNavigationAfter10s
+	V8CallInDetachedWindowByNavigationAfter1mins
+	V8CallInDetachedWindowByClosings
+	V8CallInDetachedWindowByClosingAfter10s
+	V8CallInDetachedWindowByClosingAfter1mins
+	V8CallInDetachedWindowByOtherReasons
+	V8CallInDetachedWindowByOtherReasonAfter10s
+	V8CallInDetachedWindowByOtherReasonAfter1mins
 	LayoutCount
 	RecalcStyleCount
 	LayoutDuration
@@ -44,7 +52,6 @@ title: test1
 	MediaKeys
 	Nodes
 	Resources
-	ScriptPromises
 	ContextLifecycleStateObservers
 	V8PerContextDatas
 	WorkerGlobalScopes
@@ -53,6 +60,15 @@ title: test1
 	ResourceFetchers
 	AdSubframes
 	DetachedScriptStates
+	V8CallInDetachedWindowByNavigations
+	V8CallInDetachedWindowByNavigationAfter10s
+	V8CallInDetachedWindowByNavigationAfter1mins
+	V8CallInDetachedWindowByClosings
+	V8CallInDetachedWindowByClosingAfter10s
+	V8CallInDetachedWindowByClosingAfter1mins
+	V8CallInDetachedWindowByOtherReasons
+	V8CallInDetachedWindowByOtherReasonAfter10s
+	V8CallInDetachedWindowByOtherReasonAfter1mins
 	LayoutCount
 	RecalcStyleCount
 	LayoutDuration
@@ -78,7 +94,6 @@ title:
 	MediaKeys
 	Nodes
 	Resources
-	ScriptPromises
 	ContextLifecycleStateObservers
 	V8PerContextDatas
 	WorkerGlobalScopes
@@ -87,6 +102,15 @@ title:
 	ResourceFetchers
 	AdSubframes
 	DetachedScriptStates
+	V8CallInDetachedWindowByNavigations
+	V8CallInDetachedWindowByNavigationAfter10s
+	V8CallInDetachedWindowByNavigationAfter1mins
+	V8CallInDetachedWindowByClosings
+	V8CallInDetachedWindowByClosingAfter10s
+	V8CallInDetachedWindowByClosingAfter1mins
+	V8CallInDetachedWindowByOtherReasons
+	V8CallInDetachedWindowByOtherReasonAfter10s
+	V8CallInDetachedWindowByOtherReasonAfter1mins
 	LayoutCount
 	RecalcStyleCount
 	LayoutDuration

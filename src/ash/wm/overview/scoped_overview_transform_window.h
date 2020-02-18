@@ -15,16 +15,17 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "ui/aura/client/transient_window_client_observer.h"
-#include "ui/compositor/layer_animation_observer.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/transform.h"
 
 namespace aura {
+
 class Window;
-enum class EventTargetingPolicy;
-}
+class ScopedWindowEventTargetingBlocker;
+
+}  // namespace aura
 
 namespace ui {
 class Layer;
@@ -40,10 +41,9 @@ class ScopedOverviewHideWindows;
 // fit in certain bounds. The window's state is restored when this object is
 // destroyed.
 class ASH_EXPORT ScopedOverviewTransformWindow
-    : public ui::ImplicitAnimationObserver,
-      public aura::client::TransientWindowClientObserver {
+    : public aura::client::TransientWindowClientObserver {
  public:
-  // Overview windows have certain properties if their aspect ratio exceedes a
+  // Overview windows have certain properties if their aspect ratio exceeds a
   // threshold. This enum keeps track of which category the window falls into,
   // based on its aspect ratio.
   enum class GridWindowFillMode {
@@ -66,10 +66,6 @@ class ASH_EXPORT ScopedOverviewTransformWindow
                             const gfx::SizeF& target,
                             int top_view_inset,
                             int title_height);
-
-  // Returns the transform turning |src_rect| into |dst_rect|.
-  static gfx::Transform GetTransformForRect(const gfx::RectF& src_rect,
-                                            const gfx::RectF& dst_rect);
 
   ScopedOverviewTransformWindow(OverviewItem* overview_item,
                                 aura::Window* window);
@@ -110,15 +106,15 @@ class ASH_EXPORT ScopedOverviewTransformWindow
   // OverviewItem::RestoreWindow() for details why we need this.
   void RestoreWindow(bool reset_transform);
 
-  // Informs the ScopedOverviewTransformWindow that the window being watched was
-  // destroyed. This resets the internal window pointer.
-  void OnWindowDestroyed();
-
   // Prepares for overview mode by doing any necessary actions before entering.
   void PrepareForOverview();
 
   // Sets the opacity of the managed windows.
   void SetOpacity(float opacity);
+
+  // Apply clipping on the managed windows. If |size| is empty, then restore
+  // |overview_clip_rect_|.
+  void SetClipping(const gfx::SizeF& size);
 
   // Returns |rect| having been shrunk to fit within |bounds| (preserving the
   // aspect ratio). Takes into account a window header that is |top_view_inset|
@@ -151,13 +147,6 @@ class ASH_EXPORT ScopedOverviewTransformWindow
   // clip the top portion of the window that normally contains the caption (if
   // any), otherwise it will skip updating that clip.
   void UpdateRoundedCorners(bool show, bool update_clip);
-
-  // Stop listening to any animations to finish.
-  void CancelAnimationsListener();
-
-  // ui::ImplicitAnimationObserver:
-  void OnLayerAnimationStarted(ui::LayerAnimationSequence* sequence) override;
-  void OnImplicitAnimationsCompleted() override;
 
   // aura::client::TransientWindowClientObserver:
   void OnTransientChildWindowAdded(aura::Window* parent,
@@ -199,8 +188,6 @@ class ASH_EXPORT ScopedOverviewTransformWindow
   // The original opacity of the window before entering overview mode.
   float original_opacity_;
 
-  aura::EventTargetingPolicy original_event_targeting_policy_;
-
   // Specifies how the window is laid out in the grid.
   GridWindowFillMode type_ = GridWindowFillMode::kNormal;
 
@@ -217,8 +204,9 @@ class ASH_EXPORT ScopedOverviewTransformWindow
   // For the duration of this object |window_| and its transient childrens'
   // event targeting policy will be sent to NONE. Store the originals so we can
   // change it back when destroying |this|.
-  base::flat_map<aura::Window*, aura::EventTargetingPolicy>
-      targeting_policy_map_;
+  base::flat_map<aura::Window*,
+                 std::unique_ptr<aura::ScopedWindowEventTargetingBlocker>>
+      event_targeting_blocker_map_;
 
   // The original mask layer of the window before entering overview mode.
   ui::Layer* original_mask_layer_ = nullptr;
@@ -226,6 +214,15 @@ class ASH_EXPORT ScopedOverviewTransformWindow
   // The original clipping on the layer of the window before entering overview
   // mode.
   gfx::Rect original_clip_rect_;
+
+  // The clippng on the layer of |window_| after entering overview mode.
+  // Additional clipping may be added, and when that additional clipping is
+  // removed, we should go back to this clipping.
+  gfx::Rect overview_clip_rect_;
+
+  // True if a window is clipped to match splitview bounds. If true, the
+  // splitview clipping overrides any top view inset clipping there may be.
+  bool has_aspect_ratio_clipping_ = false;
 
   std::unique_ptr<ScopedOverviewHideWindows> hidden_transient_children_;
 

@@ -128,11 +128,11 @@ class TestAutotestEvaluator(cros_test_lib.MockTempDirTestCase):
     options = cros_test_lib.EasyAttr()
     with self.assertRaises(Exception) as cm:
       autotest_evaluator.AutotestEvaluator(options)
-    exception_message = cm.exception.message
-    self.assertTrue('Missing command line' in exception_message)
-    self.assertTrue('AutotestEvaluator' in exception_message)
+    exception_message = str(cm.exception)
+    self.assertIn('Missing command line', exception_message)
+    self.assertIn('AutotestEvaluator', exception_message)
     for arg in autotest_evaluator.AutotestEvaluator.REQUIRED_ARGS:
-      self.assertTrue(arg in exception_message)
+      self.assertIn(arg, exception_message)
 
   def testRunTestFromDut(self):
     """Tests that RunTestFromDut() invokes expected commands."""

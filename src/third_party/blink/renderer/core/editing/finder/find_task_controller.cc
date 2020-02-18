@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/editing/finder/find_task_controller.h"
 
+#include "third_party/blink/public/mojom/frame/find_in_page.mojom-blink.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/idle_request_options.h"
 #include "third_party/blink/renderer/core/dom/range.h"
@@ -111,9 +112,9 @@ class FindTaskController::IdleFindTask
     while (search_start != search_end) {
       // Find in the whole block.
       FindBuffer buffer(EphemeralRangeInFlatTree(search_start, search_end));
-      std::unique_ptr<FindBuffer::Results> match_results =
+      FindBuffer::Results match_results =
           buffer.FindMatches(search_text_, find_options);
-      for (FindBuffer::BufferMatchResult match : *match_results) {
+      for (FindBuffer::BufferMatchResult match : match_results) {
         const EphemeralRangeInFlatTree ephemeral_match_range =
             buffer.RangeFromBufferIndex(match.start,
                                         match.start + match.length);

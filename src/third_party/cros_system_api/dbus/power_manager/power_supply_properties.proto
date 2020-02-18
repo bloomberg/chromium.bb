@@ -187,5 +187,11 @@ message PowerSupplyProperties {
   // Battery voltage min design measured in V.
   optional double battery_voltage_min_design = 26;
 
-  // Next ID to use: 27
+  // Current battery charge right now, measured in ampere-hours (Ah).
+  optional double battery_charge = 27;
+
+  // Battery model name reported by |model_name|.
+  optional string battery_model_name = 28;
+
+  // Next ID to use: 29
 }

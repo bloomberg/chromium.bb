@@ -131,6 +131,7 @@
 
 #include <algorithm>
 #include <functional>
+#include <limits>
 #include <type_traits>
 #include <utility>
 #include <vector>
@@ -149,7 +150,7 @@ namespace base {
 // in place.
 class BASE_EXPORT HeapHandle {
  public:
-  enum : size_t { kInvalidIndex = -1 };
+  enum : size_t { kInvalidIndex = std::numeric_limits<size_t>::max() };
 
   constexpr HeapHandle() = default;
   constexpr HeapHandle(const HeapHandle& other) = default;
@@ -457,7 +458,7 @@ class IntrusiveHeap {
   // General operations.
 
   void swap(IntrusiveHeap& other) noexcept;
-  friend void swap(IntrusiveHeap& lhs, IntrusiveHeap& rhs);
+  friend void swap(IntrusiveHeap& lhs, IntrusiveHeap& rhs) { lhs.swap(rhs); }
 
   // Comparison operators. These check for exact equality. Two heaps that are
   // semantically equivalent (contain the same elements, but in different
@@ -715,7 +716,7 @@ IntrusiveHeap<T, Compare, HeapHandleAccessor>::~IntrusiveHeap() {
 template <typename T, typename Compare, typename HeapHandleAccessor>
 IntrusiveHeap<T, Compare, HeapHandleAccessor>&
 IntrusiveHeap<T, Compare, HeapHandleAccessor>::operator=(
-    IntrusiveHeap&& other) {
+    IntrusiveHeap&& other) noexcept {
   clear();
   impl_ = std::move(other.impl_);
   return *this;

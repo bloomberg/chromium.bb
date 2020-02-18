@@ -115,8 +115,8 @@ PerformanceMark* UserTiming::CreatePerformanceMark(
     start = performance_->now();
   }
 
-  ScriptValue detail = ScriptValue::CreateNull(script_state);
-  if (RuntimeEnabledFeatures::CustomUserTimingEnabled() && mark_options)
+  ScriptValue detail = ScriptValue::CreateNull(script_state->GetIsolate());
+  if (mark_options)
     detail = mark_options->detail();
 
   bool is_worker_global_scope =

@@ -48,6 +48,7 @@ class MDnsClient;
 class MDnsSocketFactory;
 class NetLog;
 class NetLogWithSource;
+class NetworkIsolationKey;
 class URLRequestContext;
 
 // Scheduler and controller of host resolution requests. Because of the global
@@ -90,17 +91,31 @@ class NET_EXPORT HostResolverManager
       public SystemDnsConfigChangeNotifier::Observer {
  public:
   using MdnsListener = HostResolver::MdnsListener;
-  using ResolveHostRequest = HostResolver::ResolveHostRequest;
   using ResolveHostParameters = HostResolver::ResolveHostParameters;
   using SecureDnsMode = DnsConfig::SecureDnsMode;
 
-  class CancellableRequest : public ResolveHostRequest {
+  // A request that allows explicit cancellation before destruction. Enables
+  // callers (e.g. ContextHostResolver) to implement cancellation of requests on
+  // the callers' destruction.
+  class CancellableRequest {
    public:
+    CancellableRequest() = default;
+    CancellableRequest(const CancellableRequest&) = delete;
+    CancellableRequest& operator=(const CancellableRequest&) = delete;
+    virtual ~CancellableRequest() = default;
+
     // If running asynchronously, silently cancels the request as if destroyed.
     // Callbacks will never be invoked. Noop if request is already complete or
     // never started.
     virtual void Cancel() = 0;
   };
+
+  // CancellableRequest versions of different request types.
+  class CancellableResolveHostRequest
+      : public CancellableRequest,
+        public HostResolver::ResolveHostRequest {};
+  class CancellableProbeRequest : public CancellableRequest,
+                                  public HostResolver::ProbeRequest {};
 
   // Creates a HostResolver as specified by |options|. Blocking tasks are run in
   // ThreadPool.
@@ -128,12 +143,17 @@ class NET_EXPORT HostResolverManager
   // specifies any cache usage other than LOCAL_ONLY, there must be a 1:1
   // correspondence between |request_context| and |host_cache|, and both should
   // come from the same ContextHostResolver.
-  std::unique_ptr<CancellableRequest> CreateRequest(
+  std::unique_ptr<CancellableResolveHostRequest> CreateRequest(
       const HostPortPair& host,
+      const NetworkIsolationKey& network_isolation_key,
       const NetLogWithSource& net_log,
       const base::Optional<ResolveHostParameters>& optional_parameters,
       URLRequestContext* request_context,
       HostCache* host_cache);
+  // |request_context| is the context to use for the probes, and it is expected
+  // to be the context of the calling ContextHostResolver.
+  std::unique_ptr<CancellableProbeRequest> CreateDohProbeRequest(
+      URLRequestContext* request_context);
   std::unique_ptr<MdnsListener> CreateMdnsListener(const HostPortPair& host,
                                                    DnsQueryType query_type);
 
@@ -152,9 +172,6 @@ class NET_EXPORT HostResolverManager
   // Sets overriding configuration that will replace or add to configuration
   // read from the system for DnsClient resolution.
   void SetDnsConfigOverrides(DnsConfigOverrides overrides);
-
-  // Sets the URLRequestContext to use for issuing DoH probes.
-  void SetRequestContextForProbes(URLRequestContext* url_request_context);
 
   // Support for invalidating HostCaches on changes to network or DNS
   // configuration. HostCaches should register/deregister invalidators here
@@ -194,6 +211,11 @@ class NET_EXPORT HostResolverManager
   // setting DnsConfig.
   void SetDnsClientForTesting(std::unique_ptr<DnsClient> dns_client);
 
+  // Sets the last IPv6 probe result for testing. Uses the standard timeout
+  // duration, so it's up to the test fixture to ensure it doesn't expire by
+  // mocking time, if expiration would pose a problem.
+  void SetLastIPv6ProbeResultForTesting(bool last_ipv6_probe_result);
+
   // Allows the tests to catch slots leaking out of the dispatcher.  One
   // HostResolverManager::Job could occupy multiple PrioritizedDispatcher job
   // slots.
@@ -221,6 +243,7 @@ class NET_EXPORT HostResolverManager
   class LoopbackProbeJob;
   class DnsTask;
   class RequestImpl;
+  class ProbeRequestImpl;
   using JobMap = std::map<JobKey, std::unique_ptr<Job>>;
 
   // Task types that a Job might run.
@@ -257,6 +280,7 @@ class NET_EXPORT HostResolverManager
   // stale cache entries can be returned.
   HostCache::Entry ResolveLocally(
       const std::string& hostname,
+      const NetworkIsolationKey& network_isolation_key,
       DnsQueryType requested_address_family,
       HostResolverSource source,
       HostResolverFlags flags,
@@ -366,6 +390,9 @@ class NET_EXPORT HostResolverManager
   // from the first probe for some time before probing again.
   bool IsIPv6Reachable(const NetLogWithSource& net_log);
 
+  // Sets |last_ipv6_probe_result_| and updates |last_ipv6_probe_time_|.
+  void SetLastIPv6ProbeResult(bool last_ipv6_probe_result);
+
   // Attempts to connect a UDP socket to |dest|:53. Virtual for testing.
   virtual bool IsGloballyReachable(const IPAddress& dest,
                                    const NetLogWithSource& net_log);
@@ -424,6 +451,11 @@ class NET_EXPORT HostResolverManager
   int GetOrCreateMdnsClient(MDnsClient** out_client);
 
   void InvalidateCaches();
+
+  // Currently only allows one probe to be started at a time. Must be cancelled
+  // before starting another.
+  void ActivateDohProbes(URLRequestContext* url_request_context);
+  void CancelDohProbes();
 
   // Used for multicast DNS tasks. Created on first use using
   // GetOrCreateMndsClient().

@@ -18,6 +18,7 @@
 #include "base/macros.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/omnibox/browser/autocomplete_provider.h"
+#include "components/omnibox/browser/autocomplete_provider_debouncer.h"
 #include "components/omnibox/browser/search_provider.h"
 #include "third_party/metrics_proto/omnibox_event.pb.h"
 
@@ -86,6 +87,8 @@ class DocumentProvider : public AutocompleteProvider {
   FRIEND_TEST_ALL_PREFIXES(DocumentProviderTest,
                            CheckFeaturePrerequisiteDefaultSearch);
   FRIEND_TEST_ALL_PREFIXES(DocumentProviderTest,
+                           CheckFeatureNotInExplicitKeywordMode);
+  FRIEND_TEST_ALL_PREFIXES(DocumentProviderTest,
                            CheckFeaturePrerequisiteServerBackoff);
   FRIEND_TEST_ALL_PREFIXES(DocumentProviderTest, IsInputLikelyURL);
   FRIEND_TEST_ALL_PREFIXES(DocumentProviderTest, ParseDocumentSearchResults);
@@ -104,6 +107,7 @@ class DocumentProvider : public AutocompleteProvider {
   FRIEND_TEST_ALL_PREFIXES(DocumentProviderTest, GenerateLastModifiedString);
   FRIEND_TEST_ALL_PREFIXES(DocumentProviderTest, Scoring);
   FRIEND_TEST_ALL_PREFIXES(DocumentProviderTest, Caching);
+  FRIEND_TEST_ALL_PREFIXES(DocumentProviderTest, MinQueryLength);
 
   using MatchesCache = base::MRUCache<GURL, AutocompleteMatch>;
 
@@ -115,11 +119,15 @@ class DocumentProvider : public AutocompleteProvider {
 
   // Determines whether the profile/session/window meet the feature
   // prerequisites.
-  bool IsDocumentProviderAllowed(AutocompleteProviderClient* client);
+  bool IsDocumentProviderAllowed(AutocompleteProviderClient* client,
+                                 const AutocompleteInput& input);
 
   // Determines if the input is a URL, or is the start of the user entering one.
   // We avoid queries for these cases for quality and scaling reasons.
   static bool IsInputLikelyURL(const AutocompleteInput& input);
+
+  // Called by |debouncer_|, queued when |start| is called.
+  void Run();
 
   // Called when the network request for suggestions has completed.
   void OnURLLoadComplete(const network::SimpleURLLoader* source,
@@ -154,10 +162,26 @@ class DocumentProvider : public AutocompleteProvider {
       const std::string& modified_timestamp_string,
       base::Time now);
 
-  // Don't request doc suggestions for inputs shorter than |min_query_length_|.
+  // Don't request doc suggestions for inputs shorter than |min_query_length_|
+  // or longer than |max_query_length_|. A value of -1 indicates no limit. These
+  // help limit the load on backend servers.
   const size_t min_query_length_;
-  // Hide doc suggestions for inputs shorter than |min_query_show_length_|.
+  const size_t max_query_length_;
+  // Hide doc suggestions for inputs shorter than |min_query_show_length_| or
+  // longer than |max_query_show_length_|. A value of -1 indicates no limit.
+  // These help analyze experiments by allowing observing the effect of changing
+  // |min(max)_query_length_| while keeping data populations consistent.
   const size_t min_query_show_length_;
+  const size_t max_query_show_length_;
+  // Don't log doc suggestions for inputs shorter than |min_query_log_length_|
+  // or longer than |max_query_log_length_| (i.e. don't trigger
+  // field_trial_triggered and field_trial_triggered_in_session). A value of -1
+  // indicates no limit. These help analyze experiments by restricting data
+  // populations to avoid noise when only interested in a range of input
+  // lengths. E.g. experimenting with |max_query_show_length_| would affect only
+  // the small subset of long queries.
+  const size_t min_query_log_length_;
+  const size_t max_query_log_length_;
 
   // Whether a field trial has triggered for this query and this session,
   // respectively. Works similarly to BaseSearchProvider, though this class does
@@ -191,6 +215,8 @@ class DocumentProvider : public AutocompleteProvider {
   // affect which autocomplete results are displayed and their ranks.
   const size_t cache_size_;
   MatchesCache matches_cache_;
+
+  std::unique_ptr<AutocompleteProviderDebouncer> debouncer_;
 
   // For callbacks that may be run after destruction. Must be declared last.
   base::WeakPtrFactory<DocumentProvider> weak_ptr_factory_{this};

@@ -113,7 +113,7 @@ _PrebuiltMapping = collections.namedtuple(
 class PrebuiltMapping(_PrebuiltMapping):
   """A tuple of dicts describing our Chrome PFQs.
 
-  Members:
+  Attributes:
     by_compat_id: A dict mapping CompatIds to sets of BoardKey objects.
     by_arch_useflags: A dict mapping (arch, useflags) tuples to sets of
       BoardKey objects.
@@ -205,7 +205,7 @@ class PrebuiltMapping(_PrebuiltMapping):
       key = BoardKey(**d['key'])
       compat_ids[key] = CompatId(**d['compat_id'])
 
-    return cls.Get(compat_ids.keys(), compat_ids)
+    return cls.Get(list(compat_ids), compat_ids)
 
   def GetPrebuilts(self, compat_id):
     """Get the matching BoardKey objects associated with |compat_id|.
@@ -241,7 +241,7 @@ def GetChromeUseFlags(board, extra_useflags):
   assert os.path.exists('/build/%s' % board), 'Board %s not set up' % board
   extra_env = {'USE': ' '.join(extra_useflags)}
   cmd = ['equery-%s' % board, '-Cq', 'uses', constants.CHROME_CP]
-  chrome_useflags = cros_build_lib.RunCommand(
+  chrome_useflags = cros_build_lib.run(
       cmd, capture_output=True, print_cmd=False,
       extra_env=extra_env).output.rstrip().split()
   return tuple(x[1:] for x in chrome_useflags if x.startswith('+'))
@@ -265,7 +265,7 @@ def GenConfigsForBoard(board, regen, error_code_ok):
     cmd = ['%s/setup_board' % constants.CHROMITE_BIN_DIR,
            '--board=%s' % board, '--regen-configs', '--skip-toolchain-update',
            '--skip-chroot-upgrade', '--skip-board-pkg-init', '--quiet']
-    cros_build_lib.RunCommand(cmd, error_code_ok=error_code_ok)
+    cros_build_lib.run(cmd, error_code_ok=error_code_ok)
 
 
 _CompatId = collections.namedtuple('_CompatId', ['arch', 'useflags', 'cflags'])

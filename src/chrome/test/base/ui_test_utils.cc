@@ -219,7 +219,7 @@ class AutocompleteChangeObserver : public OmniboxControllerEmitter::Observer {
 
   // OmniboxControllerEmitter::Observer:
   void OnOmniboxQuery(AutocompleteController* controller,
-                      const base::string16& input_text) override {}
+                      const AutocompleteInput& input) override {}
   void OnOmniboxResultChanged(bool default_match_changed,
                               AutocompleteController* controller) override {
     if (run_loop_.running())
@@ -259,7 +259,6 @@ void NavigateToURLWithPost(Browser* browser, const GURL& url) {
   std::string post_data("test=body");
   params.post_data = network::ResourceRequestBody::CreateFromBytes(
       post_data.data(), post_data.size());
-  params.uses_post = true;
 
   NavigateToURL(&params);
 }
@@ -481,7 +480,8 @@ void SendToOmniboxAndSubmit(Browser* browser,
                             base::TimeTicks match_selection_timestamp) {
   LocationBar* location_bar = browser->window()->GetLocationBar();
   OmniboxView* omnibox = location_bar->GetOmniboxView();
-  omnibox->model()->OnSetFocus(false);
+  omnibox->model()->OnSetFocus(/*control_down=*/false,
+                               /*suppress_on_focus_suggestions=*/false);
   omnibox->SetUserText(base::ASCIIToUTF16(input));
   location_bar->AcceptInput(match_selection_timestamp);
 
@@ -517,10 +517,9 @@ void GetCookies(const GURL& url,
     base::RunLoop loop;
     auto* storage_partition =
         contents->GetMainFrame()->GetProcess()->GetStoragePartition();
-    net::CookieOptions options;
     net::CookieList cookie_list;
     storage_partition->GetCookieManagerForBrowserProcess()->GetCookieList(
-        url, options,
+        url, net::CookieOptions::MakeAllInclusive(),
         base::BindOnce(GetCookieCallback, loop.QuitClosure(), &cookie_list));
     loop.Run();
 

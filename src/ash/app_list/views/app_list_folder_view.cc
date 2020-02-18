@@ -42,7 +42,7 @@
 #include "ui/views/view_model.h"
 #include "ui/views/view_model_utils.h"
 
-namespace app_list {
+namespace ash {
 
 namespace {
 
@@ -107,8 +107,8 @@ class BackgroundAnimation : public AppListFolderView::Animation,
 
     ui::ScopedLayerAnimationSettings settings(
         background_view_->layer()->GetAnimator());
-    settings.SetTransitionDuration(base::TimeDelta::FromMilliseconds(
-        folder_view_->GetAppListConfig().folder_transition_in_duration_ms()));
+    settings.SetTransitionDuration(
+        folder_view_->GetAppListConfig().folder_transition_in_duration());
     settings.SetTweenType(gfx::Tween::FAST_OUT_SLOW_IN);
     settings.AddObserver(this);
     background_view_->layer()->SetColor(to_color);
@@ -155,7 +155,7 @@ class FolderItemTitleAnimation : public AppListFolderView::Animation,
 
     animation_.SetTweenType(gfx::Tween::FAST_OUT_SLOW_IN);
     animation_.SetSlideDuration(
-        folder_view_->GetAppListConfig().folder_transition_in_duration_ms());
+        folder_view_->GetAppListConfig().folder_transition_in_duration());
   }
 
   ~FolderItemTitleAnimation() override = default;
@@ -391,8 +391,8 @@ class ContentsContainerAnimation : public AppListFolderView::Animation,
     ui::ScopedLayerAnimationSettings animation(layer->GetAnimator());
     animation.SetTweenType(gfx::Tween::FAST_OUT_SLOW_IN);
     animation.AddObserver(this);
-    animation.SetTransitionDuration(base::TimeDelta::FromMilliseconds(
-        folder_view_->GetAppListConfig().folder_transition_in_duration_ms()));
+    animation.SetTransitionDuration(
+        folder_view_->GetAppListConfig().folder_transition_in_duration());
     layer->SetTransform(show_ ? gfx::Transform() : transform);
     layer->SetOpacity(show_ ? 1.0f : 0.0f);
 
@@ -565,7 +565,7 @@ void AppListFolderView::OnAppListItemWillBeDeleted(AppListItem* item) {
   if (item == folder_item_) {
     items_grid_view_->OnFolderItemRemoved();
     folder_header_view_->OnFolderItemRemoved();
-    folder_item_ = NULL;
+    folder_item_ = nullptr;
 
     // Do not change state if it is hidden.
     if (hide_for_reparent_ || contents_container_->layer()->opacity() == 0.0f)
@@ -574,9 +574,9 @@ void AppListFolderView::OnAppListItemWillBeDeleted(AppListItem* item) {
     // If the folder item associated with this view is removed from the model,
     // (e.g. the last item in the folder was deleted), reset the view and signal
     // the container view to show the app list instead.
-    // Pass NULL to ShowApps() to avoid triggering animation from the deleted
+    // Pass nullptr to ShowApps() to avoid triggering animation from the deleted
     // folder.
-    container_view_->ShowApps(NULL);
+    container_view_->ShowApps(nullptr);
   }
 }
 
@@ -597,13 +597,21 @@ void AppListFolderView::UpdatePreferredBounds() {
   preferred_bounds_ = gfx::Rect(GetPreferredSize());
   preferred_bounds_ += (icon_bounds_in_container.CenterPoint() -
                         preferred_bounds_.CenterPoint());
+
   gfx::Rect container_bounds = container_view_->GetContentsBounds();
+  const gfx::Size search_box_size =
+      contents_view_->GetSearchBoxSize(ash::AppListState::kStateApps);
+  // Adjust for apps container margins.
+  if (app_list_features::IsScalableAppListEnabled()) {
+    container_bounds.Inset(container_view_->CalculateMarginsForAvailableBounds(
+        container_bounds, search_box_size, true /*for_full_container_bounds*/));
+  } else {
+    container_bounds.Inset(
+        0, GetAppListConfig().search_box_fullscreen_top_padding(), 0, 0);
+  }
+  // Avoid overlap with the search box widget.
   container_bounds.Inset(
-      0,
-      GetAppListConfig().search_box_fullscreen_top_padding() +
-          search_box::kSearchBoxPreferredHeight +
-          SearchBoxView::GetFocusRingSpacing(),
-      0, 0);
+      8, search_box_size.height() + SearchBoxView::GetFocusRingSpacing(), 8, 0);
   preferred_bounds_.AdjustToFit(container_bounds);
 
   // Calculate the folder icon's bounds relative to this view.
@@ -663,7 +671,7 @@ void AppListFolderView::RecordAnimationSmoothness() {
   if (end_frame_number > *animation_start_frame_number_) {
     RecordFolderShowHideAnimationSmoothness(
         end_frame_number - *animation_start_frame_number_,
-        GetAppListConfig().folder_transition_in_duration_ms(),
+        GetAppListConfig().folder_transition_in_duration(),
         compositor->refresh_rate());
   }
   // Resets the frame number so that further invocation won't record the
@@ -713,10 +721,13 @@ void AppListFolderView::CalculateIdealBounds() {
   // Calculate bounds for page_switcher.
   gfx::Rect page_switcher_frame(rect);
   gfx::Size page_switcher_size = page_switcher_->GetPreferredSize();
-  page_switcher_size.set_height(GetAppListConfig().folder_header_height());
   page_switcher_frame.set_x(page_switcher_frame.right() -
                             page_switcher_size.width());
-  page_switcher_frame.set_y(header_frame.y());
+  // The page switcher has a different height than the folder header, but it
+  // still needs to be aligned with it.
+  page_switcher_frame.set_y(
+      header_frame.y() -
+      (page_switcher_size.height() - header_frame.height()) / 2);
   page_switcher_frame.set_size(page_switcher_size);
   view_model_->set_ideal_bounds(kIndexPageSwitcher, page_switcher_frame);
 }
@@ -880,4 +891,4 @@ void AppListFolderView::CreateOpenOrCloseFolderAccessibilityEvent(bool open) {
   announcement_view->NotifyAccessibilityEvent(ax::mojom::Event::kAlert, true);
 }
 
-}  // namespace app_list
+}  // namespace ash

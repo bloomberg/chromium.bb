@@ -23,8 +23,6 @@
 
 namespace blink {
 
-using namespace cssvalue;
-
 bool CSSParser::ParseDeclarationList(const CSSParserContext* context,
                                      MutableCSSPropertyValueSet* property_set,
                                      const String& declaration) {
@@ -245,7 +243,7 @@ bool CSSParser::ParseColor(Color& color, const String& string, bool strict) {
         StrictCSSParserContext(SecureContextMode::kInsecureContext));
   }
 
-  auto* color_value = DynamicTo<CSSColorValue>(value);
+  auto* color_value = DynamicTo<cssvalue::CSSColorValue>(value);
   if (!color_value)
     return false;
 
@@ -262,6 +260,10 @@ bool CSSParser::ParseSystemColor(Color& color,
 
   if (!RuntimeEnabledFeatures::LinkSystemColorsEnabled() &&
       (id == CSSValueID::kLinktext || id == CSSValueID::kVisitedtext)) {
+    return false;
+  } else if (!RuntimeEnabledFeatures::NewSystemColorsEnabled() &&
+             (id == CSSValueID::kActivetext || id == CSSValueID::kField ||
+              id == CSSValueID::kFieldtext)) {
     return false;
   }
   color = LayoutTheme::GetTheme().SystemColor(id, color_scheme);

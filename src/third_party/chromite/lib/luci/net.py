@@ -10,10 +10,8 @@
 
 from __future__ import print_function
 
-import urllib
-import urlparse
-
 import httplib2
+from six.moves import urllib
 
 from chromite.lib import auth
 from chromite.lib import constants
@@ -54,7 +52,7 @@ def is_transient_error(response, url):
   # result is not JSON. This assumes that we only use JSON encoding.
   if response.status == 404:
     content_type = response.get('content-type', '')
-    return (urlparse.urlparse(url).path.startswith('/_ah/api/') and
+    return (urllib.parse.urlparse(url).path.startswith('/_ah/api/') and
             not content_type.startswith('application/json'))
   return False
 
@@ -101,7 +99,7 @@ def request(url,
   protocols = ('http://', 'https://')
   assert url.startswith(protocols) and '?' not in url, url
   if params:
-    url += '?' + urllib.urlencode(params)
+    url += '?' + urllib.parse.urlencode(params)
 
   headers = (headers or {}).copy()
 

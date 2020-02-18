@@ -2,13 +2,13 @@
 
 <link rel="import" href="chrome://resources/cr_components/chromeos/network/network_apnlist.html">
 <link rel="import" href="chrome://resources/cr_components/chromeos/network/network_choose_mobile.html">
+<link rel="import" href="chrome://resources/cr_components/chromeos/network/network_icon.html">
 <link rel="import" href="chrome://resources/cr_components/chromeos/network/network_ip_config.html">
+<link rel="import" href="chrome://resources/cr_components/chromeos/network/network_listener_behavior.html">
 <link rel="import" href="chrome://resources/cr_components/chromeos/network/network_nameservers.html">
 <link rel="import" href="chrome://resources/cr_components/chromeos/network/network_property_list_mojo.html">
 <link rel="import" href="chrome://resources/cr_components/chromeos/network/network_siminfo.html">
-<link rel="import" href="chrome://resources/cr_elements/chromeos/network/cr_network_icon.html">
-<link rel="import" href="chrome://resources/cr_elements/chromeos/network/cr_network_listener_behavior.html">
-<link rel="import" href="chrome://resources/cr_elements/chromeos/network/cr_onc_types.html">
+<link rel="import" href="chrome://resources/cr_components/chromeos/network/onc_mojo.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_expand_button/cr_expand_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_toggle/cr_toggle.html">
@@ -16,7 +16,6 @@
 <link rel="import" href="chrome://resources/cr_elements/policy/cr_policy_indicator.html">
 <link rel="import" href="chrome://resources/cr_elements/policy/cr_policy_network_behavior_mojo.html">
 <link rel="import" href="chrome://resources/cr_elements/policy/cr_policy_network_indicator_mojo.html">
-<link rel="import" href="chrome://resources/html/chromeos/onc_mojo.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-collapse/iron-collapse.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
@@ -37,10 +36,6 @@
     <style include="internet-shared settings-shared iron-flex">
       :host {
         padding-bottom: 40px;
-      }
-
-      iron-collapse {
-        margin: 10px 0;
       }
 
       iron-icon {
@@ -68,24 +63,29 @@
       paper-spinner-lite {
         @apply --cr-icon-height-width;
       }
+
       .warning {
           color: var(--cr-secondary-text-color);
           margin-inline-start: var(--settings-controlled-by-spacing);
+      }
+
+      #mac-address-container {
+        border-top: none;
       }
     </style>
     <!-- Title section: Icon + name + connection state. -->
     <div id="titleDiv" class="settings-box first">
       <div class="start layout horizontal center">
-        <cr-network-icon
+        <network-icon
             show-technology-badge="[[showTechnologyBadge_]]"
             network-state="[[getNetworkState_(managedProperties_)]]">
-        </cr-network-icon>
+        </network-icon>
         <div id="networkState" class="title settings-box-text"
             connected$="[[isConnectedState_(managedProperties_)]]"
             error$="[[isConnectionErrorState_(
-                managedProperties_, outOfRange_)]]">
+                managedProperties_, outOfRange_, deviceState_)]]">
           [[getStateText_(managedProperties_, propertiesReceived_,
-              outOfRange_)]]
+              outOfRange_, deviceState_)]]
         </div>
         <template is="dom-if"
             if="[[isPolicySource(managedProperties_.source))]]">
@@ -118,20 +118,16 @@
       </cr-button>
       <!-- Use policy properties from vpn_config_allowed to indicate when that
            pref disables buttons in this row. -->
-      <controlled-button id="connect" action-button on-click="onConnectTap_"
-          hidden$="[[!showConnect_(managedProperties_, globalPolicy,
-              managedNetworkAvailable)]]"
-          disabled="[[!enableConnect_(managedProperties_, defaultNetwork,
-              propertiesReceived_, outOfRange_, globalPolicy,
-              managedNetworkAvailable)]]"
-          label="$i18n{networkButtonConnect}"
-          pref="[[getFakeVpnConfigPrefForEnforcement_(managedProperties_,
-              prefs.vpn_config_allowed)]]">
-      </controlled-button>
-      <controlled-button id="disconnect" action-button
-          on-click="onDisconnectTap_"
-          hidden$="[[!showDisconnect_(managedProperties_)]]"
-          label="$i18n{networkButtonDisconnect}"
+      <controlled-button id="connect" class="action-button"
+          on-click="onConnectDisconnectTap_"
+          hidden$="[[shouldConnectDisconnectButtonBeHidden_(managedProperties_,
+              globalPolicy,managedNetworkAvailable, deviceState_)]]"
+          disabled="[[shouldConnectDisconnectButtonBeDisabled_(
+              managedProperties_, defaultNetwork,propertiesReceived_,
+              outOfRange_, globalPolicy, managedNetworkAvailable, deviceState_
+              )]]"
+          label="[[getConnectDisconnectButtonLabel_(managedProperties_,
+              globalPolicy,managedNetworkAvailable, deviceState_)]]"
           pref="[[getFakeVpnConfigPrefForEnforcement_(managedProperties_,
               prefs.vpn_config_allowed)]]">
       </controlled-button>
@@ -324,6 +320,7 @@
 
           <!-- MAC Address. -->
           <div class="settings-box two-line single-column stretch indented"
+              id="mac-address-container"
               hidden$="[[!deviceState_.macAddress]]">
             <div>$i18n{OncMacAddress}</div>
             <div class="secondary">[[deviceState_.macAddress]]</div>

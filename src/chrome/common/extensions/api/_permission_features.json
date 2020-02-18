@@ -126,6 +126,7 @@
       "B206D8716769728278D2D300349C6CB7D7DE2EF9",  // http://crbug.com/510270
       "A3E3DE9E9F16B41D4A2FAD106BD6CA76B94A0C94",  // http://crbug.com/590259
       "C2ABD68C33A5B485971C9638B80D6A2E9CBA78C4",  // http://crbug.com/590259
+      "B41E7F08E1179CC03CBD1F49E57CF353A40ADE07",  // http://crbug.com/1019094
       "8EBDF73405D0B84CEABB8C7513C9B9FA9F1DC2CE",  // http://crbug.com/644446
       "72445193EB86716465275D4E2E84DACF47558FCF",  // http://crbug.com/644446
       "51E46A03961884A4BA74CE7CA30A75CC6F360D74",  // http://crbug.com/644446
@@ -450,6 +451,7 @@
     "location": "policy",
     "platforms": ["chromeos"],
     "whitelist": [
+      "7FE4A999359A456C4B0FB7B7AD85CEA29CA50519",  // Login screen APIs test extension
       "E219EE36A3B40612FD2A8CD6937B03EF0C97D3FE",  // Imprivata (login screen)
       "4DBFC1C52D6660DD90791976DF7FEF7B3D360509",  // Imprivata (login screen) DEV
       "A24DE1B21A67E25FB62AC8491642038FE25DA75B",  // Imprivata (in session)
@@ -474,7 +476,7 @@
     "location": "policy",
     "platforms": ["chromeos"],
     "whitelist": [
-      "7FE4A999359A456C4B0FB7B7AD85CEA29CA50519", // chrome.loginScreenUi test extension
+      "7FE4A999359A456C4B0FB7B7AD85CEA29CA50519", // Login screen APIs test extension
       "E219EE36A3B40612FD2A8CD6937B03EF0C97D3FE", // Imprivata (login screen)
       "4DBFC1C52D6660DD90791976DF7FEF7B3D360509"  // Imprivata (login screen) DEV
     ]
@@ -614,6 +616,17 @@
   "plugin": {
     "channel": "stable",
     "extension_types": ["extension", "legacy_packaged_app"]
+  },
+  "printing": {
+    "channel": "dev",
+    "platforms": ["chromeos"],
+    "extension_types": ["extension"]
+  },
+  "printingMetrics": {
+    "channel": "stable",
+    "platforms": ["chromeos"],
+    "extension_types": ["extension"],
+    "location": "policy"
   },
   "privacy": {
     "channel": "stable",

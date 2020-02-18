@@ -18,7 +18,9 @@
 #include "media/base/renderer.h"
 #include "media/base/time_delta_interpolator.h"
 #include "media/mojo/mojom/renderer.mojom.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -46,16 +48,16 @@ class MojoRenderer : public Renderer, public mojom::RendererClient {
   MojoRenderer(const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
                std::unique_ptr<VideoOverlayFactory> video_overlay_factory,
                VideoRendererSink* video_renderer_sink,
-               mojom::RendererPtr remote_renderer);
+               mojo::PendingRemote<mojom::Renderer> remote_renderer);
   ~MojoRenderer() override;
 
   // Renderer implementation.
   void Initialize(MediaResource* media_resource,
                   media::RendererClient* client,
-                  const PipelineStatusCB& init_cb) override;
-  void SetCdm(CdmContext* cdm_context,
-              const CdmAttachedCB& cdm_attached_cb) override;
-  void Flush(const base::Closure& flush_cb) override;
+                  PipelineStatusCallback init_cb) override;
+  void SetCdm(CdmContext* cdm_context, CdmAttachedCB cdm_attached_cb) override;
+  void SetLatencyHint(base::Optional<base::TimeDelta> latency_hint) override;
+  void Flush(base::OnceClosure flush_cb) override;
   void StartPlayingFrom(base::TimeDelta time) override;
   void SetPlaybackRate(double playback_rate) override;
   void SetVolume(float volume) override;
@@ -133,20 +135,21 @@ class MojoRenderer : public Renderer, public mojom::RendererClient {
   std::vector<std::unique_ptr<MojoDemuxerStreamImpl>> streams_;
 
   // This class is constructed on one thread and used exclusively on another
-  // thread. This member is used to safely pass the RendererPtr from one thread
-  // to another. It is set in the constructor and is consumed in Initialize().
-  mojom::RendererPtrInfo remote_renderer_info_;
+  // thread. This member is used to safely pass the PendingRemote from one
+  // thread to another. It is set in the constructor and is consumed in
+  // Initialize().
+  mojo::PendingRemote<mojom::Renderer> remote_renderer_pending_remote_;
 
   // Remote Renderer, bound to |task_runner_| during Initialize().
-  mojom::RendererPtr remote_renderer_;
+  mojo::Remote<mojom::Renderer> remote_renderer_;
 
-  // Binding for RendererClient, bound to the |task_runner_|.
-  mojo::AssociatedBinding<RendererClient> client_binding_;
+  // Receiver for RendererClient, bound to the |task_runner_|.
+  mojo::AssociatedReceiver<RendererClient> client_receiver_{this};
 
   bool encountered_error_ = false;
 
-  PipelineStatusCB init_cb_;
-  base::Closure flush_cb_;
+  PipelineStatusCallback init_cb_;
+  base::OnceClosure flush_cb_;
   CdmAttachedCB cdm_attached_cb_;
 
   // Lock used to serialize access for |time_interpolator_|.

@@ -31,16 +31,19 @@ namespace internal {
 
 OBJECT_CONSTRUCTORS_IMPL(JSReceiver, HeapObject)
 TQ_OBJECT_CONSTRUCTORS_IMPL(JSObject)
+TQ_OBJECT_CONSTRUCTORS_IMPL(JSCustomElementsObject)
+TQ_OBJECT_CONSTRUCTORS_IMPL(JSSpecialObject)
 TQ_OBJECT_CONSTRUCTORS_IMPL(JSAsyncFromSyncIterator)
+TQ_OBJECT_CONSTRUCTORS_IMPL(JSFunctionOrBoundFunction)
 TQ_OBJECT_CONSTRUCTORS_IMPL(JSBoundFunction)
 TQ_OBJECT_CONSTRUCTORS_IMPL(JSDate)
-OBJECT_CONSTRUCTORS_IMPL(JSFunction, JSObject)
-OBJECT_CONSTRUCTORS_IMPL(JSGlobalObject, JSObject)
+OBJECT_CONSTRUCTORS_IMPL(JSFunction, JSFunctionOrBoundFunction)
+OBJECT_CONSTRUCTORS_IMPL(JSGlobalObject, JSSpecialObject)
 TQ_OBJECT_CONSTRUCTORS_IMPL(JSGlobalProxy)
 JSIteratorResult::JSIteratorResult(Address ptr) : JSObject(ptr) {}
 OBJECT_CONSTRUCTORS_IMPL(JSMessageObject, JSObject)
 TQ_OBJECT_CONSTRUCTORS_IMPL(JSPrimitiveWrapper)
-OBJECT_CONSTRUCTORS_IMPL(JSStringIterator, JSObject)
+TQ_OBJECT_CONSTRUCTORS_IMPL(JSStringIterator)
 
 NEVER_READ_ONLY_SPACE_IMPL(JSReceiver)
 
@@ -49,7 +52,6 @@ CAST_ACCESSOR(JSGlobalObject)
 CAST_ACCESSOR(JSIteratorResult)
 CAST_ACCESSOR(JSMessageObject)
 CAST_ACCESSOR(JSReceiver)
-CAST_ACCESSOR(JSStringIterator)
 
 MaybeHandle<Object> JSReceiver::GetProperty(Isolate* isolate,
                                             Handle<JSReceiver> receiver,
@@ -300,11 +302,12 @@ void JSObject::SetEmbedderField(int index, Smi value) {
 }
 
 bool JSObject::IsUnboxedDoubleField(FieldIndex index) const {
-  Isolate* isolate = GetIsolateForPtrCompr(*this);
+  const Isolate* isolate = GetIsolateForPtrCompr(*this);
   return IsUnboxedDoubleField(isolate, index);
 }
 
-bool JSObject::IsUnboxedDoubleField(Isolate* isolate, FieldIndex index) const {
+bool JSObject::IsUnboxedDoubleField(const Isolate* isolate,
+                                    FieldIndex index) const {
   if (!FLAG_unbox_double_fields) return false;
   return map(isolate).IsUnboxedDoubleField(isolate, index);
 }
@@ -313,11 +316,12 @@ bool JSObject::IsUnboxedDoubleField(Isolate* isolate, FieldIndex index) const {
 // is needed to correctly distinguish between properties stored in-object and
 // properties stored in the properties array.
 Object JSObject::RawFastPropertyAt(FieldIndex index) const {
-  Isolate* isolate = GetIsolateForPtrCompr(*this);
+  const Isolate* isolate = GetIsolateForPtrCompr(*this);
   return RawFastPropertyAt(isolate, index);
 }
 
-Object JSObject::RawFastPropertyAt(Isolate* isolate, FieldIndex index) const {
+Object JSObject::RawFastPropertyAt(const Isolate* isolate,
+                                   FieldIndex index) const {
   DCHECK(!IsUnboxedDoubleField(isolate, index));
   if (index.is_inobject()) {
     return TaggedField<Object>::load(isolate, *this, index.offset());
@@ -375,7 +379,7 @@ void JSObject::FastPropertyAtPut(FieldIndex index, Object value) {
   }
 }
 
-void JSObject::WriteToField(int descriptor, PropertyDetails details,
+void JSObject::WriteToField(InternalIndex descriptor, PropertyDetails details,
                             Object value) {
   DCHECK_EQ(kField, details.location());
   DCHECK_EQ(kData, details.kind());
@@ -540,7 +544,9 @@ Code JSFunction::code() const {
 void JSFunction::set_code(Code value) {
   DCHECK(!ObjectInYoungGeneration(value));
   RELAXED_WRITE_FIELD(*this, kCodeOffset, value);
+#ifndef V8_DISABLE_WRITE_BARRIERS
   MarkingBarrier(*this, RawField(kCodeOffset), value);
+#endif
 }
 
 void JSFunction::set_code_no_write_barrier(Code value) {
@@ -1001,14 +1007,13 @@ bool JSGlobalProxy::IsDetachedFrom(JSGlobalObject global) const {
 
 inline int JSGlobalProxy::SizeWithEmbedderFields(int embedder_field_count) {
   DCHECK_GE(embedder_field_count, 0);
-  return kSize + embedder_field_count * kEmbedderDataSlotSize;
+  return kHeaderSize + embedder_field_count * kEmbedderDataSlotSize;
 }
 
 ACCESSORS(JSIteratorResult, value, Object, kValueOffset)
 ACCESSORS(JSIteratorResult, done, Object, kDoneOffset)
 
-ACCESSORS(JSStringIterator, string, String, kStringOffset)
-SMI_ACCESSORS(JSStringIterator, index, kNextIndexOffset)
+TQ_SMI_ACCESSORS(JSStringIterator, index)
 
 // If the fast-case backing storage takes up much more memory than a dictionary
 // backing storage would, the object should have slow elements.

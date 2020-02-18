@@ -31,10 +31,10 @@ namespace sync_bookmarks {
 using NodeMetadataPair = std::pair<const bookmarks::BookmarkNode*,
                                    std::unique_ptr<sync_pb::EntityMetadata>>;
 
-// This class is responsible for keeping the mapping between bookmarks node in
+// This class is responsible for keeping the mapping between bookmark nodes in
 // the local model and the server-side corresponding sync entities. It manages
-// the metadata for its entity and caches entity data upon a local change until
-// commit confirmation is received.
+// the metadata for its entities and caches entity data upon a local change
+// until commit confirmation is received.
 class SyncedBookmarkTracker {
  public:
   class Entity {
@@ -55,13 +55,19 @@ class SyncedBookmarkTracker {
     // Check whether |specifics| matches the stored specifics_hash.
     bool MatchesSpecificsHash(const sync_pb::EntitySpecifics& specifics) const;
 
-    // Returns null for tomstones.
+    // Returns null for tombstones.
     const bookmarks::BookmarkNode* bookmark_node() const {
       return bookmark_node_;
     }
 
-    // Used in local deletions to mark and entity as a tommstone.
+    // Used in local deletions to mark and entity as a tombstone.
     void clear_bookmark_node() { bookmark_node_ = nullptr; }
+
+    // Used when replacing a node in order to update its otherwise immutable
+    // GUID.
+    void set_bookmark_node(const bookmarks::BookmarkNode* bookmark_node) {
+      bookmark_node_ = bookmark_node;
+    }
 
     const sync_pb::EntityMetadata* metadata() const {
       // TODO(crbug.com/516866): The below CHECK is added to debug some crashes.
@@ -157,7 +163,7 @@ class SyncedBookmarkTracker {
   void Remove(const std::string& sync_id);
 
   // Increment sequence number in the metadata for the entity with |sync_id|.
-  // Tracker must contain a non-tomstone entity with server id = |sync_id|.
+  // Tracker must contain a non-tombstone entity with server id = |sync_id|.
   void IncrementSequenceNumber(const std::string& sync_id);
 
   sync_pb::BookmarkModelMetadata BuildBookmarkModelMetadata() const;
@@ -194,6 +200,11 @@ class SyncedBookmarkTracker {
   void UpdateSyncForLocalCreationIfNeeded(const std::string& old_id,
                                           const std::string& new_id);
 
+  // Informs the tracker that a BookmarkNode has been replaced. It updates
+  // the internal state of the tracker accordingly.
+  void UpdateBookmarkNodePointer(const bookmarks::BookmarkNode* old_node,
+                                 const bookmarks::BookmarkNode* new_node);
+
   // Set the value of |EntityMetadata.acked_sequence_number| in the entity with
   // |sync_id| to be equal to |EntityMetadata.sequence_number| such that it is
   // not returned in GetEntitiesWithLocalChanges().
@@ -221,6 +232,9 @@ class SyncedBookmarkTracker {
       const bookmarks::BookmarkModel* bookmark_model) const;
 
  private:
+  // Returns null if no entity is found.
+  Entity* GetMutableEntityForSyncId(const std::string& sync_id);
+
   // Reorders |entities| that represents local non-deletions such that parent
   // creation/update is before child creation/update. Returns the ordered list.
   std::vector<const Entity*> ReorderUnsyncedEntitiesExceptDeletions(

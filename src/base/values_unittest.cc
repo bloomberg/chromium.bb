@@ -458,6 +458,162 @@ TEST(ValuesTest, MoveList) {
   EXPECT_EQ(123, blank.GetList().back().GetInt());
 }
 
+TEST(ValuesTest, TakeList) {
+  // Prepare a list with a value of each type.
+  ListValue value;
+  value.Append(Value(Value::Type::NONE));
+  value.Append(Value(Value::Type::BOOLEAN));
+  value.Append(Value(Value::Type::INTEGER));
+  value.Append(Value(Value::Type::DOUBLE));
+  value.Append(Value(Value::Type::STRING));
+  value.Append(Value(Value::Type::BINARY));
+  value.Append(Value(Value::Type::LIST));
+  value.Append(Value(Value::Type::DICTIONARY));
+
+  // Take ownership of the list and make sure its contents are what we expect.
+  auto list = value.TakeList();
+  EXPECT_EQ(8u, list.size());
+  EXPECT_TRUE(list[0].is_none());
+  EXPECT_TRUE(list[1].is_bool());
+  EXPECT_TRUE(list[2].is_int());
+  EXPECT_TRUE(list[3].is_double());
+  EXPECT_TRUE(list[4].is_string());
+  EXPECT_TRUE(list[5].is_blob());
+  EXPECT_TRUE(list[6].is_list());
+  EXPECT_TRUE(list[7].is_dict());
+
+  // Validate that |value| no longer contains values.
+  EXPECT_TRUE(value.GetList().empty());
+}
+
+TEST(ValuesTest, Append) {
+  ListValue value;
+  value.Append(true);
+  EXPECT_TRUE(value.GetList().back().is_bool());
+
+  value.Append(123);
+  EXPECT_TRUE(value.GetList().back().is_int());
+
+  value.Append(3.14);
+  EXPECT_TRUE(value.GetList().back().is_double());
+
+  std::string str = "foo";
+  value.Append(str.c_str());
+  EXPECT_TRUE(value.GetList().back().is_string());
+
+  value.Append(StringPiece(str));
+  EXPECT_TRUE(value.GetList().back().is_string());
+
+  value.Append(std::move(str));
+  EXPECT_TRUE(value.GetList().back().is_string());
+
+  string16 str16 = ASCIIToUTF16("bar");
+  value.Append(str16.c_str());
+  EXPECT_TRUE(value.GetList().back().is_string());
+
+  value.Append(base::StringPiece16(str16));
+  EXPECT_TRUE(value.GetList().back().is_string());
+
+  value.Append(Value());
+  EXPECT_TRUE(value.GetList().back().is_none());
+
+  value.Append(Value(Value::Type::DICTIONARY));
+  EXPECT_TRUE(value.GetList().back().is_dict());
+
+  value.Append(Value(Value::Type::LIST));
+  EXPECT_TRUE(value.GetList().back().is_list());
+}
+
+TEST(ValuesTest, Insert) {
+  ListValue value;
+  auto GetList = [&value]() -> decltype(auto) { return value.GetList(); };
+  auto GetConstList = [&value] { return as_const(value).GetList(); };
+
+  auto storage_iter = value.Insert(GetList().end(), Value(true));
+  EXPECT_TRUE(GetList().begin() == storage_iter);
+  EXPECT_TRUE(storage_iter->is_bool());
+
+  auto span_iter = value.Insert(GetConstList().begin(), Value(123));
+  EXPECT_TRUE(GetConstList().begin() == span_iter);
+  EXPECT_TRUE(span_iter->is_int());
+}
+
+TEST(ValuesTest, EraseListIter) {
+  ListValue value;
+  value.Append(1);
+  value.Append(2);
+  value.Append(3);
+
+  EXPECT_TRUE(value.EraseListIter(value.GetList().begin() + 1));
+  EXPECT_EQ(2u, value.GetList().size());
+  EXPECT_EQ(1, value.GetList()[0].GetInt());
+  EXPECT_EQ(3, value.GetList()[1].GetInt());
+
+  EXPECT_TRUE(value.EraseListIter(value.GetList().begin()));
+  EXPECT_EQ(1u, value.GetList().size());
+  EXPECT_EQ(3, value.GetList()[0].GetInt());
+
+  EXPECT_TRUE(value.EraseListIter(value.GetList().begin()));
+  EXPECT_TRUE(value.GetList().empty());
+
+  EXPECT_FALSE(value.EraseListIter(value.GetList().begin()));
+}
+
+TEST(ValuesTest, EraseListValue) {
+  ListValue value;
+  value.Append(1);
+  value.Append(2);
+  value.Append(2);
+  value.Append(3);
+
+  EXPECT_EQ(2u, value.EraseListValue(Value(2)));
+  EXPECT_EQ(2u, value.GetList().size());
+  EXPECT_EQ(1, value.GetList()[0].GetInt());
+  EXPECT_EQ(3, value.GetList()[1].GetInt());
+
+  EXPECT_EQ(1u, value.EraseListValue(Value(1)));
+  EXPECT_EQ(1u, value.GetList().size());
+  EXPECT_EQ(3, value.GetList()[0].GetInt());
+
+  EXPECT_EQ(1u, value.EraseListValue(Value(3)));
+  EXPECT_TRUE(value.GetList().empty());
+
+  EXPECT_EQ(0u, value.EraseListValue(Value(3)));
+}
+
+TEST(ValuesTest, EraseListValueIf) {
+  ListValue value;
+  value.Append(1);
+  value.Append(2);
+  value.Append(2);
+  value.Append(3);
+
+  EXPECT_EQ(3u, value.EraseListValueIf(
+                    [](const auto& val) { return val >= Value(2); }));
+  EXPECT_EQ(1u, value.GetList().size());
+  EXPECT_EQ(1, value.GetList()[0].GetInt());
+
+  EXPECT_EQ(1u, value.EraseListValueIf([](const auto& val) { return true; }));
+  EXPECT_TRUE(value.GetList().empty());
+
+  EXPECT_EQ(0u, value.EraseListValueIf([](const auto& val) { return true; }));
+}
+
+TEST(ValuesTest, ClearList) {
+  ListValue value;
+  value.Append(1);
+  value.Append(2);
+  value.Append(3);
+  EXPECT_EQ(3u, value.GetList().size());
+
+  value.ClearList();
+  EXPECT_TRUE(value.GetList().empty());
+
+  // ClearList() should be idempotent.
+  value.ClearList();
+  EXPECT_TRUE(value.GetList().empty());
+}
+
 TEST(ValuesTest, FindKey) {
   Value::DictStorage storage;
   storage.emplace("foo", std::make_unique<Value>("bar"));
@@ -1183,7 +1339,7 @@ TEST(ValuesTest, Basic) {
   DictionaryValue new_bookmark;
   new_bookmark.SetKey("name", Value("Froogle"));
   new_bookmark.SetKey("url", Value("http://froogle.com"));
-  toolbar_bookmarks->GetList().push_back(std::move(new_bookmark));
+  toolbar_bookmarks->Append(std::move(new_bookmark));
 
   Value* bookmark_list = settings.FindPath("global.toolbar.bookmarks");
   ASSERT_TRUE(bookmark_list);

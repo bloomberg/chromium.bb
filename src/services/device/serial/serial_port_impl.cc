@@ -19,29 +19,29 @@ namespace device {
 // static
 void SerialPortImpl::Create(
     const base::FilePath& path,
-    mojom::SerialPortRequest request,
-    mojom::SerialPortConnectionWatcherPtrInfo watcher,
+    mojo::PendingReceiver<mojom::SerialPort> receiver,
+    mojo::PendingRemote<mojom::SerialPortConnectionWatcher> watcher,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner) {
-  // This SerialPortImpl is owned by |request| and |watcher|.
-  new SerialPortImpl(path, std::move(request), std::move(watcher),
+  // This SerialPortImpl is owned by |receiver| and |watcher|.
+  new SerialPortImpl(path, std::move(receiver), std::move(watcher),
                      std::move(ui_task_runner));
 }
 
 SerialPortImpl::SerialPortImpl(
     const base::FilePath& path,
-    mojom::SerialPortRequest request,
-    mojom::SerialPortConnectionWatcherPtrInfo watcher,
+    mojo::PendingReceiver<mojom::SerialPort> receiver,
+    mojo::PendingRemote<mojom::SerialPortConnectionWatcher> watcher,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner)
-    : binding_(this, std::move(request)),
+    : receiver_(this, std::move(receiver)),
       io_handler_(device::SerialIoHandler::Create(path, ui_task_runner)),
       watcher_(std::move(watcher)),
       in_stream_watcher_(FROM_HERE, mojo::SimpleWatcher::ArmingPolicy::MANUAL),
       out_stream_watcher_(FROM_HERE,
                           mojo::SimpleWatcher::ArmingPolicy::MANUAL) {
-  binding_.set_connection_error_handler(base::BindOnce(
+  receiver_.set_disconnect_handler(base::BindOnce(
       [](SerialPortImpl* self) { delete self; }, base::Unretained(this)));
   if (watcher_.is_bound()) {
-    watcher_.set_connection_error_handler(base::BindOnce(
+    watcher_.set_disconnect_handler(base::BindOnce(
         [](SerialPortImpl* self) { delete self; }, base::Unretained(this)));
   }
 }
@@ -54,15 +54,14 @@ SerialPortImpl::~SerialPortImpl() {
 void SerialPortImpl::Open(mojom::SerialConnectionOptionsPtr options,
                           mojo::ScopedDataPipeConsumerHandle in_stream,
                           mojo::ScopedDataPipeProducerHandle out_stream,
-                          mojom::SerialPortClientPtr client,
+                          mojo::PendingRemote<mojom::SerialPortClient> client,
                           OpenCallback callback) {
   DCHECK(in_stream);
   DCHECK(out_stream);
   in_stream_ = std::move(in_stream);
   out_stream_ = std::move(out_stream);
-  if (client) {
-    client_ = std::move(client);
-  }
+  if (client)
+    client_.Bind(std::move(client));
   io_handler_->Open(*options, base::BindOnce(&SerialPortImpl::OnOpenCompleted,
                                              weak_factory_.GetWeakPtr(),
                                              std::move(callback)));

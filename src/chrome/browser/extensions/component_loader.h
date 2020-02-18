@@ -170,13 +170,10 @@ class ComponentLoader {
                                  const base::FilePath& root_directory,
                                  const std::string& name_string,
                                  const std::string& description_string);
-#if BUILDFLAG(ENABLE_APP_LIST)
-  void AddChromeApp();
-#endif  // BUILDFLAG(ENABLE_APP_LIST)
-
   void AddWebStoreApp();
 
 #if defined(OS_CHROMEOS)
+  void AddChromeApp();
   void AddFileManagerExtension();
   void AddVideoPlayerExtension();
   void AddAudioPlayerExtension();
@@ -194,9 +191,6 @@ class ComponentLoader {
   void UnloadComponent(ComponentExtensionInfo* component);
 
 #if defined(OS_CHROMEOS)
-  // Enable HTML5 FileSystem for given component extension in Guest mode.
-  void EnableFileSystemInGuestMode(const std::string& id);
-
   // Used as a reply callback by |AddComponentFromDir|.
   // Called with a |root_directory| and parsed |manifest| and invokes
   // |done_cb| after adding the extension.

@@ -12,6 +12,7 @@
 #include <memory>
 #include <string>
 
+#include "common/system_utils.h"
 #include "util/EGLPlatformParameters.h"
 #include "util/OSWindow.h"
 #include "util/Timer.h"
@@ -44,18 +45,21 @@ class SampleApplication
 
     virtual void swap();
 
+    virtual void onKeyUp(const Event::KeyEvent &keyEvent);
+    virtual void onKeyDown(const Event::KeyEvent &keyEvent);
+
     OSWindow *getWindow() const;
     EGLConfig getConfig() const;
     EGLDisplay getDisplay() const;
     EGLSurface getSurface() const;
     EGLContext getContext() const;
 
-    bool popEvent(Event *event);
-
     int run();
     void exit();
 
   private:
+    bool popEvent(Event *event);
+
     std::string mName;
     uint32_t mWidth;
     uint32_t mHeight;

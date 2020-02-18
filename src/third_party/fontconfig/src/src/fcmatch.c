@@ -342,6 +342,7 @@ typedef enum _FcMatcherPriority {
     PRI1(SLANT),
     PRI1(WEIGHT),
     PRI1(WIDTH),
+    PRI1(FONT_HAS_HINT),
     PRI1(DECORATIVE),
     PRI1(ANTIALIAS),
     PRI1(RASTERIZER),
@@ -844,7 +845,7 @@ FcFontSetMatch (FcConfig    *config,
 		FcPattern   *p,
 		FcResult    *result)
 {
-    FcPattern	    *best;
+    FcPattern	    *best, *ret = NULL;
 
     assert (sets != NULL);
     assert (p != NULL);
@@ -852,17 +853,16 @@ FcFontSetMatch (FcConfig    *config,
 
     *result = FcResultNoMatch;
 
+    config = FcConfigReference (config);
     if (!config)
-    {
-	config = FcConfigGetCurrent ();
-	if (!config)
-	    return 0;
-    }
+	    return NULL;
     best = FcFontSetMatchInternal (sets, nsets, p, result);
     if (best)
-	return FcFontRenderPrepare (config, p, best);
-    else
-	return NULL;
+	ret = FcFontRenderPrepare (config, p, best);
+
+    FcConfigDestroy (config);
+
+    return ret;
 }
 
 FcPattern *
@@ -872,19 +872,16 @@ FcFontMatch (FcConfig	*config,
 {
     FcFontSet	*sets[2];
     int		nsets;
-    FcPattern   *best;
+    FcPattern   *best, *ret = NULL;
 
     assert (p != NULL);
     assert (result != NULL);
 
     *result = FcResultNoMatch;
 
+    config = FcConfigReference (config);
     if (!config)
-    {
-	config = FcConfigGetCurrent ();
-	if (!config)
-	    return 0;
-    }
+	return NULL;
     nsets = 0;
     if (config->fonts[FcSetSystem])
 	sets[nsets++] = config->fonts[FcSetSystem];
@@ -893,9 +890,11 @@ FcFontMatch (FcConfig	*config,
 
     best = FcFontSetMatchInternal (sets, nsets, p, result);
     if (best)
-	return FcFontRenderPrepare (config, p, best);
-    else
-	return NULL;
+	ret = FcFontRenderPrepare (config, p, best);
+
+    FcConfigDestroy (config);
+
+    return ret;
 }
 
 typedef struct _FcSortNode {
@@ -1182,7 +1181,7 @@ FcFontSort (FcConfig	*config,
 	    FcCharSet	**csp,
 	    FcResult	*result)
 {
-    FcFontSet	*sets[2];
+    FcFontSet	*sets[2], *ret;
     int		nsets;
 
     assert (p != NULL);
@@ -1190,18 +1189,18 @@ FcFontSort (FcConfig	*config,
 
     *result = FcResultNoMatch;
 
+    config = FcConfigReference (config);
     if (!config)
-    {
-	config = FcConfigGetCurrent ();
-	if (!config)
-	    return 0;
-    }
+	return NULL;
     nsets = 0;
     if (config->fonts[FcSetSystem])
 	sets[nsets++] = config->fonts[FcSetSystem];
     if (config->fonts[FcSetApplication])
 	sets[nsets++] = config->fonts[FcSetApplication];
-    return FcFontSetSort (config, sets, nsets, p, trim, csp, result);
+    ret = FcFontSetSort (config, sets, nsets, p, trim, csp, result);
+    FcConfigDestroy (config);
+
+    return ret;
 }
 #define __fcmatch__
 #include "fcaliastail.h"

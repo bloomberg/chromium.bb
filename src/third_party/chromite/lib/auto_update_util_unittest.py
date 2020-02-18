@@ -3,16 +3,15 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Unit tests for the auto_update_util module.
-"""
+"""Unit tests for the auto_update_util module."""
 
 from __future__ import print_function
 
-import unittest
-
 from chromite.lib import auto_update_util
+from chromite.lib import cros_test_lib
 
-class VersionMatchUnittest(unittest.TestCase):
+
+class VersionMatchUnittest(cros_test_lib.TestCase):
   """Test version_match function."""
 
   def testVersionMatch(self):

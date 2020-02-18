@@ -44,13 +44,26 @@ class AccessibilityTest : public RenderingTest {
 
   std::string PrintAXTree() const;
 
+ protected:
+  std::unique_ptr<AXContext> ax_context_;
+
  private:
   std::ostringstream& PrintAXTreeHelper(std::ostringstream&,
                                         const AXObject* root,
                                         size_t level) const;
-
-  std::unique_ptr<AXContext> ax_context_;
 };
+
+class ParameterizedAccessibilityTest : public testing::WithParamInterface<bool>,
+                                       private ScopedLayoutNGForTest,
+                                       public AccessibilityTest {
+ public:
+  ParameterizedAccessibilityTest() : ScopedLayoutNGForTest(GetParam()) {}
+
+ protected:
+  bool LayoutNGEnabled() const { return GetParam(); }
+};
+
+INSTANTIATE_TEST_SUITE_P(All, ParameterizedAccessibilityTest, testing::Bool());
 
 }  // namespace test
 }  // namespace blink

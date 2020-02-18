@@ -26,6 +26,7 @@
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
 #include "chrome/browser/content_settings/content_settings_supervised_provider.h"
+#include "chrome/browser/profiles/profile_key.h"
 #include "chrome/browser/supervised_user/supervised_user_settings_service.h"
 #include "chrome/browser/supervised_user/supervised_user_settings_service_factory.h"
 #endif
@@ -119,13 +120,10 @@ scoped_refptr<RefcountedKeyedService>
         HostContentSettingsMap::NOTIFICATION_ANDROID_PROVIDER,
         std::move(channels_provider));
 
-    if (base::FeatureList::IsEnabled(chrome::android::
-          kTrustedWebActivityNotificationDelegationEnrolment)) {
-      auto webapp_provider = std::make_unique<InstalledWebappProvider>();
-      settings_map->RegisterProvider(
-          HostContentSettingsMap::INSTALLED_WEBAPP_PROVIDER,
-          std::move(webapp_provider));
-    }
+    auto webapp_provider = std::make_unique<InstalledWebappProvider>();
+    settings_map->RegisterProvider(
+        HostContentSettingsMap::INSTALLED_WEBAPP_PROVIDER,
+        std::move(webapp_provider));
   }
 #endif  // defined (OS_ANDROID)
   return settings_map;

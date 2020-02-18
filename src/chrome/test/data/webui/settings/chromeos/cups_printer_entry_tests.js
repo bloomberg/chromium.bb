@@ -5,11 +5,17 @@
 /**
  * Helper function to verify that printers in |printerListEntries| that contain
  * |searchTerm| are not in |hiddenEntries|.
- * @param {!Element} printerListEntries
- * @param {!Element} hiddenEntries
+ * @param {!Element} printerEntryListTestElement
  * @param {string} searchTerm
  */
-function verifyFilteredPrinters(printerListEntries, hiddenEntries, searchTerm) {
+function verifyFilteredPrinters(printerEntryListTestElement, searchTerm) {
+  const printerListEntries = Array.from(
+      printerEntryListTestElement.$.printerEntryList.querySelectorAll(
+          'settings-cups-printers-entry'));
+  const hiddenEntries = Array.from(
+      printerEntryListTestElement.$.printerEntryList.querySelectorAll(
+          'settings-cups-printers-entry[hidden]'));
+
   for (let i = 0; i < printerListEntries.length; ++i) {
     const entry = printerListEntries[i];
     if (hiddenEntries.indexOf(entry) == -1) {
@@ -21,31 +27,46 @@ function verifyFilteredPrinters(printerListEntries, hiddenEntries, searchTerm) {
 }
 
 /**
+ * Helper function to verify that the actual visible printers match the
+ * expected printer list.
+ * @param {!Element} printerEntryListTestElement
+ * @param {!Array<!PrinterListEntry>} expectedVisiblePrinters
+ */
+function verifyVisiblePrinters(
+    printerEntryListTestElement, expectedVisiblePrinters) {
+  const actualPrinterList = Array.from(
+      printerEntryListTestElement.$.printerEntryList.querySelectorAll(
+          'settings-cups-printers-entry:not([hidden])'));
+
+  assertEquals(expectedVisiblePrinters.length, actualPrinterList.length);
+  for (let i = 0; i < expectedVisiblePrinters.length; i++) {
+    const expectedPrinter = expectedVisiblePrinters[i].printerInfo;
+    const actualPrinter = actualPrinterList[i].printerEntry.printerInfo;
+
+    assertEquals(actualPrinter.printerName, expectedPrinter.printerName);
+    assertEquals(actualPrinter.printerAddress, expectedPrinter.printerAddress);
+    assertEquals(actualPrinter.printerId, expectedPrinter.printerId);
+  }
+}
+
+/**
  * Helper function to verify that printers are hidden accordingly if they do not
  * match the search query. Also checks if the no search results section is shown
  * when appropriate.
  * @param {!Element} printerEntryListTestElement
+ * @param {!Array<!PrinterListEntry>} expectedVisiblePrinters
  * @param {string} searchTerm
- * @param {number} expectedNumVisiblePrinters
  */
 function verifySearchQueryResults(
-    printerEntryListTestElement, searchTerm, expectedNumVisiblePrinters) {
+    printerEntryListTestElement, expectedVisiblePrinters, searchTerm) {
   printerEntryListTestElement.searchTerm = searchTerm;
 
   Polymer.dom.flush();
 
-  let printerListEntries = Array.from(
-      printerEntryListTestElement.$.printerEntryList.querySelectorAll(
-          'settings-cups-printers-entry'));
-  let hiddenEntries = Array.from(
-      printerEntryListTestElement.$.printerEntryList.querySelectorAll(
-          'settings-cups-printers-entry[hidden]'));
+  verifyVisiblePrinters(printerEntryListTestElement, expectedVisiblePrinters);
+  verifyFilteredPrinters(printerEntryListTestElement, searchTerm);
 
-  assertEquals(
-      expectedNumVisiblePrinters,
-      printerListEntries.length - hiddenEntries.length);
-  verifyFilteredPrinters(printerListEntries, hiddenEntries, searchTerm);
-  if (expectedNumVisiblePrinters) {
+  if (expectedVisiblePrinters.length) {
     assertTrue(printerEntryListTestElement.$$('#no-search-results').hidden);
   } else {
     assertFalse(printerEntryListTestElement.$$('#no-search-results').hidden);
@@ -150,143 +171,5 @@ suite('CupsPrintersEntry', function() {
     // Three dot menu should be visible when |printerType| is set to
     // PrinterType.SAVED.
     assertTrue(!!printerEntryTestElement.$$('.icon-more-vert'));
-  });
-});
-
-suite('CupsPrinterEntryList', function() {
-  /**
-   * A printry entry list created before each test.
-   * @type {PrintersEntryList}
-   */
-  let printerEntryListTestElement = null;
-
-  setup(function() {
-    PolymerTest.clearBody();
-    printerEntryListTestElement =
-        document.createElement('settings-cups-printers-entry-list');
-    assertTrue(!!printerEntryListTestElement);
-    document.body.appendChild(printerEntryListTestElement);
-  });
-
-  teardown(function() {
-    printerEntryListTestElement.remove();
-    printerEntryListTestElement = null;
-  });
-
-  /**
-   * Helper function that creates a new PrinterListEntry.
-   * @param {string} printerName
-   * @param {string} printerAddress
-   * @param {string} printerId
-   * @param {string} printerType
-   * @return {!PrinterListEntry}
-   */
-  function createPrinterListEntry(
-      printerName, printerAddress, printerId, printerType) {
-    const entry = {
-      printerInfo: {
-        ppdManufacturer: '',
-        ppdModel: '',
-        printerAddress: printerAddress,
-        printerDescription: '',
-        printerId: printerId,
-        printerManufacturer: '',
-        printerModel: '',
-        printerMakeAndModel: '',
-        printerName: printerName,
-        printerPPDPath: '',
-        printerPpdReference: {
-          userSuppliedPpdUrl: '',
-          effectiveMakeAndModel: '',
-          autoconf: false,
-        },
-        printerProtocol: 'ipp',
-        printerQueue: 'moreinfohere',
-        printerStatus: '',
-      },
-      printerType: printerType,
-    };
-    return entry;
-  }
-
-  test('SearchTermFiltersCorrectPrinters', function() {
-    printerEntryListTestElement.push(
-        'printers',
-        createPrinterListEntry('test1', '123', '1', PrinterType.SAVED));
-    printerEntryListTestElement.push(
-        'printers',
-        createPrinterListEntry('test2', '123', '2', PrinterType.SAVED));
-    printerEntryListTestElement.push(
-        'printers',
-        createPrinterListEntry('google', '123', '3', PrinterType.SAVED));
-
-    Polymer.dom.flush();
-
-    let printerListEntries =
-        printerEntryListTestElement.shadowRoot.querySelectorAll(
-            'settings-cups-printers-entry');
-
-    assertEquals(3, printerListEntries.length);
-
-    let searchTerm = 'google';
-    // Set the search term and filter out the printers. Filtering "google"
-    // should result in one visible entry and two hidden entries.
-    verifySearchQueryResults(
-        printerEntryListTestElement, searchTerm,
-        1 /* expectedNumVisiblePrinters */);
-
-    // Change the search term and assert that entries are filtered correctly.
-    // Filtering "test" should result in two visible entries and one hidden
-    // entry.
-    searchTerm = 'test';
-    verifySearchQueryResults(
-        printerEntryListTestElement, searchTerm,
-        2 /* expectedNumVisiblePrinters */);
-
-    // Add more printers and assert that they are correctly filtered.
-    printerEntryListTestElement.push(
-        'printers',
-        createPrinterListEntry('test3', '123', '4', PrinterType.SAVED));
-    printerEntryListTestElement.push(
-        'printers',
-        createPrinterListEntry('google2', '123', '5', PrinterType.SAVED));
-
-    Polymer.dom.flush();
-
-    verifySearchQueryResults(
-        printerEntryListTestElement, searchTerm,
-        3 /* expectedNumVisiblePrinters */);
-  });
-
-  test('NoSearchFound', function() {
-    printerEntryListTestElement.push(
-        'printers',
-        createPrinterListEntry('test1', '123', '1', PrinterType.SAVED));
-    printerEntryListTestElement.push(
-        'printers',
-        createPrinterListEntry('google', '123', '2', PrinterType.SAVED));
-
-    Polymer.dom.flush();
-
-    let searchTerm = 'google';
-
-    // Set the search term and filter out the printers. Filtering "google"
-    // should result in one visible entry and two hidden entries.
-    verifySearchQueryResults(
-        printerEntryListTestElement, searchTerm,
-        1 /* expectedNumVisiblePrinters */);
-
-    // Change search term to something that has no matches.
-    searchTerm = 'noSearchFound';
-    verifySearchQueryResults(
-        printerEntryListTestElement, searchTerm,
-        0 /* expectedNumVisiblePrinters */);
-
-    // Change search term back to "google" and verify that the No search found
-    // message is no longer there.
-    searchTerm = 'google';
-    verifySearchQueryResults(
-        printerEntryListTestElement, searchTerm,
-        1 /* expectedNumVisiblePrinters */);
   });
 });

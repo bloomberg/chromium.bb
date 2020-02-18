@@ -44,7 +44,7 @@ import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 @Config(manifest = Config.NONE)
 @EnableFeatures(ChromeFeatureList.TRUSTED_WEB_ACTIVITY_NOTIFICATION_DELEGATION_ENROLMENT)
 public class NotificationPermissionUpdaterTest {
-    private static final Origin ORIGIN = new Origin("https://www.website.com");
+    private static final Origin ORIGIN = Origin.create("https://www.website.com");
     private static final String PACKAGE_NAME = "com.package.name";
     private static final String OTHER_PACKAGE_NAME = "com.other.package.name";
 
@@ -65,8 +65,8 @@ public class NotificationPermissionUpdaterTest {
 
         PackageManager pm = RuntimeEnvironment.application.getPackageManager();
         mShadowPackageManager = shadowOf(pm);
-        mNotificationPermissionUpdater = new NotificationPermissionUpdater(
-                RuntimeEnvironment.application, mPermissionManager, mTrustedWebActivityClient);
+        mNotificationPermissionUpdater =
+                new NotificationPermissionUpdater(mPermissionManager, mTrustedWebActivityClient);
     }
 
     @Test
@@ -229,7 +229,7 @@ public class NotificationPermissionUpdaterTest {
     }
 
     private void verifyPermissionNotUpdated() {
-        verify(mPermissionManager, never()).register(any(), anyString(), anyBoolean());
+        verify(mPermissionManager, never()).updatePermission(any(), anyString(), anyBoolean());
     }
 
     private void verifyPermissionUpdated(boolean enabled) {
@@ -237,7 +237,7 @@ public class NotificationPermissionUpdaterTest {
     }
 
     private void verifyPermissionUpdated(String packageName, boolean enabled) {
-        verify(mPermissionManager).register(eq(ORIGIN), eq(packageName), eq(enabled));
+        verify(mPermissionManager).updatePermission(eq(ORIGIN), eq(packageName), eq(enabled));
     }
 
     private void verifyPermissionUnregistered() {

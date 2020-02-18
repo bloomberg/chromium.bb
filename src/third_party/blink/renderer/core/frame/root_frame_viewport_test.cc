@@ -12,20 +12,16 @@
 #include "third_party/blink/renderer/core/scroll/scroll_alignment.h"
 #include "third_party/blink/renderer/core/scroll/scroll_types.h"
 #include "third_party/blink/renderer/core/scroll/scrollable_area.h"
-#include "third_party/blink/renderer/core/scroll/scrollbar_theme_mock.h"
+#include "third_party/blink/renderer/core/scroll/scrollbar_theme_overlay_mock.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
 #include "third_party/blink/renderer/platform/geometry/double_rect.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 
-namespace {
-blink::ScrollbarThemeMock scrollbar_theme_;
-}
-
 namespace blink {
 
-class ScrollableAreaStub : public GarbageCollectedFinalized<ScrollableAreaStub>,
+class ScrollableAreaStub : public GarbageCollected<ScrollableAreaStub>,
                            public ScrollableArea {
   USING_GARBAGE_COLLECTED_MIXIN(ScrollableAreaStub);
 
@@ -83,7 +79,8 @@ class ScrollableAreaStub : public GarbageCollectedFinalized<ScrollableAreaStub>,
   }
 
   ScrollbarTheme& GetPageScrollbarTheme() const override {
-    return scrollbar_theme_;
+    DEFINE_STATIC_LOCAL(ScrollbarThemeOverlayMock, theme, ());
+    return theme;
   }
 
   void Trace(blink::Visitor* visitor) override {
@@ -91,7 +88,7 @@ class ScrollableAreaStub : public GarbageCollectedFinalized<ScrollableAreaStub>,
   }
 
  protected:
-  CompositorElementId GetCompositorElementId() const override {
+  CompositorElementId GetScrollElementId() const override {
     return CompositorElementId();
   }
   void UpdateScrollOffset(const ScrollOffset& offset, ScrollType) override {
@@ -103,15 +100,8 @@ class ScrollableAreaStub : public GarbageCollectedFinalized<ScrollableAreaStub>,
   bool IsScrollCornerVisible() const override { return true; }
   IntRect ScrollCornerRect() const override { return IntRect(); }
   bool ScrollbarsCanBeActive() const override { return true; }
-  IntRect ScrollableAreaBoundingBox() const override { return IntRect(); }
   bool ShouldPlaceVerticalScrollbarOnLeft() const override { return true; }
   void ScrollControlWasSetNeedsPaintInvalidation() override {}
-  GraphicsLayer* LayerForContainer() const override { return nullptr; }
-  GraphicsLayer* LayerForScrolling() const override { return nullptr; }
-  GraphicsLayer* LayerForHorizontalScrollbar() const override {
-    return nullptr;
-  }
-  GraphicsLayer* LayerForVerticalScrollbar() const override { return nullptr; }
   bool UserInputScrollable(ScrollbarOrientation orientation) const override {
     return orientation == kHorizontalScrollbar ? user_input_scrollable_x_
                                                : user_input_scrollable_y_;

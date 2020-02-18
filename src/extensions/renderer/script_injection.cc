@@ -288,11 +288,8 @@ void ScriptInjection::InjectJs(std::set<std::string>* executing_scripts,
   std::vector<blink::WebScriptSource> sources = injector_->GetJsSources(
       run_location_, executing_scripts, num_injected_js_scripts);
   DCHECK(!sources.empty());
-  bool in_main_world = injector_->ShouldExecuteInMainWorld();
-  int world_id = in_main_world
-                     ? DOMActivityLogger::kMainWorldId
-                     : GetIsolatedWorldIdForInstance(injection_host_.get(),
-                                                     web_frame);
+  int world_id =
+      GetIsolatedWorldIdForInstance(injection_host_.get(), web_frame);
   bool is_user_gesture = injector_->IsUserGesture();
 
   std::unique_ptr<blink::WebScriptExecutionCallback> callback(
@@ -301,31 +298,25 @@ void ScriptInjection::InjectJs(std::set<std::string>* executing_scripts,
   base::ElapsedTimer exec_timer;
   if (injection_host_->id().type() == HostID::EXTENSIONS && log_activity_)
     DOMActivityLogger::AttachToWorld(world_id, injection_host_->id().id());
-  if (in_main_world) {
-    // We only inject in the main world for javascript: urls.
-    DCHECK_EQ(1u, sources.size());
 
-    web_frame->RequestExecuteScriptAndReturnValue(
-        sources.front(), is_user_gesture, callback.release());
-  } else {
-    blink::WebLocalFrame::ScriptExecutionType option;
-    if (injector_->script_type() == UserScript::CONTENT_SCRIPT) {
-      switch (run_location_) {
-        case UserScript::DOCUMENT_END:
-        case UserScript::DOCUMENT_IDLE:
-          option = blink::WebLocalFrame::kAsynchronousBlockingOnload;
-          break;
-        default:
-          option = blink::WebLocalFrame::kSynchronous;
-          break;
-      }
-    } else {
-      option = blink::WebLocalFrame::kSynchronous;
-    }
-    web_frame->RequestExecuteScriptInIsolatedWorld(
-        world_id, &sources.front(), sources.size(), is_user_gesture, option,
-        callback.release());
-  }
+  // For content scripts executing during page load, we run them asynchronously
+  // in order to reduce UI jank experienced by the user. (We don't do this for
+  // DOCUMENT_START scripts, because there's no UI to jank until after those
+  // run, so we run them as soon as we can.)
+  // Note: We could potentially also run deferred and browser-driven scripts
+  // asynchronously; however, these are rare enough that there probably isn't
+  // UI jank. If this changes, we can update this.
+  bool should_execute_asynchronously =
+      injector_->script_type() == UserScript::CONTENT_SCRIPT &&
+      (run_location_ == UserScript::DOCUMENT_END ||
+       run_location_ == UserScript::DOCUMENT_IDLE);
+  blink::WebLocalFrame::ScriptExecutionType execution_option =
+      should_execute_asynchronously
+          ? blink::WebLocalFrame::kAsynchronousBlockingOnload
+          : blink::WebLocalFrame::kSynchronous;
+  web_frame->RequestExecuteScriptInIsolatedWorld(
+      world_id, &sources.front(), sources.size(), is_user_gesture,
+      execution_option, callback.release());
 }
 
 void ScriptInjection::OnJsInjectionCompleted(

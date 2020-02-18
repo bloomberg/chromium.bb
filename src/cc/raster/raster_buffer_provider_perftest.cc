@@ -29,7 +29,7 @@
 #include "gpu/command_buffer/common/sync_token.h"
 #include "gpu/config/gpu_feature_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "testing/perf/perf_test.h"
+#include "testing/perf/perf_result_reporter.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 
@@ -202,7 +202,8 @@ class PerfRasterBufferProviderHelper {
   virtual std::unique_ptr<RasterBuffer> AcquireBufferForRaster(
       const ResourcePool::InUsePoolResource& resource,
       uint64_t resource_content_id,
-      uint64_t previous_content_id) = 0;
+      uint64_t previous_content_id,
+      bool depends_on_at_raster_decodes) = 0;
 };
 
 class PerfRasterTaskImpl : public PerfTileTask {
@@ -277,7 +278,8 @@ class RasterBufferProviderPerfTestBase {
       // No tile ids are given to support partial updates.
       std::unique_ptr<RasterBuffer> raster_buffer;
       if (helper)
-        raster_buffer = helper->AcquireBufferForRaster(in_use_resource, 0, 0);
+        raster_buffer =
+            helper->AcquireBufferForRaster(in_use_resource, 0, 0, false);
       TileTask::Vector dependencies = image_decode_tasks;
       raster_tasks->push_back(new PerfRasterTaskImpl(
           resource_pool_.get(), std::move(in_use_resource),
@@ -371,7 +373,7 @@ class RasterBufferProviderPerfTest
         Create3dResourceProvider();
         raster_buffer_provider_ = std::make_unique<GpuRasterBufferProvider>(
             compositor_context_provider_.get(), worker_context_provider_.get(),
-            false, 0, viz::RGBA_8888, gfx::Size(), true, false);
+            false, viz::RGBA_8888, gfx::Size(), true, false);
         break;
       case RASTER_BUFFER_PROVIDER_TYPE_BITMAP:
         CreateSoftwareResourceProvider();
@@ -398,9 +400,13 @@ class RasterBufferProviderPerfTest
   std::unique_ptr<RasterBuffer> AcquireBufferForRaster(
       const ResourcePool::InUsePoolResource& resource,
       uint64_t resource_content_id,
-      uint64_t previous_content_id) override {
+      uint64_t previous_content_id,
+      bool depends_on_at_raster_decodes) override {
     return raster_buffer_provider_->AcquireBufferForRaster(
-        resource, resource_content_id, previous_content_id);
+        resource, resource_content_id, previous_content_id,
+        depends_on_at_raster_decodes,
+        false /* depends_on_hardware_accelerated_jpeg_candidates */,
+        false /* depends_on_hardware_accelerated_webp_candidates */);
   }
 
   void RunMessageLoopUntilAllTasksHaveCompleted() {
@@ -435,8 +441,8 @@ class RasterBufferProviderPerfTest
     RunMessageLoopUntilAllTasksHaveCompleted();
     tile_task_manager_->CheckForCompletedTasks();
 
-    perf_test::PrintResult("schedule_tasks", TestModifierString(), test_name,
-                           timer_.LapsPerSecond(), "runs/s", true);
+    perf_test::PerfResultReporter reporter = SetUpReporter(test_name);
+    reporter.AddResult("_tasks" + TestModifierString(), timer_.LapsPerSecond());
   }
 
   void RunScheduleAlternateTasksTest(const std::string& test_name,
@@ -472,8 +478,9 @@ class RasterBufferProviderPerfTest
     RunMessageLoopUntilAllTasksHaveCompleted();
     tile_task_manager_->CheckForCompletedTasks();
 
-    perf_test::PrintResult("schedule_alternate_tasks", TestModifierString(),
-                           test_name, timer_.LapsPerSecond(), "runs/s", true);
+    perf_test::PerfResultReporter reporter = SetUpReporter(test_name);
+    reporter.AddResult("_alternate_tasks" + TestModifierString(),
+                       timer_.LapsPerSecond());
   }
 
   void RunScheduleAndExecuteTasksTest(const std::string& test_name,
@@ -501,8 +508,20 @@ class RasterBufferProviderPerfTest
     tile_task_manager_->ScheduleTasks(&empty);
     RunMessageLoopUntilAllTasksHaveCompleted();
 
-    perf_test::PrintResult("schedule_and_execute_tasks", TestModifierString(),
-                           test_name, timer_.LapsPerSecond(), "runs/s", true);
+    perf_test::PerfResultReporter reporter = SetUpReporter(test_name);
+    reporter.AddResult("_and_execute_tasks" + TestModifierString(),
+                       timer_.LapsPerSecond());
+  }
+
+ protected:
+  perf_test::PerfResultReporter SetUpReporter(const std::string& story_name) {
+    perf_test::PerfResultReporter reporter("schedule", story_name);
+    reporter.RegisterImportantMetric("_tasks" + TestModifierString(), "runs/s");
+    reporter.RegisterImportantMetric("_alternate_tasks" + TestModifierString(),
+                                     "runs/s");
+    reporter.RegisterImportantMetric(
+        "_and_execute_tasks" + TestModifierString(), "runs/s");
+    return reporter;
   }
 
  private:
@@ -606,8 +625,16 @@ class RasterBufferProviderCommonPerfTest
     for (auto& task : raster_tasks)
       task->OnTaskCompleted();
 
-    perf_test::PrintResult("build_raster_task_graph", "", test_name,
-                           timer_.LapsPerSecond(), "runs/s", true);
+    perf_test::PerfResultReporter reporter = SetUpReporter(test_name);
+    reporter.AddResult("", timer_.LapsPerSecond());
+  }
+
+ protected:
+  perf_test::PerfResultReporter SetUpReporter(const std::string& story_name) {
+    perf_test::PerfResultReporter reporter("build_raster_test_graph",
+                                           story_name);
+    reporter.RegisterImportantMetric("", "runs/s");
+    return reporter;
   }
 };
 

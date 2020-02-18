@@ -15,7 +15,7 @@
 #include "ui/events/ozone/evdev/event_factory_evdev.h"
 #include "ui/events/ozone/evdev/testing/fake_cursor_delegate_evdev.h"
 #include "ui/events/ozone/events_ozone.h"
-#include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"
+#include "ui/events/ozone/layout/stub/stub_keyboard_layout_engine.h"
 
 namespace ui {
 
@@ -80,15 +80,16 @@ class InputInjectorEvdevTest : public testing::Test {
   void ExpectClick(int x, int y, int button, int count);
 
   EventObserver event_observer_;
-  EventDispatchCallback dispatch_callback_;
+  const EventDispatchCallback dispatch_callback_;
   FakeCursorDelegateEvdev cursor_;
 
   std::unique_ptr<DeviceManager> device_manager_;
+  std::unique_ptr<StubKeyboardLayoutEngine> keyboard_layout_engine_;
   std::unique_ptr<EventFactoryEvdev> event_factory_;
 
   InputInjectorEvdev injector_;
 
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   base::RunLoop run_loop_;
 
  private:
@@ -100,11 +101,12 @@ InputInjectorEvdevTest::InputInjectorEvdevTest()
           base::BindRepeating(&EventObserver::EventDispatchCallback,
                               base::Unretained(&event_observer_))),
       device_manager_(CreateDeviceManagerForTest()),
-      event_factory_(CreateEventFactoryEvdevForTest(
-          &cursor_,
-          device_manager_.get(),
-          ui::KeyboardLayoutEngineManager::GetKeyboardLayoutEngine(),
-          dispatch_callback_)),
+      keyboard_layout_engine_(std::make_unique<ui::StubKeyboardLayoutEngine>()),
+      event_factory_(
+          CreateEventFactoryEvdevForTest(&cursor_,
+                                         device_manager_.get(),
+                                         keyboard_layout_engine_.get(),
+                                         dispatch_callback_)),
       injector_(CreateDeviceEventDispatcherEvdevForTest(event_factory_.get()),
                 &cursor_) {}
 

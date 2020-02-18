@@ -30,29 +30,28 @@
 
 #if defined(__clang__)
 #define PERFETTO_ALWAYS_INLINE __attribute__((__always_inline__))
+#define PERFETTO_NO_INLINE __attribute__((__noinline__))
 #else
 // GCC is too pedantic and often fails with the error:
 // "always_inline function might not be inlinable"
 #define PERFETTO_ALWAYS_INLINE
+#define PERFETTO_NO_INLINE
 #endif
 
-// TODO(lalitm): is_trivially_constructible is currently not available
-// in some environments we build in. Reenable when that environment supports
-// this.
-#if defined(__GLIBCXX__)
-#define PERFETTO_IS_TRIVIALLY_CONSTRUCTIBLE(T) true
+#if defined(__GNUC__) || defined(__clang__)
+#define PERFETTO_DEBUG_FUNCTION_IDENTIFIER() __PRETTY_FUNCTION__
+#elif defined(_MSC_VER)
+#define PERFETTO_DEBUG_FUNCTION_IDENTIFIER() __FUNCSIG__
 #else
-#define PERFETTO_IS_TRIVIALLY_CONSTRUCTIBLE(T) \
-  std::is_trivially_constructible<T>::value
+#define PERFETTO_DEBUG_FUNCTION_IDENTIFIER() \
+  static_assert(false, "Not implemented for this compiler")
 #endif
 
-// TODO(lalitm): is_trivially_copyable is currently not available
-// in some environments we build in. Reenable when that environment supports
-// this.
-#if defined(__GLIBCXX__)
-#define PERFETTO_IS_TRIVIALLY_COPYABLE(T) true
+#if defined(__GNUC__) || defined(__clang__)
+#define PERFETTO_PRINTF_FORMAT(x, y) \
+  __attribute__((__format__(__printf__, x, y)))
 #else
-#define PERFETTO_IS_TRIVIALLY_COPYABLE(T) std::is_trivially_copyable<T>::value
+#defien PERFETTO_PRINTF_FORMAT(x, y)
 #endif
 
 namespace perfetto {

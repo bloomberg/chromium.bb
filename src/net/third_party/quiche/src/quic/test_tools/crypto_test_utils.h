@@ -64,12 +64,18 @@ struct FakeClientOptions {
   bool only_tls_versions = false;
 };
 
+// Returns a QuicCryptoServerConfig that is in a reasonable configuration to
+// pass into HandshakeWithFakeServer.
+std::unique_ptr<QuicCryptoServerConfig> CryptoServerConfigForTesting();
+
 // returns: the number of client hellos that the client sent.
 int HandshakeWithFakeServer(QuicConfig* server_quic_config,
+                            QuicCryptoServerConfig* crypto_config,
                             MockQuicConnectionHelper* helper,
                             MockAlarmFactory* alarm_factory,
                             PacketSavingConnection* client_conn,
-                            QuicCryptoClientStream* client);
+                            QuicCryptoClientStream* client,
+                            std::string alpn);
 
 // returns: the number of client hellos that the client sent.
 int HandshakeWithFakeClient(MockQuicConnectionHelper* helper,
@@ -77,7 +83,8 @@ int HandshakeWithFakeClient(MockQuicConnectionHelper* helper,
                             PacketSavingConnection* server_conn,
                             QuicCryptoServerStream* server,
                             const QuicServerId& server_id,
-                            const FakeClientOptions& options);
+                            const FakeClientOptions& options,
+                            std::string alpn);
 
 // SetupCryptoServerConfigForTest configures |crypto_config|
 // with sensible defaults for testing.

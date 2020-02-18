@@ -30,7 +30,7 @@ void SlideAnimation::Hide() {
   BeginAnimating(false);
 }
 
-void SlideAnimation::SetSlideDuration(int duration) {
+void SlideAnimation::SetSlideDuration(base::TimeDelta duration) {
   slide_duration_ = duration;
 }
 
@@ -46,8 +46,7 @@ base::TimeDelta SlideAnimation::GetDuration() {
   const double current_progress =
       showing_ ? value_current_ : 1.0 - value_current_;
 
-  return base::TimeDelta::FromMillisecondsD(
-      slide_duration_ * (1 - pow(current_progress, dampening_value_)));
+  return slide_duration_ * (1 - pow(current_progress, dampening_value_));
 }
 
 void SlideAnimation::BeginAnimating(bool showing) {
@@ -59,7 +58,7 @@ void SlideAnimation::BeginAnimating(bool showing) {
   value_end_ = showing ? 1.0 : 0.0;
 
   // Make sure we actually have something to do.
-  if (slide_duration_ == 0) {
+  if (slide_duration_.is_zero()) {
     AnimateToState(1.0);  // Skip to the end of the animation.
     if (delegate()) {
       delegate()->AnimationProgressed(this);
@@ -76,11 +75,6 @@ void SlideAnimation::AnimateToState(double state) {
   state =
       Tween::CalculateValue(tween_type_, base::ClampToRange(state, 0.0, 1.0));
   value_current_ = value_start_ + (value_end_ - value_start_) * state;
-
-  // Implement snapping.
-  if (tween_type_ == Tween::EASE_OUT_SNAP &&
-      fabs(value_current_ - value_end_) <= 0.06)
-    value_current_ = value_end_;
 
   // Correct for any overshoot (while state may be capped at 1.0, let's not
   // take any rounding error chances.

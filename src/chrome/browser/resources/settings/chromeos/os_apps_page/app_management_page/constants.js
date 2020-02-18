@@ -9,12 +9,6 @@
 const NUMBER_OF_APPS_DISPLAYED_DEFAULT = 4;
 
 /**
- * The maximum number of apps' titles previewed in notification sublabel.
- * @const {number}
- */
-const APP_LIST_PREVIEW_APP_TITLES = 3;
-
-/**
  * Enumeration of the different subpage types within the app management page.
  * @enum {number}
  * @const
@@ -22,7 +16,6 @@ const APP_LIST_PREVIEW_APP_TITLES = 3;
 const PageType = {
   MAIN: 0,
   DETAIL: 1,
-  NOTIFICATIONS: 2,
 };
 
 /**
@@ -49,3 +42,50 @@ const TriState = apps.mojom.TriState;
 const OptionalBool = apps.mojom.OptionalBool;
 
 const InstallSource = apps.mojom.InstallSource;
+
+// This histogram is also declared and used at chrome/browser/ui/webui/settings/
+// chromeos/app_management/app_management_uma.h.
+const AppManagementEntryPointsHistogramName = 'AppManagement.EntryPoints';
+
+/**
+ * These values are persisted to logs and should not be renumbered or re-used.
+ * See tools/metrics/histograms/enums.xml.
+ * @enum {number}
+ */
+const AppManagementEntryPoint = {
+  AppListContextMenuAppInfoArc: 0,
+  AppListContextMenuAppInfoChromeApp: 1,
+  AppListContextMenuAppInfoWebApp: 2,
+  ShelfContextMenuAppInfoArc: 3,
+  ShelfContextMenuAppInfoChromeApp: 4,
+  ShelfContextMenuAppInfoWebApp: 5,
+  MainViewArc: 6,
+  MainViewChromeApp: 7,
+  MainViewWebApp: 8,
+  OsSettingsMainPage: 9,
+};
+
+/**
+ * These values are persisted to logs and should not be renumbered or re-used.
+ * See tools/metrics/histograms/enums.xml.
+ * @enum {number}
+ */
+const AppManagementUserAction = {
+  ViewOpened: 0,
+  NativeSettingsOpened: 1,
+  UninstallDialogLaunched: 2,
+  PinToShelfTurnedOn: 3,
+  PinToShelfTurnedOff: 4,
+  NotificationsTurnedOn: 5,
+  NotificationsTurnedOff: 6,
+  LocationTurnedOn: 7,
+  LocationTurnedOff: 8,
+  CameraTurnedOn: 9,
+  CameraTurnedOff: 10,
+  MicrophoneTurnedOn: 11,
+  MicrophoneTurnedOff: 12,
+  ContactsTurnedOn: 13,
+  ContactsTurnedOff: 14,
+  StorageTurnedOn: 15,
+  StorageTurnedOff: 16,
+};

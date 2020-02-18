@@ -4,11 +4,12 @@
 
 #include "net/third_party/quiche/src/quic/qbone/qbone_client.h"
 
+#include <utility>
+
 #include "net/third_party/quiche/src/quic/core/quic_epoll_alarm_factory.h"
 #include "net/third_party/quiche/src/quic/core/quic_epoll_connection_helper.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_epoll.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_exported_stats.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_ptr_util.h"
 #include "net/third_party/quiche/src/quic/qbone/qbone_stream.h"
 
 namespace quic {
@@ -17,7 +18,7 @@ std::unique_ptr<QuicClientBase::NetworkHelper> CreateNetworkHelper(
     QuicEpollServer* epoll_server,
     QboneClient* client) {
   std::unique_ptr<QuicClientBase::NetworkHelper> helper =
-      QuicMakeUnique<QuicClientEpollNetworkHelper>(epoll_server, client);
+      std::make_unique<QuicClientEpollNetworkHelper>(epoll_server, client);
   testing::testvalue::Adjust("QboneClient/network_helper", &helper);
   return helper;
 }
@@ -39,7 +40,8 @@ QboneClient::QboneClient(QuicSocketAddress server_address,
           new QuicEpollConnectionHelper(epoll_server, QuicAllocator::SIMPLE),
           new QuicEpollAlarmFactory(epoll_server),
           CreateNetworkHelper(epoll_server, this),
-          std::move(proof_verifier)),
+          std::move(proof_verifier),
+          nullptr),
       qbone_writer_(qbone_writer),
       qbone_handler_(qbone_handler),
       session_owner_(session_owner) {
@@ -90,7 +92,7 @@ class QboneClientSessionWithConnection : public QboneClientSession {
 std::unique_ptr<QuicSession> QboneClient::CreateQuicClientSession(
     const ParsedQuicVersionVector& supported_versions,
     QuicConnection* connection) {
-  return QuicMakeUnique<QboneClientSessionWithConnection>(
+  return std::make_unique<QboneClientSessionWithConnection>(
       connection, crypto_config(), session_owner(), *config(),
       supported_versions, server_id(), qbone_writer_, qbone_handler_);
 }

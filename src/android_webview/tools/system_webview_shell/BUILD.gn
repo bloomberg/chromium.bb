@@ -29,15 +29,17 @@ android_apk("system_webview_shell_apk") {
     "apk/src/org/chromium/webview_shell/WebViewBrowserActivity.java",
     "apk/src/org/chromium/webview_shell/WebViewCreateDestroyActivity.java",
     "apk/src/org/chromium/webview_shell/WebViewLayoutTestActivity.java",
+    "apk/src/org/chromium/webview_shell/WebViewPackageHelper.java",
     "apk/src/org/chromium/webview_shell/WebViewThreadTestActivity.java",
     "apk/src/org/chromium/webview_shell/WebViewTracingActivity.java",
   ]
   android_manifest = "apk/AndroidManifest.xml"
-  target_sdk_version = 28
+  target_sdk_version = 29
   deps = [
     ":system_webview_shell_apk_resources",
     "//base:base_java",
     "//third_party/android_deps:android_support_v7_appcompat_java",
+    "//third_party/guava:guava_android_java",
   ]
 }
 
@@ -93,5 +95,5 @@ instrumentation_test_apk("system_webview_shell_layout_test_apk") {
     "//third_party/blink/web_tests/webexposed/global-interface-listing.html",
     "//third_party/blink/web_tests/webexposed/global-interface-listing-expected.txt",
   ]
-  additional_apks = [ system_webview_apk_target ]
+  use_webview_provider = system_webview_apk_target
 }

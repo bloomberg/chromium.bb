@@ -35,6 +35,7 @@
 #include "content/browser/webauth/authenticator_environment_impl.h"
 #include "content/public/browser/authenticator_request_client_delegate.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_service_manager_context.h"
@@ -53,11 +54,13 @@
 #include "device/fido/mock_fido_device.h"
 #include "device/fido/test_callback_receiver.h"
 #include "device/fido/virtual_fido_device_factory.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/url_util.h"
 
 #if defined(OS_MACOSX)
 #include "device/fido/mac/authenticator_config.h"
@@ -108,7 +111,11 @@ typedef struct {
   const char* origin;
   // Either a relying party ID or a U2F AppID.
   const char* claimed_authority;
+  AuthenticatorStatus expected_status;
 } OriginClaimedAuthorityPair;
+
+// The size of credential IDs returned by GetTestCredentials().
+constexpr size_t kTestCredentialIdLength = 32u;
 
 constexpr char kTestOrigin1[] = "https://a.google.com";
 constexpr char kTestOrigin2[] = "https://acme.org";
@@ -136,107 +143,139 @@ constexpr char kTestSignClientDataJsonString[] =
     R"("https://a.google.com", "type":"webauthn.get"})";
 
 constexpr OriginClaimedAuthorityPair kValidRelyingPartyTestCases[] = {
-    {"http://localhost", "localhost"},
-    {"https://myawesomedomain", "myawesomedomain"},
-    {"https://foo.bar.google.com", "foo.bar.google.com"},
-    {"https://foo.bar.google.com", "bar.google.com"},
-    {"https://foo.bar.google.com", "google.com"},
-    {"https://earth.login.awesomecompany", "login.awesomecompany"},
-    {"https://google.com:1337", "google.com"},
+    {"http://localhost", "localhost", AuthenticatorStatus::SUCCESS},
+    {"https://myawesomedomain", "myawesomedomain",
+     AuthenticatorStatus::SUCCESS},
+    {"https://foo.bar.google.com", "foo.bar.google.com",
+     AuthenticatorStatus::SUCCESS},
+    {"https://foo.bar.google.com", "bar.google.com",
+     AuthenticatorStatus::SUCCESS},
+    {"https://foo.bar.google.com", "google.com", AuthenticatorStatus::SUCCESS},
+    {"https://earth.login.awesomecompany", "login.awesomecompany",
+     AuthenticatorStatus::SUCCESS},
+    {"https://google.com:1337", "google.com", AuthenticatorStatus::SUCCESS},
 
     // Hosts with trailing dot valid for rpIds with or without trailing dot.
     // Hosts without trailing dots only matches rpIDs without trailing dot.
     // Two trailing dots only matches rpIDs with two trailing dots.
-    {"https://google.com.", "google.com"},
-    {"https://google.com.", "google.com."},
-    {"https://google.com..", "google.com.."},
+    {"https://google.com.", "google.com", AuthenticatorStatus::SUCCESS},
+    {"https://google.com.", "google.com.", AuthenticatorStatus::SUCCESS},
+    {"https://google.com..", "google.com..", AuthenticatorStatus::SUCCESS},
 
     // Leading dots are ignored in canonicalized hosts.
-    {"https://.google.com", "google.com"},
-    {"https://..google.com", "google.com"},
-    {"https://.google.com", ".google.com"},
-    {"https://..google.com", ".google.com"},
-    {"https://accounts.google.com", ".google.com"},
+    {"https://.google.com", "google.com", AuthenticatorStatus::SUCCESS},
+    {"https://..google.com", "google.com", AuthenticatorStatus::SUCCESS},
+    {"https://.google.com", ".google.com", AuthenticatorStatus::SUCCESS},
+    {"https://..google.com", ".google.com", AuthenticatorStatus::SUCCESS},
+    {"https://accounts.google.com", ".google.com",
+     AuthenticatorStatus::SUCCESS},
 };
 
 constexpr OriginClaimedAuthorityPair kInvalidRelyingPartyTestCases[] = {
-    {"https://google.com", "com"},
-    {"http://google.com", "google.com"},
-    {"http://myawesomedomain", "myawesomedomain"},
-    {"https://google.com", "foo.bar.google.com"},
-    {"http://myawesomedomain", "randomdomain"},
-    {"https://myawesomedomain", "randomdomain"},
-    {"https://notgoogle.com", "google.com)"},
-    {"https://not-google.com", "google.com)"},
-    {"https://evil.appspot.com", "appspot.com"},
-    {"https://evil.co.uk", "co.uk"},
+    {"https://google.com", "com", AuthenticatorStatus::BAD_RELYING_PARTY_ID},
+    {"http://google.com", "google.com", AuthenticatorStatus::INVALID_DOMAIN},
+    {"http://myawesomedomain", "myawesomedomain",
+     AuthenticatorStatus::INVALID_DOMAIN},
+    {"https://google.com", "foo.bar.google.com",
+     AuthenticatorStatus::BAD_RELYING_PARTY_ID},
+    {"http://myawesomedomain", "randomdomain",
+     AuthenticatorStatus::INVALID_DOMAIN},
+    {"https://myawesomedomain", "randomdomain",
+     AuthenticatorStatus::BAD_RELYING_PARTY_ID},
+    {"https://notgoogle.com", "google.com)",
+     AuthenticatorStatus::BAD_RELYING_PARTY_ID},
+    {"https://not-google.com", "google.com)",
+     AuthenticatorStatus::BAD_RELYING_PARTY_ID},
+    {"https://evil.appspot.com", "appspot.com",
+     AuthenticatorStatus::BAD_RELYING_PARTY_ID},
+    {"https://evil.co.uk", "co.uk", AuthenticatorStatus::BAD_RELYING_PARTY_ID},
 
-    {"https://google.com", "google.com."},
-    {"https://google.com", "google.com.."},
-    {"https://google.com", ".google.com"},
-    {"https://google.com..", "google.com"},
-    {"https://.com", "com."},
-    {"https://.co.uk", "co.uk."},
+    {"https://google.com", "google.com.",
+     AuthenticatorStatus::BAD_RELYING_PARTY_ID},
+    {"https://google.com", "google.com..",
+     AuthenticatorStatus::BAD_RELYING_PARTY_ID},
+    {"https://google.com", ".google.com",
+     AuthenticatorStatus::BAD_RELYING_PARTY_ID},
+    {"https://google.com..", "google.com",
+     AuthenticatorStatus::BAD_RELYING_PARTY_ID},
+    {"https://.com", "com.", AuthenticatorStatus::BAD_RELYING_PARTY_ID},
+    {"https://.co.uk", "co.uk.", AuthenticatorStatus::BAD_RELYING_PARTY_ID},
 
-    {"https://1.2.3", "1.2.3"},
-    {"https://1.2.3", "2.3"},
+    {"https://1.2.3", "1.2.3", AuthenticatorStatus::INVALID_DOMAIN},
+    {"https://1.2.3", "2.3", AuthenticatorStatus::INVALID_DOMAIN},
 
-    {"https://127.0.0.1", "127.0.0.1"},
-    {"https://127.0.0.1", "27.0.0.1"},
-    {"https://127.0.0.1", ".0.0.1"},
-    {"https://127.0.0.1", "0.0.1"},
+    {"https://127.0.0.1", "127.0.0.1", AuthenticatorStatus::INVALID_DOMAIN},
+    {"https://127.0.0.1", "27.0.0.1", AuthenticatorStatus::INVALID_DOMAIN},
+    {"https://127.0.0.1", ".0.0.1", AuthenticatorStatus::INVALID_DOMAIN},
+    {"https://127.0.0.1", "0.0.1", AuthenticatorStatus::INVALID_DOMAIN},
 
-    {"https://[::127.0.0.1]", "127.0.0.1"},
-    {"https://[::127.0.0.1]", "[127.0.0.1]"},
+    {"https://[::127.0.0.1]", "127.0.0.1", AuthenticatorStatus::INVALID_DOMAIN},
+    {"https://[::127.0.0.1]", "[127.0.0.1]",
+     AuthenticatorStatus::INVALID_DOMAIN},
 
-    {"https://[::1]", "1"},
-    {"https://[::1]", "1]"},
-    {"https://[::1]", "::1"},
-    {"https://[::1]", "[::1]"},
-    {"https://[1::1]", "::1"},
-    {"https://[1::1]", "::1]"},
-    {"https://[1::1]", "[::1]"},
+    {"https://[::1]", "1", AuthenticatorStatus::INVALID_DOMAIN},
+    {"https://[::1]", "1]", AuthenticatorStatus::INVALID_DOMAIN},
+    {"https://[::1]", "::1", AuthenticatorStatus::INVALID_DOMAIN},
+    {"https://[::1]", "[::1]", AuthenticatorStatus::INVALID_DOMAIN},
+    {"https://[1::1]", "::1", AuthenticatorStatus::INVALID_DOMAIN},
+    {"https://[1::1]", "::1]", AuthenticatorStatus::INVALID_DOMAIN},
+    {"https://[1::1]", "[::1]", AuthenticatorStatus::INVALID_DOMAIN},
 
-    {"http://google.com:443", "google.com"},
-    {"data:google.com", "google.com"},
-    {"data:text/html,google.com", "google.com"},
-    {"ws://google.com", "google.com"},
-    {"gopher://google.com", "google.com"},
-    {"ftp://google.com", "google.com"},
-    {"file:///google.com", "google.com"},
+    {"http://google.com:443", "google.com",
+     AuthenticatorStatus::INVALID_DOMAIN},
+    {"data:google.com", "google.com", AuthenticatorStatus::OPAQUE_DOMAIN},
+    {"data:text/html,google.com", "google.com",
+     AuthenticatorStatus::OPAQUE_DOMAIN},
+    {"ws://google.com", "google.com", AuthenticatorStatus::INVALID_DOMAIN},
+    {"gopher://google.com", "google.com", AuthenticatorStatus::OPAQUE_DOMAIN},
+    {"ftp://google.com", "google.com", AuthenticatorStatus::INVALID_DOMAIN},
+    {"file:///google.com", "google.com", AuthenticatorStatus::INVALID_PROTOCOL},
     // Use of webauthn from a WSS origin may be technically valid, but we
     // prohibit use on non-HTTPS origins. (At least for now.)
-    {"wss://google.com", "google.com"},
+    {"wss://google.com", "google.com", AuthenticatorStatus::INVALID_PROTOCOL},
 
-    {"data:,", ""},
-    {"https://google.com", ""},
-    {"ws:///google.com", ""},
-    {"wss:///google.com", ""},
-    {"gopher://google.com", ""},
-    {"ftp://google.com", ""},
-    {"file:///google.com", ""},
+    {"data:,", "", AuthenticatorStatus::OPAQUE_DOMAIN},
+    {"https://google.com", "", AuthenticatorStatus::BAD_RELYING_PARTY_ID},
+    {"ws:///google.com", "", AuthenticatorStatus::INVALID_DOMAIN},
+    {"wss:///google.com", "", AuthenticatorStatus::INVALID_PROTOCOL},
+    {"gopher://google.com", "", AuthenticatorStatus::OPAQUE_DOMAIN},
+    {"ftp://google.com", "", AuthenticatorStatus::INVALID_DOMAIN},
+    {"file:///google.com", "", AuthenticatorStatus::INVALID_PROTOCOL},
 
     // This case is acceptable according to spec, but both renderer
     // and browser handling currently do not permit it.
-    {"https://login.awesomecompany", "awesomecompany"},
+    {"https://login.awesomecompany", "awesomecompany",
+     AuthenticatorStatus::BAD_RELYING_PARTY_ID},
 
     // These are AppID test cases, but should also be invalid relying party
     // examples too.
-    {"https://example.com", "https://com/"},
-    {"https://example.com", "https://com/foo"},
-    {"https://example.com", "https://foo.com/"},
-    {"https://example.com", "http://example.com"},
-    {"http://example.com", "https://example.com"},
-    {"https://127.0.0.1", "https://127.0.0.1"},
+    {"https://example.com", "https://com/",
+     AuthenticatorStatus::BAD_RELYING_PARTY_ID},
+    {"https://example.com", "https://com/foo",
+     AuthenticatorStatus::BAD_RELYING_PARTY_ID},
+    {"https://example.com", "https://foo.com/",
+     AuthenticatorStatus::BAD_RELYING_PARTY_ID},
+    {"https://example.com", "http://example.com",
+     AuthenticatorStatus::BAD_RELYING_PARTY_ID},
+    {"http://example.com", "https://example.com",
+     AuthenticatorStatus::INVALID_DOMAIN},
+    {"https://127.0.0.1", "https://127.0.0.1",
+     AuthenticatorStatus::INVALID_DOMAIN},
     {"https://www.notgoogle.com",
-     "https://www.gstatic.com/securitykey/origins.json"},
+     "https://www.gstatic.com/securitykey/origins.json",
+     AuthenticatorStatus::BAD_RELYING_PARTY_ID},
     {"https://www.google.com",
-     "https://www.gstatic.com/securitykey/origins.json#x"},
+     "https://www.gstatic.com/securitykey/origins.json#x",
+     AuthenticatorStatus::BAD_RELYING_PARTY_ID},
     {"https://www.google.com",
-     "https://www.gstatic.com/securitykey/origins.json2"},
-    {"https://www.google.com", "https://gstatic.com/securitykey/origins.json"},
-    {"https://ggoogle.com", "https://www.gstatic.com/securitykey/origi"},
-    {"https://com", "https://www.gstatic.com/securitykey/origins.json"},
+     "https://www.gstatic.com/securitykey/origins.json2",
+     AuthenticatorStatus::BAD_RELYING_PARTY_ID},
+    {"https://www.google.com", "https://gstatic.com/securitykey/origins.json",
+     AuthenticatorStatus::BAD_RELYING_PARTY_ID},
+    {"https://ggoogle.com", "https://www.gstatic.com/securitykey/origi",
+     AuthenticatorStatus::BAD_RELYING_PARTY_ID},
+    {"https://com", "https://www.gstatic.com/securitykey/origins.json",
+     AuthenticatorStatus::BAD_RELYING_PARTY_ID},
 };
 
 using TestIsUvpaaCallback = device::test::ValueCallbackReceiver<bool>;
@@ -291,7 +330,7 @@ std::vector<device::PublicKeyCredentialDescriptor> GetTestCredentials(
   std::vector<device::PublicKeyCredentialDescriptor> descriptors;
   for (size_t i = 0; i < num_credentials; i++) {
     DCHECK(i <= std::numeric_limits<uint8_t>::max());
-    std::vector<uint8_t> id(32u, static_cast<uint8_t>(i));
+    std::vector<uint8_t> id(kTestCredentialIdLength, static_cast<uint8_t>(i));
     base::flat_set<device::FidoTransportProtocol> transports{
         device::FidoTransportProtocol::kUsbHumanInterfaceDevice,
         device::FidoTransportProtocol::kBluetoothLowEnergy};
@@ -327,10 +366,11 @@ GetTestPublicKeyCredentialRequestOptions() {
 
 std::vector<device::CableDiscoveryData> GetTestCableExtension() {
   device::CableDiscoveryData cable;
-  cable.version = 1;
-  cable.client_eid.fill(0x01);
-  cable.authenticator_eid.fill(0x02);
-  cable.session_pre_key.fill(0x03);
+  cable.version = device::CableDiscoveryData::Version::V1;
+  cable.v1.emplace();
+  cable.v1->client_eid.fill(0x01);
+  cable.v1->authenticator_eid.fill(0x02);
+  cable.v1->session_pre_key.fill(0x03);
 
   std::vector<device::CableDiscoveryData> ret;
   ret.emplace_back(std::move(cable));
@@ -341,8 +381,13 @@ std::vector<device::CableDiscoveryData> GetTestCableExtension() {
 
 class AuthenticatorTestBase : public content::RenderViewHostTestHarness {
  protected:
-  AuthenticatorTestBase() { ResetVirtualDevice(); }
+  AuthenticatorTestBase() = default;
   ~AuthenticatorTestBase() override {}
+
+  void SetUp() override {
+    content::RenderViewHostTestHarness::SetUp();
+    ResetVirtualDevice();
+  }
 
   void ResetVirtualDevice() {
     auto virtual_device_factory =
@@ -354,11 +399,6 @@ class AuthenticatorTestBase : public content::RenderViewHostTestHarness {
   }
 
   device::test::VirtualFidoDeviceFactory* virtual_device_factory_;
-
-#if defined(OS_WIN)
-  device::ScopedFakeWinWebAuthnApi win_webauthn_api_ =
-      device::ScopedFakeWinWebAuthnApi::MakeUnavailable();
-#endif  // defined(OS_WIN)
 };
 
 class AuthenticatorImplTest : public AuthenticatorTestBase {
@@ -404,13 +444,13 @@ class AuthenticatorImplTest : public AuthenticatorTestBase {
 
   mojo::Remote<blink::mojom::Authenticator> ConstructAuthenticatorWithTimer(
       scoped_refptr<base::TestMockTimeTaskRunner> task_runner) {
-    connector_ = service_manager::Connector::Create(&request_);
+    connector_ = service_manager::Connector::Create(&receiver_);
     fake_hid_manager_ = std::make_unique<device::FakeFidoHidManager>();
     connector_->OverrideBinderForTesting(
         service_manager::ServiceFilter::ByName(device::mojom::kServiceName),
         device::mojom::HidManager::Name_,
-        base::Bind(&device::FakeFidoHidManager::AddBinding,
-                   base::Unretained(fake_hid_manager_.get())));
+        base::BindRepeating(&device::FakeFidoHidManager::AddReceiver,
+                            base::Unretained(fake_hid_manager_.get())));
 
     // Set up a timer for testing.
     auto timer =
@@ -427,7 +467,8 @@ class AuthenticatorImplTest : public AuthenticatorTestBase {
 
   std::string GetTestClientDataJSON(std::string type) {
     return AuthenticatorCommon::SerializeCollectedClientDataToJson(
-        std::move(type), GetTestOrigin().Serialize(), GetTestChallengeBytes());
+        std::move(type), GetTestOrigin().Serialize(), GetTestChallengeBytes(),
+        /*is_cross_origin*/ false);
   }
 
   AuthenticatorStatus TryAuthenticationWithAppId(const std::string& origin,
@@ -506,7 +547,7 @@ class AuthenticatorImplTest : public AuthenticatorTestBase {
 
  protected:
   std::unique_ptr<AuthenticatorImpl> authenticator_impl_;
-  service_manager::mojom::ConnectorRequest request_;
+  mojo::PendingReceiver<service_manager::mojom::Connector> receiver_;
   std::unique_ptr<service_manager::Connector> connector_;
   std::unique_ptr<device::FakeFidoHidManager> fake_hid_manager_;
   base::Optional<base::test::ScopedFeatureList> scoped_feature_list_;
@@ -532,7 +573,7 @@ TEST_F(AuthenticatorImplTest, MakeCredentialOriginAndRpIds) {
     authenticator->MakeCredential(std::move(options),
                                   callback_receiver.callback());
     callback_receiver.WaitForCallback();
-    EXPECT_EQ(AuthenticatorStatus::INVALID_DOMAIN, callback_receiver.status());
+    EXPECT_EQ(test_case.expected_status, callback_receiver.status());
   }
 
   // These instances time out with NOT_ALLOWED_ERROR due to unsupported
@@ -847,23 +888,32 @@ TEST_F(AuthenticatorImplTest, GetAssertionOriginAndRpIds) {
     authenticator->GetAssertion(std::move(options),
                                 callback_receiver.callback());
     callback_receiver.WaitForCallback();
-    EXPECT_EQ(AuthenticatorStatus::INVALID_DOMAIN, callback_receiver.status());
+    EXPECT_EQ(test_case.expected_status, callback_receiver.status());
   }
 }
 
 constexpr OriginClaimedAuthorityPair kValidAppIdCases[] = {
-    {"https://example.com", "https://example.com"},
-    {"https://www.example.com", "https://example.com"},
-    {"https://example.com", "https://www.example.com"},
-    {"https://example.com", "https://foo.bar.example.com"},
-    {"https://example.com", "https://foo.bar.example.com/foo/bar"},
-    {"https://google.com", "https://www.gstatic.com/securitykey/origins.json"},
+    {"https://example.com", "https://example.com",
+     AuthenticatorStatus::SUCCESS},
+    {"https://www.example.com", "https://example.com",
+     AuthenticatorStatus::SUCCESS},
+    {"https://example.com", "https://www.example.com",
+     AuthenticatorStatus::SUCCESS},
+    {"https://example.com", "https://foo.bar.example.com",
+     AuthenticatorStatus::SUCCESS},
+    {"https://example.com", "https://foo.bar.example.com/foo/bar",
+     AuthenticatorStatus::SUCCESS},
+    {"https://google.com", "https://www.gstatic.com/securitykey/origins.json",
+     AuthenticatorStatus::SUCCESS},
     {"https://www.google.com",
-     "https://www.gstatic.com/securitykey/origins.json"},
+     "https://www.gstatic.com/securitykey/origins.json",
+     AuthenticatorStatus::SUCCESS},
     {"https://www.google.com",
-     "https://www.gstatic.com/securitykey/a/google.com/origins.json"},
+     "https://www.gstatic.com/securitykey/a/google.com/origins.json",
+     AuthenticatorStatus::SUCCESS},
     {"https://accounts.google.com",
-     "https://www.gstatic.com/securitykey/origins.json"},
+     "https://www.gstatic.com/securitykey/origins.json",
+     AuthenticatorStatus::SUCCESS},
 };
 
 // Verify behavior for various combinations of origins and RP IDs.
@@ -893,13 +943,15 @@ TEST_F(AuthenticatorImplTest, AppIdExtensionValues) {
       continue;
     }
 
-    EXPECT_EQ(AuthenticatorStatus::INVALID_DOMAIN,
-              TryAuthenticationWithAppId(test_case.origin,
-                                         test_case.claimed_authority));
+    AuthenticatorStatus test_status = TryAuthenticationWithAppId(
+        test_case.origin, test_case.claimed_authority);
+    EXPECT_TRUE(test_status == AuthenticatorStatus::INVALID_DOMAIN ||
+                test_status == test_case.expected_status);
 
-    EXPECT_EQ(AuthenticatorStatus::INVALID_DOMAIN,
-              TryRegistrationWithAppIdExclude(test_case.origin,
-                                              test_case.claimed_authority));
+    test_status = TryRegistrationWithAppIdExclude(test_case.origin,
+                                                  test_case.claimed_authority);
+    EXPECT_TRUE(test_status == AuthenticatorStatus::INVALID_DOMAIN ||
+                test_status == test_case.expected_status);
   }
 }
 
@@ -1681,7 +1733,7 @@ class TestAuthenticatorRequestDelegate
 
   void RegisterActionCallbacks(
       base::OnceClosure cancel_callback,
-      base::Closure start_over_callback,
+      base::RepeatingClosure start_over_callback,
       device::FidoRequestHandlerBase::RequestCallback request_callback,
       base::RepeatingClosure bluetooth_adapter_power_on_callback,
       device::FidoRequestHandlerBase::BlePairingCallback ble_pairing_callback)
@@ -2566,13 +2618,13 @@ class AuthenticatorImplRequestDelegateTest : public AuthenticatorImplTest {
   mojo::Remote<blink::mojom::Authenticator> ConstructFakeAuthenticatorWithTimer(
       std::unique_ptr<MockAuthenticatorRequestDelegateObserver> delegate,
       scoped_refptr<base::TestMockTimeTaskRunner> task_runner) {
-    connector_ = service_manager::Connector::Create(&request_);
+    connector_ = service_manager::Connector::Create(&receiver_);
     fake_hid_manager_ = std::make_unique<device::FakeFidoHidManager>();
     connector_->OverrideBinderForTesting(
         service_manager::ServiceFilter::ByName(device::mojom::kServiceName),
         device::mojom::HidManager::Name_,
-        base::Bind(&device::FakeFidoHidManager::AddBinding,
-                   base::Unretained(fake_hid_manager_.get())));
+        base::BindRepeating(&device::FakeFidoHidManager::AddReceiver,
+                            base::Unretained(fake_hid_manager_.get())));
 
     // Set up a timer for testing.
     auto timer =
@@ -2831,6 +2883,9 @@ TEST_F(AuthenticatorImplTest, ExtensionHMACSecret) {
   }
 }
 
+// Tests that for an authenticator that does not support batching, credential
+// lists get probed silently to work around authenticators rejecting exclude
+// lists exceeding a certain size.
 TEST_F(AuthenticatorImplTest, MakeCredentialWithLargeExcludeList) {
   TestServiceManagerContext smc;
   NavigateAndCommit(GURL(kTestOrigin1));
@@ -2865,6 +2920,9 @@ TEST_F(AuthenticatorImplTest, MakeCredentialWithLargeExcludeList) {
   }
 }
 
+// Tests that for an authenticator that does not support batching, credential
+// lists get probed silently to work around authenticators rejecting allow lists
+// exceeding a certain size.
 TEST_F(AuthenticatorImplTest, GetAssertionWithLargeAllowList) {
   TestServiceManagerContext smc;
   NavigateAndCommit(GURL(kTestOrigin1));
@@ -2897,6 +2955,172 @@ TEST_F(AuthenticatorImplTest, GetAssertionWithLargeAllowList) {
     EXPECT_EQ(callback_receiver.status(),
               has_allowed_credential ? AuthenticatorStatus::SUCCESS
                                      : AuthenticatorStatus::NOT_ALLOWED_ERROR);
+  }
+}
+
+// Tests that, regardless of batching support, GetAssertion requests with a
+// single allowed credential ID don't result in a silent probing request.
+TEST_F(AuthenticatorImplTest, GetAssertionSingleElementAllowListDoesNotProbe) {
+  TestServiceManagerContext smc;
+  NavigateAndCommit(GURL(kTestOrigin1));
+
+  for (bool supports_batching : {false, true}) {
+    SCOPED_TRACE(::testing::Message()
+                 << "supports_batching=" << supports_batching);
+
+    ResetVirtualDevice();
+    device::VirtualCtap2Device::Config config;
+    if (supports_batching) {
+      config.max_credential_id_length = kTestCredentialIdLength;
+      config.max_credential_count_in_list = 10;
+    }
+    config.reject_silent_authentication_requests = true;
+    virtual_device_factory_->SetCtap2Config(config);
+
+    mojo::Remote<blink::mojom::Authenticator> authenticator =
+        ConnectToAuthenticator();
+
+    auto test_credentials = GetTestCredentials(/*num_credentials=*/1);
+    ASSERT_TRUE(virtual_device_factory_->mutable_state()->InjectRegistration(
+        test_credentials.front().id(), kTestRelyingPartyId));
+
+    PublicKeyCredentialRequestOptionsPtr options =
+        GetTestPublicKeyCredentialRequestOptions();
+    options->allow_credentials = std::move(test_credentials);
+
+    TestGetAssertionCallback callback_receiver;
+    authenticator->GetAssertion(std::move(options),
+                                callback_receiver.callback());
+    base::RunLoop().RunUntilIdle();
+    callback_receiver.WaitForCallback();
+
+    EXPECT_EQ(callback_receiver.status(), AuthenticatorStatus::SUCCESS);
+  }
+}
+
+// Tests that an allow list that fits into a single batch does not result in a
+// silent probing request.
+TEST_F(AuthenticatorImplTest, GetAssertionSingleBatchListDoesNotProbe) {
+  TestServiceManagerContext smc;
+  NavigateAndCommit(GURL(kTestOrigin1));
+
+  for (bool allow_list_fits_single_batch : {false, true}) {
+    SCOPED_TRACE(::testing::Message() << "allow_list_fits_single_batch="
+                                      << allow_list_fits_single_batch);
+
+    ResetVirtualDevice();
+    device::VirtualCtap2Device::Config config;
+    config.max_credential_id_length = kTestCredentialIdLength;
+    constexpr size_t kBatchSize = 10;
+    config.max_credential_count_in_list = kBatchSize;
+    config.reject_silent_authentication_requests = true;
+    virtual_device_factory_->SetCtap2Config(config);
+
+    mojo::Remote<blink::mojom::Authenticator> authenticator =
+        ConnectToAuthenticator();
+
+    auto test_credentials = GetTestCredentials(
+        /*num_credentials=*/kBatchSize +
+        (allow_list_fits_single_batch ? 0 : 1));
+    ASSERT_TRUE(virtual_device_factory_->mutable_state()->InjectRegistration(
+        test_credentials.back().id(), kTestRelyingPartyId));
+
+    PublicKeyCredentialRequestOptionsPtr options =
+        GetTestPublicKeyCredentialRequestOptions();
+    options->allow_credentials = std::move(test_credentials);
+
+    TestGetAssertionCallback callback_receiver;
+    authenticator->GetAssertion(std::move(options),
+                                callback_receiver.callback());
+    base::RunLoop().RunUntilIdle();
+    callback_receiver.WaitForCallback();
+
+    EXPECT_EQ(callback_receiver.status(),
+              allow_list_fits_single_batch
+                  ? AuthenticatorStatus::SUCCESS
+                  : AuthenticatorStatus::NOT_ALLOWED_ERROR);
+  }
+}
+
+TEST_F(AuthenticatorImplTest, NoUnexpectedAuthenticatorExtensions) {
+  TestServiceManagerContext smc;
+  NavigateAndCommit(GURL(kTestOrigin1));
+
+  device::VirtualCtap2Device::Config config;
+  config.add_extra_extension = true;
+  virtual_device_factory_->SetCtap2Config(config);
+
+  mojo::Remote<blink::mojom::Authenticator> authenticator =
+      ConnectToAuthenticator();
+
+  // Check that extra authenticator extensions are rejected when creating a
+  // credential.
+  TestMakeCredentialCallback create_callback;
+  authenticator->MakeCredential(GetTestPublicKeyCredentialCreationOptions(),
+                                create_callback.callback());
+  base::RunLoop().RunUntilIdle();
+  create_callback.WaitForCallback();
+  EXPECT_EQ(create_callback.status(), AuthenticatorStatus::NOT_ALLOWED_ERROR);
+
+  // Extensions should also be rejected when getting an assertion.
+  PublicKeyCredentialRequestOptionsPtr assertion_options =
+      GetTestPublicKeyCredentialRequestOptions();
+  ASSERT_TRUE(virtual_device_factory_->mutable_state()->InjectRegistration(
+      assertion_options->allow_credentials.back().id(), kTestRelyingPartyId));
+  TestGetAssertionCallback assertion_callback;
+  authenticator->GetAssertion(std::move(assertion_options),
+                              assertion_callback.callback());
+  base::RunLoop().RunUntilIdle();
+  assertion_callback.WaitForCallback();
+  EXPECT_EQ(assertion_callback.status(),
+            AuthenticatorStatus::NOT_ALLOWED_ERROR);
+}
+
+// Tests that on an authenticator that supports batching, exclude lists that fit
+// into a single batch are sent without probing.
+TEST_F(AuthenticatorImplTest, ExcludeListBatching) {
+  TestServiceManagerContext smc;
+  NavigateAndCommit(GURL(kTestOrigin1));
+
+  for (bool authenticator_has_excluded_credential : {false, true}) {
+    SCOPED_TRACE(::testing::Message()
+                 << "authenticator_has_excluded_credential="
+                 << authenticator_has_excluded_credential);
+
+    ResetVirtualDevice();
+    device::VirtualCtap2Device::Config config;
+    config.max_credential_id_length = kTestCredentialIdLength;
+    constexpr size_t kBatchSize = 10;
+    config.max_credential_count_in_list = kBatchSize;
+    // Reject silent authentication requests to ensure we are not probing
+    // credentials silently, since the exclude list should fit into a single
+    // batch.
+    config.reject_silent_authentication_requests = true;
+    virtual_device_factory_->SetCtap2Config(config);
+
+    auto test_credentials = GetTestCredentials(kBatchSize);
+    test_credentials.insert(
+        test_credentials.end() - 1,
+        {device::CredentialType::kPublicKey,
+         std::vector<uint8_t>(kTestCredentialIdLength + 1, 1)});
+    if (authenticator_has_excluded_credential) {
+      ASSERT_TRUE(virtual_device_factory_->mutable_state()->InjectRegistration(
+          test_credentials.back().id(), kTestRelyingPartyId));
+    }
+
+    mojo::Remote<blink::mojom::Authenticator> authenticator =
+        ConnectToAuthenticator();
+    PublicKeyCredentialCreationOptionsPtr options =
+        GetTestPublicKeyCredentialCreationOptions();
+    options->exclude_credentials = std::move(test_credentials);
+    TestMakeCredentialCallback callback;
+    authenticator->MakeCredential(std::move(options), callback.callback());
+    base::RunLoop().RunUntilIdle();
+    callback.WaitForCallback();
+
+    EXPECT_EQ(callback.status(), authenticator_has_excluded_credential
+                                     ? AuthenticatorStatus::CREDENTIAL_EXCLUDED
+                                     : AuthenticatorStatus::SUCCESS);
   }
 }
 
@@ -3651,8 +3875,6 @@ class ResidentKeyAuthenticatorImplTest : public UVAuthenticatorImplTest {
   ResidentKeyAuthenticatorImplTest() = default;
 
   void SetUp() override {
-    scoped_feature_list_.InitWithFeatures({device::kWebAuthResidentKeys}, {});
-
     UVAuthenticatorImplTest::SetUp();
     old_client_ = SetBrowserClientForTesting(&test_client_);
     device::VirtualCtap2Device::Config config;
@@ -3689,7 +3911,6 @@ class ResidentKeyAuthenticatorImplTest : public UVAuthenticatorImplTest {
 
  private:
   ContentBrowserClient* old_client_ = nullptr;
-  base::test::ScopedFeatureList scoped_feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(ResidentKeyAuthenticatorImplTest);
 };
@@ -4077,15 +4298,14 @@ TEST_F(ResidentKeyAuthenticatorImplTest, WinCredProtectApiVersion) {
   // The canned response returned by the Windows API fake is for acme.com.
   NavigateAndCommit(GURL("https://acme.com"));
   TestServiceManagerContext smc;
-  // AuthenticatorTestBase default-disables |win_webauthn_api_|.
-  win_webauthn_api_.set_available(true);
   for (const bool supports_cred_protect : {false, true}) {
     SCOPED_TRACE(testing::Message()
                  << "supports_cred_protect: " << supports_cred_protect);
 
-    win_webauthn_api_.set_version(supports_cred_protect
-                                      ? WEBAUTHN_API_VERSION_2
-                                      : WEBAUTHN_API_VERSION_1);
+    ::device::FakeWinWebAuthnApi api;
+    virtual_device_factory_->set_win_webauthn_api(&api);
+    api.set_version(supports_cred_protect ? WEBAUTHN_API_VERSION_2
+                                          : WEBAUTHN_API_VERSION_1);
 
     PublicKeyCredentialCreationOptionsPtr options = make_credential_options();
     options->relying_party = device::PublicKeyCredentialRpEntity();
@@ -4111,6 +4331,46 @@ TEST_F(ResidentKeyAuthenticatorImplTest, WinCredProtectApiVersion) {
   }
 }
 #endif  // defined(OS_WIN)
+
+// Tests that an allowList with only credential IDs of a length exceeding the
+// maxCredentialIdLength parameter is not mistakenly interpreted as an empty
+// allow list.
+TEST_F(ResidentKeyAuthenticatorImplTest,
+       AllowListWithOnlyOversizedCredentialIds) {
+  device::VirtualCtap2Device::Config config;
+  config.u2f_support = true;
+  config.pin_support = true;
+  config.resident_key_support = true;
+  config.max_credential_id_length = kTestCredentialIdLength;
+  config.max_credential_count_in_list = 10;
+  virtual_device_factory_->SetCtap2Config(config);
+  ASSERT_TRUE(virtual_device_factory_->mutable_state()->InjectResidentKey(
+      /*credential_id=*/std::vector<uint8_t>(kTestCredentialIdLength, 1),
+      kTestRelyingPartyId,
+      /*user_id=*/{{1}}, base::nullopt, base::nullopt));
+  ASSERT_TRUE(virtual_device_factory_->mutable_state()->InjectResidentKey(
+      /*credential_id=*/std::vector<uint8_t>(kTestCredentialIdLength, 2),
+      kTestRelyingPartyId,
+      /*user_id=*/{{2}}, base::nullopt, base::nullopt));
+
+  TestServiceManagerContext smc;
+  mojo::Remote<blink::mojom::Authenticator> authenticator =
+      ConnectToAuthenticator();
+  TestGetAssertionCallback callback_receiver;
+  // |SelectAccount| should not be called since this is not a resident key
+  // request.
+  test_client_.expected_accounts = "<invalid>";
+
+  PublicKeyCredentialRequestOptionsPtr options = get_credential_options();
+  options->appid = kTestOrigin1;
+  options->allow_credentials = {device::PublicKeyCredentialDescriptor(
+      device::CredentialType::kPublicKey,
+      std::vector<uint8_t>(kTestCredentialIdLength + 1, 0))};
+
+  authenticator->GetAssertion(std::move(options), callback_receiver.callback());
+  callback_receiver.WaitForCallback();
+  EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR, callback_receiver.status());
+}
 
 class InternalAuthenticatorImplTest : public AuthenticatorTestBase {
  protected:
@@ -4156,12 +4416,12 @@ class InternalAuthenticatorImplTest : public AuthenticatorTestBase {
   ConstructAuthenticatorWithTimer(
       GURL effective_origin_url,
       scoped_refptr<base::TestMockTimeTaskRunner> task_runner) {
-    connector_ = service_manager::Connector::Create(&request_);
+    connector_ = service_manager::Connector::Create(&receiver_);
     fake_hid_manager_ = std::make_unique<device::FakeFidoHidManager>();
     connector_->OverrideBinderForTesting(
         service_manager::ServiceFilter::ByName(device::mojom::kServiceName),
         device::mojom::HidManager::Name_,
-        base::BindRepeating(&device::FakeFidoHidManager::AddBinding,
+        base::BindRepeating(&device::FakeFidoHidManager::AddReceiver,
                             base::Unretained(fake_hid_manager_.get())));
 
     // Set up a timer for testing.
@@ -4174,7 +4434,7 @@ class InternalAuthenticatorImplTest : public AuthenticatorTestBase {
 
  protected:
   std::unique_ptr<InternalAuthenticatorImpl> internal_authenticator_impl_;
-  service_manager::mojom::ConnectorRequest request_;
+  mojo::PendingReceiver<service_manager::mojom::Connector> receiver_;
   std::unique_ptr<service_manager::Connector> connector_;
   std::unique_ptr<device::FakeFidoHidManager> fake_hid_manager_;
 };
@@ -4203,7 +4463,7 @@ TEST_F(InternalAuthenticatorImplTest, MakeCredentialOriginAndRpIds) {
     authenticator->MakeCredential(std::move(options),
                                   callback_receiver.callback());
     callback_receiver.WaitForCallback();
-    EXPECT_EQ(AuthenticatorStatus::INVALID_DOMAIN, callback_receiver.status());
+    EXPECT_EQ(test_case.expected_status, callback_receiver.status());
   }
 
   // These instances should bypass security errors, by setting the effective
@@ -4226,7 +4486,7 @@ TEST_F(InternalAuthenticatorImplTest, MakeCredentialOriginAndRpIds) {
     authenticator->MakeCredential(std::move(options),
                                   callback_receiver.callback());
     callback_receiver.WaitForCallback();
-    EXPECT_EQ(AuthenticatorStatus::SUCCESS, callback_receiver.status());
+    EXPECT_EQ(test_case.expected_status, callback_receiver.status());
   }
 }
 
@@ -4256,7 +4516,7 @@ TEST_F(InternalAuthenticatorImplTest, GetAssertionOriginAndRpIds) {
     authenticator->GetAssertion(std::move(options),
                                 callback_receiver.callback());
     callback_receiver.WaitForCallback();
-    EXPECT_EQ(AuthenticatorStatus::INVALID_DOMAIN, callback_receiver.status());
+    EXPECT_EQ(test_case.expected_status, callback_receiver.status());
   }
 
   // These instances should bypass security errors, by setting the effective
@@ -4282,7 +4542,7 @@ TEST_F(InternalAuthenticatorImplTest, GetAssertionOriginAndRpIds) {
     authenticator->GetAssertion(std::move(options),
                                 callback_receiver.callback());
     callback_receiver.WaitForCallback();
-    EXPECT_EQ(AuthenticatorStatus::SUCCESS, callback_receiver.status());
+    EXPECT_EQ(test_case.expected_status, callback_receiver.status());
   }
 }
 

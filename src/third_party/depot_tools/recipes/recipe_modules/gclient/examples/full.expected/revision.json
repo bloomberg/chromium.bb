@@ -128,8 +128,6 @@
       "--with_tags",
       "--delete_unversioned_trees",
       "--revision",
-      "Angle@abc",
-      "--revision",
       "src/third_party/angle@refs/heads/lkgr",
       "--output-json",
       "/path/to/tmp/json"
@@ -201,7 +199,7 @@
     "cmd": [
       "python",
       "-u",
-      "\nimport os, sys\n\nbuild_path = sys.argv[1]\nif os.path.exists(build_path):\n  for (path, dir, files) in os.walk(build_path):\n    for cur_file in files:\n      if cur_file.endswith('index.lock'):\n        path_to_file = os.path.join(path, cur_file)\n        print 'deleting %s' % path_to_file\n        os.remove(path_to_file)\n",
+      "\nimport os, sys\n\nbuild_path = sys.argv[1]\nif os.path.exists(build_path):\n  for (path, dir, files) in os.walk(build_path):\n    for cur_file in files:\n      if cur_file.endswith('index.lock'):\n        path_to_file = os.path.join(path, cur_file)\n        print('deleting %s' % path_to_file)\n        os.remove(path_to_file)\n",
       "[START_DIR]"
     ],
     "infra_step": true,
@@ -216,7 +214,7 @@
       "@@@STEP_LOG_LINE@python.inline@    for cur_file in files:@@@",
       "@@@STEP_LOG_LINE@python.inline@      if cur_file.endswith('index.lock'):@@@",
       "@@@STEP_LOG_LINE@python.inline@        path_to_file = os.path.join(path, cur_file)@@@",
-      "@@@STEP_LOG_LINE@python.inline@        print 'deleting %s' % path_to_file@@@",
+      "@@@STEP_LOG_LINE@python.inline@        print('deleting %s' % path_to_file)@@@",
       "@@@STEP_LOG_LINE@python.inline@        os.remove(path_to_file)@@@",
       "@@@STEP_LOG_END@python.inline@@@"
     ]

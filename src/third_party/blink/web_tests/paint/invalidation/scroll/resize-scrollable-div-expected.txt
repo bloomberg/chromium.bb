@@ -1,27 +1,11 @@
 {
   "layers": [
     {
-      "name": "LayoutView #document",
-      "bounds": [800, 600],
-      "drawsContent": false,
-      "backgroundColor": "#FFFFFF"
-    },
-    {
-      "name": "Scrolling Layer",
-      "bounds": [800, 600],
-      "drawsContent": false
-    },
-    {
       "name": "Scrolling Contents Layer",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
-        {
-          "object": "LayoutBlockFlow DIV id='div'",
-          "rect": [8, 108, 300, 300],
-          "reason": "geometry"
-        },
         {
           "object": "HorizontalScrollbar",
           "rect": [8, 393, 285, 15],
@@ -41,6 +25,16 @@
           "object": "VerticalScrollbar",
           "rect": [93, 108, 15, 85],
           "reason": "scroll control"
+        },
+        {
+          "object": "Scroll corner of LayoutNGBlockFlow DIV id='div'",
+          "rect": [293, 393, 15, 15],
+          "reason": "geometry"
+        },
+        {
+          "object": "Scroll corner of LayoutNGBlockFlow DIV id='div'",
+          "rect": [93, 193, 15, 15],
+          "reason": "geometry"
         }
       ]
     }

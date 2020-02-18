@@ -12,7 +12,6 @@
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/lazy_instance.h"
-#include "base/memory/shared_memory.h"
 #include "base/task/post_task.h"
 #include "base/task_runner_util.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -49,7 +48,8 @@
 #include "media/gpu/ipc/service/gpu_video_decode_accelerator.h"
 #include "media/gpu/ipc/service/media_gpu_channel_manager.h"
 #include "media/mojo/services/mojo_video_encode_accelerator_provider.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
+#include "skia/buildflags.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 #include "third_party/skia/include/gpu/gl/GrGLAssembleInterface.h"
 #include "third_party/skia/include/gpu/gl/GrGLInterface.h"
@@ -87,6 +87,10 @@
 
 #if defined(OS_MACOSX)
 #include "ui/base/cocoa/quartz_util.h"
+#endif
+
+#if BUILDFLAG(SKIA_USE_DAWN)
+#include "components/viz/common/gpu/dawn_context_provider.h"
 #endif
 
 namespace viz {
@@ -131,12 +135,6 @@ base::OnceCallback<void(Params&&...)> WrapCallback(
       base::RetainedRef(std::move(runner)), std::move(callback));
 }
 
-void DestroyBinding(mojo::BindingSet<mojom::GpuService>* binding,
-                    base::WaitableEvent* wait) {
-  binding->CloseAllBindings();
-  wait->Signal();
-}
-
 }  // namespace
 
 GpuServiceImpl::GpuServiceImpl(
@@ -150,7 +148,7 @@ GpuServiceImpl::GpuServiceImpl(
         gpu_feature_info_for_hardware_gpu,
     const gpu::GpuExtraInfo& gpu_extra_info,
     gpu::VulkanImplementation* vulkan_implementation,
-    base::OnceClosure exit_callback)
+    base::OnceCallback<void(bool /*immediately*/)> exit_callback)
     : main_runner_(base::ThreadTaskRunnerHandle::Get()),
       io_runner_(std::move(io_runner)),
       watchdog_thread_(std::move(watchdog_thread)),
@@ -163,8 +161,7 @@ GpuServiceImpl::GpuServiceImpl(
 #if BUILDFLAG(ENABLE_VULKAN)
       vulkan_implementation_(vulkan_implementation),
 #endif
-      exit_callback_(std::move(exit_callback)),
-      bindings_(std::make_unique<mojo::BindingSet<mojom::GpuService>>()) {
+      exit_callback_(std::move(exit_callback)) {
   DCHECK(!io_runner_->BelongsToCurrentThread());
   DCHECK(exit_callback_);
 
@@ -183,6 +180,19 @@ GpuServiceImpl::GpuServiceImpl(
           gpu::kGpuFeatureStatusEnabled;
     } else {
       DLOG(WARNING) << "Failed to create Vulkan context provider.";
+    }
+  }
+#endif
+
+#if BUILDFLAG(SKIA_USE_DAWN)
+  if (gpu_preferences_.gr_context_type == gpu::GrContextType::kDawn) {
+    dawn_context_provider_ = DawnContextProvider::Create();
+    if (dawn_context_provider_) {
+      gpu_info_.oop_rasterization_supported = true;
+      gpu_feature_info_.status_values[gpu::GPU_FEATURE_TYPE_OOP_RASTERIZATION] =
+          gpu::kGpuFeatureStatusEnabled;
+    } else {
+      DLOG(WARNING) << "Failed to create Dawn context provider.";
     }
   }
 #endif
@@ -214,11 +224,18 @@ GpuServiceImpl::~GpuServiceImpl() {
   bind_task_tracker_.TryCancelAll();
   logging::SetLogMessageHandler(nullptr);
   g_log_callback.Get().Reset();
+
+  // Destroy the receiver on the IO thread.
   base::WaitableEvent wait;
-  if (io_runner_->PostTask(
-          FROM_HERE, base::BindOnce(&DestroyBinding, bindings_.get(), &wait))) {
+  auto destroy_receiver_task = base::BindOnce(
+      [](mojo::Receiver<mojom::GpuService>* receiver,
+         base::WaitableEvent* wait) {
+        receiver->reset();
+        wait->Signal();
+      },
+      &receiver_, &wait);
+  if (io_runner_->PostTask(FROM_HERE, std::move(destroy_receiver_task)))
     wait.Wait();
-  }
 
   if (watchdog_thread_)
     watchdog_thread_->OnGpuProcessTearDown();
@@ -267,6 +284,11 @@ void GpuServiceImpl::UpdateGPUInfo() {
   // Record initialization only after collecting the GPU info because that can
   // take a significant amount of time.
   gpu_info_.initialization_time = base::Time::Now() - start_time_;
+
+  // For the GPU watchdog - how long the init might take on a slow machine?
+  UMA_HISTOGRAM_CUSTOM_TIMES(
+      "GPU.GPUInitializationTime", gpu_info_.initialization_time,
+      base::TimeDelta::FromSeconds(1), base::TimeDelta::FromSeconds(60), 50);
 }
 
 void GpuServiceImpl::InitializeWithHost(
@@ -313,8 +335,8 @@ void GpuServiceImpl::InitializeWithHost(
     shutdown_event_ = owned_shutdown_event_.get();
   }
 
-  scheduler_ =
-      std::make_unique<gpu::Scheduler>(main_runner_, sync_point_manager);
+  scheduler_ = std::make_unique<gpu::Scheduler>(
+      main_runner_, sync_point_manager, gpu_preferences_);
 
   // Defer creation of the render thread. This is to prevent it from handling
   // IPC messages before the sandbox has been enabled and all other necessary
@@ -325,7 +347,7 @@ void GpuServiceImpl::InitializeWithHost(
       gpu_memory_buffer_factory_.get(), gpu_feature_info_,
       std::move(activity_flags), std::move(default_offscreen_surface),
       image_decode_accelerator_worker_.get(), vulkan_context_provider(),
-      metal_context_provider_.get());
+      metal_context_provider_.get(), dawn_context_provider());
 
   media_gpu_channel_manager_.reset(
       new media::MediaGpuChannelManager(gpu_channel_manager_.get()));
@@ -333,15 +355,17 @@ void GpuServiceImpl::InitializeWithHost(
     watchdog_thread()->AddPowerObserver();
 }
 
-void GpuServiceImpl::Bind(mojom::GpuServiceRequest request) {
+void GpuServiceImpl::Bind(
+    mojo::PendingReceiver<mojom::GpuService> pending_receiver) {
   if (main_runner_->BelongsToCurrentThread()) {
     bind_task_tracker_.PostTask(
         io_runner_.get(), FROM_HERE,
         base::BindOnce(&GpuServiceImpl::Bind, base::Unretained(this),
-                       std::move(request)));
+                       std::move(pending_receiver)));
     return;
   }
-  bindings_->AddBinding(this, std::move(request));
+  DCHECK(!receiver_.is_bound());
+  receiver_.Bind(std::move(pending_receiver));
 }
 
 void GpuServiceImpl::DisableGpuCompositing() {
@@ -372,102 +396,109 @@ void GpuServiceImpl::RecordLogMessage(int severity,
 
 #if defined(OS_CHROMEOS)
 void GpuServiceImpl::CreateArcVideoDecodeAccelerator(
-    arc::mojom::VideoDecodeAcceleratorRequest vda_request) {
+    mojo::PendingReceiver<arc::mojom::VideoDecodeAccelerator> vda_receiver) {
   DCHECK(io_runner_->BelongsToCurrentThread());
   main_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(
           &GpuServiceImpl::CreateArcVideoDecodeAcceleratorOnMainThread,
-          weak_ptr_, std::move(vda_request)));
+          weak_ptr_, std::move(vda_receiver)));
 }
 
 void GpuServiceImpl::CreateArcVideoEncodeAccelerator(
-    arc::mojom::VideoEncodeAcceleratorRequest vea_request) {
+    mojo::PendingReceiver<arc::mojom::VideoEncodeAccelerator> vea_receiver) {
   DCHECK(io_runner_->BelongsToCurrentThread());
   main_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(
           &GpuServiceImpl::CreateArcVideoEncodeAcceleratorOnMainThread,
-          weak_ptr_, std::move(vea_request)));
+          weak_ptr_, std::move(vea_receiver)));
 }
 
 void GpuServiceImpl::CreateArcVideoProtectedBufferAllocator(
-    arc::mojom::VideoProtectedBufferAllocatorRequest pba_request) {
+    mojo::PendingReceiver<arc::mojom::VideoProtectedBufferAllocator>
+        pba_receiver) {
   DCHECK(io_runner_->BelongsToCurrentThread());
   main_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(
           &GpuServiceImpl::CreateArcVideoProtectedBufferAllocatorOnMainThread,
-          weak_ptr_, std::move(pba_request)));
+          weak_ptr_, std::move(pba_receiver)));
 }
 
 void GpuServiceImpl::CreateArcProtectedBufferManager(
-    arc::mojom::ProtectedBufferManagerRequest pbm_request) {
+    mojo::PendingReceiver<arc::mojom::ProtectedBufferManager> pbm_receiver) {
   DCHECK(io_runner_->BelongsToCurrentThread());
   main_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(
           &GpuServiceImpl::CreateArcProtectedBufferManagerOnMainThread,
-          weak_ptr_, std::move(pbm_request)));
+          weak_ptr_, std::move(pbm_receiver)));
 }
 
 void GpuServiceImpl::CreateArcVideoDecodeAcceleratorOnMainThread(
-    arc::mojom::VideoDecodeAcceleratorRequest vda_request) {
+    mojo::PendingReceiver<arc::mojom::VideoDecodeAccelerator> vda_receiver) {
   DCHECK(main_runner_->BelongsToCurrentThread());
-  mojo::MakeStrongBinding(std::make_unique<arc::GpuArcVideoDecodeAccelerator>(
-                              gpu_preferences_, protected_buffer_manager_),
-                          std::move(vda_request));
+  mojo::MakeSelfOwnedReceiver(
+      std::make_unique<arc::GpuArcVideoDecodeAccelerator>(
+          gpu_preferences_, protected_buffer_manager_),
+      std::move(vda_receiver));
 }
 
 void GpuServiceImpl::CreateArcVideoEncodeAcceleratorOnMainThread(
-    arc::mojom::VideoEncodeAcceleratorRequest vea_request) {
+    mojo::PendingReceiver<arc::mojom::VideoEncodeAccelerator> vea_receiver) {
   DCHECK(main_runner_->BelongsToCurrentThread());
-  mojo::MakeStrongBinding(
+  mojo::MakeSelfOwnedReceiver(
       std::make_unique<arc::GpuArcVideoEncodeAccelerator>(gpu_preferences_),
-      std::move(vea_request));
+      std::move(vea_receiver));
 }
 
 void GpuServiceImpl::CreateArcVideoProtectedBufferAllocatorOnMainThread(
-    arc::mojom::VideoProtectedBufferAllocatorRequest pba_request) {
+    mojo::PendingReceiver<arc::mojom::VideoProtectedBufferAllocator>
+        pba_receiver) {
   DCHECK(main_runner_->BelongsToCurrentThread());
   auto gpu_arc_video_protected_buffer_allocator =
       arc::GpuArcVideoProtectedBufferAllocator::Create(
           protected_buffer_manager_);
   if (!gpu_arc_video_protected_buffer_allocator)
     return;
-  mojo::MakeStrongBinding(std::move(gpu_arc_video_protected_buffer_allocator),
-                          std::move(pba_request));
+  mojo::MakeSelfOwnedReceiver(
+      std::move(gpu_arc_video_protected_buffer_allocator),
+      std::move(pba_receiver));
 }
 
 void GpuServiceImpl::CreateArcProtectedBufferManagerOnMainThread(
-    arc::mojom::ProtectedBufferManagerRequest pbm_request) {
+    mojo::PendingReceiver<arc::mojom::ProtectedBufferManager> pbm_receiver) {
   DCHECK(main_runner_->BelongsToCurrentThread());
-  mojo::MakeStrongBinding(
+  mojo::MakeSelfOwnedReceiver(
       std::make_unique<arc::GpuArcProtectedBufferManagerProxy>(
           protected_buffer_manager_),
-      std::move(pbm_request));
+      std::move(pbm_receiver));
 }
 
 void GpuServiceImpl::CreateJpegDecodeAccelerator(
-    chromeos_camera::mojom::MjpegDecodeAcceleratorRequest jda_request) {
+    mojo::PendingReceiver<chromeos_camera::mojom::MjpegDecodeAccelerator>
+        jda_receiver) {
   DCHECK(io_runner_->BelongsToCurrentThread());
   chromeos_camera::MojoMjpegDecodeAcceleratorService::Create(
-      std::move(jda_request));
+      std::move(jda_receiver));
 }
 
 void GpuServiceImpl::CreateJpegEncodeAccelerator(
-    chromeos_camera::mojom::JpegEncodeAcceleratorRequest jea_request) {
+    mojo::PendingReceiver<chromeos_camera::mojom::JpegEncodeAccelerator>
+        jea_receiver) {
   DCHECK(io_runner_->BelongsToCurrentThread());
   chromeos_camera::MojoJpegEncodeAcceleratorService::Create(
-      std::move(jea_request));
+      std::move(jea_receiver));
 }
 #endif  // defined(OS_CHROMEOS)
 
 void GpuServiceImpl::CreateVideoEncodeAcceleratorProvider(
-    media::mojom::VideoEncodeAcceleratorProviderRequest vea_provider_request) {
+    mojo::PendingReceiver<media::mojom::VideoEncodeAcceleratorProvider>
+        vea_provider_receiver) {
   DCHECK(io_runner_->BelongsToCurrentThread());
   media::MojoVideoEncodeAcceleratorProvider::Create(
-      std::move(vea_provider_request),
+      std::move(vea_provider_receiver),
       base::BindRepeating(&media::GpuVideoEncodeAcceleratorFactory::CreateVEA),
       gpu_preferences_);
 }
@@ -512,6 +543,22 @@ void GpuServiceImpl::GetVideoMemoryUsageStats(
   std::move(callback).Run(video_memory_usage_stats);
 }
 
+void GpuServiceImpl::StartPeakMemoryMonitor(uint32_t sequence_num) {
+  DCHECK(io_runner_->BelongsToCurrentThread());
+  main_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&GpuServiceImpl::StartPeakMemoryMonitorOnMainThread,
+                     weak_ptr_, sequence_num));
+}
+
+void GpuServiceImpl::GetPeakMemoryUsage(uint32_t sequence_num,
+                                        GetPeakMemoryUsageCallback callback) {
+  DCHECK(io_runner_->BelongsToCurrentThread());
+  main_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&GpuServiceImpl::GetPeakMemoryUsageOnMainThread,
+                                weak_ptr_, sequence_num, std::move(callback)));
+}
+
 #if defined(OS_WIN)
 void GpuServiceImpl::GetGpuSupportedRuntimeVersion(
     GetGpuSupportedRuntimeVersionCallback callback) {
@@ -534,8 +581,10 @@ void GpuServiceImpl::GetGpuSupportedRuntimeVersion(
       &gpu_info_.dx12_vulkan_version_info);
   std::move(callback).Run(gpu_info_.dx12_vulkan_version_info);
 
-  // The unsandboxed GPU process fulfilled its duty. Bye bye.
-  MaybeExit(false);
+  // The unsandboxed GPU process fulfilled its duty and Dxdiag task is not
+  // running. Bye bye.
+  if (!long_dx_task_different_thread_in_progress_)
+    MaybeExit(false);
 }
 
 void GpuServiceImpl::RequestCompleteGpuInfo(
@@ -556,6 +605,7 @@ void GpuServiceImpl::RequestCompleteGpuInfo(
              RequestCompleteGpuInfoCallback callback) {
             std::move(callback).Run(gpu_service->gpu_info_.dx_diagnostics);
             // The unsandboxed GPU process fulfilled its duty. Bye bye.
+            gpu_service->long_dx_task_different_thread_in_progress_ = false;
             gpu_service->MaybeExit(false);
           },
           this, std::move(callback))));
@@ -591,6 +641,7 @@ void GpuServiceImpl::UpdateGpuInfoPlatform(
 
   // We can continue on shutdown here because we're not writing any critical
   // state in this task.
+  long_dx_task_different_thread_in_progress_ = true;
   base::PostTaskAndReplyWithResult(
       base::CreateCOMSTATaskRunner(
           {base::ThreadPool(), base::TaskPriority::USER_VISIBLE,
@@ -695,13 +746,22 @@ void GpuServiceImpl::EstablishGpuChannel(int32_t client_id,
                                          bool is_gpu_host,
                                          bool cache_shaders_on_disk,
                                          EstablishGpuChannelCallback callback) {
-  if (gpu::IsReservedClientId(client_id)) {
-    // This returns a null handle, which is treated by the client as a failure
-    // case.
-    std::move(callback).Run(mojo::ScopedMessagePipeHandle());
-    return;
-  }
+  // This should always be called on the IO thread first.
   if (io_runner_->BelongsToCurrentThread()) {
+    if (IsExiting()) {
+      // We are already exiting so there is no point in responding. Close the
+      // receiver so we can safely drop the callback.
+      receiver_.reset();
+      return;
+    }
+
+    if (gpu::IsReservedClientId(client_id)) {
+      // This returns a null handle, which is treated by the client as a failure
+      // case.
+      std::move(callback).Run(mojo::ScopedMessagePipeHandle());
+      return;
+    }
+
     EstablishGpuChannelCallback wrap_callback = base::BindOnce(
         [](scoped_refptr<base::SingleThreadTaskRunner> runner,
            EstablishGpuChannelCallback cb,
@@ -770,10 +830,11 @@ void GpuServiceImpl::WakeUpGpu() {
 #endif
 }
 
-void GpuServiceImpl::GpuSwitched() {
+void GpuServiceImpl::GpuSwitched(gl::GpuPreference active_gpu_heuristic) {
   DVLOG(1) << "GPU: GPU has switched";
   if (!in_host_process())
-    ui::GpuSwitchingManager::GetInstance()->NotifyGpuSwitched();
+    ui::GpuSwitchingManager::GetInstance()->NotifyGpuSwitched(
+        active_gpu_heuristic);
 }
 
 void GpuServiceImpl::DestroyAllChannels() {
@@ -843,15 +904,7 @@ void GpuServiceImpl::Crash() {
 
 void GpuServiceImpl::Hang() {
   DCHECK(io_runner_->BelongsToCurrentThread());
-
-  main_runner_->PostTask(FROM_HERE, base::BindOnce([] {
-                           DVLOG(1) << "GPU: Simulating GPU hang";
-                           for (;;) {
-                             // Do not sleep here. The GPU watchdog timer tracks
-                             // the amount of user time this thread is using and
-                             // it doesn't use much while calling Sleep.
-                           }
-                         }));
+  main_runner_->PostTask(FROM_HERE, base::BindOnce(&gl::Hang));
 }
 
 void GpuServiceImpl::ThrowJavaException() {
@@ -870,6 +923,18 @@ void GpuServiceImpl::Stop(StopCallback callback) {
       std::move(callback));
 }
 
+void GpuServiceImpl::StartPeakMemoryMonitorOnMainThread(uint32_t sequence_num) {
+  gpu_channel_manager_->StartPeakMemoryMonitor(sequence_num);
+}
+
+void GpuServiceImpl::GetPeakMemoryUsageOnMainThread(
+    uint32_t sequence_num,
+    GetPeakMemoryUsageCallback callback) {
+  uint64_t peak_memory = gpu_channel_manager_->GetPeakMemoryUsage(sequence_num);
+  io_runner_->PostTask(FROM_HERE,
+                       base::BindOnce(std::move(callback), peak_memory));
+}
+
 void GpuServiceImpl::MaybeExit(bool for_context_loss) {
   DCHECK(main_runner_->BelongsToCurrentThread());
 
@@ -885,7 +950,14 @@ void GpuServiceImpl::MaybeExit(bool for_context_loss) {
                   "from errors. GPU process will restart shortly.";
   }
   is_exiting_.Set();
-  std::move(exit_callback_).Run();
+  // For the unsandboxed GPU process used for info collection, if we exit
+  // immediately, then the reply message could be lost. That's why the
+  // |exit_callback_| takes the boolean argument.
+  std::move(exit_callback_).Run(/*immediately=*/for_context_loss);
+}
+
+gpu::Scheduler* GpuServiceImpl::GetGpuScheduler() {
+  return scheduler_.get();
 }
 
 }  // namespace viz

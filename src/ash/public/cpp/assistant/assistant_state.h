@@ -9,10 +9,11 @@
 
 #include "ash/public/cpp/assistant/assistant_state_base.h"
 #include "ash/public/mojom/assistant_state_controller.mojom.h"
-#include "ash/public/mojom/voice_interaction_controller.mojom.h"
 #include "base/macros.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
-#include "mojo/public/cpp/bindings/interface_ptr_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
+#include "mojo/public/cpp/bindings/remote_set.h"
 
 namespace ash {
 
@@ -26,20 +27,22 @@ class ASH_PUBLIC_EXPORT AssistantState
   AssistantState();
   ~AssistantState() override;
 
-  void BindRequest(mojom::AssistantStateControllerRequest request);
-  void NotifyStatusChanged(mojom::VoiceInteractionState state);
+  void BindReceiver(
+      mojo::PendingReceiver<mojom::AssistantStateController> receiver);
+  void NotifyStatusChanged(mojom::AssistantState state);
   void NotifyFeatureAllowed(mojom::AssistantAllowedState state);
   void NotifyLocaleChanged(const std::string& locale);
   void NotifyArcPlayStoreEnabledChanged(bool enabled);
   void NotifyLockedFullScreenStateChanged(bool enabled);
 
   // ash::mojom::AssistantStateController:
-  void AddMojomObserver(mojom::AssistantStateObserverPtr observer) override;
+  void AddMojomObserver(mojo::PendingRemote<mojom::AssistantStateObserver>
+                            pending_observer) override;
 
  private:
-  mojo::BindingSet<mojom::AssistantStateController> bindings_;
+  mojo::ReceiverSet<mojom::AssistantStateController> receivers_;
 
-  mojo::InterfacePtrSet<mojom::AssistantStateObserver> remote_observers_;
+  mojo::RemoteSet<mojom::AssistantStateObserver> remote_observers_;
 
   DISALLOW_COPY_AND_ASSIGN(AssistantState);
 };

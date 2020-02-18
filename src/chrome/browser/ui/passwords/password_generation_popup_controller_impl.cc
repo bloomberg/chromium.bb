@@ -37,10 +37,6 @@
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/text_utils.h"
 
-#if defined(OS_ANDROID)
-#include "chrome/browser/android/preferences/preferences_launcher.h"
-#endif
-
 // Handles registration for key events with RenderFrameHost.
 class PasswordGenerationPopupControllerImpl::KeyPressRegistrator {
  public:
@@ -212,10 +208,6 @@ void PasswordGenerationPopupControllerImpl::Show(GenerationUIState state) {
         driver_->GetPasswordGenerationHelper()->GeneratePassword(
             web_contents()->GetLastCommittedURL().GetOrigin(), form_signature_,
             field_signature_, max_length_, &spec_priority);
-    if (driver_ && driver_->GetPasswordManager()) {
-      driver_->GetPasswordManager()->ReportSpecPriorityForGeneratedPassword(
-          form_, spec_priority);
-    }
   }
   state_ = state;
 
@@ -339,9 +331,6 @@ PasswordGenerationPopupControllerImpl::GetSuggestions() {
 }
 
 #if !defined(OS_ANDROID)
-void PasswordGenerationPopupControllerImpl::SetTypesetter(
-    gfx::Typesetter typesetter) {}
-
 int PasswordGenerationPopupControllerImpl::GetElidedValueWidthForRow(int row) {
   return 0;
 }

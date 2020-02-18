@@ -21,6 +21,7 @@
 #include "content/shell/common/web_test/web_test_bluetooth_fake_adapter_setter.mojom.h"
 #include "content/shell/test_runner/test_preferences.h"
 #include "content/shell/test_runner/web_test_delegate.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "v8/include/v8.h"
 
 class SkBitmap;
@@ -76,6 +77,7 @@ class BlinkTestRunner : public RenderViewObserver,
   void EnableAutoResizeMode(const blink::WebSize& min_size,
                             const blink::WebSize& max_size) override;
   void DisableAutoResizeMode(const blink::WebSize& new_size) override;
+  void ResetAutoResizeMode() override;
   void NavigateSecondaryWindow(const GURL& url) override;
   void InspectSecondaryWindow() override;
   void ClearAllDatabases() override;
@@ -89,7 +91,6 @@ class BlinkTestRunner : public RenderViewObserver,
   void SimulateWebContentIndexDelete(const std::string& id) override;
   void SetDeviceScaleFactor(float factor) override;
   void SetDeviceColorSpace(const std::string& name) override;
-  float GetWindowToViewportScale() override;
   std::unique_ptr<blink::WebInputEvent> TransformScreenToWidgetCoordinates(
       test_runner::WebWidgetTestProxy* web_widget_test_proxy,
       const blink::WebInputEvent& event) override;
@@ -135,11 +136,8 @@ class BlinkTestRunner : public RenderViewObserver,
   void ResolveBeforeInstallPromptPromise(const std::string& platform) override;
   blink::WebPlugin* CreatePluginPlaceholder(
       const blink::WebPluginParams& params) override;
-  float GetDeviceScaleFactor() const override;
   void RunIdleTasks(base::OnceClosure callback) override;
   void ForceTextInputStateUpdate(blink::WebLocalFrame* frame) override;
-  void ExcludeSchemeFromRequestInitiatorSiteLockChecks(
-      const std::string& scheme) override;
 
   // Resets a RenderView to a known state for web tests. It is used both when
   // a RenderView is created and when reusing an existing RenderView for the
@@ -180,7 +178,8 @@ class BlinkTestRunner : public RenderViewObserver,
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner();
 
   mojom::WebTestBluetoothFakeAdapterSetter& GetBluetoothFakeAdapterSetter();
-  mojom::WebTestBluetoothFakeAdapterSetterPtr bluetooth_fake_adapter_setter_;
+  mojo::Remote<mojom::WebTestBluetoothFakeAdapterSetter>
+      bluetooth_fake_adapter_setter_;
 
   test_runner::TestPreferences prefs_;
 

@@ -52,9 +52,10 @@ egl::Error ToEGL(Result result, rx::DisplayVk *displayVk, EGLint errorCode)
 
 namespace rx
 {
-// Mirrors std_validation_str in loader.c
-const char *g_VkStdValidationLayerName = "VK_LAYER_LUNARG_standard_validation";
-const char *g_VkValidationLayerNames[] = {
+// Unified layer that includes full validation layer stack
+const char *g_VkKhronosValidationLayerName  = "VK_LAYER_KHRONOS_validation";
+const char *g_VkStandardValidationLayerName = "VK_LAYER_LUNARG_standard_validation";
+const char *g_VkValidationLayerNames[]      = {
     "VK_LAYER_GOOGLE_threading", "VK_LAYER_LUNARG_parameter_validation",
     "VK_LAYER_LUNARG_object_tracker", "VK_LAYER_LUNARG_core_validation",
     "VK_LAYER_GOOGLE_unique_objects"};
@@ -72,9 +73,14 @@ bool HasValidationLayer(const std::vector<VkLayerProperties> &layerProps, const 
     return false;
 }
 
+bool HasKhronosValidationLayer(const std::vector<VkLayerProperties> &layerProps)
+{
+    return HasValidationLayer(layerProps, g_VkKhronosValidationLayerName);
+}
+
 bool HasStandardValidationLayer(const std::vector<VkLayerProperties> &layerProps)
 {
-    return HasValidationLayer(layerProps, g_VkStdValidationLayerName);
+    return HasValidationLayer(layerProps, g_VkStandardValidationLayerName);
 }
 
 bool HasValidationLayers(const std::vector<VkLayerProperties> &layerProps)
@@ -215,9 +221,14 @@ bool GetAvailableValidationLayers(const std::vector<VkLayerProperties> &layerPro
                                   bool mustHaveLayers,
                                   VulkanLayerVector *enabledLayerNames)
 {
-    if (HasStandardValidationLayer(layerProps))
+    // Favor unified Khronos layer, but fallback to standard validation
+    if (HasKhronosValidationLayer(layerProps))
     {
-        enabledLayerNames->push_back(g_VkStdValidationLayerName);
+        enabledLayerNames->push_back(g_VkKhronosValidationLayerName);
+    }
+    else if (HasStandardValidationLayer(layerProps))
+    {
+        enabledLayerNames->push_back(g_VkStandardValidationLayerName);
     }
     else if (HasValidationLayers(layerProps))
     {
@@ -275,7 +286,7 @@ VkDevice Context::getDevice() const
 }
 
 // MemoryProperties implementation.
-MemoryProperties::MemoryProperties() : mMemoryProperties{0} {}
+MemoryProperties::MemoryProperties() : mMemoryProperties{} {}
 
 void MemoryProperties::init(VkPhysicalDevice physicalDevice)
 {
@@ -286,7 +297,7 @@ void MemoryProperties::init(VkPhysicalDevice physicalDevice)
 
 void MemoryProperties::destroy()
 {
-    mMemoryProperties = {0};
+    mMemoryProperties = {};
 }
 
 angle::Result MemoryProperties::findCompatibleMemoryIndex(
@@ -330,8 +341,16 @@ void StagingBuffer::destroy(VkDevice device)
     mSize = 0;
 }
 
-angle::Result StagingBuffer::init(Context *context, VkDeviceSize size, StagingUsage usage)
+angle::Result StagingBuffer::init(ContextVk *contextVk, VkDeviceSize size, StagingUsage usage)
 {
+    // TODO: Remove with anglebug.com/2162: Vulkan: Implement device memory sub-allocation
+    // Check if we have too many resources allocated already and need to free some before allocating
+    // more and (possibly) exceeding the device's limits.
+    if (contextVk->shouldFlush())
+    {
+        ANGLE_TRY(contextVk->flushImpl(nullptr));
+    }
+
     VkBufferCreateInfo createInfo    = {};
     createInfo.sType                 = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
     createInfo.flags                 = 0;
@@ -344,17 +363,17 @@ angle::Result StagingBuffer::init(Context *context, VkDeviceSize size, StagingUs
     VkMemoryPropertyFlags flags =
         (VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 
-    ANGLE_VK_TRY(context, mBuffer.init(context->getDevice(), createInfo));
+    ANGLE_VK_TRY(contextVk, mBuffer.init(contextVk->getDevice(), createInfo));
     VkMemoryPropertyFlags flagsOut = 0;
-    ANGLE_TRY(AllocateBufferMemory(context, flags, &flagsOut, nullptr, &mBuffer, &mDeviceMemory));
+    ANGLE_TRY(AllocateBufferMemory(contextVk, flags, &flagsOut, nullptr, &mBuffer, &mDeviceMemory));
     mSize = static_cast<size_t>(size);
     return angle::Result::Continue;
 }
 
-void StagingBuffer::dumpResources(Serial serial, std::vector<vk::GarbageObject> *garbageQueue)
+void StagingBuffer::release(ContextVk *contextVk)
 {
-    mBuffer.dumpResources(serial, garbageQueue);
-    mDeviceMemory.dumpResources(serial, garbageQueue);
+    contextVk->addGarbage(&mBuffer);
+    contextVk->addGarbage(&mDeviceMemory);
 }
 
 angle::Result AllocateBufferMemory(vk::Context *context,
@@ -435,146 +454,93 @@ gl::TextureType Get2DTextureType(uint32_t layerCount, GLint samples)
     }
 }
 
-GarbageObjectBase::GarbageObjectBase() : mHandleType(HandleType::Invalid), mHandle(VK_NULL_HANDLE)
+GarbageObject::GarbageObject() : mHandleType(HandleType::Invalid), mHandle(VK_NULL_HANDLE) {}
+
+GarbageObject::GarbageObject(HandleType handleType, GarbageHandle handle)
+    : mHandleType(handleType), mHandle(handle)
 {}
 
-// GarbageObjectBase implementation
-void GarbageObjectBase::destroy(VkDevice device)
+GarbageObject::GarbageObject(GarbageObject &&other) : GarbageObject()
+{
+    *this = std::move(other);
+}
+
+GarbageObject &GarbageObject::operator=(GarbageObject &&rhs)
+{
+    std::swap(mHandle, rhs.mHandle);
+    std::swap(mHandleType, rhs.mHandleType);
+    return *this;
+}
+
+// GarbageObject implementation
+// Using c-style casts here to avoid conditional compile for MSVC 32-bit
+//  which fails to compile with reinterpret_cast, requiring static_cast.
+void GarbageObject::destroy(VkDevice device)
 {
     switch (mHandleType)
     {
         case HandleType::Semaphore:
-            vkDestroySemaphore(device, reinterpret_cast<VkSemaphore>(mHandle), nullptr);
+            vkDestroySemaphore(device, (VkSemaphore)mHandle, nullptr);
             break;
         case HandleType::CommandBuffer:
             // Command buffers are pool allocated.
             UNREACHABLE();
             break;
         case HandleType::Event:
-            vkDestroyEvent(device, reinterpret_cast<VkEvent>(mHandle), nullptr);
+            vkDestroyEvent(device, (VkEvent)mHandle, nullptr);
             break;
         case HandleType::Fence:
-            vkDestroyFence(device, reinterpret_cast<VkFence>(mHandle), nullptr);
+            vkDestroyFence(device, (VkFence)mHandle, nullptr);
             break;
         case HandleType::DeviceMemory:
-            vkFreeMemory(device, reinterpret_cast<VkDeviceMemory>(mHandle), nullptr);
+            vkFreeMemory(device, (VkDeviceMemory)mHandle, nullptr);
             break;
         case HandleType::Buffer:
-            vkDestroyBuffer(device, reinterpret_cast<VkBuffer>(mHandle), nullptr);
+            vkDestroyBuffer(device, (VkBuffer)mHandle, nullptr);
             break;
         case HandleType::BufferView:
-            vkDestroyBufferView(device, reinterpret_cast<VkBufferView>(mHandle), nullptr);
+            vkDestroyBufferView(device, (VkBufferView)mHandle, nullptr);
             break;
         case HandleType::Image:
-            vkDestroyImage(device, reinterpret_cast<VkImage>(mHandle), nullptr);
+            vkDestroyImage(device, (VkImage)mHandle, nullptr);
             break;
         case HandleType::ImageView:
-            vkDestroyImageView(device, reinterpret_cast<VkImageView>(mHandle), nullptr);
+            vkDestroyImageView(device, (VkImageView)mHandle, nullptr);
             break;
         case HandleType::ShaderModule:
-            vkDestroyShaderModule(device, reinterpret_cast<VkShaderModule>(mHandle), nullptr);
+            vkDestroyShaderModule(device, (VkShaderModule)mHandle, nullptr);
             break;
         case HandleType::PipelineLayout:
-            vkDestroyPipelineLayout(device, reinterpret_cast<VkPipelineLayout>(mHandle), nullptr);
+            vkDestroyPipelineLayout(device, (VkPipelineLayout)mHandle, nullptr);
             break;
         case HandleType::RenderPass:
-            vkDestroyRenderPass(device, reinterpret_cast<VkRenderPass>(mHandle), nullptr);
+            vkDestroyRenderPass(device, (VkRenderPass)mHandle, nullptr);
             break;
         case HandleType::Pipeline:
-            vkDestroyPipeline(device, reinterpret_cast<VkPipeline>(mHandle), nullptr);
+            vkDestroyPipeline(device, (VkPipeline)mHandle, nullptr);
             break;
         case HandleType::DescriptorSetLayout:
-            vkDestroyDescriptorSetLayout(device, reinterpret_cast<VkDescriptorSetLayout>(mHandle),
-                                         nullptr);
+            vkDestroyDescriptorSetLayout(device, (VkDescriptorSetLayout)mHandle, nullptr);
             break;
         case HandleType::Sampler:
-            vkDestroySampler(device, reinterpret_cast<VkSampler>(mHandle), nullptr);
+            vkDestroySampler(device, (VkSampler)mHandle, nullptr);
             break;
         case HandleType::DescriptorPool:
-            vkDestroyDescriptorPool(device, reinterpret_cast<VkDescriptorPool>(mHandle), nullptr);
+            vkDestroyDescriptorPool(device, (VkDescriptorPool)mHandle, nullptr);
             break;
         case HandleType::Framebuffer:
-            vkDestroyFramebuffer(device, reinterpret_cast<VkFramebuffer>(mHandle), nullptr);
+            vkDestroyFramebuffer(device, (VkFramebuffer)mHandle, nullptr);
             break;
         case HandleType::CommandPool:
-            vkDestroyCommandPool(device, reinterpret_cast<VkCommandPool>(mHandle), nullptr);
+            vkDestroyCommandPool(device, (VkCommandPool)mHandle, nullptr);
             break;
         case HandleType::QueryPool:
-            vkDestroyQueryPool(device, reinterpret_cast<VkQueryPool>(mHandle), nullptr);
+            vkDestroyQueryPool(device, (VkQueryPool)mHandle, nullptr);
             break;
         default:
             UNREACHABLE();
             break;
     }
-}
-
-// GarbageObject implementation.
-GarbageObject::GarbageObject() : mSerial() {}
-
-GarbageObject::GarbageObject(const GarbageObject &other) = default;
-
-GarbageObject &GarbageObject::operator=(const GarbageObject &other) = default;
-
-bool GarbageObject::destroyIfComplete(VkDevice device, Serial completedSerial)
-{
-    if (completedSerial >= mSerial)
-    {
-        destroy(device);
-        return true;
-    }
-
-    return false;
-}
-
-bool SamplerNameContainsNonZeroArrayElement(const std::string &name)
-{
-    constexpr char kZERO_ELEMENT[] = "[0]";
-
-    size_t start = 0;
-    while (true)
-    {
-        start = name.find(kZERO_ELEMENT[0], start);
-        if (start == std::string::npos)
-        {
-            break;
-        }
-        if (name.compare(start, strlen(kZERO_ELEMENT), kZERO_ELEMENT) != 0)
-        {
-            return true;
-        }
-        start++;
-    }
-    return false;
-}
-
-std::string GetMappedSamplerName(const std::string &originalName)
-{
-    std::string samplerName = originalName;
-
-    // Samplers in structs are extracted.
-    std::replace(samplerName.begin(), samplerName.end(), '.', '_');
-
-    // Remove array elements
-    auto out = samplerName.begin();
-    for (auto in = samplerName.begin(); in != samplerName.end(); in++)
-    {
-        if (*in == '[')
-        {
-            while (*in != ']')
-            {
-                in++;
-                ASSERT(in != samplerName.end());
-            }
-        }
-        else
-        {
-            *out++ = *in;
-        }
-    }
-
-    samplerName.erase(out, samplerName.end());
-
-    return samplerName;
 }
 
 }  // namespace vk
@@ -592,6 +558,7 @@ PFN_vkDestroyDebugReportCallbackEXT vkDestroyDebugReportCallbackEXT = nullptr;
 
 // VK_KHR_get_physical_device_properties2
 PFN_vkGetPhysicalDeviceProperties2KHR vkGetPhysicalDeviceProperties2KHR = nullptr;
+PFN_vkGetPhysicalDeviceFeatures2KHR vkGetPhysicalDeviceFeatures2KHR     = nullptr;
 
 // VK_KHR_external_semaphore_fd
 PFN_vkImportSemaphoreFdKHR vkImportSemaphoreFdKHR = nullptr;
@@ -626,6 +593,7 @@ void InitDebugReportEXTFunctions(VkInstance instance)
 void InitGetPhysicalDeviceProperties2KHRFunctions(VkInstance instance)
 {
     GET_FUNC(vkGetPhysicalDeviceProperties2KHR);
+    GET_FUNC(vkGetPhysicalDeviceFeatures2KHR);
 }
 
 #if defined(ANGLE_PLATFORM_FUCHSIA)
@@ -645,6 +613,15 @@ void InitExternalMemoryHardwareBufferANDROIDFunctions(VkInstance instance)
     GET_FUNC(vkGetMemoryAndroidHardwareBufferANDROID);
 }
 #endif
+
+#if defined(ANGLE_PLATFORM_GGP)
+PFN_vkCreateStreamDescriptorSurfaceGGP vkCreateStreamDescriptorSurfaceGGP = nullptr;
+
+void InitGGPStreamDescriptorSurfaceFunctions(VkInstance instance)
+{
+    GET_FUNC(vkCreateStreamDescriptorSurfaceGGP);
+}
+#endif  // defined(ANGLE_PLATFORM_GGP)
 
 void InitExternalSemaphoreFdFunctions(VkInstance instance)
 {
@@ -678,10 +655,10 @@ VkSamplerMipmapMode GetSamplerMipmapMode(const GLenum filter)
 {
     switch (filter)
     {
-        case GL_LINEAR:
         case GL_LINEAR_MIPMAP_LINEAR:
         case GL_NEAREST_MIPMAP_LINEAR:
             return VK_SAMPLER_MIPMAP_MODE_LINEAR;
+        case GL_LINEAR:
         case GL_NEAREST:
         case GL_NEAREST_MIPMAP_NEAREST:
         case GL_LINEAR_MIPMAP_NEAREST:

@@ -24,19 +24,19 @@
 #include "components/consent_auditor/consent_auditor.h"
 #include "components/signin/public/base/avatar_icon_util.h"
 #include "components/signin/public/identity_manager/account_info.h"
-#include "components/unified_consent/feature.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "url/gurl.h"
 
+namespace {
 const int kProfileImageSize = 128;
+}  // namespace
 
 SyncConfirmationHandler::SyncConfirmationHandler(
     Browser* browser,
     const std::unordered_map<std::string, int>& string_to_grd_id_map)
     : profile_(browser->profile()),
       browser_(browser),
-      did_user_explicitly_interact(false),
       string_to_grd_id_map_(string_to_grd_id_map),
       identity_manager_(IdentityManagerFactory::GetForProfile(profile_)) {
   DCHECK(profile_);
@@ -50,7 +50,7 @@ SyncConfirmationHandler::~SyncConfirmationHandler() {
 
   // Abort signin and prevent sync from starting if none of the actions on the
   // sync confirmation dialog are taken by the user.
-  if (!did_user_explicitly_interact) {
+  if (!did_user_explicitly_interact_) {
     HandleUndo(nullptr);
     base::RecordAction(base::UserMetricsAction("Signin_Abort_Signin"));
   }
@@ -83,20 +83,20 @@ void SyncConfirmationHandler::RegisterMessages() {
 }
 
 void SyncConfirmationHandler::HandleConfirm(const base::ListValue* args) {
-  did_user_explicitly_interact = true;
+  did_user_explicitly_interact_ = true;
   RecordConsent(args);
   CloseModalSigninWindow(LoginUIService::SYNC_WITH_DEFAULT_SETTINGS);
 }
 
 void SyncConfirmationHandler::HandleGoToSettings(const base::ListValue* args) {
   DCHECK(profile_->IsSyncAllowed());
-  did_user_explicitly_interact = true;
+  did_user_explicitly_interact_ = true;
   RecordConsent(args);
   CloseModalSigninWindow(LoginUIService::CONFIGURE_SYNC_FIRST);
 }
 
 void SyncConfirmationHandler::HandleUndo(const base::ListValue* args) {
-  did_user_explicitly_interact = true;
+  did_user_explicitly_interact_ = true;
   CloseModalSigninWindow(LoginUIService::ABORT_SIGNIN);
 }
 
@@ -117,8 +117,7 @@ void SyncConfirmationHandler::HandleAccountImageRequest(
 
 void SyncConfirmationHandler::RecordConsent(const base::ListValue* args) {
   CHECK_EQ(2U, args->GetSize());
-  const std::vector<base::Value>& consent_description =
-      args->GetList()[0].GetList();
+  base::Value::ConstListView consent_description = args->GetList()[0].GetList();
   const std::string& consent_confirmation = args->GetList()[1].GetString();
 
   // The strings returned by the WebUI are not free-form, they must belong into
@@ -211,6 +210,8 @@ void SyncConfirmationHandler::CloseModalSigninWindow(
 
 void SyncConfirmationHandler::HandleInitializedWithSize(
     const base::ListValue* args) {
+  AllowJavascript();
+
   if (!browser_)
     return;
 
@@ -237,5 +238,5 @@ void SyncConfirmationHandler::HandleInitializedWithSize(
   // TODO(anthonyvd): Figure out why this is needed on Mac and not other
   // platforms and if there's a way to start unfocused while avoiding this
   // workaround.
-  web_ui()->CallJavascriptFunctionUnsafe("sync.confirmation.clearFocus");
+  FireWebUIListener("clear-focus");
 }

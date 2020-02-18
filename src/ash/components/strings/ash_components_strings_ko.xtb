@@ -41,8 +41,9 @@
 <translation id="2397416548179033562">Chrome 메뉴 표시</translation>
 <translation id="2424073332829844142">Caps Lock 켜고 끄기</translation>
 <translation id="2441202986792279177">창 간에 빠르게 전환</translation>
-<translation id="2454251766545114447">축소 표시</translation>
+<translation id="2454251766545114447">화면 축소</translation>
 <translation id="2478303094958140141">ChromeVox(음성 피드백) 사용 또는 사용 중지</translation>
+<translation id="2480851840841871861">Google 어시스턴트 열기</translation>
 <translation id="2488661730534396940">왼쪽 데스크 활성화</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2530339807289914946">웹페이지를 아래로 스크롤</translation>
@@ -97,7 +98,9 @@
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> 또는 <ph name="ENTER" /></translation>
 <translation id="4240486403425279990">전체보기 모드</translation>
 <translation id="4382340674111381977">이전 페이지로 돌아가기</translation>
+<translation id="4458670250301149821">앱 그리드의 폴더 안팎으로 앱 아이콘 이동</translation>
 <translation id="4472417192667361414">시스템 및 디스플레이 설정</translation>
+<translation id="449214506787633354"><ph name="CTRL" /> 다음 <ph name="LEFT" />, <ph name="RIGHT" />, <ph name="UP" /> 또는 <ph name="DOWN" /></translation>
 <translation id="4556221320735744018">단축키 도우미 보기</translation>
 <translation id="4628718545549558538">상태 영역(계정 사진이 표시되는 위치) 열기</translation>
 <translation id="4642092649622328492">부분 스크린샷 찍기</translation>
@@ -129,13 +132,13 @@
 <translation id="6022924867608035986">검색창 텍스트 삭제</translation>
 <translation id="6045998054441862242">고대비 모드 사용</translation>
 <translation id="6052614013050385269">마우스 오른쪽 버튼으로 링크 클릭</translation>
-<translation id="6129953537138746214">공백</translation>
+<translation id="6129953537138746214">Space</translation>
 <translation id="6143669479988153888">페이지를 확대</translation>
 <translation id="6185696379715117369">페이지 위로</translation>
 <translation id="6228457605945141550">어둡게</translation>
 <translation id="6276708887952587684">페이지 소스 보기</translation>
 <translation id="6321940490215594447">방문 기록 페이지 열기</translation>
-<translation id="6340769215862220182">확대 표시</translation>
+<translation id="6340769215862220182">화면 확대</translation>
 <translation id="6359811074279051077"><ph name="MODIFIER" /><ph name="SEPARATOR" /><ph name="KEY" /></translation>
 <translation id="6395172954772765143">텍스트 행 끝부분까지 선택</translation>
 <translation id="6419237577786823024"><ph name="CTRL1" /><ph name="SEPARATOR1" /><ph name="LEFT" /> 또는 <ph name="CTRL2" /><ph name="SEPARATOR2" /><ph name="RIGHT" /></translation>
@@ -169,6 +172,7 @@
 <translation id="7439718573248533901">다음 글자를 삭제(앞으로 삭제)</translation>
 <translation id="7500368597227394048">하이픈</translation>
 <translation id="7611271430932669992">포커스를 팝업 및 대화상자로 이동</translation>
+<translation id="7635348532214572995">앱 그리드에서 앱 아이콘 이동</translation>
 <translation id="766326951329901120">클립보드의 콘텐츠를 일반 텍스트로 붙여넣기</translation>
 <translation id="7703010453515335249">왼쪽 대괄호</translation>
 <translation id="7724603315864178912">잘라내기</translation>
@@ -203,6 +207,7 @@
 <translation id="9041599225465145264">클립보드에서 콘텐츠 붙여넣기</translation>
 <translation id="9052808072970550123">다음 사용자로 전환</translation>
 <translation id="906458777597946297">창 최대화</translation>
+<translation id="9072882242928138086"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="SHIFT" /> 다음 <ph name="LEFT" />, <ph name="RIGHT" />, <ph name="UP" /> 또는 <ph name="DOWN" /></translation>
 <translation id="9091855755813503076">행의 처음으로 이동</translation>
 <translation id="9106898733795143799">페이지 및 웹브라우저</translation>
 <translation id="9162942292291287644"><ph name="QUERY" /> 검색결과 없음</translation>

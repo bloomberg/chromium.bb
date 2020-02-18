@@ -167,7 +167,7 @@ bool ExecuteCodeFunction::Execute(const std::string& code_string,
 
   executor->ExecuteScript(
       host_id_, script_type, code_string, frame_scope, frame_id,
-      match_about_blank, run_at, ScriptExecutor::ISOLATED_WORLD,
+      match_about_blank, run_at,
       IsWebView() ? ScriptExecutor::WEB_VIEW_PROCESS
                   : ScriptExecutor::DEFAULT_PROCESS,
       GetWebViewSrc(), file_url_, user_gesture(), css_origin,
@@ -239,11 +239,9 @@ bool ExecuteCodeFunction::LoadFile(const std::string& file,
       component_extension_resource_manager->IsComponentExtensionResource(
           resource_.extension_root(), resource_.relative_path(),
           &resource_id)) {
-    DCHECK(!ui::ResourceBundle::GetSharedInstance().IsGzipped(resource_id));
-    base::StringPiece resource =
-        ui::ResourceBundle::GetSharedInstance().GetRawDataResource(resource_id);
-    std::unique_ptr<std::string> data(
-        new std::string(resource.data(), resource.size()));
+    auto data = std::make_unique<std::string>(
+        ui::ResourceBundle::GetSharedInstance().LoadDataResourceString(
+            resource_id));
 
     base::PostTaskAndReplyWithResult(
         FROM_HERE,

@@ -38,7 +38,9 @@
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
+#include "chrome/browser/ui/tabs/tab_group.h"
 #include "chrome/browser/ui/tabs/tab_group_id.h"
+#include "chrome/browser/ui/tabs/tab_group_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "components/sessions/content/content_serialized_navigation_builder.h"
 #include "components/sessions/core/session_command.h"
@@ -86,7 +88,7 @@ SessionService::SessionService(Profile* profile)
 }
 
 SessionService::SessionService(const base::FilePath& save_path)
-    : profile_(NULL),
+    : profile_(nullptr),
       should_use_delayed_save_(false),
       base_session_service_(new sessions::BaseSessionService(
           sessions::BaseSessionService::SESSION_RESTORE,
@@ -129,7 +131,7 @@ bool SessionService::ShouldNewWindowStartSession() {
 }
 
 bool SessionService::RestoreIfNecessary(const std::vector<GURL>& urls_to_open) {
-  return RestoreIfNecessary(urls_to_open, NULL);
+  return RestoreIfNecessary(urls_to_open, nullptr);
 }
 
 void SessionService::ResetFromCurrentBrowsers() {
@@ -480,9 +482,8 @@ void SessionService::TabRestored(WebContents* tab, bool pinned) {
   if (!ShouldTrackChangesToWindow(session_tab_helper->window_id()))
     return;
 
-  // TODO(crbug.com/930991): handle tab groups here.
   BuildCommandsForTab(session_tab_helper->window_id(), tab, -1, base::nullopt,
-                      pinned, NULL);
+                      pinned, nullptr);
   base_session_service_->StartSaveTimer();
 }
 
@@ -589,7 +590,8 @@ bool SessionService::ShouldRestoreWindowOfType(
     return true;
 #endif
 
-  return window_type == sessions::SessionWindow::TYPE_NORMAL;
+  return (window_type == sessions::SessionWindow::TYPE_NORMAL) ||
+         (window_type == sessions::SessionWindow::TYPE_POPUP);
 }
 
 void SessionService::RemoveUnusedRestoreWindows(
@@ -776,8 +778,10 @@ void SessionService::BuildCommandsForBrowser(
   }
 
   // Set the visual data for each tab group.
-  for (const TabGroupId& group_id : tab_strip->ListTabGroups()) {
-    const TabGroupVisualData* data = tab_strip->GetVisualDataForGroup(group_id);
+  TabGroupModel* group_model = tab_strip->group_model();
+  for (const TabGroupId& group_id : group_model->ListTabGroups()) {
+    const TabGroupVisualData* data =
+        group_model->GetTabGroup(group_id)->visual_data();
     base_session_service_->AppendRebuildCommand(
         sessions::CreateTabGroupMetadataUpdateCommand(
             group_id.token(), data->title(), data->color()));

@@ -12,7 +12,7 @@ Polymer({
 
   behaviors: [
     CrScrollableBehavior,
-    CrNetworkListenerBehavior,
+    NetworkListenerBehavior,
   ],
 
   properties: {
@@ -116,6 +116,26 @@ Polymer({
     errorText_: {
       type: String,
       value: '',
+    },
+
+    /**
+     * Indicates whether the value in the Manufacturer dropdown is a valid
+     * printer manufacturer.
+     * @private
+     */
+    isManufacturerInvalid_: {
+      type: Boolean,
+      value: false,
+    },
+
+    /**
+     * Indicates whether the value in the Model dropdown is a valid printer
+     * model.
+     * @private
+     */
+    isModelInvalid_: {
+      type: Boolean,
+      value: false,
     },
   },
 
@@ -303,7 +323,8 @@ Polymer({
    */
   canSavePrinter_: function() {
     return this.printerInfoChanged_ &&
-        (this.isPrinterConfigured_() || !this.isOnline_);
+        (this.isPrinterConfigured_() || !this.isOnline_) &&
+        !this.isManufacturerInvalid_ && !this.isModelInvalid_;
   },
 
   /**
@@ -340,10 +361,7 @@ Polymer({
       return;
     }
 
-    settings.CupsPrintersBrowserProxyImpl.getInstance()
-        .getEulaUrl(
-            this.pendingPrinter_.ppdManufacturer, this.pendingPrinter_.ppdModel)
-        .then(this.onGetEulaUrlCompleted_.bind(this));
+    this.attemptPpdEulaFetch_();
   },
 
   /**
@@ -386,6 +404,10 @@ Polymer({
       this.modelList = modelsInfo.models;
       // ModelListChanged_ is the final step of initializing pendingPrinter.
       this.arePrinterFieldsInitialized_ = true;
+
+      // Fetch the EULA URL once we have PpdReferences from fetching the
+      // |modelList|.
+      this.attemptPpdEulaFetch_();
     }
   },
 
@@ -445,7 +467,7 @@ Polymer({
         .getNetworkStateList({
           filter: chromeos.networkConfig.mojom.FilterType.kActive,
           networkType: chromeos.networkConfig.mojom.NetworkType.kAll,
-          limit: chromeos.networkConfig.mojom.kNoLimit,
+          limit: chromeos.networkConfig.mojom.NO_LIMIT,
         })
         .then((responseParams) => {
           this.onActiveNetworksChanged(responseParams.result);
@@ -459,6 +481,23 @@ Polymer({
    */
   protocolSelectEnabled: function() {
     return this.isOnline_ && this.networkProtocolActive_;
+  },
+
+  /**
+   * Attempts fetching for the EULA Url based off of the current printer's
+   * |ppdManufacturer| and |ppdModel|.
+   * @private
+   */
+  attemptPpdEulaFetch_: function() {
+    if (!this.pendingPrinter_.ppdManufacturer ||
+        !this.pendingPrinter_.ppdModel) {
+      return;
+    }
+
+    settings.CupsPrintersBrowserProxyImpl.getInstance()
+        .getEulaUrl(
+            this.pendingPrinter_.ppdManufacturer, this.pendingPrinter_.ppdModel)
+        .then(this.onGetEulaUrlCompleted_.bind(this));
   },
 
 });

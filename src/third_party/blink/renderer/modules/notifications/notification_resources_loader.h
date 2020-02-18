@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "third_party/blink/public/mojom/notifications/notification.mojom-blink.h"
+#include "third_party/blink/public/mojom/notifications/notification.mojom-blink-forward.h"
 #include "third_party/blink/renderer/core/loader/threaded_icon_loader.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
@@ -26,7 +26,7 @@ struct WebSize;
 // Fetches the resources specified in a given NotificationData. Uses a
 // callback to notify the caller when all fetches have finished.
 class MODULES_EXPORT NotificationResourcesLoader final
-    : public GarbageCollectedFinalized<NotificationResourcesLoader> {
+    : public GarbageCollected<NotificationResourcesLoader> {
   USING_PRE_FINALIZER(NotificationResourcesLoader, Stop);
 
  public:

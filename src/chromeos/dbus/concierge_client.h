@@ -9,7 +9,8 @@
 
 #include "base/component_export.h"
 #include "base/files/scoped_file.h"
-#include "chromeos/dbus/concierge/service.pb.h"
+#include "base/observer_list.h"
+#include "chromeos/dbus/concierge/concierge_service.pb.h"
 #include "chromeos/dbus/dbus_client.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "dbus/object_proxy.h"
@@ -20,6 +21,30 @@ namespace chromeos {
 // start and stop VMs, as well as for disk image management.
 class COMPONENT_EXPORT(CHROMEOS_DBUS) ConciergeClient : public DBusClient {
  public:
+  // Used for observing Concierge service itself.
+  class Observer : public base::CheckedObserver {
+   public:
+    // Called when Concierge service exits.
+    virtual void ConciergeServiceStopped() = 0;
+    // Called when Concierge service is either started or restarted.
+    virtual void ConciergeServiceRestarted() = 0;
+  };
+
+  // Used for observing VMs starting and stopping.
+  class VmObserver {
+   public:
+    // OnVmStarted is signaled by Concierge when a VM starts.
+    virtual void OnVmStarted(
+        const vm_tools::concierge::VmStartedSignal& signal) = 0;
+
+    // OnVmStopped is signaled by Concierge when a VM stops.
+    virtual void OnVmStopped(
+        const vm_tools::concierge::VmStoppedSignal& signal) = 0;
+
+   protected:
+    virtual ~VmObserver() = default;
+  };
+
   // Used for observing all concierge signals related to running
   // containers (e.g. startup).
   class ContainerObserver {
@@ -48,6 +73,16 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) ConciergeClient : public DBusClient {
     virtual ~DiskImageObserver() = default;
   };
 
+  // Adds an observer for monitoring Concierge service.
+  virtual void AddObserver(Observer* observer) = 0;
+  // Removes an observer if added.
+  virtual void RemoveObserver(Observer* observer) = 0;
+
+  // Adds an observer for VM start and stop.
+  virtual void AddVmObserver(VmObserver* observer) = 0;
+  // Removes an observer if added.
+  virtual void RemoveVmObserver(VmObserver* observer) = 0;
+
   // Adds an observer for container startup.
   virtual void AddContainerObserver(ContainerObserver* observer) = 0;
   // Removes an observer if added.
@@ -57,6 +92,11 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) ConciergeClient : public DBusClient {
   virtual void AddDiskImageObserver(DiskImageObserver* observer) = 0;
   // Adds an observer for disk image operations.
   virtual void RemoveDiskImageObserver(DiskImageObserver* observer) = 0;
+
+  // IsVmSartedSignalConnected and IsVmStoppedSignalConnected must return true
+  // before RestartCrostini is called.
+  virtual bool IsVmStartedSignalConnected() = 0;
+  virtual bool IsVmStoppedSignalConnected() = 0;
 
   // IsContainerStartupFailedSignalConnected must return true before
   // StartContainer is called.
@@ -171,13 +211,6 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) ConciergeClient : public DBusClient {
   virtual void DetachUsbDevice(
       const vm_tools::concierge::DetachUsbDeviceRequest& request,
       DBusMethodCallback<vm_tools::concierge::DetachUsbDeviceResponse>
-          callback) = 0;
-
-  // Lists all the USB devices currently attached to a given VM.
-  // |callback| is called once the method call has finished.
-  virtual void ListUsbDevices(
-      const vm_tools::concierge::ListUsbDeviceRequest& request,
-      DBusMethodCallback<vm_tools::concierge::ListUsbDeviceResponse>
           callback) = 0;
 
   // Starts ARCVM if there is not already one running.

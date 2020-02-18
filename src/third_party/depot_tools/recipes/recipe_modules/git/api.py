@@ -17,13 +17,8 @@ class GitApi(recipe_api.RecipeApi):
     infra_step = kwargs.pop('infra_step', True)
     git_cmd = ['git']
 
-    if kwargs.pop('add_retry', False) and not self.m.runtime.is_luci:
-      # On LUCI, the `git` binary is a go wrapper which already implements all
-      # the git-retry logic.
-      git_cmd += ['retry']
-
     options = kwargs.pop('git_config_options', {})
-    for k, v in sorted(options.iteritems()):
+    for k, v in sorted(options.items()):
       git_cmd.extend(['-c', '%s=%s' % (k, v)])
     can_fail_build = kwargs.pop('can_fail_build', True)
     try:
@@ -64,7 +59,7 @@ class GitApi(recipe_api.RecipeApi):
     """
     if previous_result:
       assert isinstance(previous_result, dict)
-      assert all(isinstance(v, long) for v in previous_result.itervalues())
+      assert all(isinstance(v, long) for v in previous_result.values())
       assert 'size' in previous_result
       assert 'size-pack' in previous_result
 
@@ -83,14 +78,14 @@ class GitApi(recipe_api.RecipeApi):
         result[name] = long(value.strip())
 
       def results_to_text(results):
-        return ['  %s: %s' % (k, v) for k, v in results.iteritems()]
+        return ['  %s: %s' % (k, v) for k, v in results.items()]
 
       step_result.presentation.logs['result'] = results_to_text(result)
 
       if previous_result:
         delta = {
             key: value - previous_result[key]
-            for key, value in result.iteritems()
+            for key, value in result.items()
             if key in previous_result}
         step_result.presentation.logs['delta'] = (
             ['before:'] + results_to_text(previous_result) +
@@ -201,10 +196,8 @@ class GitApi(recipe_api.RecipeApi):
         with self.m.context(env={'PATH': path}):
           self('cache', 'populate', '-c',
                self.m.infra_paths.default_git_cache_dir, url,
-
                name='populate cache',
-               can_fail_build=can_fail_build,
-               add_retry=True)
+               can_fail_build=can_fail_build)
           dir_cmd = self(
               'cache', 'exists', '--quiet',
               '--cache-dir', self.m.infra_paths.default_git_cache_dir, url,
@@ -269,8 +262,7 @@ class GitApi(recipe_api.RecipeApi):
         self('fetch', *fetch_args,
           name=fetch_step_name,
           stderr=fetch_stderr,
-          can_fail_build=can_fail_build,
-          add_retry=True)
+          can_fail_build=can_fail_build)
       if display_fetch_size:
         self.count_objects(
             name='count-objects after %s' % fetch_step_name,

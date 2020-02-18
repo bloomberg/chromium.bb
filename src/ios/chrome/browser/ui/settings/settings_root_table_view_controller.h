@@ -12,14 +12,13 @@
 #import "ios/chrome/browser/ui/table_view/cells/table_view_link_header_footer_item.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_controller.h"
 
-extern NSString* const kSettingsToolbarDeleteButtonId;
-
 // SettingsRootTableViewController is a base class for integrating UITableViews
 // into the Settings UI.  It handles the configuration and display of the MDC
 // AppBar.
 @interface SettingsRootTableViewController
     : ChromeTableViewController <SettingsRootViewControlling,
-                                 TableViewLinkHeaderFooterItemDelegate>
+                                 TableViewLinkHeaderFooterItemDelegate,
+                                 UIAdaptivePresentationControllerDelegate>
 
 // Delete button for the toolbar.
 @property(nonatomic, strong, readonly) UIBarButtonItem* deleteButton;
@@ -80,11 +79,6 @@ extern NSString* const kSettingsToolbarDeleteButtonId;
 // * Restores the done button.
 // * Removes the transparent veil.
 - (void)allowUserInteraction;
-
-// Returns YES. Subclasses can override to prevent a swipe down dismissal. This
-// is useful when the ViewController contains editable fields and accidental
-// dismissals want to be avoided.
-- (BOOL)shouldDismissViewControllerBySwipeDown;
 
 @end
 

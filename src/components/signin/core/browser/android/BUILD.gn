@@ -6,10 +6,10 @@ import("//build/config/android/rules.gni")
 
 generate_jni("jni_headers") {
   sources = [
+    "java/src/org/chromium/components/signin/AccountManagerFacade.java",
     "java/src/org/chromium/components/signin/AccountTrackerService.java",
     "java/src/org/chromium/components/signin/ChildAccountInfoFetcher.java",
     "java/src/org/chromium/components/signin/ConsistencyCookieManager.java",
-    "java/src/org/chromium/components/signin/OAuth2TokenService.java",
   ]
 }
 
@@ -22,7 +22,7 @@ android_library("java") {
     "//base:jni_java",
     "//net/android:net_java",
     "//third_party/android_deps:android_support_v4_java",
-    "//third_party/android_deps:com_android_support_support_annotations_java",
+    "//third_party/android_deps:androidx_annotation_annotation_java",
     "//ui/android:ui_java",
   ]
 
@@ -43,7 +43,6 @@ android_library("java") {
     "java/src/org/chromium/components/signin/GmsJustUpdatedException.java",
     "java/src/org/chromium/components/signin/util/PatternMatcher.java",
     "java/src/org/chromium/components/signin/MutableObservableValue.java",
-    "java/src/org/chromium/components/signin/OAuth2TokenService.java",
     "java/src/org/chromium/components/signin/ObservableValue.java",
     "java/src/org/chromium/components/signin/ProfileDataSource.java",
     "java/src/org/chromium/components/signin/SigninActivityMonitor.java",
@@ -65,7 +64,7 @@ junit_binary("components_signin_junit_tests") {
     "//base:base_java",
     "//base:base_java_test_support",
     "//base:base_junit_test_support",
-    "//third_party/android_deps:com_android_support_support_annotations_java",
+    "//third_party/android_deps:androidx_annotation_annotation_java",
     "//third_party/junit",
   ]
 }
@@ -77,7 +76,7 @@ android_library("signin_javatests") {
     ":signin_java_test_support",
     "//base:base_java",
     "//base:base_java_test_support",
-    "//third_party/android_deps:com_android_support_support_annotations_java",
+    "//third_party/android_deps:androidx_annotation_annotation_java",
     "//third_party/android_support_test_runner:rules_java",
     "//third_party/android_support_test_runner:runner_java",
     "//third_party/jsr-305:jsr_305_javalib",
@@ -93,7 +92,7 @@ android_library("signin_java_test_support") {
     ":java",
     "//base:base_java",
     "//base:base_java_test_support",
-    "//third_party/android_deps:com_android_support_support_annotations_java",
+    "//third_party/android_deps:androidx_annotation_annotation_java",
     "//third_party/jsr-305:jsr_305_javalib",
     "//third_party/junit",
   ]

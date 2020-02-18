@@ -290,37 +290,45 @@ namespace sw
 			sRGBtoLinear12_16[i] = (unsigned short)(clamp(sw::sRGBtoLinear((float)i / 0x0FFF) * 0xFFFF + 0.5f, 0.0f, (float)0xFFFF));
 		}
 
+		constexpr float4 X[4] = {
+			sw::replicate(SampleLocationsX[0]),
+			sw::replicate(SampleLocationsX[1]),
+			sw::replicate(SampleLocationsX[2]),
+			sw::replicate(SampleLocationsX[3]),
+		};
+
+		constexpr float4 Y[4] = {
+			sw::replicate(SampleLocationsY[0]),
+			sw::replicate(SampleLocationsY[1]),
+			sw::replicate(SampleLocationsY[2]),
+			sw::replicate(SampleLocationsY[3]),
+		};
+
 		for(int q = 0; q < 4; q++)
 		{
 			for(int c = 0; c < 16; c++)
 			{
 				for(int i = 0; i < 4; i++)
 				{
-					const float X[4] = {+0.3125f, -0.3125f, -0.1250f, +0.1250f};
-					const float Y[4] = {+0.1250f, -0.1250f, +0.3125f, -0.3125f};
+					// Reorder sample points for centroid computation
+					const float Xs[4] = { X[1][0], X[2][0], X[0][0], X[3][0] };
+					const float Ys[4] = { Y[1][0], Y[2][0], Y[0][0], Y[3][0] };
 
-					sampleX[q][c][i] = c & (1 << i) ? X[q] : 0.0f;
-					sampleY[q][c][i] = c & (1 << i) ? Y[q] : 0.0f;
+					sampleX[q][c][i] = c & (1 << i) ? Xs[q] : 0.0f;
+					sampleY[q][c][i] = c & (1 << i) ? Ys[q] : 0.0f;
 					weight[c][i] = c & (1 << i) ? 1.0f : 0.0f;
 				}
 			}
 		}
 
-		const int Xf[4] = {-5, +5, +2, -2};   // Fragment offsets
-		const int Yf[4] = {-2, +2, -5, +5};   // Fragment offsets
+		constexpr auto subPixB = vk::SUBPIXEL_PRECISION_BITS;
+
+		// Reorder sample points for fragment offset computation
+		const int Xf[4] = { toFixedPoint(X[2][0], subPixB), toFixedPoint(X[1][0], subPixB), toFixedPoint(X[3][0], subPixB), toFixedPoint(X[0][0], subPixB) };
+		const int Yf[4] = { toFixedPoint(Y[2][0], subPixB), toFixedPoint(Y[1][0], subPixB), toFixedPoint(Y[3][0], subPixB), toFixedPoint(Y[0][0], subPixB) };
 
 		memcpy(&this->Xf, &Xf, sizeof(Xf));
 		memcpy(&this->Yf, &Yf, sizeof(Yf));
-
-		static const float4 X[4] = {{-0.3125f, -0.3125f, -0.3125f, -0.3125f},
-					                {+0.3125f, +0.3125f, +0.3125f, +0.3125f},
-					                {+0.1250f, +0.1250f, +0.1250f, +0.1250f},
-					                {-0.1250f, -0.1250f, -0.1250f, -0.1250f}};
-
-		static const float4 Y[4] = {{-0.1250f, -0.1250f, -0.1250f, -0.1250f},
-		                            {+0.1250f, +0.1250f, +0.1250f, +0.1250f},
-		                            {-0.3125f, -0.3125f, -0.3125f, -0.3125f},
-		                            {+0.3125f, +0.3125f, +0.3125f, +0.3125f}};
 
 		memcpy(&this->X, &X, sizeof(X));
 		memcpy(&this->Y, &Y, sizeof(Y));

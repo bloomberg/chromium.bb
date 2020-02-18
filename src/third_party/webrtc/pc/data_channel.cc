@@ -14,7 +14,6 @@
 #include <string>
 #include <utility>
 
-#include "absl/memory/memory.h"
 #include "media/sctp/sctp_transport_internal.h"
 #include "pc/sctp_utils.h"
 #include "rtc_base/checks.h"
@@ -360,9 +359,10 @@ void DataChannel::OnTransportChannelCreated() {
   }
 }
 
-void DataChannel::OnTransportChannelDestroyed() {
-  // The SctpTransport is going away (for example, because the SCTP m= section
-  // was rejected), so we need to close abruptly.
+void DataChannel::OnTransportChannelClosed() {
+  // The SctpTransport is unusable (for example, because the SCTP m= section
+  // was rejected, or because the DTLS transport closed), so we need to close
+  // abruptly.
   CloseAbruptly();
 }
 
@@ -426,7 +426,7 @@ void DataChannel::OnDataReceived(const cricket::ReceiveDataParams& params,
   }
 
   bool binary = (params.type == cricket::DMT_BINARY);
-  auto buffer = absl::make_unique<DataBuffer>(payload, binary);
+  auto buffer = std::make_unique<DataBuffer>(payload, binary);
   if (state_ == kOpen && observer_) {
     ++messages_received_;
     bytes_received_ += buffer->size();
@@ -663,7 +663,7 @@ bool DataChannel::QueueSendDataMessage(const DataBuffer& buffer) {
     RTC_LOG(LS_ERROR) << "Can't buffer any more data for the data channel.";
     return false;
   }
-  queued_send_data_.PushBack(absl::make_unique<DataBuffer>(buffer));
+  queued_send_data_.PushBack(std::make_unique<DataBuffer>(buffer));
   return true;
 }
 
@@ -678,7 +678,7 @@ void DataChannel::SendQueuedControlMessages() {
 }
 
 void DataChannel::QueueControlMessage(const rtc::CopyOnWriteBuffer& buffer) {
-  queued_control_data_.PushBack(absl::make_unique<DataBuffer>(buffer, true));
+  queued_control_data_.PushBack(std::make_unique<DataBuffer>(buffer, true));
 }
 
 bool DataChannel::SendControlMessage(const rtc::CopyOnWriteBuffer& buffer) {

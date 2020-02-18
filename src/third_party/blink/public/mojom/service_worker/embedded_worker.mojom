@@ -10,6 +10,8 @@ import "mojo/public/mojom/base/unguessable_token.mojom";
 import "services/network/public/mojom/url_loader_factory.mojom";
 import "third_party/blink/public/mojom/devtools/console_message.mojom";
 import "third_party/blink/public/mojom/devtools/devtools_agent.mojom";
+import "third_party/blink/public/mojom/worker/subresource_loader_updater.mojom";
+import "third_party/blink/public/mojom/loader/fetch_client_settings_object.mojom";
 import "third_party/blink/public/mojom/loader/url_loader_factory_bundle.mojom";
 import "third_party/blink/public/mojom/renderer_preference_watcher.mojom";
 import "third_party/blink/public/mojom/renderer_preferences.mojom";
@@ -20,7 +22,6 @@ import "third_party/blink/public/mojom/service_worker/service_worker_installed_s
 import "third_party/blink/public/mojom/service_worker/service_worker_event_status.mojom";
 import "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom";
 import "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom";
-import "third_party/blink/public/mojom/v8_cache_options.mojom";
 import "third_party/blink/public/mojom/worker/worker_content_settings_proxy.mojom";
 import "third_party/blink/public/mojom/web_feature/web_feature.mojom";
 import "url/mojom/url.mojom";
@@ -44,11 +45,16 @@ struct EmbeddedWorkerStartParams {
   // https://w3c.github.io/ServiceWorker/#dfn-type
   ScriptType script_type;
 
+  // The outside fetch client settings object. This is used for top-level script
+  // fetch.
+  FetchClientSettingsObject outside_fetch_client_settings_object;
+
   // The string used for "user-agent" HTTP header.
   string user_agent;
 
-  // The id to talk with the DevTools agent for the worker.
-  int32 worker_devtools_agent_route_id;
+  // The id this service worker uses as render_frame_id in
+  // network::ResourceRequests it makes.
+  int32 service_worker_route_id;
 
   // Unique token identifying this worker for DevTools.
   mojo_base.mojom.UnguessableToken devtools_worker_token;
@@ -76,9 +82,6 @@ struct EmbeddedWorkerStartParams {
   // True if this service worker has been installed.
   bool is_installed;
 
-  // Determines how eagerly V8 creates the code cache.
-  V8CacheOptions v8_cache_options;
-
   // Used to set up fetch requests.
   RendererPreferences renderer_preferences;
 
@@ -100,21 +103,18 @@ struct EmbeddedWorkerStartParams {
   ServiceWorkerProviderInfoForStartWorker provider_info;
 
   // Interface for the renderer to query the content settings in the browser.
-  WorkerContentSettingsProxy content_settings_proxy;
+  pending_remote<WorkerContentSettingsProxy> content_settings_proxy;
 
   // Interface for keeping track of the renderer preferences.
-  RendererPreferenceWatcher& preference_watcher_request;
+  pending_receiver<RendererPreferenceWatcher> preference_watcher_receiver;
 
   // Used to load subresources in the service worker.  This allows the service
   // worker to load chrome-extension:// URLs which the renderer's default
   // loader factory can't load.
   URLLoaderFactoryBundle subresource_loader_factories;
 
-  // Another interface to talk to the service worker from the browser process
-  // to update WorkerFetchContext. See the comment of
-  // ServiceWorkerSubresourceLoaderUpdater why there are two interfaces.
-  pending_receiver<ServiceWorkerSubresourceLoaderUpdater>
-      subresource_loader_updater;
+  // Used for updating subresource loaders after NetworkService crash etc.
+  pending_receiver<SubresourceLoaderUpdater> subresource_loader_updater;
 };
 
 // Holds timing information about the start worker sequence for UMA.

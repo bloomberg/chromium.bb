@@ -7,6 +7,8 @@
 
 #include <string>
 
+#include "build/build_config.h"
+
 namespace signin_metrics {
 enum ProfileSignout : int;
 enum class SignoutDelete;
@@ -19,7 +21,7 @@ namespace signin {
 // PrimaryAccountMutator is the interface to set and clear the primary account
 // (see IdentityManager for more information).
 //
-// It is a pure interface that has concrete implementation on platform that
+// This interface has concrete implementations on platform that
 // support changing the signed-in state during the lifetime of the application.
 // On other platforms, there is no implementation, and no instance will be
 // available at runtime (thus accessors may return null).
@@ -27,6 +29,7 @@ class PrimaryAccountMutator {
  public:
   // Represents the options for handling the accounts known to the
   // IdentityManager upon calling ClearPrimaryAccount().
+  // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.components.signin.identitymanager
   enum class ClearAccountsAction {
     kDefault,    // Default action based on internal policy.
     kKeepAll,    // Keep all accounts.

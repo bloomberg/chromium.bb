@@ -8,13 +8,12 @@ import static org.junit.Assert.assertEquals;
 
 import android.support.test.filters.SmallTest;
 
-import com.google.android.libraries.feed.common.functional.Consumer;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.Callback;
+import org.chromium.base.Consumer;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 
 /** Unit tests for {@link FutureTaskConsumer}. */

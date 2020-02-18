@@ -306,11 +306,17 @@ egl::Error Renderer9::initialize()
             mAdapter, mDeviceType, mDeviceWindow,
             behaviorFlags | D3DCREATE_HARDWARE_VERTEXPROCESSING | D3DCREATE_PUREDEVICE,
             &presentParameters, &mDevice);
+
+        if (FAILED(result))
+        {
+            ERR() << "CreateDevice1 failed: (" << gl::FmtHR(result) << ")";
+        }
     }
     if (result == D3DERR_OUTOFVIDEOMEMORY || result == E_OUTOFMEMORY || result == D3DERR_DEVICELOST)
     {
         return egl::EglBadAlloc(D3D9_INIT_OUT_OF_MEMORY)
-               << "CreateDevice failed: device lost of out of memory";
+               << "CreateDevice failed: device lost or out of memory (" << gl::FmtHR(result)
+               << ")";
     }
 
     if (FAILED(result))
@@ -325,7 +331,8 @@ egl::Error Renderer9::initialize()
             ASSERT(result == D3DERR_OUTOFVIDEOMEMORY || result == E_OUTOFMEMORY ||
                    result == D3DERR_NOTAVAILABLE || result == D3DERR_DEVICELOST);
             return egl::EglBadAlloc(D3D9_INIT_OUT_OF_MEMORY)
-                   << "CreateDevice2 failed: device lost, not available, or of out of memory";
+                   << "CreateDevice2 failed: device lost, not available, or of out of memory ("
+                   << gl::FmtHR(result) << ")";
         }
     }
 
@@ -404,7 +411,7 @@ egl::Error Renderer9::initializeDevice()
 
 D3DPRESENT_PARAMETERS Renderer9::getDefaultPresentParameters()
 {
-    D3DPRESENT_PARAMETERS presentParameters = {0};
+    D3DPRESENT_PARAMETERS presentParameters = {};
 
     // The default swap chain is never actually used. Surface will create a new swap chain with the
     // proper parameters.
@@ -715,9 +722,11 @@ SwapChainD3D *Renderer9::createSwapChain(NativeWindowD3D *nativeWindow,
 
 egl::Error Renderer9::getD3DTextureInfo(const egl::Config *configuration,
                                         IUnknown *d3dTexture,
+                                        const egl::AttributeMap &attribs,
                                         EGLint *width,
                                         EGLint *height,
-                                        EGLint *samples,
+                                        GLsizei *samples,
+                                        gl::Format *glFormat,
                                         const angle::Format **angleFormat) const
 {
     IDirect3DTexture9 *texture = nullptr;
@@ -773,10 +782,17 @@ egl::Error Renderer9::getD3DTextureInfo(const egl::Config *configuration,
                    << "Unknown client buffer texture format: " << desc.Format;
     }
 
+    const auto &d3dFormatInfo = d3d9::GetD3DFormatInfo(desc.Format);
+    ASSERT(d3dFormatInfo.info().id != angle::FormatID::NONE);
+
+    if (glFormat)
+    {
+        *glFormat = gl::Format(d3dFormatInfo.info().glInternalFormat);
+    }
+
     if (angleFormat)
     {
-        const auto &d3dFormatInfo = d3d9::GetD3DFormatInfo(desc.Format);
-        ASSERT(d3dFormatInfo.info().id != angle::FormatID::NONE);
+
         *angleFormat = &d3dFormatInfo.info();
     }
 
@@ -2341,7 +2357,7 @@ std::string Renderer9::getRendererDescription() const
 
 DeviceIdentifier Renderer9::getAdapterIdentifier() const
 {
-    DeviceIdentifier deviceIdentifier = {0};
+    DeviceIdentifier deviceIdentifier = {};
     deviceIdentifier.VendorId         = static_cast<UINT>(mAdapterIdentifier.VendorId);
     deviceIdentifier.DeviceId         = static_cast<UINT>(mAdapterIdentifier.DeviceId);
     deviceIdentifier.SubSysId         = static_cast<UINT>(mAdapterIdentifier.SubSysId);
@@ -3000,7 +3016,10 @@ void Renderer9::generateCaps(gl::Caps *outCaps,
 
 void Renderer9::initializeFeatures(angle::FeaturesD3D *features) const
 {
-    d3d9::InitializeFeatures(features);
+    if (!mDisplay->getState().featuresAllDisabled)
+    {
+        d3d9::InitializeFeatures(features);
+    }
     OverrideFeaturesWithDisplayState(features, mDisplay->getState());
 }
 
@@ -3201,14 +3220,14 @@ angle::Result Renderer9::applyTextures(const gl::Context *context, gl::ShaderTyp
     }
 
     // Set all the remaining textures to NULL
-    size_t samplerCount = (shaderType == gl::ShaderType::Fragment)
-                              ? caps.maxShaderTextureImageUnits[gl::ShaderType::Fragment]
-                              : caps.maxShaderTextureImageUnits[gl::ShaderType::Vertex];
+    int samplerCount = (shaderType == gl::ShaderType::Fragment)
+                           ? caps.maxShaderTextureImageUnits[gl::ShaderType::Fragment]
+                           : caps.maxShaderTextureImageUnits[gl::ShaderType::Vertex];
 
     // TODO(jmadill): faster way?
-    for (size_t samplerIndex = samplerRange.high(); samplerIndex < samplerCount; samplerIndex++)
+    for (int samplerIndex = samplerRange.high(); samplerIndex < samplerCount; samplerIndex++)
     {
-        ANGLE_TRY(setTexture(context, shaderType, static_cast<int>(samplerIndex), nullptr));
+        ANGLE_TRY(setTexture(context, shaderType, samplerIndex, nullptr));
     }
 
     return angle::Result::Continue;

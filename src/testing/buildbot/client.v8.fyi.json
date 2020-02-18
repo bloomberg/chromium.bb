@@ -128,10 +128,8 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--os-type",
-          "android",
           "--build-revision",
-          "${got_revision}",
+          "${got_cr_revision}",
           "--test-machine-name",
           "${buildername}"
         ],
@@ -141,6 +139,14 @@
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "maps_pixel_test",
+        "precommit_args": [
+          "--review-patch-issue",
+          "${patch_issue}",
+          "--review-patch-set",
+          "${patch_set}",
+          "--buildbucket-build-id",
+          "${buildbucket_build_id}"
+        ],
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -152,7 +158,8 @@
               "os": "Android"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -162,10 +169,8 @@
           "--browser=android-chromium",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --force_high_performance_gpu",
           "--dont-restore-color-profile-after-test",
-          "--os-type",
-          "android",
           "--build-revision",
           "${got_cr_revision}",
           "--test-machine-name",
@@ -297,7 +302,7 @@
           "--browser=android-chromium",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --force_high_performance_gpu",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --force_high_performance_gpu --use-cmd-decoder=validating",
           "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl_conformance_tests_output.json"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
@@ -446,10 +451,8 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--os-type",
-          "linux",
           "--build-revision",
-          "${got_revision}",
+          "${got_cr_revision}",
           "--test-machine-name",
           "${buildername}"
         ],
@@ -459,6 +462,14 @@
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "maps_pixel_test",
+        "precommit_args": [
+          "--review-patch-issue",
+          "${patch_issue}",
+          "--review-patch-set",
+          "${patch_set}",
+          "--buildbucket-build-id",
+          "${buildbucket_build_id}"
+        ],
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -469,7 +480,8 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -479,10 +491,8 @@
           "--browser=release",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --force_high_performance_gpu",
           "--dont-restore-color-profile-after-test",
-          "--os-type",
-          "linux",
           "--build-revision",
           "${got_cr_revision}",
           "--test-machine-name",
@@ -580,7 +590,7 @@
           "--browser=release",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --force_high_performance_gpu",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --force_high_performance_gpu --use-cmd-decoder=validating",
           "--webgl-conformance-version=2.0.1",
           "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json"
         ],
@@ -611,7 +621,7 @@
           "--browser=release",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --force_high_performance_gpu"
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --force_high_performance_gpu --use-cmd-decoder=validating"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -758,10 +768,8 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--os-type",
-          "linux",
           "--build-revision",
-          "${got_revision}",
+          "${got_cr_revision}",
           "--test-machine-name",
           "${buildername}"
         ],
@@ -771,6 +779,14 @@
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "maps_pixel_test",
+        "precommit_args": [
+          "--review-patch-issue",
+          "${patch_issue}",
+          "--review-patch-set",
+          "${patch_set}",
+          "--buildbucket-build-id",
+          "${buildbucket_build_id}"
+        ],
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -781,7 +797,8 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -791,10 +808,8 @@
           "--browser=release",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --force_high_performance_gpu",
           "--dont-restore-color-profile-after-test",
-          "--os-type",
-          "linux",
           "--build-revision",
           "${got_cr_revision}",
           "--test-machine-name",
@@ -892,7 +907,7 @@
           "--browser=release",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --force_high_performance_gpu",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --force_high_performance_gpu --use-cmd-decoder=validating",
           "--webgl-conformance-version=2.0.1",
           "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json"
         ],
@@ -923,7 +938,7 @@
           "--browser=release",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --force_high_performance_gpu"
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --force_high_performance_gpu --use-cmd-decoder=validating"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -1066,10 +1081,8 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--os-type",
-          "mac",
           "--build-revision",
-          "${got_revision}",
+          "${got_cr_revision}",
           "--test-machine-name",
           "${buildername}"
         ],
@@ -1079,6 +1092,14 @@
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "maps_pixel_test",
+        "precommit_args": [
+          "--review-patch-issue",
+          "${patch_issue}",
+          "--review-patch-set",
+          "${patch_set}",
+          "--buildbucket-build-id",
+          "${buildbucket_build_id}"
+        ],
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -1088,7 +1109,8 @@
               "os": "mac-intel-stable"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -1098,10 +1120,8 @@
           "--browser=release",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --force_high_performance_gpu",
           "--dont-restore-color-profile-after-test",
-          "--os-type",
-          "mac",
           "--build-revision",
           "${got_cr_revision}",
           "--test-machine-name",
@@ -1196,7 +1216,7 @@
           "--browser=release",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --force_high_performance_gpu",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --force_high_performance_gpu --use-cmd-decoder=validating",
           "--webgl-conformance-version=2.0.1",
           "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json"
         ],
@@ -1226,7 +1246,7 @@
           "--browser=release",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --force_high_performance_gpu"
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --force_high_performance_gpu --use-cmd-decoder=validating"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -1279,9 +1299,10 @@
     "isolated_scripts": [
       {
         "args": [
-          "--num-retries=3"
+          "--num-retries=3",
+          "--fuzzy-diff"
         ],
-        "isolate_name": "blink_web_tests_exparchive",
+        "isolate_name": "blink_web_tests",
         "merge": {
           "args": [
             "--verbose"
@@ -1328,9 +1349,10 @@
       {
         "args": [
           "--num-retries=3",
-          "--debug"
+          "--debug",
+          "--fuzzy-diff"
         ],
-        "isolate_name": "blink_web_tests_exparchive",
+        "isolate_name": "blink_web_tests",
         "merge": {
           "args": [
             "--verbose"
@@ -1377,9 +1399,10 @@
       {
         "args": [
           "--num-retries=3",
-          "--additional-driver-flag=--js-flags=--future"
+          "--additional-driver-flag=--js-flags=--future",
+          "--fuzzy-diff"
         ],
-        "isolate_name": "blink_web_tests_exparchive",
+        "isolate_name": "blink_web_tests",
         "merge": {
           "args": [
             "--verbose"
@@ -1428,7 +1451,7 @@
         "args": [
           "--num-retries=3"
         ],
-        "isolate_name": "blink_web_tests_exparchive",
+        "isolate_name": "blink_web_tests",
         "merge": {
           "args": [
             "--verbose"
@@ -1477,7 +1500,7 @@
         "args": [
           "--num-retries=3"
         ],
-        "isolate_name": "blink_web_tests_exparchive",
+        "isolate_name": "blink_web_tests",
         "merge": {
           "args": [
             "--verbose"
@@ -1504,7 +1527,7 @@
         "args": [
           "--num-retries=3"
         ],
-        "isolate_name": "blink_web_tests_exparchive",
+        "isolate_name": "blink_web_tests",
         "merge": {
           "args": [
             "--verbose"
@@ -1698,10 +1721,8 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--os-type",
-          "win",
           "--build-revision",
-          "${got_revision}",
+          "${got_cr_revision}",
           "--test-machine-name",
           "${buildername}"
         ],
@@ -1711,6 +1732,14 @@
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "maps_pixel_test",
+        "precommit_args": [
+          "--review-patch-issue",
+          "${patch_issue}",
+          "--review-patch-set",
+          "${patch_set}",
+          "--buildbucket-build-id",
+          "${buildbucket_build_id}"
+        ],
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -1721,7 +1750,8 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -1731,10 +1761,8 @@
           "--browser=release",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --force_high_performance_gpu",
           "--dont-restore-color-profile-after-test",
-          "--os-type",
-          "win",
           "--build-revision",
           "${got_cr_revision}",
           "--test-machine-name",
@@ -1832,7 +1860,7 @@
           "--browser=release",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --force_high_performance_gpu",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --force_high_performance_gpu --use-cmd-decoder=validating",
           "--webgl-conformance-version=2.0.1",
           "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json"
         ],
@@ -1863,7 +1891,7 @@
           "--browser=release",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --force_high_performance_gpu"
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --force_high_performance_gpu --use-cmd-decoder=validating"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {

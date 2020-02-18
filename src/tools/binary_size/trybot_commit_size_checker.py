@@ -17,51 +17,25 @@ import archive
 import diagnose_bloat
 import diff
 import describe
-import html_report
+import file_format
 import models
 
-_NDJSON_FILENAME = 'supersize_diff.ndjson'
+_SIZEDIFF_FILENAME = 'supersize_diff.sizediff'
+_TEXT_FILENAME = 'supersize_diff.txt'
 _HTML_REPORT_BASE_URL = (
     'https://storage.googleapis.com/chrome-supersize/viewer.html?load_url=')
 _MAX_DEX_METHOD_COUNT_INCREASE = 50
 _MAX_NORMALIZED_INCREASE = 16 * 1024
 _MAX_PAK_INCREASE = 1024
 
-_FAILURE_GUIDANCE = """
-Please look at size breakdowns, try to understand the growth, and see if it can
-be mitigated.
-
-There is guidance at:
-
-https://chromium.googlesource.com/chromium/src/+/master/docs/speed/apk_size_regressions.md#Debugging-Apk-Size-Increase
-
-If the growth is expected / justified, then you can bypass this bot failure by
-adding "Binary-Size: $JUSTIFICATION" footer to your commit message (must go at
-the bottom of the message, similar to "Bug:").
-
-Here are some examples:
-
-Binary-Size: Increase is due to translations and so cannot be avoided.
-Binary-Size: Increase is due to new images, which are already optimally encoded.
-Binary-Size: Increase is temporary due to a "new way" / "old way" refactoring. \
-It should go away once the "old way" is removed.
-Binary-Size: Increase is temporary and will be reverted before next branch cut.
-Binary-Size: Increase needed to reduce RAM of a common user flow.
-Binary-Size: Increase needed to reduce runtime of a common user flow.
-Binary-Size: Increase needed to implement a feature, and I've already spent a \
-non-trivial amount of time trying to reduce its size.
-"""
-
 
 class _SizeDelta(collections.namedtuple(
-    'SizeDelta', ['name', 'units', 'expected', 'actual', 'details'])):
+    'SizeDelta', ['name', 'units', 'expected', 'actual'])):
 
   @property
   def explanation(self):
     ret = '{}: {} {} (max is {} {})'.format(
         self.name, self.actual, self.units, self.expected, self.units)
-    if self.details and not self.IsAllowable():
-      ret += '\n' + self.details
     return ret
 
   def IsAllowable(self):
@@ -90,48 +64,35 @@ def _CreateMutableConstantsDelta(symbols):
   symbols = symbols.WhereInSection('d').WhereNameMatches(r'\bk[A-Z]|\b[A-Z_]+$')
   lines, net_added = _SymbolDiffHelper(symbols)
 
-  if net_added <= 0:
-    details = """\
-Symbols within .data that are named like constants (crbug.com/747064).
-"""
-  else:
-    details = """\
-Detected new symbols within .data that are named like constants.
-Either:
-  * Mark the symbols as const, or
-  * Rename them.
-
-For more context: https://crbug.com/747064
-"""
-
-  if net_added:
-    details += """
-Refer to Mutable Constants Diff for list of symbols.
-"""
-  return lines, _SizeDelta('Mutable Constants', 'symbols', 0, net_added,
-                           details)
+  return lines, _SizeDelta('Mutable Constants', 'symbols', 0, net_added)
 
 
 def _CreateMethodCountDelta(symbols):
-  symbols = symbols.WhereInSection(models.SECTION_DEX_METHOD)
-  lines, net_added = _SymbolDiffHelper(symbols)
-  details = 'Refer to Dex Method Diff for list of added/removed methods.'
+  method_symbols = symbols.WhereInSection(models.SECTION_DEX_METHOD)
+  method_lines, net_method_added = _SymbolDiffHelper(method_symbols)
+  class_symbols = symbols.WhereInSection(
+      models.SECTION_DEX).WhereNameMatches('#').Inverted()
+  class_lines, _ = _SymbolDiffHelper(class_symbols)
+  lines = []
+  if class_lines:
+    lines.append('===== Classes Added & Removed =====')
+    lines.extend(class_lines)
+    lines.extend(['', ''])  # empty lines added for clarity
+  if method_lines:
+    lines.append('===== Methods Added & Removed =====')
+    lines.extend(method_lines)
 
-  return lines, _SizeDelta('Dex Methods', 'methods',
-                           _MAX_DEX_METHOD_COUNT_INCREASE, net_added, details)
+  return lines, _SizeDelta('Dex Methods Count', 'methods',
+                           _MAX_DEX_METHOD_COUNT_INCREASE, net_method_added)
 
 
 def _CreateResourceSizesDelta(apk_name, before_dir, after_dir):
   sizes_diff = diagnose_bloat.ResourceSizesDiff(apk_name)
   sizes_diff.ProduceDiff(before_dir, after_dir)
-  details = (
-      'See https://chromium.googlesource.com/chromium/src/+/master/docs/speed/'
-      'binary_size/metrics.md#Normalized-APK-Size '
-      'for an explanation of Normalized APK Size')
 
   return sizes_diff.Summary(), _SizeDelta(
       'Normalized APK Size', 'bytes', _MAX_NORMALIZED_INCREASE,
-      sizes_diff.summary_stat.value, details)
+      sizes_diff.summary_stat.value)
 
 
 def _CreateSupersizeDiff(apk_name, before_dir, after_dir):
@@ -152,9 +113,25 @@ def _CreateUncompressedPakSizeDeltas(symbols):
       s.section_name == models.SECTION_PAK_NONTRANSLATED)
   return [
       _SizeDelta('Uncompressed Pak Entry "{}"'.format(pak.full_name), 'bytes',
-                 _MAX_PAK_INCREASE, pak.after_symbol.size, None)
+                 _MAX_PAK_INCREASE, pak.after_symbol.size)
       for pak in pak_symbols
   ]
+
+
+def _CreateTestingSymbolsDeltas(symbols):
+  testing_symbols = symbols.WhereIsDex().WhereNameMatches(
+      'ForTest').WhereDiffStatusIs(models.DIFF_STATUS_ADDED)
+  lines = None
+  if len(testing_symbols):
+    lines = list(describe.GenerateLines(testing_symbols, summarize=False))
+  return lines, _SizeDelta('Added symbols named "ForTest"', 'symbols', 0,
+                           len(testing_symbols))
+
+
+def _FormatSign(number):
+  if number > 0:
+    return '+{}'.format(number)
+  return '{}'.format(number)
 
 
 def main():
@@ -187,6 +164,9 @@ def main():
   logging.info('Creating Supersize diff')
   supersize_diff_lines, delta_size_info = _CreateSupersizeDiff(
       args.apk_name, args.before_dir, args.after_dir)
+  supersize_text_path = os.path.join(args.staging_dir, _TEXT_FILENAME)
+  with open(supersize_text_path, 'w') as f:
+    describe.WriteLines(supersize_diff_lines, f.write)
 
   changed_symbols = delta_size_info.raw_symbols.WhereDiffStatusIs(
       models.DIFF_STATUS_UNCHANGED).Inverted()
@@ -204,6 +184,12 @@ def main():
       _CreateMutableConstantsDelta(changed_symbols))
   size_deltas.add(mutable_constants_delta)
 
+  # Look for symbols with 'ForTesting' in their name.
+  logging.info('Checking for symbols named "ForTest"')
+  testing_symbols_lines, test_symbols_delta = (
+      _CreateTestingSymbolsDeltas(changed_symbols))
+  size_deltas.add(test_symbols_delta)
+
   # Check for uncompressed .pak file entries being added to avoid unnecessary
   # bloat.
   logging.info('Checking pak symbols')
@@ -215,10 +201,10 @@ def main():
       _CreateResourceSizesDelta(args.apk_name, args.before_dir, args.after_dir))
   size_deltas.add(resource_sizes_delta)
 
-  # .ndjson can be consumed by the html viewer.
+  # .sizediff can be consumed by the html viewer.
   logging.info('Creating HTML Report')
-  ndjson_path = os.path.join(args.staging_dir, _NDJSON_FILENAME)
-  html_report.BuildReportFromSizeInfo(ndjson_path, delta_size_info)
+  sizediff_path = os.path.join(args.staging_dir, _SIZEDIFF_FILENAME)
+  file_format.SaveDeltaSizeInfo(delta_size_info, sizediff_path)
 
   passing_deltas = set(m for m in size_deltas if m.IsAllowable())
   failing_deltas = size_deltas - passing_deltas
@@ -227,15 +213,16 @@ def main():
   failing_checks_text = '\n'.join(d.explanation for d in sorted(failing_deltas))
   passing_checks_text = '\n'.join(d.explanation for d in sorted(passing_deltas))
   checks_text = """\
-FAILING:
+FAILING Checks:
 {}
 
-PASSING:
+PASSING Checks:
 {}
+
+To understand what those checks are and how to pass them, see:
+https://chromium.googlesource.com/chromium/src/+/master/docs/speed/binary_size/android_binary_size_trybot.md
+
 """.format(failing_checks_text, passing_checks_text)
-
-  if failing_deltas:
-    checks_text += _FAILURE_GUIDANCE
 
   status_code = int(bool(failing_deltas))
 
@@ -245,44 +232,70 @@ PASSING:
   if is_roller and mutable_constants_delta not in failing_deltas:
     status_code = 0
 
-  summary = '<br>' + '<br>'.join(resource_sizes_lines)
-  if 'Empty Resource Sizes Diff' in summary:
-    summary = '<br>No size metrics were affected.'
-  if failing_deltas:
-    summary += '<br><br>Failed Size Checks:<br>'
-    summary += failing_checks_text.replace('\n', '<br>')
-    summary += '<br>Look at "Size Assertion Results" for guidance.'
-
+  summary = '<br>' + checks_text.replace('\n', '<br>')
   links_json = [
       {
-          'name': '>>> Size Assertion Results <<<',
-          'lines': checks_text.splitlines(),
+          'name': '>>> Binary Size Details <<<',
+          'lines': resource_sizes_lines,
       },
       {
           'name': '>>> Mutable Constants Diff <<<',
           'lines': mutable_constants_lines,
       },
       {
-          'name': '>>> Dex Method Diff <<<',
+          'name': '>>> "ForTest" Symbols Diff <<<',
+          'lines': testing_symbols_lines,
+      },
+      {
+          'name': '>>> Dex Class and Method Diff <<<',
           'lines': dex_delta_lines,
       },
       {
           'name': '>>> SuperSize Text Diff <<<',
-          'lines': supersize_diff_lines,
+          'url': '{{' + _TEXT_FILENAME + '}}',
       },
       {
-          'name': '>>> Supersize HTML Diff <<<',
-          'url': _HTML_REPORT_BASE_URL + '{{' + _NDJSON_FILENAME + '}}',
+          'name': '>>> SuperSize HTML Diff <<<',
+          'url': _HTML_REPORT_BASE_URL + '{{' + _SIZEDIFF_FILENAME + '}}',
       },
   ]
-  # Remove empty diffs (Mutable Constants or Dex Method).
+  # Remove empty diffs (Mutable Constants, Dex Method, ...).
   links_json = [o for o in links_json if o.get('lines') or o.get('url')]
+
+  binary_size_listings = []
+  for delta in size_deltas:
+    if delta.actual == 0:
+      continue
+    listing = {
+        'name': delta.name,
+        'delta': '{} {}'.format(_FormatSign(delta.actual), delta.units),
+        'limit': '{} {}'.format(_FormatSign(delta.expected), delta.units),
+        'allowed': delta.IsAllowable(),
+    }
+    binary_size_listings.append(listing)
+
+  binary_size_extras = [
+      {
+          'text': 'SuperSize HTML Diff',
+          'url': _HTML_REPORT_BASE_URL + '{{' + _SIZEDIFF_FILENAME + '}}',
+      },
+      {
+          'text': 'SuperSize Text Diff',
+          'url': '{{' + _TEXT_FILENAME + '}}',
+      },
+  ]
+
+  binary_size_plugin_json = {
+      'listings': binary_size_listings,
+      'extras': binary_size_extras,
+  }
 
   results_json = {
       'status_code': status_code,
       'summary': summary,
-      'archive_filenames': [_NDJSON_FILENAME],
+      'archive_filenames': [_SIZEDIFF_FILENAME, _TEXT_FILENAME],
       'links': links_json,
+      'gerrit_plugin_details': binary_size_plugin_json,
   }
 
   with open(args.results_path, 'w') as f:

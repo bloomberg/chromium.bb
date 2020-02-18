@@ -18,18 +18,17 @@ class BlobURLTokenImpl : public blink::mojom::BlobURLToken {
  public:
   BlobURLTokenImpl(base::WeakPtr<BlobStorageContext> context,
                    const GURL& url,
-                   std::unique_ptr<BlobDataHandle> blob,
+                   mojo::PendingRemote<blink::mojom::Blob> blob,
                    mojo::PendingReceiver<blink::mojom::BlobURLToken> receiver)
       : context_(std::move(context)),
         url_(url),
-        blob_(std::move(blob)),
         token_(base::UnguessableToken::Create()) {
     receivers_.Add(this, std::move(receiver));
     receivers_.set_disconnect_handler(base::BindRepeating(
         &BlobURLTokenImpl::OnConnectionError, base::Unretained(this)));
     if (context_) {
       context_->mutable_registry()->AddTokenMapping(token_, url_,
-                                                    blob_->uuid());
+                                                    std::move(blob));
     }
   }
 
@@ -57,7 +56,6 @@ class BlobURLTokenImpl : public blink::mojom::BlobURLToken {
   base::WeakPtr<BlobStorageContext> context_;
   mojo::ReceiverSet<blink::mojom::BlobURLToken> receivers_;
   const GURL url_;
-  const std::unique_ptr<BlobDataHandle> blob_;
   const base::UnguessableToken token_;
 };
 
@@ -80,12 +78,7 @@ void BlobURLStoreImpl::Register(mojo::PendingRemote<blink::mojom::Blob> blob,
     std::move(callback).Run();
     return;
   }
-  // Only report errors when we don't have permission to commit and
-  // the process is valid. The process check is a temporary solution to
-  // handle cases where this method is run after the
-  // process associated with |delegate_| has been destroyed.
-  // See https://crbug.com/933089 for details.
-  if (!delegate_->CanCommitURL(url) && delegate_->IsProcessValid()) {
+  if (!delegate_->CanCommitURL(url)) {
     mojo::ReportBadMessage(
         "Non committable URL passed to BlobURLStore::Register");
     std::move(callback).Run();
@@ -98,11 +91,10 @@ void BlobURLStoreImpl::Register(mojo::PendingRemote<blink::mojom::Blob> blob,
     return;
   }
 
-  mojo::Remote<blink::mojom::Blob> blob_remote(std::move(blob));
-  blink::mojom::Blob* blob_ptr = blob_remote.get();
-  blob_ptr->GetInternalUUID(base::BindOnce(
-      &BlobURLStoreImpl::RegisterWithUUID, weak_ptr_factory_.GetWeakPtr(),
-      std::move(blob_remote), url, std::move(callback)));
+  if (context_)
+    context_->RegisterPublicBlobURL(url, std::move(blob));
+  urls_.insert(url);
+  std::move(callback).Run();
 }
 
 void BlobURLStoreImpl::Revoke(const GURL& url) {
@@ -110,12 +102,7 @@ void BlobURLStoreImpl::Revoke(const GURL& url) {
     mojo::ReportBadMessage("Invalid scheme passed to BlobURLStore::Revoke");
     return;
   }
-  // Only report errors when we don't have permission to commit and
-  // the process is valid. The process check is a temporary solution to
-  // handle cases where this method is run after the
-  // process associated with |delegate_| has been destroyed.
-  // See https://crbug.com/933089 for details.
-  if (!delegate_->CanCommitURL(url) && delegate_->IsProcessValid()) {
+  if (!delegate_->CanCommitURL(url)) {
     mojo::ReportBadMessage(
         "Non committable URL passed to BlobURLStore::Revoke");
     return;
@@ -132,23 +119,20 @@ void BlobURLStoreImpl::Revoke(const GURL& url) {
 
 void BlobURLStoreImpl::Resolve(const GURL& url, ResolveCallback callback) {
   if (!context_) {
-    std::move(callback).Run(nullptr);
+    std::move(callback).Run(mojo::NullRemote());
     return;
   }
-  blink::mojom::BlobPtr blob;
-  std::unique_ptr<BlobDataHandle> blob_handle =
-      context_->GetBlobDataFromPublicURL(url);
-  if (blob_handle)
-    BlobImpl::Create(std::move(blob_handle), MakeRequest(&blob));
+  mojo::PendingRemote<blink::mojom::Blob> blob =
+      context_->GetBlobFromPublicURL(url);
   std::move(callback).Run(std::move(blob));
 }
 
 void BlobURLStoreImpl::ResolveAsURLLoaderFactory(
     const GURL& url,
-    network::mojom::URLLoaderFactoryRequest request) {
+    mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver) {
   BlobURLLoaderFactory::Create(
-      context_ ? context_->GetBlobDataFromPublicURL(url) : nullptr, url,
-      std::move(request));
+      context_ ? context_->GetBlobFromPublicURL(url) : mojo::NullRemote(), url,
+      context_, std::move(receiver));
 }
 
 void BlobURLStoreImpl::ResolveForNavigation(
@@ -156,23 +140,11 @@ void BlobURLStoreImpl::ResolveForNavigation(
     mojo::PendingReceiver<blink::mojom::BlobURLToken> token) {
   if (!context_)
     return;
-  std::unique_ptr<BlobDataHandle> blob_handle =
-      context_->GetBlobDataFromPublicURL(url);
-  if (!blob_handle)
+  mojo::PendingRemote<blink::mojom::Blob> blob =
+      context_->GetBlobFromPublicURL(url);
+  if (!blob)
     return;
-  new BlobURLTokenImpl(context_, url, std::move(blob_handle), std::move(token));
-}
-
-void BlobURLStoreImpl::RegisterWithUUID(mojo::Remote<blink::mojom::Blob> blob,
-                                        const GURL& url,
-                                        RegisterCallback callback,
-                                        const std::string& uuid) {
-  // |blob| is unused, but is passed here to be kept alive until
-  // RegisterPublicBlobURL increments the refcount of it via the uuid.
-  if (context_)
-    context_->RegisterPublicBlobURL(url, uuid);
-  urls_.insert(url);
-  std::move(callback).Run();
+  new BlobURLTokenImpl(context_, url, std::move(blob), std::move(token));
 }
 
 }  // namespace storage

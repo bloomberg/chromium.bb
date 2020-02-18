@@ -44,7 +44,6 @@ class MockAccessoryView
                void(const base::string16&,
                     const base::string16&,
                     base::OnceClosure));
-  MOCK_METHOD1(SetTypesetter, void(gfx::Typesetter));
   MOCK_METHOD1(GetElidedValueWidthForRow, int(int));
   MOCK_METHOD1(GetElidedLabelWidthForRow, int(int));
 
@@ -116,8 +115,8 @@ class AutofillKeyboardAccessoryAdapterTest : public testing::Test {
     accessory_view_ = view.get();
 
     autofill_accessory_adapter_ =
-        std::make_unique<AutofillKeyboardAccessoryAdapter>(controller(), 0,
-                                                           false);
+        std::make_unique<AutofillKeyboardAccessoryAdapter>(
+            popup_controller_->GetWeakPtr(), 0, false);
     autofill_accessory_adapter_->SetAccessoryView(std::move(view));
   }
 

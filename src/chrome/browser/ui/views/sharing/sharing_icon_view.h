@@ -9,7 +9,6 @@
 #include "chrome/browser/ui/views/page_action/page_action_icon_view.h"
 #include "third_party/skia/include/core/SkColor.h"
 
-
 // The location bar icon to show the sharing features bubble.
 class SharingIconView : public PageActionIconView {
  public:
@@ -33,7 +32,7 @@ class SharingIconView : public PageActionIconView {
   bool IsTriggerableEvent(const ui::Event& event) override;
   const gfx::VectorIcon& GetVectorIconBadge() const override;
   views::BubbleDialogDelegateView* GetBubble() const override;
-  bool Update() override;
+  void UpdateImpl() override;
   const gfx::VectorIcon& GetVectorIcon() const override;
   base::string16 GetTextForTooltipAndAccessibleName() const override;
 

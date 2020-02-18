@@ -55,6 +55,11 @@ class FullscreenModel : public ChromeBroadcastObserverInterface {
     return content_height_ > scroll_view_height_ + toolbar_height_delta();
   }
 
+  // Whether the view is scrolled all the way to the top.
+  bool is_scrolled_to_top() const {
+    return y_content_offset_ <= -expanded_toolbar_height_;
+  }
+
   // Whether the view is scrolled all the way to the bottom.
   bool is_scrolled_to_bottom() const {
     return y_content_offset_ + scroll_view_height_ >= content_height_;
@@ -73,14 +78,10 @@ class FullscreenModel : public ChromeBroadcastObserverInterface {
 
   // Returns the toolbar insets at |progress|.
   UIEdgeInsets GetToolbarInsetsAtProgress(CGFloat progress) const {
-    const CGFloat kBottomToolbarProgress =
-        base::FeatureList::IsEnabled(fullscreen::features::kLockBottomToolbar)
-            ? 1.0
-            : progress;
     return UIEdgeInsetsMake(
         collapsed_toolbar_height_ +
             progress * (expanded_toolbar_height_ - collapsed_toolbar_height_),
-        0, kBottomToolbarProgress * bottom_toolbar_height_, 0);
+        0, progress * bottom_toolbar_height_, 0);
   }
 
   // Increments and decrements |disabled_counter_| for features that require the

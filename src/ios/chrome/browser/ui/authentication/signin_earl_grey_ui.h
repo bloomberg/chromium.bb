@@ -7,15 +7,22 @@
 
 #import <Foundation/Foundation.h>
 
-#import "ios/chrome/browser/ui/authentication/cells/signin_promo_view.h"
+#import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_constants.h"
 
-@class ChromeIdentity;
+@class FakeChromeIdentity;
 
 // Methods used for the EarlGrey tests, related to UI.
 @interface SigninEarlGreyUI : NSObject
 
-// Adds the identity (if not already added), and perform a sign-in.
-+ (void)signinWithIdentity:(ChromeIdentity*)identity;
+// Calls [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity
+// isManagedAccount:NO].
++ (void)signinWithFakeIdentity:(FakeChromeIdentity*)fakeIdentity;
+
+// Adds the identity (if not already added), and perform a sign-in. if
+// |isManagedAccount| is true, |fakeIdentity| needs to be a managed account and
+// the managed dialog is expected while signing in.
++ (void)signinWithFakeIdentity:(FakeChromeIdentity*)fakeIdentity
+              isManagedAccount:(BOOL)isManagedAccount;
 
 // Taps on the settings link in the sign-in view. The sign-in view has to be
 // opened before calling this method.
@@ -24,6 +31,9 @@
 // Selects an identity when the identity chooser dialog is presented. The dialog
 // is confirmed, but it doesn't validated the user consent page.
 + (void)selectIdentityWithEmail:(NSString*)userEmail;
+
+// Confirms the managed account dialog with signing in.
++ (void)confirmSigninWithManagedAccount;
 
 // Confirms the sign in confirmation page, scrolls first to make the OK button
 // visible on short devices (e.g. iPhone 5s).
@@ -46,6 +56,10 @@
 
 // Checks that the sign-in promo view is not visible.
 + (void)checkSigninPromoNotVisible;
+
+// Signs out from the current identity. if |isManagedAccount| is true, the
+// confirmed managed dialog is confirmed while signing out.
++ (void)signOutWithManagedAccount:(BOOL)isManagedAccount;
 
 @end
 

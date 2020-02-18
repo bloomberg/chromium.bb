@@ -13,8 +13,10 @@
 #include "device/vr/public/mojom/vr_service.mojom.h"
 #include "device/vr/vr_device.h"
 #include "device/vr/vr_export.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "ui/display/display.h"
 
 namespace device {
@@ -30,15 +32,16 @@ class DEVICE_VR_EXPORT VROrientationSession
       public mojom::XRSessionController {
  public:
   VROrientationSession(VROrientationDevice* device,
-                       mojom::XRFrameDataProviderRequest,
-                       mojom::XRSessionControllerRequest);
+                       mojo::PendingReceiver<mojom::XRFrameDataProvider>,
+                       mojo::PendingReceiver<mojom::XRSessionController>);
   ~VROrientationSession() override;
 
   void GetEnvironmentIntegrationProvider(
-      mojom::XREnvironmentIntegrationProviderAssociatedRequest
+      mojo::PendingAssociatedReceiver<mojom::XREnvironmentIntegrationProvider>
           environment_provider) override;
   void SetInputSourceButtonListener(
-      device::mojom::XRInputSourceButtonListenerAssociatedPtrInfo) override;
+      mojo::PendingAssociatedRemote<device::mojom::XRInputSourceButtonListener>)
+      override;
 
   // Accessible to tests.
  protected:
@@ -51,10 +54,13 @@ class DEVICE_VR_EXPORT VROrientationSession
 
   void OnMojoConnectionError();
 
-  mojo::Binding<mojom::XRFrameDataProvider> magic_window_binding_;
-  mojo::Binding<mojom::XRSessionController> session_controller_binding_;
+  mojo::Receiver<mojom::XRFrameDataProvider> magic_window_receiver_;
+  mojo::Receiver<mojom::XRSessionController> session_controller_receiver_;
   device::VROrientationDevice* device_;
   bool restrict_frame_data_ = true;
+
+  // This must be the last member
+  base::WeakPtrFactory<VROrientationSession> weak_ptr_factory_{this};
 };
 
 }  // namespace device

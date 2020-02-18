@@ -28,7 +28,6 @@
 #include "cc/paint/paint_flags.h"
 #include "third_party/blink/renderer/platform/fonts/character_range.h"
 #include "third_party/blink/renderer/platform/fonts/font_cache.h"
-#include "third_party/blink/renderer/platform/fonts/font_fallback_iterator.h"
 #include "third_party/blink/renderer/platform/fonts/font_fallback_list.h"
 #include "third_party/blink/renderer/platform/fonts/ng_text_fragment_paint_info.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/caching_word_shaper.h"
@@ -464,12 +463,6 @@ void Font::WillUseFontData(const String& text) const {
         GetFontDescription(), family.Family(), text);
 }
 
-scoped_refptr<FontFallbackIterator> Font::CreateFontFallbackIterator(
-    FontFallbackPriority fallback_priority) const {
-  return FontFallbackIterator::Create(font_description_, font_fallback_list_,
-                                      fallback_priority);
-}
-
 GlyphData Font::GetEmphasisMarkGlyphData(const AtomicString& mark) const {
   if (mark.IsEmpty())
     return GlyphData();
@@ -548,6 +541,24 @@ void Font::ExpandRangeToIncludePartialGlyphs(const TextRun& text_run,
   ShapeResultBuffer buffer;
   word_shaper.FillResultBuffer(run_info, &buffer);
   buffer.ExpandRangeToIncludePartialGlyphs(from, to);
+}
+
+float Font::TabWidth(const SimpleFontData* font_data,
+                     const TabSize& tab_size,
+                     float position) const {
+  float base_tab_width = TabWidth(font_data, tab_size);
+  if (!base_tab_width)
+    return GetFontDescription().LetterSpacing();
+
+  float distance_to_tab_stop = base_tab_width - fmodf(position, base_tab_width);
+
+  // Let the minimum width be the half of the space width so that it's always
+  // recognizable.  if the distance to the next tab stop is less than that,
+  // advance an additional tab stop.
+  if (distance_to_tab_stop < font_data->SpaceWidth() / 2)
+    distance_to_tab_stop += base_tab_width;
+
+  return distance_to_tab_stop;
 }
 
 LayoutUnit Font::TabWidth(const TabSize& tab_size, LayoutUnit position) const {

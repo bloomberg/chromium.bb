@@ -57,8 +57,6 @@
 
 namespace blink {
 
-using namespace html_names;
-
 TreeScope::TreeScope(ContainerNode& root_node, Document& document)
     : root_node_(&root_node),
       document_(&document),
@@ -279,7 +277,7 @@ static bool ShouldAcceptNonElementNode(const Node& node) {
     return false;
   // In some cases the hit test doesn't return slot elements, so we can only
   // get it through its child and can't skip it.
-  if (IsHTMLSlotElement(*parent))
+  if (IsA<HTMLSlotElement>(*parent))
     return true;
   // SVG text content elements has no background, and are thus not
   // hit during the background phase of hit-testing. Because of that
@@ -289,7 +287,6 @@ static bool ShouldAcceptNonElementNode(const Node& node) {
 
 HeapVector<Member<Element>> TreeScope::ElementsFromHitTestResult(
     HitTestResult& result) const {
-  DCHECK(RootNode().isConnected());
   HeapVector<Member<Element>> elements;
   Node* last_node = nullptr;
   for (const auto rect_based_node : result.ListBasedTestResult()) {
@@ -595,8 +592,8 @@ Element* TreeScope::GetElementByAccessKey(const String& key) const {
   Element* result = nullptr;
   Node& root = RootNode();
   for (Element& element : ElementTraversal::DescendantsOf(root)) {
-    if (DeprecatedEqualIgnoringCase(element.FastGetAttribute(kAccesskeyAttr),
-                                    key))
+    if (DeprecatedEqualIgnoringCase(
+            element.FastGetAttribute(html_names::kAccesskeyAttr), key))
       result = &element;
     if (ShadowRoot* shadow_root = element.GetShadowRoot()) {
       if (Element* shadow_result = shadow_root->GetElementByAccessKey(key))

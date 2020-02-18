@@ -12,9 +12,9 @@ namespace quic {
 
 // A utility for extracting QUIC Client Hello messages from packets,
 // without needs to spin up a full QuicSession.
-class ChloExtractor {
+class QUIC_NO_EXPORT ChloExtractor {
  public:
-  class Delegate {
+  class QUIC_NO_EXPORT Delegate {
    public:
     virtual ~Delegate() {}
 
@@ -31,7 +31,7 @@ class ChloExtractor {
   // if found will result in the session being created early, to
   // enable support for multi-packet CHLOs.
   static bool Extract(const QuicEncryptedPacket& packet,
-                      const ParsedQuicVersionVector& versions,
+                      ParsedQuicVersion version,
                       const QuicTagVector& create_session_tag_indicators,
                       Delegate* delegate,
                       uint8_t connection_id_length);

@@ -210,9 +210,9 @@ extern const char kSelectToSpeakExtensionId[];
 // Path to preinstalled Select-to-speak extension (relative to
 // |chrome::DIR_RESOURCES|).
 extern const char kSelectToSpeakExtensionPath[];
-// The extension id of the Switch access extension.
+// The extension id of the Switch Access extension.
 extern const char kSwitchAccessExtensionId[];
-// Path to preinstalled Switch access extension (relative to
+// Path to preinstalled Switch Access extension (relative to
 // |chrome::DIR_RESOURCES|).
 extern const char kSwitchAccessExtensionPath[];
 // Name of the manifest file in an extension when a special manifest is used
@@ -267,6 +267,10 @@ extern const char kAppStateReadyToRun[];
 
 // The path part of the file system url used for media file systems.
 extern const char kMediaFileSystemPathPart[];
+
+// The key name of extension request timestamp used by the
+// prefs::kCloudExtensionRequestIds preference.
+extern const char kExtensionRequestTimestamp[];
 }  // namespace extension_misc
 
 #endif  // CHROME_COMMON_EXTENSIONS_EXTENSION_CONSTANTS_H_

@@ -11,7 +11,6 @@
 #include "net/third_party/quiche/src/quic/platform/api/quic_file_utils.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_map_util.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_ptr_util.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_text_utils.h"
 
 using spdy::kV3LowestPriority;
@@ -137,6 +136,15 @@ const QuicBackendResponse* QuicMemoryCacheBackend::GetResponse(
 
   auto it = responses_.find(GetKey(host, path));
   if (it == responses_.end()) {
+    uint64_t ignored = 0;
+    if (generate_bytes_response_) {
+      if (QuicTextUtils::StringToUint64(
+              QuicStringPiece(path.data() + 1, path.size() - 1), &ignored)) {
+        // The actual parsed length is ignored here and will be recomputed
+        // by the caller.
+        return generate_bytes_response_.get();
+      }
+    }
     QUIC_DVLOG(1) << "Get response for resource failed: host " << host
                   << " path " << path;
     if (default_response_) {
@@ -272,8 +280,20 @@ bool QuicMemoryCacheBackend::InitializeBackend(
     MaybeAddServerPushResources(resource_file->host(), resource_file->path(),
                                 push_resources);
   }
+
   cache_initialized_ = true;
   return true;
+}
+
+void QuicMemoryCacheBackend::GenerateDynamicResponses() {
+  QuicWriterMutexLock lock(&response_mutex_);
+  // Add a generate bytes response.
+  spdy::SpdyHeaderBlock response_headers;
+  response_headers[":status"] = "200";
+  generate_bytes_response_ = std::make_unique<QuicBackendResponse>();
+  generate_bytes_response_->set_headers(std::move(response_headers));
+  generate_bytes_response_->set_response_type(
+      QuicBackendResponse::GENERATE_BYTES);
 }
 
 bool QuicMemoryCacheBackend::IsBackendInitialized() const {
@@ -341,7 +361,7 @@ void QuicMemoryCacheBackend::AddResponseImpl(QuicStringPiece host,
     QUIC_BUG << "Response for '" << key << "' already exists!";
     return;
   }
-  auto new_response = QuicMakeUnique<QuicBackendResponse>();
+  auto new_response = std::make_unique<QuicBackendResponse>();
   new_response->set_response_type(response_type);
   new_response->set_headers(std::move(response_headers));
   new_response->set_body(response_body);

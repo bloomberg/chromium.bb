@@ -29,6 +29,7 @@
 #include "extensions/browser/uninstall_reason.h"
 #include "net/base/url_util.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
+#include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 #include "url/gurl.h"
 
 namespace chromeos {
@@ -231,7 +232,7 @@ void AndroidSmsAppSetupControllerImpl::TryInstallApp(const GURL& install_url,
                   << "Trying to install PWA for " << install_url
                   << ". Num attempts so far # " << num_attempts_so_far;
   web_app::ExternalInstallOptions options(
-      install_url, web_app::LaunchContainer::kWindow,
+      install_url, blink::mojom::DisplayMode::kStandalone,
       web_app::ExternalInstallSource::kInternalDefault);
   options.override_previous_user_uninstall = true;
   // The ServiceWorker does not load in time for the installability check, so
@@ -289,8 +290,7 @@ void AndroidSmsAppSetupControllerImpl::OnAppInstallResult(
 
   // Grant notification permission for the PWA.
   host_content_settings_map_->SetWebsiteSettingDefaultScope(
-      app_url, GURL() /* top_level_url */,
-      ContentSettingsType::CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+      app_url, GURL() /* top_level_url */, ContentSettingsType::NOTIFICATIONS,
       content_settings::ResourceIdentifier(),
       std::make_unique<base::Value>(ContentSetting::CONTENT_SETTING_ALLOW));
 

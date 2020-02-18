@@ -503,6 +503,13 @@ void GLES2InterfaceStub::MultiDrawArraysInstancedWEBGL(
     const GLsizei* /* counts */,
     const GLsizei* /* instance_counts */,
     GLsizei /* drawcount */) {}
+void GLES2InterfaceStub::MultiDrawArraysInstancedBaseInstanceWEBGL(
+    GLenum /* mode */,
+    const GLint* /* firsts */,
+    const GLsizei* /* counts */,
+    const GLsizei* /* instance_counts */,
+    const GLuint* /* baseinstances */,
+    GLsizei /* drawcount */) {}
 void GLES2InterfaceStub::MultiDrawElementsWEBGL(GLenum /* mode */,
                                                 const GLsizei* /* counts */,
                                                 GLenum /* type */,
@@ -514,6 +521,15 @@ void GLES2InterfaceStub::MultiDrawElementsInstancedWEBGL(
     GLenum /* type */,
     const GLsizei* /* offsets */,
     const GLsizei* /* instance_counts */,
+    GLsizei /* drawcount */) {}
+void GLES2InterfaceStub::MultiDrawElementsInstancedBaseVertexBaseInstanceWEBGL(
+    GLenum /* mode */,
+    const GLsizei* /* counts */,
+    GLenum /* type */,
+    const GLsizei* /* offsets */,
+    const GLsizei* /* instance_counts */,
+    const GLint* /* basevertices */,
+    const GLuint* /* baseinstances */,
     GLsizei /* drawcount */) {}
 void GLES2InterfaceStub::StencilFunc(GLenum /* func */,
                                      GLint /* ref */,
@@ -860,6 +876,11 @@ void GLES2InterfaceStub::DispatchCompute(GLuint /* num_groups_x */,
                                          GLuint /* num_groups_y */,
                                          GLuint /* num_groups_z */) {}
 void GLES2InterfaceStub::DispatchComputeIndirect(GLintptr /* offset */) {}
+void GLES2InterfaceStub::DrawArraysIndirect(GLenum /* mode */,
+                                            const void* /* offset */) {}
+void GLES2InterfaceStub::DrawElementsIndirect(GLenum /* mode */,
+                                              GLenum /* type */,
+                                              const void* /* offset */) {}
 void GLES2InterfaceStub::GetProgramInterfaceiv(GLuint /* program */,
                                                GLenum /* program_interface */,
                                                GLenum /* pname */,
@@ -1016,11 +1037,25 @@ void GLES2InterfaceStub::DrawArraysInstancedANGLE(GLenum /* mode */,
                                                   GLint /* first */,
                                                   GLsizei /* count */,
                                                   GLsizei /* primcount */) {}
+void GLES2InterfaceStub::DrawArraysInstancedBaseInstanceANGLE(
+    GLenum /* mode */,
+    GLint /* first */,
+    GLsizei /* count */,
+    GLsizei /* primcount */,
+    GLuint /* baseinstance */) {}
 void GLES2InterfaceStub::DrawElementsInstancedANGLE(GLenum /* mode */,
                                                     GLsizei /* count */,
                                                     GLenum /* type */,
                                                     const void* /* indices */,
                                                     GLsizei /* primcount */) {}
+void GLES2InterfaceStub::DrawElementsInstancedBaseVertexBaseInstanceANGLE(
+    GLenum /* mode */,
+    GLsizei /* count */,
+    GLenum /* type */,
+    const void* /* indices */,
+    GLsizei /* primcount */,
+    GLint /* basevertex */,
+    GLuint /* baseinstance */) {}
 void GLES2InterfaceStub::VertexAttribDivisorANGLE(GLuint /* index */,
                                                   GLuint /* divisor */) {}
 void GLES2InterfaceStub::ProduceTextureDirectCHROMIUM(GLuint /* texture */,
@@ -1231,12 +1266,13 @@ void GLES2InterfaceStub::ProgramPathFragmentInputGenCHROMIUM(
     GLenum /* genMode */,
     GLint /* components */,
     const GLfloat* /* coeffs */) {}
+void GLES2InterfaceStub::ContextVisibilityHintCHROMIUM(
+    GLboolean /* visibility */) {}
 void GLES2InterfaceStub::CoverageModulationCHROMIUM(GLenum /* components */) {}
 GLenum GLES2InterfaceStub::GetGraphicsResetStatusKHR() {
   return 0;
 }
 void GLES2InterfaceStub::BlendBarrierKHR() {}
-void GLES2InterfaceStub::ApplyScreenSpaceAntialiasingCHROMIUM() {}
 void GLES2InterfaceStub::BindFragDataLocationIndexedEXT(
     GLuint /* program */,
     GLuint /* colorNumber */,

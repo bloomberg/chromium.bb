@@ -24,6 +24,7 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/url_constants.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "third_party/blink/public/mojom/frame/fullscreen.mojom.h"
 
 using url::kAboutBlankURL;
 using content::WebContents;
@@ -117,7 +118,7 @@ void FullscreenControllerInteractiveTest::ToggleTabFullscreen_Internal(
     FullscreenNotificationObserver fullscreen_observer(browser());
     if (enter_fullscreen)
       browser()->EnterFullscreenModeForTab(tab, GURL(),
-                                           blink::WebFullscreenOptions());
+                                           blink::mojom::FullscreenOptions());
     else
       browser()->ExitFullscreenModeForTab(tab);
     fullscreen_observer.Wait();
@@ -278,7 +279,7 @@ IN_PROC_BROWSER_TEST_F(
     FullscreenNotificationObserver fullscreen_observer(browser());
     EXPECT_FALSE(browser()->window()->IsFullscreen());
     browser()->EnterFullscreenModeForTab(tab, GURL(),
-                                         blink::WebFullscreenOptions());
+                                         blink::mojom::FullscreenOptions());
     fullscreen_observer.Wait();
     EXPECT_TRUE(browser()->window()->IsFullscreen());
   }
@@ -350,13 +351,9 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
 }
 
 // Tests mouse lock then fullscreen.
+// TODO(crbug.com/913409): UAv2 seems to make this flaky.
 IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
-                       MouseLockThenFullscreen) {
-  if (base::FeatureList::IsEnabled(features::kUserActivationV2)) {
-    // TODO(mustaq): UAv2 seems to make this flaky (http://crbug.com/913409).
-    return;
-  }
-
+                       DISABLED_MouseLockThenFullscreen) {
   ASSERT_TRUE(embedded_test_server()->Start());
   ui_test_utils::NavigateToURL(
       browser(), embedded_test_server()->GetURL(kFullscreenMouseLockHTML));

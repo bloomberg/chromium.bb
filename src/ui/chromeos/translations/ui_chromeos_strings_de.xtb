@@ -75,11 +75,9 @@
 <translation id="1829129547161959350">Pinguin</translation>
 <translation id="183183971458492120">Informationen werden geladen…</translation>
 <translation id="1838709767668011582">Google Sites-Website</translation>
-<translation id="1839704667838141620">Angeben, wie die Datei geteilt werden soll</translation>
 <translation id="1844692022597038441">Diese Datei ist offline nicht verfügbar.</translation>
 <translation id="184633654410729720">Thailändische Tastatur (Kedmanee)</translation>
 <translation id="1847880352285315359">Gespeichert</translation>
-<translation id="1864676585353837027">Angeben, wie die Dateien geteilt werden sollen</translation>
 <translation id="1864756863218646478">Die Datei wurde nicht gefunden.</translation>
 <translation id="1921986354447415460">Tastatur "Türkisch-F"</translation>
 <translation id="1931134289871235022">Slowakisch</translation>
@@ -89,7 +87,6 @@
 <translation id="1943097386230153518">Neuen Dienst installieren</translation>
 <translation id="1947424002851288782">Deutsche Tastatur</translation>
 <translation id="1972984168337863910">Erweiterte Dateiinformationen maximieren</translation>
-<translation id="197560921582345123">Darf bearbeiten</translation>
 <translation id="1984603991036629094">Armenische phonetische Tastatur</translation>
 <translation id="2001796770603320721">In Drive verwalten</translation>
 <translation id="2009067268969781306">Durch die Formatierung eines Laufwerks werden alle darauf gespeicherten Daten gelöscht. Diese Aktion kann nicht rückgängig gemacht werden.</translation>
@@ -226,6 +223,7 @@
 <translation id="3645531960514756307">Ordner loslösen</translation>
 <translation id="3678559383040232393">Maltesische Tastatur</translation>
 <translation id="3685122418104378273">Die Google Drive-Synchronisierung ist bei der mobilen Datennutzung standardmäßig deaktiviert.</translation>
+<translation id="3689865792480713551"><ph name="ACTIVITY_DESCRIPTION" /> abbrechen.</translation>
 <translation id="3726463242007121105">Dieses Gerät kann nicht geöffnet werden, da das zugehörige Dateisystem nicht unterstützt wird.</translation>
 <translation id="3741243925913727067">Fotos und Videos des Mediengeräts auf Google Drive sichern</translation>
 <translation id="3749289110408117711">Dateiname</translation>
@@ -286,7 +284,6 @@
 <translation id="4522570452068850558">Details</translation>
 <translation id="4552678318981539154">Mehr Speicherplatz erwerben</translation>
 <translation id="4559767610552730302">Bokeh</translation>
-<translation id="4568854179928172494">Änderungszeitpunkt</translation>
 <translation id="4572815280350369984"><ph name="FILE_TYPE" />-Datei</translation>
 <translation id="457386861538956877">Mehr...</translation>
 <translation id="4579744207439506346"><ph name="ENTRY_NAME" /> wurde zur Auswahl hinzugefügt.</translation>
@@ -467,6 +464,7 @@
 <translation id="6339145975392024142">US-amerikanisch (PC)</translation>
 <translation id="6346310558342052870">Zugriff eingeschränkt</translation>
 <translation id="6353618411602605519">Kroatische Tastatur</translation>
+<translation id="6356685157277930264">Feedbackfenster für "Meine Dateien"</translation>
 <translation id="6358884629796491903">Drache</translation>
 <translation id="637062427944097960">Diese Datei wurde auf einem anderen Desktop geöffnet. Wechseln Sie zu <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />), um die Datei anzusehen.</translation>
 <translation id="6395575651121294044"><ph name="NUMBER_OF_FILES" /> Elemente</translation>
@@ -566,6 +564,7 @@
 <translation id="7589661784326793847">Einen Moment bitte</translation>
 <translation id="7603724359189955920">Gitter</translation>
 <translation id="7627790789328695202">Hoppla, <ph name="FILE_NAME" /> existiert bereits. Geben Sie einen anderen Namen ein und versuchen Sie es erneut.</translation>
+<translation id="7628656427739290098">Zu <ph name="PERCENT" /> % abgeschlossen.</translation>
 <translation id="7649070708921625228">Hilfe</translation>
 <translation id="7654209398114106148"><ph name="NUMBER_OF_ITEMS" /> Elemente werden verschoben...</translation>
 <translation id="7658239707568436148">Abbrechen</translation>
@@ -592,7 +591,6 @@
 <translation id="7827012282502221009"><ph name="NUMBER_OF_TB" /> TB</translation>
 <translation id="7839804798877833423">Zum Abrufen dieser Dateien werden etwa <ph name="FILE_SIZE" /> mobile Daten benötigt.</translation>
 <translation id="7846076177841592234">Auswahl aufheben</translation>
-<translation id="7850851215703745691">Die Drive-Dateien wurden noch nicht geteilt.</translation>
 <translation id="7853966320808728790">Französisch – Bépo</translation>
 <translation id="7864662577698025113">Neuen Dienst hinzufügen</translation>
 <translation id="7873831373602885875">Speichern in "<ph name="FOLDER_NAME" />" nicht möglich. Alle Änderungen werden im Ordner "Downloads" in <ph name="DOWNLOADS_FOLDER" /> gespeichert.</translation>
@@ -608,7 +606,6 @@
 <translation id="7969525169268594403">Slowenisch</translation>
 <translation id="7982283708762922719">Größe</translation>
 <translation id="7987485481246785146">Sorani-Tastatur nach arabischem Layout</translation>
-<translation id="799923393800005025">Darf ansehen</translation>
 <translation id="8008366997883261463">Jack Russell</translation>
 <translation id="8028993641010258682">Größe</translation>
 <translation id="8031722894461705849">Slowakische Tastatur</translation>
@@ -670,8 +667,6 @@
 <translation id="8600173386174225982">Die Dateiliste wird jetzt in der Miniaturansicht angezeigt.</translation>
 <translation id="8601932370724196034">Crostini-Bilddatei</translation>
 <translation id="8669949407341943408">Verschieben...</translation>
-<translation id="8671210955687109937">Darf kommentieren</translation>
-<translation id="8686213429977032554">Die Drive-Datei wurde noch nicht geteilt.</translation>
 <translation id="8698464937041809063">Google-Zeichnung</translation>
 <translation id="8714406895390098252">Fahrrad</translation>
 <translation id="8719721339511222681"><ph name="ENTRY_NAME" /> wurde ausgewählt.</translation>

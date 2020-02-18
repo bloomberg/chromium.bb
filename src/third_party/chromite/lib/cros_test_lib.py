@@ -9,7 +9,6 @@ from __future__ import print_function
 
 import collections
 import contextlib
-import cStringIO
 import functools
 import os
 import re
@@ -19,6 +18,7 @@ import unittest
 
 import mock
 import six
+from six.moves import StringIO
 
 from chromite.lib import cache
 from chromite.lib import constants
@@ -33,6 +33,7 @@ from chromite.lib import remote_access
 from chromite.lib import retry_util
 from chromite.lib import terminal
 from chromite.lib import timeout_util
+from chromite.utils import outcap
 
 
 Directory = collections.namedtuple('Directory', ['name', 'contents'])
@@ -185,8 +186,9 @@ def VerifyTarball(tarball, dir_struct):
     AssertionError when there is any divergence between the tarball and the
     structure specified by 'dir_struct'.
   """
-  contents = cros_build_lib.RunCommand(
-      ['tar', '-tf', tarball], capture_output=True).output.splitlines()
+  result = cros_build_lib.run(['tar', '-tf', tarball], capture_output=True,
+                              encoding='utf-8')
+  contents = result.stdout.splitlines()
   normalized = set()
   for p in contents:
     norm = os.path.normpath(p)
@@ -324,7 +326,7 @@ class TruthTable(object):
     for inputs in truth_table:
       a, b, c = inputs
       result = mod.Foo(a, b, c)
-      self.assertEquals(result, truth_table.GetOutput(inputs))
+      self.assertEqual(result, truth_table.GetOutput(inputs))
   """
 
   class TruthTableInputIterator(object):
@@ -454,7 +456,7 @@ class EasyAttr(dict):
     self[attr] = value
 
   def __dir__(self):
-    return self.keys()
+    return list(self.keys())
 
 
 class LogFilter(logging.Filter):
@@ -462,7 +464,7 @@ class LogFilter(logging.Filter):
 
   def __init__(self):
     logging.Filter.__init__(self)
-    self.messages = cStringIO.StringIO()
+    self.messages = StringIO()
 
   def filter(self, record):
     self.messages.write(record.getMessage() + '\n')
@@ -539,14 +541,39 @@ class TestCase(unittest.TestCase):
     # This is set to keep pylint from complaining.
     self.__test_was_run__ = False
 
+  @staticmethod
+  def _CheckTestEnv(msg):
+    """Sanity check the environment.  https://crbug.com/1015450"""
+    # Note: We use print+sys.exit here instead of logging/Die because it might
+    # cause errors in tests that expect their own setUp to run before their own
+    # tearDown executes.  By failing in the core funcs, we violate that.
+    st = os.stat('/')
+    if st.st_mode & 0o7777 != 0o755:
+      print('%s %s\nError: The root directory has broken permissions: %o\n'
+            'Fix with: sudo chmod 755 /' % (sys.argv[0], msg, st.st_mode),
+            file=sys.stderr)
+      sys.exit(1)
+    if st.st_uid or st.st_gid:
+      print('%s %s\nError: The root directory has broken ownership: %i:%i'
+            ' (should be 0:0)\nFix with: sudo chown 0:0 /' %
+            (sys.argv[0], msg, st.st_uid, st.st_gid), file=sys.stderr)
+      sys.exit(1)
+
   def setUp(self):
+    self._CheckTestEnv('%s.setUp' % (self.id(),))
+
     self.__saved_env__ = os.environ.copy()
     self.__saved_cwd__ = os.getcwd()
     self.__saved_umask__ = os.umask(0o22)
     for x in self.ENVIRON_VARIABLE_SUPPRESSIONS:
       os.environ.pop(x, None)
+    # Force all log lines in tests to include ANSI color prefixes, since it can
+    # be configured per-user.
+    os.environ['NOCOLOR'] = 'no'
 
   def tearDown(self):
+    self._CheckTestEnv('%s.tearDown' % (self.id(),))
+
     osutils.SetEnvironment(self.__saved_env__)
     os.chdir(self.__saved_cwd__)
     os.umask(self.__saved_umask__)
@@ -679,9 +706,42 @@ class TestCase(unittest.TestCase):
     try:
       self.assertSequenceEqual(seq1, seq2)
     except AssertionError as ex:
-      return ex.message
+      return str(ex)
     else:
       return 'no differences'
+
+  # Upstream deprecated these in Python 3, but left them in Python 2.
+  # Deprecate them ourselves to help with migration.  We can delete these
+  # once upstream drops them.
+  def _disable(deprecated, replacement):  # pylint: disable=no-self-argument
+    def disable_func(*_args, **_kwargs):
+      raise RuntimeError('%s() is removed in Python 3; use %s() instead' %
+                         (deprecated, replacement))
+    return disable_func
+
+  assertEquals = _disable('assertEquals', 'assertEqual')
+  assertNotEquals = _disable('assertNotEquals', 'assertNotEqual')
+  assertAlmostEquals = _disable('assertAlmostEquals', 'assertAlmostEqual')
+  assertNotAlmostEquals = _disable('assertNotAlmostEquals',
+                                   'assertNotAlmostEqual')
+  assert_ = _disable('assert_', 'assertTrue')
+  failUnlessEqual = _disable('failUnlessEqual', 'assertEqual')
+  failIfEqual = _disable('failIfEqual', 'assertNotEqual')
+  failUnlessAlmostEqual = _disable('failUnlessAlmostEqual', 'assertAlmostEqual')
+  failIfAlmostEqual = _disable('failIfAlmostEqual', 'assertNotAlmostEqual')
+  failUnless = _disable('failUnless', 'assertTrue')
+  failUnlessRaises = _disable('failUnlessRaises', 'assertRaises')
+  failIf = _disable('failIf', 'assertFalse')
+
+  # Python 3 renamed these.
+  if sys.version_info.major < 3:
+    assertCountEqual = unittest.TestCase.assertItemsEqual
+    assertRaisesRegex = unittest.TestCase.assertRaisesRegexp
+    assertRegex = unittest.TestCase.assertRegexpMatches
+
+  assertItemsEqual = _disable('assertItemsEqual', 'assertCountEqual')
+  assertRaisesRegexp = _disable('assertRaisesRegexp', 'assertRaisesRegex')
+  assertRegexpMatches = _disable('assertRegexpMatches', 'assertRegex')
 
 
 class LoggingTestCase(TestCase):
@@ -718,7 +778,7 @@ class OutputTestCase(TestCase):
 
   def OutputCapturer(self, *args, **kwargs):
     """Create and return OutputCapturer object."""
-    self._output_capturer = cros_build_lib.OutputCapturer(*args, **kwargs)
+    self._output_capturer = outcap.OutputCapturer(*args, **kwargs)
     return self._output_capturer
 
   def _GetOutputCapt(self):
@@ -1048,7 +1108,7 @@ class LocalSqlServerTestCase(TempDirTestCase):
         '--basedir=/usr',
         '--ldata=%s' % self._mysqld_dir,
     ]
-    cros_build_lib.RunCommand(cmd, quiet=True)
+    cros_build_lib.run(cmd, quiet=True)
 
     self.mysqld_host = '127.0.0.1'
     self.mysqld_port = remote_access.GetUnusedPort()
@@ -1062,7 +1122,7 @@ class LocalSqlServerTestCase(TempDirTestCase):
         '--tmpdir', mysqld_tmp_dir,
     ]
     self._mysqld_runner = parallel.BackgroundTaskRunner(
-        cros_build_lib.RunCommand,
+        cros_build_lib.run,
         processes=1,
         halt_on_error=True)
     queue = self._mysqld_runner.__enter__()
@@ -1099,7 +1159,7 @@ class LocalSqlServerTestCase(TempDirTestCase):
           '-u', 'root',
           'shutdown',
       ]
-      cros_build_lib.RunCommand(cmd, quiet=True)
+      cros_build_lib.run(cmd, quiet=True)
     except cros_build_lib.RunCommandError as e:
       self._CleanupMysqld(
           failure='mysqladmin failed to shutdown mysqld: %s' % e)
@@ -1137,11 +1197,12 @@ class FakeSDKCache(object):
     # Sets the SDK Version.
     self.sdk_version = sdk_version
     os.environ['%SDK_VERSION'] = sdk_version
-    # Defines the path for the fake SDK Cache.
-    self.tarball_cache_path = os.path.join(self.cache_dir, 'chrome-sdk',
-                                           'tarballs')
-    # Creates an SDK TarballCache instance.
-    self.tarball_cache = cache.TarballCache(self.tarball_cache_path)
+    # Defines the path for the fake SDK Symlink Cache. (No backing tarball cache
+    # is needed.)
+    self.symlink_cache_path = os.path.join(self.cache_dir, 'chrome-sdk',
+                                           'symlinks')
+    # Creates an SDK SymlinkCache instance.
+    self.symlink_cache = cache.DiskCache(self.symlink_cache_path)
 
   def CreateCacheReference(self, board, key):
     """Creates the Cache Reference.
@@ -1153,12 +1214,8 @@ class FakeSDKCache(object):
     Returns:
       Path to the cache directory.
     """
-    # Creates the cache key required for accessing the fake SDK cache.
-    cache_key = (board, self.sdk_version, key)
     # Adds the cache path at the key.
-    cache.CacheReference(self.tarball_cache,
-                         cache_key).Assign(self.tarball_cache_path)
-    return self.tarball_cache.Lookup(cache_key).path
+    return self.symlink_cache.Lookup((board, self.sdk_version, key)).path
 
 
 class MockTestCase(TestCase):
@@ -1498,9 +1555,9 @@ class TestProgram(unittest.TestProgram):
       ProfileTestRunner.SORT_STATS_KEYS = opts.profile_sort_keys.split(',')
 
     # Figure out which tests the user/unittest wants to run.
-    if len(opts.tests) == 0 and self.defaultTest is None:
+    if not opts.tests and self.defaultTest is None:
       self.testNames = None
-    elif len(opts.tests) > 0:
+    elif opts.tests:
       self.testNames = opts.tests
     else:
       self.testNames = (self.defaultTest,)
@@ -1546,8 +1603,17 @@ class PopenMock(partial_mock.PartialCmdMock):
     script = os.path.join(self.tempdir, 'mock_cmd.sh')
     stdout = os.path.join(self.tempdir, 'output')
     stderr = os.path.join(self.tempdir, 'error')
-    osutils.WriteFile(stdout, result.output)
-    osutils.WriteFile(stderr, result.error)
+    # This encoding handling might appear a bit wonky, but it's OK, I promise.
+    # The purpose of this mock is to stuff data into files so that we can run a
+    # fake script in place of the real command.  So any cros_build_lib.run()
+    # settings will still be fully checked including encoding.  This code just
+    # takes care of writing the data from AddCmdResult objects.  Those might be
+    # specified in strings or in bytes, but there's no value in forcing all code
+    # to use the same encoding with the mocks.
+    def _MaybeEncode(src):
+      return src.encode('utf-8') if isinstance(src, six.text_type) else src
+    osutils.WriteFile(stdout, _MaybeEncode(result.output), mode='wb')
+    osutils.WriteFile(stderr, _MaybeEncode(result.error), mode='wb')
     osutils.WriteFile(
         script,
         ['#!/bin/bash\n', 'cat %s\n' % stdout, 'cat %s >&2\n' % stderr,
@@ -1558,25 +1624,28 @@ class PopenMock(partial_mock.PartialCmdMock):
 
 
 class RunCommandMock(partial_mock.PartialCmdMock):
-  """Provides a context where all RunCommand invocations low-level mocked."""
+  """Provides a context where all run invocations low-level mocked."""
 
   TARGET = 'chromite.lib.cros_build_lib'
-  ATTRS = ('RunCommand',)
-  DEFAULT_ATTR = 'RunCommand'
+  ATTRS = ('run',)
+  DEFAULT_ATTR = 'run'
 
-  def RunCommand(self, cmd, *args, **kwargs):
-    result = self._results['RunCommand'].LookupResult(
+  def run(self, cmd, *args, **kwargs):
+    result = self._results['run'].LookupResult(
         (cmd,), kwargs=kwargs, hook_args=(cmd,) + args, hook_kwargs=kwargs)
 
     popen_mock = PopenMock()
     popen_mock.AddCmdResult(partial_mock.Ignore(), result.returncode,
                             result.output, result.error)
     with popen_mock:
-      return self.backup['RunCommand'](cmd, *args, **kwargs)
+      return self.backup['run'](cmd, *args, **kwargs)
+
+  # Backwards compat API.
+  RunCommand = run
 
 
 class RunCommandTestCase(MockTestCase):
-  """MockTestCase that mocks out RunCommand by default."""
+  """MockTestCase that mocks out run by default."""
 
   def setUp(self):
     self.rc = self.StartPatcher(RunCommandMock())
@@ -1584,7 +1653,7 @@ class RunCommandTestCase(MockTestCase):
     self.assertCommandCalled = self.rc.assertCommandCalled
     self.assertCommandContains = self.rc.assertCommandContains
 
-    # These ENV variables affect RunCommand behavior, hide them.
+    # These ENV variables affect run behavior, hide them.
     self._old_envs = {e: os.environ.pop(e) for e in constants.ENV_PASSTHRU
                       if e in os.environ}
 

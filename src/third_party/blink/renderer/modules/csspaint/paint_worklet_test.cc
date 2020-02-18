@@ -213,7 +213,9 @@ class MainOrOffThreadPaintWorkletTest
       : ScopedOffMainThreadCSSPaintForTest(GetParam()) {}
 };
 
-INSTANTIATE_TEST_SUITE_P(, MainOrOffThreadPaintWorkletTest, ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All,
+                         MainOrOffThreadPaintWorkletTest,
+                         ::testing::Bool());
 
 class MockObserver final : public CSSPaintImageGenerator::Observer {
  public:
@@ -289,6 +291,32 @@ TEST_P(MainOrOffThreadPaintWorkletTest, ConsistentGlobalScopeOnMainThread) {
       ScriptSourceCode(bar), SanitizeScriptErrors::kDoNotSanitize);
 
   EXPECT_TRUE(paint_worklet_to_test->GetDocumentDefinitionMap().at("bar"));
+}
+
+TEST_P(MainOrOffThreadPaintWorkletTest, AllGlobalScopesMustBeCreated) {
+  PaintWorklet* paint_worklet_to_test =
+      MakeGarbageCollected<PaintWorklet>(&GetFrame());
+
+  EXPECT_TRUE(paint_worklet_to_test->GetGlobalScopesForTesting().IsEmpty());
+
+  std::unique_ptr<PaintWorkletPaintDispatcher> dispatcher =
+      std::make_unique<PaintWorkletPaintDispatcher>();
+  Persistent<PaintWorkletProxyClient> proxy_client =
+      MakeGarbageCollected<PaintWorkletProxyClient>(
+          1, paint_worklet_to_test, dispatcher->GetWeakPtr(), nullptr);
+  paint_worklet_to_test->SetProxyClientForTesting(proxy_client);
+
+  while (paint_worklet_to_test->NeedsToCreateGlobalScopeForTesting()) {
+    paint_worklet_to_test->AddGlobalScopeForTesting();
+  }
+
+  if (RuntimeEnabledFeatures::OffMainThreadCSSPaintEnabled()) {
+    EXPECT_EQ(paint_worklet_to_test->GetGlobalScopesForTesting().size(),
+              2 * PaintWorklet::kNumGlobalScopesPerThread);
+  } else {
+    EXPECT_EQ(paint_worklet_to_test->GetGlobalScopesForTesting().size(),
+              PaintWorklet::kNumGlobalScopesPerThread);
+  }
 }
 
 TEST_F(PaintWorkletTest, ConsistentGlobalScopeCrossThread) {
@@ -514,32 +542,6 @@ TEST_F(PaintWorkletTest, GeneratorNotifiedAfterAllRegistrations) {
       definition->GetPaintRenderingContext2DSettings()->alpha());
 
   EXPECT_TRUE(paint_worklet_to_test->GetDocumentDefinitionMap().at("foo"));
-}
-
-TEST_P(MainOrOffThreadPaintWorkletTest, AllGlobalScopesMustBeCreated) {
-  PaintWorklet* paint_worklet_to_test =
-      MakeGarbageCollected<PaintWorklet>(&GetFrame());
-
-  EXPECT_TRUE(paint_worklet_to_test->GetGlobalScopesForTesting().IsEmpty());
-
-  std::unique_ptr<PaintWorkletPaintDispatcher> dispatcher =
-      std::make_unique<PaintWorkletPaintDispatcher>();
-  Persistent<PaintWorkletProxyClient> proxy_client =
-      MakeGarbageCollected<PaintWorkletProxyClient>(
-          1, paint_worklet_to_test, dispatcher->GetWeakPtr(), nullptr);
-  paint_worklet_to_test->SetProxyClientForTesting(proxy_client);
-
-  while (paint_worklet_to_test->NeedsToCreateGlobalScopeForTesting()) {
-    paint_worklet_to_test->AddGlobalScopeForTesting();
-  }
-
-  if (RuntimeEnabledFeatures::OffMainThreadCSSPaintEnabled()) {
-    EXPECT_EQ(paint_worklet_to_test->GetGlobalScopesForTesting().size(),
-              2 * PaintWorklet::kNumGlobalScopesPerThread);
-  } else {
-    EXPECT_EQ(paint_worklet_to_test->GetGlobalScopesForTesting().size(),
-              PaintWorklet::kNumGlobalScopesPerThread);
-  }
 }
 
 }  // namespace blink

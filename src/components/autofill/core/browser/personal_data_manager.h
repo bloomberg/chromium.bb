@@ -154,6 +154,10 @@ class PersonalDataManager : public KeyedService,
   std::string OnAcceptedLocalCreditCardSave(
       const CreditCard& imported_credit_card);
 
+  // Triggered when the user accepts saving a VPA value. Stores the |vpa_id| to
+  // the database.
+  virtual void AddVPA(const std::string& vpa_id);
+
   // Adds |profile| to the web database.
   virtual void AddProfile(const AutofillProfile& profile);
 
@@ -264,12 +268,6 @@ class PersonalDataManager : public KeyedService,
   // Returns the profiles to suggest to the user, ordered by frecency.
   std::vector<AutofillProfile*> GetProfilesToSuggest() const;
 
-  // Remove profiles that whose |type| field is flagged as invalid, if Chrome
-  // is configured to not make suggestions based on invalid data.
-  static void MaybeRemoveInvalidSuggestions(
-      const AutofillType& type,
-      std::vector<AutofillProfile*>* profiles);
-
   // Returns Suggestions corresponding to the focused field's |type| and
   // |field_contents|, i.e. what the user has typed. |field_is_autofilled| is
   // true if the field has already been autofilled, and |field_types| stores the
@@ -325,22 +323,6 @@ class PersonalDataManager : public KeyedService,
 
   const std::string& app_locale() const { return app_locale_; }
 
-  // Merges |new_profile| into one of the |existing_profiles| if possible;
-  // otherwise appends |new_profile| to the end of that list. Fills
-  // |merged_profiles| with the result. Returns the |guid| of the new or updated
-  // profile.
-  static std::string MergeProfile(
-      const AutofillProfile& new_profile,
-      std::vector<std::unique_ptr<AutofillProfile>>* existing_profiles,
-      const std::string& app_locale,
-      std::vector<AutofillProfile>* merged_profiles);
-
-  // Returns true if |country_code| is a country that the user is likely to
-  // be associated with the user. More concretely, it checks if there are any
-  // addresses with this country or if the user's system timezone is in the
-  // given country.
-  virtual bool IsCountryOfInterest(const std::string& country_code) const;
-
   // Returns our best guess for the country a user is likely to use when
   // inputting a new address. The value is calculated once and cached, so it
   // will only update when Chrome is restarted.
@@ -386,6 +368,10 @@ class PersonalDataManager : public KeyedService,
 
   // Notifies observers that the waiting should be stopped.
   void NotifyPersonalDataObserver();
+
+  // Called when at least one (can be multiple) card was saved. |is_local_card|
+  // indicates if the card is saved to local storage.
+  void OnCreditCardSaved(bool is_local_card);
 
   void set_client_profile_validator_for_test(
       AutofillProfileValidator* validator) {
@@ -466,8 +452,6 @@ class PersonalDataManager : public KeyedService,
   FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest,
                            ClearCreditCardNonSettingsOrigins);
   FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest,
-                           MoveJapanCityToStreetAddress);
-  FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest,
                            RequestProfileServerValidity);
   FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest,
                            GetProfileSuggestions_Validity);
@@ -528,10 +512,10 @@ class PersonalDataManager : public KeyedService,
   // credit cardss. On subsequent calls, does nothing.
   void LogStoredCreditCardMetrics() const;
 
-  // Returns the value of the AutofillEnabled pref.
+  // Returns true if either Profile or CreditCard Autofill is enabled.
   virtual bool IsAutofillEnabled() const;
 
-  // Returns the value of the AutofillEnabled pref.
+  // Returns the value of the AutofillProfileEnabled pref.
   virtual bool IsAutofillProfileEnabled() const;
 
   // Returns the value of the AutofillCreditCardEnabled pref.
@@ -554,12 +538,6 @@ class PersonalDataManager : public KeyedService,
   // were not created from the settings page.
   void ClearProfileNonSettingsOrigins();
   void ClearCreditCardNonSettingsOrigins();
-
-  // Appends the value of the city field of a JP address to its street address
-  // field, separated by a newline, and clears the city field.
-  // TODO(rouslan): Remove this migration in or after October 2019. See bug:
-  // https://crbug.com/871301
-  void MoveJapanCityToStreetAddress();
 
   // Called when the |profile| is validated by the AutofillProfileValidator,
   // updates the profiles on the |ongoing_profile_changes_| and the DB.
@@ -685,30 +663,12 @@ class PersonalDataManager : public KeyedService,
           server_id_profiles_map,
       std::unordered_map<std::string, std::string>* guids_merge_map) const;
 
-  // Tries to merge the |server_address| into the |existing_profiles| if
-  // possible. Adds it to the list if no match is found. The existing profiles
-  // should be sorted by decreasing frecency outside of this method, since this
-  // will be called multiple times in a row. Returns the guid of the new or
-  // updated profile.
-  static std::string MergeServerAddressesIntoProfiles(
-      const AutofillProfile& server_address,
-      std::vector<AutofillProfile>* existing_profiles,
-      const std::string& app_locale,
-      const std::string& primary_account_email);
-
   // Removes profile from web database according to |guid| and resets credit
   // card's billing address if that address is used by any credit cards.
   // The method does not refresh, this allows multiple removal with one
   // refreshing in the end.
   void RemoveAutofillProfileByGUIDAndBlankCreditCardReference(
       const std::string& guid);
-
-  // Returns true if an address can be deleted in a major version upgrade.
-  // An address is deletable if it is unverified, and not used by a valid
-  // credit card as billing address, and not used for a long time(13 months).
-  bool IsAddressDeletable(
-      AutofillProfile* profile,
-      const std::unordered_set<std::string>& used_billing_address_guids);
 
   // Applies various fixes and cleanups on autofill addresses.
   void ApplyAddressFixesAndCleanups();

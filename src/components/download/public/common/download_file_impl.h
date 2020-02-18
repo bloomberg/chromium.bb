@@ -15,6 +15,7 @@
 #include <unordered_map>
 #include <vector>
 
+#include "base/cancelable_callback.h"
 #include "base/files/file.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -60,17 +61,16 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadFileImpl : public DownloadFile {
                   const DownloadItem::ReceivedSlices& received_slices,
                   bool is_parallelizable) override;
   void AddInputStream(std::unique_ptr<InputStream> stream,
-                      int64_t offset,
-                      int64_t length) override;
+                      int64_t offset) override;
   void RenameAndUniquify(const base::FilePath& full_path,
-                         const RenameCompletionCallback& callback) override;
+                         RenameCompletionCallback callback) override;
   void RenameAndAnnotate(
       const base::FilePath& full_path,
       const std::string& client_guid,
       const GURL& source_url,
       const GURL& referrer_url,
       mojo::PendingRemote<quarantine::mojom::Quarantine> remote_quarantine,
-      const RenameCompletionCallback& callback) override;
+      RenameCompletionCallback callback) override;
   void Detach() override;
   void Cancel() override;
   void SetPotentialFileLength(int64_t length) override;
@@ -80,14 +80,13 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadFileImpl : public DownloadFile {
   void Resume() override;
 
 #if defined(OS_ANDROID)
-  void RenameToIntermediateUri(
-      const GURL& original_url,
-      const GURL& referrer_url,
-      const base::FilePath& file_name,
-      const std::string& mime_type,
-      const base::FilePath& current_path,
-      const RenameCompletionCallback& callback) override;
-  void PublishDownload(const RenameCompletionCallback& callback) override;
+  void RenameToIntermediateUri(const GURL& original_url,
+                               const GURL& referrer_url,
+                               const base::FilePath& file_name,
+                               const std::string& mime_type,
+                               const base::FilePath& current_path,
+                               RenameCompletionCallback callback) override;
+  void PublishDownload(RenameCompletionCallback callback) override;
   base::FilePath GetDisplayName() override;
 #endif  // defined(OS_ANDROID)
 
@@ -102,7 +101,6 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadFileImpl : public DownloadFile {
   class COMPONENTS_DOWNLOAD_EXPORT SourceStream {
    public:
     SourceStream(int64_t offset,
-                 int64_t length,
                  int64_t starting_file_write_offset,
                  std::unique_ptr<InputStream> stream);
     ~SourceStream();
@@ -156,6 +154,9 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadFileImpl : public DownloadFile {
     void set_finished(bool finish) { finished_ = finish; }
     size_t index() { return index_; }
     void set_index(size_t index) { index_ = index; }
+    base::CancelableOnceClosure* read_stream_callback() {
+      return &read_stream_callback_;
+    }
 
    private:
     // Starting position of the stream, this is from the network response.
@@ -189,8 +190,16 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadFileImpl : public DownloadFile {
     // The stream through which data comes.
     std::unique_ptr<InputStream> input_stream_;
 
+    // Cancelable callback to read from the |input_stream_|.
+    base::CancelableOnceClosure read_stream_callback_;
+
     DISALLOW_COPY_AND_ASSIGN(SourceStream);
   };
+
+  // Sets the task runner for testing purpose, must be called before
+  // Initialize().
+  void SetTaskRunnerForTesting(
+      scoped_refptr<base::SequencedTaskRunner> task_runner);
 
  protected:
   // For test class overrides.
@@ -223,7 +232,7 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadFileImpl : public DownloadFile {
   struct RenameParameters {
     RenameParameters(RenameOption option,
                      const base::FilePath& new_path,
-                     const RenameCompletionCallback& completion_callback);
+                     RenameCompletionCallback completion_callback);
     ~RenameParameters();
 
     RenameOption option;
@@ -247,7 +256,7 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadFileImpl : public DownloadFile {
 
   // Called after |file_| was renamed.
   void OnRenameComplete(const base::FilePath& content_path,
-                        const RenameCompletionCallback& callback,
+                        RenameCompletionCallback callback,
                         DownloadInterruptReason reason);
 
   // Send an update on our progress.
@@ -277,9 +286,6 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadFileImpl : public DownloadFile {
   // Register callback and start to read data from the stream.
   void RegisterAndActivateStream(SourceStream* source_stream);
 
-  // Helper method to activate a stream and start reading from it.
-  void ActivateStream(SourceStream* source_stream);
-
   // Called when a stream completes.
   void OnStreamCompleted(SourceStream* source_stream);
 
@@ -301,6 +307,9 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadFileImpl : public DownloadFile {
   // If the file is a sparse file, return the total number of valid bytes.
   // Otherwise, return the current file size.
   int64_t TotalBytesReceived() const;
+
+  // Sends an error update to the observer.
+  void SendErrorUpdateIfFinished(DownloadInterruptReason reason);
 
   // Helper method to handle stream error
   void HandleStreamError(SourceStream* source_stream,
@@ -359,7 +368,12 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadFileImpl : public DownloadFile {
   base::TimeDelta download_time_with_parallel_streams_;
   base::TimeDelta download_time_without_parallel_streams_;
 
+  // The slices received, this is being updated when new data are written.
   std::vector<DownloadItem::ReceivedSlice> received_slices_;
+
+  // Slices to download, calculated during the initialization and are not
+  // updated when new data are written.
+  std::vector<DownloadItem::ReceivedSlice> slice_to_download_;
 
   // Used to track whether the download is paused or not. This value is ignored
   // when network service is disabled as download pause/resumption is handled
@@ -370,6 +384,9 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadFileImpl : public DownloadFile {
 
   // TaskRunner to post updates to the |observer_|.
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
+
+  // TaskRunner this object lives on after initialization.
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
 #if defined(OS_ANDROID)
   base::FilePath display_name_;

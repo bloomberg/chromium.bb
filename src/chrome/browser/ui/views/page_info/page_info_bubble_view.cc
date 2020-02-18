@@ -22,6 +22,7 @@
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/reputation/safety_tip_ui_helper.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -76,7 +77,6 @@
 #include "ui/views/layout/layout_manager.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
-#include "ui/views/window/dialog_client_view.h"
 #include "url/gurl.h"
 
 #if BUILDFLAG(FULL_SAFE_BROWSING)
@@ -507,6 +507,9 @@ PageInfoBubbleView::PageInfoBubbleView(
   // before PageInfo updates trigger child layouts.
   SetSize(GetPreferredSize());
 
+  // When |web_contents| is not from a Tab, |web_contents| does not have a
+  // |TabSpecificContentSettings| and need to create one; otherwise, noop.
+  TabSpecificContentSettings::CreateForWebContents(web_contents);
   presenter_ = std::make_unique<PageInfo>(
       this, profile, TabSpecificContentSettings::FromWebContents(web_contents),
       web_contents, url, security_level, visible_security_state);
@@ -614,7 +617,7 @@ void PageInfoBubbleView::SetCookieInfo(const CookieInfoList& cookie_info_list) {
   if (cookie_button_ == nullptr) {
     // Get the icon.
     PageInfoUI::PermissionInfo info;
-    info.type = CONTENT_SETTINGS_TYPE_COOKIES;
+    info.type = ContentSettingsType::COOKIES;
     info.setting = CONTENT_SETTING_ALLOW;
     info.is_incognito =
         Profile::FromBrowserContext(web_contents()->GetBrowserContext())
@@ -734,8 +737,8 @@ void PageInfoBubbleView::SetIdentityInfo(const IdentityInfo& identity_info) {
   std::unique_ptr<PageInfoUI::SecurityDescription> security_description =
       GetSecurityDescription(identity_info);
 
-  // Set the bubble title, update the title label text, then apply color.
   set_window_title(security_description->summary);
+  set_security_description_type(security_description->type);
   GetBubbleFrameView()->UpdateWindowTitle();
   int text_style = views::style::STYLE_PRIMARY;
   switch (security_description->summary_style) {
@@ -787,8 +790,16 @@ void PageInfoBubbleView::SetIdentityInfo(const IdentityInfo& identity_info) {
               PageInfo::SITE_IDENTITY_STATUS_EV_CERT &&
           identity_info.connection_status ==
               PageInfo::SITE_CONNECTION_STATUS_ENCRYPTED) {
-        subtitle_text =
-            base::UTF8ToUTF16(identity_info.identity_status_description);
+        // An EV cert is required to have an organization name, a city
+        // (localityName), and country, but state is "if any".
+        if (!certificate_->subject().organization_names.empty() &&
+            !certificate_->subject().locality_name.empty() &&
+            !certificate_->subject().country_name.empty()) {
+          subtitle_text = l10n_util::GetStringFUTF16(
+              IDS_PAGE_INFO_SECURITY_TAB_SECURE_IDENTITY_EV_VERIFIED,
+              base::UTF8ToUTF16(certificate_->subject().organization_names[0]),
+              base::UTF8ToUTF16(certificate_->subject().country_name));
+        }
       }
     }
 
@@ -924,8 +935,11 @@ PageInfoBubbleView::CreateSecurityDescriptionForPasswordReuse() const {
       l10n_util::GetStringUTF16(IDS_PAGE_INFO_CHANGE_PASSWORD_SUMMARY);
   auto* service = safe_browsing::ChromePasswordProtectionService::
       GetPasswordProtectionService(profile_);
+  std::vector<size_t> placeholder_offsets;
   security_description->details = service->GetWarningDetailText(
-      service->reused_password_account_type_for_last_shown_warning());
+      service->reused_password_account_type_for_last_shown_warning(),
+      &placeholder_offsets);
+  security_description->type = SecurityDescriptionType::SAFE_BROWSING;
   return security_description;
 }
 #endif
@@ -985,12 +999,16 @@ void PageInfoBubbleView::StyledLabelLinkClicked(views::StyledLabel* label,
                                                 int event_flags) {
   switch (label->GetID()) {
     case PageInfoBubbleView::VIEW_ID_PAGE_INFO_LABEL_SECURITY_DETAILS:
-      web_contents()->OpenURL(content::OpenURLParams(
-          GURL(chrome::kPageInfoHelpCenterURL), content::Referrer(),
-          WindowOpenDisposition::NEW_FOREGROUND_TAB, ui::PAGE_TRANSITION_LINK,
-          false));
-      presenter_->RecordPageInfoAction(
-          PageInfo::PAGE_INFO_CONNECTION_HELP_OPENED);
+      if (GetSecurityDescriptionType() == SecurityDescriptionType::SAFETY_TIP) {
+        OpenHelpCenterFromSafetyTip(web_contents());
+      } else {
+        web_contents()->OpenURL(content::OpenURLParams(
+            GURL(chrome::kPageInfoHelpCenterURL), content::Referrer(),
+            WindowOpenDisposition::NEW_FOREGROUND_TAB, ui::PAGE_TRANSITION_LINK,
+            false));
+        presenter_->RecordPageInfoAction(
+            PageInfo::PAGE_INFO_CONNECTION_HELP_OPENED);
+      }
       break;
     case PageInfoBubbleView::
         VIEW_ID_PAGE_INFO_LABEL_RESET_CERTIFICATE_DECISIONS:

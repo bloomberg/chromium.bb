@@ -6,12 +6,13 @@
 #define ASH_MEDIA_MEDIA_NOTIFICATION_CONTAINER_IMPL_H_
 
 #include "ash/ash_export.h"
+#include "base/containers/flat_set.h"
 #include "components/media_message_center/media_notification_container.h"
-#include "components/media_message_center/media_notification_view.h"
 #include "ui/message_center/views/message_view.h"
 
 namespace media_message_center {
-class MediaNotificationItem;
+class MediaSessionNotificationItem;
+class MediaNotificationView;
 }  // namespace media_message_center
 
 namespace ash {
@@ -26,7 +27,7 @@ class ASH_EXPORT MediaNotificationContainerImpl
  public:
   explicit MediaNotificationContainerImpl(
       const message_center::Notification& notification,
-      base::WeakPtr<media_message_center::MediaNotificationItem> item);
+      base::WeakPtr<media_message_center::MediaSessionNotificationItem> item);
   ~MediaNotificationContainerImpl() override;
 
   // message_center::MessageView:
@@ -36,13 +37,19 @@ class ASH_EXPORT MediaNotificationContainerImpl
       const override;
   void SetExpanded(bool expanded) override;
   void UpdateCornerRadius(int top_radius, int bottom_radius) override;
+  void UpdateControlButtonsVisibility() override;
 
   // media_message_center::MediaNotificationContainer:
   void OnExpanded(bool expanded) override;
+  void OnMediaSessionInfoChanged(
+      const media_session::mojom::MediaSessionInfoPtr& session_info) override {}
+  void OnMediaSessionMetadataChanged() override {}
   void OnVisibleActionsChanged(
-      const std::set<media_session::mojom::MediaSessionAction>& actions)
+      const base::flat_set<media_session::mojom::MediaSessionAction>& actions)
       override {}
   void OnMediaArtworkChanged(const gfx::ImageSkia& image) override {}
+  void OnColorsChanged(SkColor foreground, SkColor background) override;
+  void OnHeaderClicked() override {}
 
   // views::View:
   void OnMouseEvent(ui::MouseEvent* event) override;
@@ -51,11 +58,15 @@ class ASH_EXPORT MediaNotificationContainerImpl
   void UpdateControlButtonsVisibilityWithNotification(
       const message_center::Notification& notification);
 
-  // View containing close and settings buttons.
-  std::unique_ptr<message_center::NotificationControlButtonsView>
-      control_buttons_view_;
+  // Contains |control_buttons_view_| and puts a circular colored background
+  // behind it to ensure proper contrast.
+  views::View* control_buttons_container_ = nullptr;
 
-  media_message_center::MediaNotificationView view_;
+  // View containing close and settings buttons.
+  message_center::NotificationControlButtonsView* control_buttons_view_ =
+      nullptr;
+
+  media_message_center::MediaNotificationView* view_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(MediaNotificationContainerImpl);
 };

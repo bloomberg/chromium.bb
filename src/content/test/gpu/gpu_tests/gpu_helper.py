@@ -8,11 +8,12 @@ import mock
 # This set must be the union of the driver tags used in WebGL and WebGL2
 # expectations files.
 EXPECTATIONS_DRIVER_TAGS = frozenset([
-    'angle_lt_25.20.100.6444',
-    'angle_lt_25.20.100.6577',
-    'mesa_lt_17.1.6',
-    'mesa_lt_17.3.9',
-    'mesa_lt_19.1.2'
+    'intel_lt_25.20.100.6444',
+    'intel_lt_25.20.100.6577',
+    'intel_lt_26.20.100.7000',
+    'intel_lt_26.20.100.7323',
+    'mesa_eq_18.0.5',
+    'mesa_lt_19.1.2',
 ])
 
 
@@ -131,6 +132,16 @@ def GetSkiaRenderer(extra_browser_args):
       if "--disable-vulkan-fallback-to-gl-for-testing" in o:
         return 'skia-renderer'
   return 'no-skia-renderer'
+
+
+# Used to parse additional options sent to the browser instance via
+# '--extra-browser-args', looking for '--use-gl='.
+def GetGL(extra_browser_args):
+  if extra_browser_args:
+    for o in extra_browser_args:
+      if "--use-gl=" in o:
+        return 'use-gl'
+  return 'no-use-gl'
 
 
 # Used to parse additional options sent to the browser instance via

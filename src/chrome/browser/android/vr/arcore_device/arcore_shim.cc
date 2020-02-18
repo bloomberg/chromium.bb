@@ -7,6 +7,7 @@
 #include <dlfcn.h>
 
 #include "base/android/android_hardware_buffer_compat.h"
+#include "base/android/build_info.h"
 #include "base/logging.h"
 
 namespace {
@@ -64,6 +65,7 @@ namespace {
   CALL(ArSession_setCameraTextureName)        \
   CALL(ArSession_setDisplayGeometry)          \
   CALL(ArSession_update)                      \
+  CALL(ArTrackable_acquireNewAnchor)          \
   CALL(ArTrackable_getTrackingState)          \
   CALL(ArTrackable_getType)                   \
   CALL(ArTrackable_release)                   \
@@ -119,7 +121,8 @@ bool LoadArCoreSdk(const std::string& libraryPath) {
 }
 
 bool IsArCoreSupported() {
-  return base::AndroidHardwareBufferCompat::IsSupportAvailable();
+  return base::android::BuildInfo::GetInstance()->sdk_int() >=
+         base::android::SDK_VERSION_NOUGAT;
 }
 
 }  // namespace vr
@@ -274,6 +277,14 @@ void ArHitResult_acquireTrackable(const ArSession* session,
                                   ArTrackable** out_trackable) {
   arcore_api->impl_ArHitResult_acquireTrackable(session, hit_result,
                                                 out_trackable);
+}
+
+ArStatus ArTrackable_acquireNewAnchor(ArSession* session,
+                                      ArTrackable* trackable,
+                                      ArPose* pose,
+                                      ArAnchor** out_anchor) {
+  return arcore_api->impl_ArTrackable_acquireNewAnchor(session, trackable, pose,
+                                                       out_anchor);
 }
 
 void ArTrackable_getTrackingState(const ArSession* session,

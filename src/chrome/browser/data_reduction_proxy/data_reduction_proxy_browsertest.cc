@@ -19,13 +19,11 @@
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/browser/metrics/subprocess_metrics_provider.h"
-#include "chrome/browser/page_load_metrics/page_load_metrics_test_waiter.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_service_client_test_utils.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_pingback_client.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_util.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
@@ -35,6 +33,7 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "components/data_reduction_proxy/core/common/uma_util.h"
 #include "components/data_reduction_proxy/proto/client_config.pb.h"
+#include "components/page_load_metrics/browser/page_load_metrics_test_waiter.h"
 #include "components/prefs/pref_service.h"
 #include "components/previews/core/previews_experiments.h"
 #include "components/previews/core/previews_features.h"
@@ -44,12 +43,11 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/storage_partition.h"
-#include "content/public/browser/system_connector.h"
 #include "content/public/common/network_service_util.h"
-#include "content/public/common/service_names.mojom.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/test_navigation_observer.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/host_port_pair.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_request_headers.h"
@@ -63,7 +61,6 @@
 #include "services/network/public/cpp/network_switches.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "services/network/public/mojom/network_service_test.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace data_reduction_proxy {
@@ -87,18 +84,6 @@ std::unique_ptr<net::test_server::HttpResponse> BasicResponse(
   return response;
 }
 
-std::unique_ptr<net::test_server::HttpResponse> CreateDRPResponseWithHeader(
-    const net::test_server::HttpRequest& request) {
-  auto response = std::make_unique<net::test_server::BasicHttpResponse>();
-  const auto chrome_proxy_header = request.headers.find("chrome-proxy");
-  if (chrome_proxy_header != request.headers.end())
-    response->set_content(chrome_proxy_header->second);
-  response->set_content_type("text/html");
-  response->AddCustomHeader("chrome-proxy", "ofcl=10");
-  response->AddCustomHeader("via", "1.1 Chrome-Compression-Proxy");
-  return response;
-}
-
 std::unique_ptr<net::test_server::HttpResponse> IncrementRequestCount(
     const std::string& relative_url,
     int* request_count,
@@ -118,9 +103,9 @@ std::string GetDestinationHost(const net::test_server::HttpRequest& request) {
 
 void SimulateNetworkChange(network::mojom::ConnectionType type) {
   if (!content::IsInProcessNetworkService()) {
-    network::mojom::NetworkServiceTestPtr network_service_test;
-    content::GetSystemConnector()->BindInterface(
-        content::mojom::kNetworkServiceName, &network_service_test);
+    mojo::Remote<network::mojom::NetworkServiceTest> network_service_test;
+    content::GetNetworkService()->BindTestInterface(
+        network_service_test.BindNewPipeAndPassReceiver());
     base::RunLoop run_loop;
     network_service_test->SimulateNetworkChange(type, run_loop.QuitClosure());
     run_loop.Run();
@@ -148,12 +133,10 @@ ClientConfig CreateEmptyConfig() {
 class ScopedConfigWaiter
     : public mojom::DataReductionProxyThrottleConfigObserver {
  public:
-  explicit ScopedConfigWaiter(Profile* profile) : binding_(this) {
-    mojom::DataReductionProxyThrottleConfigObserverPtr observer;
-    binding_.Bind(mojo::MakeRequest(&observer));
+  explicit ScopedConfigWaiter(Profile* profile) {
     DataReductionProxyChromeSettingsFactory::GetForBrowserContext(profile)
         ->data_reduction_proxy_service()
-        ->AddThrottleConfigObserver(std::move(observer));
+        ->AddThrottleConfigObserver(receiver_.BindNewPipeAndPassRemote());
   }
 
   ~ScopedConfigWaiter() override { run_loop_.Run(); }
@@ -172,7 +155,8 @@ class ScopedConfigWaiter
   }
 
   mojom::DataReductionProxyThrottleConfigPtr initial_config_;
-  mojo::Binding<mojom::DataReductionProxyThrottleConfigObserver> binding_;
+  mojo::Receiver<mojom::DataReductionProxyThrottleConfigObserver> receiver_{
+      this};
   base::RunLoop run_loop_;
 };
 
@@ -205,9 +189,7 @@ class DataReductionProxyBrowsertestBase : public InProcessBrowserTest {
                                     config_server_.base_url().spec());
   }
 
-  void SetUp() override {
-    InProcessBrowserTest::SetUp();
-  }
+  void SetUp() override { InProcessBrowserTest::SetUp(); }
 
   void SetUpOnMainThread() override {
     // Make sure the favicon doesn't mess with the tests.
@@ -320,7 +302,8 @@ class DataReductionProxyBrowsertestBase : public InProcessBrowserTest {
     // Config is not fetched if the holdback group is enabled and lite page
     // redirect previews are not enabled. So, return early.
     if (data_reduction_proxy::params::IsIncludedInHoldbackFieldTrial() &&
-        !previews::params::IsLitePageServerPreviewsEnabled()) {
+        !previews::params::IsLitePageServerPreviewsEnabled() &&
+        !params::ForceEnableClientConfigServiceForAllDataSaverUsers()) {
       return;
     }
 
@@ -331,7 +314,8 @@ class DataReductionProxyBrowsertestBase : public InProcessBrowserTest {
     // Config is not fetched if the holdback group is enabled and lite page
     // redirect previews are not enabled. So, return early.
     if (data_reduction_proxy::params::IsIncludedInHoldbackFieldTrial() &&
-        !previews::params::IsLitePageServerPreviewsEnabled()) {
+        !previews::params::IsLitePageServerPreviewsEnabled() &&
+        !params::ForceEnableClientConfigServiceForAllDataSaverUsers()) {
       return;
     }
     // Destructor of |config_waiter_| waits for the config fetch request to
@@ -355,7 +339,8 @@ class DataReductionProxyBrowsertestBase : public InProcessBrowserTest {
     // redirect previews are enabled.
     EXPECT_TRUE(
         !data_reduction_proxy::params::IsIncludedInHoldbackFieldTrial() ||
-        previews::params::IsLitePageServerPreviewsEnabled());
+        previews::params::IsLitePageServerPreviewsEnabled() ||
+        params::ForceEnableClientConfigServiceForAllDataSaverUsers());
 
     auto response = std::make_unique<net::test_server::BasicHttpResponse>();
     response->set_content(config_.SerializeAsString());
@@ -365,7 +350,6 @@ class DataReductionProxyBrowsertestBase : public InProcessBrowserTest {
 
   ClientConfig config_;
   std::unique_ptr<ScopedConfigWaiter> config_waiter_;
-  base::test::ScopedFeatureList param_feature_list_;
   net::EmbeddedTestServer secure_proxy_check_server_;
   net::EmbeddedTestServer config_server_;
   std::unique_ptr<net::test_server::ControllableHttpResponse> favicon_catcher_;
@@ -511,6 +495,11 @@ IN_PROC_BROWSER_TEST_F(DataReductionProxyBrowsertest, DisabledOnIncognito) {
   ASSERT_TRUE(test_server.Start());
 
   Browser* incognito = CreateIncognitoBrowser();
+  ASSERT_FALSE(DataReductionProxyChromeSettingsFactory::GetForBrowserContext(
+      incognito->profile()));
+  ASSERT_TRUE(DataReductionProxyChromeSettingsFactory::GetForBrowserContext(
+      browser()->profile()));
+
   ui_test_utils::NavigateToURL(
       incognito, GetURLWithMockHost(test_server, "/echoheader?Chrome-Proxy"));
   EXPECT_EQ(GetBody(incognito), kDummyBody);
@@ -691,19 +680,27 @@ IN_PROC_BROWSER_TEST_F(DataReductionProxyBrowsertest, UMAMetricsRecorded) {
 
 // Test that enabling the holdback disables the proxy and that the client config
 // is fetched when lite page redirect preview is enabled.
-// First parameter is true if the data reduction proxy holdback should be
-// enabled. Second parameter is true if lite page redirect preview is enabled.
 class DataReductionProxyWithHoldbackBrowsertest
-    : public ::testing::WithParamInterface<std::tuple<bool, bool>>,
+    : public ::testing::WithParamInterface<std::tuple<bool, bool, bool>>,
       public DataReductionProxyBrowsertest {
  public:
   DataReductionProxyWithHoldbackBrowsertest()
       : DataReductionProxyBrowsertest(),
-        data_reduction_proxy_holdback_enabled_(std::get<0>(GetParam())),
-        lite_page_redirect_previews_enabled_(std::get<1>(GetParam())) {}
+        // Consider the holdback as enabled if holdback is enabled or the
+        // |force_enable_config_service_fetches_| is enabled.
+        data_reduction_proxy_holdback_enabled_(std::get<2>(GetParam()) ||
+                                               std::get<0>(GetParam())),
+        lite_page_redirect_previews_enabled_(std::get<1>(GetParam())),
+        force_enable_config_service_fetches_(std::get<2>(GetParam())) {}
 
   void SetUp() override {
-    if (data_reduction_proxy_holdback_enabled_) {
+    if (force_enable_config_service_fetches_) {
+      scoped_feature_list_.InitAndEnableFeatureWithParameters(
+          data_reduction_proxy::features::kDataReductionProxyHoldback,
+          {{"force_enable_config_service_fetches", "true"}});
+    }
+    if (!force_enable_config_service_fetches_ &&
+        data_reduction_proxy_holdback_enabled_) {
       scoped_feature_list_.InitAndEnableFeature(
           data_reduction_proxy::features::kDataReductionProxyHoldback);
     }
@@ -717,6 +714,7 @@ class DataReductionProxyWithHoldbackBrowsertest
 
   const bool data_reduction_proxy_holdback_enabled_;
   const bool lite_page_redirect_previews_enabled_;
+  const bool force_enable_config_service_fetches_;
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
@@ -747,7 +745,8 @@ IN_PROC_BROWSER_TEST_P(DataReductionProxyWithHoldbackBrowsertest,
   // holdback is not enabled would trigger and cause the test to fail.
   ui_test_utils::NavigateToURL(browser(), GURL("http://does.not.resolve/foo"));
 
-  if (data_reduction_proxy_holdback_enabled_) {
+  if (data_reduction_proxy_holdback_enabled_ ||
+      force_enable_config_service_fetches_) {
     EXPECT_NE(GetBody(), kPrimaryResponse);
   } else {
     EXPECT_EQ(GetBody(), kPrimaryResponse);
@@ -756,9 +755,12 @@ IN_PROC_BROWSER_TEST_P(DataReductionProxyWithHoldbackBrowsertest,
 
 // First parameter is true if the data reduction proxy holdback should be
 // enabled. Second parameter is true if lite page redirect preview is enabled.
-INSTANTIATE_TEST_SUITE_P(,
+// Third parameter is true if data reduction proxy config should always be
+// fetched.
+INSTANTIATE_TEST_SUITE_P(All,
                          DataReductionProxyWithHoldbackBrowsertest,
                          ::testing::Combine(::testing::Bool(),
+                                            ::testing::Bool(),
                                             ::testing::Bool()));
 
 class DataReductionProxyExpBrowsertest : public DataReductionProxyBrowsertest {
@@ -979,73 +981,6 @@ class DataReductionProxyFallbackBrowsertest
   net::EmbeddedTestServer primary_server_;
   net::EmbeddedTestServer secondary_server_;
 };
-
-class TestDataReductionProxyPingbackClient
-    : public DataReductionProxyPingbackClient {
- public:
-  bool received_valid_pingback() const { return received_valid_pingback_; }
-  uint64_t received_page_id() const { return received_page_id_; }
-
- private:
-  void SendPingback(const DataReductionProxyData& data,
-                    const DataReductionProxyPageLoadTiming& timing) override {
-    EXPECT_TRUE(data.used_data_reduction_proxy());
-    EXPECT_EQ(kSessionKey, data.session_key());
-    EXPECT_GT(*data.page_id(), 0U);
-    received_valid_pingback_ = true;
-    received_page_id_ = *data.page_id();
-  }
-
-  void SetPingbackReportingFraction(
-      float pingback_reporting_fraction) override {}
-
-  bool received_valid_pingback_ = false;
-  uint64_t received_page_id_ = 0;
-};
-
-IN_PROC_BROWSER_TEST_F(DataReductionProxyBrowsertest, PingbackSent) {
-  net::EmbeddedTestServer primary_server;
-  primary_server.RegisterRequestHandler(
-      base::BindRepeating(&CreateDRPResponseWithHeader));
-  ASSERT_TRUE(primary_server.Start());
-  SetConfig(CreateConfigForServer(primary_server));
-  // A network change forces the config to be fetched.
-  SimulateNetworkChange(network::mojom::ConnectionType::CONNECTION_3G);
-  WaitForConfig();
-
-  // Pingback client is owned by the DRP service.
-  TestDataReductionProxyPingbackClient* pingback_client =
-      new TestDataReductionProxyPingbackClient();
-  DataReductionProxyChromeSettingsFactory::GetForBrowserContext(
-      browser()->profile())
-      ->data_reduction_proxy_service()
-      ->SetPingbackClientForTesting(pingback_client);
-
-  // Proxy will be used, so it shouldn't matter if the host cannot be resolved.
-  ui_test_utils::NavigateToURL(
-      browser(), GURL("http://does.not.resolve.com/echo_chromeproxy_header"));
-  std::string body = GetBody();
-
-  // Navigate away for the metrics to be recorded.
-  ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
-
-  EXPECT_TRUE(pingback_client->received_valid_pingback());
-  EXPECT_THAT(body, HasSubstr(base::StringPrintf("s=%s,", kSessionKey)));
-  EXPECT_THAT(body, HasSubstr("pid="));
-
-  // Parse the page ID from chrom-proxy request header and compare with page ID
-  // sent in pingback.
-  uint64_t request_page_id = 0;
-  base::StringPairs kv_pairs;
-  EXPECT_TRUE(base::SplitStringIntoKeyValuePairs(body, '=', ',', &kv_pairs));
-  for (const auto& kv_pair : kv_pairs) {
-    if (kv_pair.first == "pid")
-      EXPECT_TRUE(base::HexStringToUInt64(kv_pair.second, &request_page_id));
-  }
-
-  EXPECT_NE(0u, request_page_id);
-  EXPECT_EQ(pingback_client->received_page_id(), request_page_id);
-}
 
 IN_PROC_BROWSER_TEST_F(DataReductionProxyFallbackBrowsertest,
                        FallbackProxyUsedOnNetError) {
@@ -1311,12 +1246,22 @@ IN_PROC_BROWSER_TEST_F(DataReductionProxyFallbackBrowsertest,
       BYPASS_EVENT_TYPE_STATUS_502_HTTP_BAD_GATEWAY, 1);
 }
 
-IN_PROC_BROWSER_TEST_F(DataReductionProxyFallbackBrowsertest,
-                       ProxyShortBypassedOn502ErrorWithFeature) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeatureWithParameters(
-      features::kDataReductionProxyBlockOnBadGatewayResponse,
-      {{"block_duration_seconds", "10"}});
+class DataReductionProxyFallbackBrowsertestWithBlockOnBadGatewayFeature
+    : public DataReductionProxyFallbackBrowsertest {
+ public:
+  DataReductionProxyFallbackBrowsertestWithBlockOnBadGatewayFeature() {
+    feature_list_.InitAndEnableFeatureWithParameters(
+        features::kDataReductionProxyBlockOnBadGatewayResponse,
+        {{"block_duration_seconds", "10"}});
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(
+    DataReductionProxyFallbackBrowsertestWithBlockOnBadGatewayFeature,
+    ProxyShortBypassedOn502ErrorWithFeature) {
   base::HistogramTester histogram_tester;
   net::EmbeddedTestServer test_server;
   test_server.RegisterRequestHandler(
@@ -1367,13 +1312,14 @@ class DataReductionProxyWarmupURLBrowsertest
       : via_header_(std::get<1>(GetParam()) ? "1.1 Chrome-Compression-Proxy"
                                             : "bad"),
         primary_server_(GetTestServerType()),
-        secondary_server_(GetTestServerType()) {}
-
-  void SetUpOnMainThread() override {
+        secondary_server_(GetTestServerType()) {
     if (!std::get<2>(GetParam())) {
       scoped_feature_list_.InitAndDisableFeature(
           features::kDataReductionProxyDisableProxyFailedWarmup);
     }
+  }
+
+  void SetUpOnMainThread() override {
     primary_server_loop_ = std::make_unique<base::RunLoop>();
     primary_server_.RegisterRequestHandler(base::BindRepeating(
         &DataReductionProxyWarmupURLBrowsertest::WaitForWarmupRequest,
@@ -1516,7 +1462,7 @@ IN_PROC_BROWSER_TEST_P(
 // Second parameter is true if the test proxy server should set via header
 // correctly on the response headers.
 INSTANTIATE_TEST_SUITE_P(
-    ,
+    All,
     DataReductionProxyWarmupURLBrowsertest,
     ::testing::Combine(
         testing::Values(ProxyServer_ProxyScheme_HTTP,

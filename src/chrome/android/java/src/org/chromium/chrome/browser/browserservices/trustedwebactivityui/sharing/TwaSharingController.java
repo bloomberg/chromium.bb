@@ -8,11 +8,14 @@ import android.net.Uri;
 import android.text.TextUtils;
 import android.util.Pair;
 
+import androidx.browser.trusted.sharing.ShareData;
+import androidx.browser.trusted.sharing.ShareTarget;
+
 import org.chromium.base.Promise;
+import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.browserservices.TrustedWebActivityUmaRecorder;
 import org.chromium.chrome.browser.browserservices.TrustedWebActivityUmaRecorder.ShareRequestMethod;
-import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.TrustedWebActivityVerifier;
-import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
+import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.TwaVerifier;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityNavigationController;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabProvider;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
@@ -25,9 +28,6 @@ import java.util.Locale;
 
 import javax.inject.Inject;
 
-import androidx.browser.trusted.sharing.ShareData;
-import androidx.browser.trusted.sharing.ShareTarget;
-
 /**
  * Handles sharing intents coming to Trusted Web Activities.
  */
@@ -36,36 +36,38 @@ public class TwaSharingController {
     private final CustomTabActivityTabProvider mTabProvider;
     private final CustomTabActivityNavigationController mNavigationController;
     private final WebApkPostShareTargetNavigator mPostNavigator;
-    private final TrustedWebActivityVerifier mVerifier;
+    private final TwaVerifier mVerifierDelegate;
     private final TrustedWebActivityUmaRecorder mUmaRecorder;
 
     @Inject
     public TwaSharingController(CustomTabActivityTabProvider tabProvider,
             CustomTabActivityNavigationController navigationController,
             WebApkPostShareTargetNavigator postNavigator,
-            TrustedWebActivityVerifier verifier,
+            TwaVerifier verifierDelegate,
             TrustedWebActivityUmaRecorder umaRecorder) {
         mTabProvider = tabProvider;
         mNavigationController = navigationController;
         mPostNavigator = postNavigator;
-        mVerifier = verifier;
+        mVerifierDelegate = verifierDelegate;
         mUmaRecorder = umaRecorder;
     }
 
     /**
-     * Checks whether the incoming intent (represented by a {@link CustomTabIntentDataProvider})
-     * is a sharing intent and attempts to perform the sharing.
+     * Checks whether the incoming intent (represented by a
+     * {@link BrowserServicesIntentDataProvider}) is a sharing intent and attempts to perform the
+     * sharing.
      *
      * Returns a {@link Promise<Boolean>} with a boolean telling whether sharing was successful.
      */
-    public Promise<Boolean> deliverToShareTarget(CustomTabIntentDataProvider intentDataProvider) {
+    public Promise<Boolean> deliverToShareTarget(
+            BrowserServicesIntentDataProvider intentDataProvider) {
         ShareData shareData = intentDataProvider.getShareData();
         ShareTarget shareTarget = intentDataProvider.getShareTarget();
         if (shareTarget == null || shareData == null) {
             return Promise.fulfilled(false);
         }
 
-        return mVerifier.verifyOrigin(shareTarget.action).then(
+        return mVerifierDelegate.verify(shareTarget.action).then(
                 (Promise.Function<Boolean, Boolean>) (verified) -> {
             if (!verified) {
                 return false;
@@ -95,7 +97,6 @@ public class TwaSharingController {
         String action = shareTarget.action;
         String paramTitle = params.title;
         String paramText = params.text;
-        String paramUrl = ""; // Not supported on Android
         String method = shareTarget.method;
         boolean isPost = method != null && "POST".equals(method.toUpperCase(Locale.ENGLISH));
         String encodingType = shareTarget.encodingType;
@@ -110,8 +111,8 @@ public class TwaSharingController {
             filesArray[i] = file.name;
             acceptsArray[i] =  file.acceptedTypes.toArray(new String[file.acceptedTypes.size()]);
         }
-        return new WebApkInfo.ShareTarget(action, paramTitle, paramText, paramUrl, isPost,
-                isMultipart, filesArray, acceptsArray);
+        return new WebApkInfo.ShareTarget(
+                action, paramTitle, paramText, isPost, isMultipart, filesArray, acceptsArray);
     }
 
     private boolean sendPost(ShareData shareData, WebApkInfo.ShareTarget target) {

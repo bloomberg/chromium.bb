@@ -15,6 +15,7 @@
 #include "cc/animation/element_animations.h"
 #include "cc/animation/keyframe_effect.h"
 #include "cc/animation/scroll_offset_animation_curve.h"
+#include "cc/animation/scroll_offset_animation_curve_factory.h"
 #include "cc/animation/scroll_offset_animations.h"
 #include "cc/animation/single_keyframe_effect_animation.h"
 #include "cc/animation/timing_function.h"
@@ -352,7 +353,7 @@ class LayerTreeHostAnimationTestAddKeyframeModelWithTimingFunction
                      base::TimeTicks monotonic_time) override {
     // TODO(ajuma): This test only checks the active tree. Add checks for
     // pending tree too.
-    if (!host_impl->active_tree()->root_layer_for_testing())
+    if (!host_impl->active_tree()->root_layer())
       return;
 
     // Wait for the commit with the animation to happen.
@@ -793,10 +794,9 @@ class LayerTreeHostAnimationTestScrollOffsetChangesArePropagated
     switch (layer_tree_host()->SourceFrameNumber()) {
       case 1: {
         std::unique_ptr<ScrollOffsetAnimationCurve> curve(
-            ScrollOffsetAnimationCurve::Create(
-                gfx::ScrollOffset(500.f, 550.f),
-                CubicBezierTimingFunction::CreatePreset(
-                    CubicBezierTimingFunction::EaseType::EASE_IN_OUT)));
+            ScrollOffsetAnimationCurveFactory::
+                CreateEaseInOutAnimationForTesting(
+                    gfx::ScrollOffset(500.f, 550.f)));
         std::unique_ptr<KeyframeModel> keyframe_model(KeyframeModel::Create(
             std::move(curve), 1, 0, TargetProperty::SCROLL_OFFSET));
         keyframe_model->set_needs_synchronized_start_time(true);
@@ -880,7 +880,9 @@ class LayerTreeHostAnimationTestScrollOffsetAnimationTakeover
   scoped_refptr<FakePictureLayer> scroll_layer_;
 };
 
-MULTI_THREAD_TEST_F(LayerTreeHostAnimationTestScrollOffsetAnimationTakeover);
+// TODO(crbug.com/1018213):  [BlinkGenPropertyTrees] Scroll Animation should be
+// taken over from cc when scroll is unpromoted.
+// MULTI_THREAD_TEST_F(LayerTreeHostAnimationTestScrollOffsetAnimationTakeover);
 
 // Verifies that an impl-only scroll offset animation gets updated when the
 // scroll offset is adjusted on the main thread.
@@ -1005,10 +1007,8 @@ class LayerTreeHostPresentationDuringAnimation
     layer_tree_host()->root_layer()->AddChild(scroll_layer_);
 
     std::unique_ptr<ScrollOffsetAnimationCurve> curve(
-        ScrollOffsetAnimationCurve::Create(
-            gfx::ScrollOffset(6500.f, 7500.f),
-            CubicBezierTimingFunction::CreatePreset(
-                CubicBezierTimingFunction::EaseType::EASE_IN_OUT)));
+        ScrollOffsetAnimationCurveFactory::CreateEaseInOutAnimationForTesting(
+            gfx::ScrollOffset(6500.f, 7500.f)));
     std::unique_ptr<KeyframeModel> keyframe_model(KeyframeModel::Create(
         std::move(curve), 1, 0, TargetProperty::SCROLL_OFFSET));
     keyframe_model->set_needs_synchronized_start_time(true);
@@ -1083,10 +1083,8 @@ class LayerTreeHostAnimationTestScrollOffsetAnimationRemoval
     layer_tree_host()->root_layer()->AddChild(scroll_layer_);
 
     std::unique_ptr<ScrollOffsetAnimationCurve> curve(
-        ScrollOffsetAnimationCurve::Create(
-            gfx::ScrollOffset(6500.f, 7500.f),
-            CubicBezierTimingFunction::CreatePreset(
-                CubicBezierTimingFunction::EaseType::EASE_IN_OUT)));
+        ScrollOffsetAnimationCurveFactory::CreateEaseInOutAnimationForTesting(
+            gfx::ScrollOffset(6500.f, 7500.f)));
     std::unique_ptr<KeyframeModel> keyframe_model(KeyframeModel::Create(
         std::move(curve), 1, 0, TargetProperty::SCROLL_OFFSET));
     keyframe_model->set_needs_synchronized_start_time(true);
@@ -1155,7 +1153,7 @@ class LayerTreeHostAnimationTestScrollOffsetAnimationRemoval
     if (!host_impl->pending_tree())
       return false;
 
-    if (!host_impl->active_tree()->root_layer_for_testing())
+    if (!host_impl->active_tree()->root_layer())
       return false;
 
     scoped_refptr<AnimationTimeline> timeline_impl =
@@ -1211,10 +1209,8 @@ class LayerTreeHostAnimationTestScrollOffsetAnimationCompletion
     layer_tree_host()->root_layer()->AddChild(scroll_layer_);
 
     std::unique_ptr<ScrollOffsetAnimationCurve> curve(
-        ScrollOffsetAnimationCurve::Create(
-            final_position_,
-            CubicBezierTimingFunction::CreatePreset(
-                CubicBezierTimingFunction::EaseType::EASE_IN_OUT)));
+        ScrollOffsetAnimationCurveFactory::CreateEaseInOutAnimationForTesting(
+            final_position_));
     std::unique_ptr<KeyframeModel> keyframe_model(KeyframeModel::Create(
         std::move(curve), 1, 0, TargetProperty::SCROLL_OFFSET));
     keyframe_model->set_needs_synchronized_start_time(true);
@@ -2163,10 +2159,8 @@ class ImplSideInvalidationWithoutCommitTestScroll
 
   void BeginTest() override {
     std::unique_ptr<ScrollOffsetAnimationCurve> curve(
-        ScrollOffsetAnimationCurve::Create(
-            gfx::ScrollOffset(500.f, 550.f),
-            CubicBezierTimingFunction::CreatePreset(
-                CubicBezierTimingFunction::EaseType::EASE_IN_OUT)));
+        ScrollOffsetAnimationCurveFactory::CreateEaseInOutAnimationForTesting(
+            gfx::ScrollOffset(500.f, 550.f)));
     std::unique_ptr<KeyframeModel> keyframe_model(KeyframeModel::Create(
         std::move(curve), 1, 0, TargetProperty::SCROLL_OFFSET));
     keyframe_model->set_needs_synchronized_start_time(true);
@@ -2349,11 +2343,11 @@ class LayerTreeHostAnimationTestSetPotentiallyAnimatingOnLacDestruction
   void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) override {
     if (host_impl->pending_tree()->source_frame_number() <= 1) {
       EXPECT_TRUE(host_impl->pending_tree()
-                      ->root_layer_for_testing()
+                      ->root_layer()
                       ->screen_space_transform_is_animating());
     } else {
       EXPECT_FALSE(host_impl->pending_tree()
-                       ->root_layer_for_testing()
+                       ->root_layer()
                        ->screen_space_transform_is_animating());
     }
   }
@@ -2373,7 +2367,7 @@ class LayerTreeHostAnimationTestSetPotentiallyAnimatingOnLacDestruction
                                    DrawResult draw_result) override {
     const bool screen_space_transform_is_animating =
         host_impl->active_tree()
-            ->root_layer_for_testing()
+            ->root_layer()
             ->screen_space_transform_is_animating();
 
     // Check that screen_space_transform_is_animating changes only once.

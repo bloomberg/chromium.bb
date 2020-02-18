@@ -19,6 +19,7 @@
 #include "chromecast/media/cma/backend/cma_backend_factory.h"
 #include "media/audio/audio_io.h"
 #include "media/audio/test_audio_thread.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -26,8 +27,8 @@
 namespace {
 
 std::unique_ptr<service_manager::Connector> CreateConnector() {
-  service_manager::mojom::ConnectorRequest request;
-  return service_manager::Connector::Create(&request);
+  mojo::PendingReceiver<service_manager::mojom::Connector> receiver;
+  return service_manager::Connector::Create(&receiver);
 }
 
 std::string DummyGetSessionId(std::string /* audio_group_id */) {
@@ -65,7 +66,8 @@ void SignalPull(
 
 void SignalError(
     ::media::AudioOutputStream::AudioSourceCallback* source_callback) {
-  source_callback->OnError();
+  source_callback->OnError(
+      ::media::AudioOutputStream::AudioSourceCallback::ErrorType::kUnknown);
 }
 
 // Mock implementations
@@ -79,7 +81,7 @@ class MockAudioSourceCallback
 
   MOCK_METHOD4(OnMoreData,
                int(base::TimeDelta, base::TimeTicks, int, ::media::AudioBus*));
-  MOCK_METHOD0(OnError, void());
+  MOCK_METHOD1(OnError, void(ErrorType));
 
  private:
   int OnMoreDataImpl(base::TimeDelta /* delay */,
@@ -365,7 +367,7 @@ TEST_F(CastAudioMixerTest, OnError) {
 
   // Note that error will only be triggered on the first stream because that
   // is the only stream that has been started.
-  EXPECT_CALL(source, OnError());
+  EXPECT_CALL(source, OnError(_));
   SignalError(source_callback_);
   base::RunLoop().RunUntilIdle();
 

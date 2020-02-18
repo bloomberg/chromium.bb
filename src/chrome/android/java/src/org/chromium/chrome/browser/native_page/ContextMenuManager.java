@@ -4,18 +4,19 @@
 
 package org.chromium.chrome.browser.native_page;
 
-import android.support.annotation.IntDef;
-import android.support.annotation.StringRes;
 import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MenuItem.OnMenuItemClickListener;
 import android.view.View;
 
+import androidx.annotation.IntDef;
+import androidx.annotation.StringRes;
+
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.ui.base.WindowAndroid.OnCloseContextMenuListener;
 import org.chromium.ui.mojom.WindowOpenDisposition;
 
@@ -186,15 +187,6 @@ public class ContextMenuManager implements OnCloseContextMenuListener {
         if (mAnchorView == null) return;
         mAnchorView = null;
         mTouchEnabledDelegate.setTouchEnabled(true);
-    }
-
-    /**
-     * Preserves delegate's reference in View's tag so it can later be retrieved from focused view.
-     */
-    public static void registerViewForTouchlessContextMenu(View view, Delegate delegate) {
-        if (FeatureUtilities.isNoTouchModeEnabled()) {
-            view.setTag(R.id.context_menu_delegate, delegate);
-        }
     }
 
     /**

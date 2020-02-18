@@ -12,7 +12,8 @@
 #include "base/strings/string16.h"
 #include "components/autofill/content/common/mojom/autofill_driver.mojom.h"
 #include "components/autofill/core/common/password_form.h"
-#include "mojo/public/cpp/bindings/associated_binding_set.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 class FakeMojoPasswordManagerDriver
@@ -22,8 +23,9 @@ class FakeMojoPasswordManagerDriver
 
   ~FakeMojoPasswordManagerDriver() override;
 
-  void BindRequest(
-      autofill::mojom::PasswordManagerDriverAssociatedRequest request);
+  void BindReceiver(
+      mojo::PendingAssociatedReceiver<autofill::mojom::PasswordManagerDriver>
+          receiver);
 
   // Flushes all pending messages from the associated binding.
   void Flush();
@@ -32,23 +34,11 @@ class FakeMojoPasswordManagerDriver
   // TODO(crbug.com/948062): Migrate the other methods to GMock as well.
   MOCK_METHOD0(ShowTouchToFill, void());
 
-  bool called_show_pw_suggestions() const {
-    return called_show_pw_suggestions_;
-  }
-
-  const base::Optional<base::string16>& show_pw_suggestions_username() const {
-    return show_pw_suggestions_username_;
-  }
-
-  int show_pw_suggestions_options() const {
-    return show_pw_suggestions_options_;
-  }
-
-  void reset_show_pw_suggestions() {
-    called_show_pw_suggestions_ = false;
-    show_pw_suggestions_username_ = base::nullopt;
-    show_pw_suggestions_options_ = -1;
-  }
+  MOCK_METHOD4(ShowPasswordSuggestions,
+               void(base::i18n::TextDirection,
+                    const base::string16&,
+                    int,
+                    const gfx::RectF&));
 
   bool called_show_not_secure_warning() const {
     return called_show_not_secure_warning_;
@@ -73,9 +63,9 @@ class FakeMojoPasswordManagerDriver
     return called_same_document_navigation_;
   }
 
-  const base::Optional<autofill::PasswordForm>&
-  password_form_same_document_navigation() const {
-    return password_form_same_document_navigation_;
+  const base::Optional<autofill::PasswordForm>& password_form_maybe_submitted()
+      const {
+    return password_form_maybe_submitted_;
   }
 
   bool called_password_forms_parsed() const {
@@ -148,13 +138,8 @@ class FakeMojoPasswordManagerDriver
   void PasswordFormSubmitted(
       const autofill::PasswordForm& password_form) override;
 
-  void SameDocumentNavigation(
-      const autofill::PasswordForm& password_form) override;
-
-  void ShowPasswordSuggestions(base::i18n::TextDirection text_direction,
-                               const base::string16& typed_username,
-                               int options,
-                               const gfx::RectF& bounds) override;
+  void SameDocumentNavigation(autofill::mojom::SubmissionIndicatorEvent
+                                  submission_indication_event) override;
 
   void RecordSavePasswordProgress(const std::string& log) override;
 
@@ -174,22 +159,16 @@ class FakeMojoPasswordManagerDriver
   void LogFirstFillingResult(uint32_t form_renderer_id,
                              int32_t result) override {}
 
-  // Records whether ShowPasswordSuggestions() gets called.
-  bool called_show_pw_suggestions_ = false;
-  // Records data received via ShowPasswordSuggestions() call.
-  base::Optional<base::string16> show_pw_suggestions_username_;
-  int show_pw_suggestions_options_ = -1;
   // Records whether ShowNotSecureWarning() gets called.
   bool called_show_not_secure_warning_ = false;
   // Records whether PasswordFormSubmitted() gets called.
   bool called_password_form_submitted_ = false;
   // Records data received via PasswordFormSubmitted() call.
   base::Optional<autofill::PasswordForm> password_form_submitted_;
+  // Records data received via ShowManualFallbackForSaving() call.
+  base::Optional<autofill::PasswordForm> password_form_maybe_submitted_;
   // Records whether SameDocumentNavigation() gets called.
   bool called_same_document_navigation_ = false;
-  // Records data received via SameDocumentNavigation() call.
-  base::Optional<autofill::PasswordForm>
-      password_form_same_document_navigation_;
   // Records whether PasswordFormsParsed() gets called.
   bool called_password_forms_parsed_ = false;
   // Records if the list received via PasswordFormsParsed() call was empty.
@@ -219,7 +198,8 @@ class FakeMojoPasswordManagerDriver
   autofill::mojom::FocusedFieldType last_focused_field_type_ =
       autofill::mojom::FocusedFieldType::kUnknown;
 
-  mojo::AssociatedBinding<autofill::mojom::PasswordManagerDriver> binding_;
+  mojo::AssociatedReceiver<autofill::mojom::PasswordManagerDriver> receiver_{
+      this};
 };
 
 #endif  // CHROME_RENDERER_AUTOFILL_FAKE_MOJO_PASSWORD_MANAGER_DRIVER_H_

@@ -10,7 +10,6 @@
 #include "base/callback.h"
 #import "base/mac/foundation_util.h"
 #include "base/mac/mac_util.h"
-#import "base/mac/scoped_nsautorelease_pool.h"
 #import "base/mac/scoped_nsobject.h"
 #import "base/mac/scoped_objc_class_swizzler.h"
 #include "base/macros.h"
@@ -43,7 +42,6 @@
 #include "ui/views/test/widget_test.h"
 #include "ui/views/widget/native_widget_mac.h"
 #include "ui/views/widget/native_widget_private.h"
-#include "ui/views/window/dialog_client_view.h"
 #include "ui/views/window/dialog_delegate.h"
 
 // Donates an implementation of -[NSAnimation stopAnimation] which calls the
@@ -817,10 +815,9 @@ TEST_F(NativeWidgetMacTest, NonWidgetParent) {
 TEST_F(NativeWidgetMacTest, CloseAllSecondaryWidgetsValidState) {
   NativeWidgetMacTestWindow* last_window = nil;
   bool window_deallocated = false;
-  {
+  @autoreleasepool {
     // First verify the behavior of CloseAllSecondaryWidgets in the normal case,
     // and how [NSApp windows] changes in response to Widget closure.
-    base::mac::ScopedNSAutoreleasePool pool;
     Widget* widget = CreateWidgetWithTestWindow(
         Widget::InitParams(Widget::InitParams::TYPE_WINDOW), &last_window);
     last_window.deallocFlag = &window_deallocated;
@@ -833,10 +830,9 @@ TEST_F(NativeWidgetMacTest, CloseAllSecondaryWidgetsValidState) {
   EXPECT_TRUE(window_deallocated);
   window_deallocated = false;
 
-  {
+  @autoreleasepool {
     // Repeat, but now retain a reference and close the window before
     // CloseAllSecondaryWidgets().
-    base::mac::ScopedNSAutoreleasePool pool;
     Widget* widget = CreateWidgetWithTestWindow(
         Widget::InitParams(Widget::InitParams::TYPE_WINDOW), &last_window);
     last_window.deallocFlag = &window_deallocated;
@@ -847,8 +843,7 @@ TEST_F(NativeWidgetMacTest, CloseAllSecondaryWidgetsValidState) {
   }
 
   EXPECT_FALSE(window_deallocated);
-  {
-    base::mac::ScopedNSAutoreleasePool pool;
+  @autoreleasepool {
     Widget::CloseAllSecondaryWidgets();
     [last_window release];
   }
@@ -880,8 +875,7 @@ TEST_F(NativeWidgetMacTest, NonWidgetParentLastReference) {
   bool child_dealloced = false;
   bool native_parent_dealloced = false;
   NativeWidgetMacTestWindow* native_parent = nil;
-  {
-    base::mac::ScopedNSAutoreleasePool pool;
+  @autoreleasepool {
     native_parent = MakeBorderlessNativeParent();
     [native_parent setDeallocFlag:&native_parent_dealloced];
 
@@ -893,13 +887,12 @@ TEST_F(NativeWidgetMacTest, NonWidgetParentLastReference) {
     CreateWidgetWithTestWindow(std::move(init_params), &window);
     [window setDeallocFlag:&child_dealloced];
   }
-  {
+  @autoreleasepool {
     // On 10.11, closing a weak reference on the parent window works, but older
     // versions of AppKit get upset if things are released inside -[NSWindow
     // close]. This test tries to establish a situation where the last reference
     // to the child window is released inside WidgetOwnerNSWindowAdapter::
     // OnWindowWillClose().
-    base::mac::ScopedNSAutoreleasePool pool;
     [native_parent close];
     EXPECT_TRUE(child_dealloced);
   }
@@ -1145,8 +1138,8 @@ class ScopedSwizzleWaiter {
 
   ~ScopedSwizzleWaiter() { instance_ = nullptr; }
 
-  static IMP GetMethodAndMarkCalled() {
-    return instance_->GetMethodInternal();
+  static void OriginalSetWindowStateForEnd(id receiver, SEL method) {
+    return instance_->CallMethodInternal(receiver, method);
   }
 
   void WaitForMethod() {
@@ -1164,12 +1157,12 @@ class ScopedSwizzleWaiter {
   bool method_called() const { return method_called_; }
 
  private:
-  IMP GetMethodInternal() {
+  void CallMethodInternal(id receiver, SEL selector) {
     DCHECK(!method_called_);
     method_called_ = true;
     if (run_loop_)
       run_loop_->Quit();
-    return swizzler_.GetOriginalImplementation();
+    swizzler_.InvokeOriginal<void>(receiver, selector);
   }
 
   static ScopedSwizzleWaiter* instance_;
@@ -1511,8 +1504,7 @@ TEST_F(NativeWidgetMacTest, CloseWithWindowModalSheet) {
 
   // Test another hypothetical: What if -sheetDidEnd: was invoked somehow
   // without going through [NSApp endSheet:] or -[NSWindow endSheet:].
-  {
-    base::mac::ScopedNSAutoreleasePool pool;
+  @autoreleasepool {
     Widget* sheet_widget = ShowWindowModalWidget(native_parent);
     NSWindow* sheet_window =
         sheet_widget->GetNativeWindow().GetNativeNSWindow();
@@ -1548,8 +1540,7 @@ TEST_F(NativeWidgetMacTest, CloseWithWindowModalSheet) {
 // https://crbug.com/851376.
 TEST_F(NativeWidgetMacTest, CloseWindowModalSheetWithoutSheetParent) {
   NSWindow* native_parent = MakeClosableTitledNativeParent();
-  {
-    base::mac::ScopedNSAutoreleasePool pool;
+  @autoreleasepool {
     Widget* sheet_widget = ShowWindowModalWidget(native_parent);
     NSWindow* sheet_window =
         sheet_widget->GetNativeWindow().GetNativeNSWindow();
@@ -1877,7 +1868,7 @@ TEST_F(NativeWidgetMacTest, InvalidateShadow) {
   EXPECT_EQ(0, [window invalidateShadowCount]);
   widget->CloseNow();
 
-  init_params.opacity = Widget::InitParams::TRANSLUCENT_WINDOW;
+  init_params.opacity = Widget::InitParams::WindowOpacity::kTranslucent;
   widget = CreateWidgetWithTestWindow(std::move(init_params), &window);
   BridgedNativeWidgetTestApi test_api(window);
 
@@ -1919,20 +1910,20 @@ TEST_F(NativeWidgetMacTest, ContentOpacity) {
   Widget::InitParams init_params =
       CreateParams(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
 
-  EXPECT_EQ(init_params.opacity, Widget::InitParams::INFER_OPACITY);
+  EXPECT_EQ(init_params.opacity, Widget::InitParams::WindowOpacity::kInferred);
   Widget* widget = CreateWidgetWithTestWindow(std::move(init_params), &window);
 
   // Infer should default to opaque on Mac.
   EXPECT_TRUE([[window contentView] isOpaque]);
   widget->CloseNow();
 
-  init_params.opacity = Widget::InitParams::TRANSLUCENT_WINDOW;
+  init_params.opacity = Widget::InitParams::WindowOpacity::kTranslucent;
   widget = CreateWidgetWithTestWindow(std::move(init_params), &window);
   EXPECT_FALSE([[window contentView] isOpaque]);
   widget->CloseNow();
 
   // Test opaque explicitly.
-  init_params.opacity = Widget::InitParams::OPAQUE_WINDOW;
+  init_params.opacity = Widget::InitParams::WindowOpacity::kOpaque;
   widget = CreateWidgetWithTestWindow(std::move(init_params), &window);
   EXPECT_TRUE([[window contentView] isOpaque]);
   widget->CloseNow();
@@ -2402,7 +2393,6 @@ NSArray* ExtractTouchBarGroupIdentifiers(NSView* view) {
 TEST_F(NativeWidgetMacTest, TouchBar) {
   ModalDialogDelegate* delegate = new ModalDialogDelegate(ui::MODAL_TYPE_NONE);
   views::DialogDelegate::CreateDialogWidget(delegate, nullptr, nullptr);
-  DialogClientView* client_view = delegate->GetDialogClientView();
   NSView* content =
       [delegate->GetWidget()->GetNativeWindow().GetNativeNSWindow()
               contentView];
@@ -2415,8 +2405,8 @@ TEST_F(NativeWidgetMacTest, TouchBar) {
   NSString* const kTouchBarCancelId = @"com.google.chrome-CANCEL";
 
   EXPECT_TRUE(content);
-  EXPECT_TRUE(client_view->ok_button());
-  EXPECT_TRUE(client_view->cancel_button());
+  EXPECT_TRUE(delegate->GetOkButton());
+  EXPECT_TRUE(delegate->GetCancelButton());
 
   if (@available(macOS 10.12.2, *)) {
     NSTouchBar* touch_bar = [content touchBar];
@@ -2439,8 +2429,8 @@ TEST_F(NativeWidgetMacTest, TouchBar) {
   // Remove the cancel button.
   delegate->set_buttons(ui::DIALOG_BUTTON_OK);
   delegate->DialogModelChanged();
-  EXPECT_TRUE(client_view->ok_button());
-  EXPECT_FALSE(client_view->cancel_button());
+  EXPECT_TRUE(delegate->GetOkButton());
+  EXPECT_FALSE(delegate->GetCancelButton());
 
   if (@available(macOS 10.12.2, *)) {
     NSTouchBar* touch_bar = [content touchBar];
@@ -2483,7 +2473,7 @@ TEST_F(NativeWidgetMacTest, InitCallback) {
 
 @implementation TestStopAnimationWaiter
 - (void)setWindowStateForEnd {
-  views::test::ScopedSwizzleWaiter::GetMethodAndMarkCalled()(self, _cmd);
+  views::test::ScopedSwizzleWaiter::OriginalSetWindowStateForEnd(self, _cmd);
 }
 @end
 

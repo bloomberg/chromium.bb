@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/config/ui.gni")
+import("//gpu/vulkan/features.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//ui/ozone/ozone.gni")
 
@@ -55,6 +56,7 @@ source_set("command_buffer_traits_sources") {
 
   deps = [
     "//base",
+    "//gpu/ipc/common:vulkan_ycbcr_info",
     "//ui/gfx/ipc/buffer_types",
     "//ui/gfx/ipc/geometry",
   ]
@@ -142,6 +144,8 @@ source_set("ipc_common_sources") {
 
   if (is_android) {
     sources += [
+      "android/scoped_surface_request_conduit.cc",
+      "android/scoped_surface_request_conduit.h",
       "gpu_surface_lookup.cc",
       "gpu_surface_lookup.h",
       "gpu_surface_tracker.cc",
@@ -167,80 +171,9 @@ if (is_android) {
       "//ui/gl",
     ]
     visibility = [
+      "//android_webview/browser/gfx",
       "//gpu/*",
       "//media/gpu:gpu",
-    ]
-  }
-}
-
-if (is_android) {
-  component("android_texture_owner") {
-    sources = [
-      "android/image_reader_gl_owner.cc",
-      "android/image_reader_gl_owner.h",
-      "android/scoped_surface_request_conduit.cc",
-      "android/scoped_surface_request_conduit.h",
-      "android/surface_texture_gl_owner.cc",
-      "android/surface_texture_gl_owner.h",
-      "android/texture_owner.cc",
-      "android/texture_owner.h",
-    ]
-    configs += [ "//gpu:gpu_implementation" ]
-    deps = [
-      ":android_image_reader_utils",
-      "//base",
-      "//gpu/command_buffer/service:gles2_sources",
-      "//gpu/command_buffer/service:service_sources",
-      "//ui/gl",
-    ]
-    libs = [ "android" ]
-    visibility = [
-      "//gpu/*",
-      "//media/gpu:gpu",
-      "//content/browser:browser",
-    ]
-  }
-}
-
-if (is_android) {
-  jumbo_static_library("android_texture_owner_test_support") {
-    testonly = true
-    sources = [
-      "android/mock_abstract_texture.cc",
-      "android/mock_abstract_texture.h",
-      "android/mock_texture_owner.cc",
-      "android/mock_texture_owner.h",
-    ]
-    deps = [
-      ":android_texture_owner",
-      "//base/test:test_support",
-      "//gpu:test_support",
-      "//testing/gmock",
-      "//testing/gtest",
-      "//ui/gl",
-      "//ui/gl/init",
-    ]
-  }
-}
-
-if (is_android) {
-  source_set("android_texture_owner_unittests") {
-    testonly = true
-    sources = [
-      "android/image_reader_gl_owner_unittest.cc",
-      "android/surface_texture_gl_owner_unittest.cc",
-    ]
-
-    deps = [
-      ":android_texture_owner",
-      ":android_texture_owner_test_support",
-      "//base/test:test_support",
-      "//gpu:test_support",
-      "//media/base:base",
-      "//testing/gmock",
-      "//testing/gtest",
-      "//ui/gl",
-      "//ui/gl/init",
     ]
   }
 }
@@ -256,7 +189,7 @@ source_set("surface_handle_type") {
   ]
 }
 
-source_set("vulkan_ycbcr_info") {
+component("vulkan_ycbcr_info") {
   sources = [
     "vulkan_ycbcr_info.cc",
     "vulkan_ycbcr_info.h",
@@ -264,9 +197,22 @@ source_set("vulkan_ycbcr_info") {
   deps = [
     "//base",
   ]
+  configs += [ "//gpu:gpu_implementation" ]
+}
+
+source_set("vulkan_types") {
+  sources = [
+    "vulkan_types.h",
+  ]
+  public_deps = [
+    "//ui/gfx",
+  ]
+  all_dependent_configs = [ "//third_party/vulkan:vulkan_config" ]
+  configs += [ "//gpu:gpu_implementation" ]
 }
 
 mojom("interfaces") {
+  generate_java = true
   sources = [
     "capabilities.mojom",
     "context_result.mojom",
@@ -288,9 +234,14 @@ mojom("interfaces") {
     "//ui/gfx/geometry/mojom",
     "//ui/gfx/mojom",
   ]
+  if (enable_vulkan) {
+    public_deps += [ ":vulkan_interface" ]
+    enabled_features = [ "supports_vulkan" ]
+  }
 }
 
 mojom("gpu_preferences_interface") {
+  generate_java = true
   sources = [
     "gpu_preferences.mojom",
   ]
@@ -306,6 +257,20 @@ mojom("gpu_preferences_interface") {
   }
 }
 
+mojom("vulkan_interface") {
+  generate_java = true
+  sources = [
+    "vulkan_info.mojom",
+    "vulkan_types.mojom",
+  ]
+
+  public_deps = [
+    "//mojo/public/mojom/base",
+  ]
+
+  js_generate_struct_deserializers = true
+}
+
 mojom("test_interfaces") {
   testonly = true
   sources = [
@@ -315,6 +280,21 @@ mojom("test_interfaces") {
   public_deps = [
     ":gpu_preferences_interface",
     ":interfaces",
+  ]
+
+  if (enable_vulkan) {
+    public_deps += [ ":vulkan_interface" ]
+  }
+}
+
+source_set("vulkan_types_mojom_traits") {
+  sources = [
+    "vulkan_types_mojom_traits.h",
+  ]
+
+  deps = [
+    ":vulkan_interface_shared_cpp_sources",
+    ":vulkan_types",
   ]
 }
 
@@ -337,5 +317,8 @@ source_set("mojom_traits") {
   ]
   if (is_android) {
     sources += [ "vulkan_ycbcr_info_mojom_traits.h" ]
+  }
+  if (enable_vulkan) {
+    deps += [ ":vulkan_types_mojom_traits" ]
   }
 }

@@ -17,6 +17,7 @@
 #include "base/values.h"
 #include "chrome/browser/ui/autofill/payments/save_card_bubble_view.h"
 #include "chrome/browser/ui/autofill/payments/save_card_ui.h"
+#include "chrome/browser/ui/autofill/test/test_autofill_bubble_handler.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
@@ -93,10 +94,6 @@ class SaveCardBubbleControllerImplTest : public BrowserWithTestWindowTest {
             prefs::PREVIOUS_SAVE_CREDIT_CARD_PROMPT_USER_DECISION_NONE);
   }
 
-  std::unique_ptr<BrowserWindow> CreateBrowserWindow() override {
-    return std::make_unique<SaveCardBubbleTestBrowserWindow>();
-  }
-
   void SetLegalMessage(
       const std::string& message_json,
       AutofillClient::SaveCreditCardOptions options =
@@ -106,10 +103,10 @@ class SaveCardBubbleControllerImplTest : public BrowserWithTestWindowTest {
     ASSERT_TRUE(value);
     base::DictionaryValue* dictionary;
     ASSERT_TRUE(value->GetAsDictionary(&dictionary));
-    std::unique_ptr<base::DictionaryValue> legal_message =
-        dictionary->CreateDeepCopy();
-    controller()->OfferUploadSave(CreditCard(), std::move(legal_message),
-                                  options,
+    LegalMessageLines legal_message_lines;
+    LegalMessageLine::Parse(*dictionary, &legal_message_lines,
+                            /*escape_apostrophes=*/true);
+    controller()->OfferUploadSave(CreditCard(), legal_message_lines, options,
                                   base::BindOnce(&UploadSaveCardCallback));
   }
 
@@ -142,7 +139,7 @@ class SaveCardBubbleControllerImplTest : public BrowserWithTestWindowTest {
 
   void ClickSaveButton() {
     controller()->OnSaveButton({});
-    if (controller()->ShouldShowCardSavedAnimation())
+    if (controller()->ShouldShowCardSavedLabelAnimation())
       controller()->OnAnimationEnded();
   }
 
@@ -157,25 +154,6 @@ class SaveCardBubbleControllerImplTest : public BrowserWithTestWindowTest {
   base::test::ScopedFeatureList scoped_feature_list_;
 
  private:
-  class TestSaveCardBubbleView final : public SaveCardBubbleView {
-    void Hide() override {}
-  };
-
-  class SaveCardBubbleTestBrowserWindow : public TestBrowserWindow {
-   public:
-    SaveCardBubbleView* ShowSaveCreditCardBubble(
-        content::WebContents* contents,
-        SaveCardBubbleController* controller,
-        bool user_gesture) override {
-      if (!save_card_bubble_view_)
-        save_card_bubble_view_ = std::make_unique<TestSaveCardBubbleView>();
-      return save_card_bubble_view_.get();
-    }
-
-   private:
-    std::unique_ptr<TestSaveCardBubbleView> save_card_bubble_view_;
-  };
-
   static void UploadSaveCardCallback(
       AutofillClient::SaveCardOfferUserDecision user_decision,
       const AutofillClient::UserProvidedCardDetails&
@@ -1456,90 +1434,6 @@ TEST_F(SaveCardBubbleControllerImplTest,
   histogram_tester.ExpectUniqueSample(
       "Autofill.SaveCreditCardPrompt.Upload.Reshows.RequestingExpirationDate",
       AutofillMetrics::SAVE_CARD_PROMPT_DISMISS_CLICK_LEGAL_MESSAGE, 1);
-}
-
-// SAVE_CARD_PROMPT_END_INVALID_LEGAL_MESSAGE is only possible for
-// Upload.FirstShow.
-TEST_F(SaveCardBubbleControllerImplTest,
-       Metrics_Upload_FirstShow_InvalidLegalMessage) {
-  base::HistogramTester histogram_tester;
-
-  // Legal message is invalid because it's missing the url.
-  SetLegalMessage(
-      "{"
-      "  \"line\" : [ {"
-      "     \"template\": \"Panda {0}.\","
-      "     \"template_parameter\": [ {"
-      "        \"display_text\": \"bear\""
-      "     } ]"
-      "  } ]"
-      "}");
-
-  EXPECT_THAT(
-      histogram_tester.GetAllSamples(
-          "Autofill.SaveCreditCardPrompt.Upload.FirstShow"),
-      ElementsAre(
-          Bucket(AutofillMetrics::SAVE_CARD_PROMPT_SHOW_REQUESTED, 1),
-          Bucket(AutofillMetrics::SAVE_CARD_PROMPT_END_INVALID_LEGAL_MESSAGE,
-                 1)));
-}
-
-// SAVE_CARD_PROMPT_END_INVALID_LEGAL_MESSAGE is only possible for
-// Upload.FirstShow.
-TEST_F(SaveCardBubbleControllerImplTest,
-       Metrics_Upload_FirstShow_RequestingCardholderName_InvalidLegalMessage) {
-  base::HistogramTester histogram_tester;
-
-  // Legal message is invalid because it's missing the url.
-  SetLegalMessage(
-      "{"
-      "  \"line\" : [ {"
-      "     \"template\": \"Panda {0}.\","
-      "     \"template_parameter\": [ {"
-      "        \"display_text\": \"bear\""
-      "     } ]"
-      "  } ]"
-      "}",
-      AutofillClient::SaveCreditCardOptions()
-          .with_should_request_name_from_user(true)
-          .with_show_prompt(true));
-
-  EXPECT_THAT(
-      histogram_tester.GetAllSamples("Autofill.SaveCreditCardPrompt.Upload."
-                                     "FirstShow.RequestingCardholderName"),
-      ElementsAre(
-          Bucket(AutofillMetrics::SAVE_CARD_PROMPT_SHOW_REQUESTED, 1),
-          Bucket(AutofillMetrics::SAVE_CARD_PROMPT_END_INVALID_LEGAL_MESSAGE,
-                 1)));
-}
-
-// SAVE_CARD_PROMPT_END_INVALID_LEGAL_MESSAGE is only possible for
-// Upload.FirstShow.
-TEST_F(SaveCardBubbleControllerImplTest,
-       Metrics_Upload_FirstShow_RequestingExpirationDate_InvalidLegalMessage) {
-  base::HistogramTester histogram_tester;
-
-  // Legal message is invalid because it's missing the url.
-  SetLegalMessage(
-      "{"
-      "  \"line\" : [ {"
-      "     \"template\": \"Panda {0}.\","
-      "     \"template_parameter\": [ {"
-      "        \"display_text\": \"bear\""
-      "     } ]"
-      "  } ]"
-      "}",
-      AutofillClient::SaveCreditCardOptions()
-          .with_should_request_expiration_date_from_user(true)
-          .with_show_prompt());
-
-  EXPECT_THAT(
-      histogram_tester.GetAllSamples("Autofill.SaveCreditCardPrompt.Upload."
-                                     "FirstShow.RequestingExpirationDate"),
-      ElementsAre(
-          Bucket(AutofillMetrics::SAVE_CARD_PROMPT_SHOW_REQUESTED, 1),
-          Bucket(AutofillMetrics::SAVE_CARD_PROMPT_END_INVALID_LEGAL_MESSAGE,
-                 1)));
 }
 
 TEST_F(SaveCardBubbleControllerImplTest, OnlyOneActiveBubble_RepeatedLocal) {

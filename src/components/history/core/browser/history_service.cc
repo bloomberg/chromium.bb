@@ -62,14 +62,16 @@
 using base::Time;
 
 namespace history {
+
 namespace {
 
-const base::Feature kHistoryServiceUsesTaskScheduler{
-    "HistoryServiceUsesTaskScheduler", base::FEATURE_DISABLED_BY_DEFAULT};
-
-static const char* kHistoryThreadName = "Chrome_HistoryThread";
+const char* kHistoryThreadName = "Chrome_HistoryThread";
 
 }  // namespace
+
+// static
+const base::Feature HistoryService::kHistoryServiceUsesTaskScheduler{
+    "HistoryServiceUsesTaskScheduler", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Sends messages from the backend to us on the main thread. This must be a
 // separate class from the history service so that it can hold a reference to
@@ -724,6 +726,22 @@ void HistoryService::CountUniqueHostsVisitedLastMonth(
       std::move(callback));
 }
 
+base::CancelableTaskTracker::TaskId HistoryService::GetLastVisitToHost(
+    const GURL& host,
+    base::Time begin_time,
+    base::Time end_time,
+    GetLastVisitToHostCallback callback,
+    base::CancelableTaskTracker* tracker) {
+  DCHECK(backend_task_runner_) << "History service being called after cleanup";
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  return tracker->PostTaskAndReplyWithResult(
+      backend_task_runner_.get(), FROM_HERE,
+      base::BindOnce(&HistoryBackend::GetLastVisitToHost, history_backend_,
+                     host, begin_time, end_time),
+      std::move(callback));
+}
+
 // Downloads -------------------------------------------------------------------
 
 // Handle creation of a download by creating an entry in the history service's
@@ -760,9 +778,8 @@ void HistoryService::QueryDownloads(DownloadQueryCallback callback) {
 
 // Handle updates for a particular download. This is a 'fire and forget'
 // operation, so we don't need to be called back.
-void HistoryService::UpdateDownload(
-    const DownloadRow& data,
-    bool should_commit_immediately) {
+void HistoryService::UpdateDownload(const DownloadRow& data,
+                                    bool should_commit_immediately) {
   TRACE_EVENT0("browser", "HistoryService::UpdateDownload");
   DCHECK(backend_task_runner_) << "History service being called after cleanup";
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -1006,20 +1023,11 @@ void HistoryService::NotifyProfileError(sql::InitStatus init_status,
     history_client_->NotifyProfileError(init_status, diagnostics);
 }
 
-void HistoryService::DeleteURL(const GURL& url) {
-  TRACE_EVENT0("browser", "HistoryService::DeleteURL");
+void HistoryService::DeleteURLs(const std::vector<GURL>& urls) {
+  TRACE_EVENT0("browser", "HistoryService::DeleteURLs");
   DCHECK(backend_task_runner_) << "History service being called after cleanup";
   DCHECK(thread_checker_.CalledOnValidThread());
   // We will update the visited links when we observe the delete notifications.
-  ScheduleTask(PRIORITY_NORMAL, base::BindOnce(&HistoryBackend::DeleteURL,
-                                               history_backend_, url));
-}
-
-void HistoryService::DeleteURLsForTest(const std::vector<GURL>& urls) {
-  DCHECK(backend_task_runner_) << "History service being called after cleanup";
-  DCHECK(thread_checker_.CalledOnValidThread());
-  // We will update the visited links when we observe the delete
-  // notifications.
   ScheduleTask(PRIORITY_NORMAL, base::BindOnce(&HistoryBackend::DeleteURLs,
                                                history_backend_, urls));
 }
@@ -1149,7 +1157,7 @@ void HistoryService::DeleteLocalAndRemoteUrl(WebHistoryService* web_history,
         /*restrict_urls=*/{url}, base::Time(), base::Time::Max(),
         base::DoNothing(), partial_traffic_annotation);
   }
-  DeleteURL(url);
+  DeleteURLs({url});
 }
 
 void HistoryService::OnDBLoaded() {

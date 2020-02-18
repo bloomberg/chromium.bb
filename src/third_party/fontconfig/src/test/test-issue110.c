@@ -45,6 +45,24 @@
 #  define FC_DIR_SEPARATOR_S       "/"
 #endif
 
+#ifdef _WIN32
+#include <direct.h>
+#define mkdir(path,mode) _mkdir(path)
+
+int
+setenv(const char *name, const char *value, int o)
+{
+    size_t len = strlen(name) + strlen(value) + 1;
+    char *s = malloc(len+1);
+    int ret;
+
+    snprintf(s, len, "%s=%s", name, value);
+    ret = _putenv(s);
+    free(s);
+    return ret;
+}
+#endif
+
 extern FcChar8 *FcConfigRealFilename (FcConfig *, FcChar8 *);
 
 #ifdef HAVE_MKDTEMP
@@ -206,7 +224,9 @@ main(void)
 	goto bail;
     free (ret);
     free (s);
+    FcConfigDestroy (cfg);
     setenv ("FONTCONFIG_SYSROOT", sysroot, 1);
+    cfg = FcConfigCreate ();
     fprintf (stderr, "D: Creating %s\n", sysroot);
     mkdir_p (sysroot);
     retval++;

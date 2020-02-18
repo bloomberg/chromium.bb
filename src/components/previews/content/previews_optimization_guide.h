@@ -8,8 +8,9 @@
 #include <string>
 #include <vector>
 
-#include "base/callback_forward.h"
-#include "components/previews/core/previews_experiments.h"
+#include "base/containers/flat_set.h"
+#include "base/containers/mru_cache.h"
+#include "components/optimization_guide/proto/hints.pb.h"
 
 namespace content {
 class NavigationHandle;
@@ -17,50 +18,57 @@ class NavigationHandle;
 
 class GURL;
 
+namespace optimization_guide {
+class OptimizationGuideDecider;
+}  // namespace optimization_guide
+
 namespace previews {
+enum class PreviewsType;
 class PreviewsUserData;
 
 // A Previews optimization guide that makes decisions guided by hints received
-// from the OptimizationGuideService.
+// from an |optimization_guide::OptimizationGuideDecider|.
 class PreviewsOptimizationGuide {
  public:
-  PreviewsOptimizationGuide() {}
-  virtual ~PreviewsOptimizationGuide() {}
+  explicit PreviewsOptimizationGuide(
+      optimization_guide::OptimizationGuideDecider* optimization_guide_decider);
+  virtual ~PreviewsOptimizationGuide();
 
-  // Returns whether the optimization guide is ready to receive requests.
-  virtual bool IsReady() const = 0;
+  // Returns whether a Preview should be shown for the current conditions.
+  virtual bool ShouldShowPreview(content::NavigationHandle* navigation_handle);
 
   // Returns whether |type| is allowed for the URL associated with
-  // |navigation_handle| and the current conditions. |previews_data| can be
-  // modified (for further details provided by hints). Note that this will
-  // return false if a hint is needed to determine if the preview is allowed but
-  // we do not have everything we need to make that determination in memory.
+  // |navigation_handle|. |previews_data| can be
+  // modified (for further details provided by hints).
   virtual bool CanApplyPreview(PreviewsUserData* previews_data,
                                content::NavigationHandle* navigation_handle,
-                               PreviewsType type) = 0;
+                               PreviewsType type);
 
-  // Returns whether |navigation_handle| may have associated optimization hints
-  // (specifically, PageHints). If so, but the hints are not available
-  // synchronously, this method will request that they be loaded (from disk or
-  // network). The callback is run after the hint is loaded and can be used as
-  // a signal during tests.
-  virtual bool MaybeLoadOptimizationHints(
-      content::NavigationHandle* navigation_handle,
-      base::OnceClosure callback) = 0;
+  // Returns whether there may be commit-time preview guidance available for the
+  // URL associated with |navigation_handle|.
+  virtual bool AreCommitTimePreviewsAvailable(
+      content::NavigationHandle* navigation_handle);
 
   // Whether |url| has loaded resource loading hints and, if it does, populates
   // |out_resource_patterns_to_block| with the resource patterns to block.
   virtual bool GetResourceLoadingHints(
       const GURL& url,
-      std::vector<std::string>* out_resource_patterns_to_block) = 0;
+      std::vector<std::string>* out_resource_patterns_to_block);
 
-  // Logs UMA for whether the OptimizationGuide HintCache has a matching Hint
-  // guidance for |url|. This is useful for measuring the effectiveness of the
-  // page hints provided by Cacao.
-  virtual void LogHintCacheMatch(const GURL& url, bool is_committed) const = 0;
+ private:
+  // The Optimization Guide Decider to consult for whether an optimization can
+  // be applied. Not owned.
+  optimization_guide::OptimizationGuideDecider* optimization_guide_decider_;
 
-  // Clears all fetched hints from its store.
-  virtual void ClearFetchedHints() = 0;
+  // An in-memory cache of resource loading hints keyed by the URL. This allows
+  // us to avoid making too many calls to |optimization_guide_decider_|.
+  base::MRUCache<GURL, std::vector<std::string>> resource_loading_hints_cache_;
+
+  // The optimization types registered with |optimization_guide_decider_|.
+  const base::flat_set<optimization_guide::proto::OptimizationType>
+      registered_optimization_types_;
+
+  DISALLOW_COPY_AND_ASSIGN(PreviewsOptimizationGuide);
 };
 
 }  // namespace previews

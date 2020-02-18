@@ -21,7 +21,7 @@ AppId TestInstallFinalizer::GetAppIdForUrl(const GURL& url) {
   return GenerateAppIdFromURL(url);
 }
 
-TestInstallFinalizer::TestInstallFinalizer() {}
+TestInstallFinalizer::TestInstallFinalizer() = default;
 
 TestInstallFinalizer::~TestInstallFinalizer() = default;
 
@@ -29,28 +29,33 @@ void TestInstallFinalizer::FinalizeInstall(
     const WebApplicationInfo& web_app_info,
     const FinalizeOptions& options,
     InstallFinalizedCallback callback) {
-  AppId app_id = GetAppIdForUrl(web_app_info.app_url);
-  if (next_app_id_.has_value()) {
-    app_id = next_app_id_.value();
-    next_app_id_.reset();
-  }
-
-  InstallResultCode code = InstallResultCode::kSuccessNewInstall;
-  if (next_result_code_.has_value()) {
-    code = next_result_code_.value();
-    next_result_code_.reset();
-  }
-
-  // Store input data copies for inspecting in tests.
-  web_app_info_copy_ = std::make_unique<WebApplicationInfo>(web_app_info);
   finalize_options_list_.push_back(options);
+  Finalize(web_app_info, InstallResultCode::kSuccessNewInstall,
+           std::move(callback));
+}
 
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback), app_id, code));
+void TestInstallFinalizer::FinalizeUpdate(
+    const WebApplicationInfo& web_app_info,
+    InstallFinalizedCallback callback) {
+  Finalize(web_app_info, InstallResultCode::kSuccessAlreadyInstalled,
+           std::move(callback));
+}
+
+void TestInstallFinalizer::FinalizeFallbackInstallAfterSync(
+    const AppId& app_id,
+    InstallFinalizedCallback callback) {
+  NOTREACHED();
+}
+
+void TestInstallFinalizer::FinalizeUninstallAfterSync(
+    const AppId& app_id,
+    UninstallWebAppCallback callback) {
+  NOTREACHED();
 }
 
 void TestInstallFinalizer::UninstallExternalWebApp(
     const GURL& app_url,
+    ExternalInstallSource external_install_source,
     UninstallWebAppCallback callback) {
   DCHECK(base::Contains(next_uninstall_external_web_app_results_, app_url));
   uninstall_external_web_app_urls_.push_back(app_url);
@@ -65,21 +70,31 @@ void TestInstallFinalizer::UninstallExternalWebApp(
                      }));
 }
 
-void TestInstallFinalizer::UninstallWebApp(const AppId& app_url,
-                                           UninstallWebAppCallback callback) {}
-
-bool TestInstallFinalizer::CanCreateOsShortcuts() const {
-  return true;
+bool TestInstallFinalizer::CanUserUninstallFromSync(const AppId& app_id) const {
+  NOTIMPLEMENTED();
+  return false;
 }
 
-void TestInstallFinalizer::CreateOsShortcuts(
-    const AppId& app_id,
-    bool add_to_desktop,
-    CreateOsShortcutsCallback callback) {
-  ++num_create_os_shortcuts_calls_;
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(std::move(callback), true /* shortcuts_created */));
+void TestInstallFinalizer::UninstallWebAppFromSyncByUser(
+    const AppId& app_url,
+    UninstallWebAppCallback callback) {
+  NOTIMPLEMENTED();
+}
+
+bool TestInstallFinalizer::CanUserUninstallExternalApp(
+    const AppId& app_id) const {
+  NOTIMPLEMENTED();
+  return false;
+}
+
+void TestInstallFinalizer::UninstallExternalAppByUser(const AppId& app_id,
+                                                      UninstallWebAppCallback) {
+  NOTIMPLEMENTED();
+}
+
+bool TestInstallFinalizer::WasExternalAppUninstalledByUser(
+    const AppId& app_id) const {
+  return base::Contains(user_uninstalled_external_apps_, app_id);
 }
 
 bool TestInstallFinalizer::CanAddAppToQuickLaunchBar() const {
@@ -109,17 +124,6 @@ void TestInstallFinalizer::RevealAppShim(const AppId& app_id) {
   ++num_reveal_appshim_calls_;
 }
 
-bool TestInstallFinalizer::CanSkipAppUpdateForSync(
-    const AppId& app_id,
-    const WebApplicationInfo& web_app_info) const {
-  return next_can_skip_app_update_for_sync_;
-}
-
-bool TestInstallFinalizer::CanUserUninstallFromSync(const AppId& app_id) const {
-  NOTIMPLEMENTED();
-  return false;
-}
-
 void TestInstallFinalizer::SetNextFinalizeInstallResult(
     const AppId& app_id,
     InstallResultCode code) {
@@ -134,9 +138,31 @@ void TestInstallFinalizer::SetNextUninstallExternalWebAppResult(
   next_uninstall_external_web_app_results_[app_url] = uninstalled;
 }
 
-void TestInstallFinalizer::SetNextCanSkipAppUpdateForSync(
-    bool can_skip_app_update_for_sync) {
-  next_can_skip_app_update_for_sync_ = can_skip_app_update_for_sync;
+void TestInstallFinalizer::SimulateExternalAppUninstalledByUser(
+    const AppId& app_id) {
+  DCHECK(!base::Contains(user_uninstalled_external_apps_, app_id));
+  user_uninstalled_external_apps_.insert(app_id);
+}
+
+void TestInstallFinalizer::Finalize(const WebApplicationInfo& web_app_info,
+                                    InstallResultCode code,
+                                    InstallFinalizedCallback callback) {
+  AppId app_id = GetAppIdForUrl(web_app_info.app_url);
+  if (next_app_id_.has_value()) {
+    app_id = next_app_id_.value();
+    next_app_id_.reset();
+  }
+
+  if (next_result_code_.has_value()) {
+    code = next_result_code_.value();
+    next_result_code_.reset();
+  }
+
+  // Store input data copies for inspecting in tests.
+  web_app_info_copy_ = std::make_unique<WebApplicationInfo>(web_app_info);
+
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), app_id, code));
 }
 
 }  // namespace web_app

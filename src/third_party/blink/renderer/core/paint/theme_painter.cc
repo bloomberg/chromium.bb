@@ -81,7 +81,7 @@ bool IsTemporalInput(const AtomicString& type) {
 }
 
 bool IsMenulistInput(const Node* node) {
-  if (auto* input = ToHTMLInputElementOrNull(node)) {
+  if (auto* input = DynamicTo<HTMLInputElement>(node)) {
 #if defined(OS_ANDROID)
     if (IsTemporalInput(input->type()))
       return true;
@@ -118,7 +118,7 @@ void CountAppearanceTextFieldPart(const Node* node) {
                     WebFeature::kCSSValueAppearanceTextFieldRendered);
   WebFeature feature =
       WebFeature::kCSSValueAppearanceTextFieldForOthersRendered;
-  if (auto* input = ToHTMLInputElementOrNull(node)) {
+  if (auto* input = DynamicTo<HTMLInputElement>(node)) {
     const AtomicString& type = input->type();
     if (type == input_type_names::kSearch) {
       feature = WebFeature::kCSSValueAppearanceTextFieldForSearch;
@@ -147,6 +147,8 @@ bool ThemePainter::Paint(const LayoutObject& o,
   if (LayoutTheme::GetTheme().ShouldUseFallbackTheme(style))
     return PaintUsingFallbackTheme(node, style, paint_info, r);
 
+  // TODO(tkent): Clean the counting code when M80 is promoted to the stable
+  // channel.
   if (part == kButtonPart && node) {
     if (IsA<HTMLAnchorElement>(node)) {
       Deprecation::CountDeprecation(
@@ -154,12 +156,16 @@ bool ThemePainter::Paint(const LayoutObject& o,
       COUNT_APPEARANCE(doc, ButtonForNonButton);
     } else if (IsA<HTMLButtonElement>(node)) {
       UseCounter::Count(doc, WebFeature::kCSSValueAppearanceButtonForButton);
-    } else if (IsHTMLInputElement(node) &&
-               ToHTMLInputElement(node)->IsTextButton()) {
+    } else if (IsA<HTMLInputElement>(node) &&
+               To<HTMLInputElement>(node)->IsTextButton()) {
       // Text buttons (type=button, reset, submit) has
       // -webkit-appearance:push-button by default.
       UseCounter::Count(doc,
                         WebFeature::kCSSValueAppearanceButtonForOtherButtons);
+    } else if (IsA<HTMLInputElement>(node) &&
+               To<HTMLInputElement>(node)->type() == input_type_names::kColor) {
+      //  'button' for input[type=color], of which default appearance is
+      // 'square-button', is not deprecated.
     } else {
       COUNT_APPEARANCE(doc, ButtonForNonButton);
       COUNT_APPEARANCE(doc, ButtonForOthers);
@@ -171,9 +177,9 @@ bool ThemePainter::Paint(const LayoutObject& o,
             To<Element>(node)->getAttribute(html_names::kTypeAttr);
         // https://github.com/twbs/bootstrap/pull/29053
         if (type == "button" || type == "reset" || type == "submit") {
-          COUNT_APPEARANCE(doc, ButtonForBootstrapLooseSelector);
+          DEPRECATE_APPEARANCE(doc, ButtonForBootstrapLooseSelector);
         } else {
-          COUNT_APPEARANCE(doc, ButtonForOthers2);
+          DEPRECATE_APPEARANCE(doc, ButtonForOthers2);
         }
       }
     }
@@ -183,28 +189,28 @@ bool ThemePainter::Paint(const LayoutObject& o,
   switch (part) {
     case kCheckboxPart: {
       COUNT_APPEARANCE(doc, Checkbox);
-      auto* input = ToHTMLInputElementOrNull(node);
+      auto* input = DynamicTo<HTMLInputElement>(node);
       if (!input || input->type() != input_type_names::kCheckbox)
         DEPRECATE_APPEARANCE(doc, CheckboxForOthers);
       return PaintCheckbox(node, o.GetDocument(), style, paint_info, r);
     }
     case kRadioPart: {
       COUNT_APPEARANCE(doc, Radio);
-      auto* input = ToHTMLInputElementOrNull(node);
+      auto* input = DynamicTo<HTMLInputElement>(node);
       if (!input || input->type() != input_type_names::kRadio)
         DEPRECATE_APPEARANCE(doc, RadioForOthers);
       return PaintRadio(node, o.GetDocument(), style, paint_info, r);
     }
     case kPushButtonPart: {
       COUNT_APPEARANCE(doc, PushButton);
-      auto* input = ToHTMLInputElementOrNull(node);
+      auto* input = DynamicTo<HTMLInputElement>(node);
       if (!input || !input->IsTextButton())
         DEPRECATE_APPEARANCE(doc, PushButtonForOthers);
       return PaintButton(node, o.GetDocument(), style, paint_info, r);
     }
     case kSquareButtonPart: {
       COUNT_APPEARANCE(doc, SquareButton);
-      auto* input = ToHTMLInputElementOrNull(node);
+      auto* input = DynamicTo<HTMLInputElement>(node);
       if (!input || input->type() != input_type_names::kColor)
         DEPRECATE_APPEARANCE(doc, SquareButtonForOthers);
       return PaintButton(node, o.GetDocument(), style, paint_info, r);
@@ -220,7 +226,7 @@ bool ThemePainter::Paint(const LayoutObject& o,
     }
     case kMenulistPart:
       COUNT_APPEARANCE(doc, MenuList);
-      if (!IsHTMLSelectElement(node) && !IsMenulistInput(node))
+      if (!IsA<HTMLSelectElement>(node) && !IsMenulistInput(node))
         DEPRECATE_APPEARANCE(doc, MenuListForOthers);
       return PaintMenuList(node, o.GetDocument(), style, paint_info, r);
     case kMeterPart:
@@ -236,14 +242,14 @@ bool ThemePainter::Paint(const LayoutObject& o,
       return PaintProgressBar(o, paint_info, r);
     case kSliderHorizontalPart: {
       COUNT_APPEARANCE(doc, SliderHorizontal);
-      auto* input = ToHTMLInputElementOrNull(node);
+      auto* input = DynamicTo<HTMLInputElement>(node);
       if (!input || input->type() != input_type_names::kRange)
         DEPRECATE_APPEARANCE(doc, SliderHorizontalForOthers);
       return PaintSliderTrack(o, paint_info, r);
     }
     case kSliderVerticalPart: {
       COUNT_APPEARANCE(doc, SliderVertical);
-      auto* input = ToHTMLInputElementOrNull(node);
+      auto* input = DynamicTo<HTMLInputElement>(node);
       if (!input || input->type() != input_type_names::kRange)
         DEPRECATE_APPEARANCE(doc, SliderVerticalForOthers);
       return PaintSliderTrack(o, paint_info, r);
@@ -251,7 +257,7 @@ bool ThemePainter::Paint(const LayoutObject& o,
     case kSliderThumbHorizontalPart: {
       COUNT_APPEARANCE(doc, SliderThumbHorizontal);
       auto* input =
-          ToHTMLInputElementOrNull(node ? node->OwnerShadowHost() : nullptr);
+          DynamicTo<HTMLInputElement>(node ? node->OwnerShadowHost() : nullptr);
       if (!input || input->type() != input_type_names::kRange)
         DEPRECATE_APPEARANCE(doc, SliderThumbHorizontalForOthers);
       return PaintSliderThumb(node, style, paint_info, r);
@@ -259,7 +265,7 @@ bool ThemePainter::Paint(const LayoutObject& o,
     case kSliderThumbVerticalPart: {
       COUNT_APPEARANCE(doc, SliderThumbVertical);
       auto* input =
-          ToHTMLInputElementOrNull(node ? node->OwnerShadowHost() : nullptr);
+          DynamicTo<HTMLInputElement>(node ? node->OwnerShadowHost() : nullptr);
       if (!input || input->type() != input_type_names::kRange)
         DEPRECATE_APPEARANCE(doc, SliderThumbVerticalForOthers);
       return PaintSliderThumb(node, style, paint_info, r);
@@ -284,13 +290,13 @@ bool ThemePainter::Paint(const LayoutObject& o,
       if (node) {
         const auto& doc = node->GetDocument();
         COUNT_APPEARANCE(doc, TextArea);
-        if (!IsHTMLTextAreaElement(node))
+        if (!IsA<HTMLTextAreaElement>(node))
           DEPRECATE_APPEARANCE(doc, TextAreaForOthers);
       }
       return PaintTextArea(node, style, paint_info, r);
     case kSearchFieldPart: {
       COUNT_APPEARANCE(doc, SearchField);
-      auto* input = ToHTMLInputElementOrNull(node);
+      auto* input = DynamicTo<HTMLInputElement>(node);
       if (!input || input->type() != input_type_names::kSearch)
         DEPRECATE_APPEARANCE(doc, SearchFieldForOthers);
       return PaintSearchField(node, style, paint_info, r);
@@ -348,7 +354,7 @@ bool ThemePainter::PaintBorderOnly(const Node* node,
       if (node) {
         const auto& doc = node->GetDocument();
         COUNT_APPEARANCE(doc, TextArea);
-        if (!IsHTMLTextAreaElement(node))
+        if (!IsA<HTMLTextAreaElement>(node))
           DEPRECATE_APPEARANCE(doc, TextAreaForOthers);
       }
       return PaintTextArea(node, style, paint_info, r);
@@ -394,7 +400,7 @@ bool ThemePainter::PaintDecorations(const Node* node,
   switch (style.EffectiveAppearance()) {
     case kMenulistButtonPart:
       COUNT_APPEARANCE(document, MenuListButton);
-      if (!IsHTMLSelectElement(node) && !IsMenulistInput(node))
+      if (!IsA<HTMLSelectElement>(node) && !IsMenulistInput(node))
         DEPRECATE_APPEARANCE(document, MenuListButtonForOthers);
       return PaintMenuListButton(node, document, style, paint_info, r);
     case kTextFieldPart:
@@ -425,11 +431,10 @@ bool ThemePainter::PaintDecorations(const Node* node,
 void ThemePainter::PaintSliderTicks(const LayoutObject& o,
                                     const PaintInfo& paint_info,
                                     const IntRect& rect) {
-  Node* node = o.GetNode();
-  if (!IsHTMLInputElement(node))
+  auto* input = DynamicTo<HTMLInputElement>(o.GetNode());
+  if (!input)
     return;
 
-  HTMLInputElement* input = ToHTMLInputElement(node);
   if (input->type() != input_type_names::kRange ||
       !input->UserAgentShadowRoot()->HasChildren())
     return;

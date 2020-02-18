@@ -17,7 +17,6 @@
 #include "content/common/input/input_event.h"
 #include "content/common/input/input_event_ack.h"
 #include "content/common/input/input_event_dispatch_type.h"
-#include "content/common/input/input_param_traits.h"
 #include "content/common/input/synthetic_gesture_params.h"
 #include "content/common/input/synthetic_pinch_gesture_params.h"
 #include "content/common/input/synthetic_pointer_action_list_params.h"
@@ -119,8 +118,7 @@ IPC_STRUCT_TRAITS_BEGIN(content::SyntheticSmoothScrollGestureParams)
   IPC_STRUCT_TRAITS_MEMBER(speed_in_pixels_s)
   IPC_STRUCT_TRAITS_MEMBER(fling_velocity_x)
   IPC_STRUCT_TRAITS_MEMBER(fling_velocity_y)
-  IPC_STRUCT_TRAITS_MEMBER(precise_scrolling_deltas)
-  IPC_STRUCT_TRAITS_MEMBER(scroll_by_page)
+  IPC_STRUCT_TRAITS_MEMBER(granularity)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::SyntheticPinchGestureParams)

@@ -117,12 +117,15 @@ class SyncManagerImpl
       const KeyDerivationParams& key_derivation_params,
       const sync_pb::EncryptedData& pending_keys) override;
   void OnPassphraseAccepted() override;
+  void OnTrustedVaultKeyRequired() override;
+  void OnTrustedVaultKeyAccepted() override;
   void OnBootstrapTokenUpdated(const std::string& bootstrap_token,
                                BootstrapTokenType type) override;
   void OnEncryptedTypesChanged(ModelTypeSet encrypted_types,
                                bool encrypt_everything) override;
   void OnEncryptionComplete() override;
-  void OnCryptographerStateChanged(Cryptographer* cryptographer) override;
+  void OnCryptographerStateChanged(Cryptographer* cryptographer,
+                                   bool has_pending_keys) override;
   void OnPassphraseTypeChanged(PassphraseType type,
                                base::Time explicit_passphrase_time) override;
 
@@ -169,9 +172,6 @@ class SyncManagerImpl
   // NudgeHandler implementation.
   void NudgeForInitialDownload(ModelType type) override;
   void NudgeForCommit(ModelType type) override;
-  void NudgeForRefresh(ModelType type) override;
-
-  const SyncScheduler* scheduler() const;
 
   static std::string GenerateCacheGUIDForTest();
 
@@ -196,8 +196,6 @@ class SyncManagerImpl
     // Returned pointer owned by the caller.
     base::DictionaryValue* ToValue() const;
   };
-
-  base::TimeDelta GetNudgeDelayTimeDelta(const ModelType& model_type);
 
   using NotificationInfoMap = std::map<ModelType, NotificationInfo>;
 

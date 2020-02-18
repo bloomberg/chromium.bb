@@ -62,7 +62,7 @@ class CONTENT_EXPORT FrameTreeNode {
     virtual ~Observer() {}
   };
 
-  static const int kFrameTreeNodeInvalidId = -1;
+  static const int kFrameTreeNodeInvalidId;
 
   // Returns the FrameTreeNode with the given global |frame_tree_node_id|,
   // regardless of which FrameTree it is in.
@@ -95,25 +95,11 @@ class CONTENT_EXPORT FrameTreeNode {
   // Feature-Policy HTTP headers).
   void ResetForNavigation();
 
-  FrameTree* frame_tree() const {
-    return frame_tree_;
-  }
-
-  Navigator* navigator() {
-    return navigator_.get();
-  }
-
-  RenderFrameHostManager* render_manager() {
-    return &render_manager_;
-  }
-
-  int frame_tree_node_id() const {
-    return frame_tree_node_id_;
-  }
-
-  const std::string& frame_name() const {
-    return replication_state_.name;
-  }
+  FrameTree* frame_tree() const { return frame_tree_; }
+  Navigator* navigator() { return navigator_.get(); }
+  RenderFrameHostManager* render_manager() { return &render_manager_; }
+  int frame_tree_node_id() const { return frame_tree_node_id_; }
+  const std::string& frame_name() const { return replication_state_.name; }
 
   const std::string& unique_name() const {
     return replication_state_.unique_name;
@@ -164,9 +150,7 @@ class CONTENT_EXPORT FrameTreeNode {
   void SetCurrentURL(const GURL& url);
 
   // Returns true iff SetCurrentURL has been called with a non-blank URL.
-  bool has_committed_real_load() const {
-    return has_committed_real_load_;
-  }
+  bool has_committed_real_load() const { return has_committed_real_load_; }
 
   // Returns whether the frame's owner element in the parent document is
   // collapsed, that is, removed from the layout as if it did not exist, as per
@@ -300,10 +284,7 @@ class CONTENT_EXPORT FrameTreeNode {
   // Resets the current navigation request. If |keep_state| is true, any state
   // created by the NavigationRequest (e.g. speculative RenderFrameHost,
   // loading state) will not be reset by the function.
-  // If |keep_state| is false and the request is renderer-initiated and
-  // |inform_renderer| is true, an IPC will be sent to the renderer process to
-  // inform it that the navigation it requested was cancelled.
-  void ResetNavigationRequest(bool keep_state, bool inform_renderer);
+  void ResetNavigationRequest(bool keep_state);
 
   // A RenderFrameHost in this node started loading.
   // |to_different_document| will be true unless the load is a fragment

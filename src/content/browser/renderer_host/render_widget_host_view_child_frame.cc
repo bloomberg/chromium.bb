@@ -450,14 +450,12 @@ void RenderWidgetHostViewChildFrame::UnregisterFrameSinkId() {
 }
 
 void RenderWidgetHostViewChildFrame::UpdateViewportIntersection(
-    const gfx::Rect& viewport_intersection,
-    const gfx::Rect& compositor_visible_rect,
-    blink::FrameOcclusionState occlusion_state) {
+    const blink::ViewportIntersectionState& intersection_state) {
   if (host()) {
-    host()->SetIntersectsViewport(!viewport_intersection.IsEmpty());
-    host()->Send(new WidgetMsg_SetViewportIntersection(
-        host()->GetRoutingID(), viewport_intersection, compositor_visible_rect,
-        occlusion_state));
+    host()->SetIntersectsViewport(
+        !intersection_state.viewport_intersection.IsEmpty());
+    host()->Send(new WidgetMsg_SetViewportIntersection(host()->GetRoutingID(),
+                                                       intersection_state));
   }
 }
 
@@ -780,9 +778,7 @@ void RenderWidgetHostViewChildFrame::WillSendScreenRects() {
   // spammy way to do this, but triggering on SendScreenRects() is reasonable
   // until somebody figures that out. RWHVCF::Init() is too early.
   if (frame_connector_) {
-    UpdateViewportIntersection(frame_connector_->viewport_intersection_rect(),
-                               frame_connector_->compositor_visible_rect(),
-                               frame_connector_->occlusion_state());
+    UpdateViewportIntersection(frame_connector_->intersection_state());
     SetIsInert();
     UpdateInheritedEffectiveTouchAction();
     UpdateRenderThrottlingStatus();
@@ -965,18 +961,6 @@ InputEventAckState RenderWidgetHostViewChildFrame::FilterInputEvent(
     return INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS;
   }
 
-  return INPUT_EVENT_ACK_STATE_NOT_CONSUMED;
-}
-
-InputEventAckState RenderWidgetHostViewChildFrame::FilterChildGestureEvent(
-    const blink::WebGestureEvent& gesture_event) {
-  // We may be the owner of a RenderWidgetHostViewGuest,
-  // so we talk to the root RWHV on its behalf.
-  // TODO(mcnee): Remove once MimeHandlerViewGuest is based on OOPIF.
-  // See crbug.com/659750
-  if (frame_connector_)
-    return frame_connector_->GetRootRenderWidgetHostView()
-        ->FilterChildGestureEvent(gesture_event);
   return INPUT_EVENT_ACK_STATE_NOT_CONSUMED;
 }
 

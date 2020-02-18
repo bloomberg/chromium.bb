@@ -6,9 +6,10 @@
 
 #include <algorithm>
 
-#include "platform/api/logging.h"
+#include "util/logging.h"
 
 namespace openscreen {
+namespace osp {
 
 FakeMdnsPlatformService::FakeMdnsPlatformService() = default;
 FakeMdnsPlatformService::~FakeMdnsPlatformService() = default;
@@ -45,4 +46,5 @@ void FakeMdnsPlatformService::DeregisterInterfaces(
   }
 }
 
+}  // namespace osp
 }  // namespace openscreen

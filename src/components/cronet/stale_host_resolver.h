@@ -70,6 +70,8 @@ class StaleHostResolver : public net::HostResolver {
 
   // HostResolver implementation:
 
+  void OnShutdown() override;
+
   // Resolves as a regular HostResolver, but if stale data is available and
   // usable (according to the options passed to the constructor), and fresh data
   // is not returned before the specified delay, returns the stale data instead.
@@ -78,6 +80,7 @@ class StaleHostResolver : public net::HostResolver {
   // request to continue in order to repopulate the cache.
   std::unique_ptr<ResolveHostRequest> CreateRequest(
       const net::HostPortPair& host,
+      const net::NetworkIsolationKey& network_isolation_key,
       const net::NetLogWithSource& net_log,
       const base::Optional<ResolveHostParameters>& optional_parameters)
       override;

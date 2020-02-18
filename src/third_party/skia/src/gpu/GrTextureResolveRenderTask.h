@@ -12,39 +12,41 @@
 
 class GrTextureResolveRenderTask final : public GrRenderTask {
 public:
-    GrTextureResolveRenderTask(sk_sp<GrSurfaceProxy> proxy,
-                               GrSurfaceProxy::ResolveFlags resolveFlags)
-            : GrRenderTask(std::move(proxy))
-            , fResolveFlags(resolveFlags) {
-        // Ensure the last render task that operated on the target is closed. That's where msaa and
-        // mipmaps should have been marked dirty.
-        SkASSERT(!fTarget->getLastRenderTask() || fTarget->getLastRenderTask()->isClosed());
-        SkASSERT(GrSurfaceProxy::ResolveFlags::kNone != fResolveFlags);
-    }
+    GrTextureResolveRenderTask() : GrRenderTask() {}
+    ~GrTextureResolveRenderTask() override;
 
-    void init(const GrCaps&);
+    void addProxy(GrSurfaceProxyView proxyView, GrSurfaceProxy::ResolveFlags, const GrCaps&);
 
 private:
-    void onPrepare(GrOpFlushState*) override {}
     bool onIsUsed(GrSurfaceProxy* proxy) const override {
-        SkASSERT(proxy != fTarget.get());  // This case should be handled by GrRenderTask.
+        // This case should be handled by GrRenderTask.
+        SkASSERT(proxy != fTargetView.proxy());
         return false;
     }
-    void handleInternalAllocationFailure() override {}
+    void handleInternalAllocationFailure() override {
+        // No need to do anything special here. We just double check the proxies during onExecute.
+    }
     void gatherProxyIntervals(GrResourceAllocator*) const override;
 
-    ExpectedOutcome onMakeClosed(const GrCaps&) override {
+    ExpectedOutcome onMakeClosed(const GrCaps&, SkIRect*) override {
         return ExpectedOutcome::kTargetUnchanged;
     }
 
     bool onExecute(GrOpFlushState*) override;
 
 #ifdef SK_DEBUG
-    // No non-dst proxies.
-    void visitProxies_debugOnly(const VisitSurfaceProxyFunc& fn) const override {}
+    SkDEBUGCODE(void visitProxies_debugOnly(const GrOp::VisitProxyFunc&) const override;)
 #endif
 
-    const GrSurfaceProxy::ResolveFlags fResolveFlags;
+    struct Resolve {
+        Resolve(GrSurfaceProxyView proxyView, GrSurfaceProxy::ResolveFlags flags)
+                : fProxyView(std::move(proxyView)), fFlags(flags) {}
+        GrSurfaceProxyView fProxyView;
+        GrSurfaceProxy::ResolveFlags fFlags;
+        SkIRect fMSAAResolveRect;
+    };
+
+    SkSTArray<4, Resolve> fResolves;
 };
 
 #endif

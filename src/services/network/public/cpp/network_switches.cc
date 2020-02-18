@@ -56,9 +56,6 @@ const char kNetLogCaptureMode[] = "net-log-capture-mode";
 // for the format.
 const char kSSLKeyLogFile[] = "ssl-key-log-file";
 
-// Don't send HTTP-Referer headers.
-const char kNoReferrers[] = "no-referrers";
-
 // Allows overriding the list of restricted ports by passing a comma-separated
 // list of port numbers.
 const char kExplicitlyAllowedPorts[] = "explicitly-allowed-ports";
@@ -72,6 +69,9 @@ const char kExplicitlyAllowedPorts[] = "explicitly-allowed-ports";
 // --unsafely-treat-insecure-origin-as-secure=http://a.test,http://b.test
 const char kUnsafelyTreatInsecureOriginAsSecure[] =
     "unsafely-treat-insecure-origin-as-secure";
+
+// Disable OOR-CORS in child processes regardless of the base::Feature flag.
+const char kForceToDisableOutOfBlinkCors[] = "disable-oor-cors";
 
 }  // namespace switches
 

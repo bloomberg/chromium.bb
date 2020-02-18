@@ -17,6 +17,7 @@
 #include "chrome/browser/installable/installable_metrics.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
+#include "chrome/browser/web_applications/components/app_shortcut_manager.h"
 #include "chrome/browser/web_applications/components/install_finalizer.h"
 #include "chrome/browser/web_applications/components/install_manager.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
@@ -48,11 +49,13 @@ void PendingAppInstallTask::CreateTabHelpers(
 PendingAppInstallTask::PendingAppInstallTask(
     Profile* profile,
     AppRegistrar* registrar,
+    AppShortcutManager* shortcut_manger,
     WebAppUiManager* ui_manager,
     InstallFinalizer* install_finalizer,
     ExternalInstallOptions install_options)
     : profile_(profile),
       registrar_(registrar),
+      shortcut_manager_(shortcut_manger),
       install_finalizer_(install_finalizer),
       ui_manager_(ui_manager),
       externally_installed_app_prefs_(profile_->GetPrefs()),
@@ -86,10 +89,33 @@ void PendingAppInstallTask::Install(content::WebContents* web_contents,
     return;
   }
 
+  // Avoid counting an error if we are shutting down. This matches later
+  // stages of install where if the WebContents is destroyed we return early.
+  if (load_url_result == WebAppUrlLoader::Result::kFailedWebContentsDestroyed)
+    return;
+
+  InstallResultCode code = InstallResultCode::kInstallURLLoadFailed;
+
+  switch (load_url_result) {
+    case WebAppUrlLoader::Result::kUrlLoaded:
+    case WebAppUrlLoader::Result::kFailedWebContentsDestroyed:
+      // Handled above.
+      NOTREACHED();
+      break;
+    case WebAppUrlLoader::Result::kRedirectedUrlLoaded:
+      code = InstallResultCode::kInstallURLRedirected;
+      break;
+    case WebAppUrlLoader::Result::kFailedUnknownReason:
+      code = InstallResultCode::kInstallURLLoadFailed;
+      break;
+    case WebAppUrlLoader::Result::kFailedPageTookTooLong:
+      code = InstallResultCode::kInstallURLLoadTimeOut;
+      break;
+  }
+
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(result_callback),
-                                Result(InstallResultCode::kFailedUnknownReason,
-                                       base::nullopt)));
+      FROM_HERE,
+      base::BindOnce(std::move(result_callback), Result(code, base::nullopt)));
 }
 
 void PendingAppInstallTask::UninstallPlaceholderApp(
@@ -108,7 +134,7 @@ void PendingAppInstallTask::UninstallPlaceholderApp(
 
   // Otherwise, uninstall the placeholder app.
   install_finalizer_->UninstallExternalWebApp(
-      install_options_.url,
+      install_options_.url, install_options_.install_source,
       base::BindOnce(&PendingAppInstallTask::OnPlaceholderUninstalled,
                      weak_ptr_factory_.GetWeakPtr(), web_contents,
                      std::move(result_callback)));
@@ -122,7 +148,8 @@ void PendingAppInstallTask::OnPlaceholderUninstalled(
     LOG(ERROR) << "Failed to uninstall placeholder for: "
                << install_options_.url;
     std::move(result_callback)
-        .Run(Result(InstallResultCode::kFailedUnknownReason, base::nullopt));
+        .Run(Result(InstallResultCode::kFailedPlaceholderUninstall,
+                    base::nullopt));
     return;
   }
   ContinueWebAppInstall(web_contents, std::move(result_callback));
@@ -164,12 +191,14 @@ void PendingAppInstallTask::InstallPlaceholder(ResultCallback callback) {
   web_app_info.title = base::UTF8ToUTF16(install_options_.url.spec());
   web_app_info.app_url = install_options_.url;
 
-  switch (install_options_.launch_container) {
-    case LaunchContainer::kDefault:
-    case LaunchContainer::kTab:
+  switch (install_options_.user_display_mode) {
+    case DisplayMode::kUndefined:
+    case DisplayMode::kBrowser:
       web_app_info.open_as_window = false;
       break;
-    case LaunchContainer::kWindow:
+    case DisplayMode::kMinimalUi:
+    case DisplayMode::kStandalone:
+    case DisplayMode::kFullscreen:
       web_app_info.open_as_window = true;
       break;
   }
@@ -223,8 +252,8 @@ void PendingAppInstallTask::OnWebAppInstalled(bool is_placeholder,
   // TODO(ortuno): Make adding a shortcut to the applications menu independent
   // from adding a shortcut to desktop.
   if (install_options_.add_to_applications_menu &&
-      install_finalizer_->CanCreateOsShortcuts()) {
-    install_finalizer_->CreateOsShortcuts(
+      shortcut_manager_->CanCreateShortcuts()) {
+    shortcut_manager_->CreateShortcuts(
         app_id, install_options_.add_to_desktop,
         base::BindOnce(
             [](base::ScopedClosureRunner scoped_closure,

@@ -6,6 +6,7 @@
 <link rel="help" href="https://github.com/WICG/display-locking">
 <link rel="match" href="acquire-size-used-when-auto-size-border-ref.html">
 <script src="/common/reftest-wait.js"></script>
+<script src="../resources/utils.js"></script>
 
 <style>
 #border {
@@ -13,13 +14,16 @@
   border: 1px solid green;
 }
 #container {
-  contain: style layout;
   border: 10px solid black;
+  intrinsic-size: 123px 456px;
 }
 #child {
   width: 500px;
   height: 500px;
   background: red;
+}
+div:not([rendersubtree~="invisible"]) {
+  intrinsic-size: legacy !important;
 }
 </style>
 
@@ -40,7 +44,7 @@ function finishTest() {
 
 function runTest() {
   let container = document.getElementById("container");
-  container.displayLock.acquire({ timeout: Infinity, size: [123, 456] }).then(finishTest);
+  setInvisible(container).then(finishTest);
 }
 
 window.onload = runTest;

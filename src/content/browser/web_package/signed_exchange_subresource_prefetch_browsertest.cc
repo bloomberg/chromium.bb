@@ -286,6 +286,17 @@ class SignedExchangePrefetchBrowserTest
       // Shutdown the server.
       EXPECT_TRUE(embedded_test_server()->ShutdownAndWaitUntilComplete());
 
+      // The HTTP Cache does not currently support cross-origin prefetching if
+      // the split cache is enabled, so skip the rest of the tests.
+      // TODO(crbug.com/939317): Remove this early return when cross-origin
+      // prefetching with split cache works.
+      if (base::FeatureList::IsEnabled(
+              net::features::kSplitCacheByNetworkIsolationKey) &&
+          !url::Origin::Create(sxg_url).IsSameOriginWith(
+              url::Origin::Create(inner_url))) {
+        return;
+      }
+
       // Need to setup MockSignedExchangeHandlerFactory because the SXG is
       // loaded from HTTPCache.
       MockSignedExchangeHandlerFactory factory({MockSignedExchangeHandlerParams(
@@ -381,7 +392,7 @@ class SignedExchangePrefetchBrowserTest
 
     EXPECT_EQ(0, sxg_request_counter->GetRequestCount());
 
-    NavigateToURL(shell(), prefetch_page_url);
+    EXPECT_TRUE(NavigateToURL(shell(), prefetch_page_url));
 
     WaitUntilLoaded(sxg_url);
 
@@ -804,7 +815,7 @@ IN_PROC_BROWSER_TEST_P(SignedExchangePrefetchBrowserTest,
   ScopedSignedExchangeHandlerFactory scoped_factory(&factory);
 
   EXPECT_EQ(0, GetPrefetchURLLoaderCallCount());
-  NavigateToURL(shell(), prefetch_page_url);
+  EXPECT_TRUE(NavigateToURL(shell(), prefetch_page_url));
 
   WaitUntilLoaded(sxg_page_url);
   if (base::FeatureList::IsEnabled(
@@ -1095,7 +1106,7 @@ class SignedExchangeSubresourcePrefetchBrowserTest
     ScopedSignedExchangeHandlerFactory scoped_factory(&factory);
 
     EXPECT_EQ(0, GetPrefetchURLLoaderCallCount());
-    NavigateToURL(shell(), prefetch_page_url);
+    EXPECT_TRUE(NavigateToURL(shell(), prefetch_page_url));
 
     WaitUntilLoaded(sxg_page_url);
     WaitUntilLoaded(sxg_script_url);
@@ -1230,7 +1241,8 @@ class SignedExchangeSubresourcePrefetchBrowserTest
              script_header_integrity)});
     ScopedSignedExchangeHandlerFactory scoped_factory(&factory);
 
-    NavigateToURL(shell(), embedded_test_server()->GetURL(prefetch_path));
+    EXPECT_TRUE(
+        NavigateToURL(shell(), embedded_test_server()->GetURL(prefetch_path)));
 
     WaitUntilLoaded(target_sxg_url);
     WaitUntilLoaded(script_sxg_url);
@@ -1541,7 +1553,8 @@ IN_PROC_BROWSER_TEST_F(SignedExchangeSubresourcePrefetchBrowserTest,
            image2_url, "image/png", {}, image2_header_integrity)});
   ScopedSignedExchangeHandlerFactory scoped_factory(&factory);
 
-  NavigateToURL(shell(), embedded_test_server()->GetURL(prefetch_path));
+  EXPECT_TRUE(
+      NavigateToURL(shell(), embedded_test_server()->GetURL(prefetch_path)));
   WaitUntilLoaded(target_sxg_url);
   WaitUntilLoaded(image1_sxg_url);
 
@@ -1651,7 +1664,8 @@ IN_PROC_BROWSER_TEST_F(SignedExchangeSubresourcePrefetchBrowserTest,
   });
   ScopedSignedExchangeHandlerFactory scoped_factory(&factory);
 
-  NavigateToURL(shell(), embedded_test_server()->GetURL(prefetch_path));
+  EXPECT_TRUE(
+      NavigateToURL(shell(), embedded_test_server()->GetURL(prefetch_path)));
 
   WaitUntilLoaded(target_sxg_url);
   WaitUntilLoaded(script1_sxg_url);
@@ -1754,7 +1768,8 @@ IN_PROC_BROWSER_TEST_F(SignedExchangeSubresourcePrefetchBrowserTest,
            script_url, "text/javascript", {}, script_header_integrity)});
   ScopedSignedExchangeHandlerFactory scoped_factory(&factory);
 
-  NavigateToURL(shell(), embedded_test_server()->GetURL(prefetch_path));
+  EXPECT_TRUE(
+      NavigateToURL(shell(), embedded_test_server()->GetURL(prefetch_path)));
 
   WaitUntilLoaded(target_sxg_url);
   WaitUntilLoaded(script_sxg_url);
@@ -1854,7 +1869,8 @@ IN_PROC_BROWSER_TEST_F(SignedExchangeSubresourcePrefetchBrowserTest,
   });
   ScopedSignedExchangeHandlerFactory scoped_factory(&factory);
 
-  NavigateToURL(shell(), embedded_test_server()->GetURL(prefetch_path));
+  EXPECT_TRUE(
+      NavigateToURL(shell(), embedded_test_server()->GetURL(prefetch_path)));
 
   WaitUntilLoaded(target_sxg_url);
   WaitUntilLoaded(script1_sxg_url);
@@ -2071,7 +2087,8 @@ let results = [];
 
   ScopedSignedExchangeHandlerFactory scoped_factory(&factory);
 
-  NavigateToURL(shell(), embedded_test_server()->GetURL(prefetch_path));
+  EXPECT_TRUE(
+      NavigateToURL(shell(), embedded_test_server()->GetURL(prefetch_path)));
 
   // Wait until all (main- and sub-resource) SXGs are prefetched.
   while (GetCachedExchanges(shell()).size() < base::size(kTestCases) + 1) {
@@ -2186,7 +2203,7 @@ IN_PROC_BROWSER_TEST_F(SignedExchangeSubresourcePrefetchBrowserTest,
   ScopedSignedExchangeHandlerFactory scoped_factory(&factory);
 
   EXPECT_EQ(0, GetPrefetchURLLoaderCallCount());
-  NavigateToURL(shell(), prefetch_page_url);
+  EXPECT_TRUE(NavigateToURL(shell(), prefetch_page_url));
 
   WaitUntilLoaded(sxg_page_url);
   WaitUntilLoaded(sxg_script_url);
@@ -2268,7 +2285,8 @@ IN_PROC_BROWSER_TEST_F(SignedExchangeSubresourcePrefetchBrowserTest,
            script_url, "text/javascript", {}, script_header_integrity)});
   ScopedSignedExchangeHandlerFactory scoped_factory(&factory);
 
-  NavigateToURL(shell(), embedded_test_server()->GetURL(prefetch_path));
+  EXPECT_TRUE(
+      NavigateToURL(shell(), embedded_test_server()->GetURL(prefetch_path)));
 
   WaitUntilLoaded(target_sxg_url);
   WaitUntilLoaded(script_sxg_url);

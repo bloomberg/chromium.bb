@@ -48,7 +48,6 @@ void ValidateOps(PaintOpBuffer* buffer) {
   for (auto* op : PaintOpBuffer::Iterator(buffer))
     EXPECT_TRUE(static_cast<T*>(op)->IsValid());
 }
-
 }  // namespace
 
 class PaintOpSerializationTestUtils {
@@ -238,6 +237,26 @@ TEST(PaintOpBufferTest, SaveDrawRestore) {
   // Since alpha is stored in a uint8_t and gets rounded, so use tolerance.
   float expected_alpha = alpha * 50 / 255.f;
   EXPECT_LE(std::abs(expected_alpha - canvas.paint_.getAlpha()), 1.f);
+}
+
+// Verify that we don't optimize SaveLayerAlpha / DrawTextBlob / Restore.
+TEST(PaintOpBufferTest, SaveDrawTextBlobRestore) {
+  PaintOpBuffer buffer;
+
+  uint8_t alpha = 100;
+  buffer.push<SaveLayerAlphaOp>(nullptr, alpha);
+
+  PaintFlags paint_flags;
+  EXPECT_TRUE(paint_flags.SupportsFoldingAlpha());
+  buffer.push<DrawTextBlobOp>(SkTextBlob::MakeFromString("abc", SkFont()), 0, 0,
+                              paint_flags);
+  buffer.push<RestoreOp>();
+
+  SaveCountingCanvas canvas;
+  buffer.Playback(&canvas);
+
+  EXPECT_EQ(1, canvas.save_count_);
+  EXPECT_EQ(1, canvas.restore_count_);
 }
 
 // The same as SaveDrawRestore, but test that the optimization doesn't apply
@@ -1393,8 +1412,8 @@ void PushDrawDRRectOps(PaintOpBuffer* buffer) {
 }
 
 void PushDrawImageOps(PaintOpBuffer* buffer) {
-  size_t len = std::min(std::min(test_images.size(), test_flags.size()),
-                        test_floats.size() - 1);
+  size_t len =
+      std::min({test_images.size(), test_flags.size(), test_floats.size() - 1});
   for (size_t i = 0; i < len; ++i) {
     buffer->push<DrawImageOp>(test_images[i], test_floats[i],
                               test_floats[i + 1], &test_flags[i]);
@@ -1408,8 +1427,8 @@ void PushDrawImageOps(PaintOpBuffer* buffer) {
 }
 
 void PushDrawImageRectOps(PaintOpBuffer* buffer) {
-  size_t len = std::min(std::min(test_images.size(), test_flags.size()),
-                        test_rects.size() - 1);
+  size_t len =
+      std::min({test_images.size(), test_flags.size(), test_rects.size() - 1});
   for (size_t i = 0; i < len; ++i) {
     PaintCanvas::SrcRectConstraint constraint =
         i % 2 ? PaintCanvas::kStrict_SrcRectConstraint
@@ -1529,8 +1548,8 @@ void PushDrawTextBlobOps(PaintOpBuffer* buffer) {
         return builder.make();
       }(),
   };
-  size_t len = std::min(std::min(test_paint_blobs.size(), test_flags.size()),
-                        test_floats.size() - 1);
+  size_t len = std::min(
+      {test_paint_blobs.size(), test_flags.size(), test_floats.size() - 1});
   for (size_t i = 0; i < len; ++i) {
     buffer->push<DrawTextBlobOp>(test_paint_blobs[i], test_floats[i],
                                  test_floats[i + 1], test_flags[i]);

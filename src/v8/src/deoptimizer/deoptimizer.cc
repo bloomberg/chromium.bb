@@ -357,6 +357,9 @@ void Deoptimizer::DeoptimizeMarkedCodeForContext(NativeContext native_context) {
   for (Code code : codes) {
     isolate->heap()->InvalidateCodeDeoptimizationData(code);
   }
+
+  native_context.GetOSROptimizedCodeCache().EvictMarkedCode(
+      native_context.GetIsolate());
 }
 
 void Deoptimizer::DeoptimizeAll(Isolate* isolate) {
@@ -375,6 +378,7 @@ void Deoptimizer::DeoptimizeAll(Isolate* isolate) {
   while (!context.IsUndefined(isolate)) {
     NativeContext native_context = NativeContext::cast(context);
     MarkAllCodeForContext(native_context);
+    OSROptimizedCodeCache::Clear(native_context);
     DeoptimizeMarkedCodeForContext(native_context);
     context = native_context.next_context_link();
   }
@@ -432,6 +436,13 @@ void Deoptimizer::DeoptimizeFunction(JSFunction function, Code code) {
       code.set_deopt_already_counted(true);
     }
     DeoptimizeMarkedCodeForContext(function.context().native_context());
+    // TODO(mythria): Ideally EvictMarkCode should compact the cache without
+    // having to explicitly call this. We don't do this currently because
+    // compacting causes GC and DeoptimizeMarkedCodeForContext uses raw
+    // pointers. Update DeoptimizeMarkedCodeForContext to use handles and remove
+    // this call from here.
+    OSROptimizedCodeCache::Compact(
+        Handle<NativeContext>(function.context().native_context(), isolate));
   }
 }
 
@@ -687,6 +698,10 @@ void Deoptimizer::DoComputeOutputFrames() {
     }
   }
 
+  StackGuard* const stack_guard = isolate()->stack_guard();
+  CHECK_GT(static_cast<uintptr_t>(caller_frame_top_),
+           stack_guard->real_jslimit());
+
   if (trace_scope_ != nullptr) {
     timer.Start();
     PrintF(trace_scope_->file(), "[deoptimizing (DEOPT %s): begin ",
@@ -744,6 +759,7 @@ void Deoptimizer::DoComputeOutputFrames() {
 
   // Translate each output frame.
   int frame_index = 0;  // output_frame_index
+  size_t total_output_frame_size = 0;
   for (size_t i = 0; i < count; ++i, ++frame_index) {
     // Read the ast node id, function, and frame height for this output frame.
     TranslatedFrame* translated_frame = &(translated_state_.frames()[i]);
@@ -779,6 +795,7 @@ void Deoptimizer::DoComputeOutputFrames() {
         FATAL("invalid frame");
         break;
     }
+    total_output_frame_size += output_[frame_index]->GetFrameSize();
   }
 
   FrameDescription* topmost = output_[count - 1];
@@ -798,6 +815,18 @@ void Deoptimizer::DoComputeOutputFrames() {
            bailout_id_, node_id.ToInt(), output_[index]->GetPc(),
            caller_frame_top_, ms);
   }
+
+  // The following invariant is fairly tricky to guarantee, since the size of
+  // an optimized frame and its deoptimized counterparts usually differs. We
+  // thus need to consider the case in which deoptimized frames are larger than
+  // the optimized frame in stack checks in optimized code. We do this by
+  // applying an offset to stack checks (see kArchStackPointerGreaterThan in the
+  // code generator).
+  // Note that we explicitly allow deopts to exceed the limit by a certain
+  // number of slack bytes.
+  CHECK_GT(
+      static_cast<uintptr_t>(caller_frame_top_) - total_output_frame_size,
+      stack_guard->real_jslimit() - kStackLimitSlackForDeoptimizationInBytes);
 }
 
 void Deoptimizer::DoComputeInterpretedFrame(TranslatedFrame* translated_frame,
@@ -3640,8 +3669,7 @@ void TranslatedState::EnsurePropertiesAllocatedAndMarked(
 
   // Set markers for the double properties.
   Handle<DescriptorArray> descriptors(map->instance_descriptors(), isolate());
-  int field_count = map->NumberOfOwnDescriptors();
-  for (int i = 0; i < field_count; i++) {
+  for (InternalIndex i : map->IterateOwnDescriptors()) {
     FieldIndex index = FieldIndex::ForDescriptor(*map, i);
     if (descriptors->GetDetails(i).representation().IsDouble() &&
         !index.is_inobject()) {
@@ -3673,10 +3701,9 @@ void TranslatedState::EnsureJSObjectAllocated(TranslatedValue* slot,
   Handle<ByteArray> object_storage = AllocateStorageFor(slot);
   // Now we handle the interesting (JSObject) case.
   Handle<DescriptorArray> descriptors(map->instance_descriptors(), isolate());
-  int field_count = map->NumberOfOwnDescriptors();
 
   // Set markers for the double properties.
-  for (int i = 0; i < field_count; i++) {
+  for (InternalIndex i : map->IterateOwnDescriptors()) {
     FieldIndex index = FieldIndex::ForDescriptor(*map, i);
     if (descriptors->GetDetails(i).representation().IsDouble() &&
         index.is_inobject()) {
@@ -3712,8 +3739,7 @@ void TranslatedState::InitializeJSObjectAt(
   CHECK_GE(slot->GetChildrenCount(), 2);
 
   // Notify the concurrent marker about the layout change.
-  isolate()->heap()->NotifyObjectLayoutChange(
-      *object_storage, slot->GetChildrenCount() * kTaggedSize, no_allocation);
+  isolate()->heap()->NotifyObjectLayoutChange(*object_storage, no_allocation);
 
   // Fill the property array field.
   {
@@ -3772,8 +3798,7 @@ void TranslatedState::InitializeObjectWithTaggedFieldsAt(
   }
 
   // Notify the concurrent marker about the layout change.
-  isolate()->heap()->NotifyObjectLayoutChange(
-      *object_storage, slot->GetChildrenCount() * kTaggedSize, no_allocation);
+  isolate()->heap()->NotifyObjectLayoutChange(*object_storage, no_allocation);
 
   // Write the fields to the object.
   for (int i = 1; i < slot->GetChildrenCount(); i++) {

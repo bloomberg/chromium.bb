@@ -7,29 +7,32 @@ package org.chromium.chrome.browser.contacts_picker;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.res.Resources;
+import android.graphics.Bitmap;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.RelativeLayout;
+
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ApiCompatibilityUtils;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.task.AsyncTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.GlobalDiscardableReferencePool;
+import org.chromium.chrome.browser.ui.widget.RoundedIconGenerator;
 import org.chromium.chrome.browser.util.BitmapCache;
 import org.chromium.chrome.browser.util.ConversionUtils;
-import org.chromium.chrome.browser.widget.RoundedIconGenerator;
 import org.chromium.chrome.browser.widget.selection.SelectableListLayout;
 import org.chromium.chrome.browser.widget.selection.SelectableListToolbar;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
 import org.chromium.content.browser.contacts.ContactsPickerPropertiesRequested;
 import org.chromium.ui.ContactsPickerListener;
 import org.chromium.ui.UiUtils;
+import org.chromium.ui.widget.OptimizedFrameLayout;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -41,10 +44,11 @@ import java.util.Set;
  * A class for keeping track of common data associated with showing contact details in
  * the contacts picker, for example the RecyclerView.
  */
-public class PickerCategoryView extends RelativeLayout
+public class PickerCategoryView extends OptimizedFrameLayout
         implements View.OnClickListener, RecyclerView.RecyclerListener,
                    SelectionDelegate.SelectionObserver<ContactDetails>,
-                   SelectableListToolbar.SearchDelegate, TopView.SelectAllToggleCallback {
+                   SelectableListToolbar.SearchDelegate, TopView.SelectAllToggleCallback,
+                   CompressContactIconsWorkerTask.CompressContactIconsCallback {
     // These values are written to logs.  New enum values can be added, but existing
     // enums must never be renumbered or deleted and reused.
     private static final int ACTION_CANCEL = 0;
@@ -90,7 +94,7 @@ public class PickerCategoryView extends RelativeLayout
     private SelectionDelegate<ContactDetails> mSelectionDelegate;
 
     // A cache for contact images, lazily created.
-    private BitmapCache mBitmapCache;
+    private ContactsBitmapCache mBitmapCache;
 
     // The search icon.
     private ImageView mSearchButton;
@@ -113,6 +117,12 @@ public class PickerCategoryView extends RelativeLayout
     // Whether the contacts data returned includes telephone numbers.
     public final boolean includeTel;
 
+    // Whether the contacts data returned includes addresses.
+    public final boolean includeAddresses;
+
+    // Whether the contacts data returned includes icons.
+    public final boolean includeIcons;
+
     /**
      * @param multiSelectionAllowed Whether the contacts picker should allow multiple items to be
      * selected.
@@ -120,14 +130,17 @@ public class PickerCategoryView extends RelativeLayout
     @SuppressWarnings("unchecked") // mSelectableListLayout
     public PickerCategoryView(Context context, boolean multiSelectionAllowed,
             boolean shouldIncludeNames, boolean shouldIncludeEmails, boolean shouldIncludeTel,
-            String formattedOrigin, ContactsPickerToolbar.ContactsToolbarDelegate delegate) {
-        super(context);
+            boolean shouldIncludeAddresses, boolean shouldIncludeIcons, String formattedOrigin,
+            ContactsPickerToolbar.ContactsToolbarDelegate delegate) {
+        super(context, null);
 
         mActivity = (ChromeActivity) context;
         mMultiSelectionAllowed = multiSelectionAllowed;
         includeNames = shouldIncludeNames;
         includeEmails = shouldIncludeEmails;
         includeTel = shouldIncludeTel;
+        includeAddresses = shouldIncludeAddresses;
+        includeIcons = shouldIncludeIcons;
 
         mSelectionDelegate = new SelectionDelegate<ContactDetails>();
         if (!multiSelectionAllowed) mSelectionDelegate.setSingleSelectionMode();
@@ -146,7 +159,7 @@ public class PickerCategoryView extends RelativeLayout
                 R.string.contacts_picker_no_contacts_found,
                 R.string.contacts_picker_no_contacts_found);
 
-        mPickerAdapter = new PickerAdapter(this, context.getContentResolver(), formattedOrigin);
+        mPickerAdapter = new PickerAdapter(this, context, formattedOrigin);
         mRecyclerView = mSelectableListLayout.initializeRecyclerView(mPickerAdapter);
         int titleId = multiSelectionAllowed ? R.string.contacts_picker_select_contacts
                                             : R.string.contacts_picker_select_contact;
@@ -156,7 +169,7 @@ public class PickerCategoryView extends RelativeLayout
         mToolbar.setNavigationOnClickListener(this);
         mToolbar.initializeSearchView(this, R.string.contacts_picker_search, 0);
         mToolbar.setDelegate(delegate);
-        mToolbar.showBackArrow();
+        mSelectableListLayout.configureWideDisplayStyle();
 
         mSearchButton = (ImageView) mToolbar.findViewById(R.id.search);
         mSearchButton.setOnClickListener(this);
@@ -167,12 +180,7 @@ public class PickerCategoryView extends RelativeLayout
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setLayoutManager(mLayoutManager);
 
-        // Each image (on a Pixel 2 phone) is about 30-40K. Calculate a proportional amount of the
-        // available memory, but cap it at 5MB.
-        final long maxMemory = ConversionUtils.bytesToKilobytes(Runtime.getRuntime().maxMemory());
-        int iconCacheSizeKb = (int) (maxMemory / 8); // 1/8th of the available memory.
-        mBitmapCache = new BitmapCache(GlobalDiscardableReferencePool.getReferencePool(),
-                Math.min(iconCacheSizeKb, 5 * ConversionUtils.BYTES_PER_MEGABYTE));
+        mBitmapCache = new ContactsBitmapCache();
     }
 
     /**
@@ -286,7 +294,7 @@ public class PickerCategoryView extends RelativeLayout
     public void onClick(View view) {
         int id = view.getId();
         if (id == R.id.done) {
-            notifyContactsSelected();
+            prepareContactsSelected();
         } else if (id == R.id.search) {
             onStartSearch();
         } else {
@@ -304,7 +312,7 @@ public class PickerCategoryView extends RelativeLayout
         return mIconGenerator;
     }
 
-    BitmapCache getIconCache() {
+    ContactsBitmapCache getIconCache() {
         return mBitmapCache;
     }
 
@@ -321,13 +329,36 @@ public class PickerCategoryView extends RelativeLayout
     }
 
     /**
+     * Formats the selected contacts before notifying the listeners.
+     */
+    private void prepareContactsSelected() {
+        List<ContactDetails> selectedContacts = mSelectionDelegate.getSelectedItemsAsList();
+        Collections.sort(selectedContacts);
+
+        if (includeIcons && PickerAdapter.includesIcons()) {
+            // Fetch missing icons and compress them first.
+            new CompressContactIconsWorkerTask(
+                    mActivity.getContentResolver(), mBitmapCache, selectedContacts, this)
+                    .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+            return;
+        }
+
+        notifyContactsSelected(selectedContacts);
+    }
+
+    @Override
+    public void iconsCompressed(List<ContactDetails> selectedContacts) {
+        notifyContactsSelected(selectedContacts);
+    }
+
+    /**
      * @param isIncluded Whether the property was requested by the API.
      * @param isEnabled Whether the property was allowed to be shared by the user.
      * @param selected The property values that are currently selected.
      * @return The list of property values to share.
      */
-    private List<String> getContactPropertyValues(
-            boolean isIncluded, boolean isEnabled, List<String> selected) {
+    private <T> List<T> getContactPropertyValues(
+            boolean isIncluded, boolean isEnabled, List<T> selected) {
         if (!isIncluded) {
             // The property wasn't requested in the API so return null.
             return null;
@@ -335,7 +366,7 @@ public class PickerCategoryView extends RelativeLayout
 
         if (!isEnabled) {
             // The user doesn't want to share this property, so return an empty array.
-            return new ArrayList<String>();
+            return new ArrayList<T>();
         }
 
         // Share whatever was selected.
@@ -345,12 +376,8 @@ public class PickerCategoryView extends RelativeLayout
     /**
      * Notifies any listeners that one or more contacts have been selected.
      */
-    private void notifyContactsSelected() {
-        List<ContactDetails> selectedContacts = mSelectionDelegate.getSelectedItemsAsList();
-        Collections.sort(selectedContacts);
-
-        List<ContactsPickerListener.Contact> contacts =
-                new ArrayList<ContactsPickerListener.Contact>();
+    private void notifyContactsSelected(List<ContactDetails> selectedContacts) {
+        List<ContactsPickerListener.Contact> contacts = new ArrayList<>();
 
         for (ContactDetails contactDetails : selectedContacts) {
             contacts.add(new ContactsPickerListener.Contact(
@@ -359,8 +386,13 @@ public class PickerCategoryView extends RelativeLayout
                     getContactPropertyValues(includeEmails, PickerAdapter.includesEmails(),
                             contactDetails.getEmails()),
                     getContactPropertyValues(includeTel, PickerAdapter.includesTelephones(),
-                            contactDetails.getPhoneNumbers())));
+                            contactDetails.getPhoneNumbers()),
+                    getContactPropertyValues(includeAddresses, PickerAdapter.includesAddresses(),
+                            contactDetails.getAddresses()),
+                    getContactPropertyValues(includeIcons, PickerAdapter.includesIcons(),
+                            contactDetails.getIcons())));
         }
+
         executeAction(ContactsPickerListener.ContactsPickerAction.CONTACTS_SELECTED, contacts,
                 ACTION_CONTACTS_SELECTED);
     }
@@ -375,7 +407,7 @@ public class PickerCategoryView extends RelativeLayout
             List<ContactsPickerListener.Contact> contacts, int umaId) {
         int selectCount = contacts != null ? contacts.size() : 0;
         int contactCount = mPickerAdapter.getAllContacts().size();
-        int percentageShared = (100 * selectCount) / contactCount;
+        int percentageShared = contactCount > 0 ? (100 * selectCount) / contactCount : 0;
 
         int propertiesRequested = ContactsPickerPropertiesRequested.PROPERTIES_NONE;
         if (includeNames) propertiesRequested |= ContactsPickerPropertiesRequested.PROPERTIES_NAMES;
@@ -383,6 +415,12 @@ public class PickerCategoryView extends RelativeLayout
             propertiesRequested |= ContactsPickerPropertiesRequested.PROPERTIES_EMAILS;
         }
         if (includeTel) propertiesRequested |= ContactsPickerPropertiesRequested.PROPERTIES_TELS;
+        if (includeAddresses) {
+            propertiesRequested |= ContactsPickerPropertiesRequested.PROPERTIES_ADDRESSES;
+        }
+        if (includeIcons) {
+            propertiesRequested |= ContactsPickerPropertiesRequested.PROPERTIES_ICONS;
+        }
 
         mListener.onContactsPickerUserAction(
                 action, contacts, percentageShared, propertiesRequested);
@@ -420,5 +458,36 @@ public class PickerCategoryView extends RelativeLayout
     @VisibleForTesting
     public TopView getTopViewForTesting() {
         return mTopView;
+    }
+
+    // A wrapper around BitmapCache to keep track of contacts that don't have an icon.
+    protected static class ContactsBitmapCache {
+        public BitmapCache bitmapCache;
+        public Set<String> noIconIds;
+
+        public ContactsBitmapCache() {
+            // Each image (on a Pixel 2 phone) is about 30-40K. Calculate a proportional amount of
+            // the available memory, but cap it at 5MB.
+            final long maxMemory =
+                    ConversionUtils.bytesToKilobytes(Runtime.getRuntime().maxMemory());
+            int iconCacheSizeKb = (int) (maxMemory / 8); // 1/8th of the available memory.
+            bitmapCache = new BitmapCache(GlobalDiscardableReferencePool.getReferencePool(),
+                    Math.min(iconCacheSizeKb, 5 * ConversionUtils.BYTES_PER_MEGABYTE));
+
+            noIconIds = new HashSet<>();
+        }
+
+        public Bitmap getBitmap(String id) {
+            return bitmapCache.getBitmap(id);
+        }
+
+        public void putBitmap(String id, Bitmap icon) {
+            if (icon == null) {
+                noIconIds.add(id);
+            } else {
+                bitmapCache.putBitmap(id, icon);
+                noIconIds.remove(id);
+            }
+        }
     }
 }

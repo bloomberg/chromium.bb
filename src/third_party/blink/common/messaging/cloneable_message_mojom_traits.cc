@@ -22,7 +22,9 @@ bool StructTraits<blink::mojom::CloneableMessage::DataView,
   mojo_base::BigBufferView message_view;
   base::Optional<base::UnguessableToken> locked_agent_cluster_id;
   if (!data.ReadEncodedMessage(&message_view) || !data.ReadBlobs(&out->blobs) ||
-      !data.ReadLockedAgentClusterId(&locked_agent_cluster_id)) {
+      !data.ReadLockedAgentClusterId(&locked_agent_cluster_id) ||
+      !data.ReadSenderOrigin(&out->sender_origin) ||
+      !data.ReadNativeFileSystemTokens(&out->native_file_system_tokens)) {
     return false;
   }
 
@@ -32,6 +34,7 @@ bool StructTraits<blink::mojom::CloneableMessage::DataView,
   out->stack_trace_id = data.stack_trace_id();
   out->stack_trace_debugger_id_first = data.stack_trace_debugger_id_first();
   out->stack_trace_debugger_id_second = data.stack_trace_debugger_id_second();
+  out->stack_trace_should_pause = data.stack_trace_should_pause();
   out->locked_agent_cluster_id = locked_agent_cluster_id;
   return true;
 }

@@ -32,6 +32,7 @@ class ToggleButton;
 
 namespace ash {
 class HoverHighlightView;
+class UnfocusableLabel;
 
 // Factory/utility functions used by the system menu.
 class TrayPopupUtils {
@@ -92,6 +93,10 @@ class TrayPopupUtils {
   //
   // TODO(bruthig): Update all system menu rows to use this.
   static views::Label* CreateDefaultLabel();
+
+  // Returns a label that has been configured for system menu layout and does
+  // not allow accessibility focus.
+  static UnfocusableLabel* CreateUnfocusableLabel();
 
   // Returns an image view to be used in the main image region of a system menu
   // row. This should be used by all rows that have a main image, i.e. both
@@ -166,11 +171,10 @@ class TrayPopupUtils {
       const views::View* host,
       SkColor background_color);
 
-  // Creates a SkPath matching the TrayPopupInkDropStyle. This path is normally
-  // used to generate the focus ring and ink drop shapes.
-  static std::unique_ptr<SkPath> CreateHighlightPath(
-      TrayPopupInkDropStyle ink_drop_style,
-      const views::View* host);
+  // Installs a HighlightPathGenerator matching the TrayPopupInkDropStyle.
+  static void InstallHighlightPathGenerator(
+      views::View* host,
+      TrayPopupInkDropStyle ink_drop_style);
 
   // Creates and returns a horizontal separator line to be drawn between rows
   // in a detailed view. If |left_inset| is true, then the separator is inset on
@@ -194,15 +198,6 @@ class TrayPopupUtils {
                                         bool visible);
 
  private:
-  // Returns the effective ink drop insets for |host| according to the
-  // |ink_drop_style|.
-  static gfx::Insets GetInkDropInsets(TrayPopupInkDropStyle ink_drop_style);
-
-  // Returns the effective ink drop bounds for |host| according to the
-  // |ink_drop_style|.
-  static gfx::Rect GetInkDropBounds(TrayPopupInkDropStyle ink_drop_style,
-                                    const views::View* host);
-
   DISALLOW_IMPLICIT_CONSTRUCTORS(TrayPopupUtils);
 };
 

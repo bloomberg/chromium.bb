@@ -27,10 +27,10 @@
 #include "mojo/public/cpp/bindings/connection_error_callback.h"
 #include "mojo/public/cpp/bindings/connection_group.h"
 #include "mojo/public/cpp/bindings/disconnect_reason.h"
-#include "mojo/public/cpp/bindings/filter_chain.h"
 #include "mojo/public/cpp/bindings/lib/control_message_handler.h"
 #include "mojo/public/cpp/bindings/lib/control_message_proxy.h"
 #include "mojo/public/cpp/bindings/message.h"
+#include "mojo/public/cpp/bindings/message_dispatcher.h"
 #include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
 
 namespace mojo {
@@ -84,9 +84,9 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) InterfaceEndpointClient
 
   AssociatedGroup* associated_group();
 
-  // Adds a MessageReceiver which can filter a message after validation but
+  // Sets a MessageFilter which can filter a message after validation but
   // before dispatch.
-  void AddFilter(std::unique_ptr<MessageReceiver> filter);
+  void SetFilter(std::unique_ptr<MessageFilter> filter);
 
   // After this call the object is in an invalid state and shouldn't be reused.
   ScopedInterfaceEndpointHandle PassHandle();
@@ -127,7 +127,7 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) InterfaceEndpointClient
   // The following methods send interface control messages.
   // They must only be called when the handle is not in pending association
   // state.
-  void QueryVersion(const base::Callback<void(uint32_t)>& callback);
+  void QueryVersion(base::OnceCallback<void(uint32_t)> callback);
   void RequireVersion(uint32_t version);
   void FlushForTesting();
   void FlushAsyncForTesting(base::OnceClosure callback);
@@ -163,6 +163,10 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) InterfaceEndpointClient
   void MaybeSendNotifyIdle();
 
   const char* interface_name() const { return interface_name_; }
+
+  void force_outgoing_messages_async(bool force) {
+    force_outgoing_messages_async_ = force;
+  }
 
 #if DCHECK_IS_ON()
   void SetNextCallLocation(const base::Location& location) {
@@ -251,7 +255,7 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) InterfaceEndpointClient
 
   MessageReceiverWithResponderStatus* const incoming_receiver_ = nullptr;
   HandleIncomingMessageThunk thunk_{this};
-  FilterChain filters_;
+  MessageDispatcher dispatcher_;
 
   AsyncResponderMap async_responders_;
   SyncResponseMap sync_responses_;
@@ -274,6 +278,17 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) InterfaceEndpointClient
   // is actually transmitted for it.
   base::Location next_call_location_;
 #endif
+
+  // If set to |true|, the endpoint ignores the sync flag when sending messages.
+  // This means that all messages are sent as if they were async, and all
+  // incoming replies are treated as if they replied to an async message. It is
+  // NOT appropriate to call generated sync method signatures (i.e. mojom
+  // interface methods with output arguments) on such endpoints.
+  //
+  // This exists only to facilitate APIs forwarding opaque sync messages through
+  // the endpoint from some other sequence which blocks on the reply, such as
+  // with sync calls on a SharedRemote.
+  bool force_outgoing_messages_async_ = false;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

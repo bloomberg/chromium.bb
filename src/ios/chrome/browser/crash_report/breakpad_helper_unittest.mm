@@ -5,8 +5,8 @@
 #import "ios/chrome/browser/crash_report/breakpad_helper.h"
 #import "base/test/ios/wait_util.h"
 #include "ios/chrome/browser/crash_report/main_thread_freeze_detector.h"
-#import "ios/chrome/test/base/scoped_block_swizzler.h"
 #import "ios/chrome/test/ocmock/OCMockObject+BreakpadControllerTesting.h"
+#import "ios/testing/scoped_block_swizzler.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 #import "third_party/breakpad/breakpad/src/client/ios/BreakpadController.h"
@@ -60,6 +60,7 @@ TEST_F(BreakpadHelperTest, CrashReportUserApplicationStateAllKeys) {
   // single breakpad record.
   breakpad_helper::SetCurrentOrientation(3, 7);
   breakpad_helper::SetCurrentHorizontalSizeClass(2);
+  breakpad_helper::SetCurrentUserInterfaceStyle(2);
   breakpad_helper::SetRegularTabCount(999);
   breakpad_helper::SetIncognitoTabCount(999);
   breakpad_helper::SetDestroyingAndRebuildingIncognitoBrowserState(true);

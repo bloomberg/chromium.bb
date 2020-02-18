@@ -22,9 +22,11 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/dns/dns_config.h"
-#include "net/http/http_auth_preferences.h"
 #include "net/log/net_log.h"
 #include "net/log/trace_net_log_observer.h"
 #include "services/network/keepalive_statistics_recorder.h"
@@ -37,9 +39,6 @@
 #include "services/network/public/mojom/network_quality_estimator_manager.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
-#include "services/service_manager/public/cpp/service.h"
-#include "services/service_manager/public/cpp/service_binding.h"
-#include "services/service_manager/public/mojom/service.mojom.h"
 
 namespace net {
 class FileNetLogObserver;
@@ -59,14 +58,14 @@ class NetworkContext;
 class NetworkUsageAccumulator;
 
 class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
-    : public service_manager::Service,
-      public mojom::NetworkService {
+    : public mojom::NetworkService {
  public:
-  NetworkService(
-      std::unique_ptr<service_manager::BinderRegistry> registry,
-      mojom::NetworkServiceRequest request = nullptr,
-      service_manager::mojom::ServiceRequest service_request = nullptr,
-      bool delay_initialization_until_set_client = false);
+  static const base::TimeDelta kInitialDohProbeTimeout;
+
+  NetworkService(std::unique_ptr<service_manager::BinderRegistry> registry,
+                 mojo::PendingReceiver<mojom::NetworkService> receiver =
+                     mojo::NullReceiver(),
+                 bool delay_initialization_until_set_client = false);
 
   ~NetworkService() override;
 
@@ -75,31 +74,23 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   // encrypted storage can be used.
   void set_os_crypt_is_configured();
 
-  // Allows late binding if the mojo request wasn't specified in the
+  // Allows late binding if the mojo receiver wasn't specified in the
   // constructor.
-  void Bind(mojom::NetworkServiceRequest request);
+  void Bind(mojo::PendingReceiver<mojom::NetworkService> receiver);
 
   // Allows the browser process to synchronously initialize the NetworkService.
   // TODO(jam): remove this once the old path is gone.
-  void Initialize(mojom::NetworkServiceParamsPtr params);
+  void Initialize(mojom::NetworkServiceParamsPtr params,
+                  bool mock_network_change_notifier = false);
 
-  // Creates a NetworkService instance on the current thread, optionally using
-  // the passed-in NetLog. Does not take ownership of |net_log|. Must be
-  // destroyed before |net_log|.
+  // Creates a NetworkService instance on the current thread.
   static std::unique_ptr<NetworkService> Create(
-      mojom::NetworkServiceRequest request,
-      service_manager::mojom::ServiceRequest service_request = nullptr);
+      mojo::PendingReceiver<mojom::NetworkService> receiver);
 
   // Creates a testing instance of NetworkService not bound to an actual
   // Service pipe. This instance must be driven by direct calls onto the
   // NetworkService object.
   static std::unique_ptr<NetworkService> CreateForTesting();
-
-  // Creates a testing instance of NetworkService similar to above, but the
-  // instance is bound to |request|. Test code may use an appropriate Connector
-  // to bind interface requests within this service instance.
-  static std::unique_ptr<NetworkService> CreateForTesting(
-      service_manager::mojom::ServiceRequest service_request);
 
   // These are called by NetworkContexts as they are being created and
   // destroyed.
@@ -114,7 +105,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
       net::NetLog::ThreadSafeObserver* observer);
 
   // mojom::NetworkService implementation:
-  void SetClient(mojom::NetworkServiceClientPtr client,
+  void SetClient(mojo::PendingRemote<mojom::NetworkServiceClient> client,
                  mojom::NetworkServiceParamsPtr params) override;
 #if defined(OS_CHROMEOS)
   void ReinitializeLogging(mojom::LoggingSettingsPtr settings) override;
@@ -140,11 +131,12 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
                            const std::vector<url::Origin>& origins) override;
   void SetMaxConnectionsPerProxy(int32_t max_connections) override;
   void GetNetworkChangeManager(
-      mojom::NetworkChangeManagerRequest request) override;
+      mojo::PendingReceiver<mojom::NetworkChangeManager> receiver) override;
   void GetNetworkQualityEstimatorManager(
-      mojom::NetworkQualityEstimatorManagerRequest request) override;
+      mojo::PendingReceiver<mojom::NetworkQualityEstimatorManager> receiver)
+      override;
   void GetDnsConfigChangeManager(
-      mojom::DnsConfigChangeManagerRequest request) override;
+      mojo::PendingReceiver<mojom::DnsConfigChangeManager> receiver) override;
   void GetTotalNetworkUsages(
       mojom::NetworkService::GetTotalNetworkUsagesCallback callback) override;
   void GetNetworkList(
@@ -155,18 +147,13 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   void SetCryptConfig(mojom::CryptConfigPtr crypt_config) override;
 #endif
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_WIN) || (defined(OS_MACOSX) && !defined(OS_IOS))
   void SetEncryptionKey(const std::string& encryption_key) override;
 #endif
   void AddCorbExceptionForPlugin(uint32_t process_id) override;
   void RemoveCorbExceptionForPlugin(uint32_t process_id) override;
   void AddExtraMimeTypesForCorb(
       const std::vector<std::string>& mime_types) override;
-  void ExcludeSchemeFromRequestInitiatorSiteLockChecks(
-      const std::string& scheme,
-      mojom::NetworkService::
-          ExcludeSchemeFromRequestInitiatorSiteLockChecksCallback callback)
-      override;
   void OnMemoryPressure(base::MemoryPressureListener::MemoryPressureLevel
                             memory_pressure_level) override;
   void OnPeerToPeerConnectionsCountChange(uint32_t count) override;
@@ -178,6 +165,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
 #if defined(OS_ANDROID)
   void DumpWithoutCrashing(base::Time dump_request_time) override;
 #endif
+  void BindTestInterface(
+      mojo::PendingReceiver<mojom::NetworkServiceTest> receiver) override;
 
   // Returns an HttpAuthHandlerFactory for the given NetworkContext.
   std::unique_ptr<net::HttpAuthHandlerFactory> CreateHttpAuthHandlerFactory(
@@ -189,7 +178,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   bool quic_disabled() const { return quic_disabled_; }
   bool HasRawHeadersAccess(uint32_t process_id, const GURL& resource_url) const;
 
-  mojom::NetworkServiceClient* client() { return client_.get(); }
+  mojom::NetworkServiceClient* client() {
+    return client_.is_bound() ? client_.get() : nullptr;
+  }
   net::NetworkQualityEstimator* network_quality_estimator() {
     return network_quality_estimator_manager_->GetNetworkQualityEstimator();
   }
@@ -221,13 +212,14 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
     host_resolver_factory_ = std::move(host_resolver_factory);
   }
 
+  bool split_auth_cache_by_network_isolation_key() const {
+    return split_auth_cache_by_network_isolation_key_;
+  }
+
   static NetworkService* GetNetworkServiceForTesting();
 
  private:
-  // service_manager::Service implementation.
-  void OnBindInterface(const service_manager::BindSourceInfo& source_info,
-                       const std::string& interface_name,
-                       mojo::ScopedMessagePipeHandle interface_pipe) override;
+  class DelayedDohProbeActivator;
 
   void DestroyNetworkContexts();
 
@@ -248,8 +240,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   // Starts timer call UpdateLoadInfo() again, if needed.
   void AckUpdateLoadInfo();
 
-  service_manager::ServiceBinding service_binding_{this};
-
   bool initialized_ = false;
 
   net::NetLog* net_log_;
@@ -257,7 +247,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   std::unique_ptr<net::FileNetLogObserver> file_net_log_observer_;
   net::TraceNetLogObserver trace_net_log_observer_;
 
-  mojom::NetworkServiceClientPtr client_;
+  mojo::Remote<mojom::NetworkServiceClient> client_;
 
   KeepaliveStatisticsRecorder keepalive_statistics_recorder_;
 
@@ -271,7 +261,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
 
   std::unique_ptr<service_manager::BinderRegistry> registry_;
 
-  mojo::Binding<mojom::NetworkService> binding_;
+  mojo::Receiver<mojom::NetworkService> receiver_{this};
 
   std::unique_ptr<NetworkQualityEstimatorManager>
       network_quality_estimator_manager_;
@@ -281,10 +271,13 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   std::unique_ptr<net::HostResolverManager> host_resolver_manager_;
   std::unique_ptr<net::HostResolver::Factory> host_resolver_factory_;
   std::unique_ptr<NetworkUsageAccumulator> network_usage_accumulator_;
-
-  net::HttpAuthPreferences http_auth_preferences_;
-  mojom::HttpAuthStaticParamsPtr http_auth_static_params_;
   std::unique_ptr<HttpAuthCacheCopier> http_auth_cache_copier_;
+
+  // Members that would store the http auth network_service related params.
+  // These Params are later used by NetworkContext to create
+  // HttpAuthPreferences.
+  mojom::HttpAuthDynamicParamsPtr http_auth_dynamic_network_service_params_;
+  mojom::HttpAuthStaticParamsPtr http_auth_static_network_service_params_;
 
   // NetworkContexts created by CreateNetworkContext(). They call into the
   // NetworkService when their connection is closed so that it can delete
@@ -325,6 +318,12 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
 
   // A timer that periodically calls ReportMetrics every hour.
   base::RepeatingTimer metrics_trigger_timer_;
+
+  // Whether new NetworkContexts will be configured to partition their
+  // HttpAuthCaches by NetworkIsolationKey.
+  bool split_auth_cache_by_network_isolation_key_ = false;
+
+  std::unique_ptr<DelayedDohProbeActivator> doh_probe_activator_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkService);
 };

@@ -19,6 +19,7 @@
 
 #include <vector>
 
+#include "source/fuzz/protobufs/spirvfuzz_protobufs.h"
 #include "source/opt/build_module.h"
 #include "source/opt/ir_context.h"
 #include "spirv-tools/libspirv.h"
@@ -92,6 +93,19 @@ const spvtools::MessageConsumer kConsoleMessageConsumer =
       break;
   }
 };
+
+// Dumps the SPIRV-V module in |context| to file |filename|. Useful for
+// interactive debugging.
+void DumpShader(opt::IRContext* context, const char* filename);
+
+// Dumps |binary| to file |filename|. Useful for interactive debugging.
+void DumpShader(const std::vector<uint32_t>& binary, const char* filename);
+
+// Dumps |transformations| to file |filename| in JSON format. Useful for
+// interactive debugging.
+void DumpTransformationsJson(
+    const protobufs::TransformationSequence& transformations,
+    const char* filename);
 
 }  // namespace fuzz
 }  // namespace spvtools

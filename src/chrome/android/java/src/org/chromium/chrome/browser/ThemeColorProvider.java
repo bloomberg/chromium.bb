@@ -6,10 +6,12 @@ package org.chromium.chrome.browser;
 
 import android.content.Context;
 import android.content.res.ColorStateList;
-import android.support.annotation.ColorInt;
-import android.support.annotation.Nullable;
+
+import androidx.annotation.ColorInt;
+import androidx.annotation.Nullable;
 
 import org.chromium.base.ObserverList;
+import org.chromium.chrome.browser.toolbar.ToolbarColors;
 import org.chromium.chrome.browser.util.ColorUtils;
 
 /**
@@ -65,8 +67,8 @@ public abstract class ThemeColorProvider {
     public ThemeColorProvider(Context context) {
         mThemeColorObservers = new ObserverList<ThemeColorObserver>();
         mTintObservers = new ObserverList<TintObserver>();
-        mLightModeTint = ColorUtils.getThemedToolbarIconTint(context, true);
-        mDarkModeTint = ColorUtils.getThemedToolbarIconTint(context, false);
+        mLightModeTint = ToolbarColors.getThemedToolbarIconTint(context, true);
+        mDarkModeTint = ToolbarColors.getThemedToolbarIconTint(context, false);
     }
 
     /**

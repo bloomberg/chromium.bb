@@ -112,6 +112,11 @@ void AssistantViewDelegateImpl::GetNavigableContentsFactoryForView(
   assistant_controller_->GetNavigableContentsFactory(std::move(receiver));
 }
 
+aura::Window* AssistantViewDelegateImpl::GetRootWindowForDisplayId(
+    int64_t display_id) {
+  return Shell::Get()->GetRootWindowForDisplayId(display_id);
+}
+
 aura::Window* AssistantViewDelegateImpl::GetRootWindowForNewWindows() {
   return Shell::Get()->GetRootWindowForNewWindows();
 }
@@ -173,13 +178,6 @@ void AssistantViewDelegateImpl::OnSuggestionChipPressed(
 
 void AssistantViewDelegateImpl::OpenUrlFromView(const GURL& url) {
   assistant_controller_->OpenUrl(url);
-}
-
-void AssistantViewDelegateImpl::NotifyDeepLinkReceived(
-    assistant::util::DeepLinkType type,
-    const std::map<std::string, std::string>& params) {
-  for (AssistantViewDelegateObserver& observer : view_delegate_observers_)
-    observer.OnDeepLinkReceived(type, params);
 }
 
 }  // namespace ash

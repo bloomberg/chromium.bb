@@ -7,7 +7,7 @@
 #include "ash/app_list/app_list_util.h"
 #include "ash/app_list/views/search_result_container_view.h"
 
-namespace app_list {
+namespace ash {
 
 ResultLocationDetails::ResultLocationDetails() = default;
 
@@ -37,8 +37,10 @@ bool ResultLocationDetails::operator!=(
 }
 
 ResultSelectionController::ResultSelectionController(
-    const ResultSelectionModel* result_container_views)
-    : result_selection_model_(result_container_views) {}
+    const ResultSelectionModel* result_container_views,
+    const base::RepeatingClosure& selection_change_callback)
+    : result_selection_model_(result_container_views),
+      selection_change_callback_(selection_change_callback) {}
 
 ResultSelectionController::~ResultSelectionController() = default;
 
@@ -49,7 +51,7 @@ ResultSelectionController::MoveResult ResultSelectionController::MoveSelection(
 
   ResultLocationDetails next_location;
   if (!selected_location_details_) {
-    ResetSelection(&event);
+    ResetSelection(&event, false /* default_selection */);
     return MoveResult::kResultChanged;
   }
 
@@ -59,7 +61,8 @@ ResultSelectionController::MoveResult ResultSelectionController::MoveSelection(
   return result;
 }
 
-void ResultSelectionController::ResetSelection(const ui::KeyEvent* key_event) {
+void ResultSelectionController::ResetSelection(const ui::KeyEvent* key_event,
+                                               bool default_selection) {
   // Prevents crash on start up
   if (result_selection_model_->size() == 0)
     return;
@@ -97,14 +100,22 @@ void ResultSelectionController::ResetSelection(const ui::KeyEvent* key_event) {
 
   selected_result_ = new_selection;
 
-  if (selected_result_)
+  // Set the state of the new selected result.
+  if (selected_result_) {
     selected_result_->SetSelected(true, is_shift_tab);
+    selected_result_->set_is_default_result(default_selection);
+  }
+
+  selection_change_callback_.Run();
 }
 
 void ResultSelectionController::ClearSelection() {
   selected_location_details_ = nullptr;
-  if (selected_result_)
+  if (selected_result_) {
+    // Reset the state of the previous selected result.
     selected_result_->SetSelected(false, base::nullopt);
+    selected_result_->set_is_default_result(false);
+  }
   selected_result_ = nullptr;
 }
 
@@ -130,6 +141,7 @@ ResultSelectionController::GetNextResultLocationForLocation(
 
   if (selected_result_ && event.key_code() == ui::VKEY_TAB &&
       selected_result_->SelectNextResultAction(event.IsShiftDown())) {
+    selection_change_callback_.Run();
     return MoveResult::kNone;
   }
 
@@ -227,9 +239,14 @@ void ResultSelectionController::SetSelection(
   ClearSelection();
 
   selected_result_ = GetResultAtLocation(location);
+  // SetSelection is only called by MoveSelection when user changes
+  // selected result, therefore, the result selected by user is not
+  // a default result.
+  selected_result_->set_is_default_result(false);
   selected_location_details_ =
       std::make_unique<ResultLocationDetails>(location);
   selected_result_->SetSelected(true, reverse_tab_order);
+  selection_change_callback_.Run();
 }
 
 SearchResultBaseView* ResultSelectionController::GetResultAtLocation(
@@ -297,4 +314,4 @@ void ResultSelectionController::ChangeContainer(
   location_details->container_index = new_container;
 }
 
-}  // namespace app_list
+}  // namespace ash

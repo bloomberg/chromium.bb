@@ -15,8 +15,6 @@ from six.moves import builtins
 from chromite.cbuildbot import repository
 from chromite.cbuildbot.stages import config_stages
 from chromite.cbuildbot.stages import generic_stages_unittest
-from chromite.cbuildbot.stages import test_stages
-from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import git
 from chromite.lib import gs
@@ -61,7 +59,7 @@ class CheckTemplateStageTest(generic_stages_unittest.AbstractStageTestCase):
     stage.ctx.LS.return_value = ['template.json']
 
     gs_paths = stage._ListTemplates()
-    self.assertItemsEqual(gs_paths, ['R_template.json', 'template.json'])
+    self.assertCountEqual(gs_paths, ['R_template.json', 'template.json'])
 
   def test_ListTemplatesWithNoSuchKeyError(self):
     """Test _ListTemplates with NoSuchKeyError."""
@@ -104,15 +102,11 @@ class UpdateConfigStageTest(generic_stages_unittest.AbstractStageTestCase):
     self.PatchObject(git, 'PushBranch')
     self.PatchObject(git, 'RunGit')
     self.PatchObject(repository, 'CloneWorkingRepo')
-    self.PatchObject(cros_build_lib, 'RunCommand')
+    self.PatchObject(cros_build_lib, 'run')
 
     self.project = 'chromite'
-    self.chromite_dir = config_stages.GetProjectRepoDir('chromite',
-                                                        constants.CHROMITE_URL)
+    self.chromite_dir = os.path.join(self.tempdir, self.project)
     self.buildstore = FakeBuildStore()
-
-  def tearDown(self):
-    osutils.RmDir(self.chromite_dir, ignore_missing=True)
 
   # pylint: disable=arguments-differ
   def ConstructStage(self, template, new_config=True):
@@ -182,37 +176,16 @@ class UpdateConfigStageTest(generic_stages_unittest.AbstractStageTestCase):
       self.assertEqual(
           os.path.basename(config_change_patch), 'config_change.patch')
 
-  def testRunBinhostTest(self):
-    """Test RunBinhostTest."""
-    self.PatchObject(
-        config_stages.UpdateConfigStage,
-        '_CreateConfigPatch',
-        return_value='patch')
-    mock_binhost_run = self.PatchObject(test_stages.BinhostTestStage, 'Run')
-    mock_run_git = self.PatchObject(git, 'RunGit')
-    template = 'build_config.ToT.json'
-    stage = self.ConstructStage(template)
-
-    stage._RunBinhostTest()
-    self.assertEqual(mock_run_git.call_count, 2)
-    mock_binhost_run.assert_called_once_with()
-
   def testMasterBasic(self):
     """Basic test on master branch."""
-    mock_binhost_test = self.PatchObject(config_stages.UpdateConfigStage,
-                                         '_RunBinhostTest')
     template = 'build_config.ToT.json'
     stage = self.ConstructStage(template)
     stage.PerformStage()
     self.assertTrue(stage.branch == 'master')
-    mock_binhost_test.assert_called_once_with()
 
   def testReleaseBasic(self):
     """Basic test on release branch."""
     template = 'build_config.release-R50-7978.B.json'
-    mock_binhost_test = self.PatchObject(config_stages.UpdateConfigStage,
-                                         '_RunBinhostTest')
     stage = self.ConstructStage(template)
     stage.PerformStage()
     self.assertTrue(stage.branch == 'release-R50-7978.B')
-    mock_binhost_test.assert_not_called()

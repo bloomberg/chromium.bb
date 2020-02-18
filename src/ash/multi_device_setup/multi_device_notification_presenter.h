@@ -10,21 +10,19 @@
 
 #include "ash/ash_export.h"
 #include "ash/session/session_observer.h"
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "ui/message_center/message_center_observer.h"
 
 namespace message_center {
 class MessageCenter;
 class Notification;
 }  // namespace message_center
-
-namespace service_manager {
-class Connector;
-}  // namespace service_manager
 
 namespace ash {
 
@@ -47,9 +45,8 @@ class ASH_EXPORT MultiDeviceNotificationPresenter
       public SessionObserver,
       public message_center::MessageCenterObserver {
  public:
-  MultiDeviceNotificationPresenter(
-      message_center::MessageCenter* message_center,
-      service_manager::Connector* connector);
+  explicit MultiDeviceNotificationPresenter(
+      message_center::MessageCenter* message_center);
   ~MultiDeviceNotificationPresenter() override;
 
   // Removes the notification created by NotifyPotentialHostExists() or does
@@ -120,16 +117,16 @@ class ASH_EXPORT MultiDeviceNotificationPresenter
   void FlushForTesting();
 
   message_center::MessageCenter* message_center_;
-  service_manager::Connector* connector_;
 
   // Notification currently showing or
   // Status::kNoNotificationVisible if there isn't one.
   Status notification_status_ = Status::kNoNotificationVisible;
 
-  chromeos::multidevice_setup::mojom::MultiDeviceSetupPtr
-      multidevice_setup_ptr_;
-  mojo::Binding<chromeos::multidevice_setup::mojom::AccountStatusChangeDelegate>
-      binding_;
+  mojo::Remote<chromeos::multidevice_setup::mojom::MultiDeviceSetup>
+      multidevice_setup_remote_;
+  mojo::Receiver<
+      chromeos::multidevice_setup::mojom::AccountStatusChangeDelegate>
+      receiver_{this};
 
   base::WeakPtrFactory<MultiDeviceNotificationPresenter> weak_ptr_factory_{
       this};

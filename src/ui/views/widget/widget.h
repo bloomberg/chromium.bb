@@ -167,18 +167,18 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
                         // show the drag image.
     };
 
-    enum WindowOpacity {
+    enum class WindowOpacity {
       // Infer fully opaque or not. For WinAura, top-level windows that are not
       // of TYPE_WINDOW are translucent so that they can be made to fade in.
       // For LinuxAura, only windows that are TYPE_DRAG are translucent.  In all
       // other cases, windows are fully opaque.
-      INFER_OPACITY,
+      kInferred,
       // Fully opaque.
-      OPAQUE_WINDOW,
+      kOpaque,
       // Possibly translucent/transparent.  Widgets that fade in or out using
       // SetOpacity() but do not make use of an alpha channel should use
-      // INFER_OPACITY.
-      TRANSLUCENT_WINDOW,
+      // kInferred.
+      kTranslucent,
     };
 
     enum Activatable {
@@ -199,13 +199,13 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
       WIDGET_OWNS_NATIVE_WIDGET
     };
 
-    enum ShadowType {
-      SHADOW_TYPE_DEFAULT,  // Use default shadow setting. It will be one of
-                            // the settings below depending on InitParams::type
-                            // and the native widget's type.
-      SHADOW_TYPE_NONE,     // Don't draw any shadow.
-      SHADOW_TYPE_DROP,     // Draw a drop shadow that emphasizes Z-order
-                            // relationship to other windows.
+    enum class ShadowType {
+      kDefault,  // Use default shadow setting. It will be one of
+                 // the settings below depending on InitParams::type
+                 // and the native widget's type.
+      kNone,     // Don't draw any shadow.
+      kDrop,     // Draw a drop shadow that emphasizes Z-order
+                 // relationship to other windows.
     };
 
     // Default initialization with |type| set to TYPE_WINDOW.
@@ -238,14 +238,13 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
 
     bool child = false;
 
-    // If TRANSLUCENT_WINDOW, the widget may be fully or partially transparent.
-    // If OPAQUE_WINDOW, we can perform optimizations based on the widget being
-    // fully opaque.
-    // Default is based on ViewsDelegate::GetOpacityForInitParams().  Defaults
-    // to OPAQUE_WINDOW for non-window widgets.
-    // Translucent windows may not always be supported. Use
-    // IsTranslucentWindowOpacitySupported() to determine whether they are.
-    WindowOpacity opacity = INFER_OPACITY;
+    // If kTranslucent, the widget may be fully or partially transparent.
+    // If kOpaque, we can perform optimizations based on the widget being fully
+    // opaque. Default is based on ViewsDelegate::GetOpacityForInitParams().
+    // Defaults to kOpaque for non-window widgets. Translucent windows may not
+    // always be supported. Use IsTranslucentWindowOpacitySupported() to
+    // determine whether they are.
+    WindowOpacity opacity = WindowOpacity::kInferred;
 
     bool accept_events = true;
 
@@ -261,9 +260,9 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
 
     bool mirror_origin_in_rtl = false;
 
-    ShadowType shadow_type = SHADOW_TYPE_DEFAULT;
+    ShadowType shadow_type = ShadowType::kDefault;
 
-    // A hint about the size of the shadow if the type is SHADOW_TYPE_DROP. May
+    // A hint about the size of the shadow if the type is ShadowType::kDrop. May
     // be ignored on some platforms. No value indicates no preference.
     base::Optional<int> shadow_elevation;
 
@@ -490,7 +489,8 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // Retrieves the restored bounds for the window.
   gfx::Rect GetRestoredBounds() const;
 
-  // Retrieves the current workspace for the window.
+  // Retrieves the current workspace for the window. (On macOS: an opaque
+  // binary blob that encodes the workspace and other window state.)
   std::string GetWorkspace() const;
 
   // Sizes and/or places the widget to the specified bounds, size or position.
@@ -545,6 +545,14 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // Note that while you can pass ClosedReason::kUnspecified, it is highly
   // discouraged and only supported for backwards-compatibility with Close().
   void CloseWithReason(ClosedReason closed_reason);
+
+  // A UI test which tries to asynchronously examine a widget (e.g. the pixel
+  // tests) will fail if the widget is closed before that.  This can happen
+  // easily with widgets that close on focus loss coupled with tests being run
+  // in parallel, since one test's widget can be closed by the appearance of
+  // another test's.  This method can be used to temporarily disable
+  // Widget::Close() for such asynchronous cases.
+  void SetBlockCloseForTesting(bool block_close) { block_close_ = block_close; }
 
   // TODO(beng): Move off public API.
   // Closes the widget immediately. Compare to |Close|. This will destroy the
@@ -768,6 +776,8 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
     return non_client_view_ ? non_client_view_->client_view() : nullptr;
   }
 
+  // Returns the compositor for this Widget, note that this may change during
+  // the Widget's lifetime (e.g. when switching monitors on Chrome OS).
   ui::Compositor* GetCompositor() {
     return const_cast<ui::Compositor*>(
         const_cast<const Widget*>(this)->GetCompositor());
@@ -1093,6 +1103,9 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // True when window movement via mouse interaction with the frame should be
   // disabled.
   bool movement_disabled_ = false;
+
+  // Block the widget from closing.
+  bool block_close_ = false;
 
   ScopedObserver<ui::NativeTheme, ui::NativeThemeObserver> observer_manager_{
       this};

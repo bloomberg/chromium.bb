@@ -2,153 +2,155 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('print_preview', function() {
-  /**
-   * |key| is the field in the serialized settings state that corresponds to the
-   * setting, or an empty string if the setting should not be saved in the
-   * serialized state.
-   * @typedef {{
-   *   value: *,
-   *   unavailableValue: *,
-   *   valid: boolean,
-   *   available: boolean,
-   *   setByPolicy: boolean,
-   *   setFromUi: boolean,
-   *   key: string,
-   *   updatesPreview: boolean,
-   * }}
-   */
-  let Setting;
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {isMac, isWindows} from 'chrome://resources/js/cr.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {PromiseResolver} from 'chrome://resources/js/promise_resolver.m.js';
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-  /**
-   * @typedef {{
-   *   pages: !print_preview.Setting,
-   *   copies: !print_preview.Setting,
-   *   collate: !print_preview.Setting,
-   *   layout: !print_preview.Setting,
-   *   color: !print_preview.Setting,
-   *   mediaSize: !print_preview.Setting,
-   *   margins: !print_preview.Setting,
-   *   dpi: !print_preview.Setting,
-   *   fitToPage: !print_preview.Setting,
-   *   scaling: !print_preview.Setting,
-   *   duplex: !print_preview.Setting,
-   *   duplexShortEdge: !print_preview.Setting,
-   *   cssBackground: !print_preview.Setting,
-   *   selectionOnly: !print_preview.Setting,
-   *   headerFooter: !print_preview.Setting,
-   *   rasterize: !print_preview.Setting,
-   *   vendorItems: !print_preview.Setting,
-   *   otherOptions: !print_preview.Setting,
-   *   ranges: !print_preview.Setting,
-   *   pagesPerSheet: !print_preview.Setting,
-   *   pin: (print_preview.Setting|undefined),
-   *   pinValue: (print_preview.Setting|undefined),
-   * }}
-   */
-  let Settings;
+import {BackgroundGraphicsModeRestriction, Policies} from '../native_layer.js';
 
-  /**
-   * @typedef {{
-   *    version: string,
-   *    recentDestinations: (!Array<!print_preview.RecentDestination> |
-   *                         undefined),
-   *    dpi: ({horizontal_dpi: number,
-   *           vertical_dpi: number,
-   *           is_default: (boolean | undefined)} | undefined),
-   *    mediaSize: ({height_microns: number,
-   *                 width_microns: number,
-   *                 custom_display_name: (string | undefined),
-   *                 is_default: (boolean | undefined)} | undefined),
-   *    marginsType: (print_preview.ticket_items.MarginsTypeValue | undefined),
-   *    customMargins: (print_preview.MarginsSetting | undefined),
-   *    isColorEnabled: (boolean | undefined),
-   *    isDuplexEnabled: (boolean | undefined),
-   *    isHeaderFooterEnabled: (boolean | undefined),
-   *    isLandscapeEnabled: (boolean | undefined),
-   *    isCollateEnabled: (boolean | undefined),
-   *    isFitToPageEnabled: (boolean | undefined),
-   *    isCssBackgroundEnabled: (boolean | undefined),
-   *    scaling: (string | undefined),
-   *    vendor_options: (Object | undefined),
-   *    isPinEnabled: (boolean | undefined),
-   *    pinValue: (string | undefined)
-   * }}
-   */
-  let SerializedSettings;
-
-  /**
-   * @typedef {{
-   *  value: *,
-   *  managed: boolean
-   * }}
-   */
-  let PolicyEntry;
-
-  /**
-   * @typedef {{
-   *   headerFooter: print_preview.PolicyEntry
-   * }}
-   */
-  let PolicySettings;
-
-  /**
-   * Constant values matching printing::DuplexMode enum.
-   * @enum {number}
-   */
-  const DuplexMode = {
-    SIMPLEX: 0,
-    LONG_EDGE: 1,
-    SHORT_EDGE: 2,
-    UNKNOWN_DUPLEX_MODE: -1,
-  };
-
-  /**
-   * Values matching the types of duplex in a CDD.
-   * @enum {string}
-   */
-  const DuplexType = {
-    NO_DUPLEX: 'NO_DUPLEX',
-    LONG_EDGE: 'LONG_EDGE',
-    SHORT_EDGE: 'SHORT_EDGE'
-  };
-
-  return {
-    DuplexMode: DuplexMode,
-    DuplexType: DuplexType,
-    PolicyEntry: PolicyEntry,
-    PolicySettings: PolicySettings,
-    SerializedSettings: SerializedSettings,
-    Setting: Setting,
-    Settings: Settings,
-  };
-});
-
-cr.define('print_preview.Model', () => {
-  return {
-    /** @private {?PrintPreviewModelElement} */
-    instance_: null,
-
-    /** @private {!PromiseResolver} */
-    whenReady_: new PromiseResolver(),
-
-    /** @return {!PrintPreviewModelElement} */
-    getInstance: () => assert(print_preview.Model.instance_),
-
-    /** @return {!Promise} */
-    whenReady:
-        () => {
-          return print_preview.Model.whenReady_.promise;
-        },
-  };
-});
-
-(function() {
-'use strict';
+import {Cdd, CddCapabilities, Destination, DestinationOrigin, DestinationType, RecentDestination} from './destination.js';
+import {getPrinterTypeForDestination} from './destination_match.js';
+// <if expr="chromeos">
+import {ColorModeRestriction, DuplexModeRestriction, PinModeRestriction} from './destination_policies.js';
+// </if>
+import {DocumentSettings} from './document_info.js';
+import {CustomMarginsOrientation, Margins, MarginsSetting, MarginsType} from './margins.js';
+import {ScalingType} from './scaling.js';
+import {Size} from './size.js';
 
 /**
- * Sticky setting names. Alphabetical except for fitToPage, which must be set
- * after scaling in updateFromStickySettings().
+ * |key| is the field in the serialized settings state that corresponds to the
+ * setting, or an empty string if the setting should not be saved in the
+ * serialized state.
+ * @typedef {{
+ *   value: *,
+ *   unavailableValue: *,
+ *   valid: boolean,
+ *   available: boolean,
+ *   setByPolicy: boolean,
+ *   setFromUi: boolean,
+ *   key: string,
+ *   updatesPreview: boolean,
+ * }}
+ */
+export let Setting;
+
+/**
+ * @typedef {{
+ *   pages: !Setting,
+ *   copies: !Setting,
+ *   collate: !Setting,
+ *   layout: !Setting,
+ *   color: !Setting,
+ *   mediaSize: !Setting,
+ *   margins: !Setting,
+ *   dpi: !Setting,
+ *   scaling: !Setting,
+ *   scalingType: !Setting,
+ *   scalingTypePdf: !Setting,
+ *   duplex: !Setting,
+ *   duplexShortEdge: !Setting,
+ *   cssBackground: !Setting,
+ *   selectionOnly: !Setting,
+ *   headerFooter: !Setting,
+ *   rasterize: !Setting,
+ *   vendorItems: !Setting,
+ *   otherOptions: !Setting,
+ *   ranges: !Setting,
+ *   pagesPerSheet: !Setting,
+ *   pin: (Setting|undefined),
+ *   pinValue: (Setting|undefined),
+ * }}
+ */
+export let Settings;
+
+/**
+ * @typedef {{
+ *    version: string,
+ *    recentDestinations: (!Array<!RecentDestination> |
+ *                         undefined),
+ *    dpi: ({horizontal_dpi: number,
+ *           vertical_dpi: number,
+ *           is_default: (boolean | undefined)} | undefined),
+ *    mediaSize: ({height_microns: number,
+ *                 width_microns: number,
+ *                 custom_display_name: (string | undefined),
+ *                 is_default: (boolean | undefined)} | undefined),
+ *    marginsType: (MarginsType | undefined),
+ *    customMargins: (MarginsSetting | undefined),
+ *    isColorEnabled: (boolean | undefined),
+ *    isDuplexEnabled: (boolean | undefined),
+ *    isHeaderFooterEnabled: (boolean | undefined),
+ *    isLandscapeEnabled: (boolean | undefined),
+ *    isCollateEnabled: (boolean | undefined),
+ *    isCssBackgroundEnabled: (boolean | undefined),
+ *    scaling: (string | undefined),
+ *    scalingType: (ScalingType | undefined),
+ *    scalingTypePdf: (ScalingType | undefined),
+ *    vendor_options: (Object | undefined),
+ *    isPinEnabled: (boolean | undefined),
+ *    pinValue: (string | undefined)
+ * }}
+ */
+export let SerializedSettings;
+
+/**
+ * @typedef {{
+ *  value: *,
+ *  managed: boolean
+ * }}
+ */
+export let PolicyEntry;
+
+/**
+ * @typedef {{
+ *   headerFooter: (PolicyEntry | undefined),
+ *   cssBackground: (PolicyEntry | undefined),
+ * }}
+ */
+export let PolicySettings;
+
+/**
+ * Constant values matching printing::DuplexMode enum.
+ * @enum {number}
+ */
+export const DuplexMode = {
+  SIMPLEX: 0,
+  LONG_EDGE: 1,
+  SHORT_EDGE: 2,
+  UNKNOWN_DUPLEX_MODE: -1,
+};
+
+/**
+ * Values matching the types of duplex in a CDD.
+ * @enum {string}
+ */
+export const DuplexType = {
+  NO_DUPLEX: 'NO_DUPLEX',
+  LONG_EDGE: 'LONG_EDGE',
+  SHORT_EDGE: 'SHORT_EDGE'
+};
+
+/** @private {?PrintPreviewModelElement} */
+let instance = null;
+
+/** @private {!PromiseResolver} */
+let whenReadyResolver = new PromiseResolver();
+
+/** @return {!PrintPreviewModelElement} */
+export function getInstance() {
+  return assert(instance);
+}
+
+/** @return {!Promise} */
+export function whenReady() {
+  return whenReadyResolver.promise;
+}
+
+/**
+ * Sticky setting names in alphabetical order.
  * @type {!Array<string>}
  */
 const STICKY_SETTING_NAMES = [
@@ -164,9 +166,9 @@ const STICKY_SETTING_NAMES = [
   'layout',
   'margins',
   'mediaSize',
-  'customScaling',
   'scaling',
-  'fitToPage',
+  'scalingType',
+  'scalingTypePdf',
   'vendorItems',
 ];
 // <if expr="chromeos">
@@ -184,14 +186,16 @@ const MINIMUM_HEIGHT_MICRONS = 25400;
 Polymer({
   is: 'print-preview-model',
 
+  _template: null,
+
   properties: {
     /**
      * Object containing current settings of Print Preview, for use by Polymer
      * controls.
-     * Initialize settings that are only available on some printers to
-     * unavailable, and settings that are provided by PDF generation to
-     * available.
-     * @type {!print_preview.Settings}
+     * Initialize all settings to available so that more settings always stays
+     * in a collapsed state during startup, when document information and
+     * printer capabilities may arrive at slightly different times.
+     * @type {!Settings}
      */
     settings: {
       type: Object,
@@ -242,7 +246,7 @@ Polymer({
             value: true, /* color */
             unavailableValue: false,
             valid: true,
-            available: false,
+            available: true,
             setByPolicy: false,
             setFromUi: false,
             key: 'isColorEnabled',
@@ -255,16 +259,15 @@ Polymer({
               height_microns: 279400,
             },
             valid: true,
-            available: false,
+            available: true,
             setByPolicy: false,
             setFromUi: false,
             key: 'mediaSize',
             updatesPreview: true,
           },
           margins: {
-            value: print_preview.ticket_items.MarginsTypeValue.DEFAULT,
-            unavailableValue:
-                print_preview.ticket_items.MarginsTypeValue.DEFAULT,
+            value: MarginsType.DEFAULT,
+            unavailableValue: MarginsType.DEFAULT,
             valid: true,
             available: true,
             setByPolicy: false,
@@ -286,21 +289,11 @@ Polymer({
             value: {},
             unavailableValue: {},
             valid: true,
-            available: false,
+            available: true,
             setByPolicy: false,
             setFromUi: false,
             key: 'dpi',
             updatesPreview: false,
-          },
-          fitToPage: {
-            value: false,
-            unavailableValue: false,
-            valid: true,
-            available: true,
-            setByPolicy: false,
-            setFromUi: false,
-            key: 'isFitToPageEnabled',
-            updatesPreview: true,
           },
           scaling: {
             value: '100',
@@ -312,21 +305,31 @@ Polymer({
             key: 'scaling',
             updatesPreview: true,
           },
-          customScaling: {
-            value: false,
-            unavailableValue: false,
+          scalingType: {
+            value: ScalingType.DEFAULT,
+            unavailableValue: ScalingType.DEFAULT,
             valid: true,
             available: true,
             setByPolicy: false,
             setFromUi: false,
-            key: 'customScaling',
+            key: 'scalingType',
+            updatesPreview: true,
+          },
+          scalingTypePdf: {
+            value: ScalingType.DEFAULT,
+            unavailableValue: ScalingType.DEFAULT,
+            valid: true,
+            available: true,
+            setByPolicy: false,
+            setFromUi: false,
+            key: 'scalingTypePdf',
             updatesPreview: true,
           },
           duplex: {
             value: true,
             unavailableValue: false,
             valid: true,
-            available: false,
+            available: true,
             setByPolicy: false,
             setFromUi: false,
             key: 'isDuplexEnabled',
@@ -386,7 +389,7 @@ Polymer({
             value: {},
             unavailableValue: {},
             valid: true,
-            available: false,
+            available: true,
             setByPolicy: false,
             setFromUi: false,
             key: 'vendorOptions',
@@ -441,7 +444,7 @@ Polymer({
             value: false,
             unavailableValue: false,
             valid: true,
-            available: false,
+            available: true,
             setByPolicy: false,
             setFromUi: false,
             key: 'isPinEnabled',
@@ -451,7 +454,7 @@ Polymer({
             value: '',
             unavailableValue: '',
             valid: true,
-            available: false,
+            available: true,
             setByPolicy: false,
             setFromUi: false,
             key: 'pinValue',
@@ -462,29 +465,30 @@ Polymer({
       },
     },
 
-    controlsManaged: {
+    settingsManaged: {
       type: Boolean,
       notify: true,
       value: false,
     },
 
-    /** @type {print_preview.Destination} */
+    /** @type {Destination} */
     destination: Object,
 
-    /** @type {!print_preview.DocumentSettings} */
+    /** @type {!DocumentSettings} */
     documentSettings: Object,
 
-    /** @type {print_preview.Margins} */
+    /** @type {Margins} */
     margins: Object,
 
-    /** @type {!print_preview.Size} */
+    /** @type {!Size} */
     pageSize: Object,
   },
 
   observers: [
     'updateSettingsFromDestination_(destination.capabilities)',
     'updateSettingsAvailabilityFromDocumentSettings_(' +
-        'documentSettings.isModifiable, documentSettings.hasCssMediaStyles,' +
+        'documentSettings.isModifiable, documentSettings.isFromArc,' +
+        'documentSettings.isPdf, documentSettings.hasCssMediaStyles, ' +
         'documentSettings.hasSelection)',
     'updateHeaderFooterAvailable_(' +
         'margins, settings.margins.value, ' +
@@ -494,35 +498,35 @@ Polymer({
   /** @private {boolean} */
   initialized_: false,
 
-  /** @private {?print_preview.SerializedSettings} */
+  /** @private {?SerializedSettings} */
   stickySettings_: null,
 
-  /** @private {?print_preview.PolicySettings} */
+  /** @private {?PolicySettings} */
   policySettings_: null,
 
-  /** @private {?print_preview.Cdd} */
+  /** @private {?Cdd} */
   lastDestinationCapabilities_: null,
 
   /** @override */
   attached: function() {
-    assert(!print_preview.Model.instance_);
-    print_preview.Model.instance_ = this;
-    print_preview.Model.whenReady_.resolve();
+    assert(!instance);
+    instance = this;
+    whenReadyResolver.resolve();
   },
 
   /** @override */
   detached: function() {
-    print_preview.Model.instance_ = null;
-    print_preview.Model.whenReady_ = new PromiseResolver();
+    instance = null;
+    whenReadyResolver = new PromiseResolver();
   },
 
   /**
    * @param {string} settingName Name of the setting to get.
-   * @return {print_preview.Setting} The setting object.
+   * @return {Setting} The setting object.
    */
   getSetting: function(settingName) {
-    const setting = /** @type {print_preview.Setting} */ (
-        this.get(settingName, this.settings));
+    const setting =
+        /** @type {Setting} */ (this.get(settingName, this.settings));
     assert(setting, 'Setting is missing: ' + settingName);
     return setting;
   },
@@ -655,7 +659,7 @@ Polymer({
   },
 
   /**
-   * @param {?print_preview.CddCapabilities} caps The printer capabilities.
+   * @param {?CddCapabilities} caps The printer capabilities.
    * @private
    */
   updateSettingsAvailabilityFromDestination_: function(caps) {
@@ -664,25 +668,17 @@ Polymer({
     this.setSettingPath_(
         'color.available', this.destination.hasColorCapability);
 
-    this.setSettingPath_(
-        'dpi.available',
-        !!caps && !!caps.dpi && !!caps.dpi.option &&
-            caps.dpi.option.length > 1);
-
     const capsHasDuplex = !!caps && !!caps.duplex && !!caps.duplex.option;
     const capsHasLongEdge = capsHasDuplex &&
-        caps.duplex.option.some(
-            o => o.type == print_preview.DuplexType.LONG_EDGE);
+        caps.duplex.option.some(o => o.type == DuplexType.LONG_EDGE);
     const capsHasShortEdge = capsHasDuplex &&
-        caps.duplex.option.some(
-            o => o.type == print_preview.DuplexType.SHORT_EDGE);
+        caps.duplex.option.some(o => o.type == DuplexType.SHORT_EDGE);
     this.setSettingPath_(
         'duplexShortEdge.available', capsHasLongEdge && capsHasShortEdge);
     this.setSettingPath_(
         'duplex.available',
         (capsHasLongEdge || capsHasShortEdge) &&
-            caps.duplex.option.some(
-                o => o.type == print_preview.DuplexType.NO_DUPLEX));
+            caps.duplex.option.some(o => o.type == DuplexType.NO_DUPLEX));
 
     this.setSettingPath_(
         'vendorItems.available', !!caps && !!caps.vendor_capability);
@@ -701,22 +697,31 @@ Polymer({
 
   /** @private */
   updateSettingsAvailabilityFromDestinationAndDocumentSettings_: function() {
-    const isSaveAsPDF = this.destination.id ==
-        print_preview.Destination.GooglePromotedId.SAVE_AS_PDF;
+    const isSaveAsPDF =
+        this.destination.id == Destination.GooglePromotedId.SAVE_AS_PDF;
     const knownSizeToSaveAsPdf = isSaveAsPDF &&
         (!this.documentSettings.isModifiable ||
          this.documentSettings.hasCssMediaStyles);
-    this.setSettingPath_('fitToPage.unavailableValue', !isSaveAsPDF);
+    const scalingAvailable = !knownSizeToSaveAsPdf &&
+        !this.documentSettings.isFromArc &&
+        (this.documentSettings.isModifiable || this.documentSettings.isPdf);
+    this.setSettingPath_('scaling.available', scalingAvailable);
     this.setSettingPath_(
-        'fitToPage.available',
-        !knownSizeToSaveAsPdf && !this.documentSettings.isModifiable);
-    this.setSettingPath_('scaling.available', !knownSizeToSaveAsPdf);
+        'scalingType.available',
+        scalingAvailable && !this.documentSettings.isPdf);
+    this.setSettingPath_(
+        'scalingTypePdf.available',
+        scalingAvailable && this.documentSettings.isPdf);
     const caps = this.destination && this.destination.capabilities ?
         this.destination.capabilities.printer :
         null;
     this.setSettingPath_(
         'mediaSize.available',
         !!caps && !!caps.media_size && !knownSizeToSaveAsPdf);
+    this.setSettingPath_(
+        'dpi.available',
+        !this.documentSettings.isFromArc && !!caps && !!caps.dpi &&
+            !!caps.dpi.option && caps.dpi.option.length > 1);
     this.setSettingPath_('layout.available', this.isLayoutAvailable_(caps));
   },
 
@@ -727,20 +732,31 @@ Polymer({
     }
 
     this.setSettingPath_(
-        'margins.available', this.documentSettings.isModifiable);
+        'pagesPerSheet.available',
+        !this.documentSettings.isFromArc &&
+            (this.documentSettings.isModifiable ||
+             this.documentSettings.isPdf));
     this.setSettingPath_(
-        'customMargins.available', this.documentSettings.isModifiable);
+        'margins.available',
+        !this.documentSettings.isFromArc && this.documentSettings.isModifiable);
     this.setSettingPath_(
-        'cssBackground.available', this.documentSettings.isModifiable);
+        'customMargins.available',
+        !this.documentSettings.isFromArc && this.documentSettings.isModifiable);
+    this.setSettingPath_(
+        'cssBackground.available',
+        !this.documentSettings.isFromArc && this.documentSettings.isModifiable);
     this.setSettingPath_(
         'selectionOnly.available',
-        this.documentSettings.isModifiable &&
+        !this.documentSettings.isFromArc &&
+            this.documentSettings.isModifiable &&
             this.documentSettings.hasSelection);
     this.setSettingPath_(
-        'headerFooter.available', this.isHeaderFooterAvailable_());
+        'headerFooter.available',
+        !this.documentSettings.isFromArc && this.isHeaderFooterAvailable_());
     this.setSettingPath_(
         'rasterize.available',
-        !this.documentSettings.isModifiable && !cr.isWindows && !cr.isMac);
+        !this.documentSettings.isFromArc &&
+            !this.documentSettings.isModifiable && !isWindows && !isMac);
     this.setSettingPath_(
         'otherOptions.available',
         this.settings.cssBackground.available ||
@@ -784,22 +800,19 @@ Polymer({
     // Otherwise, availability depends on the margins.
     let available = false;
     const marginsType =
-        /** @type {!print_preview.ticket_items.MarginsTypeValue} */ (
-            this.getSettingValue('margins'));
+        /** @type {!MarginsType} */ (this.getSettingValue('margins'));
     switch (marginsType) {
-      case print_preview.ticket_items.MarginsTypeValue.DEFAULT:
+      case MarginsType.DEFAULT:
         available = !this.margins ||
-            this.margins.get(
-                print_preview.ticket_items.CustomMarginsOrientation.TOP) > 0 ||
-            this.margins.get(
-                print_preview.ticket_items.CustomMarginsOrientation.BOTTOM) > 0;
+            this.margins.get(CustomMarginsOrientation.TOP) > 0 ||
+            this.margins.get(CustomMarginsOrientation.BOTTOM) > 0;
         break;
-      case print_preview.ticket_items.MarginsTypeValue.NO_MARGINS:
+      case MarginsType.NO_MARGINS:
         break;
-      case print_preview.ticket_items.MarginsTypeValue.MINIMUM:
+      case MarginsType.MINIMUM:
         available = true;
         break;
-      case print_preview.ticket_items.MarginsTypeValue.CUSTOM:
+      case MarginsType.CUSTOM:
         const margins = this.getSettingValue('customMargins');
         available = margins.marginTop > 0 || margins.marginBottom > 0;
         break;
@@ -810,12 +823,13 @@ Polymer({
   },
 
   /**
-   * @param {?print_preview.CddCapabilities} caps The printer capabilities.
+   * @param {?CddCapabilities} caps The printer capabilities.
    * @private
    */
   isLayoutAvailable_: function(caps) {
     if (!caps || !caps.page_orientation || !caps.page_orientation.option ||
-        !this.documentSettings.isModifiable ||
+        (!this.documentSettings.isModifiable &&
+         !this.documentSettings.isFromArc) ||
         this.documentSettings.hasCssMediaStyles) {
       return false;
     }
@@ -830,7 +844,7 @@ Polymer({
   },
 
   /**
-   * @param {?print_preview.CddCapabilities} caps The printer capabilities.
+   * @param {?CddCapabilities} caps The printer capabilities.
    * @private
    */
   updateSettingsValues_: function(caps) {
@@ -879,9 +893,8 @@ Polymer({
       }
     } else if (
         !this.settings.color.available &&
-        (this.destination.id ===
-             print_preview.Destination.GooglePromotedId.DOCS ||
-         this.destination.type === print_preview.DestinationType.MOBILE)) {
+        (this.destination.id === Destination.GooglePromotedId.DOCS ||
+         this.destination.type === DestinationType.MOBILE)) {
       this.setSettingPath_('color.unavailableValue', true);
     } else if (
         !this.settings.color.available && caps && caps.color &&
@@ -899,16 +912,13 @@ Polymer({
       const defaultOption = caps.duplex.option.find(o => !!o.is_default);
       this.setSetting(
           'duplex',
-          defaultOption ?
-              (defaultOption.type == print_preview.DuplexType.LONG_EDGE ||
-               defaultOption.type == print_preview.DuplexType.SHORT_EDGE) :
-              false,
+          defaultOption ? (defaultOption.type == DuplexType.LONG_EDGE ||
+                           defaultOption.type == DuplexType.SHORT_EDGE) :
+                          false,
           true);
       this.setSetting(
           'duplexShortEdge',
-          defaultOption ?
-              defaultOption.type == print_preview.DuplexType.SHORT_EDGE :
-              false,
+          defaultOption ? defaultOption.type == DuplexType.SHORT_EDGE : false,
           true);
 
       if (!this.settings.duplexShortEdge.available) {
@@ -916,17 +926,16 @@ Polymer({
         // Set duplexShortEdge's unavailable value based on the printer.
         this.setSettingPath_(
             'duplexShortEdge.unavailableValue',
-            caps.duplex.option.some(
-                o => o.type == print_preview.DuplexType.SHORT_EDGE));
+            caps.duplex.option.some(o => o.type == DuplexType.SHORT_EDGE));
       }
     } else if (
         !this.settings.duplex.available && caps && caps.duplex &&
         caps.duplex.option) {
       // In this case, there must only be one option.
-      const hasLongEdge = caps.duplex.option.some(
-          o => o.type == print_preview.DuplexType.LONG_EDGE);
-      const hasShortEdge = caps.duplex.option.some(
-          o => o.type == print_preview.DuplexType.SHORT_EDGE);
+      const hasLongEdge =
+          caps.duplex.option.some(o => o.type == DuplexType.LONG_EDGE);
+      const hasShortEdge =
+          caps.duplex.option.some(o => o.type == DuplexType.SHORT_EDGE);
       // If the only option available is long edge, the value should always be
       // true.
       this.setSettingPath_(
@@ -978,8 +987,8 @@ Polymer({
 
     let savedSettings;
     try {
-      savedSettings = /** @type {print_preview.SerializedSettings} */ (
-          JSON.parse(savedSettingsStr));
+      savedSettings =
+          /** @type {SerializedSettings} */ (JSON.parse(savedSettingsStr));
     } catch (e) {
       console.error('Unable to parse state ' + e);
       return;  // use default values rather than updating.
@@ -1000,41 +1009,124 @@ Polymer({
   },
 
   /**
-   * Sets settings in accordance to policies from native code, and prevents
-   * those settings from being changed via other means.
-   * @param {boolean|undefined} headerFooter Value of
-   *     printing.print_header_footer, if set in prefs (or undefined, if not).
-   * @param {boolean} isHeaderFooterManaged true if the header/footer UI state
-   *     is managed by a policy.
+   * Helper function for configurePolicySetting_(). Sets value and managed flag
+   * for given setting.
+   * @param {string} settingName Name of the setting being applied.
+   * @param {*} value Value of the setting provided via policy.
+   * @param {boolean} managed Flag showing whether value of setting is managed.
+   * @private
    */
-  setPolicySettings: function(headerFooter, isHeaderFooterManaged) {
-    this.policySettings_ = {
-      headerFooter: {
-        value: headerFooter,
-        managed: isHeaderFooterManaged,
-      },
+  setPolicySetting_: function(settingName, value, managed) {
+    if (!this.policySettings_) {
+      this.policySettings_ = {};
+    }
+    this.policySettings_[settingName] = {
+      value: value,
+      managed: managed,
     };
   },
 
+  /**
+   * Helper function for setPolicySettings(). Calculates value and managed flag
+   * of the setting according to allowed and default modes.
+   * @param {string} settingName Name of the setting being applied.
+   * @param {*} allowedMode Policy value of allowed mode.
+   * @param {*} defaultMode Policy value of default mode.
+   * @private
+   */
+  configurePolicySetting_: function(settingName, allowedMode, defaultMode) {
+    switch (settingName) {
+      case 'headerFooter': {
+        const value = allowedMode !== undefined ? allowedMode : defaultMode;
+        if (value !== undefined) {
+          this.setPolicySetting_(settingName, value, allowedMode !== undefined);
+        }
+        break;
+      }
+      case 'cssBackground': {
+        const value = allowedMode ? allowedMode : defaultMode;
+        if (value !== undefined) {
+          this.setPolicySetting_(
+              settingName, value === BackgroundGraphicsModeRestriction.ENABLED,
+              !!allowedMode);
+        }
+        break;
+      }
+      default:
+        break;
+    }
+  },
+
+  /**
+   * Sets settings in accordance to policies from native code, and prevents
+   * those settings from being changed via other means.
+   * @param {Policies} policies Value of policies.
+   */
+  setPolicySettings: function(policies) {
+    if (policies === undefined) {
+      return;
+    }
+    ['headerFooter', 'cssBackground'].forEach(settingName => {
+      if (!policies[settingName]) {
+        return;
+      }
+      const defaultMode = policies[settingName].defaultMode;
+      const allowedMode = policies[settingName].allowedMode;
+      this.configurePolicySetting_(settingName, allowedMode, defaultMode);
+    });
+  },
+
   applyStickySettings: function() {
-    const defaultScaling = '100';
     if (this.stickySettings_) {
       STICKY_SETTING_NAMES.forEach(settingName => {
         const setting = this.get(settingName, this.settings);
         const value = this.stickySettings_[setting.key];
         if (value != undefined) {
           this.setSetting(settingName, value);
-        } else if (
-            settingName === 'customScaling' &&
-            !!this.stickySettings_['scaling']) {
-          // If users with an old set of sticky settings intentionally set a non
-          // default value, set customScaling to true so the value is restored.
-          // Otherwise, set to false with noSticky=true.
-          const scalingIsDefault = this.stickySettings_['scaling'] === '100';
-          this.setSetting(settingName, !scalingIsDefault, scalingIsDefault);
+        } else {
+          this.applyScalingStickySettings_(settingName);
         }
       });
     }
+    this.applyPolicySettings_();
+    this.initialized_ = true;
+    this.updateManaged_();
+    this.stickySettings_ = null;
+    this.fire('sticky-settings-changed', this.getStickySettings_());
+  },
+
+  /**
+   * Helper function for applyStickySettings(). Checks if the setting
+   * is a scaling setting and applies by applying the old types
+   * that rely on 'fitToPage' and 'customScaling'.
+   * @param {string} settingName Name of the setting being applied.
+   * @private
+   */
+  applyScalingStickySettings_: function(settingName) {
+    // TODO(dhoss): Remove checks for 'customScaling' and 'fitToPage'
+    if (settingName === 'scalingType' &&
+        'customScaling' in this.stickySettings_) {
+      const isCustom = this.stickySettings_['customScaling'];
+      const scalingType = isCustom ? ScalingType.CUSTOM : ScalingType.DEFAULT;
+      this.setSetting(settingName, scalingType);
+    } else if (settingName === 'scalingTypePdf') {
+      if ('isFitToPageEnabled' in this.stickySettings_) {
+        const isFitToPage = this.stickySettings_['isFitToPageEnabled'];
+        const scalingTypePdf = isFitToPage ?
+            ScalingType.FIT_TO_PAGE :
+            this.getSetting('scalingType').value;
+        this.setSetting(settingName, scalingTypePdf);
+      } else if (this.getSetting('scalingType').value === ScalingType.CUSTOM) {
+        // In the event that 'isFitToPageEnabled' was not in the sticky
+        // settings, and 'scalingType' has been set to custom, we want
+        // 'scalingTypePdf' to match.
+        this.setSetting(settingName, ScalingType.CUSTOM);
+      }
+    }
+  },
+
+  /** @private */
+  applyPolicySettings_: function() {
     if (this.policySettings_) {
       for (const [settingName, policy] of Object.entries(
                this.policySettings_)) {
@@ -1046,10 +1138,6 @@ Polymer({
         }
       }
     }
-    this.initialized_ = true;
-    this.updateManaged_();
-    this.stickySettings_ = null;
-    this.fire('sticky-settings-changed', this.getStickySettings_());
   },
 
   // <if expr="chromeos">
@@ -1065,8 +1153,7 @@ Polymer({
       // |this.setSetting| does nothing if policy is present.
       // We want to set the value nevertheless so we call |this.set| directly.
       this.set(
-          'settings.color.value',
-          colorValue == print_preview.ColorModeRestriction.COLOR);
+          'settings.color.value', colorValue === ColorModeRestriction.COLOR);
     }
     this.set('settings.color.setByPolicy', !!colorPolicy);
 
@@ -1077,12 +1164,11 @@ Polymer({
     if (duplexValue) {
       this.set(
           'settings.duplex.value',
-          duplexValue != print_preview.DuplexModeRestriction.SIMPLEX);
-      if (duplexValue === print_preview.DuplexModeRestriction.SHORT_EDGE) {
+          duplexValue != DuplexModeRestriction.SIMPLEX);
+      if (duplexValue === DuplexModeRestriction.SHORT_EDGE) {
         this.set('settings.duplexShortEdge.value', true);
         setDuplexTypeByPolicy = true;
-      } else if (
-          duplexValue === print_preview.DuplexModeRestriction.LONG_EDGE) {
+      } else if (duplexValue === DuplexModeRestriction.LONG_EDGE) {
         this.set('settings.duplexShortEdge.value', false);
         setDuplexTypeByPolicy = true;
       }
@@ -1093,15 +1179,13 @@ Polymer({
         !!duplexPolicy && setDuplexTypeByPolicy);
 
     const pinPolicy = this.destination.pinPolicy;
-    if (pinPolicy == print_preview.PinModeRestriction.NO_PIN) {
+    if (pinPolicy === PinModeRestriction.NO_PIN) {
       this.set('settings.pin.available', false);
       this.set('settings.pinValue.available', false);
     }
     const pinValue = pinPolicy ? pinPolicy : this.destination.defaultPinPolicy;
     if (pinValue) {
-      this.set(
-          'settings.pin.value',
-          pinValue == print_preview.PinModeRestriction.PIN);
+      this.set('settings.pin.value', pinValue === PinModeRestriction.PIN);
     }
     this.set('settings.pin.setByPolicy', !!pinPolicy);
 
@@ -1111,12 +1195,12 @@ Polymer({
 
   /** @private */
   updateManaged_: function() {
-    let managedSettings = ['headerFooter'];
+    let managedSettings = ['cssBackground', 'headerFooter'];
     // <if expr="chromeos">
     managedSettings =
         managedSettings.concat(['color', 'duplex', 'duplexShortEdge', 'pin']);
     // </if>
-    this.controlsManaged = managedSettings.some(settingName => {
+    this.settingsManaged = managedSettings.some(settingName => {
       const setting = this.getSetting(settingName);
       return setting.available && setting.setByPolicy;
     });
@@ -1147,36 +1231,34 @@ Polymer({
   },
 
   /**
-   * @return {!print_preview.DuplexMode} The duplex mode selected.
+   * @return {!DuplexMode} The duplex mode selected.
    * @private
    */
   getDuplexMode_: function() {
     if (!this.getSettingValue('duplex')) {
-      return print_preview.DuplexMode.SIMPLEX;
+      return DuplexMode.SIMPLEX;
     }
 
-    return this.getSettingValue('duplexShortEdge') ?
-        print_preview.DuplexMode.SHORT_EDGE :
-        print_preview.DuplexMode.LONG_EDGE;
+    return this.getSettingValue('duplexShortEdge') ? DuplexMode.SHORT_EDGE :
+                                                     DuplexMode.LONG_EDGE;
   },
 
   /**
-   * @return {!print_preview.DuplexType} The duplex type selected.
+   * @return {!DuplexType} The duplex type selected.
    * @private
    */
   getCddDuplexType_: function() {
     if (!this.getSettingValue('duplex')) {
-      return print_preview.DuplexType.NO_DUPLEX;
+      return DuplexType.NO_DUPLEX;
     }
 
-    return this.getSettingValue('duplexShortEdge') ?
-        print_preview.DuplexType.SHORT_EDGE :
-        print_preview.DuplexType.LONG_EDGE;
+    return this.getSettingValue('duplexShortEdge') ? DuplexType.SHORT_EDGE :
+                                                     DuplexType.LONG_EDGE;
   },
 
   /**
    * Creates a string that represents a print ticket.
-   * @param {!print_preview.Destination} destination Destination to print to.
+   * @param {!Destination} destination Destination to print to.
    * @param {boolean} openPdfInPreview Whether this print request is to open
    *     the PDF in Preview app (Mac only).
    * @param {boolean} showSystemDialog Whether this print request is to show
@@ -1191,6 +1273,9 @@ Polymer({
                     vendor_id: (number | undefined)}}
          */
         (this.getSettingValue('dpi'));
+    const scalingSettingKey = this.getSetting('scalingTypePdf').available ?
+        'scalingTypePdf' :
+        'scalingType';
     const ticket = {
       mediaSize: this.getSettingValue('mediaSize'),
       pageCount: this.getSettingValue('pages').length,
@@ -1205,23 +1290,19 @@ Polymer({
       shouldPrintBackgrounds: this.getSettingValue('cssBackground'),
       shouldPrintSelectionOnly: false,  // only used in print preview
       previewModifiable: this.documentSettings.isModifiable,
-      printToPDF: destination.id ==
-          print_preview.Destination.GooglePromotedId.SAVE_AS_PDF,
-      printToGoogleDrive:
-          destination.id == print_preview.Destination.GooglePromotedId.DOCS,
-      printWithCloudPrint: !destination.isLocal,
-      printWithPrivet: destination.isPrivet,
-      printWithExtension: destination.isExtension,
+      printToGoogleDrive: destination.id == Destination.GooglePromotedId.DOCS,
+      printerType: getPrinterTypeForDestination(destination),
       rasterizePDF: this.getSettingValue('rasterize'),
-      scaleFactor: this.getSettingValue('customScaling') ?
+      scaleFactor:
+          this.getSettingValue(scalingSettingKey) === ScalingType.CUSTOM ?
           parseInt(this.getSettingValue('scaling'), 10) :
           100,
+      scalingType: this.getSettingValue(scalingSettingKey),
       pagesPerSheet: this.getSettingValue('pagesPerSheet'),
       dpiHorizontal: (dpi && 'horizontal_dpi' in dpi) ? dpi.horizontal_dpi : 0,
       dpiVertical: (dpi && 'vertical_dpi' in dpi) ? dpi.vertical_dpi : 0,
       dpiDefault: (dpi && 'is_default' in dpi) ? dpi.is_default : false,
       deviceName: destination.id,
-      fitToPageEnabled: this.getSettingValue('fitToPage'),
       pageWidth: this.pageSize.width,
       pageHeight: this.pageSize.height,
       showSystemDialog: showSystemDialog,
@@ -1232,8 +1313,7 @@ Polymer({
       ticket.cloudPrintID = destination.id;
     }
 
-    if (this.getSettingValue('margins') ==
-        print_preview.ticket_items.MarginsTypeValue.CUSTOM) {
+    if (this.getSettingValue('margins') == MarginsType.CUSTOM) {
       ticket.marginsCustom = this.getSettingValue('customMargins');
     }
 
@@ -1252,6 +1332,9 @@ Polymer({
     if (this.getSettingValue('pin')) {
       ticket.pinValue = this.getSettingValue('pinValue');
     }
+    if (destination.origin == DestinationOrigin.CROS) {
+      ticket.advancedSettings = this.getSettingValue('vendorItems');
+    }
     // </if>
 
     return JSON.stringify(ticket);
@@ -1259,7 +1342,7 @@ Polymer({
 
   /**
    * Creates an object that represents a Google Cloud Print print ticket.
-   * @param {!print_preview.Destination} destination Destination to print to.
+   * @param {!Destination} destination Destination to print to.
    * @return {string} Google Cloud Print print ticket.
    */
   createCloudJobTicket: function(destination) {
@@ -1354,4 +1437,3 @@ Polymer({
     return JSON.stringify(cjt);
   },
 });
-})();

@@ -14,7 +14,7 @@ namespace content {
 
 // Entry point to an embedder implemented permission context for the Native File
 // System API. Instances of this class can be retrieved via a BrowserContext.
-// All these methods should always be called on the same sequence.
+// All these methods must always be called on the UI thread.
 class NativeFileSystemPermissionContext {
  public:
   // The type of action a user took that resulted in needing a permission grant
@@ -94,14 +94,14 @@ class NativeFileSystemPermissionContext {
       int frame_id,
       base::OnceCallback<void(SensitiveDirectoryResult)> callback) = 0;
 
-  enum class SafeBrowsingResult { kAllow, kBlock };
-  // Runs a recently finished write operation through Safe Browsing code to
-  // determine if the write should be allowed or blocked.
-  virtual void PerformSafeBrowsingChecks(
+  enum class AfterWriteCheckResult { kAllow, kBlock };
+  // Runs a recently finished write operation through checks such as malware
+  // or other security checks to determine if the write should be allowed.
+  virtual void PerformAfterWriteChecks(
       std::unique_ptr<NativeFileSystemWriteItem> item,
       int process_id,
       int frame_id,
-      base::OnceCallback<void(SafeBrowsingResult)> callback) = 0;
+      base::OnceCallback<void(AfterWriteCheckResult)> callback) = 0;
 
   // Returns whether the given |origin| is allowed to ask for write access.
   // This is used to block save file dialogs from being shown

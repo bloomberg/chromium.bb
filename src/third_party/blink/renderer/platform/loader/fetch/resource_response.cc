@@ -31,11 +31,16 @@
 #include <memory>
 #include <string>
 
+#include "services/network/public/cpp/cors/cors.h"
+#include "services/network/public/mojom/fetch_api.mojom-blink.h"
 #include "third_party/blink/public/platform/web_url_response.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_load_info.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_load_timing.h"
 #include "third_party/blink/renderer/platform/network/http_names.h"
 #include "third_party/blink/renderer/platform/network/http_parsers.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
 
@@ -76,14 +81,20 @@ ResourceResponse::SignedCertificateTimestamp::IsolatedCopy() const {
       signature_data_.IsolatedCopy());
 }
 
-ResourceResponse::ResourceResponse() : is_null_(true) {}
+ResourceResponse::ResourceResponse()
+    : is_null_(true),
+      response_type_(network::mojom::FetchResponseType::kDefault) {}
 
 ResourceResponse::ResourceResponse(const KURL& current_request_url)
-    : current_request_url_(current_request_url), is_null_(false) {}
+    : current_request_url_(current_request_url),
+      is_null_(false),
+      response_type_(network::mojom::FetchResponseType::kDefault) {}
 
 ResourceResponse::ResourceResponse(const ResourceResponse&) = default;
 ResourceResponse& ResourceResponse::operator=(const ResourceResponse&) =
     default;
+
+ResourceResponse::~ResourceResponse() = default;
 
 bool ResourceResponse::IsHTTP() const {
   return current_request_url_.ProtocolIsInHTTPFamily();
@@ -222,11 +233,19 @@ void ResourceResponse::SetSecurityDetails(
     time_t valid_to,
     const Vector<AtomicString>& certificate,
     const SignedCertificateTimestampList& sct_list) {
-  DCHECK_NE(security_style_, kWebSecurityStyleUnknown);
-  DCHECK_NE(security_style_, kWebSecurityStyleNeutral);
+  DCHECK_NE(security_style_, SecurityStyle::kUnknown);
+  DCHECK_NE(security_style_, SecurityStyle::kNeutral);
   security_details_ = SecurityDetails(
       protocol, key_exchange, key_exchange_group, cipher, mac, subject_name,
       san_list, issuer, valid_from, valid_to, certificate, sct_list);
+}
+
+bool ResourceResponse::IsCorsSameOrigin() const {
+  return network::cors::IsCorsSameOriginResponseType(response_type_);
+}
+
+bool ResourceResponse::IsCorsCrossOrigin() const {
+  return network::cors::IsCorsCrossOriginResponseType(response_type_);
 }
 
 void ResourceResponse::SetHttpHeaderField(const AtomicString& name,
@@ -243,6 +262,26 @@ void ResourceResponse::AddHttpHeaderField(const AtomicString& name,
   HTTPHeaderMap::AddResult result = http_header_fields_.Add(name, value);
   if (!result.is_new_entry)
     result.stored_value->value = result.stored_value->value + ", " + value;
+}
+
+void ResourceResponse::AddHttpHeaderFieldWithMultipleValues(
+    const AtomicString& name,
+    const Vector<AtomicString>& values) {
+  if (values.IsEmpty())
+    return;
+
+  UpdateHeaderParsedState(name);
+
+  StringBuilder value_builder;
+  const auto it = http_header_fields_.Find(name);
+  if (it != http_header_fields_.end())
+    value_builder.Append(it->value);
+  for (const auto& value : values) {
+    if (!value_builder.IsEmpty())
+      value_builder.Append(", ");
+    value_builder.Append(value);
+  }
+  http_header_fields_.Set(name, value_builder.ToAtomicString());
 }
 
 void ResourceResponse::ClearHttpHeaderField(const AtomicString& name) {

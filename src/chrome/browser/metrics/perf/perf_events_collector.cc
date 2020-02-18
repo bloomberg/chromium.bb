@@ -21,6 +21,7 @@
 #include "chrome/browser/metrics/perf/process_type_collector.h"
 #include "chrome/browser/metrics/perf/windowed_incognito_observer.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chromeos/dbus/debug_daemon/debug_daemon_client_provider.h"
 #include "components/variations/variations_associated_data.h"
 #include "third_party/metrics_proto/sampled_profile.pb.h"
 
@@ -135,12 +136,6 @@ const char kPerfRecordDataTLBMissesCmd[] =
 const char kPerfRecordCacheMissesCmd[] =
     "perf record -a -e cache-misses -c 10007";
 
-const char kPerfStatMemoryBandwidthCmd[] =
-    "perf stat -a -e cycles -e instructions "
-    "-e uncore_imc/data_reads/ -e uncore_imc/data_writes/ "
-    "-e cpu/event=0xD0,umask=0x11,name=MEM_UOPS_RETIRED-STLB_MISS_LOADS/ "
-    "-e cpu/event=0xD0,umask=0x12,name=MEM_UOPS_RETIRED-STLB_MISS_STORES/";
-
 const std::vector<RandomSelector::WeightAndValue> GetDefaultCommands_x86_64(
     const CPUIdentity& cpuid) {
   using WeightAndValue = RandomSelector::WeightAndValue;
@@ -159,18 +154,8 @@ const std::vector<RandomSelector::WeightAndValue> GetDefaultCommands_x86_64(
   }
 
   if (cpu_uarch == "IvyBridge" || cpu_uarch == "Haswell" ||
-      cpu_uarch == "Broadwell") {
-    cmds.push_back(WeightAndValue(45.0, kPerfRecordCyclesCmd));
-    cmds.push_back(WeightAndValue(20.0, callgraph_cmd));
-    cmds.push_back(WeightAndValue(15.0, kPerfRecordLBRCmd));
-    cmds.push_back(WeightAndValue(5.0, kPerfRecordInstructionTLBMissesCmd));
-    cmds.push_back(WeightAndValue(5.0, kPerfRecordDataTLBMissesCmd));
-    cmds.push_back(WeightAndValue(5.0, kPerfStatMemoryBandwidthCmd));
-    cmds.push_back(WeightAndValue(5.0, kPerfRecordCacheMissesCmd));
-    return cmds;
-  }
-  if (cpu_uarch == "SandyBridge" || cpu_uarch == "Skylake" ||
-      cpu_uarch == "Kabylake") {
+      cpu_uarch == "Broadwell" || cpu_uarch == "SandyBridge" ||
+      cpu_uarch == "Skylake" || cpu_uarch == "Kabylake") {
     cmds.push_back(WeightAndValue(50.0, kPerfRecordCyclesCmd));
     cmds.push_back(WeightAndValue(20.0, callgraph_cmd));
     cmds.push_back(WeightAndValue(15.0, kPerfRecordLBRCmd));
@@ -253,6 +238,11 @@ PerfCollector::~PerfCollector() = default;
 
 void PerfCollector::SetUp() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  // Create DebugdClientProvider to bind its private DBus connection to the
+  // current sequence.
+  debugd_client_provider_ =
+      std::make_unique<chromeos::DebugDaemonClientProvider>();
 
   auto task_runner = base::SequencedTaskRunnerHandle::Get();
   base::PostTask(
@@ -385,30 +375,19 @@ void PerfCollector::SetCollectionParamsFromVariationParams(
   command_selector_.SetOdds(commands);
 }
 
-internal::MetricCollector::PerfProtoType PerfCollector::GetPerfProtoType(
-    const std::vector<std::string>& args) {
-  if (args.size() > 1 && args[0] == "perf") {
-    if (args[1] == "record" || args[1] == "mem")
-      return PerfProtoType::PERF_TYPE_DATA;
-    if (args[1] == "stat")
-      return PerfProtoType::PERF_TYPE_STAT;
-  }
-
-  return PerfProtoType::PERF_TYPE_UNSUPPORTED;
-}
-
 std::unique_ptr<PerfOutputCall> PerfCollector::CreatePerfOutputCall(
     base::TimeDelta duration,
     const std::vector<std::string>& perf_args,
     PerfOutputCall::DoneCallback callback) {
-  return std::make_unique<PerfOutputCall>(duration, perf_args,
-                                          std::move(callback));
+  DCHECK(debugd_client_provider_.get());
+  return std::make_unique<PerfOutputCall>(
+      debugd_client_provider_->debug_daemon_client(), duration, perf_args,
+      std::move(callback));
 }
 
 void PerfCollector::OnPerfOutputComplete(
     std::unique_ptr<WindowedIncognitoObserver> incognito_observer,
     std::unique_ptr<SampledProfile> sampled_profile,
-    PerfProtoType type,
     bool has_cycles,
     std::string perf_stdout) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -418,14 +397,13 @@ void PerfCollector::OnPerfOutputComplete(
   perf_output_call_ = nullptr;
 
   ParseOutputProtoIfValid(std::move(incognito_observer),
-                          std::move(sampled_profile), type, has_cycles,
+                          std::move(sampled_profile), has_cycles,
                           std::move(perf_stdout));
 }
 
 void PerfCollector::ParseOutputProtoIfValid(
     std::unique_ptr<WindowedIncognitoObserver> incognito_observer,
     std::unique_ptr<SampledProfile> sampled_profile,
-    PerfProtoType type,
     bool has_cycles,
     std::string perf_stdout) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -449,7 +427,7 @@ void PerfCollector::ParseOutputProtoIfValid(
       base::BindOnce(&OnCollectProcessTypes, sampled_profile.get()),
       base::BindOnce(&PerfCollector::SaveSerializedPerfProto,
                      weak_factory_.GetWeakPtr(), std::move(sampled_profile),
-                     type, std::move(perf_stdout)));
+                     std::move(perf_stdout)));
   DCHECK(posted);
 }
 
@@ -479,8 +457,7 @@ bool PerfCollector::ShouldCollect() const {
 namespace internal {
 
 bool CommandSamplesCPUCycles(const std::vector<std::string>& args) {
-  // First two arguments are "perf record", "perf stat", etc. We are only
-  // interested in "perf record".
+  // Command must start with "perf record".
   if (args.size() < 4 || args[0] != "perf" || args[1] != "record")
     return false;
   for (size_t i = 2; i + 1 < args.size(); ++i) {
@@ -507,7 +484,6 @@ void PerfCollector::CollectProfile(
   std::vector<std::string> command =
       base::SplitString(command_selector_.Select(), kPerfCommandDelimiter,
                         base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
-  PerfProtoType type = GetPerfProtoType(command);
   bool has_cycles = internal::CommandSamplesCPUCycles(command);
 
   DCHECK(sampled_profile->has_trigger_event());
@@ -517,7 +493,7 @@ void PerfCollector::CollectProfile(
       collection_params().collection_duration, command,
       base::BindOnce(&PerfCollector::OnPerfOutputComplete,
                      weak_factory_.GetWeakPtr(), std::move(incognito_observer),
-                     std::move(sampled_profile), type, has_cycles));
+                     std::move(sampled_profile), has_cycles));
 }
 
 // static

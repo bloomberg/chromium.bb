@@ -173,9 +173,6 @@ CompositingLayerAssigner::GetReasonsPreventingSquashing(
   if (layer->TransformAncestor() != squashing_layer.TransformAncestor())
     return SquashingDisallowedReason::kTransformAncestorMismatch;
 
-  if (layer->RenderingContextRoot() != squashing_layer.RenderingContextRoot())
-    return SquashingDisallowedReason::kRenderingContextMismatch;
-
   if (layer->HasFilterInducingProperty() ||
       layer->FilterAncestor() != squashing_layer.FilterAncestor())
     return SquashingDisallowedReason::kFilterMismatch;
@@ -207,6 +204,10 @@ CompositingLayerAssigner::GetReasonsPreventingSquashing(
   if (layer->GetLayoutObject().HasMask() ||
       layer->MaskAncestor() != squashing_layer.MaskAncestor())
     return SquashingDisallowedReason::kMaskMismatch;
+
+  if (layer->NearestContainedLayoutLayer() !=
+      squashing_layer.NearestContainedLayoutLayer())
+    return SquashingDisallowedReason::kCrossesLayoutContainmentBoundary;
 
   return SquashingDisallowedReason::kNone;
 }

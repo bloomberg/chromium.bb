@@ -8,7 +8,13 @@
 
 class FPDFEditPageEmbedderTest : public EmbedderTest {};
 
-TEST_F(FPDFEditPageEmbedderTest, Rotation) {
+// TODO(crbug.com/pdfium/11): Fix this test and enable.
+#if defined(_SKIA_SUPPORT_) || defined(_SKIA_SUPPORT_PATHS_)
+#define MAYBE_Rotation DISABLED_Rotation
+#else
+#define MAYBE_Rotation Rotation
+#endif
+TEST_F(FPDFEditPageEmbedderTest, MAYBE_Rotation) {
   const char kOriginalMD5[] = "0a90de37f52127619c3dfb642b5fa2fe";
   const char kRotatedMD5[] = "d599429574ff0dcad3bc898ea8b874ca";
 
@@ -120,6 +126,31 @@ TEST_F(FPDFEditPageEmbedderTest, HasTransparencyText) {
 
     FPDFPageObj_SetBlendMode(obj, "Lighten");
     EXPECT_TRUE(FPDFPageObj_HasTransparency(obj));
+  }
+
+  UnloadPage(page);
+}
+
+TEST_F(FPDFEditPageEmbedderTest, GetFillAndStrokeForImage) {
+  constexpr int kExpectedObjectCount = 39;
+  constexpr int kImageObjectsStartIndex = 33;
+  ASSERT_TRUE(OpenDocument("embedded_images.pdf"));
+  FPDF_PAGE page = LoadPage(0);
+  ASSERT_TRUE(page);
+
+  ASSERT_EQ(kExpectedObjectCount, FPDFPage_CountObjects(page));
+
+  for (int i = kImageObjectsStartIndex; i < kExpectedObjectCount; ++i) {
+    FPDF_PAGEOBJECT image = FPDFPage_GetObject(page, i);
+    ASSERT_TRUE(image);
+    EXPECT_EQ(FPDF_PAGEOBJ_IMAGE, FPDFPageObj_GetType(image));
+
+    unsigned int r;
+    unsigned int g;
+    unsigned int b;
+    unsigned int a;
+    EXPECT_FALSE(FPDFPageObj_GetFillColor(image, &r, &g, &b, &a));
+    EXPECT_FALSE(FPDFPageObj_GetStrokeColor(image, &r, &g, &b, &a));
   }
 
   UnloadPage(page);

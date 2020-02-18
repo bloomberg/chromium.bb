@@ -23,6 +23,22 @@
 namespace vk
 {
 
+static void setExternalMemoryProperties(VkExternalMemoryHandleTypeFlagBits handleType, VkExternalMemoryProperties* properties)
+{
+#if SWIFTSHADER_EXTERNAL_MEMORY_OPAQUE_FD
+	if (handleType == VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD_BIT)
+	{
+		properties->compatibleHandleTypes = VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD_BIT;
+		properties->exportFromImportedHandleTypes = VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD_BIT;
+		properties->externalMemoryFeatures = VK_EXTERNAL_MEMORY_FEATURE_IMPORTABLE_BIT | VK_EXTERNAL_MEMORY_FEATURE_EXPORTABLE_BIT;
+		return;
+	}
+#endif
+	properties->compatibleHandleTypes = 0;
+	properties->exportFromImportedHandleTypes = 0;
+	properties->externalMemoryFeatures = 0;
+}
+
 PhysicalDevice::PhysicalDevice(const void*, void* mem)
 {
 }
@@ -32,7 +48,7 @@ const VkPhysicalDeviceFeatures& PhysicalDevice::getFeatures() const
 	static const VkPhysicalDeviceFeatures features
 	{
 		VK_TRUE,   // robustBufferAccess
-		VK_FALSE,  // fullDrawIndexUint32
+		VK_TRUE,   // fullDrawIndexUint32
 		VK_FALSE,  // imageCubeArray
 		VK_TRUE,   // independentBlend
 		VK_FALSE,  // geometryShader
@@ -56,7 +72,7 @@ const VkPhysicalDeviceFeatures& PhysicalDevice::getFeatures() const
 		VK_FALSE,  // textureCompressionBC
 		VK_FALSE,  // occlusionQueryPrecise
 		VK_FALSE,  // pipelineStatisticsQuery
-		VK_FALSE,  // vertexPipelineStoresAndAtomics
+		VK_TRUE,   // vertexPipelineStoresAndAtomics
 		VK_TRUE,   // fragmentStoresAndAtomics
 		VK_FALSE,  // shaderTessellationAndGeometryPointSize
 		VK_FALSE,  // shaderImageGatherExtended
@@ -68,8 +84,8 @@ const VkPhysicalDeviceFeatures& PhysicalDevice::getFeatures() const
 		VK_FALSE,  // shaderSampledImageArrayDynamicIndexing
 		VK_FALSE,  // shaderStorageBufferArrayDynamicIndexing
 		VK_FALSE,  // shaderStorageImageArrayDynamicIndexing
-		VK_FALSE,  // shaderClipDistance
-		VK_FALSE,  // shaderCullDistance
+		VK_TRUE,   // shaderClipDistance
+		VK_TRUE,   // shaderCullDistance
 		VK_FALSE,  // shaderFloat64
 		VK_FALSE,  // shaderInt64
 		VK_FALSE,  // shaderInt16
@@ -134,6 +150,21 @@ void PhysicalDevice::getFeatures(VkPhysicalDeviceShaderDrawParameterFeatures* fe
 	features->shaderDrawParameters = VK_FALSE;
 }
 
+void PhysicalDevice::getFeatures(VkPhysicalDeviceLineRasterizationFeaturesEXT* features) const
+{
+	features->rectangularLines = VK_TRUE;
+    features->bresenhamLines = VK_TRUE;
+    features->smoothLines = VK_FALSE;
+    features->stippledRectangularLines = VK_FALSE;
+    features->stippledBresenhamLines = VK_FALSE;
+    features->stippledSmoothLines = VK_FALSE;
+}
+
+void PhysicalDevice::getFeatures(VkPhysicalDeviceProvokingVertexFeaturesEXT* features) const
+{
+	features->provokingVertexLast = VK_TRUE;
+}
+
 VkSampleCountFlags PhysicalDevice::getSampleCounts() const
 {
 	return VK_SAMPLE_COUNT_1_BIT | VK_SAMPLE_COUNT_4_BIT;
@@ -160,8 +191,8 @@ const VkPhysicalDeviceLimits& PhysicalDevice::getLimits() const
 		0, // sparseAddressSpaceSize (unsupported)
 		MAX_BOUND_DESCRIPTOR_SETS, // maxBoundDescriptorSets
 		16, // maxPerStageDescriptorSamplers
-		12, // maxPerStageDescriptorUniformBuffers
-		4, // maxPerStageDescriptorStorageBuffers
+		14, // maxPerStageDescriptorUniformBuffers
+		16, // maxPerStageDescriptorStorageBuffers
 		16, // maxPerStageDescriptorSampledImages
 		4, // maxPerStageDescriptorStorageImages
 		4, // maxPerStageDescriptorInputAttachments
@@ -178,7 +209,7 @@ const VkPhysicalDeviceLimits& PhysicalDevice::getLimits() const
 		vk::MAX_VERTEX_INPUT_BINDINGS, // maxVertexInputBindings
 		2047, // maxVertexInputAttributeOffset
 		2048, // maxVertexInputBindingStride
-		64, // maxVertexOutputComponents
+		sw::MAX_INTERFACE_COMPONENTS, // maxVertexOutputComponents
 		0, // maxTessellationGenerationLevel (unsupported)
 		0, // maxTessellationPatchSize (unsupported)
 		0, // maxTessellationControlPerVertexInputComponents (unsupported)
@@ -192,7 +223,7 @@ const VkPhysicalDeviceLimits& PhysicalDevice::getLimits() const
 		0, // maxGeometryOutputComponents (unsupported)
 		0, // maxGeometryOutputVertices (unsupported)
 		0, // maxGeometryTotalOutputComponents (unsupported)
-		64, // maxFragmentInputComponents
+		sw::MAX_INTERFACE_COMPONENTS, // maxFragmentInputComponents
 		4, // maxFragmentOutputAttachments
 		1, // maxFragmentDualSrcAttachments
 		4, // maxFragmentCombinedOutputResources
@@ -200,7 +231,7 @@ const VkPhysicalDeviceLimits& PhysicalDevice::getLimits() const
 		{ 65535, 65535, 65535 }, // maxComputeWorkGroupCount[3]
 		128, // maxComputeWorkGroupInvocations
 		{ 128, 128, 64, }, // maxComputeWorkGroupSize[3]
-		4, // subPixelPrecisionBits
+		vk::SUBPIXEL_PRECISION_BITS, // subPixelPrecisionBits
 		4, // subTexelPrecisionBits
 		4, // mipmapPrecisionBits
 		UINT32_MAX, // maxDrawIndexedIndexValue
@@ -238,9 +269,9 @@ const VkPhysicalDeviceLimits& PhysicalDevice::getLimits() const
 		1, // maxSampleMaskWords
 		VK_FALSE, // timestampComputeAndGraphics
 		60, // timestampPeriod
-		8, // maxClipDistances
-		8, // maxCullDistances
-		8, // maxCombinedClipAndCullDistances
+		sw::MAX_CLIP_DISTANCES, // maxClipDistances
+		sw::MAX_CULL_DISTANCES, // maxCullDistances
+		sw::MAX_CLIP_DISTANCES + sw::MAX_CULL_DISTANCES, // maxCombinedClipAndCullDistances
 		2, // discreteQueuePriorities
 		{ 1.0, vk::MAX_POINT_SIZE }, // pointSizeRange[2]
 		{ 1.0, 1.0 }, // lineWidthRange[2] (unsupported)
@@ -324,9 +355,7 @@ void PhysicalDevice::getProperties(VkPhysicalDeviceSubgroupProperties* propertie
 
 void PhysicalDevice::getProperties(const VkExternalMemoryHandleTypeFlagBits* handleType, VkExternalImageFormatProperties* properties) const
 {
-	properties->externalMemoryProperties.compatibleHandleTypes = 0;
-	properties->externalMemoryProperties.exportFromImportedHandleTypes = 0;
-	properties->externalMemoryProperties.externalMemoryFeatures = 0;
+	setExternalMemoryProperties(*handleType, &properties->externalMemoryProperties);
 }
 
 void PhysicalDevice::getProperties(VkSamplerYcbcrConversionImageFormatProperties* properties) const
@@ -343,9 +372,7 @@ void PhysicalDevice::getProperties(VkPhysicalDevicePresentationPropertiesANDROID
 
 void PhysicalDevice::getProperties(const VkPhysicalDeviceExternalBufferInfo* pExternalBufferInfo, VkExternalBufferProperties* pExternalBufferProperties) const
 {
-	pExternalBufferProperties->externalMemoryProperties.compatibleHandleTypes = 0;
-	pExternalBufferProperties->externalMemoryProperties.exportFromImportedHandleTypes = 0;
-	pExternalBufferProperties->externalMemoryProperties.externalMemoryFeatures = 0;
+	setExternalMemoryProperties(pExternalBufferInfo->handleType, &pExternalBufferProperties->externalMemoryProperties);
 }
 
 void PhysicalDevice::getProperties(const VkPhysicalDeviceExternalFenceInfo* pExternalFenceInfo, VkExternalFenceProperties* pExternalFenceProperties) const
@@ -357,9 +384,45 @@ void PhysicalDevice::getProperties(const VkPhysicalDeviceExternalFenceInfo* pExt
 
 void PhysicalDevice::getProperties(const VkPhysicalDeviceExternalSemaphoreInfo* pExternalSemaphoreInfo, VkExternalSemaphoreProperties* pExternalSemaphoreProperties) const
 {
+#if SWIFTSHADER_EXTERNAL_SEMAPHORE_OPAQUE_FD
+	if (pExternalSemaphoreInfo->handleType == VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_FD_BIT)
+	{
+		pExternalSemaphoreProperties->compatibleHandleTypes = VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_FD_BIT;
+		pExternalSemaphoreProperties->exportFromImportedHandleTypes = VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_FD_BIT;
+		pExternalSemaphoreProperties->externalSemaphoreFeatures = VK_EXTERNAL_SEMAPHORE_FEATURE_EXPORTABLE_BIT | VK_EXTERNAL_SEMAPHORE_FEATURE_IMPORTABLE_BIT;
+		return;
+	}
+#endif
+#if VK_USE_PLATFORM_FUCHSIA
+	if (pExternalSemaphoreInfo->handleType == VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_TEMP_ZIRCON_EVENT_BIT_FUCHSIA)
+	{
+		pExternalSemaphoreProperties->compatibleHandleTypes = VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_TEMP_ZIRCON_EVENT_BIT_FUCHSIA;
+		pExternalSemaphoreProperties->exportFromImportedHandleTypes = VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_TEMP_ZIRCON_EVENT_BIT_FUCHSIA;
+		pExternalSemaphoreProperties->externalSemaphoreFeatures = VK_EXTERNAL_SEMAPHORE_FEATURE_EXPORTABLE_BIT | VK_EXTERNAL_SEMAPHORE_FEATURE_IMPORTABLE_BIT;
+		return;
+	}
+#endif
 	pExternalSemaphoreProperties->compatibleHandleTypes = 0;
 	pExternalSemaphoreProperties->exportFromImportedHandleTypes = 0;
 	pExternalSemaphoreProperties->externalSemaphoreFeatures = 0;
+}
+
+void PhysicalDevice::getProperties(VkPhysicalDeviceDriverPropertiesKHR* properties) const
+{
+	properties->driverID = VK_DRIVER_ID_GOOGLE_SWIFTSHADER_KHR;
+	strcpy(properties->driverName, "SwiftShader driver");
+	strcpy(properties->driverInfo, "");
+	properties->conformanceVersion = {1, 1, 3, 3};
+}
+
+void PhysicalDevice::getProperties(VkPhysicalDeviceLineRasterizationPropertiesEXT* properties) const
+{
+	properties->lineSubPixelPrecisionBits = vk::SUBPIXEL_PRECISION_BITS;
+}
+
+void PhysicalDevice::getProperties(VkPhysicalDeviceProvokingVertexPropertiesEXT* properties) const
+{
+	properties->provokingVertexModePerPipeline = VK_TRUE;
 }
 
 bool PhysicalDevice::hasFeatures(const VkPhysicalDeviceFeatures& requestedFeatures) const
@@ -451,8 +514,10 @@ void PhysicalDevice::getFormatProperties(Format format, VkFormatProperties* pFor
 	case VK_FORMAT_R32G32B32A32_UINT:
 	case VK_FORMAT_R32G32B32A32_SINT:
 	case VK_FORMAT_R32G32B32A32_SFLOAT:
+	case VK_FORMAT_S8_UINT:
 	case VK_FORMAT_D16_UNORM:
 	case VK_FORMAT_D32_SFLOAT:
+	case VK_FORMAT_D32_SFLOAT_S8_UINT:
 		pFormatProperties->optimalTilingFeatures |=
 			VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT |
 			VK_FORMAT_FEATURE_BLIT_SRC_BIT |
@@ -557,6 +622,7 @@ void PhysicalDevice::getFormatProperties(Format format, VkFormatProperties* pFor
 			VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BIT |
 			VK_FORMAT_FEATURE_BLIT_DST_BIT;
 		break;
+	case VK_FORMAT_S8_UINT:
 	case VK_FORMAT_D16_UNORM:
 	case VK_FORMAT_D32_SFLOAT: // Note: either VK_FORMAT_D32_SFLOAT or VK_FORMAT_X8_D24_UNORM_PACK32 must be supported
 	case VK_FORMAT_D32_SFLOAT_S8_UINT: // Note: either VK_FORMAT_D24_UNORM_S8_UINT or VK_FORMAT_D32_SFLOAT_S8_UINT must be supported
@@ -762,6 +828,20 @@ void PhysicalDevice::getQueueFamilyProperties(uint32_t pQueueFamilyPropertyCount
 		pQueueFamilyProperties[i].queueCount = 1;
 		pQueueFamilyProperties[i].queueFlags = VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT | VK_QUEUE_TRANSFER_BIT;
 		pQueueFamilyProperties[i].timestampValidBits = 0; // No support for time stamps
+	}
+}
+
+void PhysicalDevice::getQueueFamilyProperties(uint32_t pQueueFamilyPropertyCount,
+                                              VkQueueFamilyProperties2* pQueueFamilyProperties) const
+{
+	for(uint32_t i = 0; i < pQueueFamilyPropertyCount; i++)
+	{
+		pQueueFamilyProperties[i].queueFamilyProperties.minImageTransferGranularity.width = 1;
+		pQueueFamilyProperties[i].queueFamilyProperties.minImageTransferGranularity.height = 1;
+		pQueueFamilyProperties[i].queueFamilyProperties.minImageTransferGranularity.depth = 1;
+		pQueueFamilyProperties[i].queueFamilyProperties.queueCount = 1;
+		pQueueFamilyProperties[i].queueFamilyProperties.queueFlags = VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT | VK_QUEUE_TRANSFER_BIT;
+		pQueueFamilyProperties[i].queueFamilyProperties.timestampValidBits = 0; // No support for time stamps
 	}
 }
 

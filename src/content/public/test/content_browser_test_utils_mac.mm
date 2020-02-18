@@ -128,33 +128,41 @@ void SetWindowBounds(gfx::NativeWindow window, const gfx::Rect& bounds) {
 void GetStringAtPointForRenderWidget(
     RenderWidgetHost* rwh,
     const gfx::Point& point,
-    base::Callback<void(const std::string&, const gfx::Point&)>
+    base::OnceCallback<void(const std::string&, const gfx::Point&)>
         result_callback) {
   TextInputClientMac::GetInstance()->GetStringAtPoint(
       rwh, point,
-      base::BindOnce(base::RetainBlock(
-          ^(const mac::AttributedStringCoder::EncodedString& encoded_string,
-            gfx::Point baseline_point) {
+      base::BindOnce(
+          base::RetainBlock(^(
+              base::OnceCallback<void(const std::string&, const gfx::Point&)>
+                  callback,
+              const mac::AttributedStringCoder::EncodedString& encoded_string,
+              gfx::Point baseline_point) {
             std::string string = base::SysNSStringToUTF8(
                 [mac::AttributedStringCoder::Decode(&encoded_string) string]);
-            result_callback.Run(string, baseline_point);
-          })));
+            std::move(callback).Run(string, baseline_point);
+          }),
+          std::move(result_callback)));
 }
 
 void GetStringFromRangeForRenderWidget(
     RenderWidgetHost* rwh,
     const gfx::Range& range,
-    base::Callback<void(const std::string&, const gfx::Point&)>
+    base::OnceCallback<void(const std::string&, const gfx::Point&)>
         result_callback) {
   TextInputClientMac::GetInstance()->GetStringFromRange(
       rwh, range,
-      base::BindOnce(base::RetainBlock(
-          ^(const mac::AttributedStringCoder::EncodedString& encoded_string,
-            gfx::Point baseline_point) {
+      base::BindOnce(
+          base::RetainBlock(^(
+              base::OnceCallback<void(const std::string&, const gfx::Point&)>
+                  callback,
+              const mac::AttributedStringCoder::EncodedString& encoded_string,
+              gfx::Point baseline_point) {
             std::string string = base::SysNSStringToUTF8(
                 [mac::AttributedStringCoder::Decode(&encoded_string) string]);
-            result_callback.Run(string, baseline_point);
-          })));
+            std::move(callback).Run(string, baseline_point);
+          }),
+          std::move(result_callback)));
 }
 
 }  // namespace content
@@ -163,7 +171,7 @@ void GetStringFromRangeForRenderWidget(
 - (void)didAddSubview:(NSView*)view {
   content::RenderWidgetHostViewCocoaObserver::GetSwizzler(
       content::RenderWidgetHostViewCocoaObserver::kDidAddSubview)
-      ->GetOriginalImplementation()(self, _cmd, view);
+      ->InvokeOriginal<void, NSView*>(self, _cmd, view);
 
   content::RenderWidgetHostViewMac* rwhv_mac =
       content::GetRenderWidgetHostViewMac(self);
@@ -206,7 +214,8 @@ void GetStringFromRangeForRenderWidget(
   content::RenderWidgetHostViewCocoaObserver::GetSwizzler(
       content::RenderWidgetHostViewCocoaObserver::
           kShowDefinitionForAttributedString)
-      ->GetOriginalImplementation()(self, _cmd, attrString, textBaselineOrigin);
+      ->InvokeOriginal<void, NSAttributedString*, NSPoint>(
+          self, _cmd, attrString, textBaselineOrigin);
 
   auto* rwhv_mac = content::GetRenderWidgetHostViewMac(self);
 

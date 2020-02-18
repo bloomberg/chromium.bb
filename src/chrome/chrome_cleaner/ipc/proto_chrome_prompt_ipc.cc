@@ -6,6 +6,8 @@
 
 #include <windows.h>
 
+#include "base/bind_helpers.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/win_util.h"
 #include "components/chrome_cleaner/public/proto/chrome_prompt.pb.h"
@@ -104,7 +106,7 @@ void ProtoChromePromptIPC::RunPromptUserTask(
     std::string file_path_utf8;
     if (!base::UTF16ToUTF8(file_to_delete.value().c_str(),
                            file_to_delete.value().size(), &file_path_utf8)) {
-      std::move(callback).Run(PromptAcceptance::DENIED);
+      std::move(callback).Run(PromptUserResponse::DENIED);
       return;
     } else {
       prompt_user_message.add_files_to_delete(file_path_utf8);
@@ -115,7 +117,7 @@ void ProtoChromePromptIPC::RunPromptUserTask(
     std::string registry_key_utf8;
     if (!base::UTF16ToUTF8(registry_key.c_str(), registry_key.size(),
                            &registry_key_utf8)) {
-      std::move(callback).Run(PromptAcceptance::DENIED);
+      std::move(callback).Run(PromptUserResponse::DENIED);
       return;
     } else {
       prompt_user_message.add_registry_keys(registry_key_utf8);
@@ -126,7 +128,7 @@ void ProtoChromePromptIPC::RunPromptUserTask(
     std::string extension_id_utf8;
     if (!base::UTF16ToUTF8(extension_id.c_str(), extension_id.size(),
                            &extension_id_utf8)) {
-      std::move(callback).Run(PromptAcceptance::DENIED);
+      std::move(callback).Run(PromptUserResponse::DENIED);
       return;
     } else {
       prompt_user_message.add_extension_ids(extension_id_utf8);
@@ -151,7 +153,8 @@ void ProtoChromePromptIPC::RunPromptUserTask(
   }
 
   // Receive the response from Chrome.
-  PromptAcceptance prompt_acceptance = WaitForPromptAcceptance();
+  PromptUserResponse::PromptAcceptance prompt_acceptance =
+      WaitForPromptAcceptance();
 
   if (state_ == State::kDoneInteraction) {
     return;
@@ -207,7 +210,7 @@ void ProtoChromePromptIPC::SendBuffer(const std::string& request_content) {
   WriteByPointer(request_content.data(), kMessageLength);
 }
 
-ProtoChromePromptIPC::PromptAcceptance
+PromptUserResponse::PromptAcceptance
 ProtoChromePromptIPC::WaitForPromptAcceptance() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_EQ(State::kWaitingForResponseFromChrome, state_);
@@ -222,16 +225,16 @@ ProtoChromePromptIPC::WaitForPromptAcceptance() {
   if (!::ReadFile(response_read_handle_.Get(), &response_length,
                   sizeof(response_length), &bytes_read, nullptr)) {
     PLOG(ERROR) << "Reading the prompt acceptance message length failed.";
-    return PromptAcceptance::DENIED;
+    return PromptUserResponse::DENIED;
   }
   if (bytes_read != sizeof(response_length)) {
     PLOG(ERROR) << "Short read on the prompt acceptance message length.";
-    return PromptAcceptance::DENIED;
+    return PromptUserResponse::DENIED;
   }
 
   if (response_length == 0 || response_length > kMaxMessageLength) {
     PLOG(ERROR) << "Invalid message length received: " << response_length;
-    return PromptAcceptance::DENIED;
+    return PromptUserResponse::DENIED;
   }
 
   // Read the response.
@@ -240,23 +243,23 @@ ProtoChromePromptIPC::WaitForPromptAcceptance() {
                   base::WriteInto(&response_content, response_length + 1),
                   response_length, &bytes_read, nullptr)) {
     PLOG(ERROR) << "Reading the prompt acceptance message failed";
-    return PromptAcceptance::DENIED;
+    return PromptUserResponse::DENIED;
   }
   if (bytes_read != response_length) {
     PLOG(ERROR) << "Short read on the prompt acceptance message.";
-    return PromptAcceptance::DENIED;
+    return PromptUserResponse::DENIED;
   }
 
   chrome_cleaner::PromptUserResponse response;
   if (!response.ParseFromString(response_content)) {
     LOG(ERROR) << "Parsing of prompt acceptance failed.";
-    return PromptAcceptance::DENIED;
+    return PromptUserResponse::DENIED;
   }
 
   // Successful execution.
   call_connection_closed.ReplaceClosure(base::DoNothing());
 
-  return static_cast<PromptAcceptance>(response.prompt_acceptance());
+  return response.prompt_acceptance();
 }
 
 }  // namespace chrome_cleaner

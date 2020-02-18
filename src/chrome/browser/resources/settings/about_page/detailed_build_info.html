@@ -24,22 +24,16 @@
         width: 100%;
       }
     </style>
-    <div class="settings-box two-line single-column">
-      <div>$i18n{aboutPlatformLabel}</div>
-      <div class="secondary" id="osVersion">[[versionInfo_.osVersion]]</div>
-    </div>
-    <div class="settings-box two-line single-column"
-        hidden$="[[!shouldShowVersion_(versionInfo_.osFirmware)]]">
-      <div>$i18n{aboutFirmwareLabel}</div>
-      <div class="secondary" id="osFirmware">[[versionInfo_.osFirmware]]</div>
-    </div>
     <div class="settings-box two-line">
       <div class="start">
-        <div>$i18n{aboutChannelLabel}</div>
-        <div class="secondary">[[currentlyOnChannelText_]]</div>
+        <div role="heading" aria-level="2">$i18n{aboutChannelLabel}</div>
+        <div id="currentlyOnChannelText" aria-hidden="true" class="secondary">
+          [[currentlyOnChannelText_]]
+        </div>
       </div>
       <div class="separator"></div>
       <cr-button on-click="onChangeChannelTap_"
+          aria-describedby="currentlyOnChannelText"
           disabled="[[!canChangeChannel_]]">
         $i18n{aboutChangeChannel}
       </cr-button>
@@ -57,29 +51,24 @@
         </settings-channel-switcher-dialog>
       </template>
     </div>
-    <div class="settings-box two-line single-column"
-        hidden$="[[!shouldShowVersion_(versionInfo_.arcVersion)]]">
-      <div>$i18n{aboutArcVersionLabel}</div>
-      <div class="secondary" id="arcVersion">[[versionInfo_.arcVersion]]</div>
-    </div>
-    <div class="settings-box two-line single-column">
-      <div>V8</div>
-      <div class="secondary">$i18n{aboutJsEngineVersion}</div>
-    </div>
-    <div class="settings-box two-line single-column">
-      <div>$i18n{aboutUserAgentLabel}</div>
-      <div class="secondary">$i18n{aboutUserAgent}</div>
-    </div>
-    <div class="settings-box two-line single-column">
-      <div>$i18n{aboutCommandLineLabel}</div>
-      <div id="command-line" class="secondary">
-        [[i18n('aboutCommandLine')]]
+    <div id="endOfLifeSectionContainer"
+        class="settings-box two-line single-column"
+        hidden="[[!eolMessageWithMonthAndYear]]">
+      <div role="heading" aria-level="2">$i18n{aboutEndOfLifeTitle}</div>
+      <div class="secondary">
+        <span id="eolMessageWithMonthAndYear" aria-hidden="true">
+          [[eolMessageWithMonthAndYear]]
+        </span>
+        <a href="$i18nRaw{endOfLifeLearnMoreURL}"
+            aria-describedby="eolMessageWithMonthAndYear" target="_blank">
+          $i18n{learnMore}
+        </a>
       </div>
     </div>
-    <div class="settings-box two-line single-column">
-      <div>$i18n{aboutBuildDateLabel}</div>
-      <div class="secondary">$i18n{aboutBuildDate}</div>
-    </div>
+    <cr-link-row class="hr" label="$i18n{aboutBuildDetailsTitle}"
+        on-click="onBuildDetailsTap_" external>
+    </cr-link-row>
+    <div class="hr"></div>
   </template>
   <script src="detailed_build_info.js"></script>
 </dom-module>

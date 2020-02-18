@@ -36,10 +36,12 @@
 
 #include "base/macros.h"
 #include "build/build_config.h"
+#include "third_party/blink/renderer/platform/heap/finalizer_traits.h"
 #include "third_party/blink/renderer/platform/heap/gc_info.h"
 #include "third_party/blink/renderer/platform/heap/heap_page.h"
 #include "third_party/blink/renderer/platform/heap/process_heap.h"
 #include "third_party/blink/renderer/platform/heap/thread_state.h"
+#include "third_party/blink/renderer/platform/heap/thread_state_statistics.h"
 #include "third_party/blink/renderer/platform/heap/visitor.h"
 #include "third_party/blink/renderer/platform/heap/worklist.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
@@ -54,18 +56,18 @@ namespace incremental_marking_test {
 class IncrementalMarkingScopeBase;
 }  // namespace incremental_marking_test
 
-class AddressCache;
+namespace weakness_marking_test {
+class EphemeronCallbacksCounter;
+}  // namespace weakness_marking_test
+
+class ConcurrentMarkingVisitor;
 class ThreadHeapStatsCollector;
+class PageBloomFilter;
 class PagePool;
 class ProcessHeapReporter;
 class RegionTree;
 
-struct MarkingItem {
-  void* object;
-  TraceCallback callback;
-};
-
-using CustomCallbackItem = MarkingItem;
+using MarkingItem = TraceDescriptor;
 using NotFullyConstructedItem = void*;
 using WeakTableItem = MarkingItem;
 
@@ -74,11 +76,17 @@ struct BackingStoreCallbackItem {
   MovingObjectCallback callback;
 };
 
+struct CustomCallbackItem {
+  WeakCallback callback;
+  void* parameter;
+};
+
 using V8Reference = const TraceWrapperV8Reference<v8::Value>*;
 
 // Segment size of 512 entries necessary to avoid throughput regressions. Since
 // the work list is currently a temporary object this is not a problem.
 using MarkingWorklist = Worklist<MarkingItem, 512 /* local entries */>;
+using WriteBarrierWorklist = Worklist<HeapObjectHeader*, 256>;
 using NotFullyConstructedWorklist =
     Worklist<NotFullyConstructedItem, 16 /* local entries */>;
 using WeakCallbackWorklist =
@@ -172,6 +180,14 @@ class ObjectAliveTrait<T, true> {
   }
 };
 
+template <typename T, typename = int>
+struct IsGarbageCollectedContainer : std::false_type {};
+
+template <typename T>
+struct IsGarbageCollectedContainer<
+    T,
+    typename T::IsGarbageCollectedCollectionTypeMarker> : std::true_type {};
+
 }  // namespace internal
 
 class PLATFORM_EXPORT ThreadHeap {
@@ -214,6 +230,10 @@ class PLATFORM_EXPORT ThreadHeap {
 
   MarkingWorklist* GetMarkingWorklist() const {
     return marking_worklist_.get();
+  }
+
+  WriteBarrierWorklist* GetWriteBarrierWorklist() const {
+    return write_barrier_worklist_.get();
   }
 
   NotFullyConstructedWorklist* GetNotFullyConstructedWorklist() const {
@@ -282,14 +302,15 @@ class PLATFORM_EXPORT ThreadHeap {
   bool AdvanceMarking(MarkingVisitor*, base::TimeTicks deadline);
   void VerifyMarking();
 
+  // Returns true if marker is done
+  bool AdvanceConcurrentMarking(ConcurrentMarkingVisitor*, base::TimeTicks);
+
   // Conservatively checks whether an address is a pointer in any of the
   // thread heaps.  If so marks the object pointed to as live.
   Address CheckAndMarkPointer(MarkingVisitor*, Address);
 
   size_t ObjectPayloadSizeForTesting();
   void ResetAllocationPointForTesting();
-
-  AddressCache* address_cache() const { return address_cache_.get(); }
 
   PagePool* GetFreePagePool() { return free_page_pool_.get(); }
 
@@ -309,60 +330,10 @@ class PLATFORM_EXPORT ThreadHeap {
     return arenas_[arena_index];
   }
 
-  // VectorBackingArena() returns an arena that the vector allocation should
-  // use.  We have four vector arenas and want to choose the best arena here.
-  //
-  // The goal is to improve the succession rate where expand and
-  // promptlyFree happen at an allocation point. This is a key for reusing
-  // the same memory as much as possible and thus improves performance.
-  // To achieve the goal, we use the following heuristics:
-  //
-  // - A vector that has been expanded recently is likely to be expanded
-  //   again soon.
-  // - A vector is likely to be promptly freed if the same type of vector
-  //   has been frequently promptly freed in the past.
-  // - Given the above, when allocating a new vector, look at the four vectors
-  //   that are placed immediately prior to the allocation point of each arena.
-  //   Choose the arena where the vector is least likely to be expanded
-  //   nor promptly freed.
-  //
-  // To implement the heuristics, we add an arenaAge to each arena. The arenaAge
-  // is updated if:
-  //
-  // - a vector on the arena is expanded; or
-  // - a vector that meets the condition (*) is allocated on the arena
-  //
-  //   (*) More than 33% of the same type of vectors have been promptly
-  //       freed since the last GC.
-  //
-  BaseArena* VectorBackingArena(uint32_t gc_info_index) {
-    DCHECK(thread_state_->CheckThread());
-    uint32_t entry_index = gc_info_index & kLikelyToBePromptlyFreedArrayMask;
-    --likely_to_be_promptly_freed_[entry_index];
-    int arena_index = vector_backing_arena_index_;
-    // If likely_to_be_promptly_freed_[entryIndex] > 0, that means that
-    // more than 33% of vectors of the type have been promptly freed
-    // since the last GC.
-    if (likely_to_be_promptly_freed_[entry_index] > 0) {
-      arena_ages_[arena_index] = ++current_arena_ages_;
-      vector_backing_arena_index_ =
-          ArenaIndexOfVectorArenaLeastRecentlyExpanded(
-              BlinkGC::kVector1ArenaIndex, BlinkGC::kVector4ArenaIndex);
-    }
-    DCHECK(IsVectorArenaIndex(arena_index));
-    return arenas_[arena_index];
-  }
-  BaseArena* ExpandedVectorBackingArena(uint32_t gc_info_index);
   static bool IsVectorArenaIndex(int arena_index) {
-    return BlinkGC::kVector1ArenaIndex <= arena_index &&
-           arena_index <= BlinkGC::kVector4ArenaIndex;
+    return BlinkGC::kVectorArenaIndex == arena_index;
   }
   static bool IsNormalArenaIndex(int);
-  void AllocationPointAdjusted(int arena_index);
-  void PromptlyFreed(uint32_t gc_info_index);
-  void ClearArenaAges();
-  int ArenaIndexOfVectorArenaLeastRecentlyExpanded(int begin_arena_index,
-                                                   int end_arena_index);
 
   void MakeConsistentForGC();
   // MakeConsistentForMutator() drops marks from marked objects and rebuild
@@ -372,17 +343,15 @@ class PLATFORM_EXPORT ThreadHeap {
 
   void Compact();
 
-  bool AdvanceLazySweep(base::TimeTicks deadline);
-
-  void ConcurrentSweep();
+  enum class SweepingType : uint8_t { kMutator, kConcurrent };
+  bool AdvanceSweep(SweepingType sweeping_type, base::TimeTicks deadline);
 
   void PrepareForSweep();
   void RemoveAllPages();
   void InvokeFinalizersOnSweptPages();
   void CompleteSweep();
 
-  enum SnapshotType { kHeapSnapshot, kFreelistSnapshot };
-  void TakeSnapshot(SnapshotType);
+  void CollectStatistics(ThreadState::Statistics* statistics);
 
   ThreadHeapStatsCollector* stats_collector() const {
     return heap_stats_collector_.get();
@@ -403,6 +372,8 @@ class PLATFORM_EXPORT ThreadHeap {
   }
 #endif
 
+  PageBloomFilter* page_bloom_filter() { return page_bloom_filter_.get(); }
+
  private:
   static int ArenaIndexForObjectSize(size_t);
 
@@ -412,12 +383,12 @@ class PLATFORM_EXPORT ThreadHeap {
 
   void InvokeEphemeronCallbacks(MarkingVisitor*);
 
-  void FlushV8References(MarkingVisitor*);
+  void FlushV8References();
 
   ThreadState* thread_state_;
   std::unique_ptr<ThreadHeapStatsCollector> heap_stats_collector_;
   std::unique_ptr<RegionTree> region_tree_;
-  std::unique_ptr<AddressCache> address_cache_;
+  std::unique_ptr<PageBloomFilter> page_bloom_filter_;
   std::unique_ptr<PagePool> free_page_pool_;
   std::unique_ptr<ProcessHeapReporter> process_heap_reporter_;
 
@@ -425,6 +396,11 @@ class PLATFORM_EXPORT ThreadHeap {
   // trace callback for iterating the body of the object. This worklist should
   // contain almost all objects.
   std::unique_ptr<MarkingWorklist> marking_worklist_;
+
+  // Objects on this worklist have been collected in the write barrier. The
+  // worklist is different from |marking_worklist_| to minimize execution in the
+  // path where a write barrier is executed.
+  std::unique_ptr<WriteBarrierWorklist> write_barrier_worklist_;
 
   // Objects on this worklist were observed to be in construction (in their
   // constructor) and thus have been delayed for processing. They have not yet
@@ -467,18 +443,6 @@ class PLATFORM_EXPORT ThreadHeap {
   std::unique_ptr<HeapCompact> compaction_;
 
   BaseArena* arenas_[BlinkGC::kNumberOfArenas];
-  int vector_backing_arena_index_;
-  size_t arena_ages_[BlinkGC::kNumberOfArenas];
-  size_t current_arena_ages_;
-
-  // Ideally we want to allocate an array of size |gcInfoTableMax| but it will
-  // waste memory. Thus we limit the array size to 2^8 and share one entry
-  // with multiple types of vectors. This won't be an issue in practice,
-  // since there will be less than 2^8 types of objects in common cases.
-  static const int kLikelyToBePromptlyFreedArraySize = (1 << 8);
-  static const int kLikelyToBePromptlyFreedArrayMask =
-      kLikelyToBePromptlyFreedArraySize - 1;
-  std::unique_ptr<int[]> likely_to_be_promptly_freed_;
 
   static ThreadHeap* main_thread_heap_;
 
@@ -486,6 +450,7 @@ class PLATFORM_EXPORT ThreadHeap {
   template <typename T>
   friend class Member;
   friend class ThreadState;
+  friend class weakness_marking_test::EphemeronCallbacksCounter;
 };
 
 template <typename T>
@@ -506,22 +471,43 @@ class GarbageCollected {
 #endif
 
  public:
-  using GarbageCollectedType = T;
+  using ParentMostGarbageCollectedType = T;
 
   void* operator new(size_t size) = delete;  // Must use MakeGarbageCollected.
 
+  template <typename Derived>
   static void* AllocateObject(size_t size) {
-    if (IsGarbageCollectedMixin<T>::value) {
-      // Ban large mixin so we can use PageFromObject() on them.
-      CHECK_GE(kLargeObjectSizeThreshold, size)
-          << "GarbageCollectedMixin may not be a large object";
-    }
-    return ThreadHeap::Allocate<T>(size);
+    return ThreadHeap::Allocate<GCInfoFoldedType<Derived>>(size);
   }
 
   void operator delete(void* p) { NOTREACHED(); }
 
  protected:
+  // This trait in theory can be moved to gc_info.h, but that would cause
+  // significant memory bloat caused by huge number of ThreadHeap::Allocate<>
+  // instantiations, which linker is not able to fold.
+  template <typename Derived>
+  class GCInfoFolded {
+    static constexpr bool is_virtual_destructor_at_base =
+        std::has_virtual_destructor<ParentMostGarbageCollectedType>::value;
+    static constexpr bool both_trivially_destructible =
+        std::is_trivially_destructible<ParentMostGarbageCollectedType>::value &&
+        std::is_trivially_destructible<Derived>::value;
+    static constexpr bool has_custom_dispatch_at_base =
+        internal::HasFinalizeGarbageCollectedObject<
+            ParentMostGarbageCollectedType>::value;
+
+   public:
+    using Type = std::conditional_t<is_virtual_destructor_at_base ||
+                                        both_trivially_destructible ||
+                                        has_custom_dispatch_at_base,
+                                    ParentMostGarbageCollectedType,
+                                    Derived>;
+  };
+
+  template <typename Derived>
+  using GCInfoFoldedType = typename GCInfoFolded<Derived>::Type;
+
   GarbageCollected() = default;
 
   DISALLOW_COPY_AND_ASSIGN(GarbageCollected);
@@ -533,7 +519,17 @@ template <typename T, typename... Args>
 T* MakeGarbageCollected(Args&&... args) {
   static_assert(WTF::IsGarbageCollectedType<T>::value,
                 "T needs to be a garbage collected object");
-  void* memory = T::AllocateObject(sizeof(T));
+  static_assert(std::is_trivially_destructible<T>::value ||
+                    std::has_virtual_destructor<T>::value ||
+                    std::is_final<T>::value ||
+                    internal::IsGarbageCollectedContainer<T>::value ||
+                    internal::HasFinalizeGarbageCollectedObject<T>::value,
+                "Finalized GarbageCollected class should either have a virtual "
+                "destructor or be marked as final");
+  static_assert(!IsGarbageCollectedMixin<T>::value ||
+                    sizeof(T) <= kLargeObjectSizeThreshold,
+                "GarbageCollectedMixin may not be a large object");
+  void* memory = T::template AllocateObject<T>(sizeof(T));
   HeapObjectHeader* header = HeapObjectHeader::FromPayload(memory);
   // Placement new as regular operator new() is deleted.
   T* object = ::new (memory) T(std::forward<Args>(args)...);
@@ -553,7 +549,20 @@ template <typename T, typename... Args>
 T* MakeGarbageCollected(AdditionalBytes additional_bytes, Args&&... args) {
   static_assert(WTF::IsGarbageCollectedType<T>::value,
                 "T needs to be a garbage collected object");
-  void* memory = T::AllocateObject(sizeof(T) + additional_bytes.value);
+  static_assert(std::is_trivially_destructible<T>::value ||
+                    std::has_virtual_destructor<T>::value ||
+                    std::is_final<T>::value ||
+                    internal::IsGarbageCollectedContainer<T>::value ||
+                    internal::HasFinalizeGarbageCollectedObject<T>::value,
+                "Finalized GarbageCollected class should either have a virtual "
+                "destructor or be marked as final.");
+  const size_t size = sizeof(T) + additional_bytes.value;
+  if (IsGarbageCollectedMixin<T>::value) {
+    // Ban large mixin so we can use PageFromObject() on them.
+    CHECK_GE(kLargeObjectSizeThreshold, size)
+        << "GarbageCollectedMixin may not be a large object";
+  }
+  void* memory = T::template AllocateObject<T>(size);
   HeapObjectHeader* header = HeapObjectHeader::FromPayload(memory);
   // Placement new as regular operator new() is deleted.
   T* object = ::new (memory) T(std::forward<Args>(args)...);
@@ -612,7 +621,7 @@ Address ThreadHeap::Allocate(size_t size) {
 }
 
 template <typename T>
-void Visitor::HandleWeakCell(Visitor* self, void* object) {
+void Visitor::HandleWeakCell(const WeakCallbackInfo&, void* object) {
   WeakMember<T>* weak_member = reinterpret_cast<WeakMember<T>*>(object);
   if (weak_member->Get()) {
     if (weak_member->IsHashTableDeletedValue()) {
@@ -624,6 +633,37 @@ void Visitor::HandleWeakCell(Visitor* self, void* object) {
     if (!ThreadHeap::IsHeapObjectAlive(weak_member->Get()))
       weak_member->Clear();
   }
+}
+
+class PLATFORM_EXPORT WeakCallbackInfo final {
+ public:
+  template <typename T>
+  bool IsHeapObjectAlive(const T*) const;
+  template <typename T>
+  bool IsHeapObjectAlive(const WeakMember<T>&) const;
+  template <typename T>
+  bool IsHeapObjectAlive(const UntracedMember<T>&) const;
+
+ private:
+  WeakCallbackInfo() = default;
+  friend class ThreadHeap;
+};
+
+template <typename T>
+bool WeakCallbackInfo::IsHeapObjectAlive(const T* object) const {
+  return ThreadHeap::IsHeapObjectAlive(object);
+}
+
+template <typename T>
+bool WeakCallbackInfo::IsHeapObjectAlive(
+    const WeakMember<T>& weak_member) const {
+  return ThreadHeap::IsHeapObjectAlive(weak_member);
+}
+
+template <typename T>
+bool WeakCallbackInfo::IsHeapObjectAlive(
+    const UntracedMember<T>& untraced_member) const {
+  return ThreadHeap::IsHeapObjectAlive(untraced_member.Get());
 }
 
 }  // namespace blink

@@ -288,8 +288,8 @@ class ContextualSearchDelegateTest : public testing::Test {
   std::string search_url_preload_;
   int coca_card_tag_;
 
-  base::test::TaskEnvironment task_environment_{
-      base::test::TaskEnvironment::MainThreadType::IO};
+  base::test::SingleThreadTaskEnvironment task_environment_{
+      base::test::SingleThreadTaskEnvironment::MainThreadType::IO};
   std::unique_ptr<TemplateURLService> template_url_service_;
   scoped_refptr<network::SharedURLLoaderFactory>
       test_shared_url_loader_factory_;
@@ -383,7 +383,7 @@ TEST_F(ContextualSearchDelegateTest, InvalidResponse) {
   auto* pending_request = test_url_loader_factory_.GetPendingRequest(0);
   test_url_loader_factory_.SimulateResponseForPendingRequest(
       pending_request->request.url, network::URLLoaderCompletionStatus(net::OK),
-      network::ResourceResponseHead(), std::string());
+      network::mojom::URLResponseHead::New(), std::string());
   base::RunLoop().RunUntilIdle();
 
   EXPECT_FALSE(do_prevent_preload());

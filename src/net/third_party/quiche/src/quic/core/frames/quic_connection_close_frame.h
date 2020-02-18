@@ -10,6 +10,7 @@
 
 #include "net/third_party/quiche/src/quic/core/quic_error_codes.h"
 #include "net/third_party/quiche/src/quic/core/quic_types.h"
+#include "net/third_party/quiche/src/quic/core/quic_versions.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_export.h"
 
 namespace quic {
@@ -17,20 +18,14 @@ namespace quic {
 struct QUIC_EXPORT_PRIVATE QuicConnectionCloseFrame {
   QuicConnectionCloseFrame();
 
-  // TODO(fkastenholz): After migration to supporting IETF QUIC, this probably
-  // should be deprecated.
-  QuicConnectionCloseFrame(QuicErrorCode error_code, std::string error_details);
-
-  // Sets close_type to IETF_QUIC_APPLICATION_CONNECTION_CLOSE.
-  QuicConnectionCloseFrame(QuicErrorCode quic_error_code,
-                           std::string error_details,
-                           uint64_t ietf_application_error_code);
-
-  // Sets close_type to IETF_QUIC_TRANSPORT_CONNECTION_CLOSE.
-  QuicConnectionCloseFrame(QuicErrorCode quic_error_code,
-                           std::string error_details,
-                           QuicIetfTransportErrorCodes transport_error_code,
-                           uint64_t transport_frame_type);
+  // Builds a connection close frame based on the transport version
+  // and the mapping of error_code. THIS IS THE PREFERRED C'TOR
+  // TO USE IF YOU NEED TO CREATE A CONNECTION-CLOSE-FRAME AND
+  // HAVE IT BE CORRECT FOR THE VERSION AND CODE MAPPINGS.
+  QuicConnectionCloseFrame(QuicTransportVersion transport_version,
+                           QuicErrorCode error_code,
+                           std::string error_phrase,
+                           uint64_t transport_close_frame_type);
 
   friend QUIC_EXPORT_PRIVATE std::ostream& operator<<(
       std::ostream& os,
@@ -49,8 +44,7 @@ struct QUIC_EXPORT_PRIVATE QuicConnectionCloseFrame {
   // - A 16 bit QuicErrorCode, which is used in Google QUIC.
   union {
     QuicIetfTransportErrorCodes transport_error_code;
-    // TODO(fkastenholz): Change this to uint64_t to reflect -22 of the ID.
-    uint16_t application_error_code;
+    uint64_t application_error_code;
     QuicErrorCode quic_error_code;
   };
 

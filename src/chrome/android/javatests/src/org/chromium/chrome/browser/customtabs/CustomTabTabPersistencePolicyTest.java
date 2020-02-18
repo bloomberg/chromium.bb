@@ -5,11 +5,12 @@
 package org.chromium.chrome.browser.customtabs;
 
 import android.app.Activity;
-import android.support.annotation.Nullable;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 import android.support.test.filters.SmallTest;
 import android.support.test.rule.UiThreadTestRule;
+
+import androidx.annotation.Nullable;
 
 import org.hamcrest.Matchers;
 import org.junit.After;
@@ -67,7 +68,7 @@ public class CustomTabTabPersistencePolicyTest {
     public UiThreadTestRule mRule = new UiThreadTestRule();
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         // CustomTabsConnection needs a true context, not the mock context set below.
         CustomTabsConnection.getInstance();
 
@@ -83,7 +84,7 @@ public class CustomTabTabPersistencePolicyTest {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         mMockDirectory.tearDown();
 
         for (Activity activity : ApplicationStatus.getRunningActivities()) {

@@ -16,10 +16,10 @@
 #include "third_party/blink/renderer/core/page/focus_controller.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
+#include "third_party/blink/renderer/core/testing/color_scheme_helper.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
-#include "third_party/blink/renderer/platform/web_test_support.h"
 
 namespace blink {
 
@@ -28,16 +28,6 @@ class LayoutThemeTest : public PageTestBase,
  protected:
   LayoutThemeTest() : ScopedCSSColorSchemeForTest(true) {}
   void SetHtmlInnerHTML(const char* html_content);
-
-  void SetUp() override {
-    WebTestSupport::SetMockThemeEnabledForTest(true);
-    PageTestBase::SetUp();
-  }
-
-  void TearDown() override {
-    PageTestBase::TearDown();
-    WebTestSupport::SetMockThemeEnabledForTest(false);
-  }
 };
 
 void LayoutThemeTest::SetHtmlInnerHTML(const char* html_content) {
@@ -119,8 +109,9 @@ TEST_F(LayoutThemeTest, RootElementColorChange) {
             initial_style->VisitedDependentColor(GetCSSPropertyColor()));
 
   // Change color scheme to dark.
-  GetDocument().GetSettings()->SetPreferredColorScheme(
-      PreferredColorScheme::kDark);
+  ColorSchemeHelper color_scheme_helper;
+  color_scheme_helper.SetPreferredColorScheme(GetDocument(),
+                                              PreferredColorScheme::kDark);
   UpdateAllLifecyclePhasesForTest();
 
   document_element_style = GetDocument().documentElement()->GetComputedStyle();
@@ -136,8 +127,8 @@ TEST_F(LayoutThemeTest, RootElementColorChange) {
             initial_style->VisitedDependentColor(GetCSSPropertyColor()));
 }
 
-// Mock theming is done on LayoutThemeDefault which is not a base class for
-// LayoutThemeMac.
+// The expectations are based on LayoutThemeDefault::SystemColor.
+// LayoutThemeMac doesn't use that code path.
 #if !defined(OS_MACOSX)
 TEST_F(LayoutThemeTest, SystemColorWithColorScheme) {
   SetHtmlInnerHTML(R"HTML(
@@ -155,17 +146,18 @@ TEST_F(LayoutThemeTest, SystemColorWithColorScheme) {
 
   const ComputedStyle* style = dark_element->GetComputedStyle();
   EXPECT_EQ(WebColorScheme::kLight, style->UsedColorScheme());
-  EXPECT_EQ(Color(0xc0, 0xc0, 0xc0),
+  EXPECT_EQ(Color(0xdd, 0xdd, 0xdd),
             style->VisitedDependentColor(GetCSSPropertyColor()));
 
   // Change color scheme to dark.
-  GetDocument().GetSettings()->SetPreferredColorScheme(
-      PreferredColorScheme::kDark);
+  ColorSchemeHelper color_scheme_helper;
+  color_scheme_helper.SetPreferredColorScheme(GetDocument(),
+                                              PreferredColorScheme::kDark);
   UpdateAllLifecyclePhasesForTest();
 
   style = dark_element->GetComputedStyle();
   EXPECT_EQ(WebColorScheme::kDark, style->UsedColorScheme());
-  EXPECT_EQ(Color(0x80, 0x80, 0x80),
+  EXPECT_EQ(Color(0x44, 0x44, 0x44),
             style->VisitedDependentColor(GetCSSPropertyColor()));
 }
 #endif  // !defined(OS_MACOSX)

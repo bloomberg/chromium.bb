@@ -25,13 +25,7 @@
 #include "media/gpu/buildflags.h"
 #include "services/metrics/public/cpp/delegating_ukm_recorder.h"
 #include "services/metrics/public/cpp/mojo_ukm_recorder.h"
-#include "services/metrics/public/mojom/constants.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "third_party/skia/include/core/SkFontLCDConfig.h"
-
-#if defined(USE_OZONE)
-#include "ui/ozone/public/ozone_platform.h"
-#endif
 
 namespace {
 
@@ -95,7 +89,12 @@ VizMainImpl::VizMainImpl(Delegate* delegate,
     }
   }
 
-  CreateUkmRecorderIfNeeded(dependencies.connector);
+  if (!gpu_init_->gpu_info().in_process_gpu && dependencies.ukm_recorder) {
+    // NOTE: If the GPU is running in the browser process, we can use the
+    // browser's UKMRecorder.
+    ukm_recorder_ = std::move(dependencies.ukm_recorder);
+    ukm::DelegatingUkmRecorder::Get()->AddDelegate(ukm_recorder_->GetWeakPtr());
+  }
 
   gpu_service_ = std::make_unique<GpuServiceImpl>(
       gpu_init_->gpu_info(), gpu_init_->TakeWatchdogThread(), io_task_runner(),
@@ -106,10 +105,6 @@ VizMainImpl::VizMainImpl(Delegate* delegate,
       base::BindOnce(&VizMainImpl::ExitProcess, base::Unretained(this)));
   if (dependencies_.create_display_compositor)
     gpu_service_->set_oopd_enabled();
-
-#if defined(USE_OZONE)
-  ui::OzonePlatform::GetInstance()->AddInterfaces(&registry_);
-#endif
 }
 
 VizMainImpl::~VizMainImpl() {
@@ -143,21 +138,11 @@ void VizMainImpl::BindAssociated(
   receiver_.Bind(std::move(pending_receiver));
 }
 
-#if defined(USE_OZONE)
-bool VizMainImpl::CanBindInterface(const std::string& interface_name) const {
-  return registry_.CanBindInterface(interface_name);
-}
-
-void VizMainImpl::BindInterface(const std::string& interface_name,
-                                mojo::ScopedMessagePipeHandle interface_pipe) {
-  registry_.BindInterface(interface_name, std::move(interface_pipe));
-}
-#endif
-
 void VizMainImpl::CreateGpuService(
     mojo::PendingReceiver<mojom::GpuService> pending_receiver,
     mojo::PendingRemote<mojom::GpuHost> pending_gpu_host,
-    discardable_memory::mojom::DiscardableSharedMemoryManagerPtr
+    mojo::PendingRemote<
+        discardable_memory::mojom::DiscardableSharedMemoryManager>
         discardable_memory_manager,
     mojo::ScopedSharedBufferHandle activity_flags,
     gfx::FontRenderParams::SubpixelRendering subpixel_rendering) {
@@ -215,18 +200,6 @@ void VizMainImpl::CreateGpuService(
     delegate_->OnGpuServiceConnection(gpu_service_.get());
 }
 
-void VizMainImpl::CreateUkmRecorderIfNeeded(
-    service_manager::Connector* connector) {
-  // If GPU is running in the browser process, we can use browser's UKMRecorder.
-  if (gpu_init_->gpu_info().in_process_gpu)
-    return;
-
-  DCHECK(connector) << "Unable to initialize UKMRecorder in the GPU process - "
-                    << "no valid connector.";
-  ukm_recorder_ = ukm::MojoUkmRecorder::Create(connector);
-  ukm::DelegatingUkmRecorder::Get()->AddDelegate(ukm_recorder_->GetWeakPtr());
-}
-
 void VizMainImpl::CreateFrameSinkManager(
     mojom::FrameSinkManagerParamsPtr params) {
   DCHECK(viz_compositor_thread_runner_);
@@ -263,7 +236,7 @@ void VizMainImpl::CreateFrameSinkManagerInternal(
   // the same signature. https://crbug.com/928845
   CHECK(!task_executor_);
   task_executor_ = std::make_unique<gpu::GpuInProcessThreadService>(
-      gpu_thread_task_runner_, gpu_service_->scheduler(),
+      gpu_thread_task_runner_, gpu_service_->GetGpuScheduler(),
       gpu_service_->sync_point_manager(), gpu_service_->mailbox_manager(),
       gpu_service_->share_group(), format, gpu_service_->gpu_feature_info(),
       gpu_service_->gpu_channel_manager()->gpu_preferences(),
@@ -281,11 +254,17 @@ void VizMainImpl::CreateVizDevTools(mojom::VizDevToolsParamsPtr params) {
 #endif
 }
 
-void VizMainImpl::ExitProcess() {
+void VizMainImpl::ExitProcess(bool immediately) {
   DCHECK(gpu_thread_task_runner_->BelongsToCurrentThread());
 
   // Close mojom::VizMain bindings first so the browser can't try to reconnect.
   receiver_.reset();
+
+  if (!gpu_init_->gpu_info().in_process_gpu && immediately) {
+    // Atomically shut down GPU process to make it faster and simpler.
+    base::Process::TerminateCurrentProcessImmediately(/*exit_code=*/0);
+    return;
+  }
 
   if (viz_compositor_thread_runner_) {
     // OOP-D requires destroying RootCompositorFrameSinkImpls on the compositor

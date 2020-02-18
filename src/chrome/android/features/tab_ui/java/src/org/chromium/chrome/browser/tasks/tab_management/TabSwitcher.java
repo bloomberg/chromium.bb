@@ -6,10 +6,13 @@ package org.chromium.chrome.browser.tasks.tab_management;
 
 import android.graphics.Bitmap;
 import android.graphics.Rect;
-import android.support.annotation.NonNull;
+import android.graphics.RectF;
+import android.os.SystemClock;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Callback;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.ui.resources.dynamics.ViewResourceAdapter;
@@ -101,10 +104,10 @@ public interface TabSwitcher {
         boolean onBackPressed();
 
         /**
-         * Set the bottom control height to margin the bottom of the TabListRecyclerView.
-         * @param bottomControlsHeight The bottom control height in pixel.
+         * Enable recording the first meaningful paint event of the Grid Tab Switcher.
+         * @param activityCreateTimeMs {@link SystemClock#elapsedRealtime} at activity creation.
          */
-        void setBottomControlsHeight(int bottomControlsHeight);
+        void enableRecordingFirstMeaningfulPaint(long activityCreateTimeMs);
     }
 
     /**
@@ -177,10 +180,34 @@ public interface TabSwitcher {
          */
         @VisibleForTesting
         int getCleanupDelayForTesting();
+
+        /**
+         * @return The top offset from top toolbar to tab list. Used to adjust the animations for
+         *         tab switcher.
+         */
+        int getTabListTopOffset();
+    }
+
+    /**
+     * Interface to access the Tab Dialog.
+     */
+    interface TabDialogDelegation {
+        /**
+         * Set a hook to receive {@link RectF} with position information about source tab card used
+         * to setup Tab Dialog animation.
+         * @param callback The callback to send rect through.
+         */
+        @VisibleForTesting
+        void setSourceRectCallbackForTesting(Callback<RectF> callback);
     }
 
     /**
      * @return The {@link TabListDelegate}.
      */
     TabListDelegate getTabListDelegate();
+
+    /**
+     * @return The {@link TabDialogDelegation}.
+     */
+    TabDialogDelegation getTabGridDialogDelegation();
 }

@@ -14,7 +14,7 @@ Polymer({
   is: 'internet-detail-dialog',
 
   behaviors: [
-    CrNetworkListenerBehavior,
+    NetworkListenerBehavior,
     CrPolicyNetworkBehaviorMojo,
     I18nBehavior,
   ],
@@ -24,21 +24,15 @@ Polymer({
     guid: String,
 
     /** @private {!chromeos.networkConfig.mojom.ManagedProperties|undefined} */
-    managedProperties_: Object,
+    managedProperties_: {
+      type: Object,
+      observer: 'managedPropertiesChanged_',
+    },
 
     /** @private {?OncMojo.DeviceStateProperties} */
     deviceState_: {
       type: Object,
       value: null,
-    },
-
-    /**
-     * Interface for networkingPrivate calls, passed from internet_page.
-     * @type {NetworkingPrivate}
-     */
-    networkingPrivate: {
-      type: Object,
-      value: chrome.networkingPrivate,
     },
 
     /**
@@ -55,18 +49,19 @@ Polymer({
   },
 
   /**
+   * Set to true once the action button has been focused.
+   * @private {boolean}
+   */
+  didSetFocus_: false,
+
+  /**
    * Set to true to once the initial properties have been received. This
    * prevents setProperties from being called when setting default properties.
    * @private {boolean}
    */
   propertiesReceived_: false,
 
-  /**
-   * This UI will use both the networkingPrivate extension API and the
-   * networkConfig mojo API until we provide all of the required functionality
-   * in networkConfig. TODO(stevenjb): Remove use of networkingPrivate api.
-   * @private {?chromeos.networkConfig.mojom.CrosNetworkConfigRemote}
-   */
+  /** @private {?chromeos.networkConfig.mojom.CrosNetworkConfigRemote} */
   networkConfig_: null,
 
   /** @override */
@@ -105,31 +100,19 @@ Polymer({
     this.getNetworkDetails_();
   },
 
-  /** @override */
-  ready: function() {
-    CrOncStrings = {
-      OncTypeCellular: loadTimeData.getString('OncTypeCellular'),
-      OncTypeEthernet: loadTimeData.getString('OncTypeEthernet'),
-      OncTypeMobile: loadTimeData.getString('OncTypeMobile'),
-      OncTypeTether: loadTimeData.getString('OncTypeTether'),
-      OncTypeVPN: loadTimeData.getString('OncTypeVPN'),
-      OncTypeWiFi: loadTimeData.getString('OncTypeWiFi'),
-      networkListItemConnected:
-          loadTimeData.getString('networkListItemConnected'),
-      networkListItemConnecting:
-          loadTimeData.getString('networkListItemConnecting'),
-      networkListItemConnectingTo:
-          loadTimeData.getString('networkListItemConnectingTo'),
-      networkListItemInitializing:
-          loadTimeData.getString('networkListItemInitializing'),
-      networkListItemScanning:
-          loadTimeData.getString('networkListItemScanning'),
-      networkListItemNotConnected:
-          loadTimeData.getString('networkListItemNotConnected'),
-      networkListItemNoNetwork:
-          loadTimeData.getString('networkListItemNoNetwork'),
-      vpnNameTemplate: loadTimeData.getString('vpnNameTemplate'),
-    };
+  /** @private */
+  managedPropertiesChanged_: function() {
+    assert(this.managedProperties_);
+
+    // Focus the action button once the initial state is set.
+    if (!this.didSetFocus_ &&
+        this.showConnectDisconnect_(this.managedProperties_)) {
+      const button = this.$$('#title .action-button:not([hidden])');
+      if (button) {
+        button.focus();
+        this.didSetFocus_ = true;
+      }
+    }
   },
 
   /** @private */
@@ -210,6 +193,14 @@ Polymer({
    */
   getNetworkState_: function(managedProperties) {
     return OncMojo.managedPropertiesToNetworkState(managedProperties);
+  },
+
+  /**
+   * @return {!chromeos.networkConfig.mojom.ConfigProperties}
+   * @private
+   */
+  getDefaultConfigProperties_: function() {
+    return OncMojo.getDefaultConfigProperties(this.managedProperties_.type);
   },
 
   /**
@@ -300,7 +291,7 @@ Polymer({
   showCellularSim_: function(managedProperties) {
     return managedProperties.type ==
         chromeos.networkConfig.mojom.NetworkType.kCellular &&
-        managedProperties.cellular.family != 'CDMA';
+        managedProperties.typeProperties.cellular.family != 'CDMA';
   },
 
   /**
@@ -311,7 +302,33 @@ Polymer({
   showCellularChooseNetwork_: function(managedProperties) {
     return managedProperties.type ==
         chromeos.networkConfig.mojom.NetworkType.kCellular &&
-        managedProperties.cellular.supportNetworkScan;
+        managedProperties.typeProperties.cellular.supportNetworkScan;
+  },
+
+  /**
+   * @param {!chromeos.networkConfig.mojom.ManagedProperties} managedProperties
+   * @return {boolean}
+   * @private
+   */
+  showForget_: function(managedProperties) {
+    const mojom = chromeos.networkConfig.mojom;
+    if (!managedProperties ||
+        managedProperties.type != mojom.NetworkType.kWiFi) {
+      return false;
+    }
+    return managedProperties.source != mojom.OncSource.kNone &&
+        !this.isPolicySource(managedProperties.source);
+  },
+
+  /** @private */
+  onForgetTap_: function() {
+    this.networkConfig_.forgetNetwork(this.guid).then(response => {
+      if (!response.success) {
+        console.error('Forget network failed for: ' + this.guid);
+      }
+      // A forgotten network no longer has a valid GUID, close the dialog.
+      this.close_();
+    });
   },
 
   /**
@@ -405,21 +422,28 @@ Polymer({
       return;
     }
     if (!this.showConnect_(this.managedProperties_)) {
-      this.networkingPrivate.startDisconnect(this.guid);
+      this.networkConfig_.startDisconnect(this.guid);
       return;
     }
 
+    const mojom = chromeos.networkConfig.mojom;
     const guid = this.managedProperties_.guid;
-    this.networkingPrivate.startConnect(guid, function() {
-      if (chrome.runtime.lastError) {
-        const message = chrome.runtime.lastError.message;
-        if (message == 'connecting' || message == 'connect-canceled' ||
-            message == 'connected' || message == 'Error.InvalidNetworkGuid') {
-          return;
-        }
-        console.error(
-            'Unexpected networkingPrivate.startConnect error: ' + message +
-            ' For: ' + guid);
+    this.networkConfig_.startConnect(this.guid).then(response => {
+      switch (response.result) {
+        case mojom.StartConnectResult.kSuccess:
+          break;
+        case mojom.StartConnectResult.kInvalidState:
+        case mojom.StartConnectResult.kCanceled:
+          // Ignore failures due to in-progress or cancelled connects.
+          break;
+        case mojom.StartConnectResult.kInvalidGuid:
+        case mojom.StartConnectResult.kNotConfigured:
+        case mojom.StartConnectResult.kBlocked:
+        case mojom.StartConnectResult.kUnknown:
+          console.error(
+              'Unexpected startConnect error for: ' + guid + ' Result: ' +
+              response.result.toString() + ' Message: ' + response.message);
+          break;
       }
     });
   },
@@ -432,8 +456,9 @@ Polymer({
     if (!this.propertiesReceived_) {
       return;
     }
+    const config = this.getDefaultConfigProperties_();
     const apn = event.detail;
-    const config = {cellular: {apn: apn}};
+    config.typeConfig.cellular = {apn: apn};
     this.setMojoNetworkProperties_(config);
   },
 
@@ -466,7 +491,9 @@ Polymer({
     if (!this.propertiesReceived_) {
       return;
     }
-    this.setMojoNetworkProperties_({proxySettings: event.detail});
+    const config = this.getDefaultConfigProperties_();
+    config.proxySettings = event.detail;
+    this.setMojoNetworkProperties_(config);
   },
 
   /**

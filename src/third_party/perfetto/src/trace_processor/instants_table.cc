@@ -50,15 +50,15 @@ uint32_t InstantsTable::RowCount() {
 int InstantsTable::BestIndex(const QueryConstraints& qc, BestIndexInfo* info) {
   info->estimated_cost =
       static_cast<uint32_t>(storage_->instants().instant_count());
+  info->sqlite_omit_order_by = true;
 
   // Only the string columns are handled by SQLite
-  info->order_by_consumed = true;
   size_t name_index = schema().ColumnIndexFromName("name");
   size_t ref_type_index = schema().ColumnIndexFromName("ref_type");
   for (size_t i = 0; i < qc.constraints().size(); i++) {
-    info->omit[i] =
-        qc.constraints()[i].iColumn != static_cast<int>(name_index) &&
-        qc.constraints()[i].iColumn != static_cast<int>(ref_type_index);
+    info->sqlite_omit_constraint[i] =
+        qc.constraints()[i].column != static_cast<int>(name_index) &&
+        qc.constraints()[i].column != static_cast<int>(ref_type_index);
   }
 
   return SQLITE_OK;

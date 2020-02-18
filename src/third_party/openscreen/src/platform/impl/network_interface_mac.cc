@@ -17,10 +17,10 @@
 #include <string>
 #include <vector>
 
-#include "platform/api/logging.h"
 #include "platform/api/network_interface.h"
 #include "platform/base/ip_address.h"
 #include "platform/impl/scoped_pipe.h"
+#include "util/logging.h"
 
 namespace openscreen {
 namespace platform {
@@ -64,12 +64,12 @@ uint8_t ToPrefixLength(const uint8_t (&netmask)[N]) {
   return result;
 }
 
-std::vector<InterfaceAddresses> ProcessInterfacesList(ifaddrs* interfaces) {
+std::vector<InterfaceInfo> ProcessInterfacesList(ifaddrs* interfaces) {
   // Socket used for querying interface media types.
   const ScopedFd ioctl_socket(socket(AF_INET6, SOCK_DGRAM, 0));
 
   // Walk the |interfaces| linked list, creating the hierarchial structure.
-  std::vector<InterfaceAddresses> results;
+  std::vector<InterfaceInfo> results;
   for (ifaddrs* cur = interfaces; cur; cur = cur->ifa_next) {
     // Skip: 1) loopback interfaces, 2) interfaces that are down, 3) interfaces
     // with no address configured.
@@ -78,13 +78,13 @@ std::vector<InterfaceAddresses> ProcessInterfacesList(ifaddrs* interfaces) {
       continue;
     }
 
-    // Look-up the InterfaceAddressess entry by name. Auto-create a new one if
-    // none by the current name exists in |results|.
+    // Look-up the InterfaceInfo entry by name. Auto-create a new one if none by
+    // the current name exists in |results|.
     const std::string name = cur->ifa_name;
     const auto it = std::find_if(
         results.begin(), results.end(),
-        [&name](const InterfaceAddresses& a) { return a.info.name == name; });
-    InterfaceAddresses* addresses;
+        [&name](const InterfaceInfo& info) { return info.name == name; });
+    InterfaceInfo* interface;
     if (it == results.end()) {
       // Query for the interface media type and status. If not valid/active,
       // skip further processing. Note that "active" here means the media is
@@ -108,25 +108,26 @@ std::vector<InterfaceAddresses> ProcessInterfacesList(ifaddrs* interfaces) {
         type = InterfaceInfo::Type::kEthernet;
       }
 
-      results.emplace_back();
-      addresses = &(results.back());
       // Start with an unknown hardware ethernet address, which should be
       // updated as the linked list is walked.
       const uint8_t kUnknownHardwareAddress[6] = {0, 0, 0, 0, 0, 0};
-      addresses->info = InterfaceInfo(if_nametoindex(cur->ifa_name),
-                                      kUnknownHardwareAddress, name, type);
+      results.emplace_back(if_nametoindex(cur->ifa_name),
+                           kUnknownHardwareAddress, name, type,
+                           // IPSubnets to be filled-in later.
+                           std::vector<IPSubnet>());
+      interface = &(results.back());
     } else {
-      addresses = &(*it);
+      interface = &(*it);
     }
 
     // Add another address to the list of addresses for the current interface.
     if (cur->ifa_addr->sa_family == AF_LINK) {  // Hardware ethernet address.
       auto* const addr_dl = reinterpret_cast<const sockaddr_dl*>(cur->ifa_addr);
       const caddr_t lladdr = LLADDR(addr_dl);
-      static_assert(sizeof(lladdr) >= sizeof(addresses->info.hardware_address),
+      static_assert(sizeof(lladdr) >= sizeof(interface->hardware_address),
                     "Platform defines too-small link addresses?");
-      memcpy(&addresses->info.hardware_address[0], &lladdr[0],
-             sizeof(addresses->info.hardware_address));
+      memcpy(&interface->hardware_address[0], &lladdr[0],
+             sizeof(interface->hardware_address));
     } else if (cur->ifa_addr->sa_family == AF_INET6) {  // Ipv6 address.
       auto* const addr_in6 =
           reinterpret_cast<const sockaddr_in6*>(cur->ifa_addr);
@@ -140,7 +141,7 @@ std::vector<InterfaceAddresses> ProcessInterfacesList(ifaddrs* interfaces) {
                      ->sin6_addr.s6_addr),
                sizeof(tmp));
       }
-      addresses->addresses.emplace_back(ip, ToPrefixLength(tmp));
+      interface->addresses.emplace_back(ip, ToPrefixLength(tmp));
     } else if (cur->ifa_addr->sa_family == AF_INET) {  // Ipv4 address.
       auto* const addr_in = reinterpret_cast<const sockaddr_in*>(cur->ifa_addr);
       uint8_t tmp[sizeof(addr_in->sin_addr.s_addr)];
@@ -153,7 +154,7 @@ std::vector<InterfaceAddresses> ProcessInterfacesList(ifaddrs* interfaces) {
                      ->sin_addr.s_addr),
                sizeof(tmp));
       }
-      addresses->addresses.emplace_back(ip, ToPrefixLength(tmp));
+      interface->addresses.emplace_back(ip, ToPrefixLength(tmp));
     }
   }
 
@@ -162,13 +163,13 @@ std::vector<InterfaceAddresses> ProcessInterfacesList(ifaddrs* interfaces) {
 
 }  // namespace
 
-std::vector<InterfaceAddresses> GetInterfaceAddresses() {
+std::vector<InterfaceInfo> GetNetworkInterfaces() {
+  std::vector<InterfaceInfo> results;
   ifaddrs* interfaces;
-  if (getifaddrs(&interfaces) != 0) {
-    return std::vector<InterfaceAddresses>();
+  if (getifaddrs(&interfaces) == 0) {
+    results = ProcessInterfacesList(interfaces);
+    freeifaddrs(interfaces);
   }
-  std::vector<InterfaceAddresses> results = ProcessInterfacesList(interfaces);
-  freeifaddrs(interfaces);
   return results;
 }
 

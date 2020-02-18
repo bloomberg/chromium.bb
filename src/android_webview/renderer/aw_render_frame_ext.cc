@@ -9,18 +9,16 @@
 
 #include "android_webview/common/aw_hit_test_data.h"
 #include "android_webview/common/render_view_messages.h"
-#include "base/lazy_instance.h"
+#include "base/no_destructor.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/content/renderer/autofill_agent.h"
 #include "components/autofill/content/renderer/password_autofill_agent.h"
 #include "components/content_capture/common/content_capture_features.h"
 #include "components/content_capture/renderer/content_capture_sender.h"
-#include "content/public/renderer/document_state.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
 #include "third_party/blink/public/platform/web_size.h"
-#include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_element.h"
 #include "third_party/blink/public/web/web_element_collection.h"
 #include "third_party/blink/public/web/web_frame_widget.h"
@@ -147,8 +145,10 @@ void PopulateHitTestData(const GURL& absolute_link_url,
 
 // Registry for RenderFrame => AwRenderFrameExt lookups
 typedef std::map<content::RenderFrame*, AwRenderFrameExt*> FrameExtMap;
-base::LazyInstance<FrameExtMap>::Leaky render_frame_ext_map =
-    LAZY_INSTANCE_INITIALIZER;
+FrameExtMap* GetFrameExtMap() {
+  static base::NoDestructor<FrameExtMap> map;
+  return map.get();
+}
 
 AwRenderFrameExt::AwRenderFrameExt(content::RenderFrame* render_frame)
     : content::RenderFrameObserver(render_frame) {
@@ -162,7 +162,7 @@ AwRenderFrameExt::AwRenderFrameExt(content::RenderFrame* render_frame)
     new content_capture::ContentCaptureSender(render_frame, &registry_);
 
   // Add myself to the RenderFrame => AwRenderFrameExt register.
-  render_frame_ext_map.Get().emplace(render_frame, this);
+  GetFrameExtMap()->emplace(render_frame, this);
 }
 
 AwRenderFrameExt::~AwRenderFrameExt() {
@@ -172,11 +172,11 @@ AwRenderFrameExt::~AwRenderFrameExt() {
   // render_frames in the map and wipe the one(s) that point to this
   // AwRenderFrameExt
 
-  auto& map = render_frame_ext_map.Get();
-  auto it = map.begin();
-  while (it != map.end()) {
+  auto* map = GetFrameExtMap();
+  auto it = map->begin();
+  while (it != map->end()) {
     if (it->second == this) {
-      it = map.erase(it);
+      it = map->erase(it);
     } else {
       ++it;
     }
@@ -186,8 +186,8 @@ AwRenderFrameExt::~AwRenderFrameExt() {
 AwRenderFrameExt* AwRenderFrameExt::FromRenderFrame(
     content::RenderFrame* render_frame) {
   DCHECK(render_frame != nullptr);
-  auto iter = render_frame_ext_map.Get().find(render_frame);
-  DCHECK(render_frame_ext_map.Get().end() != iter)
+  auto iter = GetFrameExtMap()->find(render_frame);
+  DCHECK(GetFrameExtMap()->end() != iter)
       << "Should always exist a render_frame_ext for a render_frame";
   AwRenderFrameExt* render_frame_ext = iter->second;
   return render_frame_ext;
@@ -202,12 +202,6 @@ bool AwRenderFrameExt::OnAssociatedInterfaceRequestForFrame(
 void AwRenderFrameExt::DidCommitProvisionalLoad(
     bool is_same_document_navigation,
     ui::PageTransition transition) {
-  blink::WebLocalFrame* frame = render_frame()->GetWebFrame();
-  content::DocumentState* document_state =
-      content::DocumentState::FromDocumentLoader(frame->GetDocumentLoader());
-  if (document_state->can_load_local_resources())
-    frame->GetDocument().GrantLoadLocalResources();
-
   // Clear the cache when we cross site boundaries in the main frame.
   //
   // We're trying to approximate what happens with a multi-process Chromium,
@@ -215,6 +209,7 @@ void AwRenderFrameExt::DidCommitProvisionalLoad(
   // up, and thus start with a clear cache. Wiring up a signal from browser to
   // renderer code to say "this navigation would have switched processes" would
   // be disruptive, so this clearing of the cache is the compromise.
+  blink::WebLocalFrame* frame = render_frame()->GetWebFrame();
   if (!frame->Parent()) {
     url::Origin new_origin = url::Origin::Create(frame->GetDocument().Url());
     if (!new_origin.IsSameOriginWith(last_origin_)) {

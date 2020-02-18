@@ -15,16 +15,17 @@
 #include "components/network_session_configurator/common/network_switches.h"
 #include "content/browser/browsing_data/browsing_data_test_utils.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/service_worker_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/storage_usage_info.h"
-#include "content/public/browser/system_connector.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/network_service_util.h"
-#include "content/public/common/service_names.mojom.h"
 #include "content/public/test/content_browser_test_utils.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/url_util.h"
 #include "net/test/embedded_test_server/http_response.h"
+#include "services/network/public/mojom/network_service.mojom.h"
 #include "services/network/public/mojom/network_service_test.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -50,14 +51,16 @@ void GetServiceWorkersCallback(
 
 void ServiceWorkerActivationObserver::SignalActivation(
     ServiceWorkerContextWrapper* context,
-    const base::Closure& callback) {
-  new ServiceWorkerActivationObserver(context, callback);
+    base::OnceClosure callback) {
+  new ServiceWorkerActivationObserver(context, std::move(callback));
 }
 
 ServiceWorkerActivationObserver::ServiceWorkerActivationObserver(
     ServiceWorkerContextWrapper* context,
-    const base::Closure& callback)
-    : context_(context), scoped_observer_(this), callback_(callback) {
+    base::OnceClosure callback)
+    : context_(context),
+      scoped_observer_(this),
+      callback_(std::move(callback)) {
   scoped_observer_.Add(context);
 }
 
@@ -69,7 +72,7 @@ void ServiceWorkerActivationObserver::OnVersionStateChanged(
     ServiceWorkerVersion::Status) {
   if (context_->GetLiveVersion(version_id)->status() ==
       ServiceWorkerVersion::ACTIVATED) {
-    callback_.Run();
+    std::move(callback_).Run();
     delete this;
   }
 }
@@ -104,7 +107,7 @@ void AddServiceWorker(const std::string& origin,
       FROM_HERE, ServiceWorkerContext::GetCoreThreadId(),
       base::BindOnce(&ServiceWorkerContextWrapper::RegisterServiceWorker,
                      base::Unretained(service_worker_context), js_url, options,
-                     base::Bind(&AddServiceWorkerCallback)));
+                     base::BindOnce(&AddServiceWorkerCallback)));
 
   // Wait for its activation.
   base::RunLoop run_loop;
@@ -131,8 +134,8 @@ std::vector<StorageUsageInfo> GetServiceWorkers(
       base::BindOnce(
           &ServiceWorkerContextWrapper::GetAllOriginsInfo,
           base::Unretained(service_worker_context),
-          base::Bind(&GetServiceWorkersCallback, run_loop.QuitClosure(),
-                     base::Unretained(&service_workers))));
+          base::BindOnce(&GetServiceWorkersCallback, run_loop.QuitClosure(),
+                         base::Unretained(&service_workers))));
   run_loop.Run();
 
   return service_workers;
@@ -163,9 +166,9 @@ void SetResponseContent(const GURL& url,
 }
 
 void SetUpMockCertVerifier(int32_t default_result) {
-  network::mojom::NetworkServiceTestPtr network_service_test;
-  GetSystemConnector()->BindInterface(mojom::kNetworkServiceName,
-                                      &network_service_test);
+  mojo::Remote<network::mojom::NetworkServiceTest> network_service_test;
+  GetNetworkService()->BindTestInterface(
+      network_service_test.BindNewPipeAndPassReceiver());
 
   base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
   network_service_test->MockCertVerifierSetDefaultResult(

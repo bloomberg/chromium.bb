@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env vpython3
 # Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -38,8 +38,10 @@ class GClientSmokeBase(fake_repos.FakeReposTestBase):
     self.env = os.environ.copy()
     self.env['DEPOT_TOOLS_UPDATE'] = '0'
     self.env['DEPOT_TOOLS_METRICS'] = '0'
+    # Suppress Python 3 warnings and other test undesirables.
+    self.env['GCLIENT_TEST'] = '1'
 
-  def gclient(self, cmd, cwd=None):
+  def gclient(self, cmd, cwd=None, error_ok=False):
     if not cwd:
       cwd = self.root_dir
     if COVERAGE:
@@ -55,6 +57,10 @@ class GClientSmokeBase(fake_repos.FakeReposTestBase):
     (stdout, stderr) = process.communicate()
     logging.debug("XXX: %s\n%s\nXXX" % (' '.join(cmd), stdout))
     logging.debug("YYY: %s\n%s\nYYY" % (' '.join(cmd), stderr))
+
+    if not error_ok:
+      self.assertEqual(0, process.returncode, stderr)
+
     return (stdout.replace('\r\n', '\n'), stderr.replace('\r\n', '\n'),
             process.returncode)
 
@@ -85,11 +91,10 @@ class GClientSmokeBase(fake_repos.FakeReposTestBase):
   def parseGclient(self, cmd, items, expected_stderr='', untangle=False):
     """Parse gclient's output to make it easier to test.
     If untangle is True, tries to sort out the output from parallel checkout."""
-    (stdout, stderr, returncode) = self.gclient(cmd)
+    (stdout, stderr, _) = self.gclient(cmd)
     if untangle:
       stdout = self.untangle(stdout)
     self.checkString(expected_stderr, stderr)
-    self.assertEqual(0, returncode)
     return self.checkBlock(stdout, items)
 
   def splitBlock(self, stdout):
@@ -167,19 +172,18 @@ class GClientSmoke(GClientSmokeBase):
 
   def testNotConfigured(self):
     res = ('', 'Error: client not configured; see \'gclient config\'\n', 1)
-    self.check(res, self.gclient(['diff']))
-    self.check(res, self.gclient(['pack']))
-    self.check(res, self.gclient(['revert']))
-    self.check(res, self.gclient(['revinfo']))
-    self.check(res, self.gclient(['runhooks']))
-    self.check(res, self.gclient(['status']))
-    self.check(res, self.gclient(['sync']))
-    self.check(res, self.gclient(['update']))
+    self.check(res, self.gclient(['diff'], error_ok=True))
+    self.check(res, self.gclient(['pack'], error_ok=True))
+    self.check(res, self.gclient(['revert'], error_ok=True))
+    self.check(res, self.gclient(['revinfo'], error_ok=True))
+    self.check(res, self.gclient(['runhooks'], error_ok=True))
+    self.check(res, self.gclient(['status'], error_ok=True))
+    self.check(res, self.gclient(['sync'], error_ok=True))
+    self.check(res, self.gclient(['update'], error_ok=True))
 
   def testConfig(self):
     # Get any bootstrapping out of the way.
     results = self.gclient(['version'])
-    self.assertEqual(results[2], 0)
 
     p = join(self.root_dir, '.gclient')
     def test(cmd, expected):
@@ -260,7 +264,7 @@ class GClientSmoke(GClientSmokeBase):
     test(['config', '--spec', '["blah blah"]'], '["blah blah"]')
 
     os.remove(p)
-    results = self.gclient(['config', 'foo', 'faa', 'fuu'])
+    results = self.gclient(['config', 'foo', 'faa', 'fuu'], error_ok=True)
     err = ('Usage: gclient.py config [options] [url]\n\n'
            'gclient.py: error: Inconsistent arguments. Use either --spec or one'
            ' or 2 args\n')
@@ -307,6 +311,8 @@ class GClientSmoke(GClientSmokeBase):
 class GClientSmokeGIT(GClientSmokeBase):
   def setUp(self):
     super(GClientSmokeGIT, self).setUp()
+    self.env['PATH'] = (os.path.join(ROOT_DIR, 'testing_support')
+                        + os.pathsep + self.env['PATH'])
     self.enabled = self.FAKE_REPOS.set_up_git()
 
   def testSync(self):
@@ -525,9 +531,8 @@ class GClientSmokeGIT(GClientSmokeBase):
     if not self.enabled:
       return
     self.gclient(['config', self.git_base + 'repo_13', '--name', 'src'])
-    _out, _err, rc = self.gclient(
+    self.gclient(
         ['sync', '-v', '-v', '-v', '--revision', self.githash('repo_13', 2)])
-    self.assertEqual(0, rc)
 
   def testSyncFetchUpdate(self):
     if not self.enabled:
@@ -536,22 +541,19 @@ class GClientSmokeGIT(GClientSmokeBase):
 
     # Sync to an earlier revision first, one that doesn't refer to
     # non-standard refs.
-    _out, _err, rc = self.gclient(
+    self.gclient(
         ['sync', '-v', '-v', '-v', '--revision', self.githash('repo_13', 1)])
-    self.assertEqual(0, rc)
 
     # Make sure update that pulls a non-standard ref works.
-    _out, _err, rc = self.gclient(
+    self.gclient(
         ['sync', '-v', '-v', '-v', '--revision', self.githash('repo_13', 2)])
-    self.assertEqual(0, rc)
 
   def testSyncDirect(self):
     if not self.enabled:
       return
     self.gclient(['config', self.git_base + 'repo_12', '--name', 'src'])
-    _out, _err, rc = self.gclient(
+    self.gclient(
         ['sync', '-v', '-v', '-v', '--revision', 'refs/changes/1212'])
-    self.assertEqual(0, rc)
 
   def testSyncUnmanaged(self):
     if not self.enabled:
@@ -734,19 +736,12 @@ class GClientSmokeGIT(GClientSmokeBase):
         ('running', self.root_dir),                 # pre-deps hook
         ('running', self.root_dir),                 # pre-deps hook (fails)
     ]
-    executable = sys.executable
-    # On Python 3 we always execute hooks with 'python', so we cannot use
-    # sys.executable.
-    if sys.version_info.major == 3:
-      executable = subprocess.check_output(
-          ['python', '-c', 'import sys; print(sys.executable)'])
-      executable = executable.decode('utf-8').strip()
-    expected_stderr = ("Error: Command '%s -c import sys; "
+    expected_stderr = ("Error: Command 'vpython -c import sys; "
                        "sys.exit(1)' returned non-zero exit status 1 in %s\n"
-                       % (executable, self.root_dir))
-    stdout, stderr, retcode = self.gclient(['sync', '--deps', 'mac', '--jobs=1',
-                                            '--revision',
-                                            'src@' + self.githash('repo_5', 3)])
+                       % self.root_dir)
+    stdout, stderr, retcode = self.gclient(
+        ['sync', '--deps', 'mac', '--jobs=1', '--revision',
+         'src@' + self.githash('repo_5', 3)], error_ok=True)
     self.assertEqual(stderr, expected_stderr)
     self.assertEqual(2, retcode)
     self.checkBlock(stdout, expectated_stdout)
@@ -892,15 +887,13 @@ class GClientSmokeGIT(GClientSmokeBase):
           '}',
       ]))
 
-    results = self.gclient([
+    self.gclient([
         'setdep', '-r', 'foo@new_foo', '-r', 'bar@new_bar',
         '--var', 'foo_var=new_val', '--deps-file', fake_deps])
 
     with open(fake_deps) as f:
       contents = f.read().splitlines()
 
-    self.assertEqual('', results[1], results[1])
-    self.assertEqual(0, results[2])
     self.assertEqual([
           'vars = { ',
           '  "foo_var": "new_val",',
@@ -937,15 +930,13 @@ class GClientSmokeGIT(GClientSmokeBase):
           '}]',
       ]))
 
-    results = self.gclient([
+    self.gclient([
         'setdep', '-r', 'foo@new_foo', '-r', 'bar@new_bar',
         '--var', 'foo_var=new_val', '--deps-file', fake_deps])
 
     with open(fake_deps) as f:
       contents = f.read().splitlines()
 
-    self.assertEqual('', results[1], results[1])
-    self.assertEqual(0, results[2])
     self.assertEqual([
           'vars = { ',
           '  "foo_var": "new_val",',
@@ -985,13 +976,11 @@ class GClientSmokeGIT(GClientSmokeBase):
         'getdep', '-r', 'foo', '-r', 'bar','--var', 'foo_var',
         '--deps-file', fake_deps])
 
-    self.assertEqual('', results[1])
     self.assertEqual([
         'foo_val',
         'foo_rev',
         'bar_rev',
     ], results[0].splitlines())
-    self.assertEqual(0, results[2])
 
   def testGetDep_BuiltinVariables(self):
     self.gclient(['config', self.git_base + 'repo_1', '--name', 'src'])
@@ -1020,13 +1009,11 @@ class GClientSmokeGIT(GClientSmokeBase):
         'getdep', '-r', 'foo', '-r', 'bar','--var', 'foo_var',
         '--deps-file', fake_deps])
 
-    self.assertEqual('', results[1])
     self.assertEqual([
         'foo_val',
         'foo_rev',
         'bar_rev',
     ], results[0].splitlines())
-    self.assertEqual(0, results[2])
 
   def testFlatten(self):
     if not self.enabled:
@@ -1050,11 +1037,10 @@ class GClientSmokeGIT(GClientSmokeBase):
         'name': 'src',
         'deps_file': output_deps
     }]
-    results = self.gclient([
+    self.gclient([
         'sync',
         '--spec=solutions=%s' % solutions
     ])
-    self.assertEqual(results[2], 0)
 
     with open(output_deps) as f:
       deps_contents = f.read()
@@ -1473,7 +1459,7 @@ class GClientSmokeGIT(GClientSmokeBase):
 
     self.maxDiff = None
     self.assertEqual([
-        'gclient_gn_args_file = "src/repo2/gclient.args"',
+        'gclient_gn_args_file = "src/repo8/gclient.args"',
         "gclient_gn_args = ['str_var']",
         'deps = {',
         '  # src',
@@ -1977,8 +1963,7 @@ class GClientSmokeCipd(GClientSmokeBase):
 
   def testSyncCipd(self):
     self.gclient(['config', self.git_base + 'repo_14', '--name', 'src'])
-    out, err, rc = self.gclient(['sync'])
-    self.assertEqual(0, rc, out + err)
+    self.gclient(['sync'])
 
     tree = self.mangle_git_tree(('repo_14@1', 'src'))
     tree.update({
@@ -2010,19 +1995,17 @@ class GClientSmokeCipd(GClientSmokeBase):
     self.gclient(['config', self.git_base + 'repo_13', '--name', 'src'])
 
     # repo_13@1 has src/repo12 as a git dependency.
-    out, err, rc = self.gclient(
+    self.gclient(
         ['sync', '-v', '-v', '-v', '--revision', self.githash('repo_13', 1)])
-    self.assertEqual(0, rc, out + err)
 
     tree = self.mangle_git_tree(('repo_13@1', 'src'),
                                 ('repo_12@1', 'src/repo12'))
     self.assertTree(tree)
 
     # repo_13@3 has src/repo12 as a cipd dependency.
-    out, err, rc = self.gclient(
+    self.gclient(
         ['sync', '-v', '-v', '-v', '--revision', self.githash('repo_13', 3),
          '--delete_unversioned_trees'])
-    self.assertEqual(0, rc, out + err)
 
     tree = self.mangle_git_tree(('repo_13@3', 'src'))
     tree.update({
@@ -2042,10 +2025,9 @@ class GClientSmokeCipd(GClientSmokeBase):
     self.gclient(['config', self.git_base + 'repo_13', '--name', 'src'])
 
     # repo_13@3 has src/repo12 as a cipd dependency.
-    out, err, rc = self.gclient(
+    self.gclient(
         ['sync', '-v', '-v', '-v', '--revision', self.githash('repo_13', 3),
          '--delete_unversioned_trees'])
-    self.assertEqual(0, rc, out + err)
 
     tree = self.mangle_git_tree(('repo_13@3', 'src'))
     tree.update({
@@ -2062,9 +2044,8 @@ class GClientSmokeCipd(GClientSmokeBase):
     self.assertTree(tree)
 
     # repo_13@1 has src/repo12 as a git dependency.
-    out, err, rc = self.gclient(
+    self.gclient(
         ['sync', '-v', '-v', '-v', '--revision', self.githash('repo_13', 1)])
-    self.assertEqual(0, rc, out + err)
 
     tree = self.mangle_git_tree(('repo_13@1', 'src'),
                                 ('repo_12@1', 'src/repo12'))

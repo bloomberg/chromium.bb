@@ -6,7 +6,9 @@
 
 #include <utility>
 
-#include "mojo/public/cpp/bindings/associated_interface_ptr.h"
+#include "mojo/public/cpp/bindings/associated_receiver_set.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
+#include "third_party/blink/public/mojom/bluetooth/web_bluetooth.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
@@ -55,7 +57,7 @@ void BluetoothRemoteGATTCharacteristic::ContextDestroyed(ExecutionContext*) {
 }
 
 void BluetoothRemoteGATTCharacteristic::Dispose() {
-  client_bindings_.CloseAllBindings();
+  receivers_.Clear();
 }
 
 const WTF::AtomicString& BluetoothRemoteGATTCharacteristic::InterfaceName()
@@ -189,7 +191,7 @@ ScriptPromise BluetoothRemoteGATTCharacteristic::writeValue(
   // If bytes is more than 512 bytes long (the maximum length of an attribute
   // value, per Long Attribute Values) return a promise rejected with an
   // InvalidModificationError and abort.
-  if (value.ByteLength() > 512) {
+  if (value.ByteLengthAsSizeT() > 512) {
     return ScriptPromise::RejectWithDOMException(
         script_state, MakeGarbageCollected<DOMException>(
                           DOMExceptionCode::kInvalidModificationError,
@@ -198,7 +200,8 @@ ScriptPromise BluetoothRemoteGATTCharacteristic::writeValue(
 
   // Let valueVector be a copy of the bytes held by value.
   Vector<uint8_t> value_vector;
-  value_vector.Append(value.Bytes(), value.ByteLength());
+  value_vector.Append(value.Bytes(),
+                      static_cast<wtf_size_t>(value.ByteLengthAsSizeT()));
 
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
@@ -255,15 +258,15 @@ ScriptPromise BluetoothRemoteGATTCharacteristic::startNotifications(
 
   mojom::blink::WebBluetoothService* service =
       device_->GetBluetooth()->Service();
-  mojom::blink::WebBluetoothCharacteristicClientAssociatedPtrInfo ptr_info;
-  auto request = mojo::MakeRequest(&ptr_info);
+  mojo::PendingAssociatedRemote<mojom::blink::WebBluetoothCharacteristicClient>
+      client;
   // See https://bit.ly/2S0zRAS for task types.
-  client_bindings_.AddBinding(
-      this, std::move(request),
+  receivers_.Add(
+      this, client.InitWithNewEndpointAndPassReceiver(),
       GetExecutionContext()->GetTaskRunner(TaskType::kMiscPlatformAPI));
 
   service->RemoteCharacteristicStartNotifications(
-      characteristic_->instance_id, std::move(ptr_info),
+      characteristic_->instance_id, std::move(client),
       WTF::Bind(&BluetoothRemoteGATTCharacteristic::NotificationsCallback,
                 WrapPersistent(this), WrapPersistent(resolver)));
 

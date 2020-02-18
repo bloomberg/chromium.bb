@@ -190,32 +190,33 @@ class LocalDeviceInstrumentationTestRun(
 
         steps.append(use_webview_provider)
 
-      def install_helper(apk, permissions):
+      def install_helper(apk, modules=None, fake_modules=None,
+                         permissions=None):
+
         @instrumentation_tracing.no_tracing
-        @trace_event.traced("apk_path")
-        def install_helper_internal(d, apk_path=apk.path):
+        @trace_event.traced
+        def install_helper_internal(d, apk_path=None):
           # pylint: disable=unused-argument
-          d.Install(apk, permissions=permissions)
+          logging.info('Start Installing %s', apk.path)
+          d.Install(
+              apk,
+              modules=modules,
+              fake_modules=fake_modules,
+              permissions=permissions)
+          logging.info('Finished Installing %s', apk.path)
+
         return install_helper_internal
 
       def incremental_install_helper(apk, json_path, permissions):
-        @trace_event.traced("apk_path")
-        def incremental_install_helper_internal(d, apk_path=apk.path):
-          # pylint: disable=unused-argument
-          installer.Install(d, json_path, apk=apk, permissions=permissions)
-        return incremental_install_helper_internal
 
-      if self._test_instance.apk_under_test:
-        permissions = self._test_instance.apk_under_test.GetPermissions()
-        if self._test_instance.apk_under_test_incremental_install_json:
-          steps.append(incremental_install_helper(
-                           self._test_instance.apk_under_test,
-                           self._test_instance.
-                               apk_under_test_incremental_install_json,
-                           permissions))
-        else:
-          steps.append(install_helper(self._test_instance.apk_under_test,
-                                      permissions))
+        @trace_event.traced
+        def incremental_install_helper_internal(d, apk_path=None):
+          # pylint: disable=unused-argument
+          logging.info('Start Incremental Installing %s', apk.path)
+          installer.Install(d, json_path, apk=apk, permissions=permissions)
+          logging.info('Finished Incremental Installing %s', apk.path)
+
+        return incremental_install_helper_internal
 
       permissions = self._test_instance.test_apk.GetPermissions()
       if self._test_instance.test_apk_incremental_install_json:
@@ -225,11 +226,29 @@ class LocalDeviceInstrumentationTestRun(
                              test_apk_incremental_install_json,
                          permissions))
       else:
-        steps.append(install_helper(self._test_instance.test_apk,
-                                    permissions))
+        steps.append(
+            install_helper(
+                self._test_instance.test_apk, permissions=permissions))
 
-      steps.extend(install_helper(apk, None)
-                   for apk in self._test_instance.additional_apks)
+      steps.extend(
+          install_helper(apk) for apk in self._test_instance.additional_apks)
+
+      # The apk under test needs to be installed last since installing other
+      # apks after will unintentionally clear the fake module directory.
+      # TODO(wnwen): Make this more robust, fix crbug.com/1010954.
+      if self._test_instance.apk_under_test:
+        permissions = self._test_instance.apk_under_test.GetPermissions()
+        if self._test_instance.apk_under_test_incremental_install_json:
+          steps.append(
+              incremental_install_helper(
+                  self._test_instance.apk_under_test,
+                  self._test_instance.apk_under_test_incremental_install_json,
+                  permissions))
+        else:
+          steps.append(
+              install_helper(self._test_instance.apk_under_test,
+                             self._test_instance.modules,
+                             self._test_instance.fake_modules, permissions))
 
       @trace_event.traced
       def set_debug_app(dev):
@@ -282,9 +301,10 @@ class LocalDeviceInstrumentationTestRun(
         host_device_tuples_substituted = [
             (h, local_device_test_run.SubstituteDeviceRoot(d, device_root))
             for h, d in host_device_tuples]
-        logging.info('instrumentation data deps:')
+        logging.info('Pushing data dependencies.')
         for h, d in host_device_tuples_substituted:
-          logging.info('%r -> %r', h, d)
+          logging.debug('  %r -> %r', h, d)
+        local_device_environment.place_nomedia_on_device(dev, device_root)
         dev.PushChangedFiles(host_device_tuples_substituted,
                              delete_device_stale=True)
         if not host_device_tuples_substituted:
@@ -541,6 +561,7 @@ class LocalDeviceInstrumentationTestRun(
     with ui_capture_dir:
       with self._env.output_manager.ArchivedTempfile(
           stream_name, 'logcat') as logcat_file:
+        logmon = None
         try:
           with logcat_monitor.LogcatMonitor(
               device.adb,
@@ -555,7 +576,8 @@ class LocalDeviceInstrumentationTestRun(
                 output = device.StartInstrumentation(
                     target, raw=True, extras=extras, timeout=timeout, retries=0)
         finally:
-          logmon.Close()
+          if logmon:
+            logmon.Close()
 
       if logcat_file.Link():
         logging.info('Logcat saved to %s', logcat_file.Link())
@@ -589,13 +611,12 @@ class LocalDeviceInstrumentationTestRun(
       def handle_coverage_data():
         if self._test_instance.coverage_directory:
           try:
+            if not os.path.exists(self._test_instance.coverage_directory):
+              os.makedirs(self._test_instance.coverage_directory)
             device.PullFile(coverage_device_file,
                             self._test_instance.coverage_directory)
-            device.RunShellCommand(
-                'rm -f %s' % posixpath.join(coverage_directory, '*'),
-                check_return=True,
-                shell=True)
-          except base_error.BaseError as e:
+            device.RemovePath(coverage_device_file, True)
+          except (OSError, base_error.BaseError) as e:
             logging.warning('Failed to handle coverage data after tests: %s', e)
 
       def handle_render_test_data():

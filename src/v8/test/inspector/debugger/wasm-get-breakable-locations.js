@@ -16,12 +16,12 @@ var func_idx = builder.addFunction('helper', kSig_v_v)
     .addBody([
         kExprNop,
         kExprI32Const, 12,
-        kExprSetLocal, 0,
+        kExprLocalSet, 0,
     ]).index;
 
 builder.addFunction('main', kSig_v_i)
     .addBody([
-        kExprGetLocal, 0,
+        kExprLocalGet, 0,
         kExprIf, kWasmStmt,
           kExprBlock, kWasmStmt,
             kExprCallFunction, func_idx,
@@ -76,8 +76,12 @@ function handleScriptParsed(messageObject) {
   ++numScripts;
 
   if (url.startsWith('wasm://')) {
-    InspectorTest.log('This is a wasm script (nr ' + wasmScripts.length + ').');
-    wasmScripts.push(scriptId);
+    // Only want the fake (function specific) scripts, not the one for the full
+    // module.
+    if (url.split('/').length == 5) {
+      InspectorTest.log('This is a wasm script (nr ' + wasmScripts.length + ').');
+      wasmScripts.push(scriptId);
+    }
   }
 }
 

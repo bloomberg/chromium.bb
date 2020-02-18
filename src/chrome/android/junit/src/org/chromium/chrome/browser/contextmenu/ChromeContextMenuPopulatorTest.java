@@ -25,15 +25,17 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.base.metrics.test.DisableHistogramsRule;
 import org.chromium.base.test.BaseRobolectricTestRunner;
-import org.chromium.blink_public.web.WebContextMenuMediaType;
+import org.chromium.blink_public.common.ContextMenuDataMediaType;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.contextmenu.ChromeContextMenuPopulator.ContextMenuMode;
 import org.chromium.chrome.browser.contextmenu.ChromeContextMenuPopulatorTest.ShadowUrlUtilities;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
+import org.chromium.chrome.browser.share.ShareDelegate;
+;
 import org.chromium.chrome.browser.util.UrlUtilities;
-import org.chromium.chrome.test.support.DisableHistogramsRule;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.search_engines.TemplateUrlService;
 import org.chromium.ui.base.MenuSourceType;
@@ -64,11 +66,13 @@ public class ChromeContextMenuPopulatorTest {
     private ContextMenuItemDelegate mItemDelegate;
     @Mock
     private TemplateUrlService mTemplateUrlService;
+    @Mock
+    private ShareDelegate mShareDelegate;
 
     private ChromeContextMenuPopulator mPopulator;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         MockitoAnnotations.initMocks(this);
 
         when(mItemDelegate.getPageUrl()).thenReturn(PAGE_URL);
@@ -89,7 +93,8 @@ public class ChromeContextMenuPopulatorTest {
     }
 
     private void initializePopulator(@ContextMenuMode int mode) {
-        mPopulator = Mockito.spy(new ChromeContextMenuPopulator(mItemDelegate, mode));
+        mPopulator = Mockito.spy(
+                new ChromeContextMenuPopulator(mItemDelegate, () -> mShareDelegate, mode));
         doReturn(mTemplateUrlService).when(mPopulator).getTemplateUrlService();
     }
 
@@ -238,7 +243,7 @@ public class ChromeContextMenuPopulatorTest {
     @Test
     public void testVideoLink() {
         FirstRunStatus.setFirstRunFlowComplete(false);
-        ContextMenuParams contextMenuParams = new ContextMenuParams(WebContextMenuMediaType.VIDEO,
+        ContextMenuParams contextMenuParams = new ContextMenuParams(ContextMenuDataMediaType.VIDEO,
                 PAGE_URL, "http://www.blah.com/I_love_mouse_video.avi", "VIDEO!", "", "", "", null,
                 true, 0, 0, MenuSourceType.MENU_SOURCE_TOUCH);
 
@@ -277,7 +282,7 @@ public class ChromeContextMenuPopulatorTest {
     @Test
     public void testImageHiFi() {
         FirstRunStatus.setFirstRunFlowComplete(false);
-        ContextMenuParams contextMenuParams = new ContextMenuParams(WebContextMenuMediaType.IMAGE,
+        ContextMenuParams contextMenuParams = new ContextMenuParams(ContextMenuDataMediaType.IMAGE,
                 PAGE_URL, "", "", "", IMAGE_SRC_URL, IMAGE_TITLE_TEXT, null, true, 0, 0,
                 MenuSourceType.MENU_SOURCE_TOUCH);
 
@@ -311,7 +316,7 @@ public class ChromeContextMenuPopulatorTest {
     @Test
     public void testHttpLinkWithImageHiFi() {
         FirstRunStatus.setFirstRunFlowComplete(false);
-        ContextMenuParams contextMenuParams = new ContextMenuParams(WebContextMenuMediaType.IMAGE,
+        ContextMenuParams contextMenuParams = new ContextMenuParams(ContextMenuDataMediaType.IMAGE,
                 PAGE_URL, LINK_URL, LINK_TEXT, "", IMAGE_SRC_URL, IMAGE_TITLE_TEXT, null, true, 0,
                 0, MenuSourceType.MENU_SOURCE_TOUCH);
 

@@ -17,6 +17,7 @@
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_util.h"
+#include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"  // nogncheck
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
@@ -45,6 +46,7 @@ void AddInternetStrings(content::WebUIDataSource* html_source) {
       {"close", IDS_CLOSE},
       {"networkButtonConnect", IDS_SETTINGS_INTERNET_BUTTON_CONNECT},
       {"networkButtonDisconnect", IDS_SETTINGS_INTERNET_BUTTON_DISCONNECT},
+      {"networkButtonForget", IDS_SETTINGS_INTERNET_BUTTON_FORGET},
       {"networkIPAddress", IDS_SETTINGS_INTERNET_NETWORK_IP_ADDRESS},
       {"networkSectionNetwork", IDS_SETTINGS_INTERNET_NETWORK_SECTION_NETWORK},
       {"networkSectionProxy", IDS_SETTINGS_INTERNET_NETWORK_SECTION_PROXY},
@@ -160,8 +162,9 @@ InternetDetailDialogUI::InternetDetailDialogUI(content::WebUI* web_ui)
 InternetDetailDialogUI::~InternetDetailDialogUI() {}
 
 void InternetDetailDialogUI::BindCrosNetworkConfig(
-    chromeos::network_config::mojom::CrosNetworkConfigRequest request) {
-  ash::GetNetworkConfigService(std::move(request));
+    mojo::PendingReceiver<chromeos::network_config::mojom::CrosNetworkConfig>
+        receiver) {
+  ash::GetNetworkConfigService(std::move(receiver));
 }
 
 }  // namespace chromeos

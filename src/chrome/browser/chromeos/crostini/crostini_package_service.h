@@ -21,7 +21,7 @@
 #include "chrome/browser/chromeos/crostini/crostini_registry_service.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "storage/browser/fileapi/file_system_url.h"
+#include "storage/browser/file_system/file_system_url.h"
 
 namespace crostini {
 
@@ -58,19 +58,16 @@ class CrostiniPackageService : public KeyedService,
       CrostiniManager::GetLinuxPackageInfoCallback callback);
 
   // LinuxPackageOperationProgressObserver:
-  void OnInstallLinuxPackageProgress(const std::string& vm_name,
-                                     const std::string& container_name,
+  void OnInstallLinuxPackageProgress(const ContainerId& container_id,
                                      InstallLinuxPackageProgressStatus status,
                                      int progress_percent) override;
 
-  void OnUninstallPackageProgress(const std::string& vm_name,
-                                  const std::string& container_name,
+  void OnUninstallPackageProgress(const ContainerId& container_id,
                                   UninstallPackageProgressStatus status,
                                   int progress_percent) override;
 
   // PendingAppListUpdatesObserver:
-  void OnPendingAppListUpdates(const std::string& vm_name,
-                               const std::string& container_name,
+  void OnPendingAppListUpdates(const ContainerId& container_id,
                                int count) override;
 
   // VmShutdownObserver

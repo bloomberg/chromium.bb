@@ -10,6 +10,7 @@
 
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
 #include "ui/display/display.h"
 #include "ui/gfx/transform.h"
@@ -44,6 +45,9 @@ class ArCore {
   // when the camera image was updated successfully.
   virtual mojom::VRPosePtr Update(bool* camera_updated) = 0;
 
+  // Return latest estimate for the floor height.
+  virtual float GetEstimatedFloorHeight() = 0;
+
   // Returns information about all planes detected in the current frame.
   virtual mojom::XRPlaneDetectionDataPtr GetDetectedPlanesData() = 0;
 
@@ -53,6 +57,42 @@ class ArCore {
   virtual bool RequestHitTest(
       const mojom::XRRayPtr& ray,
       std::vector<mojom::XRHitResultPtr>* hit_results) = 0;
+
+  // Subscribes to hit test. Returns base::nullopt if subscription failed.
+  // This variant will subscribe for a hit test to a specific native origin
+  // specified in |native_origin_information|. The native origin will be used
+  // along with passed in ray to compute the hit test results as of latest
+  // frame. The passed in |entity_types| will be used to filter out the results
+  // that do not match anything in the vector.
+  virtual base::Optional<uint64_t> SubscribeToHitTest(
+      mojom::XRNativeOriginInformationPtr native_origin_information,
+      const std::vector<mojom::EntityTypeForHitTest>& entity_types,
+      mojom::XRRayPtr ray) = 0;
+  // Subscribes to hit test for transient input sources. Returns base::nullopt
+  // if subscription failed. This variant will subscribe for a hit test to
+  // transient input sources that match the |profile_name|. The passed in ray
+  // will be used to compute the hit test results as of latest frame (relative
+  // to the location of transient input source). The passed in |entity_types|
+  // will be used to filter out the results that do not match anything in the
+  // vector.
+  virtual base::Optional<uint64_t> SubscribeToHitTestForTransientInput(
+      const std::string& profile_name,
+      const std::vector<mojom::EntityTypeForHitTest>& entity_types,
+      mojom::XRRayPtr ray) = 0;
+
+  virtual mojom::XRHitTestSubscriptionResultsDataPtr
+  GetHitTestSubscriptionResults(
+      const gfx::Transform& mojo_from_viewer,
+      const base::Optional<std::vector<mojom::XRInputSourceStatePtr>>&
+          maybe_input_state) = 0;
+
+  virtual void UnsubscribeFromHitTest(uint64_t subscription_id) = 0;
+
+  virtual base::Optional<uint64_t> CreateAnchor(const mojom::PosePtr& pose) = 0;
+  virtual base::Optional<uint64_t> CreateAnchor(const mojom::PosePtr& pose,
+                                                uint64_t plane_id) = 0;
+
+  virtual void DetachAnchor(uint64_t anchor_id) = 0;
 
   virtual void Pause() = 0;
   virtual void Resume() = 0;

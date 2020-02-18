@@ -16,18 +16,20 @@
 #include "components/spellcheck/common/spellcheck_features.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/test/mock_render_process_host.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 class SpellCheckHostChromeImplWinBrowserTest : public InProcessBrowserTest {
  public:
+  SpellCheckHostChromeImplWinBrowserTest() {
+    feature_list_.InitAndEnableFeature(spellcheck::kWinUseBrowserSpellChecker);
+  }
+
   void SetUpOnMainThread() override {
     content::BrowserContext* context = browser()->profile();
     renderer_.reset(new content::MockRenderProcessHost(context));
 
-    base::test::ScopedFeatureList feature_list;
-    feature_list.InitAndEnableFeature(spellcheck::kWinUseBrowserSpellChecker);
-
-    SpellCheckHostChromeImpl::Create(renderer_->GetID(),
-                                     mojo::MakeRequest(&spell_check_host_));
+    SpellCheckHostChromeImpl::Create(
+        renderer_->GetID(), spell_check_host_.BindNewPipeAndPassReceiver());
   }
 
   void TearDownOnMainThread() override { renderer_.reset(); }
@@ -57,8 +59,9 @@ class SpellCheckHostChromeImplWinBrowserTest : public InProcessBrowserTest {
   }
 
  protected:
+  base::test::ScopedFeatureList feature_list_;
   std::unique_ptr<content::MockRenderProcessHost> renderer_;
-  spellcheck::mojom::SpellCheckHostPtr spell_check_host_;
+  mojo::Remote<spellcheck::mojom::SpellCheckHost> spell_check_host_;
 
   bool received_result_ = false;
   std::vector<SpellCheckResult> result_;
@@ -70,9 +73,6 @@ IN_PROC_BROWSER_TEST_F(SpellCheckHostChromeImplWinBrowserTest,
                        SpellCheckReturnMessage) {
   if (base::win::GetVersion() < base::win::Version::WIN8)
     return;
-
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(spellcheck::kWinUseBrowserSpellChecker);
 
   spellcheck_platform::SetLanguage(
       "en-US", base::BindOnce(&SpellCheckHostChromeImplWinBrowserTest::

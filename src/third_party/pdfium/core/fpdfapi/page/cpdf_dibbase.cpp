@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <memory>
+#include <numeric>
 #include <utility>
 #include <vector>
 
@@ -82,6 +83,16 @@ bool AreColorIndicesOutOfBounds(const uint8_t* indices,
   return false;
 }
 
+int CalculateBitsPerPixel(uint32_t bpc, uint32_t comps) {
+  // TODO(thestig): Can |bpp| be 0 here? Add an ASSERT() or handle it?
+  uint32_t bpp = bpc * comps;
+  if (bpp == 1)
+    return 1;
+  if (bpp <= 8)
+    return 8;
+  return 24;
+}
+
 CJPX_Decoder::ColorSpaceOption ColorSpaceOptionFromColorSpace(
     CPDF_ColorSpace* pCS) {
   if (!pCS)
@@ -134,18 +145,11 @@ bool CPDF_DIBBase::Load(CPDF_Document* pDoc, const CPDF_Stream* pStream) {
   if (CreateDecoder() == LoadState::kFail)
     return false;
 
-  if (m_bImageMask) {
-    m_bpp = 1;
-    m_bpc = 1;
-    m_nComponents = 1;
-    m_AlphaFlag = 1;
-  } else if (m_bpc * m_nComponents == 1) {
-    m_bpp = 1;
-  } else if (m_bpc * m_nComponents <= 8) {
-    m_bpp = 8;
-  } else {
-    m_bpp = 24;
-  }
+  if (m_bImageMask)
+    SetMaskProperties();
+  else
+    m_bpp = CalculateBitsPerPixel(m_bpc, m_nComponents);
+
   FX_SAFE_UINT32 pitch = fxcodec::CalculatePitch32(m_bpp, m_Width);
   if (!pitch.IsValid())
     return false;
@@ -167,20 +171,14 @@ bool CPDF_DIBBase::Load(CPDF_Document* pDoc, const CPDF_Stream* pStream) {
 
 bool CPDF_DIBBase::ContinueToLoadMask() {
   if (m_bImageMask) {
-    m_bpp = 1;
-    m_bpc = 1;
-    m_nComponents = 1;
-    m_AlphaFlag = 1;
-  } else if (m_bpc * m_nComponents == 1) {
-    m_bpp = 1;
-  } else if (m_bpc * m_nComponents <= 8) {
-    m_bpp = 8;
+    SetMaskProperties();
   } else {
-    m_bpp = 24;
+    if (!m_bpc || !m_nComponents)
+      return false;
+
+    m_bpp = CalculateBitsPerPixel(m_bpc, m_nComponents);
   }
-  if (!m_bpc || !m_nComponents) {
-    return false;
-  }
+
   FX_SAFE_UINT32 pitch = fxcodec::CalculatePitch32(m_bpp, m_Width);
   if (!pitch.IsValid())
     return false;
@@ -634,13 +632,11 @@ RetainPtr<CFX_DIBitmap> CPDF_DIBBase::LoadJpxBitmap() {
     return nullptr;
 
   pCachedBitmap->Clear(0xFFFFFFFF);
+  // Fill |output_offsets| with 0, 1, ... N.
   std::vector<uint8_t> output_offsets(components);
-  for (uint32_t i = 0; i < components; ++i)
-    output_offsets[i] = i;
-  if (bSwapRGB) {
-    output_offsets[0] = 2;
-    output_offsets[2] = 0;
-  }
+  std::iota(output_offsets.begin(), output_offsets.end(), 0);
+  if (bSwapRGB)
+    std::swap(output_offsets[0], output_offsets[2]);
   if (!decoder->Decode(pCachedBitmap->GetBuffer(), pCachedBitmap->GetPitch(),
                        output_offsets)) {
     return nullptr;
@@ -671,6 +667,7 @@ CPDF_DIBBase::LoadState CPDF_DIBBase::StartLoadMask() {
 
   const CPDF_Array* pMatte = m_pMaskStream->GetDict()->GetArrayFor("Matte");
   if (pMatte && m_pColorSpace && m_Family != PDFCS_PATTERN &&
+      pMatte->size() == m_nComponents &&
       m_pColorSpace->CountComponents() <= m_nComponents) {
     std::vector<float> colors =
         ReadArrayElementsToVector(pMatte, m_nComponents);
@@ -679,8 +676,8 @@ CPDF_DIBBase::LoadState CPDF_DIBBase::StartLoadMask() {
     float G;
     float B;
     m_pColorSpace->GetRGB(colors.data(), &R, &G, &B);
-    m_MatteColor = ArgbEncode(0, FXSYS_round(R * 255), FXSYS_round(G * 255),
-                              FXSYS_round(B * 255));
+    m_MatteColor = ArgbEncode(0, FXSYS_roundf(R * 255), FXSYS_roundf(G * 255),
+                              FXSYS_roundf(B * 255));
   }
   return StartLoadMaskDIB();
 }
@@ -760,14 +757,14 @@ void CPDF_DIBBase::LoadPalette() {
     float B = 0.0f;
     m_pColorSpace->GetRGB(color_values, &R, &G, &B);
 
-    FX_ARGB argb0 = ArgbEncode(255, FXSYS_round(R * 255), FXSYS_round(G * 255),
-                               FXSYS_round(B * 255));
+    FX_ARGB argb0 = ArgbEncode(255, FXSYS_roundf(R * 255),
+                               FXSYS_roundf(G * 255), FXSYS_roundf(B * 255));
     color_values[0] += m_CompData[0].m_DecodeStep;
     color_values[1] += m_CompData[0].m_DecodeStep;
     color_values[2] += m_CompData[0].m_DecodeStep;
     m_pColorSpace->GetRGB(color_values, &R, &G, &B);
-    FX_ARGB argb1 = ArgbEncode(255, FXSYS_round(R * 255), FXSYS_round(G * 255),
-                               FXSYS_round(B * 255));
+    FX_ARGB argb1 = ArgbEncode(255, FXSYS_roundf(R * 255),
+                               FXSYS_roundf(G * 255), FXSYS_roundf(B * 255));
     if (argb0 != 0xFF000000 || argb1 != 0xFFFFFFFF) {
       SetPaletteArgb(0, argb0);
       SetPaletteArgb(1, argb1);
@@ -803,8 +800,8 @@ void CPDF_DIBBase::LoadPalette() {
     } else {
       m_pColorSpace->GetRGB(color_values.data(), &R, &G, &B);
     }
-    SetPaletteArgb(i, ArgbEncode(255, FXSYS_round(R * 255),
-                                 FXSYS_round(G * 255), FXSYS_round(B * 255)));
+    SetPaletteArgb(i, ArgbEncode(255, FXSYS_roundf(R * 255),
+                                 FXSYS_roundf(G * 255), FXSYS_roundf(B * 255)));
   }
 }
 
@@ -1365,4 +1362,11 @@ void CPDF_DIBBase::DownSampleScanline32Bit(int orig_Bpp,
 bool CPDF_DIBBase::TransMask() const {
   return m_bLoadMask && m_GroupFamily == PDFCS_DEVICECMYK &&
          m_Family == PDFCS_DEVICECMYK;
+}
+
+void CPDF_DIBBase::SetMaskProperties() {
+  m_bpp = 1;
+  m_bpc = 1;
+  m_nComponents = 1;
+  m_AlphaFlag = 1;
 }

@@ -276,10 +276,6 @@ TraceConfig BackgroundTracingConfigImpl::GetTraceConfig() const {
     chrome_config.SetProcessFilterConfig(process_config);
   }
 
-  if (requires_anonymized_data_) {
-    chrome_config.EnableArgumentFilter();
-  }
-
   chrome_config.SetTraceBufferSizeInKb(GetMaximumTraceBufferSizeKb());
 
 #if defined(OS_ANDROID)
@@ -523,13 +519,14 @@ TraceConfig BackgroundTracingConfigImpl::GetConfigForCategoryPreset(
       return TraceConfig(
           "benchmark,toplevel,ipc,base,ServiceWorker,CacheStorage,Blob,"
           "IndexedDB,loading,mojom,navigation,renderer,blink,blink_gc,blink."
-          "user_timing,blink.worker,fonts,disabled-by-default-cpu_profiler,"
-          "disabled-by-default-network",
+          "user_timing,blink.worker,fonts,startup,disabled-by-default-cpu_"
+          "profiler,disabled-by-default-network",
           record_mode);
     case BackgroundTracingConfigImpl::CategoryPreset::BENCHMARK_POWER:
       return TraceConfig(
           "benchmark,toplevel,ipc,base,audio,compositor,gpu,media,memory,midi,"
-          "native,omnibox,renderer,skia,task_scheduler,ui,v8,views,webaudio",
+          "native,omnibox,renderer,skia,task_scheduler,ui,v8,views,webaudio,"
+          "disabled-by-default-cpu_profiler",
           record_mode);
     case BackgroundTracingConfigImpl::CategoryPreset::BLINK_STYLE:
       return TraceConfig("blink_style", record_mode);

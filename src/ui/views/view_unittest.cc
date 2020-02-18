@@ -57,7 +57,6 @@
 #include "ui/views/views_features.h"
 #include "ui/views/widget/native_widget.h"
 #include "ui/views/widget/root_view.h"
-#include "ui/views/window/dialog_client_view.h"
 #include "ui/views/window/dialog_delegate.h"
 
 using base::ASCIIToUTF16;
@@ -2191,7 +2190,7 @@ TEST_F(ViewTest, HandleAccelerator) {
   Widget* widget = test_widget.widget();
   FocusManager* focus_manager = widget->GetFocusManager();
 
-#if defined(USE_AURA) && !defined(OS_CHROMEOS)
+#if BUILDFLAG(ENABLE_DESKTOP_AURA)
   // When a non-child view is not active, it shouldn't handle accelerators.
   EXPECT_FALSE(widget->IsActive());
   EXPECT_FALSE(focus_manager->ProcessAccelerator(return_accelerator));
@@ -2233,7 +2232,7 @@ TEST_F(ViewTest, HandleAccelerator) {
   EXPECT_EQ(1, child_view->accelerator_count_map_[return_accelerator]);
   EXPECT_EQ(0, view->accelerator_count_map_[return_accelerator]);
 
-#if defined(USE_AURA) && !defined(OS_CHROMEOS)
+#if BUILDFLAG(ENABLE_DESKTOP_AURA)
   // When a child view is not in focus, its parent should handle accelerators.
   child_view->accelerator_count_map_[return_accelerator] = 0;
   view->accelerator_count_map_[return_accelerator] = 0;

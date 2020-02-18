@@ -4,15 +4,14 @@
 
 #include "chrome/browser/resource_coordinator/resource_coordinator_parts.h"
 
-#include "chrome/browser/performance_manager/performance_manager.h"
+#include "components/performance_manager/performance_manager_impl.h"
 
 namespace resource_coordinator {
 
 ResourceCoordinatorParts::ResourceCoordinatorParts()
 #if !defined(OS_ANDROID)
     : tab_manager_(&tab_load_tracker_),
-      tab_lifecycle_unit_source_(tab_manager_.intervention_policy_database(),
-                                 tab_manager_.usage_clock())
+      tab_lifecycle_unit_source_(tab_manager_.usage_clock())
 #endif
 {
 #if !defined(OS_ANDROID)

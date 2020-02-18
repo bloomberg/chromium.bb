@@ -4,7 +4,10 @@
 
 #include "third_party/blink/renderer/core/paint/compositing/compositing_reason_finder.h"
 
+#include "base/test/scoped_feature_list.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
 #include "third_party/blink/renderer/core/layout/layout_block.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/scroll/scroll_types.h"
@@ -27,11 +30,6 @@ class CompositingReasonFinderTest : public RenderingTest {
   }
 };
 
-class CompositingReasonFinderTestPlatform : public TestingPlatformSupport {
- public:
-  bool IsLowEndDevice() override { return true; }
-};
-
 TEST_F(CompositingReasonFinderTest, CompositingReasonDependencies) {
   EXPECT_FALSE(CompositingReason::kComboAllDirectNonStyleDeterminedReasons &
                (~CompositingReason::kComboAllDirectReasons));
@@ -42,9 +40,19 @@ TEST_F(CompositingReasonFinderTest, CompositingReasonDependencies) {
                CompositingReason::kComboAllStyleDeterminedReasons);
 }
 
-TEST_F(CompositingReasonFinderTest, DontPromoteTrivial3DLowEnd) {
-  ScopedTestingPlatformSupport<CompositingReasonFinderTestPlatform> platform;
+class CompositingReasonFinderTestWithDoNotCompositeTrivial3D
+    : public CompositingReasonFinderTest {
+ public:
+  CompositingReasonFinderTestWithDoNotCompositeTrivial3D() {
+    scoped_feature_list_.InitAndEnableFeature(
+        blink::features::kDoNotCompositeTrivial3D);
+  }
 
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+TEST_F(CompositingReasonFinderTestWithDoNotCompositeTrivial3D,
+       DontPromoteTrivial3D) {
   SetBodyInnerHTML(R"HTML(
     <div id='target'
       style='width: 100px; height: 100px; transform: translateZ(0)'></div>
@@ -56,21 +64,18 @@ TEST_F(CompositingReasonFinderTest, DontPromoteTrivial3DLowEnd) {
   EXPECT_EQ(kNotComposited, paint_layer->GetCompositingState());
 }
 
-TEST_F(CompositingReasonFinderTest, PromoteNonTrivial3DLowEnd) {
-  ScopedTestingPlatformSupport<CompositingReasonFinderTestPlatform> platform;
+class CompositingReasonFinderTestWithCompositeTrivial3D
+    : public CompositingReasonFinderTest {
+ public:
+  CompositingReasonFinderTestWithCompositeTrivial3D() {
+    scoped_feature_list_.InitAndDisableFeature(
+        blink::features::kDoNotCompositeTrivial3D);
+  }
 
-  SetBodyInnerHTML(R"HTML(
-    <div id='target'
-      style='width: 100px; height: 100px; transform: translateZ(1px)'></div>
-  )HTML");
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
 
-  Element* target = GetDocument().getElementById("target");
-  PaintLayer* paint_layer =
-      ToLayoutBoxModelObject(target->GetLayoutObject())->Layer();
-  EXPECT_EQ(kPaintsIntoOwnBacking, paint_layer->GetCompositingState());
-}
-
-TEST_F(CompositingReasonFinderTest, PromoteTrivial3DByDefault) {
+TEST_F(CompositingReasonFinderTestWithCompositeTrivial3D, PromoteTrivial3D) {
   SetBodyInnerHTML(R"HTML(
     <div id='target'
       style='width: 100px; height: 100px; transform: translateZ(0)'></div>
@@ -82,7 +87,7 @@ TEST_F(CompositingReasonFinderTest, PromoteTrivial3DByDefault) {
   EXPECT_EQ(kPaintsIntoOwnBacking, paint_layer->GetCompositingState());
 }
 
-TEST_F(CompositingReasonFinderTest, PromoteNonTrivial3DByDefault) {
+TEST_F(CompositingReasonFinderTest, PromoteNonTrivial3D) {
   SetBodyInnerHTML(R"HTML(
     <div id='target'
       style='width: 100px; height: 100px; transform: translateZ(1px)'></div>
@@ -92,6 +97,26 @@ TEST_F(CompositingReasonFinderTest, PromoteNonTrivial3DByDefault) {
   PaintLayer* paint_layer =
       ToLayoutBoxModelObject(target->GetLayoutObject())->Layer();
   EXPECT_EQ(kPaintsIntoOwnBacking, paint_layer->GetCompositingState());
+}
+
+class CompositingReasonFinderTestLowEndPlatform
+    : public TestingPlatformSupport {
+ public:
+  bool IsLowEndDevice() override { return true; }
+};
+
+TEST_F(CompositingReasonFinderTest, DontPromoteTrivial3DWithLowEndDevice) {
+  ScopedTestingPlatformSupport<CompositingReasonFinderTestLowEndPlatform>
+      platform;
+  SetBodyInnerHTML(R"HTML(
+    <div id='target'
+      style='width: 100px; height: 100px; transform: translateZ(0)'></div>
+  )HTML");
+
+  Element* target = GetDocument().getElementById("target");
+  PaintLayer* paint_layer =
+      ToLayoutBoxModelObject(target->GetLayoutObject())->Layer();
+  EXPECT_EQ(kNotComposited, paint_layer->GetCompositingState());
 }
 
 TEST_F(CompositingReasonFinderTest, OnlyAnchoredStickyPositionPromoted) {
@@ -197,6 +222,43 @@ TEST_F(CompositingReasonFinderTest, DontPromoteEmptyIframe) {
   ASSERT_TRUE(child_frame_view);
   EXPECT_EQ(kNotComposited,
             child_frame_view->GetLayoutView()->Layer()->GetCompositingState());
+}
+
+TEST_F(CompositingReasonFinderTest, PromoteCrossOriginIframe) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatureState(
+      blink::features::kCompositeCrossOriginIframes, true);
+  SetBodyInnerHTML(R"HTML(
+    <!DOCTYPE html>
+    <iframe id=iframe></iframe>
+  )HTML");
+  UpdateAllLifecyclePhasesForTest();
+
+  Element* iframe = GetDocument().getElementById("iframe");
+  ASSERT_TRUE(iframe);
+  PaintLayer* iframe_layer =
+      ToLayoutBoxModelObject(iframe->GetLayoutObject())->Layer();
+  ASSERT_TRUE(iframe_layer);
+  ASSERT_FALSE(To<HTMLFrameOwnerElement>(iframe)
+                   ->ContentFrame()
+                   ->IsCrossOriginSubframe());
+  EXPECT_EQ(kNotComposited, iframe_layer->DirectCompositingReasons());
+
+  SetBodyInnerHTML(R"HTML(
+    <!DOCTYPE html>
+    <iframe id=iframe sandbox></iframe>
+  )HTML");
+  UpdateAllLifecyclePhasesForTest();
+
+  iframe = GetDocument().getElementById("iframe");
+  ASSERT_TRUE(iframe);
+  iframe_layer = ToLayoutBoxModelObject(iframe->GetLayoutObject())->Layer();
+  ASSERT_TRUE(iframe_layer);
+  ASSERT_TRUE(To<HTMLFrameOwnerElement>(iframe)
+                  ->ContentFrame()
+                  ->IsCrossOriginSubframe());
+  EXPECT_EQ(CompositingReason::kCrossOriginIframe,
+            iframe_layer->DirectCompositingReasons());
 }
 
 }  // namespace blink

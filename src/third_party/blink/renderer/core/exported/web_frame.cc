@@ -10,7 +10,6 @@
 #include "third_party/blink/public/web/web_frame_owner_properties.h"
 #include "third_party/blink/renderer/bindings/core/v8/window_proxy_manager.h"
 #include "third_party/blink/renderer/core/dom/increment_load_event_delay_count.h"
-#include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
 #include "third_party/blink/renderer/core/exported/web_remote_frame_impl.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
@@ -34,6 +33,8 @@ bool WebFrame::Swap(WebFrame* frame) {
   Frame* old_frame = ToCoreFrame(*this);
   if (!old_frame->IsAttached())
     return false;
+  FrameOwner* owner = old_frame->Owner();
+  FrameSwapScope frame_swap_scope(owner);
 
   // Unload the current Document in this frame: this calls unload handlers,
   // detaches child frames, etc. Since this runs script, make sure this frame
@@ -89,7 +90,6 @@ bool WebFrame::Swap(WebFrame* frame) {
 
   Page* page = old_frame->GetPage();
   AtomicString name = old_frame->Tree().GetName();
-  FrameOwner* owner = old_frame->Owner();
 
   v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
   WindowProxyManager::GlobalProxyVector global_proxies;
@@ -199,11 +199,6 @@ void WebFrame::SetFrameOwnerProperties(
   owner->SetAllowPaymentRequest(properties.allow_payment_request);
   owner->SetIsDisplayNone(properties.is_display_none);
   owner->SetRequiredCsp(properties.required_csp);
-}
-
-void WebFrame::Collapse(bool collapsed) {
-  FrameOwner* owner = ToCoreFrame(*this)->Owner();
-  To<HTMLFrameOwnerElement>(owner)->SetCollapsed(collapsed);
 }
 
 WebFrame* WebFrame::Opener() const {

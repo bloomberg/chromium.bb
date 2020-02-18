@@ -37,6 +37,17 @@ WebGPUImplementation::~WebGPUImplementation() {
   // commands are still in flight.
   Flush();
   helper_->Finish();
+
+#if BUILDFLAG(USE_DAWN)
+  // Now that commands are finished, free the wire client.
+  wire_client_.reset();
+
+  // All client-side Dawn objects are now destroyed.
+  // Shared memory allocations for buffers that were still mapped at the time
+  // of destruction can now be safely freed.
+  memory_transfer_service_->FreeHandlesPendingToken(helper_->InsertToken());
+  helper_->Finish();
+#endif
 }
 
 gpu::ContextResult WebGPUImplementation::Initialize(
@@ -153,8 +164,16 @@ unsigned int WebGPUImplementation::GetTransferBufferFreeSize() const {
   NOTREACHED();
   return 0;
 }
+bool WebGPUImplementation::IsJpegDecodeAccelerationSupported() const {
+  NOTREACHED();
+  return false;
+}
+bool WebGPUImplementation::IsWebPDecodeAccelerationSupported() const {
+  NOTREACHED();
+  return false;
+}
 bool WebGPUImplementation::CanDecodeWithHardwareAcceleration(
-    base::span<const uint8_t> encoded_data) const {
+    const cc::ImageHeaderMetadata* image_metadata) const {
   NOTREACHED();
   return false;
 }
@@ -219,10 +238,57 @@ void WebGPUImplementation::OnGpuControlReturnData(
   TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("gpu.dawn"),
                "WebGPUImplementation::OnGpuControlReturnData", "bytes",
                data.size());
-  if (!wire_client_->HandleCommands(
-      reinterpret_cast<const char*>(data.data()), data.size())) {
-    // TODO(enga): Lose the context.
+
+  if (data.size() <= sizeof(cmds::DawnReturnDataHeader)) {
+    // TODO(jiawei.shao@intel.com): Lose the context.
     NOTREACHED();
+  }
+  const cmds::DawnReturnDataHeader& dawnReturnDataHeader =
+      *reinterpret_cast<const cmds::DawnReturnDataHeader*>(data.data());
+
+  const uint8_t* dawnReturnDataBody =
+      data.data() + sizeof(cmds::DawnReturnDataHeader);
+  size_t dawnReturnDataSize = data.size() - sizeof(cmds::DawnReturnDataHeader);
+
+  switch (dawnReturnDataHeader.return_data_type) {
+    case DawnReturnDataType::kDawnCommands:
+      if (!wire_client_->HandleCommands(
+              reinterpret_cast<const char*>(dawnReturnDataBody),
+              dawnReturnDataSize)) {
+        // TODO(enga): Lose the context.
+        NOTREACHED();
+      }
+      break;
+    case DawnReturnDataType::kRequestedDawnAdapterProperties: {
+      const cmds::DawnReturnAdapterInfo* returned_adapter_info =
+          reinterpret_cast<const cmds::DawnReturnAdapterInfo*>(
+              dawnReturnDataBody);
+
+      GLuint request_adapter_serial =
+          returned_adapter_info->adapter_ids.request_adapter_serial;
+      auto request_callback_iter =
+          request_adapter_callback_map_.find(request_adapter_serial);
+      if (request_callback_iter == request_adapter_callback_map_.end()) {
+        // TODO(jiawei.shao@intel.com): Lose the context.
+        NOTREACHED();
+        break;
+      }
+      auto& request_callback = request_callback_iter->second;
+      GLuint adapter_service_id =
+          returned_adapter_info->adapter_ids.adapter_service_id;
+      WGPUDeviceProperties adapter_properties = {};
+      const volatile char* deserialized_buffer =
+          reinterpret_cast<const volatile char*>(
+              returned_adapter_info->deserialized_buffer);
+      dawn_wire::DeserializeWGPUDeviceProperties(&adapter_properties,
+                                                 deserialized_buffer);
+      std::move(request_callback).Run(adapter_service_id, adapter_properties);
+      request_adapter_callback_map_.erase(request_callback_iter);
+    } break;
+    default:
+      // TODO(jiawei.shao@intel.com): Lose the context.
+      NOTREACHED();
+      break;
   }
 #endif
 }
@@ -306,7 +372,7 @@ void WebGPUImplementation::FlushCommands() {
   helper_->Flush();
 }
 
-DawnDevice WebGPUImplementation::GetDefaultDevice() {
+WGPUDevice WebGPUImplementation::GetDefaultDevice() {
 #if BUILDFLAG(USE_DAWN)
   return wire_client_->GetDevice();
 #else
@@ -315,13 +381,73 @@ DawnDevice WebGPUImplementation::GetDefaultDevice() {
 #endif
 }
 
-ReservedTexture WebGPUImplementation::ReserveTexture(DawnDevice device) {
+ReservedTexture WebGPUImplementation::ReserveTexture(WGPUDevice device) {
 #if BUILDFLAG(USE_DAWN)
   dawn_wire::ReservedTexture reservation = wire_client_->ReserveTexture(device);
   return {reservation.texture, reservation.id, reservation.generation};
 #else
   NOTREACHED();
   return {};
+#endif
+}
+
+uint32_t WebGPUImplementation::NextRequestAdapterSerial() {
+  return ++request_adapter_serial_;
+}
+
+bool WebGPUImplementation::RequestAdapterAsync(
+    PowerPreference power_preference,
+    base::OnceCallback<void(uint32_t, const WGPUDeviceProperties&)>
+        request_adapter_callback) {
+  uint32_t request_adapter_serial = NextRequestAdapterSerial();
+
+  // Avoid the overflow of request_adapter_serial and old slot being reused.
+  if (request_adapter_callback_map_.find(request_adapter_serial) !=
+      request_adapter_callback_map_.end()) {
+    return false;
+  }
+
+  helper_->RequestAdapter(request_adapter_serial,
+                          static_cast<uint32_t>(power_preference));
+  helper_->Flush();
+
+  request_adapter_callback_map_[request_adapter_serial] =
+      std::move(request_adapter_callback);
+
+  return true;
+}
+
+bool WebGPUImplementation::RequestDevice(
+    uint32_t requested_adapter_id,
+    const WGPUDeviceProperties* requested_device_properties) {
+#if BUILDFLAG(USE_DAWN)
+  if (!requested_device_properties) {
+    helper_->RequestDevice(requested_adapter_id, 0, 0, 0);
+    return true;
+  }
+
+  size_t serialized_device_properties_size =
+      dawn_wire::SerializedWGPUDevicePropertiesSize(
+          requested_device_properties);
+  DCHECK_NE(0u, serialized_device_properties_size);
+
+  // Both transfer_buffer and c2s_buffer_ are created with transfer_buffer_,
+  // so we need to make c2s_buffer_ clean before transferring
+  // requested_device_properties with transfer_buffer.
+  Flush();
+  ScopedTransferBufferPtr transfer_buffer(serialized_device_properties_size,
+                                          helper_, transfer_buffer_);
+  dawn_wire::SerializeWGPUDeviceProperties(
+      requested_device_properties,
+      reinterpret_cast<char*>(transfer_buffer.address()));
+  helper_->RequestDevice(requested_adapter_id, transfer_buffer.shm_id(),
+                         transfer_buffer.offset(),
+                         serialized_device_properties_size);
+  transfer_buffer.Release();
+  return true;
+#else
+  NOTREACHED();
+  return false;
 #endif
 }
 

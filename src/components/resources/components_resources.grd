@@ -18,11 +18,11 @@
       <part file="neterror_resources.grdp" />
       <part file="ntp_tiles_resources.grdp" />
       <part file="offline_pages_resources.grdp" />
+      <part file="policy_resources.grdp" />
       <part file="printing_resources.grdp" />
       <part file="safe_browsing_resources.grdp" />
       <part file="security_interstitials_resources.grdp" />
       <part file="signin_resources.grdp" />
-      <part file="sync_driver_resources.grdp" />
       <part file="translate_resources.grdp" />
       <part file="user_actions_ui_resources.grdp" />
       <part file="version_ui_resources.grdp" />

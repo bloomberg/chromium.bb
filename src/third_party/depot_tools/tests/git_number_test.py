@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env vpython3
 # Copyright 2013 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -41,11 +41,11 @@ class Basic(git_test_utils.GitRepoReadWriteTestBase):
     super(Basic, self).tearDown()
 
   def _git_number(self, refs, cache=False):
-    refs = map(binascii.unhexlify, refs)
+    refs = [binascii.unhexlify(ref) for ref in refs]
     self.repo.run(self.gn.load_generation_numbers, refs)
     if cache:
       self.repo.run(self.gn.finalize, refs)
-    return map(self.gn.get_num, refs)
+    return [self.gn.get_num(ref) for ref in refs]
 
   def testBasic(self):
     self.assertEqual([0], self._git_number([self.repo['A']]))

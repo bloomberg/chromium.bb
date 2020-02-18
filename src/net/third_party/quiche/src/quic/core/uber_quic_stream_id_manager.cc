@@ -10,18 +10,27 @@
 namespace quic {
 
 UberQuicStreamIdManager::UberQuicStreamIdManager(
-    QuicSession* session,
+    Perspective perspective,
+    ParsedQuicVersion version,
+    QuicStreamIdManager::DelegateInterface* delegate,
+    QuicStreamCount num_expected_unidirectiona_static_streams,
     QuicStreamCount max_open_outgoing_bidirectional_streams,
     QuicStreamCount max_open_outgoing_unidirectional_streams,
     QuicStreamCount max_open_incoming_bidirectional_streams,
     QuicStreamCount max_open_incoming_unidirectional_streams)
-    : bidirectional_stream_id_manager_(session,
+    : bidirectional_stream_id_manager_(delegate,
                                        /*unidirectional=*/false,
+                                       perspective,
+                                       version.transport_version,
+                                       0,
                                        max_open_outgoing_bidirectional_streams,
                                        max_open_incoming_bidirectional_streams),
       unidirectional_stream_id_manager_(
-          session,
+          delegate,
           /*unidirectional=*/true,
+          perspective,
+          version.transport_version,
+          num_expected_unidirectiona_static_streams,
           max_open_outgoing_unidirectional_streams,
           max_open_incoming_unidirectional_streams) {}
 
@@ -126,6 +135,14 @@ void UberQuicStreamIdManager::SetLargestPeerCreatedStreamId(
       largest_peer_created_stream_id);
 }
 
+QuicStreamId UberQuicStreamIdManager::GetLargestPeerCreatedStreamId(
+    bool unidirectional) const {
+  if (unidirectional) {
+    return unidirectional_stream_id_manager_.largest_peer_created_stream_id();
+  }
+  return bidirectional_stream_id_manager_.largest_peer_created_stream_id();
+}
+
 QuicStreamId UberQuicStreamIdManager::next_outgoing_bidirectional_stream_id()
     const {
   return bidirectional_stream_id_manager_.next_outgoing_stream_id();
@@ -136,36 +153,32 @@ QuicStreamId UberQuicStreamIdManager::next_outgoing_unidirectional_stream_id()
   return unidirectional_stream_id_manager_.next_outgoing_stream_id();
 }
 
-size_t UberQuicStreamIdManager::max_allowed_outgoing_bidirectional_streams()
-    const {
+size_t UberQuicStreamIdManager::max_outgoing_bidirectional_streams() const {
   return bidirectional_stream_id_manager_.outgoing_max_streams();
 }
 
-size_t UberQuicStreamIdManager::max_allowed_outgoing_unidirectional_streams()
-    const {
+size_t UberQuicStreamIdManager::max_outgoing_unidirectional_streams() const {
   return unidirectional_stream_id_manager_.outgoing_max_streams();
 }
 
-QuicStreamCount
-UberQuicStreamIdManager::actual_max_allowed_incoming_bidirectional_streams()
+QuicStreamCount UberQuicStreamIdManager::max_incoming_bidirectional_streams()
     const {
   return bidirectional_stream_id_manager_.incoming_actual_max_streams();
 }
 
-QuicStreamCount
-UberQuicStreamIdManager::actual_max_allowed_incoming_unidirectional_streams()
+QuicStreamCount UberQuicStreamIdManager::max_incoming_unidirectional_streams()
     const {
   return unidirectional_stream_id_manager_.incoming_actual_max_streams();
 }
 
 QuicStreamCount
-UberQuicStreamIdManager::advertised_max_allowed_incoming_bidirectional_streams()
-    const {
+UberQuicStreamIdManager::advertised_max_incoming_bidirectional_streams() const {
   return bidirectional_stream_id_manager_.incoming_advertised_max_streams();
 }
 
-QuicStreamCount UberQuicStreamIdManager::
-    advertised_max_allowed_incoming_unidirectional_streams() const {
+QuicStreamCount
+UberQuicStreamIdManager::advertised_max_incoming_unidirectional_streams()
+    const {
   return unidirectional_stream_id_manager_.incoming_advertised_max_streams();
 }
 

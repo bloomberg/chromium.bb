@@ -7,18 +7,16 @@ package org.chromium.chrome.browser.toolbar.bottom;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.util.AttributeSet;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ActivityTabProvider.ActivityTabTabObserver;
 import org.chromium.chrome.browser.ThemeColorProvider;
 import org.chromium.chrome.browser.ThemeColorProvider.TintObserver;
+import org.chromium.chrome.browser.compositor.layouts.EmptyOverviewModeObserver;
+import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.util.FeatureUtilities;
+import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.ui.widget.ChromeImageButton;
 
@@ -32,32 +30,21 @@ class ShareButton extends ChromeImageButton implements TintObserver {
     /** The {@link ActivityTabTabObserver} used to know when the active page changed. */
     private ActivityTabTabObserver mActivityTabTabObserver;
 
-    /** The share button text label. */
-    private TextView mLabel;
+    /** The {@link OverviewModeBehavior} used to observe overview state changes.  */
+    private OverviewModeBehavior mOverviewModeBehavior;
 
-    /** The wrapper View that contains the share button and the label. */
-    private View mWrapper;
+    /** The {@link OvervieModeObserver} observing the OverviewModeBehavior  */
+    private OverviewModeBehavior.OverviewModeObserver mOverviewModeObserver;
 
     public ShareButton(Context context, AttributeSet attrs) {
         super(context, attrs);
-    }
 
-    /**
-     * @param wrapper The wrapping View of this button.
-     */
-    public void setWrapperView(ViewGroup wrapper) {
-        mWrapper = wrapper;
-        mLabel = mWrapper.findViewById(R.id.share_button_label);
-        if (FeatureUtilities.isLabeledBottomToolbarEnabled()) mLabel.setVisibility(View.VISIBLE);
-    }
-
-    @Override
-    public void setOnClickListener(OnClickListener listener) {
-        if (mWrapper != null) {
-            mWrapper.setOnClickListener(listener);
-        } else {
-            super.setOnClickListener(listener);
-        }
+        mOverviewModeObserver = new EmptyOverviewModeObserver() {
+            @Override
+            public void onOverviewModeStartedShowing(boolean showTabSwitcherToolbar) {
+                setEnabled(false);
+            }
+        };
     }
 
     void setThemeColorProvider(ThemeColorProvider themeColorProvider) {
@@ -69,16 +56,20 @@ class ShareButton extends ChromeImageButton implements TintObserver {
         mActivityTabTabObserver = new ActivityTabTabObserver(activityTabProvider) {
             @Override
             public void onObservingDifferentTab(Tab tab) {
-                if (tab == null) return;
                 updateButtonEnabledState(tab);
             }
 
             @Override
             public void onUpdateUrl(Tab tab, String url) {
-                if (tab == null) return;
                 updateButtonEnabledState(tab);
             }
         };
+    }
+
+    public void setOverviewModeBehavior(OverviewModeBehavior overviewModeBehavior) {
+        assert overviewModeBehavior != null;
+        mOverviewModeBehavior = overviewModeBehavior;
+        mOverviewModeBehavior.addOverviewModeObserver(mOverviewModeObserver);
     }
 
     void destroy() {
@@ -90,21 +81,27 @@ class ShareButton extends ChromeImageButton implements TintObserver {
             mActivityTabTabObserver.destroy();
             mActivityTabTabObserver = null;
         }
+
+        if (mOverviewModeBehavior != null) {
+            mOverviewModeBehavior.removeOverviewModeObserver(mOverviewModeObserver);
+            mOverviewModeObserver = null;
+        }
     }
 
-    private void updateButtonEnabledState(Tab tab) {
+    public void updateButtonEnabledState(Tab tab) {
+        if (tab == null) {
+            setEnabled(false);
+            return;
+        }
         final String url = tab.getUrl();
         final boolean isChromeScheme = url.startsWith(UrlConstants.CHROME_URL_PREFIX)
                 || url.startsWith(UrlConstants.CHROME_NATIVE_URL_PREFIX);
-        final boolean isEnabled = !isChromeScheme && !tab.isShowingInterstitialPage();
+        final boolean isEnabled = !isChromeScheme && !((TabImpl) tab).isShowingInterstitialPage();
         setEnabled(isEnabled);
-        if (mWrapper != null) mWrapper.setEnabled(isEnabled);
-        if (mLabel != null) mLabel.setEnabled(isEnabled);
     }
 
     @Override
     public void onTintChanged(ColorStateList tint, boolean useLight) {
         ApiCompatibilityUtils.setImageTintList(this, tint);
-        if (mLabel != null) mLabel.setTextColor(tint);
     }
 }

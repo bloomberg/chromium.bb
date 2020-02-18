@@ -20,13 +20,13 @@ class PrintingHandler;
 class ChromeContentUtilityClient : public content::ContentUtilityClient {
  public:
   using NetworkBinderCreationCallback =
-      base::Callback<void(service_manager::BinderRegistry*)>;
+      base::OnceCallback<void(service_manager::BinderRegistry*)>;
 
   ChromeContentUtilityClient();
   ~ChromeContentUtilityClient() override;
 
   // content::ContentUtilityClient:
-  void UtilityThreadStarted() override;
+  void ExposeInterfacesToBrowser(mojo::BinderMap* binders) override;
   bool OnMessageReceived(const IPC::Message& message) override;
   void RegisterNetworkBinders(
       service_manager::BinderRegistry* registry) override;
@@ -35,7 +35,7 @@ class ChromeContentUtilityClient : public content::ContentUtilityClient {
 
   // See NetworkBinderProvider above.
   static void SetNetworkBinderCreationCallback(
-      const NetworkBinderCreationCallback& callback);
+      NetworkBinderCreationCallback callback);
 
  private:
 #if defined(OS_WIN) && BUILDFLAG(ENABLE_PRINT_PREVIEW)

@@ -12,11 +12,11 @@
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "chrome/browser/download/test_download_shelf.h"
+#include "chrome/browser/ui/autofill/test/test_autofill_bubble_handler.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
-#include "chrome/browser/ui/page_action/page_action_icon_container.h"
 #include "chrome/common/buildflags.h"
 
 #if !defined(OS_ANDROID)
@@ -30,6 +30,11 @@ namespace extensions {
 class Extension;
 }
 
+namespace qrcode_generator {
+class QRCodeGeneratorBubbleController;
+class QRCodeGeneratorBubbleView;
+}  // namespace qrcode_generator
+
 namespace send_tab_to_self {
 class SendTabToSelfBubbleController;
 class SendTabToSelfBubbleView;
@@ -37,6 +42,7 @@ class SendTabToSelfBubbleView;
 
 // An implementation of BrowserWindow used for testing. TestBrowserWindow only
 // contains a valid LocationBar, all other getters return NULL.
+// However, some of them can be preset to a specific value.
 // See BrowserWithTestWindowTest for an example of using this class.
 class TestBrowserWindow : public BrowserWindow {
  public:
@@ -57,6 +63,7 @@ class TestBrowserWindow : public BrowserWindow {
   ui::ZOrderLevel GetZOrderLevel() const override;
   void SetZOrderLevel(ui::ZOrderLevel order) override {}
   gfx::NativeWindow GetNativeWindow() const override;
+  bool IsOnCurrentWorkspace() const override;
   void SetTopControlsShownRatio(content::WebContents* web_contents,
                                 float ratio) override;
   bool DoBrowserControlsShrinkRendererSize(
@@ -94,9 +101,10 @@ class TestBrowserWindow : public BrowserWindow {
   bool IsFullscreen() const override;
   bool IsFullscreenBubbleVisible() const override;
   LocationBar* GetLocationBar() const override;
-  PageActionIconContainer* GetOmniboxPageActionIconContainer() override;
-  PageActionIconContainer* GetToolbarPageActionIconContainer() override;
-  void SetFocusToLocationBar(bool select_all) override {}
+  void UpdatePageActionIcon(PageActionIconType type) override {}
+  autofill::AutofillBubbleHandler* GetAutofillBubbleHandler() override;
+  void ExecutePageActionIconForTesting(PageActionIconType type) override {}
+  void SetFocusToLocationBar(bool is_user_initiated) override {}
   void UpdateReloadStopState(bool is_loading, bool force) override {}
   void UpdateToolbar(content::WebContents* contents) override {}
   void UpdateCustomTabBarVisibility(bool visible, bool animate) override {}
@@ -121,24 +129,22 @@ class TestBrowserWindow : public BrowserWindow {
   bool IsToolbarVisible() const override;
   bool IsToolbarShowing() const override;
   SharingDialog* ShowSharingDialog(content::WebContents* contents,
-                                   SharingUiController* controller) override;
+                                   SharingDialogData data) override;
   void ShowUpdateChromeDialog() override {}
   void ShowBookmarkBubble(const GURL& url, bool already_bookmarked) override {}
+  qrcode_generator::QRCodeGeneratorBubbleView* ShowQRCodeGeneratorBubble(
+      content::WebContents* contents,
+      qrcode_generator::QRCodeGeneratorBubbleController* controller,
+      const GURL& url) override;
 #if !defined(OS_ANDROID)
-  void ShowIntentPickerBubble(std::vector<apps::IntentPickerAppInfo> app_info,
-                              bool show_stay_in_chrome,
-                              bool show_remember_selection,
-                              PageActionIconType icon_type,
-                              IntentPickerResponse callback) override {}
+  void ShowIntentPickerBubble(
+      std::vector<apps::IntentPickerAppInfo> app_info,
+      bool show_stay_in_chrome,
+      bool show_remember_selection,
+      PageActionIconType icon_type,
+      const base::Optional<url::Origin>& initiating_origin,
+      IntentPickerResponse callback) override {}
 #endif  //  !define(OS_ANDROID)
-  autofill::SaveCardBubbleView* ShowSaveCreditCardBubble(
-      content::WebContents* contents,
-      autofill::SaveCardBubbleController* controller,
-      bool user_gesture) override;
-  autofill::LocalCardMigrationBubble* ShowLocalCardMigrationBubble(
-      content::WebContents* contents,
-      autofill::LocalCardMigrationBubbleController* controller,
-      bool user_gesture) override;
   send_tab_to_self::SendTabToSelfBubbleView* ShowSendTabToSelfBubble(
       content::WebContents* contents,
       send_tab_to_self::SendTabToSelfBubbleController* controller,
@@ -190,14 +196,16 @@ class TestBrowserWindow : public BrowserWindow {
 
   void ShowInProductHelpPromo(InProductHelpFeature iph_feature) override {}
 
+  void SetNativeWindow(gfx::NativeWindow window);
+
  protected:
   void DestroyBrowser() override {}
 
  private:
   class TestLocationBar : public LocationBar {
    public:
-    TestLocationBar() : LocationBar(NULL) {}
-    ~TestLocationBar() override {}
+    TestLocationBar() = default;
+    ~TestLocationBar() override = default;
 
     // LocationBar:
     GURL GetDestinationURL() const override;
@@ -209,9 +217,6 @@ class TestBrowserWindow : public BrowserWindow {
     void FocusLocation(bool select_all) override {}
     void FocusSearch() override {}
     void UpdateContentSettingsIcons() override {}
-    void UpdateSaveCreditCardIcon() override {}
-    void UpdateLocalCardMigrationIcon() override {}
-    void UpdateBookmarkStarVisibility() override {}
     void SaveStateToContents(content::WebContents* contents) override {}
     void Revert() override {}
     const OmniboxView* GetOmniboxView() const override;
@@ -222,22 +227,10 @@ class TestBrowserWindow : public BrowserWindow {
     DISALLOW_COPY_AND_ASSIGN(TestLocationBar);
   };
 
-  class TestOmniboxPageActionIconContainer : public PageActionIconContainer {
-   public:
-    TestOmniboxPageActionIconContainer() {}
-    ~TestOmniboxPageActionIconContainer() override {}
-
-    // PageActionIconContainer:
-    void UpdatePageActionIcon(PageActionIconType type) override {}
-    void ExecutePageActionIconForTesting(PageActionIconType type) override {}
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(TestOmniboxPageActionIconContainer);
-  };
-
+  autofill::TestAutofillBubbleHandler autofill_bubble_handler_;
   TestDownloadShelf download_shelf_;
   TestLocationBar location_bar_;
-  TestOmniboxPageActionIconContainer omnibox_page_action_icon_container_;
+  gfx::NativeWindow native_window_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(TestBrowserWindow);
 };

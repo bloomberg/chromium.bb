@@ -14,45 +14,121 @@
 
 #include "common/Assert.h"
 #include "common/Constants.h"
+#include "common/Math.h"
 #include "tests/DawnTest.h"
 #include "utils/ComboRenderPipelineDescriptor.h"
-#include "utils/DawnHelpers.h"
+#include "utils/WGPUHelpers.h"
 
 constexpr static unsigned int kRTSize = 8;
 
 class BindGroupTests : public DawnTest {
 protected:
-    dawn::CommandBuffer CreateSimpleComputeCommandBuffer(
-            const dawn::ComputePipeline& pipeline, const dawn::BindGroup& bindGroup) {
-        dawn::CommandEncoder encoder = device.CreateCommandEncoder();
-        dawn::ComputePassEncoder pass = encoder.BeginComputePass();
-        pass.SetPipeline(pipeline);
-        pass.SetBindGroup(0, bindGroup, 0, nullptr);
-        pass.Dispatch(1, 1, 1);
-        pass.EndPass();
-        return encoder.Finish();
-    }
+  wgpu::CommandBuffer CreateSimpleComputeCommandBuffer(const wgpu::ComputePipeline& pipeline,
+                                                       const wgpu::BindGroup& bindGroup) {
+      wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
+      wgpu::ComputePassEncoder pass = encoder.BeginComputePass();
+      pass.SetPipeline(pipeline);
+      pass.SetBindGroup(0, bindGroup);
+      pass.Dispatch(1, 1, 1);
+      pass.EndPass();
+      return encoder.Finish();
+  }
 
-    dawn::PipelineLayout MakeBasicPipelineLayout(
-        dawn::Device device,
-        std::vector<dawn::BindGroupLayout> bindingInitializer) const {
-        dawn::PipelineLayoutDescriptor descriptor;
+  wgpu::PipelineLayout MakeBasicPipelineLayout(
+      wgpu::Device device,
+      std::vector<wgpu::BindGroupLayout> bindingInitializer) const {
+      wgpu::PipelineLayoutDescriptor descriptor;
 
-        descriptor.bindGroupLayoutCount = bindingInitializer.size();
-        descriptor.bindGroupLayouts = bindingInitializer.data();
+      descriptor.bindGroupLayoutCount = bindingInitializer.size();
+      descriptor.bindGroupLayouts = bindingInitializer.data();
 
-        return device.CreatePipelineLayout(&descriptor);
-    }
+      return device.CreatePipelineLayout(&descriptor);
+  }
+
+  wgpu::ShaderModule MakeSimpleVSModule() const {
+      return utils::CreateShaderModule(device, utils::SingleShaderStage::Vertex, R"(
+        #version 450
+        void main() {
+            const vec2 pos[3] = vec2[3](vec2(-1.f, 1.f), vec2(1.f, 1.f), vec2(-1.f, -1.f));
+            gl_Position = vec4(pos[gl_VertexIndex], 0.f, 1.f);
+        })");
+  }
+
+  wgpu::ShaderModule MakeFSModule(std::vector<wgpu::BindingType> bindingTypes) const {
+      ASSERT(bindingTypes.size() <= kMaxBindGroups);
+
+      std::ostringstream fs;
+      fs << R"(
+        #version 450
+        layout(location = 0) out vec4 fragColor;
+        )";
+
+      for (size_t i = 0; i < bindingTypes.size(); ++i) {
+          switch (bindingTypes[i]) {
+              case wgpu::BindingType::UniformBuffer:
+                  fs << "layout (std140, set = " << i << ", binding = 0) uniform UniformBuffer" << i
+                     << R"( {
+                        vec4 color;
+                    } buffer)"
+                     << i << ";\n";
+                  break;
+              case wgpu::BindingType::StorageBuffer:
+                  fs << "layout (std430, set = " << i << ", binding = 0) buffer StorageBuffer" << i
+                     << R"( {
+                        vec4 color;
+                    } buffer)"
+                     << i << ";\n";
+                  break;
+              default:
+                  UNREACHABLE();
+          }
+      }
+
+      fs << R"(
+        void main() {
+            fragColor = vec4(0.0);
+        )";
+      for (size_t i = 0; i < bindingTypes.size(); ++i) {
+          fs << "fragColor += buffer" << i << ".color;\n";
+      }
+      fs << "}\n";
+
+      return utils::CreateShaderModule(device, utils::SingleShaderStage::Fragment,
+                                       fs.str().c_str());
+  }
+
+  wgpu::RenderPipeline MakeTestPipeline(const utils::BasicRenderPass& renderPass,
+                                        std::vector<wgpu::BindingType> bindingTypes,
+                                        std::vector<wgpu::BindGroupLayout> bindGroupLayouts) {
+      wgpu::ShaderModule vsModule = MakeSimpleVSModule();
+      wgpu::ShaderModule fsModule = MakeFSModule(bindingTypes);
+
+      wgpu::PipelineLayout pipelineLayout = MakeBasicPipelineLayout(device, bindGroupLayouts);
+
+      utils::ComboRenderPipelineDescriptor pipelineDescriptor(device);
+      pipelineDescriptor.layout = pipelineLayout;
+      pipelineDescriptor.vertexStage.module = vsModule;
+      pipelineDescriptor.cFragmentStage.module = fsModule;
+      pipelineDescriptor.cColorStates[0].format = renderPass.colorFormat;
+      pipelineDescriptor.cColorStates[0].colorBlend.operation = wgpu::BlendOperation::Add;
+      pipelineDescriptor.cColorStates[0].colorBlend.srcFactor = wgpu::BlendFactor::One;
+      pipelineDescriptor.cColorStates[0].colorBlend.dstFactor = wgpu::BlendFactor::One;
+      pipelineDescriptor.cColorStates[0].alphaBlend.operation = wgpu::BlendOperation::Add;
+      pipelineDescriptor.cColorStates[0].alphaBlend.srcFactor = wgpu::BlendFactor::One;
+      pipelineDescriptor.cColorStates[0].alphaBlend.dstFactor = wgpu::BlendFactor::One;
+
+      return device.CreateRenderPipeline(&pipelineDescriptor);
+  }
 };
 
 // Test a bindgroup reused in two command buffers in the same call to queue.Submit().
 // This test passes by not asserting or crashing.
 TEST_P(BindGroupTests, ReusedBindGroupSingleSubmit) {
-    dawn::BindGroupLayout bgl = utils::MakeBindGroupLayout(
+    wgpu::BindGroupLayout bgl = utils::MakeBindGroupLayout(
         device, {
-                    {0, dawn::ShaderStage::Compute, dawn::BindingType::UniformBuffer},
+                    {0, wgpu::ShaderStage::Compute, wgpu::BindingType::UniformBuffer},
                 });
-    dawn::PipelineLayout pl = utils::MakeBasicPipelineLayout(device, &bgl);
+    wgpu::PipelineLayout pl = utils::MakeBasicPipelineLayout(device, &bgl);
 
     const char* shader = R"(
         #version 450
@@ -63,22 +139,22 @@ TEST_P(BindGroupTests, ReusedBindGroupSingleSubmit) {
         }
     )";
 
-    dawn::ShaderModule module =
+    wgpu::ShaderModule module =
         utils::CreateShaderModule(device, utils::SingleShaderStage::Compute, shader);
 
-    dawn::ComputePipelineDescriptor cpDesc;
+    wgpu::ComputePipelineDescriptor cpDesc;
     cpDesc.layout = pl;
     cpDesc.computeStage.module = module;
     cpDesc.computeStage.entryPoint = "main";
-    dawn::ComputePipeline cp = device.CreateComputePipeline(&cpDesc);
+    wgpu::ComputePipeline cp = device.CreateComputePipeline(&cpDesc);
 
-    dawn::BufferDescriptor bufferDesc;
+    wgpu::BufferDescriptor bufferDesc;
     bufferDesc.size = sizeof(float);
-    bufferDesc.usage = dawn::BufferUsage::CopyDst | dawn::BufferUsage::Uniform;
-    dawn::Buffer buffer = device.CreateBuffer(&bufferDesc);
-    dawn::BindGroup bindGroup = utils::MakeBindGroup(device, bgl, {{0, buffer, 0, sizeof(float)}});
+    bufferDesc.usage = wgpu::BufferUsage::CopyDst | wgpu::BufferUsage::Uniform;
+    wgpu::Buffer buffer = device.CreateBuffer(&bufferDesc);
+    wgpu::BindGroup bindGroup = utils::MakeBindGroup(device, bgl, {{0, buffer, 0, sizeof(float)}});
 
-    dawn::CommandBuffer cb[2];
+    wgpu::CommandBuffer cb[2];
     cb[0] = CreateSimpleComputeCommandBuffer(cp, bindGroup);
     cb[1] = CreateSimpleComputeCommandBuffer(cp, bindGroup);
     queue.Submit(2, cb);
@@ -90,18 +166,18 @@ TEST_P(BindGroupTests, ReusedBindGroupSingleSubmit) {
 TEST_P(BindGroupTests, ReusedUBO) {
     utils::BasicRenderPass renderPass = utils::CreateBasicRenderPass(device, kRTSize, kRTSize);
 
-    dawn::ShaderModule vsModule =
+    wgpu::ShaderModule vsModule =
         utils::CreateShaderModule(device, utils::SingleShaderStage::Vertex, R"(
         #version 450
         layout (set = 0, binding = 0) uniform vertexUniformBuffer {
             mat2 transform;
         };
         void main() {
-            const vec2 pos[3] = vec2[3](vec2(-1.f, -1.f), vec2(1.f, -1.f), vec2(-1.f, 1.f));
+            const vec2 pos[3] = vec2[3](vec2(-1.f, 1.f), vec2(1.f, 1.f), vec2(-1.f, -1.f));
             gl_Position = vec4(transform * pos[gl_VertexIndex], 0.f, 1.f);
         })");
 
-    dawn::ShaderModule fsModule =
+    wgpu::ShaderModule fsModule =
         utils::CreateShaderModule(device, utils::SingleShaderStage::Fragment, R"(
         #version 450
         layout (set = 0, binding = 1) uniform fragmentUniformBuffer {
@@ -112,20 +188,20 @@ TEST_P(BindGroupTests, ReusedUBO) {
             fragColor = color;
         })");
 
-    dawn::BindGroupLayout bgl = utils::MakeBindGroupLayout(
+    wgpu::BindGroupLayout bgl = utils::MakeBindGroupLayout(
         device, {
-                    {0, dawn::ShaderStage::Vertex, dawn::BindingType::UniformBuffer},
-                    {1, dawn::ShaderStage::Fragment, dawn::BindingType::UniformBuffer},
+                    {0, wgpu::ShaderStage::Vertex, wgpu::BindingType::UniformBuffer},
+                    {1, wgpu::ShaderStage::Fragment, wgpu::BindingType::UniformBuffer},
                 });
-    dawn::PipelineLayout pipelineLayout = utils::MakeBasicPipelineLayout(device, &bgl);
+    wgpu::PipelineLayout pipelineLayout = utils::MakeBasicPipelineLayout(device, &bgl);
 
     utils::ComboRenderPipelineDescriptor textureDescriptor(device);
     textureDescriptor.layout = pipelineLayout;
     textureDescriptor.vertexStage.module = vsModule;
     textureDescriptor.cFragmentStage.module = fsModule;
-    textureDescriptor.cColorStates[0]->format = renderPass.colorFormat;
+    textureDescriptor.cColorStates[0].format = renderPass.colorFormat;
 
-    dawn::RenderPipeline pipeline = device.CreateRenderPipeline(&textureDescriptor);
+    wgpu::RenderPipeline pipeline = device.CreateRenderPipeline(&textureDescriptor);
 
     struct Data {
         float transform[8];
@@ -139,21 +215,20 @@ TEST_P(BindGroupTests, ReusedUBO) {
         { 0 },
         { 0.f, 1.f, 0.f, 1.f },
     };
-    dawn::Buffer buffer =
-        utils::CreateBufferFromData(device, &data, sizeof(data), dawn::BufferUsage::Uniform);
-    dawn::BindGroup bindGroup = utils::MakeBindGroup(device, bgl, {
-        {0, buffer, 0, sizeof(Data::transform)},
-        {1, buffer, 256, sizeof(Data::color)}
-    });
+    wgpu::Buffer buffer =
+        utils::CreateBufferFromData(device, &data, sizeof(data), wgpu::BufferUsage::Uniform);
+    wgpu::BindGroup bindGroup = utils::MakeBindGroup(
+        device, bgl,
+        {{0, buffer, 0, sizeof(Data::transform)}, {1, buffer, 256, sizeof(Data::color)}});
 
-    dawn::CommandEncoder encoder = device.CreateCommandEncoder();
-    dawn::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPass.renderPassInfo);
+    wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
+    wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPass.renderPassInfo);
     pass.SetPipeline(pipeline);
-    pass.SetBindGroup(0, bindGroup, 0, nullptr);
+    pass.SetBindGroup(0, bindGroup);
     pass.Draw(3, 1, 0, 0);
     pass.EndPass();
 
-    dawn::CommandBuffer commands = encoder.Finish();
+    wgpu::CommandBuffer commands = encoder.Finish();
     queue.Submit(1, &commands);
 
     RGBA8 filled(0, 255, 0, 255);
@@ -171,18 +246,18 @@ TEST_P(BindGroupTests, ReusedUBO) {
 TEST_P(BindGroupTests, UBOSamplerAndTexture) {
     utils::BasicRenderPass renderPass = utils::CreateBasicRenderPass(device, kRTSize, kRTSize);
 
-    dawn::ShaderModule vsModule =
+    wgpu::ShaderModule vsModule =
         utils::CreateShaderModule(device, utils::SingleShaderStage::Vertex, R"(
         #version 450
         layout (set = 0, binding = 0) uniform vertexUniformBuffer {
             mat2 transform;
         };
         void main() {
-            const vec2 pos[3] = vec2[3](vec2(-1.f, -1.f), vec2(1.f, -1.f), vec2(-1.f, 1.f));
+            const vec2 pos[3] = vec2[3](vec2(-1.f, 1.f), vec2(1.f, 1.f), vec2(-1.f, -1.f));
             gl_Position = vec4(transform * pos[gl_VertexIndex], 0.f, 1.f);
         })");
 
-    dawn::ShaderModule fsModule =
+    wgpu::ShaderModule fsModule =
         utils::CreateShaderModule(device, utils::SingleShaderStage::Fragment, R"(
         #version 450
         layout (set = 0, binding = 1) uniform sampler samp;
@@ -192,52 +267,52 @@ TEST_P(BindGroupTests, UBOSamplerAndTexture) {
             fragColor = texture(sampler2D(tex, samp), gl_FragCoord.xy);
         })");
 
-    dawn::BindGroupLayout bgl = utils::MakeBindGroupLayout(
+    wgpu::BindGroupLayout bgl = utils::MakeBindGroupLayout(
         device, {
-                    {0, dawn::ShaderStage::Vertex, dawn::BindingType::UniformBuffer},
-                    {1, dawn::ShaderStage::Fragment, dawn::BindingType::Sampler},
-                    {2, dawn::ShaderStage::Fragment, dawn::BindingType::SampledTexture},
+                    {0, wgpu::ShaderStage::Vertex, wgpu::BindingType::UniformBuffer},
+                    {1, wgpu::ShaderStage::Fragment, wgpu::BindingType::Sampler},
+                    {2, wgpu::ShaderStage::Fragment, wgpu::BindingType::SampledTexture},
                 });
-    dawn::PipelineLayout pipelineLayout = utils::MakeBasicPipelineLayout(device, &bgl);
+    wgpu::PipelineLayout pipelineLayout = utils::MakeBasicPipelineLayout(device, &bgl);
 
     utils::ComboRenderPipelineDescriptor pipelineDescriptor(device);
     pipelineDescriptor.layout = pipelineLayout;
     pipelineDescriptor.vertexStage.module = vsModule;
     pipelineDescriptor.cFragmentStage.module = fsModule;
-    pipelineDescriptor.cColorStates[0]->format = renderPass.colorFormat;
+    pipelineDescriptor.cColorStates[0].format = renderPass.colorFormat;
 
-    dawn::RenderPipeline pipeline = device.CreateRenderPipeline(&pipelineDescriptor);
+    wgpu::RenderPipeline pipeline = device.CreateRenderPipeline(&pipelineDescriptor);
 
     constexpr float dummy = 0.0f;
     constexpr float transform[] = { 1.f, 0.f, dummy, dummy, 0.f, 1.f, dummy, dummy };
-    dawn::Buffer buffer = utils::CreateBufferFromData(device, &transform, sizeof(transform),
-                                                      dawn::BufferUsage::Uniform);
+    wgpu::Buffer buffer = utils::CreateBufferFromData(device, &transform, sizeof(transform),
+                                                      wgpu::BufferUsage::Uniform);
 
-    dawn::SamplerDescriptor samplerDescriptor;
-    samplerDescriptor.minFilter = dawn::FilterMode::Nearest;
-    samplerDescriptor.magFilter = dawn::FilterMode::Nearest;
-    samplerDescriptor.mipmapFilter = dawn::FilterMode::Nearest;
-    samplerDescriptor.addressModeU = dawn::AddressMode::ClampToEdge;
-    samplerDescriptor.addressModeV = dawn::AddressMode::ClampToEdge;
-    samplerDescriptor.addressModeW = dawn::AddressMode::ClampToEdge;
+    wgpu::SamplerDescriptor samplerDescriptor;
+    samplerDescriptor.minFilter = wgpu::FilterMode::Nearest;
+    samplerDescriptor.magFilter = wgpu::FilterMode::Nearest;
+    samplerDescriptor.mipmapFilter = wgpu::FilterMode::Nearest;
+    samplerDescriptor.addressModeU = wgpu::AddressMode::ClampToEdge;
+    samplerDescriptor.addressModeV = wgpu::AddressMode::ClampToEdge;
+    samplerDescriptor.addressModeW = wgpu::AddressMode::ClampToEdge;
     samplerDescriptor.lodMinClamp = kLodMin;
     samplerDescriptor.lodMaxClamp = kLodMax;
-    samplerDescriptor.compare = dawn::CompareFunction::Never;
+    samplerDescriptor.compare = wgpu::CompareFunction::Never;
 
-    dawn::Sampler sampler = device.CreateSampler(&samplerDescriptor);
+    wgpu::Sampler sampler = device.CreateSampler(&samplerDescriptor);
 
-    dawn::TextureDescriptor descriptor;
-    descriptor.dimension = dawn::TextureDimension::e2D;
+    wgpu::TextureDescriptor descriptor;
+    descriptor.dimension = wgpu::TextureDimension::e2D;
     descriptor.size.width = kRTSize;
     descriptor.size.height = kRTSize;
     descriptor.size.depth = 1;
     descriptor.arrayLayerCount = 1;
     descriptor.sampleCount = 1;
-    descriptor.format = dawn::TextureFormat::RGBA8Unorm;
+    descriptor.format = wgpu::TextureFormat::RGBA8Unorm;
     descriptor.mipLevelCount = 1;
-    descriptor.usage = dawn::TextureUsage::CopyDst | dawn::TextureUsage::Sampled;
-    dawn::Texture texture = device.CreateTexture(&descriptor);
-    dawn::TextureView textureView = texture.CreateView();
+    descriptor.usage = wgpu::TextureUsage::CopyDst | wgpu::TextureUsage::Sampled;
+    wgpu::Texture texture = device.CreateTexture(&descriptor);
+    wgpu::TextureView textureView = texture.CreateView();
 
     int width = kRTSize, height = kRTSize;
     int widthInBytes = width * sizeof(RGBA8);
@@ -248,28 +323,25 @@ TEST_P(BindGroupTests, UBOSamplerAndTexture) {
     for (int i = 0; i < size; i++) {
         data[i] = RGBA8(0, 255, 0, 255);
     }
-    dawn::Buffer stagingBuffer =
-        utils::CreateBufferFromData(device, data.data(), sizeInBytes, dawn::BufferUsage::CopySrc);
+    wgpu::Buffer stagingBuffer =
+        utils::CreateBufferFromData(device, data.data(), sizeInBytes, wgpu::BufferUsage::CopySrc);
 
-    dawn::BindGroup bindGroup = utils::MakeBindGroup(device, bgl, {
-        {0, buffer, 0, sizeof(transform)},
-        {1, sampler},
-        {2, textureView}
-    });
+    wgpu::BindGroup bindGroup = utils::MakeBindGroup(
+        device, bgl, {{0, buffer, 0, sizeof(transform)}, {1, sampler}, {2, textureView}});
 
-    dawn::CommandEncoder encoder = device.CreateCommandEncoder();
-    dawn::BufferCopyView bufferCopyView =
+    wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
+    wgpu::BufferCopyView bufferCopyView =
         utils::CreateBufferCopyView(stagingBuffer, 0, widthInBytes, 0);
-    dawn::TextureCopyView textureCopyView = utils::CreateTextureCopyView(texture, 0, 0, {0, 0, 0});
-    dawn::Extent3D copySize = {width, height, 1};
+    wgpu::TextureCopyView textureCopyView = utils::CreateTextureCopyView(texture, 0, 0, {0, 0, 0});
+    wgpu::Extent3D copySize = {width, height, 1};
     encoder.CopyBufferToTexture(&bufferCopyView, &textureCopyView, &copySize);
-    dawn::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPass.renderPassInfo);
+    wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPass.renderPassInfo);
     pass.SetPipeline(pipeline);
-    pass.SetBindGroup(0, bindGroup, 0, nullptr);
+    pass.SetBindGroup(0, bindGroup);
     pass.Draw(3, 1, 0, 0);
     pass.EndPass();
 
-    dawn::CommandBuffer commands = encoder.Finish();
+    wgpu::CommandBuffer commands = encoder.Finish();
     queue.Submit(1, &commands);
 
     RGBA8 filled(0, 255, 0, 255);
@@ -288,7 +360,7 @@ TEST_P(BindGroupTests, MultipleBindLayouts) {
 
     utils::BasicRenderPass renderPass = utils::CreateBasicRenderPass(device, kRTSize, kRTSize);
 
-    dawn::ShaderModule vsModule =
+    wgpu::ShaderModule vsModule =
         utils::CreateShaderModule(device, utils::SingleShaderStage::Vertex, R"(
         #version 450
         layout (set = 0, binding = 0) uniform vertexUniformBuffer1 {
@@ -298,11 +370,11 @@ TEST_P(BindGroupTests, MultipleBindLayouts) {
             mat2 transform2;
         };
         void main() {
-            const vec2 pos[3] = vec2[3](vec2(-1.f, -1.f), vec2(1.f, -1.f), vec2(-1.f, 1.f));
+            const vec2 pos[3] = vec2[3](vec2(-1.f, 1.f), vec2(1.f, 1.f), vec2(-1.f, -1.f));
             gl_Position = vec4((transform1 + transform2) * pos[gl_VertexIndex], 0.f, 1.f);
         })");
 
-    dawn::ShaderModule fsModule =
+    wgpu::ShaderModule fsModule =
         utils::CreateShaderModule(device, utils::SingleShaderStage::Fragment, R"(
         #version 450
         layout (set = 0, binding = 1) uniform fragmentUniformBuffer1 {
@@ -316,21 +388,21 @@ TEST_P(BindGroupTests, MultipleBindLayouts) {
             fragColor = color1 + color2;
         })");
 
-    dawn::BindGroupLayout layout = utils::MakeBindGroupLayout(
+    wgpu::BindGroupLayout layout = utils::MakeBindGroupLayout(
         device, {
-                    {0, dawn::ShaderStage::Vertex, dawn::BindingType::UniformBuffer},
-                    {1, dawn::ShaderStage::Fragment, dawn::BindingType::UniformBuffer},
+                    {0, wgpu::ShaderStage::Vertex, wgpu::BindingType::UniformBuffer},
+                    {1, wgpu::ShaderStage::Fragment, wgpu::BindingType::UniformBuffer},
                 });
 
-    dawn::PipelineLayout pipelineLayout = MakeBasicPipelineLayout(device, {layout, layout});
+    wgpu::PipelineLayout pipelineLayout = MakeBasicPipelineLayout(device, {layout, layout});
 
     utils::ComboRenderPipelineDescriptor textureDescriptor(device);
     textureDescriptor.layout = pipelineLayout;
     textureDescriptor.vertexStage.module = vsModule;
     textureDescriptor.cFragmentStage.module = fsModule;
-    textureDescriptor.cColorStates[0]->format = renderPass.colorFormat;
+    textureDescriptor.cColorStates[0].format = renderPass.colorFormat;
 
-    dawn::RenderPipeline pipeline = device.CreateRenderPipeline(&textureDescriptor);
+    wgpu::RenderPipeline pipeline = device.CreateRenderPipeline(&textureDescriptor);
 
     struct Data {
         float transform[8];
@@ -340,8 +412,8 @@ TEST_P(BindGroupTests, MultipleBindLayouts) {
     ASSERT(offsetof(Data, color) == 256);
 
     std::vector<Data> data;
-    std::vector<dawn::Buffer> buffers;
-    std::vector<dawn::BindGroup> bindGroups;
+    std::vector<wgpu::Buffer> buffers;
+    std::vector<wgpu::BindGroup> bindGroups;
 
     data.push_back(
         {{1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, {0}, {0.0f, 1.0f, 0.0f, 1.0f}});
@@ -350,23 +422,23 @@ TEST_P(BindGroupTests, MultipleBindLayouts) {
         {{0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f}, {0}, {1.0f, 0.0f, 0.0f, 1.0f}});
 
     for (int i = 0; i < 2; i++) {
-        dawn::Buffer buffer =
-            utils::CreateBufferFromData(device, &data[i], sizeof(Data), dawn::BufferUsage::Uniform);
+        wgpu::Buffer buffer =
+            utils::CreateBufferFromData(device, &data[i], sizeof(Data), wgpu::BufferUsage::Uniform);
         buffers.push_back(buffer);
         bindGroups.push_back(utils::MakeBindGroup(device, layout,
                                                   {{0, buffers[i], 0, sizeof(Data::transform)},
                                                    {1, buffers[i], 256, sizeof(Data::color)}}));
     }
 
-    dawn::CommandEncoder encoder = device.CreateCommandEncoder();
-    dawn::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPass.renderPassInfo);
+    wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
+    wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPass.renderPassInfo);
     pass.SetPipeline(pipeline);
-    pass.SetBindGroup(0, bindGroups[0], 0, nullptr);
-    pass.SetBindGroup(1, bindGroups[1], 0, nullptr);
+    pass.SetBindGroup(0, bindGroups[0]);
+    pass.SetBindGroup(1, bindGroups[1]);
     pass.Draw(3, 1, 0, 0);
     pass.EndPass();
 
-    dawn::CommandBuffer commands = encoder.Finish();
+    wgpu::CommandBuffer commands = encoder.Finish();
     queue.Submit(1, &commands);
 
     RGBA8 filled(255, 255, 0, 255);
@@ -380,72 +452,42 @@ TEST_P(BindGroupTests, MultipleBindLayouts) {
 
 // This test reproduces an out-of-bound bug on D3D12 backends when calling draw command twice with
 // one pipeline that has 4 bind group sets in one render pass.
-TEST_P(BindGroupTests, DrawTwiceInSamePipelineWithFourBindGroupSets)
-{
+TEST_P(BindGroupTests, DrawTwiceInSamePipelineWithFourBindGroupSets) {
     utils::BasicRenderPass renderPass = utils::CreateBasicRenderPass(device, kRTSize, kRTSize);
 
-    dawn::ShaderModule vsModule =
-        utils::CreateShaderModule(device, utils::SingleShaderStage::Vertex, R"(
-        #version 450
-        void main() {
-            const vec2 pos[3] = vec2[3](vec2(-1.f, -1.f), vec2(1.f, -1.f), vec2(-1.f, 1.f));
-            gl_Position = vec4(pos[gl_VertexIndex], 0.f, 1.f);
-        })");
+    wgpu::BindGroupLayout layout = utils::MakeBindGroupLayout(
+        device, {{0, wgpu::ShaderStage::Fragment, wgpu::BindingType::UniformBuffer}});
 
-    dawn::ShaderModule fsModule =
-        utils::CreateShaderModule(device, utils::SingleShaderStage::Fragment, R"(
-        #version 450
-        layout (std140, set = 0, binding = 0) uniform fragmentUniformBuffer1 {
-            vec4 color1;
-        };
-        layout (std140, set = 1, binding = 0) uniform fragmentUniformBuffer2 {
-            vec4 color2;
-        };
-        layout (std140, set = 2, binding = 0) uniform fragmentUniformBuffer3 {
-            vec4 color3;
-        };
-        layout (std140, set = 3, binding = 0) uniform fragmentUniformBuffer4 {
-            vec4 color4;
-        };
-        layout(location = 0) out vec4 fragColor;
-        void main() {
-            fragColor = color1 + color2 + color3 + color4;
-        })");
+    wgpu::RenderPipeline pipeline =
+        MakeTestPipeline(renderPass,
+                         {wgpu::BindingType::UniformBuffer, wgpu::BindingType::UniformBuffer,
+                          wgpu::BindingType::UniformBuffer, wgpu::BindingType::UniformBuffer},
+                         {layout, layout, layout, layout});
 
-    dawn::BindGroupLayout layout = utils::MakeBindGroupLayout(
-        device, {{0, dawn::ShaderStage::Fragment, dawn::BindingType::UniformBuffer}});
-    dawn::PipelineLayout pipelineLayout = MakeBasicPipelineLayout(
-        device, { layout, layout, layout, layout });
-
-    utils::ComboRenderPipelineDescriptor pipelineDescriptor(device);
-    pipelineDescriptor.layout = pipelineLayout;
-    pipelineDescriptor.vertexStage.module = vsModule;
-    pipelineDescriptor.cFragmentStage.module = fsModule;
-    pipelineDescriptor.cColorStates[0]->format = renderPass.colorFormat;
-
-    dawn::RenderPipeline pipeline = device.CreateRenderPipeline(&pipelineDescriptor);
-    dawn::CommandEncoder encoder = device.CreateCommandEncoder();
-    dawn::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPass.renderPassInfo);
+    wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
+    wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPass.renderPassInfo);
 
     pass.SetPipeline(pipeline);
 
-    std::array<float, 4> color = { 0.25, 0, 0, 0.25 };
-    dawn::Buffer uniformBuffer =
-        utils::CreateBufferFromData(device, &color, sizeof(color), dawn::BufferUsage::Uniform);
-    dawn::BindGroup bindGroup = utils::MakeBindGroup(
-        device, layout, { { 0, uniformBuffer, 0, sizeof(color) } });
+    // The color will be added 8 times, so the value should be 0.125. But we choose 0.126
+    // because of precision issues on some devices (for example NVIDIA bots).
+    std::array<float, 4> color = {0.126, 0, 0, 0.126};
+    wgpu::Buffer uniformBuffer =
+        utils::CreateBufferFromData(device, &color, sizeof(color), wgpu::BufferUsage::Uniform);
+    wgpu::BindGroup bindGroup =
+        utils::MakeBindGroup(device, layout, {{0, uniformBuffer, 0, sizeof(color)}});
 
-    pass.SetBindGroup(0, bindGroup, 0, nullptr);
-    pass.SetBindGroup(1, bindGroup, 0, nullptr);
-    pass.SetBindGroup(2, bindGroup, 0, nullptr);
-    pass.SetBindGroup(3, bindGroup, 0, nullptr);
+    pass.SetBindGroup(0, bindGroup);
+    pass.SetBindGroup(1, bindGroup);
+    pass.SetBindGroup(2, bindGroup);
+    pass.SetBindGroup(3, bindGroup);
     pass.Draw(3, 1, 0, 0);
 
     pass.SetPipeline(pipeline);
     pass.Draw(3, 1, 0, 0);
     pass.EndPass();
 
-    dawn::CommandBuffer commands = encoder.Finish();
+    wgpu::CommandBuffer commands = encoder.Finish();
     queue.Submit(1, &commands);
 
     RGBA8 filled(255, 0, 0, 255);
@@ -455,6 +497,322 @@ TEST_P(BindGroupTests, DrawTwiceInSamePipelineWithFourBindGroupSets)
     EXPECT_PIXEL_RGBA8_EQ(filled, renderPass.color, max, min);
     EXPECT_PIXEL_RGBA8_EQ(filled, renderPass.color, min, max);
     EXPECT_PIXEL_RGBA8_EQ(notFilled, renderPass.color, max, max);
+}
+
+// Test that bind groups can be set before the pipeline.
+TEST_P(BindGroupTests, SetBindGroupBeforePipeline) {
+    utils::BasicRenderPass renderPass = utils::CreateBasicRenderPass(device, kRTSize, kRTSize);
+
+    // Create a bind group layout which uses a single uniform buffer.
+    wgpu::BindGroupLayout layout = utils::MakeBindGroupLayout(
+        device, {{0, wgpu::ShaderStage::Fragment, wgpu::BindingType::UniformBuffer}});
+
+    // Create a pipeline that uses the uniform bind group layout.
+    wgpu::RenderPipeline pipeline =
+        MakeTestPipeline(renderPass, {wgpu::BindingType::UniformBuffer}, {layout});
+
+    wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
+    wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPass.renderPassInfo);
+
+    // Create a bind group with a uniform buffer and fill it with RGBAunorm(1, 0, 0, 1).
+    std::array<float, 4> color = {1, 0, 0, 1};
+    wgpu::Buffer uniformBuffer =
+        utils::CreateBufferFromData(device, &color, sizeof(color), wgpu::BufferUsage::Uniform);
+    wgpu::BindGroup bindGroup =
+        utils::MakeBindGroup(device, layout, {{0, uniformBuffer, 0, sizeof(color)}});
+
+    // Set the bind group, then the pipeline, and draw.
+    pass.SetBindGroup(0, bindGroup);
+    pass.SetPipeline(pipeline);
+    pass.Draw(3, 1, 0, 0);
+
+    pass.EndPass();
+
+    wgpu::CommandBuffer commands = encoder.Finish();
+    queue.Submit(1, &commands);
+
+    // The result should be red.
+    RGBA8 filled(255, 0, 0, 255);
+    RGBA8 notFilled(0, 0, 0, 0);
+    int min = 1, max = kRTSize - 3;
+    EXPECT_PIXEL_RGBA8_EQ(filled, renderPass.color, min, min);
+    EXPECT_PIXEL_RGBA8_EQ(filled, renderPass.color, max, min);
+    EXPECT_PIXEL_RGBA8_EQ(filled, renderPass.color, min, max);
+    EXPECT_PIXEL_RGBA8_EQ(notFilled, renderPass.color, max, max);
+}
+
+// Test that dynamic bind groups can be set before the pipeline.
+TEST_P(BindGroupTests, SetDynamicBindGroupBeforePipeline) {
+    utils::BasicRenderPass renderPass = utils::CreateBasicRenderPass(device, kRTSize, kRTSize);
+
+    // Create a bind group layout which uses a single dynamic uniform buffer.
+    wgpu::BindGroupLayout layout = utils::MakeBindGroupLayout(
+        device, {{0, wgpu::ShaderStage::Fragment, wgpu::BindingType::UniformBuffer, true}});
+
+    // Create a pipeline that uses the dynamic uniform bind group layout for two bind groups.
+    wgpu::RenderPipeline pipeline = MakeTestPipeline(
+        renderPass, {wgpu::BindingType::UniformBuffer, wgpu::BindingType::UniformBuffer},
+        {layout, layout});
+
+    // Prepare data RGBAunorm(1, 0, 0, 0.5) and RGBAunorm(0, 1, 0, 0.5). They will be added in the
+    // shader.
+    std::array<float, 4> color0 = {1, 0, 0, 0.501};
+    std::array<float, 4> color1 = {0, 1, 0, 0.501};
+
+    size_t color1Offset = Align(sizeof(color0), kMinDynamicBufferOffsetAlignment);
+
+    std::vector<uint8_t> data(color1Offset + sizeof(color1));
+    memcpy(data.data(), color0.data(), sizeof(color0));
+    memcpy(data.data() + color1Offset, color1.data(), sizeof(color1));
+
+    // Create a bind group and uniform buffer with the color data. It will be bound at the offset
+    // to each color.
+    wgpu::Buffer uniformBuffer =
+        utils::CreateBufferFromData(device, data.data(), data.size(), wgpu::BufferUsage::Uniform);
+    wgpu::BindGroup bindGroup =
+        utils::MakeBindGroup(device, layout, {{0, uniformBuffer, 0, 4 * sizeof(float)}});
+
+    wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
+    wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPass.renderPassInfo);
+
+    // Set the first dynamic bind group.
+    uint32_t dynamicOffset = 0;
+    pass.SetBindGroup(0, bindGroup, 1, &dynamicOffset);
+
+    // Set the second dynamic bind group.
+    dynamicOffset = color1Offset;
+    pass.SetBindGroup(1, bindGroup, 1, &dynamicOffset);
+
+    // Set the pipeline and draw.
+    pass.SetPipeline(pipeline);
+    pass.Draw(3, 1, 0, 0);
+
+    pass.EndPass();
+
+    wgpu::CommandBuffer commands = encoder.Finish();
+    queue.Submit(1, &commands);
+
+    // The result should be RGBAunorm(1, 0, 0, 0.5) + RGBAunorm(0, 1, 0, 0.5)
+    RGBA8 filled(255, 255, 0, 255);
+    RGBA8 notFilled(0, 0, 0, 0);
+    int min = 1, max = kRTSize - 3;
+    EXPECT_PIXEL_RGBA8_EQ(filled, renderPass.color, min, min);
+    EXPECT_PIXEL_RGBA8_EQ(filled, renderPass.color, max, min);
+    EXPECT_PIXEL_RGBA8_EQ(filled, renderPass.color, min, max);
+    EXPECT_PIXEL_RGBA8_EQ(notFilled, renderPass.color, max, max);
+}
+
+// Test that bind groups set for one pipeline are still set when the pipeline changes.
+TEST_P(BindGroupTests, BindGroupsPersistAfterPipelineChange) {
+    utils::BasicRenderPass renderPass = utils::CreateBasicRenderPass(device, kRTSize, kRTSize);
+
+    // Create a bind group layout which uses a single dynamic uniform buffer.
+    wgpu::BindGroupLayout uniformLayout = utils::MakeBindGroupLayout(
+        device, {{0, wgpu::ShaderStage::Fragment, wgpu::BindingType::UniformBuffer, true}});
+
+    // Create a bind group layout which uses a single dynamic storage buffer.
+    wgpu::BindGroupLayout storageLayout = utils::MakeBindGroupLayout(
+        device, {{0, wgpu::ShaderStage::Fragment, wgpu::BindingType::StorageBuffer, true}});
+
+    // Create a pipeline which uses the uniform buffer and storage buffer bind groups.
+    wgpu::RenderPipeline pipeline0 = MakeTestPipeline(
+        renderPass, {wgpu::BindingType::UniformBuffer, wgpu::BindingType::StorageBuffer},
+        {uniformLayout, storageLayout});
+
+    // Create a pipeline which uses the uniform buffer bind group twice.
+    wgpu::RenderPipeline pipeline1 = MakeTestPipeline(
+        renderPass, {wgpu::BindingType::UniformBuffer, wgpu::BindingType::UniformBuffer},
+        {uniformLayout, uniformLayout});
+
+    // Prepare data RGBAunorm(1, 0, 0, 0.5) and RGBAunorm(0, 1, 0, 0.5). They will be added in the
+    // shader.
+    std::array<float, 4> color0 = {1, 0, 0, 0.5};
+    std::array<float, 4> color1 = {0, 1, 0, 0.5};
+
+    size_t color1Offset = Align(sizeof(color0), kMinDynamicBufferOffsetAlignment);
+
+    std::vector<uint8_t> data(color1Offset + sizeof(color1));
+    memcpy(data.data(), color0.data(), sizeof(color0));
+    memcpy(data.data() + color1Offset, color1.data(), sizeof(color1));
+
+    // Create a bind group and uniform buffer with the color data. It will be bound at the offset
+    // to each color.
+    wgpu::Buffer uniformBuffer =
+        utils::CreateBufferFromData(device, data.data(), data.size(), wgpu::BufferUsage::Uniform);
+    wgpu::BindGroup bindGroup =
+        utils::MakeBindGroup(device, uniformLayout, {{0, uniformBuffer, 0, 4 * sizeof(float)}});
+
+    wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
+    wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPass.renderPassInfo);
+
+    // Set the first pipeline (uniform, storage).
+    pass.SetPipeline(pipeline0);
+
+    // Set the first bind group at a dynamic offset.
+    // This bind group matches the slot in the pipeline layout.
+    uint32_t dynamicOffset = 0;
+    pass.SetBindGroup(0, bindGroup, 1, &dynamicOffset);
+
+    // Set the second bind group at a dynamic offset.
+    // This bind group does not match the slot in the pipeline layout.
+    dynamicOffset = color1Offset;
+    pass.SetBindGroup(1, bindGroup, 1, &dynamicOffset);
+
+    // Set the second pipeline (uniform, uniform).
+    // Both bind groups match the pipeline.
+    // They should persist and not need to be bound again.
+    pass.SetPipeline(pipeline1);
+    pass.Draw(3, 1, 0, 0);
+
+    pass.EndPass();
+
+    wgpu::CommandBuffer commands = encoder.Finish();
+    queue.Submit(1, &commands);
+
+    // The result should be RGBAunorm(1, 0, 0, 0.5) + RGBAunorm(0, 1, 0, 0.5)
+    RGBA8 filled(255, 255, 0, 255);
+    RGBA8 notFilled(0, 0, 0, 0);
+    int min = 1, max = kRTSize - 3;
+    EXPECT_PIXEL_RGBA8_EQ(filled, renderPass.color, min, min);
+    EXPECT_PIXEL_RGBA8_EQ(filled, renderPass.color, max, min);
+    EXPECT_PIXEL_RGBA8_EQ(filled, renderPass.color, min, max);
+    EXPECT_PIXEL_RGBA8_EQ(notFilled, renderPass.color, max, max);
+}
+
+// Do a successful draw. Then, change the pipeline and one bind group.
+// Draw to check that the all bind groups are set.
+TEST_P(BindGroupTests, DrawThenChangePipelineAndBindGroup) {
+    utils::BasicRenderPass renderPass = utils::CreateBasicRenderPass(device, kRTSize, kRTSize);
+
+    // Create a bind group layout which uses a single dynamic uniform buffer.
+    wgpu::BindGroupLayout uniformLayout = utils::MakeBindGroupLayout(
+        device, {{0, wgpu::ShaderStage::Fragment, wgpu::BindingType::UniformBuffer, true}});
+
+    // Create a bind group layout which uses a single dynamic storage buffer.
+    wgpu::BindGroupLayout storageLayout = utils::MakeBindGroupLayout(
+        device, {{0, wgpu::ShaderStage::Fragment, wgpu::BindingType::StorageBuffer, true}});
+
+    // Create a pipeline with pipeline layout (uniform, uniform, storage).
+    wgpu::RenderPipeline pipeline0 =
+        MakeTestPipeline(renderPass,
+                         {wgpu::BindingType::UniformBuffer, wgpu::BindingType::UniformBuffer,
+                          wgpu::BindingType::StorageBuffer},
+                         {uniformLayout, uniformLayout, storageLayout});
+
+    // Create a pipeline with pipeline layout (uniform, storage, storage).
+    wgpu::RenderPipeline pipeline1 =
+        MakeTestPipeline(renderPass,
+                         {wgpu::BindingType::UniformBuffer, wgpu::BindingType::StorageBuffer,
+                          wgpu::BindingType::StorageBuffer},
+                         {uniformLayout, storageLayout, storageLayout});
+
+    // Prepare color data.
+    // The first draw will use { color0, color1, color2 }.
+    // The second draw will use { color0, color3, color2 }.
+    // The pipeline uses additive color and alpha blending so the result of two draws should be
+    // { 2 * color0 + color1 + 2 * color2 + color3} = RGBAunorm(1, 1, 1, 1)
+    std::array<float, 4> color0 = {0.501, 0, 0, 0};
+    std::array<float, 4> color1 = {0, 1, 0, 0};
+    std::array<float, 4> color2 = {0, 0, 0, 0.501};
+    std::array<float, 4> color3 = {0, 0, 1, 0};
+
+    size_t color1Offset = Align(sizeof(color0), kMinDynamicBufferOffsetAlignment);
+    size_t color2Offset = Align(color1Offset + sizeof(color1), kMinDynamicBufferOffsetAlignment);
+    size_t color3Offset = Align(color2Offset + sizeof(color2), kMinDynamicBufferOffsetAlignment);
+
+    std::vector<uint8_t> data(color3Offset + sizeof(color3), 0);
+    memcpy(data.data(), color0.data(), sizeof(color0));
+    memcpy(data.data() + color1Offset, color1.data(), sizeof(color1));
+    memcpy(data.data() + color2Offset, color2.data(), sizeof(color2));
+    memcpy(data.data() + color3Offset, color3.data(), sizeof(color3));
+
+    // Create a uniform and storage buffer bind groups to bind the color data.
+    wgpu::Buffer uniformBuffer =
+        utils::CreateBufferFromData(device, data.data(), data.size(), wgpu::BufferUsage::Uniform);
+
+    wgpu::Buffer storageBuffer =
+        utils::CreateBufferFromData(device, data.data(), data.size(), wgpu::BufferUsage::Storage);
+
+    wgpu::BindGroup uniformBindGroup =
+        utils::MakeBindGroup(device, uniformLayout, {{0, uniformBuffer, 0, 4 * sizeof(float)}});
+    wgpu::BindGroup storageBindGroup =
+        utils::MakeBindGroup(device, storageLayout, {{0, storageBuffer, 0, 4 * sizeof(float)}});
+
+    wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
+    wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPass.renderPassInfo);
+
+    // Set the pipeline to (uniform, uniform, storage)
+    pass.SetPipeline(pipeline0);
+
+    // Set the first bind group to color0 in the dynamic uniform buffer.
+    uint32_t dynamicOffset = 0;
+    pass.SetBindGroup(0, uniformBindGroup, 1, &dynamicOffset);
+
+    // Set the first bind group to color1 in the dynamic uniform buffer.
+    dynamicOffset = color1Offset;
+    pass.SetBindGroup(1, uniformBindGroup, 1, &dynamicOffset);
+
+    // Set the first bind group to color2 in the dynamic storage buffer.
+    dynamicOffset = color2Offset;
+    pass.SetBindGroup(2, storageBindGroup, 1, &dynamicOffset);
+
+    pass.Draw(3, 1, 0, 0);
+
+    // Set the pipeline to (uniform, storage, storage)
+    //  - The first bind group should persist (inherited on some backends)
+    //  - The second bind group needs to be set again to pass validation.
+    //    It changed from uniform to storage.
+    //  - The third bind group should persist. It should be set again by the backend internally.
+    pass.SetPipeline(pipeline1);
+
+    // Set the second bind group to color3 in the dynamic storage buffer.
+    dynamicOffset = color3Offset;
+    pass.SetBindGroup(1, storageBindGroup, 1, &dynamicOffset);
+
+    pass.Draw(3, 1, 0, 0);
+    pass.EndPass();
+
+    wgpu::CommandBuffer commands = encoder.Finish();
+    queue.Submit(1, &commands);
+
+    RGBA8 filled(255, 255, 255, 255);
+    RGBA8 notFilled(0, 0, 0, 0);
+    int min = 1, max = kRTSize - 3;
+    EXPECT_PIXEL_RGBA8_EQ(filled, renderPass.color, min, min);
+    EXPECT_PIXEL_RGBA8_EQ(filled, renderPass.color, max, min);
+    EXPECT_PIXEL_RGBA8_EQ(filled, renderPass.color, min, max);
+    EXPECT_PIXEL_RGBA8_EQ(notFilled, renderPass.color, max, max);
+}
+
+// Test that visibility of bindings in BindGroupLayout can be none
+// This test passes by not asserting or crashing.
+TEST_P(BindGroupTests, BindGroupLayoutVisibilityCanBeNone) {
+    utils::BasicRenderPass renderPass = utils::CreateBasicRenderPass(device, kRTSize, kRTSize);
+
+    wgpu::BindGroupLayoutBinding binding = {0, wgpu::ShaderStage::None,
+                                            wgpu::BindingType::UniformBuffer};
+    wgpu::BindGroupLayoutDescriptor descriptor;
+    descriptor.bindingCount = 1;
+    descriptor.bindings = &binding;
+    wgpu::BindGroupLayout layout = device.CreateBindGroupLayout(&descriptor);
+
+    wgpu::RenderPipeline pipeline = MakeTestPipeline(renderPass, {}, {layout});
+
+    std::array<float, 4> color = {1, 0, 0, 1};
+    wgpu::Buffer uniformBuffer =
+        utils::CreateBufferFromData(device, &color, sizeof(color), wgpu::BufferUsage::Uniform);
+    wgpu::BindGroup bindGroup =
+        utils::MakeBindGroup(device, layout, {{0, uniformBuffer, 0, sizeof(color)}});
+
+    wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
+    wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPass.renderPassInfo);
+    pass.SetPipeline(pipeline);
+    pass.SetBindGroup(0, bindGroup);
+    pass.Draw(3, 1, 0, 0);
+    pass.EndPass();
+
+    wgpu::CommandBuffer commands = encoder.Finish();
+    queue.Submit(1, &commands);
 }
 
 DAWN_INSTANTIATE_TEST(BindGroupTests, D3D12Backend, MetalBackend, OpenGLBackend, VulkanBackend);

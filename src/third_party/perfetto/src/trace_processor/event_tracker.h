@@ -29,8 +29,7 @@ namespace trace_processor {
 
 class TraceProcessorContext;
 
-// This class takes sched events from the trace and processes them to store
-// as sched slices.
+// Tracks sched events, instants, and counters.
 class EventTracker {
  public:
   explicit EventTracker(TraceProcessorContext*);
@@ -38,29 +37,20 @@ class EventTracker {
   EventTracker& operator=(const EventTracker&) = delete;
   virtual ~EventTracker();
 
-  // This method is called when a sched switch event is seen in the trace.
-  virtual void PushSchedSwitch(uint32_t cpu,
-                               int64_t timestamp,
-                               uint32_t prev_pid,
-                               base::StringView prev_comm,
-                               int32_t prev_prio,
-                               int64_t prev_state,
-                               uint32_t next_pid,
-                               base::StringView next_comm,
-                               int32_t next_prio);
+  // Adds a counter event to the counters table returning the RowId of the
+  // newly added row.
+  virtual RowId PushCounter(int64_t timestamp, double value, TrackId track_id);
 
-  // This method is called when a counter event is seen in the trace.
-  virtual RowId PushCounter(int64_t timestamp,
-                            double value,
-                            StringId name_id,
-                            int64_t ref,
-                            RefType ref_type,
-                            bool resolve_utid_to_upid = false);
-
-  // This method is called when a counter event is seen in the trace.
-  virtual RowId PushCounter(int64_t timestamp,
-                            double value,
-                            TraceStorage::CounterDefinitions::Id defn_id);
+  // Adds a counter event to the counters table for counter events which
+  // should be associated with a process but only have a thread context
+  // (e.g. rss_stat events).
+  //
+  // This function will resolve the utid to a upid when the events are
+  // flushed (see |FlushPendingEvents()|).
+  virtual RowId PushProcessCounterForThread(int64_t timestamp,
+                                            double value,
+                                            StringId name_id,
+                                            UniqueTid utid);
 
   // This method is called when a instant event is seen in the trace.
   virtual RowId PushInstant(int64_t timestamp,
@@ -74,13 +64,13 @@ class EventTracker {
   // storage.
   void FlushPendingEvents();
 
- private:
-  // Represents a slice which is currently pending.
-  struct PendingSchedSlice {
-    size_t storage_index = std::numeric_limits<size_t>::max();
-    uint32_t next_pid = 0;
-  };
+  // For SchedEventTracker.
+  int64_t max_timestamp() const { return max_timestamp_; }
+  void UpdateMaxTimestamp(int64_t ts) {
+    max_timestamp_ = std::max(ts, max_timestamp_);
+  }
 
+ private:
   // Represents a counter event which is currently pending upid resolution.
   struct PendingUpidResolutionCounter {
     uint32_t row = 0;
@@ -94,9 +84,6 @@ class EventTracker {
     UniqueTid utid = 0;
   };
 
-  // Store pending sched slices for each CPU.
-  std::array<PendingSchedSlice, base::kMaxCpus> pending_sched_per_cpu_{};
-
   // Store the rows in the counters table which need upids resolved.
   std::vector<PendingUpidResolutionCounter> pending_upid_resolution_counter_;
 
@@ -105,11 +92,7 @@ class EventTracker {
 
   // Timestamp of the previous event. Used to discard events arriving out
   // of order.
-  int64_t prev_timestamp_ = 0;
-
-  static constexpr uint8_t kSchedSwitchMaxFieldId = 7;
-  std::array<StringId, kSchedSwitchMaxFieldId + 1> sched_switch_field_ids_;
-  StringId sched_switch_id_;
+  int64_t max_timestamp_ = 0;
 
   TraceProcessorContext* const context_;
 };

@@ -143,17 +143,27 @@ void LoginHandler::Start(
   // If the WebRequest API wants to take a shot at intercepting this, we can
   // return immediately. |continuation| will eventually be invoked if the
   // request isn't cancelled.
-  auto* api =
-      extensions::BrowserContextKeyedAPIFactory<extensions::WebRequestAPI>::Get(
-          web_contents()->GetBrowserContext());
-  auto continuation = base::BindOnce(&LoginHandler::MaybeSetUpLoginPrompt,
-                                     weak_factory_.GetWeakPtr(), request_url,
-                                     is_main_frame, mode);
-  if (api->MaybeProxyAuthRequest(web_contents()->GetBrowserContext(),
-                                 auth_info_, std::move(response_headers),
-                                 request_id, is_main_frame,
-                                 std::move(continuation))) {
-    return;
+  //
+  // When committed interstitials are enabled, LoginHandler::Start is called
+  // twice: once when Chrome initially receives the auth challenge, and again
+  // after a blank error page is committed to show a login prompt on top of
+  // it. Extensions should only be notified of each auth request once, and only
+  // before the request is cancelled. Therefore, the WebRequest API is only
+  // notified in PRE_COMMIT mode.
+  if (!base::FeatureList::IsEnabled(
+          features::kHTTPAuthCommittedInterstitials) ||
+      mode == PRE_COMMIT) {
+    auto* api = extensions::BrowserContextKeyedAPIFactory<
+        extensions::WebRequestAPI>::Get(web_contents()->GetBrowserContext());
+    auto continuation = base::BindOnce(&LoginHandler::MaybeSetUpLoginPrompt,
+                                       weak_factory_.GetWeakPtr(), request_url,
+                                       is_main_frame, mode);
+    if (api->MaybeProxyAuthRequest(web_contents()->GetBrowserContext(),
+                                   auth_info_, std::move(response_headers),
+                                   request_id, is_main_frame,
+                                   std::move(continuation))) {
+      return;
+    }
   }
 #endif
 
@@ -533,7 +543,7 @@ void LoginHandler::MaybeSetUpLoginPrompt(
       (is_cross_origin_request || web_contents()->ShowingInterstitialPage() ||
        auth_info().is_proxy) &&
       web_contents()->GetDelegate()->GetDisplayMode(web_contents()) !=
-          blink::kWebDisplayModeStandalone) {
+          blink::mojom::DisplayMode::kStandalone) {
     DCHECK(!base::FeatureList::IsEnabled(
         features::kHTTPAuthCommittedInterstitials));
     RecordHttpAuthPromptType(AUTH_PROMPT_TYPE_WITH_INTERSTITIAL);

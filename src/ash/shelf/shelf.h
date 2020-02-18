@@ -40,6 +40,7 @@ class StatusAreaWidget;
 class ShelfObserver;
 class TrayBackgroundView;
 class WorkAreaInsets;
+class ShelfTooltipManager;
 
 // Controller for the shelf state. One per display, because each display might
 // have different shelf alignment, autohide, etc. Exists for the lifetime of the
@@ -116,15 +117,16 @@ class ASH_EXPORT Shelf : public ShelfLayoutManagerObserver {
 
   void UpdateVisibilityState();
 
-  // Sets whether shelf's visibility state updates should be suspended.
-  void SetSuspendVisibilityUpdate(bool value);
-
   void MaybeUpdateShelfBackground();
 
   ShelfVisibilityState GetVisibilityState() const;
 
   // Returns the ideal bounds of the shelf assuming it is visible.
   gfx::Rect GetIdealBounds() const;
+
+  // Returns the ideal bounds of the shelf, but in tablet mode always returns
+  // the bounds of the in-app shelf.
+  gfx::Rect GetIdealBoundsForWorkAreaCalculation();
 
   // Returns the screen bounds of the item for the specified window. If there is
   // no item for the specified window an empty rect is returned.
@@ -140,7 +142,7 @@ class ASH_EXPORT Shelf : public ShelfLayoutManagerObserver {
   void ProcessMouseEvent(const ui::MouseEvent& event);
 
   // Handles a mousewheel scroll event coming from the shelf.
-  void ProcessMouseWheelEvent(const ui::MouseWheelEvent& event);
+  void ProcessMouseWheelEvent(ui::MouseWheelEvent* event);
 
   void AddObserver(ShelfObserver* observer);
   void RemoveObserver(ShelfObserver* observer);
@@ -185,6 +187,8 @@ class ASH_EXPORT Shelf : public ShelfLayoutManagerObserver {
   }
   int auto_hide_lock() const { return auto_hide_lock_; }
 
+  ShelfTooltipManager* tooltip() { return tooltip_.get(); }
+
  protected:
   // ShelfLayoutManagerObserver:
   void WillDeleteShelfLayoutManager() override;
@@ -196,6 +200,7 @@ class ASH_EXPORT Shelf : public ShelfLayoutManagerObserver {
 
  private:
   class AutoHideEventHandler;
+  class AutoDimEventHandler;
   friend class ShelfLayoutManagerTest;
 
   // Returns work area insets object for the window with this shelf.
@@ -210,7 +215,7 @@ class ASH_EXPORT Shelf : public ShelfLayoutManagerObserver {
   std::unique_ptr<ShelfWidget> shelf_widget_;
 
   // These initial values hide the shelf until user preferences are available.
-  ShelfAlignment alignment_ = SHELF_ALIGNMENT_BOTTOM_LOCKED;
+  ShelfAlignment alignment_ = ShelfAlignment::kBottomLocked;
   ShelfAutoHideBehavior auto_hide_behavior_ = SHELF_AUTO_HIDE_ALWAYS_HIDDEN;
 
   // Sets shelf alignment to bottom during login and screen lock.
@@ -220,6 +225,9 @@ class ASH_EXPORT Shelf : public ShelfLayoutManagerObserver {
 
   // Forwards mouse and gesture events to ShelfLayoutManager for auto-hide.
   std::unique_ptr<AutoHideEventHandler> auto_hide_event_handler_;
+
+  // Forwards mouse and gesture events to ShelfLayoutManager for auto-dim.
+  std::unique_ptr<AutoDimEventHandler> auto_dim_event_handler_;
 
   // Hands focus off to different parts of the shelf.
   std::unique_ptr<ShelfFocusCycler> shelf_focus_cycler_;
@@ -235,6 +243,8 @@ class ASH_EXPORT Shelf : public ShelfLayoutManagerObserver {
   // Used by ScopedAutoHideLock to maintain the state of the lock for auto-hide
   // shelf.
   int auto_hide_lock_ = 0;
+
+  std::unique_ptr<ShelfTooltipManager> tooltip_;
 
   DISALLOW_COPY_AND_ASSIGN(Shelf);
 };

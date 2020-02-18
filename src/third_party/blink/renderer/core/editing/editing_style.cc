@@ -70,8 +70,6 @@
 
 namespace blink {
 
-using namespace cssvalue;
-
 // Editing style properties must be preserved during editing operation.
 // e.g. when a user inserts a new paragraph, all properties listed here must be
 // copied to the new paragraph.
@@ -426,7 +424,7 @@ static Color CssValueToColor(const CSSValue* value) {
   if (!value)
     return Color::kTransparent;
 
-  auto* color_value = DynamicTo<CSSColorValue>(value);
+  auto* color_value = DynamicTo<cssvalue::CSSColorValue>(value);
   if (!color_value && !value->IsPrimitiveValue() && !value->IsIdentifierValue())
     return Color::kTransparent;
 
@@ -1143,7 +1141,7 @@ bool EditingStyle::ElementIsStyledSpanOrHTMLEquivalent(
     const HTMLElement* element) {
   DCHECK(element);
   bool element_is_span_or_element_equivalent = false;
-  if (IsHTMLSpanElement(*element)) {
+  if (IsA<HTMLSpanElement>(*element)) {
     element_is_span_or_element_equivalent = true;
   } else {
     const HeapVector<Member<HTMLElementEquivalent>>& html_element_equivalents =

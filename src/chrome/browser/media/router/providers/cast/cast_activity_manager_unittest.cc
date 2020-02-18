@@ -18,7 +18,6 @@
 #include "base/test/mock_callback.h"
 #include "base/test/values_test_util.h"
 #include "base/values.h"
-#include "chrome/browser/media/router/data_decoder_util.h"
 #include "chrome/browser/media/router/providers/cast/cast_session_client.h"
 #include "chrome/browser/media/router/providers/cast/mock_activity_record.h"
 #include "chrome/browser/media/router/providers/cast/test_util.h"
@@ -29,10 +28,9 @@
 #include "components/cast_channel/cast_test_util.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/test/browser_task_environment.h"
-#include "services/data_decoder/data_decoder_service.h"
-#include "services/data_decoder/public/cpp/testing_json_parser.h"
-#include "services/data_decoder/public/mojom/constants.mojom.h"
-#include "services/service_manager/public/cpp/test/test_connector_factory.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
+#include "services/data_decoder/public/cpp/test_support/in_process_data_decoder.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -104,16 +102,15 @@ class CastActivityManagerTest : public testing::Test,
   void SetUp() override {
     CastActivityManager::SetActitivyRecordFactoryForTest(this);
 
-    router_binding_ = std::make_unique<mojo::Binding<mojom::MediaRouter>>(
-        &mock_router_, mojo::MakeRequest(&router_ptr_));
+    router_receiver_ = std::make_unique<mojo::Receiver<mojom::MediaRouter>>(
+        &mock_router_, router_remote_.BindNewPipeAndPassReceiver());
 
     session_tracker_.reset(
         new CastSessionTracker(&media_sink_service_, &message_handler_,
                                socket_service_.task_runner()));
     manager_ = std::make_unique<CastActivityManager>(
         &media_sink_service_, session_tracker_.get(), &message_handler_,
-        router_ptr_.get(),
-        std::make_unique<DataDecoder>(connector_factory_.GetDefaultConnector()),
+        router_remote_.get(),
         "theHashToken");
 
     RunUntilIdle();
@@ -303,11 +300,10 @@ class CastActivityManagerTest : public testing::Test,
 
  protected:
   content::BrowserTaskEnvironment task_environment_;
-  data_decoder::TestingJsonParser::ScopedFactoryOverride parser_override_;
-  service_manager::TestConnectorFactory connector_factory_;
+  data_decoder::test::InProcessDataDecoder in_process_data_decoder_;
   MockMojoMediaRouter mock_router_;
-  mojom::MediaRouterPtr router_ptr_;
-  std::unique_ptr<mojo::Binding<mojom::MediaRouter>> router_binding_;
+  mojo::Remote<mojom::MediaRouter> router_remote_;
+  std::unique_ptr<mojo::Receiver<mojom::MediaRouter>> router_receiver_;
   cast_channel::MockCastSocketService socket_service_;
   cast_channel::MockCastSocket socket_;
   cast_channel::MockCastMessageHandler message_handler_;
@@ -437,7 +433,7 @@ TEST_F(CastActivityManagerTest, AppMessageFromReceiver) {
   LaunchSession();
 
   // Destination ID matches client ID.
-  cast_channel::CastMessage message = cast_channel::CreateCastMessage(
+  cast::channel::CastMessage message = cast_channel::CreateCastMessage(
       "urn:x-cast:com.google.foo", base::Value(base::Value::Type::DICTIONARY),
       "sourceId", "theClientId");
 

@@ -13,10 +13,12 @@
 #include "base/no_destructor.h"
 #include "base/process/process.h"
 #include "base/process/process_handle.h"
+#include "base/profiler/sampling_profiler_thread_token.h"
 #include "base/profiler/stack_sampling_profiler.h"
 #include "base/strings/strcat.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
-#include "base/threading/thread_local.h"
+#include "base/threading/sequence_local_storage_slot.h"
+#include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "services/tracing/public/cpp/perfetto/perfetto_traced_process.h"
 #include "services/tracing/public/cpp/perfetto/producer_client.h"
@@ -156,13 +158,12 @@ class TracingSamplerProfilerDataSource
 std::atomic<uint32_t>
     TracingSamplerProfilerDataSource::incremental_state_reset_id_{0};
 
-base::ThreadLocalStorage::Slot* GetThreadLocalStorageProfilerSlot() {
-  static base::NoDestructor<base::ThreadLocalStorage::Slot>
-      thread_local_profiler_tls([](void* profiler) {
-        delete static_cast<TracingSamplerProfiler*>(profiler);
-      });
-
-  return thread_local_profiler_tls.get();
+base::SequenceLocalStorageSlot<TracingSamplerProfiler>&
+GetSequenceLocalStorageProfilerSlot() {
+  static base::NoDestructor<
+      base::SequenceLocalStorageSlot<TracingSamplerProfiler>>
+      storage;
+  return *storage;
 }
 
 }  // namespace
@@ -460,27 +461,22 @@ TracingSamplerProfiler::TracingProfileBuilder::GetCallstackIDAndMaybeEmit(
 std::unique_ptr<TracingSamplerProfiler>
 TracingSamplerProfiler::CreateOnMainThread() {
   return std::make_unique<TracingSamplerProfiler>(
-      (base::PlatformThread::CurrentId()));
+      base::GetSamplingProfilerCurrentThreadToken());
 }
 
 // static
 void TracingSamplerProfiler::CreateOnChildThread() {
-  auto* slot = GetThreadLocalStorageProfilerSlot();
-  if (slot->Get())
+  base::SequenceLocalStorageSlot<TracingSamplerProfiler>& slot =
+      GetSequenceLocalStorageProfilerSlot();
+  if (slot)
     return;
 
-  auto* profiler =
-      new TracingSamplerProfiler(base::PlatformThread::CurrentId());
-  slot->Set(profiler);
+  slot.emplace(base::GetSamplingProfilerCurrentThreadToken());
 }
 
 // static
 void TracingSamplerProfiler::DeleteOnChildThreadForTesting() {
-  auto* profiler = GetThreadLocalStorageProfilerSlot()->Get();
-  if (profiler) {
-    delete static_cast<TracingSamplerProfiler*>(profiler);
-    GetThreadLocalStorageProfilerSlot()->Set(nullptr);
-  }
+  GetSequenceLocalStorageProfilerSlot().reset();
 }
 
 // static
@@ -507,9 +503,9 @@ void TracingSamplerProfiler::StopTracingForTesting() {
 }
 
 TracingSamplerProfiler::TracingSamplerProfiler(
-    base::PlatformThreadId sampled_thread_id)
-    : sampled_thread_id_(sampled_thread_id) {
-  DCHECK_NE(sampled_thread_id_, base::kInvalidThreadId);
+    base::SamplingProfilerThreadToken sampled_thread_token)
+    : sampled_thread_token_(sampled_thread_token) {
+  DCHECK_NE(sampled_thread_token_.id, base::kInvalidThreadId);
   TracingSamplerProfilerDataSource::Get()->RegisterProfiler(this);
 }
 
@@ -544,22 +540,24 @@ void TracingSamplerProfiler::StartTracing(
   params.keep_consistent_sampling_interval = false;
 
   auto profile_builder = std::make_unique<TracingProfileBuilder>(
-      sampled_thread_id_, std::move(trace_writer), should_enable_filtering);
+      sampled_thread_token_.id, std::move(trace_writer),
+      should_enable_filtering);
   profile_builder_ = profile_builder.get();
   // Create and start the stack sampling profiler.
-#if defined(OS_ANDROID) && BUILDFLAG(CAN_UNWIND_WITH_CFI_TABLE) && \
-    defined(OFFICIAL_BUILD)
+#if defined(OS_ANDROID)
+#if BUILDFLAG(CAN_UNWIND_WITH_CFI_TABLE) && defined(OFFICIAL_BUILD)
   auto* module_cache = profile_builder->GetModuleCache();
   profiler_ = std::make_unique<base::StackSamplingProfiler>(
-      sampled_thread_id_, params, std::move(profile_builder),
-      std::make_unique<StackSamplerAndroid>(sampled_thread_id_, module_cache));
-
-#else
-  profiler_ = std::make_unique<base::StackSamplingProfiler>(
-      sampled_thread_id_, params, std::move(profile_builder));
-#endif
-
+      sampled_thread_token_, params, std::move(profile_builder),
+      std::make_unique<StackSamplerAndroid>(sampled_thread_token_,
+                                            module_cache));
   profiler_->Start();
+#endif  // BUILDFLAG(CAN_UNWIND_WITH_CFI_TABLE) && defined(OFFICIAL_BUILD)
+#else   // defined(OS_ANDROID)
+  profiler_ = std::make_unique<base::StackSamplingProfiler>(
+      sampled_thread_token_, params, std::move(profile_builder));
+  profiler_->Start();
+#endif  // defined(OS_ANDROID)
 }
 
 void TracingSamplerProfiler::StopTracing() {

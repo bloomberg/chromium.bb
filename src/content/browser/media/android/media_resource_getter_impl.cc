@@ -10,7 +10,8 @@
 #include "base/single_thread_task_runner.h"
 #include "base/task/post_task.h"
 #include "content/browser/child_process_security_policy_impl.h"
-#include "content/browser/fileapi/browser_file_system_helper.h"
+#include "content/browser/file_system/browser_file_system_helper.h"
+#include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -21,7 +22,9 @@
 #include "media/base/android/media_url_interceptor.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/auth.h"
+#include "net/base/network_isolation_key.h"
 #include "net/http/http_auth.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/restricted_cookie_manager.mojom.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -36,6 +39,8 @@ namespace {
 mojo::PendingRemote<network::mojom::RestrictedCookieManager>
 GetRestrictedCookieManagerForContext(BrowserContext* browser_context,
                                      const GURL& url,
+                                     const GURL& site_for_cookies,
+                                     const url::Origin& top_frame_origin,
                                      int render_process_id,
                                      int render_frame_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -47,6 +52,7 @@ GetRestrictedCookieManagerForContext(BrowserContext* browser_context,
   mojo::PendingRemote<network::mojom::RestrictedCookieManager> pipe;
   storage_partition->CreateRestrictedCookieManager(
       network::mojom::RestrictedCookieManagerRole::NETWORK, origin,
+      site_for_cookies, top_frame_origin,
       /* is_service_worker = */ false, render_process_id, render_frame_id,
       pipe.InitWithNewPipeAndPassReceiver());
   return pipe;
@@ -119,10 +125,19 @@ void MediaResourceGetterImpl::GetAuthCredentials(
     return;
   }
 
+  RenderFrameHostImpl* render_frame_host =
+      RenderFrameHostImpl::FromID(render_process_id_, render_frame_id_);
+  // Can't get a NetworkIsolationKey to get credentials if the RenderFrameHost
+  // has already been destroyed.
+  if (!render_frame_host) {
+    GetAuthCredentialsCallback(std::move(callback), base::nullopt);
+    return;
+  }
+
   BrowserContext::GetDefaultStoragePartition(browser_context_)
       ->GetNetworkContext()
-      ->LookupBasicAuthCredentials(
-          url,
+      ->LookupServerBasicAuthCredentials(
+          url, render_frame_host->GetNetworkIsolationKey(),
           base::BindOnce(&MediaResourceGetterImpl::GetAuthCredentialsCallback,
                          weak_factory_.GetWeakPtr(), std::move(callback)));
 }
@@ -144,7 +159,8 @@ void MediaResourceGetterImpl::GetCookies(const GURL& url,
 
   mojo::Remote<network::mojom::RestrictedCookieManager> cookie_manager(
       GetRestrictedCookieManagerForContext(
-          browser_context_, url, render_process_id_, render_frame_id_));
+          browser_context_, url, site_for_cookies, top_frame_origin,
+          render_process_id_, render_frame_id_));
   network::mojom::RestrictedCookieManager* cookie_manager_ptr =
       cookie_manager.get();
   cookie_manager_ptr->GetCookiesString(

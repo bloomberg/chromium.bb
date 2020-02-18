@@ -18,6 +18,8 @@ proto_library("chrome_settings_full_runtime") {
         "/components/policy/proto/cloud_policy_full_runtime.proto",
     "$root_gen_dir" +
         "/components/policy/proto/chrome_settings_full_runtime.proto",
+    "$root_gen_dir" +
+        "/components/policy/proto/policy_common_definitions_full_runtime.proto",
   ]
 
   use_protobuf_full = true
@@ -68,7 +70,8 @@ source_set("auditor_sources") {
     ":traffic_annotation",
     "//base",
     "//net/traffic_annotation",
-    "//third_party/libxml",
+    "//third_party/libxml:xml_reader",  # Safe, consumes Chromium-produced file.
+    "//third_party/libxml:xml_writer",
     "//third_party/protobuf:protobuf_full",
     "//third_party/re2",
   ]
@@ -95,8 +98,7 @@ test("traffic_annotation_auditor_unittests") {
     "tests/annotations_sample1.xml",
     "tests/annotations_sample2.xml",
     "tests/annotations_sample3.xml",
-    "tests/extractor_outputs/bad_assignment1.txt",
-    "tests/extractor_outputs/bad_assignment2.txt",
+    "tests/extractor_outputs/bad_assignment.txt",
     "tests/extractor_outputs/bad_call.txt",
     "tests/extractor_outputs/bad_syntax_annotation1.txt",
     "tests/extractor_outputs/bad_syntax_annotation2.txt",

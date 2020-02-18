@@ -5,6 +5,8 @@
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
 
 #include "base/logging.h"
+#include "services/network/public/mojom/url_loader.mojom.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 
 namespace blink {
 
@@ -13,15 +15,16 @@ void URLLoaderThrottle::Delegate::UpdateDeferredRequestHeaders(
     const net::HttpRequestHeaders& modified_request_headers,
     const net::HttpRequestHeaders& modified_cors_exempt_request_headers) {}
 void URLLoaderThrottle::Delegate::UpdateDeferredResponseHead(
-    const network::ResourceResponseHead& new_response_head) {}
+    network::mojom::URLResponseHeadPtr new_response_head) {}
 void URLLoaderThrottle::Delegate::PauseReadingBodyFromNet() {}
 void URLLoaderThrottle::Delegate::ResumeReadingBodyFromNet() {}
 
 void URLLoaderThrottle::Delegate::InterceptResponse(
-    network::mojom::URLLoaderPtr new_loader,
-    network::mojom::URLLoaderClientRequest new_client_request,
-    network::mojom::URLLoaderPtr* original_loader,
-    network::mojom::URLLoaderClientRequest* original_client_request) {
+    mojo::PendingRemote<network::mojom::URLLoader> new_loader,
+    mojo::PendingReceiver<network::mojom::URLLoaderClient> new_client_receiver,
+    mojo::PendingRemote<network::mojom::URLLoader>* original_loader,
+    mojo::PendingReceiver<network::mojom::URLLoaderClient>*
+        original_client_receiver) {
   NOTIMPLEMENTED();
 }
 
@@ -47,19 +50,19 @@ void URLLoaderThrottle::WillStartRequest(network::ResourceRequest* request,
 
 void URLLoaderThrottle::WillRedirectRequest(
     net::RedirectInfo* redirect_info,
-    const network::ResourceResponseHead& response_head,
+    const network::mojom::URLResponseHead& response_head,
     bool* defer,
     std::vector<std::string>* to_be_removed_request_headers,
     net::HttpRequestHeaders* modified_request_headers) {}
 
 void URLLoaderThrottle::WillProcessResponse(
     const GURL& response_url,
-    network::ResourceResponseHead* response_head,
+    network::mojom::URLResponseHead* response_head,
     bool* defer) {}
 
 void URLLoaderThrottle::BeforeWillProcessResponse(
     const GURL& response_url,
-    const network::ResourceResponseHead& response_head,
+    const network::mojom::URLResponseHead& response_head,
     bool* defer) {}
 
 void URLLoaderThrottle::WillOnCompleteWithError(

@@ -21,14 +21,17 @@
 // Synthesized from protocol.
 @synthesize tappable = _tappable;
 // Sythesized from protocol.
-@synthesize accepted = _accepted;
+@synthesize badgeState = _badgeState;
+// Synthesized from BadgeItem.
+@synthesize fullScreen = _fullScreen;
 
 - (instancetype)initWithBadgeType:(BadgeType)badgeType {
   self = [super init];
   if (self) {
     _badgeType = badgeType;
     _tappable = NO;
-    _accepted = NO;
+    _badgeState = BadgeStateNone;
+    _fullScreen = badgeType == BadgeType::kBadgeTypeIncognito;
   }
   return self;
 }
@@ -37,10 +40,6 @@
 
 - (BadgeType)badgeType {
   return _badgeType;
-}
-
-- (BOOL)isFullScreen {
-  return self.badgeType == BadgeType::kBadgeTypeIncognito;
 }
 
 @end

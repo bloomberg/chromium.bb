@@ -455,7 +455,10 @@ void SafeStackFrameIterator::Advance() {
       last_callback_scope = external_callback_scope_;
       external_callback_scope_ = external_callback_scope_->previous();
     }
-    if (frame_->is_java_script() || frame_->is_wasm()) break;
+    if (frame_->is_java_script() || frame_->is_wasm() ||
+        frame_->is_wasm_to_js()) {
+      break;
+    }
     if (frame_->is_exit() || frame_->is_builtin_exit()) {
       // Some of the EXIT frames may have ExternalCallbackScope allocated on
       // top of them. In that case the scope corresponds to the first EXIT
@@ -489,7 +492,8 @@ Code StackFrame::LookupCode() const {
 void StackFrame::IteratePc(RootVisitor* v, Address* pc_address,
                            Address* constant_pool_address, Code holder) {
   Address pc = *pc_address;
-  DCHECK(holder.GetHeap()->GcSafeCodeContains(holder, pc));
+  DCHECK(ReadOnlyHeap::Contains(holder) ||
+         holder.GetHeap()->GcSafeCodeContains(holder, pc));
   unsigned pc_offset = static_cast<unsigned>(pc - holder.InstructionStart());
   Object code = holder;
   v->VisitRootPointer(Root::kTop, nullptr, FullObjectSlot(&code));
@@ -553,14 +557,6 @@ StackFrame::Type StackFrame::ComputeType(const StackFrameIteratorBase* iterator,
           return WASM_EXIT;
         case wasm::WasmCode::kWasmToJsWrapper:
           return WASM_TO_JS;
-        case wasm::WasmCode::kRuntimeStub:
-          // Some stubs, like e.g. {WasmCode::kWasmCompileLazy} build their own
-          // specialized frame which already carries a type marker.
-          // TODO(mstarzinger): This is only needed for the case where embedded
-          // builtins are disabled. It can be removed once all non-embedded
-          // builtins are gone.
-          if (StackFrame::IsTypeMarker(marker)) break;
-          return STUB;
         case wasm::WasmCode::kInterpreterEntry:
           return WASM_INTERPRETER_ENTRY;
         default:
@@ -1079,13 +1075,12 @@ Address StubFrame::GetCallerStackPointer() const {
   return fp() + ExitFrameConstants::kCallerSPOffset;
 }
 
-int StubFrame::LookupExceptionHandlerInTable(int* stack_slots) {
+int StubFrame::LookupExceptionHandlerInTable() {
   Code code = LookupCode();
   DCHECK(code.is_turbofanned());
   DCHECK_EQ(code.kind(), Code::BUILTIN);
   HandlerTable table(code);
   int pc_offset = static_cast<int>(pc() - code.InstructionStart());
-  *stack_slots = code.stack_slots();
   return table.LookupReturn(pc_offset);
 }
 
@@ -1271,6 +1266,7 @@ void JavaScriptFrame::CollectFunctionAndOffsetForICStats(JSFunction function,
   if (maybe_script.IsScript()) {
     Script script = Script::cast(maybe_script);
     ic_info.line_num = script.GetLineNumber(source_pos) + 1;
+    ic_info.column_num = script.GetColumnNumber(source_pos);
     ic_info.script_name = ic_stats->GetOrCacheScriptName(script);
   }
 }
@@ -1324,7 +1320,7 @@ Object JavaScriptBuiltinContinuationFrame::context() const {
 void JavaScriptBuiltinContinuationWithCatchFrame::SetException(
     Object exception) {
   Address exception_argument_slot =
-      fp() + JavaScriptFrameConstants::kLastParameterOffset +
+      fp() + BuiltinContinuationFrameConstants::kFixedFrameSizeAboveFp +
       kSystemPointerSize;  // Skip over return value slot.
 
   // Only allow setting exception if previous value was the hole.
@@ -1627,7 +1623,7 @@ void OptimizedFrame::Summarize(std::vector<FrameSummary>* frames) const {
 }
 
 int OptimizedFrame::LookupExceptionHandlerInTable(
-    int* stack_slots, HandlerTable::CatchPrediction* prediction) {
+    int* data, HandlerTable::CatchPrediction* prediction) {
   // We cannot perform exception prediction on optimized code. Instead, we need
   // to use FrameSummary to find the corresponding code offset in unoptimized
   // code to perform prediction there.
@@ -1635,7 +1631,7 @@ int OptimizedFrame::LookupExceptionHandlerInTable(
   Code code = LookupCode();
   HandlerTable table(code);
   int pc_offset = static_cast<int>(pc() - code.InstructionStart());
-  if (stack_slots) *stack_slots = code.stack_slots();
+  DCHECK_NULL(data);  // Data is not used and will not return a value.
 
   // When the return pc has been replaced by a trampoline there won't be
   // a handler for this trampoline. Thus we need to use the return pc that
@@ -1676,8 +1672,8 @@ DeoptimizationData OptimizedFrame::GetDeoptimizationData(
 Object OptimizedFrame::receiver() const {
   Code code = LookupCode();
   if (code.kind() == Code::BUILTIN) {
-    Address argc_ptr = fp() + OptimizedBuiltinFrameConstants::kArgCOffset;
-    intptr_t argc = *reinterpret_cast<intptr_t*>(argc_ptr);
+    intptr_t argc = static_cast<int>(
+        Memory<intptr_t>(fp() + OptimizedBuiltinFrameConstants::kArgCOffset));
     intptr_t args_size =
         (StandardFrameConstants::kFixedSlotCountAboveFp + argc) *
         kSystemPointerSize;
@@ -1921,6 +1917,10 @@ int WasmCompiledFrame::position() const {
   return FrameSummary::GetSingle(this).SourcePosition();
 }
 
+Object WasmCompiledFrame::context() const {
+  return wasm_instance().native_context();
+}
+
 void WasmCompiledFrame::Summarize(std::vector<FrameSummary>* functions) const {
   DCHECK(functions->empty());
   // The {WasmCode*} escapes this scope via the {FrameSummary}, which is fine,
@@ -1950,15 +1950,13 @@ bool WasmCompiledFrame::at_to_number_conversion() const {
   return !!pos;
 }
 
-int WasmCompiledFrame::LookupExceptionHandlerInTable(int* stack_slots) {
-  DCHECK_NOT_NULL(stack_slots);
+int WasmCompiledFrame::LookupExceptionHandlerInTable() {
   wasm::WasmCode* code =
       isolate()->wasm_engine()->code_manager()->LookupCode(pc());
   if (!code->IsAnonymous() && code->handler_table_size() > 0) {
     HandlerTable table(code->handler_table(), code->handler_table_size(),
                        HandlerTable::kReturnAddressBasedEncoding);
     int pc_offset = static_cast<int>(pc() - code->instruction_start());
-    *stack_slots = static_cast<int>(code->stack_slots());
     return table.LookupReturn(pc_offset);
   }
   return -1;
@@ -1992,6 +1990,11 @@ void WasmInterpreterEntryFrame::Summarize(
 }
 
 Code WasmInterpreterEntryFrame::unchecked_code() const { return Code(); }
+
+int WasmInterpreterEntryFrame::NumberOfActiveFrames() const {
+  Handle<WasmInstanceObject> instance(wasm_instance(), isolate());
+  return instance->debug_info().NumberOfActiveFrames(fp());
+}
 
 WasmInstanceObject WasmInterpreterEntryFrame::wasm_instance() const {
   const int offset = WasmCompiledFrameConstants::kWasmInstanceOffset;

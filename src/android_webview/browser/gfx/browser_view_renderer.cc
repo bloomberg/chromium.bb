@@ -7,11 +7,11 @@
 #include <memory>
 #include <utility>
 
-#include "android_webview/browser/aw_feature_list.h"
 #include "android_webview/browser/gfx/browser_view_renderer_client.h"
 #include "android_webview/browser/gfx/compositor_frame_consumer.h"
 #include "android_webview/browser/gfx/root_frame_sink.h"
 #include "android_webview/browser/gfx/root_frame_sink_proxy.h"
+#include "android_webview/common/aw_features.h"
 #include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/logging.h"
@@ -20,6 +20,7 @@
 #include "base/supports_user_data.h"
 #include "base/trace_event/traced_value.h"
 #include "cc/base/math_util.h"
+#include "components/viz/common/features.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "content/public/browser/render_process_host.h"
@@ -113,11 +114,9 @@ BrowserViewRenderer::BrowserViewRenderer(
       on_new_picture_enable_(false),
       clear_view_(false),
       offscreen_pre_raster_(false) {
-  if (base::FeatureList::IsEnabled(features::kVizForWebView)) {
-    root_frame_sink_proxy_ = std::make_unique<RootFrameSinkProxy>(
-        ui_task_runner_,
-        base::BindRepeating(&BrowserViewRenderer::SetNeedsBeginFrames,
-                            base::Unretained(this)));
+  if (::features::IsUsingVizForWebView()) {
+    root_frame_sink_proxy_ =
+        std::make_unique<RootFrameSinkProxy>(ui_task_runner_, this);
   }
 }
 
@@ -137,7 +136,11 @@ void BrowserViewRenderer::SetCurrentCompositorFrameConsumer(
   }
   current_compositor_frame_consumer_ = compositor_frame_consumer;
   if (current_compositor_frame_consumer_) {
-    current_compositor_frame_consumer_->SetCompositorFrameProducer(this);
+    RootFrameSinkGetter root_sink_getter;
+    if (root_frame_sink_proxy_)
+      root_sink_getter = root_frame_sink_proxy_->GetRootFrameSinkCallback();
+    current_compositor_frame_consumer_->SetCompositorFrameProducer(
+        this, std::move(root_sink_getter));
     OnParentDrawDataUpdated(current_compositor_frame_consumer_);
   }
 }
@@ -302,7 +305,7 @@ bool BrowserViewRenderer::OnDrawHardware() {
   }
   std::unique_ptr<ChildFrame> child_frame = std::make_unique<ChildFrame>(
       std::move(future), frame_sink_id_, viewport_size_for_tile_priority,
-      external_draw_constraints_.transform, offscreen_pre_raster_,
+      external_draw_constraints_.transform, offscreen_pre_raster_, dip_scale_,
       std::move(requests));
 
   ReturnUnusedResource(
@@ -834,8 +837,15 @@ void BrowserViewRenderer::CopyOutput(
   PostInvalidate(compositor_);
 }
 
-void BrowserViewRenderer::SetNeedsBeginFrames(bool needs_begin_frames) {
-  NOTIMPLEMENTED();
+void BrowserViewRenderer::Invalidate() {
+  PostInvalidate(compositor_);
+}
+
+void BrowserViewRenderer::ProgressFling(base::TimeTicks frame_time) {
+  if (!compositor_)
+    return;
+  TRACE_EVENT0("android_webview", "BrowserViewRenderer::ProgressFling");
+  compositor_->ProgressFling(frame_time);
 }
 
 void BrowserViewRenderer::PostInvalidate(

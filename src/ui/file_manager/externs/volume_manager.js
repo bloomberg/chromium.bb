@@ -25,13 +25,13 @@ class VolumeManager {
    * Obtains a volume info containing the passed entry.
    * @param {!Entry|!FilesAppEntry} entry Entry on the volume to be
    *     returned. Can be fake.
-   * @return {VolumeInfo} The VolumeInfo instance or null if not found.
+   * @return {?VolumeInfo} The VolumeInfo instance or null if not found.
    */
   getVolumeInfo(entry) {}
 
   /**
    * Returns the drive connection state.
-   * @return {VolumeManagerCommon.DriveConnectionState} Connection state.
+   * @return {chrome.fileManagerPrivate.DriveConnectionState} Connection state.
    */
   getDriveConnectionState() {}
 

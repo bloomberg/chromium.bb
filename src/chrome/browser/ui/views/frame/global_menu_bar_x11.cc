@@ -211,7 +211,6 @@ GlobalMenuBarX11::GlobalMenuBarX11(BrowserView* browser_view,
       browser_view_(browser_view),
       xid_(host->GetAcceleratedWidget()),
       tab_restore_service_(nullptr),
-      scoped_observer_(this),
       last_command_id_(kFirstUnreservedCommandId - 1) {
   GlobalMenuBarRegistrarX11::GetInstance()->OnMenuBarCreated(this);
 }
@@ -270,7 +269,8 @@ void GlobalMenuBarX11::Initialize(DbusMenu::InitializedCallback callback) {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   DCHECK(profile_manager);
   avatar_menu_ = std::make_unique<AvatarMenu>(
-      &profile_manager->GetProfileAttributesStorage(), this, nullptr);
+      &profile_manager->GetProfileAttributesStorage(), this,
+      BrowserList::GetInstance()->GetLastActive());
   avatar_menu_->RebuildMenu();
   BrowserList::AddObserver(this);
 

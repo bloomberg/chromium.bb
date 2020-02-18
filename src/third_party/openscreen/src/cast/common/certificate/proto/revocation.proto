@@ -8,7 +8,7 @@
 
 syntax = "proto2";
 
-package cast_certificate;
+package cast.certificate;
 
 option optimize_for = LITE_RUNTIME;
 

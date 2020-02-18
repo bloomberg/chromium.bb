@@ -29,9 +29,6 @@ const CGFloat kLocationImageToLabelSpacing = -4.0;
 // Minimal horizontal padding between the leading edge of the location bar and
 // the content of the location bar.
 const CGFloat kLocationBarLeadingPadding = 5.0;
-// Minimal horizontal padding between the leading edge of the location bar and
-// the BadgeView.
-const CGFloat kBadgeViewLeadingSpacing = 3.0;
 // Trailing space between the trailing button and the trailing edge of the
 // location bar.
 const CGFloat kButtonTrailingSpacing = 10;
@@ -334,9 +331,7 @@ const CGFloat kbadgeViewAnimationDuration = 0.2;
     ];
 
     self.badgeViewFullScreenDisabledConstraints = @[
-      [self.badgeView.leadingAnchor
-          constraintEqualToAnchor:self.leadingAnchor
-                         constant:kBadgeViewLeadingSpacing],
+      [self.badgeView.leadingAnchor constraintEqualToAnchor:self.leadingAnchor],
       [self.badgeView.trailingAnchor
           constraintLessThanOrEqualToAnchor:self.locationContainerView
                                                 .leadingAnchor],
@@ -381,7 +376,9 @@ const CGFloat kbadgeViewAnimationDuration = 0.2;
     // label. Thus, there should be at least one object alreading in
     // |accessibleElements|.
     DCHECK([self.accessibleElements count] > 0);
-    [self.accessibleElements insertObject:self.badgeView atIndex:1];
+    if ([self.accessibleElements indexOfObject:self.badgeView] == NSNotFound) {
+      [self.accessibleElements insertObject:self.badgeView atIndex:1];
+    }
   } else {
     [self.accessibleElements removeObject:self.badgeView];
   }
@@ -449,7 +446,10 @@ const CGFloat kbadgeViewAnimationDuration = 0.2;
   }
 
   if (self.trailingButton.enabled) {
-    [self.accessibleElements addObject:self.trailingButton];
+    if ([self.accessibleElements indexOfObject:self.trailingButton] ==
+        NSNotFound) {
+      [self.accessibleElements addObject:self.trailingButton];
+    }
   } else {
     [self.accessibleElements removeObject:self.trailingButton];
   }

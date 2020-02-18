@@ -64,7 +64,8 @@ class SigninGlobalErrorTest : public testing::Test {
     ASSERT_TRUE(profile_manager_.profile_attributes_storage()->
         GetProfileAttributesWithPath(profile()->GetPath(), &entry));
 
-    entry->SetAuthInfo(account_info.gaia, base::UTF8ToUTF16(kTestEmail));
+    entry->SetAuthInfo(account_info.gaia, base::UTF8ToUTF16(kTestEmail),
+                       /*is_consented_primary_account=*/true);
 
     global_error_ = SigninGlobalErrorFactory::GetForProfile(profile());
     error_controller_ = SigninErrorControllerFactory::GetForProfile(profile());
@@ -81,7 +82,7 @@ class SigninGlobalErrorTest : public testing::Test {
   void SetAuthError(GoogleServiceAuthError::State state) {
     signin::IdentityTestEnvironment* identity_test_env =
         identity_test_env_profile_adaptor_->identity_test_env();
-    std::string primary_account_id =
+    CoreAccountId primary_account_id =
         identity_test_env->identity_manager()->GetPrimaryAccountId();
 
     signin::UpdatePersistentErrorOfRefreshTokenForAccount(

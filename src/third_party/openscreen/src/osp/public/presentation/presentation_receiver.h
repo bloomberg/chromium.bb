@@ -15,7 +15,7 @@
 #include "osp/public/presentation/presentation_connection.h"
 
 namespace openscreen {
-namespace presentation {
+namespace osp {
 
 enum class ResponseResult {
   kSuccess = 0,
@@ -61,8 +61,8 @@ class ReceiverDelegate {
 class Receiver final : public MessageDemuxer::MessageCallback,
                        public Connection::ParentDelegate {
  public:
-  // TODO(issue/31): Remove singletons in the embedder API and protocol
-  // implementation layers
+  // TODO(crbug.com/openscreen/31): Remove singletons in the embedder API and
+  // protocol implementation layers.
   static Receiver* Get();
   void Init();
   void Deinit();
@@ -147,7 +147,7 @@ class Receiver final : public MessageDemuxer::MessageCallback,
   uint64_t GetNextConnectionId();
 };
 
-}  // namespace presentation
+}  // namespace osp
 }  // namespace openscreen
 
 #endif  // OSP_PUBLIC_PRESENTATION_PRESENTATION_RECEIVER_H_

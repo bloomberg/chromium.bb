@@ -22,18 +22,24 @@ template <typename Functor>
 static void TraverseNonCompositingDescendantsInPaintOrder(const LayoutObject&,
                                                           const Functor&);
 
+static bool MayBeSkippedContainerForFloating(const LayoutObject& object) {
+  return !object.IsInLayoutNGInlineFormattingContext() &&
+         !object.IsLayoutBlock();
+}
+
 template <typename Functor>
 static void
 TraverseNonCompositingDescendantsBelongingToAncestorPaintInvalidationContainer(
     const LayoutObject& object,
     const Functor& functor) {
   // |object| is a paint invalidation container, but is not a stacking context
-  // or is a non-block, so the paint invalidation container of stacked
-  // descendants may not belong to |object| but belong to an ancestor. This
-  // function traverses all such descendants. See Case 1a and Case 2 below for
-  // details.
+  // (legacy layout only: or is a non-block), so the paint invalidation
+  // container of stacked descendants may not belong to |object| but belong to
+  // an ancestor. This function traverses all such descendants. See (legacy
+  // layout only: Case 1a and) Case 2 below for details.
   DCHECK(object.IsPaintInvalidationContainer() &&
-         (!object.StyleRef().IsStackingContext() || !object.IsLayoutBlock()));
+         (!object.StyleRef().IsStackingContext() ||
+          MayBeSkippedContainerForFloating(object)));
 
   LayoutObject* descendant = object.NextInPreOrder(&object);
   while (descendant) {
@@ -43,7 +49,10 @@ TraverseNonCompositingDescendantsBelongingToAncestorPaintInvalidationContainer(
       // invalidation container in the same situation as |object|, or its paint
       // invalidation container is in such situation. Keep searching until a
       // stacked layer is found.
-      if (!object.IsLayoutBlock() && descendant->IsFloating()) {
+      if (MayBeSkippedContainerForFloating(object) &&
+          descendant->IsFloating()) {
+        // The following is for legacy layout only because LayoutNG allows an
+        // inline to contain floats.
         // Case 1a (rare): However, if the descendant is a floating object below
         // a composited non-block object, the subtree may belong to an ancestor
         // in paint order, thus recur into the subtree. Note that for
@@ -65,12 +74,13 @@ TraverseNonCompositingDescendantsBelongingToAncestorPaintInvalidationContainer(
       TraverseNonCompositingDescendantsInPaintOrder(*descendant, functor);
       descendant = descendant->NextInPreOrderAfterChildren(&object);
     } else if (descendant->StyleRef().IsStackingContext() &&
-               descendant->IsLayoutBlock()) {
+               !MayBeSkippedContainerForFloating(*descendant)) {
       // Case 3: The descendant is an invalidation container and is a stacking
       // context.  No objects in the subtree can have invalidation container
       // outside of it, thus skip the whole subtree.
-      // This excludes non-block because there might be floating objects under
-      // the descendant belonging to some ancestor in paint order (Case 1a).
+      // Legacy layout only: This excludes non-block because there might be
+      // floating objects under the descendant belonging to some ancestor in
+      // paint order (Case 1a).
       descendant = descendant->NextInPreOrderAfterChildren(&object);
     } else {
       // Case 4: The descendant is an invalidation container but not a stacking
@@ -92,12 +102,13 @@ static void TraverseNonCompositingDescendantsInPaintOrder(
       functor(*descendant);
       descendant = descendant->NextInPreOrder(&object);
     } else if (descendant->StyleRef().IsStackingContext() &&
-               descendant->IsLayoutBlock()) {
+               !MayBeSkippedContainerForFloating(*descendant)) {
       // The descendant is an invalidation container and is a stacking context.
       // No objects in the subtree can have invalidation container outside of
       // it, thus skip the whole subtree.
-      // This excludes non-blocks because there might be floating objects under
-      // the descendant belonging to some ancestor in paint order (Case 1a).
+      // Legacy layout only: This excludes non-blocks because there might be
+      // floating objects under the descendant belonging to some ancestor in
+      // paint order (Case 1a).
       descendant = descendant->NextInPreOrderAfterChildren(&object);
     } else {
       // If a paint invalidation container is not a stacking context, or the
@@ -116,7 +127,9 @@ static void SetPaintingLayerNeedsRepaintDuringTraverse(
       ToLayoutBoxModelObject(object).HasSelfPaintingLayer()) {
     ToLayoutBoxModelObject(object).Layer()->SetNeedsRepaint();
   } else if (object.IsFloating() && object.Parent() &&
-             !object.Parent()->IsLayoutBlock()) {
+             MayBeSkippedContainerForFloating(*object.Parent())) {
+    // The following is for legacy layout only because LayoutNG allows an
+    // inline to contain floats.
     object.PaintingLayer()->SetNeedsRepaint();
   }
 }
@@ -172,20 +185,12 @@ void ObjectPaintInvalidator::
   Helper::Traverse(object_);
 }
 
-void ObjectPaintInvalidator::InvalidateDisplayItemClient(
-    const DisplayItemClient& client,
-    PaintInvalidationReason reason) {
-  // It's caller's responsibility to ensure PaintingLayer's NeedsRepaint is set.
-  // Don't set the flag here because getting PaintLayer has cost and the caller
-  // can use various ways (e.g. PaintInvalidatinContext::painting_layer) to
-  // reduce the cost.
-  DCHECK(!object_.PaintingLayer() || object_.PaintingLayer()->NeedsRepaint());
-
-  client.Invalidate(reason);
-
-  if (LocalFrameView* frame_view = object_.GetFrameView())
-    frame_view->TrackObjectPaintInvalidation(client, reason);
+#if DCHECK_IS_ON()
+void ObjectPaintInvalidator::CheckPaintLayerNeedsRepaint() {
+  DCHECK(!object_.PaintingLayer() ||
+         object_.PaintingLayer()->SelfNeedsRepaint());
 }
+#endif
 
 void ObjectPaintInvalidator::SlowSetPaintingLayerNeedsRepaint() {
   if (PaintLayer* painting_layer = object_.PaintingLayer())
@@ -234,6 +239,11 @@ ObjectPaintInvalidatorWithContext::ComputePaintInvalidationReason() {
         .UpdatePreviousOutlineMayBeAffectedByDescendants();
     return PaintInvalidationReason::kOutline;
   }
+
+  // Force full paint invalidation if the object has background-clip:text to
+  // update the background on any change in the subtree.
+  if (object_.StyleRef().BackgroundClip() == EFillBox::kText)
+    return PaintInvalidationReason::kBackground;
 
   // If the size is zero on one of our bounds then we know we're going to have
   // to do a full invalidation of either old bounds or new bounds.

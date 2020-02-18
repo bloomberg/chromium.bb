@@ -16,21 +16,19 @@ namespace fuchsia {
 FilteredServiceDirectory::FilteredServiceDirectory(
     sys::ServiceDirectory* directory)
     : directory_(std::move(directory)) {
-  outgoing_directory_.Serve(
-      outgoing_directory_client_.NewRequest().TakeChannel());
 }
 
 FilteredServiceDirectory::~FilteredServiceDirectory() {}
 
-void FilteredServiceDirectory::AddService(const char* service_name) {
+void FilteredServiceDirectory::AddService(base::StringPiece service_name) {
   outgoing_directory_.AddPublicService(
       std::make_unique<vfs::Service>(
-          [this, service_name](zx::channel channel,
-                               async_dispatcher_t* dispatcher) {
+          [this, service_name = service_name.as_string()](
+              zx::channel channel, async_dispatcher_t* dispatcher) {
             DCHECK_EQ(dispatcher, async_get_default_dispatcher());
             directory_->Connect(service_name, std::move(channel));
           }),
-      service_name);
+      service_name.as_string());
 }
 
 void FilteredServiceDirectory::ConnectClient(

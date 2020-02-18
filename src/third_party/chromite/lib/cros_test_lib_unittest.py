@@ -56,17 +56,17 @@ class TruthTableTest(cros_test_lib.TestCase):
     # Check that more than one iterable can be used at once.
     iter1 = iter(tt)
     iter2 = iter(tt)
-    self.assertEquals(lines[0], next(iter1))
-    self.assertEquals(lines[0], next(iter2))
-    self.assertEquals(lines[1], next(iter2))
+    self.assertEqual(lines[0], next(iter1))
+    self.assertEqual(lines[0], next(iter2))
+    self.assertEqual(lines[1], next(iter2))
 
     # Check that iteration again works again.
     for ix, line in enumerate(tt):
-      self.assertEquals(lines[ix], line)
+      self.assertEqual(lines[ix], line)
 
     # Check direct access of input lines.
     for i in range(len(tt)):
-      self.assertEquals(lines[i], tt.GetInputs(i))
+      self.assertEqual(lines[i], tt.GetInputs(i))
 
     # Check assertions on bad input to GetInputs.
     self.assertRaises(ValueError, tt.GetInputs, -1)
@@ -75,7 +75,7 @@ class TruthTableTest(cros_test_lib.TestCase):
   def testTwoDimensions(self):
     """Test TruthTable behavior for two boolean inputs."""
     tt = cros_test_lib.TruthTable(inputs=[(True, True), (True, False)])
-    self.assertEquals(len(tt), pow(2, 2))
+    self.assertEqual(len(tt), pow(2, 2))
 
     # Check truth table output.
     self.assertFalse(tt.GetOutput((False, False)))
@@ -89,10 +89,10 @@ class TruthTableTest(cros_test_lib.TestCase):
 
     # Check iteration over input lines.
     lines = list(tt)
-    self.assertEquals((False, False), lines[0])
-    self.assertEquals((False, True), lines[1])
-    self.assertEquals((True, False), lines[2])
-    self.assertEquals((True, True), lines[3])
+    self.assertEqual((False, False), lines[0])
+    self.assertEqual((False, True), lines[1])
+    self.assertEqual((True, False), lines[2])
+    self.assertEqual((True, True), lines[3])
 
     self._TestTableSanity(tt, lines)
 
@@ -103,7 +103,7 @@ class TruthTableTest(cros_test_lib.TestCase):
     true1 = (False, True, False, True)
     true2 = (True, True, False, False)
     tt = cros_test_lib.TruthTable(inputs=(false1, false2), input_result=False)
-    self.assertEquals(len(tt), pow(2, 4))
+    self.assertEqual(len(tt), pow(2, 4))
 
     # Check truth table output.
     self.assertFalse(tt.GetOutput(false1))
@@ -117,10 +117,10 @@ class TruthTableTest(cros_test_lib.TestCase):
 
     # Check iteration over input lines.
     lines = list(tt)
-    self.assertEquals((False, False, False, False), lines[0])
-    self.assertEquals((False, False, False, True), lines[1])
-    self.assertEquals((False, True, True, True), lines[7])
-    self.assertEquals((True, True, True, True), lines[15])
+    self.assertEqual((False, False, False, False), lines[0])
+    self.assertEqual((False, False, False, True), lines[1])
+    self.assertEqual((False, True, True, True), lines[7])
+    self.assertEqual((True, True, True, True), lines[15])
 
     self._TestTableSanity(tt, lines)
 
@@ -187,13 +187,13 @@ class MockTestCaseTest(cros_test_lib.TestCase):
     tc.StartPatcher(patcher)
     tc.StartPatcher(patcher2)
     patcher.stop()
-    self.assertEquals(self.Mockable.TO_BE_MOCKED2, -200)
-    self.assertEquals(self.Mockable.TO_BE_MOCKED3, -300)
+    self.assertEqual(self.Mockable.TO_BE_MOCKED2, -200)
+    self.assertEqual(self.Mockable.TO_BE_MOCKED3, -300)
     self.assertRaises(RuntimeError, tc.tearDown)
     # Make sure that even though exception is raised for stopping 'patcher', we
     # continue to stop 'patcher2', and run patcher.stopall().
-    self.assertEquals(self.Mockable.TO_BE_MOCKED2, 10)
-    self.assertEquals(self.Mockable.TO_BE_MOCKED3, 20)
+    self.assertEqual(self.Mockable.TO_BE_MOCKED2, 10)
+    self.assertEqual(self.Mockable.TO_BE_MOCKED3, 20)
 
 
 class TestCaseTest(unittest.TestCase):
@@ -250,10 +250,10 @@ class OutputTestCaseTest(cros_test_lib.OutputTestCase,
     self.AssertOutputContainsLine('bar')
 
   def testRunCommandCapture(self):
-    """Check capturing RunCommand() subprocess output."""
+    """Check capturing run() subprocess output."""
     with self.OutputCapturer():
-      cros_build_lib.RunCommand(['sh', '-c', 'echo foo; echo bar >&2'],
-                                mute_output=False)
+      cros_build_lib.run(['sh', '-c', 'echo foo; echo bar >&2'],
+                         mute_output=False)
     self.AssertOutputContainsLine('foo')
     self.AssertOutputContainsLine('bar', check_stdout=False, check_stderr=True)
 
@@ -271,3 +271,36 @@ class OutputTestCaseTest(cros_test_lib.OutputTestCase,
     # Verify that output is actually written to the correct files.
     self.assertEqual('foo\n', osutils.ReadFile(stdout_path))
     self.assertEqual('bar\n', osutils.ReadFile(stderr_path))
+
+
+class RunCommandTestCase(cros_test_lib.RunCommandTestCase):
+  """Verify the test case behavior."""
+
+  def testPopenMockEncodingEmptyStrings(self):
+    """Verify our automatic encoding in PopenMock works with default output."""
+    self.rc.AddCmdResult(['/x'])
+    result = cros_build_lib.run(['/x'], capture_output=True)
+    self.assertEqual(b'', result.stdout)
+    self.assertEqual(b'', result.stderr)
+    result = cros_build_lib.run(['/x'], capture_output=True, encoding='utf-8')
+    self.assertEqual('', result.stdout)
+    self.assertEqual('', result.stderr)
+
+  def testPopenMockBinaryData(self):
+    """Verify our automatic encoding in PopenMock works with bytes."""
+    self.rc.AddCmdResult(['/x'], error=b'\xff')
+    result = cros_build_lib.run(['/x'], capture_output=True)
+    self.assertEqual(b'', result.stdout)
+    self.assertEqual(b'\xff', result.stderr)
+    with self.assertRaises(UnicodeDecodeError):
+      cros_build_lib.run(['/x'], capture_output=True, encoding='utf-8')
+
+  def testPopenMockMixedData(self):
+    """Verify our automatic encoding in PopenMock works with mixed data."""
+    self.rc.AddCmdResult(['/x'], error=b'abc\x00', output=u'Yes\u20a0')
+    result = cros_build_lib.run(['/x'], capture_output=True)
+    self.assertEqual(b'Yes\xe2\x82\xa0', result.stdout)
+    self.assertEqual(b'abc\x00', result.stderr)
+    result = cros_build_lib.run(['/x'], capture_output=True, encoding='utf-8')
+    self.assertEqual(u'Yes\u20a0', result.stdout)
+    self.assertEqual(u'abc\x00', result.stderr)

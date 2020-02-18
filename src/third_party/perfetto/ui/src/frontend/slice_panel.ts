@@ -14,34 +14,50 @@
 
 import * as m from 'mithril';
 
+import {Actions} from '../common/actions';
 import {drawDoubleHeadedArrow} from '../common/canvas_utils';
 import {translateState} from '../common/thread_state';
-import {timeToCode} from '../common/time';
+import {timeToCode, toNs} from '../common/time';
 
-import {globals} from './globals';
+import {globals, SliceDetails, ThreadDesc} from './globals';
 import {Panel, PanelSize} from './panel';
+import {scrollToTrackAndTs} from './scroll_helper';
 
-interface SliceDetailsPanelAttrs {
-  utid: number;
-}
-
-export class SliceDetailsPanel extends Panel<SliceDetailsPanelAttrs> {
-  view({attrs}: m.CVnode<SliceDetailsPanelAttrs>) {
-    const threadInfo = globals.threads.get(attrs.utid);
+export class SliceDetailsPanel extends Panel {
+  view() {
     const sliceInfo = globals.sliceDetails;
-    if (threadInfo && sliceInfo.ts && sliceInfo.dur) {
+    if (sliceInfo.utid === undefined) return;
+    const threadInfo = globals.threads.get(sliceInfo.utid);
+
+    return m(
+        '.details-panel',
+        m('.details-panel-heading',
+          m('h2.split', `Slice Details`),
+          (sliceInfo.wakeupTs && sliceInfo.wakerUtid) ?
+              m('h2.split', 'Scheduling Latency') :
+              ''),
+        this.getDetails(sliceInfo, threadInfo));
+  }
+
+  getDetails(sliceInfo: SliceDetails, threadInfo: ThreadDesc|undefined) {
+    if (!threadInfo || sliceInfo.ts === undefined ||
+        sliceInfo.dur === undefined) {
+      return null;
+    } else {
       return m(
-          '.details-panel',
-          m('.details-panel-heading', `Slice Details:`),
-          m('.details-table', [m('table', [
-              m('tr', m('th', `PID`), m('td', `${threadInfo.pid}`)),
+          '.details-table',
+          m('table',
+            [
               m('tr',
-                m('th', `Process name`),
-                m('td', `${threadInfo.procName}`)),
-              m('tr', m('th', `TID`), m('td', `${threadInfo.tid}`)),
+                m('th', `Process`),
+                m('td', `${threadInfo.procName} [${threadInfo.pid}]`)),
               m('tr',
-                m('th', `Thread name`),
-                m('td', `${threadInfo.threadName}`)),
+                m('th', `Thread`),
+                m('td',
+                  `${threadInfo.threadName} [${threadInfo.tid}]`,
+                  m('i.material-icons',
+                    {onclick: () => this.goToThread(), title: 'Go to thread'},
+                    'call_made'))),
               m('tr',
                 m('th', `Start time`),
                 m('td', `${timeToCode(sliceInfo.ts)}`)),
@@ -52,72 +68,96 @@ export class SliceDetailsPanel extends Panel<SliceDetailsPanelAttrs> {
               m('tr',
                 m('th', `End State`),
                 m('td', `${translateState(sliceInfo.endState)}`))
-            ])], ));
-    }
-  else {
-      return m(
-          '.details-panel', m('.details-panel-heading', `Slice Details:`, ));
-  }
-}
-renderCanvas(ctx: CanvasRenderingContext2D, size: PanelSize) {
-  const details = globals.sliceDetails;
-  // Show expanded details on the scheduling of the currently selected slice.
-  if (details.wakeupTs && details.wakerUtid !== undefined) {
-    const threadInfo = globals.threads.get(details.wakerUtid);
-    // Draw separation line.
-    ctx.fillStyle = '#3c4b5d';
-    ctx.fillRect(size.width / 2, 10, 1, size.height - 10);
-    ctx.font = '16px Google Sans';
-    ctx.fillText('Scheduling Latency:', size.width / 2 + 30, 30);
-    // Draw diamond and vertical line.
-    const startDraw = {x: size.width / 2 + 30, y: 52};
-    ctx.beginPath();
-    ctx.moveTo(startDraw.x, startDraw.y + 28);
-    ctx.fillStyle = 'black';
-    ctx.lineTo(startDraw.x + 6, startDraw.y + 20);
-    ctx.lineTo(startDraw.x, startDraw.y + 12);
-    ctx.lineTo(startDraw.x - 6, startDraw.y + 20);
-    ctx.fill();
-    ctx.closePath();
-    ctx.fillRect(startDraw.x - 1, startDraw.y, 2, 100);
-
-    // Wakeup explanation text.
-    ctx.font = '13px Google Sans';
-    ctx.fillStyle = '#3c4b5d';
-    if (threadInfo) {
-      const displayText =
-          `Wakeup @ ${
-                      timeToCode(
-                          details.wakeupTs - globals.state.traceTime.startSec)
-                    } on CPU ${details.wakerCpu} by`;
-      const processText = `P: ${threadInfo.procName} [${threadInfo.pid}]`;
-      const threadText = `T: ${threadInfo.threadName} [${threadInfo.tid}]`;
-      ctx.fillText(displayText, startDraw.x + 20, startDraw.y + 20);
-      ctx.fillText(processText, startDraw.x + 20, startDraw.y + 37);
-      ctx.fillText(threadText, startDraw.x + 20, startDraw.y + 55);
-    }
-
-    // Draw latency arrow and explanation text.
-    drawDoubleHeadedArrow(ctx, startDraw.x, startDraw.y + 80, 60, true);
-    if (details.ts) {
-      const displayLatency =
-          `Scheduling latency: ${
-                                 timeToCode(
-                                     details.ts -
-                                     (details.wakeupTs -
-                                      globals.state.traceTime.startSec))
-                               }`;
-      ctx.fillText(displayLatency, startDraw.x + 70, startDraw.y + 86);
-      const explain1 =
-          'This is the interval from when the task became eligible to run';
-      const explain2 =
-          '(e.g. because of notifying a wait queue it was suspended on) to';
-      const explain3 = 'when it started running.';
-      ctx.font = '10px Google Sans';
-      ctx.fillText(explain1, startDraw.x + 70, startDraw.y + 86 + 16);
-      ctx.fillText(explain2, startDraw.x + 70, startDraw.y + 86 + 16 + 12);
-      ctx.fillText(explain3, startDraw.x + 70, startDraw.y + 86 + 16 + 24);
+            ]),
+      );
     }
   }
-}
+
+  goToThread() {
+    const sliceInfo = globals.sliceDetails;
+    if (sliceInfo.utid === undefined) return;
+    const threadInfo = globals.threads.get(sliceInfo.utid);
+
+    if (sliceInfo.id === undefined || sliceInfo.ts === undefined ||
+        sliceInfo.dur === undefined || sliceInfo.cpu === undefined ||
+        threadInfo === undefined) {
+      return;
+    }
+
+    let trackId: string|number|undefined;
+    for (const track of Object.values(globals.state.tracks)) {
+      if (track.kind === 'ThreadStateTrack' &&
+          (track.config as {utid: number}).utid === threadInfo.utid) {
+        trackId = track.id;
+      }
+    }
+
+    if (trackId) {
+      globals.makeSelection(Actions.selectThreadState({
+        utid: threadInfo.utid,
+        ts: sliceInfo.ts + globals.state.traceTime.startSec,
+        dur: sliceInfo.dur,
+        state: 'Running',
+        cpu: sliceInfo.cpu,
+        trackId: trackId.toString(),
+      }));
+
+      scrollToTrackAndTs(
+          trackId, toNs(sliceInfo.ts + globals.state.traceTime.startSec), true);
+    }
+  }
+
+
+  renderCanvas(ctx: CanvasRenderingContext2D, size: PanelSize) {
+    const details = globals.sliceDetails;
+    // Show expanded details on the scheduling of the currently selected slice.
+    if (details.wakeupTs && details.wakerUtid !== undefined) {
+      const threadInfo = globals.threads.get(details.wakerUtid);
+      // Draw diamond and vertical line.
+      const startDraw = {x: size.width / 2 + 20, y: 52};
+      ctx.beginPath();
+      ctx.moveTo(startDraw.x, startDraw.y + 28);
+      ctx.fillStyle = 'black';
+      ctx.lineTo(startDraw.x + 6, startDraw.y + 20);
+      ctx.lineTo(startDraw.x, startDraw.y + 12);
+      ctx.lineTo(startDraw.x - 6, startDraw.y + 20);
+      ctx.fill();
+      ctx.closePath();
+      ctx.fillRect(startDraw.x - 1, startDraw.y, 2, 100);
+
+      // Wakeup explanation text.
+      ctx.font = '13px Google Sans';
+      ctx.fillStyle = '#3c4b5d';
+      if (threadInfo) {
+        const displayText = `Wakeup @ ${
+            timeToCode(
+                details.wakeupTs - globals.state.traceTime.startSec)} on CPU ${
+            details.wakerCpu} by`;
+        const processText = `P: ${threadInfo.procName} [${threadInfo.pid}]`;
+        const threadText = `T: ${threadInfo.threadName} [${threadInfo.tid}]`;
+        ctx.fillText(displayText, startDraw.x + 20, startDraw.y + 20);
+        ctx.fillText(processText, startDraw.x + 20, startDraw.y + 37);
+        ctx.fillText(threadText, startDraw.x + 20, startDraw.y + 55);
+      }
+
+      // Draw latency arrow and explanation text.
+      drawDoubleHeadedArrow(ctx, startDraw.x, startDraw.y + 80, 60, true);
+      if (details.ts) {
+        const displayLatency = `Scheduling latency: ${
+            timeToCode(
+                details.ts -
+                (details.wakeupTs - globals.state.traceTime.startSec))}`;
+        ctx.fillText(displayLatency, startDraw.x + 70, startDraw.y + 86);
+        const explain1 =
+            'This is the interval from when the task became eligible to run';
+        const explain2 =
+            '(e.g. because of notifying a wait queue it was suspended on) to';
+        const explain3 = 'when it started running.';
+        ctx.font = '10px Google Sans';
+        ctx.fillText(explain1, startDraw.x + 70, startDraw.y + 86 + 16);
+        ctx.fillText(explain2, startDraw.x + 70, startDraw.y + 86 + 16 + 12);
+        ctx.fillText(explain3, startDraw.x + 70, startDraw.y + 86 + 16 + 24);
+      }
+    }
+  }
 }

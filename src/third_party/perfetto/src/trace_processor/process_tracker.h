@@ -38,8 +38,7 @@ class ProcessTracker {
   using UniqueProcessBounds =
       std::pair<UniqueProcessIterator, UniqueProcessIterator>;
 
-  using UniqueThreadIterator =
-      std::multimap<uint32_t, UniqueTid>::const_iterator;
+  using UniqueThreadIterator = std::vector<UniqueTid>::const_iterator;
   using UniqueThreadBounds =
       std::pair<UniqueThreadIterator, UniqueThreadIterator>;
 
@@ -68,6 +67,10 @@ class ProcessTracker {
   // the thread_name_id.
   virtual UniqueTid UpdateThreadName(uint32_t tid, StringId thread_name_id);
 
+  // Assigns the given name to the thread identified |utid| if it does not have
+  // a name yet.
+  virtual void SetThreadNameIfUnset(UniqueTid utid, StringId thread_name_id);
+
   // Called when a thread is seen the process tree. Retrieves the matching utid
   // for the tid and the matching upid for the tgid and stores both.
   // Virtual for testing.
@@ -87,6 +90,13 @@ class ProcessTracker {
                                        base::Optional<uint32_t> ppid,
                                        base::StringView name);
 
+  // Sets the process user id.
+  void SetProcessUid(UniquePid upid, uint32_t uid);
+
+  // Assigns the given name to the process identified by |upid| if it does not
+  // have a name yet.
+  void SetProcessNameIfUnset(UniquePid upid, StringId process_name_id);
+
   // Called on a task rename event to set the process name if the tid provided
   // is the main thread of the process.
   void UpdateProcessNameFromThreadName(uint32_t tid, StringId thread_name);
@@ -98,14 +108,15 @@ class ProcessTracker {
 
   // Returns the bounds of a range that includes all UniquePids that have the
   // requested pid.
-  UniqueProcessBounds UpidsForPid(uint32_t pid) {
+  UniqueProcessBounds UpidsForPidForTesting(uint32_t pid) {
     return pids_.equal_range(pid);
   }
 
   // Returns the bounds of a range that includes all UniqueTids that have the
   // requested tid.
-  UniqueThreadBounds UtidsForTid(uint32_t tid) {
-    return tids_.equal_range(tid);
+  UniqueThreadBounds UtidsForTidForTesting(uint32_t tid) {
+    const auto& deque = tids_[tid];
+    return std::make_pair(deque.begin(), deque.end());
   }
 
   // Marks the two threads as belonging to the same process, even if we don't
@@ -127,7 +138,7 @@ class ProcessTracker {
 
   // Each tid can have multiple UniqueTid entries, a new UniqueTid is assigned
   // each time a thread is seen in the trace.
-  std::multimap<uint32_t /* tid */, UniqueTid> tids_;
+  std::map<uint32_t /* tid */, std::vector<UniqueTid>> tids_;
 
   // Each pid can have multiple UniquePid entries, a new UniquePid is assigned
   // each time a process is seen in the trace.

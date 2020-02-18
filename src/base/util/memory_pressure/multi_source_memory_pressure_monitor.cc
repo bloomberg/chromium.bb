@@ -17,15 +17,22 @@ MultiSourceMemoryPressureMonitor::MultiSourceMemoryPressureMonitor()
       dispatch_callback_(base::BindRepeating(
           &base::MemoryPressureListener::NotifyMemoryPressure)),
       aggregator_(this) {
-  // This can't be in the parameter list because |sequence_checker_| wouldn't be
-  // available, which would be needed by the |system_evaluator_|'s constructor's
-  // call to CreateVoter().
+}
+
+MultiSourceMemoryPressureMonitor::~MultiSourceMemoryPressureMonitor() {
+  // Destroy system evaluator early while the remaining members of this class
+  // still exist. MultiSourceMemoryPressureMonitor implements
+  // MemoryPressureVoteAggregator::Delegate, and
+  // delegate_->OnMemoryPressureLevelChanged() gets indirectly called during
+  // ~SystemMemoryPressureEvaluator().
+  system_evaluator_.reset();
+}
+
+void MultiSourceMemoryPressureMonitor::Start() {
   system_evaluator_ =
       SystemMemoryPressureEvaluator::CreateDefaultSystemEvaluator(this);
   StartMetricsTimer();
 }
-
-MultiSourceMemoryPressureMonitor::~MultiSourceMemoryPressureMonitor() = default;
 
 void MultiSourceMemoryPressureMonitor::StartMetricsTimer() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

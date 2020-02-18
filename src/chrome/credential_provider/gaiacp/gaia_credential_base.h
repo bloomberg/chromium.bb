@@ -7,6 +7,8 @@
 
 #include "chrome/credential_provider/gaiacp/stdafx.h"
 
+#include <wrl/client.h>
+
 #include <memory>
 
 #include "base/strings/string16.h"
@@ -54,6 +56,11 @@ class ATL_NO_VTABLE CGaiaCredentialBase
   // Allocates a BSTR from a DLL string resource given by |id|.
   static BSTR AllocErrorString(UINT id);
 
+  // Allocates a BSTR from a DLL string resource given by |id| replacing the
+  // placeholders in the string by the provided replacements.
+  static BSTR AllocErrorString(UINT id,
+                               const std::vector<base::string16>& replacements);
+
   // Gets the directory where the credential provider is installed.
   static HRESULT GetInstallDirectory(base::FilePath* path);
 
@@ -62,7 +69,7 @@ class ATL_NO_VTABLE CGaiaCredentialBase
     UIProcessInfo();
     ~UIProcessInfo();
 
-    CComPtr<IGaiaCredential> credential;
+    Microsoft::WRL::ComPtr<IGaiaCredential> credential;
     base::win::ScopedHandle logon_token;
     base::win::ScopedProcessInformation procinfo;
     StdParentHandles parent_handles;
@@ -76,7 +83,9 @@ class ATL_NO_VTABLE CGaiaCredentialBase
   ~CGaiaCredentialBase();
 
   // Members to access user credentials.
-  const CComPtr<IGaiaCredentialProvider>& provider() const { return provider_; }
+  const Microsoft::WRL::ComPtr<IGaiaCredentialProvider> provider() const {
+    return provider_;
+  }
   const CComBSTR& get_username() const { return username_; }
   const CComBSTR& get_password() const { return password_; }
   const CComBSTR& get_sid() const { return user_sid_; }
@@ -269,8 +278,8 @@ class ATL_NO_VTABLE CGaiaCredentialBase
 
   HRESULT RecoverWindowsPasswordIfPossible(base::string16* recovered_password);
 
-  CComPtr<ICredentialProviderCredentialEvents> events_;
-  CComPtr<IGaiaCredentialProvider> provider_;
+  Microsoft::WRL::ComPtr<ICredentialProviderCredentialEvents> events_;
+  Microsoft::WRL::ComPtr<IGaiaCredentialProvider> provider_;
 
   // Handle to the logon UI process.
   HANDLE logon_ui_process_ = INVALID_HANDLE_VALUE;

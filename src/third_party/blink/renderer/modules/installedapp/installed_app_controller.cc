@@ -6,8 +6,10 @@
 
 #include <utility>
 
-#include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/common/manifest/manifest.h"
+#include "third_party/blink/public/mojom/installedapp/related_application.mojom-blink.h"
+#include "third_party/blink/public/mojom/manifest/manifest.mojom-blink.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -74,7 +76,7 @@ void InstalledAppController::OnGetManifestForRelatedApps(
 
   if (!provider_) {
     // See https://bit.ly/2S0zRAS for task types.
-    GetSupplementable()->GetInterfaceProvider().GetInterface(
+    GetSupplementable()->GetBrowserInterfaceBroker().GetInterface(
         provider_.BindNewPipeAndPassReceiver(
             GetExecutionContext()->GetTaskRunner(TaskType::kMiscPlatformAPI)));
     // TODO(mgiuca): Set a connection error handler. This requires a refactor to
@@ -94,8 +96,11 @@ void InstalledAppController::OnFilterInstalledApps(
     Vector<mojom::blink::RelatedApplicationPtr> result) {
   HeapVector<Member<RelatedApplication>> applications;
   for (const auto& res : result) {
-    auto* app = MakeGarbageCollected<RelatedApplication>(res->platform,
-                                                         res->url, res->id);
+    auto* app = MakeGarbageCollected<RelatedApplication>();
+    app->setPlatform(res->platform);
+    app->setURL(res->url);
+    app->setId(res->id);
+    app->setVersion(res->version);
     applications.push_back(app);
   }
   callbacks->OnSuccess(applications);

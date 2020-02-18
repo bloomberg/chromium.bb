@@ -102,15 +102,15 @@ GpuHostImpl::GpuHostImpl(Delegate* delegate,
       host_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()) {
   DCHECK(delegate_);
 
-  discardable_memory::mojom::DiscardableSharedMemoryManagerPtr
-      discardable_manager_ptr;
-  auto discardable_request = mojo::MakeRequest(&discardable_manager_ptr);
-  delegate_->BindDiscardableMemoryRequest(std::move(discardable_request));
+  mojo::PendingRemote<discardable_memory::mojom::DiscardableSharedMemoryManager>
+      discardable_manager_remote;
+  delegate_->BindDiscardableMemoryReceiver(
+      discardable_manager_remote.InitWithNewPipeAndPassReceiver());
 
   DCHECK(GetFontRenderParams().Get());
   viz_main_->CreateGpuService(gpu_service_remote_.BindNewPipeAndPassReceiver(),
                               gpu_host_receiver_.BindNewPipeAndPassRemote(),
-                              std::move(discardable_manager_ptr),
+                              std::move(discardable_manager_remote),
                               activity_flags_.CloneHandle(),
                               GetFontRenderParams().Get()->subpixel_rendering);
 
@@ -135,7 +135,7 @@ void GpuHostImpl::ResetFontRenderParams() {
   GetFontRenderParams().Reset();
 }
 
-void GpuHostImpl::OnProcessLaunched(base::ProcessId pid) {
+void GpuHostImpl::SetProcessId(base::ProcessId pid) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_EQ(base::kNullProcessId, pid_);
   DCHECK_NE(base::kNullProcessId, pid);
@@ -176,8 +176,8 @@ void GpuHostImpl::BlockLiveOffscreenContexts() {
 }
 
 void GpuHostImpl::ConnectFrameSinkManager(
-    mojom::FrameSinkManagerRequest request,
-    mojom::FrameSinkManagerClientPtrInfo client) {
+    mojo::PendingReceiver<mojom::FrameSinkManager> receiver,
+    mojo::PendingRemote<mojom::FrameSinkManagerClient> client) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   TRACE_EVENT0("gpu", "GpuHostImpl::ConnectFrameSinkManager");
 
@@ -188,7 +188,7 @@ void GpuHostImpl::ConnectFrameSinkManager(
       params_.deadline_to_synchronize_surfaces.has_value();
   params->activation_deadline_in_frames =
       params_.deadline_to_synchronize_surfaces.value_or(0u);
-  params->frame_sink_manager = std::move(request);
+  params->frame_sink_manager = std::move(receiver);
   params->frame_sink_manager_client = std::move(client);
   viz_main_->CreateFrameSinkManager(std::move(params));
 }
@@ -424,10 +424,9 @@ void GpuHostImpl::DidInitialize(
     if (oopd_enabled)
       CreateChannelCache(gpu::kInProcessCommandBufferClientId);
 
-    bool use_gr_shader_cache =
-        base::FeatureList::IsEnabled(
-            features::kDefaultEnableOopRasterization) ||
-        base::FeatureList::IsEnabled(features::kUseSkiaRenderer);
+    bool use_gr_shader_cache = base::FeatureList::IsEnabled(
+                                   features::kDefaultEnableOopRasterization) ||
+                               features::IsUsingSkiaRenderer();
     if (use_gr_shader_cache)
       CreateChannelCache(gpu::kGrShaderCacheClientId);
   }

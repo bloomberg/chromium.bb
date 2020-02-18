@@ -4,9 +4,10 @@
 
 #include "net/third_party/quiche/src/quic/test_tools/crypto_test_utils.h"
 
+#include <utility>
+
 #include "net/third_party/quiche/src/quic/core/proto/crypto_server_config_proto.h"
 #include "net/third_party/quiche/src/quic/core/quic_utils.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_ptr_util.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_test.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_text_utils.h"
 #include "net/third_party/quiche/src/quic/test_tools/mock_clock.h"
@@ -47,7 +48,7 @@ class ShloVerifier {
 
   std::unique_ptr<ValidateClientHelloCallback>
   GetValidateClientHelloCallback() {
-    return QuicMakeUnique<ValidateClientHelloCallback>(this);
+    return std::make_unique<ValidateClientHelloCallback>(this);
   }
 
  private:
@@ -82,7 +83,7 @@ class ShloVerifier {
   };
 
   std::unique_ptr<ProcessClientHelloCallback> GetProcessClientHelloCallback() {
-    return QuicMakeUnique<ProcessClientHelloCallback>(this);
+    return std::make_unique<ProcessClientHelloCallback>(this);
   }
 
   void ProcessClientHelloDone(std::unique_ptr<CryptoHandshakeMessage> message) {
@@ -127,7 +128,7 @@ TEST_F(CryptoTestUtilsTest, TestGenerateFullCHLO) {
       QuicRandom::GetInstance(), &clock, new_config_options);
   primary_config.set_primary_time(clock.WallNow().ToUNIXSeconds());
   std::unique_ptr<CryptoHandshakeMessage> msg =
-      crypto_config.AddConfig(std::move(primary_config), clock.WallNow());
+      crypto_config.AddConfig(primary_config, clock.WallNow());
   QuicStringPiece orbit;
   ASSERT_TRUE(msg->GetStringPiece(kORBT, &orbit));
   std::string nonce;

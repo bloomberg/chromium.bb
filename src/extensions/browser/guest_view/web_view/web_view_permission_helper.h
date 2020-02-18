@@ -71,7 +71,7 @@ class WebViewPermissionHelper
                    base::OnceCallback<void(bool)> callback);
   void RequestPointerLockPermission(bool user_gesture,
                                     bool last_unlocked_by_target,
-                                    const base::Callback<void(bool)>& callback);
+                                    base::OnceCallback<void(bool)> callback);
 
   // Requests Geolocation Permission from the embedder.
   void RequestGeolocationPermission(int bridge_id,
@@ -83,22 +83,6 @@ class WebViewPermissionHelper
   void RequestFileSystemPermission(const GURL& url,
                                    bool allowed_by_default,
                                    base::OnceCallback<void(bool)> callback);
-
-  // Called when file system access is requested by the guest content using the
-  // asynchronous HTML5 file system API. The request is plumbed through the
-  // <webview> permission request API. The request will be:
-  // - Allowed if the embedder explicitly allowed it.
-  // - Denied if the embedder explicitly denied.
-  // - Determined by the guest's content settings if the embedder does not
-  // perform an explicit action.
-  // If access was blocked due to the page's content settings,
-  // |blocked_by_policy| should be true, and this function should invoke
-  // OnContentBlocked.
-  void FileSystemAccessedAsync(int render_process_id,
-                               int render_frame_id,
-                               int request_id,
-                               const GURL& url,
-                               bool blocked_by_policy);
 
   enum PermissionResponseAction { DENY, ALLOW, DEFAULT };
 

@@ -64,13 +64,13 @@ bool ShelfContextMenuModel::IsCommandIdChecked(int command_id) const {
         Shell::Get()->session_controller()->GetLastActiveUserPrefService();
     const ShelfAlignment alignment = GetShelfAlignmentPref(prefs, display_id_);
     if (command_id == MENU_ALIGNMENT_LEFT)
-      return alignment == SHELF_ALIGNMENT_LEFT;
+      return alignment == ShelfAlignment::kLeft;
     if (command_id == MENU_ALIGNMENT_BOTTOM) {
-      return alignment == SHELF_ALIGNMENT_BOTTOM ||
-             alignment == SHELF_ALIGNMENT_BOTTOM_LOCKED;
+      return alignment == ShelfAlignment::kBottom ||
+             alignment == ShelfAlignment::kBottomLocked;
     }
     if (command_id == MENU_ALIGNMENT_RIGHT)
-      return alignment == SHELF_ALIGNMENT_RIGHT;
+      return alignment == ShelfAlignment::kRight;
   }
 
   return SimpleMenuModel::Delegate::IsCommandIdChecked(command_id);
@@ -99,24 +99,24 @@ void ShelfContextMenuModel::ExecuteCommand(int command_id, int event_flags) {
     case MENU_ALIGNMENT_LEFT:
       DCHECK(!is_tablet_mode);
       metrics->RecordUserMetricsAction(UMA_SHELF_ALIGNMENT_SET_LEFT);
-      SetShelfAlignmentPref(prefs, display_id_, SHELF_ALIGNMENT_LEFT);
+      SetShelfAlignmentPref(prefs, display_id_, ShelfAlignment::kLeft);
       break;
     case MENU_ALIGNMENT_RIGHT:
       DCHECK(!is_tablet_mode);
       metrics->RecordUserMetricsAction(UMA_SHELF_ALIGNMENT_SET_RIGHT);
-      SetShelfAlignmentPref(prefs, display_id_, SHELF_ALIGNMENT_RIGHT);
+      SetShelfAlignmentPref(prefs, display_id_, ShelfAlignment::kRight);
       break;
     case MENU_ALIGNMENT_BOTTOM:
       DCHECK(!is_tablet_mode);
       metrics->RecordUserMetricsAction(UMA_SHELF_ALIGNMENT_SET_BOTTOM);
-      SetShelfAlignmentPref(prefs, display_id_, SHELF_ALIGNMENT_BOTTOM);
+      SetShelfAlignmentPref(prefs, display_id_, ShelfAlignment::kBottom);
       break;
     case MENU_CHANGE_WALLPAPER:
       shell->wallpaper_controller()->OpenWallpaperPickerIfAllowed();
       break;
     default:
       if (delegate_) {
-        if (app_list::IsCommandIdAnAppLaunch(command_id)) {
+        if (IsCommandIdAnAppLaunch(command_id)) {
           shell->app_list_controller()->RecordShelfAppLaunched(
               base::nullopt /* recorded_app_list_view_state */,
               base::nullopt /* recorded_home_launcher_shown */);
@@ -153,7 +153,8 @@ void ShelfContextMenuModel::AddShelfAndWallpaperItems() {
   // mode, the shelf alignment option is not shown.
   LoginStatus status = Shell::Get()->session_controller()->login_status();
   if (status == LoginStatus::USER &&
-      !Shell::Get()->tablet_mode_controller()->InTabletMode()) {
+      !Shell::Get()->tablet_mode_controller()->InTabletMode() &&
+      prefs->FindPreference(prefs::kShelfAlignmentLocal)->IsUserModifiable()) {
     alignment_submenu_ = std::make_unique<ui::SimpleMenuModel>(this);
 
     constexpr int group = 0;

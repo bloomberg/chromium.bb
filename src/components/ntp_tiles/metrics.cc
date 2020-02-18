@@ -10,7 +10,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 #include "components/ntp_tiles/constants.h"
-#include "components/rappor/public/rappor_utils.h"
 
 namespace ntp_tiles {
 namespace metrics {
@@ -33,8 +32,6 @@ const char kHistogramExploreName[] = "explore";
 const char kTileTypeSuffixIconColor[] = "IconsColor";
 const char kTileTypeSuffixIconGray[] = "IconsGray";
 const char kTileTypeSuffixIconReal[] = "IconsReal";
-const char kTileTypeSuffixThumbnail[] = "Thumbnail";
-const char kTileTypeSuffixThumbnailFailed[] = "ThumbnailFailed";
 
 void LogUmaHistogramAge(const std::string& name, const base::TimeDelta& value) {
   // Log the value in number of seconds.
@@ -73,10 +70,6 @@ const char* GetTileTypeSuffix(TileVisualType type) {
       return kTileTypeSuffixIconGray;
     case TileVisualType::ICON_REAL:
       return kTileTypeSuffixIconReal;
-    case THUMBNAIL:
-      return kTileTypeSuffixThumbnail;
-    case THUMBNAIL_FAILED:
-      return kTileTypeSuffixThumbnailFailed;
     case TileVisualType::NONE:                     // Fall through.
     case TileVisualType::UNKNOWN_TILE_TYPE:
       break;
@@ -90,8 +83,7 @@ void RecordPageImpression(int number_of_tiles) {
   base::UmaHistogramSparse("NewTabPage.NumberOfTiles", number_of_tiles);
 }
 
-void RecordTileImpression(const NTPTileImpression& impression,
-                          rappor::RapporService* rappor_service) {
+void RecordTileImpression(const NTPTileImpression& impression) {
   UMA_HISTOGRAM_ENUMERATION("NewTabPage.SuggestionsImpression",
                             impression.index, kMaxNumTiles);
 
@@ -132,14 +124,7 @@ void RecordTileImpression(const NTPTileImpression& impression,
 
   const char* tile_type_suffix = GetTileTypeSuffix(impression.visual_type);
   if (tile_type_suffix) {
-    if (!impression.url_for_rappor.is_empty()) {
-      // Note: This handles a null |rappor_service|.
-      rappor::SampleDomainAndRegistryFromGURL(
-          rappor_service,
-          base::StringPrintf("NTP.SuggestionsImpressions.%s", tile_type_suffix),
-          impression.url_for_rappor);
-    }
-
+    // TODO(http://crbug.com/1021598): Add UKM here.
     base::UmaHistogramExactLinear(
         base::StringPrintf("NewTabPage.SuggestionsImpression.%s",
                            tile_type_suffix),

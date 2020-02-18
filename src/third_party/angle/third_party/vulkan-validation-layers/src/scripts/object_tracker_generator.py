@@ -64,6 +64,7 @@ from io import open
 #     separate line, align parameter names at the specified column
 class ObjectTrackerGeneratorOptions(GeneratorOptions):
     def __init__(self,
+                 conventions = None,
                  filename = None,
                  directory = '.',
                  apiname = None,
@@ -87,7 +88,7 @@ class ObjectTrackerGeneratorOptions(GeneratorOptions):
                  alignFuncParam = 0,
                  expandEnumerants = True,
                  valid_usage_path = ''):
-        GeneratorOptions.__init__(self, filename, directory, apiname, profile,
+        GeneratorOptions.__init__(self, conventions, filename, directory, apiname, profile,
                                   versions, emitversions, defaultExtensions,
                                   addExtensions, removeExtensions, emitExtensions, sortProcedure)
         self.prefixText      = prefixText
@@ -160,6 +161,12 @@ class ObjectTrackerOutputGenerator(OutputGenerator):
             'vkGetPhysicalDeviceDisplayProperties2KHR',
             'vkGetDisplayModePropertiesKHR',
             'vkGetDisplayModeProperties2KHR',
+            'vkAcquirePerformanceConfigurationINTEL',
+            'vkReleasePerformanceConfigurationINTEL',
+            'vkQueueSetPerformanceConfigurationINTEL',
+            'vkCreateFramebuffer',
+            'vkSetDebugUtilsObjectNameEXT',
+            'vkSetDebugUtilsObjectTagEXT',
             ]
         # These VUIDS are not implicit, but are best handled in this layer. Codegen for vkDestroy calls will generate a key
         # which is translated here into a good VU.  Saves ~40 checks.
@@ -201,6 +208,9 @@ class ObjectTrackerOutputGenerator(OutputGenerator):
             "surface-nullalloc": "\"VUID-vkDestroySurfaceKHR-surface-01268\"",
             "framebuffer-compatalloc": "\"VUID-vkDestroyFramebuffer-framebuffer-00893\"",
             "framebuffer-nullalloc": "\"VUID-vkDestroyFramebuffer-framebuffer-00894\"",
+            "VkGraphicsPipelineCreateInfo-basePipelineHandle": "\"VUID-VkGraphicsPipelineCreateInfo-flags-00722\"",
+            "VkComputePipelineCreateInfo-basePipelineHandle": "\"VUID-VkComputePipelineCreateInfo-flags-00697\"",
+            "VkRayTracingPipelineCreateInfoNV-basePipelineHandle": "\"VUID-VkRayTracingPipelineCreateInfoNV-flags-02404\"",
            }
 
         # Commands shadowed by interface functions and are not implemented
@@ -265,7 +275,7 @@ class ObjectTrackerOutputGenerator(OutputGenerator):
             if alias:
                 alias_string = 'VUID-%s-%s' % (alias, suffix)
                 if alias_string in self.valid_vuids:
-                    vuid = "\"%s\"" % vuid_string
+                    vuid = "\"%s\"" % alias_string
         return vuid
     #
     # Increases indent by 4 spaces and tracks it globally
@@ -293,26 +303,35 @@ class ObjectTrackerOutputGenerator(OutputGenerator):
     # Generate the object tracker undestroyed object validation function
     def GenReportFunc(self):
         output_func = ''
-        output_func += 'bool ObjectLifetimes::ReportUndestroyedObjects(VkDevice device, const std::string& error_code) {\n'
-        output_func += '    bool skip = false;\n'
-        output_func += '    skip |= DeviceReportUndestroyedObjects(device, kVulkanObjectTypeCommandBuffer, error_code);\n'
-        for handle in self.object_types:
-            if self.isHandleTypeNonDispatchable(handle):
-                output_func += '    skip |= DeviceReportUndestroyedObjects(device, %s, error_code);\n' % (self.GetVulkanObjType(handle))
-        output_func += '    return skip;\n'
-        output_func += '}\n'
+        for objtype in ['instance', 'device']:
+            upper_objtype = objtype.capitalize();
+            output_func += 'bool ObjectLifetimes::ReportUndestroyed%sObjects(Vk%s %s, const std::string& error_code) const {\n' % (upper_objtype, upper_objtype, objtype)
+            output_func += '    bool skip = false;\n'
+            if objtype == 'device':
+                output_func += '    skip |= ReportLeaked%sObjects(%s, kVulkanObjectTypeCommandBuffer, error_code);\n' % (upper_objtype, objtype)
+            for handle in self.object_types:
+                if self.handle_types.IsNonDispatchable(handle):
+                    if (objtype == 'device' and self.handle_parents.IsParentDevice(handle)) or (objtype == 'instance' and not self.handle_parents.IsParentDevice(handle)):
+                        output_func += '    skip |= ReportLeaked%sObjects(%s, %s, error_code);\n' % (upper_objtype, objtype, self.GetVulkanObjType(handle))
+            output_func += '    return skip;\n'
+            output_func += '}\n'
         return output_func
 
     #
     # Generate the object tracker undestroyed object destruction function
     def GenDestroyFunc(self):
         output_func = ''
-        output_func += 'void ObjectLifetimes::DestroyUndestroyedObjects(VkDevice device) {\n'
-        output_func += '    DeviceDestroyUndestroyedObjects(device, kVulkanObjectTypeCommandBuffer);\n'
-        for handle in self.object_types:
-            if self.isHandleTypeNonDispatchable(handle):
-                output_func += '    DeviceDestroyUndestroyedObjects(device, %s);\n' % (self.GetVulkanObjType(handle))
-        output_func += '}\n'
+        for objtype in ['instance', 'device']:
+            upper_objtype = objtype.capitalize();
+            output_func += 'void ObjectLifetimes::DestroyLeaked%sObjects() {\n' % upper_objtype
+            if objtype == 'device':
+                output_func += '    DestroyUndestroyedObjects(kVulkanObjectTypeCommandBuffer);\n'
+            for handle in self.object_types:
+                if self.handle_types.IsNonDispatchable(handle):
+                    if (objtype == 'device' and self.handle_parents.IsParentDevice(handle)) or (objtype == 'instance' and not self.handle_parents.IsParentDevice(handle)):
+                        output_func += '    DestroyUndestroyedObjects(%s);\n' % self.GetVulkanObjType(handle)
+            output_func += '}\n'
+
         return output_func
 
     #
@@ -341,6 +360,11 @@ class ObjectTrackerOutputGenerator(OutputGenerator):
     # Called at beginning of processing as file is opened
     def beginFile(self, genOpts):
         OutputGenerator.beginFile(self, genOpts)
+
+        # Initialize members that require the tree
+        self.handle_types = GetHandleTypes(self.registry.tree)
+        self.handle_parents = GetHandleParents(self.registry.tree)
+        self.type_categories = GetTypeCategories(self.registry.tree)
 
         header_file = (genOpts.filename == 'object_tracker.h')
         source_file = (genOpts.filename == 'object_tracker.cpp')
@@ -490,32 +514,9 @@ class ObjectTrackerOutputGenerator(OutputGenerator):
     def paramIsPointer(self, param):
         ispointer = False
         for elem in param:
-            if ((elem.tag is not 'type') and (elem.tail is not None)) and '*' in elem.tail:
+            if elem.tag == 'type' and elem.tail is not None and '*' in elem.tail:
                 ispointer = True
         return ispointer
-    #
-    # Get the category of a type
-    def getTypeCategory(self, typename):
-        types = self.registry.tree.findall("types/type")
-        for elem in types:
-            if (elem.find("name") is not None and elem.find('name').text == typename) or elem.attrib.get('name') == typename:
-                return elem.attrib.get('category')
-    #
-    # Check if a parent object is dispatchable or not
-    def isHandleTypeObject(self, handletype):
-        handle = self.registry.tree.find("types/type/[name='" + handletype + "'][@category='handle']")
-        if handle is not None:
-            return True
-        else:
-            return False
-    #
-    # Check if a parent object is dispatchable or not
-    def isHandleTypeNonDispatchable(self, handletype):
-        handle = self.registry.tree.find("types/type/[name='" + handletype + "'][@category='handle']")
-        if handle is not None and handle.find('type').text == 'VK_DEFINE_NON_DISPATCHABLE_HANDLE':
-            return True
-        else:
-            return False
     #
     # Retrieve the type and name for a parameter
     def getTypeNameTuple(self, param):
@@ -611,7 +612,7 @@ class ObjectTrackerOutputGenerator(OutputGenerator):
         struct_members = struct_member_dict[struct_item]
 
         for member in struct_members:
-            if self.isHandleTypeObject(member.type):
+            if member.type in self.handle_types:
                 return True
             # recurse for member structs, guard against infinite recursion
             elif member.type in struct_member_dict and member.type != struct_item:
@@ -624,7 +625,7 @@ class ObjectTrackerOutputGenerator(OutputGenerator):
         struct_list = set()
         for item in item_list:
             paramtype = item.find('type')
-            typecategory = self.getTypeCategory(paramtype.text)
+            typecategory = self.type_categories[paramtype.text]
             if typecategory == 'struct':
                 if self.struct_contains_object(paramtype.text) == True:
                     struct_list.add(item)
@@ -638,7 +639,7 @@ class ObjectTrackerOutputGenerator(OutputGenerator):
         else:
             member_list = item_list
         for item in member_list:
-            if self.isHandleTypeObject(paramtype.text):
+            if paramtype.text in self.handle_types:
                 object_list.add(item)
         return object_list
     #
@@ -680,7 +681,7 @@ class ObjectTrackerOutputGenerator(OutputGenerator):
         handle_type = params[-1].find('type')
         is_create_pipelines = False
 
-        if self.isHandleTypeObject(handle_type.text):
+        if handle_type.text in self.handle_types:
             # Check for special case where multiple handles are returned
             object_array = False
             if cmd_info[-1].len is not None:
@@ -691,6 +692,8 @@ class ObjectTrackerOutputGenerator(OutputGenerator):
                 if 'CreateGraphicsPipelines' in proto.text or 'CreateComputePipelines' in proto.text or 'CreateRayTracingPipelines' in proto.text:
                     is_create_pipelines = True
                     create_obj_code += '%sif (VK_ERROR_VALIDATION_FAILED_EXT == result) return;\n' % indent
+                create_obj_code += '%sif (%s) {\n' % (indent, handle_name.text)
+                indent = self.incIndent(indent)
                 countispointer = ''
                 if 'uint32_t*' in cmd_info[-2].cdecl:
                     countispointer = '*'
@@ -701,11 +704,14 @@ class ObjectTrackerOutputGenerator(OutputGenerator):
             dispobj = params[0].find('type').text
             if is_create_pipelines:
                 create_obj_code += '%sif (!pPipelines[index]) continue;\n' % indent
-            create_obj_code += '%sCreateObject(%s, %s, %s, %s);\n' % (indent, params[0].find('name').text, object_dest, self.GetVulkanObjType(cmd_info[-1].type), allocator)
+            create_obj_code += '%sCreateObject(%s, %s, %s);\n' % (indent, object_dest, self.GetVulkanObjType(cmd_info[-1].type), allocator)
             if object_array == True:
                 indent = self.decIndent(indent)
                 create_obj_code += '%s}\n' % indent
+                indent = self.decIndent(indent)
+                create_obj_code += '%s}\n' % indent
             indent = self.decIndent(indent)
+
         return create_obj_code
     #
     # Generate source for destroying a non-dispatchable object
@@ -724,15 +730,15 @@ class ObjectTrackerOutputGenerator(OutputGenerator):
             nullalloc_vuid_string = '%s-nullalloc' % cmd_info[param].name
             compatalloc_vuid = self.manual_vuids.get(compatalloc_vuid_string, "kVUIDUndefined")
             nullalloc_vuid = self.manual_vuids.get(nullalloc_vuid_string, "kVUIDUndefined")
-            if self.isHandleTypeObject(cmd_info[param].type) == True:
+            if cmd_info[param].type in self.handle_types:
                 if object_array == True:
                     # This API is freeing an array of handles -- add loop control
                     validate_code += 'HEY, NEED TO DESTROY AN ARRAY\n'
                 else:
                     dispobj = cmd_info[0].type
                     # Call Destroy a single time
-                    validate_code += '%sskip |= ValidateDestroyObject(%s, %s, %s, pAllocator, %s, %s);\n' % (indent, cmd_info[0].name, cmd_info[param].name, self.GetVulkanObjType(cmd_info[param].type), compatalloc_vuid, nullalloc_vuid)
-                    record_code += '%sRecordDestroyObject(%s, %s, %s);\n' % (indent, cmd_info[0].name, cmd_info[param].name, self.GetVulkanObjType(cmd_info[param].type))
+                    validate_code += '%sskip |= ValidateDestroyObject(%s, %s, pAllocator, %s, %s);\n' % (indent, cmd_info[param].name, self.GetVulkanObjType(cmd_info[param].type), compatalloc_vuid, nullalloc_vuid)
+                    record_code += '%sRecordDestroyObject(%s, %s);\n' % (indent, cmd_info[param].name, self.GetVulkanObjType(cmd_info[param].type))
         return object_array, validate_code, record_code
     #
     # Output validation for a single object (obj_count is NULL) or a counted list of objects
@@ -747,13 +753,25 @@ class ObjectTrackerOutputGenerator(OutputGenerator):
         if parent_vuid == 'kVUIDUndefined':
             parent_vuid = self.GetVuid(parent_name, 'commonparent')
         if obj_count is not None:
+
+            pre_call_code += '%sif (%s%s) {\n' % (indent, prefix, obj_name)
+            indent = self.incIndent(indent)
             pre_call_code += '%sfor (uint32_t %s = 0; %s < %s; ++%s) {\n' % (indent, index, index, obj_count, index)
             indent = self.incIndent(indent)
-            pre_call_code += '%sskip |= ValidateObject(%s, %s%s[%s], %s, %s, %s, %s);\n' % (indent, disp_name, prefix, obj_name, index, self.GetVulkanObjType(obj_type), null_allowed, param_vuid, parent_vuid)
+            pre_call_code += '%sskip |= ValidateObject(%s%s[%s], %s, %s, %s, %s);\n' % (indent, prefix, obj_name, index, self.GetVulkanObjType(obj_type), null_allowed, param_vuid, parent_vuid)
+            indent = self.decIndent(indent)
+            pre_call_code += '%s}\n' % indent
             indent = self.decIndent(indent)
             pre_call_code += '%s}\n' % indent
         else:
-            pre_call_code += '%sskip |= ValidateObject(%s, %s%s, %s, %s, %s, %s);\n' % (indent, disp_name, prefix, obj_name, self.GetVulkanObjType(obj_type), null_allowed, param_vuid, parent_vuid)
+            bonus_indent = ''
+            if 'basePipelineHandle' in obj_name:
+                pre_call_code += '%sif ((%sflags & VK_PIPELINE_CREATE_DERIVATIVE_BIT) && (%sbasePipelineIndex == -1))\n' % (indent, prefix, prefix)
+                bonus_indent = '    '
+                null_allowed = 'false'
+                manual_vuid_index = parent_name + '-' + obj_name
+                param_vuid = self.manual_vuids.get(manual_vuid_index, "kVUIDUndefined")
+            pre_call_code += '%s%sskip |= ValidateObject(%s%s, %s, %s, %s, %s);\n' % (bonus_indent, indent, prefix, obj_name, self.GetVulkanObjType(obj_type), null_allowed, param_vuid, parent_vuid)
         return pre_call_code
     #
     # first_level_param indicates if elements are passed directly into the function else they're below a ptr/struct
@@ -766,7 +784,7 @@ class ObjectTrackerOutputGenerator(OutputGenerator):
             # Handle objects
             if member.iscreate and first_level_param and member == members[-1]:
                 continue
-            if self.isHandleTypeObject(member.type) == True:
+            if member.type in self.handle_types:
                 count_name = member.len
                 if (count_name is not None):
                     count_name = '%s%s' % (prefix, member.len)
@@ -796,7 +814,7 @@ class ObjectTrackerOutputGenerator(OutputGenerator):
                         pre_code += '%s}\n' % indent
                         indent = self.decIndent(indent)
                         pre_code += '%s}\n' % indent
-                    # Single Struct
+                    # Single Struct Pointer
                     elif ispointer:
                         # Update struct prefix
                         new_prefix = '%s%s->' % (prefix, member.name)
@@ -808,6 +826,13 @@ class ObjectTrackerOutputGenerator(OutputGenerator):
                         pre_code += tmp_pre
                         indent = self.decIndent(indent)
                         pre_code += '%s}\n' % indent
+                    # Single Nested Struct
+                    else:
+                        # Update struct prefix
+                        new_prefix = '%s%s.' % (prefix, member.name)
+                        # Process sub-structs
+                        tmp_pre = self.validate_objects(struct_info, indent, new_prefix, array_index, disp_name, member.type, False)
+                        pre_code += tmp_pre
         return pre_code
     #
     # For a particular API, generate the object handling code
@@ -842,7 +867,6 @@ class ObjectTrackerOutputGenerator(OutputGenerator):
     #
     # Capture command parameter info needed to create, destroy, and validate objects
     def genCmd(self, cmdinfo, cmdname, alias):
-
         # Add struct-member type information to command parameter information
         OutputGenerator.genCmd(self, cmdinfo, cmdname, alias)
         members = cmdinfo.elem.findall('.//param')
@@ -862,7 +886,6 @@ class ObjectTrackerOutputGenerator(OutputGenerator):
 
         # Generate member info
         membersInfo = []
-        constains_extension_structs = False
         allocator = 'nullptr'
         for member in members:
             # Get type and name of member
@@ -876,7 +899,7 @@ class ObjectTrackerOutputGenerator(OutputGenerator):
             isconst = True if 'const' in cdecl else False
             # Mark param as local if it is an array of objects
             islocal = False;
-            if self.isHandleTypeObject(type) == True:
+            if type in self.handle_types:
                 if (length is not None) and (isconst == True):
                     islocal = True
             # Or if it's a struct that contains an object
@@ -940,7 +963,7 @@ class ObjectTrackerOutputGenerator(OutputGenerator):
             if 'object_tracker.h' in self.genOpts.filename:
                 # Output PreCallValidateAPI prototype if necessary
                 if pre_call_validate:
-                    pre_cv_func_decl = 'bool PreCallValidate' + func_decl_template + ';'
+                    pre_cv_func_decl = 'bool PreCallValidate' + func_decl_template + ' const;'
                     self.appendSection('command', pre_cv_func_decl)
 
                 # Output PreCallRecordAPI prototype if necessary
@@ -953,12 +976,14 @@ class ObjectTrackerOutputGenerator(OutputGenerator):
                     post_cr_func_decl = 'void PostCallRecord' + func_decl_template + ';'
                     if result_type.text == 'VkResult':
                         post_cr_func_decl = post_cr_func_decl.replace(')', ',\n    VkResult                                    result)')
+                    elif result_type.text == 'VkDeviceAddress':
+                        post_cr_func_decl = post_cr_func_decl.replace(')', ',\n    VkDeviceAddress                             result)')
                     self.appendSection('command', post_cr_func_decl)
 
             if 'object_tracker.cpp' in self.genOpts.filename:
                 # Output PreCallValidateAPI function if necessary
                 if pre_call_validate and not manual:
-                    pre_cv_func_decl = 'bool ObjectLifetimes::PreCallValidate' + func_decl_template + ' {'
+                    pre_cv_func_decl = 'bool ObjectLifetimes::PreCallValidate' + func_decl_template + ' const {'
                     self.appendSection('command', '')
                     self.appendSection('command', pre_cv_func_decl)
                     self.appendSection('command', '    bool skip = false;')
@@ -984,8 +1009,9 @@ class ObjectTrackerOutputGenerator(OutputGenerator):
                         # The two createpipelines APIs may create on failure -- skip the success result check
                         if 'CreateGraphicsPipelines' not in cmdname and 'CreateComputePipelines' not in cmdname and 'CreateRayTracingPipelines' not in cmdname:
                             post_cr_func_decl = post_cr_func_decl.replace('{', '{\n    if (result != VK_SUCCESS) return;')
+                    elif result_type.text == 'VkDeviceAddress':
+                        post_cr_func_decl = post_cr_func_decl.replace(')', ',\n    VkDeviceAddress                             result)')
                     self.appendSection('command', post_cr_func_decl)
-
 
                     self.appendSection('command', post_call_record)
                     self.appendSection('command', '}')

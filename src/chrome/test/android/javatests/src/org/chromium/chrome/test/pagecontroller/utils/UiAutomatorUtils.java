@@ -12,10 +12,11 @@ import android.os.Environment;
 import android.os.ParcelFileDescriptor;
 import android.os.Process;
 import android.os.RemoteException;
-import android.support.annotation.NonNull;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.uiautomator.UiDevice;
 import android.support.test.uiautomator.UiObject2;
+
+import androidx.annotation.NonNull;
 
 import org.chromium.base.Log;
 
@@ -210,7 +211,7 @@ public class UiAutomatorUtils {
     /**
      * Click on a node.
      * @param locator           Locator used to find the node.
-     * @throws  UiLocationError If locator didn't find any nodes within timeout interval.
+     * @throws  UiLocationException If locator didn't find any nodes within timeout interval.
      */
     public void click(@NonNull IUi2Locator locator) {
         clickDurationInternal(locator, SHORT_CLICK_DURATION);
@@ -220,7 +221,7 @@ public class UiAutomatorUtils {
      * Click on a node and checks for an expected outcome.
      * @param locator          Locator used to find the node to click on.
      * @param outcomeLocator   Locator to check for existence after the click.
-     * @throws UiLocationError If locator didn't find any nodes within timeout interval or if
+     * @throws UiLocationException If locator didn't find any nodes within timeout interval or if
      *                         provided outcomeLocator didn't find any nodes after the click.
      */
     public void click(@NonNull IUi2Locator locator, @NonNull IUi2Locator outcomeLocator) {
@@ -231,7 +232,7 @@ public class UiAutomatorUtils {
      * Enters text in a node and press enter.
      * @param locator          Locator used to find the node.
      * @param text             The text to enter.
-     * @throws UiLocationError If locator didn't find any nodes within timeout interval.
+     * @throws UiLocationException If locator didn't find any nodes within timeout interval.
      */
     public void setTextAndEnter(@NonNull IUi2Locator locator, @NonNull String text) {
         click(locator);
@@ -243,8 +244,8 @@ public class UiAutomatorUtils {
     /**
      * Performs the swipe up gesture repeatedly until a locator is found.
      * @param locator  locator that will stop the swipe if found on screen.
-     * @param stopLocator  locator that will cause an UiLocationError if found before locator.
-     * @throws UiLocationError
+     * @param stopLocator  locator that will cause an UiLocationException if found before locator.
+     * @throws UiLocationException
      */
     public void swipeUpVerticallyUntilFound(IUi2Locator locator, IUi2Locator stopLocator) {
         swipeVerticallyUntilFound(locator, stopLocator, DEFAULT_SWIPE_SCREEN_FRACTION);
@@ -253,8 +254,8 @@ public class UiAutomatorUtils {
     /**
      * Performs the swipe down gesture repeatedly until a locator is found.
      * @param locator     locator that will stop the swipe if found on screen.
-     * @param stopLocator locator that will cause an UiLocationError if found before locator.
-     * @throws UiLocationError
+     * @param stopLocator locator that will cause an UiLocationException if found before locator.
+     * @throws UiLocationException
      */
     public void swipeDownVerticallyUntilFound(IUi2Locator locator, IUi2Locator stopLocator) {
         swipeVerticallyUntilFound(locator, stopLocator, -DEFAULT_SWIPE_SCREEN_FRACTION);
@@ -335,15 +336,19 @@ public class UiAutomatorUtils {
     }
 
     // positive fraction indicates swipe up
+    /**
+     * @throws UiLocationException
+     */
     private void swipeVerticallyUntilFound(
             IUi2Locator locator, IUi2Locator stopLocator, float fractionOfScreen) {
         if (mLocatorHelper.isOnScreen(locator)) return;
         Utils.sleep(UiLocatorHelper.UI_CHECK_INTERVAL_MS);
         int iterationsLeft = MAX_SWIPES;
         while (!mLocatorHelper.isOnScreen(locator) && iterationsLeft-- > 0) {
-            if (mLocatorHelper.isOnScreen(stopLocator))
+            if (mLocatorHelper.isOnScreen(stopLocator)) {
                 throw new UiLocationException(
                         "Did not find locator while swiping to " + stopLocator + ".", locator);
+            }
             swipeVertically(fractionOfScreen);
             Utils.sleep(UiLocatorHelper.UI_CHECK_INTERVAL_MS);
         }

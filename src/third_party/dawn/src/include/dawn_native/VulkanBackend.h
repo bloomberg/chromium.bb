@@ -24,42 +24,73 @@
 
 namespace dawn_native { namespace vulkan {
 
-    // Common properties of external images
-    struct ExternalImageDescriptor {
-        const DawnTextureDescriptor* cTextureDescriptor;  // Must match image creation params
-        bool isCleared;               // Sets whether the texture will be cleared before use
-        VkDeviceSize allocationSize;  // Must match VkMemoryAllocateInfo from image creation
-        uint32_t memoryTypeIndex;     // Must match VkMemoryAllocateInfo from image creation
+    // The different types of ExternalImageDescriptors
+    enum ExternalImageDescriptorType {
+#ifdef __linux__
+        OpaqueFD,
+        DmaBuf,
+#endif  // __linux__
     };
 
-    DAWN_NATIVE_EXPORT VkInstance GetInstance(DawnDevice device);
+    // Common properties of external images
+    struct DAWN_NATIVE_EXPORT ExternalImageDescriptor {
+      public:
+        const ExternalImageDescriptorType type;           // Must match the subclass
+        const WGPUTextureDescriptor* cTextureDescriptor;  // Must match image creation params
+        bool isCleared;  // Sets whether the texture will be cleared before use
 
-    DAWN_NATIVE_EXPORT DawnSwapChainImplementation CreateNativeSwapChainImpl(DawnDevice device,
+      protected:
+        ExternalImageDescriptor(ExternalImageDescriptorType type);
+    };
+
+    DAWN_NATIVE_EXPORT VkInstance GetInstance(WGPUDevice device);
+
+    DAWN_NATIVE_EXPORT PFN_vkVoidFunction GetInstanceProcAddr(WGPUDevice device, const char* pName);
+
+    DAWN_NATIVE_EXPORT DawnSwapChainImplementation CreateNativeSwapChainImpl(WGPUDevice device,
                                                                              VkSurfaceKHR surface);
-    DAWN_NATIVE_EXPORT DawnTextureFormat
+    DAWN_NATIVE_EXPORT WGPUTextureFormat
     GetNativeSwapChainPreferredFormat(const DawnSwapChainImplementation* swapChain);
 
 // Can't use DAWN_PLATFORM_LINUX since header included in both dawn and chrome
 #ifdef __linux__
-        // Descriptor for opaque file descriptor image import
-        struct ExternalImageDescriptorOpaqueFD : ExternalImageDescriptor {
+        // Common properties of external images represented by FDs
+        struct DAWN_NATIVE_EXPORT ExternalImageDescriptorFD : ExternalImageDescriptor {
+          public:
             int memoryFD;  // A file descriptor from an export of the memory of the image
             std::vector<int> waitFDs;  // File descriptors of semaphores which will be waited on
+
+          protected:
+            ExternalImageDescriptorFD(ExternalImageDescriptorType type);
         };
 
-        // Imports an external vulkan image from an opaque file descriptor. Internally, this uses
-        // external memory / semaphore extensions to import the image. Then, waits on the provided
-        // |descriptor->waitFDs| before the texture can be used. Finally, a signal semaphore
-        // can be exported, transferring control back to the caller.
-        // On failure, returns a nullptr
-        DAWN_NATIVE_EXPORT DawnTexture
-        WrapVulkanImageOpaqueFD(DawnDevice cDevice,
-                                const ExternalImageDescriptorOpaqueFD* descriptor);
+        // Descriptor for opaque file descriptor image import
+        struct DAWN_NATIVE_EXPORT ExternalImageDescriptorOpaqueFD : ExternalImageDescriptorFD {
+            ExternalImageDescriptorOpaqueFD();
+
+            VkDeviceSize allocationSize;  // Must match VkMemoryAllocateInfo from image creation
+            uint32_t memoryTypeIndex;     // Must match VkMemoryAllocateInfo from image creation
+        };
+
+        // Descriptor for dma-buf file descriptor image import
+        struct DAWN_NATIVE_EXPORT ExternalImageDescriptorDmaBuf : ExternalImageDescriptorFD {
+            ExternalImageDescriptorDmaBuf();
+
+            uint32_t stride;       // Stride of the buffer in bytes
+            uint64_t drmModifier;  // DRM modifier of the buffer
+        };
 
         // Exports a signal semaphore from a wrapped texture. This must be called on wrapped
         // textures before they are destroyed. On failure, returns -1
-        DAWN_NATIVE_EXPORT int ExportSignalSemaphoreOpaqueFD(DawnDevice cDevice,
-                                                             DawnTexture cTexture);
+        DAWN_NATIVE_EXPORT int ExportSignalSemaphoreOpaqueFD(WGPUDevice cDevice,
+                                                             WGPUTexture cTexture);
+
+        // Imports external memory into a Vulkan image. Internally, this uses external memory /
+        // semaphore extensions to import the image and wait on the provided synchronizaton
+        // primitives before the texture can be used.
+        // On failure, returns a nullptr.
+        DAWN_NATIVE_EXPORT WGPUTexture WrapVulkanImage(WGPUDevice cDevice,
+                                                       const ExternalImageDescriptor* descriptor);
 #endif  // __linux__
 }}  // namespace dawn_native::vulkan
 

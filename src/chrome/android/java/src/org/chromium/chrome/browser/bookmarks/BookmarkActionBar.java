@@ -15,11 +15,10 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkItem;
-import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkModelObserver;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge;
+import org.chromium.chrome.browser.incognito.IncognitoUtils;
 import org.chromium.chrome.browser.tabmodel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
-import org.chromium.chrome.browser.widget.dragreorder.DragReorderableListAdapter;
+import org.chromium.chrome.browser.ui.widget.dragreorder.DragReorderableListAdapter;
 import org.chromium.chrome.browser.widget.selection.SelectableListToolbar;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
 import org.chromium.components.bookmarks.BookmarkId;
@@ -37,13 +36,6 @@ public class BookmarkActionBar extends SelectableListToolbar<BookmarkId>
                    DragReorderableListAdapter.DragListener {
     private BookmarkItem mCurrentFolder;
     private BookmarkDelegate mDelegate;
-
-    private BookmarkModelObserver mBookmarkModelObserver = new BookmarkModelObserver() {
-        @Override
-        public void bookmarkModelChanged() {
-            onSelectionStateChange(mDelegate.getSelectionDelegate().getSelectedItemsAsList());
-        }
-    };
 
     public BookmarkActionBar(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -163,7 +155,6 @@ public class BookmarkActionBar extends SelectableListToolbar<BookmarkId>
         mDelegate = delegate;
         mDelegate.addUIObserver(this);
         if (!delegate.isDialogUi()) getMenu().removeItem(R.id.close_menu_id);
-        delegate.getModel().addObserver(mBookmarkModelObserver);
 
         getMenu().setGroupEnabled(R.id.selection_mode_menu_group, true);
     }
@@ -175,7 +166,6 @@ public class BookmarkActionBar extends SelectableListToolbar<BookmarkId>
         if (mDelegate == null) return;
 
         mDelegate.removeUIObserver(this);
-        mDelegate.getModel().removeObserver(mBookmarkModelObserver);
     }
 
     @Override
@@ -217,8 +207,9 @@ public class BookmarkActionBar extends SelectableListToolbar<BookmarkId>
             // Editing a bookmark action on multiple selected items doesn't make sense. So disable.
             getMenu().findItem(R.id.selection_mode_edit_menu_id).setVisible(
                     selectedBookmarks.size() == 1);
-            getMenu().findItem(R.id.selection_open_in_incognito_tab_id)
-                    .setVisible(PrefServiceBridge.getInstance().isIncognitoModeEnabled());
+            getMenu()
+                    .findItem(R.id.selection_open_in_incognito_tab_id)
+                    .setVisible(IncognitoUtils.isIncognitoModeEnabled());
             // It does not make sense to open a folder in new tab.
             for (BookmarkId bookmark : selectedBookmarks) {
                 BookmarkItem item = mDelegate.getModel().getBookmarkById(bookmark);

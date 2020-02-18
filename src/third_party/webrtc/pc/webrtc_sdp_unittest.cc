@@ -1524,6 +1524,8 @@ class WebRtcSdpTest : public ::testing::Test {
       CompareSimulcastDescription(
           c1.media_description()->simulcast_description(),
           c2.media_description()->simulcast_description());
+      EXPECT_EQ(c1.media_description()->alt_protocol(),
+                c2.media_description()->alt_protocol());
     }
 
     // group
@@ -1680,6 +1682,14 @@ class WebRtcSdpTest : public ::testing::Test {
     desc_.RemoveTransportInfoByName(content_name);
     info.description.opaque_parameters = params;
     desc_.AddTransportInfo(info);
+  }
+
+  void AddAltProtocol(const std::string& content_name,
+                      const std::string& alt_protocol) {
+    ASSERT_TRUE(desc_.GetTransportInfoByName(content_name) != NULL);
+    cricket::MediaContentDescription* description =
+        desc_.GetContentDescriptionByName(content_name);
+    description->set_alt_protocol(alt_protocol);
   }
 
   void AddFingerprint() {
@@ -2234,6 +2244,22 @@ TEST_F(WebRtcSdpTest, SerializeSessionDescriptionWithOpaqueTransportParams) {
   EXPECT_EQ(message, sdp_with_transport_parameters);
 }
 
+TEST_F(WebRtcSdpTest, SerializeSessionDescriptionWithAltProtocol) {
+  AddAltProtocol(kAudioContentName, "foo");
+  AddAltProtocol(kVideoContentName, "bar");
+
+  ASSERT_TRUE(jdesc_.Initialize(desc_.Clone(), jdesc_.session_id(),
+                                jdesc_.session_version()));
+  std::string message = webrtc::SdpSerialize(jdesc_);
+
+  std::string sdp_with_alt_protocol = kSdpFullString;
+  InjectAfter(kAttributeIcePwdVoice, "a=x-alt-protocol:foo\r\n",
+              &sdp_with_alt_protocol);
+  InjectAfter(kAttributeIcePwdVideo, "a=x-alt-protocol:bar\r\n",
+              &sdp_with_alt_protocol);
+  EXPECT_EQ(message, sdp_with_alt_protocol);
+}
+
 TEST_F(WebRtcSdpTest, SerializeSessionDescriptionWithRecvOnlyContent) {
   EXPECT_TRUE(TestSerializeDirection(RtpTransceiverDirection::kRecvOnly));
 }
@@ -2644,6 +2670,24 @@ TEST_F(WebRtcSdpTest, DeserializeSessionDescriptionWithOpaqueTransportParams) {
                                 jdesc_.session_version()));
   EXPECT_TRUE(
       CompareSessionDescription(jdesc_, jdesc_with_transport_parameters));
+}
+
+TEST_F(WebRtcSdpTest, DeserializeSessionDescriptionWithAltProtocol) {
+  std::string sdp_with_alt_protocol = kSdpFullString;
+  InjectAfter(kAttributeIcePwdVoice, "a=x-alt-protocol:foo\r\n",
+              &sdp_with_alt_protocol);
+  InjectAfter(kAttributeIcePwdVideo, "a=x-alt-protocol:bar\r\n",
+              &sdp_with_alt_protocol);
+
+  JsepSessionDescription jdesc_with_alt_protocol(kDummyType);
+  EXPECT_TRUE(SdpDeserialize(sdp_with_alt_protocol, &jdesc_with_alt_protocol));
+
+  AddAltProtocol(kAudioContentName, "foo");
+  AddAltProtocol(kVideoContentName, "bar");
+
+  ASSERT_TRUE(jdesc_.Initialize(desc_.Clone(), jdesc_.session_id(),
+                                jdesc_.session_version()));
+  EXPECT_TRUE(CompareSessionDescription(jdesc_, jdesc_with_alt_protocol));
 }
 
 TEST_F(WebRtcSdpTest, DeserializeSessionDescriptionWithUfragPwd) {
@@ -4594,121 +4638,6 @@ TEST_F(WebRtcSdpTest, ParseNoMid) {
   EXPECT_THAT(output.description()->contents(),
               ElementsAre(Field("name", &cricket::ContentInfo::name, ""),
                           Field("name", &cricket::ContentInfo::name, "")));
-}
-
-// Test that the media transport name and base64-decoded setting is parsed from
-// an a=x-mt line.
-TEST_F(WebRtcSdpTest, ParseMediaTransport) {
-  JsepSessionDescription output(kDummyType);
-  std::string sdp = kSdpSessionString;
-  sdp += "a=x-mt:rtp:dGVzdDY0\r\n";
-  SdpParseError error;
-
-  ASSERT_TRUE(webrtc::SdpDeserialize(sdp, &output, &error))
-      << error.description;
-  const auto& settings = output.description()->MediaTransportSettings();
-  ASSERT_EQ(1u, settings.size());
-  EXPECT_EQ("rtp", settings[0].transport_name);
-  EXPECT_EQ("test64", settings[0].transport_setting);
-}
-
-// Test that an a=x-mt line fails to parse if its setting is invalid base 64.
-TEST_F(WebRtcSdpTest, ParseMediaTransportInvalidBase64) {
-  JsepSessionDescription output(kDummyType);
-  std::string sdp = kSdpSessionString;
-  sdp += "a=x-mt:rtp:ThisIsInvalidBase64\r\n";
-  SdpParseError error;
-
-  ASSERT_FALSE(webrtc::SdpDeserialize(sdp, &output, &error));
-}
-
-// Test that multiple a=x-mt lines are parsed in the order of preference (the
-// order of the lines in the SDP).
-TEST_F(WebRtcSdpTest, ParseMediaTransportMultipleLines) {
-  JsepSessionDescription output(kDummyType);
-  std::string sdp = kSdpSessionString;
-  sdp +=
-      "a=x-mt:rtp:dGVzdDY0\r\n"
-      "a=x-mt:generic:Z2VuZXJpY3NldHRpbmc=\r\n";
-  SdpParseError error;
-
-  ASSERT_TRUE(webrtc::SdpDeserialize(sdp, &output, &error))
-      << error.description;
-  const auto& settings = output.description()->MediaTransportSettings();
-  ASSERT_EQ(2u, settings.size());
-  EXPECT_EQ("rtp", settings[0].transport_name);
-  EXPECT_EQ("test64", settings[0].transport_setting);
-  EXPECT_EQ("generic", settings[1].transport_name);
-  EXPECT_EQ("genericsetting", settings[1].transport_setting);
-}
-
-// Test that only the first a=x-mt line associated with a transport name is
-// parsed and the rest ignored.
-TEST_F(WebRtcSdpTest, ParseMediaTransportSkipRepeatedTransport) {
-  JsepSessionDescription output(kDummyType);
-  std::string sdp = kSdpSessionString;
-  sdp +=
-      "a=x-mt:rtp:dGVzdDY0\r\n"
-      "a=x-mt:rtp:Z2VuZXJpY3NldHRpbmc=\r\n";
-  SdpParseError error;
-
-  // Repeated 'rtp' transport setting. We still parse the SDP successfully,
-  // but ignore the repeated transport.
-  ASSERT_TRUE(webrtc::SdpDeserialize(sdp, &output, &error));
-  const auto& settings = output.description()->MediaTransportSettings();
-  EXPECT_EQ("test64", settings[0].transport_setting);
-}
-
-// Test that an a=x-mt line fails to parse if it is missing a setting.
-TEST_F(WebRtcSdpTest, ParseMediaTransportMalformedLine) {
-  JsepSessionDescription output(kDummyType);
-  std::string sdp = kSdpSessionString;
-  sdp += "a=x-mt:rtp\r\n";
-  SdpParseError error;
-
-  ASSERT_FALSE(webrtc::SdpDeserialize(sdp, &output, &error));
-}
-
-// Test that an a=x-mt line fails to parse if its missing a name and setting.
-TEST_F(WebRtcSdpTest, ParseMediaTransportMalformedLine2) {
-  JsepSessionDescription output(kDummyType);
-  std::string sdp = kSdpSessionString;
-  sdp += "a=x-mt\r\n";
-  SdpParseError error;
-
-  ASSERT_FALSE(webrtc::SdpDeserialize(sdp, &output, &error));
-}
-
-TEST_F(WebRtcSdpTest, ParseMediaTransportIgnoreNonsenseAttributeLines) {
-  JsepSessionDescription output(kDummyType);
-  std::string sdp = kSdpSessionString;
-  sdp += "a=x-nonsense:rtp:dGVzdDY0\r\n";
-  SdpParseError error;
-
-  ASSERT_TRUE(webrtc::SdpDeserialize(sdp, &output, &error))
-      << error.description;
-  EXPECT_TRUE(output.description()->MediaTransportSettings().empty());
-}
-
-TEST_F(WebRtcSdpTest, SerializeMediaTransportSettings) {
-  auto description = absl::make_unique<cricket::SessionDescription>();
-
-  JsepSessionDescription output(SdpType::kOffer);
-  // JsepSessionDescription takes ownership of the description.
-  output.Initialize(std::move(description), "session_id", "session_version");
-  output.description()->AddMediaTransportSetting("foo", "bar");
-  std::string serialized_out;
-  output.ToString(&serialized_out);
-  ASSERT_THAT(serialized_out, ::testing::HasSubstr("\r\na=x-mt:foo:YmFy\r\n"));
-}
-
-TEST_F(WebRtcSdpTest, SerializeMediaTransportSettingsTestCopy) {
-  cricket::SessionDescription description;
-  description.AddMediaTransportSetting("name", "setting");
-  std::unique_ptr<cricket::SessionDescription> copy = description.Clone();
-  ASSERT_EQ(1u, copy->MediaTransportSettings().size());
-  EXPECT_EQ("name", copy->MediaTransportSettings()[0].transport_name);
-  EXPECT_EQ("setting", copy->MediaTransportSettings()[0].transport_setting);
 }
 
 TEST_F(WebRtcSdpTest, SerializeWithDefaultSctpProtocol) {

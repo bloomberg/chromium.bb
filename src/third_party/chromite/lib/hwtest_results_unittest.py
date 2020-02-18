@@ -69,20 +69,20 @@ class HWTestResultManagerTest(cros_test_lib.MockTestCase):
     expect_r5 = hwtest_results.HWTestResult(4, build_2, 'test_e', 'pass')
 
     results = self.manager.GetHWTestResultsFromCIDB(self.db, [build_1])
-    self.assertItemsEqual(results, [expect_r1, expect_r2, expect_r3])
+    self.assertCountEqual(results, [expect_r1, expect_r2, expect_r3])
 
     results = self.manager.GetHWTestResultsFromCIDB(
         self.db, [build_1], test_statues=constants.HWTEST_STATUES_NOT_PASSED)
-    self.assertItemsEqual(results, [expect_r2, expect_r3])
+    self.assertCountEqual(results, [expect_r2, expect_r3])
 
     results = self.manager.GetHWTestResultsFromCIDB(self.db, [build_1, build_2])
-    self.assertItemsEqual(
+    self.assertCountEqual(
         results, [expect_r1, expect_r2, expect_r3, expect_r4, expect_r5])
 
     results = self.manager.GetHWTestResultsFromCIDB(
         self.db, [build_1, build_2],
         test_statues=constants.HWTEST_STATUES_NOT_PASSED)
-    self.assertItemsEqual(results, [expect_r2, expect_r3, expect_r4])
+    self.assertCountEqual(results, [expect_r2, expect_r3, expect_r4])
 
   def testGetFailedHWTestsFromCIDB(self):
     """Test GetFailedHWTestsFromCIDB."""
@@ -93,7 +93,7 @@ class HWTestResultManagerTest(cros_test_lib.MockTestCase):
     failed_tests = self.manager.GetFailedHWTestsFromCIDB(
         self.db, [build_1, build_2])
 
-    self.assertItemsEqual(failed_tests,
+    self.assertCountEqual(failed_tests,
                           ['test_b', 'test_c', 'test_d', 'test_e'])
     mock_get_hwtest_results.assert_called_once_with(
         self.db, [build_1, build_2],
@@ -109,24 +109,24 @@ class HWTestResultManagerTest(cros_test_lib.MockTestCase):
     self.PatchObject(git.ProjectCheckout, 'GetPath')
 
     failed_hwtests = {'graphics_dEQP'}
-    self.assertItemsEqual(self.manager.GetFailedHwtestsAffectedByChange(
+    self.assertCountEqual(self.manager.GetFailedHwtestsAffectedByChange(
         mock_change, manifest, failed_hwtests), failed_hwtests)
 
     failed_hwtests = {'graphics_Gbm'}
-    self.assertItemsEqual(self.manager.GetFailedHwtestsAffectedByChange(
+    self.assertCountEqual(self.manager.GetFailedHwtestsAffectedByChange(
         mock_change, manifest, failed_hwtests), failed_hwtests)
 
     failed_hwtests = {'graphics_dEQP', 'graphics_Gbm'}
-    self.assertItemsEqual(self.manager.GetFailedHwtestsAffectedByChange(
+    self.assertCountEqual(self.manager.GetFailedHwtestsAffectedByChange(
         mock_change, manifest, failed_hwtests), failed_hwtests)
 
     failed_hwtests = {'audio_ActiveStreamStress'}
-    self.assertItemsEqual(self.manager.GetFailedHwtestsAffectedByChange(
+    self.assertCountEqual(self.manager.GetFailedHwtestsAffectedByChange(
         mock_change, manifest, failed_hwtests), set())
 
     failed_hwtests = {'graphics_dEQP', 'graphics_Gbm',
                       'audio_ActiveStreamStress'}
-    self.assertItemsEqual(self.manager.GetFailedHwtestsAffectedByChange(
+    self.assertCountEqual(self.manager.GetFailedHwtestsAffectedByChange(
         mock_change, manifest, failed_hwtests),
                           {'graphics_dEQP', 'graphics_Gbm'})
 
@@ -143,7 +143,7 @@ class HWTestResultManagerTest(cros_test_lib.MockTestCase):
     suspects, no_assignee_hwtests = self.manager.FindHWTestFailureSuspects(
         [c1, c2], mock.Mock(), {test_1, test_2})
 
-    self.assertItemsEqual(suspects, {c1, c2})
+    self.assertCountEqual(suspects, {c1, c2})
     self.assertTrue(no_assignee_hwtests)
 
   def testFindHWTestFailureSuspectsNoAssignees(self):
@@ -159,7 +159,7 @@ class HWTestResultManagerTest(cros_test_lib.MockTestCase):
     suspects, no_assignee_hwtests = self.manager.FindHWTestFailureSuspects(
         [c1, c2], mock.Mock(), {test_1, test_2})
 
-    self.assertItemsEqual(suspects, set())
+    self.assertCountEqual(suspects, set())
     self.assertTrue(no_assignee_hwtests)
 
   def testFindHWTestFailureSuspectsNoFailedHWTests(self):
@@ -170,5 +170,5 @@ class HWTestResultManagerTest(cros_test_lib.MockTestCase):
     suspects, no_assignee_hwtests = self.manager.FindHWTestFailureSuspects(
         [c1, c2], mock.Mock(), set())
 
-    self.assertItemsEqual(suspects, set())
+    self.assertCountEqual(suspects, set())
     self.assertFalse(no_assignee_hwtests)

@@ -31,14 +31,13 @@
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/browser/download/download_core_service.h"
 #include "chrome/browser/download/download_core_service_factory.h"
+#include "chrome/browser/heavy_ad_intervention/heavy_ad_service.h"
+#include "chrome/browser/heavy_ad_intervention/heavy_ad_service_factory.h"
 #include "chrome/browser/native_file_system/chrome_native_file_system_permission_context.h"
 #include "chrome/browser/native_file_system/native_file_system_permission_context_factory.h"
 #include "chrome/browser/permissions/permission_manager.h"
 #include "chrome/browser/permissions/permission_manager_factory.h"
-#include "chrome/browser/plugins/chrome_plugin_service_filter.h"
-#include "chrome/browser/plugins/plugin_prefs.h"
 #include "chrome/browser/prefs/browser_prefs.h"
-#include "chrome/browser/prefs/in_process_service_factory_factory.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/prefs/pref_service_syncable_util.h"
 #include "chrome/browser/profiles/profile_key.h"
@@ -73,18 +72,12 @@
 #include "net/http/transport_security_state.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "services/network/public/mojom/network_context.mojom.h"
-#include "services/preferences/public/cpp/in_process_service_factory.h"
-#include "services/preferences/public/cpp/pref_service_main.h"
-#include "services/preferences/public/mojom/preferences.mojom.h"
-#include "services/service_manager/public/cpp/service.h"
 #include "storage/browser/database/database_tracker.h"
 
 #if defined(OS_ANDROID)
 #include "components/prefs/scoped_user_pref_update.h"
 #else  // !defined(OS_ANDROID)
 #include "chrome/browser/ui/zoom/chrome_zoom_level_otr_delegate.h"
-#include "chrome/services/app_service/app_service.h"
-#include "chrome/services/app_service/public/mojom/constants.mojom.h"
 #include "components/zoom/zoom_event_manager.h"
 #include "content/public/browser/host_zoom_map.h"
 #endif  // defined(OS_ANDROID)
@@ -102,6 +95,11 @@
 #include "extensions/browser/extension_pref_store.h"
 #include "extensions/browser/extension_pref_value_map_factory.h"
 #include "extensions/common/extension.h"
+#endif
+
+#if BUILDFLAG(ENABLE_PLUGINS)
+#include "chrome/browser/plugins/chrome_plugin_service_filter.h"
+#include "chrome/browser/plugins/plugin_prefs.h"
 #endif
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
@@ -133,9 +131,7 @@ OffTheRecordProfileImpl::OffTheRecordProfileImpl(Profile* real_profile)
   BrowserContext::Initialize(this, profile_->GetPath());
   prefs_ = CreateIncognitoPrefServiceSyncable(
       PrefServiceSyncableFromProfile(profile_),
-      CreateExtensionPrefStore(profile_, true),
-      InProcessPrefServiceFactoryFactory::GetInstanceForKey(key_.get())
-          ->CreateDelegate());
+      CreateExtensionPrefStore(profile_, true));
 
   key_->SetPrefs(prefs_.get());
   SimpleKeyMap::GetInstance()->Associate(this, key_.get());
@@ -189,6 +185,8 @@ void OffTheRecordProfileImpl::Init() {
 
   // AccessibilityLabelsService has a default prefs behavior in incognito.
   AccessibilityLabelsService::InitOffTheRecordPrefs(this);
+
+  HeavyAdServiceFactory::GetForBrowserContext(this)->InitializeOffTheRecord();
 }
 
 OffTheRecordProfileImpl::~OffTheRecordProfileImpl() {
@@ -380,18 +378,6 @@ DownloadManagerDelegate* OffTheRecordProfileImpl::GetDownloadManagerDelegate() {
       ->GetDownloadManagerDelegate();
 }
 
-std::unique_ptr<service_manager::Service>
-OffTheRecordProfileImpl::HandleServiceRequest(
-    const std::string& service_name,
-    service_manager::mojom::ServiceRequest request) {
-  if (service_name == prefs::mojom::kServiceName) {
-    return InProcessPrefServiceFactoryFactory::GetInstanceForKey(key_.get())
-        ->CreatePrefService(std::move(request));
-  }
-
-  return nullptr;
-}
-
 policy::SchemaRegistryService*
 OffTheRecordProfileImpl::GetPolicySchemaRegistryService() {
   return nullptr;
@@ -445,6 +431,11 @@ content::PushMessagingService*
 OffTheRecordProfileImpl::GetPushMessagingService() {
   // TODO(johnme): Support push messaging in incognito if possible.
   return NULL;
+}
+
+content::StorageNotificationService*
+OffTheRecordProfileImpl::GetStorageNotificationService() {
+  return nullptr;
 }
 
 content::SSLHostStateDelegate*
@@ -527,9 +518,13 @@ OffTheRecordProfileImpl::GetSharedCorsOriginAccessList() {
   return profile_->GetSharedCorsOriginAccessList();
 }
 
+bool OffTheRecordProfileImpl::ShouldEnableOutOfBlinkCors() {
+  return profile_->ShouldEnableOutOfBlinkCors();
+}
+
 content::NativeFileSystemPermissionContext*
 OffTheRecordProfileImpl::GetNativeFileSystemPermissionContext() {
-  return NativeFileSystemPermissionContextFactory::GetForProfile(this).get();
+  return NativeFileSystemPermissionContextFactory::GetForProfile(this);
 }
 
 bool OffTheRecordProfileImpl::IsSameProfile(Profile* profile) {
@@ -621,18 +616,6 @@ class GuestSessionProfile : public OffTheRecordProfileImpl {
         this, user_manager::UserManager::Get()->GetActiveUser());
   }
 
-  std::unique_ptr<service_manager::Service> HandleServiceRequest(
-      const std::string& service_name,
-      service_manager::mojom::ServiceRequest request) override {
-    // Ensure apps are serviced in guest profiles.
-    if (service_name == apps::mojom::kServiceName) {
-      return std::make_unique<apps::AppService>(std::move(request));
-    }
-
-    return OffTheRecordProfileImpl::HandleServiceRequest(service_name,
-                                                         std::move(request));
-  }
-
  private:
   // The guest user should be able to customize Chrome OS preferences.
   std::unique_ptr<chromeos::Preferences> chromeos_preferences_;
@@ -648,6 +631,7 @@ Profile* Profile::CreateOffTheRecordProfile() {
   if (!profile)
     profile = new OffTheRecordProfileImpl(this);
   profile->Init();
+  NotifyOffTheRecordProfileCreated(profile);
   return profile;
 }
 

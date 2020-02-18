@@ -2,18 +2,23 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from absl import app
 from selenium import webdriver
 
-testSite = "http://www.popuptest.com/popuptest1.html"
-options = webdriver.ChromeOptions()
-options.add_experimental_option('excludeSwitches', ['disable-popup-blocking'])
-exe_path = "C:/ProgramData/chocolatey/lib/chromedriver/tools/chromedriver.exe"
-driver = webdriver.Chrome(
-    exe_path,
-    chrome_options=options,
-    service_args=["--verbose", r"--log-path=c:\temp\chromedriver.log"])
-driver.implicitly_wait(5)
-driver.get(testSite)
-handles = driver.window_handles
-print len(handles)
-driver.quit()
+import test_util
+
+
+def main(argv):
+  testSite = "http://www.dummysoftware.com/popupdummy_testpage.html"
+  options = webdriver.ChromeOptions()
+  options.add_experimental_option('excludeSwitches', ['disable-popup-blocking'])
+  driver = test_util.create_chrome_webdriver(chrome_options=options)
+  driver.implicitly_wait(5)
+  driver.get(testSite)
+  handles = driver.window_handles
+  print len(handles)
+  driver.quit()
+
+
+if __name__ == '__main__':
+  app.run(main)

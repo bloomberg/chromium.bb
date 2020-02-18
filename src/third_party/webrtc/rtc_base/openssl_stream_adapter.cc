@@ -25,7 +25,6 @@
 #include <utility>
 #include <vector>
 
-#include "absl/memory/memory.h"
 #include "rtc_base/checks.h"
 #include "rtc_base/logging.h"
 #include "rtc_base/numerics/safe_conversions.h"
@@ -374,9 +373,9 @@ bool OpenSSLStreamAdapter::GetSslCipherSuite(int* cipher_suite) {
   return true;
 }
 
-int OpenSSLStreamAdapter::GetSslVersion() const {
+SSLProtocolVersion OpenSSLStreamAdapter::GetSslVersion() const {
   if (state_ != SSL_CONNECTED) {
-    return -1;
+    return SSL_PROTOCOL_NOT_GIVEN;
   }
 
   int ssl_version = SSL_version(ssl_);
@@ -396,7 +395,15 @@ int OpenSSLStreamAdapter::GetSslVersion() const {
     }
   }
 
-  return -1;
+  return SSL_PROTOCOL_NOT_GIVEN;
+}
+
+bool OpenSSLStreamAdapter::GetSslVersionBytes(int* version) const {
+  if (state_ != SSL_CONNECTED) {
+    return false;
+  }
+  *version = SSL_version(ssl_);
+  return true;
 }
 
 // Key Extractor interface
@@ -1075,7 +1082,7 @@ int OpenSSLStreamAdapter::SSLVerifyCallback(X509_STORE_CTX* store, void* arg) {
   // Record the peer's certificate.
   X509* cert = X509_STORE_CTX_get0_cert(store);
   stream->peer_cert_chain_.reset(
-      new SSLCertChain(absl::make_unique<OpenSSLCertificate>(cert)));
+      new SSLCertChain(std::make_unique<OpenSSLCertificate>(cert)));
 #endif
 
   // If the peer certificate digest isn't known yet, we'll wait to verify

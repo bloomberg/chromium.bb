@@ -14,14 +14,68 @@
 
 #include "tests/perf_tests/DawnPerfTest.h"
 
+#include "common/Assert.h"
+#include "dawn_platform/tracing/TraceEvent.h"
+#include "tests/perf_tests/DawnPerfTestPlatform.h"
 #include "utils/Timer.h"
+
+#include <json/value.h>
+#include <json/writer.h>
+
+#include <fstream>
+#include <limits>
 
 namespace {
 
     DawnPerfTestEnvironment* gTestEnv = nullptr;
 
-    constexpr double kMicroSecondsPerSecond = 1e6;
-    constexpr double kNanoSecondsPerSecond = 1e9;
+    void DumpTraceEventsToJSONFile(
+        const std::vector<DawnPerfTestPlatform::TraceEvent>& traceEventBuffer,
+        const char* traceFile) {
+        std::ofstream outFile;
+        outFile.open(traceFile, std::ios_base::app);
+
+        Json::StreamWriterBuilder builder;
+        std::unique_ptr<Json::StreamWriter> writer(builder.newStreamWriter());
+
+        for (const DawnPerfTestPlatform::TraceEvent& traceEvent : traceEventBuffer) {
+            Json::Value value(Json::objectValue);
+
+            const Json::LargestInt microseconds =
+                static_cast<Json::LargestInt>(traceEvent.timestamp * 1000.0 * 1000.0);
+
+            char phase[2] = {traceEvent.phase, '\0'};
+
+            value["name"] = traceEvent.name;
+            switch (traceEvent.category) {
+                case dawn_platform::TraceCategory::General:
+                    value["cat"] = "general";
+                    break;
+                case dawn_platform::TraceCategory::Validation:
+                    value["cat"] = "validation";
+                    break;
+                case dawn_platform::TraceCategory::Recording:
+                    value["cat"] = "recording";
+                    break;
+                case dawn_platform::TraceCategory::GPUWork:
+                    value["cat"] = "gpu";
+                    break;
+                default:
+                    UNREACHABLE();
+            }
+            value["ph"] = &phase[0];
+            value["id"] = traceEvent.id;
+            value["tid"] = traceEvent.threadId;
+            value["ts"] = microseconds;
+            value["pid"] = "Dawn";
+
+            outFile << ", ";
+            writer->write(value, &outFile);
+            outFile.flush();
+        }
+
+        outFile.close();
+    }
 
 }  // namespace
 
@@ -39,21 +93,33 @@ DawnPerfTestEnvironment::DawnPerfTestEnvironment(int argc, char** argv)
             continue;
         }
 
-        if (strstr(argv[i], "--override-steps=") == argv[i]) {
-            const char* value = strchr(argv[i], '=');
-            if (value != nullptr) {
-                mOverrideStepsToRun = strtoul(value + 1, nullptr, 0);
+        constexpr const char kOverrideStepsArg[] = "--override-steps=";
+        if (strstr(argv[i], kOverrideStepsArg) == argv[i]) {
+            const char* overrideSteps = argv[i] + strlen(kOverrideStepsArg);
+            if (overrideSteps[0] != '\0') {
+                mOverrideStepsToRun = strtoul(overrideSteps, nullptr, 0);
+            }
+            continue;
+        }
+
+        constexpr const char kTraceFileArg[] = "--trace-file=";
+        if (strstr(argv[i], kTraceFileArg) == argv[i]) {
+            const char* traceFile = argv[i] + strlen(kTraceFileArg);
+            if (traceFile[0] != '\0') {
+                mTraceFile = traceFile;
             }
             continue;
         }
 
         if (strcmp("-h", argv[i]) == 0 || strcmp("--help", argv[i]) == 0) {
-            std::cout << "Additional flags:"
-                      << " [--calibration] [--override-steps=x]\n"
-                      << "  --calibration: Only run calibration. Calibration allows the perf test"
-                         " runner script to save some time.\n"
-                      << " --override-steps: Set a fixed number of steps to run for each test\n"
-                      << std::endl;
+            std::cout
+                << "Additional flags:"
+                << " [--calibration] [--override-steps=x] [--enable-tracing] [--trace-file=file]\n"
+                << "  --calibration: Only run calibration. Calibration allows the perf test"
+                   " runner script to save some time.\n"
+                << " --override-steps: Set a fixed number of steps to run for each test\n"
+                << " --trace-file: The file to dump trace results.\n"
+                << std::endl;
             continue;
         }
     }
@@ -63,6 +129,38 @@ DawnPerfTestEnvironment::~DawnPerfTestEnvironment() = default;
 
 void DawnPerfTestEnvironment::SetUp() {
     DawnTestEnvironment::SetUp();
+
+    mPlatform = std::make_unique<DawnPerfTestPlatform>();
+    mInstance->SetPlatform(mPlatform.get());
+
+    // Begin writing the trace event array.
+    if (mTraceFile != nullptr) {
+        std::ofstream outFile;
+        outFile.open(mTraceFile);
+        outFile << "{ \"traceEvents\": [";
+        outFile << "{}";  // Dummy object so trace events can always prepend a comma
+        outFile.flush();
+        outFile.close();
+    }
+}
+
+void DawnPerfTestEnvironment::TearDown() {
+    // End writing the trace event array.
+    if (mTraceFile != nullptr) {
+        std::vector<DawnPerfTestPlatform::TraceEvent> traceEventBuffer =
+            mPlatform->AcquireTraceEventBuffer();
+
+        // Write remaining trace events.
+        DumpTraceEventsToJSONFile(traceEventBuffer, mTraceFile);
+
+        std::ofstream outFile;
+        outFile.open(mTraceFile, std::ios_base::app);
+        outFile << "]}";
+        outFile << std::endl;
+        outFile.close();
+    }
+
+    DawnTestEnvironment::TearDown();
 }
 
 bool DawnPerfTestEnvironment::IsCalibrating() const {
@@ -73,34 +171,23 @@ unsigned int DawnPerfTestEnvironment::OverrideStepsToRun() const {
     return mOverrideStepsToRun;
 }
 
-DawnPerfTestBase::DawnPerfTestBase(DawnTestBase* test, unsigned int iterationsPerStep)
-    : mTest(test), mIterationsPerStep(iterationsPerStep), mTimer(utils::CreateTimer()) {
+const char* DawnPerfTestEnvironment::GetTraceFile() const {
+    return mTraceFile;
+}
+
+DawnPerfTestBase::DawnPerfTestBase(DawnTestBase* test,
+                                   unsigned int iterationsPerStep,
+                                   unsigned int maxStepsInFlight)
+    : mTest(test),
+      mIterationsPerStep(iterationsPerStep),
+      mMaxStepsInFlight(maxStepsInFlight),
+      mTimer(utils::CreateTimer()) {
 }
 
 DawnPerfTestBase::~DawnPerfTestBase() = default;
 
 void DawnPerfTestBase::AbortTest() {
     mRunning = false;
-}
-
-void DawnPerfTestBase::WaitForGPU() {
-    dawn::FenceDescriptor desc = {};
-    desc.initialValue = 0;
-
-    dawn::Fence fence = mTest->queue.CreateFence(&desc);
-    mTest->queue.Signal(fence, 1);
-
-    bool done = false;
-    fence.OnCompletion(1,
-                       [](DawnFenceCompletionStatus status, void* userdata) {
-                           ASSERT_EQ(status, DAWN_FENCE_COMPLETION_STATUS_SUCCESS);
-                           *reinterpret_cast<bool*>(userdata) = true;
-                       },
-                       &done);
-
-    while (!done) {
-        mTest->WaitABit();
-    }
 }
 
 void DawnPerfTestBase::RunTest() {
@@ -128,20 +215,50 @@ void DawnPerfTestBase::RunTest() {
     // Do another warmup run. Seems to consistently improve results.
     DoRunLoop(kMaximumRunTimeSeconds);
 
-    for (unsigned int trial = 0; trial < kNumTrials; ++trial) {
-        DoRunLoop(kMaximumRunTimeSeconds);
-        PrintResults();
+    DawnPerfTestPlatform* platform =
+        reinterpret_cast<DawnPerfTestPlatform*>(gTestEnv->GetInstance()->GetPlatform());
+    const char* testName = ::testing::UnitTest::GetInstance()->current_test_info()->name();
+
+    // Only enable trace event recording in this section.
+    // We don't care about trace events during warmup and calibration.
+    platform->EnableTraceEventRecording(true);
+    {
+        TRACE_EVENT0(platform, General, testName);
+        for (unsigned int trial = 0; trial < kNumTrials; ++trial) {
+            TRACE_EVENT0(platform, General, "Trial");
+            DoRunLoop(kMaximumRunTimeSeconds);
+            OutputResults();
+        }
     }
+    platform->EnableTraceEventRecording(false);
 }
 
 void DawnPerfTestBase::DoRunLoop(double maxRunTime) {
+    dawn_platform::Platform* platform = gTestEnv->GetInstance()->GetPlatform();
+
     mNumStepsPerformed = 0;
+    cpuTime = 0;
     mRunning = true;
+
+    wgpu::FenceDescriptor desc = {};
+    uint64_t signaledFenceValue = 0;
+    wgpu::Fence fence = mTest->queue.CreateFence(&desc);
+
     mTimer->Start();
 
     // This loop can be canceled by calling AbortTest().
     while (mRunning) {
+        // Wait if there are too many steps in flight on the GPU.
+        while (signaledFenceValue - fence.GetCompletedValue() >= mMaxStepsInFlight) {
+            mTest->WaitABit();
+        }
+        TRACE_EVENT0(platform, General, "Step");
+        double stepStart = mTimer->GetElapsedTime();
         Step();
+        cpuTime += mTimer->GetElapsedTime() - stepStart;
+
+        mTest->queue.Signal(fence, ++signaledFenceValue);
+
         if (mRunning) {
             ++mNumStepsPerformed;
             if (mTimer->GetElapsedTime() > maxRunTime) {
@@ -152,35 +269,107 @@ void DawnPerfTestBase::DoRunLoop(double maxRunTime) {
         }
     }
 
+    // Wait for all GPU commands to complete.
+    // TODO(enga): When Dawn has multiple backgrounds threads, add a Device::WaitForIdleForTesting()
+    // which waits for all threads to stop doing work. When we output results, there should
+    // be no additional incoming trace events.
+    while (signaledFenceValue != fence.GetCompletedValue()) {
+        mTest->WaitABit();
+    }
+
     mTimer->Stop();
 }
 
-void DawnPerfTestBase::PrintResults() {
-    double elapsedTimeSeconds[2] = {
-        mTimer->GetElapsedTime(),
-        mGPUTimeNs * 1e-9,
+void DawnPerfTestBase::OutputResults() {
+    // TODO(enga): When Dawn has multiple backgrounds threads, add a Device::WaitForIdleForTesting()
+    // which waits for all threads to stop doing work. When we output results, there should
+    // be no additional incoming trace events.
+    DawnPerfTestPlatform* platform =
+        reinterpret_cast<DawnPerfTestPlatform*>(gTestEnv->GetInstance()->GetPlatform());
+
+    std::vector<DawnPerfTestPlatform::TraceEvent> traceEventBuffer =
+        platform->AcquireTraceEventBuffer();
+
+    struct EventTracker {
+        double start = std::numeric_limits<double>::max();
+        double end = 0;
+        uint32_t count = 0;
     };
 
-    const char* clockNames[2] = {
-        "wall_time",
-        "gpu_time",
-    };
+    EventTracker validationTracker = {};
+    EventTracker recordingTracker = {};
 
-    // If measured gpu time is non-zero, print that too.
-    unsigned int clocksToOutput = mGPUTimeNs > 0 ? 2 : 1;
+    double totalValidationTime = 0;
+    double totalRecordingTime = 0;
 
-    for (unsigned int i = 0; i < clocksToOutput; ++i) {
-        double secondsPerStep = elapsedTimeSeconds[i] / static_cast<double>(mNumStepsPerformed);
-        double secondsPerIteration = secondsPerStep / static_cast<double>(mIterationsPerStep);
+    // Note: We assume END timestamps always come after their corresponding BEGIN timestamps.
+    // TODO(enga): When Dawn has multiple threads, stratify by thread id.
+    for (const DawnPerfTestPlatform::TraceEvent& traceEvent : traceEventBuffer) {
+        EventTracker* tracker = nullptr;
+        double* totalTime = nullptr;
 
-        // Give the result a different name to ensure separate graphs if we transition.
-        if (secondsPerIteration > 1e-3) {
-            double microSecondsPerIteration = secondsPerIteration * kMicroSecondsPerSecond;
-            PrintResult(clockNames[i], microSecondsPerIteration, "us", true);
-        } else {
-            double nanoSecPerIteration = secondsPerIteration * kNanoSecondsPerSecond;
-            PrintResult(clockNames[i], nanoSecPerIteration, "ns", true);
+        switch (traceEvent.category) {
+            case dawn_platform::TraceCategory::Validation:
+                tracker = &validationTracker;
+                totalTime = &totalValidationTime;
+                break;
+            case dawn_platform::TraceCategory::Recording:
+                tracker = &recordingTracker;
+                totalTime = &totalRecordingTime;
+                break;
+            default:
+                break;
         }
+
+        if (tracker == nullptr) {
+            continue;
+        }
+
+        if (traceEvent.phase == TRACE_EVENT_PHASE_BEGIN) {
+            tracker->start = std::min(tracker->start, traceEvent.timestamp);
+            tracker->count++;
+        }
+
+        if (traceEvent.phase == TRACE_EVENT_PHASE_END) {
+            tracker->end = std::max(tracker->end, traceEvent.timestamp);
+            ASSERT(tracker->count > 0);
+            tracker->count--;
+
+            if (tracker->count == 0) {
+                *totalTime += (tracker->end - tracker->start);
+                *tracker = {};
+            }
+        }
+    }
+
+    PrintPerIterationResultFromSeconds("wall_time", mTimer->GetElapsedTime(), true);
+    PrintPerIterationResultFromSeconds("cpu_time", cpuTime, true);
+    PrintPerIterationResultFromSeconds("validation_time", totalValidationTime, true);
+    PrintPerIterationResultFromSeconds("recording_time", totalRecordingTime, true);
+
+    const char* traceFile = gTestEnv->GetTraceFile();
+    if (traceFile != nullptr) {
+        DumpTraceEventsToJSONFile(traceEventBuffer, traceFile);
+    }
+}
+
+void DawnPerfTestBase::PrintPerIterationResultFromSeconds(const std::string& trace,
+                                                          double valueInSeconds,
+                                                          bool important) const {
+    if (valueInSeconds == 0) {
+        return;
+    }
+
+    double secondsPerIteration =
+        valueInSeconds / static_cast<double>(mNumStepsPerformed * mIterationsPerStep);
+
+    // Give the result a different name to ensure separate graphs if we transition.
+    if (secondsPerIteration > 1) {
+        PrintResult(trace, secondsPerIteration * 1e3, "ms", important);
+    } else if (secondsPerIteration > 1e-3) {
+        PrintResult(trace, secondsPerIteration * 1e6, "us", important);
+    } else {
+        PrintResult(trace, secondsPerIteration * 1e9, "ns", important);
     }
 }
 

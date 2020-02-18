@@ -47,12 +47,12 @@ class SubtestResult(object):
 
 class TestharnessResult(Result):
     default_expected = "OK"
-    statuses = {"OK", "ERROR", "INTERNAL-ERROR", "TIMEOUT", "EXTERNAL-TIMEOUT", "CRASH"}
+    statuses = {"OK", "ERROR", "INTERNAL-ERROR", "TIMEOUT", "EXTERNAL-TIMEOUT", "CRASH", "PRECONDITION_FAILED"}
 
 
 class TestharnessSubtestResult(SubtestResult):
     default_expected = "PASS"
-    statuses = {"PASS", "FAIL", "TIMEOUT", "NOTRUN"}
+    statuses = {"PASS", "FAIL", "TIMEOUT", "NOTRUN", "PRECONDITION_FAILED"}
 
 
 class ReftestResult(Result):
@@ -111,6 +111,18 @@ class RunInfo(dict):
             self["wasm"] = False
         if extras is not None:
             self.update(extras)
+
+        # Until the test harness can understand default pref values,
+        # (https://bugzilla.mozilla.org/show_bug.cgi?id=1577912) this value
+        # should by synchronized with the default pref value indicated in
+        # StaticPrefList.yaml.
+        #
+        # Currently for automation, the pref (and `sw-e10s`) defaults to true in
+        # nightly builds and false otherwise but can be overridden with
+        # `--setpref`. If overridden, the value would be initialized in
+        # `run_info_extras` and be supplied in the `extras` parameter.
+        if "sw-e10s" not in self:
+            self["sw-e10s"] = self.get("nightly_build", False)
 
         self["headless"] = extras.get("headless", False)
         self["webrender"] = enable_webrender
@@ -334,6 +346,17 @@ class Test(object):
             return []
         except KeyError:
             return []
+
+    def expect_any_subtest_status(self):
+        metadata = self._get_metadata()
+        if metadata is None:
+            return False
+        try:
+            # This key is used by the Blink CI to ignore subtest statuses
+            metadata.get("blink_expect_any_subtest_status")
+            return True
+        except KeyError:
+            return False
 
     def __repr__(self):
         return "<%s.%s %s>" % (self.__module__, self.__class__.__name__, self.id)

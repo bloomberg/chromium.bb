@@ -15,14 +15,15 @@
 #include "base/lazy_instance.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
+#include "components/services/storage/indexed_db/scopes/scopes_lock_manager.h"
 #include "content/browser/indexed_db/indexed_db_backing_store.h"
 #include "content/browser/indexed_db/indexed_db_database.h"
 #include "content/browser/indexed_db/indexed_db_task_helper.h"
 #include "content/browser/indexed_db/indexed_db_transaction.h"
-#include "content/browser/indexed_db/scopes/scopes_lock_manager.h"
 #include "content/common/content_export.h"
 #include "third_party/blink/public/common/indexeddb/web_idb_types.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
+#include "third_party/leveldatabase/env_chromium.h"
 #include "third_party/leveldatabase/src/include/leveldb/status.h"
 
 namespace content {
@@ -30,6 +31,8 @@ class IndexedDBBackingStore;
 class IndexedDBConnection;
 class IndexedDBFactory;
 class IndexedDBTransaction;
+class LevelDBFactory;
+class TransactionalLevelDBFactory;
 
 // Use this factory to create some IndexedDB objects. Exists solely to
 // facilitate tests which sometimes need to inject mock objects into the system.
@@ -46,6 +49,12 @@ class CONTENT_EXPORT IndexedDBClassFactory {
   static IndexedDBClassFactory* Get();
 
   static void SetIndexedDBClassFactoryGetter(GetterCallback* cb);
+
+  // Visible for testing.
+  static leveldb_env::Options GetLevelDBOptions();
+
+  virtual LevelDBFactory& leveldb_factory();
+  virtual TransactionalLevelDBFactory& transactional_leveldb_factory();
 
   // Returns a constructed database, or a leveldb::Status error if there was a
   // problem initializing the database. |run_tasks_callback| is called when the
@@ -70,10 +79,18 @@ class CONTENT_EXPORT IndexedDBClassFactory {
       IndexedDBTransaction::TearDownCallback tear_down_callback,
       IndexedDBBackingStore::Transaction* backing_store_transaction);
 
+  void SetLevelDBFactoryForTesting(LevelDBFactory* leveldb_factory);
+
  protected:
-  IndexedDBClassFactory() {}
-  virtual ~IndexedDBClassFactory() {}
+  IndexedDBClassFactory();
+  IndexedDBClassFactory(
+      LevelDBFactory* leveldb_factory,
+      TransactionalLevelDBFactory* transactional_leveldb_factory);
+  virtual ~IndexedDBClassFactory() = default;
   friend struct base::LazyInstanceTraitsBase<IndexedDBClassFactory>;
+
+  LevelDBFactory* leveldb_factory_;
+  TransactionalLevelDBFactory* transactional_leveldb_factory_;
 };
 
 }  // namespace content

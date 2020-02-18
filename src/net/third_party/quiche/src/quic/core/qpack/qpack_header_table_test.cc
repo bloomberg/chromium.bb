@@ -4,6 +4,8 @@
 
 #include "net/third_party/quiche/src/quic/core/qpack/qpack_header_table.h"
 
+#include <utility>
+
 #include "net/third_party/quiche/src/quic/core/qpack/qpack_static_table.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_arraysize.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_test.h"
@@ -23,6 +25,7 @@ class MockObserver : public QpackHeaderTable::Observer {
   ~MockObserver() override = default;
 
   MOCK_METHOD0(OnInsertCountReachedThreshold, void());
+  MOCK_METHOD0(Cancel, void());
 };
 
 class QpackHeaderTableTest : public QuicTest {
@@ -89,9 +92,14 @@ class QpackHeaderTableTest : public QuicTest {
     return table_.SetDynamicTableCapacity(capacity);
   }
 
-  void RegisterObserver(QpackHeaderTable::Observer* observer,
-                        uint64_t required_insert_count) {
-    table_.RegisterObserver(observer, required_insert_count);
+  void RegisterObserver(uint64_t required_insert_count,
+                        QpackHeaderTable::Observer* observer) {
+    table_.RegisterObserver(required_insert_count, observer);
+  }
+
+  void UnregisterObserver(uint64_t required_insert_count,
+                          QpackHeaderTable::Observer* observer) {
+    table_.UnregisterObserver(required_insert_count, observer);
   }
 
   uint64_t max_entries() const { return table_.max_entries(); }
@@ -416,9 +424,9 @@ TEST_F(QpackHeaderTableTest, MaxInsertSizeWithoutEvictingGivenEntry) {
             table.MaxInsertSizeWithoutEvictingGivenEntry(1));
 }
 
-TEST_F(QpackHeaderTableTest, Observer) {
+TEST_F(QpackHeaderTableTest, RegisterObserver) {
   StrictMock<MockObserver> observer1;
-  RegisterObserver(&observer1, 1);
+  RegisterObserver(1, &observer1);
   EXPECT_CALL(observer1, OnInsertCountReachedThreshold);
   InsertEntry("foo", "bar");
   EXPECT_EQ(1u, inserted_entry_count());
@@ -427,8 +435,8 @@ TEST_F(QpackHeaderTableTest, Observer) {
   // Registration order does not matter.
   StrictMock<MockObserver> observer2;
   StrictMock<MockObserver> observer3;
-  RegisterObserver(&observer3, 3);
-  RegisterObserver(&observer2, 2);
+  RegisterObserver(3, &observer3);
+  RegisterObserver(2, &observer2);
 
   EXPECT_CALL(observer2, OnInsertCountReachedThreshold);
   InsertEntry("foo", "bar");
@@ -444,8 +452,8 @@ TEST_F(QpackHeaderTableTest, Observer) {
   // notified.
   StrictMock<MockObserver> observer4;
   StrictMock<MockObserver> observer5;
-  RegisterObserver(&observer4, 4);
-  RegisterObserver(&observer5, 4);
+  RegisterObserver(4, &observer4);
+  RegisterObserver(4, &observer5);
 
   EXPECT_CALL(observer4, OnInsertCountReachedThreshold);
   EXPECT_CALL(observer5, OnInsertCountReachedThreshold);
@@ -453,6 +461,27 @@ TEST_F(QpackHeaderTableTest, Observer) {
   EXPECT_EQ(4u, inserted_entry_count());
   Mock::VerifyAndClearExpectations(&observer4);
   Mock::VerifyAndClearExpectations(&observer5);
+}
+
+TEST_F(QpackHeaderTableTest, UnregisterObserver) {
+  StrictMock<MockObserver> observer1;
+  StrictMock<MockObserver> observer2;
+  StrictMock<MockObserver> observer3;
+  StrictMock<MockObserver> observer4;
+  RegisterObserver(1, &observer1);
+  RegisterObserver(2, &observer2);
+  RegisterObserver(2, &observer3);
+  RegisterObserver(3, &observer4);
+
+  UnregisterObserver(2, &observer3);
+
+  EXPECT_CALL(observer1, OnInsertCountReachedThreshold);
+  EXPECT_CALL(observer2, OnInsertCountReachedThreshold);
+  EXPECT_CALL(observer4, OnInsertCountReachedThreshold);
+  InsertEntry("foo", "bar");
+  InsertEntry("foo", "bar");
+  InsertEntry("foo", "bar");
+  EXPECT_EQ(3u, inserted_entry_count());
 }
 
 TEST_F(QpackHeaderTableTest, DrainingIndex) {
@@ -491,6 +520,15 @@ TEST_F(QpackHeaderTableTest, DrainingIndex) {
   EXPECT_EQ(2u, table.draining_index(0.5));
   // No entry can be referenced if all of the table is draining.
   EXPECT_EQ(4u, table.draining_index(1.0));
+}
+
+TEST_F(QpackHeaderTableTest, Cancel) {
+  StrictMock<MockObserver> observer;
+  auto table = std::make_unique<QpackHeaderTable>();
+  table->RegisterObserver(1, &observer);
+
+  EXPECT_CALL(observer, Cancel);
+  table.reset();
 }
 
 }  // namespace

@@ -16,11 +16,11 @@
 #include "ash/display/screen_ash.h"
 #include "ash/keyboard/keyboard_controller_impl.h"
 #include "ash/keyboard/test_keyboard_ui.h"
-#include "ash/mojo_test_interface_factory.h"
 #include "ash/public/cpp/ash_prefs.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/test/test_keyboard_controller_observer.h"
 #include "ash/public/cpp/test/test_new_window_delegate.h"
+#include "ash/public/cpp/test/test_photo_controller.h"
 #include "ash/public/cpp/test/test_system_tray_client.h"
 #include "ash/session/test_pref_service_provider.h"
 #include "ash/session/test_session_controller_client.h"
@@ -41,7 +41,6 @@
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/dbus/audio/cras_audio_client.h"
 #include "chromeos/dbus/power/power_policy_controller.h"
-#include "chromeos/network/network_handler.h"
 #include "chromeos/system/fake_statistics_provider.h"
 #include "components/discardable_memory/public/mojom/discardable_shared_memory_manager.mojom.h"
 #include "components/prefs/testing_pref_service.h"
@@ -176,10 +175,12 @@ void AshTestHelper::SetUp(const InitParams& init_params,
 
   assistant_service_ = std::make_unique<TestAssistantService>();
   shell->assistant_controller()->SetAssistant(
-      assistant_service_->CreateInterfacePtrAndBind().PassInterface());
+      assistant_service_->CreateRemoteAndBind());
 
   system_tray_client_ = std::make_unique<TestSystemTrayClient>();
   shell->system_tray_model()->SetClient(system_tray_client_.get());
+
+  photo_controller_ = std::make_unique<TestPhotoController>();
 
   if (init_params.start_session)
     session_controller_client_->CreatePredefinedUserSessions(1);

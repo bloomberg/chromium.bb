@@ -42,8 +42,6 @@
 
 namespace blink {
 
-using namespace html_names;
-
 // Returns true if |node| is UL, OL, or BLOCKQUOTE with "display:block".
 // "Outdent" command considers <BLOCKQUOTE style="display:inline"> makes
 // indentation.
@@ -55,15 +53,15 @@ static bool IsHTMLListOrBlockquoteElement(const Node* node) {
     return false;
   // TODO(yosin): We should check OL/UL element has "list-style-type" CSS
   // property to make sure they layout contents as list.
-  return IsHTMLUListElement(*element) || IsHTMLOListElement(*element) ||
-         element->HasTagName(kBlockquoteTag);
+  return IsA<HTMLUListElement>(*element) || IsA<HTMLOListElement>(*element) ||
+         element->HasTagName(html_names::kBlockquoteTag);
 }
 
 IndentOutdentCommand::IndentOutdentCommand(Document& document,
                                            IndentType type_of_action)
     : ApplyBlockElementCommand(
           document,
-          kBlockquoteTag,
+          html_names::kBlockquoteTag,
           "margin: 0 0 0 40px; border: none; padding: 0px;"),
       type_of_action_(type_of_action) {}
 
@@ -185,7 +183,7 @@ void IndentOutdentCommand::IndentIntoBlockquote(const Position& start,
     if (outer_block == start.ComputeContainerNode()) {
       // When we apply indent to an empty <blockquote>, we should call
       // insertNodeAfter(). See http://crbug.com/625802 for more details.
-      if (outer_block->HasTagName(kBlockquoteTag))
+      if (outer_block->HasTagName(html_names::kBlockquoteTag))
         InsertNodeAfter(target_blockquote, outer_block, editing_state);
       else
         InsertNodeAt(target_blockquote, start, editing_state);
@@ -218,13 +216,13 @@ void IndentOutdentCommand::OutdentParagraph(EditingState* editing_state) {
     return;
 
   // Use InsertListCommand to remove the selection from the list
-  if (IsHTMLOListElement(*enclosing_element)) {
+  if (IsA<HTMLOListElement>(*enclosing_element)) {
     ApplyCommandToComposite(MakeGarbageCollected<InsertListCommand>(
                                 GetDocument(), InsertListCommand::kOrderedList),
                             editing_state);
     return;
   }
-  if (IsHTMLUListElement(*enclosing_element)) {
+  if (IsA<HTMLUListElement>(*enclosing_element)) {
     ApplyCommandToComposite(
         MakeGarbageCollected<InsertListCommand>(
             GetDocument(), InsertListCommand::kUnorderedList),
@@ -263,8 +261,8 @@ void IndentOutdentCommand::OutdentParagraph(EditingState* editing_state) {
     if (split_point) {
       if (Element* split_point_parent = split_point->parentElement()) {
         // We can't outdent if there is no place to go!
-        if (split_point_parent->HasTagName(kBlockquoteTag) &&
-            !split_point->HasTagName(kBlockquoteTag) &&
+        if (split_point_parent->HasTagName(html_names::kBlockquoteTag) &&
+            !split_point->HasTagName(html_names::kBlockquoteTag) &&
             HasEditableStyle(*split_point_parent->parentNode()))
           SplitElement(split_point_parent, split_point);
       }

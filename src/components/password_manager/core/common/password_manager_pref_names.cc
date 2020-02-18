@@ -8,9 +8,6 @@
 namespace password_manager {
 namespace prefs {
 
-const char kBlacklistedCredentialsNormalized[] =
-    "profile.blacklisted_credentials_normalized";
-
 const char kCredentialsEnableAutosignin[] = "credentials_enable_autosignin";
 const char kCredentialsEnableService[] = "credentials_enable_service";
 
@@ -38,6 +35,14 @@ const char kWasSignInPasswordPromoClicked[] =
 const char kNumberSignInPasswordPromoShown[] =
     "profile.number_sign_in_password_promo_shown";
 
+const char kSignInPasswordPromoRevive[] =
+    "profile.sign_in_password_promo_revive";
+
+const char kAccountStorageOptedInAccounts[] =
+    "profile.password_account_storage_opted_in_accounts";
+
+const char kIsAccountStoreDefault[] = "profile.is_account_store_default";
+
 const char kSyncPasswordHash[] = "profile.sync_password_hash";
 
 const char kSyncPasswordLengthAndHashSalt[] =
@@ -53,6 +58,9 @@ const char kPasswordManagerOnboardingState[] =
 
 const char kPasswordLeakDetectionEnabled[] =
     "profile.password_manager_leak_detection";
+
+const char kWasOnboardingFeatureCheckedBefore[] =
+    "profile.was_pwm_onboarding_feature_checked_before";
 
 }  // namespace prefs
 }  // namespace password_manager

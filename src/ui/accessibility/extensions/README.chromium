@@ -6,10 +6,9 @@ one-click install from the Settings page.
 # Building
 #
 
-Right now only the colorenhancer needs to be built, because it has localized
-strings. To build it:
+Some of the extensions have localized strings and need to be built:
 
-ninja -C out/Release ui/accessibility/extensions
+ninja -C out/Release ui/accessibility/extensions:extensions
 
 The built extensions will be in your out directory, e.g.:
 
@@ -19,6 +18,16 @@ All other extensions should be zipped and uploaded to the webstore.
 
 Note for chromevoxclassic:
 see chromevoxclassic/README for further details.
+
+You can build all extension tests by doing:
+
+ninja -C out/Release ui/accessibility/extensions:extension_tests
+
+This currently only produces tests for ChromeVox Classic
+
+out/Release/chromevox_tests
+
+This target is not run on a bot, so run it manually before release!
 
 #
 # Instructions for publishing to the web store (new as of August 2019):
@@ -38,4 +47,4 @@ This script can be used to programmatically update extensions. Proceed with caut
 only use this if you are already comfortable updating an extension manually, you have a
 rollback plan, and you can take the time to understand the script.
 
-chrome/browser/resources/chromeos/chromevox/tools/publish_webstore_extension.py
+chrome/browser/resources/chromeos/accessibility/chromevox/tools/publish_webstore_extension.py

@@ -30,12 +30,12 @@ class ExtensionURLLoaderThrottle : public blink::URLLoaderThrottle {
                         bool* defer) override;
   void WillRedirectRequest(
       net::RedirectInfo* redirect_info,
-      const network::ResourceResponseHead& response_head,
+      const network::mojom::URLResponseHead& response_head,
       bool* defer,
       std::vector<std::string>* to_be_removed_request_headers,
       net::HttpRequestHeaders* modified_request_headers) override;
   void WillProcessResponse(const GURL& response_url,
-                           network::ResourceResponseHead* response_head,
+                           network::mojom::URLResponseHead* response_head,
                            bool* defer) override;
 
  private:
@@ -43,7 +43,6 @@ class ExtensionURLLoaderThrottle : public blink::URLLoaderThrottle {
   void DetachFromCurrentSequence() override;
 
   ExtensionThrottleManager* manager_ = nullptr;
-  int request_load_flags_ = 0;
   GURL start_request_url_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionURLLoaderThrottle);

@@ -5,21 +5,27 @@
 #ifndef CHROME_APP_SHIM_APP_SHIM_CONTROLLER_H_
 #define CHROME_APP_SHIM_APP_SHIM_CONTROLLER_H_
 
+#include <vector>
+
 #import <AppKit/AppKit.h>
 
 #include "base/files/file_path.h"
 #include "base/mac/scoped_nsobject.h"
 #include "chrome/common/mac/app_shim.mojom.h"
-#include "chrome/common/mac/app_shim_param_traits.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/platform/named_platform_channel.h"
 #include "mojo/public/cpp/system/isolated_connection.h"
+#include "url/gurl.h"
 
 namespace apps {
 class MachBootstrapAcceptorTest;
 }
 
 @class AppShimDelegate;
+@class ProfileMenuTarget;
 
 // The AppShimController is responsible for launching and maintaining the
 // connection with the main Chrome process, and generally controls the lifetime
@@ -34,8 +40,9 @@ class AppShimController : public chrome::mojom::AppShim {
     base::FilePath user_data_dir;
     // The relative path of the profile.
     base::FilePath profile_dir;
-    std::string app_mode_id;
-    base::string16 app_mode_name;
+    std::string app_id;
+    base::string16 app_name;
+    GURL app_url;
   };
 
   explicit AppShimController(const Params& params);
@@ -46,8 +53,11 @@ class AppShimController : public chrome::mojom::AppShim {
   // Called when the app is activated, e.g. by clicking on it in the dock, by
   // dropping a file on the dock icon, or by Cmd+Tabbing to it.
   // Returns whether the message was sent.
-  bool SendFocusApp(apps::AppShimFocusType focus_type,
+  bool SendFocusApp(chrome::mojom::AppShimFocusType focus_type,
                     const std::vector<base::FilePath>& files);
+
+  // Called when a profile is selected from the profiles NSMenu.
+  void ProfileMenuItemSelected(uint32_t index);
 
  private:
   friend class TestShimClient;
@@ -61,15 +71,20 @@ class AppShimController : public chrome::mojom::AppShim {
   void ChannelError(uint32_t custom_reason, const std::string& description);
   void BootstrapChannelError(uint32_t custom_reason,
                              const std::string& description);
-  void LaunchAppDone(apps::AppShimLaunchResult result,
-                     chrome::mojom::AppShimRequest app_shim_request);
+  void OnShimConnectedResponse(
+      chrome::mojom::AppShimLaunchResult result,
+      mojo::PendingReceiver<chrome::mojom::AppShim> app_shim_receiver);
 
   // chrome::mojom::AppShim implementation.
   void CreateRemoteCocoaApplication(
-      remote_cocoa::mojom::ApplicationAssociatedRequest request) override;
+      mojo::PendingAssociatedReceiver<remote_cocoa::mojom::Application>
+          receiver) override;
   void CreateCommandDispatcherForWidget(uint64_t widget_id) override;
   void SetBadgeLabel(const std::string& badge_label) override;
-  void SetUserAttention(apps::AppShimAttentionType attention_type) override;
+  void SetUserAttention(
+      chrome::mojom::AppShimAttentionType attention_type) override;
+  void UpdateProfileMenu(std::vector<chrome::mojom::ProfileMenuItemPtr>
+                             profile_menu_items) override;
 
   // Terminates the app shim process.
   void Close();
@@ -118,15 +133,21 @@ class AppShimController : public chrome::mojom::AppShim {
   base::scoped_nsobject<NSRunningApplication> chrome_launched_by_app_;
 
   mojo::IsolatedConnection bootstrap_mojo_connection_;
-  chrome::mojom::AppShimHostBootstrapPtr host_bootstrap_;
+  mojo::Remote<chrome::mojom::AppShimHostBootstrap> host_bootstrap_;
 
-  mojo::Binding<chrome::mojom::AppShim> shim_binding_;
-  chrome::mojom::AppShimHostPtr host_;
-  chrome::mojom::AppShimHostRequest host_request_;
+  mojo::Receiver<chrome::mojom::AppShim> shim_receiver_{this};
+  mojo::Remote<chrome::mojom::AppShimHost> host_;
+  mojo::PendingReceiver<chrome::mojom::AppShimHost> host_receiver_;
 
   base::scoped_nsobject<AppShimDelegate> delegate_;
   bool launch_app_done_;
   NSInteger attention_request_id_;
+
+  // The target for NSMenuItems in the profile menu.
+  base::scoped_nsobject<ProfileMenuTarget> profile_menu_target_;
+
+  // The items in the profile menu.
+  std::vector<chrome::mojom::ProfileMenuItemPtr> profile_menu_items_;
 
   DISALLOW_COPY_AND_ASSIGN(AppShimController);
 };

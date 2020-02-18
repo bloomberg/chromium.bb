@@ -23,7 +23,6 @@ import collections
 import ctypes
 import multiprocessing
 import os
-import tempfile
 
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
@@ -54,8 +53,8 @@ def ReadSymsHeader(sym_file):
   Raises:
     ValueError if the first line of |sym_file| is invalid
   """
-  with cros_build_lib.Open(sym_file) as f:
-    header = f.readline().split()
+  with cros_build_lib.Open(sym_file, 'rb') as f:
+    header = f.readline().decode('utf-8').split()
 
   if header[0] != 'MODULE' or len(header) != 5:
     raise ValueError('header of sym file is invalid')
@@ -91,9 +90,9 @@ def GenerateBreakpadSymbol(elf_file, debug_file=None, breakpad_dir=None,
 
   def _DumpIt(cmd_args):
     if needs_sudo:
-      run_command = cros_build_lib.SudoRunCommand
+      run_command = cros_build_lib.sudo_run
     else:
-      run_command = cros_build_lib.RunCommand
+      run_command = cros_build_lib.run
     return run_command(
         cmd_base + cmd_args, redirect_stderr=True, log_stdout_to_file=temp.name,
         error_code_ok=True, debug_level=logging.DEBUG)
@@ -105,7 +104,8 @@ def GenerateBreakpadSymbol(elf_file, debug_file=None, breakpad_dir=None,
                       signals.StrSignal(-ret), msg)
 
   osutils.SafeMakedirs(breakpad_dir)
-  with tempfile.NamedTemporaryFile(dir=breakpad_dir, bufsize=0) as temp:
+  with cros_build_lib.UnbufferedNamedTemporaryFile(
+      dir=breakpad_dir, delete=False) as temp:
     if debug_file:
       # Try to dump the symbols using the debug file like normal.
       cmd_args = [elf_file, os.path.dirname(debug_file)]
@@ -133,12 +133,13 @@ def GenerateBreakpadSymbol(elf_file, debug_file=None, breakpad_dir=None,
         # do not consider such occurrences as errors.
         logging.PrintBuildbotStepWarnings()
         _CrashCheck(result.returncode, 'giving up entirely')
-        if 'file contains no debugging information' in result.error:
+        if b'file contains no debugging information' in result.stderr:
           logging.warning('no symbols found for %s', elf_file)
         else:
           num_errors.value += 1
           logging.error('dumping symbols for %s failed:\n%s', elf_file,
                         result.error)
+        os.unlink(temp.name)
         return num_errors.value
 
     # Move the dumped symbol file to the right place:
@@ -150,7 +151,6 @@ def GenerateBreakpadSymbol(elf_file, debug_file=None, breakpad_dir=None,
     osutils.SafeMakedirs(os.path.dirname(sym_file))
     os.rename(temp.name, sym_file)
     os.chmod(sym_file, 0o644)
-    temp.delete = False
 
   return sym_file
 
@@ -195,8 +195,7 @@ def GenerateBreakpadSymbols(board, breakpad_dir=None, strip_cfi=False,
   # Make sure non-root can write out symbols as needed.
   osutils.SafeMakedirs(breakpad_dir, sudo=True)
   if not os.access(breakpad_dir, os.W_OK):
-    cros_build_lib.SudoRunCommand(['chown', '-R', str(os.getuid()),
-                                   breakpad_dir])
+    cros_build_lib.sudo_run(['chown', '-R', str(os.getuid()), breakpad_dir])
   debug_dir = FindDebugDir(board, sysroot=sysroot)
   exclude_paths = [os.path.join(debug_dir, x) for x in exclude_dirs]
   if file_list is None:

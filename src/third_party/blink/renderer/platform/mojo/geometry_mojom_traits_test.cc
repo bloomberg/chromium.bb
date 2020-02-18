@@ -5,8 +5,10 @@
 #include <utility>
 
 #include "base/test/task_environment.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/geometry/float_point_3d.h"
 #include "ui/gfx/geometry/mojom/geometry.mojom-blink.h"
 #include "ui/gfx/geometry/mojom/geometry_traits_test_service.mojom-blink.h"
 
@@ -21,9 +23,10 @@ class GeometryStructTraitsTest
   GeometryStructTraitsTest() {}
 
  protected:
-  gfx::mojom::blink::GeometryTraitsTestServicePtr GetTraitsTestProxy() {
-    gfx::mojom::blink::GeometryTraitsTestServicePtr proxy;
-    traits_test_bindings_.AddBinding(this, mojo::MakeRequest(&proxy));
+  mojo::Remote<gfx::mojom::blink::GeometryTraitsTestService>
+  GetTraitsTestProxy() {
+    mojo::Remote<gfx::mojom::blink::GeometryTraitsTestService> proxy;
+    traits_test_receivers_.Add(this, proxy.BindNewPipeAndPassReceiver());
     return proxy;
   }
 
@@ -38,7 +41,7 @@ class GeometryStructTraitsTest
     std::move(callback).Run(p);
   }
 
-  void EchoPoint3F(const WebFloatPoint3D& p,
+  void EchoPoint3F(const FloatPoint3D& p,
                    EchoPoint3FCallback callback) override {
     std::move(callback).Run(p);
   }
@@ -93,8 +96,8 @@ class GeometryStructTraitsTest
     std::move(callback).Run(q);
   }
 
-  mojo::BindingSet<gfx::mojom::blink::GeometryTraitsTestService>
-      traits_test_bindings_;
+  mojo::ReceiverSet<gfx::mojom::blink::GeometryTraitsTestService>
+      traits_test_receivers_;
 
   base::test::TaskEnvironment task_environment_;
 
@@ -107,7 +110,8 @@ TEST_F(GeometryStructTraitsTest, Size) {
   const int32_t kWidth = 1234;
   const int32_t kHeight = 5678;
   WebSize input(kWidth, kHeight);
-  gfx::mojom::blink::GeometryTraitsTestServicePtr proxy = GetTraitsTestProxy();
+  mojo::Remote<gfx::mojom::blink::GeometryTraitsTestService> proxy =
+      GetTraitsTestProxy();
   WebSize output;
   proxy->EchoSize(input, &output);
   EXPECT_EQ(input, output);
@@ -117,7 +121,8 @@ TEST_F(GeometryStructTraitsTest, Point) {
   const float kX = 1234;
   const float kY = 5678;
   WebPoint input(kX, kY);
-  gfx::mojom::blink::GeometryTraitsTestServicePtr proxy = GetTraitsTestProxy();
+  mojo::Remote<gfx::mojom::blink::GeometryTraitsTestService> proxy =
+      GetTraitsTestProxy();
   WebPoint output;
   proxy->EchoPoint(input, &output);
   EXPECT_EQ(input, output);
@@ -127,7 +132,8 @@ TEST_F(GeometryStructTraitsTest, PointF) {
   const float kX = 1.234;
   const float kY = 5.678;
   WebFloatPoint input(kX, kY);
-  gfx::mojom::blink::GeometryTraitsTestServicePtr proxy = GetTraitsTestProxy();
+  mojo::Remote<gfx::mojom::blink::GeometryTraitsTestService> proxy =
+      GetTraitsTestProxy();
   WebFloatPoint output;
   proxy->EchoPointF(input, &output);
   EXPECT_EQ(input, output);
@@ -137,9 +143,10 @@ TEST_F(GeometryStructTraitsTest, Point3D) {
   const float kX = 1.234;
   const float kY = 5.678;
   const float kZ = 9.098;
-  WebFloatPoint3D input(kX, kY, kZ);
-  gfx::mojom::blink::GeometryTraitsTestServicePtr proxy = GetTraitsTestProxy();
-  WebFloatPoint3D output;
+  FloatPoint3D input(kX, kY, kZ);
+  mojo::Remote<gfx::mojom::blink::GeometryTraitsTestService> proxy =
+      GetTraitsTestProxy();
+  FloatPoint3D output;
   proxy->EchoPoint3F(input, &output);
   EXPECT_EQ(input, output);
 }
@@ -150,7 +157,8 @@ TEST_F(GeometryStructTraitsTest, Rect) {
   const float kWidth = 3;
   const float kHeight = 4;
   WebRect input(kX, kY, kWidth, kHeight);
-  gfx::mojom::blink::GeometryTraitsTestServicePtr proxy = GetTraitsTestProxy();
+  mojo::Remote<gfx::mojom::blink::GeometryTraitsTestService> proxy =
+      GetTraitsTestProxy();
   WebRect output;
   proxy->EchoRect(input, &output);
   EXPECT_EQ(input, output);
@@ -162,7 +170,8 @@ TEST_F(GeometryStructTraitsTest, RectF) {
   const float kWidth = 3.456;
   const float kHeight = 4.567;
   WebFloatRect input(kX, kY, kWidth, kHeight);
-  gfx::mojom::blink::GeometryTraitsTestServicePtr proxy = GetTraitsTestProxy();
+  mojo::Remote<gfx::mojom::blink::GeometryTraitsTestService> proxy =
+      GetTraitsTestProxy();
   WebFloatRect output;
   proxy->EchoRectF(input, &output);
   EXPECT_EQ(input, output);

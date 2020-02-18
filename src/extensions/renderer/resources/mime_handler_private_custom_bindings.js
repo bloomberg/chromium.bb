@@ -19,12 +19,12 @@ loadScript('extensions/common/api/mime_handler.mojom');
 
 var servicePtr = new extensions.mimeHandler.MimeHandlerServicePtr;
 Mojo.bindInterface(extensions.mimeHandler.MimeHandlerService.name,
-                   mojo.makeRequest(servicePtr).handle);
+                   mojo.makeRequest(servicePtr).handle, "context", true);
 var beforeUnloadControlPtr =
     new extensions.mimeHandler.BeforeUnloadControlPtr;
 Mojo.bindInterface(
     extensions.mimeHandler.BeforeUnloadControl.name,
-    mojo.makeRequest(beforeUnloadControlPtr).handle);
+    mojo.makeRequest(beforeUnloadControlPtr).handle, "context", true);
 
 // Stores a promise to the GetStreamInfo() result to avoid making additional
 // calls in response to getStreamInfo() calls.

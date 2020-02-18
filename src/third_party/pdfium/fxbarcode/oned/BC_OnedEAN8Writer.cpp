@@ -28,6 +28,7 @@
 #include <vector>
 
 #include "core/fxcrt/fx_extension.h"
+#include "core/fxcrt/fx_memory_wrappers.h"
 #include "core/fxge/cfx_defaultrenderdevice.h"
 #include "core/fxge/text_char_pos.h"
 #include "fxbarcode/BC_Writer.h"
@@ -150,14 +151,14 @@ bool CBC_OnedEAN8Writer::ShowChars(WideStringView contents,
                      (float)(leftPosition + strWidth - 0.5), (float)m_Height);
   matr.Concat(*matrix);
   FX_RECT re = matr.TransformRect(rect).GetOuterRect();
-  device->FillRect(re, m_backgroundColor);
+  device->FillRect(re, kBackgroundColor);
   CFX_Matrix matr1(m_outputHScale, 0.0, 0.0, 1.0, 0.0, 0.0);
   CFX_FloatRect rect1(
       (float)(leftPosition + 33 * multiple), (float)(m_Height - iTextHeight),
       (float)(leftPosition + 33 * multiple + strWidth - 0.5), (float)m_Height);
   matr1.Concat(*matrix);
   re = matr1.TransformRect(rect1).GetOuterRect();
-  device->FillRect(re, m_backgroundColor);
+  device->FillRect(re, kBackgroundColor);
   strWidth = (int32_t)(strWidth * m_outputHScale);
 
   CalcTextInfo(tempStr, charpos.data(), m_pFont.Get(), (float)strWidth,

@@ -162,6 +162,53 @@ namespace sw
 				}
 
 				setBuiltins(x, y, z, w, cMask);
+
+				for (uint32_t i = 0; i < state.numClipDistances; i++)
+				{
+					auto distance = interpolate(xxxx, DclipDistance[i], rhw,
+												primitive + OFFSET(Primitive, clipDistance[i]),
+												false, true, false);
+
+					auto clipMask = SignMask(CmpGE(distance, SIMD::Float(0)));
+					for (auto ms = 0u; ms < state.multiSample; ms++)
+					{
+						// TODO: Fragments discarded by clipping do not exist at
+						// all -- they should not be counted in queries or have
+						// their Z/S effects performed when early fragment tests
+						// are enabled.
+						cMask[ms] &= clipMask;
+					}
+
+					if (spirvShader->getUsedCapabilities().ClipDistance)
+					{
+						auto it = spirvShader->inputBuiltins.find(spv::BuiltInClipDistance);
+						if(it != spirvShader->inputBuiltins.end())
+						{
+							if (i < it->second.SizeInComponents)
+							{
+								routine.getVariable(it->second.Id)[it->second.FirstComponent + i] = distance;
+							}
+						}
+					}
+				}
+
+				if (spirvShader->getUsedCapabilities().CullDistance)
+				{
+					auto it = spirvShader->inputBuiltins.find(spv::BuiltInCullDistance);
+					if(it != spirvShader->inputBuiltins.end())
+					{
+						for (uint32_t i = 0; i < state.numCullDistances; i++)
+						{
+							if (i < it->second.SizeInComponents)
+							{
+								routine.getVariable(it->second.Id)[it->second.FirstComponent + i] =
+										interpolate(xxxx, DcullDistance[i], rhw,
+													primitive + OFFSET(Primitive, cullDistance[i]),
+													false, true, false);
+							}
+						}
+					}
+				}
 			}
 
 			Bool alphaPass = true;
@@ -222,7 +269,7 @@ namespace sw
 		}
 	}
 
-	Float4 PixelRoutine::interpolateCentroid(Float4 &x, Float4 &y, Float4 &rhw, Pointer<Byte> planeEquation, bool flat, bool perspective)
+	Float4 PixelRoutine::interpolateCentroid(const Float4 &x, const Float4 &y, const Float4 &rhw, Pointer<Byte> planeEquation, bool flat, bool perspective)
 	{
 		Float4 interpolant = *Pointer<Float4>(planeEquation + OFFSET(PlaneEquation,C), 16);
 
@@ -240,7 +287,7 @@ namespace sw
 		return interpolant;
 	}
 
-	void PixelRoutine::stencilTest(Pointer<Byte> &sBuffer, int q, Int &x, Int &sMask, Int &cMask)
+	void PixelRoutine::stencilTest(const Pointer<Byte> &sBuffer, int q, const Int &x, Int &sMask, const Int &cMask)
 	{
 		if(!state.stencilActive)
 		{
@@ -249,14 +296,16 @@ namespace sw
 
 		// (StencilRef & StencilMask) CompFunc (StencilBufferValue & StencilMask)
 
-		Pointer<Byte> buffer = sBuffer + 2 * x;
+		Pointer<Byte> buffer = sBuffer + x;
 
 		if(q > 0)
 		{
 			buffer += q * *Pointer<Int>(data + OFFSET(DrawData,stencilSliceB));
 		}
 
-		Byte8 value = *Pointer<Byte8>(buffer);
+		Int pitch = *Pointer<Int>(data + OFFSET(DrawData, stencilPitchB));
+		Byte8 value = *Pointer<Byte8>(buffer) & Byte8(-1, -1, 0, 0, 0, 0, 0, 0);
+		value = value | (*Pointer<Byte8>(buffer + pitch - 2) & Byte8(0, 0, -1, -1, 0, 0, 0, 0));
 		Byte8 valueBack = value;
 
 		if(state.frontStencil.compareMask != 0xff)
@@ -326,7 +375,7 @@ namespace sw
 		}
 	}
 
-	Bool PixelRoutine::depthTest32F(Pointer<Byte> &zBuffer, int q, Int &x, Float4 &z, Int &sMask, Int &zMask, Int &cMask)
+	Bool PixelRoutine::depthTest32F(const Pointer<Byte> &zBuffer, int q, const Int &x, const Float4 &z, const Int &sMask, Int &zMask, const Int &cMask)
 	{
 		Float4 Z = z;
 
@@ -335,18 +384,8 @@ namespace sw
 			Z = oDepth;
 		}
 
-		Pointer<Byte> buffer;
-		Int pitch;
-
-		if(!state.quadLayoutDepthBuffer)
-		{
-			buffer = zBuffer + 4 * x;
-			pitch = *Pointer<Int>(data + OFFSET(DrawData,depthPitchB));
-		}
-		else
-		{
-			buffer = zBuffer + 8 * x;
-		}
+		Pointer<Byte> buffer = zBuffer + 4 * x;
+		Int pitch = *Pointer<Int>(data + OFFSET(DrawData,depthPitchB));
 
 		if(q > 0)
 		{
@@ -357,16 +396,9 @@ namespace sw
 
 		if(state.depthCompareMode != VK_COMPARE_OP_NEVER || (state.depthCompareMode != VK_COMPARE_OP_ALWAYS && !state.depthWriteEnable))
 		{
-			if(!state.quadLayoutDepthBuffer)
-			{
-				// FIXME: Properly optimizes?
-				zValue.xy = *Pointer<Float4>(buffer);
-				zValue.zw = *Pointer<Float4>(buffer + pitch - 8);
-			}
-			else
-			{
-				zValue = *Pointer<Float4>(buffer, 16);
-			}
+			// FIXME: Properly optimizes?
+			zValue.xy = *Pointer<Float4>(buffer);
+			zValue.zw = *Pointer<Float4>(buffer + pitch - 8);
 		}
 
 		Int4 zTest;
@@ -422,7 +454,7 @@ namespace sw
 		return zMask != 0;
 	}
 
-	Bool PixelRoutine::depthTest16(Pointer<Byte> &zBuffer, int q, Int &x, Float4 &z, Int &sMask, Int &zMask, Int &cMask)
+	Bool PixelRoutine::depthTest16(const Pointer<Byte> &zBuffer, int q, const Int &x, const Float4 &z, const Int &sMask, Int &zMask, const Int &cMask)
 	{
 		Short4 Z = convertFixed16(z, true);
 
@@ -431,18 +463,8 @@ namespace sw
 			Z = convertFixed16(oDepth, true);
 		}
 
-		Pointer<Byte> buffer;
-		Int pitch;
-
-		if(!state.quadLayoutDepthBuffer)
-		{
-			buffer = zBuffer + 2 * x;
-			pitch = *Pointer<Int>(data + OFFSET(DrawData,depthPitchB));
-		}
-		else
-		{
-			buffer = zBuffer + 4 * x;
-		}
+		Pointer<Byte> buffer = zBuffer + 2 * x;
+		Int pitch = *Pointer<Int>(data + OFFSET(DrawData, depthPitchB));
 
 		if(q > 0)
 		{
@@ -453,16 +475,9 @@ namespace sw
 
 		if(state.depthCompareMode != VK_COMPARE_OP_NEVER || (state.depthCompareMode != VK_COMPARE_OP_ALWAYS && !state.depthWriteEnable))
 		{
-			if(!state.quadLayoutDepthBuffer)
-			{
-				// FIXME: Properly optimizes?
-				zValue = *Pointer<Short4>(buffer) & Short4(-1, -1, 0, 0);
-				zValue = zValue | (*Pointer<Short4>(buffer + pitch - 4) & Short4(0, 0, -1, -1));
-			}
-			else
-			{
-				zValue = *Pointer<Short4>(buffer, 8);
-			}
+			// FIXME: Properly optimizes?
+			zValue = *Pointer<Short4>(buffer) & Short4(-1, -1, 0, 0);
+			zValue = zValue | (*Pointer<Short4>(buffer + pitch - 4) & Short4(0, 0, -1, -1));
 		}
 
 		Int4 zTest;
@@ -522,7 +537,7 @@ namespace sw
 		return zMask != 0;
 	}
 
-	Bool PixelRoutine::depthTest(Pointer<Byte> &zBuffer, int q, Int &x, Float4 &z, Int &sMask, Int &zMask, Int &cMask)
+	Bool PixelRoutine::depthTest(const Pointer<Byte> &zBuffer, int q, const Int &x, const Float4 &z, const Int &sMask, Int &zMask, const Int &cMask)
 	{
 		if(!state.depthTestActive)
 		{
@@ -535,7 +550,7 @@ namespace sw
 			return depthTest32F(zBuffer, q, x, z, sMask, zMask, cMask);
 	}
 
-	void PixelRoutine::alphaToCoverage(Int cMask[4], Float4 &alpha)
+	void PixelRoutine::alphaToCoverage(Int cMask[4], const Float4 &alpha)
 	{
 		Int4 coverage0 = CmpNLT(alpha, *Pointer<Float4>(data + OFFSET(DrawData,a2c0)));
 		Int4 coverage1 = CmpNLT(alpha, *Pointer<Float4>(data + OFFSET(DrawData,a2c1)));
@@ -553,7 +568,7 @@ namespace sw
 		cMask[3] &= aMask3;
 	}
 
-	void PixelRoutine::writeDepth32F(Pointer<Byte> &zBuffer, int q, Int &x, Float4 &z, Int &zMask)
+	void PixelRoutine::writeDepth32F(Pointer<Byte> &zBuffer, int q, const Int &x, const Float4 &z, const Int &zMask)
 	{
 		Float4 Z = z;
 
@@ -562,18 +577,8 @@ namespace sw
 			Z = oDepth;
 		}
 
-		Pointer<Byte> buffer;
-		Int pitch;
-
-		if(!state.quadLayoutDepthBuffer)
-		{
-			buffer = zBuffer + 4 * x;
-			pitch = *Pointer<Int>(data + OFFSET(DrawData,depthPitchB));
-		}
-		else
-		{
-			buffer = zBuffer + 8 * x;
-		}
+		Pointer<Byte> buffer = zBuffer + 4 * x;
+		Int pitch = *Pointer<Int>(data + OFFSET(DrawData,depthPitchB));
 
 		if(q > 0)
 		{
@@ -584,35 +589,21 @@ namespace sw
 
 		if(state.depthCompareMode != VK_COMPARE_OP_NEVER || (state.depthCompareMode != VK_COMPARE_OP_ALWAYS && !state.depthWriteEnable))
 		{
-			if(!state.quadLayoutDepthBuffer)
-			{
-				// FIXME: Properly optimizes?
-				zValue.xy = *Pointer<Float4>(buffer);
-				zValue.zw = *Pointer<Float4>(buffer + pitch - 8);
-			}
-			else
-			{
-				zValue = *Pointer<Float4>(buffer, 16);
-			}
+			// FIXME: Properly optimizes?
+			zValue.xy = *Pointer<Float4>(buffer);
+			zValue.zw = *Pointer<Float4>(buffer + pitch - 8);
 		}
 
 		Z = As<Float4>(As<Int4>(Z) & *Pointer<Int4>(constants + OFFSET(Constants,maskD4X) + zMask * 16, 16));
 		zValue = As<Float4>(As<Int4>(zValue) & *Pointer<Int4>(constants + OFFSET(Constants,invMaskD4X) + zMask * 16, 16));
 		Z = As<Float4>(As<Int4>(Z) | As<Int4>(zValue));
 
-		if(!state.quadLayoutDepthBuffer)
-		{
-			// FIXME: Properly optimizes?
-			*Pointer<Float2>(buffer) = Float2(Z.xy);
-			*Pointer<Float2>(buffer + pitch) = Float2(Z.zw);
-		}
-		else
-		{
-			*Pointer<Float4>(buffer, 16) = Z;
-		}
+		// FIXME: Properly optimizes?
+		*Pointer<Float2>(buffer) = Float2(Z.xy);
+		*Pointer<Float2>(buffer + pitch) = Float2(Z.zw);
 	}
 
-	void PixelRoutine::writeDepth16(Pointer<Byte> &zBuffer, int q, Int &x, Float4 &z, Int &zMask)
+	void PixelRoutine::writeDepth16(Pointer<Byte> &zBuffer, int q, const Int &x, const Float4 &z, const Int &zMask)
 	{
 		Short4 Z = As<Short4>(convertFixed16(z, true));
 
@@ -621,18 +612,8 @@ namespace sw
 			Z = As<Short4>(convertFixed16(oDepth, true));
 		}
 
-		Pointer<Byte> buffer;
-		Int pitch;
-
-		if(!state.quadLayoutDepthBuffer)
-		{
-			buffer = zBuffer + 2 * x;
-			pitch = *Pointer<Int>(data + OFFSET(DrawData,depthPitchB));
-		}
-		else
-		{
-			buffer = zBuffer + 4 * x;
-		}
+		Pointer<Byte> buffer = zBuffer + 2 * x;
+		Int pitch = *Pointer<Int>(data + OFFSET(DrawData,depthPitchB));
 
 		if(q > 0)
 		{
@@ -643,37 +624,23 @@ namespace sw
 
 		if(state.depthCompareMode != VK_COMPARE_OP_NEVER || (state.depthCompareMode != VK_COMPARE_OP_ALWAYS && !state.depthWriteEnable))
 		{
-			if(!state.quadLayoutDepthBuffer)
-			{
-				// FIXME: Properly optimizes?
-				zValue = *Pointer<Short4>(buffer) & Short4(-1, -1, 0, 0);
-				zValue = zValue | (*Pointer<Short4>(buffer + pitch - 4) & Short4(0, 0, -1, -1));
-			}
-			else
-			{
-				zValue = *Pointer<Short4>(buffer, 8);
-			}
+			// FIXME: Properly optimizes?
+			zValue = *Pointer<Short4>(buffer) & Short4(-1, -1, 0, 0);
+			zValue = zValue | (*Pointer<Short4>(buffer + pitch - 4) & Short4(0, 0, -1, -1));
 		}
 
 		Z = Z & *Pointer<Short4>(constants + OFFSET(Constants,maskW4Q) + zMask * 8, 8);
 		zValue = zValue & *Pointer<Short4>(constants + OFFSET(Constants,invMaskW4Q) + zMask * 8, 8);
 		Z = Z | zValue;
 
-		if(!state.quadLayoutDepthBuffer)
-		{
-			// FIXME: Properly optimizes?
-			*Pointer<Short>(buffer) = Extract(Z, 0);
-			*Pointer<Short>(buffer+2) = Extract(Z, 1);
-			*Pointer<Short>(buffer+pitch) = Extract(Z, 2);
-			*Pointer<Short>(buffer+pitch+2) = Extract(Z, 3);
-		}
-		else
-		{
-			*Pointer<Short4>(buffer, 8) = Z;
-		}
+		// FIXME: Properly optimizes?
+		*Pointer<Short>(buffer) = Extract(Z, 0);
+		*Pointer<Short>(buffer+2) = Extract(Z, 1);
+		*Pointer<Short>(buffer+pitch) = Extract(Z, 2);
+		*Pointer<Short>(buffer+pitch+2) = Extract(Z, 3);
 	}
 
-	void PixelRoutine::writeDepth(Pointer<Byte> &zBuffer, int q, Int &x, Float4 &z, Int &zMask)
+	void PixelRoutine::writeDepth(Pointer<Byte> &zBuffer, int q, const Int &x, const Float4 &z, const Int &zMask)
 	{
 		if(!state.depthWriteEnable)
 		{
@@ -686,7 +653,7 @@ namespace sw
 			writeDepth32F(zBuffer, q, x, z, zMask);
 	}
 
-	void PixelRoutine::writeStencil(Pointer<Byte> &sBuffer, int q, Int &x, Int &sMask, Int &zMask, Int &cMask)
+	void PixelRoutine::writeStencil(Pointer<Byte> &sBuffer, int q, const Int &x, const Int &sMask, const Int &zMask, const Int &cMask)
 	{
 		if(!state.stencilActive)
 		{
@@ -706,19 +673,20 @@ namespace sw
 			return;
 		}
 
-		Pointer<Byte> buffer = sBuffer + 2 * x;
+		Pointer<Byte> buffer = sBuffer + x;
 
 		if(q > 0)
 		{
 			buffer += q * *Pointer<Int>(data + OFFSET(DrawData,stencilSliceB));
 		}
 
-		Byte8 bufferValue = *Pointer<Byte8>(buffer);
-
+		Int pitch = *Pointer<Int>(data + OFFSET(DrawData, stencilPitchB));
+		Byte8 bufferValue = *Pointer<Byte8>(buffer) & Byte8(-1, -1, 0, 0, 0, 0, 0, 0);
+		bufferValue = bufferValue | (*Pointer<Byte8>(buffer + pitch - 2) & Byte8(0, 0, -1, -1, 0, 0, 0, 0));
 		Byte8 newValue;
 		stencilOperation(newValue, bufferValue, state.frontStencil, false, zMask, sMask);
 
-		if(state.frontStencil.writeMask != 0)
+		if((state.frontStencil.writeMask & 0xFF) != 0xFF) // Assume 8-bit stencil buffer
 		{
 			Byte8 maskedValue = bufferValue;
 			newValue &= *Pointer<Byte8>(data + OFFSET(DrawData,stencil[0].writeMaskQ));
@@ -730,7 +698,7 @@ namespace sw
 
 		stencilOperation(newValueBack, bufferValue, state.backStencil, true, zMask, sMask);
 
-		if(state.backStencil.writeMask != 0)
+		if((state.backStencil.writeMask & 0xFF) != 0xFF) // Assume 8-bit stencil buffer
 		{
 			Byte8 maskedValue = bufferValue;
 			newValueBack &= *Pointer<Byte8>(data + OFFSET(DrawData,stencil[1].writeMaskQ));
@@ -746,10 +714,11 @@ namespace sw
 		bufferValue &= *Pointer<Byte8>(constants + OFFSET(Constants,invMaskB4Q) + 8 * cMask);
 		newValue |= bufferValue;
 
-		*Pointer<Byte4>(buffer) = Byte4(newValue);
+		*Pointer<Short>(buffer) = Extract(As<Short4>(newValue), 0);
+		*Pointer<Short>(buffer + pitch) = Extract(As<Short4>(newValue), 1);
 	}
 
-	void PixelRoutine::stencilOperation(Byte8 &newValue, Byte8 &bufferValue, VkStencilOpState const &ops, bool isBack, Int &zMask, Int &sMask)
+	void PixelRoutine::stencilOperation(Byte8 &newValue, const Byte8 &bufferValue, const PixelProcessor::States::StencilOpState &ops, bool isBack, const Int &zMask, const Int &sMask)
 	{
 		Byte8 &pass = newValue;
 		Byte8 fail;
@@ -782,7 +751,7 @@ namespace sw
 		}
 	}
 
-	void PixelRoutine::stencilOperation(Byte8 &output, Byte8 &bufferValue, VkStencilOp operation, bool isBack)
+	void PixelRoutine::stencilOperation(Byte8 &output, const Byte8 &bufferValue, VkStencilOp operation, bool isBack)
 	{
 		switch(operation)
 		{
@@ -951,7 +920,7 @@ namespace sw
 		return vk::Format(state.targetFormat[index]).isSRGBformat();
 	}
 
-	void PixelRoutine::readPixel(int index, Pointer<Byte> &cBuffer, Int &x, Vector4s &pixel)
+	void PixelRoutine::readPixel(int index, const Pointer<Byte> &cBuffer, const Int &x, Vector4s &pixel)
 	{
 		Short4 c01;
 		Short4 c23;
@@ -968,7 +937,15 @@ namespace sw
 			pixel.x = (c01 & Short4(0x7C00u)) << 1;
 			pixel.y = (c01 & Short4(0x03E0u)) << 6;
 			pixel.z = (c01 & Short4(0x001Fu)) << 11;
-			pixel.w = (c01 & Short4(0x8000u));
+			pixel.w = (c01 & Short4(0x8000u)) >> 15;
+
+			// Expand to 16 bit range
+			pixel.x |= As<Short4>(As<UShort4>(pixel.x) >> 5);
+			pixel.x |= As<Short4>(As<UShort4>(pixel.x) >> 10);
+			pixel.y |= As<Short4>(As<UShort4>(pixel.y) >> 5);
+			pixel.y |= As<Short4>(As<UShort4>(pixel.y) >> 10);
+			pixel.z |= As<Short4>(As<UShort4>(pixel.z) >> 5);
+			pixel.z |= As<Short4>(As<UShort4>(pixel.z) >> 10);
 			break;
 		case VK_FORMAT_R5G6B5_UNORM_PACK16:
 			buffer = cBuffer + 2 * x;
@@ -979,6 +956,14 @@ namespace sw
 			pixel.y = (c01 & Short4(0x07E0u)) << 5;
 			pixel.z = (c01 & Short4(0x001Fu)) << 11;
 			pixel.w = Short4(0xFFFFu);
+
+			// Expand to 16 bit range
+			pixel.x |= As<Short4>(As<UShort4>(pixel.x) >> 5);
+			pixel.x |= As<Short4>(As<UShort4>(pixel.x) >> 10);
+			pixel.y |= As<Short4>(As<UShort4>(pixel.y) >> 6);
+			pixel.y |= As<Short4>(As<UShort4>(pixel.y) >> 12);
+			pixel.z |= As<Short4>(As<UShort4>(pixel.z) >> 5);
+			pixel.z |= As<Short4>(As<UShort4>(pixel.z) >> 10);
 			break;
 		case VK_FORMAT_B8G8R8A8_UNORM:
 		case VK_FORMAT_B8G8R8A8_SRGB:
@@ -1063,6 +1048,21 @@ namespace sw
 			pixel.z = Short4(0xFFFFu);
 			pixel.w = Short4(0xFFFFu);
 			break;
+		case VK_FORMAT_A2B10G10R10_UNORM_PACK32:
+		{
+			buffer = cBuffer;
+			Int4 v = Int4(0);
+			v = Insert(v, *Pointer<Int>(buffer + 4 * x), 0);
+			v = Insert(v, *Pointer<Int>(buffer + 4 * x + 4), 1);
+			buffer += *Pointer<Int>(data + OFFSET(DrawData, colorPitchB[index]));
+			v = Insert(v, *Pointer<Int>(buffer + 4 * x), 2);
+			v = Insert(v, *Pointer<Int>(buffer + 4 * x + 4), 3);
+
+			pixel.x = Short4(v << 6) & Short4(0xFFC0u);
+			pixel.y = Short4(v >> 4) & Short4(0xFFC0u);
+			pixel.z = Short4(v >> 14) & Short4(0xFFC0u);
+			pixel.w = Short4(v >> 16) & Short4(0xC000u);
+		} break;
 		default:
 			UNIMPLEMENTED("VkFormat %d", state.targetFormat[index]);
 		}
@@ -1073,7 +1073,7 @@ namespace sw
 		}
 	}
 
-	void PixelRoutine::alphaBlend(int index, Pointer<Byte> &cBuffer, Vector4s &current, Int &x)
+	void PixelRoutine::alphaBlend(int index, const Pointer<Byte> &cBuffer, Vector4s &current, const Int &x)
 	{
 		if(!state.blendState[index].alphaBlendEnable)
 		{
@@ -1192,7 +1192,7 @@ namespace sw
 		}
 	}
 
-	void PixelRoutine::writeColor(int index, Pointer<Byte> &cBuffer, Int &x, Vector4s &current, Int &sMask, Int &zMask, Int &cMask)
+	void PixelRoutine::writeColor(int index, const Pointer<Byte> &cBuffer, const Int &x, Vector4s &current, const Int &sMask, const Int &zMask, const Int &cMask)
 	{
 		if(isSRGB(index))
 		{
@@ -1201,16 +1201,6 @@ namespace sw
 
 		switch(state.targetFormat[index])
 		{
-		case VK_FORMAT_A1R5G5B5_UNORM_PACK16:
-			current.x = AddSat(As<UShort4>(current.x), UShort4(0x0400));
-			current.y = AddSat(As<UShort4>(current.y), UShort4(0x0400));
-			current.z = AddSat(As<UShort4>(current.z), UShort4(0x0400));
-			break;
-		case VK_FORMAT_R5G6B5_UNORM_PACK16:
-			current.x = AddSat(As<UShort4>(current.x), UShort4(0x0400));
-			current.y = AddSat(As<UShort4>(current.y), UShort4(0x0200));
-			current.z = AddSat(As<UShort4>(current.z), UShort4(0x0400));
-			break;
 		case VK_FORMAT_B8G8R8A8_UNORM:
 		case VK_FORMAT_B8G8R8A8_SRGB:
 		case VK_FORMAT_R8G8B8A8_UNORM:
@@ -1389,38 +1379,26 @@ namespace sw
 				Pointer<Byte> buffer = cBuffer + 2 * x;
 				Int value = *Pointer<Int>(buffer);
 
-				Int c01 = Extract(As<Int2>(current.x), 0);
+				Int channelMask = *Pointer<Int>(constants + OFFSET(Constants,mask5551Q[bgraWriteMask & 0xF][0]));
 
+				Int c01 = Extract(As<Int2>(current.x), 0);
+				Int mask01 = *Pointer<Int>(constants + OFFSET(Constants,maskW4Q[0][0]) + xMask * 8);
 				if(bgraWriteMask != 0x0000000F)
 				{
-					Int masked = value;
-					c01 &= *Pointer<Int>(constants + OFFSET(Constants,mask5551Q[bgraWriteMask][0]));
-					masked &= *Pointer<Int>(constants + OFFSET(Constants,mask5551Q[~bgraWriteMask & 0xF][0]));
-					c01 |= masked;
+					mask01 &= channelMask;
 				}
-
-				c01 &= *Pointer<Int>(constants + OFFSET(Constants,maskW4Q[0][0]) + xMask * 8);
-				value &= *Pointer<Int>(constants + OFFSET(Constants,invMaskW4Q[0][0]) + xMask * 8);
-				c01 |= value;
-				*Pointer<Int>(buffer) = c01;
+				*Pointer<Int>(buffer) = (c01 & mask01) | (value & ~mask01);
 
 				buffer += *Pointer<Int>(data + OFFSET(DrawData,colorPitchB[index]));
 				value = *Pointer<Int>(buffer);
 
 				Int c23 = Extract(As<Int2>(current.x), 1);
-
+				Int mask23 = *Pointer<Int>(constants + OFFSET(Constants,maskW4Q[0][2]) + xMask * 8);
 				if(bgraWriteMask != 0x0000000F)
 				{
-					Int masked = value;
-					c23 &= *Pointer<Int>(constants + OFFSET(Constants,mask5551Q[bgraWriteMask][0]));
-					masked &= *Pointer<Int>(constants + OFFSET(Constants,mask5551Q[~bgraWriteMask & 0xF][0]));
-					c23 |= masked;
+					mask23 &= channelMask;
 				}
-
-				c23 &= *Pointer<Int>(constants + OFFSET(Constants,maskW4Q[0][2]) + xMask * 8);
-				value &= *Pointer<Int>(constants + OFFSET(Constants,invMaskW4Q[0][2]) + xMask * 8);
-				c23 |= value;
-				*Pointer<Int>(buffer) = c23;
+				*Pointer<Int>(buffer) = (c23 & mask23) | (value & ~mask23);
 			}
 			break;
 		case VK_FORMAT_R5G6B5_UNORM_PACK16:
@@ -1428,38 +1406,26 @@ namespace sw
 				Pointer<Byte> buffer = cBuffer + 2 * x;
 				Int value = *Pointer<Int>(buffer);
 
-				Int c01 = Extract(As<Int2>(current.x), 0);
+				Int channelMask = *Pointer<Int>(constants + OFFSET(Constants,mask565Q[bgraWriteMask & 0x7][0]));
 
+				Int c01 = Extract(As<Int2>(current.x), 0);
+				Int mask01 = *Pointer<Int>(constants + OFFSET(Constants,maskW4Q[0][0]) + xMask * 8);
 				if((bgraWriteMask & 0x00000007) != 0x00000007)
 				{
-					Int masked = value;
-					c01 &= *Pointer<Int>(constants + OFFSET(Constants,mask565Q[bgraWriteMask & 0x7][0]));
-					masked &= *Pointer<Int>(constants + OFFSET(Constants,mask565Q[~bgraWriteMask & 0x7][0]));
-					c01 |= masked;
+					mask01 &= channelMask;
 				}
-
-				c01 &= *Pointer<Int>(constants + OFFSET(Constants,maskW4Q[0][0]) + xMask * 8);
-				value &= *Pointer<Int>(constants + OFFSET(Constants,invMaskW4Q[0][0]) + xMask * 8);
-				c01 |= value;
-				*Pointer<Int>(buffer) = c01;
+				*Pointer<Int>(buffer) = (c01 & mask01) | (value & ~mask01);
 
 				buffer += *Pointer<Int>(data + OFFSET(DrawData,colorPitchB[index]));
 				value = *Pointer<Int>(buffer);
 
 				Int c23 = Extract(As<Int2>(current.x), 1);
-
+				Int mask23 = *Pointer<Int>(constants + OFFSET(Constants,maskW4Q[0][2]) + xMask * 8);
 				if((bgraWriteMask & 0x00000007) != 0x00000007)
 				{
-					Int masked = value;
-					c23 &= *Pointer<Int>(constants + OFFSET(Constants,mask565Q[bgraWriteMask & 0x7][0]));
-					masked &= *Pointer<Int>(constants + OFFSET(Constants,mask565Q[~bgraWriteMask & 0x7][0]));
-					c23 |= masked;
+					mask23 &= channelMask;
 				}
-
-				c23 &= *Pointer<Int>(constants + OFFSET(Constants,maskW4Q[0][2]) + xMask * 8);
-				value &= *Pointer<Int>(constants + OFFSET(Constants,invMaskW4Q[0][2]) + xMask * 8);
-				c23 |= value;
-				*Pointer<Int>(buffer) = c23;
+				*Pointer<Int>(buffer) = (c23 & mask23) | (value & ~mask23);
 			}
 			break;
 		case VK_FORMAT_B8G8R8A8_UNORM:
@@ -1467,35 +1433,24 @@ namespace sw
 			{
 				Pointer<Byte> buffer = cBuffer + x * 4;
 				Short4 value = *Pointer<Short4>(buffer);
+				Short4 channelMask = *Pointer<Short4>(constants + OFFSET(Constants,maskB4Q[bgraWriteMask][0]));
 
-				if(bgraWriteMask != 0x0000000F)   // FIXME: Need for masking when XRGB && Fh?
+				Short4 mask01 = *Pointer<Short4>(constants + OFFSET(Constants,maskD01Q) + xMask * 8);
+				if(bgraWriteMask != 0x0000000F)
 				{
-					Short4 masked = value;
-					c01 &= *Pointer<Short4>(constants + OFFSET(Constants,maskB4Q[bgraWriteMask][0]));
-					masked &= *Pointer<Short4>(constants + OFFSET(Constants,invMaskB4Q[bgraWriteMask][0]));
-					c01 |= masked;
+					mask01 &= channelMask;
 				}
-
-				c01 &= *Pointer<Short4>(constants + OFFSET(Constants,maskD01Q) + xMask * 8);
-				value &= *Pointer<Short4>(constants + OFFSET(Constants,invMaskD01Q) + xMask * 8);
-				c01 |= value;
-				*Pointer<Short4>(buffer) = c01;
+				*Pointer<Short4>(buffer) = (c01 & mask01) | (value & ~mask01);
 
 				buffer += *Pointer<Int>(data + OFFSET(DrawData,colorPitchB[index]));
 				value = *Pointer<Short4>(buffer);
 
-				if(bgraWriteMask != 0x0000000F)   // FIXME: Need for masking when XRGB && Fh?
+				Short4 mask23 = *Pointer<Short4>(constants + OFFSET(Constants,maskD23Q) + xMask * 8);
+				if(bgraWriteMask != 0x0000000F)
 				{
-					Short4 masked = value;
-					c23 &= *Pointer<Short4>(constants + OFFSET(Constants,maskB4Q[bgraWriteMask][0]));
-					masked &= *Pointer<Short4>(constants + OFFSET(Constants,invMaskB4Q[bgraWriteMask][0]));
-					c23 |= masked;
+					mask23 &= channelMask;
 				}
-
-				c23 &= *Pointer<Short4>(constants + OFFSET(Constants,maskD23Q) + xMask * 8);
-				value &= *Pointer<Short4>(constants + OFFSET(Constants,invMaskD23Q) + xMask * 8);
-				c23 |= value;
-				*Pointer<Short4>(buffer) = c23;
+				*Pointer<Short4>(buffer) = (c23 & mask23) | (value & ~mask23);
 			}
 			break;
 		case VK_FORMAT_R8G8B8A8_UNORM:
@@ -1505,37 +1460,24 @@ namespace sw
 			{
 				Pointer<Byte> buffer = cBuffer + x * 4;
 				Short4 value = *Pointer<Short4>(buffer);
+				Short4 channelMask = *Pointer<Short4>(constants + OFFSET(Constants,maskB4Q[rgbaWriteMask][0]));
 
-				bool masked = (rgbaWriteMask != 0x0000000F); // FIXME: Need for masking when XBGR && Fh?
-
-				if(masked)
+				Short4 mask01 = *Pointer<Short4>(constants + OFFSET(Constants,maskD01Q) + xMask * 8);
+				if(rgbaWriteMask != 0x0000000F)
 				{
-					Short4 masked = value;
-					c01 &= *Pointer<Short4>(constants + OFFSET(Constants,maskB4Q[rgbaWriteMask][0]));
-					masked &= *Pointer<Short4>(constants + OFFSET(Constants,invMaskB4Q[rgbaWriteMask][0]));
-					c01 |= masked;
+					mask01 &= channelMask;
 				}
-
-				c01 &= *Pointer<Short4>(constants + OFFSET(Constants,maskD01Q) + xMask * 8);
-				value &= *Pointer<Short4>(constants + OFFSET(Constants,invMaskD01Q) + xMask * 8);
-				c01 |= value;
-				*Pointer<Short4>(buffer) = c01;
+				*Pointer<Short4>(buffer) = (c01 & mask01) | (value & ~mask01);
 
 				buffer += *Pointer<Int>(data + OFFSET(DrawData,colorPitchB[index]));
 				value = *Pointer<Short4>(buffer);
 
-				if(masked)
+				Short4 mask23 = *Pointer<Short4>(constants + OFFSET(Constants,maskD23Q) + xMask * 8);
+				if(rgbaWriteMask != 0x0000000F)
 				{
-					Short4 masked = value;
-					c23 &= *Pointer<Short4>(constants + OFFSET(Constants,maskB4Q[rgbaWriteMask][0]));
-					masked &= *Pointer<Short4>(constants + OFFSET(Constants,invMaskB4Q[rgbaWriteMask][0]));
-					c23 |= masked;
+					mask23 &= channelMask;
 				}
-
-				c23 &= *Pointer<Short4>(constants + OFFSET(Constants,maskD23Q) + xMask * 8);
-				value &= *Pointer<Short4>(constants + OFFSET(Constants,invMaskD23Q) + xMask * 8);
-				c23 |= value;
-				*Pointer<Short4>(buffer) = c23;
+				*Pointer<Short4>(buffer) = (c23 & mask23) | (value & ~mask23);
 			}
 			break;
 		case VK_FORMAT_R8G8_UNORM:
@@ -1857,7 +1799,7 @@ namespace sw
 		}
 	}
 
-	void PixelRoutine::alphaBlend(int index, Pointer<Byte> &cBuffer, Vector4f &oC, Int &x)
+	void PixelRoutine::alphaBlend(int index, const Pointer<Byte> &cBuffer, Vector4f &oC, const Int &x)
 	{
 		if(!state.blendState[index].alphaBlendEnable)
 		{
@@ -2069,7 +2011,7 @@ namespace sw
 		}
 	}
 
-	void PixelRoutine::writeColor(int index, Pointer<Byte> &cBuffer, Int &x, Vector4f &oC, Int &sMask, Int &zMask, Int &cMask)
+	void PixelRoutine::writeColor(int index, const Pointer<Byte> &cBuffer, const Int &x, Vector4f &oC, const Int &sMask, const Int &zMask, const Int &cMask)
 	{
 		switch(state.targetFormat[index])
 		{
@@ -2634,7 +2576,7 @@ namespace sw
 		}
 	}
 
-	UShort4 PixelRoutine::convertFixed16(Float4 &cf, bool saturate)
+	UShort4 PixelRoutine::convertFixed16(const Float4 &cf, bool saturate)
 	{
 		return UShort4(cf * Float4(0xFFFF), saturate);
 	}

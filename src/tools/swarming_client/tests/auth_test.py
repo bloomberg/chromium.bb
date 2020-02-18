@@ -12,6 +12,9 @@ import time
 # Mutates sys.path.
 import test_env
 
+from utils import tools
+tools.force_local_third_party()
+
 # third_party/
 import httplib2
 from depot_tools import auto_stub

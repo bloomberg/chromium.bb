@@ -24,6 +24,7 @@
 #include "gpu/command_buffer/service/program_cache.h"
 #include "gpu/command_buffer/service/shared_image_representation.h"
 #include "ui/gl/gl_version_info.h"
+#include "ui/gl/progress_reporter.h"
 
 #if defined(OS_WIN)
 #include "gpu/command_buffer/service/shared_image_backing_factory_d3d.h"
@@ -176,32 +177,49 @@ bool PassthroughResources::HasTexturesPendingDestruction() const {
   return !textures_pending_destruction.empty();
 }
 
-void PassthroughResources::Destroy(gl::GLApi* api) {
+void PassthroughResources::Destroy(gl::GLApi* api,
+                                   gl::ProgressReporter* progress_reporter) {
   bool have_context = !!api;
   // Only delete textures that are not referenced by a TexturePassthrough
   // object, they handle their own deletion once all references are lost
-  DeleteServiceObjects(&texture_id_map, have_context,
-                       [this, api](GLuint client_id, GLuint texture) {
-                         if (!texture_object_map.HasClientID(client_id)) {
-                           api->glDeleteTexturesFn(1, &texture);
-                         }
-                       });
-  DeleteServiceObjects(&buffer_id_map, have_context,
-                       [api](GLuint client_id, GLuint buffer) {
-                         api->glDeleteBuffersARBFn(1, &buffer);
-                       });
-  DeleteServiceObjects(&renderbuffer_id_map, have_context,
-                       [api](GLuint client_id, GLuint renderbuffer) {
-                         api->glDeleteRenderbuffersEXTFn(1, &renderbuffer);
-                       });
+  DeleteServiceObjects(
+      &texture_id_map, have_context,
+      [this, api, progress_reporter](GLuint client_id, GLuint texture) {
+        if (!texture_object_map.HasClientID(client_id)) {
+          api->glDeleteTexturesFn(1, &texture);
+          if (progress_reporter) {
+            progress_reporter->ReportProgress();
+          }
+        }
+      });
+  DeleteServiceObjects(
+      &buffer_id_map, have_context,
+      [api, progress_reporter](GLuint client_id, GLuint buffer) {
+        api->glDeleteBuffersARBFn(1, &buffer);
+        if (progress_reporter) {
+          progress_reporter->ReportProgress();
+        }
+      });
+  DeleteServiceObjects(
+      &renderbuffer_id_map, have_context,
+      [api, progress_reporter](GLuint client_id, GLuint renderbuffer) {
+        api->glDeleteRenderbuffersEXTFn(1, &renderbuffer);
+        if (progress_reporter) {
+          progress_reporter->ReportProgress();
+        }
+      });
   DeleteServiceObjects(&sampler_id_map, have_context,
                        [api](GLuint client_id, GLuint sampler) {
                          api->glDeleteSamplersFn(1, &sampler);
                        });
-  DeleteServiceObjects(&program_id_map, have_context,
-                       [api](GLuint client_id, GLuint program) {
-                         api->glDeleteProgramFn(program);
-                       });
+  DeleteServiceObjects(
+      &program_id_map, have_context,
+      [api, progress_reporter](GLuint client_id, GLuint program) {
+        api->glDeleteProgramFn(program);
+        if (progress_reporter) {
+          progress_reporter->ReportProgress();
+        }
+      });
   DeleteServiceObjects(&shader_id_map, have_context,
                        [api](GLuint client_id, GLuint shader) {
                          api->glDeleteShaderFn(shader);
@@ -699,6 +717,15 @@ GLES2Decoder::Error GLES2DecoderPassthroughImpl::DoCommandsImpl(
   if (entries_processed)
     *entries_processed = process_pos;
 
+#if defined(OS_MACOSX)
+  // Aggressively call glFlush on macOS. This is the only fix that has been
+  // found so far to avoid crashes on Intel drivers. The workaround
+  // isn't needed for WebGL contexts, though.
+  // https://crbug.com/863817
+  if (!feature_info_->IsWebGLContext())
+    context_->FlushForDriverCrashWorkaround();
+#endif
+
   return result;
 }
 
@@ -763,6 +790,10 @@ gpu::ContextResult GLES2DecoderPassthroughImpl::Initialize(
       "GL_CHROMIUM_bind_uniform_location",
       "GL_CHROMIUM_sync_query",
       "GL_EXT_debug_marker",
+      "GL_EXT_memory_object",
+      "GL_EXT_memory_object_fd",
+      "GL_EXT_semaphore",
+      "GL_EXT_semaphore_fd",
       "GL_KHR_debug",
       "GL_NV_fence",
       "GL_OES_EGL_image",
@@ -1747,6 +1778,11 @@ void GLES2DecoderPassthroughImpl::BindOnePendingImage(
   if (!image)
     return;
 
+  // Because the binding is deferred, this texture may not be currently bound
+  // any more. Bind it again.
+  GLenum texture_type = TextureTargetToTextureType(target);
+  api()->glBindTextureFn(texture_type, texture->service_id());
+
   // TODO: internalformat?
   if (image->ShouldBindOrCopy() == gl::GLImage::BIND)
     image->BindTexImage(target);
@@ -1756,6 +1792,14 @@ void GLES2DecoderPassthroughImpl::BindOnePendingImage(
   // If copy / bind fail, then we could keep the bind state the same.
   // However, for now, we only try once.
   texture->set_is_bind_pending(false);
+
+  // Re-bind the previous texture
+  const BoundTexture& bound_texture =
+      bound_textures_[static_cast<size_t>(GLenumToTextureTarget(texture_type))]
+                     [active_texture_unit_];
+  GLuint prev_texture =
+      bound_texture.texture ? bound_texture.texture->service_id() : 0;
+  api()->glBindTextureFn(texture_type, prev_texture);
 
   // Update any binding points that are currently bound for this texture.
   RebindTexture(texture);

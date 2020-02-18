@@ -13,6 +13,7 @@
 #include "services/viz/public/cpp/compositing/frame_deadline_mojom_traits.h"
 #include "services/viz/public/cpp/compositing/surface_range_mojom_traits.h"
 #include "services/viz/public/mojom/compositing/compositor_frame_metadata.mojom-shared.h"
+#include "ui/gfx/mojom/overlay_transform_mojom_traits.h"
 
 namespace mojo {
 
@@ -93,16 +94,6 @@ struct StructTraits<viz::mojom::CompositorFrameMetadataDataView,
     return metadata.min_page_scale_factor;
   }
 
-  static float top_controls_height(
-      const viz::CompositorFrameMetadata& metadata) {
-    return metadata.top_controls_height;
-  }
-
-  static float top_controls_shown_ratio(
-      const viz::CompositorFrameMetadata& metadata) {
-    return metadata.top_controls_shown_ratio;
-  }
-
   static base::TimeTicks local_surface_id_allocation_time(
       const viz::CompositorFrameMetadata& metadata) {
     DCHECK(!metadata.local_surface_id_allocation_time.is_null());
@@ -112,6 +103,21 @@ struct StructTraits<viz::mojom::CompositorFrameMetadataDataView,
   static base::Optional<base::TimeDelta> preferred_frame_interval(
       const viz::CompositorFrameMetadata& metadata) {
     return metadata.preferred_frame_interval;
+  }
+
+  static bool top_controls_visible_height_set(
+      const viz::CompositorFrameMetadata& metadata) {
+    return metadata.top_controls_visible_height.has_value();
+  }
+
+  static float top_controls_visible_height(
+      const viz::CompositorFrameMetadata& metadata) {
+    return metadata.top_controls_visible_height.value_or(0.f);
+  }
+
+  static gfx::OverlayTransform display_transform_hint(
+      const viz::CompositorFrameMetadata& metadata) {
+    return metadata.display_transform_hint;
   }
 
   static bool Read(viz::mojom::CompositorFrameMetadataDataView data,

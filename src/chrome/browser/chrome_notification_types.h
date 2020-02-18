@@ -177,14 +177,8 @@ enum NotificationType {
   // Send when kiosk auto-launch warning screen had completed.
   NOTIFICATION_KIOSK_AUTOLAUNCH_WARNING_COMPLETED,
 
-  // Send when enable consumer kiosk warning screen is visible.
-  NOTIFICATION_KIOSK_ENABLE_WARNING_VISIBLE,
-
   // Send when consumer kiosk has been enabled.
   NOTIFICATION_KIOSK_ENABLED,
-
-  // Send when enable consumer kiosk warning screen had completed.
-  NOTIFICATION_KIOSK_ENABLE_WARNING_COMPLETED,
 
   // Sent when kiosk app list is loaded in UI.
   NOTIFICATION_KIOSK_APPS_LOADED,
@@ -198,10 +192,6 @@ enum NotificationType {
 #endif
 
 #if defined(TOOLKIT_VIEWS)
-  // Sent when a bookmark's context menu is shown. Used to notify
-  // tests that the context menu has been created and shown.
-  NOTIFICATION_BOOKMARK_CONTEXT_MENU_SHOWN,
-
   // Notification that the nested loop using during tab dragging has returned.
   // Used for testing.
   NOTIFICATION_TAB_DRAG_LOOP_DONE,

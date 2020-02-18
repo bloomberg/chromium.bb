@@ -10,7 +10,9 @@
 #include <vector>
 
 #include "base/bind_helpers.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/json/json_reader.h"
+#include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/simple_test_clock.h"
@@ -19,7 +21,6 @@
 #include "chrome/browser/browsing_data/browsing_data_flash_lso_helper.h"
 #include "chrome/browser/browsing_data/mock_browsing_data_cookie_helper.h"
 #include "chrome/browser/browsing_data/mock_browsing_data_local_storage_helper.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
@@ -34,6 +35,8 @@
 #include "chrome/browser/ui/webui/site_settings_helper.h"
 #include "chrome/browser/usb/usb_chooser_context.h"
 #include "chrome/browser/usb/usb_chooser_context_factory.h"
+#include "chrome/browser/web_applications/components/web_app_helpers.h"
+#include "chrome/browser/web_applications/test/test_app_registrar.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_profile.h"
@@ -46,7 +49,6 @@
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "content/public/browser/navigation_controller.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_web_ui.h"
@@ -110,7 +112,7 @@ class FlashContentSettingsChangeWaiter : public content_settings::Observer {
       const ContentSettingsPattern& secondary_pattern,
       ContentSettingsType content_type,
       const std::string& resource_identifier) override {
-    if (content_type == CONTENT_SETTINGS_TYPE_PLUGINS)
+    if (content_type == ContentSettingsType::PLUGINS)
       Proceed();
   }
 
@@ -125,6 +127,10 @@ class FlashContentSettingsChangeWaiter : public content_settings::Observer {
   DISALLOW_COPY_AND_ASSIGN(FlashContentSettingsChangeWaiter);
 };
 #endif
+
+std::string GenerateFakeAppId(const GURL& url) {
+  return web_app::GenerateAppIdFromURL(url);
+}
 
 }  // namespace
 
@@ -147,7 +153,7 @@ class ContentSettingSourceSetter {
 
   const char* GetPrefNameForDefaultPermissionSetting() {
     switch (content_type_) {
-      case CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
+      case ContentSettingsType::NOTIFICATIONS:
         return prefs::kManagedDefaultNotificationsSetting;
       default:
         // Add support as needed.
@@ -168,28 +174,37 @@ class SiteSettingsHandlerTest : public testing::Test {
  public:
   SiteSettingsHandlerTest()
       : kNotifications(site_settings::ContentSettingsTypeToGroupName(
-            CONTENT_SETTINGS_TYPE_NOTIFICATIONS)),
+            ContentSettingsType::NOTIFICATIONS)),
         kCookies(site_settings::ContentSettingsTypeToGroupName(
-            CONTENT_SETTINGS_TYPE_COOKIES)),
+            ContentSettingsType::COOKIES)),
         kFlash(site_settings::ContentSettingsTypeToGroupName(
-            CONTENT_SETTINGS_TYPE_PLUGINS)),
-        handler_(&profile_) {
+            ContentSettingsType::PLUGINS)) {
 #if defined(OS_CHROMEOS)
     user_manager_enabler_ = std::make_unique<user_manager::ScopedUserManager>(
         std::make_unique<chromeos::MockUserManager>());
 #endif
+
+    // Fully initialize |profile_| in the constructor since some children
+    // classes need it right away for SetUp().
+    DCHECK(profile_dir_.CreateUniqueTempDir());
+    TestingProfile::Builder profile_builder;
+    profile_builder.SetPath(profile_dir_.GetPath());
+    profile_ = profile_builder.Build();
   }
 
   void SetUp() override {
+    handler_ =
+        std::make_unique<SiteSettingsHandler>(profile_.get(), app_registrar_);
     handler()->set_web_ui(web_ui());
     handler()->AllowJavascript();
     web_ui()->ClearTrackedCalls();
   }
 
-  TestingProfile* profile() { return &profile_; }
+  TestingProfile* profile() { return profile_.get(); }
   TestingProfile* incognito_profile() { return incognito_profile_; }
+  web_app::TestAppRegistrar& app_registrar() { return app_registrar_; }
   content::TestWebUI* web_ui() { return &web_ui_; }
-  SiteSettingsHandler* handler() { return &handler_; }
+  SiteSettingsHandler* handler() { return handler_.get(); }
 
   void ValidateBlockAutoplay(bool expected_value, bool expected_enabled) {
     const content::TestWebUI::CallData& data = *web_ui()->call_data().back();
@@ -217,7 +232,7 @@ class SiteSettingsHandlerTest : public testing::Test {
   void SetSoundContentSettingDefault(ContentSetting value) {
     HostContentSettingsMap* content_settings =
         HostContentSettingsMapFactory::GetForProfile(profile());
-    content_settings->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_SOUND,
+    content_settings->SetDefaultContentSetting(ContentSettingsType::SOUND,
                                                value);
   }
 
@@ -385,16 +400,12 @@ class SiteSettingsHandlerTest : public testing::Test {
   }
 
   void CreateIncognitoProfile() {
-    incognito_profile_ = TestingProfile::Builder().BuildIncognito(&profile_);
+    incognito_profile_ = TestingProfile::Builder().BuildIncognito(profile());
   }
 
   virtual void DestroyIncognitoProfile() {
-    content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_PROFILE_DESTROYED,
-        content::Source<Profile>(static_cast<Profile*>(incognito_profile_)),
-        content::NotificationService::NoDetails());
-    profile_.SetOffTheRecordProfile(nullptr);
-    ASSERT_FALSE(profile_.HasOffTheRecordProfile());
+    profile_->SetOffTheRecordProfile(nullptr);
+    ASSERT_FALSE(profile_->HasOffTheRecordProfile());
     incognito_profile_ = nullptr;
   }
 
@@ -469,11 +480,16 @@ class SiteSettingsHandlerTest : public testing::Test {
   const std::string kFlash;
 
  private:
+  // A profile directory that outlives |task_environment_| is needed because
+  // TestingProfile::CreateHistoryService uses the directory to host a
+  // database. See https://crbug.com/546640 for more details.
+  base::ScopedTempDir profile_dir_;
   content::BrowserTaskEnvironment task_environment_;
-  TestingProfile profile_;
+  std::unique_ptr<TestingProfile> profile_;
   TestingProfile* incognito_profile_;
+  web_app::TestAppRegistrar app_registrar_;
   content::TestWebUI web_ui_;
-  SiteSettingsHandler handler_;
+  std::unique_ptr<SiteSettingsHandler> handler_;
 #if defined(OS_CHROMEOS)
   std::unique_ptr<user_manager::ScopedUserManager> user_manager_enabler_;
 #endif
@@ -513,9 +529,9 @@ TEST_F(SiteSettingsHandlerTest, MAYBE_GetAllSites) {
   base::ListValue get_all_sites_args;
   get_all_sites_args.AppendString(kCallbackId);
   base::Value category_list(base::Value::Type::LIST);
-  category_list.GetList().emplace_back(kNotifications);
-  category_list.GetList().emplace_back(kFlash);
-  get_all_sites_args.GetList().push_back(std::move(category_list));
+  category_list.Append(kNotifications);
+  category_list.Append(kFlash);
+  get_all_sites_args.Append(std::move(category_list));
 
   // Test all sites is empty when there are no preferences.
   handler()->HandleGetAllSites(&get_all_sites_args);
@@ -527,7 +543,7 @@ TEST_F(SiteSettingsHandlerTest, MAYBE_GetAllSites) {
     EXPECT_EQ(kCallbackId, data.arg1()->GetString());
     ASSERT_TRUE(data.arg2()->GetBool());
 
-    const base::Value::ListStorage& site_groups = data.arg3()->GetList();
+    base::Value::ConstListView site_groups = data.arg3()->GetList();
     EXPECT_EQ(0UL, site_groups.size());
   }
 
@@ -537,9 +553,9 @@ TEST_F(SiteSettingsHandlerTest, MAYBE_GetAllSites) {
   const GURL url1("http://example.com");
   const GURL url2("https://other.example.com");
   map->SetContentSettingDefaultScope(url1, url1,
-                                     CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+                                     ContentSettingsType::NOTIFICATIONS,
                                      std::string(), CONTENT_SETTING_BLOCK);
-  map->SetContentSettingDefaultScope(url2, url2, CONTENT_SETTINGS_TYPE_PLUGINS,
+  map->SetContentSettingDefaultScope(url2, url2, ContentSettingsType::PLUGINS,
                                      std::string(), CONTENT_SETTING_ALLOW);
   handler()->HandleGetAllSites(&get_all_sites_args);
 
@@ -549,12 +565,12 @@ TEST_F(SiteSettingsHandlerTest, MAYBE_GetAllSites) {
     EXPECT_EQ(kCallbackId, data.arg1()->GetString());
     ASSERT_TRUE(data.arg2()->GetBool());
 
-    const base::Value::ListStorage& site_groups = data.arg3()->GetList();
+    base::Value::ConstListView site_groups = data.arg3()->GetList();
     EXPECT_EQ(1UL, site_groups.size());
     for (const base::Value& site_group : site_groups) {
       const std::string& etld_plus1_string =
           site_group.FindKey("etldPlus1")->GetString();
-      const base::Value::ListStorage& origin_list =
+      base::Value::ConstListView origin_list =
           site_group.FindKey("origins")->GetList();
       EXPECT_EQ("example.com", etld_plus1_string);
       EXPECT_EQ(2UL, origin_list.size());
@@ -567,7 +583,7 @@ TEST_F(SiteSettingsHandlerTest, MAYBE_GetAllSites) {
 
   // Add an additional exception belonging to a different eTLD+1.
   const GURL url3("https://example2.net");
-  map->SetContentSettingDefaultScope(url3, url3, CONTENT_SETTINGS_TYPE_PLUGINS,
+  map->SetContentSettingDefaultScope(url3, url3, ContentSettingsType::PLUGINS,
                                      std::string(), CONTENT_SETTING_BLOCK);
   handler()->HandleGetAllSites(&get_all_sites_args);
 
@@ -578,12 +594,12 @@ TEST_F(SiteSettingsHandlerTest, MAYBE_GetAllSites) {
     EXPECT_EQ(kCallbackId, data.arg1()->GetString());
     ASSERT_TRUE(data.arg2()->GetBool());
 
-    const base::Value::ListStorage& site_groups = data.arg3()->GetList();
+    base::Value::ConstListView site_groups = data.arg3()->GetList();
     EXPECT_EQ(2UL, site_groups.size());
     for (const base::Value& site_group : site_groups) {
       const std::string& etld_plus1_string =
           site_group.FindKey("etldPlus1")->GetString();
-      const base::Value::ListStorage& origin_list =
+      base::Value::ConstListView origin_list =
           site_group.FindKey("origins")->GetList();
       if (etld_plus1_string == "example2.net") {
         EXPECT_EQ(1UL, origin_list.size());
@@ -602,12 +618,12 @@ TEST_F(SiteSettingsHandlerTest, MAYBE_GetAllSites) {
   auto_blocker->SetClockForTesting(&clock);
   const GURL url4("https://example2.co.uk");
   for (int i = 0; i < 3; ++i) {
-    auto_blocker->RecordDismissAndEmbargo(url4,
-                                          CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
+    auto_blocker->RecordDismissAndEmbargo(
+        url4, ContentSettingsType::NOTIFICATIONS, false);
   }
   EXPECT_EQ(
       CONTENT_SETTING_BLOCK,
-      auto_blocker->GetEmbargoResult(url4, CONTENT_SETTINGS_TYPE_NOTIFICATIONS)
+      auto_blocker->GetEmbargoResult(url4, ContentSettingsType::NOTIFICATIONS)
           .content_setting);
   handler()->HandleGetAllSites(&get_all_sites_args);
 
@@ -617,7 +633,7 @@ TEST_F(SiteSettingsHandlerTest, MAYBE_GetAllSites) {
     EXPECT_EQ(kCallbackId, data.arg1()->GetString());
     ASSERT_TRUE(data.arg2()->GetBool());
 
-    const base::Value::ListStorage& site_groups = data.arg3()->GetList();
+    base::Value::ConstListView site_groups = data.arg3()->GetList();
     EXPECT_EQ(3UL, site_groups.size());
   }
 
@@ -631,7 +647,7 @@ TEST_F(SiteSettingsHandlerTest, MAYBE_GetAllSites) {
     EXPECT_EQ(kCallbackId, data.arg1()->GetString());
     ASSERT_TRUE(data.arg2()->GetBool());
 
-    const base::Value::ListStorage& site_groups = data.arg3()->GetList();
+    base::Value::ConstListView site_groups = data.arg3()->GetList();
     EXPECT_EQ(2UL, site_groups.size());
     EXPECT_EQ("example.com", site_groups[0].FindKey("etldPlus1")->GetString());
     EXPECT_EQ("example2.net", site_groups[1].FindKey("etldPlus1")->GetString());
@@ -640,17 +656,17 @@ TEST_F(SiteSettingsHandlerTest, MAYBE_GetAllSites) {
   // Add an expired embargo setting to an existing eTLD+1 group and make sure it
   // still appears.
   for (int i = 0; i < 3; ++i) {
-    auto_blocker->RecordDismissAndEmbargo(url3,
-                                          CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
+    auto_blocker->RecordDismissAndEmbargo(
+        url3, ContentSettingsType::NOTIFICATIONS, false);
   }
   EXPECT_EQ(
       CONTENT_SETTING_BLOCK,
-      auto_blocker->GetEmbargoResult(url3, CONTENT_SETTINGS_TYPE_NOTIFICATIONS)
+      auto_blocker->GetEmbargoResult(url3, ContentSettingsType::NOTIFICATIONS)
           .content_setting);
   clock.Advance(base::TimeDelta::FromDays(8));
   EXPECT_EQ(
       CONTENT_SETTING_ASK,
-      auto_blocker->GetEmbargoResult(url3, CONTENT_SETTINGS_TYPE_NOTIFICATIONS)
+      auto_blocker->GetEmbargoResult(url3, ContentSettingsType::NOTIFICATIONS)
           .content_setting);
 
   handler()->HandleGetAllSites(&get_all_sites_args);
@@ -660,7 +676,7 @@ TEST_F(SiteSettingsHandlerTest, MAYBE_GetAllSites) {
     EXPECT_EQ(kCallbackId, data.arg1()->GetString());
     ASSERT_TRUE(data.arg2()->GetBool());
 
-    const base::Value::ListStorage& site_groups = data.arg3()->GetList();
+    base::Value::ConstListView site_groups = data.arg3()->GetList();
     EXPECT_EQ(2UL, site_groups.size());
     EXPECT_EQ("example.com", site_groups[0].FindKey("etldPlus1")->GetString());
     EXPECT_EQ("example2.net", site_groups[1].FindKey("etldPlus1")->GetString());
@@ -669,17 +685,17 @@ TEST_F(SiteSettingsHandlerTest, MAYBE_GetAllSites) {
   // Add an expired embargo to a new eTLD+1 and make sure it doesn't appear.
   const GURL url5("http://test.example5.com");
   for (int i = 0; i < 3; ++i) {
-    auto_blocker->RecordDismissAndEmbargo(url5,
-                                          CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
+    auto_blocker->RecordDismissAndEmbargo(
+        url5, ContentSettingsType::NOTIFICATIONS, false);
   }
   EXPECT_EQ(
       CONTENT_SETTING_BLOCK,
-      auto_blocker->GetEmbargoResult(url5, CONTENT_SETTINGS_TYPE_NOTIFICATIONS)
+      auto_blocker->GetEmbargoResult(url5, ContentSettingsType::NOTIFICATIONS)
           .content_setting);
   clock.Advance(base::TimeDelta::FromDays(8));
   EXPECT_EQ(
       CONTENT_SETTING_ASK,
-      auto_blocker->GetEmbargoResult(url5, CONTENT_SETTINGS_TYPE_NOTIFICATIONS)
+      auto_blocker->GetEmbargoResult(url5, ContentSettingsType::NOTIFICATIONS)
           .content_setting);
 
   handler()->HandleGetAllSites(&get_all_sites_args);
@@ -689,7 +705,7 @@ TEST_F(SiteSettingsHandlerTest, MAYBE_GetAllSites) {
     EXPECT_EQ(kCallbackId, data.arg1()->GetString());
     ASSERT_TRUE(data.arg2()->GetBool());
 
-    const base::Value::ListStorage& site_groups = data.arg3()->GetList();
+    base::Value::ConstListView site_groups = data.arg3()->GetList();
     EXPECT_EQ(2UL, site_groups.size());
     EXPECT_EQ("example.com", site_groups[0].FindKey("etldPlus1")->GetString());
     EXPECT_EQ("example2.net", site_groups[1].FindKey("etldPlus1")->GetString());
@@ -787,6 +803,48 @@ TEST_F(SiteSettingsHandlerTest, OnStorageFetched) {
   EXPECT_EQ(0, origin_info->FindKey("engagement")->GetDouble());
   EXPECT_EQ(0, origin_info->FindKey("usage")->GetDouble());
   EXPECT_EQ(1, origin_info->FindKey("numCookies")->GetDouble());
+}
+
+TEST_F(SiteSettingsHandlerTest, InstalledApps) {
+  web_app::TestAppRegistrar& registrar = app_registrar();
+  const GURL url("http://abc.example.com/");
+  registrar.AddExternalApp(GenerateFakeAppId(url), {url});
+
+  SetUpCookiesTreeModel();
+
+  const base::ListValue* storage_and_cookie_list =
+      GetOnStorageFetchedSentListValue();
+  EXPECT_EQ(3U, storage_and_cookie_list->GetSize());
+
+  const base::DictionaryValue* site_group;
+  ASSERT_TRUE(storage_and_cookie_list->GetDictionary(0, &site_group));
+
+  std::string etld_plus1_string;
+  ASSERT_TRUE(site_group->GetString("etldPlus1", &etld_plus1_string));
+  ASSERT_EQ("example.com", etld_plus1_string);
+
+  ASSERT_TRUE(site_group->FindKey("hasInstalledPWA")->GetBool());
+
+  const base::ListValue* origin_list;
+  ASSERT_TRUE(site_group->GetList("origins", &origin_list));
+  const base::DictionaryValue* origin_info;
+
+  ASSERT_TRUE(origin_list->GetDictionary(0, &origin_info));
+  EXPECT_EQ("http://abc.example.com/",
+            origin_info->FindKey("origin")->GetString());
+  EXPECT_TRUE(origin_info->FindKey("isInstalled")->GetBool());
+
+  // Verify that installed booleans are false for other siteGroups/origins
+  ASSERT_TRUE(storage_and_cookie_list->GetDictionary(1, &site_group));
+
+  ASSERT_TRUE(site_group->GetString("etldPlus1", &etld_plus1_string));
+  ASSERT_EQ("google.com", etld_plus1_string);
+  ASSERT_TRUE(site_group->GetList("origins", &origin_list));
+  ASSERT_TRUE(origin_list->GetDictionary(0, &origin_info));
+  EXPECT_EQ("https://www.google.com/",
+            origin_info->FindKey("origin")->GetString());
+  EXPECT_FALSE(site_group->FindKey("hasInstalledPWA")->GetBool());
+  EXPECT_FALSE(origin_info->FindKey("isInstalled")->GetBool());
 }
 
 TEST_F(SiteSettingsHandlerTest, Origins) {
@@ -887,8 +945,7 @@ TEST_F(SiteSettingsHandlerTest, NotificationPermissionRevokeUkm) {
   EXPECT_EQ(*ukm_recorder.GetEntryMetric(entry, "Source"),
             static_cast<int64_t>(PermissionSourceUI::SITE_SETTINGS));
   EXPECT_EQ(*ukm_recorder.GetEntryMetric(entry, "PermissionType"),
-            static_cast<int64_t>(
-                ContentSettingsType::CONTENT_SETTINGS_TYPE_NOTIFICATIONS));
+            static_cast<int64_t>(ContentSettingsType::NOTIFICATIONS));
   EXPECT_EQ(*ukm_recorder.GetEntryMetric(entry, "Action"),
             static_cast<int64_t>(PermissionAction::REVOKED));
 }
@@ -900,7 +957,7 @@ TEST_F(SiteSettingsHandlerTest, DefaultSettingSource) {
   // Use a non-default port to verify the display name does not strip this off.
   const std::string google("https://www.google.com:183");
   ContentSettingSourceSetter source_setter(profile(),
-                                           CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
+                                           ContentSettingsType::NOTIFICATIONS);
 
   base::ListValue get_origin_permissions_args;
   get_origin_permissions_args.AppendString(kCallbackId);
@@ -1025,7 +1082,7 @@ TEST_F(SiteSettingsHandlerTest, ChangingFlashSettingForSiteIsRemembered) {
       HostContentSettingsMapFactory::GetForProfile(profile());
   // Make sure the site being tested doesn't already have this marker set.
   EXPECT_EQ(nullptr,
-            map->GetWebsiteSetting(url, url, CONTENT_SETTINGS_TYPE_PLUGINS_DATA,
+            map->GetWebsiteSetting(url, url, ContentSettingsType::PLUGINS_DATA,
                                    std::string(), nullptr));
 
   // Change the Flash setting.
@@ -1045,14 +1102,14 @@ TEST_F(SiteSettingsHandlerTest, ChangingFlashSettingForSiteIsRemembered) {
   // Check that this site has now been marked for displaying Flash always, then
   // clear it and check this works.
   EXPECT_NE(nullptr,
-            map->GetWebsiteSetting(url, url, CONTENT_SETTINGS_TYPE_PLUGINS_DATA,
+            map->GetWebsiteSetting(url, url, ContentSettingsType::PLUGINS_DATA,
                                    std::string(), nullptr));
   base::ListValue clear_args;
   clear_args.AppendString(origin_with_port);
   handler()->HandleSetOriginPermissions(&set_args);
   handler()->HandleClearFlashPref(&clear_args);
   EXPECT_EQ(nullptr,
-            map->GetWebsiteSetting(url, url, CONTENT_SETTINGS_TYPE_PLUGINS_DATA,
+            map->GetWebsiteSetting(url, url, ContentSettingsType::PLUGINS_DATA,
                                    std::string(), nullptr));
 }
 #endif
@@ -1231,11 +1288,11 @@ class SiteSettingsHandlerInfobarTest : public BrowserWithTestWindowTest {
  public:
   SiteSettingsHandlerInfobarTest()
       : kNotifications(site_settings::ContentSettingsTypeToGroupName(
-            CONTENT_SETTINGS_TYPE_NOTIFICATIONS)) {}
+            ContentSettingsType::NOTIFICATIONS)) {}
 
   void SetUp() override {
     BrowserWithTestWindowTest::SetUp();
-    handler_ = std::make_unique<SiteSettingsHandler>(profile());
+    handler_ = std::make_unique<SiteSettingsHandler>(profile(), app_registrar_);
     handler()->set_web_ui(web_ui());
     handler()->AllowJavascript();
     web_ui()->ClearTrackedCalls();
@@ -1282,6 +1339,7 @@ class SiteSettingsHandlerInfobarTest : public BrowserWithTestWindowTest {
   const std::string kNotifications;
 
  private:
+  web_app::TestAppRegistrar app_registrar_;
   content::TestWebUI web_ui_;
   std::unique_ptr<SiteSettingsHandler> handler_;
   std::unique_ptr<BrowserWindow> window2_;
@@ -1730,7 +1788,7 @@ TEST_F(SiteSettingsHandlerChooserExceptionTest,
        HandleGetChooserExceptionListForUsb) {
   const std::string kUsbChooserGroupName =
       site_settings::ContentSettingsTypeToGroupName(
-          CONTENT_SETTINGS_TYPE_USB_CHOOSER_DATA);
+          ContentSettingsType::USB_CHOOSER_DATA);
 
   const base::Value& exceptions = GetChooserExceptionListFromWebUiCallData(
       kUsbChooserGroupName, /*expected_total_calls=*/1u);
@@ -1741,7 +1799,7 @@ TEST_F(SiteSettingsHandlerChooserExceptionTest,
        HandleGetChooserExceptionListForUsbOffTheRecord) {
   const std::string kUsbChooserGroupName =
       site_settings::ContentSettingsTypeToGroupName(
-          CONTENT_SETTINGS_TYPE_USB_CHOOSER_DATA);
+          ContentSettingsType::USB_CHOOSER_DATA);
   SetUpOffTheRecordUsbChooserContext();
   web_ui()->ClearTrackedCalls();
 
@@ -1777,7 +1835,7 @@ TEST_F(SiteSettingsHandlerChooserExceptionTest,
        HandleResetChooserExceptionForSiteForUsb) {
   const std::string kUsbChooserGroupName =
       site_settings::ContentSettingsTypeToGroupName(
-          CONTENT_SETTINGS_TYPE_USB_CHOOSER_DATA);
+          ContentSettingsType::USB_CHOOSER_DATA);
   const auto kAndroidOrigin = url::Origin::Create(kAndroidUrl);
   const auto kChromiumOrigin = url::Origin::Create(kChromiumUrl);
   const std::string kAndroidOriginStr = kAndroidUrl.GetOrigin().spec();
@@ -1800,8 +1858,8 @@ TEST_F(SiteSettingsHandlerChooserExceptionTest,
       UsbChooserContext::DeviceInfoToValue(*persistent_device_info_)));
 
   EXPECT_CALL(observer_, OnChooserObjectPermissionChanged(
-                             CONTENT_SETTINGS_TYPE_USB_GUARD,
-                             CONTENT_SETTINGS_TYPE_USB_CHOOSER_DATA));
+                             ContentSettingsType::USB_GUARD,
+                             ContentSettingsType::USB_CHOOSER_DATA));
   EXPECT_CALL(observer_, OnPermissionRevoked(kAndroidOrigin, kChromiumOrigin));
   handler()->HandleResetChooserExceptionForSite(&args);
 
@@ -1847,8 +1905,8 @@ TEST_F(SiteSettingsHandlerChooserExceptionTest,
   }
 
   EXPECT_CALL(observer_, OnChooserObjectPermissionChanged(
-                             CONTENT_SETTINGS_TYPE_USB_GUARD,
-                             CONTENT_SETTINGS_TYPE_USB_CHOOSER_DATA));
+                             ContentSettingsType::USB_GUARD,
+                             ContentSettingsType::USB_CHOOSER_DATA));
   EXPECT_CALL(observer_, OnPermissionRevoked(kChromiumOrigin, kChromiumOrigin));
   handler()->HandleResetChooserExceptionForSite(&args);
 
@@ -1888,8 +1946,8 @@ TEST_F(SiteSettingsHandlerChooserExceptionTest,
   }
 
   EXPECT_CALL(observer_, OnChooserObjectPermissionChanged(
-                             CONTENT_SETTINGS_TYPE_USB_GUARD,
-                             CONTENT_SETTINGS_TYPE_USB_CHOOSER_DATA));
+                             ContentSettingsType::USB_GUARD,
+                             ContentSettingsType::USB_CHOOSER_DATA));
   EXPECT_CALL(observer_, OnPermissionRevoked(kAndroidOrigin, kAndroidOrigin));
   handler()->HandleResetChooserExceptionForSite(&args);
 

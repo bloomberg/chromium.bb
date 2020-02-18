@@ -19,7 +19,6 @@ class Profile;
 
 namespace extensions {
 
-class BookmarkAppRegistrar;
 class CrxInstaller;
 class Extension;
 
@@ -36,22 +35,27 @@ class BookmarkAppInstallFinalizer : public web_app::InstallFinalizer {
   void FinalizeInstall(const WebApplicationInfo& web_app_info,
                        const FinalizeOptions& options,
                        InstallFinalizedCallback callback) override;
-  void UninstallExternalWebApp(const GURL& app_url,
-                               UninstallWebAppCallback callback) override;
-  void UninstallWebApp(const web_app::AppId& app_id,
-                       UninstallWebAppCallback) override;
-  bool CanCreateOsShortcuts() const override;
-  void CreateOsShortcuts(const web_app::AppId& app_id,
-                         bool add_to_desktop,
-                         CreateOsShortcutsCallback callback) override;
+  void FinalizeFallbackInstallAfterSync(
+      const web_app::AppId& app_id,
+      InstallFinalizedCallback callback) override;
+  void FinalizeUninstallAfterSync(const web_app::AppId& app_id,
+                                  UninstallWebAppCallback callback) override;
+  void FinalizeUpdate(const WebApplicationInfo& web_app_info,
+                      InstallFinalizedCallback callback) override;
+  void UninstallExternalWebApp(
+      const GURL& app_url,
+      web_app::ExternalInstallSource external_install_source,
+      UninstallWebAppCallback callback) override;
+  bool CanUserUninstallFromSync(const web_app::AppId& app_id) const override;
+  void UninstallWebAppFromSyncByUser(const web_app::AppId& app_id,
+                                     UninstallWebAppCallback callback) override;
+  bool CanUserUninstallExternalApp(const web_app::AppId& app_id) const override;
+  void UninstallExternalAppByUser(const web_app::AppId& app_id,
+                                  UninstallWebAppCallback callback) override;
+  bool WasExternalAppUninstalledByUser(
+      const web_app::AppId& app_id) const override;
   bool CanRevealAppShim() const override;
   void RevealAppShim(const web_app::AppId& app_id) override;
-  bool CanSkipAppUpdateForSync(
-      const web_app::AppId& app_id,
-      const WebApplicationInfo& web_app_info) const override;
-  bool CanUserUninstallFromSync(const web_app::AppId& app_id) const override;
-  void SetSubsystems(web_app::AppRegistrar* registrar,
-                     web_app::WebAppUiManager* ui_manager) override;
 
   using CrxInstallerFactory =
       base::RepeatingCallback<scoped_refptr<CrxInstaller>(Profile*)>;
@@ -59,21 +63,29 @@ class BookmarkAppInstallFinalizer : public web_app::InstallFinalizer {
       CrxInstallerFactory crx_installer_factory);
 
  private:
-  const Extension* GetExtensionById(const web_app::AppId& app_id) const;
+  // May return nullptr if app_id is not found or extension is disabled.
+  const Extension* GetEnabledExtension(const web_app::AppId& app_id) const;
 
-  void OnExtensionInstalled(
-      const GURL& app_url,
-      LaunchType launch_type,
-      bool is_locally_installed,
-      web_app::InstallFinalizer::InstallFinalizedCallback callback,
-      scoped_refptr<CrxInstaller> crx_installer,
-      const base::Optional<CrxInstallError>& error);
+  void UninstallExtension(const web_app::AppId& app_id,
+                          UninstallWebAppCallback);
+
+  void OnExtensionInstalled(const GURL& app_url,
+                            LaunchType launch_type,
+                            bool is_locally_installed,
+                            bool is_system_app,
+                            InstallFinalizedCallback callback,
+                            scoped_refptr<CrxInstaller> crx_installer,
+                            const base::Optional<CrxInstallError>& error);
+
+  void OnExtensionUpdated(const web_app::AppId& expected_app_id,
+                          InstallFinalizedCallback callback,
+                          scoped_refptr<CrxInstaller> crx_installer,
+                          const base::Optional<CrxInstallError>& error);
 
   CrxInstallerFactory crx_installer_factory_;
   web_app::ExternallyInstalledWebAppPrefs externally_installed_app_prefs_;
 
   Profile* profile_;
-  BookmarkAppRegistrar* registrar_ = nullptr;
 
   base::WeakPtrFactory<BookmarkAppInstallFinalizer> weak_ptr_factory_{this};
 

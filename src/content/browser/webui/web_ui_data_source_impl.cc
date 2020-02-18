@@ -67,11 +67,10 @@ class WebUIDataSourceImpl::InternalDataSource : public URLDataSource {
   std::string GetMimeType(const std::string& path) override {
     return parent_->GetMimeType(path);
   }
-  void StartDataRequest(
-      const std::string& path,
-      const WebContents::Getter& wc_getter,
-      const URLDataSource::GotDataCallback& callback) override {
-    return parent_->StartDataRequest(path, wc_getter, callback);
+  void StartDataRequest(const GURL& url,
+                        const WebContents::Getter& wc_getter,
+                        URLDataSource::GotDataCallback callback) override {
+    return parent_->StartDataRequest(url, wc_getter, std::move(callback));
   }
   bool ShouldReplaceExistingSource() override {
     return parent_->replace_existing_source_;
@@ -175,6 +174,8 @@ void WebUIDataSourceImpl::SetDefaultResource(int resource_id) {
 void WebUIDataSourceImpl::SetRequestFilter(
     const ShouldHandleRequestCallback& should_handle_request_callback,
     const HandleRequestCallback& handle_request_callback) {
+  CHECK(!should_handle_request_callback_);
+  CHECK(!filter_callback_);
   should_handle_request_callback_ = should_handle_request_callback;
   filter_callback_ = handle_request_callback;
 }
@@ -271,12 +272,13 @@ std::string WebUIDataSourceImpl::GetMimeType(const std::string& path) const {
 }
 
 void WebUIDataSourceImpl::StartDataRequest(
-    const std::string& path,
+    const GURL& url,
     const WebContents::Getter& wc_getter,
-    const URLDataSource::GotDataCallback& callback) {
+    URLDataSource::GotDataCallback callback) {
+  const std::string path = URLDataSource::URLToRequestPath(url);
   if (!should_handle_request_callback_.is_null() &&
       should_handle_request_callback_.Run(path)) {
-    filter_callback_.Run(path, callback);
+    filter_callback_.Run(path, std::move(callback));
     return;
   }
 
@@ -285,24 +287,24 @@ void WebUIDataSourceImpl::StartDataRequest(
   if (use_strings_js_) {
     bool from_js_module = path == "strings.m.js";
     if (from_js_module || path == "strings.js") {
-      SendLocalizedStringsAsJSON(callback, from_js_module);
+      SendLocalizedStringsAsJSON(std::move(callback), from_js_module);
       return;
     }
   }
 
   int resource_id = PathToIdrOrDefault(CleanUpPath(path));
-  DCHECK_NE(resource_id, -1);
+  DCHECK_NE(resource_id, -1) << " for " << path;
   scoped_refptr<base::RefCountedMemory> response(
       GetContentClient()->GetDataResourceBytes(resource_id));
-  callback.Run(response.get());
+  std::move(callback).Run(response.get());
 }
 
 void WebUIDataSourceImpl::SendLocalizedStringsAsJSON(
-    const URLDataSource::GotDataCallback& callback,
+    URLDataSource::GotDataCallback callback,
     bool from_js_module) {
   std::string template_data;
   webui::AppendJsonJS(&localized_strings_, &template_data, from_js_module);
-  callback.Run(base::RefCountedString::TakeString(&template_data));
+  std::move(callback).Run(base::RefCountedString::TakeString(&template_data));
 }
 
 const base::DictionaryValue* WebUIDataSourceImpl::GetLocalizedStrings() const {

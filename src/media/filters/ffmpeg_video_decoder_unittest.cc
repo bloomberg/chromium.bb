@@ -200,7 +200,7 @@ class FFmpegVideoDecoderTest : public testing::Test {
 
   StrictMock<MockMediaLog> media_log_;
 
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   std::unique_ptr<FFmpegVideoDecoder> decoder_;
 
   // Various buffers for testing.
@@ -225,7 +225,7 @@ TEST_F(FFmpegVideoDecoderTest, Initialize_OpenDecoderFails) {
                             VideoDecoderConfig::AlphaMode::kIsOpaque,
                             VideoColorSpace(), kNoTransformation, kCodedSize,
                             kVisibleRect, kNaturalSize, EmptyExtraData(),
-                            Unencrypted());
+                            EncryptionScheme::kUnencrypted);
   InitializeWithConfigWithResult(config, false);
 }
 

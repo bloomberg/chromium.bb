@@ -78,8 +78,8 @@ ShellBrowserContext::~ShellBrowserContext() {
   // outstanding request while URLRequestContext's destructor ensures that there
   // are no more outstanding requests.
   if (resource_context_) {
-    BrowserThread::DeleteSoon(
-      BrowserThread::IO, FROM_HERE, resource_context_.release());
+    base::DeleteSoon(FROM_HERE, {BrowserThread::IO},
+                     resource_context_.release());
   }
   ShutdownStoragePartitions();
 }
@@ -177,6 +177,11 @@ storage::SpecialStoragePolicy* ShellBrowserContext::GetSpecialStoragePolicy() {
 }
 
 PushMessagingService* ShellBrowserContext::GetPushMessagingService() {
+  return nullptr;
+}
+
+StorageNotificationService*
+ShellBrowserContext::GetStorageNotificationService() {
   return nullptr;
 }
 

@@ -5,9 +5,11 @@
 #include "android_webview/browser/network_service/aw_web_resource_response.h"
 
 #include <memory>
+#include <string>
+#include <vector>
 
 #include "android_webview/browser/input_stream.h"
-#include "android_webview/native_jni/AwWebResourceResponse_jni.h"
+#include "android_webview/browser_jni_headers/AwWebResourceResponse_jni.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"

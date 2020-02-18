@@ -10,11 +10,28 @@
 
 namespace autofill_assistant {
 
-LoginChoice::LoginChoice(const std::string& id,
-                         const std::string& text,
-                         int priority)
-    : identifier(id), label(text), preselect_priority(priority) {}
+LoginChoice::LoginChoice(
+    const std::string& _identifier,
+    const std::string& _label,
+    const std::string& _sublabel,
+    const base::Optional<std::string>& _sublabel_accessibility_hint,
+    int _preselect_priority,
+    const base::Optional<InfoPopupProto>& _info_popup)
+    : identifier(_identifier),
+      label(_label),
+      sublabel(_sublabel),
+      sublabel_accessibility_hint(_sublabel_accessibility_hint),
+      preselect_priority(_preselect_priority),
+      info_popup(_info_popup) {}
+LoginChoice::LoginChoice(const LoginChoice& another) = default;
 LoginChoice::~LoginChoice() = default;
+
+PaymentInstrument::PaymentInstrument() = default;
+PaymentInstrument::PaymentInstrument(
+    std::unique_ptr<autofill::CreditCard> _card,
+    std::unique_ptr<autofill::AutofillProfile> _billing_address)
+    : card(std::move(_card)), billing_address(std::move(_billing_address)) {}
+PaymentInstrument::~PaymentInstrument() = default;
 
 UserData::UserData() = default;
 UserData::~UserData() = default;

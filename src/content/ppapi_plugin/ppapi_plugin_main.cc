@@ -24,7 +24,6 @@
 #include "ipc/ipc_sender.h"
 #include "ppapi/proxy/plugin_globals.h"
 #include "ppapi/proxy/proxy_module.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "ui/base/ui_base_switches.h"
 
 #if defined(OS_WIN)
@@ -118,7 +117,6 @@ int PpapiPluginMain(const MainFunctionParams& parameters) {
 
 #ifdef V8_USE_EXTERNAL_STARTUP_DATA
   gin::V8Initializer::LoadV8Snapshot();
-  gin::V8Initializer::LoadV8Natives();
 #endif
 
 #if defined(OS_LINUX)
@@ -137,7 +135,7 @@ int PpapiPluginMain(const MainFunctionParams& parameters) {
 #if defined(OS_WIN)
   if (!base::win::IsUser32AndGdi32Available())
     gfx::win::InitializeDirectWrite();
-  InitializeDWriteFontProxy(ChildThread::Get()->GetConnector());
+  InitializeDWriteFontProxy();
 
   int antialiasing_enabled = 1;
   base::StringToInt(

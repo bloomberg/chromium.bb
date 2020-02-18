@@ -10,7 +10,6 @@
 #include "base/atomic_sequence_num.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task/post_task.h"
@@ -23,8 +22,8 @@
 #include "chrome/browser/safe_browsing/certificate_reporting_service_test_utils.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/test_safe_browsing_service.h"
-#include "chrome/browser/ssl/certificate_error_report.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/security_interstitials/content/certificate_error_report.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/browser_task_environment.h"
@@ -196,8 +195,8 @@ class CertificateReportingServiceReporterOnIOThreadTest
   }
 
  private:
-  base::test::TaskEnvironment task_environment_{
-      base::test::TaskEnvironment::MainThreadType::IO};
+  base::test::SingleThreadTaskEnvironment task_environment_{
+      base::test::SingleThreadTaskEnvironment::MainThreadType::IO};
 
   network::TestURLLoaderFactory test_url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory_;
@@ -220,7 +219,7 @@ TEST_F(CertificateReportingServiceReporterOnIOThreadTest,
   const GURL kFailureURL("https://www.foo.com/");
 
   test_url_loader_factory()->AddResponse(
-      kFailureURL, network::ResourceResponseHead(), std::string(),
+      kFailureURL, network::mojom::URLResponseHead::New(), std::string(),
       network::URLLoaderCompletionStatus(net::ERR_SSL_PROTOCOL_ERROR));
 
   CertificateErrorReporter* certificate_error_reporter =
@@ -320,7 +319,7 @@ TEST_F(CertificateReportingServiceReporterOnIOThreadTest,
   const GURL kFailureURL("https://www.foo.com/");
 
   test_url_loader_factory()->AddResponse(
-      kFailureURL, network::ResourceResponseHead(), std::string(),
+      kFailureURL, network::mojom::URLResponseHead::New(), std::string(),
       network::URLLoaderCompletionStatus(net::ERR_SSL_PROTOCOL_ERROR));
 
   CertificateErrorReporter* certificate_error_reporter =

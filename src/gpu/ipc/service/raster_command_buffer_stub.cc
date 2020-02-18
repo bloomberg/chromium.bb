@@ -8,7 +8,7 @@
 #include <utility>
 
 #include "base/macros.h"
-#include "base/memory/shared_memory.h"
+#include "base/memory/unsafe_shared_memory_region.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "gpu/command_buffer/common/constants.h"
@@ -138,7 +138,10 @@ gpu::ContextResult RasterCommandBufferStub::Initialize(
                                                                         : "0");
 
   scoped_refptr<gl::GLContext> context = shared_context_state->context();
-  if (!shared_context_state->MakeCurrent(nullptr)) {
+  // Raster decoder needs gl context for GPUTracing.
+  // TODO(penghuang): get rid of the gl dependeny when GL is not used for
+  // raster. https://crbug.com/c/1018725
+  if (!shared_context_state->MakeCurrent(nullptr, true /* needs_gl */)) {
     LOG(ERROR) << "ContextResult::kTransientFailure: "
                   "Failed to make context current.";
     return gpu::ContextResult::kTransientFailure;

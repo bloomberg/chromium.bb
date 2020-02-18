@@ -35,6 +35,7 @@ class VEAEncoder final : public VideoTrackRecorder::Encoder,
       int32_t bits_per_second,
       media::VideoCodecProfile codec,
       const gfx::Size& size,
+      bool use_native_input,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   // media::VideoEncodeAccelerator::Client implementation.
@@ -57,6 +58,13 @@ class VEAEncoder final : public VideoTrackRecorder::Encoder,
     base::WritableSharedMemoryMapping mapping;
   };
 
+  struct OutputBuffer {
+    base::UnsafeSharedMemoryRegion region;
+    base::WritableSharedMemoryMapping mapping;
+
+    bool IsValid();
+  };
+
   VEAEncoder(
       const VideoTrackRecorder::OnEncodedVideoCB& on_encoded_video_callback,
       const VideoTrackRecorder::OnErrorCB& on_error_callback,
@@ -73,7 +81,8 @@ class VEAEncoder final : public VideoTrackRecorder::Encoder,
   void EncodeOnEncodingTaskRunner(scoped_refptr<media::VideoFrame> frame,
                                   base::TimeTicks capture_timestamp) override;
 
-  void ConfigureEncoderOnEncodingTaskRunner(const gfx::Size& size);
+  void ConfigureEncoderOnEncodingTaskRunner(const gfx::Size& size,
+                                            bool use_native_input);
 
   void DestroyOnEncodingTaskRunner(base::WaitableEvent* async_waiter = nullptr);
 
@@ -85,7 +94,7 @@ class VEAEncoder final : public VideoTrackRecorder::Encoder,
   std::unique_ptr<media::VideoEncodeAccelerator> video_encoder_;
 
   // Shared memory buffers for output with the VEA.
-  Vector<std::unique_ptr<base::SharedMemory>> output_buffers_;
+  Vector<std::unique_ptr<OutputBuffer>> output_buffers_;
 
   // Shared memory buffers for output with the VEA as FIFO.
   // TODO(crbug.com/960665): Replace with a WTF equivalent.

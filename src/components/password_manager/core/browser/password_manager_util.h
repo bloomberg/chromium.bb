@@ -5,7 +5,6 @@
 #ifndef COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_MANAGER_UTIL_H_
 #define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_MANAGER_UTIL_H_
 
-#include <map>
 #include <memory>
 #include <vector>
 
@@ -49,17 +48,6 @@ password_manager::SyncState GetPasswordSyncState(
 // Reports whether passwords are synced with normal encryption, i.e. without a
 // custom passphrase.
 bool IsSyncingWithNormalEncryption(const syncer::SyncService* sync_service);
-
-// Finds the forms with a duplicate sync tags in |forms|. The first one of
-// the duplicated entries stays in |forms|, the others are moved to
-// |duplicates|.
-// |tag_groups| is optional. It will contain |forms| and |duplicates| grouped by
-// the sync tag. The first element in each group is one from |forms|. It's
-// followed by the duplicates.
-void FindDuplicates(
-    std::vector<std::unique_ptr<autofill::PasswordForm>>* forms,
-    std::vector<std::unique_ptr<autofill::PasswordForm>>* duplicates,
-    std::vector<std::vector<autofill::PasswordForm*>>* tag_groups);
 
 // Removes Android username-only credentials from |android_credentials|.
 // Transforms federated credentials into non zero-click ones.
@@ -114,17 +102,24 @@ base::StringPiece GetSignonRealmWithProtocolExcluded(
     const autofill::PasswordForm& form);
 
 // Given all non-blacklisted |non_federated_matches|, finds and populates
-// |best_matches| and |preferred_match_| accordingly. For comparing credentials
-// the following rule is used: non-psl match is better than psl match, preferred
-// match is better than non-preferred match. In case of tie, an arbitrary
-// credential from the tied ones is chosen for |best_matches| and
-// preferred_match.
+// |non_federated_same_scheme|, |best_matches|, and |preferred_match|
+// accordingly. For comparing credentials the following rule is used: non-psl
+// match is better than psl match, preferred match is better than non-preferred
+// match. In case of tie, an arbitrary credential from the tied ones is chosen
+// for |best_matches| and |preferred_match|.
 void FindBestMatches(
     const std::vector<const autofill::PasswordForm*>& non_federated_matches,
     autofill::PasswordForm::Scheme scheme,
+    bool sort_matches_by_date_last_used,
     std::vector<const autofill::PasswordForm*>* non_federated_same_scheme,
-    std::map<base::string16, const autofill::PasswordForm*>* best_matches,
+    std::vector<const autofill::PasswordForm*>* best_matches,
     const autofill::PasswordForm** preferred_match);
+
+// Returns a form with the given |username_value| from |forms|, or nullptr if
+// none exists. If multiple matches exist, returns the first one.
+const autofill::PasswordForm* FindFormByUsername(
+    const std::vector<const autofill::PasswordForm*>& forms,
+    const base::string16& username_value);
 
 // If the user submits a form, they may have used existing credentials, new
 // credentials, or modified existing credentials that should be updated.
@@ -136,7 +131,7 @@ void FindBestMatches(
 // PSL and Android matches.
 const autofill::PasswordForm* GetMatchForUpdating(
     const autofill::PasswordForm& submitted_form,
-    const std::map<base::string16, const autofill::PasswordForm*>& credentials);
+    const std::vector<const autofill::PasswordForm*>& credentials);
 
 // This method creates a blacklisted form with |digests|'s scheme, signon_realm
 // and origin. This is done to avoid storing PII and to have a normalized unique
@@ -145,6 +140,31 @@ const autofill::PasswordForm* GetMatchForUpdating(
 // credentials), the original origin is kept.
 autofill::PasswordForm MakeNormalizedBlacklistedForm(
     password_manager::PasswordStore::FormDigest digest);
+
+// Whether the current signed-in user (aka unconsented primary account) has
+// opted in to use the Google account storage for passwords (as opposed to
+// local/profile storage).
+// |pref_service| must not be null.
+// |sync_service| may be null (commonly the case in incognito mode), in which
+// case this will simply return false.
+bool IsOptedInForAccountStorage(const PrefService* pref_service,
+                                const syncer::SyncService* sync_service);
+
+// Whether it makes sense to ask the user to opt-in for account-based
+// password storage. This is true if the opt-in doesn't exist yet, but all
+// other requirements are met (i.e. there is a signed-in user etc).
+// |pref_service| must not be null.
+// |sync_service| may be null (commonly the case in incognito mode), in which
+// case this will simply return false.
+bool ShouldShowAccountStorageOptIn(const PrefService* pref_service,
+                                   const syncer::SyncService* sync_service);
+
+// Sets or clears the opt-in to using account storage for passwords for the
+// current signed-in user (unconsented primary account).
+// |pref_service| and |sync_service| must not be null.
+void SetAccountStorageOptIn(PrefService* pref_service,
+                            const syncer::SyncService* sync_service,
+                            bool opt_in);
 
 }  // namespace password_manager_util
 

@@ -20,9 +20,9 @@ TestClipboard::TestClipboard()
 
 TestClipboard::~TestClipboard() = default;
 
-Clipboard* TestClipboard::CreateForCurrentThread() {
+TestClipboard* TestClipboard::CreateForCurrentThread() {
   base::AutoLock lock(Clipboard::ClipboardMapLock());
-  Clipboard* clipboard = new TestClipboard;
+  auto* clipboard = new TestClipboard;
   (*Clipboard::ClipboardMapPtr())[base::PlatformThread::CurrentId()] =
       base::WrapUnique(clipboard);
   return clipboard;
@@ -149,12 +149,21 @@ void TestClipboard::ClearLastModifiedTime() {
   last_modified_time_ = base::Time();
 }
 
-void TestClipboard::WriteObjects(ClipboardBuffer buffer,
-                                 const ObjectMap& objects) {
+void TestClipboard::WritePortableRepresentations(ClipboardBuffer buffer,
+                                                 const ObjectMap& objects) {
   Clear(buffer);
   default_store_buffer_ = buffer;
   for (const auto& kv : objects)
-    DispatchObject(kv.first, kv.second);
+    DispatchPortableRepresentation(kv.first, kv.second);
+  default_store_buffer_ = ClipboardBuffer::kCopyPaste;
+}
+
+void TestClipboard::WritePlatformRepresentations(
+    ClipboardBuffer buffer,
+    std::vector<Clipboard::PlatformRepresentation> platform_representations) {
+  Clear(buffer);
+  default_store_buffer_ = buffer;
+  DispatchPlatformRepresentations(std::move(platform_representations));
   default_store_buffer_ = ClipboardBuffer::kCopyPaste;
 }
 
@@ -166,7 +175,7 @@ void TestClipboard::WriteText(const char* text_data, size_t text_len) {
   if (IsSupportedClipboardBuffer(ClipboardBuffer::kSelection))
     GetStore(ClipboardBuffer::kSelection)
         .data[ClipboardFormatType::GetPlainTextType()] = text;
-  ui::ClipboardMonitor::GetInstance()->NotifyClipboardDataChanged();
+  ClipboardMonitor::GetInstance()->NotifyClipboardDataChanged();
 }
 
 void TestClipboard::WriteHTML(const char* markup_data,
@@ -208,6 +217,7 @@ void TestClipboard::WriteBitmap(const SkBitmap& bitmap) {
     NOTREACHED() << "Unable to convert bitmap for clipboard";
     return;
   }
+  ClipboardMonitor::GetInstance()->NotifyClipboardDataChanged();
 }
 
 void TestClipboard::WriteData(const ClipboardFormatType& format,

@@ -7,8 +7,10 @@
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
 <link rel="import" href="../controls/settings_slider.html">
 <link rel="import" href="../controls/settings_toggle_button.html">
+<link rel="import" href="../device_page/device_page_browser_proxy.html">
 <link rel="import" href="../i18n_setup.html">
 <link rel="import" href="../route.html">
+<link rel="import" href="../route_origin_behavior.html">
 <link rel="import" href="../settings_shared_css.html">
 
 <dom-module id="settings-manage-a11y-page">
@@ -66,9 +68,11 @@
           label="$i18n{selectToSpeakOptionsLabel}" external></cr-link-row>
     </iron-collapse>
 
-    <cr-link-row class="hr" label="$i18n{manageTtsSettings}"
-        on-click="onManageTtsSettingsTap_"
-        sub-label="$i18n{ttsSettingsLinkDescription}" embedded></cr-link-row>
+    <cr-link-row id="ttsSubpageButton" class="hr"
+        label="$i18n{manageTtsSettings}" on-click="onManageTtsSettingsTap_"
+        sub-label="$i18n{ttsSettingsLinkDescription}"
+        role-description="$i18n{subpageArrowRoleDescription}" embedded>
+    </cr-link-row>
 
     <h2>$i18n{displayHeading}</h2>
     <settings-toggle-button class="first"
@@ -80,36 +84,42 @@
         label="$i18n{screenMagnifierLabel}"
         disabled="[[prefs.ash.docked_magnifier.enabled.value]]">
     </settings-toggle-button>
-    <div class="settings-box continuation">
-      <div class="start sub-item settings-box-text">
-        $i18n{screenMagnifierZoomLabel}
+    <template is="dom-if" if="[[prefs.settings.a11y.screen_magnifier.value]]">
+      <div class="settings-box continuation">
+        <div class="start sub-item settings-box-text">
+          $i18n{screenMagnifierZoomLabel}
+        </div>
+        <settings-dropdown-menu label="$i18n{screenMagnifierZoomLabel}"
+            pref="{{prefs.settings.a11y.screen_magnifier_scale}}"
+            menu-options="[[screenMagnifierZoomOptions_]]"
+            disabled="[[!prefs.settings.a11y.screen_magnifier.value]]">
+        </settings-dropdown-menu>
       </div>
-      <settings-dropdown-menu label="$i18n{screenMagnifierZoomLabel}"
-          pref="{{prefs.settings.a11y.screen_magnifier_scale}}"
-          menu-options="[[screenMagnifierZoomOptions_]]"
-          disabled="[[!prefs.settings.a11y.screen_magnifier.value]]">
-      </settings-dropdown-menu>
-    </div>
+    </template>
     <settings-toggle-button
         pref="{{prefs.ash.docked_magnifier.enabled}}"
         label="$i18n{dockedMagnifierLabel}"
         disabled="[[prefs.settings.a11y.screen_magnifier.value]]">
     </settings-toggle-button>
-    <div class="settings-box continuation">
-      <div class="start sub-item settings-box-text">
-        $i18n{dockedMagnifierZoomLabel}
+    <template is="dom-if" if="[[prefs.ash.docked_magnifier.enabled.value]]">
+      <div class="settings-box continuation">
+        <div class="start sub-item settings-box-text">
+          $i18n{dockedMagnifierZoomLabel}
+        </div>
+        <settings-dropdown-menu label="$i18n{dockedMagnifierZoomLabel}"
+            pref="{{prefs.ash.docked_magnifier.scale}}"
+            menu-options="[[screenMagnifierZoomOptions_]]"
+            disabled="[[!prefs.ash.docked_magnifier.enabled.value]]">
+        </settings-dropdown-menu>
       </div>
-      <settings-dropdown-menu label="$i18n{dockedMagnifierZoomLabel}"
-          pref="{{prefs.ash.docked_magnifier.scale}}"
-          menu-options="[[screenMagnifierZoomOptions_]]"
-          disabled="[[!prefs.ash.docked_magnifier.enabled.value]]">
-      </settings-dropdown-menu>
-    </div>
-    <cr-link-row class="hr" label="$i18n{displaySettingsTitle}"
-        on-click="onDisplayTap_" sub-label="$i18n{displaySettingsDescription}"
-        embedded></cr-link-row>
-    <cr-link-row class="hr" label="$i18n{appearanceSettingsTitle}"
-        on-click="onAppearanceTap_"
+    </template>
+    <cr-link-row id="displaySubpageButton" class="hr"
+        label="$i18n{displaySettingsTitle}" on-click="onDisplayTap_"
+        sub-label="$i18n{displaySettingsDescription}"
+        role-description="$i18n{subpageArrowRoleDescription}" embedded>
+    </cr-link-row>
+    <cr-link-row id="appearanceSubpageButton" class="hr"
+        label="$i18n{appearanceSettingsTitle}" on-click="onAppearanceTap_"
         sub-label="$i18n{appearanceSettingsDescription}"
         external="[[isOSSettings_]]" embedded></cr-link-row>
 
@@ -142,14 +152,18 @@
       </settings-toggle-button>
       <iron-collapse
           opened="[[prefs.settings.a11y.switch_access.enabled.value]]">
-        <cr-link-row label="$i18n{switchAccessOptionsLabel}"
-            on-click="onSwitchAccessSettingsTap_" embedded>
+        <cr-link-row id="switchAccessSubpageButton"
+            label="$i18n{switchAccessOptionsLabel}"
+            on-click="onSwitchAccessSettingsTap_"
+            role-description="$i18n{subpageArrowRoleDescription}" embedded>
         </cr-link-row>
       </iron-collapse>
     </template>
-    <cr-link-row class="hr" label="$i18n{keyboardSettingsTitle}"
-        on-click="onKeyboardTap_" sub-label="$i18n{keyboardSettingsDescription}"
-        embedded></cr-link-row>
+    <cr-link-row id="keyboardSubpageButton" class="hr"
+        label="$i18n{keyboardSettingsTitle}" on-click="onKeyboardTap_"
+        sub-label="$i18n{keyboardSettingsDescription}"
+        role-description="$i18n{subpageArrowRoleDescription}" embedded>
+    </cr-link-row>
 
     <h2>$i18n{mouseAndTouchpadHeading}</h2>
     <settings-toggle-button class="first"
@@ -200,12 +214,13 @@
     </settings-toggle-button>
     <div class="settings-box continuation"
         hidden$="[[!prefs.settings.a11y.large_cursor_enabled.value]]">
-      <div class="start sub-item settings-box-text">
+      <div class="start sub-item settings-box-text" aria-hidden="true">
         $i18n{largeMouseCursorSizeLabel}
       </div>
       <settings-slider
           pref="{{prefs.settings.a11y.large_cursor_dip_size}}"
           min="25" max="64"
+          label-aria="$i18n{largeMouseCursorSizeLabel}"
           label-min="$i18n{largeMouseCursorSizeDefaultLabel}"
           label-max="$i18n{largeMouseCursorSizeLargeLabel}">
       </settings-slider>
@@ -214,16 +229,21 @@
         pref="{{prefs.settings.a11y.cursor_highlight}}"
         label="$i18n{cursorHighlightLabel}">
     </settings-toggle-button>
-    <cr-link-row class="hr" label="$i18n{mouseSettingsTitle}"
-        on-click="onMouseTap_" sub-label="$i18n{mouseSettingsDescription}"
-        embedded></cr-link-row>
+    <cr-link-row id="pointerSubpageButton" class="hr"
+        label="$i18n{mouseSettingsTitle}" on-click="onMouseTap_"
+        sub-label="$i18n{mouseSettingsDescription}"
+        role-description="$i18n{subpageArrowRoleDescription}" embedded>
+    </cr-link-row>
 
-    <h2>$i18n{audioHeading}</h2>
-    <settings-toggle-button class="first"
+    <h2>$i18n{audioAndCaptionsHeading}</h2>
+    <cr-link-row id="captionsSubpageButton" class="first"
+        label="$i18n{captionsTitle}" on-click="onCaptionsClick_"
+        role-description="$i18n{subpageArrowRoleDescription}"></cr-link-row>
+    <settings-toggle-button
         pref="{{prefs.settings.a11y.mono_audio}}"
         label="$i18n{monoAudioLabel}">
     </settings-toggle-button>
-    <settings-toggle-button id="startupSoundEnabled" class="first"
+    <settings-toggle-button id="startupSoundEnabled"
         pref=" "
         on-change="toggleStartupSoundEnabled_"
         label="$i18n{startupSoundLabel}">
@@ -239,7 +259,7 @@
             $i18n{a11yWebStore}
           </div>
         </div>
-        <cr-icon-button actionable class="icon-external"
+        <cr-icon-button class="icon-external"
             aria-label="$i18n{additionalFeaturesTitle}"
             aria-describedby="moreFeaturesSecondary"></cr-icon-button>
       </a>

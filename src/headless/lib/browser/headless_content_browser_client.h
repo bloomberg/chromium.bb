@@ -9,6 +9,7 @@
 
 #include "content/public/browser/content_browser_client.h"
 #include "headless/public/headless_browser.h"
+#include "storage/browser/quota/quota_settings.h"
 
 namespace headless {
 
@@ -41,6 +42,7 @@ class HeadlessContentBrowserClient : public content::ContentBrowserClient {
 #endif
   void AppendExtraCommandLineSwitches(base::CommandLine* command_line,
                                       int child_process_id) override;
+  std::string GetApplicationLocale() override;
   std::string GetAcceptLangs(content::BrowserContext* context) override;
   void AllowCertificateError(
       content::WebContents* web_contents,
@@ -49,8 +51,8 @@ class HeadlessContentBrowserClient : public content::ContentBrowserClient {
       const GURL& request_url,
       bool is_main_frame_request,
       bool strict_enforcement,
-      const base::Callback<void(content::CertificateRequestResultType)>&
-          callback) override;
+      base::OnceCallback<void(content::CertificateRequestResultType)> callback)
+      override;
   base::OnceClosure SelectClientCertificate(
       content::WebContents* web_contents,
       net::SSLCertRequestInfo* cert_request_info,
@@ -58,7 +60,7 @@ class HeadlessContentBrowserClient : public content::ContentBrowserClient {
       std::unique_ptr<content::ClientCertificateDelegate> delegate) override;
   bool ShouldEnableStrictSiteIsolation() override;
 
-  ::network::mojom::NetworkContextPtr CreateNetworkContext(
+  mojo::Remote<::network::mojom::NetworkContext> CreateNetworkContext(
       content::BrowserContext* context,
       bool in_memory,
       const base::FilePath& relative_partition_path) override;

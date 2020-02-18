@@ -13,13 +13,7 @@ DEPS = [
 ]
 
 
-PROPERTIES = {
-  'patch_project': recipe_api.Property(None),
-  'patch_repository_url': recipe_api.Property(None),
-}
-
-
-def RunSteps(api, patch_project, patch_repository_url):
+def RunSteps(api):
   src_cfg = api.gclient.make_config(CACHE_DIR='[ROOT]/git_cache')
   soln = src_cfg.solutions.add()
   soln.name = 'src'
@@ -61,9 +55,7 @@ def GenTests(api):
           project='chromium',
           builder='linux',
           git_repo='https://chromium.googlesource.com/src') +
-      api.properties(
-          expected_patch_root=None,
-          patch_project='chromium') +
+      api.properties(expected_patch_root=None) +
       api.post_process(post_process.DropExpectation)
   )
 
@@ -73,9 +65,7 @@ def GenTests(api):
           project='chromium',
           builder='linux',
           git_repo='https://chromium.googlesource.com/src') +
-      api.properties(
-          expected_patch_root='src',
-          patch_project='chromium') +
+      api.properties(expected_patch_root='src') +
       api.post_process(post_process.DropExpectation)
   )
 
@@ -85,9 +75,7 @@ def GenTests(api):
           project='chromium',
           builder='linux',
           git_repo='https://chromium.googlesource.com/v8/v8') +
-      api.properties(
-          expected_patch_root='src/v8',
-          patch_project='v8') +
+      api.properties(expected_patch_root='src/v8') +
       api.post_process(post_process.DropExpectation)
   )
 
@@ -97,8 +85,6 @@ def GenTests(api):
           project='chromium',
           builder='linux',
           git_repo='https://webrtc.googlesource.com/src') +
-      api.properties(
-          expected_patch_root='src/third_party/webrtc',
-          patch_project='webrtc') +
+      api.properties(expected_patch_root='src/third_party/webrtc')+
       api.post_process(post_process.DropExpectation)
   )

@@ -16,6 +16,7 @@
 #include <cmath>
 #include <utility>
 
+#include "absl/algorithm/container.h"
 #include "api/units/timestamp.h"
 #include "modules/rtp_rtcp/include/rtp_rtcp_defines.h"
 #include "modules/rtp_rtcp/source/rtcp_packet/transport_feedback.h"
@@ -24,55 +25,68 @@
 #include "system_wrappers/include/field_trial.h"
 
 namespace webrtc {
-namespace {
 
-PacketResult NetworkPacketFeedbackFromRtpPacketFeedback(
-    const webrtc::PacketFeedback& pf) {
-  PacketResult feedback;
-  if (pf.arrival_time_ms == webrtc::PacketFeedback::kNotReceived) {
-    feedback.receive_time = Timestamp::PlusInfinity();
+constexpr TimeDelta kSendTimeHistoryWindow = TimeDelta::Seconds<60>();
+
+void InFlightBytesTracker::AddInFlightPacketBytes(
+    const PacketFeedback& packet) {
+  RTC_DCHECK(packet.sent.send_time.IsFinite());
+  auto it = in_flight_data_.find({packet.local_net_id, packet.remote_net_id});
+  if (it != in_flight_data_.end()) {
+    it->second += packet.sent.size;
   } else {
-    feedback.receive_time = Timestamp::ms(pf.arrival_time_ms);
+    in_flight_data_.insert(
+        {{packet.local_net_id, packet.remote_net_id}, packet.sent.size});
   }
-  feedback.sent_packet.sequence_number = pf.long_sequence_number;
-  feedback.sent_packet.send_time = Timestamp::ms(pf.send_time_ms);
-  feedback.sent_packet.size = DataSize::bytes(pf.payload_size);
-  feedback.sent_packet.pacing_info = pf.pacing_info;
-  feedback.sent_packet.prior_unacked_data =
-      DataSize::bytes(pf.unacknowledged_data);
-  return feedback;
 }
-}  // namespace
-const int64_t kNoTimestamp = -1;
-const int64_t kSendTimeHistoryWindowMs = 60000;
 
-TransportFeedbackAdapter::TransportFeedbackAdapter()
-    : allow_duplicates_(field_trial::IsEnabled(
-          "WebRTC-TransportFeedbackAdapter-AllowDuplicates")),
-      send_time_history_(kSendTimeHistoryWindowMs),
-      current_offset_ms_(kNoTimestamp),
-      last_timestamp_us_(kNoTimestamp),
-      local_net_id_(0),
-      remote_net_id_(0) {}
+void InFlightBytesTracker::RemoveInFlightPacketBytes(
+    const PacketFeedback& packet) {
+  if (packet.sent.send_time.IsInfinite())
+    return;
+  auto it = in_flight_data_.find({packet.local_net_id, packet.remote_net_id});
+  if (it != in_flight_data_.end()) {
+    RTC_DCHECK_GE(it->second, packet.sent.size);
+    it->second -= packet.sent.size;
+    if (it->second.IsZero())
+      in_flight_data_.erase(it);
+  }
+}
+
+DataSize InFlightBytesTracker::GetOutstandingData(
+    uint16_t local_net_id,
+    uint16_t remote_net_id) const {
+  auto it = in_flight_data_.find({local_net_id, remote_net_id});
+  if (it != in_flight_data_.end()) {
+    return it->second;
+  } else {
+    return DataSize::Zero();
+  }
+}
+
+TransportFeedbackAdapter::TransportFeedbackAdapter() = default;
 
 TransportFeedbackAdapter::~TransportFeedbackAdapter() {
   RTC_DCHECK(observers_.empty());
 }
 
-void TransportFeedbackAdapter::RegisterPacketFeedbackObserver(
-    PacketFeedbackObserver* observer) {
+void TransportFeedbackAdapter::RegisterStreamFeedbackObserver(
+    std::vector<uint32_t> ssrcs,
+    StreamFeedbackObserver* observer) {
   rtc::CritScope cs(&observers_lock_);
   RTC_DCHECK(observer);
-  RTC_DCHECK(std::find(observers_.begin(), observers_.end(), observer) ==
-             observers_.end());
-  observers_.push_back(observer);
+  RTC_DCHECK(absl::c_find_if(observers_, [=](const auto& pair) {
+               return pair.second == observer;
+             }) == observers_.end());
+  observers_.push_back({ssrcs, observer});
 }
 
-void TransportFeedbackAdapter::DeRegisterPacketFeedbackObserver(
-    PacketFeedbackObserver* observer) {
+void TransportFeedbackAdapter::DeRegisterStreamFeedbackObserver(
+    StreamFeedbackObserver* observer) {
   rtc::CritScope cs(&observers_lock_);
   RTC_DCHECK(observer);
-  const auto it = std::find(observers_.begin(), observers_.end(), observer);
+  const auto it = absl::c_find_if(
+      observers_, [=](const auto& pair) { return pair.second == observer; });
   RTC_DCHECK(it != observers_.end());
   observers_.erase(it);
 }
@@ -82,52 +96,66 @@ void TransportFeedbackAdapter::AddPacket(const RtpPacketSendInfo& packet_info,
                                          Timestamp creation_time) {
   {
     rtc::CritScope cs(&lock_);
-    PacketFeedback packet_feedback(
-        creation_time.ms(), packet_info.transport_sequence_number,
-        packet_info.length + overhead_bytes, local_net_id_, remote_net_id_,
-        packet_info.pacing_info);
+    PacketFeedback packet;
+    packet.creation_time = creation_time;
+    packet.sent.sequence_number =
+        seq_num_unwrapper_.Unwrap(packet_info.transport_sequence_number);
+    packet.sent.size = DataSize::bytes(packet_info.length + overhead_bytes);
+    packet.local_net_id = local_net_id_;
+    packet.remote_net_id = remote_net_id_;
+    packet.sent.pacing_info = packet_info.pacing_info;
     if (packet_info.has_rtp_sequence_number) {
-      packet_feedback.ssrc = packet_info.ssrc;
-      packet_feedback.rtp_sequence_number = packet_info.rtp_sequence_number;
+      packet.ssrc = packet_info.ssrc;
+      packet.rtp_sequence_number = packet_info.rtp_sequence_number;
     }
-    send_time_history_.RemoveOld(creation_time.ms());
-    send_time_history_.AddNewPacket(std::move(packet_feedback));
-  }
 
-  {
-    rtc::CritScope cs(&observers_lock_);
-    for (auto* observer : observers_) {
-      observer->OnPacketAdded(packet_info.ssrc,
-                              packet_info.transport_sequence_number);
+    while (!history_.empty() &&
+           creation_time - history_.begin()->second.creation_time >
+               kSendTimeHistoryWindow) {
+      // TODO(sprang): Warn if erasing (too many) old items?
+      if (history_.begin()->second.sent.sequence_number > last_ack_seq_num_)
+        in_flight_.RemoveInFlightPacketBytes(history_.begin()->second);
+      history_.erase(history_.begin());
     }
+    history_.insert(std::make_pair(packet.sent.sequence_number, packet));
   }
 }
 absl::optional<SentPacket> TransportFeedbackAdapter::ProcessSentPacket(
     const rtc::SentPacket& sent_packet) {
   rtc::CritScope cs(&lock_);
+  auto send_time = Timestamp::ms(sent_packet.send_time_ms);
   // TODO(srte): Only use one way to indicate that packet feedback is used.
   if (sent_packet.info.included_in_feedback || sent_packet.packet_id != -1) {
-    SendTimeHistory::Status send_status = send_time_history_.OnSentPacket(
-        sent_packet.packet_id, sent_packet.send_time_ms);
-    absl::optional<PacketFeedback> packet;
-    if (allow_duplicates_ ||
-        send_status != SendTimeHistory::Status::kDuplicate) {
-      packet = send_time_history_.GetPacket(sent_packet.packet_id);
-    }
-
-    if (packet) {
-      SentPacket msg;
-      msg.size = DataSize::bytes(packet->payload_size);
-      msg.send_time = Timestamp::ms(packet->send_time_ms);
-      msg.sequence_number = packet->long_sequence_number;
-      msg.prior_unacked_data = DataSize::bytes(packet->unacknowledged_data);
-      msg.data_in_flight =
-          send_time_history_.GetOutstandingData(local_net_id_, remote_net_id_);
-      return msg;
+    int64_t unwrapped_seq_num =
+        seq_num_unwrapper_.Unwrap(sent_packet.packet_id);
+    auto it = history_.find(unwrapped_seq_num);
+    if (it != history_.end()) {
+      bool packet_retransmit = it->second.sent.send_time.IsFinite();
+      it->second.sent.send_time = send_time;
+      last_send_time_ = std::max(last_send_time_, send_time);
+      // TODO(srte): Don't do this on retransmit.
+      if (!pending_untracked_size_.IsZero()) {
+        if (send_time < last_untracked_send_time_)
+          RTC_LOG(LS_WARNING)
+              << "appending acknowledged data for out of order packet. (Diff: "
+              << ToString(last_untracked_send_time_ - send_time) << " ms.)";
+        it->second.sent.prior_unacked_data += pending_untracked_size_;
+        pending_untracked_size_ = DataSize::Zero();
+      }
+      if (!packet_retransmit) {
+        if (it->second.sent.sequence_number > last_ack_seq_num_)
+          in_flight_.AddInFlightPacketBytes(it->second);
+        it->second.sent.data_in_flight = GetOutstandingData();
+        return it->second.sent;
+      }
     }
   } else if (sent_packet.info.included_in_allocation) {
-    send_time_history_.AddUntracked(sent_packet.info.packet_size_bytes,
-                                    sent_packet.send_time_ms);
+    if (send_time < last_send_time_) {
+      RTC_LOG(LS_WARNING) << "ignoring untracked data for out of order packet.";
+    }
+    pending_untracked_size_ +=
+        DataSize::bytes(sent_packet.info.packet_size_bytes);
+    last_untracked_send_time_ = std::max(last_untracked_send_time_, send_time);
   }
   return absl::nullopt;
 }
@@ -136,43 +164,36 @@ absl::optional<TransportPacketsFeedback>
 TransportFeedbackAdapter::ProcessTransportFeedback(
     const rtcp::TransportFeedback& feedback,
     Timestamp feedback_receive_time) {
-  DataSize prior_in_flight = GetOutstandingData();
-
-  last_packet_feedback_vector_ =
-      GetPacketFeedbackVector(feedback, feedback_receive_time);
-  {
-    rtc::CritScope cs(&observers_lock_);
-    for (auto* observer : observers_) {
-      observer->OnPacketFeedbackVector(last_packet_feedback_vector_);
-    }
-  }
-
-  std::vector<PacketFeedback> feedback_vector = last_packet_feedback_vector_;
-  if (feedback_vector.empty())
+  if (feedback.GetPacketStatusCount() == 0) {
+    RTC_LOG(LS_INFO) << "Empty transport feedback packet received.";
     return absl::nullopt;
-
-  TransportPacketsFeedback msg;
-  for (const PacketFeedback& rtp_feedback : feedback_vector) {
-    if (rtp_feedback.send_time_ms != PacketFeedback::kNoSendTime) {
-      auto feedback = NetworkPacketFeedbackFromRtpPacketFeedback(rtp_feedback);
-      msg.packet_feedbacks.push_back(feedback);
-    } else if (rtp_feedback.arrival_time_ms == PacketFeedback::kNotReceived) {
-      msg.sendless_arrival_times.push_back(Timestamp::PlusInfinity());
-    } else {
-      msg.sendless_arrival_times.push_back(
-          Timestamp::ms(rtp_feedback.arrival_time_ms));
-    }
   }
+  std::vector<PacketFeedback> feedback_vector;
+  TransportPacketsFeedback msg;
+  msg.feedback_time = feedback_receive_time;
   {
     rtc::CritScope cs(&lock_);
-    absl::optional<int64_t> first_unacked_send_time_ms =
-        send_time_history_.GetFirstUnackedSendTime();
-    if (first_unacked_send_time_ms)
-      msg.first_unacked_send_time = Timestamp::ms(*first_unacked_send_time_ms);
+    msg.prior_in_flight =
+        in_flight_.GetOutstandingData(local_net_id_, remote_net_id_);
+    feedback_vector =
+        ProcessTransportFeedbackInner(feedback, feedback_receive_time);
+    if (feedback_vector.empty())
+      return absl::nullopt;
+
+    for (const PacketFeedback& fb : feedback_vector) {
+      PacketResult res;
+      res.sent_packet = fb.sent;
+      res.receive_time = fb.receive_time;
+      msg.packet_feedbacks.push_back(res);
+    }
+    auto it = history_.find(last_ack_seq_num_);
+    if (it != history_.end()) {
+      msg.first_unacked_send_time = it->second.sent.send_time;
+    }
+    msg.data_in_flight =
+        in_flight_.GetOutstandingData(local_net_id_, remote_net_id_);
   }
-  msg.feedback_time = feedback_receive_time;
-  msg.prior_in_flight = prior_in_flight;
-  msg.data_in_flight = GetOutstandingData();
+  SignalObservers(feedback_vector);
   return msg;
 }
 
@@ -185,75 +206,106 @@ void TransportFeedbackAdapter::SetNetworkIds(uint16_t local_id,
 
 DataSize TransportFeedbackAdapter::GetOutstandingData() const {
   rtc::CritScope cs(&lock_);
-  return send_time_history_.GetOutstandingData(local_net_id_, remote_net_id_);
+  return in_flight_.GetOutstandingData(local_net_id_, remote_net_id_);
 }
 
-std::vector<PacketFeedback> TransportFeedbackAdapter::GetPacketFeedbackVector(
+std::vector<PacketFeedback>
+TransportFeedbackAdapter::ProcessTransportFeedbackInner(
     const rtcp::TransportFeedback& feedback,
     Timestamp feedback_time) {
   // Add timestamp deltas to a local time base selected on first packet arrival.
   // This won't be the true time base, but makes it easier to manually inspect
   // time stamps.
-  if (last_timestamp_us_ == kNoTimestamp) {
-    current_offset_ms_ = feedback_time.ms();
+  if (last_timestamp_.IsInfinite()) {
+    current_offset_ = feedback_time;
   } else {
-    current_offset_ms_ += feedback.GetBaseDeltaUs(last_timestamp_us_) / 1000;
+    // TODO(srte): We shouldn't need to do rounding here.
+    current_offset_ += feedback.GetBaseDelta(last_timestamp_)
+                           .RoundDownTo(TimeDelta::Millis<1>());
   }
-  last_timestamp_us_ = feedback.GetBaseTimeUs();
+  last_timestamp_ = feedback.GetBaseTime();
 
   std::vector<PacketFeedback> packet_feedback_vector;
-  if (feedback.GetPacketStatusCount() == 0) {
-    RTC_LOG(LS_INFO) << "Empty transport feedback packet received.";
-    return packet_feedback_vector;
-  }
   packet_feedback_vector.reserve(feedback.GetPacketStatusCount());
-  {
-    rtc::CritScope cs(&lock_);
-    size_t failed_lookups = 0;
-    int64_t offset_us = 0;
-    int64_t timestamp_ms = 0;
-    uint16_t seq_num = feedback.GetBaseSequence();
-    for (const auto& packet : feedback.GetReceivedPackets()) {
-      // Insert into the vector those unreceived packets which precede this
-      // iteration's received packet.
-      for (; seq_num != packet.sequence_number(); ++seq_num) {
-        PacketFeedback packet_feedback(PacketFeedback::kNotReceived, seq_num);
-        // Note: Element not removed from history because it might be reported
-        // as received by another feedback.
-        if (!send_time_history_.GetFeedback(&packet_feedback, false))
-          ++failed_lookups;
-        if (packet_feedback.local_net_id == local_net_id_ &&
-            packet_feedback.remote_net_id == remote_net_id_) {
-          packet_feedback_vector.push_back(packet_feedback);
-        }
-      }
 
-      // Handle this iteration's received packet.
-      offset_us += packet.delta_us();
-      timestamp_ms = current_offset_ms_ + (offset_us / 1000);
-      PacketFeedback packet_feedback(timestamp_ms, packet.sequence_number());
-      if (!send_time_history_.GetFeedback(&packet_feedback, true))
-        ++failed_lookups;
-      if (packet_feedback.local_net_id == local_net_id_ &&
-          packet_feedback.remote_net_id == remote_net_id_) {
-        packet_feedback_vector.push_back(packet_feedback);
-      }
+  size_t failed_lookups = 0;
+  size_t ignored = 0;
+  TimeDelta packet_offset = TimeDelta::Zero();
+  for (const auto& packet : feedback.GetAllPackets()) {
+    int64_t seq_num = seq_num_unwrapper_.Unwrap(packet.sequence_number());
 
-      ++seq_num;
+    if (seq_num > last_ack_seq_num_) {
+      // Starts at history_.begin() if last_ack_seq_num_ < 0, since any valid
+      // sequence number is >= 0.
+      for (auto it = history_.upper_bound(last_ack_seq_num_);
+           it != history_.upper_bound(seq_num); ++it) {
+        in_flight_.RemoveInFlightPacketBytes(it->second);
+      }
+      last_ack_seq_num_ = seq_num;
     }
 
-    if (failed_lookups > 0) {
-      RTC_LOG(LS_WARNING) << "Failed to lookup send time for " << failed_lookups
-                          << " packet" << (failed_lookups > 1 ? "s" : "")
-                          << ". Send time history too small?";
+    auto it = history_.find(seq_num);
+    if (it == history_.end()) {
+      ++failed_lookups;
+      continue;
+    }
+
+    if (it->second.sent.send_time.IsInfinite()) {
+      // TODO(srte): Fix the tests that makes this happen and make this a
+      // DCHECK.
+      RTC_DLOG(LS_ERROR)
+          << "Received feedback before packet was indicated as sent";
+      continue;
+    }
+
+    PacketFeedback packet_feedback = it->second;
+    if (packet.received()) {
+      packet_offset += packet.delta();
+      packet_feedback.receive_time =
+          current_offset_ + packet_offset.RoundDownTo(TimeDelta::Millis<1>());
+      // Note: Lost packets are not removed from history because they might be
+      // reported as received by a later feedback.
+      history_.erase(it);
+    }
+    if (packet_feedback.local_net_id == local_net_id_ &&
+        packet_feedback.remote_net_id == remote_net_id_) {
+      packet_feedback_vector.push_back(packet_feedback);
+    } else {
+      ++ignored;
     }
   }
+
+  if (failed_lookups > 0) {
+    RTC_LOG(LS_WARNING) << "Failed to lookup send time for " << failed_lookups
+                        << " packet" << (failed_lookups > 1 ? "s" : "")
+                        << ". Send time history too small?";
+  }
+  if (ignored > 0) {
+    RTC_LOG(LS_INFO) << "Ignoring " << ignored
+                     << " packets because they were sent on a different route.";
+  }
+
   return packet_feedback_vector;
 }
 
-std::vector<PacketFeedback>
-TransportFeedbackAdapter::GetTransportFeedbackVector() const {
-  return last_packet_feedback_vector_;
+void TransportFeedbackAdapter::SignalObservers(
+    const std::vector<PacketFeedback>& feedback_vector) {
+  rtc::CritScope cs(&observers_lock_);
+  for (auto& observer : observers_) {
+    std::vector<StreamFeedbackObserver::StreamPacketInfo> selected_feedback;
+    for (const auto& packet : feedback_vector) {
+      if (packet.ssrc && absl::c_count(observer.first, *packet.ssrc) > 0) {
+        StreamFeedbackObserver::StreamPacketInfo packet_info;
+        packet_info.ssrc = *packet.ssrc;
+        packet_info.rtp_sequence_number = packet.rtp_sequence_number;
+        packet_info.received = packet.receive_time.IsFinite();
+        selected_feedback.push_back(packet_info);
+      }
+    }
+    if (!selected_feedback.empty()) {
+      observer.second->OnPacketFeedbackVector(std::move(selected_feedback));
+    }
+  }
 }
 
 }  // namespace webrtc

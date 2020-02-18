@@ -10,6 +10,7 @@ matrix:
   fast_finish: true
   allow_failures:
     - env: CHECK_COMMIT_FORMAT=ON
+    - env: VULKAN_BUILD_TARGET=GN
   include:
     # Linux GCC debug build.
     - os: linux
@@ -19,6 +20,9 @@ matrix:
     - os: linux
       compiler: clang
       env: VULKAN_BUILD_TARGET=LINUX
+    # Linux GN debug build
+    - os: linux
+      env: VULKAN_BUILD_TARGET=GN
     # MacOS clang debug build.
     - os: osx
       compiler: clang
@@ -38,6 +42,18 @@ cache: ccache
 
 before_install:
   - set -e
+  - CMAKE_VERSION=3.10.2
+  - |
+    if [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then
+      # Upgrade to the desired version of CMake
+      CMAKE_URL="https://cmake.org/files/v${CMAKE_VERSION%.*}/cmake-${CMAKE_VERSION}-Linux-x86_64.tar.gz"
+      echo CMAKE_URL=${CMAKE_URL}
+      mkdir cmake-${CMAKE_VERSION} && travis_retry wget --no-check-certificate -O - ${CMAKE_URL} | tar --strip-components=1 -xz -C cmake-${CMAKE_VERSION}
+      export PATH=${PWD}/cmake-${CMAKE_VERSION}/bin:${PATH}
+    else
+      brew install cmake || brew upgrade cmake
+    fi
+    cmake --version
   - unset -f cd pushd popd
   - |
     if [[ "$TRAVIS_EVENT_TYPE" == "cron" ]]; then
@@ -45,10 +61,11 @@ before_install:
         UPDATE_DEPS_EXTRA_OPTIONS="--ref=master"
     fi
   - |
-    if [[ "$VULKAN_BUILD_TARGET" == "LINUX" ]]; then
+    if [[ "$VULKAN_BUILD_TARGET" == "LINUX" ]] || [[ "$VULKAN_BUILD_TARGET" == "GN" ]]; then
       # Install the appropriate Linux packages.
       sudo apt-get -qq update
-      sudo apt-get -y install libxkbcommon-dev libwayland-dev libxrandr-dev libx11-xcb-dev
+      sudo apt-get -y install libxkbcommon-dev libwayland-dev libxrandr-dev libx11-xcb-dev \
+                              python-pathlib
     fi
   - |
     if [[ "$VULKAN_BUILD_TARGET" == "LINUX" ]] || [[ "$VULKAN_BUILD_TARGET" == "MACOS" ]]; then
@@ -76,12 +93,23 @@ script:
   - set -e
   - |
     if [[ "$VULKAN_BUILD_TARGET" == "LINUX" ]] || [[ "$VULKAN_BUILD_TARGET" == "MACOS" ]]; then
+      # Verify consistency between source file generators and output
+      echo Verifying consistency between source file generators and output
+      python3 scripts/generate_source.py --verify external/Vulkan-Headers/registry
       # Build Vulkan-Loader
       mkdir build
       cd build
       cmake -DCMAKE_BUILD_TYPE=Debug -C../external/helper.cmake ..
       make -j $core_count
       cd ..
+    fi
+  - |
+    if [[ "$VULKAN_BUILD_TARGET" == "GN" ]]; then
+      git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git depot_tools
+      export PATH=$PATH:$PWD/depot_tools
+      ./build-gn/update_deps.sh
+      gn gen out/Debug
+      ninja -C out/Debug
     fi
   - |
     if [[ "$CHECK_FORMAT" == "ON" ]]; then
@@ -106,7 +134,6 @@ script:
 notifications:
   email:
     recipients:
-      - karl@lunarg.com
       - lenny@lunarg.com
     on_success: change
     on_failure: always

@@ -15,6 +15,7 @@
 #include "base/optional.h"
 #include "chrome/browser/chromeos/authpolicy/kerberos_files_handler.h"
 #include "chromeos/dbus/kerberos/kerberos_service.pb.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "components/policy/core/common/policy_namespace.h"
 #include "components/policy/core/common/policy_service.h"
 
@@ -32,7 +33,8 @@ namespace chromeos {
 class KerberosAddAccountRunner;
 class VariableExpander;
 
-class KerberosCredentialsManager : public policy::PolicyService::Observer {
+class KerberosCredentialsManager : public KeyedService,
+                                   public policy::PolicyService::Observer {
  public:
   using ResultCallback = base::OnceCallback<void(kerberos::ErrorType)>;
   using ListAccountsCallback =
@@ -56,10 +58,6 @@ class KerberosCredentialsManager : public policy::PolicyService::Observer {
   KerberosCredentialsManager(PrefService* local_state,
                              Profile* primary_profile);
   ~KerberosCredentialsManager() override;
-
-  // Singleton accessor. Available once the primary profile is available.
-  // DCHECKs if the instance has not been created yet.
-  static KerberosCredentialsManager& Get();
 
   // Registers prefs stored in local state.
   static void RegisterLocalStatePrefs(PrefRegistrySimple* registry);
@@ -88,7 +86,7 @@ class KerberosCredentialsManager : public policy::PolicyService::Observer {
   void AddObserver(Observer* observer);
 
   // Stop observing this object. |observer| is not owned.
-  void RemoveObserver(const Observer* observer);
+  void RemoveObserver(Observer* observer);
 
   // Adds an account for the given |principal_name| (user@example.com). If
   // |is_managed| is true, the account is assumed to be managed by an admin and
@@ -147,8 +145,19 @@ class KerberosCredentialsManager : public policy::PolicyService::Observer {
     return GetActivePrincipalName();
   }
 
+  // Getter for the GetKerberosFiles() callback, used on tests to build a mock
+  // KerberosFilesHandler.
+  base::RepeatingClosure GetGetKerberosFilesCallbackForTesting();
+
+  // Used on tests to replace the KerberosFilesHandler created on the
+  // constructor with a mock KerberosFilesHandler.
+  void SetKerberosFilesHandlerForTesting(
+      std::unique_ptr<KerberosFilesHandler> kerberos_files_handler);
+
  private:
   friend class KerberosAddAccountRunner;
+  using RepeatedAccountField =
+      google::protobuf::RepeatedPtrField<kerberos::Account>;
 
   // Callback on KerberosAddAccountRunner::Done.
   void OnAddAccountRunnerDone(KerberosAddAccountRunner* runner,
@@ -205,15 +214,11 @@ class KerberosCredentialsManager : public policy::PolicyService::Observer {
   void SetActivePrincipalName(const std::string& principal_name);
   void ClearActivePrincipalName();
 
-  // Gets the current account list and calls DoValidateActivePrincipal().
-  void ValidateActivePrincipal();
-
-  // Checks whether the active principal is contained in the given |response|.
+  // Checks whether the active principal is contained in the given |accounts|.
   // If not, resets it to the first principal or clears it if the list is empty.
-  // It's not expected that this ever triggers, but it provides a fail safe if
-  // the active principal should ever break for whatever reason.
-  void DoValidateActivePrincipal(
-      const kerberos::ListAccountsResponse& response);
+  // It's expected to trigger if the active account is removed by
+  // |RemoveAccount()| or |ClearAccounts()|.
+  void ValidateActivePrincipal(const RepeatedAccountField& accounts);
 
   // Notification shown when the Kerberos ticket is about to expire.
   void ShowTicketExpiryNotification();
@@ -249,7 +254,7 @@ class KerberosCredentialsManager : public policy::PolicyService::Observer {
   policy::PolicyService* policy_service_ = nullptr;
 
   // Called by OnSignalConnected(), puts Kerberos files where GSSAPI finds them.
-  KerberosFilesHandler kerberos_files_handler_;
+  std::unique_ptr<KerberosFilesHandler> kerberos_files_handler_;
 
   // Observer for Kerberos-related prefs.
   std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;

@@ -7,7 +7,6 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
-#include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/process/process_handle.h"
 #include "base/run_loop.h"
@@ -59,7 +58,7 @@ class PrintingLayoutTest : public PrintingTest<InProcessBrowserTest>,
 
   void TearDown() override {
     InProcessBrowserTest::TearDown();
-    base::DeleteFile(emf_path_, true);
+    base::DeleteFileRecursively(emf_path_);
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {

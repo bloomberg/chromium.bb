@@ -34,7 +34,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/public/common/indexeddb/web_idb_types.h"
-#include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-blink.h"
+#include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/web_blob_info.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
@@ -110,13 +110,13 @@ class MODULES_EXPORT IDBRequest : public EventTargetWithInlineData,
     ~AsyncTraceState();
 
     // Used to transfer the trace end event state to an IDBRequest.
-    AsyncTraceState(AsyncTraceState&& other) noexcept {
+    AsyncTraceState(AsyncTraceState&& other) {
       DCHECK(IsEmpty());
       this->trace_event_name_ = other.trace_event_name_;
       this->id_ = other.id_;
       other.trace_event_name_ = nullptr;
     }
-    AsyncTraceState& operator=(AsyncTraceState&& rhs) noexcept {
+    AsyncTraceState& operator=(AsyncTraceState&& rhs) {
       DCHECK(IsEmpty());
       this->trace_event_name_ = rhs.trace_event_name_;
       this->id_ = rhs.id_;

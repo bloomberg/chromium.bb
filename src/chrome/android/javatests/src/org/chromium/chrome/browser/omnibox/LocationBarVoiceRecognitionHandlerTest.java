@@ -10,9 +10,10 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.speech.RecognizerIntent;
-import android.support.annotation.ColorRes;
 import android.support.test.filters.SmallTest;
 import android.view.ViewGroup;
+
+import androidx.annotation.ColorRes;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -33,8 +34,8 @@ import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteDelegate;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestion;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestionListEmbedder;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.tab.MockTab;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabBuilder;
 import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -130,7 +131,7 @@ public class LocationBarVoiceRecognitionHandlerTest {
         }
 
         @Override
-        protected boolean isRecognitionIntentPresent(Context context, boolean useCachedValue) {
+        protected boolean isRecognitionIntentPresent(boolean useCachedValue) {
             return true;
         }
 
@@ -433,7 +434,7 @@ public class LocationBarVoiceRecognitionHandlerTest {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mWindowAndroid = new TestWindowAndroid(mActivityTestRule.getActivity());
             mWindowAndroid.setAndroidPermissionDelegate(mPermissionDelegate);
-            mTab = new TabBuilder().setId(0).setWindow(mWindowAndroid).build();
+            mTab = new MockTab(0, false);
         });
     }
 

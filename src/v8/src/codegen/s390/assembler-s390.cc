@@ -218,6 +218,11 @@ void CpuFeatures::ProbeImpl(bool cross_compile) {
         supportsCPUFeature("vx")) {
       supported_ |= (1u << VECTOR_ENHANCE_FACILITY_1);
     }
+    // Test for Vector Enhancement Facility 2 - Bit 148
+    if (facilities[2] & (one << (63 - (148 - 128))) &&
+        supportsCPUFeature("vx")) {
+      supported_ |= (1u << VECTOR_ENHANCE_FACILITY_2);
+    }
     // Test for Miscellaneous Instruction Extension Facility - Bit 58
     if (facilities[0] & (1lu << (63 - 58))) {
       supported_ |= (1u << MISC_INSTR_EXT2);
@@ -329,8 +334,8 @@ void Assembler::AllocateAndInstallRequestedHeapObjects(Isolate* isolate) {
     Address pc = reinterpret_cast<Address>(buffer_start_) + request.offset();
     switch (request.kind()) {
       case HeapObjectRequest::kHeapNumber: {
-        object = isolate->factory()->NewHeapNumber(request.heap_number(),
-                                                   AllocationType::kOld);
+        object = isolate->factory()->NewHeapNumber<AllocationType::kOld>(
+            request.heap_number());
         set_target_address_at(pc, kNullAddress, object.address(),
                               SKIP_ICACHE_FLUSH);
         break;

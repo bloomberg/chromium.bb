@@ -21,27 +21,33 @@ from chromite.lib import commandline
 from chromite.lib import cros_logging as logging
 
 
-def GetOptions(my_commands):
+def GetOptions(cmd_name=None):
   """Returns the parser to use for commandline parsing.
 
   Args:
-    my_commands: A dictionary mapping subcommand names to classes.
+    cmd_name: The subcommand to import & add.
 
   Returns:
     A commandline.ArgumentParser object.
   """
   parser = commandline.ArgumentParser(caching=True, default_log_level='notice')
 
-  if my_commands:
-    subparsers = parser.add_subparsers(title='Subcommands')
-    for cmd_name in sorted(my_commands.keys()):
-      class_def = my_commands[cmd_name]
+  subparsers = parser.add_subparsers(title='Subcommands', dest='subcommand')
+  subparsers.required = True
+
+  # We add all the commands so `cros --help ...` looks reasonable.
+  # We add them in order also so the --help output is stable for users.
+  for subcommand in sorted(command.ListCommands()):
+    if subcommand == cmd_name:
+      class_def = command.ImportCommand(cmd_name)
       epilog = getattr(class_def, 'EPILOG', None)
       sub_parser = subparsers.add_parser(
           cmd_name, description=class_def.__doc__, epilog=epilog,
           caching=class_def.use_caching_options,
           formatter_class=commandline.argparse.RawDescriptionHelpFormatter)
       class_def.AddParser(sub_parser)
+    else:
+      subparsers.add_parser(subcommand, add_help=False)
 
   return parser
 
@@ -53,13 +59,20 @@ def _RunSubCommand(subcommand):
 
 def main(argv):
   try:
-    parser = GetOptions(command.ListCommands())
-    # Cros currently does nothing without a subcmd. Print help if no args are
-    # specified.
+    # The first time we parse the commandline is only to figure out what
+    # subcommand the user wants to run.  This allows us to avoid importing
+    # all subcommands which can be quite slow.  This works because there is
+    # no way in Python to list all subcommands and their help output in a
+    # single run.
+    parser = GetOptions()
     if not argv:
       parser.print_help()
       return 1
 
+    namespace, _ = parser.parse_known_args(argv)
+    # The user has selected a subcommand now, so get the full parser after we
+    # import the single subcommand.
+    parser = GetOptions(namespace.subcommand)
     namespace = parser.parse_args(argv)
     subcommand = namespace.command_class(namespace)
     try:
@@ -69,8 +82,7 @@ def main(argv):
       raise
     except Exception as e:
       code = 1
-      logging.error('cros %s failed before completing.',
-                    subcommand.command_name)
+      logging.error('cros %s failed before completing.', namespace.subcommand)
       if namespace.debug:
         raise
       else:

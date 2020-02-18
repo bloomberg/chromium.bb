@@ -38,7 +38,7 @@ class WallpaperControllerImpl;
 //
 //  Material Design:
 //    1. Shelf button backgrounds
-//    2. Overlay for the SHELF_BACKGROUND_MAXIMIZED state.
+//    2. Overlay for the ShelfBackgroundType::kMaximized state.
 class ASH_EXPORT ShelfBackgroundAnimator : public ShelfObserver,
                                            public gfx::AnimationDelegate,
                                            public WallpaperControllerObserver {
@@ -46,13 +46,14 @@ class ASH_EXPORT ShelfBackgroundAnimator : public ShelfObserver,
   // The maximum alpha value that can be used.
   static const int kMaxAlpha = SK_AlphaOPAQUE;
 
+  ShelfBackgroundAnimator(Shelf* shelf,
+                          WallpaperControllerImpl* wallpaper_controller);
+  ~ShelfBackgroundAnimator() override;
+
   // Initializes this with the given |background_type|. This will observe the
   // |shelf| for background type changes and the |wallpaper_controller| for
   // wallpaper changes if not null.
-  ShelfBackgroundAnimator(ShelfBackgroundType background_type,
-                          Shelf* shelf,
-                          WallpaperControllerImpl* wallpaper_controller);
-  ~ShelfBackgroundAnimator() override;
+  void Init(ShelfBackgroundType background_type);
 
   ShelfBackgroundType target_background_type() const {
     return target_background_type_;
@@ -82,8 +83,8 @@ class ASH_EXPORT ShelfBackgroundAnimator : public ShelfObserver,
   void AnimationProgressed(const gfx::Animation* animation) override;
   void AnimationEnded(const gfx::Animation* animation) override;
 
-  // Gets the alpha value of |background_type|.
-  int GetBackgroundAlphaValue(ShelfBackgroundType background_type) const;
+  // Gets the color corresponding with |background_type|.
+  SkColor GetBackgroundColor(ShelfBackgroundType background_type) const;
 
  protected:
   // ShelfObserver:
@@ -162,10 +163,11 @@ class ASH_EXPORT ShelfBackgroundAnimator : public ShelfObserver,
   WallpaperControllerImpl* wallpaper_controller_;
 
   // The background type that this is animating towards or has reached.
-  ShelfBackgroundType target_background_type_ = SHELF_BACKGROUND_DEFAULT;
+  ShelfBackgroundType target_background_type_ = ShelfBackgroundType::kDefaultBg;
 
   // The last background type this is animating away from.
-  ShelfBackgroundType previous_background_type_ = SHELF_BACKGROUND_MAXIMIZED;
+  ShelfBackgroundType previous_background_type_ =
+      ShelfBackgroundType::kMaximized;
 
   // Drives the animation.
   std::unique_ptr<gfx::SlideAnimation> animator_;

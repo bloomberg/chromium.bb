@@ -37,7 +37,8 @@ void ExternalProtocolHandler::RunExternalProtocolDialog(
     const GURL& url,
     WebContents* web_contents,
     ui::PageTransition page_transition,
-    bool has_user_gesture) {
+    bool has_user_gesture,
+    const base::Optional<url::Origin>& initiating_origin) {
   // First, check if ARC version of the dialog is available and run ARC version
   // when possible.
   // TODO(ellyjones): Refactor arc::RunArcExternalProtocolDialog() to take a
@@ -46,7 +47,8 @@ void ExternalProtocolHandler::RunExternalProtocolDialog(
   int render_process_host_id =
       web_contents->GetRenderViewHost()->GetProcess()->GetID();
   int routing_id = web_contents->GetRenderViewHost()->GetRoutingID();
-  if (arc::RunArcExternalProtocolDialog(url, render_process_host_id, routing_id,
+  if (arc::RunArcExternalProtocolDialog(url, initiating_origin,
+                                        render_process_host_id, routing_id,
                                         page_transition, has_user_gesture)) {
     return;
   }
@@ -64,11 +66,6 @@ ExternalProtocolDialog::~ExternalProtocolDialog() {
 
 int ExternalProtocolDialog::GetDialogButtons() const {
   return ui::DIALOG_BUTTON_OK;
-}
-
-base::string16 ExternalProtocolDialog::GetDialogButtonLabel(
-    ui::DialogButton button) const {
-  return l10n_util::GetStringUTF16(IDS_EXTERNAL_PROTOCOL_OK_BUTTON_TEXT);
 }
 
 base::string16 ExternalProtocolDialog::GetWindowTitle() const {
@@ -109,6 +106,10 @@ ExternalProtocolDialog::ExternalProtocolDialog(WebContents* web_contents,
                                                const GURL& url)
     : creation_time_(base::TimeTicks::Now()),
       scheme_(url.scheme()) {
+  views::DialogDelegate::set_button_label(
+      ui::DIALOG_BUTTON_OK,
+      l10n_util::GetStringUTF16(IDS_EXTERNAL_PROTOCOL_OK_BUTTON_TEXT));
+
   views::MessageBoxView::InitParams params((base::string16()));
   params.message_width = kMessageWidth;
   message_box_view_ = new views::MessageBoxView(params);

@@ -30,6 +30,7 @@
 #include "cc/test/fake_recording_source.h"
 #include "cc/test/fake_tile_manager.h"
 #include "cc/test/fake_tile_task_manager.h"
+#include "cc/test/layer_test_common.h"
 #include "cc/test/skia_common.h"
 #include "cc/test/test_layer_tree_host_base.h"
 #include "cc/test/test_task_graph_runner.h"
@@ -88,7 +89,7 @@ class SynchronousSimpleTaskRunner : public base::TestSimpleTaskRunner {
 class TileManagerTilePriorityQueueTest : public TestLayerTreeHostBase {
  public:
   LayerTreeSettings CreateSettings() override {
-    LayerTreeSettings settings;
+    auto settings = TestLayerTreeHostBase::CreateSettings();
     settings.create_low_res_tiling = true;
     return settings;
   }
@@ -616,19 +617,15 @@ TEST_F(TileManagerTilePriorityQueueTest, ActivationComesBeforeSoon) {
   // Create a pending child layer.
   scoped_refptr<FakeRasterSource> pending_raster_source =
       FakeRasterSource::CreateFilled(layer_bounds);
-  std::unique_ptr<FakePictureLayerImpl> pending_child =
-      FakePictureLayerImpl::CreateWithRasterSource(
-          host_impl()->pending_tree(), layer_id() + 1, pending_raster_source);
-  FakePictureLayerImpl* pending_child_raw = pending_child.get();
-  pending_child_raw->SetDrawsContent(true);
-  pending_layer()->test_properties()->AddChild(std::move(pending_child));
+  auto* pending_child = AddLayer<FakePictureLayerImpl>(
+      host_impl()->pending_tree(), pending_raster_source);
+  pending_child->SetDrawsContent(true);
+  CopyProperties(pending_layer(), pending_child);
 
   // Set a small viewport, so we have soon and eventually tiles.
   host_impl()->active_tree()->SetDeviceViewportRect(gfx::Rect(200, 200));
   host_impl()->AdvanceToNextFrame(base::TimeDelta::FromMilliseconds(1));
-  host_impl()->pending_tree()->property_trees()->needs_rebuild = true;
-  host_impl()->pending_tree()->BuildLayerListAndPropertyTreesForTesting();
-  host_impl()->pending_tree()->UpdateDrawProperties();
+  UpdateDrawProperties(host_impl()->pending_tree());
 
   host_impl()->SetRequiresHighResToDraw();
   std::unique_ptr<RasterTilePriorityQueue> queue(host_impl()->BuildRasterQueue(
@@ -836,21 +833,14 @@ TEST_F(TileManagerTilePriorityQueueTest,
       FakeRasterSource::CreateFilled(layer_bounds);
   SetupPendingTree(pending_raster_source);
 
-  std::unique_ptr<FakePictureLayerImpl> pending_child =
-      FakePictureLayerImpl::CreateWithRasterSource(host_impl()->pending_tree(),
-                                                   2, pending_raster_source);
-  int child_id = pending_child->id();
-  pending_layer()->test_properties()->AddChild(std::move(pending_child));
-
-  FakePictureLayerImpl* pending_child_layer =
-      static_cast<FakePictureLayerImpl*>(
-          pending_layer()->test_properties()->children[0]);
+  auto* pending_child_layer = AddLayer<FakePictureLayerImpl>(
+      host_impl()->pending_tree(), pending_raster_source);
+  int child_id = pending_child_layer->id();
   pending_child_layer->SetDrawsContent(true);
+  CopyProperties(pending_layer(), pending_child_layer);
 
   host_impl()->AdvanceToNextFrame(base::TimeDelta::FromMilliseconds(1));
-  host_impl()->pending_tree()->property_trees()->needs_rebuild = true;
-  host_impl()->pending_tree()->BuildLayerListAndPropertyTreesForTesting();
-  host_impl()->pending_tree()->UpdateDrawProperties();
+  UpdateDrawProperties(host_impl()->pending_tree());
 
   ActivateTree();
   SetupPendingTree(pending_raster_source);
@@ -950,21 +940,20 @@ TEST_F(TileManagerTilePriorityQueueTest,
       FakeRasterSource::CreateFilled(layer_bounds);
   SetupPendingTree(pending_raster_source);
 
-  std::unique_ptr<FakePictureLayerImpl> pending_child =
-      FakePictureLayerImpl::CreateWithRasterSource(host_impl()->pending_tree(),
-                                                   2, pending_raster_source);
-  FakePictureLayerImpl* pending_child_layer = pending_child.get();
-  pending_layer()->test_properties()->AddChild(std::move(pending_child));
+  auto* pending_child_layer = AddLayer<FakePictureLayerImpl>(
+      host_impl()->pending_tree(), pending_raster_source);
+  pending_child_layer->SetElementId(
+      LayerIdToElementIdForTesting(pending_child_layer->id()));
+  CopyProperties(pending_layer(), pending_child_layer);
 
   // Create a fully transparent child layer so that its tile priorities are not
   // considered to be valid.
   pending_child_layer->SetDrawsContent(true);
-  pending_child_layer->test_properties()->force_render_surface = true;
+  CreateEffectNode(pending_child_layer).render_surface_reason =
+      RenderSurfaceReason::kTest;
 
   host_impl()->AdvanceToNextFrame(base::TimeDelta::FromMilliseconds(1));
-  host_impl()->pending_tree()->property_trees()->needs_rebuild = true;
-  host_impl()->pending_tree()->BuildLayerListAndPropertyTreesForTesting();
-  host_impl()->pending_tree()->UpdateDrawProperties();
+  UpdateDrawProperties(host_impl()->pending_tree());
 
   host_impl()->pending_tree()->SetOpacityMutated(
       pending_child_layer->element_id(), 0.0f);
@@ -1052,13 +1041,11 @@ TEST_F(TileManagerTilePriorityQueueTest, RasterTilePriorityQueueEmptyLayers) {
   EXPECT_EQ(16u, tile_count);
 
   for (int i = 1; i < 10; ++i) {
-    std::unique_ptr<FakePictureLayerImpl> pending_child_layer =
-        FakePictureLayerImpl::Create(host_impl()->pending_tree(),
-                                     layer_id() + i);
+    auto* pending_child_layer =
+        AddLayer<FakePictureLayerImpl>(host_impl()->pending_tree());
     pending_child_layer->SetDrawsContent(true);
     pending_child_layer->set_has_valid_tile_priorities(true);
-    pending_layer()->test_properties()->AddChild(
-        std::move(pending_child_layer));
+    CopyProperties(pending_layer(), pending_child_layer);
   }
 
   queue = host_impl()->BuildRasterQueue(SAME_PRIORITY_FOR_BOTH_TREES,
@@ -1102,13 +1089,11 @@ TEST_F(TileManagerTilePriorityQueueTest, EvictionTilePriorityQueueEmptyLayers) {
   host_impl()->tile_manager()->InitializeTilesWithResourcesForTesting(tiles);
 
   for (int i = 1; i < 10; ++i) {
-    std::unique_ptr<FakePictureLayerImpl> pending_child_layer =
-        FakePictureLayerImpl::Create(host_impl()->pending_tree(),
-                                     layer_id() + i);
+    auto* pending_child_layer =
+        AddLayer<FakePictureLayerImpl>(host_impl()->pending_tree());
     pending_child_layer->SetDrawsContent(true);
     pending_child_layer->set_has_valid_tile_priorities(true);
-    pending_layer()->test_properties()->AddChild(
-        std::move(pending_child_layer));
+    CopyProperties(pending_layer(), pending_child_layer);
   }
 
   std::unique_ptr<EvictionTilePriorityQueue> queue(
@@ -1491,8 +1476,8 @@ TEST_F(TileManagerTilePriorityQueueTest, NoRasterTasksforSolidColorTiles) {
   FakePictureLayerTilingClient tiling_client;
   tiling_client.SetTileSize(size);
 
-  std::unique_ptr<PictureLayerImpl> layer_impl = PictureLayerImpl::Create(
-      host_impl()->active_tree(), 1, Layer::LayerMaskType::NOT_MASK);
+  std::unique_ptr<PictureLayerImpl> layer_impl =
+      PictureLayerImpl::Create(host_impl()->active_tree(), 1);
   layer_impl->set_contributes_to_drawn_render_surface(true);
   PictureLayerTilingSet* tiling_set = layer_impl->picture_layer_tiling_set();
 
@@ -1546,7 +1531,10 @@ class TestSoftwareRasterBufferProvider : public FakeRasterBufferProviderImpl {
   std::unique_ptr<RasterBuffer> AcquireBufferForRaster(
       const ResourcePool::InUsePoolResource& resource,
       uint64_t resource_content_id,
-      uint64_t previous_content_id) override {
+      uint64_t previous_content_id,
+      bool depends_on_at_raster_decodes,
+      bool depends_on_hardware_accelerated_jpeg_candidates,
+      bool depends_on_hardware_accelerated_webp_candidates) override {
     if (!resource.software_backing()) {
       auto backing = std::make_unique<TestSoftwareBacking>();
       backing->shared_bitmap_id = viz::SharedBitmap::GenerateId();
@@ -1775,8 +1763,8 @@ TEST_F(PixelInspectTileManagerTest, LowResHasNoImage) {
     FakePictureLayerTilingClient tiling_client;
     tiling_client.SetTileSize(size);
 
-    std::unique_ptr<PictureLayerImpl> layer = PictureLayerImpl::Create(
-        host_impl()->active_tree(), 1, Layer::LayerMaskType::NOT_MASK);
+    std::unique_ptr<PictureLayerImpl> layer =
+        PictureLayerImpl::Create(host_impl()->active_tree(), 1);
     PictureLayerTilingSet* tiling_set = layer->picture_layer_tiling_set();
     layer->set_contributes_to_drawn_render_surface(true);
 
@@ -1850,7 +1838,7 @@ class ActivationTasksDoNotBlockReadyToDrawTest : public TileManagerTest {
   }
 
   LayerTreeSettings CreateSettings() override {
-    LayerTreeSettings settings = TileManagerTest::CreateSettings();
+    auto settings = TileManagerTest::CreateSettings();
     settings.gpu_rasterization_forced = true;
     return settings;
   }
@@ -1906,7 +1894,7 @@ TEST_F(ActivationTasksDoNotBlockReadyToDrawTest,
 class PartialRasterTileManagerTest : public TileManagerTest {
  public:
   LayerTreeSettings CreateSettings() override {
-    LayerTreeSettings settings = TileManagerTest::CreateSettings();
+    auto settings = TileManagerTest::CreateSettings();
     settings.use_partial_raster = true;
     return settings;
   }
@@ -1935,17 +1923,17 @@ TEST_F(PartialRasterTileManagerTest, CancelledTasksHaveNoContentId) {
 
   // Steal from the recycled tree.
   std::unique_ptr<FakePictureLayerImpl> pending_layer =
-      FakePictureLayerImpl::CreateWithRasterSource(pending_tree, kLayerId,
-                                                   pending_raster_source);
+      FakePictureLayerImpl::Create(pending_tree, kLayerId,
+                                   pending_raster_source);
   pending_layer->SetDrawsContent(true);
 
   // The bounds() just mirror the raster source size.
   pending_layer->SetBounds(pending_layer->raster_source()->GetSize());
+  SetupRootProperties(pending_layer.get());
   pending_tree->SetRootLayerForTesting(std::move(pending_layer));
 
   // Add tilings/tiles for the layer.
-  host_impl()->pending_tree()->BuildLayerListAndPropertyTreesForTesting();
-  host_impl()->pending_tree()->UpdateDrawProperties();
+  UpdateDrawProperties(host_impl()->pending_tree());
 
   // Build the raster queue and invalidate the top tile.
   std::unique_ptr<RasterTilePriorityQueue> queue(host_impl()->BuildRasterQueue(
@@ -1984,7 +1972,10 @@ class VerifyResourceContentIdRasterBufferProvider
   std::unique_ptr<RasterBuffer> AcquireBufferForRaster(
       const ResourcePool::InUsePoolResource& resource,
       uint64_t resource_content_id,
-      uint64_t previous_content_id) override {
+      uint64_t previous_content_id,
+      bool depends_on_at_raster_decodes,
+      bool depends_on_hardware_accelerated_jpeg_candidates,
+      bool depends_on_hardware_accelerated_webp_candidates) override {
     EXPECT_EQ(expected_content_id_, resource_content_id);
     return nullptr;
   }
@@ -2033,17 +2024,17 @@ void RunPartialRasterCheck(std::unique_ptr<LayerTreeHostImpl> host_impl,
       host_impl->active_tree()->GetDeviceViewport());
 
   std::unique_ptr<FakePictureLayerImpl> pending_layer =
-      FakePictureLayerImpl::CreateWithRasterSource(pending_tree, kLayerId,
-                                                   pending_raster_source);
+      FakePictureLayerImpl::Create(pending_tree, kLayerId,
+                                   pending_raster_source);
   pending_layer->SetDrawsContent(true);
 
   // The bounds() just mirror the raster source size.
   pending_layer->SetBounds(pending_layer->raster_source()->GetSize());
+  SetupRootProperties(pending_layer.get());
   pending_tree->SetRootLayerForTesting(std::move(pending_layer));
 
   // Add tilings/tiles for the layer.
-  host_impl->pending_tree()->BuildLayerListAndPropertyTreesForTesting();
-  host_impl->pending_tree()->UpdateDrawProperties();
+  UpdateDrawProperties(pending_tree);
 
   // Build the raster queue and invalidate the top tile.
   std::unique_ptr<RasterTilePriorityQueue> queue(host_impl->BuildRasterQueue(
@@ -2118,17 +2109,17 @@ void RunPartialTileDecodeCheck(std::unique_ptr<LayerTreeHostImpl> host_impl,
 
   // Steal from the recycled tree.
   std::unique_ptr<FakePictureLayerImpl> pending_layer =
-      FakePictureLayerImpl::CreateWithRasterSource(pending_tree, kLayerId,
-                                                   pending_raster_source);
+      FakePictureLayerImpl::Create(pending_tree, kLayerId,
+                                   pending_raster_source);
   pending_layer->SetDrawsContent(true);
 
   // The bounds() just mirror the raster source size.
   pending_layer->SetBounds(pending_layer->raster_source()->GetSize());
+  SetupRootProperties(pending_layer.get());
   pending_tree->SetRootLayerForTesting(std::move(pending_layer));
 
   // Add tilings/tiles for the layer.
-  host_impl->pending_tree()->BuildLayerListAndPropertyTreesForTesting();
-  host_impl->pending_tree()->UpdateDrawProperties();
+  UpdateDrawProperties(pending_tree);
 
   // Build the raster queue and invalidate the top tile if partial raster is
   // enabled.
@@ -2182,7 +2173,10 @@ class InvalidResourceRasterBufferProvider
   std::unique_ptr<RasterBuffer> AcquireBufferForRaster(
       const ResourcePool::InUsePoolResource& resource,
       uint64_t resource_content_id,
-      uint64_t previous_content_id) override {
+      uint64_t previous_content_id,
+      bool depends_on_at_raster_decodes,
+      bool depends_on_hardware_accelerated_jpeg_candidates,
+      bool depends_on_hardware_accelerated_webp_candidates) override {
     if (!resource.gpu_backing()) {
       auto backing = std::make_unique<StubGpuBacking>();
       // Don't set a mailbox to signal invalid resource.
@@ -2230,8 +2224,8 @@ TEST_F(InvalidResourceTileManagerTest, InvalidResource) {
   FakePictureLayerTilingClient tiling_client;
   tiling_client.SetTileSize(size);
 
-  std::unique_ptr<PictureLayerImpl> layer = PictureLayerImpl::Create(
-      host_impl()->active_tree(), 1, Layer::LayerMaskType::NOT_MASK);
+  std::unique_ptr<PictureLayerImpl> layer =
+      PictureLayerImpl::Create(host_impl()->active_tree(), 1);
   layer->set_contributes_to_drawn_render_surface(true);
 
   auto* tiling = layer->picture_layer_tiling_set()->AddTiling(
@@ -2278,7 +2272,10 @@ class MockReadyToDrawRasterBufferProviderImpl
   std::unique_ptr<RasterBuffer> AcquireBufferForRaster(
       const ResourcePool::InUsePoolResource& resource,
       uint64_t resource_content_id,
-      uint64_t previous_content_id) override {
+      uint64_t previous_content_id,
+      bool depends_on_at_raster_decodes,
+      bool depends_on_hardware_accelerated_jpeg_candidates,
+      bool depends_on_hardware_accelerated_webp_candidates) override {
     if (!resource.software_backing())
       resource.set_software_backing(std::make_unique<TestSoftwareBacking>());
     return std::make_unique<FakeRasterBuffer>();
@@ -2335,11 +2332,6 @@ class TileManagerReadyToDrawTest : public TileManagerTest {
       }
     }
     recording_source_->Rerecord();
-  }
-
-  LayerTreeSettings CreateSettings() override {
-    LayerTreeSettings settings;
-    return settings;
   }
 
   void SetupTreesWithActiveTreeTiles() {
@@ -2561,8 +2553,8 @@ TEST_F(TileManagerReadyToDrawTest, TilePrioritiesUpdated) {
   EXPECT_GT(orig_num_required, 0u);
 
   host_impl()->active_tree()->SetDeviceViewportRect(gfx::Rect(layer_bounds));
-  host_impl()->active_tree()->UpdateDrawProperties();
-  host_impl()->pending_tree()->UpdateDrawProperties();
+  UpdateDrawProperties(host_impl()->active_tree());
+  UpdateDrawProperties(host_impl()->pending_tree());
 
   // Rerun prepare tiles.
   {
@@ -2711,7 +2703,7 @@ class CheckerImagingTileManagerTest : public TestLayerTreeHostBase {
   }
 
   LayerTreeSettings CreateSettings() override {
-    LayerTreeSettings settings;
+    auto settings = TestLayerTreeHostBase::CreateSettings();
     settings.commit_to_active_tree = false;
     settings.enable_checker_imaging = true;
     settings.min_image_bytes_to_checker = 512 * 1024;
@@ -2797,7 +2789,7 @@ TEST_F(CheckerImagingTileManagerTest,
 class EmptyCacheTileManagerTest : public TileManagerTest {
  public:
   LayerTreeSettings CreateSettings() override {
-    LayerTreeSettings settings;
+    auto settings = TileManagerTest::CreateSettings();
     settings.decoded_image_working_set_budget_bytes = 0;
     return settings;
   }
@@ -3271,7 +3263,10 @@ class VerifyImageProviderRasterBufferProvider
   std::unique_ptr<RasterBuffer> AcquireBufferForRaster(
       const ResourcePool::InUsePoolResource& resource,
       uint64_t resource_content_id,
-      uint64_t previous_content_id) override {
+      uint64_t previous_content_id,
+      bool depends_on_at_raster_decodes,
+      bool depends_on_hardware_accelerated_jpeg_candidates,
+      bool depends_on_hardware_accelerated_webp_candidates) override {
     buffer_count_++;
     return std::make_unique<VerifyImageProviderRasterBuffer>();
   }
@@ -3325,7 +3320,7 @@ class DecodedImageTrackerTileManagerTest : public TestLayerTreeHostBase {
   }
 
   LayerTreeSettings CreateSettings() override {
-    LayerTreeSettings settings = TestLayerTreeHostBase::CreateSettings();
+    auto settings = TestLayerTreeHostBase::CreateSettings();
     settings.max_preraster_distance_in_screen_pixels = 100;
     return settings;
   }
@@ -3403,18 +3398,18 @@ TEST_F(DecodedImageTrackerTileManagerTest, DecodedImageTrackerDropsLocksOnUse) {
 
   // Steal from the recycled tree.
   std::unique_ptr<FakePictureLayerImpl> pending_layer =
-      FakePictureLayerImpl::CreateWithRasterSource(pending_tree, kLayerId,
-                                                   pending_raster_source);
+      FakePictureLayerImpl::Create(pending_tree, kLayerId,
+                                   pending_raster_source);
   pending_layer->SetDrawsContent(true);
 
   // The bounds() are half the recording source size, allowing for prepaint
   // images.
   pending_layer->SetBounds(gfx::Size(500, 500));
+  SetupRootProperties(pending_layer.get());
   pending_tree->SetRootLayerForTesting(std::move(pending_layer));
 
   // Add tilings/tiles for the layer.
-  host_impl()->pending_tree()->BuildLayerListAndPropertyTreesForTesting();
-  host_impl()->pending_tree()->UpdateDrawProperties();
+  UpdateDrawProperties(host_impl()->pending_tree());
 
   // Build the raster queue and invalidate the top tile if partial raster is
   // enabled.

@@ -13,7 +13,6 @@
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/compositor/surface_utils.h"
-#include "content/browser/frame_host/render_widget_host_view_guest.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/renderer_host/delegated_frame_host.h"
 #include "content/browser/renderer_host/display_util.h"
@@ -53,9 +52,9 @@ RenderWidgetHostViewBase::~RenderWidgetHostViewBase() {
   // away. However, some subclasses may wish to call this earlier in their
   // shutdown process, e.g. to force removal from
   // RenderWidgetHostInputEventRouter's surface map before relinquishing a
-  // host pointer, as in RenderWidgetHostViewGuest. There is no harm in calling
-  // NotifyObserversAboutShutdown() twice, as the observers are required to
-  // de-register on the first call, and so the second call does nothing.
+  // host pointer. There is no harm in calling NotifyObserversAboutShutdown()
+  // twice, as the observers are required to de-register on the first call, and
+  // so the second call does nothing.
   NotifyObserversAboutShutdown();
   // If we have a live reference to |text_input_manager_|, we should unregister
   // so that the |text_input_manager_| will free its state.
@@ -361,12 +360,6 @@ InputEventAckState RenderWidgetHostViewBase::FilterInputEvent(
   return INPUT_EVENT_ACK_STATE_NOT_CONSUMED;
 }
 
-InputEventAckState RenderWidgetHostViewBase::FilterChildGestureEvent(
-    const blink::WebGestureEvent& gesture_event) {
-  // By default, do nothing with the child's gesture events.
-  return INPUT_EVENT_ACK_STATE_NOT_CONSUMED;
-}
-
 void RenderWidgetHostViewBase::WheelEventAck(
     const blink::WebMouseWheelEvent& event,
     InputEventAckState ack_result) {
@@ -566,11 +559,6 @@ base::WeakPtr<RenderWidgetHostViewBase> RenderWidgetHostViewBase::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }
 
-void RenderWidgetHostViewBase::FocusedNodeTouched(
-    bool editable) {
-  DVLOG(1) << "FocusedNodeTouched: " << editable;
-}
-
 void RenderWidgetHostViewBase::GetScreenInfo(ScreenInfo* screen_info) {
   DisplayUtil::GetNativeViewScreenInfo(screen_info, GetNativeView());
 }
@@ -687,10 +675,6 @@ bool RenderWidgetHostViewBase::TransformPointToCoordSpaceForView(
   return true;
 }
 
-bool RenderWidgetHostViewBase::IsRenderWidgetHostViewGuest() {
-  return false;
-}
-
 bool RenderWidgetHostViewBase::IsRenderWidgetHostViewChildFrame() {
   return false;
 }
@@ -708,6 +692,11 @@ void RenderWidgetHostViewBase::Destroy() {
 
 bool RenderWidgetHostViewBase::CanSynchronizeVisualProperties() {
   return true;
+}
+
+std::vector<std::unique_ptr<ui::TouchEvent>>
+RenderWidgetHostViewBase::ExtractAndCancelActiveTouches() {
+  return {};
 }
 
 void RenderWidgetHostViewBase::TextInputStateChanged(
@@ -823,13 +812,8 @@ bool RenderWidgetHostViewBase::TransformPointToTargetCoordSpace(
 
   RenderWidgetHostViewBase* cur_view = target_view;
   while (cur_view->IsRenderWidgetHostViewChildFrame()) {
-    if (cur_view->IsRenderWidgetHostViewGuest()) {
-      cur_view = static_cast<RenderWidgetHostViewGuest*>(cur_view)
-                     ->GetOwnerRenderWidgetHostView();
-    } else {
-      cur_view = static_cast<RenderWidgetHostViewChildFrame*>(cur_view)
-                     ->GetParentView();
-    }
+    cur_view =
+        static_cast<RenderWidgetHostViewChildFrame*>(cur_view)->GetParentView();
     if (!cur_view)
       return false;
     target_ancestors.push_back(cur_view->GetFrameSinkId());

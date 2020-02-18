@@ -29,5 +29,16 @@ AccessibilityDelegate* ShellDelegateImpl::CreateAccessibilityDelegate() {
   return new DefaultAccessibilityDelegate;
 }
 
+bool ShellDelegateImpl::CanGoBack(gfx::NativeWindow window) const {
+  return true;
+}
+
+void ShellDelegateImpl::BindNavigableContentsFactory(
+    mojo::PendingReceiver<content::mojom::NavigableContentsFactory> receiver) {}
+
+void ShellDelegateImpl::BindMultiDeviceSetup(
+    mojo::PendingReceiver<chromeos::multidevice_setup::mojom::MultiDeviceSetup>
+        receiver) {}
+
 }  // namespace shell
 }  // namespace ash

@@ -35,6 +35,7 @@
 #include "third_party/blink/renderer/core/layout/svg/svg_layout_support.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_resources.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_resources_cache.h"
+#include "third_party/blink/renderer/core/layout/svg/transform_helper.h"
 #include "third_party/blink/renderer/core/layout/svg/transformed_hit_test_location.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/svg_root_painter.h"
@@ -54,7 +55,7 @@ LayoutSVGRoot::LayoutSVGRoot(SVGElement* node)
       has_box_decoration_background_(false),
       has_non_isolated_blending_descendants_(false),
       has_non_isolated_blending_descendants_dirty_(false) {
-  SVGSVGElement* svg = ToSVGSVGElement(node);
+  auto* svg = To<SVGSVGElement>(node);
   DCHECK(svg);
 
   LayoutSize intrinsic_size(svg->IntrinsicWidth(), svg->IntrinsicHeight());
@@ -71,7 +72,7 @@ void LayoutSVGRoot::UnscaledIntrinsicSizingInfo(
     IntrinsicSizingInfo& intrinsic_sizing_info) const {
   // https://www.w3.org/TR/SVG/coords.html#IntrinsicSizing
 
-  SVGSVGElement* svg = ToSVGSVGElement(GetNode());
+  auto* svg = To<SVGSVGElement>(GetNode());
   DCHECK(svg);
 
   intrinsic_sizing_info.size =
@@ -95,14 +96,14 @@ void LayoutSVGRoot::UnscaledIntrinsicSizingInfo(
 
 void LayoutSVGRoot::ComputeIntrinsicSizingInfo(
     IntrinsicSizingInfo& intrinsic_sizing_info) const {
-  DCHECK(!ShouldApplySizeContainment() && !DisplayLockInducesSizeContainment());
+  DCHECK(!ShouldApplySizeContainment());
   UnscaledIntrinsicSizingInfo(intrinsic_sizing_info);
 
   intrinsic_sizing_info.size.Scale(StyleRef().EffectiveZoom());
 }
 
 bool LayoutSVGRoot::IsEmbeddedThroughSVGImage() const {
-  return SVGImage::IsInSVGImage(ToSVGSVGElement(GetNode()));
+  return SVGImage::IsInSVGImage(To<SVGSVGElement>(GetNode()));
 }
 
 bool LayoutSVGRoot::IsEmbeddedThroughFrameContainingSVGDocument() const {
@@ -193,7 +194,7 @@ void LayoutSVGRoot::UpdateLayout() {
   const bool viewport_may_have_changed =
       SelfNeedsLayout() || old_size != Size();
 
-  SVGSVGElement* svg = ToSVGSVGElement(GetNode());
+  auto* svg = To<SVGSVGElement>(GetNode());
   DCHECK(svg);
   // When hasRelativeLengths() is false, no descendants have relative lengths
   // (hence no one is interested in viewport size changes).
@@ -271,12 +272,12 @@ void LayoutSVGRoot::PaintReplaced(const PaintInfo& paint_info,
 
 void LayoutSVGRoot::WillBeDestroyed() {
   SVGResourcesCache::ClientDestroyed(*this);
-  SVGResources::ClearClipPathFilterMask(ToSVGSVGElement(*GetNode()), Style());
+  SVGResources::ClearClipPathFilterMask(To<SVGSVGElement>(*GetNode()), Style());
   LayoutReplaced::WillBeDestroyed();
 }
 
 bool LayoutSVGRoot::IntrinsicSizeIsFontMetricsDependent() const {
-  const SVGSVGElement& svg = ToSVGSVGElement(*GetNode());
+  const auto& svg = To<SVGSVGElement>(*GetNode());
   return svg.width()->CurrentValue()->IsFontRelative() ||
          svg.height()->CurrentValue()->IsFontRelative();
 }
@@ -323,8 +324,8 @@ void LayoutSVGRoot::StyleDidChange(StyleDifference diff,
     IntrinsicSizingInfoChanged();
 
   LayoutReplaced::StyleDidChange(diff, old_style);
-  SVGResources::UpdateClipPathFilterMask(ToSVGSVGElement(*GetNode()), old_style,
-                                         StyleRef());
+  SVGResources::UpdateClipPathFilterMask(To<SVGSVGElement>(*GetNode()),
+                                         old_style, StyleRef());
   SVGResourcesCache::ClientStyleChanged(*this, diff, StyleRef());
 }
 
@@ -422,7 +423,7 @@ PositionWithAffinity LayoutSVGRoot::PositionForPoint(
 // relative to our borderBox origin.  This method gives us exactly that.
 SVGTransformChange LayoutSVGRoot::BuildLocalToBorderBoxTransform() {
   SVGTransformChangeDetector change_detector(local_to_border_box_transform_);
-  SVGSVGElement* svg = ToSVGSVGElement(GetNode());
+  auto* svg = To<SVGSVGElement>(GetNode());
   DCHECK(svg);
   float scale = StyleRef().EffectiveZoom();
   local_to_border_box_transform_ = svg->ViewBoxToViewTransform(

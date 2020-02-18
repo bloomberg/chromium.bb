@@ -12,11 +12,13 @@
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/power_monitor_test_base.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/timer/mock_timer.h"
 #include "components/media_message_center/media_controls_progress_view.h"
 #include "services/media_session/public/cpp/test/test_media_controller.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -35,7 +37,7 @@ using media_session::test::TestMediaController;
 namespace {
 
 const int kAppIconSize = 20;
-constexpr int kArtworkViewHeight = 80;
+constexpr int kArtworkViewHeight = 48;
 constexpr int kArtworkCornerRadius = 4;
 
 const base::string16 kTestAppName = base::ASCIIToUTF16("Test app");
@@ -90,6 +92,10 @@ class LockScreenMediaControlsViewTest : public LoginTestBase {
     // Enable media controls.
     feature_list.InitAndEnableFeature(features::kLockScreenMediaControls);
 
+    auto power_source = std::make_unique<base::PowerMonitorTestSource>();
+    power_source_ = power_source.get();
+    base::PowerMonitor::Initialize(std::move(power_source));
+
     LoginTestBase::SetUp();
 
     lock_contents_view_ = new LockContentsView(
@@ -118,6 +124,8 @@ class LockScreenMediaControlsViewTest : public LoginTestBase {
     actions_.clear();
 
     LoginTestBase::TearDown();
+
+    base::PowerMonitor::ShutdownForTesting();
   }
 
   void EnableAllActions() {
@@ -177,16 +185,16 @@ class LockScreenMediaControlsViewTest : public LoginTestBase {
   }
 
   views::Button* GetButtonForAction(MediaSessionAction action) const {
-    const auto& children = button_row()->children();
-    const auto it = std::find_if(
-        children.begin(), children.end(), [action](const views::View* v) {
-          return views::Button::AsButton(v)->tag() == static_cast<int>(action);
-        });
+    const auto& buttons = media_action_buttons();
+    const auto it = std::find_if(buttons.begin(), buttons.end(),
+                                 [action](const views::Button* b) {
+                                   return b->tag() == static_cast<int>(action);
+                                 });
 
-    if (it == children.end())
+    if (it == buttons.end())
       return nullptr;
 
-    return views::Button::AsButton(*it);
+    return *it;
   }
 
   TestMediaController* media_controller() const {
@@ -225,6 +233,10 @@ class LockScreenMediaControlsViewTest : public LoginTestBase {
     return header_row()->close_button_for_testing();
   }
 
+  std::vector<views::Button*>& media_action_buttons() const {
+    return media_controls_view_->media_action_buttons_;
+  }
+
   bool CloseButtonHasImage() const {
     return !close_button()
                 ->GetImage(views::Button::ButtonState::STATE_NORMAL)
@@ -243,6 +255,8 @@ class LockScreenMediaControlsViewTest : public LoginTestBase {
     return media_controls_view_->GetArtworkClipPath();
   }
 
+  base::PowerMonitorTestSource& GetTestPowerSource() { return *power_source_; }
+
   LockScreenMediaControlsView* media_controls_view_ = nullptr;
   AnimationWaiter* animation_waiter_ = nullptr;
 
@@ -257,6 +271,7 @@ class LockScreenMediaControlsViewTest : public LoginTestBase {
   LockContentsView* lock_contents_view_ = nullptr;
   std::unique_ptr<TestMediaController> media_controller_;
   std::set<MediaSessionAction> actions_;
+  base::PowerMonitorTestSource* power_source_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(LockScreenMediaControlsViewTest);
 };
@@ -341,10 +356,10 @@ TEST_F(LockScreenMediaControlsViewTest, ButtonsSanityCheck) {
   EnableAllActions();
 
   EXPECT_TRUE(button_row()->GetVisible());
-  EXPECT_EQ(5u, button_row()->children().size());
+  EXPECT_EQ(5u, media_action_buttons().size());
 
   for (int i = 0; i < 5; /* size of |button_row| */ i++) {
-    auto* child = button_row()->children()[i];
+    auto* child = media_action_buttons()[i];
 
     ASSERT_TRUE(IsMediaButtonType(child->GetClassName()));
 
@@ -741,7 +756,7 @@ TEST_F(LockScreenMediaControlsViewTest, UpdateArtwork) {
 
   {
     // Verify that the provided artwork is correctly scaled down.
-    gfx::Rect expected_artwork_bounds(0, 20, 80, 40);
+    gfx::Rect expected_artwork_bounds(0, 12, 48, 24);
     gfx::Rect artwork_bounds = artwork_view()->GetImageBounds();
     EXPECT_EQ(expected_artwork_bounds, artwork_bounds);
 
@@ -753,14 +768,14 @@ TEST_F(LockScreenMediaControlsViewTest, UpdateArtwork) {
   }
 
   // Create artwork that must be scaled up to fit the view.
-  artwork.allocN32Pixels(40, 70);
+  artwork.allocN32Pixels(20, 40);
 
   media_controls_view_->MediaControllerImageChanged(
       media_session::mojom::MediaSessionImageType::kArtwork, artwork);
 
   {
     // Verify that the provided artwork is correctly scaled up.
-    gfx::Rect expected_artwork_bounds(17, 0, 45, 80);
+    gfx::Rect expected_artwork_bounds(12, 0, 24, 48);
     gfx::Rect artwork_bounds = artwork_view()->GetImageBounds();
     EXPECT_EQ(expected_artwork_bounds, artwork_bounds);
 
@@ -772,14 +787,14 @@ TEST_F(LockScreenMediaControlsViewTest, UpdateArtwork) {
   }
 
   // Create artwork that already fits the view size.
-  artwork.allocN32Pixels(70, kArtworkViewHeight);
+  artwork.allocN32Pixels(30, kArtworkViewHeight);
 
   media_controls_view_->MediaControllerImageChanged(
       media_session::mojom::MediaSessionImageType::kArtwork, artwork);
 
   {
     // Verify that the provided artwork size doesn't change.
-    gfx::Rect expected_artwork_bounds(5, 0, 70, 80);
+    gfx::Rect expected_artwork_bounds(9, 0, 30, 48);
     gfx::Rect artwork_bounds = artwork_view()->GetImageBounds();
     EXPECT_EQ(expected_artwork_bounds, artwork_bounds);
 
@@ -789,6 +804,27 @@ TEST_F(LockScreenMediaControlsViewTest, UpdateArtwork) {
                       kArtworkCornerRadius, kArtworkCornerRadius);
     EXPECT_EQ(path, GetArtworkClipPath());
   }
+}
+
+TEST_F(LockScreenMediaControlsViewTest, ArtworkVisibility) {
+  SimulateMediaSessionChanged(
+      media_session::mojom::MediaPlaybackState::kPlaying);
+
+  EXPECT_FALSE(artwork_view()->GetVisible());
+
+  SkBitmap image;
+  image.allocN32Pixels(10, 10);
+  image.eraseColor(SK_ColorMAGENTA);
+
+  media_controls_view_->MediaControllerImageChanged(
+      media_session::mojom::MediaSessionImageType::kArtwork, image);
+  EXPECT_TRUE(artwork_view()->GetVisible());
+
+  // Don't hide artwork immediately after getting null image.
+  image.reset();
+  media_controls_view_->MediaControllerImageChanged(
+      media_session::mojom::MediaSessionImageType::kArtwork, image);
+  EXPECT_TRUE(artwork_view()->GetVisible());
 }
 
 TEST_F(LockScreenMediaControlsViewTest, AccessibleNodeData) {
@@ -1123,6 +1159,24 @@ TEST_F(LockScreenMediaControlsViewTest, Histogram_Hide_Unlocked) {
   tester.ExpectUniqueSample(
       LockScreenMediaControlsView::kMediaControlsHideHistogramName,
       LockScreenMediaControlsView::HideReason::kUnlocked, 1);
+  tester.ExpectUniqueSample(
+      LockScreenMediaControlsView::kMediaControlsShownHistogramName,
+      LockScreenMediaControlsView::Shown::kShown, 1);
+}
+
+TEST_F(LockScreenMediaControlsViewTest, Histogram_Hide_DeviceSleep) {
+  base::HistogramTester tester;
+
+  SimulateMediaSessionChanged(
+      media_session::mojom::MediaPlaybackState::kPlaying);
+
+  GetTestPowerSource().GenerateSuspendEvent();
+
+  SimulateSessionUnlock();
+
+  tester.ExpectUniqueSample(
+      LockScreenMediaControlsView::kMediaControlsHideHistogramName,
+      LockScreenMediaControlsView::HideReason::kDeviceSleep, 1);
   tester.ExpectUniqueSample(
       LockScreenMediaControlsView::kMediaControlsShownHistogramName,
       LockScreenMediaControlsView::Shown::kShown, 1);

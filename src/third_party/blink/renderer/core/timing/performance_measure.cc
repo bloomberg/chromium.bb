@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/timing/performance_measure.h"
 
+#include "third_party/blink/public/mojom/timing/performance_mark_or_measure.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
 #include "third_party/blink/renderer/core/performance_entry_names.h"
@@ -47,16 +48,16 @@ PerformanceMeasure* PerformanceMeasure::Create(
 ScriptValue PerformanceMeasure::detail(ScriptState* script_state) {
   v8::Isolate* isolate = script_state->GetIsolate();
   if (!serialized_detail_)
-    return ScriptValue(script_state, v8::Null(isolate));
+    return ScriptValue(isolate, v8::Null(isolate));
   auto result = deserialized_detail_map_.insert(
       script_state, TraceWrapperV8Reference<v8::Value>());
   TraceWrapperV8Reference<v8::Value>& relevant_data =
       result.stored_value->value;
   if (!result.is_new_entry)
-    return ScriptValue(script_state, relevant_data.NewLocal(isolate));
+    return ScriptValue(isolate, relevant_data.NewLocal(isolate));
   v8::Local<v8::Value> value = serialized_detail_->Deserialize(isolate);
   relevant_data.Set(isolate, value);
-  return ScriptValue(script_state, value);
+  return ScriptValue(isolate, value);
 }
 
 AtomicString PerformanceMeasure::entryType() const {
@@ -65,6 +66,14 @@ AtomicString PerformanceMeasure::entryType() const {
 
 PerformanceEntryType PerformanceMeasure::EntryTypeEnum() const {
   return PerformanceEntry::EntryType::kMeasure;
+}
+
+mojom::blink::PerformanceMarkOrMeasurePtr
+PerformanceMeasure::ToMojoPerformanceMarkOrMeasure() {
+  auto mojo_performance_mark_or_measure =
+      PerformanceEntry::ToMojoPerformanceMarkOrMeasure();
+  mojo_performance_mark_or_measure->detail = serialized_detail_->GetWireData();
+  return mojo_performance_mark_or_measure;
 }
 
 void PerformanceMeasure::Trace(blink::Visitor* visitor) {

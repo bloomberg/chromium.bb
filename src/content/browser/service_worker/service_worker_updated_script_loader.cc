@@ -17,18 +17,18 @@
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_disk_cache.h"
 #include "content/browser/service_worker/service_worker_loader_helpers.h"
-#include "content/browser/service_worker/service_worker_storage.h"
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/browser/url_loader_factory_getter.h"
 #include "content/common/service_worker/service_worker_utils.h"
-#include "content/common/throttling_url_loader.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/common/content_client.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/cert/cert_status_flags.h"
-#include "services/network/public/cpp/resource_response.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
+#include "third_party/blink/public/common/loader/throttling_url_loader.h"
 #include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 
 namespace content {
@@ -51,14 +51,14 @@ std::unique_ptr<
     ServiceWorkerUpdatedScriptLoader::ThrottlingURLLoaderCoreWrapper>
 ServiceWorkerUpdatedScriptLoader::ThrottlingURLLoaderCoreWrapper::
     CreateLoaderAndStart(
-        std::unique_ptr<network::SharedURLLoaderFactoryInfo>
-            loader_factory_info,
+        std::unique_ptr<network::PendingSharedURLLoaderFactory>
+            pending_loader_factory,
         BrowserContextGetter browser_context_getter,
         int32_t routing_id,
         int32_t request_id,
         uint32_t options,
         const network::ResourceRequest& resource_request,
-        network::mojom::URLLoaderClientPtrInfo client,
+        mojo::PendingRemote<network::mojom::URLLoaderClient> client,
         const net::NetworkTrafficAnnotationTag& traffic_annotation) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   auto wrapper = base::WrapUnique(new ThrottlingURLLoaderCoreWrapper());
@@ -66,7 +66,7 @@ ServiceWorkerUpdatedScriptLoader::ThrottlingURLLoaderCoreWrapper::
   RunOrPostTaskOnThread(
       FROM_HERE, BrowserThread::UI,
       base::BindOnce(&ThrottlingURLLoaderCoreWrapper::StartInternalOnUI,
-                     std::move(loader_factory_info),
+                     std::move(pending_loader_factory),
                      std::move(browser_context_getter), routing_id, request_id,
                      options, network::ResourceRequest(resource_request),
                      std::move(client),
@@ -77,16 +77,17 @@ ServiceWorkerUpdatedScriptLoader::ThrottlingURLLoaderCoreWrapper::
 
 // static
 void ServiceWorkerUpdatedScriptLoader::ThrottlingURLLoaderCoreWrapper::
-    StartInternalOnUI(std::unique_ptr<network::SharedURLLoaderFactoryInfo>
-                          loader_factory_info,
-                      BrowserContextGetter browser_context_getter,
-                      int32_t routing_id,
-                      int32_t request_id,
-                      uint32_t options,
-                      network::ResourceRequest resource_request,
-                      network::mojom::URLLoaderClientPtrInfo client_info,
-                      net::NetworkTrafficAnnotationTag traffic_annotation,
-                      LoaderOnUI* loader_on_ui) {
+    StartInternalOnUI(
+        std::unique_ptr<network::PendingSharedURLLoaderFactory>
+            pending_loader_factory,
+        BrowserContextGetter browser_context_getter,
+        int32_t routing_id,
+        int32_t request_id,
+        uint32_t options,
+        network::ResourceRequest resource_request,
+        mojo::PendingRemote<network::mojom::URLLoaderClient> client_remote,
+        net::NetworkTrafficAnnotationTag traffic_annotation,
+        LoaderOnUI* loader_on_ui) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   BrowserContext* browser_context = browser_context_getter.Run();
   if (!browser_context)
@@ -102,9 +103,11 @@ void ServiceWorkerUpdatedScriptLoader::ThrottlingURLLoaderCoreWrapper::
           resource_request, browser_context, std::move(wc_getter),
           /*navigation_ui_data=*/nullptr, RenderFrameHost::kNoFrameTreeNodeId);
 
-  network::mojom::URLLoaderClientPtr client(std::move(client_info));
-  auto loader = ThrottlingURLLoader::CreateLoaderAndStart(
-      network::SharedURLLoaderFactory::Create(std::move(loader_factory_info)),
+  mojo::Remote<network::mojom::URLLoaderClient> client(
+      std::move(client_remote));
+  auto loader = blink::ThrottlingURLLoader::CreateLoaderAndStart(
+      network::SharedURLLoaderFactory::Create(
+          std::move(pending_loader_factory)),
       std::move(throttles), routing_id, request_id, options, &resource_request,
       client.get(), traffic_annotation, base::ThreadTaskRunnerHandle::Get());
   loader_on_ui->loader = std::move(loader);
@@ -165,7 +168,7 @@ std::unique_ptr<ServiceWorkerUpdatedScriptLoader>
 ServiceWorkerUpdatedScriptLoader::CreateAndStart(
     uint32_t options,
     const network::ResourceRequest& original_request,
-    network::mojom::URLLoaderClientPtr client,
+    mojo::PendingRemote<network::mojom::URLLoaderClient> client,
     scoped_refptr<ServiceWorkerVersion> version) {
   DCHECK(blink::ServiceWorkerUtils::IsImportedScriptUpdateCheckEnabled());
   return base::WrapUnique(new ServiceWorkerUpdatedScriptLoader(
@@ -175,13 +178,12 @@ ServiceWorkerUpdatedScriptLoader::CreateAndStart(
 ServiceWorkerUpdatedScriptLoader::ServiceWorkerUpdatedScriptLoader(
     uint32_t options,
     const network::ResourceRequest& original_request,
-    network::mojom::URLLoaderClientPtr client,
+    mojo::PendingRemote<network::mojom::URLLoaderClient> client,
     scoped_refptr<ServiceWorkerVersion> version)
     : request_url_(original_request.url),
       resource_type_(static_cast<ResourceType>(original_request.resource_type)),
       options_(options),
       version_(std::move(version)),
-      network_client_binding_(this),
       network_watcher_(FROM_HERE,
                        mojo::SimpleWatcher::ArmingPolicy::MANUAL,
                        base::SequencedTaskRunnerHandle::Get()),
@@ -209,9 +211,8 @@ ServiceWorkerUpdatedScriptLoader::ServiceWorkerUpdatedScriptLoader(
   DCHECK(cache_writer_);
 
   network_loader_ = std::move(info.paused_state->network_loader);
-  network_client_request_ =
-      std::move(info.paused_state->network_client_request);
-  network_consumer_ = std::move(info.paused_state->network_consumer);
+  pending_network_client_receiver_ =
+      std::move(info.paused_state->network_client_receiver);
 
   network_loader_state_ = info.paused_state->network_loader_state;
   DCHECK(network_loader_state_ == LoaderState::kLoadingBody ||
@@ -227,12 +228,14 @@ ServiceWorkerUpdatedScriptLoader::ServiceWorkerUpdatedScriptLoader(
   // Resume the cache writer and observe its writes, so all data written
   // is sent to |client_|.
   cache_writer_->set_write_observer(this);
-  net::Error error = cache_writer_->Resume(
-      base::BindOnce(&ServiceWorkerUpdatedScriptLoader::OnCacheWriterResumed,
-                     weak_factory_.GetWeakPtr()));
+  net::Error error = cache_writer_->Resume(base::BindOnce(
+      &ServiceWorkerUpdatedScriptLoader::OnCacheWriterResumed,
+      weak_factory_.GetWeakPtr(), info.paused_state->pending_network_buffer,
+      info.paused_state->consumed_bytes));
 
   if (error != net::ERR_IO_PENDING) {
-    OnCacheWriterResumed(error);
+    OnCacheWriterResumed(info.paused_state->pending_network_buffer,
+                         info.paused_state->consumed_bytes, error);
   }
 }
 
@@ -344,9 +347,9 @@ int ServiceWorkerUpdatedScriptLoader::WillWriteInfo(
       response_info->response_data_size);
   // Don't pass SSLInfo to the client when the original request doesn't ask
   // to send it.
-  if (response.head.ssl_info.has_value() &&
+  if (response.head->ssl_info.has_value() &&
       !(options_ & network::mojom::kURLLoadOptionSendSSLInfoWithResponse)) {
-    response.head.ssl_info.reset();
+    response.head->ssl_info.reset();
   }
 
   client_->OnReceiveResponse(std::move(response.head));
@@ -423,7 +426,10 @@ int ServiceWorkerUpdatedScriptLoader::WillWriteData(
   return net::ERR_IO_PENDING;
 }
 
-void ServiceWorkerUpdatedScriptLoader::OnCacheWriterResumed(net::Error error) {
+void ServiceWorkerUpdatedScriptLoader::OnCacheWriterResumed(
+    scoped_refptr<network::MojoToNetPendingBuffer> pending_network_buffer,
+    uint32_t consumed_bytes,
+    net::Error error) {
   DCHECK_NE(error, net::ERR_IO_PENDING);
   // Stop observing write operations in cache writer as further data are
   // from network which would be processed by OnNetworkDataAvailable().
@@ -441,10 +447,17 @@ void ServiceWorkerUpdatedScriptLoader::OnCacheWriterResumed(net::Error error) {
     return;
   }
 
+  // The data in the pending buffer has been processed during resuming. At this
+  // point, this completes the pending read and releases the Mojo handle to
+  // continue with reading the rest of the body.
+  DCHECK(pending_network_buffer);
+  pending_network_buffer->CompleteRead(consumed_bytes);
+  network_consumer_ = pending_network_buffer->ReleaseHandle();
+
   // Continue to load the rest of the body from the network.
   DCHECK_EQ(body_writer_state_, WriterState::kWriting);
   DCHECK(network_consumer_);
-  network_client_binding_.Bind(std::move(network_client_request_));
+  network_client_receiver_.Bind(std::move(pending_network_client_receiver_));
   network_watcher_.Watch(
       network_consumer_.get(),
       MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
@@ -620,7 +633,7 @@ void ServiceWorkerUpdatedScriptLoader::CommitCompleted(
   client_producer_watcher_.Cancel();
 
   network_loader_.reset();
-  network_client_binding_.Close();
+  network_client_receiver_.reset();
   network_consumer_.reset();
   network_watcher_.Cancel();
   cache_writer_.reset();

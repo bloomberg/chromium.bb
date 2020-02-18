@@ -19,6 +19,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/writable_shared_memory_region.h"
+#include "base/optional.h"
 #include "base/task_runner.h"
 #include "build/build_config.h"
 #include "mojo/core/atomic_flag.h"
@@ -113,12 +114,17 @@ class MOJO_SYSTEM_IMPL_EXPORT NodeController : public ports::NodeDelegate,
   // interface after requesting shutdown, you do so at your own risk and there
   // is NO guarantee that new messages will be sent or ports will complete
   // transfer.
-  void RequestShutdown(const base::Closure& callback);
+  void RequestShutdown(base::OnceClosure callback);
 
   // Notifies the NodeController that we received a bad message from the given
   // node.
   void NotifyBadMessageFrom(const ports::NodeName& source_node,
                             const std::string& error);
+
+  // Force-closes the connection to another process to simulate connection
+  // failures for testing. |process_id| must correspond to a process to which
+  // this node has an active NodeChannel.
+  void ForceDisconnectProcessForTesting(base::ProcessId process_id);
 
   static void DeserializeRawBytesAsEventForFuzzer(
       base::span<const unsigned char> data);
@@ -156,7 +162,8 @@ class MOJO_SYSTEM_IMPL_EXPORT NodeController : public ports::NodeDelegate,
       ports::NodeName token,
       const ProcessErrorCallback& process_error_callback);
   void AcceptBrokerClientInvitationOnIOThread(
-      ConnectionParams connection_params);
+      ConnectionParams connection_params,
+      base::Optional<PlatformHandle> broker_host_handle);
 
   void ConnectIsolatedOnIOThread(ConnectionParams connection_params,
                                  ports::PortRef port,
@@ -238,6 +245,9 @@ class MOJO_SYSTEM_IMPL_EXPORT NodeController : public ports::NodeDelegate,
   // possible. If so, shutdown is performed and the shutdown callback is run.
   void AttemptShutdownIfRequested();
 
+  // See |ForceDisconnectProcessForTesting()|.
+  void ForceDisconnectProcessForTestingOnIOThread(base::ProcessId process_id);
+
   // These are safe to access from any thread as long as the Node is alive.
   Core* const core_;
   const ports::NodeName name_;
@@ -299,7 +309,7 @@ class MOJO_SYSTEM_IMPL_EXPORT NodeController : public ports::NodeDelegate,
   // Set by RequestShutdown(). If this is non-null, the controller will
   // begin polling the Node to see if clean shutdown is possible any time the
   // Node's state is modified by the controller.
-  base::Closure shutdown_callback_;
+  base::OnceClosure shutdown_callback_;
   // Flag to fast-path checking |shutdown_callback_|.
   AtomicFlag shutdown_callback_flag_;
 

@@ -5,6 +5,7 @@
 #include "content/renderer/media/android/stream_texture_wrapper_impl.h"
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "cc/layers/video_frame_provider.h"
 #include "gpu/GLES2/gl2extchromium.h"
@@ -62,13 +63,21 @@ void StreamTextureWrapperImpl::ReallocateVideoFrame() {
       gpu::MailboxHolder(mailbox, texture_mailbox_sync_token,
                          GL_TEXTURE_EXTERNAL_OES)};
 
+  // The pixel format doesn't matter here as long as it's valid for texture
+  // frames. But SkiaRenderer wants to ensure that the format of the resource
+  // used here which will eventually create a promise image must match the
+  // format of the resource(SharedImageVideo) used to create fulfill image.
+  // crbug.com/1028746. Since we create all the textures/abstract textures as
+  // well as shared images for video to be of format RGBA, we need to use the
+  // pixel format as ABGR here(which corresponds to 32bpp RGBA).
   scoped_refptr<media::VideoFrame> new_frame =
       media::VideoFrame::WrapNativeTextures(
-          media::PIXEL_FORMAT_ARGB, holders,
+          media::PIXEL_FORMAT_ABGR, holders,
           media::BindToCurrentLoop(
               base::BindOnce(&OnReleaseVideoFrame, factory_, mailbox)),
           natural_size_, gfx::Rect(natural_size_), natural_size_,
           base::TimeDelta());
+  new_frame->set_ycbcr_info(ycbcr_info_);
 
   if (enable_texture_copy_) {
     new_frame->metadata()->SetBoolean(media::VideoFrameMetadata::COPY_REQUIRED,
@@ -93,6 +102,14 @@ void StreamTextureWrapperImpl::SetCurrentFrameInternal(
     scoped_refptr<media::VideoFrame> video_frame) {
   base::AutoLock auto_lock(current_frame_lock_);
   current_frame_ = std::move(video_frame);
+}
+
+void StreamTextureWrapperImpl::SetYcbcrInfo(
+    base::Optional<gpu::VulkanYCbCrInfo> ycbcr_info) {
+  DCHECK(!ycbcr_info_);
+
+  current_frame_->set_ycbcr_info(ycbcr_info);
+  ycbcr_info_ = std::move(ycbcr_info);
 }
 
 void StreamTextureWrapperImpl::UpdateTextureSize(const gfx::Size& new_size) {
@@ -120,7 +137,7 @@ void StreamTextureWrapperImpl::Initialize(
     const base::RepeatingClosure& received_frame_cb,
     const gfx::Size& natural_size,
     scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner,
-    const StreamTextureWrapperInitCB& init_cb) {
+    StreamTextureWrapperInitCB init_cb) {
   DVLOG(2) << __func__;
 
   compositor_task_runner_ = compositor_task_runner;
@@ -130,34 +147,40 @@ void StreamTextureWrapperImpl::Initialize(
       FROM_HERE,
       base::BindOnce(&StreamTextureWrapperImpl::InitializeOnMainThread,
                      weak_factory_.GetWeakPtr(), received_frame_cb,
-                     media::BindToCurrentLoop(init_cb)));
+                     media::BindToCurrentLoop(std::move(init_cb))));
 }
 
 void StreamTextureWrapperImpl::InitializeOnMainThread(
     const base::RepeatingClosure& received_frame_cb,
-    const StreamTextureWrapperInitCB& init_cb) {
+    StreamTextureWrapperInitCB init_cb) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   DVLOG(2) << __func__;
 
   // Normally, we have a factory.  However, if the gpu process is restarting,
   // then we might not.
   if (!factory_) {
-    init_cb.Run(false);
+    std::move(init_cb).Run(false);
     return;
   }
 
   stream_texture_proxy_ = factory_->CreateProxy();
   if (!stream_texture_proxy_) {
-    init_cb.Run(false);
+    std::move(init_cb).Run(false);
     return;
   }
 
   ReallocateVideoFrame();
 
-  stream_texture_proxy_->BindToTaskRunner(received_frame_cb,
-                                          compositor_task_runner_);
+  // Unretained is safe here since |stream_texture_proxy_| is a scoped member of
+  // the this StreamTextureWrapperImpl class which clears/resets this callback
+  // before |this| is destroyed.
+  stream_texture_proxy_->BindToTaskRunner(
+      received_frame_cb,
+      base::BindOnce(&StreamTextureWrapperImpl::SetYcbcrInfo,
+                     base::Unretained(this)),
+      compositor_task_runner_);
 
-  init_cb.Run(true);
+  std::move(init_cb).Run(true);
 }
 
 void StreamTextureWrapperImpl::Destroy() {

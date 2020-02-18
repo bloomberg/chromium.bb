@@ -16,13 +16,16 @@
 
 'use strict';
 
+// If you add or remove job types, do not forget to fix the colspans below.
 const JOB_TYPES = [
   { id: 'linux-gcc7-x86_64-release', label: 'rel' },
   { id: 'linux-clang-x86_64-debug', label: 'dbg' },
   { id: 'linux-clang-x86_64-tsan', label: 'tsan' },
   { id: 'linux-clang-x86_64-msan', label: 'msan' },
   { id: 'linux-clang-x86_64-asan_lsan', label: '{a,l}san' },
+  { id: 'linux-clang-x86-asan_lsan', label: 'x86 {a,l}san' },
   { id: 'linux-clang-x86_64-libfuzzer', label: 'fuzzer' },
+  { id: 'linux-clang-x86_64-bazel', label: 'bazel' },
   { id: 'ui-clang-x86_64-debug', label: 'dbg' },
   { id: 'ui-clang-x86_64-release', label: 'rel' },
   { id: 'android-clang-arm-release', label: 'rel' },
@@ -194,15 +197,15 @@ var CLsPageRenderer = {
                 m('td[rowspan=4]', 'Status'),
                 m('td[rowspan=4]', 'Owner'),
                 m('td[rowspan=4]', 'Updated'),
-                m('td[colspan=10]', 'Bots'),
+                m('td[colspan=12]', 'Bots'),
               ),
               m('tr',
-                m('td[colspan=8]', 'linux'),
+                m('td[colspan=10]', 'linux'),
                 m('td[colspan=2]', 'android'),
               ),
               m('tr',
                 m('td', 'gcc7'),
-                m('td[colspan=5]', 'clang'),
+                m('td[colspan=7]', 'clang'),
                 m('td[colspan=2]', 'ui'),
                 m('td[colspan=2]', 'clang-arm'),
               ),

@@ -51,4 +51,13 @@ icu::UnicodeString UnicodeStringFromUtf32(const uint8_t* data, size_t size) {
   return icu::UnicodeString::fromUTF32(uchars.data(), uchars.size());
 }
 
+std::vector<char16_t> RandomChar16Array(size_t random_value,
+                                        const uint8_t* data,
+                                        size_t size) {
+  std::vector<char16_t> arr;
+  arr.resize(random_value % size * sizeof(uint8_t) / sizeof(char16_t));
+  memcpy(arr.data(), data, arr.size() * sizeof(char16_t) / sizeof(uint8_t));
+  return arr;
+}
+
 #endif  // THIRD_PARTY_ICU_FUZZERS_FUZZER_UTILS_H_

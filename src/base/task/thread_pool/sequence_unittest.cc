@@ -140,7 +140,7 @@ TEST(ThreadPoolSequenceTest, GetSortKeyBestEffort) {
 
   // Verify the sort key.
   EXPECT_EQ(TaskPriority::BEST_EFFORT, best_effort_sort_key.priority());
-  EXPECT_EQ(take_best_effort_task->queue_time,
+  EXPECT_EQ(take_best_effort_task.queue_time,
             best_effort_sort_key.next_task_sequenced_time());
 
   // DidProcessTask for correctness.
@@ -174,7 +174,7 @@ TEST(ThreadPoolSequenceTest, GetSortKeyForeground) {
 
   // Verify the sort key.
   EXPECT_EQ(TaskPriority::USER_VISIBLE, foreground_sort_key.priority());
-  EXPECT_EQ(take_foreground_task->queue_time,
+  EXPECT_EQ(take_foreground_task.queue_time,
             foreground_sort_key.next_task_sequenced_time());
 
   // DidProcessTask for correctness.
@@ -184,7 +184,7 @@ TEST(ThreadPoolSequenceTest, GetSortKeyForeground) {
 
 // Verify that a DCHECK fires if DidProcessTask() is called on a sequence which
 // didn't return a Task.
-TEST(ThreadPoolSequenceTest, DidProcessTaskWithoutTakeTask) {
+TEST(ThreadPoolSequenceTest, DidProcessTaskWithoutWillRunTask) {
   scoped_refptr<Sequence> sequence = MakeRefCounted<Sequence>(
       TaskTraits(ThreadPool()), nullptr, TaskSourceExecutionMode::kParallel);
   Sequence::Transaction sequence_transaction(sequence->BeginTransaction());
@@ -193,7 +193,6 @@ TEST(ThreadPoolSequenceTest, DidProcessTaskWithoutTakeTask) {
   auto registered_task_source =
       RegisteredTaskSource::CreateForTesting(sequence);
   EXPECT_DCHECK_DEATH({
-    registered_task_source.WillRunTask();
     registered_task_source.DidProcessTask(&sequence_transaction);
   });
 }
@@ -210,7 +209,7 @@ TEST(ThreadPoolSequenceTest, TakeEmptyFrontSlot) {
       RegisteredTaskSource::CreateForTesting(sequence);
   {
     registered_task_source.WillRunTask();
-    EXPECT_TRUE(registered_task_source.TakeTask(&sequence_transaction));
+    IgnoreResult(registered_task_source.TakeTask(&sequence_transaction));
     registered_task_source.DidProcessTask(&sequence_transaction);
   }
   EXPECT_DCHECK_DEATH({

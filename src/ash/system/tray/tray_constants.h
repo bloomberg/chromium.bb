@@ -6,8 +6,6 @@
 #define ASH_SYSTEM_TRAY_TRAY_CONSTANTS_H_
 
 #include "ash/ash_export.h"
-#include "base/macros.h"
-#include "chromeos/constants/chromeos_switches.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -53,17 +51,11 @@ extern const int kTrayPopupItemMinEndWidth;
 // item. This applies to all labels in the system menu.
 extern const int kTrayPopupLabelRightPadding;
 
-extern const int kTrayRoundedBorderRadius;
-
 // The width of ToggleButton views including any border padding.
 extern const int kTrayToggleButtonWidth;
 
 // Constants for the title row.
 constexpr int kTitleRowProgressBarHeight = 2;
-
-// Extra padding used to adjust hitting region around tray items.
-extern const int kHitRegionPadding;
-extern const int kHitRegionPaddingDense;
 
 // Width of lines used to separate menu items (e.g. input method menu).
 constexpr int kMenuSeparatorWidth = 1;
@@ -106,6 +98,10 @@ constexpr gfx::Insets kUnifiedSliderRowPadding(0, 12, 8, 16);
 constexpr gfx::Insets kUnifiedSliderBubblePadding(12, 0, 4, 0);
 constexpr gfx::Insets kUnifiedSliderPadding(0, 16);
 
+constexpr int kMessageCenterCollapseThreshold = 175;
+constexpr int kStackedNotificationBarHeight = 32;
+constexpr int kStackedNotificationBarCollapsedHeight = 40;
+constexpr int kNotificationIconStackThreshold = 28;
 constexpr int kUnifiedSliderViewSpacing = 12;
 constexpr int kUnifiedMenuPadding = 8;
 constexpr int kUnifiedMessageCenterBubbleSpacing = 8;
@@ -113,7 +109,7 @@ constexpr int kUnifiedNotificationCenterSpacing = 16;
 constexpr int kUnifiedTrayIconSize = 20;
 constexpr int kUnifiedTraySpacingBetweenIcons = 6;
 constexpr int kUnifiedTrayBatteryWidth = 10;
-constexpr int kUnifiedTrayCornerRadius = 20;
+constexpr int kUnifiedTrayCornerRadius = 16;
 constexpr int kUnifiedTrayContentPadding = 12;
 constexpr int kUnifiedTopShortcutSpacing = 16;
 constexpr int kUnifiedNotificationHiddenLineHeight = 20;
@@ -122,7 +118,6 @@ constexpr int kUnifiedNotificationMinimumHeight = 40;
 constexpr gfx::Insets kUnifiedTopShortcutPadding(0, 16);
 constexpr gfx::Insets kUnifiedNotificationHiddenPadding(6, 16);
 constexpr gfx::Insets kUnifiedCircularButtonFocusPadding(4);
-constexpr int kStackingNotificationCounterHeight = 32;
 constexpr gfx::Insets kStackingNotificationClearAllButtonPadding(8, 16);
 
 // Size of an icon drawn inside top shortcut buttons.
@@ -133,6 +128,20 @@ constexpr int kUnifiedManagedDeviceSpacing = 4;
 constexpr int kUnifiedSystemInfoHeight = 16;
 constexpr int kUnifiedSystemInfoSpacing = 8;
 constexpr gfx::Insets kUnifiedSystemInfoDateViewPadding(3);
+
+// Constants used in StackedNotificationBar located on top of the message
+// center.
+constexpr gfx::Insets kStackedNotificationIconsContainerPadding(1, 16, 0, 8);
+constexpr int kStackedNotificationBarMaxIcons = 3;
+constexpr int kStackedNotificationBarIconSpacing = 6;
+constexpr int kStackedNotificationIconSize = 18;
+constexpr int kNotificationIconAnimationLowPosition = 7;
+constexpr int kNotificationIconAnimationHighPosition = -3;
+constexpr double kNotificationIconAnimationScaleFactor = 0.77;
+constexpr int kNotificationIconAnimationUpDurationMs = 50;
+constexpr int kNotificationIconAnimationDownDurationMs = 17;
+constexpr int kNotificationIconAnimationOutDurationMs = 67;
+constexpr double kNotificationCenterDragExpandThreshold = 0.8;
 
 // Constants used in FeaturePodsView of UnifiedSystemTray.
 constexpr gfx::Size kUnifiedFeaturePodIconSize(48, 48);
@@ -159,9 +168,7 @@ constexpr int kUnifiedFeaturePodMaxItemsInCollapsed = 5;
 constexpr int kUnifiedFeaturePodsPageSpacing = 48;
 constexpr int kUnifiedNotificationSeparatorThickness = 1;
 
-// Constants used in system tray page transition animations (ms).
-constexpr int kUnifiedSystemTrayPageTransitionDurationMs = 250;
-constexpr int kUnifiedSystemTrayOverScrollPageTransitionDurationMs = 50;
+// Constants used in system tray page transition animations.
 constexpr double kCollapseThreshold = 0.3;
 
 // Separators between multiple users are shorter than the full width.
@@ -181,21 +188,8 @@ constexpr int kUnifiedTopShortcutButtonMinSpacing = 4;
 constexpr gfx::Insets kUnifiedDetailedViewTitlePadding(0, 0, 0, 16);
 constexpr int kUnifiedDetailedViewTitleRowHeight = 64;
 
-class TrayConstants {
- public:
-  static int hit_region_padding() {
-    return UseNewDenseShelfUi() ? kHitRegionPaddingDense : kHitRegionPadding;
-  }
-
- private:
-  static bool UseNewDenseShelfUi() {
-    static bool use_new_dense_shelf_ui =
-        chromeos::switches::ShouldShowShelfDenseClamshell();
-    return use_new_dense_shelf_ui;
-  }
-
-  DISALLOW_IMPLICIT_CONSTRUCTORS(TrayConstants);
-};
+constexpr int kStatusAreaLeftPaddingForOverflow = 100;
+constexpr int kStatusAreaForceCollapseAvailableWidth = 200;
 
 }  // namespace ash
 

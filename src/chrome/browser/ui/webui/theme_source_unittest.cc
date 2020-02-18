@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/run_loop.h"
+#include "base/strings/strcat.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/theme_source.h"
 #include "chrome/common/url_constants.h"
@@ -24,8 +25,12 @@ class WebUISourcesTest : public testing::Test {
   size_t result_data_size() const { return result_data_size_; }
 
   void StartDataRequest(const std::string& source) {
-    theme_source()->StartDataRequest(source, content::WebContents::Getter(),
-                                     callback_);
+    theme_source()->StartDataRequest(
+        GURL(base::StrCat({content::kChromeUIScheme, "://",
+                           chrome::kChromeUIThemeHost, "/", source})),
+        content::WebContents::Getter(),
+        base::BindOnce(&WebUISourcesTest::SendResponse,
+                       base::Unretained(this)));
   }
 
   size_t result_data_size_;
@@ -34,8 +39,6 @@ class WebUISourcesTest : public testing::Test {
   void SetUp() override {
     profile_ = std::make_unique<TestingProfile>();
     theme_source_ = std::make_unique<ThemeSource>(profile_.get());
-    callback_ = base::Bind(&WebUISourcesTest::SendResponse,
-                           base::Unretained(this));
   }
 
   void TearDown() override {
@@ -46,8 +49,6 @@ class WebUISourcesTest : public testing::Test {
   void SendResponse(scoped_refptr<base::RefCountedMemory> data) {
     result_data_size_ = data ? data->size() : 0;
   }
-
-  content::URLDataSource::GotDataCallback callback_;
 
   content::BrowserTaskEnvironment task_environment_;
 
@@ -93,4 +94,16 @@ TEST_F(WebUISourcesTest, ThemeSourceCSS) {
   StartDataRequest("css/WRONGURL");
   EXPECT_EQ(result_data_size_, empty_size);
 #endif
+}
+
+TEST_F(WebUISourcesTest, ThemeAllowedOrigin) {
+  EXPECT_EQ(
+      theme_source()->GetAccessControlAllowOriginForOrigin("chrome://settings"),
+      "chrome://settings");
+  EXPECT_EQ(theme_source()->GetAccessControlAllowOriginForOrigin(
+                "chrome-extensions://some-id"),
+            "");
+  EXPECT_EQ(
+      theme_source()->GetAccessControlAllowOriginForOrigin("http://google.com"),
+      "");
 }

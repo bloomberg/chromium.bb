@@ -10,7 +10,7 @@
 #include "base/command_line.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/chromeos/arc/arc_optin_uma.h"
-#include "chrome/browser/chromeos/arc/arc_session_manager.h"
+#include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/settings/stats_reporting_controller.h"
 #include "chrome/browser/ui/zoom/chrome_zoom_level_prefs.h"
@@ -178,8 +178,10 @@ TEST_F(ArcSettingsServiceTest,
 
 // Initial settings applied in case intent helper instance is set before
 // provisioning.
+
+// TODO(crbug.com/1004630) Disabled due to flake.
 TEST_F(ArcSettingsServiceTest,
-       InitialSettingsAppliedForInstanceBeforeProvisioning) {
+       DISABLED_InitialSettingsAppliedForInstanceBeforeProvisioning) {
   arc_session_manager()->RequestEnable();
   arc_session_manager()->OnTermsOfServiceNegotiatedForTesting(true);
   arc_session_manager()->StartArcForTesting();

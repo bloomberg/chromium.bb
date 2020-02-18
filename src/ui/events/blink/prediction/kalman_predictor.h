@@ -5,6 +5,7 @@
 #ifndef UI_EVENTS_BLINK_PREDICTION_KALMAN_PREDICTOR_H_
 #define UI_EVENTS_BLINK_PREDICTION_KALMAN_PREDICTOR_H_
 
+#include <deque>
 #include <vector>
 
 #include "ui/events/blink/prediction/input_predictor.h"
@@ -19,7 +20,16 @@ namespace ui {
 // be used to predict one dimension (x, y).
 class KalmanPredictor : public InputPredictor {
  public:
-  explicit KalmanPredictor();
+  // Heuristic option enables changing the influence of acceleration based on
+  // change of direction. Direction cut off enables discarding the prediction if
+  // the predicted direction is opposite from the current direction.
+  enum PredictionOptions {
+    kNone = 0x0,
+    kHeuristicsEnabled = 0x1,
+    kDirectionCutOffEnabled = 0x2
+  };
+
+  explicit KalmanPredictor(unsigned int prediction_options);
   ~KalmanPredictor() override;
 
   const char* GetName() const override;
@@ -35,8 +45,8 @@ class KalmanPredictor : public InputPredictor {
 
   // Generate the prediction based on stored points and given time_stamp.
   // Return false if no prediction available.
-  bool GeneratePrediction(base::TimeTicks predict_time,
-                          InputData* result) const override;
+  std::unique_ptr<InputData> GeneratePrediction(
+      base::TimeTicks predict_time) const override;
 
   // Return the filtered value of time intervals.
   base::TimeDelta TimeInterval() const override;
@@ -54,8 +64,15 @@ class KalmanPredictor : public InputPredictor {
   // Filter to smooth time intervals.
   KalmanFilter time_filter_;
 
-  // The last input point.
-  InputData last_point_;
+  // Most recent input data.
+  std::deque<InputData> last_points_;
+
+  // Maximum time interval between first and last events in last points queue.
+  static constexpr base::TimeDelta kMaxTimeInQueue =
+      base::TimeDelta::FromMilliseconds(40);
+
+  // Flags to determine the enabled prediction options.
+  const unsigned int prediction_options_;
 
   DISALLOW_COPY_AND_ASSIGN(KalmanPredictor);
 };

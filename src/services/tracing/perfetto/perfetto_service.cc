@@ -10,8 +10,8 @@
 #include "base/no_destructor.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "base/task/post_task.h"
-#include "services/service_manager/public/cpp/bind_source_info.h"
 #include "services/tracing/perfetto/consumer_host.h"
 #include "services/tracing/perfetto/producer_host.h"
 #include "services/tracing/public/cpp/perfetto/shared_memory.h"
@@ -63,6 +63,11 @@ PerfettoService::PerfettoService(
   // from threads without a MessageLoop doesn't get lost.
   service_->SetSMBScrapingEnabled(true);
   DCHECK(service_);
+
+  receivers_.set_disconnect_handler(base::BindRepeating(
+      &PerfettoService::OnServiceDisconnect, base::Unretained(this)));
+  producer_receivers_.set_disconnect_handler(base::BindRepeating(
+      &PerfettoService::OnProducerHostDisconnect, base::Unretained(this)));
 }
 
 PerfettoService::~PerfettoService() = default;
@@ -71,21 +76,25 @@ perfetto::TracingService* PerfettoService::GetService() const {
   return service_.get();
 }
 
-void PerfettoService::BindRequest(mojom::PerfettoServiceRequest request,
-                                  uint32_t pid) {
-  bindings_.AddBinding(this, std::move(request), pid);
+void PerfettoService::BindReceiver(
+    mojo::PendingReceiver<mojom::PerfettoService> receiver,
+    uint32_t pid) {
+  ++num_active_connections_[pid];
+  receivers_.Add(this, std::move(receiver), pid);
 }
 
 void PerfettoService::ConnectToProducerHost(
-    mojom::ProducerClientPtr producer_client,
-    mojom::ProducerHostRequest producer_host_request) {
+    mojo::PendingRemote<mojom::ProducerClient> producer_client,
+    mojo::PendingReceiver<mojom::ProducerHost> producer_host_receiver) {
   auto new_producer = std::make_unique<ProducerHost>();
-  uint32_t producer_pid = bindings_.dispatch_context();
+  uint32_t producer_pid = receivers_.current_context();
   new_producer->Initialize(std::move(producer_client), service_.get(),
                            base::StrCat({mojom::kPerfettoProducerNamePrefix,
                                          base::NumberToString(producer_pid)}));
-  producer_bindings_.AddBinding(std::move(new_producer),
-                                std::move(producer_host_request));
+
+  ++num_active_connections_[producer_pid];
+  producer_receivers_.Add(std::move(new_producer),
+                          std::move(producer_host_receiver), producer_pid);
 }
 
 void PerfettoService::AddActiveServicePid(base::ProcessId pid) {
@@ -97,6 +106,7 @@ void PerfettoService::AddActiveServicePid(base::ProcessId pid) {
 
 void PerfettoService::RemoveActiveServicePid(base::ProcessId pid) {
   active_service_pids_.erase(pid);
+  num_active_connections_.erase(pid);
   for (auto* tracing_session : tracing_sessions_) {
     tracing_session->OnActiveServicePidRemoved(pid);
   }
@@ -147,6 +157,22 @@ void PerfettoService::RequestTracingSession(
   }
 
   std::move(callback).Run();
+}
+
+void PerfettoService::OnServiceDisconnect() {
+  OnDisconnectFromProcess(receivers_.current_context());
+}
+
+void PerfettoService::OnProducerHostDisconnect() {
+  OnDisconnectFromProcess(producer_receivers_.current_context());
+}
+
+void PerfettoService::OnDisconnectFromProcess(base::ProcessId pid) {
+  int& num_connections = num_active_connections_[pid];
+  DCHECK_GT(num_connections, 0);
+  --num_connections;
+  if (!num_connections)
+    RemoveActiveServicePid(pid);
 }
 
 }  // namespace tracing

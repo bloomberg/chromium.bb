@@ -38,10 +38,8 @@
 
 namespace blink {
 
-using namespace html_names;
-
 HTMLTemplateElement::HTMLTemplateElement(Document& document)
-    : HTMLElement(kTemplateTag, document) {
+    : HTMLElement(html_names::kTemplateTag, document) {
   UseCounter::Count(document, WebFeature::kHTMLTemplateElement);
 }
 
@@ -62,8 +60,10 @@ void HTMLTemplateElement::CloneNonAttributePropertiesFrom(
     CloneChildrenFlag flag) {
   if (flag == CloneChildrenFlag::kSkip)
     return;
-  if (ToHTMLTemplateElement(source).content_)
-    content()->CloneChildNodesFrom(*ToHTMLTemplateElement(source).content());
+
+  auto& html_template_element = To<HTMLTemplateElement>(source);
+  if (html_template_element.content_)
+    content()->CloneChildNodesFrom(*html_template_element.content());
 }
 
 void HTMLTemplateElement::DidMoveToNewDocument(Document& old_document) {

@@ -16,7 +16,7 @@
 #include "base/observer_list_threadsafe.h"
 #include "base/sequence_checker.h"
 #include "base/synchronization/lock.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "services/network/public/mojom/network_change_manager.mojom.h"
 
 namespace network {
@@ -39,7 +39,7 @@ class COMPONENT_EXPORT(NETWORK_CPP) NetworkConnectionTracker
     : public network::mojom::NetworkChangeManagerClient {
  public:
   using BindingCallback = base::RepeatingCallback<void(
-      network::mojom::NetworkChangeManagerRequest)>;
+      mojo::PendingReceiver<network::mojom::NetworkChangeManager>)>;
   using ConnectionTypeCallback =
       base::OnceCallback<void(network::mojom::ConnectionType)>;
 
@@ -54,9 +54,9 @@ class COMPONENT_EXPORT(NETWORK_CPP) NetworkConnectionTracker
   };
 
   // Constructs a NetworkConnectionTracker. |callback| should bind the given
-  // NetworkChangeManagerRequest to the NetworkChangeManager that should be
-  // used. NetworkConnectionTracker does not need to be destroyed before the
-  // network service.
+  // mojo::PendingReceiver<NetworkChangeManager> to the NetworkChangeManager
+  // that should be used. NetworkConnectionTracker does not need to be destroyed
+  // before the network service.
   explicit NetworkConnectionTracker(BindingCallback callback);
 
   ~NetworkConnectionTracker() override;
@@ -127,8 +127,8 @@ class COMPONENT_EXPORT(NETWORK_CPP) NetworkConnectionTracker
   // restarts.
   void HandleNetworkServicePipeBroken();
 
-  // Callback to bind a NetworkChangeManagerRequest.
-  const BindingCallback bind_request_callback_;
+  // Callback to bind a mojo::PendingReceiver<NetworkChangeManager>.
+  const BindingCallback bind_receiver_callback_;
 
   // The task runner that |this| lives on.
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
@@ -148,7 +148,7 @@ class COMPONENT_EXPORT(NETWORK_CPP) NetworkConnectionTracker
   const scoped_refptr<base::ObserverListThreadSafe<NetworkConnectionObserver>>
       leaky_network_change_observer_list_;
 
-  mojo::Binding<network::mojom::NetworkChangeManagerClient> binding_;
+  mojo::Receiver<network::mojom::NetworkChangeManagerClient> receiver_{this};
 
   // Only the initialization and re-initialization of |this| are required to
   // be bound to the same sequence.

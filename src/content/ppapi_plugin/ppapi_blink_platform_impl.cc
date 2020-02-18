@@ -42,23 +42,14 @@ PpapiBlinkPlatformImpl::PpapiBlinkPlatformImpl() {
   SkFontConfigInterface::SetGlobal(font_loader_);
   sandbox_support_.reset(new WebSandboxSupportLinux(font_loader_));
 #elif defined(OS_MACOSX)
-  sandbox_support_.reset(
-      new WebSandboxSupportMac(ChildThread::Get()->GetConnector()));
+  sandbox_support_ = std::make_unique<WebSandboxSupportMac>();
 #endif
 }
 
 PpapiBlinkPlatformImpl::~PpapiBlinkPlatformImpl() {
 }
 
-void PpapiBlinkPlatformImpl::Shutdown() {
-#if defined(OS_LINUX) || defined(OS_MACOSX)
-  // SandboxSupport contains a map of OutOfProcessFont objects, which hold
-  // WebStrings and WebVectors, which become invalidated when blink is shut
-  // down. Hence, we need to clear that map now, just before blink::shutdown()
-  // is called.
-  sandbox_support_.reset();
-#endif
-}
+void PpapiBlinkPlatformImpl::Shutdown() {}
 
 blink::WebSandboxSupport* PpapiBlinkPlatformImpl::GetSandboxSupport() {
 #if defined(OS_LINUX) || defined(OS_MACOSX)

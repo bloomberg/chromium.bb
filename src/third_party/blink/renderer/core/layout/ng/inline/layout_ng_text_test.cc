@@ -47,6 +47,21 @@ class LayoutNGTextTest : public PageTestBase {
   }
 };
 
+TEST_F(LayoutNGTextTest, SetTextWithOffsetAppendControl) {
+  if (!RuntimeEnabledFeatures::LayoutNGEnabled())
+    return;
+
+  SetBodyInnerHTML(u"<pre id=target>a</pre>");
+  Text& text = To<Text>(*GetElementById("target")->firstChild());
+  // Note: "\n" is control character instead of text character.
+  text.appendData("\nX");
+
+  EXPECT_EQ(
+      "*{'a', ShapeResult=0+1}\n"
+      "*{'X', ShapeResult=2+1}\n",
+      GetItemsAsString(*text.GetLayoutObject()));
+}
+
 TEST_F(LayoutNGTextTest, SetTextWithOffsetAppendCollapseWhiteSpace) {
   if (!RuntimeEnabledFeatures::LayoutNGEnabled())
     return;
@@ -122,6 +137,19 @@ TEST_F(LayoutNGTextTest, SetTextWithOffsetDeleteRTL) {
   text.deleteData(2, 2, ASSERT_NO_EXCEPTION);  // remove "23"
 
   EXPECT_EQ("*{'0 4', ShapeResult=0+3}\n",
+            GetItemsAsString(*text.GetLayoutObject()));
+}
+
+// http://crbug.com/1000685
+TEST_F(LayoutNGTextTest, SetTextWithOffsetDeleteRTL2) {
+  if (!RuntimeEnabledFeatures::LayoutNGEnabled())
+    return;
+
+  SetBodyInnerHTML(u"<p id=target dir=rtl>0(xy)5</p>");
+  Text& text = To<Text>(*GetElementById("target")->firstChild());
+  text.deleteData(0, 1, ASSERT_NO_EXCEPTION);  // remove "0"
+
+  EXPECT_EQ("*{'(xy)5', ShapeResult=0+5}\n",
             GetItemsAsString(*text.GetLayoutObject()));
 }
 

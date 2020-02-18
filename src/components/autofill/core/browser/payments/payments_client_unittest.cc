@@ -24,6 +24,7 @@
 #include "components/autofill/core/browser/payments/local_card_migration_manager.h"
 #include "components/autofill/core/browser/payments/payments_client.h"
 #include "components/autofill/core/browser/test_personal_data_manager.h"
+#include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/autofill/core/common/autofill_switches.h"
@@ -140,13 +141,15 @@ class PaymentsClientTest : public testing::Test {
     unmask_response_details_ = &response;
   }
 
-  void OnDidGetOptChangeResult(AutofillClient::PaymentsRpcResult result,
-                               bool user_is_opted_in,
-                               base::Value fido_creation_options) {
+  void OnDidGetOptChangeResult(
+      AutofillClient::PaymentsRpcResult result,
+      PaymentsClient::OptChangeResponseDetails& response) {
     result_ = result;
-    user_is_opted_in_ = user_is_opted_in;
-    if (fido_creation_options.is_dict())
-      fido_creation_options_ = fido_creation_options.Clone();
+    opt_change_response_.user_is_opted_in = response.user_is_opted_in;
+    opt_change_response_.fido_creation_options =
+        std::move(response.fido_creation_options);
+    opt_change_response_.fido_request_options =
+        std::move(response.fido_request_options);
   }
 
   void OnDidGetUploadDetails(
@@ -209,9 +212,10 @@ class PaymentsClientTest : public testing::Test {
 
   // If |opt_in| is set to true, then opts the user in to use FIDO
   // authentication for card unmasking. Otherwise opts the user out.
-  void StartOptChangeRequest(bool opt_in) {
+  void StartOptChangeRequest(
+      PaymentsClient::OptChangeRequestDetails::Reason reason) {
     PaymentsClient::OptChangeRequestDetails request_details;
-    request_details.opt_in = opt_in;
+    request_details.reason = reason;
     client_->OptChange(
         request_details,
         base::BindOnce(&PaymentsClientTest::OnDidGetOptChangeResult,
@@ -279,7 +283,7 @@ class PaymentsClientTest : public testing::Test {
   void IssueOAuthToken() {
     identity_test_env_.WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
         "totally_real_token",
-        base::Time::Now() + base::TimeDelta::FromDays(10));
+        AutofillClock::Now() + base::TimeDelta::FromDays(10));
 
     // Verify the auth header.
     std::string auth_header_value;
@@ -299,10 +303,8 @@ class PaymentsClientTest : public testing::Test {
 
   // Server ID of a saved card via credit card upload save.
   std::string server_id_;
-  // Status of the user's FIDO auth opt-in; returned from an OptChange call.
-  base::Optional<bool> user_is_opted_in_;
-  // FIDO auth enrollment creation options; returned from an OptChange call.
-  base::Value fido_creation_options_;
+  // The OptChangeResponseDetails retrieved from an OptChangeRequest.
+  PaymentsClient::OptChangeResponseDetails opt_change_response_;
   // The UnmaskResponseDetails retrieved from an UnmaskRequest.  Includes PAN.
   PaymentsClient::UnmaskResponseDetails* unmask_response_details_ = nullptr;
   // The legal message returned from a GetDetails upload save preflight call.
@@ -428,11 +430,13 @@ TEST_F(PaymentsClientTest, UnmaskSuccessViaFIDO) {
 TEST_F(PaymentsClientTest, UnmaskSuccessViaCVCWithCreationOptions) {
   StartUnmasking(CardUnmaskOptions().with_use_fido(false));
   IssueOAuthToken();
-  ReturnResponse(net::HTTP_OK,
-                 "{ \"pan\": \"1234\", \"fido_creation_options\": "
-                 "{\"relying_party_id\": \"google.com\"}}");
+  ReturnResponse(
+      net::HTTP_OK,
+      "{ \"pan\": \"1234\", \"dcvv\": \"321\", \"fido_creation_options\": "
+      "{\"relying_party_id\": \"google.com\"}}");
   EXPECT_EQ(AutofillClient::SUCCESS, result_);
   EXPECT_EQ("1234", unmask_response_details_->real_pan);
+  EXPECT_EQ("321", unmask_response_details_->dcvv);
   EXPECT_EQ("google.com",
             *unmask_response_details_->fido_creation_options->FindStringKey(
                 "relying_party_id"));
@@ -514,51 +518,51 @@ TEST_F(PaymentsClientTest, UnmaskLogsCvcLengthForPaymentRequest) {
       "Autofill.CardUnmask.CvcLength.ForPaymentRequest", 5, 1);
 }
 
-TEST_F(PaymentsClientTest, UnmaskLogsBlankCvcLength) {
-  base::HistogramTester histogram_tester;
-  StartUnmasking(CardUnmaskOptions()
-                     .with_reason(AutofillClient::UNMASK_FOR_AUTOFILL)
-                     .with_cvc(""));
-  IssueOAuthToken();
-
-  histogram_tester.ExpectBucketCount(
-      "Autofill.CardUnmask.CvcLength.ForAutofill", 0, 1);
-}
-
 TEST_F(PaymentsClientTest, OptInSuccess) {
-  StartOptChangeRequest(/*opt_in=*/true);
+  StartOptChangeRequest(
+      PaymentsClient::OptChangeRequestDetails::ENABLE_FIDO_AUTH);
   IssueOAuthToken();
-  ReturnResponse(net::HTTP_OK, "{ \"user_is_opted_in\": true }");
+  ReturnResponse(net::HTTP_OK,
+                 "{ \"fido_authentication_info\": { \"user_status\": "
+                 "\"FIDO_AUTH_ENABLED\"}}");
   EXPECT_EQ(AutofillClient::SUCCESS, result_);
-  EXPECT_TRUE(user_is_opted_in_.value());
+  EXPECT_TRUE(opt_change_response_.user_is_opted_in.value());
 }
 
 TEST_F(PaymentsClientTest, OptInServerUnresponsive) {
-  StartOptChangeRequest(/*opt_in=*/true);
+  StartOptChangeRequest(
+      PaymentsClient::OptChangeRequestDetails::ENABLE_FIDO_AUTH);
   IssueOAuthToken();
   ReturnResponse(net::HTTP_REQUEST_TIMEOUT, "");
   EXPECT_EQ(AutofillClient::NETWORK_ERROR, result_);
-  EXPECT_FALSE(user_is_opted_in_.value());
+  EXPECT_FALSE(opt_change_response_.user_is_opted_in.has_value());
 }
 
 TEST_F(PaymentsClientTest, OptOutSuccess) {
-  StartOptChangeRequest(/*opt_in=*/false);
+  StartOptChangeRequest(
+      PaymentsClient::OptChangeRequestDetails::DISABLE_FIDO_AUTH);
   IssueOAuthToken();
-  ReturnResponse(net::HTTP_OK, "{ \"user_is_opted_in\": false }");
+  ReturnResponse(net::HTTP_OK,
+                 "{ \"fido_authentication_info\": { \"user_status\": "
+                 "\"FIDO_AUTH_DISABLED\"}}");
   EXPECT_EQ(AutofillClient::SUCCESS, result_);
-  EXPECT_FALSE(user_is_opted_in_.value());
+  EXPECT_FALSE(opt_change_response_.user_is_opted_in.value());
 }
 
 TEST_F(PaymentsClientTest, EnrollAttemptReturnsCreationOptions) {
-  StartOptChangeRequest(/*opt_in=*/true);
+  StartOptChangeRequest(
+      PaymentsClient::OptChangeRequestDetails::ENABLE_FIDO_AUTH);
   IssueOAuthToken();
   ReturnResponse(net::HTTP_OK,
-                 "{ \"user_is_opted_in\": false, \"fido_creation_options\": { "
-                 "\"relying_party_id\": \"google.com\"} }");
+                 "{ \"fido_authentication_info\": { \"user_status\": "
+                 "\"FIDO_AUTH_DISABLED\","
+                 "\"fido_creation_options\": {"
+                 "\"relying_party_id\": \"google.com\"}}}");
   EXPECT_EQ(AutofillClient::SUCCESS, result_);
-  EXPECT_FALSE(user_is_opted_in_.value());
+  EXPECT_FALSE(opt_change_response_.user_is_opted_in.value());
   EXPECT_EQ("google.com",
-            *fido_creation_options_.FindStringKey("relying_party_id"));
+            *opt_change_response_.fido_creation_options->FindStringKey(
+                "relying_party_id"));
 }
 
 TEST_F(PaymentsClientTest, GetDetailsSuccess) {
@@ -707,9 +711,6 @@ TEST_F(PaymentsClientTest, GetUploadDetailsVariationsTest) {
   // headers. Also, the variations header provider may have been registered to
   // observe some other field trial list, so reset it.
   variations::VariationsHttpHeaderProvider::GetInstance()->ResetForTesting();
-  // Note: This needs a base::FieldTrialList instance because it does not use
-  // ScopedFeatureList, which provides its own, unlike other tests that do.
-  base::FieldTrialList field_trial_list_(nullptr);
   CreateFieldTrialWithId("AutofillTest", "Group", 369);
   StartGettingUploadDetails();
 
@@ -806,7 +807,7 @@ TEST_F(PaymentsClientTest, GetUploadAccountFromSyncTest) {
   // Issue a token for the secondary account.
   identity_test_env_.WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
       secondary_account_info.account_id, "secondary_account_token",
-      base::Time::Now() + base::TimeDelta::FromDays(10));
+      AutofillClock::Now() + base::TimeDelta::FromDays(10));
 
   // Verify the auth header.
   std::string auth_header_value;
@@ -821,9 +822,6 @@ TEST_F(PaymentsClientTest, UploadCardVariationsTest) {
   // headers. Also, the variations header provider may have been registered to
   // observe some other field trial list, so reset it.
   variations::VariationsHttpHeaderProvider::GetInstance()->ResetForTesting();
-  // Note: This needs a base::FieldTrialList instance because it does not use
-  // ScopedFeatureList, which provides its own, unlike other tests that do.
-  base::FieldTrialList field_trial_list_(nullptr);
   CreateFieldTrialWithId("AutofillTest", "Group", 369);
   StartUploading(/*include_cvc=*/true);
   IssueOAuthToken();
@@ -839,9 +837,6 @@ TEST_F(PaymentsClientTest, UnmaskCardVariationsTest) {
   // headers. Also, the variations header provider may have been registered to
   // observe some other field trial list, so reset it.
   variations::VariationsHttpHeaderProvider::GetInstance()->ResetForTesting();
-  // Note: This needs a base::FieldTrialList instance because it does not use
-  // ScopedFeatureList, which provides its own, unlike other tests that do.
-  base::FieldTrialList field_trial_list_(nullptr);
   CreateFieldTrialWithId("AutofillTest", "Group", 369);
   StartUnmasking(CardUnmaskOptions());
   IssueOAuthToken();
@@ -857,9 +852,6 @@ TEST_F(PaymentsClientTest, MigrateCardsVariationsTest) {
   // headers. Also, the variations header provider may have been registered to
   // observe some other field trial list, so reset it.
   variations::VariationsHttpHeaderProvider::GetInstance()->ResetForTesting();
-  // Note: This needs a base::FieldTrialList instance because it does not use
-  // ScopedFeatureList, which provides its own, unlike other tests that do.
-  base::FieldTrialList field_trial_list_(nullptr);
   CreateFieldTrialWithId("AutofillTest", "Group", 369);
   StartMigrating(/*has_cardholder_name=*/true);
   IssueOAuthToken();

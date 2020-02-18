@@ -153,8 +153,6 @@ wl_array_copy(struct wl_array *array, struct wl_array *source)
 
 /** \cond */
 
-struct wl_object global_zombie_object;
-
 int
 wl_interface_equal(const struct wl_interface *a, const struct wl_interface *b)
 {
@@ -177,21 +175,21 @@ union map_entry {
 #define map_entry_get_data(entry) ((void *)((entry).next & ~(uintptr_t)0x3))
 #define map_entry_get_flags(entry) (((entry).next >> 1) & 0x1)
 
-WL_EXPORT void
+void
 wl_map_init(struct wl_map *map, uint32_t side)
 {
 	memset(map, 0, sizeof *map);
 	map->side = side;
 }
 
-WL_EXPORT void
+void
 wl_map_release(struct wl_map *map)
 {
 	wl_array_release(&map->client_entries);
 	wl_array_release(&map->server_entries);
 }
 
-WL_EXPORT uint32_t
+uint32_t
 wl_map_insert_new(struct wl_map *map, uint32_t flags, void *data)
 {
 	union map_entry *start, *entry;
@@ -223,7 +221,7 @@ wl_map_insert_new(struct wl_map *map, uint32_t flags, void *data)
 	return (entry - start) + base;
 }
 
-WL_EXPORT int
+int
 wl_map_insert_at(struct wl_map *map, uint32_t flags, uint32_t i, void *data)
 {
 	union map_entry *start;
@@ -251,7 +249,7 @@ wl_map_insert_at(struct wl_map *map, uint32_t flags, uint32_t i, void *data)
 	return 0;
 }
 
-WL_EXPORT int
+int
 wl_map_reserve_new(struct wl_map *map, uint32_t i)
 {
 	union map_entry *start;
@@ -290,7 +288,7 @@ wl_map_reserve_new(struct wl_map *map, uint32_t i)
 	return 0;
 }
 
-WL_EXPORT void
+void
 wl_map_remove(struct wl_map *map, uint32_t i)
 {
 	union map_entry *start;
@@ -314,7 +312,7 @@ wl_map_remove(struct wl_map *map, uint32_t i)
 	map->free_list = (i << 1) | 1;
 }
 
-WL_EXPORT void *
+void *
 wl_map_lookup(struct wl_map *map, uint32_t i)
 {
 	union map_entry *start;
@@ -337,7 +335,7 @@ wl_map_lookup(struct wl_map *map, uint32_t i)
 	return NULL;
 }
 
-WL_EXPORT uint32_t
+uint32_t
 wl_map_lookup_flags(struct wl_map *map, uint32_t i)
 {
 	union map_entry *start;
@@ -371,7 +369,7 @@ for_each_helper(struct wl_array *entries, wl_iterator_func_t func, void *data)
 
 	for (p = start; p < end; p++)
 		if (p->data && !map_entry_is_free(*p)) {
-			ret = func(map_entry_get_data(*p), data);
+			ret = func(map_entry_get_data(*p), data, map_entry_get_flags(*p));
 			if (ret != WL_ITERATOR_CONTINUE)
 				break;
 		}
@@ -379,7 +377,7 @@ for_each_helper(struct wl_array *entries, wl_iterator_func_t func, void *data)
 	return ret;
 }
 
-WL_EXPORT void
+void
 wl_map_for_each(struct wl_map *map, wl_iterator_func_t func, void *data)
 {
 	enum wl_iterator_result ret;

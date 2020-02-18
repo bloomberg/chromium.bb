@@ -7,7 +7,8 @@
 
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "services/device/public/mojom/geolocation.mojom.h"
 #include "services/device/public/mojom/geolocation_context.mojom.h"
 #include "third_party/blink/public/mojom/geolocation/geolocation_service.mojom.h"
@@ -30,14 +31,14 @@ class GeolocationServiceImplContext {
   void RequestPermission(
       RenderFrameHost* render_frame_host,
       bool user_gesture,
-      const base::Callback<void(blink::mojom::PermissionStatus)>& callback);
+      base::OnceCallback<void(blink::mojom::PermissionStatus)> callback);
 
  private:
   PermissionControllerImpl* permission_controller_;
   int request_id_;
 
   void HandlePermissionStatus(
-      const base::Callback<void(blink::mojom::PermissionStatus)>& callback,
+      base::OnceCallback<void(blink::mojom::PermissionStatus)> callback,
       blink::mojom::PermissionStatus permission_status);
 
   base::WeakPtrFactory<GeolocationServiceImplContext> weak_factory_{this};
@@ -49,12 +50,11 @@ class CONTENT_EXPORT GeolocationServiceImpl
     : public blink::mojom::GeolocationService {
  public:
   GeolocationServiceImpl(device::mojom::GeolocationContext* geolocation_context,
-                         PermissionControllerImpl* permission_controller,
                          RenderFrameHost* render_frame_host);
   ~GeolocationServiceImpl() override;
 
   // Binds to the GeolocationService.
-  void Bind(blink::mojom::GeolocationServiceRequest request);
+  void Bind(mojo::PendingReceiver<blink::mojom::GeolocationService> receiver);
 
   // Creates a Geolocation instance.
   // This may not be called a second time until the Geolocation instance has
@@ -78,9 +78,9 @@ class CONTENT_EXPORT GeolocationServiceImpl
   // Along with each GeolocationService, we store a
   // GeolocationServiceImplContext which primarily exists to manage a
   // Permission Request ID.
-  mojo::BindingSet<blink::mojom::GeolocationService,
-                   std::unique_ptr<GeolocationServiceImplContext>>
-      binding_set_;
+  mojo::ReceiverSet<blink::mojom::GeolocationService,
+                    std::unique_ptr<GeolocationServiceImplContext>>
+      receiver_set_;
 
   DISALLOW_COPY_AND_ASSIGN(GeolocationServiceImpl);
 };

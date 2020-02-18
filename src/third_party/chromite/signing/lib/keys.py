@@ -161,8 +161,8 @@ class KeyPair(object):
       SignerKeyError: If error getting sha1sum from public key
       RunCommandError: if vbutil_key fails
     """
-    res = cros_build_lib.RunCommand(['vbutil_key', '--unpack', self.public],
-                                    error_code_ok=True)
+    res = cros_build_lib.run(['vbutil_key', '--unpack', self.public],
+                             check=False, encoding='utf-8')
 
     # Match line that looks like: 'Key sha1sum: <sha1sum>'.
     match = re.search(r'Key sha1sum: +(\w+)', res.output)
@@ -370,12 +370,12 @@ class Keyset(object):
 
   def Prune(self):
     """Check that all keys exists, else remove them."""
-    for k, key in self.keys.items():
-      if not key.Exists():
+    for k in list(self.keys):
+      if not self.keys[k].Exists():
         self.keys.pop(k)
-    for root_of_trust, keys in self._root_of_trust_keys.items():
-      for k, key in keys.items():
-        if not key.Exists():
+    for root_of_trust in list(self._root_of_trust_keys):
+      for k in list(self._root_of_trust_keys[root_of_trust]):
+        if not self._root_of_trust_keys[root_of_trust][k].Exists():
           self._root_of_trust_keys[root_of_trust].pop(k)
 
   def AddKey(self, key):
@@ -472,6 +472,6 @@ class Keyset(object):
 
     if not found:
       raise SignerRootOfTrustKeyMissingError(
-          'Unable to find %s', root_of_trust_name)
+          'Unable to find %s' % (root_of_trust_name,))
 
     return ks

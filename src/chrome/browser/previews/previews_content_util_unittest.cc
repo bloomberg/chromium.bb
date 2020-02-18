@@ -7,7 +7,6 @@
 #include <map>
 #include <memory>
 #include <string>
-#include <vector>
 
 #include "base/test/gtest_util.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -83,18 +82,11 @@ class PreviewEnabledPreviewsDecider : public PreviewsDecider {
     return IsEnabled(type);
   }
 
-  bool LoadPageHints(content::NavigationHandle* navigation_handle) override {
+  bool AreCommitTimePreviewsAvailable(
+      content::NavigationHandle* navigation_handle) override {
     return navigation_handle->GetURL().host_piece().ends_with(
         "hintcachedhost.com");
   }
-
-  bool GetResourceLoadingHints(
-      const GURL& url,
-      std::vector<std::string>* out_resource_patterns_to_block) const override {
-    return false;
-  }
-
-  void LogHintCacheMatch(const GURL& url, bool is_committed) const override {}
 
  private:
   bool IsEnabled(PreviewsType type) const {
@@ -166,14 +158,14 @@ TEST_F(PreviewsContentUtilTest,
        DetermineAllowedClientPreviewsStateDataSaverDisabled) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitFromCommandLine(
-      "Previews,ResourceLoadingHints,NoScriptPreviews",
+      "Previews,DeferAllScript,ResourceLoadingHints,NoScriptPreviews",
       {} /* disable_features */);
   PreviewsUserData user_data(1);
   bool is_reload = false;
   bool previews_triggering_logic_already_ran = false;
   bool is_data_saver_user = true;
-  EXPECT_EQ(content::OFFLINE_PAGE_ON | content::RESOURCE_LOADING_HINTS_ON |
-                content::NOSCRIPT_ON,
+  EXPECT_EQ(content::OFFLINE_PAGE_ON | content::DEFER_ALL_SCRIPT_ON |
+                content::RESOURCE_LOADING_HINTS_ON | content::NOSCRIPT_ON,
             previews::CallDetermineAllowedClientPreviewsState(
                 &user_data, GURL("http://www.google.com"), is_reload,
                 previews_triggering_logic_already_ran, is_data_saver_user,
@@ -190,7 +182,7 @@ TEST_F(PreviewsContentUtilTest,
        DetermineAllowedClientPreviewsStateOfflineAndRedirects) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitFromCommandLine(
-      "Previews", "ResourceLoadingHints,NoScriptPreviews");
+      "Previews", "DeferAllScript,ResourceLoadingHints,NoScriptPreviews");
   PreviewsUserData user_data(1);
   bool is_reload = false;
   bool previews_triggering_logic_already_ran = false;
@@ -447,25 +439,26 @@ TEST_F(PreviewsContentUtilTest, DetermineCommittedClientPreviewsStateForHttp) {
   user_data.set_navigation_ect(net::EFFECTIVE_CONNECTION_TYPE_2G);
   base::HistogramTester histogram_tester;
 
-  // Verify that currently these previews do not commit on HTTP.
-  EXPECT_EQ(content::PREVIEWS_OFF,
+  // Verify that these previews do now commit on HTTP.
+  EXPECT_EQ(content::DEFER_ALL_SCRIPT_ON,
             previews::DetermineCommittedClientPreviewsState(
                 &user_data, GURL("http://www.google.com"),
                 content::NOSCRIPT_ON | content::RESOURCE_LOADING_HINTS_ON |
                     content::DEFER_ALL_SCRIPT_ON,
                 enabled_previews_decider(), nullptr));
   histogram_tester.ExpectTotalCount(
-      "Previews.Triggered.EffectiveConnectionType2", 0);
-
-  // Ensure one does commit on HTTPS (to confirm test setup).
-  EXPECT_NE(content::PREVIEWS_OFF,
-            previews::DetermineCommittedClientPreviewsState(
-                &user_data, GURL("https://www.google.com"),
-                content::NOSCRIPT_ON | content::RESOURCE_LOADING_HINTS_ON |
-                    content::DEFER_ALL_SCRIPT_ON,
-                enabled_previews_decider(), nullptr));
-  histogram_tester.ExpectTotalCount(
       "Previews.Triggered.EffectiveConnectionType2", 1);
+
+  EXPECT_EQ(content::RESOURCE_LOADING_HINTS_ON,
+            previews::DetermineCommittedClientPreviewsState(
+                &user_data, GURL("http://www.google.com"),
+                content::RESOURCE_LOADING_HINTS_ON, enabled_previews_decider(),
+                nullptr));
+
+  EXPECT_EQ(content::NOSCRIPT_ON,
+            previews::DetermineCommittedClientPreviewsState(
+                &user_data, GURL("http://www.google.com"), content::NOSCRIPT_ON,
+                enabled_previews_decider(), nullptr));
 }
 
 TEST_F(PreviewsContentUtilTest,

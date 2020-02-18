@@ -9,10 +9,11 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.SystemClock;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.text.TextUtils;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 import androidx.browser.customtabs.CustomTabsService;
 import androidx.browser.customtabs.CustomTabsService.Relation;
 
@@ -21,7 +22,6 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.StrictModeContext;
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
@@ -33,6 +33,7 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.content_public.browser.BrowserStartupController;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
+import org.chromium.content_public.browser.WebContents;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -76,6 +77,8 @@ public class OriginVerifier {
     @Nullable private OriginVerificationListener mListener;
     private Origin mOrigin;
     private long mVerificationStartTime;
+    @Nullable
+    private WebContents mWebContents;
 
     /**
      * A collection of Relationships (stored as Strings, with the signature set to an empty String)
@@ -84,13 +87,17 @@ public class OriginVerifier {
     private static final AtomicReference<Set<String>> sVerificationOverrides =
             new AtomicReference<>();
 
+    /**
+     * Factory that can be injected by Dagger.
+     */
     @Reusable
     public static class Factory {
         @Inject
         public Factory() {}
 
-        public OriginVerifier create(String packageName, @Relation int relation) {
-            return new OriginVerifier(packageName, relation);
+        public OriginVerifier create(
+                String packageName, @Relation int relation, @Nullable WebContents webContents) {
+            return new OriginVerifier(packageName, relation, webContents);
         }
     }
 
@@ -160,9 +167,8 @@ public class OriginVerifier {
      */
     public static boolean wasPreviouslyVerified(String packageName, Origin origin,
             @Relation int relation) {
-        return shouldOverrideVerification(packageName, origin, relation)
-                || VerificationResultStore.isRelationshipSaved(new Relationship(packageName,
-                getCertificateSHA256FingerprintForPackage(packageName), origin, relation));
+        return wasPreviouslyVerified(packageName,
+                getCertificateSHA256FingerprintForPackage(packageName), origin, relation);
     }
 
 
@@ -179,7 +185,8 @@ public class OriginVerifier {
      */
     private static boolean wasPreviouslyVerified(String packageName, String signatureFingerprint,
             Origin origin, @Relation int relation) {
-        return VerificationResultStore.isRelationshipSaved(
+        return shouldOverrideVerification(packageName, origin, relation)
+                || VerificationResultStore.isRelationshipSaved(
                 new Relationship(packageName, signatureFingerprint, origin, relation));
     }
 
@@ -205,11 +212,15 @@ public class OriginVerifier {
      * Use {@link OriginVerifier#start}
      * @param packageName The package for the Android application for verification.
      * @param relation Digital Asset Links {@link Relation} to use during verification.
+     * @param webContents The web contents of the tab used for reporting errors to DevTools. Can be
+     *         null if unavailable.
      */
-    public OriginVerifier(String packageName, @Relation int relation) {
+    public OriginVerifier(
+            String packageName, @Relation int relation, @Nullable WebContents webContents) {
         mPackageName = packageName;
         mSignatureFingerprint = getCertificateSHA256FingerprintForPackage(mPackageName);
         mRelation = relation;
+        mWebContents = webContents;
     }
 
     /**
@@ -229,7 +240,7 @@ public class OriginVerifier {
         String disableDalUrl = CommandLine.getInstance().getSwitchValue(
                 ChromeSwitches.DISABLE_DIGITAL_ASSET_LINK_VERIFICATION);
         if (!TextUtils.isEmpty(disableDalUrl)
-                && mOrigin.equals(new Origin(disableDalUrl))) {
+                && mOrigin.equals(Origin.create(disableDalUrl))) {
             Log.i(TAG, "Verification skipped for %s due to command line flag.", origin);
             PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, new VerifiedCallback(true, null));
             return;
@@ -257,8 +268,9 @@ public class OriginVerifier {
             // Early return for testing without native.
             return;
         }
-        mNativeOriginVerifier = OriginVerifierJni.get().init(
-                OriginVerifier.this, Profile.getLastUsedProfile().getOriginalProfile());
+        if (mWebContents != null && mWebContents.isDestroyed()) mWebContents = null;
+        mNativeOriginVerifier = OriginVerifierJni.get().init(OriginVerifier.this, mWebContents,
+                Profile.getLastUsedProfile().getOriginalProfile());
         assert mNativeOriginVerifier != 0;
         String relationship = null;
         switch (mRelation) {
@@ -451,7 +463,7 @@ public class OriginVerifier {
 
     @NativeMethods
     interface Natives {
-        long init(OriginVerifier caller, Profile profile);
+        long init(OriginVerifier caller, @Nullable WebContents webContents, Profile profile);
         boolean verifyOrigin(long nativeOriginVerifier, OriginVerifier caller, String packageName,
                 String signatureFingerprint, String origin, String relationship);
         void destroy(long nativeOriginVerifier, OriginVerifier caller);

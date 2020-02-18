@@ -55,7 +55,11 @@ DEFINE_VARIATION_PARAM(kIPHDownloadHomeFeature, "IPH_DownloadHome");
 DEFINE_VARIATION_PARAM(kIPHDownloadPageFeature, "IPH_DownloadPage");
 DEFINE_VARIATION_PARAM(kIPHDownloadPageScreenshotFeature,
                        "IPH_DownloadPageScreenshot");
-DEFINE_VARIATION_PARAM(kIPHChromeDuetFeature, "IPH_ChromeDuet");
+DEFINE_VARIATION_PARAM(kIPHChromeDuetHomeButtonFeature,
+                       "IPH_ChromeDuetHomeButton");
+DEFINE_VARIATION_PARAM(kIPHChromeDuetSearchFeature, "IPH_ChromeDuet");
+DEFINE_VARIATION_PARAM(kIPHChromeDuetTabSwitcherFeature,
+                       "IPH_ChromeDuetTabSwitcherButton");
 DEFINE_VARIATION_PARAM(kIPHChromeHomeExpandFeature, "IPH_ChromeHomeExpand");
 DEFINE_VARIATION_PARAM(kIPHChromeHomePullToRefreshFeature,
                        "IPH_ChromeHomePullToRefresh");
@@ -73,8 +77,6 @@ DEFINE_VARIATION_PARAM(kIPHDownloadInfoBarDownloadContinuingFeature,
 DEFINE_VARIATION_PARAM(kIPHDownloadInfoBarDownloadsAreFasterFeature,
                        "IPH_DownloadInfoBarDownloadsAreFaster");
 DEFINE_VARIATION_PARAM(kIPHFeedCardMenuFeature, "IPH_FeedCardMenu");
-DEFINE_VARIATION_PARAM(kIPHHomePageButtonFeature, "IPH_HomePageButton");
-DEFINE_VARIATION_PARAM(kIPHHomepageTileFeature, "IPH_HomepageTile");
 DEFINE_VARIATION_PARAM(kIPHIdentityDiscFeature, "IPH_IdentityDisc");
 DEFINE_VARIATION_PARAM(kIPHKeyboardAccessoryAddressFillingFeature,
                        "IPH_KeyboardAccessoryAddressFilling");
@@ -82,8 +84,9 @@ DEFINE_VARIATION_PARAM(kIPHKeyboardAccessoryPasswordFillingFeature,
                        "IPH_KeyboardAccessoryPasswordFilling");
 DEFINE_VARIATION_PARAM(kIPHKeyboardAccessoryPaymentFillingFeature,
                        "IPH_KeyboardAccessoryPaymentFilling");
-DEFINE_VARIATION_PARAM(kIPHNewTabPageButtonFeature, "IPH_NewTabPageButton");
 DEFINE_VARIATION_PARAM(kIPHPreviewsOmniboxUIFeature, "IPH_PreviewsOmniboxUI");
+DEFINE_VARIATION_PARAM(kIPHQuietNotificationPromptsFeature,
+                       "IPH_QuietNotificationPrompts");
 DEFINE_VARIATION_PARAM(kIPHTabGroupsQuicklyComparePagesFeature,
                        "IPH_TabGroupsQuicklyComparePages");
 DEFINE_VARIATION_PARAM(kIPHTabGroupsTapToSeeAnotherTabFeature,
@@ -112,6 +115,7 @@ DEFINE_VARIATION_PARAM(kIPHBadgedTranslateManualTriggerFeature,
 DEFINE_VARIATION_PARAM(kIPHFocusModeFeature, "IPH_FocusMode");
 DEFINE_VARIATION_PARAM(kIPHGlobalMediaControls, "IPH_GlobalMediaControls");
 DEFINE_VARIATION_PARAM(kIPHReopenTabFeature, "IPH_ReopenTab");
+DEFINE_VARIATION_PARAM(kIPHWebUITabStripFeature, "IPH_WebUITabStrip");
 #if BUILDFLAG(ENABLE_LEGACY_DESKTOP_IN_PRODUCT_HELP)
 DEFINE_VARIATION_PARAM(kIPHBookmarkFeature, "IPH_Bookmark");
 DEFINE_VARIATION_PARAM(kIPHIncognitoWindowFeature, "IPH_IncognitoWindow");
@@ -134,7 +138,9 @@ constexpr flags_ui::FeatureEntry::FeatureVariation
         VARIATION_ENTRY(kIPHDownloadHomeFeature),
         VARIATION_ENTRY(kIPHDownloadPageFeature),
         VARIATION_ENTRY(kIPHDownloadPageScreenshotFeature),
-        VARIATION_ENTRY(kIPHChromeDuetFeature),
+        VARIATION_ENTRY(kIPHChromeDuetHomeButtonFeature),
+        VARIATION_ENTRY(kIPHChromeDuetSearchFeature),
+        VARIATION_ENTRY(kIPHChromeDuetTabSwitcherFeature),
         VARIATION_ENTRY(kIPHChromeHomeExpandFeature),
         VARIATION_ENTRY(kIPHChromeHomePullToRefreshFeature),
         VARIATION_ENTRY(kIPHContextualSearchWebSearchFeature),
@@ -145,14 +151,12 @@ constexpr flags_ui::FeatureEntry::FeatureVariation
         VARIATION_ENTRY(kIPHDownloadInfoBarDownloadContinuingFeature),
         VARIATION_ENTRY(kIPHDownloadInfoBarDownloadsAreFasterFeature),
         VARIATION_ENTRY(kIPHFeedCardMenuFeature),
-        VARIATION_ENTRY(kIPHHomePageButtonFeature),
-        VARIATION_ENTRY(kIPHHomepageTileFeature),
         VARIATION_ENTRY(kIPHIdentityDiscFeature),
         VARIATION_ENTRY(kIPHKeyboardAccessoryAddressFillingFeature),
         VARIATION_ENTRY(kIPHKeyboardAccessoryPasswordFillingFeature),
         VARIATION_ENTRY(kIPHKeyboardAccessoryPaymentFillingFeature),
-        VARIATION_ENTRY(kIPHNewTabPageButtonFeature),
         VARIATION_ENTRY(kIPHPreviewsOmniboxUIFeature),
+        VARIATION_ENTRY(kIPHQuietNotificationPromptsFeature),
         VARIATION_ENTRY(kIPHTabGroupsQuicklyComparePagesFeature),
         VARIATION_ENTRY(kIPHTabGroupsTapToSeeAnotherTabFeature),
         VARIATION_ENTRY(kIPHTabGroupsYourTabsAreTogetherFeature),
@@ -171,6 +175,7 @@ constexpr flags_ui::FeatureEntry::FeatureVariation
         VARIATION_ENTRY(kIPHFocusModeFeature),
         VARIATION_ENTRY(kIPHGlobalMediaControls),
         VARIATION_ENTRY(kIPHReopenTabFeature),
+        VARIATION_ENTRY(kIPHWebUITabStripFeature),
 #if BUILDFLAG(ENABLE_LEGACY_DESKTOP_IN_PRODUCT_HELP)
         VARIATION_ENTRY(kIPHBookmarkFeature),
         VARIATION_ENTRY(kIPHIncognitoWindowFeature),

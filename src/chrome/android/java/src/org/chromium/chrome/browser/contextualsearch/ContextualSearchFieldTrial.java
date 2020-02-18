@@ -4,12 +4,13 @@
 
 package org.chromium.chrome.browser.contextualsearch;
 
-import android.support.annotation.IntDef;
 import android.text.TextUtils;
+
+import androidx.annotation.IntDef;
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.CommandLine;
 import org.chromium.base.SysUtils;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.components.variations.VariationsAssociatedData;
@@ -25,8 +26,6 @@ public class ContextualSearchFieldTrial {
     // Public settings synchronized with src/components/contextual_search/core/browser/public.cc
     //==========================================================================================
     public static final String LONGPRESS_RESOLVE_PARAM_NAME = "longpress_resolve_variation";
-    public static final String LONGPRESS_RESOLVE_HIDE_ON_SCROLL = "1";
-    public static final String LONGPRESS_RESOLVE_PRIVACY_AGGRESSIVE = "2";
     public static final String LONGPRESS_RESOLVE_PRESERVE_TAP = "3";
 
     //==========================================================================================

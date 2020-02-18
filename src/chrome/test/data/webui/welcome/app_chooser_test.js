@@ -2,170 +2,180 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('welcome_app_chooser', function() {
-  suite('AppChooserTest', function() {
-    const apps = [
-      {
-        id: 0,
-        name: 'First',
-        icon: 'first',
-        url: 'http://first.example.com',
-      },
-      {
-        id: 1,
-        name: 'Second',
-        icon: 'second',
-        url: 'http://second.example.com',
-      },
-      {
-        id: 2,
-        name: 'Third',
-        icon: 'third',
-        url: 'http://third.example.com',
-      },
-      {
-        id: 3,
-        name: 'Fourth',
-        icon: 'fourth',
-        url: 'http://fourth.example.com',
-      },
-      {
-        id: 4,
-        name: 'Fifth',
-        icon: 'fifth',
-        url: 'http://fifth.example.com',
-      },
-    ];
+import 'chrome://welcome/google_apps/nux_google_apps.js';
 
-    /** @type {welcome.NuxAppProxy} */
-    let testAppBrowserProxy;
+import {GoogleAppProxyImpl} from 'chrome://welcome/google_apps/google_app_proxy.js';
+import {GoogleAppsMetricsProxyImpl} from 'chrome://welcome/google_apps/google_apps_metrics_proxy.js';
+import {BookmarkBarManager, BookmarkProxyImpl} from 'chrome://welcome/shared/bookmark_proxy.js';
 
-    /** @type {welcome.ModuleMetricsProxy} */
-    let testAppMetricsProxy;
+import {TestBookmarkProxy} from './test_bookmark_proxy.js';
+import {TestGoogleAppProxy} from './test_google_app_proxy.js';
+import {TestMetricsProxy} from './test_metrics_proxy.js';
 
-    /** @type {welcome.BookmarkProxy} */
-    let testBookmarkBrowserProxy;
+suite('AppChooserTest', function() {
+  const apps = [
+    {
+      id: 0,
+      name: 'First',
+      icon: 'first',
+      url: 'http://first.example.com',
+    },
+    {
+      id: 1,
+      name: 'Second',
+      icon: 'second',
+      url: 'http://second.example.com',
+    },
+    {
+      id: 2,
+      name: 'Third',
+      icon: 'third',
+      url: 'http://third.example.com',
+    },
+    {
+      id: 3,
+      name: 'Fourth',
+      icon: 'fourth',
+      url: 'http://fourth.example.com',
+    },
+    {
+      id: 4,
+      name: 'Fifth',
+      icon: 'fifth',
+      url: 'http://fifth.example.com',
+    },
+  ];
 
-    /** @type {AppChooserElement} */
-    let testElement;
+  /** @type {NuxAppProxy} */
+  let testAppBrowserProxy;
 
-    setup(async function() {
-      testAppBrowserProxy = new TestGoogleAppProxy();
-      testAppMetricsProxy = new TestMetricsProxy();
-      testBookmarkBrowserProxy = new TestBookmarkProxy();
+  /** @type {ModuleMetricsProxy} */
+  let testAppMetricsProxy;
 
-      welcome.GoogleAppProxyImpl.instance_ = testAppBrowserProxy;
-      welcome.GoogleAppsMetricsProxyImpl.instance_ = testAppMetricsProxy;
-      welcome.BookmarkProxyImpl.instance_ = testBookmarkBrowserProxy;
-      welcome.BookmarkBarManager.instance_ = new welcome.BookmarkBarManager();
+  /** @type {BookmarkProxy} */
+  let testBookmarkBrowserProxy;
 
-      testAppBrowserProxy.setAppList(apps);
+  /** @type {AppChooserElement} */
+  let testElement;
 
-      PolymerTest.clearBody();
-      testElement = document.createElement('nux-google-apps');
-      document.body.appendChild(testElement);
-      // Simulate nux-app's onRouteEnter call.
-      testElement.onRouteEnter();
-      await testAppMetricsProxy.whenCalled('recordPageShown');
-      await testAppBrowserProxy.whenCalled('getAppList');
-    });
+  setup(async function() {
+    testAppBrowserProxy = new TestGoogleAppProxy();
+    testAppMetricsProxy = new TestMetricsProxy();
+    testBookmarkBrowserProxy = new TestBookmarkProxy();
 
-    teardown(function() {
-      testElement.remove();
-    });
+    GoogleAppProxyImpl.instance_ = testAppBrowserProxy;
+    GoogleAppsMetricsProxyImpl.instance_ = testAppMetricsProxy;
+    BookmarkProxyImpl.instance_ = testBookmarkBrowserProxy;
+    BookmarkBarManager.instance_ = new BookmarkBarManager();
 
-    function getSelected() {
-      return Array.from(
-          testElement.shadowRoot.querySelectorAll('.option[active]'));
-    }
+    testAppBrowserProxy.setAppList(apps);
 
-    test('test app chooser options', async function() {
-      const options =
-          Array.from(testElement.shadowRoot.querySelectorAll('.option'));
-      assertEquals(5, options.length);
+    PolymerTest.clearBody();
 
-      // First three options are selected and action button should be enabled.
-      assertDeepEquals(options.slice(0, 3), getSelected());
-      assertFalse(testElement.$$('.action-button').disabled);
+    testElement = document.createElement('nux-google-apps');
+    document.body.appendChild(testElement);
 
-      // Click the first option to deselect it.
-      testBookmarkBrowserProxy.reset();
-      options[0].click();
+    // Simulate nux-app's onRouteEnter call.
+    testElement.onRouteEnter();
+    await testAppMetricsProxy.whenCalled('recordPageShown');
+    await testAppBrowserProxy.whenCalled('getAppList');
+  });
 
-      assertEquals(
-          1, await testBookmarkBrowserProxy.whenCalled('removeBookmark'));
-      assertDeepEquals(options.slice(1, 3), getSelected());
-      assertFalse(testElement.$$('.action-button').disabled);
+  teardown(function() {
+    testElement.remove();
+  });
 
-      // Click fourth option to select it.
-      testBookmarkBrowserProxy.reset();
-      options[3].click();
+  function getSelected() {
+    return Array.from(
+        testElement.shadowRoot.querySelectorAll('.option[active]'));
+  }
 
-      assertDeepEquals(
-          {
-            title: apps[3].name,
-            url: apps[3].url,
-            parentId: '1',
-          },
-          await testBookmarkBrowserProxy.whenCalled('addBookmark'));
+  test('test app chooser options', async function() {
+    const options =
+        Array.from(testElement.shadowRoot.querySelectorAll('.option'));
+    assertEquals(5, options.length);
 
-      assertDeepEquals(options.slice(1, 4), getSelected());
-      assertFalse(testElement.$$('.action-button').disabled);
+    // First three options are selected and action button should be enabled.
+    assertDeepEquals(options.slice(0, 3), getSelected());
+    assertFalse(testElement.$$('.action-button').disabled);
 
-      // Click fourth option again to deselect it.
-      testBookmarkBrowserProxy.reset();
-      options[3].click();
+    // Click the first option to deselect it.
+    testBookmarkBrowserProxy.reset();
+    options[0].click();
 
-      assertEquals(
-          4, await testBookmarkBrowserProxy.whenCalled('removeBookmark'));
-      assertDeepEquals(options.slice(1, 3), getSelected());
-      assertFalse(testElement.$$('.action-button').disabled);
+    assertEquals(
+        1, await testBookmarkBrowserProxy.whenCalled('removeBookmark'));
+    assertDeepEquals(options.slice(1, 3), getSelected());
+    assertFalse(testElement.$$('.action-button').disabled);
 
-      // Click second option to deselect it.
-      testBookmarkBrowserProxy.reset();
-      options[1].click();
+    // Click fourth option to select it.
+    testBookmarkBrowserProxy.reset();
+    options[3].click();
 
-      assertEquals(
-          2, await testBookmarkBrowserProxy.whenCalled('removeBookmark'));
-      assertDeepEquals(options.slice(2, 3), getSelected());
-      assertFalse(testElement.$$('.action-button').disabled);
+    assertDeepEquals(
+        {
+          title: apps[3].name,
+          url: apps[3].url,
+          parentId: '1',
+        },
+        await testBookmarkBrowserProxy.whenCalled('addBookmark'));
 
-      // Click third option to deselect all options.
-      testBookmarkBrowserProxy.reset();
-      options[2].click();
+    assertDeepEquals(options.slice(1, 4), getSelected());
+    assertFalse(testElement.$$('.action-button').disabled);
 
-      assertEquals(
-          3, await testBookmarkBrowserProxy.whenCalled('removeBookmark'));
-      assertEquals(0, getSelected().length);
-      assertTrue(testElement.$$('.action-button').disabled);
-    });
+    // Click fourth option again to deselect it.
+    testBookmarkBrowserProxy.reset();
+    options[3].click();
 
-    test('test app chooser skip button', async function() {
-      const options = testElement.shadowRoot.querySelectorAll('.option');
-      testElement.wasBookmarkBarShownOnInit_ = true;
+    assertEquals(
+        4, await testBookmarkBrowserProxy.whenCalled('removeBookmark'));
+    assertDeepEquals(options.slice(1, 3), getSelected());
+    assertFalse(testElement.$$('.action-button').disabled);
 
-      // First option should be selected and action button should be enabled.
-      testElement.$.noThanksButton.click();
-      assertEquals(
-          1, await testBookmarkBrowserProxy.whenCalled('removeBookmark'));
-      assertEquals(
-          true, await testBookmarkBrowserProxy.whenCalled('toggleBookmarkBar'));
-      await testAppMetricsProxy.whenCalled('recordDidNothingAndChoseSkip');
-    });
+    // Click second option to deselect it.
+    testBookmarkBrowserProxy.reset();
+    options[1].click();
 
-    test('test app chooser next button', async function() {
-      const options = testElement.shadowRoot.querySelectorAll('.option');
-      testElement.wasBookmarkBarShownOnInit_ = true;
+    assertEquals(
+        2, await testBookmarkBrowserProxy.whenCalled('removeBookmark'));
+    assertDeepEquals(options.slice(2, 3), getSelected());
+    assertFalse(testElement.$$('.action-button').disabled);
 
-      // First option should be selected and action button should be enabled.
-      testElement.$$('.action-button').click();
+    // Click third option to deselect all options.
+    testBookmarkBrowserProxy.reset();
+    options[2].click();
 
-      await testAppMetricsProxy.whenCalled('recordDidNothingAndChoseNext');
+    assertEquals(
+        3, await testBookmarkBrowserProxy.whenCalled('removeBookmark'));
+    assertEquals(0, getSelected().length);
+    assertTrue(testElement.$$('.action-button').disabled);
+  });
 
-      // Test framework only records first result, but should be called 3 times.
-      assertEquals(
-          0, await testAppBrowserProxy.whenCalled('recordProviderSelected'));
-      assertEquals(3, testAppBrowserProxy.providerSelectedCount);
-    });
+  test('test app chooser skip button', async function() {
+    const options = testElement.shadowRoot.querySelectorAll('.option');
+    testElement.wasBookmarkBarShownOnInit_ = true;
+
+    // First option should be selected and action button should be enabled.
+    testElement.$.noThanksButton.click();
+    assertEquals(
+        1, await testBookmarkBrowserProxy.whenCalled('removeBookmark'));
+    assertEquals(
+        true, await testBookmarkBrowserProxy.whenCalled('toggleBookmarkBar'));
+    await testAppMetricsProxy.whenCalled('recordDidNothingAndChoseSkip');
+  });
+
+  test('test app chooser next button', async function() {
+    const options = testElement.shadowRoot.querySelectorAll('.option');
+    testElement.wasBookmarkBarShownOnInit_ = true;
+
+    // First option should be selected and action button should be enabled.
+    testElement.$$('.action-button').click();
+
+    await testAppMetricsProxy.whenCalled('recordDidNothingAndChoseNext');
+
+    // Test framework only records first result, but should be called 3 times.
+    assertEquals(
+        0, await testAppBrowserProxy.whenCalled('recordProviderSelected'));
+    assertEquals(3, testAppBrowserProxy.providerSelectedCount);
   });
 });

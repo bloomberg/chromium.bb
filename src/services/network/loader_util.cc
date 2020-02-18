@@ -20,6 +20,8 @@
 #include "services/network/public/cpp/http_raw_request_response_info.h"
 #include "services/network/public/cpp/network_switches.h"
 #include "services/network/public/cpp/resource_response.h"
+#include "services/network/public/mojom/http_raw_request_response_info.mojom.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "url/gurl.h"
 
 namespace network {
@@ -38,23 +40,17 @@ const struct {
 } kConcerningHeaders[] = {
     {net::HttpRequestHeaders::kConnection, ConcerningHeaderId::kConnection},
     {net::HttpRequestHeaders::kCookie, ConcerningHeaderId::kCookie},
-    {"Cookie2", ConcerningHeaderId::kCookie2},
-    {"Content-transfer-encoding", ConcerningHeaderId::kContentTransferEncoding},
     {"Date", ConcerningHeaderId::kDate},
     {"Expect", ConcerningHeaderId::kExpect},
-    {"Keep-alive", ConcerningHeaderId::kKeepAlive},
     // The referer is passed in from the caller on a per-request basis, but
     // there's a separate field for it that should be used instead.
     {net::HttpRequestHeaders::kReferer, ConcerningHeaderId::kReferer},
-    {"Te", ConcerningHeaderId::kTe},
-    {net::HttpRequestHeaders::kTransferEncoding,
-     ConcerningHeaderId::kTransferEncoding},
     {"Via", ConcerningHeaderId::kVia},
 };
 
 bool ShouldSniffContent(net::URLRequest* url_request,
-                        ResourceResponse* response) {
-  const std::string& mime_type = response->head.mime_type;
+                        const mojom::URLResponseHead& response) {
+  const std::string& mime_type = response.mime_type;
 
   std::string content_type_options;
   url_request->GetResponseHeaderByName("x-content-type-options",
@@ -75,20 +71,21 @@ bool ShouldSniffContent(net::URLRequest* url_request,
   return false;
 }
 
-scoped_refptr<HttpRawRequestResponseInfo> BuildRawRequestResponseInfo(
+mojom::HttpRawRequestResponseInfoPtr BuildRawRequestResponseInfo(
     const net::URLRequest& request,
     const net::HttpRawRequestHeaders& raw_request_headers,
     const net::HttpResponseHeaders* raw_response_headers) {
-  scoped_refptr<HttpRawRequestResponseInfo> info =
-      new HttpRawRequestResponseInfo();
+  auto info = mojom::HttpRawRequestResponseInfo::New();
 
   const net::HttpResponseInfo& response_info = request.response_info();
   // Unparsed headers only make sense if they were sent as text, i.e. HTTP 1.x.
   bool report_headers_text =
       !response_info.DidUseQuic() && !response_info.was_fetched_via_spdy;
 
-  for (const auto& pair : raw_request_headers.headers())
-    info->request_headers.push_back(pair);
+  for (const auto& pair : raw_request_headers.headers()) {
+    info->request_headers.push_back(
+        mojom::HttpRawHeaderPair::New(pair.first, pair.second));
+  }
   std::string request_line = raw_request_headers.request_line();
   if (report_headers_text && !request_line.empty()) {
     std::string text = std::move(request_line);
@@ -113,7 +110,8 @@ scoped_refptr<HttpRawRequestResponseInfo> BuildRawRequestResponseInfo(
     std::string value;
     for (size_t it = 0;
          raw_response_headers->EnumerateHeaderLines(&it, &name, &value);) {
-      info->response_headers.push_back(std::make_pair(name, value));
+      info->response_headers.push_back(
+          mojom::HttpRawHeaderPair::New(name, value));
     }
     if (report_headers_text) {
       info->response_headers_text =
@@ -122,15 +120,6 @@ scoped_refptr<HttpRawRequestResponseInfo> BuildRawRequestResponseInfo(
     }
   }
   return info;
-}
-
-std::string ComputeReferrer(const GURL& referrer) {
-  if (!referrer.is_valid() || base::CommandLine::ForCurrentProcess()->HasSwitch(
-                                  switches::kNoReferrers)) {
-    return std::string();
-  }
-
-  return referrer.spec();
 }
 
 void LogConcerningRequestHeaders(const net::HttpRequestHeaders& request_headers,

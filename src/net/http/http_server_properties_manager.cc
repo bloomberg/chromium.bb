@@ -38,6 +38,7 @@ const int kVersionNumber = 5;
 const int kMaxBrokenAlternativeServicesToPersist = 200;
 
 const char kServerKey[] = "server";
+const char kQuicServerIdKey[] = "server_id";
 const char kNetworkIsolationKey[] = "isolation";
 const char kVersionKey[] = "version";
 const char kServersKey[] = "servers";
@@ -113,6 +114,23 @@ void AddAlternativeServiceFieldsToDictionaryValue(
                   NextProtoToString(alternative_service.protocol));
 }
 
+// Fails in the case of NetworkIsolationKeys that can't be persisted to disk,
+// like unique origins.
+bool TryAddBrokenAlternativeServiceFieldsToDictionaryValue(
+    const BrokenAlternativeService& broken_alt_service,
+    base::DictionaryValue* dict) {
+  base::Value network_isolation_key_value;
+  if (!broken_alt_service.network_isolation_key.ToValue(
+          &network_isolation_key_value)) {
+    return false;
+  }
+
+  dict->SetKey(kNetworkIsolationKey, std::move(network_isolation_key_value));
+  AddAlternativeServiceFieldsToDictionaryValue(
+      broken_alt_service.alternative_service, dict);
+  return true;
+}
+
 quic::QuicServerId QuicServerIdFromString(const std::string& str) {
   GURL url(str);
   if (!url.is_valid()) {
@@ -129,6 +147,36 @@ std::string QuicServerIdToString(const quic::QuicServerId& server_id) {
   HostPortPair host_port_pair(server_id.host(), server_id.port());
   return "https://" + host_port_pair.ToString() +
          (server_id.privacy_mode_enabled() ? "/private" : "");
+}
+
+// Takes in a base::Value representing a dictionary, and whether
+// NetworkIsolationKeys are enabled for HttpServerProperties, and extracts the
+// NetworkIsolationKey stored with the |kNetworkIsolationKey| in the dictionary,
+// and writes it to |out_network_isolation_key|. Returns false if unable to load
+// a NetworkIsolationKey, or the NetworkIsolationKey is non-empty, but
+// |use_network_isolation_key| is false.
+bool GetNetworkIsolationKeyFromDict(
+    const base::Value& dict,
+    bool use_network_isolation_key,
+    NetworkIsolationKey* out_network_isolation_key) {
+  DCHECK(dict.is_dict());
+
+  const base::Value* network_isolation_key_value =
+      dict.FindKey(kNetworkIsolationKey);
+  NetworkIsolationKey network_isolation_key;
+  if (!network_isolation_key_value ||
+      !NetworkIsolationKey::FromValue(*network_isolation_key_value,
+                                      &network_isolation_key)) {
+    return false;
+  }
+
+  // Fail if NetworkIsolationKeys are disabled, but the entry has a non-empty
+  // NetworkIsolationKey.
+  if (!use_network_isolation_key && !network_isolation_key.IsEmpty())
+    return false;
+
+  *out_network_isolation_key = std::move(network_isolation_key);
+  return true;
 }
 
 }  // namespace
@@ -167,8 +215,9 @@ HttpServerPropertiesManager::~HttpServerPropertiesManager() {
 
 void HttpServerPropertiesManager::ReadPrefs(
     std::unique_ptr<HttpServerProperties::ServerInfoMap>* server_info_map,
-    IPAddress* last_quic_address,
-    std::unique_ptr<QuicServerInfoMap>* quic_server_info_map,
+    IPAddress* last_local_address_when_quic_worked,
+    std::unique_ptr<HttpServerProperties::QuicServerInfoMap>*
+        quic_server_info_map,
     std::unique_ptr<BrokenAlternativeServiceList>*
         broken_alternative_service_list,
     std::unique_ptr<RecentlyBrokenAlternativeServices>*
@@ -214,11 +263,13 @@ void HttpServerPropertiesManager::ReadPrefs(
     return;
   }
 
-  ReadSupportsQuic(*http_server_properties_dict, last_quic_address);
+  ReadLastLocalAddressWhenQuicWorked(*http_server_properties_dict,
+                                     last_local_address_when_quic_worked);
 
   *server_info_map = std::make_unique<HttpServerProperties::ServerInfoMap>();
-  *quic_server_info_map = std::make_unique<QuicServerInfoMap>(
-      max_server_configs_stored_in_properties_);
+  *quic_server_info_map =
+      std::make_unique<HttpServerProperties::QuicServerInfoMap>(
+          max_server_configs_stored_in_properties_);
 
   bool use_network_isolation_key = base::FeatureList::IsEnabled(
       features::kPartitionHttpServerPropertiesByNetworkIsolationKey);
@@ -238,6 +289,7 @@ void HttpServerPropertiesManager::ReadPrefs(
   }
 
   AddToQuicServerInfoMap(*http_server_properties_dict,
+                         use_network_isolation_key,
                          quic_server_info_map->get());
 
   // Read list containing broken and recently-broken alternative services, if
@@ -261,7 +313,8 @@ void HttpServerPropertiesManager::ReadPrefs(
         continue;
       }
       AddToBrokenAlternativeServices(
-          *entry_dict, broken_alternative_service_list->get(),
+          *entry_dict, use_network_isolation_key,
+          broken_alternative_service_list->get(),
           recently_broken_alternative_services->get());
     }
   }
@@ -287,12 +340,20 @@ void HttpServerPropertiesManager::ReadPrefs(
 
 void HttpServerPropertiesManager::AddToBrokenAlternativeServices(
     const base::DictionaryValue& broken_alt_svc_entry_dict,
+    bool use_network_isolation_key,
     BrokenAlternativeServiceList* broken_alternative_service_list,
     RecentlyBrokenAlternativeServices* recently_broken_alternative_services) {
   AlternativeService alt_service;
   if (!ParseAlternativeServiceDict(broken_alt_svc_entry_dict, false,
                                    "broken alternative services",
                                    &alt_service)) {
+    return;
+  }
+
+  NetworkIsolationKey network_isolation_key;
+  if (!GetNetworkIsolationKeyFromDict(broken_alt_svc_entry_dict,
+                                      use_network_isolation_key,
+                                      &network_isolation_key)) {
     return;
   }
 
@@ -313,7 +374,10 @@ void HttpServerPropertiesManager::AddToBrokenAlternativeServices(
       DVLOG(1) << "Broken alternative service has negative broken-count.";
       return;
     }
-    recently_broken_alternative_services->Put(alt_service, broken_count);
+    recently_broken_alternative_services->Put(
+        BrokenAlternativeService(alt_service, network_isolation_key,
+                                 use_network_isolation_key),
+        broken_count);
     contains_broken_count_or_broken_until = true;
   }
 
@@ -335,8 +399,10 @@ void HttpServerPropertiesManager::AddToBrokenAlternativeServices(
     base::TimeTicks expiration_time_ticks =
         clock_->NowTicks() +
         (base::Time::FromTimeT(expiration_time_t) - base::Time::Now());
-    broken_alternative_service_list->push_back(
-        std::make_pair(alt_service, expiration_time_ticks));
+    broken_alternative_service_list->push_back(std::make_pair(
+        BrokenAlternativeService(alt_service, network_isolation_key,
+                                 use_network_isolation_key),
+        expiration_time_ticks));
     contains_broken_count_or_broken_until = true;
   }
 
@@ -352,21 +418,14 @@ void HttpServerPropertiesManager::AddServerData(
     bool use_network_isolation_key) {
   // Get server's scheme/host/pair.
   const std::string* server_str = server_dict.FindStringKey(kServerKey);
-  const base::Value* network_isolation_key_value =
-      server_dict.FindKey(kNetworkIsolationKey);
   NetworkIsolationKey network_isolation_key;
   // Can't load entry if server name missing, or if the network isolation key is
   // missing or invalid.
-  if (!server_str || !network_isolation_key_value ||
-      !NetworkIsolationKey::FromValue(*network_isolation_key_value,
+  if (!server_str ||
+      !GetNetworkIsolationKeyFromDict(server_dict, use_network_isolation_key,
                                       &network_isolation_key)) {
     return;
   }
-
-  // If the entry includes a non-empty NetworkIsolationKey, but using a network
-  // isolation key is currently disabled, throw away the entry.
-  if (!network_isolation_key.IsEmpty() && !use_network_isolation_key)
-    return;
 
   url::SchemeHostPort spdy_server((GURL(*server_str)));
   if (spdy_server.host().empty()) {
@@ -382,10 +441,10 @@ void HttpServerPropertiesManager::AddServerData(
     ParseNetworkStats(spdy_server, server_dict, &server_info);
 
   if (!server_info.empty()) {
-    server_info_map->Put(
-        HttpServerProperties::ServerInfoMapKey(
-            spdy_server, network_isolation_key, use_network_isolation_key),
-        std::move(server_info));
+    server_info_map->Put(HttpServerProperties::ServerInfoMapKey(
+                             std::move(spdy_server), network_isolation_key,
+                             use_network_isolation_key),
+                         std::move(server_info));
   }
 }
 
@@ -536,9 +595,9 @@ bool HttpServerPropertiesManager::ParseAlternativeServiceInfo(
   return true;
 }
 
-void HttpServerPropertiesManager::ReadSupportsQuic(
+void HttpServerPropertiesManager::ReadLastLocalAddressWhenQuicWorked(
     const base::DictionaryValue& http_server_properties_dict,
-    IPAddress* last_quic_address) {
+    IPAddress* last_local_address_when_quic_worked) {
   const base::DictionaryValue* supports_quic_dict = nullptr;
   if (!http_server_properties_dict.GetDictionaryWithoutPathExpansion(
           kSupportsQuicKey, &supports_quic_dict)) {
@@ -556,7 +615,7 @@ void HttpServerPropertiesManager::ReadSupportsQuic(
   std::string address;
   if (!supports_quic_dict->GetStringWithoutPathExpansion(kAddressKey,
                                                          &address) ||
-      !last_quic_address->AssignFromIPLiteral(address)) {
+      !last_local_address_when_quic_worked->AssignFromIPLiteral(address)) {
     DVLOG(1) << "Malformed SupportsQuic";
   }
 }
@@ -587,50 +646,60 @@ void HttpServerPropertiesManager::ParseNetworkStats(
 
 void HttpServerPropertiesManager::AddToQuicServerInfoMap(
     const base::DictionaryValue& http_server_properties_dict,
-    QuicServerInfoMap* quic_server_info_map) {
-  const base::DictionaryValue* quic_servers_dict = nullptr;
-  if (!http_server_properties_dict.GetDictionaryWithoutPathExpansion(
-          kQuicServers, &quic_servers_dict)) {
+    bool use_network_isolation_key,
+    HttpServerProperties::QuicServerInfoMap* quic_server_info_map) {
+  const base::Value* quic_server_info_list =
+      http_server_properties_dict.FindListKey(kQuicServers);
+  if (!quic_server_info_list) {
     DVLOG(1) << "Malformed http_server_properties for quic_servers.";
     return;
   }
 
-  for (base::DictionaryValue::Iterator it(*quic_servers_dict); !it.IsAtEnd();
-       it.Advance()) {
-    // Get quic_server_id.
-    const std::string& quic_server_id_str = it.key();
+  for (const auto& quic_server_info_value : quic_server_info_list->GetList()) {
+    if (!quic_server_info_value.is_dict())
+      continue;
+
+    const std::string* quic_server_id_str =
+        quic_server_info_value.FindStringKey(kQuicServerIdKey);
+    if (!quic_server_id_str || quic_server_id_str->empty())
+      continue;
 
     quic::QuicServerId quic_server_id =
-        QuicServerIdFromString(quic_server_id_str);
+        QuicServerIdFromString(*quic_server_id_str);
     if (quic_server_id.host().empty()) {
       DVLOG(1) << "Malformed http_server_properties for quic server: "
                << quic_server_id_str;
       continue;
     }
 
-    const base::DictionaryValue* quic_server_pref_dict = nullptr;
-    if (!it.value().GetAsDictionary(&quic_server_pref_dict)) {
+    NetworkIsolationKey network_isolation_key;
+    if (!GetNetworkIsolationKeyFromDict(quic_server_info_value,
+                                        use_network_isolation_key,
+                                        &network_isolation_key)) {
       DVLOG(1) << "Malformed http_server_properties quic server dict: "
-               << quic_server_id_str;
+               << *quic_server_id_str;
       continue;
     }
 
-    std::string quic_server_info;
-    if (!quic_server_pref_dict->GetStringWithoutPathExpansion(
-            kServerInfoKey, &quic_server_info)) {
+    const std::string* quic_server_info =
+        quic_server_info_value.FindStringKey(kServerInfoKey);
+    if (!quic_server_info) {
       DVLOG(1) << "Malformed http_server_properties quic server info: "
-               << quic_server_id_str;
+               << *quic_server_id_str;
       continue;
     }
-    quic_server_info_map->Put(quic_server_id, quic_server_info);
+    quic_server_info_map->Put(
+        HttpServerProperties::QuicServerInfoMapKey(
+            quic_server_id, network_isolation_key, use_network_isolation_key),
+        *quic_server_info);
   }
 }
 
 void HttpServerPropertiesManager::WriteToPrefs(
     const HttpServerProperties::ServerInfoMap& server_info_map,
     const GetCannonicalSuffix& get_canonical_suffix,
-    const IPAddress& last_quic_address,
-    const QuicServerInfoMap& quic_server_info_map,
+    const IPAddress& last_local_address_when_quic_worked,
+    const HttpServerProperties::QuicServerInfoMap& quic_server_info_map,
     const BrokenAlternativeServiceList& broken_alternative_service_list,
     const RecentlyBrokenAlternativeServices&
         recently_broken_alternative_services,
@@ -686,14 +755,14 @@ void HttpServerPropertiesManager::WriteToPrefs(
     server_dict.SetStringKey(kServerKey, key.server.Serialize());
     server_dict.SetKey(kNetworkIsolationKey,
                        std::move(network_isolation_key_value));
-    servers_list.GetList().emplace_back(std::move(server_dict));
+    servers_list.Append(std::move(server_dict));
   }
   http_server_properties_dict.SetKey(kServersKey, std::move(servers_list));
 
   http_server_properties_dict.SetInteger(kVersionKey, kVersionNumber);
 
-  if (last_quic_address.IsValid())
-    SaveSupportsQuicToPrefs(last_quic_address, &http_server_properties_dict);
+  SaveLastLocalAddressWhenQuicWorkedToPrefs(last_local_address_when_quic_worked,
+                                            &http_server_properties_dict);
 
   SaveQuicServerInfoMapToServerPrefs(quic_server_info_map,
                                      &http_server_properties_dict);
@@ -746,15 +815,16 @@ void HttpServerPropertiesManager::SaveAlternativeServiceToServerPrefs(
       kAlternativeServiceKey, std::move(alternative_service_list));
 }
 
-void HttpServerPropertiesManager::SaveSupportsQuicToPrefs(
-    const IPAddress& last_quic_address,
+void HttpServerPropertiesManager::SaveLastLocalAddressWhenQuicWorkedToPrefs(
+    const IPAddress& last_local_address_when_quic_worked,
     base::DictionaryValue* http_server_properties_dict) {
-  if (!last_quic_address.IsValid())
+  if (!last_local_address_when_quic_worked.IsValid())
     return;
 
   auto supports_quic_dict = std::make_unique<base::DictionaryValue>();
   supports_quic_dict->SetBoolean(kUsedQuicKey, true);
-  supports_quic_dict->SetString(kAddressKey, last_quic_address.ToString());
+  supports_quic_dict->SetString(kAddressKey,
+                                last_local_address_when_quic_worked.ToString());
   http_server_properties_dict->SetWithoutPathExpansion(
       kSupportsQuicKey, std::move(supports_quic_dict));
 }
@@ -773,21 +843,31 @@ void HttpServerPropertiesManager::SaveNetworkStatsToServerPrefs(
 }
 
 void HttpServerPropertiesManager::SaveQuicServerInfoMapToServerPrefs(
-    const QuicServerInfoMap& quic_server_info_map,
+    const HttpServerProperties::QuicServerInfoMap& quic_server_info_map,
     base::DictionaryValue* http_server_properties_dict) {
   if (quic_server_info_map.empty())
     return;
-  auto quic_servers_dict = std::make_unique<base::DictionaryValue>();
+  base::Value quic_servers_list(base::Value::Type::LIST);
   for (auto it = quic_server_info_map.rbegin();
        it != quic_server_info_map.rend(); ++it) {
-    const quic::QuicServerId& server_id = it->first;
-    auto quic_server_pref_dict = std::make_unique<base::DictionaryValue>();
-    quic_server_pref_dict->SetKey(kServerInfoKey, base::Value(it->second));
-    quic_servers_dict->SetWithoutPathExpansion(
-        QuicServerIdToString(server_id), std::move(quic_server_pref_dict));
+    const HttpServerProperties::QuicServerInfoMapKey& key = it->first;
+
+    base::Value network_isolation_key_value;
+    // Don't save entries with ephemeral NIKs.
+    if (!key.network_isolation_key.ToValue(&network_isolation_key_value))
+      continue;
+
+    base::Value quic_server_pref_dict(base::Value::Type::DICTIONARY);
+    quic_server_pref_dict.SetStringKey(kQuicServerIdKey,
+                                       QuicServerIdToString(key.server_id));
+    quic_server_pref_dict.SetKey(kNetworkIsolationKey,
+                                 std::move(network_isolation_key_value));
+    quic_server_pref_dict.SetStringKey(kServerInfoKey, it->second);
+
+    quic_servers_list.GetList().emplace_back(std::move(quic_server_pref_dict));
   }
-  http_server_properties_dict->SetWithoutPathExpansion(
-      kQuicServers, std::move(quic_servers_dict));
+  http_server_properties_dict->SetKey(kQuicServers,
+                                      std::move(quic_servers_list));
 }
 
 void HttpServerPropertiesManager::SaveBrokenAlternativeServicesToPrefs(
@@ -797,8 +877,9 @@ void HttpServerPropertiesManager::SaveBrokenAlternativeServicesToPrefs(
         recently_broken_alternative_services,
     base::DictionaryValue* http_server_properties_dict) {
   if (broken_alternative_service_list.empty() &&
-      recently_broken_alternative_services.empty())
+      recently_broken_alternative_services.empty()) {
     return;
+  }
 
   // JSON list will be in MRU order according to
   // |recently_broken_alternative_services|.
@@ -807,19 +888,22 @@ void HttpServerPropertiesManager::SaveBrokenAlternativeServicesToPrefs(
 
   // Maps recently-broken alternative services to the index where it's stored
   // in |json_list|.
-  std::unordered_map<AlternativeService, size_t, AlternativeServiceHash>
-      json_list_index_map;
+  std::map<BrokenAlternativeService, size_t> json_list_index_map;
 
   if (!recently_broken_alternative_services.empty()) {
     for (auto it = recently_broken_alternative_services.rbegin();
          it != recently_broken_alternative_services.rend(); ++it) {
-      const AlternativeService& alt_service = it->first;
+      const BrokenAlternativeService& broken_alt_service = it->first;
       int broken_count = it->second;
+
       base::DictionaryValue entry_dict;
-      AddAlternativeServiceFieldsToDictionaryValue(alt_service, &entry_dict);
+      if (!TryAddBrokenAlternativeServiceFieldsToDictionaryValue(
+              broken_alt_service, &entry_dict)) {
+        continue;
+      }
       entry_dict.SetKey(kBrokenCountKey, base::Value(broken_count));
-      json_list_index_map[alt_service] = json_list->GetList().size();
-      json_list->GetList().push_back(std::move(entry_dict));
+      json_list_index_map[broken_alt_service] = json_list->GetList().size();
+      json_list->Append(std::move(entry_dict));
     }
   }
 
@@ -831,7 +915,7 @@ void HttpServerPropertiesManager::SaveBrokenAlternativeServicesToPrefs(
          it != broken_alternative_service_list.end() &&
          count < max_broken_alternative_services;
          ++it, ++count) {
-      const AlternativeService& alt_service = it->first;
+      const BrokenAlternativeService& broken_alt_service = it->first;
       base::TimeTicks expiration_time_ticks = it->second;
       // Convert expiration from TimeTicks to Time to time_t
       time_t expiration_time_t =
@@ -839,7 +923,7 @@ void HttpServerPropertiesManager::SaveBrokenAlternativeServicesToPrefs(
               .ToTimeT();
       int64_t expiration_int64 = static_cast<int64_t>(expiration_time_t);
 
-      auto index_map_it = json_list_index_map.find(alt_service);
+      auto index_map_it = json_list_index_map.find(broken_alt_service);
       if (index_map_it != json_list_index_map.end()) {
         size_t json_list_index = index_map_it->second;
         base::DictionaryValue* entry_dict = nullptr;
@@ -850,15 +934,22 @@ void HttpServerPropertiesManager::SaveBrokenAlternativeServicesToPrefs(
                            base::Value(base::NumberToString(expiration_int64)));
       } else {
         base::DictionaryValue entry_dict;
-        AddAlternativeServiceFieldsToDictionaryValue(alt_service, &entry_dict);
+        if (!TryAddBrokenAlternativeServiceFieldsToDictionaryValue(
+                broken_alt_service, &entry_dict)) {
+          continue;
+        }
         entry_dict.SetKey(kBrokenUntilKey,
                           base::Value(base::NumberToString(expiration_int64)));
-        json_list->GetList().push_back(std::move(entry_dict));
+        json_list->Append(std::move(entry_dict));
       }
     }
   }
 
-  DCHECK(!json_list->empty());
+  // This can happen if all the entries are for NetworkIsolationKeys for opaque
+  // origins, which isn't exactly common, but can theoretically happen.
+  if (json_list->empty())
+    return;
+
   http_server_properties_dict->SetWithoutPathExpansion(
       kBrokenAlternativeServicesKey, std::move(json_list));
 }
@@ -871,18 +962,18 @@ void HttpServerPropertiesManager::OnHttpServerPropertiesLoaded() {
     return;
 
   std::unique_ptr<HttpServerProperties::ServerInfoMap> server_info_map;
-  IPAddress last_quic_address;
-  std::unique_ptr<QuicServerInfoMap> quic_server_info_map;
+  IPAddress last_local_address_when_quic_worked;
+  std::unique_ptr<HttpServerProperties::QuicServerInfoMap> quic_server_info_map;
   std::unique_ptr<BrokenAlternativeServiceList> broken_alternative_service_list;
   std::unique_ptr<RecentlyBrokenAlternativeServices>
       recently_broken_alternative_services;
 
-  ReadPrefs(&server_info_map, &last_quic_address, &quic_server_info_map,
-            &broken_alternative_service_list,
+  ReadPrefs(&server_info_map, &last_local_address_when_quic_worked,
+            &quic_server_info_map, &broken_alternative_service_list,
             &recently_broken_alternative_services);
 
   std::move(on_prefs_loaded_callback_)
-      .Run(std::move(server_info_map), last_quic_address,
+      .Run(std::move(server_info_map), last_local_address_when_quic_worked,
            std::move(quic_server_info_map),
            std::move(broken_alternative_service_list),
            std::move(recently_broken_alternative_services));

@@ -15,8 +15,9 @@ import android.media.MediaCodecList;
 import android.media.MediaCrypto;
 import android.media.MediaFormat;
 import android.os.Build;
-import android.support.annotation.IntDef;
-import android.support.annotation.Nullable;
+
+import androidx.annotation.IntDef;
+import androidx.annotation.Nullable;
 
 import org.chromium.base.BuildInfo;
 import org.chromium.base.Log;
@@ -39,7 +40,7 @@ import java.util.NoSuchElementException;
 @JNINamespace("media")
 @MainDex
 class MediaCodecUtil {
-    private static final String TAG = "cr_MediaCodecUtil";
+    private static final String TAG = "MediaCodecUtil";
 
     /**
      * Information returned by createDecoder()
@@ -71,7 +72,7 @@ class MediaCodecUtil {
             if (supportsNewMediaCodecList()) {
                 try {
                     mCodecList = new MediaCodecList(MediaCodecList.ALL_CODECS).getCodecInfos();
-                } catch (RuntimeException e) {
+                } catch (Throwable e) {
                     // Swallow the exception due to bad Android implementation and pretend
                     // MediaCodecList is not supported.
                 }

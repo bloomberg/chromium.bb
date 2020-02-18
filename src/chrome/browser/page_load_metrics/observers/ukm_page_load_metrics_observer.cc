@@ -13,9 +13,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
-#include "chrome/browser/page_load_metrics/observers/largest_contentful_paint_handler.h"
-#include "chrome/browser/page_load_metrics/page_load_metrics_util.h"
-#include "chrome/browser/page_load_metrics/protocol_util.h"
 #include "chrome/browser/prerender/prerender_final_status.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
@@ -26,6 +23,8 @@
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/metrics/net/network_metrics_provider.h"
 #include "components/offline_pages/buildflags/buildflags.h"
+#include "components/page_load_metrics/browser/page_load_metrics_util.h"
+#include "components/page_load_metrics/browser/protocol_util.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
@@ -259,6 +258,8 @@ void UkmPageLoadMetricsObserver::RecordTimingMetrics(
   if (third_party_cookie_blocking_enabled) {
     builder.SetThirdPartyCookieBlockingEnabledForSite(
         third_party_cookie_blocking_enabled.value());
+    UMA_HISTOGRAM_BOOLEAN("Privacy.ThirdPartyCookieBlockingEnabledForSite",
+                          third_party_cookie_blocking_enabled.value());
   }
 
   if (timing.input_to_navigation_start) {
@@ -378,13 +379,13 @@ void UkmPageLoadMetricsObserver::RecordTimingMetrics(
   if (timing.interactive_timing->longest_input_delay) {
     base::TimeDelta longest_input_delay =
         timing.interactive_timing->longest_input_delay.value();
-    builder.SetInteractiveTiming_LongestInputDelay3(
+    builder.SetInteractiveTiming_LongestInputDelay4(
         longest_input_delay.InMilliseconds());
   }
   if (timing.interactive_timing->longest_input_timestamp) {
     base::TimeDelta longest_input_timestamp =
         timing.interactive_timing->longest_input_timestamp.value();
-    builder.SetInteractiveTiming_LongestInputTimestamp3(
+    builder.SetInteractiveTiming_LongestInputTimestamp4(
         longest_input_timestamp.InMilliseconds());
   }
 
@@ -605,9 +606,6 @@ UkmPageLoadMetricsObserver::GetRoundedSiteEngagementScore() const {
 base::Optional<bool>
 UkmPageLoadMetricsObserver::GetThirdPartyCookieBlockingEnabled() const {
   if (!browser_context_)
-    return base::nullopt;
-
-  if (!base::FeatureList::IsEnabled(content_settings::kImprovedCookieControls))
     return base::nullopt;
 
   Profile* profile = Profile::FromBrowserContext(browser_context_);

@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/optional.h"
@@ -103,16 +104,15 @@ class MockDownloadManager : public DownloadManager {
   MOCK_METHOD1(GetAllDownloads, void(DownloadVector* downloads));
   MOCK_METHOD1(Init, bool(BrowserContext* browser_context));
   MOCK_METHOD3(RemoveDownloadsByURLAndTime,
-               int(const base::Callback<bool(const GURL&)>& url_filter,
+               int(const base::RepeatingCallback<bool(const GURL&)>& url_filter,
                    base::Time remove_begin,
                    base::Time remove_end));
   MOCK_METHOD1(DownloadUrlMock, void(download::DownloadUrlParameters*));
   void DownloadUrl(
       std::unique_ptr<download::DownloadUrlParameters> params) override {
-    DownloadUrl(std::move(params), nullptr, nullptr);
+    DownloadUrl(std::move(params), nullptr);
   }
   void DownloadUrl(std::unique_ptr<download::DownloadUrlParameters> params,
-                   std::unique_ptr<storage::BlobDataHandle> blob_data_handle,
                    scoped_refptr<network::SharedURLLoaderFactory>
                        blob_url_loader_factory) override {
     DownloadUrlMock(params.get());

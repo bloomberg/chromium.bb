@@ -32,9 +32,9 @@
 #include "Pipeline/SpirvShader.hpp"
 #include "Vertex.hpp"
 
-#include "Yarn/Containers.hpp"
-#include "Yarn/Defer.hpp"
-#include "Yarn/Trace.hpp"
+#include "marl/containers.h"
+#include "marl/defer.h"
+#include "marl/trace.h"
 
 #undef max
 
@@ -46,20 +46,26 @@ unsigned int maxPrimitives = 1 << 21;
 namespace sw
 {
 	template<typename T>
-	inline bool setBatchIndices(unsigned int batch[128][3], VkPrimitiveTopology topology, T indices, unsigned int start, unsigned int triangleCount)
+	inline bool setBatchIndices(unsigned int batch[128][3], VkPrimitiveTopology topology, VkProvokingVertexModeEXT provokingVertexMode, T indices, unsigned int start, unsigned int triangleCount)
 	{
+		bool provokeFirst = (provokingVertexMode == VK_PROVOKING_VERTEX_MODE_FIRST_VERTEX_EXT);
+
 		switch(topology)
 		{
 		case VK_PRIMITIVE_TOPOLOGY_POINT_LIST:
 		{
 			auto index = start;
+			auto pointBatch = &(batch[0][0]);
 			for(unsigned int i = 0; i < triangleCount; i++)
 			{
-				batch[i][0] = indices[index];
-				batch[i][1] = indices[index];
-				batch[i][2] = indices[index];
+				*pointBatch++ = indices[index++];
+			}
 
-				index += 1;
+			// Repeat the last index to allow for SIMD width overrun.
+			index--;
+			for(unsigned int i = 0; i < 3; i++)
+			{
+				*pointBatch++ = indices[index];
 			}
 			break;
 		}
@@ -68,8 +74,8 @@ namespace sw
 			auto index = 2 * start;
 			for(unsigned int i = 0; i < triangleCount; i++)
 			{
-				batch[i][0] = indices[index + 0];
-				batch[i][1] = indices[index + 1];
+				batch[i][0] = indices[index + (provokeFirst ? 0 : 1)];
+				batch[i][1] = indices[index + (provokeFirst ? 1 : 0)];
 				batch[i][2] = indices[index + 1];
 
 				index += 2;
@@ -81,8 +87,8 @@ namespace sw
 			auto index = start;
 			for(unsigned int i = 0; i < triangleCount; i++)
 			{
-				batch[i][0] = indices[index + 0];
-				batch[i][1] = indices[index + 1];
+				batch[i][0] = indices[index + (provokeFirst ? 0 : 1)];
+				batch[i][1] = indices[index + (provokeFirst ? 1 : 0)];
 				batch[i][2] = indices[index + 1];
 
 				index += 1;
@@ -94,9 +100,9 @@ namespace sw
 			auto index = 3 * start;
 			for(unsigned int i = 0; i < triangleCount; i++)
 			{
-				batch[i][0] = indices[index + 0];
-				batch[i][1] = indices[index + 1];
-				batch[i][2] = indices[index + 2];
+				batch[i][0] = indices[index + (provokeFirst ? 0 : 2)];
+				batch[i][1] = indices[index + (provokeFirst ? 1 : 0)];
+				batch[i][2] = indices[index + (provokeFirst ? 2 : 1)];
 
 				index += 3;
 			}
@@ -107,9 +113,9 @@ namespace sw
 			auto index = start;
 			for(unsigned int i = 0; i < triangleCount; i++)
 			{
-				batch[i][0] = indices[index + 0];
-				batch[i][1] = indices[index + ((start + i) & 1) + 1];
-				batch[i][2] = indices[index + (~(start + i) & 1) + 1];
+				batch[i][0] = indices[index + (provokeFirst ? 0 : 2)];
+				batch[i][1] = indices[index + ((start + i) & 1) + (provokeFirst ? 1 : 0)];
+				batch[i][2] = indices[index + (~(start + i) & 1) + (provokeFirst ? 1 : 0)];
 
 				index += 1;
 			}
@@ -120,9 +126,9 @@ namespace sw
 			auto index = start + 1;
 			for(unsigned int i = 0; i < triangleCount; i++)
 			{
-				batch[i][0] = indices[index + 0];
-				batch[i][1] = indices[index + 1];
-				batch[i][2] = indices[0];
+				batch[i][provokeFirst ? 0 : 2] = indices[index + 0];
+				batch[i][provokeFirst ? 1 : 0] = indices[index + 1];
+				batch[i][provokeFirst ? 2 : 1] = indices[0];
 
 				index += 1;
 			}
@@ -159,14 +165,26 @@ namespace sw
 		drawTickets.take().wait();
 	}
 
+	// Renderer objects have to be mem aligned to the alignment provided in the class declaration
+	void* Renderer::operator new(size_t size)
+	{
+		ASSERT(size == sizeof(Renderer));  // This operator can't be called from a derived class
+		return vk::allocate(sizeof(Renderer), alignof(Renderer), vk::DEVICE_MEMORY, VK_SYSTEM_ALLOCATION_SCOPE_DEVICE);
+	}
+
+	void Renderer::operator delete(void* mem)
+	{
+		vk::deallocate(mem, vk::DEVICE_MEMORY);
+	}
+
 	void Renderer::draw(const sw::Context* context, VkIndexType indexType, unsigned int count, int baseVertex,
-			TaskEvents *events, int instanceID, int viewID, void *indexBuffer,
+			TaskEvents *events, int instanceID, int viewID, void *indexBuffer, const VkExtent3D& framebufferExtent,
 			PushConstantStorage const & pushConstants, bool update)
 	{
 		if(count == 0) { return; }
 
 		auto id = nextDrawID++;
-		YARN_SCOPED_EVENT("draw %d", id);
+		MARL_SCOPED_EVENT("draw %d", id);
 
 		#ifndef NDEBUG
 		{
@@ -186,16 +204,16 @@ namespace sw
 			return;
 		}
 
-		yarn::Pool<sw::DrawCall>::Loan draw;
+		marl::Pool<sw::DrawCall>::Loan draw;
 		{
-			YARN_SCOPED_EVENT("drawCallPool.borrow()");
+			MARL_SCOPED_EVENT("drawCallPool.borrow()");
 			draw = drawCallPool.borrow();
 		}
 		draw->id = id;
 
 		if(update)
 		{
-			YARN_SCOPED_EVENT("update");
+			MARL_SCOPED_EVENT("update");
 			vertexState = VertexProcessor::update(context);
 			setupState = SetupProcessor::update(context);
 			pixelState = PixelProcessor::update(context);
@@ -244,14 +262,13 @@ namespace sw
 		draw->numPrimitivesPerBatch = numPrimitivesPerBatch;
 		draw->numBatches = (count + draw->numPrimitivesPerBatch - 1) / draw->numPrimitivesPerBatch;
 		draw->topology = context->topology;
+		draw->provokingVertexMode = context->provokingVertexMode;
 		draw->indexType = indexType;
+		draw->lineRasterizationMode = context->lineRasterizationMode;
 
 		draw->vertexRoutine = vertexRoutine;
 		draw->setupRoutine = setupRoutine;
 		draw->pixelRoutine = pixelRoutine;
-		draw->vertexPointer = (VertexProcessor::RoutinePointer)vertexRoutine->getEntry();
-		draw->setupPointer = (SetupProcessor::RoutinePointer)setupRoutine->getEntry();
-		draw->pixelPointer = (PixelProcessor::RoutinePointer)pixelRoutine->getEntry();
 		draw->setupPrimitives = setupPrimitives;
 		draw->setupState = setupState;
 
@@ -261,6 +278,7 @@ namespace sw
 		for(int i = 0; i < MAX_INTERFACE_COMPONENTS/4; i++)
 		{
 			data->input[i] = context->input[i].buffer;
+			data->robustnessSize[i] = context->input[i].robustnessSize;
 			data->stride[i] = context->input[i].vertexStride;
 		}
 
@@ -313,16 +331,17 @@ namespace sw
 			float N = viewport.minDepth;
 			float F = viewport.maxDepth;
 			float Z = F - N;
+			constexpr float subPixF = vk::SUBPIXEL_PRECISION_FACTOR;
 
 			if(context->isDrawTriangle(false))
 			{
 				N += context->depthBias;
 			}
 
-			data->Wx16 = replicate(W * 16);
-			data->Hx16 = replicate(H * 16);
-			data->X0x16 = replicate(X0 * 16 - 8);
-			data->Y0x16 = replicate(Y0 * 16 - 8);
+			data->WxF = replicate(W * subPixF);
+			data->HxF = replicate(H * subPixF);
+			data->X0xF = replicate(X0 * subPixF - subPixF / 2);
+			data->Y0xF = replicate(Y0 * subPixF - subPixF / 2);
 			data->halfPixelX = replicate(0.5f / W);
 			data->halfPixelY = replicate(0.5f / H);
 			data->viewportHeight = abs(viewport.height);
@@ -365,10 +384,10 @@ namespace sw
 
 		// Scissor
 		{
-			data->scissorX0 = scissor.offset.x;
-			data->scissorX1 = scissor.offset.x + scissor.extent.width;
-			data->scissorY0 = scissor.offset.y;
-			data->scissorY1 = scissor.offset.y + scissor.extent.height;
+			data->scissorX0 = clamp<int>(scissor.offset.x, 0, framebufferExtent.width);
+			data->scissorX1 = clamp<int>(scissor.offset.x + scissor.extent.width, 0, framebufferExtent.width);
+			data->scissorY0 = clamp<int>(scissor.offset.y, 0, framebufferExtent.height);
+			data->scissorY1 = clamp<int>(scissor.offset.y + scissor.extent.height, 0, framebufferExtent.height);
 		}
 
 		// Push constants
@@ -411,12 +430,12 @@ namespace sw
 			occlusionQuery->finish();
 		}
 
-		vertexRoutine.reset();
-		setupRoutine.reset();
-		pixelRoutine.reset();
+		vertexRoutine = {};
+		setupRoutine = {};
+		pixelRoutine = {};
 	}
 
-	void DrawCall::run(const yarn::Loan<DrawCall>& draw, yarn::Ticket::Queue* tickets, yarn::Ticket::Queue clusterQueues[MaxClusterCount])
+	void DrawCall::run(const marl::Loan<DrawCall>& draw, marl::Ticket::Queue* tickets, marl::Ticket::Queue clusterQueues[MaxClusterCount])
 	{
 		draw->setup();
 
@@ -425,8 +444,8 @@ namespace sw
 		auto const numBatches = draw->numBatches;
 
 		auto ticket = tickets->take();
-		auto finally = yarn::make_shared_finally([draw, ticket] {
-			YARN_SCOPED_EVENT("FINISH draw %d", draw->id);
+		auto finally = marl::make_shared_finally([draw, ticket] {
+			MARL_SCOPED_EVENT("FINISH draw %d", draw->id);
 			draw->teardown();
 			ticket.done();
 		});
@@ -443,7 +462,7 @@ namespace sw
 				batch->clusterTickets[cluster] = std::move(clusterQueues[cluster].take());
 			}
 
-			yarn::schedule([draw, batch, finally] {
+			marl::schedule([draw, batch, finally] {
 
 				processVertices(draw.get(), batch.get());
 
@@ -468,49 +487,51 @@ namespace sw
 
 	void DrawCall::processVertices(DrawCall* draw, BatchData* batch)
 	{
-		YARN_SCOPED_EVENT("VERTEX draw %d, batch %d", draw->id, batch->id);
+		MARL_SCOPED_EVENT("VERTEX draw %d, batch %d", draw->id, batch->id);
 
 		unsigned int triangleIndices[MaxBatchSize + 1][3];  // One extra for SIMD width overrun. TODO: Adjust to dynamic batch size.
 		{
-			YARN_SCOPED_EVENT("processPrimitiveVertices");
+			MARL_SCOPED_EVENT("processPrimitiveVertices");
 			processPrimitiveVertices(
 				triangleIndices,
 				draw->data->indices,
 				draw->indexType,
 				batch->firstPrimitive,
 				batch->numPrimitives,
-				draw->topology);
+				draw->topology,
+				draw->provokingVertexMode);
 		}
 
 		auto& vertexTask = batch->vertexTask;
 		vertexTask.primitiveStart = batch->firstPrimitive;
-		vertexTask.vertexCount = batch->numPrimitives * 3;
+		// We're only using batch compaction for points, not lines
+		vertexTask.vertexCount = batch->numPrimitives * ((draw->topology == VK_PRIMITIVE_TOPOLOGY_POINT_LIST) ? 1 : 3);
 		if (vertexTask.vertexCache.drawCall != draw->id)
 		{
 			vertexTask.vertexCache.clear();
 			vertexTask.vertexCache.drawCall = draw->id;
 		}
 
-		draw->vertexPointer(&batch->triangles.front().v0, &triangleIndices[0][0], &vertexTask, draw->data);
+		draw->vertexRoutine(&batch->triangles.front().v0, &triangleIndices[0][0], &vertexTask, draw->data);
 	}
 
 	void DrawCall::processPrimitives(DrawCall* draw, BatchData* batch)
 	{
-		YARN_SCOPED_EVENT("PRIMITIVES draw %d batch %d", draw->id, batch->id);
+		MARL_SCOPED_EVENT("PRIMITIVES draw %d batch %d", draw->id, batch->id);
 		auto triangles = &batch->triangles[0];
 		auto primitives = &batch->primitives[0];
 		batch->numVisible = draw->setupPrimitives(triangles, primitives, draw, batch->numPrimitives);
 	}
 
-	void DrawCall::processPixels(const yarn::Loan<DrawCall>& draw, const yarn::Loan<BatchData>& batch, const std::shared_ptr<yarn::Finally>& finally)
+	void DrawCall::processPixels(const marl::Loan<DrawCall>& draw, const marl::Loan<BatchData>& batch, const std::shared_ptr<marl::Finally>& finally)
 	{
 		struct Data
 		{
-			Data(const yarn::Loan<DrawCall>& draw, const yarn::Loan<BatchData>& batch, const std::shared_ptr<yarn::Finally>& finally)
+			Data(const marl::Loan<DrawCall>& draw, const marl::Loan<BatchData>& batch, const std::shared_ptr<marl::Finally>& finally)
 				: draw(draw), batch(batch), finally(finally) {}
-			yarn::Loan<DrawCall> draw;
-			yarn::Loan<BatchData> batch;
-			std::shared_ptr<yarn::Finally> finally;
+			marl::Loan<DrawCall> draw;
+			marl::Loan<BatchData> batch;
+			std::shared_ptr<marl::Finally> finally;
 		};
 		auto data = std::make_shared<Data>(draw, batch, finally);
 		for (int cluster = 0; cluster < MaxClusterCount; cluster++)
@@ -519,8 +540,8 @@ namespace sw
 			{
 				auto& draw = data->draw;
 				auto& batch = data->batch;
-				YARN_SCOPED_EVENT("PIXEL draw %d, batch %d, cluster %d", draw->id, batch->id, cluster);
-				draw->pixelPointer(&batch->primitives.front(), batch->numVisible, cluster, MaxClusterCount, draw->data);
+				MARL_SCOPED_EVENT("PIXEL draw %d, batch %d, cluster %d", draw->id, batch->id, cluster);
+				draw->pixelRoutine(&batch->primitives.front(), batch->numVisible, cluster, MaxClusterCount, draw->data);
 				batch->clusterTickets[cluster].done();
 			});
 		}
@@ -528,7 +549,7 @@ namespace sw
 
 	void Renderer::synchronize()
 	{
-		YARN_SCOPED_EVENT("synchronize");
+		MARL_SCOPED_EVENT("synchronize");
 		auto ticket = drawTickets.take();
 		ticket.wait();
 		device->updateSamplingRoutineConstCache();
@@ -541,7 +562,8 @@ namespace sw
 		VkIndexType indexType,
 		unsigned int start,
 		unsigned int triangleCount,
-		VkPrimitiveTopology topology)
+		VkPrimitiveTopology topology,
+		VkProvokingVertexModeEXT provokingVertexMode)
 	{
 		if(!primitiveIndices)
 		{
@@ -550,7 +572,7 @@ namespace sw
 				unsigned int operator[](unsigned int i) { return i; }
 			};
 
-			if(!setBatchIndices(triangleIndicesOut, topology, LinearIndex(), start, triangleCount))
+			if(!setBatchIndices(triangleIndicesOut, topology, provokingVertexMode, LinearIndex(), start, triangleCount))
 			{
 				return;
 			}
@@ -560,13 +582,13 @@ namespace sw
 			switch(indexType)
 			{
 			case VK_INDEX_TYPE_UINT16:
-				if(!setBatchIndices(triangleIndicesOut, topology, static_cast<const uint16_t*>(primitiveIndices), start, triangleCount))
+				if(!setBatchIndices(triangleIndicesOut, topology, provokingVertexMode, static_cast<const uint16_t*>(primitiveIndices), start, triangleCount))
 				{
 					return;
 				}
 				break;
 			case VK_INDEX_TYPE_UINT32:
-				if(!setBatchIndices(triangleIndicesOut, topology, static_cast<const uint32_t*>(primitiveIndices), start, triangleCount))
+				if(!setBatchIndices(triangleIndicesOut, topology, provokingVertexMode, static_cast<const uint32_t*>(primitiveIndices), start, triangleCount))
 				{
 					return;
 				}
@@ -578,16 +600,19 @@ namespace sw
 			}
 		}
 
-		// Repeat the last index to allow for SIMD width overrun.
-		triangleIndicesOut[triangleCount][0] = triangleIndicesOut[triangleCount - 1][2];
-		triangleIndicesOut[triangleCount][1] = triangleIndicesOut[triangleCount - 1][2];
-		triangleIndicesOut[triangleCount][2] = triangleIndicesOut[triangleCount - 1][2];
+		// setBatchIndices() takes care of the point case, since it's different due to the compaction
+		if (topology != VK_PRIMITIVE_TOPOLOGY_POINT_LIST)
+		{
+			// Repeat the last index to allow for SIMD width overrun.
+			triangleIndicesOut[triangleCount][0] = triangleIndicesOut[triangleCount - 1][2];
+			triangleIndicesOut[triangleCount][1] = triangleIndicesOut[triangleCount - 1][2];
+			triangleIndicesOut[triangleCount][2] = triangleIndicesOut[triangleCount - 1][2];
+		}
 	}
 
 	int DrawCall::setupSolidTriangles(Triangle *triangles, Primitive *primitives, const DrawCall *drawCall, int count)
 	{
 		auto &state = drawCall->setupState;
-		auto setupRoutine = drawCall->setupPointer;
 
 		int ms = state.multiSample;
 		const DrawData *data = drawCall->data;
@@ -599,25 +624,32 @@ namespace sw
 			Vertex &v1 = triangles->v1;
 			Vertex &v2 = triangles->v2;
 
-			if((v0.clipFlags & v1.clipFlags & v2.clipFlags) == Clipper::CLIP_FINITE)
+			Polygon polygon(&v0.position, &v1.position, &v2.position);
+
+
+			if((v0.cullMask | v1.cullMask | v2.cullMask) == 0)
 			{
-				Polygon polygon(&v0.position, &v1.position, &v2.position);
+				continue;
+			}
 
-				int clipFlagsOr = v0.clipFlags | v1.clipFlags | v2.clipFlags;
+			if((v0.clipFlags & v1.clipFlags & v2.clipFlags) != Clipper::CLIP_FINITE)
+			{
+				continue;
+			}
 
-				if(clipFlagsOr != Clipper::CLIP_FINITE)
+			int clipFlagsOr = v0.clipFlags | v1.clipFlags | v2.clipFlags;
+			if(clipFlagsOr != Clipper::CLIP_FINITE)
+			{
+				if(!Clipper::Clip(polygon, clipFlagsOr, *drawCall))
 				{
-					if(!Clipper::Clip(polygon, clipFlagsOr, *drawCall))
-					{
-						continue;
-					}
+					continue;
 				}
+			}
 
-				if(setupRoutine(primitives, triangles, &polygon, data))
-				{
-					primitives += ms;
-					visible++;
-				}
+			if(drawCall->setupRoutine(primitives, triangles, &polygon, data))
+			{
+				primitives += ms;
+				visible++;
 			}
 		}
 
@@ -761,13 +793,17 @@ namespace sw
 
 	bool DrawCall::setupLine(Primitive &primitive, Triangle &triangle, const DrawCall &draw)
 	{
-		const SetupProcessor::RoutinePointer &setupRoutine = draw.setupPointer;
 		const DrawData &data = *draw.data;
 
 		float lineWidth = data.lineWidth;
 
 		Vertex &v0 = triangle.v0;
 		Vertex &v1 = triangle.v1;
+
+		if((v0.cullMask | v1.cullMask) == 0)
+		{
+			return false;
+		}
 
 		const float4 &P0 = v0.position;
 		const float4 &P1 = v1.position;
@@ -777,8 +813,10 @@ namespace sw
 			return false;
 		}
 
-		const float W = data.Wx16[0] * (1.0f / 16.0f);
-		const float H = data.Hx16[0] * (1.0f / 16.0f);
+		constexpr float subPixF = vk::SUBPIXEL_PRECISION_FACTOR;
+
+		const float W = data.WxF[0] * (1.0f / subPixF);
+		const float H = data.HxF[0] * (1.0f / subPixF);
 
 		float dx = W * (P1.x / P1.w - P0.x / P0.w);
 		float dy = H * (P1.y / P1.w - P0.y / P0.w);
@@ -788,8 +826,10 @@ namespace sw
 			return false;
 		}
 
-		if(true)   // Rectangle centered on the line segment
+		if(draw.lineRasterizationMode != VK_LINE_RASTERIZATION_MODE_BRESENHAM_EXT)
 		{
+			// Rectangle centered on the line segment
+
 			float4 P[4];
 			int C[4];
 
@@ -839,11 +879,16 @@ namespace sw
 					}
 				}
 
-				return setupRoutine(&primitive, &triangle, &polygon, &data);
+				return draw.setupRoutine(&primitive, &triangle, &polygon, &data);
 			}
 		}
-		else   // Diamond test convention
+		else if(false)  // TODO(b/80135519): Deprecate
 		{
+			// Connecting diamonds polygon
+			// This shape satisfies the diamond test convention, except for the exit rule part.
+			// Line segments with overlapping endpoints have duplicate fragments.
+			// The ideal algorithm requires half-open line rasterization (b/80135519).
+
 			float4 P[8];
 			int C[8];
 
@@ -945,7 +990,98 @@ namespace sw
 					}
 				}
 
-				return setupRoutine(&primitive, &triangle, &polygon, &data);
+				return draw.setupRoutine(&primitive, &triangle, &polygon, &data);
+			}
+		}
+		else
+		{
+			// Parallelogram approximating Bresenham line
+			// This algorithm does not satisfy the ideal diamond-exit rule, but does avoid the
+			// duplicate fragment rasterization problem and satisfies all of Vulkan's minimum
+			// requirements for Bresenham line segment rasterization.
+
+			float4 P[8];
+			P[0] = P0;
+			P[1] = P0;
+			P[2] = P0;
+			P[3] = P0;
+			P[4] = P1;
+			P[5] = P1;
+			P[6] = P1;
+			P[7] = P1;
+
+			float dx0 = lineWidth * 0.5f * P0.w / W;
+			float dy0 = lineWidth * 0.5f * P0.w / H;
+
+			float dx1 = lineWidth * 0.5f * P1.w / W;
+			float dy1 = lineWidth * 0.5f * P1.w / H;
+
+			P[0].x += -dx0;
+			P[1].y += +dy0;
+			P[2].x += +dx0;
+			P[3].y += -dy0;
+			P[4].x += -dx1;
+			P[5].y += +dy1;
+			P[6].x += +dx1;
+			P[7].y += -dy1;
+
+			float4 L[4];
+
+			if(dx > -dy)
+			{
+				if(dx > dy)   // Right
+				{
+					L[0] = P[1];
+					L[1] = P[5];
+					L[2] = P[7];
+					L[3] = P[3];
+				}
+				else   // Down
+				{
+					L[0] = P[0];
+					L[1] = P[4];
+					L[2] = P[6];
+					L[3] = P[2];
+				}
+			}
+			else
+			{
+				if(dx > dy)   // Up
+				{
+					L[0] = P[0];
+					L[1] = P[2];
+					L[2] = P[6];
+					L[3] = P[4];
+				}
+				else   // Left
+				{
+					L[0] = P[1];
+					L[1] = P[3];
+					L[2] = P[7];
+					L[3] = P[5];
+				}
+			}
+
+			int C0 = Clipper::ComputeClipFlags(L[0]);
+			int C1 = Clipper::ComputeClipFlags(L[1]);
+			int C2 = Clipper::ComputeClipFlags(L[2]);
+			int C3 = Clipper::ComputeClipFlags(L[3]);
+
+			if((C0 & C1 & C2 & C3) == Clipper::CLIP_FINITE)
+			{
+				Polygon polygon(L, 4);
+
+				int clipFlagsOr = C0 | C1 | C2 | C3;
+
+				if(clipFlagsOr != Clipper::CLIP_FINITE)
+				{
+					if(!Clipper::Clip(polygon, clipFlagsOr, draw))
+					{
+						return false;
+					}
+				}
+
+				return draw.setupRoutine(&primitive, &triangle, &polygon, &data);
 			}
 		}
 
@@ -954,10 +1090,14 @@ namespace sw
 
 	bool DrawCall::setupPoint(Primitive &primitive, Triangle &triangle, const DrawCall &draw)
 	{
-		const SetupProcessor::RoutinePointer &setupRoutine = draw.setupPointer;
 		const DrawData &data = *draw.data;
 
 		Vertex &v = triangle.v0;
+
+		if(v.cullMask == 0)
+		{
+			return false;
+		}
 
 		float pSize = v.pointSize;
 
@@ -1007,9 +1147,11 @@ namespace sw
 			triangle.v1 = triangle.v0;
 			triangle.v2 = triangle.v0;
 
-			triangle.v1.projected.x += iround(16 * 0.5f * pSize);
-			triangle.v2.projected.y -= iround(16 * 0.5f * pSize) * (data.Hx16[0] > 0.0f ? 1 : -1);   // Both Direct3D and OpenGL expect (0, 0) in the top-left corner
-			return setupRoutine(&primitive, &triangle, &polygon, &data);
+			constexpr float subPixF = vk::SUBPIXEL_PRECISION_FACTOR;
+
+			triangle.v1.projected.x += iround(subPixF * 0.5f * pSize);
+			triangle.v2.projected.y -= iround(subPixF * 0.5f * pSize) * (data.HxF[0] > 0.0f ? 1 : -1);   // Both Direct3D and OpenGL expect (0, 0) in the top-left corner
+			return draw.setupRoutine(&primitive, &triangle, &polygon, &data);
 		}
 
 		return false;
@@ -1036,10 +1178,11 @@ namespace sw
 		for(uint32_t i = 0; i < vk::MAX_VERTEX_INPUT_BINDINGS; i++)
 		{
 			auto &attrib = inputs[i];
-			if (attrib.count && attrib.instanceStride)
+			if (attrib.count && attrib.instanceStride && (attrib.instanceStride < attrib.robustnessSize))
 			{
 				// Under the casts: attrib.buffer += attrib.instanceStride
 				attrib.buffer = (void const *)((uintptr_t)attrib.buffer + attrib.instanceStride);
+				attrib.robustnessSize -= attrib.instanceStride;
 			}
 		}
 	}

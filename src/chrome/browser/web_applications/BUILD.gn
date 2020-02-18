@@ -11,7 +11,6 @@ group("web_app_test_group") {
 
 source_set("web_applications") {
   sources = [
-    "abstract_web_app_database.h",
     "external_web_app_manager.cc",
     "external_web_app_manager.h",
     "file_utils_wrapper.cc",
@@ -44,10 +43,11 @@ source_set("web_applications") {
     "web_app_registrar.h",
     "web_app_registry_update.cc",
     "web_app_registry_update.h",
+    "web_app_shortcut_manager.cc",
+    "web_app_shortcut_manager.h",
     "web_app_sync_bridge.cc",
     "web_app_sync_bridge.h",
-    "web_app_sync_manager.cc",
-    "web_app_sync_manager.h",
+    "web_app_sync_install_delegate.h",
   ]
 
   deps = [
@@ -63,6 +63,8 @@ source_set("web_applications") {
   if (is_chromeos) {
     deps += [
       "//ash/public/cpp:cpp",
+      "//chromeos/components/help_app_ui",
+      "//chromeos/components/media_app_ui",
       "//chromeos/constants",
       "//components/arc:arc_base",
       "//components/arc/mojom",
@@ -79,8 +81,12 @@ source_set("web_applications_test_support") {
   testonly = true
 
   sources = [
+    "test/service_worker_registration_waiter.cc",
+    "test/service_worker_registration_waiter.h",
     "test/test_app_registrar.cc",
     "test/test_app_registrar.h",
+    "test/test_app_shortcut_manager.cc",
+    "test/test_app_shortcut_manager.h",
     "test/test_data_retriever.cc",
     "test/test_data_retriever.h",
     "test/test_file_handler_manager.cc",
@@ -93,10 +99,10 @@ source_set("web_applications_test_support") {
     "test/test_pending_app_manager.h",
     "test/test_system_web_app_manager.cc",
     "test/test_system_web_app_manager.h",
-    "test/test_web_app_database.cc",
-    "test/test_web_app_database.h",
     "test/test_web_app_database_factory.cc",
     "test/test_web_app_database_factory.h",
+    "test/test_web_app_registry_controller.cc",
+    "test/test_web_app_registry_controller.h",
     "test/test_web_app_ui_manager.cc",
     "test/test_web_app_ui_manager.h",
     "test/test_web_app_url_loader.cc",
@@ -134,6 +140,8 @@ source_set("web_applications_unit_tests") {
     "web_app_install_manager_unittest.cc",
     "web_app_install_task_unittest.cc",
     "web_app_registrar_unittest.cc",
+    "web_app_sync_bridge_unittest.cc",
+    "web_app_unittest.cc",
   ]
 
   deps = [
@@ -149,6 +157,7 @@ source_set("web_applications_unit_tests") {
     "//content/public/browser",
     "//content/test:test_support",
     "//skia",
+    "//testing/gtest",
   ]
 
   if (is_chromeos) {
@@ -166,6 +175,7 @@ source_set("web_applications_browser_tests") {
 
   sources = [
     "pending_app_manager_impl_browsertest.cc",
+    "web_app_icon_manager_browsertest.cc",
   ]
 
   defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]

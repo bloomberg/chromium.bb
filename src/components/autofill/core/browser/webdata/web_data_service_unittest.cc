@@ -28,7 +28,9 @@
 #include "components/autofill/core/browser/webdata/autofill_table.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service_observer.h"
+#include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/form_field_data.h"
+#include "components/os_crypt/os_crypt_mocker.h"
 #include "components/webdata/common/web_data_results.h"
 #include "components/webdata/common/web_data_service_base.h"
 #include "components/webdata/common/web_data_service_consumer.h"
@@ -48,7 +50,7 @@ using testing::ElementsAreArray;
 namespace {
 
 template <class T>
-class AutofillWebDataServiceConsumer: public WebDataServiceConsumer {
+class AutofillWebDataServiceConsumer : public WebDataServiceConsumer {
  public:
   AutofillWebDataServiceConsumer() : handle_(0) {}
   virtual ~AutofillWebDataServiceConsumer() {}
@@ -82,8 +84,7 @@ ACTION_P(SignalEvent, event) {
 class MockAutofillWebDataServiceObserver
     : public AutofillWebDataServiceObserverOnDBSequence {
  public:
-  MOCK_METHOD1(AutofillEntriesChanged,
-               void(const AutofillChangeList& changes));
+  MOCK_METHOD1(AutofillEntriesChanged, void(const AutofillChangeList& changes));
   MOCK_METHOD1(AutofillProfileChanged,
                void(const AutofillProfileChange& change));
 };
@@ -96,6 +97,8 @@ class WebDataServiceTest : public testing::Test {
  protected:
   void SetUp() override {
     base::FilePath path(WebDatabase::kInMemoryPath);
+    // OSCrypt is used for encryption of credit card data in this test.
+    OSCryptMocker::SetUp();
 
     // TODO(pkasting): http://crbug.com/740773 This should likely be sequenced,
     // not single-threaded; it's also possible the various uses of this below
@@ -119,6 +122,7 @@ class WebDataServiceTest : public testing::Test {
     wds_ = nullptr;
     wdbs_ = nullptr;
     task_environment_.RunUntilIdle();
+    OSCryptMocker::TearDown();
   }
 
   base::test::TaskEnvironment task_environment_;
@@ -183,9 +187,8 @@ class WebDataServiceAutofillTest : public WebDataServiceTest {
 
 TEST_F(WebDataServiceAutofillTest, FormFillAdd) {
   const AutofillChange expected_changes[] = {
-    AutofillChange(AutofillChange::ADD, AutofillKey(name1_, value1_)),
-    AutofillChange(AutofillChange::ADD, AutofillKey(name2_, value2_))
-  };
+      AutofillChange(AutofillChange::ADD, AutofillKey(name1_, value1_)),
+      AutofillChange(AutofillChange::ADD, AutofillKey(name2_, value2_))};
 
   // This will verify that the correct notification is triggered,
   // passing the correct list of autofill keys in the details.
@@ -204,8 +207,8 @@ TEST_F(WebDataServiceAutofillTest, FormFillAdd) {
   AutofillWebDataServiceConsumer<std::vector<AutofillEntry>> consumer;
   WebDataServiceBase::Handle handle;
   static const int limit = 10;
-  handle = wds_->GetFormValuesForElementName(
-      name1_, base::string16(), limit, &consumer);
+  handle = wds_->GetFormValuesForElementName(name1_, base::string16(), limit,
+                                             &consumer);
   task_environment_.RunUntilIdle();
   EXPECT_EQ(handle, consumer.handle());
   ASSERT_EQ(1U, consumer.result().size());
@@ -226,8 +229,7 @@ TEST_F(WebDataServiceAutofillTest, FormFillRemoveOne) {
   // This will verify that the correct notification is triggered,
   // passing the correct list of autofill keys in the details.
   const AutofillChange expected_changes[] = {
-    AutofillChange(AutofillChange::REMOVE, AutofillKey(name1_, value1_))
-  };
+      AutofillChange(AutofillChange::REMOVE, AutofillKey(name1_, value1_))};
   EXPECT_CALL(observer_,
               AutofillEntriesChanged(ElementsAreArray(expected_changes)))
       .WillOnce(SignalEvent(&done_event_));
@@ -239,7 +241,7 @@ TEST_F(WebDataServiceAutofillTest, FormFillRemoveOne) {
 
 TEST_F(WebDataServiceAutofillTest, FormFillRemoveMany) {
   TimeDelta one_day(TimeDelta::FromDays(1));
-  Time t = Time::Now();
+  Time t = AutofillClock::Now();
 
   EXPECT_CALL(observer_, AutofillEntriesChanged(_))
       .WillOnce(SignalEvent(&done_event_));
@@ -255,9 +257,8 @@ TEST_F(WebDataServiceAutofillTest, FormFillRemoveMany) {
   // This will verify that the correct notification is triggered,
   // passing the correct list of autofill keys in the details.
   const AutofillChange expected_changes[] = {
-    AutofillChange(AutofillChange::REMOVE, AutofillKey(name1_, value1_)),
-    AutofillChange(AutofillChange::REMOVE, AutofillKey(name2_, value2_))
-  };
+      AutofillChange(AutofillChange::REMOVE, AutofillKey(name1_, value1_)),
+      AutofillChange(AutofillChange::REMOVE, AutofillKey(name2_, value2_))};
   EXPECT_CALL(observer_,
               AutofillEntriesChanged(ElementsAreArray(expected_changes)))
       .WillOnce(SignalEvent(&done_event_));
@@ -271,8 +272,8 @@ TEST_F(WebDataServiceAutofillTest, ProfileAdd) {
   AutofillProfile profile;
 
   // Check that GUID-based notification was sent.
-  const AutofillProfileChange expected_change(
-      AutofillProfileChange::ADD, profile.guid(), &profile);
+  const AutofillProfileChange expected_change(AutofillProfileChange::ADD,
+                                              profile.guid(), &profile);
   EXPECT_CALL(observer_, AutofillProfileChanged(expected_change))
       .WillOnce(SignalEvent(&done_event_));
 

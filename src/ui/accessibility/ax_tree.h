@@ -12,6 +12,7 @@
 #include <unordered_map>
 
 #include "base/observer_list.h"
+#include "ui/accessibility/ax_enums.mojom-forward.h"
 #include "ui/accessibility/ax_export.h"
 #include "ui/accessibility/ax_node.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -53,6 +54,10 @@ class AX_EXPORT AXTree : public AXNode::OwnerTree {
   AXNode* root() const { return root_; }
 
   const AXTreeData& data() const { return data_; }
+
+  // AXNode::OwnerTree override.
+  // Returns the globally unique ID of this accessibility tree.
+  AXTreeID GetAXTreeID() const override;
 
   // AXNode::OwnerTree override.
   // Returns the AXNode with the given |id| if it is part of this AXTree.
@@ -212,8 +217,14 @@ class AX_EXPORT AXTree : public AXNode::OwnerTree {
       const AXTreeUpdateState* update_state);
 
   // Notify the delegate that |node| and all of its descendants will be
+  // destroyed. This function is called during AXTree teardown.
+  void RecursivelyNotifyNodeDeletedForTreeTeardown(AXNode* node);
+
+  // Notify the delegate that the node marked by |node_id| has been deleted.
+  // We are passing the node id instead of ax node is because by the time this
+  // function is called, the ax node in the tree will already have been
   // destroyed.
-  void RecursivelyNotifyNodeWillBeDeleted(AXNode* node);
+  void NotifyNodeHasBeenDeleted(AXNode::AXID node_id);
 
   // Notify the delegate that |node| has been created or reparented.
   void NotifyNodeHasBeenReparentedOrCreated(
@@ -270,6 +281,14 @@ class AX_EXPORT AXTree : public AXNode::OwnerTree {
                             const std::vector<int32_t>& new_child_ids,
                             std::vector<AXNode*>* new_children,
                             AXTreeUpdateState* update_state);
+
+  // Internal implementation of RelativeToTreeBounds. It calls itself
+  // recursively but ensures that it can only do so exactly once!
+  gfx::RectF RelativeToTreeBoundsInternal(const AXNode* node,
+                                          gfx::RectF node_bounds,
+                                          bool* offscreen,
+                                          bool clip_bounds,
+                                          bool allow_recursion) const;
 
   base::ObserverList<AXTreeObserver> observers_;
   AXNode* root_ = nullptr;

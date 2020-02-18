@@ -13,7 +13,9 @@
 #include "base/strings/string_piece.h"
 #include "chrome/browser/chrome_browser_field_trials_mobile.h"
 #include "chrome/browser/metrics/metrics_reporting_state.h"
+#include "chrome/common/metrics.mojom.h"
 #include "components/metrics/metrics_service_accessor.h"
+#include "ppapi/buildflags/buildflags.h"
 
 class ChromeMetricsServiceClient;
 class ChromePasswordManagerClient;
@@ -24,10 +26,6 @@ class Profile;
 namespace {
 class CrashesDOMHandler;
 class FlashDOMHandler;
-}
-
-namespace chrome {
-void AttemptRestart();
 }
 
 namespace domain_reliability {
@@ -60,10 +58,13 @@ namespace safe_browsing {
 class ChromeCleanerControllerDelegate;
 class DownloadUrlSBClient;
 class IncidentReportingService;
-class ReporterRunner;
 class SafeBrowsingService;
 class SafeBrowsingUIManager;
-}
+
+namespace internal {
+class ReporterRunner;
+}  // namespace internal
+}  // namespace safe_browsing
 
 namespace settings {
 class MetricsReportingHandler;
@@ -84,14 +85,11 @@ class ChromeMetricsServiceAccessor : public metrics::MetricsServiceAccessor {
  private:
   friend class ::CrashesDOMHandler;
   friend class ::FlashDOMHandler;
-  friend void chrome::AttemptRestart();
   friend class ChromeBrowserFieldTrials;
-  // For ChromeWinClang.
-  friend class ChromeBrowserMainExtraPartsMetrics;
   // For StackSamplingConfiguration.
   friend class ChromeBrowserMainParts;
+  friend class ChromeContentBrowserClient;
   friend class ChromeMetricsServicesManagerClient;
-  friend class ChromeRenderMessageFilter;
   friend class DataReductionProxyChromeSettings;
   friend class domain_reliability::DomainReliabilityServiceFactory;
   friend class extensions::ChromeGuestViewManagerDelegate;
@@ -107,13 +105,14 @@ class ChromeMetricsServiceAccessor : public metrics::MetricsServiceAccessor {
   friend class safe_browsing::ChromeCleanerControllerDelegate;
   friend class safe_browsing::DownloadUrlSBClient;
   friend class safe_browsing::IncidentReportingService;
-  friend class safe_browsing::ReporterRunner;
+  friend class safe_browsing::internal::ReporterRunner;
   friend class safe_browsing::SafeBrowsingService;
   friend class safe_browsing::SafeBrowsingUIManager;
   friend class ChromeMetricsServiceClient;
   friend class ChromePasswordManagerClient;
   friend void welcome::JoinOnboardingGroup(Profile* profile);
   friend class NavigationMetricsRecorder;
+  friend class ChromeBrowserMainExtraPartsGpu;
 
   // Testing related friends.
   friend class first_run::FirstRunMasterPrefsVariationsSeedTest;
@@ -162,6 +161,12 @@ class ChromeMetricsServiceAccessor : public metrics::MetricsServiceAccessor {
   // Cover for function of same name in MetricsServiceAccssor. See
   // ChromeMetricsServiceAccessor for details.
   static void SetForceIsMetricsReportingEnabledPrefLookup(bool value);
+
+#if BUILDFLAG(ENABLE_PLUGINS)
+  // Provides an implementation of chrome::mojom::MetricsService.
+  static void BindMetricsServiceReceiver(
+      mojo::PendingReceiver<chrome::mojom::MetricsService> receiver);
+#endif  // BUILDFLAG(ENABLE_PLUGINS)
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(ChromeMetricsServiceAccessor);
 };

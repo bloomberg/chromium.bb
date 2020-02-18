@@ -13,7 +13,7 @@
 #include "openssl/crypto.h"
 #include "openssl/err.h"
 #include "openssl/ssl.h"
-#include "platform/api/logging.h"
+#include "util/logging.h"
 
 namespace openscreen {
 
@@ -56,4 +56,27 @@ void ClearOpenSSLERRStack(const Location& location) {
   }
 }
 
+Error GetSSLError(const SSL* ssl, int return_code) {
+  switch (SSL_get_error(ssl, return_code)) {
+    case SSL_ERROR_NONE:
+      return Error::None();
+
+    case SSL_ERROR_ZERO_RETURN:
+      return Error::Code::kSocketClosedFailure;
+
+    case SSL_ERROR_WANT_READ:     // fallthrough
+    case SSL_ERROR_WANT_WRITE:    // fallthrough
+    case SSL_ERROR_WANT_CONNECT:  // fallthrough
+    case SSL_ERROR_WANT_ACCEPT:   // fallthrough
+    case SSL_ERROR_WANT_X509_LOOKUP:
+      return Error::Code::kAgain;
+
+    case SSL_ERROR_SYSCALL:  // fallthrough
+    case SSL_ERROR_SSL:
+      return Error::Code::kFatalSSLError;
+  }
+
+  OSP_NOTREACHED();
+  return Error::Code::kUnknownError;
+}
 }  // namespace openscreen

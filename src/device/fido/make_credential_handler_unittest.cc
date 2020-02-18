@@ -9,7 +9,6 @@
 #include "base/bind_helpers.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "build/build_config.h"
 #include "components/cbor/reader.h"
 #include "components/cbor/values.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
@@ -32,10 +31,6 @@
 #include "device/fido/virtual_ctap2_device.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-#if defined(OS_WIN)
-#include "device/fido/win/fake_webauthn_api.h"
-#endif  // defined(OS_WIN)
 
 using ::testing::_;
 using ::testing::DoAll;
@@ -91,9 +86,12 @@ class FidoMakeCredentialHandlerTest : public ::testing::Test {
     auto handler = std::make_unique<MakeCredentialRequestHandler>(
         nullptr, fake_discovery_factory_.get(), supported_transports_,
         std::move(request_parameter),
-        std::move(authenticator_selection_criteria), cb_.callback());
-    if (pending_mock_platform_device_)
+        std::move(authenticator_selection_criteria),
+        /*allow_skipping_pin_touch=*/true, cb_.callback());
+    if (pending_mock_platform_device_) {
       platform_discovery_->AddDevice(std::move(pending_mock_platform_device_));
+      platform_discovery_->WaitForCallToStartAndSimulateSuccess();
+    }
     return handler;
   }
 
@@ -151,11 +149,6 @@ class FidoMakeCredentialHandlerTest : public ::testing::Test {
   TestMakeCredentialRequestCallback cb_;
   base::flat_set<FidoTransportProtocol> supported_transports_ =
       GetAllTransportProtocols();
-
-#if defined(OS_WIN)
-  device::ScopedFakeWinWebAuthnApi win_webauthn_api_ =
-      device::ScopedFakeWinWebAuthnApi::MakeUnavailable();
-#endif  // defined(OS_WIN)
 };
 
 TEST_F(FidoMakeCredentialHandlerTest, TransportAvailabilityInfo) {

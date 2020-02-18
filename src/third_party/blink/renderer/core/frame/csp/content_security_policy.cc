@@ -217,8 +217,7 @@ void ContentSecurityPolicy::ApplyPolicySideEffectsToDelegate() {
       Count(WebFeature::kCSPWithStrictDynamic);
     }
 
-    if (policy->AllowEval(nullptr,
-                          SecurityViolationReportingPolicy::kSuppressReporting,
+    if (policy->AllowEval(SecurityViolationReportingPolicy::kSuppressReporting,
                           kWillNotThrowException, g_empty_string)) {
       Count(WebFeature::kCSPWithUnsafeEval);
     }
@@ -527,27 +526,25 @@ bool ContentSecurityPolicy::IsScriptInlineType(InlineType inline_type) {
 }
 
 bool ContentSecurityPolicy::AllowEval(
-    ScriptState* script_state,
     SecurityViolationReportingPolicy reporting_policy,
     ContentSecurityPolicy::ExceptionStatus exception_status,
     const String& script_content) const {
   bool is_allowed = true;
   for (const auto& policy : policies_) {
-    is_allowed &= policy->AllowEval(script_state, reporting_policy,
-                                    exception_status, script_content);
+    is_allowed &=
+        policy->AllowEval(reporting_policy, exception_status, script_content);
   }
   return is_allowed;
 }
 
 bool ContentSecurityPolicy::AllowWasmEval(
-    ScriptState* script_state,
     SecurityViolationReportingPolicy reporting_policy,
     ContentSecurityPolicy::ExceptionStatus exception_status,
     const String& script_content) const {
   bool is_allowed = true;
   for (const auto& policy : policies_) {
-    is_allowed &= policy->AllowWasmEval(script_state, reporting_policy,
-                                        exception_status, script_content);
+    is_allowed &= policy->AllowWasmEval(reporting_policy, exception_status,
+                                        script_content);
   }
   return is_allowed;
 }
@@ -806,15 +803,15 @@ bool ContentSecurityPolicy::AllowWorkerContextFromSource(
   return AllowFromSource(ContentSecurityPolicy::DirectiveType::kWorkerSrc, url);
 }
 
-bool ContentSecurityPolicy::AllowTrustedTypePolicy(
-    const String& policy_name) const {
+bool ContentSecurityPolicy::AllowTrustedTypePolicy(const String& policy_name,
+                                                   bool is_duplicate) const {
   bool is_allowed = true;
   for (const auto& policy : policies_) {
     if (!CheckHeaderTypeMatches(CheckHeaderType::kCheckAll,
                                 policy->HeaderType())) {
       continue;
     }
-    is_allowed &= policy->AllowTrustedTypePolicy(policy_name);
+    is_allowed &= policy->AllowTrustedTypePolicy(policy_name, is_duplicate);
   }
 
   return is_allowed;
@@ -950,8 +947,11 @@ static void GatherSecurityPolicyViolationEventData(
             StripURLForUseInReport(delegate->GetSecurityOrigin(), blocked_url,
                                    redirect_status, effective_type));
         break;
-      case ContentSecurityPolicy::kTrustedTypesViolation:
-        init->setBlockedURI("trusted-types");
+      case ContentSecurityPolicy::kTrustedTypesSinkViolation:
+        init->setBlockedURI("trusted-types-sink");
+        break;
+      case ContentSecurityPolicy::kTrustedTypesPolicyViolation:
+        init->setBlockedURI("trusted-types-policy");
         break;
     }
   }

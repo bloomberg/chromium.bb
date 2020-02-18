@@ -7,11 +7,12 @@
 #include <memory>
 
 #include "osp/impl/quic/quic_connection.h"
-#include "platform/api/logging.h"
 #include "platform/base/error.h"
 #include "util/big_endian.h"
+#include "util/logging.h"
 
 namespace openscreen {
+namespace osp {
 
 // static
 // Decodes a varUint, expecting it to follow the encoding format described here:
@@ -283,4 +284,5 @@ void StopWatching(MessageDemuxer::MessageWatch* watch) {
   *watch = MessageDemuxer::MessageWatch();
 }
 
+}  // namespace osp
 }  // namespace openscreen

@@ -22,6 +22,7 @@
 #include "components/autofill_assistant/browser/protocol_utils.h"
 #include "components/autofill_assistant/browser/service_impl.h"
 #include "components/autofill_assistant/browser/trigger_context.h"
+#include "components/autofill_assistant/browser/user_data.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -85,6 +86,22 @@ bool StateEndsFlow(AutofillAssistantState state) {
   return false;
 }
 
+// Convenience method to set all fields of a |DateTimeProto|.
+void SetDateTimeProto(DateTimeProto* proto,
+                      int year,
+                      int month,
+                      int day,
+                      int hour,
+                      int minute,
+                      int second) {
+  proto->mutable_date()->set_year(year);
+  proto->mutable_date()->set_month(month);
+  proto->mutable_date()->set_day(day);
+  proto->mutable_time()->set_hour(hour);
+  proto->mutable_time()->set_minute(minute);
+  proto->mutable_time()->set_second(second);
+}
+
 }  // namespace
 
 Controller::Controller(content::WebContents* web_contents,
@@ -97,6 +114,7 @@ Controller::Controller(content::WebContents* web_contents,
       service_(service ? std::move(service)
                        : ServiceImpl::Create(web_contents->GetBrowserContext(),
                                              client_)),
+      user_data_(std::make_unique<UserData>()),
       navigating_to_new_document_(web_contents->IsWaitingForResponse()) {}
 
 Controller::~Controller() = default;
@@ -155,6 +173,10 @@ content::WebContents* Controller::GetWebContents() {
 
 std::string Controller::GetAccountEmailAddress() {
   return client_->GetAccountEmailAddress();
+}
+
+std::string Controller::GetLocale() {
+  return client_->GetLocale();
 }
 
 void Controller::SetTouchableElementArea(const ElementAreaProto& area) {
@@ -334,10 +356,12 @@ const FormProto* Controller::GetForm() const {
 
 bool Controller::SetForm(
     std::unique_ptr<FormProto> form,
-    base::RepeatingCallback<void(const FormProto::Result*)> callback) {
+    base::RepeatingCallback<void(const FormProto::Result*)> changed_callback,
+    base::OnceCallback<void(const ClientStatus&)> cancel_callback) {
   form_.reset();
   form_result_.reset();
-  form_callback_ = base::DoNothing();
+  form_changed_callback_ = base::DoNothing();
+  form_cancel_callback_ = base::DoNothing::Once<const ClientStatus&>();
 
   if (!form) {
     for (ControllerObserver& observer : observers_) {
@@ -387,10 +411,11 @@ bool Controller::SetForm(
   // Form is valid.
   form_ = std::move(form);
   form_result_ = std::move(form_result);
-  form_callback_ = callback;
+  form_changed_callback_ = changed_callback;
+  form_cancel_callback_ = std::move(cancel_callback);
 
   // Call the callback with initial result.
-  form_callback_.Run(form_result_.get());
+  form_changed_callback_.Run(form_result_.get());
 
   for (ControllerObserver& observer : observers_) {
     observer.OnFormChanged(form_.get());
@@ -416,7 +441,7 @@ void Controller::SetCounterValue(int input_index,
   }
 
   input_result->mutable_counter()->set_values(counter_index, value);
-  form_callback_.Run(form_result_.get());
+  form_changed_callback_.Run(form_result_.get());
 }
 
 void Controller::SetChoiceSelected(int input_index,
@@ -437,7 +462,7 @@ void Controller::SetChoiceSelected(int input_index,
   }
 
   input_result->mutable_selection()->set_selected(choice_index, selected);
-  form_callback_.Run(form_result_.get());
+  form_changed_callback_.Run(form_result_.get());
 }
 
 void Controller::AddObserver(ControllerObserver* observer) {
@@ -494,7 +519,8 @@ void Controller::EnterStoppedState() {
   ClearInfoBox();
   SetDetails(nullptr);
   SetUserActions(nullptr);
-  SetCollectUserDataOptions(nullptr, nullptr);
+  SetCollectUserDataOptions(nullptr);
+  SetForm(nullptr, base::DoNothing(), base::DoNothing());
   EnterState(AutofillAssistantState::STOPPED);
 }
 
@@ -857,6 +883,10 @@ void Controller::Track(std::unique_ptr<TriggerContext> trigger_context,
   }
 }
 
+bool Controller::HasRunFirstCheck() const {
+  return tracking_ && has_run_first_check_;
+}
+
 bool Controller::Start(const GURL& deeplink_url,
                        std::unique_ptr<TriggerContext> trigger_context) {
   if (state_ != AutofillAssistantState::INACTIVE &&
@@ -926,7 +956,7 @@ std::string Controller::GetDebugContext() {
 }
 
 const CollectUserDataOptions* Controller::GetCollectUserDataOptions() const {
-  return collect_user_data_options_.get();
+  return collect_user_data_options_;
 }
 
 const UserData* Controller::GetUserData() const {
@@ -938,15 +968,14 @@ void Controller::OnCollectUserDataContinueButtonClicked() {
     return;
 
   auto callback = std::move(collect_user_data_options_->confirm_callback);
-  auto user_data = std::move(user_data_);
 
   // TODO(crbug.com/806868): succeed is currently always true, but we might want
   // to set it to false and propagate the result to CollectUserDataAction
   // when the user clicks "Cancel" during that action.
-  user_data->succeed = true;
+  user_data_->succeed = true;
 
-  SetCollectUserDataOptions(nullptr, nullptr);
-  std::move(callback).Run(std::move(user_data));
+  SetCollectUserDataOptions(nullptr);
+  std::move(callback).Run(user_data_.get());
 }
 
 void Controller::OnCollectUserDataAdditionalActionTriggered(int index) {
@@ -955,7 +984,7 @@ void Controller::OnCollectUserDataAdditionalActionTriggered(int index) {
 
   auto callback =
       std::move(collect_user_data_options_->additional_actions_callback);
-  SetCollectUserDataOptions(nullptr, nullptr);
+  SetCollectUserDataOptions(nullptr);
   std::move(callback).Run(index);
 }
 
@@ -964,8 +993,70 @@ void Controller::OnTermsAndConditionsLinkClicked(int link) {
     return;
 
   auto callback = std::move(collect_user_data_options_->terms_link_callback);
-  SetCollectUserDataOptions(nullptr, nullptr);
+  SetCollectUserDataOptions(nullptr);
   std::move(callback).Run(link);
+}
+
+void Controller::OnFormActionLinkClicked(int link) {
+  if (form_cancel_callback_ && form_result_ != nullptr) {
+    form_result_->set_link(link);
+    form_changed_callback_.Run(form_result_.get());
+    std::move(form_cancel_callback_).Run(ClientStatus(ACTION_APPLIED));
+  }
+}
+
+void Controller::SetDateTimeRangeStart(int year,
+                                       int month,
+                                       int day,
+                                       int hour,
+                                       int minute,
+                                       int second) {
+  if (!user_data_)
+    return;
+
+  SetDateTimeProto(&user_data_->date_time_range_start, year, month, day, hour,
+                   minute, second);
+  for (ControllerObserver& observer : observers_) {
+    observer.OnUserDataChanged(user_data_.get(),
+                               UserData::FieldChange::DATE_TIME_RANGE_START);
+  }
+  UpdateCollectUserDataActions();
+}
+
+void Controller::SetDateTimeRangeEnd(int year,
+                                     int month,
+                                     int day,
+                                     int hour,
+                                     int minute,
+                                     int second) {
+  if (!user_data_)
+    return;
+
+  SetDateTimeProto(&user_data_->date_time_range_end, year, month, day, hour,
+                   minute, second);
+  for (ControllerObserver& observer : observers_) {
+    observer.OnUserDataChanged(user_data_.get(),
+                               UserData::FieldChange::DATE_TIME_RANGE_END);
+  }
+  UpdateCollectUserDataActions();
+}
+
+void Controller::SetAdditionalValue(const std::string& client_memory_key,
+                                    const std::string& value) {
+  if (!user_data_)
+    return;
+  auto it = user_data_->additional_values_to_store.find(client_memory_key);
+  if (it == user_data_->additional_values_to_store.end()) {
+    NOTREACHED() << client_memory_key << " not found";
+    return;
+  }
+  it->second.assign(value);
+  for (ControllerObserver& observer : observers_) {
+    observer.OnUserDataChanged(user_data_.get(),
+                               UserData::FieldChange::ADDITIONAL_VALUES);
+  }
+  // It is currently not necessary to call |UpdateCollectUserDataActions|
+  // because all additional values are optional.
 }
 
 void Controller::SetShippingAddress(
@@ -975,7 +1066,8 @@ void Controller::SetShippingAddress(
 
   user_data_->shipping_address = std::move(address);
   for (ControllerObserver& observer : observers_) {
-    observer.OnUserDataChanged(user_data_.get());
+    observer.OnUserDataChanged(user_data_.get(),
+                               UserData::FieldChange::SHIPPING_ADDRESS);
   }
   UpdateCollectUserDataActions();
 }
@@ -987,31 +1079,24 @@ void Controller::SetContactInfo(
 
   user_data_->contact_profile = std::move(profile);
   for (ControllerObserver& observer : observers_) {
-    observer.OnUserDataChanged(user_data_.get());
+    observer.OnUserDataChanged(user_data_.get(),
+                               UserData::FieldChange::CONTACT_PROFILE);
   }
   UpdateCollectUserDataActions();
 }
 
-void Controller::SetCreditCard(std::unique_ptr<autofill::CreditCard> card) {
+void Controller::SetCreditCard(
+    std::unique_ptr<autofill::CreditCard> card,
+    std::unique_ptr<autofill::AutofillProfile> billing_profile) {
   if (!user_data_)
     return;
 
-  autofill::AutofillProfile* billing_profile =
-      !card || card->billing_address_id().empty()
-          ? nullptr
-          : GetPersonalDataManager()->GetProfileByGUID(
-                card->billing_address_id());
-  if (billing_profile) {
-    auto billing_address =
-        std::make_unique<autofill::AutofillProfile>(*billing_profile);
-    user_data_->billing_address = std::move(billing_address);
-  } else {
-    user_data_->billing_address.reset();
-  }
-
+  user_data_->billing_address = std::move(billing_profile);
   user_data_->card = std::move(card);
   for (ControllerObserver& observer : observers_) {
-    observer.OnUserDataChanged(user_data_.get());
+    observer.OnUserDataChanged(user_data_.get(), UserData::FieldChange::CARD);
+    observer.OnUserDataChanged(user_data_.get(),
+                               UserData::FieldChange::BILLING_ADDRESS);
   }
   UpdateCollectUserDataActions();
 }
@@ -1024,7 +1109,8 @@ void Controller::SetTermsAndConditions(
   user_data_->terms_and_conditions = terms_and_conditions;
   UpdateCollectUserDataActions();
   for (ControllerObserver& observer : observers_) {
-    observer.OnUserDataChanged(user_data_.get());
+    observer.OnUserDataChanged(user_data_.get(),
+                               UserData::FieldChange::TERMS_AND_CONDITIONS);
   }
 }
 
@@ -1035,7 +1121,8 @@ void Controller::SetLoginOption(std::string identifier) {
   user_data_->login_choice_identifier.assign(identifier);
   UpdateCollectUserDataActions();
   for (ControllerObserver& observer : observers_) {
-    observer.OnUserDataChanged(user_data_.get());
+    observer.OnUserDataChanged(user_data_.get(),
+                               UserData::FieldChange::LOGIN_CHOICE);
   }
 }
 
@@ -1050,7 +1137,7 @@ void Controller::UpdateCollectUserDataActions() {
   }
 
   bool confirm_button_enabled = CollectUserDataAction::IsUserDataComplete(
-      GetPersonalDataManager(), *user_data_, *collect_user_data_options_);
+      *user_data_, *collect_user_data_options_);
 
   UserAction confirm(collect_user_data_options_->confirm_action);
   confirm.SetEnabled(confirm_button_enabled);
@@ -1138,6 +1225,7 @@ void Controller::PerformDelayedShutdownIfNecessary() {
   if (delayed_shutdown_reason_ && script_domain_ != GetCurrentURL().host()) {
     Metrics::DropOutReason reason = delayed_shutdown_reason_.value();
     delayed_shutdown_reason_ = base::nullopt;
+    tracking_ = false;
     client_->Shutdown(reason);
   }
 }
@@ -1343,9 +1431,7 @@ void Controller::OnTouchableAreaChanged(
   }
 }
 
-void Controller::SetCollectUserDataOptions(
-    std::unique_ptr<CollectUserDataOptions> options,
-    std::unique_ptr<UserData> information) {
+void Controller::SetCollectUserDataOptions(CollectUserDataOptions* options) {
   DCHECK(!options ||
          (options->confirm_callback && options->additional_actions_callback &&
           options->terms_link_callback));
@@ -1353,12 +1439,24 @@ void Controller::SetCollectUserDataOptions(
   if (collect_user_data_options_ == nullptr && options == nullptr)
     return;
 
-  collect_user_data_options_ = std::move(options);
-  user_data_ = std::move(information);
+  collect_user_data_options_ = options;
   UpdateCollectUserDataActions();
   for (ControllerObserver& observer : observers_) {
-    observer.OnCollectUserDataOptionsChanged(collect_user_data_options_.get());
-    observer.OnUserDataChanged(user_data_.get());
+    observer.OnCollectUserDataOptionsChanged(collect_user_data_options_);
+    observer.OnUserDataChanged(user_data_.get(), UserData::FieldChange::ALL);
+  }
+}
+
+void Controller::WriteUserData(
+    base::OnceCallback<void(UserData*, UserData::FieldChange*)>
+        write_callback) {
+  UserData::FieldChange field_change = UserData::FieldChange::NONE;
+  std::move(write_callback).Run(user_data_.get(), &field_change);
+  if (field_change == UserData::FieldChange::NONE) {
+    return;
+  }
+  for (ControllerObserver& observer : observers_) {
+    observer.OnUserDataChanged(user_data_.get(), field_change);
   }
 }
 

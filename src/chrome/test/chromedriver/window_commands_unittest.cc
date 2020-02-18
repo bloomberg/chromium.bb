@@ -36,32 +36,54 @@ class MockChrome : public StubChrome {
   StubWebView web_view_;
 };
 
+typedef Status (*Command)(Session* session,
+                          WebView* web_view,
+                          const base::DictionaryValue& params,
+                          std::unique_ptr<base::Value>* value,
+                          Timeout* timeout);
+
+Status CallWindowCommand(Command command,
+                         const base::DictionaryValue& params = {},
+                         std::unique_ptr<base::Value>* value = nullptr) {
+  MockChrome* chrome = new MockChrome();
+  Session session("id", std::unique_ptr<Chrome>(chrome));
+  WebView* web_view = NULL;
+  Status status = chrome->GetWebViewById("1", &web_view);
+  if (status.IsError())
+    return status;
+
+  std::unique_ptr<base::Value> local_value;
+  Timeout timeout;
+  return command(&session, web_view, params, value ? value : &local_value,
+                 &timeout);
+}
+
 }  // namespace
 
 TEST(WindowCommandsTest, ExecuteFreeze) {
-  MockChrome* chrome = new MockChrome();
-  Session session("id", std::unique_ptr<Chrome>(chrome));
-  base::DictionaryValue params;
-  std::unique_ptr<base::Value> value;
-  Timeout timeout;
-
-  WebView* web_view = NULL;
-  Status status = chrome->GetWebViewById("1", &web_view);
+  Status status = CallWindowCommand(ExecuteFreeze);
   ASSERT_EQ(kOk, status.code());
-  status = ExecuteFreeze(&session, web_view, params, &value, &timeout);
 }
 
 TEST(WindowCommandsTest, ExecuteResume) {
-  MockChrome* chrome = new MockChrome();
-  Session session("id", std::unique_ptr<Chrome>(chrome));
-  base::DictionaryValue params;
-  std::unique_ptr<base::Value> value;
-  Timeout timeout;
-
-  WebView* web_view = NULL;
-  Status status = chrome->GetWebViewById("1", &web_view);
+  Status status = CallWindowCommand(ExecuteResume);
   ASSERT_EQ(kOk, status.code());
-  status = ExecuteResume(&session, web_view, params, &value, &timeout);
+}
+
+TEST(WindowCommandsTest, ExecuteSendCommandAndGetResult_NoCmd) {
+  base::DictionaryValue params;
+  params.SetDictionary("params", std::make_unique<base::DictionaryValue>());
+  Status status = CallWindowCommand(ExecuteSendCommandAndGetResult, params);
+  ASSERT_EQ(kInvalidArgument, status.code());
+  ASSERT_NE(status.message().find("command not passed"), std::string::npos);
+}
+
+TEST(WindowCommandsTest, ExecuteSendCommandAndGetResult_NoParams) {
+  base::DictionaryValue params;
+  params.SetString("cmd", "CSS.enable");
+  Status status = CallWindowCommand(ExecuteSendCommandAndGetResult, params);
+  ASSERT_EQ(kInvalidArgument, status.code());
+  ASSERT_NE(status.message().find("params not passed"), std::string::npos);
 }
 
 TEST(WindowCommandsTest, ProcessInputActionSequencePointerMouse) {

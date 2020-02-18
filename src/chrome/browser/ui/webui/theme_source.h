@@ -23,9 +23,9 @@ class ThemeSource : public content::URLDataSource {
   // content::URLDataSource implementation.
   std::string GetSource() override;
   void StartDataRequest(
-      const std::string& path,
+      const GURL& url,
       const content::WebContents::Getter& wc_getter,
-      const content::URLDataSource::GotDataCallback& callback) override;
+      content::URLDataSource::GotDataCallback callback) override;
   std::string GetMimeType(const std::string& path) override;
   scoped_refptr<base::SingleThreadTaskRunner> TaskRunnerForRequestPath(
       const std::string& path) override;
@@ -33,17 +33,19 @@ class ThemeSource : public content::URLDataSource {
   bool ShouldServiceRequest(const GURL& url,
                             content::ResourceContext* resource_context,
                             int render_process_id) override;
+  std::string GetAccessControlAllowOriginForOrigin(
+      const std::string& origin) override;
 
  private:
   // Fetches and sends the theme bitmap.
-  void SendThemeBitmap(const content::URLDataSource::GotDataCallback& callback,
+  void SendThemeBitmap(content::URLDataSource::GotDataCallback callback,
                        int resource_id,
                        float scale);
 
   // Used in place of SendThemeBitmap when the desired scale is larger than
   // what the resource bundle supports.  This can rescale the provided bitmap up
   // to the desired size.
-  void SendThemeImage(const content::URLDataSource::GotDataCallback& callback,
+  void SendThemeImage(content::URLDataSource::GotDataCallback callback,
                       int resource_id,
                       float scale);
 

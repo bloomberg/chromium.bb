@@ -12,6 +12,7 @@
 #include <set>
 #include <string>
 
+#include "src/base/bit-field.h"
 #include "src/execution/isolate.h"
 #include "src/heap/factory.h"
 #include "src/objects/managed.h"
@@ -78,7 +79,7 @@ class JSSegmenter : public JSObject {
 
   // Layout description.
   DEFINE_FIELD_OFFSET_CONSTANTS(JSObject::kHeaderSize,
-                                TORQUE_GENERATED_JSSEGMENTER_FIELDS)
+                                TORQUE_GENERATED_JS_SEGMENTER_FIELDS)
 
  private:
   static Granularity GetGranularity(const char* str);

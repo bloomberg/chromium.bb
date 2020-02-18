@@ -255,7 +255,6 @@ class VMTestStage(generic_stages.BoardSpecificBuilderStage,
           os.path.join(test_results_dir, 'test_harness'),
           test_config=test_config,
           whitelist_chrome_crashes=self._chrome_rev is None,
-          archive_dir=self.bot_archive_root,
           ssh_private_key=ssh_private_key,
           ssh_port=self._ssh_port)
 
@@ -332,9 +331,6 @@ class ForgivenVMTestStage(VMTestStage, generic_stages.ForgivingBuilderStage):
   stage_name = 'ForgivenVMTest'
   category = constants.TEST_INFRA_STAGE
 
-  def __init__(self, *args, **kwargs):
-    super(ForgivenVMTestStage, self).__init__(*args, **kwargs)
-
 
 class GCETestStage(VMTestStage):
   """Run autotests on a GCE VM instance."""
@@ -382,7 +378,6 @@ class GCETestStage(VMTestStage):
         os.path.join(test_results_dir, 'test_harness'),
         test_config=test_config,
         whitelist_chrome_crashes=self._chrome_rev is None,
-        archive_dir=self.bot_archive_root,
         ssh_private_key=ssh_private_key,
         ssh_port=self._ssh_port)
 
@@ -432,7 +427,7 @@ class MoblabVMTestStage(generic_stages.BoardSpecificBuilderStage,
 
   # This includes the time we expect to take to prepare and run the tests. It
   # excludes the time required to archive the results at the end.
-  _PERFORM_TIMEOUT_S = 90 * 60
+  _PERFORM_TIMEOUT_S = 110 * 60
 
   def __str__(self):
     return type(self).__name__
@@ -520,8 +515,8 @@ class MoblabVMTestStage(generic_stages.BoardSpecificBuilderStage,
       results_dir: Path to a directory used for creating result files.
     """
     results_reldir = 'moblab_vm_test_results'
-    cros_build_lib.SudoRunCommand(['chmod', '-R', 'a+rw', results_dir],
-                                  print_cmd=False)
+    cros_build_lib.sudo_run(['chmod', '-R', 'a+rw', results_dir],
+                            print_cmd=False)
     archive_dir = os.path.join(self.archive_path, results_reldir)
     osutils.RmDir(archive_dir, ignore_missing=True)
 
@@ -717,8 +712,8 @@ def ArchiveTestResults(results_path, archive_dir):
     results_path: Path to test results.
     archive_dir: Local directory to archive to.
   """
-  cros_build_lib.SudoRunCommand(['chmod', '-R', 'a+rw', results_path],
-                                print_cmd=False)
+  cros_build_lib.sudo_run(['chmod', '-R', 'a+rw', results_path],
+                          print_cmd=False)
   if os.path.exists(archive_dir):
     osutils.RmDir(archive_dir)
 
@@ -773,7 +768,7 @@ def RunDevModeTest(buildroot, board, image_dir):
   cmd = [
       os.path.join(crostestutils, test_script), '--verbose', board, image_path
   ]
-  cros_build_lib.RunCommand(cmd)
+  cros_build_lib.run(cmd)
 
 
 def RunTestSuite(buildroot,
@@ -782,14 +777,13 @@ def RunTestSuite(buildroot,
                  results_dir,
                  test_config,
                  whitelist_chrome_crashes,
-                 archive_dir,
                  ssh_private_key=None,
                  ssh_port=9228):
   """Runs the test harness suite."""
   if (test_config.use_ctest or
       test_config.test_type != constants.VM_SUITE_TEST_TYPE):
     _RunTestSuiteUsingCtest(buildroot, board, image_path, results_dir,
-                            test_config, whitelist_chrome_crashes, archive_dir,
+                            test_config, whitelist_chrome_crashes,
                             ssh_private_key, ssh_port)
   else:
     _RunTestSuiteUsingChromite(board, image_path, results_dir, test_config,
@@ -827,7 +821,7 @@ def _RunTestSuiteUsingChromite(board,
     cmd.append('--private-key=%s' % path_util.ToChrootPath(ssh_private_key))
 
   # Give tests 10 minutes to clean up before shutting down.
-  result = cros_build_lib.RunCommand(
+  result = cros_build_lib.run(
       cmd, error_code_ok=True, kill_timeout=10 * 60, enter_chroot=True)
   if result.returncode:
     results_dir_in_chroot = os.path.join(constants.SOURCE_ROOT,
@@ -848,7 +842,6 @@ def _RunTestSuiteUsingCtest(buildroot,
                             results_dir,
                             test_config,
                             whitelist_chrome_crashes,
-                            archive_dir,
                             ssh_private_key=None,
                             ssh_port=9228):
   """Runs the test harness suite using the ctest code path."""
@@ -862,7 +855,7 @@ def _RunTestSuiteUsingCtest(buildroot,
 
   crostestutils = os.path.join(buildroot, 'src', 'platform', 'crostestutils')
   cmd = [
-      os.path.join(crostestutils, 'ctest', 'ctest.py'),
+      os.path.join(crostestutils, 'au_test_harness', 'cros_au_test_harness.py'),
       '--board=%s' % board,
       '--type=%s' % dut_type, '--no_graphics', '--verbose',
       '--target_image=%s' % image_path,
@@ -872,16 +865,13 @@ def _RunTestSuiteUsingCtest(buildroot,
   if test_type not in constants.VALID_VM_TEST_TYPES:
     raise AssertionError('Unrecognized test type %r' % test_type)
 
-  if test_type == constants.FULL_AU_TEST_TYPE:
-    cmd.append('--archive_dir=%s' % archive_dir)
-  elif test_type in [
+  if test_type in [
       constants.VM_SUITE_TEST_TYPE, constants.GCE_SUITE_TEST_TYPE
   ]:
     cmd.append('--ssh_port=%s' % ssh_port)
-    cmd.append('--only_verify')
-    cmd.append('--suite=%s' % test_config.test_suite)
-  else:
-    cmd.append('--quick_update')
+    cmd.append('--verify_suite_name=%s' % test_config.test_suite)
+
+  cmd.append('--test_prefix=SimpleTestVerify')
 
   if whitelist_chrome_crashes:
     cmd.append('--whitelist_chrome_crashes')
@@ -890,7 +880,7 @@ def _RunTestSuiteUsingCtest(buildroot,
     cmd.append('--ssh_private_key=%s' % ssh_private_key)
 
   # Give tests 10 minutes to clean up before shutting down.
-  result = cros_build_lib.RunCommand(
+  result = cros_build_lib.run(
       cmd, cwd=cwd, error_code_ok=True, kill_timeout=10 * 60)
   if result.returncode:
     if os.path.exists(results_dir_in_chroot):
@@ -931,7 +921,7 @@ def RunMoblabTests(moblab_board, moblab_ip, dut_target_image, results_dir,
       'clear_devserver_cache=False',
       'image_storage_server="%s"' % local_image_cache,
   ]
-  cros_build_lib.RunCommand(
+  cros_build_lib.run(
       [
           'test_that',
           '--no-quickmerge',

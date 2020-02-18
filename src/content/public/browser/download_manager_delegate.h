@@ -14,6 +14,7 @@
 #include "base/time/time.h"
 #include "components/download/public/common/download_danger_type.h"
 #include "components/download/public/common/download_item.h"
+#include "components/download/public/common/download_url_parameters.h"
 #include "components/download/public/common/quarantine_connection.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/save_page_type.h"
@@ -27,16 +28,16 @@ class WebContents;
 
 // Called by SavePackage when it creates a download::DownloadItem.
 using SavePackageDownloadCreatedCallback =
-    base::Callback<void(download::DownloadItem*)>;
+    base::OnceCallback<void(download::DownloadItem*)>;
 
 // Will be called asynchronously with the results of the ChooseSavePath
 // operation.  If the delegate wants notification of the download item created
 // in response to this operation, the SavePackageDownloadCreatedCallback will be
 // non-null.
 using SavePackagePathPickedCallback =
-    base::Callback<void(const base::FilePath&,
-                        SavePageType,
-                        const SavePackageDownloadCreatedCallback&)>;
+    base::OnceCallback<void(const base::FilePath&,
+                            SavePageType,
+                            SavePackageDownloadCreatedCallback)>;
 
 // Called with the results of DetermineDownloadTarget().
 //
@@ -67,9 +68,6 @@ using DownloadTargetCallback =
 
 // Called when a download delayed by the delegate has completed.
 using DownloadOpenDelayedCallback = base::Callback<void(bool)>;
-
-// Called with the result of CheckForFileExistence().
-using CheckForFileExistenceCallback = base::OnceCallback<void(bool result)>;
 
 // On failure, |next_id| is equal to kInvalidId.
 using DownloadIdCallback = base::Callback<void(uint32_t /* next_id */)>;
@@ -114,7 +112,7 @@ class CONTENT_EXPORT DownloadManagerDelegate {
   // has been called or the function has returned true for a particular
   // download it should continue to return true for that download.
   virtual bool ShouldCompleteDownload(download::DownloadItem* item,
-                                      const base::Closure& complete_callback);
+                                      base::OnceClosure complete_callback);
 
   // Allows the delegate to override opening the download. If this function
   // returns false, the delegate needs to call callback when it's done
@@ -138,8 +136,7 @@ class CONTENT_EXPORT DownloadManagerDelegate {
   // Retrieve the directories to save html pages and downloads to.
   virtual void GetSaveDir(BrowserContext* browser_context,
                           base::FilePath* website_save_dir,
-                          base::FilePath* download_save_dir,
-                          bool* skip_dir_check) {}
+                          base::FilePath* download_save_dir) {}
 
   // Asks the user for the path to save a page. The delegate calls the callback
   // to give the answer.
@@ -148,8 +145,7 @@ class CONTENT_EXPORT DownloadManagerDelegate {
       const base::FilePath& suggested_path,
       const base::FilePath::StringType& default_extension,
       bool can_save_as_complete,
-      const SavePackagePathPickedCallback& callback) {
-  }
+      SavePackagePathPickedCallback callback) {}
 
   // Sanitize a filename that's going to be used for saving a subresource of a
   // SavePackage.
@@ -163,20 +159,19 @@ class CONTENT_EXPORT DownloadManagerDelegate {
   // relative path.
   virtual void SanitizeSavePackageResourceName(base::FilePath* filename) {}
 
+  // Sanitize a download parameters
+  //
+  // If the delegate does nothing, the default parameters already populated in
+  // |params| will be used. Otherwise, the delegate can update |params| to
+  // the desired parameters.
+  virtual void SanitizeDownloadParameters(
+      download::DownloadUrlParameters* params) {}
+
   // Opens the file associated with this download.
   virtual void OpenDownload(download::DownloadItem* download) {}
 
-  // Returns whether this is the most recent download in the rare event where
-  // multiple downloads are associated with the same file path.
-  virtual bool IsMostRecentDownloadItemAtFilePath(
-      download::DownloadItem* download);
-
   // Shows the download via the OS shell.
   virtual void ShowDownloadInShell(download::DownloadItem* download) {}
-
-  // Checks whether a downloaded file still exists.
-  virtual void CheckForFileExistence(download::DownloadItem* download,
-                                     CheckForFileExistenceCallback callback) {}
 
   // Return a GUID string used for identifying the application to the system AV
   // function for scanning downloaded files. If no GUID is provided or if the

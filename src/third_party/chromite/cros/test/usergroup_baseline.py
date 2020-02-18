@@ -149,7 +149,7 @@ GROUP_BASELINE = dict((e.group, e) for e in (
                                                        'u2f', 'shill'}),
     GroupEntry(group='ipsec', gid=212, users={'shill'}),
     GroupEntry(group='debugfs-access', gid=605, users={'arc-camera', 'shill',
-                                                       'power'}),
+                                                       'power', 'metrics'}),
     GroupEntry(group='arc-camera', gid=603, users={'chronos', 'crosvm'}),
     GroupEntry(group='daemon-store', gid=400, users={'biod', 'chaps',
                                                      'crosvm', 'shill'}),
@@ -169,7 +169,8 @@ GROUP_BASELINE = dict((e.group, e) for e in (
     GroupEntry(group='tun', gid=413, users={'crosvm', 'shill', 'wpan'}),
     GroupEntry(group='gpio', gid=414, users={'modem'}),
     GroupEntry(group='suzy-q', gid=415, users={'chronos', 'rma_fw_keeper'}),
-    GroupEntry(group='cros_ec-access', gid=416, users={'runtime_probe'}),
+    GroupEntry(group='cros_ec-access', gid=416, users={'runtime_probe',
+                                                       'healthd_ec'}),
     GroupEntry(group='shill', gid=20104, users={'shill', 'ipsec'}),
     GroupEntry(group='fuse-drivefs', gid=304, users={'chronos'}),
     GroupEntry(group='password-viewers', gid=611, users={'kerberosd', 'shill'}),
@@ -180,7 +181,8 @@ GROUP_BASELINE = dict((e.group, e) for e in (
     GroupEntry(group='kerberosd', gid=20131, users={'kerberosd',
                                                     'kerberosd-exec'}),
     GroupEntry(group='hidraw', gid=403, users={'fwupdate-hidraw'}),
-    GroupEntry(group='cups-proxy', gid=20136, users={'crosvm', 'cups-proxy'}),
+    GroupEntry(group='cups-proxy', gid=20136, users={'crosvm', 'cups-proxy',
+                                                     'pluginvm'}),
 ))
 
 GROUP_BASELINE_LAKITU = dict((e.group, e) for e in (
@@ -200,6 +202,16 @@ GROUP_BASELINE_JETSTREAM = dict((e.group, e) for e in (
     GroupEntry(group='hostapd', gid=1106,
                users={'hostapd', 'ap-wireless-optimizer', 'ap-monitor',
                       'ap-wifi-manager', 'ap-wifi-diagnostics', 'ap-hal'}),
+    # Add users to gdisp group in order to allow those processes to access
+    # the unix domain socket file to communicate with gdisp-broker daemon
+    GroupEntry(group='gdisp', gid=2700,
+               users={'gdisp', 'ap-csi-collector', 'ap-csi-preproc',
+                      'ap-csi-inference'}),
+    # Add gwifi users to a common gwifi group to allow access of some shared
+    # resources by multiple users.
+    GroupEntry(group='gwifi', gid=2028,
+               users={'gwifi', 'ap-controller', 'ap-update-manager',
+                      'ap-ipv6'}),
 ))
 
 # rialtod:!:400:rialto

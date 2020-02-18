@@ -35,8 +35,7 @@
 #include "extensions/common/file_util.h"
 #include "extensions/common/install_warning.h"
 #include "extensions/common/manifest_constants.h"
-#include "services/data_decoder/public/cpp/safe_json_parser.h"
-#include "services/service_manager/public/cpp/identity.h"
+#include "services/data_decoder/public/cpp/data_decoder.h"
 #include "tools/json_schema_compiler/util.h"
 #include "url/gurl.h"
 
@@ -143,27 +142,33 @@ ReadJSONRulesResult ParseRulesFromJSON(const base::Value& rules,
   return result;
 }
 
-void OnSafeJSONParserSuccess(
-    const RulesetSource& source,
-    RulesetSource::IndexAndPersistJSONRulesetCallback callback,
-    base::Value root) {
-  base::ElapsedTimer timer;
-  ReadJSONRulesResult result =
-      ParseRulesFromJSON(root, source.rule_count_limit());
-  if (result.status != Status::kSuccess) {
+void OnSafeJSONParse(const base::FilePath& json_path,
+                     const RulesetSource& source,
+                     RulesetSource::IndexAndPersistJSONRulesetCallback callback,
+                     data_decoder::DataDecoder::ValueOrError result) {
+  if (!result.value) {
     std::move(callback).Run(IndexAndPersistJSONRulesetResult::CreateErrorResult(
-        GetErrorWithFilename(source.json_path(), result.error)));
+        GetErrorWithFilename(json_path, *result.error)));
+    return;
+  }
+
+  base::ElapsedTimer timer;
+  ReadJSONRulesResult read_result =
+      ParseRulesFromJSON(*result.value, source.rule_count_limit());
+  if (read_result.status != Status::kSuccess) {
+    std::move(callback).Run(IndexAndPersistJSONRulesetResult::CreateErrorResult(
+        GetErrorWithFilename(source.json_path(), read_result.error)));
     return;
   }
 
   int ruleset_checksum;
-  size_t rules_count = result.rules.size();
-  const ParseInfo info =
-      source.IndexAndPersistRules(std::move(result.rules), &ruleset_checksum);
+  size_t rules_count = read_result.rules.size();
+  const ParseInfo info = source.IndexAndPersistRules(
+      std::move(read_result.rules), &ruleset_checksum);
   if (info.result() == ParseResult::SUCCESS) {
     std::move(callback).Run(
         IndexAndPersistJSONRulesetResult::CreateSuccessResult(
-            ruleset_checksum, std::move(result.rule_parse_warnings),
+            ruleset_checksum, std::move(read_result.rule_parse_warnings),
             rules_count, timer.Elapsed()));
     return;
   }
@@ -172,14 +177,6 @@ void OnSafeJSONParserSuccess(
       GetErrorWithFilename(source.json_path(), info.GetErrorDescription());
   std::move(callback).Run(
       IndexAndPersistJSONRulesetResult::CreateErrorResult(std::move(error)));
-}
-
-void OnSafeJSONParserError(
-    RulesetSource::IndexAndPersistJSONRulesetCallback callback,
-    const base::FilePath& json_path,
-    const std::string& json_parse_error) {
-  std::move(callback).Run(IndexAndPersistJSONRulesetResult::CreateErrorResult(
-      GetErrorWithFilename(json_path, json_parse_error)));
 }
 
 }  // namespace
@@ -240,7 +237,8 @@ RulesetSource RulesetSource::CreateStatic(const Extension& extension) {
   return RulesetSource(
       declarative_net_request::DNRManifestData::GetRulesetPath(extension),
       file_util::GetIndexedRulesetPath(extension.path()), kStaticRulesetID,
-      kStaticRulesetPriority, dnr_api::MAX_NUMBER_OF_RULES, extension.id());
+      kStaticRulesetPriority, dnr_api::SOURCE_TYPE_MANIFEST,
+      dnr_api::MAX_NUMBER_OF_RULES, extension.id());
 }
 
 // static
@@ -253,7 +251,7 @@ RulesetSource RulesetSource::CreateDynamic(content::BrowserContext* context,
   return RulesetSource(
       dynamic_ruleset_directory.AppendASCII(kDynamicRulesJSONFilename),
       dynamic_ruleset_directory.AppendASCII(kDynamicIndexedRulesFilename),
-      kDynamicRulesetID, kDynamicRulesetPriority,
+      kDynamicRulesetID, kDynamicRulesetPriority, dnr_api::SOURCE_TYPE_DYNAMIC,
       dnr_api::MAX_NUMBER_OF_DYNAMIC_RULES, extension.id());
 }
 
@@ -261,6 +259,7 @@ RulesetSource RulesetSource::CreateDynamic(content::BrowserContext* context,
 std::unique_ptr<RulesetSource> RulesetSource::CreateTemporarySource(
     size_t id,
     size_t priority,
+    dnr_api::SourceType type,
     size_t rule_count_limit,
     ExtensionId extension_id) {
   base::FilePath temporary_file_indexed;
@@ -272,19 +271,21 @@ std::unique_ptr<RulesetSource> RulesetSource::CreateTemporarySource(
 
   return std::make_unique<RulesetSource>(
       std::move(temporary_file_json), std::move(temporary_file_indexed), id,
-      priority, rule_count_limit, std::move(extension_id));
+      priority, type, rule_count_limit, std::move(extension_id));
 }
 
 RulesetSource::RulesetSource(base::FilePath json_path,
                              base::FilePath indexed_path,
                              size_t id,
                              size_t priority,
+                             dnr_api::SourceType type,
                              size_t rule_count_limit,
                              ExtensionId extension_id)
     : json_path_(std::move(json_path)),
       indexed_path_(std::move(indexed_path)),
       id_(id),
       priority_(priority),
+      type_(type),
       rule_count_limit_(rule_count_limit),
       extension_id_(std::move(extension_id)) {}
 
@@ -293,7 +294,7 @@ RulesetSource::RulesetSource(RulesetSource&&) = default;
 RulesetSource& RulesetSource::operator=(RulesetSource&&) = default;
 
 RulesetSource RulesetSource::Clone() const {
-  return RulesetSource(json_path_, indexed_path_, id_, priority_,
+  return RulesetSource(json_path_, indexed_path_, id_, priority_, type_,
                        rule_count_limit_, extension_id_);
 }
 
@@ -324,8 +325,7 @@ RulesetSource::IndexAndPersistJSONRulesetUnsafe() const {
 }
 
 void RulesetSource::IndexAndPersistJSONRuleset(
-    service_manager::Connector* connector,
-    const base::Optional<base::Token>& decoder_batch_id,
+    data_decoder::DataDecoder* decoder,
     IndexAndPersistJSONRulesetCallback callback) const {
   DCHECK(IsAPIAvailable());
 
@@ -342,25 +342,9 @@ void RulesetSource::IndexAndPersistJSONRuleset(
     return;
   }
 
-  // TODO(crbug.com/730593): Remove AdaptCallbackForRepeating() by updating
-  // the callee interface.
-  auto repeating_callback =
-      base::AdaptCallbackForRepeating(std::move(callback));
-  auto error_callback =
-      base::BindOnce(&OnSafeJSONParserError, repeating_callback, json_path_);
-
-  auto success_callback =
-      base::BindOnce(&OnSafeJSONParserSuccess, Clone(), repeating_callback);
-
-  if (decoder_batch_id) {
-    data_decoder::SafeJsonParser::ParseBatch(
-        connector, json_contents, std::move(success_callback),
-        std::move(error_callback), *decoder_batch_id);
-  } else {
-    data_decoder::SafeJsonParser::Parse(connector, json_contents,
-                                        std::move(success_callback),
-                                        std::move(error_callback));
-  }
+  decoder->ParseJson(json_contents,
+                     base::BindOnce(&OnSafeJSONParse, json_path_, Clone(),
+                                    std::move(callback)));
 }
 
 ParseInfo RulesetSource::IndexAndPersistRules(std::vector<dnr_api::Rule> rules,

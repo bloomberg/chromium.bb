@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/webui/chromeos/add_supervision/add_supervision.mojom.h"
 #include "chrome/browser/ui/webui/chromeos/add_supervision/add_supervision_handler.h"
 #include "chrome/browser/ui/webui/chromeos/system_web_dialog_delegate.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/controls/label.h"
@@ -64,15 +65,22 @@ class AddSupervisionUI : public ui::MojoWebUIController,
   // AddSupervisionHandler::Delegate:
   bool CloseDialog() override;
 
+  static void SetUpForTest(signin::IdentityManager* identity_manager);
+
  private:
   void BindAddSupervisionHandler(
-      add_supervision::mojom::AddSupervisionHandlerRequest request);
-  void SetupResources();
+      mojo::PendingReceiver<add_supervision::mojom::AddSupervisionHandler>
+          receiver);
+  void SetUpResources();
+  GURL GetAddSupervisionURL();
 
   std::unique_ptr<add_supervision::mojom::AddSupervisionHandler>
       mojo_api_handler_;
 
   GURL supervision_url_;
+
+  static signin::IdentityManager* test_identity_manager_;
+  bool allow_non_google_url_for_tests_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(AddSupervisionUI);
 };

@@ -119,13 +119,12 @@ TEST_F(PerformanceTest, Activate) {
 TEST_F(PerformanceTest, AddLongTaskTiming) {
   V8TestingScope scope;
   Initialize(scope.GetScriptState());
-  SubTaskAttribution::EntriesVector sub_task_attributions;
 
   // Add a long task entry, but no observer registered.
   base_->AddLongTaskTiming(
       base::TimeTicks() + base::TimeDelta::FromSecondsD(1234),
-      base::TimeTicks() + base::TimeDelta::FromSecondsD(5678), "same-origin",
-      "www.foo.com/bar", "", "", sub_task_attributions);
+      base::TimeTicks() + base::TimeDelta::FromSecondsD(5678), "window",
+      "same-origin", "www.foo.com/bar", "", "");
   EXPECT_FALSE(base_->HasPerformanceObserverFor(PerformanceEntry::kLongTask));
   EXPECT_EQ(0, NumPerformanceEntriesInObserver());  // has no effect
 
@@ -141,8 +140,8 @@ TEST_F(PerformanceTest, AddLongTaskTiming) {
   // Add a long task entry
   base_->AddLongTaskTiming(
       base::TimeTicks() + base::TimeDelta::FromSecondsD(1234),
-      base::TimeTicks() + base::TimeDelta::FromSecondsD(5678), "same-origin",
-      "www.foo.com/bar", "", "", sub_task_attributions);
+      base::TimeTicks() + base::TimeDelta::FromSecondsD(5678), "window",
+      "same-origin", "www.foo.com/bar", "", "");
   EXPECT_EQ(1, NumPerformanceEntriesInObserver());  // added an entry
 }
 
@@ -175,9 +174,15 @@ TEST_F(PerformanceTest, AllowsTimingRedirect) {
                                     *security_origin.get(),
                                     GetExecutionContext()));
 
-  // When cross-origin redirect opts in.
+  // When cross-origin redirect opts in, but the final response doesn't.
   redirect_chain.back().SetHttpHeaderField(http_names::kTimingAllowOrigin,
                                            origin_domain);
+  EXPECT_FALSE(AllowsTimingRedirect(redirect_chain, final_response,
+                                    *security_origin.get(),
+                                    GetExecutionContext()));
+  // When cross-origin redirect opts in, and the final response has as well.
+  final_response.SetHttpHeaderField(http_names::kTimingAllowOrigin,
+                                    origin_domain);
   EXPECT_TRUE(AllowsTimingRedirect(redirect_chain, final_response,
                                    *security_origin.get(),
                                    GetExecutionContext()));

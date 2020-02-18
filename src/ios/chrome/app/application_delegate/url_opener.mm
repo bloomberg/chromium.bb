@@ -89,6 +89,11 @@ const char* const kUMAMobileSessionStartFromAppsHistogram =
       if (callerApp == CALLER_APP_GOOGLE_CHROME)
         targetMode = ApplicationModeForTabOpening::CURRENT;
 
+      if (![params launchInIncognito] &&
+          [tabOpener URLIsOpenedInRegularMode:urlLoadParams.web_params.url]) {
+        // Record metric.
+      }
+
       [tabOpener
           dismissModalsAndOpenSelectedTabInMode:targetMode
                               withUrlLoadParams:urlLoadParams
@@ -113,12 +118,16 @@ const char* const kUMAMobileSessionStartFromAppsHistogram =
          startupInformation:(id<StartupInformation>)startupInformation
                    appState:(AppState*)appState {
   NSURL* url = launchOptions[UIApplicationLaunchOptionsURLKey];
-  NSString* sourceApplication =
-      launchOptions[UIApplicationLaunchOptionsSourceApplicationKey];
 
-  if (url && sourceApplication) {
-    NSDictionary<NSString*, id>* options =
-        @{UIApplicationOpenURLOptionsSourceApplicationKey : sourceApplication};
+  if (url) {
+    NSMutableDictionary<NSString*, id>* options =
+        [[NSMutableDictionary alloc] init];
+    NSString* sourceApplication =
+        launchOptions[UIApplicationLaunchOptionsSourceApplicationKey];
+    if (sourceApplication) {
+      options[UIApplicationOpenURLOptionsSourceApplicationKey] =
+          sourceApplication;
+    }
 
     BOOL openURLResult = [URLOpener openURL:url
                           applicationActive:applicationActive

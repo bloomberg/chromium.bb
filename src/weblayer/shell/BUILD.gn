@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/config/features.gni")
+import("//build/config/jumbo.gni")
 import("//build/config/sanitizers/sanitizers.gni")
 import("//build/config/ui.gni")
 import("//build/config/win/console_app.gni")
@@ -14,17 +15,16 @@ if (is_android) {
   import("//build/config/android/config.gni")
 }
 
-declare_args() {
-  weblayer_shell_product_name = "WebLayer Shell"
-  weblayer_shell_version = "99.77.34.5"
-  weblayer_shell_major_version = "99"
-}
-
 jumbo_static_library("weblayer_shell_lib") {
   testonly = true
   sources = [
+    "app/shell_main_params.cc",
+    "app/shell_main_params.h",
     "browser/shell.cc",
     "browser/shell.h",
+    "browser/shell_android.cc",
+    "common/shell_switches.cc",
+    "common/shell_switches.h",
   ]
 
   configs += [
@@ -61,6 +61,7 @@ jumbo_static_library("weblayer_shell_lib") {
     "//ui/platform_window",
     "//url",
     "//v8",
+    "//weblayer:resources",
   ]
 
   if (is_linux) {
@@ -161,37 +162,47 @@ repack("support_pak") {
   testonly = true
 
   sources = [
+    "$root_gen_dir/components/components_resources.pak",
+    "$root_gen_dir/components/components_resources_100_percent.pak",
+    "$root_gen_dir/components/strings/components_strings_en-US.pak",
     "$root_gen_dir/content/app/resources/content_resources_100_percent.pak",
-    "$root_gen_dir/content/app/strings/content_strings_en-US.pak",
     "$root_gen_dir/content/browser/tracing/tracing_resources.pak",
     "$root_gen_dir/content/content_resources.pak",
     "$root_gen_dir/mojo/public/js/mojo_bindings_resources.pak",
     "$root_gen_dir/net/net_resources.pak",
     "$root_gen_dir/third_party/blink/public/resources/blink_resources.pak",
     "$root_gen_dir/third_party/blink/public/resources/blink_scaled_resources_100_percent.pak",
+    "$root_gen_dir/third_party/blink/public/strings/blink_strings_en-US.pak",
     "$root_gen_dir/ui/resources/ui_resources_100_percent.pak",
     "$root_gen_dir/ui/resources/webui_resources.pak",
     "$root_gen_dir/ui/strings/app_locale_settings_en-US.pak",
     "$root_gen_dir/ui/strings/ui_strings_en-US.pak",
+    "$root_gen_dir/weblayer/weblayer_resources.pak",
   ]
 
   deps = [
+    "//components/resources",
+    "//components/strings",
     "//content:resources",
     "//content/app/resources",
-    "//content/app/strings",
     "//content/browser/tracing:resources",
     "//mojo/public/js:resources",
     "//net:net_resources",
     "//third_party/blink/public:resources",
     "//third_party/blink/public:scaled_resources_100_percent",
+    "//third_party/blink/public/strings",
     "//ui/resources",
     "//ui/strings",
+    "//weblayer:resources",
   ]
 
   if (toolkit_views) {
     deps += [ "//ui/views/resources" ]
     sources +=
         [ "$root_gen_dir/ui/views/resources/views_resources_100_percent.pak" ]
+  }
+  if (is_android) {
+    deps += [ "//ui/android:ui_java_resources" ]
   }
   output = "$root_out_dir/weblayer_support.pak"
 }
@@ -236,15 +247,15 @@ if (is_android) {
       sources += [ "app/shell.rc" ]
     }
 
-    defines = [
-      "WEBLAYER_SHELL_VERSION=\"$weblayer_shell_version\"",
-      "WEBLAYER_SHELL_MAJOR_VERSION=\"$weblayer_shell_major_version\"",
-    ]
+    defines = []
 
     deps = [
       ":pak",
       ":weblayer_shell_lib",
+      "//base",
       "//build/win:default_exe_manifest",
+      "//net",
+      "//weblayer:weblayer_lib",
     ]
 
     data_deps = [

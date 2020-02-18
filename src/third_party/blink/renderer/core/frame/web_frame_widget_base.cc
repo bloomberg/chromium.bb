@@ -13,7 +13,6 @@
 #include "third_party/blink/public/web/web_widget_client.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/layout_tree_builder_traversal.h"
-#include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
 #include "third_party/blink/renderer/core/events/web_input_event_conversion.h"
 #include "third_party/blink/renderer/core/events/wheel_event.h"
 #include "third_party/blink/renderer/core/exported/web_view_impl.h"
@@ -60,6 +59,10 @@ WebFrameWidgetBase::~WebFrameWidgetBase() = default;
 void WebFrameWidgetBase::BindLocalRoot(WebLocalFrame& local_root) {
   local_root_ = To<WebLocalFrameImpl>(local_root);
   local_root_->SetFrameWidget(this);
+  request_animation_after_delay_timer_.reset(
+      new TaskRunnerTimer<WebFrameWidgetBase>(
+          local_root.GetTaskRunner(TaskType::kInternalDefault), this,
+          &WebFrameWidgetBase::RequestAnimationAfterDelayTimerFired));
 }
 
 void WebFrameWidgetBase::Close() {
@@ -67,6 +70,7 @@ void WebFrameWidgetBase::Close() {
   local_root_->SetFrameWidget(nullptr);
   local_root_ = nullptr;
   client_ = nullptr;
+  request_animation_after_delay_timer_.reset();
 }
 
 WebLocalFrame* WebFrameWidgetBase::LocalRoot() const {
@@ -333,7 +337,6 @@ void WebFrameWidgetBase::DidNotAcquirePointerLock() {
 }
 
 void WebFrameWidgetBase::DidLosePointerLock() {
-  pointer_lock_gesture_token_ = nullptr;
   GetPage()->GetPointerLockController().DidLosePointerLock();
 }
 
@@ -358,26 +361,20 @@ void WebFrameWidgetBase::PointerLockMouseEvent(
   WebMouseEvent transformed_event =
       TransformWebMouseEvent(local_root_->GetFrameView(), mouse_event);
 
-  std::unique_ptr<UserGestureIndicator> gesture_indicator;
   AtomicString event_type;
   switch (input_event.GetType()) {
     case WebInputEvent::kMouseDown:
       event_type = event_type_names::kMousedown;
       if (!GetPage() || !GetPage()->GetPointerLockController().GetElement())
         break;
-      gesture_indicator =
-          LocalFrame::NotifyUserActivation(GetPage()
-                                               ->GetPointerLockController()
-                                               .GetElement()
-                                               ->GetDocument()
-                                               .GetFrame(),
-                                           UserGestureToken::kNewGesture);
-      pointer_lock_gesture_token_ = gesture_indicator->CurrentToken();
+      LocalFrame::NotifyUserActivation(GetPage()
+                                           ->GetPointerLockController()
+                                           .GetElement()
+                                           ->GetDocument()
+                                           .GetFrame());
       break;
     case WebInputEvent::kMouseUp:
       event_type = event_type_names::kMouseup;
-      gesture_indicator = std::make_unique<UserGestureIndicator>(
-          std::move(pointer_lock_gesture_token_));
       break;
     case WebInputEvent::kMouseMove:
       event_type = event_type_names::kMousemove;
@@ -431,6 +428,23 @@ LocalFrame* WebFrameWidgetBase::FocusedLocalFrameInWidget() const {
 
 WebLocalFrame* WebFrameWidgetBase::FocusedWebLocalFrameInWidget() const {
   return WebLocalFrameImpl::FromFrame(FocusedLocalFrameInWidget());
+}
+
+void WebFrameWidgetBase::RequestAnimationAfterDelay(
+    const base::TimeDelta& delay) {
+  DCHECK(request_animation_after_delay_timer_.get());
+  if (request_animation_after_delay_timer_->IsActive() &&
+      request_animation_after_delay_timer_->NextFireInterval() > delay) {
+    request_animation_after_delay_timer_->Stop();
+  }
+  if (!request_animation_after_delay_timer_->IsActive()) {
+    request_animation_after_delay_timer_->StartOneShot(delay, FROM_HERE);
+  }
+}
+
+void WebFrameWidgetBase::RequestAnimationAfterDelayTimerFired(TimerBase*) {
+  if (client_)
+    client_->ScheduleAnimation();
 }
 
 base::WeakPtr<AnimationWorkletMutatorDispatcherImpl>

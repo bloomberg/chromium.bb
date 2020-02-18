@@ -15,8 +15,8 @@ class PointF;
 }
 
 namespace ui {
-class OSExchangeData;
 class PlatformWindow;
+class OSExchangeData;
 
 class WM_PLATFORM_EXPORT WmDropHandler {
  public:

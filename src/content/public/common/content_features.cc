@@ -27,6 +27,11 @@ const base::Feature kAllowContentInitiatedDataUrlNavigations{
     "AllowContentInitiatedDataUrlNavigations",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Allows popups during page unloading.
+// TODO(https://crbug.com/937569): Remove this entirely in Chrome 82.
+const base::Feature kAllowPopupsDuringPageUnload{
+    "AllowPopupsDuringPageUnload", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Accepts Origin-Signed HTTP Exchanges to be signed with certificates
 // that do not have CanSignHttpExchangesDraft extension.
 // TODO(https://crbug.com/862003): Remove when certificates with
@@ -34,10 +39,6 @@ const base::Feature kAllowContentInitiatedDataUrlNavigations{
 const base::Feature kAllowSignedHTTPExchangeCertsWithoutExtension{
     "AllowSignedHTTPExchangeCertsWithoutExtension",
     base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Creates audio output and input streams using the audio service.
-const base::Feature kAudioServiceAudioStreams{"AudioServiceAudioStreams",
-                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Launches the audio service on the browser startup.
 const base::Feature kAudioServiceLaunchOnStartup{
@@ -62,6 +63,16 @@ const base::Feature kBackgroundFetch{"BackgroundFetch",
 const base::Feature kBackForwardCache{"BackForwardCache",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
+// BackForwardCache is disabled on low memory devices. The threshold is defined
+// via a field trial param: "memory_threshold_for_back_forward_cache_in_mb"
+// It is compared against base::SysInfo::AmountOfPhysicalMemoryMB().
+
+// "BackForwardCacheMemoryControls" is checked before "BackForwardCache". It
+// means the low memory devices will activate neither the control group nor the
+// experimental group of the BackForwardCache field trial.
+const base::Feature kBackForwardCacheMemoryControl{
+    "BackForwardCacheMemoryControls", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Allows swipe left/right from touchpad change browser navigation. Currently
 // only enabled by default on CrOS.
 const base::Feature kTouchpadOverscrollHistoryNavigation {
@@ -82,11 +93,6 @@ const base::Feature kBlockCredentialedSubresources{
 const base::Feature kBrowserVerifiedUserActivation{
     "BrowserVerifiedUserActivation", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Controls whether Bundled HTTP Exchanges is enabled.
-// https://wicg.github.io/webpackage/draft-yasskin-wpack-bundled-exchanges.html
-const base::Feature kBundledHTTPExchanges{"BundledHTTPExchanges",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Enables code caching for inline scripts.
 const base::Feature kCacheInlineScriptCode{"CacheInlineScriptCode",
                                            base::FEATURE_ENABLED_BY_DEFAULT};
@@ -94,7 +100,18 @@ const base::Feature kCacheInlineScriptCode{"CacheInlineScriptCode",
 // Enables support for parallel cache_storage operations via the
 // "max_shared_ops" fieldtrial parameter.
 const base::Feature kCacheStorageParallelOps{"CacheStorageParallelOps",
-                                             base::FEATURE_DISABLED_BY_DEFAULT};
+                                             base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Enables eagerly reading the response body in cache.match() when the
+// operation was started from a FetchEvent handler with a matching request
+// URL.
+const base::Feature kCacheStorageEagerReading{
+    "CacheStorageEagerReading", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables scheduling the operation at high priority when a cache.match() is
+// initiated from a FetchEvent handler with a matching request URL.
+const base::Feature kCacheStorageHighPriorityMatch{
+    "CacheStorageHighPriorityMatch", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // If Canvas2D Image Chromium is allowed, this feature controls whether it is
 // enabled.
@@ -114,7 +131,7 @@ const base::Feature kConsolidatedMovementXY{"ConsolidatedMovementXY",
 // Show messages in the DevTools console about upcoming deprecations
 // that would affect sent/received cookies.
 const base::Feature kCookieDeprecationMessages{
-    "CookieDeprecationMessages", base::FEATURE_DISABLED_BY_DEFAULT};
+    "CookieDeprecationMessages", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables Blink cooperative scheduling.
 const base::Feature kCooperativeScheduling{"CooperativeScheduling",
@@ -161,32 +178,28 @@ const base::Feature kFeaturePolicyForSandbox{"FeaturePolicyForSandbox",
 // Enables fixes for matching src: local() for web fonts correctly against full
 // font name or postscript name. Rolling out behind a flag, as enabling this
 // enables a font indexer on Android which we need to test in the field first.
-// TODO(https://crbug.com/996027): Re-enable this on Windows once Windows 7
-// DWRiteFontLookupTableBuilder stability is fixed.
-#if !defined(OS_WIN)
 const base::Feature kFontSrcLocalMatching{"FontSrcLocalMatching",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
-#else
-const base::Feature kFontSrcLocalMatching{"FontSrcLocalMatching",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
-#endif
+
+// Enables forced colors mode for web content.
+const base::Feature kForcedColors{"ForcedColors",
+                                  base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables scrollers inside Blink to store scroll offsets in fractional
 // floating-point numbers rather than truncating to integers.
 const base::Feature kFractionalScrollOffsets{"FractionalScrollOffsets",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables support for FTP URLs. When disabled FTP URLs will behave the same as
+// any other URL scheme that's unknown to the UA. See https://crbug.com/333943
+const base::Feature kFtpProtocol{"FtpProtocol",
+                                 base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Puts network quality estimate related Web APIs in the holdback mode. When the
 // holdback is enabled the related Web APIs return network quality estimate
 // set by the experiment (regardless of the actual quality).
 const base::Feature kNetworkQualityEstimatorWebHoldback{
     "NetworkQualityEstimatorWebHoldback", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Causes the implementations of guests (inner WebContents) to use
-// out-of-process iframes.
-// TODO(533069): Remove once BrowserPlugin is removed.
-const base::Feature kGuestViewCrossProcessFrames{
-    "GuestViewCrossProcessFrames", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // If a page does a client side redirect or adds to the history without a user
 // gesture, then skip it on back/forward UI.
@@ -258,7 +271,7 @@ const base::Feature kLazyInitializeMediaControls{
 // API font fallback calls to retrieve a fallback font family name as opposed to
 // using a hard-coded font lookup table.
 const base::Feature kLegacyWindowsDWriteFontFallback{
-    "LegacyWindowsDWriteFontFallback", base::FEATURE_DISABLED_BY_DEFAULT};
+    "LegacyWindowsDWriteFontFallback", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kLogJsConsoleMessages{"LogJsConsoleMessages",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
@@ -279,11 +292,6 @@ const base::Feature kMediaDevicesSystemMonitorCache {
 #endif
 };
 
-// Instead of BrowserPlugin or GuestViews, MimeHandlerView will use a cross
-// process frame to render its handler.
-const base::Feature kMimeHandlerViewInCrossProcessFrame{
-    "MimeHandlerViewInCrossProcessFrame", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enables/disables the video capture service.
 const base::Feature kMojoVideoCapture{"MojoVideoCapture",
                                       base::FEATURE_ENABLED_BY_DEFAULT};
@@ -299,11 +307,6 @@ const base::Feature kMojoVideoCaptureSecondary{
 const base::Feature kMouseSubframeNoImplicitCapture{
     "MouseSubframeNoImplicitCapture", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Transmit the response body datapipe to the renderer process in
-// CommitNavigation() so that it can start reading earlier.
-const base::Feature kNavigationImmediateResponseBody{
-    "NavigationImmediateResponseBody", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // If the network service is enabled, runs it in process.
 const base::Feature kNetworkServiceInProcess {
   "NetworkServiceInProcess",
@@ -313,6 +316,9 @@ const base::Feature kNetworkServiceInProcess {
       base::FEATURE_DISABLED_BY_DEFAULT
 #endif
 };
+
+const base::Feature kNeverSlowMode{"NeverSlowMode",
+                                   base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Kill switch for Web Notification content images.
 const base::Feature kNotificationContentImage{"NotificationContentImage",
@@ -350,18 +356,9 @@ const base::Feature kPassiveDocumentWheelEventListeners{
 const base::Feature kPassiveEventListenersDueToFling{
     "PassiveEventListenersDueToFling", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Whether ExecutionContext is paused (and workers) on background freeze.
-const base::Feature kPauseExecutionContextOnBackgroundFreeze = {
-    "PauseExecutionContextOnBackgroundFreeze",
-    base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Whether web apps can run periodic tasks upon network connectivity.
 const base::Feature kPeriodicBackgroundSync{"PeriodicBackgroundSync",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Whether we should use the navigation_client mojo interface for navigations.
-const base::Feature kPerNavigationMojoInterface = {
-    "PerNavigationMojoInterface", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // If Pepper 3D Image Chromium is allowed, this feature controls whether it is
 // enabled.
@@ -408,10 +405,6 @@ const base::Feature kPrioritizeBootstrapTasks = {
 const base::Feature kProactivelySwapBrowsingInstance{
     "ProactivelySwapBrowsingInstance", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enable raster-inducing scroll.
-const base::Feature kRasterInducingScroll{"RasterInducingScroll",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Reduce the amount of information in the default 'referer' header for
 // cross-origin requests.
 const base::Feature kReducedReferrerGranularity{
@@ -452,19 +445,11 @@ const base::Feature kRequestUnbufferedDispatch{
 const base::Feature kResamplingInputEvents{"ResamplingInputEvents",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Loading Dispatcher v0 support with ResourceLoadScheduler (crbug.com/729954).
-const base::Feature kResourceLoadScheduler{"ResourceLoadScheduler",
-                                           base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Run video capture service in the Browser process as opposed to a dedicated
 // utility process
 const base::Feature kRunVideoCaptureServiceInBrowserProcess{
     "RunVideoCaptureServiceInBrowserProcess",
     base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Save the scroll anchor and use it to restore scroll position.
-const base::Feature kScrollAnchorSerialization{
-    "ScrollAnchorSerialization", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Make sendBeacon throw for a Blob with a non simple type.
 const base::Feature kSendBeaconThrowForBlobWithNonSimpleType{
@@ -488,6 +473,13 @@ const base::Feature kServiceWorkerOnUI{"ServiceWorkerOnUI",
 // TODO(rouslan): Remove this.
 const base::Feature kServiceWorkerPaymentApps{"ServiceWorkerPaymentApps",
                                               base::FEATURE_ENABLED_BY_DEFAULT};
+
+// If enabled, prefer to start service workers in an unused renderer process if
+// available. This helps let navigations and service workers use the same
+// process when a process was already created for a navigation but not yet
+// claimed by it (as is common for navigations from the Android New Tab Page).
+const base::Feature kServiceWorkerPrefersUnusedProcess{
+    "ServiceWorkerPrefersUnusedProcess", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // http://tc39.github.io/ecmascript_sharedmem/shmem.html
 const base::Feature kSharedArrayBuffer {
@@ -536,11 +528,6 @@ const base::Feature kSmsReceiver{"SmsReceiver",
 const base::Feature kSpareRendererForSitePerProcess{
     "SpareRendererForSitePerProcess", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enables StaleWhileRevalidate support.
-// https://www.chromestatus.com/features/5050913014153216
-const base::Feature kStaleWhileRevalidate{"StaleWhileRevalidate",
-                                          base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enables Storage Pressure notifications and settings pages.
 const base::Feature kStoragePressureUI{"StoragePressureUI",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
@@ -567,6 +554,13 @@ const base::Feature kTimerThrottlingForHiddenFrames{
 const base::Feature kTouchpadAsyncPinchEvents{"TouchpadAsyncPinchEvents",
                                               base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Controls whether the RenderProcessHost uses its frames' priorities for
+// determining if it should be backgrounded. When all frames associated with a
+// RenderProcessHost are low priority, that process may be backgrounded even if
+// those frames are visible.
+const base::Feature kUseFramePriorityInRenderProcessHost{
+    "UseFramePriorityInRenderProcessHost", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Allows developers transfer user activation state to any target window in the
 // frame tree.
 const base::Feature kUserActivationPostMessageTransfer{
@@ -578,12 +572,6 @@ const base::Feature kUserActivationPostMessageTransfer{
 // to subframes.
 const base::Feature kUserActivationSameOriginVisibility{
     "UserActivationSameOriginVisibility", base::FEATURE_ENABLED_BY_DEFAULT};
-
-// An experimental simple user-activation model where the user gesture state is
-// tracked through a frame-based state instead of the gesture tokens we use
-// today.
-const base::Feature kUserActivationV2{"UserActivationV2",
-                                      base::FEATURE_ENABLED_BY_DEFAULT};
 
 // An experimental replacement for the `User-Agent` header, defined in
 // https://tools.ietf.org/html/draft-west-ua-client-hints.
@@ -676,6 +664,19 @@ const base::Feature kWebAuthCable {
 #endif
 };
 
+// Controls whether Web Bundles (Bundled HTTP Exchanges) is enabled.
+// https://wicg.github.io/webpackage/draft-yasskin-wpack-bundled-exchanges.html
+// When this feature is enabled, Chromium can load unsigned Web Bundles local
+// file under file:// URL (and content:// URI on Android).
+const base::Feature kWebBundles{"WebBundles",
+                                base::FEATURE_DISABLED_BY_DEFAULT};
+
+// When this feature is enabled, Chromium will be able to load unsigned Web
+// Bundles file under https: URL and localhost http: URL.
+// TODO(crbug.com/1018640): Implement this feature.
+const base::Feature kWebBundlesFromNetwork{"WebBundlesFromNetwork",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
+
 // If WebGL Image Chromium is allowed, this feature controls whether it is
 // enabled.
 const base::Feature kWebGLImageChromium{"WebGLImageChromium",
@@ -695,26 +696,16 @@ const base::Feature kWebPayments{"WebPayments",
 const base::Feature kWebRtcEcdsaDefault{"WebRTC-EnableWebRtcEcdsa",
                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enables negotiation of experimental multiplex codec in SDP.
-const base::Feature kWebRtcMultiplexCodec{"WebRTC-MultiplexCodec",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Use GpuMemoryBuffer backed VideoFrames in media streams.
 const base::Feature kWebRtcUseGpuMemoryBufferVideoFrames{
     "WebRTC-UseGpuMemoryBufferVideoFrames", base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Causes WebRTC to replace host ICE candidate IP addresses with generated
-// names ending in ".local" and resolve them using mDNS.
-// http://crbug.com/878465
-const base::Feature kWebRtcHideLocalIpsWithMdns{
-    "WebRtcHideLocalIpsWithMdns", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls whether the WebUSB API is enabled:
 // https://wicg.github.io/webusb
 const base::Feature kWebUsb{"WebUSB", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls whether the WebXR Device API is enabled.
-const base::Feature kWebXr{"WebXR", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kWebXr{"WebXR", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables access to AR features via the WebXR API.
 const base::Feature kWebXrArModule{"WebXRARModule",
@@ -724,6 +715,10 @@ const base::Feature kWebXrArModule{"WebXRARModule",
 const base::Feature kWebXrAnchors{"WebXRAnchors",
                                   base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables access to the WebXR Device API gamepad module.
+const base::Feature kWebXrGamepadModule{"WebXrGamepadModule",
+                                        base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Enables access to raycasting against estimated XR scene geometry.
 const base::Feature kWebXrHitTest{"WebXRHitTest",
                                   base::FEATURE_DISABLED_BY_DEFAULT};
@@ -732,6 +727,10 @@ const base::Feature kWebXrHitTest{"WebXRHitTest",
 const base::Feature kWebXrPlaneDetection{"WebXRPlaneDetection",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables access to planes detected in the user's environment.
+const base::Feature kWebXrArDOMOverlay{"WebXRARDOMOverlay",
+                                       base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Start streaming scripts on script preload.
 const base::Feature kScriptStreamingOnPreload{"ScriptStreamingOnPreload",
                                               base::FEATURE_ENABLED_BY_DEFAULT};
@@ -739,6 +738,14 @@ const base::Feature kScriptStreamingOnPreload{"ScriptStreamingOnPreload",
 // Controls whether the Trusted Types API is available.
 const base::Feature kTrustedDOMTypes{"TrustedDOMTypes",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Controls whether Client Hints are guarded by FeaturePolicy.
+const base::Feature kFeaturePolicyForClientHints{
+    "FeaturePolicyForClientHints", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Controls whether the <video>.getVideoPlaybackQuality() API is enabled.
+const base::Feature kVideoPlaybackQuality{"VideoPlaybackQuality",
+                                          base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Use ThreadPriority::DISPLAY for browser UI and IO threads.
 #if defined(OS_ANDROID) || defined(OS_CHROMEOS)

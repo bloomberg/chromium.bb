@@ -7,6 +7,7 @@
 
 from __future__ import print_function
 
+import collections
 import os
 
 import mock
@@ -102,10 +103,10 @@ config_board = test.board
         'channel': 'dev',
         'keyset': 'batman',
     }
-    sect_general = {
-        'config_board': 'test.board',
-        'board': 'board',
-    }
+    sect_general = collections.OrderedDict((
+        ('board', 'board'),
+        ('config_board', 'test.board'),
+    ))
 
     insns = pushimage.InputInsns('test.board')
     m = self.PatchObject(osutils, 'WriteFile')
@@ -147,10 +148,10 @@ config_board = test.board
         'override': 'sect_insns',
     }
     sect_insns_copy = sect_insns.copy()
-    sect_general = {
-        'config_board': 'test.board',
-        'board': 'board',
-    }
+    sect_general = collections.OrderedDict((
+        ('board', 'board'),
+        ('config_board', 'test.board'),
+    ))
 
     insns = pushimage.InputInsns('test.multi')
     self.assertEqual(insns.GetAltInsnSets(), exp_alts)
@@ -186,7 +187,7 @@ class MarkImageToBeSignedTest(gs_unittest.AbstractGSContextTest):
     """Verify diff priority values get used correctly"""
     for prio, sprio in ((0, '00'), (9, '09'), (35, '35'), (99, '99')):
       ret = pushimage.MarkImageToBeSigned(self.ctx, '', '', prio)
-      self.assertEquals(ret, '/tobesigned/%s,' % sprio)
+      self.assertEqual(ret, '/tobesigned/%s,' % sprio)
 
   def testBadPriority(self):
     """Verify we reject bad priority values"""
@@ -287,7 +288,7 @@ class PushImageTests(gs_unittest.AbstractGSContextTest):
     with mock.patch.object(gs.GSContext, 'Exists', return_value=True):
       urls = pushimage.PushImage('/src', 'test.board', 'R34-5126.0.0',
                                  sign_types=['recovery'])
-    self.assertEqual(self.gs_mock.call_count, 26)
+    self.assertEqual(self.gs_mock.call_count, 32)
     self.assertTrue(self.mark_mock.called)
     self.assertEqual(urls, EXPECTED)
 
@@ -305,7 +306,25 @@ class PushImageTests(gs_unittest.AbstractGSContextTest):
     with mock.patch.object(gs.GSContext, 'Exists', return_value=True):
       urls = pushimage.PushImage('/src', 'test.board', 'R34-5126.0.0',
                                  sign_types=['base'])
-    self.assertEqual(self.gs_mock.call_count, 28)
+    self.assertEqual(self.gs_mock.call_count, 34)
+    self.assertTrue(self.mark_mock.called)
+    self.assertEqual(urls, EXPECTED)
+
+  def testSignTypesCr50Firmware(self):
+    """Only sign the requested type"""
+    EXPECTED = {
+        'canary': [
+            ('gs://chromeos-releases/canary-channel/board2/5126.0.0/'
+             'ChromeOS-cr50_firmware-R34-5126.0.0-board2.instructions')],
+        'dev': [
+            ('gs://chromeos-releases/dev-channel/board2/5126.0.0/'
+             'ChromeOS-cr50_firmware-R34-5126.0.0-board2.instructions')],
+    }
+
+    with mock.patch.object(gs.GSContext, 'Exists', return_value=True):
+      urls = pushimage.PushImage('/src', 'board2', 'R34-5126.0.0',
+                                 sign_types=['cr50_firmware'])
+    self.assertEqual(self.gs_mock.call_count, 32)
     self.assertTrue(self.mark_mock.called)
     self.assertEqual(urls, EXPECTED)
 
@@ -313,7 +332,7 @@ class PushImageTests(gs_unittest.AbstractGSContextTest):
     """Verify nothing is signed when we request an unavailable type"""
     urls = pushimage.PushImage('/src', 'test.board', 'R34-5126.0.0',
                                sign_types=['nononononono'])
-    self.assertEqual(self.gs_mock.call_count, 24)
+    self.assertEqual(self.gs_mock.call_count, 30)
     self.assertFalse(self.mark_mock.called)
     self.assertEqual(urls, {})
 

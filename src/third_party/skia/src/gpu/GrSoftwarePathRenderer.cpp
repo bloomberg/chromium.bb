@@ -165,7 +165,7 @@ void GrSoftwarePathRenderer::DrawToTargetWithShapeMask(
                                               SkIntToScalar(-textureOriginInDeviceSpace.fY));
     maskMatrix.preConcat(viewMatrix);
     paint.addCoverageFragmentProcessor(GrSimpleTextureEffect::Make(
-            std::move(proxy), maskMatrix, GrSamplerState::Filter::kNearest));
+            std::move(proxy), kPremul_SkAlphaType, maskMatrix, GrSamplerState::Filter::kNearest));
     DrawNonAARect(renderTargetContext, std::move(paint), userStencilSettings, clip, SkMatrix::I(),
                   dstRect, invert);
 }
@@ -385,10 +385,9 @@ bool GrSoftwarePathRenderer::onDrawPath(const DrawPathArgs& args) {
                           *args.fUserStencilSettings, *args.fClip, *args.fViewMatrix, devClipBounds,
                           unclippedDevShapeBounds);
     }
-    DrawToTargetWithShapeMask(
-            std::move(proxy), args.fRenderTargetContext, std::move(args.fPaint),
-            *args.fUserStencilSettings, *args.fClip, *args.fViewMatrix,
-            SkIPoint{boundsForMask->fLeft, boundsForMask->fTop}, *boundsForMask);
+    DrawToTargetWithShapeMask(std::move(proxy), args.fRenderTargetContext, std::move(args.fPaint),
+                              *args.fUserStencilSettings, *args.fClip, *args.fViewMatrix,
+                              SkIPoint{boundsForMask->fLeft, boundsForMask->fTop}, *boundsForMask);
 
     return true;
 }

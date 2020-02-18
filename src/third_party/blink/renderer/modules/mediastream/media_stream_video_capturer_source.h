@@ -39,11 +39,11 @@ class MODULES_EXPORT MediaStreamVideoCapturerSource
           const base::UnguessableToken& session_id)>;
   MediaStreamVideoCapturerSource(
       LocalFrame* frame,
-      const SourceStoppedCallback& stop_callback,
+      SourceStoppedCallback stop_callback,
       std::unique_ptr<media::VideoCapturerSource> source);
   MediaStreamVideoCapturerSource(
       LocalFrame* frame,
-      const SourceStoppedCallback& stop_callback,
+      SourceStoppedCallback stop_callback,
       const MediaStreamDevice& device,
       const media::VideoCaptureParams& capture_params,
       DeviceCapturerFactoryCallback device_capturer_factory_callback);
@@ -71,8 +71,8 @@ class MODULES_EXPORT MediaStreamVideoCapturerSource
   void OnLog(const std::string& message) override;
   void OnHasConsumers(bool has_consumers) override;
   void OnCapturingLinkSecured(bool is_secure) override;
-  void StartSourceImpl(
-      const VideoCaptureDeliverFrameCB& frame_callback) override;
+  void StartSourceImpl(VideoCaptureDeliverFrameCB frame_callback,
+                       EncodedVideoFrameCB encoded_frame_callback) override;
   void StopSourceImpl() override;
   void StopSourceForRestartImpl() override;
   void RestartSourceImpl(const media::VideoCaptureFormat& new_format) override;

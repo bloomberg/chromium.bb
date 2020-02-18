@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/passwords/manage_passwords_test.h"
 
-#include <map>
 #include <utility>
 
 #include "base/bind.h"
@@ -22,6 +21,7 @@
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/password_form_manager.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
+#include "components/password_manager/core/browser/password_save_manager_impl.h"
 #include "components/password_manager/core/browser/stub_form_saver.h"
 #include "content/public/test/test_utils.h"
 
@@ -79,17 +79,18 @@ void ManagePasswordsTest::ExecuteManagePasswordsCommand() {
 }
 
 void ManagePasswordsTest::SetupManagingPasswords() {
-  std::map<base::string16, const autofill::PasswordForm*> map;
+  std::vector<const autofill::PasswordForm*> forms;
   for (auto* form : {&password_form_, &federated_form_}) {
-    map.insert(std::make_pair(form->username_value, form));
-    GetController()->OnPasswordAutofilled(map, form->origin, nullptr);
+    forms.push_back(form);
+    GetController()->OnPasswordAutofilled(forms, form->origin, nullptr);
   }
 }
 
 void ManagePasswordsTest::SetupPendingPassword() {
   auto form_manager = std::make_unique<PasswordFormManager>(
       &client_, driver_.AsWeakPtr(), observed_form_, &fetcher_,
-      base::WrapUnique(new password_manager::StubFormSaver),
+      std::make_unique<password_manager::PasswordSaveManagerImpl>(
+          base::WrapUnique(new password_manager::StubFormSaver)),
       nullptr /*  metrics_recorder */);
   fetcher_.NotifyFetchCompleted();
   GetController()->OnPasswordSubmitted(std::move(form_manager));
@@ -98,7 +99,8 @@ void ManagePasswordsTest::SetupPendingPassword() {
 void ManagePasswordsTest::SetupAutomaticPassword() {
   auto form_manager = std::make_unique<PasswordFormManager>(
       &client_, driver_.AsWeakPtr(), observed_form_, &fetcher_,
-      base::WrapUnique(new password_manager::StubFormSaver),
+      std::make_unique<password_manager::PasswordSaveManagerImpl>(
+          base::WrapUnique(new password_manager::StubFormSaver)),
       nullptr /*  metrics_recorder */);
   fetcher_.NotifyFetchCompleted();
   GetController()->OnAutomaticPasswordSave(std::move(form_manager));

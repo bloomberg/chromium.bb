@@ -53,7 +53,6 @@ class HatsBubbleView : public views::BubbleDialogDelegateView {
   bool ShouldShowWindowIcon() const override;
 
   // views::DialogDelegate:
-  base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
   bool Cancel() override;
   bool Accept() override;
 
@@ -62,7 +61,7 @@ class HatsBubbleView : public views::BubbleDialogDelegateView {
   void OnWidgetDestroying(views::Widget* widget) override;
 
   // views::View:
-  void Layout() override;
+  void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
 
  private:
   HatsBubbleView(Browser* browser,

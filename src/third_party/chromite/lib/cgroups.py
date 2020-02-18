@@ -136,7 +136,7 @@ class Cgroup(object):
 
         # Not all distros mount cgroup_root to sysfs.
         osutils.SafeMakedirs(mnt, sudo=True)
-        cros_build_lib.SudoRunCommand(['mount'] + args + [mnt], print_cmd=False)
+        cros_build_lib.sudo_run(['mount'] + args + [mnt], print_cmd=False)
 
       return True
 
@@ -450,7 +450,7 @@ class Cgroup(object):
       strict: Boolean; if true, then it's an error if the group can't be
         removed.  This can occur if there are still processes in it, or in
         a nested group.
-      sudo_strict: See SudoRunCommand's strict option.
+      sudo_strict: See sudo_run's strict option.
     """
     # Depth first recursively remove our children cgroups, then ourselves.
     # Allow this to fail since currently it's possible for the cleanup code
@@ -466,7 +466,7 @@ class Cgroup(object):
                          'strict was %r, sudo_strict was %r'
                          % (path, strict, sudo_strict))
 
-    result = cros_build_lib.SudoRunCommand(
+    result = cros_build_lib.sudo_run(
         ['find', path, '-depth', '-type', 'd', '-exec', 'rmdir', '{}', '+'],
         redirect_stderr=True, error_code_ok=not strict,
         print_cmd=False, strict=sudo_strict)
@@ -544,7 +544,7 @@ class Cgroup(object):
     my_pids = set(str(x) for x in self._GetCurrentProcessThreads())
 
     def _SignalPids(pids, signum):
-      cros_build_lib.SudoRunCommand(
+      cros_build_lib.sudo_run(
           ['kill', '-%i' % signum] + sorted(pids),
           print_cmd=False, error_code_ok=True, redirect_stdout=True,
           combine_stdout_stderr=True)
@@ -743,7 +743,7 @@ class ContainChildren(cros_build_lib.MasterPidContextManager):
           % self.child.namespace)
     self.run_kill = True
 
-  def _exit(self, *_args, **_kwargs):
+  def _exit(self, exc_type, exc, exc_tb):
     with signals.DeferSignals():
       self.node.TransferCurrentProcess()
       if self.run_kill:

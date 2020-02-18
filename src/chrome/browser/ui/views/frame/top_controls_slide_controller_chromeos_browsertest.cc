@@ -24,6 +24,7 @@
 #include "chrome/browser/permissions/permission_request_impl.h"
 #include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/top_container_view.h"
@@ -33,6 +34,7 @@
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "content/public/browser/system_connector.h"
 #include "content/public/test/browser_test_utils.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/dns/mock_host_resolver.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/aura/window.h"
@@ -257,6 +259,7 @@ class TopControlsSlideControllerTest : public InProcessBrowserTest {
     return test_controller_;
   }
 
+  // InProcessBrowserTest:
   void SetUpDefaultCommandLine(base::CommandLine* command_line) override {
     InProcessBrowserTest::SetUpDefaultCommandLine(command_line);
 
@@ -315,16 +318,14 @@ class TopControlsSlideControllerTest : public InProcessBrowserTest {
     ASSERT_FALSE(root_view_layer);
 
     // The contents layer transform should be restored to identity.
-    gfx::Transform expected_transform;
-    DCHECK(
-        browser_view->contents_web_view()->holder()->GetNativeViewContainer());
-    ui::Layer* contents_container_layer = browser_view->contents_web_view()
-                                              ->holder()
-                                              ->GetNativeViewContainer()
-                                              ->layer();
-    ASSERT_TRUE(contents_container_layer);
-    CompareTranslations(expected_transform,
-                        contents_container_layer->transform());
+    const gfx::Transform expected_transform;
+    EXPECT_FALSE(browser_view->GetNativeViewHostsForTopControlsSlide().empty());
+    for (auto* host : browser_view->GetNativeViewHostsForTopControlsSlide()) {
+      ASSERT_TRUE(host->GetNativeViewContainer());
+      ASSERT_TRUE(host->GetNativeViewContainer()->layer());
+      CompareTranslations(expected_transform,
+                          host->GetNativeViewContainer()->layer()->transform());
+    }
 
     // The BrowserView layout should be adjusted properly:
     const gfx::Rect& top_container_bounds =
@@ -401,18 +402,14 @@ class TopControlsSlideControllerTest : public InProcessBrowserTest {
     const float y_translation = top_controls_height * (shown_ratio - 1.f);
     expected_transform.Translate(0, y_translation);
 
-    ASSERT_TRUE(browser_view()
-                    ->contents_web_view()
-                    ->holder()
-                    ->GetNativeViewContainer());
-    ui::Layer* contents_container_layer = browser_view()
-                                              ->contents_web_view()
-                                              ->holder()
-                                              ->GetNativeViewContainer()
-                                              ->layer();
-    ASSERT_TRUE(contents_container_layer);
-    CompareTranslations(expected_transform,
-                        contents_container_layer->transform());
+    EXPECT_FALSE(
+        browser_view()->GetNativeViewHostsForTopControlsSlide().empty());
+    for (auto* host : browser_view()->GetNativeViewHostsForTopControlsSlide()) {
+      ASSERT_TRUE(host->GetNativeViewContainer());
+      ASSERT_TRUE(host->GetNativeViewContainer()->layer());
+      CompareTranslations(expected_transform,
+                          host->GetNativeViewContainer()->layer()->transform());
+    }
     CompareTranslations(expected_transform, root_view_layer->transform());
   }
 
@@ -450,8 +447,6 @@ class TopControlsSlideControllerTest : public InProcessBrowserTest {
     test_controller_ = controller.get();
     return std::move(controller);
   }
-
-  base::test::ScopedFeatureList scoped_feature_list_;
 
   TestController* test_controller_ = nullptr;  // Not owned.
 
@@ -792,14 +787,17 @@ IN_PROC_BROWSER_TEST_F(TopControlsSlideControllerTest, DisplayRotation) {
 
   // Try all possible rotations. Changing display rotation should *not* unhide
   // top chrome.
-  const std::vector<display::Display::Rotation> rotations_to_try = {
-      display::Display::ROTATE_90, display::Display::ROTATE_180,
-      display::Display::ROTATE_270, display::Display::ROTATE_0,
+  const std::vector<ash::mojom::DisplayRotationOptions> rotations_to_try = {
+      ash::mojom::DisplayRotationOptions::k90Degrees,
+      ash::mojom::DisplayRotationOptions::k180Degrees,
+      ash::mojom::DisplayRotationOptions::k270Degrees,
+      ash::mojom::DisplayRotationOptions::kZeroDegrees,
   };
 
-  ash::mojom::CrosDisplayConfigControllerPtr cros_display_config;
-  content::GetSystemConnector()->BindInterface(ash::mojom::kServiceName,
-                                               &cros_display_config);
+  mojo::Remote<ash::mojom::CrosDisplayConfigController> cros_display_config;
+  content::GetSystemConnector()->Connect(
+      ash::mojom::kServiceName,
+      cros_display_config.BindNewPipeAndPassReceiver());
   ash::mojom::CrosDisplayConfigControllerAsyncWaiter waiter_for(
       cros_display_config.get());
   std::vector<ash::mojom::DisplayUnitInfoPtr> info_list;
@@ -1136,7 +1134,7 @@ IN_PROC_BROWSER_TEST_F(TopControlsSlideControllerTest, TestPermissionBubble) {
   // request bubble resulting in top chrome unhiding.
   auto decided = [](ContentSetting) {};
   PermissionRequestImpl permission_request(
-      url, CONTENT_SETTINGS_TYPE_GEOLOCATION, true /* user_gesture */,
+      url, ContentSettingsType::GEOLOCATION, true /* user_gesture */,
       base::BindRepeating(decided), base::DoNothing() /* delete_callback */);
   auto* permission_manager =
       PermissionRequestManager::FromWebContents(active_contents);
@@ -1145,7 +1143,7 @@ IN_PROC_BROWSER_TEST_F(TopControlsSlideControllerTest, TestPermissionBubble) {
   waiter.WaitForRatio(1.f);
   EXPECT_FLOAT_EQ(top_controls_slide_controller()->GetShownRatio(), 1.f);
   CheckBrowserLayout(browser_view(), TopChromeShownState::kFullyShown);
-  EXPECT_TRUE(permission_manager->IsBubbleVisible());
+  EXPECT_TRUE(permission_manager->IsRequestInProgress());
 
   // It shouldn't be possible to hide top-chrome as long as the bubble is
   // visible.
@@ -1153,42 +1151,14 @@ IN_PROC_BROWSER_TEST_F(TopControlsSlideControllerTest, TestPermissionBubble) {
                                TopChromeShownState::kFullyShown);
 
   // Dismiss the bubble.
-  EXPECT_TRUE(permission_manager->GetBubbleWindow());
-  views::Widget::GetWidgetForNativeView(permission_manager->GetBubbleWindow())
-      ->CloseNow();
-  EXPECT_FALSE(permission_manager->IsBubbleVisible());
+  permission_manager->Closing();
+  EXPECT_FALSE(permission_manager->IsRequestInProgress());
   content::WaitForResizeComplete(active_contents);
 
   // Now it is possible to hide top-chrome again.
   ScrollAndExpectTopChromeToBe(ScrollDirection::kDown,
                                TopChromeShownState::kFullyHidden);
 }
-
-// Waits for a compositor frame to be drawn and committed on the given
-// web_contents.
-class CompositorFrameWaiter : content::WebContentsObserver {
- public:
-  explicit CompositorFrameWaiter(content::WebContents* contents)
-      : WebContentsObserver(contents) {}
-  ~CompositorFrameWaiter() override = default;
-
-  void Wait() {
-    run_loop_ = std::make_unique<base::RunLoop>();
-    run_loop_->Run();
-    run_loop_.reset();
-  }
-
-  // content::WebContentsObserver:
-  void DidCommitAndDrawCompositorFrame() override {
-    if (run_loop_)
-      run_loop_->Quit();
-  }
-
- private:
-  std::unique_ptr<base::RunLoop> run_loop_;
-
-  DISALLOW_COPY_AND_ASSIGN(CompositorFrameWaiter);
-};
 
 IN_PROC_BROWSER_TEST_F(TopControlsSlideControllerTest, TestToggleChromeVox) {
   ToggleTabletMode();
@@ -1220,9 +1190,10 @@ IN_PROC_BROWSER_TEST_F(TopControlsSlideControllerTest, TestToggleChromeVox) {
 
   // Now disable Chromevox, and expect it's now possible to hide top-chrome with
   // gesture scrolling.
-  CompositorFrameWaiter compositor_frame_waiter(active_contents);
+  content::RenderFrameSubmissionObserver compositor_frame_waiter(
+      active_contents);
   chromeos::AccessibilityManager::Get()->EnableSpokenFeedback(false);
-  compositor_frame_waiter.Wait();
+  compositor_frame_waiter.WaitForAnyFrameSubmission();
   content::WaitForResizeComplete(active_contents);
   EXPECT_FALSE(
       chromeos::AccessibilityManager::Get()->IsSpokenFeedbackEnabled());
@@ -1232,5 +1203,7 @@ IN_PROC_BROWSER_TEST_F(TopControlsSlideControllerTest, TestToggleChromeVox) {
   ScrollAndExpectTopChromeToBe(ScrollDirection::kDown,
                                TopChromeShownState::kFullyHidden);
 }
+
+// TODO(crbug.com/989131): Add test coverage that covers using WebUITabStrip.
 
 }  // namespace

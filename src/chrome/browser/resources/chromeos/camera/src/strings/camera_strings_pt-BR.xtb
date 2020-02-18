@@ -3,13 +3,11 @@
 <translationbundle lang="pt-BR">
 <translation id="1276998909102132017">Imagens da galeria</translation>
 <translation id="1430915738399379752">Imprimir</translation>
-<translation id="1462966117743110941">A câmera agora é compatível com novos modos, e as fotos e os vídeos estarão disponíveis nas suas pastas de downloads.</translation>
 <translation id="1620510694547887537">Câmera</translation>
 <translation id="1627744224761163218">4 x 4</translation>
 <translation id="1664224225747386870">Nada gravado</translation>
 <translation id="1862930711583847113">Não foi possível exportar <ph name="FILE" /></translation>
 <translation id="1899697626337024495">Resolução da foto</translation>
-<translation id="2008689030244369546">Um visual totalmente novo</translation>
 <translation id="2036868001356139588">Duração do timer</translation>
 <translation id="2050339315714019657">Retrato</translation>
 <translation id="2064538373111010176"><ph name="CAMERA" /> ativa</translation>
@@ -24,6 +22,7 @@
 
         Os apps com permissões de armazenamento terão acesso a seus vídeos e fotos.</translation>
 <translation id="3081586908890909590">Alternar para gravar vídeo</translation>
+<translation id="313467653172006084">30 QPS</translation>
 <translation id="3183731565330012717">Tipo de grade</translation>
 <translation id="3227137524299004712">Microfone</translation>
 <translation id="3259149966178251584">Resolução da câmera</translation>
@@ -44,9 +43,7 @@
 <translation id="5671277269877808209">Quadrado</translation>
 <translation id="5775960006311140197">Modo Especialista</translation>
 <translation id="5869546221129391014">Grade</translation>
-<translation id="6040143037577758943">Fechar</translation>
 <translation id="6073451960410192870">Parar de gravar</translation>
-<translation id="6165508094623778733">Saiba mais</translation>
 <translation id="6197807149213783179">Salvar metadados</translation>
 <translation id="6233780560267770709">3 por 3</translation>
 <translation id="6243827288366940320">Número de ouro</translation>
@@ -65,6 +62,8 @@
 <translation id="7658239707568436148">Cancelar</translation>
 <translation id="7670511624014457267">60 QPS</translation>
 <translation id="8049189770492311300">Timer</translation>
+<translation id="8067883171444229417">Assistir vídeo</translation>
+<translation id="8131740175452115882">Confirmar</translation>
 <translation id="8145038249676204903">Alternar para tirar foto</translation>
 <translation id="8261506727792406068">Excluir</translation>
 <translation id="8428213095426709021">Configurações</translation>

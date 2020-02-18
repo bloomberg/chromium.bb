@@ -6,15 +6,18 @@
 #include <utility>
 
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/values.h"
 #include "chrome/browser/ssl/ssl_config_service_manager.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/testing_pref_service.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "net/cert/cert_verifier.h"
 #include "net/ssl/ssl_config.h"
 #include "services/network/public/mojom/network_service.mojom.h"
@@ -26,7 +29,7 @@ using base::ListValue;
 class SSLConfigServiceManagerPrefTest : public testing::Test,
                                         public network::mojom::SSLConfigClient {
  public:
-  SSLConfigServiceManagerPrefTest() : binding_(this) {}
+  SSLConfigServiceManagerPrefTest() = default;
 
   ~SSLConfigServiceManagerPrefTest() override {
     EXPECT_EQ(updates_waited_for_, observed_configs_.size());
@@ -46,9 +49,10 @@ class SSLConfigServiceManagerPrefTest : public testing::Test,
     config_manager->AddToNetworkContextParams(network_context_params.get());
     EXPECT_TRUE(network_context_params->initial_ssl_config);
     initial_config_ = std::move(network_context_params->initial_ssl_config);
-    EXPECT_TRUE(network_context_params->ssl_config_client_request);
-    // It's safe to destroy the SSLConfigServiceManager before |binding_|.
-    binding_.Bind(std::move(network_context_params->ssl_config_client_request));
+    EXPECT_TRUE(network_context_params->ssl_config_client_receiver);
+    // It's safe to destroy the SSLConfigServiceManager before |receiver_|.
+    receiver_.Bind(
+        std::move(network_context_params->ssl_config_client_receiver));
     return config_manager;
   }
 
@@ -67,7 +71,7 @@ class SSLConfigServiceManagerPrefTest : public testing::Test,
 
     // Not going to have much luck waiting for an update if this isn't bound to
     // anything.
-    ASSERT_TRUE(binding_.is_bound());
+    ASSERT_TRUE(receiver_.is_bound());
 
     run_loop_ = std::make_unique<base::RunLoop>();
     run_loop_->Run();
@@ -88,7 +92,7 @@ class SSLConfigServiceManagerPrefTest : public testing::Test,
 
   TestingPrefServiceSimple local_state_;
 
-  mojo::Binding<network::mojom::SSLConfigClient> binding_;
+  mojo::Receiver<network::mojom::SSLConfigClient> receiver_{this};
   network::mojom::SSLConfigPtr initial_config_;
   std::vector<network::mojom::SSLConfigPtr> observed_configs_;
   size_t updates_waited_for_ = 0;
@@ -247,15 +251,15 @@ TEST_F(SSLConfigServiceManagerPrefTest, H2ClientCertCoalescingPref) {
 
   auto patterns = std::make_unique<base::ListValue>();
   // Patterns expected to be canonicalized.
-  patterns->GetList().emplace_back(base::Value("canon.example"));
-  patterns->GetList().emplace_back(base::Value(".NonCanon.example"));
-  patterns->GetList().emplace_back(base::Value("Non-Canon.example"));
-  patterns->GetList().emplace_back(base::Value("127.0.0.1"));
-  patterns->GetList().emplace_back(base::Value("2147614986"));
+  patterns->Append(base::Value("canon.example"));
+  patterns->Append(base::Value(".NonCanon.example"));
+  patterns->Append(base::Value("Non-Canon.example"));
+  patterns->Append(base::Value("127.0.0.1"));
+  patterns->Append(base::Value("2147614986"));
   // Patterns expected to be skipped.
-  patterns->GetList().emplace_back(base::Value("???"));
-  patterns->GetList().emplace_back(base::Value("example.com/"));
-  patterns->GetList().emplace_back(base::Value("xn--hellö.com"));
+  patterns->Append(base::Value("???"));
+  patterns->Append(base::Value("example.com/"));
+  patterns->Append(base::Value("xn--hellö.com"));
   local_state.SetUserPref(prefs::kH2ClientCertCoalescingHosts,
                           std::move(patterns));
 
@@ -296,4 +300,58 @@ TEST_F(SSLConfigServiceManagerPrefTest,
   ASSERT_NO_FATAL_FAILURE(WaitForUpdate());
 
   EXPECT_TRUE(observed_configs_[0]->rev_checking_required_local_anchors);
+}
+
+// Tests that the TLS 1.3 hardening pref correctly sets the corresponding value
+// in SSL configs.
+TEST_F(SSLConfigServiceManagerPrefTest, TLS13HardeningForLocalAnchors) {
+  TestingPrefServiceSimple local_state;
+  SSLConfigServiceManager::RegisterPrefs(local_state.registry());
+
+  std::unique_ptr<SSLConfigServiceManager> config_manager =
+      SetUpConfigServiceManager(&local_state);
+
+  // The hardening is disabled by default.
+  EXPECT_FALSE(initial_config_->tls13_hardening_for_local_anchors_enabled);
+
+  // It can be enabled via preference.
+  local_state.SetUserPref(prefs::kTLS13HardeningForLocalAnchorsEnabled,
+                          std::make_unique<base::Value>(true));
+  ASSERT_NO_FATAL_FAILURE(WaitForUpdate());
+  EXPECT_TRUE(observed_configs_[0]->tls13_hardening_for_local_anchors_enabled);
+
+  // It can then be disabled again.
+  local_state.SetUserPref(prefs::kTLS13HardeningForLocalAnchorsEnabled,
+                          std::make_unique<base::Value>(false));
+  ASSERT_NO_FATAL_FAILURE(WaitForUpdate());
+  EXPECT_FALSE(observed_configs_[1]->tls13_hardening_for_local_anchors_enabled);
+}
+
+// Tests that the TLS 1.3 hardening pref correctly interacts with the feature
+// flag.
+TEST_F(SSLConfigServiceManagerPrefTest,
+       TLS13HardeningForLocalAnchorsFeatureEnabled) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kTLS13HardeningForLocalAnchors);
+
+  TestingPrefServiceSimple local_state;
+  SSLConfigServiceManager::RegisterPrefs(local_state.registry());
+
+  std::unique_ptr<SSLConfigServiceManager> config_manager =
+      SetUpConfigServiceManager(&local_state);
+
+  // With the feature enabled, the hardening is enabled by default.
+  EXPECT_TRUE(initial_config_->tls13_hardening_for_local_anchors_enabled);
+
+  // It can be disabled via preferences.
+  local_state.SetUserPref(prefs::kTLS13HardeningForLocalAnchorsEnabled,
+                          std::make_unique<base::Value>(false));
+  ASSERT_NO_FATAL_FAILURE(WaitForUpdate());
+  EXPECT_FALSE(observed_configs_[0]->tls13_hardening_for_local_anchors_enabled);
+
+  // It can then be enabled again.
+  local_state.SetUserPref(prefs::kTLS13HardeningForLocalAnchorsEnabled,
+                          std::make_unique<base::Value>(true));
+  ASSERT_NO_FATAL_FAILURE(WaitForUpdate());
+  EXPECT_TRUE(observed_configs_[1]->tls13_hardening_for_local_anchors_enabled);
 }

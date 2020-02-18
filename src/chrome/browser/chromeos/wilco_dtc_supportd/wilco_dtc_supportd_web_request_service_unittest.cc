@@ -10,7 +10,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/memory/shared_memory.h"
+#include "base/memory/shared_memory_mapping.h"
 #include "base/run_loop.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
@@ -53,10 +53,10 @@ class WilcoDtcSupportdWebRequestServiceTest : public testing::Test {
         response_body = "";
         return;
       }
-      std::unique_ptr<base::SharedMemory> shared_memory;
+      base::ReadOnlySharedMemoryMapping shared_memory;
       response_body = std::string(GetStringPieceFromMojoHandle(
           std::move(response_body_handle), &shared_memory));
-      if (!shared_memory) {
+      if (!shared_memory.IsValid()) {
         response_body = "";
         return;
       }
@@ -106,11 +106,11 @@ class WilcoDtcSupportdWebRequestServiceTest : public testing::Test {
       std::unique_ptr<net::HttpStatusCode> response_status,
       net::Error net_error,
       const std::string& response_body) {
-    network::ResourceResponseHead response_head;
-    if (response_status)
-      response_head = network::CreateResourceResponseHead(*response_status);
+    auto response_head = response_status
+                             ? network::CreateURLResponseHead(*response_status)
+                             : network::mojom::URLResponseHead::New();
     test_url_loader_factory_.AddResponse(
-        GURL(url), response_head, response_body,
+        GURL(url), std::move(response_head), response_body,
         network::URLLoaderCompletionStatus(net_error));
   }
 
@@ -150,7 +150,7 @@ class WilcoDtcSupportdWebRequestServiceTest : public testing::Test {
 
   std::unique_ptr<WilcoDtcSupportdWebRequestService> web_request_service_;
   network::TestURLLoaderFactory test_url_loader_factory_;
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
 };
 
 }  // namespace

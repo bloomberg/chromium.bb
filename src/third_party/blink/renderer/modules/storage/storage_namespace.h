@@ -31,7 +31,7 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/dom_storage/session_storage_namespace.mojom-blink.h"
-#include "third_party/blink/public/mojom/dom_storage/storage_partition_service.mojom-blink.h"
+#include "third_party/blink/public/mojom/dom_storage/storage_partition_service.mojom-blink-forward.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/modules/storage/cached_storage_area.h"
@@ -65,7 +65,7 @@ class WebViewClient;
 // The StorageNamespace for SessioStorage supplement the Page. |GetCachedArea|
 // is used to get the storage area for an origin.
 class MODULES_EXPORT StorageNamespace final
-    : public GarbageCollectedFinalized<StorageNamespace>,
+    : public GarbageCollected<StorageNamespace>,
       public Supplement<Page>,
       public CachedStorageArea::InspectorEventListener {
   USING_GARBAGE_COLLECTED_MIXIN(StorageNamespace);

@@ -24,7 +24,6 @@
 #include "base/time/time.h"
 #include "mojo/public/cpp/bindings/associated_group.h"
 #include "mojo/public/cpp/bindings/connection_error_callback.h"
-#include "mojo/public/cpp/bindings/filter_chain.h"
 #include "mojo/public/cpp/bindings/interface_endpoint_client.h"
 #include "mojo/public/cpp/bindings/interface_id.h"
 #include "mojo/public/cpp/bindings/interface_ptr_info.h"
@@ -60,6 +59,11 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) InterfacePtrStateBase {
   // Returns true if bound and awaiting a response to a message.
   bool has_pending_callbacks() const {
     return endpoint_client_ && endpoint_client_->has_pending_responders();
+  }
+
+  void force_outgoing_messages_async(bool force) {
+    DCHECK(endpoint_client_);
+    endpoint_client_->force_outgoing_messages_async(force);
   }
 
 #if DCHECK_IS_ON()
@@ -130,10 +134,6 @@ class InterfacePtrState : public InterfacePtrStateBase {
     ConfigureProxyIfNecessary();
     InterfacePtrStateBase::SetNextCallLocation(location);
 #endif
-  }
-
-  void QueryVersionDeprecated(const base::Callback<void(uint32_t)>& callback) {
-    QueryVersion(base::BindOnce(callback));
   }
 
   void QueryVersion(base::OnceCallback<void(uint32_t)> callback) {

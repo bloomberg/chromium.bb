@@ -319,14 +319,17 @@ public:
 #endif
 
     void shrinkToFit() {
-        fReserve = fCount;
-        fArray = (T*)sk_realloc_throw(fArray, fReserve * sizeof(T));
+        if (fReserve != fCount) {
+            SkASSERT(fReserve > fCount);
+            fReserve = fCount;
+            fArray = (T*)sk_realloc_throw(fArray, fReserve * sizeof(T));
+        }
     }
 
 private:
     T*      fArray;
-    int     fReserve;
-    int     fCount;
+    int     fReserve;   // size of the allocation in fArray (#elements)
+    int     fCount;     // logical number of elements (fCount <= fReserve)
 
     /**
      *  Adjusts the number of elements in the array.

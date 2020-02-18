@@ -35,9 +35,9 @@ class TIntermTraverser : angle::NonCopyable
 {
   public:
     POOL_ALLOCATOR_NEW_DELETE
-    TIntermTraverser(bool preVisit,
-                     bool inVisit,
-                     bool postVisit,
+    TIntermTraverser(bool preVisitIn,
+                     bool inVisitIn,
+                     bool postVisitIn,
                      TSymbolTable *symbolTable = nullptr);
     virtual ~TIntermTraverser();
 
@@ -57,7 +57,8 @@ class TIntermTraverser : angle::NonCopyable
     }
     virtual bool visitAggregate(Visit visit, TIntermAggregate *node) { return true; }
     virtual bool visitBlock(Visit visit, TIntermBlock *node) { return true; }
-    virtual bool visitInvariantDeclaration(Visit visit, TIntermInvariantDeclaration *node)
+    virtual bool visitGlobalQualifierDeclaration(Visit visit,
+                                                 TIntermGlobalQualifierDeclaration *node)
     {
         return true;
     }

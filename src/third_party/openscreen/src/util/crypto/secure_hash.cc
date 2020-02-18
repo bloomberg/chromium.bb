@@ -9,8 +9,8 @@
 #include <cstring>
 
 #include "openssl/mem.h"
-#include "platform/api/logging.h"
 #include "util/crypto/openssl_util.h"
+#include "util/logging.h"
 
 namespace openscreen {
 

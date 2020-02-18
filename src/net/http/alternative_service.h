@@ -113,12 +113,6 @@ NET_EXPORT_PRIVATE std::ostream& operator<<(
     std::ostream& os,
     const AlternativeService& alternative_service);
 
-struct AlternativeServiceHash {
-  size_t operator()(const net::AlternativeService& entry) const {
-    return entry.protocol ^ std::hash<std::string>()(entry.host) ^ entry.port;
-  }
-};
-
 class NET_EXPORT_PRIVATE AlternativeServiceInfo {
  public:
   static AlternativeServiceInfo CreateHttp2AlternativeServiceInfo(
@@ -219,8 +213,7 @@ NET_EXPORT_PRIVATE AlternativeServiceInfoVector ProcessAlternativeServices(
         alternative_service_vector,
     bool is_http2_enabled,
     bool is_quic_enabled,
-    const quic::ParsedQuicVersionVector& supported_quic_versions,
-    bool support_ietf_format_quic_altsvc);
+    const quic::ParsedQuicVersionVector& supported_quic_versions);
 
 }  // namespace net
 

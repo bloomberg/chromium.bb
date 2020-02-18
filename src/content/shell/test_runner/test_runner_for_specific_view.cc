@@ -97,7 +97,6 @@ void TestRunnerForSpecificView::Reset() {
   if (web_view()->MainFrame()->IsWebLocalFrame()) {
     web_view()->MainFrame()->ToWebLocalFrame()->EnableViewSourceMode(false);
     web_view()->SetTextZoomFactor(1);
-    web_view()->SetZoomLevel(0);
     // As would the browser via IPC, set visibility on the RenderWidget then on
     // the Page.
     // TODO(danakj): This should set visibility on all RenderWidgets not just
@@ -106,8 +105,9 @@ void TestRunnerForSpecificView::Reset() {
     // LayerTreeView.
     main_frame_render_widget()->layer_tree_view()->SetVisible(true);
   }
-  web_view_test_proxy_->ApplyPageHidden(/*hidden=*/false,
-                                        /*initial_setting=*/true);
+  web_view_test_proxy_->ApplyPageVisibilityState(
+      content::PageVisibilityState::kVisible,
+      /*initial_setting=*/true);
 }
 
 bool TestRunnerForSpecificView::RequestPointerLock() {
@@ -489,13 +489,14 @@ void TestRunnerForSpecificView::ForceRedSelectionColors() {
 
 void TestRunnerForSpecificView::SetPageVisibility(
     const std::string& new_visibility) {
-  bool hidden;
-  if (new_visibility == "visible")
-    hidden = false;
-  else if (new_visibility == "hidden")
-    hidden = true;
-  else
+  content::PageVisibilityState visibility;
+  if (new_visibility == "visible") {
+    visibility = content::PageVisibilityState::kVisible;
+  } else if (new_visibility == "hidden") {
+    visibility = content::PageVisibilityState::kHidden;
+  } else {
     return;
+  }
 
   // As would the browser via IPC, set visibility on the RenderWidget then on
   // the Page.
@@ -503,9 +504,10 @@ void TestRunnerForSpecificView::SetPageVisibility(
   // main frame.
   // TODO(danakj): This should set visible on the RenderWidget not just the
   // LayerTreeView.
-  main_frame_render_widget()->layer_tree_view()->SetVisible(!hidden);
-  web_view_test_proxy_->ApplyPageHidden(/*hidden=*/hidden,
-                                        /*initial_setting=*/false);
+  main_frame_render_widget()->layer_tree_view()->SetVisible(
+      visibility == content::PageVisibilityState::kVisible);
+  web_view_test_proxy_->ApplyPageVisibilityState(visibility,
+                                                 /*initial_setting=*/false);
 }
 
 void TestRunnerForSpecificView::SetTextDirection(
@@ -660,15 +662,6 @@ void TestRunnerForSpecificView::SetIsolatedWorldInfo(
   web_view()->FocusedFrame()->ClearIsolatedWorldCSPForTesting(world_id);
 
   web_view()->FocusedFrame()->SetIsolatedWorldInfo(world_id, info);
-
-  if (!info.security_origin.IsNull()) {
-    // Isolated world's origin may differ from the main world origin and trigger
-    // security checks when it doesn't match request_initiator_site_lock.  To
-    // avoid this, we need to explicitly exclude the isolated world's scheme
-    // from these security checks.
-    delegate()->ExcludeSchemeFromRequestInitiatorSiteLockChecks(
-        info.security_origin.Protocol().Utf8());
-  }
 }
 
 void TestRunner::InsertStyleSheet(const std::string& source_code) {

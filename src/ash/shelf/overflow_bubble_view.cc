@@ -6,10 +6,10 @@
 
 #include <algorithm>
 
+#include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shelf/scroll_arrow_view.h"
 #include "ash/shelf/shelf.h"
-#include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_container_view.h"
 #include "ash/shelf/shelf_view.h"
 #include "ash/shelf/shelf_widget.h"
@@ -22,6 +22,7 @@
 #include "ui/events/event.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/scoped_canvas.h"
+#include "ui/views/layout/layout_provider.h"
 #include "ui/views/view_model.h"
 #include "ui/views/widget/widget.h"
 
@@ -31,7 +32,7 @@ namespace {
 // Padding between the end of the shelf in overflow mode and the arrow button
 // (if any).
 int GetDistanceToArrowButton() {
-  return ShelfConstants::button_spacing();
+  return ShelfConfig::Get()->button_spacing();
 }
 
 // Distance between overflow bubble and the main shelf.
@@ -39,17 +40,18 @@ constexpr int kDistanceToMainShelf = 4;
 
 // Sum of the shelf button size and the gap between shelf buttons.
 int GetUnit() {
-  return ShelfConstants::button_size() + ShelfConstants::button_spacing();
+  return ShelfConfig::Get()->button_size() +
+         ShelfConfig::Get()->button_spacing();
 }
 
 // Decides whether the current first visible shelf icon of the overflow shelf
 // should be hidden or fully shown when gesture scroll ends.
 int GetGestureDragTheshold() {
-  return ShelfConstants::button_size() / 2;
+  return ShelfConfig::Get()->button_size() / 2;
 }
 
 int GetBubbleCornerRadius() {
-  return ShelfConstants::button_size() / 2;
+  return ShelfConfig::Get()->button_size() / 2;
 }
 
 }  // namespace
@@ -81,7 +83,8 @@ class OverflowBubbleView::OverflowScrollArrowView : public ScrollArrowView {
       const float dsf = canvas->UndoDeviceScaleFactor();
       cc::PaintFlags fg_flags;
       fg_flags.setAntiAlias(true);
-      fg_flags.setColor(kShelfControlPermanentHighlightBackground);
+      fg_flags.setColor(
+          ShelfConfig::Get()->shelf_control_permanent_highlight_background());
 
       const float radius = std::ceil(ring_radius_dp * dsf);
       canvas->DrawCircle(gfx::ScalePoint(circle_center, dsf), radius, fg_flags);
@@ -107,6 +110,7 @@ class OverflowBubbleView::OverflowShelfContainerView
   void UpdateShelfIconsOpacity();
 
   // views::View:
+  void Layout() override;
   const char* GetClassName() const override;
 
   int first_visible_index() const { return first_visible_index_; }
@@ -138,6 +142,10 @@ OverflowBubbleView::OverflowShelfContainerView::OverflowShelfContainerView(
     ShelfView* shelf_view,
     OverflowBubbleView* bubble_view)
     : ShelfContainerView(shelf_view), bubble_view_(bubble_view) {}
+
+void OverflowBubbleView::OverflowShelfContainerView::Layout() {
+  shelf_view_->SetBoundsRect(gfx::Rect(CalculateIdealSize()));
+}
 
 const char* OverflowBubbleView::OverflowShelfContainerView::GetClassName()
     const {
@@ -228,7 +236,9 @@ OverflowBubbleView::OverflowBubbleView(ShelfView* shelf_view,
   DCHECK(shelf_view_);
   DCHECK(GetShelf());
 
-  set_border_radius(ShelfConstants::shelf_size() / 2);
+  const int shelf_size = ShelfConfig::Get()->shelf_size();
+  set_border_radius(views::LayoutProvider::Get()->GetCornerRadiusMetric(
+      views::EMPHASIS_MAXIMUM, {shelf_size, shelf_size}));
   SetArrow(views::BubbleBorder::NONE);
   SetBackground(nullptr);
   set_shadow(views::BubbleBorder::NO_ASSETS);
@@ -324,11 +334,11 @@ int OverflowBubbleView::ScrollByYOffset(float y_offset, bool animating) {
   return diff;
 }
 
-int OverflowBubbleView::GetFirstVisibleIndexForTest() const {
+int OverflowBubbleView::GetFirstVisibleIndex() const {
   return shelf_container_view_->first_visible_index();
 }
 
-int OverflowBubbleView::GetLastVisibleIndexForTest() const {
+int OverflowBubbleView::GetLastVisibleIndex() const {
   return shelf_container_view_->last_visible_index();
 }
 
@@ -451,6 +461,18 @@ void OverflowBubbleView::ScrollToNewPage(bool forward) {
     ScrollByYOffset(offset, true);
 }
 
+void OverflowBubbleView::ScrollToBeginning() {
+  scroll_offset_ = gfx::Vector2dF();
+  Layout();
+}
+
+void OverflowBubbleView::ScrollToEnd() {
+  scroll_offset_ = GetShelf()->IsHorizontalAlignment()
+                       ? gfx::Vector2dF(CalculateScrollUpperBound(), 0)
+                       : gfx::Vector2dF(0, CalculateScrollUpperBound());
+  Layout();
+}
+
 gfx::Size OverflowBubbleView::CalculatePreferredSize() const {
   gfx::Rect monitor_rect =
       display::Screen::GetScreen()
@@ -476,8 +498,8 @@ gfx::Size OverflowBubbleView::CalculatePreferredSize() const {
 void OverflowBubbleView::Layout() {
   UpdateLayoutStrategy();
 
-  const gfx::Size shelf_button_size(ShelfConstants::button_size(),
-                                    ShelfConstants::button_size());
+  const gfx::Size shelf_button_size(ShelfConfig::Get()->button_size(),
+                                    ShelfConfig::Get()->button_size());
   const gfx::Size arrow_button_size(GetArrowButtonSize(), GetArrowButtonSize());
 
   bool is_horizontal = GetShelf()->IsHorizontalAlignment();
@@ -501,7 +523,7 @@ void OverflowBubbleView::Layout() {
       layout_strategy_ == SHOW_BUTTONS) {
     left_arrow_bounds = gfx::Rect(shelf_button_size);
     left_arrow_bounds.ClampToCenteredSize(arrow_button_size);
-    shelf_container_bounds.Inset(ShelfConstants::button_size() +
+    shelf_container_bounds.Inset(ShelfConfig::Get()->button_size() +
                                      GetDistanceToArrowButton() -
                                      fading_zone_inset,
                                  0, 0, 0);
@@ -509,7 +531,7 @@ void OverflowBubbleView::Layout() {
 
   if (layout_strategy_ == SHOW_RIGHT_ARROW_BUTTON ||
       layout_strategy_ == SHOW_BUTTONS) {
-    shelf_container_bounds.Inset(0, 0, ShelfConstants::button_size(), 0);
+    shelf_container_bounds.Inset(0, 0, ShelfConfig::Get()->button_size(), 0);
     right_arrow_bounds =
         gfx::Rect(shelf_container_bounds.top_right(), shelf_button_size);
     right_arrow_bounds.ClampToCenteredSize(arrow_button_size);
@@ -582,6 +604,32 @@ const char* OverflowBubbleView::GetClassName() const {
   return "OverflowBubbleView";
 }
 
+void OverflowBubbleView::ScrollRectToVisible(const gfx::Rect& rect) {
+  const bool is_horizontal_alignment = GetShelf()->IsHorizontalAlignment();
+
+  // |rect| should be a shelf app icon's bounds in OverflowBubbleView's
+  // coordinates. Calculates the index of this app icon.
+  const int start_location = is_horizontal_alignment ? rect.x() : rect.y();
+  const int shelf_container_start_location =
+      is_horizontal_alignment ? shelf_container_view_->bounds().x()
+                              : shelf_container_view_->bounds().y();
+  const int index =
+      (start_location - shelf_container_start_location) / GetUnit() +
+      shelf_view_->first_visible_index();
+
+  if (index <= GetLastVisibleIndex() && index >= GetFirstVisibleIndex())
+    return;
+
+  if (index == shelf_view_->last_visible_index())
+    ScrollToEnd();
+  else if (index == shelf_view_->first_visible_index())
+    ScrollToBeginning();
+  else if (index > GetLastVisibleIndex())
+    ScrollToNewPage(/*forward=*/true);
+  else if (index < GetFirstVisibleIndex())
+    ScrollToNewPage(/*forward=*/false);
+}
+
 void OverflowBubbleView::OnShelfButtonAboutToRequestFocusFromTabTraversal(
     ShelfButton* button,
     bool reverse) {}
@@ -609,7 +657,8 @@ gfx::Rect OverflowBubbleView::GetBubbleBounds() {
   const gfx::Rect anchor_rect = GetAnchorRect();
   const int distance_to_overflow_button =
       kDistanceToMainShelf +
-      (ShelfConstants::shelf_size() - ShelfConstants::control_size()) / 2;
+      (ShelfConfig::Get()->shelf_size() - ShelfConfig::Get()->control_size()) /
+          2;
   gfx::Rect monitor_rect =
       display::Screen::GetScreen()
           ->GetDisplayNearestPoint(anchor_rect.CenterPoint())
@@ -631,7 +680,7 @@ gfx::Rect OverflowBubbleView::GetBubbleBounds() {
   } else {
     bounds = gfx::Rect(0, anchor_rect.bottom() - content_size.height(),
                        content_size.width(), content_size.height());
-    if (GetShelf()->alignment() == SHELF_ALIGNMENT_LEFT)
+    if (GetShelf()->alignment() == ShelfAlignment::kLeft)
       bounds.set_x(anchor_rect.right() + distance_to_overflow_button);
     else
       bounds.set_x(anchor_rect.x() - distance_to_overflow_button -
@@ -671,7 +720,7 @@ bool OverflowBubbleView::ShouldCloseOnMouseExit() {
 }
 
 int OverflowBubbleView::GetArrowButtonSize() {
-  static int kArrowButtonSize = ShelfConstants::control_size();
+  static int kArrowButtonSize = ShelfConfig::Get()->control_size();
   return kArrowButtonSize;
 }
 

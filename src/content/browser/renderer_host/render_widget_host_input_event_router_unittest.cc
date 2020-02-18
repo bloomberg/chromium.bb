@@ -13,6 +13,7 @@
 #include "content/browser/compositor/surface_utils.h"
 #include "content/browser/compositor/test/test_image_transport_factory.h"
 #include "content/browser/renderer_host/frame_connector_delegate.h"
+#include "content/browser/renderer_host/frame_token_message_queue.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_child_frame.h"
 #include "content/browser/renderer_host/render_widget_targeter.h"
@@ -22,6 +23,8 @@
 #include "content/test/mock_render_widget_host_delegate.h"
 #include "content/test/mock_widget_impl.h"
 #include "content/test/test_render_view_host.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/viz/public/mojom/hit_test/input_target_client.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -199,12 +202,13 @@ class RenderWidgetHostInputEventRouterTest : public testing::Test {
 
     process_host_root_ =
         std::make_unique<MockRenderProcessHost>(browser_context_.get());
-    mojom::WidgetPtr widget_root;
-    widget_impl_root_ =
-        std::make_unique<MockWidgetImpl>(mojo::MakeRequest(&widget_root));
+    mojo::PendingRemote<mojom::Widget> widget_root;
+    widget_impl_root_ = std::make_unique<MockWidgetImpl>(
+        widget_root.InitWithNewPipeAndPassReceiver());
     widget_host_root_ = std::make_unique<RenderWidgetHostImpl>(
         &delegate_, process_host_root_.get(),
-        process_host_root_->GetNextRoutingID(), std::move(widget_root), false);
+        process_host_root_->GetNextRoutingID(), std::move(widget_root),
+        /*hidden=*/false, std::make_unique<FrameTokenMessageQueue>());
     view_root_ =
         std::make_unique<MockRootRenderWidgetHostView>(widget_host_root_.get());
 
@@ -212,8 +216,8 @@ class RenderWidgetHostInputEventRouterTest : public testing::Test {
     // tries to query the renderer. It doesn't matter that the pipe isn't
     // connected on the other end, as we really don't want it to respond
     // anyways.
-    viz::mojom::InputTargetClientPtr input_target_client;
-    service_manager::InterfaceProvider().GetInterface(&input_target_client);
+    mojo::Remote<viz::mojom::InputTargetClient> input_target_client;
+    ignore_result(input_target_client.BindNewPipeAndPassReceiver());
     widget_host_root_->SetInputTargetClient(std::move(input_target_client));
 
     EXPECT_EQ(view_root_.get(),
@@ -233,12 +237,13 @@ class RenderWidgetHostInputEventRouterTest : public testing::Test {
 
     child.process_host =
         std::make_unique<MockRenderProcessHost>(browser_context_.get());
-    mojom::WidgetPtr widget_child;
-    child.widget_impl =
-        std::make_unique<MockWidgetImpl>(mojo::MakeRequest(&widget_child));
+    mojo::PendingRemote<mojom::Widget> widget_child;
+    child.widget_impl = std::make_unique<MockWidgetImpl>(
+        widget_child.InitWithNewPipeAndPassReceiver());
     child.widget_host = std::make_unique<RenderWidgetHostImpl>(
         &delegate_, child.process_host.get(),
-        child.process_host->GetNextRoutingID(), std::move(widget_child), false);
+        child.process_host->GetNextRoutingID(), std::move(widget_child),
+        /*hidden=*/false, std::make_unique<FrameTokenMessageQueue>());
     child.view = std::make_unique<TestRenderWidgetHostViewChildFrame>(
         child.widget_host.get());
     child.frame_connector = std::make_unique<MockFrameConnectorDelegate>(
@@ -906,6 +911,31 @@ TEST_F(RenderWidgetHostInputEventRouterTest,
 TEST_F(RenderWidgetHostInputEventRouterTest, CanCallShowContextMenuAtPoint) {
   rwhier()->ShowContextMenuAtPoint(gfx::Point(0, 0), ui::MENU_SOURCE_MOUSE,
                                    view_root_.get());
+}
+
+// Input events get latched to a target when middle click autoscroll is in
+// progress. This tests enusres that autoscroll latched target state is cleared
+// when the view, input events are latched to is destroyed.
+TEST_F(RenderWidgetHostInputEventRouterTest,
+       EnsureAutoScrollLatchedTargetIsCleared) {
+  ChildViewState child = MakeChildView(view_root_.get());
+
+  // Simulate middle click mouse event.
+  blink::WebMouseEvent mouse_event(
+      blink::WebInputEvent::kMouseDown, blink::WebInputEvent::kNoModifiers,
+      blink::WebInputEvent::GetStaticTimeStampForTests());
+  mouse_event.button = blink::WebPointerProperties::Button::kMiddle;
+
+  view_root_->SetHittestResult(child.view.get(), false);
+  RenderWidgetTargeter* targeter = rwhier()->GetRenderWidgetTargeterForTests();
+  rwhier()->RouteMouseEvent(view_root_.get(), &mouse_event,
+                            ui::LatencyInfo(ui::SourceEventType::MOUSE));
+  // Set middle click autoscroll in progress to true.
+  rwhier()->SetAutoScrollInProgress(true);
+  // Destroy the view/target, middle click autoscroll is latched to.
+  rwhier()->OnRenderWidgetHostViewBaseDestroyed(child.view.get());
+
+  EXPECT_FALSE(targeter->is_auto_scroll_in_progress());
 }
 
 }  // namespace content

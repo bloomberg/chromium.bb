@@ -15,7 +15,7 @@
 #include "content/renderer/loader/resource_dispatcher.h"
 #include "net/url_request/redirect_info.h"
 #include "services/network/public/cpp/features.h"
-#include "services/network/public/cpp/resource_response.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "third_party/blink/public/common/features.h"
 
 namespace content {
@@ -46,16 +46,16 @@ class URLLoaderClientImpl::DeferredOnReceiveResponse final
     : public DeferredMessage {
  public:
   explicit DeferredOnReceiveResponse(
-      const network::ResourceResponseHead& response_head)
-      : response_head_(response_head) {}
+      network::mojom::URLResponseHeadPtr response_head)
+      : response_head_(std::move(response_head)) {}
 
   void HandleMessage(ResourceDispatcher* dispatcher, int request_id) override {
-    dispatcher->OnReceivedResponse(request_id, response_head_);
+    dispatcher->OnReceivedResponse(request_id, std::move(response_head_));
   }
   bool IsCompletionMessage() const override { return false; }
 
  private:
-  const network::ResourceResponseHead response_head_;
+  network::mojom::URLResponseHeadPtr response_head_;
 };
 
 class URLLoaderClientImpl::DeferredOnReceiveRedirect final
@@ -63,21 +63,21 @@ class URLLoaderClientImpl::DeferredOnReceiveRedirect final
  public:
   DeferredOnReceiveRedirect(
       const net::RedirectInfo& redirect_info,
-      const network::ResourceResponseHead& response_head,
+      network::mojom::URLResponseHeadPtr response_head,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner)
       : redirect_info_(redirect_info),
-        response_head_(response_head),
+        response_head_(std::move(response_head)),
         task_runner_(std::move(task_runner)) {}
 
   void HandleMessage(ResourceDispatcher* dispatcher, int request_id) override {
-    dispatcher->OnReceivedRedirect(request_id, redirect_info_, response_head_,
-                                   task_runner_);
+    dispatcher->OnReceivedRedirect(request_id, redirect_info_,
+                                   std::move(response_head_), task_runner_);
   }
   bool IsCompletionMessage() const override { return false; }
 
  private:
   const net::RedirectInfo redirect_info_;
-  const network::ResourceResponseHead response_head_;
+  network::mojom::URLResponseHeadPtr response_head_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 };
 
@@ -152,8 +152,7 @@ URLLoaderClientImpl::URLLoaderClientImpl(
       resource_dispatcher_(resource_dispatcher),
       task_runner_(std::move(task_runner)),
       bypass_redirect_checks_(bypass_redirect_checks),
-      last_loaded_url_(request_url),
-      url_loader_client_binding_(this) {}
+      last_loaded_url_(request_url) {}
 
 URLLoaderClientImpl::~URLLoaderClientImpl() = default;
 
@@ -230,9 +229,9 @@ void URLLoaderClientImpl::FlushDeferredMessages() {
 void URLLoaderClientImpl::Bind(
     network::mojom::URLLoaderClientEndpointsPtr endpoints) {
   url_loader_.Bind(std::move(endpoints->url_loader), task_runner_);
-  url_loader_client_binding_.Bind(std::move(endpoints->url_loader_client),
-                                  task_runner_);
-  url_loader_client_binding_.set_connection_error_handler(base::BindOnce(
+  url_loader_client_receiver_.Bind(std::move(endpoints->url_loader_client),
+                                   task_runner_);
+  url_loader_client_receiver_.set_disconnect_handler(base::BindOnce(
       &URLLoaderClientImpl::OnConnectionClosed, weak_factory_.GetWeakPtr()));
 }
 
@@ -241,7 +240,7 @@ void URLLoaderClientImpl::OnReceiveResponse(
   has_received_response_head_ = true;
   if (NeedsStoringMessage()) {
     StoreAndDispatch(
-        std::make_unique<DeferredOnReceiveResponse>(response_head));
+        std::make_unique<DeferredOnReceiveResponse>(std::move(response_head)));
   } else {
     resource_dispatcher_->OnReceivedResponse(request_id_,
                                              std::move(response_head));
@@ -261,7 +260,7 @@ void URLLoaderClientImpl::OnReceiveRedirect(
   last_loaded_url_ = redirect_info.new_url;
   if (NeedsStoringMessage()) {
     StoreAndDispatch(std::make_unique<DeferredOnReceiveRedirect>(
-        redirect_info, response_head, task_runner_));
+        redirect_info, std::move(response_head), task_runner_));
   } else {
     resource_dispatcher_->OnReceivedRedirect(
         request_id_, redirect_info, std::move(response_head), task_runner_);

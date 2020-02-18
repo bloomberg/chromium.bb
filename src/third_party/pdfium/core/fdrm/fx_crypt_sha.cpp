@@ -6,8 +6,6 @@
 
 #include "core/fdrm/fx_crypt.h"
 
-#define rol(x, y) (((x) << (y)) | (((unsigned int)x) >> (32 - y)))
-
 #define SHA_GET_UINT32(n, b, i)                                         \
   {                                                                     \
     (n) = ((uint32_t)(b)[(i)] << 24) | ((uint32_t)(b)[(i) + 1] << 16) | \
@@ -19,6 +17,24 @@
     (b)[(i) + 1] = (uint8_t)((n) >> 16); \
     (b)[(i) + 2] = (uint8_t)((n) >> 8);  \
     (b)[(i) + 3] = (uint8_t)((n));       \
+  }
+#define SHA_GET_UINT64(n, b, i)                                             \
+  {                                                                         \
+    (n) = ((uint64_t)(b)[(i)] << 56) | ((uint64_t)(b)[(i) + 1] << 48) |     \
+          ((uint64_t)(b)[(i) + 2] << 40) | ((uint64_t)(b)[(i) + 3] << 32) | \
+          ((uint64_t)(b)[(i) + 4] << 24) | ((uint64_t)(b)[(i) + 5] << 16) | \
+          ((uint64_t)(b)[(i) + 6] << 8) | ((uint64_t)(b)[(i) + 7]);         \
+  }
+#define SHA_PUT_UINT64(n, b, i)          \
+  {                                      \
+    (b)[(i)] = (uint8_t)((n) >> 56);     \
+    (b)[(i) + 1] = (uint8_t)((n) >> 48); \
+    (b)[(i) + 2] = (uint8_t)((n) >> 40); \
+    (b)[(i) + 3] = (uint8_t)((n) >> 32); \
+    (b)[(i) + 4] = (uint8_t)((n) >> 24); \
+    (b)[(i) + 5] = (uint8_t)((n) >> 16); \
+    (b)[(i) + 6] = (uint8_t)((n) >> 8);  \
+    (b)[(i) + 7] = (uint8_t)((n));       \
   }
 
 #define SHA384_F0(x, y, z) ((x & y) | (z & (x | y)))
@@ -42,25 +58,7 @@
 #define SHA384_R(t) \
   (W[t] = SHA384_S1(W[t - 2]) + W[t - 7] + SHA384_S0(W[t - 15]) + W[t - 16])
 
-#define GET_FX_64WORD(n, b, i)                                              \
-  {                                                                         \
-    (n) = ((uint64_t)(b)[(i)] << 56) | ((uint64_t)(b)[(i) + 1] << 48) |     \
-          ((uint64_t)(b)[(i) + 2] << 40) | ((uint64_t)(b)[(i) + 3] << 32) | \
-          ((uint64_t)(b)[(i) + 4] << 24) | ((uint64_t)(b)[(i) + 5] << 16) | \
-          ((uint64_t)(b)[(i) + 6] << 8) | ((uint64_t)(b)[(i) + 7]);         \
-  }
-#define PUT_UINT64(n, b, i)              \
-  {                                      \
-    (b)[(i)] = (uint8_t)((n) >> 56);     \
-    (b)[(i) + 1] = (uint8_t)((n) >> 48); \
-    (b)[(i) + 2] = (uint8_t)((n) >> 40); \
-    (b)[(i) + 3] = (uint8_t)((n) >> 32); \
-    (b)[(i) + 4] = (uint8_t)((n) >> 24); \
-    (b)[(i) + 5] = (uint8_t)((n) >> 16); \
-    (b)[(i) + 6] = (uint8_t)((n) >> 8);  \
-    (b)[(i) + 7] = (uint8_t)((n));       \
-  }
-
+#define rol(x, y) (((x) << (y)) | (((unsigned int)x) >> (32 - y)))
 #define SHR(x, n) ((x & 0xFFFFFFFF) >> n)
 #define ROTR(x, n) (SHR(x, n) | (x << (32 - n)))
 #define S0(x) (ROTR(x, 7) ^ ROTR(x, 18) ^ SHR(x, 3))
@@ -295,22 +293,22 @@ void sha384_process(CRYPT_sha2_context* ctx, const uint8_t data[128]) {
   uint64_t temp1, temp2;
   uint64_t A, B, C, D, E, F, G, H;
   uint64_t W[80];
-  GET_FX_64WORD(W[0], data, 0);
-  GET_FX_64WORD(W[1], data, 8);
-  GET_FX_64WORD(W[2], data, 16);
-  GET_FX_64WORD(W[3], data, 24);
-  GET_FX_64WORD(W[4], data, 32);
-  GET_FX_64WORD(W[5], data, 40);
-  GET_FX_64WORD(W[6], data, 48);
-  GET_FX_64WORD(W[7], data, 56);
-  GET_FX_64WORD(W[8], data, 64);
-  GET_FX_64WORD(W[9], data, 72);
-  GET_FX_64WORD(W[10], data, 80);
-  GET_FX_64WORD(W[11], data, 88);
-  GET_FX_64WORD(W[12], data, 96);
-  GET_FX_64WORD(W[13], data, 104);
-  GET_FX_64WORD(W[14], data, 112);
-  GET_FX_64WORD(W[15], data, 120);
+  SHA_GET_UINT64(W[0], data, 0);
+  SHA_GET_UINT64(W[1], data, 8);
+  SHA_GET_UINT64(W[2], data, 16);
+  SHA_GET_UINT64(W[3], data, 24);
+  SHA_GET_UINT64(W[4], data, 32);
+  SHA_GET_UINT64(W[5], data, 40);
+  SHA_GET_UINT64(W[6], data, 48);
+  SHA_GET_UINT64(W[7], data, 56);
+  SHA_GET_UINT64(W[8], data, 64);
+  SHA_GET_UINT64(W[9], data, 72);
+  SHA_GET_UINT64(W[10], data, 80);
+  SHA_GET_UINT64(W[11], data, 88);
+  SHA_GET_UINT64(W[12], data, 96);
+  SHA_GET_UINT64(W[13], data, 104);
+  SHA_GET_UINT64(W[14], data, 112);
+  SHA_GET_UINT64(W[15], data, 120);
   A = ctx->state[0];
   B = ctx->state[1];
   C = ctx->state[2];
@@ -363,73 +361,66 @@ void sha384_process(CRYPT_sha2_context* ctx, const uint8_t data[128]) {
 
 void CRYPT_SHA1Start(CRYPT_sha1_context* context) {
   SHA_Core_Init(context->h);
+  context->total_bytes = 0;
   context->blkused = 0;
-  context->lenhi = context->lenlo = 0;
 }
 
 void CRYPT_SHA1Update(CRYPT_sha1_context* context,
                       const uint8_t* data,
                       uint32_t size) {
-  unsigned char* q = (unsigned char*)data;
-  unsigned int wordblock[16];
-  int len = size;
-  unsigned int lenw = len;
-  int i;
-  context->lenlo += lenw;
-  context->lenhi += (context->lenlo < lenw);
-  if (context->blkused && context->blkused + len < 64) {
-    memcpy(context->block + context->blkused, q, len);
-    context->blkused += len;
-  } else {
-    while (context->blkused + len >= 64) {
-      memcpy(context->block + context->blkused, q, 64 - context->blkused);
-      q += 64 - context->blkused;
-      len -= 64 - context->blkused;
-      for (i = 0; i < 16; i++) {
-        wordblock[i] = (((unsigned int)context->block[i * 4 + 0]) << 24) |
-                       (((unsigned int)context->block[i * 4 + 1]) << 16) |
-                       (((unsigned int)context->block[i * 4 + 2]) << 8) |
-                       (((unsigned int)context->block[i * 4 + 3]) << 0);
-      }
-      SHATransform(context->h, wordblock);
-      context->blkused = 0;
-    }
-    memcpy(context->block, q, len);
-    context->blkused = len;
+  context->total_bytes += size;
+  if (context->blkused && size < 64 - context->blkused) {
+    memcpy(context->block + context->blkused, data, size);
+    context->blkused += size;
+    return;
   }
+  uint32_t wordblock[16];
+  while (size >= 64 - context->blkused) {
+    memcpy(context->block + context->blkused, data, 64 - context->blkused);
+    data += 64 - context->blkused;
+    size -= 64 - context->blkused;
+    for (int i = 0; i < 16; i++) {
+      wordblock[i] = (((uint32_t)context->block[i * 4 + 0]) << 24) |
+                     (((uint32_t)context->block[i * 4 + 1]) << 16) |
+                     (((uint32_t)context->block[i * 4 + 2]) << 8) |
+                     (((uint32_t)context->block[i * 4 + 3]) << 0);
+    }
+    SHATransform(context->h, wordblock);
+    context->blkused = 0;
+  }
+  memcpy(context->block, data, size);
+  context->blkused = size;
 }
 
 void CRYPT_SHA1Finish(CRYPT_sha1_context* context, uint8_t digest[20]) {
-  int i;
-  int pad;
-  unsigned char c[64];
-  unsigned int lenhi, lenlo;
+  uint64_t total_bits = 8 * context->total_bytes;  // Prior to padding.
+  uint8_t c[64];
+  uint8_t pad;
   if (context->blkused >= 56) {
     pad = 56 + 64 - context->blkused;
   } else {
     pad = 56 - context->blkused;
   }
-  lenhi = (context->lenhi << 3) | (context->lenlo >> (32 - 3));
-  lenlo = (context->lenlo << 3);
   memset(c, 0, pad);
   c[0] = 0x80;
   CRYPT_SHA1Update(context, c, pad);
-  c[0] = (lenhi >> 24) & 0xFF;
-  c[1] = (lenhi >> 16) & 0xFF;
-  c[2] = (lenhi >> 8) & 0xFF;
-  c[3] = (lenhi >> 0) & 0xFF;
-  c[4] = (lenlo >> 24) & 0xFF;
-  c[5] = (lenlo >> 16) & 0xFF;
-  c[6] = (lenlo >> 8) & 0xFF;
-  c[7] = (lenlo >> 0) & 0xFF;
+  c[0] = (total_bits >> 56) & 0xFF;
+  c[1] = (total_bits >> 48) & 0xFF;
+  c[2] = (total_bits >> 40) & 0xFF;
+  c[3] = (total_bits >> 32) & 0xFF;
+  c[4] = (total_bits >> 24) & 0xFF;
+  c[5] = (total_bits >> 16) & 0xFF;
+  c[6] = (total_bits >> 8) & 0xFF;
+  c[7] = (total_bits >> 0) & 0xFF;
   CRYPT_SHA1Update(context, c, 8);
-  for (i = 0; i < 5; i++) {
+  for (int i = 0; i < 5; i++) {
     digest[i * 4] = (context->h[i] >> 24) & 0xFF;
     digest[i * 4 + 1] = (context->h[i] >> 16) & 0xFF;
     digest[i * 4 + 2] = (context->h[i] >> 8) & 0xFF;
     digest[i * 4 + 3] = (context->h[i]) & 0xFF;
   }
 }
+
 void CRYPT_SHA1Generate(const uint8_t* data,
                         uint32_t size,
                         uint8_t digest[20]) {
@@ -438,9 +429,9 @@ void CRYPT_SHA1Generate(const uint8_t* data,
   CRYPT_SHA1Update(&s, data, size);
   CRYPT_SHA1Finish(&s, digest);
 }
+
 void CRYPT_SHA256Start(CRYPT_sha2_context* context) {
-  context->total[0] = 0;
-  context->total[1] = 0;
+  context->total_bytes = 0;
   context->state[0] = 0x6A09E667;
   context->state[1] = 0xBB67AE85;
   context->state[2] = 0x3C6EF372;
@@ -449,6 +440,7 @@ void CRYPT_SHA256Start(CRYPT_sha2_context* context) {
   context->state[5] = 0x9B05688C;
   context->state[6] = 0x1F83D9AB;
   context->state[7] = 0x5BE0CD19;
+  memset(context->buffer, 0, sizeof(context->buffer));
 }
 
 void CRYPT_SHA256Update(CRYPT_sha2_context* context,
@@ -457,13 +449,9 @@ void CRYPT_SHA256Update(CRYPT_sha2_context* context,
   if (!size)
     return;
 
-  uint32_t left = context->total[0] & 0x3F;
+  uint32_t left = context->total_bytes & 0x3F;
   uint32_t fill = 64 - left;
-  context->total[0] += size;
-  context->total[0] &= 0xFFFFFFFF;
-  if (context->total[0] < size)
-    context->total[1]++;
-
+  context->total_bytes += size;
   if (left && size >= fill) {
     memcpy(context->buffer + left, data, fill);
     sha256_process(context, context->buffer);
@@ -482,11 +470,9 @@ void CRYPT_SHA256Update(CRYPT_sha2_context* context,
 
 void CRYPT_SHA256Finish(CRYPT_sha2_context* context, uint8_t digest[32]) {
   uint8_t msglen[8];
-  uint32_t high = (context->total[0] >> 29) | (context->total[1] << 3);
-  uint32_t low = (context->total[0] << 3);
-  SHA_PUT_UINT32(high, msglen, 0);
-  SHA_PUT_UINT32(low, msglen, 4);
-  uint32_t last = context->total[0] & 0x3F;
+  uint64_t total_bits = 8 * context->total_bytes;  // Prior to padding.
+  SHA_PUT_UINT64(total_bits, msglen, 0);
+  uint32_t last = context->total_bytes & 0x3F;
   uint32_t padn = (last < 56) ? (56 - last) : (120 - last);
   CRYPT_SHA256Update(context, sha256_padding, padn);
   CRYPT_SHA256Update(context, msglen, 8);
@@ -510,7 +496,7 @@ void CRYPT_SHA256Generate(const uint8_t* data,
 }
 
 void CRYPT_SHA384Start(CRYPT_sha2_context* context) {
-  memset(context, 0, sizeof(CRYPT_sha2_context));
+  context->total_bytes = 0;
   context->state[0] = 0xcbbb9d5dc1059ed8ULL;
   context->state[1] = 0x629a292a367cd507ULL;
   context->state[2] = 0x9159015a3070dd17ULL;
@@ -519,6 +505,7 @@ void CRYPT_SHA384Start(CRYPT_sha2_context* context) {
   context->state[5] = 0x8eb44a8768581511ULL;
   context->state[6] = 0xdb0c2e0d64f98fa7ULL;
   context->state[7] = 0x47b5481dbefa4fa4ULL;
+  memset(context->buffer, 0, sizeof(context->buffer));
 }
 
 void CRYPT_SHA384Update(CRYPT_sha2_context* context,
@@ -527,12 +514,9 @@ void CRYPT_SHA384Update(CRYPT_sha2_context* context,
   if (!size)
     return;
 
-  uint32_t left = static_cast<uint32_t>(context->total[0]) & 0x7F;
+  uint32_t left = context->total_bytes & 0x7F;
   uint32_t fill = 128 - left;
-  context->total[0] += size;
-  if (context->total[0] < size)
-    context->total[1]++;
-
+  context->total_bytes += size;
   if (left && size >= fill) {
     memcpy(context->buffer + left, data, fill);
     sha384_process(context, context->buffer);
@@ -550,24 +534,20 @@ void CRYPT_SHA384Update(CRYPT_sha2_context* context,
 }
 
 void CRYPT_SHA384Finish(CRYPT_sha2_context* context, uint8_t digest[48]) {
-  uint32_t last, padn;
   uint8_t msglen[16];
-  memset(msglen, 0, 16);
-  uint64_t high, low;
-  high = (context->total[0] >> 29) | (context->total[1] << 3);
-  low = (context->total[0] << 3);
-  PUT_UINT64(high, msglen, 0);
-  PUT_UINT64(low, msglen, 8);
-  last = (uint32_t)context->total[0] & 0x7F;
-  padn = (last < 112) ? (112 - last) : (240 - last);
+  uint64_t total_bits = 8 * context->total_bytes;  // Prior to padding.
+  SHA_PUT_UINT64(0ULL, msglen, 0);
+  SHA_PUT_UINT64(total_bits, msglen, 8);
+  uint32_t last = context->total_bytes & 0x7F;
+  uint32_t padn = (last < 112) ? (112 - last) : (240 - last);
   CRYPT_SHA384Update(context, sha384_padding, padn);
   CRYPT_SHA384Update(context, msglen, 16);
-  PUT_UINT64(context->state[0], digest, 0);
-  PUT_UINT64(context->state[1], digest, 8);
-  PUT_UINT64(context->state[2], digest, 16);
-  PUT_UINT64(context->state[3], digest, 24);
-  PUT_UINT64(context->state[4], digest, 32);
-  PUT_UINT64(context->state[5], digest, 40);
+  SHA_PUT_UINT64(context->state[0], digest, 0);
+  SHA_PUT_UINT64(context->state[1], digest, 8);
+  SHA_PUT_UINT64(context->state[2], digest, 16);
+  SHA_PUT_UINT64(context->state[3], digest, 24);
+  SHA_PUT_UINT64(context->state[4], digest, 32);
+  SHA_PUT_UINT64(context->state[5], digest, 40);
 }
 
 void CRYPT_SHA384Generate(const uint8_t* data,
@@ -580,7 +560,7 @@ void CRYPT_SHA384Generate(const uint8_t* data,
 }
 
 void CRYPT_SHA512Start(CRYPT_sha2_context* context) {
-  memset(context, 0, sizeof(CRYPT_sha2_context));
+  context->total_bytes = 0;
   context->state[0] = 0x6a09e667f3bcc908ULL;
   context->state[1] = 0xbb67ae8584caa73bULL;
   context->state[2] = 0x3c6ef372fe94f82bULL;
@@ -589,6 +569,7 @@ void CRYPT_SHA512Start(CRYPT_sha2_context* context) {
   context->state[5] = 0x9b05688c2b3e6c1fULL;
   context->state[6] = 0x1f83d9abfb41bd6bULL;
   context->state[7] = 0x5be0cd19137e2179ULL;
+  memset(context->buffer, 0, sizeof(context->buffer));
 }
 
 void CRYPT_SHA512Update(CRYPT_sha2_context* context,
@@ -598,26 +579,22 @@ void CRYPT_SHA512Update(CRYPT_sha2_context* context,
 }
 
 void CRYPT_SHA512Finish(CRYPT_sha2_context* context, uint8_t digest[64]) {
-  uint32_t last, padn;
   uint8_t msglen[16];
-  memset(msglen, 0, 16);
-  uint64_t high, low;
-  high = (context->total[0] >> 29) | (context->total[1] << 3);
-  low = (context->total[0] << 3);
-  PUT_UINT64(high, msglen, 0);
-  PUT_UINT64(low, msglen, 8);
-  last = (uint32_t)context->total[0] & 0x7F;
-  padn = (last < 112) ? (112 - last) : (240 - last);
+  uint64_t total_bits = 8 * context->total_bytes;
+  SHA_PUT_UINT64(0ULL, msglen, 0);
+  SHA_PUT_UINT64(total_bits, msglen, 8);
+  uint32_t last = context->total_bytes & 0x7F;
+  uint32_t padn = (last < 112) ? (112 - last) : (240 - last);
   CRYPT_SHA512Update(context, sha384_padding, padn);
   CRYPT_SHA512Update(context, msglen, 16);
-  PUT_UINT64(context->state[0], digest, 0);
-  PUT_UINT64(context->state[1], digest, 8);
-  PUT_UINT64(context->state[2], digest, 16);
-  PUT_UINT64(context->state[3], digest, 24);
-  PUT_UINT64(context->state[4], digest, 32);
-  PUT_UINT64(context->state[5], digest, 40);
-  PUT_UINT64(context->state[6], digest, 48);
-  PUT_UINT64(context->state[7], digest, 56);
+  SHA_PUT_UINT64(context->state[0], digest, 0);
+  SHA_PUT_UINT64(context->state[1], digest, 8);
+  SHA_PUT_UINT64(context->state[2], digest, 16);
+  SHA_PUT_UINT64(context->state[3], digest, 24);
+  SHA_PUT_UINT64(context->state[4], digest, 32);
+  SHA_PUT_UINT64(context->state[5], digest, 40);
+  SHA_PUT_UINT64(context->state[6], digest, 48);
+  SHA_PUT_UINT64(context->state[7], digest, 56);
 }
 
 void CRYPT_SHA512Generate(const uint8_t* data,

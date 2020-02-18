@@ -7,6 +7,7 @@
 
 #include <gtest/gtest.h>
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
+#include "third_party/blink/renderer/core/testing/scoped_mock_overlay_scrollbars.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support_with_mock_scheduler.h"
 
 namespace base {
@@ -18,7 +19,7 @@ namespace blink {
 class Document;
 class LocalFrame;
 
-class PageTestBase : public testing::Test {
+class PageTestBase : public testing::Test, public ScopedMockOverlayScrollbars {
   USING_FAST_MALLOC(PageTestBase);
 
  public:
@@ -40,6 +41,10 @@ class PageTestBase : public testing::Test {
   void SetBodyContent(const std::string&);
   void SetBodyInnerHTML(const String&);
   void SetHtmlInnerHTML(const std::string&);
+
+  // Insert STYLE element with |style_rules|, no need to have "<style>", into
+  // HEAD.
+  void InsertStyleElement(const std::string& style_rules);
 
   // Navigate to |url| providing an empty response but
   // URL and security origin of the Document will be set to |url|.

@@ -32,26 +32,26 @@ GpuClient::GpuClient(std::unique_ptr<GpuClientDelegate> delegate,
       client_tracing_id_(client_tracing_id),
       task_runner_(std::move(task_runner)) {
   DCHECK(delegate_);
-  gpu_bindings_.set_connection_error_handler(
+  gpu_receivers_.set_disconnect_handler(
       base::BindRepeating(&GpuClient::OnError, base::Unretained(this),
                           ErrorReason::kConnectionLost));
 }
 
 GpuClient::~GpuClient() {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
-  gpu_bindings_.CloseAllBindings();
+  gpu_receivers_.Clear();
   OnError(ErrorReason::kInDestructor);
 }
 
-void GpuClient::Add(mojom::GpuRequest request) {
+void GpuClient::Add(mojo::PendingReceiver<mojom::Gpu> receiver) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
-  gpu_bindings_.AddBinding(this, std::move(request));
+  gpu_receivers_.Add(this, std::move(receiver));
 }
 
 void GpuClient::OnError(ErrorReason reason) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   ClearCallback();
-  if (gpu_bindings_.empty() && delegate_) {
+  if (gpu_receivers_.empty() && delegate_) {
     if (auto* gpu_memory_buffer_manager =
             delegate_->GetGpuMemoryBufferManager()) {
       gpu_memory_buffer_manager->DestroyAllGpuMemoryBufferForClient(client_id_);
@@ -166,19 +166,21 @@ void GpuClient::EstablishGpuChannel(EstablishGpuChannelCallback callback) {
 
 #if defined(OS_CHROMEOS)
 void GpuClient::CreateJpegDecodeAccelerator(
-    chromeos_camera::mojom::MjpegDecodeAcceleratorRequest jda_request) {
+    mojo::PendingReceiver<chromeos_camera::mojom::MjpegDecodeAccelerator>
+        jda_receiver) {
   if (auto* gpu_host = delegate_->EnsureGpuHost()) {
     gpu_host->gpu_service()->CreateJpegDecodeAccelerator(
-        std::move(jda_request));
+        std::move(jda_receiver));
   }
 }
 #endif  // defined(OS_CHROMEOS)
 
 void GpuClient::CreateVideoEncodeAcceleratorProvider(
-    media::mojom::VideoEncodeAcceleratorProviderRequest vea_provider_request) {
+    mojo::PendingReceiver<media::mojom::VideoEncodeAcceleratorProvider>
+        vea_provider_receiver) {
   if (auto* gpu_host = delegate_->EnsureGpuHost()) {
     gpu_host->gpu_service()->CreateVideoEncodeAcceleratorProvider(
-        std::move(vea_provider_request));
+        std::move(vea_provider_receiver));
   }
 }
 
@@ -211,8 +213,8 @@ void GpuClient::DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
 }
 
 void GpuClient::CreateGpuMemoryBufferFactory(
-    mojom::GpuMemoryBufferFactoryRequest request) {
-  gpu_memory_buffer_factory_bindings_.AddBinding(this, std::move(request));
+    mojo::PendingReceiver<mojom::GpuMemoryBufferFactory> receiver) {
+  gpu_memory_buffer_factory_receivers_.Add(this, std::move(receiver));
 }
 
 }  // namespace viz

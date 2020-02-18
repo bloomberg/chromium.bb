@@ -36,6 +36,7 @@ settings.ContentSettingsTypes = {
   CLIPBOARD: 'clipboard',
   SENSORS: 'sensors',
   PAYMENT_HANDLER: 'payment-handler',
+  MIXEDSCRIPT: 'mixed-script',
   BLUETOOTH_SCANNING: 'bluetooth-scanning',
   NATIVE_FILE_SYSTEM_WRITE: 'native-file-system-write',
 };
@@ -121,3 +122,10 @@ settings.SortMethod = {
   MOST_VISITED: 'most-visited',
   STORAGE: 'data-stored',
 };
+
+/**
+ * String representation of the wildcard used for universal
+ * match for SiteExceptions.
+ * @type {string}
+ */
+settings.SITE_EXCEPTION_WILDCARD = '*';

@@ -99,6 +99,7 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "third_party/blink/public/platform/web_input_event.h"
 #include "ui/compositor/compositor_switches.h"
 #include "ui/gl/gl_switches.h"
@@ -762,13 +763,9 @@ IN_PROC_BROWSER_TEST_F(DevToolsBeforeUnloadTest,
 
 // Tests that BeforeUnload event gets called on devtools that are opened
 // on another devtools.
-#if defined(OS_CHROMEOS) || defined(OS_LINUX)
 // TODO(https://crbug.com/1000654): Re-enable this test.
-#define MAYBE_TestDevToolsOnDevTools DISABLED_TestDevToolsOnDevTools
-#else
-#define MAYBE_TestDevToolsOnDevTools TestDevToolsOnDevTools
-#endif
-IN_PROC_BROWSER_TEST_F(DevToolsBeforeUnloadTest, MAYBE_TestDevToolsOnDevTools) {
+IN_PROC_BROWSER_TEST_F(DevToolsBeforeUnloadTest,
+                       DISABLED_TestDevToolsOnDevTools) {
   ASSERT_TRUE(spawned_test_server()->Start());
   LoadTestPage(kDebuggerTestPage);
 
@@ -831,9 +828,16 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestShowScriptsTab) {
 // Tests that scripts tab is populated with inspected scripts even if it
 // hadn't been shown by the moment inspected paged refreshed.
 // @see http://crbug.com/26312
-IN_PROC_BROWSER_TEST_F(
-    DevToolsSanityTest,
-    TestScriptsTabIsPopulatedOnInspectedPageRefresh) {
+// This test is flaky on windows and linux asan. See https://crbug.com/1013003
+#if defined(OS_WIN) || defined(OS_MACOSX)
+#define MAYBE_TestScriptsTabIsPopulatedOnInspectedPageRefresh \
+  DISABLED_TestScriptsTabIsPopulatedOnInspectedPageRefresh
+#else
+#define MAYBE_TestScriptsTabIsPopulatedOnInspectedPageRefresh \
+  TestScriptsTabIsPopulatedOnInspectedPageRefresh
+#endif
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest,
+                       MAYBE_TestScriptsTabIsPopulatedOnInspectedPageRefresh) {
   RunTest("testScriptsTabIsPopulatedOnInspectedPageRefresh",
           kDebuggerTestPage);
 }
@@ -1049,7 +1053,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsExtensionTest,
 // different from the extension's background page, are rendered in their own
 // processes and not in the devtools process or the extension's process.
 IN_PROC_BROWSER_TEST_F(DevToolsExtensionTest,
-                       HttpIframeInDevToolsExtensionDevtools) {
+                       DISABLED_HttpIframeInDevToolsExtensionDevtools) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   // Install the dynamically-generated extension.
@@ -1546,21 +1550,21 @@ bool InterceptURLLoad(content::URLLoaderInterceptor::RequestParams* params) {
     return false;
   }
 
-  network::ResourceResponseHead response;
+  auto response = network::mojom::URLResponseHead::New();
 
-  response.headers = new net::HttpResponseHeaders("200 OK\r\n\r\n");
+  response->headers = new net::HttpResponseHeaders("200 OK\r\n\r\n");
 
   auto start_time =
       base::TimeTicks::Now() - base::TimeDelta::FromMilliseconds(10);
-  response.request_start = start_time;
-  response.response_start = base::TimeTicks::Now();
-  response.request_time =
+  response->request_start = start_time;
+  response->response_start = base::TimeTicks::Now();
+  response->request_time =
       base::Time::Now() - base::TimeDelta::FromMilliseconds(10);
-  response.response_time = base::Time::Now();
+  response->response_time = base::Time::Now();
 
-  auto& load_timing = response.load_timing;
+  auto& load_timing = response->load_timing;
   load_timing.request_start = start_time;
-  load_timing.request_start_time = response.request_time;
+  load_timing.request_start_time = response->request_time;
   load_timing.send_start = start_time;
   load_timing.send_end = base::TimeTicks::Now();
   load_timing.receive_headers_end = base::TimeTicks::Now();
@@ -1568,7 +1572,7 @@ bool InterceptURLLoad(content::URLLoaderInterceptor::RequestParams* params) {
   if (url.query() != kPushUseNullEndTime)
     load_timing.push_end = base::TimeTicks::Now();
 
-  params->client->OnReceiveResponse(response);
+  params->client->OnReceiveResponse(std::move(response));
   mojo::DataPipe pipe;  // The response's body is empty. The pipe is not filled.
   params->client->OnStartLoadingResponseBody(std::move(pipe.consumer_handle));
   params->client->OnComplete(network::URLLoaderCompletionStatus());
@@ -1789,7 +1793,9 @@ IN_PROC_BROWSER_TEST_F(DevToolsAutoOpenerTest, TestAutoOpenForTabs) {
 }
 
 // Flaky timeouts on Win7 Tests (dbg)(1); see https://crbug.com/985255.
-#if defined(OS_WIN) && !defined(NDEBUG)
+// Flaky timeouts and failures on Win7 (32) Tests; see
+// https://crbug.com/1025411.
+#if defined(OS_WIN)
 #define MAYBE_DevToolsReattachAfterCrashTest \
   DISABLED_DevToolsReattachAfterCrashTest
 #else
@@ -1813,13 +1819,23 @@ class MAYBE_DevToolsReattachAfterCrashTest : public DevToolsSanityTest {
   }
 };
 
+// Crashes on Win. http://crbug.com/1025369
+#if defined(OS_WIN)
+#define MAYBE_TestReattachAfterCrashOnTimeline \
+  DISABLED_TestReattachAfterCrashOnTimeline
+#define MAYBE_TestReattachAfterCrashOnNetwork \
+  DISABLED_TestReattachAfterCrashOnNetwork
+#else
+#define MAYBE_TestReattachAfterCrashOnTimeline TestReattachAfterCrashOnTimeline
+#define MAYBE_TestReattachAfterCrashOnNetwork TestReattachAfterCrashOnNetwork
+#endif
 IN_PROC_BROWSER_TEST_F(MAYBE_DevToolsReattachAfterCrashTest,
-                       TestReattachAfterCrashOnTimeline) {
+                       MAYBE_TestReattachAfterCrashOnTimeline) {
   RunTestWithPanel("timeline");
 }
 
 IN_PROC_BROWSER_TEST_F(MAYBE_DevToolsReattachAfterCrashTest,
-                       TestReattachAfterCrashOnNetwork) {
+                       MAYBE_TestReattachAfterCrashOnNetwork) {
   RunTestWithPanel("network");
 }
 
@@ -2136,11 +2152,11 @@ class StaticURLDataSource : public content::URLDataSource {
 
   // content::URLDataSource:
   std::string GetSource() override { return source_; }
-  void StartDataRequest(const std::string& path,
+  void StartDataRequest(const GURL& url,
                         const content::WebContents::Getter& wc_getter,
-                        const GotDataCallback& callback) override {
+                        GotDataCallback callback) override {
     std::string data(content_);
-    callback.Run(base::RefCountedString::TakeString(&data));
+    std::move(callback).Run(base::RefCountedString::TakeString(&data));
   }
   std::string GetMimeType(const std::string& path) override {
     return "text/html";

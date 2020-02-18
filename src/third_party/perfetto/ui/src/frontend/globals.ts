@@ -15,7 +15,7 @@
 import {assertExists} from '../base/logging';
 import {DeferredAction} from '../common/actions';
 import {CurrentSearchResults, SearchSummary} from '../common/search_data';
-import {createEmptyState, State} from '../common/state';
+import {CallsiteInfo, createEmptyState, State} from '../common/state';
 
 import {FrontendLocalState} from './frontend_local_state';
 import {RafScheduler} from './raf_scheduler';
@@ -28,11 +28,35 @@ export interface SliceDetails {
   dur?: number;
   priority?: number;
   endState?: string;
+  cpu?: number;
+  id?: number;
+  utid?: number;
   wakeupTs?: number;
   wakerUtid?: number;
   wakerCpu?: number;
   category?: string;
   name?: string;
+}
+
+export interface CounterDetails {
+  startTime?: number;
+  value?: number;
+  delta?: number;
+  duration?: number;
+}
+
+export interface HeapProfileDetails {
+  id?: number;
+  ts?: number;
+  tsNs?: number;
+  allocated?: number;
+  allocatedNotFreed?: number;
+  pid?: number;
+  upid?: number;
+  flamegraph?: CallsiteInfo[];
+  expandedCallsite?: CallsiteInfo;
+  viewingOption?: string;
+  expandedId?: number;
 }
 
 export interface QuantizedLoad {
@@ -67,13 +91,17 @@ class Globals {
   private _overviewStore?: OverviewStore = undefined;
   private _threadMap?: ThreadMap = undefined;
   private _sliceDetails?: SliceDetails = undefined;
-  private _isLoading = false;
+  private _counterDetails?: CounterDetails = undefined;
+  private _heapProfileDetails?: HeapProfileDetails = undefined;
+  private _numQueriesQueued = 0;
   private _bufferUsage?: number = undefined;
   private _recordingLog?: string = undefined;
   private _currentSearchResults: CurrentSearchResults = {
     sliceIds: new Float64Array(0),
     tsStarts: new Float64Array(0),
     utids: new Float64Array(0),
+    trackIds: [],
+    refTypes: [],
     totalResults: 0,
   };
   searchSummary: SearchSummary = {
@@ -95,6 +123,8 @@ class Globals {
     this._overviewStore = new Map<string, QuantizedLoad[]>();
     this._threadMap = new Map<number, ThreadDesc>();
     this._sliceDetails = {};
+    this._counterDetails = {};
+    this._heapProfileDetails = {};
   }
 
   get state(): State {
@@ -142,12 +172,28 @@ class Globals {
     this._sliceDetails = assertExists(click);
   }
 
-  set loading(isLoading: boolean) {
-    this._isLoading = isLoading;
+  get counterDetails() {
+    return assertExists(this._counterDetails);
   }
 
-  get isLoading() {
-    return this._isLoading;
+  set counterDetails(click: CounterDetails) {
+    this._counterDetails = assertExists(click);
+  }
+
+  get heapProfileDetails() {
+    return assertExists(this._heapProfileDetails);
+  }
+
+  set heapProfileDetails(click: HeapProfileDetails) {
+    this._heapProfileDetails = assertExists(click);
+  }
+
+  set numQueuedQueries(value: number) {
+    this._numQueriesQueued = value;
+  }
+
+  get numQueuedQueries() {
+    return this._numQueriesQueued;
   }
 
   get bufferUsage() {
@@ -185,6 +231,14 @@ class Globals {
     return Math.pow(2, Math.floor(Math.log2(resolution)));
   }
 
+  makeSelection(action: DeferredAction<{}>) {
+    // A new selection should cancel the current search selection.
+    globals.frontendLocalState.searchIndex = -1;
+    globals.frontendLocalState.currentTab =
+        action.type === 'deselect' ? undefined : 'current_selection';
+    globals.dispatch(action);
+  }
+
   resetForTesting() {
     this._dispatch = undefined;
     this._state = undefined;
@@ -197,11 +251,13 @@ class Globals {
     this._overviewStore = undefined;
     this._threadMap = undefined;
     this._sliceDetails = undefined;
-    this._isLoading = false;
+    this._numQueriesQueued = 0;
     this._currentSearchResults = {
       sliceIds: new Float64Array(0),
       tsStarts: new Float64Array(0),
       utids: new Float64Array(0),
+      trackIds: [],
+      refTypes: [],
       totalResults: 0,
     };
   }

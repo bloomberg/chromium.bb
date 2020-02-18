@@ -222,26 +222,6 @@ TEST_F(NonClientFrameViewAshTest, MinimumAndMaximumSize) {
             max_frame_size.height());
 }
 
-// Verify that NonClientFrameViewAsh returns the correct minimum frame size when
-// the kMinimumSize property is set.
-TEST_F(NonClientFrameViewAshTest, HonorsMinimumSizeProperty) {
-  const gfx::Size min_client_size(500, 500);
-  TestWidgetConstraintsDelegate* delegate = new TestWidgetConstraintsDelegate;
-  delegate->set_minimum_size(min_client_size);
-  std::unique_ptr<views::Widget> widget = CreateTestWidget(delegate);
-
-  // Update the native window's minimum size property.
-  const gfx::Size min_window_size(600, 700);
-  widget->GetNativeWindow()->SetProperty(aura::client::kMinimumSize,
-                                         new gfx::Size(min_window_size));
-
-  NonClientFrameViewAsh* non_client_frame_view =
-      delegate->non_client_frame_view();
-  const gfx::Size min_frame_size = non_client_frame_view->GetMinimumSize();
-
-  EXPECT_EQ(min_window_size, min_frame_size);
-}
-
 // Verify that NonClientFrameViewAsh updates the avatar icon based on the
 // avatar icon window property.
 TEST_F(NonClientFrameViewAshTest, AvatarIcon) {
@@ -413,9 +393,11 @@ TEST_F(NonClientFrameViewAshTest, HeaderVisibilityInFullscreen) {
   EXPECT_FALSE(header_view->in_immersive_mode());
   EXPECT_TRUE(header_view->GetVisible());
   widget->SetFullscreen(true);
+  widget->LayoutRootViewIfNecessary();
   EXPECT_TRUE(header_view->in_immersive_mode());
   EXPECT_TRUE(header_view->GetVisible());
   widget->SetFullscreen(false);
+  widget->LayoutRootViewIfNecessary();
   EXPECT_FALSE(header_view->in_immersive_mode());
   EXPECT_TRUE(header_view->GetVisible());
 
@@ -423,9 +405,11 @@ TEST_F(NonClientFrameViewAshTest, HeaderVisibilityInFullscreen) {
   // in fullscreen.
   widget->SetFullscreen(true);
   ImmersiveFullscreenController::EnableForWidget(widget.get(), false);
+  widget->LayoutRootViewIfNecessary();
   EXPECT_FALSE(header_view->in_immersive_mode());
   EXPECT_FALSE(header_view->GetVisible());
   widget->SetFullscreen(false);
+  widget->LayoutRootViewIfNecessary();
   EXPECT_FALSE(header_view->in_immersive_mode());
   EXPECT_TRUE(header_view->GetVisible());
 }
@@ -501,6 +485,7 @@ TEST_F(NonClientFrameViewAshTest, BackButton) {
   EXPECT_FALSE(header_view->GetBackButton());
   model_ptr->SetVisible(views::CAPTION_BUTTON_ICON_BACK, true);
   non_client_frame_view->SizeConstraintsChanged();
+  widget->LayoutRootViewIfNecessary();
   EXPECT_TRUE(header_view->GetBackButton());
   EXPECT_FALSE(header_view->GetBackButton()->GetEnabled());
 
@@ -515,6 +500,7 @@ TEST_F(NonClientFrameViewAshTest, BackButton) {
 
   model_ptr->SetEnabled(views::CAPTION_BUTTON_ICON_BACK, true);
   non_client_frame_view->SizeConstraintsChanged();
+  widget->LayoutRootViewIfNecessary();
   EXPECT_TRUE(header_view->GetBackButton());
   EXPECT_TRUE(header_view->GetBackButton()->GetEnabled());
 
@@ -529,6 +515,7 @@ TEST_F(NonClientFrameViewAshTest, BackButton) {
 
   model_ptr->SetVisible(views::CAPTION_BUTTON_ICON_BACK, false);
   non_client_frame_view->SizeConstraintsChanged();
+  widget->LayoutRootViewIfNecessary();
   EXPECT_FALSE(header_view->GetBackButton());
 }
 
@@ -588,6 +575,7 @@ TEST_F(NonClientFrameViewAshTest, CustomButtonModel) {
 
   model_ptr->SetVisible(views::CAPTION_BUTTON_ICON_CLOSE, true);
   non_client_frame_view->SizeConstraintsChanged();
+  widget->LayoutRootViewIfNecessary();
   EXPECT_TRUE(test_api.close_button()->GetVisible());
 
   EXPECT_FALSE(test_api.minimize_button()->GetVisible());
@@ -597,41 +585,49 @@ TEST_F(NonClientFrameViewAshTest, CustomButtonModel) {
   // Back button
   model_ptr->SetVisible(views::CAPTION_BUTTON_ICON_BACK, true);
   non_client_frame_view->SizeConstraintsChanged();
+  widget->LayoutRootViewIfNecessary();
   EXPECT_TRUE(header_view->GetBackButton()->GetVisible());
   EXPECT_FALSE(header_view->GetBackButton()->GetEnabled());
 
   model_ptr->SetEnabled(views::CAPTION_BUTTON_ICON_BACK, true);
   non_client_frame_view->SizeConstraintsChanged();
+  widget->LayoutRootViewIfNecessary();
   EXPECT_TRUE(header_view->GetBackButton()->GetEnabled());
 
   // size button
   model_ptr->SetVisible(views::CAPTION_BUTTON_ICON_MAXIMIZE_RESTORE, true);
   non_client_frame_view->SizeConstraintsChanged();
+  widget->LayoutRootViewIfNecessary();
   EXPECT_TRUE(test_api.size_button()->GetVisible());
   EXPECT_FALSE(test_api.size_button()->GetEnabled());
 
   model_ptr->SetEnabled(views::CAPTION_BUTTON_ICON_MAXIMIZE_RESTORE, true);
   non_client_frame_view->SizeConstraintsChanged();
+  widget->LayoutRootViewIfNecessary();
   EXPECT_TRUE(test_api.size_button()->GetEnabled());
 
   // minimize button
   model_ptr->SetVisible(views::CAPTION_BUTTON_ICON_MINIMIZE, true);
   non_client_frame_view->SizeConstraintsChanged();
+  widget->LayoutRootViewIfNecessary();
   EXPECT_TRUE(test_api.minimize_button()->GetVisible());
   EXPECT_FALSE(test_api.minimize_button()->GetEnabled());
 
   model_ptr->SetEnabled(views::CAPTION_BUTTON_ICON_MINIMIZE, true);
   non_client_frame_view->SizeConstraintsChanged();
+  widget->LayoutRootViewIfNecessary();
   EXPECT_TRUE(test_api.minimize_button()->GetEnabled());
 
   // menu button
   model_ptr->SetVisible(views::CAPTION_BUTTON_ICON_MENU, true);
   non_client_frame_view->SizeConstraintsChanged();
+  widget->LayoutRootViewIfNecessary();
   EXPECT_TRUE(test_api.menu_button()->GetVisible());
   EXPECT_FALSE(test_api.menu_button()->GetEnabled());
 
   model_ptr->SetEnabled(views::CAPTION_BUTTON_ICON_MENU, true);
   non_client_frame_view->SizeConstraintsChanged();
+  widget->LayoutRootViewIfNecessary();
   EXPECT_TRUE(test_api.menu_button()->GetEnabled());
 
   // zoom button
@@ -639,6 +635,7 @@ TEST_F(NonClientFrameViewAshTest, CustomButtonModel) {
                test_api.size_button()->icon_definition_for_test()->name);
   model_ptr->set_zoom_mode(true);
   non_client_frame_view->SizeConstraintsChanged();
+  widget->LayoutRootViewIfNecessary();
   EXPECT_STREQ(kWindowControlZoomIcon.name,
                test_api.size_button()->icon_definition_for_test()->name);
   widget->Maximize();
@@ -869,7 +866,7 @@ TEST_P(NonClientFrameViewAshFrameColorTest, WideFrameInitialColor) {
 }
 
 // Run frame color tests with and without custom WindowStateDelegate.
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          NonClientFrameViewAshFrameColorTest,
                          testing::Bool());
 

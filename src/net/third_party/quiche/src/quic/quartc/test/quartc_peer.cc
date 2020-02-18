@@ -4,6 +4,8 @@
 
 #include "net/third_party/quiche/src/quic/quartc/test/quartc_peer.h"
 
+#include <utility>
+
 #include "net/third_party/quiche/src/quic/platform/api/quic_mem_slice_storage.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_string_piece.h"
 
@@ -21,7 +23,8 @@ QuartcPeer::QuartcPeer(const QuicClock* clock,
       buffer_allocator_(buffer_allocator),
       enabled_(false),
       session_(nullptr),
-      configs_(configs) {}
+      configs_(configs),
+      last_available_(QuicBandwidth::Zero()) {}
 
 QuartcPeer::~QuartcPeer() {
   session_->CloseConnection("~QuartcPeer()");
@@ -59,7 +62,7 @@ void QuartcPeer::OnSessionCreated(QuartcSession* session) {
             : largest_message_payload;
     QUIC_LOG(INFO) << "Set max frame size for source " << config.id << " to "
                    << config.max_frame_size;
-    data_sources_.push_back(QuicMakeUnique<QuartcDataSource>(
+    data_sources_.push_back(std::make_unique<QuartcDataSource>(
         clock_, alarm_factory_, random_, config, this));
   }
 }
@@ -85,6 +88,7 @@ void QuartcPeer::OnCongestionControlChange(QuicBandwidth bandwidth_estimate,
   // estimate, or it may explicitly subtract overhead before surfacing its
   // estimate.
   QuicBandwidth available = std::min(bandwidth_estimate, pacing_rate);
+  last_available_ = available;
   for (auto& source : data_sources_) {
     available = source->AllocateBandwidth(available);
   }

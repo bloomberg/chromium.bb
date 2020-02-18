@@ -27,6 +27,7 @@
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
+#include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -76,11 +77,10 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
                bool(const std::vector<autofill::PasswordForm*>& local_forms,
                     const GURL& origin,
                     const CredentialsCallback& callback));
-  MOCK_METHOD3(
-      PasswordWasAutofilled,
-      void(const std::map<base::string16, const autofill::PasswordForm*>&,
-           const GURL&,
-           const std::vector<const autofill::PasswordForm*>*));
+  MOCK_METHOD3(PasswordWasAutofilled,
+               void(const std::vector<const autofill::PasswordForm*>&,
+                    const GURL&,
+                    const std::vector<const autofill::PasswordForm*>*));
 
   explicit MockPasswordManagerClient(PasswordStore* store)
       : store_(store), password_manager_(this) {
@@ -91,6 +91,10 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
         prefs::kWasAutoSignInFirstRunExperienceShown, true);
     prefs_->registry()->RegisterBooleanPref(
         prefs::kPasswordLeakDetectionEnabled, true);
+#if !defined(OS_IOS)
+    prefs_->registry()->RegisterBooleanPref(::prefs::kSafeBrowsingEnabled,
+                                            true);
+#endif
   }
   ~MockPasswordManagerClient() override {}
 
@@ -107,7 +111,7 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
     NotifyUserCouldBeAutoSignedInPtr(form.get());
   }
 
-  PasswordStore* GetPasswordStore() const override { return store_; }
+  PasswordStore* GetProfilePasswordStore() const override { return store_; }
 
   PrefService* GetPrefs() const override { return prefs_.get(); }
 
@@ -1654,9 +1658,8 @@ TEST_F(CredentialManagerImplTest,
   store_->AddLogin(form_);
 
   EXPECT_CALL(*client_,
-              PasswordWasAutofilled(
-                  ElementsAre(Pair(form_.username_value, Pointee(form_))), _,
-                  Pointee(ElementsAre(Pointee(federated)))));
+              PasswordWasAutofilled(ElementsAre(Pointee(form_)), _,
+                                    Pointee(ElementsAre(Pointee(federated)))));
 
   bool called = false;
   CredentialManagerError error;

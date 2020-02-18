@@ -41,16 +41,12 @@ const v8::FunctionCallbackInfo<v8::Value>& info
 
   {% if attribute.is_save_same_object %}
   // [SaveSameObject]
-  {% set same_object_private_key = interface_name + attribute.camel_case_name %}
-  // If you see a compile error that
-  //   V8PrivateProperty::GetSameObject{{same_object_private_key}}
-  // is not defined, then you need to register your attribute at
-  // V8_PRIVATE_PROPERTY_FOR_EACH defined in V8PrivateProperty.h as
-  //   X(SameObject, {{same_object_private_key}})
-  auto privateSameObject = V8PrivateProperty::GetSameObject{{same_object_private_key}}(info.GetIsolate());
+  static const V8PrivateProperty::SymbolKey kSaveSameObjectKey;
+  auto private_same_object =
+      V8PrivateProperty::GetSymbol(info.GetIsolate(), kSaveSameObjectKey);
   {
     v8::Local<v8::Value> v8_value;
-    if (privateSameObject.GetOrUndefined(holder).ToLocal(&v8_value) && !v8_value->IsUndefined()) {
+    if (private_same_object.GetOrUndefined(holder).ToLocal(&v8_value) && !v8_value->IsUndefined()) {
       V8SetReturnValue(info, v8_value);
       return;
     }
@@ -75,9 +71,18 @@ const v8::FunctionCallbackInfo<v8::Value>& info
 
   {% if attribute.cached_attribute_validation_method %}
   // [CachedAttribute]
+  {% if cpp_class == 'History' and attribute.camel_case_name == 'State' %}
+  V8PrivateProperty::Symbol property_symbol =
+      V8PrivateProperty::GetHistoryStateSymbol(info.GetIsolate());
+  {% else %}
+  {% if not attribute.private_property_is_shared_between_getter_and_setter %}
+  static const V8PrivateProperty::SymbolKey kPrivateProperty{{attribute.camel_case_name}};
+
+  {% endif %}
   V8PrivateProperty::Symbol property_symbol =
       V8PrivateProperty::GetSymbol(info.GetIsolate(),
-          "{{cpp_class}}#{{attribute.camel_case_name}}");
+          kPrivateProperty{{attribute.camel_case_name}});
+  {% endif %}
   if (!static_cast<const {{cpp_class}}*>(impl)->{{attribute.cached_attribute_validation_method}}()) {
     v8::Local<v8::Value> v8_value;
     if (property_symbol.GetOrUndefined(holder).ToLocal(&v8_value) && !v8_value->IsUndefined()) {
@@ -177,8 +182,8 @@ const v8::FunctionCallbackInfo<v8::Value>& info
   if ({{attribute.cpp_value}} && DOMDataStore::SetReturnValue{{world_suffix}}(info.GetReturnValue(), {{attribute.cpp_value_to_script_wrappable}}))
     return;
   v8::Local<v8::Value> v8_value(ToV8({{attribute.cpp_value_to_script_wrappable}}, holder, info.GetIsolate()));
-  V8PrivateProperty::GetSymbol(
-      info.GetIsolate(), "KeepAlive#{{interface_name}}#{{attribute.name}}")
+  static const V8PrivateProperty::SymbolKey kKeepAliveKey;
+  V8PrivateProperty::GetSymbol(info.GetIsolate(), kKeepAliveKey)
       .Set(holder, v8_value);
   {% endif %}
 
@@ -190,7 +195,7 @@ const v8::FunctionCallbackInfo<v8::Value>& info
 
   {% if attribute.is_save_same_object %}
   // [SaveSameObject]
-  privateSameObject.Set(holder, info.GetReturnValue().Get());
+  private_same_object.Set(holder, info.GetReturnValue().Get());
   {% endif %}
   {% endfilter %}{# format_remove_duplicates #}
 }
@@ -203,30 +208,33 @@ const v8::FunctionCallbackInfo<v8::Value>& info
 {# Attribute is limited to only known values: check that the attribute value is
    one of those. If not, set it to the empty string.
    http://www.whatwg.org/specs/web-apps/current-work/#limited-to-only-known-values #}
+{% if reflect_only_values %}
+AtomicString atomic_{{cpp_value}}({{cpp_value}}.LowerASCII());
+{% endif %}
 {% if reflect_empty %}
 if ({{cpp_value}}.IsNull()) {
 {% if reflect_missing %}
-  {{cpp_value}} = "{{reflect_missing}}";
+  {{cpp_value}} = {{reflect_missing}};
 {% else %}
   ;
 {% endif %}
 } else if ({{cpp_value}}.IsEmpty()) {
-  {{cpp_value}} = "{{reflect_empty}}";
+  {{cpp_value}} = {{reflect_empty}};
 {% else %}
 if ({{cpp_value}}.IsEmpty()) {
 {# FIXME: should use [ReflectEmpty] instead; need to change IDL files #}
 {% if reflect_missing %}
-  {{cpp_value}} = "{{reflect_missing}}";
+  {{cpp_value}} = {{reflect_missing}};
 {% else %}
   ;
 {% endif %}
 {% endif %}
 {% for value in reflect_only_values %}
-} else if (EqualIgnoringASCIICase({{cpp_value}}, "{{value}}")) {
-  {{cpp_value}} = "{{value}}";
+} else if (atomic_{{cpp_value}} == {{value}}) {
+  {{cpp_value}} = {{value}};
 {% endfor %}
 } else {
-  {{cpp_value}} = "{{reflect_invalid}}";
+  {{cpp_value}} = {{reflect_invalid}};
 }
 {% endmacro %}
 
@@ -406,6 +414,10 @@ static void {{attribute.camel_case_name}}AttributeSetter{{world_suffix}}(
   CEReactionsScope ce_reactions_scope;
   {% endif %}
 
+  {% if attribute.is_explicit_nullable %}
+  bool is_null = IsUndefinedOrNull(v8_value);
+  {% endif %}
+
   // Prepare the value to be set.
   {% if attribute.idl_type != 'EventHandler' %}
   {{v8_value_to_local_cpp_value(attribute) | trim | indent(2)}}
@@ -457,17 +469,15 @@ static void {{attribute.camel_case_name}}AttributeSetter{{world_suffix}}(
   {% if attribute.is_replaceable %}
   v8::Local<v8::String> property_name = V8AtomicString(isolate, "{{attribute.name}}");
   {% endif %}
-  {% if attribute.is_explicit_nullable %}
-  bool is_null = IsUndefinedOrNull(v8_value);
-  {% endif %}
   {{attribute.cpp_setter | indent(2)}};
 
   {% if attribute.cached_attribute_validation_method %}
   // [CachedAttribute]
   // Invalidate the cached value.
   V8PrivateProperty::GetSymbol(
-      isolate, "{{cpp_class}}#{{attribute.camel_case_name}}")
-      .DeleteProperty(holder, v8::Undefined(isolate));
+      isolate,
+      kPrivateProperty{{attribute.camel_case_name}})
+      .DeleteProperty(holder);
   {% endif %}
   {% endif %}{# attribute.is_put_forwards #}
   {% endfilter %}{# format_remove_duplicates #}

@@ -4,13 +4,18 @@
 
 package org.chromium.chrome.browser.customtabs.dependency_injection;
 
+import org.chromium.chrome.browser.browserservices.BrowserServicesActivityTabController;
+import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.browserservices.ClientAppDataRegister;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.TwaIntentHandlingStrategy;
-import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
+import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.TwaVerifier;
+import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.Verifier;
 import org.chromium.chrome.browser.customtabs.CustomTabNightModeStateController;
+import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabController;
 import org.chromium.chrome.browser.customtabs.content.CustomTabIntentHandler.IntentIgnoringCriterion;
 import org.chromium.chrome.browser.customtabs.content.CustomTabIntentHandlingStrategy;
 import org.chromium.chrome.browser.customtabs.content.DefaultCustomTabIntentHandlingStrategy;
+import org.chromium.chrome.browser.init.StartupTabPreloader;
 import org.chromium.chrome.browser.webapps.WebApkPostShareTargetNavigator;
 
 import dagger.Lazy;
@@ -23,21 +28,30 @@ import dagger.Reusable;
  */
 @Module
 public class CustomTabActivityModule {
-    private final CustomTabIntentDataProvider mIntentDataProvider;
+    private final BrowserServicesIntentDataProvider mIntentDataProvider;
     private final CustomTabNightModeStateController mNightModeController;
     private final IntentIgnoringCriterion mIntentIgnoringCriterion;
+    private final StartupTabPreloader mStartupTabPreloader;
 
-    public CustomTabActivityModule(CustomTabIntentDataProvider intentDataProvider,
+    public CustomTabActivityModule(BrowserServicesIntentDataProvider intentDataProvider,
             CustomTabNightModeStateController nightModeController,
-            IntentIgnoringCriterion intentIgnoringCriterion) {
+            IntentIgnoringCriterion intentIgnoringCriterion,
+            StartupTabPreloader startupTabPreloader) {
         mIntentDataProvider = intentDataProvider;
         mNightModeController = nightModeController;
         mIntentIgnoringCriterion = intentIgnoringCriterion;
+        mStartupTabPreloader = startupTabPreloader;
     }
 
     @Provides
-    public CustomTabIntentDataProvider provideIntentDataProvider() {
+    public BrowserServicesIntentDataProvider providesBrowserServicesIntentDataProvider() {
         return mIntentDataProvider;
+    }
+
+    @Provides
+    public BrowserServicesActivityTabController provideTabController(
+            CustomTabActivityTabController customTabActivityTabController) {
+        return customTabActivityTabController;
     }
 
     @Provides
@@ -58,6 +72,12 @@ public class CustomTabActivityModule {
     }
 
     @Provides
+    public Verifier provideVerifierDelegate(Lazy<TwaVerifier> twaVerifierDelegate) {
+        // TODO(peconn): Add handing of WebAPK/A2HS delegate.
+        return twaVerifierDelegate.get();
+    }
+
+    @Provides
     public IntentIgnoringCriterion provideIntentIgnoringCriterion() {
         return mIntentIgnoringCriterion;
     }
@@ -66,5 +86,10 @@ public class CustomTabActivityModule {
     @Reusable
     public WebApkPostShareTargetNavigator providePostShareTargetNavigator() {
         return new WebApkPostShareTargetNavigator();
+    }
+
+    @Provides
+    public StartupTabPreloader provideStartupTabPreloader() {
+        return mStartupTabPreloader;
     }
 }

@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_NAVIGATION_PREDICTOR_NAVIGATION_PREDICTOR_H_
 #define CHROME_BROWSER_NAVIGATION_PREDICTOR_NAVIGATION_PREDICTOR_H_
 
+#include <deque>
+#include <set>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -13,7 +15,7 @@
 #include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
-#include "base/timer/timer.h"
+#include "chrome/browser/prerender/prerender_handle.h"
 #include "content/public/browser/visibility.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -25,22 +27,22 @@
 
 namespace content {
 class BrowserContext;
+class NavigationHandle;
 class RenderFrameHost;
 }
 
 namespace prerender {
-class PrerenderHandle;
 class PrerenderManager;
 }
 
-class SiteEngagementService;
 class TemplateURLService;
 
 // This class gathers metrics of anchor elements from both renderer process
 // and browser process. Then it uses these metrics to make predictions on what
 // are the most likely anchor elements that the user will click.
 class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost,
-                            public content::WebContentsObserver {
+                            public content::WebContentsObserver,
+                            public prerender::PrerenderHandle::Observer {
  public:
   // |render_frame_host| is the host associated with the render frame. It is
   // used to retrieve metrics at the browser side.
@@ -48,8 +50,8 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost,
   ~NavigationPredictor() override;
 
   // Create and bind NavigationPredictor.
-  static void Create(mojo::PendingReceiver<AnchorElementMetricsHost> receiver,
-                     content::RenderFrameHost* render_frame_host);
+  static void Create(content::RenderFrameHost* render_frame_host,
+                     mojo::PendingReceiver<AnchorElementMetricsHost> receiver);
 
   // Enum describing the possible set of actions that navigation predictor may
   // take. This enum should remain synchronized with enum
@@ -58,55 +60,42 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost,
   enum class Action {
     kUnknown = 0,
     kNone = 1,
-    kPreresolve = 2,
-    kPreconnect = 3,
+    // DEPRECATED: kPreresolve = 2,
+    // DEPRECATED: kPreconnect = 3,
     kPrefetch = 4,
-    kPreconnectOnVisibilityChange = 5,
-    kDeprecatedPreconnectOnAppForeground = 6,  // Deprecated.
-    kPreconnectAfterTimeout = 7,
-    kMaxValue = kPreconnectAfterTimeout,
+    // DEPRECATED: kPreconnectOnVisibilityChange = 5,
+    // DEPRECATED: kPreconnectOnAppForeground = 6,  // Deprecated.
+    // DEPRECATED: kPreconnectAfterTimeout = 7,
+    kMaxValue = kPrefetch,
   };
 
-  // Enum describing the accuracy of actions taken by the navigation predictor.
-  // This enum should remain synchronized with enum
-  // NavigationPredictorAccuracyActionTaken in enums.xml. Order of enum values
-  // should not be changed since the values are recorded in UMA.
-  enum class ActionAccuracy {
-    // No action was taken, but an anchor element was clicked.
-    kNoActionTakenClickHappened = 0,
-
-    // Navigation predictor prefetched a URL, and an anchor element was clicked
-    // which pointed to the same URL as prefetched URL.
-    kPrefetchActionClickToSameURL = 1,
-
-    // Navigation predictor prefetched a URL, and an anchor element was clicked
-    // whose URL had the same origin as the prefetched URL.
-    kPrefetchActionClickToSameOrigin = 2,
-
-    // Navigation predictor prefetched a URL, and an anchor element was clicked
-    // whose URL had a different origin than the prefetched URL.
-    kPrefetchActionClickToDifferentOrigin = 3,
-
-    // Navigation predictor preconnected to an origin, and an anchor element was
-    // clicked whose URL had the same origin as the preconnected origin.
-    kPreconnectActionClickToSameOrigin = 4,
-
-    // Navigation predictor preconnected to an origin, and an anchor element was
-    // clicked whose URL had a different origin than the preconnected origin.
-    kPreconnectActionClickToDifferentOrigin = 5,
-    kMaxValue = kPreconnectActionClickToDifferentOrigin,
+  // Enum to report the prerender result of the clicked link. Changes must be
+  // propagated to enums.xml, and the enum should not be re-ordered.
+  enum class PrerenderResult {
+    // The prerender finished entirely before the link was clicked.
+    kSameOriginPrefetchFinished = 0,
+    // The prerender was started but not finished before the user navigated or
+    // backgrounded the page.
+    kSameOriginPrefetchPartiallyComplete = 1,
+    // The link was waiting to be prerendered while another prerender was in
+    // progress.
+    kSameOriginPrefetchInQueue = 2,
+    // The prerender was attempted, but a prerender mechanism skipped the
+    // prerender.
+    kSameOriginPrefetchSkipped = 3,
+    // The link was same origin, but scored poorly in the decider logic.
+    kSameOriginBelowThreshold = 4,
+    // The URL was not seen in the load event.
+    kSameOriginNotSeen = 5,
+    // The link was cross origin and scored above the threshold, but we did not
+    // prerender it.
+    kCrossOriginAboveThreshold = 6,
+    // The link was cross origin and scored below the threshold.
+    kCrossOriginBelowThreshold = 7,
+    // The URL was not seen in the load event.
+    kCrossOriginNotSeen = 8,
+    kMaxValue = kCrossOriginNotSeen,
   };
-
- protected:
-  // Origin that we decided to preconnect to.
-  base::Optional<url::Origin> preconnect_origin_;
-
-  // URL that we decided to prefetch.
-  base::Optional<GURL> prefetch_url_;
-
-  // True if a prefetch_url_ has already been prefetched, so we know
-  // whether to prefetch the url again when a tab becomes visible.
-  bool prefetch_url_prefetched_ = false;
 
  private:
   // Struct holding navigation score, rank and other info of the anchor element.
@@ -120,14 +109,24 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost,
       std::vector<blink::mojom::AnchorElementMetricsPtr> metrics,
       const gfx::Size& viewport_size) override;
 
+  // content::WebContentsObserver:
+  void OnVisibilityChanged(content::Visibility visibility) override;
+  void DidStartNavigation(
+      content::NavigationHandle* navigation_handle) override;
+
+  // prerender::PrerenderHandle::Observer:
+  void OnPrerenderStop(prerender::PrerenderHandle* handle) override;
+  void OnPrerenderStart(prerender::PrerenderHandle* handle) override {}
+  void OnPrerenderStopLoading(prerender::PrerenderHandle* handle) override {}
+  void OnPrerenderDomContentLoaded(
+      prerender::PrerenderHandle* handle) override {}
+  void OnPrerenderNetworkBytesChanged(
+      prerender::PrerenderHandle* handle) override {}
+
   // Returns true if the anchor element metric from the renderer process is
   // valid.
   bool IsValidMetricFromRenderer(
       const blink::mojom::AnchorElementMetrics& metric) const;
-
-  // Returns site engagement service, which can be used to get site engagement
-  // score. Return value is guaranteed to be non-null.
-  SiteEngagementService* GetEngagementService() const;
 
   // Returns template URL service. Guaranteed to be non-null.
   TemplateURLService* GetTemplateURLService() const;
@@ -136,8 +135,8 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost,
   void MergeMetricsSameTargetUrl(
       std::vector<blink::mojom::AnchorElementMetricsPtr>* metrics) const;
 
-  // Computes and stores document level metrics, including |number_of_anchors_|,
-  // |document_engagement_score_|, etc.
+  // Computes and stores document level metrics, including |number_of_anchors_|
+  // etc.
   void ComputeDocumentMetricsOnLoad(
       const std::vector<blink::mojom::AnchorElementMetricsPtr>& metrics);
 
@@ -145,8 +144,6 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost,
   // returns navigation score. Virtual for testing purposes.
   virtual double CalculateAnchorNavigationScore(
       const blink::mojom::AnchorElementMetrics& metrics,
-      double document_engagement_score,
-      double target_engagement_score,
       int area_rank) const;
 
   // If |sum_page_scales_| is non-zero, return the page-wide score to add to
@@ -157,7 +154,7 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost,
   // action to take, or decide not to do anything. Example actions including
   // preresolve, preload, prerendering, etc.
   void MaybeTakeActionOnLoad(
-      const url::Origin& document_origin,
+      const GURL& document_url,
       const std::vector<std::unique_ptr<NavigationScore>>&
           sorted_navigation_scores);
 
@@ -166,17 +163,15 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost,
 
   // Given a url to prefetch, uses PrerenderManager to start a NoStatePrefetch
   // of that URL.
-  virtual void Prefetch(prerender::PrerenderManager* prerender_manager);
+  virtual void Prefetch(prerender::PrerenderManager* prerender_manager,
+                        const GURL& url_to_prefetch);
 
-  base::Optional<GURL> GetUrlToPrefetch(
-      const url::Origin& document_origin,
+  // Returns a collection of URLs that can be prefetched. Only one should be
+  // prefetched at a time.
+  std::deque<GURL> GetUrlsToPrefetch(
+      const GURL& document_url,
       const std::vector<std::unique_ptr<NavigationScore>>&
-          sorted_navigation_scores) const;
-
-  base::Optional<url::Origin> GetOriginToPreconnect(
-      const url::Origin& document_origin,
-      const std::vector<std::unique_ptr<NavigationScore>>&
-          sorted_navigation_scores) const;
+          sorted_navigation_scores);
 
   // Record anchor element metrics on page load.
   void RecordMetricsOnLoad(
@@ -190,19 +185,14 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost,
   // |target_url| is the URL navigated to by the user.
   void RecordActionAccuracyOnClick(const GURL& target_url) const;
 
-  // content::WebContentsObserver:
-  void OnVisibilityChanged(content::Visibility visibility) override;
-
-  // MaybePreconnectNow preconnects to an origin server if it's allowed.
-  void MaybePreconnectNow(Action log_action);
+  // Records metrics on which action the predictor is taking.
+  void RecordAction(Action log_action);
 
   // Sends metrics to the UKM id at |ukm_source_id_|.
   void MaybeSendMetricsToUkm() const;
 
   // After an in-page click, sends the index of the url that was clicked to the
-  // UKM id at |ukm_source_id_|. The index sent corresponds to the index of that
-  // url in |top_urls_|, and is 1-indexed. If the url does not appear in
-  // |top_urls_|, a 0 is returned.
+  // UKM id at |ukm_source_id_|.
   void MaybeSendClickMetricsToUkm(const std::string& clicked_url) const;
 
   // Returns the minimum of the bucket that |value| belongs in, for page-wide
@@ -217,17 +207,20 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost,
   // |ratio_area|.
   int GetLinearBucketForRatioArea(int value) const;
 
+  // Notifies the keyed service of the updated predicted navigation.
+  void NotifyPredictionUpdated(
+      const std::vector<std::unique_ptr<NavigationScore>>&
+          sorted_navigation_scores);
+
+  // Record metrics about how many prerenders were started and finished.
+  void RecordActionAccuracyOnTearDown();
+
   // Used to get keyed services.
   content::BrowserContext* const browser_context_;
 
   // Maps from target url (href) to navigation score.
   std::unordered_map<std::string, std::unique_ptr<NavigationScore>>
       navigation_scores_map_;
-
-  // The urls of the top anchor elements in the page, in a random order.
-  // If there are 10 or more urls on the page, |top_urls_| contains 10 urls.
-  // Otherwise, it contains all the urls.
-  std::vector<GURL> top_urls_;
 
   // Total number of anchors that: href has the same host as the document,
   // contains image, inside an iframe, href incremented by 1 from document url.
@@ -251,8 +244,6 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost,
   const int is_same_host_scale_;
   const int contains_image_scale_;
   const int is_url_incremented_scale_;
-  const int source_engagement_score_scale_;
-  const int target_engagement_score_scale_;
   const int area_rank_scale_;
   const int ratio_distance_root_top_scale_;
 
@@ -282,22 +273,20 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost,
   // they are not comparable.
   const int prefetch_url_score_threshold_;
 
-  // Minimum preconnect score that the origin should have for preconnect. Note
-  // that scores of origins are computed differently from scores of URLs, so
-  // they are not comparable.
-  const int preconnect_origin_score_threshold_;
-
-  // True if |this| is allowed to preconnect to same origin hosts.
-  const bool same_origin_preconnecting_allowed_;
-
-  // True if |this| should use the PrerenderManager to prefetch after
-  // a preconnect.
-  const bool prefetch_after_preconnect_;
+  // True if |this| should use the PrerenderManager to prefetch.
+  const bool prefetch_enabled_;
 
   // True by default, otherwise navigation scores will not be normalized
   // by the sum of metrics weights nor normalized from 0 to 100 across
   // all navigation scores for a page.
   const bool normalize_navigation_scores_;
+
+  // A count of clicks to prevent reporting more than 10 clicks to UKM.
+  size_t clicked_count_ = 0;
+
+  // Whether a new navigation has started (only set if load event comes before
+  // DidStartNavigation).
+  bool next_navigation_started_ = false;
 
   // Timing of document loaded and last click.
   base::TimeTicks document_loaded_timing_;
@@ -310,11 +299,24 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost,
   // Current visibility state of the web contents.
   content::Visibility current_visibility_;
 
-  // Used to preconnect regularly.
-  base::OneShotTimer timer_;
-
-  // PrerenderHandle returned after completing a prefetch in PrerenderManager.
+  // Current prerender handle.
   std::unique_ptr<prerender::PrerenderHandle> prerender_handle_;
+
+  // URL that we decided to prefetch, and are currently prefetching.
+  base::Optional<GURL> prefetch_url_;
+
+  // An ordered list of URLs that should be prefetched in succession.
+  std::deque<GURL> urls_to_prefetch_;
+
+  // URLs that were successfully prefetched.
+  std::set<GURL> urls_prefetched_;
+
+  // URLs that scored above the threshold in sorted order.
+  std::vector<GURL> urls_above_threshold_;
+
+  // URLs that had a prerender started, but were canceled due to background or
+  // next navigation.
+  std::set<GURL> partial_prerfetches_;
 
   // UKM ID for navigation
   ukm::SourceId ukm_source_id_;
@@ -322,8 +324,11 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost,
   // UKM recorder
   ukm::UkmRecorder* ukm_recorder_ = nullptr;
 
-  // The origin of the current page.
-  url::Origin document_origin_;
+  // The URL of the current page.
+  GURL document_url_;
+
+  // Render frame host of the current page.
+  const content::RenderFrameHost* render_frame_host_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

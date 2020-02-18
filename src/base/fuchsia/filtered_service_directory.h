@@ -14,11 +14,12 @@
 
 #include "base/base_export.h"
 #include "base/macros.h"
+#include "base/strings/string_piece.h"
 
 namespace base {
 namespace fuchsia {
 
-// ServiceDirectory that uses the supplied ServiceDirectoryClient to satisfy
+// ServiceDirectory that uses the supplied sys::ServiceDirectory to satisfy
 // requests for only a restricted set of services.
 class BASE_EXPORT FilteredServiceDirectory {
  public:
@@ -28,19 +29,20 @@ class BASE_EXPORT FilteredServiceDirectory {
   ~FilteredServiceDirectory();
 
   // Adds the specified service to the list of whitelisted services.
-  void AddService(const char* service_name);
+  void AddService(base::StringPiece service_name);
 
   // Connects a directory client. The directory can be passed to a sandboxed
   // process to be used for /svc namespace.
   void ConnectClient(
       fidl::InterfaceRequest<::fuchsia::io::Directory> dir_request);
 
+  // Accessor for the OutgoingDirectory, used to add handlers for services
+  // in addition to those provided from |directory| via AddService().
+  sys::OutgoingDirectory* outgoing_directory() { return &outgoing_directory_; }
+
  private:
   const sys::ServiceDirectory* const directory_;
   sys::OutgoingDirectory outgoing_directory_;
-
-  // Client side of the channel used by |outgoing_directory_|.
-  fidl::InterfaceHandle<::fuchsia::io::Directory> outgoing_directory_client_;
 
   DISALLOW_COPY_AND_ASSIGN(FilteredServiceDirectory);
 };

@@ -8,6 +8,13 @@ We follow the [Chromium code of conduct](
 https://chromium.googlesource.com/chromium/src/+/master/CODE_OF_CONDUCT.md) in
 our our repos and organizations, mailing lists, and other communications.
 
+# Issues
+
+Please use crbug.com issue tracker. Relevant components to file bugs to include
+"Speed", "Test>Telemetry", "Speed>Dashboard", "Speed>Tracing", and "Speed>Bisection".
+
+Do not use the github issue tracker.
+
 # Workflow
 
 Install [depot_tools](
@@ -56,7 +63,7 @@ Credentials for the following hosts are required:
   github-review.com
   github.com
 ```
-Then you cloned the github url of this repository. That confuses git cl /o\.
+Then you cloned the github url of this repository. That confuses `git cl` /o\.
 To make things work, you'll need to re-clone from
 https://chromium.googlesource.com/catapult for things to work.
 

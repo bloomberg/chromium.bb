@@ -16,14 +16,18 @@
 
 #include "src/trace_processor/string_pool.h"
 
+#include <limits>
+
 #include "perfetto/base/logging.h"
 #include "perfetto/ext/base/utils.h"
 
 namespace perfetto {
 namespace trace_processor {
 
-StringPool::StringPool() {
-  blocks_.emplace_back(kDefaultBlockSize);
+StringPool::StringPool(size_t block_size_bytes)
+    : block_size_bytes_(block_size_bytes > 0 ? block_size_bytes
+                                             : kDefaultBlockSize) {
+  blocks_.emplace_back(block_size_bytes_);
 
   // Reserve a slot for the null string.
   PERFETTO_CHECK(blocks_.back().TryInsert(NullTermStringView()));
@@ -40,16 +44,16 @@ StringPool::Id StringPool::InsertString(base::StringView str, uint64_t hash) {
   const uint8_t* ptr = blocks_.back().TryInsert(str);
   if (PERFETTO_UNLIKELY(!ptr)) {
     // This means the block did not have enough space. This should only happen
-    // on 32-bit platforms as we allocate a 4GB mmap on 64 bit.
-    PERFETTO_CHECK(sizeof(uint8_t*) == 4);
+    // if the block size is small.
+    PERFETTO_CHECK(block_size_bytes_ <= std::numeric_limits<uint32_t>::max());
 
     // Add a new block to store the data. If the string is larger that the
     // default block size, add a bigger block exlusively for this string.
-    if (str.size() + kMaxMetadataSize > kDefaultBlockSize) {
+    if (str.size() + kMaxMetadataSize > block_size_bytes_) {
       blocks_.emplace_back(str.size() +
                            base::AlignUp<base::kPageSize>(kMaxMetadataSize));
     } else {
-      blocks_.emplace_back(kDefaultBlockSize);
+      blocks_.emplace_back(block_size_bytes_);
     }
 
     // Try and reserve space again - this time we should definitely succeed.
@@ -66,8 +70,12 @@ StringPool::Id StringPool::InsertString(base::StringView str, uint64_t hash) {
 
 const uint8_t* StringPool::Block::TryInsert(base::StringView str) {
   auto str_size = str.size();
-  if (static_cast<uint64_t>(pos_) + str_size + kMaxMetadataSize > size_)
+  size_t max_pos = static_cast<size_t>(pos_) + str_size + kMaxMetadataSize;
+  if (max_pos > size_)
     return nullptr;
+
+  // Ensure that we commit up until the end of the string to memory.
+  mem_.EnsureCommitted(max_pos);
 
   // Get where we should start writing this string.
   uint8_t* begin = Get(pos_);
@@ -86,6 +94,7 @@ const uint8_t* StringPool::Block::TryInsert(base::StringView str) {
 
   // Update the end of the block and return the pointer to the string.
   pos_ = OffsetOf(end);
+
   return begin;
 }
 

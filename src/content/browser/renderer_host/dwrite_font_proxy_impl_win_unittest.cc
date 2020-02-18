@@ -22,7 +22,8 @@
 #include "base/win/windows_version.h"
 #include "content/public/common/content_features.h"
 #include "content/public/test/browser_task_environment.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/service_manager/public/cpp/bind_source_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/dwrite_rasterizer_support/dwrite_rasterizer_support.h"
@@ -57,7 +58,7 @@ constexpr int kDWriteMajorVersionSupportingSingleLookups = 10;
 class DWriteFontProxyImplUnitTest : public testing::Test {
  public:
   DWriteFontProxyImplUnitTest()
-      : binding_(&impl_, mojo::MakeRequest(&dwrite_font_proxy_)) {}
+      : receiver_(&impl_, dwrite_font_proxy_.BindNewPipeAndPassReceiver()) {}
 
   blink::mojom::DWriteFontProxy& dwrite_font_proxy() {
     return *dwrite_font_proxy_;
@@ -70,9 +71,9 @@ class DWriteFontProxyImplUnitTest : public testing::Test {
   }
 
   base::test::TaskEnvironment task_environment_;
-  blink::mojom::DWriteFontProxyPtr dwrite_font_proxy_;
+  mojo::Remote<blink::mojom::DWriteFontProxy> dwrite_font_proxy_;
   DWriteFontProxyImpl impl_;
-  mojo::Binding<blink::mojom::DWriteFontProxy> binding_;
+  mojo::Receiver<blink::mojom::DWriteFontProxy> receiver_;
 };
 
 // Derived class for tests that exercise font unique local matching mojo methods
@@ -268,24 +269,31 @@ TEST_F(DWriteFontProxyImplUnitTest, FallbackFamily) {
     if (fallback_request.is_win10 && !on_win10)
       continue;
 
-    std::string family_name;
+    blink::mojom::FallbackFamilyAndStylePtr fallback_family_and_style;
     UChar32 codepoint;
     U16_GET(fallback_request.text.c_str(), 0, 0, fallback_request.text.size(),
             codepoint);
-    dwrite_font_proxy().FallbackFamilyNameForCodepoint(
+    dwrite_font_proxy().FallbackFamilyAndStyleForCodepoint(
         "Times New Roman", fallback_request.language_tag, codepoint,
-        &family_name);
+        &fallback_family_and_style);
 
     auto find_result_it =
         std::find(fallback_request.fallback_fonts.begin(),
-                  fallback_request.fallback_fonts.end(), family_name);
+                  fallback_request.fallback_fonts.end(),
+                  fallback_family_and_style->fallback_family_name);
 
     EXPECT_TRUE(find_result_it != fallback_request.fallback_fonts.end())
         << "Did not find expected fallback font for language: "
         << fallback_request.language_tag << ", codepoint U+" << std::hex
-        << codepoint << " DWrite returned font name: \"" << family_name << "\""
+        << codepoint << " DWrite returned font name: \""
+        << fallback_family_and_style->fallback_family_name << "\""
         << ", expected: "
         << base::JoinString(fallback_request.fallback_fonts, ", ");
+    EXPECT_EQ(fallback_family_and_style->weight, 400u);
+    EXPECT_EQ(fallback_family_and_style->width,
+              5u);  // SkFontStyle::Width::kNormal_Width
+    EXPECT_EQ(fallback_family_and_style->slant,
+              0u);  // SkFontStyle::Slant::kUpright_Slant
   }
 }
 

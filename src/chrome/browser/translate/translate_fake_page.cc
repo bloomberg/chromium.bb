@@ -33,27 +33,21 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_renderer_host.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "url/gurl.h"
 
 FakePageImpl::FakePageImpl()
-    : called_translate_(false),
-      called_revert_translation_(false),
-      binding_(this) {}
+    : called_translate_(false), called_revert_translation_(false) {}
 FakePageImpl::~FakePageImpl() {}
 
-translate::mojom::PagePtr FakePageImpl::BindToNewPagePtr() {
-  binding_.Close();
+mojo::PendingRemote<translate::mojom::Page>
+FakePageImpl::BindToNewPageRemote() {
+  receiver_.reset();
   translate_callback_pending_.Reset();
-  translate::mojom::PagePtr page;
-  binding_.Bind(mojo::MakeRequest(&page));
-  return page;
+  return receiver_.BindNewPipeAndPassRemote();
 }
 
 // translate::mojom::Page implementation.
 void FakePageImpl::Translate(const std::string& translate_script,
-                             network::mojom::URLLoaderFactoryPtr
-                                 unused_loader_factory_for_translate_script,
                              const std::string& source_lang,
                              const std::string& target_lang,
                              TranslateCallback callback) {

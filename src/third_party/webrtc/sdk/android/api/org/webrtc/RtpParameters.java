@@ -13,7 +13,6 @@ package org.webrtc;
 import android.support.annotation.Nullable;
 import java.lang.Double;
 import java.lang.String;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import org.webrtc.MediaStreamTrack;
@@ -53,7 +52,7 @@ public class RtpParameters {
     public Long ssrc;
 
     // This constructor is useful for creating simulcast layers.
-    Encoding(String rid, boolean active, Double scaleResolutionDownBy) {
+    public Encoding(String rid, boolean active, Double scaleResolutionDownBy) {
       this.rid = rid;
       this.active = active;
       this.scaleResolutionDownBy = scaleResolutionDownBy;

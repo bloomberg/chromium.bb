@@ -13,7 +13,7 @@
 #include "base/strings/stringprintf.h"
 #include "media/capture/video/fake_video_capture_device.h"
 #include "media/capture/video/video_capture_device_info.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/video_capture/device_media_to_mojo_adapter.h"
 #include "services/video_capture/public/mojom/producer.mojom.h"
 #include "services/video_capture/public/uma/video_capture_service_event.h"
@@ -101,23 +101,23 @@ DeviceFactoryMediaToMojoAdapter::~DeviceFactoryMediaToMojoAdapter() = default;
 void DeviceFactoryMediaToMojoAdapter::GetDeviceInfos(
     GetDeviceInfosCallback callback) {
   capture_system_->GetDeviceInfosAsync(
-      base::Bind(&TranslateDeviceInfos, base::Passed(&callback)));
+      base::BindOnce(&TranslateDeviceInfos, std::move(callback)));
   has_called_get_device_infos_ = true;
 }
 
 void DeviceFactoryMediaToMojoAdapter::CreateDevice(
     const std::string& device_id,
-    mojom::DeviceRequest device_request,
+    mojo::PendingReceiver<mojom::Device> device_receiver,
     CreateDeviceCallback callback) {
   auto active_device_iter = active_devices_by_id_.find(device_id);
   if (active_device_iter != active_devices_by_id_.end()) {
     // The requested device is already in use.
-    // Revoke the access and close the device, then bind to the new request.
+    // Revoke the access and close the device, then bind to the new receiver.
     ActiveDeviceEntry& device_entry = active_device_iter->second;
-    device_entry.binding->Unbind();
+    device_entry.receiver->reset();
     device_entry.device->Stop();
-    device_entry.binding->Bind(std::move(device_request));
-    device_entry.binding->set_connection_error_handler(base::Bind(
+    device_entry.receiver->Bind(std::move(device_receiver));
+    device_entry.receiver->set_disconnect_handler(base::BindOnce(
         &DeviceFactoryMediaToMojoAdapter::OnClientConnectionErrorOrClose,
         base::Unretained(this), device_id));
     std::move(callback).Run(mojom::DeviceAccessResultCode::SUCCESS);
@@ -127,7 +127,7 @@ void DeviceFactoryMediaToMojoAdapter::CreateDevice(
   auto create_and_add_new_device_cb =
       base::BindOnce(&DeviceFactoryMediaToMojoAdapter::CreateAndAddNewDevice,
                      weak_factory_.GetWeakPtr(), device_id,
-                     std::move(device_request), std::move(callback));
+                     std::move(device_receiver), std::move(callback));
 
   if (has_called_get_device_infos_) {
     std::move(create_and_add_new_device_cb).Run();
@@ -135,34 +135,36 @@ void DeviceFactoryMediaToMojoAdapter::CreateDevice(
   }
 
   capture_system_->GetDeviceInfosAsync(
-      base::Bind(&DiscardDeviceInfosAndCallContinuation,
-                 base::Passed(&create_and_add_new_device_cb)));
+      base::BindOnce(&DiscardDeviceInfosAndCallContinuation,
+                     std::move(create_and_add_new_device_cb)));
   has_called_get_device_infos_ = true;
 }
 
 void DeviceFactoryMediaToMojoAdapter::AddSharedMemoryVirtualDevice(
     const media::VideoCaptureDeviceInfo& device_info,
-    mojom::ProducerPtr producer,
+    mojo::PendingRemote<mojom::Producer> producer,
     bool send_buffer_handles_to_producer_as_raw_file_descriptors,
-    mojom::SharedMemoryVirtualDeviceRequest virtual_device_request) {
+    mojo::PendingReceiver<mojom::SharedMemoryVirtualDevice>
+        virtual_device_receiver) {
   NOTIMPLEMENTED();
 }
 
 void DeviceFactoryMediaToMojoAdapter::AddTextureVirtualDevice(
     const media::VideoCaptureDeviceInfo& device_info,
-    mojom::TextureVirtualDeviceRequest virtual_device_request) {
+    mojo::PendingReceiver<mojom::TextureVirtualDevice>
+        virtual_device_receiver) {
   NOTIMPLEMENTED();
 }
 
 void DeviceFactoryMediaToMojoAdapter::RegisterVirtualDevicesChangedObserver(
-    mojom::DevicesChangedObserverPtr observer,
+    mojo::PendingRemote<mojom::DevicesChangedObserver> observer,
     bool raise_event_if_virtual_devices_already_present) {
   NOTIMPLEMENTED();
 }
 
 void DeviceFactoryMediaToMojoAdapter::CreateAndAddNewDevice(
     const std::string& device_id,
-    mojom::DeviceRequest device_request,
+    mojo::PendingReceiver<mojom::Device> device_receiver,
     CreateDeviceCallback callback) {
   std::unique_ptr<media::VideoCaptureDevice> media_device =
       capture_system_->CreateDevice(device_id);
@@ -183,9 +185,9 @@ void DeviceFactoryMediaToMojoAdapter::CreateAndAddNewDevice(
   device_entry.device =
       std::make_unique<DeviceMediaToMojoAdapter>(std::move(media_device));
 #endif  // defined(OS_CHROMEOS)
-  device_entry.binding = std::make_unique<mojo::Binding<mojom::Device>>(
-      device_entry.device.get(), std::move(device_request));
-  device_entry.binding->set_connection_error_handler(base::Bind(
+  device_entry.receiver = std::make_unique<mojo::Receiver<mojom::Device>>(
+      device_entry.device.get(), std::move(device_receiver));
+  device_entry.receiver->set_disconnect_handler(base::BindOnce(
       &DeviceFactoryMediaToMojoAdapter::OnClientConnectionErrorOrClose,
       base::Unretained(this), device_id));
   active_devices_by_id_[device_id] = std::move(device_entry);

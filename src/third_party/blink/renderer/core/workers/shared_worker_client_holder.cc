@@ -34,8 +34,9 @@
 #include <utility>
 #include "base/logging.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
-#include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
+#include "third_party/blink/public/mojom/blob/blob_url_store.mojom-blink.h"
 #include "third_party/blink/public/mojom/loader/fetch_client_settings_object.mojom-blink.h"
 #include "third_party/blink/public/mojom/worker/shared_worker_info.mojom-blink.h"
 #include "third_party/blink/public/platform/web_content_security_policy.h"
@@ -71,7 +72,7 @@ SharedWorkerClientHolder::SharedWorkerClientHolder(Document& document)
     : ContextLifecycleObserver(&document),
       task_runner_(document.GetTaskRunner(blink::TaskType::kDOMManipulation)) {
   DCHECK(IsMainThread());
-  document.GetInterfaceProvider()->GetInterface(
+  document.GetBrowserInterfaceBroker().GetInterface(
       connector_.BindNewPipeAndPassReceiver(task_runner_));
 }
 
@@ -91,11 +92,11 @@ void SharedWorkerClientHolder::Connect(
   Vector<CSPHeaderAndType> headers =
       worker->GetExecutionContext()->GetContentSecurityPolicy()->Headers();
   WebString header = "";
-  auto header_type = mojom::ContentSecurityPolicyType::kReport;
+  auto header_type = network::mojom::ContentSecurityPolicyType::kReport;
   if (headers.size() > 0) {
     header = headers[0].first;
-    header_type =
-        static_cast<mojom::ContentSecurityPolicyType>(headers[0].second);
+    header_type = static_cast<network::mojom::ContentSecurityPolicyType>(
+        headers[0].second);
   }
 
   mojom::blink::SharedWorkerInfoPtr info(mojom::blink::SharedWorkerInfo::New(

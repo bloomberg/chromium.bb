@@ -17,6 +17,7 @@ import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
@@ -30,13 +31,13 @@ import org.chromium.chrome.browser.download.DownloadManagerService;
 import org.chromium.chrome.browser.download.DownloadNotifier;
 import org.chromium.chrome.browser.download.DownloadSharedPreferenceEntry;
 import org.chromium.chrome.browser.download.DownloadSharedPreferenceHelper;
+import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.offlinepages.OfflinePageOrigin;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.document.AsyncTabCreationParams;
 import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.components.offline_items_collection.ContentId;
 import org.chromium.components.offline_items_collection.LaunchLocation;
 import org.chromium.components.offline_items_collection.LegacyHelpers;
@@ -65,13 +66,16 @@ public class OfflinePageDownloadBridge {
     }
 
     private OfflinePageDownloadBridge() {
-        mNativeOfflinePageDownloadBridge = sIsTesting ? 0L : nativeInit();
+        mNativeOfflinePageDownloadBridge = sIsTesting
+                ? 0L
+                : OfflinePageDownloadBridgeJni.get().init(OfflinePageDownloadBridge.this);
     }
 
     /** Destroys the native portion of the bridge. */
     public void destroy() {
         if (mNativeOfflinePageDownloadBridge != 0) {
-            nativeDestroy(mNativeOfflinePageDownloadBridge);
+            OfflinePageDownloadBridgeJni.get().destroy(
+                    mNativeOfflinePageDownloadBridge, OfflinePageDownloadBridge.this);
             mNativeOfflinePageDownloadBridge = 0;
         }
     }
@@ -172,7 +176,7 @@ public class OfflinePageDownloadBridge {
      * @param origin the object encapsulating application origin of the request.
      */
     public static void startDownload(Tab tab, OfflinePageOrigin origin) {
-        nativeStartDownload(tab, origin.encodeAsJsonString());
+        OfflinePageDownloadBridgeJni.get().startDownload(tab, origin.encodeAsJsonString());
     }
 
     /**
@@ -260,7 +264,10 @@ public class OfflinePageDownloadBridge {
         return null;
     }
 
-    private native long nativeInit();
-    private native void nativeDestroy(long nativeOfflinePageDownloadBridge);
-    private static native void nativeStartDownload(Tab tab, String origin);
+    @NativeMethods
+    interface Natives {
+        long init(OfflinePageDownloadBridge caller);
+        void destroy(long nativeOfflinePageDownloadBridge, OfflinePageDownloadBridge caller);
+        void startDownload(Tab tab, String origin);
+    }
 }

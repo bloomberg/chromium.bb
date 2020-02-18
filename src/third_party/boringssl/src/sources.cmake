@@ -14,6 +14,7 @@ set(
   crypto/cipher_extra/test/aes_128_ctr_hmac_sha256.txt
   crypto/cipher_extra/test/aes_128_gcm_siv_tests.txt
   crypto/cipher_extra/test/aes_128_gcm_tests.txt
+  crypto/cipher_extra/test/aes_192_gcm_tests.txt
   crypto/cipher_extra/test/aes_256_cbc_sha1_tls_implicit_iv_tests.txt
   crypto/cipher_extra/test/aes_256_cbc_sha1_tls_tests.txt
   crypto/cipher_extra/test/aes_256_cbc_sha256_tls_tests.txt
@@ -46,6 +47,7 @@ set(
   crypto/evp/scrypt_tests.txt
   crypto/fipsmodule/aes/aes_tests.txt
   crypto/fipsmodule/bn/bn_tests.txt
+  crypto/fipsmodule/bn/miller_rabin_tests.txt
   crypto/fipsmodule/ec/ec_scalar_base_mult_tests.txt
   crypto/fipsmodule/ec/p256-x86_64_tests.txt
   crypto/fipsmodule/ecdsa/ecdsa_sign_tests.txt

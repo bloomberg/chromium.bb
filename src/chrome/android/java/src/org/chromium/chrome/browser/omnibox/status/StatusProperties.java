@@ -9,6 +9,7 @@ import android.view.View;
 
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel.WritableBooleanPropertyKey;
+import org.chromium.ui.modelutil.PropertyModel.WritableFloatPropertyKey;
 import org.chromium.ui.modelutil.PropertyModel.WritableIntPropertyKey;
 import org.chromium.ui.modelutil.PropertyModel.WritableObjectPropertyKey;
 
@@ -28,6 +29,12 @@ class StatusProperties {
     /** Specifies the icon. */
     static final WritableObjectPropertyKey<Bitmap> STATUS_ICON =
             new WritableObjectPropertyKey<>(true);
+
+    /** Specifies the icon alpha. */
+    static final WritableFloatPropertyKey STATUS_ALPHA = new WritableFloatPropertyKey();
+
+    /** Specifies if the icon should be shown or not. */
+    static final WritableBooleanPropertyKey SHOW_STATUS_ICON = new WritableBooleanPropertyKey();
 
     /** Specifies accessibility string presented to user upon long click on security icon. */
     public static final WritableIntPropertyKey STATUS_ICON_ACCESSIBILITY_TOAST_RES =
@@ -63,8 +70,8 @@ class StatusProperties {
 
     public static final PropertyKey[] ALL_KEYS = new PropertyKey[] {ANIMATIONS_ENABLED,
             STATUS_ICON_ACCESSIBILITY_TOAST_RES, STATUS_ICON_RES, STATUS_ICON_TINT_RES, STATUS_ICON,
-            STATUS_ICON_DESCRIPTION_RES, SEPARATOR_COLOR_RES, STATUS_CLICK_LISTENER,
-            VERBOSE_STATUS_TEXT_COLOR_RES, VERBOSE_STATUS_TEXT_STRING_RES,
+            STATUS_ALPHA, SHOW_STATUS_ICON, STATUS_ICON_DESCRIPTION_RES, SEPARATOR_COLOR_RES,
+            STATUS_CLICK_LISTENER, VERBOSE_STATUS_TEXT_COLOR_RES, VERBOSE_STATUS_TEXT_STRING_RES,
             VERBOSE_STATUS_TEXT_VISIBLE, VERBOSE_STATUS_TEXT_WIDTH, INCOGNITO_BADGE_VISIBLE};
 
     private StatusProperties() {}

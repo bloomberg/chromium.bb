@@ -126,20 +126,6 @@ std::unique_ptr<protocol::Value> StringUtil::parseJSON(const String16& string) {
 }
 
 // static
-ProtocolMessage StringUtil::jsonToMessage(String message) {
-  ProtocolMessage result;
-  result.json = std::move(message);
-  return result;
-}
-
-// static
-ProtocolMessage StringUtil::binaryToMessage(std::vector<uint8_t> message) {
-  ProtocolMessage result;
-  result.binary = std::move(message);
-  return result;
-}
-
-// static
 void StringUtil::builderAppendQuotedString(StringBuilder& builder,
                                            const String& str) {
   builder.append('"');
@@ -167,15 +153,6 @@ std::unique_ptr<StringBufferImpl> StringBufferImpl::adopt(String16& string) {
 StringBufferImpl::StringBufferImpl(String16& string) {
   m_owner.swap(string);
   m_string = toStringView(m_owner);
-}
-
-String16 debuggerIdToString(const std::pair<int64_t, int64_t>& debuggerId) {
-  const size_t kBufferSize = 35;
-
-  char buffer[kBufferSize];
-  v8::base::OS::SNPrintF(buffer, kBufferSize, "(%08" PRIX64 "%08" PRIX64 ")",
-                         debuggerId.first, debuggerId.second);
-  return String16(buffer);
 }
 
 String16 stackTraceIdToString(uintptr_t id) {

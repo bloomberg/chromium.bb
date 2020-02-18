@@ -37,9 +37,11 @@ PendingAppManager::~PendingAppManager() {
 }
 
 void PendingAppManager::SetSubsystems(AppRegistrar* registrar,
+                                      AppShortcutManager* shortcut_manager,
                                       WebAppUiManager* ui_manager,
                                       InstallFinalizer* finalizer) {
   registrar_ = registrar;
+  shortcut_manager_ = shortcut_manager;
   ui_manager_ = ui_manager;
   finalizer_ = finalizer;
 }
@@ -89,7 +91,7 @@ void PendingAppManager::SynchronizeInstalledApps(
                          urls_to_remove.size() + desired_urls.size()));
 
   UninstallApps(
-      urls_to_remove,
+      urls_to_remove, install_source,
       base::BindRepeating(&PendingAppManager::UninstallForSynchronizeCallback,
                           weak_ptr_factory_.GetWeakPtr(), install_source));
   InstallApps(

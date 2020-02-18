@@ -13,9 +13,9 @@
 #include "chrome/browser/chromeos/file_system_provider/fileapi/provider_async_file_util.h"
 #include "chrome/browser/chromeos/file_system_provider/fileapi/watcher_manager.h"
 #include "content/public/browser/browser_thread.h"
-#include "storage/browser/fileapi/file_stream_reader.h"
-#include "storage/browser/fileapi/file_stream_writer.h"
-#include "storage/browser/fileapi/file_system_url.h"
+#include "storage/browser/file_system/file_stream_reader.h"
+#include "storage/browser/file_system/file_stream_writer.h"
+#include "storage/browser/file_system/file_system_url.h"
 
 using content::BrowserThread;
 
@@ -86,10 +86,10 @@ storage::WatcherManager* BackendDelegate::GetWatcherManager(
 
 void BackendDelegate::GetRedirectURLForContents(
     const storage::FileSystemURL& url,
-    const storage::URLCallback& callback) {
+    storage::URLCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK_EQ(storage::kFileSystemTypeProvided, url.type());
-  callback.Run(GURL());
+  std::move(callback).Run(GURL());
 }
 
 }  // namespace file_system_provider

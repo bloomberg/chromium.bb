@@ -10,7 +10,8 @@ import android.view.View.MeasureSpec;
 import android.view.ViewGroup;
 import android.view.ViewGroup.MarginLayoutParams;
 
-import org.chromium.base.VisibleForTesting;
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -29,6 +30,7 @@ import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.RenderCoordinates;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
+import org.chromium.content_public.common.ResourceRequestBody;
 import org.chromium.ui.base.ViewAndroidDelegate;
 
 /**
@@ -192,8 +194,8 @@ public class OverlayPanelContent {
             }
 
             @Override
-            public void onLoadProgressChanged(int progress) {
-                mProgressObserver.onProgressBarUpdated(progress);
+            public void visibleSSLStateChanged() {
+                mContentDelegate.onSSLStateUpdated();
             }
 
             @Override
@@ -209,6 +211,18 @@ public class OverlayPanelContent {
             @Override
             public boolean isFullscreenForTabOrPending() {
                 return mIsFullscreen;
+            }
+
+            @Override
+            public void openNewTab(String url, String extraHeaders, ResourceRequestBody postData,
+                    int disposition, boolean isRendererInitiated) {
+                mContentDelegate.onOpenNewTabRequested(url);
+            }
+
+            @Override
+            public boolean shouldCreateWebContents(String targetUrl) {
+                mContentDelegate.onOpenNewTabRequested(targetUrl);
+                return false;
             }
 
             @Override
@@ -331,6 +345,11 @@ public class OverlayPanelContent {
                     }
 
                     @Override
+                    public void loadProgressChanged(float progress) {
+                        mProgressObserver.onProgressBarUpdated(progress);
+                    }
+
+                    @Override
                     public void navigationEntryCommitted() {
                         mContentDelegate.onNavigationEntryCommitted();
                     }
@@ -345,12 +364,18 @@ public class OverlayPanelContent {
                     }
 
                     @Override
+                    public void titleWasSet(String title) {
+                        mContentDelegate.onTitleUpdated(title);
+                    }
+
+                    @Override
                     public void didFinishNavigation(NavigationHandle navigation) {
                         if (navigation.hasCommitted() && navigation.isInMainFrame()) {
                             mIsProcessingPendingNavigation = false;
                             mContentDelegate.onMainFrameNavigation(navigation.getUrl(),
                                     !TextUtils.equals(navigation.getUrl(), mLoadedUrl),
-                                    isHttpFailureCode(navigation.httpStatusCode()));
+                                    isHttpFailureCode(navigation.httpStatusCode()),
+                                    navigation.isErrorPage());
                         }
                     }
                 };
@@ -488,11 +513,17 @@ public class OverlayPanelContent {
         mNativeOverlayPanelContentPtr = 0;
     }
 
-    protected WebContents getWebContents() {
+    /**
+     * @return The associated {@link WebContents}.
+     */
+    public WebContents getWebContents() {
         return mWebContents;
     }
 
-    ViewGroup getContainerView() {
+    /**
+     * @return The associated {@link ContentView}.
+     */
+    public ViewGroup getContainerView() {
         return mContainerView;
     }
 

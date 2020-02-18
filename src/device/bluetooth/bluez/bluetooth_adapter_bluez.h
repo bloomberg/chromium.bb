@@ -74,7 +74,7 @@ class BluetoothPairingBlueZ;
 //
 // When adding methods to this class verify shutdown behavior in
 // BluetoothBlueZTest, Shutdown.
-class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterBlueZ
+class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterBlueZ final
     : public device::BluetoothAdapter,
       public bluez::BluetoothAdapterClient::Observer,
       public bluez::BluetoothDeviceClient::Observer,
@@ -231,13 +231,13 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterBlueZ
   void RegisterGattService(
       BluetoothLocalGattServiceBlueZ* service,
       const base::Closure& callback,
-      const device::BluetoothGattService::ErrorCallback& error_callback);
+      device::BluetoothGattService::ErrorCallback error_callback);
 
   // Unregister a GATT service. The service must already be registered.
   void UnregisterGattService(
       BluetoothLocalGattServiceBlueZ* service,
       const base::Closure& callback,
-      const device::BluetoothGattService::ErrorCallback& error_callback);
+      device::BluetoothGattService::ErrorCallback error_callback);
 
   // Returns if a given service is currently registered.
   bool IsGattServiceRegistered(BluetoothLocalGattServiceBlueZ* service);
@@ -372,6 +372,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterBlueZ
                                  bool success);
 
   // BluetoothAdapter:
+  base::WeakPtr<BluetoothAdapter> GetWeakPtr() override;
   bool SetPoweredImpl(bool powered) override;
   void StartScanWithFilter(
       std::unique_ptr<device::BluetoothDiscoveryFilter> discovery_filter,
@@ -436,19 +437,19 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterBlueZ
   void UpdateRegisteredApplication(
       bool ignore_unregister_failure,
       const base::Closure& callback,
-      const device::BluetoothGattService::ErrorCallback& error_callback);
+      device::BluetoothGattService::ErrorCallback error_callback);
 
   // Make the call to GattManager1 to register the services currently
   // registered.
   void RegisterApplication(
       const base::Closure& callback,
-      const device::BluetoothGattService::ErrorCallback& error_callback);
+      device::BluetoothGattService::ErrorCallback error_callback);
 
   // Register application, ignoring the given errors. Used to register a GATT
   // application even if a previous unregister application call fails.
   void RegisterApplicationOnError(
       const base::Closure& callback,
-      const device::BluetoothGattService::ErrorCallback& error_callback,
+      device::BluetoothGattService::ErrorCallback error_callback,
       const std::string& error_name,
       const std::string& error_message);
 

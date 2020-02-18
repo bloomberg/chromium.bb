@@ -8,7 +8,6 @@
 from __future__ import print_function
 
 import copy
-import json
 import os
 
 import mock
@@ -20,12 +19,10 @@ from chromite.cbuildbot.stages import generic_stages_unittest
 from chromite.cbuildbot.stages import generic_stages
 from chromite.cbuildbot.stages import test_stages
 from chromite.lib import config_lib
-from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import cros_test_lib
 from chromite.lib import failures_lib
-from chromite.lib import fake_cidb
 from chromite.lib import osutils
 from chromite.lib import parallel
 from chromite.lib import path_util
@@ -81,51 +78,6 @@ class UnitTestStageTest(generic_stages_unittest.AbstractStageTestCase,
         'unit_tests.tar', archive=False)
 
 
-class UnitTestOnlyStageTest(generic_stages_unittest.AbstractStageTestCase,
-                            cbuildbot_unittest.SimpleBuilderTestCase):
-  """Tests for the UnitTest stage when BuildPackages is skipped"""
-
-  BOT_ID = 'grunt-unittest-only-paladin'
-  RELEASE_TAG = 'ToT.0.0'
-
-  def setUp(self):
-    self.rununittests_mock = self.PatchObject(commands, 'RunUnitTests')
-    self.buildunittests_mock = self.PatchObject(
-        commands, 'BuildUnitTestTarball', return_value='unit_tests.tar')
-    self.uploadartifact_mock = self.PatchObject(
-        generic_stages.ArchivingStageMixin, 'UploadArtifact')
-    self.image_dir = os.path.join(self.build_root,
-                                  'src/build/images/grunt/latest-cbuildbot')
-
-    self._Prepare()
-    self.buildstore = FakeBuildStore()
-
-  def ConstructStage(self):
-    self._run.GetArchive().SetupArchivePath()
-    return test_stages.UnitTestStage(self._run, self.buildstore,
-                                     self._current_board)
-
-  def testFullTests(self):
-    """Tests if full unit tests are run correctly."""
-    makedirs_mock = self.PatchObject(osutils, 'SafeMakedirs')
-
-    board_runattrs = self._run.GetBoardRunAttrs(self._current_board)
-    board_runattrs.SetParallel('test_artifacts_uploaded', True)
-    self.RunStage()
-    makedirs_mock.assert_called_once_with(self._run.GetArchive().archive_path)
-    self.rununittests_mock.assert_called_once_with(
-        self.build_root,
-        self._current_board,
-        blacklist=[],
-        extra_env=mock.ANY,
-        build_stage=False)
-    self.buildunittests_mock.assert_called_once_with(
-        self.build_root, self._current_board,
-        self._run.GetArchive().archive_path)
-    self.uploadartifact_mock.assert_called_once_with(
-        'unit_tests.tar', archive=False)
-
-
 class HWTestStageTest(generic_stages_unittest.AbstractStageTestCase,
                       cbuildbot_unittest.SimpleBuilderTestCase):
   """Tests for the HWTest stage."""
@@ -146,6 +98,8 @@ class HWTestStageTest(generic_stages_unittest.AbstractStageTestCase,
     self._Prepare()
     self.buildstore = FakeBuildStore()
 
+  # Our API here is not great when it comes to kwargs passing.
+  # pylint: disable=arguments-differ
   def _Prepare(self, bot_id=None, version=None, warn_only=False, **kwargs):
     super(HWTestStageTest, self)._Prepare(bot_id, **kwargs)
 
@@ -154,6 +108,7 @@ class HWTestStageTest(generic_stages_unittest.AbstractStageTestCase,
     self.suite_config = self.GetHWTestSuite()
     self.suite_config.warn_only = warn_only
     self.suite = self.suite_config.suite
+  # pylint: enable=arguments-differ
 
   def ConstructStage(self):
     self._run.GetArchive().SetupArchivePath()
@@ -344,55 +299,6 @@ class HWTestStageTest(generic_stages_unittest.AbstractStageTestCase,
     # called.
     self.assertFalse(self.run_suite_mock.called)
 
-  def testReportHWTestResults(self):
-    """Test ReportHWTestResults."""
-    stage = self.ConstructStage()
-    json_str = """
-{
-  "tests":{
-    "Suite job":{
-       "status":"FAIL"
-    },
-    "cheets_CTS.com.android.cts.dram":{
-       "status":"FAIL"
-    },
-    "cheets_ContainerSmokeTest":{
-       "status":"GOOD"
-    },
-    "cheets_DownloadsFilesystem":{
-       "status":"ABORT"
-    },
-    "cheets_KeyboardTest":{
-       "status":"UNKNOWN"
-    }
-  }
-}
-"""
-    json_dump_dict = json.loads(json_str)
-    db = fake_cidb.FakeCIDBConnection()
-    build_id = db.InsertBuild('build_1', 1, 'build_1', 'bot_hostname')
-
-    # When json_dump_dict is None
-    self.assertIsNone(stage.ReportHWTestResults(None, build_id, db))
-
-    # When db is None
-    self.assertIsNone(stage.ReportHWTestResults(json_dump_dict, build_id, None))
-
-    # When results are successfully reported
-    stage.ReportHWTestResults(json_dump_dict, build_id, db)
-    results = db.GetHWTestResultsForBuilds([build_id])
-    result_dict = {x.test_name: x.status for x in results}
-
-    expect_dict = {
-        'cheets_DownloadsFilesystem': constants.HWTEST_STATUS_ABORT,
-        'cheets_KeyboardTest': constants.HWTEST_STATUS_OTHER,
-        'Suite job': constants.HWTEST_STATUS_FAIL,
-        'cheets_CTS.com.android.cts.dram': constants.HWTEST_STATUS_FAIL,
-        'cheets_ContainerSmokeTest': constants.HWTEST_STATUS_PASS
-    }
-    self.assertItemsEqual(expect_dict, result_dict)
-    self.assertEqual(len(results), 5)
-
   def testPerformStageOnCQ(self):
     """Test PerformStage on CQ."""
     self._Prepare('eve-paladin')
@@ -425,7 +331,8 @@ class ImageTestStageTest(generic_stages_unittest.AbstractStageTestCase,
     self._Prepare()
     self.buildstore = FakeBuildStore()
 
-  def _Prepare(self, bot_id=None, **kwargs):
+  # Our API here is not great when it comes to kwargs passing.
+  def _Prepare(self, bot_id=None, **kwargs):  # pylint: disable=arguments-differ
     super(ImageTestStageTest, self)._Prepare(bot_id, **kwargs)
     self._run.GetArchive().SetupArchivePath()
 
@@ -459,7 +366,7 @@ class CbuildbotLaunchTestEndToEndTest(
     self.tryjob_mock = self.PatchObject(
         commands, 'RunLocalTryjob', autospec=True)
     self.tryjob_failure_exception = failures_lib.BuildScriptFailure(
-        cros_build_lib.RunCommandError('msg', 1), 'cros tryjob')
+        cros_build_lib.RunCommandError('msg'), 'cros tryjob')
 
     self._Prepare()
     self.buildstore = FakeBuildStore()

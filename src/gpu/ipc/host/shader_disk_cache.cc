@@ -469,6 +469,10 @@ void ShaderCacheFactory::ClearByPath(const base::FilePath& path,
                                      base::OnceClosure callback) {
   DCHECK(CalledOnValidThread());
   DCHECK(!callback.is_null());
+  if (path.empty()) {
+    std::move(callback).Run();
+    return;
+  }
 
   auto helper = std::make_unique<ShaderClearHelper>(this, GetByPath(path), path,
                                                     delete_begin, delete_end,
@@ -552,8 +556,9 @@ void ShaderDiskCache::Init() {
 
   int rv = disk_cache::CreateCacheBackend(
       net::SHADER_CACHE, net::CACHE_BACKEND_DEFAULT,
-      cache_path_.Append(kGpuCachePath), CacheSizeBytes(), true, nullptr,
-      &backend_, base::BindOnce(&ShaderDiskCache::CacheCreatedCallback, this));
+      cache_path_.Append(kGpuCachePath), CacheSizeBytes(),
+      disk_cache::ResetHandling::kResetOnError, nullptr, &backend_,
+      base::BindOnce(&ShaderDiskCache::CacheCreatedCallback, this));
 
   if (rv == net::OK)
     cache_available_ = true;

@@ -14,6 +14,7 @@
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/testing/earl_grey/earl_grey_test.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -121,15 +122,15 @@ std::unique_ptr<net::test_server::HttpResponse> GetResponse(
   });
   GREYAssert(dialogShown, @"PassKit dialog was not shown");
 #elif defined(CHROME_EARL_GREY_2)
-  if (@available(iOS 13, *)) {
-    // TODO(crbug.com/989816):Enable the test when FB6895185 is fixed.
-    EARL_GREY_TEST_DISABLED(@"PassKit view is not fully rendered.");
-  }
-
   // EG2 test can use XCUIApplication API to check for PassKit dialog UI
   // presentation.
   XCUIApplication* app = [[XCUIApplication alloc] init];
-  XCUIElement* title = app.otherElements[@"Toy Town Membership"];
+  XCUIElement* title = nil;
+  if (@available(iOS 13, *)) {
+    title = app.staticTexts[@"Toy Town Membership"];
+  } else {
+    title = app.otherElements[@"Toy Town Membership"];
+  }
   GREYAssert([title waitForExistenceWithTimeout:kWaitForDownloadTimeout],
              @"PassKit dialog UI was not presented");
 #else

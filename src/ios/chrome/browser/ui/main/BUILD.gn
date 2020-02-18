@@ -2,6 +2,48 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//ios/build/chrome_build.gni")
+
+source_set("scene") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "scene_controller.h",
+    "scene_controller.mm",
+    "scene_delegate.h",
+    "scene_delegate.mm",
+    "scene_state.h",
+    "scene_state.mm",
+  ]
+
+  deps = [
+    ":main",
+    "//base",
+    "//components/signin/public/identity_manager",
+    "//components/url_formatter",
+    "//ios/chrome/app:app",
+    "//ios/chrome/app/application_delegate:application_delegate_internal",
+    "//ios/chrome/browser/browser_state",
+    "//ios/chrome/browser/browsing_data",
+    "//ios/chrome/browser/main",
+    "//ios/chrome/browser/signin",
+    "//ios/chrome/browser/snapshots",
+    "//ios/chrome/browser/tabs:tabs",
+    "//ios/chrome/browser/ui/browser_view",
+    "//ios/chrome/browser/ui/commands:commands",
+    "//ios/chrome/browser/ui/history",
+    "//ios/chrome/browser/ui/settings:settings_root",
+    "//ios/chrome/browser/ui/signin_interaction",
+    "//ios/chrome/browser/ui/tab_grid",
+    "//ios/chrome/browser/ui/util",
+    "//ios/chrome/browser/ui/util:multiwindow_util",
+    "//ios/chrome/browser/url_loading",
+    "//ios/chrome/browser/web_state_list",
+    "//ios/public/provider/chrome/browser/user_feedback",
+  ]
+
+  libs = [ "UIKit.framework" ]
+}
+
 source_set("main") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
@@ -44,7 +86,7 @@ source_set("main") {
     "//ios/chrome/browser/ui/reading_list",
     "//ios/chrome/browser/ui/recent_tabs",
     "//ios/chrome/browser/ui/snackbar",
-    "//ios/chrome/browser/ui/translate",
+    "//ios/chrome/browser/ui/translate:legacy_translate",
     "//ios/chrome/browser/url_loading",
     "//ios/chrome/browser/web",
     "//ios/chrome/browser/web:tab_helper_delegates",
@@ -53,6 +95,11 @@ source_set("main") {
     "//ios/public/provider/chrome/browser",
     "//net",
   ]
+
+  if (ios_enable_multi_window) {
+    deps += [ "//ios/chrome/app/resources:base_scene_storyboard" ]
+  }
+
   libs = [ "UIKit.framework" ]
 }
 
@@ -61,9 +108,11 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "browser_view_wrangler_unittest.mm",
+    "scene_controller_unittest.mm",
   ]
   deps = [
     ":main",
+    ":scene",
     "//base",
     "//base/test:test_support",
     "//components/bookmarks/test",

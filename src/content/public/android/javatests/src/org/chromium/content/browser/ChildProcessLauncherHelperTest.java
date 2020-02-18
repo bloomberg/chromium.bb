@@ -58,7 +58,7 @@ public class ChildProcessLauncherHelperTest {
     private static final int BLOCK_UNTIL_SETUP = 2;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         LibraryLoader.getInstance().ensureInitialized(LibraryProcessType.PROCESS_CHILD);
     }
 
@@ -151,7 +151,8 @@ public class ChildProcessLauncherHelperTest {
         // will fail to start and the ChildProcessLauncher will retry and use the slot 1.
         ChildProcessCreationParamsImpl.set(context.getPackageName(), false /* isExternalService */,
                 LibraryProcessType.PROCESS_CHILD, true /* bindToCallerCheck */,
-                false /* ignoreVisibilityForImportance */);
+                false /* ignoreVisibilityForImportance */, null /* privilegedServicesName */,
+                null /* sandboxedServicesName */);
         ChildProcessLauncherHelperImpl launcher =
                 startSandboxedChildProcess(BLOCK_UNTIL_SETUP, true /* doSetupConnection */);
 
@@ -257,7 +258,8 @@ public class ChildProcessLauncherHelperTest {
         Context context = InstrumentationRegistry.getTargetContext();
         ChildProcessCreationParamsImpl.set(context.getPackageName(), false /* isExternalService */,
                 LibraryProcessType.PROCESS_CHILD, true /* bindToCallerCheck */,
-                false /* ignoreVisibilityForImportance */);
+                false /* ignoreVisibilityForImportance */, null /* privilegedServicesName */,
+                null /* sandboxedServicesName */);
         testWarmUpImpl();
     }
 
@@ -265,7 +267,7 @@ public class ChildProcessLauncherHelperTest {
     @Test
     @MediumTest
     @Feature({"ProcessManagement"})
-    public void testWarmUpProcessCrashBeforeUse() throws RemoteException {
+    public void testWarmUpProcessCrashBeforeUse() {
         Assert.assertEquals(0, getConnectedSandboxedServicesCount());
 
         Context context = InstrumentationRegistry.getTargetContext();
@@ -292,7 +294,7 @@ public class ChildProcessLauncherHelperTest {
     @Test
     @MediumTest
     @Feature({"ProcessManagement"})
-    public void testWarmUpProcessCrashAfterUse() throws RemoteException {
+    public void testWarmUpProcessCrashAfterUse() {
         Context context = InstrumentationRegistry.getTargetContext();
         warmUpOnUiThreadBlocking(context, true /* sandboxed */);
 
@@ -317,7 +319,7 @@ public class ChildProcessLauncherHelperTest {
     @Test
     @MediumTest
     @Feature({"ProcessManagement"})
-    public void testWarmUpPrivilegedProcess() throws RemoteException {
+    public void testWarmUpPrivilegedProcess() {
         Assert.assertEquals(0, getConnectedServicesCount());
 
         Context context = InstrumentationRegistry.getTargetContext();
@@ -338,7 +340,7 @@ public class ChildProcessLauncherHelperTest {
     @Test
     @MediumTest
     @Feature({"ProcessManagement"})
-    public void testLauncherCleanup() throws RemoteException {
+    public void testLauncherCleanup() {
         ChildProcessLauncherHelperImpl launcher =
                 startSandboxedChildProcess(BLOCK_UNTIL_SETUP, true /* doSetupConnection */);
         int pid = getPid(launcher);

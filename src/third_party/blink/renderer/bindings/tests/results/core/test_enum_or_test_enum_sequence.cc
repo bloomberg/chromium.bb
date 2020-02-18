@@ -13,6 +13,7 @@
 #include "base/stl_util.h"
 #include "third_party/blink/renderer/bindings/core/v8/idl_types.h"
 #include "third_party/blink/renderer/bindings/core/v8/native_value_traits_impl.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_iterator.h"
 #include "third_party/blink/renderer/bindings/core/v8/to_v8_for_core.h"
 
 namespace blink {
@@ -27,7 +28,7 @@ const String& TestEnumOrTestEnumSequence::GetAsTestEnum() const {
 void TestEnumOrTestEnumSequence::SetTestEnum(const String& value) {
   DCHECK(IsNull());
   NonThrowableExceptionState exception_state;
-  const char* kValidValues[] = {
+  const char* const kValidValues[] = {
       "",
       "EnumValue1",
       "EnumValue2",
@@ -55,7 +56,7 @@ const Vector<String>& TestEnumOrTestEnumSequence::GetAsTestEnumSequence() const 
 void TestEnumOrTestEnumSequence::SetTestEnumSequence(const Vector<String>& value) {
   DCHECK(IsNull());
   NonThrowableExceptionState exception_state;
-  const char* kValidValues[] = {
+  const char* const kValidValues[] = {
       "",
       "EnumValue1",
       "EnumValue2",
@@ -94,27 +95,34 @@ void V8TestEnumOrTestEnumSequence::ToImpl(
   if (conversion_mode == UnionTypeConversionMode::kNullable && IsUndefinedOrNull(v8_value))
     return;
 
-  if (HasCallableIteratorSymbol(isolate, v8_value, exception_state)) {
-    Vector<String> cpp_value = NativeValueTraits<IDLSequence<IDLString>>::NativeValue(isolate, v8_value, exception_state);
+  if (v8_value->IsObject()) {
+    ScriptIterator script_iterator = ScriptIterator::FromIterable(
+        isolate, v8_value.As<v8::Object>(), exception_state);
     if (exception_state.HadException())
       return;
-    const char* kValidValues[] = {
-        "",
-        "EnumValue1",
-        "EnumValue2",
-        "EnumValue3",
-    };
-    if (!IsValidEnum(cpp_value, kValidValues, base::size(kValidValues), "TestEnum", exception_state))
+    if (!script_iterator.IsNull()) {
+      Vector<String> cpp_value = NativeValueTraits<IDLSequence<IDLString>>::NativeValue(isolate, std::move(script_iterator), exception_state);
+      if (exception_state.HadException())
+        return;
+      const char* const kValidValues[] = {
+          "",
+          "EnumValue1",
+          "EnumValue2",
+          "EnumValue3",
+      };
+      if (!IsValidEnum(cpp_value, kValidValues, base::size(kValidValues),
+                       "TestEnum", exception_state))
+        return;
+      impl.SetTestEnumSequence(cpp_value);
       return;
-    impl.SetTestEnumSequence(cpp_value);
-    return;
+    }
   }
 
   {
     V8StringResource<> cpp_value = v8_value;
     if (!cpp_value.Prepare(exception_state))
       return;
-    const char* kValidValues[] = {
+    const char* const kValidValues[] = {
         "",
         "EnumValue1",
         "EnumValue2",
@@ -149,3 +157,4 @@ TestEnumOrTestEnumSequence NativeValueTraits<TestEnumOrTestEnumSequence>::Native
 }
 
 }  // namespace blink
+

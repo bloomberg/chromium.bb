@@ -4,7 +4,8 @@
 
 #include "net/third_party/quiche/src/quic/qbone/qbone_packet_exchanger.h"
 
-#include "net/third_party/quiche/src/quic/platform/api/quic_ptr_util.h"
+#include <utility>
+
 #include "net/third_party/quiche/src/quic/platform/api/quic_test.h"
 #include "net/third_party/quiche/src/quic/qbone/mock_qbone_client.h"
 
@@ -99,7 +100,7 @@ TEST(QbonePacketExchangerTest,
 
   string packet = "data";
   exchanger.AddPacketToBeRead(
-      QuicMakeUnique<QuicData>(packet.data(), packet.length()));
+      std::make_unique<QuicData>(packet.data(), packet.length()));
   EXPECT_CALL(client, ProcessPacketFromNetwork(StrEq("data")));
 
   EXPECT_TRUE(exchanger.ReadAndDeliverPacket(&client));

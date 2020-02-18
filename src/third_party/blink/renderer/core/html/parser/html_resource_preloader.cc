@@ -56,11 +56,10 @@ static void PreconnectHost(LocalFrame* local_frame, PreloadRequest* request) {
   if (!host.IsValid() || !host.ProtocolIsInHTTPFamily())
     return;
   WebPrescientNetworking* web_prescient_networking =
-      Platform::Current()->PrescientNetworking();
+      local_frame->PrescientNetworking();
   if (web_prescient_networking) {
     web_prescient_networking->Preconnect(
-        WebLocalFrameImpl::FromFrame(local_frame), host,
-        request->CrossOrigin() != kCrossOriginAttributeAnonymous);
+        host, request->CrossOrigin() != kCrossOriginAttributeAnonymous);
   }
 }
 
@@ -106,7 +105,6 @@ bool HTMLResourcePreloader::AllowPreloadRequest(PreloadRequest* preload) const {
   // resources are either classified into CSS (always fetched when not in the
   // HTML only arm), JS (skip_script param), or other.
   switch (preload->GetResourceType()) {
-    case ResourceType::kFont:
     case ResourceType::kRaw:
     case ResourceType::kSVGDocument:
     case ResourceType::kXSLStyleSheet:
@@ -118,11 +116,14 @@ bool HTMLResourcePreloader::AllowPreloadRequest(PreloadRequest* preload) const {
     case ResourceType::kManifest:
     case ResourceType::kMock:
       return !GetFieldTrialParamByFeatureAsBool(
-          features::kLightweightNoStatePrefetch, "skip_other", false);
+          features::kLightweightNoStatePrefetch, "skip_other", true);
     case ResourceType::kImage:
       return false;
     case ResourceType::kCSSStyleSheet:
       return true;
+    case ResourceType::kFont:
+      return base::FeatureList::IsEnabled(
+          features::kLightweightNoStatePrefetch_FetchFonts);
     case ResourceType::kScript:
       // We might skip all script.
       if (GetFieldTrialParamByFeatureAsBool(
@@ -133,7 +134,7 @@ bool HTMLResourcePreloader::AllowPreloadRequest(PreloadRequest* preload) const {
       // Otherwise, we might skip async/deferred script.
       return !GetFieldTrialParamByFeatureAsBool(
                  features::kLightweightNoStatePrefetch, "skip_async_script",
-                 false) ||
+                 true) ||
              preload->DeferOption() == FetchParameters::DeferOption::kNoDefer;
   }
 }

@@ -15,7 +15,6 @@
 #include "cc/layers/picture_layer_impl.h"
 #include "cc/raster/playback_image_provider.h"
 #include "cc/raster/raster_buffer_provider.h"
-#include "cc/trees/layer_tree_host_common.h"
 #include "cc/trees/layer_tree_host_impl.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "ui/gfx/geometry/axis_transform2d.h"
@@ -146,11 +145,10 @@ RasterizeAndRecordBenchmarkImpl::~RasterizeAndRecordBenchmarkImpl() = default;
 
 void RasterizeAndRecordBenchmarkImpl::DidCompleteCommit(
     LayerTreeHostImpl* host) {
-  LayerTreeHostCommon::CallFunctionForEveryLayer(
-      host->active_tree(), [this](LayerImpl* layer) {
-        rasterize_results_.total_layers++;
-        layer->RunMicroBenchmark(this);
-      });
+  for (auto* layer : *host->active_tree()) {
+    rasterize_results_.total_layers++;
+    layer->RunMicroBenchmark(this);
+  }
 
   std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue());
   result->SetDouble("rasterize_time_ms",

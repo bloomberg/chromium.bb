@@ -6,22 +6,22 @@ package org.chromium.chrome.browser.omnibox;
 
 import android.Manifest;
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.speech.RecognizerIntent;
-import android.support.annotation.IntDef;
-import android.support.annotation.VisibleForTesting;
 import android.text.TextUtils;
+
+import androidx.annotation.IntDef;
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.metrics.CachedMetrics;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteCoordinator;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.RenderFrameHost;
 import org.chromium.content_public.browser.WebContents;
@@ -66,18 +66,19 @@ public class LocationBarVoiceRecognitionHandler {
             new CachedMetrics.EnumeratedHistogramSample(
                     "VoiceInteraction.VoiceResultConfidenceValue", 101);
 
-    final private Delegate mDelegate;
+    private final Delegate mDelegate;
     private WebContentsObserver mVoiceSearchWebContentsObserver;
 
     // VoiceInteractionEventSource defined in tools/metrics/histograms/enums.xml.
     // Do not reorder or remove items, only add new items before HISTOGRAM_BOUNDARY.
     @IntDef({VoiceInteractionSource.OMNIBOX, VoiceInteractionSource.NTP,
-            VoiceInteractionSource.SEARCH_WIDGET})
+            VoiceInteractionSource.SEARCH_WIDGET, VoiceInteractionSource.TASKS_SURFACE})
     public @interface VoiceInteractionSource {
         int OMNIBOX = 0;
         int NTP = 1;
         int SEARCH_WIDGET = 2;
-        int HISTOGRAM_BOUNDARY = 3;
+        int TASKS_SURFACE = 3;
+        int HISTOGRAM_BOUNDARY = 4;
     }
 
     /**
@@ -349,7 +350,7 @@ public class LocationBarVoiceRecognitionHandler {
 
         if (!showSpeechRecognitionIntent(windowAndroid, intent, source)) {
             // Requery whether or not the recognition intent can be handled.
-            isRecognitionIntentPresent(activity, false);
+            isRecognitionIntentPresent(false);
             mDelegate.updateMicButtonState();
             recordVoiceSearchFailureEventSource(source);
         }
@@ -389,7 +390,7 @@ public class LocationBarVoiceRecognitionHandler {
         }
 
         Activity activity = windowAndroid.getActivity().get();
-        return activity != null && isRecognitionIntentPresent(activity, true);
+        return activity != null && isRecognitionIntentPresent(true);
     }
 
     /**
@@ -457,13 +458,11 @@ public class LocationBarVoiceRecognitionHandler {
      * {@link RecognizerIntent#ACTION_WEB_SEARCH} {@link Intent} is handled by any
      * {@link android.app.Activity}s in the system.
      *
-     * @param context        The {@link Context} to use to check to see if the {@link Intent} will
-     *                       be handled.
      * @param useCachedValue Whether or not to use the cached value from a previous result.
      * @return {@code true} if recognition is supported.  {@code false} otherwise.
      */
     @VisibleForTesting
-    protected boolean isRecognitionIntentPresent(Context context, boolean useCachedValue) {
-        return FeatureUtilities.isRecognitionIntentPresent(context, useCachedValue);
+    protected boolean isRecognitionIntentPresent(boolean useCachedValue) {
+        return FeatureUtilities.isRecognitionIntentPresent(useCachedValue);
     }
 }

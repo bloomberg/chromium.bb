@@ -2,94 +2,99 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('discards_tab', function() {
-  'use strict';
+import 'chrome://resources/js/action_link.js';
+import 'chrome://resources/cr_elements/action_link_css.m.js';
+import './mojo_api.js';
 
-  /**
-   * @param {mojom.LifecycleUnitState} state The discard state.
-   * @return {boolean} Whether the state is related to discarding.
-   */
-  function isDiscardRelatedState(state) {
-    return state == mojom.LifecycleUnitState.PENDING_DISCARD ||
-        state == mojom.LifecycleUnitState.DISCARDED;
+import {assertNotReached} from 'chrome://resources/js/assert.m.js';
+import {getFaviconForPageURL} from 'chrome://resources/js/icon.m.js';
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {boolToString, durationToString, getOrCreateDetailsProvider} from './discards.js';
+import {SortedTableBehavior} from './sorted_table_behavior.js';
+
+/**
+ * @param {mojom.LifecycleUnitState} state The discard state.
+ * @return {boolean} Whether the state is related to discarding.
+ */
+function isDiscardRelatedState(state) {
+  return state == mojom.LifecycleUnitState.PENDING_DISCARD ||
+      state == mojom.LifecycleUnitState.DISCARDED;
+}
+
+/**
+ * Compares two TabDiscardsInfos based on the data in the provided sort-key.
+ * @param {string} sortKey The key of the sort. See the "data-sort-key"
+ *     attribute of the table headers for valid sort-keys.
+ * @param {boolean|number|string} a The first value being compared.
+ * @param {boolean|number|string} b The second value being compared.
+ * @return {number} A negative number if a < b, 0 if a == b, and a positive
+ *     number if a > b.
+ */
+export function compareTabDiscardsInfos(sortKey, a, b) {
+  let val1 = a[sortKey];
+  let val2 = b[sortKey];
+
+  // Compares strings.
+  if (sortKey == 'title' || sortKey == 'tabUrl') {
+    val1 = val1.toLowerCase();
+    val2 = val2.toLowerCase();
+    if (val1 == val2) {
+      return 0;
+    }
+    return val1 > val2 ? 1 : -1;
   }
 
-  /**
-   * Compares two TabDiscardsInfos based on the data in the provided sort-key.
-   * @param {string} sortKey The key of the sort. See the "data-sort-key"
-   *     attribute of the table headers for valid sort-keys.
-   * @param {boolean|number|string} a The first value being compared.
-   * @param {boolean|number|string} b The second value being compared.
-   * @return {number} A negative number if a < b, 0 if a == b, and a positive
-   *     number if a > b.
-   */
-  function compareTabDiscardsInfos(sortKey, a, b) {
-    let val1 = a[sortKey];
-    let val2 = b[sortKey];
-
-    // Compares strings.
-    if (sortKey == 'title' || sortKey == 'tabUrl') {
-      val1 = val1.toLowerCase();
-      val2 = val2.toLowerCase();
-      if (val1 == val2) {
-        return 0;
-      }
-      return val1 > val2 ? 1 : -1;
+  // Compares boolean fields.
+  if (['canFreeze', 'canDiscard', 'isAutoDiscardable'].includes(sortKey)) {
+    if (val1 == val2) {
+      return 0;
     }
-
-    // Compares boolean fields.
-    if (['canFreeze', 'canDiscard', 'isAutoDiscardable'].includes(sortKey)) {
-      if (val1 == val2) {
-        return 0;
-      }
-      return val1 ? 1 : -1;
-    }
-
-    // Compare lifecycle state. This is actually a compound key.
-    if (sortKey == 'state') {
-      // If the keys are discarding state, then break ties using the discard
-      // reason.
-      if (val1 == val2 && isDiscardRelatedState(val1)) {
-        val1 = a['discardReason'];
-        val2 = b['discardReason'];
-      }
-      return val1 - val2;
-    }
-
-    // Compares numeric fields.
-    // NOTE: visibility, loadingState and state are represented as a numeric
-    // value.
-    if ([
-          'visibility',
-          'loadingState',
-          'discardCount',
-          'utilityRank',
-          'reactivationScore',
-          'lastActiveSeconds',
-          'siteEngagementScore',
-        ].includes(sortKey)) {
-      return val1 - val2;
-    }
-
-    assertNotReached('Unsupported sort key: ' + sortKey);
-    return 0;
+    return val1 ? 1 : -1;
   }
 
-  return {
-    compareTabDiscardsInfos: compareTabDiscardsInfos,
-  };
-});
+  // Compare lifecycle state. This is actually a compound key.
+  if (sortKey == 'state') {
+    // If the keys are discarding state, then break ties using the discard
+    // reason.
+    if (val1 == val2 && isDiscardRelatedState(val1)) {
+      val1 = a['discardReason'];
+      val2 = b['discardReason'];
+    }
+    return val1 - val2;
+  }
+
+  // Compares numeric fields.
+  // NOTE: visibility, loadingState and state are represented as a numeric
+  // value.
+  if ([
+        'visibility',
+        'loadingState',
+        'discardCount',
+        'utilityRank',
+        'reactivationScore',
+        'lastActiveSeconds',
+        'siteEngagementScore',
+      ].includes(sortKey)) {
+    return val1 - val2;
+  }
+
+  assertNotReached('Unsupported sort key: ' + sortKey);
+  return 0;
+}
 
 
 Polymer({
   is: 'discards-tab',
+
+  _template: html`{__html_template__}`,
 
   behaviors: [SortedTableBehavior],
 
   properties: {
     /**
      * List of tabinfos.
-     * @private {?Array<!mojom.TabDiscardsInfo>}
+     * @private {?Array<!discards.mojom.TabDiscardsInfo>}
      */
     tabInfos_: {
       type: Array,
@@ -99,20 +104,20 @@ Polymer({
   /** @private The current update timer if any. */
   updateTimer_: 0,
 
-  /** @private {(mojom.DiscardsDetailsProviderRemote|null)} */
+  /** @private {(discards.mojom.DetailsProviderRemote|null)} */
   discardsDetailsProvider_: null,
 
   /** @override */
   ready: function() {
     this.setSortKey('utilityRank');
-    this.discardsDetailsProvider_ = discards.getOrCreateDetailsProvider();
+    this.discardsDetailsProvider_ = getOrCreateDetailsProvider();
 
     this.updateTable_();
   },
 
   /**
-   * Returns a sort function to compare tab infos based on the provided sort key
-   * and a boolean reverse flag.
+   * Returns a sort function to compare tab infos based on the provided sort
+   * key and a boolean reverse flag.
    * @param {string} sortKey The sort key for the  returned function.
    * @param {boolean} sortReverse True if sorting is reversed.
    * @return {function({Object}, {Object}): number}
@@ -129,7 +134,7 @@ Polymer({
     }
 
     return function(a, b) {
-      const comp = discards_tab.compareTabDiscardsInfos(sortKey, a, b);
+      const comp = compareTabDiscardsInfos(sortKey, a, b);
       return sortReverse ? -comp : comp;
     };
   },
@@ -137,17 +142,18 @@ Polymer({
   /**
    * Returns a string representation of a visibility enum value for display in
    * a table.
-   * @param {mojom.LifecycleUnitVisibility} visibility A visibility value.
+   * @param {discards.mojom.LifecycleUnitVisibility} visibility A visibility
+   *     value.
    * @return {string} A string representation of the visibility.
    * @private
    */
   visibilityToString_: function(visibility) {
     switch (visibility) {
-      case mojom.LifecycleUnitVisibility.HIDDEN:
+      case discards.mojom.LifecycleUnitVisibility.HIDDEN:
         return 'hidden';
-      case mojom.LifecycleUnitVisibility.OCCLUDED:
+      case discards.mojom.LifecycleUnitVisibility.OCCLUDED:
         return 'occluded';
-      case mojom.LifecycleUnitVisibility.VISIBLE:
+      case discards.mojom.LifecycleUnitVisibility.VISIBLE:
         return 'visible';
     }
     assertNotReached('Unknown visibility: ' + visibility);
@@ -196,23 +202,24 @@ Polymer({
    * @param {mojom.LifecycleUnitState} state The lifecycle state.
    * @param {mojom.LifecycleUnitDiscardReason} reason The discard reason. This
    *     is only used if the state is discard related.
-   * @param {mojom.LifecycleUnitVisibility} visibility A visibility value.
+   * @param {discards.mojom.LifecycleUnitVisibility} visibility A visibility
+   *     value.
    * @param {boolean} hasFocus Whether or not the tab has input focus.
-   * @param {mojoBase.mojom.TimeDelta} stateChangeTime Delta between Unix Epoch
-   *     and time at which the lifecycle state has changed.
-   * @return {string} A string representation of the lifecycle state, augmented
-   *     with the discard reason if appropriate.
+   * @param {mojoBase.mojom.TimeDelta} stateChangeTime Delta between Unix
+   *     Epoch and time at which the lifecycle state has changed.
+   * @return {string} A string representation of the lifecycle state,
+   *     augmented with the discard reason if appropriate.
    * @private
    */
   lifecycleStateToString_: function(
       state, reason, visibility, hasFocus, stateChangeTime) {
     const pageLifecycleStateFromVisibilityAndFocus = function() {
       switch (visibility) {
-        case mojom.LifecycleUnitVisibility.HIDDEN:
-        case mojom.LifecycleUnitVisibility.OCCLUDED:
+        case discards.mojom.LifecycleUnitVisibility.HIDDEN:
+        case discards.mojom.LifecycleUnitVisibility.OCCLUDED:
           // An occluded page is also considered hidden.
           return 'hidden';
-        case mojom.LifecycleUnitVisibility.VISIBLE:
+        case discards.mojom.LifecycleUnitVisibility.VISIBLE:
           return hasFocus ? 'active' : 'passive';
       }
       assertNotReached('Unknown visibility: ' + visibility);
@@ -233,7 +240,8 @@ Polymer({
       case mojom.LifecycleUnitState.DISCARDED:
         return 'discarded (' + this.discardReasonToString_(reason) + ')' +
             ((reason == mojom.LifecycleUnitDiscardReason.URGENT) ? ' at ' +
-                     // Must convert since Date constructor takes milliseconds.
+                     // Must convert since Date constructor takes
+                     // milliseconds.
                      (new Date(stateChangeTime.microseconds / 1000))
                          .toLocaleString() :
                                                                    '');
@@ -255,8 +263,8 @@ Polymer({
 
   /**
    * A wrapper to updateTableImpl_ that is called due to user action and not
-   * due to the automatic timer. Cancels the existing timer  and reschedules it
-   * after rendering instantaneously.
+   * due to the automatic timer. Cancels the existing timer  and reschedules
+   * it after rendering instantaneously.
    * @private
    */
   updateTable_: function() {
@@ -269,7 +277,7 @@ Polymer({
 
   /**
    * Formats an items reactivation for display.
-   * @param {mojom.TabDiscardsInfo} item The item in question.
+   * @param {discards.mojom.TabDiscardsInfo} item The item in question.
    * @return {string} The formatted reactivation score.
    * @private
    */
@@ -280,7 +288,7 @@ Polymer({
 
   /**
    * Formats an items site engagement score for display.
-   * @param {mojom.TabDiscardsInfo} item The item in question.
+   * @param {discards.mojom.TabDiscardsInfo} item The item in question.
    * @return {string} The formatted site engagemetn score.
    * @private
    */
@@ -290,18 +298,17 @@ Polymer({
 
   /**
    * Retrieves favicon style tag value for an item.
-   * @param {mojom.TabDiscardsInfo} item The item in question.
+   * @param {discards.mojom.TabDiscardsInfo} item The item in question.
    * @return {string} A style to retrieve and display the item's favicon.
    * @private
    */
   getFavIconStyle_: function(item) {
-    return 'background-image:' +
-        cr.icon.getFaviconForPageURL(item.tabUrl, false);
+    return 'background-image:' + getFaviconForPageURL(item.tabUrl, false);
   },
 
   /**
    * Formats an items lifecycle state for display.
-   * @param {mojom.TabDiscardsInfo} item The item in question.
+   * @param {discards.mojom.TabDiscardsInfo} item The item in question.
    * @return {string} A human readable lifecycle state.
    * @private
    */
@@ -317,13 +324,14 @@ Polymer({
   },
 
   /**
-   * Returns a string representation of a boolean value for display in a table.
+   * Returns a string representation of a boolean value for display in a
+   * table.
    * @param {boolean} value A boolean value.
    * @return {string} A string representing the bool.
    * @private
    */
   boolToString_: function(value) {
-    return discards.boolToString(value);
+    return boolToString(value);
   },
 
   /**
@@ -333,13 +341,14 @@ Polymer({
    * @private
    */
   durationToString_: function(secondsAgo) {
-    return discards.durationToString(secondsAgo);
+    return durationToString(secondsAgo);
   },
 
   /**
    * Tests whether an item has reasons why it cannot be frozen.
-   * @param {mojom.TabDiscardsInfo} item The item in question.
-   * @return {boolean} true iff there are reasons why the item cannot be frozen.
+   * @param {discards.mojom.TabDiscardsInfo} item The item in question.
+   * @return {boolean} true iff there are reasons why the item cannot be
+   *     frozen.
    * @private
    */
   hasCannotFreezeReasons_: function(item) {
@@ -347,7 +356,7 @@ Polymer({
   },
   /**
    * Tests whether an item has reasons why it cannot be discarded.
-   * @param {mojom.TabDiscardsInfo} item The item in question.
+   * @param {discards.mojom.TabDiscardsInfo} item The item in question.
    * @return {boolean} true iff there are reasons why the item cannot be
    *     discarded.
    * @private
@@ -358,7 +367,7 @@ Polymer({
 
   /**
    * Tests whether an item can be loaded.
-   * @param {mojom.TabDiscardsInfo} item The item in question.
+   * @param {discards.mojom.TabDiscardsInfo} item The item in question.
    * @return {boolean} true iff the item can be loaded.
    * @private
    */
@@ -368,13 +377,13 @@ Polymer({
 
   /**
    * Tests whether an item can be frozen.
-   * @param {mojom.TabDiscardsInfo} item The item in question.
+   * @param {discards.mojom.TabDiscardsInfo} item The item in question.
    * @return {boolean} true iff the item can be frozen.
    * @private
    */
   canFreeze_: function(item) {
-    if (item.visibility == mojom.LifecycleUnitVisibility.HIDDEN ||
-        item.visibility == mojom.LifecycleUnitVisibility.OCCLUDED) {
+    if (item.visibility == discards.mojom.LifecycleUnitVisibility.HIDDEN ||
+        item.visibility == discards.mojom.LifecycleUnitVisibility.OCCLUDED) {
       // Only tabs that aren't visible can be frozen for now.
       switch (item.state) {
         case mojom.LifecycleUnitState.DISCARDED:
@@ -390,13 +399,13 @@ Polymer({
 
   /**
    * Tests whether an item can be discarded.
-   * @param {mojom.TabDiscardsInfo} item The item in question.
+   * @param {discards.mojom.TabDiscardsInfo} item The item in question.
    * @return {boolean} true iff the item can be discarded.
    * @private
    */
   canDiscard_: function(item) {
-    if (item.visibility == mojom.LifecycleUnitVisibility.HIDDEN ||
-        item.visibility == mojom.LifecycleUnitVisibility.OCCLUDED) {
+    if (item.visibility == discards.mojom.LifecycleUnitVisibility.HIDDEN ||
+        item.visibility == discards.mojom.LifecycleUnitVisibility.OCCLUDED) {
       // Only tabs that aren't visible can be discarded for now.
       switch (item.state) {
         case mojom.LifecycleUnitState.DISCARDED:

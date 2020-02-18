@@ -217,16 +217,6 @@ class VersionInfo(object):
      which contains the version information.
   2) passing in a string with the 3 version components.
   3) using a source repo and calling from_repo().
-
-  Args:
-    version_string: Optional 3 component version string to parse.  Contains:
-        build_number: release build number.
-        branch_build_number: current build number on a branch.
-        patch_number: patch number.
-    chrome_branch: If version_string specified, specify chrome_branch i.e. 13.
-    incr_type: How we should increment this version -
-        chrome_branch|build|branch|patch
-    version_file: version file location.
   """
   # Pattern for matching build name format.  Includes chrome branch hack.
   VER_PATTERN = r'(\d+).(\d+).(\d+)(?:-R(\d+))*'
@@ -235,6 +225,18 @@ class VersionInfo(object):
 
   def __init__(self, version_string=None, chrome_branch=None,
                incr_type='build', version_file=None):
+    """Initialize.
+
+    Args:
+      version_string: Optional 3 component version string to parse.  Contains:
+          build_number: release build number.
+          branch_build_number: current build number on a branch.
+          patch_number: patch number.
+      chrome_branch: If version_string specified, specify chrome_branch i.e. 13.
+      incr_type: How we should increment this version -
+          chrome_branch|build|branch|patch
+      version_file: version file location.
+    """
     if version_file:
       self.version_file = version_file
       logging.debug('Using VERSION _FILE = %s', version_file)
@@ -343,7 +345,7 @@ class VersionInfo(object):
                   ('CHROMEOS_PATCH', self.patch_number),
                   ('CHROME_BRANCH', self.chrome_branch))
 
-    with tempfile.NamedTemporaryFile(prefix='mvp') as temp_fh:
+    with tempfile.NamedTemporaryFile(prefix='mvp', mode='w') as temp_fh:
       with open(self.version_file, 'r') as source_version_fh:
         for line in source_version_fh:
           for key, value in components:
@@ -734,7 +736,7 @@ class BuildSpecsManager(object):
     # If version is specified, find out what Chrome branch it is on.
     if version is not None:
       dirs = glob.glob(os.path.join(self.buildspecs_dir, '*', version + '.xml'))
-      if len(dirs) == 0:
+      if not dirs:
         return False
       assert len(dirs) <= 1, 'More than one spec found for %s' % version
       dir_pfx = os.path.basename(os.path.dirname(dirs[0]))
@@ -867,7 +869,7 @@ class BuildSpecsManager(object):
             self._latest_build['status'] == constants.BUILDER_STATUS_FAILED)
 
   def WaitForSlavesToComplete(self, master_build_identifier, builders_array,
-                              pool=None, timeout=3 * 60,
+                              timeout=3 * 60,
                               ignore_timeout_exception=True):
     """Wait for all slaves to complete or timeout.
 
@@ -879,8 +881,6 @@ class BuildSpecsManager(object):
     Args:
       master_build_identifier: Master build identifier to check.
       builders_array: The name list of the build configs to check.
-      pool: An instance of ValidationPool.validation_pool used by sync stage
-            to apply changes.
       timeout: Number of seconds to wait for the results.
       ignore_timeout_exception: Whether to ignore when the timeout exception is
         raised in waiting. Default to True.
@@ -905,7 +905,6 @@ class BuildSpecsManager(object):
         metadata=self.metadata,
         buildbucket_client=self.buildbucket_client,
         version=self.current_version,
-        pool=pool,
         dry_run=self.dry_run)
 
     try:

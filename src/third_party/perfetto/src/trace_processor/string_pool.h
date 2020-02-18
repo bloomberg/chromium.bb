@@ -17,13 +17,16 @@
 #ifndef SRC_TRACE_PROCESSOR_STRING_POOL_H_
 #define SRC_TRACE_PROCESSOR_STRING_POOL_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
+#include <unordered_map>
+#include <vector>
+
 #include "perfetto/ext/base/optional.h"
 #include "perfetto/ext/base/paged_memory.h"
 #include "perfetto/protozero/proto_utils.h"
 #include "src/trace_processor/null_term_string_view.h"
-
-#include <unordered_map>
-#include <vector>
 
 namespace perfetto {
 namespace trace_processor {
@@ -71,7 +74,7 @@ class StringPool {
     uint32_t block_offset_ = 0;
   };
 
-  StringPool();
+  StringPool(size_t block_size_bytes = kDefaultBlockSize);
   ~StringPool();
 
   // Allow std::move().
@@ -123,7 +126,9 @@ class StringPool {
 
   struct Block {
     explicit Block(size_t size)
-        : mem_(base::PagedMemory::Allocate(size)), size_(size) {}
+        : mem_(base::PagedMemory::Allocate(size,
+                                           base::PagedMemory::kDontCommit)),
+          size_(size) {}
     ~Block() = default;
 
     // Allow std::move().
@@ -151,7 +156,7 @@ class StringPool {
    private:
     base::PagedMemory mem_;
     uint32_t pos_ = 0;
-    size_t size_;
+    size_t size_ = 0;
   };
 
   friend class Iterator;
@@ -214,6 +219,10 @@ class StringPool {
     const uint8_t* str_ptr = ReadSize(ptr, &size);
     return NullTermStringView(reinterpret_cast<const char*>(str_ptr), size);
   }
+
+  // The minimum size of a new block. A larger block may be created if a string
+  // is added that is larger than this size.
+  size_t block_size_bytes_;
 
   // The actual memory storing the strings.
   std::vector<Block> blocks_;

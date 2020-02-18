@@ -7,8 +7,7 @@
 #include <utility>
 
 #include "mojo/public/cpp/bindings/remote.h"
-#include "services/service_manager/public/cpp/interface_provider.h"
-#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
@@ -26,6 +25,7 @@
 #include "third_party/blink/renderer/modules/mediastream/user_media_controller.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/mediastream/webrtc_uma_histograms.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
@@ -64,7 +64,7 @@ MediaDevices::MediaDevices(ExecutionContext* context)
 MediaDevices::~MediaDevices() = default;
 
 ScriptPromise MediaDevices::enumerateDevices(ScriptState* script_state) {
-  Platform::Current()->UpdateWebRTCAPICount(WebRTCAPIName::kEnumerateDevices);
+  UpdateWebRTCMethodCount(RTCAPIName::kEnumerateDevices);
   LocalFrame* frame =
       To<Document>(ExecutionContext::From(script_state))->GetFrame();
   if (!frame) {
@@ -304,8 +304,9 @@ void MediaDevices::DevicesEnumerated(
       if (device_type == mojom::blink::MediaDeviceType::MEDIA_AUDIO_INPUT ||
           device_type == mojom::blink::MediaDeviceType::MEDIA_VIDEO_INPUT) {
         InputDeviceInfo* input_device_info =
-            InputDeviceInfo::Create(device_info->device_id, device_info->label,
-                                    device_info->group_id, device_type);
+            MakeGarbageCollected<InputDeviceInfo>(
+                device_info->device_id, device_info->label,
+                device_info->group_id, device_type);
         if (device_type == mojom::blink::MediaDeviceType::MEDIA_VIDEO_INPUT &&
             !video_input_capabilities.IsEmpty()) {
           input_device_info->SetVideoInputCapabilities(
@@ -346,7 +347,7 @@ void MediaDevices::OnDispatcherHostConnectionError() {
 const mojo::Remote<mojom::blink::MediaDevicesDispatcherHost>&
 MediaDevices::GetDispatcherHost(LocalFrame* frame) {
   if (!dispatcher_host_) {
-    frame->GetInterfaceProvider().GetInterface(
+    frame->GetBrowserInterfaceBroker().GetInterface(
         dispatcher_host_.BindNewPipeAndPassReceiver());
     dispatcher_host_.set_disconnect_handler(
         WTF::Bind(&MediaDevices::OnDispatcherHostConnectionError,

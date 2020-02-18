@@ -5,15 +5,18 @@
 #ifndef GPU_COMMAND_BUFFER_CLIENT_WEBGPU_INTERFACE_H_
 #define GPU_COMMAND_BUFFER_CLIENT_WEBGPU_INTERFACE_H_
 
-#include <dawn/dawn.h>
+#include <dawn/dawn_proc_table.h>
+#include <dawn/webgpu.h>
 
+#include "base/callback.h"
 #include "gpu/command_buffer/client/interface_base.h"
+#include "gpu/command_buffer/common/webgpu_cmd_enums.h"
 
 namespace gpu {
 namespace webgpu {
 
 struct ReservedTexture {
-  DawnTexture texture;
+  WGPUTexture texture;
   uint32_t id;
   uint32_t generation;
 };
@@ -25,8 +28,15 @@ class WebGPUInterface : public InterfaceBase {
 
   virtual const DawnProcTable& GetProcs() const = 0;
   virtual void FlushCommands() = 0;
-  virtual DawnDevice GetDefaultDevice() = 0;
-  virtual ReservedTexture ReserveTexture(DawnDevice device) = 0;
+  virtual WGPUDevice GetDefaultDevice() = 0;
+  virtual ReservedTexture ReserveTexture(WGPUDevice device) = 0;
+  virtual bool RequestAdapterAsync(
+      PowerPreference power_preference,
+      base::OnceCallback<void(uint32_t, const WGPUDeviceProperties&)>
+          request_adapter_callback) = 0;
+  virtual bool RequestDevice(
+      uint32_t adapter_service_id,
+      const WGPUDeviceProperties* requested_device_properties) = 0;
 
 // Include the auto-generated part of this class. We split this because
 // it means we can easily edit the non-auto generated parts right here in

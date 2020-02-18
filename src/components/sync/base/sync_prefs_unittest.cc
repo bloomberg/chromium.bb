@@ -15,6 +15,7 @@
 #include "components/prefs/testing_pref_service.h"
 #include "components/sync/base/pref_names.h"
 #include "components/sync/base/user_demographics.h"
+#include "components/sync/base/user_selectable_type.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -48,7 +49,7 @@ class SyncPrefsTest : public testing::Test {
     pref_service_.Set(prefs::kSyncDemographics, dict);
   }
 
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   sync_preferences::TestingPrefServiceSyncable pref_service_;
   std::unique_ptr<SyncPrefs> sync_prefs_;
 };
@@ -133,6 +134,19 @@ TEST_F(SyncPrefsTest, ObservedPrefs) {
 
   sync_prefs_->RemoveSyncPrefObserver(&mock_sync_pref_observer);
 }
+
+#if defined(OS_CHROMEOS)
+TEST_F(SyncPrefsTest, SetSelectedOsTypesTriggersPreferredDataTypesPrefChange) {
+  StrictMock<MockSyncPrefObserver> mock_sync_pref_observer;
+  EXPECT_CALL(mock_sync_pref_observer, OnPreferredDataTypesPrefChange());
+
+  sync_prefs_->AddSyncPrefObserver(&mock_sync_pref_observer);
+  sync_prefs_->SetSelectedOsTypes(/*sync_all_os_types=*/false,
+                                  UserSelectableOsTypeSet(),
+                                  UserSelectableOsTypeSet());
+  sync_prefs_->RemoveSyncPrefObserver(&mock_sync_pref_observer);
+}
+#endif
 
 TEST_F(SyncPrefsTest, ClearPreferences) {
   EXPECT_FALSE(sync_prefs_->IsFirstSetupComplete());
@@ -255,7 +269,7 @@ TEST_F(SyncPrefsTest, Basic) {
 }
 
 TEST_F(SyncPrefsTest, SelectedTypesKeepEverythingSynced) {
-  EXPECT_TRUE(sync_prefs_->HasKeepEverythingSynced());
+  ASSERT_TRUE(sync_prefs_->HasKeepEverythingSynced());
 
   EXPECT_EQ(UserSelectableTypeSet::All(), sync_prefs_->GetSelectedTypes());
   for (UserSelectableType type : UserSelectableTypeSet::All()) {
@@ -265,6 +279,16 @@ TEST_F(SyncPrefsTest, SelectedTypesKeepEverythingSynced) {
         /*selected_types=*/{type});
     EXPECT_EQ(UserSelectableTypeSet::All(), sync_prefs_->GetSelectedTypes());
   }
+}
+
+TEST_F(SyncPrefsTest, SelectedTypesKeepEverythingSyncedButPolicyRestricted) {
+  ASSERT_TRUE(sync_prefs_->HasKeepEverythingSynced());
+  pref_service_.SetManagedPref(prefs::kSyncPreferences,
+                               std::make_unique<base::Value>(false));
+
+  UserSelectableTypeSet expected_type_set = UserSelectableTypeSet::All();
+  expected_type_set.Remove(UserSelectableType::kPreferences);
+  EXPECT_EQ(expected_type_set, sync_prefs_->GetSelectedTypes());
 }
 
 TEST_F(SyncPrefsTest, SelectedTypesNotKeepEverythingSynced) {
@@ -283,6 +307,82 @@ TEST_F(SyncPrefsTest, SelectedTypesNotKeepEverythingSynced) {
   }
 }
 
+TEST_F(SyncPrefsTest, SelectedTypesNotKeepEverythingSyncedAndPolicyRestricted) {
+  pref_service_.SetManagedPref(prefs::kSyncPreferences,
+                               std::make_unique<base::Value>(false));
+  sync_prefs_->SetSelectedTypes(
+      /*keep_everything_synced=*/false,
+      /*registered_types=*/UserSelectableTypeSet::All(),
+      /*selected_types=*/UserSelectableTypeSet());
+
+  ASSERT_FALSE(
+      sync_prefs_->GetSelectedTypes().Has(UserSelectableType::kPreferences));
+  for (UserSelectableType type : UserSelectableTypeSet::All()) {
+    sync_prefs_->SetSelectedTypes(
+        /*keep_everything_synced=*/false,
+        /*registered_types=*/UserSelectableTypeSet::All(),
+        /*selected_types=*/{type});
+    UserSelectableTypeSet expected_type_set = UserSelectableTypeSet{type};
+    expected_type_set.Remove(UserSelectableType::kPreferences);
+    EXPECT_EQ(expected_type_set, sync_prefs_->GetSelectedTypes());
+  }
+}
+
+#if defined(OS_CHROMEOS)
+TEST_F(SyncPrefsTest, IsSyncAllOsTypesEnabled) {
+  EXPECT_TRUE(sync_prefs_->IsSyncAllOsTypesEnabled());
+
+  sync_prefs_->SetSelectedOsTypes(
+      /*sync_all_os_types=*/false,
+      /*registered_types=*/UserSelectableOsTypeSet::All(),
+      /*selected_types=*/UserSelectableOsTypeSet::All());
+  EXPECT_FALSE(sync_prefs_->IsSyncAllOsTypesEnabled());
+  // Browser pref is not affected.
+  EXPECT_TRUE(sync_prefs_->HasKeepEverythingSynced());
+
+  sync_prefs_->SetSelectedOsTypes(
+      /*sync_all_os_types=*/true,
+      /*registered_types=*/UserSelectableOsTypeSet::All(),
+      /*selected_types=*/UserSelectableOsTypeSet::All());
+  EXPECT_TRUE(sync_prefs_->IsSyncAllOsTypesEnabled());
+}
+
+TEST_F(SyncPrefsTest, GetSelectedOsTypesWithAllOsTypesEnabled) {
+  EXPECT_TRUE(sync_prefs_->IsSyncAllOsTypesEnabled());
+  EXPECT_EQ(UserSelectableOsTypeSet::All(), sync_prefs_->GetSelectedOsTypes());
+  for (UserSelectableOsType type : UserSelectableOsTypeSet::All()) {
+    sync_prefs_->SetSelectedOsTypes(
+        /*sync_all_os_types=*/true,
+        /*registered_types=*/UserSelectableOsTypeSet::All(),
+        /*selected_types=*/{type});
+    EXPECT_EQ(UserSelectableOsTypeSet::All(),
+              sync_prefs_->GetSelectedOsTypes());
+  }
+}
+
+TEST_F(SyncPrefsTest, GetSelectedOsTypesNotAllOsTypesSelected) {
+  const UserSelectableTypeSet browser_types = sync_prefs_->GetSelectedTypes();
+
+  sync_prefs_->SetSelectedOsTypes(
+      /*sync_all_os_types=*/false,
+      /*registered_types=*/UserSelectableOsTypeSet::All(),
+      /*selected_types=*/UserSelectableOsTypeSet());
+  EXPECT_EQ(UserSelectableOsTypeSet(), sync_prefs_->GetSelectedOsTypes());
+  // Browser types are not changed.
+  EXPECT_EQ(browser_types, sync_prefs_->GetSelectedTypes());
+
+  for (UserSelectableOsType type : UserSelectableOsTypeSet::All()) {
+    sync_prefs_->SetSelectedOsTypes(
+        /*sync_all_os_types=*/false,
+        /*registered_types=*/UserSelectableOsTypeSet::All(),
+        /*selected_types=*/{type});
+    EXPECT_EQ(UserSelectableOsTypeSet{type}, sync_prefs_->GetSelectedOsTypes());
+    // Browser types are not changed.
+    EXPECT_EQ(browser_types, sync_prefs_->GetSelectedTypes());
+  }
+}
+#endif  // defined(OS_CHROMEOS)
+
 // Similar to SyncPrefsTest, but does not create a SyncPrefs instance. This lets
 // individual tests set up the "before" state of the PrefService before
 // SyncPrefs gets created.
@@ -292,7 +392,7 @@ class SyncPrefsMigrationTest : public testing::Test {
     SyncPrefs::RegisterProfilePrefs(pref_service_.registry());
   }
 
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   sync_preferences::TestingPrefServiceSyncable pref_service_;
 };
 
@@ -472,7 +572,7 @@ TEST_P(SyncPrefsSyncSuppressedMigrationCombinationsTest, Idempotent) {
 // Not all combinations of pref values are possible in practice, but anyway the
 // migration should always be idempotent, so we test all combinations here.
 INSTANTIATE_TEST_SUITE_P(
-    ,
+    All,
     SyncPrefsSyncSuppressedMigrationCombinationsTest,
     testing::Combine(::testing::Values(PREF_FALSE, PREF_TRUE, PREF_UNSET),
                      ::testing::Values(PREF_FALSE, PREF_TRUE, PREF_UNSET),

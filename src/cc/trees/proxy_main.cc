@@ -132,6 +132,10 @@ void ProxyMain::BeginMainFrame(
       benchmark_instrumentation::kDoBeginFrame,
       begin_main_frame_state->begin_frame_id);
 
+  // This needs to run unconditionally, so do it before any early-returns.
+  if (layer_tree_host_->scheduling_client())
+    layer_tree_host_->scheduling_client()->DidRunBeginMainFrame();
+
   // If the commit finishes, LayerTreeHost will transfer its swap promises to
   // LayerTreeImpl. The destructor of ScopedSwapPromiseChecker aborts the
   // remaining swap promises.
@@ -217,6 +221,13 @@ void ProxyMain::BeginMainFrame(
   }
 
   layer_tree_host_->WillBeginMainFrame();
+
+  // This call winds through to the LocalFrameView to mark the beginning
+  // of a main frame for metrics purposes. Some metrics are only gathered
+  // between calls to RecordStartOfFrameMetrics and RecordEndOfFrameMetrics.
+  // This is not wrapped into layer_tree_host_->WillBeginMainFrame because
+  // it should only be called from the multi-threaded proxy (we do not want
+  // metrics gathering in tests).
   layer_tree_host_->RecordStartOfFrameMetrics();
 
   // See LayerTreeHostClient::BeginMainFrame for more documentation on
@@ -236,7 +247,7 @@ void ProxyMain::BeginMainFrame(
 
   // See LayerTreeHostClient::MainFrameUpdate for more documentation on
   // what this does.
-  layer_tree_host_->RequestMainFrameUpdate();
+  layer_tree_host_->RequestMainFrameUpdate(true /* report_cc_metrics */);
 
   // At this point the main frame may have deferred main frame updates to
   // avoid committing right now, or we may be deferring commits but not
@@ -312,16 +323,6 @@ void ProxyMain::BeginMainFrame(
     layer_tree_host_->RecordEndOfFrameMetrics(begin_main_frame_start_time);
     return;
   }
-
-  // Queue the LATENCY_BEGIN_FRAME_RENDERER_MAIN_COMPONENT swap promise only
-  // once we know we will commit since QueueSwapPromise itself requests a
-  // commit.
-  ui::LatencyInfo new_latency_info(ui::SourceEventType::FRAME);
-  new_latency_info.AddLatencyNumberWithTimestamp(
-      ui::LATENCY_BEGIN_FRAME_RENDERER_MAIN_COMPONENT,
-      begin_main_frame_state->begin_frame_args.frame_time);
-  layer_tree_host_->QueueSwapPromise(
-      std::make_unique<LatencyInfoSwapPromise>(new_latency_info));
 
   current_pipeline_stage_ = NO_PIPELINE_STAGE;
 

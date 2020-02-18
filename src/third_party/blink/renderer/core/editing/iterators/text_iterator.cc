@@ -28,6 +28,7 @@
 #include "third_party/blink/renderer/core/editing/iterators/text_iterator.h"
 
 #include <unicode/utf16.h>
+#include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/editing/editing_utilities.h"
@@ -50,8 +51,6 @@
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
-
-using namespace html_names;
 
 namespace {
 
@@ -170,7 +169,7 @@ bool ShouldHandleChildren(const Node& node,
                           const TextIteratorBehavior& behavior) {
   // To support |TextIteratorEmitsImageAltText|, we don't traversal child
   // nodes, in flat tree.
-  if (IsHTMLImageElement(node))
+  if (IsA<HTMLImageElement>(node))
     return false;
   // Traverse internals of text control elements in flat tree only when
   // |EntersTextControls| flag is set.
@@ -178,8 +177,9 @@ bool ShouldHandleChildren(const Node& node,
     return false;
 
   if (auto* element = DynamicTo<Element>(node)) {
-    if (auto* context = element->GetDisplayLockContext())
-      return context->IsActivatable();
+    if (auto* context = element->GetDisplayLockContext()) {
+      return context->IsActivatable(DisplayLockActivationReason::kSelection);
+    }
   }
   return true;
 }
@@ -310,10 +310,13 @@ void TextIteratorAlgorithm<Strategy>::Advance() {
       node_ = nullptr;
       return;
     }
+    const bool locked =
+        DisplayLockUtilities::NearestLockedInclusiveAncestor(*node_);
 
     LayoutObject* layout_object = node_->GetLayoutObject();
-    if (!layout_object) {
-      if (IsA<ShadowRoot>(node_.Get()) || HasDisplayContents(*node_)) {
+    if (!layout_object || locked) {
+      if (!locked &&
+          (IsA<ShadowRoot>(node_.Get()) || HasDisplayContents(*node_))) {
         // Shadow roots or display: contents elements don't have LayoutObjects,
         // but we want to visit children anyway.
         iteration_progress_ = iteration_progress_ < kHandledNode
@@ -373,9 +376,9 @@ void TextIteratorAlgorithm<Strategy>::Advance() {
                       (html_element &&
                        (IsHTMLFormControlElement(html_element) ||
                         IsA<HTMLLegendElement>(html_element) ||
-                        IsHTMLImageElement(html_element) ||
-                        IsHTMLMeterElement(html_element) ||
-                        IsHTMLProgressElement(html_element))))) {
+                        IsA<HTMLImageElement>(html_element) ||
+                        IsA<HTMLMeterElement>(html_element) ||
+                        IsA<HTMLProgressElement>(html_element))))) {
             HandleReplacedElement();
           } else {
             HandleNonTextNode();
@@ -506,10 +509,12 @@ bool TextIteratorAlgorithm<Strategy>::SupportsAltText(const Node& node) {
     return false;
 
   // FIXME: Add isSVGImageElement.
-  if (IsHTMLImageElement(*element))
+  if (IsA<HTMLImageElement>(*element))
     return true;
-  if (IsHTMLInputElement(*element) &&
-      ToHTMLInputElement(node).type() == input_type_names::kImage)
+
+  auto* html_input_element = DynamicTo<HTMLInputElement>(element);
+  if (html_input_element &&
+      html_input_element->type() == input_type_names::kImage)
     return true;
   return false;
 }
@@ -576,7 +581,7 @@ bool TextIteratorAlgorithm<Strategy>::ShouldEmitTabBeforeNode(
   const LayoutNGTableCellInterface* rc =
       ToInterface<LayoutNGTableCellInterface>(r);
   const LayoutNGTableInterface* t = rc->TableInterface();
-  return t && (t->CellInterfacePreceding(*rc) || t->CellInterfaceAbove(*rc));
+  return t && !t->IsFirstCell(*rc);
 }
 
 template <typename Strategy>
@@ -587,8 +592,9 @@ bool TextIteratorAlgorithm<Strategy>::ShouldEmitNewlineForNode(
 
   if (layout_object ? !layout_object->IsBR() : !IsA<HTMLBRElement>(node))
     return false;
-  return emits_original_text || !(node.IsInShadowTree() &&
-                                  IsHTMLInputElement(*node.OwnerShadowHost()));
+  return emits_original_text ||
+         !(node.IsInShadowTree() &&
+           IsA<HTMLInputElement>(*node.OwnerShadowHost()));
 }
 
 static bool ShouldEmitNewlinesBeforeAndAfterNode(const Node& node) {
@@ -598,21 +604,30 @@ static bool ShouldEmitNewlinesBeforeAndAfterNode(const Node& node) {
   if (!r) {
     if (HasDisplayContents(node))
       return false;
-    return (node.HasTagName(kBlockquoteTag) || node.HasTagName(kDdTag) ||
-            node.HasTagName(kDivTag) || node.HasTagName(kDlTag) ||
-            node.HasTagName(kDtTag) || node.HasTagName(kH1Tag) ||
-            node.HasTagName(kH2Tag) || node.HasTagName(kH3Tag) ||
-            node.HasTagName(kH4Tag) || node.HasTagName(kH5Tag) ||
-            node.HasTagName(kH6Tag) || node.HasTagName(kHrTag) ||
-            node.HasTagName(kLiTag) || node.HasTagName(kListingTag) ||
-            node.HasTagName(kOlTag) || node.HasTagName(kPTag) ||
-            node.HasTagName(kPreTag) || node.HasTagName(kTrTag) ||
-            node.HasTagName(kUlTag));
+    return (node.HasTagName(html_names::kBlockquoteTag) ||
+            node.HasTagName(html_names::kDdTag) ||
+            node.HasTagName(html_names::kDivTag) ||
+            node.HasTagName(html_names::kDlTag) ||
+            node.HasTagName(html_names::kDtTag) ||
+            node.HasTagName(html_names::kH1Tag) ||
+            node.HasTagName(html_names::kH2Tag) ||
+            node.HasTagName(html_names::kH3Tag) ||
+            node.HasTagName(html_names::kH4Tag) ||
+            node.HasTagName(html_names::kH5Tag) ||
+            node.HasTagName(html_names::kH6Tag) ||
+            node.HasTagName(html_names::kHrTag) ||
+            node.HasTagName(html_names::kLiTag) ||
+            node.HasTagName(html_names::kListingTag) ||
+            node.HasTagName(html_names::kOlTag) ||
+            node.HasTagName(html_names::kPTag) ||
+            node.HasTagName(html_names::kPreTag) ||
+            node.HasTagName(html_names::kTrTag) ||
+            node.HasTagName(html_names::kUlTag));
   }
 
   // Need to make an exception for option and optgroup, because we want to
   // keep the legacy behavior before we added layoutObjects to them.
-  if (IsHTMLOptionElement(node) || IsHTMLOptGroupElement(node))
+  if (IsA<HTMLOptionElement>(node) || IsA<HTMLOptGroupElement>(node))
     return false;
 
   // Need to make an exception for table cells, because they are blocks, but we
@@ -664,7 +679,7 @@ static bool ShouldEmitExtraNewlineForNode(const Node* node) {
   if (!r || !r->IsBox())
     return false;
 
-  return node->HasTagName(kPTag);
+  return node->HasTagName(html_names::kPTag);
 }
 
 // Whether or not we should emit a character as we enter node_ (if it's a

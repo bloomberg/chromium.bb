@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/read_only_shared_memory_region.h"
 #include "base/test/simple_test_tick_clock.h"
@@ -24,6 +25,7 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/viz/public/mojom/compositing/compositor_frame_sink.mojom-blink.h"
 #include "services/viz/public/mojom/hit_test/hit_test_region_list.mojom-blink.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -182,10 +184,9 @@ class VideoFrameSubmitterTest : public testing::Test {
     // By setting the submission state before we set the sink, we can make
     // testing easier without having to worry about the first sent frame.
     submitter_->SetIsSurfaceVisible(true);
-    submitter_->compositor_frame_sink_ =
-        viz::mojom::blink::CompositorFrameSinkPtr(std::move(submitter_sink));
-    mojom::blink::SurfaceEmbedderPtr embedder;
-    mojo::MakeRequest(&embedder);
+    submitter_->compositor_frame_sink_.Bind(std::move(submitter_sink));
+    mojo::Remote<mojom::blink::SurfaceEmbedder> embedder;
+    ignore_result(embedder.BindNewPipeAndPassReceiver());
     submitter_->surface_embedder_ = std::move(embedder);
     auto surface_id = viz::SurfaceId(
         viz::FrameSinkId(1, 1),
@@ -913,6 +914,16 @@ TEST_F(VideoFrameSubmitterTest, NoDuplicateFramesDidReceiveFrame) {
 
   // Trying to submit the same frame again does nothing...
   EXPECT_CALL(*video_frame_provider_, GetCurrentFrame()).WillOnce(Return(vf));
+  submitter_->DidReceiveFrame();
+  task_environment_.RunUntilIdle();
+}
+
+TEST_F(VideoFrameSubmitterTest, ZeroSizedFramesAreNotSubmitted) {
+  auto vf = media::VideoFrame::CreateEOSFrame();
+  ASSERT_TRUE(vf->natural_size().IsEmpty());
+
+  EXPECT_CALL(*video_frame_provider_, GetCurrentFrame()).WillOnce(Return(vf));
+  EXPECT_CALL(*sink_, DoSubmitCompositorFrame(_, _)).Times(0);
   submitter_->DidReceiveFrame();
   task_environment_.RunUntilIdle();
 }

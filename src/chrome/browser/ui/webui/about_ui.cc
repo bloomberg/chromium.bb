@@ -181,9 +181,9 @@ class ChromeOSTermsHandler
     : public base::RefCountedThreadSafe<ChromeOSTermsHandler> {
  public:
   static void Start(const std::string& path,
-                    const content::URLDataSource::GotDataCallback& callback) {
+                    content::URLDataSource::GotDataCallback callback) {
     scoped_refptr<ChromeOSTermsHandler> handler(
-        new ChromeOSTermsHandler(path, callback));
+        new ChromeOSTermsHandler(path, std::move(callback)));
     handler->StartOnUIThread();
   }
 
@@ -191,9 +191,9 @@ class ChromeOSTermsHandler
   friend class base::RefCountedThreadSafe<ChromeOSTermsHandler>;
 
   ChromeOSTermsHandler(const std::string& path,
-                       const content::URLDataSource::GotDataCallback& callback)
+                       content::URLDataSource::GotDataCallback callback)
       : path_(path),
-        callback_(callback),
+        callback_(std::move(callback)),
         // Previously we were using "initial locale" http://crbug.com/145142
         locale_(g_browser_process->GetApplicationLocale()) {}
 
@@ -343,7 +343,7 @@ class ChromeOSTermsHandler
     // Do nothing if OEM EULA or Play Store ToS load failed.
     if (contents_.empty() && path_.empty())
       contents_ = l10n_util::GetStringUTF8(IDS_TERMS_HTML);
-    callback_.Run(base::RefCountedString::TakeString(&contents_));
+    std::move(callback_).Run(base::RefCountedString::TakeString(&contents_));
   }
 
   // Path in the URL.
@@ -365,19 +365,18 @@ class ChromeOSCreditsHandler
     : public base::RefCountedThreadSafe<ChromeOSCreditsHandler> {
  public:
   static void Start(const std::string& path,
-                    const content::URLDataSource::GotDataCallback& callback) {
+                    content::URLDataSource::GotDataCallback callback) {
     scoped_refptr<ChromeOSCreditsHandler> handler(
-        new ChromeOSCreditsHandler(path, callback));
+        new ChromeOSCreditsHandler(path, std::move(callback)));
     handler->StartOnUIThread();
   }
 
  private:
   friend class base::RefCountedThreadSafe<ChromeOSCreditsHandler>;
 
-  ChromeOSCreditsHandler(
-      const std::string& path,
-      const content::URLDataSource::GotDataCallback& callback)
-      : path_(path), callback_(callback) {}
+  ChromeOSCreditsHandler(const std::string& path,
+                         content::URLDataSource::GotDataCallback callback)
+      : path_(path), callback_(std::move(callback)) {}
 
   virtual ~ChromeOSCreditsHandler() {}
 
@@ -411,11 +410,11 @@ class ChromeOSCreditsHandler
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     // If we fail to load Chrome OS credits from disk, load it from resources.
     if (contents_.empty() && path_ != kKeyboardUtilsPath) {
-      contents_ = ui::ResourceBundle::GetSharedInstance()
-                      .GetRawDataResource(IDR_OS_CREDITS_HTML)
-                      .as_string();
+      contents_ =
+          ui::ResourceBundle::GetSharedInstance().LoadDataResourceString(
+              IDR_OS_CREDITS_HTML);
     }
-    callback_.Run(base::RefCountedString::TakeString(&contents_));
+    std::move(callback_).Run(base::RefCountedString::TakeString(&contents_));
   }
 
   // Path in the URL.
@@ -434,9 +433,9 @@ class LinuxCreditsHandler
     : public base::RefCountedThreadSafe<LinuxCreditsHandler> {
  public:
   static void Start(const std::string& path,
-                    const content::URLDataSource::GotDataCallback& callback) {
+                    content::URLDataSource::GotDataCallback callback) {
     scoped_refptr<LinuxCreditsHandler> handler(
-        new LinuxCreditsHandler(path, callback));
+        new LinuxCreditsHandler(path, std::move(callback)));
     handler->StartOnUIThread();
   }
 
@@ -444,8 +443,8 @@ class LinuxCreditsHandler
   friend class base::RefCountedThreadSafe<LinuxCreditsHandler>;
 
   LinuxCreditsHandler(const std::string& path,
-                      const content::URLDataSource::GotDataCallback& callback)
-      : path_(path), callback_(callback) {}
+                      content::URLDataSource::GotDataCallback callback)
+      : path_(path), callback_(std::move(callback)) {}
 
   virtual ~LinuxCreditsHandler() {}
 
@@ -481,11 +480,11 @@ class LinuxCreditsHandler
     // resources.
     // TODO(rjwright): Add a linux-specific placeholder in resources.
     if (contents_.empty() && path_ != kKeyboardUtilsPath) {
-      contents_ = ui::ResourceBundle::GetSharedInstance()
-                      .GetRawDataResource(IDR_OS_CREDITS_HTML)
-                      .as_string();
+      contents_ =
+          ui::ResourceBundle::GetSharedInstance().LoadDataResourceString(
+              IDR_OS_CREDITS_HTML);
     }
-    callback_.Run(base::RefCountedString::TakeString(&contents_));
+    std::move(callback_).Run(base::RefCountedString::TakeString(&contents_));
   }
 
   // Path in the URL.
@@ -595,9 +594,11 @@ std::string AboutUIHTMLSource::GetSource() {
 }
 
 void AboutUIHTMLSource::StartDataRequest(
-    const std::string& path,
+    const GURL& url,
     const content::WebContents::Getter& wc_getter,
-    const content::URLDataSource::GotDataCallback& callback) {
+    content::URLDataSource::GotDataCallback callback) {
+  // TODO(crbug/1009127): Simplify usages of |path| since |url| is available.
+  const std::string path = content::URLDataSource::URLToRequestPath(url);
   std::string response;
   // Add your data source here, in alphabetical order.
   if (source_name_ == chrome::kChromeUIChromeURLsHost) {
@@ -613,9 +614,8 @@ void AboutUIHTMLSource::StartDataRequest(
     if (idr == IDR_ABOUT_UI_CREDITS_HTML) {
       response = about_ui::GetCredits(true /*include_scripts*/);
     } else {
-      response = ui::ResourceBundle::GetSharedInstance()
-                     .GetRawDataResource(idr)
-                     .as_string();
+      response =
+          ui::ResourceBundle::GetSharedInstance().LoadDataResourceString(idr);
     }
 #if defined(OS_LINUX) || defined(OS_OPENBSD)
   } else if (source_name_ == chrome::kChromeUILinuxProxyConfigHost) {
@@ -623,16 +623,16 @@ void AboutUIHTMLSource::StartDataRequest(
 #endif
 #if defined(OS_CHROMEOS)
   } else if (source_name_ == chrome::kChromeUIOSCreditsHost) {
-    ChromeOSCreditsHandler::Start(path, callback);
+    ChromeOSCreditsHandler::Start(path, std::move(callback));
     return;
   } else if (source_name_ == chrome::kChromeUILinuxCreditsHost) {
-    LinuxCreditsHandler::Start(path, callback);
+    LinuxCreditsHandler::Start(path, std::move(callback));
     return;
 #endif
 #if !defined(OS_ANDROID)
   } else if (source_name_ == chrome::kChromeUITermsHost) {
 #if defined(OS_CHROMEOS)
-    ChromeOSTermsHandler::Start(path, callback);
+    ChromeOSTermsHandler::Start(path, std::move(callback));
     return;
 #else
     response = l10n_util::GetStringUTF8(IDS_TERMS_HTML);
@@ -640,14 +640,14 @@ void AboutUIHTMLSource::StartDataRequest(
 #endif
   }
 
-  FinishDataRequest(response, callback);
+  FinishDataRequest(response, std::move(callback));
 }
 
 void AboutUIHTMLSource::FinishDataRequest(
     const std::string& html,
-    const content::URLDataSource::GotDataCallback& callback) {
+    content::URLDataSource::GotDataCallback callback) {
   std::string html_copy(html);
-  callback.Run(base::RefCountedString::TakeString(&html_copy));
+  std::move(callback).Run(base::RefCountedString::TakeString(&html_copy));
 }
 
 std::string AboutUIHTMLSource::GetMimeType(const std::string& path) {

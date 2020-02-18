@@ -14,7 +14,9 @@
 #include "base/run_loop.h"
 #include "base/task/single_thread_task_executor.h"
 #include "base/threading/simple_thread.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/service.h"
@@ -64,19 +66,20 @@ class ProvidedService : public Service,
  private:
   // service_manager::Service:
   void OnStart() override {
-    bindings_.set_connection_error_handler(
-        base::Bind(&ProvidedService::OnConnectionError,
-                   base::Unretained(this)));
+    receivers_.set_disconnect_handler(base::BindRepeating(
+        &ProvidedService::OnMojoDisconnect, base::Unretained(this)));
     registry_.AddInterface<test::mojom::ConnectTestService>(
-        base::Bind(&ProvidedService::BindConnectTestServiceRequest,
-                   base::Unretained(this)));
-    registry_.AddInterface<test::mojom::BlockedInterface>(base::Bind(
-        &ProvidedService::BindBlockedInterfaceRequest, base::Unretained(this)));
+        base::BindRepeating(&ProvidedService::BindConnectTestServiceReceiver,
+                            base::Unretained(this)));
+    registry_.AddInterface<test::mojom::BlockedInterface>(
+        base::BindRepeating(&ProvidedService::BindBlockedInterfaceReceiver,
+                            base::Unretained(this)));
     registry_.AddInterface<test::mojom::AlwaysAllowedInterface>(
-        base::Bind(&ProvidedService::BindAlwaysAllowedInterfaceRequest,
-                   base::Unretained(this)));
+        base::BindRepeating(
+            &ProvidedService::BindAlwaysAllowedInterfaceReceiver,
+            base::Unretained(this)));
     registry_.AddInterface(base::BindRepeating(
-        &ProvidedService::BindIdentityTestRequest, base::Unretained(this)));
+        &ProvidedService::BindIdentityTestReceiver, base::Unretained(this)));
   }
 
   void OnBindInterface(const BindSourceInfo& source_info,
@@ -91,10 +94,10 @@ class ProvidedService : public Service,
     run_loop_->Quit();
   }
 
-  void BindConnectTestServiceRequest(
-      test::mojom::ConnectTestServiceRequest request,
+  void BindConnectTestServiceReceiver(
+      mojo::PendingReceiver<test::mojom::ConnectTestService> receiver,
       const BindSourceInfo& source_info) {
-    bindings_.AddBinding(this, std::move(request));
+    receivers_.Add(this, std::move(receiver));
     test::mojom::ConnectionStatePtr state(test::mojom::ConnectionState::New());
     state->connection_remote_name = source_info.identity.name();
     state->connection_remote_instance_group =
@@ -103,25 +106,27 @@ class ProvidedService : public Service,
     state->initialize_local_instance_group =
         service_binding_.identity().instance_group();
 
-    service_binding_.GetConnector()->BindInterface(source_info.identity,
-                                                   &caller_);
+    service_binding_.GetConnector()->Connect(
+        source_info.identity, caller_.BindNewPipeAndPassReceiver());
     caller_->ConnectionAccepted(std::move(state));
   }
 
-  void BindBlockedInterfaceRequest(test::mojom::BlockedInterfaceRequest request,
-                                   const BindSourceInfo& source_info) {
-    blocked_bindings_.AddBinding(this, std::move(request));
-  }
-
-  void BindAlwaysAllowedInterfaceRequest(
-      test::mojom::AlwaysAllowedInterfaceRequest request,
+  void BindBlockedInterfaceReceiver(
+      mojo::PendingReceiver<test::mojom::BlockedInterface> receiver,
       const BindSourceInfo& source_info) {
-    always_allowed_bindings_.AddBinding(this, std::move(request));
+    blocked_receivers_.Add(this, std::move(receiver));
   }
 
-  void BindIdentityTestRequest(test::mojom::IdentityTestRequest request,
-                               const BindSourceInfo& source_info) {
-    identity_test_bindings_.AddBinding(this, std::move(request));
+  void BindAlwaysAllowedInterfaceReceiver(
+      mojo::PendingReceiver<test::mojom::AlwaysAllowedInterface> receiver,
+      const BindSourceInfo& source_info) {
+    always_allowed_receivers_.Add(this, std::move(receiver));
+  }
+
+  void BindIdentityTestReceiver(
+      mojo::PendingReceiver<test::mojom::IdentityTest> receiver,
+      const BindSourceInfo& source_info) {
+    identity_test_receivers_.Add(this, std::move(receiver));
   }
 
   // test::mojom::ConnectTestService:
@@ -166,14 +171,14 @@ class ProvidedService : public Service,
     run_loop_ = nullptr;
 
     caller_.reset();
-    bindings_.CloseAllBindings();
-    blocked_bindings_.CloseAllBindings();
-    always_allowed_bindings_.CloseAllBindings();
-    identity_test_bindings_.CloseAllBindings();
+    receivers_.Clear();
+    blocked_receivers_.Clear();
+    always_allowed_receivers_.Clear();
+    identity_test_receivers_.Clear();
   }
 
-  void OnConnectionError() {
-    if (bindings_.empty()) {
+  void OnMojoDisconnect() {
+    if (receivers_.empty()) {
       if (service_binding_.is_bound())
         service_binding_.Close();
       run_loop_->Quit();
@@ -184,13 +189,13 @@ class ProvidedService : public Service,
   service_manager::ServiceBinding service_binding_{this};
   const std::string title_;
   mojom::ServiceRequest request_;
-  test::mojom::ExposedInterfacePtr caller_;
+  mojo::Remote<test::mojom::ExposedInterface> caller_;
   BinderRegistryWithArgs<const BindSourceInfo&> registry_;
-  mojo::BindingSet<test::mojom::ConnectTestService> bindings_;
-  mojo::BindingSet<test::mojom::BlockedInterface> blocked_bindings_;
-  mojo::BindingSet<test::mojom::AlwaysAllowedInterface>
-      always_allowed_bindings_;
-  mojo::BindingSet<test::mojom::IdentityTest> identity_test_bindings_;
+  mojo::ReceiverSet<test::mojom::ConnectTestService> receivers_;
+  mojo::ReceiverSet<test::mojom::BlockedInterface> blocked_receivers_;
+  mojo::ReceiverSet<test::mojom::AlwaysAllowedInterface>
+      always_allowed_receivers_;
+  mojo::ReceiverSet<test::mojom::IdentityTest> identity_test_receivers_;
 
   DISALLOW_COPY_AND_ASSIGN(ProvidedService);
 };
@@ -205,13 +210,12 @@ class ConnectTestService : public Service,
  private:
   // service_manager::Service:
   void OnStart() override {
-    base::Closure error_handler =
-        base::Bind(&ConnectTestService::OnConnectionError,
-                   base::Unretained(this));
-    bindings_.set_connection_error_handler(error_handler);
+    base::RepeatingClosure disconnect_handler = base::BindRepeating(
+        &ConnectTestService::OnMojoDisconnect, base::Unretained(this));
+    receivers_.set_disconnect_handler(disconnect_handler);
     registry_.AddInterface<test::mojom::ConnectTestService>(
-        base::Bind(&ConnectTestService::BindConnectTestServiceRequest,
-                   base::Unretained(this)));
+        base::BindRepeating(&ConnectTestService::BindConnectTestServiceReceiver,
+                            base::Unretained(this)));
   }
 
   void OnBindInterface(const BindSourceInfo& source_info,
@@ -240,9 +244,9 @@ class ConnectTestService : public Service,
     Terminate();
   }
 
-  void BindConnectTestServiceRequest(
-      test::mojom::ConnectTestServiceRequest request) {
-    bindings_.AddBinding(this, std::move(request));
+  void BindConnectTestServiceReceiver(
+      mojo::PendingReceiver<test::mojom::ConnectTestService> receiver) {
+    receivers_.Add(this, std::move(receiver));
   }
 
   // test::mojom::ConnectTestService:
@@ -254,15 +258,15 @@ class ConnectTestService : public Service,
     std::move(callback).Run(service_binding_.identity().instance_id());
   }
 
-  void OnConnectionError() {
-    if (bindings_.empty())
+  void OnMojoDisconnect() {
+    if (receivers_.empty())
       service_binding_.RequestClose();
   }
 
   service_manager::ServiceBinding service_binding_;
   std::vector<std::unique_ptr<Service>> delegates_;
   BinderRegistry registry_;
-  mojo::BindingSet<test::mojom::ConnectTestService> bindings_;
+  mojo::ReceiverSet<test::mojom::ConnectTestService> receivers_;
   std::list<std::unique_ptr<ProvidedService>> provided_services_;
 
   DISALLOW_COPY_AND_ASSIGN(ConnectTestService);

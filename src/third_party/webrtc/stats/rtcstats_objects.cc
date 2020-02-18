@@ -598,6 +598,7 @@ WEBRTC_RTCSTATS_IMPL(
     RTCInboundRTPStreamStats, RTCRTPStreamStats, "inbound-rtp",
     &packets_received,
     &bytes_received,
+    &header_bytes_received,
     &packets_lost,
     &last_packet_received_timestamp,
     &jitter,
@@ -615,7 +616,10 @@ WEBRTC_RTCSTATS_IMPL(
     &frames_decoded,
     &key_frames_decoded,
     &total_decode_time,
+    &total_inter_frame_delay,
+    &total_squared_inter_frame_delay,
     &content_type,
+    &estimated_playout_timestamp,
     &decoder_implementation)
 // clang-format on
 
@@ -630,6 +634,7 @@ RTCInboundRTPStreamStats::RTCInboundRTPStreamStats(std::string&& id,
       fec_packets_received("fecPacketsReceived"),
       fec_packets_discarded("fecPacketsDiscarded"),
       bytes_received("bytesReceived"),
+      header_bytes_received("headerBytesReceived"),
       packets_lost("packetsLost"),
       last_packet_received_timestamp("lastPacketReceivedTimestamp"),
       jitter("jitter"),
@@ -647,7 +652,10 @@ RTCInboundRTPStreamStats::RTCInboundRTPStreamStats(std::string&& id,
       frames_decoded("framesDecoded"),
       key_frames_decoded("keyFramesDecoded"),
       total_decode_time("totalDecodeTime"),
+      total_inter_frame_delay("totalInterFrameDelay"),
+      total_squared_inter_frame_delay("totalSquaredInterFrameDelay"),
       content_type("contentType"),
+      estimated_playout_timestamp("estimatedPlayoutTimestamp"),
       decoder_implementation("decoderImplementation") {}
 
 RTCInboundRTPStreamStats::RTCInboundRTPStreamStats(
@@ -657,6 +665,7 @@ RTCInboundRTPStreamStats::RTCInboundRTPStreamStats(
       fec_packets_received(other.fec_packets_received),
       fec_packets_discarded(other.fec_packets_discarded),
       bytes_received(other.bytes_received),
+      header_bytes_received(other.header_bytes_received),
       packets_lost(other.packets_lost),
       last_packet_received_timestamp(other.last_packet_received_timestamp),
       jitter(other.jitter),
@@ -674,7 +683,10 @@ RTCInboundRTPStreamStats::RTCInboundRTPStreamStats(
       frames_decoded(other.frames_decoded),
       key_frames_decoded(other.key_frames_decoded),
       total_decode_time(other.total_decode_time),
+      total_inter_frame_delay(other.total_inter_frame_delay),
+      total_squared_inter_frame_delay(other.total_squared_inter_frame_delay),
       content_type(other.content_type),
+      estimated_playout_timestamp(other.estimated_playout_timestamp),
       decoder_implementation(other.decoder_implementation) {}
 
 RTCInboundRTPStreamStats::~RTCInboundRTPStreamStats() {}
@@ -686,6 +698,7 @@ WEBRTC_RTCSTATS_IMPL(
     &packets_sent,
     &retransmitted_packets_sent,
     &bytes_sent,
+    &header_bytes_sent,
     &retransmitted_bytes_sent,
     &target_bitrate,
     &frames_encoded,
@@ -710,6 +723,7 @@ RTCOutboundRTPStreamStats::RTCOutboundRTPStreamStats(std::string&& id,
       packets_sent("packetsSent"),
       retransmitted_packets_sent("retransmittedPacketsSent"),
       bytes_sent("bytesSent"),
+      header_bytes_sent("headerBytesSent"),
       retransmitted_bytes_sent("retransmittedBytesSent"),
       target_bitrate("targetBitrate"),
       frames_encoded("framesEncoded"),
@@ -730,6 +744,7 @@ RTCOutboundRTPStreamStats::RTCOutboundRTPStreamStats(
       packets_sent(other.packets_sent),
       retransmitted_packets_sent(other.retransmitted_packets_sent),
       bytes_sent(other.bytes_sent),
+      header_bytes_sent(other.header_bytes_sent),
       retransmitted_bytes_sent(other.retransmitted_bytes_sent),
       target_bitrate(other.target_bitrate),
       frames_encoded(other.frames_encoded),
@@ -874,6 +889,9 @@ WEBRTC_RTCSTATS_IMPL(RTCTransportStats, RTCStats, "transport",
     &selected_candidate_pair_id,
     &local_certificate_id,
     &remote_certificate_id,
+    &tls_version,
+    &dtls_cipher,
+    &srtp_cipher,
     &selected_candidate_pair_changes)
 // clang-format on
 
@@ -890,6 +908,9 @@ RTCTransportStats::RTCTransportStats(std::string&& id, int64_t timestamp_us)
       selected_candidate_pair_id("selectedCandidatePairId"),
       local_certificate_id("localCertificateId"),
       remote_certificate_id("remoteCertificateId"),
+      tls_version("tlsVersion"),
+      dtls_cipher("dtlsCipher"),
+      srtp_cipher("srtpCipher"),
       selected_candidate_pair_changes("selectedCandidatePairChanges") {}
 
 RTCTransportStats::RTCTransportStats(const RTCTransportStats& other)
@@ -901,6 +922,9 @@ RTCTransportStats::RTCTransportStats(const RTCTransportStats& other)
       selected_candidate_pair_id(other.selected_candidate_pair_id),
       local_certificate_id(other.local_certificate_id),
       remote_certificate_id(other.remote_certificate_id),
+      tls_version(other.tls_version),
+      dtls_cipher(other.dtls_cipher),
+      srtp_cipher(other.srtp_cipher),
       selected_candidate_pair_changes(other.selected_candidate_pair_changes) {}
 
 RTCTransportStats::~RTCTransportStats() {}

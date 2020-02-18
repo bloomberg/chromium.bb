@@ -42,7 +42,11 @@ typedef struct {
 #ifdef VK_USE_PLATFORM_MACOS_MVK
         VkIcdSurfaceMacOS macos_surf;
 #endif  // VK_USE_PLATFORM_MACOS_MVK
+#ifdef VK_USE_PLATFORM_METAL_EXT
+        VkIcdSurfaceMetal metal_surf;
+#endif // VK_USE_PLATFORM_METAL_EXT
         VkIcdSurfaceDisplay display_surf;
+        VkIcdSurfaceHeadless headless_surf;
     };
     uint32_t base_size;            // Size of VkIcdSurfaceBase
     uint32_t platform_size;        // Size of corresponding VkIcdSurfaceXXX
@@ -55,6 +59,10 @@ bool wsi_swapchain_instance_gpa(struct loader_instance *ptr_instance, const char
 
 void wsi_create_instance(struct loader_instance *ptr_instance, const VkInstanceCreateInfo *pCreateInfo);
 bool wsi_unsupported_instance_extension(const VkExtensionProperties *ext_prop);
+
+VKAPI_ATTR VkResult VKAPI_CALL terminator_CreateHeadlessSurfaceEXT(VkInstance instance,
+                                                                   const VkHeadlessSurfaceCreateInfoEXT *pCreateInfo,
+                                                                   const VkAllocationCallbacks *pAllocator, VkSurfaceKHR *pSurface);
 
 VKAPI_ATTR VkResult VKAPI_CALL terminator_CreateSwapchainKHR(VkDevice device, const VkSwapchainCreateInfoKHR *pCreateInfo,
                                                              const VkAllocationCallbacks *pAllocator, VkSwapchainKHR *pSwapchain);
@@ -120,6 +128,10 @@ VKAPI_ATTR VkResult VKAPI_CALL terminator_CreateMacOSSurfaceMVK(VkInstance insta
 #ifdef VK_USE_PLATFORM_IOS_MVK
 VKAPI_ATTR VkResult VKAPI_CALL terminator_CreateIOSSurfaceMVK(VkInstance instance, const VkIOSSurfaceCreateInfoMVK *pCreateInfo,
                                                               const VkAllocationCallbacks *pAllocator, VkSurfaceKHR *pSurface);
+#endif
+#if defined(VK_USE_PLATFORM_METAL_EXT)
+VKAPI_ATTR VkResult VKAPI_CALL terminator_CreateMetalSurfaceEXT(VkInstance instance, const VkMetalSurfaceCreateInfoEXT *pCreateInfo,
+                                                                const VkAllocationCallbacks *pAllocator, VkSurfaceKHR *pSurface);
 #endif
 VKAPI_ATTR VkResult VKAPI_CALL terminator_GetPhysicalDeviceDisplayPropertiesKHR(VkPhysicalDevice physicalDevice,
                                                                                 uint32_t *pPropertyCount,

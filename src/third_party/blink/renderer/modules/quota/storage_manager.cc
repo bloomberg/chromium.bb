@@ -5,7 +5,6 @@
 #include "third_party/blink/renderer/modules/quota/storage_manager.h"
 
 #include "mojo/public/cpp/bindings/callback_helpers.h"
-#include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/mojom/quota/quota_types.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
@@ -19,6 +18,7 @@
 #include "third_party/blink/renderer/modules/permissions/permission_utils.h"
 #include "third_party/blink/renderer/modules/quota/quota_utils.h"
 #include "third_party/blink/renderer/modules/quota/storage_estimate.h"
+#include "third_party/blink/renderer/modules/quota/storage_usage_details.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"

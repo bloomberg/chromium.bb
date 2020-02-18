@@ -20,6 +20,8 @@
 #include "chrome/browser/chromeos/accessibility/chromevox_panel.h"
 #include "chrome/browser/chromeos/accessibility/switch_access_panel.h"
 #include "chrome/browser/extensions/api/braille_display_private/braille_controller.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_observer.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/user_manager/user_manager.h"
@@ -29,12 +31,12 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_registry_observer.h"
 #include "extensions/browser/extension_system.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
 #include "ui/accessibility/ax_enums.mojom-forward.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 
 class Browser;
-class Profile;
 class SwitchAccessEventHandlerDelegate;
 
 namespace ash {
@@ -108,7 +110,8 @@ class AccessibilityManager
       public extensions::ExtensionRegistryObserver,
       public user_manager::UserManager::UserSessionStateObserver,
       public input_method::InputMethodManager::Observer,
-      public CrasAudioHandler::AudioObserver {
+      public CrasAudioHandler::AudioObserver,
+      public ProfileObserver {
  public:
   // Creates an instance of AccessibilityManager, this should be called once,
   // because only one instance should exist at the same time.
@@ -211,10 +214,10 @@ class AccessibilityManager
   // Called when the Select-to-Speak extension state has changed.
   void OnSelectToSpeakStateChanged(ash::SelectToSpeakState state);
 
-  // Invoked to enable or disable switch access.
+  // Invoked to enable or disable Switch Access.
   void SetSwitchAccessEnabled(bool enabled);
 
-  // Returns if switch access is enabled.
+  // Returns if Switch Access is enabled.
   bool IsSwitchAccessEnabled() const;
 
   // Returns true if a braille display is connected to the system, otherwise
@@ -384,8 +387,8 @@ class AccessibilityManager
   void OnFocusHighlightChanged();
   void OnTapDraggingChanged();
   void OnSelectToSpeakChanged();
-  void UpdateSwitchAccessFromPref();
   void OnAutoclickChanged();
+  void OnSwitchAccessChanged();
 
   void CheckBrailleState();
   void ReceiveBrailleDisplayState(
@@ -428,8 +431,12 @@ class AccessibilityManager
   // CrasAudioHandler::AudioObserver:
   void OnActiveOutputNodeChanged() override;
 
+  // ProfileObserver:
+  void OnProfileWillBeDestroyed(Profile* profile) override;
+
   // Profile which has the current a11y context.
   Profile* profile_ = nullptr;
+  ScopedObserver<Profile, ProfileObserver> profile_observer_{this};
 
   content::NotificationRegistrar notification_registrar_;
   std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
@@ -492,7 +499,7 @@ class AccessibilityManager
       caret_bounds_observer_for_test_;
 
   // Used to set the audio focus enforcement type for ChromeVox.
-  media_session::mojom::AudioFocusManagerPtr audio_focus_manager_ptr_;
+  mojo::Remote<media_session::mojom::AudioFocusManager> audio_focus_manager_;
 
   base::WeakPtrFactory<AccessibilityManager> weak_ptr_factory_{this};
 

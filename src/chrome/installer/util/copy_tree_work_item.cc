@@ -110,7 +110,7 @@ void CopyTreeWorkItem::RollbackImpl() {
   // If this does happen sometimes, we may consider using Move instead of
   // Delete here. For now we just log the error and continue with the
   // rest of rollback operation.
-  if (copied_to_dest_path_ && !base::DeleteFile(dest_path_, true)) {
+  if (copied_to_dest_path_ && !base::DeleteFileRecursively(dest_path_)) {
     LOG(ERROR) << "Can not delete " << dest_path_.value();
   }
   if (moved_to_backup_) {
@@ -121,19 +121,30 @@ void CopyTreeWorkItem::RollbackImpl() {
     }
   }
   if (copied_to_alternate_path_ &&
-      !base::DeleteFile(alternative_path_, true)) {
+      !base::DeleteFileRecursively(alternative_path_)) {
     LOG(ERROR) << "Can not delete " << alternative_path_.value();
   }
 }
 
+// static
 bool CopyTreeWorkItem::IsFileInUse(const base::FilePath& path) {
   if (!base::PathExists(path))
     return false;
 
-  HANDLE handle = ::CreateFile(path.value().c_str(), FILE_ALL_ACCESS,
-                               NULL, NULL, OPEN_EXISTING, NULL, NULL);
-  if (handle  == INVALID_HANDLE_VALUE)
+  // A running executable is open with exclusive write access, so attempting to
+  // write to it will fail with a sharing violation. A more precise method would
+  // be to open the file with DELETE access and attempt to set the delete
+  // disposition on the handle. This would fail if the file was mapped into a
+  // process's address space, but succeed otherwise. This seems like overkill,
+  // however.
+  HANDLE handle =
+      ::CreateFile(path.value().c_str(), FILE_WRITE_DATA,
+                   FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+                   nullptr, OPEN_EXISTING, 0, nullptr);
+  if (handle == INVALID_HANDLE_VALUE) {
+    DPCHECK(::GetLastError() == ERROR_SHARING_VIOLATION);
     return true;
+  }
 
   CloseHandle(handle);
   return false;

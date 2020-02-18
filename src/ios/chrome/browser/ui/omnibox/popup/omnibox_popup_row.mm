@@ -7,8 +7,8 @@
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "components/omnibox/common/omnibox_features.h"
+#import "ios/chrome/browser/ui/elements/fade_truncating_label.h"
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_accessibility_identifier_constants.h"
-#import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_truncating_label.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_constants.h"
 #include "ios/chrome/browser/ui/util/rtl_geometry.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
@@ -53,6 +53,8 @@ const CGFloat kLeadingPaddingIpadCompact = 71;
   self = [super initWithStyle:UITableViewCellStyleDefault
               reuseIdentifier:@"OmniboxPopupRow"];
   if (self) {
+    _incognito = incognito;
+
     self.isAccessibilityElement = YES;
     self.backgroundColor = UIColor.clearColor;
     self.selectedBackgroundView = [[UIView alloc] initWithFrame:CGRectZero];
@@ -60,15 +62,13 @@ const CGFloat kLeadingPaddingIpadCompact = 71;
         [UIColor colorNamed:kTableViewRowHighlightColor], _incognito,
         [UIColor colorNamed:kTableViewRowHighlightDarkColor]);
 
-    _incognito = incognito;
-
     _textTruncatingLabel =
-        [[OmniboxPopupTruncatingLabel alloc] initWithFrame:CGRectZero];
+        [[FadeTruncatingLabel alloc] initWithFrame:CGRectZero];
     _textTruncatingLabel.userInteractionEnabled = NO;
     [self.contentView addSubview:_textTruncatingLabel];
 
     _detailTruncatingLabel =
-        [[OmniboxPopupTruncatingLabel alloc] initWithFrame:CGRectZero];
+        [[FadeTruncatingLabel alloc] initWithFrame:CGRectZero];
     _detailTruncatingLabel.userInteractionEnabled = NO;
     [self.contentView addSubview:_detailTruncatingLabel];
 

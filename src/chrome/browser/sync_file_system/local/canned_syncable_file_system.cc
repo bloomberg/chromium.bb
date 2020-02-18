@@ -17,6 +17,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/task_runner_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/sync_file_system/file_change.h"
@@ -26,11 +27,11 @@
 #include "chrome/browser/sync_file_system/syncable_file_system_util.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "storage/browser/blob/shareable_file_reference.h"
-#include "storage/browser/fileapi/external_mount_points.h"
-#include "storage/browser/fileapi/file_system_backend.h"
-#include "storage/browser/fileapi/file_system_context.h"
-#include "storage/browser/fileapi/file_system_operation_context.h"
-#include "storage/browser/fileapi/file_system_operation_runner.h"
+#include "storage/browser/file_system/external_mount_points.h"
+#include "storage/browser/file_system/file_system_backend.h"
+#include "storage/browser/file_system/file_system_context.h"
+#include "storage/browser/file_system/file_system_operation_context.h"
+#include "storage/browser/file_system/file_system_operation_runner.h"
 #include "storage/browser/quota/quota_manager.h"
 #include "storage/browser/test/mock_blob_util.h"
 #include "storage/browser/test/mock_special_storage_policy.h"
@@ -266,6 +267,7 @@ void CannedSyncableFileSystem::TearDown() {
   // Make sure we give some more time to finish tasks on other threads.
   EnsureLastTaskRuns(io_task_runner_.get());
   EnsureLastTaskRuns(file_task_runner_.get());
+  base::ThreadPoolInstance::Get()->FlushForTesting();
 }
 
 FileSystemURL CannedSyncableFileSystem::URL(const std::string& path) const {

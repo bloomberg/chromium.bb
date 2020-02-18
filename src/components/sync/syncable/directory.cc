@@ -87,8 +87,7 @@ Directory::SaveChangesSnapshot::SaveChangesSnapshot()
 Directory::SaveChangesSnapshot::~SaveChangesSnapshot() {}
 
 bool Directory::SaveChangesSnapshot::HasUnsavedMetahandleChanges() const {
-  return !dirty_metas.empty() || !metahandles_to_purge.empty() ||
-         !delete_journals.empty() || !delete_journals_to_purge.empty();
+  return !dirty_metas.empty() || !metahandles_to_purge.empty();
 }
 
 Directory::Kernel::Kernel(
@@ -183,12 +182,10 @@ DirOpenResult Directory::OpenImpl(
   // swap these later.
   Directory::MetahandlesMap tmp_handles_map;
 
-  std::unique_ptr<JournalIndex> delete_journals =
-      std::make_unique<JournalIndex>();
   MetahandleSet metahandles_to_purge;
 
-  DirOpenResult result = store_->Load(&tmp_handles_map, delete_journals.get(),
-                                      &metahandles_to_purge, &info);
+  DirOpenResult result =
+      store_->Load(&tmp_handles_map, &metahandles_to_purge, &info);
   if (OPENED_NEW != result && OPENED_EXISTING != result)
     return result;
 
@@ -196,7 +193,6 @@ DirOpenResult Directory::OpenImpl(
   kernel_ =
       std::make_unique<Kernel>(name, info, delegate, transaction_observer);
   kernel_->metahandles_to_purge.swap(metahandles_to_purge);
-  delete_journal_ = std::make_unique<DeleteJournal>(std::move(delete_journals));
   InitializeIndices(&tmp_handles_map);
 
   // Save changes back in case there are any metahandles to purge.
@@ -210,11 +206,6 @@ DirOpenResult Directory::OpenImpl(
       &Directory::OnCatastrophicError, weak_ptr_factory_.GetWeakPtr()));
 
   return result;
-}
-
-DeleteJournal* Directory::delete_journal() {
-  DCHECK(delete_journal_);
-  return delete_journal_.get();
 }
 
 void Directory::Close() {
@@ -517,9 +508,6 @@ void Directory::TakeSnapshotForSaveChanges(SaveChangesSnapshot* snapshot) {
   snapshot->kernel_info_status = kernel_->info_status;
   // This one we reset on failure.
   kernel_->info_status = KERNEL_SHARE_INFO_VALID;
-
-  delete_journal_->TakeSnapshotAndClear(&trans, &snapshot->delete_journals,
-                                        &snapshot->delete_journals_to_purge);
 }
 
 bool Directory::SaveChanges() {
@@ -638,9 +626,7 @@ void Directory::UnapplyEntry(EntryKernel* entry) {
 }
 
 void Directory::DeleteEntry(const ScopedKernelLock& lock,
-                            bool save_to_journal,
-                            EntryKernel* entry_ptr,
-                            OwnedEntryKernelSet* entries_to_journal) {
+                            EntryKernel* entry_ptr) {
   int64_t handle = entry_ptr->ref(META_HANDLE);
 
   kernel_->metahandles_to_purge.insert(handle);
@@ -671,10 +657,6 @@ void Directory::DeleteEntry(const ScopedKernelLock& lock,
     num_erased = kernel_->server_tags_map.erase(entry->ref(UNIQUE_SERVER_TAG));
     DCHECK_EQ(1u, num_erased);
   }
-
-  if (save_to_journal) {
-    entries_to_journal->insert(std::move(entry));
-  }
 }
 
 void Directory::PurgeEntriesWithTypeIn(ModelTypeSet disabled_types,
@@ -685,8 +667,6 @@ void Directory::PurgeEntriesWithTypeIn(ModelTypeSet disabled_types,
     return;
 
   WriteTransaction trans(FROM_HERE, PURGE_ENTRIES, this);
-
-  OwnedEntryKernelSet entries_to_journal;
 
   {
     ScopedKernelLock lock(this);
@@ -721,17 +701,10 @@ void Directory::PurgeEntriesWithTypeIn(ModelTypeSet disabled_types,
             types_to_unapply.Has(server_type)) {
           UnapplyEntry(entry);
         } else {
-          bool save_to_journal =
-              (types_to_journal.Has(local_type) ||
-               types_to_journal.Has(server_type)) &&
-              (delete_journal_->IsDeleteJournalEnabled(local_type) ||
-               delete_journal_->IsDeleteJournalEnabled(server_type));
-          DeleteEntry(lock, save_to_journal, entry, &entries_to_journal);
+          DeleteEntry(lock, entry);
         }
       }
     }
-
-    delete_journal_->AddJournalBatch(&trans, entries_to_journal);
 
     // Ensure meta tracking for these data types reflects the purged state.
     for (ModelType type : disabled_types) {
@@ -801,11 +774,6 @@ void Directory::HandleSaveChangesFailure(const SaveChangesSnapshot& snapshot) {
 
   kernel_->metahandles_to_purge.insert(snapshot.metahandles_to_purge.begin(),
                                        snapshot.metahandles_to_purge.end());
-
-  // Restore delete journals.
-  delete_journal_->AddJournalBatch(&trans, snapshot.delete_journals);
-  delete_journal_->PurgeDeleteJournals(&trans,
-                                       snapshot.delete_journals_to_purge);
 }
 
 void Directory::GetDownloadProgress(

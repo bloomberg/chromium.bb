@@ -20,6 +20,7 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/app_mode/startup_app_launcher.h"
@@ -65,7 +66,7 @@ constexpr int kAppInstallSplashScreenMinTimeMS = 10000;
 // Parameters for test:
 bool skip_splash_wait = false;
 int network_wait_time_in_seconds = 10;
-base::Closure* network_timeout_callback = nullptr;
+base::OnceClosure* network_timeout_callback = nullptr;
 AppLaunchController::ReturnBoolCallback* can_configure_network_callback =
     nullptr;
 AppLaunchController::ReturnBoolCallback*
@@ -182,7 +183,7 @@ void AppLaunchController::StartAppLaunch(bool is_auto_launch) {
 
   // TODO(tengs): Add a loading profile app launch state.
   app_launch_splash_screen_view_->SetDelegate(this);
-  app_launch_splash_screen_view_->Show(app_id_);
+  app_launch_splash_screen_view_->Show();
 
   KioskAppManager::App app;
   CHECK(KioskAppManager::Get());
@@ -225,7 +226,7 @@ void AppLaunchController::SetNetworkWaitForTesting(int wait_time_secs) {
 
 // static
 void AppLaunchController::SetNetworkTimeoutCallbackForTesting(
-    base::Closure* callback) {
+    base::OnceClosure* callback) {
   network_timeout_callback = callback;
 }
 
@@ -287,15 +288,18 @@ void AppLaunchController::OnCancelAppLaunch() {
   OnLaunchFailed(KioskAppLaunchError::USER_CANCEL);
 }
 
-void AppLaunchController::OnNetworkConfigRequested(bool requested) {
-  network_config_requested_ = requested;
-  if (requested) {
-    MaybeShowNetworkConfigureUI();
-  } else {
-    app_launch_splash_screen_view_->UpdateAppLaunchState(
-        AppLaunchSplashScreenView::APP_LAUNCH_STATE_PREPARING_NETWORK);
-    startup_app_launcher_->RestartLauncher();
-  }
+void AppLaunchController::OnNetworkConfigRequested() {
+  DCHECK(!network_config_requested_);
+  network_config_requested_ = true;
+  MaybeShowNetworkConfigureUI();
+}
+
+void AppLaunchController::OnNetworkConfigFinished() {
+  DCHECK(network_config_requested_);
+  network_config_requested_ = false;
+  app_launch_splash_screen_view_->UpdateAppLaunchState(
+      AppLaunchSplashScreenView::APP_LAUNCH_STATE_PREPARING_NETWORK);
+  startup_app_launcher_->RestartLauncher();
 }
 
 void AppLaunchController::OnNetworkStateChanged(bool online) {
@@ -310,6 +314,13 @@ void AppLaunchController::OnNetworkStateChanged(bool online) {
 
 void AppLaunchController::OnDeletingSplashScreenView() {
   app_launch_splash_screen_view_ = nullptr;
+}
+
+KioskAppManagerBase::App AppLaunchController::GetAppData() {
+  KioskAppManagerBase::App app;
+  bool app_found = KioskAppManager::Get()->GetApp(app_id_, &app);
+  DCHECK(app_found);
+  return app;
 }
 
 void AppLaunchController::OnProfileLoaded(Profile* profile) {
@@ -368,8 +379,10 @@ void AppLaunchController::OnNetworkWaitTimedout() {
 
   MaybeShowNetworkConfigureUI();
 
-  if (network_timeout_callback)
-    network_timeout_callback->Run();
+  if (network_timeout_callback) {
+    std::move(*network_timeout_callback).Run();
+    network_timeout_callback = nullptr;
+  }
 }
 
 void AppLaunchController::OnAppWindowCreated() {
@@ -479,7 +492,7 @@ void AppLaunchController::OnInstallingApp() {
   // We have connectivity at this point, so we can skip the network
   // configuration dialog if it is being shown and not explicitly requested.
   if (showing_network_dialog_ && !network_config_requested_) {
-    app_launch_splash_screen_view_->Show(app_id_);
+    app_launch_splash_screen_view_->Show();
     showing_network_dialog_ = false;
     launch_splash_start_time_ = base::TimeTicks::Now().ToInternalValue();
   }

@@ -7,6 +7,8 @@
 
 #include "base/callback.h"
 #include "base/component_export.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_loader_factory.mojom-forward.h"
 
@@ -31,16 +33,16 @@ class COMPONENT_EXPORT(NETWORK_CPP) WeakWrapperSharedURLLoaderFactory
   void Detach();
 
   // SharedURLLoaderFactory implementation.
-  void CreateLoaderAndStart(mojom::URLLoaderRequest loader,
+  void CreateLoaderAndStart(mojo::PendingReceiver<mojom::URLLoader> loader,
                             int32_t routing_id,
                             int32_t request_id,
                             uint32_t options,
                             const network::ResourceRequest& request,
-                            mojom::URLLoaderClientPtr client,
+                            mojo::PendingRemote<mojom::URLLoaderClient> client,
                             const net::MutableNetworkTrafficAnnotationTag&
                                 traffic_annotation) override;
-  void Clone(mojom::URLLoaderFactoryRequest request) override;
-  std::unique_ptr<network::SharedURLLoaderFactoryInfo> Clone() override;
+  void Clone(mojo::PendingReceiver<mojom::URLLoaderFactory> receiver) override;
+  std::unique_ptr<network::PendingSharedURLLoaderFactory> Clone() override;
 
  private:
   ~WeakWrapperSharedURLLoaderFactory() override;

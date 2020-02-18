@@ -952,6 +952,84 @@ TEST_F(SwiftShaderTest, CopyTexImage)
 	Uninitialize();
 }
 
+// Tests copying to a texture from a pixel buffer object
+TEST_F(SwiftShaderTest, CopyTexImageFromPixelBuffer)
+{
+	Initialize(3, false);
+	const GLuint red   = 0xff0000ff;
+	const GLuint green = 0x00ff00ff;
+	const GLuint blue  = 0x0000ffff;
+	// Set up texture
+	GLuint texture = 0;
+	glGenTextures(1, &texture);
+	EXPECT_NO_GL_ERROR();
+	GLuint tex_data[4][4] = {
+		{red, red, red, red},
+		{red, red, red, red},
+		{red, red, red, red},
+		{red, red, red, red}
+	};
+	glBindTexture(GL_TEXTURE_2D, texture);
+	EXPECT_NO_GL_ERROR();
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 4, 4, 0, GL_RGBA, GL_UNSIGNED_BYTE, (void *) tex_data[0]);
+	EXPECT_NO_GL_ERROR();
+	// Set up Pixel Buffer Object
+	GLuint pixelBuffer = 0;
+	glGenBuffers(1, &pixelBuffer);
+	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pixelBuffer);
+	EXPECT_NO_GL_ERROR();
+	glPixelStorei(GL_UNPACK_ROW_LENGTH, 4);
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+	EXPECT_NO_GL_ERROR();
+	GLuint pixel_data[4][4] = {
+		{blue, blue, green, green},
+		{blue, blue, green, green},
+		{blue, blue, green, green},
+		{blue, blue, green, green},
+	};
+	glBufferData(GL_PIXEL_UNPACK_BUFFER, sizeof(pixel_data), (void *) pixel_data, GL_STREAM_DRAW);
+	// Should set the 2-rightmost columns of the currently bound texture to the
+	// 2-rightmost columns of the PBO;
+	GLintptr offset = 2 * sizeof(GLuint);
+	glTexSubImage2D(GL_TEXTURE_2D, 0, 2, 0, 2, 4, GL_RGBA, GL_UNSIGNED_BYTE, reinterpret_cast<void *>(offset));
+	EXPECT_NO_GL_ERROR();
+	// Create an off-screen framebuffer to render the texture data to.
+	GLuint fbo = 0;
+	glGenFramebuffers(1, &fbo);
+	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
+	EXPECT_NO_GL_ERROR();
+	unsigned int color[4][4] = {
+		{0, 0, 0, 0},
+		{0, 0, 0, 0},
+		{0, 0, 0, 0},
+		{0, 0, 0, 0}
+	};
+	glReadPixels(0, 0, 4, 4, GL_RGBA, GL_UNSIGNED_BYTE, &color);
+	EXPECT_NO_GL_ERROR();
+	bool allEqual = true;
+	for (int i = 0; i < 4; i++)
+	{
+		for (int j = 0; j < 2; j++)
+		{
+			allEqual = allEqual && (color[i][j] == tex_data[i][j]);
+			allEqual = allEqual && (color[i][j+2] == pixel_data[i][j+2]);
+			if (!allEqual)
+				break;
+		}
+		if (!allEqual)
+			break;
+	}
+	EXPECT_EQ(allEqual, true);
+	// We can't use an offset of 3 GLuints or more, because the PBO is not large
+	// enough to satisfy such a request with the current GL_UNPACK_ROW_LENGTH.
+	offset = 3 * sizeof(GLuint);
+	glTexSubImage2D(GL_TEXTURE_2D, 0, 2, 0, 2, 4, GL_RGBA, GL_UNSIGNED_BYTE, reinterpret_cast<void *>(offset));
+	GLenum error = glGetError();
+	EXPECT_GLENUM_EQ(GL_INVALID_OPERATION, error);
+	Uninitialize();
+}
+
 // Tests reading of half-float textures.
 TEST_F(SwiftShaderTest, ReadHalfFloat)
 {
@@ -1107,8 +1185,11 @@ TEST_F(SwiftShaderTest, AtanCornerCases)
 	ASSERT_NE(-1, positive_value);
 	GLint negative_value = glGetUniformLocation(ph.program, "negative_value");
 	ASSERT_NE(-1, negative_value);
-	glUniform1f(positive_value,  1.0);
-	glUniform1f(negative_value, -1.0);
+
+	float value = 1.0f;
+	glUniform1fv(positive_value, 1, &value);
+	value = -1.0f;
+	glUniform1fv(negative_value, 1, &value);
 
 	glClearColor(0.0, 0.0, 0.0, 0.0);
 	glClear(GL_COLOR_BUFFER_BIT);
@@ -1764,6 +1845,7 @@ TEST_F(SwiftShaderTest, BlitTest)
 	const int small = 200;
 	const int neg_small = -small;
 	const int neg_big = -big;
+	int max = 0x7fffffff;
 	int data[][8] = {
 		// sx0, sy0, sx1, sy1, dx0, dy0, dx1, dy1
 		{0, 0, 0, 0, 0, 0, 0, 0},
@@ -1776,7 +1858,14 @@ TEST_F(SwiftShaderTest, BlitTest)
 		{neg_small, small, neg_small, neg_small, neg_small, big, small},
 		{big, big-1, big-2, big-3, big-4, big-5, big-6, big-7},
 		{big, neg_big, neg_big, big, small, big, 0, neg_small},
-		{323479648, 21931, 1769809195, 32733, 0, 0, -161640504, 32766}
+		{323479648, 21931, 1769809195, 32733, 0, 0, -161640504, 32766},
+		{0, 0, max, max, 0, 0, 8, 8},
+		{0, 0, 8, 8, 0, 0, max, max},
+		{0, 0, max, max, 0, 0, max, max},
+		{-1, -1, max, max, 0, 0, 8, 8},
+		{0, 0, 8, 8, -1, -1, max, max},
+		{-1, -1, max, max, -1, -1, max, max},
+		{-max-1, -max-1, max, max, -max-1, -max-1, max, max}
 	};
 
 	for (int i = 0; i < (int) (sizeof(data)/sizeof(data[0])); i++)

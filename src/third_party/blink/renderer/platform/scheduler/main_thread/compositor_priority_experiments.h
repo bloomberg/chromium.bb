@@ -44,8 +44,6 @@ class PLATFORM_EXPORT CompositorPriorityExperiments {
 
   QueuePriority GetCompositorPriority() const;
 
-  void SetCompositingIsFast(bool compositing_is_fast);
-
   void OnTaskCompleted(MainThreadTaskQueue* queue,
                        QueuePriority current_priority,
                        MainThreadTaskQueue::TaskTiming* task_timing);
@@ -53,6 +51,8 @@ class PLATFORM_EXPORT CompositorPriorityExperiments {
   QueuePriority GetAlternatingPriority() const {
     return alternating_compositor_priority_;
   }
+
+  void OnWillBeginMainFrame();
 
   void OnMainThreadSchedulerInitialized();
   void OnMainThreadSchedulerShutdown();
@@ -78,7 +78,8 @@ class PLATFORM_EXPORT CompositorPriorityExperiments {
     void UpdateCompositorBudgetState(base::TimeTicks now);
 
     void OnTaskCompleted(MainThreadTaskQueue* queue,
-                         MainThreadTaskQueue::TaskTiming* task_timing);
+                         MainThreadTaskQueue::TaskTiming* task_timing,
+                         bool have_seen_stop_signal);
 
     // Unimplemented methods.
     void AddQueueToBudgetPool(TaskQueue* queue,
@@ -96,20 +97,20 @@ class PLATFORM_EXPORT CompositorPriorityExperiments {
     const base::TickClock* tick_clock_;  // Not owned.
   };
 
-  MainThreadSchedulerImpl* scheduler_;  // Not owned.
-
   static Experiment GetExperimentFromFeatureList();
 
   void DoPrioritizeCompositingAfterDelay();
 
   void PostPrioritizeCompositingAfterDelayTask();
 
+  enum class StopSignalType { kAnyCompositorTask, kBeginMainFrameTask };
+
+  MainThreadSchedulerImpl* scheduler_;  // Not owned.
+
   const Experiment experiment_;
 
   QueuePriority alternating_compositor_priority_ =
       QueuePriority::kVeryHighPriority;
-
-  bool compositing_is_fast_ = false;
 
   QueuePriority delay_compositor_priority_ = QueuePriority::kNormalPriority;
   CancelableClosureHolder do_prioritize_compositing_after_delay_callback_;
@@ -117,6 +118,9 @@ class PLATFORM_EXPORT CompositorPriorityExperiments {
 
   QueuePriority budget_compositor_priority_ = QueuePriority::kVeryHighPriority;
   std::unique_ptr<CompositorBudgetPoolController> budget_pool_controller_;
+
+  const StopSignalType stop_signal_;
+  bool will_begin_main_frame_ = false;
 };
 
 }  // namespace scheduler

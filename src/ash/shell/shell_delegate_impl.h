@@ -23,6 +23,14 @@ class ShellDelegateImpl : public ShellDelegate {
   bool CanShowWindowForUser(const aura::Window* window) const override;
   std::unique_ptr<ScreenshotDelegate> CreateScreenshotDelegate() override;
   AccessibilityDelegate* CreateAccessibilityDelegate() override;
+  bool CanGoBack(gfx::NativeWindow window) const override;
+  void BindNavigableContentsFactory(
+      mojo::PendingReceiver<content::mojom::NavigableContentsFactory> receiver)
+      override;
+  void BindMultiDeviceSetup(
+      mojo::PendingReceiver<
+          chromeos::multidevice_setup::mojom::MultiDeviceSetup> receiver)
+      override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ShellDelegateImpl);

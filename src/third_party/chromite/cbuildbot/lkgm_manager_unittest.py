@@ -17,7 +17,6 @@ import mock
 from chromite.cbuildbot import lkgm_manager
 from chromite.cbuildbot import manifest_version
 from chromite.cbuildbot import repository
-from chromite.cbuildbot import validation_pool
 from chromite.lib import config_lib
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
@@ -25,7 +24,6 @@ from chromite.lib import cros_logging as logging
 from chromite.lib import cros_test_lib
 from chromite.lib import git
 from chromite.lib import osutils
-from chromite.lib import patch as cros_patch
 from chromite.lib.buildstore import FakeBuildStore
 
 
@@ -107,7 +105,7 @@ class LKGMCandidateInfoTest(cros_test_lib.TestCase):
 
 @contextlib.contextmanager
 def TemporaryManifest():
-  with tempfile.NamedTemporaryFile() as f:
+  with tempfile.NamedTemporaryFile(mode='w') as f:
     # Create fake but empty manifest file.
     new_doc = minidom.getDOMImplementation().createDocument(
         None, 'manifest', None)
@@ -157,68 +155,6 @@ class LKGMManagerTest(cros_test_lib.MockTempDirTestCase):
   def _GetPathToManifest(self, info):
     return os.path.join(self.manager.all_specs_dir, '%s.xml' %
                         info.VersionString())
-
-  def testCreateNewCandidate(self):
-    """Tests that we can create a new candidate and uprev an old rc."""
-    # Let's stub out other LKGMManager calls cause they're already
-    # unit tested.
-
-    my_info = lkgm_manager._LKGMCandidateInfo('1.2.3')
-    most_recent_candidate = lkgm_manager._LKGMCandidateInfo('1.2.3-rc12')
-    self.manager.latest = most_recent_candidate.VersionString()
-
-    new_candidate = lkgm_manager._LKGMCandidateInfo('1.2.3-rc13')
-    new_manifest = 'some_manifest'
-
-    build_id = 59271
-
-    # Patch out our RepoRepository to make sure we don't corrupt real repo.
-    cros_source_mock = self.PatchObject(self.manager, 'cros_source')
-    cros_source_mock.branch = 'master'
-    cros_source_mock.directory = '/foo/repo'
-
-    self.PatchObject(lkgm_manager.LKGMManager, 'CheckoutSourceCode')
-    self.PatchObject(lkgm_manager.LKGMManager, 'CreateManifest',
-                     return_value=new_manifest)
-    self.PatchObject(lkgm_manager.LKGMManager, 'HasCheckoutBeenBuilt',
-                     return_value=False)
-
-    # Do manifest refresh work.
-    self.PatchObject(lkgm_manager.LKGMManager, 'RefreshManifestCheckout')
-    self.PatchObject(lkgm_manager.LKGMManager, 'GetCurrentVersionInfo',
-                     return_value=my_info)
-    init_mock = self.PatchObject(lkgm_manager.LKGMManager,
-                                 'InitializeManifestVariables')
-
-    self.PatchObject(lkgm_manager.LKGMManager,
-                     'GenerateBlameListSinceLKGM',
-                     return_value=True)
-    self.PatchObject(lkgm_manager.LKGMManager,
-                     '_AdjustRepoCheckoutToLocalManifest')
-    self.PatchObject(lkgm_manager.LKGMManager,
-                     '_AddPatchesToManifest')
-    mock_pool = self.PatchObject(
-        validation_pool, 'ValidationPool',
-        build_root=self.manager.cros_source.directory,
-        has_chump_cls=False)
-
-    # For _AdjustRepoCheckoutToLocalManifest.
-    self.PatchObject(git, 'Clone')
-    self.PatchObject(git, 'CreateBranch')
-
-    # Publish new candidate.
-    publish_mock = self.PatchObject(lkgm_manager.LKGMManager, 'PublishManifest')
-
-    candidate_path = self.manager.CreateNewCandidate(
-        build_id=build_id, validation_pool=mock_pool)
-    self.assertEqual(candidate_path, self._GetPathToManifest(new_candidate))
-
-    publish_mock.assert_called_once_with(new_manifest,
-                                         new_candidate.VersionString(),
-                                         build_id=build_id)
-    init_mock.assert_called_once_with(my_info)
-    self.push_mock.assert_called_once_with(mock.ANY, mock.ANY, sync=False)
-    self.assertTrue(mock_pool.has_chump_cls)
 
   def testCreateFromManifest(self):
     """Tests that we can create a new candidate from another manifest."""
@@ -282,10 +218,6 @@ class LKGMManagerTest(cros_test_lib.MockTempDirTestCase):
                                  'InitializeManifestVariables')
     self.PatchObject(lkgm_manager.LKGMManager, 'HasCheckoutBeenBuilt',
                      return_value=True)
-
-    # For _AdjustRepoCheckoutToLocalManifest.
-    self.PatchObject(git, 'Clone')
-    self.PatchObject(git, 'CreateBranch')
 
     candidate = self.manager.CreateNewCandidate()
     self.assertEqual(candidate, None)
@@ -358,7 +290,7 @@ Commit: Gerrit <chrome-bot@chromium.org>
         'revision': '1234567890',
     }
     self.manager.incr_type = 'build'
-    self.PatchObject(cros_build_lib, 'RunCommand', side_effect=Exception())
+    self.PatchObject(cros_build_lib, 'run', side_effect=Exception())
     exists_mock, link_mock = self._MockParseGitLog(fake_git_log, project)
     self.manager.GenerateBlameListSinceLKGM()
 
@@ -447,163 +379,3 @@ Commit: Gerrit <chrome-bot@chromium.org>
       self.assertEqual(
           elements[0].getAttribute(lkgm_manager.CHROME_VERSION_ATTR),
           chrome_version)
-
-  def testAddLKGMToManifest(self, present=True):
-    """Tests whether we can write the LKGM version to the manifest file."""
-    with TemporaryManifest() as f:
-      # Set up LGKM symlink.
-      if present:
-        lkgm_version = '6377.0.0-rc1'
-        os.makedirs(os.path.dirname(self.manager.lkgm_path))
-        os.symlink('../foo/%s.xml' % lkgm_version, self.manager.lkgm_path)
-
-      # Write the chrome element to manifest.
-      self.manager._AddLKGMToManifest(f.name)
-
-      # Read the manifest file.
-      new_doc = minidom.parse(f.name)
-      elements = new_doc.getElementsByTagName(lkgm_manager.LKGM_ELEMENT)
-      if present:
-        self.assertEqual(len(elements), 1)
-        self.assertEqual(
-            elements[0].getAttribute(lkgm_manager.LKGM_VERSION_ATTR),
-            lkgm_version)
-      else:
-        self.assertEqual(len(elements), 0)
-
-  def testAddLKGMToManifestWithMissingFile(self):
-    """Tests writing the LKGM version when LKGM.xml is missing."""
-    self.testAddLKGMToManifest(present=False)
-
-  def _MockValidationPool(self, gerrit_patchs):
-    mock_pool = mock.Mock()
-    mock_pool.applied = gerrit_patchs
-    return mock_pool
-
-  def testAddPatchesToManifest(self):
-    """Tests whether we can add a fake patch to an empty manifest file.
-
-    This test creates an empty xml file with just manifest/ tag in it then
-    runs the AddPatchesToManifest with one mocked out GerritPatch and ensures
-    the newly generated manifest has the correct patch information afterwards.
-    """
-    with TemporaryManifest() as f:
-      gerrit_patch = cros_patch.GerritFetchOnlyPatch(
-          'https://host/chromite/tacos',
-          'chromite/tacos',
-          'refs/changes/11/12345/4',
-          'master',
-          'cros-internal',
-          '7181e4b5e182b6f7d68461b04253de095bad74f9',
-          'I47ea30385af60ae4cc2acc5d1a283a46423bc6e1',
-          '12345',
-          '4',
-          'foo@chromium.org',
-          1,
-          1,
-          3)
-
-      mock_pool = self._MockValidationPool([gerrit_patch])
-      self.manager._AddPatchesToManifest(f.name, mock_pool)
-
-      new_doc = minidom.parse(f.name)
-      element = new_doc.getElementsByTagName(
-          lkgm_manager.PALADIN_COMMIT_ELEMENT)[0]
-
-      self.assertEqual(element.getAttribute(
-          cros_patch.ATTR_CHANGE_ID), gerrit_patch.change_id)
-      self.assertEqual(element.getAttribute(
-          cros_patch.ATTR_COMMIT), gerrit_patch.commit)
-      self.assertEqual(element.getAttribute(cros_patch.ATTR_PROJECT),
-                       gerrit_patch.project)
-      self.assertEqual(element.getAttribute(cros_patch.ATTR_REMOTE),
-                       gerrit_patch.remote)
-      self.assertEqual(element.getAttribute(cros_patch.ATTR_BRANCH),
-                       gerrit_patch.tracking_branch)
-      self.assertEqual(element.getAttribute(cros_patch.ATTR_REF),
-                       gerrit_patch.ref)
-      self.assertEqual(
-          element.getAttribute(cros_patch.ATTR_OWNER_EMAIL),
-          gerrit_patch.owner_email)
-      self.assertEqual(
-          element.getAttribute(cros_patch.ATTR_PROJECT_URL),
-          gerrit_patch.project_url)
-      self.assertEqual(
-          element.getAttribute(cros_patch.ATTR_PATCH_NUMBER),
-          gerrit_patch.patch_number)
-      self.assertEqual(
-          element.getAttribute(cros_patch.ATTR_FAIL_COUNT),
-          str(gerrit_patch.fail_count))
-      self.assertEqual(
-          element.getAttribute(cros_patch.ATTR_PASS_COUNT),
-          str(gerrit_patch.pass_count))
-      self.assertEqual(
-          element.getAttribute(cros_patch.ATTR_TOTAL_FAIL_COUNT),
-          str(gerrit_patch.total_fail_count))
-
-  def testAddPatchesToManifestWithUnicode(self):
-    """Tests to add a fake patch with unicode to an empty manifest file.
-
-    Test whether _AddPatchesToManifest can add to a patch with unicode to
-    manifest file without any UnicodeError exception and that the decoded
-    manifest has the original unicode string.
-    """
-    with TemporaryManifest() as f:
-      gerrit_patch = cros_patch.GerritFetchOnlyPatch(
-          'https://host/chromite/tacos',
-          'chromite/tacos',
-          'refs/changes/11/12345/4',
-          'master',
-          'cros-internal',
-          '7181e4b5e182b6f7d68461b04253de095bad74f9',
-          'I47ea30385af60ae4cc2acc5d1a283a46423bc6e1',
-          '12345',
-          '4',
-          u'foo\xe9@chromium.org',
-          1,
-          1,
-          3)
-
-      mock_pool = self._MockValidationPool([gerrit_patch])
-      self.manager._AddPatchesToManifest(f.name, mock_pool)
-
-      new_doc = minidom.parse(f.name)
-      element = new_doc.getElementsByTagName(
-          lkgm_manager.PALADIN_COMMIT_ELEMENT)[0]
-
-      self.assertEqual(
-          element.getAttribute(cros_patch.ATTR_OWNER_EMAIL),
-          gerrit_patch.owner_email)
-
-  def testAddPatchesToManifestWithInvalidTokens(self):
-    """Tests to add a fake patch with invalid tokens to a manifest.
-
-    Test whether _AddPatchesToManifest will skip commits with invalid tokens.
-    """
-    with TemporaryManifest() as f:
-      gerrit_patch = cros_patch.GerritFetchOnlyPatch(
-          'https://host/chromite/tacos',
-          'chromite/tacos',
-          'refs/changes/11/12345/4',
-          'master',
-          'cros-internal',
-          '7181e4b5e182b6f7d68461b04253de095bad74f9',
-          'I47ea30385af60ae4cc2acc5d1a283a46423bc6e1',
-          '12345',
-          '4',
-          'foo@chromium.org',
-          1,
-          1,
-          3,
-          #Invalid tokens
-          '…')
-
-      mock_pool = self._MockValidationPool([gerrit_patch])
-      self.manager._AddPatchesToManifest(f.name, mock_pool)
-
-      new_doc = minidom.parse(f.name)
-      self.assertEqual(0, len(new_doc.getElementsByTagName(
-          lkgm_manager.PALADIN_COMMIT_ELEMENT)))
-
-      self.assertEqual(1, mock_pool.SendNotification.call_count)
-      self.assertEqual(1, mock_pool.RemoveReady.call_count)

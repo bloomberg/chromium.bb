@@ -22,11 +22,12 @@
 #endif
 
 #if defined(TOOLKIT_VIEWS)
+#include "base/callback_helpers.h"
 #include "base/strings/strcat.h"
+#include "ui/compositor/test/draw_waiter_for_test.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/views/test/widget_test.h"
-#include "ui/views/widget/widget_observer.h"
 #endif
 
 namespace {
@@ -56,18 +57,6 @@ class WidgetCloser {
   DISALLOW_COPY_AND_ASSIGN(WidgetCloser);
 };
 
-class CompositorObserverEnd : public ui::CompositorObserver {
- public:
-  void OnCompositingEnded(ui::Compositor* compositor) override {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                  run_loop_.QuitClosure());
-  }
-  void WaitForComplete() { run_loop_.Run(); }
-
- private:
-  base::RunLoop run_loop_;
-};
-
 #endif  // defined(TOOLKIT_VIEWS)
 
 }  // namespace
@@ -83,13 +72,6 @@ TestBrowserDialog::~TestBrowserDialog() = default;
 
 void TestBrowserDialog::PreShow() {
   UpdateWidgets();
-}
-
-void CompareAsync(const BrowserSkiaGoldPixelDiff* pixel_diff,
-                  const std::string& name,
-                  const views::View* view,
-                  bool* result) {
-  *result = pixel_diff->CompareScreenshot(name, view);
 }
 
 // This returns true if exactly one views widget was shown that is a dialog or
@@ -112,35 +94,32 @@ bool TestBrowserDialog::VerifyUi() {
   });
   widgets_ = added;
 
-  if (added.size() != 1)
+  if (added.size() != 1) {
+    DLOG(INFO) << "VerifyUi(): Expected 1 added widget; got " << added.size();
     return false;
+  }
 
   views::Widget* dialog_widget = *(added.begin());
 // TODO(https://crbug.com/958242) support Mac for pixel tests.
 #if !defined(OS_MACOSX)
   if (pixel_diff_) {
+    dialog_widget->SetBlockCloseForTesting(true);
+    base::ScopedClosureRunner unblock_close(
+        base::BindOnce(&views::Widget::SetBlockCloseForTesting,
+                       base::Unretained(dialog_widget), false));
     // Wait for painting complete.
-    auto* compositor = dialog_widget->GetNativeView()->layer()->GetCompositor();
-    CompositorObserverEnd obend;
-    compositor->AddObserver(&obend);
-    obend.WaitForComplete();
-    compositor->RemoveObserver(&obend);
+    auto* compositor = dialog_widget->GetCompositor();
+    ui::DrawWaiterForTest::WaitForCompositingEnded(compositor);
 
-    base::ScopedAllowBlockingForTesting allow_blocking;
     pixel_diff_->Init(dialog_widget, "BrowserUiDialog");
     auto* test_info = testing::UnitTest::GetInstance()->current_test_info();
     const std::string test_name =
         base::StrCat({test_info->test_case_name(), "_", test_info->name()});
-    bool result = false;
-    base::RunLoop run_loop;
-    base::ThreadTaskRunnerHandle::Get()->PostTaskAndReply(
-        FROM_HERE,
-        base::BindOnce(CompareAsync, pixel_diff_.get(), test_name,
-                       dialog_widget->GetContentsView(), &result),
-        run_loop.QuitClosure());
-    run_loop.Run();
-    if (!result)
+    if (!pixel_diff_->CompareScreenshot(test_name,
+                                        dialog_widget->GetContentsView())) {
+      DLOG(INFO) << "VerifyUi(): Pixel compare failed.";
       return false;
+    }
   }
 #endif  // OS_MACOSX
 
@@ -157,7 +136,11 @@ bool TestBrowserDialog::VerifyUi() {
   const gfx::Rect display_work_area =
       screen->GetDisplayNearestWindow(native_window).work_area();
 
-  return display_work_area.Contains(dialog_bounds);
+  const bool dialog_in_bounds = display_work_area.Contains(dialog_bounds);
+  DLOG_IF(INFO, !dialog_in_bounds)
+      << "VerifyUi(): Dialog bounds " << dialog_bounds.ToString()
+      << " outside of display work area " << display_work_area.ToString();
+  return dialog_in_bounds;
 #else
   NOTIMPLEMENTED();
   return false;

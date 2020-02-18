@@ -110,6 +110,10 @@ namespace declarativeNetRequest {
      URLTransform? transform;
      // The redirect url. Redirects to JavaScript urls are not allowed.
      DOMString? url;
+     // TODO(crbug.com/974391): Add documentation once the implementation is
+     // complete.
+     [nodoc]
+     DOMString? regexSubstitution;
   };
 
   dictionary RuleCondition {
@@ -134,6 +138,9 @@ namespace declarativeNetRequest {
     //
     // If omitted, all urls are matched. An empty string is not allowed.
     //
+    // A pattern beginning with <code>||*</code> is not allowed. Use
+    // <code>*</code> instead.
+    //
     // Note: The <code>urlFilter</code> must be composed of only ASCII
     // characters. This is matched against a url where the host is encoded in
     // the punycode format (in case of internationalized domains) and any other
@@ -142,6 +149,11 @@ namespace declarativeNetRequest {
     // <code>urlFilter</code> will be matched against the url
     // http://abc.xn--p1ai/?q=%D1%84.
     DOMString? urlFilter;
+
+    // TODO(crbug.com/974391): Add documentation once the implementation is
+    // complete.
+    [nodoc]
+    DOMString? regexFilter;
 
     // Whether the <code>urlFilter</code> is case sensitive. Default is true.
     boolean? isUrlFilterCaseSensitive;
@@ -209,16 +221,15 @@ namespace declarativeNetRequest {
     RuleAction action;
   };
 
-  [nodoc]
   enum SourceType {
     // The rule is specified in a JSON file within the extension's package.
     manifest,
     // The rule is a dynamic rule added by the extension using
-    // $(ref:declarativeNetRequest.addDynamicRules).
+    // $(ref:declarativeNetRequest.updateDynamicRules).
     dynamic
   };
 
-  [nodoc]
+  // Uniquely describes a declarative rule specified by the extension.
   dictionary MatchedRule {
     // A matching rule's ID.
     long ruleId;
@@ -256,6 +267,47 @@ namespace declarativeNetRequest {
      MatchedRuleInfo[] rulesMatchedInfo;
   };
 
+  dictionary RequestDetails {
+    // The ID of the request. Request IDs are unique within a browser session.
+    DOMString requestId;
+
+    // The URL of the request.
+    DOMString url;
+
+    // The origin where the request was initiated. This does not change through
+    // redirects. If this is an opaque origin, the string 'null' will be used.
+    DOMString? initiator;
+
+    // Standard HTTP method.
+    DOMString method;
+
+    // The value 0 indicates that the request happens in the main frame; a
+    // positive value indicates the ID of a subframe in which the request
+    // happens. If the document of a (sub-)frame is loaded (<code>type</code> is
+    // <code>main_frame</code> or <code>sub_frame</code>), <code>frameId</code>
+    // indicates the ID of this frame, not the ID of the outer frame. Frame IDs
+    // are unique within a tab.
+    long frameId;
+
+    // ID of frame that wraps the frame which sent the request. Set to -1 if no
+    // parent frame exists.
+    long parentFrameId;
+
+    // The ID of the tab in which the request takes place. Set to -1 if the
+    // request isn't related to a tab.
+    long tabId;
+
+    // The resource type of the request.
+    ResourceType type;
+  };
+
+  dictionary MatchedRuleInfoDebug {
+    MatchedRule rule;
+
+    // Details about the request for which the rule was matched.
+    RequestDetails request;
+  };
+
   callback EmptyCallback = void();
   callback GetAllowedPagesCallback = void(DOMString[] result);
   callback GetRulesCallback = void(Rule[] rules);
@@ -263,28 +315,27 @@ namespace declarativeNetRequest {
 
   interface Functions {
 
-    // Adds <code>rules</code> to the current set of dynamic rules for the
-    // extension. These rules are persisted across browser sessions.
+    // Modify the current set of dynamic rules for the extension. The rules
+    // with IDs listed in <code>rule_ids_to_remove</code> are first removed,
+    // and then the rules given in <code>rules_to_add</code> are added. This
+    // update happens as a single atomic operation: either all specified rules
+    // are added and removed, or an error is returned.
+    // These rules are persisted across browser sessions.
+    // Any ids in <code>rule_ids_to_remove</code> that are not present will be
+    // ignored.
+    // Note that static rules specified as part of the extension package can
+    // not be removed using this function.
     // Note: <a href="#property-MAX_NUMBER_OF_DYNAMIC_RULES">
     // MAX_NUMBER_OF_DYNAMIC_RULES</a> is the maximum number of dynamic rules an
     // extension can add.
-    // |rules|: The rules to add.
-    // |callback|: Called once the given <code>rules</code> are added. In case
-    // of an error, $(ref:runtime.lastError) will be set to denote the error
-    // message and no rules will be added. This can happen for multiple reasons,
-    // such as invalid rule format, duplicate rule ID, rule count limit
-    // exceeded, internal errors, and others.
-    static void addDynamicRules(Rule[] rules, optional EmptyCallback callback);
-
-    // Removes rules corresponding to <code>rule_ids</code> from the current set
-    // of dynamic rules for the extension. Any <code>rule_ids</code> not already
-    // present are ignored. Note that static rules specified as part of the
-    // extension package can not be removed using this function.
-    // |rule_ids|: The IDs of dynamic rules to remove.
-    // |callback|: Called once the rules are removed. In case of an error,
-    // $(ref:runtime.lastError) will be set to denote the error message and no
-    // rules will be removed. This may happen due to internal errors.
-    static void removeDynamicRules(long[] rule_ids,
+    // |rule_ids_to_remove|: The IDs of rules to remove.
+    // |rules_to_add|: The rules to add.
+    // |callback|: Called once the update is complete or has failed. In case of
+    // an error, $(ref:runtime.lastError) will be set to denote the error
+    // message and no change will be made to the rule set. This can happen for
+    // multiple reasons, such as invalid rule format, duplicate rule ID, rule
+    // count limit exceeded, internal errors, and others.
+    static void updateDynamicRules(long[] rule_ids_to_remove, Rule[] rules_to_add,
         optional EmptyCallback callback);
 
     // Returns the current set of dynamic rules for the extension.
@@ -350,5 +401,13 @@ namespace declarativeNetRequest {
 
     // The maximum number of dynamic rules that an extension can add.
     [value=5000] static long MAX_NUMBER_OF_DYNAMIC_RULES();
+  };
+
+  interface Events {
+    // Fired when a rule is matched with a request. Only available for unpacked
+    // extensions as this is intended to be used for debugging purposes only.
+    // |matched_rule_info|: The rule that has been matched along with
+    // information about the associated request.
+    static void onRuleMatchedDebug(MatchedRuleInfoDebug matched_rule_info);
   };
 };

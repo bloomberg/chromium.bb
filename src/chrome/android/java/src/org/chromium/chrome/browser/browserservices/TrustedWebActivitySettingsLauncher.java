@@ -5,15 +5,17 @@
 package org.chromium.chrome.browser.browserservices;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 
 import org.chromium.base.Log;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.preferences.PreferencesLauncher;
-import org.chromium.chrome.browser.preferences.website.SettingsNavigationSource;
-import org.chromium.chrome.browser.preferences.website.SingleCategoryPreferences;
-import org.chromium.chrome.browser.preferences.website.SiteSettingsCategory;
+import org.chromium.chrome.browser.settings.PreferencesLauncher;
+import org.chromium.chrome.browser.settings.website.SettingsNavigationSource;
+import org.chromium.chrome.browser.settings.website.SingleCategoryPreferences;
+import org.chromium.chrome.browser.settings.website.SingleWebsitePreferences;
+import org.chromium.chrome.browser.settings.website.SiteSettingsCategory;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -67,7 +69,7 @@ public class TrustedWebActivitySettingsLauncher {
     }
 
     private static void openSingleWebsitePrefs(Context context, String origin) {
-        context.startActivity(PreferencesLauncher.createIntentForSingleWebsitePreferences(
+        context.startActivity(createIntentForSingleWebsitePreferences(
                 context, origin, SettingsNavigationSource.TWA_CLEAR_DATA_DIALOG));
     }
 
@@ -83,5 +85,16 @@ public class TrustedWebActivitySettingsLauncher {
                 SettingsNavigationSource.TWA_CLEAR_DATA_DIALOG);
 
         PreferencesLauncher.launchSettingsPage(context, SingleCategoryPreferences.class, extras);
+    }
+
+    /**
+     * Creates an intent to launch single website preferences for the specified {@param url}.
+     */
+    private static Intent createIntentForSingleWebsitePreferences(
+            Context context, String url, @SettingsNavigationSource int navigationSource) {
+        Bundle args = SingleWebsitePreferences.createFragmentArgsForSite(url);
+        args.putInt(SettingsNavigationSource.EXTRA_KEY, navigationSource);
+        return PreferencesLauncher.createIntentForSettingsPage(
+                context, SingleWebsitePreferences.class.getName(), args);
     }
 }

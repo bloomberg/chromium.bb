@@ -6,16 +6,16 @@ package org.chromium.chrome.browser.toolbar;
 
 import android.content.res.ColorStateList;
 import android.view.View.OnClickListener;
-import android.view.ViewGroup;
 
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ThemeColorProvider;
 import org.chromium.chrome.browser.ThemeColorProvider.TintObserver;
+import org.chromium.chrome.browser.compositor.layouts.EmptyOverviewModeObserver;
+import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
+import org.chromium.chrome.browser.compositor.layouts.OverviewModeState;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabModelObserver;
 import org.chromium.chrome.browser.toolbar.TabCountProvider.TabCountObserver;
-import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 
@@ -42,18 +42,32 @@ public class TabSwitcherButtonCoordinator {
     private TabCountProvider mTabCountProvider;
     private TabCountObserver mTabCountObserver;
 
+    /** The {@link OverviewModeBehavior} used to observe overview state changes.  */
+    private OverviewModeBehavior mOverviewModeBehavior;
+
+    /** The {@link OvervieModeObserver} observing the OverviewModeBehavior  */
+    private OverviewModeBehavior.OverviewModeObserver mOverviewModeObserver;
+
+    @OverviewModeState
+    private int mOverviewModeState;
+
     /**
      * Build the controller that manages the tab switcher button.
-     * @param root The root {@link ViewGroup} for locating the view to inflate.
+     * @param view The {@link TabSwitcherButtonView} the controller manages.
      */
-    public TabSwitcherButtonCoordinator(ViewGroup root) {
-        final TabSwitcherButtonView view = root.findViewById(R.id.tab_switcher_button);
+    public TabSwitcherButtonCoordinator(TabSwitcherButtonView view) {
         PropertyModelChangeProcessor.create(
                 mTabSwitcherButtonModel, view, new TabSwitcherButtonViewBinder());
+        mOverviewModeObserver = new EmptyOverviewModeObserver() {
+            @Override
+            public void onOverviewModeStateChanged(
+                    @OverviewModeState int overviewModeState, boolean showTabSwitcherToolbar) {
+                mOverviewModeState = overviewModeState;
+                updateButtonState();
+            }
+        };
 
-        CharSequence description = root.getResources().getString(R.string.open_tabs);
-        mTabSwitcherButtonModel.set(TabSwitcherButtonProperties.ON_LONG_CLICK_LISTENER,
-                v -> AccessibilityUtil.showAccessibilityToast(root.getContext(), v, description));
+        mOverviewModeState = OverviewModeState.NOT_SHOWN;
     }
 
     /**
@@ -81,9 +95,16 @@ public class TabSwitcherButtonCoordinator {
             @Override
             public void onTabCountChanged(int tabCount, boolean isIncognito) {
                 mTabSwitcherButtonModel.set(TabSwitcherButtonProperties.NUMBER_OF_TABS, tabCount);
+                updateButtonState();
             }
         };
-        mTabCountProvider.addObserver(mTabCountObserver);
+        mTabCountProvider.addObserverAndTrigger(mTabCountObserver);
+    }
+
+    public void setOverviewModeBehavior(OverviewModeBehavior overviewModeBehavior) {
+        assert overviewModeBehavior != null;
+        mOverviewModeBehavior = overviewModeBehavior;
+        mOverviewModeBehavior.addOverviewModeObserver(mOverviewModeObserver);
     }
 
     public void destroy() {
@@ -95,5 +116,19 @@ public class TabSwitcherButtonCoordinator {
             mTabCountProvider.removeObserver(mTabCountObserver);
             mTabCountProvider = null;
         }
+        if (mOverviewModeBehavior != null) {
+            mOverviewModeBehavior.removeOverviewModeObserver(mOverviewModeObserver);
+            mOverviewModeObserver = null;
+        }
+    }
+
+    private void updateButtonState() {
+        // TODO(crbug.com/1039997): match SHOWN_HOMEPAGE instead.
+        boolean shouldEnable = mOverviewModeState != OverviewModeState.SHOWN_TABSWITCHER
+                && mOverviewModeState != OverviewModeState.SHOWN_TABSWITCHER_TASKS_ONLY
+                && mOverviewModeState != OverviewModeState.SHOWN_TABSWITCHER_OMNIBOX_ONLY
+                && mOverviewModeState != OverviewModeState.SHOWN_TABSWITCHER_TWO_PANES
+                && mTabSwitcherButtonModel.get(TabSwitcherButtonProperties.NUMBER_OF_TABS) >= 1;
+        mTabSwitcherButtonModel.set(TabSwitcherButtonProperties.IS_ENABLED, shouldEnable);
     }
 }

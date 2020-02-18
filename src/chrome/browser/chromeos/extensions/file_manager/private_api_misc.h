@@ -19,7 +19,7 @@
 #include "chrome/browser/extensions/chrome_extension_function_details.h"
 #include "chrome/common/extensions/api/file_manager_private.h"
 #include "google_apis/drive/drive_api_error_codes.h"
-#include "storage/browser/fileapi/file_system_url.h"
+#include "storage/browser/file_system/file_system_url.h"
 
 namespace chromeos {
 class RecentFile;
@@ -194,20 +194,6 @@ class FileManagerPrivateInternalGetMimeTypeFunction
   ResponseAction Run() override;
 
   void OnGetMimeType(const std::string& mimeType);
-};
-
-// Implements the chrome.fileManagerPrivate.isPiexLoaderEnabled method.
-class FileManagerPrivateIsPiexLoaderEnabledFunction : public ExtensionFunction {
- public:
-  FileManagerPrivateIsPiexLoaderEnabledFunction() = default;
-  DECLARE_EXTENSION_FUNCTION("fileManagerPrivate.isPiexLoaderEnabled",
-                             FILEMANAGERPRIVATE_ISPIEXLOADERENABLED)
- protected:
-  ~FileManagerPrivateIsPiexLoaderEnabledFunction() override = default;
-
- private:
-  ResponseAction Run() override;
-  DISALLOW_COPY_AND_ASSIGN(FileManagerPrivateIsPiexLoaderEnabledFunction);
 };
 
 // Implements the chrome.fileManagerPrivate.getProviders method.

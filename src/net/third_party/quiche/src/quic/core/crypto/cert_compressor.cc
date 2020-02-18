@@ -7,9 +7,9 @@
 #include <cstdint>
 #include <memory>
 #include <string>
+#include <utility>
 
 #include "net/third_party/quiche/src/quic/core/quic_utils.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_ptr_util.h"
 #include "third_party/zlib/zlib.h"
 
 namespace quic {
@@ -577,7 +577,7 @@ bool CertCompressor::DecompressChain(
       return false;
     }
 
-    uncompressed_data = QuicMakeUnique<uint8_t[]>(uncompressed_size);
+    uncompressed_data = std::make_unique<uint8_t[]>(uncompressed_size);
     z_stream z;
     ScopedZLib scoped_z(ScopedZLib::INFLATE);
 

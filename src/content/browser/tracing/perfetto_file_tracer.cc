@@ -12,15 +12,18 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
 #include "base/threading/scoped_blocking_call.h"
+#include "build/build_config.h"
 #include "components/tracing/common/trace_startup_config.h"
 #include "components/tracing/common/tracing_switches.h"
-#include "content/public/browser/system_connector.h"
+#include "content/public/browser/tracing_service.h"
 #include "mojo/public/cpp/system/data_pipe_drainer.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "services/tracing/public/cpp/perfetto/perfetto_config.h"
-#include "services/tracing/public/mojom/constants.mojom.h"
 #include "third_party/perfetto/include/perfetto/tracing/core/trace_config.h"
 #include "third_party/perfetto/protos/perfetto/config/trace_config.pb.h"
+
+#if defined(OS_ANDROID)
+#include "content/browser/android/tracing_controller_android.h"
+#endif
 
 namespace content {
 
@@ -35,6 +38,14 @@ class BackgroundDrainer : public mojo::DataPipeDrainer::Client {
     base::FilePath output_file =
         base::CommandLine::ForCurrentProcess()->GetSwitchValuePath(
             switches::kPerfettoOutputFile);
+
+#if defined(OS_ANDROID)
+    if (output_file.empty()) {
+      TracingControllerAndroid::GenerateTracingFilePath(&output_file);
+      VLOG(0) << "Writing to output file: " << output_file.value();
+    }
+#endif
+
     file_.Initialize(output_file,
                      base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
     if (!file_.IsValid()) {
@@ -87,8 +98,8 @@ PerfettoFileTracer::PerfettoFileTracer()
            base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::BLOCK_SHUTDOWN})),
       background_drainer_(background_task_runner_) {
-  GetSystemConnector()->BindInterface(tracing::mojom::kServiceName,
-                                      &consumer_host_);
+  GetTracingService().BindConsumerHost(
+      consumer_host_.BindNewPipeAndPassReceiver());
 
   const auto& chrome_config =
       tracing::TraceStartupConfig::GetInstance()->GetTraceConfig();
@@ -105,15 +116,12 @@ PerfettoFileTracer::PerfettoFileTracer()
   // We just need a single global trace buffer, for our data.
   trace_config.mutable_buffers()->front().set_size_kb(32 * 1024);
 
-  tracing::mojom::TracingSessionClientPtr tracing_session_client;
-  binding_.Bind(mojo::MakeRequest(&tracing_session_client));
-  binding_.set_connection_error_handler(base::BindOnce(
-      &PerfettoFileTracer::OnTracingSessionEnded, base::Unretained(this)));
-
   consumer_host_->EnableTracing(
-      mojo::MakeRequest(&tracing_session_host_),
-      std::move(tracing_session_client), std::move(trace_config),
+      tracing_session_host_.BindNewPipeAndPassReceiver(),
+      receiver_.BindNewPipeAndPassRemote(), std::move(trace_config),
       tracing::mojom::TracingClientPriority::kBackground);
+  receiver_.set_disconnect_handler(base::BindOnce(
+      &PerfettoFileTracer::OnTracingSessionEnded, base::Unretained(this)));
   ReadBuffers();
 }
 
@@ -161,7 +169,7 @@ void PerfettoFileTracer::ReadBuffers() {
 }
 
 void PerfettoFileTracer::OnTracingSessionEnded() {
-  binding_.Close();
+  receiver_.reset();
   tracing_session_host_.reset();
 }
 

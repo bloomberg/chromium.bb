@@ -6,12 +6,10 @@
 
 #include <cstdint>
 
+#include "net/third_party/quiche/src/quic/core/quic_error_codes.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_str_cat.h"
 
 namespace quic {
-
-QuicConsumedData::QuicConsumedData(size_t bytes_consumed, bool fin_consumed)
-    : bytes_consumed(bytes_consumed), fin_consumed(fin_consumed) {}
 
 std::ostream& operator<<(std::ostream& os, const QuicConsumedData& s) {
   os << "bytes_consumed: " << s.bytes_consumed
@@ -53,17 +51,14 @@ std::string HistogramEnumString(WriteStatus enum_value) {
       return "ERROR";
     case WRITE_STATUS_MSG_TOO_BIG:
       return "MSG_TOO_BIG";
+    case WRITE_STATUS_FAILED_TO_COALESCE_PACKET:
+      return "WRITE_STATUS_FAILED_TO_COALESCE_PACKET";
     case WRITE_STATUS_NUM_VALUES:
       return "NUM_VALUES";
   }
   QUIC_DLOG(ERROR) << "Invalid WriteStatus value: " << enum_value;
   return "<invalid>";
 }
-
-WriteResult::WriteResult() : status(WRITE_STATUS_ERROR), bytes_written(0) {}
-
-WriteResult::WriteResult(WriteStatus status, int bytes_written_or_error_code)
-    : status(status), bytes_written(bytes_written_or_error_code) {}
 
 std::ostream& operator<<(std::ostream& os, const WriteResult& s) {
   os << "{ status: " << s.status;
@@ -411,6 +406,25 @@ QuicErrorCodeToIetfMapping QuicErrorCodeToTransportErrorCode(
     case QUIC_TOO_MANY_BUFFERED_CONTROL_FRAMES:
       return {true,
               {static_cast<uint64_t>(QUIC_TOO_MANY_BUFFERED_CONTROL_FRAMES)}};
+    case QUIC_TRANSPORT_INVALID_CLIENT_INDICATION:
+      return {false, {0u}};
+    case QUIC_QPACK_DECOMPRESSION_FAILED:
+      return {
+          false,
+          {static_cast<uint64_t>(IETF_QUIC_HTTP_QPACK_DECOMPRESSION_FAILED)}};
+    case QUIC_QPACK_ENCODER_STREAM_ERROR:
+      return {
+          false,
+          {static_cast<uint64_t>(IETF_QUIC_HTTP_QPACK_ENCODER_STREAM_ERROR)}};
+    case QUIC_QPACK_DECODER_STREAM_ERROR:
+      return {
+          false,
+          {static_cast<uint64_t>(IETF_QUIC_HTTP_QPACK_DECODER_STREAM_ERROR)}};
+    case QUIC_STREAM_DATA_BEYOND_CLOSE_OFFSET:
+      return {true,
+              {static_cast<uint64_t>(QUIC_STREAM_DATA_BEYOND_CLOSE_OFFSET)}};
+    case QUIC_STREAM_MULTIPLE_OFFSET:
+      return {true, {static_cast<uint64_t>(QUIC_STREAM_MULTIPLE_OFFSET)}};
     case QUIC_LAST_ERROR:
       return {false, {static_cast<uint64_t>(QUIC_LAST_ERROR)}};
   }
@@ -448,6 +462,8 @@ std::string QuicIetfFrameTypeString(QuicIetfFrameType t) {
     RETURN_STRING_LITERAL(IETF_APPLICATION_CLOSE);
     RETURN_STRING_LITERAL(IETF_EXTENSION_MESSAGE_NO_LENGTH);
     RETURN_STRING_LITERAL(IETF_EXTENSION_MESSAGE);
+    RETURN_STRING_LITERAL(IETF_EXTENSION_MESSAGE_NO_LENGTH_V99);
+    RETURN_STRING_LITERAL(IETF_EXTENSION_MESSAGE_V99);
     default:
       return QuicStrCat("Private value (", t, ")");
   }
@@ -457,13 +473,118 @@ std::ostream& operator<<(std::ostream& os, const QuicIetfFrameType& c) {
   return os;
 }
 
+std::string TransmissionTypeToString(TransmissionType transmission_type) {
+  switch (transmission_type) {
+    RETURN_STRING_LITERAL(NOT_RETRANSMISSION);
+    RETURN_STRING_LITERAL(HANDSHAKE_RETRANSMISSION);
+    RETURN_STRING_LITERAL(ALL_UNACKED_RETRANSMISSION);
+    RETURN_STRING_LITERAL(ALL_INITIAL_RETRANSMISSION);
+    RETURN_STRING_LITERAL(LOSS_RETRANSMISSION);
+    RETURN_STRING_LITERAL(RTO_RETRANSMISSION);
+    RETURN_STRING_LITERAL(TLP_RETRANSMISSION);
+    RETURN_STRING_LITERAL(PTO_RETRANSMISSION);
+    RETURN_STRING_LITERAL(PROBING_RETRANSMISSION);
+    default:
+      // Some varz rely on this behavior for statistic collection.
+      if (transmission_type == LAST_TRANSMISSION_TYPE + 1) {
+        return "INVALID_TRANSMISSION_TYPE";
+      }
+      return QuicStrCat("Unknown(", static_cast<int>(transmission_type), ")");
+      break;
+  }
+}
+
+std::string PacketHeaderFormatToString(PacketHeaderFormat format) {
+  switch (format) {
+    RETURN_STRING_LITERAL(IETF_QUIC_LONG_HEADER_PACKET);
+    RETURN_STRING_LITERAL(IETF_QUIC_SHORT_HEADER_PACKET);
+    RETURN_STRING_LITERAL(GOOGLE_QUIC_PACKET);
+    default:
+      return QuicStrCat("Unknown (", static_cast<int>(format), ")");
+  }
+}
+
+std::string QuicLongHeaderTypeToString(QuicLongHeaderType type) {
+  switch (type) {
+    RETURN_STRING_LITERAL(VERSION_NEGOTIATION);
+    RETURN_STRING_LITERAL(INITIAL);
+    RETURN_STRING_LITERAL(ZERO_RTT_PROTECTED);
+    RETURN_STRING_LITERAL(HANDSHAKE);
+    RETURN_STRING_LITERAL(RETRY);
+    RETURN_STRING_LITERAL(INVALID_PACKET_TYPE);
+    default:
+      return QuicStrCat("Unknown (", static_cast<int>(type), ")");
+  }
+}
+
+std::string MessageStatusToString(MessageStatus message_status) {
+  switch (message_status) {
+    RETURN_STRING_LITERAL(MESSAGE_STATUS_SUCCESS);
+    RETURN_STRING_LITERAL(MESSAGE_STATUS_ENCRYPTION_NOT_ESTABLISHED);
+    RETURN_STRING_LITERAL(MESSAGE_STATUS_UNSUPPORTED);
+    RETURN_STRING_LITERAL(MESSAGE_STATUS_BLOCKED);
+    RETURN_STRING_LITERAL(MESSAGE_STATUS_TOO_LARGE);
+    RETURN_STRING_LITERAL(MESSAGE_STATUS_INTERNAL_ERROR);
+    default:
+      return QuicStrCat("Unknown(", static_cast<int>(message_status), ")");
+      break;
+  }
+}
+
+std::string MessageResultToString(MessageResult message_result) {
+  if (message_result.status != MESSAGE_STATUS_SUCCESS) {
+    return QuicStrCat("{", MessageStatusToString(message_result.status), "}");
+  }
+  return QuicStrCat("{MESSAGE_STATUS_SUCCESS,id=", message_result.message_id,
+                    "}");
+}
+
+std::ostream& operator<<(std::ostream& os, const MessageResult& mr) {
+  os << MessageResultToString(mr);
+  return os;
+}
+
+std::string PacketNumberSpaceToString(PacketNumberSpace packet_number_space) {
+  switch (packet_number_space) {
+    RETURN_STRING_LITERAL(INITIAL_DATA);
+    RETURN_STRING_LITERAL(HANDSHAKE_DATA);
+    RETURN_STRING_LITERAL(APPLICATION_DATA);
+    default:
+      return QuicStrCat("Unknown(", static_cast<int>(packet_number_space), ")");
+      break;
+  }
+}
+
+std::string SerializedPacketFateToString(SerializedPacketFate fate) {
+  switch (fate) {
+    RETURN_STRING_LITERAL(COALESCE);
+    RETURN_STRING_LITERAL(BUFFER);
+    RETURN_STRING_LITERAL(SEND_TO_WRITER);
+    RETURN_STRING_LITERAL(FAILED_TO_WRITE_COALESCED_PACKET);
+    default:
+      return QuicStrCat("Unknown(", static_cast<int>(fate), ")");
+  }
+}
+
+std::string EncryptionLevelToString(EncryptionLevel level) {
+  switch (level) {
+    RETURN_STRING_LITERAL(ENCRYPTION_INITIAL);
+    RETURN_STRING_LITERAL(ENCRYPTION_HANDSHAKE);
+    RETURN_STRING_LITERAL(ENCRYPTION_ZERO_RTT);
+    RETURN_STRING_LITERAL(ENCRYPTION_FORWARD_SECURE);
+    default:
+      return QuicStrCat("Unknown(", static_cast<int>(level), ")");
+      break;
+  }
+}
+
 std::string QuicConnectionCloseTypeString(QuicConnectionCloseType type) {
   switch (type) {
     RETURN_STRING_LITERAL(GOOGLE_QUIC_CONNECTION_CLOSE);
     RETURN_STRING_LITERAL(IETF_QUIC_TRANSPORT_CONNECTION_CLOSE);
     RETURN_STRING_LITERAL(IETF_QUIC_APPLICATION_CONNECTION_CLOSE);
     default:
-      return QuicStrCat("Unknown: ", static_cast<int>(type));
+      return QuicStrCat("Unknown(", static_cast<int>(type), ")");
       break;
   }
 }

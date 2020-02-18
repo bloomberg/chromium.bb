@@ -8,7 +8,8 @@
 #include <sys/types.h>
 
 #include "base/bind.h"
-#include "base/files/file_path.h"
+#include "base/command_line.h"
+#include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
 #include "base/logging.h"
 #include "base/mac/authorization_util.h"
@@ -18,11 +19,15 @@
 #include "base/mac/scoped_authorizationref.h"
 #include "base/mac/scoped_launch_data.h"
 #include "base/memory/ptr_util.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/posix/eintr_wrapper.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "remoting/base/string_resources.h"
 #include "remoting/host/host_config.h"
 #include "remoting/host/mac/constants_mac.h"
+#include "remoting/host/mac/permission_checker.h"
+#include "remoting/host/mac/permission_wizard.h"
 #include "remoting/host/resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -30,6 +35,8 @@
 namespace remoting {
 
 namespace {
+
+constexpr char kIoThreadName[] = "DaemonControllerDelegateMac IO thread";
 
 // Simple RAII class to ensure that waitpid() gets called on a child process.
 // Neither std::unique_ptr nor base::ScopedGeneric are well suited, because the
@@ -94,7 +101,7 @@ bool RunHelperAsRoot(const std::string& command,
   FILE* pipe = nullptr;
   pid_t pid;
   OSStatus status = base::mac::ExecuteWithPrivilegesAndGetPID(
-      authorization.get(), remoting::kHostHelperScriptPath,
+      authorization.get(), remoting::kHostServiceBinaryPath,
       kAuthorizationFlagDefaults, arguments, &pipe, &pid);
   if (status != errAuthorizationSuccess) {
     LOG(ERROR) << "AuthorizationExecuteWithPrivileges: "
@@ -150,7 +157,7 @@ bool RunHelperAsRoot(const std::string& command,
     return true;
   }
 
-  LOG(ERROR) << remoting::kHostHelperScriptPath << " failed with exit status "
+  LOG(ERROR) << remoting::kHostServiceBinaryPath << " failed with exit status "
              << exit_status;
   return false;
 }
@@ -202,8 +209,10 @@ void ElevateAndStopHost(const DaemonController::CompletionCallback& done) {
 
 }  // namespace
 
-DaemonControllerDelegateMac::DaemonControllerDelegateMac() {
+DaemonControllerDelegateMac::DaemonControllerDelegateMac()
+    : io_thread_(kIoThreadName) {
   LoadResources(std::string());
+  io_task_runner_ = io_thread_.StartWithType(base::MessagePumpType::IO);
 }
 
 DaemonControllerDelegateMac::~DaemonControllerDelegateMac() {
@@ -237,6 +246,17 @@ DaemonControllerDelegateMac::GetConfig() {
   if (host_config->GetString(kXmppLoginConfigPath, &value))
     config->SetString(kXmppLoginConfigPath, value);
   return config;
+}
+
+void DaemonControllerDelegateMac::CheckPermission(
+    bool it2me,
+    DaemonController::BoolCallback callback) {
+  auto checker = std::make_unique<mac::PermissionChecker>(
+      it2me ? mac::HostMode::IT2ME : mac::HostMode::ME2ME, io_task_runner_);
+  permission_wizard_ =
+      std::make_unique<mac::PermissionWizard>(std::move(checker));
+  permission_wizard_->SetCompletionCallback(std::move(callback));
+  permission_wizard_->Start(base::ThreadTaskRunnerHandle::Get());
 }
 
 void DaemonControllerDelegateMac::SetConfigAndStart(

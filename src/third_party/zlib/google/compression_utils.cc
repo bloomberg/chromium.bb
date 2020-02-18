@@ -42,7 +42,7 @@ bool GzipCompress(base::StringPiece input, std::string* output) {
   const uLongf input_size = static_cast<uLongf>(input.size());
 
   uLongf compressed_data_size =
-      zlib_internal::GZipExpectedCompressedSize(input_size);
+      zlib_internal::GzipExpectedCompressedSize(input_size);
 
   Bytef* compressed_data;
   if (!base::UncheckedMalloc(compressed_data_size,
@@ -109,14 +109,8 @@ bool GzipUncompress(base::StringPiece input, std::string* output) {
 }
 
 uint32_t GetUncompressedSize(base::StringPiece compressed_data) {
-  // The uncompressed size is stored in the last 4 bytes of |input| in LE.
-  uint32_t size;
-  if (compressed_data.length() < sizeof(size))
-    return 0;
-  memcpy(&size,
-         &compressed_data.data()[compressed_data.length() - sizeof(size)],
-         sizeof(size));
-  return base::ByteSwapToLE32(size);
+  return zlib_internal::GetGzipUncompressedSize(
+      bit_cast<Bytef*>(compressed_data.data()), compressed_data.length());
 }
 
 }  // namespace compression

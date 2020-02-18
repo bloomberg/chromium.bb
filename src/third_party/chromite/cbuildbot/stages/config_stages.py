@@ -15,7 +15,6 @@ import traceback
 
 from chromite.cbuildbot import repository
 from chromite.cbuildbot.stages import generic_stages
-from chromite.cbuildbot.stages import test_stages
 from chromite.lib import constants
 from chromite.lib import cros_logging as logging
 from chromite.lib import cros_build_lib
@@ -305,7 +304,7 @@ class UpdateConfigStage(generic_stages.BuilderStage):
 
     # Because of --update, this updates our generated files.
     cmd = ['cros_sdk', '--', test_path, '--update']
-    cros_build_lib.RunCommand(cmd, cwd=os.path.dirname(self.chromite_dir))
+    cros_build_lib.run(cmd, cwd=os.path.dirname(self.chromite_dir))
 
   def _CreateConfigPatch(self):
     """Create and return a diff patch file for config changes."""
@@ -322,20 +321,6 @@ class UpdateConfigStage(generic_stages.BuilderStage):
       f.write(result.output)
 
     return config_change_patch
-
-  def _RunBinhostTest(self):
-    """Run BinhostTest stage for master branch."""
-    config_change_patch = self._CreateConfigPatch()
-
-    # Apply config patch.
-    git.RunGit(
-        constants.CHROMITE_DIR, ['apply', config_change_patch], print_cmd=True)
-
-    test_stages.BinhostTestStage(
-        self._run, self.buildstore, suffix='_' + self.branch).Run()
-
-    # Clean config patch.
-    git.RunGit(constants.CHROMITE_DIR, ['checkout', '.'], print_cmd=True)
 
   def _PushCommits(self):
     """Commit and push changes to current branch."""
@@ -357,8 +342,6 @@ class UpdateConfigStage(generic_stages.BuilderStage):
       self._DownloadTemplate()
       self._RunUnitTest()
       if self._ContainsConfigUpdates():
-        if self.branch == 'master':
-          self._RunBinhostTest()
         self._PushCommits()
       else:
         logging.info('Nothing changed. No need to update configs for %s',
@@ -395,7 +378,7 @@ class DeployLuciSchedulerStage(generic_stages.BuilderStage):
         os.path.join(constants.CHROMITE_DIR, 'config',
                      'chromeos_config_unittest'))
     cmd = ['cros_sdk', '--', test_path]
-    cros_build_lib.RunCommand(cmd, cwd=constants.CHROMITE_DIR)
+    cros_build_lib.run(cmd, cwd=constants.CHROMITE_DIR)
 
   def _MakeWorkDir(self, name):
     """Makes and returns the path to a temporary directory.

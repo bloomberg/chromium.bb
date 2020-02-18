@@ -23,12 +23,14 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_HASH_TABLE_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_HASH_TABLE_H_
 
+#include <atomic>
 #include <memory>
 
 #include "base/numerics/checked_math.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/partition_allocator.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/conditional_destructor.h"
 #include "third_party/blink/renderer/platform/wtf/construct_traits.h"
 #include "third_party/blink/renderer/platform/wtf/hash_traits.h"
 
@@ -41,7 +43,6 @@
 #endif
 
 #if DUMP_HASHTABLE_STATS
-#include <atomic>
 #include "third_party/blink/renderer/platform/wtf/threading.h"
 #endif
 
@@ -90,6 +91,13 @@
   } while (0)
 #endif
 #endif
+
+namespace {
+template <typename T>
+ALWAYS_INLINE std::atomic<T>& AsAtomic(T& t) {
+  return reinterpret_cast<std::atomic<T>&>(t);
+}
+}  // namespace
 
 namespace WTF {
 
@@ -694,7 +702,15 @@ template <typename Key,
           typename Traits,
           typename KeyTraits,
           typename Allocator>
-class HashTable final {
+class HashTable final
+    : public ConditionalDestructor<HashTable<Key,
+                                             Value,
+                                             Extractor,
+                                             HashFunctions,
+                                             Traits,
+                                             KeyTraits,
+                                             Allocator>,
+                                   Allocator::kIsGarbageCollected> {
   DISALLOW_NEW();
 
  public:
@@ -726,14 +742,10 @@ class HashTable final {
 
   HashTable();
 
-  // For design of the destructor, please refer to
-  // [here](https://docs.google.com/document/d/1AoGTvb3tNLx2tD1hNqAfLRLmyM59GM0O-7rCHTT_7_U/)
-  ~HashTable() {
+  void Finalize() {
+    static_assert(!Allocator::kIsGarbageCollected,
+                  "GCed collections can't be finalized.");
     if (LIKELY(!table_))
-      return;
-    // If this is called during sweeping, it must not touch other heap objects
-    // such as the backing.
-    if (Allocator::IsSweepForbidden())
       return;
     EnterAccessForbiddenScope();
     DeleteAllBucketsAndDeallocate(table_, table_size_);
@@ -742,10 +754,10 @@ class HashTable final {
   }
 
   HashTable(const HashTable&);
-  HashTable(HashTable&&) noexcept;
+  HashTable(HashTable&&);
   void swap(HashTable&);
   HashTable& operator=(const HashTable&);
-  HashTable& operator=(HashTable&&) noexcept;
+  HashTable& operator=(HashTable&&);
 
   // When the hash table is empty, just return the same iterator for end as
   // for begin.  This is more efficient because we don't have to skip all the
@@ -1348,13 +1360,13 @@ HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
   DCHECK(!IsEmptyOrDeletedBucket(*entry));
   // Translate constructs an element so we need to notify using the trait. Avoid
   // doing that in the translator so that they can be easily customized.
-  ConstructTraits<ValueType, Traits, Allocator>::NotifyNewElements(entry, 1);
+  ConstructTraits<ValueType, Traits, Allocator>::NotifyNewElement(entry);
 
   ++key_count_;
 
   if (ShouldExpand()) {
     entry = Expand(entry);
-  } else if (Traits::kWeakHandlingFlag == kWeakHandling && ShouldShrink()) {
+  } else if (WTF::IsWeak<ValueType>::value && ShouldShrink()) {
     // When weak hash tables are processed by the garbage collector,
     // elements with no other strong references to them will have their
     // table entries cleared. But no shrinking of the backing store is
@@ -1416,7 +1428,7 @@ HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
   DCHECK(!IsEmptyOrDeletedBucket(*entry));
   // Translate constructs an element so we need to notify using the trait. Avoid
   // doing that in the translator so that they can be easily customized.
-  ConstructTraits<ValueType, Traits, Allocator>::NotifyNewElements(entry, 1);
+  ConstructTraits<ValueType, Traits, Allocator>::NotifyNewElement(entry);
 
   ++key_count_;
   if (ShouldExpand())
@@ -1781,8 +1793,8 @@ HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
     stats_->numRehashes.fetch_add(1, std::memory_order_relaxed);
 #endif
 
-  table_ = new_table;
-  Allocator::template BackingWriteBarrierForHashTable<HashTable>(table_);
+  AsAtomic<ValueType*>(table_).store(new_table, std::memory_order_relaxed);
+  Allocator::template BackingWriteBarrierForHashTable<HashTable>(new_table);
   table_size_ = new_table_size;
 
   Value* new_entry = nullptr;
@@ -1800,7 +1812,7 @@ HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
   // Rescan the contents of the backing store as no write barriers were emitted
   // during re-insertion. Traits::NeedsToForbidGCOnMove ensures that no
   // garbage collection is triggered during moving.
-  Allocator::TraceMarkedBackingStore(table_);
+  Allocator::TraceMarkedBackingStore(new_table);
 
   deleted_count_ = 0;
 
@@ -1924,7 +1936,7 @@ template <typename Key,
           typename KeyTraits,
           typename Allocator>
 HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
-    HashTable(HashTable&& other) noexcept
+    HashTable(HashTable&& other)
     : table_(nullptr),
       table_size_(0),
       key_count_(0),
@@ -1958,7 +1970,15 @@ void HashTable<Key,
                KeyTraits,
                Allocator>::swap(HashTable& other) {
   DCHECK(!AccessForbidden());
-  std::swap(table_, other.table_);
+  // Following 3 lines swap table_ and other.table_ using atomic stores. These
+  // are needed for Oilpan concurrent marking which might trace the hash table
+  // while it is being swapped (i.e. the atomic stores are to avoid a data
+  // race). Atomic reads are not needed here because this method is only called
+  // on the mutator thread, which is also the only one that writes to them, so
+  // there is *no* risk of data races when reading.
+  Value* tmp_table = other.table_;
+  AsAtomic<Value*>(other.table_).store(table_, std::memory_order_relaxed);
+  AsAtomic<Value*>(table_).store(tmp_table, std::memory_order_relaxed);
   Allocator::template BackingWriteBarrierForHashTable<HashTable>(table_);
   Allocator::template BackingWriteBarrierForHashTable<HashTable>(other.table_);
   std::swap(table_size_, other.table_size_);
@@ -2003,7 +2023,7 @@ template <typename Key,
           typename Allocator>
 HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>&
 HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
-operator=(HashTable&& other) noexcept {
+operator=(HashTable&& other) {
   swap(other);
   return *this;
 }
@@ -2016,27 +2036,9 @@ template <WeakHandlingFlag weakHandlingFlag,
           typename Traits,
           typename KeyTraits,
           typename Allocator>
-struct WeakProcessingHashTableHelper;
-
-template <typename Key,
-          typename Value,
-          typename Extractor,
-          typename HashFunctions,
-          typename Traits,
-          typename KeyTraits,
-          typename Allocator>
-struct WeakProcessingHashTableHelper<kNoWeakHandling,
-                                     Key,
-                                     Value,
-                                     Extractor,
-                                     HashFunctions,
-                                     Traits,
-                                     KeyTraits,
-                                     Allocator> {
+struct WeakProcessingHashTableHelper {
   STATIC_ONLY(WeakProcessingHashTableHelper);
-  static void Process(typename Allocator::Visitor* visitor, void* closure) {}
-  static void EphemeronIteration(typename Allocator::Visitor* visitor,
-                                 void* closure) {}
+  static void Process(const typename Allocator::WeakCallbackInfo&, void*) {}
 };
 
 template <typename Key,
@@ -2066,25 +2068,19 @@ struct WeakProcessingHashTableHelper<kWeakHandling,
   using ValueType = typename HashTableType::ValueType;
 
   // Used for purely weak and for weak-and-strong tables (ephemerons).
-  static void Process(typename Allocator::Visitor* visitor, void* closure) {
-    HashTableType* table = reinterpret_cast<HashTableType*>(closure);
+  static void Process(const typename Allocator::WeakCallbackInfo&,
+                      void* parameter) {
+    HashTableType* table = reinterpret_cast<HashTableType*>(parameter);
     // During incremental marking, the table may be freed after the callback has
     // been registered.
     if (!table->table_)
       return;
 
-    // Only trace the backing store. Its fields will be processed below.
-    Allocator::template TraceHashTableBackingOnly<ValueType, HashTableType>(
-        visitor, table->table_, &(table->table_));
-    // Now perform weak processing (this is a no-op if the backing was
-    // accessible through an iterator and was already marked strongly).
+    // Weak processing: If the backing was accessible through an iterator and
+    // thus marked strongly this loop will find all buckets as non-empty.
     for (ValueType* element = table->table_ + table->table_size_ - 1;
          element >= table->table_; element--) {
       if (!HashTableType::IsEmptyOrDeletedBucket(*element)) {
-        // At this stage calling trace can make no difference
-        // (everything is already traced), but we use the return value
-        // to remove things from the collection.
-
         if (!TraceInCollectionTrait<kWeakHandling, ValueType, Traits>::IsAlive(
                 *element)) {
           table->RegisterModification();
@@ -2094,26 +2090,6 @@ struct WeakProcessingHashTableHelper<kWeakHandling,
           // We don't rehash the backing until the next add or delete,
           // because that would cause allocation during GC.
         }
-      }
-    }
-  }
-
-  // Called repeatedly for tables that have both weak and strong pointers.
-  static void EphemeronIteration(typename Allocator::Visitor* visitor,
-                                 void* closure) {
-    HashTableType* table = reinterpret_cast<HashTableType*>(closure);
-    // During incremental marking, the table may be freed after the callback has
-    // been registered.
-    if (!table->table_)
-      return;
-    // Check the hash table for elements that we now know will not be
-    // removed by weak processing. Those elements need to have their strong
-    // pointers traced.
-    for (ValueType* element = table->table_ + table->table_size_ - 1;
-         element >= table->table_; element--) {
-      if (!HashTableType::IsEmptyOrDeletedBucket(*element)) {
-        TraceInCollectionTrait<kWeakHandling, ValueType, Traits>::Trace(
-            visitor, *element);
       }
     }
   }
@@ -2130,38 +2106,39 @@ template <typename VisitorDispatcher, typename A>
 std::enable_if_t<A::kIsGarbageCollected>
 HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
     Trace(VisitorDispatcher visitor) {
-  if (Traits::kWeakHandlingFlag == kNoWeakHandling) {
+  static_assert(WTF::IsWeak<ValueType>::value ||
+                    IsTraceableInCollectionTrait<Traits>::value,
+                "Value should not be traced");
+  ValueType* table =
+      AsAtomic<ValueType*>(table_).load(std::memory_order_relaxed);
+  if (!WTF::IsWeak<ValueType>::value) {
     // Strong HashTable.
-    DCHECK(IsTraceableInCollectionTrait<Traits>::value);
     Allocator::template TraceHashTableBackingStrongly<ValueType, HashTable>(
-        visitor, table_, &table_);
+        visitor, table, &table_);
   } else {
     // Weak HashTable. The HashTable may be held alive strongly from somewhere
     // else, e.g., an iterator.
 
+    // Only trace the backing store. Its buckets will be processed after
+    // marking. The interesting cases for marking are:
+    // - The backing is dropped using clear(): The backing can still be
+    //   compacted but empty/deleted buckets will only be destroyed once the
+    //   backing is reclaimed by the garbage collector on the next cycle.
+    // - The hash table expands/shrinks: Buckets are moved to the new backing
+    //   store and strongified, resulting in all buckets being alive. The old
+    //   backing store is marked but only contains empty/deleted buckets as all
+    //   non-empty/deleted buckets have been moved to the new backing store.
+    Allocator::template TraceHashTableBackingOnly<ValueType, HashTable>(
+        visitor, table, &table_);
     // Trace the table weakly. For marking this will result in delaying the
     // processing until the end of the atomic pause. It is safe to trace
     // weakly multiple times.
     Allocator::template TraceHashTableBackingWeakly<ValueType, HashTable>(
-        visitor, table_, &table_,
-        WeakProcessingHashTableHelper<Traits::kWeakHandlingFlag, Key, Value,
-                                      Extractor, HashFunctions, Traits,
+        visitor, table, &table_,
+        WeakProcessingHashTableHelper<WeakHandlingTrait<ValueType>::value, Key,
+                                      Value, Extractor, HashFunctions, Traits,
                                       KeyTraits, Allocator>::Process,
         this);
-
-    if (IsTraceableInCollectionTrait<Traits>::value) {
-      // Mix of strong and weak fields. We use an approach similar to ephemeron
-      // marking to find a fixed point, c.f.:
-      // - http://dl.acm.org/citation.cfm?doid=263698.263733
-      // - http://www.jucs.org/jucs_14_21/eliminating_cycles_in_weak
-      // Adding the table for ephemeron marking delays marking any elements in
-      // the backing until regular marking is finished.
-      Allocator::RegisterWeakTable(
-          visitor, this,
-          WeakProcessingHashTableHelper<
-              Traits::kWeakHandlingFlag, Key, Value, Extractor, HashFunctions,
-              Traits, KeyTraits, Allocator>::EphemeronIteration);
-    }
   }
 }
 

@@ -17,7 +17,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/mock_entropy_provider.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/test/task_environment.h"
@@ -162,7 +161,7 @@ class CancelingTestRequest : public TestRequest {
 
 class ResourceSchedulerTest : public testing::Test {
  protected:
-  ResourceSchedulerTest() : field_trial_list_(nullptr) {
+  ResourceSchedulerTest() {
     base::test::ScopedFeatureList feature_list;
     feature_list.InitAndEnableFeature(
         net::features::kPartitionHttpServerPropertiesByNetworkIsolationKey);
@@ -179,11 +178,11 @@ class ResourceSchedulerTest : public testing::Test {
 
   // Done separately from construction to allow for modification of command
   // line flags in tests.
-  void InitializeScheduler(bool enabled = true) {
+  void InitializeScheduler() {
     CleanupScheduler();
 
     // Destroys previous scheduler.
-    scheduler_.reset(new ResourceScheduler(enabled, &tick_clock_));
+    scheduler_ = std::make_unique<ResourceScheduler>(&tick_clock_);
 
     scheduler()->SetResourceSchedulerParamsManagerForTests(
         resource_scheduler_params_manager_);
@@ -523,7 +522,6 @@ class ResourceSchedulerTest : public testing::Test {
   net::TestNetworkQualityEstimator network_quality_estimator_;
   std::unique_ptr<net::TestURLRequestContext> context_;
   ResourceSchedulerParamsManager resource_scheduler_params_manager_;
-  base::FieldTrialList field_trial_list_;
   base::SimpleTestTickClock tick_clock_;
 };
 
@@ -1657,7 +1655,7 @@ TEST_F(ResourceSchedulerTest, NumDelayableAtStartOfNonDelayableUMA) {
       1);
 }
 
-TEST_F(ResourceSchedulerTest, SchedulerEnabled) {
+TEST_F(ResourceSchedulerTest, Simple) {
   SetMaxDelayableRequests(1);
   std::unique_ptr<TestRequest> high(
       NewRequest("http://host/high", net::HIGHEST));
@@ -1667,28 +1665,14 @@ TEST_F(ResourceSchedulerTest, SchedulerEnabled) {
       NewRequest("http://host/req", net::LOWEST));
 
   EXPECT_FALSE(request->started());
-}
-
-TEST_F(ResourceSchedulerTest, SchedulerDisabled) {
-  InitializeScheduler(false);
-
-  std::unique_ptr<TestRequest> high(
-      NewRequest("http://host/high", net::HIGHEST));
-  std::unique_ptr<TestRequest> low(NewRequest("http://host/req", net::LOWEST));
-
-  std::unique_ptr<TestRequest> request(
-      NewRequest("http://host/req", net::LOWEST));
-
-  // Normally |request| wouldn't start immediately due to the |high| priority
-  // request, but when the scheduler is disabled it starts immediately.
-  EXPECT_TRUE(request->started());
 }
 
 TEST_F(ResourceSchedulerTest, MultipleInstances_1) {
   SetMaxDelayableRequests(1);
   // In some circumstances there may exist multiple instances.
-  ResourceScheduler another_scheduler(false,
-                                      base::DefaultTickClock::GetInstance());
+  ResourceScheduler another_scheduler(base::DefaultTickClock::GetInstance());
+  another_scheduler.SetResourceSchedulerParamsManagerForTests(
+      ResourceSchedulerParamsManager(FixedParamsManager(99)));
 
   std::unique_ptr<TestRequest> high(
       NewRequest("http://host/high", net::HIGHEST));
@@ -1697,15 +1681,13 @@ TEST_F(ResourceSchedulerTest, MultipleInstances_1) {
   std::unique_ptr<TestRequest> request(
       NewRequest("http://host/req", net::LOWEST));
 
-  // Though |another_scheduler| is disabled, this request should be throttled
-  // as it's handled by |scheduler_| which is active.
+  // This request should be throttled as it's handled by |scheduler_|.
   EXPECT_FALSE(request->started());
 }
 
 TEST_F(ResourceSchedulerTest, MultipleInstances_2) {
   SetMaxDelayableRequests(1);
-  ResourceScheduler another_scheduler(true,
-                                      base::DefaultTickClock::GetInstance());
+  ResourceScheduler another_scheduler(base::DefaultTickClock::GetInstance());
   another_scheduler.OnClientCreated(kChildId, kRouteId,
                                     &network_quality_estimator_);
 

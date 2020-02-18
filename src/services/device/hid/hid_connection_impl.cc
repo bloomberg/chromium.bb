@@ -9,10 +9,31 @@
 
 namespace device {
 
+// static
+void HidConnectionImpl::Create(
+    scoped_refptr<device::HidConnection> connection,
+    mojo::PendingReceiver<mojom::HidConnection> receiver,
+    mojo::PendingRemote<mojom::HidConnectionClient> connection_client,
+    mojo::PendingRemote<mojom::HidConnectionWatcher> watcher) {
+  // This HidConnectionImpl is owned by |receiver| and |watcher|.
+  new HidConnectionImpl(connection, std::move(receiver),
+                        std::move(connection_client), std::move(watcher));
+}
+
 HidConnectionImpl::HidConnectionImpl(
     scoped_refptr<device::HidConnection> connection,
-    mojo::PendingRemote<mojom::HidConnectionClient> connection_client)
-    : hid_connection_(std::move(connection)) {
+    mojo::PendingReceiver<mojom::HidConnection> receiver,
+    mojo::PendingRemote<mojom::HidConnectionClient> connection_client,
+    mojo::PendingRemote<mojom::HidConnectionWatcher> watcher)
+    : receiver_(this, std::move(receiver)),
+      hid_connection_(std::move(connection)),
+      watcher_(std::move(watcher)) {
+  receiver_.set_disconnect_handler(base::BindOnce(
+      [](HidConnectionImpl* self) { delete self; }, base::Unretained(this)));
+  if (watcher_) {
+    watcher_.set_disconnect_handler(base::BindOnce(
+        [](HidConnectionImpl* self) { delete self; }, base::Unretained(this)));
+  }
   if (connection_client) {
     hid_connection_->SetClient(this);
     client_.Bind(std::move(connection_client));
@@ -23,8 +44,9 @@ HidConnectionImpl::~HidConnectionImpl() {
   DCHECK(hid_connection_);
   hid_connection_->SetClient(nullptr);
 
-  // Close |hid_connection_| on destruction because this class is owned by a
-  // mojo::StrongBinding and will be destroyed when the pipe is closed.
+  // Close |hid_connection_| on destruction. HidConnectionImpl is owned by
+  // its mojom::HidConnection receiver and mojom::HidConnectionWatcher remote
+  // and will self-destruct when either pipe is closed.
   hid_connection_->Close();
 }
 

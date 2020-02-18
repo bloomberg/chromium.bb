@@ -21,6 +21,9 @@ from chromite.lib import timeout_util
 
 # Version file location inside chroot.
 CHROOT_VERSION_FILE = '/etc/cros_chroot_version'
+# Version hooks directory.
+_CHROOT_VERSION_HOOKS_DIR = os.path.join(constants.CROSUTILS_DIR,
+                                         'chroot_version_hooks.d')
 
 
 # Name of the LV that contains the active chroot inside the chroot.img file.
@@ -85,9 +88,62 @@ def GetChrootVersion(chroot):
   try:
     return updater.GetVersion()
   except (IOError, Error) as e:
-    logging.debug(e.message)
+    logging.debug(e)
 
   return None
+
+
+def IsChrootVersionValid(chroot_path, hooks_dir=None):
+  """Check if the chroot version exists and is a valid version."""
+  version = GetChrootVersion(chroot_path)
+  return version and version <= LatestChrootVersion(hooks_dir)
+
+
+def LatestChrootVersion(hooks_dir=None):
+  """Get the most recent update hook version."""
+  hook_files = os.listdir(hooks_dir or _CHROOT_VERSION_HOOKS_DIR)
+
+  # Hook file names must follow the "version_short_description" convention.
+  # Pull out just the version number and find the max.
+  return max(int(hook.split('_', 1)[0]) for hook in hook_files)
+
+
+def EarliestChrootVersion(hooks_dir=None):
+  """Get the oldest update hook version."""
+  hook_files = os.listdir(hooks_dir or _CHROOT_VERSION_HOOKS_DIR)
+
+  # Hook file names must follow the "version_short_description" convention.
+  # Pull out just the version number and find the max.
+  return min(int(hook.split('_', 1)[0]) for hook in hook_files)
+
+
+def IsChrootDirValid(chroot_path):
+  """Check the permissions and owner on a chroot directory.
+
+  Args:
+    chroot_path: The path to a chroot.
+
+  Returns:
+    bool - False iff there are incorrect values on an existing directory.
+  """
+  if not os.path.exists(chroot_path):
+    # No directory == no incorrect values.
+    return True
+
+  return (IsChrootOwnerValid(chroot_path) and
+          IsChrootPermissionsValid(chroot_path))
+
+
+def IsChrootOwnerValid(chroot_path):
+  """Check if the chroot owner is root."""
+  chroot_stat = os.stat(chroot_path)
+  return not chroot_stat.st_uid and not chroot_stat.st_gid
+
+
+def IsChrootPermissionsValid(chroot_path):
+  """Check if the permissions on the directory are correct."""
+  chroot_stat = os.stat(chroot_path)
+  return chroot_stat.st_mode & 0o7777 == 0o755
 
 
 def IsChrootReady(chroot):
@@ -103,7 +159,8 @@ def IsChrootReady(chroot):
   Returns:
     True iff the chroot contains a valid version.
   """
-  return GetChrootVersion(chroot) > 0
+  version = GetChrootVersion(chroot)
+  return version is not None and version > 0
 
 
 def FindVolumeGroupForDevice(chroot_path, chroot_dev):
@@ -133,8 +190,8 @@ def FindVolumeGroupForDevice(chroot_path, chroot_dev):
 
   cmd = ['pvs', '-q', '--noheadings', '-o', 'vg_name,pv_name', '--unbuffered',
          '--separator', '\t']
-  result = cros_build_lib.SudoRunCommand(
-      cmd, capture_output=True, print_cmd=False)
+  result = cros_build_lib.sudo_run(
+      cmd, capture_output=True, print_cmd=False, encoding='utf-8')
   existing_vgs = set()
   for line in result.output.strip().splitlines():
     # Typical lines are '  vg_name\tpv_name\n'.  Match with a regex
@@ -167,8 +224,9 @@ def _DeviceFromFile(chroot_image):
   """
   chroot_dev = None
   cmd = ['losetup', '-j', chroot_image]
-  result = cros_build_lib.SudoRunCommand(
-      cmd, capture_output=True, error_code_ok=True, print_cmd=False)
+  result = cros_build_lib.sudo_run(
+      cmd, capture_output=True, error_code_ok=True, print_cmd=False,
+      encoding='utf-8')
   if result.returncode == 0:
     match = re.match(r'/dev/loop\d+', result.output)
     if match:
@@ -187,8 +245,8 @@ def _AttachDeviceToFile(chroot_image):
   """
   cmd = ['losetup', '--show', '-f', chroot_image]
   # Result should be '/dev/loopN\n' for whatever loop device is chosen.
-  result = cros_build_lib.SudoRunCommand(
-      cmd, capture_output=True, print_cmd=False)
+  result = cros_build_lib.sudo_run(
+      cmd, capture_output=True, print_cmd=False, encoding='utf-8')
   chroot_dev = result.output.strip()
 
   # Force rescanning the new device in case lvmetad doesn't pick it up.
@@ -277,8 +335,9 @@ def MountChroot(chroot=None, buildroot=None, create=True,
     logging.error('Unable to find a VG for %s on %s', chroot, chroot_dev)
     return False
   cmd = ['vgs', chroot_vg]
-  result = cros_build_lib.SudoRunCommand(
-      cmd, capture_output=True, error_code_ok=True, print_cmd=False)
+  result = cros_build_lib.sudo_run(
+      cmd, capture_output=True, error_code_ok=True, print_cmd=False,
+      encoding='utf-8')
   if result.returncode == 0:
     logging.debug('Activating existing VG %s', chroot_vg)
     cmd = ['vgchange', '-q', '-ay', chroot_vg]
@@ -289,7 +348,7 @@ def MountChroot(chroot=None, buildroot=None, create=True,
     try_count = list(range(1, 4))
     for i in try_count:
       try:
-        cros_build_lib.SudoRunCommand(cmd, capture_output=True, print_cmd=False)
+        cros_build_lib.sudo_run(cmd, capture_output=True, print_cmd=False)
         break
       except cros_build_lib.RunCommandError:
         logging.warning('Failed to activate VG on try %d.', i)
@@ -297,22 +356,23 @@ def MountChroot(chroot=None, buildroot=None, create=True,
           raise
   else:
     cmd = ['vgcreate', '-q', chroot_vg, chroot_dev]
-    cros_build_lib.SudoRunCommand(cmd, capture_output=True, print_cmd=False)
+    cros_build_lib.sudo_run(cmd, capture_output=True, print_cmd=False)
 
   # Make sure there is an LV containing a filesystem in our VG.
   chroot_lv = '%s/chroot' % chroot_vg
   chroot_dev_path = '/dev/%s' % chroot_lv
   cmd = ['lvs', chroot_lv]
-  result = cros_build_lib.SudoRunCommand(
-      cmd, capture_output=True, error_code_ok=True, print_cmd=False)
+  result = cros_build_lib.sudo_run(
+      cmd, capture_output=True, error_code_ok=True, print_cmd=False,
+      encoding='utf-8')
   if result.returncode != 0:
     cmd = ['lvcreate', '-q', '-L499G', '-T',
            '%s/%s' % (chroot_vg, CHROOT_THINPOOL_NAME), '-V500G',
            '-n', CHROOT_LV_NAME]
-    cros_build_lib.SudoRunCommand(cmd, capture_output=True, print_cmd=False)
+    cros_build_lib.sudo_run(cmd, capture_output=True, print_cmd=False)
 
     cmd = ['mke2fs', '-q', '-m', '0', '-t', 'ext4', chroot_dev_path]
-    cros_build_lib.SudoRunCommand(cmd, capture_output=True, print_cmd=False)
+    cros_build_lib.sudo_run(cmd, capture_output=True, print_cmd=False)
 
   osutils.SafeMakedirsNonRoot(chroot)
 
@@ -331,7 +391,7 @@ def MountChroot(chroot=None, buildroot=None, create=True,
     time.sleep(1)
 
   cmd = ['mount', '-text4', '-onoatime', chroot_dev_path, chroot]
-  cros_build_lib.SudoRunCommand(cmd, capture_output=True, print_cmd=False)
+  cros_build_lib.sudo_run(cmd, capture_output=True, print_cmd=False)
 
   return True
 
@@ -400,20 +460,21 @@ def CleanupChrootMount(chroot=None, buildroot=None, delete=False,
     # TODO(lamontjones): Dump some information to help find the process still
     # inside the chroot, causing crbug.com/923432.  In the end, this is likely
     # to become fuser -k.
-    fuser = cros_build_lib.SudoRunCommand(['fuser', chroot], error_code_ok=True)
-    lsof = cros_build_lib.SudoRunCommand(['lsof', chroot], error_code_ok=True)
-    ps = cros_build_lib.RunCommand(['ps', 'auxf'], error_code_ok=True)
+    fuser = cros_build_lib.sudo_run(['fuser', chroot], error_code_ok=True)
+    lsof = cros_build_lib.sudo_run(['lsof', chroot], error_code_ok=True)
+    ps = cros_build_lib.run(['ps', 'auxf'], error_code_ok=True)
     raise Error(
-        'Umount failed: %s.\nfuser output=%s\nlsof output=%s\nps output=%s\n',
-        e.result.error, fuser.output, lsof.output, ps.output)
+        'Umount failed: %s.\nfuser output=%s\nlsof output=%s\nps output=%s\n' %
+        (e.result.error, fuser.output, lsof.output, ps.output))
 
   # Find the loopback device by either matching the VG or the image.
   chroot_dev = None
   if vg_name:
     cmd = ['vgs', '-q', '--noheadings', '-o', 'pv_name', '--unbuffered',
            vg_name]
-    result = cros_build_lib.SudoRunCommand(
-        cmd, capture_output=True, error_code_ok=True, print_cmd=False)
+    result = cros_build_lib.sudo_run(
+        cmd, capture_output=True, error_code_ok=True, print_cmd=False,
+        encoding='utf-8')
     if result.returncode == 0:
       chroot_dev = result.output.strip()
     else:
@@ -427,18 +488,19 @@ def CleanupChrootMount(chroot=None, buildroot=None, delete=False,
     vg_name = FindVolumeGroupForDevice(chroot, chroot_dev)
     if vg_name:
       cmd = ['vgs', vg_name]
-      result = cros_build_lib.SudoRunCommand(
-          cmd, capture_output=True, error_code_ok=True, print_cmd=False)
+      result = cros_build_lib.sudo_run(
+          cmd, capture_output=True, error_code_ok=True, print_cmd=False,
+          encoding='utf-8')
       if result.returncode != 0:
         vg_name = None
 
   # Clean up all the pieces we found above.
   if vg_name:
     cmd = ['vgchange', '-an', vg_name]
-    cros_build_lib.SudoRunCommand(cmd, capture_output=True, print_cmd=False)
+    cros_build_lib.sudo_run(cmd, capture_output=True, print_cmd=False)
   if chroot_dev:
     cmd = ['losetup', '-d', chroot_dev]
-    cros_build_lib.SudoRunCommand(cmd, capture_output=True, print_cmd=False)
+    cros_build_lib.sudo_run(cmd, capture_output=True, print_cmd=False)
   if delete:
     osutils.SafeUnlink(chroot_img)
     osutils.RmDir(chroot, ignore_missing=True, sudo=True)
@@ -464,7 +526,7 @@ def _RescanDeviceLvmMetadata(chroot_dev):
   # This may fail if lvmetad isn't in use, but it's faster to ignore the
   # exit code than to check if we should actually run the command.
   cmd = ['pvscan', '--cache', chroot_dev]
-  cros_build_lib.SudoRunCommand(
+  cros_build_lib.sudo_run(
       cmd, capture_output=True, print_cmd=False, error_code_ok=True)
 
 
@@ -472,7 +534,7 @@ def RunChrootVersionHooks(version_file=None, hooks_dir=None):
   """Run the chroot version hooks to bring the chroot up to date."""
   if not cros_build_lib.IsInsideChroot():
     command = ['run_chroot_version_hooks']
-    cros_build_lib.RunCommand(command, enter_chroot=True)
+    cros_build_lib.run(command, enter_chroot=True)
   else:
     chroot = ChrootUpdater(version_file=version_file, hooks_dir=hooks_dir)
     chroot.ApplyUpdates()
@@ -483,7 +545,7 @@ def InitLatestVersion(version_file=None, hooks_dir=None):
   if not cros_build_lib.IsInsideChroot():
     # Run the command in the chroot.
     command = ['run_chroot_version_hooks', '--init-latest']
-    cros_build_lib.RunCommand(command, enter_chroot=True)
+    cros_build_lib.run(command, enter_chroot=True)
   else:
     # Initialize the version.
     chroot = ChrootUpdater(version_file=version_file, hooks_dir=hooks_dir)
@@ -497,9 +559,6 @@ def InitLatestVersion(version_file=None, hooks_dir=None):
 class ChrootUpdater(object):
   """Chroot version and update related functionality."""
 
-  _CHROOT_VERSION_HOOKS_DIR = os.path.join(constants.CROSUTILS_DIR,
-                                           'chroot_version_hooks.d')
-
   def __init__(self, version_file=None, hooks_dir=None):
     if version_file:
       # We have one. Just here to skip the logic below since we don't need it.
@@ -512,7 +571,7 @@ class ChrootUpdater(object):
       default_version_file = path_util.FromChrootPath(CHROOT_VERSION_FILE)
 
     self._version_file = version_file or default_version_file
-    self._hooks_dir = hooks_dir or self._CHROOT_VERSION_HOOKS_DIR
+    self._hooks_dir = hooks_dir or _CHROOT_VERSION_HOOKS_DIR
 
     self._version = None
     self._latest_version = None
@@ -522,7 +581,7 @@ class ChrootUpdater(object):
   def latest_version(self):
     """Get the highest available version for the chroot."""
     if self._latest_version is None:
-      self._latest_version = self._LatestScriptsVersion()
+      self._latest_version = LatestChrootVersion(self._hooks_dir)
     return self._latest_version
 
   def GetVersion(self):
@@ -578,9 +637,8 @@ class ChrootUpdater(object):
           '    cros_sdk --replace' %  self.GetVersion())
 
     for hook, version in self.GetChrootUpdates():
-      result = cros_build_lib.RunCommand(['bash', hook],
-                                         enter_chroot=True,
-                                         error_code_ok=True)
+      result = cros_build_lib.run(['bash', hook],
+                                  enter_chroot=True, error_code_ok=True)
       if not result.returncode:
         self.SetVersion(version)
       else:
@@ -640,10 +698,3 @@ class ChrootUpdater(object):
 
     self._hook_files = hook_files
     return self._hook_files
-
-  def _LatestScriptsVersion(self):
-    """Get the most recent update hook version."""
-    hook_files = os.listdir(self._hooks_dir)
-    # Hook file names must follow the "version_short_description" convention.
-    # Pull out just the version number and find the max.
-    return max(int(hook.split('_', 1)[0]) for hook in hook_files)

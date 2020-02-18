@@ -21,104 +21,128 @@ cr.define('safe_browsing', function() {
         addSavedPasswords(passwords));
     cr.sendWithPromise('getDatabaseManagerInfo', []).then(
       function(databaseState) {
-        var fullHashCacheState = databaseState.splice(-1,1);
+        const fullHashCacheState = databaseState.splice(-1,1);
         addDatabaseManagerInfo(databaseState);
         addFullHashCacheInfo(fullHashCacheState);
     });
 
     cr.sendWithPromise('getSentClientDownloadRequests', [])
-        .then(
-            (sentClientDownloadRequests) => {
-                sentClientDownloadRequests.forEach(function(cdr) {
-                  addSentClientDownloadRequestsInfo(cdr);
-                })});
+        .then((sentClientDownloadRequests) => {
+          sentClientDownloadRequests.forEach(function(cdr) {
+            addSentClientDownloadRequestsInfo(cdr);
+          });
+        });
     cr.addWebUIListener(
         'sent-client-download-requests-update', function(result) {
           addSentClientDownloadRequestsInfo(result);
         });
 
     cr.sendWithPromise('getReceivedClientDownloadResponses', [])
-        .then(
-            (receivedClientDownloadResponses) => {
-                receivedClientDownloadResponses.forEach(function(cdr) {
-                  addReceivedClientDownloadResponseInfo(cdr);
-                })});
+        .then((receivedClientDownloadResponses) => {
+          receivedClientDownloadResponses.forEach(function(cdr) {
+            addReceivedClientDownloadResponseInfo(cdr);
+          });
+        });
     cr.addWebUIListener(
         'received-client-download-responses-update', function(result) {
           addReceivedClientDownloadResponseInfo(result);
         });
 
-    cr.sendWithPromise('getSentCSBRRs', [])
-        .then((sentCSBRRs) => {sentCSBRRs.forEach(function(csbrr) {
-                addSentCSBRRsInfo(csbrr);
-              })});
+    cr.sendWithPromise('getSentCSBRRs', []).then((sentCSBRRs) => {
+      sentCSBRRs.forEach(function(csbrr) {
+        addSentCSBRRsInfo(csbrr);
+      });
+    });
     cr.addWebUIListener('sent-csbrr-update', function(result) {
       addSentCSBRRsInfo(result);
     });
 
-    cr.sendWithPromise('getPGEvents', [])
-        .then((pgEvents) => {pgEvents.forEach(function(pgEvent) {
-                addPGEvent(pgEvent);
-              })});
+    cr.sendWithPromise('getPGEvents', []).then((pgEvents) => {
+      pgEvents.forEach(function(pgEvent) {
+        addPGEvent(pgEvent);
+      });
+    });
     cr.addWebUIListener('sent-pg-event', function(result) {
       addPGEvent(result);
     });
 
-    cr.sendWithPromise('getSecurityEvents', [])
-        .then((securityEvents) => {securityEvents.forEach(
-          function(securityEvent) {
-                addSecurityEvent(securityEvent);
-              })});
+    cr.sendWithPromise('getSecurityEvents', []).then((securityEvents) => {
+      securityEvents.forEach(function(securityEvent) {
+        addSecurityEvent(securityEvent);
+      });
+    });
     cr.addWebUIListener('sent-security-event', function(result) {
       addSecurityEvent(result);
     });
 
-    cr.sendWithPromise('getPGPings', [])
-        .then((pgPings) => { pgPings.forEach(function (pgPing) {
-          addPGPing(pgPing);
-        })});
+    cr.sendWithPromise('getPGPings', []).then((pgPings) => {
+      pgPings.forEach(function(pgPing) {
+        addPGPing(pgPing);
+      });
+    });
     cr.addWebUIListener('pg-pings-update', function(result) {
       addPGPing(result);
     });
 
-    cr.sendWithPromise('getPGResponses', [])
-        .then((pgResponses) => { pgResponses.forEach(function (pgResponse) {
-          addPGResponse(pgResponse);
-        })});
+    cr.sendWithPromise('getPGResponses', []).then((pgResponses) => {
+      pgResponses.forEach(function(pgResponse) {
+        addPGResponse(pgResponse);
+      });
+    });
     cr.addWebUIListener('pg-responses-update', function(result) {
       addPGResponse(result);
     });
 
-    cr.sendWithPromise('getLogMessages', [])
-        .then((logMessages) => { logMessages.forEach(function (message) {
-          addLogMessage(message);
-        })});
+    cr.sendWithPromise('getRTLookupPings', []).then((rtLookupPings) => {
+      rtLookupPings.forEach(function(rtLookupPing) {
+        addRTLookupPing(rtLookupPing);
+      });
+    });
+    cr.addWebUIListener('rt-lookup-pings-update', function(result) {
+      addRTLookupPing(result);
+    });
+
+    cr.sendWithPromise('getRTLookupResponses', []).then((rtLookupResponses) => {
+      rtLookupResponses.forEach(function(rtLookupResponse) {
+        addRTLookupResponse(rtLookupResponse);
+      });
+    });
+    cr.addWebUIListener('rt-lookup-responses-update', function(result) {
+      addRTLookupResponse(result);
+    });
+
+    cr.sendWithPromise('getLogMessages', []).then((logMessages) => {
+      logMessages.forEach(function(message) {
+        addLogMessage(message);
+      });
+    });
     cr.addWebUIListener('log-messages-update', function(message) {
       addLogMessage(message);
     });
 
     $('get-referrer-chain-form').addEventListener('submit', addReferrerChain);
 
-    // Allow tabs to be navigated to by anchor.
-    showTab(window.location.hash.substr(1));
+    // Allow tabs to be navigated to by fragment. The fragment with be of the
+    // format "#tab-<tab id>"
+    showTab(window.location.hash.substr(5));
     window.onhashchange = function () {
-      showTab(window.location.hash.substr(1));
+      showTab(window.location.hash.substr(5));
     };
 
     // When the tab updates, update the anchor
     $('tabbox').addEventListener('selectedChange', function() {
-      var tabbox = $('tabbox');
-      var tabs = tabbox.querySelector('tabs').children;
-      var selectedTab = tabs[tabbox.selectedIndex];
-      window.location.hash = selectedTab.id;
+      const tabbox = $('tabbox');
+      const tabs = tabbox.querySelector('tabs').children;
+      const selectedTab = tabs[tabbox.selectedIndex];
+      window.location.hash = 'tab-' + selectedTab.id;
     }, true);
   }
 
   function addExperiments(result) {
-    var resLength = result.length;
-    var experimentsListFormatted = '';
+    const resLength = result.length;
+    let experimentsListFormatted = '';
 
-    for (var i = 0; i < resLength; i += 2) {
+    for (let i = 0; i < resLength; i += 2) {
       experimentsListFormatted += "<div><b>" + result[i + 1] +
           "</b>: " + result[i] + "</div>";
     }
@@ -126,10 +150,10 @@ cr.define('safe_browsing', function() {
   }
 
   function addPrefs(result) {
-    var resLength = result.length;
-    var preferencesListFormatted = "";
+    const resLength = result.length;
+    let preferencesListFormatted = "";
 
-    for (var i = 0; i < resLength; i += 2) {
+    for (let i = 0; i < resLength; i += 2) {
       preferencesListFormatted += "<div><b>" + result[i + 1] + "</b>: " +
           result[i] + "</div>";
     }
@@ -137,16 +161,16 @@ cr.define('safe_browsing', function() {
   }
 
   function addCookie(result) {
-    var cookieFormatted = '<b>Value:</b> ' + result[0] + '\n' +
+    const cookieFormatted = '<b>Value:</b> ' + result[0] + '\n' +
         '<b>Created:</b> ' + (new Date(result[1])).toLocaleString();
     $('cookie-panel').innerHTML = cookieFormatted;
   }
 
   function addSavedPasswords(result) {
-    var resLength = result.length;
-    var savedPasswordFormatted = "";
+    const resLength = result.length;
+    let savedPasswordFormatted = "";
 
-    for (var i = 0; i < resLength; i += 2) {
+    for (let i = 0; i < resLength; i += 2) {
       savedPasswordFormatted += "<div>" + result[i];
       if (result[i+1]) {
         savedPasswordFormatted += " (GAIA password)";
@@ -160,10 +184,10 @@ cr.define('safe_browsing', function() {
   }
 
   function addDatabaseManagerInfo(result) {
-    var resLength = result.length;
-    var preferencesListFormatted = "";
+    const resLength = result.length;
+    let preferencesListFormatted = "";
 
-    for (var i = 0; i < resLength; i += 2) {
+    for (let i = 0; i < resLength; i += 2) {
       preferencesListFormatted += "<div><b>" + result[i] + "</b>: " +
           result[i + 1] + "</div>";
     }
@@ -175,77 +199,82 @@ cr.define('safe_browsing', function() {
   }
 
   function addSentClientDownloadRequestsInfo(result) {
-    var logDiv = $('sent-client-download-requests-list');
+    const logDiv = $('sent-client-download-requests-list');
     appendChildWithInnerText(logDiv, result);
   }
 
   function addReceivedClientDownloadResponseInfo(result) {
-    var logDiv = $('received-client-download-response-list');
+    const logDiv = $('received-client-download-response-list');
     appendChildWithInnerText(logDiv, result);
   }
 
   function addSentCSBRRsInfo(result) {
-    var logDiv = $('sent-csbrrs-list');
+    const logDiv = $('sent-csbrrs-list');
     appendChildWithInnerText(logDiv, result);
   }
 
   function addPGEvent(result) {
-    var logDiv = $('pg-event-log');
-    var eventFormatted = "[" + (new Date(result["time"])).toLocaleString() +
+    const logDiv = $('pg-event-log');
+    const eventFormatted = "[" + (new Date(result["time"])).toLocaleString() +
         "] " + result['message'];
     appendChildWithInnerText(logDiv, eventFormatted);
   }
 
   function addSecurityEvent(result) {
-    var logDiv = $('security-event-log');
-    var eventFormatted = "[" + (new Date(result["time"])).toLocaleString() +
+    const logDiv = $('security-event-log');
+    const eventFormatted = "[" + (new Date(result["time"])).toLocaleString() +
         "] " + result['message'];
     appendChildWithInnerText(logDiv, eventFormatted);
   }
 
-  function addPGPingRow(token) {
-    var row = $('pg-ping-list').insertRow();
+  function insertTokenToTable(tableId, token) {
+    const row = $(tableId).insertRow();
     row.className = 'content';
-    row.id = 'pg-ping-list-' + token;
-    row.insertCell();
-    row.insertCell();
+    row.id = tableId + '-' + token;
+    row.insertCell().className = 'content';
+    row.insertCell().className = 'content';
   }
 
-  function addPGPing(result) {
-    var token = result[0];
-    var request = result[1];
+  function addResultToTable(tableId, result, position) {
+    const token = result[0];
+    const request = result[1];
 
-    if ($('pg-ping-list-'+token) == undefined) {
-      addPGPingRow(token);
+    if ($(tableId + '-' + token) == undefined) {
+      insertTokenToTable(tableId, token);
     }
 
-    var cell = $('pg-ping-list-'+token).cells[0];
+    const cell = $(tableId + '-' + token).cells[position];
     appendChildWithInnerText(cell, request);
   }
 
+  function addPGPing(result) {
+    addResultToTable('pg-ping-list', result, 0);
+  }
+
   function addPGResponse(result) {
-    var token = result[0];
-    var response = result[1];
+    addResultToTable('pg-ping-list', result, 1);
+  }
 
-    if ($('pg-ping-list-'+token) == undefined) {
-      addPGPingRow(token);
-    }
+  function addRTLookupPing(result) {
+    addResultToTable('rt-lookup-ping-list', result, 0);
+  }
 
-    var cell = $('pg-ping-list-'+token).cells[1];
-    appendChildWithInnerText(cell, response);
+  function addRTLookupResponse(result) {
+    addResultToTable('rt-lookup-ping-list', result, 1);
   }
 
   function addLogMessage(result) {
-    var logDiv = $('log-messages');
-    var eventFormatted = "[" + (new Date(result["time"])).toLocaleString() +
+    const logDiv = $('log-messages');
+    const eventFormatted = "[" + (new Date(result["time"])).toLocaleString() +
         "] " + result['message'];
     appendChildWithInnerText(logDiv, eventFormatted);
   }
 
   function appendChildWithInnerText(logDiv, text) {
-    if (!logDiv)
+    if (!logDiv) {
       return;
-    var textDiv = document.createElement('div');
+    }
+    const textDiv = document.createElement('div');
     textDiv.innerText = text;
     logDiv.appendChild(textDiv);
   }

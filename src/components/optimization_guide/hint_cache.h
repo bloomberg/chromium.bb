@@ -12,11 +12,11 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/sequence_checker.h"
-#include "components/optimization_guide/hint_cache_store.h"
+#include "components/optimization_guide/optimization_guide_store.h"
 #include "components/optimization_guide/proto/hints.pb.h"
 
 namespace optimization_guide {
-class HintUpdateData;
+class StoreUpdateData;
 
 using HintLoadedCallback = base::OnceCallback<void(const proto::Hint*)>;
 
@@ -29,10 +29,11 @@ using HintLoadedCallback = base::OnceCallback<void(const proto::Hint*)>;
 class HintCache {
  public:
   // Construct the HintCache with a backing store and an optional max memory
-  // cache size. While |hint_store| is required, |max_memory_cache_hints| is
-  // optional and the default max size will be used if it is not provided.
+  // cache size. While |optimization_guide_store| is required,
+  // |max_memory_cache_hints| is optional and the default max size will be used
+  // if it is not provided.
   explicit HintCache(
-      std::unique_ptr<HintCacheStore> hint_store,
+      std::unique_ptr<OptimizationGuideStore> optimization_guide_store,
       base::Optional<int> max_memory_cache_hints = base::Optional<int>());
   ~HintCache();
 
@@ -42,13 +43,13 @@ class HintCache {
   // pre-existing data and begin in a clean state.
   void Initialize(bool purge_existing_data, base::OnceClosure callback);
 
-  // Returns a HintUpdateData. During component processing, hints from the
-  // component are moved into the HintUpdateData. After component
+  // Returns a StoreUpdateData. During component processing, hints from the
+  // component are moved into the StoreUpdateData. After component
   // processing completes, the component update data is provided to the backing
   // store in UpdateComponentHints() and used to update its component hints. In
   // the case the provided component version is not newer than the store's
   // version, nullptr will be returned by the call.
-  std::unique_ptr<HintUpdateData> MaybeCreateUpdateDataForComponentHints(
+  std::unique_ptr<StoreUpdateData> MaybeCreateUpdateDataForComponentHints(
       const base::Version& version) const;
 
   // Returns an UpdateData created by the store to hold updates for fetched
@@ -59,13 +60,13 @@ class HintCache {
   // created update data will be scheduled to be updated. |expiry_time|
   // specifies when the hints within the created update data will be expired
   // from the store.
-  std::unique_ptr<HintUpdateData> CreateUpdateDataForFetchedHints(
+  std::unique_ptr<StoreUpdateData> CreateUpdateDataForFetchedHints(
       base::Time update_time,
       base::Time expiry_time) const;
 
-  // Updates the store's component data using the provided HintUpdateData
+  // Updates the store's component data using the provided StoreUpdateData
   // and asynchronously runs the provided callback after the update finishes.
-  void UpdateComponentHints(std::unique_ptr<HintUpdateData> component_data,
+  void UpdateComponentHints(std::unique_ptr<StoreUpdateData> component_data,
                             base::OnceClosure callback);
 
   // Process |get_hints_response| to be stored in the hint cache store.
@@ -77,7 +78,7 @@ class HintCache {
       base::Time update_time,
       base::OnceClosure callback);
 
-  // Purge fetched hints from the owned |hint_store_| and reset
+  // Purge fetched hints from the owned |optimization_guide_store_| and reset
   // the |memory_cache_|.
   void ClearFetchedHints();
 
@@ -92,14 +93,14 @@ class HintCache {
   // Returns the update time provided by |hint_store_|, which specifies when the
   // fetched hints within the store are ready to be updated. If |hint_store_| is
   // not initialized, base::Time() is returned.
-  base::Time FetchedHintsUpdateTime() const;
+  base::Time GetFetchedHintsUpdateTime() const;
 
   // Returns the hint data for |host| if found in memory, otherwise nullptr.
   const proto::Hint* GetHintIfLoaded(const std::string& host);
 
  private:
   using StoreHintMemoryCache =
-      base::HashingMRUCache<HintCacheStore::EntryKey,
+      base::HashingMRUCache<OptimizationGuideStore::EntryKey,
                             std::unique_ptr<proto::Hint>>;
 
   // The callback run after the store finishes initialization. This then runs
@@ -110,12 +111,13 @@ class HintCache {
   // loaded hint to |memory_cache_|, potentially purging the least recently
   // used element, and then runs the callback initially provided by the
   // LoadHint() call.
-  void OnLoadStoreHint(HintLoadedCallback callback,
-                       const HintCacheStore::EntryKey& store_hint_entry_key,
-                       std::unique_ptr<proto::Hint> hint);
+  void OnLoadStoreHint(
+      HintLoadedCallback callback,
+      const OptimizationGuideStore::EntryKey& store_hint_entry_key,
+      std::unique_ptr<proto::Hint> hint);
 
   // The backing store used with this hint cache. Set during construction.
-  const std::unique_ptr<HintCacheStore> hint_store_;
+  const std::unique_ptr<OptimizationGuideStore> optimization_guide_store_;
 
   // The in-memory cache of hints loaded from the store. Maps store EntryKey to
   // Hint proto. This servers two purposes:

@@ -1,3 +1,313 @@
+2019-12-05  Werner Lemberg  <wl@gnu.org>
+
+	* src/truetype/ttinterp.c (TT_RunIns): Use `FT_OFFSET'.
+
+	Reported as
+
+	  https://bugs.chromium.org/p/chromium/issues/detail?id=1030614
+
+2019-12-03  Werner Lemberg  <wl@gnu.org>
+
+	More nullptr offset UBSan warnings (#57331, #57347).
+
+	* src/autofit/afcjk.c (af_cjk_hints_compute_segments),
+	src/psaux/psft.c (cf2_getSeacComponent), src/truetype/ttinterp.c
+	(Ins_UNKNOWN): Use `FT_OFFSET'.
+
+2019-11-29  Dominik Röttsches  <drott@chromium.org>
+
+	Avoid more nullptr offset UBSan warnings (#57316).
+
+	* src/base/ftoutln.c (FT_Outline_Transform): Bail on empty points.
+	* src/cff/cffload.c (cff_subfont_load): Use `FT_OFFSET'.
+	* src/psaux/psft.c (cf2_decoder_parse_substrings): Early out if
+	`charstring_base' or `charstring_len' are null.
+	* src/sfnt/ttload.c (tt_face_load_name): Use `FT_OFFSET'.
+
+2019-11-23  John Stracke  <jstracke@Google.com>
+
+	[base] Really fix #57194.
+
+	Apply accidentally missed second part of patch.
+
+	* src/base/ftgloadr.c (FT_GlyphLoader_CheckPoints): Call
+	`FT_GlyphLoader_CreateExtra'.
+
+2019-11-23  Werner Lemberg  <wl@gnu.org>
+
+	[truetype] Avoid sanitizer warning (#57289).
+
+	* src/truetype/ttpload.c (tt_face_get_device_metrics): Use
+	`FT_OFFSET'.
+
+2019-11-23  Armin Hasitzka  <prince.cherusker@gmail.com>
+
+	[truetype] Fix integer overflow (#57287).
+
+	* src/truetype/ttgload.c (compute_glyph_metrics): Use `SUB_LONG'.
+
+2019-11-23  Ben Wagner  <bungeman@google.com>
+
+	[sfnt] Avoid sanitizer warning (#57286).
+
+	* src/sfnt/ttcmap.c (tt_face_build_cmaps): Avoid possible `NULL +
+	offset' computation.
+	Tag `table' as `const'.
+
+2019-11-23  John Stracke  <jstracke@Google.com>
+            Werner Lemberg  <wl@gnu.org>
+
+	[base] Fix `NULL + offset' sanitizer warnings (#57194).
+
+	* src/base/ftgloadr.c (FT_GlyphLoader_Adjust_Points,
+	FT_GlyphLoader_Adjust_Subglyphs): Use `FT_OFFSET'.
+	(FT_GlyphLoader_CreateExtra): Add short cut if some values are zero.
+
+2019-11-23  Werner Lemberg  <wl@gnu.org>
+
+	* include/freetype/internal/ftmemory.h (FT_OFFSET): New macro.
+
+	Use this for `base + offset' pointer calculations where `base' can
+	be NULL (triggering a sanitizer warning even if the resulting
+	pointer gets never dereferenced since it is undefined behaviour
+	in C).
+
+	Suggested by Ben Wagner.
+
+2019-11-23  Ben Wagner  <bungeman@google.com>
+
+	[sfnt] Ensure OTTO fonts have tables (#57285).
+
+	* src/sfnt/ttload.c (tt_face_load_font_dir): Add test.
+
+2019-11-23  Behdad Esfahbod  <behdad@behdad.org>
+
+	Minor fixes for recent compilers.
+
+	* src/gzip/infutil.h (inflate_mask): Add `const'.
+
+	* src/autofit/aflatin2.c: Include `ft2build.h'.
+
+2019-11-07  Nikolaus Waxweiler  <madigens@gmail.com>
+
+	* CMakeLists.txt: Minor additions to the notes, compile
+	  builds/unix/ftsystem.c instead of src/base/ftsystem.c on UNIX.
+
+	The latter change is based on the code proposed by rim in #55235.
+
+2019-10-25  Werner Lemberg  <wl@gnu.org>
+
+	* src/sfnt/sfwoff2.c (woff2_open_font): Check `num_fonts' for TTCs.
+
+	Reported as
+
+	  https://bugs.chromium.org/p/oss-fuzz/issues/detail?id=18494
+
+2019-10-22  Werner Lemberg  <wl@gnu.org>
+
+	* src/sfnt/sfwoff2.c (woff2_open_font): Avoid undefined shift.
+
+	Also improve tracing.
+
+	Reported as
+
+	  https://bugs.chromium.org/p/oss-fuzz/issues/detail?id=18390
+
+2019-10-10  Alexei Podtelezhnikov  <apodtele@gmail.com>
+
+	* src/sfnt/pngshim.c (premultiply_data): Optimize for __SSE__ only.
+
+2019-10-10  Werner Lemberg  <wl@gnu.org>
+
+	* src/sfnt/sfwoff2.c (reconstruct_glyf): Check `triplet_size'.
+
+	Reported as
+
+	  https://bugs.chromium.org/p/oss-fuzz/issues/detail?id=18108
+
+2019-10-09  John Tytgat  <John.Tytgat@esko.com>
+
+	[cff] Fix FT_FACE_FLAG_GLYPH_NAMES for CFF2 based fonts (#57023).
+
+	* src/cff/cffobjs.c (cff_face_init): Don't set
+	FT_FACE_FLAG_GLYPH_NAMES for CFF2 based fonts.
+
+2019-10-08  Werner Lemberg  <wl@gnu.org>
+
+	[woff2] Fix SFNT table checks.
+
+	Also reduce number of SFNT table lookups.
+
+	Reported as
+
+	  https://bugs.chromium.org/p/oss-fuzz/issues/detail?id=18065
+
+	* include/freetype/internal/wofftypes.h (WOFF2_InfoRec): Add fields
+	`glyf_table', `loca_table', and `head_table'.
+
+	* src/sfnt/sfwoff2.c (reconstruct_glyf): Update signature.
+	Use table pointers in `info' parameter.
+	(get_x_mins): Check `maxp_table'
+	Use table pointers in `info' parameter.
+	(reconstruct_font):  Use and set table pointers in `info' parameter.
+	Fix check for `glyf' and `loca' tables.
+	Update call to `reconstruct_glyf'.
+	(woff2_open_font): Updated.
+
+2019-10-06  Werner Lemberg  <wl@gnu.org>
+
+	* src/sfnt/sfwoff2.c (reconstruct_glyf): Fix reallocation.
+
+	Reported as
+
+	  https://bugs.chromium.org/p/oss-fuzz/issues/detail?id=18046
+
+2019-10-06  Werner Lemberg  <wl@gnu.org>
+
+	Improve memory debugging.
+
+	* include/freetype/internal/ftmemory.h (FT_MEM_FREE): Use
+	`FT_DEBUG_INNER' to set source code file name and line.
+
+	* src/base/ftdbgmem.c (ft_mem_table_remove): Better formatting of
+	tracing message.
+
+2019-10-03  Werner Lemberg  <wl@gnu.org>
+
+	* src/sfnt/sfwoff2 (reconstruct_font): Fix reallocation.
+
+	Reported as
+
+	  https://bugs.chromium.org/p/oss-fuzz/issues/detail?id=17966
+
+2019-10-01  Alexei Podtelezhnikov  <apodtele@gmail.com>
+
+	* src/base/ftstroke.c (ft_stroker_inside): Speed up.
+
+2019-10-01  Werner Lemberg  <wl@gnu.org>
+
+	* src/sfnt/sfwoff2 (woff2_open_font): Initialize `woff2.ttc_fonts'.
+
+	Reported as
+
+	  https://bugs.chromium.org/p/oss-fuzz/issues/detail?id=17804
+
+2019-09-30  Werner Lemberg  <wl@gnu.org>
+
+	* src/sfnt/sfwoff2.c (reconstruct_font): Fix memory leak.
+
+	Reported as
+
+	  https://bugs.chromium.org/p/oss-fuzz/issues/detail?id=17812
+
+2019-09-30  Werner Lemberg  <wl@gnu.org>
+
+	[woff2] Reject fonts without `head' table.
+
+	Also fix memory deallocation in case of error.
+
+	`head' problem reported as
+
+	  https://bugs.chromium.org/p/oss-fuzz/issues/detail?id=17820
+
+	* src/sfnt/sfwoff2.c (reconstruct_glyf): Don't use `stream_close'.
+	Abort if `head_table' is NULL.
+	Don't free `transformed_buf' in case of error.
+	(woff2_open_font): Don't set `uncompressed_buf' to NULL.
+
+2019-09-29  Werner Lemberg  <wl@gnu.org>
+
+	[woff2] Fix compiler warnings.
+
+	Problem reported by Alexei.
+
+	* src/sfnt/sfwoff2.c (reconstruct_glyf): Initialize `x_min'.
+	(reconstruct_font): Initialize `num_hmetrics'.
+	(woff2_open_font): Initialize `info'.
+
+2019-09-28  Werner Lemberg  <wl@gnu.org>
+
+	* src/sfnt/sfwoff2.c (woff2_open_font): Fix sanity check.
+
+	Correct thinkos in patch from 2019-09-01.
+
+2019-09-28  Werner Lemberg  <wl@gnu.org>
+
+	[woff2] Fix memory leaks.
+
+	One of them reported as
+
+	  https://bugs.chromium.org/p/oss-fuzz/issues/detail?id=17766
+
+	* src/sfnt/sfwoff2.c (woff2_open_font): Free `info->x_mins' and
+	`woff2->ttc_fonts'.
+
+	(reconstruct_glyf): Initialize `info->x_mins'.
+
+2019-09-27  Alexei Podtelezhnikov  <apodtele@gmail.com>
+
+	* src/base/ftstroke.c (ft_stroker_cap): Speed up caps.
+
+2019-09-25  Alexei Podtelezhnikov  <apodtele@gmail.com>
+
+	* src/base/ftstroke.c (ft_stroker_outside): Speed up clipped miter.
+	* include/freetype/ftstroke.h: Wordsmith miter docs.
+
+2019-09-25  Werner Lemberg  <wl@gnu.org>
+
+	* src/sfnt/sfwoff2.c (woff2_open_font): Check (sum of) table sizes.
+
+	Reported as
+
+	  https://bugs.chromium.org/p/oss-fuzz/issues/detail?id=17684
+
+2019-09-23  Alexei Podtelezhnikov  <apodtele@gmail.com>
+
+	* src/base/ftstroke.c (ft_stroke_border_arcto): Speed up calculations.
+
+2019-09-20  Nikhil Ramakrishnan  <ramakrishnan.nikhil@gmail.com>
+
+	[woff2] Fix memory leaks.
+
+	Reported as
+
+	  https://bugs.chromium.org/p/oss-fuzz/issues/detail?id=16896
+
+	* src/sfnt/sfwoff2.c (woff2_open_font): Fix error handling.
+	Free `uncompressed_buf'.
+	(reconstruct_font): Free `transformed_buf'.
+
+2019-09-17  Werner Lemberg  <wl@gnu.org>
+
+	* src/otvalid/otvcommon.c (otv_Coverage_get_last): Guard `count'.
+
+	Problem reported by Marc Schönefeld <marc.schoenefeld@gmx.org>.
+
+2019-09-17  Werner Lemberg  <wl@gnu.org>
+
+	* src/sfnt/sfwoff2.c (woff2_open_font): Check table index.
+
+	Reported as
+
+	  https://bugs.chromium.org/p/oss-fuzz/issues/detail?id=17100
+
+2019-09-15  Avi Halachmi (:avih)  <avihpit@yahoo.com>
+
+	[cmake] Don't fail if brotli is missing (#56894).
+
+	The libs which cmake controls are commented out at
+
+	  include/freetype/config/ftoption.h
+
+	and cmake un-comment each enabled library, but the brotli option was
+	not commented out, therefore `FT_CONFIG_OPTION_USE_BROTLI' remained
+	defined even if brotli was missing/disabled/etc.
+
+	Comment it such that cmake can control it, which means leaving it
+	undefined if brotli is missing.
+
+	* include/freetype/config/ftoption.h: Fix typo.
+
 2019-09-05  Werner Lemberg  <wl@gnu.org>
 
 	[cmake] Add brotli support.

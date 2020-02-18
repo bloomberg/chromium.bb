@@ -61,8 +61,6 @@ class WebContentsDelegateAndroid : public content::WebContentsDelegate {
   void ActivateContents(content::WebContents* contents) override;
   void LoadingStateChanged(content::WebContents* source,
                            bool to_different_document) override;
-  void LoadProgressChanged(content::WebContents* source,
-                           double load_progress) override;
   void RendererUnresponsive(
       content::WebContents* source,
       content::RenderWidgetHost* render_widget_host,
@@ -76,19 +74,12 @@ class WebContentsDelegateAndroid : public content::WebContentsDelegate {
                           const std::string& frame_name,
                           const GURL& target_url,
                           content::WebContents* new_contents) override;
-  bool ShouldCreateWebContents(
-      content::WebContents* web_contents,
-      content::RenderFrameHost* opener,
+  bool IsWebContentsCreationOverridden(
       content::SiteInstance* source_site_instance,
-      int32_t route_id,
-      int32_t main_frame_route_id,
-      int32_t main_frame_widget_route_id,
       content::mojom::WindowContainerType window_container_type,
       const GURL& opener_url,
       const std::string& frame_name,
-      const GURL& target_url,
-      const std::string& partition_id,
-      content::SessionStorageNamespace* session_storage_namespace) override;
+      const GURL& target_url) override;
   void CloseContents(content::WebContents* source) override;
   void SetContentsBounds(content::WebContents* source,
                          const gfx::Rect& bounds) override;
@@ -107,7 +98,7 @@ class WebContentsDelegateAndroid : public content::WebContentsDelegate {
   void EnterFullscreenModeForTab(
       content::WebContents* web_contents,
       const GURL& origin,
-      const blink::WebFullscreenOptions& options) override;
+      const blink::mojom::FullscreenOptions& options) override;
   void ExitFullscreenModeForTab(content::WebContents* web_contents) override;
   bool IsFullscreenForTabOrPending(
       const content::WebContents* web_contents) override;
@@ -116,7 +107,10 @@ class WebContentsDelegateAndroid : public content::WebContentsDelegate {
                             const GURL& initiator_url,
                             blink::NavigationBlockedReason reason) override;
   int GetTopControlsHeight() override;
+  int GetTopControlsMinHeight() override;
   int GetBottomControlsHeight() override;
+  int GetBottomControlsMinHeight() override;
+  bool ShouldAnimateBrowserControlsHeightChanges() override;
   bool DoBrowserControlsShrinkRendererSize(
       const content::WebContents* contents) override;
 

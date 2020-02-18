@@ -19,6 +19,42 @@
 namespace mojo {
 
 template <>
+struct EnumTraits<gpu::mojom::GrContextType, gpu::GrContextType> {
+  static gpu::mojom::GrContextType ToMojom(gpu::GrContextType input) {
+    switch (input) {
+      case gpu::GrContextType::kGL:
+        return gpu::mojom::GrContextType::kGL;
+      case gpu::GrContextType::kVulkan:
+        return gpu::mojom::GrContextType::kVulkan;
+      case gpu::GrContextType::kMetal:
+        return gpu::mojom::GrContextType::kMetal;
+      case gpu::GrContextType::kDawn:
+        return gpu::mojom::GrContextType::kDawn;
+    }
+    NOTREACHED();
+    return gpu::mojom::GrContextType::kGL;
+  }
+  static bool FromMojom(gpu::mojom::GrContextType input,
+                        gpu::GrContextType* out) {
+    switch (input) {
+      case gpu::mojom::GrContextType::kGL:
+        *out = gpu::GrContextType::kGL;
+        return true;
+      case gpu::mojom::GrContextType::kVulkan:
+        *out = gpu::GrContextType::kVulkan;
+        return true;
+      case gpu::mojom::GrContextType::kMetal:
+        *out = gpu::GrContextType::kMetal;
+        return true;
+      case gpu::mojom::GrContextType::kDawn:
+        *out = gpu::GrContextType::kDawn;
+        return true;
+    }
+    return false;
+  }
+};
+
+template <>
 struct EnumTraits<gpu::mojom::VulkanImplementationName,
                   gpu::VulkanImplementationName> {
   static gpu::mojom::VulkanImplementationName ToMojom(
@@ -28,6 +64,8 @@ struct EnumTraits<gpu::mojom::VulkanImplementationName,
         return gpu::mojom::VulkanImplementationName::kNone;
       case gpu::VulkanImplementationName::kNative:
         return gpu::mojom::VulkanImplementationName::kNative;
+      case gpu::VulkanImplementationName::kForcedNative:
+        return gpu::mojom::VulkanImplementationName::kForcedNative;
       case gpu::VulkanImplementationName::kSwiftshader:
         return gpu::mojom::VulkanImplementationName::kSwiftshader;
     }
@@ -42,6 +80,9 @@ struct EnumTraits<gpu::mojom::VulkanImplementationName,
         return true;
       case gpu::mojom::VulkanImplementationName::kNative:
         *out = gpu::VulkanImplementationName::kNative;
+        return true;
+      case gpu::mojom::VulkanImplementationName::kForcedNative:
+        *out = gpu::VulkanImplementationName::kForcedNative;
         return true;
       case gpu::mojom::VulkanImplementationName::kSwiftshader:
         *out = gpu::VulkanImplementationName::kSwiftshader;
@@ -108,13 +149,13 @@ struct StructTraits<gpu::mojom::GpuPreferencesDataView, gpu::GpuPreferences> {
       out->texture_target_exception_list.push_back(usage_format);
     }
 
-    out->disable_gpu_driver_bug_workarounds =
-        prefs.disable_gpu_driver_bug_workarounds();
     out->ignore_gpu_blacklist = prefs.ignore_gpu_blacklist();
     out->enable_oop_rasterization = prefs.enable_oop_rasterization();
     out->disable_oop_rasterization = prefs.disable_oop_rasterization();
     out->enable_oop_rasterization_ddl = prefs.enable_oop_rasterization_ddl();
     out->watchdog_starts_backgrounded = prefs.watchdog_starts_backgrounded();
+    if (!prefs.ReadGrContextType(&out->gr_context_type))
+      return false;
     if (!prefs.ReadUseVulkan(&out->use_vulkan))
       return false;
     out->enforce_vulkan_protected_memory =
@@ -126,6 +167,8 @@ struct StructTraits<gpu::mojom::GpuPreferencesDataView, gpu::GpuPreferences> {
     out->enable_gpu_benchmarking_extension =
         prefs.enable_gpu_benchmarking_extension();
     out->enable_webgpu = prefs.enable_webgpu();
+    out->enable_gpu_blocked_time_metric =
+        prefs.enable_gpu_blocked_time_metric();
 
 #if defined(USE_OZONE)
     if (!prefs.ReadMessagePumpType(&out->message_pump_type))
@@ -241,10 +284,6 @@ struct StructTraits<gpu::mojom::GpuPreferencesDataView, gpu::GpuPreferences> {
   texture_target_exception_list(const gpu::GpuPreferences& prefs) {
     return prefs.texture_target_exception_list;
   }
-  static bool disable_gpu_driver_bug_workarounds(
-      const gpu::GpuPreferences& prefs) {
-    return prefs.disable_gpu_driver_bug_workarounds;
-  }
   static bool ignore_gpu_blacklist(const gpu::GpuPreferences& prefs) {
     return prefs.ignore_gpu_blacklist;
   }
@@ -259,6 +298,9 @@ struct StructTraits<gpu::mojom::GpuPreferencesDataView, gpu::GpuPreferences> {
   }
   static bool watchdog_starts_backgrounded(const gpu::GpuPreferences& prefs) {
     return prefs.watchdog_starts_backgrounded;
+  }
+  static gpu::GrContextType gr_context_type(const gpu::GpuPreferences& prefs) {
+    return prefs.gr_context_type;
   }
   static gpu::VulkanImplementationName use_vulkan(
       const gpu::GpuPreferences& prefs) {
@@ -284,6 +326,9 @@ struct StructTraits<gpu::mojom::GpuPreferencesDataView, gpu::GpuPreferences> {
   }
   static bool enable_webgpu(const gpu::GpuPreferences& prefs) {
     return prefs.enable_webgpu;
+  }
+  static bool enable_gpu_blocked_time_metric(const gpu::GpuPreferences& prefs) {
+    return prefs.enable_gpu_blocked_time_metric;
   }
 #if defined(USE_OZONE)
   static base::MessagePumpType message_pump_type(

@@ -12,6 +12,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -20,9 +21,12 @@
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_core_observer.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/service_worker_context.h"
 #include "content/public/browser/service_worker_running_info.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 
 namespace base {
 class FilePath;
@@ -55,7 +59,8 @@ class URLLoaderFactoryGetter;
 class CONTENT_EXPORT ServiceWorkerContextWrapper
     : public ServiceWorkerContext,
       public ServiceWorkerContextCoreObserver,
-      public base::RefCountedThreadSafe<ServiceWorkerContextWrapper> {
+      public base::RefCountedThreadSafe<ServiceWorkerContextWrapper,
+                                        BrowserThread::DeleteOnUIThread> {
  public:
   using StatusCallback =
       base::OnceCallback<void(blink::ServiceWorkerStatusCode)>;
@@ -121,8 +126,12 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
   void OnReportConsoleMessage(int64_t version_id,
                               const ConsoleMessage& message) override;
   void OnNoControllees(int64_t version_id, const GURL& scope) override;
-  void OnRunningStateChanged(int64_t version_id,
-                             EmbeddedWorkerStatus running_status) override;
+  void OnStarted(int64_t version_id,
+                 const GURL& scope,
+                 int process_id,
+                 const GURL& script_url) override;
+  void OnStopped(int64_t version_id) override;
+  void OnDeleteAndStartOver() override;
   void OnVersionStateChanged(int64_t version_id,
                              const GURL& scope,
                              ServiceWorkerVersion::Status status) override;
@@ -136,10 +145,12 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
       ResultCallback callback) override;
   void UnregisterServiceWorker(const GURL& scope,
                                ResultCallback callback) override;
-  bool StartingExternalRequest(int64_t service_worker_version_id,
-                               const std::string& request_uuid) override;
-  bool FinishedExternalRequest(int64_t service_worker_version_id,
-                               const std::string& request_uuid) override;
+  ServiceWorkerExternalRequestResult StartingExternalRequest(
+      int64_t service_worker_version_id,
+      const std::string& request_uuid) override;
+  ServiceWorkerExternalRequestResult FinishedExternalRequest(
+      int64_t service_worker_version_id,
+      const std::string& request_uuid) override;
   void CountExternalRequestsForTest(
       const GURL& url,
       CountExternalRequestsCallback callback) override;
@@ -156,20 +167,13 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
       const GURL& scope,
       blink::TransferableMessage message,
       ResultCallback result_callback) override;
-  void StartServiceWorkerAndDispatchLongRunningMessage(
-      const GURL& scope,
-      blink::TransferableMessage message,
-      ResultCallback result_callback) override;
   void StartServiceWorkerForNavigationHint(
       const GURL& document_url,
       StartServiceWorkerForNavigationHintCallback callback) override;
   void StopAllServiceWorkersForOrigin(const GURL& origin) override;
   void StopAllServiceWorkers(base::OnceClosure callback) override;
-  void GetAllServiceWorkerRunningInfos(
-      GetAllServiceWorkerRunningInfosCallback callback) override;
-  void GetServiceWorkerRunningInfo(
-      int64_t version_id,
-      GetServiceWorkerRunningInfoCallback callback) override;
+  const base::flat_map<int64_t, ServiceWorkerRunningInfo>&
+  GetRunningServiceWorkerInfos() override;
 
   // These methods must only be called from the core thread.
   ServiceWorkerRegistration* GetLiveRegistration(int64_t registration_id);
@@ -178,15 +182,15 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
   std::vector<ServiceWorkerVersionInfo> GetAllLiveVersionInfo();
 
   // May be called from any thread, and the callback is called on that thread.
-  void HasMainFrameProviderHost(const GURL& origin,
+  void HasMainFrameWindowClient(const GURL& origin,
                                 BoolCallback callback) const;
 
-  // Returns all frame ids for the given |origin|. Must be called on the core
-  // thread.
-  std::unique_ptr<std::vector<GlobalFrameRoutingId>> GetProviderHostIds(
-      const GURL& origin) const;
+  // Returns all frame routing ids for the given |origin|. Must be called on the
+  // core thread.
+  std::unique_ptr<std::vector<GlobalFrameRoutingId>>
+  GetWindowClientFrameRoutingIds(const GURL& origin) const;
 
-  // Returns the registration whose scope longest matches |document_url|. It is
+  // Returns the registration whose scope longest matches |client_url|. It is
   // guaranteed that the returned registration has the activated worker.
   //
   //  - If the registration is not found, returns ERROR_NOT_FOUND.
@@ -197,8 +201,8 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
   //    activated.
   //
   // Can be called on any thread, and the callback is called on that thread.
-  void FindReadyRegistrationForDocument(const GURL& document_url,
-                                        FindRegistrationCallback callback);
+  void FindReadyRegistrationForClientUrl(const GURL& client_url,
+                                         FindRegistrationCallback callback);
 
   // Returns the registration for |scope|. It is guaranteed that the returned
   // registration has the activated worker.
@@ -327,9 +331,9 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
 
  private:
   friend class BackgroundSyncManagerTest;
-  friend class base::RefCountedThreadSafe<ServiceWorkerContextWrapper>;
-  friend class EmbeddedWorkerTestHelper;
+  friend class base::DeleteHelper<ServiceWorkerContextWrapper>;
   friend class EmbeddedWorkerBrowserTest;
+  friend class EmbeddedWorkerTestHelper;
   friend class FakeServiceWorkerContextWrapper;
   friend class ServiceWorkerClientsApiBrowserTest;
   friend class ServiceWorkerInternalsUI;
@@ -337,6 +341,7 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
   friend class ServiceWorkerProcessManager;
   friend class ServiceWorkerRequestHandler;
   friend class ServiceWorkerVersionBrowserTest;
+  friend struct BrowserThread::DeleteOnThread<BrowserThread::UI>;
 
   ~ServiceWorkerContextWrapper() override;
 
@@ -347,8 +352,8 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
       storage::SpecialStoragePolicy* special_storage_policy,
       ChromeBlobStorageContext* blob_context,
       URLLoaderFactoryGetter* url_loader_factory_getter,
-      std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
-          non_network_loader_factory_bundle_info_for_update_check);
+      std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
+          non_network_pending_loader_factory_bundle_for_update_check);
   void ShutdownOnCoreThread();
 
   // If |include_installing_version| is true, |callback| is called if there is
@@ -410,7 +415,6 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
       const GURL& source_origin,
       ResultCallback result_callback,
       scoped_refptr<base::TaskRunner> callback_runner,
-      bool is_long_running_message,
       blink::ServiceWorkerStatusCode service_worker_status,
       scoped_refptr<ServiceWorkerRegistration> registration);
 
@@ -420,27 +424,11 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
       scoped_refptr<ServiceWorkerRegistration> registration,
       ServiceWorkerContext::ResultCallback result_callback,
       scoped_refptr<base::TaskRunner> callback_runner,
-      bool is_long_running_message,
       blink::ServiceWorkerStatusCode service_worker_status);
 
-  void SendActiveWorkerMessage(
-      blink::TransferableMessage message,
-      const GURL& source_origin,
-      ServiceWorkerContext::ResultCallback result_callback,
-      blink::ServiceWorkerStatusCode status,
-      scoped_refptr<ServiceWorkerRegistration> registration);
-
-
-  ServiceWorkerRunningInfo ExtractServiceWorkerRunningInfoFromVersionInfo(
-      const ServiceWorkerVersionInfo& version_info);
-
-  // RUNNING and STOPPING are considered "running". See the comments in
-  // OnRunningStateChange.
-  bool IsRunningStatus(EmbeddedWorkerStatus status);
-
   // Called when ServiceWorkerImportedScriptUpdateCheck is enabled.
-  std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
-  CreateNonNetworkURLLoaderFactoryBundleInfoForUpdateCheck(
+  std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
+  CreateNonNetworkPendingURLLoaderFactoryBundleForUpdateCheck(
       BrowserContext* browser_context);
 
   void SetUpLoaderFactoryForUpdateCheckOnUI(
@@ -476,11 +464,6 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
       blink::TransferableMessage message,
       ResultCallback result_callback,
       scoped_refptr<base::TaskRunner> callback_runner);
-  void StartServiceWorkerAndDispatchLongRunningMessageOnCoreThread(
-      const GURL& scope,
-      blink::TransferableMessage message,
-      ResultCallback result_callback,
-      scoped_refptr<base::TaskRunner> callback_runner);
   void FindReadyRegistrationForIdOnCoreThread(
       int64_t registration_id,
       const GURL& origin,
@@ -499,12 +482,12 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
       bool include_installing_version,
       FindRegistrationCallback callback,
       scoped_refptr<base::TaskRunner> callback_runner);
-  void HasMainFrameProviderHostOnCoreThread(
+  void HasMainFrameWindowClientOnCoreThread(
       const GURL& origin,
       BoolCallback callback,
       scoped_refptr<base::TaskRunner> callback_runner) const;
-  void FindReadyRegistrationForDocumentOnCoreThread(
-      const GURL& document_url,
+  void FindReadyRegistrationForClientUrlOnCoreThread(
+      const GURL& client_url,
       FindRegistrationCallback callback,
       scoped_refptr<base::TaskRunner> callback_runner);
   void GetAllRegistrationsOnCoreThread(GetRegistrationsInfosCallback callback);
@@ -547,13 +530,6 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
   void StopAllServiceWorkersOnCoreThread(
       base::OnceClosure callback,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner_for_callback);
-  void GetAllServiceWorkerRunningInfosOnCoreThread(
-      GetAllServiceWorkerRunningInfosCallback callback,
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner_for_callback);
-  void GetServiceWorkerRunningInfoOnCoreThread(
-      int64_t version_id,
-      GetServiceWorkerRunningInfoCallback callback,
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner_for_callback);
 
   // Observers of |context_core_| which live within content's implementation
   // boundary. Shared with |context_core_|.
@@ -563,7 +539,8 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
 
   // Observers which live outside content's implementation boundary. Observer
   // methods will always be dispatched on the UI thread.
-  base::ObserverList<ServiceWorkerContextObserver>::Unchecked observer_list_;
+  base::ObserverList<ServiceWorkerContextObserver, true>::Unchecked
+      observer_list_;
 
   const std::unique_ptr<ServiceWorkerProcessManager> process_manager_;
   // Cleared in ShutdownOnCoreThread():
@@ -579,9 +556,10 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
   // context.
   ResourceContext* resource_context_ = nullptr;
 
-  // The set of workers that are considered "running". For dispatching
-  // OnVersionRunningStatusChanged events.
-  base::flat_set<int64_t /* version_id */> running_service_workers_;
+  // Map that contains all service workers that are considered "running". Used
+  // to dispatch OnVersionStartedRunning()/OnVersionStoppedRunning() events.
+  base::flat_map<int64_t /* version_id */, ServiceWorkerRunningInfo>
+      running_service_workers_;
 
   // Maps the origin to a set of registration ids for that origin. Must be
   // accessed on UI thread.

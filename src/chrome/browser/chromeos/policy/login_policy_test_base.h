@@ -23,6 +23,7 @@ class UserPolicyTestHelper;
 
 // This class can be used to implement tests which need policy to be set prior
 // to login.
+// TODO (crbug/1014663): Deprecate this class in favor of LoggedInUserMixin.
 class LoginPolicyTestBase : public chromeos::OobeBaseTest {
  protected:
   LoginPolicyTestBase();
@@ -44,7 +45,13 @@ class LoginPolicyTestBase : public chromeos::OobeBaseTest {
   Profile* GetProfileForActiveUser();
 
   void SkipToLoginScreen();
-  // Should match ShowSigninScreenForTest method in SigninScreenHandler.
+
+  // Triggers the login, but does not wait for a user session to start.
+  void TriggerLogIn(const std::string& user_id,
+                    const std::string& password,
+                    const std::string& services);
+
+  // Triggers the login and waits for a user session to start.
   void LogIn(const std::string& user_id,
              const std::string& password,
              const std::string& services);

@@ -59,7 +59,8 @@ class HeadlessProtocolBrowserTest
     // components migration from the old web APIs.
     // After completion of the migration, we should remove this.
     // See crbug.com/911943 for detail.
-    command_line->AppendSwitchASCII("enable-blink-features", "HTMLImports");
+    command_line->AppendSwitchASCII(switches::kEnableBlinkFeatures,
+                                    "HTMLImports");
   }
 
  private:
@@ -212,8 +213,8 @@ HEADLESS_PROTOCOL_TEST(VirtualTimeBasics, "emulation/virtual-time-basics.js")
 HEADLESS_PROTOCOL_TEST(VirtualTimeInterrupt,
                        "emulation/virtual-time-interrupt.js")
 
-// Flaky on Linux & Mac. TODO(crbug.com/930717): Re-enable.
-#if defined(OS_LINUX) || defined(OS_MACOSX)
+// Flaky on Linux, Mac & Win. TODO(crbug.com/930717): Re-enable.
+#if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
 #define MAYBE_VirtualTimeCrossProcessNavigation \
   DISABLED_VirtualTimeCrossProcessNavigation
 #else
@@ -244,10 +245,12 @@ HEADLESS_PROTOCOL_TEST(VirtualTimeFetchStream,
                        "emulation/virtual-time-fetch-stream.js")
 HEADLESS_PROTOCOL_TEST(VirtualTimeDialogWhileLoading,
                        "emulation/virtual-time-dialog-while-loading.js")
-
-// Flaky Test crbug.com/859382
-HEADLESS_PROTOCOL_TEST(DISABLED_VirtualTimeHistoryNavigation,
+HEADLESS_PROTOCOL_TEST(VirtualTimeHistoryNavigation,
                        "emulation/virtual-time-history-navigation.js")
+HEADLESS_PROTOCOL_TEST(VirtualTimeHistoryNavigationSameDoc,
+                       "emulation/virtual-time-history-navigation-same-doc.js")
+HEADLESS_PROTOCOL_TEST(VirtualTimeFetchKeepalive,
+                       "emulation/virtual-time-fetch-keepalive.js")
 
 // http://crbug.com/633321
 #if defined(OS_ANDROID)
@@ -263,6 +266,9 @@ HEADLESS_PROTOCOL_TEST(MAYBE_VirtualTimeTimerSuspend,
                        "emulation/virtual-time-timer-suspended.js")
 #undef MAYBE_VirtualTimeTimerOrder
 #undef MAYBE_VirtualTimeTimerSuspend
+
+HEADLESS_PROTOCOL_TEST(HeadlessSessionBasicsTest,
+                       "sessions/headless-session-basics.js")
 
 class HeadlessProtocolCompositorBrowserTest
     : public HeadlessProtocolBrowserTest {
@@ -301,7 +307,9 @@ class HeadlessProtocolCompositorBrowserTest
 // chromium/src/headless/lib/browser/protocol/target_handler.cc?
 // rcl=5811aa08e60ba5ac7622f029163213cfbdb682f7&l=32
 // TODO(crbug.com/954398): Suite is timeout-flaky on Windows.
-#if defined(OS_MACOSX) || defined(OS_WIN)
+// TODO(crbug.com/1020046): Suite is flaky on TSan Linux.
+#if defined(OS_MACOSX) || defined(OS_WIN) || \
+    (defined(OS_LINUX) && defined(THREAD_SANITIZER))
 #define HEADLESS_PROTOCOL_COMPOSITOR_TEST(TEST_NAME, SCRIPT_NAME) \
   IN_PROC_BROWSER_TEST_F(HeadlessProtocolCompositorBrowserTest,   \
                          DISABLED_##TEST_NAME) {                  \
@@ -332,6 +340,11 @@ HEADLESS_PROTOCOL_COMPOSITOR_TEST(
 #endif
 HEADLESS_PROTOCOL_COMPOSITOR_TEST(MAYBE_CompositorCssAnimation,
                                   "emulation/compositor-css-animation-test.js")
+HEADLESS_PROTOCOL_COMPOSITOR_TEST(
+    VirtualTimeCancelClientRedirect,
+    "emulation/virtual-time-cancel-client-redirect.js")
+HEADLESS_PROTOCOL_COMPOSITOR_TEST(DoubleBeginFrame,
+                                  "emulation/double-begin-frame.js")
 HEADLESS_PROTOCOL_COMPOSITOR_TEST(VirtualTimeControllerTest,
                                   "helpers/virtual-time-controller-test.js")
 HEADLESS_PROTOCOL_COMPOSITOR_TEST(RendererHelloWorld,
@@ -413,5 +426,8 @@ HEADLESS_PROTOCOL_COMPOSITOR_TEST(RendererFrameLoadEvents,
 HEADLESS_PROTOCOL_COMPOSITOR_TEST(RendererCssUrlFilter,
                                   "sanity/renderer-css-url-filter.js")
 HEADLESS_PROTOCOL_COMPOSITOR_TEST(RendererCanvas, "sanity/renderer-canvas.js")
+
+HEADLESS_PROTOCOL_COMPOSITOR_TEST(RendererOpacityAnimation,
+                                  "sanity/renderer-opacity-animation.js")
 
 }  // namespace headless

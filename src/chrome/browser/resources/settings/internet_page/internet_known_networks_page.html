@@ -1,6 +1,6 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
-<link rel="import" href="chrome://resources/cr_elements/chromeos/network/cr_network_listener_behavior.html">
+<link rel="import" href="chrome://resources/cr_components/chromeos/network/network_listener_behavior.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_action_menu/cr_action_menu.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_link_row/cr_link_row.html">
@@ -35,7 +35,8 @@
           filter="networkIsPreferred_">
         <div class="list-item">
           <cr-link-row embedded label="[[getNetworkDisplayName_(item)]]"
-              on-click="fireShowDetails_">
+              on-click="fireShowDetails_"
+              role-description="$i18n{subpageArrowRoleDescription}">
             <template is="dom-if" if="[[isPolicySource(item.source))]]">
               <cr-policy-indicator on-click="doNothing_"
                   indicator-type="[[getIndicatorTypeForSource(item.source)]]">
@@ -59,7 +60,8 @@
           filter="networkIsNotPreferred_">
         <div class="list-item">
           <cr-link-row embedded label="[[getNetworkDisplayName_(item)]]"
-              on-click="fireShowDetails_">
+              on-click="fireShowDetails_"
+              role-description="$i18n{subpageArrowRoleDescription}">
             <template is="dom-if" if="[[isPolicySource(item.source))]]">
               <cr-policy-indicator on-click="doNothing_"
                   indicator-type="[[getIndicatorTypeForSource(item.source)]]">
@@ -74,7 +76,7 @@
       </template>
     </div>
 
-    <cr-action-menu id="dotsMenu">
+    <cr-action-menu id="dotsMenu" role-description="$i18n{menu}">
       <button class="dropdown-item" hidden="[[!showAddPreferred_]]"
           on-click="onAddPreferredTap_">
         $i18n{knownNetworksMenuAddPreferred}

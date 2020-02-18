@@ -29,7 +29,6 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
 #include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/probe/async_task_id.h"
 #include "third_party/blink/renderer/platform/bindings/name_client.h"
@@ -41,7 +40,7 @@ namespace blink {
 class ExecutionContext;
 class ScheduledAction;
 
-class CORE_EXPORT DOMTimer final : public GarbageCollectedFinalized<DOMTimer>,
+class CORE_EXPORT DOMTimer final : public GarbageCollected<DOMTimer>,
                                    public ContextLifecycleObserver,
                                    public TimerBase,
                                    public NameClient {
@@ -79,11 +78,7 @@ class CORE_EXPORT DOMTimer final : public GarbageCollectedFinalized<DOMTimer>,
   void Stop() override;
 
  private:
-  friend class DOMTimerCoordinator;  // For Create().
-
   void Fired() override;
-
-  scoped_refptr<base::SingleThreadTaskRunner> TimerTaskRunner() const override;
 
   int timeout_id_;
   int nesting_level_;

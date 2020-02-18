@@ -17,7 +17,8 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/arc/arc_session_manager.h"
+#include "chrome/browser/chromeos/arc/enterprise/cert_store/arc_smart_card_manager_bridge.h"
+#include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/policy/developer_tools_policy_handler.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
@@ -34,9 +35,7 @@
 #include "components/policy/policy_constants.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user.h"
-#include "content/public/browser/system_connector.h"
 #include "crypto/sha2.h"
-#include "services/data_decoder/public/cpp/safe_json_parser.h"
 
 namespace arc {
 
@@ -44,6 +43,7 @@ namespace {
 
 constexpr char kArcCaCerts[] = "caCerts";
 constexpr char kPolicyCompliantJson[] = "{ \"policyCompliant\": true }";
+constexpr char kArcRequiredKeyPairs[] = "requiredKeyPairs";
 
 // invert_bool_value: If the Chrome policy and the ARC policy with boolean value
 // have opposite semantics, set this to true so the bool is inverted before
@@ -214,10 +214,24 @@ void AddOncCaCertsToPolicies(const policy::PolicyMap& policy_map,
   filtered_policies->Set(kArcCaCerts, std::move(ca_certs));
 }
 
-std::string GetFilteredJSONPolicies(const policy::PolicyMap& policy_map,
-                                    const PrefService* profile_prefs,
-                                    const std::string& guid,
-                                    bool is_affiliated) {
+void AddRequiredKeyPairs(const ArcSmartCardManagerBridge* smart_card_manager,
+                         base::DictionaryValue* filtered_policies) {
+  if (!smart_card_manager)
+    return;
+  std::unique_ptr<base::ListValue> cert_names(
+      std::make_unique<base::ListValue>());
+  for (const auto& name : smart_card_manager->get_required_cert_names()) {
+    cert_names->Append(name);
+  }
+  filtered_policies->Set(kArcRequiredKeyPairs, std::move(cert_names));
+}
+
+std::string GetFilteredJSONPolicies(
+    const policy::PolicyMap& policy_map,
+    const PrefService* profile_prefs,
+    const std::string& guid,
+    bool is_affiliated,
+    const ArcSmartCardManagerBridge* smart_card_manager) {
   base::DictionaryValue filtered_policies;
   // Parse ArcPolicy as JSON string before adding other policies to the
   // dictionary.
@@ -275,18 +289,12 @@ std::string GetFilteredJSONPolicies(const policy::PolicyMap& policy_map,
 
   filtered_policies.SetString("guid", guid);
 
+  AddRequiredKeyPairs(smart_card_manager, &filtered_policies);
+
   std::string policy_json;
   JSONStringValueSerializer serializer(&policy_json);
   serializer.Serialize(filtered_policies);
   return policy_json;
-}
-
-void OnReportComplianceParseFailure(
-    base::OnceCallback<void(const std::string&)> callback,
-    const std::string& error) {
-  // TODO(poromov@): Report to histogram.
-  DLOG(ERROR) << "Can't parse policy compliance report";
-  std::move(callback).Run(kPolicyCompliantJson);
 }
 
 void UpdateFirstComplianceSinceSignInTiming(
@@ -352,6 +360,11 @@ ArcPolicyBridge* ArcPolicyBridge::GetForBrowserContext(
 ArcPolicyBridge* ArcPolicyBridge::GetForBrowserContextForTesting(
     content::BrowserContext* context) {
   return ArcPolicyBridgeFactory::GetForBrowserContextForTesting(context);
+}
+
+// static
+BrowserContextKeyedServiceFactory* ArcPolicyBridge::GetFactory() {
+  return ArcPolicyBridgeFactory::GetInstance();
 }
 
 base::WeakPtr<ArcPolicyBridge> ArcPolicyBridge::GetWeakPtr() {
@@ -432,11 +445,10 @@ void ArcPolicyBridge::ReportCompliance(const std::string& request,
   // the callee interface.
   auto repeating_callback =
       base::AdaptCallbackForRepeating(std::move(callback));
-  data_decoder::SafeJsonParser::Parse(
-      content::GetSystemConnector(), request,
-      base::BindOnce(&ArcPolicyBridge::OnReportComplianceParseSuccess,
-                     weak_ptr_factory_.GetWeakPtr(), repeating_callback),
-      base::BindOnce(&OnReportComplianceParseFailure, repeating_callback));
+  data_decoder::DataDecoder::ParseJsonIsolated(
+      request,
+      base::BindOnce(&ArcPolicyBridge::OnReportComplianceParse,
+                     weak_ptr_factory_.GetWeakPtr(), repeating_callback));
 }
 
 void ArcPolicyBridge::ReportCloudDpsRequested(
@@ -542,24 +554,34 @@ std::string ArcPolicyBridge::GetCurrentJSONPolicies() const {
   const Profile* const profile = Profile::FromBrowserContext(context_);
   const user_manager::User* const user =
       chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
+  const ArcSmartCardManagerBridge* smart_card_manager =
+      ArcSmartCardManagerBridge::GetForBrowserContext(context_);
 
   return GetFilteredJSONPolicies(policy_map, profile->GetPrefs(),
-                                 instance_guid_, user->IsAffiliated());
+                                 instance_guid_, user->IsAffiliated(),
+                                 smart_card_manager);
 }
 
-void ArcPolicyBridge::OnReportComplianceParseSuccess(
+void ArcPolicyBridge::OnReportComplianceParse(
     base::OnceCallback<void(const std::string&)> callback,
-    base::Value parsed_json) {
+    data_decoder::DataDecoder::ValueOrError result) {
+  if (!result.value) {
+    // TODO(poromov@): Report to histogram.
+    DLOG(ERROR) << "Can't parse policy compliance report";
+    std::move(callback).Run(kPolicyCompliantJson);
+    return;
+  }
+
   // Always returns "compliant".
   std::move(callback).Run(kPolicyCompliantJson);
   Profile::FromBrowserContext(context_)->GetPrefs()->SetBoolean(
       prefs::kArcPolicyComplianceReported, true);
 
   const base::DictionaryValue* dict = nullptr;
-  if (parsed_json.GetAsDictionary(&dict)) {
+  if (result.value->GetAsDictionary(&dict)) {
     UpdateComplianceReportMetrics(dict);
     for (Observer& observer : observers_) {
-      observer.OnComplianceReportReceived(&parsed_json);
+      observer.OnComplianceReportReceived(&result.value.value());
     }
   }
 }

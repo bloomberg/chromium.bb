@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include "tools/trace_to_text/pprof_builder.h"
+#include "perfetto/profiling/pprof_builder.h"
 
 #include <cxxabi.h>
 #include <inttypes.h>
@@ -25,23 +25,36 @@
 #include <utility>
 #include <vector>
 
-#include "tools/trace_to_text/profile_visitor.h"
-#include "tools/trace_to_text/symbolizer.h"
-#include "tools/trace_to_text/trace_symbol_table.h"
 #include "tools/trace_to_text/utils.h"
 
 #include "perfetto/base/logging.h"
+#include "perfetto/base/time.h"
+#include "perfetto/ext/base/string_utils.h"
+#include "perfetto/ext/base/utils.h"
+#include "perfetto/profiling/symbolizer.h"
+#include "perfetto/protozero/packed_repeated_fields.h"
+#include "perfetto/protozero/scattered_heap_buffer.h"
+#include "perfetto/trace_processor/trace_processor.h"
 
-#include "protos/perfetto/trace/profiling/profile_common.pb.h"
-#include "protos/perfetto/trace/profiling/profile_packet.pb.h"
-#include "protos/perfetto/trace/trace.pb.h"
-#include "protos/perfetto/trace/trace_packet.pb.h"
-#include "protos/third_party/pprof/profile.pb.h"
+#include "protos/perfetto/trace/trace.pbzero.h"
+#include "protos/perfetto/trace/trace_packet.pbzero.h"
+#include "protos/third_party/pprof/profile.pbzero.h"
 
 namespace perfetto {
 namespace trace_to_text {
 
 namespace {
+
+using ::protozero::proto_utils::kMessageLengthFieldSize;
+using ::protozero::proto_utils::MakeTagLengthDelimited;
+using ::protozero::proto_utils::WriteVarInt;
+
+struct View {
+  const char* type;
+  const char* unit;
+  const char* aggregator;
+  const char* filter;
+};
 
 void MaybeDemangle(std::string* name) {
   int ignored;
@@ -52,306 +65,533 @@ void MaybeDemangle(std::string* name) {
   }
 }
 
-using ::perfetto::protos::Callstack;
-using ::perfetto::protos::Frame;
-using ::perfetto::protos::InternedString;
-using ::perfetto::protos::Mapping;
-using ::perfetto::protos::ProfilePacket;
-using ::perfetto::protos::InternedData;
+const View kSpaceView{"space", "bytes", "SUM(size)", nullptr};
+const View kAllocSpaceView{"alloc_space", "bytes", "SUM(size)", "size > 0"};
+const View kAllocObjectsView{"alloc_objects", "count", "sum(count)",
+                             "size > 0"};
+const View kObjectsView{"objects", "count", "SUM(count)", nullptr};
 
-using GLine = ::perfetto::third_party::perftools::profiles::Line;
-using GMapping = ::perfetto::third_party::perftools::profiles::Mapping;
-using GLocation = ::perfetto::third_party::perftools::profiles::Location;
-using GProfile = ::perfetto::third_party::perftools::profiles::Profile;
-using GValueType = ::perfetto::third_party::perftools::profiles::ValueType;
-using GFunction = ::perfetto::third_party::perftools::profiles::Function;
-using GSample = ::perfetto::third_party::perftools::profiles::Sample;
+const View kViews[] = {kAllocObjectsView, kObjectsView, kAllocSpaceView,
+                       kSpaceView};
 
-std::string ToHex(const std::string& build_id) {
-  std::string hex_build_id(2 * build_id.size() + 1, ' ');
-  for (size_t i = 0; i < build_id.size(); ++i)
-    snprintf(&(hex_build_id[2 * i]), 3, "%02hhx", build_id[i]);
-  // Remove the trailing nullbyte.
-  hex_build_id.resize(2 * build_id.size());
-  return hex_build_id;
+using Iterator = trace_processor::TraceProcessor::Iterator;
+
+constexpr const char* kQueryProfiles =
+    "select distinct hpa.upid, hpa.ts, p.pid from heap_profile_allocation hpa, "
+    "process p where p.upid = hpa.upid;";
+
+int64_t GetStatsInt(trace_processor::TraceProcessor* tp,
+                    const std::string& name,
+                    uint64_t pid) {
+  auto it = tp->ExecuteQuery("SELECT value from stats where name = '" + name +
+                             "' AND idx = " + std::to_string(pid));
+  if (!it.Next()) {
+    if (!it.Status().ok()) {
+      PERFETTO_DFATAL_OR_ELOG("Invalid iterator: %s",
+                              it.Status().message().c_str());
+      return -1;
+    }
+    // TODO(fmayer): Remove this case once we always get an entry in the stats
+    // table.
+    return 0;
+  }
+  return it.Get(0).long_value;
 }
 
-enum Strings : int64_t {
-  kEmpty = 0,
-  kObjects,
-  kAllocObjects,
-  kCount,
-  kSpace,
-  kAllocSpace,
-  kBytes,
-  kIdleSpace,
-  kMaxSpace,
+bool VerifyPIDStats(trace_processor::TraceProcessor* tp, uint64_t pid) {
+  bool success = true;
+  int64_t stat = GetStatsInt(tp, "heapprofd_buffer_corrupted", pid);
+  if (stat == -1) {
+    PERFETTO_DFATAL_OR_ELOG("Failed to get heapprofd_buffer_corrupted stat");
+  } else if (stat > 0) {
+    success = false;
+    PERFETTO_ELOG("WARNING: The profile for %" PRIu64
+                  " ended early due to a buffer corruption."
+                  " THIS IS ALWAYS A BUG IN HEAPPROFD OR"
+                  " CLIENT MEMORY CORRUPTION.",
+                  pid);
+  }
+  stat = GetStatsInt(tp, "heapprofd_buffer_overran", pid);
+  if (stat == -1) {
+    PERFETTO_DFATAL_OR_ELOG("Failed to get heapprofd_buffer_overran stat");
+  } else if (stat > 0) {
+    success = false;
+    PERFETTO_ELOG("WARNING: The profile for %" PRIu64
+                  " ended early due to a buffer overrun.",
+                  pid);
+  }
+
+  stat = GetStatsInt(tp, "heapprofd_rejected_concurrent", pid);
+  if (stat == -1) {
+    PERFETTO_DFATAL_OR_ELOG("Failed to get heapprofd_rejected_concurrent stat");
+  } else if (stat > 0) {
+    success = false;
+    PERFETTO_ELOG("WARNING: The profile for %" PRIu64
+                  " was rejected due to a concurrent profile.",
+                  pid);
+  }
+  return success;
+}
+
+struct Callsite {
+  int64_t id;
+  int64_t frame_id;
 };
 
-class GProfileWriter : public ProfileVisitor {
+// Return map from callsite_id to list of frame_ids that make up the callstack.
+std::vector<std::vector<int64_t>> GetCallsiteToFrames(
+    trace_processor::TraceProcessor* tp) {
+  Iterator count_it =
+      tp->ExecuteQuery("select count(*) from stack_profile_callsite;");
+  if (!count_it.Next()) {
+    PERFETTO_DFATAL_OR_ELOG("Failed to get number of callsites: %s",
+                            count_it.Status().message().c_str());
+    return {};
+  }
+  int64_t count = count_it.Get(0).long_value;
+
+  Iterator it = tp->ExecuteQuery(
+      "select id, parent_id, frame_id from stack_profile_callsite order by "
+      "depth;");
+  std::vector<std::vector<int64_t>> result(static_cast<size_t>(count));
+  while (it.Next()) {
+    int64_t id = it.Get(0).long_value;
+    int64_t parent_id = it.Get(1).long_value;
+    int64_t frame_id = it.Get(2).long_value;
+    std::vector<int64_t>& path = result[static_cast<size_t>(id)];
+    path.push_back(frame_id);
+    if (parent_id != -1) {
+      const std::vector<int64_t>& parent_path =
+          result[static_cast<size_t>(parent_id)];
+      path.insert(path.end(), parent_path.begin(), parent_path.end());
+    }
+  }
+
+  if (!it.Status().ok()) {
+    PERFETTO_DFATAL_OR_ELOG("Invalid iterator: %s",
+                            it.Status().message().c_str());
+    return {};
+  }
+  return result;
+}
+
+struct Line {
+  int64_t symbol_id;
+  uint32_t line_number;
+};
+
+std::map<int64_t, std::vector<Line>> GetSymbolSetIdToLines(
+    trace_processor::TraceProcessor* tp) {
+  std::map<int64_t, std::vector<Line>> result;
+  Iterator it = tp->ExecuteQuery(
+      "SELECT symbol_set_id, id, line_number FROM stack_profile_symbol;");
+  while (it.Next()) {
+    int64_t symbol_set_id = it.Get(0).long_value;
+    int64_t id = it.Get(1).long_value;
+    int64_t line_number = it.Get(2).long_value;
+    result[symbol_set_id].emplace_back(
+        Line{id, static_cast<uint32_t>(line_number)});
+  }
+
+  if (!it.Status().ok()) {
+    PERFETTO_DFATAL_OR_ELOG("Invalid iterator: %s",
+                            it.Status().message().c_str());
+    return {};
+  }
+  return result;
+}
+
+class GProfileBuilder {
  public:
-  GProfileWriter(TraceSymbolTable* symbol_table) : symbol_table_(symbol_table) {
-    GValueType* value_type = profile_.add_sample_type();
-    value_type->set_type(kMaxSpace);
-    value_type->set_unit(kBytes);
-
-    value_type = profile_.add_sample_type();
-    value_type->set_type(kObjects);
-    value_type->set_unit(kCount);
-
-    value_type = profile_.add_sample_type();
-    value_type->set_type(kAllocObjects);
-    value_type->set_unit(kCount);
-
-    value_type = profile_.add_sample_type();
-    value_type->set_type(kIdleSpace);
-    value_type->set_unit(kBytes);
-
-    value_type = profile_.add_sample_type();
-    value_type->set_type(kAllocSpace);
-    value_type->set_unit(kBytes);
-
-    // The last value is the default one selected.
-    value_type = profile_.add_sample_type();
-    value_type->set_type(kSpace);
-    value_type->set_unit(kBytes);
+  GProfileBuilder(
+      const std::vector<std::vector<int64_t>>& callsite_to_frames,
+      const std::map<int64_t, std::vector<Line>>& symbol_set_id_to_lines,
+      int64_t max_symbol_id)
+      : callsite_to_frames_(callsite_to_frames),
+        symbol_set_id_to_lines_(symbol_set_id_to_lines),
+        max_symbol_id_(max_symbol_id) {
+    // The pprof format expects the first entry in the string table to be the
+    // empty string.
+    Intern("");
   }
 
-  int64_t InternInGProfile(const std::string& str) {
-    decltype(string_table_)::iterator it;
-    std::tie(it, std::ignore) =
-        string_table_.emplace(str, string_table_.size());
-    return static_cast<int64_t>(it->second);
-  }
-
-  bool AddInternedString(const InternedString& interned_string) override {
-    string_lookup_.emplace(interned_string.iid(), interned_string.str());
-    return true;
-  }
-
-  bool AddCallstack(const Callstack& callstack) override {
-    std::vector<uint64_t> frame_ids(
-        static_cast<size_t>(callstack.frame_ids().size()));
-    std::reverse_copy(callstack.frame_ids().cbegin(),
-                      callstack.frame_ids().cend(), frame_ids.begin());
-    callstack_lookup_.emplace(callstack.iid(), std::move(frame_ids));
-    return true;
-  }
-
-  bool AddMapping(const Mapping& mapping) override {
-    mapping_base_.emplace(mapping.iid(), mapping.start() - mapping.load_bias());
-    GMapping* gmapping = profile_.add_mapping();
-    gmapping->set_id(mapping.iid());
-    gmapping->set_memory_start(mapping.start());
-    gmapping->set_memory_limit(mapping.end());
-    gmapping->set_file_offset(mapping.exact_offset());
-    std::string filename;
-    for (uint64_t str_id : mapping.path_string_ids()) {
-      auto it = string_lookup_.find(str_id);
-      if (it == string_lookup_.end()) {
-        PERFETTO_ELOG("Mapping %" PRIu64
-                      " referring to invalid string_id %" PRIu64 ".",
-                      static_cast<uint64_t>(mapping.iid()), str_id);
-        return false;
-      }
-
-      filename += "/" + it->second;
+  std::vector<Iterator> BuildViewIterators(trace_processor::TraceProcessor* tp,
+                                           uint64_t upid,
+                                           uint64_t ts) {
+    std::vector<Iterator> view_its;
+    for (size_t i = 0; i < base::ArraySize(kViews); ++i) {
+      const View& v = kViews[i];
+      std::string query = "SELECT hpa.callsite_id ";
+      query += ", " + std::string(v.aggregator) +
+               " FROM heap_profile_allocation hpa ";
+      // TODO(fmayer): Figure out where negative callsite_id comes from.
+      query += "WHERE hpa.callsite_id >= 0 ";
+      query += "AND hpa.upid = " + std::to_string(upid) + " ";
+      query += "AND hpa.ts <= " + std::to_string(ts) + " ";
+      if (v.filter)
+        query += "AND " + std::string(v.filter) + " ";
+      query += "GROUP BY hpa.callsite_id;";
+      view_its.emplace_back(tp->ExecuteQuery(query));
     }
-
-    gmapping->set_filename(InternInGProfile(filename));
-
-    auto str_it = string_lookup_.find(mapping.build_id());
-    if (str_it != string_lookup_.end()) {
-      const std::string& build_id = str_it->second;
-      gmapping->set_build_id(InternInGProfile(ToHex(build_id)));
-    }
-    return true;
+    return view_its;
   }
 
-  bool AddFrame(const Frame& frame) override {
-    auto it = mapping_base_.find(frame.mapping_id());
-    if (it == mapping_base_.end()) {
-      PERFETTO_ELOG("Frame referring to invalid mapping ID %" PRIu64,
-                    static_cast<uint64_t>(frame.mapping_id()));
-      return false;
-    }
-    uint64_t mapping_base = it->second;
-
-    GLocation* glocation = profile_.add_location();
-    glocation->set_id(frame.iid());
-    glocation->set_mapping_id(frame.mapping_id());
-    glocation->set_address(frame.rel_pc() + mapping_base);
-
-    const std::vector<SymbolizedFrame>* symbolized_frames =
-        symbol_table_->Get(frame.iid());
-    std::vector<SymbolizedFrame> frames;
-    if (symbolized_frames == nullptr) {
-      // Write out whatever was in the profile initially.
-      auto str_it = string_lookup_.find(frame.function_name_id());
-      if (str_it == string_lookup_.end()) {
-        PERFETTO_ELOG("Function referring to invalid string id %" PRIu64,
-                      static_cast<uint64_t>(frame.function_name_id()));
-        return false;
-      }
-      frames.emplace_back(SymbolizedFrame{str_it->second, "", 0});
-    } else {
-      frames = *symbolized_frames;
-    }
-
-    for (const SymbolizedFrame& sym_frame : frames) {
-      GLine* gline = glocation->add_line();
-      uint64_t function_id = ++max_function_id_;
-      gline->set_function_id(function_id);
-      gline->set_line(sym_frame.line);
-      std::string function_name = sym_frame.function_name;
-      // This assumes both the device that captured the trace and the host
-      // machine use the same mangling scheme. This is a reasonable
-      // assumption as the Itanium ABI is the de-facto standard for mangling.
-      MaybeDemangle(&function_name);
-      GFunction* gfunction = profile_.add_function();
-      gfunction->set_id(function_id);
-      gfunction->set_name(InternInGProfile(function_name));
-      gfunction->set_filename(InternInGProfile(sym_frame.file_name));
-    }
-    return true;
-  }
-
-  bool AddProfiledFrameSymbols(const protos::ProfiledFrameSymbols&) override {
-    return true;
-  }
-
-  bool Finalize() {
-    // We keep the interning table as string -> uint64_t for fast and easy
-    // lookup. When dumping, we need to turn it into a uint64_t -> string
-    // table so we get it sorted by key order.
-    std::map<uint64_t, std::string> inverted_string_table;
-    for (const auto& p : string_table_)
-      inverted_string_table[p.second] = p.first;
-    for (const auto& p : inverted_string_table)
-      profile_.add_string_table(p.second);
-    return true;
-  }
-
-  bool WriteProfileForProcess(
-      uint64_t pid,
-      const std::vector<const ProfilePacket::ProcessHeapSamples*>& proc_samples,
-      std::string* serialized) {
-    GProfile cur_profile = profile_;
-    for (const ProfilePacket::ProcessHeapSamples* samples : proc_samples) {
-      if (samples->rejected_concurrent()) {
-        PERFETTO_ELOG("WARNING: The profile for %" PRIu64
-                      " was rejected due to a concurrent profile.",
-                      pid);
-      }
-      if (samples->buffer_overran()) {
-        PERFETTO_ELOG("WARNING: The profile for %" PRIu64
-                      " ended early due to a buffer overrun.",
-                      pid);
-      }
-      if (samples->buffer_corrupted()) {
-        PERFETTO_ELOG("WARNING: The profile for %" PRIu64
-                      " ended early due to a buffer corruption."
-                      " THIS IS ALWAYS A BUG IN HEAPPROFD OR"
-                      " CLIENT MEMORY CORRUPTION.",
-                      pid);
-      }
-
-      for (const ProfilePacket::HeapSample& sample : samples->samples()) {
-        GSample* gsample = cur_profile.add_sample();
-        auto it = callstack_lookup_.find(sample.callstack_id());
-        if (it == callstack_lookup_.end()) {
-          PERFETTO_ELOG("Callstack referring to invalid callstack id %" PRIu64,
-                        static_cast<uint64_t>(sample.callstack_id()));
+  bool WriteAllocations(std::vector<Iterator>* view_its,
+                        std::set<int64_t>* seen_frames) {
+    for (;;) {
+      bool all_next = true;
+      bool any_next = false;
+      for (size_t i = 0; i < base::ArraySize(kViews); ++i) {
+        Iterator& it = (*view_its)[i];
+        bool next = it.Next();
+        if (!it.Status().ok()) {
+          PERFETTO_DFATAL_OR_ELOG("Invalid view iterator: %s",
+                                  it.Status().message().c_str());
           return false;
         }
-        for (uint64_t frame_id : it->second)
-          gsample->add_location_id(frame_id);
-        gsample->add_value(static_cast<int64_t>(sample.self_max()));
-        gsample->add_value(
-            static_cast<int64_t>(sample.alloc_count() - sample.free_count()));
-        gsample->add_value(static_cast<int64_t>(sample.alloc_count()));
-        gsample->add_value(static_cast<int64_t>(sample.self_idle()));
-        gsample->add_value(static_cast<int64_t>(sample.self_allocated()));
-        gsample->add_value(static_cast<int64_t>(sample.self_allocated() -
-                                                sample.self_freed()));
+        all_next = all_next && next;
+        any_next = any_next || next;
+      }
+
+      if (!all_next) {
+        PERFETTO_DCHECK(!any_next);
+        break;
+      }
+
+      auto* gsample = result_->add_sample();
+      protozero::PackedVarInt sample_values;
+      for (size_t i = 0; i < base::ArraySize(kViews); ++i) {
+        int64_t callstack_id = (*view_its)[i].Get(0).long_value;
+        if (i == 0) {
+          auto frames = FramesForCallstack(callstack_id);
+          if (frames.empty())
+            return false;
+          protozero::PackedVarInt location_ids;
+          for (int64_t frame : frames)
+            location_ids.Append(ToPprofId(frame));
+          gsample->set_location_id(location_ids);
+          seen_frames->insert(frames.cbegin(), frames.cend());
+        } else {
+          if (callstack_id != (*view_its)[i].Get(0).long_value) {
+            PERFETTO_DFATAL_OR_ELOG("Wrong callstack.");
+            return false;
+          }
+        }
+        sample_values.Append((*view_its)[i].Get(1).long_value);
+      }
+      gsample->set_value(sample_values);
+    }
+    return true;
+  }
+
+  bool WriteMappings(trace_processor::TraceProcessor* tp,
+                     const std::set<int64_t> seen_mappings) {
+    Iterator mapping_it = tp->ExecuteQuery(
+        "SELECT id, exact_offset, start, end, name "
+        "FROM stack_profile_mapping;");
+    size_t mappings_no = 0;
+    while (mapping_it.Next()) {
+      int64_t id = mapping_it.Get(0).long_value;
+      if (seen_mappings.find(id) == seen_mappings.end())
+        continue;
+      ++mappings_no;
+      auto interned_filename = Intern(mapping_it.Get(4).string_value);
+      auto* gmapping = result_->add_mapping();
+      gmapping->set_id(ToPprofId(id));
+      // Do not set the build_id here to avoid downstream services
+      // trying to symbolize (e.g. b/141735056)
+      gmapping->set_file_offset(
+          static_cast<uint64_t>(mapping_it.Get(1).long_value));
+      gmapping->set_memory_start(
+          static_cast<uint64_t>(mapping_it.Get(2).long_value));
+      gmapping->set_memory_limit(
+          static_cast<uint64_t>(mapping_it.Get(3).long_value));
+      gmapping->set_filename(interned_filename);
+    }
+    if (!mapping_it.Status().ok()) {
+      PERFETTO_DFATAL_OR_ELOG("Invalid mapping iterator: %s",
+                              mapping_it.Status().message().c_str());
+      return false;
+    }
+    if (mappings_no != seen_mappings.size()) {
+      PERFETTO_DFATAL_OR_ELOG("Missing mappings.");
+      return false;
+    }
+    return true;
+  }
+
+  bool WriteSymbols(trace_processor::TraceProcessor* tp,
+                    const std::set<int64_t>& seen_symbol_ids) {
+    Iterator symbol_it = tp->ExecuteQuery(
+        "SELECT id, name, source_file FROM stack_profile_symbol");
+    size_t symbols_no = 0;
+    while (symbol_it.Next()) {
+      int64_t id = symbol_it.Get(0).long_value;
+      if (seen_symbol_ids.find(id) == seen_symbol_ids.end())
+        continue;
+      ++symbols_no;
+      const std::string& name = symbol_it.Get(1).string_value;
+      std::string demangled_name = name;
+      MaybeDemangle(&demangled_name);
+
+      auto interned_demangled_name = Intern(demangled_name);
+      auto interned_system_name = Intern(name);
+      auto interned_filename = Intern(symbol_it.Get(2).string_value);
+      auto* gfunction = result_->add_function();
+      gfunction->set_id(ToPprofId(id));
+      gfunction->set_name(interned_demangled_name);
+      gfunction->set_system_name(interned_system_name);
+      gfunction->set_filename(interned_filename);
+    }
+
+    if (!symbol_it.Status().ok()) {
+      PERFETTO_DFATAL_OR_ELOG("Invalid iterator: %s",
+                              symbol_it.Status().message().c_str());
+      return false;
+    }
+
+    if (symbols_no != seen_symbol_ids.size()) {
+      PERFETTO_DFATAL_OR_ELOG("Missing symbols.");
+      return false;
+    }
+    return true;
+  }
+
+  bool WriteFrames(trace_processor::TraceProcessor* tp,
+                   const std::set<int64_t>& seen_frames,
+                   std::set<int64_t>* seen_mappings,
+                   std::set<int64_t>* seen_symbol_ids) {
+    Iterator frame_it = tp->ExecuteQuery(
+        "SELECT spf.id, spf.name, spf.mapping, spf.rel_pc, spf.symbol_set_id "
+        "FROM stack_profile_frame spf;");
+    size_t frames_no = 0;
+    while (frame_it.Next()) {
+      int64_t frame_id = frame_it.Get(0).long_value;
+      if (seen_frames.find(frame_id) == seen_frames.end())
+        continue;
+      frames_no++;
+      std::string frame_name = frame_it.Get(1).string_value;
+      int64_t mapping_id = frame_it.Get(2).long_value;
+      int64_t rel_pc = frame_it.Get(3).long_value;
+      int64_t symbol_set_id = frame_it.Get(4).long_value;
+
+      seen_mappings->emplace(mapping_id);
+      auto* glocation = result_->add_location();
+      glocation->set_id(ToPprofId(frame_id));
+      glocation->set_mapping_id(ToPprofId(mapping_id));
+      // TODO(fmayer): Convert to abspc.
+      // relpc + (mapping.start - (mapping.exact_offset -
+      //                           mapping.start_offset)).
+      glocation->set_address(static_cast<uint64_t>(rel_pc));
+      if (symbol_set_id) {
+        for (const Line& line : LineForSymbolSetId(symbol_set_id)) {
+          seen_symbol_ids->emplace(line.symbol_id);
+          auto* gline = glocation->add_line();
+          gline->set_line(line.line_number);
+          gline->set_function_id(ToPprofId(line.symbol_id));
+        }
+      } else {
+        int64_t synthesized_symbol_id = ++max_symbol_id_;
+        std::string demangled_name = frame_name;
+        MaybeDemangle(&demangled_name);
+
+        auto* gline = glocation->add_line();
+        gline->set_line(0);
+        gline->set_function_id(ToPprofId(synthesized_symbol_id));
+
+        auto interned_demangled_name = Intern(demangled_name);
+        auto interned_system_name = Intern(frame_name);
+        auto* gfunction = result_->add_function();
+        gfunction->set_id(ToPprofId(synthesized_symbol_id));
+        gfunction->set_name(interned_demangled_name);
+        gfunction->set_system_name(interned_system_name);
       }
     }
-    *serialized = cur_profile.SerializeAsString();
+
+    if (!frame_it.Status().ok()) {
+      PERFETTO_DFATAL_OR_ELOG("Invalid iterator: %s",
+                              frame_it.Status().message().c_str());
+      return false;
+    }
+    if (frames_no != seen_frames.size()) {
+      PERFETTO_DFATAL_OR_ELOG("Missing frames.");
+      return false;
+    }
     return true;
+  }
+
+  uint64_t ToPprofId(int64_t id) {
+    PERFETTO_DCHECK(id >= 0);
+    return static_cast<uint64_t>(id) + 1;
+  }
+
+  void WriteSampleTypes() {
+    for (size_t i = 0; i < base::ArraySize(kViews); ++i) {
+      Intern(kViews[i].type);
+      Intern(kViews[i].unit);
+    }
+
+    for (size_t i = 0; i < base::ArraySize(kViews); ++i) {
+      auto* sample_type = result_->add_sample_type();
+      sample_type->set_type(Intern(kViews[i].type));
+      sample_type->set_unit(Intern(kViews[i].unit));
+    }
+  }
+
+  std::string GenerateGProfile(trace_processor::TraceProcessor* tp,
+                               uint64_t upid,
+                               uint64_t ts) {
+    std::set<int64_t> seen_frames;
+    std::set<int64_t> seen_mappings;
+    std::set<int64_t> seen_symbol_ids;
+
+    std::vector<Iterator> view_its = BuildViewIterators(tp, upid, ts);
+
+    WriteSampleTypes();
+    if (!WriteAllocations(&view_its, &seen_frames))
+      return {};
+    if (!WriteFrames(tp, seen_frames, &seen_mappings, &seen_symbol_ids))
+      return {};
+    if (!WriteMappings(tp, seen_mappings))
+      return {};
+    if (!WriteSymbols(tp, seen_symbol_ids))
+      return {};
+    return result_.SerializeAsString();
+  }
+
+  const std::vector<int64_t>& FramesForCallstack(int64_t callstack_id) {
+    size_t callsite_idx = static_cast<size_t>(callstack_id);
+    PERFETTO_CHECK(callstack_id >= 0 &&
+                   callsite_idx < callsite_to_frames_.size());
+    return callsite_to_frames_[callsite_idx];
+  }
+
+  const std::vector<Line>& LineForSymbolSetId(int64_t symbol_set_id) {
+    auto it = symbol_set_id_to_lines_.find(symbol_set_id);
+    if (it == symbol_set_id_to_lines_.end())
+      return empty_line_vector_;
+    return it->second;
+  }
+
+  int64_t Intern(const std::string& s) {
+    auto it = string_table_.find(s);
+    if (it == string_table_.end()) {
+      std::tie(it, std::ignore) =
+          string_table_.emplace(s, string_table_.size());
+      result_->add_string_table(s);
+    }
+    return it->second;
   }
 
  private:
-  TraceSymbolTable* symbol_table_;
-  GProfile profile_;
-
-  uint64_t max_function_id_ = 0;
-
-  std::map<uint64_t, uint64_t> mapping_base_;
-  std::set<uint64_t> functions_to_dump_;
-  std::map<uint64_t, const std::vector<uint64_t>> callstack_lookup_;
-  std::map<uint64_t, std::string> string_lookup_;
-  std::map<std::string, uint64_t> string_table_{
-      {"", kEmpty},
-      {"objects", kObjects},
-      {"alloc_objects", kAllocObjects},
-      {"count", kCount},
-      {"space", kSpace},
-      {"alloc_space", kAllocSpace},
-      {"bytes", kBytes},
-      {"idle_space", kIdleSpace},
-      {"max_space", kMaxSpace}};
+  protozero::HeapBuffered<third_party::perftools::profiles::pbzero::Profile>
+      result_;
+  std::map<std::string, int64_t> string_table_;
+  const std::vector<std::vector<int64_t>>& callsite_to_frames_;
+  const std::map<int64_t, std::vector<Line>>& symbol_set_id_to_lines_;
+  const std::vector<Line> empty_line_vector_;
+  int64_t max_symbol_id_;
 };
-
-bool DumpProfilePacket(const std::vector<ProfilePacket>& packet_fragments,
-                       const std::vector<InternedData>& interned_data,
-                       std::vector<SerializedProfile>* output,
-                       Symbolizer* symbolizer) {
-  TraceSymbolTable symbol_table(symbolizer);
-  if (!symbol_table.Visit(packet_fragments, interned_data))
-    return false;
-  if (!symbol_table.Finalize())
-    return false;
-
-  GProfileWriter writer(&symbol_table);
-  if (!writer.Visit(packet_fragments, interned_data))
-    return false;
-
-  if (!writer.Finalize())
-    return false;
-
-  std::map<uint64_t, std::vector<const ProfilePacket::ProcessHeapSamples*>>
-      heap_samples;
-  for (const ProfilePacket& packet : packet_fragments) {
-    for (const ProfilePacket::ProcessHeapSamples& samples :
-         packet.process_dumps()) {
-      heap_samples[samples.pid()].emplace_back(&samples);
-    }
-  }
-  for (const auto& p : heap_samples) {
-    std::string serialized;
-    if (!writer.WriteProfileForProcess(p.first, p.second, &serialized))
-      return false;
-    output->emplace_back(SerializedProfile{p.first, std::move(serialized)});
-  }
-  return true;
-}
 
 }  // namespace
 
 bool TraceToPprof(std::istream* input,
                   std::vector<SerializedProfile>* output,
-                  Symbolizer* symbolizer) {
-  return VisitCompletePacket(
-      input, [output, symbolizer](
-                 uint32_t, const std::vector<ProfilePacket>& packet_fragments,
-                 const std::vector<InternedData>& interned_data) {
-        return DumpProfilePacket(packet_fragments, interned_data, output,
-                                 symbolizer);
-      });
+                  Symbolizer* symbolizer,
+                  uint64_t pid,
+                  const std::vector<uint64_t>& timestamps) {
+  trace_processor::Config config;
+  std::unique_ptr<trace_processor::TraceProcessor> tp =
+      trace_processor::TraceProcessor::CreateInstance(config);
+
+  if (!ReadTrace(tp.get(), input))
+    return false;
+
+  tp->NotifyEndOfFile();
+  return TraceToPprof(tp.get(), output, symbolizer, pid, timestamps);
 }
 
-bool TraceToPprof(std::istream* input, std::vector<SerializedProfile>* output) {
-  return TraceToPprof(input, output, nullptr);
+bool TraceToPprof(trace_processor::TraceProcessor* tp,
+                  std::vector<SerializedProfile>* output,
+                  Symbolizer* symbolizer,
+                  uint64_t pid,
+                  const std::vector<uint64_t>& timestamps) {
+  if (symbolizer) {
+    SymbolizeDatabase(tp, symbolizer, [&tp](const std::string& packet_proto) {
+      std::unique_ptr<uint8_t[]> buf(new uint8_t[11 + packet_proto.size()]);
+      uint8_t* wptr = &buf[0];
+      *(wptr++) =
+          MakeTagLengthDelimited(protos::pbzero::Trace::kPacketFieldNumber);
+      wptr = WriteVarInt(packet_proto.size(), wptr);
+      memcpy(wptr, packet_proto.data(), packet_proto.size());
+      wptr += packet_proto.size();
+      size_t buf_size = static_cast<size_t>(wptr - &buf[0]);
+      auto status = tp->Parse(std::move(buf), buf_size);
+      if (!status.ok()) {
+        PERFETTO_DFATAL_OR_ELOG("Failed to parse: %s",
+                                status.message().c_str());
+        return;
+      }
+    });
+  }
+
+  tp->NotifyEndOfFile();
+  auto max_symbol_id_it =
+      tp->ExecuteQuery("SELECT MAX(id) from stack_profile_symbol");
+  if (!max_symbol_id_it.Next()) {
+    PERFETTO_DFATAL_OR_ELOG("Failed to get max symbol set id: %s",
+                            max_symbol_id_it.Status().message().c_str());
+    return false;
+  }
+
+  int64_t max_symbol_id = max_symbol_id_it.Get(0).long_value;
+  const auto callsite_to_frames = GetCallsiteToFrames(tp);
+  const auto symbol_set_id_to_lines = GetSymbolSetIdToLines(tp);
+
+  bool any_fail = false;
+  Iterator it = tp->ExecuteQuery(kQueryProfiles);
+  while (it.Next()) {
+    GProfileBuilder builder(callsite_to_frames, symbol_set_id_to_lines,
+                            max_symbol_id);
+    uint64_t upid = static_cast<uint64_t>(it.Get(0).long_value);
+    uint64_t ts = static_cast<uint64_t>(it.Get(1).long_value);
+    uint64_t profile_pid = static_cast<uint64_t>(it.Get(2).long_value);
+    if ((pid > 0 && profile_pid != pid) ||
+        (!timestamps.empty() && std::find(timestamps.begin(), timestamps.end(),
+                                          ts) == timestamps.end())) {
+      continue;
+    }
+
+    if (!VerifyPIDStats(tp, pid))
+      any_fail = true;
+
+    std::string pid_query = "select pid from process where upid = ";
+    pid_query += std::to_string(upid) + ";";
+    Iterator pid_it = tp->ExecuteQuery(pid_query);
+    PERFETTO_CHECK(pid_it.Next());
+
+    std::string profile_proto = builder.GenerateGProfile(tp, upid, ts);
+    output->emplace_back(SerializedProfile{
+        static_cast<uint64_t>(pid_it.Get(0).long_value), profile_proto});
+  }
+  if (any_fail) {
+    PERFETTO_ELOG(
+        "One or more of your profiles had an issue. Please consult "
+        "https://docs.perfetto.dev/#/heapprofd?id=troubleshooting.");
+  }
+  if (!it.Status().ok()) {
+    PERFETTO_DFATAL_OR_ELOG("Invalid iterator: %s",
+                            it.Status().message().c_str());
+    return false;
+  }
+  return true;
+}
+
+bool TraceToPprof(std::istream* input,
+                  std::vector<SerializedProfile>* output,
+                  uint64_t pid,
+                  const std::vector<uint64_t>& timestamps) {
+  return TraceToPprof(input, output, nullptr, pid, timestamps);
 }
 
 }  // namespace trace_to_text

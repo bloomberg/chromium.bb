@@ -7,9 +7,10 @@ package org.chromium.content.browser.selection;
 import android.content.Context;
 import android.os.Build;
 import android.provider.Settings;
-import android.support.annotation.IntDef;
 import android.text.TextUtils;
 import android.view.textclassifier.TextClassifier;
+
+import androidx.annotation.IntDef;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
@@ -18,6 +19,7 @@ import org.chromium.content_public.browser.SelectionClient;
 import org.chromium.content_public.browser.SelectionMetricsLogger;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.WindowAndroid;
+import org.chromium.ui.touch_selection.SelectionEventType;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -60,8 +62,9 @@ public class SmartSelectionClient implements SelectionClient {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O || windowAndroid == null) return null;
 
         // Don't do Smart Selection when device is not provisioned or in incognito mode.
-        if (!isDeviceProvisioned(windowAndroid.getContext().get()) || webContents.isIncognito())
+        if (!isDeviceProvisioned(windowAndroid.getContext().get()) || webContents.isIncognito()) {
             return null;
+        }
 
         return new SmartSelectionClient(callback, webContents, windowAndroid);
     }
@@ -71,8 +74,10 @@ public class SmartSelectionClient implements SelectionClient {
         assert Build.VERSION.SDK_INT >= Build.VERSION_CODES.O;
         mProvider = new SmartSelectionProvider(callback, windowAndroid);
         mCallback = callback;
-        mSmartSelectionMetricLogger =
-                SmartSelectionMetricsLogger.create(windowAndroid.getContext().get());
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            mSmartSelectionMetricLogger =
+                    SmartSelectionMetricsLogger.create(windowAndroid.getContext().get());
+        }
         mNativeSmartSelectionClient =
                 SmartSelectionClientJni.get().init(SmartSelectionClient.this, webContents);
     }
@@ -89,7 +94,7 @@ public class SmartSelectionClient implements SelectionClient {
     public void onSelectionChanged(String selection) {}
 
     @Override
-    public void onSelectionEvent(int eventType, float posXPix, float posYPix) {}
+    public void onSelectionEvent(@SelectionEventType int eventType, float posXPix, float posYPix) {}
 
     @Override
     public void selectWordAroundCaretAck(boolean didSelect, int startAdjust, int endAdjust) {}

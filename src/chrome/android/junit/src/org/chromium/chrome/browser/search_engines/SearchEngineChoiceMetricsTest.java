@@ -19,9 +19,9 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 
+import org.chromium.base.metrics.test.DisableHistogramsRule;
 import org.chromium.base.metrics.test.ShadowRecordHistogram;
 import org.chromium.base.test.BaseRobolectricTestRunner;
-import org.chromium.chrome.test.support.DisableHistogramsRule;
 import org.chromium.components.search_engines.TemplateUrl;
 import org.chromium.components.search_engines.TemplateUrlService;
 
@@ -119,6 +119,10 @@ public final class SearchEngineChoiceMetricsTest {
         assertEquals(0,
                 ShadowRecordHistogram.getHistogramValueCountForTesting(
                         HISTOGRAM_AFTER_CHOICE, SearchEngineType.SEARCH_ENGINE_GOOGLE));
+        assertEquals(0,
+                ShadowRecordHistogram.getHistogramValueCountForTesting(
+                        "Android.SearchEngineChoice.EventsV2",
+                        SearchEngineChoiceMetrics.Events.SEARCH_ENGINE_CHANGED));
     }
 
     @Test

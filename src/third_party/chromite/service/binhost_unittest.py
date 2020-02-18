@@ -54,7 +54,7 @@ class GetPrebuiltAclArgsTest(cros_test_lib.MockTempDirTestCase):
 
     acls = binhost.GetPrebuiltAclArgs(self.build_target)
 
-    self.assertItemsEqual(expected_acls, acls)
+    self.assertCountEqual(expected_acls, acls)
 
   def testNoFile(self):
     """Test no file handling."""

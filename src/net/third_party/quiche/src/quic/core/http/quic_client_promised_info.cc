@@ -9,7 +9,6 @@
 
 #include "net/third_party/quiche/src/quic/core/http/spdy_server_push_utils.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_ptr_util.h"
 #include "net/third_party/quiche/src/spdy/core/spdy_protocol.h"
 
 using spdy::SpdyHeaderBlock;
@@ -72,7 +71,7 @@ bool QuicClientPromisedInfo::OnPromiseHeaders(const SpdyHeaderBlock& headers) {
 }
 
 void QuicClientPromisedInfo::OnResponseHeaders(const SpdyHeaderBlock& headers) {
-  response_headers_ = QuicMakeUnique<SpdyHeaderBlock>(headers.Clone());
+  response_headers_ = std::make_unique<SpdyHeaderBlock>(headers.Clone());
   if (client_request_delegate_) {
     // We already have a client request waiting.
     FinalValidation();

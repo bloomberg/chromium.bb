@@ -32,7 +32,6 @@
 #include "base/files/file_path.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/memory/shared_memory.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "base/single_thread_task_runner.h"
@@ -50,6 +49,7 @@
 #include "media/base/win/mf_helpers.h"
 #include "media/base/win/mf_initializer.h"
 #include "media/filters/vp9_parser.h"
+#include "media/gpu/windows/d3d11_video_device_format_support.h"
 #include "media/gpu/windows/dxva_picture_buffer_win.h"
 #include "media/gpu/windows/supported_profile_helpers.h"
 #include "media/video/h264_parser.h"
@@ -354,6 +354,8 @@ bool H264ConfigChangeDetector::DetectConfig(const uint8_t* stream,
     }
   }
 
+  // TODO(sandersd): Update to match logic in VTVDA that tracks activated rather
+  // than most recent SPS and PPS.
   if (!sps.empty() && sps != last_sps_) {
     if (!last_sps_.empty()) {
       // Flag configuration changes after we see an IDR slice.
@@ -517,6 +519,7 @@ DXVAVideoDecodeAccelerator::DXVAVideoDecodeAccelerator(
       use_dx11_(false),
       use_keyed_mutex_(false),
       using_angle_device_(false),
+      using_debug_device_(false),
       enable_accelerated_vpx_decode_(
           !workarounds.disable_accelerated_vpx_decode),
       processing_config_changed_(false) {
@@ -852,6 +855,7 @@ bool DXVAVideoDecodeAccelerator::CreateDX11DevManager() {
       RETURN_ON_HR_FAILURE(hr, "Failed to create debug DX11 device", false);
     }
 #endif
+    using_debug_device_ = !!d3d11_device_context_;
     if (!d3d11_device_context_) {
       hr = D3D11CreateDevice(NULL, D3D_DRIVER_TYPE_HARDWARE, NULL, flags,
                              feature_levels, base::size(feature_levels),
@@ -877,19 +881,15 @@ bool DXVAVideoDecodeAccelerator::CreateDX11DevManager() {
   if (!options.ExtendedResourceSharing)
     support_copy_nv12_textures_ = false;
 
-  UINT nv12_format_support = 0;
-  hr =
-      D3D11Device()->CheckFormatSupport(DXGI_FORMAT_NV12, &nv12_format_support);
-  RETURN_ON_HR_FAILURE(hr, "Failed to check NV12 format support", false);
+  FormatSupportChecker checker(ShouldUseANGLEDevice() ? angle_device_
+                                                      : d3d11_device_);
+  RETURN_ON_FAILURE(checker.Initialize(), "Failed to check format supports!",
+                    false);
 
-  if (!(nv12_format_support & D3D11_FORMAT_SUPPORT_VIDEO_PROCESSOR_OUTPUT))
+  if (!checker.CheckOutputFormatSupport(DXGI_FORMAT_NV12))
     support_copy_nv12_textures_ = false;
 
-  UINT fp16_format_support = 0;
-  hr = D3D11Device()->CheckFormatSupport(DXGI_FORMAT_R16G16B16A16_FLOAT,
-                                         &fp16_format_support);
-  if (FAILED(hr) ||
-      !(fp16_format_support & D3D11_FORMAT_SUPPORT_VIDEO_PROCESSOR_OUTPUT))
+  if (!checker.CheckOutputFormatSupport(DXGI_FORMAT_R16G16B16A16_FLOAT))
     use_fp16_ = false;
 
   // Enable multithreaded mode on the device. This ensures that accesses to
@@ -1855,6 +1855,35 @@ void DXVAVideoDecodeAccelerator::StopOnError(
   if (client_)
     client_->NotifyError(error);
   client_ = NULL;
+
+#ifdef _DEBUG
+  if (using_debug_device_) {
+    // MSDN says that this needs to be casted twice, then GetMessage should
+    // be called with a malloc.
+    Microsoft::WRL::ComPtr<ID3D11Debug> debug_layer;
+    if (SUCCEEDED(d3d11_device_.As(&debug_layer))) {
+      Microsoft::WRL::ComPtr<ID3D11InfoQueue> message_layer;
+      if (SUCCEEDED(debug_layer.As(&message_layer))) {
+        uint64_t message_count = message_layer->GetNumStoredMessages();
+        for (uint64_t i = 0; i < message_count; i++) {
+          SIZE_T message_size;
+          message_layer->GetMessage(i, nullptr, &message_size);
+          D3D11_MESSAGE* message =
+              reinterpret_cast<D3D11_MESSAGE*>(malloc(message_size));
+          if (message) {
+            message_layer->GetMessage(i, message, &message_size);
+            if (media_log_) {
+              MEDIA_LOG(INFO, media_log_) << message->pDescription;
+            } else {
+              DVLOG(1) << message->pDescription;
+            }
+            free(message);
+          }
+        }
+      }
+    }
+  }
+#endif
 
   if (GetState() != kUninitialized) {
     Invalidate();

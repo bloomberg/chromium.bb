@@ -25,17 +25,19 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_PEERCONNECTION_RTC_STATS_RESPONSE_BASE_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_PEERCONNECTION_RTC_STATS_RESPONSE_BASE_H_
 
-#include "third_party/blink/public/platform/web_rtc_legacy_stats.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/peerconnection/rtc_legacy_stats.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 
+// TODO(crbug.com/787254): Merge  RTCStatsResponseBase and RTCStatsResponse
+// when the former is not referenced in renderer/platform anymore.
 class RTCStatsResponseBase : public ScriptWrappable {
  public:
   ~RTCStatsResponseBase() override = default;
 
-  virtual void AddStats(const WebRTCLegacyStats&) = 0;
+  virtual void AddStats(const RTCLegacyStats&) = 0;
 };
 
 }  // namespace blink

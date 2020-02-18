@@ -25,6 +25,7 @@
 #include "content/public/browser/android/synchronous_compositor.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/drop_data.h"
 #include "ui/android/overscroll_refresh_handler.h"
@@ -229,12 +230,10 @@ gfx::Rect WebContentsViewAndroid::GetViewBounds() const {
   return gfx::Rect(view_.GetSize());
 }
 
-void WebContentsViewAndroid::CreateView(
-    const gfx::Size& initial_size, gfx::NativeView context) {
-}
+void WebContentsViewAndroid::CreateView(gfx::NativeView context) {}
 
 RenderWidgetHostViewBase* WebContentsViewAndroid::CreateViewForWidget(
-    RenderWidgetHost* render_widget_host, bool is_guest_view_hack) {
+    RenderWidgetHost* render_widget_host) {
   if (render_widget_host->GetView()) {
     // During testing, the view will already be set up in most cases to the
     // test view, so we don't want to clobber it with a real one. To verify that
@@ -531,9 +530,24 @@ int WebContentsViewAndroid::GetTopControlsHeight() const {
   return delegate ? delegate->GetTopControlsHeight() : 0;
 }
 
+int WebContentsViewAndroid::GetTopControlsMinHeight() const {
+  auto* delegate = web_contents_->GetDelegate();
+  return delegate ? delegate->GetTopControlsMinHeight() : 0;
+}
+
 int WebContentsViewAndroid::GetBottomControlsHeight() const {
   auto* delegate = web_contents_->GetDelegate();
   return delegate ? delegate->GetBottomControlsHeight() : 0;
+}
+
+int WebContentsViewAndroid::GetBottomControlsMinHeight() const {
+  auto* delegate = web_contents_->GetDelegate();
+  return delegate ? delegate->GetBottomControlsMinHeight() : 0;
+}
+
+bool WebContentsViewAndroid::ShouldAnimateBrowserControlsHeightChanges() const {
+  auto* delegate = web_contents_->GetDelegate();
+  return delegate && delegate->ShouldAnimateBrowserControlsHeightChanges();
 }
 
 bool WebContentsViewAndroid::DoBrowserControlsShrinkRendererSize() const {

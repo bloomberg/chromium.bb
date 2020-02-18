@@ -104,7 +104,6 @@ class CPDF_FormField {
   WideString GetFullName() const;
 
   Type GetType() const { return m_Type; }
-  uint32_t GetFlags() const { return m_Flags; }
 
   CPDF_Dictionary* GetFieldDict() const { return m_pDict.Get(); }
 
@@ -124,8 +123,6 @@ class CPDF_FormField {
   uint32_t GetFieldFlags() const;
   ByteString GetDefaultStyle() const;
 
-  // TODO(thestig): Figure out what to do with unused methods here.
-  bool IsReadOnly() const { return m_bReadOnly; }
   bool IsRequired() const { return m_bRequired; }
   bool IsNoExport() const { return m_bNoExport; }
 
@@ -192,13 +189,23 @@ class CPDF_FormField {
   bool NotifyListOrComboBoxBeforeChange(const WideString& value);
   void NotifyListOrComboBoxAfterChange();
 
+  const CPDF_Object* GetDefaultValueObject() const;
+  const CPDF_Object* GetValueObject() const;
+
+  // For choice fields.
+  const CPDF_Object* GetSelectedIndicesObject() const;
+
+  // For choice fields.
+  // Value object takes precedence over selected indices object.
+  const CPDF_Object* GetValueOrSelectedIndicesObject() const;
+
   const std::vector<UnownedPtr<CPDF_FormControl>>& GetControls() const;
 
   CPDF_FormField::Type m_Type = kUnknown;
-  bool m_bReadOnly = false;
   bool m_bRequired = false;
   bool m_bNoExport = false;
-  uint32_t m_Flags = 0;
+  bool m_bIsMultiSelectListBox = false;
+  bool m_bIsUnison = false;
   float m_FontSize = 0;
   UnownedPtr<CPDF_InteractiveForm> const m_pForm;
   RetainPtr<CPDF_Dictionary> const m_pDict;

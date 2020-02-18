@@ -82,7 +82,23 @@ std::ostream& operator<<(std::ostream& os, const CoreAccountInfo& account);
 #if defined(OS_ANDROID)
 // Constructs a Java CoreAccountInfo from the provided C++ CoreAccountInfo
 base::android::ScopedJavaLocalRef<jobject> ConvertToJavaCoreAccountInfo(
+    JNIEnv* env,
     const CoreAccountInfo& account_info);
+
+// Constructs a Java CoreAccountId from the provided C++ CoreAccountId
+base::android::ScopedJavaLocalRef<jobject> ConvertToJavaCoreAccountId(
+    JNIEnv* env,
+    const CoreAccountId& account_id);
+
+// Constructs a C++ CoreAccountInfo from the provided Java CoreAccountInfo
+CoreAccountInfo ConvertFromJavaCoreAccountInfo(
+    JNIEnv* env,
+    const base::android::JavaRef<jobject>& j_core_account_info);
+
+// Constructs a C++ CoreAccountId from the provided Java CoreAccountId
+CoreAccountId ConvertFromJavaCoreAccountId(
+    JNIEnv* env,
+    const base::android::JavaRef<jobject>& j_core_account_id);
 #endif
 
 #endif  // COMPONENTS_SIGNIN_PUBLIC_IDENTITY_MANAGER_ACCOUNT_INFO_H_

@@ -9,7 +9,6 @@ from __future__ import print_function
 
 import os
 
-from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import image_lib
 from chromite.lib import image_lib_unittest
@@ -32,9 +31,9 @@ class GenerateStatefulPayloadTest(cros_test_lib.RunCommandTempDirTestCase):
 
     self.PatchObject(osutils.TempDir, '__enter__', return_value=self.tempdir)
     fake_partitions = (
-        cros_build_lib.PartitionInfo(3, 0, 4, 4, 'fs', 'STATE', ''),
+        image_lib.PartitionInfo(3, 0, 4, 4, 'fs', 'STATE', ''),
     )
-    self.PatchObject(cros_build_lib, 'GetImageDiskPartitionInfo',
+    self.PatchObject(image_lib, 'GetImageDiskPartitionInfo',
                      return_value=fake_partitions)
 
     paygen_stateful_payload_lib.GenerateStatefulPayload('dev/null',

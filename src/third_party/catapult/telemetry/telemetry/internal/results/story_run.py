@@ -4,17 +4,19 @@
 
 import contextlib
 import datetime
+import json
 import logging
+import numbers
 import os
 import posixpath
 import time
-import urllib
 
 
 PASS = 'PASS'
 FAIL = 'FAIL'
 SKIP = 'SKIP'
 
+MEASUREMENTS_NAME = 'measurements.json'
 
 _CONTENT_TYPES = {
     '.dat': 'application/octet-stream',  # Generic data blob.
@@ -44,22 +46,15 @@ def ContentTypeFromExt(name):
     return _DEFAULT_CONTENT_TYPE
 
 
-class Artifact(object):
-  def __init__(self, name, local_path, content_type):
+class _Artifact(object):
+  def __init__(self, local_path, content_type):
     """
     Args:
-      name: name of the artifact.
       local_path: an absolute local path to an artifact file.
       content_type: A string representing the MIME type of a file.
     """
-    self._name = name
     self._local_path = local_path
     self._content_type = content_type
-    self._url = None
-
-  @property
-  def name(self):
-    return self._name
 
   @property
   def local_path(self):
@@ -69,24 +64,11 @@ class Artifact(object):
   def content_type(self):
     return self._content_type
 
-  @property
-  def url(self):
-    return self._url
-
-  def SetUrl(self, url):
-    assert not self._url, 'Artifact URL has been already set'
-    self._url = url
-
   def AsDict(self):
-    d = {
+    return {
         'filePath': self.local_path,
         'contentType': self.content_type
     }
-    # TODO(crbug.com/981349): Remove this when artifact uploading is
-    # switched over to the results processor.
-    if self.url:
-      d['remoteUrl'] = self.url
-    return d
 
 
 class StoryRun(object):
@@ -104,8 +86,7 @@ class StoryRun(object):
     self._story = story
     self._test_prefix = test_prefix
     self._index = index
-    self._values = []
-    self._tbm_metrics = []
+    self._tags = []
     self._skip_reason = None
     self._skip_expected = False
     self._failed = False
@@ -113,6 +94,8 @@ class StoryRun(object):
     self._start_time = time.time()
     self._end_time = None
     self._artifacts = {}
+    self._measurements = {}
+    self._InitTags()
 
     if intermediate_dir is None:
       self._artifacts_dir = None
@@ -123,19 +106,49 @@ class StoryRun(object):
       if not os.path.exists(self._artifacts_dir):
         os.makedirs(self._artifacts_dir)
 
-  def AddLegacyValue(self, value):
-    self._values.append(value)
+  def AddMeasurement(self, name, unit, samples, description=None):
+    """Record an add hoc measurement associated with this story run."""
+    assert self._measurements is not None, (
+        'Measurements have already been collected')
+    if not isinstance(name, basestring):
+      raise TypeError('name must be a string, got %s' % name)
+    assert name not in self._measurements, (
+        'Already have measurement with the name %s' % name)
+    self._measurements[name] = _MeasurementToDict(unit, samples, description)
 
-  def SetTbmMetrics(self, metrics):
-    assert not self._tbm_metrics, 'Metrics have already been set'
-    assert len(metrics) > 0, 'Metrics should not be empty'
-    self._tbm_metrics = metrics
+  def _WriteMeasurementsArtifact(self):
+    if self._measurements:
+      with self.CreateArtifact(MEASUREMENTS_NAME) as f:
+        json.dump({'measurements': self._measurements}, f)
+    # It's an error to record more measurements after this point.
+    self._measurements = None
+
+  def AddTags(self, key, values):
+    """Record values to be associated with a given tag key."""
+    self._tags.extend({'key': key, 'value': value} for value in values)
+
+  def _InitTags(self):
+    if 'GTEST_SHARD_INDEX' in os.environ:
+      self.AddTags('shard', [os.environ['GTEST_SHARD_INDEX']])
+    self.AddTags('story_tag', self.story.GetStoryTagsList())
+
+  def AddTbmMetrics(self, metrics):
+    """Register Timeline Based Metrics to compute on traces for this story.
+
+    Args:
+      metrics: A list of strings, each should be of the form 'v2:metric' or
+        'v3:metric' for respective TBM versioned metrics. If the version number
+        is omitted, a default of 'v2' is assumed.
+    """
+    for metric in metrics:
+      version, name = _ParseTbmMetric(metric)
+      self.AddTags(version, [name])
 
   def SetFailed(self, failure_str):
     self._failed = True
     self._failure_str = failure_str
 
-  def Skip(self, reason, is_expected=True):
+  def Skip(self, reason, expected=True):
     if not reason:
       raise ValueError('A skip reason must be given')
     # TODO(#4254): Turn this into a hard failure.
@@ -143,11 +156,12 @@ class StoryRun(object):
       logging.warning(
           'Story was already skipped with reason: %s', self.skip_reason)
     self._skip_reason = reason
-    self._skip_expected = is_expected
+    self._skip_expected = expected
 
   def Finish(self):
     assert not self.finished, 'story run had already finished'
     self._end_time = time.time()
+    self._WriteMeasurementsArtifact()
 
   def AsDict(self):
     """Encode as TestResultEntry dict in LUCI Test Results format.
@@ -158,26 +172,18 @@ class StoryRun(object):
     return {
         'testResult': {
             'testPath': self.test_path,
+            'resultId': str(self.index),
             'status': self.status,
-            'isExpected': self.is_expected,
+            'expected': self.expected,
             'startTime': self.start_datetime.isoformat() + 'Z',
             'runDuration': _FormatDuration(self.duration),
-            'artifacts': {
+            'outputArtifacts': {
                 name: artifact.AsDict()
                 for name, artifact in self._artifacts.items()
             },
-            'tags': [
-                {'key': key, 'value': value}
-                for key, value in self._IterTags()
-            ],
+            'tags': self._tags
         }
     }
-
-  def _IterTags(self):
-    for metric in self._tbm_metrics:
-      yield 'tbmv2', metric
-    if 'GTEST_SHARD_INDEX' in os.environ:
-      yield 'shard', os.environ['GTEST_SHARD_INDEX']
 
   @property
   def story(self):
@@ -189,25 +195,10 @@ class StoryRun(object):
 
   @property
   def test_path(self):
-    # Some stories use URLs as names, often containing special characters.
-    # To avoid potential issues, and to make it easy to identify the components
-    # on a test_path, we percent encode those special chars.
-    # TODO(crbug.com/983993): Remove this when all stories have good names.
-    story_name = urllib.quote(self.story.name, safe='')
     if self._test_prefix is not None:
-      return '/'.join([self._test_prefix, story_name])
+      return '/'.join([self._test_prefix, self.story.name])
     else:
-      return story_name
-
-  @property
-  def values(self):
-    """The values that correspond to this story run."""
-    return self._values
-
-  @property
-  def tbm_metrics(self):
-    """The TBMv2 metrics that will computed on this story run."""
-    return self._tbm_metrics
+      return self.story.name
 
   @property
   def status(self):
@@ -232,7 +223,7 @@ class StoryRun(object):
     return self._skip_reason
 
   @property
-  def is_expected(self):
+  def expected(self):
     """Whether the test status is expected."""
     return self._skip_expected or self.ok
 
@@ -301,7 +292,7 @@ class StoryRun(object):
       # We want to keep track of all artifacts (e.g. logs) even in the case
       # of an exception in the client code, so we create a record for
       # this artifact before yielding the file handle.
-      self._artifacts[name] = Artifact(name, local_path, content_type)
+      self._artifacts[name] = _Artifact(local_path, content_type)
       yield file_obj
 
   @contextlib.contextmanager
@@ -330,7 +321,7 @@ class StoryRun(object):
     yield local_path
     assert os.path.isfile(local_path), (
         'Failed to capture an artifact: %s' % local_path)
-    self._artifacts[name] = Artifact(name, local_path, content_type)
+    self._artifacts[name] = _Artifact(local_path, content_type)
 
   def IterArtifacts(self, subdir=None):
     """Iterate over all artifacts in a given sub-directory.
@@ -352,3 +343,31 @@ class StoryRun(object):
     Returns an Artifact object or None, if there's no artifact with this name.
     """
     return self._artifacts.get(name)
+
+
+def _MeasurementToDict(unit, samples, description):
+  """Validate a measurement and encode as a JSON serializable dict."""
+  if not isinstance(unit, basestring):
+    # TODO(crbug.com/999484): Also validate that this is a known unit.
+    raise TypeError('unit must be a string, got %s' % unit)
+  if not isinstance(samples, list):
+    samples = [samples]
+  if not all(isinstance(v, numbers.Number) for v in samples):
+    raise TypeError(
+        'samples must be a list of numeric values, got %s' % samples)
+  measurement = {'unit': unit, 'samples': samples}
+  if description is not None:
+    if not isinstance(description, basestring):
+      raise TypeError('description must be a string, got %s' % description)
+    measurement['description'] = description
+  return measurement
+
+
+def _ParseTbmMetric(metric):
+  if ':' in metric:
+    version, name = metric.split(':')
+    if version not in ('tbmv2', 'tbmv3'):
+      raise ValueError('Invalid metric name: %s' % metric)
+    return (version, name)
+  else:
+    return ('tbmv2', metric)

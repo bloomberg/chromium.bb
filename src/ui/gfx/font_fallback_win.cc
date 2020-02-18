@@ -4,15 +4,9 @@
 
 #include "ui/gfx/font_fallback_win.h"
 
-#include <dwrite_2.h>
-#include <usp10.h>
-#include <wrl.h>
-#include <wrl/client.h>
-
 #include <algorithm>
 #include <map>
 
-#include "base/i18n/rtl.h"
 #include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "base/message_loop/message_loop_current.h"
@@ -23,10 +17,10 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "base/win/registry.h"
-#include "base/win/scoped_gdi_object.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/font_fallback.h"
 #include "ui/gfx/font_fallback_skia_impl.h"
+#include "ui/gfx/platform_font.h"
 
 namespace gfx {
 
@@ -257,13 +251,18 @@ bool GetFallbackFont(const Font& font,
   if (text.find(kNulCharacter) != base::StringPiece16::npos)
     return false;
 
-  std::string skia_fallback_family =
-      GetFallbackFontFamilyNameSkia(font, locale, text);
+  sk_sp<SkTypeface> fallback_typeface =
+      GetSkiaFallbackTypeface(font, locale, text);
 
-  if (skia_fallback_family.empty())
+  if (!fallback_typeface)
     return false;
 
-  *result = Font(skia_fallback_family, font.GetFontSize());
+  // Fallback needs to keep the exact SkTypeface, as re-matching the font using
+  // family name and styling information loses access to the underlying platform
+  // font handles and is not guaranteed to result in the correct typeface, see
+  // https://crbug.com/1003829
+  *result = Font(PlatformFont::CreateFromSkTypeface(
+      std::move(fallback_typeface), font.GetFontSize(), base::nullopt));
   return true;
 }
 

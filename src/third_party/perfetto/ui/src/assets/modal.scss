@@ -29,14 +29,14 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 4;
+  z-index: 999;
 }
 
 .modal-container {
   background-color: #fff;
   padding: 30px;
-  max-width: 550px;
-  max-height: 100vh;
+  max-width: 90vw;
+  max-height: 90vh;
   border-radius: 4px;
   overflow-y: auto;
   box-sizing: border-box;
@@ -182,4 +182,21 @@
     font: inherit;
     font-weight: bold;
   }
+}
+
+.modal-pre {
+  white-space: pre-line;
+}
+
+.modal-logs {
+  white-space: pre-wrap;
+  border: 1px solid #999;
+  background: #eee;
+  font-size: 10px;
+  font-family: monospace;
+  -webkit-user-select: text;
+  margin-top: 10px;
+  min-height: 50px;
+  max-height: 40vh;
+  overflow: scroll;
 }

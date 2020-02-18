@@ -29,7 +29,7 @@ namespace views {
 class ImageView;
 }  // namespace views
 
-namespace app_list {
+namespace ash {
 namespace test {
 class SearchResultListViewTest;
 }  // namespace test
@@ -57,7 +57,7 @@ class APP_LIST_EXPORT SearchResultView
   void SetDisplayIcon(const gfx::ImageSkia& source);
 
  private:
-  friend class app_list::test::SearchResultListViewTest;
+  friend class test::SearchResultListViewTest;
 
   void UpdateTitleText();
   void UpdateDetailsText();
@@ -108,7 +108,6 @@ class APP_LIST_EXPORT SearchResultView
 
   // SearchResultActionsViewDelegate overrides:
   void OnSearchResultActionActivated(size_t index, int event_flags) override;
-  void OnSearchResultActionsUnSelected() override;
   bool IsSearchResultHoveredOrSelected() override;
 
   // Invoked when the context menu closes.
@@ -136,6 +135,6 @@ class APP_LIST_EXPORT SearchResultView
   DISALLOW_COPY_AND_ASSIGN(SearchResultView);
 };
 
-}  // namespace app_list
+}  // namespace ash
 
 #endif  // ASH_APP_LIST_VIEWS_SEARCH_RESULT_VIEW_H_

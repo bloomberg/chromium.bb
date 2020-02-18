@@ -76,6 +76,10 @@ class AgentImpl : public ::fuchsia::modular::Agent {
           &ComponentStateBase::TeardownIfUnused, base::Unretained(this)));
     }
 
+    // Requests that this instance be torn-down, regardless of whether one or
+    // more keep-alive bindings (see above) have clients.
+    void DisconnectClientsAndTeardown();
+
    private:
     friend class AgentImpl;
 
@@ -111,7 +115,6 @@ class AgentImpl : public ::fuchsia::modular::Agent {
   void Connect(std::string requester_url,
                fidl::InterfaceRequest<::fuchsia::sys::ServiceProvider> services)
       override;
-  void RunTask(std::string task_id, RunTaskCallback callback) override;
 
  private:
   friend class ComponentStateBase;

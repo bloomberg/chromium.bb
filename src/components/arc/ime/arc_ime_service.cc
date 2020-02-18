@@ -26,6 +26,7 @@
 #include "ui/gfx/range/range.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/non_client_view.h"
+#include "ui/wm/core/ime_util_chromeos.h"
 
 namespace arc {
 
@@ -395,9 +396,13 @@ void ArcImeService::SetCompositionText(
   ime_bridge_->SendSetCompositionText(composition);
 }
 
-void ArcImeService::ConfirmCompositionText() {
-  InvalidateSurroundingTextAndSelectionRange();
+void ArcImeService::ConfirmCompositionText(bool keep_selection) {
+  if (!keep_selection) {
+    InvalidateSurroundingTextAndSelectionRange();
+  }
   has_composition_text_ = false;
+  // Note: SendConfirmCompositonText() will commit the text and
+  // keep the selection unchanged
   ime_bridge_->SendConfirmCompositionText();
 }
 
@@ -496,6 +501,17 @@ bool ArcImeService::GetTextFromRange(const gfx::Range& range,
   return true;
 }
 
+void ArcImeService::EnsureCaretNotInRect(const gfx::Rect& rect_in_screen) {
+  if (focused_arc_window_ == nullptr)
+    return;
+  aura::Window* top_level_window = focused_arc_window_->GetToplevelWindow();
+  // If the window is not a notification, the window move is handled by
+  // Android.
+  if (top_level_window->type() != aura::client::WINDOW_TYPE_POPUP)
+    return;
+  wm::EnsureWindowNotInRect(top_level_window, rect_in_screen);
+}
+
 ui::TextInputMode ArcImeService::GetTextInputMode() const {
   return ui::TEXT_INPUT_MODE_DEFAULT;
 }
@@ -538,7 +554,9 @@ bool ArcImeService::GetCompositionTextRange(gfx::Range* range) const {
 }
 
 bool ArcImeService::SetEditableSelectionRange(const gfx::Range& range) {
-  return false;
+  selection_range_ = range;
+  ime_bridge_->SendSelectionRange(selection_range_);
+  return true;
 }
 
 bool ArcImeService::DeleteRange(const gfx::Range& range) {

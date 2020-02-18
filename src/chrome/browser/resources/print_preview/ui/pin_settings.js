@@ -2,13 +2,28 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'chrome://resources/cr_elements/cr_checkbox/cr_checkbox.m.js';
+import 'chrome://resources/cr_elements/cr_input/cr_input.m.js';
+import 'chrome://resources/polymer/v3_0/iron-collapse/iron-collapse.js';
+import './print_preview_shared_css.js';
+import './settings_section.js';
+
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {State} from '../data/state.js';
+
+import {InputBehavior} from './input_behavior.js';
+import {SettingsBehavior} from './settings_behavior.js';
+
 Polymer({
   is: 'print-preview-pin-settings',
 
-  behaviors: [SettingsBehavior, print_preview.InputBehavior],
+  _template: html`{__html_template__}`,
+
+  behaviors: [SettingsBehavior, InputBehavior],
 
   properties: {
-    /** @type {!print_preview.State} */
+    /** @type {!State} */
     state: Number,
 
     disabled: Boolean,
@@ -52,7 +67,7 @@ Polymer({
 
   /** @return {!CrInputElement} The cr-input field element for InputBehavior. */
   getInput: function() {
-    return this.$.pinValue;
+    return /** @type {!CrInputElement} */ (this.$.pinValue);
   },
 
   /**
@@ -66,7 +81,7 @@ Polymer({
   /** @private */
   onCollapseChanged_: function() {
     if (this.pinEnabled_) {
-      /** @type {!CrInputElement} */ (this.$.pinValue).inputElement.focus();
+      /** @type {!CrInputElement} */ (this.$.pinValue).focusInput();
     }
   },
 
@@ -136,8 +151,7 @@ Polymer({
     // It's done because we don't permit multiple simultaneous validation errors
     // in Print Preview and we also don't want to set the value when sticky
     // settings may not yet have been set.
-    if (this.state != print_preview.State.READY &&
-        this.settings.pinValue.valid) {
+    if (this.state != State.READY && this.settings.pinValue.valid) {
       return;
     }
     this.inputValid_ = this.computeValid_();

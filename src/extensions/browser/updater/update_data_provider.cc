@@ -99,9 +99,14 @@ UpdateDataProvider::GetData(bool install_immediately,
     crx_component->pk_hash.resize(crypto::kSHA256Length, 0);
     crypto::SHA256HashString(pubkey_bytes, crx_component->pk_hash.data(),
                              crx_component->pk_hash.size());
-    crx_component->version = extension_data.is_corrupt_reinstall
-                                 ? base::Version("0.0.0.0")
-                                 : extension->version();
+    crx_component->app_id =
+        update_client::GetCrxIdFromPublicKeyHash(crx_component->pk_hash);
+    if (extension_data.is_corrupt_reinstall) {
+      crx_component->version = base::Version("0.0.0.0");
+    } else {
+      crx_component->version = extension->version();
+      crx_component->fingerprint = extension->DifferentialFingerprint();
+    }
     crx_component->allows_background_download = false;
     crx_component->requires_network_encryption = true;
     crx_component->crx_format_requirement =
@@ -124,7 +129,9 @@ UpdateDataProvider::GetData(bool install_immediately,
           crx_component->disabled_reasons.push_back(enum_value);
       }
     }
-    crx_component->install_source = extension_data.install_source;
+    crx_component->install_source = extension_data.is_corrupt_reinstall
+                                        ? "reinstall"
+                                        : extension_data.install_source;
     crx_component->install_location =
         ManifestFetchData::GetSimpleLocationString(extension->location());
   }

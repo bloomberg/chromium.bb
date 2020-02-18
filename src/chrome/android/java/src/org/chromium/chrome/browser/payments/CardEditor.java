@@ -5,12 +5,13 @@
 package org.chromium.chrome.browser.payments;
 
 import android.os.Handler;
-import android.support.annotation.Nullable;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
 import android.text.style.AbsoluteSizeSpan;
 import android.text.style.ForegroundColorSpan;
 import android.util.Pair;
+
+import androidx.annotation.Nullable;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
@@ -24,12 +25,13 @@ import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
 import org.chromium.chrome.browser.payments.PaymentRequestImpl.PaymentRequestServiceObserverForTest;
-import org.chromium.chrome.browser.preferences.autofill.AutofillProfileBridge.DropdownKeyValue;
+import org.chromium.chrome.browser.settings.autofill.AutofillProfileBridge.DropdownKeyValue;
 import org.chromium.chrome.browser.widget.prefeditor.EditorBase;
 import org.chromium.chrome.browser.widget.prefeditor.EditorFieldModel;
 import org.chromium.chrome.browser.widget.prefeditor.EditorFieldModel.EditorFieldValidator;
 import org.chromium.chrome.browser.widget.prefeditor.EditorFieldModel.EditorValueIconGenerator;
 import org.chromium.chrome.browser.widget.prefeditor.EditorModel;
+import org.chromium.components.payments.MethodStrings;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.payments.mojom.PaymentMethodData;
 
@@ -310,7 +312,7 @@ public class CardEditor extends EditorBase<AutofillPaymentInstrument>
     public void addAcceptedPaymentMethodIfRecognized(PaymentMethodData data) {
         assert data != null;
         String method = data.supportedMethod;
-        if (BasicCardUtils.BASIC_CARD_METHOD_NAME.equals(method)) {
+        if (MethodStrings.BASIC_CARD.equals(method)) {
             Set<String> basicCardNetworks = BasicCardUtils.convertBasicCardToNetworks(data);
             mAcceptedBasicCardIssuerNetworks.addAll(basicCardNetworks);
             for (String network : basicCardNetworks) {
@@ -415,7 +417,7 @@ public class CardEditor extends EditorBase<AutofillPaymentInstrument>
 
             String methodName = card.getBasicCardIssuerNetwork();
             if (mAcceptedBasicCardIssuerNetworks.contains(methodName)) {
-                methodName = BasicCardUtils.BASIC_CARD_METHOD_NAME;
+                methodName = MethodStrings.BASIC_CARD;
             }
             assert methodName != null;
 

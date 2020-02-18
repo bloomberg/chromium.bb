@@ -49,7 +49,7 @@ std::unique_ptr<PrinterHandler> PrinterHandler::CreateForLocalPrinters(
 std::unique_ptr<PrinterHandler> PrinterHandler::CreateForPdfPrinter(
     Profile* profile,
     content::WebContents* preview_web_contents,
-    StickySettings* sticky_settings) {
+    PrintPreviewStickySettings* sticky_settings) {
   return std::make_unique<PdfPrinterHandler>(profile, preview_web_contents,
                                              sticky_settings);
 }
@@ -70,5 +70,12 @@ void PrinterHandler::StartGrantPrinterAccess(const std::string& printer_id,
                                              GetPrinterInfoCallback callback) {
   NOTREACHED();
 }
+
+#if defined(OS_CHROMEOS)
+void PrinterHandler::StartGetEulaUrl(const std::string& destination_id,
+                                     GetEulaUrlCallback callback) {
+  NOTREACHED();
+}
+#endif
 
 }  // namespace printing

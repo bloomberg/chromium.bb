@@ -8,13 +8,22 @@
 #include "base/scoped_observer.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
+#include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_observer.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_types.h"
 #include "ui/views/window/non_client_view.h"
 
 class BrowserFrame;
 class BrowserView;
-class HostedAppButtonContainer;
+class WebAppFrameToolbarView;
+
+// Type used for functions whose return values depend on the active state of
+// the frame.
+enum class BrowserFrameActiveState {
+  kUseCurrent,  // Use current frame active state.
+  kActive,      // Treat frame as active regardless of current state.
+  kInactive,    // Treat frame as inactive regardless of current state.
+};
 
 // A specialization of the NonClientFrameView object that provides additional
 // Browser-specific methods.
@@ -22,14 +31,6 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
                                   public ProfileAttributesStorage::Observer,
                                   public TabStripObserver {
  public:
-  // Type used for functions whose return values depend on the active state of
-  // the frame.
-  enum ActiveState {
-    kUseCurrent,  // Use current frame active state.
-    kActive,      // Treat frame as active regardless of current state.
-    kInactive,    // Treat frame as inactive regardless of current state.
-  };
-
   // The minimum total height users should have to use as a drag handle to move
   // the window with.
   static constexpr int kMinimumDragHeight = 8;
@@ -85,7 +86,7 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   // Returns whether the shapes of background tabs are visible against the
   // frame, given an active state of |active|.
   virtual bool HasVisibleBackgroundTabShapes(
-      ActiveState active_state = kUseCurrent) const;
+      BrowserFrameActiveState active_state) const;
 
   // Returns whether the shapes of background tabs are visible against the frame
   // for either active or inactive windows.
@@ -96,11 +97,12 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
 
   // Returns the color to use for text, caption buttons, and other title bar
   // elements.
-  virtual SkColor GetCaptionColor(ActiveState active_state = kUseCurrent) const;
+  virtual SkColor GetCaptionColor(BrowserFrameActiveState active_state) const;
 
   // Returns the color of the browser frame, which is also the color of the
   // tabstrip background.
-  SkColor GetFrameColor(ActiveState active_state = kUseCurrent) const;
+  SkColor GetFrameColor(BrowserFrameActiveState active_state =
+                            BrowserFrameActiveState::kUseCurrent) const;
 
   // Called by BrowserView to signal the frame color has changed and needs
   // to be repainted.
@@ -112,12 +114,13 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
 
   // For non-transparent windows, returns the background tab image resource ID
   // if the image has been customized, directly or indirectly, by the theme.
-  base::Optional<int> GetCustomBackgroundId(ActiveState active_state) const;
+  base::Optional<int> GetCustomBackgroundId(
+      BrowserFrameActiveState active_state) const;
 
   // Updates the throbber.
   virtual void UpdateThrobber(bool running) = 0;
 
-  // Provided for mus and macOS to update the minimum window size property.
+  // Provided for platform-specific updates of minimum window size.
   virtual void UpdateMinimumSize();
 
   // views::NonClientFrameView:
@@ -127,19 +130,21 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   int NonClientHitTest(const gfx::Point& point) override;
   void ResetWindowControls() override;
 
-  HostedAppButtonContainer* hosted_app_button_container_for_testing() {
-    return hosted_app_button_container_;
+  WebAppFrameToolbarView* web_app_frame_toolbar_for_testing() {
+    return web_app_frame_toolbar_;
   }
 
  protected:
   // Converts an ActiveState to a bool representing whether the frame should be
   // treated as active.
-  bool ShouldPaintAsActive(ActiveState active_state) const;
+  bool ShouldPaintAsActive(BrowserFrameActiveState active_state) const;
 
   // Compute aspects of the frame needed to paint the frame background.
-  gfx::ImageSkia GetFrameImage(ActiveState active_state = kUseCurrent) const;
+  gfx::ImageSkia GetFrameImage(BrowserFrameActiveState active_state =
+                                   BrowserFrameActiveState::kUseCurrent) const;
   gfx::ImageSkia GetFrameOverlayImage(
-      ActiveState active_state = kUseCurrent) const;
+      BrowserFrameActiveState active_state =
+          BrowserFrameActiveState::kUseCurrent) const;
 
   // views::NonClientFrameView:
   void ChildPreferredSizeChanged(views::View* child) override;
@@ -155,15 +160,15 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   void OnProfileHighResAvatarLoaded(
       const base::FilePath& profile_path) override;
 
-  void set_hosted_app_button_container(
-      HostedAppButtonContainer* hosted_app_button_container) {
-    hosted_app_button_container_ = hosted_app_button_container;
+  void set_web_app_frame_toolbar(
+      WebAppFrameToolbarView* web_app_frame_toolbar) {
+    web_app_frame_toolbar_ = web_app_frame_toolbar;
   }
-  HostedAppButtonContainer* hosted_app_button_container() {
-    return hosted_app_button_container_;
+  WebAppFrameToolbarView* web_app_frame_toolbar() {
+    return web_app_frame_toolbar_;
   }
-  const HostedAppButtonContainer* hosted_app_button_container() const {
-    return hosted_app_button_container_;
+  const WebAppFrameToolbarView* web_app_frame_toolbar() const {
+    return web_app_frame_toolbar_;
   }
 
  private:
@@ -182,16 +187,19 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   // default theme properties.
   SkColor GetThemeOrDefaultColor(int color_id) const;
 
+  // Returns the color of the given |color_id| for an un-themed frame.
+  SkColor GetUnthemedColor(int color_id) const;
+
   // The frame that hosts this view.
   BrowserFrame* frame_;
 
   // The BrowserView hosted within this View.
   BrowserView* browser_view_;
 
-  // Menu button and page status icons. Only used by hosted app windows.
-  HostedAppButtonContainer* hosted_app_button_container_ = nullptr;
+  // Menu button and page status icons. Only used by web-app windows.
+  WebAppFrameToolbarView* web_app_frame_toolbar_ = nullptr;
 
-  ScopedObserver<TabStrip, BrowserNonClientFrameView> tab_strip_observer_;
+  ScopedObserver<TabStrip, TabStripObserver> tab_strip_observer_{this};
 
   DISALLOW_COPY_AND_ASSIGN(BrowserNonClientFrameView);
 };

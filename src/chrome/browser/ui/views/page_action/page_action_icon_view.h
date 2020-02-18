@@ -20,6 +20,7 @@
 
 class CommandUpdater;
 class OmniboxView;
+class PageActionIconLoadingIndicatorView;
 
 namespace content {
 class WebContents;
@@ -42,11 +43,14 @@ class PageActionIconView : public IconLabelBubbleView {
     // Gets the color to use for the ink highlight.
     virtual SkColor GetPageActionInkDropColor() const = 0;
 
+    // Gets the opacity to use for the ink highlight.
+    virtual float GetPageActionInkDropVisibleOpacity() const;
+
     virtual content::WebContents* GetWebContentsForPageActionIconView() = 0;
 
     // Returns the border the icon should use. It depends on what kind of
     // delegate this icon has.
-    virtual std::unique_ptr<views::Border> GetPageActionIconBorder() const;
+    virtual std::unique_ptr<views::Border> CreatePageActionIconBorder() const;
 
     // Delegate should override and return true when the user is editing the
     // location bar contents.
@@ -62,12 +66,15 @@ class PageActionIconView : public IconLabelBubbleView {
 
   void set_icon_size(int size) { icon_size_ = size; }
 
+  // Sets the active state of the icon. An active icon will be displayed in a
+  // "call to action" color.
+  void SetActive(bool active);
+
+  // Hide the icon on user input in progress and invokes UpdateImpl().
+  void Update();
+
   // Returns the bubble instance for the icon.
   virtual views::BubbleDialogDelegateView* GetBubble() const = 0;
-
-  // Updates the icon state and associated bubble when the WebContents changes.
-  // Returns true if there was a change.
-  virtual bool Update();
 
   // Retrieve the text to be used for a tooltip or accessible name.
   virtual base::string16 GetTextForTooltipAndAccessibleName() const = 0;
@@ -75,6 +82,10 @@ class PageActionIconView : public IconLabelBubbleView {
   SkColor GetLabelColorForTesting() const;
 
   void ExecuteForTesting();
+
+  PageActionIconLoadingIndicatorView* loading_indicator_for_testing() {
+    return loading_indicator_;
+  }
 
  protected:
   enum ExecuteSource {
@@ -134,9 +145,14 @@ class PageActionIconView : public IconLabelBubbleView {
   // Updates the icon image after some state has changed.
   virtual void UpdateIconImage();
 
-  // Sets the active state of the icon. An active icon will be displayed in a
-  // "call to action" color.
-  void SetActiveInternal(bool active);
+  // Creates and updates the loading indicator.
+  // TODO(crbug.com/964127): Ideally this should be lazily initialized in
+  // SetIsLoading(), but local card migration icon has a weird behavior that
+  // doing so will cause the indicator being invisible. Investigate and fix.
+  void InstallLoadingIndicator();
+
+  // Set if the page action icon is in the loading state.
+  void SetIsLoading(bool is_loading);
 
   // Returns the associated web contents from the delegate.
   content::WebContents* GetWebContents() const;
@@ -145,6 +161,10 @@ class PageActionIconView : public IconLabelBubbleView {
 
   // Delegate accessor for subclasses.
   Delegate* delegate() const { return delegate_; }
+
+  // Update the icon and sets visibility appropriate for the associated model
+  // state.
+  virtual void UpdateImpl() = 0;
 
  private:
   void UpdateBorder();
@@ -168,6 +188,9 @@ class PageActionIconView : public IconLabelBubbleView {
   // subclass, but generally indicates that the associated feature is acting on
   // the web page.
   bool active_ = false;
+
+  // The loading indicator, showing a throbber animation on top of the icon.
+  PageActionIconLoadingIndicatorView* loading_indicator_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(PageActionIconView);
 };

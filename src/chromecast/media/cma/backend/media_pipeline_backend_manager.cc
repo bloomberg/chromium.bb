@@ -15,7 +15,6 @@
 #include "chromecast/chromecast_buildflags.h"
 #include "chromecast/media/cma/backend/audio_decoder_wrapper.h"
 #include "chromecast/media/cma/backend/cma_backend.h"
-#include "chromecast/media/cma/backend/extra_audio_stream.h"
 #include "chromecast/media/cma/backend/media_pipeline_backend_wrapper.h"
 #include "chromecast/public/volume_control.h"
 
@@ -35,19 +34,17 @@ namespace media {
 
 namespace {
 
-#if BUILDFLAG(IS_CAST_AUDIO_ONLY) || BUILDFLAG(ENABLE_ASSISTANT)
 constexpr int kAudioDecoderLimit = std::numeric_limits<int>::max();
-#else
-constexpr int kAudioDecoderLimit = 1;
-#endif
-
+constexpr int kVideoDecoderLimit = 1;
 constexpr base::TimeDelta kPowerSaveWaitTime = base::TimeDelta::FromSeconds(5);
 
 }  // namespace
 
 MediaPipelineBackendManager::MediaPipelineBackendManager(
-    scoped_refptr<base::SingleThreadTaskRunner> media_task_runner)
+    scoped_refptr<base::SingleThreadTaskRunner> media_task_runner,
+    MediaResourceTracker* media_resource_tracker)
     : media_task_runner_(std::move(media_task_runner)),
+      media_resource_tracker_(media_resource_tracker),
       playing_audio_streams_count_({{AudioContentType::kMedia, 0},
                                     {AudioContentType::kAlarm, 0},
                                     {AudioContentType::kCommunication, 0},
@@ -59,24 +56,19 @@ MediaPipelineBackendManager::MediaPipelineBackendManager(
            {AudioContentType::kOther, 0}}),
       allow_volume_feedback_observers_(
           new base::ObserverListThreadSafe<AllowVolumeFeedbackObserver>()),
-      global_volume_multipliers_({{AudioContentType::kMedia, 1.0f},
-                                  {AudioContentType::kAlarm, 1.0f},
-                                  {AudioContentType::kCommunication, 1.0f},
-                                  {AudioContentType::kOther, 1.0f}},
-                                 base::KEEP_FIRST_OF_DUPES),
       backend_wrapper_using_video_decoder_(nullptr),
       buffer_delegate_(nullptr),
       weak_factory_(this) {
   DCHECK(media_task_runner_);
-  DCHECK(playing_audio_streams_count_.size() ==
-         static_cast<unsigned long>(AudioContentType::kNumTypes));
-  DCHECK(playing_noneffects_audio_streams_count_.size() ==
-         static_cast<unsigned long>(AudioContentType::kNumTypes));
-  DCHECK(global_volume_multipliers_.size() ==
-         static_cast<unsigned long>(AudioContentType::kNumTypes));
+  DCHECK_EQ(playing_audio_streams_count_.size(),
+            static_cast<size_t>(AudioContentType::kNumTypes));
+  DCHECK_EQ(playing_noneffects_audio_streams_count_.size(),
+            static_cast<size_t>(AudioContentType::kNumTypes));
   for (int i = 0; i < NUM_DECODER_TYPES; ++i) {
     decoder_count_[i] = 0;
   }
+
+  RUN_ON_MEDIA_THREAD(CreateMixerConnection);
 }
 
 MediaPipelineBackendManager::~MediaPipelineBackendManager() {
@@ -86,7 +78,8 @@ MediaPipelineBackendManager::~MediaPipelineBackendManager() {
 std::unique_ptr<CmaBackend> MediaPipelineBackendManager::CreateCmaBackend(
     const media::MediaPipelineDeviceParams& params) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
-  return std::make_unique<MediaPipelineBackendWrapper>(params, this);
+  return std::make_unique<MediaPipelineBackendWrapper>(params, this,
+                                                       media_resource_tracker_);
 }
 
 void MediaPipelineBackendManager::BackendDestroyed(
@@ -113,7 +106,8 @@ void MediaPipelineBackendManager::BackendUseVideoDecoder(
 bool MediaPipelineBackendManager::IncrementDecoderCount(DecoderType type) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
   DCHECK(type < NUM_DECODER_TYPES);
-  const int limit = (type == AUDIO_DECODER) ? kAudioDecoderLimit : 1;
+  const int limit =
+      (type == VIDEO_DECODER) ? kVideoDecoderLimit : kAudioDecoderLimit;
   if (decoder_count_[type] >= limit) {
     LOG(WARNING) << "Decoder limit reached for type " << type;
     return false;
@@ -135,12 +129,43 @@ void MediaPipelineBackendManager::UpdatePlayingAudioCount(
     bool sfx,
     const AudioContentType type,
     int change) {
+  DCHECK(media_task_runner_->BelongsToCurrentThread());
   DCHECK(change == -1 || change == 1) << "bad count change: " << change;
 
   bool had_playing_audio_streams = (TotalPlayingAudioStreamsCount() > 0);
+  // Volume feedback sounds are only allowed when there are no non-effects
+  // audio streams playing.
+  bool prev_allow_feedback = (TotalPlayingNoneffectsAudioStreamsCount() == 0);
+
   playing_audio_streams_count_[type] += change;
   DCHECK_GE(playing_audio_streams_count_[type], 0);
 
+  if (!sfx) {
+    playing_noneffects_audio_streams_count_[type] += change;
+    DCHECK_GE(playing_noneffects_audio_streams_count_[type], 0);
+  }
+
+  HandlePlayingAudioStreamsChange(had_playing_audio_streams,
+                                  prev_allow_feedback);
+}
+
+void MediaPipelineBackendManager::OnMixerStreamCountChange(int primary_streams,
+                                                           int sfx_streams) {
+  DCHECK(media_task_runner_->BelongsToCurrentThread());
+  bool had_playing_audio_streams = (TotalPlayingAudioStreamsCount() > 0);
+  bool prev_allow_feedback = (TotalPlayingNoneffectsAudioStreamsCount() == 0);
+
+  mixer_primary_stream_count_ = primary_streams;
+  mixer_sfx_stream_count_ = sfx_streams;
+
+  HandlePlayingAudioStreamsChange(had_playing_audio_streams,
+                                  prev_allow_feedback);
+}
+
+void MediaPipelineBackendManager::HandlePlayingAudioStreamsChange(
+    bool had_playing_audio_streams,
+    bool prev_allow_feedback) {
+  DCHECK(media_task_runner_->BelongsToCurrentThread());
   int new_playing_audio_streams = TotalPlayingAudioStreamsCount();
   if (new_playing_audio_streams == 0) {
     power_save_timer_.Start(FROM_HERE, kPowerSaveWaitTime, this,
@@ -154,17 +179,7 @@ void MediaPipelineBackendManager::UpdatePlayingAudioCount(
     }
   }
 
-  if (sfx) {
-    return;
-  }
-
-  // Volume feedback sounds are only allowed when there are no non-effects
-  // audio streams playing.
-  bool prev_allow_feedback = (TotalPlayingNoneffectsAudioStreamsCount() == 0);
-  playing_noneffects_audio_streams_count_[type] += change;
-  DCHECK_GE(playing_noneffects_audio_streams_count_[type], 0);
   bool new_allow_feedback = (TotalPlayingNoneffectsAudioStreamsCount() == 0);
-
   if (new_allow_feedback != prev_allow_feedback) {
     allow_volume_feedback_observers_->Notify(
         FROM_HERE, &AllowVolumeFeedbackObserver::AllowVolumeFeedbackSounds,
@@ -177,7 +192,7 @@ int MediaPipelineBackendManager::TotalPlayingAudioStreamsCount() {
   for (auto entry : playing_audio_streams_count_) {
     total += entry.second;
   }
-  return total;
+  return std::max(total, mixer_primary_stream_count_ + mixer_sfx_stream_count_);
 }
 
 int MediaPipelineBackendManager::TotalPlayingNoneffectsAudioStreamsCount() {
@@ -185,7 +200,7 @@ int MediaPipelineBackendManager::TotalPlayingNoneffectsAudioStreamsCount() {
   for (auto entry : playing_noneffects_audio_streams_count_) {
     total += entry.second;
   }
-  return total;
+  return std::max(total, mixer_primary_stream_count_);
 }
 
 void MediaPipelineBackendManager::EnterPowerSaveMode() {
@@ -210,39 +225,16 @@ void MediaPipelineBackendManager::RemoveAllowVolumeFeedbackObserver(
 
 void MediaPipelineBackendManager::AddExtraPlayingStream(
     bool sfx,
-    const AudioContentType type,
-    ExtraAudioStream* extra_audio_stream) {
-  MAKE_SURE_MEDIA_THREAD(AddExtraPlayingStream, sfx, type, extra_audio_stream);
+    const AudioContentType type) {
+  MAKE_SURE_MEDIA_THREAD(AddExtraPlayingStream, sfx, type);
   UpdatePlayingAudioCount(sfx, type, 1);
-  if (extra_audio_stream)
-    extra_audio_streams_[type].emplace(extra_audio_stream);
 }
 
 void MediaPipelineBackendManager::RemoveExtraPlayingStream(
     bool sfx,
-    const AudioContentType type,
-    ExtraAudioStream* extra_audio_stream) {
-  MAKE_SURE_MEDIA_THREAD(RemoveExtraPlayingStream, sfx, type,
-                         extra_audio_stream);
+    const AudioContentType type) {
+  MAKE_SURE_MEDIA_THREAD(RemoveExtraPlayingStream, sfx, type);
   UpdatePlayingAudioCount(sfx, type, -1);
-  if (extra_audio_stream)
-    extra_audio_streams_[type].erase(extra_audio_stream);
-}
-
-void MediaPipelineBackendManager::SetGlobalVolumeMultiplier(
-    AudioContentType type,
-    float multiplier) {
-  MAKE_SURE_MEDIA_THREAD(SetGlobalVolumeMultiplier, type, multiplier);
-  DCHECK_GE(multiplier, 0.0f);
-  global_volume_multipliers_[type] = multiplier;
-  for (auto* a : audio_decoders_) {
-    if (a->content_type() == type) {
-      a->SetGlobalVolumeMultiplier(multiplier);
-    }
-  }
-  for (auto* extra_audio_stream : extra_audio_streams_[type]) {
-    extra_audio_stream->SetGlobalVolumeMultiplier(multiplier);
-  }
 }
 
 void MediaPipelineBackendManager::SetBufferDelegate(
@@ -251,28 +243,6 @@ void MediaPipelineBackendManager::SetBufferDelegate(
   DCHECK(buffer_delegate);
   DCHECK(!buffer_delegate_);
   buffer_delegate_ = buffer_delegate;
-}
-
-bool MediaPipelineBackendManager::IsPlaying(bool include_sfx,
-                                            AudioContentType type) {
-  if (include_sfx) {
-    return playing_audio_streams_count_[type];
-  } else {
-    return playing_noneffects_audio_streams_count_[type];
-  }
-}
-
-void MediaPipelineBackendManager::AddAudioDecoder(
-    ActiveAudioDecoderWrapper* decoder) {
-  DCHECK(decoder);
-  audio_decoders_.insert(decoder);
-  decoder->SetGlobalVolumeMultiplier(
-      global_volume_multipliers_[decoder->content_type()]);
-}
-
-void MediaPipelineBackendManager::RemoveAudioDecoder(
-    ActiveAudioDecoderWrapper* decoder) {
-  audio_decoders_.erase(decoder);
 }
 
 void MediaPipelineBackendManager::SetPowerSaveEnabled(bool power_save_enabled) {

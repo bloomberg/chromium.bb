@@ -19,8 +19,9 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
+#include "chrome/browser/apps/app_service/app_service_metrics.h"
 #include "chrome/browser/apps/launch_service/launch_service.h"
-#include "chrome/browser/chromeos/crostini/crostini_util.h"
+#include "chrome/browser/chromeos/crostini/crostini_features.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "chrome/browser/chromeos/file_manager/arc_file_tasks.h"
@@ -41,6 +42,7 @@
 #include "chrome/common/extensions/api/file_manager_private.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/services/app_service/public/mojom/types.mojom.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "components/drive/drive_api_util.h"
 #include "components/prefs/pref_service.h"
@@ -55,7 +57,7 @@
 #include "extensions/browser/extension_util.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_set.h"
-#include "storage/browser/fileapi/file_system_url.h"
+#include "storage/browser/file_system/file_system_url.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/mime_util/mime_util.h"
 #include "ui/base/window_open_disposition.h"
@@ -78,6 +80,7 @@ const char kArcAppTaskType[] = "arc";
 const char kCrostiniAppTaskType[] = "crostini";
 const char kWebAppTaskType[] = "web";
 const char kImportCrostiniImageHandlerId[] = "import-crostini-image";
+const char kInstallLinuxPackageHandlerId[] = "install-linux-package";
 
 // Converts a TaskType to a string.
 std::string TaskTypeToString(TaskType task_type) {
@@ -125,13 +128,29 @@ bool ContainsGoogleDocument(const std::vector<extensions::EntryInfo>& entries) {
   return false;
 }
 
-// Leaves tasks handled by the file manger itself as is and removes all others.
+// Removes all tasks except tasks handled by file manager.
 void KeepOnlyFileManagerInternalTasks(std::vector<FullTaskDescriptor>* tasks) {
   std::vector<FullTaskDescriptor> filtered;
   for (size_t i = 0; i < tasks->size(); ++i) {
     if ((*tasks)[i].task_descriptor().app_id == kFileManagerAppId)
       filtered.push_back((*tasks)[i]);
   }
+  tasks->swap(filtered);
+}
+
+// Removes task |actions| handled by file manager.
+void RemoveFileManagerInternalActions(const std::set<std::string>& actions,
+                                      std::vector<FullTaskDescriptor>* tasks) {
+  std::vector<FullTaskDescriptor> filtered;
+  for (size_t i = 0; i < tasks->size(); ++i) {
+    const auto& action = (*tasks)[i].task_descriptor().action_id;
+    if ((*tasks)[i].task_descriptor().app_id != kFileManagerAppId) {
+      filtered.push_back((*tasks)[i]);
+    } else if (actions.find(action) == actions.end()) {
+      filtered.push_back((*tasks)[i]);
+    }
+  }
+
   tasks->swap(filtered);
 }
 
@@ -200,6 +219,16 @@ void PostProcessFoundTasks(
   // Google documents can only be handled by internal handlers.
   if (ContainsGoogleDocument(entries))
     KeepOnlyFileManagerInternalTasks(result_list.get());
+
+  // Remove file manager internal view-pdf and view-swf actions if needed.
+  std::set<std::string> disabled_actions;
+  if (!util::ShouldBeOpenedWithPlugin(profile, FILE_PATH_LITERAL(".pdf"), ""))
+    disabled_actions.emplace("view-pdf");
+  if (!util::ShouldBeOpenedWithPlugin(profile, FILE_PATH_LITERAL(".swf"), ""))
+    disabled_actions.emplace("view-swf");
+  if (!disabled_actions.empty())
+    RemoveFileManagerInternalActions(disabled_actions, result_list.get());
+
   ChooseAndSetDefaultTask(*profile->GetPrefs(), entries, result_list.get());
   std::move(callback).Run(std::move(result_list));
 }
@@ -376,6 +405,11 @@ bool ExecuteFileTask(Profile* profile,
                               task.task_type, NUM_TASK_TYPE);
   }
 
+  // TODO(crbug.com/1005640): Move recording this metric to the App Service when
+  // file handling is supported there.
+  apps::RecordAppLaunch(task.app_id,
+                        apps::mojom::LaunchSource::kFromFileManager);
+
   if (auto* notifier = FileTasksNotifier::GetForProfile(profile)) {
     notifier->NotifyFileTasks(file_urls);
   }
@@ -385,9 +419,9 @@ bool ExecuteFileTask(Profile* profile,
     extensions::app_file_handler_util::MimeTypeCollector* mime_collector =
         new extensions::app_file_handler_util::MimeTypeCollector(profile);
     mime_collector->CollectForURLs(
-        file_urls, base::Bind(&ExecuteByArcAfterMimeTypesCollected, profile,
-                              task, file_urls, base::Passed(std::move(done)),
-                              base::Owned(mime_collector)));
+        file_urls, base::BindOnce(&ExecuteByArcAfterMimeTypesCollected, profile,
+                                  task, file_urls, std::move(done),
+                                  base::Owned(mime_collector)));
     return true;
   }
 
@@ -447,9 +481,12 @@ bool ExecuteFileTask(Profile* profile,
 
 bool IsFileHandlerEnabled(Profile* profile,
                           const apps::FileHandlerInfo& file_handler_info) {
-  // Crostini backup files can be disabled by policy.
+  // Crostini deb files and backup files can be disabled by policy.
+  if (file_handler_info.id == kInstallLinuxPackageHandlerId) {
+    return crostini::CrostiniFeatures::Get()->IsRootAccessAllowed(profile);
+  }
   if (file_handler_info.id == kImportCrostiniImageHandlerId) {
-    return crostini::IsCrostiniExportImportUIAllowedForProfile(profile);
+    return crostini::CrostiniFeatures::Get()->IsExportImportUIAllowed(profile);
   }
   return true;
 }

@@ -48,6 +48,10 @@ bool IsIncludedInHoldbackFieldTrial();
 // not included in a group.
 std::string HoldbackFieldTrialGroup();
 
+// Returns true if DRP config service should always be fetched even if DRP
+// holdback is enabled.
+bool ForceEnableClientConfigServiceForAllDataSaverUsers();
+
 // Returns true if this client has the command line switch to enable forced
 // pageload metrics pingbacks on every page load.
 bool IsForcePingbackEnabledViaFlags();
@@ -69,10 +73,6 @@ GURL GetPingbackURL();
 // If the Data Reduction Proxy config client is being used, the URL for the
 // Data Reduction Proxy config service.
 GURL GetConfigServiceURL();
-
-// Returns true if the Data Reduction Proxy is forced to be enabled from the
-// command line.
-bool ShouldForceEnableDataReductionProxy();
 
 // The current LitePage experiment blacklist version.
 int LitePageVersion();

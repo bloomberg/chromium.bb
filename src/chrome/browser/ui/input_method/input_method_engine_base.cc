@@ -12,6 +12,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "ui/aura/window.h"
@@ -40,6 +41,7 @@ namespace {
 
 const char kErrorNotActive[] = "IME is not active";
 const char kErrorWrongContext[] = "Context is not active";
+const char kErrorInvalidValue[] = "Argument '%s' with value '%d' is not valid";
 
 #if defined(OS_CHROMEOS)
 std::string GetKeyFromEvent(const ui::KeyEvent& event) {
@@ -126,6 +128,7 @@ void GetExtensionKeyboardEventFromKeyEvent(
   }
   ext_event->key_code = static_cast<int>(event.key_code());
   ext_event->alt_key = event.IsAltDown();
+  ext_event->altgr_key = event.IsAltGrDown();
   ext_event->ctrl_key = event.IsControlDown();
   ext_event->shift_key = event.IsShiftDown();
   ext_event->caps_lock = event.IsCapsLockOn();
@@ -136,10 +139,13 @@ void GetExtensionKeyboardEventFromKeyEvent(
 #endif  // defined(OS_CHROMEOS)
 }
 
+bool IsUint32Value(int i) {
+  return 0 <= i && i <= std::numeric_limits<uint32_t>::max();
+}
+
 }  // namespace
 
-InputMethodEngineBase::KeyboardEvent::KeyboardEvent()
-    : alt_key(false), ctrl_key(false), shift_key(false), caps_lock(false) {}
+InputMethodEngineBase::KeyboardEvent::KeyboardEvent() = default;
 
 InputMethodEngineBase::KeyboardEvent::KeyboardEvent(
     const KeyboardEvent& other) = default;
@@ -151,7 +157,6 @@ InputMethodEngineBase::InputMethodEngineBase()
       context_id_(0),
       next_context_id_(1),
       profile_(nullptr),
-      next_request_id_(1),
       composition_changed_(false),
       text_(""),
       commit_text_changed_(false),
@@ -209,7 +214,7 @@ void InputMethodEngineBase::Enable(const std::string& component_id) {
 void InputMethodEngineBase::Disable() {
   std::string last_component_id{active_component_id_};
   active_component_id_.clear();
-  ConfirmCompositionText(/* reset_engine */ true);
+  ConfirmCompositionText(/* reset_engine */ true, /* keep_selection */ false);
   observer_->OnDeactivated(last_component_id);
 }
 
@@ -238,8 +243,19 @@ void InputMethodEngineBase::ProcessKeyEvent(const ui::KeyEvent& key_event,
     ext_event.extension_id = extension_id_;
 
   // Should not pass key event in password field.
-  if (current_input_type_ != ui::TEXT_INPUT_TYPE_PASSWORD)
-    observer_->OnKeyEvent(active_component_id_, ext_event, std::move(callback));
+  if (current_input_type_ != ui::TEXT_INPUT_TYPE_PASSWORD) {
+    // Bind the start time to the callback so that we can calculate the latency
+    // when the callback is called.
+    observer_->OnKeyEvent(
+        active_component_id_, ext_event,
+        base::BindOnce(
+            [](base::Time start, KeyEventDoneCallback callback, bool handled) {
+              std::move(callback).Run(handled);
+              UMA_HISTOGRAM_TIMES("InputMethod.KeyEventLatency",
+                                  base::Time::Now() - start);
+            },
+            base::Time::Now(), std::move(callback)));
+  }
 }
 
 void InputMethodEngineBase::SetSurroundingText(const std::string& text,
@@ -293,6 +309,16 @@ bool InputMethodEngineBase::CommitText(int context_id,
   return true;
 }
 
+bool InputMethodEngineBase::FinishComposingText(int context_id,
+                                                std::string* error) {
+  if (context_id != context_id_ || context_id_ == -1) {
+    *error = kErrorWrongContext;
+    return false;
+  }
+  ConfirmCompositionText(/* reset_engine */ false, /* keep_selection */ true);
+  return true;
+}
+
 bool InputMethodEngineBase::DeleteSurroundingText(int context_id,
                                                   int offset,
                                                   size_t number_of_chars,
@@ -330,6 +356,7 @@ bool InputMethodEngineBase::SendKeyEvents(
 
     int flags = ui::EF_NONE;
     flags |= event.alt_key ? ui::EF_ALT_DOWN : ui::EF_NONE;
+    flags |= event.altgr_key ? ui::EF_ALTGR_DOWN : ui::EF_NONE;
     flags |= event.ctrl_key ? ui::EF_CONTROL_DOWN : ui::EF_NONE;
     flags |= event.shift_key ? ui::EF_SHIFT_DOWN : ui::EF_NONE;
     flags |= event.caps_lock ? ui::EF_CAPS_LOCK_ON : ui::EF_NONE;
@@ -412,7 +439,7 @@ bool InputMethodEngineBase::SetCompositionRange(
 
   // When there is composition text, commit it to the text field first before
   // changing the composition range.
-  ConfirmCompositionText(/* reset_engine */ false);
+  ConfirmCompositionText(/* reset_engine */ false, /* keep_selection */ false);
 
   std::vector<ui::ImeTextSpan> text_spans;
   for (const auto& segment : segments) {
@@ -435,8 +462,44 @@ bool InputMethodEngineBase::SetCompositionRange(
     text_span.end_offset = segment.end;
     text_spans.push_back(text_span);
   }
+  if (!IsUint32Value(selection_before)) {
+    *error = base::StringPrintf(kErrorInvalidValue, "selection_before",
+                                selection_before);
+    return false;
+  }
+  if (!IsUint32Value(selection_after)) {
+    *error = base::StringPrintf(kErrorInvalidValue, "selection_after",
+                                selection_after);
+    return false;
+  }
+  return SetCompositionRange(static_cast<uint32_t>(selection_before),
+                             static_cast<uint32_t>(selection_after),
+                             text_spans);
+}
 
-  return SetCompositionRange(selection_before, selection_after, text_spans);
+bool InputMethodEngineBase::SetSelectionRange(int context_id,
+                                              int start,
+                                              int end,
+                                              std::string* error) {
+  if (!IsActive()) {
+    *error = kErrorNotActive;
+    return false;
+  }
+  if (context_id != context_id_ || context_id_ == -1) {
+    *error = kErrorWrongContext;
+    return false;
+  }
+  if (!IsUint32Value(start)) {
+    *error = base::StringPrintf(kErrorInvalidValue, "start", start);
+    return false;
+  }
+  if (!IsUint32Value(end)) {
+    *error = base::StringPrintf(kErrorInvalidValue, "end", end);
+    return false;
+  }
+
+  return SetSelectionRange(static_cast<uint32_t>(start),
+                           static_cast<uint32_t>(end));
 }
 
 void InputMethodEngineBase::KeyEventHandled(const std::string& extension_id,
@@ -457,26 +520,37 @@ void InputMethodEngineBase::KeyEventHandled(const std::string& extension_id,
     composition_changed_ = false;
   }
 
-  auto request = request_map_.find(request_id);
-  if (request == request_map_.end()) {
+  const auto it = pending_key_events_.find(request_id);
+  if (it == pending_key_events_.end()) {
     LOG(ERROR) << "Request ID not found: " << request_id;
     return;
   }
 
-  std::move(request->second.second).Run(handled);
-  request_map_.erase(request);
+  std::move(it->second.callback).Run(handled);
+  pending_key_events_.erase(it);
 }
 
-std::string InputMethodEngineBase::AddRequest(
+std::string InputMethodEngineBase::AddPendingKeyEvent(
     const std::string& component_id,
-    ui::IMEEngineHandlerInterface::KeyEventDoneCallback key_data) {
+    ui::IMEEngineHandlerInterface::KeyEventDoneCallback callback) {
   std::string request_id = base::NumberToString(next_request_id_);
   ++next_request_id_;
 
-  request_map_[request_id] = std::make_pair(component_id, std::move(key_data));
+  pending_key_events_.emplace(
+      request_id, PendingKeyEvent(component_id, std::move(callback)));
 
   return request_id;
 }
+
+InputMethodEngineBase::PendingKeyEvent::PendingKeyEvent(
+    const std::string& component_id,
+    ui::IMEEngineHandlerInterface::KeyEventDoneCallback callback)
+    : component_id(component_id), callback(std::move(callback)) {}
+
+InputMethodEngineBase::PendingKeyEvent::PendingKeyEvent(
+    PendingKeyEvent&& other) = default;
+
+InputMethodEngineBase::PendingKeyEvent::~PendingKeyEvent() = default;
 
 void InputMethodEngineBase::DeleteSurroundingTextToInputContext(
     int offset,
@@ -487,11 +561,12 @@ void InputMethodEngineBase::DeleteSurroundingTextToInputContext(
     input_context->DeleteSurroundingText(offset, number_of_chars);
 }
 
-void InputMethodEngineBase::ConfirmCompositionText(bool reset_engine) {
+void InputMethodEngineBase::ConfirmCompositionText(bool reset_engine,
+                                                   bool keep_selection) {
   ui::IMEInputContextHandlerInterface* input_context =
       ui::IMEBridge::Get()->GetInputContextHandler();
   if (input_context)
-    input_context->ConfirmCompositionText(reset_engine);
+    input_context->ConfirmCompositionText(reset_engine, keep_selection);
 }
 
 }  // namespace input_method

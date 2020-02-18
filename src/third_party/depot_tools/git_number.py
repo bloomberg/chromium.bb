@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env vpython3
 # Copyright 2013 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -22,6 +22,7 @@ repo that it operates on in the ref 'refs/number/commits'.
 """
 
 from __future__ import print_function
+from __future__ import division
 
 import binascii
 import collections
@@ -59,7 +60,10 @@ def pathlify(hash_prefix):
   >>> pathlify('\xDE\xAD')
   'de/ad'
   """
-  return '/'.join('%02x' % ord(b) for b in hash_prefix)
+  if sys.version_info.major == 3:
+    return '/'.join('%02x' % b for b in hash_prefix)
+  else:
+    return '/'.join('%02x' % ord(b) for b in hash_prefix)
 
 
 @git.memoize_one(threadsafe=False)
@@ -75,9 +79,9 @@ def get_number_tree(prefix_bytes):
   ref = '%s:%s' % (REF, pathlify(prefix_bytes))
 
   try:
-    raw = buffer(git.run('cat-file', 'blob', ref, autostrip=False))
+    raw = git.run('cat-file', 'blob', ref, autostrip=False, decode=False)
     return dict(struct.unpack_from(CHUNK_FMT, raw, i * CHUNK_SIZE)
-                for i in xrange(len(raw) / CHUNK_SIZE))
+                for i in range(len(raw) // CHUNK_SIZE))
   except subprocess2.CalledProcessError:
     return {}
 
@@ -111,14 +115,15 @@ def intern_number_tree(tree):
   'c552317aa95ca8c3f6aae3357a4be299fbcb25ce'
   """
   with tempfile.TemporaryFile() as f:
-    for k, v in sorted(tree.iteritems()):
+    for k, v in sorted(tree.items()):
       f.write(struct.pack(CHUNK_FMT, k, v))
     f.seek(0)
     return git.intern_f(f)
 
 
-def leaf_map_fn((pre, tree)):
+def leaf_map_fn(pre_tree):
   """Converts a prefix and number tree into a git index line."""
+  pre, tree = pre_tree
   return '100644 blob %s\t%s\0' % (intern_number_tree(tree), pathlify(pre))
 
 
@@ -133,7 +138,7 @@ def finalize(targets):
   if not DIRTY_TREES:
     return
 
-  msg = 'git-number Added %s numbers' % sum(DIRTY_TREES.itervalues())
+  msg = 'git-number Added %s numbers' % sum(DIRTY_TREES.values())
 
   idx = os.path.join(git.run('rev-parse', '--git-dir'), 'number.idx')
   env = os.environ.copy()
@@ -149,7 +154,7 @@ def finalize(targets):
 
     with git.ScopedPool(kind=POOL_KIND) as leaf_pool:
       for item in leaf_pool.imap(leaf_map_fn, prefixes_trees):
-        updater.stdin.write(item)
+        updater.stdin.write(item.encode())
         inc()
 
     updater.stdin.close()
@@ -166,7 +171,7 @@ def finalize(targets):
         '-m', msg,
         '-p'] + git.hash_multi(REF)
     for t in targets:
-      commit_cmd.extend(['-p', binascii.hexlify(t)])
+      commit_cmd.extend(['-p', binascii.hexlify(t).decode()])
     commit_cmd.append(tree_id)
     commit_hash = git.run(*commit_cmd)
     git.run('update-ref', REF, commit_hash)
@@ -179,7 +184,11 @@ def preload_tree(prefix):
 
 
 def all_prefixes(depth=PREFIX_LEN):
-  for x in (chr(i) for i in xrange(255)):
+  if sys.version_info.major == 3:
+    prefixes = [bytes([i]) for i in range(255)]
+  else:
+    prefixes = [chr(i) for i in range(255)]
+  for x in prefixes:
     # This isn't covered because PREFIX_LEN currently == 1
     if depth > 1:  # pragma: no cover
       for r in all_prefixes(depth - 1):
@@ -227,9 +236,9 @@ def load_generation_numbers(targets):
       # stdout as they're produced). GIL strikes again :/
       cmd = [
         'rev-list', '--topo-order', '--parents', '--reverse', '^' + REF,
-      ] + map(binascii.hexlify, targets)
+      ] + [binascii.hexlify(target).decode() for target in targets]
       for line in git.run(*cmd).splitlines():
-        tokens = map(binascii.unhexlify, line.split())
+        tokens = [binascii.unhexlify(token) for token in line.split()]
         rev_list.append((tokens[0], tokens[1:]))
         inc()
 

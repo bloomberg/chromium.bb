@@ -8,7 +8,7 @@
 # tags: [ d3d11 d3d9 no-angle opengl opengles vulkan ]
 # tags: [ no-passthrough passthrough ]
 # tags: [ webgl-version-1 ]
-# tags: [ angle_lt_25.20.100.6444 mesa_lt_17.1.6 ]
+# tags: [ intel_lt_25.20.100.6444 intel_lt_26.20.100.7000 intel_lt_26.20.100.7323 mesa_eq_18.0.5 ]
 # results: [ Failure RetryOnFailure Skip ]
 
 
@@ -18,7 +18,6 @@
 # It's expected that not all extensions will be available on all platforms.
 # Having a test listed here is not necessarily a problem.
 [ win vulkan passthrough ] WebglExtension_EXT_float_blend [ Failure ]
-crbug.com/angleproject/2672 [ vulkan passthrough ] WebglExtension_WEBGL_multi_draw_instanced [ Failure ]
 
 # Skip these, rather than expect them to fail, to speed up test
 # execution. The browser is restarted even after expected test
@@ -47,6 +46,7 @@ crbug.com/849576 [ no-passthrough ] WebglExtension_KHR_parallel_shader_compile [
 crbug.com/867718 [ win d3d9 ] WebglExtension_EXT_disjoint_timer_query [ Failure ]
 [ win amd d3d9 ] WebglExtension_WEBGL_depth_texture [ Failure ]
 [ win d3d9 ] WebglExtension_WEBGL_draw_buffers [ Failure ]
+[ win d3d9 ] WebglExtension_OES_fbo_render_mipmap [ Failure ]
 
 # Android general
 [ android ] WebglExtension_EXT_frag_depth [ Failure ]
@@ -74,7 +74,7 @@ crbug.com/867718 [ win d3d9 ] WebglExtension_EXT_disjoint_timer_query [ Failure 
 
 # Need to implement new error semantics
 # https://github.com/KhronosGroup/WebGL/pull/2607
-crbug.com/849572 conformance/extensions/angle-instanced-arrays-out-of-bounds.html [ Failure ]
+crbug.com/849572 [ passthrough ] conformance/extensions/angle-instanced-arrays-out-of-bounds.html [ Failure ]
 
 # Nvidia bugs fixed in latest driver
 # TODO(http://crbug.com/887241): Upgrade the drivers on the bots.
@@ -97,10 +97,15 @@ crbug.com/953120 [ passthrough ] conformance/programs/program-test.html [ Failur
 # TODO(crbug.com/979444): once this is passing on the passthrough
 # command decoder on Android, simplify this expectation to just not
 # declare any OS.
+# TODO(crbug.com/1026468): simplify "win" condition
+# if [ win intel opengl passthrough ] [ Failure ] suppression is lifted.
 crbug.com/979444 [ chromeos ] conformance/textures/misc/texture-corner-case-videos.html [ RetryOnFailure ]
 crbug.com/979444 [ linux ] conformance/textures/misc/texture-corner-case-videos.html [ RetryOnFailure ]
 crbug.com/979444 [ mac no-passthrough ] conformance/textures/misc/texture-corner-case-videos.html [ RetryOnFailure ]
-crbug.com/979444 [ win ] conformance/textures/misc/texture-corner-case-videos.html [ RetryOnFailure ]
+crbug.com/979444 [ win nvidia ] conformance/textures/misc/texture-corner-case-videos.html [ RetryOnFailure ]
+crbug.com/979444 [ win amd ] conformance/textures/misc/texture-corner-case-videos.html [ RetryOnFailure ]
+crbug.com/979444 [ win intel d3d11 ] conformance/textures/misc/texture-corner-case-videos.html [ RetryOnFailure ]
+crbug.com/979444 [ win intel opengl no-passthrough ] conformance/textures/misc/texture-corner-case-videos.html [ RetryOnFailure ]
 crbug.com/979444 [ android ] conformance/textures/misc/texture-corner-case-videos.html [ RetryOnFailure ]
 
 # Win / AMD / Passthrough command decoder / D3D11
@@ -117,32 +122,47 @@ crbug.com/751849 [ win7 debug nvidia d3d11 passthrough ] conformance/extensions/
 # Win failures     #
 ####################
 
+# Failed issues
+crbug.com/1023747 [ win d3d11 passthrough ] WebglExtension_OES_fbo_render_mipmap [ Failure ]
+
 # Intel flaky issues
-crbug.com/825338 [ win intel ] conformance/extensions/oes-texture-float-with-video.html [ RetryOnFailure ]
+crbug.com/825338 [ win intel d3d11 ] conformance/extensions/oes-texture-float-with-video.html [ RetryOnFailure ]
 crbug.com/929009 [ win intel ] conformance/glsl/misc/shader-with-non-reserved-words.html [ RetryOnFailure ]
 crbug.com/854100 [ win10 intel opengl ] conformance/glsl/variables/gl-pointcoord.html [ RetryOnFailure ]
 crbug.com/602688 [ win intel d3d11 passthrough ] conformance/renderbuffers/framebuffer-state-restoration.html [ RetryOnFailure ]
-
-# Intel failed issues
-crbug.com/angleproject/2722 [ win intel vulkan passthrough ] conformance/rendering/clipping-wide-points.html [ Failure ]
-[ win7 intel no-passthrough ] conformance/textures/misc/copy-tex-image-and-sub-image-2d.html [ Failure ]
+crbug.com/1023745 [ win intel d3d9 passthrough ] conformance2/textures/image_bitmap_from_video/tex-2d-r16f-red-half_float.html [ RetryOnFailure ]
 
 # Intel driver issues
+crbug.com/angleproject/2909 [ win intel vulkan passthrough intel_lt_26.20.100.7000 ] conformance/ogles/GL/faceforward/faceforward_001_to_006.html [ Failure ]
+crbug.com/angleproject/2722 [ win intel vulkan passthrough intel_lt_26.20.100.7323 ] conformance/rendering/clipping-wide-points.html [ Failure ]
+
 # This is an OpenGL driver bug on Intel platform and it is fixed in
 # Intel Driver 25.20.100.6444.
 # Case no-over-optimization-on-uniform-array-09 always fail if run
 # case biuDepthRange_001_to_002 first.
 # Temporarily skip these two cases now because this issue blocks
 # WEBGL_video_texture implementation.
-crbug.com/907195 [ win intel opengl passthrough angle_lt_25.20.100.6444 ] conformance/ogles/GL/biuDepthRange/biuDepthRange_001_to_002.html [ Skip ]
-crbug.com/907195 [ win intel opengl passthrough angle_lt_25.20.100.6444 ] conformance/uniforms/no-over-optimization-on-uniform-array-09.html [ Skip ]
+crbug.com/907195 [ win intel opengl passthrough intel_lt_25.20.100.6444 ] conformance/ogles/GL/biuDepthRange/biuDepthRange_001_to_002.html [ Skip ]
+crbug.com/907195 [ win intel opengl passthrough intel_lt_25.20.100.6444 ] conformance/uniforms/no-over-optimization-on-uniform-array-09.html [ Skip ]
+
+# Flaky failure in IDirect3D9Ex::CreateDeviceEx
+# during DXVAVideoDecodeAccelerator::Initialize on 26.20.100.7323 driver
+# When it fails, it's all 3 retires, thus "Failure" expectation
+crbug.com/1026468 [ win intel opengl passthrough ] conformance/extensions/oes-texture-float-with-video.html [ Failure ]
+crbug.com/1026468 [ win intel opengl passthrough ] conformance/extensions/oes-texture-half-float-with-video.html [ Failure ]
+crbug.com/1026468 [ win intel opengl passthrough ] conformance/textures/image_bitmap_from_video/* [ Failure ]
+crbug.com/1026468 [ win intel opengl passthrough ] conformance/textures/misc/tex-video-using-tex-unit-non-zero.html [ Failure ]
+crbug.com/1026468 [ win intel opengl passthrough ] conformance/textures/misc/texture-corner-case-videos.html [ Failure ]
+crbug.com/1026468 [ win intel opengl passthrough ] conformance/textures/misc/texture-upload-size.html [ Failure ]
+crbug.com/1026468 [ win intel opengl passthrough ] conformance/textures/video/* [ Failure ]
 
 # TODO(kbr): re-enable suppression for same test below once fixed.
 crbug.com/angleproject/2103 [ win ] conformance/glsl/bugs/sampler-struct-function-arg.html [ Skip ]
 
 # Note that the following test seems to pass, but it may still be flaky.
-crbug.com/478572 [ win ] deqp/data/gles2/shaders/functions.html [ Failure ]
-crbug.com/931006 [ win ] conformance/textures/misc/texture-active-bind.html [ Failure ]
+crbug.com/478572 [ win d3d9 passthrough ] deqp/data/gles2/shaders/functions.html [ Failure ]
+crbug.com/478572 [ win amd vulkan passthrough ] deqp/data/gles2/shaders/functions.html [ Failure ]
+crbug.com/931006 [ win ] conformance/textures/misc/texture-active-bind.html [ RetryOnFailure ]
 crbug.com/951628 [ win no-passthrough ] conformance/rendering/blending.html [ Failure ]
 
 # Win NVIDIA failures
@@ -188,7 +208,6 @@ crbug.com/475095 [ win amd d3d9 ] conformance/extensions/angle-instanced-arrays.
 # Skipping these two tests because they're causing assertion failures.
 crbug.com/angleproject/896 [ win d3d9 no-passthrough ] conformance/extensions/oes-texture-float-with-canvas.html [ Skip ]
 crbug.com/angleproject/896 [ win d3d9 no-passthrough ] conformance/extensions/oes-texture-half-float-with-canvas.html [ Skip ]
-crbug.com/angleproject/1179 [ win d3d9 ] conformance/glsl/bugs/floor-div-cos-should-not-truncate.html [ Failure ]
 
 # The functions test have been persistently flaky on D3D9
 crbug.com/415609 [ win d3d9 ] conformance/glsl/functions/* [ RetryOnFailure ]
@@ -207,22 +226,8 @@ crbug.com/963205 [ win nvidia opengl passthrough ] conformance/extensions/webgl-
 # Mark ANGLE's OpenGL as flaky on Windows Nvidia
 crbug.com/582083 [ win nvidia opengl ] conformance/* [ RetryOnFailure ]
 
-# Win / OpenGL / AMD failures
-crbug.com/649824 [ win amd opengl ] conformance/attribs/gl-bindAttribLocation-aliasing.html [ Skip ]
-crbug.com/angleproject/1007 [ win amd opengl ] conformance/glsl/misc/shader-struct-scope.html [ Skip ]
-crbug.com/angleproject/1506 [ win amd opengl ] conformance/rendering/clipping-wide-points.html [ Failure ]
-
-# AMD RX 550 Failures
-crbug.com/950123 [ win amd-0x699f opengl ] conformance/glsl/bugs/gl-fragcoord-multisampling-bug.html [ Skip ]
-crbug.com/950123 [ win amd-0x699f opengl ] conformance/glsl/misc/fragcolor-fragdata-invariant.html [ Skip ]
-crbug.com/950123 [ win amd-0x699f opengl ] conformance/glsl/samplers/glsl-function-texture2dprojlod.html [ Skip ]
-crbug.com/950123 [ win amd-0x699f opengl ] conformance/rendering/line-rendering-quality.html [ Skip ]
-crbug.com/952887 [ win amd-0x699f opengl passthrough ] conformance/rendering/multisample-corruption.html [ Skip ]
-
-# Mark ANGLE's OpenGL as flaky on Windows Amd
-crbug.com/582083 [ win amd opengl ] conformance/* [ RetryOnFailure ]
-
 # D3D9 / Passthrough command decoder
+crbug.com/angleproject/1179 [ win d3d9 passthrough ] conformance/glsl/bugs/floor-div-cos-should-not-truncate.html [ Failure ]
 crbug.com/angleproject/2192 [ win d3d9 passthrough ] conformance/textures/canvas/tex-2d-luminance-luminance-unsigned_byte.html [ Failure ]
 crbug.com/angleproject/2192 [ win d3d9 passthrough ] conformance/textures/canvas/tex-2d-luminance_alpha-luminance_alpha-unsigned_byte.html [ Failure ]
 crbug.com/angleproject/2192 [ win d3d9 passthrough ] conformance/textures/image_bitmap_from_canvas/tex-2d-luminance-luminance-unsigned_byte.html [ Failure ]
@@ -233,51 +238,41 @@ crbug.com/angleproject/2192 [ win d3d9 passthrough ] conformance/textures/webgl_
 crbug.com/angleproject/2192 [ win d3d9 passthrough ] conformance/textures/webgl_canvas/tex-2d-luminance_alpha-luminance_alpha-unsigned_byte.html [ Failure ]
 
 # Vulkan / Win / Passthrough command decoder
-crbug.com/angleproject/3469 [ win vulkan passthrough ] conformance/extensions/webgl-draw-buffers.html [ Failure ]
-crbug.com/angleproject/2916 [ win vulkan passthrough ] conformance/offscreencanvas/context-lost-restored-worker.html [ Failure ]
-crbug.com/angleproject/2916 [ win vulkan passthrough ] conformance/offscreencanvas/context-lost-restored.html [ Failure ]
+crbug.com/angleproject/3469 [ win vulkan passthrough nvidia ] conformance/extensions/webgl-draw-buffers.html [ Failure ]
 crbug.com/angleproject/2722 [ win vulkan passthrough ] conformance/textures/misc/copy-tex-image-and-sub-image-2d.html [ Failure ]
 crbug.com/angleproject/2914 [ win vulkan passthrough ] conformance/textures/misc/texture-copying-feedback-loops.html [ Failure ]
 crbug.com/angleproject/2722 [ win vulkan passthrough ] conformance/textures/misc/texture-mips.html [ Failure ]
 
 # Note: the following test crashes so it's skipped.  http://anglebug.com/3352
 crbug.com/angleproject/2921 [ win vulkan passthrough ] conformance/uniforms/out-of-bounds-uniform-array-access.html [ Skip ]
-crbug.com/angleproject/2672 [ win vulkan passthrough ] WebglExtension_ANGLE_instanced_arrays [ Failure ]
-crbug.com/angleproject/2897 [ win vulkan passthrough ] WebglExtension_EXT_blend_minmax [ Failure ]
-crbug.com/angleproject/2898 [ win vulkan passthrough ] WebglExtension_EXT_color_buffer_half_float [ Failure ]
-crbug.com/angleproject/2885 [ win vulkan passthrough ] WebglExtension_EXT_disjoint_timer_query [ Failure ]
-crbug.com/angleproject/2887 [ win vulkan passthrough ] WebglExtension_EXT_frag_depth [ Failure ]
 crbug.com/angleproject/2899 [ win vulkan passthrough ] WebglExtension_EXT_shader_texture_lod [ Failure ]
-crbug.com/angleproject/2902 [ win vulkan passthrough ] WebglExtension_OES_element_index_uint [ Failure ]
-crbug.com/angleproject/2903 [ win vulkan passthrough ] WebglExtension_OES_standard_derivatives [ Failure ]
-crbug.com/angleproject/2898 [ win vulkan passthrough ] WebglExtension_OES_texture_float [ Failure ]
-crbug.com/angleproject/2898 [ win vulkan passthrough ] WebglExtension_OES_texture_float_linear [ Failure ]
-crbug.com/angleproject/2898 [ win vulkan passthrough ] WebglExtension_OES_texture_half_float [ Failure ]
-crbug.com/angleproject/2898 [ win vulkan passthrough ] WebglExtension_OES_texture_half_float_linear [ Failure ]
-crbug.com/angleproject/2898 [ win vulkan passthrough ] WebglExtension_WEBGL_color_buffer_float [ Failure ]
-crbug.com/angleproject/2904 [ win vulkan passthrough ] WebglExtension_WEBGL_compressed_texture_s3tc [ Failure ]
-crbug.com/angleproject/2905 [ win vulkan passthrough ] WebglExtension_WEBGL_depth_texture [ Failure ]
-crbug.com/angleproject/2394 [ win vulkan passthrough ] WebglExtension_WEBGL_draw_buffers [ Failure ]
 crbug.com/angleproject/3111 [ win vulkan passthrough ] deqp/data/gles2/shaders/swizzles.html [ Skip ]
 crbug.com/angleproject/3741 [ win vulkan passthrough ] conformance/textures/misc/mipmap-fbo.html [ RetryOnFailure ]
 
 # Vulkan / Win / NVIDIA / Passthrough command decoder
+crbug.com/angleproject/3935 [ win nvidia vulkan passthrough ] conformance/canvas/viewport-unchanged-upon-resize.html [ Failure ]
 crbug.com/963205 [ win nvidia vulkan passthrough ] conformance/extensions/webgl-compressed-texture-s3tc-srgb.html [ Failure ]
 crbug.com/964321 [ win nvidia vulkan passthrough ] conformance/extensions/webgl-compressed-texture-s3tc.html [ RetryOnFailure ]
 crbug.com/963217 [ win nvidia vulkan passthrough ] conformance/glsl/samplers/glsl-function-texture2dprojlod.html [ Failure ]
 crbug.com/angleproject/2915 [ win nvidia vulkan passthrough ] conformance/limits/gl-max-texture-dimensions.html [ Failure ]
-crbug.com/964331 [ win10 nvidia vulkan passthrough ] conformance/ogles/GL/pow/pow_009_to_016.html [ Failure ]
-crbug.com/964331 [ win10 nvidia vulkan passthrough ] conformance/ogles/GL/pow/pow_017_to_024.html [ Failure ]
+crbug.com/angleproject/3883 [ win nvidia vulkan passthrough ] conformance/misc/uninitialized-test.html [ Failure ]
+crbug.com/angleproject/2909 [ win nvidia vulkan passthrough ] conformance/ogles/GL/faceforward/faceforward_001_to_006.html [ Failure ]
+crbug.com/angleproject/2722 [ win nvidia vulkan passthrough ] conformance/renderbuffers/framebuffer-state-restoration.html [ Failure ]
 crbug.com/angleproject/2939 [ win nvidia vulkan passthrough ] conformance/rendering/gl-scissor-fbo-test.html [ RetryOnFailure ]
 crbug.com/963223 [ win nvidia vulkan passthrough ] conformance/rendering/out-of-bounds-array-buffers.html [ Failure ]
+crbug.com/angleproject/2722 [ win nvidia vulkan passthrough ] conformance/textures/misc/texture-attachment-formats.html [ Failure ]
+crbug.com/1020295 [ win7 nvidia vulkan passthrough ] conformance/textures/misc/texture-complete.html [ RetryOnFailure ]
 crbug.com/angleproject/2915 [ win nvidia vulkan passthrough ] conformance/textures/misc/texture-size.html [ Failure ]
 crbug.com/angleproject/2930 [ win nvidia vulkan passthrough ] conformance/textures/misc/texture-size-cube-maps.html [ Failure ]
 crbug.com/angleproject/3481 [ win nvidia vulkan passthrough ] conformance/textures/misc/texture-sub-image-cube-maps.html [ Failure ]
 crbug.com/angleproject/2926 [ win nvidia vulkan passthrough ] deqp/data/gles2/shaders/conversions.html [ Failure ]
-crbug.com/angleproject/2909 [ win nvidia vulkan passthrough ] conformance/ogles/GL/faceforward/faceforward_001_to_006.html [ Failure ]
-crbug.com/angleproject/2722 [ win nvidia vulkan passthrough ] conformance/textures/misc/texture-attachment-formats.html [ Failure ]
-crbug.com/angleproject/2722 [ win nvidia vulkan passthrough ] conformance/renderbuffers/framebuffer-state-restoration.html [ Failure ]
-crbug.com/angleproject/3883 [ win nvidia vulkan passthrough ] conformance/misc/uninitialized-test.html [ Failure ]
+# Flaky since crbug.com/1017162
+crbug.com/1017162 [ win nvidia vulkan passthrough ] conformance/extensions/angle-instanced-arrays.html [ Failure ]
+crbug.com/1017162 [ win nvidia vulkan passthrough ] conformance/ogles/GL/* [ Failure ]
+crbug.com/1017162 [ win nvidia vulkan passthrough ] conformance/context/context-attribute-preserve-drawing-buffer.html [ Failure ]
+crbug.com/1017162 [ win nvidia vulkan passthrough ] conformance/extensions/oes-fbo-render-mipmap.html [ Failure ]
+crbug.com/1017162 [ win nvidia vulkan passthrough ] conformance/renderbuffers/stencil-renderbuffer-initialization.html [ Failure ]
+crbug.com/1017162 [ win nvidia vulkan passthrough ] conformance/renderbuffers/depth-renderbuffer-initialization.html [ Failure ]
 
 # Vulkan / Win / AMD / Passthrough command decoder
 crbug.com/angleproject/2898 [ win amd vulkan passthrough ] conformance/extensions/oes-texture-float-with-canvas.html [ Failure ]
@@ -289,9 +284,8 @@ crbug.com/931016 [ win amd vulkan passthrough ] conformance/textures/image_bitma
 crbug.com/931016 [ win amd vulkan passthrough ] conformance/textures/image_bitmap_from_canvas/tex-2d-rgb* [ Failure ]
 crbug.com/974347 [ win amd vulkan passthrough ] conformance/textures/image/tex-2d-luminance-luminance-unsigned_byte.html [ Failure ]
 crbug.com/974347 [ win amd vulkan passthrough ] conformance/textures/image/tex-2d-luminance_alpha-luminance_alpha-unsigned_byte.html [ Failure ]
-
-# Vulkan / Win / Intel / Passthrough command decoder
-crbug.com/angleproject/2909 [ win intel vulkan passthrough ] conformance/ogles/GL/faceforward/faceforward_001_to_006.html [ Failure ]
+crbug.com/1004581 [ win amd vulkan passthrough ] conformance/rendering/multisample-corruption.html [ Failure ]
+crbug.com/1010942 [ win amd vulkan passthrough ] conformance/glsl/samplers/glsl-function-texture2dproj.html [ Failure ]
 
 ####################
 # Mac failures     #
@@ -328,32 +322,8 @@ crbug.com/871352 [ mac debug nvidia-0xfe9 ] conformance/uniforms/uniform-sampler
 crbug.com/948218 [ mac debug nvidia-0xfe9 ] conformance/glsl/misc/shader-with-non-reserved-words.html [ Failure ]
 
 # Mac / Passthrough command decoder
-crbug.com/990368 [ mac passthrough ] conformance/canvas/canvas-test.html [ Failure ]
-crbug.com/990368 [ mac passthrough ] conformance/canvas/draw-static-webgl-to-multiple-canvas-test.html [ Failure ]
-crbug.com/990368 [ mac passthrough ] conformance/canvas/draw-webgl-to-canvas-test.html [ Failure ]
-crbug.com/990368 [ mac passthrough ] conformance/canvas/to-data-url-test.html [ Failure ]
-crbug.com/angleproject/3812 [ mac passthrough ] conformance/context/context-attribute-preserve-drawing-buffer.html [ Failure ]
-crbug.com/990368 [ mac passthrough ] conformance/context/premultiplyalpha-test.html [ Failure ]
-crbug.com/989194 [ mac passthrough ] conformance/extensions/oes-texture-float-with-video.html [ Failure ]
-crbug.com/989194 [ mac passthrough ] conformance/extensions/oes-texture-half-float-with-video.html [ Failure ]
 crbug.com/989194 [ mac passthrough ] conformance/extensions/oes-texture-half-float.html [ Failure ]
-crbug.com/angleproject/3768 [ mac passthrough ] conformance/glsl/bugs/sequence-operator-evaluation-order.html [ Failure ]
-crbug.com/angleproject/3769 [ mac passthrough ] conformance/glsl/misc/shader-struct-scope.html [ Failure ]
-crbug.com/angleproject/3769 [ mac passthrough ] conformance/glsl/misc/shader-with-short-circuiting-operators.html [ Failure ]
-crbug.com/angleproject/3771 [ mac passthrough ] conformance/glsl/samplers/glsl-function-texture2dprojlod.html [ Failure ]
-crbug.com/angleproject/3770 [ mac passthrough ] conformance/ogles/GL/build/build_177_to_178.html [ Failure ]
-crbug.com/angleproject/3772 [ mac passthrough ] conformance/rendering/draw-webgl-to-canvas-2d-repeatedly.html [ Failure ]
-crbug.com/989194 [ mac passthrough ] conformance/textures/image_bitmap_from_video/* [ Failure ]
-crbug.com/989194 [ mac passthrough ] conformance/textures/video/* [ Failure ]
-crbug.com/990368 [ mac passthrough ] conformance/textures/webgl_canvas/* [ Failure ]
-crbug.com/angleproject/3774 [ mac passthrough ] conformance/textures/misc/gl-pixelstorei.html [ Failure ]
 crbug.com/angleproject/3766 [ mac passthrough ] conformance/textures/misc/gl-teximage.html [ Failure ]
-crbug.com/angleproject/3813 [ mac passthrough ] conformance/textures/misc/tex-image-webgl.html [ Failure ]
-crbug.com/989194 [ mac passthrough ] conformance/textures/misc/tex-video-using-tex-unit-non-zero.html [ Failure ]
-crbug.com/989194 [ mac passthrough ] conformance/textures/misc/texture-corner-case-videos.html [ Failure ]
-crbug.com/989194 [ mac passthrough ] conformance/textures/misc/texture-npot-video.html [ Failure ]
-crbug.com/989194 [ mac passthrough ] conformance/textures/misc/texture-upload-size.html [ Failure ]
-crbug.com/989194 [ mac passthrough ] conformance/textures/misc/texture-video-transparent.html [ Failure ]
 
 # Mac / Passthrough command decoder / AMD
 crbug.com/angleproject/3767 [ mac passthrough amd ] conformance/rendering/rendering-stencil-large-viewport.html [ Failure ]
@@ -365,12 +335,19 @@ crbug.com/992231 [ mac passthrough amd-0x679e ] conformance/context/context-size
 # Linux failures   #
 ####################
 
-# Intel driver issues
-crbug.com/680675 [ linux intel mesa_lt_17.1.6 ] conformance/extensions/webgl-compressed-texture-astc.html [ Failure ]
+# Intel failed issues
+crbug.com/1021428 [ linux intel vulkan ] conformance/textures/misc/copy-tex-image-and-sub-image-2d.html [ Failure ]
+crbug.com/1021428 [ linux intel vulkan ] conformance/textures/misc/texture-copying-feedback-loops.html [ Failure ]
+crbug.com/1021428 [ linux intel vulkan ] conformance/textures/misc/texture-mips.html [ Failure ]
+crbug.com/1021428 [ linux intel vulkan ] conformance/rendering/clipping-wide-points.html [ Failure ]
+crbug.com/1021428 [ linux intel vulkan ] conformance/extensions/webgl-draw-buffers.html [ Failure ]
+crbug.com/1021428 [ linux intel vulkan ] WebglExtension_EXT_shader_texture_lod [ Failure ]
+crbug.com/1021428 [ linux intel vulkan ] WebglExtension_EXT_float_blend [ Failure ]
+crbug.com/1021428 [ linux intel vulkan ] WebglExtension_WEBGL_depth_texture [ Failure ]
 
 # The following two tests only fail on Linux/Intel with Mesa 18.0.5,
 # not on Mesa 17.1.4 with the same Intel HD 630 GPU.
-crbug.com/928530 [ linux intel no-passthrough ] conformance/programs/program-test.html [ Failure ]
+crbug.com/928530 [ linux intel mesa_eq_18.0.5 no-passthrough ] conformance/programs/program-test.html [ Failure ]
 
 # NVIDIA
 crbug.com/524144 [ linux nvidia no-passthrough ] conformance/extensions/oes-element-index-uint.html [ RetryOnFailure ]
@@ -399,6 +376,8 @@ crbug.com/998498 [ linux amd passthrough ] conformance/textures/misc/tex-input-v
 # Linux passthrough AMD OpenGL
 crbug.com/965594 [ linux amd opengl passthrough ] conformance/more/conformance/quickCheckAPI-S_V.html [ RetryOnFailure ]
 crbug.com/965594 [ linux amd opengl passthrough ] conformance/more/conformance/webGLArrays.html [ RetryOnFailure ]
+crbug.com/1028639 [ linux amd opengl passthrough ] conformance/ogles/GL/mat/mat_009_to_016.html [ Failure ]
+crbug.com/1028639 [ linux amd opengl passthrough ] conformance/ogles/GL/log2/log2_009_to_012.html [ Failure ]
 
 
 ####################
@@ -420,7 +399,7 @@ crbug.com/352645 [ android android-webview-instrumentation ] conformance/texture
 crbug.com/352645 [ android ] conformance/textures/video/tex-2d-rgb-rgb-unsigned_short_5_6_5.html [ Skip ]
 crbug.com/352645 [ android android-webview-instrumentation ] conformance/textures/video/tex-2d-rgba-rgba-unsigned_byte.html [ Skip ]
 crbug.com/352645 [ android android-webview-instrumentation ] conformance/textures/video/tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html [ Skip ]
-crbug.com/352645 [ android-webview-instrumentation ] conformance/textures/video/tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html [ Skip ]
+crbug.com/352645 [ android android-webview-instrumentation ] conformance/textures/video/tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html [ Skip ]
 crbug.com/352645 [ android android-webview-instrumentation no-angle ] conformance/textures/misc/texture-npot-video.html [ Skip ]
 
 # These video tests appear to be flaky.
@@ -503,6 +482,7 @@ crbug.com/611945 [ android qualcomm-adreno-(tm)-420 ] conformance/glsl/bugs/qual
 crbug.com/611945 [ qualcomm-adreno-(tm)-420 android ] conformance/glsl/bugs/sampler-struct-function-arg.html [ Failure ]
 crbug.com/611945 [ qualcomm-adreno-(tm)-430 android ] conformance/glsl/bugs/sampler-struct-function-arg.html [ Failure ]
 crbug.com/951628 [ android qualcomm-adreno-(tm)-420 no-passthrough ] conformance/rendering/blending.html [ Failure ]
+crbug.com/1002997 [ android qualcomm-adreno-(tm)-430 no-passthrough ] conformance/rendering/blending.html [ Failure ]
 
 # This test is skipped because running it causes a future test to fail.
 # The list of tests which may be that future test is very long. It is
@@ -531,12 +511,13 @@ crbug.com/798117 [ android nvidia ] conformance/glsl/bugs/assign-to-swizzled-twi
 crbug.com/606096 [ android nvidia ] conformance/glsl/bugs/multiplication-assignment.html [ Failure ]
 crbug.com/912161 [ android nvidia ] conformance/glsl/constructors/glsl-construct-ivec4.html [ RetryOnFailure ]
 crbug.com/912161 [ android nvidia ] conformance/glsl/constructors/glsl-construct-mat2.html [ RetryOnFailure ]
-crbug.com/891456 [ android nvidia ] conformance/extensions/oes-texture-float-with-video.html [ RetryOnFailure ]
-crbug.com/891456 [ android nvidia ] conformance/extensions/oes-texture-half-float-with-video.html [ RetryOnFailure ]
+crbug.com/891456 [ android nvidia ] conformance/extensions/oes-texture-float-with-video.html [ Failure ]
+crbug.com/891456 [ android nvidia ] conformance/extensions/oes-texture-half-float-with-video.html [ Failure ]
 crbug.com/891456 [ android nvidia ] conformance/textures/image_bitmap_from_video/tex-2d-luminance-luminance-unsigned_byte.html [ RetryOnFailure ]
 crbug.com/891456 [ android nvidia ] conformance/textures/image_bitmap_from_video/tex-2d-luminance_alpha-luminance_alpha-unsigned_byte.html [ RetryOnFailure ]
 crbug.com/891456 [ android nvidia ] conformance/textures/image_bitmap_from_video/tex-2d-rgb-rgb-unsigned_short_5_6_5.html [ RetryOnFailure ]
 crbug.com/891456 [ android nvidia ] conformance/textures/image_bitmap_from_video/tex-2d-rgba-rgba-unsigned_byte.html [ RetryOnFailure ]
+crbug.com/1025790 [ android nvidia ] conformance/textures/misc/tex-image-canvas-corruption.html [ Skip ]
 crbug.com/478572 [ android nvidia ] deqp/data/gles2/shaders/functions.html [ Failure ]
 
 # Flaky timeout on android_n5x_swarming_rel and

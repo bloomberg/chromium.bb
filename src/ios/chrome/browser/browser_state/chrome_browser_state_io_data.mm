@@ -57,7 +57,6 @@
 #include "net/proxy_resolution/proxy_config_service_fixed.h"
 #include "net/proxy_resolution/proxy_resolution_service.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "net/url_request/data_protocol_handler.h"
 #include "net/url_request/report_sender.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
@@ -113,14 +112,6 @@ void ChromeBrowserStateIOData::InitializeOnUIThread(
 
   chrome_http_user_agent_settings_.reset(
       new IOSChromeHttpUserAgentSettings(pref_service));
-
-  // These members are used only for sign in, which is not enabled
-  // in incognito mode.  So no need to initialize them.
-  if (!IsOffTheRecord()) {
-    google_services_user_account_id_.Init(prefs::kGoogleServicesUserAccountId,
-                                          pref_service);
-    google_services_user_account_id_.MoveToSequence(io_task_runner);
-  }
 }
 
 ChromeBrowserStateIOData::AppRequestContext::AppRequestContext() {}
@@ -234,21 +225,6 @@ net::URLRequestContext* ChromeBrowserStateIOData::GetMainRequestContext()
     const {
   DCHECK(initialized_);
   return main_request_context_.get();
-}
-
-net::URLRequestContext* ChromeBrowserStateIOData::GetIsolatedAppRequestContext(
-    net::URLRequestContext* main_context,
-    const base::FilePath& partition_path) const {
-  DCHECK(initialized_);
-  AppRequestContext* context = nullptr;
-  if (base::Contains(app_request_context_map_, partition_path)) {
-    context = app_request_context_map_[partition_path];
-  } else {
-    context = AcquireIsolatedAppRequestContext(main_context);
-    app_request_context_map_[partition_path] = context;
-  }
-  DCHECK(context);
-  return context;
 }
 
 void ChromeBrowserStateIOData::SetCookieStoreForPartitionPath(
@@ -384,6 +360,8 @@ void ChromeBrowserStateIOData::Init(
       io_thread_globals->ct_policy_enforcer.get());
   main_request_context_->set_cert_transparency_verifier(
       io_thread_globals->cert_transparency_verifier.get());
+  main_request_context_->set_quic_context(
+      io_thread_globals->quic_context.get());
 
   InitializeInternal(std::move(network_delegate), profile_params_.get(),
                      protocol_handlers);
@@ -397,22 +375,10 @@ void ChromeBrowserStateIOData::ApplyProfileParamsToContext(
   context->set_http_user_agent_settings(chrome_http_user_agent_settings_.get());
 }
 
-std::unique_ptr<net::URLRequestJobFactory>
-ChromeBrowserStateIOData::SetUpJobFactoryDefaults(
-    std::unique_ptr<net::URLRequestJobFactoryImpl> job_factory,
-    net::NetworkDelegate* network_delegate) const {
-  bool set_protocol = job_factory->SetProtocolHandler(
-      url::kDataScheme, std::make_unique<net::DataProtocolHandler>());
-  DCHECK(set_protocol);
-
-  return job_factory;
-}
-
 void ChromeBrowserStateIOData::ShutdownOnUIThread(
     std::unique_ptr<IOSChromeURLRequestContextGetterVector> context_getters) {
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
 
-  google_services_user_account_id_.Destroy();
   enable_referrers_.Destroy();
   enable_do_not_track_.Destroy();
   enable_metrics_.Destroy();
@@ -427,7 +393,7 @@ void ChromeBrowserStateIOData::ShutdownOnUIThread(
     }
   }
 
-  bool posted = web::WebThread::DeleteSoon(web::WebThread::IO, FROM_HERE, this);
+  bool posted = base::DeleteSoon(FROM_HERE, {web::WebThread::IO}, this);
   if (!posted)
     delete this;
 }

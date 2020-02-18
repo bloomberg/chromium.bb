@@ -490,31 +490,12 @@ void AnimationHost::SetAnimationEvents(
 
   for (size_t event_index = 0; event_index < events->events_.size();
        ++event_index) {
-    ElementId element_id = events->events_[event_index].element_id;
-
-    // Use the map of all ElementAnimations, not just ticking animations, since
-    // non-ticking animations may still receive events for impl-only animations.
-    const ElementToAnimationsMap& all_element_animations =
-        element_to_animations_map_;
-    auto iter = all_element_animations.find(element_id);
-    if (iter != all_element_animations.end()) {
-      switch (events->events_[event_index].type) {
-        case AnimationEvent::STARTED:
-          (*iter).second->NotifyAnimationStarted(events->events_[event_index]);
-          break;
-
-        case AnimationEvent::FINISHED:
-          (*iter).second->NotifyAnimationFinished(events->events_[event_index]);
-          break;
-
-        case AnimationEvent::ABORTED:
-          (*iter).second->NotifyAnimationAborted(events->events_[event_index]);
-          break;
-
-        case AnimationEvent::TAKEOVER:
-          (*iter).second->NotifyAnimationTakeover(events->events_[event_index]);
-          break;
-      }
+    AnimationEvent& event = events->events_[event_index];
+    AnimationTimeline* timeline = GetTimelineById(event.uid.timeline_id);
+    if (timeline) {
+      Animation* animation = timeline->GetAnimationById(event.uid.animation_id);
+      if (animation)
+        animation->DispatchAndDelegateAnimationEvent(event);
     }
   }
 }
@@ -667,7 +648,7 @@ void AnimationHost::ImplOnlyScrollAnimationCreate(
     base::TimeDelta delayed_by,
     base::TimeDelta animation_start_offset) {
   DCHECK(scroll_offset_animations_impl_);
-  scroll_offset_animations_impl_->ScrollAnimationCreate(
+  scroll_offset_animations_impl_->MouseWheelScrollAnimationCreate(
       element_id, target_offset, current_offset, delayed_by,
       animation_start_offset);
 }
@@ -730,6 +711,20 @@ void AnimationHost::SetLayerTreeMutator(
   mutator_->SetClient(this);
 }
 
+WorkletAnimation* AnimationHost::FindWorkletAnimation(WorkletAnimationId id) {
+  // TODO(majidvp): Use a map to make lookup O(1)
+  auto animation = std::find_if(
+      ticking_animations_.begin(), ticking_animations_.end(), [id](auto& it) {
+        return it->IsWorkletAnimation() &&
+               ToWorkletAnimation(it.get())->worklet_animation_id() == id;
+      });
+
+  if (animation == ticking_animations_.end())
+    return nullptr;
+
+  return ToWorkletAnimation(animation->get());
+}
+
 void AnimationHost::SetMutationUpdate(
     std::unique_ptr<MutatorOutputState> output_state) {
   if (!output_state)
@@ -739,17 +734,9 @@ void AnimationHost::SetMutationUpdate(
   for (auto& animation_state : output_state->animations) {
     WorkletAnimationId id = animation_state.worklet_animation_id;
 
-    // TODO(majidvp): Use a map to make lookup O(1)
-    auto to_update = std::find_if(
-        ticking_animations_.begin(), ticking_animations_.end(), [id](auto& it) {
-          return it->IsWorkletAnimation() &&
-                 ToWorkletAnimation(it.get())->worklet_animation_id() == id;
-        });
-
-    if (to_update == ticking_animations_.end())
-      continue;
-
-    ToWorkletAnimation(to_update->get())->SetOutputState(animation_state);
+    WorkletAnimation* to_update = FindWorkletAnimation(id);
+    if (to_update)
+      to_update->SetOutputState(animation_state);
   }
 }
 
@@ -788,6 +775,13 @@ void AnimationHost::SetAnimationCounts(
 
 size_t AnimationHost::MainThreadAnimationsCount() const {
   return main_thread_animations_count_;
+}
+
+bool AnimationHost::HasCustomPropertyAnimations() const {
+  for (const auto& it : ticking_animations_)
+    if (it->AffectsCustomProperty())
+      return true;
+  return false;
 }
 
 bool AnimationHost::CurrentFrameHadRAF() const {

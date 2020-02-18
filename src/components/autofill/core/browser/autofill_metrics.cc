@@ -22,6 +22,7 @@
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_prefs.h"
+#include "components/autofill/core/common/autofill_tick_clock.h"
 #include "components/autofill/core/common/form_data.h"
 #include "services/metrics/public/cpp/metrics_utils.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
@@ -767,10 +768,17 @@ void AutofillMetrics::LogSaveCardPromptMetricBySecurityLevel(
     histogram_name += "Local";
   }
 
-  base::UmaHistogramEnumeration(
-      security_state::GetSecurityLevelHistogramName(
-          histogram_name, security_level),
-      metric, NUM_SAVE_CARD_PROMPT_METRICS);
+  base::UmaHistogramEnumeration(security_state::GetSecurityLevelHistogramName(
+                                    histogram_name, security_level),
+                                metric, NUM_SAVE_CARD_PROMPT_METRICS);
+}
+
+// static
+void AutofillMetrics::LogCreditCardUploadFeedbackMetric(
+    CreditCardUploadFeedbackMetric metric) {
+  DCHECK_LT(metric, NUM_CREDIT_CARD_UPLOAD_FEEDBACK_METRICS);
+  UMA_HISTOGRAM_ENUMERATION("Autofill.CreditCardUploadFeedback", metric,
+                            NUM_CREDIT_CARD_UPLOAD_FEEDBACK_METRICS);
 }
 
 // static
@@ -919,6 +927,117 @@ void AutofillMetrics::LogSaveCardWithFirstAndLastNameComplete(bool is_local) {
   std::string histogram_name = "Autofill.SaveCardWithFirstAndLastNameComplete.";
   histogram_name += is_local ? "Local" : "Server";
   base::UmaHistogramBoolean(histogram_name, true);
+}
+
+// static
+void AutofillMetrics::LogCardUnmaskDurationAfterWebauthn(
+    const base::TimeDelta& duration,
+    AutofillClient::PaymentsRpcResult result) {
+  std::string suffix;
+  switch (result) {
+    case AutofillClient::SUCCESS:
+      suffix = "Success";
+      break;
+    case AutofillClient::TRY_AGAIN_FAILURE:
+    case AutofillClient::PERMANENT_FAILURE:
+      suffix = "Failure";
+      break;
+    case AutofillClient::NETWORK_ERROR:
+      suffix = "NetworkError";
+      break;
+    case AutofillClient::NONE:
+      NOTREACHED();
+      return;
+  }
+  base::UmaHistogramLongTimes("Autofill.BetterAuth.CardUnmaskDuration.Fido",
+                              duration);
+  base::UmaHistogramLongTimes(
+      "Autofill.BetterAuth.CardUnmaskDuration.Fido." + suffix, duration);
+}
+
+// static
+void AutofillMetrics::LogCardUnmaskPreflightCalled() {
+  UMA_HISTOGRAM_BOOLEAN("Autofill.BetterAuth.CardUnmaskPreflightCalled", true);
+}
+
+// static
+void AutofillMetrics::LogCardUnmaskPreflightDuration(
+    const base::TimeDelta& duration) {
+  base::UmaHistogramLongTimes("Autofill.BetterAuth.CardUnmaskPreflightDuration",
+                              duration);
+}
+
+// static
+void AutofillMetrics::LogWebauthnOptChangeCalled(
+    bool request_to_opt_in,
+    bool is_checkout_flow,
+    WebauthnOptInParameters metric) {
+  if (!request_to_opt_in) {
+    DCHECK(!is_checkout_flow);
+    base::UmaHistogramBoolean(
+        "Autofill.BetterAuth.OptOutCalled.FromSettingsPage", true);
+    return;
+  }
+
+  std::string histogram_name = "Autofill.BetterAuth.OptInCalled.";
+  histogram_name += is_checkout_flow ? "FromCheckoutFlow" : "FromSettingsPage";
+  base::UmaHistogramEnumeration(histogram_name, metric);
+}
+
+// static
+void AutofillMetrics::LogWebauthnOptInPromoShown(bool is_checkout_flow) {
+  std::string suffix =
+      is_checkout_flow ? "FromCheckoutFlow" : "FromSettingsPage";
+  base::UmaHistogramBoolean("Autofill.BetterAuth.OptInPromoShown." + suffix,
+                            true);
+}
+
+// static
+void AutofillMetrics::LogWebauthnOptInPromoUserDecision(
+    bool is_checkout_flow,
+    WebauthnOptInPromoUserDecisionMetric metric) {
+  std::string suffix =
+      (is_checkout_flow ? "FromCheckoutFlow" : "FromSettingsPage");
+  base::UmaHistogramEnumeration(
+      "Autofill.BetterAuth.OptInPromoUserDecision." + suffix, metric);
+}
+
+// static
+void AutofillMetrics::LogCardUnmaskTypeDecision(
+    CardUnmaskTypeDecisionMetric metric) {
+  base::UmaHistogramEnumeration("Autofill.BetterAuth.CardUnmaskTypeDecision",
+                                metric);
+}
+
+// static
+void AutofillMetrics::LogUserPerceivedLatencyOnCardSelection(
+    PreflightCallEvent event,
+    bool fido_auth_enabled) {
+  std::string histogram_name =
+      "Autofill.BetterAuth.UserPerceivedLatencyOnCardSelection.";
+  histogram_name += fido_auth_enabled ? "OptedIn" : "OptedOut";
+  base::UmaHistogramEnumeration(histogram_name, event);
+}
+
+// static
+void AutofillMetrics::LogWebauthnResult(WebauthnFlowEvent event,
+                                        WebauthnResultMetric metric) {
+  std::string histogram_name = "Autofill.BetterAuth.WebauthnResult.";
+  switch (event) {
+    case WebauthnFlowEvent::kImmediateAuthentication:
+      histogram_name += "ImmediateAuthentication";
+      break;
+    case WebauthnFlowEvent::kAuthenticationAfterCvc:
+      histogram_name += "AuthenticationAfterCVC";
+      break;
+    case WebauthnFlowEvent::kCheckoutOptIn:
+      histogram_name += "CheckoutOptIn";
+      break;
+    case WebauthnFlowEvent::kSettingsPageOptIn:
+      histogram_name += "SettingsPageOptIn";
+      break;
+  }
+  base::UmaHistogramEnumeration(histogram_name, metric);
 }
 
 // static
@@ -1186,10 +1305,9 @@ void AutofillMetrics::LogUserHappinessBySecurityLevel(
       return;
   }
 
-  base::UmaHistogramEnumeration(
-      security_state::GetSecurityLevelHistogramName(
-          histogram_name, security_level),
-      metric, NUM_USER_HAPPINESS_METRICS);
+  base::UmaHistogramEnumeration(security_state::GetSecurityLevelHistogramName(
+                                    histogram_name, security_level),
+                                metric, NUM_USER_HAPPINESS_METRICS);
 }
 
 // static
@@ -1262,10 +1380,40 @@ void AutofillMetrics::LogIsAutofillEnabledAtStartup(bool enabled) {
 }
 
 // static
+void AutofillMetrics::LogIsAutofillProfileEnabledAtStartup(bool enabled) {
+  UMA_HISTOGRAM_BOOLEAN("Autofill.Address.IsEnabled.Startup", enabled);
+}
+
+// static
+void AutofillMetrics::LogIsAutofillCreditCardEnabledAtStartup(bool enabled) {
+  UMA_HISTOGRAM_BOOLEAN("Autofill.CreditCard.IsEnabled.Startup", enabled);
+}
+
+// static
 void AutofillMetrics::LogIsAutofillEnabledAtPageLoad(
     bool enabled,
     AutofillSyncSigninState sync_state) {
   std::string name("Autofill.IsEnabled.PageLoad");
+  UMA_HISTOGRAM_BOOLEAN(name, enabled);
+  base::UmaHistogramBoolean(name + GetMetricsSyncStateSuffix(sync_state),
+                            enabled);
+}
+
+// static
+void AutofillMetrics::LogIsAutofillProfileEnabledAtPageLoad(
+    bool enabled,
+    AutofillSyncSigninState sync_state) {
+  std::string name("Autofill.Address.IsEnabled.PageLoad");
+  UMA_HISTOGRAM_BOOLEAN(name, enabled);
+  base::UmaHistogramBoolean(name + GetMetricsSyncStateSuffix(sync_state),
+                            enabled);
+}
+
+// static
+void AutofillMetrics::LogIsAutofillCreditCardEnabledAtPageLoad(
+    bool enabled,
+    AutofillSyncSigninState sync_state) {
+  std::string name("Autofill.CreditCard.IsEnabled.PageLoad");
   UMA_HISTOGRAM_BOOLEAN(name, enabled);
   base::UmaHistogramBoolean(name + GetMetricsSyncStateSuffix(sync_state),
                             enabled);
@@ -1696,9 +1844,7 @@ void AutofillMetrics::LogDeveloperEngagementUkm(
 AutofillMetrics::FormInteractionsUkmLogger::FormInteractionsUkmLogger(
     ukm::UkmRecorder* ukm_recorder,
     const ukm::SourceId source_id)
-    : ukm_recorder_(ukm_recorder), source_id_(source_id) {
-  UMA_HISTOGRAM_BOOLEAN("Autofill.CanLogUKM", CanLog());
-}
+    : ukm_recorder_(ukm_recorder), source_id_(source_id) {}
 
 void AutofillMetrics::FormInteractionsUkmLogger::OnFormsParsed(
     const ukm::SourceId source_id) {
@@ -1974,8 +2120,9 @@ int64_t AutofillMetrics::FormInteractionsUkmLogger::MillisecondsSinceFormParsed(
     const base::TimeTicks& form_parsed_timestamp) const {
   DCHECK(!form_parsed_timestamp.is_null());
   // Use the pinned timestamp as the current time if it's set.
-  base::TimeTicks now =
-      pinned_timestamp_.is_null() ? base::TimeTicks::Now() : pinned_timestamp_;
+  base::TimeTicks now = pinned_timestamp_.is_null()
+                            ? AutofillTickClock::NowTicks()
+                            : pinned_timestamp_;
 
   return ukm::GetExponentialBucketMin(
       (now - form_parsed_timestamp).InMilliseconds(),
@@ -1987,7 +2134,7 @@ AutofillMetrics::UkmTimestampPin::UkmTimestampPin(
     : logger_(logger) {
   DCHECK(logger_);
   DCHECK(!logger_->has_pinned_timestamp());
-  logger_->set_pinned_timestamp(base::TimeTicks::Now());
+  logger_->set_pinned_timestamp(AutofillTickClock::NowTicks());
 }
 
 AutofillMetrics::UkmTimestampPin::~UkmTimestampPin() {

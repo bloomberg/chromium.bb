@@ -6,12 +6,12 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 
 #include "net/third_party/quiche/src/quic/core/http/quic_spdy_client_session.h"
 #include "net/third_party/quiche/src/quic/core/http/spdy_utils.h"
 #include "net/third_party/quiche/src/quic/core/quic_utils.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_ptr_util.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_socket_address.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_test.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_text_utils.h"
@@ -66,17 +66,17 @@ class QuicSpdyClientStreamTest : public QuicTestWithParam<ParsedQuicVersion> {
                  connection_,
                  &push_promise_index_),
         body_("hello world") {
-    SetQuicFlag(FLAGS_quic_supports_tls_handshake, true);
+    SetQuicReloadableFlag(quic_supports_tls_handshake, true);
     session_.Initialize();
 
     headers_[":status"] = "200";
     headers_["content-length"] = "11";
 
-    stream_ = QuicMakeUnique<QuicSpdyClientStream>(
+    stream_ = std::make_unique<QuicSpdyClientStream>(
         GetNthClientInitiatedBidirectionalStreamId(
             connection_->transport_version(), 0),
         &session_, BIDIRECTIONAL);
-    stream_visitor_ = QuicMakeUnique<StreamVisitor>();
+    stream_visitor_ = std::make_unique<StreamVisitor>();
     stream_->set_visitor(stream_visitor_.get());
   }
 
@@ -96,12 +96,12 @@ class QuicSpdyClientStreamTest : public QuicTestWithParam<ParsedQuicVersion> {
   std::unique_ptr<StreamVisitor> stream_visitor_;
   SpdyHeaderBlock headers_;
   std::string body_;
-  HttpEncoder encoder_;
 };
 
 INSTANTIATE_TEST_SUITE_P(Tests,
                          QuicSpdyClientStreamTest,
-                         ::testing::ValuesIn(AllSupportedVersions()));
+                         ::testing::ValuesIn(AllSupportedVersions()),
+                         ::testing::PrintToStringParamName());
 
 TEST_P(QuicSpdyClientStreamTest, TestReceivingIllegalResponseStatusCode) {
   headers_[":status"] = "200 ok";
@@ -112,7 +112,8 @@ TEST_P(QuicSpdyClientStreamTest, TestReceivingIllegalResponseStatusCode) {
   auto headers = AsHeaderList(headers_);
   stream_->OnStreamHeaderList(false, headers.uncompressed_header_bytes(),
                               headers);
-  EXPECT_EQ(QUIC_BAD_APPLICATION_PAYLOAD, stream_->stream_error());
+  EXPECT_THAT(stream_->stream_error(),
+              IsStreamError(QUIC_BAD_APPLICATION_PAYLOAD));
 }
 
 TEST_P(QuicSpdyClientStreamTest, TestFraming) {
@@ -121,9 +122,9 @@ TEST_P(QuicSpdyClientStreamTest, TestFraming) {
                               headers);
   std::unique_ptr<char[]> buffer;
   QuicByteCount header_length =
-      encoder_.SerializeDataFrameHeader(body_.length(), &buffer);
+      HttpEncoder::SerializeDataFrameHeader(body_.length(), &buffer);
   std::string header = std::string(buffer.get(), header_length);
-  std::string data = VersionHasDataFrameHeader(connection_->transport_version())
+  std::string data = VersionUsesHttp3(connection_->transport_version())
                          ? header + body_
                          : body_;
   stream_->OnStreamFrame(
@@ -152,9 +153,9 @@ TEST_P(QuicSpdyClientStreamTest, TestFramingOnePacket) {
                               headers);
   std::unique_ptr<char[]> buffer;
   QuicByteCount header_length =
-      encoder_.SerializeDataFrameHeader(body_.length(), &buffer);
+      HttpEncoder::SerializeDataFrameHeader(body_.length(), &buffer);
   std::string header = std::string(buffer.get(), header_length);
-  std::string data = VersionHasDataFrameHeader(connection_->transport_version())
+  std::string data = VersionUsesHttp3(connection_->transport_version())
                          ? header + body_
                          : body_;
   stream_->OnStreamFrame(
@@ -172,14 +173,14 @@ TEST_P(QuicSpdyClientStreamTest,
   stream_->OnStreamHeaderList(false, headers.uncompressed_header_bytes(),
                               headers);
   // The headers should parse successfully.
-  EXPECT_EQ(QUIC_STREAM_NO_ERROR, stream_->stream_error());
+  EXPECT_THAT(stream_->stream_error(), IsQuicStreamNoError());
   EXPECT_EQ("200", stream_->response_headers().find(":status")->second);
   EXPECT_EQ(200, stream_->response_code());
   std::unique_ptr<char[]> buffer;
   QuicByteCount header_length =
-      encoder_.SerializeDataFrameHeader(large_body.length(), &buffer);
+      HttpEncoder::SerializeDataFrameHeader(large_body.length(), &buffer);
   std::string header = std::string(buffer.get(), header_length);
-  std::string data = VersionHasDataFrameHeader(connection_->transport_version())
+  std::string data = VersionUsesHttp3(connection_->transport_version())
                          ? header + large_body
                          : large_body;
   EXPECT_CALL(*connection_, SendControlFrame(_));
@@ -197,7 +198,7 @@ TEST_P(QuicSpdyClientStreamTest,
 TEST_P(QuicSpdyClientStreamTest, ReceivingTrailers) {
   // There is no kFinalOffsetHeaderKey if trailers are sent on the
   // request/response stream.
-  if (VersionUsesQpack(connection_->transport_version())) {
+  if (VersionUsesHttp3(connection_->transport_version())) {
     return;
   }
 
@@ -221,9 +222,9 @@ TEST_P(QuicSpdyClientStreamTest, ReceivingTrailers) {
   // received, as well as all data.
   std::unique_ptr<char[]> buffer;
   QuicByteCount header_length =
-      encoder_.SerializeDataFrameHeader(body_.length(), &buffer);
+      HttpEncoder::SerializeDataFrameHeader(body_.length(), &buffer);
   std::string header = std::string(buffer.get(), header_length);
-  std::string data = VersionHasDataFrameHeader(connection_->transport_version())
+  std::string data = VersionUsesHttp3(connection_->transport_version())
                          ? header + body_
                          : body_;
   stream_->OnStreamFrame(

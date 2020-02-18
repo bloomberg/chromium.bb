@@ -14,7 +14,9 @@
 #include "base/unguessable_token.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/cert/cert_database.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "url/gurl.h"
@@ -37,8 +39,9 @@ class CONTENT_EXPORT NetworkServiceClient
 #endif
       public net::CertDatabase::Observer {
  public:
-  explicit NetworkServiceClient(network::mojom::NetworkServiceClientRequest
-                                    network_service_client_request);
+  explicit NetworkServiceClient(
+      mojo::PendingReceiver<network::mojom::NetworkServiceClient>
+          network_service_client_receiver);
   ~NetworkServiceClient() override;
 
   // network::mojom::NetworkServiceClient implementation:
@@ -87,11 +90,10 @@ class CONTENT_EXPORT NetworkServiceClient
 
   // net::NetworkChangeNotifier::DNSObserver implementation:
   void OnDNSChanged() override;
-  void OnInitialDNSConfigRead() override;
 #endif
 
  private:
-  mojo::Binding<network::mojom::NetworkServiceClient> binding_;
+  mojo::Receiver<network::mojom::NetworkServiceClient> receiver_;
 
   std::unique_ptr<base::MemoryPressureListener> memory_pressure_listener_;
 
@@ -100,7 +102,7 @@ class CONTENT_EXPORT NetworkServiceClient
 #if defined(OS_ANDROID)
   std::unique_ptr<base::android::ApplicationStatusListener>
       app_status_listener_;
-  network::mojom::NetworkChangeManagerPtr network_change_manager_;
+  mojo::Remote<network::mojom::NetworkChangeManager> network_change_manager_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(NetworkServiceClient);

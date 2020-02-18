@@ -36,6 +36,9 @@ Example contents:
   },
   "swarming": {
     "secret_bytes": "cmFkaWNhbGx5IGNvb2wgc2VjcmV0IHN0dWZmCg=="
+  },
+  "luciexe": {
+    "cache_dir": "/b/s/w/ir/cache"
   }
 }
 ```
@@ -108,5 +111,19 @@ message Swarming {
   // task triggerer directly to the task. The bytes will not appear on any
   // swarming UI, or be visible to any users of the swarming service.
   byte secret_bytes = 1;
+}
+```
+
+## `luciexe`
+
+This section describes data passed from a `luciexe` host (e.g. Buildbucket's
+agent in swarming).
+
+```
+message LUCIExe {
+  // The absolute path of the base cache directory. This directory MAY be on the
+  // same filesystem as CWD (but is not guaranteed to be). The available caches
+  // are described in Buildbucket as CacheEntry messages.
+  string cache_dir = 1;
 }
 ```

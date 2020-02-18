@@ -83,7 +83,7 @@ class SudoKeepAlive(cros_build_lib.MasterPidContextManager):
     # First check to see if we're already authed.  If so, then we don't
     # need to prompt the user for their password.
     for idx, cmd in enumerate(cmds):
-      ret = cros_build_lib.RunCommand(
+      ret = cros_build_lib.run(
           cmd, print_cmd=False, shell=True, error_code_ok=True)
 
       if ret.returncode != 0:
@@ -102,11 +102,11 @@ class SudoKeepAlive(cros_build_lib.MasterPidContextManager):
 
         # We need to go interactive and allow sudo to ask for credentials.
         interactive_cmd = cmd.replace(' -n', '')
-        cros_build_lib.RunCommand(interactive_cmd, shell=True, print_cmd=False)
+        cros_build_lib.run(interactive_cmd, shell=True, print_cmd=False)
 
         # Verify that sudo access is set up properly.
         try:
-          cros_build_lib.RunCommand(cmd, shell=True, print_cmd=False)
+          cros_build_lib.run(cmd, shell=True, print_cmd=False)
         except cros_build_lib.RunCommandError:
           if idx == 0:
             raise
@@ -130,8 +130,7 @@ class SudoKeepAlive(cros_build_lib.MasterPidContextManager):
     self._existing_keepalive_value = os.environ.get('CROS_SUDO_KEEP_ALIVE')
     os.environ['CROS_SUDO_KEEP_ALIVE'] = start_for_tty
 
-  # pylint: disable=unused-argument
-  def _exit(self, exc_type, exc_value, traceback):
+  def _exit(self, exc_type, exc, exc_tb):
     if self._proc is None:
       return
 
@@ -150,5 +149,5 @@ class SudoKeepAlive(cros_build_lib.MasterPidContextManager):
 
 def SetFileContents(path, value, cwd=None):
   """Set a given filepath contents w/ the passed in value."""
-  cros_build_lib.SudoRunCommand(['tee', path], redirect_stdout=True,
-                                print_cmd=False, input=value, cwd=cwd)
+  cros_build_lib.sudo_run(['tee', path], redirect_stdout=True,
+                          print_cmd=False, input=value, cwd=cwd)

@@ -8,12 +8,14 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.StrictMode;
 import android.os.SystemClock;
-import android.support.annotation.Nullable;
 import android.support.v4.util.AtomicFile;
 import android.text.TextUtils;
 import android.util.Pair;
 import android.util.SparseBooleanArray;
 import android.util.SparseIntArray;
+
+import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
@@ -21,7 +23,7 @@ import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
 import org.chromium.base.StreamUtil;
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.VisibleForTesting;
+import org.chromium.base.TraceEvent;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
@@ -35,6 +37,7 @@ import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabIdManager;
+import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TabState;
 import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -496,8 +499,10 @@ public class TabPersistentStore extends TabPersister {
             while (!mTabsToRestore.isEmpty()
                     && mNormalTabsRestored.size() == 0
                     && mIncognitoTabsRestored.size() == 0) {
-                TabRestoreDetails tabToRestore = mTabsToRestore.removeFirst();
-                restoreTab(tabToRestore, true);
+                try (TraceEvent e = TraceEvent.scoped("LoadFirstTabState")) {
+                    TabRestoreDetails tabToRestore = mTabsToRestore.removeFirst();
+                    restoreTab(tabToRestore, true);
+                }
             }
         }
         loadNextTab();
@@ -744,7 +749,8 @@ public class TabPersistentStore extends TabPersister {
 
     private void addTabToSaveQueueIfApplicable(Tab tab) {
         if (tab == null) return;
-        if (mTabsToSave.contains(tab) || !tab.isTabStateDirty() || isTabUrlContentScheme(tab)) {
+        if (mTabsToSave.contains(tab) || !((TabImpl) tab).isTabStateDirty()
+                || isTabUrlContentScheme(tab)) {
             return;
         }
 
@@ -1159,7 +1165,7 @@ public class TabPersistentStore extends TabPersister {
         @Override
         protected void onPostExecute(Void v) {
             if (mDestroyed || isCancelled()) return;
-            if (mStateSaved) mTab.setIsTabStateDirty(false);
+            if (mStateSaved) ((TabImpl) mTab).setIsTabStateDirty(false);
             mSaveTabTask = null;
             saveNextTab();
         }
@@ -1314,6 +1320,7 @@ public class TabPersistentStore extends TabPersister {
 
         public LoadTabTask(TabRestoreDetails tabToRestore) {
             mTabToRestore = tabToRestore;
+            TraceEvent.startAsync("LoadTabState", mTabToRestore.id);
         }
 
         @Override
@@ -1329,6 +1336,7 @@ public class TabPersistentStore extends TabPersister {
 
         @Override
         protected void onPostExecute(TabState tabState) {
+            TraceEvent.finishAsync("LoadTabState", mTabToRestore.id);
             if (mDestroyed || isCancelled()) return;
 
             boolean isIncognito = isIncognitoTabBeingRestored(mTabToRestore, tabState);

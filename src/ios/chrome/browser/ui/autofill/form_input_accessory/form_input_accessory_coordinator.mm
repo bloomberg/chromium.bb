@@ -22,7 +22,7 @@
 #import "ios/chrome/browser/ui/autofill/manual_fill/fallback_view_controller.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_accessory_view_controller.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_injection_handler.h"
-#import "ios/chrome/browser/ui/autofill/manual_fill/password_coordinator.h"
+#import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_password_coordinator.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/web/public/web_state.h"
@@ -74,37 +74,47 @@
                               browserState:browserState];
   if (self) {
     _webStateList = webStateList;
-
     _injectionHandler = injectionHandler;
-
-    _formInputAccessoryViewController =
-        [[FormInputAccessoryViewController alloc]
-            initWithManualFillAccessoryViewControllerDelegate:self];
-
-    auto passwordStore = IOSChromePasswordStoreFactory::GetForBrowserState(
-        browserState, ServiceAccessType::EXPLICIT_ACCESS);
-
-    // There is no personal data manager in OTR (incognito). Get the original
-    // one for manual fallback.
-    autofill::PersonalDataManager* personalDataManager =
-        autofill::PersonalDataManagerFactory::GetForBrowserState(
-            browserState->GetOriginalChromeBrowserState());
-
-    _formInputAccessoryMediator = [[FormInputAccessoryMediator alloc]
-           initWithConsumer:self.formInputAccessoryViewController
-                   delegate:self
-               webStateList:webStateList
-        personalDataManager:personalDataManager
-              passwordStore:passwordStore];
     _dispatcher = dispatcher;
   }
   return self;
 }
 
+- (void)start {
+  _formInputAccessoryViewController = [[FormInputAccessoryViewController alloc]
+      initWithManualFillAccessoryViewControllerDelegate:self];
+
+  auto passwordStore = IOSChromePasswordStoreFactory::GetForBrowserState(
+      self.browserState, ServiceAccessType::EXPLICIT_ACCESS);
+
+  // There is no personal data manager in OTR (incognito). Get the original
+  // one for manual fallback.
+  autofill::PersonalDataManager* personalDataManager =
+      autofill::PersonalDataManagerFactory::GetForBrowserState(
+          self.browserState->GetOriginalChromeBrowserState());
+
+  _formInputAccessoryMediator = [[FormInputAccessoryMediator alloc]
+         initWithConsumer:self.formInputAccessoryViewController
+                 delegate:self
+             webStateList:self.webStateList
+      personalDataManager:personalDataManager
+            passwordStore:passwordStore];
+}
+
 - (void)stop {
   [self stopChildren];
+
   [self.formInputAccessoryViewController restoreOriginalKeyboardView];
+  self.formInputAccessoryViewController = nil;
+
   [self.formInputAccessoryMediator disconnect];
+  self.formInputAccessoryMediator = nil;
+}
+
+- (void)reset {
+  [self stopChildren];
+  [self.formInputAccessoryMediator enableSuggestions];
+  [self.formInputAccessoryViewController reset];
 }
 
 #pragma mark - Presenting Children
@@ -179,18 +189,19 @@
   // On iOS 13, beta 3, the popover is not dismissed when the keyboard hides.
   // This explicitly dismiss any popover.
   if (base::ios::IsRunningOnIOS13OrLater() && IsIPadIdiom()) {
-    [self stopChildren];
-    [self.formInputAccessoryMediator enableSuggestions];
-    [self.formInputAccessoryViewController resetManualFallbackIcons];
+    [self reset];
   }
+}
+
+- (void)mediatorDidDetectMovingToBackground:
+    (FormInputAccessoryMediator*)mediator {
+  [self reset];
 }
 
 #pragma mark - ManualFillAccessoryViewControllerDelegate
 
 - (void)keyboardButtonPressed {
-  [self stopChildren];
-  [self.formInputAccessoryMediator enableSuggestions];
-  [self.formInputAccessoryViewController unlockManualFallbackView];
+  [self reset];
 }
 
 - (void)accountButtonPressed:(UIButton*)sender {
@@ -218,29 +229,32 @@
 
 - (void)fallbackCoordinatorDidDismissPopover:
     (FallbackCoordinator*)fallbackCoordinator {
-  [self.formInputAccessoryMediator enableSuggestions];
-  [self.formInputAccessoryViewController resetManualFallbackIcons];
+  [self reset];
 }
 
 #pragma mark - PasswordCoordinatorDelegate
 
 - (void)openPasswordSettings {
+  [self reset];
   [self.navigator openPasswordSettings];
 }
 
 - (void)openAllPasswordsPicker {
+  [self reset];
   [self.navigator openAllPasswordsPicker];
 }
 
 #pragma mark - CardCoordinatorDelegate
 
 - (void)openCardSettings {
+  [self reset];
   [self.navigator openCreditCardSettings];
 }
 
 #pragma mark - AddressCoordinatorDelegate
 
 - (void)openAddressSettings {
+  [self reset];
   [self.navigator openAddressSettings];
 }
 

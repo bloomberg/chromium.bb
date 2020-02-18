@@ -16,6 +16,7 @@
 
 namespace base {
 class SequencedTaskRunner;
+class WaitableEvent;
 }  // namespace base
 
 namespace net {
@@ -30,10 +31,6 @@ class CaptureServiceReceiver {
   // The timeout for a connecting socket to stop waiting and report error.
   static constexpr base::TimeDelta kConnectTimeout =
       base::TimeDelta::FromSeconds(1);
-
-  // The timeout for a connected socket to disconnect due to inactivity.
-  static constexpr base::TimeDelta kInactivityTimeout =
-      base::TimeDelta::FromSeconds(5);
 
   explicit CaptureServiceReceiver(const ::media::AudioParameters& audio_params);
   ~CaptureServiceReceiver();
@@ -60,6 +57,7 @@ class CaptureServiceReceiver {
       int result);
   void OnConnectTimeout(
       ::media::AudioInputStream::AudioInputCallback* input_callback);
+  void StopOnTaskRunner(base::WaitableEvent* finished);
 
   const ::media::AudioParameters audio_params_;
 

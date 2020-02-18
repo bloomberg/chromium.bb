@@ -22,26 +22,4 @@ suite('UtilModuleTest', function() {
     match = re.exec('Hello, world');
     assertEquals(null, match);
   });
-
-  test('click handler', function() {
-    document.body.innerHTML = `
-      <a id="file" href="file:///path/to/file">File</a>
-      <a id="chrome" href="about:chrome">Chrome</a>
-      <a href="about:blank"><b id="blank">Click me</b></a>
-    `;
-
-    var clickArgs = null;
-    var oldSend = chrome.send;
-    chrome.send = function(message, args) {
-      assertEquals('navigateToUrl', message);
-      clickArgs = args;
-    };
-    $('file').click();
-    assertEquals('file:///path/to/file', clickArgs[0]);
-    $('chrome').click();
-    assertEquals('about:chrome', clickArgs[0]);
-    $('blank').click();
-    assertEquals('about:blank', clickArgs[0]);
-    chrome.send = oldSend;
-  });
 });

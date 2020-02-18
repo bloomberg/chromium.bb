@@ -7,6 +7,7 @@
 // Polymer BrowserTest fixture.
 GEN_INCLUDE(['//chrome/test/data/webui/polymer_browser_test_base.js']);
 GEN('#include "chrome/browser/ui/webui/welcome/helpers.h"');
+GEN('#include "services/network/public/cpp/features.h"');
 
 /** Test fixture for Polymer welcome elements. */
 const WelcomeBrowserTest = class extends PolymerTest {
@@ -15,16 +16,28 @@ const WelcomeBrowserTest = class extends PolymerTest {
     throw 'this is abstract and should be overridden by subclasses';
   }
 
+  /**
+   * Override default |extraLibraries| since PolymerTest includes more than are
+   * needed in JS Module based tests.
+   * @override
+   */
   get extraLibraries() {
     return [
-      ...super.extraLibraries,
-      '../test_browser_proxy.js',
+      '//third_party/mocha/mocha.js',
+      '//chrome/test/data/webui/mocha_adapter.js',
     ];
   }
 
   /** @override */
+  get webuiHost() {
+    return 'welcome';
+  }
+
+  /** @override */
   get featureList() {
-    return {enabled: ['welcome::kForceEnabled']};
+    return {
+      enabled: ['welcome::kForceEnabled', 'network::features::kOutOfBlinkCors']
+    };
   }
 };
 
@@ -32,17 +45,7 @@ const WelcomeBrowserTest = class extends PolymerTest {
 var WelcomeAppChooserTest = class extends WelcomeBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://welcome/google_apps/nux_google_apps.html';
-  }
-
-  /** @override */
-  get extraLibraries() {
-    return super.extraLibraries.concat([
-      'app_chooser_test.js',
-      'test_google_app_proxy.js',
-      'test_metrics_proxy.js',
-      'test_bookmark_proxy.js',
-    ]);
+    return 'chrome://welcome/test_loader.html?module=welcome/app_chooser_test.js';
   }
 };
 
@@ -54,18 +57,7 @@ TEST_F('WelcomeAppChooserTest', 'All', function() {
 var WelcomeWelcomeAppTest = class extends WelcomeBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://welcome/welcome_app.html';
-  }
-
-  /** @override */
-  get extraLibraries() {
-    return super.extraLibraries.concat([
-      '../test_util.js',
-      'welcome_app_test.js',
-      'test_bookmark_proxy.js',
-      'test_welcome_browser_proxy.js',
-      'test_nux_set_as_default_proxy.js',
-    ]);
+    return 'chrome://welcome/test_loader.html?module=welcome/welcome_app_test.js';
   }
 };
 
@@ -77,15 +69,7 @@ TEST_F('WelcomeWelcomeAppTest', 'All', function() {
 var WelcomeSigninViewTest = class extends WelcomeBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://welcome/signin_view.html';
-  }
-
-  /** @override */
-  get extraLibraries() {
-    return super.extraLibraries.concat([
-      'signin_view_test.js',
-      'test_welcome_browser_proxy.js',
-    ]);
+    return 'chrome://welcome/test_loader.html?module=welcome/signin_view_test.js';
   }
 };
 
@@ -97,15 +81,7 @@ TEST_F('WelcomeSigninViewTest', 'All', function() {
 var WelcomeNavigationBehaviorTest = class extends WelcomeBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://welcome/navigation_behavior.html';
-  }
-
-  /** @override */
-  get extraLibraries() {
-    return super.extraLibraries.concat([
-      '../test_util.js',
-      'navigation_behavior_test.js',
-    ]);
+    return 'chrome://welcome/test_loader.html?module=welcome/navigation_behavior_test.js';
   }
 };
 
@@ -117,15 +93,7 @@ TEST_F('WelcomeNavigationBehaviorTest', 'All', function() {
 var WelcomeModuleMetricsTest = class extends WelcomeBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://welcome/shared/module_metrics_proxy.html';
-  }
-
-  /** @override */
-  get extraLibraries() {
-    return super.extraLibraries.concat([
-      'module_metrics_test.js',
-      'test_metrics_proxy.js',
-    ]);
+    return 'chrome://welcome/test_loader.html?module=welcome/module_metrics_test.js';
   }
 };
 
@@ -137,16 +105,7 @@ TEST_F('WelcomeModuleMetricsTest', 'All', function() {
 var WelcomeSetAsDefaultTest = class extends WelcomeBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://welcome/set_as_default/nux_set_as_default.html';
-  }
-
-  /** @override */
-  get extraLibraries() {
-    return super.extraLibraries.concat([
-      '../test_util.js',
-      'nux_set_as_default_test.js',
-      'test_nux_set_as_default_proxy.js',
-    ]);
+    return 'chrome://welcome/test_loader.html?module=welcome/nux_set_as_default_test.js';
   }
 };
 
@@ -158,16 +117,7 @@ TEST_F('WelcomeSetAsDefaultTest', 'All', function() {
 var WelcomeNtpBackgroundTest = class extends WelcomeBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://welcome/ntp_background/nux_ntp_background.html';
-  }
-
-  /** @override */
-  get extraLibraries() {
-    return super.extraLibraries.concat([
-      'nux_ntp_background_test.js',
-      'test_metrics_proxy.js',
-      'test_ntp_background_proxy.js',
-    ]);
+    return 'chrome://welcome/test_loader.html?module=welcome/nux_ntp_background_test.js';
   }
 };
 

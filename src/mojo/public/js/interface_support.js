@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 'use strict';
 
-goog.require('mojo.interfaceControl.kRunMessageId');
+goog.require('mojo.interfaceControl.RUN_MESSAGE_ID');
 goog.require('mojo.interfaceControl.RunResponseMessageParamsSpec');
 goog.require('mojo.internal');
 
@@ -26,7 +26,7 @@ mojo.internal.interfaceSupport.ControlMessageHandler = class {
   sendRunMessage(requestId, input) {
     return new Promise(resolve => {
       mojo.internal.serializeAndSendMessage(
-          this.handle_, mojo.interfaceControl.kRunMessageId, requestId,
+          this.handle_, mojo.interfaceControl.RUN_MESSAGE_ID, requestId,
           mojo.internal.kMessageFlagExpectsResponse,
           mojo.interfaceControl.RunMessageParamsSpec.$, {'input': input});
       this.pendingFlushResolvers_.set(requestId, resolve);
@@ -34,7 +34,7 @@ mojo.internal.interfaceSupport.ControlMessageHandler = class {
   }
 
   maybeHandleControlMessage(header, buffer) {
-    if (header.ordinal === mojo.interfaceControl.kRunMessageId) {
+    if (header.ordinal === mojo.interfaceControl.RUN_MESSAGE_ID) {
       const data = new DataView(buffer, header.headerSize);
       const decoder = new mojo.internal.Decoder(data, []);
       if (header.flags & mojo.internal.kMessageFlagExpectsResponse)
@@ -51,7 +51,7 @@ mojo.internal.interfaceSupport.ControlMessageHandler = class {
         mojo.interfaceControl.RunMessageParamsSpec.$.$.structSpec)['input'];
     if (input.hasOwnProperty('flushForTesting')) {
       mojo.internal.serializeAndSendMessage(
-          this.handle_, mojo.interfaceControl.kRunMessageId, requestId,
+          this.handle_, mojo.interfaceControl.RUN_MESSAGE_ID, requestId,
           mojo.internal.kMessageFlagIsResponse,
           mojo.interfaceControl.RunResponseMessageParamsSpec.$,
           {'output': null});
@@ -150,10 +150,23 @@ mojo.internal.interfaceSupport.ConnectionErrorEventRouter = class {
 };
 
 /**
+ * @interface
+ * @export
+ */
+mojo.internal.interfaceSupport.PendingReceiver = class {
+  /**
+   * @return {!MojoHandle}
+   * @export
+   */
+  get handle() {}
+};
+
+/**
  * Generic helper used to implement all generated remote classes. Knows how to
  * serialize requests and deserialize their replies, both according to
  * declarative message structure specs.
- * @template T
+ *
+ * @template {!mojo.internal.interfaceSupport.PendingReceiver} T
  * @export
  */
 mojo.internal.interfaceSupport.InterfaceRemoteBase = class {
@@ -359,15 +372,6 @@ mojo.internal.interfaceSupport.InterfaceRemoteBaseWrapper = class {
   constructor(remote) {
     /** @private {!mojo.internal.interfaceSupport.InterfaceRemoteBase<T>} */
     this.remote_ = remote;
-  }
-
-  // TODO(ortuno): Remove once new names are used in the exposed interfaces.
-  /**
-   * @return {!T}
-   * @export
-   */
-  createRequest() {
-    return this.remote_.bindNewPipeAndPassReceiver();
   }
 
   /**
@@ -711,18 +715,6 @@ mojo.internal.interfaceSupport.InterfaceReceiverHelper = class {
    */
   bindHandle(handle) {
     this.helper_internal_.bindHandle(handle);
-  }
-
-  // TODO(ortuno): Remove once new names are used in the exposed interfaces.
-  /**
-   * Returns a remote for this interface which sends messages directly to this
-   * object. Any number of proxies may be created to the same object.
-   *
-   * @return {!T}
-   * @export
-   */
-  createProxy() {
-    return this.helper_internal_.bindNewPipeAndPassRemote();
   }
 
   /**

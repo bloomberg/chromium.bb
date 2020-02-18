@@ -18,9 +18,9 @@
 
 #include <list>
 
-#define FLATC_VERSION "1.10.0"
-
 namespace flatbuffers {
+
+const char *FLATC_VERSION() { return FLATBUFFERS_VERSION(); }
 
 void FlatCompiler::ParseFile(
     flatbuffers::Parser &parser, const std::string &filename,
@@ -30,8 +30,10 @@ void FlatCompiler::ParseFile(
   include_directories.push_back(local_include_directory.c_str());
   include_directories.push_back(nullptr);
   if (!parser.Parse(contents.c_str(), &include_directories[0],
-                    filename.c_str()))
+                    filename.c_str())) {
     Error(parser.error_, false, false);
+  }
+  if (!parser.error_.empty()) { Warn(parser.error_, false); }
   include_directories.pop_back();
   include_directories.pop_back();
 }
@@ -40,7 +42,7 @@ void FlatCompiler::LoadBinarySchema(flatbuffers::Parser &parser,
                                     const std::string &filename,
                                     const std::string &contents) {
   if (!parser.Deserialize(reinterpret_cast<const uint8_t *>(contents.c_str()),
-      contents.size())) {
+                          contents.size())) {
     Error("failed to load binary schema: " + filename, false, false);
   }
 }
@@ -99,15 +101,21 @@ std::string FlatCompiler::GetUsageString(const char *program_name) const {
     "  --gen-object-api   Generate an additional object-based API.\n"
     "  --gen-compare      Generate operator== for object-based API types.\n"
     "  --gen-nullable     Add Clang _Nullable for C++ pointer. or @Nullable for Java\n"
+    "  --java-checkerframework Add @Pure for Java.\n"
     "  --gen-generated    Add @Generated annotation for Java\n"
-    "  --gen-all          Generate not just code for the current schema files,\n" 
+    "  --gen-all          Generate not just code for the current schema files,\n"
     "                     but for all files it includes as well.\n"
     "                     If the language uses a single file for output (by default\n"
     "                     the case for C++ and JS), all code will end up in this one\n"
     "                     file.\n"
+    "  --cpp-include      Adds an #include in generated file.\n"
     "  --cpp-ptr-type T   Set object API pointer type (default std::unique_ptr).\n"
     "  --cpp-str-type T   Set object API string type (default std::string).\n"
-    "                     T::c_str() and T::length() must be supported.\n"
+    "                     T::c_str(), T::length() and T::empty() must be supported.\n"
+    "                     The custom type also needs to be constructible from std::string\n"
+    "                     (see the --cpp-str-flex-ctor option to change this behavior).\n"
+    "  --cpp-str-flex-ctor Don't construct custom string types by passing std::string\n"
+    "                     from Flatbuffers, but (char* + length).\n"
     "  --object-prefix    Customise class prefix for C++ object-based API.\n"
     "  --object-suffix    Customise class suffix for C++ object-based API.\n"
     "                     Default value is \"T\".\n"
@@ -141,6 +149,8 @@ std::string FlatCompiler::GetUsageString(const char *program_name) const {
     "  --force-defaults   Emit default values in binary output from JSON\n"
     "  --force-empty      When serializing from object API representation,\n"
     "                     force strings and vectors to empty rather than null.\n"
+    "  --flexbuffers      Used with \"binary\" and \"json\" options, it generates\n"
+    "                     data using schema-less FlexBuffers.\n"
     "FILEs may be schemas (must end in .fbs), binary schemas (must end in .bfbs),\n"
     "or JSON files (conforming to preceding schema). FILEs after the -- must be\n"
     "binary flatbuffer format files.\n"
@@ -241,14 +251,21 @@ int FlatCompiler::Compile(int argc, const char **argv) {
         opts.generate_object_based_api = true;
       } else if (arg == "--gen-compare") {
         opts.gen_compare = true;
+      } else if (arg == "--cpp-include") {
+        if (++argi >= argc) Error("missing include following" + arg, true);
+        opts.cpp_includes.push_back(argv[argi]);
       } else if (arg == "--cpp-ptr-type") {
         if (++argi >= argc) Error("missing type following" + arg, true);
         opts.cpp_object_api_pointer_type = argv[argi];
       } else if (arg == "--cpp-str-type") {
         if (++argi >= argc) Error("missing type following" + arg, true);
         opts.cpp_object_api_string_type = argv[argi];
+      } else if (arg == "--cpp-str-flex-ctor") {
+        opts.cpp_object_api_string_flexible_constructor = true;
       } else if (arg == "--gen-nullable") {
         opts.gen_nullable = true;
+      } else if (arg == "--java-checkerframework") {
+        opts.java_checkerframework = true;
       } else if (arg == "--gen-generated") {
         opts.gen_generated = true;
       } else if (arg == "--object-prefix") {
@@ -282,7 +299,7 @@ int FlatCompiler::Compile(int argc, const char **argv) {
       } else if (arg == "-M") {
         print_make_rules = true;
       } else if (arg == "--version") {
-        printf("flatc version %s\n", FLATC_VERSION);
+        printf("flatc version %s\n", FLATC_VERSION());
         exit(0);
       } else if (arg == "--grpc") {
         grpc_enabled = true;
@@ -307,6 +324,10 @@ int FlatCompiler::Compile(int argc, const char **argv) {
         opts.force_defaults = true;
       } else if (arg == "--force-empty") {
         opts.set_empty_to_null = false;
+      } else if (arg == "--java-primitive-has-method") {
+        opts.java_primitive_has_method = true;
+      } else if (arg == "--flexbuffers") {
+        opts.use_flexbuffers = true;
       } else {
         for (size_t i = 0; i < params_.num_generators; ++i) {
           if (arg == params_.generators[i].generator_opt_long ||
@@ -381,7 +402,8 @@ int FlatCompiler::Compile(int argc, const char **argv) {
                 "\" matches the schema, use --raw-binary to read this file"
                 " anyway.");
         } else if (!flatbuffers::BufferHasIdentifier(
-                       contents.c_str(), parser->file_identifier_.c_str(), opts.size_prefixed)) {
+                       contents.c_str(), parser->file_identifier_.c_str(),
+                       opts.size_prefixed)) {
           Error("binary \"" + filename +
                 "\" does not have expected file_identifier \"" +
                 parser->file_identifier_ +
@@ -390,7 +412,8 @@ int FlatCompiler::Compile(int argc, const char **argv) {
       }
     } else {
       // Check if file contains 0 bytes.
-      if (!is_binary_schema && contents.length() != strlen(contents.c_str())) {
+      if (!opts.use_flexbuffers && !is_binary_schema &&
+          contents.length() != strlen(contents.c_str())) {
         Error("input file appears to be binary: " + filename, true);
       }
       if (is_schema) {
@@ -401,6 +424,16 @@ int FlatCompiler::Compile(int argc, const char **argv) {
       }
       if (is_binary_schema) {
         LoadBinarySchema(*parser.get(), filename, contents);
+      }
+      if (opts.use_flexbuffers) {
+        if (opts.lang_to_generate == IDLOptions::kJson) {
+          parser->flex_root_ = flexbuffers::GetRoot(
+              reinterpret_cast<const uint8_t *>(contents.c_str()),
+              contents.size());
+        } else {
+          parser->flex_builder_.Clear();
+          ParseFile(*parser.get(), filename, contents, include_directories);
+        }
       } else {
         ParseFile(*parser.get(), filename, contents, include_directories);
         if (!is_schema && !parser->builder_.GetSize()) {
@@ -437,11 +470,16 @@ int FlatCompiler::Compile(int argc, const char **argv) {
                   params_.generators[i].lang_name + " for " + filebase);
           }
         } else {
-          std::string make_rule = params_.generators[i].make_rule(
-              *parser.get(), output_path, filename);
-          if (!make_rule.empty())
-            printf("%s\n",
-                   flatbuffers::WordWrap(make_rule, 80, " ", " \\").c_str());
+          if (params_.generators[i].make_rule == nullptr) {
+            Error(std::string("Cannot generate make rule for ") +
+                  params_.generators[i].lang_name);
+          } else {
+            std::string make_rule = params_.generators[i].make_rule(
+                *parser.get(), output_path, filename);
+            if (!make_rule.empty())
+              printf("%s\n",
+                     flatbuffers::WordWrap(make_rule, 80, " ", " \\").c_str());
+          }
         }
         if (grpc_enabled) {
           if (params_.generators[i].generateGRPC != nullptr) {

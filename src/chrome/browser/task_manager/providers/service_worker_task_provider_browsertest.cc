@@ -204,6 +204,10 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerTaskProviderBrowserTest,
 
   EXPECT_TRUE(tasks().empty());
   Browser* incognito = CreateIncognitoBrowser();
+
+  // Close the default browser.
+  CloseBrowserSynchronously(browser());
+
   ui_test_utils::NavigateToURL(
       incognito, embedded_test_server()->GetURL(
                      "/service_worker/create_service_worker.html"));

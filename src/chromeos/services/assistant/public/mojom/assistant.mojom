@@ -19,7 +19,6 @@ import "services/device/public/mojom/wake_lock_provider.mojom";
 import "services/identity/public/mojom/identity_accessor.mojom";
 import "services/media_session/public/mojom/audio_focus.mojom";
 import "services/media_session/public/mojom/media_controller.mojom";
-import "services/preferences/public/mojom/preferences.mojom";
 import "ui/accessibility/mojom/ax_assistant_structure.mojom";
 import "ui/gfx/geometry/mojom/geometry.mojom";
 import "url/mojom/url.mojom";
@@ -28,8 +27,8 @@ import "url/mojom/url.mojom";
 interface AssistantService {
   // Initiates assistant and provides interfaces for assistant to call into the
   // browser.
-  Init(Client assistant_client_interface,
-       DeviceActions device_actions_interface,
+  Init(pending_remote<Client> assistant_client_interface,
+       pending_remote<DeviceActions> device_actions_interface,
        bool is_test);
 
   // Binds the main assistant backend interface.
@@ -80,7 +79,8 @@ interface Assistant {
   // result will contain TTS. Otherwise TTS will not be present in the
   // generated server response. Results will be returned through registered
   // |AssistantInteractionSubscriber|.
-  StartTextInteraction(string query, bool allow_tts);
+  StartTextInteraction(
+    string query, AssistantQuerySource source, bool allow_tts);
 
   // Starts a new Assistant voice interaction.
   StartVoiceInteraction();
@@ -99,7 +99,8 @@ interface Assistant {
 
   // Registers assistant interaction event subscriber. Subscribers'
   // implementation is responsible for selecting events of interest.
-  AddAssistantInteractionSubscriber(AssistantInteractionSubscriber subscriber);
+  AddAssistantInteractionSubscriber(
+      pending_remote<AssistantInteractionSubscriber> subscriber);
 
   // Retrieves a notification. A voiceless interaction will be sent to server to
   // retrieve the notification of |action_index|, which can trigger other
@@ -140,6 +141,7 @@ interface Assistant {
 // Describes an Assistant interaction.
 struct AssistantInteractionMetadata {
   AssistantInteractionType type;
+  AssistantQuerySource source;
   string query;
 };
 
@@ -147,6 +149,23 @@ struct AssistantInteractionMetadata {
 enum AssistantInteractionType {
   kText,
   kVoice,
+};
+
+// Enumeration of possible Assistant query sources. These values are persisted
+// to logs. Entries should not be renumbered and numeric values should never
+// be reused. Append new values to the end.
+enum AssistantQuerySource {
+  kUnspecified = 0,
+  kDeepLink = 1,
+  kDialogPlateTextField = 2,
+  kStylus = 3,
+  kSuggestionChip = 4,
+  kVoiceInput = 5,
+  kProactiveSuggestions = 6,
+  kLibAssistantInitiated = 7,
+  kWarmerWelcome = 8,
+  kConversationStarter = 9,
+  kWhatsOnMyScreen = 10,
 };
 
 // Subscribes to Assistant's interaction event. These events are server driven
@@ -172,6 +191,9 @@ interface AssistantInteractionSubscriber {
   // Assistant got open URL response from server. |in_background| refers to
   // being in background of Assistant UI, not in background of browser.
   OnOpenUrlResponse(url.mojom.Url url, bool in_background);
+
+  // Assistant got open Android app response from server.
+  OnOpenAppResponse(AndroidAppInfo app_info) => (bool app_opened);
 
   // Assistant speech recognition has started.
   OnSpeechRecognitionStarted();
@@ -201,7 +223,7 @@ interface AssistantInteractionSubscriber {
 // Interface for assistant to call into client.
 interface Client {
   // Notifies assistant client that assistant running status has changed.
-  OnAssistantStatusChanged(bool running);
+  OnAssistantStatusChanged(ash.mojom.AssistantState new_state);
 
   // Request context of current window from browser.
   RequestAssistantStructure() => (
@@ -230,10 +252,6 @@ interface Client {
   // Requests Ash's AssistantStateController interface from the browser.
   RequestAssistantStateController(
       pending_receiver<ash.mojom.AssistantStateController> receiver);
-
-  // Requests a PrefStoreConnector from the browser.
-  RequestPrefStoreConnector(
-      pending_receiver<prefs.mojom.PrefStoreConnector> receiver);
 
   // Requests a BatteryMonitor from the browser.
   RequestBatteryMonitor(pending_receiver<device.mojom.BatteryMonitor> receiver);
@@ -304,7 +322,7 @@ interface DeviceActions {
   LaunchAndroidIntent(string intent);
 
   // Register App list event subscriber.
-  AddAppListEventSubscriber(AppListEventSubscriber subscriber);
+  AddAppListEventSubscriber(pending_remote<AppListEventSubscriber> subscriber);
 };
 
 // Subscribes to App list events.
@@ -327,12 +345,22 @@ enum AssistantInteractionResolution {
   kMultiDeviceHotwordLoss,
 };
 
+// Enumeration of possible Assistant suggestion types.
+enum AssistantSuggestionType {
+  kUnspecified,
+  kConversationStarter,
+};
+
 // Models an Assistant suggestion.
 struct AssistantSuggestion {
+  AssistantSuggestionType type = kUnspecified;
+
   // Display text. e.g. "Cancel".
   string text;
+
   // Optional URL for icon. e.g. "https://www.gstatic.com/icon.png".
   url.mojom.Url icon_url;
+
   // Optional URL for action. e.g.
   // "https://www.google.com/search?query=action".
   url.mojom.Url action_url;

@@ -10,8 +10,10 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_simple_task_runner.h"
+#include "base/test/test_timeouts.h"
 #include "base/win/windows_version.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -150,7 +152,7 @@ class SnapshotAuraTest : public testing::TestWithParam<bool> {
     scoped_refptr<SnapshotHolder> holder(new SnapshotHolder);
     ui::GrabWindowSnapshotAsync(
         root_window(), source_rect,
-        base::Bind(&SnapshotHolder::SnapshotCallback, holder));
+        base::BindOnce(&SnapshotHolder::SnapshotCallback, holder));
 
     holder->WaitForSnapshot();
     DCHECK(holder->completed());
@@ -192,7 +194,7 @@ class SnapshotAuraTest : public testing::TestWithParam<bool> {
   DISALLOW_COPY_AND_ASSIGN(SnapshotAuraTest);
 };
 
-INSTANTIATE_TEST_SUITE_P(, SnapshotAuraTest, ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All, SnapshotAuraTest, ::testing::Bool());
 
 #if defined(OS_WIN) && !defined(NDEBUG)
 // https://crbug.com/852512
@@ -201,6 +203,14 @@ INSTANTIATE_TEST_SUITE_P(, SnapshotAuraTest, ::testing::Bool());
 #define MAYBE_FullScreenWindow FullScreenWindow
 #endif
 TEST_P(SnapshotAuraTest, MAYBE_FullScreenWindow) {
+#if defined(OS_LINUX)
+  // TODO(https://crbug.com/1002716): Fix this test to run in < action_timeout()
+  // on the Linux Debug & TSAN bots.
+  const base::RunLoop::ScopedRunTimeoutForTest increased_run_timeout(
+      TestTimeouts::action_max_timeout(),
+      base::MakeExpectedNotRunClosure(FROM_HERE, "RunLoop::Run() timed out."));
+#endif  // defined(OS_LINUX)
+
 #if defined(OS_WIN)
   // TODO(https://crbug.com/850556): Make work on Win10.
   base::win::Version version = base::win::GetVersion();
@@ -308,7 +318,7 @@ TEST_P(SnapshotAuraTest, RotateAndUIScale) {
   test_screen()->SetUIScale(kUIScale);
   test_screen()->SetDisplayRotation(display::Display::ROTATE_90);
 
-  gfx::Rect test_bounds(100, 100, 300, 200);
+  gfx::Rect test_bounds(100, 100, 200, 300);
   SetupTestWindow(test_bounds);
   WaitForDraw();
 
@@ -334,7 +344,7 @@ TEST_P(SnapshotAuraTest, RotateAndUIScaleAndScaleFactor) {
   test_screen()->SetUIScale(kUIScale);
   test_screen()->SetDisplayRotation(display::Display::ROTATE_90);
 
-  gfx::Rect test_bounds(20, 30, 150, 100);
+  gfx::Rect test_bounds(20, 30, 100, 150);
   SetupTestWindow(test_bounds);
   WaitForDraw();
 

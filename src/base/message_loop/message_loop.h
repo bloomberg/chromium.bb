@@ -23,10 +23,6 @@
 
 namespace base {
 
-namespace internal {
-class MessageLoopThreadDelegate;
-}  // namespace internal
-
 class MessageLoopImpl;
 class MessagePump;
 class TaskObserver;
@@ -160,7 +156,6 @@ class BASE_EXPORT MessageLoop {
   friend class MessageLoopTypedTest;
   friend class ScheduleWorkTest;
   friend class Thread;
-  friend class internal::MessageLoopThreadDelegate;
   friend class sequence_manager::internal::SequenceManagerImpl;
   FRIEND_TEST_ALL_PREFIXES(MessageLoopTest, DeleteUnboundLoop);
 
@@ -201,79 +196,6 @@ class BASE_EXPORT MessageLoop {
 
   DISALLOW_COPY_AND_ASSIGN(MessageLoop);
 };
-
-#if !defined(OS_NACL)
-
-//-----------------------------------------------------------------------------
-// MessageLoopForUI extends MessageLoop with methods that are particular to a
-// MessageLoop instantiated with TYPE_UI.
-//
-// By instantiating a MessageLoopForUI on the current thread, the owner enables
-// native UI message pumping.
-//
-// MessageLoopCurrentForUI is exposed statically on its thread via
-// MessageLoopCurrentForUI::Get() to provide additional functionality.
-//
-class BASE_EXPORT MessageLoopForUI : public MessageLoop {
- public:
-  explicit MessageLoopForUI(MessagePumpType type = MessagePumpType::UI);
-
-#if defined(OS_IOS)
-  // On iOS, the main message loop cannot be Run().  Instead call Attach(),
-  // which connects this MessageLoop to the UI thread's CFRunLoop and allows
-  // PostTask() to work.
-  void Attach();
-#endif
-
-#if defined(OS_ANDROID)
-  // On Android there are cases where we want to abort immediately without
-  // calling Quit(), in these cases we call Abort().
-  void Abort();
-
-  // True if this message pump has been aborted.
-  bool IsAborted();
-
-  // Since Run() is never called on Android, and the message loop is run by the
-  // java Looper, quitting the RunLoop won't join the thread, so we need a
-  // callback to run when the RunLoop goes idle to let the Java thread know when
-  // it can safely quit.
-  void QuitWhenIdle(base::OnceClosure callback);
-#endif
-
-#if defined(OS_WIN)
-  // See method of the same name in the Windows MessagePumpForUI implementation.
-  void EnableWmQuit();
-#endif
-};
-
-// Do not add any member variables to MessageLoopForUI!  This is important b/c
-// MessageLoopForUI is often allocated via MessageLoop(TYPE_UI).  Any extra
-// data that you need should be stored on the MessageLoop's pump_ instance.
-static_assert(sizeof(MessageLoop) == sizeof(MessageLoopForUI),
-              "MessageLoopForUI should not have extra member variables");
-
-#endif  // !defined(OS_NACL)
-
-//-----------------------------------------------------------------------------
-// MessageLoopForIO extends MessageLoop with methods that are particular to a
-// MessageLoop instantiated with TYPE_IO.
-//
-// By instantiating a MessageLoopForIO on the current thread, the owner enables
-// native async IO message pumping.
-//
-// MessageLoopCurrentForIO is exposed statically on its thread via
-// MessageLoopCurrentForIO::Get() to provide additional functionality.
-//
-class BASE_EXPORT MessageLoopForIO : public MessageLoop {
- public:
-  MessageLoopForIO() : MessageLoop(MessagePumpType::IO) {}
-};
-
-// Do not add any member variables to MessageLoopForIO!  This is important b/c
-// MessageLoopForIO is often allocated via MessageLoop(TYPE_IO).  Any extra
-// data that you need should be stored on the MessageLoop's pump_ instance.
-static_assert(sizeof(MessageLoop) == sizeof(MessageLoopForIO),
-              "MessageLoopForIO should not have extra member variables");
 
 }  // namespace base
 

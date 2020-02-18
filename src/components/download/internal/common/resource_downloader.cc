@@ -9,15 +9,12 @@
 #include "base/bind.h"
 #include "components/download/public/common/stream_handle_input_stream.h"
 #include "components/download/public/common/url_loader_factory_provider.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/wake_lock_provider.mojom.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/service_manager/public/cpp/connector.h"
-
-namespace network {
-struct ResourceResponseHead;
-}
 
 namespace download {
 
@@ -94,7 +91,7 @@ ResourceDownloader::InterceptNavigationResponse(
     const GURL& tab_referrer_url,
     std::vector<GURL> url_chain,
     net::CertStatus cert_status,
-    const scoped_refptr<network::ResourceResponse>& response_head,
+    network::mojom::URLResponseHeadPtr response_head,
     mojo::ScopedDataPipeConsumerHandle response_body,
     network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
@@ -145,7 +142,7 @@ void ResourceDownloader::Start(
     std::unique_ptr<DownloadUrlParameters> download_url_parameters,
     bool is_parallel_request,
     bool is_background_mode) {
-  callback_ = download_url_parameters->callback();
+  callback_ = std::move(download_url_parameters->callback());
   upload_callback_ = download_url_parameters->upload_callback();
   guid_ = download_url_parameters->guid();
   is_content_initiated_ = download_url_parameters->content_initiated();
@@ -157,26 +154,25 @@ void ResourceDownloader::Start(
           download_url_parameters->GetSaveInfo()),
       is_parallel_request, download_url_parameters->is_transient(),
       download_url_parameters->fetch_error_body(),
-      download_url_parameters->follow_cross_origin_redirects(),
+      download_url_parameters->cross_origin_redirects(),
       download_url_parameters->request_headers(),
       download_url_parameters->request_origin(),
       download_url_parameters->download_source(),
       std::vector<GURL>(1, resource_request_->url), is_background_mode);
 
-  network::mojom::URLLoaderClientPtr url_loader_client_ptr;
-  url_loader_client_binding_ =
-      std::make_unique<mojo::Binding<network::mojom::URLLoaderClient>>(
-          url_loader_client_.get(), mojo::MakeRequest(&url_loader_client_ptr));
+  mojo::PendingRemote<network::mojom::URLLoaderClient> url_loader_client_remote;
+  url_loader_client_receiver_ =
+      std::make_unique<mojo::Receiver<network::mojom::URLLoaderClient>>(
+          url_loader_client_.get(),
+          url_loader_client_remote.InitWithNewPipeAndPassReceiver());
 
   // Set up the URLLoader
-  network::mojom::URLLoaderRequest url_loader_request =
-      mojo::MakeRequest(&url_loader_);
   url_loader_factory_->CreateLoaderAndStart(
-      std::move(url_loader_request),
+      url_loader_.BindNewPipeAndPassReceiver(),
       0,  // routing_id
       0,  // request_id
       network::mojom::kURLLoadOptionSendSSLInfoWithResponse,
-      *(resource_request_.get()), std::move(url_loader_client_ptr),
+      *(resource_request_.get()), std::move(url_loader_client_remote),
       net::MutableNetworkTrafficAnnotationTag(
           download_url_parameters->GetNetworkTrafficAnnotation()));
   url_loader_->SetPriority(net::RequestPriority::IDLE,
@@ -186,7 +182,7 @@ void ResourceDownloader::Start(
 void ResourceDownloader::InterceptResponse(
     std::vector<GURL> url_chain,
     net::CertStatus cert_status,
-    const scoped_refptr<network::ResourceResponse>& response_head,
+    network::mojom::URLResponseHeadPtr response_head,
     mojo::ScopedDataPipeConsumerHandle response_body,
     network::mojom::URLLoaderClientEndpointsPtr endpoints) {
   // Set the URLLoader.
@@ -198,23 +194,20 @@ void ResourceDownloader::InterceptResponse(
       false, /* is_parallel_request */
       false, /* is_transient */
       false, /* fetch_error_body */
-      true,  /* follow_cross_origin_redirects */
+      network::mojom::RedirectMode::kFollow,
       download::DownloadUrlParameters::RequestHeadersType(),
       std::string(), /* request_origin */
       download::DownloadSource::NAVIGATION, std::move(url_chain),
       false /* is_background_mode */);
 
   // Simulate on the new URLLoaderClient calls that happened on the old client.
-  response_head->head.cert_status = cert_status;
-  url_loader_client_->OnReceiveResponse(response_head->head);
-
-  // Available when NavigationImmediateResponse is enabled.
-  if (response_body)
-    url_loader_client_->OnStartLoadingResponseBody(std::move(response_body));
+  response_head->cert_status = cert_status;
+  url_loader_client_->OnReceiveResponse(std::move(response_head));
+  url_loader_client_->OnStartLoadingResponseBody(std::move(response_body));
 
   // Bind the new client.
-  url_loader_client_binding_ =
-      std::make_unique<mojo::Binding<network::mojom::URLLoaderClient>>(
+  url_loader_client_receiver_ =
+      std::make_unique<mojo::Receiver<network::mojom::URLLoaderClient>>(
           url_loader_client_.get(), std::move(endpoints->url_loader_client));
 }
 
@@ -230,6 +223,8 @@ void ResourceDownloader::OnResponseStarted(
   download_create_info->render_frame_id = render_frame_id_;
   download_create_info->has_user_gesture = resource_request_->has_user_gesture;
   download_create_info->is_content_initiated = is_content_initiated_;
+  download_create_info->transition_type =
+      ui::PageTransitionFromInt(resource_request_->transition_type);
 
   delegate_task_runner_->PostTask(
       FROM_HERE,
@@ -240,7 +235,7 @@ void ResourceDownloader::OnResponseStarted(
           URLLoaderFactoryProvider::URLLoaderFactoryProviderPtr(
               new URLLoaderFactoryProvider(url_loader_factory_),
               base::OnTaskRunnerDeleter(base::ThreadTaskRunnerHandle::Get())),
-          this, callback_));
+          this, std::move(callback_)));
 }
 
 void ResourceDownloader::OnReceiveRedirect() {
@@ -265,10 +260,6 @@ void ResourceDownloader::OnUploadProgress(uint64_t bytes_uploaded) {
 
   delegate_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(upload_callback_, bytes_uploaded));
-}
-
-void ResourceDownloader::CancelRequest() {
-  Destroy();
 }
 
 void ResourceDownloader::Destroy() {

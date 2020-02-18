@@ -59,7 +59,9 @@ public class AwContentCaptureTest {
                 mWhiteList.toArray(whitelist);
                 isRegEx = new boolean[mWhiteList.size()];
                 int i = 0;
-                for (boolean r : mIsRegEx) isRegEx[i++] = r;
+                for (boolean r : mIsRegEx) {
+                    isRegEx[i++] = r;
+                }
             }
             setWhitelist(whitelist, isRegEx);
         }
@@ -69,12 +71,12 @@ public class AwContentCaptureTest {
     }
 
     private static class TestAwContentCaptureConsumer extends ContentCaptureConsumer {
-        private final static long DEFAULT_TIMEOUT_IN_SECONDS = 30;
+        private static final long DEFAULT_TIMEOUT_IN_SECONDS = 30;
 
-        public final static int CONTENT_CAPTURED = 1;
-        public final static int CONTENT_UPDATED = 2;
-        public final static int CONTENT_REMOVED = 3;
-        public final static int SESSION_REMOVED = 4;
+        public static final int CONTENT_CAPTURED = 1;
+        public static final int CONTENT_UPDATED = 2;
+        public static final int CONTENT_REMOVED = 3;
+        public static final int SESSION_REMOVED = 4;
 
         public TestAwContentCaptureConsumer(WebContents webContents) {
             super(webContents);
@@ -114,7 +116,9 @@ public class AwContentCaptureTest {
             mCurrentFrameSession = session;
             mRemovedIds = removedIds;
             // Remove the id from removedIds because id can be reused.
-            for (long id : removedIds) mCapturedContentIds.remove(id);
+            for (long id : removedIds) {
+                mCapturedContentIds.remove(id);
+            }
             mCallbacks.add(CONTENT_REMOVED);
             mCallbackHelper.notifyCalled();
         }
@@ -174,7 +178,9 @@ public class AwContentCaptureTest {
         public int[] getCallbacks() {
             int[] result = new int[mCallbacks.size()];
             int index = 0;
-            for (Integer c : mCallbacks) result[index++] = c;
+            for (Integer c : mCallbacks) {
+                result[index++] = c;
+            }
             return result;
         }
 
@@ -192,8 +198,8 @@ public class AwContentCaptureTest {
         private CallbackHelper mCallbackHelper = new CallbackHelper();
     }
 
-    private final static String MAIN_FRAME_FILE = "/main_frame.html";
-    private final static String SECOND_PAGE = "/second_page.html";
+    private static final String MAIN_FRAME_FILE = "/main_frame.html";
+    private static final String SECOND_PAGE = "/second_page.html";
 
     @Rule
     public AwActivityTestRule mRule = new AwActivityTestRule();
@@ -280,8 +286,8 @@ public class AwContentCaptureTest {
         TestThreadUtils.runOnUiThreadBlocking(() -> { mContainerView.scrollTo(0, 0); });
     }
 
-    private static void verifyFrame(Long expectedId, String expectedUrl, ContentCaptureData result)
-            throws Exception {
+    private static void verifyFrame(
+            Long expectedId, String expectedUrl, ContentCaptureData result) {
         if (expectedId == null || expectedId.longValue() == 0) {
             Assert.assertNotEquals(0, result.getId());
         } else {
@@ -291,16 +297,16 @@ public class AwContentCaptureTest {
         Assert.assertFalse(result.getBounds().isEmpty());
     }
 
-    private static void verifyFrameSession(FrameSession expected, FrameSession result)
-            throws Exception {
+    private static void verifyFrameSession(FrameSession expected, FrameSession result) {
         if (expected == null && (result == null || result.isEmpty())) return;
         Assert.assertEquals(expected.size(), result.size());
-        for (int i = 0; i < expected.size(); i++)
+        for (int i = 0; i < expected.size(); i++) {
             verifyFrame(expected.get(i).getId(), expected.get(i).getValue(), result.get(i));
+        }
     }
 
     private static void verifyContent(Set<String> expectedContent, Set<Long> unexpectedIds,
-            Set<Long> expectedIds, ContentCaptureData result) throws Exception {
+            Set<Long> expectedIds, ContentCaptureData result) {
         Assert.assertEquals(expectedContent.size(), result.getChildren().size());
         if (expectedIds != null) {
             Assert.assertEquals(expectedIds.size(), result.getChildren().size());
@@ -321,8 +327,7 @@ public class AwContentCaptureTest {
 
     private static void verifyCapturedContent(FrameSession expectedParentSession,
             Long expectedFrameId, String expectedUrl, Set<String> expectedContent,
-            Set<Long> unexpectedContentIds, FrameSession parentResult, ContentCaptureData result)
-            throws Exception {
+            Set<Long> unexpectedContentIds, FrameSession parentResult, ContentCaptureData result) {
         verifyFrameSession(expectedParentSession, parentResult);
         verifyFrame(expectedFrameId, expectedUrl, result);
         verifyContent(expectedContent, unexpectedContentIds, null, result);
@@ -330,22 +335,23 @@ public class AwContentCaptureTest {
 
     private static void verifyUpdatedContent(FrameSession expectedParentSession,
             Long expectedFrameId, String expectedUrl, Set<String> expectedContent,
-            Set<Long> expectedContentIds, FrameSession parentResult, ContentCaptureData result)
-            throws Exception {
+            Set<Long> expectedContentIds, FrameSession parentResult, ContentCaptureData result) {
         verifyFrameSession(expectedParentSession, parentResult);
         verifyFrame(expectedFrameId, expectedUrl, result);
         verifyContent(expectedContent, null, expectedContentIds, result);
     }
 
-    private static void verifyRemovedIds(Set<Long> expectedIds, long[] result) throws Exception {
+    private static void verifyRemovedIds(Set<Long> expectedIds, long[] result) {
         Assert.assertEquals(expectedIds.size(), result.length);
         Set<Long> resultSet = new HashSet<Long>(result.length);
-        for (long id : result) resultSet.add(id);
+        for (long id : result) {
+            resultSet.add(id);
+        }
         Assert.assertTrue(expectedIds.containsAll(resultSet));
     }
 
     private static void verifyRemovedContent(Long expectedFrameId, String expectedUrl,
-            Set<Long> expectedIds, FrameSession resultFrame, long[] result) throws Exception {
+            Set<Long> expectedIds, FrameSession resultFrame, long[] result) {
         Assert.assertEquals(1, resultFrame.size());
         verifyFrame(expectedFrameId, expectedUrl, resultFrame.get(0));
         verifyRemovedIds(expectedIds, result);
@@ -386,7 +392,9 @@ public class AwContentCaptureTest {
 
     private FrameSession createFrameSession(ContentCaptureData... frames) {
         FrameSession result = new FrameSession(frames.length);
-        for (ContentCaptureData f : frames) result.addAll(createFrameSession(f));
+        for (ContentCaptureData f : frames) {
+            result.addAll(createFrameSession(f));
+        }
         return result;
     }
 
@@ -397,13 +405,17 @@ public class AwContentCaptureTest {
 
     private static Set<String> toStringSet(String... strings) {
         Set<String> result = new HashSet<String>();
-        for (String s : strings) result.add(s);
+        for (String s : strings) {
+            result.add(s);
+        }
         return result;
     }
 
     private static Set<Long> toLongSet(Long... longs) {
         Set<Long> result = new HashSet<Long>();
-        for (Long s : longs) result.add(s);
+        for (Long s : longs) {
+            result.add(s);
+        }
         return result;
     }
 

@@ -9,7 +9,7 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
+#include "components/page_load_metrics/browser/page_load_metrics_observer.h"
 #include "services/metrics/public/cpp/ukm_source.h"
 
 namespace content {
@@ -105,7 +105,7 @@ class AMPPageLoadMetricsObserver
     page_load_metrics::PageRenderData render_data;
 
     // Whether an AMP document was loaded, based on observed
-    // WebLoadingBehaviorFlags for this frame.
+    // LoadingBehaviorFlags for this frame.
     bool amp_document_loaded = false;
   };
 

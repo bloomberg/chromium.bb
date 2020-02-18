@@ -6,7 +6,10 @@
 #define COMPONENTS_VIZ_TEST_TEST_FRAME_SINK_MANAGER_H_
 
 #include "base/macros.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/viz/privileged/mojom/compositing/frame_sink_manager.mojom.h"
 
 namespace viz {
@@ -16,8 +19,8 @@ class TestFrameSinkManagerImpl : public mojom::FrameSinkManager {
   TestFrameSinkManagerImpl();
   ~TestFrameSinkManagerImpl() override;
 
-  void BindRequest(mojom::FrameSinkManagerRequest request,
-                   mojom::FrameSinkManagerClientPtr client);
+  void BindReceiver(mojo::PendingReceiver<mojom::FrameSinkManager> receiver,
+                    mojo::PendingRemote<mojom::FrameSinkManagerClient> client);
 
  private:
   // mojom::FrameSinkManager:
@@ -33,8 +36,8 @@ class TestFrameSinkManagerImpl : public mojom::FrameSinkManager {
       mojom::RootCompositorFrameSinkParamsPtr params) override {}
   void CreateCompositorFrameSink(
       const FrameSinkId& frame_sink_id,
-      mojom::CompositorFrameSinkRequest request,
-      mojom::CompositorFrameSinkClientPtr client) override {}
+      mojo::PendingReceiver<mojom::CompositorFrameSink> receiver,
+      mojo::PendingRemote<mojom::CompositorFrameSinkClient> client) override {}
   void DestroyCompositorFrameSink(
       const FrameSinkId& frame_sink_id,
       DestroyCompositorFrameSinkCallback callback) override {}
@@ -45,9 +48,9 @@ class TestFrameSinkManagerImpl : public mojom::FrameSinkManager {
       const FrameSinkId& parent_frame_sink_id,
       const FrameSinkId& child_frame_sink_id) override {}
   void AddVideoDetectorObserver(
-      mojom::VideoDetectorObserverPtr observer) override {}
+      mojo::PendingRemote<mojom::VideoDetectorObserver> observer) override {}
   void CreateVideoCapturer(
-      mojom::FrameSinkVideoCapturerRequest request) override {}
+      mojo::PendingReceiver<mojom::FrameSinkVideoCapturer> receiver) override {}
   void EvictSurfaces(const std::vector<SurfaceId>& surface_ids) override {}
   void RequestCopyOfOutput(
       const SurfaceId& surface_id,
@@ -61,8 +64,8 @@ class TestFrameSinkManagerImpl : public mojom::FrameSinkManager {
   void EvictBackBuffer(uint32_t cache_id,
                        EvictBackBufferCallback callback) override {}
 
-  mojo::Binding<mojom::FrameSinkManager> binding_;
-  mojom::FrameSinkManagerClientPtr client_;
+  mojo::Receiver<mojom::FrameSinkManager> receiver_{this};
+  mojo::Remote<mojom::FrameSinkManagerClient> client_;
 
   DISALLOW_COPY_AND_ASSIGN(TestFrameSinkManagerImpl);
 };

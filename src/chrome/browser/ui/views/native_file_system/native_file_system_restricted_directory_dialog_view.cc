@@ -14,7 +14,6 @@
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/fill_layout.h"
-#include "ui/views/window/dialog_client_view.h"
 
 NativeFileSystemRestrictedDirectoryDialogView::
     ~NativeFileSystemRestrictedDirectoryDialogView() {
@@ -46,16 +45,6 @@ base::string16 NativeFileSystemRestrictedDirectoryDialogView::GetWindowTitle()
 
 int NativeFileSystemRestrictedDirectoryDialogView::GetDialogButtons() const {
   return ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL;
-}
-
-base::string16
-NativeFileSystemRestrictedDirectoryDialogView::GetDialogButtonLabel(
-    ui::DialogButton button) const {
-  if (button == ui::DIALOG_BUTTON_OK)
-    return l10n_util::GetStringUTF16(
-        is_directory_ ? IDS_NATIVE_FILE_SYSTEM_RESTRICTED_DIRECTORY_BUTTON
-                      : IDS_NATIVE_FILE_SYSTEM_RESTRICTED_FILE_BUTTON);
-  return l10n_util::GetStringUTF16(IDS_APP_CANCEL);
 }
 
 bool NativeFileSystemRestrictedDirectoryDialogView::ShouldShowCloseButton()
@@ -97,6 +86,12 @@ NativeFileSystemRestrictedDirectoryDialogView::
         bool is_directory,
         base::OnceCallback<void(SensitiveDirectoryResult)> callback)
     : is_directory_(is_directory), callback_(std::move(callback)) {
+  DialogDelegate::set_button_label(
+      ui::DIALOG_BUTTON_OK,
+      l10n_util::GetStringUTF16(
+          is_directory_ ? IDS_NATIVE_FILE_SYSTEM_RESTRICTED_DIRECTORY_BUTTON
+                        : IDS_NATIVE_FILE_SYSTEM_RESTRICTED_FILE_BUTTON));
+
   SetLayoutManager(std::make_unique<views::FillLayout>());
   set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(
       views::TEXT, views::TEXT));

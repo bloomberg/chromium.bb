@@ -128,8 +128,8 @@ class CORE_EXPORT ContentSecurityPolicyDelegate : public GarbageCollectedMixin {
       const blink::WebVector<WebContentSecurityPolicy>&) = 0;
 };
 
-class CORE_EXPORT ContentSecurityPolicy
-    : public GarbageCollectedFinalized<ContentSecurityPolicy> {
+class CORE_EXPORT ContentSecurityPolicy final
+    : public GarbageCollected<ContentSecurityPolicy> {
  public:
   enum ExceptionStatus { kWillThrowException, kWillNotThrowException };
 
@@ -137,11 +137,15 @@ class CORE_EXPORT ContentSecurityPolicy
   // https://w3c.github.io/webappsec-csp/#violation-resource. By the time we
   // generate a report, we're guaranteed that the value isn't 'null', so we
   // don't need that state in this enum.
+  //
+  // Trusted Types violation's 'resource' values are defined in
+  // https://wicg.github.io/trusted-types/dist/spec/#csp-violation-object-hdr.
   enum ViolationType {
     kInlineViolation,
     kEvalViolation,
     kURLViolation,
-    kTrustedTypesViolation
+    kTrustedTypesSinkViolation,
+    kTrustedTypesPolicyViolation
   };
 
   // The |type| argument given to inline checks, e.g.:
@@ -232,12 +236,10 @@ class CORE_EXPORT ContentSecurityPolicy
   // exception in the event of a violation. When the caller will throw
   // an exception, ContentSecurityPolicy does not log a violation
   // message to the console because it would be redundant.
-  bool AllowEval(ScriptState*,
-                 SecurityViolationReportingPolicy,
+  bool AllowEval(SecurityViolationReportingPolicy,
                  ExceptionStatus,
                  const String& script_content) const;
-  bool AllowWasmEval(ScriptState*,
-                     SecurityViolationReportingPolicy,
+  bool AllowWasmEval(SecurityViolationReportingPolicy,
                      ExceptionStatus,
                      const String& script_content) const;
   bool AllowPluginType(const String& type,
@@ -282,7 +284,8 @@ class CORE_EXPORT ContentSecurityPolicy
       CheckHeaderType = CheckHeaderType::kCheckAll) const;
   bool AllowWorkerContextFromSource(const KURL&) const;
 
-  bool AllowTrustedTypePolicy(const String& policy_name) const;
+  bool AllowTrustedTypePolicy(const String& policy_name,
+                              bool is_duplicate) const;
 
   // Passing 'String()' into the |nonce| arguments in the following methods
   // represents an unnonced resource load.

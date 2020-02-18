@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/observer_list.h"
 #include "components/password_manager/core/browser/form_fetcher.h"
 #include "components/password_manager/core/browser/http_password_store_migrator.h"
 #include "components/password_manager/core/browser/password_store.h"
@@ -34,6 +35,13 @@ class FormFetcherImpl : public FormFetcher,
 
   ~FormFetcherImpl() override;
 
+  // Returns a MultiStoreFormFetcher if  the password account storage feature is
+  // enabled. Returns a FormFetcherImpl otherwise.
+  static std::unique_ptr<FormFetcherImpl> CreateFormFetcherImpl(
+      PasswordStore::FormDigest form_digest,
+      const PasswordManagerClient* client,
+      bool should_migrate_http_passwords);
+
   // FormFetcher:
   void AddConsumer(FormFetcher::Consumer* consumer) override;
   void RemoveConsumer(FormFetcher::Consumer* consumer) override;
@@ -44,14 +52,14 @@ class FormFetcherImpl : public FormFetcher,
       const override;
   std::vector<const autofill::PasswordForm*> GetFederatedMatches()
       const override;
-  std::vector<const autofill::PasswordForm*> GetBlacklistedMatches()
-      const override;
+
+  bool IsBlacklisted() const override;
 
   const std::vector<const autofill::PasswordForm*>& GetAllRelevantMatches()
       const override;
 
-  const std::map<base::string16, const autofill::PasswordForm*>&
-  GetBestMatches() const override;
+  const std::vector<const autofill::PasswordForm*>& GetBestMatches()
+      const override;
 
   const autofill::PasswordForm* GetPreferredMatch() const override;
 
@@ -67,43 +75,9 @@ class FormFetcherImpl : public FormFetcher,
   void ProcessMigratedForms(
       std::vector<std::unique_ptr<autofill::PasswordForm>> forms) override;
 
- private:
-  // Processes password form results and forwards them to the |consumers_|.
-  void ProcessPasswordStoreResults(
-      std::vector<std::unique_ptr<autofill::PasswordForm>> results);
-
+ protected:
   // PasswordStore results will be fetched for this description.
   const PasswordStore::FormDigest form_digest_;
-
-  // Results obtained from PasswordStore:
-  std::vector<std::unique_ptr<autofill::PasswordForm>> non_federated_;
-
-  // Federated credentials relevant to the observed form. They are neither
-  // filled not saved by PasswordFormManager, so they are kept separately from
-  // non-federated matches.
-  std::vector<std::unique_ptr<autofill::PasswordForm>> federated_;
-
-  // List of blacklisted credentials obtained form the password store.
-  std::vector<std::unique_ptr<autofill::PasswordForm>> blacklisted_;
-
-  // Non-federated credentials of the same scheme as the observed form.
-  std::vector<const autofill::PasswordForm*> non_federated_same_scheme_;
-
-  // Set of nonblacklisted PasswordForms from the password store that best match
-  // the form being managed by |this|, indexed by username.
-  std::map<base::string16, const autofill::PasswordForm*> best_matches_;
-
-  // Convenience pointer to entry in |best_matches_| that is marked as
-  // preferred. This is only allowed to be null if there are no best matches at
-  // all, since there will always be one preferred login when there are multiple
-  // matches (when first saved, a login is marked preferred).
-  const autofill::PasswordForm* preferred_match_ = nullptr;
-
-  // Statistics for the current domain.
-  std::vector<InteractionsStats> interactions_stats_;
-
-  // Consumers of the fetcher, all are assumed to outlive |this|.
-  std::set<FormFetcher::Consumer*> consumers_;
 
   // Client used to obtain a CredentialFilter.
   const PasswordManagerClient* const client_;
@@ -114,6 +88,50 @@ class FormFetcherImpl : public FormFetcher,
   // False unless FetchDataFromPasswordStore has been called again without the
   // password store returning results in the meantime.
   bool need_to_refetch_ = false;
+
+  // If false, matches are sorted using the "preferred" field.
+  bool sort_matches_by_date_last_used_ = false;
+
+  // Processes password form results and forwards them to the |consumers_|.
+  void ProcessPasswordStoreResults(
+      std::vector<std::unique_ptr<autofill::PasswordForm>> results);
+
+ private:
+  // Splits |results| into |federated_|, |non_federated_| and |blacklisted_|.
+  void SplitResults(
+      std::vector<std::unique_ptr<autofill::PasswordForm>> results);
+
+  // Results obtained from PasswordStore:
+  std::vector<std::unique_ptr<autofill::PasswordForm>> non_federated_;
+
+  // Federated credentials relevant to the observed form. They are neither
+  // filled not saved by PasswordFormManager, so they are kept separately from
+  // non-federated matches.
+  std::vector<std::unique_ptr<autofill::PasswordForm>> federated_;
+
+  // Non-federated credentials of the same scheme as the observed form.
+  std::vector<const autofill::PasswordForm*> non_federated_same_scheme_;
+
+  // Set of nonblacklisted PasswordForms from the password store that best match
+  // the form being managed by |this|.
+  std::vector<const autofill::PasswordForm*> best_matches_;
+
+  // Convenience pointer to entry in |best_matches_| that is marked as
+  // preferred. This is only allowed to be null if there are no best matches at
+  // all, since there will always be one preferred login when there are multiple
+  // matches (when first saved, a login is marked preferred).
+  const autofill::PasswordForm* preferred_match_ = nullptr;
+
+  // Whether there were any blacklisted credentials obtained from the password
+  // store.
+  bool is_blacklisted_ = false;
+
+  // Statistics for the current domain.
+  std::vector<InteractionsStats> interactions_stats_;
+
+  // Consumers of the fetcher, all are assumed to either outlive |this| or
+  // remove themselves from the list during their destruction.
+  base::ObserverList<FormFetcher::Consumer> consumers_;
 
   // Indicates whether HTTP passwords should be migrated to HTTPS.
   const bool should_migrate_http_passwords_;

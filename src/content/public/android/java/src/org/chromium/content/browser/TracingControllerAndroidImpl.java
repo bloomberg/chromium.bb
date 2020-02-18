@@ -14,6 +14,7 @@ import android.util.Pair;
 
 import org.chromium.base.Callback;
 import org.chromium.base.Log;
+import org.chromium.base.StrictModeContext;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
@@ -45,7 +46,7 @@ import java.util.TimeZone;
  */
 @JNINamespace("content")
 public class TracingControllerAndroidImpl implements TracingControllerAndroid {
-    private static final String TAG = "cr.TracingController";
+    private static final String TAG = "TracingController";
 
     private static final String ACTION_START = "GPU_PROFILER_START";
     private static final String ACTION_STOP = "GPU_PROFILER_STOP";
@@ -123,21 +124,21 @@ public class TracingControllerAndroidImpl implements TracingControllerAndroid {
      */
     @CalledByNative
     private static String generateTracingFilePath() {
-        String state = Environment.getExternalStorageState();
-        if (!Environment.MEDIA_MOUNTED.equals(state)) {
-            return null;
-        }
+        try (StrictModeContext ignored = StrictModeContext.allowDiskWrites()) {
+            String state = Environment.getExternalStorageState();
+            if (!Environment.MEDIA_MOUNTED.equals(state)) {
+                return null;
+            }
 
-        // Generate a hopefully-unique filename using the UTC timestamp.
-        // (Not a huge problem if it isn't unique, we'll just append more data.)
-        SimpleDateFormat formatter = new SimpleDateFormat(
-                "yyyy-MM-dd-HHmmss", Locale.US);
-        formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
-        File dir = Environment.getExternalStoragePublicDirectory(
-                Environment.DIRECTORY_DOWNLOADS);
-        File file = new File(
-                dir, "chrome-profile-results-" + formatter.format(new Date()));
-        return file.getPath();
+            // Generate a hopefully-unique filename using the UTC timestamp.
+            // (Not a huge problem if it isn't unique, we'll just append more data.)
+            SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd-HHmmss", Locale.US);
+            formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
+            File dir =
+                    Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+            File file = new File(dir, "chrome-profile-results-" + formatter.format(new Date()));
+            return file.getPath();
+        }
     }
 
     /**

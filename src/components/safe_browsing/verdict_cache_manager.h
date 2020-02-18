@@ -12,13 +12,10 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/history_service_observer.h"
 #include "components/safe_browsing/proto/csd.pb.h"
 #include "url/gurl.h"
-
-namespace history {
-class HistoryService;
-}
 
 class HostContentSettingsMap;
 
@@ -83,13 +80,15 @@ class VerdictCacheManager : public history::HistoryServiceObserver {
   // Removes all the expired verdicts from cache.
   void CleanUpExpiredVerdicts();
 
+  void CleanUpExpiredPhishGuardVerdicts();
+
   // Helper method to remove content settings when URLs are deleted. If
   // |all_history| is true, removes all cached verdicts. Otherwise it removes
   // all verdicts associated with the deleted URLs in |deleted_rows|.
   void RemoveContentSettingsOnURLsDeleted(bool all_history,
                                           const history::URLRows& deleted_rows);
 
-  bool RemoveExpiredVerdicts(
+  bool RemoveExpiredPhishGuardVerdicts(
       LoginReputationClientRequest::TriggerType trigger_type,
       base::DictionaryValue* cache_dictionary);
 
@@ -105,7 +104,7 @@ class VerdictCacheManager : public history::HistoryServiceObserver {
   base::Optional<size_t> stored_verdict_count_password_entry_;
 
   ScopedObserver<history::HistoryService, history::HistoryServiceObserver>
-      history_service_observer_;
+      history_service_observer_{this};
 
   // Content settings maps associated with this instance.
   scoped_refptr<HostContentSettingsMap> content_settings_;

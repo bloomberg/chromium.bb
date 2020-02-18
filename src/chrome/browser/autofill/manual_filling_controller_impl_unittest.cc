@@ -12,19 +12,23 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/optional.h"
+#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_feature_list.h"
+#include "build/build_config.h"
 #include "chrome/browser/autofill/mock_address_accessory_controller.h"
 #include "chrome/browser/autofill/mock_credit_card_accessory_controller.h"
 #include "chrome/browser/autofill/mock_manual_filling_view.h"
 #include "chrome/browser/autofill/mock_password_accessory_controller.h"
 #include "chrome/browser/password_manager/password_accessory_controller.h"
 #include "chrome/browser/password_manager/touch_to_fill_controller.h"
-#include "chrome/test/base/chrome_render_view_host_test_harness.h"
+#include "chrome/test/base/testing_profile.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/favicon/core/test/mock_favicon_service.h"
 #include "components/password_manager/core/common/password_manager_features.h"
+#include "content/public/test/browser_task_environment.h"
+#include "content/public/test/test_web_contents_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -58,20 +62,15 @@ AccessorySheetData populate_sheet(AccessoryTabType type) {
 
 }  // namespace
 
-class ManualFillingControllerTest : public ChromeRenderViewHostTestHarness {
+class ManualFillingControllerTest : public testing::Test {
  public:
   ManualFillingControllerTest() = default;
 
   void SetUp() override {
-    ChromeRenderViewHostTestHarness::SetUp();
-    NavigateAndCommit(GURL(kExampleSite));
-    touch_to_fill_controller_.emplace(web_contents());
     ManualFillingControllerImpl::CreateForWebContentsForTesting(
         web_contents(), favicon_service(), mock_pwd_controller_.AsWeakPtr(),
         mock_address_controller_.AsWeakPtr(), mock_cc_controller_.AsWeakPtr(),
-        touch_to_fill_controller_->AsWeakPtr(),
         std::make_unique<NiceMock<MockManualFillingView>>());
-    NavigateAndCommit(GURL(kExampleSite));
   }
 
   void FocusFieldAndClearExpectations(FocusedFieldType fieldType) {
@@ -96,17 +95,23 @@ class ManualFillingControllerTest : public ChromeRenderViewHostTestHarness {
     return mock_favicon_service_.get();
   }
 
+  content::WebContents* web_contents() { return web_contents_; }
+
   MockManualFillingView* view() {
     return static_cast<MockManualFillingView*>(controller()->view());
   }
 
  protected:
+  content::BrowserTaskEnvironment task_environment_;
+  TestingProfile profile_;
+  content::TestWebContentsFactory web_contents_factory_;
+  content::WebContents* web_contents_ =
+      web_contents_factory_.CreateWebContents(&profile_);
+
   NiceMock<MockPasswordAccessoryController> mock_pwd_controller_;
   NiceMock<MockAddressAccessoryController> mock_address_controller_;
   NiceMock<MockCreditCardAccessoryController> mock_cc_controller_;
-  // Constructing a TouchToFillController needs a valid WebContents. Use a
-  // base::Optional to be able to delay the construction.
-  base::Optional<TouchToFillController> touch_to_fill_controller_;
+
   std::unique_ptr<StrictMock<favicon::MockFaviconService>>
       mock_favicon_service_ =
           std::make_unique<StrictMock<favicon::MockFaviconService>>();
@@ -163,15 +168,6 @@ TEST_F(ManualFillingControllerTest, AlwaysShowsAccessoryForPasswordFields) {
   controller()->RefreshSuggestions(empty_passwords_sheet());
 
   EXPECT_CALL(*view(), ShowWhenKeyboardIsVisible());
-  FocusFieldAndClearExpectations(FocusedFieldType::kFillablePasswordField);
-}
-
-TEST_F(ManualFillingControllerTest, TouchToFillSheetHasPreference) {
-  controller()->RefreshSuggestions(
-      populate_sheet(AccessoryTabType::TOUCH_TO_FILL));
-  controller()->RefreshSuggestions(populate_sheet(AccessoryTabType::PASSWORDS));
-
-  EXPECT_CALL(*view(), ShowTouchToFillSheet());
   FocusFieldAndClearExpectations(FocusedFieldType::kFillablePasswordField);
 }
 

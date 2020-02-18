@@ -5,12 +5,13 @@
 #ifndef UTIL_CRYPTO_SHA2_H_
 #define UTIL_CRYPTO_SHA2_H_
 
+#include <openssl/sha.h>
 #include <stddef.h>
 
 #include <string>
 
 #include "absl/strings/string_view.h"
-#include "openssl/sha.h"
+#include "platform/base/error.h"
 
 namespace openscreen {
 
@@ -21,12 +22,12 @@ namespace openscreen {
 // Computes the SHA-256 hash of the input string 'str' and stores the first
 // 'len' bytes of the hash in the output buffer 'output'.  If 'len' > 32,
 // only 32 bytes (the full hash) are stored in the 'output' buffer.
-void SHA256HashString(absl::string_view str,
-                      uint8_t output[SHA256_DIGEST_LENGTH]);
+Error SHA256HashString(absl::string_view str,
+                       uint8_t output[SHA256_DIGEST_LENGTH]);
 
 // Convenience version of the above that returns the result in a 32-byte
 // string.
-std::string SHA256HashString(absl::string_view str);
+ErrorOr<std::string> SHA256HashString(absl::string_view str);
 
 }  // namespace openscreen
 

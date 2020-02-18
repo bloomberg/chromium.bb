@@ -17,6 +17,8 @@
 #include "base/trace_event/traced_value.h"
 #include "content/browser/android/synchronous_compositor_sync_call_bridge.h"
 #include "content/browser/bad_message.h"
+#include "content/browser/browser_main_loop.h"
+#include "content/browser/renderer_host/compositor_dependencies_android.h"
 #include "content/browser/renderer_host/render_widget_host_view_android.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/android/sync_compositor_statics.h"
@@ -27,6 +29,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
+#include "gpu/ipc/client/gpu_channel_host.h"
 #include "ipc/ipc_sender.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -37,6 +40,29 @@
 #include "ui/gfx/skia_util.h"
 
 namespace content {
+
+namespace {
+
+bool g_viz_established = false;
+
+// TODO(vasilyt): Create BrowserCompositor for webview and move it there?
+void EstablishVizConnection(
+    scoped_refptr<gpu::GpuChannelHost> gpu_channel_host) {
+  content::CompositorDependenciesAndroid::Get()
+      .TryEstablishVizConnectionIfNeeded();
+  g_viz_established = true;
+}
+
+void EstablishGpuChannelToEstablishVizConnection() {
+  if (g_viz_established)
+    return;
+
+  content::BrowserMainLoop::GetInstance()
+      ->gpu_channel_establish_factory()
+      ->EstablishGpuChannel(base::BindOnce(&EstablishVizConnection));
+}
+
+}  // namespace
 
 // This class runs on the IO thread and is destroyed when the renderer
 // side closes the mojo channel.
@@ -121,10 +147,10 @@ SynchronousCompositorHost::SynchronousCompositorHost(
       use_in_process_zero_copy_software_draw_(use_in_proc_software_draw),
       bytes_limit_(0u),
       renderer_param_version_(0u),
-      need_animate_scroll_(false),
       need_invalidate_count_(0u),
       invalidate_needs_draw_(false),
       did_activate_pending_tree_count_(0u) {
+  EstablishGpuChannelToEstablishVizConnection();
   client_->DidInitializeCompositor(this, frame_sink_id_);
   bridge_ = new SynchronousCompositorSyncCallBridge(this);
 }
@@ -157,10 +183,10 @@ SynchronousCompositorHost::DemandDrawHwAsync(
     const gfx::Rect& viewport_rect_for_tile_priority,
     const gfx::Transform& transform_for_tile_priority) {
   invalidate_needs_draw_ = false;
-  scoped_refptr<FrameFuture> frame_future = new FrameFuture();
-  if (compute_scroll_needs_synchronous_draw_ || !allow_async_draw_) {
+  scoped_refptr<FrameFuture> frame_future =
+      new FrameFuture(rwhva_->GetLocalSurfaceIdAllocation().local_surface_id());
+  if (!allow_async_draw_) {
     allow_async_draw_ = allow_async_draw_ || IsReadyForSynchronousCall();
-    compute_scroll_needs_synchronous_draw_ = false;
     auto frame_ptr = std::make_unique<Frame>();
     *frame_ptr = DemandDrawHw(viewport_size, viewport_rect_for_tile_priority,
                               transform_for_tile_priority);
@@ -459,14 +485,13 @@ void SynchronousCompositorHost::SynchronouslyZoomBy(float zoom_delta,
 void SynchronousCompositorHost::OnComputeScroll(
     base::TimeTicks animation_time) {
   on_compute_scroll_called_ = true;
+}
 
-  if (!need_animate_scroll_)
-    return;
-  need_animate_scroll_ = false;
-
-  if (mojom::SynchronousCompositor* compositor = GetSynchronousCompositor())
-    compositor->ComputeScroll(animation_time);
-  compute_scroll_needs_synchronous_draw_ = true;
+void SynchronousCompositorHost::ProgressFling(base::TimeTicks frame_time) {
+  // Progress fling if OnComputeScroll was called or we're scrolling inner frame
+  if (on_compute_scroll_called_ || !rwhva_->is_currently_scrolling_viewport()) {
+    rwhva_->host()->ProgressFlingIfNeeded(frame_time);
+  }
 }
 
 ui::ViewAndroid::CopyViewCallback
@@ -488,7 +513,6 @@ void SynchronousCompositorHost::BeginFrame(
     ui::WindowAndroid* window_android,
     const viz::BeginFrameArgs& args,
     const viz::FrameTimingDetailsMap& timing_details) {
-  compute_scroll_needs_synchronous_draw_ = false;
   if (!bridge_->WaitAfterVSyncOnUIThread(window_android))
     return;
   mojom::SynchronousCompositor* compositor = GetSynchronousCompositor();
@@ -527,7 +551,6 @@ void SynchronousCompositorHost::UpdateState(
     return;
   }
   renderer_param_version_ = params.version;
-  need_animate_scroll_ = params.need_animate_scroll;
   root_scroll_offset_ = params.total_scroll_offset;
   max_scroll_offset_ = params.max_scroll_offset;
   scrollable_size_ = params.scrollable_size;

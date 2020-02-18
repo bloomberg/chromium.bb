@@ -13,8 +13,8 @@ namespace blink {
 
 class NDEFRecord;
 class NDEFMessage;
-class NFCScanOptions;
-class NFCPushOptions;
+class NDEFScanOptions;
+class NDEFPushOptions;
 
 }  // namespace blink
 
@@ -22,31 +22,30 @@ class NFCPushOptions;
 namespace mojo {
 
 template <>
-struct TypeConverter<device::mojom::blink::NDEFRecordPtr,
-                     ::blink::NDEFRecord*> {
+struct TypeConverter<device::mojom::blink::NDEFRecordPtr, blink::NDEFRecord*> {
   static device::mojom::blink::NDEFRecordPtr Convert(
-      const ::blink::NDEFRecord* record);
+      const blink::NDEFRecord* record);
 };
 
 template <>
 struct TypeConverter<device::mojom::blink::NDEFMessagePtr,
-                     ::blink::NDEFMessage*> {
+                     blink::NDEFMessage*> {
   static device::mojom::blink::NDEFMessagePtr Convert(
-      const ::blink::NDEFMessage* message);
+      const blink::NDEFMessage* message);
 };
 
 template <>
-struct TypeConverter<device::mojom::blink::NFCPushOptionsPtr,
-                     const ::blink::NFCPushOptions*> {
-  static device::mojom::blink::NFCPushOptionsPtr Convert(
-      const ::blink::NFCPushOptions* pushOptions);
+struct TypeConverter<device::mojom::blink::NDEFPushOptionsPtr,
+                     const ::blink::NDEFPushOptions*> {
+  static device::mojom::blink::NDEFPushOptionsPtr Convert(
+      const ::blink::NDEFPushOptions* pushOptions);
 };
 
 template <>
-struct TypeConverter<device::mojom::blink::NFCScanOptionsPtr,
-                     const ::blink::NFCScanOptions*> {
-  static device::mojom::blink::NFCScanOptionsPtr Convert(
-      const ::blink::NFCScanOptions* scanOptions);
+struct TypeConverter<device::mojom::blink::NDEFScanOptionsPtr,
+                     const ::blink::NDEFScanOptions*> {
+  static device::mojom::blink::NDEFScanOptionsPtr Convert(
+      const ::blink::NDEFScanOptions* scanOptions);
 };
 
 }  // namespace mojo

@@ -14,6 +14,10 @@
 #include "cc/scheduler/scheduler.h"
 #include "cc/trees/layer_tree_host_impl.h"
 
+namespace viz {
+struct FrameTimingDetails;
+}
+
 namespace cc {
 class LayerTreeHost;
 class ProxyMain;
@@ -109,7 +113,7 @@ class CC_EXPORT ProxyImpl : public LayerTreeHostImplClient,
   void DidPresentCompositorFrameOnImplThread(
       uint32_t frame_token,
       std::vector<LayerTreeHost::PresentationTimeCallback> callbacks,
-      const gfx::PresentationFeedback& feedback) override;
+      const viz::FrameTimingDetails& details) override;
   void NotifyAnimationWorkletStateChange(
       AnimationWorkletMutationState state,
       ElementListType element_list_type) override;
@@ -137,6 +141,7 @@ class CC_EXPORT ProxyImpl : public LayerTreeHostImplClient,
   void FrameIntervalUpdated(base::TimeDelta interval) override {}
   size_t CompositedAnimationsCount() const override;
   size_t MainThreadAnimationsCount() const override;
+  bool HasCustomPropertyAnimations() const override;
   bool CurrentFrameHadRAF() const override;
   bool NextFrameHasPendingRAF() const override;
 

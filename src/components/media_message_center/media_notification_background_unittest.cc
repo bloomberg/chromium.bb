@@ -109,6 +109,10 @@ class MediaNotificationBackgroundTest : public testing::Test {
     return background_->foreground_color_;
   }
 
+  double GetBackgroundFaviconColorShadeFactor() const {
+    return MediaNotificationBackground::kBackgroundFaviconColorShadeFactor;
+  }
+
  private:
   std::unique_ptr<MediaNotificationBackground> background_;
 
@@ -137,10 +141,84 @@ TEST_F(MediaNotificationBackgroundTest,
   EXPECT_EQ(kTestColor, GetBackgroundColor());
 }
 
+TEST_F(MediaNotificationBackgroundTest,
+       DeriveBackgroundColor_NoArtworkAfterHavingOne) {
+  constexpr SkColor kTestColor = SK_ColorYELLOW;
+  background()->UpdateArtwork(CreateTestBackgroundImage(kTestColor));
+  EXPECT_EQ(kTestColor, GetBackgroundColor());
+
+  background()->UpdateArtwork(gfx::ImageSkia());
+  EXPECT_FALSE(GetBackgroundColor().has_value());
+}
+
+// Favicons should be used when available but have a shade applying to them.
+TEST_F(MediaNotificationBackgroundTest,
+       DeriveBackgroundColor_PopularNonWhiteBlackColorFavicon) {
+  constexpr SkColor kTestColor = SK_ColorYELLOW;
+  background()->UpdateFavicon(CreateTestBackgroundImage(kTestColor));
+  const SkColor expected_color = SkColorSetRGB(
+      SkColorGetR(kTestColor) * GetBackgroundFaviconColorShadeFactor(),
+      SkColorGetG(kTestColor) * GetBackgroundFaviconColorShadeFactor(),
+      SkColorGetB(kTestColor) * GetBackgroundFaviconColorShadeFactor());
+  EXPECT_EQ(expected_color, GetBackgroundColor());
+}
+
+TEST_F(MediaNotificationBackgroundTest,
+       DeriveBackgroundColor_NoFaviconAfterHavingOne) {
+  constexpr SkColor kTestColor = SK_ColorYELLOW;
+  background()->UpdateFavicon(CreateTestBackgroundImage(kTestColor));
+  const SkColor expected_color = SkColorSetRGB(
+      SkColorGetR(kTestColor) * GetBackgroundFaviconColorShadeFactor(),
+      SkColorGetG(kTestColor) * GetBackgroundFaviconColorShadeFactor(),
+      SkColorGetB(kTestColor) * GetBackgroundFaviconColorShadeFactor());
+  EXPECT_EQ(expected_color, GetBackgroundColor());
+
+  background()->UpdateFavicon(gfx::ImageSkia());
+  EXPECT_FALSE(GetBackgroundColor().has_value());
+}
+
+TEST_F(MediaNotificationBackgroundTest,
+       DeriveBackgroundColor_FaviconSetThenArtwork) {
+  constexpr SkColor kArtworkColor = SK_ColorYELLOW;
+  constexpr SkColor kFaviconColor = SK_ColorRED;
+
+  background()->UpdateFavicon(CreateTestBackgroundImage(kFaviconColor));
+  background()->UpdateArtwork(CreateTestBackgroundImage(kArtworkColor));
+
+  EXPECT_EQ(kArtworkColor, GetBackgroundColor());
+}
+
+TEST_F(MediaNotificationBackgroundTest,
+       DeriveBackgroundColor_ArtworkSetThenFavicon) {
+  constexpr SkColor kArtworkColor = SK_ColorYELLOW;
+  constexpr SkColor kFaviconColor = SK_ColorRED;
+
+  background()->UpdateArtwork(CreateTestBackgroundImage(kArtworkColor));
+  background()->UpdateFavicon(CreateTestBackgroundImage(kFaviconColor));
+
+  EXPECT_EQ(kArtworkColor, GetBackgroundColor());
+}
+
+TEST_F(MediaNotificationBackgroundTest,
+       DeriveBackgroundColor_SetAndRemoveArtworkWithFavicon) {
+  constexpr SkColor kArtworkColor = SK_ColorYELLOW;
+  constexpr SkColor kFaviconColor = SK_ColorRED;
+
+  background()->UpdateArtwork(CreateTestBackgroundImage(kArtworkColor));
+  background()->UpdateFavicon(CreateTestBackgroundImage(kFaviconColor));
+  background()->UpdateArtwork(gfx::ImageSkia());
+
+  const SkColor expected_color = SkColorSetRGB(
+      SkColorGetR(kFaviconColor) * GetBackgroundFaviconColorShadeFactor(),
+      SkColorGetG(kFaviconColor) * GetBackgroundFaviconColorShadeFactor(),
+      SkColorGetB(kFaviconColor) * GetBackgroundFaviconColorShadeFactor());
+  EXPECT_EQ(expected_color, GetBackgroundColor());
+}
+
 TEST_F(MediaNotificationBackgroundTest, GetBackgroundColorRespectsTheme) {
   TestDarkTheme dark_theme;
   views::View owner;
-  owner.SetNativeTheme(&dark_theme);
+  owner.SetNativeThemeForTesting(&dark_theme);
   EXPECT_EQ(kDarkBackgroundColor, background()->GetBackgroundColor(owner));
 }
 
@@ -172,7 +250,7 @@ class MediaNotificationBackgroundBlackWhiteTest
   }
 };
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          MediaNotificationBackgroundBlackWhiteTest,
                          testing::Values(SK_ColorBLACK, SK_ColorWHITE));
 
@@ -353,7 +431,9 @@ class MediaNotificationBackgroundRTLTest
   base::test::ScopedCommandLine command_line_;
 };
 
-INSTANTIATE_TEST_SUITE_P(, MediaNotificationBackgroundRTLTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All,
+                         MediaNotificationBackgroundRTLTest,
+                         testing::Bool());
 
 TEST_P(MediaNotificationBackgroundRTLTest, BoundsSanityCheck) {
   // The test notification will have a width of 200 and a height of 50.

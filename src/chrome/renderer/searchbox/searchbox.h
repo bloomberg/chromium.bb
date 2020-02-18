@@ -20,7 +20,8 @@
 #include "components/omnibox/common/omnibox_focus_state.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/public/renderer/render_frame_observer_tracker.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "url/gurl.h"
 
 // The renderer-side implementation of the embeddedSearch API (see
@@ -95,7 +96,7 @@ class SearchBox : public content::RenderFrameObserver,
   void Paste(const base::string16& text);
 
   // Will return null if the theme info hasn't been set yet.
-  const ThemeBackgroundInfo* GetThemeBackgroundInfo() const;
+  const NtpTheme* GetNtpTheme() const;
 
   // Sends FocusOmnibox(OMNIBOX_FOCUS_INVISIBLE) to the browser.
   void StartCapturingKeyStrokes();
@@ -189,6 +190,35 @@ class SearchBox : public content::RenderFrameObserver,
   // Confirms applied theme changes.
   void ConfirmThemeChanges();
 
+  // Queries the autocomplete backend for realbox results for |input| as a
+  // search term. |prevent_inline_autocomplete| is true if the result set should
+  // not require inline autocomplete for the default match. Handled by
+  // |QueryAutocompleteResult|.
+  void QueryAutocomplete(const base::string16& input,
+                         bool prevent_inline_autocomplete);
+
+  // Deletes |AutocompleteMatch| by index of the result.
+  void DeleteAutocompleteMatch(uint8_t line);
+
+  // Cancels the current autocomplete query. Clears the result set if
+  // |clear_result| is true.
+  void StopAutocomplete(bool clear_result);
+
+  // Called when a user dismisses a promo.
+  void BlocklistPromo(const std::string& promo_id);
+
+  // Handles navigation to privileged (i.e. chrome://) URLs by calling the
+  // browser to do the navigation.
+  void OpenAutocompleteMatch(uint8_t line,
+                             const GURL& url,
+                             bool are_matches_showing,
+                             double time_elapsed_since_last_focus,
+                             double button,
+                             bool alt_key,
+                             bool ctrl_key,
+                             bool meta_key,
+                             bool shift_key);
+
   bool is_focused() const { return is_focused_; }
   bool is_input_in_progress() const { return is_input_in_progress_; }
   bool is_key_capture_enabled() const { return is_key_capture_enabled_; }
@@ -200,13 +230,15 @@ class SearchBox : public content::RenderFrameObserver,
   void OnDestruct() override;
 
   // Overridden from chrome::mojom::EmbeddedSearchClient:
+  void AutocompleteResultChanged(
+      chrome::mojom::AutocompleteResultPtr result) override;
   void SetPageSequenceNumber(int page_seq_no) override;
   void FocusChanged(OmniboxFocusState new_focus_state,
                     OmniboxFocusChangeReason reason) override;
   void MostVisitedInfoChanged(
       const InstantMostVisitedInfo& most_visited_info) override;
   void SetInputInProgress(bool input_in_progress) override;
-  void ThemeChanged(const ThemeBackgroundInfo& theme_info) override;
+  void ThemeChanged(const NtpTheme& theme) override;
   void LocalBackgroundSelected() override;
 
   void AddCustomLinkResult(bool success);
@@ -217,8 +249,9 @@ class SearchBox : public content::RenderFrameObserver,
   GURL GetURLForMostVisitedItem(InstantRestrictedID item_id) const;
 
   // The connection to the EmbeddedSearch service in the browser process.
-  chrome::mojom::EmbeddedSearchAssociatedPtr embedded_search_service_;
-  mojo::AssociatedBinding<chrome::mojom::EmbeddedSearchClient> binding_;
+  mojo::AssociatedRemote<chrome::mojom::EmbeddedSearch>
+      embedded_search_service_;
+  mojo::AssociatedReceiver<chrome::mojom::EmbeddedSearchClient> receiver_{this};
 
   // Whether it's legal to execute JavaScript in |render_frame()|.
   // This class may want to execute JS in response to IPCs (via the
@@ -242,7 +275,7 @@ class SearchBox : public content::RenderFrameObserver,
   // comparing most visited items.
   InstantMostVisitedInfo most_visited_info_;
   bool has_received_most_visited_;
-  base::Optional<ThemeBackgroundInfo> theme_info_;
+  base::Optional<NtpTheme> theme_;
 
   base::WeakPtrFactory<SearchBox> weak_ptr_factory_{this};
 

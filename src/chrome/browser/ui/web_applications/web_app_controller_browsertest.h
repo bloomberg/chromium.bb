@@ -30,12 +30,38 @@ enum class ControllerType {
   kUnifiedControllerWithWebApp,
 };
 
+std::string ControllerTypeParamToString(
+    const ::testing::TestParamInfo<ControllerType>& controller_type);
+
 // Base class for tests of user interface support for web applications.
 // ControllerType selects between use of WebAppBrowserController and
 // HostedAppBrowserController.
-class WebAppControllerBrowserTest
+class WebAppControllerBrowserTestBase
     : public extensions::ExtensionBrowserTest,
       public ::testing::WithParamInterface<ControllerType> {
+ public:
+  WebAppControllerBrowserTestBase();
+  ~WebAppControllerBrowserTestBase() = 0;
+
+  AppId InstallPWA(const GURL& app_url);
+
+  AppId InstallWebApp(std::unique_ptr<WebApplicationInfo> web_app_info);
+
+  // Launches the app as a window and returns the browser.
+  Browser* LaunchWebAppBrowser(const AppId&);
+
+  // Launches the app as a tab and returns the browser.
+  Browser* LaunchBrowserForWebAppInTab(const AppId&);
+
+  base::Optional<AppId> FindAppWithUrlInScope(const GURL& url);
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(WebAppControllerBrowserTestBase);
+};
+
+class WebAppControllerBrowserTest : public WebAppControllerBrowserTestBase {
  public:
   WebAppControllerBrowserTest();
   ~WebAppControllerBrowserTest() = 0;
@@ -44,13 +70,11 @@ class WebAppControllerBrowserTest
   void SetUp() override;
 
  protected:
-  AppId InstallPWA(const GURL& app_url);
-
-  AppId InstallWebApp(std::unique_ptr<WebApplicationInfo>&& web_app_info);
-
   content::WebContents* OpenApplication(const AppId&);
 
   net::EmbeddedTestServer* https_server() { return &https_server_; }
+
+  GURL GetInstallableAppURL();
 
   // ExtensionBrowserTest:
   void SetUpInProcessBrowserTestFixture() override;

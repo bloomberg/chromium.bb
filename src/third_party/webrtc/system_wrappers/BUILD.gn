@@ -12,7 +12,7 @@ if (is_android) {
 }
 import("../webrtc.gni")
 
-rtc_static_library("system_wrappers") {
+rtc_library("system_wrappers") {
   visibility = [ "*" ]
   sources = [
     "include/clock.h",
@@ -82,7 +82,7 @@ rtc_source_set("cpu_features_api") {
   ]
 }
 
-rtc_source_set("field_trial") {
+rtc_library("field_trial") {
   visibility = [ "*" ]
   public = [
     "include/field_trial.h",
@@ -98,19 +98,11 @@ rtc_source_set("field_trial") {
     "../rtc_base:logging",
     "//third_party/abseil-cpp/absl/strings",
   ]
-  if (build_with_chromium) {
-    # When WebRTC is built as part of Chromium it should exclude the default
-    # implementation of field_trial unless it is building for NACL or
-    # Chromecast.
-    if (!is_nacl && !is_chromecast) {
-      deps += [ "../../webrtc_overrides:field_trial" ]
-    }
-  }
 }
 
-rtc_source_set("event_wrapper") {
+rtc_library("event_wrapper") {
   visibility = [
-    "../modules/video_coding",
+    "../modules/video_coding:video_coding_legacy",
     "../modules/video_coding:video_coding_unittests",
   ]
   sources = [
@@ -122,7 +114,7 @@ rtc_source_set("event_wrapper") {
   ]
 }
 
-rtc_source_set("metrics") {
+rtc_library("metrics") {
   visibility = [ "*" ]
   public = [
     "include/metrics.h",
@@ -137,13 +129,10 @@ rtc_source_set("metrics") {
     "../rtc_base:checks",
     "../rtc_base:rtc_base_approved",
   ]
-  if (build_with_chromium) {
-    deps += [ "../../webrtc_overrides:metrics" ]
-  }
 }
 
 if (is_android && !build_with_mozilla) {
-  rtc_static_library("cpu_features_android") {
+  rtc_library("cpu_features_android") {
     sources = [
       "source/cpu_features_android.c",
     ]
@@ -155,7 +144,7 @@ if (is_android && !build_with_mozilla) {
 }
 
 if (is_linux) {
-  rtc_static_library("cpu_features_linux") {
+  rtc_library("cpu_features_linux") {
     sources = [
       "source/cpu_features_linux.c",
     ]
@@ -184,6 +173,7 @@ if (rtc_include_tests) {
       ":system_wrappers",
       "../rtc_base:checks",
       "../rtc_base:rtc_base_approved",
+      "../test:rtc_expect_death",
       "../test:test_main",
       "../test:test_support",
       "//testing/gtest",

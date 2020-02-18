@@ -4,7 +4,6 @@
 
 import("//build/buildflag_header.gni")
 import("//build/config/features.gni")
-import("//build/config/jumbo.gni")
 import("//pdf/features.gni")
 import("//testing/test.gni")
 import("//third_party/pdfium/pdfium.gni")
@@ -20,12 +19,14 @@ if (enable_pdf) {
   pdf_engine = 0  # 0 PDFium
 
   config("pdf_common_config") {
+    configs = [ "//build/config/compiler:noshadowing" ]
+
     if (pdf_engine == 0) {
       include_dirs = [ "//third_party/pdfium" ]
     }
   }
 
-  jumbo_static_library("pdf") {
+  static_library("pdf") {
     configs += [ ":pdf_common_config" ]
     deps = [
       ":features",
@@ -155,6 +156,8 @@ if (enable_pdf) {
       "test/test_utils.h",
     ]
 
+    configs += [ "//build/config/compiler:noshadowing" ]
+
     deps = [
       ":pdf",
       "//base",
@@ -212,10 +215,7 @@ if (enable_pdf) {
       ]
 
       if (v8_use_external_startup_data) {
-        data += [
-          "$root_out_dir/natives_blob.bin",
-          "$root_out_dir/snapshot_blob.bin",
-        ]
+        data += [ "$root_out_dir/snapshot_blob.bin" ]
       }
     }
   }

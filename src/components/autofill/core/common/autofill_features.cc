@@ -54,6 +54,10 @@ const base::Feature kAutofillEnableAccountWalletStorage{
 const base::Feature kAutofillEnableCompanyName{
     "AutofillEnableCompanyName", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Controls whether we show "Hide suggestions" item in the suggestions menu.
+const base::Feature kAutofillEnableHideSuggestionsUI{
+    "AutofillEnableHideSuggestionsUI", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls whether or not a minimum number of fields is required before
 // heuristic field type prediction is run for a form.
 const base::Feature kAutofillEnforceMinRequiredFieldsForHeuristics{
@@ -112,6 +116,11 @@ const base::Feature kAutofillProfileServerValidation{
 const base::Feature kAutofillRejectCompanyBirthyear{
     "AutofillRejectCompanyBirthyear", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Controls whether autofill rejects using non-verified company names that are
+// social titles (e.g., "Mrs.") in some languages.
+const base::Feature kAutofillRejectCompanySocialTitle{
+    "AutofillRejectCompanySocialTitle", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls whether or not a group of fields not enclosed in a form can be
 // considered a form. If this is enabled, unowned fields will only constitute
 // a form if there are signals to suggest that this might a checkout page.
@@ -125,6 +134,10 @@ const base::Feature kAutofillRestrictUnownedFieldsToFormlessCheckout{
 // models prior to a client-push.
 const base::Feature kAutofillRichMetadataQueries{
     "AutofillRichMetadataQueries", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Controls whether UPI/VPA values will be saved and filled into payment forms.
+const base::Feature kAutofillSaveAndFillVPA{"AutofillSaveAndFillVPA",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kAutofillSaveOnProbablySubmitted{
     "AutofillSaveOnProbablySubmitted", base::FEATURE_ENABLED_BY_DEFAULT};
@@ -165,6 +178,10 @@ const base::Feature kAutofillSkipComparingInferredLabels{
 const base::Feature kAutofillTokenPrefixMatching{
     "AutofillTokenPrefixMatching", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables the touch to fill feature for Android.
+const base::Feature kAutofillTouchToFill = {"TouchToFillAndroid",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kAutofillUploadThrottling{"AutofillUploadThrottling",
                                               base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -178,6 +195,10 @@ const base::Feature kAutofillUseImprovedLabelDisambiguation{
     "AutofillUseImprovedLabelDisambiguation",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Server predictions for CVC fields are used if the feature is enabled.
+const base::Feature kAutofillUseServerCVCPrediction{
+    "AutofillUseServerCVCPrediction", base::FEATURE_ENABLED_BY_DEFAULT};
+
 #if defined(OS_ANDROID)
 // Controls whether the Autofill manual fallback for Addresses and Payments is
 // present on Android.
@@ -187,10 +208,6 @@ const base::Feature kAutofillManualFallbackAndroid{
 // Controls whether to use modernized style for the Autofill dropdown.
 const base::Feature kAutofillRefreshStyleAndroid{
     "AutofillRefreshStyleAndroid", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Enables the touch to fill feature for Android.
-const base::Feature kTouchToFillAndroid = {"TouchToFillAndroid",
-                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
 #endif  // OS_ANDROID
 

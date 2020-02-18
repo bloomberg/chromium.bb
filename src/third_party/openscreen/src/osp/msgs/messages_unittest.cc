@@ -5,8 +5,14 @@
 #include "gtest/gtest.h"
 #include "osp/msgs/osp_messages.h"
 
+using openscreen::msgs::CborEncodeBuffer;
+using openscreen::msgs::HttpHeader;
+using openscreen::msgs::PresentationConnectionMessage;
+using openscreen::msgs::PresentationStartRequest;
+using openscreen::msgs::PresentationUrlAvailabilityRequest;
+
 namespace openscreen {
-namespace msgs {
+namespace osp {
 
 // TODO(btolsch): This is in the current (draft) spec, but should we actually
 // allow this?
@@ -221,5 +227,5 @@ TEST(PresentationMessagesTest, CborEncodeBufferTooLarge) {
   ASSERT_FALSE(EncodePresentationUrlAvailabilityRequest(request, &buffer));
 }
 
-}  // namespace msgs
+}  // namespace osp
 }  // namespace openscreen

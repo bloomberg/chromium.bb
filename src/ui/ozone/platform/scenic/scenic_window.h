@@ -44,15 +44,18 @@ class COMPONENT_EXPORT(OZONE) ScenicWindow
 
   scenic::Session* scenic_session() { return &scenic_session_; }
 
-  void AttachSurface(fuchsia::ui::gfx::ExportToken surface_export_token);
+  // Embeds the View identified by |token| into the render node,
+  // causing its contents to be displayed in this window.
+  void AttachSurfaceView(fuchsia::ui::views::ViewHolderToken token);
 
   // PlatformWindow implementation.
   gfx::Rect GetBounds() override;
   void SetBounds(const gfx::Rect& bounds) override;
   void SetTitle(const base::string16& title) override;
-  void Show() override;
+  void Show(bool inactive) override;
   void Hide() override;
   void Close() override;
+  bool IsVisible() const override;
   void PrepareForShutdown() override;
   void SetCapture() override;
   void ReleaseCapture() override;
@@ -65,11 +68,15 @@ class COMPONENT_EXPORT(OZONE) ScenicWindow
   void Activate() override;
   void Deactivate() override;
   void SetUseNativeFrame(bool use_native_frame) override;
+  bool ShouldUseNativeFrame() const override;
   void SetCursor(PlatformCursor cursor) override;
   void MoveCursorTo(const gfx::Point& location) override;
   void ConfineCursorToBounds(const gfx::Rect& bounds) override;
   void SetRestoredBoundsInPixels(const gfx::Rect& bounds) override;
   gfx::Rect GetRestoredBoundsInPixels() const override;
+  void SetWindowIcons(const gfx::ImageSkia& window_icon,
+                      const gfx::ImageSkia& app_icon) override;
+  void SizeConstraintsChanged() override;
 
  private:
   // Callbacks for |scenic_session_|.
@@ -104,8 +111,12 @@ class COMPONENT_EXPORT(OZONE) ScenicWindow
   // Entity node for the |view_|.
   scenic::EntityNode node_;
 
+  // Node in |scenic_session_| for receiving input that hits within our View.
+  scenic::ShapeNode input_node_;
+
   // Node in |scenic_session_| for rendering (hit testing disabled).
   scenic::EntityNode render_node_;
+  std::unique_ptr<scenic::ViewHolder> surface_view_holder_;
 
   // The ratio used for translating device-independent coordinates to absolute
   // pixel coordinates.

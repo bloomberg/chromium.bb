@@ -7,7 +7,6 @@
 #include <gtk/gtk.h>
 
 #include "chrome/browser/ui/libgtkui/gtk_util.h"
-#include "chrome/browser/ui/libgtkui/skia_utils_gtk.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/rect.h"
@@ -77,6 +76,8 @@ SkColor SkColorFromColorId(ui::NativeTheme::ColorId color_id) {
     case ui::NativeTheme::kColorId_DialogBackground:
     case ui::NativeTheme::kColorId_BubbleBackground:
       return GetBgColor("");
+    case ui::NativeTheme::kColorId_DialogForeground:
+      return GetFgColor("GtkLabel");
     case ui::NativeTheme::kColorId_BubbleFooterBackground:
       return GetBgColor("#statusbar");
 
@@ -103,6 +104,7 @@ SkColor SkColorFromColorId(ui::NativeTheme::ColorId color_id) {
     case ui::NativeTheme::kColorId_FocusedMenuItemBackgroundColor:
       return GetBgColor("GtkMenu#menu GtkMenuItem#menuitem:hover");
     case ui::NativeTheme::kColorId_EnabledMenuItemForegroundColor:
+    case ui::NativeTheme::kColorId_MenuDropIndicator:
       return GetFgColor("GtkMenu#menu GtkMenuItem#menuitem GtkLabel");
     case ui::NativeTheme::kColorId_SelectedMenuItemForegroundColor:
       return GetFgColor("GtkMenu#menu GtkMenuItem#menuitem:hover GtkLabel");
@@ -120,14 +122,10 @@ SkColor SkColorFromColorId(ui::NativeTheme::ColorId color_id) {
             "GtkMenu#menu GtkSeparator#separator.horizontal");
       }
       return GetFgColor("GtkMenu#menu GtkMenuItem#menuitem.separator");
-    case ui::NativeTheme::kColorId_TouchableMenuItemLabelColor:
-    case ui::NativeTheme::kColorId_ActionableSubmenuVerticalSeparatorColor:
-      return gfx::kPlaceholderColor;
     // Fallback to the same colors as Aura.
     case ui::NativeTheme::kColorId_HighlightedMenuItemBackgroundColor:
     case ui::NativeTheme::kColorId_HighlightedMenuItemForegroundColor:
-    case ui::NativeTheme::kColorId_MenuItemAlertBackgroundColorMax:
-    case ui::NativeTheme::kColorId_MenuItemAlertBackgroundColorMin:
+    case ui::NativeTheme::kColorId_MenuItemAlertBackgroundColor:
       return ui::NativeTheme::GetInstanceForNativeUi()->GetSystemColor(
           color_id);
 
@@ -135,6 +133,7 @@ SkColor SkColorFromColorId(ui::NativeTheme::ColorId color_id) {
     case ui::NativeTheme::kColorId_LabelEnabledColor:
       return GetFgColor("GtkLabel");
     case ui::NativeTheme::kColorId_LabelDisabledColor:
+    case ui::NativeTheme::kColorId_LabelSecondaryColor:
       return GetFgColor("GtkLabel:disabled");
     case ui::NativeTheme::kColorId_LabelTextSelectionColor:
       return GetFgColor(GtkVersionCheck(3, 20) ? "GtkLabel #selection"
@@ -159,7 +158,8 @@ SkColor SkColorFromColorId(ui::NativeTheme::ColorId color_id) {
       GdkColor* color;
       gtk_style_context_get_style(link_context, "link-color", &color, nullptr);
       if (color) {
-        SkColor ret_color = GdkColorToSkColor(*color);
+        SkColor ret_color =
+            SkColorSetRGB(color->red >> 8, color->green >> 8, color->blue >> 8);
         // gdk_color_free() was deprecated in Gtk3.14.  This code path is only
         // taken on versions earlier than Gtk3.12, but the compiler doesn't know
         // that, so silence the deprecation warnings.
@@ -180,11 +180,10 @@ SkColor SkColorFromColorId(ui::NativeTheme::ColorId color_id) {
 
     // Button
     case ui::NativeTheme::kColorId_ButtonEnabledColor:
+    case ui::NativeTheme::kColorId_ButtonUncheckedColor:
       return GetFgColor("GtkButton#button.text-button GtkLabel");
     case ui::NativeTheme::kColorId_ButtonDisabledColor:
       return GetFgColor("GtkButton#button.text-button:disabled GtkLabel");
-    case ui::NativeTheme::kColorId_ButtonHoverColor:
-      return GetFgColor("GtkButton#button.text-button:hover GtkLabel");
     case ui::NativeTheme::kColorId_ButtonPressedShade:
       return SK_ColorTRANSPARENT;
 
@@ -297,8 +296,8 @@ SkColor SkColorFromColorId(ui::NativeTheme::ColorId color_id) {
       // theme should be used.
       ui::NativeTheme* fallback_theme =
           color_utils::IsDark(GetBgColor(""))
-              ? ui::NativeTheme::GetInstanceForNativeUi()
-              : ui::NativeThemeDarkAura::instance();
+              ? ui::NativeThemeDarkAura::instance()
+              : ui::NativeTheme::GetInstanceForNativeUi();
       return fallback_theme->GetSystemColor(color_id);
     }
 
@@ -345,13 +344,6 @@ NativeThemeGtk::NativeThemeGtk() {
   g_type_class_unref(g_type_class_ref(gtk_toggle_button_get_type()));
   g_type_class_unref(g_type_class_ref(gtk_tree_view_get_type()));
   g_type_class_unref(g_type_class_ref(gtk_window_get_type()));
-
-  // Add the web native theme as an observer to stay in sync with dark mode,
-  // high contrast, and preferred color scheme changes.
-  color_scheme_observer_ =
-      std::make_unique<NativeTheme::ColorSchemeNativeThemeObserver>(
-          NativeTheme::GetInstanceForWeb());
-  AddObserver(color_scheme_observer_.get());
 
   OnThemeChanged(gtk_settings_get_default(), nullptr);
 }

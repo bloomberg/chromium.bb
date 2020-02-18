@@ -5,7 +5,9 @@
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/test/mock_callback.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/video_capture/public/cpp/mock_producer.h"
 #include "services/video_capture/public/mojom/constants.mojom.h"
 #include "services/video_capture/public/mojom/device.mojom.h"
@@ -78,10 +80,10 @@ TEST_F(VideoCaptureServiceTest, VirtualDeviceEnumeratedAfterAdd) {
 
 TEST_F(VideoCaptureServiceTest,
        AddingAndRemovingVirtualDevicesRaisesDevicesChangedEvent) {
-  mojom::DevicesChangedObserverPtr observer;
+  mojo::PendingRemote<mojom::DevicesChangedObserver> observer;
   MockDevicesChangedObserver mock_observer;
-  mojo::Binding<mojom::DevicesChangedObserver> observer_binding(
-      &mock_observer, mojo::MakeRequest(&observer));
+  mojo::Receiver<mojom::DevicesChangedObserver> observer_receiver(
+      &mock_observer, observer.InitWithNewPipeAndPassReceiver());
   factory_->RegisterVirtualDevicesChangedObserver(
       std::move(observer),
       false /*raise_event_if_virtual_devices_already_present*/);
@@ -95,7 +97,7 @@ TEST_F(VideoCaptureServiceTest,
     run_loop.Run();
   }
 
-  mojom::TextureVirtualDevicePtr device_context_2;
+  mojo::PendingRemote<mojom::TextureVirtualDevice> device_context_2;
   {
     base::RunLoop run_loop;
     EXPECT_CALL(mock_observer, OnDevicesChanged())
@@ -125,19 +127,19 @@ TEST_F(VideoCaptureServiceTest,
 // crash or bad state.
 TEST_F(VideoCaptureServiceTest,
        AddAndRemoveVirtualDeviceAfterObserverHasDisconnected) {
-  mojom::DevicesChangedObserverPtr observer;
+  mojo::PendingRemote<mojom::DevicesChangedObserver> observer;
   MockDevicesChangedObserver mock_observer;
-  mojo::Binding<mojom::DevicesChangedObserver> observer_binding(
-      &mock_observer, mojo::MakeRequest(&observer));
+  mojo::Receiver<mojom::DevicesChangedObserver> observer_receiver(
+      &mock_observer, observer.InitWithNewPipeAndPassReceiver());
   factory_->RegisterVirtualDevicesChangedObserver(
       std::move(observer),
       false /*raise_event_if_virtual_devices_already_present*/);
 
   // Disconnect observer
-  observer_binding.Close();
+  observer_receiver.reset();
 
   auto device_context = AddTextureVirtualDevice("TestDevice");
-  device_context = nullptr;
+  device_context.reset();
 }
 
 // Tests that VideoCaptureDeviceFactory::CreateDevice() returns an error
@@ -145,17 +147,17 @@ TEST_F(VideoCaptureServiceTest,
 TEST_F(VideoCaptureServiceTest, ErrorCodeOnCreateDeviceForInvalidDescriptor) {
   const std::string invalid_device_id = "invalid";
   base::RunLoop wait_loop;
-  mojom::DevicePtr fake_device_proxy;
+  mojo::Remote<mojom::Device> fake_device_remote;
   base::MockCallback<mojom::DeviceFactory::CreateDeviceCallback>
-      create_device_proxy_callback;
-  EXPECT_CALL(create_device_proxy_callback,
+      create_device_remote_callback;
+  EXPECT_CALL(create_device_remote_callback,
               Run(mojom::DeviceAccessResultCode::ERROR_DEVICE_NOT_FOUND))
       .Times(1)
       .WillOnce(InvokeWithoutArgs([&wait_loop]() { wait_loop.Quit(); }));
   factory_->GetDeviceInfos(device_info_receiver_.Get());
   factory_->CreateDevice(invalid_device_id,
-                         mojo::MakeRequest(&fake_device_proxy),
-                         create_device_proxy_callback.Get());
+                         fake_device_remote.BindNewPipeAndPassReceiver(),
+                         create_device_remote_callback.Get());
   wait_loop.Run();
 }
 
@@ -167,14 +169,15 @@ TEST_F(VideoCaptureServiceTest, CreateDeviceSuccessForVirtualDevice) {
   auto device_context = AddSharedMemoryVirtualDevice(virtual_device_id);
 
   base::MockCallback<mojom::DeviceFactory::CreateDeviceCallback>
-      create_device_proxy_callback;
-  EXPECT_CALL(create_device_proxy_callback,
+      create_device_remote_callback;
+  EXPECT_CALL(create_device_remote_callback,
               Run(mojom::DeviceAccessResultCode::SUCCESS))
       .Times(1)
       .WillOnce(InvokeWithoutArgs([&wait_loop]() { wait_loop.Quit(); }));
-  mojom::DevicePtr device_proxy;
-  factory_->CreateDevice(virtual_device_id, mojo::MakeRequest(&device_proxy),
-                         create_device_proxy_callback.Get());
+  mojo::Remote<mojom::Device> device_remote;
+  factory_->CreateDevice(virtual_device_id,
+                         device_remote.BindNewPipeAndPassReceiver(),
+                         create_device_remote_callback.Get());
   wait_loop.Run();
 }
 

@@ -29,7 +29,6 @@
 #include "base/win/scoped_gdi_object.h"
 #include "base/win/scoped_hdc.h"
 #include "base/win/scoped_select_object.h"
-#include "base/win/win_client_metrics.h"
 #include "third_party/skia/include/core/SkFontLCDConfig.h"
 #include "third_party/skia/include/core/SkFontMetrics.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
@@ -43,10 +42,6 @@
 #include "ui/gfx/win/scoped_set_map_mode.h"
 
 namespace {
-
-// Enable the use of PlatformFontSkia instead of PlatformFontWin.
-const base::Feature kPlatformFontSkiaOnWindows{
-    "PlatformFontSkiaOnWindows", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Sets style properties on |font_info| based on |font_style|.
 void SetLogFontStyle(int font_style, LOGFONT* font_info) {
@@ -240,6 +235,10 @@ HRESULT GetMatchingDirectWriteFont(LOGFONT* font_info,
 
 namespace gfx {
 
+// Enable the use of PlatformFontSkia instead of PlatformFontWin.
+const base::Feature kPlatformFontSkiaOnWindows{
+    "PlatformFontSkiaOnWindows", base::FEATURE_ENABLED_BY_DEFAULT};
+
 // static
 PlatformFontWin::HFontRef* PlatformFontWin::base_font_ref_;
 
@@ -275,9 +274,25 @@ HRESULT GetFamilyNameFromDirectWriteFont(IDWriteFont* dwrite_font,
 PlatformFontWin::PlatformFontWin() : font_ref_(GetBaseFontRef()) {
 }
 
-PlatformFontWin::PlatformFontWin(const std::string& font_name,
-                                 int font_size) {
+PlatformFontWin::PlatformFontWin(const std::string& font_name, int font_size) {
   InitWithFontNameAndSize(font_name, font_size);
+}
+
+PlatformFontWin::PlatformFontWin(sk_sp<SkTypeface> typeface,
+                                 int font_size_pixels,
+                                 const base::Optional<FontRenderParams>& params)
+    : typeface_(std::move(typeface)) {
+  DCHECK(typeface_);
+
+  // TODO(http://crbug.com/944227): This is a transitional code path until we
+  // complete migrating to PlatformFontSkia on Windows. Being unable to wrap the
+  // SkTypeface into a PlatformFontSkia and performing a rematching by font
+  // family name instead loses platform font handles encapsulated in SkTypeface,
+  // and in turn leads to instantiating a different font than what was returned
+  // by font fallback, compare https://crbug.com/1003829.
+  SkString family_name;
+  typeface_->getFamilyName(&family_name);
+  InitWithFontNameAndSize(family_name.c_str(), font_size_pixels);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -357,6 +372,10 @@ const FontRenderParams& PlatformFontWin::GetFontRenderParams() {
   static const base::NoDestructor<FontRenderParams> params(
       gfx::GetFontRenderParams(FontRenderParamsQuery(), nullptr));
   return *params;
+}
+
+sk_sp<SkTypeface> PlatformFontWin::GetNativeSkTypefaceIfAvailable() const {
+  return sk_sp<SkTypeface>(typeface_);
 }
 
 NativeFont PlatformFontWin::GetNativeFont() const {
@@ -643,6 +662,17 @@ PlatformFont* PlatformFont::CreateFromNameAndSize(const std::string& font_name,
   if (base::FeatureList::IsEnabled(kPlatformFontSkiaOnWindows))
     return new PlatformFontSkia(font_name, font_size);
   return new PlatformFontWin(font_name, font_size);
+}
+
+// static
+PlatformFont* PlatformFont::CreateFromSkTypeface(
+    sk_sp<SkTypeface> typeface,
+    int font_size,
+    const base::Optional<FontRenderParams>& params) {
+  TRACE_EVENT0("fonts", "PlatformFont::CreateFromSkTypeface");
+  if (base::FeatureList::IsEnabled(kPlatformFontSkiaOnWindows))
+    return new PlatformFontSkia(typeface, font_size, params);
+  return new PlatformFontWin(typeface, font_size, params);
 }
 
 }  // namespace gfx

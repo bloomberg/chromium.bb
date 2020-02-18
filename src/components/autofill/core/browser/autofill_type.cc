@@ -56,6 +56,10 @@ FieldTypeGroup GroupTypeOfServerFieldType(ServerFieldType field_type) {
     case ADDRESS_HOME_STREET_ADDRESS:
     case ADDRESS_HOME_SORTING_CODE:
     case ADDRESS_HOME_DEPENDENT_LOCALITY:
+    case ADDRESS_HOME_STREET:
+    case ADDRESS_HOME_HOUSE_NUMBER:
+    case ADDRESS_HOME_FLOOR:
+    case ADDRESS_HOME_OTHER_SUBUNIT:
       return ADDRESS_HOME;
 
     case ADDRESS_BILLING_LINE1:
@@ -439,78 +443,6 @@ ServerFieldType AutofillType::GetStorableType() const {
   return UNKNOWN_TYPE;
 }
 
-// static
-ServerFieldType AutofillType::GetEquivalentBillingFieldType(
-    ServerFieldType field_type) {
-  switch (field_type) {
-    case ADDRESS_HOME_LINE1:
-      return ADDRESS_BILLING_LINE1;
-
-    case ADDRESS_HOME_LINE2:
-      return ADDRESS_BILLING_LINE2;
-
-    case ADDRESS_HOME_APT_NUM:
-      return ADDRESS_BILLING_APT_NUM;
-
-    case ADDRESS_HOME_CITY:
-      return ADDRESS_BILLING_CITY;
-
-    case ADDRESS_HOME_STATE:
-      return ADDRESS_BILLING_STATE;
-
-    case ADDRESS_HOME_ZIP:
-      return ADDRESS_BILLING_ZIP;
-
-    case ADDRESS_HOME_COUNTRY:
-      return ADDRESS_BILLING_COUNTRY;
-
-    case ADDRESS_HOME_STREET_ADDRESS:
-      return ADDRESS_BILLING_STREET_ADDRESS;
-
-    case ADDRESS_HOME_SORTING_CODE:
-      return ADDRESS_BILLING_SORTING_CODE;
-
-    case ADDRESS_HOME_DEPENDENT_LOCALITY:
-      return ADDRESS_BILLING_DEPENDENT_LOCALITY;
-
-    case PHONE_HOME_WHOLE_NUMBER:
-      return PHONE_BILLING_WHOLE_NUMBER;
-
-    case PHONE_HOME_NUMBER:
-      return PHONE_BILLING_NUMBER;
-
-    case PHONE_HOME_CITY_CODE:
-      return PHONE_BILLING_CITY_CODE;
-
-    case PHONE_HOME_COUNTRY_CODE:
-      return PHONE_BILLING_COUNTRY_CODE;
-
-    case PHONE_HOME_CITY_AND_NUMBER:
-      return PHONE_BILLING_CITY_AND_NUMBER;
-
-    case NAME_FIRST:
-      return NAME_BILLING_FIRST;
-
-    case NAME_MIDDLE:
-      return NAME_BILLING_MIDDLE;
-
-    case NAME_LAST:
-      return NAME_BILLING_LAST;
-
-    case NAME_MIDDLE_INITIAL:
-      return NAME_BILLING_MIDDLE_INITIAL;
-
-    case NAME_FULL:
-      return NAME_BILLING_FULL;
-
-    case NAME_SUFFIX:
-      return NAME_BILLING_SUFFIX;
-
-    default:
-      return field_type;
-  }
-}
-
 std::string AutofillType::ToString() const {
   if (IsUnknown())
     return "UNKNOWN_TYPE";
@@ -788,6 +720,14 @@ std::string AutofillType::ServerFieldTypeToString(ServerFieldType type) {
       return "NOT_USERNAME";
     case UPI_VPA:
       return "UPI_VPA";
+    case ADDRESS_HOME_STREET:
+      return "ADDRESS_HOME_STREET";
+    case ADDRESS_HOME_HOUSE_NUMBER:
+      return "ADDRESS_HOME_HOUSE_NUMBER";
+    case ADDRESS_HOME_FLOOR:
+      return "ADDRESS_HOME_FLOOR";
+    case ADDRESS_HOME_OTHER_SUBUNIT:
+      return "ADDRESS_HOME_OTHER_SUBUNIT";
     case AMBIGUOUS_TYPE:
       return "AMBIGUOUS_TYPE";
     case MAX_VALID_FIELD_TYPE:

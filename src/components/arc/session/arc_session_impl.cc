@@ -15,6 +15,7 @@
 #include "ash/public/cpp/default_scale_factor_retriever.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/compiler_specific.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/posix/eintr_wrapper.h"
@@ -26,7 +27,7 @@
 #include "base/task/task_traits.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
-#include "chromeos/dbus/login_manager/arc.pb.h"
+#include "chromeos/system/scheduler_configuration_manager_base.h"
 #include "components/arc/arc_features.h"
 #include "components/arc/arc_util.h"
 #include "components/arc/session/arc_bridge_host_impl.h"
@@ -79,27 +80,6 @@ bool WaitForSocketReadable(int raw_socket_fd, int raw_cancel_fd) {
 
   DCHECK(fds[0].revents);
   return true;
-}
-
-// Converts ArcSupervisionTransition into
-// login_manager::UpgradeArcContainerRequest_SupervisionTransition.
-login_manager::UpgradeArcContainerRequest_SupervisionTransition
-ToLoginManagerSupervisionTransition(ArcSupervisionTransition transition) {
-  switch (transition) {
-    case ArcSupervisionTransition::NO_TRANSITION:
-      return login_manager::
-          UpgradeArcContainerRequest_SupervisionTransition_NONE;
-    case ArcSupervisionTransition::CHILD_TO_REGULAR:
-      return login_manager::
-          UpgradeArcContainerRequest_SupervisionTransition_CHILD_TO_REGULAR;
-    case ArcSupervisionTransition::REGULAR_TO_CHILD:
-      return login_manager::
-          UpgradeArcContainerRequest_SupervisionTransition_REGULAR_TO_CHILD;
-    default:
-      NOTREACHED() << "Invalid transition " << transition;
-      return login_manager::
-          UpgradeArcContainerRequest_SupervisionTransition_NONE;
-  }
 }
 
 // Real Delegate implementation to connect Mojo.
@@ -323,9 +303,6 @@ void ArcSessionDelegateImpl::OnMojoConnected(
 
 }  // namespace
 
-const char ArcSessionImpl::kPackagesCacheModeCopy[] = "copy";
-const char ArcSessionImpl::kPackagesCacheModeSkipCopy[] = "skip-copy";
-
 // static
 std::unique_ptr<ArcSessionImpl::Delegate> ArcSessionImpl::CreateDelegate(
     ArcBridgeService* arc_bridge_service,
@@ -335,8 +312,12 @@ std::unique_ptr<ArcSessionImpl::Delegate> ArcSessionImpl::CreateDelegate(
                                                   channel);
 }
 
-ArcSessionImpl::ArcSessionImpl(std::unique_ptr<Delegate> delegate)
-    : delegate_(std::move(delegate)), client_(ArcClientAdapter::Create()) {
+ArcSessionImpl::ArcSessionImpl(std::unique_ptr<Delegate> delegate,
+                               chromeos::SchedulerConfigurationManagerBase*
+                                   scheduler_configuration_manager)
+    : delegate_(std::move(delegate)),
+      client_(ArcClientAdapter::Create(delegate_->GetChannel())),
+      scheduler_configuration_manager_(scheduler_configuration_manager) {
   DCHECK(client_);
   client_->AddObserver(this);
 }
@@ -345,6 +326,8 @@ ArcSessionImpl::~ArcSessionImpl() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(state_ == State::NOT_STARTED || state_ == State::STOPPED);
   client_->RemoveObserver(this);
+  if (scheduler_configuration_manager_)  // for testing
+    scheduler_configuration_manager_->RemoveObserver(this);
 }
 
 void ArcSessionImpl::StartMiniInstance() {
@@ -361,25 +344,36 @@ void ArcSessionImpl::StartMiniInstance() {
 
 void ArcSessionImpl::OnLcdDensity(int32_t lcd_density) {
   DCHECK_GT(lcd_density, 0);
-  DCHECK_EQ(state_, State::WAITING_FOR_LCD_DENSITY);
-  state_ = State::STARTING_MINI_INSTANCE;
-  StartArcMiniContainerRequest request;
-  request.set_native_bridge_experiment(
-      base::FeatureList::IsEnabled(arc::kNativeBridgeToggleFeature));
-  request.set_arc_file_picker_experiment(
-      base::FeatureList::IsEnabled(arc::kFilePickerExperimentFeature));
+  DCHECK(state_ == State::WAITING_FOR_LCD_DENSITY);
+
+  lcd_density_ = lcd_density;
+  const auto& last_reply = scheduler_configuration_manager_->GetLastReply();
+  if (last_reply) {
+    state_ = State::STARTING_MINI_INSTANCE;
+    DoStartMiniInstance(last_reply->first ? last_reply->second : 0);
+  } else {
+    state_ = State::WAITING_FOR_NUM_CORES;
+    scheduler_configuration_manager_->AddObserver(this);
+  }
+}
+
+void ArcSessionImpl::DoStartMiniInstance(size_t num_cores_disabled) {
+  DCHECK_GT(lcd_density_, 0);
+  StartParams params;
+  params.native_bridge_experiment =
+      base::FeatureList::IsEnabled(arc::kNativeBridgeToggleFeature);
+  params.arc_file_picker_experiment =
+      base::FeatureList::IsEnabled(arc::kFilePickerExperimentFeature);
   // Enable Custom Tabs only on Dev and Cannary, and only when Mash is enabled.
   const bool is_custom_tab_enabled =
       base::FeatureList::IsEnabled(arc::kCustomTabsExperimentFeature) &&
       delegate_->GetChannel() != version_info::Channel::STABLE &&
       delegate_->GetChannel() != version_info::Channel::BETA;
-  request.set_arc_custom_tabs_experiment(is_custom_tab_enabled);
-  const bool is_arc_print_spooler_enabled =
-      base::FeatureList::IsEnabled(arc::kPrintSpoolerExperimentFeature) &&
-      delegate_->GetChannel() != version_info::Channel::STABLE &&
-      delegate_->GetChannel() != version_info::Channel::BETA;
-  request.set_arc_print_spooler_experiment(is_arc_print_spooler_enabled);
-  request.set_lcd_density(lcd_density);
+  params.arc_custom_tabs_experiment = is_custom_tab_enabled;
+  params.arc_print_spooler_experiment =
+      base::FeatureList::IsEnabled(arc::kPrintSpoolerExperimentFeature);
+  params.lcd_density = lcd_density_;
+  params.num_cores_disabled = num_cores_disabled;
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           chromeos::switches::kArcPlayStoreAutoUpdate)) {
@@ -387,14 +381,12 @@ void ArcSessionImpl::OnLcdDensity(int32_t lcd_density) {
         base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
             chromeos::switches::kArcPlayStoreAutoUpdate);
     if (value == kOn) {
-      request.set_play_store_auto_update(
-          login_manager::
-              StartArcMiniContainerRequest_PlayStoreAutoUpdate_AUTO_UPDATE_ON);
+      params.play_store_auto_update =
+          StartParams::PlayStoreAutoUpdate::AUTO_UPDATE_ON;
       VLOG(1) << "Play Store auto-update is forced on";
     } else if (value == kOff) {
-      request.set_play_store_auto_update(
-          login_manager::
-              StartArcMiniContainerRequest_PlayStoreAutoUpdate_AUTO_UPDATE_OFF);
+      params.play_store_auto_update =
+          StartParams::PlayStoreAutoUpdate::AUTO_UPDATE_OFF;
       VLOG(1) << "Play Store auto-update is forced off";
     } else {
       LOG(ERROR) << "Invalid parameter " << value << " for "
@@ -403,9 +395,10 @@ void ArcSessionImpl::OnLcdDensity(int32_t lcd_density) {
   }
 
   VLOG(1) << "Starting ARC mini instance with lcd_density="
-          << request.lcd_density();
+          << params.lcd_density
+          << ", num_cores_disabled=" << params.num_cores_disabled;
 
-  client_->StartMiniArc(request,
+  client_->StartMiniArc(std::move(params),
                         base::BindOnce(&ArcSessionImpl::OnMiniInstanceStarted,
                                        weak_factory_.GetWeakPtr()));
 }
@@ -422,6 +415,7 @@ void ArcSessionImpl::RequestUpgrade(UpgradeParams params) {
       NOTREACHED();
       break;
     case State::WAITING_FOR_LCD_DENSITY:
+    case State::WAITING_FOR_NUM_CORES:
     case State::STARTING_MINI_INSTANCE:
       VLOG(2) << "Requested to upgrade a starting ARC mini instance";
       // OnMiniInstanceStarted() will restart a full instance.
@@ -455,7 +449,7 @@ void ArcSessionImpl::OnMiniInstanceStarted(bool result) {
 
   if (stop_requested_) {
     // The ARC instance has started to run. Request to stop.
-    StopArcInstance();
+    StopArcInstance(/*on_shutdown=*/false);
     return;
   }
 
@@ -479,12 +473,12 @@ void ArcSessionImpl::OnFreeDiskSpace(int64_t space) {
   // Ensure there's sufficient space on disk for the container.
   if (space == -1) {
     LOG(ERROR) << "Could not determine free disk space";
-    StopArcInstance();
+    StopArcInstance(/*on_shutdown=*/false);
     return;
   } else if (space < kMinimumFreeDiskSpaceBytes) {
     VLOG(1) << "There is not enough disk space to start the ARC container";
     insufficient_disk_space_ = true;
-    StopArcInstance();
+    StopArcInstance(/*on_shutdown=*/false);
     return;
   }
 
@@ -499,60 +493,21 @@ void ArcSessionImpl::OnSocketCreated(base::ScopedFD socket_fd) {
   if (stop_requested_) {
     // The ARC instance has started to run. Request to stop.
     VLOG(1) << "Stop() called while creating socket";
-    StopArcInstance();
+    StopArcInstance(/*on_shutdown=*/false);
     return;
   }
 
   if (!socket_fd.is_valid()) {
     LOG(ERROR) << "ARC: Error creating socket";
-    StopArcInstance();
+    StopArcInstance(/*on_shutdown=*/false);
     return;
   }
 
   VLOG(2) << "Socket is created. Starting ARC container";
-  UpgradeArcContainerRequest request;
-  user_manager::UserManager* user_manager = user_manager::UserManager::Get();
-  DCHECK(user_manager->GetPrimaryUser());
-
-  request.set_account_id(
-      cryptohome::Identification(user_manager->GetPrimaryUser()->GetAccountId())
-          .id());
-  request.set_skip_boot_completed_broadcast(
-      !base::FeatureList::IsEnabled(arc::kBootCompletedBroadcastFeature));
-
-  // Set packages cache mode coming from autotests.
-  const std::string packages_cache_mode_string =
-      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          chromeos::switches::kArcPackagesCacheMode);
-  if (packages_cache_mode_string == kPackagesCacheModeSkipCopy) {
-    request.set_packages_cache_mode(
-        login_manager::
-            UpgradeArcContainerRequest_PackageCacheMode_SKIP_SETUP_COPY_ON_INIT);
-  } else if (packages_cache_mode_string == kPackagesCacheModeCopy) {
-    request.set_packages_cache_mode(
-        login_manager::
-            UpgradeArcContainerRequest_PackageCacheMode_COPY_ON_INIT);
-  } else if (!packages_cache_mode_string.empty()) {
-    VLOG(2) << "Invalid packages cache mode switch "
-            << packages_cache_mode_string << ".";
-  }
-
-  request.set_supervision_transition(ToLoginManagerSupervisionTransition(
-      upgrade_params_.supervision_transition));
-  request.set_locale(upgrade_params_.locale);
-  for (const std::string& language : upgrade_params_.preferred_languages)
-    request.add_preferred_languages(language);
-
-  request.set_is_demo_session(upgrade_params_.is_demo_session);
-  if (!upgrade_params_.demo_session_apps_path.empty()) {
-    DCHECK(upgrade_params_.is_demo_session);
-    request.set_demo_session_apps_path(
-        upgrade_params_.demo_session_apps_path.value());
-  }
-
-  client_->UpgradeArc(request, base::BindOnce(&ArcSessionImpl::OnUpgraded,
-                                              weak_factory_.GetWeakPtr(),
-                                              std::move(socket_fd)));
+  client_->UpgradeArc(
+      std::move(upgrade_params_),
+      base::BindOnce(&ArcSessionImpl::OnUpgraded, weak_factory_.GetWeakPtr(),
+                     std::move(socket_fd)));
 }
 
 void ArcSessionImpl::OnUpgraded(base::ScopedFD socket_fd, bool result) {
@@ -568,7 +523,7 @@ void ArcSessionImpl::OnUpgraded(base::ScopedFD socket_fd, bool result) {
 
   if (stop_requested_) {
     // The ARC instance has started to run. Request to stop.
-    StopArcInstance();
+    StopArcInstance(/*on_shutdown=*/false);
     return;
   }
 
@@ -579,7 +534,7 @@ void ArcSessionImpl::OnUpgraded(base::ScopedFD socket_fd, bool result) {
                                            weak_factory_.GetWeakPtr()));
   if (!accept_cancel_pipe_.is_valid()) {
     // Failed to post a task to accept() the request.
-    StopArcInstance();
+    StopArcInstance(/*on_shutdown=*/false);
     return;
   }
 }
@@ -591,13 +546,13 @@ void ArcSessionImpl::OnMojoConnected(
   accept_cancel_pipe_.reset();
 
   if (stop_requested_) {
-    StopArcInstance();
+    StopArcInstance(/*on_shutdown=*/false);
     return;
   }
 
   if (!arc_bridge_host.get()) {
     LOG(ERROR) << "Invalid pipe.";
-    StopArcInstance();
+    StopArcInstance(/*on_shutdown=*/false);
     return;
   }
   arc_bridge_host_ = std::move(arc_bridge_host);
@@ -618,10 +573,14 @@ void ArcSessionImpl::Stop() {
   stop_requested_ = true;
   arc_bridge_host_.reset();
   switch (state_) {
+    case State::WAITING_FOR_NUM_CORES:
+      if (scheduler_configuration_manager_)  // for testing
+        scheduler_configuration_manager_->RemoveObserver(this);
+      FALLTHROUGH;
     case State::NOT_STARTED:
     case State::WAITING_FOR_LCD_DENSITY:
-      // If |Stop()| is called while waiting for LCD density, it can directly
-      // move to stopped state.
+      // If |Stop()| is called while waiting for LCD density or CPU cores
+      // information, it can directly move to stopped state.
       OnStopped(ArcStopReason::SHUTDOWN);
       return;
     case State::STARTING_MINI_INSTANCE:
@@ -639,7 +598,7 @@ void ArcSessionImpl::Stop() {
     case State::RUNNING_MINI_INSTANCE:
     case State::RUNNING_FULL_INSTANCE:
       // An ARC {mini,full} instance is running. Request to stop it.
-      StopArcInstance();
+      StopArcInstance(/*on_shutdown=*/false);
       return;
 
     case State::CONNECTING_MOJO:
@@ -655,9 +614,10 @@ void ArcSessionImpl::Stop() {
   }
 }
 
-void ArcSessionImpl::StopArcInstance() {
+void ArcSessionImpl::StopArcInstance(bool on_shutdown) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(state_ == State::WAITING_FOR_LCD_DENSITY ||
+         state_ == State::WAITING_FOR_NUM_CORES ||
          state_ == State::STARTING_MINI_INSTANCE ||
          state_ == State::RUNNING_MINI_INSTANCE ||
          state_ == State::STARTING_FULL_INSTANCE ||
@@ -668,7 +628,7 @@ void ArcSessionImpl::StopArcInstance() {
 
   // When the instance is full instance, change the |state_| in
   // ArcInstanceStopped().
-  client_->StopArcInstance();
+  client_->StopArcInstance(on_shutdown);
 }
 
 void ArcSessionImpl::ArcInstanceStopped() {
@@ -736,7 +696,7 @@ void ArcSessionImpl::OnShutdown() {
       state_ == State::STARTING_FULL_INSTANCE ||
       state_ == State::CONNECTING_MOJO ||
       state_ == State::RUNNING_FULL_INSTANCE) {
-    StopArcInstance();
+    StopArcInstance(/*on_shutdown=*/true);
   }
 
   // Directly set to the STOPPED state by OnStopped(). Note that calling
@@ -745,9 +705,25 @@ void ArcSessionImpl::OnShutdown() {
   OnStopped(ArcStopReason::SHUTDOWN);
 }
 
-void ArcSessionImpl::SetUserIdHashForProfile(const std::string& hash) {
+void ArcSessionImpl::SetUserInfo(const std::string& hash,
+                                 const std::string& serial_number) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  client_->SetUserIdHashForProfile(hash);
+  client_->SetUserInfo(hash, serial_number);
+}
+
+void ArcSessionImpl::OnConfigurationSet(bool success,
+                                        size_t num_cores_disabled) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK_EQ(state_, State::WAITING_FOR_NUM_CORES);
+
+  scheduler_configuration_manager_->RemoveObserver(this);
+  state_ = State::STARTING_MINI_INSTANCE;
+
+  // Note: On non-x86_64 devices, the configuration request to debugd always
+  // fails. It is WAI, and to support that case, don't log anything even when
+  // |success| is false. |num_cores_disabled| is always set regardless of
+  // where the call is successful.
+  DoStartMiniInstance(num_cores_disabled);
 }
 
 std::ostream& operator<<(std::ostream& os, ArcSessionImpl::State state) {
@@ -758,6 +734,7 @@ std::ostream& operator<<(std::ostream& os, ArcSessionImpl::State state) {
   switch (state) {
     MAP_STATE(NOT_STARTED);
     MAP_STATE(WAITING_FOR_LCD_DENSITY);
+    MAP_STATE(WAITING_FOR_NUM_CORES);
     MAP_STATE(STARTING_MINI_INSTANCE);
     MAP_STATE(RUNNING_MINI_INSTANCE);
     MAP_STATE(STARTING_FULL_INSTANCE);

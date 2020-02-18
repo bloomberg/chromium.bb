@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 
 import("//build/config/chromecast_build.gni")
-import("//build/split_static_library.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
 import("//third_party/blink/renderer/bindings/bindings.gni")
 import("//third_party/blink/renderer/bindings/modules/v8/generated.gni")
@@ -18,22 +17,8 @@ if (is_android) {
 
 visibility = [ "//third_party/blink/renderer/*" ]
 
-if (!is_component_build && is_win) {
-  # This target as a static library (for non-component builds) is >2GB for
-  # official builds and some goma builds on Windows. This causes linking to
-  # fail. As a workaround, force using a split static library for these
-  # configurations.
-  modules_target_type = "split_static_library"
-} else {
-  modules_target_type = "component"
-}
-
 config("modules_implementation") {
   defines = [ "BLINK_MODULES_IMPLEMENTATION=1" ]
-}
-
-config("notouch_config") {
-  defines = [ "TOUCHLESS_MEDIA_CONTROLS" ]
 }
 
 make_names("module_names") {
@@ -42,12 +27,8 @@ make_names("module_names") {
   deps = []  # Don't use default deps (otherwise it will be circular).
 }
 
-target("jumbo_" + modules_target_type, "modules") {
+jumbo_component("modules") {
   output_name = "blink_modules"
-
-  if (modules_target_type == "split_static_library") {
-    split_count = 5
-  }
 
   visibility = []  # Allow re-assignment of list.
   visibility = [ "//third_party/blink/*" ]
@@ -103,6 +84,7 @@ target("jumbo_" + modules_target_type, "modules") {
     "//third_party/blink/renderer/modules/credentialmanager",
     "//third_party/blink/renderer/modules/crypto",
     "//third_party/blink/renderer/modules/csspaint",
+    "//third_party/blink/renderer/modules/compression",
     "//third_party/blink/renderer/modules/device_orientation",
     "//third_party/blink/renderer/modules/document_metadata",
     "//third_party/blink/renderer/modules/donottrack",
@@ -158,7 +140,7 @@ target("jumbo_" + modules_target_type, "modules") {
     "//third_party/blink/renderer/modules/srcobject",
     "//third_party/blink/renderer/modules/storage",
     "//third_party/blink/renderer/modules/vibration",
-    "//third_party/blink/renderer/modules/vr",
+    "//third_party/blink/renderer/modules/video_raf",
     "//third_party/blink/renderer/modules/wake_lock",
     "//third_party/blink/renderer/modules/webaudio",
     "//third_party/blink/renderer/modules/webdatabase",
@@ -167,6 +149,7 @@ target("jumbo_" + modules_target_type, "modules") {
     "//third_party/blink/renderer/modules/webmidi",
     "//third_party/blink/renderer/modules/webshare",
     "//third_party/blink/renderer/modules/websockets",
+    "//third_party/blink/renderer/modules/webtransport",
     "//third_party/blink/renderer/modules/webusb",
     "//third_party/blink/renderer/modules/worklet",
     "//third_party/blink/renderer/modules/xr",
@@ -175,17 +158,14 @@ target("jumbo_" + modules_target_type, "modules") {
   deps = [
     ":make_modules_generated",
     ":module_names",
+    "//jingle:webrtc_glue",
     "//net:net",
     "//third_party/blink/renderer/bindings/modules:generated",
     "//third_party/blink/renderer/bindings/modules/v8:bindings_modules_impl",
     "//third_party/blink/renderer/bindings/modules/v8:bindings_modules_origin_trial_features",
     "//third_party/blink/renderer/core",
     "//third_party/icu",
-    "//third_party/webrtc/api/audio:aec3_config_json",
-    "//third_party/webrtc/pc:libjingle_peerconnection",
-    "//third_party/webrtc/rtc_base:rtc_base",
-    "//third_party/webrtc_overrides:init_webrtc",
-    "//third_party/webrtc_overrides:task_queue_factory",
+    "//third_party/webrtc_overrides:webrtc_component",
     "//third_party/zlib",
   ]
 
@@ -202,10 +182,6 @@ target("jumbo_" + modules_target_type, "modules") {
 
   configs -= [ "//build/config/compiler:default_symbols" ]
   configs += blink_symbols_config
-
-  if (is_android && notouch_build) {
-    configs += [ ":notouch_config" ]
-  }
 }
 
 jumbo_source_set("modules_testing") {
@@ -338,6 +314,7 @@ jumbo_source_set("unit_tests") {
     "mediacapturefromelement/html_audio_element_capturer_source_unittest.cc",
     "mediacapturefromelement/html_video_element_capturer_source_unittest.cc",
     "mediarecorder/audio_track_recorder_unittest.cc",
+    "mediarecorder/fake_encoded_video_frame.h",
     "mediarecorder/media_recorder_handler_unittest.cc",
     "mediarecorder/video_track_recorder_unittest.cc",
     "mediasession/media_session_test.cc",
@@ -383,14 +360,28 @@ jumbo_source_set("unit_tests") {
     "peerconnection/adapters/quic_packet_transport_adapter_test.cc",
     "peerconnection/byte_buffer_queue_test.cc",
     "peerconnection/call_setup_state_tracker_unittest.cc",
+    "peerconnection/media_stream_remote_video_source_test.cc",
+    "peerconnection/media_stream_track_metrics_test.cc",
+    "peerconnection/media_stream_video_webrtc_sink_test.cc",
+    "peerconnection/peer_connection_dependency_factory_test.cc",
+    "peerconnection/peer_connection_tracker_test.cc",
     "peerconnection/rtc_data_channel_test.cc",
     "peerconnection/rtc_ice_transport_test.cc",
     "peerconnection/rtc_ice_transport_test.h",
+    "peerconnection/rtc_peer_connection_handler_test.cc",
     "peerconnection/rtc_peer_connection_test.cc",
     "peerconnection/rtc_quic_stream_test.cc",
     "peerconnection/rtc_quic_transport_test.cc",
     "peerconnection/rtc_quic_transport_test.h",
+    "peerconnection/rtc_rtp_receiver_impl_test.cc",
+    "peerconnection/rtc_rtp_sender_impl_test.cc",
+    "peerconnection/rtc_rtp_transceiver_impl_test.cc",
     "peerconnection/rtc_sctp_transport_test.cc",
+    "peerconnection/transceiver_state_surfacer_test.cc",
+    "peerconnection/webrtc_audio_renderer_test.cc",
+    "peerconnection/webrtc_media_stream_track_adapter_map_test.cc",
+    "peerconnection/webrtc_media_stream_track_adapter_test.cc",
+    "peerconnection/webrtc_set_description_observer_test.cc",
     "picture_in_picture/picture_in_picture_controller_test.cc",
     "presentation/mock_presentation_service.h",
     "presentation/presentation_availability_state_test.cc",
@@ -402,13 +393,18 @@ jumbo_source_set("unit_tests") {
     "push_messaging/push_subscription_test.cc",
     "remoteplayback/remote_playback_test.cc",
     "screen_orientation/screen_orientation_controller_impl_test.cc",
+    "sensor/ambient_light_sensor_test.cc",
+    "sensor/sensor_test_utils.cc",
+    "sensor/sensor_test_utils.h",
     "service_worker/service_worker_container_test.cc",
+    "service_worker/service_worker_event_queue_test.cc",
     "service_worker/service_worker_installed_scripts_manager_test.cc",
-    "service_worker/service_worker_timeout_timer_test.cc",
     "service_worker/thread_safe_script_container_test.cc",
     "service_worker/web_embedded_worker_impl_test.cc",
-    "wake_lock/wake_lock_controller_test.cc",
-    "wake_lock/wake_lock_state_record_test.cc",
+    "video_raf/video_frame_request_callback_collection_test.cc",
+    "wake_lock/wake_lock_manager_test.cc",
+    "wake_lock/wake_lock_sentinel_test.cc",
+    "wake_lock/wake_lock_test.cc",
     "wake_lock/wake_lock_test_utils.cc",
     "wake_lock/wake_lock_test_utils.h",
     "webaudio/audio_basic_processor_handler_test.cc",
@@ -442,14 +438,6 @@ jumbo_source_set("unit_tests") {
     sources += [ "payments/skip_to_gpay_utils_test.cc" ]
   }
 
-  if (is_android && notouch_build) {
-    sources += [
-      "media_controls/touchless/media_controls_touchless_impl_test.cc",
-      "media_controls/touchless/test_media_controls_menu_host.cc",
-      "media_controls/touchless/test_media_controls_menu_host.h",
-    ]
-  }
-
   configs += [
     "//third_party/blink/renderer:config",
     "//third_party/blink/renderer:inside_blink",
@@ -470,11 +458,13 @@ jumbo_source_set("unit_tests") {
     "//third_party/blink/renderer/core",
     "//third_party/blink/renderer/modules/gamepad:unit_tests",
     "//third_party/blink/renderer/modules/hid:unit_tests",
+    "//third_party/blink/renderer/modules/native_file_system:unit_tests",
     "//third_party/blink/renderer/modules/storage:unit_tests",
+    "//third_party/blink/renderer/modules/webtransport:unit_tests",
     "//third_party/blink/renderer/platform",
     "//third_party/blink/renderer/platform/wtf",
     "//third_party/opus",
-    "//third_party/webrtc/rtc_base:rtc_base",
+    "//third_party/webrtc_overrides:webrtc_component",
     "//v8",
   ]
 
@@ -493,6 +483,20 @@ group("accessibility_unittests_data") {
 group("mediastream_unittests_data") {
   data = [
     "//media/test/data/",
+  ]
+}
+
+fuzzer_test("web_app_manifest_fuzzer") {
+  sources = [
+    "manifest/manifest_fuzzer.cc",
+  ]
+
+  dict = "manifest/manifest_fuzzer.dict"
+  seed_corpus = "manifest/fuzzer_seed_corpus"
+
+  deps = [
+    ":modules",
+    "//third_party/blink/renderer/platform:blink_fuzzer_test_support",
   ]
 }
 

@@ -71,7 +71,7 @@ struct RtpStreamSender {
 class RtpVideoSender : public RtpVideoSenderInterface,
                        public OverheadObserver,
                        public VCMProtectionCallback,
-                       public PacketFeedbackObserver {
+                       public StreamFeedbackObserver {
  public:
   // Rtp modules are assumed to be sorted in simulcast index order.
   RtpVideoSender(
@@ -136,10 +136,7 @@ class RtpVideoSender : public RtpVideoSenderInterface,
       size_t transport_overhead_bytes_per_packet) override;
   // Implements OverheadObserver.
   void OnOverheadChanged(size_t overhead_bytes_per_packet) override;
-  void OnBitrateUpdated(uint32_t bitrate_bps,
-                        uint8_t fraction_loss,
-                        int64_t rtt,
-                        int framerate) override;
+  void OnBitrateUpdated(BitrateAllocationUpdate update, int framerate) override;
   uint32_t GetPayloadBitrateBps() const override;
   uint32_t GetProtectionBitrateBps() const override;
   void SetEncodingData(size_t width,
@@ -150,10 +147,9 @@ class RtpVideoSender : public RtpVideoSenderInterface,
       uint32_t ssrc,
       rtc::ArrayView<const uint16_t> sequence_numbers) const override;
 
-  // From PacketFeedbackObserver.
-  void OnPacketAdded(uint32_t ssrc, uint16_t seq_num) override {}
+  // From StreamFeedbackObserver.
   void OnPacketFeedbackVector(
-      const std::vector<PacketFeedback>& packet_feedback_vector) override;
+      std::vector<StreamPacketInfo> packet_feedback_vector) override;
 
  private:
   void UpdateModuleSendingState() RTC_EXCLUSIVE_LOCKS_REQUIRED(crit_);
@@ -186,6 +182,7 @@ class RtpVideoSender : public RtpVideoSenderInterface,
   const std::vector<webrtc_internal_rtp_video_sender::RtpStreamSender>
       rtp_streams_;
   const RtpConfig rtp_config_;
+  const absl::optional<VideoCodecType> codec_type_;
   RtpTransportControllerSendInterface* const transport_;
 
   // When using the generic descriptor we want all simulcast streams to share
@@ -205,10 +202,10 @@ class RtpVideoSender : public RtpVideoSenderInterface,
   std::vector<FrameCounts> frame_counts_ RTC_GUARDED_BY(crit_);
   FrameCountObserver* const frame_count_observer_;
 
-  // Effectively const map from ssrc to RTPSender, for all media ssrcs.
+  // Effectively const map from SSRC to RtpRtcp, for all media SSRCs.
   // This map is set at construction time and never changed, but it's
   // non-trivial to make it properly const.
-  std::map<uint32_t, RTPSender*> ssrc_to_rtp_sender_;
+  std::map<uint32_t, RtpRtcp*> ssrc_to_rtp_module_;
 
   RTC_DISALLOW_COPY_AND_ASSIGN(RtpVideoSender);
 };

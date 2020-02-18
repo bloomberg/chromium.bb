@@ -25,6 +25,11 @@
 
 namespace aura {
 
+// Required to declare a friend class.
+namespace test {
+class AuraTestHelper;
+}
+
 // This class keeps track of whether any HWNDs are occluding any app windows.
 // It notifies the host of any app window whose occlusion state changes. Most
 // code should not need to use this; it's an implementation detail.
@@ -48,11 +53,15 @@ class AURA_EXPORT NativeWindowOcclusionTrackerWin : public WindowObserver {
 
  private:
   friend class NativeWindowOcclusionTrackerTest;
+  friend class test::AuraTestHelper;
+
+  // Returns a pointer to global instance.
+  static NativeWindowOcclusionTrackerWin** GetInstanceForTesting();
 
   // This class computes the occlusion state of the tracked windows.
   // It runs on a separate thread, and notifies the main thread of
   // the occlusion state of the tracked windows.
-  class WindowOcclusionCalculator {
+  class AURA_EXPORT WindowOcclusionCalculator {
    public:
     WindowOcclusionCalculator(
         scoped_refptr<base::SequencedTaskRunner> task_runner,
@@ -67,6 +76,8 @@ class AURA_EXPORT NativeWindowOcclusionTrackerWin : public WindowObserver {
 
    private:
     friend class NativeWindowOcclusionTrackerTest;
+    friend class test::AuraTestHelper;
+
     struct NativeWindowOcclusionState {
       // The region of the native window that is not occluded by other windows.
       SkRegion unoccluded_region;
@@ -217,9 +228,9 @@ class AURA_EXPORT NativeWindowOcclusionTrackerWin : public WindowObserver {
   void UpdateOcclusionState(const base::flat_map<HWND, Window::OcclusionState>&
                                 root_window_hwnds_occlusion_state);
 
-  // This is called with session changed notifications. If the screen is locked,
-  // it marks app windows as occluded.
-  void OnSessionChange(WPARAM status_code);
+  // This is called with session changed notifications. If the screen is locked
+  // by the current session, it marks app windows as occluded.
+  void OnSessionChange(WPARAM status_code, const bool* is_current_session);
 
   // Task runner to call ComputeNativeWindowOcclusionStatus, and to handle
   // Windows event notifications, off of the UI thread.

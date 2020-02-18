@@ -6,9 +6,9 @@
 
 [
     Exposed=(Window,Worker,Worklet),
-    RuntimeEnabled=StreamsNative,
     ConstructorCallWith=ScriptState,
-    Constructor([PermissiveDictionaryConversion] QueuingStrategyInit init)
+    Constructor([PermissiveDictionaryConversion] QueuingStrategyInit init),
+    MeasureAs=ByteLengthQueuingStrategyConstructor
 ] interface ByteLengthQueuingStrategy {
     [CallWith=ScriptState] readonly attribute any highWaterMark;
 

@@ -21,7 +21,7 @@ namespace dawn_native {
 
     // Wrapper for a resource backed by a heap.
     class ResourceHeapBase {
-      protected:
+      public:
         ResourceHeapBase() = default;
         virtual ~ResourceHeapBase() = default;
     };

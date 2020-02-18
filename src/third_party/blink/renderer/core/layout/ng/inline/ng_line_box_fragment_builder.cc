@@ -26,8 +26,8 @@ void NGLineBoxFragmentBuilder::Reset() {
   metrics_ = NGLineHeightMetrics();
   line_box_type_ = NGPhysicalLineBoxFragment::kNormalLineBox;
 
-  has_last_resort_break_ = false;
-  has_floating_descendants_ = false;
+  break_appeal_ = kBreakAppealPerfect;
+  has_floating_descendants_for_paint_ = false;
   has_orthogonal_flow_roots_ = false;
   has_descendant_that_depends_on_percentage_block_size_ = false;
   has_block_fragmentation_ = false;
@@ -100,7 +100,7 @@ void NGLineBoxFragmentBuilder::AddChildren(ChildList& children) {
       AddChild(std::move(child.fragment), child.offset);
       DCHECK(!child.fragment);
     } else if (child.out_of_flow_positioned_box) {
-      AddOutOfFlowChildCandidate(
+      AddOutOfFlowInlineChildCandidate(
           NGBlockNode(ToLayoutBox(child.out_of_flow_positioned_box)),
           child.offset, child.container_direction);
       child.out_of_flow_positioned_box = nullptr;
@@ -108,10 +108,26 @@ void NGLineBoxFragmentBuilder::AddChildren(ChildList& children) {
   }
 }
 
-void NGLineBoxFragmentBuilder::AddOutOfFlowChildren(ChildList& children) {
+void NGLineBoxFragmentBuilder::PropagateChildrenData(ChildList& children) {
   for (auto& child : children) {
+    if (child.layout_result) {
+      DCHECK(!child.fragment);
+      const NGPhysicalContainerFragment& fragment =
+          child.layout_result->PhysicalFragment();
+      if (fragment.IsFloating()) {
+        // Add positioned floating objects to the fragment tree, not to the
+        // fragment item list. Because they are not necessary for inline
+        // traversals, and leading floating objects are still in the fragment
+        // tree, this helps simplifying painting floats.
+        AddChild(fragment, child.offset);
+        child.layout_result.reset();
+        continue;
+      }
+      PropagateChildData(child.layout_result->PhysicalFragment(), child.offset);
+      continue;
+    }
     if (child.out_of_flow_positioned_box) {
-      AddOutOfFlowChildCandidate(
+      AddOutOfFlowInlineChildCandidate(
           NGBlockNode(ToLayoutBox(child.out_of_flow_positioned_box)),
           child.offset, child.container_direction);
       child.out_of_flow_positioned_box = nullptr;

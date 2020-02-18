@@ -58,8 +58,7 @@ FrameSinkManagerImpl::FrameSinkManagerImpl(const InitParams& params)
       hit_test_manager_(surface_manager()),
       restart_id_(params.restart_id),
       run_all_compositor_stages_before_draw_(
-          params.run_all_compositor_stages_before_draw),
-      binding_(this) {
+          params.run_all_compositor_stages_before_draw) {
   surface_manager_.AddObserver(&hit_test_manager_);
   surface_manager_.AddObserver(this);
 }
@@ -86,28 +85,28 @@ FrameSinkManagerImpl::~FrameSinkManagerImpl() {
 }
 
 void FrameSinkManagerImpl::BindAndSetClient(
-    mojom::FrameSinkManagerRequest request,
+    mojo::PendingReceiver<mojom::FrameSinkManager> receiver,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    mojom::FrameSinkManagerClientPtr client) {
+    mojo::PendingRemote<mojom::FrameSinkManagerClient> client) {
   DCHECK(!client_);
-  DCHECK(!binding_.is_bound());
-  binding_.Bind(std::move(request), std::move(task_runner));
-  client_ptr_ = std::move(client);
-  client_ = client_ptr_.get();
+  DCHECK(!receiver_.is_bound());
+  receiver_.Bind(std::move(receiver), std::move(task_runner));
+  client_remote_.Bind(std::move(client));
+  client_ = client_remote_.get();
 }
 
 void FrameSinkManagerImpl::SetLocalClient(
     mojom::FrameSinkManagerClient* client,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner) {
-  DCHECK(!client_ptr_);
+  DCHECK(!client_remote_);
   DCHECK(!ui_task_runner_);
   client_ = client;
   ui_task_runner_ = ui_task_runner;
 }
 
 void FrameSinkManagerImpl::ForceShutdown() {
-  if (binding_.is_bound())
-    binding_.Close();
+  if (receiver_.is_bound())
+    receiver_.reset();
 
   for (auto& it : cached_back_buffers_)
     it.second.RunAndReset();
@@ -185,13 +184,13 @@ void FrameSinkManagerImpl::CreateRootCompositorFrameSink(
 
 void FrameSinkManagerImpl::CreateCompositorFrameSink(
     const FrameSinkId& frame_sink_id,
-    mojom::CompositorFrameSinkRequest request,
-    mojom::CompositorFrameSinkClientPtr client) {
+    mojo::PendingReceiver<mojom::CompositorFrameSink> receiver,
+    mojo::PendingRemote<mojom::CompositorFrameSinkClient> client) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!base::Contains(sink_map_, frame_sink_id));
 
   sink_map_[frame_sink_id] = std::make_unique<CompositorFrameSinkImpl>(
-      this, frame_sink_id, std::move(request), std::move(client));
+      this, frame_sink_id, std::move(receiver), std::move(client));
 }
 
 void FrameSinkManagerImpl::DestroyCompositorFrameSink(
@@ -270,7 +269,7 @@ void FrameSinkManagerImpl::UnregisterFrameSinkHierarchy(
 }
 
 void FrameSinkManagerImpl::AddVideoDetectorObserver(
-    mojom::VideoDetectorObserverPtr observer) {
+    mojo::PendingRemote<mojom::VideoDetectorObserver> observer) {
   if (!video_detector_) {
     video_detector_ = std::make_unique<VideoDetector>(
         GetRegisteredFrameSinkIds(), &surface_manager_);
@@ -279,9 +278,9 @@ void FrameSinkManagerImpl::AddVideoDetectorObserver(
 }
 
 void FrameSinkManagerImpl::CreateVideoCapturer(
-    mojom::FrameSinkVideoCapturerRequest request) {
+    mojo::PendingReceiver<mojom::FrameSinkVideoCapturer> receiver) {
   video_capturers_.emplace(std::make_unique<FrameSinkVideoCapturerImpl>(
-      this, std::move(request),
+      this, std::move(receiver),
       std::make_unique<media::VideoCaptureOracle>(
           true /* enable_auto_throttling */)));
 }
@@ -544,7 +543,7 @@ void FrameSinkManagerImpl::OnFrameTokenChangedDirect(
 
 void FrameSinkManagerImpl::OnFrameTokenChanged(const FrameSinkId& frame_sink_id,
                                                uint32_t frame_token) {
-  if (client_ptr_ || !ui_task_runner_) {
+  if (client_remote_ || !ui_task_runner_) {
     // This is a Mojo client or a locally-connected client *without* a task
     // runner. In this case, call directly.
     OnFrameTokenChangedDirect(frame_sink_id, frame_token);
@@ -564,6 +563,18 @@ VideoDetector* FrameSinkManagerImpl::CreateVideoDetectorForTesting(
   video_detector_ = std::make_unique<VideoDetector>(
       GetRegisteredFrameSinkIds(), surface_manager(), tick_clock, task_runner);
   return video_detector_.get();
+}
+
+void FrameSinkManagerImpl::DidBeginFrame(const FrameSinkId& frame_sink_id,
+                                         const BeginFrameArgs& args) {
+  for (auto& observer : observer_list_)
+    observer.OnFrameSinkDidBeginFrame(frame_sink_id, args);
+}
+
+void FrameSinkManagerImpl::DidFinishFrame(const FrameSinkId& frame_sink_id,
+                                          const BeginFrameArgs& args) {
+  for (auto& observer : observer_list_)
+    observer.OnFrameSinkDidFinishFrame(frame_sink_id, args);
 }
 
 void FrameSinkManagerImpl::AddObserver(FrameSinkObserver* obs) {

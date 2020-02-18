@@ -12,9 +12,13 @@
 #include "base/memory/unsafe_shared_memory_region.h"
 #include "base/numerics/checked_math.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/posix/eintr_wrapper.h"
 #include "base/system/sys_info.h"
 #include "components/arc/video_accelerator/arc_video_accelerator_util.h"
+#include "media/base/color_plane_layout.h"
+#include "media/base/format_utils.h"
 #include "media/base/video_types.h"
+#include "media/gpu/buffer_validation.h"
 #include "media/gpu/gpu_video_encode_accelerator_factory.h"
 #include "media/gpu/macros.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -30,7 +34,7 @@ base::Optional<media::VideoFrameLayout> CreateVideoFrameLayout(
     const gfx::GpuMemoryBufferHandle& gmb_handle) {
   const size_t num_planes = gmb_handle.native_pixmap_handle.planes.size();
 
-  std::vector<media::VideoFrameLayout::Plane> layout_planes(num_planes);
+  std::vector<media::ColorPlaneLayout> layout_planes(num_planes);
   for (size_t i = 0; i < num_planes; i++) {
     const auto& plane = gmb_handle.native_pixmap_handle.planes[i];
     if (!base::IsValueInRangeForNumericType<int32_t>(plane.stride)) {
@@ -180,27 +184,38 @@ void GpuArcVideoEncodeAccelerator::EncodeDmabuf(
     return;
   }
 
+  std::vector<base::ScopedFD> fds = DuplicateFD(std::move(fd), planes.size());
+  if (fds.empty()) {
+    DLOG(ERROR) << "Failed to duplicate fd";
+    client_->NotifyError(Error::kInvalidArgumentError);
+    return;
+  }
   auto gmb_handle =
-      CreateGpuMemoryBufferHandle(format, coded_size_, std::move(fd), planes);
+      CreateGpuMemoryBufferHandle(format, coded_size_, std::move(fds), planes);
   if (!gmb_handle) {
     DLOG(ERROR) << "Failed to create GpuMemoryBufferHandle";
     client_->NotifyError(Error::kInvalidArgumentError);
     return;
   }
 
-  auto layout = CreateVideoFrameLayout(format, coded_size_, *gmb_handle);
-  if (!layout) {
-    DLOG(ERROR) << "Failed to create VideoFrameLayout.";
+  base::Optional<gfx::BufferFormat> buffer_format =
+      VideoPixelFormatToGfxBufferFormat(format);
+  if (!format) {
+    DLOG(ERROR) << "Unexpected format: " << format;
     client_->NotifyError(Error::kInvalidArgumentError);
     return;
   }
+  std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer =
+      support_.CreateGpuMemoryBufferImplFromHandle(
+          std::move(gmb_handle).value(), coded_size_, *buffer_format,
+          gfx::BufferUsage::SCANOUT_VEA_READ_CAMERA_AND_CPU_READ_WRITE,
+          base::NullCallback());
 
-  std::vector<base::ScopedFD> scoped_fds;
-  for (auto& plane : gmb_handle->native_pixmap_handle.planes) {
-    scoped_fds.push_back(std::move(plane.fd));
-  }
-  auto frame = media::VideoFrame::WrapExternalDmabufs(
-      *layout, gfx::Rect(visible_size_), visible_size_, std::move(scoped_fds),
+  gpu::MailboxHolder dummy_mailbox[media::VideoFrame::kMaxPlanes];
+  auto frame = media::VideoFrame::WrapExternalGpuMemoryBuffer(
+      gfx::Rect(visible_size_), visible_size_, std::move(gpu_memory_buffer),
+      dummy_mailbox /* mailbox_holders */,
+      base::NullCallback() /* mailbox_holder_release_cb_ */,
       base::TimeDelta::FromMicroseconds(timestamp));
   if (!frame) {
     DLOG(ERROR) << "Failed to create VideoFrame";
@@ -225,8 +240,17 @@ void GpuArcVideoEncodeAccelerator::EncodeSharedMemory(
     return;
   }
 
-  auto gmb_handle = CreateGpuMemoryBufferHandle(
-      format, coded_size_, base::ScopedFD(HANDLE_EINTR(dup(fd.get()))), planes);
+  base::ScopedFD dup_fd(HANDLE_EINTR(dup(fd.get())));
+  std::vector<base::ScopedFD> fds =
+      DuplicateFD(std::move(dup_fd), planes.size());
+  if (fds.empty()) {
+    DLOG(ERROR) << "Failed to duplicate fd";
+    client_->NotifyError(Error::kInvalidArgumentError);
+    return;
+  }
+
+  auto gmb_handle =
+      CreateGpuMemoryBufferHandle(format, coded_size_, std::move(fds), planes);
   if (!gmb_handle) {
     DLOG(ERROR) << "Failed to create GpuMemoryBufferHandle";
     client_->NotifyError(Error::kInvalidArgumentError);
@@ -308,7 +332,7 @@ void GpuArcVideoEncodeAccelerator::UseBitstreamBuffer(
   }
 
   size_t shmem_size;
-  if (!GetFileSize(fd.get(), &shmem_size)) {
+  if (!media::GetFileSize(fd.get(), &shmem_size)) {
     client_->NotifyError(Error::kInvalidArgumentError);
     return;
   }
@@ -319,18 +343,16 @@ void GpuArcVideoEncodeAccelerator::UseBitstreamBuffer(
   // rather than pulling out the fd. https://crbug.com/713763.
   // TODO(rockot): Pass through a real size rather than |0|.
   base::UnguessableToken guid = base::UnguessableToken::Create();
-  base::SharedMemoryHandle shm_handle(base::FileDescriptor(fd.release(), true),
-                                      shmem_size, guid);
-  use_bitstream_cbs_.emplace(bitstream_buffer_serial_, std::move(callback));
-  accelerator_->UseOutputBitstreamBuffer(
-      media::BitstreamBuffer(bitstream_buffer_serial_, shm_handle,
-                             false /* read_only */, size, offset));
-
-  // Close |shm_handle| because it is actually duplicated on the ctor of
-  // media::BitstreamBuffer and it will not close itself on the dtor.
-  if (shm_handle.IsValid()) {
-    shm_handle.Close();
+  auto shm_region = base::subtle::PlatformSharedMemoryRegion::Take(
+      std::move(fd), base::subtle::PlatformSharedMemoryRegion::Mode::kUnsafe,
+      shmem_size, guid);
+  if (!shm_region.IsValid()) {
+    client_->NotifyError(Error::kInvalidArgumentError);
+    return;
   }
+  use_bitstream_cbs_.emplace(bitstream_buffer_serial_, std::move(callback));
+  accelerator_->UseOutputBitstreamBuffer(media::BitstreamBuffer(
+      bitstream_buffer_serial_, std::move(shm_region), size, offset));
 
   // Mask against 30 bits to avoid (undefined) wraparound on signed integer.
   bitstream_buffer_serial_ = (bitstream_buffer_serial_ + 1) & 0x3FFFFFFF;

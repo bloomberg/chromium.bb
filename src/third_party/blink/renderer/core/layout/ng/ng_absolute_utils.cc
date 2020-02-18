@@ -55,24 +55,76 @@ bool IsTopDominant(const WritingMode container_writing_mode,
          (container_direction != TextDirection::kRtl);
 }
 
-inline LayoutUnit StaticPositionStartInset(bool is_static_position_start,
-                                           LayoutUnit static_position_offset,
-                                           LayoutUnit size) {
-  return is_static_position_start ? static_position_offset
-                                  : static_position_offset - size;
+// A direction agnostic version of |NGLogicalStaticPosition::InlineEdge|, and
+// |NGLogicalStaticPosition::BlockEdge|.
+enum StaticPositionEdge { kStart, kCenter, kEnd };
+
+inline StaticPositionEdge GetStaticPositionEdge(
+    NGLogicalStaticPosition::InlineEdge inline_edge) {
+  switch (inline_edge) {
+    case NGLogicalStaticPosition::InlineEdge::kInlineStart:
+      return kStart;
+    case NGLogicalStaticPosition::InlineEdge::kInlineCenter:
+      return kCenter;
+    case NGLogicalStaticPosition::InlineEdge::kInlineEnd:
+      return kEnd;
+  }
 }
 
-inline LayoutUnit StaticPositionEndInset(bool is_static_position_start,
+inline StaticPositionEdge GetStaticPositionEdge(
+    NGLogicalStaticPosition::BlockEdge block_edge) {
+  switch (block_edge) {
+    case NGLogicalStaticPosition::BlockEdge::kBlockStart:
+      return kStart;
+    case NGLogicalStaticPosition::BlockEdge::kBlockCenter:
+      return kCenter;
+    case NGLogicalStaticPosition::BlockEdge::kBlockEnd:
+      return kEnd;
+  }
+}
+
+inline LayoutUnit StaticPositionStartInset(StaticPositionEdge edge,
+                                           LayoutUnit static_position_offset,
+                                           LayoutUnit size) {
+  switch (edge) {
+    case kStart:
+      return static_position_offset;
+    case kCenter:
+      return static_position_offset - (size / 2);
+    case kEnd:
+      return static_position_offset - size;
+  }
+}
+
+inline LayoutUnit StaticPositionEndInset(StaticPositionEdge edge,
                                          LayoutUnit static_position_offset,
                                          LayoutUnit available_size,
                                          LayoutUnit size) {
-  return available_size - static_position_offset -
-         (is_static_position_start ? size : LayoutUnit());
+  switch (edge) {
+    case kStart:
+      return available_size - static_position_offset - size;
+    case kCenter:
+      return available_size - static_position_offset - (size / 2);
+    case kEnd:
+      return available_size - static_position_offset;
+  }
+}
+
+LayoutUnit ComputeShrinkToFitSize(
+    const base::Optional<MinMaxSize>& child_minmax,
+    LayoutUnit computed_available_size,
+    LayoutUnit margin_start,
+    LayoutUnit margin_end) {
+  return child_minmax->ShrinkToFit(
+      (computed_available_size - margin_start - margin_end)
+          .ClampNegativeToZero());
 }
 
 // Implement the absolute size resolution algorithm.
 // https://www.w3.org/TR/css-position-3/#abs-non-replaced-width
 // https://www.w3.org/TR/css-position-3/#abs-non-replaced-height
+// |child_minmax| can have no value if an element is replaced, and has no
+// intrinsic width or height, but has an aspect ratio.
 void ComputeAbsoluteSize(const LayoutUnit border_padding_size,
                          const base::Optional<MinMaxSize>& child_minmax,
                          const LayoutUnit margin_percentage_resolution_size,
@@ -84,7 +136,7 @@ void ComputeAbsoluteSize(const LayoutUnit border_padding_size,
                          const LayoutUnit min_size,
                          const LayoutUnit max_size,
                          const LayoutUnit static_position_offset,
-                         bool is_static_position_start,
+                         StaticPositionEdge static_position_edge,
                          bool is_start_dominant,
                          bool is_block_direction,
                          base::Optional<LayoutUnit> size,
@@ -113,9 +165,7 @@ void ComputeAbsoluteSize(const LayoutUnit border_padding_size,
   if (!inset_end_length.IsAuto()) {
     inset_end = MinimumValueForLength(inset_end_length, available_size);
   }
-#if DCHECK_IS_ON()
-  bool values_might_be_saturated = false;
-#endif
+
   // Solving the equation:
   // |inset_start| + |margin_start| + |size| + |margin_end| + |inset_end| =
   // |available_size|
@@ -125,31 +175,46 @@ void ComputeAbsoluteSize(const LayoutUnit border_padding_size,
       margin_start = LayoutUnit();
     if (!margin_end)
       margin_end = LayoutUnit();
-    DCHECK(child_minmax.has_value());
 
-    LayoutUnit computed_available_size =
-        is_static_position_start ? available_size - static_position_offset
-                                 : static_position_offset;
-    size = child_minmax->ShrinkToFit(
-        (computed_available_size - *margin_start - *margin_end)
-            .ClampNegativeToZero());
+    LayoutUnit computed_available_size;
+    switch (static_position_edge) {
+      case kStart:
+        // The available-size for the start static-position "grows" towards the
+        // end edge.
+        // |      *----------->|
+        computed_available_size = available_size - static_position_offset;
+        break;
+      case kCenter:
+        // The available-size for the center static-position "grows" towards
+        // both edges (equally), and stops when it hits the first one.
+        // |<-----*---->       |
+        computed_available_size =
+            2 * std::min(static_position_offset,
+                         available_size - static_position_offset);
+        break;
+      case kEnd:
+        // The available-size for the end static-position "grows" towards the
+        // start edge.
+        // |<-----*            |
+        computed_available_size = static_position_offset;
+        break;
+    }
+    size = ComputeShrinkToFitSize(child_minmax, computed_available_size,
+                                  *margin_start, *margin_end);
     LayoutUnit margin_size = *size + *margin_start + *margin_end;
     if (is_start_dominant) {
       inset_start = StaticPositionStartInset(
-          is_static_position_start, static_position_offset, margin_size);
+          static_position_edge, static_position_offset, margin_size);
     } else {
-      inset_end = StaticPositionEndInset(is_static_position_start,
-                                         static_position_offset, available_size,
-                                         margin_size);
+      inset_end =
+          StaticPositionEndInset(static_position_edge, static_position_offset,
+                                 available_size, margin_size);
     }
   } else if (inset_start && inset_end && size) {
     // "If left, right, and width are not auto:"
     // Compute margins.
     LayoutUnit margin_space =
         available_size - *inset_start - *inset_end - *size;
-#if DCHECK_IS_ON()
-    values_might_be_saturated |= margin_space.MightBeSaturated();
-#endif
 
     if (!margin_start && !margin_end) {
       // When both margins are auto.
@@ -173,9 +238,6 @@ void ComputeAbsoluteSize(const LayoutUnit border_padding_size,
     } else {
       // Are the values over-constrained?
       LayoutUnit margin_extra = margin_space - *margin_start - *margin_end;
-#if DCHECK_IS_ON()
-      values_might_be_saturated |= margin_extra.MightBeSaturated();
-#endif
       if (margin_extra) {
         // Relax the end.
         if (is_start_dominant)
@@ -196,30 +258,26 @@ void ComputeAbsoluteSize(const LayoutUnit border_padding_size,
   if (!inset_start && !size) {
     // Rule 1: left/width are unknown.
     DCHECK(inset_end.has_value());
-    DCHECK(child_minmax.has_value());
     LayoutUnit computed_available_size = available_size - *inset_end;
-    size = child_minmax->ShrinkToFit(
-        (computed_available_size - *margin_start - *margin_end)
-            .ClampNegativeToZero());
+    size = ComputeShrinkToFitSize(child_minmax, computed_available_size,
+                                  *margin_start, *margin_end);
   } else if (!inset_start && !inset_end) {
     // Rule 2.
     DCHECK(size.has_value());
     LayoutUnit margin_size = *size + *margin_start + *margin_end;
     if (is_start_dominant) {
       inset_start = StaticPositionStartInset(
-          is_static_position_start, static_position_offset, margin_size);
+          static_position_edge, static_position_offset, margin_size);
     } else {
-      inset_end = StaticPositionEndInset(is_static_position_start,
-                                         static_position_offset, available_size,
-                                         margin_size);
+      inset_end =
+          StaticPositionEndInset(static_position_edge, static_position_offset,
+                                 available_size, margin_size);
     }
   } else if (!size && !inset_end) {
     // Rule 3.
-    DCHECK(child_minmax.has_value());
     LayoutUnit computed_available_size = available_size - *inset_start;
-    size = child_minmax->ShrinkToFit(
-        (computed_available_size - *margin_start - *margin_end)
-            .ClampNegativeToZero());
+    size = ComputeShrinkToFitSize(child_minmax, computed_available_size,
+                                  *margin_start, *margin_end);
   }
 
   // Rules 4 through 6: 1 out of 3 are unknown.
@@ -234,18 +292,6 @@ void ComputeAbsoluteSize(const LayoutUnit border_padding_size,
            *margin_end;
   }
 
-#if DCHECK_IS_ON()
-  values_might_be_saturated |=
-      inset_start->MightBeSaturated() || inset_end->MightBeSaturated() ||
-      size->MightBeSaturated() || margin_start->MightBeSaturated() ||
-      margin_end->MightBeSaturated() || available_size.MightBeSaturated();
-  // The DCHECK is useful, but only holds true if the values aren't saturated.
-  if (!values_might_be_saturated) {
-    DCHECK_EQ(available_size,
-              *inset_start + *inset_end + *margin_start + *margin_end + *size);
-  }
-#endif  // #if DCHECK_IS_ON()
-
   // If calculated |size| is outside of min/max constraints, rerun the
   // algorithm with the constrained |size|.
   LayoutUnit constrained_size = ConstrainByMinMax(*size, min_size, max_size);
@@ -257,7 +303,7 @@ void ComputeAbsoluteSize(const LayoutUnit border_padding_size,
         border_padding_size, child_minmax, margin_percentage_resolution_size,
         available_size, margin_start_length, margin_end_length,
         inset_start_length, inset_end_length, min_size, max_size,
-        static_position_offset, is_static_position_start, is_start_dominant,
+        static_position_offset, static_position_edge, is_start_dominant,
         is_block_direction, constrained_size, size_out, inset_start_out,
         inset_end_out, margin_start_out, margin_end_out);
     return;
@@ -387,12 +433,10 @@ NGLogicalOutOfFlowPosition ComputePartialAbsoluteWithChildInlineSize(
       space.AvailableSize().inline_size, style.MarginStart(), style.MarginEnd(),
       style.LogicalInlineStart(), style.LogicalInlineEnd(), min_inline_size,
       max_inline_size, static_position.offset.inline_offset,
-      static_position.inline_edge ==
-          NGLogicalStaticPosition::InlineEdge::kInlineStart,
-      is_start_dominant, false /* is_block_direction */, inline_size,
-      &position.size.inline_size, &position.inset.inline_start,
-      &position.inset.inline_end, &position.margins.inline_start,
-      &position.margins.inline_end);
+      GetStaticPositionEdge(static_position.inline_edge), is_start_dominant,
+      false /* is_block_direction */, inline_size, &position.size.inline_size,
+      &position.inset.inline_start, &position.inset.inline_end,
+      &position.margins.inline_start, &position.margins.inline_end);
 
   return position;
 }
@@ -451,12 +495,10 @@ void ComputeFullAbsoluteWithChildBlockSize(
       space.AvailableSize().block_size, style.MarginBefore(),
       style.MarginAfter(), style.LogicalTop(), style.LogicalBottom(),
       min_block_size, max_block_size, static_position.offset.block_offset,
-      static_position.block_edge ==
-          NGLogicalStaticPosition::BlockEdge::kBlockStart,
-      is_start_dominant, true /* is_block_direction */, block_size,
-      &position->size.block_size, &position->inset.block_start,
-      &position->inset.block_end, &position->margins.block_start,
-      &position->margins.block_end);
+      GetStaticPositionEdge(static_position.block_edge), is_start_dominant,
+      true /* is_block_direction */, block_size, &position->size.block_size,
+      &position->inset.block_start, &position->inset.block_end,
+      &position->margins.block_start, &position->margins.block_end);
 }
 
 }  // namespace blink

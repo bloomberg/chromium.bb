@@ -28,7 +28,7 @@
 #include "ui/views/animation/ink_drop.h"
 #include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/animation/ink_drop_mask.h"
-#include "ui/views/view_class_properties.h"
+#include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/widget/widget.h"
 
 #if defined(OS_WIN)
@@ -66,6 +66,21 @@ constexpr char NewTabButton::kClassName[];
 // static
 const gfx::Size NewTabButton::kButtonSize{28, 28};
 
+class NewTabButton::HighlightPathGenerator
+    : public views::HighlightPathGenerator {
+ public:
+  HighlightPathGenerator() = default;
+
+  // views::HighlightPathGenerator:
+  SkPath GetHighlightPath(const views::View* view) override {
+    return static_cast<const NewTabButton*>(view)->GetBorderPath(
+        view->GetContentsBounds().origin(), 1.0f, false);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(HighlightPathGenerator);
+};
+
 NewTabButton::NewTabButton(TabStrip* tab_strip, views::ButtonListener* listener)
     : views::ImageButton(listener), tab_strip_(tab_strip) {
   set_animate_on_state_change(true);
@@ -82,6 +97,8 @@ NewTabButton::NewTabButton(TabStrip* tab_strip, views::ButtonListener* listener)
   set_ink_drop_visible_opacity(0.14f);
 
   SetInstallFocusRingOnFocus(true);
+  views::HighlightPathGenerator::Install(
+      this, std::make_unique<NewTabButton::HighlightPathGenerator>());
 }
 
 NewTabButton::~NewTabButton() {
@@ -132,17 +149,17 @@ const char* NewTabButton::GetClassName() const {
   return kClassName;
 }
 
-void NewTabButton::Layout() {
-  views::ImageButton::Layout();
-  ink_drop_container_->SetBoundsRect(GetLocalBounds());
-}
-
 void NewTabButton::AddLayerBeneathView(ui::Layer* new_layer) {
   ink_drop_container_->AddLayerBeneathView(new_layer);
 }
 
 void NewTabButton::RemoveLayerBeneathView(ui::Layer* old_layer) {
   ink_drop_container_->RemoveLayerBeneathView(old_layer);
+}
+
+void NewTabButton::OnBoundsChanged(const gfx::Rect& previous_bounds) {
+  ImageButton::OnBoundsChanged(previous_bounds);
+  ink_drop_container_->SetBoundsRect(GetLocalBounds());
 }
 
 #if defined(OS_WIN)
@@ -182,13 +199,6 @@ void NewTabButton::PaintButtonContents(gfx::Canvas* canvas) {
   canvas->Translate(GetContentsBounds().OffsetFromOrigin());
   PaintFill(canvas);
   PaintPlusIcon(canvas);
-}
-
-void NewTabButton::OnBoundsChanged(const gfx::Rect& previous_bounds) {
-  ImageButton::OnBoundsChanged(previous_bounds);
-  SetProperty(
-      views::kHighlightPathKey,
-      new SkPath(GetBorderPath(GetContentsBounds().origin(), 1.0f, false)));
 }
 
 gfx::Size NewTabButton::CalculatePreferredSize() const {
@@ -234,7 +244,7 @@ void NewTabButton::PaintFill(gfx::Canvas* canvas) const {
 
   const float scale = canvas->image_scale();
   const base::Optional<int> bg_id =
-      tab_strip_->GetCustomBackgroundId(BrowserNonClientFrameView::kUseCurrent);
+      tab_strip_->GetCustomBackgroundId(BrowserFrameActiveState::kUseCurrent);
   if (bg_id.has_value() && !new_tab_promo_observer_.IsObservingSources()) {
     float x_scale = scale;
     const gfx::Rect& contents_bounds = GetContentsBounds();
@@ -262,7 +272,7 @@ void NewTabButton::PaintFill(gfx::Canvas* canvas) const {
 
 void NewTabButton::PaintPlusIcon(gfx::Canvas* canvas) const {
   const SkColor background_color = tab_strip_->GetTabBackgroundColor(
-      TabActive::kInactive, BrowserNonClientFrameView::kUseCurrent);
+      TabActive::kInactive, BrowserFrameActiveState::kUseCurrent);
 
   cc::PaintFlags flags;
   flags.setAntiAlias(true);
@@ -296,7 +306,7 @@ SkColor NewTabButton::GetButtonFillColor() const {
   return GetThemeProvider()->GetDisplayProperty(
              ThemeProperties::SHOULD_FILL_BACKGROUND_TAB_COLOR)
              ? tab_strip_->GetTabBackgroundColor(
-                   TabActive::kInactive, BrowserNonClientFrameView::kUseCurrent)
+                   TabActive::kInactive, BrowserFrameActiveState::kUseCurrent)
              : SK_ColorTRANSPARENT;
 }
 
@@ -313,8 +323,8 @@ SkPath NewTabButton::GetBorderPath(const gfx::Point& origin,
     const float diameter = radius * 2;
     path.rLineTo(diameter, 0);
     path.rLineTo(0, scaled_origin.y() + radius);
-    path.rArcTo(radius, radius, 0, SkPath::kSmall_ArcSize,
-                SkPath::kCW_Direction, -diameter, 0);
+    path.rArcTo(radius, radius, 0, SkPath::kSmall_ArcSize, SkPathDirection::kCW,
+                -diameter, 0);
     path.close();
   } else {
     path.addCircle(scaled_origin.x() + radius, scaled_origin.y() + radius,

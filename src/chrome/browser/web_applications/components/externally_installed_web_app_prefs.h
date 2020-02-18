@@ -57,9 +57,10 @@ class ExternallyInstalledWebAppPrefs {
   // *placeholder app*.
   base::Optional<AppId> LookupPlaceholderAppId(const GURL& url) const;
   void SetIsPlaceholder(const GURL& url, bool is_placeholder);
+  bool IsPlaceholderApp(const AppId& app_id) const;
 
  private:
-  PrefService* pref_service_;
+  PrefService* const pref_service_;
 
   DISALLOW_COPY_AND_ASSIGN(ExternallyInstalledWebAppPrefs);
 };

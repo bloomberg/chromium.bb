@@ -2,174 +2,202 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('extensions', function() {
-  /** @interface */
-  class ToolbarDelegate {
-    /**
-     * Toggles whether or not the profile is in developer mode.
-     * @param {boolean} inDevMode
-     */
-    setProfileInDevMode(inDevMode) {}
+import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
+import 'chrome://resources/cr_elements/cr_toggle/cr_toggle.m.js';
+import 'chrome://resources/cr_elements/cr_toolbar/cr_toolbar.m.js';
+import 'chrome://resources/cr_elements/hidden_style_css.m.js';
+import 'chrome://resources/cr_elements/policy/cr_tooltip_icon.m.js';
+import 'chrome://resources/cr_elements/shared_vars_css.m.js';
+import 'chrome://resources/polymer/v3_0/paper-styles/color.js';
+import './pack_dialog.js';
 
-    /**
-     * Opens the dialog to load unpacked extensions.
-     * @return {!Promise}
-     */
-    loadUnpacked() {}
+import {getToastManager} from 'chrome://resources/cr_elements/cr_toast/cr_toast_manager.m.js';
+import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
+import {listenOnce} from 'chrome://resources/js/util.m.js';
+import {IronA11yAnnouncer} from 'chrome://resources/polymer/v3_0/iron-a11y-announcer/iron-a11y-announcer.js';
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-    /**
-     * Updates all extensions.
-     * @return {!Promise}
-     */
-    updateAllExtensions() {}
-  }
+/** @interface */
+export class ToolbarDelegate {
+  /**
+   * Toggles whether or not the profile is in developer mode.
+   * @param {boolean} inDevMode
+   */
+  setProfileInDevMode(inDevMode) {}
 
-  const Toolbar = Polymer({
-    is: 'extensions-toolbar',
+  /**
+   * Opens the dialog to load unpacked extensions.
+   * @return {!Promise}
+   */
+  loadUnpacked() {}
 
-    properties: {
-      /** @type {extensions.ToolbarDelegate} */
-      delegate: Object,
+  /**
+   * Updates all extensions.
+   * @return {!Promise}
+   */
+  updateAllExtensions() {}
+}
 
-      inDevMode: {
-        type: Boolean,
-        value: false,
-        observer: 'onInDevModeChanged_',
-        reflectToAttribute: true,
-      },
+Polymer({
+  is: 'extensions-toolbar',
 
-      devModeControlledByPolicy: Boolean,
+  _template: html`{__html_template__}`,
 
-      isSupervised: Boolean,
+  properties: {
+    /** @type {ToolbarDelegate} */
+    delegate: Object,
 
-      // <if expr="chromeos">
-      kioskEnabled: Boolean,
-      // </if>
-
-      canLoadUnpacked: Boolean,
-
-      /** @private */
-      expanded_: Boolean,
-
-      /** @private */
-      showPackDialog_: Boolean,
-
-      /**
-       * Prevents initiating update while update is in progress.
-       * @private
-       */
-      isUpdating_: {type: Boolean, value: false}
+    inDevMode: {
+      type: Boolean,
+      value: false,
+      observer: 'onInDevModeChanged_',
+      reflectToAttribute: true,
     },
 
-    behaviors: [I18nBehavior],
+    devModeControlledByPolicy: Boolean,
 
-    hostAttributes: {
-      role: 'banner',
-    },
-
-    /**
-     * @return {boolean}
-     * @private
-     */
-    shouldDisableDevMode_: function() {
-      return this.devModeControlledByPolicy || this.isSupervised;
-    },
-
-    /**
-     * @param {!CustomEvent<boolean>} e
-     * @private
-     */
-    onDevModeToggleChange_: function(e) {
-      this.delegate.setProfileInDevMode(e.detail);
-      chrome.metricsPrivate.recordUserAction(
-          'Options_ToggleDeveloperMode_' + (e.detail ? 'Enabled' : 'Disabled'));
-    },
-
-    /**
-     * @param {boolean} current
-     * @param {boolean} previous
-     * @private
-     */
-    onInDevModeChanged_: function(current, previous) {
-      const drawer = this.$.devDrawer;
-      if (this.inDevMode) {
-        if (drawer.hidden) {
-          drawer.hidden = false;
-          // Requesting the offsetTop will cause a reflow (to account for
-          // hidden).
-          /** @suppress {suspiciousCode} */ drawer.offsetTop;
-        }
-      } else {
-        if (previous == undefined) {
-          drawer.hidden = true;
-          return;
-        }
-
-        listenOnce(drawer, 'transitionend', e => {
-          if (!this.inDevMode) {
-            drawer.hidden = true;
-          }
-        });
-      }
-      this.expanded_ = !this.expanded_;
-    },
-
-    /** @private */
-    onLoadUnpackedTap_: function() {
-      this.delegate.loadUnpacked().catch(loadError => {
-        this.fire('load-error', loadError);
-      });
-      chrome.metricsPrivate.recordUserAction('Options_LoadUnpackedExtension');
-    },
-
-    /** @private */
-    onPackTap_: function() {
-      chrome.metricsPrivate.recordUserAction('Options_PackExtension');
-      this.showPackDialog_ = true;
-    },
-
-    /** @private */
-    onPackDialogClose_: function() {
-      this.showPackDialog_ = false;
-      this.$.packExtensions.focus();
-    },
+    isSupervised: Boolean,
 
     // <if expr="chromeos">
-    /** @private */
-    onKioskTap_: function() {
-      this.fire('kiosk-tap');
-    },
+    kioskEnabled: Boolean,
     // </if>
 
+    canLoadUnpacked: Boolean,
+
     /** @private */
-    onUpdateNowTap_: function() {
-      // If already updating, do not initiate another update.
-      if (this.isUpdating_) {
+    expanded_: Boolean,
+
+    /** @private */
+    showPackDialog_: Boolean,
+
+    /**
+     * Prevents initiating update while update is in progress.
+     * @private
+     */
+    isUpdating_: {type: Boolean, value: false}
+  },
+
+  behaviors: [I18nBehavior],
+
+  hostAttributes: {
+    role: 'banner',
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  shouldDisableDevMode_: function() {
+    return this.devModeControlledByPolicy || this.isSupervised;
+  },
+
+  /**
+   * @return {string}
+   * @private
+   */
+  getTooltipText_: function() {
+    return this.i18n(
+        this.isSupervised ? 'controlledSettingChildRestriction' :
+                            'controlledSettingPolicy');
+  },
+
+  /**
+   * @return {string}
+   * @private
+   */
+  getIcon_: function() {
+    return this.isSupervised ? 'cr20:kite' : 'cr20:domain';
+  },
+
+  /**
+   * @param {!CustomEvent<boolean>} e
+   * @private
+   */
+  onDevModeToggleChange_: function(e) {
+    this.delegate.setProfileInDevMode(e.detail);
+    chrome.metricsPrivate.recordUserAction(
+        'Options_ToggleDeveloperMode_' + (e.detail ? 'Enabled' : 'Disabled'));
+  },
+
+  /**
+   * @param {boolean} current
+   * @param {boolean} previous
+   * @private
+   */
+  onInDevModeChanged_: function(current, previous) {
+    const drawer = this.$.devDrawer;
+    if (this.inDevMode) {
+      if (drawer.hidden) {
+        drawer.hidden = false;
+        // Requesting the offsetTop will cause a reflow (to account for
+        // hidden).
+        /** @suppress {suspiciousCode} */ drawer.offsetTop;
+      }
+    } else {
+      if (previous == undefined) {
+        drawer.hidden = true;
         return;
       }
 
-      this.isUpdating_ = true;
+      listenOnce(drawer, 'transitionend', e => {
+        if (!this.inDevMode) {
+          drawer.hidden = true;
+        }
+      });
+    }
+    this.expanded_ = !this.expanded_;
+  },
 
-      const toastManager = cr.toastManager.getInstance();
-      // Keep the toast open indefinitely.
-      toastManager.duration = 0;
-      toastManager.show(this.i18n('toolbarUpdatingToast'), false);
-      this.delegate.updateAllExtensions().then(
-          () => {
-            toastManager.hide();
-            toastManager.duration = 3000;
-            toastManager.show(this.i18n('toolbarUpdateDone'), false);
-            this.isUpdating_ = false;
-          },
-          () => {
-            toastManager.hide();
-            this.isUpdating_ = false;
-          });
-    },
-  });
+  /** @private */
+  onLoadUnpackedTap_: function() {
+    this.delegate.loadUnpacked().catch(loadError => {
+      this.fire('load-error', loadError);
+    });
+    chrome.metricsPrivate.recordUserAction('Options_LoadUnpackedExtension');
+  },
 
-  return {
-    Toolbar: Toolbar,
-    ToolbarDelegate: ToolbarDelegate,
-  };
+  /** @private */
+  onPackTap_: function() {
+    chrome.metricsPrivate.recordUserAction('Options_PackExtension');
+    this.showPackDialog_ = true;
+  },
+
+  /** @private */
+  onPackDialogClose_: function() {
+    this.showPackDialog_ = false;
+    this.$.packExtensions.focus();
+  },
+
+  // <if expr="chromeos">
+  /** @private */
+  onKioskTap_: function() {
+    this.fire('kiosk-tap');
+  },
+  // </if>
+
+  /** @private */
+  onUpdateNowTap_: function() {
+    // If already updating, do not initiate another update.
+    if (this.isUpdating_) {
+      return;
+    }
+
+    this.isUpdating_ = true;
+
+    const toastManager = getToastManager();
+    // Keep the toast open indefinitely.
+    toastManager.duration = 0;
+    toastManager.show(this.i18n('toolbarUpdatingToast'));
+    this.delegate.updateAllExtensions().then(
+        () => {
+          toastManager.hide();
+          toastManager.duration = 3000;
+          toastManager.show(this.i18n('toolbarUpdateDone'));
+          this.isUpdating_ = false;
+        },
+        () => {
+          toastManager.hide();
+          this.isUpdating_ = false;
+        });
+  },
 });

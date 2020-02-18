@@ -182,13 +182,18 @@
     "-webkit-activelink",
     "activeborder",
     "activecaption",
+    "activetext",
     "appworkspace",
     "background",
     "buttonface",
     "buttonhighlight",
     "buttonshadow",
     "buttontext",
+    "canvas",
+    "canvastext",
     "captiontext",
+    "field",
+    "fieldtext",
     "graytext",
     "highlight",
     "highlighttext",
@@ -377,6 +382,8 @@
     "inline-flex",
     "grid",
     "inline-grid",
+    "math",
+    "inline-math",
     "contents",
     //none
     "-webkit-flex",
@@ -1205,5 +1212,14 @@
     // (forced-colors:) media feature
     // none
     "active",
+
+    // (navigation-controls) media feature
+    // none
+    "back-button",
+
+    // render-subtree
+    "invisible",
+    "skip-activation",
+    "skip-viewport-activation",
   ],
 }

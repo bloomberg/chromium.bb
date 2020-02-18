@@ -29,6 +29,7 @@
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/reading_list_add_command.h"
 #import "ios/chrome/browser/ui/list_model/list_model.h"
+#import "ios/chrome/browser/ui/ntp_tile_views/ntp_tile_constants.h"
 #import "ios/chrome/browser/ui/popup_menu/cells/popup_menu_navigation_item.h"
 #import "ios/chrome/browser/ui/popup_menu/cells/popup_menu_tools_item.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_constants.h"
@@ -39,11 +40,13 @@
 #import "ios/chrome/browser/ui/toolbar/public/features.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/browser/web/features.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/public/provider/chrome/browser/user_feedback/user_feedback_provider.h"
+#include "ios/web/common/features.h"
 #include "ios/web/common/user_agent.h"
 #include "ios/web/public/favicon/favicon_status.h"
 #import "ios/web/public/navigation/navigation_item.h"
@@ -51,7 +54,7 @@
 #include "ios/web/public/navigation/navigation_manager.h"
 #include "ios/web/public/web_client.h"
 #import "ios/web/public/web_state.h"
-#import "ios/web/public/web_state/web_state_observer_bridge.h"
+#import "ios/web/public/web_state_observer_bridge.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/image/image.h"
 
@@ -124,6 +127,7 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
 @property(nonatomic, strong) PopupMenuToolsItem* bookmarkItem;
 @property(nonatomic, strong) PopupMenuToolsItem* translateItem;
 @property(nonatomic, strong) PopupMenuToolsItem* findInPageItem;
+@property(nonatomic, strong) PopupMenuToolsItem* textZoomItem;
 @property(nonatomic, strong) PopupMenuToolsItem* siteInformationItem;
 @property(nonatomic, strong) PopupMenuToolsItem* requestDesktopSiteItem;
 @property(nonatomic, strong) PopupMenuToolsItem* requestMobileSiteItem;
@@ -448,6 +452,8 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
       [specificItems addObject:self.translateItem];
     if (self.findInPageItem)
       [specificItems addObject:self.findInPageItem];
+    if (self.textZoomItem)
+      [specificItems addObject:self.textZoomItem];
     if (self.siteInformationItem)
       [specificItems addObject:self.siteInformationItem];
     if (self.requestDesktopSiteItem)
@@ -537,6 +543,8 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
   [self updateBookmarkItem];
   self.translateItem.enabled = [self isTranslateEnabled];
   self.findInPageItem.enabled = [self isFindInPageEnabled];
+  self.textZoomItem.enabled =
+      !self.webContentAreaShowingOverlay && [self isCurrentURLWebURL];
   self.siteInformationItem.enabled = [self currentWebPageSupportsSiteInfo];
   self.requestDesktopSiteItem.enabled =
       [self userAgentType] == web::UserAgentType::MOBILE;
@@ -704,32 +712,23 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
   // represent a section in the popup menu. Having one sub array means having
   // all the items in the same section.
   PopupMenuToolsItem* copiedContentItem = nil;
-  if (base::FeatureList::IsEnabled(kCopiedContentBehavior)) {
-    ClipboardRecentContent* clipboardRecentContent =
-        ClipboardRecentContent::GetInstance();
+  ClipboardRecentContent* clipboardRecentContent =
+      ClipboardRecentContent::GetInstance();
 
-    if (search_engines::SupportsSearchByImage(self.templateURLService) &&
-        clipboardRecentContent->GetRecentImageFromClipboard()) {
-      copiedContentItem = CreateTableViewItem(
-          IDS_IOS_TOOLS_MENU_SEARCH_COPIED_IMAGE,
-          PopupMenuActionSearchCopiedImage, @"popup_menu_paste_and_go",
-          kToolsMenuCopiedImageSearch);
-    } else if (clipboardRecentContent->GetRecentURLFromClipboard()) {
-      copiedContentItem = CreateTableViewItem(
-          IDS_IOS_TOOLS_MENU_VISIT_COPIED_LINK, PopupMenuActionPasteAndGo,
-          @"popup_menu_paste_and_go", kToolsMenuPasteAndGo);
-    } else if (clipboardRecentContent->GetRecentTextFromClipboard()) {
-      copiedContentItem = CreateTableViewItem(
-          IDS_IOS_TOOLS_MENU_SEARCH_COPIED_TEXT, PopupMenuActionPasteAndGo,
-          @"popup_menu_paste_and_go", kToolsMenuPasteAndGo);
-    }
-  } else {
-    NSString* pasteboardString = [UIPasteboard generalPasteboard].string;
-    if (pasteboardString) {
-      copiedContentItem = CreateTableViewItem(
-          IDS_IOS_TOOLS_MENU_PASTE_AND_GO, PopupMenuActionPasteAndGo,
-          @"popup_menu_paste_and_go", kToolsMenuPasteAndGo);
-    }
+  if (search_engines::SupportsSearchByImage(self.templateURLService) &&
+      clipboardRecentContent->GetRecentImageFromClipboard()) {
+    copiedContentItem = CreateTableViewItem(
+        IDS_IOS_TOOLS_MENU_SEARCH_COPIED_IMAGE,
+        PopupMenuActionSearchCopiedImage, @"popup_menu_paste_and_go",
+        kToolsMenuCopiedImageSearch);
+  } else if (clipboardRecentContent->GetRecentURLFromClipboard()) {
+    copiedContentItem = CreateTableViewItem(
+        IDS_IOS_TOOLS_MENU_VISIT_COPIED_LINK, PopupMenuActionPasteAndGo,
+        @"popup_menu_paste_and_go", kToolsMenuPasteAndGo);
+  } else if (clipboardRecentContent->GetRecentTextFromClipboard()) {
+    copiedContentItem = CreateTableViewItem(
+        IDS_IOS_TOOLS_MENU_SEARCH_COPIED_TEXT, PopupMenuActionPasteAndGo,
+        @"popup_menu_paste_and_go", kToolsMenuPasteAndGo);
   }
   if (copiedContentItem) {
     if (base::FeatureList::IsEnabled(kToolbarNewTabButton)) {
@@ -827,11 +826,19 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
   }
   [actionsArray addObject:self.translateItem];
 
-  // Find in Pad.
+  // Find in Page.
   self.findInPageItem = CreateTableViewItem(
       IDS_IOS_TOOLS_MENU_FIND_IN_PAGE, PopupMenuActionFindInPage,
       @"popup_menu_find_in_page", kToolsMenuFindInPageId);
   [actionsArray addObject:self.findInPageItem];
+
+  // Text Zoom
+  if (base::FeatureList::IsEnabled(web::kWebPageTextAccessibility)) {
+    self.textZoomItem = CreateTableViewItem(
+        IDS_IOS_TOOLS_MENU_TEXT_ZOOM, PopupMenuActionTextZoom,
+        @"popup_menu_text_zoom", kToolsMenuTextZoom);
+    [actionsArray addObject:self.textZoomItem];
+  }
 
   if ([self userAgentType] != web::UserAgentType::DESKTOP) {
     // Request Desktop Site.
@@ -899,8 +906,13 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
   self.readingListItem = CreateTableViewItem(
       IDS_IOS_TOOLS_MENU_READING_LIST, PopupMenuActionReadingList,
       @"popup_menu_reading_list", kToolsMenuReadingListId);
-  self.readingListItem.badgeNumber =
+  NSInteger numberOfUnreadArticles =
       [self.readingListMenuNotifier readingListUnreadCount];
+  self.readingListItem.badgeNumber = numberOfUnreadArticles;
+  if (numberOfUnreadArticles) {
+    self.readingListItem.additionalAccessibilityLabel =
+        AccessibilityLabelForReadingListCellWithCount(numberOfUnreadArticles);
+  }
   if (self.engagementTracker &&
       self.engagementTracker->ShouldTriggerHelpUI(
           feature_engagement::kIPHBadgedReadingListFeature)) {
@@ -920,11 +932,23 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
                           @"popup_menu_history", kToolsMenuHistoryId);
   history.enabled = !self.isIncognito;
 
+  // Open Downloads folder.
+  TableViewItem* downloadsFolder = CreateTableViewItem(
+      IDS_IOS_TOOLS_MENU_DOWNLOADS, PopupMenuActionOpenDownloads,
+      @"popup_menu_downloads", kToolsMenuDownloadsId);
+
   // Settings.
   TableViewItem* settings =
       CreateTableViewItem(IDS_IOS_TOOLS_MENU_SETTINGS, PopupMenuActionSettings,
                           @"popup_menu_settings", kToolsMenuSettingsId);
 
+  // If downloads manager's flag is enabled, displays Downloads.
+  if (base::FeatureList::IsEnabled(web::features::kEnablePersistentDownloads)) {
+    return @[
+      bookmarks, self.readingListItem, recentTabs, history, downloadsFolder,
+      settings
+    ];
+  }
   return @[ bookmarks, self.readingListItem, recentTabs, history, settings ];
 }
 

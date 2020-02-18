@@ -231,7 +231,6 @@ class HistoryUiFaviconRequestHandlerImplTest : public ::testing::Test {
   testing::NiceMock<base::MockCallback<
       HistoryUiFaviconRequestHandlerImpl::CanSendHistoryDataGetter>>
       can_send_history_data_getter_;
-  base::CancelableTaskTracker tracker_;
   base::HistogramTester histogram_tester_;
   base::test::ScopedFeatureList scoped_feature_list_;
   HistoryUiFaviconRequestHandlerImpl history_ui_favicon_request_handler_;
@@ -243,17 +242,16 @@ class HistoryUiFaviconRequestHandlerImplTest : public ::testing::Test {
 TEST_F(HistoryUiFaviconRequestHandlerImplTest, ShouldGetEmptyBitmap) {
   scoped_feature_list_.InitAndDisableFeature(
       kEnableHistoryFaviconsGoogleServerQuery);
-  EXPECT_CALL(
-      mock_favicon_service_,
-      GetRawFaviconForPageURL(GURL(kDummyPageUrl), _,
-                              kDefaultDesiredSizeInPixel, _, _, &tracker_));
+  EXPECT_CALL(mock_favicon_service_,
+              GetRawFaviconForPageURL(GURL(kDummyPageUrl), _,
+                                      kDefaultDesiredSizeInPixel, _, _, _));
   EXPECT_CALL(synced_favicon_getter_, Run(GURL(kDummyPageUrl)))
       .WillOnce([](auto) { return favicon_base::FaviconRawBitmapResult(); });
   favicon_base::FaviconRawBitmapResult result;
   history_ui_favicon_request_handler_.GetRawFaviconForPageURL(
       GURL(kDummyPageUrl), kDefaultDesiredSizeInPixel,
       base::BindOnce(&StoreBitmap, &result), kDummyPlatform, kDummyOrigin,
-      /*icon_url_for_uma=*/GURL(), &tracker_);
+      /*icon_url_for_uma=*/GURL());
   EXPECT_FALSE(result.is_valid());
   histogram_tester_.ExpectUniqueSample(
       std::string(kAvailabilityHistogramName) + kDummyOriginHistogramSuffix,
@@ -265,17 +263,16 @@ TEST_F(HistoryUiFaviconRequestHandlerImplTest, ShouldGetEmptyBitmap) {
 TEST_F(HistoryUiFaviconRequestHandlerImplTest, ShouldGetSyncBitmap) {
   scoped_feature_list_.InitAndDisableFeature(
       kEnableHistoryFaviconsGoogleServerQuery);
-  EXPECT_CALL(
-      mock_favicon_service_,
-      GetRawFaviconForPageURL(GURL(kDummyPageUrl), _,
-                              kDefaultDesiredSizeInPixel, _, _, &tracker_));
+  EXPECT_CALL(mock_favicon_service_,
+              GetRawFaviconForPageURL(GURL(kDummyPageUrl), _,
+                                      kDefaultDesiredSizeInPixel, _, _, _));
   EXPECT_CALL(synced_favicon_getter_, Run(GURL(kDummyPageUrl)))
       .WillOnce([](auto) { return CreateTestBitmapResult(); });
   favicon_base::FaviconRawBitmapResult result;
   history_ui_favicon_request_handler_.GetRawFaviconForPageURL(
       GURL(kDummyPageUrl), kDefaultDesiredSizeInPixel,
       base::BindOnce(&StoreBitmap, &result), kDummyPlatform, kDummyOrigin,
-      /*icon_url_for_uma=*/GURL(), &tracker_);
+      /*icon_url_for_uma=*/GURL());
   EXPECT_TRUE(result.is_valid());
   histogram_tester_.ExpectUniqueSample(
       std::string(kAvailabilityHistogramName) + kDummyOriginHistogramSuffix,
@@ -288,10 +285,9 @@ TEST_F(HistoryUiFaviconRequestHandlerImplTest, ShouldGetLocalBitmap) {
   scoped_feature_list_.InitAndDisableFeature(
       kEnableHistoryFaviconsGoogleServerQuery);
   mock_favicon_service_.StoreMockLocalFavicon(GURL(kDummyPageUrl));
-  EXPECT_CALL(
-      mock_favicon_service_,
-      GetRawFaviconForPageURL(GURL(kDummyPageUrl), _,
-                              kDefaultDesiredSizeInPixel, _, _, &tracker_));
+  EXPECT_CALL(mock_favicon_service_,
+              GetRawFaviconForPageURL(GURL(kDummyPageUrl), _,
+                                      kDefaultDesiredSizeInPixel, _, _, _));
   EXPECT_CALL(mock_large_icon_service_,
               TouchIconFromGoogleServer(GURL(kDummyIconUrl)));
   EXPECT_CALL(synced_favicon_getter_, Run(_)).Times(0);
@@ -299,7 +295,7 @@ TEST_F(HistoryUiFaviconRequestHandlerImplTest, ShouldGetLocalBitmap) {
   history_ui_favicon_request_handler_.GetRawFaviconForPageURL(
       GURL(kDummyPageUrl), kDefaultDesiredSizeInPixel,
       base::BindOnce(&StoreBitmap, &result), kDummyPlatform, kDummyOrigin,
-      /*icon_url_for_uma=*/GURL(), &tracker_);
+      /*icon_url_for_uma=*/GURL());
   EXPECT_TRUE(result.is_valid());
   histogram_tester_.ExpectUniqueSample(
       std::string(kAvailabilityHistogramName) + kDummyOriginHistogramSuffix,
@@ -314,10 +310,9 @@ TEST_F(HistoryUiFaviconRequestHandlerImplTest,
       kEnableHistoryFaviconsGoogleServerQuery, {{"trim_url_path", "false"}});
   mock_large_icon_service_.StoreMockGoogleServerFavicon(GURL(kDummyPageUrl));
   EXPECT_CALL(can_send_history_data_getter_, Run());
-  EXPECT_CALL(
-      mock_favicon_service_,
-      GetRawFaviconForPageURL(GURL(kDummyPageUrl), _,
-                              kDefaultDesiredSizeInPixel, _, _, &tracker_))
+  EXPECT_CALL(mock_favicon_service_,
+              GetRawFaviconForPageURL(GURL(kDummyPageUrl), _,
+                                      kDefaultDesiredSizeInPixel, _, _, _))
       .Times(2);
   EXPECT_CALL(mock_large_icon_service_,
               GetLargeIconOrFallbackStyleFromGoogleServerSkippingLocalCache(
@@ -327,7 +322,7 @@ TEST_F(HistoryUiFaviconRequestHandlerImplTest,
   history_ui_favicon_request_handler_.GetRawFaviconForPageURL(
       GURL(kDummyPageUrl), kDefaultDesiredSizeInPixel,
       base::BindOnce(&StoreBitmap, &result), kDummyPlatform, kDummyOrigin,
-      /*icon_url_for_uma=*/GURL(), &tracker_);
+      /*icon_url_for_uma=*/GURL());
   EXPECT_TRUE(result.is_valid());
   histogram_tester_.ExpectUniqueSample(
       std::string(kAvailabilityHistogramName) + kDummyOriginHistogramSuffix,
@@ -344,10 +339,9 @@ TEST_F(HistoryUiFaviconRequestHandlerImplTest,
       kEnableHistoryFaviconsGoogleServerQuery, {{"trim_url_path", "true"}});
   mock_large_icon_service_.StoreMockGoogleServerFavicon(GURL(kDummyPageUrl));
   EXPECT_CALL(can_send_history_data_getter_, Run());
-  EXPECT_CALL(
-      mock_favicon_service_,
-      GetRawFaviconForPageURL(GURL(kDummyPageUrl), _,
-                              kDefaultDesiredSizeInPixel, _, _, &tracker_))
+  EXPECT_CALL(mock_favicon_service_,
+              GetRawFaviconForPageURL(GURL(kDummyPageUrl), _,
+                                      kDefaultDesiredSizeInPixel, _, _, _))
       .Times(2);
   EXPECT_CALL(mock_large_icon_service_,
               GetLargeIconOrFallbackStyleFromGoogleServerSkippingLocalCache(
@@ -358,7 +352,7 @@ TEST_F(HistoryUiFaviconRequestHandlerImplTest,
   history_ui_favicon_request_handler_.GetRawFaviconForPageURL(
       GURL(kDummyPageUrl), kDefaultDesiredSizeInPixel,
       base::BindOnce(&StoreBitmap, &result), kDummyPlatform, kDummyOrigin,
-      /*icon_url_for_uma=*/GURL(), &tracker_);
+      /*icon_url_for_uma=*/GURL());
   EXPECT_TRUE(result.is_valid());
   histogram_tester_.ExpectUniqueSample(
       std::string(kAvailabilityHistogramName) + kDummyOriginHistogramSuffix,
@@ -373,13 +367,13 @@ TEST_F(HistoryUiFaviconRequestHandlerImplTest, ShouldGetEmptyImage) {
   scoped_feature_list_.InitAndDisableFeature(
       kEnableHistoryFaviconsGoogleServerQuery);
   EXPECT_CALL(mock_favicon_service_,
-              GetFaviconImageForPageURL(GURL(kDummyPageUrl), _, &tracker_));
+              GetFaviconImageForPageURL(GURL(kDummyPageUrl), _, _));
   EXPECT_CALL(synced_favicon_getter_, Run(GURL(kDummyPageUrl)))
       .WillOnce([](auto) { return favicon_base::FaviconRawBitmapResult(); });
   favicon_base::FaviconImageResult result;
   history_ui_favicon_request_handler_.GetFaviconImageForPageURL(
       GURL(kDummyPageUrl), base::BindOnce(&StoreImage, &result), kDummyOrigin,
-      /*icon_url_for_uma=*/GURL(), &tracker_);
+      /*icon_url_for_uma=*/GURL());
   EXPECT_TRUE(result.image.IsEmpty());
   histogram_tester_.ExpectUniqueSample(
       std::string(kAvailabilityHistogramName) + kDummyOriginHistogramSuffix,
@@ -392,13 +386,13 @@ TEST_F(HistoryUiFaviconRequestHandlerImplTest, ShouldGetSyncImage) {
   scoped_feature_list_.InitAndDisableFeature(
       kEnableHistoryFaviconsGoogleServerQuery);
   EXPECT_CALL(mock_favicon_service_,
-              GetFaviconImageForPageURL(GURL(kDummyPageUrl), _, &tracker_));
+              GetFaviconImageForPageURL(GURL(kDummyPageUrl), _, _));
   EXPECT_CALL(synced_favicon_getter_, Run(GURL(kDummyPageUrl)))
       .WillOnce([](auto) { return CreateTestBitmapResult(); });
   favicon_base::FaviconImageResult result;
   history_ui_favicon_request_handler_.GetFaviconImageForPageURL(
       GURL(kDummyPageUrl), base::BindOnce(&StoreImage, &result), kDummyOrigin,
-      /*icon_url_for_uma=*/GURL(), &tracker_);
+      /*icon_url_for_uma=*/GURL());
   EXPECT_FALSE(result.image.IsEmpty());
   histogram_tester_.ExpectUniqueSample(
       std::string(kAvailabilityHistogramName) + kDummyOriginHistogramSuffix,
@@ -412,14 +406,14 @@ TEST_F(HistoryUiFaviconRequestHandlerImplTest, ShouldGetLocalImage) {
       kEnableHistoryFaviconsGoogleServerQuery);
   mock_favicon_service_.StoreMockLocalFavicon(GURL(kDummyPageUrl));
   EXPECT_CALL(mock_favicon_service_,
-              GetFaviconImageForPageURL(GURL(kDummyPageUrl), _, &tracker_));
+              GetFaviconImageForPageURL(GURL(kDummyPageUrl), _, _));
   EXPECT_CALL(mock_large_icon_service_,
               TouchIconFromGoogleServer(GURL(kDummyIconUrl)));
   EXPECT_CALL(synced_favicon_getter_, Run(_)).Times(0);
   favicon_base::FaviconImageResult result;
   history_ui_favicon_request_handler_.GetFaviconImageForPageURL(
       GURL(kDummyPageUrl), base::BindOnce(&StoreImage, &result), kDummyOrigin,
-      /*icon_url_for_uma=*/GURL(), &tracker_);
+      /*icon_url_for_uma=*/GURL());
   EXPECT_FALSE(result.image.IsEmpty());
   histogram_tester_.ExpectUniqueSample(
       std::string(kAvailabilityHistogramName) + kDummyOriginHistogramSuffix,
@@ -435,7 +429,7 @@ TEST_F(HistoryUiFaviconRequestHandlerImplTest,
   mock_large_icon_service_.StoreMockGoogleServerFavicon(GURL(kDummyPageUrl));
   EXPECT_CALL(can_send_history_data_getter_, Run());
   EXPECT_CALL(mock_favicon_service_,
-              GetFaviconImageForPageURL(GURL(kDummyPageUrl), _, &tracker_))
+              GetFaviconImageForPageURL(GURL(kDummyPageUrl), _, _))
       .Times(2);
   EXPECT_CALL(mock_large_icon_service_,
               GetLargeIconOrFallbackStyleFromGoogleServerSkippingLocalCache(
@@ -445,7 +439,7 @@ TEST_F(HistoryUiFaviconRequestHandlerImplTest,
   favicon_base::FaviconImageResult result;
   history_ui_favicon_request_handler_.GetFaviconImageForPageURL(
       GURL(kDummyPageUrl), base::BindOnce(&StoreImage, &result), kDummyOrigin,
-      /*icon_url_for_uma=*/GURL(), &tracker_);
+      /*icon_url_for_uma=*/GURL());
   EXPECT_FALSE(result.image.IsEmpty());
   histogram_tester_.ExpectUniqueSample(
       std::string(kAvailabilityHistogramName) + kDummyOriginHistogramSuffix,
@@ -463,7 +457,7 @@ TEST_F(HistoryUiFaviconRequestHandlerImplTest,
   mock_large_icon_service_.StoreMockGoogleServerFavicon(GURL(kDummyPageUrl));
   EXPECT_CALL(can_send_history_data_getter_, Run());
   EXPECT_CALL(mock_favicon_service_,
-              GetFaviconImageForPageURL(GURL(kDummyPageUrl), _, &tracker_))
+              GetFaviconImageForPageURL(GURL(kDummyPageUrl), _, _))
       .Times(2);
   EXPECT_CALL(mock_large_icon_service_,
               GetLargeIconOrFallbackStyleFromGoogleServerSkippingLocalCache(
@@ -473,7 +467,7 @@ TEST_F(HistoryUiFaviconRequestHandlerImplTest,
   favicon_base::FaviconImageResult result;
   history_ui_favicon_request_handler_.GetFaviconImageForPageURL(
       GURL(kDummyPageUrl), base::BindOnce(&StoreImage, &result), kDummyOrigin,
-      /*icon_url_for_uma=*/GURL(), &tracker_);
+      /*icon_url_for_uma=*/GURL());
   EXPECT_FALSE(result.image.IsEmpty());
   histogram_tester_.ExpectUniqueSample(
       std::string(kAvailabilityHistogramName) + kDummyOriginHistogramSuffix,
@@ -491,10 +485,9 @@ TEST_F(HistoryUiFaviconRequestHandlerImplTest,
   EXPECT_CALL(can_send_history_data_getter_, Run()).WillOnce([]() {
     return false;
   });
-  EXPECT_CALL(
-      mock_favicon_service_,
-      GetRawFaviconForPageURL(GURL(kDummyPageUrl), _,
-                              kDefaultDesiredSizeInPixel, _, _, &tracker_))
+  EXPECT_CALL(mock_favicon_service_,
+              GetRawFaviconForPageURL(GURL(kDummyPageUrl), _,
+                                      kDefaultDesiredSizeInPixel, _, _, _))
       .WillOnce([](auto, auto, auto, auto,
                    favicon_base::FaviconRawBitmapCallback callback, auto) {
         std::move(callback).Run(favicon_base::FaviconRawBitmapResult());
@@ -508,7 +501,7 @@ TEST_F(HistoryUiFaviconRequestHandlerImplTest,
   history_ui_favicon_request_handler_.GetRawFaviconForPageURL(
       GURL(kDummyPageUrl), kDefaultDesiredSizeInPixel,
       base::BindOnce(&StoreBitmap, &result), kDummyPlatform, kDummyOrigin,
-      /*icon_url_for_uma=*/GURL(), &tracker_);
+      /*icon_url_for_uma=*/GURL());
 }
 
 TEST_F(HistoryUiFaviconRequestHandlerImplTest, ShouldResizeSyncBitmap) {
@@ -518,7 +511,7 @@ TEST_F(HistoryUiFaviconRequestHandlerImplTest, ShouldResizeSyncBitmap) {
       kEnableHistoryFaviconsGoogleServerQuery);
   EXPECT_CALL(mock_favicon_service_,
               GetRawFaviconForPageURL(GURL(kDummyPageUrl), _,
-                                      kDesiredSizeInPixel, _, _, &tracker_))
+                                      kDesiredSizeInPixel, _, _, _))
       .WillOnce([](auto, auto, auto, auto,
                    favicon_base::FaviconRawBitmapCallback callback, auto) {
         std::move(callback).Run(favicon_base::FaviconRawBitmapResult());
@@ -531,7 +524,7 @@ TEST_F(HistoryUiFaviconRequestHandlerImplTest, ShouldResizeSyncBitmap) {
   history_ui_favicon_request_handler_.GetRawFaviconForPageURL(
       GURL(kDummyPageUrl), kDesiredSizeInPixel,
       base::BindOnce(&StoreBitmap, &result), kDummyPlatform, kDummyOrigin,
-      /*icon_url_for_uma=*/GURL(), &tracker_);
+      /*icon_url_for_uma=*/GURL());
   EXPECT_TRUE(result.is_valid());
   EXPECT_EQ(gfx::Size(kDesiredSizeInPixel, kDesiredSizeInPixel),
             result.pixel_size);

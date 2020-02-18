@@ -7,12 +7,15 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/scoped_observer.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_observer.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "ui/views/accessibility/ax_event_observer.h"
 
 class PrefChangeRegistrar;
-class Profile;
 
 namespace chromeos {
 
@@ -30,7 +33,9 @@ namespace chromeos {
 // either Fullscreen or Docked magnifier is enabled.
 class MagnificationManager
     : public content::NotificationObserver,
-      public user_manager::UserManager::UserSessionStateObserver {
+      public user_manager::UserManager::UserSessionStateObserver,
+      public ProfileObserver,
+      public views::AXEventObserver {
  public:
   // Creates an instance of MagnificationManager. This should be called once.
   static void Initialize();
@@ -59,6 +64,12 @@ class MagnificationManager
   // Loads the Fullscreen magnifier scale from the pref.
   double GetSavedScreenMagnifierScale() const;
 
+  // ProfileObserver:
+  void OnProfileWillBeDestroyed(Profile* profile) override;
+
+  // views::AXEventObserver:
+  void OnViewEvent(views::View* view, ax::mojom::Event event_type) override;
+
   void SetProfileForTest(Profile* profile);
 
  private:
@@ -85,7 +96,11 @@ class MagnificationManager
   // Called when received content::NOTIFICATION_FOCUS_CHANGED_IN_PAGE.
   void HandleFocusChangedInPage(const content::NotificationDetails& details);
 
+  // Called in response to AXEventObserver.
+  void HandleFocusChanged(const gfx::Rect& bounds_in_screen, bool is_editable);
+
   Profile* profile_ = nullptr;
+  ScopedObserver<Profile, ProfileObserver> profile_observer_{this};
 
   bool fullscreen_magnifier_enabled_ = false;
   bool keep_focus_centered_ = false;

@@ -15,13 +15,10 @@
 #include "base/macros.h"
 
 namespace ash {
-class PaginationController;
-}
-
-namespace app_list {
 
 class AppsContainerView;
 class HorizontalPage;
+class PaginationController;
 
 // HorizontalPageContainer contains a list of HorizontalPage that are
 // horizontally laid out. These pages can be switched with gesture scrolling.
@@ -42,9 +39,11 @@ class APP_LIST_EXPORT HorizontalPageContainer
   void OnWillBeHidden() override;
   void OnAnimationStarted(ash::AppListState from_state,
                           ash::AppListState to_state) override;
-  gfx::Rect GetSearchBoxBounds() const override;
-  gfx::Rect GetSearchBoxBoundsForState(ash::AppListState state) const override;
-  gfx::Rect GetPageBoundsForState(ash::AppListState state) const override;
+  gfx::Rect GetPageBoundsForState(
+      ash::AppListState state,
+      const gfx::Rect& contents_bounds,
+      const gfx::Rect& search_box_bounds) const override;
+  void UpdateOpacityForState(ash::AppListState state) override;
   views::View* GetFirstFocusableView() override;
   views::View* GetLastFocusableView() override;
   bool ShouldShowSearchBox() const override;
@@ -55,7 +54,7 @@ class APP_LIST_EXPORT HorizontalPageContainer
 
  private:
   // PaginationModelObserver:
-  void TotalPagesChanged() override;
+  void TotalPagesChanged(int previous_page_count, int new_page_count) override;
   void SelectedPageChanged(int old_selected, int new_selected) override;
   void TransitionStarting() override;
   void TransitionChanged() override;
@@ -92,6 +91,6 @@ class APP_LIST_EXPORT HorizontalPageContainer
   DISALLOW_COPY_AND_ASSIGN(HorizontalPageContainer);
 };
 
-}  // namespace app_list
+}  // namespace ash
 
 #endif  // ASH_APP_LIST_VIEWS_HORIZONTAL_PAGE_CONTAINER_H_

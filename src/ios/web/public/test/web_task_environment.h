@@ -7,9 +7,6 @@
 
 #include "base/test/task_environment.h"
 
-// TODO(crbug.com/992483): Rename this header to web_task_environment.h and
-// migrate all users.
-//
 // WebTaskEnvironment is the iOS equivalent of content::BrowserTaskEnvironment.
 //
 // It's is a convenience class for creating a set of TestWebThreads and a thread
@@ -67,12 +64,6 @@ class WebTaskEnvironment : public base::test::TaskEnvironment {
   std::unique_ptr<TestWebThread> io_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(WebTaskEnvironment);
-};
-
-// TODO(crbug.com/992483): Mass migrate users and remove this.
-class TestWebThreadBundle : public WebTaskEnvironment {
- public:
-  using WebTaskEnvironment::WebTaskEnvironment;
 };
 
 }  // namespace web

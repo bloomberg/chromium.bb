@@ -21,9 +21,11 @@ import android.widget.TextView;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ResourceId;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.vr.UiUnsupportedMode;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.content_public.browser.WebContents;
@@ -41,7 +43,7 @@ public class ConnectionInfoPopup implements OnClickListener, ModalDialogProperti
     private static final String TAG = "ConnectionInfoPopup";
 
     private static final String HELP_URL =
-            "https://support.google.com/chrome/answer/95617";
+            "https://support.google.com/chrome?p=android_connection_info";
 
     private final Context mContext;
     private final ModalDialogManager mModalDialogManager;
@@ -49,17 +51,20 @@ public class ConnectionInfoPopup implements OnClickListener, ModalDialogProperti
     private final LinearLayout mContainer;
     private final WebContents mWebContents;
     private final WebContentsObserver mWebContentsObserver;
-    private final int mPaddingWide, mPaddingThin;
+    private final int mPaddingWide;
+    private final int mPaddingThin;
     private final long mNativeConnectionInfoPopup;
     private final CertificateViewer mCertificateViewer;
-    private TextView mCertificateViewerTextView, mMoreInfoLink;
-    private ViewGroup mCertificateLayout, mDescriptionLayout;
+    private TextView mCertificateViewerTextView;
+    private TextView mMoreInfoLink;
+    private ViewGroup mCertificateLayout;
+    private ViewGroup mDescriptionLayout;
     private Button mResetCertDecisionsButton;
     private String mLinkUrl;
 
     private ConnectionInfoPopup(Context context, Tab tab) {
         mContext = context;
-        mModalDialogManager = tab.getActivity().getModalDialogManager();
+        mModalDialogManager = ((TabImpl) tab).getActivity().getModalDialogManager();
         mWebContents = tab.getWebContents();
 
         mCertificateViewer = new CertificateViewer(mContext);
@@ -74,7 +79,7 @@ public class ConnectionInfoPopup implements OnClickListener, ModalDialogProperti
                 mPaddingWide - mPaddingThin);
 
         // This needs to come after other member initialization.
-        mNativeConnectionInfoPopup = nativeInit(this, mWebContents);
+        mNativeConnectionInfoPopup = ConnectionInfoPopupJni.get().init(this, mWebContents);
         mWebContentsObserver = new WebContentsObserver(mWebContents) {
             @Override
             public void navigationEntryCommitted() {
@@ -195,7 +200,8 @@ public class ConnectionInfoPopup implements OnClickListener, ModalDialogProperti
     @Override
     public void onClick(View v) {
         if (mResetCertDecisionsButton == v) {
-            nativeResetCertDecisions(mNativeConnectionInfoPopup, mWebContents);
+            ConnectionInfoPopupJni.get().resetCertDecisions(
+                    mNativeConnectionInfoPopup, ConnectionInfoPopup.this, mWebContents);
             dismissDialog(DialogDismissalCause.ACTION_ON_CONTENT);
         } else if (mCertificateViewerTextView == v) {
             byte[][] certChain = CertificateChainHelper.getCertificateChain(mWebContents);
@@ -229,7 +235,7 @@ public class ConnectionInfoPopup implements OnClickListener, ModalDialogProperti
     public void onDismiss(PropertyModel model, int dismissalCause) {
         assert mNativeConnectionInfoPopup != 0;
         mWebContentsObserver.destroy();
-        nativeDestroy(mNativeConnectionInfoPopup);
+        ConnectionInfoPopupJni.get().destroy(mNativeConnectionInfoPopup, ConnectionInfoPopup.this);
         mDialogModel = null;
     }
 
@@ -260,9 +266,11 @@ public class ConnectionInfoPopup implements OnClickListener, ModalDialogProperti
         new ConnectionInfoPopup(context, tab);
     }
 
-    private static native long nativeInit(ConnectionInfoPopup popup,
-            WebContents webContents);
-    private native void nativeDestroy(long nativeConnectionInfoPopupAndroid);
-    private native void nativeResetCertDecisions(
-            long nativeConnectionInfoPopupAndroid, WebContents webContents);
+    @NativeMethods
+    interface Natives {
+        long init(ConnectionInfoPopup popup, WebContents webContents);
+        void destroy(long nativeConnectionInfoPopupAndroid, ConnectionInfoPopup caller);
+        void resetCertDecisions(long nativeConnectionInfoPopupAndroid, ConnectionInfoPopup caller,
+                WebContents webContents);
+    }
 }

@@ -11,15 +11,6 @@
 namespace skia {
 namespace textlayout {
 
-struct Measurement {
-    SkScalar fAlphabeticBaseline;
-    SkScalar fIdeographicBaseline;
-    SkScalar fHeight;
-    SkScalar fWidth;
-    SkScalar fMaxIntrinsicWidth;
-    SkScalar fMinIntrinsicWidth;
-};
-
 enum InternalState {
   kUnknown = 0,
   kShaped = 1,

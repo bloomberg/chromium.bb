@@ -8,7 +8,8 @@
 #include "base/callback.h"
 #include "base/component_export.h"
 #include "media/cast/net/cast_transport_config.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/ip_endpoint.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/network/public/mojom/udp_socket.mojom.h"
@@ -59,18 +60,18 @@ class COMPONENT_EXPORT(MIRRORING_SERVICE) UdpSocketClient final
   network::mojom::NetworkContext* const network_context_;
   base::OnceClosure error_callback_;
 
-  mojo::Binding<network::mojom::UDPSocketListener> binding_;
+  mojo::Receiver<network::mojom::UDPSocketListener> receiver_{this};
 
   // The callback to deliver the received packets to the packet parser. Set
   // when StartReceiving() is called.
   media::cast::PacketReceiverCallbackWithStatus packet_receiver_callback_;
 
-  network::mojom::UDPSocketPtr udp_socket_;
+  mojo::Remote<network::mojom::UDPSocket> udp_socket_;
 
   // Set by SendPacket() when the sending is not allowed. Once set, SendPacket()
   // can only be called again when a previous sending completes successfully.
-  // TODO(xjz): Change the callback to a base::OnceClosure as well as in the
-  // cast::PacketTransport SendPacket().
+  // TODO(crbug.com/1015479): Change the callback to a base::OnceClosure as well
+  // as in the cast::PacketTransport SendPacket().
   base::RepeatingClosure resume_send_callback_;
 
   // Total numbe of bytes written to the data pipe.

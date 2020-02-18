@@ -34,6 +34,11 @@ int main(int argc, char** argv) {
   base::CommandLine::Init(argc, argv);
   angle::InitTestHarness(&argc, argv);
   base::TestSuite test_suite(argc, argv);
+
+  // The process and thread priorities are modified by
+  // StabilizeCPUForBenchmarking()/SetLowPriorityProcess().
+  test_suite.DisableCheckForThreadAndProcessPriority();
+
   int rt = base::LaunchUnitTestsSerially(
       argc, argv, base::BindOnce(&RunHelper, base::Unretained(&test_suite)));
   return rt;

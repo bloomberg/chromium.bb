@@ -32,6 +32,9 @@ typedef QuicBufferedPacketStore::EnqueuePacketResult EnqueuePacketResult;
 
 namespace {
 
+// Minimal INITIAL packet length sent by clients is 1200.
+const QuicPacketLength kMinClientInitialPacketLength = 1200;
+
 // An alarm that informs the QuicDispatcher to delete old sessions.
 class DeleteSessionsAlarm : public QuicAlarm::Delegate {
  public:
@@ -74,6 +77,17 @@ class PacketCollector : public QuicPacketCreator::DelegateInterface,
 
   void OnUnrecoverableError(QuicErrorCode /*error*/,
                             const std::string& /*error_details*/) override {}
+
+  bool ShouldGeneratePacket(HasRetransmittableData /*retransmittable*/,
+                            IsHandshake /*handshake*/) override {
+    DCHECK(false);
+    return true;
+  }
+
+  const QuicFrames MaybeBundleAckOpportunistically() override {
+    DCHECK(false);
+    return {};
+  }
 
   // QuicStreamFrameDataProducer
   WriteStreamDataResult WriteStreamData(QuicStreamId /*id*/,
@@ -121,6 +135,7 @@ class StatelessConnectionTerminator {
         creator_(server_connection_id, &framer_, &collector_),
         time_wait_list_manager_(time_wait_list_manager) {
     framer_.set_data_producer(&collector_);
+    framer_.SetInitialObfuscators(server_connection_id);
   }
 
   ~StatelessConnectionTerminator() {
@@ -128,24 +143,26 @@ class StatelessConnectionTerminator {
     framer_.set_data_producer(nullptr);
   }
 
+  // Serializes a packet containing CONNECTION_CLOSE frame and send it (without
+  // adding connection to the time wait).
+  void StatelesslyCloseConnection(const QuicSocketAddress& self_address,
+                                  const QuicSocketAddress& peer_address,
+                                  QuicErrorCode error_code,
+                                  const std::string& error_details) {
+    SerializeConnectionClosePacket(error_code, error_details);
+
+    for (const auto& packet : *collector_.packets()) {
+      time_wait_list_manager_->SendPacket(self_address, peer_address, *packet);
+    }
+  }
+
   // Generates a packet containing a CONNECTION_CLOSE frame specifying
   // |error_code| and |error_details| and add the connection to time wait.
   void CloseConnection(QuicErrorCode error_code,
                        const std::string& error_details,
                        bool ietf_quic) {
-    QuicConnectionCloseFrame* frame =
-        new QuicConnectionCloseFrame(error_code, error_details);
-    if (VersionHasIetfQuicFrames(framer_.transport_version())) {
-      frame->close_type = IETF_QUIC_TRANSPORT_CONNECTION_CLOSE;
-    }
+    SerializeConnectionClosePacket(error_code, error_details);
 
-    if (!creator_.AddSavedFrame(QuicFrame(frame), NOT_RETRANSMISSION)) {
-      QUIC_BUG << "Unable to add frame to an empty packet";
-      delete frame;
-      return;
-    }
-    creator_.Flush();
-    DCHECK_EQ(1u, collector_.packets()->size());
     time_wait_list_manager_->AddConnectionIdToTimeWait(
         server_connection_id_, ietf_quic,
         QuicTimeWaitListManager::SEND_TERMINATION_PACKETS,
@@ -153,6 +170,21 @@ class StatelessConnectionTerminator {
   }
 
  private:
+  void SerializeConnectionClosePacket(QuicErrorCode error_code,
+                                      const std::string& error_details) {
+    QuicConnectionCloseFrame* frame = new QuicConnectionCloseFrame(
+        framer_.transport_version(), error_code, error_details,
+        /*transport_close_frame_type=*/0);
+
+    if (!creator_.AddFrame(QuicFrame(frame), NOT_RETRANSMISSION)) {
+      QUIC_BUG << "Unable to add frame to an empty packet";
+      delete frame;
+      return;
+    }
+    creator_.FlushCurrentPacket();
+    DCHECK_EQ(1u, collector_.packets()->size());
+  }
+
   QuicConnectionId server_connection_id_;
   QuicFramer framer_;
   // Set as the visitor of |creator_| to collect any generated packets.
@@ -206,7 +238,10 @@ QuicDispatcher::QuicDispatcher(
       allow_short_initial_server_connection_ids_(false),
       expected_server_connection_id_length_(
           expected_server_connection_id_length),
-      should_update_expected_server_connection_id_length_(false) {}
+      should_update_expected_server_connection_id_length_(false) {
+  QUIC_DLOG(INFO) << "Created QuicDispatcher with versions: "
+                  << ParsedQuicVersionVectorToString(GetSupportedVersions());
+}
 
 QuicDispatcher::~QuicDispatcher() {
   session_map_.clear();
@@ -228,33 +263,20 @@ void QuicDispatcher::ProcessPacket(const QuicSocketAddress& self_address,
                        QuicStringPiece(packet.data(), packet.length()));
   ReceivedPacketInfo packet_info(self_address, peer_address, packet);
   std::string detailed_error;
-  QuicErrorCode error;
-  if (!GetQuicReloadableFlag(quic_use_parse_public_header)) {
-    error = QuicFramer::ProcessPacketDispatcher(
-        packet, expected_server_connection_id_length_, &packet_info.form,
-        &packet_info.version_flag, &packet_info.version_label,
-        &packet_info.destination_connection_id,
-        &packet_info.source_connection_id, &detailed_error);
-  } else {
-    QUIC_RELOADABLE_FLAG_COUNT(quic_use_parse_public_header);
-    bool retry_token_present;
-    QuicStringPiece retry_token;
-    error = QuicFramer::ParsePublicHeaderDispatcher(
-        packet, expected_server_connection_id_length_, &packet_info.form,
-        &packet_info.version_flag, &packet_info.use_length_prefix,
-        &packet_info.version_label, &packet_info.version,
-        &packet_info.destination_connection_id,
-        &packet_info.source_connection_id, &retry_token_present, &retry_token,
-        &detailed_error);
-  }
+  bool retry_token_present;
+  QuicStringPiece retry_token;
+  const QuicErrorCode error = QuicFramer::ParsePublicHeaderDispatcher(
+      packet, expected_server_connection_id_length_, &packet_info.form,
+      &packet_info.long_packet_type, &packet_info.version_flag,
+      &packet_info.use_length_prefix, &packet_info.version_label,
+      &packet_info.version, &packet_info.destination_connection_id,
+      &packet_info.source_connection_id, &retry_token_present, &retry_token,
+      &detailed_error);
   if (error != QUIC_NO_ERROR) {
     // Packet has framing error.
     SetLastError(error);
     QUIC_DLOG(ERROR) << detailed_error;
     return;
-  }
-  if (!GetQuicReloadableFlag(quic_use_parse_public_header)) {
-    packet_info.version = ParseQuicVersionLabel(packet_info.version_label);
   }
   if (packet_info.destination_connection_id.length() !=
           expected_server_connection_id_length_ &&
@@ -350,28 +372,8 @@ bool QuicDispatcher::MaybeDispatchPacket(
     QUIC_DLOG(INFO) << "Packet with short destination connection ID "
                     << server_connection_id << " expected "
                     << static_cast<int>(expected_server_connection_id_length_);
-    if (!GetQuicReloadableFlag(quic_drop_invalid_small_initial_connection_id)) {
-      // Add this connection_id to the time-wait state, to safely reject
-      // future packets.
-      QUIC_DLOG(INFO) << "Adding connection ID " << server_connection_id
-                      << " to time-wait list.";
-      StatelesslyTerminateConnection(
-          server_connection_id, packet_info.form, packet_info.version_flag,
-          packet_info.use_length_prefix, packet_info.version,
-          QUIC_HANDSHAKE_FAILED, "Reject connection",
-          quic::QuicTimeWaitListManager::SEND_STATELESS_RESET);
-
-      DCHECK(time_wait_list_manager_->IsConnectionIdInTimeWait(
-          server_connection_id));
-      time_wait_list_manager_->ProcessPacket(
-          packet_info.self_address, packet_info.peer_address,
-          server_connection_id, packet_info.form, GetPerPacketContext());
-
-      buffered_packets_.DiscardPackets(server_connection_id);
-    } else {
-      QUIC_RELOADABLE_FLAG_COUNT(quic_drop_invalid_small_initial_connection_id);
-      // Drop the packet silently.
-    }
+    // Drop the packet silently.
+    QUIC_CODE_COUNT(quic_dropped_invalid_small_initial_connection_id);
     return true;
   }
 
@@ -383,8 +385,14 @@ bool QuicDispatcher::MaybeDispatchPacket(
     it->second->ProcessUdpPacket(packet_info.self_address,
                                  packet_info.peer_address, packet_info.packet);
     return true;
-  } else {
+  } else if (packet_info.version.transport_version !=
+             QUIC_VERSION_UNSUPPORTED) {
     // We did not find the connection ID, check if we've replaced it.
+    // This is only performed for supported versions because packets with
+    // unsupported versions can flow through this function in order to send
+    // a version negotiation packet, but we know that their connection ID
+    // did not get replaced since that is performed on connection creation,
+    // and that only happens for known verions.
     QuicConnectionId replaced_connection_id = MaybeReplaceServerConnectionId(
         server_connection_id, packet_info.version);
     if (replaced_connection_id != server_connection_id) {
@@ -433,23 +441,28 @@ bool QuicDispatcher::MaybeDispatchPacket(
         // packet and stop processing the current packet.
         QuicConnectionId client_connection_id =
             packet_info.source_connection_id;
-        bool use_length_prefix = packet_info.use_length_prefix;
-        if (!GetQuicReloadableFlag(quic_use_length_prefix_from_packet_info)) {
-          use_length_prefix = packet_info.form != GOOGLE_QUIC_PACKET &&
-                              !QuicVersionLabelUses4BitConnectionIdLength(
-                                  packet_info.version_label);
-        } else {
-          QUIC_RELOADABLE_FLAG_COUNT(quic_use_length_prefix_from_packet_info);
-          // TODO(dschinazi) remove the client-side workaround in
-          // QuicFramer::ParseServerVersionNegotiationProbeResponse
-          // when quic_use_length_prefix_from_packet_info is deprecated.
-        }
         time_wait_list_manager()->SendVersionNegotiationPacket(
             server_connection_id, client_connection_id,
-            packet_info.form != GOOGLE_QUIC_PACKET, use_length_prefix,
-            GetSupportedVersions(), packet_info.self_address,
-            packet_info.peer_address, GetPerPacketContext());
+            packet_info.form != GOOGLE_QUIC_PACKET,
+            packet_info.use_length_prefix, GetSupportedVersions(),
+            packet_info.self_address, packet_info.peer_address,
+            GetPerPacketContext());
       }
+      return true;
+    }
+
+    if (crypto_config()->validate_chlo_size() &&
+        packet_info.form == IETF_QUIC_LONG_HEADER_PACKET &&
+        packet_info.long_packet_type == INITIAL &&
+        packet_info.packet.length() < kMinClientInitialPacketLength) {
+      StatelessConnectionTerminator terminator(
+          packet_info.destination_connection_id, packet_info.version,
+          helper_.get(), time_wait_list_manager_.get());
+      QUIC_DVLOG(1) << "Initial packet too small: "
+                    << packet_info.packet.length();
+      terminator.StatelesslyCloseConnection(
+          packet_info.self_address, packet_info.peer_address,
+          IETF_QUIC_PROTOCOL_VIOLATION, "Initial packet too small");
       return true;
     }
   }
@@ -473,20 +486,8 @@ void QuicDispatcher::ProcessHeader(ReceivedPacketInfo* packet_info) {
         ProcessChlo(/*alpn=*/"", packet_info);
         break;
       }
-      ParsedQuicVersionVector chlo_extractor_versions;
-      if (!GetQuicRestartFlag(
-              quic_dispatcher_hands_chlo_extractor_one_version)) {
-        chlo_extractor_versions = GetSupportedVersions();
-      } else {
-        QUIC_RESTART_FLAG_COUNT(
-            quic_dispatcher_hands_chlo_extractor_one_version);
-        chlo_extractor_versions = {packet_info->version};
-        // TODO(dschinazi) once we deprecate
-        // quic_dispatcher_hands_chlo_extractor_one_version, we should change
-        // ChloExtractor::Extract to only take one version.
-      }
       if (GetQuicFlag(FLAGS_quic_allow_chlo_buffering) &&
-          !ChloExtractor::Extract(packet_info->packet, chlo_extractor_versions,
+          !ChloExtractor::Extract(packet_info->packet, packet_info->version,
                                   config_->create_session_tag_indicators(),
                                   &alpn_extractor,
                                   server_connection_id.length())) {
@@ -523,18 +524,7 @@ void QuicDispatcher::ProcessHeader(ReceivedPacketInfo* packet_info) {
 
 QuicDispatcher::QuicPacketFate QuicDispatcher::ValidityChecks(
     const ReceivedPacketInfo& packet_info) {
-  // To have all the checks work properly without tears, insert any new check
-  // into the framework of this method in the section for checks that return the
-  // check's fate value.  The sections for checks must be ordered with the
-  // highest priority fate first.
-
-  // All packets within a connection sent by a client before receiving a
-  // response from the server are required to have the version negotiation flag
-  // set.  Since this may be a client continuing a connection we lost track of
-  // via server restart, send a rejection to fast-fail the connection.
   if (!packet_info.version_flag) {
-    if (GetQuicReloadableFlag(quic_reply_to_old_android_conformance_test)) {
-      QUIC_RELOADABLE_FLAG_COUNT(quic_reply_to_old_android_conformance_test);
       // The Android network conformance test contains a UDP test that sends a
       // 12-byte packet with the following format:
       //  - 0x0c (public flags: 8-byte connection ID, 1-byte packet number)
@@ -562,17 +552,12 @@ QuicDispatcher::QuicPacketFate QuicDispatcher::ValidityChecks(
             /*ietf_quic=*/false, GetPerPacketContext());
         return kFateDrop;
       }
-    }
 
     QUIC_DLOG(INFO)
         << "Packet without version arrived for unknown connection ID "
         << packet_info.destination_connection_id;
-    if (GetQuicReloadableFlag(quic_reject_unprocessable_packets_statelessly)) {
-      QUIC_RELOADABLE_FLAG_COUNT(quic_reject_unprocessable_packets_statelessly);
-      MaybeResetPacketsWithNoVersion(packet_info);
-      return kFateDrop;
-    }
-    return kFateTimeWait;
+    MaybeResetPacketsWithNoVersion(packet_info);
+    return kFateDrop;
   }
 
   // Let the connection parse and validate packet number.
@@ -589,7 +574,7 @@ void QuicDispatcher::CleanUpSession(SessionMap::iterator it,
       !connection->termination_packets()->empty()) {
     action = QuicTimeWaitListManager::SEND_TERMINATION_PACKETS;
   } else {
-    if (!connection->IsHandshakeConfirmed()) {
+    if (!connection->IsHandshakeComplete()) {
       if (!VersionHasIetfInvariantHeader(connection->transport_version())) {
         QUIC_CODE_COUNT(gquic_add_to_time_wait_list_with_handshake_failed);
       } else {

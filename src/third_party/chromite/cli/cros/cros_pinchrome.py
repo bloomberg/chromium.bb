@@ -59,8 +59,8 @@ def UpdateManifest(ebuild):
     ebuild: Path to the ebuild to update the manifest for.
   """
   ebuild = path_util.ToChrootPath(os.path.realpath(ebuild))
-  cros_build_lib.RunCommand(['ebuild', ebuild, 'manifest'], quiet=True,
-                            enter_chroot=True)
+  cros_build_lib.run(['ebuild', ebuild, 'manifest'], quiet=True,
+                     enter_chroot=True)
 
 
 def SplitPVPath(path):

@@ -89,7 +89,7 @@ void UnexpectedCallback(int result) {
 }  // namespace
 
 TEST(HttpAuthGSSAPIPOSIXTest, GSSAPIStartup) {
-  BoundTestNetLog log;
+  RecordingBoundTestNetLog log;
   // TODO(ahendrickson): Manipulate the libraries and paths to test each of the
   // libraries we expect, and also whether or not they have the interface
   // functions we want.
@@ -115,7 +115,7 @@ TEST(HttpAuthGSSAPIPOSIXTest, GSSAPIStartup) {
 }
 
 TEST(HttpAuthGSSAPIPOSIXTest, CustomLibraryMissing) {
-  BoundTestNetLog log;
+  RecordingBoundTestNetLog log;
 
   std::unique_ptr<GSSAPILibrary> gssapi(
       new GSSAPISharedLibrary("/this/library/does/not/exist"));
@@ -131,7 +131,7 @@ TEST(HttpAuthGSSAPIPOSIXTest, CustomLibraryMissing) {
 }
 
 TEST(HttpAuthGSSAPIPOSIXTest, CustomLibraryExists) {
-  BoundTestNetLog log;
+  RecordingBoundTestNetLog log;
   base::FilePath module;
   ASSERT_TRUE(base::PathService::Get(base::DIR_MODULE, &module));
   auto basename = base::GetNativeLibraryName("test_gssapi");
@@ -151,7 +151,7 @@ TEST(HttpAuthGSSAPIPOSIXTest, CustomLibraryExists) {
 }
 
 TEST(HttpAuthGSSAPIPOSIXTest, CustomLibraryMethodsMissing) {
-  BoundTestNetLog log;
+  RecordingBoundTestNetLog log;
   base::FilePath module;
   ASSERT_TRUE(base::PathService::Get(base::DIR_MODULE, &module));
   auto basename = base::GetNativeLibraryName("test_badgssapi");
@@ -268,8 +268,7 @@ TEST(HttpAuthGSSAPIPOSIXTest, GSSAPICycle) {
 TEST(HttpAuthGSSAPITest, ParseChallenge_FirstRound) {
   // The first round should just consist of an unadorned "Negotiate" header.
   test::MockGSSAPILibrary mock_library;
-  HttpAuthGSSAPI auth_gssapi(&mock_library, "Negotiate",
-                             CHROME_GSS_SPNEGO_MECH_OID_DESC);
+  HttpAuthGSSAPI auth_gssapi(&mock_library, CHROME_GSS_SPNEGO_MECH_OID_DESC);
   std::string challenge_text = "Negotiate";
   HttpAuthChallengeTokenizer challenge(challenge_text.begin(),
                                        challenge_text.end());
@@ -278,12 +277,11 @@ TEST(HttpAuthGSSAPITest, ParseChallenge_FirstRound) {
 }
 
 TEST(HttpAuthGSSAPITest, ParseChallenge_TwoRounds) {
-  BoundTestNetLog log;
+  RecordingBoundTestNetLog log;
   // The first round should just have "Negotiate", and the second round should
   // have a valid base64 token associated with it.
   test::MockGSSAPILibrary mock_library;
-  HttpAuthGSSAPI auth_gssapi(&mock_library, "Negotiate",
-                             CHROME_GSS_SPNEGO_MECH_OID_DESC);
+  HttpAuthGSSAPI auth_gssapi(&mock_library, CHROME_GSS_SPNEGO_MECH_OID_DESC);
   std::string first_challenge_text = "Negotiate";
   HttpAuthChallengeTokenizer first_challenge(first_challenge_text.begin(),
                                              first_challenge_text.end());
@@ -323,8 +321,7 @@ TEST(HttpAuthGSSAPITest, ParseChallenge_UnexpectedTokenFirstRound) {
   // If the first round challenge has an additional authentication token, it
   // should be treated as an invalid challenge from the server.
   test::MockGSSAPILibrary mock_library;
-  HttpAuthGSSAPI auth_gssapi(&mock_library, "Negotiate",
-                             CHROME_GSS_SPNEGO_MECH_OID_DESC);
+  HttpAuthGSSAPI auth_gssapi(&mock_library, CHROME_GSS_SPNEGO_MECH_OID_DESC);
   std::string challenge_text = "Negotiate Zm9vYmFy";
   HttpAuthChallengeTokenizer challenge(challenge_text.begin(),
                                        challenge_text.end());
@@ -336,8 +333,7 @@ TEST(HttpAuthGSSAPITest, ParseChallenge_MissingTokenSecondRound) {
   // If a later-round challenge is simply "Negotiate", it should be treated as
   // an authentication challenge rejection from the server or proxy.
   test::MockGSSAPILibrary mock_library;
-  HttpAuthGSSAPI auth_gssapi(&mock_library, "Negotiate",
-                             CHROME_GSS_SPNEGO_MECH_OID_DESC);
+  HttpAuthGSSAPI auth_gssapi(&mock_library, CHROME_GSS_SPNEGO_MECH_OID_DESC);
   std::string first_challenge_text = "Negotiate";
   HttpAuthChallengeTokenizer first_challenge(first_challenge_text.begin(),
                                              first_challenge_text.end());
@@ -361,8 +357,7 @@ TEST(HttpAuthGSSAPITest, ParseChallenge_NonBase64EncodedToken) {
   // If a later-round challenge has an invalid base64 encoded token, it should
   // be treated as an invalid challenge.
   test::MockGSSAPILibrary mock_library;
-  HttpAuthGSSAPI auth_gssapi(&mock_library, "Negotiate",
-                             CHROME_GSS_SPNEGO_MECH_OID_DESC);
+  HttpAuthGSSAPI auth_gssapi(&mock_library, CHROME_GSS_SPNEGO_MECH_OID_DESC);
   std::string first_challenge_text = "Negotiate";
   HttpAuthChallengeTokenizer first_challenge(first_challenge_text.begin(),
                                              first_challenge_text.end());

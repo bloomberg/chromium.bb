@@ -9,6 +9,7 @@
 #include <map>
 #include <memory>
 #include <set>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/optional.h"
@@ -24,6 +25,7 @@
 
 namespace views {
 
+class Label;
 class Link;
 class StyledLabelListener;
 
@@ -36,13 +38,15 @@ class VIEWS_EXPORT StyledLabel : public View, public LinkListener {
  public:
   METADATA_HEADER(StyledLabel);
 
+  using LinkTargets = std::map<Link*, gfx::Range>;
+
   // TestApi is used for tests to get internal implementation details.
   class VIEWS_EXPORT TestApi {
    public:
     explicit TestApi(StyledLabel* view);
     ~TestApi();
 
-    const std::map<View*, gfx::Range>& link_targets();
+    const LinkTargets& link_targets();
 
    private:
     StyledLabel* const view_;
@@ -53,7 +57,8 @@ class VIEWS_EXPORT StyledLabel : public View, public LinkListener {
   // Parameters that define label style for a styled label's text range.
   struct VIEWS_EXPORT RangeStyleInfo {
     RangeStyleInfo();
-    RangeStyleInfo(const RangeStyleInfo& copy);
+    RangeStyleInfo(const RangeStyleInfo&);
+    RangeStyleInfo& operator=(const RangeStyleInfo&);
     ~RangeStyleInfo();
 
     // Creates a range style info with default values for link.
@@ -82,6 +87,28 @@ class VIEWS_EXPORT StyledLabel : public View, public LinkListener {
     // A custom view shown instead of the underlying text. Ownership of custom
     // views must be passed to StyledLabel via AddCustomView().
     View* custom_view = nullptr;
+  };
+
+  // Sizing information for laying out the label based on a particular width.
+  struct VIEWS_EXPORT LayoutSizeInfo {
+    explicit LayoutSizeInfo(int max_valid_width);
+    LayoutSizeInfo(const LayoutSizeInfo&);
+    LayoutSizeInfo& operator=(const LayoutSizeInfo&);
+    ~LayoutSizeInfo();
+
+    // The maximum width for which this info is guaranteed to be valid.
+    // Requesting a larger width than this will force a recomputation.
+    int max_valid_width = 0;
+
+    // The actual size needed to lay out the label for a requested width of
+    // |max_valid_width|.  total_size.width() is at most |max_valid_width| but
+    // may be smaller depending on how line wrapping is computed.  Requesting a
+    // smaller width than this will force a recomputation.
+    gfx::Size total_size;
+
+    // The sizes of each line of child views.  |size| can be computed directly
+    // from these values and is kept separately just for convenience.
+    std::vector<gfx::Size> line_sizes;
   };
 
   // Note that any trailing whitespace in |text| will be trimmed.
@@ -128,13 +155,19 @@ class VIEWS_EXPORT StyledLabel : public View, public LinkListener {
   bool GetAutoColorReadabilityEnabled() const;
   void SetAutoColorReadabilityEnabled(bool auto_color_readability);
 
-  // Resizes the label so its width is set to the width of the longest line and
-  // its height deduced accordingly.
+  // Returns the layout size information that would be used to layout the label
+  // at width |w|.  This can be used by callers who need more detail than what's
+  // provided by GetHeightForWidth().
+  const LayoutSizeInfo& GetLayoutSizeInfoForWidth(int w) const;
+
+  // Resizes the label so its width is set to the fixed width and its height
+  // deduced accordingly. Even if all widths of the lines are shorter than
+  // |fixed_width|, the given value is applied to the element's width.
   // This is only intended for multi-line labels and is useful when the label's
   // text contains several lines separated with \n.
-  // |max_width| is the maximum width that will be used (longer lines will be
-  // wrapped). If 0, no maximum width is enforced.
-  void SizeToFit(int max_width);
+  // |fixed_width| is the fixed width that will be used (longer lines will be
+  // wrapped).  If 0, no fixed width is enforced.
+  void SizeToFit(int fixed_width);
 
   // View:
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
@@ -168,6 +201,14 @@ class VIEWS_EXPORT StyledLabel : public View, public LinkListener {
   };
   using StyleRanges = std::list<StyleRange>;
 
+  // Child view-related information for layout.
+  struct LayoutViews;
+
+  // Returns the starting X coordinate for the views in a line, based on the
+  // current |horizontal_alignment_| and insets and given the amount of excess
+  // space available on that line.
+  int StartX(int excess_space) const;
+
   // Returns the default line height, based on the default style.
   int GetDefaultLineHeight() const;
 
@@ -175,21 +216,17 @@ class VIEWS_EXPORT StyledLabel : public View, public LinkListener {
   gfx::FontList GetFontListForRange(
       const StyleRanges::const_iterator& range) const;
 
-  // Calculates how to layout child views, creates them and sets their size and
-  // position. |width| is the horizontal space, in pixels, that the view has to
-  // work with. If |dry_run| is true, the view hierarchy is not touched. Caches
-  // the results in |calculated_size_|, |width_at_last_layout_|, and
-  // |width_at_last_size_calculation_|. Returns the needed size.
-  gfx::Size CalculateAndDoLayout(int width, bool dry_run);
+  // Sets |layout_size_info_| and |layout_views_| for the given |width|.  No-op
+  // if current_width <= width <= max_width, where:
+  //   current_width = layout_size_info_.total_size.width()
+  //   width = max(width, GetInsets().width())
+  //   max_width = layout_size_info_.max_valid_width
+  void CalculateLayout(int width) const;
 
-  // Adjusts the offsets of the views in a line for alignment and other line
-  // parameters.
-  void AdvanceOneLine(int* line_number,
-                      gfx::Point* offset,
-                      int* max_line_height,
-                      int width,
-                      std::vector<View*>* views_in_a_line,
-                      bool new_line = true);
+  // Creates a Label for a given |text|, |style_info|, and |range|.
+  std::unique_ptr<Label> CreateLabel(const base::string16& text,
+                                     const RangeStyleInfo& style_info,
+                                     const gfx::Range& range) const;
 
   // The text to display.
   base::string16 text_;
@@ -198,7 +235,7 @@ class VIEWS_EXPORT StyledLabel : public View, public LinkListener {
   int default_text_style_ = style::STYLE_PRIMARY;
 
   // Line height. If zero, style::GetLineHeight() is used.
-  int specified_line_height_;
+  int specified_line_height_ = 0;
 
   // The listener that will be informed of link clicks.
   StyledLabelListener* listener_;
@@ -208,24 +245,24 @@ class VIEWS_EXPORT StyledLabel : public View, public LinkListener {
 
   // A mapping from a view to the range it corresponds to in |text_|. Only views
   // that correspond to ranges with is_link style set will be added to the map.
-  std::map<View*, gfx::Range> link_targets_;
+  LinkTargets link_targets_;
 
   // Owns the custom views used to replace ranges of text with icons, etc.
   std::set<std::unique_ptr<View>> custom_views_;
 
-  // This variable saves the result of the last GetHeightForWidth call in order
-  // to avoid repeated calculation.
-  mutable gfx::Size calculated_size_;
-  mutable int width_at_last_size_calculation_;
-  int width_at_last_layout_;
+  // Saves the effects of the last CalculateLayout() call to avoid repeated
+  // calculation.  |layout_size_info_| can then be cached until the next
+  // recalculation, while |layout_views_| only exists until the next Layout().
+  mutable LayoutSizeInfo layout_size_info_{0};
+  mutable std::unique_ptr<LayoutViews> layout_views_;
 
   // Background color on which the label is drawn, for auto color readability.
-  SkColor displayed_on_background_color_;
-  bool displayed_on_background_color_set_;
+  SkColor displayed_on_background_color_ = SK_ColorWHITE;
+  bool displayed_on_background_color_set_ = false;
 
   // Controls whether the text is automatically re-colored to be readable on the
   // background.
-  bool auto_color_readability_enabled_;
+  bool auto_color_readability_enabled_ = true;
 
   // The horizontal alignment. This value is flipped for RTL. The default
   // behavior is to align left in LTR UI and right in RTL UI.

@@ -46,7 +46,7 @@ public class SyncTest {
     @Test
     @LargeTest
     @Feature({"Sync"})
-    public void testFlushDirectoryDoesntBreakSync() throws Throwable {
+    public void testFlushDirectoryDoesntBreakSync() {
         mSyncTestRule.setUpTestAccountAndSignIn();
         final Activity activity = mSyncTestRule.getActivity();
 
@@ -71,7 +71,7 @@ public class SyncTest {
         Assert.assertFalse(SyncTestUtil.isSyncRequested());
 
         // Signing back in should re-enable sync.
-        mSyncTestRule.signIn(account);
+        mSyncTestRule.signinAndEnableSync(account);
         SyncTestUtil.waitForSyncActive();
     }
 
@@ -81,10 +81,10 @@ public class SyncTest {
     public void testStopAndClear() {
         mSyncTestRule.setUpTestAccountAndSignIn();
         CriteriaHelper.pollUiThread(
-                new Criteria("Timed out checking that isSignedInOnNative() == true") {
+                new Criteria("Timed out checking that hasPrimaryAccount() == true") {
                     @Override
                     public boolean isSatisfied() {
-                        return IdentityServicesProvider.getSigninManager().isSignedInOnNative();
+                        return IdentityServicesProvider.getIdentityManager().hasPrimaryAccount();
                     }
                 },
                 SyncTestUtil.TIMEOUT_MS, SyncTestUtil.INTERVAL_MS);
@@ -95,10 +95,10 @@ public class SyncTest {
         Assert.assertNull(SigninTestUtil.getCurrentAccount());
         Assert.assertFalse(SyncTestUtil.isSyncRequested());
         CriteriaHelper.pollUiThread(
-                new Criteria("Timed out checking that isSignedInOnNative() == false") {
+                new Criteria("Timed out checking that hasPrimaryAccount() == false") {
                     @Override
                     public boolean isSatisfied() {
-                        return !IdentityServicesProvider.getSigninManager().isSignedInOnNative();
+                        return !IdentityServicesProvider.getIdentityManager().hasPrimaryAccount();
                     }
                 },
                 SyncTestUtil.TIMEOUT_MS, SyncTestUtil.INTERVAL_MS);

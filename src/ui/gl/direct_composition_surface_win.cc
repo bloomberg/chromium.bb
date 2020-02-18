@@ -444,6 +444,14 @@ bool DirectCompositionSurfaceWin::IsSwapChainTearingSupported() {
   return supported;
 }
 
+// static
+bool DirectCompositionSurfaceWin::AllowTearing() {
+  // Swap chain tearing is used only if vsync is disabled explicitly.
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+             switches::kDisableGpuVsync) &&
+         DirectCompositionSurfaceWin::IsSwapChainTearingSupported();
+}
+
 bool DirectCompositionSurfaceWin::Initialize(GLSurfaceFormat format) {
   d3d11_device_ = QueryD3D11DeviceObjectFromANGLE();
   if (!d3d11_device_) {
@@ -700,8 +708,8 @@ void DirectCompositionSurfaceWin::OnVSync(base::TimeTicks vsync_time,
   if (SupportsPresentationFeedback()) {
     task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&DirectCompositionSurfaceWin::HandleVSyncOnMainThread,
-                   weak_ptr_, vsync_time, interval));
+        base::BindOnce(&DirectCompositionSurfaceWin::HandleVSyncOnMainThread,
+                       weak_ptr_, vsync_time, interval));
   }
 }
 

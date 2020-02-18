@@ -8,6 +8,7 @@
 #include "base/callback_forward.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
+#include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_registry_observer.h"
 
@@ -24,15 +25,9 @@ class BookmarkAppRegistrar : public web_app::AppRegistrar,
   ~BookmarkAppRegistrar() override;
 
   // AppRegistrar:
-  void Init(base::OnceClosure callback) override;
-  BookmarkAppRegistrar* AsBookmarkAppRegistrar() override;
   bool IsInstalled(const web_app::AppId& app_id) const override;
   bool IsLocallyInstalled(const web_app::AppId& app_id) const override;
-  bool WasExternalAppUninstalledByUser(
-      const web_app::AppId& app_id) const override;
   bool WasInstalledByUser(const web_app::AppId& app_id) const override;
-  base::Optional<web_app::AppId> FindAppWithUrlInScope(
-      const GURL& url) const override;
   int CountUserInstalledApps() const override;
   std::string GetAppShortName(const web_app::AppId& app_id) const override;
   std::string GetAppDescription(const web_app::AppId& app_id) const override;
@@ -40,20 +35,25 @@ class BookmarkAppRegistrar : public web_app::AppRegistrar,
       const web_app::AppId& app_id) const override;
   const GURL& GetAppLaunchURL(const web_app::AppId& app_id) const override;
   base::Optional<GURL> GetAppScope(const web_app::AppId& app_id) const override;
-  web_app::LaunchContainer GetAppLaunchContainer(
+  web_app::DisplayMode GetAppDisplayMode(
       const web_app::AppId& app_id) const override;
-  void SetAppLaunchContainer(
-      const web_app::AppId& app_id,
-      web_app::LaunchContainer launch_container) override;
+  web_app::DisplayMode GetAppUserDisplayMode(
+      const web_app::AppId& app_id) const override;
+  std::vector<WebApplicationIconInfo> GetAppIconInfos(
+      const web_app::AppId& app_id) const override;
   std::vector<web_app::AppId> GetAppIds() const override;
 
   // ExtensionRegistryObserver:
   void OnExtensionUninstalled(content::BrowserContext* browser_context,
                               const Extension* extension,
                               UninstallReason reason) override;
+  void OnExtensionUnloaded(content::BrowserContext* browser_context,
+                           const Extension* extension,
+                           UnloadedExtensionReason reason) override;
   void OnShutdown(ExtensionRegistry* registry) override;
 
  private:
+  const Extension* GetBookmarkApp(const web_app::AppId& app_id) const;
   const Extension* GetExtension(const web_app::AppId& app_id) const;
 
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>

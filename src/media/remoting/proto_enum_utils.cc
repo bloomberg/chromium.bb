@@ -11,26 +11,28 @@ namespace remoting {
   case OriginType::x:        \
     return OtherType::x
 
-base::Optional<EncryptionScheme::CipherMode> ToMediaEncryptionSchemeCipherMode(
+base::Optional<EncryptionScheme> ToMediaEncryptionScheme(
     pb::EncryptionScheme::CipherMode value) {
-  using OriginType = pb::EncryptionScheme;
-  using OtherType = EncryptionScheme;
   switch (value) {
-    CASE_RETURN_OTHER(CIPHER_MODE_UNENCRYPTED);
-    CASE_RETURN_OTHER(CIPHER_MODE_AES_CTR);
-    CASE_RETURN_OTHER(CIPHER_MODE_AES_CBC);
+    case pb::EncryptionScheme::CIPHER_MODE_UNENCRYPTED:
+      return EncryptionScheme::kUnencrypted;
+    case pb::EncryptionScheme::CIPHER_MODE_AES_CTR:
+      return EncryptionScheme::kCenc;
+    case pb::EncryptionScheme::CIPHER_MODE_AES_CBC:
+      return EncryptionScheme::kCbcs;
   }
   return base::nullopt;  // Not a 'default' to ensure compile-time checks.
 }
 
 base::Optional<pb::EncryptionScheme::CipherMode>
-ToProtoEncryptionSchemeCipherMode(EncryptionScheme::CipherMode value) {
-  using OriginType = EncryptionScheme;
-  using OtherType = pb::EncryptionScheme;
+ToProtoEncryptionSchemeCipherMode(EncryptionScheme value) {
   switch (value) {
-    CASE_RETURN_OTHER(CIPHER_MODE_UNENCRYPTED);
-    CASE_RETURN_OTHER(CIPHER_MODE_AES_CTR);
-    CASE_RETURN_OTHER(CIPHER_MODE_AES_CBC);
+    case EncryptionScheme::kUnencrypted:
+      return pb::EncryptionScheme::CIPHER_MODE_UNENCRYPTED;
+    case EncryptionScheme::kCenc:
+      return pb::EncryptionScheme::CIPHER_MODE_AES_CTR;
+    case EncryptionScheme::kCbcs:
+      return pb::EncryptionScheme::CIPHER_MODE_AES_CBC;
   }
   return base::nullopt;  // Not a 'default' to ensure compile-time checks.
 }
@@ -346,7 +348,6 @@ base::Optional<VideoPixelFormat> ToMediaVideoPixelFormat(
     CASE_RETURN_OTHER(PIXEL_FORMAT_I444);
     CASE_RETURN_OTHER(PIXEL_FORMAT_NV12);
     CASE_RETURN_OTHER(PIXEL_FORMAT_NV21);
-    CASE_RETURN_OTHER(PIXEL_FORMAT_UYVY);
     CASE_RETURN_OTHER(PIXEL_FORMAT_YUY2);
     CASE_RETURN_OTHER(PIXEL_FORMAT_ARGB);
     CASE_RETURN_OTHER(PIXEL_FORMAT_XRGB);
@@ -361,7 +362,8 @@ base::Optional<VideoPixelFormat> ToMediaVideoPixelFormat(
     CASE_RETURN_OTHER(PIXEL_FORMAT_YUV420P12);
     CASE_RETURN_OTHER(PIXEL_FORMAT_YUV422P12);
     CASE_RETURN_OTHER(PIXEL_FORMAT_YUV444P12);
-    // PIXEL_FORMAT_RGB32 and PIXEL_FORMAT_Y8 are deprecated .
+    // PIXEL_FORMAT_UYVY, PIXEL_FORMAT_RGB32 and PIXEL_FORMAT_Y8 are deprecated.
+    case pb::VideoDecoderConfig_Format_PIXEL_FORMAT_UYVY:
     case pb::VideoDecoderConfig_Format_PIXEL_FORMAT_RGB32:
     case pb::VideoDecoderConfig_Format_PIXEL_FORMAT_Y8:
       return base::nullopt;
@@ -369,6 +371,8 @@ base::Optional<VideoPixelFormat> ToMediaVideoPixelFormat(
       CASE_RETURN_OTHER(PIXEL_FORMAT_ABGR);
       CASE_RETURN_OTHER(PIXEL_FORMAT_XBGR);
       CASE_RETURN_OTHER(PIXEL_FORMAT_P016LE);
+      CASE_RETURN_OTHER(PIXEL_FORMAT_XR30);
+      CASE_RETURN_OTHER(PIXEL_FORMAT_XB30);
   }
   return base::nullopt;  // Not a 'default' to ensure compile-time checks.
 }
@@ -559,9 +563,10 @@ ToProtoDemuxerStreamStatus(DemuxerStream::Status value) {
   return base::nullopt;  // Not a 'default' to ensure compile-time checks.
 }
 
-base::Optional<EncryptionMode> ToMediaEncryptionMode(pb::EncryptionMode value) {
+base::Optional<EncryptionScheme> ToMediaEncryptionScheme(
+    pb::EncryptionMode value) {
   using OriginType = pb::EncryptionMode;
-  using OtherType = EncryptionMode;
+  using OtherType = EncryptionScheme;
   switch (value) {
     CASE_RETURN_OTHER(kUnencrypted);
     CASE_RETURN_OTHER(kCenc);
@@ -570,8 +575,9 @@ base::Optional<EncryptionMode> ToMediaEncryptionMode(pb::EncryptionMode value) {
   return base::nullopt;  // Not a 'default' to ensure compile-time checks.
 }
 
-base::Optional<pb::EncryptionMode> ToProtoEncryptionMode(EncryptionMode value) {
-  using OriginType = EncryptionMode;
+base::Optional<pb::EncryptionMode> ToProtoEncryptionMode(
+    EncryptionScheme value) {
+  using OriginType = EncryptionScheme;
   using OtherType = pb::EncryptionMode;
   switch (value) {
     CASE_RETURN_OTHER(kUnencrypted);

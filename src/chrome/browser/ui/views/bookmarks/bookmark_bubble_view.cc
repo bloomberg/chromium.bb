@@ -33,7 +33,7 @@
 #include "ui/views/widget/widget.h"
 
 #if !defined(OS_CHROMEOS)
-#include "chrome/browser/ui/views/sync/bubble_sync_promo_view_util.h"
+#include "chrome/browser/ui/views/sync/dice_bubble_sync_promo_view.h"
 #endif
 
 using base::UserMetricsAction;
@@ -41,6 +41,17 @@ using bookmarks::BookmarkModel;
 using bookmarks::BookmarkNode;
 
 BookmarkBubbleView* BookmarkBubbleView::bookmark_bubble_ = nullptr;
+
+namespace {
+
+std::unique_ptr<views::View> CreateEditButton(views::ButtonListener* listener) {
+  auto edit_button = views::MdTextButton::CreateSecondaryUiButton(
+      listener, l10n_util::GetStringUTF16(IDS_BOOKMARK_BUBBLE_OPTIONS));
+  edit_button->AddAccelerator(ui::Accelerator(ui::VKEY_E, ui::EF_ALT_DOWN));
+  return edit_button;
+}
+
+}  // namespace
 
 // static
 views::Widget* BookmarkBubbleView::ShowBubble(
@@ -136,52 +147,6 @@ void BookmarkBubbleView::WindowClosing() {
 
 // views::DialogDelegate -------------------------------------------------------
 
-base::string16 BookmarkBubbleView::GetDialogButtonLabel(
-    ui::DialogButton button) const {
-  return l10n_util::GetStringUTF16((button == ui::DIALOG_BUTTON_OK)
-                                       ? IDS_DONE
-                                       : IDS_BOOKMARK_BUBBLE_REMOVE_BOOKMARK);
-}
-
-std::unique_ptr<views::View> BookmarkBubbleView::CreateExtraView() {
-  auto edit_button = views::MdTextButton::CreateSecondaryUiButton(
-      this, l10n_util::GetStringUTF16(IDS_BOOKMARK_BUBBLE_OPTIONS));
-  edit_button->AddAccelerator(ui::Accelerator(ui::VKEY_E, ui::EF_ALT_DOWN));
-  edit_button_ = edit_button.get();
-  return edit_button;
-}
-
-bool BookmarkBubbleView::GetExtraViewPadding(int* padding) {
-  *padding = ChromeLayoutProvider::Get()->GetDistanceMetric(
-      DISTANCE_UNRELATED_CONTROL_HORIZONTAL_LARGE);
-  return true;
-}
-
-std::unique_ptr<views::View> BookmarkBubbleView::CreateFootnoteView() {
-#if defined(OS_CHROMEOS)
-  // ChromeOS does not show the signin promo.
-  return nullptr;
-#else
-  if (!SyncPromoUI::ShouldShowSyncPromo(profile_))
-    return nullptr;
-
-  BubbleSyncPromoViewParams params;
-  params.link_text_resource_id = IDS_BOOKMARK_SYNC_PROMO_LINK;
-  params.message_text_resource_id = IDS_BOOKMARK_SYNC_PROMO_MESSAGE;
-  params.dice_no_accounts_promo_message_resource_id =
-      IDS_BOOKMARK_DICE_PROMO_SIGNIN_MESSAGE;
-  params.dice_accounts_promo_message_resource_id =
-      IDS_BOOKMARK_DICE_PROMO_SYNC_MESSAGE;
-  params.dice_signin_button_prominent = false;
-
-  auto footnote_view = CreateBubbleSyncPromoView(
-      profile_, delegate_.get(),
-      signin_metrics::AccessPoint::ACCESS_POINT_BOOKMARK_BUBBLE, params);
-  footnote_view_ = footnote_view.get();
-  return footnote_view;
-#endif
-}
-
 bool BookmarkBubbleView::Cancel() {
   base::RecordAction(UserMetricsAction("BookmarkBubble_Unstar"));
   // Set this so we remove the bookmark after the window closes.
@@ -199,11 +164,10 @@ bool BookmarkBubbleView::Close() {
   return true;
 }
 
-void BookmarkBubbleView::UpdateButton(views::LabelButton* button,
-                                      ui::DialogButton type) {
-  LocationBarBubbleDelegateView::UpdateButton(button, type);
-  if (type == ui::DIALOG_BUTTON_CANCEL)
-    button->AddAccelerator(ui::Accelerator(ui::VKEY_R, ui::EF_ALT_DOWN));
+void BookmarkBubbleView::OnDialogInitialized() {
+  views::Button* cancel = GetCancelButton();
+  if (cancel)
+    cancel->AddAccelerator(ui::Accelerator(ui::VKEY_R, ui::EF_ALT_DOWN));
 }
 
 // views::View -----------------------------------------------------------------
@@ -275,6 +239,14 @@ BookmarkBubbleView::BookmarkBubbleView(
       profile_(profile),
       url_(url),
       newly_bookmarked_(newly_bookmarked) {
+  DialogDelegate::set_button_label(ui::DIALOG_BUTTON_OK,
+                                   l10n_util::GetStringUTF16(IDS_DONE));
+  DialogDelegate::set_button_label(
+      ui::DIALOG_BUTTON_CANCEL,
+      l10n_util::GetStringUTF16(IDS_BOOKMARK_BUBBLE_REMOVE_BOOKMARK));
+  DialogDelegate::SetExtraView(CreateEditButton(this));
+  DialogDelegate::SetFootnoteView(CreateSigninPromoView());
+
   chrome::RecordDialogCreation(chrome::DialogIdentifier::BOOKMARK);
   set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(
       views::CONTROL, views::CONTROL));
@@ -327,4 +299,20 @@ void BookmarkBubbleView::ApplyEdits() {
     folder_model()->MaybeChangeParent(node,
                                       parent_combobox_->GetSelectedIndex());
   }
+}
+
+std::unique_ptr<views::View> BookmarkBubbleView::CreateSigninPromoView() {
+#if defined(OS_CHROMEOS)
+  // ChromeOS does not show the signin promo.
+  return nullptr;
+#else
+  if (!SyncPromoUI::ShouldShowSyncPromo(profile_))
+    return nullptr;
+
+  return std::make_unique<DiceBubbleSyncPromoView>(
+      profile_, delegate_.get(),
+      signin_metrics::AccessPoint::ACCESS_POINT_BOOKMARK_BUBBLE,
+      IDS_BOOKMARK_DICE_PROMO_SYNC_MESSAGE,
+      /*dice_signin_button_prominent=*/false);
+#endif
 }

@@ -29,6 +29,7 @@
 #include "third_party/blink/renderer/core/frame/embedded_content_view.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/frame/remote_frame.h"
 #include "third_party/blink/renderer/core/frame/remote_frame_view.h"
 #include "third_party/blink/renderer/core/html/html_frame_element_base.h"
 #include "third_party/blink/renderer/core/html/html_plugin_element.h"
@@ -40,7 +41,7 @@
 
 namespace blink {
 
-LayoutEmbeddedContent::LayoutEmbeddedContent(Element* element)
+LayoutEmbeddedContent::LayoutEmbeddedContent(HTMLFrameOwnerElement* element)
     : LayoutReplaced(element),
       // Reference counting is used to prevent the part from being destroyed
       // while inside the EmbeddedContentView code, which might not be able to
@@ -61,7 +62,7 @@ void LayoutEmbeddedContent::WillBeDestroyed() {
     cache->Remove(this);
   }
 
-  if (auto* frame_owner = DynamicTo<HTMLFrameOwnerElement>(GetNode()))
+  if (auto* frame_owner = GetFrameOwnerElement())
     frame_owner->SetEmbeddedContentView(nullptr);
 
   LayoutReplaced::WillBeDestroyed();
@@ -76,7 +77,7 @@ void LayoutEmbeddedContent::Destroy() {
   // Release()).
   //
   // But, we've told the system we've destroyed the layoutObject, which happens
-  // when the DOM node is destroyed. So there is a good change the DOM node this
+  // when the DOM node is destroyed. So there is a good chance the DOM node this
   // object points too is invalid, so we have to clear the node so we make sure
   // we don't access it in the future.
   ClearNode();
@@ -99,8 +100,8 @@ WebPluginContainerImpl* LayoutEmbeddedContent::Plugin() const {
 }
 
 EmbeddedContentView* LayoutEmbeddedContent::GetEmbeddedContentView() const {
-  if (auto* frame_owner_element = DynamicTo<HTMLFrameOwnerElement>(GetNode()))
-    return frame_owner_element->OwnedEmbeddedContentView();
+  if (auto* frame_owner = GetFrameOwnerElement())
+    return frame_owner->OwnedEmbeddedContentView();
   return nullptr;
 }
 
@@ -123,7 +124,7 @@ bool LayoutEmbeddedContent::RequiresAcceleratedCompositing() const {
   if (plugin_view && plugin_view->CcLayer())
     return true;
 
-  auto* element = DynamicTo<HTMLFrameOwnerElement>(GetNode());
+  auto* element = GetFrameOwnerElement();
   if (!element)
     return false;
 
@@ -254,20 +255,28 @@ void LayoutEmbeddedContent::StyleDidChange(StyleDifference diff,
                                            const ComputedStyle* old_style) {
   LayoutReplaced::StyleDidChange(diff, old_style);
 
-  if (!old_style || Style()->PointerEvents() != old_style->PointerEvents()) {
-    if (auto* frame_owner = DynamicTo<HTMLFrameOwnerElement>(GetNode()))
-      frame_owner->PointerEventsChanged();
+  if (EmbeddedContentView* embedded_content_view = GetEmbeddedContentView()) {
+    if (StyleRef().Visibility() != EVisibility::kVisible) {
+      embedded_content_view->Hide();
+    } else {
+      embedded_content_view->Show();
+    }
   }
 
-  EmbeddedContentView* embedded_content_view = GetEmbeddedContentView();
-  if (!embedded_content_view)
+  if (old_style &&
+      StyleRef().VisibleToHitTesting() == old_style->VisibleToHitTesting()) {
+    return;
+  }
+
+  auto* frame_owner = GetFrameOwnerElement();
+  if (!frame_owner)
     return;
 
-  if (StyleRef().Visibility() != EVisibility::kVisible) {
-    embedded_content_view->Hide();
-  } else {
-    embedded_content_view->Show();
-  }
+  auto* frame = frame_owner->ContentFrame();
+  if (!frame)
+    return;
+
+  frame->UpdateVisibleToHitTesting();
 }
 
 void LayoutEmbeddedContent::UpdateLayout() {
@@ -385,9 +394,12 @@ void LayoutEmbeddedContent::UpdateGeometry(
   // than reimplementing in each concrete subclass.
   LayoutView* layout_view = View();
   if (layout_view && layout_view->HasOverflowClip()) {
-    // Floored because the frame_rect in a content view is an IntRect. We may
-    // want to reevaluate that since scroll offsets/layout can be fractional.
-    frame_rect.Move(FlooredIntSize(layout_view->ScrolledContentOffset()));
+    // Floored because the PixelSnappedScrollOffset returns a ScrollOffset
+    // which is a float-type but frame_rect in a content view is an IntRect. We
+    // may want to reevaluate the use of pixel snapping that since scroll
+    // offsets/layout can be fractional.
+    frame_rect.Move(
+        FlooredIntSize(layout_view->PixelSnappedScrolledContentOffset()));
   }
 
   embedded_content_view.SetFrameRect(frame_rect);

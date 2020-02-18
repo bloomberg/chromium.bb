@@ -2,10 +2,6 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-#error-message {
-  width: 768px;
-}
-
 .show-with-ui-state-update,
 .show-with-ui-state-signin,
 .show-with-ui-state-supervised,
@@ -51,24 +47,18 @@ oobe-dialog .error-icon {
   display: none;
 }
 
-.error-message-paragraph {
-  font-size: 12px;
-  line-height: 18px;
-  margin-bottom: 20px;
-}
-
-.error-message-paragraph a {
-  color: rgb(17,85,204);
+#error-message-md-subtitle a {
+  color: var(--google-blue-600);
   text-decoration: none;
 }
 
-#error-message-md-footer {
-  overflow: scroll;
+.scrollable {
+  overflow: auto;
 }
 
 #offline-network-control {
-  height: 200px;
   margin-bottom: 20px;
+  min-height: 200px;
 }
 
 .button-spacer {

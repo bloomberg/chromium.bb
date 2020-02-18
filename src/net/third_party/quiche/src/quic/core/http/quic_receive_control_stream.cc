@@ -4,10 +4,13 @@
 
 #include "net/third_party/quiche/src/quic/core/http/quic_receive_control_stream.h"
 
+#include <utility>
+
 #include "net/third_party/quiche/src/quic/core/http/http_constants.h"
 #include "net/third_party/quiche/src/quic/core/http/http_decoder.h"
 #include "net/third_party/quiche/src/quic/core/http/quic_spdy_session.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_ptr_util.h"
+#include "net/third_party/quiche/src/quic/core/quic_types.h"
+#include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
 
 namespace quic {
 
@@ -56,16 +59,22 @@ class QuicReceiveControlStream::HttpDecoderVisitor
     if (stream_->session()->perspective() == Perspective::IS_SERVER) {
       QuicSpdySession* spdy_session =
           static_cast<QuicSpdySession*>(stream_->session());
-      spdy_session->set_max_allowed_push_id(frame.push_id);
+      spdy_session->SetMaxAllowedPushId(frame.push_id);
       return true;
     }
     CloseConnectionOnWrongFrame("Max Push Id");
     return false;
   }
 
-  bool OnGoAwayFrame(const GoAwayFrame& /*frame*/) override {
-    CloseConnectionOnWrongFrame("Goaway");
-    return false;
+  bool OnGoAwayFrame(const GoAwayFrame& frame) override {
+    QuicSpdySession* spdy_session =
+        static_cast<QuicSpdySession*>(stream_->session());
+    if (spdy_session->perspective() == Perspective::IS_SERVER) {
+      CloseConnectionOnWrongFrame("Go Away");
+      return false;
+    }
+    spdy_session->OnHttp3GoAway(frame.stream_id);
+    return true;
   }
 
   bool OnSettingsFrameStart(QuicByteCount header_length) override {
@@ -96,7 +105,7 @@ class QuicReceiveControlStream::HttpDecoderVisitor
     return false;
   }
 
-  bool OnHeadersFrameStart(QuicByteCount /*frame_length*/) override {
+  bool OnHeadersFrameStart(QuicByteCount /*header_length*/) override {
     CloseConnectionOnWrongFrame("Headers");
     return false;
   }
@@ -111,9 +120,13 @@ class QuicReceiveControlStream::HttpDecoderVisitor
     return false;
   }
 
-  bool OnPushPromiseFrameStart(PushId /*push_id*/,
-                               QuicByteCount /*frame_length*/,
-                               QuicByteCount /*push_id_length*/) override {
+  bool OnPushPromiseFrameStart(QuicByteCount /*header_length*/) override {
+    CloseConnectionOnWrongFrame("Push Promise");
+    return false;
+  }
+
+  bool OnPushPromiseFramePushId(PushId /*push_id*/,
+                                QuicByteCount /*push_id_length*/) override {
     CloseConnectionOnWrongFrame("Push Promise");
     return false;
   }
@@ -129,7 +142,7 @@ class QuicReceiveControlStream::HttpDecoderVisitor
   }
 
   bool OnUnknownFrameStart(uint64_t /* frame_type */,
-                           QuicByteCount /* frame_length */) override {
+                           QuicByteCount /* header_length */) override {
     // Ignore unknown frame types.
     return true;
   }
@@ -159,7 +172,7 @@ class QuicReceiveControlStream::HttpDecoderVisitor
 QuicReceiveControlStream::QuicReceiveControlStream(PendingStream* pending)
     : QuicStream(pending, READ_UNIDIRECTIONAL, /*is_static=*/true),
       settings_frame_received_(false),
-      http_decoder_visitor_(QuicMakeUnique<HttpDecoderVisitor>(this)),
+      http_decoder_visitor_(std::make_unique<HttpDecoderVisitor>(this)),
       decoder_(http_decoder_visitor_.get()) {
   sequencer()->set_level_triggered(true);
 }
@@ -214,6 +227,9 @@ bool QuicReceiveControlStream::OnSettingsFrame(const SettingsFrame& settings) {
   QUIC_DVLOG(1) << "Control Stream " << id()
                 << " received settings frame: " << settings;
   QuicSpdySession* spdy_session = static_cast<QuicSpdySession*>(session());
+  if (spdy_session->debug_visitor() != nullptr) {
+    spdy_session->debug_visitor()->OnSettingsFrameReceived(settings);
+  }
   for (const auto& setting : settings.values) {
     spdy_session->OnSetting(setting.first, setting.second);
   }
@@ -228,6 +244,9 @@ bool QuicReceiveControlStream::OnPriorityFrameStart(
 
 bool QuicReceiveControlStream::OnPriorityFrame(const PriorityFrame& priority) {
   DCHECK_EQ(Perspective::IS_SERVER, session()->perspective());
+  if (!GetQuicFlag(FLAGS_quic_allow_http3_priority)) {
+    return true;
+  }
   QuicStream* stream =
       session()->GetOrCreateStream(priority.prioritized_element_id);
   // It's possible that the client sends a Priority frame for a request stream

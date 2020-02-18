@@ -8,7 +8,7 @@
 #include <limits>
 #include <string>
 
-#include "net/third_party/quiche/src/quic/core/qpack/qpack_constants.h"
+#include "net/third_party/quiche/src/quic/core/qpack/qpack_instructions.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
 
 namespace quic {
@@ -16,31 +16,28 @@ namespace quic {
 QpackDecoderStreamSender::QpackDecoderStreamSender() : delegate_(nullptr) {}
 
 void QpackDecoderStreamSender::SendInsertCountIncrement(uint64_t increment) {
-  values_.varint = increment;
-
-  std::string output;
-  instruction_encoder_.Encode(InsertCountIncrementInstruction(), values_,
-                              &output);
-  delegate_->WriteStreamData(output);
+  instruction_encoder_.Encode(
+      QpackInstructionWithValues::InsertCountIncrement(increment), &buffer_);
 }
 
 void QpackDecoderStreamSender::SendHeaderAcknowledgement(
     QuicStreamId stream_id) {
-  values_.varint = stream_id;
-
-  std::string output;
-  instruction_encoder_.Encode(HeaderAcknowledgementInstruction(), values_,
-                              &output);
-  delegate_->WriteStreamData(output);
+  instruction_encoder_.Encode(
+      QpackInstructionWithValues::HeaderAcknowledgement(stream_id), &buffer_);
 }
 
 void QpackDecoderStreamSender::SendStreamCancellation(QuicStreamId stream_id) {
-  values_.varint = stream_id;
+  instruction_encoder_.Encode(
+      QpackInstructionWithValues::StreamCancellation(stream_id), &buffer_);
+}
 
-  std::string output;
-  instruction_encoder_.Encode(StreamCancellationInstruction(), values_,
-                              &output);
-  delegate_->WriteStreamData(output);
+void QpackDecoderStreamSender::Flush() {
+  if (buffer_.empty()) {
+    return;
+  }
+
+  delegate_->WriteStreamData(buffer_);
+  buffer_.clear();
 }
 
 }  // namespace quic

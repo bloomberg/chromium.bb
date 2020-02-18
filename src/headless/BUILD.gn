@@ -33,7 +33,6 @@ repack("pak") {
     "$root_gen_dir/components/components_resources.pak",
     "$root_gen_dir/components/strings/components_strings_en-US.pak",
     "$root_gen_dir/content/app/resources/content_resources_100_percent.pak",
-    "$root_gen_dir/content/app/strings/content_strings_en-US.pak",
     "$root_gen_dir/content/browser/devtools/devtools_resources.pak",
     "$root_gen_dir/content/browser/tracing/tracing_resources.pak",
     "$root_gen_dir/content/content_resources.pak",
@@ -42,6 +41,7 @@ repack("pak") {
     "$root_gen_dir/net/net_resources.pak",
     "$root_gen_dir/third_party/blink/public/resources/blink_resources.pak",
     "$root_gen_dir/third_party/blink/public/resources/blink_scaled_resources_100_percent.pak",
+    "$root_gen_dir/third_party/blink/public/strings/blink_strings_en-US.pak",
     "$root_gen_dir/ui/resources/ui_resources_100_percent.pak",
     "$root_gen_dir/ui/resources/webui_resources.pak",
     "$root_gen_dir/ui/strings/app_locale_settings_en-US.pak",
@@ -60,13 +60,13 @@ repack("pak") {
     "//components/strings",
     "//content:resources",
     "//content/app/resources",
-    "//content/app/strings",
     "//content/browser/devtools:resources",
     "//content/browser/tracing:resources",
     "//mojo/public/js:resources",
     "//net:net_resources",
     "//third_party/blink/public:resources",
     "//third_party/blink/public:scaled_resources_100_percent",
+    "//third_party/blink/public/strings",
     "//ui/resources",
     "//ui/strings",
   ]
@@ -154,13 +154,7 @@ devtools_domains = [
 ]
 
 generated_devtools_api = []
-generated_devtools_api_js = []
-generated_devtools_api_js_externs = []
 foreach(domain, devtools_domains) {
-  generated_devtools_api_js +=
-      [ "$target_gen_dir/public/devtools_js/" + domain + ".js" ]
-  generated_devtools_api_js_externs +=
-      [ "$target_gen_dir/public/devtools_js/externs/externs_" + domain + ".js" ]
   generated_devtools_api += [
     "$target_gen_dir/public/devtools/domains/" + domain + ".cc",
     "$target_gen_dir/public/devtools/domains/" + domain + ".h",
@@ -176,20 +170,16 @@ foreach(domain, devtools_domains) {
 action("gen_devtools_client_api") {
   script = "lib/browser/devtools_api/client_api_generator.py"
   deps = [
-    "//third_party/blink/renderer/core/inspector:protocol_version",
+    "//third_party/blink/public/devtools_protocol:protocol_version",
   ]
   inputs = [
-    "$root_gen_dir/third_party/blink/renderer/core/inspector/protocol.json",
+    "$root_gen_dir/third_party/blink/public/devtools_protocol/protocol.json",
   ]
 
-  outputs = generated_devtools_api + generated_devtools_api_js +
-            generated_devtools_api_js_externs
-
+  outputs = generated_devtools_api
   sources = [
     "lib/browser/devtools_api/domain_cc.template",
-    "lib/browser/devtools_api/domain_externs_js.template",
     "lib/browser/devtools_api/domain_h.template",
-    "lib/browser/devtools_api/domain_js.template",
     "lib/browser/devtools_api/domain_type_conversions_h.template",
     "lib/browser/devtools_api/domain_types_cc.template",
     "lib/browser/devtools_api/domain_types_forward_declarations_h.template",
@@ -202,13 +192,6 @@ action("gen_devtools_client_api") {
     "--output_dir",
     rebase_path(target_gen_dir, root_build_dir) + "/public",
   ]
-}
-
-js_library("js_devtools_bindings_lib") {
-  sources = [ "lib/browser/devtools_api/devtools_connection.js" ] +
-            generated_devtools_api_js
-  deps = []
-  extra_deps = [ ":gen_devtools_client_api" ]
 }
 
 if (headless_fontconfig_utils && !is_fuchsia) {
@@ -230,10 +213,10 @@ if (headless_fontconfig_utils && !is_fuchsia) {
 inspector_protocol_generate("protocol_sources") {
   visibility = [ "//headless:headless_shared_sources" ]
   deps = [
-    "//third_party/blink/renderer/core/inspector:protocol_version",
+    "//third_party/blink/public/devtools_protocol:protocol_version",
   ]
   _blink_protocol_path = rebase_path(
-          "$root_gen_dir/third_party/blink/renderer/core/inspector/protocol.json",
+          "$root_gen_dir/third_party/blink/public/devtools_protocol/protocol.json",
           root_build_dir)
 
   inspector_protocol_dir = "//third_party/inspector_protocol"
@@ -242,7 +225,7 @@ inspector_protocol_generate("protocol_sources") {
   config_values = [ "protocol.path=$_blink_protocol_path" ]
 
   inputs = [
-    "$root_gen_dir/third_party/blink/renderer/core/inspector/protocol.json",
+    "$root_gen_dir/third_party/blink/public/devtools_protocol/protocol.json",
     config_file,
   ]
 
@@ -305,7 +288,7 @@ jumbo_source_set("headless_shared_sources") {
     "//base:base_static",
     "//content/public/common",
     "//content/public/common:service_names",
-    "//third_party/inspector_protocol:encoding",
+    "//third_party/inspector_protocol:crdtp",
     "//ui/base",
     "//url",
   ]
@@ -364,7 +347,6 @@ jumbo_component("headless_non_renderer") {
     "lib/browser/headless_window_tree_host.h",
     "lib/browser/protocol/browser_handler.cc",
     "lib/browser/protocol/browser_handler.h",
-    "lib/browser/protocol/domain_handler.cc",
     "lib/browser/protocol/domain_handler.h",
     "lib/browser/protocol/headless_devtools_session.cc",
     "lib/browser/protocol/headless_devtools_session.h",
@@ -490,7 +472,6 @@ jumbo_component("headless_non_renderer") {
   # use external v8 startup data too.
   if ((is_win && is_component_build) || !is_win) {
     if (v8_use_external_startup_data) {
-      data += [ "$root_out_dir/natives_blob.bin" ]
       public_deps += [ "//v8" ]
       if (use_v8_context_snapshot) {
         data += [ "$root_out_dir/v8_context_snapshot.bin" ]
@@ -653,63 +634,6 @@ if (is_mac) {
   }
 }
 
-# The js_binary rule doesn't currently work on windows. Apparently there are
-# problems on mac too where java isn't necessarily installed.
-if (is_linux) {
-  js_binary("js_devtools_bindings_test") {
-    sources = [
-      "test/bindings_test.js",
-    ]
-    deps = [
-      ":js_devtools_bindings_lib",
-    ]
-    externs_list = [ "lib/tab_socket_externs.js" ]
-    outputs = [
-      "$target_gen_dir/devtools_bindings_test.js",
-    ]
-    config_files = []
-    closure_flags = [
-      "jscomp_error=checkTypes",
-      "dependency_mode=STRICT",
-
-      # Currently the bindings do not support property renaming so we can't use
-      # ADVANCED_OPTIMIZATIONS here.  We could add support via either moving all
-      # the types to externs, or via applying the same renaming to the json
-      # dictionaries sent between C++ and JS.  The closure compiler can produce
-      # files which contain those mappings with the appropriate flag.
-      "compilation_level=SIMPLE",
-      "language_out=ES5_STRICT",
-      "entry_point=chromium.BindingsTest",
-    ]
-  }
-
-  grit("headless_browsertest_resources_grit") {
-    source = "headless_browsertest_resources.grd"
-    outputs = [
-      "grit/headless_browsertest_resources.h",
-      "$root_gen_dir/headless/headless_browsertest_resources.pak",
-    ]
-    grit_flags = [
-      "-E",
-      "gen_root=" + rebase_path(root_gen_dir, root_build_dir),
-    ]
-    deps = [
-      ":js_devtools_bindings_test",
-    ]
-    resource_ids = "lib/headless_browsertest_resource_ids"
-  }
-
-  repack("headless_browser_tests_pak") {
-    sources = [
-      "$root_gen_dir/headless/headless_browsertest_resources.pak",
-    ]
-    output = "$root_out_dir/headless_browser_tests.pak"
-    deps = [
-      ":headless_browsertest_resources_grit",
-    ]
-  }
-}
-
 test("headless_browsertests") {
   configs += [ "//net:net_test_config" ]
   sources = [
@@ -757,6 +681,7 @@ test("headless_browsertests") {
   deps = [
     ":headless_shell_lib",
     "//base",
+    "//cc:test_support",
     "//components/security_state/content",
     "//components/services/pdf_compositor/public/mojom",
     "//content/test:test_support",
@@ -768,18 +693,6 @@ test("headless_browsertests") {
 
   if (!is_fuchsia) {
     deps += [ "//components/crash/content/browser" ]
-  }
-
-  if (is_linux) {
-    # Only include this if we built the js_binary
-    data += [ "$root_out_dir/headless_browser_tests.pak" ]
-    sources += [ "test/headless_js_bindings_browsertest.cc" ]
-    deps += [
-      ":headless_browser_tests_pak",
-      "//ui/gfx:geometry_skia",
-      "//ui/gfx/codec",
-      "//ui/gfx/geometry",
-    ]
   }
 
   if (is_mac) {
@@ -834,24 +747,24 @@ if (is_win) {
     }
   }
 
-  # Headless library with child specific dependencies (e.g., renderer). This
-  # is used when no browser depencendies are needed (e.g. chrome:child_dll).
-  static_library("headless_shell_child_lib") {
-    sources = [
-      "app/headless_shell.cc",
-      "app/headless_shell.h",
-      "app/headless_shell_win.cc",
-      "public/headless_shell.h",
-    ]
-    deps = [
-      ":headless_renderer",
-      "//build:branding_buildflags",
-      "//content/public/child:child",
-      "//net",
-      "//ui/base",
-    ]
+  if (is_multi_dll_chrome) {
+    # Headless library with child specific dependencies (e.g., renderer). This
+    # is used when no browser depencendies are needed (e.g. chrome:child_dll).
+    static_library("headless_shell_child_lib") {
+      sources = [
+        "app/headless_shell.cc",
+        "app/headless_shell.h",
+        "app/headless_shell_win.cc",
+        "public/headless_shell.h",
+      ]
+      deps = [
+        ":headless_renderer",
+        "//build:branding_buildflags",
+        "//content/public/child:child",
+        "//net",
+        "//ui/base",
+      ]
 
-    if (is_multi_dll_chrome) {
       defines = [ "CHROME_MULTIPLE_DLL_CHILD" ]
       sources += [
         "lib/browser/headless_web_contents_impl.cc",

@@ -25,9 +25,11 @@
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_manager_connection.h"
+#include "content/public/test/back_forward_cache_util.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -36,6 +38,7 @@
 #include "content/test/did_commit_navigation_interceptor.h"
 #include "device/base/features.h"
 #include "device/fido/fake_fido_discovery.h"
+#include "device/fido/features.h"
 #include "device/fido/fido_discovery_factory.h"
 #include "device/fido/fido_test_data.h"
 #include "device/fido/hid/fake_hid_impl_for_testing.h"
@@ -96,8 +99,8 @@ constexpr char kResidentCredentialsErrorMessage[] =
     "'allowCredentials' lists are not supported at this time.";
 
 constexpr char kRelyingPartySecurityErrorMessage[] =
-    "webauth: SecurityError: The relying party ID 'localhost' is not a "
-    "registrable domain suffix of, nor equal to 'https://www.acme.com";
+    "webauth: SecurityError: The relying party ID is not a registrable domain "
+    "suffix of, nor equal to the current domain.";
 
 constexpr char kRelyingPartyUserIconUrlSecurityErrorMessage[] =
     "webauth: SecurityError: 'user.icon' should be a secure URL";
@@ -108,11 +111,10 @@ constexpr char kRelyingPartyRpIconUrlSecurityErrorMessage[] =
 constexpr char kAbortErrorMessage[] =
     "webauth: AbortError: Request has been aborted.";
 
-constexpr char kOriginMismatchMessage[] =
-    "webauth: NotAllowedError: The following credential operations can only "
-    "occur in a document which is same-origin with all of its ancestors: "
-    "storage/retrieval of 'PasswordCredential' and 'FederatedCredential', and "
-    "creation/retrieval of 'PublicKeyCredential'";
+constexpr char kFeatureMissingMessage[] =
+    "webauth: NotAllowedError: The 'publickey-credentials' feature is not "
+    "enabled in this document. Feature Policy may be used to delegate Web "
+    "Authentication capabilities to cross-origin child frames.";
 
 // Templates to be used with base::ReplaceStringPlaceholders. Can be
 // modified to include up to 9 replacements. The default values for
@@ -136,7 +138,7 @@ constexpr char kCreatePublicKeyTemplate[] =
     "     authenticatorAttachment: '$5',"
     "  },"
     "  attestation: '$6',"
-    "}}).then(c => window.domAutomationController.send('webauth: OK'),"
+    "}}).then(c => window.domAutomationController.send('webauth: OK' + $9),"
     "         e => window.domAutomationController.send("
     "                  'webauth: ' + e.toString()));";
 
@@ -179,6 +181,10 @@ struct CreateParameters {
   const char* rp_icon = "https://pics.acme.com/00/p/aBjjjpqPb.png";
   const char* user_icon = "https://pics.acme.com/00/p/aBjjjpqPb.png";
   const char* signal = "";
+  // extra_ok_output is a Javascript expression which must evaluate to a string.
+  // It can use the |PublicKeyCredential| object named |c| to extract useful
+  // fields.
+  const char* extra_ok_output = "''";
 };
 
 std::string BuildCreateCallWithParameters(const CreateParameters& parameters) {
@@ -191,7 +197,9 @@ std::string BuildCreateCallWithParameters(const CreateParameters& parameters) {
   substitutions.push_back(parameters.attestation);
   substitutions.push_back(parameters.rp_icon);
   substitutions.push_back(parameters.user_icon);
+
   if (strlen(parameters.signal) == 0) {
+    substitutions.push_back(parameters.extra_ok_output);
     return base::ReplaceStringPlaceholders(kCreatePublicKeyTemplate,
                                            substitutions, nullptr);
   }
@@ -203,22 +211,20 @@ std::string BuildCreateCallWithParameters(const CreateParameters& parameters) {
 constexpr char kGetPublicKeyTemplate[] =
     "navigator.credentials.get({ publicKey: {"
     "  challenge: new TextEncoder().encode('climb a mountain'),"
-    "  rpId: 'acme.com',"
     "  timeout: 1000,"
     "  userVerification: '$1',"
     "  $2}"
-    "}).then(c => window.domAutomationController.send('webauth: OK'),"
+    "}).then(c => window.domAutomationController.send('webauth: OK' + $3),"
     "        e => window.domAutomationController.send("
     "                  'webauth: ' + e.toString()));";
 
 constexpr char kGetPublicKeyWithAbortSignalTemplate[] =
     "navigator.credentials.get({ publicKey: {"
     "  challenge: new TextEncoder().encode('climb a mountain'),"
-    "  rpId: 'acme.com',"
     "  timeout: 1000,"
     "  userVerification: '$1',"
     "  $2},"
-    "  signal: $3"
+    "  signal: $4"
     "}).catch(c => window.domAutomationController.send("
     "                  'webauth: ' + c.toString()));";
 
@@ -230,12 +236,17 @@ struct GetParameters {
       "     id: new TextEncoder().encode('allowedCredential'),"
       "     transports: ['usb', 'nfc', 'ble']}]";
   const char* signal = "";
+  // extra_ok_output is a Javascript expression which must evaluate to a string.
+  // It can use the |PublicKeyCredential| object named |c| to extract useful
+  // fields.
+  const char* extra_ok_output = "''";
 };
 
 std::string BuildGetCallWithParameters(const GetParameters& parameters) {
   std::vector<std::string> substitutions;
   substitutions.push_back(parameters.user_verification);
   substitutions.push_back(parameters.allow_credentials);
+  substitutions.push_back(parameters.extra_ok_output);
   if (strlen(parameters.signal) == 0) {
     return base::ReplaceStringPlaceholders(kGetPublicKeyTemplate, substitutions,
                                            nullptr);
@@ -392,7 +403,8 @@ class WebAuthBrowserTestBase : public content::ContentBrowserTest {
         new WebAuthBrowserTestContentBrowserClient(&test_state_));
     old_client_ = SetBrowserClientForTesting(test_client_.get());
 
-    NavigateToURL(shell(), GetHttpsURL("www.acme.com", "/title1.html"));
+    EXPECT_TRUE(
+        NavigateToURL(shell(), GetHttpsURL("www.acme.com", "/title1.html")));
   }
 
   void TearDown() override {
@@ -459,12 +471,11 @@ class WebAuthLocalClientBrowserTest : public WebAuthBrowserTestBase {
   }
 
   void ConnectToAuthenticator() {
-    auto* broker = static_cast<blink::mojom::DocumentInterfaceBroker*>(
-        static_cast<RenderFrameHostImpl*>(
-            shell()->web_contents()->GetMainFrame()));
+    auto* render_frame_host_impl = static_cast<RenderFrameHostImpl*>(
+        shell()->web_contents()->GetMainFrame());
     if (authenticator_remote_.is_bound())
       authenticator_remote_.reset();
-    broker->GetAuthenticator(
+    render_frame_host_impl->GetAuthenticator(
         authenticator_remote_.BindNewPipeAndPassReceiver());
   }
 
@@ -551,7 +562,8 @@ IN_PROC_BROWSER_TEST_F(WebAuthLocalClientBrowserTest,
                                   create_callback_receiver.callback());
 
   fake_hid_discovery->WaitForCallToStartAndSimulateSuccess();
-  NavigateToURL(shell(), GetHttpsURL("www.acme.com", "/title2.html"));
+  EXPECT_TRUE(
+      NavigateToURL(shell(), GetHttpsURL("www.acme.com", "/title2.html")));
   WaitForConnectionError();
 
   // The next active document should be able to successfully call
@@ -573,7 +585,8 @@ IN_PROC_BROWSER_TEST_F(WebAuthLocalClientBrowserTest,
                                 get_callback_receiver.callback());
 
   fake_hid_discovery->WaitForCallToStartAndSimulateSuccess();
-  NavigateToURL(shell(), GetHttpsURL("www.acme.com", "/title2.html"));
+  EXPECT_TRUE(
+      NavigateToURL(shell(), GetHttpsURL("www.acme.com", "/title2.html")));
   WaitForConnectionError();
 
   // The next active document should be able to successfully call
@@ -629,7 +642,8 @@ IN_PROC_BROWSER_TEST_F(WebAuthLocalClientBrowserTest,
           if (behavior == AttestationCallbackBehavior::BEFORE_NAVIGATION) {
             std::move(callback).Run(false);
           }
-          NavigateToURL(shell(), GetHttpsURL("www.acme.com", "/title2.html"));
+          EXPECT_TRUE(NavigateToURL(
+              shell(), GetHttpsURL("www.acme.com", "/title2.html")));
           if (behavior == AttestationCallbackBehavior::AFTER_NAVIGATION) {
             std::move(callback).Run(false);
           }
@@ -648,7 +662,9 @@ IN_PROC_BROWSER_TEST_F(WebAuthLocalClientBrowserTest,
   ScopedNavigationCancellingThrottleInstaller navigation_canceller(
       shell()->web_contents());
 
-  NavigateToURL(shell(), GetHttpsURL("www.acme.com", "/title2.html"));
+  // This navigation should be canceled and hence should not succeed.
+  EXPECT_FALSE(
+      NavigateToURL(shell(), GetHttpsURL("www.acme.com", "/title2.html")));
 
   auto* fake_hid_discovery = discovery_factory_->ForgeNextHidDiscovery();
   TestCreateCallbackReceiver create_callback_receiver;
@@ -672,7 +688,8 @@ IN_PROC_BROWSER_TEST_F(WebAuthLocalClientBrowserTest,
       }));
 
   auto* fake_hid_discovery = discovery_factory_->ForgeNextHidDiscovery();
-  NavigateToURL(shell(), GetHttpsURL("www.acme.com", "/title2.html"));
+  EXPECT_TRUE(
+      NavigateToURL(shell(), GetHttpsURL("www.acme.com", "/title2.html")));
   WaitForConnectionError();
 
   // Normally, when the request is serviced, the implementation retrieves the
@@ -765,9 +782,12 @@ class WebAuthJavascriptClientBrowserTest : public WebAuthBrowserTestBase {
   WebAuthJavascriptClientBrowserTest() = default;
   ~WebAuthJavascriptClientBrowserTest() override = default;
 
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
+ protected:
+  std::vector<base::Feature> GetFeaturesToEnable() override {
+    return {features::kWebAuth, device::kWebAuthFeaturePolicy};
+  }
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(WebAuthJavascriptClientBrowserTest);
 };
 
@@ -969,7 +989,7 @@ IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
 // Tests that when navigator.credentials.get() is called with user verification
 // required, we get an NotAllowedError because the virtual device isn't
 // configured with UV and GetAssertionRequestHandler will return
-// |kUserConsentButCredentialNotRecognized| when such an authenticator is
+// |kAuthenticatorMissingUserVerification| when such an authenticator is
 // touched in that case.
 IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
                        GetPublicKeyCredentialUserVerification) {
@@ -1117,7 +1137,8 @@ IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
                        RequestsFromIFrames) {
   static constexpr char kOuterHost[] = "acme.com";
   static constexpr char kInnerHost[] = "notacme.com";
-  NavigateToURL(shell(), GetHttpsURL(kOuterHost, "/page_with_iframe.html"));
+  EXPECT_TRUE(NavigateToURL(shell(),
+                            GetHttpsURL(kOuterHost, "/page_with_iframe.html")));
 
   auto* virtual_device_factory = InjectVirtualFidoDeviceFactory();
   static constexpr uint8_t kOuterCredentialID = 1;
@@ -1129,15 +1150,39 @@ IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
   ASSERT_TRUE(virtual_device_factory->mutable_state()->InjectRegistration(
       kInnerCredentialIDArray, kInnerHost));
 
-  for (const auto cross_origin : {false, true}) {
-    SCOPED_TRACE(cross_origin);
+  static constexpr struct kTestCase {
+    // Whether the iframe loads from a different origin.
+    bool cross_origin;
+    bool create_should_work;
+    bool get_should_work;
+    // The contents of an "allow" attribute on the iframe.
+    const char allow_value[32];
+  } kTestCases[] = {
+      // XO |Create|Get  | Allow
+      {false, true, true, ""},
+      {true, false, false, ""},
+      {true, true, true, "publickey-credentials"},
+  };
 
-    if (cross_origin) {
+  for (const auto& test : kTestCases) {
+    SCOPED_TRACE(test.allow_value);
+    SCOPED_TRACE(test.cross_origin);
+
+    const std::string setAllowJS = base::StringPrintf(
+        "document.getElementById('test_iframe').setAttribute('allow', '%s'); "
+        "window.domAutomationController.send('OK');",
+        test.allow_value);
+    std::string result;
+    ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+        shell()->web_contents()->GetMainFrame(), setAllowJS.c_str(), &result));
+    ASSERT_EQ("OK", result);
+
+    if (test.cross_origin) {
       // Create a cross-origin iframe by loading it from notacme.com.
       NavigateIframeToURL(shell()->web_contents(), "test_iframe",
                           GetHttpsURL(kInnerHost, "/title2.html"));
     } else {
-      // Create a same-origin iframe by loading it from www.acme.com.
+      // Create a same-origin iframe by loading it from acme.com.
       NavigateIframeToURL(shell()->web_contents(), "test_iframe",
                           GetHttpsURL(kOuterHost, "/title2.html"));
     }
@@ -1149,17 +1194,18 @@ IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
     ASSERT_EQ(2u, frames.size());
     RenderFrameHost* const iframe = frames[1];
 
-    std::string result;
+    CreateParameters create_parameters;
+    create_parameters.rp_id = test.cross_origin ? "notacme.com" : "acme.com";
     ASSERT_TRUE(content::ExecuteScriptAndExtractString(
-        iframe, BuildCreateCallWithParameters(CreateParameters()), &result));
-    if (cross_origin) {
-      EXPECT_EQ(kOriginMismatchMessage, result);
+        iframe, BuildCreateCallWithParameters(create_parameters), &result));
+    if (test.create_should_work) {
+      EXPECT_EQ(std::string(kOkMessage), result);
     } else {
-      EXPECT_EQ(kOkMessage, result);
+      EXPECT_EQ(kFeatureMissingMessage, result);
     }
 
     const int credential_id =
-        cross_origin ? kInnerCredentialID : kOuterCredentialID;
+        test.cross_origin ? kInnerCredentialID : kOuterCredentialID;
     const std::string allow_credentials = base::StringPrintf(
         "allowCredentials: "
         "[{ type: 'public-key',"
@@ -1170,10 +1216,10 @@ IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
     get_params.allow_credentials = allow_credentials.c_str();
     ASSERT_TRUE(content::ExecuteScriptAndExtractString(
         iframe, BuildGetCallWithParameters(get_params), &result));
-    if (cross_origin) {
-      EXPECT_EQ(kOriginMismatchMessage, result);
+    if (test.get_should_work) {
+      EXPECT_EQ(std::string(kOkMessage), result);
     } else {
-      EXPECT_EQ(kOkMessage, result);
+      EXPECT_EQ(kFeatureMissingMessage, result);
     }
   }
 }
@@ -1193,7 +1239,8 @@ IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
         return true;
       });
 
-  NavigateToURL(shell(), GetHttpsURL("www.acme.com", "/page_with_iframe.html"));
+  EXPECT_TRUE(NavigateToURL(
+      shell(), GetHttpsURL("www.acme.com", "/page_with_iframe.html")));
 
   // The plain ExecuteScriptAndExtractString cannot be used because
   // NavigateIframeToURL uses it internally and they get confused about which
@@ -1247,8 +1294,8 @@ IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
         },
         shell()->web_contents(), &prompt_callback_was_invoked, behavior);
 
-    NavigateToURL(shell(),
-                  GetHttpsURL("www.acme.com", "/page_with_iframe.html"));
+    EXPECT_TRUE(NavigateToURL(
+        shell(), GetHttpsURL("www.acme.com", "/page_with_iframe.html")));
 
     CreateParameters parameters;
     parameters.attestation = "direct";
@@ -1264,13 +1311,52 @@ IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
   }
 }
 
+IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
+                       BadCableExtensionVersions) {
+  // The caBLE extension should only contain v1 data. Test that nothing crashes
+  // if a site tries to set other versions.
+
+  InjectVirtualFidoDeviceFactory();
+  GetParameters parameters;
+  parameters.allow_credentials =
+      "allowCredentials: [{ type: 'public-key',"
+      "  id: new TextEncoder().encode('allowedCredential'),"
+      "  transports: ['cable']}],"
+      "extensions: {"
+      "  cableAuthentication: [{"
+      "    version: 1,"
+      "    clientEid: new Uint8Array(Array(16).fill(1)),"
+      "    authenticatorEid: new Uint8Array(Array(16).fill(2)),"
+      "    sessionPreKey: new Uint8Array(Array(32).fill(3)),"
+      "  },{"
+      "    version: 2,"
+      "    clientEid: new Uint8Array(Array(16).fill(1)),"
+      "    authenticatorEid: new Uint8Array(Array(16).fill(2)),"
+      "    sessionPreKey: new Uint8Array(Array(32).fill(3)),"
+      "  },{"
+      "    version: 3,"
+      "    clientEid: new Uint8Array(Array(16).fill(1)),"
+      "    authenticatorEid: new Uint8Array(Array(16).fill(2)),"
+      "    sessionPreKey: new Uint8Array(Array(32).fill(3)),"
+      "  }]"
+      "}";
+  std::string result;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      shell()->web_contents()->GetMainFrame(),
+      BuildGetCallWithParameters(parameters), &result));
+  ASSERT_EQ(kNotAllowedErrorMessage, result);
+}
+
 #if defined(OS_WIN)
 IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest, WinMakeCredential) {
-  NavigateToURL(shell(), GetHttpsURL("www.acme.com", "/title1.html"));
+  EXPECT_TRUE(
+      NavigateToURL(shell(), GetHttpsURL("www.acme.com", "/title1.html")));
 
-  device::ScopedFakeWinWebAuthnApi fake_api;
+  device::FakeWinWebAuthnApi fake_api;
   fake_api.set_is_uvpaa(true);
   fake_api.set_hresult(S_OK);
+  auto* virtual_device_factory = InjectVirtualFidoDeviceFactory();
+  virtual_device_factory->set_win_webauthn_api(&fake_api);
 
   base::Optional<std::string> result = ExecuteScriptAndExtractPrefixedString(
       shell()->web_contents(),
@@ -1281,8 +1367,11 @@ IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest, WinMakeCredential) {
 
 IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
                        WinMakeCredentialReturnCodeFailure) {
-  NavigateToURL(shell(), GetHttpsURL("www.acme.com", "/title1.html"));
-  device::ScopedFakeWinWebAuthnApi fake_api;
+  EXPECT_TRUE(
+      NavigateToURL(shell(), GetHttpsURL("www.acme.com", "/title1.html")));
+  device::FakeWinWebAuthnApi fake_api;
+  auto* virtual_device_factory = InjectVirtualFidoDeviceFactory();
+  virtual_device_factory->set_win_webauthn_api(&fake_api);
 
   // Errors documented for WebAuthNGetErrorName() in <webauthn.h>.
   const std::map<HRESULT, std::string> errors{
@@ -1315,10 +1404,13 @@ IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest, WinGetAssertion) {
-  NavigateToURL(shell(), GetHttpsURL("www.acme.com", "/title1.html"));
+  EXPECT_TRUE(
+      NavigateToURL(shell(), GetHttpsURL("www.acme.com", "/title1.html")));
 
-  device::ScopedFakeWinWebAuthnApi fake_api;
+  device::FakeWinWebAuthnApi fake_api;
   fake_api.set_hresult(S_OK);
+  auto* virtual_device_factory = InjectVirtualFidoDeviceFactory();
+  virtual_device_factory->set_win_webauthn_api(&fake_api);
 
   base::Optional<std::string> result = ExecuteScriptAndExtractPrefixedString(
       shell()->web_contents(), BuildGetCallWithParameters(GetParameters()),
@@ -1337,8 +1429,11 @@ IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest, WinGetAssertion) {
 
 IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
                        WinGetAssertionReturnCodeFailure) {
-  NavigateToURL(shell(), GetHttpsURL("www.acme.com", "/title1.html"));
-  device::ScopedFakeWinWebAuthnApi fake_api;
+  EXPECT_TRUE(
+      NavigateToURL(shell(), GetHttpsURL("www.acme.com", "/title1.html")));
+  device::FakeWinWebAuthnApi fake_api;
+  auto* virtual_device_factory = InjectVirtualFidoDeviceFactory();
+  virtual_device_factory->set_win_webauthn_api(&fake_api);
 
   // Errors documented for WebAuthNGetErrorName() in <webauthn.h>.
   const std::set<HRESULT> errors{
@@ -1395,6 +1490,21 @@ IN_PROC_BROWSER_TEST_F(WebAuthBrowserBleDisabledTest, CheckBleDisabled) {
   fake_hid_discovery->WaitForCallToStart();
   EXPECT_TRUE(fake_hid_discovery->is_start_requested());
   EXPECT_FALSE(fake_ble_discovery->is_start_requested());
+}
+
+class WebAuthLocalClientBackForwardCacheBrowserTest
+    : public WebAuthLocalClientBrowserTest {
+ protected:
+  BackForwardCacheDisabledTester tester_;
+};
+
+IN_PROC_BROWSER_TEST_F(WebAuthLocalClientBackForwardCacheBrowserTest,
+                       WebAuthDisablesBackForwardCache) {
+  // Initialisation of the test should disable bfcache.
+  EXPECT_TRUE(tester_.IsDisabledForFrameWithReason(
+      shell()->web_contents()->GetMainFrame()->GetProcess()->GetID(),
+      shell()->web_contents()->GetMainFrame()->GetRoutingID(),
+      "WebAuthenticationAPI"));
 }
 
 // WebAuthBrowserCtapTest ----------------------------------------------

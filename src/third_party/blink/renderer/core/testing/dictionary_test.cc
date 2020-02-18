@@ -21,17 +21,17 @@ ScriptIterator GetIterator(const Dictionary& iterable,
   v8::Isolate* isolate = iterable.GetIsolate();
   if (!iterable.Get(v8::Symbol::GetIterator(isolate), iterator_getter) ||
       !iterator_getter->IsFunction()) {
-    return nullptr;
+    return ScriptIterator();
   }
   v8::Local<v8::Value> iterator;
   if (!V8ScriptRunner::CallFunction(
            v8::Local<v8::Function>::Cast(iterator_getter), execution_context,
            iterable.V8Value(), 0, nullptr, isolate)
            .ToLocal(&iterator))
-    return nullptr;
+    return ScriptIterator();
   if (!iterator->IsObject())
-    return nullptr;
-  return ScriptIterator(v8::Local<v8::Object>::Cast(iterator), isolate);
+    return ScriptIterator();
+  return ScriptIterator(isolate, v8::Local<v8::Object>::Cast(iterator));
 }
 }  // namespace
 
@@ -297,8 +297,11 @@ void DictionaryTest::GetDerivedDerivedInternals(
 void DictionaryTest::Trace(blink::Visitor* visitor) {
   visitor->Trace(element_member_);
   visitor->Trace(element_or_null_member_);
+  visitor->Trace(object_member_);
+  visitor->Trace(object_or_null_member_with_default_);
   visitor->Trace(double_or_string_sequence_member_);
   visitor->Trace(event_target_or_null_member_);
+  visitor->Trace(any_member_);
   visitor->Trace(callback_function_member_);
   ScriptWrappable::Trace(visitor);
 }

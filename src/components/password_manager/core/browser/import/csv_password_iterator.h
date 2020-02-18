@@ -52,6 +52,10 @@ class CSVPasswordIterator {
   }
 
  private:
+  // SeekToNextValidRow seeks the iterator to the first available data row which
+  // is valid, or to the end of the CSV if there is no such row.
+  void SeekToNextValidRow();
+
   // |map_| stores the meaning of particular columns in the row.
   const CSVPassword::ColumnMap* map_ = nullptr;
   // |csv_rest_| contains the CSV lines left to be iterated over.
@@ -61,6 +65,22 @@ class CSVPasswordIterator {
   // Contains a CSVPassword created from |map_| and |csv_row_| if possible.
   base::Optional<CSVPassword> password_;
 };
+
+// ConsumeCSVLine is a shared utility between CSVPasswordIterator (which uses
+// it to consume data rows) and CSVPasswordSequence (which uses it to consume
+// the header row). Therefore it is public, but it is not intended for use
+// beyond those two classes.
+// ConsumeCSVLine returns all the characters from the start of |input| until
+// the first '\n', "\r\n" (exclusive) or the end of |input|. Cuts the returned
+// part (inclusive the line breaks) from |input|. Skips blocks of matching
+// quotes. Examples:
+// old input -> returned value, new input
+// "ab\ncd" -> "ab", "cd"
+// "\r\n" -> "", ""
+// "abcd" -> "abcd", ""
+// "\r" -> "\r", ""
+// "a\"\n\"b" -> "a\"\n\"b", ""
+base::StringPiece ConsumeCSVLine(base::StringPiece* input);
 
 }  // namespace password_manager
 

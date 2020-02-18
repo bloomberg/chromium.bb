@@ -45,7 +45,7 @@
 #include "ui/views/controls/progress_bar.h"
 #include "ui/views/drag_controller.h"
 
-namespace app_list {
+namespace ash {
 
 namespace {
 
@@ -79,12 +79,6 @@ constexpr SkColor kContextSelectionFolder =
 
 // The width of the focus ring within a folder.
 constexpr int kFocusRingWidth = 2;
-
-// The duration in milliseconds of dragged view hover animation.
-constexpr int kDraggedViewHoverAnimationDuration = 250;
-
-// The duration in milliseconds of dragged view hover animation for folder icon.
-constexpr int kDraggedViewHoverAnimationDurationForFolder = 125;
 
 // The shadow blur of title.
 constexpr int kTitleShadowBlur = 28;
@@ -165,8 +159,7 @@ class AppListItemView::IconImageView : public views::ImageView {
   void AnimateRoundedCornerAndInsets(const AppListConfig& config, bool show) {
     ui::ScopedLayerAnimationSettings settings(layer()->GetAnimator());
     settings.SetTweenType(gfx::Tween::EASE_IN);
-    settings.SetTransitionDuration(base::TimeDelta::FromMilliseconds(
-        kDraggedViewHoverAnimationDurationForFolder));
+    settings.SetTransitionDuration(base::TimeDelta::FromMilliseconds(125));
 
     SetRoundedCornerAndInsets(
         show ? config.folder_unclipped_icon_dimension() / 2
@@ -278,7 +271,7 @@ AppListItemView::AppListItemView(AppsGridView* apps_grid_view,
 
   set_context_menu_controller(this);
 
-  SetAnimationDuration(0);
+  SetAnimationDuration(base::TimeDelta());
 
   preview_circle_radius_ = 0;
 }
@@ -731,9 +724,9 @@ void AppListItemView::OnGestureEvent(ui::GestureEvent* event) {
         touch_drag_timer_.Start(
             FROM_HERE,
             base::TimeDelta::FromMilliseconds(kTouchLongpressDelayInMs),
-            base::Bind(&AppListItemView::OnTouchDragTimer,
-                       base::Unretained(this), event->location(),
-                       event->root_location()));
+            base::BindOnce(&AppListItemView::OnTouchDragTimer,
+                           base::Unretained(this), event->location(),
+                           event->root_location()));
         event->SetHandled();
       }
       break;
@@ -808,6 +801,10 @@ void AppListItemView::EnsureLayer() {
     return;
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
+}
+
+void AppListItemView::FireMouseDragTimerForTest() {
+  mouse_drag_timer_.FireNow();
 }
 
 void AppListItemView::AnimationProgressed(const gfx::Animation* animation) {
@@ -944,7 +941,7 @@ void AppListItemView::ItemPercentDownloadedChanged() {
 void AppListItemView::ItemBeingDestroyed() {
   DCHECK(item_weak_);
   item_weak_->RemoveObserver(this);
-  item_weak_ = NULL;
+  item_weak_ = nullptr;
 }
 
 int AppListItemView::GetPreviewCircleRadius() const {
@@ -960,12 +957,17 @@ void AppListItemView::CreateDraggedViewHoverAnimation() {
   dragged_view_hover_animation_ = std::make_unique<gfx::SlideAnimation>(this);
   dragged_view_hover_animation_->SetTweenType(gfx::Tween::EASE_IN);
   dragged_view_hover_animation_->SetSlideDuration(
-      kDraggedViewHoverAnimationDuration);
+      base::TimeDelta::FromMilliseconds(250));
 }
 
 void AppListItemView::AdaptBoundsForSelectionHighlight(gfx::Rect* bounds) {
   bounds->Inset(0, 0, 0, GetAppListConfig().grid_icon_bottom_padding());
   bounds->ClampToCenteredSize(GetAppListConfig().grid_focus_size());
+  // Update the bounds to account for the focus ring width - by default, the
+  // focus ring is painted so the highlight bounds are centered within the
+  // focus ring stroke - this should be overridden so the outer stroke bounds
+  // match the grid focus size set in the app list config.
+  bounds->Inset(gfx::Insets(kFocusRingWidth / 2));
 }
 
-}  // namespace app_list
+}  // namespace ash

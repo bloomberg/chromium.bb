@@ -20,10 +20,13 @@ import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.Region;
 import android.graphics.drawable.Drawable;
-import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
+import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
+import android.widget.TextView;
+
+import androidx.annotation.IntDef;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.autofill_assistant.R;
@@ -50,6 +53,9 @@ import java.util.List;
 class AssistantOverlayDrawable extends Drawable implements FullscreenListener {
     private static final int FADE_DURATION_MS = 250;
 
+    /** '…' in UTF-8. */
+    private static final String ELLIPSIS = "\u2026";
+
     /** Default background color and alpha. */
     private static final int DEFAULT_BACKGROUND_COLOR = Color.argb(0x42, 0, 0, 0);
 
@@ -71,6 +77,7 @@ class AssistantOverlayDrawable extends Drawable implements FullscreenListener {
     private int mBoxStrokeAlpha;
     private final Paint mBoxClear;
     private final Paint mBoxFill;
+    private final Paint mTextPaint;
 
     /** When in partial mode, don't draw on {@link #mTransparentArea}. */
     private boolean mPartial;
@@ -97,6 +104,9 @@ class AssistantOverlayDrawable extends Drawable implements FullscreenListener {
 
     /** A single RectF instance used for drawing, to avoid creating many instances when drawing. */
     private final RectF mDrawRect = new RectF();
+
+    /** The image to draw on top of full overlays, if set. */
+    private AssistantOverlayImage mOverlayImage;
 
     private AssistantOverlayDelegate mDelegate;
 
@@ -129,6 +139,16 @@ class AssistantOverlayDrawable extends Drawable implements FullscreenListener {
                 TypedValue.COMPLEX_UNIT_DIP, BOX_CORNER_DP, displayMetrics);
 
         mFullscreenManager.addListener(this);
+
+        // Inherit font from AssistantBlackBody style. This is done by letting a temporary text view
+        // resolve the target typeface, because resolving it manually with ResourcesCompat.getFont()
+        // yields a StrictMode violation due to disk access.
+        mTextPaint = new Paint();
+        TextView temp = new TextView(context);
+        ApiCompatibilityUtils.setTextAppearance(temp, R.style.TextAppearance_AssistantBlackBody);
+        if (temp.getTypeface() != null) {
+            mTextPaint.setTypeface(temp.getTypeface());
+        }
 
         // Sets colors to default.
         setBackgroundColor(null);
@@ -229,6 +249,20 @@ class AssistantOverlayDrawable extends Drawable implements FullscreenListener {
         invalidateSelf();
     }
 
+    void setFullOverlayImage(@Nullable AssistantOverlayImage overlayImage) {
+        mOverlayImage = overlayImage;
+        if (mOverlayImage == null) {
+            invalidateSelf();
+            return;
+        }
+
+        mTextPaint.setTextSize(mOverlayImage.mTextSizeInPixels);
+        if (mOverlayImage.mTextColor != null) {
+            mTextPaint.setColor(mOverlayImage.mTextColor);
+        }
+        invalidateSelf();
+    }
+
     /** Set or update the restricted area. */
     void setRestrictedArea(List<RectF> restrictedArea) {
         mRestrictedArea = restrictedArea;
@@ -253,6 +287,7 @@ class AssistantOverlayDrawable extends Drawable implements FullscreenListener {
     public void draw(Canvas canvas) {
         Rect bounds = getBounds();
         int width = bounds.width();
+        int yTop = mFullscreenManager.getContentOffset();
         int yBottom = bounds.height() - mFullscreenManager.getBottomControlsHeight()
                 - mFullscreenManager.getBottomControlOffset();
 
@@ -261,14 +296,32 @@ class AssistantOverlayDrawable extends Drawable implements FullscreenListener {
 
         canvas.drawPaint(mBackground);
 
+        // Draw overlay image, if specified.
+        if (!mPartial && mOverlayImage != null && mOverlayImage.mImageBitmap != null) {
+            canvas.drawBitmap(mOverlayImage.mImageBitmap,
+                    bounds.left + (bounds.right - bounds.left) / 2.0f
+                            - mOverlayImage.mImageSizeInPixels / 2.0f,
+                    yTop + mOverlayImage.mImageTopMarginInPixels, null);
+
+            if (!TextUtils.isEmpty(mOverlayImage.mText)) {
+                String text = trimStringToWidth(
+                        mOverlayImage.mText, bounds.right - bounds.left, mTextPaint);
+                float textWidth = mTextPaint.measureText(text);
+                canvas.drawText(text,
+                        bounds.left + (bounds.right - bounds.left) / 2.0f - textWidth / 2.0f,
+                        yTop + mOverlayImage.mImageTopMarginInPixels
+                                + mOverlayImage.mImageSizeInPixels
+                                + mOverlayImage.mImageBottomMarginInPixels,
+                        mTextPaint);
+            }
+        }
+
         if (mVisualViewport.isEmpty()) return;
 
         // Ratio of to use to convert zoomed CSS pixels, to physical pixels. Aspect ratio is
         // conserved, so width and height are always converted with the same value. Using width
         // here, since viewport width always corresponds to the overlay width.
         float cssPixelsToPhysical = ((float) width) / mVisualViewport.width();
-
-        int yTop = mFullscreenManager.getContentOffset();
 
         // Don't draw on top of the restricted area.
         for (RectF rect : mRestrictedArea) {
@@ -324,7 +377,8 @@ class AssistantOverlayDrawable extends Drawable implements FullscreenListener {
     public void onToggleOverlayVideoMode(boolean enabled) {}
 
     @Override
-    public void onBottomControlsHeightChanged(int bottomControlsHeight) {
+    public void onBottomControlsHeightChanged(
+            int bottomControlsHeight, int bottomControlsMinHeight) {
         invalidateSelf();
     }
 
@@ -338,6 +392,24 @@ class AssistantOverlayDrawable extends Drawable implements FullscreenListener {
         if (mDelegate != null) {
             mDelegate.updateTouchableArea();
         }
+    }
+
+    /**
+     * Trims {@code text} until its width is smaller or equal {@code width} when rendered with
+     * {@code paint}. If characters are removed, an ellipsis ('…') is appended.
+     * @return the trimmed string, possibly with a trailing ellipsis.
+     */
+    private String trimStringToWidth(String text, int width, Paint paint) {
+        String trimmedText = text;
+        float textWidth = paint.measureText(trimmedText);
+        if (textWidth > width) {
+            while (!TextUtils.isEmpty(trimmedText) && textWidth > width) {
+                trimmedText = trimmedText.substring(0, trimmedText.length() - 1);
+                textWidth = paint.measureText(trimmedText + ELLIPSIS);
+            }
+            trimmedText = trimmedText + ELLIPSIS;
+        }
+        return trimmedText;
     }
 
     @IntDef({AnimationType.NONE, AnimationType.FADE_IN, AnimationType.FADE_OUT})

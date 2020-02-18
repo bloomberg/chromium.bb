@@ -4,7 +4,10 @@
 
 #include "net/third_party/quiche/src/quic/core/http/quic_send_control_stream.h"
 
+#include <utility>
+
 #include "net/third_party/quiche/src/quic/platform/api/quic_text_utils.h"
+#include "net/third_party/quiche/src/quic/test_tools/quic_config_peer.h"
 #include "net/third_party/quiche/src/quic/test_tools/quic_spdy_session_peer.h"
 #include "net/third_party/quiche/src/quic/test_tools/quic_test_utils.h"
 
@@ -20,23 +23,36 @@ using ::testing::StrictMock;
 struct TestParams {
   TestParams(const ParsedQuicVersion& version, Perspective perspective)
       : version(version), perspective(perspective) {
-    QUIC_LOG(INFO) << "TestParams: version: "
-                   << ParsedQuicVersionToString(version)
-                   << ", perspective: " << perspective;
+    QUIC_LOG(INFO) << "TestParams: " << *this;
   }
 
   TestParams(const TestParams& other)
       : version(other.version), perspective(other.perspective) {}
 
+  friend std::ostream& operator<<(std::ostream& os, const TestParams& tp) {
+    os << "{ version: " << ParsedQuicVersionToString(tp.version)
+       << ", perspective: "
+       << (tp.perspective == Perspective::IS_CLIENT ? "client" : "server")
+       << "}";
+    return os;
+  }
+
   ParsedQuicVersion version;
   Perspective perspective;
 };
+
+// Used by ::testing::PrintToStringParamName().
+std::string PrintToString(const TestParams& tp) {
+  return QuicStrCat(
+      ParsedQuicVersionToString(tp.version), "_",
+      (tp.perspective == Perspective::IS_CLIENT ? "client" : "server"));
+}
 
 std::vector<TestParams> GetTestParams() {
   std::vector<TestParams> params;
   ParsedQuicVersionVector all_supported_versions = AllSupportedVersions();
   for (const auto& version : AllSupportedVersions()) {
-    if (!VersionHasStreamType(version.transport_version)) {
+    if (!VersionUsesHttp3(version.transport_version)) {
       continue;
     }
     for (Perspective p : {Perspective::IS_SERVER, Perspective::IS_CLIENT}) {
@@ -62,6 +78,13 @@ class QuicSendControlStreamTest : public QuicTestWithParam<TestParams> {
   void Initialize() {
     session_.Initialize();
     send_control_stream_ = QuicSpdySessionPeer::GetSendControlStream(&session_);
+    QuicConfigPeer::SetReceivedInitialSessionFlowControlWindow(
+        session_.config(), kMinimumFlowControlSendWindow);
+    QuicConfigPeer::SetReceivedInitialMaxStreamDataBytesUnidirectional(
+        session_.config(), kMinimumFlowControlSendWindow);
+    QuicConfigPeer::SetReceivedMaxIncomingUnidirectionalStreams(
+        session_.config(), 3);
+    session_.OnConfigNegotiated();
   }
 
   Perspective perspective() const { return GetParam().perspective; }
@@ -70,37 +93,34 @@ class QuicSendControlStreamTest : public QuicTestWithParam<TestParams> {
   MockAlarmFactory alarm_factory_;
   StrictMock<MockQuicConnection>* connection_;
   StrictMock<MockQuicSpdySession> session_;
-  HttpEncoder encoder_;
   QuicSendControlStream* send_control_stream_;
 };
 
 INSTANTIATE_TEST_SUITE_P(Tests,
                          QuicSendControlStreamTest,
-                         ::testing::ValuesIn(GetTestParams()));
+                         ::testing::ValuesIn(GetTestParams()),
+                         ::testing::PrintToStringParamName());
 
 TEST_P(QuicSendControlStreamTest, WriteSettings) {
-  if (GetParam().version.handshake_protocol == PROTOCOL_TLS1_3) {
-    // TODO(nharper, b/112643533): Figure out why this test fails when TLS is
-    // enabled and fix it.
-    return;
-  }
-
   session_.set_qpack_maximum_dynamic_table_capacity(255);
+  session_.set_qpack_maximum_blocked_streams(16);
   session_.set_max_inbound_header_list_size(1024);
 
   Initialize();
   testing::InSequence s;
 
   std::string expected_write_data = QuicTextUtils::HexDecode(
-      "00"      // stream type: control stream
-      "04"      // frame type: SETTINGS frame
-      "06"      // frame length
-      "01"      // SETTINGS_QPACK_MAX_TABLE_CAPACITY
-      "40ff"    // 255
-      "06"      // SETTINGS_MAX_HEADER_LIST_SIZE
-      "4400");  // 1024
+      "00"    // stream type: control stream
+      "04"    // frame type: SETTINGS frame
+      "08"    // frame length
+      "01"    // SETTINGS_QPACK_MAX_TABLE_CAPACITY
+      "40ff"  // 255
+      "06"    // SETTINGS_MAX_HEADER_LIST_SIZE
+      "4400"  // 1024
+      "07"    // SETTINGS_QPACK_BLOCKED_STREAMS
+      "10");  // 16
 
-  auto buffer = QuicMakeUnique<char[]>(expected_write_data.size());
+  auto buffer = std::make_unique<char[]>(expected_write_data.size());
   QuicDataWriter writer(expected_write_data.size(), buffer.get());
 
   // A lambda to save and consume stream data when QuicSession::WritevData() is
@@ -125,12 +145,6 @@ TEST_P(QuicSendControlStreamTest, WriteSettings) {
 }
 
 TEST_P(QuicSendControlStreamTest, WriteSettingsOnlyOnce) {
-  if (GetParam().version.handshake_protocol == PROTOCOL_TLS1_3) {
-    // TODO(nharper, b/112643533): Figure out why this test fails when TLS is
-    // enabled and fix it.
-    return;
-  }
-
   Initialize();
   testing::InSequence s;
 
@@ -144,12 +158,6 @@ TEST_P(QuicSendControlStreamTest, WriteSettingsOnlyOnce) {
 }
 
 TEST_P(QuicSendControlStreamTest, WritePriorityBeforeSettings) {
-  if (GetParam().version.handshake_protocol == PROTOCOL_TLS1_3) {
-    // TODO(nharper, b/112643533): Figure out why this test fails when TLS is
-    // enabled and fix it.
-    return;
-  }
-
   Initialize();
   testing::InSequence s;
 

@@ -1,5 +1,6 @@
 include_rules = [
   "+chrome/browser/ui/views/crostini",
+  "+chrome/browser/ui/views/plugin_vm",
 ]
 
 specific_include_rules = {
@@ -7,6 +8,10 @@ specific_include_rules = {
     # TODO(mash): Remove the line below, http://crbug.com/557397
     "+ash/shell.h",
     "+ash/wm/wm_event.h",
+    "+ash/rotator/screen_rotation_animator.h",
     "+ui/message_center",
+  ],
+  "autotest_private_api\.h": [
+    "+ash/rotator/screen_rotation_animator_observer.h",
   ]
 }

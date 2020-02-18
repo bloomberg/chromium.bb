@@ -24,9 +24,9 @@ MtpDeviceManager::MtpDeviceManager()
     : bus_(chromeos::DBusThreadManager::Get()->GetSystemBus()) {
   // Listen for future mtpd service owner changes, in case it is not
   // available right now. There is no guarantee that mtpd is running already.
-  dbus::Bus::GetServiceOwnerCallback mtpd_owner_changed_callback =
-      base::Bind(&MtpDeviceManager::FinishSetupOnOriginThread,
-                 weak_ptr_factory_.GetWeakPtr());
+  dbus::Bus::ServiceOwnerChangeCallback mtpd_owner_changed_callback =
+      base::BindRepeating(&MtpDeviceManager::FinishSetupOnOriginThread,
+                          weak_ptr_factory_.GetWeakPtr());
   if (bus_) {
     bus_->ListenForServiceOwnerChange(mtpd::kMtpdServiceName,
                                       mtpd_owner_changed_callback);
@@ -50,12 +50,13 @@ MtpDeviceManager::~MtpDeviceManager() {
   VLOG(1) << "MtpDeviceManager Shutdown completed";
 }
 
-void MtpDeviceManager::AddBinding(mojom::MtpManagerRequest request) {
-  bindings_.AddBinding(this, std::move(request));
+void MtpDeviceManager::AddReceiver(
+    mojo::PendingReceiver<mojom::MtpManager> receiver) {
+  receivers_.Add(this, std::move(receiver));
 }
 
 void MtpDeviceManager::EnumerateStoragesAndSetClient(
-    mojom::MtpManagerClientAssociatedPtrInfo client,
+    mojo::PendingAssociatedRemote<mojom::MtpManagerClient> client,
     EnumerateStoragesAndSetClientCallback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 

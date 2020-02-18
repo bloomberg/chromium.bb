@@ -4,7 +4,7 @@
 
 import("//gpu/vulkan/features.gni")
 if (is_fuchsia) {
-  import("//build/config/fuchsia/rules.gni")
+  import("//build/config/fuchsia/generate_runner_scripts.gni")
 }
 
 group("demo") {
@@ -32,14 +32,14 @@ source_set("ozone_demo_lib") {
     "//ui/display/types",
     "//ui/events",
     "//ui/events:dom_keycode_converter",
-    "//ui/events/ozone:events_ozone_layout",
+    "//ui/events/ozone/layout",
     "//ui/gfx/geometry",
     "//ui/ozone",
     "//ui/platform_window",
   ]
 
   if (is_fuchsia) {
-    deps += [ "//third_party/fuchsia-sdk/sdk:ui_policy" ]
+    deps += [ "//third_party/fuchsia-sdk/sdk:fuchsia-ui-policy" ]
   }
 }
 
@@ -61,7 +61,7 @@ executable("ozone_demo") {
     "//components/tracing:startup_tracing",
     "//gpu/vulkan:buildflags",
     "//mojo/core/embedder",
-    "//ui/events/ozone:events_ozone_layout",
+    "//ui/events/ozone/layout",
     "//ui/gl",
     "//ui/gl/init",
     "//ui/ozone",
@@ -94,7 +94,7 @@ executable("skia_demo") {
     "//components/tracing:startup_tracing",
     "//mojo/core/embedder",
     "//skia",
-    "//ui/events/ozone:events_ozone_layout",
+    "//ui/events/ozone/layout",
     "//ui/gl",
     "//ui/gl/init",
     "//ui/ozone",

@@ -4,12 +4,10 @@
 
 package org.chromium.chrome.browser.login;
 
-import android.content.Intent;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -22,13 +20,11 @@ import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
-import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule;
-import org.chromium.chrome.browser.customtabs.CustomTabsTestUtils;
 import org.chromium.chrome.browser.tab.SadTab;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tabmodel.TabLaunchType;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ChromeTabUtils;
@@ -48,7 +44,7 @@ import java.util.concurrent.atomic.AtomicReference;
 public class ChromeHttpAuthHandlerTest {
     @Rule
     public ChromeActivityTestRule<? extends ChromeActivity> mActivityTestRule =
-            ChromeActivityTestRule.forMainActivity();
+            new ChromeActivityTestRule(ChromeTabbedActivity.class);
 
     @Rule
     public CustomTabActivityTestRule mCustomTabActivityTestRule = new CustomTabActivityTestRule();
@@ -62,7 +58,7 @@ public class ChromeHttpAuthHandlerTest {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         if (mTestServer != null) mTestServer.stopAndDestroyServer();
     }
 
@@ -109,21 +105,9 @@ public class ChromeHttpAuthHandlerTest {
     @MediumTest
     @Restriction(Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     public void authDialogSuppressedOnBackgroundTab() throws Exception {
-        Tab firstTab = mActivityTestRule.getActivity().getActivityTab();
-        if (mActivityTestRule.getActivity() instanceof ChromeTabbedActivity) {
-            ChromeTabUtils.newTabFromMenu(
-                    InstrumentationRegistry.getInstrumentation(), mActivityTestRule.getActivity());
-        } else {
-            // For now, only NoTouchMode should hit this path.
-            // In NoTouchMode, multiple tabs are only supported though CCT, so use a CCT instead of
-            // a second tab.
-            Assert.assertTrue(FeatureUtilities.isNoTouchModeEnabled());
-            Intent intent = CustomTabsTestUtils.createMinimalCustomTabIntent(
-                    InstrumentationRegistry.getTargetContext(), "about:blank");
-            // NoTouchMode only allows CCT for 1p use-cases.
-            IntentHandler.addTrustedIntentExtras(intent);
-            mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
-        }
+        TabImpl firstTab = (TabImpl) mActivityTestRule.getActivity().getActivityTab();
+        ChromeTabUtils.newTabFromMenu(
+                InstrumentationRegistry.getInstrumentation(), mActivityTestRule.getActivity());
         // If the first tab was closed due to OOM, then just exit the test.
         if (TestThreadUtils.runOnUiThreadBlocking(
                     () -> firstTab.isClosing() || SadTab.isShowing(firstTab))) {

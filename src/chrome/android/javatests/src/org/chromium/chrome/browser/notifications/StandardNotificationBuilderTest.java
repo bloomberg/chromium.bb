@@ -31,8 +31,8 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.notifications.channels.ChannelDefinitions;
+import org.chromium.chrome.browser.ui.widget.RoundedIconGenerator;
 import org.chromium.chrome.browser.util.UrlUtilities;
-import org.chromium.chrome.browser.widget.RoundedIconGenerator;
 import org.chromium.content_public.browser.test.NativeLibraryTestRule;
 
 /**
@@ -51,7 +51,7 @@ public class StandardNotificationBuilderTest {
     public NativeLibraryTestRule mActivityTestRule = new NativeLibraryTestRule();
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         // Not initializing the browser process is safe because GetDomainAndRegistry() is
         // stand-alone.
         mActivityTestRule.loadNativeLibraryNoBrowserProcess();

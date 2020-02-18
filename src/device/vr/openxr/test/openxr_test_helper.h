@@ -14,15 +14,20 @@
 #include <unordered_set>
 #include <vector>
 
+#include "base/optional.h"
 #include "base/synchronization/lock.h"
 #include "device/vr/test/test_hook.h"
 #include "third_party/openxr/src/include/openxr/openxr.h"
+
+namespace gfx {
+class Transform;
+}  // namespace gfx
 
 class OpenXrTestHelper : public device::ServiceTestHook {
  public:
   OpenXrTestHelper();
   ~OpenXrTestHelper();
-
+  void Reset();
   void TestFailure();
 
   // TestHookRegistration
@@ -38,39 +43,48 @@ class OpenXrTestHelper : public device::ServiceTestHook {
 
   XrSystemId GetSystemId();
   XrSwapchain GetSwapchain();
+  XrInstance CreateInstance();
+  XrResult GetActionStateFloat(XrAction action, XrActionStateFloat* data) const;
   XrResult GetActionStateBoolean(XrAction action,
                                  XrActionStateBoolean* data) const;
   XrResult GetActionStateVector2f(XrAction action,
                                   XrActionStateVector2f* data) const;
   XrResult GetActionStatePose(XrAction action, XrActionStatePose* data) const;
-  XrSpace CreateLocalSpace();
-  XrSpace CreateViewSpace();
-  XrAction CreateAction(XrActionSet action_set,
-                        const XrActionCreateInfo& create_info);
+  XrSpace CreateReferenceSpace(XrReferenceSpaceType type);
+  XrResult CreateAction(XrActionSet action_set,
+                        const XrActionCreateInfo& create_info,
+                        XrAction* action);
   XrActionSet CreateActionSet(const XrActionSetCreateInfo& createInfo);
-  XrSpace CreateActionSpace();
+  XrResult CreateActionSpace(
+      const XrActionSpaceCreateInfo& action_space_create_info,
+      XrSpace* space);
   XrPath GetPath(const char* path_string);
+  XrPath GetCurrentInteractionProfile();
 
   XrResult GetSession(XrSession* session);
   XrResult BeginSession();
   XrResult EndSession();
+  XrResult BeginFrame();
+  XrResult EndFrame();
 
   XrResult BindActionAndPath(XrActionSuggestedBinding binding);
 
   void SetD3DDevice(ID3D11Device* d3d_device);
+  XrResult AttachActionSets(const XrSessionActionSetsAttachInfo& attach_info);
+  uint32_t AttachedActionSetsSize() const;
   XrResult SyncActionData(XrActionSet action_set);
   const std::vector<Microsoft::WRL::ComPtr<ID3D11Texture2D>>&
   GetSwapchainTextures() const;
-  void GetPose(XrPosef* pose);
+  void LocateSpace(XrSpace space, XrPosef* pose);
   std::string PathToString(XrPath path) const;
   bool UpdateData();
+  bool UpdateViewFOV(XrView views[], uint32_t size);
 
   uint32_t NextSwapchainImageIndex();
   XrTime NextPredictedDisplayTime();
 
-  bool UpdateSessionStateEventQueue();
-  bool HasPendingSessionStateEvent();
-  XrEventDataSessionStateChanged GetNextSessionStateEvent();
+  void UpdateEventQueue();
+  XrResult PollEvent(XrEventDataBuffer* event_data);
 
   // Methods that validate the parameter with the current state of the runtime.
   XrResult ValidateAction(XrAction action) const;
@@ -79,6 +93,7 @@ class OpenXrTestHelper : public device::ServiceTestHook {
   XrResult ValidateActionSet(XrActionSet action_set) const;
   XrResult ValidateActionSetCreateInfo(
       const XrActionSetCreateInfo& create_info) const;
+  XrResult ValidateActionSetNotAttached(XrActionSet action_set) const;
   XrResult ValidateActionSpaceCreateInfo(
       const XrActionSpaceCreateInfo& create_info) const;
   XrResult ValidateInstance(XrInstance instance) const;
@@ -88,7 +103,12 @@ class OpenXrTestHelper : public device::ServiceTestHook {
   XrResult ValidateSpace(XrSpace space) const;
   XrResult ValidatePath(XrPath path) const;
   XrResult ValidatePredictedDisplayTime(XrTime time) const;
+  XrResult ValidateXrCompositionLayerProjection(
+      const XrCompositionLayerProjection& projection_layer) const;
+  XrResult ValidateXrCompositionLayerProjectionView(
+      const XrCompositionLayerProjectionView& projection_view) const;
   XrResult ValidateXrPosefIsIdentity(const XrPosef& pose) const;
+  XrResult ValidateViews(uint32_t view_capacity_input, XrView* views) const;
 
   // Properties of the mock OpenXR runtime that does not change are created
   // as static variables.
@@ -98,11 +118,14 @@ class OpenXrTestHelper : public device::ServiceTestHook {
   static const uint32_t kDimension;
   static const uint32_t kSwapCount;
   static const uint32_t kMinSwapchainBuffering;
-  static const uint32_t kMaxViewCount;
+  static const uint32_t kViewCount;
   static const XrViewConfigurationView kViewConfigView;
   static XrViewConfigurationView kViewConfigurationViews[];
   static const XrViewConfigurationType kViewConfigurationType;
   static const XrEnvironmentBlendMode kEnvironmentBlendMode;
+  static const char* kLocalReferenceSpacePath;
+  static const char* kStageReferenceSpacePath;
+  static const char* kViewReferenceSpacePath;
 
  private:
   struct ActionProperties {
@@ -113,6 +136,12 @@ class OpenXrTestHelper : public device::ServiceTestHook {
 
   XrResult UpdateAction(XrAction action);
   void SetSessionState(XrSessionState state);
+  base::Optional<gfx::Transform> GetPose();
+  device::ControllerFrameData GetControllerDataFromPath(
+      std::string path_string) const;
+  bool IsSessionRunning() const;
+
+  bool create_fake_instance_;
 
   // Properties of the mock OpenXR runtime that doesn't change throughout the
   // lifetime of the instance. However, these aren't static because they are
@@ -121,16 +150,15 @@ class OpenXrTestHelper : public device::ServiceTestHook {
   // to validate that they were queried before being used.
   XrSystemId system_id_;
   XrSession session_;
-  XrSessionState session_state_;
   XrSwapchain swapchain_;
-  XrSpace local_space_;
-  XrSpace view_space_;
 
   // Properties that changes depending on the state of the runtime.
+  XrSessionState session_state_;
+  bool frame_begin_;
   Microsoft::WRL::ComPtr<ID3D11Device> d3d_device_;
   std::vector<Microsoft::WRL::ComPtr<ID3D11Texture2D>> textures_arr_;
   uint32_t acquired_swapchain_texture_;
-  uint32_t next_action_space_;
+  uint32_t next_space_;
   XrTime next_predicted_display_time_;
 
   // paths_ is used to keep tracked of strings that already has a corresponding
@@ -140,7 +168,11 @@ class OpenXrTestHelper : public device::ServiceTestHook {
   // index_in_action_state_arr member which can help index into the following
   // *_action_states_ vector and retrieve data.
   std::unordered_map<XrAction, ActionProperties> actions_;
+  std::unordered_map<XrSpace, XrAction> action_spaces_;
+  std::unordered_map<XrSpace, std::string> reference_spaces_;
   std::unordered_map<XrActionSet, std::vector<XrAction>> action_sets_;
+  std::unordered_map<XrActionSet, std::vector<XrAction>> attached_action_sets_;
+  std::unordered_map<XrAction, XrActionStateFloat> float_action_states_;
   std::unordered_map<XrAction, XrActionStateBoolean> boolean_action_states_;
   std::unordered_map<XrAction, XrActionStateVector2f> v2f_action_states_;
   std::unordered_map<XrAction, XrActionStatePose> pose_action_state_;
@@ -155,9 +187,7 @@ class OpenXrTestHelper : public device::ServiceTestHook {
 
   std::array<device::ControllerFrameData, device::kMaxTrackedDevices> data_arr_;
 
-  // session_state_event_queue_ is used to store XrEventDataSessionStateChanged
-  // event whenever session state changes.
-  std::queue<XrEventDataSessionStateChanged> session_state_event_queue_;
+  std::queue<XrEventDataBuffer> event_queue_;
 
   device::VRTestHook* test_hook_ GUARDED_BY(lock_) = nullptr;
   base::Lock lock_;

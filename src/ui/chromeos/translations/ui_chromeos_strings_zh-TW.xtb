@@ -75,11 +75,9 @@
 <translation id="1829129547161959350">企鵝</translation>
 <translation id="183183971458492120">正在載入資訊...</translation>
 <translation id="1838709767668011582">Google 網站</translation>
-<translation id="1839704667838141620">變更這些檔案的共用方式。</translation>
 <translation id="1844692022597038441">這個檔案無法離線瀏覽。</translation>
 <translation id="184633654410729720">泰文鍵盤 (Kedmanee)</translation>
 <translation id="1847880352285315359">已儲存</translation>
-<translation id="1864676585353837027">變更這些檔案的共用方式</translation>
 <translation id="1864756863218646478">找不到檔案。</translation>
 <translation id="1921986354447415460">土耳其文 F 鍵盤</translation>
 <translation id="1931134289871235022">斯洛伐克文</translation>
@@ -89,7 +87,6 @@
 <translation id="1943097386230153518">安裝新服務</translation>
 <translation id="1947424002851288782">德文鍵盤</translation>
 <translation id="1972984168337863910">展開檔案意見回饋面板</translation>
-<translation id="197560921582345123">可以編輯</translation>
 <translation id="1984603991036629094">亞美尼亞文 (拼音) 鍵盤</translation>
 <translation id="2001796770603320721">在雲端硬碟中管理</translation>
 <translation id="2009067268969781306">若將硬碟格式化，其中儲存的所有資料都將遭到刪除。這項操作無法復原。</translation>
@@ -226,6 +223,7 @@
 <translation id="3645531960514756307">取消固定資料夾</translation>
 <translation id="3678559383040232393">馬爾他文鍵盤</translation>
 <translation id="3685122418104378273">使用行動數據時，Google 雲端硬碟同步功能預設為停用。</translation>
+<translation id="3689865792480713551">取消<ph name="ACTIVITY_DESCRIPTION" />。</translation>
 <translation id="3726463242007121105">這個裝置所用的檔案系統不受支援，因此系統無法開啟這個裝置。</translation>
 <translation id="3741243925913727067">將您媒體裝置上的相片和影片備份到 Google 雲端硬碟。</translation>
 <translation id="3749289110408117711">檔案名稱</translation>
@@ -286,11 +284,10 @@
 <translation id="4522570452068850558">詳細資訊</translation>
 <translation id="4552678318981539154">購買更多儲存空間</translation>
 <translation id="4559767610552730302">散景</translation>
-<translation id="4568854179928172494">上次修改時間</translation>
 <translation id="4572815280350369984"><ph name="FILE_TYPE" /> 檔案</translation>
 <translation id="457386861538956877">更多…</translation>
 <translation id="4579744207439506346">已將「<ph name="ENTRY_NAME" />」新增至選取範圍。</translation>
-<translation id="4582497162516204941">透過 Linux (測試版) 執行安裝程序</translation>
+<translation id="4582497162516204941">透過 Linux (Beta 版) 執行安裝程序</translation>
 <translation id="4594543368593301662">目前顯示的是「<ph name="SEARCH_TERM" />」的搜尋結果。</translation>
 <translation id="4631887759990505102">演出者</translation>
 <translation id="4656293982926141856">這台電腦</translation>
@@ -400,7 +397,7 @@
 <translation id="5533102081734025921"><ph name="IMAGE_TYPE" /> 圖片</translation>
 <translation id="5533555070048896610">音譯 (namaste → नमस्ते)</translation>
 <translation id="5534520101572674276">正在計算大小</translation>
-<translation id="5583640892426849032">Backspace 鍵</translation>
+<translation id="5583640892426849032">Backspace</translation>
 <translation id="5605830556594064952">Dvorak 美式配置</translation>
 <translation id="5640179856859982418">瑞士文鍵盤</translation>
 <translation id="5649768706273821470">聆聽</translation>
@@ -467,6 +464,7 @@
 <translation id="6339145975392024142">美式國際鍵盤 (PC)</translation>
 <translation id="6346310558342052870">權限受到限制</translation>
 <translation id="6353618411602605519">克羅埃西亞文鍵盤</translation>
+<translation id="6356685157277930264">檔案狀態視窗</translation>
 <translation id="6358884629796491903">龍</translation>
 <translation id="637062427944097960">這個檔案已在其他電腦上開啟。前往 <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />) 查看。</translation>
 <translation id="6395575651121294044"><ph name="NUMBER_OF_FILES" /> 個項目</translation>
@@ -566,6 +564,7 @@
 <translation id="7589661784326793847">請稍候片刻</translation>
 <translation id="7603724359189955920">網格</translation>
 <translation id="7627790789328695202">糟糕！已存在名為 <ph name="FILE_NAME" /> 的檔案。請重新命名檔案並再試一次。</translation>
+<translation id="7628656427739290098">已完成 <ph name="PERCENT" />%。</translation>
 <translation id="7649070708921625228">說明</translation>
 <translation id="7654209398114106148">正在移動 <ph name="NUMBER_OF_ITEMS" /> 個項目...</translation>
 <translation id="7658239707568436148">取消</translation>
@@ -592,7 +591,6 @@
 <translation id="7827012282502221009"><ph name="NUMBER_OF_TB" /> TB</translation>
 <translation id="7839804798877833423">擷取這些檔案大約會使用 <ph name="FILE_SIZE" /> 行動數據流量。</translation>
 <translation id="7846076177841592234">全部取消選取</translation>
-<translation id="7850851215703745691">這些雲端硬碟檔案尚未與你共用</translation>
 <translation id="7853966320808728790">法文 BÉPO</translation>
 <translation id="7864662577698025113">新增服務</translation>
 <translation id="7873831373602885875">無法儲存到「<ph name="FOLDER_NAME" />」。系統會將所有編輯內容儲存到「下載」資料夾中的「<ph name="DOWNLOADS_FOLDER" />」。</translation>
@@ -608,7 +606,6 @@
 <translation id="7969525169268594403">斯洛維尼亞文</translation>
 <translation id="7982283708762922719">高度</translation>
 <translation id="7987485481246785146">索拉尼庫爾德式阿拉伯文鍵盤</translation>
-<translation id="799923393800005025">可以檢視</translation>
 <translation id="8008366997883261463">傑克羅素梗</translation>
 <translation id="8028993641010258682">大小</translation>
 <translation id="8031722894461705849">斯洛伐克文鍵盤</translation>
@@ -670,8 +667,6 @@
 <translation id="8600173386174225982">檔案清單已變更為縮圖檢視模式。</translation>
 <translation id="8601932370724196034">Crostini 圖片檔</translation>
 <translation id="8669949407341943408">移動中...</translation>
-<translation id="8671210955687109937">可以註解</translation>
-<translation id="8686213429977032554">這個雲端硬碟檔案尚未與你共用</translation>
 <translation id="8698464937041809063">Google 繪圖</translation>
 <translation id="8714406895390098252">單車</translation>
 <translation id="8719721339511222681">已選取「<ph name="ENTRY_NAME" />」。</translation>

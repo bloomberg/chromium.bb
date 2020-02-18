@@ -9,7 +9,7 @@
 #include "base/optional.h"
 #include "chrome/browser/page_load_metrics/observers/histogram_suffixes.h"
 #include "chrome/browser/page_load_metrics/observers/page_load_metrics_observer_test_harness.h"
-#include "chrome/browser/page_load_metrics/page_load_tracker.h"
+#include "components/page_load_metrics/browser/page_load_tracker.h"
 #include "components/page_load_metrics/common/test/page_load_metrics_test_util.h"
 #include "content/public/browser/web_contents.h"
 
@@ -70,7 +70,7 @@ class MultiTabLoadingPageLoadMetricsObserverTest
       web_contents()->WasShown();
     }
 
-    SimulateTimingUpdate(timing);
+    tester()->SimulateTimingUpdate(timing);
   }
 
  protected:
@@ -84,14 +84,14 @@ class MultiTabLoadingPageLoadMetricsObserverTest
                           base::HistogramBase::Count expected_base,
                           base::HistogramBase::Count expected_2_or_more,
                           base::HistogramBase::Count expected_5_or_more) {
-    histogram_tester().ExpectTotalCount(
+    tester()->histogram_tester().ExpectTotalCount(
         std::string(internal::kHistogramPrefixMultiTabLoading).append(suffix),
         expected_base);
-    histogram_tester().ExpectTotalCount(
+    tester()->histogram_tester().ExpectTotalCount(
         std::string(internal::kHistogramPrefixMultiTabLoading2OrMore)
             .append(suffix),
         expected_2_or_more);
-    histogram_tester().ExpectTotalCount(
+    tester()->histogram_tester().ExpectTotalCount(
         std::string(internal::kHistogramPrefixMultiTabLoading5OrMore)
             .append(suffix),
         expected_5_or_more);

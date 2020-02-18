@@ -55,6 +55,7 @@ class NET_EXPORT WebSocketChannel {
       const std::vector<std::string>&,
       const url::Origin&,
       const GURL&,
+      const net::NetworkIsolationKey&,
       const HttpRequestHeaders&,
       URLRequestContext*,
       const NetLogWithSource&,
@@ -79,6 +80,7 @@ class NET_EXPORT WebSocketChannel {
       const std::vector<std::string>& requested_protocols,
       const url::Origin& origin,
       const GURL& site_for_cookies,
+      const net::NetworkIsolationKey& network_isolation_key,
       const HttpRequestHeaders& additional_headers);
 
   // Sends a data frame to the remote side. It is the responsibility of the
@@ -127,6 +129,7 @@ class NET_EXPORT WebSocketChannel {
       const std::vector<std::string>& requested_protocols,
       const url::Origin& origin,
       const GURL& site_for_cookies,
+      const net::NetworkIsolationKey& network_isolation_key,
       const HttpRequestHeaders& additional_headers,
       const WebSocketStreamRequestCreationCallback& callback);
 
@@ -156,6 +159,7 @@ class NET_EXPORT WebSocketChannel {
 #if defined(OS_ANDROID)
   static const uint64_t kReceiveQuotaThreshold = 1 << 15;
 #else
+  // |2^n - delta| is better than 2^n on Linux. See crrev.com/c/1792208.
   static const uint64_t kReceiveQuotaThreshold = 65500;
 #endif
 
@@ -192,6 +196,7 @@ class NET_EXPORT WebSocketChannel {
       const std::vector<std::string>& requested_protocols,
       const url::Origin& origin,
       const GURL& site_for_cookies,
+      const net::NetworkIsolationKey& network_isolation_key,
       const HttpRequestHeaders& additional_headers,
       const WebSocketStreamRequestCreationCallback& callback);
 

@@ -35,6 +35,7 @@
 #include <ostream>
 
 #include "base/macros.h"
+#include "third_party/blink/public/web/web_ax_enums.h"
 #include "third_party/blink/renderer/core/accessibility/axid.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/editing/markers/document_marker.h"
@@ -101,8 +102,8 @@ class IgnoredReason {
   void Trace(blink::Visitor* visitor) { visitor->Trace(related_object); }
 };
 
-class NameSourceRelatedObject
-    : public GarbageCollectedFinalized<NameSourceRelatedObject> {
+class NameSourceRelatedObject final
+    : public GarbageCollected<NameSourceRelatedObject> {
  public:
   WeakMember<AXObject> object;
   String text;
@@ -168,14 +169,14 @@ WTF_ALLOW_INIT_WITH_MEM_FUNCTIONS(blink::DescriptionSource)
 
 namespace blink {
 
-class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
+class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
  public:
   typedef HeapVector<Member<AXObject>> AXObjectVector;
 
   // Iterator for doing an in-order traversal of the accessibility tree.
   // Includes ignored objects in the traversal.
   class MODULES_EXPORT InOrderTraversalIterator final
-      : public GarbageCollectedFinalized<InOrderTraversalIterator> {
+      : public GarbageCollected<InOrderTraversalIterator> {
    public:
     ~InOrderTraversalIterator() = default;
 
@@ -266,7 +267,7 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   // Walks through all the unignored parents of the object up to the root.
   // Does not include the object itself in the list of ancestors.
   class MODULES_EXPORT AncestorsIterator final
-      : public GarbageCollectedFinalized<AncestorsIterator> {
+      : public GarbageCollected<AncestorsIterator> {
    public:
     ~AncestorsIterator() = default;
 
@@ -469,7 +470,7 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   }
 
   // Check object state.
-  virtual bool IsAutofillAvailable() { return false; }
+  virtual bool IsAutofillAvailable() const { return false; }
   virtual bool IsClickable() const;
   virtual AccessibilityExpanded IsExpanded() const {
     return kExpandedUndefined;
@@ -621,7 +622,7 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   // Used by objects of role ColorWellRole.
   virtual RGBA32 ColorValue() const { return Color::kTransparent; }
   virtual bool CanvasHasFallbackContent() const { return false; }
-  virtual AtomicString FontFamily() const { return g_null_atom; }
+  virtual String FontFamily() const { return String(); }
   // Font size is in pixels.
   virtual float FontSize() const { return 0.0f; }
   virtual float FontWeight() const { return 0.0f; }
@@ -686,6 +687,11 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   // The start and end character offset of each word in the object's text.
   virtual void GetWordBoundaries(Vector<int>& word_starts,
                                  Vector<int>& word_ends) const;
+  // Returns the text offset (text offset as in AXPosition, not as in
+  // pixel offset) in the container of an inline text box.
+  virtual unsigned TextOffsetInContainer(unsigned offset) const {
+    return offset;
+  }
 
   // Properties of interactive elements.
   ax::mojom::DefaultActionVerb Action() const;
@@ -711,7 +717,7 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   ax::mojom::Role DetermineAriaRoleAttribute() const;
   virtual ax::mojom::Role AriaRoleAttribute() const;
   virtual AXObject* ActiveDescendant() { return nullptr; }
-  virtual String AriaAutoComplete() const { return String(); }
+  virtual String AutoComplete() const { return String(); }
   virtual void AriaOwnsElements(AXObjectVector& owns) const {}
   virtual void AriaDescribedbyElements(AXObjectVector&) const {}
   virtual AXObject* ErrorMessage() const { return nullptr; }
@@ -1000,7 +1006,7 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   // Notifications that this object may have changed.
   virtual void ChildrenChanged() {}
   virtual void HandleActiveDescendantChanged() {}
-  virtual void HandleAutofillStateChanged(bool) {}
+  virtual void HandleAutofillStateChanged(WebAXAutofillState) {}
   virtual void HandleAriaExpandedChanged() {}
   virtual void SelectionChanged();
   virtual void TextChanged() {}

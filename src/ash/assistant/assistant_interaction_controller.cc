@@ -13,12 +13,14 @@
 #include "ash/assistant/model/assistant_interaction_model_observer.h"
 #include "ash/assistant/model/assistant_query.h"
 #include "ash/assistant/model/assistant_response.h"
-#include "ash/assistant/model/assistant_ui_element.h"
 #include "ash/assistant/model/assistant_ui_model.h"
+#include "ash/assistant/model/ui/assistant_card_element.h"
+#include "ash/assistant/model/ui/assistant_text_element.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/assistant/util/assistant_util.h"
 #include "ash/assistant/util/deep_link_util.h"
 #include "ash/assistant/util/histogram_util.h"
+#include "ash/public/cpp/android_intent_helper.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/assistant/assistant_setup.h"
@@ -29,6 +31,7 @@
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/bind.h"
 #include "base/optional.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chromeos/services/assistant/public/features.h"
 #include "components/prefs/pref_service.h"
@@ -41,6 +44,8 @@ namespace ash {
 namespace {
 
 constexpr int kWarmerWelcomesMaxTimesTriggered = 3;
+constexpr char kAndroidIntentScheme[] = "intent://";
+constexpr char kAndroidIntentPrefix[] = "#Intent";
 
 // Helpers ---------------------------------------------------------------------
 
@@ -73,8 +78,7 @@ bool IsTabletMode() {
 
 AssistantInteractionController::AssistantInteractionController(
     AssistantController* assistant_controller)
-    : assistant_controller_(assistant_controller),
-      assistant_interaction_subscriber_binding_(this) {
+    : assistant_controller_(assistant_controller) {
   AddModelObserver(this);
   assistant_controller_->AddObserver(this);
   Shell::Get()->highlighter_controller()->AddObserver(this);
@@ -91,9 +95,8 @@ void AssistantInteractionController::SetAssistant(
   assistant_ = assistant;
 
   // Subscribe to Assistant interaction events.
-  chromeos::assistant::mojom::AssistantInteractionSubscriberPtr ptr;
-  assistant_interaction_subscriber_binding_.Bind(mojo::MakeRequest(&ptr));
-  assistant_->AddAssistantInteractionSubscriber(std::move(ptr));
+  assistant_->AddAssistantInteractionSubscriber(
+      assistant_interaction_subscriber_receiver_.BindNewPipeAndPassRemote());
 }
 
 void AssistantInteractionController::AddModelObserver(
@@ -128,9 +131,8 @@ void AssistantInteractionController::OnDeepLinkReceived(
     assistant_controller_->ui_controller()->ShowUi(
         AssistantEntryPoint::kDeepLink);
 
-    // Currently the only way to trigger this deeplink is via suggestion chip.
-    // TODO(b/119841827): Use source specified from deep link.
-    StartScreenContextInteraction(AssistantQuerySource::kSuggestionChip);
+    // The "What's on my screen" chip initiates a screen context interaction.
+    StartScreenContextInteraction(AssistantQuerySource::kWhatsOnMyScreen);
     return;
   }
 
@@ -271,7 +273,7 @@ void AssistantInteractionController::OnHighlighterEnabledChanged(
       // Skip setting input modality to stylus when the embedded Assistant
       // feature is enabled to prevent highlighter aborting sessions in
       // OnUiModeChanged.
-      if (!app_list_features::IsEmbeddedAssistantUIEnabled())
+      if (!app_list_features::IsAssistantLauncherUIEnabled())
         model_.SetInputModality(InputModality::kStylus);
       break;
     case HighlighterEnabledState::kDisabledByUser:
@@ -405,8 +407,8 @@ void AssistantInteractionController::OnInteractionStarted(
     // set the pending query from outside of the interaction lifecycle, the
     // pending query type will always be |kNull| here.
     if (model_.pending_query().type() == AssistantQueryType::kNull) {
-      model_.SetPendingQuery(
-          std::make_unique<AssistantTextQuery>(metadata->query));
+      model_.SetPendingQuery(std::make_unique<AssistantTextQuery>(
+          metadata->query, metadata->source));
     }
     model_.CommitPendingQuery();
     model_.SetMicState(MicState::kClosed);
@@ -525,9 +527,13 @@ void AssistantInteractionController::OnSuggestionChipPressed(
   // is because suggestion chips pressed after a voice query should continue to
   // return TTS, as really the text interaction is just a continuation of the
   // user's preceding voice interaction.
-  StartTextInteraction(suggestion->text, /*allow_tts=*/model_.response() &&
-                                             model_.response()->has_tts(),
-                       /*query_source=*/AssistantQuerySource::kSuggestionChip);
+  StartTextInteraction(
+      suggestion->text,
+      /*allow_tts=*/model_.response() && model_.response()->has_tts(),
+      /*query_source=*/suggestion->type ==
+              AssistantSuggestionType::kConversationStarter
+          ? AssistantQuerySource::kConversationStarter
+          : AssistantQuerySource::kSuggestionChip);
 }
 
 void AssistantInteractionController::OnSuggestionsResponse(
@@ -659,6 +665,40 @@ void AssistantInteractionController::OnOpenUrlResponse(const GURL& url,
   assistant_controller_->OpenUrl(url, in_background, /*from_server=*/true);
 }
 
+void AssistantInteractionController::OnOpenAppResponse(
+    chromeos::assistant::mojom::AndroidAppInfoPtr app_info,
+    OnOpenAppResponseCallback callback) {
+  if (model_.interaction_state() != InteractionState::kActive)
+    return;
+
+  auto* android_helper = AndroidIntentHelper::GetInstance();
+  if (!android_helper) {
+    std::move(callback).Run(false);
+    return;
+  }
+
+  auto intent = android_helper->GetAndroidAppLaunchIntent(std::move(app_info));
+  if (!intent.has_value()) {
+    std::move(callback).Run(false);
+    return;
+  }
+
+  // Common Android intent might starts with intent scheme "intent://" or
+  // Android app scheme "android-app://". But it might also only contains
+  // reference starts with "#Intent".
+  // However, GURL requires the URL spec to be non-empty, which invalidate the
+  // intent starts with "#Intent". For this case, we adding the Android intent
+  // scheme to the intent to validate it for GURL constructor.
+  auto intent_str = intent.value();
+  if (base::StartsWith(intent_str, kAndroidIntentPrefix,
+                       base::CompareCase::SENSITIVE)) {
+    intent_str = kAndroidIntentScheme + intent_str;
+  }
+  assistant_controller_->OpenUrl(GURL(intent_str), /*in_background=*/false,
+                                 /*from_server=*/true);
+  std::move(callback).Run(true);
+}
+
 void AssistantInteractionController::OnDialogPlateButtonPressed(
     AssistantButtonId id) {
   if (id == AssistantButtonId::kKeyboardInputToggle) {
@@ -765,7 +805,7 @@ void AssistantInteractionController::OnUiVisible(
     should_attempt_warmer_welcome_ = false;
     // When the embedded Assistant feature is enabled, we call ShowUi(kStylus)
     // OnHighlighterSelectionRecognized. But we are not actually using stylus.
-    if (!app_list_features::IsEmbeddedAssistantUIEnabled())
+    if (!app_list_features::IsAssistantLauncherUIEnabled())
       model_.SetInputModality(InputModality::kStylus);
     return;
   }
@@ -838,10 +878,12 @@ void AssistantInteractionController::StartProactiveSuggestionsInteraction(
   const std::string& description = proactive_suggestions->description();
   const std::string& search_query = proactive_suggestions->search_query();
 
-  model_.SetPendingQuery(std::make_unique<AssistantTextQuery>(description));
+  model_.SetPendingQuery(std::make_unique<AssistantTextQuery>(
+      description, AssistantQuerySource::kProactiveSuggestions));
 
   OnInteractionStarted(AssistantInteractionMetadata::New(
-      AssistantInteractionType::kText, /*query=*/description));
+      AssistantInteractionType::kText,
+      AssistantQuerySource::kProactiveSuggestions, /*query=*/description));
 
   OnHtmlResponse(proactive_suggestions->html(), /*fallback=*/std::string());
 
@@ -876,7 +918,7 @@ void AssistantInteractionController::StartTextInteraction(
   model_.SetPendingQuery(
       std::make_unique<AssistantTextQuery>(text, query_source));
 
-  assistant_->StartTextInteraction(text, allow_tts);
+  assistant_->StartTextInteraction(text, query_source, allow_tts);
 }
 
 void AssistantInteractionController::StartVoiceInteraction() {

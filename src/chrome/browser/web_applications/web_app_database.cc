@@ -6,17 +6,20 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "chrome/browser/web_applications/components/web_app_constants.h"
-#include "chrome/browser/web_applications/proto/web_app.pb.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_database_factory.h"
+#include "chrome/browser/web_applications/web_app_registry_update.h"
 #include "components/sync/base/model_type.h"
+#include "components/sync/model/metadata_batch.h"
+#include "components/sync/model/metadata_change_list.h"
 #include "components/sync/model/model_error.h"
 
 namespace web_app {
 
-WebAppDatabase::WebAppDatabase(AbstractWebAppDatabaseFactory* database_factory)
-    : database_factory_(database_factory) {
+WebAppDatabase::WebAppDatabase(AbstractWebAppDatabaseFactory* database_factory,
+                               ReportErrorCallback error_callback)
+    : database_factory_(database_factory),
+      error_callback_(std::move(error_callback)) {
   DCHECK(database_factory_);
 }
 
@@ -24,125 +27,184 @@ WebAppDatabase::~WebAppDatabase() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
-void WebAppDatabase::OpenDatabase(OnceRegistryOpenedCallback callback) {
+void WebAppDatabase::OpenDatabase(RegistryOpenedCallback callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!store_);
 
   syncer::OnceModelTypeStoreFactory store_factory =
       database_factory_->GetStoreFactory();
 
-  // CreateStore then ReadRegistry.
-  CreateStore(
-      std::move(store_factory),
-      base::BindOnce(&WebAppDatabase::ReadRegistry,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  std::move(store_factory)
+      .Run(syncer::WEB_APPS,
+           base::BindOnce(&WebAppDatabase::OnDatabaseOpened,
+                          weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
-void WebAppDatabase::WriteWebApps(AppsToWrite apps,
-                                  CompletionCallback callback) {
+void WebAppDatabase::Write(
+    const RegistryUpdateData& update_data,
+    std::unique_ptr<syncer::MetadataChangeList> metadata_change_list,
+    CompletionCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(opened_);
 
-  BeginTransaction();
+  std::unique_ptr<syncer::ModelTypeStore::WriteBatch> write_batch =
+      store_->CreateWriteBatch();
 
-  for (auto* web_app : apps) {
+  // |update_data| can be empty here but we should write |metadata_change_list|
+  // anyway.
+  write_batch->TakeMetadataChangesFrom(std::move(metadata_change_list));
+
+  for (const std::unique_ptr<WebApp>& web_app : update_data.apps_to_create) {
     auto proto = CreateWebAppProto(*web_app);
-    write_batch_->WriteData(proto->app_id(), proto->SerializeAsString());
+    write_batch->WriteData(web_app->app_id(), proto->SerializeAsString());
   }
 
-  CommitTransaction(std::move(callback));
-}
+  for (const std::unique_ptr<WebApp>& web_app : update_data.apps_to_update) {
+    auto proto = CreateWebAppProto(*web_app);
+    write_batch->WriteData(web_app->app_id(), proto->SerializeAsString());
+  }
 
-void WebAppDatabase::DeleteWebApps(std::vector<AppId> app_ids,
-                                   CompletionCallback callback) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(opened_);
+  for (const AppId& app_id : update_data.apps_to_delete)
+    write_batch->DeleteData(app_id);
 
-  BeginTransaction();
-
-  for (auto& app_id : app_ids)
-    write_batch_->DeleteData(app_id);
-
-  CommitTransaction(std::move(callback));
+  store_->CommitWriteBatch(
+      std::move(write_batch),
+      base::BindOnce(&WebAppDatabase::OnDataWritten,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 // static
 std::unique_ptr<WebAppProto> WebAppDatabase::CreateWebAppProto(
     const WebApp& web_app) {
-  auto proto = std::make_unique<WebAppProto>();
+  auto local_data = std::make_unique<WebAppProto>();
 
   // Required fields:
+  const GURL launch_url = web_app.launch_url();
+  DCHECK(!launch_url.is_empty() && launch_url.is_valid());
+
   DCHECK(!web_app.app_id().empty());
-  proto->set_app_id(web_app.app_id());
+  DCHECK_EQ(web_app.app_id(), GenerateAppIdFromURL(launch_url));
 
-  DCHECK(!web_app.launch_url().is_empty() && web_app.launch_url().is_valid());
-  proto->set_launch_url(web_app.launch_url().spec());
+  sync_pb::WebAppSpecifics* sync_data = local_data->mutable_sync_data();
 
-  proto->set_name(web_app.name());
+  sync_data->set_launch_url(launch_url.spec());
 
-  DCHECK_NE(LaunchContainer::kDefault, web_app.launch_container());
-  proto->set_launch_container(web_app.launch_container() ==
-                                      LaunchContainer::kWindow
-                                  ? LaunchContainerProto::WINDOW
-                                  : LaunchContainerProto::TAB);
+  local_data->set_name(web_app.name());
 
-  proto->set_is_locally_installed(web_app.is_locally_installed());
+  sync_data->set_user_display_mode(
+      ToWebAppSpecificsUserDisplayMode(web_app.user_display_mode()));
+
+  DCHECK(web_app.sources_.any());
+  local_data->mutable_sources()->set_system(web_app.sources_[Source::kSystem]);
+  local_data->mutable_sources()->set_policy(web_app.sources_[Source::kPolicy]);
+  local_data->mutable_sources()->set_web_app_store(
+      web_app.sources_[Source::kWebAppStore]);
+  local_data->mutable_sources()->set_sync(web_app.sources_[Source::kSync]);
+  local_data->mutable_sources()->set_default_(
+      web_app.sources_[Source::kDefault]);
+
+  local_data->set_is_locally_installed(web_app.is_locally_installed());
 
   // Optional fields:
-  proto->set_description(web_app.description());
+  if (web_app.display_mode() != DisplayMode::kUndefined) {
+    local_data->set_display_mode(
+        ToWebAppProtoDisplayMode(web_app.display_mode()));
+  }
+  local_data->set_description(web_app.description());
   if (!web_app.scope().is_empty())
-    proto->set_scope(web_app.scope().spec());
+    local_data->set_scope(web_app.scope().spec());
   if (web_app.theme_color().has_value())
-    proto->set_theme_color(web_app.theme_color().value());
+    local_data->set_theme_color(web_app.theme_color().value());
 
-  for (const WebApp::IconInfo& icon : web_app.icons()) {
-    WebAppIconInfoProto* icon_proto = proto->add_icons();
-    icon_proto->set_url(icon.url.spec());
-    icon_proto->set_size_in_px(icon.size_in_px);
+  local_data->set_is_in_sync_install(web_app.is_in_sync_install());
+
+  // Set sync_data to sync proto.
+  sync_data->set_name(web_app.sync_data().name);
+  if (web_app.sync_data().theme_color.has_value())
+    sync_data->set_theme_color(web_app.sync_data().theme_color.value());
+
+  for (const WebApplicationIconInfo& icon_info : web_app.icon_infos()) {
+    WebAppIconInfoProto* icon_info_proto = local_data->add_icon_infos();
+    icon_info_proto->set_size_in_px(icon_info.square_size_px);
+    DCHECK(!icon_info.url.is_empty());
+    icon_info_proto->set_url(icon_info.url.spec());
   }
 
-  return proto;
+  for (SquareSizePx size : web_app.downloaded_icon_sizes())
+    local_data->add_downloaded_icon_sizes(size);
+
+  return local_data;
 }
 
 // static
-std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(const WebAppProto& proto) {
-  auto web_app = std::make_unique<WebApp>(proto.app_id());
+std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(
+    const WebAppProto& local_data) {
+  if (!local_data.has_sync_data()) {
+    DLOG(ERROR) << "WebApp proto parse error: no sync_data field";
+    return nullptr;
+  }
 
-  // Required fields:
-  GURL launch_url(proto.launch_url());
+  const sync_pb::WebAppSpecifics& sync_data = local_data.sync_data();
+
+  // AppId is a hash of launch_url. Read launch_url first:
+  GURL launch_url(sync_data.launch_url());
   if (launch_url.is_empty() || !launch_url.is_valid()) {
     DLOG(ERROR) << "WebApp proto launch_url parse error: "
                 << launch_url.possibly_invalid_spec();
     return nullptr;
   }
+
+  const AppId app_id = GenerateAppIdFromURL(launch_url);
+
+  auto web_app = std::make_unique<WebApp>(app_id);
   web_app->SetLaunchUrl(launch_url);
 
-  if (!proto.has_name()) {
+  // Required fields:
+  if (!local_data.has_sources()) {
+    DLOG(ERROR) << "WebApp proto parse error: no sources field";
+    return nullptr;
+  }
+
+  WebApp::Sources sources;
+  sources[Source::kSystem] = local_data.sources().system();
+  sources[Source::kPolicy] = local_data.sources().policy();
+  sources[Source::kWebAppStore] = local_data.sources().web_app_store();
+  sources[Source::kSync] = local_data.sources().sync();
+  sources[Source::kDefault] = local_data.sources().default_();
+  if (!sources.any()) {
+    DLOG(ERROR) << "WebApp proto parse error: no any source in sources field";
+    return nullptr;
+  }
+  web_app->sources_ = sources;
+
+  if (!local_data.has_name()) {
     DLOG(ERROR) << "WebApp proto parse error: no name field";
     return nullptr;
   }
-  web_app->SetName(proto.name());
+  web_app->SetName(local_data.name());
 
-  if (!proto.has_launch_container()) {
-    DLOG(ERROR) << "WebApp proto parse error: no launch_container field";
+  if (!sync_data.has_user_display_mode()) {
+    DLOG(ERROR) << "WebApp proto parse error: no user_display_mode field";
     return nullptr;
   }
-  web_app->SetLaunchContainer(proto.launch_container() ==
-                                      LaunchContainerProto::WINDOW
-                                  ? LaunchContainer::kWindow
-                                  : LaunchContainer::kTab);
+  web_app->SetUserDisplayMode(
+      ToMojomDisplayMode(sync_data.user_display_mode()));
 
-  if (!proto.has_is_locally_installed()) {
+  if (!local_data.has_is_locally_installed()) {
     DLOG(ERROR) << "WebApp proto parse error: no is_locally_installed field";
     return nullptr;
   }
-  web_app->SetIsLocallyInstalled(proto.is_locally_installed());
+  web_app->SetIsLocallyInstalled(local_data.is_locally_installed());
 
   // Optional fields:
-  if (proto.has_description())
-    web_app->SetDescription(proto.description());
+  if (local_data.has_display_mode())
+    web_app->SetDisplayMode(ToMojomDisplayMode(local_data.display_mode()));
 
-  if (proto.has_scope()) {
-    GURL scope(proto.scope());
+  if (local_data.has_description())
+    web_app->SetDescription(local_data.description());
+
+  if (local_data.has_scope()) {
+    GURL scope(local_data.scope());
     if (scope.is_empty() || !scope.is_valid()) {
       DLOG(ERROR) << "WebApp proto scope parse error: "
                   << scope.possibly_invalid_spec();
@@ -151,67 +213,92 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(const WebAppProto& proto) {
     web_app->SetScope(scope);
   }
 
-  if (proto.has_theme_color())
-    web_app->SetThemeColor(proto.theme_color());
+  if (local_data.has_theme_color())
+    web_app->SetThemeColor(local_data.theme_color());
 
-  WebApp::Icons icons;
-  for (int i = 0; i < proto.icons_size(); ++i) {
-    const WebAppIconInfoProto& icon_proto = proto.icons(i);
+  if (local_data.has_is_in_sync_install())
+    web_app->SetIsInSyncInstall(local_data.is_in_sync_install());
 
-    GURL icon_url(icon_proto.url());
+  // Parse sync_data from sync proto.
+  WebApp::SyncData parsed_sync_data;
+  if (sync_data.has_name())
+    parsed_sync_data.name = sync_data.name();
+  if (sync_data.has_theme_color())
+    parsed_sync_data.theme_color = sync_data.theme_color();
+  web_app->SetSyncData(std::move(parsed_sync_data));
+
+  std::vector<WebApplicationIconInfo> icon_infos;
+  for (const WebAppIconInfoProto& icon_info_proto : local_data.icon_infos()) {
+    WebApplicationIconInfo icon_info;
+    icon_info.square_size_px = icon_info_proto.size_in_px();
+    if (!icon_info_proto.has_url()) {
+      DLOG(ERROR) << "WebApp IconInfo has missing url";
+      return nullptr;
+    }
+    GURL icon_url(icon_info_proto.url());
     if (icon_url.is_empty() || !icon_url.is_valid()) {
       DLOG(ERROR) << "WebApp IconInfo proto url parse error: "
                   << icon_url.possibly_invalid_spec();
       return nullptr;
     }
+    icon_info.url = icon_url;
 
-    icons.push_back({icon_url, icon_proto.size_in_px()});
+    icon_infos.push_back(std::move(icon_info));
   }
-  web_app->SetIcons(std::move(icons));
+  web_app->SetIconInfos(std::move(icon_infos));
+
+  std::vector<SquareSizePx> icon_sizes_on_disk;
+  for (int32_t size : local_data.downloaded_icon_sizes())
+    icon_sizes_on_disk.push_back(size);
+  web_app->SetDownloadedIconSizes(std::move(icon_sizes_on_disk));
 
   return web_app;
 }
 
-void WebAppDatabase::ReadRegistry(OnceRegistryOpenedCallback callback) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(store_);
-  store_->ReadAllData(base::BindOnce(&WebAppDatabase::OnAllDataRead,
-                                     weak_ptr_factory_.GetWeakPtr(),
-                                     std::move(callback)));
-}
-
-void WebAppDatabase::CreateStore(
-    syncer::OnceModelTypeStoreFactory store_factory,
-    base::OnceClosure closure) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  std::move(store_factory)
-      .Run(syncer::WEB_APPS,
-           base::BindOnce(&WebAppDatabase::OnStoreCreated,
-                          weak_ptr_factory_.GetWeakPtr(), std::move(closure)));
-}
-
-void WebAppDatabase::OnStoreCreated(
-    base::OnceClosure closure,
+void WebAppDatabase::OnDatabaseOpened(
+    RegistryOpenedCallback callback,
     const base::Optional<syncer::ModelError>& error,
     std::unique_ptr<syncer::ModelTypeStore> store) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (error) {
+    error_callback_.Run(*error);
     DLOG(ERROR) << "WebApps LevelDB opening error: " << error->ToString();
     return;
   }
 
   store_ = std::move(store);
-  std::move(closure).Run();
+  // TODO(loyso): Use ReadAllDataAndPreprocess to parse protos in the background
+  // sequence.
+  store_->ReadAllData(base::BindOnce(&WebAppDatabase::OnAllDataRead,
+                                     weak_ptr_factory_.GetWeakPtr(),
+                                     std::move(callback)));
 }
 
 void WebAppDatabase::OnAllDataRead(
-    OnceRegistryOpenedCallback callback,
+    RegistryOpenedCallback callback,
     const base::Optional<syncer::ModelError>& error,
     std::unique_ptr<syncer::ModelTypeStore::RecordList> data_records) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (error) {
-    DLOG(ERROR) << "WebApps LevelDB read error: " << error->ToString();
+    error_callback_.Run(*error);
+    DLOG(ERROR) << "WebApps LevelDB data read error: " << error->ToString();
+    return;
+  }
+
+  store_->ReadAllMetadata(base::BindOnce(
+      &WebAppDatabase::OnAllMetadataRead, weak_ptr_factory_.GetWeakPtr(),
+      std::move(data_records), std::move(callback)));
+}
+
+void WebAppDatabase::OnAllMetadataRead(
+    std::unique_ptr<syncer::ModelTypeStore::RecordList> data_records,
+    RegistryOpenedCallback callback,
+    const base::Optional<syncer::ModelError>& error,
+    std::unique_ptr<syncer::MetadataBatch> metadata_batch) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (error) {
+    error_callback_.Run(*error);
+    DLOG(ERROR) << "WebApps LevelDB metadata read error: " << error->ToString();
     return;
   }
 
@@ -223,7 +310,7 @@ void WebAppDatabase::OnAllDataRead(
       registry.emplace(app_id, std::move(web_app));
   }
 
-  std::move(callback).Run(std::move(registry));
+  std::move(callback).Run(std::move(registry), std::move(metadata_batch));
   opened_ = true;
 }
 
@@ -231,8 +318,10 @@ void WebAppDatabase::OnDataWritten(
     CompletionCallback callback,
     const base::Optional<syncer::ModelError>& error) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (error)
+  if (error) {
+    error_callback_.Run(*error);
     DLOG(ERROR) << "WebApps LevelDB write error: " << error->ToString();
+  }
 
   std::move(callback).Run(!error);
 }
@@ -242,29 +331,72 @@ std::unique_ptr<WebApp> WebAppDatabase::ParseWebApp(const AppId& app_id,
                                                     const std::string& value) {
   WebAppProto proto;
   const bool parsed = proto.ParseFromString(value);
-  if (!parsed || proto.app_id() != app_id) {
-    DLOG(ERROR) << "WebApps LevelDB parse error (unknown).";
+  if (!parsed) {
+    DLOG(ERROR) << "WebApps LevelDB parse error: can't parse proto.";
     return nullptr;
   }
 
-  return CreateWebApp(proto);
+  auto web_app = CreateWebApp(proto);
+  if (web_app->app_id() != app_id) {
+    DLOG(ERROR) << "WebApps LevelDB error: app_id doesn't match storage key";
+    return nullptr;
+  }
+
+  return web_app;
 }
 
-void WebAppDatabase::BeginTransaction() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(!write_batch_);
-  write_batch_ = store_->CreateWriteBatch();
+DisplayMode ToMojomDisplayMode(WebAppProto::DisplayMode display_mode) {
+  switch (display_mode) {
+    case WebAppProto::BROWSER:
+      return DisplayMode::kBrowser;
+    case WebAppProto::MINIMAL_UI:
+      return DisplayMode::kMinimalUi;
+    case WebAppProto::STANDALONE:
+      return DisplayMode::kStandalone;
+    case WebAppProto::FULLSCREEN:
+      return DisplayMode::kFullscreen;
+  }
 }
 
-void WebAppDatabase::CommitTransaction(CompletionCallback callback) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(write_batch_);
+DisplayMode ToMojomDisplayMode(
+    ::sync_pb::WebAppSpecifics::UserDisplayMode user_display_mode) {
+  switch (user_display_mode) {
+    case ::sync_pb::WebAppSpecifics::BROWSER:
+      return DisplayMode::kBrowser;
+    case ::sync_pb::WebAppSpecifics::STANDALONE:
+      return DisplayMode::kStandalone;
+  }
+}
 
-  store_->CommitWriteBatch(
-      std::move(write_batch_),
-      base::BindOnce(&WebAppDatabase::OnDataWritten,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
-  write_batch_.reset();
+WebAppProto::DisplayMode ToWebAppProtoDisplayMode(DisplayMode display_mode) {
+  switch (display_mode) {
+    case DisplayMode::kBrowser:
+      return WebAppProto::BROWSER;
+    case DisplayMode::kMinimalUi:
+      return WebAppProto::MINIMAL_UI;
+    case DisplayMode::kUndefined:
+      NOTREACHED();
+      FALLTHROUGH;
+    case DisplayMode::kStandalone:
+      return WebAppProto::STANDALONE;
+    case DisplayMode::kFullscreen:
+      return WebAppProto::FULLSCREEN;
+  }
+}
+
+::sync_pb::WebAppSpecifics::UserDisplayMode ToWebAppSpecificsUserDisplayMode(
+    DisplayMode user_display_mode) {
+  switch (user_display_mode) {
+    case DisplayMode::kBrowser:
+      return ::sync_pb::WebAppSpecifics::BROWSER;
+    case DisplayMode::kUndefined:
+    case DisplayMode::kMinimalUi:
+    case DisplayMode::kFullscreen:
+      NOTREACHED();
+      FALLTHROUGH;
+    case DisplayMode::kStandalone:
+      return ::sync_pb::WebAppSpecifics::STANDALONE;
+  }
 }
 
 }  // namespace web_app

@@ -98,7 +98,7 @@ def RunSwarmingCommand(cmd, swarming_server, is_skylab=False,
       swarming_cmd += ['--expiration', str(expiration_secs)]
 
     if tags is not None:
-      for k, v in tags.items():
+      for k, v in sorted(tags.items()):
         swarming_cmd += ['--tags=%s:%s' % (k, v)]
 
     if service_account_json:
@@ -120,12 +120,12 @@ def RunSwarmingCommand(cmd, swarming_server, is_skylab=False,
           with timeout_util.Timeout(SILENCE_INTERVAL_MIN * 60):
             logging.info('Re-run swarming_cmd to avoid buildbot salency check.')
             if is_skylab:
-              result = cros_build_lib.RunCommand(
+              result = cros_build_lib.run(
                   swarming_cmd + ['--passed_mins',
                                   str(iteration * SILENCE_INTERVAL_MIN)],
                   *args, **kwargs)
             else:
-              result = cros_build_lib.RunCommand(swarming_cmd, *args, **kwargs)
+              result = cros_build_lib.run(swarming_cmd, *args, **kwargs)
             break
         except timeout_util.TimeoutError:
           pass
@@ -194,15 +194,15 @@ def RunSwarmingCommandWithRetries(max_retry, *args, **kwargs):
 
 
 class SwarmingCommandResult(cros_build_lib.CommandResult):
-  """An object to store result of a command that is run via swarming.
-
-  Args:
-    task_summary_json: A dictionary, loaded from the json file
-                       output by swarming client. It cantains all
-                       details about the swarming task.
-  """
+  """An object to store result of a command that is run via swarming."""
 
   def __init__(self, task_summary_json, *args, **kwargs):
+    """Initialize.
+
+    Args:
+      task_summary_json: A dictionary, loaded from the json file output by
+          swarming client. It cantains all details about the swarming task.
+    """
     super(SwarmingCommandResult, self).__init__(*args, **kwargs)
     self.task_summary_json = task_summary_json
 

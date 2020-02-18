@@ -114,7 +114,6 @@ jumbo_source_set("common_sources") {
   visibility = [ "//content/*" ]
 
   sources = [
-    "bind_interface_helpers.h",
     "bindings_policy.h",
     "browser_controls_state.h",
     "cdm_info.h",
@@ -124,7 +123,6 @@ jumbo_source_set("common_sources") {
     "common_param_traits.h",
     "common_param_traits_macros.h",
     "common_sandbox_support_linux.h",
-    "connection_filter.h",
     "console_message_level.h",
     "content_client.cc",
     "content_client.h",
@@ -161,8 +159,6 @@ jumbo_source_set("common_sources") {
     "menu_item.h",
     "mhtml_generation_params.cc",
     "mhtml_generation_params.h",
-    "mime_handler_view_mode.cc",
-    "mime_handler_view_mode.h",
     "navigation_policy.cc",
     "navigation_policy.h",
     "network_service_util.cc",
@@ -172,10 +168,12 @@ jumbo_source_set("common_sources") {
     "page_state.cc",
     "page_state.h",
     "page_type.h",
+    "page_visibility_state.h",
     "page_zoom.h",
     "pepper_plugin_info.cc",
     "pepper_plugin_info.h",
     "persistent_notification_status.h",
+    "previews_state.cc",
     "previews_state.h",
     "process_type.h",
     "profiling.cc",
@@ -198,8 +196,6 @@ jumbo_source_set("common_sources") {
     "screen_info.h",
     "screen_orientation_values.h",
     "service_manager_connection.h",
-    "simple_connection_filter.cc",
-    "simple_connection_filter.h",
     "socket_permission_request.h",
     "stop_find_action.h",
     "storage_quota_params.h",
@@ -216,8 +212,6 @@ jumbo_source_set("common_sources") {
     "webplugininfo.cc",
     "webplugininfo.h",
     "webplugininfo_param_traits.h",
-    "webrtc_ip_handling_policy.cc",
-    "webrtc_ip_handling_policy.h",
     "widget_type.h",
   ]
 
@@ -344,6 +338,7 @@ mojom("interfaces") {
   ]
 
   sources = [
+    "browser_controls_state.mojom",
     "drop_data.mojom",
     "fullscreen_video_element.mojom",
     "resource_load_info.mojom",
@@ -359,6 +354,7 @@ mojom("interfaces") {
   }
 
   public_deps = [
+    ":client_hints_mojom",
     ":resource_type_bindings",
     "//mojo/public/mojom/base:base",
     "//services/network/public/mojom",
@@ -373,6 +369,18 @@ mojom("interfaces") {
   export_class_attribute = "CONTENT_EXPORT"
   export_define = "CONTENT_IMPLEMENTATION=1"
   export_header = "content/common/content_export.h"
+}
+
+mojom("client_hints_mojom") {
+  sources = [
+    "client_hints.mojom",
+  ]
+
+  public_deps = [
+    "//mojo/public/mojom/base",
+    "//third_party/blink/public/mojom:web_client_hints_types_mojo_bindings",
+    "//url/mojom:url_mojom_origin",
+  ]
 }
 
 mojom("service_names") {

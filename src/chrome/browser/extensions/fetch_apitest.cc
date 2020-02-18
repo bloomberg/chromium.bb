@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/extensions/extension_apitest.h"
@@ -14,10 +15,33 @@
 #include "extensions/test/test_extension_dir.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/test/embedded_test_server/http_request.h"
+#include "net/test/embedded_test_server/http_response.h"
+#include "services/network/public/cpp/features.h"
 
 namespace extensions {
 
 namespace {
+
+// Returns a response whose body is request's origin.
+std::unique_ptr<net::test_server::HttpResponse> HandleEchoOrigin(
+    const net::test_server::HttpRequest& request) {
+  if (request.relative_url != "/echo-origin")
+    return nullptr;
+
+  auto response = std::make_unique<net::test_server::BasicHttpResponse>();
+  response->set_code(net::HTTP_OK);
+  response->set_content_type("text/plain");
+  auto it = request.headers.find("origin");
+  if (it != request.headers.end()) {
+    response->set_content(it->second);
+  } else {
+    response->set_content("<no origin attached>");
+  }
+  response->AddCustomHeader("access-control-allow-origin", "*");
+
+  return response;
+}
 
 // JavaScript snippet which performs a fetch given a URL expression to be
 // substituted as %s, then sends back the fetched content using the
@@ -30,6 +54,16 @@ const char* kFetchScript =
     "}).catch(function(err) {\n"
     "  window.domAutomationController.send(String(err));\n"
     "});\n";
+
+constexpr char kFetchPostScript[] = R"(
+  fetch($1, {method: 'POST'}).then((result) => {
+    return result.text();
+  }).then((text) => {
+    window.domAutomationController.send(text);
+  }).catch((error) => {
+    window.domAutomationController.send(String(err));
+  });
+)";
 
 class ExtensionFetchTest : public ExtensionApiTest {
  protected:
@@ -69,10 +103,12 @@ class ExtensionFetchTest : public ExtensionApiTest {
     return browser()->tab_strip_model()->GetActiveWebContents();
   }
 
- private:
   void SetUpOnMainThread() override {
     ExtensionApiTest::SetUpOnMainThread();
     host_resolver()->AddRule("*", "127.0.0.1");
+
+    embedded_test_server()->RegisterRequestHandler(
+        base::BindRepeating(HandleEchoOrigin));
     ASSERT_TRUE(StartEmbeddedTestServer());
   }
 };
@@ -219,6 +255,104 @@ IN_PROC_BROWSER_TEST_F(ExtensionFetchTest,
       &fetch_result));
   EXPECT_EQ("TypeError: Failed to fetch", fetch_result);
 }
+
+IN_PROC_BROWSER_TEST_F(ExtensionFetchTest, FetchResponseType) {
+  const std::string script = base::StringPrintf(
+      "fetch(%s).then(function(response) {\n"
+      "  window.domAutomationController.send(response.type);\n"
+      "}).catch(function(err) {\n"
+      "  window.domAutomationController.send(String(err));\n"
+      "});\n",
+      GetQuotedTestServerURL("example.com", "/extensions/test_file.txt")
+          .data());
+  TestExtensionDir dir;
+  dir.WriteManifestWithSingleQuotes(
+      "{"
+      "'background': {'scripts': ['bg.js']},"
+      "'manifest_version': 2,"
+      "'name': 'FetchResponseType',"
+      "'permissions': ['http://example.com/*'],"
+      "'version': '1'"
+      "}");
+  const Extension* extension = WriteFilesAndLoadTestExtension(&dir);
+  ASSERT_TRUE(extension);
+
+  EXPECT_EQ("basic", ExecuteScriptInBackgroundPage(extension->id(), script));
+}
+
+class ExtensionFetchPostOriginTest : public ExtensionFetchTest,
+                                     public testing::WithParamInterface<bool> {
+ protected:
+  void SetUp() override {
+    if (GetParam()) {
+      scoped_feature_list_.InitAndEnableFeature(
+          network::features::
+              kDeriveOriginFromUrlForNeitherGetNorHeadRequestWhenHavingSpecialAccess);
+    } else {
+      scoped_feature_list_.InitAndDisableFeature(
+          network::features::
+              kDeriveOriginFromUrlForNeitherGetNorHeadRequestWhenHavingSpecialAccess);
+    }
+    ExtensionFetchTest::SetUp();
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_P(ExtensionFetchPostOriginTest,
+                       OriginOnPostWithPermissions) {
+  TestExtensionDir dir;
+  dir.WriteManifest(R"JSON(
+     {
+      "background": {"scripts": ["bg.js"]},
+      "manifest_version": 2,
+      "name": "FetchResponseType",
+      "permissions": ["http://example.com/*"],
+      "version": "1"
+     })JSON");
+  const Extension* extension = WriteFilesAndLoadTestExtension(&dir);
+  ASSERT_TRUE(extension);
+
+  GURL destination_url =
+      embedded_test_server()->GetURL("example.com", "/echo-origin");
+  std::string script = content::JsReplace(kFetchPostScript, destination_url);
+  std::string origin_string =
+      network::features::ShouldEnableOutOfBlinkCorsForTesting() && GetParam()
+          ? url::Origin::Create(destination_url).Serialize()
+          : url::Origin::Create(extension->url()).Serialize();
+  EXPECT_EQ(origin_string,
+            ExecuteScriptInBackgroundPage(extension->id(), script));
+}
+
+IN_PROC_BROWSER_TEST_P(ExtensionFetchPostOriginTest,
+                       OriginOnPostWithoutPermissions) {
+  TestExtensionDir dir;
+  dir.WriteManifest(R"JSON(
+     {
+      "background": {"scripts": ["bg.js"]},
+      "manifest_version": 2,
+      "name": "FetchResponseType",
+      "permissions": [],
+      "version": "1"
+     })JSON");
+  const Extension* extension = WriteFilesAndLoadTestExtension(&dir);
+  ASSERT_TRUE(extension);
+
+  const std::string script = content::JsReplace(
+      kFetchPostScript,
+      embedded_test_server()->GetURL("example.com", "/echo-origin"));
+  EXPECT_EQ(url::Origin::Create(extension->url()).Serialize(),
+            ExecuteScriptInBackgroundPage(extension->id(), script));
+}
+
+INSTANTIATE_TEST_SUITE_P(UseExtensionOrigin,
+                         ExtensionFetchPostOriginTest,
+                         testing::Values(false));
+
+INSTANTIATE_TEST_SUITE_P(UseDestinationUrlOrigin,
+                         ExtensionFetchPostOriginTest,
+                         testing::Values(true));
 
 }  // namespace
 

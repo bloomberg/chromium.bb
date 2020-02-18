@@ -77,9 +77,8 @@ class SDKPackageStageTest(generic_stages_unittest.AbstractStageTestCase,
 
   def setUp(self):
     self.buildstore = FakeBuildStore()
-    # Replace SudoRunCommand, since we don't care about sudo.
-    self.PatchObject(
-        cros_build_lib, 'SudoRunCommand', wraps=cros_build_lib.RunCommand)
+    # Replace sudo_run, since we don't care about sudo.
+    self.PatchObject(cros_build_lib, 'sudo_run', wraps=cros_build_lib.run)
     self.uploadartifact_mock = self.PatchObject(
         generic_stages.ArchivingStageMixin, 'UploadArtifact')
     # Prepare a fake chroot.
@@ -110,9 +109,9 @@ class SDKPackageStageTest(generic_stages_unittest.AbstractStageTestCase,
     self.RunStage()
 
     # Check tarball for the correct contents.
-    output = cros_build_lib.RunCommand(
+    output = cros_build_lib.run(
         ['tar', '-I', 'xz', '-tvf', fake_tarball],
-        capture_output=True).output.splitlines()
+        encoding='utf-8', capture_output=True).stdout.splitlines()
     # First line is './', use it as an anchor, count the chars, and strip as
     # much from all other lines.
     stripchars = len(output[0]) - 1
@@ -273,9 +272,9 @@ class SDKPackageToolchainOverlaysStageTest(
           self.build_root, constants.DEFAULT_CHROOT_DIR,
           constants.SDK_OVERLAYS_OUTPUT,
           'built-sdk-overlay-toolchains-%s.tar.xz' % toolchains)
-      output = cros_build_lib.RunCommand(
+      output = cros_build_lib.run(
           ['tar', '-I', 'xz', '-tf', overlay_tarball],
-          capture_output=True).output.splitlines()
+          encoding='utf-8', capture_output=True).stdout.splitlines()
       # Check that the overlay tarball contains a marker file and that the
       # board recorded by this marker file indeed uses the toolchains for which
       # the tarball was built.
@@ -293,7 +292,7 @@ class SDKTestStageTest(generic_stages_unittest.AbstractStageTestCase):
   def setUp(self):
     self.buildstore = FakeBuildStore()
     # This code has its own unit tests, so no need to go testing it here.
-    self.run_mock = self.PatchObject(cros_build_lib, 'RunCommand')
+    self.run_mock = self.PatchObject(cros_build_lib, 'run')
 
   def ConstructStage(self):
     return sdk_stages.SDKTestStage(self._run, self.buildstore)

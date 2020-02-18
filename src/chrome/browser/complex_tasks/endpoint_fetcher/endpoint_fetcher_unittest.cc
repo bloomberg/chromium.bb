@@ -23,7 +23,7 @@ using MockEndpointFetcherCallback = base::MockCallback<EndpointFetcherCallback>;
 
 namespace {
 const char kContentType[] = "mock_content_type";
-const char kEmail[] = "mock_email";
+const char kEmail[] = "mock_email@gmail.com";
 const char kEndpoint[] = "https://my-endpoint.com";
 const char kExpectedResponse[] = "mock_response";
 const char kExpectedAuthError[] = "There was an authentication error";
@@ -84,21 +84,21 @@ class EndpointFetcherTest : public testing::Test {
                        const std::string& response_data,
                        net::HttpStatusCode response_code,
                        net::Error error) {
-    network::ResourceResponseHead head;
+    auto head = network::mojom::URLResponseHead::New();
     std::string headers(base::StringPrintf(
         "HTTP/1.1 %d %s\nContent-type: application/json\n\n",
         static_cast<int>(response_code), GetHttpReasonPhrase(response_code)));
-    head.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+    head->headers = base::MakeRefCounted<net::HttpResponseHeaders>(
         net::HttpUtil::AssembleRawHeaders(headers));
-    head.mime_type = "application/json";
+    head->mime_type = "application/json";
     network::URLLoaderCompletionStatus status(error);
     status.decoded_body_length = response_data.size();
-    test_url_loader_factory_.AddResponse(request_url, head, response_data,
-                                         status);
+    test_url_loader_factory_.AddResponse(request_url, std::move(head),
+                                         response_data, status);
   }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   signin::IdentityTestEnvironment identity_test_env_;
   MockEndpointFetcherCallback mock_callback_;
   network::TestURLLoaderFactory test_url_loader_factory_;

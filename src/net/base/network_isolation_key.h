@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/values.h"
@@ -34,6 +35,23 @@ class NET_EXPORT NetworkIsolationKey {
   NetworkIsolationKey& operator=(
       const NetworkIsolationKey& network_isolation_key);
   NetworkIsolationKey& operator=(NetworkIsolationKey&& network_isolation_key);
+
+  // Creates a transient non-empty NetworkIsolationKey by creating an opaque
+  // origin. This prevents the NetworkIsolationKey from sharing data with other
+  // NetworkIsolationKeys. Data for transient NetworkIsolationKeys is not
+  // persisted to disk.
+  static NetworkIsolationKey CreateTransient();
+
+  // Creates a new key using |top_frame_origin_| and |new_frame_origin|.
+  NetworkIsolationKey CreateWithNewFrameOrigin(
+      const url::Origin& new_frame_origin) const;
+
+  // Intended for temporary use in locations that should be using a non-empty
+  // NetworkIsolationKey(), but are not yet. This both reduces the chance of
+  // accidentally copying the lack of a NIK where one should be used, and
+  // provides a reasonable way of locating callsites that need to have their
+  // NetworkIsolationKey filled in.
+  static NetworkIsolationKey Todo() { return NetworkIsolationKey(); }
 
   // Compare keys for equality, true if all enabled fields are equal.
   bool operator==(const NetworkIsolationKey& other) const {
@@ -70,13 +88,20 @@ class NET_EXPORT NetworkIsolationKey {
   // disk related to it (e.g., disk cache).
   bool IsTransient() const;
 
-  // APIs for serialization to and from the mojo structure.
+  // Getters for the original top frame and frame origins used as inputs to
+  // construct |this|. This could return different values from what the
+  // isolation key eventually uses based on whether the NIK uses eTLD+1 or not.
+  // WARNING(crbug.com/1032081): Note that these might not return the correct
+  // value associated with a request if the NIK on which this is called is from
+  // a component using multiple requests mapped to the same NIK.
   const base::Optional<url::Origin>& GetTopFrameOrigin() const {
-    return top_frame_origin_;
+    DCHECK_EQ(original_top_frame_origin_.has_value(),
+              top_frame_origin_.has_value());
+    return original_top_frame_origin_;
   }
-
   const base::Optional<url::Origin>& GetFrameOrigin() const {
-    return frame_origin_;
+    DCHECK_EQ(original_frame_origin_.has_value(), frame_origin_.has_value());
+    return original_frame_origin_;
   }
 
   // Returns true if all parts of the key are empty.
@@ -96,14 +121,25 @@ class NET_EXPORT NetworkIsolationKey {
       WARN_UNUSED_RESULT;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(NetworkIsolationKeyWithFrameOriginTest,
+                           UseRegistrableDomain);
+
+  void ReplaceOriginsWithRegistrableDomains();
+
   // Whether or not to use the |frame_origin_| as part of the key.
   bool use_frame_origin_;
 
-  // The origin of the top frame of the page making the request.
+  // The origin/etld+1 of the top frame of the page making the request.
   base::Optional<url::Origin> top_frame_origin_;
 
-  // The origin of the frame that initiates the request.
+  // The original top frame origin sent to the constructor of this request.
+  base::Optional<url::Origin> original_top_frame_origin_;
+
+  // The origin/etld+1 of the frame that initiates the request.
   base::Optional<url::Origin> frame_origin_;
+
+  // The original frame origin sent to the constructor of this request.
+  base::Optional<url::Origin> original_frame_origin_;
 };
 
 }  // namespace net

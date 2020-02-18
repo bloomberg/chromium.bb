@@ -24,14 +24,15 @@ URLRequestContextBuilderMojo::URLRequestContextBuilderMojo() = default;
 URLRequestContextBuilderMojo::~URLRequestContextBuilderMojo() = default;
 
 void URLRequestContextBuilderMojo::SetMojoProxyResolverFactory(
-    proxy_resolver::mojom::ProxyResolverFactoryPtr
+    mojo::PendingRemote<proxy_resolver::mojom::ProxyResolverFactory>
         mojo_proxy_resolver_factory) {
   mojo_proxy_resolver_factory_ = std::move(mojo_proxy_resolver_factory);
 }
 
 #if defined(OS_CHROMEOS)
 void URLRequestContextBuilderMojo::SetDhcpWpadUrlClient(
-    network::mojom::DhcpWpadUrlClientPtr dhcp_wpad_url_client) {
+    mojo::PendingRemote<network::mojom::DhcpWpadUrlClient>
+        dhcp_wpad_url_client) {
   dhcp_wpad_url_client_ = std::move(dhcp_wpad_url_client);
 }
 #endif  // defined(OS_CHROMEOS)

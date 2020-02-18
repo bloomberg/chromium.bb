@@ -127,6 +127,9 @@
   <message desc="Label text used to cancel zip operation in progress." name="IDS_ZIP_ARCHIVER_PACKING_CANCEL_BUTTON_LABEL">
     Cancel
   </message>
+  <message desc="Message shown when limit of open FSPs reached." name="IDS_ZIP_ARCHIVER_TOO_MANY_OPENED">
+    Too many file systems opened.
+  </message>
 
   <!-- MultiDevice setup dialog. -->
   <message name="IDS_MULTIDEVICE_SETUP_ACCEPT_LABEL" desc="Label for button to accept conditions and begin MultiDevice setup workflow.">
@@ -153,6 +156,9 @@
   <message name="IDS_MULTIDEVICE_SETUP_SETUP_SUCCEEDED_PAGE_MESSAGE" desc="Message for successful setup page.">
     Go to <ph name="LINK_BEGIN">&lt;a id="settings-link"&gt;</ph>Settings<ph name="LINK_END">&lt;/a&gt;</ph> to see options for your connected phone
   </message>
+  <message name="IDS_MULTIDEVICE_SETUP_DIALOG_ACCESSIBILITY_TITLE" desc="Accessibility title for the multidevice setup dialog with a '- Dialog' appended to inform screen reader users they are in a dialog. This is a work around to deal with the fact that we cannot annotate the window's role as a dialog another way.">
+    Connect to your phone - Dialog
+  </message>
   <message name="IDS_MULTIDEVICE_SETUP_START_SETUP_PAGE_HEADER" desc="Header for welcome page.">
     Connect to your phone
   </message>
@@ -167,6 +173,10 @@
   </message>
   <message name="IDS_MULTIDEVICE_SETUP_START_SETUP_PAGE_MULTIPLE_DEVICE_HEADER" desc="Label appearing over a list of Android phones which this Chromebook can connect to.">
     Select a device
+  </message>
+  <message name="IDS_MULTIDEVICE_SETUP_START_SETUP_PAGE_OFFLINE_DEVICE_OPTION" desc="Device name appearing in the list of Android phones indicating
+  the device is offline.">
+    <ph name="DEVICE_NAME">$1<ex>Pixel 2</ex></ph> (offline)
   </message>
   <message name="IDS_MULTIDEVICE_SETUP_START_SETUP_PAGE_FEATURE_LIST_HEADER" desc="Header to introduce a list of the features that the user is agreeing to in the multi-device setup.">
     When you connect your devices, you agree that your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> can:
@@ -192,6 +202,12 @@
   <!-- Update Screen Strings -->
   <message name="IDS_CHECKING_FOR_UPDATES" desc="Notification for checking for update">
     Checking for updates
+  </message>
+  <message name="IDS_CHECKING_FOR_UPDATE_MSG" desc="Chrome OS OOBE: message shown during checking for update stage.">
+    Future software and security updates will install automatically.
+  </message>
+  <message name="IDS_UPDATE_MSG" desc="Chrome OS OOBE: message shown during update stage.">
+    Your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> will restart after this update. Future software and security updates will install automatically.
   </message>
   <message name="IDS_QUICK_FIX_RELEASE_BUILD" desc="Quick Fix build which is Chrome OS release build displayed string instead of canary/dev/beta.">
     QuickFix
@@ -423,7 +439,7 @@
     Powerwash illustration
   </message>
   <message name="IDS_UPDATING_SCREEN_TITLE" desc="Title of the OOBE screen displayed while system update is being dowloaded.">
-    Updating
+    Updating...
   </message>
   <message name="IDS_UPDATE_SCREEN_ACCESSIBLE_TITLE" desc="Title to be spoken on opening the OOBE update screen">
     Chrome updates automatically so you always have the freshest version
@@ -600,6 +616,23 @@
     Accept and continue
   </message>
 
+  <!-- Strings for the OOBE packaged license screen -->
+  <message name="IDS_OOBE_PACKAGED_LICENSE_TITLE" desc="Title of the screen which advertises use of packaged license.">
+    Enroll your device
+  </message>
+  <message name="IDS_OOBE_PACKGED_LICENSE_SUBTITLE_P1" desc="Paragraph 1 of subtitle of the packaged license screen.">
+    This Chromebook Enterprise device comes bundled with the Chrome Enterprise Upgrade. To take advantage of the enterprise capabilities, enroll this device with a Google admin account.
+  </message>
+  <message name="IDS_OOBE_PACKGED_LICENSE_SUBTITLE_P2" desc="Paragraph 2 of subtitle of the packaged license screen.">
+    Visit g.co/ChromeEnterpriseAccount if you need to create a new account.
+  </message>
+  <message name="IDS_OOBE_PACKAGED_LICENSE_ENROLL_BUTTON_LABEL" desc="The label of the button that leads to enrollment screen.">
+    Enroll
+  </message>
+  <message name="IDS_OOBE_PACKAGED_LICENSE_DONT_ENROLL_BUTTON_LABEL" desc="The label of the button that leads to login screen.">
+    Don't enroll
+  </message>
+
    <!-- Strings for the OOBE demo setup flow -->
   <message name="IDS_OOBE_DEMO_SETUP_PREFERENCES_SCREEN_TITLE" desc="The title of the dialog that allows to choose demo setup preferences.">
     Choose your demo preferences
@@ -759,54 +792,6 @@
   </message>
   <message name="IDS_LOGIN_SYNC_CONSENT_SCREEN_ACCEPT_AND_CONTINUE" desc="The label on the button that closes dialog while accepting the selected settings.">
     Accept and continue
-  </message>
-  <message name="IDS_LOGIN_SYNC_CONSENT_GET_GOOGLE_SMARTS" desc="The title of the dialog that explains Chrome Sync and privacy options.">
-    Get Google smarts in <ph name="IDS_SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph>
-  </message>
-  <message name="IDS_LOGIN_SYNC_CONSENT_YOUR_BOOKMARKS_ON_ALL_DEVICES" desc="Example of how user will benefit from enabling sync and personalization Chrome features.">
-    Your bookmarks, passwords, history, and more on all your devices
-  </message>
-  <message name="IDS_LOGIN_SYNC_CONSENT_PERSONALIZED_GOOGLE_SERVICES" desc="Example of how user will benefit from enabling sync and personalization Chrome features.">
-    Personalized Google services like Play
-  </message>
-  <message name="IDS_LOGIN_SYNC_CONSENT_IMPROVE_CHROME" desc="Example of how user can help to make Chrome better by enabling sync and personalization Chrome features.">
-    Improve <ph name="IDS_SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> and its security by sending system information and usage to Google
-  </message>
-  <message name="IDS_LOGIN_SYNC_CONSENT_GOOGLE_MAY_USE" desc="The explanation how google may use statistics.">
-    Google may use content on sites you visit and browsing activity and interactions to personalize <ph name="IDS_SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> and other Google services like Translate, Search, and ads. You can customize this anytime in Settings.
-  </message>
-  <message name="IDS_LOGIN_SYNC_CONSENT_MORE_OPTIONS" desc="Label on the button that will open a new dialog with options.">
-    More options
-  </message>
-  <message name="IDS_LOGIN_SYNC_CONSENT_YES_I_AM_IN" desc="Label on the button that user should press to agree with displayed options.">
-    Yes, I'm in.
-  </message>
-  <message name="IDS_LOGIN_SYNC_CONSENT_SYNC_OPTIONS" desc="The title of the dialog that allows user to adjust Chrome sync options.">
-    Sync and personalization options
-  </message>
-  <message name="IDS_LOGIN_SYNC_CONSENT_SYNC_OPTIONS_SUBTITLE" desc="A paragraph below the dialog title explaining the meaning of the selectable options in the dialog.">
-    To help you more easily manage your experience in <ph name="IDS_SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph>, features related to sync and personalization are now under a single control. Turning this on may change your current settings.
-  </message>
-  <message name="IDS_LOGIN_SYNC_CONSENT_CHOOSE_OPTION" desc="A paragraph below the dialog title explaining that user needs to choose one of the displayed options below.">
-    To continue, choose an option:
-  </message>
-  <message name="IDS_LOGIN_SYNC_CONSENT_OPTION_REVIEW" desc="A label displayed next to the radio-button that will open features review dialog after setup is completed.">
-    Review sync and personalization features following setup
-  </message>
-  <message name="IDS_LOGIN_SYNC_CONSENT_OPTION_REVIEW_DSC" desc="A short description that is displayed under the option label, explaining what this option is about. This option will allow user to review individual settings later.">
-    Review the settings for each feature and change them if you want
-  </message>
-  <message name="IDS_LOGIN_SYNC_CONSENT_OPTION_JUST_SYNC" desc="A label displayed next to the radio-button that will turn on only Chrome sync feature and no personalization.">
-    Just sync
-  </message>
-  <message name="IDS_LOGIN_SYNC_CONSENT_OPTION_JUST_SYNC_DSC" desc="A short description that is displayed under the selectable option name, explaining that this option will turn on only Chrome sync and no personalization.">
-    Only enable features related to <ph name="IDS_SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> Sync
-  </message>
-  <message name="IDS_LOGIN_SYNC_CONSENT_OPTION_SYNC_AND_PERSONALIZATION" desc="A label displayed next to the radio-button that will turn on both Chrome sync and personalization features.">
-    Go ahead, turn on sync and personalization features
-  </message>
-  <message name="IDS_LOGIN_SYNC_CONSENT_OPTION_SYNC_AND_PERSONALIZATION_DSC" desc="A short description that is displayed under the selectable 'all features' option name, explaining user can always change this selection later in Chrome Settings.">
-    You can always change this later in settings
   </message>
   <message name="IDS_LOGIN_RECOMMEND_APPS_SCREEN_TITLE" desc="The title of the dialog that recommend apps which user has installed in other devices">
     Install apps from your other devices
@@ -1011,7 +996,6 @@
   </message>
   <message name="IDS_LOGIN_SAML_INTERSTITIAL_MESSAGE" desc="Message to show on the SAML interstitial page to tell the user to continue signing in using their enterprise account.">
     This device is managed by <ph name="BEGIN_BOLD">&lt;strong&gt;</ph><ph name="DOMAIN">$1<ex>acmecorp.com</ex></ph><ph name="END_BOLD">&lt;/strong&gt;</ph>.
-    <ph name="LINE_BREAK">&lt;br/&gt;</ph>
     Please click "Next" to continue signing in to your <ph name="BEGIN_BOLD">&lt;strong&gt;</ph><ph name="DOMAIN">$1<ex>acmecorp.com</ex></ph><ph name="END_BOLD">&lt;/strong&gt;</ph> account.
   </message>
   <message name="IDS_LOGIN_SAML_INTERSTITIAL_CHANGE_ACCOUNT_LINK_TEXT" desc="Text of the link that allows the user to change the login account.">
@@ -1242,9 +1226,15 @@
     Invalid client certificate
   </message>
 
-  <!-- Strings used in <cr-network-list>, used in Settings and OOBE -->
+  <!-- Strings used in <network-list>, used in Settings and OOBE -->
   <message name="IDS_NETWORK_LIST_INITIALIZING" desc="Text in the network list element when a Cellular network is initiailizing.">
     Initializing...
+  </message>
+  <message name="IDS_NETWORK_LIST_NOT_AVAILABLE" desc="Text in the network list element when a network is not available to be selected but is still present in the list (e.g., if cellular activation is not allowed in the current context, this message is displayed next to unactivated cellular networks).">
+    Not available
+  </message>
+  <message name="IDS_NETWORK_LIST_SIM_CARD_LOCKED" desc="Text in the network list element when a Cellular network's SIM card is locked.">
+    SIM card is locked
   </message>
   <message name="IDS_NETWORK_LIST_NOT_CONNECTED" desc="Text in the network list element when there is a network for the type, but it is not connected or connecting.">
     Not connected
@@ -1257,6 +1247,57 @@
   </message>
   <message name="IDS_NETWORK_LIST_THIRD_PARTY_VPN_NAME_TEMPLATE" desc="Template for constructing the name of a VPN network that is handled by a third-party VPN provider from the provider name and the network name.">
     <ph name="PROVIDER_NAME">$1<ex>OpenVPN</ex></ph>: <ph name="NETWORK_NAME">$2<ex>Work Network</ex></ph>
+  </message>
+  <message name="IDS_NETWORK_LIST_ITEM_SUBPAGE_BUTTON_LABEL" desc="A11y label for a button which links to details about a network, shown in settings.">
+    <ph name="NETWORK_NAME">$1<ex>GuestNetwork</ex></ph>, Details
+  </message>
+  <message name="IDS_NETWORK_LIST_ITEM_LABEL" desc="A11y label for a network shown in a list in settings and oobe.  Clicking the network starts a connection attempt.">
+    Network <ph name="NETWORK_INDEX">$1<ex>1</ex></ph> of <ph name="NETWORK_COUNT">$2<ex>10</ex></ph>, <ph name="NETWORK_NAME">$3<ex>Ethernet</ex></ph>, Connect
+  </message>
+  <message name="IDS_NETWORK_LIST_ITEM_LABEL_ETHERNET_MANAGED" desc="A11y label for an enterprise managed ethernet network shown in a list in settings and oobe.  Clicking the network starts a connection attempt.">
+    Network <ph name="NETWORK_INDEX">$1<ex>1</ex></ph> of <ph name="NETWORK_COUNT">$2<ex>10</ex></ph>, <ph name="NETWORK_NAME">$3<ex>Ethernet</ex></ph>, Managed by your Administrator, Connect
+  </message>
+  <message name="IDS_NETWORK_LIST_ITEM_LABEL_ETHERNET_WITH_CONNECTION_STATUS" desc="A11y label for an enterprise managed ethernet network with connection status shown in a list in settings and oobe.  Clicking the network navigates to the details page.">
+    Network <ph name="NETWORK_INDEX">$1<ex>1</ex></ph> of <ph name="NETWORK_COUNT">$2<ex>10</ex></ph>, <ph name="NETWORK_NAME">$3<ex>Ethernet</ex></ph>, <ph name="CONNECTION_STATUS">$4<ex>Connected</ex></ph>, Details
+  </message>
+  <message name="IDS_NETWORK_LIST_ITEM_LABEL_ETHERNET_MANAGED_WITH_CONNECTION_STATUS" desc="A11y label for an enterprise managed ethernet network in a list in settings and oobe.  Includes connection status.  Clicking the network navigates to the details page.">
+    Network <ph name="NETWORK_INDEX">$1<ex>1</ex></ph> of <ph name="NETWORK_COUNT">$2<ex>10</ex></ph>, <ph name="NETWORK_NAME">$3<ex>Ethernet</ex></ph>, <ph name="CONNECTION_STATUS">$4<ex>Connected</ex></ph>, Managed by your Administrator, Details
+  </message>
+  <message name="IDS_NETWORK_LIST_ITEM_LABEL_WIFI" desc="A11y label for a Wi-Fi network in a list in settings and oobe.  Clicking the network starts a connection attempt.">
+    Network <ph name="NETWORK_INDEX">$1<ex>1</ex></ph> of <ph name="NETWORK_COUNT">$2<ex>10</ex></ph>, <ph name="NETWORK_NAME">$3<ex>GuestNetwork</ex></ph>, <ph name="SECURITY_STATUS">$4<ex>Unsecured</ex></ph>, Signal Strength <ph name="SIGNAL_STRENGTH">$5<ex>80</ex></ph>%, Connect
+  </message>
+  <message name="IDS_NETWORK_LIST_ITEM_LABEL_WIFI_MANAGED" desc="A11y label for an enterprise managed Wi-Fi network in a list in settings and oobe. Clicking the network starts a connection attempt.">
+    Network <ph name="NETWORK_INDEX">$1<ex>1</ex></ph> of <ph name="NETWORK_COUNT">$2<ex>10</ex></ph>, <ph name="NETWORK_NAME">$3<ex>GuestNetwork</ex></ph>, <ph name="SECURITY_STATUS">$4<ex>Unsecured</ex></ph>, Signal Strength <ph name="SIGNAL_STRENGTH">$5<ex>80</ex></ph>%, Managed by your Administrator, Connect
+  </message>
+  <message name="IDS_NETWORK_LIST_ITEM_LABEL_WIFI_WITH_CONNECTION_STATUS" desc="A11y label for a Wi-Fi network in a list in settings and oobe.  Includes connection status.  Clicking the network navigates to the details page.">
+    Network <ph name="NETWORK_INDEX">$1<ex>1</ex></ph> of <ph name="NETWORK_COUNT">$2<ex>10</ex></ph>, <ph name="NETWORK_NAME">$3<ex>GuestNetwork</ex></ph>, <ph name="SECURITY_STATUS">$4<ex>Unsecured</ex></ph>, <ph name="CONNECTION_STATUS">$5<ex>Connecting</ex></ph>, Signal Strength <ph name="SIGNAL_STRENGTH">$6<ex>80</ex></ph>%, Details
+  </message>
+  <message name="IDS_NETWORK_LIST_ITEM_LABEL_WIFI_MANAGED_WITH_CONNECTION_STATUS" desc="A11y label for an enterprise managed Wi-Fi network in a list in settings and oobe.  Includes connection status.  Clicking the network navigates to the details page.">
+    Network <ph name="NETWORK_INDEX">$1<ex>1</ex></ph> of <ph name="NETWORK_COUNT">$2<ex>10</ex></ph>, <ph name="NETWORK_NAME">$3<ex>GuestNetwork</ex></ph>, <ph name="SECURITY_STATUS">$4<ex>Unsecured</ex></ph>, <ph name="CONNECTION_STATUS">$5<ex>Connecting</ex></ph>, Signal Strength <ph name="SIGNAL_STRENGTH">$6<ex>80</ex></ph>%, Managed by your Administrator, Details
+  </message>
+  <message name="IDS_NETWORK_LIST_ITEM_LABEL_CELLULAR" desc="A11y label for a cellular network in a list in settings and oobe. Clicking the network starts a connection attempt.">
+    Network <ph name="NETWORK_INDEX">$1<ex>1</ex></ph> of <ph name="NETWORK_COUNT">$2<ex>10</ex></ph>, <ph name="NETWORK_NAME">$3<ex>Verizon Wireless</ex></ph>, Signal Strength <ph name="SIGNAL_STRENGTH">$4<ex>80</ex></ph>%, Connect
+  </message>
+  <message name="IDS_NETWORK_LIST_ITEM_LABEL_CELLULAR_MANAGED" desc="A11y label for an enterprise managed cellular network in a list in settings and oobe. Clicking the network starts a connection attempt. Clicking the network navigates to the details page.">
+    Network <ph name="NETWORK_INDEX">$1<ex>1</ex></ph> of <ph name="NETWORK_COUNT">$2<ex>10</ex></ph>, <ph name="NETWORK_NAME">$3<ex>Verizon Wireless</ex></ph>, Signal Strength <ph name="SIGNAL_STRENGTH">$4<ex>80</ex></ph>%, Managed by your Administrator, Connect
+  </message>
+  <message name="IDS_NETWORK_LIST_ITEM_LABEL_CELLULAR_WITH_CONNECTION_STATUS" desc="A11y label for a cellular network in a list in settings and oobe .  Includes connection status. Clicking the network navigates to the details page.">
+    Network <ph name="NETWORK_INDEX">$1<ex>1</ex></ph> of <ph name="NETWORK_COUNT">$2<ex>10</ex></ph>, <ph name="NETWORK_NAME">$3<ex>Verizon Wireless</ex></ph>, <ph name="CONNECTION_STATUS">$4<ex>Connecting...</ex></ph>, Signal Strength <ph name="SIGNAL_STRENGTH">$5<ex>80</ex></ph>%, Details
+  </message>
+  <message name="IDS_NETWORK_LIST_ITEM_LABEL_CELLULAR_MANAGED_WITH_CONNECTION_STATUS" desc="A11y label for an enterprise managed cellular network in a list in settings and oobe.  Includes connection status. Clicking the network navigates to the details page.">
+    Network <ph name="NETWORK_INDEX">$1<ex>1</ex></ph> of <ph name="NETWORK_COUNT">$2<ex>10</ex></ph>, <ph name="NETWORK_NAME">$3<ex>Verizon Wireless</ex></ph>, <ph name="CONNECTION_STATUS">$4<ex>Connecting...</ex></ph>, Signal Strength <ph name="SIGNAL_STRENGTH">$5<ex>80</ex></ph>%, Managed by your Administrator, Details
+  </message>
+  <message name="IDS_NETWORK_LIST_ITEM_LABEL_TETHER" desc="A11y label for a phone tether network in a list in settings and oobe. Clicking the network navigates to the details page.">
+    Network <ph name="NETWORK_INDEX">$1<ex>1</ex></ph> of <ph name="NETWORK_COUNT">$2<ex>10</ex></ph>, <ph name="PHONE_NAME">$3<ex>Pixel 4</ex></ph>, Signal Strength <ph name="SIGNAL_STRENGTH">$4<ex>80</ex></ph>%, Phone Battery <ph name="BATTERY_STATUS">$5<ex>80</ex></ph>%, Connect
+  </message>
+  <message name="IDS_NETWORK_LIST_ITEM_LABEL_TETHER_WITH_CONNECTION_STATUS" desc="A11y label for a phone tether network in a list in settings and oobe.  Includes connection status. Clicking the network navigates to the details page.">
+    Network <ph name="NETWORK_INDEX">$1<ex>1</ex></ph> of <ph name="NETWORK_COUNT">$2<ex>10</ex></ph>, <ph name="PHONE_NAME">$3<ex>Pixel 4</ex></ph>, <ph name="CONNECTION_STATUS">$4<ex>Connecting...</ex></ph>, Signal Strength <ph name="SIGNAL_STRENGTH">$5<ex>80</ex></ph>%, Phone Battery <ph name="BATTERY_STATUS">$6<ex>80</ex></ph>%, Details
+  </message>
+  <message name="IDS_WIFI_NETWORK_STATUS_SECURED" desc="a11y label used when a Wi-Fi network is secured.">
+    Secured
+  </message>
+  <message name="IDS_WIFI_NETWORK_STATUS_UNSECURED" desc="a11y label used when a Wi-Fi network connection is not secured.">
+    Unsecured
   </message>
 
   <!-- Other Network UI strings -->
@@ -1495,7 +1536,36 @@
     <ph name="BR">&lt;br&gt;</ph>
     <ph name="BEGIN_BOLD">&lt;b&gt;</ph>Note:<ph name="END_BOLD">&lt;/b&gt;</ph>  The system will reboot during the process.
   </message>
-
+  <message name="IDS_ENABLE_ARC_ADB_SIDELOADING_SETUP_TITLE" desc="Title of the enable ARC ADB Sideloading screen upon reboot">
+    Do you want to proceed?
+  </message>
+  <message name="IDS_ENABLE_ARC_ADB_SIDELOADING_SETUP_MESSAGE" desc="Setup message in dialog for enabling ARC ADB Sideloading.">
+    Continuing will enable ADB debugging for creating and testing Android apps. Note that ADB debugging allows installation of test apps that haven't been verified by Google.
+  </message>
+  <message name="IDS_ENABLE_ARC_ADB_SIDELOADING_SETUP_ILLUSTRATION_TITLE" desc="Accessible title of ARC ADB sideloading illustration depicting the setup screen.">
+    Enabling adb to create apps illustration
+  </message>
+  <message name="IDS_ENABLE_ARC_ADB_SIDELOADING_ERROR_TITLE" desc="Title message when enabling of ARC ADB Sideloading fails.">
+    Something went wrong
+  </message>
+  <message name="IDS_ENABLE_ARC_ADB_SIDELOADING_ERROR_MESSAGE" desc="Error message when enabling of ARC ADB Sideloading fails.">
+    Couldn't enable ADB debugging. Go to Settings and try again.
+  </message>
+  <message name="IDS_ENABLE_ARC_ADB_SIDELOADING_ERROR_ILLUSTRATION_TITLE" desc="Accessible title of ARC ADB sideloading illustration depicting the error screen.">
+    Failed to enable ADB illustration
+  </message>
+  <message name="IDS_ENABLE_ARC_ADB_SIDELOADING_LEARN_MORE" desc="Learn more link text in the enable ARC ADB Sideloading dialog.">
+    Learn more
+  </message>
+  <message name="IDS_ENABLE_ARC_ADB_SIDELOADING_CONFIRM_BUTTON" desc="Button for confirming an action in a dialog for ARC ADB Sideloading.">
+    Confirm
+  </message>
+  <message name="IDS_ENABLE_ARC_ADB_SIDELOADING_CANCEL_BUTTON" desc="Button for canceling an action in a dialog for ARC ADB Sideloading.">
+    Cancel
+  </message>
+  <message name="IDS_ENABLE_ARC_ADB_SIDELOADING_OK_BUTTON" desc="Button for acknowledging in a dialog for ARC ADB Sideloading.">
+    OK
+  </message>
   <message name="IDS_RESET_SCREEN_WARNING_MSG" desc="Warning text shown on reset screen above the exclamation icon.">
     Reset this <ph name="IDS_SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> device
   </message>
@@ -1603,9 +1673,6 @@
   </message>
   <message name="IDS_CONTROLLED_SETTING_PARENT" desc="Text displayed in the controlled settings bubble when a setting's value is controlled by user's parent.">
     This setting is managed by a parent.
-  </message>
-  <message name="IDS_CONTROLLED_SETTING_CHILD_RESTRICTION" desc="Text displayed in the controlled settings bubble when a setting's value is pre-set because the user is a child.">
-    This setting can't be changed by a child user.
   </message>
   <message name="IDS_STATUSBAR_DISABLE_SPOKEN_FEEDBACK" desc="The menu option to disable spoken feedback accessibility feature.">
     Disable ChromeVox (spoken feedback)
@@ -1812,11 +1879,8 @@
   <message name="IDS_LOGIN_ERROR_OFFLINE_FAILED_NETWORK_NOT_CONNECTED" desc="Couldn't sign in because offline sign-in has failed and network is not connected">
     Sorry, your email or password could not be verified. Try connecting to a network first.
   </message>
-  <message name="IDS_LOGIN_ERROR_KEYBOARD_SWITCH_HINT" desc="A hint text for the login and lock screens about layout switching">
-    Hit Control-Shift-Space to switch keyboard layout.
-  </message>
-  <message name="IDS_LOGIN_ERROR_CAPS_LOCK_HINT" desc="A hint text for the login and lock screens that Caps Lock is on">
-    Caps Lock is on.
+  <message name="IDS_LOGIN_ERROR_KEYBOARD_SWITCH_HINT" desc="A hint text for the login and lock screens about correct layout">
+    Check your keyboard layout and try again.
   </message>
   <message name="IDS_LOGIN_ERROR_CAPTIVE_PORTAL" desc="An error message shown when we suggest that user may be behind the captive portal.">
     Before signing in, please enter as Guest to activate the network <ph name="NETWORK_ID">$1<ex>Public Wifi</ex></ph>
@@ -2093,11 +2157,17 @@
   <message name="IDS_EOL_NOTIFICATION_TITLE" desc="Notification title shown to inform the user that this device is no longer supported.">
     Final software update
   </message>
-  <message name="IDS_EOL_NOTIFICATION_EOL" desc="Notification shown to inform the user that this device will no longer receive latest software updates.">
+  <message name="IDS_EOL_NOTIFICATION_EOL" desc="Notification message shown to inform the user that this device will no longer receive latest software updates.">
     This is the last automatic software and security update for this <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>. To get future updates, upgrade to a newer model.
   </message>
   <message name="IDS_EOL_DISMISS_BUTTON" desc="A button label shown in the notification for eol status change to dismiss the notification.">
     Don't remind me again
+  </message>
+  <message name="IDS_PENDING_EOL_NOTIFICATION_TITLE" desc="Notification title shown to inform the user that this device will no longer be supported after a certain period of time.">
+    Updates end <ph name="MONTH_AND_YEAR">$1<ex>June 2020</ex></ph>
+  </message>
+  <message name="IDS_PENDING_EOL_NOTIFICATION_MESSAGE" desc="Notification message shown to inform the user that this device will no longer receive latest software updates after a certain period of time.">
+    You'll still be able to use this <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> after that time, but it will no longer get automatic software and security updates
   </message>
 
   <!-- TPM Firmware Update Notification Strings -->
@@ -2664,7 +2734,8 @@
     <ph name="LICENSE_TYPE">$1<ex>Perpetual</ex></ph> (<ph name="LICENSE_COUNT">$2<ex>10</ex></ph> rem.)
   </message>
 
-  <!-- About network UI display strings -->
+  <!-- About network UI (chrome://network) display strings (for developer
+       debugging) -->
   <message name="IDS_NETWORK_UI_TITLE" desc="Title of the page">
     Network
   </message>
@@ -2703,6 +2774,9 @@
   </message>
   <message name="IDS_NETWORK_UI_FAVORITE_NETWORKS" desc="Label for list of favorite networks">
     Favorite Networks:
+  </message>
+  <message name="IDS_NETWORK_UI_ETHERNET_EAP" desc="Label for section with the EthernetEAP network">
+    Ethernet EAP:
   </message>
   <message name="IDS_NETWORK_UI_DEVICES" desc="Label for list of network devices, e.g. wifi or cellular">
     Devices:
@@ -2930,6 +3004,12 @@
   <message name="IDS_ARC_OPT_IN_LEARN_MORE_PAI_SERVICE" desc="Message shown in pop up overlay dialog when user clicks learn more play auto install services.">
     <ph name="BEGIN_PARAGRAPH1">&lt;p&gt;</ph>To remove apps, go to Settings &gt; Google Play Store &gt; Manage Android preferences &gt; Apps or Application manager. Then tap the app you want to uninstall (you may need to swipe right or left to find the app). Then tap Uninstall or Disable.<ph name="END_PARAGRAPH1">&lt;/p&gt;</ph>
   </message>
+  <message name="IDS_ARC_OPT_IN_CONTACT_ADMIN_TITLE" desc="Title of dialog shown when user tries to launch ARC app but ARC is diabled by admin">
+    This app requires access to the Play Store
+  </message>
+  <message name="IDS_ARC_OPT_IN_CONTACT_ADMIN_CONTEXT" desc="Text of dialog shown when user tries to launch ARC app but ARC is diabled by admin">
+    To ask for access, contact the administrator of this device.
+  </message>
   <message name="IDS_ARC_OPT_IN_PRIVACY_POLICY_LINK" desc="Text of the Link to Goolge Privacy Policy in opt-in dialog">
     Google privacy policy
   </message>
@@ -3065,38 +3145,35 @@
   <message name="IDS_ARC_USB_ACCESS_PERMISSION_HEADING" desc="Heading text in the content area of the Android app USB device access permission prompt. Tells the user the app will be able to access the usb device if confirmed.">
     Allow "<ph name="APP_NAME">$1<ex>Gmail Checker</ex></ph>" to access:
   </message>
-  <message name="IDS_VOICE_INTERACTION_VALUE_PROP_LOADING" desc="Loading message of the voice interaction value prop dialog.">
+  <message name="IDS_ASSISTANT_VALUE_PROP_LOADING" desc="Loading message of the voice interaction value prop dialog.">
     Loading Google Assistant...
   </message>
-  <message name="IDS_VOICE_INTERACTION_VALUE_PROP_LOAD_ERROR_TITLE" desc="Load error title of the voice interaction value prop dialog.">
+  <message name="IDS_ASSISTANT_VALUE_PROP_LOAD_ERROR_TITLE" desc="Load error title of the voice interaction value prop dialog.">
     Google Assistant
   </message>
-  <message name="IDS_VOICE_INTERACTION_VALUE_PROP_LOAD_ERROR_MESSAGE" desc="Load error message of the voice interaction value prop dialog.">
+  <message name="IDS_ASSISTANT_VALUE_PROP_LOAD_ERROR_MESSAGE" desc="Load error message of the voice interaction value prop dialog.">
     Google Assistant was unable to load, please check your network connection and retry.
   </message>
-  <message name="IDS_VOICE_INTERACTION_VALUE_PROP_SKIP_BUTTON" desc="Button label for skipping voice interaction value prop upon error.">
+  <message name="IDS_ASSISTANT_VALUE_PROP_SKIP_BUTTON" desc="Button label for skipping voice interaction value prop upon error.">
     Skip
   </message>
-  <message name="IDS_VOICE_INTERACTION_VALUE_PROP_RETRY_BUTTON" desc="Button label for retry loading voice interaction value prop.">
+  <message name="IDS_ASSISTANT_VALUE_PROP_RETRY_BUTTON" desc="Button label for retry loading voice interaction value prop.">
     Retry
-  </message>
-  <message name="IDS_VOICE_INTERACTION_VALUE_PROP_NEXT_BUTTION" desc="Button label for accepting voice interaction value proposition.">
-    Next
-  </message>
-  <message name="IDS_WAIT_FOR_CONTAINER_READY_TITLE" desc="Title of the wait for container ready OOBE screen.">
-    Just a sec
   </message>
   <message name="IDS_WAIT_FOR_CONTAINER_READY_INTRO_MESSAGE" desc="Introduction message for the wait for container ready OOBE screen">
     Ask it questions. Tell it to do things. It's your personal Google, always ready to help.
   </message>
-  <message name="IDS_VOICE_INTERACTION_LOGO" desc="Logo label for voice interaction.">
+  <message name="IDS_ASSISTANT_LOGO" desc="Logo label for voice interaction.">
     Google assistant logo
+  </message>
+  <message name="IDS_ASSISTANT_OOBE_USER_IMAGE" desc="Image label for the user image.">
+    User image
   </message>
   <message name="IDS_ASSISTANT_SCREEN_CONTEXT_TITLE" desc="Title for assistant screen context optin. This is also used as the title for a toggle that lets the assistant use whats on the screen in Assistant settings page.">
     Related info
   </message>
   <message name="IDS_ASSISTANT_SCREEN_CONTEXT_DESC" desc="Description for assistant screen context optin. This is also used as the sub label for context-enable toggle in Assistant settings page.">
-    Let the Assistant show you info related to what's on your screen
+    Let your Assistant show you info related to what's on your screen
   </message>
   <message name="IDS_ASSISTANT_READY_SCREEN_TITLE" desc="Title for assistant ready screen.">
     Your Assistant is ready
@@ -3224,6 +3301,18 @@
   <message name="IDS_PRINT_JOB_DOOR_OPEN_NOTIFICATION_TITLE" desc="Title of the error printing notification.">
     Printer door open
   </message>
+  <message name="IDS_PRINT_JOB_PRINTER_UNREACHABLE_NOTIFICATION_TITLE" desc="Title of the error printing notification.">
+    Can’t connect to printer
+  </message>
+  <message name="IDS_PRINT_JOB_TRAY_MISSING_NOTIFICATION_TITLE" desc="Title of the error printing notification.">
+    A paper tray is missing
+  </message>
+  <message name="IDS_PRINT_JOB_OUTPUT_FULL_NOTIFICATION_TITLE" desc="Title of the error printing notification.">
+    Output tray is full
+  </message>
+  <message name="IDS_PRINT_JOB_STOPPED_NOTIFICATION_TITLE" desc="Title of the error printing notification.">
+    Printer has stopped
+  </message>
   <message name="IDS_PRINT_JOB_NOTIFICATION_MESSAGE" desc="Message of the print job notification.">
     <ph name="PAGE_NUMBER">$1<ex>5</ex></ph> pages to <ph name="PRINTER_NAME">$2<ex>printer</ex></ph>
   </message>
@@ -3258,20 +3347,26 @@
   <message name="IDS_REQUEST_PIN_DIALOG_PROCESSING" desc="The text displayed while the certificate provider API is waiting for response from extension.">
     Processing request...
   </message>
-  <message name="IDS_REQUEST_PIN_DIALOG_INVALID_PIN_ERROR" desc="The error message displayed in the certificate provider PIN request dialog when an invalid PIN was entered.">
+  <message name="IDS_REQUEST_PIN_DIALOG_INVALID_PIN_ERROR" desc="The error message displayed in the certificate provider PIN request dialog when an invalid PIN was entered. Should end with a full stop since it can be chained with more text.">
     Invalid PIN.
   </message>
-  <message name="IDS_REQUEST_PIN_DIALOG_INVALID_PUK_ERROR" desc="The error message displayed in the certificate provider PIN request dialog when an invalid PUK was entered.">
+  <message name="IDS_REQUEST_PIN_DIALOG_INVALID_PUK_ERROR" desc="The error message displayed in the certificate provider PIN request dialog when an invalid PUK was entered. Should end with a full stop since it can be chained with more text.">
     Invalid PUK.
   </message>
   <message name="IDS_REQUEST_PIN_DIALOG_MAX_ATTEMPTS_EXCEEDED_ERROR" desc="The error message displayed in the certificate provider PIN request dialog when maximum allowed attempts exceeded.">
     Maximum allowed attempts exceeded.
   </message>
-  <message name="IDS_REQUEST_PIN_DIALOG_UNKNOWN_ERROR" desc="The error message displayed in the certificate provider PIN request dialog when unknown error occurred in extension code.">
+  <message name="IDS_REQUEST_PIN_DIALOG_UNKNOWN_ERROR" desc="The error message displayed in the certificate provider PIN request dialog when unknown error occurred in extension code. Should end with a full stop since it can be chained with more text.">
     Unknown error.
   </message>
   <message name="IDS_REQUEST_PIN_DIALOG_ATTEMPTS_LEFT" desc="The text displayed in the certificate provider PIN request dialog about the number of attempts left">
     Attempts left: <ph name="ATTEMPTS_LEFT">$1<ex>3</ex></ph>
+  </message>
+  <message name="IDS_REQUEST_PIN_DIALOG_ERROR_RETRY" desc="The text displayed in the certificate provider PIN request dialog when the previous login attempt was unsuccessful, including the reason for the previous failure.">
+    <ph name="ERROR_MESSAGE">$1<ex>Invalid PIN.</ex></ph> Please try again.
+  </message>
+  <message name="IDS_REQUEST_PIN_DIALOG_ERROR_RETRY_ATTEMPTS" desc="The text displayed in the certificate provider PIN request dialog when the previous login attempt was unsuccessful but there are more attempts remaining. Includes the reason for the previous failure.">
+    <ph name="ERROR_MESSAGE">$1<ex>Invalid PIN.</ex></ph> Please try again. Attempts left: <ph name="ATTEMPTS_LEFT">$2<ex>3</ex></ph>
   </message>
   <message name="IDS_REQUEST_PIN_DIALOG_PIN" desc="The Provider Identification Number abbreviation">
     PIN
@@ -3408,6 +3503,9 @@
   <message name="IDS_CROSTINI_INSTALLER_START_CONTAINER_MESSAGE" desc="Text shown in the Crostini installer dialog when the container inside the VM is starting">
     This process may take a few minutes. Starting the Linux container.
   </message>
+  <message name="IDS_CROSTINI_INSTALLER_CONFIGURE_CONTAINER_MESSAGE" desc="Text shown in the Crostini installer dialog when the container inside the VM is being configured" translateable="false">
+    Configuring the Linux container. This might take up to 30 minutes.
+  </message>
   <message name="IDS_CROSTINI_INSTALLER_SETUP_CONTAINER_MESSAGE" desc="Text shown in the Crostini installer dialog when the container inside the VM is being set up">
     This process may take a few minutes. Setting up the Linux container.
   </message>
@@ -3441,6 +3539,9 @@
   <message name="IDS_CROSTINI_INSTALLER_START_CONTAINER_ERROR" desc="Text shown in the Crostini installer dialog when the container fails to start inside the VM">
     The Linux container didn't start. Please try again.
   </message>
+  <message name="IDS_CROSTINI_INSTALLER_CONFIGURE_CONTAINER_ERROR" desc="Text shown in the Crostini installer dialog when the container fails to be configured inside the VM" translateable="false">
+    The was an error while configuring Linux. Contact your administrator.
+  </message>
   <message name="IDS_CROSTINI_INSTALLER_SETUP_CONTAINER_ERROR" desc="Text shown in the Crostini installer dialog when the container fails to be set up inside the VM">
     The Linux container setup did not complete. Please try again.
   </message>
@@ -3470,6 +3571,78 @@
   </message>
   <message name="IDS_CROSTINI_UPGRADING_SUBTEXT" desc="Description for upgrade dialog warning user of delay starting container due to running upgrades.">
     Your app will open when the upgrade is finished. Upgrades can take a few minutes.
+  </message>
+  <message name="IDS_CROSTINI_UPGRADER_TITLE" desc="Title of the Crostini upgrader, a dialog for upgrading Linux.">
+    Upgrade Linux (Beta)
+  </message>
+  <message name="IDS_CROSTINI_UPGRADER_BODY" desc="Description for the Crostini upgrader, a dialog for upgrading Linux.">
+    We recommend you back up your current Linux container prior to upgrading.
+  </message>
+  <message name="IDS_CROSTINI_UPGRADER_UPGRADE_BUTTON" desc="Label for the button in the Crostini upgrader dialog to begin upgrading Linux.">
+    Upgrade
+  </message>
+  <message name="IDS_CROSTINI_UPGRADER_LAUNCH_BUTTON" desc="Label for the button in the Crostini upgrader dialog to launch the Linux terminal after upgrading Linux.">
+    Launch
+  </message>
+  <message name="IDS_CROSTINI_UPGRADER_BACKING_UP_TITLE" desc="Title of the Crostini upgrader when the container backup is in progress.">
+    Backing up Linux apps and files
+  </message>
+  <message name="IDS_CROSTINI_UPGRADER_BACKING_UP_MESSAGE" desc="Text shown by the Crostini upgrader when the container backup is in progress.">
+    This may take up to 30 minutes.
+  </message>
+  <message name="IDS_CROSTINI_UPGRADER_BACKUP_SUCCEEDED_TITLE" desc="Title of the Crostini upgrader when the container backup completed successfully, prior to the main upgrade.">
+    Backing up complete
+  </message>
+  <message name="IDS_CROSTINI_UPGRADER_BACKUP_SUCCEEDED_MESSAGE" desc="Text shown by the Crostini upgrader when the container backup completed successfully, prior to the main upgrade.">
+    Linux apps and files have been successfully backed up. Upgrade will begin shortly.
+  </message>
+  <message name="IDS_CROSTINI_UPGRADER_UPGRADING_TITLE" desc="Title of the Crostini upgrader when the upgrade is in progress.">
+    Upgrading Linux
+  </message>
+  <message name="IDS_CROSTINI_UPGRADER_UPGRADING" desc="Text shown by the Crostini upgrader when the upgrade is in progress.">
+    This may take up to 30 minutes.
+  </message>
+  <message name="IDS_CROSTINI_UPGRADER_SUCCEEDED_TITLE" desc="Title of the Crostini upgrader when the upgrade is finished successfully.">
+    Upgrading Linux
+  </message>
+  <message name="IDS_CROSTINI_UPGRADER_SUCCEEDED" desc="Text shown by the Crostini upgrader when the upgrade is finished successfully.">
+    Linux has been successfully upgraded.
+  </message>
+  <message name="IDS_CROSTINI_UPGRADER_ERROR_TITLE" desc="Title of the Crostini upgrader when an error occurs.">
+    Error upgrading Linux
+  </message>
+  <message name="IDS_CROSTINI_UPGRADER_CANCELING_TITLE" desc="Title of the Crostini upgrader when the upgrade is canceled.">
+    Cancelling Linux upgrade
+  </message>
+  <message name="IDS_CROSTINI_UPGRADER_CANCELING" desc="Text shown in the Crostini upgrader dialog when the upgrade is canceled.">
+    This window will close after cancellation is complete.
+  </message>
+  <message name="IDS_CROSTINI_UPGRADER_BACKUP_CHECKBOX_MESSAGE" desc="Text shown in the Crostini upgrader dialog next to the backup checkbox.">
+    Back up my apps and files to Downloads folder before upgrading Linux.
+  </message>
+  <message name="IDS_CROSTINI_UPGRADER_BACKUP_CHANGE_LOCATION" desc="Text shown in the Crostini upgrader dialog next to the backup checkbox with a link enabling the user to change the location to which files are backed up.">
+    Change location
+  </message>
+  <message name="IDS_CROSTINI_ANSIBLE_SOFTWARE_CONFIG_LABEL" translateable="false" desc="Label for dialog warning user of unavailable Linux container until software configurations are applied.">
+    Configuring Linux
+  </message>
+  <message name="IDS_CROSTINI_ANSIBLE_SOFTWARE_CONFIG_SUBTEXT" translateable="false" desc="Description for dialog warning user of unavailable Linux container until software configurations are applied.">
+    Linux is being configured by your administrator. Configuration will take a few minutes.
+  </message>
+  <message name="IDS_CROSTINI_ANSIBLE_SOFTWARE_CONFIG_ERROR_LABEL" translateable="false" desc="Label for Crostini software config dialog when there is an error in Ansible playbook application or installation.">
+    Error configuring Linux
+  </message>
+  <message name="IDS_CROSTINI_ANSIBLE_SOFTWARE_CONFIG_ERROR_SUBTEXT" translateable="false" desc="Text shown for Crostini software config dialog when there is an error in Ansible playbook application or installation.">
+    There was an error while configuring Linux. Please contact your administrator.
+  </message>
+  <message name="IDS_CROSTINI_ANSIBLE_SOFTWARE_CONFIG_ERROR_OFFLINE_LABEL" translateable="false" desc="Label for dialog warning user of missing internet connection required for container configuration.">
+    <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> is offline
+  </message>
+  <message name="IDS_CROSTINI_ANSIBLE_SOFTWARE_CONFIG_ERROR_OFFLINE_SUBTEXT" translateable="false" desc="Text shown for Crostini software config dialog when there is an error in Ansible playbook application or installation due to missing internet connection.">
+    Could not configure Linux. Connect to the internet and try again.
+  </message>
+  <message name="IDS_CROSTINI_ANSIBLE_SOFTWARE_CONFIG_RETRY_BUTTON" translateable="false" desc="Retry button of the Crostini software config dialog that starts the configuration steps again.">
+    Retry
   </message>
   <message name="IDS_CROSTINI_SHUT_DOWN_LINUX_MENU_ITEM" desc="Text shown in the context menu for the Linux terminal app, allowing users to shut down the Linux virtual machine.">
     Shut down Linux (Beta)
@@ -3503,6 +3676,23 @@
   </message>
   <message name="IDS_CROSTINI_PACKAGE_INSTALL_NOTIFICATION_ERROR_MESSAGE" desc="Message in the Notification for Linux package installation when there is an error during installation.">
     An error occurred during installation of your Linux application.
+  </message>
+
+  <!-- Linux windows force closing messages -->
+  <message name="IDS_CROSTINI_FORCE_CLOSE_TITLE_UNKNOWN" desc="Title of the crostini force-close dialog, which is used to destroy windows which are not responding. This version is used when we don't know which app is not responding.">
+    Application not responding.
+  </message>
+  <message name="IDS_CROSTINI_FORCE_CLOSE_TITLE_KNOWN" desc="Title of the crostini force-close dialog, which is used to destroy windows which are not responding. This version is used when we know which app is not responding.">
+    <ph name="LINUX_APP_NAME">$1<ex>GIMP</ex></ph> not responding.
+  </message>
+  <message name="IDS_CROSTINI_FORCE_CLOSE_BODY_UNKNOWN" desc="Description used by crostini's force-close dialog. This version is used when we don't know which app is not responding.">
+    The application is not responding. Select "Force close" to close the app.
+  </message>
+  <message name="IDS_CROSTINI_FORCE_CLOSE_BODY_KNOWN" desc="Description used by crostini's force-close dialog. This version is used when we know which app is not responding.">
+    <ph name="LINUX_APP_NAME">$1<ex>GIMP</ex></ph> is not responding. Select "Force close" to close the app.
+  </message>
+  <message name="IDS_CROSTINI_FORCE_CLOSE_ACCEPT_BUTTON" desc="Label for the button in the force-close dialog that closes the window.">
+    Force close
   </message>
 
   <!-- Linux application uninstaller messages -->
@@ -3715,9 +3905,6 @@
   <message name="IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_PASSWORD_REAUTH" desc="Tooltip for an icon on user's lock screen pod shown by EasyUnlock when the user must enter their password instead of using EasyUnlock, because too much time has passed since their last password entry.">
     For added security, Smart Lock will ask you to enter your password after 20 hours.
   </message>
-  <message name="IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_UNSUPPORTED_ANDROID_VERSION" desc="Tooltip for the icon on user's lock screen pod shown by Easy Unlock when a phone set up to unlock the Chromebook is detected, but has an unsupported Android version. The user is asked to update the phone.">
-    Please update your phone to a newer version of Android to unlock this <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>.
-  </message>
   <message name="IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_HARDLOCK_USER" desc="Tooltip text shown on a user's lock screen pod when Easy Unlock feature is enabled for the user, but the user hard locked the device. Hard lock is done by clicking the Easy Unlock icon on the user's pod. When a device is hard locked by a user, the Easy Unlock cannot be used to unlock the device as that user. A password has to be entered to unlock the device.">
     Your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> is locked for security. Manually enter your password to continue.
   </message>
@@ -3744,6 +3931,9 @@
   </message>
   <message name="IDS_SMART_LOCK_SPINNER_ACCESSIBILITY_LABEL" desc="Label for the spinner icon used for accessibility purposes. This label is needed because this state does not have a tooltip.">
     Finding your phone
+  </message>
+  <message name="IDS_SMART_LOCK_SCREENLOCK_AUTHENTICATED_LABEL" desc="Label for the Smart Lock icon used for accessibility purposes. Describes when a phone eligible to unlock the Chromebook is detected and authenticated.">
+    Your device can be unlocked with Smart Lock. Press Enter to unlock.
   </message>
 
   <!-- User Image Selection Dialog -->
@@ -3929,6 +4119,14 @@
     Contact the device admin for your organization
   </message>
 
+  <!-- Strings for Account Manager error screen -->
+  <message name="IDS_ACCOUNT_MANAGER_SECONDARY_ACCOUNTS_DISABLED_TITLE" desc="Title for the Chrome OS Account Manager error screen when addition of secondary Google Accounts is disabled.">
+    Addition of more Google Accounts is disabled
+  </message>
+  <message name="IDS_ACCOUNT_MANAGER_SECONDARY_ACCOUNTS_DISABLED_TEXT" desc="Text body for the Chrome OS Account Manager error screen when addition of secondary Google Accounts is disabled.">
+    Your administrator has disabled the addition of more Google Accounts
+  </message>
+
   <!-- Strings for Account Manager welcome screen -->
   <message name="IDS_ACCOUNT_MANAGER_WELCOME_TITLE" desc="Title for the Chrome OS Account Manager Welcome screen.">
     Sign-in has changed
@@ -3976,8 +4174,8 @@
   </message>
 
   <!-- Strings for Add Supervision screen -->
-  <message name="IDS_ADD_SUPERVISION_PAGE_TITLE" desc="Title for the Chrome OS Add Supervision screen.">
-    Add Supervision
+  <message name="IDS_ADD_SUPERVISION_PAGE_TITLE" desc="Title for the Chrome OS Add Supervision screen. Since the title bar is not visible, this string is only used by screen readers.">
+    Set Up Parental Controls
   </message>
   <message name="IDS_ADD_SUPERVISION_NETWORK_DOWN_HEADING" desc="Heading string shown in the Add Supervision page when the network is not available.">
     Can’t connect to the internet
@@ -4015,7 +4213,7 @@ You can manage this account’s settings by installing the Family Link app on yo
 
   <!-- Strings for login screen extension UI -->
   <message name="IDS_LOGIN_EXTENSION_UI_DIALOG_TITLE" desc="Dialog title for windows opened from a login screen extension. These windows will be displayed over the login screen.">
-    This authentication service is hosted by <ph name="EXTENSION_NAME">$1<ex>Identity Provider Name</ex></ph>
+    Sign-in provided by <ph name="EXTENSION_NAME">$1<ex>Identity Provider Name</ex></ph>
   </message>
 
   <!-- Strings for notifications about features which aren't supported in Crostini -->

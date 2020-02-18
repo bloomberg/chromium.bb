@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/html/forms/file_input_type.h"
 
+#include "base/run_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/clipboard/data_object.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -70,7 +71,8 @@ TEST(FileInputTypeTest, ignoreDroppedNonNativeFiles) {
   DataObject* native_file_raw_drag_data = DataObject::Create();
   const DragData native_file_drag_data(native_file_raw_drag_data, FloatPoint(),
                                        FloatPoint(), kDragOperationCopy);
-  native_file_drag_data.PlatformData()->Add(File::Create("/native/path"));
+  native_file_drag_data.PlatformData()->Add(
+      MakeGarbageCollected<File>("/native/path"));
   native_file_drag_data.PlatformData()->SetFilesystemId("fileSystemId");
   file_input->ReceiveDroppedFiles(&native_file_drag_data);
   EXPECT_EQ("fileSystemId", file_input->DroppedFileSystemId());
@@ -137,14 +139,14 @@ TEST(FileInputTypeTest, DropTouchesNoPopupOpeningObserver) {
   Document& doc = page_holder->GetDocument();
 
   doc.body()->SetInnerHTMLFromString("<input type=file webkitdirectory>");
-  auto& input = *ToHTMLInputElement(doc.body()->firstChild());
+  auto& input = *To<HTMLInputElement>(doc.body()->firstChild());
 
   base::RunLoop run_loop;
-  MockFileChooser chooser(&doc.GetFrame()->GetInterfaceProvider(),
+  MockFileChooser chooser(doc.GetFrame()->GetBrowserInterfaceBroker(),
                           run_loop.QuitClosure());
   DragData drag_data(DataObject::Create(), FloatPoint(), FloatPoint(),
                      kDragOperationCopy);
-  drag_data.PlatformData()->Add(File::Create("/foo/bar"));
+  drag_data.PlatformData()->Add(MakeGarbageCollected<File>("/foo/bar"));
   input.ReceiveDroppedFiles(&drag_data);
   run_loop.Run();
 

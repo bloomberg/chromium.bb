@@ -58,6 +58,28 @@ class CreateTest(cros_test_lib.MockTestCase, api_config.ApiConfigMixin):
                               self.validate_only_config)
     patch.assert_not_called()
 
+  def testMockCall(self):
+    """Sanity check that a mock call does not execute any logic."""
+    patch = self.PatchObject(sysroot_service, 'Create')
+    request = self._InputProto()
+    response = self._OutputProto()
+
+    rc = sysroot_controller.Create(request, response, self.mock_call_config)
+
+    patch.assert_not_called()
+    self.assertEqual(controller.RETURN_CODE_SUCCESS, rc)
+
+  def testMockError(self):
+    """Sanity check that a mock error does not execute any logic."""
+    patch = self.PatchObject(sysroot_service, 'Create')
+    request = self._InputProto()
+    response = self._OutputProto()
+
+    rc = sysroot_controller.Create(request, response, self.mock_error_config)
+
+    patch.assert_not_called()
+    self.assertEqual(controller.RETURN_CODE_UNRECOVERABLE, rc)
+
   def testArgumentValidation(self):
     """Test the input argument validation."""
     # Error when no name provided.
@@ -118,6 +140,52 @@ class CreateTest(cros_test_lib.MockTestCase, api_config.ApiConfigMixin):
     self.assertEqual(sysroot_path, out_proto.sysroot.path)
 
 
+class CreateSimpleChromeSysrootTest(cros_test_lib.MockTempDirTestCase,
+                                    api_config.ApiConfigMixin):
+  """CreateSimpleChromeSysroot function tests."""
+
+  def _InputProto(self, build_target=None, use_flags=None):
+    """Helper to build and input proto instance."""
+    proto = sysroot_pb2.CreateSimpleChromeSysrootRequest()
+    if build_target:
+      proto.build_target.name = build_target
+    if use_flags:
+      proto.use_flags = use_flags
+    return proto
+
+  def _OutputProto(self):
+    """Helper to build output proto instance."""
+    return sysroot_pb2.CreateSimpleChromeSysrootResponse()
+
+  def testValidateOnly(self):
+    """Sanity check that a validate only call does not execute any logic."""
+    patch = self.PatchObject(sysroot_service, 'CreateSimpleChromeSysroot')
+
+    board = 'board'
+    in_proto = self._InputProto(build_target=board, use_flags=[])
+    sysroot_controller.CreateSimpleChromeSysroot(in_proto, self._OutputProto(),
+                                                 self.validate_only_config)
+    patch.assert_not_called()
+
+  def testArgumentValidation(self):
+    """Test the input argument validation."""
+    # Error when no build target provided.
+    in_proto = self._InputProto()
+    out_proto = self._OutputProto()
+    with self.assertRaises(cros_build_lib.DieSystemExit):
+      sysroot_controller.CreateSimpleChromeSysroot(in_proto, out_proto,
+                                                   self.api_config)
+
+    # Valid when board is specified.
+    patch = self.PatchObject(sysroot_service, 'CreateSimpleChromeSysroot',
+                             return_value='/path/to/sysroot/tar.bz')
+    in_proto = self._InputProto(build_target='board')
+    out_proto = self._OutputProto()
+    sysroot_controller.CreateSimpleChromeSysroot(in_proto, out_proto,
+                                                 self.api_config)
+    patch.assert_called_once()
+
+
 class InstallToolchainTest(cros_test_lib.MockTempDirTestCase,
                            api_config.ApiConfigMixin):
   """Install toolchain function tests."""
@@ -157,6 +225,31 @@ class InstallToolchainTest(cros_test_lib.MockTempDirTestCase,
     sysroot_controller.InstallToolchain(in_proto, self._OutputProto(),
                                         self.validate_only_config)
     patch.assert_not_called()
+
+  def testMockCall(self):
+    """Sanity check that a mock call does not execute any logic."""
+    patch = self.PatchObject(sysroot_service, 'InstallToolchain')
+    request = self._InputProto()
+    response = self._OutputProto()
+
+    rc = sysroot_controller.InstallToolchain(request, response,
+                                             self.mock_call_config)
+
+    patch.assert_not_called()
+    self.assertEqual(controller.RETURN_CODE_SUCCESS, rc)
+
+  def testMockError(self):
+    """Sanity check that a mock error does not execute any logic."""
+    patch = self.PatchObject(sysroot_service, 'InstallToolchain')
+    request = self._InputProto()
+    response = self._OutputProto()
+
+    rc = sysroot_controller.InstallToolchain(request, response,
+                                             self.mock_error_config)
+
+    patch.assert_not_called()
+    self.assertEqual(controller.RETURN_CODE_UNSUCCESSFUL_RESPONSE_AVAILABLE, rc)
+    self.assertTrue(response.failed_packages)
 
   def testArgumentValidation(self):
     """Test the argument validation."""
@@ -258,6 +351,31 @@ class InstallPackagesTest(cros_test_lib.MockTempDirTestCase,
     sysroot_controller.InstallPackages(in_proto, self._OutputProto(),
                                        self.validate_only_config)
     patch.assert_not_called()
+
+  def testMockCall(self):
+    """Sanity check that a mock call does not execute any logic."""
+    patch = self.PatchObject(sysroot_service, 'BuildPackages')
+    request = self._InputProto()
+    response = self._OutputProto()
+
+    rc = sysroot_controller.InstallPackages(request, response,
+                                            self.mock_call_config)
+
+    patch.assert_not_called()
+    self.assertEqual(controller.RETURN_CODE_SUCCESS, rc)
+
+  def testMockError(self):
+    """Sanity check that a mock error does not execute any logic."""
+    patch = self.PatchObject(sysroot_service, 'BuildPackages')
+    request = self._InputProto()
+    response = self._OutputProto()
+
+    rc = sysroot_controller.InstallPackages(request, response,
+                                            self.mock_error_config)
+
+    patch.assert_not_called()
+    self.assertEqual(controller.RETURN_CODE_UNSUCCESSFUL_RESPONSE_AVAILABLE, rc)
+    self.assertTrue(response.failed_packages)
 
   def testArgumentValidationAllMissing(self):
     """Test missing all arguments."""

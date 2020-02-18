@@ -7,9 +7,10 @@ package org.chromium.chrome.browser.survey;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Handler;
-import android.support.annotation.IntDef;
-import android.support.annotation.VisibleForTesting;
 import android.text.TextUtils;
+
+import androidx.annotation.IntDef;
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
@@ -26,7 +27,7 @@ import org.chromium.chrome.browser.infobar.InfoBarContainerLayout.Item;
 import org.chromium.chrome.browser.infobar.InfoBarIdentifier;
 import org.chromium.chrome.browser.infobar.SurveyInfoBar;
 import org.chromium.chrome.browser.infobar.SurveyInfoBarDelegate;
-import org.chromium.chrome.browser.preferences.privacy.PrivacyPreferencesManager;
+import org.chromium.chrome.browser.settings.privacy.PrivacyPreferencesManager;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.Tab.TabHidingType;

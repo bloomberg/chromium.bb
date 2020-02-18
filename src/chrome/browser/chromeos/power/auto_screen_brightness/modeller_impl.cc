@@ -21,6 +21,7 @@
 #include "base/task_runner_util.h"
 #include "base/time/default_tick_clock.h"
 #include "base/time/time.h"
+#include "chrome/browser/chromeos/power/auto_screen_brightness/utils.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/events/event.h"
@@ -53,6 +54,7 @@ enum class ModelLoadingStatus {
 
 void LogModelLoadingStatus(ModelLoadingStatus status) {
   UMA_HISTOGRAM_ENUMERATION("AutoScreenBrightness.ModelLoadingStatus", status);
+  VLOG(1) << "ABModel model loading status: " << static_cast<int>(status);
 }
 
 // Loads saved model from locations specified by |spec|. This
@@ -123,9 +125,9 @@ bool SaveDataAndLogError(const base::FilePath& path, const std::string& data) {
 // and a latest curve.
 // This should run in another thread to be non-blocking to the main
 // thread (if |is_testing| is false).
-MonotoneCubicSpline TrainModel(Trainer* trainer,
-                               const std::vector<TrainingDataPoint>& data,
-                               bool is_testing) {
+TrainingResult TrainModel(Trainer* trainer,
+                          const std::vector<TrainingDataPoint>& data,
+                          bool is_testing) {
   DCHECK(is_testing ||
          !content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   return trainer->Train(data);
@@ -339,23 +341,20 @@ ModelConfig ModellerImpl::GetModelConfigForTesting() const {
   return model_config_;
 }
 
-ModellerImpl::ModelSavingSpec ModellerImpl::GetModelSavingSpecFromProfile(
-    const Profile* profile) {
-  DCHECK(profile);
-
+ModellerImpl::ModelSavingSpec ModellerImpl::GetModelSavingSpecFromProfilePath(
+    const base::FilePath& profile_path) {
   ModelSavingSpec model_saving_spec;
-  const base::FilePath profile_path = profile->GetPath();
   if (profile_path.empty()) {
     return model_saving_spec;
   }
 
   const base::FilePath model_dir = profile_path.Append(kModelDir);
   if (!base::DirectoryExists(model_dir) && !base::CreateDirectory(model_dir)) {
-    VLOG(1) << "Auto screen brightness model dir does not exist.";
+    VLOG(1) << "ABModel auto screen brightness model dir does not exist.";
     return model_saving_spec;
   }
 
-  VLOG(1) << "Auto screen brightness model dir: " << model_dir.value();
+  VLOG(1) << "ABModel auto screen brightness model dir: " << model_dir.value();
   model_saving_spec.global_curve = model_dir.Append(kGlobalCurveFileName);
   model_saving_spec.personal_curve = model_dir.Append(kPersonalCurveFileName);
   model_saving_spec.iteration_count =
@@ -401,23 +400,42 @@ ModellerImpl::ModellerImpl(
     return;
   }
 
-  model_saving_spec_ = GetModelSavingSpecFromProfile(profile);
-  if (model_saving_spec_.global_curve.empty()) {
-    is_modeller_enabled_ = false;
-    return;
-  }
-
   als_reader_observer_.Add(als_reader);
   brightness_monitor_observer_.Add(brightness_monitor);
   model_config_loader_observer_.Add(model_config_loader);
 
   user_activity_observer_.Add(user_activity_detector);
+
+  base::PostTaskAndReplyWithResult(
+      blocking_task_runner_.get(), FROM_HERE,
+      base::BindOnce(&ModellerImpl::GetModelSavingSpecFromProfilePath,
+                     profile->GetPath()),
+      base::BindOnce(&ModellerImpl::OnModelSavingSpecReadFromProfile,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
+
+void ModellerImpl::OnModelSavingSpecReadFromProfile(
+    const ModelSavingSpec& spec) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(!model_saving_spec_.has_value());
+
+  model_saving_spec_ = spec;
+  HandleStatusUpdate();
 }
 
 void ModellerImpl::HandleStatusUpdate() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (is_modeller_enabled_.has_value())
     return;
+
+  if (!model_saving_spec_.has_value())
+    return;
+
+  if (model_saving_spec_->global_curve.empty()) {
+    is_modeller_enabled_ = false;
+    OnInitializationComplete();
+    return;
+  }
 
   if (!als_init_status_.has_value())
     return;
@@ -456,7 +474,7 @@ void ModellerImpl::HandleStatusUpdate() {
 
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_.get(), FROM_HERE,
-      base::BindOnce(&LoadModelFromDisk, model_saving_spec_, is_testing_),
+      base::BindOnce(&LoadModelFromDisk, *model_saving_spec_, is_testing_),
       base::BindOnce(&ModellerImpl::OnModelLoadedFromDisk,
                      weak_ptr_factory_.GetWeakPtr()));
 }
@@ -488,6 +506,10 @@ bool ModellerImpl::ApplyCustomization() {
     training_delay_ = base::TimeDelta::FromSeconds(training_delay_in_seconds);
   }
 
+  curve_error_tolerance_ = GetFieldTrialParamByFeatureAsDouble(
+      features::kAutoScreenBrightness, "curve_error_tolerance",
+      curve_error_tolerance_);
+
   return true;
 }
 
@@ -517,12 +539,14 @@ void ModellerImpl::OnModelLoadedFromDisk(const Model& model) {
 
   model_ = model;
   if (!model_.global_curve || *model_.global_curve != *initial_global_curve_) {
-    // Reset the model.
+    // Reset the model and erase personal curve from |model_| if it exists.
     model_.global_curve = initial_global_curve_;
-    model_.personal_curve = base::nullopt;
-    model_.iteration_count = 0;
+    ErasePersonalCurve();
     global_curve_reset_ = true;
+    VLOG(1) << "ABModel global curve reset";
   }
+  UMA_HISTOGRAM_BOOLEAN("AutoScreenBrightness.GlobalCurveResetOnInitialization",
+                        global_curve_reset_);
 
   DCHECK(model_.global_curve);
   // Run SetInitialCurves calculations on background thread to avoid blocking UI
@@ -557,6 +581,8 @@ void ModellerImpl::OnSetInitialCurves(bool is_personal_curve_valid) {
 
   UMA_HISTOGRAM_BOOLEAN("AutoScreenBrightness.PersonalCurveValid",
                         is_personal_curve_valid);
+  VLOG(1) << "ABModel initial personal curve valid: "
+          << is_personal_curve_valid;
 
   const bool has_loaded_and_valid_personal_curve =
       model_.personal_curve && is_personal_curve_valid;
@@ -567,8 +593,7 @@ void ModellerImpl::OnSetInitialCurves(bool is_personal_curve_valid) {
                                              : *model_.global_curve));
 
   if (!has_loaded_and_valid_personal_curve) {
-    model_.personal_curve = base::nullopt;
-    model_.iteration_count = 0;
+    ErasePersonalCurve();
   } else if (model_.iteration_count == 0) {
     model_.iteration_count = 1;
   }
@@ -614,31 +639,43 @@ void ModellerImpl::StartTraining() {
   data_cache_ = std::vector<TrainingDataPoint>();
 }
 
-void ModellerImpl::OnTrainingFinished(const MonotoneCubicSpline& curve) {
+void ModellerImpl::OnTrainingFinished(const TrainingResult& result) {
   const base::TimeTicks now = tick_clock_->NowTicks();
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  ++model_.iteration_count;
-  for (auto& observer : observers_)
-    observer.OnModelTrained(curve);
+  // Only export the curve if there's a new curve and the error is small.
+  // "Export" means we update personal curve in |model_| and notify observers.
+  const bool export_personal_curve = result.new_curve &&
+                                     result.error <= curve_error_tolerance_ &&
+                                     result.new_curve != model_.personal_curve;
 
-  // Save personal curve if it doesn't exist or has been updated.
-  const bool save_personal_curve =
-      !model_.personal_curve || *model_.personal_curve != curve;
+  if (export_personal_curve) {
+    ++model_.iteration_count;
+    model_.personal_curve = result.new_curve;
+    for (auto& observer : observers_)
+      observer.OnModelTrained(*result.new_curve);
+  }
+
+  VLOG(1) << "ABModel training finished (has_new_curve,error,updated): "
+          << result.new_curve.has_value() << ", " << FormatToPrint(result.error)
+          << ", " << export_personal_curve;
+
   const std::string histogram_name =
       std::string("AutoScreenBrightness.TrainingCompleteDuration.") +
-      (save_personal_curve ? "NewCurve" : "NoNewCurve");
+      (export_personal_curve ? "NewCurve" : "NoNewCurve");
   base::UmaHistogramTimes(histogram_name, now - training_start_.value());
-
-  if (save_personal_curve)
-    model_.personal_curve = curve;
 
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_.get(), FROM_HERE,
-      base::BindOnce(&SaveModelToDisk, model_saving_spec_, model_,
-                     global_curve_reset_, save_personal_curve, is_testing_),
+      base::BindOnce(&SaveModelToDisk, *model_saving_spec_, model_,
+                     global_curve_reset_, export_personal_curve, is_testing_),
       base::BindOnce(&ModellerImpl::OnModelSavedToDisk,
                      weak_ptr_factory_.GetWeakPtr()));
+}
+
+void ModellerImpl::ErasePersonalCurve() {
+  model_.personal_curve = base::nullopt;
+  model_.iteration_count = 0;
 }
 
 }  // namespace auto_screen_brightness

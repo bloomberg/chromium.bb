@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "third_party/blink/public/mojom/native_file_system/native_file_system_error.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/array_buffer_or_array_buffer_view_or_blob_or_usv_string.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_blob.h"
@@ -26,9 +27,12 @@
 namespace blink {
 
 NativeFileSystemWriter::NativeFileSystemWriter(
-    RevocableInterfacePtr<mojom::blink::NativeFileSystemFileWriter> mojo_ptr)
-    : mojo_ptr_(std::move(mojo_ptr)) {
-  DCHECK(mojo_ptr_);
+    ExecutionContext* context,
+    mojo::PendingRemote<mojom::blink::NativeFileSystemFileWriter>
+        writer_pending_remote)
+    : ContextLifecycleObserver(context),
+      writer_remote_(std::move(writer_pending_remote)) {
+  DCHECK(writer_remote_);
 }
 
 ScriptPromise NativeFileSystemWriter::write(
@@ -42,11 +46,12 @@ ScriptPromise NativeFileSystemWriter::write(
   Blob* blob = nullptr;
   if (data.IsArrayBuffer()) {
     DOMArrayBuffer* array_buffer = data.GetAsArrayBuffer();
-    blob_data->AppendBytes(array_buffer->Data(), array_buffer->ByteLength());
+    blob_data->AppendBytes(array_buffer->Data(),
+                           array_buffer->ByteLengthAsSizeT());
   } else if (data.IsArrayBufferView()) {
     DOMArrayBufferView* array_buffer_view = data.GetAsArrayBufferView().View();
     blob_data->AppendBytes(array_buffer_view->BaseAddress(),
-                           array_buffer_view->byteLength());
+                           array_buffer_view->deprecatedByteLengthAsUnsigned());
   } else if (data.IsBlob()) {
     blob = data.GetAsBlob();
   } else if (data.IsUSVString()) {
@@ -57,7 +62,8 @@ ScriptPromise NativeFileSystemWriter::write(
 
   if (!blob) {
     uint64_t size = blob_data->length();
-    blob = Blob::Create(BlobDataHandle::Create(std::move(blob_data), size));
+    blob = MakeGarbageCollected<Blob>(
+        BlobDataHandle::Create(std::move(blob_data), size));
   }
 
   return WriteBlob(script_state, position, blob);
@@ -66,7 +72,7 @@ ScriptPromise NativeFileSystemWriter::write(
 ScriptPromise NativeFileSystemWriter::WriteBlob(ScriptState* script_state,
                                                 uint64_t position,
                                                 Blob* blob) {
-  if (!mojo_ptr_ || pending_operation_) {
+  if (!writer_remote_ || pending_operation_) {
     return ScriptPromise::RejectWithDOMException(
         script_state, MakeGarbageCollected<DOMException>(
                           DOMExceptionCode::kInvalidStateError));
@@ -74,14 +80,14 @@ ScriptPromise NativeFileSystemWriter::WriteBlob(ScriptState* script_state,
   pending_operation_ =
       MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise result = pending_operation_->Promise();
-  mojo_ptr_->Write(
+  writer_remote_->Write(
       position, blob->AsMojoBlob(),
       WTF::Bind(&NativeFileSystemWriter::WriteComplete, WrapPersistent(this)));
   return result;
 }
 
 class NativeFileSystemWriter::StreamWriterClient
-    : public GarbageCollectedFinalized<StreamWriterClient>,
+    : public GarbageCollected<StreamWriterClient>,
       public FetchDataLoader::Client {
   USING_GARBAGE_COLLECTED_MIXIN(StreamWriterClient);
 
@@ -171,7 +177,7 @@ ScriptPromise NativeFileSystemWriter::WriteStream(
     uint64_t position,
     ReadableStream* stream,
     ExceptionState& exception_state) {
-  if (!mojo_ptr_ || pending_operation_) {
+  if (!writer_remote_ || pending_operation_) {
     return ScriptPromise::RejectWithDOMException(
         script_state, MakeGarbageCollected<DOMException>(
                           DOMExceptionCode::kInvalidStateError));
@@ -191,7 +197,7 @@ ScriptPromise NativeFileSystemWriter::WriteStream(
   ScriptPromise result = pending_operation_->Promise();
   auto* client = MakeGarbageCollected<StreamWriterClient>(this);
   stream_loader_->Start(consumer, client);
-  mojo_ptr_->WriteStream(
+  writer_remote_->WriteStream(
       position, client->TakeDataPipe(),
       WTF::Bind(&StreamWriterClient::WriteComplete, WrapPersistent(client)));
   return result;
@@ -199,7 +205,7 @@ ScriptPromise NativeFileSystemWriter::WriteStream(
 
 ScriptPromise NativeFileSystemWriter::truncate(ScriptState* script_state,
                                                uint64_t size) {
-  if (!mojo_ptr_ || pending_operation_) {
+  if (!writer_remote_ || pending_operation_) {
     return ScriptPromise::RejectWithDOMException(
         script_state, MakeGarbageCollected<DOMException>(
                           DOMExceptionCode::kInvalidStateError));
@@ -207,13 +213,14 @@ ScriptPromise NativeFileSystemWriter::truncate(ScriptState* script_state,
   pending_operation_ =
       MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise result = pending_operation_->Promise();
-  mojo_ptr_->Truncate(size, WTF::Bind(&NativeFileSystemWriter::TruncateComplete,
-                                      WrapPersistent(this)));
+  writer_remote_->Truncate(size,
+                           WTF::Bind(&NativeFileSystemWriter::TruncateComplete,
+                                     WrapPersistent(this)));
   return result;
 }
 
 ScriptPromise NativeFileSystemWriter::close(ScriptState* script_state) {
-  if (!mojo_ptr_ || pending_operation_) {
+  if (!writer_remote_ || pending_operation_) {
     return ScriptPromise::RejectWithDOMException(
         script_state, MakeGarbageCollected<DOMException>(
                           DOMExceptionCode::kInvalidStateError));
@@ -221,7 +228,7 @@ ScriptPromise NativeFileSystemWriter::close(ScriptState* script_state) {
   pending_operation_ =
       MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise result = pending_operation_->Promise();
-  mojo_ptr_->Close(
+  writer_remote_->Close(
       WTF::Bind(&NativeFileSystemWriter::CloseComplete, WrapPersistent(this)));
 
   return result;
@@ -229,6 +236,7 @@ ScriptPromise NativeFileSystemWriter::close(ScriptState* script_state) {
 
 void NativeFileSystemWriter::Trace(Visitor* visitor) {
   ScriptWrappable::Trace(visitor);
+  ContextLifecycleObserver::Trace(visitor);
   visitor->Trace(file_);
   visitor->Trace(pending_operation_);
   visitor->Trace(stream_loader_);
@@ -257,7 +265,11 @@ void NativeFileSystemWriter::CloseComplete(
   pending_operation_ = nullptr;
   // We close the mojo pipe because we intend this writer to be discarded after
   // close. Subsequent operations will fail.
-  mojo_ptr_ = nullptr;
+  writer_remote_.reset();
+}
+
+void NativeFileSystemWriter::ContextDestroyed(ExecutionContext*) {
+  writer_remote_.reset();
 }
 
 }  // namespace blink

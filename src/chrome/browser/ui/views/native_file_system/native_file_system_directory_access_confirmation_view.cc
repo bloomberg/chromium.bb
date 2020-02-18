@@ -21,7 +21,6 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/layout/box_layout.h"
-#include "ui/views/window/dialog_client_view.h"
 
 NativeFileSystemDirectoryAccessConfirmationView::
     ~NativeFileSystemDirectoryAccessConfirmationView() {
@@ -47,20 +46,6 @@ base::string16 NativeFileSystemDirectoryAccessConfirmationView::GetWindowTitle()
     const {
   return l10n_util::GetStringUTF16(
       IDS_NATIVE_FILE_SYSTEM_DIRECTORY_ACCESS_CONFIRMATION_TITLE);
-}
-
-int NativeFileSystemDirectoryAccessConfirmationView::GetDefaultDialogButton()
-    const {
-  return ui::DIALOG_BUTTON_OK;
-}
-
-base::string16
-NativeFileSystemDirectoryAccessConfirmationView::GetDialogButtonLabel(
-    ui::DialogButton button) const {
-  if (button == ui::DIALOG_BUTTON_OK)
-    return l10n_util::GetStringUTF16(
-        IDS_NATIVE_FILE_SYSTEM_DIRECTORY_ACCESS_ALLOW_BUTTON);
-  return l10n_util::GetStringUTF16(IDS_APP_CANCEL);
 }
 
 bool NativeFileSystemDirectoryAccessConfirmationView::ShouldShowCloseButton()
@@ -94,8 +79,7 @@ ui::ModalType NativeFileSystemDirectoryAccessConfirmationView::GetModalType()
 
 views::View*
 NativeFileSystemDirectoryAccessConfirmationView::GetInitiallyFocusedView() {
-  const views::DialogClientView* dcv = GetDialogClientView();
-  return dcv ? dcv->cancel_button() : nullptr;
+  return GetCancelButton();
 }
 
 NativeFileSystemDirectoryAccessConfirmationView::
@@ -104,6 +88,10 @@ NativeFileSystemDirectoryAccessConfirmationView::
         const base::FilePath& path,
         base::OnceCallback<void(PermissionAction result)> callback)
     : callback_(std::move(callback)) {
+  DialogDelegate::set_button_label(
+      ui::DIALOG_BUTTON_OK,
+      l10n_util::GetStringUTF16(
+          IDS_NATIVE_FILE_SYSTEM_DIRECTORY_ACCESS_ALLOW_BUTTON));
   const views::LayoutProvider* provider = ChromeLayoutProvider::Get();
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical,

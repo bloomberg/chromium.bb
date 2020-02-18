@@ -8,14 +8,11 @@
 #include <memory>
 #include <string>
 
-#include "base/android/jni_android.h"
 #include "base/android/scoped_java_ref.h"
-#include "base/compiler_specific.h"
 #include "base/macros.h"
 
 namespace net {
 class HttpResponseHeaders;
-class URLRequest;
 }
 
 namespace android_webview {
@@ -28,7 +25,7 @@ class AwWebResourceResponse {
  public:
   // It is expected that |obj| is an instance of the Java-side
   // org.chromium.android_webview.AwWebResourceResponse class.
-  AwWebResourceResponse(const base::android::JavaRef<jobject>& obj);
+  explicit AwWebResourceResponse(const base::android::JavaRef<jobject>& obj);
   ~AwWebResourceResponse();
 
   bool HasInputStream(JNIEnv* env) const;
@@ -43,8 +40,6 @@ class AwWebResourceResponse {
   bool GetResponseHeaders(JNIEnv* env, net::HttpResponseHeaders* headers) const;
 
  private:
-  AwWebResourceResponse();
-
   base::android::ScopedJavaGlobalRef<jobject> java_object_;
 
   bool input_stream_transferred_;
@@ -52,6 +47,6 @@ class AwWebResourceResponse {
   DISALLOW_COPY_AND_ASSIGN(AwWebResourceResponse);
 };
 
-} // namespace android_webview
+}  // namespace android_webview
 
 #endif  // ANDROID_WEBVIEW_BROWSER_NETWORK_SERVICE_AW_WEB_RESOURCE_RESPONSE_H_

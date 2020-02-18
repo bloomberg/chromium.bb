@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/fullscreen_control/fullscreen_control_popup.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "chrome/browser/ui/views/fullscreen_control/fullscreen_control_view.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
@@ -17,20 +19,18 @@ constexpr int kFinalOffset = 45;
 constexpr float kInitialOpacity = 0.1f;
 constexpr float kFinalOpacity = 1.f;
 
-constexpr int kSlideInDurationMs = 300;
-constexpr int kSlideOutDurationMs = 150;
-
 // Creates a Widget containing an FullscreenControlView.
-std::unique_ptr<views::Widget> CreatePopupWidget(gfx::NativeView parent_view,
-                                                 FullscreenControlView* view) {
+std::unique_ptr<views::Widget> CreatePopupWidget(
+    gfx::NativeView parent_view,
+    std::unique_ptr<FullscreenControlView> view) {
   // Initialize the popup.
   std::unique_ptr<views::Widget> popup = std::make_unique<views::Widget>();
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
-  params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
+  params.opacity = views::Widget::InitParams::WindowOpacity::kTranslucent;
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.parent = parent_view;
   popup->Init(std::move(params));
-  popup->SetContentsView(view);
+  popup->SetContentsView(view.release());
 
   return popup;
 }
@@ -41,13 +41,11 @@ FullscreenControlPopup::FullscreenControlPopup(
     gfx::NativeView parent_view,
     const base::RepeatingClosure& on_button_pressed,
     const base::RepeatingClosure& on_visibility_changed)
-    : control_view_(new FullscreenControlView(on_button_pressed)),
-      popup_(CreatePopupWidget(parent_view, control_view_)),
-      animation_(std::make_unique<gfx::SlideAnimation>(this)),
-      on_visibility_changed_(on_visibility_changed) {
-  DCHECK(on_visibility_changed_);
-  animation_->Reset(0);
-}
+    : FullscreenControlPopup(
+          CreatePopupWidget(
+              parent_view,
+              std::make_unique<FullscreenControlView>(on_button_pressed)),
+          on_visibility_changed) {}
 
 FullscreenControlPopup::~FullscreenControlPopup() {}
 
@@ -62,7 +60,7 @@ void FullscreenControlPopup::Show(const gfx::Rect& parent_bounds_in_screen) {
 
   parent_bounds_in_screen_ = parent_bounds_in_screen;
 
-  animation_->SetSlideDuration(kSlideInDurationMs);
+  animation_->SetSlideDuration(base::TimeDelta::FromMilliseconds(300));
   animation_->Show();
 
   // The default animation progress is 0. Call it once here then show the popup
@@ -76,7 +74,7 @@ void FullscreenControlPopup::Hide(bool animated) {
     return;
 
   if (animated) {
-    animation_->SetSlideDuration(kSlideOutDurationMs);
+    animation_->SetSlideDuration(base::TimeDelta::FromMilliseconds(150));
     animation_->Hide();
     return;
   }
@@ -99,6 +97,19 @@ bool FullscreenControlPopup::IsAnimating() const {
 
 bool FullscreenControlPopup::IsVisible() const {
   return popup_->IsVisible();
+}
+
+FullscreenControlPopup::FullscreenControlPopup(
+    std::unique_ptr<views::Widget> popup,
+    const base::RepeatingClosure& on_visibility_changed)
+    : AnimationDelegateViews(popup->GetRootView()),
+      control_view_(
+          static_cast<FullscreenControlView*>(popup->GetContentsView())),
+      popup_(std::move(popup)),
+      animation_(std::make_unique<gfx::SlideAnimation>(this)),
+      on_visibility_changed_(on_visibility_changed) {
+  DCHECK(on_visibility_changed_);
+  animation_->Reset(0);
 }
 
 void FullscreenControlPopup::AnimationProgressed(

@@ -1,8 +1,10 @@
-// Copyright (c) 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/app_list/search/search_result_ranker/ml_app_rank_provider.h"
+
+#include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -21,17 +23,16 @@
 #include "components/crx_file/id_util.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "mojo/public/cpp/bindings/map.h"
 #include "ui/base/resource/resource_bundle.h"
 
+using ::chromeos::machine_learning::mojom::BuiltinModelId;
+using ::chromeos::machine_learning::mojom::BuiltinModelSpec;
+using ::chromeos::machine_learning::mojom::BuiltinModelSpecPtr;
 using ::chromeos::machine_learning::mojom::CreateGraphExecutorResult;
 using ::chromeos::machine_learning::mojom::ExecuteResult;
 using ::chromeos::machine_learning::mojom::FloatList;
 using ::chromeos::machine_learning::mojom::Int64List;
 using ::chromeos::machine_learning::mojom::LoadModelResult;
-using ::chromeos::machine_learning::mojom::ModelId;
-using ::chromeos::machine_learning::mojom::ModelSpec;
-using ::chromeos::machine_learning::mojom::ModelSpecPtr;
 using ::chromeos::machine_learning::mojom::Tensor;
 using ::chromeos::machine_learning::mojom::TensorPtr;
 using ::chromeos::machine_learning::mojom::ValueList;
@@ -76,15 +77,15 @@ bool LoadExamplePreprocessorConfig(
 
 // Perform the inference given the |features| and |app_id| of an app.
 // Posts |callback| to |task_runner| to perform the actual inference.
-void DoInference(
-    const std::string& app_id,
-    const std::vector<float>& features,
-    scoped_refptr<base::SequencedTaskRunner> task_runner,
-    const base::RepeatingCallback<void(std::map<std::string, TensorPtr> inputs,
-                                       const std::vector<std::string> outputs,
-                                       const std::string app_id)> callback) {
+void DoInference(const std::string& app_id,
+                 const std::vector<float>& features,
+                 scoped_refptr<base::SequencedTaskRunner> task_runner,
+                 const base::RepeatingCallback<
+                     void(base::flat_map<std::string, TensorPtr> inputs,
+                          const std::vector<std::string> outputs,
+                          const std::string app_id)> callback) {
   // Prepare the input tensor.
-  std::map<std::string, TensorPtr> inputs;
+  base::flat_map<std::string, TensorPtr> inputs;
   auto tensor = Tensor::New();
   tensor->shape = Int64List::New();
   tensor->shape->value = std::vector<int64_t>({1, features.size()});
@@ -104,10 +105,10 @@ void DoInference(
 // Returns true on success.
 bool RankerExampleToVectorizedFeatures(
     const assist_ranker::ExamplePreprocessorConfig& preprocessor_config,
-    assist_ranker::RankerExample& example,
+    assist_ranker::RankerExample* example,
     std::vector<float>* vectorized_features) {
   int preprocessor_error = assist_ranker::ExamplePreprocessor::Process(
-      preprocessor_config, &example, true);
+      preprocessor_config, example, true);
   // kNoFeatureIndexFound can occur normally (e.g., when the app URL
   // isn't known to the model or a rarely seen enum value is used).
   if (preprocessor_error != assist_ranker::ExamplePreprocessor::kSuccess &&
@@ -118,7 +119,7 @@ bool RankerExampleToVectorizedFeatures(
   }
 
   const auto& extracted_features =
-      example.features()
+      example->features()
           .at(assist_ranker::ExamplePreprocessor::kVectorizedFeatureDefaultName)
           .float_list()
           .float_value();
@@ -137,9 +138,10 @@ void CreateRankingsImpl(
     int all_clicks_last_hour,
     int all_clicks_last_24_hours,
     scoped_refptr<base::SequencedTaskRunner> task_runner,
-    const base::RepeatingCallback<void(std::map<std::string, TensorPtr> inputs,
-                                       const std::vector<std::string> outputs,
-                                       const std::string app_id)>& callback) {
+    const base::RepeatingCallback<
+        void(base::flat_map<std::string, TensorPtr> inputs,
+             const std::vector<std::string> outputs,
+             const std::string app_id)>& callback) {
   const base::Time now(base::Time::Now());
   const int hour = HourOfDay(now);
   const int day = DayOfWeek(now);
@@ -156,7 +158,7 @@ void CreateRankingsImpl(
                             total_hours, day, hour, all_clicks_last_hour,
                             all_clicks_last_24_hours));
     std::vector<float> vectorized_features;
-    if (RankerExampleToVectorizedFeatures(preprocessor_config, example,
+    if (RankerExampleToVectorizedFeatures(preprocessor_config, &example,
                                           &vectorized_features)) {
       DoInference(app.first, vectorized_features, task_runner, callback);
     }
@@ -283,12 +285,13 @@ std::map<std::string, float> MlAppRankProvider::RetrieveRankings() {
   return ranking_map_;
 }
 
-void MlAppRankProvider::RunExecutor(std::map<std::string, TensorPtr> inputs,
-                                    const std::vector<std::string> outputs,
-                                    const std::string app_id) {
+void MlAppRankProvider::RunExecutor(
+    base::flat_map<std::string, TensorPtr> inputs,
+    const std::vector<std::string> outputs,
+    const std::string app_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(creation_sequence_checker_);
   BindGraphExecutorIfNeeded();
-  executor_->Execute(mojo::MapToFlatMap(std::move(inputs)), std::move(outputs),
+  executor_->Execute(std::move(inputs), std::move(outputs),
                      base::BindOnce(&MlAppRankProvider::ExecuteCallback,
                                     base::Unretained(this), app_id));
 }
@@ -309,10 +312,11 @@ void MlAppRankProvider::BindGraphExecutorIfNeeded() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(creation_sequence_checker_);
   if (!model_) {
     // Load the model.
-    ModelSpecPtr spec = ModelSpec::New(ModelId::TOP_CAT_20190722);
-    chromeos::machine_learning::ServiceConnection::GetInstance()->LoadModel(
-        std::move(spec), model_.BindNewPipeAndPassReceiver(),
-        base::BindOnce(&LoadModelCallback));
+    BuiltinModelSpecPtr spec =
+        BuiltinModelSpec::New(BuiltinModelId::TOP_CAT_20190722);
+    chromeos::machine_learning::ServiceConnection::GetInstance()
+        ->LoadBuiltinModel(std::move(spec), model_.BindNewPipeAndPassReceiver(),
+                           base::BindOnce(&LoadModelCallback));
   }
 
   if (!executor_) {

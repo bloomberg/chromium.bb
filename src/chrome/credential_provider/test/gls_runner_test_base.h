@@ -5,6 +5,8 @@
 #ifndef CHROME_CREDENTIAL_PROVIDER_TEST_GLS_RUNNER_TEST_BASE_H_
 #define CHROME_CREDENTIAL_PROVIDER_TEST_GLS_RUNNER_TEST_BASE_H_
 
+#include <wrl/client.h>
+
 #include "base/test/test_reg_util_win.h"
 #include "chrome/credential_provider/common/gcp_strings.h"
 #include "chrome/credential_provider/gaiacp/gaia_credential_provider.h"
@@ -38,6 +40,7 @@ class GlsRunnerTestBase : public ::testing::Test {
       const std::string& gls_email,
       const std::string& gaia_id_override,
       const std::string& gaia_password,
+      const std::string& full_name_override,
       const base::string16& start_gls_event_name,
       bool ignore_expected_gaia_id,
       base::CommandLine* command_line);
@@ -65,11 +68,15 @@ class GlsRunnerTestBase : public ::testing::Test {
   FakeCredentialProviderEvents* fake_provider_events() {
     return &fake_provider_events_;
   }
+  FakeCredentialProviderCredentialEvents*
+  fake_credential_provider_credential_events() {
+    return &fake_credential_provider_credential_events_;
+  }
   FakeInternetAvailabilityChecker* fake_internet_checker() {
     return &fake_internet_checker_;
   }
 
-  const CComPtr<ICredentialProvider>& created_provider() const {
+  const Microsoft::WRL::ComPtr<ICredentialProvider>& created_provider() const {
     return gaia_provider_;
   }
 
@@ -150,20 +157,31 @@ class GlsRunnerTestBase : public ::testing::Test {
   HRESULT FinishLogonProcess(bool expected_success,
                              bool expected_credentials_change_fired,
                              int expected_error_message);
+  HRESULT FinishLogonProcess(bool expected_success,
+                             bool expected_credentials_change_fired,
+                             const base::string16& expected_error_message);
   HRESULT FinishLogonProcessWithCred(
       bool expected_success,
       bool expected_credentials_change_fired,
       int expected_error_message,
-      const CComPtr<ICredentialProviderCredential>& local_testing_cred);
+      const Microsoft::WRL::ComPtr<ICredentialProviderCredential>&
+          local_testing_cred);
+  HRESULT FinishLogonProcessWithCred(
+      bool expected_success,
+      bool expected_credentials_change_fired,
+      const base::string16& expected_error_message,
+      const Microsoft::WRL::ComPtr<ICredentialProviderCredential>&
+          local_testing_cred);
   HRESULT ReportLogonProcessResult(
-      const CComPtr<ICredentialProviderCredential>& local_testing_cred);
+      const Microsoft::WRL::ComPtr<ICredentialProviderCredential>&
+          local_testing_cred);
 
  private:
   HRESULT InternalInitializeProvider(
       const CREDENTIAL_PROVIDER_CREDENTIAL_SERIALIZATION* pcpcs_in,
       DWORD* count);
   HRESULT ApplyProviderFilter(
-      const CComPtr<ICredentialProvider>& provider,
+      const Microsoft::WRL::ComPtr<ICredentialProvider>& provider,
       const CREDENTIAL_PROVIDER_CREDENTIAL_SERIALIZATION* pcpcs_in,
       CREDENTIAL_PROVIDER_CREDENTIAL_SERIALIZATION* pcpcs_out,
       HRESULT* update_remote_credentials_hr);
@@ -179,6 +197,8 @@ class GlsRunnerTestBase : public ::testing::Test {
   FakePasswordRecoveryManager fake_password_recovery_manager_;
   FakeWinHttpUrlFetcherFactory fake_http_url_fetcher_factory_;
   FakeCredentialProviderEvents fake_provider_events_;
+  FakeCredentialProviderCredentialEvents
+      fake_credential_provider_credential_events_;
   FakeCredentialProviderUserArray fake_user_array_;
 
   // SID of the user that is considered to be locking the workstation. This is
@@ -186,14 +206,14 @@ class GlsRunnerTestBase : public ::testing::Test {
   base::string16 sid_locking_workstation_;
 
   // Reference to the provider that is created and owned by this class.
-  CComPtr<ICredentialProvider> gaia_provider_;
+  Microsoft::WRL::ComPtr<ICredentialProvider> gaia_provider_;
 
   // Reference to the credential in provider that is being tested by this class.
   // This member is kept so that it can be automatically released on destruction
   // of the test if the test did not explicitly release it. This allows us to
   // write less boiler plate test code and ensures that proper destruction order
   // of the credentials is respected.
-  CComPtr<ICredentialProviderCredential> testing_cred_;
+  Microsoft::WRL::ComPtr<ICredentialProviderCredential> testing_cred_;
 
   // Keeps track of whether a logon process has started for |testing_cred_|.
   // Testers who do not explicitly call FinishLogonProcess before the end of

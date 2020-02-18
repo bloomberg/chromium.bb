@@ -12,8 +12,6 @@ script will always roll to the tip of to origin/master.
 from __future__ import print_function
 
 import argparse
-import collections
-import gclient_eval
 import os
 import re
 import subprocess
@@ -54,7 +52,7 @@ class AlreadyRolledError(Error):
 def check_output(*args, **kwargs):
   """subprocess.check_output() passing shell=True on Windows for git."""
   kwargs.setdefault('shell', NEED_SHELL)
-  return subprocess.check_output(*args, **kwargs)
+  return subprocess.check_output(*args, **kwargs).decode('utf-8')
 
 
 def check_call(*args, **kwargs):
@@ -173,7 +171,7 @@ def finalize(commit_msg, current_dir, rolls):
 
   # Pull the dependency to the right revision. This is surprising to users
   # otherwise.
-  for _head, roll_to, full_dir in sorted(rolls.itervalues()):
+  for _head, roll_to, full_dir in sorted(rolls.values()):
     check_call(['git', 'checkout', '--quiet', roll_to], cwd=full_dir)
 
 
@@ -251,7 +249,7 @@ def main():
 
     logs = []
     setdep_args = []
-    for dependency, (head, roll_to, full_dir) in sorted(rolls.iteritems()):
+    for dependency, (head, roll_to, full_dir) in sorted(rolls.items()):
       log = generate_commit_message(
           full_dir, dependency, head, roll_to, args.no_log, args.log_limit)
       logs.append(log)

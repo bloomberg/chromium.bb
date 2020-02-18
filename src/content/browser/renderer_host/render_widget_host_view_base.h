@@ -60,6 +60,7 @@ class WebMouseWheelEvent;
 namespace ui {
 enum class DomCode;
 class LatencyInfo;
+class TouchEvent;
 struct DidOverscrollParams;
 }
 
@@ -119,7 +120,6 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
       base::OnceCallback<void(const SkBitmap&)> callback) override;
   std::unique_ptr<viz::ClientFrameSinkVideoCapturer> CreateVideoCapturer()
       override;
-  void FocusedNodeTouched(bool editable) override;
   void GetScreenInfo(ScreenInfo* screen_info) override;
   void EnableAutoResize(const gfx::Size& min_size,
                         const gfx::Size& max_size) override;
@@ -232,13 +232,6 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   // being forwarded.
   virtual InputEventAckState FilterInputEvent(
       const blink::WebInputEvent& input_event);
-
-  // Allows a root RWHV to filter gesture events in a child.
-  // TODO(mcnee): Remove once both callers are removed, following
-  // scroll-latching being enabled and BrowserPlugin being removed.
-  // crbug.com/751782
-  virtual InputEventAckState FilterChildGestureEvent(
-      const blink::WebGestureEvent& gesture_event);
 
   virtual void WheelEventAck(const blink::WebMouseWheelEvent& event,
                              InputEventAckState ack_result);
@@ -386,13 +379,6 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   bool GetTransformToViewCoordSpace(RenderWidgetHostViewBase* target_view,
                                     gfx::Transform* transform);
 
-  // TODO(kenrb, wjmaclean): This is a temporary subclass identifier for
-  // RenderWidgetHostViewGuests that is needed for special treatment during
-  // input event routing. It can be removed either when RWHVGuests properly
-  // support direct mouse event routing, or when RWHVGuest is removed
-  // entirely, which comes first.
-  virtual bool IsRenderWidgetHostViewGuest();
-
   // Subclass identifier for RenderWidgetHostViewChildFrames. This is useful
   // to be able to know if this RWHV is embedded within another RWHV. If
   // other kinds of embeddable RWHVs are created, this should be renamed to
@@ -431,9 +417,15 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   // synchronization, the default implementation returns true.
   virtual bool CanSynchronizeVisualProperties();
 
-  // Cancels any existing active pointers by dispatching synthetic cancel
-  // events.
-  virtual void CancelActiveTouches() {}
+  // Extracts information about any active pointers and cancels any existing
+  // active pointers by dispatching synthetic cancel events.
+  virtual std::vector<std::unique_ptr<ui::TouchEvent>>
+  ExtractAndCancelActiveTouches();
+
+  // Used to transfer pointer state from one view to another. It recreates the
+  // pointer state by dispatching touch down events.
+  virtual void TransferTouches(
+      const std::vector<std::unique_ptr<ui::TouchEvent>>& touches) {}
 
   //----------------------------------------------------------------------------
   // The following methods are related to IME.

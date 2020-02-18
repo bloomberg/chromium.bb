@@ -755,6 +755,16 @@ GLES2MultiDrawArraysInstancedWEBGL(GLenum mode,
   gles2::GetGLContext()->MultiDrawArraysInstancedWEBGL(
       mode, firsts, counts, instance_counts, drawcount);
 }
+void GL_APIENTRY
+GLES2MultiDrawArraysInstancedBaseInstanceWEBGL(GLenum mode,
+                                               const GLint* firsts,
+                                               const GLsizei* counts,
+                                               const GLsizei* instance_counts,
+                                               const GLuint* baseinstances,
+                                               GLsizei drawcount) {
+  gles2::GetGLContext()->MultiDrawArraysInstancedBaseInstanceWEBGL(
+      mode, firsts, counts, instance_counts, baseinstances, drawcount);
+}
 void GL_APIENTRY GLES2MultiDrawElementsWEBGL(GLenum mode,
                                              const GLsizei* counts,
                                              GLenum type,
@@ -772,6 +782,19 @@ GLES2MultiDrawElementsInstancedWEBGL(GLenum mode,
                                      GLsizei drawcount) {
   gles2::GetGLContext()->MultiDrawElementsInstancedWEBGL(
       mode, counts, type, offsets, instance_counts, drawcount);
+}
+void GL_APIENTRY GLES2MultiDrawElementsInstancedBaseVertexBaseInstanceWEBGL(
+    GLenum mode,
+    const GLsizei* counts,
+    GLenum type,
+    const GLsizei* offsets,
+    const GLsizei* instance_counts,
+    const GLint* basevertices,
+    const GLuint* baseinstances,
+    GLsizei drawcount) {
+  gles2::GetGLContext()->MultiDrawElementsInstancedBaseVertexBaseInstanceWEBGL(
+      mode, counts, type, offsets, instance_counts, basevertices, baseinstances,
+      drawcount);
 }
 void GL_APIENTRY GLES2StencilFunc(GLenum func, GLint ref, GLuint mask) {
   gles2::GetGLContext()->StencilFunc(func, ref, mask);
@@ -1275,6 +1298,14 @@ void GL_APIENTRY GLES2DispatchCompute(GLuint num_groups_x,
 void GL_APIENTRY GLES2DispatchComputeIndirect(GLintptr offset) {
   gles2::GetGLContext()->DispatchComputeIndirect(offset);
 }
+void GL_APIENTRY GLES2DrawArraysIndirect(GLenum mode, const void* offset) {
+  gles2::GetGLContext()->DrawArraysIndirect(mode, offset);
+}
+void GL_APIENTRY GLES2DrawElementsIndirect(GLenum mode,
+                                           GLenum type,
+                                           const void* offset) {
+  gles2::GetGLContext()->DrawElementsIndirect(mode, type, offset);
+}
 void GL_APIENTRY GLES2GetProgramInterfaceiv(GLuint program,
                                             GLenum program_interface,
                                             GLenum pname,
@@ -1489,6 +1520,15 @@ void GL_APIENTRY GLES2DrawArraysInstancedANGLE(GLenum mode,
   gles2::GetGLContext()->DrawArraysInstancedANGLE(mode, first, count,
                                                   primcount);
 }
+void GL_APIENTRY
+GLES2DrawArraysInstancedBaseInstanceANGLE(GLenum mode,
+                                          GLint first,
+                                          GLsizei count,
+                                          GLsizei primcount,
+                                          GLuint baseinstance) {
+  gles2::GetGLContext()->DrawArraysInstancedBaseInstanceANGLE(
+      mode, first, count, primcount, baseinstance);
+}
 void GL_APIENTRY GLES2DrawElementsInstancedANGLE(GLenum mode,
                                                  GLsizei count,
                                                  GLenum type,
@@ -1496,6 +1536,17 @@ void GL_APIENTRY GLES2DrawElementsInstancedANGLE(GLenum mode,
                                                  GLsizei primcount) {
   gles2::GetGLContext()->DrawElementsInstancedANGLE(mode, count, type, indices,
                                                     primcount);
+}
+void GL_APIENTRY
+GLES2DrawElementsInstancedBaseVertexBaseInstanceANGLE(GLenum mode,
+                                                      GLsizei count,
+                                                      GLenum type,
+                                                      const void* indices,
+                                                      GLsizei primcount,
+                                                      GLint basevertex,
+                                                      GLuint baseinstance) {
+  gles2::GetGLContext()->DrawElementsInstancedBaseVertexBaseInstanceANGLE(
+      mode, count, type, indices, primcount, basevertex, baseinstance);
 }
 void GL_APIENTRY GLES2VertexAttribDivisorANGLE(GLuint index, GLuint divisor) {
   gles2::GetGLContext()->VertexAttribDivisorANGLE(index, divisor);
@@ -1803,6 +1854,9 @@ GLES2ProgramPathFragmentInputGenCHROMIUM(GLuint program,
   gles2::GetGLContext()->ProgramPathFragmentInputGenCHROMIUM(
       program, location, genMode, components, coeffs);
 }
+void GL_APIENTRY GLES2ContextVisibilityHintCHROMIUM(GLboolean visibility) {
+  gles2::GetGLContext()->ContextVisibilityHintCHROMIUM(visibility);
+}
 void GL_APIENTRY GLES2CoverageModulationCHROMIUM(GLenum components) {
   gles2::GetGLContext()->CoverageModulationCHROMIUM(components);
 }
@@ -1811,9 +1865,6 @@ GLenum GL_APIENTRY GLES2GetGraphicsResetStatusKHR() {
 }
 void GL_APIENTRY GLES2BlendBarrierKHR() {
   gles2::GetGLContext()->BlendBarrierKHR();
-}
-void GL_APIENTRY GLES2ApplyScreenSpaceAntialiasingCHROMIUM() {
-  gles2::GetGLContext()->ApplyScreenSpaceAntialiasingCHROMIUM();
 }
 void GL_APIENTRY GLES2BindFragDataLocationIndexedEXT(GLuint program,
                                                      GLuint colorNumber,
@@ -2567,6 +2618,11 @@ extern const NameToFunc g_gles2_function_table[] = {
         reinterpret_cast<GLES2FunctionPointer>(glMultiDrawArraysInstancedWEBGL),
     },
     {
+        "glMultiDrawArraysInstancedBaseInstanceWEBGL",
+        reinterpret_cast<GLES2FunctionPointer>(
+            glMultiDrawArraysInstancedBaseInstanceWEBGL),
+    },
+    {
         "glMultiDrawElementsWEBGL",
         reinterpret_cast<GLES2FunctionPointer>(glMultiDrawElementsWEBGL),
     },
@@ -2574,6 +2630,11 @@ extern const NameToFunc g_gles2_function_table[] = {
         "glMultiDrawElementsInstancedWEBGL",
         reinterpret_cast<GLES2FunctionPointer>(
             glMultiDrawElementsInstancedWEBGL),
+    },
+    {
+        "glMultiDrawElementsInstancedBaseVertexBaseInstanceWEBGL",
+        reinterpret_cast<GLES2FunctionPointer>(
+            glMultiDrawElementsInstancedBaseVertexBaseInstanceWEBGL),
     },
     {
         "glStencilFunc",
@@ -2976,6 +3037,14 @@ extern const NameToFunc g_gles2_function_table[] = {
         reinterpret_cast<GLES2FunctionPointer>(glDispatchComputeIndirect),
     },
     {
+        "glDrawArraysIndirect",
+        reinterpret_cast<GLES2FunctionPointer>(glDrawArraysIndirect),
+    },
+    {
+        "glDrawElementsIndirect",
+        reinterpret_cast<GLES2FunctionPointer>(glDrawElementsIndirect),
+    },
+    {
         "glGetProgramInterfaceiv",
         reinterpret_cast<GLES2FunctionPointer>(glGetProgramInterfaceiv),
     },
@@ -3116,8 +3185,18 @@ extern const NameToFunc g_gles2_function_table[] = {
         reinterpret_cast<GLES2FunctionPointer>(glDrawArraysInstancedANGLE),
     },
     {
+        "glDrawArraysInstancedBaseInstanceANGLE",
+        reinterpret_cast<GLES2FunctionPointer>(
+            glDrawArraysInstancedBaseInstanceANGLE),
+    },
+    {
         "glDrawElementsInstancedANGLE",
         reinterpret_cast<GLES2FunctionPointer>(glDrawElementsInstancedANGLE),
+    },
+    {
+        "glDrawElementsInstancedBaseVertexBaseInstanceANGLE",
+        reinterpret_cast<GLES2FunctionPointer>(
+            glDrawElementsInstancedBaseVertexBaseInstanceANGLE),
     },
     {
         "glVertexAttribDivisorANGLE",
@@ -3319,6 +3398,10 @@ extern const NameToFunc g_gles2_function_table[] = {
             glProgramPathFragmentInputGenCHROMIUM),
     },
     {
+        "glContextVisibilityHintCHROMIUM",
+        reinterpret_cast<GLES2FunctionPointer>(glContextVisibilityHintCHROMIUM),
+    },
+    {
         "glCoverageModulationCHROMIUM",
         reinterpret_cast<GLES2FunctionPointer>(glCoverageModulationCHROMIUM),
     },
@@ -3329,11 +3412,6 @@ extern const NameToFunc g_gles2_function_table[] = {
     {
         "glBlendBarrierKHR",
         reinterpret_cast<GLES2FunctionPointer>(glBlendBarrierKHR),
-    },
-    {
-        "glApplyScreenSpaceAntialiasingCHROMIUM",
-        reinterpret_cast<GLES2FunctionPointer>(
-            glApplyScreenSpaceAntialiasingCHROMIUM),
     },
     {
         "glBindFragDataLocationIndexedEXT",

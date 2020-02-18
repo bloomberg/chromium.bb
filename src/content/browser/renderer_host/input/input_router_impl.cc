@@ -458,6 +458,10 @@ void InputRouterImpl::SendGeneratedGestureScrollEvents(
                                               gesture_event.latency);
 }
 
+gfx::Size InputRouterImpl::GetRootWidgetViewportSize() {
+  return client_->GetRootWidgetViewportSize();
+}
+
 void InputRouterImpl::SendMouseWheelEventImmediately(
     const MouseWheelEventWithLatencyInfo& wheel_event) {
   mojom::WidgetInputHandler::DispatchEventCallback callback = base::BindOnce(
@@ -700,6 +704,10 @@ void InputRouterImpl::ForceSetTouchActionAuto() {
 
 void InputRouterImpl::ForceResetTouchActionForTest() {
   touch_action_filter_.ForceResetTouchActionForTest();
+}
+
+bool InputRouterImpl::IsFlingActiveForTest() {
+  return gesture_event_queue_.IsFlingActiveForTest();
 }
 
 void InputRouterImpl::OnSetTouchAction(cc::TouchAction touch_action) {

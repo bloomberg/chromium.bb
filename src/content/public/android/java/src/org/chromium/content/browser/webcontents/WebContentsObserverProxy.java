@@ -81,15 +81,17 @@ class WebContentsObserverProxy extends WebContentsObserver {
     @Override
     @CalledByNative
     public void didStartNavigation(NavigationHandle navigation) {
-        for (mObserversIterator.rewind(); mObserversIterator.hasNext();)
+        for (mObserversIterator.rewind(); mObserversIterator.hasNext();) {
             mObserversIterator.next().didStartNavigation(navigation);
+        }
     }
 
     @Override
     @CalledByNative
     public void didRedirectNavigation(NavigationHandle navigation) {
-        for (mObserversIterator.rewind(); mObserversIterator.hasNext();)
+        for (mObserversIterator.rewind(); mObserversIterator.hasNext();) {
             mObserversIterator.next().didRedirectNavigation(navigation);
+        }
     }
 
     @Override
@@ -113,6 +115,22 @@ class WebContentsObserverProxy extends WebContentsObserver {
     public void didStopLoading(String url) {
         for (mObserversIterator.rewind(); mObserversIterator.hasNext();) {
             mObserversIterator.next().didStopLoading(url);
+        }
+    }
+
+    @Override
+    @CalledByNative
+    public void loadProgressChanged(float progress) {
+        for (mObserversIterator.rewind(); mObserversIterator.hasNext();) {
+            mObserversIterator.next().loadProgressChanged(progress);
+        }
+    }
+
+    @Override
+    @CalledByNative
+    public void didChangeVisibleSecurityState() {
+        for (mObserversIterator.rewind(); mObserversIterator.hasNext();) {
+            mObserversIterator.next().didChangeVisibleSecurityState();
         }
     }
 
@@ -242,14 +260,6 @@ class WebContentsObserverProxy extends WebContentsObserver {
     public void viewportFitChanged(@WebContentsObserver.ViewportFitType int value) {
         for (mObserversIterator.rewind(); mObserversIterator.hasNext();) {
             mObserversIterator.next().viewportFitChanged(value);
-        }
-    }
-
-    @Override
-    @CalledByNative
-    public void didReloadLoFiImages() {
-        for (mObserversIterator.rewind(); mObserversIterator.hasNext();) {
-            mObserversIterator.next().didReloadLoFiImages();
         }
     }
 

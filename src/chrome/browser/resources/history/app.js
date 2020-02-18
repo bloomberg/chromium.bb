@@ -21,8 +21,59 @@ cr.define('history', function() {
     return lazyLoadPromise;
   }
 
+  // Adds click/auxclick listeners for any link on the page. If the link points
+  // to a chrome: or file: url, then calls into the browser to do the
+  // navigation. Note: This method is *not* re-entrant. Every call to it, will
+  // re-add listeners on |document|. It's up to callers to ensure this is only
+  // called once.
+  function listenForPrivilegedLinkClicks() {
+    ['click', 'auxclick'].forEach(function(eventName) {
+      document.addEventListener(eventName, function(e) {
+        // Ignore buttons other than left and middle.
+        if (e.button > 1 || e.defaultPrevented) {
+          return;
+        }
+
+        const eventPath = e.path;
+        let anchor = null;
+        if (eventPath) {
+          for (let i = 0; i < eventPath.length; i++) {
+            const element = eventPath[i];
+            if (element.tagName === 'A' && element.href) {
+              anchor = element;
+              break;
+            }
+          }
+        }
+
+        // Fallback if Event.path is not available.
+        let el = e.target;
+        if (!anchor && el.nodeType == Node.ELEMENT_NODE &&
+            el.webkitMatchesSelector('A, A *')) {
+          while (el.tagName != 'A') {
+            el = el.parentElement;
+          }
+          anchor = el;
+        }
+
+        if (!anchor) {
+          return;
+        }
+
+        anchor = /** @type {!HTMLAnchorElement} */ (anchor);
+        if ((anchor.protocol == 'file:' || anchor.protocol == 'about:') &&
+            (e.button == 0 || e.button == 1)) {
+          history.BrowserService.getInstance().navigateToUrl(
+              anchor.href, anchor.target, /** @type {!MouseEvent} */ (e));
+          e.preventDefault();
+        }
+      });
+    });
+  }
+
   return {
     ensureLazyLoaded: ensureLazyLoaded,
+    listenForPrivilegedLinkClicks: listenForPrivilegedLinkClicks,
   };
 });
 
@@ -32,6 +83,7 @@ Polymer({
   behaviors: [
     FindShortcutBehavior,
     Polymer.IronScrollTargetBehavior,
+    WebUIListenerBehavior,
   ],
 
   properties: {
@@ -59,6 +111,9 @@ Polymer({
       // 'otherDevicesInitialized'.
       value: loadTimeData.getBoolean('isUserSignedIn'),
     },
+
+    /** @private */
+    pendingDelete_: Boolean,
 
     toolbarShadow_: {
       type: Boolean,
@@ -106,32 +161,36 @@ Polymer({
   },
 
   /** @private {?function(!Event)} */
-  boundOnCanExecute_: null,
+  boundOnKeyDown_: null,
 
-  /** @private {?function(!Event)} */
-  boundOnCommand_: null,
+  /** @override */
+  created: function() {
+    history.listenForPrivilegedLinkClicks();
+  },
 
   /** @override */
   attached: function() {
-    cr.ui.decorate('command', cr.ui.Command);
-    this.boundOnCanExecute_ = this.onCanExecute_.bind(this);
-    this.boundOnCommand_ = this.onCommand_.bind(this);
-
-    document.addEventListener('canExecute', this.boundOnCanExecute_);
-    document.addEventListener('command', this.boundOnCommand_);
+    this.boundOnKeyDown_ = e => this.onKeyDown_(e);
+    document.addEventListener('keydown', this.boundOnKeyDown_);
+    this.addWebUIListener(
+        'sign-in-state-changed',
+        signedIn => this.onSignInStateChanged_(signedIn));
+    this.addWebUIListener(
+        'has-other-forms-changed',
+        hasOtherForms => this.onHasOtherFormsChanged_(hasOtherForms));
+    history.BrowserService.getInstance().historyLoaded();
   },
 
   /** @override */
   detached: function() {
-    document.removeEventListener('canExecute', this.boundOnCanExecute_);
-    document.removeEventListener('command', this.boundOnCommand_);
+    document.removeEventListener('keydown', this.boundOnKeyDown_);
+    this.boundOnKeyDown_ = null;
   },
 
   onFirstRender: function() {
     setTimeout(function() {
-      chrome.send(
-          'metricsHandler:recordTime',
-          ['History.ResultsRenderedTime', window.performance.now()]);
+      history.BrowserService.getInstance().recordTime(
+          'History.ResultsRenderedTime', window.performance.now());
     });
 
     // Focus the search field on load. Done here to ensure the history page
@@ -221,32 +280,43 @@ Polymer({
   },
 
   /**
-   * @param {Event} e
+   * @param {!KeyboardEvent} e
    * @private
    */
-  onCanExecute_: function(e) {
-    e = /** @type {cr.ui.CanExecuteEvent} */ (e);
-    switch (e.command.id) {
-      case 'delete-command':
-        e.canExecute = this.$.toolbar.count > 0;
-        break;
-      case 'select-all-command':
-        e.canExecute = !this.$.toolbar.searchField.isSearchFocused() &&
-            !this.syncedTabsSelected_(this.selectedPage_);
-        break;
+  onKeyDown_: function(e) {
+    if ((e.key === 'Delete' || e.key === 'Backspace') &&
+        !(e.altKey || e.ctrlKey || e.metaKey || e.shiftKey)) {
+      this.onDeleteCommand_();
+      return;
+    }
+
+    if (e.key === 'a' && !e.altKey && !e.shiftKey) {
+      let hasTriggerModifier = e.ctrlKey && !e.metaKey;
+      // <if expr="is_macosx">
+      hasTriggerModifier = !e.ctrlKey && e.metaKey;
+      // </if>
+      if (hasTriggerModifier) {
+        this.onSelectAllCommand_();
+        e.preventDefault();
+      }
     }
   },
 
-  /**
-   * @param {Event} e
-   * @private
-   */
-  onCommand_: function(e) {
-    if (e.command.id == 'delete-command') {
-      this.deleteSelected();
-    } else if (e.command.id == 'select-all-command') {
-      this.selectOrUnselectAll();
+  /** @private */
+  onDeleteCommand_: function() {
+    if (this.$.toolbar.count == 0 || this.pendingDelete_) {
+      return;
     }
+    this.deleteSelected();
+  },
+
+  /** @private */
+  onSelectAllCommand_: function() {
+    if (this.$.toolbar.searchField.isSearchFocused() ||
+        this.syncedTabsSelected_(this.selectedPage_)) {
+      return;
+    }
+    this.selectOrUnselectAll();
   },
 
   /**
@@ -258,18 +328,21 @@ Polymer({
   },
 
   /**
-   * Called when browsing data is cleared.
+   * Update sign in state of synced device manager after user logs in or out.
+   * @param {boolean} isUserSignedIn
+   * @private
    */
-  historyDeleted: function() {
-    this.$.history.historyDeleted();
+  onSignInStateChanged_: function(isUserSignedIn) {
+    this.isUserSignedIn_ = isUserSignedIn;
   },
 
   /**
    * Update sign in state of synced device manager after user logs in or out.
-   * @param {boolean} isUserSignedIn
+   * @param {boolean} hasOtherForms
+   * @private
    */
-  updateSignInState: function(isUserSignedIn) {
-    this.isUserSignedIn_ = isUserSignedIn;
+  onHasOtherFormsChanged_: function(hasOtherForms) {
+    this.set('footerInfo.otherFormsOfHistory', hasOtherForms);
   },
 
   /**

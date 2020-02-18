@@ -60,7 +60,7 @@ pt_PT{
         SM{"São Marinho"}
         SV{"Salvador"}
         SX{"São Martinho (Sint Maarten)"}
-        SZ{"Essuatíni"}
+        TF{"Territórios Austrais Franceses"}
         TJ{"Tajiquistão"}
         TK{"Toquelau"}
         TM{"Turquemenistão"}
@@ -69,6 +69,8 @@ pt_PT{
         UZ{"Usbequistão"}
         VI{"Ilhas Virgens dos EUA"}
         VN{"Vietname"}
+        XA{"pseudoacentos"}
+        XB{"pseudobidirecional"}
         YE{"Iémen"}
         YT{"Maiote"}
         ZW{"Zimbabué"}
@@ -81,5 +83,5 @@ pt_PT{
         CI{"Costa do Marfim"}
         CZ{"República Checa"}
     }
-    Version{"2.1.49.82"}
+    Version{"36"}
 }

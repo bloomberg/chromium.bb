@@ -23,6 +23,7 @@
 #include "content/public/browser/devtools_frontend_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
+#include "net/base/filename_util.h"
 #include "net/base/load_flags.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/resource_request.h"
@@ -84,11 +85,23 @@ std::string DevToolsDataSource::GetSource() {
   return chrome::kChromeUIDevToolsHost;
 }
 
+// static
+GURL GetCustomDevToolsFrontendURL() {
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kCustomDevtoolsFrontend)) {
+    return GURL(base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+        switches::kCustomDevtoolsFrontend));
+  }
+  return GURL();
+}
+
 void DevToolsDataSource::StartDataRequest(
-    const std::string& path,
+    const GURL& url,
     const content::WebContents::Getter& wc_getter,
-    const GotDataCallback& callback) {
-  // Serve request from local bundle.
+    GotDataCallback callback) {
+  // Serve request to devtools://bundled/ from local bundle.
+  // TODO(crbug/1009127): Simplify usages of |path| since |url| is available.
+  const std::string path = content::URLDataSource::URLToRequestPath(url);
   std::string bundled_path_prefix(chrome::kChromeUIDevToolsBundledPath);
   bundled_path_prefix += "/";
   if (base::StartsWith(path, bundled_path_prefix,
@@ -99,23 +112,27 @@ void DevToolsDataSource::StartDataRequest(
                             base::CompareCase::INSENSITIVE_ASCII));
     std::string path_under_bundled =
         path_without_params.substr(bundled_path_prefix.length());
-#if BUILDFLAG(DEBUG_DEVTOOLS)
-    StartFileRequestForDebugDevtools(path_under_bundled, callback);
-#else
-    StartBundledDataRequest(path_under_bundled, callback);
+#if !BUILDFLAG(DEBUG_DEVTOOLS)
+    if (!GetCustomDevToolsFrontendURL().SchemeIsFile()) {
+      // Fetch from packaged resources.
+      StartBundledDataRequest(path_under_bundled, std::move(callback));
+      return;
+    }
 #endif
+    // Fetch from file system.
+    StartFileRequest(path_under_bundled, std::move(callback));
     return;
   }
 
-  // Serve empty page.
+  // Serve request to devtools://blank as empty page.
   std::string empty_path_prefix(chrome::kChromeUIDevToolsBlankPath);
   if (base::StartsWith(path, empty_path_prefix,
                        base::CompareCase::INSENSITIVE_ASCII)) {
-    callback.Run(new base::RefCountedStaticMemory());
+    std::move(callback).Run(new base::RefCountedStaticMemory());
     return;
   }
 
-  // Serve request from remote location.
+  // Serve request to devtools://remote from remote location.
   std::string remote_path_prefix(chrome::kChromeUIDevToolsRemotePath);
   remote_path_prefix += "/";
   if (base::StartsWith(path, remote_path_prefix,
@@ -124,37 +141,30 @@ void DevToolsDataSource::StartDataRequest(
 
     CHECK_EQ(url.host(), kRemoteFrontendDomain);
     if (url.is_valid() && DevToolsUIBindings::IsValidRemoteFrontendURL(url)) {
-      StartRemoteDataRequest(url, callback);
+      StartRemoteDataRequest(url, std::move(callback));
     } else {
       DLOG(ERROR) << "Refusing to load invalid remote front-end URL";
-      callback.Run(CreateNotFoundResponse());
+      std::move(callback).Run(CreateNotFoundResponse());
     }
     return;
   }
 
-  std::string custom_frontend_url =
-      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kCustomDevtoolsFrontend);
-
-  if (custom_frontend_url.empty()) {
-    callback.Run(nullptr);
-    return;
-  }
-
-  // Serve request from custom location.
+  // Serve request to devtools://custom from custom URL.
   std::string custom_path_prefix(chrome::kChromeUIDevToolsCustomPath);
   custom_path_prefix += "/";
-
   if (base::StartsWith(path, custom_path_prefix,
                        base::CompareCase::INSENSITIVE_ASCII)) {
-    GURL url =
-        GURL(custom_frontend_url + path.substr(custom_path_prefix.length()));
-    DCHECK(url.is_valid());
-    StartCustomDataRequest(url, callback);
-    return;
+    GURL custom_devtools_frontend = GetCustomDevToolsFrontendURL();
+    if (!custom_devtools_frontend.is_empty()) {
+      GURL url = GURL(custom_devtools_frontend.spec() +
+                      path.substr(custom_path_prefix.length()));
+      DCHECK(url.is_valid());
+      StartCustomDataRequest(url, std::move(callback));
+      return;
+    }
   }
 
-  callback.Run(nullptr);
+  std::move(callback).Run(CreateNotFoundResponse());
 }
 
 std::string DevToolsDataSource::GetMimeType(const std::string& path) {
@@ -175,22 +185,20 @@ bool DevToolsDataSource::ShouldServeMimeTypeAsContentTypeHeader() {
 
 void DevToolsDataSource::StartBundledDataRequest(
     const std::string& path,
-    const content::URLDataSource::GotDataCallback& callback) {
-  base::StringPiece resource =
-      content::DevToolsFrontendHost::GetFrontendResource(path);
+    content::URLDataSource::GotDataCallback callback) {
+  scoped_refptr<base::RefCountedMemory> bytes =
+      content::DevToolsFrontendHost::GetFrontendResourceBytes(path);
 
-  DLOG_IF(WARNING, resource.empty())
+  DLOG_IF(WARNING, !bytes)
       << "Unable to find dev tool resource: " << path
       << ". If you compiled with debug_devtools=1, try running with "
          "--debug-devtools.";
-  scoped_refptr<base::RefCountedStaticMemory> bytes(
-      new base::RefCountedStaticMemory(resource.data(), resource.length()));
-  callback.Run(bytes.get());
+  std::move(callback).Run(bytes);
 }
 
 void DevToolsDataSource::StartRemoteDataRequest(
     const GURL& url,
-    const content::URLDataSource::GotDataCallback& callback) {
+    content::URLDataSource::GotDataCallback callback) {
   CHECK(url.is_valid());
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation("devtools_hard_coded_data_source",
@@ -217,14 +225,15 @@ void DevToolsDataSource::StartRemoteDataRequest(
           }
         })");
 
-  StartNetworkRequest(url, traffic_annotation, net::LOAD_NORMAL, callback);
+  StartNetworkRequest(url, traffic_annotation, net::LOAD_NORMAL,
+                      std::move(callback));
 }
 
 void DevToolsDataSource::StartCustomDataRequest(
     const GURL& url,
-    const content::URLDataSource::GotDataCallback& callback) {
+    content::URLDataSource::GotDataCallback callback) {
   if (!url.is_valid()) {
-    callback.Run(CreateNotFoundResponse());
+    std::move(callback).Run(CreateNotFoundResponse());
     return;
   }
   net::NetworkTrafficAnnotationTag traffic_annotation =
@@ -257,20 +266,20 @@ void DevToolsDataSource::StartCustomDataRequest(
         })");
 
   StartNetworkRequest(url, traffic_annotation, net::LOAD_DISABLE_CACHE,
-                      callback);
+                      std::move(callback));
 }
 
 void DevToolsDataSource::StartNetworkRequest(
     const GURL& url,
     const net::NetworkTrafficAnnotationTag& traffic_annotation,
     int load_flags,
-    const GotDataCallback& callback) {
+    GotDataCallback callback) {
   auto request = std::make_unique<network::ResourceRequest>();
   request->url = url;
   request->load_flags = load_flags;
 
   auto request_iter = pending_requests_.emplace(pending_requests_.begin());
-  request_iter->callback = callback;
+  request_iter->callback = std::move(callback);
   request_iter->loader =
       network::SimpleURLLoader::Create(std::move(request), traffic_annotation);
   request_iter->loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
@@ -279,8 +288,7 @@ void DevToolsDataSource::StartNetworkRequest(
                      base::Unretained(this), request_iter));
 }
 
-#if BUILDFLAG(DEBUG_DEVTOOLS)
-scoped_refptr<base::RefCountedMemory> ReadFileForDebugDevTools(
+scoped_refptr<base::RefCountedMemory> ReadFileForDevTools(
     const base::FilePath& path) {
   std::string buffer;
   if (!base::ReadFileToString(path, &buffer)) {
@@ -290,42 +298,38 @@ scoped_refptr<base::RefCountedMemory> ReadFileForDebugDevTools(
   return base::RefCountedString::TakeString(&buffer);
 }
 
-void DevToolsDataSource::StartFileRequestForDebugDevtools(
-    const std::string& path,
-    const GotDataCallback& callback) {
-  base::FilePath inspector_debug_dir;
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kCustomDevtoolsFrontend)) {
-    inspector_debug_dir =
-        command_line->GetSwitchValuePath(switches::kCustomDevtoolsFrontend);
-    // --custom-devtools-frontend may already be used to specify an URL.
-    // In that case, fall back to the default debug-devtools bundle.
-    if (!base::PathExists(inspector_debug_dir))
-      inspector_debug_dir.clear();
-  }
-  if (inspector_debug_dir.empty() &&
-      !base::PathService::Get(chrome::DIR_INSPECTOR_DEBUG,
-                              &inspector_debug_dir)) {
-    callback.Run(CreateNotFoundResponse());
-    return;
+void DevToolsDataSource::StartFileRequest(const std::string& path,
+                                          GotDataCallback callback) {
+  base::FilePath base_path;
+  GURL custom_devtools_frontend = GetCustomDevToolsFrontendURL();
+  if (custom_devtools_frontend.SchemeIsFile()) {
+    if (!net::FileURLToFilePath(custom_devtools_frontend, &base_path)) {
+      std::move(callback).Run(CreateNotFoundResponse());
+      return;
+    }
+  } else {
+#if BUILDFLAG(DEBUG_DEVTOOLS)
+    // Use default path for unbundled files when debug_devtools=true
+    if (!base::PathService::Get(chrome::DIR_INSPECTOR_DEBUG, &base_path)) {
+      std::move(callback).Run(CreateNotFoundResponse());
+      return;
+    }
+#else
+    NOTREACHED();
+#endif
   }
 
-  DCHECK(!inspector_debug_dir.empty());
-
-  base::FilePath full_path = inspector_debug_dir.AppendASCII(path);
+  base::FilePath full_path = base_path.AppendASCII(path);
+  CHECK(base_path.IsParent(full_path));
 
   base::PostTaskAndReplyWithResult(
       FROM_HERE,
       {base::MayBlock(), base::ThreadPool(),
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN,
        base::TaskPriority::USER_VISIBLE},
-      // The usage of BindRepeating below is only because the type of
-      // task callback needs to match that of response callback, which
-      // is currently a repeating callback.
-      base::BindRepeating(ReadFileForDebugDevTools, std::move(full_path)),
-      callback);
+      base::BindOnce(ReadFileForDevTools, std::move(full_path)),
+      std::move(callback));
 }
-#endif  // BUILDFLAG(DEBUG_DEVTOOLS)
 
 void DevToolsDataSource::OnLoadComplete(
     std::list<PendingRequest>::iterator request_iter,
@@ -344,5 +348,5 @@ DevToolsDataSource::PendingRequest::PendingRequest(PendingRequest&& other) =
 
 DevToolsDataSource::PendingRequest::~PendingRequest() {
   if (callback)
-    callback.Run(CreateNotFoundResponse());
+    std::move(callback).Run(CreateNotFoundResponse());
 }

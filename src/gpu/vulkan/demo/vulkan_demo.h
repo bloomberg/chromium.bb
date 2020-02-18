@@ -12,6 +12,7 @@
 #include "gpu/vulkan/vulkan_swap_chain.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/platform_window/platform_window.h"
 #include "ui/platform_window/platform_window_delegate.h"
 
 class SkCanvas;
@@ -27,7 +28,6 @@ class VulkanContextProvider;
 
 namespace ui {
 class PlatformEventSource;
-class PlatformWindow;
 }  // namespace ui
 
 namespace gpu {
@@ -56,6 +56,7 @@ class VulkanDemo : public ui::PlatformWindowDelegate {
   void OnAcceleratedWidgetAvailable(gfx::AcceleratedWidget widget) override;
   void OnAcceleratedWidgetDestroyed() override {}
   void OnActivationChanged(bool active) override {}
+  void OnMouseEnter() override {}
 
   void CreateSkSurface();
   void Draw(SkCanvas* canvas, float fraction);

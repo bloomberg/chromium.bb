@@ -73,7 +73,7 @@
               </cr-icon-button>
             </template>
             <template is="dom-if" if="[[!item.metadata.isLocal]]">
-              <cr-icon-button actionable class="icon-external"
+              <cr-icon-button class="icon-external"
                   on-click="onRemoteEditAddressTap_"></cr-icon-button>
             </template>
           </div>
@@ -84,7 +84,7 @@
         $i18n{noAddressesFound}
       </div>
     </div>
-    <cr-action-menu id="addressSharedMenu">
+    <cr-action-menu id="addressSharedMenu" role-description="$i18n{menu}">
       <button id="menuEditAddress" class="dropdown-item"
           on-click="onMenuEditAddressTap_">$i18n{edit}</button>
       <button id="menuRemoveAddress" class="dropdown-item"

@@ -238,7 +238,7 @@ bool VulkanWindowContext::createSwapchain(int width, int height,
         }
     }
     fDisplayParams = params;
-    fSampleCount = params.fMSAASampleCount;
+    fSampleCount = SkTMax(1, params.fMSAASampleCount);
     fStencilBits = 8;
 
     if (VK_FORMAT_UNDEFINED == surfaceFormat) {
@@ -352,7 +352,8 @@ void VulkanWindowContext::createBuffers(VkFormat format, SkColorType colorType) 
         } else {
             GrBackendTexture backendTexture(fWidth, fHeight, info);
 
-            fSurfaces[i] = SkSurface::MakeFromBackendTexture(
+            // We don't set the sampled usage bit on the swapchain so this can't be a GrTexture.
+            fSurfaces[i] = SkSurface::MakeFromBackendTextureAsRenderTarget(
                     fContext.get(), backendTexture, kTopLeft_GrSurfaceOrigin, fSampleCount,
                     colorType, fDisplayParams.fColorSpace, &fDisplayParams.fSurfaceProps);
 
@@ -371,9 +372,10 @@ void VulkanWindowContext::createBuffers(VkFormat format, SkColorType colorType) 
     fBackbuffers = new BackbufferInfo[fImageCount + 1];
     for (uint32_t i = 0; i < fImageCount + 1; ++i) {
         fBackbuffers[i].fImageIndex = -1;
-        GR_VK_CALL_ERRCHECK(fInterface,
-                            CreateSemaphore(fDevice, &semaphoreInfo,
-                                            nullptr, &fBackbuffers[i].fRenderSemaphore));
+        SkDEBUGCODE(VkResult result = )GR_VK_CALL(fInterface,
+                CreateSemaphore(fDevice, &semaphoreInfo, nullptr,
+                                &fBackbuffers[i].fRenderSemaphore));
+        SkASSERT(result == VK_SUCCESS);
     }
     fCurrentBackbufferIndex = fImageCount;
 }
@@ -469,8 +471,9 @@ sk_sp<SkSurface> VulkanWindowContext::getBackbufferSurface() {
     semaphoreInfo.pNext = nullptr;
     semaphoreInfo.flags = 0;
     VkSemaphore semaphore;
-    GR_VK_CALL_ERRCHECK(fInterface, CreateSemaphore(fDevice, &semaphoreInfo,
-                                                    nullptr, &semaphore));
+    SkDEBUGCODE(VkResult result = )GR_VK_CALL(fInterface, CreateSemaphore(fDevice, &semaphoreInfo,
+                                                                          nullptr, &semaphore));
+    SkASSERT(result == VK_SUCCESS);
 
     // acquire the image
     VkResult res = fAcquireNextImageKHR(fDevice, fSwapchain, UINT64_MAX,

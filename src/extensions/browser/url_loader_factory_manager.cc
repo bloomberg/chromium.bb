@@ -32,6 +32,7 @@
 #include "extensions/common/manifest_handlers/content_scripts_handler.h"
 #include "extensions/common/switches.h"
 #include "extensions/common/user_script.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "url/gurl.h"
@@ -289,7 +290,7 @@ bool DoContentScriptsDependOnRelaxedCorb(const Extension& extension) {
 
 bool DoExtensionPermissionsCoverCorsOrCorbRelatedOrigins(
     const Extension& extension) {
-  // TODO(lukasza): https://crbug.com/846346: Return false if the |extension|
+  // TODO(lukasza): https://crbug.com/1016904: Return false if the |extension|
   // doesn't need a special URLLoaderFactory based on |extension| permissions.
   // For now we conservatively assume that all extensions need relaxed CORS/CORB
   // treatment.
@@ -307,43 +308,34 @@ bool IsSpecialURLLoaderFactoryRequired(const Extension& extension,
   }
 }
 
-network::mojom::URLLoaderFactoryPtrInfo CreateURLLoaderFactory(
-    content::RenderProcessHost* process,
-    network::mojom::NetworkContext* network_context,
-    mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>*
-        header_client,
-    const Extension& extension) {
-  // Compute relaxed CORB config to be used by |extension|.
-  network::mojom::URLLoaderFactoryParamsPtr params =
-      network::mojom::URLLoaderFactoryParams::New();
-
+void OverrideFactoryParams(const Extension& extension,
+                           FactoryUser factory_user,
+                           network::mojom::URLLoaderFactoryParams* params) {
   // Setup factory bound allow list that overwrites per-profile common list
   // to allow tab specific permissions only for this newly created factory.
-  params->factory_bound_allow_patterns = CreateCorsOriginAccessAllowList(
-      extension,
-      PermissionsData::EffectiveHostPermissionsMode::kIncludeTabSpecific);
+  params->factory_bound_access_patterns =
+      network::mojom::CorsOriginAccessPatterns::New();
+  params->factory_bound_access_patterns->source_origin =
+      url::Origin::Create(extension.url());
+  params->factory_bound_access_patterns->allow_patterns =
+      CreateCorsOriginAccessAllowList(
+          extension,
+          PermissionsData::EffectiveHostPermissionsMode::kIncludeTabSpecific);
 
-  if (header_client)
-    params->header_client = std::move(*header_client);
-  params->process_id = process->GetID();
-  // TODO(lukasza): https://crbug.com/846346: Use more granular CORB enforcement
-  // based on the specific |extension|'s permissions.
+  // TODO(lukasza): https://crbug.com/1016904: Use more granular CORB
+  // enforcement based on the specific |extension|'s permissions.
   params->is_corb_enabled = false;
-  params->request_initiator_site_lock = url::Origin::Create(extension.url());
 
-  // Create the URLLoaderFactory.
-  network::mojom::URLLoaderFactoryPtrInfo factory_info;
-  network_context->CreateURLLoaderFactory(mojo::MakeRequest(&factory_info),
-                                          std::move(params));
-  return factory_info;
+  if (factory_user == FactoryUser::kExtensionProcess)
+    params->unsafe_non_webby_initiator = true;
 }
 
-void MarkInitiatorsAsRequiringSeparateURLLoaderFactory(
+void MarkIsolatedWorldsAsRequiringSeparateURLLoaderFactory(
     content::RenderFrameHost* frame,
     std::vector<url::Origin> request_initiators,
     bool push_to_renderer_now) {
   DCHECK(!request_initiators.empty());
-  frame->MarkInitiatorsAsRequiringSeparateURLLoaderFactory(
+  frame->MarkIsolatedWorldsAsRequiringSeparateURLLoaderFactory(
       std::move(request_initiators), push_to_renderer_now);
 }
 
@@ -477,7 +469,7 @@ void URLLoaderFactoryManager::ReadyToCommitNavigation(
     // factories are pushed slightly later - during the commit.
     constexpr bool kPushToRendererNow = false;
 
-    MarkInitiatorsAsRequiringSeparateURLLoaderFactory(
+    MarkIsolatedWorldsAsRequiringSeparateURLLoaderFactory(
         frame, std::move(initiators_requiring_separate_factory),
         kPushToRendererNow);
   }
@@ -508,17 +500,15 @@ void URLLoaderFactoryManager::WillExecuteCode(content::RenderFrameHost* frame,
   // legacy IPC pipe (raciness will be introduced if that ever changes).
   constexpr bool kPushToRendererNow = true;
 
-  MarkInitiatorsAsRequiringSeparateURLLoaderFactory(
+  MarkIsolatedWorldsAsRequiringSeparateURLLoaderFactory(
       frame, {url::Origin::Create(extension->url())}, kPushToRendererNow);
 }
 
 // static
-network::mojom::URLLoaderFactoryPtrInfo URLLoaderFactoryManager::CreateFactory(
+void URLLoaderFactoryManager::OverrideURLLoaderFactoryParams(
     content::RenderProcessHost* process,
-    network::mojom::NetworkContext* network_context,
-    mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>*
-        header_client,
-    const url::Origin& initiator_origin) {
+    const url::Origin& origin,
+    network::mojom::URLLoaderFactoryParams* factory_params) {
   content::BrowserContext* browser_context = process->GetBrowserContext();
   const ExtensionRegistry* registry = ExtensionRegistry::Get(browser_context);
   DCHECK(registry);  // CreateFactory shouldn't happen during shutdown.
@@ -527,21 +517,21 @@ network::mojom::URLLoaderFactoryPtrInfo URLLoaderFactoryManager::CreateFactory(
   // precursor origins, but here opaque origins (e.g. think data: URIs) created
   // by an extension should inherit CORS/CORB treatment of the extension.
   url::SchemeHostPort precursor_origin =
-      initiator_origin.GetTupleOrPrecursorTupleIfOpaque();
+      origin.GetTupleOrPrecursorTupleIfOpaque();
 
-  // Don't create a factory for something that is not an extension.
+  // Don't change factory params for something that is not an extension.
   if (precursor_origin.scheme() != kExtensionScheme)
-    return network::mojom::URLLoaderFactoryPtrInfo();
+    return;
 
   // Find the |extension| associated with |initiator_origin|.
   const Extension* extension =
       registry->enabled_extensions().GetByID(precursor_origin.host());
   if (!extension) {
     // This may happen if an extension gets disabled between the time
-    // RenderFrameHost::MarkInitiatorAsRequiringSeparateURLLoaderFactory is
+    // RenderFrameHost::MarkIsolatedWorldAsRequiringSeparateURLLoaderFactory is
     // called and the time
-    // ContentBrowserClient::CreateURLLoaderFactory is called.
-    return network::mojom::URLLoaderFactoryPtrInfo();
+    // ContentBrowserClient::OverrideURLLoaderFactoryParams is called.
+    return;
   }
 
   // Figure out if the factory is needed for content scripts VS extension
@@ -551,11 +541,11 @@ network::mojom::URLLoaderFactoryPtrInfo URLLoaderFactoryManager::CreateFactory(
   if (process_map->Contains(extension->id(), process->GetID()))
     factory_user = FactoryUser::kExtensionProcess;
 
-  // Create the factory (but only if really needed).
+  // Don't change |factory_params| unless required.
   if (!IsSpecialURLLoaderFactoryRequired(*extension, factory_user))
-    return network::mojom::URLLoaderFactoryPtrInfo();
-  return CreateURLLoaderFactory(process, network_context, header_client,
-                                *extension);
+    return;
+
+  OverrideFactoryParams(*extension, factory_user, factory_params);
 }
 
 // static

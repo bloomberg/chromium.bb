@@ -68,9 +68,6 @@ class OffTheRecordProfileImpl : public Profile {
   policy::UserCloudPolicyManager* GetUserCloudPolicyManager() override;
 #endif  // defined(OS_CHROMEOS)
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
-  std::unique_ptr<service_manager::Service> HandleServiceRequest(
-      const std::string& service_name,
-      service_manager::mojom::ServiceRequest request) override;
   bool IsSameProfile(Profile* profile) override;
   base::Time GetStartTime() const override;
   ProfileKey* GetProfileKey() const override;
@@ -108,6 +105,7 @@ class OffTheRecordProfileImpl : public Profile {
   content::BrowserPluginGuestManager* GetGuestManager() override;
   storage::SpecialStoragePolicy* GetSpecialStoragePolicy() override;
   content::PushMessagingService* GetPushMessagingService() override;
+  content::StorageNotificationService* GetStorageNotificationService() override;
   content::SSLHostStateDelegate* GetSSLHostStateDelegate() override;
   content::PermissionControllerDelegate* GetPermissionControllerDelegate()
       override;
@@ -124,6 +122,7 @@ class OffTheRecordProfileImpl : public Profile {
       std::vector<network::mojom::CorsOriginPatternPtr> block_patterns,
       base::OnceClosure closure) override;
   content::SharedCorsOriginAccessList* GetSharedCorsOriginAccessList() override;
+  bool ShouldEnableOutOfBlinkCors() override;
   content::NativeFileSystemPermissionContext*
   GetNativeFileSystemPermissionContext() override;
 

@@ -18,6 +18,8 @@
 struct AccountInfo;
 class Browser;
 class Profile;
+class ProfileAttributesEntry;
+class ProfileAttributesStorage;
 
 // Utility functions to gather status information from the various signed in
 // services and construct messages suitable for showing in UI.
@@ -51,17 +53,20 @@ void EnableSyncFromPromo(Browser* browser,
                          bool is_default_promo_account);
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
-// Returns the display email string for the given account.  If the profile
-// has not been migrated to use gaia ids, then its possible for the display
-// to not ne known yet.  In this case, use |account_id|, which is assumed to
-// be an email address.
-std::string GetDisplayEmail(Profile* profile, const std::string& account_id);
-
 // Returns the list of all accounts that have a token. The default account in
 // the Gaia cookies will be the first account in the list.
 std::vector<AccountInfo> GetAccountsForDicePromos(Profile* profile);
 
 #endif
+
+// Returns the short user identity to display for |profile|. It is based on the
+// current unconsented primary account (if exists).
+// TODO(crbug.com/1012179): Move this logic into ProfileAttributesEntry once
+// AvatarToolbarButton becomes an observer of ProfileAttributesStorage and thus
+// ProfileAttributesEntry is up-to-date when AvatarToolbarButton needs it.
+base::string16 GetShortProfileIdentityToDisplay(
+    const ProfileAttributesEntry& profile_attributes_entry,
+    Profile* profile);
 
 // Returns the domain of the policy value of RestrictSigninToPattern. Returns
 // an empty string if the policy is not set or can not be parsed. The parser
@@ -84,11 +89,32 @@ void EnableSyncFromPromo(
              signin_metrics::AccessPoint signin_access_point,
              signin_metrics::PromoAction signin_promo_action,
              signin_metrics::Reason signin_reason,
-             const std::string& account_id,
+             const CoreAccountId& account_id,
              DiceTurnSyncOnHelper::SigninAbortedMode signin_aborted_mode)>
         create_dice_turn_sync_on_helper_callback);
 }  // namespace internal
 #endif
+
+// Returns whether Chrome should show the identity of the user (using a brief
+// animation) on opening a new window. IdentityManager's refresh tokens must be
+// loaded when this function gets called.
+bool ShouldShowAnimatedIdentityOnOpeningWindow(
+    const ProfileAttributesStorage& profile_attributes_storage,
+    Profile* profile);
+
+// Records that the animated identity was shown for the given profile. This is
+// used for metrics and to decide whether/when the animation can be shown again.
+void RecordAnimatedIdentityTriggered(Profile* profile);
+
+// Records that the avatar icon was highlighted for the given profile. This is
+// used for metrics.
+void RecordAvatarIconHighlighted(Profile* profile);
+
+// Called when the ProfileMenuView is opened. Used for metrics.
+void RecordProfileMenuViewShown(Profile* profile);
+
+// Called when a button/link in the profile menu was clicked.
+void RecordProfileMenuClick(Profile* profile);
 
 }  // namespace signin_ui_util
 

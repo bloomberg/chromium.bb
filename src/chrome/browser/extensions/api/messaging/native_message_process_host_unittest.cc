@@ -9,6 +9,7 @@
 
 #include <memory>
 #include <utility>
+#include <vector>
 
 #include "base/base_paths.h"
 #include "base/base_switches.h"
@@ -26,6 +27,7 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/post_task.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"
@@ -39,6 +41,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/version_info/version_info.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/browser_task_environment.h"
 #include "extensions/common/extension.h"
@@ -122,8 +125,8 @@ class NativeMessagingTest : public ::testing::Test,
 
   void TearDown() override {
     if (native_message_host_) {
-      BrowserThread::DeleteSoon(
-          BrowserThread::IO, FROM_HERE, native_message_host_.release());
+      base::DeleteSoon(FROM_HERE, {BrowserThread::IO},
+                       native_message_host_.release());
     }
     base::RunLoop().RunUntilIdle();
   }
@@ -228,16 +231,18 @@ TEST_F(NativeMessagingTest, SingleSendMessageWrite) {
   base::string16 pipe_name = base::StringPrintf(
       L"\\\\.\\pipe\\chrome.nativeMessaging.out.%llx", base::RandUint64());
   base::File write_handle =
-      base::File(CreateNamedPipeW(pipe_name.c_str(),
-                                  PIPE_ACCESS_OUTBOUND | FILE_FLAG_OVERLAPPED |
-                                      FILE_FLAG_FIRST_PIPE_INSTANCE,
-                                  PIPE_TYPE_BYTE, 1, 0, 0, 5000, NULL),
+      base::File(base::ScopedPlatformFile(CreateNamedPipeW(
+                     pipe_name.c_str(),
+                     PIPE_ACCESS_OUTBOUND | FILE_FLAG_OVERLAPPED |
+                         FILE_FLAG_FIRST_PIPE_INSTANCE,
+                     PIPE_TYPE_BYTE, 1, 0, 0, 5000, nullptr)),
                  true /* async */);
   ASSERT_TRUE(write_handle.IsValid());
-  base::File read_handle = base::File(
-      CreateFileW(pipe_name.c_str(), GENERIC_READ, 0, NULL, OPEN_EXISTING,
-                  FILE_ATTRIBUTE_NORMAL | FILE_FLAG_OVERLAPPED, NULL),
-      true /* async */);
+  base::File read_handle =
+      base::File(base::ScopedPlatformFile(CreateFileW(
+                     pipe_name.c_str(), GENERIC_READ, 0, nullptr, OPEN_EXISTING,
+                     FILE_ATTRIBUTE_NORMAL | FILE_FLAG_OVERLAPPED, nullptr)),
+                 true /* async */);
   ASSERT_TRUE(read_handle.IsValid());
 
   read_file = std::move(read_handle);
@@ -323,7 +328,14 @@ TEST_F(NativeMessagingTest, EchoConnect) {
 
 // Test send message with a real client. The args passed when launching the
 // native messaging host should contain reconnect args.
-TEST_F(NativeMessagingTest, ReconnectArgs) {
+//
+// TODO(crbug.com/1026121): Fix it. This test is flaky on Win7 bots.
+#if defined(OS_WIN)
+#define MAYBE_ReconnectArgs DISABLED_ReconnectArgs
+#else
+#define MAYBE_ReconnectArgs ReconnectArgs
+#endif
+TEST_F(NativeMessagingTest, MAYBE_ReconnectArgs) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(features::kOnConnectNative);
   ScopedAllowNativeAppConnectionForTest allow_native_app_connection(true);

@@ -28,14 +28,17 @@
 #include "ui/android/view_android.h"
 #endif  // OS_ANDROID
 
+namespace cc {
+class RenderFrameMetadata;
+}
+
 namespace content {
 
 class BrowserContext;
 class DevToolsFrameTraceRecorder;
 class FrameTreeNode;
-class NavigationHandleImpl;
+class NavigationRequest;
 class RenderFrameHostImpl;
-struct DevToolsFrameMetadata;
 
 class CONTENT_EXPORT RenderFrameDevToolsAgentHost
     : public DevToolsAgentHostImpl,
@@ -59,16 +62,22 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
   // This method is called when new frame is created during cross process
   // navigation.
   static scoped_refptr<DevToolsAgentHost> CreateForCrossProcessNavigation(
-      NavigationHandleImpl* handle);
+      NavigationRequest* request);
   static scoped_refptr<DevToolsAgentHost> FindForDangling(
       FrameTreeNode* frame_tree_node);
 
   static void WebContentsCreated(WebContents* web_contents);
 
+#if defined(OS_ANDROID)
   static void SignalSynchronousSwapCompositorFrame(
       RenderFrameHost* frame_host,
-      const DevToolsFrameMetadata& frame_metadata);
+      const cc::RenderFrameMetadata& frame_metadata);
+#endif
+
   FrameTreeNode* frame_tree_node() { return frame_tree_node_; }
+
+  void OnNavigationRequestWillBeSent(
+      const NavigationRequest& navigation_request);
 
   // DevToolsAgentHost overrides.
   void DisconnectWebContents() override;
@@ -129,22 +138,21 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
 
 #if defined(OS_ANDROID)
   device::mojom::WakeLock* GetWakeLock();
+  void SynchronousSwapCompositorFrame(
+      const cc::RenderFrameMetadata& frame_metadata);
 #endif
 
-  void SynchronousSwapCompositorFrame(
-      const DevToolsFrameMetadata& frame_metadata);
   void UpdateResourceLoaderFactories();
 
-  std::unique_ptr<DevToolsFrameTraceRecorder> frame_trace_recorder_;
 #if defined(OS_ANDROID)
+  std::unique_ptr<DevToolsFrameTraceRecorder> frame_trace_recorder_;
   mojo::Remote<device::mojom::WakeLock> wake_lock_;
 #endif
 
   // The active host we are talking to.
   RenderFrameHostImpl* frame_host_ = nullptr;
-  base::flat_set<NavigationHandleImpl*> navigation_handles_;
+  base::flat_set<NavigationRequest*> navigation_requests_;
   bool render_frame_alive_ = false;
-  void* active_file_chooser_interceptor_ = nullptr;
 
   // The FrameTreeNode associated with this agent.
   FrameTreeNode* frame_tree_node_;

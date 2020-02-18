@@ -61,6 +61,7 @@ repack("repack_unscaled_resources") {
   visibility = [ ":packed_resources" ]
   sources = [
     "$root_gen_dir/components/components_resources.pak",
+    "$root_gen_dir/components/sync_driver_resources.pak",
     "$root_gen_dir/ios/chrome/ios_resources.pak",
     "$root_gen_dir/ios/web/ios_web_resources.pak",
     "$root_gen_dir/mojo/public/js/mojo_bindings_resources.pak",
@@ -70,6 +71,7 @@ repack("repack_unscaled_resources") {
   deps = [
     ":ios_resources",
     "//components/resources",
+    "//components/sync/driver:resources",
     "//ios/web:resources",
     "//mojo/public/js:resources",
     "//net:net_resources",
@@ -151,19 +153,19 @@ generate_localizable_strings("system_strings") {
   ]
 }
 
-imageset("quick_action_new_incognito_tab") {
+imageset("quick_action_incognito_search") {
   sources = [
-    "quick_action_new_incognito_tab.imageset/Contents.json",
-    "quick_action_new_incognito_tab.imageset/quick_action_new_incognito_tab@2x.png",
-    "quick_action_new_incognito_tab.imageset/quick_action_new_incognito_tab@3x.png",
+    "quick_action_incognito_search.imageset/Contents.json",
+    "quick_action_incognito_search.imageset/quick_action_incognito_search@2x.png",
+    "quick_action_incognito_search.imageset/quick_action_incognito_search@3x.png",
   ]
 }
 
-imageset("quick_action_new_tab") {
+imageset("quick_action_new_search") {
   sources = [
-    "quick_action_new_tab.imageset/Contents.json",
-    "quick_action_new_tab.imageset/quick_action_new_tab@2x.png",
-    "quick_action_new_tab.imageset/quick_action_new_tab@3x.png",
+    "quick_action_new_search.imageset/Contents.json",
+    "quick_action_new_search.imageset/quick_action_new_search@2x.png",
+    "quick_action_new_search.imageset/quick_action_new_search@3x.png",
   ]
 }
 
@@ -185,8 +187,8 @@ imageset("quick_action_voice_search") {
 
 group("quick_action_icons") {
   public_deps = [
-    ":quick_action_new_incognito_tab",
-    ":quick_action_new_tab",
+    ":quick_action_incognito_search",
+    ":quick_action_new_search",
     ":quick_action_qr_scanner",
     ":quick_action_voice_search",
   ]

@@ -52,7 +52,6 @@ class CookieStoreIOS;
 // changes are written directly to the system cookie store, then propagated to
 // the backing store by OnSystemCookiesChanged, which is called by the system
 // store once the change to the system store is written back.
-// For not synchronized CookieStore, please see CookieStoreIOSPersistent.
 class CookieStoreIOS : public net::CookieStore,
                        public CookieNotificationObserver {
  public:
@@ -126,8 +125,7 @@ class CookieStoreIOS : public net::CookieStore,
 
  private:
   using CookieChangeCallbackList =
-      base::CallbackList<void(const CanonicalCookie& cookie,
-                              CookieChangeCause cause)>;
+      base::CallbackList<void(const CookieChangeInfo&)>;
 
   class Subscription : public base::LinkNode<Subscription>,
                        public CookieChangeSubscription {

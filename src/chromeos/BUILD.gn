@@ -5,6 +5,7 @@
 import("//build/buildflag_header.gni")
 import("//build/config/chromeos/rules.gni")
 import("//build/config/ui.gni")
+import("//testing/libfuzzer/fuzzer_test.gni")
 import("//testing/test.gni")
 import("//third_party/protobuf/proto_library.gni")
 
@@ -17,7 +18,7 @@ config("chromeos_implementation") {
 
 buildflag_header("chromeos_buildflags") {
   header = "chromeos_buildflags.h"
-  flags = [ "IS_CROS_CHROME_SDK=$is_cros_chrome_sdk" ]
+  flags = [ "IS_CHROMEOS_DEVICE=$is_chromeos_device" ]
 }
 
 component("chromeos") {
@@ -43,6 +44,12 @@ component("chromeos") {
   sources = [
     "hugepage_text/hugepage_text.cc",
     "hugepage_text/hugepage_text.h",
+    "memory/kstaled.cc",
+    "memory/kstaled.h",
+    "memory/memory.cc",
+    "memory/memory.h",
+    "memory/swap_configuration.cc",
+    "memory/swap_configuration.h",
     "policy/weekly_time/time_utils.cc",
     "policy/weekly_time/time_utils.h",
     "policy/weekly_time/weekly_time.cc",
@@ -200,7 +207,7 @@ test("chromeos_unittests") {
 # linux-chromeos). See the following for reference:
 # https://chromium.googlesource.com/chromium/src/+/master/docs/chromeos_build_instructions.md
 # https://chromium.googlesource.com/chromiumos/docs/+/master/simple_chrome_workflow.md
-if (is_cros_chrome_sdk) {
+if (is_chromeos_device) {
   # This builds a tool that prepares a DUT or VM for testing, which can be
   # utilized by wrapping a host-side script test.
   generate_runner_script("cros_test_wrapper") {
@@ -238,8 +245,14 @@ if (is_cros_chrome_sdk) {
   # To diagnose tast failures or disable tests, see go/tast-failures
   tast_test("chrome_all_tast_tests") {
     # To disable a specific test, add it the following list and cite a bug.
-    # TODO(crbug.com/1000351): Enable crostini.SanityArtifact.
-    tast_disabled_tests = [ "crostini.SanityArtifact" ]
+    tast_disabled_tests = [
+      # crbug.com/1000351
+      "crostini.SanityArtifact",
+
+      # crbug.com/1006681
+      "crostini.GPUEnabledDownload",
+      "crostini.SanityDownload",
+    ]
   }
 
   tast_test("chrome_all_tast_tests_informational") {
@@ -265,4 +278,13 @@ if (is_cros_chrome_sdk) {
       "$root_out_dir/resources/chromeos/",
     ]
   }
+}
+
+fuzzer_test("ppd_line_reader_fuzzer") {
+  sources = [
+    "printing/ppd_line_reader_fuzzer.cc",
+  ]
+  deps = [
+    ":chromeos",
+  ]
 }

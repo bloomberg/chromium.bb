@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/vr/test/webvr_browser_test.h"
-
 #include "build/build_config.h"
 #include "chrome/browser/vr/test/multi_class_browser_test.h"
 #include "chrome/browser/vr/test/webxr_vr_browser_test.h"
@@ -17,39 +15,13 @@
 
 namespace vr {
 
-class TransitionXRMock : public MockXRDeviceHookBase {
- public:
-  void WaitGetSessionStateStopping(
-      device_test::mojom::XRTestHook::WaitGetSessionStateStoppingCallback
-          callback) final;
-
-  bool session_state_stopping_ = false;
-};
-
-void TransitionXRMock::WaitGetSessionStateStopping(
-    device_test::mojom::XRTestHook::WaitGetSessionStateStoppingCallback
-        callback) {
-  std::move(callback).Run(session_state_stopping_);
-  session_state_stopping_ = false;
-}
-
-// Tests that WebVR/WebXR is not exposed if the flag is not on and the page does
+// Tests that WebXR is not exposed if the flag is not on and the page does
 // not have an origin trial token.
 void TestApiDisabledWithoutFlagSetImpl(WebXrVrBrowserTestBase* t,
                                        std::string filename) {
   t->LoadUrlAndAwaitInitialization(t->GetFileUrlForHtmlTestFile(filename));
   t->WaitOnJavaScriptStep();
   t->EndTest();
-}
-
-// Tests that WebVR does not return any devices if OpenVR support is disabled.
-IN_PROC_BROWSER_TEST_F(WebVrRuntimelessBrowserTest,
-                       TestWebVrNoDevicesWithoutRuntime) {
-  LoadUrlAndAwaitInitialization(
-      GetFileUrlForHtmlTestFile("generic_webvr_page"));
-  EXPECT_FALSE(XrDeviceFound())
-      << "Found a VRDisplay even with OpenVR disabled";
-  AssertNoJavaScriptErrors();
 }
 
 // Tests that WebXR does not return any devices if all runtime support is
@@ -64,12 +36,6 @@ IN_PROC_BROWSER_TEST_F(WebXrVrRuntimelessBrowserTest,
 
 // Windows-specific tests.
 #ifdef OS_WIN
-
-IN_PROC_BROWSER_TEST_F(WebVrOpenVrBrowserTestWebVrDisabled,
-                       TestWebVrDisabledWithoutFlagSet) {
-  TestApiDisabledWithoutFlagSetImpl(this,
-                                    "test_webvr_disabled_without_flag_set");
-}
 
 #if BUILDFLAG(ENABLE_OPENXR)
 IN_PROC_MULTI_CLASS_BROWSER_TEST_F3(WebXrVrOpenVrBrowserTestWebXrDisabled,
@@ -105,16 +71,13 @@ void TestPresentationEntryImpl(WebXrVrBrowserTestBase* t,
   t->AssertNoJavaScriptErrors();
 }
 
-IN_PROC_BROWSER_TEST_F(WebVrOpenVrBrowserTest, TestRequestPresentEntersVr) {
-  TestPresentationEntryImpl(this, "generic_webvr_page");
-}
 WEBXR_VR_ALL_RUNTIMES_PLUS_INCOGNITO_BROWSER_TEST_F(
     TestRequestSessionEntersVr) {
   TestPresentationEntryImpl(t, "generic_webxr_page");
 }
 
 // Tests that window.requestAnimationFrame continues to fire while in
-// WebVR/WebXR presentation since the tab is still visible.
+// WebXR presentation since the tab is still visible.
 void TestWindowRafFiresWhilePresentingImpl(WebXrVrBrowserTestBase* t,
                                            std::string filename) {
   t->LoadUrlAndAwaitInitialization(t->GetFileUrlForHtmlTestFile(filename));
@@ -126,11 +89,6 @@ void TestWindowRafFiresWhilePresentingImpl(WebXrVrBrowserTestBase* t,
   t->EndTest();
 }
 
-IN_PROC_BROWSER_TEST_F(WebVrOpenVrBrowserTest,
-                       TestWindowRafFiresWhilePresenting) {
-  TestWindowRafFiresWhilePresentingImpl(
-      this, "test_window_raf_fires_while_presenting");
-}
 WEBXR_VR_ALL_RUNTIMES_BROWSER_TEST_F(TestWindowRafFiresWhilePresenting) {
   TestWindowRafFiresWhilePresentingImpl(
       t, "webxr_test_window_raf_fires_while_presenting");
@@ -150,23 +108,59 @@ WEBXR_VR_ALL_RUNTIMES_BROWSER_TEST_F(TestNonImmersiveStopsDuringImmersive) {
 }
 
 #if BUILDFLAG(ENABLE_OPENXR)
-IN_PROC_BROWSER_TEST_F(WebXrVrOpenXrBrowserTest, TestSessionEnded) {
-  TransitionXRMock transition_mock;
+// Tests that WebXR session ends when certain events are received.
+void TestWebXRSessionEndWhenEventTriggered(
+    WebXrVrBrowserTestBase* t,
+    device_test::mojom::EventType event_type) {
+  MockXRDeviceHookBase transition_mock;
+  t->LoadUrlAndAwaitInitialization(
+      t->GetFileUrlForHtmlTestFile("test_webxr_presentation_ended"));
+  t->EnterSessionWithUserGestureOrFail();
 
-  // Load the test page, and enter presentation.
+  // Wait for JavaScript to submit at least one frame.
+  ASSERT_TRUE(
+      t->PollJavaScriptBoolean("hasPresentedFrame", t->kPollTimeoutMedium))
+      << "No frame submitted";
+  device_test::mojom::EventData data = {};
+  data.type = event_type;
+  transition_mock.PopulateEvent(data);
+  // Tell JavaScript that it is done with the test.
+  t->WaitOnJavaScriptStep();
+  t->EndTest();
+}
+
+IN_PROC_BROWSER_TEST_F(WebXrVrOpenXrBrowserTest, TestSessionEnded) {
+  TestWebXRSessionEndWhenEventTriggered(
+      this, device_test::mojom::EventType::kSessionLost);
+}
+
+IN_PROC_BROWSER_TEST_F(WebXrVrOpenXrBrowserTest, TestInsanceLost) {
+  TestWebXRSessionEndWhenEventTriggered(
+      this, device_test::mojom::EventType::kInstanceLost);
+}
+
+IN_PROC_BROWSER_TEST_F(WebXrVrOpenXrBrowserTest, TestVisibilityChanged) {
+  MockXRDeviceHookBase transition_mock;
   this->LoadUrlAndAwaitInitialization(
-      this->GetFileUrlForHtmlTestFile("test_webxr_presentation_ended"));
+      this->GetFileUrlForHtmlTestFile("webxr_test_visibility_changed"));
   this->EnterSessionWithUserGestureOrFail();
 
   // Wait for JavaScript to submit at least one frame.
   ASSERT_TRUE(this->PollJavaScriptBoolean("hasPresentedFrame",
                                           this->kPollTimeoutMedium))
       << "No frame submitted";
-  // Trigger the OpenXr Runtime to send the stop event and wait until we see the
-  // session get terminated.
-  transition_mock.session_state_stopping_ = true;
-  // Tell JavaScript that it is done with the test.
-  this->WaitOnJavaScriptStep();
+
+  this->PollJavaScriptBooleanOrFail("isVisibilityEqualTo('visible')",
+                                    this->kPollTimeoutMedium);
+
+  device_test::mojom::EventData event_data = {};
+  event_data.type = device_test::mojom::EventType::kVisibilityVisibleBlurred;
+  transition_mock.PopulateEvent(event_data);
+
+  // TODO(crbug.com/1002742): visible-blurred is forced to hidden in WebXR
+  this->PollJavaScriptBooleanOrFail("isVisibilityEqualTo('hidden')",
+                                    this->kPollTimeoutMedium);
+  this->RunJavaScriptOrFail("done()");
   this->EndTest();
 }
 #endif  // BUILDFLAG(ENABLE_OPENXR)

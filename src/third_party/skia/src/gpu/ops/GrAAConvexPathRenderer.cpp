@@ -219,21 +219,25 @@ static void update_degenerate_test(DegenerateTestData* data, const SkPoint& pt) 
     }
 }
 
-static inline SkPathPriv::FirstDirection get_direction(const SkPath& path, const SkMatrix& m) {
+static inline bool get_direction(const SkPath& path, const SkMatrix& m,
+                                 SkPathPriv::FirstDirection* dir) {
     // At this point, we've already returned true from canDraw(), which checked that the path's
     // direction could be determined, so this should just be fetching the cached direction.
-    SkPathPriv::FirstDirection dir;
-    SkAssertResult(SkPathPriv::CheapComputeFirstDirection(path, &dir));
+    // However, if perspective is involved, we're operating on a transformed path, which may no
+    // longer have a computable direction.
+    if (!SkPathPriv::CheapComputeFirstDirection(path, dir)) {
+        return false;
+    }
 
     // check whether m reverses the orientation
     SkASSERT(!m.hasPerspective());
     SkScalar det2x2 = m.get(SkMatrix::kMScaleX) * m.get(SkMatrix::kMScaleY) -
                       m.get(SkMatrix::kMSkewX)  * m.get(SkMatrix::kMSkewY);
     if (det2x2 < 0) {
-        dir = SkPathPriv::OppositeFirstDirection(dir);
+        *dir = SkPathPriv::OppositeFirstDirection(*dir);
     }
 
-    return dir;
+    return true;
 }
 
 static inline void add_line_to_segment(const SkPoint& pt,
@@ -283,7 +287,10 @@ static bool get_segments(const SkPath& path,
     // line paths. We detect paths that are very close to a line (zero area) and
     // draw nothing.
     DegenerateTestData degenerateData;
-    SkPathPriv::FirstDirection dir = get_direction(path, m);
+    SkPathPriv::FirstDirection dir;
+    if (!get_direction(path, m, &dir)) {
+        return false;
+    }
 
     for (;;) {
         SkPoint pts[4];
@@ -530,10 +537,11 @@ static void create_vertices(const SegmentArray& segments,
 
 class QuadEdgeEffect : public GrGeometryProcessor {
 public:
-    static sk_sp<GrGeometryProcessor> Make(const SkMatrix& localMatrix, bool usesLocalCoords,
-                                           bool wideColor) {
-        return sk_sp<GrGeometryProcessor>(
-                new QuadEdgeEffect(localMatrix, usesLocalCoords, wideColor));
+    static GrGeometryProcessor* Make(SkArenaAlloc* arena,
+                                     const SkMatrix& localMatrix,
+                                     bool usesLocalCoords,
+                                     bool wideColor) {
+        return arena->make<QuadEdgeEffect>(localMatrix, usesLocalCoords, wideColor);
     }
 
     ~QuadEdgeEffect() override {}
@@ -603,9 +611,9 @@ public:
 
         void setData(const GrGLSLProgramDataManager& pdman,
                      const GrPrimitiveProcessor& gp,
-                     FPCoordTransformIter&& transformIter) override {
+                     const CoordTransformRange& transformRange) override {
             const QuadEdgeEffect& qe = gp.cast<QuadEdgeEffect>();
-            this->setTransformDataHelper(qe.fLocalMatrix, pdman, &transformIter);
+            this->setTransformDataHelper(qe.fLocalMatrix, pdman, transformRange);
         }
 
     private:
@@ -621,6 +629,8 @@ public:
     }
 
 private:
+    friend class ::SkArenaAlloc; // for access to ctor
+
     QuadEdgeEffect(const SkMatrix& localMatrix, bool usesLocalCoords, bool wideColor)
             : INHERITED(kQuadEdgeEffect_ClassID)
             , fLocalMatrix(localMatrix)
@@ -646,11 +656,11 @@ private:
 GR_DEFINE_GEOMETRY_PROCESSOR_TEST(QuadEdgeEffect);
 
 #if GR_TEST_UTILS
-sk_sp<GrGeometryProcessor> QuadEdgeEffect::TestCreate(GrProcessorTestData* d) {
+GrGeometryProcessor* QuadEdgeEffect::TestCreate(GrProcessorTestData* d) {
     // Doesn't work without derivative instructions.
     return d->caps()->shaderCaps()->shaderDerivativeSupport()
-                   ? QuadEdgeEffect::Make(GrTest::TestMatrix(d->fRandom), d->fRandom->nextBool(),
-                                          d->fRandom->nextBool())
+                   ? QuadEdgeEffect::Make(d->allocator(), GrTest::TestMatrix(d->fRandom),
+                                          d->fRandom->nextBool(), d->fRandom->nextBool())
                    : nullptr;
 }
 #endif
@@ -693,7 +703,8 @@ public:
                    const GrUserStencilSettings* stencilSettings)
             : INHERITED(ClassID()), fHelper(helperArgs, GrAAType::kCoverage, stencilSettings) {
         fPaths.emplace_back(PathData{viewMatrix, path, color});
-        this->setTransformedBounds(path.getBounds(), viewMatrix, HasAABloat::kYes, IsZeroArea::kNo);
+        this->setTransformedBounds(path.getBounds(), viewMatrix, HasAABloat::kYes,
+                                   IsHairline::kNo);
     }
 
     const char* name() const override { return "AAConvexPathOp"; }
@@ -732,8 +743,9 @@ private:
         }
 
         // Setup GrGeometryProcessor
-        sk_sp<GrGeometryProcessor> quadProcessor(
-                QuadEdgeEffect::Make(invert, fHelper.usesLocalCoords(), fWideColor));
+        GrGeometryProcessor* quadProcessor = QuadEdgeEffect::Make(target->allocator(), invert,
+                                                                  fHelper.usesLocalCoords(),
+                                                                  fWideColor);
         const size_t kVertexStride = quadProcessor->vertexStride();
 
         // TODO generate all segments for all paths and use one vertex buffer
@@ -804,7 +816,7 @@ private:
                 firstIndex += draw.fIndexCnt;
                 firstVertex += draw.fVertexCnt;
             }
-            target->recordDraw(quadProcessor, meshes, draws.count());
+            target->recordDraw(quadProcessor, meshes, draws.count(), GrPrimitiveType::kTriangles);
         }
     }
 

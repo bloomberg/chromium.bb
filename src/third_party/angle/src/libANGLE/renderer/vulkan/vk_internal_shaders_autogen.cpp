@@ -58,6 +58,11 @@ namespace
 #include "libANGLE/renderer/vulkan/shaders/gen/BufferUtils.comp.0000000B.inc"
 #include "libANGLE/renderer/vulkan/shaders/gen/ConvertIndex.comp.00000000.inc"
 #include "libANGLE/renderer/vulkan/shaders/gen/ConvertIndex.comp.00000001.inc"
+#include "libANGLE/renderer/vulkan/shaders/gen/ConvertIndex.comp.00000002.inc"
+#include "libANGLE/renderer/vulkan/shaders/gen/ConvertIndex.comp.00000003.inc"
+#include "libANGLE/renderer/vulkan/shaders/gen/ConvertIndexIndirectLineLoop.comp.00000000.inc"
+#include "libANGLE/renderer/vulkan/shaders/gen/ConvertIndexIndirectLineLoop.comp.00000001.inc"
+#include "libANGLE/renderer/vulkan/shaders/gen/ConvertIndirectLineLoop.comp.00000000.inc"
 #include "libANGLE/renderer/vulkan/shaders/gen/ConvertVertex.comp.00000000.inc"
 #include "libANGLE/renderer/vulkan/shaders/gen/ConvertVertex.comp.00000001.inc"
 #include "libANGLE/renderer/vulkan/shaders/gen/ConvertVertex.comp.00000002.inc"
@@ -75,15 +80,6 @@ namespace
 #include "libANGLE/renderer/vulkan/shaders/gen/ConvertVertex.comp.0000000E.inc"
 #include "libANGLE/renderer/vulkan/shaders/gen/ConvertVertex.comp.0000000F.inc"
 #include "libANGLE/renderer/vulkan/shaders/gen/ConvertVertex.comp.00000010.inc"
-#include "libANGLE/renderer/vulkan/shaders/gen/ConvertVertex.comp.00000011.inc"
-#include "libANGLE/renderer/vulkan/shaders/gen/ConvertVertex.comp.00000012.inc"
-#include "libANGLE/renderer/vulkan/shaders/gen/ConvertVertex.comp.00000013.inc"
-#include "libANGLE/renderer/vulkan/shaders/gen/ConvertVertex.comp.00000014.inc"
-#include "libANGLE/renderer/vulkan/shaders/gen/ConvertVertex.comp.00000015.inc"
-#include "libANGLE/renderer/vulkan/shaders/gen/ConvertVertex.comp.00000016.inc"
-#include "libANGLE/renderer/vulkan/shaders/gen/ConvertVertex.comp.00000017.inc"
-#include "libANGLE/renderer/vulkan/shaders/gen/ConvertVertex.comp.00000018.inc"
-#include "libANGLE/renderer/vulkan/shaders/gen/ConvertVertex.comp.00000019.inc"
 #include "libANGLE/renderer/vulkan/shaders/gen/FullScreenQuad.vert.00000000.inc"
 #include "libANGLE/renderer/vulkan/shaders/gen/ImageClear.frag.00000000.inc"
 #include "libANGLE/renderer/vulkan/shaders/gen/ImageClear.frag.00000001.inc"
@@ -192,6 +188,17 @@ constexpr ShaderBlob kBufferUtils_comp_shaders[] = {
 constexpr ShaderBlob kConvertIndex_comp_shaders[] = {
     {kConvertIndex_comp_00000000, sizeof(kConvertIndex_comp_00000000)},
     {kConvertIndex_comp_00000001, sizeof(kConvertIndex_comp_00000001)},
+    {kConvertIndex_comp_00000002, sizeof(kConvertIndex_comp_00000002)},
+    {kConvertIndex_comp_00000003, sizeof(kConvertIndex_comp_00000003)},
+};
+constexpr ShaderBlob kConvertIndexIndirectLineLoop_comp_shaders[] = {
+    {kConvertIndexIndirectLineLoop_comp_00000000,
+     sizeof(kConvertIndexIndirectLineLoop_comp_00000000)},
+    {kConvertIndexIndirectLineLoop_comp_00000001,
+     sizeof(kConvertIndexIndirectLineLoop_comp_00000001)},
+};
+constexpr ShaderBlob kConvertIndirectLineLoop_comp_shaders[] = {
+    {kConvertIndirectLineLoop_comp_00000000, sizeof(kConvertIndirectLineLoop_comp_00000000)},
 };
 constexpr ShaderBlob kConvertVertex_comp_shaders[] = {
     {kConvertVertex_comp_00000000, sizeof(kConvertVertex_comp_00000000)},
@@ -211,15 +218,6 @@ constexpr ShaderBlob kConvertVertex_comp_shaders[] = {
     {kConvertVertex_comp_0000000E, sizeof(kConvertVertex_comp_0000000E)},
     {kConvertVertex_comp_0000000F, sizeof(kConvertVertex_comp_0000000F)},
     {kConvertVertex_comp_00000010, sizeof(kConvertVertex_comp_00000010)},
-    {kConvertVertex_comp_00000011, sizeof(kConvertVertex_comp_00000011)},
-    {kConvertVertex_comp_00000012, sizeof(kConvertVertex_comp_00000012)},
-    {kConvertVertex_comp_00000013, sizeof(kConvertVertex_comp_00000013)},
-    {kConvertVertex_comp_00000014, sizeof(kConvertVertex_comp_00000014)},
-    {kConvertVertex_comp_00000015, sizeof(kConvertVertex_comp_00000015)},
-    {kConvertVertex_comp_00000016, sizeof(kConvertVertex_comp_00000016)},
-    {kConvertVertex_comp_00000017, sizeof(kConvertVertex_comp_00000017)},
-    {kConvertVertex_comp_00000018, sizeof(kConvertVertex_comp_00000018)},
-    {kConvertVertex_comp_00000019, sizeof(kConvertVertex_comp_00000019)},
 };
 constexpr ShaderBlob kFullScreenQuad_vert_shaders[] = {
     {kFullScreenQuad_vert_00000000, sizeof(kFullScreenQuad_vert_00000000)},
@@ -333,6 +331,14 @@ void ShaderLibrary::destroy(VkDevice device)
     {
         shader.get().destroy(device);
     }
+    for (RefCounted<ShaderAndSerial> &shader : mConvertIndexIndirectLineLoop_comp_shaders)
+    {
+        shader.get().destroy(device);
+    }
+    for (RefCounted<ShaderAndSerial> &shader : mConvertIndirectLineLoop_comp_shaders)
+    {
+        shader.get().destroy(device);
+    }
     for (RefCounted<ShaderAndSerial> &shader : mConvertVertex_comp_shaders)
     {
         shader.get().destroy(device);
@@ -391,6 +397,26 @@ angle::Result ShaderLibrary::getConvertIndex_comp(Context *context,
 {
     return GetShader(context, mConvertIndex_comp_shaders, kConvertIndex_comp_shaders,
                      ArraySize(kConvertIndex_comp_shaders), shaderFlags, shaderOut);
+}
+
+angle::Result ShaderLibrary::getConvertIndexIndirectLineLoop_comp(
+    Context *context,
+    uint32_t shaderFlags,
+    RefCounted<ShaderAndSerial> **shaderOut)
+{
+    return GetShader(context, mConvertIndexIndirectLineLoop_comp_shaders,
+                     kConvertIndexIndirectLineLoop_comp_shaders,
+                     ArraySize(kConvertIndexIndirectLineLoop_comp_shaders), shaderFlags, shaderOut);
+}
+
+angle::Result ShaderLibrary::getConvertIndirectLineLoop_comp(
+    Context *context,
+    uint32_t shaderFlags,
+    RefCounted<ShaderAndSerial> **shaderOut)
+{
+    return GetShader(context, mConvertIndirectLineLoop_comp_shaders,
+                     kConvertIndirectLineLoop_comp_shaders,
+                     ArraySize(kConvertIndirectLineLoop_comp_shaders), shaderFlags, shaderOut);
 }
 
 angle::Result ShaderLibrary::getConvertVertex_comp(Context *context,

@@ -203,7 +203,7 @@ static string image_format_to_type(ImageFormat fmt, SPIRType::BaseType basetype)
 	}
 }
 
-string CompilerHLSL::image_type_hlsl_modern(const SPIRType &type, uint32_t)
+string CompilerHLSL::image_type_hlsl_modern(const SPIRType &type, uint32_t id)
 {
 	auto &imagetype = get<SPIRType>(type.image.type);
 	const char *dim = nullptr;
@@ -235,7 +235,12 @@ string CompilerHLSL::image_type_hlsl_modern(const SPIRType &type, uint32_t)
 		if (type.image.sampled == 1)
 			return join("Buffer<", type_to_glsl(imagetype), components, ">");
 		else if (type.image.sampled == 2)
+		{
+			if (interlocked_resources.count(id))
+				return join("RasterizerOrderedBuffer<", image_format_to_type(type.image.format, imagetype.basetype),
+				            ">");
 			return join("RWBuffer<", image_format_to_type(type.image.format, imagetype.basetype), ">");
+		}
 		else
 			SPIRV_CROSS_THROW("Sampler buffers must be either sampled or unsampled. Cannot deduce in runtime.");
 	case DimSubpassData:
@@ -248,6 +253,8 @@ string CompilerHLSL::image_type_hlsl_modern(const SPIRType &type, uint32_t)
 	const char *arrayed = type.image.arrayed ? "Array" : "";
 	const char *ms = type.image.ms ? "MS" : "";
 	const char *rw = typed_load ? "RW" : "";
+	if (typed_load && interlocked_resources.count(id))
+		rw = "RasterizerOrdered";
 	return join(rw, "Texture", dim, ms, arrayed, "<",
 	            typed_load ? image_format_to_type(type.image.format, imagetype.basetype) :
 	                         join(type_to_glsl(imagetype), components),
@@ -1038,7 +1045,7 @@ void CompilerHLSL::emit_specialization_constants_and_structs()
 {
 	bool emitted = false;
 	SpecializationConstant wg_x, wg_y, wg_z;
-	uint32_t workgroup_size_id = get_work_group_size_specialization_constants(wg_x, wg_y, wg_z);
+	ID workgroup_size_id = get_work_group_size_specialization_constants(wg_x, wg_y, wg_z);
 
 	auto loop_lock = ir.create_loop_hard_lock();
 	for (auto &id_ : ir.ids_for_constant_or_type)
@@ -1848,9 +1855,13 @@ void CompilerHLSL::emit_buffer_block(const SPIRVariable &var)
 		Bitset flags = ir.get_buffer_block_flags(var);
 		bool is_readonly = flags.get(DecorationNonWritable);
 		bool is_coherent = flags.get(DecorationCoherent);
+		bool is_interlocked = interlocked_resources.count(var.self) > 0;
+		const char *type_name = "ByteAddressBuffer ";
+		if (!is_readonly)
+			type_name = is_interlocked ? "RasterizerOrderedByteAddressBuffer " : "RWByteAddressBuffer ";
 		add_resource_name(var.self);
-		statement(is_coherent ? "globallycoherent " : "", is_readonly ? "ByteAddressBuffer " : "RWByteAddressBuffer ",
-		          to_name(var.self), type_to_array_glsl(type), to_resource_binding(var), ";");
+		statement(is_coherent ? "globallycoherent " : "", type_name, to_name(var.self), type_to_array_glsl(type),
+		          to_resource_binding(var), ";");
 	}
 	else
 	{
@@ -2014,9 +2025,9 @@ void CompilerHLSL::emit_sampled_image_op(uint32_t result_type, uint32_t result_i
 	}
 }
 
-string CompilerHLSL::to_func_call_arg(uint32_t id)
+string CompilerHLSL::to_func_call_arg(const SPIRFunction::Parameter &arg, uint32_t id)
 {
-	string arg_str = CompilerGLSL::to_func_call_arg(id);
+	string arg_str = CompilerGLSL::to_func_call_arg(arg, id);
 
 	if (hlsl_options.shader_model <= 30)
 		return arg_str;
@@ -2478,7 +2489,7 @@ void CompilerHLSL::emit_texture_op(const Instruction &i)
 
 	uint32_t result_type = ops[0];
 	uint32_t id = ops[1];
-	uint32_t img = ops[2];
+	VariableID img = ops[2];
 	uint32_t coord = ops[3];
 	uint32_t dref = 0;
 	uint32_t comp = 0;
@@ -3713,7 +3724,7 @@ void CompilerHLSL::emit_access_chain(const Instruction &instruction)
 		e.row_major_matrix = row_major_matrix;
 		e.matrix_stride = matrix_stride;
 		e.immutable = should_forward(ops[2]);
-		e.loaded_from = backing_variable ? backing_variable->self : 0;
+		e.loaded_from = backing_variable ? backing_variable->self : ID(0);
 
 		if (chain)
 		{
@@ -4021,6 +4032,7 @@ void CompilerHLSL::emit_instruction(const Instruction &instruction)
 	// If we need to do implicit bitcasts, make sure we do it with the correct type.
 	uint32_t integer_width = get_integer_width_for_instruction(instruction);
 	auto int_type = to_signed_basetype(integer_width);
+	auto uint_type = to_unsigned_basetype(integer_width);
 
 	switch (opcode)
 	{
@@ -4183,7 +4195,7 @@ void CompilerHLSL::emit_instruction(const Instruction &instruction)
 		auto id = ops[1];
 
 		if (expression_type(ops[2]).vecsize > 1)
-			emit_unrolled_binary_op(result_type, id, ops[2], ops[3], "==");
+			emit_unrolled_binary_op(result_type, id, ops[2], ops[3], "==", false, SPIRType::Unknown);
 		else
 			HLSL_BOP_CAST(==, int_type);
 		break;
@@ -4191,12 +4203,19 @@ void CompilerHLSL::emit_instruction(const Instruction &instruction)
 
 	case OpLogicalEqual:
 	case OpFOrdEqual:
+	case OpFUnordEqual:
 	{
+		// HLSL != operator is unordered.
+		// https://docs.microsoft.com/en-us/windows/win32/direct3d10/d3d10-graphics-programming-guide-resources-float-rules.
+		// isnan() is apparently implemented as x != x as well.
+		// We cannot implement UnordEqual as !(OrdNotEqual), as HLSL cannot express OrdNotEqual.
+		// HACK: FUnordEqual will be implemented as FOrdEqual.
+
 		auto result_type = ops[0];
 		auto id = ops[1];
 
 		if (expression_type(ops[2]).vecsize > 1)
-			emit_unrolled_binary_op(result_type, id, ops[2], ops[3], "==");
+			emit_unrolled_binary_op(result_type, id, ops[2], ops[3], "==", false, SPIRType::Unknown);
 		else
 			HLSL_BOP(==);
 		break;
@@ -4208,7 +4227,7 @@ void CompilerHLSL::emit_instruction(const Instruction &instruction)
 		auto id = ops[1];
 
 		if (expression_type(ops[2]).vecsize > 1)
-			emit_unrolled_binary_op(result_type, id, ops[2], ops[3], "!=");
+			emit_unrolled_binary_op(result_type, id, ops[2], ops[3], "!=", false, SPIRType::Unknown);
 		else
 			HLSL_BOP_CAST(!=, int_type);
 		break;
@@ -4216,12 +4235,23 @@ void CompilerHLSL::emit_instruction(const Instruction &instruction)
 
 	case OpLogicalNotEqual:
 	case OpFOrdNotEqual:
+	case OpFUnordNotEqual:
 	{
+		// HLSL != operator is unordered.
+		// https://docs.microsoft.com/en-us/windows/win32/direct3d10/d3d10-graphics-programming-guide-resources-float-rules.
+		// isnan() is apparently implemented as x != x as well.
+
+		// FIXME: FOrdNotEqual cannot be implemented in a crisp and simple way here.
+		// We would need to do something like not(UnordEqual), but that cannot be expressed either.
+		// Adding a lot of NaN checks would be a breaking change from perspective of performance.
+		// SPIR-V will generally use isnan() checks when this even matters.
+		// HACK: FOrdNotEqual will be implemented as FUnordEqual.
+
 		auto result_type = ops[0];
 		auto id = ops[1];
 
 		if (expression_type(ops[2]).vecsize > 1)
-			emit_unrolled_binary_op(result_type, id, ops[2], ops[3], "!=");
+			emit_unrolled_binary_op(result_type, id, ops[2], ops[3], "!=", false, SPIRType::Unknown);
 		else
 			HLSL_BOP(!=);
 		break;
@@ -4232,10 +4262,10 @@ void CompilerHLSL::emit_instruction(const Instruction &instruction)
 	{
 		auto result_type = ops[0];
 		auto id = ops[1];
-		auto type = opcode == OpUGreaterThan ? SPIRType::UInt : SPIRType::Int;
+		auto type = opcode == OpUGreaterThan ? uint_type : int_type;
 
 		if (expression_type(ops[2]).vecsize > 1)
-			emit_unrolled_binary_op(result_type, id, ops[2], ops[3], ">");
+			emit_unrolled_binary_op(result_type, id, ops[2], ops[3], ">", false, type);
 		else
 			HLSL_BOP_CAST(>, type);
 		break;
@@ -4247,9 +4277,21 @@ void CompilerHLSL::emit_instruction(const Instruction &instruction)
 		auto id = ops[1];
 
 		if (expression_type(ops[2]).vecsize > 1)
-			emit_unrolled_binary_op(result_type, id, ops[2], ops[3], ">");
+			emit_unrolled_binary_op(result_type, id, ops[2], ops[3], ">", false, SPIRType::Unknown);
 		else
 			HLSL_BOP(>);
+		break;
+	}
+
+	case OpFUnordGreaterThan:
+	{
+		auto result_type = ops[0];
+		auto id = ops[1];
+
+		if (expression_type(ops[2]).vecsize > 1)
+			emit_unrolled_binary_op(result_type, id, ops[2], ops[3], "<=", true, SPIRType::Unknown);
+		else
+			CompilerGLSL::emit_instruction(instruction);
 		break;
 	}
 
@@ -4259,9 +4301,9 @@ void CompilerHLSL::emit_instruction(const Instruction &instruction)
 		auto result_type = ops[0];
 		auto id = ops[1];
 
-		auto type = opcode == OpUGreaterThanEqual ? SPIRType::UInt : SPIRType::Int;
+		auto type = opcode == OpUGreaterThanEqual ? uint_type : int_type;
 		if (expression_type(ops[2]).vecsize > 1)
-			emit_unrolled_binary_op(result_type, id, ops[2], ops[3], ">=");
+			emit_unrolled_binary_op(result_type, id, ops[2], ops[3], ">=", false, type);
 		else
 			HLSL_BOP_CAST(>=, type);
 		break;
@@ -4273,9 +4315,21 @@ void CompilerHLSL::emit_instruction(const Instruction &instruction)
 		auto id = ops[1];
 
 		if (expression_type(ops[2]).vecsize > 1)
-			emit_unrolled_binary_op(result_type, id, ops[2], ops[3], ">=");
+			emit_unrolled_binary_op(result_type, id, ops[2], ops[3], ">=", false, SPIRType::Unknown);
 		else
 			HLSL_BOP(>=);
+		break;
+	}
+
+	case OpFUnordGreaterThanEqual:
+	{
+		auto result_type = ops[0];
+		auto id = ops[1];
+
+		if (expression_type(ops[2]).vecsize > 1)
+			emit_unrolled_binary_op(result_type, id, ops[2], ops[3], "<", true, SPIRType::Unknown);
+		else
+			CompilerGLSL::emit_instruction(instruction);
 		break;
 	}
 
@@ -4285,9 +4339,9 @@ void CompilerHLSL::emit_instruction(const Instruction &instruction)
 		auto result_type = ops[0];
 		auto id = ops[1];
 
-		auto type = opcode == OpULessThan ? SPIRType::UInt : SPIRType::Int;
+		auto type = opcode == OpULessThan ? uint_type : int_type;
 		if (expression_type(ops[2]).vecsize > 1)
-			emit_unrolled_binary_op(result_type, id, ops[2], ops[3], "<");
+			emit_unrolled_binary_op(result_type, id, ops[2], ops[3], "<", false, type);
 		else
 			HLSL_BOP_CAST(<, type);
 		break;
@@ -4299,9 +4353,21 @@ void CompilerHLSL::emit_instruction(const Instruction &instruction)
 		auto id = ops[1];
 
 		if (expression_type(ops[2]).vecsize > 1)
-			emit_unrolled_binary_op(result_type, id, ops[2], ops[3], "<");
+			emit_unrolled_binary_op(result_type, id, ops[2], ops[3], "<", false, SPIRType::Unknown);
 		else
 			HLSL_BOP(<);
+		break;
+	}
+
+	case OpFUnordLessThan:
+	{
+		auto result_type = ops[0];
+		auto id = ops[1];
+
+		if (expression_type(ops[2]).vecsize > 1)
+			emit_unrolled_binary_op(result_type, id, ops[2], ops[3], ">=", true, SPIRType::Unknown);
+		else
+			CompilerGLSL::emit_instruction(instruction);
 		break;
 	}
 
@@ -4311,9 +4377,9 @@ void CompilerHLSL::emit_instruction(const Instruction &instruction)
 		auto result_type = ops[0];
 		auto id = ops[1];
 
-		auto type = opcode == OpULessThanEqual ? SPIRType::UInt : SPIRType::Int;
+		auto type = opcode == OpULessThanEqual ? uint_type : int_type;
 		if (expression_type(ops[2]).vecsize > 1)
-			emit_unrolled_binary_op(result_type, id, ops[2], ops[3], "<=");
+			emit_unrolled_binary_op(result_type, id, ops[2], ops[3], "<=", false, type);
 		else
 			HLSL_BOP_CAST(<=, type);
 		break;
@@ -4325,9 +4391,21 @@ void CompilerHLSL::emit_instruction(const Instruction &instruction)
 		auto id = ops[1];
 
 		if (expression_type(ops[2]).vecsize > 1)
-			emit_unrolled_binary_op(result_type, id, ops[2], ops[3], "<=");
+			emit_unrolled_binary_op(result_type, id, ops[2], ops[3], "<=", false, SPIRType::Unknown);
 		else
 			HLSL_BOP(<=);
+		break;
+	}
+
+	case OpFUnordLessThanEqual:
+	{
+		auto result_type = ops[0];
+		auto id = ops[1];
+
+		if (expression_type(ops[2]).vecsize > 1)
+			emit_unrolled_binary_op(result_type, id, ops[2], ops[3], ">", true, SPIRType::Unknown);
+		else
+			CompilerGLSL::emit_instruction(instruction);
 		break;
 	}
 
@@ -4483,7 +4561,8 @@ void CompilerHLSL::emit_instruction(const Instruction &instruction)
 
 		// When using the pointer, we need to know which variable it is actually loaded from.
 		auto *var = maybe_get_backing_variable(ops[2]);
-		e.loaded_from = var ? var->self : 0;
+		e.loaded_from = var ? var->self : ID(0);
+		inherit_expression_dependencies(id, ops[3]);
 		break;
 	}
 
@@ -4641,8 +4720,11 @@ void CompilerHLSL::emit_instruction(const Instruction &instruction)
 	}
 
 	case OpBitCount:
-		HLSL_UFOP(countbits);
+	{
+		auto basetype = expression_type(ops[2]).basetype;
+		emit_unary_func_op_cast(ops[0], ops[1], ops[2], "countbits", basetype, basetype);
 		break;
+	}
 
 	case OpBitReverse:
 		HLSL_UFOP(reversebits);
@@ -4669,6 +4751,12 @@ void CompilerHLSL::emit_instruction(const Instruction &instruction)
 
 	case OpIsHelperInvocationEXT:
 		SPIRV_CROSS_THROW("helperInvocationEXT() is not supported in HLSL.");
+
+	case OpBeginInvocationInterlockEXT:
+	case OpEndInvocationInterlockEXT:
+		if (hlsl_options.shader_model < 51)
+			SPIRV_CROSS_THROW("Rasterizer order views require Shader Model 5.1.");
+		break; // Nothing to do in the body
 
 	default:
 		CompilerGLSL::emit_instruction(instruction);
@@ -4744,7 +4832,7 @@ void CompilerHLSL::add_vertex_attribute_remap(const HLSLVertexAttributeRemap &ve
 	remap_vertex_attributes.push_back(vertex_attributes);
 }
 
-uint32_t CompilerHLSL::remap_num_workgroups_builtin()
+VariableID CompilerHLSL::remap_num_workgroups_builtin()
 {
 	update_active_builtins();
 
@@ -4847,6 +4935,7 @@ string CompilerHLSL::compile()
 	validate_shader_model();
 	update_active_builtins();
 	analyze_image_and_sampler_usage();
+	analyze_interlocked_resource_usage();
 
 	// Subpass input needs SV_Position.
 	if (need_subpass_input)

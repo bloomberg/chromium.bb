@@ -18,7 +18,6 @@
 #include "content/common/renderer.mojom.h"
 #include "content/common/unique_name_helper.h"
 #include "content/public/browser/storage_partition.h"
-#include "content/public/common/screen_info.h"
 #include "content/renderer/compositor/layer_tree_view.h"
 #include "content/renderer/input/render_widget_input_handler_delegate.h"
 #include "content/renderer/loader/request_extra_data.h"
@@ -36,6 +35,7 @@
 #include "content/shell/test_runner/web_test_interfaces.h"
 #include "content/shell/test_runner/web_view_test_proxy.h"
 #include "content/shell/test_runner/web_widget_test_proxy.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/platform/web_float_rect.h"
 #include "third_party/blink/public/platform/web_input_event.h"
@@ -56,7 +56,6 @@
 #include "third_party/skia/include/core/SkFontMgr.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/ports/SkTypeface_win.h"
-#include "ui/gfx/win/direct_write.h"
 #endif
 
 using blink::WebRect;
@@ -92,14 +91,13 @@ RenderViewImpl* CreateWebViewTestProxy(CompositorDependencies* compositor_deps,
 std::unique_ptr<RenderWidget> CreateRenderWidgetForFrame(
     int32_t routing_id,
     CompositorDependencies* compositor_deps,
-    const ScreenInfo& screen_info,
-    blink::WebDisplayMode display_mode,
+    blink::mojom::DisplayMode display_mode,
     bool swapped_out,
     bool never_visible,
-    mojom::WidgetRequest widget_request) {
+    mojo::PendingReceiver<mojom::Widget> widget_receiver) {
   return std::make_unique<test_runner::WebWidgetTestProxy>(
-      routing_id, compositor_deps, screen_info, display_mode, swapped_out,
-      /*hidden=*/true, never_visible, std::move(widget_request));
+      routing_id, compositor_deps, display_mode, swapped_out,
+      /*hidden=*/true, never_visible, std::move(widget_receiver));
 }
 
 RenderFrameImpl* CreateWebFrameTestProxy(RenderFrameImpl::CreateParams params) {
@@ -113,12 +111,6 @@ RenderFrameImpl* CreateWebFrameTestProxy(RenderFrameImpl::CreateParams params) {
       new test_runner::WebFrameTestProxy(std::move(params));
   render_frame_proxy->Initialize(interfaces, render_view_impl);
   return render_frame_proxy;
-}
-
-float GetWindowToViewportScale(RenderWidget* render_widget) {
-  blink::WebFloatRect rect(0, 0, 1.0f, 0.0);
-  render_widget->ConvertWindowToViewport(&rect);
-  return rect.width;
 }
 
 #if defined(OS_WIN)
@@ -207,7 +199,9 @@ void SetFocusAndActivate(RenderView* render_view, bool enable) {
 }
 
 void ForceResizeRenderView(RenderView* render_view, const WebSize& new_size) {
-  auto* render_view_impl = static_cast<RenderViewImpl*>(render_view);
+  RenderViewImpl* render_view_impl = static_cast<RenderViewImpl*>(render_view);
+  if (!render_view_impl->GetMainRenderFrame())
+    return;
   RenderWidget* render_widget = render_view_impl->GetWidget();
   gfx::Rect window_rect(render_widget->WindowRect().x,
                         render_widget->WindowRect().y, new_size.width,
@@ -216,14 +210,10 @@ void ForceResizeRenderView(RenderView* render_view, const WebSize& new_size) {
 }
 
 void SetDeviceScaleFactor(RenderView* render_view, float factor) {
-  RenderWidget* render_widget =
-      static_cast<RenderViewImpl*>(render_view)->GetWidget();
-  render_widget->SetDeviceScaleFactorForTesting(factor);
-}
-
-float GetWindowToViewportScale(RenderView* render_view) {
-  return GetWindowToViewportScale(
-      static_cast<RenderViewImpl*>(render_view)->GetWidget());
+  RenderViewImpl* render_view_impl = static_cast<RenderViewImpl*>(render_view);
+  if (!render_view_impl->GetMainRenderFrame())
+    return;
+  render_view_impl->GetWidget()->SetDeviceScaleFactorForTesting(factor);
 }
 
 std::unique_ptr<blink::WebInputEvent> TransformScreenToWidgetCoordinates(
@@ -234,9 +224,30 @@ std::unique_ptr<blink::WebInputEvent> TransformScreenToWidgetCoordinates(
   RenderWidget* render_widget =
       static_cast<RenderWidget*>(web_widget_test_proxy);
 
+  // Compute the scale from window (dsf-independent) to blink (dsf-dependent
+  // under UseZoomForDSF).
+  blink::WebFloatRect rect(0, 0, 1.0f, 0.0);
+  render_widget->ConvertWindowToViewport(&rect);
+  float scale = rect.width;
+
   blink::WebRect view_rect = render_widget->ViewRect();
-  float scale = GetWindowToViewportScale(render_widget);
   gfx::Vector2d delta(-view_rect.x, -view_rect.y);
+
+  // The coordinates are given in terms of the root widget, so adjust for the
+  // position of the main frame.
+  // TODO(sgilhuly): This doesn't work for events sent to OOPIFs because the
+  // main frame is remote, and doesn't have a corresponding RenderWidget.
+  // Currently none of those tests are run out of headless mode.
+  blink::WebFrame* frame =
+      web_widget_test_proxy->GetWebViewTestProxy()->webview()->MainFrame();
+  if (frame->IsWebLocalFrame()) {
+    test_runner::WebWidgetTestProxy* root_widget =
+        GetWebWidgetTestProxy(frame->ToWebLocalFrame());
+    blink::WebRect root_rect = root_widget->ViewRect();
+    gfx::Vector2d root_delta(root_rect.x, root_rect.y);
+    delta.Add(root_delta);
+  }
+
   return ui::TranslateAndScaleWebInputEvent(event, delta, scale);
 }
 
@@ -257,9 +268,10 @@ gfx::ColorSpace GetTestingColorSpace(const std::string& name) {
 
 void SetDeviceColorSpace(RenderView* render_view,
                          const gfx::ColorSpace& color_space) {
-  RenderWidget* render_widget =
-      static_cast<RenderViewImpl*>(render_view)->GetWidget();
-  render_widget->SetDeviceColorSpaceForTesting(color_space);
+  RenderViewImpl* render_view_impl = static_cast<RenderViewImpl*>(render_view);
+  if (!render_view_impl->GetMainRenderFrame())
+    return;
+  render_view_impl->GetWidget()->SetDeviceColorSpaceForTesting(color_space);
 }
 
 void SetTestBluetoothScanDuration(BluetoothTestScanDurationSetting setting) {
@@ -278,23 +290,26 @@ void SetTestBluetoothScanDuration(BluetoothTestScanDurationSetting setting) {
 }
 
 void UseSynchronousResizeMode(RenderView* render_view, bool enable) {
-  RenderWidget* render_widget =
-      static_cast<RenderViewImpl*>(render_view)->GetWidget();
-  render_widget->UseSynchronousResizeModeForTesting(enable);
+  RenderViewImpl* render_view_impl = static_cast<RenderViewImpl*>(render_view);
+  if (!render_view_impl->GetMainRenderFrame())
+    return;
+  render_view_impl->GetWidget()->UseSynchronousResizeModeForTesting(enable);
 }
 
 void EnableAutoResizeMode(RenderView* render_view,
                           const WebSize& min_size,
                           const WebSize& max_size) {
-  RenderWidget* render_widget =
-      static_cast<RenderViewImpl*>(render_view)->GetWidget();
-  render_widget->EnableAutoResizeForTesting(min_size, max_size);
+  RenderViewImpl* render_view_impl = static_cast<RenderViewImpl*>(render_view);
+  if (!render_view_impl->GetMainRenderFrame())
+    return;
+  render_view_impl->GetWidget()->EnableAutoResizeForTesting(min_size, max_size);
 }
 
 void DisableAutoResizeMode(RenderView* render_view, const WebSize& new_size) {
-  RenderWidget* render_widget =
-      static_cast<RenderViewImpl*>(render_view)->GetWidget();
-  render_widget->DisableAutoResizeForTesting(new_size);
+  RenderViewImpl* render_view_impl = static_cast<RenderViewImpl*>(render_view);
+  if (!render_view_impl->GetMainRenderFrame())
+    return;
+  render_view_impl->GetWidget()->DisableAutoResizeForTesting(new_size);
 }
 
 void SchedulerRunIdleTasks(base::OnceClosure callback) {

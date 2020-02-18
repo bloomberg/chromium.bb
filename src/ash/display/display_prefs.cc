@@ -232,16 +232,12 @@ void LoadDisplayProperties(PrefService* local_state) {
       continue;
     }
     display::Display::Rotation rotation = display::Display::ROTATE_0;
-    float ui_scale = 1.0f;
     const gfx::Insets* insets_to_set = nullptr;
 
     int rotation_value = 0;
     if (dict_value->GetInteger("rotation", &rotation_value)) {
       rotation = static_cast<display::Display::Rotation>(rotation_value);
     }
-    int ui_scale_value = 0;
-    if (dict_value->GetInteger("ui-scale", &ui_scale_value))
-      ui_scale = static_cast<float>(ui_scale_value) / 1000.0f;
 
     int width = 0, height = 0;
     dict_value->GetInteger("width", &width);
@@ -271,8 +267,8 @@ void LoadDisplayProperties(PrefService* local_state) {
     dict_value->GetDouble(kDisplayZoom, &display_zoom);
 
     GetDisplayManager()->RegisterDisplayProperty(
-        id, rotation, ui_scale, insets_to_set, resolution_in_pixels,
-        device_scale_factor, display_zoom, refresh_rate, is_interlaced);
+        id, rotation, insets_to_set, resolution_in_pixels, device_scale_factor,
+        display_zoom, refresh_rate, is_interlaced);
   }
 }
 
@@ -538,11 +534,6 @@ void StoreCurrentDisplayProperties(PrefService* pref_service) {
                                static_cast<int>(info.GetRotation(
                                    display::Display::RotationSource::USER)));
 
-    // We store a negative ui scale to let us know the next time we boot that it
-    // is not the first boot with display zoom mode enabled.
-    // TODO(oshima|malaykeshav): Remove this in m71.
-    property_value->SetInteger("ui-scale", -1000);
-
     display::ManagedDisplayMode mode;
     if (!display.IsInternal() &&
         display_manager->GetSelectedModeForDisplayId(id, &mode) &&
@@ -724,7 +715,7 @@ void StoreExternalDisplayMirrorInfo(PrefService* pref_service) {
   const std::set<int64_t>& external_display_mirror_info =
       GetDisplayManager()->external_display_mirror_info();
   for (const auto& id : external_display_mirror_info)
-    pref_data->GetList().emplace_back(base::Value(base::NumberToString(id)));
+    pref_data->Append(base::Value(base::NumberToString(id)));
 }
 
 // Stores mixed mirror mode parameters. Clear the preferences if
@@ -745,7 +736,7 @@ void StoreDisplayMixedMirrorModeParams(
 
   base::ListValue mirroring_destination_ids_value;
   for (const auto& id : mixed_params->destination_ids) {
-    mirroring_destination_ids_value.GetList().emplace_back(
+    mirroring_destination_ids_value.Append(
         base::Value(base::NumberToString(id)));
   }
   pref_data->SetKey(kMirroringDestinationIds,
@@ -761,22 +752,14 @@ void StoreCurrentDisplayMixedMirrorModeParams(PrefService* pref_service) {
 
 // static
 void DisplayPrefs::RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
-  registry->RegisterDictionaryPref(prefs::kSecondaryDisplays,
-                                   PrefRegistry::PUBLIC);
-  registry->RegisterDictionaryPref(prefs::kDisplayProperties,
-                                   PrefRegistry::PUBLIC);
-  registry->RegisterStringPref(prefs::kDisplayPowerState, kDisplayPowerAllOn,
-                               PrefRegistry::PUBLIC);
-  registry->RegisterDictionaryPref(prefs::kDisplayRotationLock,
-                                   PrefRegistry::PUBLIC);
-  registry->RegisterDictionaryPref(prefs::kDisplayTouchAssociations,
-                                   PrefRegistry::PUBLIC);
-  registry->RegisterDictionaryPref(prefs::kDisplayTouchPortAssociations,
-                                   PrefRegistry::PUBLIC);
-  registry->RegisterListPref(prefs::kExternalDisplayMirrorInfo,
-                             PrefRegistry::PUBLIC);
-  registry->RegisterDictionaryPref(prefs::kDisplayMixedMirrorModeParams,
-                                   PrefRegistry::PUBLIC);
+  registry->RegisterDictionaryPref(prefs::kSecondaryDisplays);
+  registry->RegisterDictionaryPref(prefs::kDisplayProperties);
+  registry->RegisterStringPref(prefs::kDisplayPowerState, kDisplayPowerAllOn);
+  registry->RegisterDictionaryPref(prefs::kDisplayRotationLock);
+  registry->RegisterDictionaryPref(prefs::kDisplayTouchAssociations);
+  registry->RegisterDictionaryPref(prefs::kDisplayTouchPortAssociations);
+  registry->RegisterListPref(prefs::kExternalDisplayMirrorInfo);
+  registry->RegisterDictionaryPref(prefs::kDisplayMixedMirrorModeParams);
 }
 
 DisplayPrefs::DisplayPrefs(PrefService* local_state)

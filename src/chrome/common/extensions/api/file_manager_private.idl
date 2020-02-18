@@ -10,10 +10,16 @@ namespace fileManagerPrivate {
 // Type of the mounted volume.
 enum VolumeType { drive, downloads, removable, archive, provided, mtp,
                   media_view, crostini, android_files, documents_provider,
-                  testing };
+                  testing, smb };
 
 // Device type. Available if this is removable volume.
 enum DeviceType { usb, sd, optical, mobile, unknown };
+
+// List of connection types of drive.
+enum DriveConnectionStateType {OFFLINE, METERED, ONLINE};
+
+// List of reasons of DriveConnectionStateType.
+enum DriveOfflineReason {NOT_READY, NO_NETWORK, NO_SERVICE};
 
 // Additional data about mount, for example, that the filesystem is not
 // supported.
@@ -194,12 +200,6 @@ enum EntryPropertyName {
   isArbitrarySyncFolder
 };
 
-// Entry property visibility for setEntryTag();
-enum EntryTagVisibility {
-  private,
-  public
-};
-
 // Source of the volume data.
 enum Source {
   file,
@@ -223,17 +223,12 @@ enum SourceRestriction {
   any_source,
 
   // Allows source with native local file system only.
-  native_source,
-
-  // Allows native source and Drive source.
-  native_or_drive_source
+  native_source
 };
 
 enum CrostiniEventType {
   enable,
   disable,
-  root_access_allow,
-  root_access_disallow,
   share,
   unshare
 };
@@ -621,10 +616,10 @@ dictionary DriveMetadataSearchResult {
 };
 
 dictionary DriveConnectionState {
-  DOMString type;
+  DriveConnectionStateType type;
 
   // Reasons of offline.
-  DOMString? reason;
+  DriveOfflineReason? reason;
 
   // Whether the device has a cellular network access or not. i.e. the |type|
   // can be 'metered' or not.
@@ -734,15 +729,9 @@ callback GetEntryPropertiesCallback =
 // |sourcePath| Source path of the mount.
 callback AddMountCallback = void(DOMString sourcePath);
 
-callback MarkCacheAsMountedCallback = void();
-
 // |volumeMetadataList| The list of VolumeMetadata representing mounted volumes.
 callback GetVolumeMetadataListCallback =
     void(VolumeMetadata[] volumeMetadataList);
-
-// |fileTransferCancelStatuses| The list of FileTransferCancelStatus.
-callback CancelFileTransfersCallback =
-    void(FileTransferCancelStatus[] fileTransferCancelStatuses);
 
 // |copyId| ID of the copy task. Can be used to identify the progress, and to
 // cancel the task.
@@ -766,9 +755,10 @@ callback SearchDriveMetadataCallback =
 
 callback SearchFilesCallback = void([instanceOf=Entry] object[] entries);
 
-// |urls| The map of hash and array of FileEntry's URL. The array can be empty
-// if the corresponding file is not found.
-callback SearchFilesByHashesCallback = void(object urls);
+// |paths| A map of hash to array of drive paths. The array can be empty
+// if the corresponding file is not found. However, the array will only
+// contain at most one path per hash.
+callback SearchFilesByHashesCallback = void(object paths);
 
 callback ZipSelectionCallback = void(optional boolean success);
 
@@ -776,9 +766,6 @@ callback GetDriveConnectionStateCallback = void(DriveConnectionState result);
 
 // |result| true if the length is in the valid range, false otherwise.
 callback ValidatePathNameLengthCallback = void(boolean result);
-
-// |accessToken| OAuth2 access token, or an empty string if failed to fetch.
-callback RequestAccessTokenCallback = void(DOMString accessToken);
 
 // |accessToken| OAuth2 access token, or an empty string if failed to fetch.
 callback RequestWebStoreAccessTokenCallback = void(DOMString accessToken);
@@ -951,20 +938,6 @@ interface Functions {
                            boolean pin,
                            SimpleCallback callback);
 
-  // If |entry| is a Drive file, ensures the file is downloaded to the cache.
-  // Otherwise, finishes immediately in success. For example, when the file is
-  // under Downloads, MTP, removeable media, or provided by extensions for
-  // other cloud storage services than Google Drive, this does nothing.
-  // This is a workaround to avoid intermittent and duplicated downloading of
-  // a Drive file by current implementation of Drive integration when an
-  // extension reads a file sequentially but intermittently.
-  // |entry| A regular file entry to be read.
-  // |callback| Callback called after having the file in cache.
-  //     $(ref:runtime.lastError) will be set if there was an error.
-  [nocompile]
-  static void ensureFileDownloaded([instanceof=Entry] object entry,
-                           SimpleCallback callback);
-
   // Resolves entries in the isolated file system and returns corresponding
   // entries in the external file system mounted to Chrome OS file manager
   // backend. If resolving entry fails, the entry will be just ignored and the
@@ -984,26 +957,9 @@ interface Functions {
   // |volumeId| An ID of the volume.
   static void removeMount(DOMString volumeId);
 
-  // Marks a cache file of Drive as mounted or unmounted.
-  // Does nothing if the file is not under Drive directory.
-  // |sourcePath| Mounted source file. Relative file path within external file
-  //     system.
-  // |isMounted| Mark as mounted if true. Mark as unmounted otherwise.
-  // |callback| Completion callback. $(ref:runtime.lastError) will be set if
-  //     there was an error.
-  static void markCacheAsMounted(DOMString sourcePath, boolean isMounted,
-      MarkCacheAsMountedCallback callback);
-
   // Get the list of mounted volumes.
   // |callback|
   static void getVolumeMetadataList(GetVolumeMetadataListCallback callback);
-
-  // Cancels ongoing file transfers for selected files.
-  // |entries| Array of files for which ongoing transfer should be canceled.
-  // |callback| Completion callback of the cancel.
-  [nocompile]
-  static void cancelFileTransfers([instanceof=Entry] object[] entries,
-                                  SimpleCallback callback);
 
   // Starts to copy an entry. If the source is a directory, the copy is done
   // recursively.
@@ -1061,7 +1017,6 @@ interface Functions {
                                   SearchDriveMetadataCallback callback);
 
   // Search files in the volume having |volumeId| by using |hashList|.
-  // sub-directories) the given |targetDirectoryUrl|.
   static void searchFilesByHashes(DOMString volumeId,
                                   DOMString[] hashList,
                                   SearchFilesByHashesCallback callback);
@@ -1101,13 +1056,6 @@ interface Functions {
   // |operation| Zooming mode.
   static void zoom(ZoomOperationType operation);
 
-  // Requests a Drive API OAuth2 access token.
-  // |refresh| Whether the token should be refetched instead of using the cached
-  //     one.
-  // |callback|
-  static void requestAccessToken(boolean refresh,
-                                 RequestAccessTokenCallback callback);
-
   // Requests a Webstore API OAuth2 access token.
   // |callback|
   static void requestWebStoreAccessToken(
@@ -1119,14 +1067,6 @@ interface Functions {
   [nocompile]
   static void getDownloadUrl([instanceof=Entry] object entry,
                              GetUrlCallback callback);
-
-  // Requests to share drive files.
-  // |entry| Entry to be shared.
-  // |shareType| Type of access that is getting granted.
-  [nocompile]
-  static void requestDriveShare([instanceof=Entry] object entry,
-                                DriveShareType shareType,
-                                SimpleCallback callback);
 
   // Obtains a list of profiles that are logged-in.
   static void getProfiles(GetProfilesCallback callback);
@@ -1145,17 +1085,6 @@ interface Functions {
   [nocompile]
   static void computeChecksum([instanceof=Entry] object entry,
                               ComputeChecksumCallback callback);
-
-  // Sets a tag on a file or a directory. Only Drive files are supported.
-  [nocompile]
-  static void setEntryTag([instanceof=Entry] object entry,
-                          EntryTagVisibility visibility,
-                          DOMString key,
-                          DOMString value,
-                          SimpleCallback callback);
-
-  // Returns if Piex loader is enabled.
-  static void isPiexLoaderEnabled(BooleanCallback callback);
 
   // Returns list of available providers.
   static void getProviders(GetProvidersCallback callback);

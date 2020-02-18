@@ -8,17 +8,13 @@
 #include <string>
 
 #include "json/value.h"
-#include "platform/api/logging.h"
 #include "platform/base/error.h"
+#include "util/logging.h"
 
 namespace openscreen {
-namespace {
-// A reasonable maximum stack depth, may need to adjust as needs change.
-constexpr int kMaxStackDepth = 64;
-}  // namespace
 
 JsonReader::JsonReader() {
-  builder_["stackLimit"] = kMaxStackDepth;
+  Json::CharReaderBuilder::strictMode(&builder_.settings_);
 }
 
 ErrorOr<Json::Value> JsonReader::Read(absl::string_view document) {

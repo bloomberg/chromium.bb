@@ -5,6 +5,7 @@
 #include "net/third_party/quiche/src/quic/core/http/quic_spdy_client_session.h"
 
 #include <string>
+#include <utility>
 
 #include "net/third_party/quiche/src/quic/core/crypto/crypto_protocol.h"
 #include "net/third_party/quiche/src/quic/core/http/quic_spdy_client_stream.h"
@@ -52,22 +53,25 @@ bool QuicSpdyClientSession::ShouldCreateOutgoingBidirectionalStream() {
     QUIC_DLOG(INFO) << "Encryption not active so no outgoing stream created.";
     return false;
   }
+  bool goaway_received = VersionUsesHttp3(transport_version())
+                             ? http3_goaway_received()
+                             : QuicSession::goaway_received();
   if (!GetQuicReloadableFlag(quic_use_common_stream_check) &&
-      !VersionHasIetfQuicFrames(connection()->transport_version())) {
+      !VersionHasIetfQuicFrames(transport_version())) {
     if (GetNumOpenOutgoingStreams() >=
         stream_id_manager().max_open_outgoing_streams()) {
       QUIC_DLOG(INFO) << "Failed to create a new outgoing stream. "
                       << "Already " << GetNumOpenOutgoingStreams() << " open.";
       return false;
     }
-    if (goaway_received() && respect_goaway_) {
+    if (goaway_received && respect_goaway_) {
       QUIC_DLOG(INFO) << "Failed to create a new outgoing stream. "
                       << "Already received goaway.";
       return false;
     }
     return true;
   }
-  if (goaway_received() && respect_goaway_) {
+  if (goaway_received && respect_goaway_) {
     QUIC_DLOG(INFO) << "Failed to create a new outgoing stream. "
                     << "Already received goaway.";
     return false;
@@ -100,7 +104,7 @@ QuicSpdyClientSession::CreateOutgoingUnidirectionalStream() {
 
 std::unique_ptr<QuicSpdyClientStream>
 QuicSpdyClientSession::CreateClientStream() {
-  return QuicMakeUnique<QuicSpdyClientStream>(
+  return std::make_unique<QuicSpdyClientStream>(
       GetNextOutgoingBidirectionalStreamId(), this, BIDIRECTIONAL);
 }
 
@@ -131,14 +135,16 @@ bool QuicSpdyClientSession::ShouldCreateIncomingStream(QuicStreamId id) {
     QUIC_BUG << "ShouldCreateIncomingStream called when disconnected";
     return false;
   }
-  if (goaway_received() && respect_goaway_) {
+  bool goaway_received = quic::VersionUsesHttp3(transport_version())
+                             ? http3_goaway_received()
+                             : QuicSession::goaway_received();
+  if (goaway_received && respect_goaway_) {
     QUIC_DLOG(INFO) << "Failed to create a new outgoing stream. "
                     << "Already received goaway.";
     return false;
   }
-  if (QuicUtils::IsClientInitiatedStreamId(connection()->transport_version(),
-                                           id) ||
-      (VersionHasIetfQuicFrames(connection()->transport_version()) &&
+  if (QuicUtils::IsClientInitiatedStreamId(transport_version(), id) ||
+      (VersionHasIetfQuicFrames(transport_version()) &&
        QuicUtils::IsBidirectionalStreamId(id))) {
     QUIC_LOG(WARNING) << "Received invalid push stream id " << id;
     connection()->CloseConnection(
@@ -170,7 +176,7 @@ QuicSpdyStream* QuicSpdyClientSession::CreateIncomingStream(QuicStreamId id) {
 
 std::unique_ptr<QuicCryptoClientStreamBase>
 QuicSpdyClientSession::CreateQuicCryptoStream() {
-  return QuicMakeUnique<QuicCryptoClientStream>(
+  return std::make_unique<QuicCryptoClientStream>(
       server_id_, this,
       crypto_config_->proof_verifier()->CreateDefaultContext(), crypto_config_,
       this);

@@ -15,9 +15,13 @@
 #include "base/scoped_observer.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "chrome/browser/search/background/ntp_background_service.h"
 #include "chrome/browser/search/background/ntp_background_service_observer.h"
+#include "chrome/browser/search/one_google_bar/one_google_bar_service.h"
 #include "chrome/browser/search/one_google_bar/one_google_bar_service_observer.h"
+#include "chrome/browser/search/promos/promo_service.h"
 #include "chrome/browser/search/promos/promo_service_observer.h"
+#include "chrome/browser/search/search_suggest/search_suggest_service.h"
 #include "chrome/browser/search/search_suggest/search_suggest_service_observer.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "content/public/browser/url_data_source.h"
@@ -28,10 +32,6 @@
 
 struct OneGoogleBarData;
 struct PromoData;
-class NtpBackgroundService;
-class OneGoogleBarService;
-class PromoService;
-class SearchSuggestService;
 class Profile;
 
 namespace search_provider_logos {
@@ -59,10 +59,10 @@ class LocalNtpSource : public content::URLDataSource,
   class DesktopLogoObserver;
 
   struct NtpBackgroundRequest {
-    NtpBackgroundRequest(
-        base::TimeTicks start_time,
-        const content::URLDataSource::GotDataCallback& callback);
-    NtpBackgroundRequest(const NtpBackgroundRequest&);
+    NtpBackgroundRequest(base::TimeTicks start_time,
+                         content::URLDataSource::GotDataCallback callback);
+    NtpBackgroundRequest(NtpBackgroundRequest&&);
+    NtpBackgroundRequest& operator=(NtpBackgroundRequest&&);
     ~NtpBackgroundRequest();
 
     base::TimeTicks start_time;
@@ -72,9 +72,9 @@ class LocalNtpSource : public content::URLDataSource,
   // Overridden from content::URLDataSource:
   std::string GetSource() override;
   void StartDataRequest(
-      const std::string& path,
+      const GURL& url,
       const content::WebContents::Getter& wc_getter,
-      const content::URLDataSource::GotDataCallback& callback) override;
+      content::URLDataSource::GotDataCallback callback) override;
   std::string GetMimeType(const std::string& path) override;
   bool AllowCaching() override;
   bool ShouldServiceRequest(const GURL& url,
@@ -110,7 +110,7 @@ class LocalNtpSource : public content::URLDataSource,
   // is returned immediately, otherwise it is returned when it becomes available
   // in ServeOneGoogleBar.
   void ServeOneGoogleBarWhenAvailable(
-      const content::URLDataSource::GotDataCallback& callback);
+      content::URLDataSource::GotDataCallback callback);
 
   // Called when the promo data is available and serves |data| to any pending
   // requests from the NTP.
@@ -119,12 +119,12 @@ class LocalNtpSource : public content::URLDataSource,
   // is returned immediately, otherwise it is returned when it becomes
   // available in ServePromo.
   void ServePromoWhenAvailable(
-      const content::URLDataSource::GotDataCallback& callback);
+      content::URLDataSource::GotDataCallback callback);
 
   // If suggestion data is available return it immediately, otherwise no search
   // suggestions will be shown on this NTP load.
   void ServeSearchSuggestionsIfAvailable(
-      const content::URLDataSource::GotDataCallback& callback);
+      content::URLDataSource::GotDataCallback callback);
 
   // Start requests for the promo and OGB.
   void InitiatePromoAndOGBRequests();
@@ -137,7 +137,7 @@ class LocalNtpSource : public content::URLDataSource,
   NtpBackgroundService* ntp_background_service_;
 
   ScopedObserver<NtpBackgroundService, NtpBackgroundServiceObserver>
-      ntp_background_service_observer_;
+      ntp_background_service_observer_{this};
 
   base::Optional<base::TimeTicks> pending_one_google_bar_request_;
   std::vector<content::URLDataSource::GotDataCallback>
@@ -146,21 +146,22 @@ class LocalNtpSource : public content::URLDataSource,
   OneGoogleBarService* one_google_bar_service_;
 
   ScopedObserver<OneGoogleBarService, OneGoogleBarServiceObserver>
-      one_google_bar_service_observer_;
+      one_google_bar_service_observer_{this};
 
   base::Optional<base::TimeTicks> pending_promo_request_;
   std::vector<content::URLDataSource::GotDataCallback> promo_callbacks_;
 
   PromoService* promo_service_;
 
-  ScopedObserver<PromoService, PromoServiceObserver> promo_service_observer_;
+  ScopedObserver<PromoService, PromoServiceObserver> promo_service_observer_{
+      this};
 
   base::Optional<base::TimeTicks> pending_search_suggest_request_;
 
   SearchSuggestService* search_suggest_service_;
 
   ScopedObserver<SearchSuggestService, SearchSuggestServiceObserver>
-      search_suggest_service_observer_;
+      search_suggest_service_observer_{this};
 
   search_provider_logos::LogoService* logo_service_;
   std::unique_ptr<DesktopLogoObserver> logo_observer_;

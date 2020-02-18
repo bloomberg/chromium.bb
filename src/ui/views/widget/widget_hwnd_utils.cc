@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "build/build_config.h"
 #include "ui/base/l10n/l10n_util_win.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/views/win/hwnd_message_handler.h"
@@ -49,7 +50,7 @@ void CalculateWindowStylesFromInitParams(
     *ex_style |= WS_EX_TOPMOST;
   if (params.mirror_origin_in_rtl)
     *ex_style |= l10n_util::GetExtendedTooltipStyles();
-  if (params.shadow_type == Widget::InitParams::SHADOW_TYPE_DROP)
+  if (params.shadow_type == Widget::InitParams::ShadowType::kDrop)
     *class_style |= CS_DROPSHADOW;
 
   // Set type-dependent style attributes.
@@ -108,6 +109,15 @@ void CalculateWindowStylesFromInitParams(
       break;
     case Widget::InitParams::TYPE_MENU:
       *style |= WS_POPUP;
+      if (::features::IsFormControlsRefreshEnabled() &&
+          params.remove_standard_frame) {
+        // If the platform doesn't support drop shadow, decorate the Window
+        // with just a border.
+        if (ui::win::IsAeroGlassEnabled())
+          *style |= WS_THICKFRAME;
+        else
+          *style |= WS_BORDER;
+      }
       break;
     case Widget::InitParams::TYPE_TOOLTIP:
       *style |= WS_POPUP;
@@ -156,7 +166,7 @@ void ConfigureWindowStyles(
   // This doesn't work when Aero is disabled, so disable it in that case.
   // Software composited windows can continue to use WS_EX_LAYERED.
   bool is_translucent =
-      (params.opacity == Widget::InitParams::TRANSLUCENT_WINDOW &&
+      (params.opacity == Widget::InitParams::WindowOpacity::kTranslucent &&
        (ui::win::IsAeroGlassEnabled() || params.force_software_compositing));
 
   CalculateWindowStylesFromInitParams(params, widget_delegate,

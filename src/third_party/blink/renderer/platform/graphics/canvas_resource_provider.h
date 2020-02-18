@@ -23,6 +23,12 @@ namespace gles2 {
 class GLES2Interface;
 
 }  // namespace gles2
+
+namespace raster {
+
+class RasterInterface;
+
+}  // namespace raster
 }  // namespace gpu
 
 namespace blink {
@@ -57,7 +63,7 @@ class PLATFORM_EXPORT CanvasResourceProvider
     kAcceleratedCompositedResourceUsage = 3,
     kAcceleratedDirect2DResourceUsage = 4,
     kAcceleratedDirect3DResourceUsage = 5,
-    kSoftwareCompositedDirect2DResourceUsage = 6,
+    kSoftwareCompositedDirect2DResourceUsage = 6,  // deprecated
     kMaxValue = kSoftwareCompositedDirect2DResourceUsage,
   };
 
@@ -110,16 +116,6 @@ class PLATFORM_EXPORT CanvasResourceProvider
       base::WeakPtr<CanvasResourceDispatcher>,
       bool is_origin_top_left = true);
 
-  static std::unique_ptr<CanvasResourceProvider> CreateForTesting(
-      const IntSize&,
-      ResourceProviderType,
-      base::WeakPtr<WebGraphicsContext3DProviderWrapper>,
-      unsigned msaa_sample_count,
-      const CanvasColorParams&,
-      uint8_t presentation_mode,
-      base::WeakPtr<CanvasResourceDispatcher>,
-      bool is_origin_top_left = true);
-
   // Use Snapshot() for capturing a frame that is intended to be displayed via
   // the compositor. Cases that are destined to be transferred via a
   // TransferableResource should call ProduceCanvasResource() instead.
@@ -154,7 +150,7 @@ class PLATFORM_EXPORT CanvasResourceProvider
   // queue, thus reducing latency, but with the possible side effects of tearing
   // (in cases where the resource is scanned out directly) and irregular frame
   // rate.
-  bool IsSingleBuffered() { return is_single_buffered_; }
+  bool IsSingleBuffered() const { return is_single_buffered_; }
 
   // Attempt to enable single buffering mode on this resource provider.  May
   // fail if the CanvasResourcePRovider subclass does not support this mode of
@@ -196,8 +192,13 @@ class PLATFORM_EXPORT CanvasResourceProvider
   // are modified externally from the provider's SkSurface.
   virtual void NotifyTexParamsModified(const CanvasResource* resource) {}
 
+  size_t cached_resources_count_for_testing() const {
+    return canvas_resources_.size();
+  }
+
  protected:
   gpu::gles2::GLES2Interface* ContextGL() const;
+  gpu::raster::RasterInterface* RasterInterface() const;
   GrContext* GetGrContext() const;
   base::WeakPtr<WebGraphicsContext3DProviderWrapper> ContextProviderWrapper() {
     return context_provider_wrapper_;
@@ -209,6 +210,7 @@ class PLATFORM_EXPORT CanvasResourceProvider
   }
   SkFilterQuality FilterQuality() const { return filter_quality_; }
   scoped_refptr<StaticBitmapImage> SnapshotInternal();
+  scoped_refptr<CanvasResource> GetImportedResource() const;
 
   CanvasResourceProvider(const ResourceProviderType&,
                          const IntSize&,

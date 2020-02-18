@@ -10,9 +10,11 @@
 #include <string>
 
 #include "base/compiler_specific.h"
+#include "base/feature_list.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "third_party/skia/include/core/SkTypeface.h"
 #include "ui/gfx/gfx_export.h"
 #include "ui/gfx/platform_font.h"
 
@@ -21,10 +23,18 @@ struct IDWriteFont;
 
 namespace gfx {
 
+// Deprecation of PlatformFontWin (See http://crbug.com/944227).
+extern GFX_EXPORT const base::Feature kPlatformFontSkiaOnWindows;
+
 class GFX_EXPORT PlatformFontWin : public PlatformFont {
  public:
   PlatformFontWin();
   PlatformFontWin(const std::string& font_name, int font_size);
+
+  // Wraps the provided SkTypeface without triggering a font rematch.
+  PlatformFontWin(sk_sp<SkTypeface> typeface,
+                  int font_size_pixels,
+                  const base::Optional<FontRenderParams>& params);
 
   // Dialog units to pixels conversion.
   // See http://support.microsoft.com/kb/145994 for details.
@@ -54,6 +64,8 @@ class GFX_EXPORT PlatformFontWin : public PlatformFont {
   std::string GetActualFontName() const override;
   int GetFontSize() const override;
   const FontRenderParams& GetFontRenderParams() override;
+  sk_sp<SkTypeface> GetNativeSkTypefaceIfAvailable() const override;
+
   NativeFont GetNativeFont() const;
 
   // Called once during initialization if we should be retrieving font metrics
@@ -188,6 +200,9 @@ class GFX_EXPORT PlatformFontWin : public PlatformFont {
 
   // Indirect reference to the HFontRef, which references the underlying HFONT.
   scoped_refptr<HFontRef> font_ref_;
+
+  // An optional typeface when the font is constructed from a typeface.
+  sk_sp<SkTypeface> typeface_;
 
   DISALLOW_COPY_AND_ASSIGN(PlatformFontWin);
 };

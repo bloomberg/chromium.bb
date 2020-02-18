@@ -11,10 +11,11 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.VisibleForTesting;
 
 import java.util.List;
 
@@ -26,7 +27,7 @@ import java.util.List;
  * [1] https://developer.android.com/reference/android/location/package-summary.html
  */
 public class LocationProviderAndroid implements LocationListener, LocationProvider {
-    private static final String TAG = "cr_LocationProvider";
+    private static final String TAG = "LocationProvider";
 
     private LocationManager mLocationManager;
     private boolean mIsRunning;

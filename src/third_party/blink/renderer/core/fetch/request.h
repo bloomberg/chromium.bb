@@ -5,8 +5,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FETCH_REQUEST_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_FETCH_REQUEST_H_
 
-#include "services/network/public/mojom/fetch_api.mojom-blink.h"
-#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
+#include "services/network/public/mojom/fetch_api.mojom-blink-forward.h"
+#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/bindings/core/v8/dictionary.h"
 #include "third_party/blink/renderer/bindings/core/v8/request_or_usv_string.h"
@@ -93,6 +93,7 @@ class CORE_EXPORT Request final : public Body {
   const BodyStreamBuffer* BodyBuffer() const override {
     return request_->Buffer();
   }
+  mojom::RequestContextType GetRequestContextType() const;
 
   void Trace(blink::Visitor*) override;
 

@@ -5,29 +5,29 @@
 #include "net/third_party/quiche/src/quic/core/crypto/transport_parameters.h"
 
 #include <cstring>
+#include <utility>
 
 #include "third_party/boringssl/src/include/openssl/mem.h"
 #include "net/third_party/quiche/src/quic/core/quic_versions.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_arraysize.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_ip_address.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_ptr_util.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_test.h"
 #include "net/third_party/quiche/src/quic/test_tools/quic_test_utils.h"
 
 namespace quic {
 namespace test {
 namespace {
+
+using testing::Pair;
+using testing::UnorderedElementsAre;
+
 const ParsedQuicVersion kVersion(PROTOCOL_TLS1_3, QUIC_VERSION_99);
 const QuicVersionLabel kFakeVersionLabel = 0x01234567;
 const QuicVersionLabel kFakeVersionLabel2 = 0x89ABCDEF;
-const QuicConnectionId kFakeOriginalConnectionId = TestConnectionId(0x1337);
 const uint64_t kFakeIdleTimeoutMilliseconds = 12012;
 const uint8_t kFakeStatelessResetTokenData[16] = {
     0x90, 0x91, 0x92, 0x93, 0x94, 0x95, 0x96, 0x97,
     0x98, 0x99, 0x9A, 0x9B, 0x9C, 0x9D, 0x9E, 0x9F};
-const std::vector<uint8_t> kFakeStatelessResetToken(
-    kFakeStatelessResetTokenData,
-    kFakeStatelessResetTokenData + sizeof(kFakeStatelessResetTokenData));
 const uint64_t kFakeMaxPacketSize = 9001;
 const uint64_t kFakeInitialMaxData = 101;
 const uint64_t kFakeInitialMaxStreamDataBidiLocal = 2001;
@@ -39,14 +39,37 @@ const uint64_t kFakeAckDelayExponent = 10;
 const uint64_t kFakeMaxAckDelay = 51;
 const bool kFakeDisableMigration = true;
 const uint64_t kFakeActiveConnectionIdLimit = 52;
-const QuicConnectionId kFakePreferredConnectionId = TestConnectionId(0xBEEF);
 const uint8_t kFakePreferredStatelessResetTokenData[16] = {
     0x80, 0x81, 0x82, 0x83, 0x84, 0x85, 0x86, 0x87,
     0x88, 0x89, 0x8A, 0x8B, 0x8C, 0x8D, 0x8E, 0x8F};
-const std::vector<uint8_t> kFakePreferredStatelessResetToken(
-    kFakePreferredStatelessResetTokenData,
-    kFakePreferredStatelessResetTokenData +
-        sizeof(kFakeStatelessResetTokenData));
+
+const auto kCustomParameter1 =
+    static_cast<TransportParameters::TransportParameterId>(0xffcd);
+const char* kCustomParameter1Value = "foo";
+const auto kCustomParameter2 =
+    static_cast<TransportParameters::TransportParameterId>(0xff34);
+const char* kCustomParameter2Value = "bar";
+
+QuicConnectionId CreateFakeOriginalConnectionId() {
+  return TestConnectionId(0x1337);
+}
+
+QuicConnectionId CreateFakePreferredConnectionId() {
+  return TestConnectionId(0xBEEF);
+}
+
+std::vector<uint8_t> CreateFakeStatelessResetToken() {
+  return std::vector<uint8_t>(
+      kFakeStatelessResetTokenData,
+      kFakeStatelessResetTokenData + sizeof(kFakeStatelessResetTokenData));
+}
+
+std::vector<uint8_t> CreateFakePreferredStatelessResetToken() {
+  return std::vector<uint8_t>(
+      kFakePreferredStatelessResetTokenData,
+      kFakePreferredStatelessResetTokenData +
+          sizeof(kFakePreferredStatelessResetTokenData));
+}
 
 QuicSocketAddress CreateFakeV4SocketAddress() {
   QuicIpAddress ipv4_address;
@@ -71,9 +94,10 @@ CreateFakePreferredAddress() {
   TransportParameters::PreferredAddress preferred_address;
   preferred_address.ipv4_socket_address = CreateFakeV4SocketAddress();
   preferred_address.ipv6_socket_address = CreateFakeV6SocketAddress();
-  preferred_address.connection_id = kFakePreferredConnectionId;
-  preferred_address.stateless_reset_token = kFakePreferredStatelessResetToken;
-  return QuicMakeUnique<TransportParameters::PreferredAddress>(
+  preferred_address.connection_id = CreateFakePreferredConnectionId();
+  preferred_address.stateless_reset_token =
+      CreateFakePreferredStatelessResetToken();
+  return std::make_unique<TransportParameters::PreferredAddress>(
       preferred_address);
 }
 
@@ -101,6 +125,8 @@ TEST_F(TransportParametersTest, RoundTripClient) {
   orig_params.disable_migration = kFakeDisableMigration;
   orig_params.active_connection_id_limit.set_value(
       kFakeActiveConnectionIdLimit);
+  orig_params.custom_parameters[kCustomParameter1] = kCustomParameter1Value;
+  orig_params.custom_parameters[kCustomParameter2] = kCustomParameter2Value;
 
   std::vector<uint8_t> serialized;
   ASSERT_TRUE(SerializeTransportParameters(kVersion, orig_params, &serialized));
@@ -134,6 +160,10 @@ TEST_F(TransportParametersTest, RoundTripClient) {
   EXPECT_EQ(kFakeDisableMigration, new_params.disable_migration);
   EXPECT_EQ(kFakeActiveConnectionIdLimit,
             new_params.active_connection_id_limit.value());
+  EXPECT_THAT(
+      new_params.custom_parameters,
+      UnorderedElementsAre(Pair(kCustomParameter1, kCustomParameter1Value),
+                           Pair(kCustomParameter2, kCustomParameter2Value)));
 }
 
 TEST_F(TransportParametersTest, RoundTripServer) {
@@ -142,9 +172,9 @@ TEST_F(TransportParametersTest, RoundTripServer) {
   orig_params.version = kFakeVersionLabel;
   orig_params.supported_versions.push_back(kFakeVersionLabel);
   orig_params.supported_versions.push_back(kFakeVersionLabel2);
-  orig_params.original_connection_id = kFakeOriginalConnectionId;
+  orig_params.original_connection_id = CreateFakeOriginalConnectionId();
   orig_params.idle_timeout_milliseconds.set_value(kFakeIdleTimeoutMilliseconds);
-  orig_params.stateless_reset_token = kFakeStatelessResetToken;
+  orig_params.stateless_reset_token = CreateFakeStatelessResetToken();
   orig_params.max_packet_size.set_value(kFakeMaxPacketSize);
   orig_params.initial_max_data.set_value(kFakeInitialMaxData);
   orig_params.initial_max_stream_data_bidi_local.set_value(
@@ -175,10 +205,11 @@ TEST_F(TransportParametersTest, RoundTripServer) {
   EXPECT_EQ(2u, new_params.supported_versions.size());
   EXPECT_EQ(kFakeVersionLabel, new_params.supported_versions[0]);
   EXPECT_EQ(kFakeVersionLabel2, new_params.supported_versions[1]);
-  EXPECT_EQ(kFakeOriginalConnectionId, new_params.original_connection_id);
+  EXPECT_EQ(CreateFakeOriginalConnectionId(),
+            new_params.original_connection_id);
   EXPECT_EQ(kFakeIdleTimeoutMilliseconds,
             new_params.idle_timeout_milliseconds.value());
-  EXPECT_EQ(kFakeStatelessResetToken, new_params.stateless_reset_token);
+  EXPECT_EQ(CreateFakeStatelessResetToken(), new_params.stateless_reset_token);
   EXPECT_EQ(kFakeMaxPacketSize, new_params.max_packet_size.value());
   EXPECT_EQ(kFakeInitialMaxData, new_params.initial_max_data.value());
   EXPECT_EQ(kFakeInitialMaxStreamDataBidiLocal,
@@ -199,12 +230,13 @@ TEST_F(TransportParametersTest, RoundTripServer) {
             new_params.preferred_address->ipv4_socket_address);
   EXPECT_EQ(CreateFakeV6SocketAddress(),
             new_params.preferred_address->ipv6_socket_address);
-  EXPECT_EQ(kFakePreferredConnectionId,
+  EXPECT_EQ(CreateFakePreferredConnectionId(),
             new_params.preferred_address->connection_id);
-  EXPECT_EQ(kFakePreferredStatelessResetToken,
+  EXPECT_EQ(CreateFakePreferredStatelessResetToken(),
             new_params.preferred_address->stateless_reset_token);
   EXPECT_EQ(kFakeActiveConnectionIdLimit,
             new_params.active_connection_id_limit.value());
+  EXPECT_EQ(0u, new_params.custom_parameters.size());
 }
 
 TEST_F(TransportParametersTest, IsValid) {
@@ -255,7 +287,7 @@ TEST_F(TransportParametersTest, NoClientParamsWithStatelessResetToken) {
   orig_params.perspective = Perspective::IS_CLIENT;
   orig_params.version = kFakeVersionLabel;
   orig_params.idle_timeout_milliseconds.set_value(kFakeIdleTimeoutMilliseconds);
-  orig_params.stateless_reset_token = kFakeStatelessResetToken;
+  orig_params.stateless_reset_token = CreateFakeStatelessResetToken();
   orig_params.max_packet_size.set_value(kFakeMaxPacketSize);
 
   std::vector<uint8_t> out;
@@ -526,10 +558,11 @@ TEST_F(TransportParametersTest, ParseServerParams) {
   EXPECT_EQ(2u, new_params.supported_versions.size());
   EXPECT_EQ(kFakeVersionLabel, new_params.supported_versions[0]);
   EXPECT_EQ(kFakeVersionLabel2, new_params.supported_versions[1]);
-  EXPECT_EQ(kFakeOriginalConnectionId, new_params.original_connection_id);
+  EXPECT_EQ(CreateFakeOriginalConnectionId(),
+            new_params.original_connection_id);
   EXPECT_EQ(kFakeIdleTimeoutMilliseconds,
             new_params.idle_timeout_milliseconds.value());
-  EXPECT_EQ(kFakeStatelessResetToken, new_params.stateless_reset_token);
+  EXPECT_EQ(CreateFakeStatelessResetToken(), new_params.stateless_reset_token);
   EXPECT_EQ(kFakeMaxPacketSize, new_params.max_packet_size.value());
   EXPECT_EQ(kFakeInitialMaxData, new_params.initial_max_data.value());
   EXPECT_EQ(kFakeInitialMaxStreamDataBidiLocal,
@@ -550,9 +583,9 @@ TEST_F(TransportParametersTest, ParseServerParams) {
             new_params.preferred_address->ipv4_socket_address);
   EXPECT_EQ(CreateFakeV6SocketAddress(),
             new_params.preferred_address->ipv6_socket_address);
-  EXPECT_EQ(kFakePreferredConnectionId,
+  EXPECT_EQ(CreateFakePreferredConnectionId(),
             new_params.preferred_address->connection_id);
-  EXPECT_EQ(kFakePreferredStatelessResetToken,
+  EXPECT_EQ(CreateFakePreferredStatelessResetToken(),
             new_params.preferred_address->stateless_reset_token);
   EXPECT_EQ(kFakeActiveConnectionIdLimit,
             new_params.active_connection_id_limit.value());
@@ -594,7 +627,7 @@ TEST_F(TransportParametersTest, CryptoHandshakeMessageRoundtrip) {
   orig_params.version = kFakeVersionLabel;
   orig_params.max_packet_size.set_value(kFakeMaxPacketSize);
 
-  orig_params.google_quic_params = QuicMakeUnique<CryptoHandshakeMessage>();
+  orig_params.google_quic_params = std::make_unique<CryptoHandshakeMessage>();
   const std::string kTestString = "test string";
   orig_params.google_quic_params->SetStringPiece(42, kTestString);
   const uint32_t kTestValue = 12;

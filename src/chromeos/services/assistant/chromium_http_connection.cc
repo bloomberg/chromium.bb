@@ -12,14 +12,16 @@
 
 #include "base/logging.h"
 #include "base/task/post_task.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/load_flags.h"
 #include "services/network/public/cpp/header_util.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 
 using assistant_client::HttpConnection;
+using network::PendingSharedURLLoaderFactory;
 using network::SharedURLLoaderFactory;
-using network::SharedURLLoaderFactoryInfo;
 
 // A macro which ensures we are running in |task_runner_|'s sequence.
 #define ENSURE_IN_SEQUENCE(method, ...)                                  \
@@ -39,26 +41,14 @@ constexpr int kResponseCodeInvalid = -1;
 
 }  // namespace
 
-ChromiumHttpConnectionFactory::ChromiumHttpConnectionFactory(
-    std::unique_ptr<SharedURLLoaderFactoryInfo> url_loader_factory_info)
-    : url_loader_factory_(
-          SharedURLLoaderFactory::Create(std::move(url_loader_factory_info))) {}
-
-ChromiumHttpConnectionFactory::~ChromiumHttpConnectionFactory() = default;
-
-HttpConnection* ChromiumHttpConnectionFactory::Create(
-    HttpConnection::Delegate* delegate) {
-  return new ChromiumHttpConnection(url_loader_factory_->Clone(), delegate);
-}
-
 ChromiumHttpConnection::ChromiumHttpConnection(
-    std::unique_ptr<SharedURLLoaderFactoryInfo> url_loader_factory_info,
+    std::unique_ptr<PendingSharedURLLoaderFactory> pending_url_loader_factory,
     Delegate* delegate)
     : delegate_(delegate),
       task_runner_(base::CreateSequencedTaskRunner({base::ThreadPool()})),
-      url_loader_factory_info_(std::move(url_loader_factory_info)) {
+      pending_url_loader_factory_(std::move(pending_url_loader_factory)) {
   DCHECK(delegate_);
-  DCHECK(url_loader_factory_info_);
+  DCHECK(pending_url_loader_factory_);
 
   // Add a reference, so |this| cannot go away until Close() is called.
   AddRef();
@@ -120,6 +110,7 @@ void ChromiumHttpConnection::SetChunkedUploadContentType(
   upload_content_ = "";
   upload_content_type_ = "";
   chunked_upload_content_type_ = content_type;
+  AddHeader(::net::HttpRequestHeaders::kContentType, content_type);
 }
 
 void ChromiumHttpConnection::EnableHeaderResponse() {
@@ -167,10 +158,11 @@ void ChromiumHttpConnection::Start() {
       !chunked_upload_content_type_.empty() && method_ == Method::POST;
   if (chunked_upload) {
     // Attach a chunked upload body.
-    network::mojom::ChunkedDataPipeGetterPtr data_pipe;
-    binding_set_.AddBinding(this, mojo::MakeRequest(&data_pipe));
+    mojo::PendingRemote<network::mojom::ChunkedDataPipeGetter> data_remote;
+    receiver_set_.Add(this, data_remote.InitWithNewPipeAndPassReceiver());
     resource_request->request_body = new network::ResourceRequestBody();
-    resource_request->request_body->SetToChunkedDataPipe(std::move(data_pipe));
+    resource_request->request_body->SetToChunkedDataPipe(
+        std::move(data_remote));
   }
 
   url_loader_ = network::SimpleURLLoader::Create(std::move(resource_request),
@@ -181,7 +173,7 @@ void ChromiumHttpConnection::Start() {
     url_loader_->AttachStringForUpload(upload_content_, upload_content_type_);
 
   auto factory =
-      SharedURLLoaderFactory::Create(std::move(url_loader_factory_info_));
+      SharedURLLoaderFactory::Create(std::move(pending_url_loader_factory_));
   if (handle_partial_response_) {
     url_loader_->SetOnResponseStartedCallback(
         base::BindOnce(&ChromiumHttpConnection::OnResponseStarted, this));
@@ -393,12 +385,24 @@ void ChromiumHttpConnection::OnURLLoadComplete(
 
 void ChromiumHttpConnection::OnResponseStarted(
     const GURL& final_url,
-    const network::ResourceResponseHead& response_header) {
+    const network::mojom::URLResponseHead& response_header) {
   if (enable_header_response_ && response_header.headers) {
     // Only propagate |OnHeaderResponse()| once before any |OnPartialResponse()|
     // invoked to honor the API contract.
     delegate_->OnHeaderResponse(response_header.headers->raw_headers());
   }
+}
+
+ChromiumHttpConnectionFactory::ChromiumHttpConnectionFactory(
+    std::unique_ptr<PendingSharedURLLoaderFactory> pending_url_loader_factory)
+    : url_loader_factory_(SharedURLLoaderFactory::Create(
+          std::move(pending_url_loader_factory))) {}
+
+ChromiumHttpConnectionFactory::~ChromiumHttpConnectionFactory() = default;
+
+HttpConnection* ChromiumHttpConnectionFactory::Create(
+    HttpConnection::Delegate* delegate) {
+  return new ChromiumHttpConnection(url_loader_factory_->Clone(), delegate);
 }
 
 }  // namespace assistant

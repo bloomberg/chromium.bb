@@ -8,6 +8,33 @@
 
 namespace blink {
 
+TEST(TextResourceDecoderTest, UTF8Decode) {
+  std::unique_ptr<TextResourceDecoder> decoder =
+      std::make_unique<TextResourceDecoder>(
+          TextResourceDecoderOptions::CreateUTF8Decode());
+  const unsigned char kFooUTF8WithBOM[] = {0xef, 0xbb, 0xbf, 0x66, 0x6f, 0x6f};
+  WTF::String decoded = decoder->Decode(
+      reinterpret_cast<const char*>(kFooUTF8WithBOM), sizeof(kFooUTF8WithBOM));
+  decoded = decoded + decoder->Flush();
+  EXPECT_EQ(WTF::UTF8Encoding(), decoder->Encoding());
+  EXPECT_EQ("foo", decoded);
+}
+
+TEST(TextResourceDecoderTest, UTF8DecodeWithoutBOM) {
+  std::unique_ptr<TextResourceDecoder> decoder =
+      std::make_unique<TextResourceDecoder>(
+          TextResourceDecoderOptions::CreateUTF8DecodeWithoutBOM());
+  const unsigned char kFooUTF8WithBOM[] = {0xef, 0xbb, 0xbf, 0x66, 0x6f, 0x6f};
+  WTF::String decoded = decoder->Decode(
+      reinterpret_cast<const char*>(kFooUTF8WithBOM), sizeof(kFooUTF8WithBOM));
+  decoded = decoded + decoder->Flush();
+  EXPECT_EQ(WTF::UTF8Encoding(), decoder->Encoding());
+  EXPECT_EQ(
+      "\xef\xbb\xbf"
+      "foo",
+      decoded.Utf8());
+}
+
 TEST(TextResourceDecoderTest, BasicUTF16) {
   std::unique_ptr<TextResourceDecoder> decoder =
       std::make_unique<TextResourceDecoder>(TextResourceDecoderOptions(

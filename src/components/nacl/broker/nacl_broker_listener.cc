@@ -44,27 +44,12 @@ NaClBrokerListener::NaClBrokerListener() = default;
 NaClBrokerListener::~NaClBrokerListener() = default;
 
 void NaClBrokerListener::Listen() {
-  mojo::ScopedMessagePipeHandle channel_handle;
-  auto service =
-      CreateNaClService(base::ThreadTaskRunnerHandle::Get(), &channel_handle);
-  channel_ = IPC::Channel::CreateClient(channel_handle.release(), this,
-                                        base::ThreadTaskRunnerHandle::Get());
+  NaClService service(base::ThreadTaskRunnerHandle::Get());
+  channel_ =
+      IPC::Channel::CreateClient(service.TakeChannelPipe().release(), this,
+                                 base::ThreadTaskRunnerHandle::Get());
   CHECK(channel_->Connect());
   run_loop_.Run();
-}
-
-// NOTE: changes to this method need to be reviewed by the security team.
-bool NaClBrokerListener::PreSpawnTarget(sandbox::TargetPolicy* policy) {
-  // This code is duplicated in chrome_content_browser_client.cc.
-
-  // Allow the server side of a pipe restricted to the "chrome.nacl."
-  // namespace so that it cannot impersonate other system or other chrome
-  // service pipes.
-  sandbox::ResultCode result = policy->AddRule(
-      sandbox::TargetPolicy::SUBSYS_NAMED_PIPES,
-      sandbox::TargetPolicy::NAMEDPIPES_ALLOW_ANY,
-      L"\\\\.\\pipe\\chrome.nacl.*");
-  return result == sandbox::SBOX_ALL_OK;
 }
 
 service_manager::SandboxType NaClBrokerListener::GetSandboxType() {
@@ -96,7 +81,7 @@ void NaClBrokerListener::OnChannelError() {
 
 void NaClBrokerListener::OnLaunchLoaderThroughBroker(
     int launch_id,
-    mojo::MessagePipeHandle service_request_pipe) {
+    mojo::MessagePipeHandle ipc_channel_handle) {
   base::ProcessHandle loader_handle_in_browser = 0;
 
   // Create the path to the nacl broker/loader executable - it's the executable
@@ -115,13 +100,10 @@ void NaClBrokerListener::OnLaunchLoaderThroughBroker(
     base::HandlesToInheritVector handles;
     channel.PrepareToPassRemoteEndpoint(&handles, cmd_line);
 
-    std::string token = base::NumberToString(base::RandUint64());
-    cmd_line->AppendSwitchASCII(
-        service_manager::switches::kServiceRequestChannelToken, token);
     mojo::OutgoingInvitation invitation;
     MojoResult fuse_result = mojo::FuseMessagePipes(
-        mojo::ScopedMessagePipeHandle(service_request_pipe),
-        invitation.AttachMessagePipe(token));
+        mojo::ScopedMessagePipeHandle(ipc_channel_handle),
+        invitation.AttachMessagePipe(0));
     DCHECK_EQ(MOJO_RESULT_OK, fuse_result);
 
     base::Process loader_process;

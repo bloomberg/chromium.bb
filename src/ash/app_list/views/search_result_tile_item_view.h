@@ -14,18 +14,15 @@
 #include "base/macros.h"
 #include "ui/views/context_menu_controller.h"
 
-namespace ash {
-class PaginationModel;
-}
-
 namespace views {
 class ImageView;
 class Label;
 }  // namespace views
 
-namespace app_list {
+namespace ash {
 
 class AppListViewDelegate;
+class PaginationModel;
 class SearchResult;
 
 // A tile view that displays a search result. It hosts view for search result
@@ -77,7 +74,9 @@ class APP_LIST_EXPORT SearchResultTileItemView
 
  private:
   // Launch the result and log to various histograms.
-  void ActivateResult(int event_flags);
+  // |by_button_press|: True if |result_| is activated by button pressing;
+  //                    otherwise |result| is activated by ENTER key pressing.
+  void ActivateResult(int event_flags, bool by_button_press);
 
   // Bound by ShowContextMenuForViewImpl().
   void OnGetContextMenuModel(views::View* source,
@@ -141,6 +140,6 @@ class APP_LIST_EXPORT SearchResultTileItemView
   DISALLOW_COPY_AND_ASSIGN(SearchResultTileItemView);
 };
 
-}  // namespace app_list
+}  // namespace ash
 
 #endif  // ASH_APP_LIST_VIEWS_SEARCH_RESULT_TILE_ITEM_VIEW_H_

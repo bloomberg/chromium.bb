@@ -34,10 +34,16 @@ namespace content {
 // the bug is understood and fixed.
 #define MAYBE_ManipulatePan DISABLED_ManipulatePan
 #define MAYBE_ManipulateZoom DISABLED_ManipulateZoom
-#define MAYBE_ManipulateExposureTime DISABLED_ManipulateExposureTime
 #else
 #define MAYBE_ManipulatePan ManipulatePan
 #define MAYBE_ManipulateZoom ManipulateZoom
+#endif
+
+// TODO(crbug.com/793859, crbug.com/986602): This test is broken on Android
+// (see above) and flaky on Linux.
+#if defined(OS_ANDROID) || defined(OS_LINUX)
+#define MAYBE_ManipulateExposureTime DISABLED_ManipulateExposureTime
+#else
 #define MAYBE_ManipulateExposureTime ManipulateExposureTime
 #endif
 
@@ -95,7 +101,7 @@ class WebRtcImageCaptureBrowserTestBase
         switches::kUseFakeDeviceForMediaStream));
 
     // Enable Pan/Tilt for testing.
-    command_line->AppendSwitchASCII("--enable-blink-features",
+    command_line->AppendSwitchASCII(switches::kEnableBlinkFeatures,
                                     "MediaCapturePanTilt");
   }
 
@@ -213,8 +219,14 @@ IN_PROC_BROWSER_TEST_P(WebRtcImageCaptureSucceedsBrowserTest, GrabFrame) {
   ASSERT_TRUE(RunImageCaptureTestCase("testCreateAndGrabFrameSucceeds()"));
 }
 
+// Flaky. crbug.com/998116
+#if defined(OS_LINUX)
+#define MAYBE_GetTrackCapabilities DISABLED_GetTrackCapabilities
+#else
+#define MAYBE_GetTrackCapabilities GetTrackCapabilities
+#endif
 IN_PROC_BROWSER_TEST_P(WebRtcImageCaptureSucceedsBrowserTest,
-                       GetTrackCapabilities) {
+                       MAYBE_GetTrackCapabilities) {
   embedded_test_server()->StartAcceptingConnections();
   ASSERT_TRUE(RunImageCaptureTestCase("testCreateAndGetTrackCapabilities()"));
 }
@@ -264,8 +276,8 @@ IN_PROC_BROWSER_TEST_P(WebRtcImageCaptureSucceedsBrowserTest,
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    ,  // Use no prefix, so that these get picked up when using
-       // --gtest_filter=WebRtc*
+    All,  // Use no prefix, so that these get picked up when using
+          // --gtest_filter=WebRtc*
     WebRtcImageCaptureSucceedsBrowserTest,
     testing::Combine(
         testing::Values(TargetCamera::FAKE_DEVICE),
@@ -360,7 +372,7 @@ IN_PROC_BROWSER_TEST_P(WebRtcImageCaptureGetPhotoStateFailsBrowserTest,
   ASSERT_TRUE(RunImageCaptureTestCase("testCreateAndGrabFrameSucceeds()"));
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          WebRtcImageCaptureGetPhotoStateFailsBrowserTest,
                          testing::ValuesIn(kTargetVideoCaptureStacks));
 
@@ -387,7 +399,7 @@ IN_PROC_BROWSER_TEST_P(WebRtcImageCaptureSetPhotoOptionsFailsBrowserTest,
   ASSERT_TRUE(RunImageCaptureTestCase("testCreateAndGrabFrameSucceeds()"));
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          WebRtcImageCaptureSetPhotoOptionsFailsBrowserTest,
                          testing::ValuesIn(kTargetVideoCaptureStacks));
 
@@ -411,7 +423,7 @@ IN_PROC_BROWSER_TEST_P(WebRtcImageCaptureTakePhotoFailsBrowserTest, GrabFrame) {
   ASSERT_TRUE(RunImageCaptureTestCase("testCreateAndGrabFrameSucceeds()"));
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          WebRtcImageCaptureTakePhotoFailsBrowserTest,
                          testing::ValuesIn(kTargetVideoCaptureStacks));
 

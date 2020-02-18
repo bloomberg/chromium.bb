@@ -41,27 +41,6 @@ const newTreeElement = (() => {
   const _uiNodeData = new WeakMap();
 
   /**
-   * Applies highlights to the tree element based on certain flags and state.
-   * @param {HTMLSpanElement} symbolNameElement Element that displays the
-   * short name of the tree item.
-   * @param {TreeNode} node Data about this symbol name element's tree node.
-   */
-  function _highlightSymbolName(symbolNameElement, node) {
-    const dexMethodStats = node.childStats[_DEX_METHOD_SYMBOL_TYPE];
-    if (dexMethodStats && dexMethodStats.count < 0) {
-      // This symbol was removed between the before and after versions.
-      symbolNameElement.classList.add('removed');
-    }
-
-    if (state.has('highlight')) {
-      const stats = Object.values(node.childStats);
-      if (stats.some(stat => stat.highlight > 0)) {
-        symbolNameElement.classList.add('highlight');
-      }
-    }
-  }
-
-  /**
    * Replace the contents of the size element for a tree node.
    * @param {HTMLElement} sizeElement Element that should display the size
    * @param {TreeNode} node Data about this size element's tree node.
@@ -344,6 +323,13 @@ const newTreeElement = (() => {
       const symbolStyle = getIconStyle(data.type[1]);
       icon.setAttribute('fill', symbolStyle.color);
     }
+
+    // Insert an SVG icon at the start of the link to represent adds/removals.
+    const diffStatusIcon = getDiffStatusTemplate(data);
+    if (diffStatusIcon) {
+      link.insertBefore(diffStatusIcon, link.firstElementChild);
+    }
+
     // Insert an SVG icon at the start of the link to represent type
     link.insertBefore(icon, link.firstElementChild);
 
@@ -355,7 +341,6 @@ const newTreeElement = (() => {
       _ZERO_WIDTH_SPACE
     );
     symbolName.title = data.idPath;
-    _highlightSymbolName(symbolName, data);
 
     // Set the byte size and hover text
     _setSize(element.querySelector('.size'), data);
@@ -466,6 +451,7 @@ const newTreeElement = (() => {
     const input = /** @type {HTMLInputElement} */ (event.currentTarget);
     const file = input.files.item(0);
     const fileUrl = URL.createObjectURL(file);
+    startWorkerForFileName(file.name)
 
     _dataUrlInput.value = '';
     _dataUrlInput.dispatchEvent(new Event('change'));

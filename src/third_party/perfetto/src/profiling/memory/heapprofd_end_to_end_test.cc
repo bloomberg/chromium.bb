@@ -738,8 +738,8 @@ TEST_P(HeapprofdEndToEnd, DiscoverByNameDenormalizedCmdline) {
 }
 
 TEST_P(HeapprofdEndToEnd, ReInit) {
-  constexpr uint64_t kFirstIterationBytes = 5;
-  constexpr uint64_t kSecondIterationBytes = 7;
+  constexpr size_t kFirstIterationBytes = 5;
+  constexpr size_t kSecondIterationBytes = 7;
 
   base::Pipe signal_pipe = base::Pipe::Create(base::Pipe::kBothNonBlock);
   base::Pipe ack_pipe = base::Pipe::Create(base::Pipe::kBothBlock);
@@ -750,7 +750,7 @@ TEST_P(HeapprofdEndToEnd, ReInit) {
     case -1:
       PERFETTO_FATAL("Failed to fork.");
     case 0: {
-      uint64_t bytes = kFirstIterationBytes;
+      size_t bytes = kFirstIterationBytes;
       signal_pipe.wr.reset();
       ack_pipe.rd.reset();
       for (;;) {
@@ -819,7 +819,7 @@ TEST_P(HeapprofdEndToEnd, ReInit) {
   PERFETTO_CHECK(PERFETTO_EINTR(waitpid(pid, nullptr, 0)) == pid);
 }
 
-TEST_P(HeapprofdEndToEnd, DISABLED_ConcurrentSession) {
+TEST_P(HeapprofdEndToEnd, ConcurrentSession) {
   constexpr size_t kAllocSize = 1024;
 
   pid_t pid = ForkContinuousMalloc(kAllocSize);
@@ -961,10 +961,8 @@ TEST_P(HeapprofdEndToEnd, NativeProfilingActiveAtProcessExit) {
 
 // This test only works when run on Android using an Android Q version of
 // Bionic.
-// TODO(b/118428762): look into unwinding issues on x86.
-#if !PERFETTO_BUILDFLAG(PERFETTO_OS_ANDROID) ||                        \
-    PERFETTO_BUILDFLAG(PERFETTO_START_DAEMONS) || defined(__i386__) || \
-    defined(__x86_64__)
+#if !PERFETTO_BUILDFLAG(PERFETTO_OS_ANDROID) || \
+    PERFETTO_BUILDFLAG(PERFETTO_START_DAEMONS)
 INSTANTIATE_TEST_CASE_P(DISABLED_Run, HeapprofdEndToEnd, Bool(), TestSuffix);
 #else
 INSTANTIATE_TEST_CASE_P(Run, HeapprofdEndToEnd, Bool(), TestSuffix);

@@ -8,8 +8,6 @@ source_set("cells") {
     "table_view_activity_indicator_header_footer_item.mm",
     "table_view_cell.h",
     "table_view_cell.mm",
-    "table_view_cells_constants.h",
-    "table_view_cells_constants.mm",
     "table_view_detail_icon_item.h",
     "table_view_detail_icon_item.mm",
     "table_view_detail_text_item.h",
@@ -30,6 +28,7 @@ source_set("cells") {
     "table_view_text_button_item.mm",
     "table_view_text_edit_item.h",
     "table_view_text_edit_item.mm",
+    "table_view_text_edit_item_delegate.h",
     "table_view_text_header_footer_item.h",
     "table_view_text_header_footer_item.mm",
     "table_view_text_item.h",
@@ -43,8 +42,10 @@ source_set("cells") {
   ]
 
   deps = [
+    ":cells_constants",
     "resources:table_view_cell_chevron",
     "resources:table_view_cell_edit_icon",
+    "resources:table_view_cell_error_icon",
     "resources:table_view_cell_favicon_background",
     "//base",
     "//base:i18n",
@@ -52,6 +53,7 @@ source_set("cells") {
     "//ios/chrome/browser/ui/colors:colors",
     "//ios/chrome/browser/ui/elements",
     "//ios/chrome/browser/ui/list_model",
+    "//ios/chrome/browser/ui/reading_list:reading_list_constants",
     "//ios/chrome/browser/ui/settings/cells:public",
     "//ios/chrome/browser/ui/table_view:styler",
     "//ios/chrome/browser/ui/util",
@@ -59,10 +61,21 @@ source_set("cells") {
     "//ios/chrome/common/colors",
     "//ios/chrome/common/favicon",
     "//ios/chrome/common/ui_util",
-    "//ios/third_party/material_components_ios:material_components_ios",
+    "//ios/third_party/material_components_ios",
     "//net",
     "//ui/base",
     "//url:url",
+  ]
+  configs += [ "//build/config/compiler:enable_arc" ]
+}
+
+source_set("cells_constants") {
+  sources = [
+    "table_view_cells_constants.h",
+    "table_view_cells_constants.mm",
+  ]
+  deps = [
+    "//base",
   ]
   configs += [ "//build/config/compiler:enable_arc" ]
 }
@@ -85,6 +98,7 @@ source_set("unit_tests") {
 
   deps = [
     ":cells",
+    ":cells_constants",
     "//base",
     "//ios/chrome/browser/ui/table_view:styler",
     "//ios/chrome/common/colors",

@@ -192,7 +192,7 @@ class _Lock(cros_build_lib.MasterPidContextManager):
     self.fd
     return self
 
-  def _exit(self, _exc_type, _exc, _traceback):
+  def _exit(self, exc_type, exc, exc_tb):
     try:
       self.unlock()
     finally:
@@ -236,9 +236,8 @@ class FileLock(_Lock):
           raise
       if create:
         osutils.SafeMakedirs(os.path.dirname(self.path), sudo=True)
-        cros_build_lib.SudoRunCommand(['touch', self.path], print_cmd=False)
-        cros_build_lib.SudoRunCommand(['chmod', '666', self.path],
-                                      print_cmd=False)
+        cros_build_lib.sudo_run(['touch', self.path], print_cmd=False)
+        cros_build_lib.sudo_run(['chmod', '666', self.path], print_cmd=False)
 
     # If we're on py3.4 and this attribute is exposed, use it to close
     # the threading race between open and fcntl setting; this is
@@ -339,6 +338,8 @@ class PipeLock(object):
     pipe2 = getattr(os, 'pipe2', None)
     if pipe2:
       cloexec = getattr(os, 'O_CLOEXEC', 0)
+      # Pylint-1.7 is unable to handle this conditional logic.
+      # pylint: disable=not-callable
       pipes = pipe2(cloexec)
     else:
       pipes = os.pipe()
@@ -356,7 +357,7 @@ class PipeLock(object):
     """
     return os.read(self.read_fd, size)
 
-  def Post(self, data='!'):
+  def Post(self, data=b'!'):
     """Write |data| to the pipe.
 
     Args:

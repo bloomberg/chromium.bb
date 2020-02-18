@@ -11,6 +11,7 @@
 #include "base/hash/hash.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/optional.h"
 #include "base/rand_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_download_manager.h"
@@ -20,12 +21,14 @@
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/password_manager/core/browser/browser_save_password_progress_logger.h"
+#include "components/password_manager/core/browser/field_info_manager.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
 
 using autofill::AutofillDownloadManager;
 using autofill::AutofillField;
 using autofill::AutofillUploadContents;
+using autofill::FieldSignature;
 using autofill::FormData;
 using autofill::FormFieldData;
 using autofill::FormStructure;
@@ -34,6 +37,7 @@ using autofill::RandomizedEncoder;
 using autofill::ServerFieldType;
 using autofill::ServerFieldTypeSet;
 using autofill::ValueElementPair;
+using password_manager_util::FindFormByUsername;
 
 using Logger = autofill::SavePasswordProgressLogger;
 using StringID = autofill::SavePasswordProgressLogger::StringID;
@@ -102,8 +106,9 @@ void LabelFields(const FieldTypeMap& field_types,
       }
 
       auto vote_type_iter = vote_types.find(field->name);
-      if (vote_type_iter != vote_types.end())
+      if (vote_type_iter != vote_types.end()) {
         field->set_vote_type(vote_type_iter->second);
+      }
       DCHECK(type != autofill::USERNAME ||
              field->vote_type() !=
                  AutofillUploadContents::Field::NO_INFORMATION);
@@ -118,11 +123,12 @@ void LabelFields(const FieldTypeMap& field_types,
 // which doesn't have a username.
 bool IsAddingUsernameToExistingMatch(
     const PasswordForm& credentials,
-    const std::map<base::string16, const PasswordForm*>& matches) {
-  const auto match = matches.find(base::string16());
-  return !credentials.username_value.empty() && match != matches.end() &&
-         !match->second->is_public_suffix_match &&
-         match->second->password_value == credentials.password_value;
+    const std::vector<const PasswordForm*>& matches) {
+  if (credentials.username_value.empty())
+    return false;
+  const PasswordForm* match = FindFormByUsername(matches, base::string16());
+  return match && !match->is_public_suffix_match &&
+         match->password_value == credentials.password_value;
 }
 
 // Helper functions for character type classification. The built-in functions
@@ -168,6 +174,19 @@ size_t GetLowEntropyHashValue(const base::string16& value) {
 
 }  // namespace
 
+SingleUsernameVoteData::SingleUsernameVoteData(
+    uint32_t renderer_id,
+    const FormPredictions& form_predictions)
+    : renderer_id(renderer_id), form_predictions(form_predictions) {}
+
+SingleUsernameVoteData::SingleUsernameVoteData(
+    const SingleUsernameVoteData& other) = default;
+SingleUsernameVoteData& SingleUsernameVoteData::operator=(
+    const SingleUsernameVoteData&) = default;
+SingleUsernameVoteData::SingleUsernameVoteData(SingleUsernameVoteData&& other) =
+    default;
+SingleUsernameVoteData::~SingleUsernameVoteData() = default;
+
 VotesUploader::VotesUploader(PasswordManagerClient* client,
                              bool is_possible_change_password_form)
     : client_(client),
@@ -179,11 +198,12 @@ VotesUploader::~VotesUploader() = default;
 void VotesUploader::SendVotesOnSave(
     const FormData& observed,
     const PasswordForm& submitted_form,
-    const std::map<base::string16, const PasswordForm*>& best_matches,
+    const std::vector<const PasswordForm*>& best_matches,
     PasswordForm* pending_credentials) {
   if (pending_credentials->times_used == 1 ||
-      IsAddingUsernameToExistingMatch(*pending_credentials, best_matches))
+      IsAddingUsernameToExistingMatch(*pending_credentials, best_matches)) {
     UploadFirstLoginVotes(best_matches, *pending_credentials, submitted_form);
+  }
 
   // Upload credentials the first time they are saved. This data is used
   // by password generation to help determine account creation sites.
@@ -197,6 +217,7 @@ void VotesUploader::SendVotesOnSave(
                          autofill::USERNAME,
                          FormStructure(observed).FormSignatureAsStr());
     }
+    MaybeSendSingleUsernameVote(true /* credentials_saved */);
   } else {
     SendVoteOnCredentialsReuse(observed, submitted_form, pending_credentials);
   }
@@ -353,6 +374,8 @@ bool VotesUploader::UploadPasswordVote(
   form_structure.set_randomized_encoder(
       RandomizedEncoder::Create(client_->GetPrefs()));
 
+  // TODO(crbug.com/875768): Use VotesUploader::StartUploadRequest for avoiding
+  // code duplication.
   bool success = download_manager->StartUploadRequest(
       form_structure, false /* was_autofilled */, available_field_types,
       login_form_signature, true /* observed_submission */,
@@ -364,7 +387,7 @@ bool VotesUploader::UploadPasswordVote(
 
 // TODO(crbug.com/840384): Share common code with UploadPasswordVote.
 void VotesUploader::UploadFirstLoginVotes(
-    const std::map<base::string16, const PasswordForm*>& best_matches,
+    const std::vector<const PasswordForm*>& best_matches,
     const PasswordForm& pending_credentials,
     const PasswordForm& form_to_upload) {
   AutofillDownloadManager* download_manager =
@@ -413,6 +436,8 @@ void VotesUploader::UploadFirstLoginVotes(
     logger.LogFormStructure(Logger::STRING_FIRSTUSE_FORM_VOTE, form_structure);
   }
 
+  // TODO(crbug.com/875768): Use VotesUploader::StartUploadRequest for avoiding
+  // code duplication.
   download_manager->StartUploadRequest(
       form_structure, false /* was_autofilled */, available_field_types,
       std::string(), true /* observed_submission */, nullptr /* prefs */);
@@ -435,6 +460,60 @@ void VotesUploader::SetInitialHashValueOfUsernameField(
       break;
     }
   }
+}
+
+void VotesUploader::MaybeSendSingleUsernameVote(bool credentials_saved) {
+  if (!single_username_vote_data_)
+    return;
+
+  FieldInfoManager* field_info_manager = client_->GetFieldInfoManager();
+  if (!field_info_manager)
+    return;
+
+  const FormPredictions& predictions =
+      single_username_vote_data_->form_predictions;
+  std::vector<FieldSignature> field_signatures;
+  for (const auto& field : predictions.fields)
+    field_signatures.push_back(field.signature);
+
+  std::unique_ptr<FormStructure> form_to_upload =
+      FormStructure::CreateForPasswordManagerUpload(predictions.form_signature,
+                                                    field_signatures);
+
+  // Label the username field with a SINGLE_USERNAME or NOT_USERNAME vote.
+  // TODO(crbug.com/552420): Use LabelFields() when cl/1667453 is landed.
+  ServerFieldTypeSet available_field_types;
+  for (size_t i = 0; i < form_to_upload->field_count(); ++i) {
+    AutofillField* field = form_to_upload->field(i);
+
+    ServerFieldType type = autofill::UNKNOWN_TYPE;
+    uint32_t field_renderer_id = predictions.fields[i].renderer_id;
+    if (field_renderer_id == single_username_vote_data_->renderer_id) {
+      if (field_info_manager->GetFieldType(predictions.form_signature,
+                                           predictions.fields[i].signature) !=
+          autofill::UNKNOWN_TYPE) {
+        // The vote for this field has been already sent. Don't send again.
+        return;
+      }
+      type = credentials_saved && !has_username_edited_vote_
+                 ? autofill::SINGLE_USERNAME
+                 : autofill::NOT_USERNAME;
+      if (has_username_edited_vote_)
+        field->set_vote_type(AutofillUploadContents::Field::USERNAME_EDITED);
+      available_field_types.insert(type);
+      SaveFieldVote(form_to_upload->form_signature(),
+                    field->GetFieldSignature(), type);
+    }
+    field->set_possible_types({type});
+  }
+
+  if (password_manager_util::IsLoggingActive(client_)) {
+    BrowserSavePasswordProgressLogger logger(client_->GetLogManager());
+    logger.LogFormStructure(Logger::STRING_USERNAME_FIRST_FLOW_VOTE,
+                            *form_to_upload);
+  }
+
+  StartUploadRequest(std::move(form_to_upload), available_field_types);
 }
 
 void VotesUploader::AddGeneratedVote(FormStructure* form_structure) {
@@ -483,19 +562,20 @@ void VotesUploader::AddGeneratedVote(FormStructure* form_structure) {
 
 void VotesUploader::SetKnownValueFlag(
     const PasswordForm& pending_credentials,
-    const std::map<base::string16, const PasswordForm*>& best_matches,
+    const std::vector<const PasswordForm*>& best_matches,
     FormStructure* form) {
   const base::string16& known_username = pending_credentials.username_value;
   base::string16 known_password;
   if (password_overridden_) {
     // If we are updating a password, the known value should be the old
     // password, not the new one.
-    auto it = best_matches.find(known_username);
-    if (it == best_matches.end()) {
+    const PasswordForm* match =
+        FindFormByUsername(best_matches, known_username);
+    if (!match) {
       // Username was not found, do nothing.
       return;
     }
-    known_password = it->second->password_value;
+    known_password = match->password_value;
   } else {
     known_password = pending_credentials.password_value;
   }
@@ -534,8 +614,9 @@ bool VotesUploader::FindCorrectedUsernameElement(
     return false;
   for (const PasswordForm* match : matches) {
     if ((match->password_value == password) &&
-        FindUsernameInOtherPossibleUsernames(*match, username))
+        FindUsernameInOtherPossibleUsernames(*match, username)) {
       return true;
+    }
   }
   return false;
 }
@@ -544,30 +625,25 @@ void VotesUploader::GeneratePasswordAttributesVote(
     const base::string16& password_value,
     FormStructure* form_structure) {
   // Don't crowdsource password attributes for non-ascii passwords.
-  for (const auto& e : password_value)
+  for (const auto& e : password_value) {
     if (!(IsUppercaseLetter(e) || IsLowercaseLetter(e) || IsNumeric(e) ||
-          IsSpecialSymbol(e)))
+          IsSpecialSymbol(e))) {
       return;
+    }
+  }
 
-  // Select a character class attribute to upload.
-  int bucket = base::RandGenerator(9);
+  // Select a character class attribute to upload. Upload special symbols more
+  // often (8 in 9 cases) as most issues are due to missing or wrong special
+  // symbols. Don't upload info about uppercase and numeric characters as all
+  // sites that allow lowercase letters also uppercase letters, and all sites
+  // allow numeric symbols in passwords.
+  autofill::PasswordAttribute character_class_attribute;
   bool (*predicate)(int c) = nullptr;
-  autofill::PasswordAttribute character_class_attribute =
-      autofill::PasswordAttribute::kHasSpecialSymbol;
-  if (bucket == 0) {
+  if (base::RandGenerator(9) == 0) {
     predicate = &IsLowercaseLetter;
     character_class_attribute =
         autofill::PasswordAttribute::kHasLowercaseLetter;
-  } else if (bucket == 1) {
-    predicate = &IsUppercaseLetter;
-    character_class_attribute =
-        autofill::PasswordAttribute::kHasUppercaseLetter;
-  } else if (bucket == 2) {
-    predicate = &IsNumeric;
-    character_class_attribute = autofill::PasswordAttribute::kHasNumeric;
-  } else {  //  3 <= bucket < 9
-    // Upload symbols more often as 2/3rd of issues are because of missing
-    // special symbols.
+  } else {
     predicate = &IsSpecialSymbol;
     character_class_attribute = autofill::PasswordAttribute::kHasSpecialSymbol;
   }
@@ -601,10 +677,41 @@ void VotesUploader::GeneratePasswordAttributesVote(
 void VotesUploader::StoreInitialFieldValues(
     const autofill::FormData& observed_form) {
   for (const auto& field : observed_form.fields) {
-    if (!field.value.empty())
+    if (!field.value.empty()) {
       initial_values_.insert(
           std::make_pair(field.unique_renderer_id, field.value));
+    }
   }
+}
+
+bool VotesUploader::StartUploadRequest(
+    std::unique_ptr<autofill::FormStructure> form_to_upload,
+    const ServerFieldTypeSet& available_field_types) {
+  AutofillDownloadManager* download_manager =
+      client_->GetAutofillDownloadManager();
+  if (!download_manager)
+    return false;
+
+  // Force uploading as these events are relatively rare and we want to make
+  // sure to receive them.
+  form_to_upload->set_upload_required(UPLOAD_REQUIRED);
+
+  // Attach the Randomized Encoder.
+  form_to_upload->set_randomized_encoder(
+      RandomizedEncoder::Create(client_->GetPrefs()));
+
+  return download_manager->StartUploadRequest(
+      *form_to_upload, false /* was_autofilled */, available_field_types,
+      std::string(), true /* observed_submission */, nullptr /* prefs */);
+}
+
+void VotesUploader::SaveFieldVote(uint64_t form_signature,
+                                  uint32_t field_signature,
+                                  autofill::ServerFieldType field_type) {
+  FieldInfoManager* field_info_manager = client_->GetFieldInfoManager();
+  if (!field_info_manager)
+    return;
+  field_info_manager->AddFieldType(form_signature, field_signature, field_type);
 }
 
 }  // namespace password_manager

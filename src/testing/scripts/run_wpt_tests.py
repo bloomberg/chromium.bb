@@ -20,6 +20,10 @@ import sys
 
 import common
 
+BLINK_TOOLS_DIR = os.path.join(common.SRC_DIR, 'third_party', 'blink', 'tools')
+WPT_METADATA_DIR = "../../wpt_expectations_metadata/"
+WPT_OVERRIDE_EXPECTATIONS_PATH = (
+    "../../third_party/blink/web_tests/WPTOverrideExpectations")
 
 class WPTTestAdapter(common.BaseIsolatedScriptArgsAdapter):
 
@@ -48,14 +52,12 @@ class WPTTestAdapter(common.BaseIsolatedScriptArgsAdapter):
             "--binary-arg=--enable-blink-features=MojoJS,MojoJSTest",
             "--webdriver-binary=../../out/Release/chromedriver",
             "--headless",
-            # TODO(lpz): Consider removing --processes and compute automatically
-            # from multiprocessing.cpu_count()
-            "--processes=10",
             "--no-capture-stdio",
             "--no-manifest-download",
             "--no-pause-after-test",
             "--no-fail-on-unexpected",
-            "--metadata=../../out/Release/wpt_expectations_metadata/",
+            "--metadata",
+            WPT_METADATA_DIR,
             # By specifying metadata above, WPT will try to find manifest in the
             # metadata directory. So here we point it back to the correct path
             # for the manifest.
@@ -66,7 +68,14 @@ class WPTTestAdapter(common.BaseIsolatedScriptArgsAdapter):
             # update the manifest in cast it's stale.
             #"--no-manifest-update",
             "--manifest=../../third_party/blink/web_tests/external/"
-                "WPT_BASE_MANIFEST_6.json"
+                "WPT_BASE_MANIFEST_6.json",
+            # (crbug.com/1023835) The flags below are temporary to aid debugging
+            "--log-mach=-",
+            "--log-mach-verbose",
+            # See if multi-processing affects timeouts.
+            # TODO(lpz): Consider removing --processes and compute automatically
+            # from multiprocessing.cpu_count()
+            #"--processes=5",
         ])
         return rest_args
 
@@ -80,18 +89,28 @@ class WPTTestAdapter(common.BaseIsolatedScriptArgsAdapter):
     def clean_up_after_test_run(self):
         common.run_command([
             sys.executable,
-            os.path.join(common.SRC_DIR, 'third_party', 'blink', 'tools',
-                         'update_wpt_output.py'),
+            os.path.join(BLINK_TOOLS_DIR, 'update_wpt_output.py'),
+            '--verbose',
             '--old-json-output-file-path',
             self.options.old_json_output_file_path,
             '--new-json-output-dir', self.options.new_json_output_dir,
             '--new-json-output-filename', self.options.new_json_output_filename,
             '--additional-expectations',
-            '../../third_party/blink/web_tests/WPTOverrideExpectations',
+            WPT_OVERRIDE_EXPECTATIONS_PATH
         ])
 
 
 def main():
+    # First, generate WPT metadata files.
+    common.run_command([
+        sys.executable,
+        os.path.join(BLINK_TOOLS_DIR, 'build_wpt_metadata.py'),
+        "--metadata-output-dir",
+        WPT_METADATA_DIR,
+        "--additional-expectations",
+        WPT_OVERRIDE_EXPECTATIONS_PATH
+    ])
+
     adapter = WPTTestAdapter()
     return adapter.run_test()
 

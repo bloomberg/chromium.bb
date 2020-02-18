@@ -13,20 +13,13 @@
 #include "src/image/SkImage_GpuYUVA.h"
 #include "src/image/SkImage_Lazy.h"
 
-static GrColorSpaceInfo make_info(const SkImage*& image) {
-    return GrColorSpaceInfo(SkColorTypeToGrColorType(image->colorType()),
-                            image->alphaType(),
-                            image->refColorSpace());
-}
-
 GrImageTextureMaker::GrImageTextureMaker(GrRecordingContext* context, const SkImage* client,
                                          SkImage::CachingHint chint, bool useDecal)
-        : INHERITED(context, client->width(), client->height(), make_info(client), useDecal)
+        : INHERITED(context, client->imageInfo(), useDecal)
         , fImage(static_cast<const SkImage_Lazy*>(client))
         , fCachingHint(chint) {
     SkASSERT(client->isLazyGenerated());
-    GrMakeKeyFromImageID(&fOriginalKey, client->uniqueID(),
-                         SkIRect::MakeWH(this->width(), this->height()));
+    GrMakeKeyFromImageID(&fOriginalKey, client->uniqueID(), SkIRect::MakeSize(this->dimensions()));
 }
 
 sk_sp<GrTextureProxy> GrImageTextureMaker::refOriginalTextureProxy(bool willBeMipped,
@@ -48,11 +41,10 @@ void GrImageTextureMaker::makeCopyKey(const CopyParams& stretch, GrUniqueKey* pa
 
 GrYUVAImageTextureMaker::GrYUVAImageTextureMaker(GrContext* context, const SkImage* client,
                                                  bool useDecal)
-        : INHERITED(context, client->width(), client->height(), make_info(client), useDecal)
+        : INHERITED(context, client->imageInfo(), useDecal)
         , fImage(static_cast<const SkImage_GpuYUVA*>(client)) {
     SkASSERT(as_IB(client)->isYUVA());
-    GrMakeKeyFromImageID(&fOriginalKey, client->uniqueID(),
-                         SkIRect::MakeWH(this->width(), this->height()));
+    GrMakeKeyFromImageID(&fOriginalKey, client->uniqueID(), SkIRect::MakeSize(this->dimensions()));
 }
 
 sk_sp<GrTextureProxy> GrYUVAImageTextureMaker::refOriginalTextureProxy(bool willBeMipped,

@@ -19,6 +19,7 @@
 #include "components/user_manager/user_manager.h"
 #include "components/version_info/version_info.h"
 #include "content/public/common/content_switches.h"
+#include "google_apis/gaia/gaia_auth_util.h"
 
 namespace {
 
@@ -59,13 +60,8 @@ bool ReleaseNotesStorage::ShouldNotify() {
     return false;
   }
 
-  // Only shows notification in stable channel.
-  if (!chrome::GetChannelName().empty())
-    return false;
-
   std::string user_email = profile_->GetProfileUserName();
-  if (base::EndsWith(user_email, "@google.com",
-                     base::CompareCase::INSENSITIVE_ASCII) ||
+  if (gaia::IsGoogleInternalAccountEmail(user_email) ||
       (ProfileHelper::Get()->GetUserByProfile(profile_)->HasGaiaAccount() &&
        !profile_->GetProfilePolicyConnector()->IsManaged())) {
     const int last_milestone = profile_->GetPrefs()->GetInteger(

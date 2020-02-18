@@ -17,10 +17,11 @@ if (build_with_chromium) {
       "//third_party/jsoncpp/generated",
     ]
 
-    cflags_cc = [
-      "-Wno-exit-time-destructors",
-      "-Wno-implicit-fallthrough",
-    ]
+    cflags_cc = [ "-Wno-implicit-fallthrough" ]
+
+    if (is_clang) {
+      cflags_cc += [ "-Wno-exit-time-destructors" ]
+    }
   }
 
   source_set("jsoncpp") {

@@ -24,11 +24,11 @@
 #include "components/services/filesystem/public/mojom/types.mojom.h"
 #include "content/public/browser/browser_thread.h"
 #include "storage/browser/blob/shareable_file_reference.h"
-#include "storage/browser/fileapi/file_stream_reader.h"
-#include "storage/browser/fileapi/file_system_context.h"
-#include "storage/browser/fileapi/file_system_operation_context.h"
-#include "storage/browser/fileapi/file_system_url.h"
-#include "storage/browser/fileapi/native_file_util.h"
+#include "storage/browser/file_system/file_stream_reader.h"
+#include "storage/browser/file_system/file_system_context.h"
+#include "storage/browser/file_system/file_system_operation_context.h"
+#include "storage/browser/file_system/file_system_url.h"
+#include "storage/browser/file_system/native_file_util.h"
 
 using storage::AsyncFileUtil;
 using storage::FileSystemOperationContext;
@@ -151,7 +151,7 @@ void OnDidCheckMediaForCreateSnapshotFile(
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   base::FilePath platform_path(platform_file.get()->path());
   if (error != base::File::FILE_OK)
-    platform_file = NULL;
+    platform_file.reset();
   std::move(callback).Run(error, file_info, platform_path, platform_file);
 }
 
@@ -609,33 +609,32 @@ DeviceMediaAsyncFileUtil::GetFileStreamReader(
 void DeviceMediaAsyncFileUtil::AddWatcher(
     const storage::FileSystemURL& url,
     bool recursive,
-    const storage::WatcherManager::StatusCallback& callback,
-    const storage::WatcherManager::NotificationCallback&
-        notification_callback) {
+    storage::WatcherManager::StatusCallback callback,
+    storage::WatcherManager::NotificationCallback notification_callback) {
   MTPDeviceAsyncDelegate* const delegate =
       MTPDeviceMapService::GetInstance()->GetMTPDeviceAsyncDelegate(url);
   if (!delegate) {
-    callback.Run(base::File::FILE_ERROR_FAILED);
+    std::move(callback).Run(base::File::FILE_ERROR_FAILED);
     return;
   }
 
-  delegate->AddWatcher(url.origin().GetURL(), url.path(), recursive, callback,
-                       notification_callback);
+  delegate->AddWatcher(url.origin().GetURL(), url.path(), recursive,
+                       std::move(callback), std::move(notification_callback));
 }
 
 void DeviceMediaAsyncFileUtil::RemoveWatcher(
     const storage::FileSystemURL& url,
     const bool recursive,
-    const storage::WatcherManager::StatusCallback& callback) {
+    storage::WatcherManager::StatusCallback callback) {
   MTPDeviceAsyncDelegate* const delegate =
       MTPDeviceMapService::GetInstance()->GetMTPDeviceAsyncDelegate(url);
   if (!delegate) {
-    callback.Run(base::File::FILE_ERROR_FAILED);
+    std::move(callback).Run(base::File::FILE_ERROR_FAILED);
     return;
   }
 
   delegate->RemoveWatcher(url.origin().GetURL(), url.path(), recursive,
-                          callback);
+                          std::move(callback));
 }
 
 DeviceMediaAsyncFileUtil::DeviceMediaAsyncFileUtil(

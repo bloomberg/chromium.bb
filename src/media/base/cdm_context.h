@@ -18,6 +18,10 @@ class CdmProxyContext;
 class Decryptor;
 class MediaCryptoContext;
 
+#if defined(OS_FUCHSIA)
+class FuchsiaCdmContext;
+#endif
+
 // An interface representing the context that a media player needs from a
 // content decryption module (CDM) to decrypt (and decode) encrypted buffers.
 // Typically this will be passed to the media player (e.g. using SetCdm()).
@@ -72,6 +76,10 @@ class MEDIA_EXPORT CdmContext {
   // occurs implicitly along with decoding).
   virtual Decryptor* GetDecryptor();
 
+  // Returns whether the CDM requires Media Foundation-based media Renderer.
+  // Should only return true on Windows.
+  virtual bool RequiresMediaFoundationRenderer();
+
   // Returns an ID that can be used to find a remote CDM, in which case this CDM
   // serves as a proxy to the remote one. Returns kInvalidCdmId when remote CDM
   // is not supported (e.g. this CDM is a local CDM).
@@ -90,6 +98,12 @@ class MEDIA_EXPORT CdmContext {
   virtual MediaCryptoContext* GetMediaCryptoContext();
 #endif
 
+#if defined(OS_FUCHSIA)
+  // Returns FuchsiaCdmContext interface when the context is backed by Fuchsia
+  // CDM. Otherwise returns nullptr.
+  virtual FuchsiaCdmContext* GetFuchsiaCdmContext();
+#endif
+
  protected:
   CdmContext();
 
@@ -99,7 +113,7 @@ class MEDIA_EXPORT CdmContext {
 
 // Callback to notify that the CdmContext has been completely attached to
 // the media pipeline. Parameter indicates whether the operation succeeded.
-typedef base::Callback<void(bool)> CdmAttachedCB;
+typedef base::OnceCallback<void(bool)> CdmAttachedCB;
 
 // A dummy implementation of CdmAttachedCB.
 MEDIA_EXPORT void IgnoreCdmAttached(bool success);

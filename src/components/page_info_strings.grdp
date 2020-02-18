@@ -33,14 +33,23 @@
   </message>
 
   <!-- Safety Tip summary strings -->
+  <message name="IDS_PAGE_INFO_SAFETY_TIP_BAD_REPUTATION_TITLE" desc="Message to display in the page info bubble when the page you are on triggered a safety tip.">
+    Suspicious site
+  </message>
   <message name="IDS_PAGE_INFO_SAFETY_TIP_BAD_REPUTATION_DESCRIPTION" desc="Body of message to display in the page info bubble when you are viewing a page that triggered a safety tip.">
     This site could be fake or fraudulent. Chrome recommends leaving now.
   </message>
-  <message name="IDS_PAGE_INFO_SAFETY_TIP_LEAVE_BUTTON" desc="Text of button to leave a suspicious page shown on the safety tip page info bubble.">
-    Leave this site
+  <message name="IDS_PAGE_INFO_SAFETY_TIP_MORE_INFO_LINK" desc="Text of link to Help Center page on safety tip page info bubble.">
+    Learn more
   </message>
-  <message name="IDS_PAGE_INFO_SAFETY_TIP_SUMMARY" desc="Message to display in the page info bubble when the page you are on triggered a safety tip.">
-    Suspicious site
+  <message name="IDS_PAGE_INFO_SAFETY_TIP_LEAVE_BUTTON" desc="Text of button to leave a suspicious page shown on the safety tip page info bubble.">
+    Leave site
+  </message>
+  <message name="IDS_PAGE_INFO_SAFETY_TIP_LOOKALIKE_TITLE" desc="Title of Safety Tip infobar on a domain that looks like another domain.">
+    Did you mean <ph name='LOOKALIKE_DOMAIN'>$1<ex>google.com</ex></ph>?
+  </message>
+  <message name="IDS_PAGE_INFO_SAFETY_TIP_LOOKALIKE_DESCRIPTION" desc="Body of a warning when the user visits a page that triggered a Safety Tip because the domain looked like another domain.">
+    This site's name looks similar to <ph name='LOOKALIKE_DOMAIN'>$1<ex>google.com</ex></ph>. Attackers sometimes mimic sites by making hard-to-see changes to the web address.
   </message>
 
   <!-- Viewing file strings -->
@@ -54,6 +63,9 @@
   </message>
   <message name="IDS_PAGE_INFO_MIXED_CONTENT_DETAILS" desc="A short paragraph explaining a partially insecure site to the user.">
     Attackers might be able to see the images you’re looking at on this site and trick you by modifying them.
+  </message>
+  <message name="IDS_PAGE_INFO_LEGACY_TLS_DETAILS" desc="A short paragraph explaining to the user a site that uses deprecated security configrations.">
+    This site uses an outdated security configuration, which may expose your information (for example, passwords or credit card numbers) when it is sent to this site.
   </message>
   <message name="IDS_PAGE_INFO_NOT_SECURE_DETAILS" desc="A short paragraph explaining a non-secure site to the user.">
     You should not enter any sensitive information on this site (for example, passwords or credit cards), because it could be stolen by attackers.
@@ -199,7 +211,7 @@
           Cookies <ph name="NUM_COOKIES">$1<ex>(4 in use)</ex></ph>
       </message>
       <message name="IDS_PAGE_INFO_NUM_COOKIES_PARENTHESIZED" desc="The label of the counts for allowed cookies that are in use on the page. This text will be used in IDS_PAGE_INFO_COOKIES_BUTTON_TEXT.">
-        ({NUM_COOKIES, plural, =1 {1 in use} other {# in use}})
+        {NUM_COOKIES, plural, =1 {(1 in use)} other {(# in use)}}
       </message>
       <message name="IDS_PAGE_INFO_COOKIES_TOOLTIP" desc="The text of the tooltip on IDS_PAGE_INFO_NUM_COOKIES_PARENTHESIZED.">
         Show cookies
@@ -210,8 +222,8 @@
     <message name="IDS_PAGE_INFO_TYPE_ADS" desc="The label used for the ads permission controls in the Page Info popup.">
       Ads
     </message>
-    <message name="IDS_PAGE_INFO_TYPE_AUTOPLAY" desc="The label used for the autoplay permission controls in the Page Info popup.">
-      Autoplay
+    <message name="IDS_PAGE_INFO_TYPE_PROTECTED_MEDIA_IDENTIFIER" desc="The label used for the protected media identifier permission controls in the Page Info popup.">
+      Protected content
     </message>
     <message name="IDS_PAGE_INFO_TYPE_BACKGROUND_SYNC" desc="The label used for the background sync permission controls in the Page Info popup.">
       Background Sync
@@ -266,6 +278,9 @@
     </message>
     <message name="IDS_PAGE_INFO_TYPE_BLUETOOTH_SCANNING" desc="The label used for the Bluetooth scanning controls in the Page Info popup.">
       Bluetooth scanning
+    </message>
+    <message name="IDS_PAGE_INFO_TYPE_NFC" desc="The label used for the NFC permission controls in the Page Info popup.">
+      NFC devices
     </message>
     <!-- TODO(crbug.com/716303): A few permissions are missing here. -->
 
@@ -408,11 +423,23 @@
         <message name="IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS" desc="A short paragraph explaining to the user that they has reuse their google password on current website.">
           You could lose access to your Google Account. Chrome recommends changing your password now. You'll be asked to sign in.
         </message>
+        <message name="IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS_SAVED" desc="A short paragraph explaining to a Chrome user that they have reused their saved password on the current website.">
+          You just entered your password on a deceptive site. Chrome recommends changing your password now.
+        </message>
+        <message name="IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS_SAVED_1_DOMAIN" desc="A short paragraph explaining to a Chrome user that they have reused their saved password on the current website and to change their password on one domain.">
+          You just entered your password on a deceptive site. Chrome recommends going to <ph name="WEBSITE_1">$1<ex>www.google.com</ex></ph> and other sites where you use this password and changing it now.
+        </message>
+        <message name="IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS_SAVED_2_DOMAINS" desc="A short paragraph explaining to a Chrome user that they have reused their saved password on the current website and to change their password on two domains.">
+          You just entered your password on a deceptive site. Chrome recommends going to <ph name="WEBSITE_1">$1<ex>www.google.com</ex></ph>, <ph name="WEBSITE_2">$2<ex>www.reddit.com</ex></ph>, and other sites where you use this password and changing it now.
+        </message>
+        <message name="IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS_SAVED_3_DOMAINS" desc="A short paragraph explaining to a Chrome user that they have reused their saved password on the current website and to change their password on three domains.">
+          You just entered your password on a deceptive site. Chrome recommends going to <ph name="WEBSITE_1">$1<ex>www.google.com</ex></ph>, <ph name="WEBSITE_2">$2<ex>www.reddit.com</ex></ph>, and <ph name="WEBSITE_3">$3<ex>www.amazon.com</ex></ph>, and other sites where you use this password and changing it now.
+        </message>
         <message name="IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS_SYNC" desc="A short paragraph explaining to a Chrome sync user that they have reused their Google password on the current website.">
           Chrome can help you protect your Google Account and change your password.
         </message>
         <message name="IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS_SIGNED_IN_NON_SYNC" desc="A short paragraph explaining to a non-sync user that they have reused their Google password on the current website.">
-          Chrome can help you protect your Google Account and change your password. This will notify Google about this site.
+          You just entered your password on a deceptive site. Chrome can help. To change your password and notify Google that your account may be at risk, click Protect Account.
         </message>
         <message name="IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS_ENTERPRISE" desc="A short paragraph explaining to the user that they have reused their password on the current website.">
           You could lose access to your organization's account or experience identity theft. Chrome recommends changing your password now.
@@ -425,11 +452,23 @@
         <message name="IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS" desc="A short paragraph explaining to the user that they has reuse their google password on current website.">
           You could lose access to your Google Account. Chromium recommends changing your password now. You'll be asked to sign in.
         </message>
+        <message name="IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS_SAVED" desc="A short paragraph explaining to a Chromium user that they have reused their saved password on the current website.">
+          You just entered your password on a deceptive site. Chromium recommends changing your password now.
+        </message>
+         <message name="IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS_SAVED_1_DOMAIN" desc="A short paragraph explaining to a Chromium user that they have reused their saved password on the current website and to change their password on one domain.">
+          You just entered your password on a deceptive site. Chromium recommends going to <ph name="WEBSITE_1">$1<ex>www.google.com</ex></ph> and other sites where you use this password and changing it now.
+        </message>
+        <message name="IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS_SAVED_2_DOMAINS" desc="A short paragraph explaining to a Chromium user that they have reused their saved password on the current website and to change their password on two domains.">
+          You just entered your password on a deceptive site. Chromium recommends going to <ph name="WEBSITE_1">$1<ex>www.google.com</ex></ph>, <ph name="WEBSITE_2">$2<ex>www.reddit.com</ex></ph>, and other sites where you use this password and changing it now.
+        </message>
+        <message name="IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS_SAVED_3_DOMAINS" desc="A short paragraph explaining to a Chromium user that they have reused their saved password on the current website and to change their password on three domains.">
+          You just entered your password on a deceptive site. Chromium recommends going to <ph name="WEBSITE_1">$1<ex>www.google.com</ex></ph>, <ph name="WEBSITE_2">$2<ex>www.reddit.com</ex></ph>, and <ph name="WEBSITE_3">$3<ex>www.amazon.com</ex></ph>, and other sites where you use this password and changing it now.
+        </message>
         <message name="IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS_SYNC" desc="A short paragraph explaining to a Chrome sync user that they have reused their Google password on the current website.">
           Chromium can help you protect your Google Account and change your password.
         </message>
         <message name="IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS_SIGNED_IN_NON_SYNC" desc="A short paragraph explaining to a non-sync user that they have reused their Google password on the current website.">
-          Chromium can help you protect your Google Account and change your password. This will notify Google about this site.
+          You just entered your password on a deceptive site. Chromium can help. To change your password and notify Google that your account may be at risk, click Protect Account.
         </message>
         <message name="IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS_ENTERPRISE" desc="A short paragraph explaining to the user that they have reused their password on the current website.">
           You could lose access to your organization's account or experience identity theft. Chromium recommends changing your password now.
@@ -460,7 +499,7 @@
         <message name="IDS_PAGE_INFO_IGNORE_PASSWORD_WARNING_BUTTON" desc="The string used in the page info ignore password warning button.">
           Ignore
         </message>
-      </if>
+       </if>
       <message name="IDS_PAGE_INFO_WHITELIST_PASSWORD_REUSE_BUTTON" desc="The string used in the page info whitelist password reuse button.">
         Site is legitimate
       </message>

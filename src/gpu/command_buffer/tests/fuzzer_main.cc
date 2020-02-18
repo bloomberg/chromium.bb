@@ -170,6 +170,7 @@ constexpr const char* kExtensions[] = {
     "GL_OES_depth_texture",
     "GL_OES_EGL_image_external",
     "GL_OES_element_index_uint",
+    "GL_OES_fbo_render_mipmap",
     "GL_OES_packed_depth_stencil",
     "GL_OES_rgb8_rgba8",
     "GL_OES_standard_derivatives",
@@ -318,13 +319,18 @@ class CommandBufferSetup {
                                     gl::kGLImplementationANGLEName);
     command_line->AppendSwitchASCII(switches::kUseANGLE,
                                     gl::kANGLEImplementationNullName);
-    CHECK(gl::init::InitializeGLOneOffImplementation(
-        gl::kGLImplementationEGLANGLE, false, false, false, true));
+
+    CHECK(gl::init::InitializeStaticGLBindingsImplementation(
+        gl::kGLImplementationEGLANGLE, false));
+    CHECK(gl::init::InitializeGLOneOffPlatformImplementation(false, false,
+                                                             false, true));
 #elif defined(GPU_FUZZER_USE_SWIFTSHADER)
     command_line->AppendSwitchASCII(switches::kUseGL,
                                     gl::kGLImplementationSwiftShaderName);
-    CHECK(gl::init::InitializeGLOneOffImplementation(
-        gl::kGLImplementationSwiftShaderGL, false, false, false, true));
+    CHECK(gl::init::InitializeStaticGLBindingsImplementation(
+        gl::kGLImplementationSwiftShaderGL, false));
+    CHECK(gl::init::InitializeGLOneOffPlatformImplementation(false, false,
+                                                             false, true));
 #elif defined(GPU_FUZZER_USE_STUB)
     gl::GLSurfaceTestSupport::InitializeOneOffWithStubBindings();
     // Because the context depends on configuration bits, we want to recreate
@@ -376,7 +382,8 @@ class CommandBufferSetup {
     shared_context->MakeCurrent(surface_.get());
     context_state_ = base::MakeRefCounted<SharedContextState>(
         share_group_, surface_, std::move(shared_context),
-        config_.workarounds.use_virtualized_gl_contexts, base::DoNothing());
+        config_.workarounds.use_virtualized_gl_contexts, base::DoNothing(),
+        gpu_preferences_.gr_context_type);
     context_state_->InitializeGrContext(config_.workarounds, nullptr);
     context_state_->InitializeGL(gpu_preferences_, feature_info);
 

@@ -29,7 +29,7 @@
 #import "ios/web/public/test/web_test_with_web_state.h"
 #import "ios/web/public/test/web_view_content_test_util.h"
 #import "ios/web/public/web_client.h"
-#import "ios/web/public/web_state/web_state_observer.h"
+#include "ios/web/public/web_state_observer.h"
 #include "ios/web/test/test_url_constants.h"
 #include "net/test/embedded_test_server/default_handlers.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -48,31 +48,11 @@ using base::test::ios::kWaitForPageLoadTimeout;
 namespace web {
 namespace {
 
-// A text string from the test HTML page in the session storage returned  by
-// GetTestSessionStorage().
-const char kTestSessionStoragePageText[] = "pony";
-
 // A text string that is included in |kTestPageHTML|.
-const char kTextInTestPageHTML[] = "test";
+const char kTextInTestPageHTML[] = "this_is_a_test_string";
 
 // A test page HTML containing |kTextInTestPageHTML|.
-const char kTestPageHTML[] = "<html><body>test</body><html>";
-
-// Returns a session storage with a single committed entry of a test HTML page.
-CRWSessionStorage* GetTestSessionStorage() {
-  base::FilePath path;
-  base::PathService::Get(base::DIR_MODULE, &path);
-  path = path.Append(
-      FILE_PATH_LITERAL("ios/testing/data/http_server_files/pony.html"));
-  GURL testFileUrl(base::StringPrintf("file://%s", path.value().c_str()));
-
-  CRWSessionStorage* result = [[CRWSessionStorage alloc] init];
-  result.lastCommittedItemIndex = 0;
-  CRWNavigationItemStorage* item = [[CRWNavigationItemStorage alloc] init];
-  [item setVirtualURL:testFileUrl];
-  [result setItemStorages:@[ item ]];
-  return result;
-}
+const char kTestPageHTML[] = "<html><body>this_is_a_test_string</body><html>";
 }  // namespace
 
 using wk_navigation_util::IsWKInternalUrl;
@@ -576,19 +556,6 @@ TEST_P(WebStateTest, CallReloadDuringSessionRestore) {
   }));
 }
 
-// Tests that if a saved session is provided when creating a new WebState, it is
-// restored after the first NavigationManager::LoadIfNecessary() call.
-TEST_P(WebStateTest, RestoredFromHistory) {
-  auto web_state = WebState::CreateWithStorageSession(
-      WebState::CreateParams(GetBrowserState()), GetTestSessionStorage());
-
-  ASSERT_FALSE(test::IsWebViewContainingText(web_state.get(),
-                                             kTestSessionStoragePageText));
-  web_state->GetNavigationManager()->LoadIfNecessary();
-  EXPECT_TRUE(test::WaitForWebViewContainingText(web_state.get(),
-                                                 kTestSessionStoragePageText));
-}
-
 // Verifies that each page title is restored.
 TEST_P(WebStateTest, RestorePageTitles) {
   // Create session storage.
@@ -626,26 +593,6 @@ TEST_P(WebStateTest, RestorePageTitles) {
   }
 }
 
-// Tests that NavigationManager::LoadIfNecessary() restores the page after
-// disabling and re-enabling web usage.
-TEST_P(WebStateTest, DisableAndReenableWebUsage) {
-  auto web_state = WebState::CreateWithStorageSession(
-      WebState::CreateParams(GetBrowserState()), GetTestSessionStorage());
-  web_state->GetNavigationManager()->LoadIfNecessary();
-  ASSERT_TRUE(test::WaitForWebViewContainingText(web_state.get(),
-                                                 kTestSessionStoragePageText));
-
-  web_state->SetWebUsageEnabled(false);
-  web_state->SetWebUsageEnabled(true);
-
-  // NavigationManager::LoadIfNecessary() should restore the page.
-  ASSERT_FALSE(test::IsWebViewContainingText(web_state.get(),
-                                             kTestSessionStoragePageText));
-  web_state->GetNavigationManager()->LoadIfNecessary();
-  EXPECT_TRUE(test::WaitForWebViewContainingText(web_state.get(),
-                                                 kTestSessionStoragePageText));
-}
-
 // Tests that loading an HTML page after a failed navigation works.
 TEST_P(WebStateTest, LoadChromeThenHTML) {
   GURL app_specific_url(
@@ -661,7 +608,8 @@ TEST_P(WebStateTest, LoadChromeThenHTML) {
       web_state(),
       testing::GetErrorText(web_state(), app_specific_url, "NSURLErrorDomain",
                             /*error_code=*/NSURLErrorUnsupportedURL,
-                            /*is_post=*/false, /*is_otr=*/false)));
+                            /*is_post=*/false, /*is_otr=*/false,
+                            /*has_ssl_info=*/false)));
   NSString* data_html = @(kTestPageHTML);
   web_state()->LoadData([data_html dataUsingEncoding:NSUTF8StringEncoding],
                         @"text/html", GURL("https://www.chromium.org"));
@@ -669,17 +617,16 @@ TEST_P(WebStateTest, LoadChromeThenHTML) {
       test::WaitForWebViewContainingText(web_state(), kTextInTestPageHTML));
 }
 
+// Tests that loading an arbitrary file URL is a no-op.
+TEST_P(WebStateTest, LoadFileURL) {
+  GURL file_url("file:///path/to/file.html");
+  web::NavigationManager::WebLoadParams load_params(file_url);
+  web_state()->GetNavigationManager()->LoadURLWithParams(load_params);
+  EXPECT_FALSE(web_state()->IsLoading());
+}
+
 // Tests that reloading after loading HTML page will load the online page.
-// TODO(crbug.com/994468): This test sometimes shows an error page instead of
-// the online page when SlimNavigationManager is enabled.
-#if !TARGET_IPHONE_SIMULATOR
-#define MAYBE_LoadChromeThenWaitThenHTMLThenReload \
-  LoadChromeThenWaitThenHTMLThenReload
-#else
-#define MAYBE_LoadChromeThenWaitThenHTMLThenReload \
-  FLAKY_LoadChromeThenWaitThenHTMLThenReload
-#endif
-TEST_P(WebStateTest, MAYBE_LoadChromeThenWaitThenHTMLThenReload) {
+TEST_P(WebStateTest, LoadChromeThenWaitThenHTMLThenReload) {
   net::EmbeddedTestServer server;
   net::test_server::RegisterDefaultHandlers(&server);
   ASSERT_TRUE(server.Start());
@@ -697,7 +644,8 @@ TEST_P(WebStateTest, MAYBE_LoadChromeThenWaitThenHTMLThenReload) {
       web_state(),
       testing::GetErrorText(web_state(), app_specific_url, "NSURLErrorDomain",
                             /*error_code=*/NSURLErrorUnsupportedURL,
-                            /*is_post=*/false, /*is_otr=*/false)));
+                            /*is_post=*/false, /*is_otr=*/false,
+                            /*has_ssl_info=*/false)));
   NSString* data_html = @(kTestPageHTML);
   web_state()->LoadData([data_html dataUsingEncoding:NSUTF8StringEncoding],
                         @"text/html", echo_url);

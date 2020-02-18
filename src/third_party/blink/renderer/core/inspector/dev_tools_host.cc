@@ -36,7 +36,6 @@
 #include "third_party/blink/renderer/core/clipboard/system_clipboard.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
-#include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -126,8 +125,6 @@ void DevToolsHost::EvaluateScript(const String& expression) {
   if (!script_state)
     return;
   ScriptState::Scope scope(script_state);
-  std::unique_ptr<UserGestureIndicator> gesture_indicator =
-      LocalFrame::NotifyUserActivation(frontend_frame_);
   v8::MicrotasksScope microtasks(script_state->GetIsolate(),
                                  v8::MicrotasksScope::kRunMicrotasks);
   ScriptSourceCode source_code(expression, ScriptSourceLocationType::kInternal,
@@ -153,7 +150,8 @@ float DevToolsHost::zoomFactor() {
   // use-zoom-for-dsf mode.
   const ChromeClient* client =
       frontend_frame_->View()->GetChromeClient();
-  float window_to_viewport_ratio = client->WindowToViewportScalar(1.0f);
+  float window_to_viewport_ratio =
+      client->WindowToViewportScalar(frontend_frame_, 1.0f);
   return zoom_factor / window_to_viewport_ratio;
 }
 

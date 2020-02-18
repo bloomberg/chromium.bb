@@ -1,4 +1,19 @@
+// Copyright (C) 2019 The Android Open Source Project
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 import {_TextDecoder, _TextEncoder} from 'custom_utils';
+
 import {Adb, AdbMsg, AdbStream, CmdType} from './adb_interfaces';
 
 const textEncoder = new _TextEncoder();
@@ -23,6 +38,8 @@ enum AuthCmd {
   SIGNATURE = 2,
   RSAPUBLICKEY = 3,
 }
+
+const DEVICE_NOT_SET_ERROR = 'Device not set.';
 
 // This class is a basic TypeScript implementation of adb that only supports
 // shell commands. It is used to send the start tracing command to the connected
@@ -69,10 +86,26 @@ export class AdbOverWebUsb implements Adb {
   }
 
   async getPairedDevices() {
-    return navigator.usb.getDevices();
+    try {
+      return navigator.usb.getDevices();
+    } catch (e) {  // WebUSB not available.
+      return Promise.resolve([]);
+    }
   }
 
   async connect(device: USBDevice): Promise<void> {
+    // If we are already connected, we are also already authenticated, so we can
+    // skip doing the authentication again.
+    if (this.state === AdbState.CONNECTED) {
+      if (this.dev === device && device.opened) {
+        this.onConnected();
+        this.onConnected = () => {};
+        return;
+      }
+      // Another device was connected.
+      await this.disconnect();
+    }
+
     this.dev = device;
     this.useChecksum = true;
     this.key = await AdbOverWebUsb.initKey();
@@ -100,6 +133,16 @@ export class AdbOverWebUsb implements Adb {
     return new Promise<void>((resolve, _) => this.onConnected = resolve);
   }
 
+  async disconnect(): Promise<void> {
+    this.state = AdbState.DISCONNECTED;
+
+    if (!this.dev) return;
+
+    new Map(this.streams).forEach((stream, _id) => stream.setClosed());
+    console.assert(this.streams.size === 0);
+    this.dev = undefined;
+  }
+
   async startAuthentication() {
     // USB connected, now let's authenticate.
     const VERSION =
@@ -109,7 +152,7 @@ export class AdbOverWebUsb implements Adb {
   }
 
   findInterfaceAndEndpoint() {
-    if (!this.dev) throw Error('Device not set');
+    if (!this.dev) throw Error(DEVICE_NOT_SET_ERROR);
     for (const config of this.dev.configurations) {
       for (const interface_ of config.interfaces) {
         for (const alt of interface_.alternates) {
@@ -140,18 +183,19 @@ export class AdbOverWebUsb implements Adb {
   }
 
   receiveDeviceMessages() {
-    // TODO(nicomazz): find the best (and correct) way to stop this.
-    try {
-      this.recv().then(msg => {
-        this.onMessage(msg);
-        this.receiveDeviceMessages();
-      });
-    } catch (e) {
-      // Then the usb connection is not available anymore, the recv will throw
-      // an exception here.
-      // TODO(nicomazz): Propagate this unconnected state to the UI.
-      console.log('exception on recv: ', e);
-    }
+    this.recv()
+        .then(msg => {
+          this.onMessage(msg);
+          this.receiveDeviceMessages();
+        })
+        .catch(e => {
+          // Ignore error with "DEVICE_NOT_SET_ERROR" message since it is always
+          // thrown after the device disconnects.
+          if (e.message !== DEVICE_NOT_SET_ERROR) {
+            console.error(`Exception in recv: ${e.name}. error: ${e.message}`);
+          }
+          this.disconnect();
+        });
   }
 
   async onMessage(msg: AdbMsg) {
@@ -232,6 +276,10 @@ export class AdbOverWebUsb implements Adb {
     return this.openStream('shell:' + cmd);
   }
 
+  socket(path: string): Promise<AdbStream> {
+    return this.openStream('localfilesystem:' + path);
+  }
+
   openStream(svc: string): Promise<AdbStream> {
     const stream = new AdbStreamImpl(this, ++this.lastStreamId);
     this.streams.set(stream.localStreamId, stream);
@@ -239,8 +287,22 @@ export class AdbOverWebUsb implements Adb {
 
     //  The stream will resolve this promise once it receives the
     //  acknowledgement message from the device.
-    return new Promise<AdbStream>((resolve, _) => {
-      stream.onConnect = () => resolve(stream);
+    return new Promise<AdbStream>((resolve, reject) => {
+      stream.onConnect = () => {
+        stream.onClose = () => {};
+        resolve(stream);
+      };
+      stream.onClose = () => reject();
+    });
+  }
+
+  async shellOutputAsString(cmd: string): Promise<string> {
+    const shell = await this.shell(cmd);
+
+    return new Promise<string>((resolve, _) => {
+      const output: string[] = [];
+      shell.onData = raw => output.push(textDecoder.decode(raw));
+      shell.onClose = () => resolve(output.join());
     });
   }
 
@@ -265,14 +327,10 @@ export class AdbOverWebUsb implements Adb {
     console.assert(res.status === 'ok');
     const msg = AdbMsgImpl.decodeHeader(res.data!);
 
-    let bytesLeft = msg.dataLen;
-    let bytesReceived = 0;
-    while (bytesLeft > 0) {
-      const resp = await this.recvRaw(bytesLeft);
-      for (let i = 0; i < resp.data!.byteLength; i++) {
-        msg.data[bytesReceived++] = resp.data!.getUint8(i);
-      }
-      bytesLeft -= resp.data!.byteLength;
+    if (msg.dataLen > 0) {
+      const resp = await this.recvRaw(msg.dataLen);
+      msg.data = new Uint8Array(
+          resp.data!.buffer, resp.data!.byteOffset, resp.data!.byteLength);
     }
     if (this.useChecksum) {
       console.assert(AdbOverWebUsb.checksum(msg.data) === msg.dataChecksum);
@@ -304,12 +362,12 @@ export class AdbOverWebUsb implements Adb {
 
   sendRaw(buf: Uint8Array): Promise<USBOutTransferResult> {
     console.assert(buf.length <= this.maxPayload);
-    if (!this.dev) throw Error('Device not set');
+    if (!this.dev) throw Error(DEVICE_NOT_SET_ERROR);
     return this.dev.transferOut(this.usbWriteEpEndpoint, buf.buffer);
   }
 
   recvRaw(dataLen: number): Promise<USBInTransferResult> {
-    if (!this.dev) throw Error('Device not set');
+    if (!this.dev) throw Error(DEVICE_NOT_SET_ERROR);
     return this.dev.transferIn(this.usbReadEndpoint, dataLen);
   }
 }
@@ -344,7 +402,7 @@ export class AdbStreamImpl implements AdbStream {
 
   private sendInProgress = false;
 
-  onData: AdbStreamReadCallback = (_, __) => {};
+  onData: AdbStreamReadCallback = (_) => {};
   onConnect = () => {};
   onClose = () => {};
 
@@ -363,7 +421,6 @@ export class AdbStreamImpl implements AdbStream {
     }
 
     this.adb.send('CLSE', this.localStreamId, this.remoteStreamId);
-    this.doClose();
   }
 
   async write(msg: string|Uint8Array) {
@@ -378,7 +435,7 @@ export class AdbStreamImpl implements AdbStream {
     await this.adb.send('WRTE', this.localStreamId, this.remoteStreamId, raw);
   }
 
-  private doClose() {
+  setClosed() {
     this.state = AdbStreamState.CLOSED;
     this.adb.streams.delete(this.localStreamId);
     this.onClose();
@@ -397,7 +454,7 @@ export class AdbStreamImpl implements AdbStream {
 
     if (msg.cmd === 'WRTE') {
       this.adb.send('OKAY', this.localStreamId, this.remoteStreamId);
-      this.onData(msg.dataStr, msg.data);
+      this.onData(msg.data);
       return;
     }
 
@@ -410,7 +467,7 @@ export class AdbStreamImpl implements AdbStream {
     }
 
     if (msg.cmd === 'CLSE') {
-      this.doClose();
+      this.setClosed();
       return;
     }
     console.error(
@@ -419,7 +476,7 @@ export class AdbStreamImpl implements AdbStream {
 }
 
 interface AdbStreamReadCallback {
-  (str: string, raw: Uint8Array): void;
+  (raw: Uint8Array): void;
 }
 
 const ADB_MSG_SIZE = 6 * 4;  // 6 * int32.

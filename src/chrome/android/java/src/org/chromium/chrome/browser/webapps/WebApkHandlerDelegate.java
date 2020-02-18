@@ -78,9 +78,10 @@ public class WebApkHandlerDelegate {
         }
         // Pass non-null URL parameter so that {@link WebApkInfo#create()}
         // return value is non-null
-        WebApkInfo webApkInfo = WebApkInfo.create(packageInfo.packageName, "",
-                ShortcutSource.UNKNOWN, false /* forceNavigation */,
-                false /* isSplashProvidedByWebApk */, null /* shareData */);
+        WebApkInfo webApkInfo =
+                WebApkInfo.create(packageInfo.packageName, "", ShortcutSource.UNKNOWN,
+                        false /* forceNavigation */, false /* isSplashProvidedByWebApk */,
+                        null /* shareData */, null /* shareDataActivityClassName */);
         if (webApkInfo == null) {
             return;
         }
@@ -102,7 +103,7 @@ public class WebApkHandlerDelegate {
                 webApkInfo.shortName(), webApkInfo.webApkPackageName(), webApkInfo.id(),
                 webApkInfo.shellApkVersion(), packageInfo.versionCode, webApkInfo.url(),
                 webApkInfo.scopeUrl(), webApkInfo.manifestUrl(), webApkInfo.manifestStartUrl(),
-                webApkInfo.displayMode(), webApkInfo.orientation(), webApkInfo.themeColor(),
+                webApkInfo.displayMode(), webApkInfo.orientation(), webApkInfo.toolbarColor(),
                 webApkInfo.backgroundColor(), lastUpdateCheckTimeMsForStorage,
                 lastUpdateCompletionTimeMsInStorage, relaxUpdatesForStorage,
                 backingBrowserPackageName, isBackingBrowser, updateStatus);

@@ -19,6 +19,7 @@
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/menu_button_controller.h"
+#include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/layout/grid_layout.h"
@@ -70,15 +71,35 @@ void SetTooltipAndAccessibleName(views::Button* parent,
 
 }  // namespace
 
+SingleLineStyledLabelWrapper::SingleLineStyledLabelWrapper(
+    const base::string16& title) {
+  auto title_label = std::make_unique<views::StyledLabel>(title, nullptr);
+  // Size without a maximum width to get a single line label.
+  title_label->SizeToFit(0);
+  label_ = AddChildView(std::move(title_label));
+}
+
+views::StyledLabel* SingleLineStyledLabelWrapper::label() {
+  return label_;
+}
+
+void SingleLineStyledLabelWrapper::OnBoundsChanged(
+    const gfx::Rect& previous_bounds) {
+  // Vertically center its child manually since it doesn't have a LayoutManager.
+  DCHECK(label_);
+
+  int y_center = (height() - label_->size().height()) / 2;
+  label_->SetPosition(gfx::Point(GetLocalBounds().x(), y_center));
+}
+
 HoverButton::HoverButton(views::ButtonListener* button_listener,
                          const base::string16& text)
-    : views::LabelButton(/*button_listener*/ nullptr,
-                         text,
-                         views::style::CONTEXT_BUTTON),
-      listener_(button_listener) {
+    : views::LabelButton(button_listener, text, views::style::CONTEXT_BUTTON) {
   SetButtonController(std::make_unique<HoverButtonController>(
-      this, listener_,
+      this, button_listener,
       std::make_unique<views::Button::DefaultButtonControllerDelegate>(this)));
+
+  views::InstallRectHighlightPathGenerator(this);
 
   SetInstallFocusRingOnFocus(false);
   SetFocusBehavior(FocusBehavior::ALWAYS);
@@ -92,7 +113,7 @@ HoverButton::HoverButton(views::ButtonListener* button_listener,
   set_triggerable_event_flags(ui::EF_LEFT_MOUSE_BUTTON |
                               ui::EF_RIGHT_MOUSE_BUTTON);
   button_controller()->set_notify_action(
-      views::ButtonController::NotifyAction::NOTIFY_ON_RELEASE);
+      views::ButtonController::NotifyAction::kOnRelease);
 }
 
 HoverButton::HoverButton(views::ButtonListener* button_listener,
@@ -171,17 +192,8 @@ HoverButton::HoverButton(views::ButtonListener* button_listener,
                         row_height);
   icon_view_ = grid_layout->AddView(std::move(icon_view), 1, num_labels);
 
-  auto title_label = std::make_unique<views::StyledLabel>(title, nullptr);
-  // Size without a maximum width to get a single line label.
-  title_label->SizeToFit(0);
-  // |views::StyledLabel|s are all multi-line. With a layout manager,
-  // |StyledLabel| will try use the available space to size itself, and long
-  // titles will wrap to the next line (for smaller |HoverButton|s, this will
-  // also cover up |subtitle_|). Wrap it in a parent view with no layout manager
-  // to ensure it keeps its original size set by SizeToFit() above. Long titles
-  // will then be truncated.
-  auto title_wrapper = std::make_unique<views::View>();
-  title_ = title_wrapper->AddChildView(std::move(title_label));
+  auto title_wrapper = std::make_unique<SingleLineStyledLabelWrapper>(title);
+  title_ = title_wrapper->label();
   // Hover the whole button when hovering |title_|. This is OK because |title_|
   // will never have a link in it.
   title_wrapper->set_can_process_events_within_subtree(false);
@@ -233,6 +245,12 @@ HoverButton::HoverButton(views::ButtonListener* button_listener,
 
 HoverButton::~HoverButton() {}
 
+// static
+SkColor HoverButton::GetInkDropColor(const views::View* view) {
+  return views::style::GetColor(*view, views::style::CONTEXT_BUTTON,
+                                views::style::STYLE_SECONDARY);
+}
+
 void HoverButton::SetBorder(std::unique_ptr<views::Border> b) {
   LabelButton::SetBorder(std::move(b));
   // Make sure the minimum size is correct according to the layout (if any).
@@ -273,11 +291,10 @@ void HoverButton::SetTitleTextWithHintRange(const base::string16& title_text,
 views::Button::KeyClickAction HoverButton::GetKeyClickActionForEvent(
     const ui::KeyEvent& event) {
   if (event.key_code() == ui::VKEY_RETURN) {
-    // As the hover button is presented in the user menu, it triggers an
-    // |CLICK_ON_KEY_PRESS| action every time the user clicks on enter on all
-    // platforms (it ignores the value of
-    // |PlatformStyle::kReturnClicksFocusedControl|.
-    return CLICK_ON_KEY_PRESS;
+    // As the hover button is presented in the user menu, it triggers a
+    // kOnKeyPress action every time the user clicks on enter on all platforms.
+    // (it ignores the value of PlatformStyle::kReturnClicksFocusedControl)
+    return KeyClickAction::kOnKeyPress;
   }
   return LabelButton::GetKeyClickActionForEvent(event);
 }
@@ -295,8 +312,7 @@ void HoverButton::StateChanged(ButtonState old_state) {
 }
 
 SkColor HoverButton::GetInkDropBaseColor() const {
-  return views::style::GetColor(*this, views::style::CONTEXT_BUTTON,
-                                views::style::STYLE_SECONDARY);
+  return GetInkDropColor(this);
 }
 
 std::unique_ptr<views::InkDrop> HoverButton::CreateInkDrop() {
@@ -306,17 +322,6 @@ std::unique_ptr<views::InkDrop> HoverButton::CreateInkDrop() {
   ink_drop->SetShowHighlightOnFocus(true);
   ink_drop->SetShowHighlightOnHover(false);
   return ink_drop;
-}
-
-void HoverButton::Layout() {
-  LabelButton::Layout();
-
-  // Vertically center |title_| manually since it doesn't have a LayoutManager.
-  if (title_) {
-    DCHECK(title_->parent());
-    int y_center = title_->parent()->height() / 2 - title_->size().height() / 2;
-    title_->SetPosition(gfx::Point(title_->x(), y_center));
-  }
 }
 
 views::View* HoverButton::GetTooltipHandlerForPoint(const gfx::Point& point) {
@@ -338,20 +343,10 @@ views::View* HoverButton::GetTooltipHandlerForPoint(const gfx::Point& point) {
     }
   }
 
-  // If possible, take advantage of the |views::Label| tooltip behavior, which
-  // only sets the tooltip when the text is too long.
-  if (title_)
-    return this;
-  return label();
+  return this;
 }
 
 void HoverButton::OnBoundsChanged(const gfx::Rect& previous_bounds) {
-  // HoverButtons use a rectangular highlight to encompass the full width of
-  // their parent.
-  auto path = std::make_unique<SkPath>();
-  path->addRect(RectToSkRect(GetLocalBounds()));
-  SetProperty(views::kHighlightPathKey, path.release());
-
   if (title_) {
     SetTooltipAndAccessibleName(this, title_, subtitle_, GetLocalBounds(),
                                 taken_width_, auto_compute_tooltip_);
@@ -390,9 +385,3 @@ void HoverButton::SetSubtitleColor(SkColor color) {
     subtitle_->SetEnabledColor(color);
 }
 
-void HoverButton::OnMenuButtonClicked(Button* source,
-                                      const gfx::Point& point,
-                                      const ui::Event* event) {
-  if (listener_)
-    listener_->ButtonPressed(source, *event);
-}

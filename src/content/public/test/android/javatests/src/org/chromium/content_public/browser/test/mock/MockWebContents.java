@@ -8,7 +8,8 @@ import android.annotation.SuppressLint;
 import android.graphics.Rect;
 import android.os.Handler;
 import android.os.Parcel;
-import android.support.annotation.Nullable;
+
+import androidx.annotation.Nullable;
 
 import org.chromium.content_public.browser.AccessibilitySnapshotCallback;
 import org.chromium.content_public.browser.ImageDownloadCallback;
@@ -198,7 +199,7 @@ public class MockWebContents implements WebContents {
     }
 
     @Override
-    public int getLoadProgress() {
+    public float getLoadProgress() {
         return 0;
     }
 
@@ -227,9 +228,6 @@ public class MockWebContents implements WebContents {
 
     @Override
     public void setSpatialNavigationDisabled(boolean disabled) {}
-
-    @Override
-    public void reloadLoFiImages() {}
 
     @Override
     public int downloadImage(String url, boolean isFavicon, int maxBitmapSize, boolean bypassCache,

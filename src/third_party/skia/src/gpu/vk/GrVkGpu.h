@@ -48,6 +48,9 @@ public:
     const GrVkInterface* vkInterface() const { return fInterface.get(); }
     const GrVkCaps& vkCaps() const { return *fVkCaps; }
 
+    bool isDeviceLost() const { return fDeviceIsLost; }
+    void setDeviceLost() { fDeviceIsLost = true; }
+
     GrVkMemoryAllocator* memoryAllocator() const { return fMemoryAllocator.get(); }
 
     VkPhysicalDevice physicalDevice() const { return fPhysicalDevice; }
@@ -67,23 +70,10 @@ public:
 
     GrVkPrimaryCommandBuffer* currentCommandBuffer() { return fCurrentCmdBuffer; }
 
-    enum SyncQueue {
-        kForce_SyncQueue,
-        kSkip_SyncQueue
-    };
-
-    void querySampleLocations(GrRenderTarget*, SkTArray<SkPoint>*) override {
-        SkASSERT(!this->caps()->sampleLocationsSupport());
-        SK_ABORT("Sample locations not yet implemented for Vulkan.");
-    }
+    void querySampleLocations(GrRenderTarget*, SkTArray<SkPoint>*) override;
 
     void xferBarrier(GrRenderTarget*, GrXferBarrierType) override {}
 
-    GrBackendTexture createBackendTexture(int w, int h, const GrBackendFormat&,
-                                          GrMipMapped, GrRenderable,
-                                          const void* pixels, size_t rowBytes,
-                                          const SkColor4f* color,
-                                          GrProtected isProtected) override;
     void deleteBackendTexture(const GrBackendTexture&) override;
 #if GR_TEST_UTILS
     bool isTestingOnlyBackendTexture(const GrBackendTexture&) const override;
@@ -102,10 +92,10 @@ public:
             const GrRenderTarget*, int width, int height, int numStencilSamples) override;
 
     GrOpsRenderPass* getOpsRenderPass(
-            GrRenderTarget*, GrSurfaceOrigin, const SkRect&,
+            GrRenderTarget*, GrSurfaceOrigin, const SkIRect&,
             const GrOpsRenderPass::LoadAndStoreInfo&,
             const GrOpsRenderPass::StencilLoadAndStoreInfo&,
-            const SkTArray<GrTextureProxy*, true>& sampledProxies) override;
+            const SkTArray<GrSurfaceProxy*, true>& sampledProxies) override;
 
     void addBufferMemoryBarrier(const GrVkResource*,
                                 VkPipelineStageFlags srcStageMask,
@@ -124,22 +114,10 @@ public:
 
     bool onRegenerateMipMapLevels(GrTexture* tex) override;
 
-    void resolveRenderTargetNoFlush(GrRenderTarget* target) {
-        this->internalResolveRenderTarget(target, false);
-    }
+    void onResolveRenderTarget(GrRenderTarget* target, const SkIRect& resolveRect,
+                               GrSurfaceOrigin resolveOrigin, ForExternalIO) override;
 
-    void onResolveRenderTarget(GrRenderTarget* target) override {
-        // This resolve is called when we are preparing an msaa surface for external I/O. It is
-        // called after flushing, so we need to make sure we submit the command buffer after doing
-        // the resolve so that the resolve actually happens.
-        this->internalResolveRenderTarget(target, true);
-    }
-
-    void submitSecondaryCommandBuffer(std::unique_ptr<GrVkSecondaryCommandBuffer>,
-                                      const GrVkRenderPass*,
-                                      const VkClearValue* colorClear,
-                                      GrVkRenderTarget*, GrSurfaceOrigin,
-                                      const SkIRect& bounds);
+    void submitSecondaryCommandBuffer(std::unique_ptr<GrVkSecondaryCommandBuffer>);
 
     void submit(GrOpsRenderPass*) override;
 
@@ -147,12 +125,11 @@ public:
     bool waitFence(GrFence, uint64_t timeout) override;
     void deleteFence(GrFence) const override;
 
-    sk_sp<GrSemaphore> SK_WARN_UNUSED_RESULT makeSemaphore(bool isOwned) override;
-    sk_sp<GrSemaphore> wrapBackendSemaphore(const GrBackendSemaphore& semaphore,
-                                            GrResourceProvider::SemaphoreWrapType wrapType,
-                                            GrWrapOwnership ownership) override;
-    void insertSemaphore(sk_sp<GrSemaphore> semaphore) override;
-    void waitSemaphore(sk_sp<GrSemaphore> semaphore) override;
+    std::unique_ptr<GrSemaphore> SK_WARN_UNUSED_RESULT makeSemaphore(bool isOwned) override;
+    std::unique_ptr<GrSemaphore> wrapBackendSemaphore(const GrBackendSemaphore& semaphore,
+            GrResourceProvider::SemaphoreWrapType wrapType, GrWrapOwnership ownership) override;
+    void insertSemaphore(GrSemaphore* semaphore) override;
+    void waitSemaphore(GrSemaphore* semaphore) override;
 
     // These match the definitions in SkDrawable, from whence they came
     typedef void* SubmitContext;
@@ -164,14 +141,11 @@ public:
 
     void checkFinishProcs() override { fResourceProvider.checkCommandBuffers(); }
 
-    sk_sp<GrSemaphore> prepareTextureForCrossContextUsage(GrTexture*) override;
+    std::unique_ptr<GrSemaphore> prepareTextureForCrossContextUsage(GrTexture*) override;
 
     void copyBuffer(GrVkBuffer* srcBuffer, GrVkBuffer* dstBuffer, VkDeviceSize srcOffset,
                     VkDeviceSize dstOffset, VkDeviceSize size);
     bool updateBuffer(GrVkBuffer* buffer, const void* src, VkDeviceSize offset, VkDeviceSize size);
-
-    uint32_t getExtraSamplerKeyForProgram(const GrSamplerState&,
-                                          const GrBackendFormat& format) override;
 
     enum PersistentCacheKeyType : uint32_t {
         kShader_PersistentCacheKeyType = 0,
@@ -180,7 +154,18 @@ public:
 
     void storeVkPipelineCacheData() override;
 
+    bool beginRenderPass(const GrVkRenderPass*,
+                         const VkClearValue* colorClear,
+                         GrVkRenderTarget*, GrSurfaceOrigin,
+                         const SkIRect& bounds, bool forSecondaryCB);
+    void endRenderPass(GrRenderTarget* target, GrSurfaceOrigin origin, const SkIRect& bounds);
+
 private:
+    enum SyncQueue {
+        kForce_SyncQueue,
+        kSkip_SyncQueue
+    };
+
     GrVkGpu(GrContext*, const GrContextOptions&, const GrVkBackendContext&,
             sk_sp<const GrVkInterface>, uint32_t instanceVersion, uint32_t physicalDeviceVersion);
 
@@ -188,14 +173,20 @@ private:
 
     void destroyResources();
 
+    GrBackendTexture onCreateBackendTexture(SkISize,
+                                            const GrBackendFormat&,
+                                            GrRenderable,
+                                            const BackendTextureData*,
+                                            int numMipLevels,
+                                            GrProtected) override;
     sk_sp<GrTexture> onCreateTexture(const GrSurfaceDesc&,
                                      const GrBackendFormat& format,
                                      GrRenderable,
                                      int renderTargetSampleCnt,
                                      SkBudgeted,
                                      GrProtected,
-                                     const GrMipLevel[],
-                                     int mipLevelCount) override;
+                                     int mipLevelCount,
+                                     uint32_t levelClearMask) override;
     sk_sp<GrTexture> onCreateCompressedTexture(int width, int height, const GrBackendFormat&,
                                                SkImage::CompressionType, SkBudgeted,
                                                const void* data) override;
@@ -238,7 +229,7 @@ private:
     bool onCopySurface(GrSurface* dst, GrSurface* src, const SkIRect& srcRect,
                        const SkIPoint& dstPoint) override;
 
-    void onFinishFlush(GrSurfaceProxy*[], int, SkSurface::BackendSurfaceAccess access,
+    bool onFinishFlush(GrSurfaceProxy*[], int, SkSurface::BackendSurfaceAccess access,
                        const GrFlushInfo&, const GrPrepareForExternalIORequests&) override;
 
     // Ends and submits the current command buffer to the queue and then creates a new command
@@ -247,10 +238,8 @@ private:
     // fSemaphoreToSignal, we will add those signal semaphores to the submission of this command
     // buffer. If this GrVkGpu object has any semaphores in fSemaphoresToWaitOn, we will add those
     // wait semaphores to the submission of this command buffer.
-    void submitCommandBuffer(SyncQueue sync, GrGpuFinishedProc finishedProc = nullptr,
+    bool submitCommandBuffer(SyncQueue sync, GrGpuFinishedProc finishedProc = nullptr,
                              GrGpuFinishedContext finishedContext = nullptr);
-
-    void internalResolveRenderTarget(GrRenderTarget*, bool requiresSubmit);
 
     void copySurfaceAsCopyImage(GrSurface* dst, GrSurface* src, GrVkImage* dstImage,
                                 GrVkImage* srcImage, const SkIRect& srcRect,
@@ -272,14 +261,19 @@ private:
     void resolveImage(GrSurface* dst, GrVkRenderTarget* src, const SkIRect& srcRect,
                       const SkIPoint& dstPoint);
 
-    bool createVkImageForBackendSurface(VkFormat vkFormat, int w, int h, bool texturable,
-                                        bool renderable, GrMipMapped mipMapped, const void* srcData,
-                                        size_t srcRowBytes, const SkColor4f* color,
-                                        GrVkImageInfo* info, GrProtected isProtected);
+    bool createVkImageForBackendSurface(VkFormat,
+                                        SkISize,
+                                        bool texturable,
+                                        bool renderable,
+                                        const BackendTextureData*,
+                                        int numMipLevels,
+                                        GrVkImageInfo*,
+                                        GrProtected);
 
     sk_sp<const GrVkInterface>                            fInterface;
     sk_sp<GrVkMemoryAllocator>                            fMemoryAllocator;
     sk_sp<GrVkCaps>                                       fVkCaps;
+    bool                                                  fDeviceIsLost = false;
 
     VkInstance                                            fInstance;
     VkPhysicalDevice                                      fPhysicalDevice;

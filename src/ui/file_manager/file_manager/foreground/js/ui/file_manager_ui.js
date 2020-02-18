@@ -81,13 +81,6 @@ class FileManagerUI {
     this.copyConfirmDialog.setOkLabel(str('CONFIRM_COPY_BUTTON_LABEL'));
 
     /**
-     * Multi-profile share dialog.
-     * @type {!MultiProfileShareDialog}
-     * @const
-     */
-    this.multiProfileShareDialog = new MultiProfileShareDialog(this.element);
-
-    /**
      * Default task picker.
      * @type {!cr.filebrowser.DefaultTaskDialog}
      * @const
@@ -176,6 +169,10 @@ class FileManagerUI {
     this.searchBox = new SearchBox(
         queryRequiredElement('#search-box', this.element),
         queryRequiredElement('#search-button', this.element));
+    // Add a listener to the containing action bar for hiding the search box.
+    this.actionbar.addEventListener('click', (event) => {
+      this.searchBox.removeHidePending(event);
+    });
 
     /**
      * Empty folder UI.
@@ -194,11 +191,11 @@ class FileManagerUI {
 
     /**
      * The button to sort the file list.
-     * @type {!cr.ui.MenuButton}
+     * @type {!cr.ui.MultiMenuButton}
      * @const
      */
     this.sortButton =
-        util.queryDecoratedElement('#sort-button', cr.ui.MenuButton);
+        util.queryDecoratedElement('#sort-button', cr.ui.MultiMenuButton);
 
     /**
      * Ripple effect of sort button.
@@ -234,11 +231,11 @@ class FileManagerUI {
 
     /**
      * The button to open context menu in the check-select mode.
-     * @type {!cr.ui.MenuButton}
+     * @type {!cr.ui.MultiMenuButton}
      * @const
      */
-    this.selectionMenuButton =
-        util.queryDecoratedElement('#selection-menu-button', cr.ui.MenuButton);
+    this.selectionMenuButton = util.queryDecoratedElement(
+        '#selection-menu-button', cr.ui.MultiMenuButton);
 
     /**
      * Directory tree.
@@ -255,14 +252,6 @@ class FileManagerUI {
         queryRequiredElement('#progress-center', this.element));
 
     /**
-     * Activity complete feedback panel.
-     * @type {!HTMLElement}
-     * @const
-     */
-    this.activityCompletePanel =
-        queryRequiredElement('#completed-panel', this.element);
-
-    /**
      * Activity feedback panel.
      * @type {!HTMLElement}
      * @const
@@ -272,9 +261,9 @@ class FileManagerUI {
 
     /**
      * List container.
-     * @type {ListContainer}
+     * @type {!ListContainer}
      */
-    this.listContainer = null;
+    this.listContainer;
 
     /**
      * @type {!HTMLElement}
@@ -384,7 +373,6 @@ class FileManagerUI {
      * @private {!HTMLElement}
      */
     this.a11yMessage_ = queryRequiredElement('#a11y-msg', this.element);
-
 
     if (window.IN_TEST) {
       /**
@@ -506,8 +494,11 @@ class FileManagerUI {
    * Attaches files tooltip.
    */
   attachFilesTooltip() {
-    assertInstanceof(document.querySelector('files-tooltip'), FilesTooltip)
-        .addTargets(document.querySelectorAll('[has-tooltip]'));
+    const filesTooltip =
+        assertInstanceof(document.querySelector('files-tooltip'), FilesTooltip);
+    filesTooltip.addTargets(document.querySelectorAll('[has-tooltip]'));
+
+    this.locationLine.filesTooltip = filesTooltip;
   }
 
   /**

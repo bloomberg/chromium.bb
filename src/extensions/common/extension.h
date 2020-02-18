@@ -140,6 +140,10 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
     // instead of the usual |TYPE_EXTENSION|.
     FOR_LOGIN_SCREEN = 1 << 13,
 
+    // |WITHHOLD_PERMISSIONS| indicates that on installation the user indicated
+    // for permissions to be withheld from the extension by default.
+    WITHHOLD_PERMISSIONS = 1 << 14,
+
     // When adding new flags, make sure to update kInitFromValueFlagBits.
   };
 
@@ -216,6 +220,11 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // Returns the base extension url for a given |extension_id|.
   static GURL GetBaseURLFromExtensionId(const ExtensionId& extension_id);
 
+  // Returns true if the extension should be displayed in the extension
+  // settings page (i.e. chrome://extensions).
+  static bool ShouldDisplayInExtensionSettings(Manifest::Type type,
+                                               Manifest::Location location);
+
   // Returns true if this extension or app includes areas within |origin|.
   bool OverlapsWithOrigin(const GURL& origin) const;
 
@@ -256,8 +265,9 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   const HashedExtensionId& hashed_id() const;
   const base::Version& version() const { return version_; }
   const std::string& version_name() const { return version_name_; }
-  const std::string VersionString() const;
-  const std::string GetVersionForDisplay() const;
+  std::string VersionString() const;
+  std::string DifferentialFingerprint() const;
+  std::string GetVersionForDisplay() const;
   const std::string& name() const { return display_name_; }
   const std::string& short_name() const { return short_name_; }
   const std::string& non_localized_name() const { return non_localized_name_; }

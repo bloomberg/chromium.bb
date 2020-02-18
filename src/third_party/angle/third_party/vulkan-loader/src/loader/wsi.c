@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2015-2016 The Khronos Group Inc.
- * Copyright (c) 2015-2016 Valve Corporation
- * Copyright (c) 2015-2016 LunarG, Inc.
+ * Copyright (c) 2015-2016, 2019 The Khronos Group Inc.
+ * Copyright (c) 2015-2016, 2019 Valve Corporation
+ * Copyright (c) 2015-2016, 2019 LunarG, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@
  * Author: Jon Ashburn <jon@lunarg.com>
  * Author: Ian Elliott <ianelliott@google.com>
  * Author: Mark Lobodzinski <mark@lunarg.com>
+ * Author: Lenny Komow <lenny@lunarg.com>
  */
 
 #ifndef _GNU_SOURCE
@@ -60,9 +61,11 @@ void wsi_create_instance(struct loader_instance *ptr_instance, const VkInstanceC
 #ifdef VK_USE_PLATFORM_IOS_MVK
     ptr_instance->wsi_ios_surface_enabled = false;
 #endif  // VK_USE_PLATFORM_IOS_MVK
-
     ptr_instance->wsi_display_enabled = false;
     ptr_instance->wsi_display_props2_enabled = false;
+#ifdef VK_USE_PLATFORM_METAL_EXT
+    ptr_instance->wsi_metal_surface_enabled = false;
+#endif // VK_USE_PLATFORM_METAL_EXT
 
     for (uint32_t i = 0; i < pCreateInfo->enabledExtensionCount; i++) {
         if (strcmp(pCreateInfo->ppEnabledExtensionNames[i], VK_KHR_SURFACE_EXTENSION_NAME) == 0) {
@@ -111,6 +114,16 @@ void wsi_create_instance(struct loader_instance *ptr_instance, const VkInstanceC
             continue;
         }
 #endif  // VK_USE_PLATFORM_IOS_MVK
+        if (strcmp(pCreateInfo->ppEnabledExtensionNames[i], VK_EXT_HEADLESS_SURFACE_EXTENSION_NAME) == 0) {
+            ptr_instance->wsi_headless_surface_enabled = true;
+            continue;
+        }
+#if defined(VK_USE_PLATFORM_METAL_EXT)
+        if (strcmp(pCreateInfo->ppEnabledExtensionNames[i], VK_EXT_METAL_SURFACE_EXTENSION_NAME) == 0) {
+            ptr_instance->wsi_metal_surface_enabled = true;
+            continue;
+        }
+#endif
         if (strcmp(pCreateInfo->ppEnabledExtensionNames[i], VK_KHR_DISPLAY_EXTENSION_NAME) == 0) {
             ptr_instance->wsi_display_enabled = true;
             continue;
@@ -973,6 +986,75 @@ VKAPI_ATTR VkResult VKAPI_CALL terminator_CreateAndroidSurfaceKHR(VkInstance ins
 
 #endif  // VK_USE_PLATFORM_ANDROID_KHR
 
+// Functions for the VK_EXT_headless_surface extension:
+
+VKAPI_ATTR VkResult VKAPI_CALL vkCreateHeadlessSurfaceEXT(VkInstance instance, const VkHeadlessSurfaceCreateInfoEXT *pCreateInfo,
+                                                          const VkAllocationCallbacks *pAllocator, VkSurfaceKHR *pSurface) {
+    const VkLayerInstanceDispatchTable *disp;
+    disp = loader_get_instance_layer_dispatch(instance);
+    VkResult res;
+
+    res = disp->CreateHeadlessSurfaceEXT(instance, pCreateInfo, pAllocator, pSurface);
+    return res;
+}
+
+VKAPI_ATTR VkResult VKAPI_CALL terminator_CreateHeadlessSurfaceEXT(VkInstance instance,
+                                                                   const VkHeadlessSurfaceCreateInfoEXT *pCreateInfo,
+                                                                   const VkAllocationCallbacks *pAllocator,
+                                                                   VkSurfaceKHR *pSurface) {
+    struct loader_instance *inst = loader_get_instance(instance);
+    VkIcdSurface *pIcdSurface = NULL;
+    VkResult vkRes = VK_SUCCESS;
+    uint32_t i = 0;
+
+    if (!inst->wsi_headless_surface_enabled) {
+        loader_log(inst, VK_DEBUG_REPORT_ERROR_BIT_EXT, 0,
+                   "VK_EXT_headless_surface extension not enabled.  "
+                   "vkCreateHeadlessSurfaceEXT not executed!\n");
+        return VK_SUCCESS;
+    }
+
+    // Next, if so, proceed with the implementation of this function:
+    pIcdSurface = AllocateIcdSurfaceStruct(inst, sizeof(pIcdSurface->headless_surf.base), sizeof(pIcdSurface->headless_surf));
+    if (pIcdSurface == NULL) {
+        vkRes = VK_ERROR_OUT_OF_HOST_MEMORY;
+        goto out;
+    }
+
+    pIcdSurface->headless_surf.base.platform = VK_ICD_WSI_PLATFORM_HEADLESS;
+    // Loop through each ICD and determine if they need to create a surface
+    for (struct loader_icd_term *icd_term = inst->icd_terms; icd_term != NULL; icd_term = icd_term->next, i++) {
+        if (icd_term->scanned_icd->interface_version >= ICD_VER_SUPPORTS_ICD_SURFACE_KHR) {
+            if (NULL != icd_term->dispatch.CreateHeadlessSurfaceEXT) {
+                vkRes = icd_term->dispatch.CreateHeadlessSurfaceEXT(icd_term->instance, pCreateInfo, pAllocator,
+                                                                    &pIcdSurface->real_icd_surfaces[i]);
+                if (VK_SUCCESS != vkRes) {
+                    goto out;
+                }
+            }
+        }
+    }
+
+    *pSurface = (VkSurfaceKHR)pIcdSurface;
+
+out:
+
+    if (VK_SUCCESS != vkRes && NULL != pIcdSurface) {
+        if (NULL != pIcdSurface->real_icd_surfaces) {
+            i = 0;
+            for (struct loader_icd_term *icd_term = inst->icd_terms; icd_term != NULL; icd_term = icd_term->next, i++) {
+                if ((VkSurfaceKHR)NULL != pIcdSurface->real_icd_surfaces[i] && NULL != icd_term->dispatch.DestroySurfaceKHR) {
+                    icd_term->dispatch.DestroySurfaceKHR(icd_term->instance, pIcdSurface->real_icd_surfaces[i], pAllocator);
+                }
+            }
+            loader_instance_heap_free(inst, pIcdSurface->real_icd_surfaces);
+        }
+        loader_instance_heap_free(inst, pIcdSurface);
+    }
+
+    return vkRes;
+}
+
 #ifdef VK_USE_PLATFORM_MACOS_MVK
 
 // Functions for the VK_MVK_macos_surface extension:
@@ -1095,6 +1177,72 @@ VKAPI_ATTR VkResult VKAPI_CALL terminator_CreateIOSSurfaceMVK(VkInstance instanc
 }
 
 #endif  // VK_USE_PLATFORM_IOS_MVK
+
+#if defined(VK_USE_PLATFORM_METAL_EXT)
+
+LOADER_EXPORT VKAPI_ATTR VkResult VKAPI_CALL vkCreateMetalSurfaceEXT(VkInstance instance,
+                                                                     const VkMetalSurfaceCreateInfoEXT *pCreateInfo,
+                                                                     const VkAllocationCallbacks *pAllocator,
+                                                                     VkSurfaceKHR *pSurface) {
+    const VkLayerInstanceDispatchTable *disp = loader_get_instance_layer_dispatch(instance);
+    return disp->CreateMetalSurfaceEXT(instance, pCreateInfo, pAllocator, pSurface);
+}
+
+VKAPI_ATTR VkResult VKAPI_CALL terminator_CreateMetalSurfaceEXT(VkInstance instance, const VkMetalSurfaceCreateInfoEXT *pCreateInfo,
+                                                                const VkAllocationCallbacks *pAllocator, VkSurfaceKHR *pSurface) {
+    VkResult result = VK_SUCCESS;
+    VkIcdSurface *icd_surface = NULL;
+    uint32_t i;
+
+    // First, check to ensure the appropriate extension was enabled:
+    struct loader_instance *ptr_instance = loader_get_instance(instance);
+    if (!ptr_instance->wsi_metal_surface_enabled) {
+        loader_log(ptr_instance, VK_DEBUG_REPORT_ERROR_BIT_EXT, 0,
+                   "VK_EXT_metal_surface extension not enabled. vkCreateMetalSurfaceEXT will not be executed.\n");
+    }
+
+    // Next, if so, proceed with the implementation of this function:
+    icd_surface = AllocateIcdSurfaceStruct(ptr_instance, sizeof(icd_surface->metal_surf.base), sizeof(icd_surface->metal_surf));
+    if (icd_surface == NULL) {
+        result = VK_ERROR_OUT_OF_HOST_MEMORY;
+        goto out;
+    }
+
+    icd_surface->metal_surf.base.platform = VK_ICD_WSI_PLATFORM_METAL;
+    icd_surface->metal_surf.pLayer = pCreateInfo->pLayer;
+
+    // Loop through each ICD and determine if they need to create a surface
+    i = 0;
+    for (struct loader_icd_term *icd_term = ptr_instance->icd_terms; icd_term != NULL; icd_term = icd_term->next, ++i) {
+        if (icd_term->scanned_icd->interface_version >= ICD_VER_SUPPORTS_ICD_SURFACE_KHR) {
+            if (icd_term->dispatch.CreateMetalSurfaceEXT != NULL) {
+                result = icd_term->dispatch.CreateMetalSurfaceEXT(icd_term->instance, pCreateInfo, pAllocator,
+                                                                  &icd_surface->real_icd_surfaces[i]);
+                if (result != VK_SUCCESS) {
+                    goto out;
+                }
+            }
+        }
+    }
+    *pSurface = (VkSurfaceKHR)icd_surface;
+
+out:
+    if (result != VK_SUCCESS && icd_surface != NULL) {
+        if (icd_surface->real_icd_surfaces != NULL) {
+            i = 0;
+            for (struct loader_icd_term *icd_term = ptr_instance->icd_terms; icd_term != NULL; icd_term = icd_term->next, ++i) {
+                if (icd_surface->real_icd_surfaces[i] == VK_NULL_HANDLE && icd_term->dispatch.DestroySurfaceKHR != NULL) {
+                    icd_term->dispatch.DestroySurfaceKHR(icd_term->instance, icd_surface->real_icd_surfaces[i], pAllocator);
+                }
+            }
+            loader_instance_heap_free(ptr_instance, icd_surface->real_icd_surfaces);
+        }
+        loader_instance_heap_free(ptr_instance, icd_surface);
+    }
+    return result;
+}
+
+#endif
 
 // Functions for the VK_KHR_display instance extension:
 LOADER_EXPORT VKAPI_ATTR VkResult VKAPI_CALL vkGetPhysicalDeviceDisplayPropertiesKHR(VkPhysicalDevice physicalDevice,
@@ -1785,6 +1933,7 @@ bool wsi_swapchain_instance_gpa(struct loader_instance *ptr_instance, const char
         return true;
     }
 #endif  // VK_USE_PLATFORM_ANDROID_KHR
+
 #ifdef VK_USE_PLATFORM_MACOS_MVK
 
     // Functions for the VK_MVK_macos_surface extension:
@@ -1801,6 +1950,20 @@ bool wsi_swapchain_instance_gpa(struct loader_instance *ptr_instance, const char
         return true;
     }
 #endif  // VK_USE_PLATFORM_IOS_MVK
+
+    // Functions for the VK_EXT_headless_surface extension:
+    if (!strcmp("vkCreateHeadlessSurfaceEXT", name)) {
+        *addr = ptr_instance->wsi_headless_surface_enabled ? (void *)vkCreateHeadlessSurfaceEXT : NULL;
+        return true;
+    }
+
+#if defined(VK_USE_PLATFORM_METAL_EXT)
+    // Functions for the VK_MVK_macos_surface extension:
+    if (!strcmp("vkCreateMetalSurfaceEXT", name)) {
+        *addr = ptr_instance->wsi_metal_surface_enabled ? (void *)vkCreateMetalSurfaceEXT : NULL;
+        return true;
+    }
+#endif // VK_USE_PLATFORM_METAL_EXT
 
     // Functions for VK_KHR_display extension:
     if (!strcmp("vkGetPhysicalDeviceDisplayPropertiesKHR", name)) {

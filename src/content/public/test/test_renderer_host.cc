@@ -8,17 +8,18 @@
 
 #include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
+#include "base/task/post_task.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "content/browser/compositor/test/test_image_transport_factory.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
-#include "content/browser/frame_host/navigation_handle_impl.h"
 #include "content/browser/frame_host/navigation_request.h"
 #include "content/browser/renderer_host/render_view_host_factory.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/site_instance_impl.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_widget_host_iterator.h"
 #include "content/public/browser/web_contents.h"
@@ -34,6 +35,7 @@
 #include "content/test/test_render_view_host_factory.h"
 #include "content/test/test_render_widget_host_factory.h"
 #include "content/test/test_web_contents.h"
+#include "net/base/mock_network_change_notifier.h"
 #include "ui/base/material_design/material_design_controller.h"
 
 #if defined(OS_ANDROID)
@@ -111,12 +113,14 @@ RenderViewHostTestEnabler::RenderViewHostTestEnabler()
       rvh_factory_(new TestRenderViewHostFactory(rph_factory_.get())),
       rfh_factory_(new TestRenderFrameHostFactory()),
       rwhi_factory_(new TestRenderWidgetHostFactory()) {
-  // A MessageLoop is needed for Mojo bindings to graphics services. Some
-  // tests have their own, so this only creates one when none exists. This
-  // means tests must ensure any MessageLoop they make is created before
-  // the RenderViewHostTestEnabler.
-  if (!base::MessageLoopCurrent::Get())
-    task_environment_ = std::make_unique<base::test::TaskEnvironment>();
+  // A TaskEnvironment is needed on the main thread for Mojo bindings to
+  // graphics services. Some tests have their own, so this only creates one
+  // (single-threaded) when none exists. This means tests must ensure any
+  // TaskEnvironment they make is created before the RenderViewHostTestEnabler.
+  if (!base::MessageLoopCurrent::Get()) {
+    task_environment_ =
+        std::make_unique<base::test::SingleThreadTaskEnvironment>();
+  }
 #if !defined(OS_ANDROID)
   ImageTransportFactory::SetFactory(
       std::make_unique<TestImageTransportFactory>());
@@ -250,6 +254,10 @@ void RenderViewHostTestHarness::SetUp() {
 
   sanity_checker_.reset(new ContentBrowserSanityChecker());
 
+#if !defined(OS_ANDROID)
+  network_change_notifier_ = net::test::MockNetworkChangeNotifier::Create();
+#endif
+
   DCHECK(!browser_context_);
   browser_context_ = CreateBrowserContext();
 
@@ -285,9 +293,8 @@ void RenderViewHostTestHarness::TearDown() {
   // queue. This is preferable to immediate deletion because it will behave
   // properly if the |rph_factory_| reset above enqueued any tasks which
   // depend on |browser_context_|.
-  BrowserThread::DeleteSoon(content::BrowserThread::UI,
-                            FROM_HERE,
-                            browser_context_.release());
+  base::DeleteSoon(FROM_HERE, {content::BrowserThread::UI},
+                   browser_context_.release());
 
   // Although this isn't required by many, some subclasses members require that
   // the task environment is gone by the time that they are destroyed (akin to

@@ -298,6 +298,11 @@ uint8_t CFX_Font::GetCharSetFromUnicode(uint16_t word) {
 
 CFX_Font::CFX_Font() = default;
 
+int CFX_Font::GetSubstFontItalicAngle() const {
+  CFX_SubstFont* subst_font = GetSubstFont();
+  return subst_font ? subst_font->m_ItalicAngle : 0;
+}
+
 #ifdef PDF_ENABLE_XFA
 bool CFX_Font::LoadFile(const RetainPtr<IFX_SeekableReadStream>& pFile,
                         int nFaceIndex) {
@@ -372,13 +377,16 @@ uint32_t CFX_Font::GetGlyphWidth(uint32_t glyph_index) {
   return EM_ADJUST(FXFT_Get_Face_UnitsPerEM(m_Face->GetRec()), horiAdvance);
 }
 
-bool CFX_Font::LoadEmbedded(pdfium::span<const uint8_t> src_span) {
-  m_pFontDataAllocation =
-      std::vector<uint8_t>(src_span.begin(), src_span.end());
+bool CFX_Font::LoadEmbedded(pdfium::span<const uint8_t> src_span,
+                            bool bForceAsVertical) {
+  if (bForceAsVertical)
+    m_bVertical = true;
+  m_FontDataAllocation = std::vector<uint8_t, FxAllocAllocator<uint8_t>>(
+      src_span.begin(), src_span.end());
   m_Face = CFX_GEModule::Get()->GetFontMgr()->NewFixedFace(
-      nullptr, m_pFontDataAllocation, 0);
+      nullptr, m_FontDataAllocation, 0);
   m_bEmbedded = true;
-  m_FontData = m_pFontDataAllocation;
+  m_FontData = m_FontDataAllocation;
   return !!m_Face;
 }
 

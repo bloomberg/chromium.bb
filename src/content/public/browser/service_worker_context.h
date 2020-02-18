@@ -12,8 +12,10 @@
 #include "base/callback_forward.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/service_worker_external_request_result.h"
 #include "content/public/browser/service_worker_running_info.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom-forward.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_registration_options.mojom-forward.h"
 #include "url/gurl.h"
 
 namespace blink {
@@ -74,12 +76,6 @@ class CONTENT_EXPORT ServiceWorkerContext {
 
   using StartWorkerCallback = base::OnceCallback<
       void(int64_t version_id, int process_id, int thread_id)>;
-  using GetAllServiceWorkerRunningInfosCallback =
-      base::OnceCallback<void(ServiceWorkerContext*,
-                              const std::vector<ServiceWorkerRunningInfo>)>;
-  using GetServiceWorkerRunningInfoCallback =
-      base::OnceCallback<void(ServiceWorkerContext*,
-                              const ServiceWorkerRunningInfo&)>;
 
   // Temporary for crbug.com/824858. The thread the context core lives on.
   static bool IsServiceWorkerOnUIEnabled();
@@ -131,18 +127,21 @@ class CONTENT_EXPORT ServiceWorkerContext {
 
   // Mechanism for embedder to increment/decrement ref count of a service
   // worker.
+  //
   // Embedders can call StartingExternalRequest() while it is performing some
   // work with the worker. The worker is considered to be working until embedder
   // calls FinishedExternalRequest(). This ensures that content/ does not
   // shut the worker down while embedder is expecting the worker to be kept
   // alive.
   //
-  // Must be called from the core thread. Returns whether or not changing the
-  // ref count succeeded.
-  virtual bool StartingExternalRequest(int64_t service_worker_version_id,
-                                       const std::string& request_uuid) = 0;
-  virtual bool FinishedExternalRequest(int64_t service_worker_version_id,
-                                       const std::string& request_uuid) = 0;
+  // Must be called from the core thread.
+  virtual ServiceWorkerExternalRequestResult StartingExternalRequest(
+      int64_t service_worker_version_id,
+      const std::string& request_uuid) = 0;
+  virtual ServiceWorkerExternalRequestResult FinishedExternalRequest(
+      int64_t service_worker_version_id,
+      const std::string& request_uuid) = 0;
+
   // Returns the pending external request count for the worker with the
   // specified |origin| via |callback|. Must be called from the UI thread. The
   // callback is called on the UI thread.
@@ -204,23 +203,6 @@ class CONTENT_EXPORT ServiceWorkerContext {
       blink::TransferableMessage message,
       ResultCallback result_callback) = 0;
 
-  // Deprecated: DO NOT USE
-  // This is a temporary addition only to be used for the Android Messages
-  // integration with ChromeOS (http://crbug.com/823256).  The removal is
-  // tracked at http://crbug.com/869714.  Please ask Service Worker OWNERS
-  // (content/browser/service_worker/OWNERS) if you have questions.
-  //
-  // Starts the active worker of the registration for the given |scope|, sets
-  // its timeout to 999 days, and passes in the given |message|.  The
-  // |result_callback| will be executed upon success or failure and pass back
-  // the boolean result.
-  //
-  // May be called on any thread, and the callback is called on that thread.
-  virtual void StartServiceWorkerAndDispatchLongRunningMessage(
-      const GURL& scope,
-      blink::TransferableMessage message,
-      ResultCallback result_callback) = 0;
-
   // Starts the service worker for |document_url|. Called when a navigation to
   // that URL is predicted to occur soon. Must be called from the UI thread. The
   // |callback| will always be called on the UI thread.
@@ -242,16 +224,9 @@ class CONTENT_EXPORT ServiceWorkerContext {
   // Gets info about all running workers.
   //
   // Must be called on the UI thread. The callback is called on the UI thread.
-  virtual void GetAllServiceWorkerRunningInfos(
-      GetAllServiceWorkerRunningInfosCallback callback) = 0;
-
-  // Gets info of the running worker whose version id is
-  // |service_worker_version_id|.
-  //
-  // Must be called on the UI thread. The callback is called on the UI thread.
-  virtual void GetServiceWorkerRunningInfo(
-      int64_t service_worker_version_id,
-      GetServiceWorkerRunningInfoCallback callback) = 0;
+  virtual const base::flat_map<int64_t /* version_id */,
+                               ServiceWorkerRunningInfo>&
+  GetRunningServiceWorkerInfos() = 0;
 
  protected:
   ServiceWorkerContext() {}

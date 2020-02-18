@@ -14,8 +14,8 @@
 
 import {TimeSpan} from '../common/time';
 
+import {TRACK_BORDER_COLOR, TRACK_SHELL_WIDTH} from './css_constants';
 import {TimeScale} from './time_scale';
-import {TRACK_BORDER_COLOR, TRACK_SHELL_WIDTH} from './track_constants';
 
 export const DESIRED_PX_PER_STEP = 80;
 
@@ -72,12 +72,20 @@ export function gridlines(width: number, span: TimeSpan, timescale: TimeScale):
   const step = getGridStepSize(span.duration, desiredSteps);
   const start = Math.round(span.start / step) * step;
   const lines: Array<[number, number]> = [];
-  for (let s = start; s < span.end; s += step) {
+  let previousTimestamp = Number.NEGATIVE_INFINITY;
+  // Iterating over the number of steps instead of
+  // for (let s = start; s < span.end; s += step) because if start is very large
+  // number and step very small, s will never reach end.
+  for (let i = 0; i < desiredSteps; i++) {
     let xPos = TRACK_SHELL_WIDTH;
-    xPos += Math.floor(timescale.timeToPx(s));
+    const timestamp = start + i * step;
+    xPos += Math.floor(timescale.timeToPx(timestamp));
     if (xPos < TRACK_SHELL_WIDTH) continue;
     if (xPos > width) break;
-    lines.push([xPos, s]);
+    if (Math.abs(timestamp - previousTimestamp) > Number.EPSILON) {
+      previousTimestamp = timestamp;
+      lines.push([xPos, timestamp]);
+    }
   }
   return lines;
 }

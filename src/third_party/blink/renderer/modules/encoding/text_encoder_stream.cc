@@ -12,8 +12,10 @@
 
 #include "base/optional.h"
 #include "base/stl_util.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/bindings/core/v8/to_v8_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_string_resource.h"
-#include "third_party/blink/renderer/core/streams/transform_stream_default_controller_interface.h"
+#include "third_party/blink/renderer/core/streams/transform_stream_default_controller.h"
 #include "third_party/blink/renderer/core/streams/transform_stream_transformer.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
@@ -34,15 +36,15 @@ class TextEncoderStream::Transformer final : public TransformStreamTransformer {
 
   // Implements the "encode and enqueue a chunk" algorithm. For efficiency, only
   // the characters at the end of chunks are special-cased.
-  void Transform(v8::Local<v8::Value> chunk,
-                 TransformStreamDefaultControllerInterface* controller,
-                 ExceptionState& exception_state) override {
+  ScriptPromise Transform(v8::Local<v8::Value> chunk,
+                          TransformStreamDefaultController* controller,
+                          ExceptionState& exception_state) override {
     V8StringResource<> input_resource = chunk;
     if (!input_resource.Prepare(script_state_->GetIsolate(), exception_state))
-      return;
+      return ScriptPromise();
     const String input = input_resource;
     if (input.IsEmpty())
-      return;
+      return ScriptPromise::CastUndefined(script_state_);
 
     const base::Optional<UChar> high_surrogate = pending_high_surrogate_;
     pending_high_surrogate_ = base::nullopt;
@@ -60,28 +62,35 @@ class TextEncoderStream::Transformer final : public TransformStreamTransformer {
       bool have_output =
           Encode16BitString(input, high_surrogate, &prefix, &result);
       if (!have_output)
-        return;
+        return ScriptPromise::CastUndefined(script_state_);
     }
 
     DOMUint8Array* array =
         CreateDOMUint8ArrayFromTwoStdStringsConcatenated(prefix, result);
-    controller->Enqueue(ToV8(array, script_state_), exception_state);
+    controller->enqueue(script_state_, ScriptValue::From(script_state_, array),
+                        exception_state);
+
+    return ScriptPromise::CastUndefined(script_state_);
   }
 
   // Implements the "encode and flush" algorithm.
-  void Flush(TransformStreamDefaultControllerInterface* controller,
-             ExceptionState& exception_state) override {
+  ScriptPromise Flush(TransformStreamDefaultController* controller,
+                      ExceptionState& exception_state) override {
     if (!pending_high_surrogate_.has_value())
-      return;
+      return ScriptPromise::CastUndefined(script_state_);
 
     const std::string replacement_character = ReplacementCharacterInUtf8();
     const uint8_t* u8buffer =
         reinterpret_cast<const uint8_t*>(replacement_character.c_str());
-    controller->Enqueue(ToV8(DOMUint8Array::Create(
-                                 u8buffer, static_cast<unsigned int>(
-                                               replacement_character.length())),
-                             script_state_),
-                        exception_state);
+    controller->enqueue(
+        script_state_,
+        ScriptValue::From(script_state_,
+                          DOMUint8Array::Create(
+                              u8buffer, static_cast<unsigned int>(
+                                            replacement_character.length()))),
+        exception_state);
+
+    return ScriptPromise::CastUndefined(script_state_);
   }
 
   ScriptState* GetScriptState() override { return script_state_; }
@@ -184,9 +193,9 @@ void TextEncoderStream::Trace(Visitor* visitor) {
 
 TextEncoderStream::TextEncoderStream(ScriptState* script_state,
                                      ExceptionState& exception_state)
-    : transform_(MakeGarbageCollected<TransformStream>()) {
-  transform_->Init(MakeGarbageCollected<Transformer>(script_state),
-                   script_state, exception_state);
-}
+    : transform_(TransformStream::Create(
+          script_state,
+          MakeGarbageCollected<Transformer>(script_state),
+          exception_state)) {}
 
 }  // namespace blink

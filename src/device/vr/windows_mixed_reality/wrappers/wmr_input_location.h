@@ -16,14 +16,14 @@ class WMRInputLocation {
 
   virtual bool TryGetPosition(
       ABI::Windows::Foundation::Numerics::Vector3* position) const = 0;
-  virtual bool TryGetVelocity(
-      ABI::Windows::Foundation::Numerics::Vector3* velocity) const = 0;
 
   virtual bool TryGetOrientation(
       ABI::Windows::Foundation::Numerics::Quaternion* orientation) const = 0;
 
-  virtual bool TryGetAngularVelocity(
-      ABI::Windows::Foundation::Numerics::Vector3* angular_velocity) const = 0;
+  virtual bool TryGetPositionAccuracy(
+      ABI::Windows::UI::Input::Spatial::
+          SpatialInteractionSourcePositionAccuracy* position_accuracy)
+      const = 0;
 };
 
 class WMRInputLocationImpl : public WMRInputLocation {
@@ -37,16 +37,15 @@ class WMRInputLocationImpl : public WMRInputLocation {
   // Uses ISpatialInteractionSourceLocation.
   bool TryGetPosition(
       ABI::Windows::Foundation::Numerics::Vector3* position) const override;
-  bool TryGetVelocity(
-      ABI::Windows::Foundation::Numerics::Vector3* velocity) const override;
 
   // Uses ISpatialInteractionSourceLocation2.
   bool TryGetOrientation(ABI::Windows::Foundation::Numerics::Quaternion*
                              orientation) const override;
 
   // Uses ISpatialInteractionSourceLocation3.
-  bool TryGetAngularVelocity(ABI::Windows::Foundation::Numerics::Vector3*
-                                 angular_velocity) const override;
+  bool TryGetPositionAccuracy(ABI::Windows::UI::Input::Spatial::
+                                  SpatialInteractionSourcePositionAccuracy*
+                                      position_accuracy) const override;
 
  private:
   Microsoft::WRL::ComPtr<

@@ -8,7 +8,6 @@
 from __future__ import print_function
 
 import collections
-import cStringIO
 import errno
 import fileinput
 import glob
@@ -28,6 +27,7 @@ from chromite.lib import cros_logging as logging
 from chromite.lib import git
 from chromite.lib import osutils
 from chromite.lib import parallel
+from chromite.utils import key_value_store
 
 
 # The parsed output of running `ebuild <ebuild path> info`.
@@ -97,6 +97,10 @@ class Error(Exception):
   """Base exception class for portage_util."""
 
 
+class EbuildVersionError(Error):
+  """Error for when an invalid version is generated for an ebuild."""
+
+
 class MissingOverlayError(Error):
   """This exception indicates that a needed overlay is missing."""
 
@@ -140,7 +144,7 @@ def _ListOverlays(board=None, buildroot=constants.SOURCE_ROOT):
                            (name, overlays[name]['path'], overlay))
 
       try:
-        masters = cros_build_lib.LoadKeyValueFile(
+        masters = key_value_store.LoadFile(
             os.path.join(GetOverlayRoot(overlay), 'metadata',
                          'layout.conf'))['masters'].split()
       except (KeyError, IOError):
@@ -317,7 +321,7 @@ def ReadOverlayFile(filename, overlay_type='both', board=None,
 def GetOverlayName(overlay):
   """Get the self-declared repo name for the |overlay| path."""
   try:
-    return cros_build_lib.LoadKeyValueFile(
+    return key_value_store.LoadFile(
         os.path.join(GetOverlayRoot(overlay), 'metadata',
                      'layout.conf'))['repo-name']
   except (KeyError, IOError):
@@ -348,6 +352,11 @@ class EbuildFormatIncorrectError(Error):
     super(EbuildFormatIncorrectError, self).__init__(message)
 
 
+# Container for Classify return values.
+EBuildClassifyAttributes = collections.namedtuple('EBuildClassifyAttributes', (
+    'is_workon', 'is_stable', 'is_blacklisted', 'has_test'))
+
+
 class EBuild(object):
   """Wrapper class for information about an ebuild."""
 
@@ -367,8 +376,8 @@ class EBuild(object):
   @classmethod
   def _RunCommand(cls, command, **kwargs):
     kwargs.setdefault('capture_output', True)
-    return cros_build_lib.RunCommand(
-        command, print_cmd=cls.VERBOSE, **kwargs).output
+    kwargs.setdefault('encoding', 'utf-8')
+    return cros_build_lib.run(command, print_cmd=cls.VERBOSE, **kwargs).output
 
   @classmethod
   def _RunGit(cls, cwd, command, **kwargs):
@@ -528,24 +537,37 @@ class EBuild(object):
     is_stable = False
     is_blacklisted = False
     has_test = False
-    for line in fileinput.input(ebuild_path):
-      if line.startswith('inherit '):
-        eclasses = set(line.split())
-        if 'cros-workon' in eclasses:
-          is_workon = True
-        if EBuild._ECLASS_IMPLIES_TEST & eclasses:
+    with open(ebuild_path, mode='rb') as fp:
+      for i, line in enumerate(fp):
+        # If the file has bad encodings, produce a helpful diagnostic for the
+        # user.  The default encoding exception lacks direct file context.
+        try:
+          line = line.decode('utf-8')
+        except UnicodeDecodeError:
+          logging.exception('%s: line %i: invalid UTF-8: %s',
+                            ebuild_path, i, line)
+          raise
+
+        if line.startswith('inherit '):
+          eclasses = set(line.split())
+          if 'cros-workon' in eclasses:
+            is_workon = True
+          if EBuild._ECLASS_IMPLIES_TEST & eclasses:
+            has_test = True
+        elif line.startswith('KEYWORDS='):
+          # Strip off the comments, then extract the value of the variable, then
+          # strip off any quotes.
+          line = line.split('#', 1)[0].split('=', 1)[1].strip('"\'')
+          for keyword in line.split():
+            if not keyword.startswith('~') and keyword != '-*':
+              is_stable = True
+        elif line.startswith('CROS_WORKON_BLACKLIST='):
+          is_blacklisted = True
+        elif (line.startswith('src_test()') or
+              line.startswith('platform_pkg_test()')):
           has_test = True
-      elif line.startswith('KEYWORDS='):
-        for keyword in line.split('=', 1)[1].strip('"\'').split():
-          if not keyword.startswith('~') and keyword != '-*':
-            is_stable = True
-      elif line.startswith('CROS_WORKON_BLACKLIST='):
-        is_blacklisted = True
-      elif (line.startswith('src_test()') or
-            line.startswith('platform_pkg_test()')):
-        has_test = True
-    fileinput.close()
-    return is_workon, is_stable, is_blacklisted, has_test
+    return EBuildClassifyAttributes(
+        is_workon, is_stable, is_blacklisted, has_test)
 
   def _ReadEBuild(self, path):
     """Determine the settings of `is_workon`, `is_stable` and is_blacklisted
@@ -569,7 +591,7 @@ class EBuild(object):
     # names. First, get rid of special characters.
     test_list = []
     raw_tests_str = settings['IUSE_TESTS']
-    if len(raw_tests_str) == 0:
+    if not raw_tests_str:
       return test_list
 
     test_list.extend(_autotest_re.findall(raw_tests_str))
@@ -690,7 +712,7 @@ class EBuild(object):
     subtrees = [
         tuple(subtree.split() or [''])
         for subtree in settings.get('CROS_WORKON_SUBTREE', '').split(',')]
-    if (len(projects) > 1 or len(srcpaths) > 1) and len(rev_subdirs) > 0:
+    if (len(projects) > 1 or len(srcpaths) > 1) and rev_subdirs:
       raise EbuildFormatIncorrectError(
           ebuild_path,
           'Must not define CROS_WORKON_SUBDIRS_TO_REV if defining multiple '
@@ -747,7 +769,7 @@ class EBuild(object):
       projects = [''] * num_projects
       localnames = [''] * num_projects
     elif len(srcpaths) < num_projects:
-      if len(srcpaths) > 0:
+      if srcpaths:
         raise EbuildFormatIncorrectError(
             ebuild_path,
             '_SRCPATH has fewer items than _PROJECT.')
@@ -927,15 +949,16 @@ class EBuild(object):
 
     # The chromeos-version script will output a usable raw version number,
     # or nothing in case of error or no available version
-    result = cros_build_lib.RunCommand(['bash', '-x', vers_script] + srcdirs,
-                                       capture_output=True, error_code_ok=True)
+    result = cros_build_lib.run(
+        ['bash', '-x', vers_script] + srcdirs,
+        capture_output=True, check=False, encoding='utf-8')
 
     output = result.output.strip()
     if result.returncode or not output:
       raise Error(
           'Package %s has a chromeos-version.sh script but failed:\n'
-          'return code = %s\nstdout = %s\nstderr = %s\n',
-          self.pkgname, result.returncode, result.output, result.error)
+          'return code = %s\nstdout = %s\nstderr = %s\n' %
+          (self.pkgname, result.returncode, result.output, result.error))
 
     # Sanity check: disallow versions that will be larger than the 9999 ebuild
     # used by cros-workon.
@@ -947,6 +970,12 @@ class EBuild(object):
     if main_pv >= int(WORKON_EBUILD_VERSION):
       raise ValueError('cros-workon packages must have a PV < %s; not %s'
                        % (WORKON_EBUILD_VERSION, output))
+
+    # Sanity check: We should be able to parse a CPV string with the produced
+    # version number.
+    if not SplitCPV('foo/bar-%s' % output):
+      raise EbuildVersionError(
+          'PV returned does not match the version spec: %s' % output)
 
     return output
 
@@ -1016,6 +1045,8 @@ class EBuild(object):
     subtrees = info.subtrees
     commit_ids = [self.GetCommitId(x) for x in srcdirs]
     tree_ids = [self.GetTreeId(x) for x in subtrees]
+    # Make sure they are all valid (e.g. a deleted repo).
+    tree_ids = [tree_id for tree_id in tree_ids if tree_id]
     variables = dict(CROS_WORKON_COMMIT=self.FormatBashArray(commit_ids),
                      CROS_WORKON_TREE=self.FormatBashArray(tree_ids))
 
@@ -1033,16 +1064,24 @@ class EBuild(object):
           self.pkgname)
       test_dirs_changed = True
 
-    old_stable_commit = self._RunGit(self.overlay,
-                                     ['log', '--pretty=%H', '-n1', '--',
-                                      old_stable_ebuild_path]).rstrip()
-    output = self._RunGit(self.overlay,
-                          ['log', '%s..HEAD' % old_stable_commit, '--',
-                           self._unstable_ebuild_path,
-                           os.path.join(os.path.dirname(self.ebuild_path),
-                                        'files')])
+    def _CheckForChanges():
+      # It is possible for chromeos-version.sh to have changed leading to a
+      # non-existent old_stable_ebuild_path. If this is the case, a change
+      # happened so perform the uprev.
+      if not os.path.exists(old_stable_ebuild_path):
+        return True
 
-    unstable_ebuild_or_files_changed = bool(output)
+      old_stable_commit = self._RunGit(self.overlay,
+                                       ['log', '--pretty=%H', '-n1', '--',
+                                        old_stable_ebuild_path]).rstrip()
+      output = self._RunGit(self.overlay,
+                            ['log', '%s..HEAD' % old_stable_commit, '--',
+                             self._unstable_ebuild_path,
+                             os.path.join(os.path.dirname(self.ebuild_path),
+                                          'files')])
+      return bool(output)
+
+    unstable_ebuild_or_files_changed = _CheckForChanges()
 
     # If there has been any change in the tests list, choose to uprev.
     if (not test_dirs_changed and not unstable_ebuild_or_files_changed and
@@ -1499,7 +1538,7 @@ def RegenCache(overlay, commit_changes=True, chroot=None):
   if not repo_name:
     return
 
-  layout = cros_build_lib.LoadKeyValueFile(
+  layout = key_value_store.LoadFile(
       os.path.join(GetOverlayRoot(overlay), 'metadata', 'layout.conf'),
       ignore_missing=True)
   if layout.get('cache-format') != 'md5-dict':
@@ -1510,10 +1549,9 @@ def RegenCache(overlay, commit_changes=True, chroot=None):
     chroot_args = chroot.get_enter_args()
 
   # Regen for the whole repo.
-  cros_build_lib.RunCommand(['egencache', '--update', '--repo', repo_name,
-                             '--jobs', str(multiprocessing.cpu_count())],
-                            cwd=overlay, enter_chroot=True,
-                            chroot_args=chroot_args)
+  cros_build_lib.run(['egencache', '--update', '--repo', repo_name,
+                      '--jobs', str(multiprocessing.cpu_count())],
+                     cwd=overlay, enter_chroot=True, chroot_args=chroot_args)
   # If there was nothing new generated, then let's just bail.
   result = git.RunGit(overlay, ['status', '-s', 'metadata/'])
   if not result.output:
@@ -1535,8 +1573,9 @@ def ParseBashArray(value):
   sep = ','
   # Because %s may contain bash comments (#), put a clever newline in the way.
   cmd = 'ARR=%s\nIFS=%s; echo -n "${ARR[*]}"' % (value, sep)
-  return cros_build_lib.RunCommand(
-      cmd, print_cmd=False, shell=True, capture_output=True).output.split(sep)
+  return cros_build_lib.run(
+      cmd, print_cmd=False, shell=True, capture_output=True,
+      encoding='utf-8').stdout.split(sep)
 
 
 def WorkonEBuildGeneratorForDirectory(base_dir, subdir_support=False):
@@ -1793,9 +1832,9 @@ def FindPackageNameMatches(pkg_str, board=None,
     cmd = ['equery-%s' % board]
 
   cmd += ['list', pkg_str]
-  result = cros_build_lib.RunCommand(
+  result = cros_build_lib.run(
       cmd, cwd=buildroot, enter_chroot=True, capture_output=True,
-      error_code_ok=True)
+      check=False, encoding='utf-8')
 
   matches = []
   if result.returncode == 0:
@@ -1809,9 +1848,9 @@ def FindEbuildForBoardPackage(pkg_str, board,
   """Returns a path to an ebuild for a particular board."""
   equery = 'equery-%s' % board
   cmd = [equery, 'which', pkg_str]
-  return cros_build_lib.RunCommand(
+  return cros_build_lib.run(
       cmd, cwd=buildroot, enter_chroot=True,
-      capture_output=True).output.strip()
+      capture_output=True, encoding='utf-8').stdout.strip()
 
 
 def FindEbuildsForPackages(packages_list, sysroot, include_masked=False,
@@ -1825,23 +1864,26 @@ def FindEbuildsForPackages(packages_list, sysroot, include_masked=False,
     include_masked: True iff we should include masked ebuilds in our query.
     extra_env: optional dictionary of extra string/string pairs to use as the
       environment of equery command.
-    error_code_ok: If true, do not raise an exception when RunCommand returns
+    error_code_ok: If true, do not raise an exception when run returns
       a non-zero exit code.
-      If any package does not exist causing the RunCommand to fail, we will
+      If any package does not exist causing the run to fail, we will
       return information for none of the packages, i.e: return an
       empty dictionary.
 
   Returns:
     A map from packages in |packages_list| to their corresponding ebuilds.
   """
+  if not packages_list:
+    return {}
+
   cmd = [cros_build_lib.GetSysrootToolPath(sysroot, 'equery'), 'which']
   if include_masked:
     cmd += ['--include-masked']
   cmd += packages_list
 
-  result = cros_build_lib.RunCommand(cmd, extra_env=extra_env, print_cmd=False,
-                                     capture_output=True,
-                                     error_code_ok=error_code_ok)
+  result = cros_build_lib.run(
+      cmd, extra_env=extra_env, print_cmd=False, capture_output=True,
+      check=not error_code_ok, encoding='utf-8')
 
   if result.returncode:
     return {}
@@ -1874,7 +1916,7 @@ def FindEbuildForPackage(pkg_str, sysroot, include_masked=False,
     include_masked: True iff we should include masked ebuilds in our query.
     extra_env: optional dictionary of extra string/string pairs to use as the
       environment of equery command.
-    error_code_ok: If true, do not raise an exception when RunCommand returns
+    error_code_ok: If true, do not raise an exception when run returns
       a non-zero exit code. Instead, return None.
 
   Returns:
@@ -1906,9 +1948,9 @@ def GetInstalledPackageUseFlags(pkg_str, board=None,
     cmd = ['qlist-%s' % board]
 
   cmd += ['-CqU', pkg_str]
-  result = cros_build_lib.RunCommand(
+  result = cros_build_lib.run(
       cmd, enter_chroot=True, capture_output=True, error_code_ok=True,
-      cwd=buildroot)
+      encoding='utf-8', cwd=buildroot)
 
   use_flags = {}
   if result.returncode == 0:
@@ -1957,9 +1999,9 @@ def GetPackageDependencies(board, package,
   emerge = 'emerge-%s' % board
   cmd = [emerge, '-p', '--cols', '--quiet', '--root', '/var/empty', '-e',
          package]
-  emerge_output = cros_build_lib.RunCommand(
+  emerge_output = cros_build_lib.run(
       cmd, cwd=buildroot, enter_chroot=True,
-      capture_output=True).output.splitlines()
+      capture_output=True, encoding='utf-8').stdout.splitlines()
   packages = []
   for line in emerge_output:
     columns = line.split()
@@ -2023,14 +2065,14 @@ def GetRepositoryForEbuild(ebuild_path, sysroot):
   """
   cmd = (cros_build_lib.GetSysrootToolPath(sysroot, 'ebuild'),
          ebuild_path, 'info')
-  result = cros_build_lib.RunCommand(
-      cmd, capture_output=True, print_cmd=False, error_code_ok=True)
+  result = cros_build_lib.run(
+      cmd, capture_output=True, print_cmd=False, check=False, encoding='utf-8')
   return GetRepositoryFromEbuildInfo(result.output)
 
 
 def CleanOutdatedBinaryPackages(sysroot):
   """Cleans outdated binary packages from |sysroot|."""
-  return cros_build_lib.RunCommand(
+  return cros_build_lib.run(
       [cros_build_lib.GetSysrootToolPath(sysroot, 'eclean'), '-d', 'packages'])
 
 
@@ -2098,6 +2140,19 @@ def ParseDieHookStatusFile(metrics_dir):
     return failed_pkgs
 
 
+def HasPrebuilt(atom, board=None):
+  """Check if the atom's best visible version has a prebuilt available."""
+  best = PortageqBestVisible(atom, board=board)
+
+  emerge = 'emerge-%s' % board if board else 'emerge'
+  # Emerge args: binpkg only, no deps, pretend, quiet. --binpkg-respect-use is
+  # disabled by default when you use -K, so turn it back on.
+  cmd = [emerge, '-gKOpq', '--binpkg-respect-use=y', '=%s' % best.cpf]
+  result = cros_build_lib.run(
+      cmd, enter_chroot=True, error_code_ok=True, quiet=True)
+  return not result.returncode
+
+
 class PortageqError(Error):
   """Portageq command error."""
 
@@ -2108,7 +2163,7 @@ def _Portageq(command, board=None, **kwargs):
   Args:
     command: list - Portageq command to run excluding portageq.
     board: [str] - Specific board to query.
-    kwargs: Additional RunCommand arguments.
+    kwargs: Additional run arguments.
 
   Returns:
     cros_build_lib.CommandResult
@@ -2119,10 +2174,11 @@ def _Portageq(command, board=None, **kwargs):
   kwargs.setdefault('capture_output', True)
   kwargs.setdefault('cwd', constants.SOURCE_ROOT)
   kwargs.setdefault('debug_level', logging.DEBUG)
+  kwargs.setdefault('encoding', 'utf-8')
   kwargs.setdefault('enter_chroot', True)
 
   portageq = 'portageq-%s' % board if board else 'portageq'
-  return cros_build_lib.RunCommand([portageq] + command, **kwargs)
+  return cros_build_lib.run([portageq] + command, **kwargs)
 
 
 def PortageqBestVisible(atom, board=None, pkg_type='ebuild', cwd=None):
@@ -2132,7 +2188,7 @@ def PortageqBestVisible(atom, board=None, pkg_type='ebuild', cwd=None):
     atom: Portage atom.
     board: Board to look at. By default, look in chroot.
     pkg_type: Package type (ebuild, binary, or installed).
-    cwd: Path to use for the working directory for RunCommand.
+    cwd: Path to use for the working directory for run.
 
   Returns:
     A CPV object.
@@ -2210,8 +2266,7 @@ def PortageqEnvvars(variables, board=None, allow_undefined=False):
       # Undefined variable but letting it slide.
       result = e.result
 
-  return cros_build_lib.LoadKeyValueFile(cStringIO.StringIO(result.output),
-                                         ignore_missing=True, multiline=True)
+  return key_value_store.LoadData(result.output, multiline=True)
 
 
 def PortageqHasVersion(category_package, root='/', board=None):
@@ -2249,3 +2304,53 @@ def PortageqMatch(atom, board=None):
   """
   result = _Portageq(['match', '/', atom], board=board)
   return SplitCPV(result.output.strip()) if result.output else None
+
+
+class PackageNotFoundError(Error):
+  """Error indicating that the package asked for was not found."""
+
+
+def GenerateInstalledPackages(db, root, packages):
+  """Generate a sequence of installed package objects from package names."""
+  for package in packages:
+    category, pv = package.split('/')
+    installed_package = db.GetInstalledPackage(category, pv)
+    if not installed_package:
+      raise PackageNotFoundError('Unable to locate package %s in %s' % (package,
+                                                                        root))
+    yield installed_package
+
+
+def GeneratePackageSizes(db, root, installed_packages):
+  """Collect package sizes and generate package size pairs.
+
+  Yields:
+    (str, int): A pair of cpv and total package size.
+  """
+  visited_cpvs = set()
+  for installed_package in installed_packages:
+    package_cpv = '%s/%s/%s' % (installed_package.category,
+                                installed_package.package,
+                                installed_package.version)
+
+    assert package_cpv not in visited_cpvs
+    visited_cpvs.add(package_cpv)
+
+    total_package_filesize = 0
+    if not installed_package:
+      raise PackageNotFoundError('Unable to locate installed_package %s in %s' %
+                                 (package_cpv, root))
+    for content_type, path in installed_package.ListContents():
+      if content_type == InstalledPackage.OBJ:
+        filename = os.path.join(db.root, path)
+        try:
+          filesize = os.path.getsize(filename)
+        except OSError as e:
+          logging.warn('unable to compute the size of %s (skipping): %s',
+                       filename, e)
+          continue
+        logging.debug('size of %s = %d', filename, filesize)
+        total_package_filesize += filesize
+    logging.debug('%s installed_package size is %d', package_cpv,
+                  total_package_filesize)
+    yield (package_cpv, total_package_filesize)

@@ -15,8 +15,10 @@
 #include "platform/api/task_runner.h"
 #include "platform/api/time.h"
 #include "platform/base/ip_address.h"
+#include "util/alarm.h"
 
 namespace openscreen {
+namespace osp {
 
 // This class is the default implementation of ProtocolConnectionServer for the
 // library.  It manages connections to other endpoints as well as the lifetime
@@ -35,6 +37,7 @@ class QuicServer final : public ProtocolConnectionServer,
              MessageDemuxer* demuxer,
              std::unique_ptr<QuicConnectionFactory> connection_factory,
              ProtocolConnectionServer::Observer* observer,
+             platform::ClockNowFunctionPtr now_function,
              platform::TaskRunner* task_runner);
   ~QuicServer() override;
 
@@ -72,7 +75,7 @@ class QuicServer final : public ProtocolConnectionServer,
 
   // Deletes dead QUIC connections then returns the time interval before this
   // method should be run again.
-  absl::optional<platform::Clock::duration> Cleanup();
+  void Cleanup();
 
   const std::vector<IPEndpoint> connection_endpoints_;
   std::unique_ptr<QuicConnectionFactory> connection_factory_;
@@ -95,11 +98,15 @@ class QuicServer final : public ProtocolConnectionServer,
   // completed the QUIC handshake.
   std::map<uint64_t, ServiceConnectionData> connections_;
 
-  // Connections that need to be destroyed, but have to wait for the next event
-  // loop due to the underlying QUIC implementation's way of referencing them.
-  std::vector<decltype(connections_)::iterator> delete_connections_;
+  // Connections (endpoint IDs) that need to be destroyed, but have to wait for
+  // the next event loop due to the underlying QUIC implementation's way of
+  // referencing them.
+  std::vector<uint64_t> delete_connections_;
+
+  Alarm cleanup_alarm_;
 };
 
+}  // namespace osp
 }  // namespace openscreen
 
 #endif  // OSP_IMPL_QUIC_QUIC_SERVER_H_

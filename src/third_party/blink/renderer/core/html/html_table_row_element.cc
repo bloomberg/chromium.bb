@@ -38,19 +38,17 @@
 
 namespace blink {
 
-using namespace html_names;
-
 HTMLTableRowElement::HTMLTableRowElement(Document& document)
-    : HTMLTablePartElement(kTrTag, document) {}
+    : HTMLTablePartElement(html_names::kTrTag, document) {}
 
 bool HTMLTableRowElement::HasLegalLinkAttribute(
     const QualifiedName& name) const {
-  return name == kBackgroundAttr ||
+  return name == html_names::kBackgroundAttr ||
          HTMLTablePartElement::HasLegalLinkAttribute(name);
 }
 
 const QualifiedName& HTMLTableRowElement::SubResourceAttributeName() const {
-  return kBackgroundAttr;
+  return html_names::kBackgroundAttr;
 }
 
 static int FindIndexInRowCollection(const HTMLCollection& rows,
@@ -65,14 +63,14 @@ static int FindIndexInRowCollection(const HTMLCollection& rows,
 
 int HTMLTableRowElement::rowIndex() const {
   ContainerNode* maybe_table = parentNode();
-  if (maybe_table && IsHTMLTableSectionElement(maybe_table)) {
+  if (maybe_table && IsA<HTMLTableSectionElement>(maybe_table)) {
     // Skip THEAD, TBODY and TFOOT.
     maybe_table = maybe_table->parentNode();
   }
-  if (!(maybe_table && IsHTMLTableElement(maybe_table)))
+  auto* html_table_element = DynamicTo<HTMLTableElement>(maybe_table);
+  if (!html_table_element)
     return -1;
-  return FindIndexInRowCollection(*ToHTMLTableElement(maybe_table)->rows(),
-                                  *this);
+  return FindIndexInRowCollection(*html_table_element->rows(), *this);
 }
 
 int HTMLTableRowElement::sectionRowIndex() const {
@@ -80,9 +78,9 @@ int HTMLTableRowElement::sectionRowIndex() const {
   if (!maybe_table)
     return -1;
   HTMLCollection* rows = nullptr;
-  if (auto* section = ToHTMLTableSectionElementOrNull(maybe_table))
+  if (auto* section = DynamicTo<HTMLTableSectionElement>(maybe_table))
     rows = section->rows();
-  else if (auto* table = ToHTMLTableElementOrNull(maybe_table))
+  else if (auto* table = DynamicTo<HTMLTableElement>(maybe_table))
     rows = table->rows();
   if (!rows)
     return -1;
@@ -101,8 +99,8 @@ HTMLElement* HTMLTableRowElement::insertCell(int index,
     return nullptr;
   }
 
-  auto* cell =
-      MakeGarbageCollected<HTMLTableCellElement>(kTdTag, GetDocument());
+  auto* cell = MakeGarbageCollected<HTMLTableCellElement>(html_names::kTdTag,
+                                                          GetDocument());
   if (num_cells == index || index == -1)
     AppendChild(cell, exception_state);
   else

@@ -27,6 +27,7 @@ if (!defined(dawn_standalone)) {
 if (!defined(dawn_root)) {
   dawn_root = get_path_info("..", "abspath")
 }
+dawn_gen_root = get_path_info("${dawn_root}", "gen_dir")
 
 if (!defined(dawn_jinja2_dir)) {
   dawn_jinja2_dir = "//third_party/jinja2"
@@ -40,6 +41,10 @@ if (!defined(dawn_googletest_dir)) {
   dawn_googletest_dir = "//third_party/googletest"
 }
 
+if (!defined(dawn_jsoncpp_dir)) {
+  dawn_jsoncpp_dir = "//third_party/jsoncpp"
+}
+
 if (!defined(dawn_shaderc_dir)) {
   dawn_shaderc_dir = "//third_party/shaderc"
 }
@@ -50,4 +55,13 @@ if (!defined(dawn_spirv_cross_dir)) {
 
 if (!defined(dawn_spirv_tools_dir)) {
   dawn_spirv_tools_dir = "//third_party/SPIRV-Tools"
+}
+
+if (!defined(dawn_swiftshader_dir)) {
+  # Default to swiftshader not being available.
+  dawn_swiftshader_dir = ""
+}
+
+if (!defined(dawn_vulkan_validaion_layers_dir)) {
+  dawn_vulkan_validaion_layers_dir = "//third_party/vulkan-validation-layers"
 }

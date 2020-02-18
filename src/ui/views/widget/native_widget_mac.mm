@@ -10,8 +10,8 @@
 
 #include <utility>
 
+#include "base/base64.h"
 #include "base/bind.h"
-#include "base/lazy_instance.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/no_destructor.h"
 #include "base/strings/sys_string_conversions.h"
@@ -41,9 +41,6 @@ using remote_cocoa::mojom::WindowVisibilityState;
 namespace views {
 
 namespace {
-
-base::LazyInstance<ui::GestureRecognizerImplMac>::Leaky
-    g_gesture_recognizer_instance = LAZY_INSTANCE_INITIALIZER;
 
 static base::RepeatingCallback<void(NativeWidgetMac*)>*
     g_init_native_widget_callback = nullptr;
@@ -87,22 +84,6 @@ CGWindowLevel CGWindowLevelForZOrderLevel(ui::ZOrderLevel level,
         return kCGStatusWindowLevel;
     case ui::ZOrderLevel::kSecuritySurface:
       return kCGScreenSaverWindowLevel - 1;
-  }
-}
-
-ui::ZOrderLevel ZOrderLevelForCGWindowLevel(CGWindowLevel level) {
-  switch (level) {
-    case kCGNormalWindowLevel:
-      return ui::ZOrderLevel::kNormal;
-    case kCGFloatingWindowLevel:
-    case kCGPopUpMenuWindowLevel:
-    default:
-      return ui::ZOrderLevel::kFloatingWindow;
-    case kCGStatusWindowLevel:
-    case kCGDraggingWindowLevel:
-      return ui::ZOrderLevel::kFloatingUIElement;
-    case kCGScreenSaverWindowLevel - 1:
-      return ui::ZOrderLevel::kSecuritySurface;
   }
 }
 
@@ -409,7 +390,9 @@ gfx::Rect NativeWidgetMac::GetRestoredBounds() const {
 }
 
 std::string NativeWidgetMac::GetWorkspace() const {
-  return std::string();
+  return ns_window_host_ ? base::Base64Encode(
+                               ns_window_host_->GetWindowStateRestorationData())
+                         : std::string();
 }
 
 void NativeWidgetMac::SetBounds(const gfx::Rect& bounds) {
@@ -541,20 +524,14 @@ bool NativeWidgetMac::IsActive() const {
 }
 
 void NativeWidgetMac::SetZOrderLevel(ui::ZOrderLevel order) {
-  NSWindow* window = GetNativeWindow().GetNativeNSWindow();
-  [window setLevel:CGWindowLevelForZOrderLevel(order, type_)];
-
-  // Windows that have a higher window level than NSNormalWindowLevel default to
-  // NSWindowCollectionBehaviorTransient. Set the value explicitly here to match
-  // normal windows.
-  NSWindowCollectionBehavior behavior =
-      [window collectionBehavior] | NSWindowCollectionBehaviorManaged;
-  [window setCollectionBehavior:behavior];
+  if (!GetNSWindowMojo())
+    return;
+  z_order_level_ = order;
+  GetNSWindowMojo()->SetWindowLevel(CGWindowLevelForZOrderLevel(order, type_));
 }
 
 ui::ZOrderLevel NativeWidgetMac::GetZOrderLevel() const {
-  return ZOrderLevelForCGWindowLevel(
-      [GetNativeWindow().GetNativeNSWindow() level]);
+  return z_order_level_;
 }
 
 void NativeWidgetMac::SetVisibleOnAllWorkspaces(bool always_visible) {
@@ -751,7 +728,8 @@ bool NativeWidgetMac::IsTranslucentWindowOpacitySupported() const {
 }
 
 ui::GestureRecognizer* NativeWidgetMac::GetGestureRecognizer() {
-  return g_gesture_recognizer_instance.Pointer();
+  static base::NoDestructor<ui::GestureRecognizerImplMac> recognizer;
+  return recognizer.get();
 }
 
 void NativeWidgetMac::OnSizeConstraintsChanged() {
@@ -982,7 +960,7 @@ void NativeWidgetPrivate::ReparentNativeView(gfx::NativeView native_view,
   for (auto* child : widgets)
     child->NotifyNativeViewHierarchyWillChange();
 
-  // Update |brige_host|'s parent only if
+  // Update |bridge_host|'s parent only if
   // NativeWidgetNSWindowBridge::ReparentNativeView will.
   if (native_view == bridge_view) {
     window_host->SetParent(parent_window_host);

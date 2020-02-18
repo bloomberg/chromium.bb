@@ -96,8 +96,9 @@ class SyncSchedulerImplTest : public testing::Test {
  public:
   SyncSchedulerImplTest()
       : task_environment_(
-            base::test::TaskEnvironment::ThreadPoolExecutionMode::ASYNC,
-            base::test::TaskEnvironment::TimeSource::MOCK_TIME),
+            base::test::SingleThreadTaskEnvironment::ThreadPoolExecutionMode::
+                ASYNC,
+            base::test::SingleThreadTaskEnvironment::TimeSource::MOCK_TIME),
         syncer_(nullptr),
         delay_(nullptr) {}
 
@@ -120,8 +121,7 @@ class SyncSchedulerImplTest : public testing::Test {
     workers_.push_back(base::MakeRefCounted<FakeModelWorker>(GROUP_UI));
     workers_.push_back(base::MakeRefCounted<FakeModelWorker>(GROUP_PASSIVE));
 
-    connection_ = std::make_unique<MockConnectionManager>(directory(),
-                                                          &cancelation_signal_);
+    connection_ = std::make_unique<MockConnectionManager>(directory());
     connection_->SetServerReachable();
 
     model_type_registry_ = std::make_unique<ModelTypeRegistry>(
@@ -137,9 +137,8 @@ class SyncSchedulerImplTest : public testing::Test {
     context_ = std::make_unique<SyncCycleContext>(
         connection_.get(), directory(), extensions_activity_.get(),
         std::vector<SyncEngineEventListener*>(), nullptr,
-        model_type_registry_.get(),
-        true,  // enable keystore encryption
-        "fake_invalidator_client_id", "fake_birthday", "fake_bag_of_chips",
+        model_type_registry_.get(), "fake_invalidator_client_id",
+        "fake_birthday", "fake_bag_of_chips",
         /*poll_interval=*/base::TimeDelta::FromMinutes(30));
     context_->set_notifications_enabled(true);
     context_->set_account_name("Test");
@@ -303,7 +302,7 @@ class SyncSchedulerImplTest : public testing::Test {
   }
 
  protected:
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
 
  private:
   static const base::TickClock* tick_clock_;

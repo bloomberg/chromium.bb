@@ -16,6 +16,7 @@
 #include "base/macros.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/numerics/ranges.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -28,6 +29,14 @@
 #include "url/gurl.h"
 
 namespace policy {
+
+namespace {
+// UMA histogram name to count how often validation results with strategy
+// SCHEMA_ALLOW_UNKNOWN differ from strategy SCHEMA_ALLOW_INVALID.
+// See crbug.com/969706
+const char* const kSchemaMismatchedValueIgnored =
+    "Enterprise.SchemaMismatchedValueIgnored";
+}  // namespace
 
 // ConfigurationPolicyHandler implementation -----------------------------------
 
@@ -112,7 +121,7 @@ bool ListPolicyHandler::CheckAndGetList(
     return true;
 
   // Filter the list, rejecting any invalid strings.
-  const base::Value::ListStorage& list = value->GetList();
+  base::Value::ConstListView list = value->GetList();
   if (filtered_list)
     *filtered_list = std::make_unique<base::ListValue>();
   for (size_t list_index = 0; list_index < list.size(); ++list_index) {
@@ -185,7 +194,7 @@ bool IntRangePolicyHandlerBase::EnsureInRange(const base::Value* input,
     if (!clamp_)
       return false;
 
-    value = std::min(std::max(value, min_), max_);
+    value = base::ClampToRange(value, min_, max_);
   }
 
   if (output)
@@ -375,6 +384,13 @@ bool SchemaValidatingPolicyHandler::CheckPolicySettings(
   std::string error;
   bool result = schema_.Validate(*value, strategy_, &error_path, &error);
 
+  if (strategy_ == SCHEMA_ALLOW_INVALID) {
+    bool allow_unknown_result =
+        schema_.Validate(*value, SCHEMA_ALLOW_UNKNOWN, &error_path, &error);
+    base::UmaHistogramBoolean(kSchemaMismatchedValueIgnored,
+                              result != allow_unknown_result);
+  }
+
   if (errors && !error.empty()) {
     if (error_path.empty())
       error_path = "(ROOT)";
@@ -397,6 +413,13 @@ bool SchemaValidatingPolicyHandler::CheckAndGetValue(
   std::string error;
   bool result =
       schema_.Normalize(output->get(), strategy_, &error_path, &error, nullptr);
+
+  if (strategy_ == SCHEMA_ALLOW_INVALID) {
+    bool allow_unknown_result =
+        schema_.Validate(*value, SCHEMA_ALLOW_UNKNOWN, &error_path, &error);
+    base::UmaHistogramBoolean(kSchemaMismatchedValueIgnored,
+                              result != allow_unknown_result);
+  }
 
   if (errors && !error.empty()) {
     if (error_path.empty())
@@ -535,7 +558,7 @@ bool SimpleJsonStringSchemaValidatingPolicyHandler::CheckListOfJsonStrings(
 
   // If that succeeds, validate all the list items are strings and validate
   // the JSON inside the strings.
-  const ::base::Value::ListStorage& list = root_value->GetList();
+  base::Value::ConstListView list = root_value->GetList();
   bool json_error_seen = false;
 
   for (size_t index = 0; index < list.size(); ++index) {

@@ -12,13 +12,13 @@
 #include "android_webview/browser/find_helper.h"
 #include "android_webview/browser/permission/media_access_permission_request.h"
 #include "android_webview/browser/permission/permission_request_handler.h"
-#include "android_webview/native_jni/AwWebContentsDelegate_jni.h"
+#include "android_webview/browser_jni_headers/AwWebContentsDelegate_jni.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
-#include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
+#include "base/no_destructor.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -53,14 +53,12 @@ namespace {
 const int kFileChooserModeOpenMultiple = 1 << 0;
 const int kFileChooserModeOpenFolder = 1 << 1;
 
-base::LazyInstance<AwJavaScriptDialogManager>::Leaky
-    g_javascript_dialog_manager = LAZY_INSTANCE_INITIALIZER;
 }
 
 AwWebContentsDelegate::AwWebContentsDelegate(JNIEnv* env, jobject obj)
     : WebContentsDelegateAndroid(env, obj), is_fullscreen_(false) {}
 
-AwWebContentsDelegate::~AwWebContentsDelegate() {}
+AwWebContentsDelegate::~AwWebContentsDelegate() = default;
 
 void AwWebContentsDelegate::RendererUnresponsive(
     content::WebContents* source,
@@ -94,7 +92,9 @@ void AwWebContentsDelegate::RendererResponsive(
 
 content::JavaScriptDialogManager*
 AwWebContentsDelegate::GetJavaScriptDialogManager(WebContents* source) {
-  return g_javascript_dialog_manager.Pointer();
+  static base::NoDestructor<AwJavaScriptDialogManager>
+      javascript_dialog_manager;
+  return javascript_dialog_manager.get();
 }
 
 void AwWebContentsDelegate::FindReply(WebContents* web_contents,
@@ -289,7 +289,7 @@ void AwWebContentsDelegate::RequestMediaAccessPermission(
 void AwWebContentsDelegate::EnterFullscreenModeForTab(
     content::WebContents* web_contents,
     const GURL& origin,
-    const blink::WebFullscreenOptions& options) {
+    const blink::mojom::FullscreenOptions& options) {
   WebContentsDelegateAndroid::EnterFullscreenModeForTab(web_contents, origin,
                                                         options);
   is_fullscreen_ = true;

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <string>
+#include <utility>
 
 #include "net/third_party/quiche/src/quic/core/crypto/tls_client_connection.h"
 #include "net/third_party/quiche/src/quic/core/crypto/tls_server_connection.h"
@@ -11,7 +12,6 @@
 #include "net/third_party/quiche/src/quic/core/tls_server_handshaker.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_arraysize.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_expect_bug.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_ptr_util.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_test.h"
 #include "net/third_party/quiche/src/quic/test_tools/crypto_test_utils.h"
 #include "net/third_party/quiche/src/quic/test_tools/fake_proof_source.h"
@@ -63,7 +63,7 @@ class FakeProofVerifier : public ProofVerifier {
                                         cert_sct, context, error_details,
                                         details, std::move(callback));
     }
-    pending_ops_.push_back(QuicMakeUnique<VerifyChainPendingOp>(
+    pending_ops_.push_back(std::make_unique<VerifyChainPendingOp>(
         hostname, certs, ocsp_response, cert_sct, context, error_details,
         details, std::move(callback), verifier_.get()));
     return QUIC_PENDING;
@@ -125,7 +125,7 @@ class FakeProofVerifier : public ProofVerifier {
       QuicAsyncStatus status = delegate_->VerifyCertChain(
           hostname_, certs_, ocsp_response_, cert_sct_, context_,
           error_details_, details_,
-          QuicMakeUnique<FailingProofVerifierCallback>());
+          std::make_unique<FailingProofVerifierCallback>());
       ASSERT_NE(status, QUIC_PENDING);
       callback_->Run(status == QUIC_SUCCESS, *error_details_, details_);
     }
@@ -177,6 +177,8 @@ class TestQuicCryptoStream : public QuicCryptoStream {
     pending_writes_.push_back(std::make_pair(std::string(data), level));
   }
 
+  void OnPacketDecrypted(EncryptionLevel /*level*/) override {}
+
   const std::vector<std::pair<std::string, EncryptionLevel>>& pending_writes() {
     return pending_writes_;
   }
@@ -210,35 +212,44 @@ class TestQuicCryptoStream : public QuicCryptoStream {
   std::vector<std::pair<std::string, EncryptionLevel>> pending_writes_;
 };
 
+class MockProofHandler : public QuicCryptoClientStream::ProofHandler {
+ public:
+  MockProofHandler() = default;
+  ~MockProofHandler() override {}
+
+  MOCK_METHOD1(OnProofValid, void(const QuicCryptoClientConfig::CachedState&));
+  MOCK_METHOD1(OnProofVerifyDetailsAvailable, void(const ProofVerifyDetails&));
+};
+
 class TestQuicCryptoClientStream : public TestQuicCryptoStream {
  public:
   explicit TestQuicCryptoClientStream(QuicSession* session)
       : TestQuicCryptoStream(session),
-        proof_verifier_(new FakeProofVerifier),
-        ssl_ctx_(TlsClientConnection::CreateSslCtx()),
+        crypto_config_(std::make_unique<FakeProofVerifier>(),
+                       /*session_cache*/ nullptr),
         handshaker_(new TlsClientHandshaker(
+            QuicServerId("test.example.com", 443, false),
             this,
             session,
-            QuicServerId("test.example.com", 443, false),
-            proof_verifier_.get(),
-            ssl_ctx_.get(),
             crypto_test_utils::ProofVerifyContextForTesting(),
-            "quic-tester")) {}
+            &crypto_config_,
+            &proof_handler_)) {}
 
   ~TestQuicCryptoClientStream() override = default;
 
   TlsHandshaker* handshaker() const override { return handshaker_.get(); }
   TlsClientHandshaker* client_handshaker() const { return handshaker_.get(); }
+  const MockProofHandler& proof_handler() { return proof_handler_; }
 
   bool CryptoConnect() { return handshaker_->CryptoConnect(); }
 
   FakeProofVerifier* GetFakeProofVerifier() const {
-    return proof_verifier_.get();
+    return static_cast<FakeProofVerifier*>(crypto_config_.proof_verifier());
   }
 
  private:
-  std::unique_ptr<FakeProofVerifier> proof_verifier_;
-  bssl::UniquePtr<SSL_CTX> ssl_ctx_;
+  MockProofHandler proof_handler_;
+  QuicCryptoClientConfig crypto_config_;
   std::unique_ptr<TlsClientHandshaker> handshaker_;
 };
 
@@ -258,6 +269,10 @@ class TestQuicCryptoServerStream : public TestQuicCryptoStream {
 
   void CancelOutstandingCallbacks() {
     handshaker_->CancelOutstandingCallbacks();
+  }
+
+  void OnPacketDecrypted(EncryptionLevel level) override {
+    handshaker_->OnPacketDecrypted(level);
   }
 
   TlsHandshaker* handshaker() const override { return handshaker_.get(); }
@@ -294,7 +309,7 @@ class TlsHandshakerTest : public QuicTest {
             {ParsedQuicVersion(PROTOCOL_TLS1_3, QUIC_VERSION_99)})),
         client_session_(client_conn_, /*create_mock_crypto_stream=*/false),
         server_session_(server_conn_, /*create_mock_crypto_stream=*/false) {
-    SetQuicFlag(FLAGS_quic_supports_tls_handshake, true);
+    SetQuicReloadableFlag(quic_supports_tls_handshake, true);
     client_stream_ = new TestQuicCryptoClientStream(&client_session_);
     client_session_.SetCryptoStream(client_stream_);
     server_stream_ =
@@ -317,6 +332,34 @@ class TlsHandshakerTest : public QuicTest {
             });
   }
 
+  void ExpectHandshakeSuccessful() {
+    EXPECT_TRUE(client_stream_->handshake_confirmed());
+    EXPECT_TRUE(client_stream_->encryption_established());
+    EXPECT_TRUE(server_stream_->handshake_confirmed());
+    EXPECT_TRUE(server_stream_->encryption_established());
+    EXPECT_TRUE(client_conn_->IsHandshakeComplete());
+    EXPECT_TRUE(server_conn_->IsHandshakeComplete());
+
+    const auto& client_crypto_params =
+        client_stream_->crypto_negotiated_params();
+    const auto& server_crypto_params =
+        server_stream_->crypto_negotiated_params();
+    // The TLS params should be filled in on the client.
+    EXPECT_NE(0, client_crypto_params.cipher_suite);
+    EXPECT_NE(0, client_crypto_params.key_exchange_group);
+    EXPECT_NE(0, client_crypto_params.peer_signature_algorithm);
+
+    // The cipher suite and key exchange group should match on the client and
+    // server.
+    EXPECT_EQ(client_crypto_params.cipher_suite,
+              server_crypto_params.cipher_suite);
+    EXPECT_EQ(client_crypto_params.key_exchange_group,
+              server_crypto_params.key_exchange_group);
+    // We don't support client certs on the server (yet), so the server
+    // shouldn't have a peer signature algorithm to report.
+    EXPECT_EQ(0, server_crypto_params.peer_signature_algorithm);
+  }
+
   MockQuicConnectionHelper conn_helper_;
   MockAlarmFactory alarm_factory_;
   MockQuicConnection* client_conn_;
@@ -330,26 +373,16 @@ class TlsHandshakerTest : public QuicTest {
 };
 
 TEST_F(TlsHandshakerTest, CryptoHandshake) {
-  EXPECT_FALSE(client_conn_->IsHandshakeConfirmed());
-  EXPECT_FALSE(server_conn_->IsHandshakeConfirmed());
+  EXPECT_FALSE(client_conn_->IsHandshakeComplete());
+  EXPECT_FALSE(server_conn_->IsHandshakeComplete());
 
   EXPECT_CALL(*client_conn_, CloseConnection(_, _, _)).Times(0);
   EXPECT_CALL(*server_conn_, CloseConnection(_, _, _)).Times(0);
-  EXPECT_CALL(client_session_,
-              OnCryptoHandshakeEvent(QuicSession::ENCRYPTION_ESTABLISHED));
-  EXPECT_CALL(client_session_,
-              OnCryptoHandshakeEvent(QuicSession::HANDSHAKE_CONFIRMED));
-  EXPECT_CALL(server_session_,
-              OnCryptoHandshakeEvent(QuicSession::HANDSHAKE_CONFIRMED));
+  EXPECT_CALL(client_stream_->proof_handler(), OnProofVerifyDetailsAvailable);
   client_stream_->CryptoConnect();
   ExchangeHandshakeMessages(client_stream_, server_stream_);
 
-  EXPECT_TRUE(client_stream_->handshake_confirmed());
-  EXPECT_TRUE(client_stream_->encryption_established());
-  EXPECT_TRUE(server_stream_->handshake_confirmed());
-  EXPECT_TRUE(server_stream_->encryption_established());
-  EXPECT_TRUE(client_conn_->IsHandshakeConfirmed());
-  EXPECT_FALSE(server_conn_->IsHandshakeConfirmed());
+  ExpectHandshakeSuccessful();
 }
 
 TEST_F(TlsHandshakerTest, HandshakeWithAsyncProofSource) {
@@ -369,10 +402,7 @@ TEST_F(TlsHandshakerTest, HandshakeWithAsyncProofSource) {
 
   ExchangeHandshakeMessages(client_stream_, server_stream_);
 
-  EXPECT_TRUE(client_stream_->handshake_confirmed());
-  EXPECT_TRUE(client_stream_->encryption_established());
-  EXPECT_TRUE(server_stream_->handshake_confirmed());
-  EXPECT_TRUE(server_stream_->encryption_established());
+  ExpectHandshakeSuccessful();
 }
 
 TEST_F(TlsHandshakerTest, CancelPendingProofSource) {
@@ -401,6 +431,8 @@ TEST_F(TlsHandshakerTest, HandshakeWithAsyncProofVerifier) {
   FakeProofVerifier* proof_verifier = client_stream_->GetFakeProofVerifier();
   proof_verifier->Activate();
 
+  EXPECT_CALL(client_stream_->proof_handler(), OnProofVerifyDetailsAvailable);
+
   // Start handshake.
   client_stream_->CryptoConnect();
   ExchangeHandshakeMessages(client_stream_, server_stream_);
@@ -410,10 +442,7 @@ TEST_F(TlsHandshakerTest, HandshakeWithAsyncProofVerifier) {
 
   ExchangeHandshakeMessages(client_stream_, server_stream_);
 
-  EXPECT_TRUE(client_stream_->handshake_confirmed());
-  EXPECT_TRUE(client_stream_->encryption_established());
-  EXPECT_TRUE(server_stream_->handshake_confirmed());
-  EXPECT_TRUE(server_stream_->encryption_established());
+  ExpectHandshakeSuccessful();
 }
 
 TEST_F(TlsHandshakerTest, ClientConnectionClosedOnTlsError) {
@@ -473,7 +502,7 @@ TEST_F(TlsHandshakerTest, ClientNotSendingALPN) {
 }
 
 TEST_F(TlsHandshakerTest, ClientSendingBadALPN) {
-  static std::string kTestBadClientAlpn = "bad-client-alpn";
+  const std::string kTestBadClientAlpn = "bad-client-alpn";
   EXPECT_CALL(client_session_, GetAlpnsToOffer())
       .WillOnce(Return(std::vector<std::string>({kTestBadClientAlpn})));
   EXPECT_CALL(*client_conn_, CloseConnection(QUIC_HANDSHAKE_FAILED,
@@ -507,9 +536,9 @@ TEST_F(TlsHandshakerTest, ClientSendingTooManyALPNs) {
 }
 
 TEST_F(TlsHandshakerTest, ServerRequiresCustomALPN) {
-  static const std::string kTestAlpn = "An ALPN That Client Did Not Offer";
+  const std::string kTestAlpn = "An ALPN That Client Did Not Offer";
   EXPECT_CALL(server_session_, SelectAlpn(_))
-      .WillOnce([](const std::vector<QuicStringPiece>& alpns) {
+      .WillOnce([kTestAlpn](const std::vector<QuicStringPiece>& alpns) {
         return std::find(alpns.cbegin(), alpns.cend(), kTestAlpn);
       });
   EXPECT_CALL(*client_conn_, CloseConnection(QUIC_HANDSHAKE_FAILED,
@@ -529,34 +558,24 @@ TEST_F(TlsHandshakerTest, ServerRequiresCustomALPN) {
 TEST_F(TlsHandshakerTest, CustomALPNNegotiation) {
   EXPECT_CALL(*client_conn_, CloseConnection(_, _, _)).Times(0);
   EXPECT_CALL(*server_conn_, CloseConnection(_, _, _)).Times(0);
-  EXPECT_CALL(client_session_,
-              OnCryptoHandshakeEvent(QuicSession::ENCRYPTION_ESTABLISHED));
-  EXPECT_CALL(client_session_,
-              OnCryptoHandshakeEvent(QuicSession::HANDSHAKE_CONFIRMED));
-  EXPECT_CALL(server_session_,
-              OnCryptoHandshakeEvent(QuicSession::HANDSHAKE_CONFIRMED));
 
-  static const std::string kTestAlpn = "A Custom ALPN Value";
-  static const std::vector<std::string> kTestAlpns(
+  const std::string kTestAlpn = "A Custom ALPN Value";
+  const std::vector<std::string> kTestAlpns(
       {"foo", "bar", kTestAlpn, "something else"});
   EXPECT_CALL(client_session_, GetAlpnsToOffer())
       .WillRepeatedly(Return(kTestAlpns));
   EXPECT_CALL(server_session_, SelectAlpn(_))
-      .WillOnce([](const std::vector<QuicStringPiece>& alpns) {
-        EXPECT_THAT(alpns, ElementsAreArray(kTestAlpns));
-        return std::find(alpns.cbegin(), alpns.cend(), kTestAlpn);
-      });
+      .WillOnce(
+          [kTestAlpn, kTestAlpns](const std::vector<QuicStringPiece>& alpns) {
+            EXPECT_THAT(alpns, ElementsAreArray(kTestAlpns));
+            return std::find(alpns.cbegin(), alpns.cend(), kTestAlpn);
+          });
   EXPECT_CALL(client_session_, OnAlpnSelected(QuicStringPiece(kTestAlpn)));
   EXPECT_CALL(server_session_, OnAlpnSelected(QuicStringPiece(kTestAlpn)));
   client_stream_->CryptoConnect();
   ExchangeHandshakeMessages(client_stream_, server_stream_);
 
-  EXPECT_TRUE(client_stream_->handshake_confirmed());
-  EXPECT_TRUE(client_stream_->encryption_established());
-  EXPECT_TRUE(server_stream_->handshake_confirmed());
-  EXPECT_TRUE(server_stream_->encryption_established());
-  EXPECT_TRUE(client_conn_->IsHandshakeConfirmed());
-  EXPECT_FALSE(server_conn_->IsHandshakeConfirmed());
+  ExpectHandshakeSuccessful();
 }
 
 }  // namespace

@@ -91,6 +91,8 @@ class Client {
          pid_t pid_at_creation,
          const char* main_thread_stack_base);
 
+  ~Client();
+
   ClientConfiguration client_config_for_testing() { return client_config_; }
 
  private:
@@ -105,6 +107,7 @@ class Client {
   bool IsConnected();
 
   ClientConfiguration client_config_;
+  uint64_t max_shmem_tries_;
   // sampler_ operations are not thread-safe.
   Sampler sampler_;
   base::UnixSocketRaw sock_;

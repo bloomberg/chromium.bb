@@ -77,7 +77,8 @@ class P2PQuicPacketWriter : public quic::QuicPacketWriter,
     }
 
     P2PQuicPacketTransport::QuicPacket packet;
-    packet.packet_number = connection_->packet_generator().packet_number().ToUint64();
+    packet.packet_number =
+        connection_->packet_creator().packet_number().ToUint64();
     packet.buffer = buffer;
     packet.buf_len = buf_len;
     int bytes_written = packet_transport_->WritePacket(packet);
@@ -532,6 +533,26 @@ void P2PQuicTransportImpl::OnCryptoHandshakeEvent(CryptoHandshakeEvent event) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   QuicSession::OnCryptoHandshakeEvent(event);
   if (event == HANDSHAKE_CONFIRMED) {
+    DCHECK(IsEncryptionEstablished());
+    DCHECK(IsCryptoHandshakeConfirmed());
+    P2PQuicNegotiatedParams negotiated_params;
+    // The guaranteed largest message payload will not change throughout the
+    // connection.
+    uint16_t max_datagram_length =
+        quic::QuicSession::GetGuaranteedLargestMessagePayload();
+    if (max_datagram_length > 0) {
+      // Datagrams are supported in this case.
+      negotiated_params.set_max_datagram_length(max_datagram_length);
+    }
+    delegate_->OnConnected(negotiated_params);
+  }
+}
+
+void P2PQuicTransportImpl::SetDefaultEncryptionLevel(
+    quic::EncryptionLevel level) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  QuicSession::SetDefaultEncryptionLevel(level);
+  if (level == quic::ENCRYPTION_FORWARD_SECURE) {
     DCHECK(IsEncryptionEstablished());
     DCHECK(IsCryptoHandshakeConfirmed());
     P2PQuicNegotiatedParams negotiated_params;

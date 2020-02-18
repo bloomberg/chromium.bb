@@ -35,10 +35,6 @@ class SharedImageBackingFactoryGLTexture;
 struct GpuFeatureInfo;
 struct GpuPreferences;
 
-#if defined(OS_WIN)
-class SharedImageBackingFactoryD3D;
-#endif  // OS_WIN
-
 #if defined(OS_FUCHSIA)
 class SysmemBufferCollection;
 #endif  // OS_FUCHSIA
@@ -125,6 +121,7 @@ class GPU_GLES2_EXPORT SharedImageFactory {
   std::unique_ptr<MemoryTypeTracker> memory_tracker_;
   const bool using_vulkan_;
   const bool using_metal_;
+  const bool using_dawn_;
 
   // The set of SharedImages which have been created (and are being kept alive)
   // by this factory.
@@ -135,16 +132,12 @@ class GPU_GLES2_EXPORT SharedImageFactory {
   // eventually.
   std::unique_ptr<SharedImageBackingFactoryGLTexture> gl_backing_factory_;
 
-  // Used for creating shared image which can be shared between gl and vulakn.
+  // Used for creating shared image which can be shared between GL, Vulkan and
+  // D3D12.
   std::unique_ptr<SharedImageBackingFactory> interop_backing_factory_;
 
   // Non-null if compositing with SkiaRenderer.
   std::unique_ptr<raster::WrappedSkImageFactory> wrapped_sk_image_factory_;
-
-#if defined(OS_WIN)
-  // Used for creating DXGI Swap Chain.
-  std::unique_ptr<SharedImageBackingFactoryD3D> d3d_backing_factory_;
-#endif  // OS_WIN
 
 #if defined(OS_FUCHSIA)
   viz::VulkanContextProvider* vulkan_context_provider_;
@@ -175,7 +168,7 @@ class GPU_GLES2_EXPORT SharedImageRepresentationFactory {
       scoped_refptr<SharedContextState> context_State);
   std::unique_ptr<SharedImageRepresentationDawn> ProduceDawn(
       const Mailbox& mailbox,
-      DawnDevice device);
+      WGPUDevice device);
   std::unique_ptr<SharedImageRepresentationOverlay> ProduceOverlay(
       const Mailbox& mailbox);
 

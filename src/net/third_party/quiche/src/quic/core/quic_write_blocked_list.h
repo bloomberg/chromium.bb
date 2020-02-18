@@ -7,13 +7,13 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <utility>
 
 #include "net/third_party/quiche/src/quic/core/quic_packets.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_bug_tracker.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_containers.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_export.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_map_util.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_ptr_util.h"
 #include "net/third_party/quiche/src/spdy/core/fifo_write_scheduler.h"
 #include "net/third_party/quiche/src/spdy/core/http2_priority_write_scheduler.h"
 #include "net/third_party/quiche/src/spdy/core/lifo_write_scheduler.h"
@@ -82,22 +82,22 @@ class QUIC_EXPORT_PRIVATE QuicWriteBlockedList {
     switch (type) {
       case spdy::WriteSchedulerType::LIFO:
         priority_write_scheduler_ =
-            QuicMakeUnique<spdy::LifoWriteScheduler<QuicStreamId>>();
+            std::make_unique<spdy::LifoWriteScheduler<QuicStreamId>>();
         break;
       case spdy::WriteSchedulerType::SPDY:
         priority_write_scheduler_ =
-            QuicMakeUnique<spdy::PriorityWriteScheduler<QuicStreamId>>(
+            std::make_unique<spdy::PriorityWriteScheduler<QuicStreamId>>(
                 QuicVersionUsesCryptoFrames(version)
                     ? std::numeric_limits<QuicStreamId>::max()
                     : 0);
         break;
       case spdy::WriteSchedulerType::HTTP2:
         priority_write_scheduler_ =
-            QuicMakeUnique<spdy::Http2PriorityWriteScheduler<QuicStreamId>>();
+            std::make_unique<spdy::Http2PriorityWriteScheduler<QuicStreamId>>();
         break;
       case spdy::WriteSchedulerType::FIFO:
         priority_write_scheduler_ =
-            QuicMakeUnique<spdy::FifoWriteScheduler<QuicStreamId>>();
+            std::make_unique<spdy::FifoWriteScheduler<QuicStreamId>>();
         break;
       default:
         QUIC_BUG << "Scheduler is not supported for type: "
@@ -210,6 +210,8 @@ class QUIC_EXPORT_PRIVATE QuicWriteBlockedList {
     return priority_write_scheduler_->IsStreamReady(stream_id);
   }
 
+  spdy::WriteSchedulerType scheduler_type() const { return scheduler_type_; }
+
  private:
   bool PrecedenceMatchesSchedulerType(
       const spdy::SpdyStreamPrecedence& precedence) {
@@ -245,9 +247,9 @@ class QUIC_EXPORT_PRIVATE QuicWriteBlockedList {
 
   // A StaticStreamCollection is a vector of <QuicStreamId, bool> pairs plus a
   // eagerly-computed number of blocked static streams.
-  class StaticStreamCollection {
+  class QUIC_EXPORT_PRIVATE StaticStreamCollection {
    public:
-    struct StreamIdBlockedPair {
+    struct QUIC_EXPORT_PRIVATE StreamIdBlockedPair {
       QuicStreamId id;
       bool is_blocked;
     };

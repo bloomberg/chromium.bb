@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/events/event.h"
@@ -23,7 +24,8 @@
 
 namespace views {
 
-constexpr int Link::kFocusBorderPadding;
+// static
+constexpr gfx::Insets Link::kFocusBorderPadding;
 
 Link::Link(const base::string16& title, int text_context, int text_style)
     : Label(title, text_context, text_style),
@@ -65,7 +67,7 @@ SkColor Link::GetColor() const {
 void Link::PaintFocusRing(gfx::Canvas* canvas) const {
   if (GetFocusStyle() == FocusStyle::kRing) {
     gfx::Rect focus_ring_bounds = GetTextBounds();
-    focus_ring_bounds.Inset(gfx::Insets(-kFocusBorderPadding));
+    focus_ring_bounds.Inset(-kFocusBorderPadding);
     focus_ring_bounds.Intersect(GetLocalBounds());
     canvas->DrawFocusRect(focus_ring_bounds);
   }
@@ -76,7 +78,7 @@ gfx::Insets Link::GetInsets() const {
   if (GetFocusStyle() == FocusStyle::kRing &&
       GetFocusBehavior() != FocusBehavior::NEVER) {
     DCHECK(!GetText().empty());
-    insets += gfx::Insets(kFocusBorderPadding);
+    insets += kFocusBorderPadding;
   }
   return insets;
 }

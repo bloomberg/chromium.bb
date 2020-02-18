@@ -13,6 +13,7 @@
 #include "base/bind.h"
 #include "components/prefs/json_pref_store.h"
 #include "components/prefs/pref_filter.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/preferences/public/mojom/tracked_preference_validation_delegate.mojom.h"
 #include "services/preferences/tracked/pref_hash_filter.h"
 #include "services/preferences/tracked/pref_hash_store_impl.h"
@@ -101,22 +102,21 @@ PersistentPrefStore* CreateTrackedPersistentPrefStore(
   }
 #endif
 
-  prefs::mojom::TrackedPreferenceValidationDelegatePtr validation_delegate;
+  mojo::Remote<prefs::mojom::TrackedPreferenceValidationDelegate>
+      validation_delegate;
   validation_delegate.Bind(std::move(config->validation_delegate));
   std::unique_ptr<PrefHashFilter> unprotected_pref_hash_filter(
       new PrefHashFilter(CreatePrefHashStore(*config, false),
                          GetExternalVerificationPrefHashStorePair(
                              *config, temp_scoped_dir_cleaner),
-                         unprotected_configuration, nullptr,
+                         unprotected_configuration, mojo::NullRemote(),
                          validation_delegate.get(),
                          config->reporting_ids_count));
-  prefs::mojom::ResetOnLoadObserverPtr reset_on_load_observer(
-      std::move(config->reset_on_load_observer));
   std::unique_ptr<PrefHashFilter> protected_pref_hash_filter(new PrefHashFilter(
       CreatePrefHashStore(*config, true),
       GetExternalVerificationPrefHashStorePair(*config,
                                                temp_scoped_dir_cleaner),
-      protected_configuration, std::move(reset_on_load_observer),
+      protected_configuration, std::move(config->reset_on_load_observer),
       validation_delegate.get(), config->reporting_ids_count));
 
   PrefHashFilter* raw_unprotected_pref_hash_filter =
@@ -153,7 +153,7 @@ void InitializeMasterPrefsTracking(
   PrefHashFilter(
       CreatePrefHashStore(*configuration, false),
       GetExternalVerificationPrefHashStorePair(*configuration, nullptr),
-      configuration->tracking_configuration, nullptr, nullptr,
+      configuration->tracking_configuration, mojo::NullRemote(), nullptr,
       configuration->reporting_ids_count)
       .Initialize(master_prefs);
 }

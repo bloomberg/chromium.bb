@@ -26,7 +26,7 @@ class TestClipboard : public Clipboard {
   // Creates and associates a TestClipboard with the current thread. When no
   // longer needed, the returned clipboard must be freed by calling
   // Clipboard::DestroyClipboardForCurrentThread() on the same thread.
-  static Clipboard* CreateForCurrentThread();
+  static TestClipboard* CreateForCurrentThread();
 
   // Sets the time to be returned by GetLastModifiedTime();
   void SetLastModifiedTime(const base::Time& time);
@@ -58,7 +58,12 @@ class TestClipboard : public Clipboard {
                 std::string* result) const override;
   base::Time GetLastModifiedTime() const override;
   void ClearLastModifiedTime() override;
-  void WriteObjects(ClipboardBuffer buffer, const ObjectMap& objects) override;
+  void WritePortableRepresentations(ClipboardBuffer buffer,
+                                    const ObjectMap& objects) override;
+  void WritePlatformRepresentations(
+      ClipboardBuffer buffer,
+      std::vector<Clipboard::PlatformRepresentation> platform_representations)
+      override;
   void WriteText(const char* text_data, size_t text_len) override;
   void WriteHTML(const char* markup_data,
                  size_t markup_len,

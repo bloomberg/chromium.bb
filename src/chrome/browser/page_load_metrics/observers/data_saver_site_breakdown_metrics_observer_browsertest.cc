@@ -13,7 +13,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings_factory.h"
-#include "chrome/browser/page_load_metrics/page_load_metrics_test_waiter.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -28,6 +27,7 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "components/data_reduction_proxy/proto/data_store.pb.h"
+#include "components/page_load_metrics/browser/page_load_metrics_test_waiter.h"
 #include "components/prefs/pref_service.h"
 #include "components/previews/core/previews_features.h"
 #include "components/previews/core/previews_switches.h"
@@ -67,7 +67,8 @@ class DataSaverSiteBreakdownMetricsObserverBrowserTestBase
     scoped_feature_list_.InitWithFeaturesAndParameters(
         {{features::kLazyImageLoading,
           {{"automatic-lazy-load-images-enabled", "true"},
-           {"enable-lazy-load-images-metadata-fetch", "true"}}},
+           {"enable-lazy-load-images-metadata-fetch", "true"},
+           {"lazy_image_first_k_fully_load", "4G:0"}}},
          {features::kLazyFrameLoading,
           {{"automatic-lazy-load-frames-enabled", "true"}}}},
         {});
@@ -396,7 +397,7 @@ IN_PROC_BROWSER_TEST_F(DataSaverSiteBreakdownMetricsObserverBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(DataSaverSiteBreakdownMetricsObserverBrowserTest,
-                       LazyLoadFrameDisabledInReload) {
+                       DISABLED_LazyLoadFrameDisabledInReload) {
   net::EmbeddedTestServer cross_origin_server;
   cross_origin_server.ServeFilesFromSourceDirectory(GetChromeTestDataDir());
   ASSERT_TRUE(cross_origin_server.Start());

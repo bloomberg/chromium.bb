@@ -20,6 +20,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/accessibility_tree_formatter.h"
 #include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/mhtml_generation_result.h"
 #include "content/public/browser/navigation_controller.h"
@@ -152,9 +153,6 @@ class WebContents : public PageNavigator,
     // window.open('', 'bar')).
     std::string main_frame_name;
 
-    // Initial size of the new WebContent's view. Can be (0, 0) if not needed.
-    gfx::Size initial_size;
-
     // True if the contents should be initially hidden.
     bool initially_hidden;
 
@@ -224,6 +222,12 @@ class WebContents : public PageNavigator,
     // default initialized then the value is not passed on to the WebContents
     // and GetLastActiveTime() will return the WebContents' creation time.
     base::TimeTicks last_active_time;
+
+    // Normal WebContents initialization is split between construction and the
+    // first time it is shown. Some WebContents are never shown though.
+    // Setting this to true will invoke the WebContents delayed initialization
+    // that doesn't require visibility.
+    bool is_never_visible;
   };
 
   // Creates a new WebContents.
@@ -260,7 +264,10 @@ class WebContents : public PageNavigator,
   // nullptr will be returned instead.
   // The callback should only run on the UI thread and it should always be
   // non-null.
-  using Getter = base::Callback<WebContents*(void)>;
+  using Getter = base::RepeatingCallback<WebContents*(void)>;
+  // Use this variant for instances that will only run the callback a single
+  // time.
+  using OnceGetter = base::OnceCallback<WebContents*(void)>;
 
   // Sets delegate for platform specific screen orientation functionality.
   CONTENT_EXPORT static void SetScreenOrientationDelegate(
@@ -402,7 +409,22 @@ class WebContents : public PageNavigator,
 
   virtual void SetAccessibilityMode(ui::AXMode mode) = 0;
 
-  virtual base::string16 DumpAccessibilityTree(bool internal) = 0;
+  virtual base::string16 DumpAccessibilityTree(
+      bool internal,
+      std::vector<content::AccessibilityTreeFormatter::PropertyFilter>
+          property_filters) = 0;
+
+  // A callback that takes a string which contains accessibility event
+  // information.
+  using AccessibilityEventCallback =
+      base::RepeatingCallback<void(const std::string&)>;
+
+  // Starts or stops recording accessibility events. While accessibility events
+  // are being recorded, the callback will be called when an accessibility
+  // event is received. The start paramater says whether the recording is
+  // starting or stopping.
+  virtual void RecordAccessibilityEvents(AccessibilityEventCallback callback,
+                                         bool start) = 0;
 
   virtual const PageImportanceSignals& GetPageImportanceSignals() = 0;
 
@@ -433,6 +455,11 @@ class WebContents : public PageNavigator,
   // same document) in the main frame. This being true implies that IsLoading()
   // is also true.
   virtual bool IsLoadingToDifferentDocument() = 0;
+
+  // Returns whether the current main document has reached and finished
+  // executing its onload() handler. Corresponds to
+  // WebContentsObserver::DocumentOnLoadCompletedInMainFrame().
+  virtual bool IsDocumentOnLoadCompletedInMainFrame() = 0;
 
   // Returns whether this WebContents is waiting for a first-response for the
   // main resource of the page.
@@ -469,9 +496,11 @@ class WebContents : public PageNavigator,
   // of decrement calls.  |capture_size| specifies the capturer's video
   // resolution, but can be empty to mean "unspecified."  The first screen
   // capturer that provides a non-empty |capture_size| will override the value
-  // returned by GetPreferredSize() until all captures have ended.
-  virtual void IncrementCapturerCount(const gfx::Size& capture_size) = 0;
-  virtual void DecrementCapturerCount() = 0;
+  // returned by GetPreferredSize() until all captures have ended. |stay_hidden|
+  // determines whether to treat the underlying page as user-visible or not.
+  virtual void IncrementCapturerCount(const gfx::Size& capture_size,
+                                      bool stay_hidden) = 0;
+  virtual void DecrementCapturerCount(bool stay_hidden) = 0;
   virtual bool IsBeingCaptured() = 0;
 
   // Indicates/Sets whether all audio output from this WebContents is muted.
@@ -488,6 +517,10 @@ class WebContents : public PageNavigator,
   // Indicates whether any frame in the WebContents is connected to a serial
   // port.
   virtual bool IsConnectedToSerialPort() = 0;
+
+  // Indicates whether any frame in the WebContents is connected to a HID
+  // device.
+  virtual bool IsConnectedToHidDevice() = 0;
 
   // Indicates whether any frame in the WebContents has native file system
   // handles.
@@ -545,11 +578,14 @@ class WebContents : public PageNavigator,
   // Returns the visibility of the WebContents' view.
   virtual Visibility GetVisibility() = 0;
 
-  // Returns true if the before unload and unload listeners need to be
-  // fired. The value of this changes over time. For example, if true and the
-  // before unload listener is executed and allows the user to exit, then this
+  // This function checks *all* frames in this WebContents (not just the main
+  // frame) and returns true if at least one frame has either a beforeunload or
+  // an unload handler.
+  //
+  // The value of this may change over time. For example, if true and the
+  // beforeunload listener is executed and allows the user to exit, then this
   // returns false.
-  virtual bool NeedToFireBeforeUnload() = 0;
+  virtual bool NeedToFireBeforeUnloadOrUnload() = 0;
 
   // Runs the beforeunload handler for the main frame and all its subframes.
   // See also ClosePage in RenderViewHostImpl, which runs the unload handler.
@@ -568,9 +604,12 @@ class WebContents : public PageNavigator,
   // but ideally it should be "about:blank" to avoid problems with beforeunload.
   // To ensure sane usage of this API users first should call the async API
   // RenderFrameHost::PrepareForInnerWebContentsAttach first.
+  // Note: If |is_full_page| is true, focus will be given to the inner
+  // WebContents.
   virtual void AttachInnerWebContents(
       std::unique_ptr<WebContents> inner_web_contents,
-      RenderFrameHost* render_frame_host) = 0;
+      RenderFrameHost* render_frame_host,
+      bool is_full_page) = 0;
 
   // Returns the outer WebContents frame, the same frame that this WebContents
   // was attached in AttachToOuterWebContentsFrame().
@@ -593,6 +632,10 @@ class WebContents : public PageNavigator,
   // Notify this WebContents that the preferences have changed. This will send
   // an IPC to all the renderer processes associated with this WebContents.
   virtual void NotifyPreferencesChanged() = 0;
+
+  // Sends the current preferences to all renderer processes for the current
+  // page.
+  virtual void SyncRendererPrefs() = 0;
 
   // Notifies WebContents that an attempt has been made to read the cookies in
   // |cookie_list|.
@@ -622,11 +665,7 @@ class WebContents : public PageNavigator,
   virtual std::unique_ptr<WebContents> Clone() = 0;
 
   // Reloads the focused frame.
-  virtual void ReloadFocusedFrame(bool bypass_cache) = 0;
-
-  // Reloads all the Lo-Fi images in this WebContents. Ignores the cache and
-  // reloads from the network.
-  virtual void ReloadLoFiImages() = 0;
+  virtual void ReloadFocusedFrame() = 0;
 
   // Attains PauseSubresourceLoadingHandles for each frame in the web contents.
   // As long as these handles are not deleted, subresources will continue to be
@@ -870,10 +909,17 @@ class WebContents : public PageNavigator,
   // from the bitmap results. If there are no bitmap results <=
   // |max_bitmap_size|, the smallest bitmap is resized to |max_bitmap_size| and
   // is the only result. A |max_bitmap_size| of 0 means unlimited.
+  // For vector images, |preferred_size| will serve as a viewport into which
+  // the image will be rendered. This would usually be the dimensions of the
+  // square where the bitmap will be rendered. If |preferred_size| is 0, any
+  // existing intrinsic dimensions of the image will be used. If
+  // |max_bitmap_size| is non-zero it will also impose an upper bound on the
+  // preferred size.
   // If |bypass_cache| is true, |url| is requested from the server even if it
   // is present in the browser cache.
   virtual int DownloadImage(const GURL& url,
                             bool is_favicon,
+                            uint32_t preferred_size,
                             uint32_t max_bitmap_size,
                             bool bypass_cache,
                             ImageDownloadCallback callback) = 0;

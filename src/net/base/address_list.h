@@ -28,6 +28,7 @@ class NET_EXPORT AddressList {
  public:
   AddressList();
   AddressList(const AddressList&);
+  AddressList& operator=(const AddressList&);
   ~AddressList();
 
   // Creates an address list for a single IP literal.
@@ -58,6 +59,9 @@ class NET_EXPORT AddressList {
   // Creates a value representation of the address list, appropriate for
   // inclusion in a NetLog.
   base::Value NetLogParams() const;
+
+  // Deduplicates the stored addresses while otherwise preserving their order.
+  void Deduplicate();
 
   using iterator = std::vector<IPEndPoint>::iterator;
   using const_iterator = std::vector<IPEndPoint>::const_iterator;

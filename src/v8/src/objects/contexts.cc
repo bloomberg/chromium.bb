@@ -39,12 +39,14 @@ Handle<ScriptContextTable> ScriptContextTable::Extend(
 bool ScriptContextTable::Lookup(Isolate* isolate, ScriptContextTable table,
                                 String name, LookupResult* result) {
   DisallowHeapAllocation no_gc;
+  // Static variables cannot be in script contexts.
+  IsStaticFlag is_static_flag;
   for (int i = 0; i < table.used(); i++) {
     Context context = table.get_context(i);
     DCHECK(context.IsScriptContext());
     int slot_index = ScopeInfo::ContextSlotIndex(
         context.scope_info(), name, &result->mode, &result->init_flag,
-        &result->maybe_assigned_flag);
+        &result->maybe_assigned_flag, &is_static_flag);
 
     if (slot_index >= 0) {
       result->context_index = i;
@@ -89,7 +91,7 @@ JSObject Context::extension_object() {
   DCHECK(IsNativeContext() || IsFunctionContext() || IsBlockContext() ||
          IsEvalContext() || IsCatchContext());
   HeapObject object = extension();
-  if (object.IsTheHole()) return JSObject();
+  if (object.IsUndefined()) return JSObject();
   DCHECK(object.IsJSContextExtensionObject() ||
          (IsNativeContext() && object.IsJSGlobalObject()));
   return JSObject::cast(object);
@@ -129,19 +131,15 @@ JSGlobalProxy Context::global_proxy() {
   return native_context().global_proxy_object();
 }
 
-void Context::set_global_proxy(JSGlobalProxy object) {
-  native_context().set_global_proxy_object(object);
-}
-
 /**
  * Lookups a property in an object environment, taking the unscopables into
  * account. This is used For HasBinding spec algorithms for ObjectEnvironment.
  */
-static Maybe<bool> UnscopableLookup(LookupIterator* it) {
+static Maybe<bool> UnscopableLookup(LookupIterator* it, bool is_with_context) {
   Isolate* isolate = it->isolate();
 
   Maybe<bool> found = JSReceiver::HasProperty(it);
-  if (found.IsNothing() || !found.FromJust()) return found;
+  if (!is_with_context || found.IsNothing() || !found.FromJust()) return found;
 
   Handle<Object> unscopables;
   ASSIGN_RETURN_ON_EXCEPTION_VALUE(
@@ -175,7 +173,6 @@ Handle<Object> Context::Lookup(Handle<Context> context, Handle<String> name,
   Isolate* isolate = context->GetIsolate();
 
   bool follow_context_chain = (flags & FOLLOW_CONTEXT_CHAIN) != 0;
-  bool failed_whitelist = false;
   *index = kNotFound;
   *attributes = ABSENT;
   *init_flag = kCreatedInitialized;
@@ -200,11 +197,11 @@ Handle<Object> Context::Lookup(Handle<Context> context, Handle<String> name,
     }
 
     // 1. Check global objects, subjects of with, and extension objects.
-    DCHECK_IMPLIES(context->IsEvalContext(),
+    DCHECK_IMPLIES(context->IsEvalContext() && context->has_extension(),
                    context->extension().IsTheHole(isolate));
     if ((context->IsNativeContext() || context->IsWithContext() ||
          context->IsFunctionContext() || context->IsBlockContext()) &&
-        !context->extension_receiver().is_null()) {
+        context->has_extension() && !context->extension_receiver().is_null()) {
       Handle<JSReceiver> object(context->extension_receiver(), isolate);
 
       if (context->IsNativeContext()) {
@@ -237,7 +234,7 @@ Handle<Object> Context::Lookup(Handle<Context> context, Handle<String> name,
       if ((flags & FOLLOW_PROTOTYPE_CHAIN) == 0 ||
           object->IsJSContextExtensionObject()) {
         maybe = JSReceiver::GetOwnPropertyAttributes(object, name);
-      } else if (context->IsWithContext()) {
+      } else {
         // A with context will never bind "this", but debug-eval may look into
         // a with context when resolving "this". Other synthetic variables such
         // as new.target may be resolved as VariableMode::kDynamicLocal due to
@@ -246,10 +243,11 @@ Handle<Object> Context::Lookup(Handle<Context> context, Handle<String> name,
         // TODO(v8:5405): Replace this check with a DCHECK when resolution of
         // of synthetic variables does not go through this code path.
         if (ScopeInfo::VariableIsSynthetic(*name)) {
+          DCHECK(context->IsWithContext());
           maybe = Just(ABSENT);
         } else {
           LookupIterator it(object, name, object);
-          Maybe<bool> found = UnscopableLookup(&it);
+          Maybe<bool> found = UnscopableLookup(&it, context->IsWithContext());
           if (found.IsNothing()) {
             maybe = Nothing<PropertyAttributes>();
           } else {
@@ -259,8 +257,6 @@ Handle<Object> Context::Lookup(Handle<Context> context, Handle<String> name,
             maybe = Just(found.FromJust() ? NONE : ABSENT);
           }
         }
-      } else {
-        maybe = JSReceiver::GetPropertyAttributes(object, name);
       }
 
       if (maybe.IsNothing()) return Handle<Object>();
@@ -287,10 +283,23 @@ Handle<Object> Context::Lookup(Handle<Context> context, Handle<String> name,
       VariableMode mode;
       InitializationFlag flag;
       MaybeAssignedFlag maybe_assigned_flag;
-      int slot_index = ScopeInfo::ContextSlotIndex(scope_info, *name, &mode,
-                                                   &flag, &maybe_assigned_flag);
+      IsStaticFlag is_static_flag;
+      int slot_index =
+          ScopeInfo::ContextSlotIndex(scope_info, *name, &mode, &flag,
+                                      &maybe_assigned_flag, &is_static_flag);
       DCHECK(slot_index < 0 || slot_index >= MIN_CONTEXT_SLOTS);
       if (slot_index >= 0) {
+        // Re-direct lookup to the ScriptContextTable in case we find a hole in
+        // a REPL script context. REPL scripts allow re-declaration of
+        // script-level let bindings. The value itself is stored in the script
+        // context of the first script that declared a variable, all other
+        // script contexts will contain 'the hole' for that particular name.
+        if (scope_info.IsReplModeScope() &&
+            context->get(slot_index).IsTheHole(isolate)) {
+          context = Handle<Context>(context->previous(), isolate);
+          continue;
+        }
+
         if (FLAG_trace_contexts) {
           PrintF("=> found local in context slot %d (mode = %hhu)\n",
                  slot_index, static_cast<uint8_t>(mode));
@@ -357,6 +366,17 @@ Handle<Object> Context::Lookup(Handle<Context> context, Handle<String> name,
           return extension;
         }
       }
+
+      // Check blacklist. Names that are listed, cannot be resolved further.
+      Object blacklist = context->get(BLACK_LIST_INDEX);
+      if (blacklist.IsStringSet() &&
+          StringSet::cast(blacklist).Has(isolate, name)) {
+        if (FLAG_trace_contexts) {
+          PrintF(" - name is blacklisted. Aborting.\n");
+        }
+        break;
+      }
+
       // Check the original context, but do not follow its context chain.
       Object obj = context->get(WRAPPED_CONTEXT_INDEX);
       if (obj.IsContext()) {
@@ -366,26 +386,12 @@ Handle<Object> Context::Lookup(Handle<Context> context, Handle<String> name,
                             attributes, init_flag, variable_mode);
         if (!result.is_null()) return result;
       }
-      // Check whitelist. Names that do not pass whitelist shall only resolve
-      // to with, script or native contexts up the context chain.
-      obj = context->get(WHITE_LIST_INDEX);
-      if (obj.IsStringSet()) {
-        failed_whitelist =
-            failed_whitelist || !StringSet::cast(obj).Has(isolate, name);
-      }
     }
 
     // 3. Prepare to continue with the previous (next outermost) context.
     if (context->IsNativeContext()) break;
 
-    do {
-      context = Handle<Context>(context->previous(), isolate);
-      // If we come across a whitelist context, and the name is not
-      // whitelisted, then only consider with, script, module or native
-      // contexts.
-    } while (failed_whitelist && !context->IsScriptContext() &&
-             !context->IsNativeContext() && !context->IsWithContext() &&
-             !context->IsModuleContext());
+    context = Handle<Context>(context->previous(), isolate);
   } while (follow_context_chain);
 
   if (FLAG_trace_contexts) {
@@ -435,8 +441,12 @@ int Context::IntrinsicIndexForName(Handle<String> string) {
 
 #undef COMPARE_NAME
 
-#define COMPARE_NAME(index, type, name) \
-  if (strncmp(string, #name, length) == 0) return index;
+#define COMPARE_NAME(index, type, name)                                      \
+  {                                                                          \
+    const int name_length = static_cast<int>(arraysize(#name)) - 1;          \
+    if ((length == name_length) && strncmp(string, #name, name_length) == 0) \
+      return index;                                                          \
+  }
 
 int Context::IntrinsicIndexForName(const unsigned char* unsigned_string,
                                    int length) {
@@ -448,13 +458,6 @@ int Context::IntrinsicIndexForName(const unsigned char* unsigned_string,
 #undef COMPARE_NAME
 
 #ifdef DEBUG
-
-bool Context::IsBootstrappingOrNativeContext(Isolate* isolate, Object object) {
-  // During bootstrapping we allow all objects to pass as global
-  // objects. This is necessary to fix circular dependencies.
-  return isolate->heap()->gc_state() != Heap::NOT_IN_GC ||
-         isolate->bootstrapper()->IsActive() || object.IsNativeContext();
-}
 
 bool Context::IsBootstrappingOrValidParentContext(Object object,
                                                   Context child) {
@@ -478,15 +481,14 @@ void NativeContext::IncrementErrorsThrown() {
 
 int NativeContext::GetErrorsThrown() { return errors_thrown().value(); }
 
-STATIC_ASSERT(Context::MIN_CONTEXT_SLOTS == 4);
+STATIC_ASSERT(Context::MIN_CONTEXT_SLOTS == 2);
+STATIC_ASSERT(Context::MIN_CONTEXT_EXTENDED_SLOTS == 3);
 STATIC_ASSERT(NativeContext::kScopeInfoOffset ==
               Context::OffsetOfElementAt(NativeContext::SCOPE_INFO_INDEX));
 STATIC_ASSERT(NativeContext::kPreviousOffset ==
               Context::OffsetOfElementAt(NativeContext::PREVIOUS_INDEX));
 STATIC_ASSERT(NativeContext::kExtensionOffset ==
               Context::OffsetOfElementAt(NativeContext::EXTENSION_INDEX));
-STATIC_ASSERT(NativeContext::kNativeContextOffset ==
-              Context::OffsetOfElementAt(NativeContext::NATIVE_CONTEXT_INDEX));
 
 STATIC_ASSERT(NativeContext::kStartOfStrongFieldsOffset ==
               Context::OffsetOfElementAt(-1));
@@ -497,6 +499,34 @@ STATIC_ASSERT(NativeContext::kMicrotaskQueueOffset ==
 STATIC_ASSERT(NativeContext::kSize ==
               (Context::SizeFor(NativeContext::NATIVE_CONTEXT_SLOTS) +
                kSystemPointerSize));
+
+void NativeContext::SetDetachedWindowReason(
+    v8::Context::DetachedWindowReason reason) {
+  set_detached_window_reason(Smi::FromEnum(reason));
+
+  Isolate* isolate = GetIsolate();
+  // kWindowNotDetached is used when initializing. Don't initialize to time
+  // based value due to build artifact inconsistency (see crbug/1029863).
+  // It's safe to use 0, because the value isn't used in the kWindowNotDetached
+  // case.
+  set_detached_window_time_in_seconds(Smi::FromInt(
+      reason == v8::Context::kWindowNotDetached
+          ? 0
+          : static_cast<int>(isolate->time_millis_since_init() / 1000)));
+}
+
+v8::Context::DetachedWindowReason NativeContext::GetDetachedWindowReason()
+    const {
+  return static_cast<v8::Context::DetachedWindowReason>(
+      detached_window_reason().value());
+}
+
+int NativeContext::SecondsSinceDetachedWindow() const {
+  DCHECK(detached_window_reason().value() != v8::Context::kWindowNotDetached);
+  Isolate* isolate = GetIsolate();
+  return static_cast<int>(isolate->time_millis_since_init() / 1000 -
+                          detached_window_time_in_seconds().value());
+}
 
 }  // namespace internal
 }  // namespace v8

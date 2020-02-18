@@ -13,8 +13,10 @@ if (is_android) {
 # renderer/platform. In particular these mojom interfaces can't use types that
 # are typemapped to a type in renderer/core.
 mojom("mojom_platform") {
+  generate_java = true
   sources = [
     "ad_tagging/ad_frame.mojom",
+    "agents/agent_metrics.mojom",
     "app_banner/app_banner.mojom",
     "appcache/appcache.mojom",
     "appcache/appcache_info.mojom",
@@ -36,24 +38,23 @@ mojom("mojom_platform") {
     "cookie_store/cookie_store.mojom",
     "crash/crash_memory_metrics_reporter.mojom",
     "credentialmanager/credential_manager.mojom",
-    "csp/content_security_policy.mojom",
     "devtools/console_message.mojom",
     "devtools/devtools_agent.mojom",
     "devtools/devtools_frontend.mojom",
-    "dom_storage/session_storage_namespace.mojom",
-    "dom_storage/storage_area.mojom",
-    "dom_storage/storage_partition_service.mojom",
     "feature_policy/feature_policy.mojom",
+    "feature_policy/feature_policy_feature.mojom",
+    "feature_policy/policy_value.mojom",
     "fetch/fetch_api_request.mojom",
     "fetch/fetch_api_response.mojom",
     "file/file_utilities.mojom",
     "filesystem/file_system.mojom",
-    "frame/document_interface_broker.mojom",
     "frame/find_in_page.mojom",
     "frame/frame.mojom",
-    "frame/frame_host_test_interface.mojom",
+    "frame/frame_policy.mojom",
+    "frame/fullscreen.mojom",
     "frame/lifecycle.mojom",
     "frame/navigation_initiator.mojom",
+    "frame/sudden_termination_disabler_type.mojom",
     "geolocation/geolocation_service.mojom",
     "hid/hid.mojom",
     "hyphenation/hyphenation.mojom",
@@ -90,6 +91,7 @@ mojom("mojom_platform") {
     "page/display_cutout.mojom",
     "page/spatial_navigation.mojom",
     "payments/payment_app.mojom",
+    "peerconnection/peer_connection_tracker.mojom",
     "permissions/permission.mojom",
     "permissions/permission_status.mojom",
     "picture_in_picture/picture_in_picture.mojom",
@@ -110,11 +112,13 @@ mojom("mojom_platform") {
     "service_worker/dispatch_fetch_event_params.mojom",
     "service_worker/navigation_preload_state.mojom",
     "service_worker/service_worker_client.mojom",
+    "service_worker/service_worker_database.mojom",
     "service_worker/service_worker_error_type.mojom",
     "service_worker/service_worker_event_status.mojom",
     "service_worker/service_worker_fetch_response_callback.mojom",
     "service_worker/service_worker_installed_scripts_manager.mojom",
     "service_worker/service_worker_provider_type.mojom",
+    "service_worker/service_worker_registration_options.mojom",
     "service_worker/service_worker_state.mojom",
     "service_worker/service_worker_stream_handle.mojom",
     "site_engagement/site_engagement.mojom",
@@ -125,6 +129,8 @@ mojom("mojom_platform") {
     "speech/speech_recognition_result.mojom",
     "speech/speech_recognizer.mojom",
     "speech/speech_synthesis.mojom",
+    "timing/performance_mark_or_measure.mojom",
+    "timing/worker_timing_container.mojom",
     "ukm/ukm.mojom",
     "user_agent/user_agent_metadata.mojom",
     "v8_cache_options.mojom",
@@ -133,6 +139,7 @@ mojom("mojom_platform") {
     "webaudio/audio_context_manager.mojom",
     "webdatabase/web_database.mojom",
     "websockets/websocket_connector.mojom",
+    "webtransport/quic_transport_connector.mojom",
     "window_features/window_features.mojom",
     "worker/dedicated_worker_host.mojom",
     "worker/shared_worker.mojom",
@@ -141,6 +148,7 @@ mojom("mojom_platform") {
     "worker/shared_worker_creation_context_type.mojom",
     "worker/shared_worker_host.mojom",
     "worker/shared_worker_info.mojom",
+    "worker/subresource_loader_updater.mojom",
     "worker/worker_content_settings_proxy.mojom",
     "worker/worker_main_script_load_params.mojom",
   ]
@@ -159,6 +167,7 @@ mojom("mojom_platform") {
     ":mojom_mhtml_load_result",
     ":web_client_hints_types_mojo_bindings",
     ":web_feature_mojo_bindings",
+    "//cc/mojom",
     "//components/payments/mojom",
     "//components/services/filesystem/public/mojom",
     "//mojo/public/mojom/base",
@@ -169,8 +178,10 @@ mojom("mojom_platform") {
     "//services/service_manager/public/mojom",
     "//services/viz/public/mojom",
     "//skia/public/mojom",
+    "//third_party/blink/public/mojom/dom_storage",
     "//third_party/blink/public/mojom/usb",
     "//ui/base/ime/mojom",
+    "//ui/display/mojom",
     "//ui/gfx/geometry/mojom",
     "//ui/gfx/mojom",
     "//url/mojom:url_mojom_gurl",
@@ -205,6 +216,7 @@ mojom("mojom_platform") {
 # needed by Android's implementation (in chrome/android or in android_webview)
 # for following mojom files.
 mojom("android_mojo_bindings") {
+  generate_java = true
   sources = [
     "blob/blob.mojom",
     "blob/blob_registry.mojom",
@@ -226,9 +238,6 @@ mojom("android_mojo_bindings") {
     "webauthn/internal_authenticator.mojom",
     "webshare/webshare.mojom",
   ]
-  if (is_android && notouch_build) {
-    sources += [ "media_controls/touchless/media_controls.mojom" ]
-  }
   public_deps = [
     "//components/payments/mojom",
     "//mojo/public/mojom/base",
@@ -264,6 +273,7 @@ mojom("android_mojo_bindings") {
 # modules dependencies if it looks necessary, at that time we can put all of
 # those high-level service worker mojom files there.
 mojom("mojom_core") {
+  generate_java = true
   sources = [
     "messaging/cloneable_message.mojom",
     "messaging/message_port_descriptor.mojom",
@@ -414,6 +424,7 @@ mojom("mojom_broadcastchannel_bindings") {
 }
 
 mojom("mojom_mhtml_load_result") {
+  generate_java = true
   sources = [
     "loader/mhtml_load_result.mojom",
   ]
@@ -427,6 +438,7 @@ mojom("mojom_mhtml_load_result") {
 # because the chromium typemap for blink mojo_bindings has private content
 # dependencies.
 mojom_component("web_feature_mojo_bindings") {
+  generate_java = true
   sources = [
     "use_counter/css_property_id.mojom",
     "web_feature/web_feature.mojom",
@@ -440,6 +452,7 @@ mojom_component("web_feature_mojo_bindings") {
 # mojom files because the chromium typemap for blink mojo_bindings has private
 # content dependencies.
 mojom("web_client_hints_types_mojo_bindings") {
+  generate_java = true
   sources = [
     "web_client_hints/web_client_hints_types.mojom",
   ]
@@ -472,6 +485,7 @@ mojom("embedded_frame_sink_mojo_bindings") {
 
 # This is a separate target because it needs unscrambled message IDs.
 mojom("authenticator_test_mojo_bindings") {
+  generate_java = true
   sources = [
     "webauthn/virtual_authenticator.mojom",
   ]

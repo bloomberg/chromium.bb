@@ -16,15 +16,57 @@
 
 #include "src/trace_processor/db/bit_vector.h"
 
+#include "src/trace_processor/db/bit_vector_iterators.h"
+
 namespace perfetto {
 namespace trace_processor {
 
-BitVector::BitVector(uint32_t count, bool value) : inner_(count, value) {}
+BitVector::BitVector() = default;
 
-BitVector::BitVector(std::vector<bool> inner) : inner_(std::move(inner)) {}
+BitVector::BitVector(std::initializer_list<bool> init) {
+  for (bool x : init) {
+    if (x) {
+      AppendTrue();
+    } else {
+      AppendFalse();
+    }
+  }
+}
+
+BitVector::BitVector(uint32_t count, bool value) {
+  Resize(count, value);
+}
+
+BitVector::BitVector(std::vector<Block> blocks,
+                     std::vector<uint32_t> counts,
+                     uint32_t size)
+    : size_(size), counts_(std::move(counts)), blocks_(std::move(blocks)) {}
 
 BitVector BitVector::Copy() const {
-  return BitVector(inner_);
+  return BitVector(blocks_, counts_, size_);
+}
+
+BitVector::AllBitsIterator BitVector::IterateAllBits() const {
+  return AllBitsIterator(this);
+}
+
+BitVector::SetBitsIterator BitVector::IterateSetBits() const {
+  return SetBitsIterator(this);
+}
+
+void BitVector::UpdateSetBits(const BitVector& other) {
+  PERFETTO_DCHECK(other.size() == GetNumBitsSet());
+
+  // For each set bit in this bitvector, we lookup whether |other| has the
+  // bit set. If not, we clear the bit.
+  for (auto it = IterateSetBits(); it; it.Next()) {
+    if (!other.IsSet(it.ordinal()))
+      it.Clear();
+  }
+
+  // After the loop, we should have precisely the same number of bits
+  // set as |other|.
+  PERFETTO_DCHECK(GetNumBitsSet() == other.GetNumBitsSet());
 }
 
 }  // namespace trace_processor

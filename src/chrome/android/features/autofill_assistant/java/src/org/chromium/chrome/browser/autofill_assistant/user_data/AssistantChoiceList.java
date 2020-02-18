@@ -20,9 +20,12 @@ import android.widget.RadioButton;
 import android.widget.Space;
 import android.widget.TextView;
 
+import androidx.annotation.DrawableRes;
+
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
 import org.chromium.chrome.autofill_assistant.R;
+import org.chromium.chrome.browser.ui.widget.TintedDrawable;
 import org.chromium.ui.widget.ChromeImageView;
 
 import java.util.ArrayList;
@@ -166,6 +169,13 @@ public class AssistantChoiceList extends GridLayout {
         addItem(view, hasEditButton, null, null);
     }
 
+    public void addItem(View view, boolean hasEditButton,
+            @Nullable Callback<Boolean> itemSelectedListener,
+            @Nullable Runnable itemEditedListener) {
+        addItem(view, hasEditButton, itemSelectedListener, itemEditedListener,
+                R.drawable.ic_edit_24dp, "");
+    }
+
     /**
      * Adds an item to the list. Additional widgets to select and edit the item are created as
      * necessary.
@@ -175,10 +185,12 @@ public class AssistantChoiceList extends GridLayout {
      * @param itemSelectedListener Optional listener which is notified when the item is selected or
      * deselected.
      * @param itemEditedListener Optional listener which is notified when the item is edited.
+     * @param editButtonDrawable The drawable to use for the optional edit button.
+     * @param editButtonContentDescription The content description for the optional edit button.
      */
     public void addItem(View view, boolean hasEditButton,
-            @Nullable Callback<Boolean> itemSelectedListener,
-            @Nullable Runnable itemEditedListener) {
+            @Nullable Callback<Boolean> itemSelectedListener, @Nullable Runnable itemEditedListener,
+            @DrawableRes int editButtonDrawable, String editButtonContentDescription) {
         CompoundButton radioButton =
                 mAllowMultipleChoices ? new CheckBox(getContext()) : new RadioButton(getContext());
         radioButton.setPadding(0, 0, mColumnSpacing, 0);
@@ -194,7 +206,7 @@ public class AssistantChoiceList extends GridLayout {
         View editButton = null;
         LinearLayout spacer = null;
         if (hasEditButton) {
-            editButton = createEditButton();
+            editButton = createEditButton(editButtonDrawable, editButtonContentDescription);
             editButton.setOnClickListener(unusedView -> {
                 if (itemEditedListener != null) {
                     itemEditedListener.run();
@@ -387,17 +399,20 @@ public class AssistantChoiceList extends GridLayout {
         return lp;
     }
 
-    private View createEditButton() {
+    private View createEditButton(
+            @DrawableRes int editButtonDrawable, String editButtonContentDescription) {
         int editButtonSize = getContext().getResources().getDimensionPixelSize(
                 R.dimen.autofill_assistant_choicelist_edit_button_size);
         ChromeImageView editButton = new ChromeImageView(getContext());
-        editButton.setImageResource(R.drawable.ic_edit_24dp);
+        editButton.setImageDrawable(TintedDrawable.constructTintedDrawable(
+                getContext(), editButtonDrawable, R.color.default_icon_color));
         editButton.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
         editButton.setLayoutParams(new ViewGroup.LayoutParams(editButtonSize, editButtonSize));
 
         LinearLayout editButtonLayout = createMinimumTouchSizeContainer();
         editButtonLayout.setGravity(Gravity.CENTER);
         editButtonLayout.addView(editButton);
+        editButtonLayout.setContentDescription(editButtonContentDescription);
         return editButtonLayout;
     }
 

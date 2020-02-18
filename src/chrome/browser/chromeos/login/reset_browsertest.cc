@@ -98,8 +98,8 @@ class LoginPromptVisibleObserver : public SessionManagerClient::Observer {
  private:
   bool signal_emitted_ = false;
 
-  ScopedObserver<SessionManagerClient, LoginPromptVisibleObserver> observer_{
-      this};
+  ScopedObserver<SessionManagerClient, SessionManagerClient::Observer>
+      observer_{this};
 
   DISALLOW_COPY_AND_ASSIGN(LoginPromptVisibleObserver);
 };
@@ -521,8 +521,8 @@ IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTestWithRollback,
   EXPECT_EQ(1, update_engine_client_->rollback_call_count());
   test::OobeJS().ExpectHasClass("revert-promise-view", {"reset"});
 
-  UpdateEngineClient::Status error_update_status;
-  error_update_status.status = UpdateEngineClient::UPDATE_STATUS_ERROR;
+  update_engine::StatusResult error_update_status;
+  error_update_status.set_current_operation(update_engine::Operation::ERROR);
   update_engine_client_->NotifyObserversThatStatusChanged(error_update_status);
   OobeScreenWaiter(ErrorScreenView::kScreenId).Wait();
 
@@ -540,7 +540,10 @@ IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTestWithRollback,
   prefs->SetBoolean(prefs::kFactoryResetRequested, true);
 }
 
-IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTestWithRollback, RevertAfterCancel) {
+// This test frequently times out on sanitizer and debug build bots. See
+// https://crbug.com/1025926.
+IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTestWithRollback,
+                       DISABLED_RevertAfterCancel) {
   OobeScreenWaiter(ResetView::kScreenId).Wait();
   EXPECT_TRUE(login_prompt_visible_observer_->signal_emitted());
 

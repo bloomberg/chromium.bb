@@ -108,8 +108,11 @@ class UiDelegate {
   virtual void SetContactInfo(
       std::unique_ptr<autofill::AutofillProfile> profile) = 0;
 
-  // Sets credit card, in response to the current collect user data options.
-  virtual void SetCreditCard(std::unique_ptr<autofill::CreditCard> card) = 0;
+  // Sets credit card and billing profile, in response to the current collect
+  // user data options.
+  virtual void SetCreditCard(
+      std::unique_ptr<autofill::CreditCard> card,
+      std::unique_ptr<autofill::AutofillProfile> billing_profile) = 0;
 
   // Sets the state of the third party terms & conditions, pertaining to the
   // current collect user data options.
@@ -122,6 +125,29 @@ class UiDelegate {
 
   // Called when the user clicks a link on the terms & conditions message.
   virtual void OnTermsAndConditionsLinkClicked(int link) = 0;
+
+  // Called when the user clicks a link in the form action.
+  virtual void OnFormActionLinkClicked(int link) = 0;
+
+  // Sets the start of the date/time range.
+  virtual void SetDateTimeRangeStart(int year,
+                                     int month,
+                                     int day,
+                                     int hour,
+                                     int minute,
+                                     int second) = 0;
+
+  // Sets the end of the date/time range.
+  virtual void SetDateTimeRangeEnd(int year,
+                                   int month,
+                                   int day,
+                                   int hour,
+                                   int minute,
+                                   int second) = 0;
+
+  // Sets an additional value.
+  virtual void SetAdditionalValue(const std::string& client_memory_key,
+                                  const std::string& value) = 0;
 
   // Adds the rectangles that correspond to the current touchable area to
   // the given vector.

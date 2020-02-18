@@ -32,7 +32,7 @@ class Target(object):
 
   def update(self, target_fields):
     """Update values of some target fields given as a dict."""
-    for field, value in target_fields.iteritems():
+    for field, value in target_fields.items():
       if field not in self._fields:
         raise AttributeError('Bad target field: %s' % field)
       # Make sure the attribute actually exists in the object.

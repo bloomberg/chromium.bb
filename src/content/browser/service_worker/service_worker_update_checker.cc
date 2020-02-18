@@ -4,6 +4,8 @@
 
 #include "content/browser/service_worker/service_worker_update_checker.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/task/post_task.h"
 #include "base/trace_event/trace_event.h"
@@ -85,7 +87,8 @@ ServiceWorkerUpdateChecker::ServiceWorkerUpdateChecker(
     bool force_bypass_cache,
     blink::mojom::ServiceWorkerUpdateViaCache update_via_cache,
     base::TimeDelta time_since_last_check,
-    ServiceWorkerContextCore* context)
+    ServiceWorkerContextCore* context,
+    blink::mojom::FetchClientSettingsObjectPtr fetch_client_settings_object)
     : main_script_url_(main_script_url),
       main_script_resource_id_(main_script_resource_id),
       scripts_to_compare_(std::move(scripts_to_compare)),
@@ -94,7 +97,12 @@ ServiceWorkerUpdateChecker::ServiceWorkerUpdateChecker(
       force_bypass_cache_(force_bypass_cache),
       update_via_cache_(update_via_cache),
       time_since_last_check_(time_since_last_check),
-      context_(context) {}
+      context_(context),
+      fetch_client_settings_object_(std::move(fetch_client_settings_object)) {
+  DCHECK(context_);
+  DCHECK(fetch_client_settings_object_);
+  DCHECK(fetch_client_settings_object_->outgoing_referrer.is_valid());
+}
 
 ServiceWorkerUpdateChecker::~ServiceWorkerUpdateChecker() = default;
 
@@ -249,9 +257,10 @@ void ServiceWorkerUpdateChecker::CheckOneScript(const GURL& url,
   auto writer = storage->CreateResponseWriter(storage->NewResourceId());
   running_checker_ = std::make_unique<ServiceWorkerSingleScriptUpdateChecker>(
       url, is_main_script, main_script_url_, version_to_update_->scope(),
-      force_bypass_cache_, update_via_cache_, time_since_last_check_,
-      default_headers_, browser_context_getter_, loader_factory_,
-      std::move(compare_reader), std::move(copy_reader), std::move(writer),
+      force_bypass_cache_, update_via_cache_, fetch_client_settings_object_,
+      time_since_last_check_, default_headers_, browser_context_getter_,
+      loader_factory_, std::move(compare_reader), std::move(copy_reader),
+      std::move(writer),
       base::BindOnce(&ServiceWorkerUpdateChecker::OnOneUpdateCheckFinished,
                      weak_factory_.GetWeakPtr(), resource_id));
 }

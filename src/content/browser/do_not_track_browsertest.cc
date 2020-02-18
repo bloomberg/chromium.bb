@@ -8,6 +8,7 @@
 #include "build/build_config.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_client.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -150,7 +151,7 @@ IN_PROC_BROWSER_TEST_F(DoNotTrackTest, Redirect) {
     return;
   // We don't check the result NavigateToURL as it returns true only if the
   // final URL is equal to the passed URL.
-  NavigateToURL(shell(), url);
+  EXPECT_TRUE(NavigateToURL(shell(), url, final_url /* expected_commit_url */));
   ExpectPageTextEq("1");
 }
 
@@ -175,8 +176,8 @@ IN_PROC_BROWSER_TEST_F(DoNotTrackTest, Worker) {
   ASSERT_TRUE(embedded_test_server()->Start());
   if (!EnableDoNotTrack())
     return;
-  NavigateToURL(shell(),
-                GetURL("/workers/create_worker.html?worker_url=/capture"));
+  EXPECT_TRUE(NavigateToURL(
+      shell(), GetURL("/workers/create_worker.html?worker_url=/capture")));
   loop.Run();
 
   EXPECT_TRUE(header_map.find("DNT") != header_map.end());
@@ -206,9 +207,9 @@ IN_PROC_BROWSER_TEST_F(DoNotTrackTest, MAYBE_SharedWorker) {
   ASSERT_TRUE(embedded_test_server()->Start());
   if (!EnableDoNotTrack())
     return;
-  NavigateToURL(
+  EXPECT_TRUE(NavigateToURL(
       shell(),
-      GetURL("/workers/create_shared_worker.html?worker_url=/capture"));
+      GetURL("/workers/create_shared_worker.html?worker_url=/capture")));
   loop.Run();
 
   EXPECT_TRUE(header_map.find("DNT") != header_map.end());
@@ -231,7 +232,8 @@ IN_PROC_BROWSER_TEST_F(DoNotTrackTest, ServiceWorker_Register) {
   ASSERT_TRUE(embedded_test_server()->Start());
   if (!EnableDoNotTrack())
     return;
-  NavigateToURL(shell(), GetURL("/service_worker/create_service_worker.html"));
+  EXPECT_TRUE(NavigateToURL(
+      shell(), GetURL("/service_worker/create_service_worker.html")));
 
   EXPECT_EQ("DONE", EvalJs(shell(), "register('/capture');"));
   loop.Run();
@@ -260,7 +262,8 @@ IN_PROC_BROWSER_TEST_F(DoNotTrackTest, ServiceWorker_Update) {
 
   // Register a service worker, trigger update, then wait until the handler sees
   // the second request.
-  NavigateToURL(shell(), GetURL("/service_worker/create_service_worker.html"));
+  EXPECT_TRUE(NavigateToURL(
+      shell(), GetURL("/service_worker/create_service_worker.html")));
   EXPECT_EQ("DONE", EvalJs(shell(), "register('/capture');"));
   EXPECT_EQ("DONE", EvalJs(shell(), "update();"));
   loop.Run();
@@ -279,7 +282,8 @@ IN_PROC_BROWSER_TEST_F(DoNotTrackTest, FetchFromWorker) {
   ASSERT_TRUE(embedded_test_server()->Start());
   if (!EnableDoNotTrack())
     return;
-  NavigateToURL(shell(), GetURL("/workers/fetch_from_worker.html"));
+  EXPECT_TRUE(
+      NavigateToURL(shell(), GetURL("/workers/fetch_from_worker.html")));
   EXPECT_EQ("1", EvalJs(shell(), "fetch_from_worker('/echoheader?DNT');"));
 }
 
@@ -296,7 +300,8 @@ IN_PROC_BROWSER_TEST_F(DoNotTrackTest, MAYBE_FetchFromSharedWorker) {
   ASSERT_TRUE(embedded_test_server()->Start());
   if (!EnableDoNotTrack())
     return;
-  NavigateToURL(shell(), GetURL("/workers/fetch_from_shared_worker.html"));
+  EXPECT_TRUE(
+      NavigateToURL(shell(), GetURL("/workers/fetch_from_shared_worker.html")));
 
   EXPECT_EQ("1",
             EvalJs(shell(), "fetch_from_shared_worker('/echoheader?DNT');"));
@@ -307,8 +312,8 @@ IN_PROC_BROWSER_TEST_F(DoNotTrackTest, FetchFromServiceWorker) {
   ASSERT_TRUE(embedded_test_server()->Start());
   if (!EnableDoNotTrack())
     return;
-  NavigateToURL(shell(),
-                GetURL("/service_worker/fetch_from_service_worker.html"));
+  EXPECT_TRUE(NavigateToURL(
+      shell(), GetURL("/service_worker/fetch_from_service_worker.html")));
 
   EXPECT_EQ("ready", EvalJs(shell(), "setup();"));
   EXPECT_EQ("1",

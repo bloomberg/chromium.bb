@@ -10,13 +10,14 @@
 #include <memory>
 #include <utility>
 
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
 #include "media/capture/video/chromeos/mock_camera_module.h"
 #include "media/capture/video/chromeos/mock_vendor_tag_ops.h"
 #include "media/capture/video/chromeos/video_capture_device_factory_chromeos.h"
 #include "media/capture/video/mock_gpu_memory_buffer_manager.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -45,7 +46,7 @@ class CameraHalDelegateTest : public ::testing::Test {
     camera_hal_delegate_ =
         new CameraHalDelegate(hal_delegate_thread_.task_runner());
     camera_hal_delegate_->SetCameraModule(
-        mock_camera_module_.GetInterfacePtrInfo());
+        mock_camera_module_.GetPendingRemote());
   }
 
   void TearDown() override {
@@ -83,8 +84,8 @@ TEST_F(CameraHalDelegateTest, GetBuiltinCameraInfo) {
     cros::mojom::CameraInfoPtr camera_info = cros::mojom::CameraInfo::New();
     cros::mojom::CameraMetadataPtr static_metadata =
         cros::mojom::CameraMetadata::New();
-    static_metadata->entry_count = 1;
-    static_metadata->entry_capacity = 1;
+    static_metadata->entry_count = 2;
+    static_metadata->entry_capacity = 2;
     static_metadata->entries =
         std::vector<cros::mojom::CameraMetadataEntryPtr>();
 
@@ -108,6 +109,17 @@ TEST_F(CameraHalDelegateTest, GetBuiltinCameraInfo) {
     min_frame_durations[7] = 16666666;
     uint8_t* as_int8 = reinterpret_cast<uint8_t*>(min_frame_durations.data());
     entry->data.assign(as_int8, as_int8 + entry->count * sizeof(int64_t));
+    static_metadata->entries->push_back(std::move(entry));
+
+    entry = cros::mojom::CameraMetadataEntry::New();
+    entry->index = 1;
+    entry->tag = cros::mojom::CameraMetadataTag::
+        ANDROID_CONTROL_AE_AVAILABLE_TARGET_FPS_RANGES;
+    entry->type = cros::mojom::EntryType::TYPE_INT32;
+    entry->count = 4;
+    std::vector<int32_t> default_fps_range{30, 30, 60, 60};
+    as_int8 = reinterpret_cast<uint8_t*>(default_fps_range.data());
+    entry->data.assign(as_int8, as_int8 + entry->count * sizeof(int32_t));
     static_metadata->entries->push_back(std::move(entry));
 
     switch (camera_id) {
@@ -142,17 +154,19 @@ TEST_F(CameraHalDelegateTest, GetBuiltinCameraInfo) {
       default:
         FAIL() << "Invalid camera id";
     }
+
     std::move(cb).Run(0, std::move(camera_info));
   };
 
   auto get_vendor_tag_ops_cb =
-      [&](cros::mojom::VendorTagOpsRequest& vendor_tag_ops_request,
+      [&](mojo::PendingReceiver<cros::mojom::VendorTagOps>
+              vendor_tag_ops_receiver,
           cros::mojom::CameraModule::GetVendorTagOpsCallback&) {
-        mock_vendor_tag_ops_.Bind(std::move(vendor_tag_ops_request));
+        mock_vendor_tag_ops_.Bind(std::move(vendor_tag_ops_receiver));
       };
 
   auto set_callbacks_cb =
-      [&](cros::mojom::CameraModuleCallbacksPtr& callbacks,
+      [&](mojo::PendingRemote<cros::mojom::CameraModuleCallbacks>& callbacks,
           cros::mojom::CameraModule::SetCallbacksCallback&) {
         mock_camera_module_.NotifyCameraDeviceChange(
             2, cros::mojom::CameraDeviceStatus::CAMERA_DEVICE_STATUS_PRESENT);
@@ -161,15 +175,15 @@ TEST_F(CameraHalDelegateTest, GetBuiltinCameraInfo) {
   EXPECT_CALL(mock_camera_module_, DoGetNumberOfCameras(_))
       .Times(1)
       .WillOnce(Invoke(get_number_of_cameras_cb));
-  EXPECT_CALL(
-      mock_camera_module_,
-      DoSetCallbacks(A<cros::mojom::CameraModuleCallbacksPtr&>(),
-                     A<cros::mojom::CameraModule::SetCallbacksCallback&>()))
+  EXPECT_CALL(mock_camera_module_,
+              DoSetCallbacks(
+                  A<mojo::PendingRemote<cros::mojom::CameraModuleCallbacks>&>(),
+                  A<cros::mojom::CameraModule::SetCallbacksCallback&>()))
       .Times(1)
       .WillOnce(Invoke(set_callbacks_cb));
   EXPECT_CALL(mock_camera_module_,
               DoGetVendorTagOps(
-                  A<cros::mojom::VendorTagOpsRequest&>(),
+                  A<mojo::PendingReceiver<cros::mojom::VendorTagOps>>(),
                   A<cros::mojom::CameraModule::GetVendorTagOpsCallback&>()))
       .Times(1)
       .WillOnce(Invoke(get_vendor_tag_ops_cb));
@@ -239,10 +253,12 @@ TEST_F(CameraHalDelegateTest, GetBuiltinCameraInfo) {
 
   // IMPLEMENTATION_DEFINED format should be filtered; currently YCbCr_420_888
   // format corresponds to NV12 in Chrome.
-  ASSERT_EQ(1U, supported_formats.size());
-  ASSERT_EQ(gfx::Size(1280, 720), supported_formats[0].frame_size);
-  ASSERT_FLOAT_EQ(60.0, supported_formats[0].frame_rate);
-  ASSERT_EQ(PIXEL_FORMAT_NV12, supported_formats[0].pixel_format);
+  ASSERT_GE(supported_formats.size(), 1U);
+  for (auto& format : supported_formats) {
+    ASSERT_EQ(gfx::Size(1280, 720), format.frame_size);
+    ASSERT_TRUE(format.frame_rate == 60.0 || format.frame_rate == 30.0);
+    ASSERT_EQ(PIXEL_FORMAT_NV12, format.pixel_format);
+  }
 }
 
 }  // namespace media

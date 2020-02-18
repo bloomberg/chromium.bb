@@ -50,6 +50,9 @@ class KernelArg(object):
   def __str__(self):
     return self.Format()
 
+  def __hash__(self):
+    return hash(str(self))
+
   def Format(self):
     """Return the arg(=value) as a string.
 
@@ -275,7 +278,7 @@ class KernelArgList(collections.MutableMapping, collections.MutableSequence):
         raise KeyError(key)
     self._data.insert(index, obj)
 
-  def update(self, other=None, **kwargs):
+  def update(self, other=None, **kwargs):  # pylint: disable=arguments-differ
     """Update the list.
 
     Set elements of the list.  Depending on the type of |other|, one of the
@@ -403,16 +406,18 @@ class CommandLine(object):
 class DmConfig(object):
   """Parse the dm= parameter.
 
-  Args:
-    boot_arg: contents of the quoted dm="..." kernel cmdline element, with or
-        without surrounding quotes.
-
   Attributes:
     num_devices: Number of devices defined in this dmsetup config.
     devices: OrderedDict of devices, by device name.
   """
 
   def __init__(self, boot_arg):
+    """Initialize.
+
+    Args:
+      boot_arg: contents of the quoted dm="..." kernel cmdline element, with or
+          without surrounding quotes.
+    """
     if boot_arg.startswith('"') and boot_arg.endswith('"'):
       boot_arg = boot_arg[1:-1]
     num_devices, devices = boot_arg.split(' ', 1)
@@ -446,9 +451,6 @@ class DmConfig(object):
 class DmDevice(object):
   """A single device in the dm= kernel parameter.
 
-  Args:
-    config_lines: List of lines to process.  Excess elements are ignored.
-
   Attributes:
     name: Name of the device.
     uuid: Uuid of the device.
@@ -459,6 +461,11 @@ class DmDevice(object):
   """
 
   def __init__(self, config_lines):
+    """Initialize.
+
+    Args:
+      config_lines: List of lines to process.  Excess elements are ignored.
+    """
     name, uuid, flags, rows = config_lines[0].split()
     self.name = name
     self.uuid = uuid

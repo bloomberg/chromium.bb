@@ -9,7 +9,6 @@
 #include "third_party/blink/public/public_buildflags.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
-#include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
 #include "third_party/blink/renderer/core/editing/selection_controller.h"
 #include "third_party/blink/renderer/core/events/gesture_event.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
@@ -26,7 +25,7 @@
 #include "third_party/blink/renderer/core/scroll/scroll_animator_base.h"
 
 #if BUILDFLAG(ENABLE_UNHANDLED_TAP)
-#include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/unhandled_tap_notifier/unhandled_tap_notifier.mojom-blink.h"
 #include "third_party/blink/public/web/web_node.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
@@ -140,6 +139,10 @@ WebInputEventResult GestureManager::HandleGestureEventInFrame(
   return WebInputEventResult::kNotHandled;
 }
 
+bool GestureManager::LongTapShouldInvokeContextMenu() const {
+  return long_tap_should_invoke_context_menu_;
+}
+
 WebInputEventResult GestureManager::HandleGestureTapDown(
     const GestureEventWithHitTestResults& targeted_event) {
   suppress_mouse_events_from_gestures_ =
@@ -206,9 +209,8 @@ WebInputEventResult GestureManager::HandleGestureTap(
       FlooredIntPoint(gesture_event.PositionInRootFrame());
   Node* tapped_node = current_hit_test.InnerNode();
   Element* tapped_element = current_hit_test.InnerElement();
-  std::unique_ptr<UserGestureIndicator> gesture_indicator =
-      LocalFrame::NotifyUserActivation(
-          tapped_node ? tapped_node->GetDocument().GetFrame() : nullptr);
+  LocalFrame::NotifyUserActivation(
+      tapped_node ? tapped_node->GetDocument().GetFrame() : nullptr);
 
   mouse_event_manager_->SetClickElement(tapped_element);
 
@@ -364,20 +366,17 @@ WebInputEventResult GestureManager::HandleGestureLongPress(
     return WebInputEventResult::kNotHandled;
   }
 
-  std::unique_ptr<UserGestureIndicator> gesture_indicator =
-      LocalFrame::NotifyUserActivation(
-          inner_node ? inner_node->GetDocument().GetFrame() : nullptr);
+  LocalFrame::NotifyUserActivation(
+      inner_node ? inner_node->GetDocument().GetFrame() : nullptr);
   return SendContextMenuEventForGesture(targeted_event);
 }
 
 WebInputEventResult GestureManager::HandleGestureLongTap(
     const GestureEventWithHitTestResults& targeted_event) {
-#if !defined(OS_ANDROID)
-  if (long_tap_should_invoke_context_menu_) {
+  if (LongTapShouldInvokeContextMenu()) {
     long_tap_should_invoke_context_menu_ = false;
     return SendContextMenuEventForGesture(targeted_event);
   }
-#endif
   return WebInputEventResult::kNotHandled;
 }
 
@@ -446,7 +445,7 @@ WebInputEventResult GestureManager::HandleGestureShowPress() {
     return WebInputEventResult::kNotHandled;
   for (const PaintLayerScrollableArea* scrollable_area : *areas) {
     ScrollAnimatorBase* animator = scrollable_area->ExistingScrollAnimator();
-    if (animator)
+    if (scrollable_area->ScrollsOverflow() && animator)
       animator->CancelAnimation();
   }
   return WebInputEventResult::kNotHandled;
@@ -470,7 +469,7 @@ void GestureManager::ShowUnhandledTapUIIfNeeded(
   if (should_trigger) {
     // Start setting up the Mojo interface connection.
     mojo::Remote<mojom::blink::UnhandledTapNotifier> provider;
-    frame_->Client()->GetInterfaceProvider()->GetInterface(
+    frame_->GetBrowserInterfaceBroker().GetInterface(
         provider.BindNewPipeAndPassReceiver());
 
     // Extract text run-length.

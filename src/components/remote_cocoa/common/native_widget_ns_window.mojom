@@ -77,6 +77,10 @@ struct NativeWidgetNSWindowInitParams {
   // NSWindowCollectionBehaviorParticipatesInCycle (this is not the
   // default for NSWindows with NSBorderlessWindowMask).
   bool force_into_collection_cycle;
+  // An opaque blob of AppKit data which includes, among other things, a
+  // window's workspace and fullscreen state, and can be retrieved from or
+  // applied to a window.
+  array<uint8> state_restoration_data;
 };
 
 // The interface through which a NativeWidgetMac may interact with an NSWindow
@@ -90,7 +94,7 @@ interface NativeWidgetNSWindow {
   SetParent(uint64 parent_id);
 
   // Open a panel for file selection or creation.
-  CreateSelectFileDialog(SelectFileDialog& dialog);
+  CreateSelectFileDialog(pending_receiver<SelectFileDialog> dialog);
 
   // Places this NativeWidgetNSWindow in front of the NativeWidgetNSWindow
   // indicated by |sibling_id| in z-order.
@@ -180,6 +184,9 @@ interface NativeWidgetNSWindow {
   // Set the opacity of the NSWindow.
   SetOpacity(float opacity);
 
+  // Set the window level of the NSWindow.
+  SetWindowLevel(int32 level);
+
   // Set the content aspect ratio of the NSWindow.
   SetContentAspectRatio(gfx.mojom.SizeF aspect_ratio);
 
@@ -194,6 +201,11 @@ interface NativeWidgetNSWindow {
 
   // Make the content view be the first responder for the NSWindow.
   MakeFirstResponder();
+
+  // Sort the subviews of the content view of this window. The sorted ids of
+  // the NSViews attached by NativeViewHost::Attach are listed in
+  // |attached_subview_ids|.
+  SortSubviews(array<uint64> attached_subview_ids);
 
   // Clear the touchbar.
   ClearTouchBar();

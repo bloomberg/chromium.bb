@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <memory>
+#include <string>
 #include <utility>
 
 #include "ash/components/shortcut_viewer/keyboard_shortcut_viewer_metadata.h"
@@ -34,6 +35,7 @@
 #include "ui/base/default_style.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/chromeos/events/keyboard_layout_util.h"
 #include "ui/chromeos/search_box/search_box_view_base.h"
 #include "ui/events/event_constants.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -134,7 +136,8 @@ void UpdateAXNodeDataPosition(
 }
 
 // Returns true if the given |item| should be excluded from the view, since
-// certain shortcuts can be associated with a disabled feature behind a flag.
+// certain shortcuts can be associated with a disabled feature behind a flag,
+// or specific device property, e.g. keyboard layout.
 bool ShouldExcludeItem(const KeyboardShortcutItem& item) {
   switch (item.description_message_id) {
     case IDS_KSV_DESCRIPTION_DESKS_NEW_DESK:
@@ -144,6 +147,8 @@ bool ShouldExcludeItem(const KeyboardShortcutItem& item) {
     case IDS_KSV_DESCRIPTION_DESKS_MOVE_ACTIVE_ITEM_LEFT_DESK:
     case IDS_KSV_DESCRIPTION_DESKS_MOVE_ACTIVE_ITEM_RIGHT_DESK:
       return !ash::features::IsVirtualDesksEnabled();
+    case IDS_KSV_DESCRIPTION_OPEN_GOOGLE_ASSISTANT:
+      return ui::DeviceKeyboardHasAssistantKey();
   }
 
   return false;
@@ -186,7 +191,10 @@ views::Widget* KeyboardShortcutView::Toggle(aura::Window* context) {
     window->SetProperty(ash::kFrameInactiveColorKey, SK_ColorWHITE);
 
     // Set shelf icon.
-    const ash::ShelfID shelf_id(app_list::kInternalAppIdKeyboardShortcutViewer);
+    const ash::ShelfID shelf_id(ash::kInternalAppIdKeyboardShortcutViewer);
+    window->SetProperty(
+        ash::kAppIDKey,
+        new std::string(ash::kInternalAppIdKeyboardShortcutViewer));
     window->SetProperty(ash::kShelfIDKey,
                         new std::string(shelf_id.Serialize()));
     window->SetProperty<int>(ash::kShelfItemTypeKey, ash::TYPE_APP);
@@ -319,8 +327,8 @@ void KeyboardShortcutView::QueryChanged(search_box::SearchBoxViewBase* sender) {
   constexpr base::TimeDelta kTimeOut(base::TimeDelta::FromMilliseconds(250));
   debounce_timer_.Start(
       FROM_HERE, kTimeOut,
-      base::Bind(&KeyboardShortcutView::ShowSearchResults,
-                 base::Unretained(this), sender->search_box()->GetText()));
+      base::BindOnce(&KeyboardShortcutView::ShowSearchResults,
+                     base::Unretained(this), sender->search_box()->GetText()));
 }
 
 void KeyboardShortcutView::BackButtonPressed() {
@@ -469,13 +477,12 @@ void KeyboardShortcutView::InitCategoriesTabbedPane(
     item_list_view->AddChildView(item_view.get());
     shortcut_items.emplace_back(item_view.get());
     // Remove the search query highlight.
-    description_label_view->Layout();
+    description_label_view->InvalidateLayout();
   }
   // Update node data for the last category.
   UpdateAXNodeDataPosition(shortcut_items);
 
-  tab_contents->Layout();
-  Layout();
+  tab_contents->InvalidateLayout();
 }
 
 void KeyboardShortcutView::UpdateViewsLayout(bool is_search_box_active) {
@@ -501,8 +508,7 @@ void KeyboardShortcutView::UpdateViewsLayout(bool is_search_box_active) {
   }
   categories_tabbed_pane_->SetVisible(!should_show_search_results);
   search_results_container_->SetVisible(should_show_search_results);
-  Layout();
-  SchedulePaint();
+  InvalidateLayout();
 }
 
 void KeyboardShortcutView::ShowSearchResults(
@@ -550,7 +556,7 @@ void KeyboardShortcutView::ShowSearchResults(
         description_label_view->AddStyleRange(
             gfx::Range(match_index, match_index + match_length), style);
         // Apply new styles to highlight matched search query.
-        description_label_view->Layout();
+        description_label_view->InvalidateLayout();
       }
 
       found_items_list_view->AddChildView(item_view.get());
@@ -581,8 +587,7 @@ void KeyboardShortcutView::ShowSearchResults(
           : IDS_KSV_SEARCH_BOX_ACCESSIBILITY_VALUE_WITH_RESULTS,
       replacement_strings, nullptr));
   search_results_container_->AddChildView(search_container_content_view);
-  Layout();
-  SchedulePaint();
+  InvalidateLayout();
 }
 
 bool KeyboardShortcutView::CanMaximize() const {

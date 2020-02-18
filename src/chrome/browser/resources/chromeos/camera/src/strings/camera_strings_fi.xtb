@@ -3,13 +3,11 @@
 <translationbundle lang="fi">
 <translation id="1276998909102132017">Gallerian kuvat</translation>
 <translation id="1430915738399379752">Tulosta</translation>
-<translation id="1462966117743110941">Nyt kamerasi tukee uusia kuvaustiloja ja löydät kuvasi ja videosi Lataukset-kansioista.</translation>
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1627744224761163218">4x4</translation>
 <translation id="1664224225747386870">Mitään ei kuvattu</translation>
 <translation id="1862930711583847113">Vienti epäonnistui: <ph name="FILE" /></translation>
 <translation id="1899697626337024495">Kuvaresoluutio</translation>
-<translation id="2008689030244369546">Uudenlainen ilme</translation>
 <translation id="2036868001356139588">Ajastimen kesto</translation>
 <translation id="2050339315714019657">Pystysuunta</translation>
 <translation id="2064538373111010176"><ph name="CAMERA" /> on aktiivinen.</translation>
@@ -24,6 +22,7 @@
 
         Jos sovelluksella on tallennustilan käyttöoikeus, se voi käyttää kuvia ja videoita.</translation>
 <translation id="3081586908890909590">Vaihda videon kuvaamiseen</translation>
+<translation id="313467653172006084">30 FPS</translation>
 <translation id="3183731565330012717">Ruudukkotyyppi</translation>
 <translation id="3227137524299004712">Mikrofoni</translation>
 <translation id="3259149966178251584">Kameran resoluutio</translation>
@@ -44,9 +43,7 @@
 <translation id="5671277269877808209">Neliö</translation>
 <translation id="5775960006311140197">Asiantuntija-tila</translation>
 <translation id="5869546221129391014">Ruudukko</translation>
-<translation id="6040143037577758943">Sulje</translation>
 <translation id="6073451960410192870">Lopeta tallennus</translation>
-<translation id="6165508094623778733">Lisätietoja</translation>
 <translation id="6197807149213783179">Tallenna sisällönkuvaustiedot</translation>
 <translation id="6233780560267770709">3x3</translation>
 <translation id="6243827288366940320">Kultainen leikkaus</translation>
@@ -65,6 +62,8 @@
 <translation id="7658239707568436148">Peruuta</translation>
 <translation id="7670511624014457267">60 FPS</translation>
 <translation id="8049189770492311300">Ajastin</translation>
+<translation id="8067883171444229417">Toista video</translation>
+<translation id="8131740175452115882">Vahvista</translation>
 <translation id="8145038249676204903">Vaihda kuvan ottamiseen</translation>
 <translation id="8261506727792406068">Poista</translation>
 <translation id="8428213095426709021">Asetukset</translation>

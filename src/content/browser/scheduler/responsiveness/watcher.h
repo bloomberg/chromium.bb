@@ -35,10 +35,12 @@ class CONTENT_EXPORT Watcher : public base::RefCounted<Watcher>,
   void TearDownOnUIThread() override;
   void TearDownOnIOThread() override;
 
-  void WillRunTaskOnUIThread(const base::PendingTask* task) override;
+  void WillRunTaskOnUIThread(const base::PendingTask* task,
+                             bool was_blocked_or_low_priority) override;
   void DidRunTaskOnUIThread(const base::PendingTask* task) override;
 
-  void WillRunTaskOnIOThread(const base::PendingTask* task) override;
+  void WillRunTaskOnIOThread(const base::PendingTask* task,
+                             bool was_blocked_or_low_priority) override;
   void DidRunTaskOnIOThread(const base::PendingTask* task) override;
 
   void WillRunEventOnUIThread(const void* opaque_identifier) override;
@@ -48,29 +50,28 @@ class CONTENT_EXPORT Watcher : public base::RefCounted<Watcher>,
   FRIEND_TEST_ALL_PREFIXES(ResponsivenessWatcherTest, TaskForwarding);
   FRIEND_TEST_ALL_PREFIXES(ResponsivenessWatcherTest, TaskNesting);
   FRIEND_TEST_ALL_PREFIXES(ResponsivenessWatcherTest, NativeEvents);
+  FRIEND_TEST_ALL_PREFIXES(ResponsivenessWatcherTest, BlockedOrLowPriorityTask);
+  FRIEND_TEST_ALL_PREFIXES(ResponsivenessWatcherTest, DelayedTask);
 
   // Metadata for currently running tasks and events is needed to track whether
   // or not they caused reentrancy.
   struct Metadata {
-    explicit Metadata(const void* identifier);
+    explicit Metadata(const void* identifier,
+                      bool was_blocked_or_low_priority,
+                      base::TimeTicks execution_start_time);
 
     // An opaque identifier for the task or event.
-    const void* identifier = nullptr;
+    const void* const identifier;
+
+    // Whether the task was at some point in a queue that was blocked or low
+    // priority.
+    const bool was_blocked_or_low_priority;
+
+    // The time at which the task or event started running.
+    const base::TimeTicks execution_start_time;
 
     // Whether the task or event has caused reentrancy.
     bool caused_reentrancy = false;
-
-    // For delayed tasks, the time at which the event is scheduled to run
-    // is only loosely coupled to the time that the task actually runs. The
-    // difference between these is not interesting for computing responsiveness.
-    // Instead of measuring the duration between |queue_time| and |finish_time|,
-    // we measure the duration of execution itself.
-    //
-    // We have evidence on Windows, macOS and Linux that the timestamp on native
-    // events is not reliable. For native events, we also measure execution
-    // duration instead of queue time + execution duration. See
-    // https://crbug.com/859155#c39.
-    base::TimeTicks execution_start_time;
   };
 
   // This is called when |metric_source_| finishes destruction.
@@ -78,11 +79,12 @@ class CONTENT_EXPORT Watcher : public base::RefCounted<Watcher>,
 
   // Common implementations for the thread-specific methods.
   void WillRunTask(const base::PendingTask* task,
+                   bool was_blocked_or_low_priority,
                    std::vector<Metadata>* currently_running_metadata);
 
   // |callback| will either be synchronously invoked, or else never invoked.
-  using TaskOrEventFinishedCallback =
-      base::OnceCallback<void(base::TimeTicks, base::TimeTicks)>;
+  using TaskOrEventFinishedCallback = base::OnceCallback<
+      void(base::TimeTicks, base::TimeTicks, base::TimeTicks)>;
   void DidRunTask(const base::PendingTask* task,
                   std::vector<Metadata>* currently_running_metadata,
                   int* mismatched_task_identifiers,

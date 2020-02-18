@@ -4,12 +4,17 @@
 
 #include "third_party/blink/renderer/modules/canvas/htmlcanvas/html_canvas_element_module.h"
 
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
+#include "components/viz/test/test_context_provider.h"
+#include "components/viz/test/test_gles2_interface.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "services/viz/public/mojom/hit_test/hit_test_region_list.mojom-blink.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/frame_sinks/embedded_frame_sink.mojom-blink.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_node_ids.h"
 #include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
@@ -20,8 +25,12 @@
 #include "third_party/blink/renderer/core/html/canvas/canvas_rendering_context.h"
 #include "third_party/blink/renderer/core/html/canvas/html_canvas_element.h"
 #include "third_party/blink/renderer/core/offscreencanvas/offscreen_canvas.h"
+#include "third_party/blink/renderer/platform/graphics/gpu/shared_gpu_context.h"
+#include "third_party/blink/renderer/platform/graphics/test/gpu_memory_buffer_test_platform.h"
+#include "third_party/blink/renderer/platform/graphics/test/gpu_test_utils.h"
 #include "third_party/blink/renderer/platform/graphics/test/mock_compositor_frame_sink.h"
 #include "third_party/blink/renderer/platform/graphics/test/mock_embedded_frame_sink_provider.h"
+#include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
 
 using ::testing::_;
 using ::testing::Values;
@@ -32,9 +41,9 @@ namespace {
 
 // This class allows for overriding GenerateFrameSinkId() so that the
 // HTMLCanvasElement's SurfaceLayerBridge will get a syntactically correct
-// FrameSinkId.
-class TestingPlatformSupportWithGenerateFrameSinkId
-    : public TestingPlatformSupport {
+// FrameSinkId.  It also returns a valid GpuMemoryBufferManager so that low
+// latency mode is enabled.
+class LowLatencyTestPlatform : public GpuMemoryBufferTestPlatform {
  public:
   viz::FrameSinkId GenerateFrameSinkId() override {
     // Doesn't matter what we return as long as is not zero.
@@ -67,7 +76,7 @@ class HTMLCanvasElementModuleTest : public ::testing::Test,
   HTMLCanvasElement& canvas_element() const { return *canvas_element_; }
   OffscreenCanvas* TransferControlToOffscreen(ExceptionState& exception_state) {
     return HTMLCanvasElementModule::TransferControlToOffscreenInternal(
-        canvas_element(), exception_state);
+        &GetDocument(), canvas_element(), exception_state);
   }
 
   frame_test_helpers::WebViewHelper web_view_helper_;
@@ -92,8 +101,17 @@ TEST_P(HTMLCanvasElementModuleTest, LowLatencyCanvasCompositorFrameOpacity) {
   return;
 #endif
 
-  ScopedTestingPlatformSupport<TestingPlatformSupportWithGenerateFrameSinkId>
-      platform;
+  // This test relies on GpuMemoryBuffers being supported and enabled for low
+  // latency canvas.  The latter is true only on ChromeOS in production.
+  ScopedTestingPlatformSupport<LowLatencyTestPlatform> platform;
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kLowLatencyCanvas2dImageChromium);
+
+  auto context_provider = viz::TestContextProvider::Create();
+  context_provider->UnboundTestContextGL()
+      ->set_supports_gpu_memory_buffer_format(
+          CanvasColorParams().GetBufferFormat(), true);
+  InitializeSharedGpuContext(context_provider.get());
 
   // To intercept SubmitCompositorFrame/SubmitCompositorFrameSync messages sent
   // by a canvas's CanvasResourceDispatcher, we have to override the Mojo
@@ -125,9 +143,6 @@ TEST_P(HTMLCanvasElementModuleTest, LowLatencyCanvasCompositorFrameOpacity) {
   // This call simulates having drawn something before FinalizeFrame().
   canvas_element().DidDraw();
 
-  ::testing::InSequence s;
-  EXPECT_CALL(mock_embedded_frame_sink_provider.mock_compositor_frame_sink(),
-              DidAllocateSharedBitmap(_, _));
   EXPECT_CALL(mock_embedded_frame_sink_provider.mock_compositor_frame_sink(),
               SubmitCompositorFrame_(_))
       .WillOnce(::testing::WithArg<0>(
@@ -144,9 +159,13 @@ TEST_P(HTMLCanvasElementModuleTest, LowLatencyCanvasCompositorFrameOpacity) {
             EXPECT_NE(shared_quad_state_list.front()->are_contents_opaque,
                       context_alpha);
           })));
-  canvas_element().FinalizeFrame();
+  canvas_element().PreFinalizeFrame();
+  context_->FinalizeFrame();
+  canvas_element().PostFinalizeFrame();
   platform->RunUntilIdle();
+
+  SharedGpuContext::ResetForTesting();
 }
 
-INSTANTIATE_TEST_SUITE_P(, HTMLCanvasElementModuleTest, Values(true, false));
+INSTANTIATE_TEST_SUITE_P(All, HTMLCanvasElementModuleTest, Values(true, false));
 }  // namespace blink

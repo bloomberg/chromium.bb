@@ -14,11 +14,11 @@ namespace media {
 
 class RendererFactorySelectorTest : public testing::Test {
  public:
-  typedef RendererFactorySelector::FactoryType FactoryType;
+  using FactoryType = RendererFactoryType;
 
   class FakeFactory : public RendererFactory {
    public:
-    FakeFactory(FactoryType type) : type_(type) {}
+    explicit FakeFactory(FactoryType type) : type_(type) {}
 
     std::unique_ptr<Renderer> CreateRenderer(
         const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
@@ -27,7 +27,7 @@ class RendererFactorySelectorTest : public testing::Test {
         VideoRendererSink* video_renderer_sink,
         const RequestOverlayInfoCB& request_overlay_info_cb,
         const gfx::ColorSpace& target_color_space) override {
-      return std::unique_ptr<Renderer>();
+      return nullptr;
     }
 
     FactoryType factory_type() { return type_; }
@@ -38,8 +38,20 @@ class RendererFactorySelectorTest : public testing::Test {
 
   RendererFactorySelectorTest() = default;
 
+  void AddBaseFactory(FactoryType type) {
+    selector_.AddBaseFactory(type, std::make_unique<FakeFactory>(type));
+  }
+
   void AddFactory(FactoryType type) {
     selector_.AddFactory(type, std::make_unique<FakeFactory>(type));
+  }
+
+  void AddConditionalFactory(FactoryType type) {
+    condition_met_map_[type] = false;
+    selector_.AddConditionalFactory(
+        type, std::make_unique<FakeFactory>(type),
+        base::BindRepeating(&RendererFactorySelectorTest::IsConditionMet,
+                            base::Unretained(this), type));
   }
 
   FactoryType GetCurrentlySelectedFactoryType() {
@@ -47,67 +59,70 @@ class RendererFactorySelectorTest : public testing::Test {
         ->factory_type();
   }
 
-  bool is_remoting_active() { return is_remoting_active_; }
+  bool IsConditionMet(FactoryType type) {
+    DCHECK(condition_met_map_.count(type));
+    return condition_met_map_[type];
+  }
 
  protected:
   RendererFactorySelector selector_;
-
-  bool is_remoting_active_ = false;
+  std::map<FactoryType, bool> condition_met_map_;
 
   DISALLOW_COPY_AND_ASSIGN(RendererFactorySelectorTest);
 };
 
-TEST_F(RendererFactorySelectorTest, SetBaseFactory_SingleFactory) {
-  AddFactory(FactoryType::DEFAULT);
-
-  selector_.SetBaseFactoryType(FactoryType::DEFAULT);
-
-  EXPECT_EQ(FactoryType::DEFAULT, GetCurrentlySelectedFactoryType());
+TEST_F(RendererFactorySelectorTest, SingleFactory) {
+  AddBaseFactory(FactoryType::kDefault);
+  EXPECT_EQ(FactoryType::kDefault, GetCurrentlySelectedFactoryType());
 }
 
-TEST_F(RendererFactorySelectorTest, SetBaseFactory_MultipleFactory) {
-  AddFactory(FactoryType::DEFAULT);
-  AddFactory(FactoryType::MOJO);
+TEST_F(RendererFactorySelectorTest, MultipleFactory) {
+  AddBaseFactory(FactoryType::kDefault);
+  AddFactory(FactoryType::kMojo);
 
-  selector_.SetBaseFactoryType(FactoryType::DEFAULT);
-  EXPECT_EQ(FactoryType::DEFAULT, GetCurrentlySelectedFactoryType());
+  EXPECT_EQ(FactoryType::kDefault, GetCurrentlySelectedFactoryType());
 
-  selector_.SetBaseFactoryType(FactoryType::MOJO);
-  EXPECT_EQ(FactoryType::MOJO, GetCurrentlySelectedFactoryType());
+  selector_.SetBaseFactoryType(FactoryType::kMojo);
+  EXPECT_EQ(FactoryType::kMojo, GetCurrentlySelectedFactoryType());
 }
 
-#if defined(OS_ANDROID)
-TEST_F(RendererFactorySelectorTest, SetUseMediaPlayer) {
-  AddFactory(FactoryType::DEFAULT);
-  AddFactory(FactoryType::MEDIA_PLAYER);
-  selector_.SetBaseFactoryType(FactoryType::DEFAULT);
+TEST_F(RendererFactorySelectorTest, ConditionalFactory) {
+  AddBaseFactory(FactoryType::kDefault);
+  AddFactory(FactoryType::kMojo);
+  AddConditionalFactory(FactoryType::kCourier);
 
-  selector_.SetUseMediaPlayer(false);
-  EXPECT_EQ(FactoryType::DEFAULT, GetCurrentlySelectedFactoryType());
+  EXPECT_EQ(FactoryType::kDefault, GetCurrentlySelectedFactoryType());
 
-  selector_.SetUseMediaPlayer(true);
-  EXPECT_EQ(FactoryType::MEDIA_PLAYER, GetCurrentlySelectedFactoryType());
+  condition_met_map_[FactoryType::kCourier] = true;
+  EXPECT_EQ(FactoryType::kCourier, GetCurrentlySelectedFactoryType());
 
-  selector_.SetUseMediaPlayer(false);
-  EXPECT_EQ(FactoryType::DEFAULT, GetCurrentlySelectedFactoryType());
+  selector_.SetBaseFactoryType(FactoryType::kMojo);
+  EXPECT_EQ(FactoryType::kCourier, GetCurrentlySelectedFactoryType());
+
+  condition_met_map_[FactoryType::kCourier] = false;
+  EXPECT_EQ(FactoryType::kMojo, GetCurrentlySelectedFactoryType());
 }
-#endif
 
-TEST_F(RendererFactorySelectorTest, SetQueryIsRemotingActiveCB) {
-  AddFactory(FactoryType::DEFAULT);
-  AddFactory(FactoryType::COURIER);
-  selector_.SetBaseFactoryType(FactoryType::DEFAULT);
-  selector_.SetQueryIsRemotingActiveCB(
-      base::Bind(&RendererFactorySelectorTest::is_remoting_active,
-                 base::Unretained(this)));
+TEST_F(RendererFactorySelectorTest, MultipleConditionalFactories) {
+  AddBaseFactory(FactoryType::kDefault);
+  AddConditionalFactory(FactoryType::kFlinging);
+  AddConditionalFactory(FactoryType::kCourier);
 
-  EXPECT_EQ(FactoryType::DEFAULT, GetCurrentlySelectedFactoryType());
+  EXPECT_EQ(FactoryType::kDefault, GetCurrentlySelectedFactoryType());
 
-  is_remoting_active_ = true;
-  EXPECT_EQ(FactoryType::COURIER, GetCurrentlySelectedFactoryType());
+  condition_met_map_[FactoryType::kFlinging] = false;
+  condition_met_map_[FactoryType::kCourier] = true;
+  EXPECT_EQ(FactoryType::kCourier, GetCurrentlySelectedFactoryType());
 
-  is_remoting_active_ = false;
-  EXPECT_EQ(FactoryType::DEFAULT, GetCurrentlySelectedFactoryType());
+  condition_met_map_[FactoryType::kFlinging] = true;
+  condition_met_map_[FactoryType::kCourier] = false;
+  EXPECT_EQ(FactoryType::kFlinging, GetCurrentlySelectedFactoryType());
+
+  // It's up to the implementation detail to decide which one to use.
+  condition_met_map_[FactoryType::kFlinging] = true;
+  condition_met_map_[FactoryType::kCourier] = true;
+  EXPECT_TRUE(GetCurrentlySelectedFactoryType() == FactoryType::kFlinging ||
+              GetCurrentlySelectedFactoryType() == FactoryType::kCourier);
 }
 
 }  // namespace media

@@ -9,6 +9,8 @@
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/ui/omnibox/omnibox_theme.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_bubble_delegate_view.h"
+#include "chrome/browser/ui/views/page_action/page_action_icon_loading_indicator_view.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/events/event.h"
@@ -24,8 +26,12 @@
 #include "ui/views/controls/focus_ring.h"
 #include "ui/views/style/platform_style.h"
 
+float PageActionIconView::Delegate::GetPageActionInkDropVisibleOpacity() const {
+  return GetOmniboxStateOpacity(OmniboxPartState::SELECTED);
+}
+
 std::unique_ptr<views::Border>
-PageActionIconView::Delegate::GetPageActionIconBorder() const {
+PageActionIconView::Delegate::CreatePageActionIconBorder() const {
   return views::CreateEmptyBorder(
       GetLayoutInsets(LOCATION_BAR_ICON_INTERIOR_PADDING));
 }
@@ -52,16 +58,14 @@ PageActionIconView::PageActionIconView(CommandUpdater* command_updater,
 
   image()->EnableCanvasFlippingForRTLUI(true);
   SetInkDropMode(InkDropMode::ON);
-  set_ink_drop_visible_opacity(
-      GetOmniboxStateOpacity(OmniboxPartState::SELECTED));
   SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
   // Only shows bubble after mouse is released.
   button_controller()->set_notify_action(
-      views::ButtonController::NotifyAction::NOTIFY_ON_RELEASE);
+      views::ButtonController::NotifyAction::kOnRelease);
   UpdateBorder();
 }
 
-PageActionIconView::~PageActionIconView() {}
+PageActionIconView::~PageActionIconView() = default;
 
 bool PageActionIconView::IsBubbleShowing() const {
   // If the bubble is being destroyed, it's considered showing though it may be
@@ -73,10 +77,6 @@ bool PageActionIconView::SetCommandEnabled(bool enabled) const {
   DCHECK(command_updater_);
   command_updater_->UpdateCommandEnabled(command_id_, enabled);
   return command_updater_->IsCommandEnabled(command_id_);
-}
-
-bool PageActionIconView::Update() {
-  return false;
 }
 
 SkColor PageActionIconView::GetLabelColorForTesting() const {
@@ -179,7 +179,8 @@ const gfx::VectorIcon& PageActionIconView::GetVectorIconBadge() const {
 
 void PageActionIconView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   views::BubbleDialogDelegateView* bubble = GetBubble();
-  if (bubble)
+  // TODO(crbug.com/1016968): Remove OnAnchorBoundsChanged after fixing.
+  if (bubble && bubble->GetAnchorView())
     bubble->OnAnchorBoundsChanged();
   IconLabelBubbleView::OnBoundsChanged(previous_bounds);
 }
@@ -197,6 +198,23 @@ void PageActionIconView::SetIconColor(SkColor icon_color) {
   UpdateIconImage();
 }
 
+void PageActionIconView::SetActive(bool active) {
+  if (active_ == active)
+    return;
+  active_ = active;
+  UpdateIconImage();
+}
+
+void PageActionIconView::Update() {
+  // Currently no page action icon should be visible during user input.
+  // A future subclass may need a hook here if that changes.
+  if (delegate_->IsLocationBarUserInputInProgress()) {
+    SetVisible(false);
+  } else {
+    UpdateImpl();
+  }
+}
+
 void PageActionIconView::UpdateIconImage() {
   const ui::NativeTheme* theme = GetNativeTheme();
   SkColor icon_color = active_
@@ -207,11 +225,21 @@ void PageActionIconView::UpdateIconImage() {
                                           icon_color, GetVectorIconBadge()));
 }
 
-void PageActionIconView::SetActiveInternal(bool active) {
-  if (active_ == active)
+void PageActionIconView::InstallLoadingIndicator() {
+  if (loading_indicator_)
     return;
-  active_ = active;
-  UpdateIconImage();
+
+  loading_indicator_ =
+      AddChildView(std::make_unique<PageActionIconLoadingIndicatorView>(this));
+  loading_indicator_->SetVisible(false);
+}
+
+void PageActionIconView::SetIsLoading(bool is_loading) {
+  if (!loading_indicator_)
+    return;
+
+  is_loading ? loading_indicator_->ShowAnimation()
+             : loading_indicator_->StopAnimation();
 }
 
 content::WebContents* PageActionIconView::GetWebContents() const {
@@ -219,5 +247,5 @@ content::WebContents* PageActionIconView::GetWebContents() const {
 }
 
 void PageActionIconView::UpdateBorder() {
-  SetBorder(delegate_->GetPageActionIconBorder());
+  SetBorder(delegate_->CreatePageActionIconBorder());
 }

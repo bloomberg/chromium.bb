@@ -145,7 +145,8 @@ struct QUIC_EXPORT_PRIVATE Bbr2Params {
   QuicRoundTripCount initial_max_ack_height_filter_window = 10;
 
   // Fraction of unutilized headroom to try to leave in path upon high loss.
-  float inflight_hi_headroom = 0.15;
+  float inflight_hi_headroom =
+      GetQuicFlag(FLAGS_quic_bbr2_default_inflight_hi_headroom);
 
   // Estimate startup/bw probing has gone too far if loss rate exceeds this.
   float loss_threshold = GetQuicFlag(FLAGS_quic_bbr2_default_loss_threshold);
@@ -330,6 +331,10 @@ class QUIC_EXPORT_PRIVATE Bbr2NetworkModel {
     return bandwidth_sampler_.max_ack_height();
   }
 
+  uint64_t num_ack_aggregation_epochs() const {
+    return bandwidth_sampler_.num_ack_aggregation_epochs();
+  }
+
   bool MaybeExpireMinRtt(const Bbr2CongestionEvent& congestion_event);
 
   QuicBandwidth BandwidthEstimate() const {
@@ -371,7 +376,10 @@ class QUIC_EXPORT_PRIVATE Bbr2NetworkModel {
 
   QuicBandwidth bandwidth_latest() const { return bandwidth_latest_; }
   QuicBandwidth bandwidth_lo() const { return bandwidth_lo_; }
-  void clear_bandwidth_lo() { bandwidth_lo_ = QuicBandwidth::Infinite(); }
+  static QuicBandwidth bandwidth_lo_default() {
+    return QuicBandwidth::Infinite();
+  }
+  void clear_bandwidth_lo() { bandwidth_lo_ = bandwidth_lo_default(); }
 
   QuicByteCount inflight_latest() const { return inflight_latest_; }
   QuicByteCount inflight_lo() const { return inflight_lo_; }
@@ -379,6 +387,11 @@ class QUIC_EXPORT_PRIVATE Bbr2NetworkModel {
     return std::numeric_limits<QuicByteCount>::max();
   }
   void clear_inflight_lo() { inflight_lo_ = inflight_lo_default(); }
+  void cap_inflight_lo(QuicByteCount cap) {
+    if (inflight_lo_ != inflight_lo_default() && inflight_lo_ > cap) {
+      inflight_lo_ = cap;
+    }
+  }
 
   QuicByteCount inflight_hi_with_headroom() const;
   QuicByteCount inflight_hi() const { return inflight_hi_; }
@@ -414,7 +427,7 @@ class QUIC_EXPORT_PRIVATE Bbr2NetworkModel {
   // Max bandwidth in the current round. Updated once per congestion event.
   QuicBandwidth bandwidth_latest_ = QuicBandwidth::Zero();
   // Max bandwidth of recent rounds. Updated once per round.
-  QuicBandwidth bandwidth_lo_ = QuicBandwidth::Infinite();
+  QuicBandwidth bandwidth_lo_ = bandwidth_lo_default();
 
   // Max inflight in the current round. Updated once per congestion event.
   QuicByteCount inflight_latest_ = 0;
@@ -464,7 +477,9 @@ class QUIC_EXPORT_PRIVATE Bbr2ModeBase {
 
   virtual ~Bbr2ModeBase() = default;
 
+  // Called when entering/leaving this mode.
   virtual void Enter(const Bbr2CongestionEvent& congestion_event) = 0;
+  virtual void Leave(const Bbr2CongestionEvent& congestion_event) = 0;
 
   virtual Bbr2Mode OnCongestionEvent(
       QuicByteCount prior_in_flight,

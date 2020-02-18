@@ -4,6 +4,8 @@
 
 #include "components/sync/syncable/nigori_handler_proxy.h"
 
+#include "components/sync/base/model_type.h"
+#include "components/sync/syncable/directory_cryptographer.h"
 #include "components/sync/syncable/syncable_base_transaction.h"
 #include "components/sync/syncable/user_share.h"
 #include "components/sync/syncable/write_transaction.h"
@@ -14,7 +16,8 @@ namespace syncable {
 
 NigoriHandlerProxy::NigoriHandlerProxy(UserShare* user_share)
     : user_share_(user_share),
-      encrypted_types_(SyncEncryptionHandler::SensitiveTypes()),
+      cryptographer_(std::make_unique<DirectoryCryptographer>()),
+      encrypted_types_(AlwaysEncryptedUserTypes()),
       passphrase_type_(SyncEncryptionHandler::kInitialPassphraseType) {
   DCHECK(user_share);
 }
@@ -31,6 +34,14 @@ void NigoriHandlerProxy::OnPassphraseRequired(
 }
 
 void NigoriHandlerProxy::OnPassphraseAccepted() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+}
+
+void NigoriHandlerProxy::OnTrustedVaultKeyRequired() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+}
+
+void NigoriHandlerProxy::OnTrustedVaultKeyAccepted() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
@@ -52,10 +63,11 @@ void NigoriHandlerProxy::OnEncryptionComplete() {
 }
 
 void NigoriHandlerProxy::OnCryptographerStateChanged(
-    Cryptographer* cryptographer) {
+    Cryptographer* cryptographer,
+    bool has_pending_keys) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   syncer::WriteTransaction trans(FROM_HERE, user_share_);
-  cryptographer_.CopyFrom(*cryptographer);
+  cryptographer_ = cryptographer->Clone();
 }
 
 void NigoriHandlerProxy::OnPassphraseTypeChanged(PassphraseType type,
@@ -81,7 +93,13 @@ void NigoriHandlerProxy::UpdateNigoriFromEncryptedTypes(
 const Cryptographer* NigoriHandlerProxy::GetCryptographer(
     const syncable::BaseTransaction* const trans) const {
   DCHECK_EQ(user_share_->directory.get(), trans->directory());
-  return &cryptographer_;
+  DCHECK(cryptographer_);
+  return cryptographer_.get();
+}
+
+const DirectoryCryptographer* NigoriHandlerProxy::GetDirectoryCryptographer(
+    const syncable::BaseTransaction* const trans) const {
+  return nullptr;
 }
 
 ModelTypeSet NigoriHandlerProxy::GetEncryptedTypes(

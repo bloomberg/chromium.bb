@@ -15,6 +15,11 @@
 
 namespace arc {
 
+void DeletePrintDocument(const base::FilePath& file_path) {
+  if (!base::DeleteFile(file_path, false))
+    LOG(ERROR) << "Failed to delete print document.";
+}
+
 base::FilePath SavePrintDocument(mojo::ScopedHandle scoped_handle) {
   base::PlatformFile platform_file = base::kInvalidPlatformFile;
   if (mojo::UnwrapPlatformFile(std::move(scoped_handle), &platform_file) !=
@@ -41,8 +46,8 @@ base::FilePath SavePrintDocument(mojo::ScopedHandle scoped_handle) {
   char buf[4096];
   int bytes;
   while ((bytes = src_file.ReadAtCurrentPos(buf, sizeof(buf))) > 0) {
-    int written = temp.WriteAtCurrentPos(buf, bytes);
-    if (written != bytes) {
+    if (!temp.WriteAtCurrentPosAndCheck(
+            base::as_bytes(base::make_span(buf, bytes)))) {
       PLOG(ERROR) << "Error while saving PDF to disk.";
       return base::FilePath();
     }

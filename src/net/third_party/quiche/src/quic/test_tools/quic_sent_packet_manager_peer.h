@@ -93,6 +93,14 @@ class QuicSentPacketManagerPeer {
 
   static void SetNextPacedPacketTime(QuicSentPacketManager* sent_packet_manager,
                                      QuicTime time);
+
+  static int GetReorderingShift(QuicSentPacketManager* sent_packet_manager);
+
+  static bool AdaptiveReorderingThresholdEnabled(
+      QuicSentPacketManager* sent_packet_manager);
+
+  static bool AdaptiveTimeThresholdEnabled(
+      QuicSentPacketManager* sent_packet_manager);
 };
 
 }  // namespace test

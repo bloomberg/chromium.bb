@@ -59,7 +59,11 @@ class PrintPreviewUI : public ConstrainedWebDialogUI {
 
   const base::string16& initiator_title() const { return initiator_title_; }
 
+  bool source_is_arc() const { return source_is_arc_; }
+
   bool source_is_modifiable() const { return source_is_modifiable_; }
+
+  bool source_is_pdf() const { return source_is_pdf_; }
 
   bool source_has_selection() const { return source_has_selection_; }
 
@@ -70,6 +74,13 @@ class PrintPreviewUI : public ConstrainedWebDialogUI {
   const gfx::Rect& printable_area() const { return printable_area_; }
 
   const gfx::Size& page_size() const { return page_size_; }
+
+  // Determines if the PDF compositor is being used to generate full document
+  // from individual pages, which can avoid the need for an extra composite
+  // request containing all of the pages together.
+  // TODO(awscreen): Can remove this method once all modifiable content is
+  // handled with MSKP document type.
+  bool ShouldCompositeDocumentUsingIndividualPages() const;
 
   // Returns true if |page_number| is the last page in |pages_to_render_|.
   // |page_number| is a 0-based number.
@@ -254,8 +265,14 @@ class PrintPreviewUI : public ConstrainedWebDialogUI {
   // Weak pointer to the WebUI handler.
   PrintPreviewHandler* const handler_;
 
+  // Indicates whether the source document is from ARC.
+  bool source_is_arc_ = false;
+
   // Indicates whether the source document can be modified.
   bool source_is_modifiable_ = true;
+
+  // Indicates whether the source document is a PDF.
+  bool source_is_pdf_ = false;
 
   // Indicates whether the source document has selection.
   bool source_has_selection_ = false;

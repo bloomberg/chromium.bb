@@ -32,6 +32,8 @@
 #include "components/download/public/common/download_danger_type.h"
 #include "components/download/public/common/download_export.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
+#include "components/download/public/common/download_source.h"
+#include "net/base/network_isolation_key.h"
 #include "ui/base/page_transition_types.h"
 #include "url/origin.h"
 
@@ -287,6 +289,10 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItem : public base::SupportsUserData {
   // Origin of the original originator of this download, before redirects, etc.
   virtual const base::Optional<url::Origin>& GetRequestInitiator() const = 0;
 
+  // The key used to isolate requests from different contexts in accessing
+  // shared network resources like the cache.
+  virtual const net::NetworkIsolationKey& GetNetworkIsolationKey() const = 0;
+
   // For downloads initiated via <a download>, this is the suggested download
   // filename from the download attribute.
   virtual std::string GetSuggestedFilename() const = 0;
@@ -326,6 +332,9 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItem : public base::SupportsUserData {
 
   // Whether this download is a SavePackage download.
   virtual bool IsSavePackageDownload() const = 0;
+
+  // DownloadSource prompting this download.
+  virtual DownloadSource GetDownloadSource() const = 0;
 
   //    Destination State accessors --------------------------------------------
 
@@ -385,7 +394,7 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItem : public base::SupportsUserData {
   // GetFileExternallyRemoved() was already true. The callback will be passed
   // false if the DownloadItem was not yet complete or if the file could not be
   // deleted for any reason.
-  virtual void DeleteFile(const base::Callback<void(bool)>& callback) = 0;
+  virtual void DeleteFile(base::OnceCallback<void(bool)> callback) = 0;
 
   // True if the file that will be written by the download is dangerous
   // and we will require a call to ValidateDangerousDownload() to complete.
@@ -490,6 +499,9 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItem : public base::SupportsUserData {
   // interruptions.
   virtual void OnContentCheckCompleted(DownloadDangerType danger_type,
                                        DownloadInterruptReason reason) = 0;
+
+  // Called when async scanning completes with the given |danger_type|.
+  virtual void OnAsyncScanningCompleted(DownloadDangerType danger_type) = 0;
 
   // Mark the download to be auto-opened when completed.
   virtual void SetOpenWhenComplete(bool open) = 0;

@@ -4,7 +4,7 @@
 
 // https://gpuweb.github.io/gpuweb/
 
-dictionary GPURenderPassDescriptor {
+dictionary GPURenderPassDescriptor : GPUObjectDescriptorBase {
     required sequence<GPURenderPassColorAttachmentDescriptor> colorAttachments;
     GPURenderPassDepthStencilAttachmentDescriptor depthStencilAttachment;
 };
@@ -14,5 +14,6 @@ enum GPULoadOp {
 };
 
 enum GPUStoreOp {
-    "store"
+    "store",
+    "clear"
 };

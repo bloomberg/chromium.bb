@@ -89,6 +89,10 @@ uint32_t DisplayList::UpdateDisplay(const Display& display, Type type) {
     local_display->set_rotation(display.rotation());
     changed_values |= DisplayObserver::DISPLAY_METRIC_ROTATION;
   }
+  if (local_display->panel_rotation() != display.panel_rotation()) {
+    local_display->set_panel_rotation(display.panel_rotation());
+    changed_values |= DisplayObserver::DISPLAY_METRIC_ROTATION;
+  }
   if (local_display->device_scale_factor() != display.device_scale_factor()) {
     local_display->set_device_scale_factor(display.device_scale_factor());
     changed_values |= DisplayObserver::DISPLAY_METRIC_DEVICE_SCALE_FACTOR;
@@ -103,6 +107,9 @@ uint32_t DisplayList::UpdateDisplay(const Display& display, Type type) {
     local_display->set_depth_per_component(depth_per_component);
     local_display->set_color_depth(color_depth);
     changed_values |= DisplayObserver::DISPLAY_METRIC_COLOR_SPACE;
+  }
+  if (local_display->GetSizeInPixel() != display.GetSizeInPixel()) {
+    local_display->set_size_in_pixels(display.GetSizeInPixel());
   }
   if (should_notify_observers()) {
     for (DisplayObserver& observer : observers_)

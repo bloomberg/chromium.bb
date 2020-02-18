@@ -13,6 +13,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -98,6 +99,8 @@ gfx::NativeViewAccessible AXPlatformNodeBase::ChildAtIndex(int index) {
 }
 
 int AXPlatformNodeBase::GetIndexInParent() {
+  if (delegate_)
+    return delegate_->GetIndexInParent();
   return -1;
 }
 
@@ -409,11 +412,7 @@ bool AXPlatformNodeBase::IsPlainTextField() const {
   // We need to check both the role and editable state, because some ARIA text
   // fields may in fact not be editable, whilst some editable fields might not
   // have the role.
-  return !GetData().HasState(ax::mojom::State::kRichlyEditable) &&
-         (GetData().role == ax::mojom::Role::kTextField ||
-          GetData().role == ax::mojom::Role::kTextFieldWithComboBox ||
-          GetData().role == ax::mojom::Role::kSearchBox ||
-          GetBoolAttribute(ax::mojom::BoolAttribute::kEditableRoot));
+  return GetData().IsPlainTextField();
 }
 
 bool AXPlatformNodeBase::IsRichTextField() const {
@@ -458,14 +457,24 @@ bool AXPlatformNodeBase::IsSelectionItemSupported() const {
       return table->GetData().role == ax::mojom::Role::kGrid ||
              table->GetData().role == ax::mojom::Role::kTreeGrid;
     }
+    // https://www.w3.org/TR/core-aam-1.1/#mapping_state-property_table
+    // SelectionItem.IsSelected is exposed when aria-checked is True or False,
+    // for 'radio' and 'menuitemradio' roles.
+    case ax::mojom::Role::kRadioButton:
+    case ax::mojom::Role::kMenuItemRadio: {
+      if (GetData().GetCheckedState() == ax::mojom::CheckedState::kTrue ||
+          GetData().GetCheckedState() == ax::mojom::CheckedState::kFalse)
+        return true;
+      return false;
+    }
+    // https://www.w3.org/TR/wai-aria-1.1/#aria-selected
+    // SelectionItem.IsSelected is exposed when aria-select is True or False.
     case ax::mojom::Role::kListBoxOption:
     case ax::mojom::Role::kListItem:
-    case ax::mojom::Role::kMenuItemRadio:
     case ax::mojom::Role::kMenuListOption:
-    case ax::mojom::Role::kRadioButton:
     case ax::mojom::Role::kTab:
     case ax::mojom::Role::kTreeItem:
-      return true;
+      return HasBoolAttribute(ax::mojom::BoolAttribute::kSelected);
     default:
       return false;
   }
@@ -486,10 +495,11 @@ base::string16 AXPlatformNodeBase::GetRangeValueText() const {
 base::string16
 AXPlatformNodeBase::GetRoleDescriptionFromImageAnnotationStatusOrFromAttribute()
     const {
-  if (GetData().GetImageAnnotationStatus() ==
-          ax::mojom::ImageAnnotationStatus::kEligibleForAnnotation ||
-      GetData().GetImageAnnotationStatus() ==
-          ax::mojom::ImageAnnotationStatus::kSilentlyEligibleForAnnotation) {
+  if (GetData().role == ax::mojom::Role::kImage &&
+      (GetData().GetImageAnnotationStatus() ==
+           ax::mojom::ImageAnnotationStatus::kEligibleForAnnotation ||
+       GetData().GetImageAnnotationStatus() ==
+           ax::mojom::ImageAnnotationStatus::kSilentlyEligibleForAnnotation)) {
     return GetDelegate()->GetLocalizedRoleDescriptionForUnlabeledImage();
   }
 
@@ -733,7 +743,7 @@ bool AXPlatformNodeBase::IsChildOfLeaf() const {
 
 bool AXPlatformNodeBase::IsInvisibleOrIgnored() const {
   const AXNodeData& data = GetData();
-  return data.HasState(ax::mojom::State::kInvisible) || ui::IsIgnored(data);
+  return data.HasState(ax::mojom::State::kInvisible) || data.IsIgnored();
 }
 
 bool AXPlatformNodeBase::IsScrollable() const {
@@ -767,7 +777,7 @@ bool AXPlatformNodeBase::IsVerticallyScrollable() const {
 
 base::string16 AXPlatformNodeBase::GetValue() const {
   // Expose slider value.
-  if (IsRangeValueSupported(GetData()))
+  if (GetData().IsRangeValueSupported())
     return GetRangeValueText();
 
   // On Windows, the value of a document should be its URL.
@@ -1011,7 +1021,7 @@ void AXPlatformNodeBase::ComputeAttributes(PlatformAttributeList* attributes) {
   }
 
   // Expose slider value.
-  if (IsRangeValueSupported(GetData())) {
+  if (GetData().IsRangeValueSupported()) {
     std::string value = base::UTF16ToUTF8(GetRangeValueText());
     if (!value.empty())
       AddAttributeToList("valuetext", value, attributes);
@@ -1127,9 +1137,7 @@ void AXPlatformNodeBase::UpdateComputedHypertext() {
     return;
   }
 
-  int child_count = GetChildCount();
-
-  if (!child_count) {
+  if (!GetChildCount()) {
     if (IsRichTextField()) {
       // We don't want to expose any associated label in IA2 Hypertext.
       return;
@@ -1145,10 +1153,8 @@ void AXPlatformNodeBase::UpdateComputedHypertext() {
   // the character index of each embedded object character to the id of the
   // child object it points to.
   base::string16 hypertext;
-  for (int i = 0; i < child_count; ++i) {
-    const auto* child = FromNativeViewAccessible(ChildAtIndex(i));
-
-    DCHECK(child);
+  for (AXPlatformNodeBase* child = GetFirstChild(); child;
+       child = child->GetNextSibling()) {
     // Similar to Firefox, we don't expose text-only objects in IA2 hypertext.
     if (child->IsTextOnlyObject()) {
       hypertext_.hypertext +=
@@ -1216,6 +1222,8 @@ bool AXPlatformNodeBase::ScrollToNode(ScrollType scroll_type) {
       ax::mojom::ScrollAlignment::kScrollAlignmentCenter;
   action_data.vertical_scroll_alignment =
       ax::mojom::ScrollAlignment::kScrollAlignmentCenter;
+  action_data.scroll_behavior =
+      ax::mojom::ScrollBehavior::kDoNotScrollIfVisible;
   action_data.target_rect = r;
   GetDelegate()->AccessibilityPerformAction(action_data);
   return true;
@@ -1279,13 +1287,15 @@ int32_t AXPlatformNodeBase::GetHypertextOffsetFromChild(
     AXPlatformNodeBase* child) {
   // TODO(dougt) DCHECK(child.owner()->PlatformGetParent() == owner());
 
+  if (IsLeaf())
+    return -1;
+
   // Handle the case when we are dealing with a text-only child.
-  // Note that this object might be a platform leaf, e.g. an ARIA searchbox.
-  // Also, text-only children should not be present at tree roots and so no
+  // Text-only children should not be present at tree roots and so no
   // cross-tree traversal is necessary.
   if (child->IsTextOnlyObject()) {
     int32_t hypertext_offset = 0;
-    int32_t index_in_parent = child->GetDelegate()->GetIndexInParent();
+    int32_t index_in_parent = child->GetIndexInParent();
     DCHECK_GE(index_in_parent, 0);
     DCHECK_LT(index_in_parent, static_cast<int32_t>(GetChildCount()));
     for (uint32_t i = 0; i < static_cast<uint32_t>(index_in_parent); ++i) {
@@ -1366,9 +1376,9 @@ int AXPlatformNodeBase::GetHypertextOffsetFromEndpoint(
   }
 
   AXPlatformNodeBase* common_parent = this;
-  int32_t index_in_common_parent = GetDelegate()->GetIndexInParent();
+  int32_t index_in_common_parent = GetIndexInParent();
   while (common_parent && !endpoint_object->IsDescendantOf(common_parent)) {
-    index_in_common_parent = common_parent->GetDelegate()->GetIndexInParent();
+    index_in_common_parent = common_parent->GetIndexInParent();
     common_parent = static_cast<AXPlatformNodeBase*>(
         FromNativeViewAccessible(common_parent->GetParent()));
   }
@@ -1409,8 +1419,7 @@ int AXPlatformNodeBase::GetHypertextOffsetFromEndpoint(
         common_parent->GetDelegate()->ChildAtIndex(i)));
     DCHECK(child);
     if (endpoint_object->IsDescendantOf(child)) {
-      endpoint_index_in_common_parent =
-          child->GetDelegate()->GetIndexInParent();
+      endpoint_index_in_common_parent = child->GetIndexInParent();
       break;
     }
   }
@@ -1462,6 +1471,13 @@ void AXPlatformNodeBase::GetSelectionOffsets(int* selection_start,
       GetIntAttribute(ax::mojom::IntAttribute::kTextSelEnd, selection_end)) {
     return;
   }
+
+  GetSelectionOffsetsFromTree(selection_start, selection_end);
+}
+
+void AXPlatformNodeBase::GetSelectionOffsetsFromTree(int* selection_start,
+                                                     int* selection_end) {
+  DCHECK(selection_start && selection_end);
 
   *selection_start = GetUnignoredSelectionAnchor();
   *selection_end = GetUnignoredSelectionFocus();
@@ -1631,10 +1647,12 @@ int AXPlatformNodeBase::FindTextBoundary(
     int offset,
     AXTextBoundaryDirection direction,
     ax::mojom::TextAffinity affinity) const {
-  base::Optional<int> boundary_offset =
-      GetDelegate()->FindTextBoundary(boundary, offset, direction, affinity);
-  if (boundary_offset.has_value())
-    return *boundary_offset;
+  if (boundary != AXTextBoundary::kSentenceStart) {
+    base::Optional<int> boundary_offset =
+        GetDelegate()->FindTextBoundary(boundary, offset, direction, affinity);
+    if (boundary_offset.has_value())
+      return *boundary_offset;
+  }
 
   std::vector<int32_t> unused_line_start_offsets;
   return static_cast<int>(
@@ -1709,6 +1727,150 @@ std::string AXPlatformNodeBase::GetInvalidValue() const {
     }
   }
   return invalid_value;
+}
+
+ui::TextAttributeList AXPlatformNodeBase::ComputeTextAttributes() const {
+  ui::TextAttributeList attributes;
+
+  // We include list markers for now, but there might be other objects that are
+  // auto generated.
+  // TODO(nektar): Compute what objects are auto-generated in Blink.
+  if (GetData().role == ax::mojom::Role::kListMarker)
+    attributes.push_back(std::make_pair("auto-generated", "true"));
+
+  int color;
+  if (GetIntAttribute(ax::mojom::IntAttribute::kBackgroundColor, &color)) {
+    unsigned int alpha = SkColorGetA(color);
+    unsigned int red = SkColorGetR(color);
+    unsigned int green = SkColorGetG(color);
+    unsigned int blue = SkColorGetB(color);
+    // Don't expose default value of pure white.
+    if (alpha && (red != 255 || green != 255 || blue != 255)) {
+      std::string color_value = "rgb(" + base::NumberToString(red) + ',' +
+                                base::NumberToString(green) + ',' +
+                                base::NumberToString(blue) + ')';
+      SanitizeTextAttributeValue(color_value, &color_value);
+      attributes.push_back(std::make_pair("background-color", color_value));
+    }
+  }
+
+  if (GetIntAttribute(ax::mojom::IntAttribute::kColor, &color)) {
+    unsigned int red = SkColorGetR(color);
+    unsigned int green = SkColorGetG(color);
+    unsigned int blue = SkColorGetB(color);
+    // Don't expose default value of black.
+    if (red || green || blue) {
+      std::string color_value = "rgb(" + base::NumberToString(red) + ',' +
+                                base::NumberToString(green) + ',' +
+                                base::NumberToString(blue) + ')';
+      SanitizeTextAttributeValue(color_value, &color_value);
+      attributes.push_back(std::make_pair("color", color_value));
+    }
+  }
+
+  // First try to get the inherited font family name from the delegate. If we
+  // cannot find any name, fall back to looking the hierarchy of this node's
+  // AXNodeData instead.
+  std::string font_family(GetDelegate()->GetInheritedFontFamilyName());
+  if (font_family.empty()) {
+    font_family =
+        GetInheritedStringAttribute(ax::mojom::StringAttribute::kFontFamily);
+  }
+
+  // Attribute has no default value.
+  if (!font_family.empty()) {
+    SanitizeTextAttributeValue(font_family, &font_family);
+    attributes.push_back(std::make_pair("font-family", font_family));
+  }
+
+  float font_size;
+  // Attribute has no default value.
+  if (GetFloatAttribute(ax::mojom::FloatAttribute::kFontSize, &font_size)) {
+    // The IA2 Spec requires the value to be in pt, not in pixels.
+    // There are 72 points per inch.
+    // We assume that there are 96 pixels per inch on a standard display.
+    // TODO(nektar): Figure out the current value of pixels per inch.
+    float points = font_size * 72.0 / 96.0;
+
+    // Round to the nearest 0.5 points.
+    points = std::round(points * 2.0) / 2.0;
+
+    attributes.push_back(
+        std::make_pair("font-size", base::NumberToString(points) + "pt"));
+  }
+
+  // TODO(nektar): Add Blink support for the following attributes:
+  // text-line-through-mode, text-line-through-width, text-outline:false,
+  // text-position:baseline, text-shadow:none, text-underline-mode:continuous.
+
+  int32_t text_style = GetIntAttribute(ax::mojom::IntAttribute::kTextStyle);
+  if (text_style) {
+    if (GetData().HasTextStyle(ax::mojom::TextStyle::kBold))
+      attributes.push_back(std::make_pair("font-weight", "bold"));
+    if (GetData().HasTextStyle(ax::mojom::TextStyle::kItalic))
+      attributes.push_back(std::make_pair("font-style", "italic"));
+    if (GetData().HasTextStyle(ax::mojom::TextStyle::kLineThrough)) {
+      // TODO(nektar): Figure out a more specific value.
+      attributes.push_back(std::make_pair("text-line-through-style", "solid"));
+    }
+    if (GetData().HasTextStyle(ax::mojom::TextStyle::kUnderline)) {
+      // TODO(nektar): Figure out a more specific value.
+      attributes.push_back(std::make_pair("text-underline-style", "solid"));
+    }
+  }
+
+  // Screen readers look at the text attributes to determine if something is
+  // misspelled, so we need to propagate any spelling attributes from immediate
+  // parents of text-only objects.
+  std::string invalid_value = GetInvalidValue();
+  if (!invalid_value.empty())
+    attributes.push_back(std::make_pair("invalid", invalid_value));
+
+  std::string language = GetDelegate()->GetLanguage();
+  if (!language.empty()) {
+    SanitizeTextAttributeValue(language, &language);
+    attributes.push_back(std::make_pair("language", language));
+  }
+
+  auto text_direction = static_cast<ax::mojom::TextDirection>(
+      GetIntAttribute(ax::mojom::IntAttribute::kTextDirection));
+  switch (text_direction) {
+    case ax::mojom::TextDirection::kNone:
+      break;
+    case ax::mojom::TextDirection::kLtr:
+      attributes.push_back(std::make_pair("writing-mode", "lr"));
+      break;
+    case ax::mojom::TextDirection::kRtl:
+      attributes.push_back(std::make_pair("writing-mode", "rl"));
+      break;
+    case ax::mojom::TextDirection::kTtb:
+      attributes.push_back(std::make_pair("writing-mode", "tb"));
+      break;
+    case ax::mojom::TextDirection::kBtt:
+      // Not listed in the IA2 Spec.
+      attributes.push_back(std::make_pair("writing-mode", "bt"));
+      break;
+  }
+
+  auto text_position = static_cast<ax::mojom::TextPosition>(
+      GetIntAttribute(ax::mojom::IntAttribute::kTextPosition));
+  switch (text_position) {
+    case ax::mojom::TextPosition::kNone:
+      break;
+    case ax::mojom::TextPosition::kSubscript:
+      attributes.push_back(std::make_pair("text-position", "sub"));
+      break;
+    case ax::mojom::TextPosition::kSuperscript:
+      attributes.push_back(std::make_pair("text-position", "super"));
+      break;
+  }
+
+  return attributes;
+}
+
+void AXPlatformNodeBase::SanitizeTextAttributeValue(const std::string& input,
+                                                    std::string* output) const {
+  DCHECK(output);
 }
 
 }  // namespace ui

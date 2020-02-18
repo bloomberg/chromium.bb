@@ -12,6 +12,7 @@ from chromite.cli import flash
 from chromite.cli.cros import cros_flash
 from chromite.lib import commandline
 from chromite.lib import cros_test_lib
+from chromite.lib import remote_access
 
 
 class MockFlashCommand(command_unittest.MockCommand):
@@ -37,7 +38,7 @@ class CrosFlashTest(cros_test_lib.MockTempDirTestCase,
   """
 
   IMAGE = '/path/to/image'
-  DEVICE = '1.1.1.1'
+  DEVICE = remote_access.TEST_IP
 
   def SetupCommandMock(self, cmd_args):
     """Setup comand mock."""

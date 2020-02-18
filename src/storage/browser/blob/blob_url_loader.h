@@ -8,7 +8,10 @@
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/http/http_status_code.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "storage/browser/blob/mojo_blob_reader.h"
@@ -25,17 +28,18 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) BlobURLLoader
       public network::mojom::URLLoader {
  public:
   static void CreateAndStart(
-      network::mojom::URLLoaderRequest url_loader_request,
+      mojo::PendingReceiver<network::mojom::URLLoader> url_loader_receiver,
       const network::ResourceRequest& request,
-      network::mojom::URLLoaderClientPtr client,
+      mojo::PendingRemote<network::mojom::URLLoaderClient> client,
       std::unique_ptr<BlobDataHandle> blob_handle);
   ~BlobURLLoader() override;
 
  private:
-  BlobURLLoader(network::mojom::URLLoaderRequest url_loader_request,
-                const network::ResourceRequest& request,
-                network::mojom::URLLoaderClientPtr client,
-                std::unique_ptr<BlobDataHandle> blob_handle);
+  BlobURLLoader(
+      mojo::PendingReceiver<network::mojom::URLLoader> url_loader_receiver,
+      const network::ResourceRequest& request,
+      mojo::PendingRemote<network::mojom::URLLoaderClient> client,
+      std::unique_ptr<BlobDataHandle> blob_handle);
 
   void Start(const network::ResourceRequest& request);
 
@@ -51,15 +55,15 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) BlobURLLoader
   // storage::MojoBlobReader::Delegate implementation:
   RequestSideData DidCalculateSize(uint64_t total_size,
                                    uint64_t content_size) override;
-  void DidReadSideData(net::IOBufferWithSize* data) override;
+  void DidReadSideData(base::Optional<mojo_base::BigBuffer> data) override;
   void OnComplete(net::Error error_code, uint64_t total_written_bytes) override;
 
   void HeadersCompleted(net::HttpStatusCode status_code,
                         uint64_t content_size,
-                        net::IOBufferWithSize* metadata);
+                        base::Optional<mojo_base::BigBuffer> metadata);
 
-  mojo::Binding<network::mojom::URLLoader> binding_;
-  network::mojom::URLLoaderClientPtr client_;
+  mojo::Receiver<network::mojom::URLLoader> receiver_;
+  mojo::Remote<network::mojom::URLLoaderClient> client_;
 
   bool byte_range_set_ = false;
   net::HttpByteRange byte_range_;

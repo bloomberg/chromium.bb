@@ -132,14 +132,15 @@ namespace views {
 // TextInputHost, public:
 
 TextInputHost::TextInputHost(NativeWidgetMacNSWindowHost* host_impl)
-    : host_impl_(host_impl), mojo_binding_(this) {}
+    : host_impl_(host_impl) {}
 
 TextInputHost::~TextInputHost() = default;
 
-void TextInputHost::BindRequest(
-    remote_cocoa::mojom::TextInputHostAssociatedRequest request) {
-  mojo_binding_.Bind(std::move(request),
-                     ui::WindowResizeHelperMac::Get()->task_runner());
+void TextInputHost::BindReceiver(
+    mojo::PendingAssociatedReceiver<remote_cocoa::mojom::TextInputHost>
+        receiver) {
+  mojo_receiver_.Bind(std::move(receiver),
+                      ui::WindowResizeHelperMac::Get()->task_runner());
 }
 
 ui::TextInputClient* TextInputHost::GetTextInputClient() const {
@@ -300,7 +301,7 @@ void TextInputHost::SetCompositionText(const base::string16& text,
 void TextInputHost::ConfirmCompositionText() {
   if (!text_input_client_)
     return;
-  text_input_client_->ConfirmCompositionText();
+  text_input_client_->ConfirmCompositionText(/* keep_selection */ false);
 }
 
 bool TextInputHost::HasCompositionText(bool* out_has_composition_text) {

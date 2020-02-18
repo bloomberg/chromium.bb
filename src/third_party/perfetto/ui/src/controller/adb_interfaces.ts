@@ -15,30 +15,59 @@
 
 export interface Adb {
   connect(device: USBDevice): Promise<void>;
+  disconnect(): Promise<void>;
+  // Executes a shell command non-interactively.
   shell(cmd: string): Promise<AdbStream>;
+  // Waits until the shell get closed, and returns all the output.
+  shellOutputAsString(cmd: string): Promise<string>;
+  // Opens a connection to a UNIX socket.
+  socket(path: string): Promise<AdbStream>;
 }
 
 export interface AdbStream {
+  write(msg: string|Uint8Array): Promise<void>;
   onMessage(message: AdbMsg): void;
-  onData: (str: string, raw: Uint8Array) => void;
+  close(): void;
+  setClosed(): void;
+
   onConnect: VoidCallback;
   onClose: VoidCallback;
+  onData: (raw: Uint8Array) => void;
 }
 
 export class MockAdb implements Adb {
   connect(_: USBDevice): Promise<void> {
     return Promise.resolve();
   }
+
+  disconnect(): Promise<void> {
+    return Promise.resolve();
+  }
+
   shell(_: string): Promise<AdbStream> {
+    return Promise.resolve(new MockAdbStream());
+  }
+
+  shellOutputAsString(_: string): Promise<string> {
+    return Promise.resolve('');
+  }
+
+  socket(_: string): Promise<AdbStream> {
     return Promise.resolve(new MockAdbStream());
   }
 }
 
 export class MockAdbStream implements AdbStream {
-  onData = (_: string, __: Uint8Array) => {};
+  write(_: string|Uint8Array): Promise<void> {
+    return Promise.resolve();
+  }
+  onMessage = (_: AdbMsg) => {};
+  close() {}
+  setClosed() {}
+
   onConnect = () => {};
   onClose = () => {};
-  onMessage = (_: AdbMsg) => {};
+  onData = (_: Uint8Array) => {};
 }
 
 export declare type CmdType =

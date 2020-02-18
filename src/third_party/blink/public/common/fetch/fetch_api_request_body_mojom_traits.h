@@ -8,9 +8,10 @@
 #include <utility>
 
 #include "base/memory/scoped_refptr.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/network/public/cpp/resource_request_body.h"
-#include "services/network/public/mojom/url_loader.mojom.h"
-#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
+#include "services/network/public/mojom/url_loader.mojom-forward.h"
+#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-forward.h"
 
 namespace mojo {
 
@@ -67,16 +68,16 @@ struct StructTraits<blink::mojom::FetchAPIDataElementDataView,
   static const std::string& blob_uuid(const network::DataElement& element) {
     return element.blob_uuid_;
   }
-  static network::mojom::DataPipeGetterPtrInfo data_pipe_getter(
+  static mojo::PendingRemote<network::mojom::DataPipeGetter> data_pipe_getter(
       const network::DataElement& element) {
     if (element.type_ != network::mojom::DataElementType::kDataPipe)
-      return nullptr;
-    return element.CloneDataPipeGetter().PassInterface();
+      return mojo::NullRemote();
+    return element.CloneDataPipeGetter();
   }
-  static network::mojom::ChunkedDataPipeGetterPtrInfo chunked_data_pipe_getter(
-      const network::DataElement& element) {
+  static mojo::PendingRemote<network::mojom::ChunkedDataPipeGetter>
+  chunked_data_pipe_getter(const network::DataElement& element) {
     if (element.type_ != network::mojom::DataElementType::kChunkedDataPipe)
-      return nullptr;
+      return mojo::NullRemote();
     return const_cast<network::DataElement&>(element)
         .ReleaseChunkedDataPipeGetter();
   }

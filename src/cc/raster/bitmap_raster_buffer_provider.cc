@@ -99,7 +99,10 @@ std::unique_ptr<RasterBuffer>
 BitmapRasterBufferProvider::AcquireBufferForRaster(
     const ResourcePool::InUsePoolResource& resource,
     uint64_t resource_content_id,
-    uint64_t previous_content_id) {
+    uint64_t previous_content_id,
+    bool depends_on_at_raster_decodes,
+    bool depends_on_hardware_accelerated_jpeg_candidates,
+    bool depends_on_hardware_accelerated_webp_candidates) {
   DCHECK_EQ(resource.format(), viz::RGBA_8888);
 
   const gfx::Size& size = resource.size();

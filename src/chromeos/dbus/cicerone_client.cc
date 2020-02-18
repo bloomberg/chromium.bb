@@ -25,7 +25,7 @@ constexpr base::TimeDelta kDefaultTimeout = base::TimeDelta::FromMinutes(1);
 // How long to wait while doing more complex operations like starting or
 // creating a container.
 constexpr base::TimeDelta kLongOperationTimeout =
-    base::TimeDelta::FromMinutes(2);
+    base::TimeDelta::FromMinutes(3);
 }  // namespace
 
 class CiceroneClientImpl : public CiceroneClient {
@@ -88,6 +88,14 @@ class CiceroneClientImpl : public CiceroneClient {
 
   bool IsPendingAppListUpdatesSignalConnected() override {
     return is_pending_app_list_updates_signal_connected_;
+  }
+
+  bool IsApplyAnsiblePlaybookProgressSignalConnected() override {
+    return is_apply_ansible_playbook_progress_signal_connected_;
+  }
+
+  bool IsUpgradeContainerProgressSignalConnected() override {
+    return is_upgrade_container_progress_signal_connected_;
   }
 
   void LaunchContainerApplication(
@@ -413,6 +421,74 @@ class CiceroneClientImpl : public CiceroneClient {
             weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
+  void ApplyAnsiblePlaybook(
+      const vm_tools::cicerone::ApplyAnsiblePlaybookRequest& request,
+      DBusMethodCallback<vm_tools::cicerone::ApplyAnsiblePlaybookResponse>
+          callback) override {
+    dbus::MethodCall method_call(
+        vm_tools::cicerone::kVmCiceroneInterface,
+        vm_tools::cicerone::kApplyAnsiblePlaybookMethod);
+    dbus::MessageWriter writer(&method_call);
+
+    if (!writer.AppendProtoAsArrayOfBytes(request)) {
+      LOG(ERROR) << "Failed to encode ApplyAnsiblePlaybookRequest protobuf";
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::BindOnce(std::move(callback), base::nullopt));
+      return;
+    }
+
+    cicerone_proxy_->CallMethod(
+        &method_call, kDefaultTimeout.InMilliseconds(),
+        base::BindOnce(&CiceroneClientImpl::OnDBusProtoResponse<
+                           vm_tools::cicerone::ApplyAnsiblePlaybookResponse>,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  }
+
+  void UpgradeContainer(
+      const vm_tools::cicerone::UpgradeContainerRequest& request,
+      DBusMethodCallback<vm_tools::cicerone::UpgradeContainerResponse> callback)
+      override {
+    dbus::MethodCall method_call(vm_tools::cicerone::kVmCiceroneInterface,
+                                 vm_tools::cicerone::kUpgradeContainerMethod);
+    dbus::MessageWriter writer(&method_call);
+
+    if (!writer.AppendProtoAsArrayOfBytes(request)) {
+      LOG(ERROR) << "Failed to encode UpgradeContainerRequest protobuf";
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::BindOnce(std::move(callback), base::nullopt));
+      return;
+    }
+
+    cicerone_proxy_->CallMethod(
+        &method_call, kDefaultTimeout.InMilliseconds(),
+        base::BindOnce(&CiceroneClientImpl::OnDBusProtoResponse<
+                           vm_tools::cicerone::UpgradeContainerResponse>,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  }
+
+  void CancelUpgradeContainer(
+      const vm_tools::cicerone::CancelUpgradeContainerRequest& request,
+      DBusMethodCallback<vm_tools::cicerone::CancelUpgradeContainerResponse>
+          callback) override {
+    dbus::MethodCall method_call(
+        vm_tools::cicerone::kVmCiceroneInterface,
+        vm_tools::cicerone::kCancelUpgradeContainerMethod);
+    dbus::MessageWriter writer(&method_call);
+
+    if (!writer.AppendProtoAsArrayOfBytes(request)) {
+      LOG(ERROR) << "Failed to encode CancelUpgradeContainerRequest protobuf";
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::BindOnce(std::move(callback), base::nullopt));
+      return;
+    }
+
+    cicerone_proxy_->CallMethod(
+        &method_call, kDefaultTimeout.InMilliseconds(),
+        base::BindOnce(&CiceroneClientImpl::OnDBusProtoResponse<
+                           vm_tools::cicerone::CancelUpgradeContainerResponse>,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  }
+
   void WaitForServiceToBeAvailable(
       dbus::ObjectProxy::WaitForServiceToBeAvailableCallback callback)
       override {
@@ -515,6 +591,23 @@ class CiceroneClientImpl : public CiceroneClient {
         vm_tools::cicerone::kPendingAppListUpdatesSignal,
         base::BindRepeating(&CiceroneClientImpl::OnPendingAppListUpdatesSignal,
                             weak_ptr_factory_.GetWeakPtr()),
+        base::BindOnce(&CiceroneClientImpl::OnSignalConnected,
+                       weak_ptr_factory_.GetWeakPtr()));
+    cicerone_proxy_->ConnectToSignal(
+        vm_tools::cicerone::kVmCiceroneInterface,
+        vm_tools::cicerone::kApplyAnsiblePlaybookProgressSignal,
+        base::BindRepeating(
+            &CiceroneClientImpl::OnApplyAnsiblePlaybookProgressSignal,
+            weak_ptr_factory_.GetWeakPtr()),
+        base::BindOnce(&CiceroneClientImpl::OnSignalConnected,
+                       weak_ptr_factory_.GetWeakPtr()));
+
+    cicerone_proxy_->ConnectToSignal(
+        vm_tools::cicerone::kVmCiceroneInterface,
+        vm_tools::cicerone::kUpgradeContainerProgressSignal,
+        base::BindRepeating(
+            &CiceroneClientImpl::OnUpgradeContainerProgressSignal,
+            weak_ptr_factory_.GetWeakPtr()),
         base::BindOnce(&CiceroneClientImpl::OnSignalConnected,
                        weak_ptr_factory_.GetWeakPtr()));
   }
@@ -681,12 +774,36 @@ class CiceroneClientImpl : public CiceroneClient {
     }
   }
 
+  void OnApplyAnsiblePlaybookProgressSignal(dbus::Signal* signal) {
+    vm_tools::cicerone::ApplyAnsiblePlaybookProgressSignal proto;
+    dbus::MessageReader reader(signal);
+    if (!reader.PopArrayOfBytesAsProto(&proto)) {
+      LOG(ERROR) << "Failed to parse proto from DBus Signal";
+      return;
+    }
+    for (auto& observer : observer_list_) {
+      observer.OnApplyAnsiblePlaybookProgress(proto);
+    }
+  }
+
+  void OnUpgradeContainerProgressSignal(dbus::Signal* signal) {
+    vm_tools::cicerone::UpgradeContainerProgressSignal proto;
+    dbus::MessageReader reader(signal);
+    if (!reader.PopArrayOfBytesAsProto(&proto)) {
+      LOG(ERROR) << "Failed to parse proto from DBus Signal";
+      return;
+    }
+    for (auto& observer : observer_list_) {
+      observer.OnUpgradeContainerProgress(proto);
+    }
+  }
+
   void OnSignalConnected(const std::string& interface_name,
                          const std::string& signal_name,
                          bool is_connected) {
     if (!is_connected) {
       LOG(ERROR)
-          << "Failed to connect to Signal. Async StartContainer will not work";
+          << "Failed to connect to Signal. Async container ops may not work";
     }
     DCHECK_EQ(interface_name, vm_tools::cicerone::kVmCiceroneInterface);
     if (signal_name == vm_tools::cicerone::kContainerStartedSignal) {
@@ -719,6 +836,12 @@ class CiceroneClientImpl : public CiceroneClient {
     } else if (signal_name ==
                vm_tools::cicerone::kPendingAppListUpdatesSignal) {
       is_pending_app_list_updates_signal_connected_ = is_connected;
+    } else if (signal_name ==
+               vm_tools::cicerone::kApplyAnsiblePlaybookProgressSignal) {
+      is_apply_ansible_playbook_progress_signal_connected_ = is_connected;
+    } else if (signal_name ==
+               vm_tools::cicerone::kUpgradeContainerProgressSignal) {
+      is_upgrade_container_progress_signal_connected_ = is_connected;
     } else {
       NOTREACHED();
     }
@@ -740,6 +863,8 @@ class CiceroneClientImpl : public CiceroneClient {
   bool is_export_lxd_container_progress_signal_connected_ = false;
   bool is_import_lxd_container_progress_signal_connected_ = false;
   bool is_pending_app_list_updates_signal_connected_ = false;
+  bool is_apply_ansible_playbook_progress_signal_connected_ = false;
+  bool is_upgrade_container_progress_signal_connected_ = false;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

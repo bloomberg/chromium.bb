@@ -13,6 +13,7 @@
 #include "content/shell/test_runner/web_test_delegate.h"
 #include "content/shell/test_runner/web_test_interfaces.h"
 #include "content/shell/test_runner/web_view_test_proxy.h"
+#include "third_party/blink/public/web/web_frame_widget.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_page_popup.h"
 #include "third_party/blink/public/web/web_view.h"
@@ -104,7 +105,7 @@ bool WebWidgetTestProxy::IsPointerLocked() {
 void WebWidgetTestProxy::SetToolTipText(const blink::WebString& text,
                                         blink::WebTextDirection hint) {
   RenderWidget::SetToolTipText(text, hint);
-  GetTestRunner()->setToolTipText(text);
+  GetTestRunner()->SetToolTipText(text);
 }
 
 void WebWidgetTestProxy::StartDragging(network::mojom::ReferrerPolicy policy,
@@ -112,11 +113,26 @@ void WebWidgetTestProxy::StartDragging(network::mojom::ReferrerPolicy policy,
                                        blink::WebDragOperationsMask mask,
                                        const SkBitmap& drag_image,
                                        const gfx::Point& image_offset) {
-  GetTestRunner()->setDragImage(drag_image);
+  GetTestRunner()->SetDragImage(drag_image);
 
   // When running a test, we need to fake a drag drop operation otherwise
   // Windows waits for real mouse events to know when the drag is over.
   event_sender()->DoDragDrop(data, mask);
+}
+
+blink::WebScreenInfo WebWidgetTestProxy::GetScreenInfo() {
+  blink::WebScreenInfo info = RenderWidget::GetScreenInfo();
+
+  MockScreenOrientationClient* mock_client =
+      GetTestRunner()->GetMockScreenOrientationClient();
+
+  if (!mock_client->IsDisabled()) {
+    // Override screen orientation information with mock data.
+    info.orientation_type = mock_client->CurrentOrientationType();
+    info.orientation_angle = mock_client->CurrentOrientationAngle();
+  }
+
+  return info;
 }
 
 WebViewTestProxy* WebWidgetTestProxy::GetWebViewTestProxy() {
@@ -161,18 +177,6 @@ TestRunner* WebWidgetTestProxy::GetTestRunner() {
 }
 
 static void DoComposite(content::RenderWidget* widget, bool do_raster) {
-  if (!widget->layer_tree_view()->layer_tree_host()->IsVisible())
-    return;
-
-  if (widget->in_synchronous_composite_for_testing()) {
-    // Web tests can use a nested message loop to pump frames while inside a
-    // frame, but the compositor does not support this. In this case, we only
-    // run blink's lifecycle updates.
-    widget->BeginMainFrame(base::TimeTicks::Now());
-    widget->UpdateVisualState();
-    return;
-  }
-
   // Ensure that there is damage so that the compositor submits, and the display
   // compositor draws this frame.
   if (do_raster) {
@@ -180,10 +184,8 @@ static void DoComposite(content::RenderWidget* widget, bool do_raster) {
     layer_tree_view->layer_tree_host()->SetNeedsCommitWithForcedRedraw();
   }
 
-  widget->set_in_synchronous_composite_for_testing(true);
   widget->layer_tree_view()->layer_tree_host()->Composite(
       base::TimeTicks::Now(), do_raster);
-  widget->set_in_synchronous_composite_for_testing(false);
 }
 
 void WebWidgetTestProxy::SynchronouslyComposite(bool do_raster) {
@@ -193,7 +195,27 @@ void WebWidgetTestProxy::SynchronouslyComposite(bool do_raster) {
               ->GetSettings()
               .single_thread_proxy_scheduler);
 
+  if (!layer_tree_view()->layer_tree_host()->IsVisible())
+    return;
+
+  if (in_synchronous_composite_) {
+    // Web tests can use a nested message loop to pump frames while inside a
+    // frame, but the compositor does not support this. In this case, we only
+    // run blink's lifecycle updates.
+    BeginMainFrame(base::TimeTicks::Now());
+    UpdateVisualState();
+    return;
+  }
+
+  in_synchronous_composite_ = true;
+
+  // Composite() can detach the frame, which would destroy |this|.
+  base::WeakPtr<WebWidgetTestProxy> weak_this = weak_factory_.GetWeakPtr();
   DoComposite(this, do_raster);
+  if (!weak_this)
+    return;
+
+  in_synchronous_composite_ = false;
 
   // If the RenderWidget is for the main frame, we also composite the current
   // PagePopup afterward.
@@ -212,24 +234,10 @@ void WebWidgetTestProxy::SynchronouslyComposite(bool do_raster) {
 }
 
 void WebWidgetTestProxy::AnimateNow() {
-  // For child local roots, it's possible that the backing WebWidget gets
-  // closed between the ScheduleAnimation() call and this execution
-  // leading to a nullptr.  This happens because child local roots are
-  // owned by RenderFrames which drops the WebWidget before executing the
-  // Close() call that would invalidate the |weak_factory_| canceling the
-  // scheduled calls to AnimateNow(). In main frames, the WebWidget is
-  // dropped synchronously by Close() avoiding the problem.
-  //
-  // Ideally there would not be this divergence between frame types, and/or
-  // there would be a hook for signaling a stop to the animation. As this is
-  // not an ideal work, returning early when GetWebWidget() returns nullptr
-  // is good enough for a fake impl. Also, unicorns are mythical. Sorry.
-  if (!GetWebWidget())
-    return;
-
   bool do_raster = composite_requested_;
   animation_scheduled_ = false;
   composite_requested_ = false;
+  // Composite may destroy |this|, so don't use it afterward.
   SynchronouslyComposite(do_raster);
 }
 

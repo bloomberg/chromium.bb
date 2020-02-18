@@ -7,8 +7,6 @@ package org.chromium.chrome.browser.widget.selection;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.content.res.Resources;
-import android.support.annotation.Nullable;
-import android.support.annotation.VisibleForTesting;
 import android.support.v4.view.ViewCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -23,17 +21,20 @@ import android.view.ViewStub;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 
+import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.gesturenav.HistoryNavigationDelegate;
 import org.chromium.chrome.browser.gesturenav.HistoryNavigationLayout;
 import org.chromium.chrome.browser.ui.widget.FadingShadow;
 import org.chromium.chrome.browser.ui.widget.FadingShadowView;
-import org.chromium.chrome.browser.widget.LoadingView;
-import org.chromium.chrome.browser.widget.displaystyle.DisplayStyleObserver;
-import org.chromium.chrome.browser.widget.displaystyle.HorizontalDisplayStyle;
-import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
-import org.chromium.chrome.browser.widget.displaystyle.UiConfig.DisplayStyle;
+import org.chromium.chrome.browser.ui.widget.LoadingView;
+import org.chromium.chrome.browser.ui.widget.displaystyle.DisplayStyleObserver;
+import org.chromium.chrome.browser.ui.widget.displaystyle.HorizontalDisplayStyle;
+import org.chromium.chrome.browser.ui.widget.displaystyle.UiConfig;
+import org.chromium.chrome.browser.ui.widget.displaystyle.UiConfig.DisplayStyle;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate.SelectionObserver;
 
 import java.util.List;

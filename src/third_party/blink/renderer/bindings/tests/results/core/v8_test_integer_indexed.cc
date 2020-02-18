@@ -111,7 +111,7 @@ static void VoidMethodDocumentMethod(const v8::FunctionCallbackInfo<v8::Value>& 
   Document* document;
   document = V8Document::ToImplWithTypeCheck(info.GetIsolate(), info[0]);
   if (!document) {
-    V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("voidMethodDocument", "TestIntegerIndexed", "parameter 1 is not of type 'Document'."));
+    V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("voidMethodDocument", "TestIntegerIndexed", ExceptionMessages::ArgumentNotOfType(0, "Document")));
     return;
   }
 
@@ -167,9 +167,9 @@ static void ForEachMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
     return;
   }
 
-  this_arg = ScriptValue(ScriptState::Current(info.GetIsolate()), info[1]);
+  this_arg = ScriptValue(info.GetIsolate(), info[1]);
 
-  impl->forEachForBinding(script_state, ScriptValue(script_state, info.Holder()), callback, this_arg, exception_state);
+  impl->forEachForBinding(script_state, ScriptValue(info.GetIsolate(), info.Holder()), callback, this_arg, exception_state);
   if (exception_state.HadException()) {
     return;
   }

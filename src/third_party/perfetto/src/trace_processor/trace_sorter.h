@@ -21,23 +21,20 @@
 
 #include "perfetto/ext/base/circular_queue.h"
 #include "perfetto/trace_processor/basic_types.h"
-#include "src/trace_processor/fuchsia_provider_view.h"
-#include "src/trace_processor/proto_incremental_state.h"
+#include "src/trace_processor/timestamped_trace_piece.h"
 #include "src/trace_processor/trace_blob_view.h"
 #include "src/trace_processor/trace_processor_context.h"
 #include "src/trace_processor/trace_storage.h"
 
-#if PERFETTO_BUILDFLAG(PERFETTO_TP_JSON)
-#include <json/value.h>
-#else
-// Json traces are only supported in standalone and Chromium builds.
 namespace Json {
-class Value {};
+class Value;
 }  // namespace Json
-#endif
 
 namespace perfetto {
 namespace trace_processor {
+
+class FuchsiaProviderView;
+class PacketSequenceState;
 
 // This class takes care of sorting events parsed from the trace stream in
 // arbitrary order and pushing them to the next pipeline stages (parsing) in
@@ -68,121 +65,10 @@ namespace trace_processor {
 // from there to the end.
 class TraceSorter {
  public:
-  struct TimestampedTracePiece {
-    TimestampedTracePiece(
-        int64_t ts,
-        uint64_t idx,
-        TraceBlobView tbv,
-        ProtoIncrementalState::PacketSequenceState* sequence_state)
-        : TimestampedTracePiece(ts,
-                                /*thread_ts=*/0,
-                                /*thread_instructions=*/0,
-                                idx,
-                                std::move(tbv),
-                                /*value=*/nullptr,
-                                /*fpv=*/nullptr,
-                                /*sequence_state=*/sequence_state) {}
-
-    TimestampedTracePiece(int64_t ts, uint64_t idx, TraceBlobView tbv)
-        : TimestampedTracePiece(ts,
-                                /*thread_ts=*/0,
-                                /*thread_instructions=*/0,
-                                idx,
-                                std::move(tbv),
-                                /*value=*/nullptr,
-                                /*fpv=*/nullptr,
-                                /*sequence_state=*/nullptr) {}
-
-    TimestampedTracePiece(int64_t ts,
-                          uint64_t idx,
-                          std::unique_ptr<Json::Value> value)
-        : TimestampedTracePiece(ts,
-                                /*thread_ts=*/0,
-                                /*thread_instructions=*/0,
-                                idx,
-                                // TODO(dproy): Stop requiring TraceBlobView in
-                                // TimestampedTracePiece.
-                                TraceBlobView(nullptr, 0, 0),
-                                std::move(value),
-                                /*fpv=*/nullptr,
-                                /*sequence_state=*/nullptr) {}
-
-    TimestampedTracePiece(int64_t ts,
-                          uint64_t idx,
-                          TraceBlobView tbv,
-                          std::unique_ptr<FuchsiaProviderView> fpv)
-        : TimestampedTracePiece(ts,
-                                /*thread_ts=*/0,
-                                /*thread_instructions=*/0,
-                                idx,
-                                std::move(tbv),
-                                /*value=*/nullptr,
-                                std::move(fpv),
-                                /*sequence_state=*/nullptr) {}
-
-    TimestampedTracePiece(
-        int64_t ts,
-        int64_t thread_ts,
-        int64_t thread_instructions,
-        uint64_t idx,
-        TraceBlobView tbv,
-        ProtoIncrementalState::PacketSequenceState* sequence_state)
-        : TimestampedTracePiece(ts,
-                                thread_ts,
-                                thread_instructions,
-                                idx,
-                                std::move(tbv),
-                                /*value=*/nullptr,
-                                /*fpv=*/nullptr,
-                                sequence_state) {}
-
-    TimestampedTracePiece(
-        int64_t ts,
-        int64_t thread_ts,
-        int64_t thread_instructions,
-        uint64_t idx,
-        TraceBlobView tbv,
-        std::unique_ptr<Json::Value> value,
-        std::unique_ptr<FuchsiaProviderView> fpv,
-        ProtoIncrementalState::PacketSequenceState* sequence_state)
-        : json_value(std::move(value)),
-          fuchsia_provider_view(std::move(fpv)),
-          packet_sequence_state(sequence_state),
-          timestamp(ts),
-          thread_timestamp(thread_ts),
-          thread_instruction_count(thread_instructions),
-          packet_idx_(idx),
-          blob_view(std::move(tbv)) {}
-
-    TimestampedTracePiece(TimestampedTracePiece&&) noexcept = default;
-    TimestampedTracePiece& operator=(TimestampedTracePiece&&) = default;
-
-    // For std::lower_bound().
-    static inline bool Compare(const TimestampedTracePiece& x, int64_t ts) {
-      return x.timestamp < ts;
-    }
-
-    // For std::sort().
-    inline bool operator<(const TimestampedTracePiece& o) const {
-      return timestamp < o.timestamp ||
-             (timestamp == o.timestamp && packet_idx_ < o.packet_idx_);
-    }
-
-    std::unique_ptr<Json::Value> json_value;
-    std::unique_ptr<FuchsiaProviderView> fuchsia_provider_view;
-    ProtoIncrementalState::PacketSequenceState* packet_sequence_state;
-
-    int64_t timestamp;
-    int64_t thread_timestamp;
-    int64_t thread_instruction_count;
-    uint64_t packet_idx_;
-    TraceBlobView blob_view;
-  };
-
   TraceSorter(TraceProcessorContext*, int64_t window_size_ns);
 
   inline void PushTracePacket(int64_t timestamp,
-                              ProtoIncrementalState::PacketSequenceState* state,
+                              PacketSequenceState* state,
                               TraceBlobView packet) {
     DCHECK_ftrace_batch_cpu(kNoBatch);
     auto* queue = GetQueue(0);
@@ -223,12 +109,26 @@ class TraceSorter {
     // for a bundle are pushed.
   }
 
-  inline void PushTrackEventPacket(
-      int64_t timestamp,
-      int64_t thread_time,
-      int64_t thread_instruction_count,
-      ProtoIncrementalState::PacketSequenceState* state,
-      TraceBlobView packet) {
+  // As with |PushFtraceEvent|, doesn't immediately sort the affected queues.
+  // TODO(rsavitski): if a trace has a mix of normal & "compact" events (being
+  // pushed through this function), the ftrace batches will no longer be fully
+  // sorted by timestamp. In such situations, we will have to sort at the end of
+  // the batch. We can do better as both sub-sequences are sorted however.
+  // Consider adding extra queues, or pushing them in a merge-sort fashion
+  // instead.
+  inline void PushInlineFtraceEvent(uint32_t cpu,
+                                    int64_t timestamp,
+                                    InlineEvent inline_event) {
+    set_ftrace_batch_cpu_for_DCHECK(cpu);
+    GetQueue(cpu + 1)->Append(
+        TimestampedTracePiece(timestamp, packet_idx_++, inline_event));
+  }
+
+  inline void PushTrackEventPacket(int64_t timestamp,
+                                   int64_t thread_time,
+                                   int64_t thread_instruction_count,
+                                   PacketSequenceState* state,
+                                   TraceBlobView packet) {
     auto* queue = GetQueue(0);
     queue->Append(TimestampedTracePiece(timestamp, thread_time,
                                         thread_instruction_count, packet_idx_++,
@@ -245,6 +145,7 @@ class TraceSorter {
   // Extract all events ignoring the window.
   void ExtractEventsForced() {
     SortAndExtractEventsBeyondWindow(/*window_size_ns=*/0);
+    queues_.resize(0);
   }
 
   // Sets the window size to be the size specified (which should be lower than
@@ -263,6 +164,8 @@ class TraceSorter {
       return;
     SortAndExtractEventsBeyondWindow(window_size_ns_);
   }
+
+  int64_t max_timestamp() const { return global_max_ts_; }
 
  private:
   static constexpr uint32_t kNoBatch = std::numeric_limits<uint32_t>::max();

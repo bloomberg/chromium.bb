@@ -53,7 +53,7 @@ public class AndroidViewIntegrationTest {
     private static final int CONTENT_SIZE_CHANGE_STABILITY_TIMEOUT_MS = 1000;
 
     private static class OnContentSizeChangedHelper extends CallbackHelper {
-        final private Object mLock = new Object();
+        private final Object mLock = new Object();
         @GuardedBy("mLock")
         private int mWidth;
         @GuardedBy("mLock")
@@ -108,7 +108,7 @@ public class AndroidViewIntegrationTest {
             new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
 
     private AwTestContainerView createCustomTestContainerViewOnMainSync(
-            final AwContentsClient awContentsClient, final int visibility) throws Exception {
+            final AwContentsClient awContentsClient, final int visibility) {
         final AtomicReference<AwTestContainerView> testContainerView =
                 new AtomicReference<>();
         InstrumentationRegistry.getInstrumentation().runOnMainSync(() -> {
@@ -129,13 +129,13 @@ public class AndroidViewIntegrationTest {
         return testContainerView.get();
     }
 
-    private void assertZeroHeight(final AwTestContainerView testContainerView) throws Throwable {
+    private void assertZeroHeight(final AwTestContainerView testContainerView) {
         // Make sure the test isn't broken by the view having a non-zero height.
         InstrumentationRegistry.getInstrumentation().runOnMainSync(
                 () -> Assert.assertEquals(0, testContainerView.getHeight()));
     }
 
-    private int getRootLayoutWidthOnMainThread() throws Exception {
+    private int getRootLayoutWidthOnMainThread() {
         final AtomicReference<Integer> width = new AtomicReference<>();
         InstrumentationRegistry.getInstrumentation().runOnMainSync(
                 () -> width.set(

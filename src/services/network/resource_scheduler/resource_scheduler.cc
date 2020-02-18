@@ -139,7 +139,10 @@ base::TimeDelta GetQueuedRequestsDispatchPeriodicity() {
   // queue is not checked too frequently. The interval is also not too long, so
   // we do not expect too many requests to go on the network at the
   // same time.
-  return base::TimeDelta::FromMilliseconds(100);
+  return base::TimeDelta::FromMilliseconds(
+      base::GetFieldTrialParamByFeatureAsInt(
+          features::kProactivelyThrottleLowPriorityRequests,
+          "queued_requests_dispatch_periodicity_ms", 100));
 }
 
 struct ResourceScheduler::RequestPriorityParams {
@@ -1026,9 +1029,6 @@ class ResourceScheduler::Client
 
   ShouldStartReqResult ShouldStartRequest(
       ScheduledResourceRequestImpl* request) const {
-    if (!resource_scheduler_->enabled())
-      return START_REQUEST;
-
     // Browser requests are treated differently since they are not user-facing.
     if (is_browser_client_) {
       if (ShouldThrottleBrowserInitiatedRequestDueToP2PConnections(*request)) {
@@ -1333,11 +1333,9 @@ class ResourceScheduler::Client
   base::WeakPtrFactory<ResourceScheduler::Client> weak_ptr_factory_{this};
 };
 
-ResourceScheduler::ResourceScheduler(bool enabled,
-                                     const base::TickClock* tick_clock)
+ResourceScheduler::ResourceScheduler(const base::TickClock* tick_clock)
     : tick_clock_(tick_clock ? tick_clock
                              : base::DefaultTickClock::GetInstance()),
-      enabled_(enabled),
       queued_requests_dispatch_periodicity_(
           GetQueuedRequestsDispatchPeriodicity()),
       task_runner_(base::ThreadTaskRunnerHandle::Get()) {

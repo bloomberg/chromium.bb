@@ -202,9 +202,8 @@ void ProfileWriter::AddBookmarks(
     if (bookmark->is_folder) {
       model->AddFolder(parent, parent->children().size(), bookmark->title);
     } else {
-      model->AddURLWithCreationTimeAndMetaInfo(
-          parent, parent->children().size(), bookmark->title, bookmark->url,
-          bookmark->creation_time, NULL);
+      model->AddURL(parent, parent->children().size(), bookmark->title,
+                    bookmark->url, nullptr, bookmark->creation_time);
     }
   }
 
@@ -302,6 +301,12 @@ void ProfileWriter::AddKeywords(
     // TemplateURLService requires keywords to be unique. If there is already a
     // TemplateURL with this keyword, don't import it again.
     if (model->GetTemplateURLForKeyword(turl->keyword()) != nullptr)
+      continue;
+
+    // The omnibox doesn't properly handle search keywords with whitespace,
+    // so skip importing them.
+    if (turl->keyword().find_first_of(base::kWhitespaceUTF16) !=
+        base::string16::npos)
       continue;
 
     // For search engines if there is already a keyword with the same

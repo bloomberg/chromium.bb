@@ -17,9 +17,11 @@
 using base::android::ConvertJavaStringToUTF8;
 using base::android::JavaParamRef;
 using base::android::ScopedJavaLocalRef;
+using chrome::android::ActivityType;
 
 namespace {
 bool custom_tab_visible = false;
+ActivityType activity_type = ActivityType::kTabbed;
 bool is_in_multi_window_mode = false;
 } // namespace
 
@@ -31,6 +33,10 @@ CustomTabsVisibilityHistogram GetCustomTabsVisibleValue() {
       VISIBLE_CHROME_TAB;
 }
 
+ActivityType GetActivityType() {
+  return activity_type;
+}
+
 bool GetIsInMultiWindowModeValue() {
   return is_in_multi_window_mode;
 }
@@ -38,11 +44,6 @@ bool GetIsInMultiWindowModeValue() {
 bool IsDownloadAutoResumptionEnabledInNative() {
   JNIEnv* env = base::android::AttachCurrentThread();
   return Java_FeatureUtilities_isDownloadAutoResumptionEnabledInNative(env);
-}
-
-bool IsNoTouchModeEnabled() {
-  JNIEnv* env = base::android::AttachCurrentThread();
-  return Java_FeatureUtilities_isNoTouchModeEnabled(env);
 }
 
 std::string GetReachedCodeProfilerTrialGroup() {
@@ -60,6 +61,11 @@ static void JNI_FeatureUtilities_SetCustomTabVisible(
     jboolean visible) {
   custom_tab_visible = visible;
   ukm::UkmSource::SetCustomTabVisible(visible);
+}
+
+static void JNI_FeatureUtilities_SetActivityType(JNIEnv* env, jint type) {
+  activity_type = static_cast<ActivityType>(type);
+  // TODO(peconn): Look into adding this for UKM as well.
 }
 
 static void JNI_FeatureUtilities_SetIsInMultiWindowMode(

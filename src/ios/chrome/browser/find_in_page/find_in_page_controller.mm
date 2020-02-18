@@ -11,11 +11,11 @@
 
 #include "base/logging.h"
 #import "base/mac/foundation_util.h"
+#include "components/ukm/ios/ukm_url_recorder.h"
 #import "ios/chrome/browser/find_in_page/features.h"
 #import "ios/chrome/browser/find_in_page/find_in_page_model.h"
 #import "ios/chrome/browser/find_in_page/find_in_page_response_delegate.h"
 #import "ios/chrome/browser/find_in_page/js_findinpage_manager.h"
-#include "ios/chrome/browser/metrics/ukm_url_recorder.h"
 #import "ios/chrome/browser/web/dom_altering_lock.h"
 #import "ios/web/public/deprecated/crw_js_injection_receiver.h"
 #import "ios/web/public/find_in_page/find_in_page_manager.h"
@@ -23,7 +23,7 @@
 #import "ios/web/public/ui/crw_web_view_proxy.h"
 #import "ios/web/public/ui/crw_web_view_scroll_view_proxy.h"
 #import "ios/web/public/web_state.h"
-#import "ios/web/public/web_state/web_state_observer_bridge.h"
+#import "ios/web/public/web_state_observer_bridge.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -402,7 +402,12 @@ static NSString* gSearchTerm;
 
 - (void)findInPageManager:(web::FindInPageManager*)manager
     didSelectMatchAtIndex:(NSInteger)index
+        withContextString:(NSString*)contextString
               forWebState:(web::WebState*)webState {
+  if (contextString) {
+    UIAccessibilityPostNotification(UIAccessibilityAnnouncementNotification,
+                                    contextString);
+  }
   // Increment index so that match number show in FindBar ranges from 1...N as
   // opposed to 0...N-1.
   index++;

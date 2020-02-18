@@ -817,7 +817,13 @@
   <message name="IDS_FILE_BROWSER_ERROR_PROGRESS_SUMMARY_PLURAL" desc="Summary message for multiple errors above the progress bar. This message may be placed at the next to ohter *_PROGERSS_SUMMARY messages.">
     <ph name="COUNT">$1<ex>10</ex></ph> errors.
   </message>
+  <message name="IDS_FILE_BROWSER_PERCENT_COMPLETE" desc="Percentage of file operation that is complete in a progress message.">
+    <ph name="PERCENT">$1<ex>10</ex></ph>% complete.
+  </message>
 
+  <message name="IDS_FILE_BROWSER_CANCEL_ACTIVITY_LABEL" desc="Text spoken by ChromeVox/screen reader describing what will be cancelled.">
+    Cancel <ph name="ACTIVITY_DESCRIPTION">$1<ex>Copying file.txt</ex></ph>.
+  </message>
   <message name="IDS_FILE_BROWSER_CANCEL_LABEL" desc="Cancel label.">
     Cancel
   </message>
@@ -850,6 +856,9 @@
   </message>
   <message name="IDS_FILE_BROWSER_FEEDBACK_EXPAND_LABEL" desc="Text spoken by Chromevox when expanding multiple feedback panels.">
     Expand files feedback panels
+  </message>
+  <message name="IDS_FILE_BROWSER_FILES_FEEDBACK_WINDOW" desc="text spoken by Chromevox when tabbing to the feedback panel window.">
+    Files feedback window
   </message>
   <message name="IDS_FILE_BROWSER_SEARCH_A11Y_NO_RESULT" desc="Text spoken by ChromeVox/screen reader when a search has no result">
     There are no results for <ph name="SEARCH_TERM">$1<ex>ABC</ex></ph>.
@@ -1015,7 +1024,7 @@
     Title
   </message>
   <message name="IDS_FILE_BROWSER_METADATA_BOX_MODIFICATION_TIME" desc="Label for file modification time.">
-    Modified time
+    Date modified
   </message>
   <message name="IDS_FILE_BROWSER_METADATA_BOX_MODIFIED_BY" desc="Label for who modified the file.">
     Modified by
@@ -1076,27 +1085,6 @@
   </message>
   <message name="IDS_FILE_BROWSER_OPEN_IN_OTHER_DESKTOP_MESSAGE_PLURAL" desc="Prural verson of the message of an alert dialog that is shown when a user opens a file in a desktop of another profile but the file is opened in the original desktop.">
     These files opened on a different desktop. Move to <ph name="USER_NAME">$1<ex>John Doe</ex></ph> (<ph name="MAIL_ADDRESS">$2<ex>xxxxxx@gmail.com</ex></ph>) to view it.
-  </message>
-  <message name="IDS_FILE_BROWSER_MULTI_PROFILE_SHARE_DIALOG_TITLE" desc="Title of a dialog to request drive share for files that come from other profiles during file transfering.">
-    This Drive file isn't shared yet
-  </message>
-  <message name="IDS_FILE_BROWSER_MULTI_PROFILE_SHARE_DIALOG_TITLE_PLURAL" desc="Title of a dialog to request drive share for files that come from other profiles during file transfering.">
-    These Drive files aren't shared yet
-  </message>
-  <message name="IDS_FILE_BROWSER_MULTI_PROFILE_SHARE_DIALOG_MESSAGE" desc="Message of a dialog to request drive share for files that come from other profiles during file transfering. Below the message, there are the e-mail address of the account to be shared with the file, and a drop down list to select a share type.">
-    Change how this file is shared
-  </message>
-  <message name="IDS_FILE_BROWSER_MULTI_PROFILE_SHARE_DIALOG_MESSAGE_PLURAL" desc="Message of a dialog to request drive share for files that come from other profiles during file transfering. Below the message, there are the e-mail address of the account to be shared with the file, and a drop down list to select a share type.">
-    Change how these files are shared
-  </message>
-  <message name="IDS_FILE_BROWSER_DRIVE_SHARE_TYPE_CAN_EDIT" desc="Label text of 'Can edit' share type. Please use the same string with Google Drive.">
-    Can edit
-  </message>
-  <message name="IDS_FILE_BROWSER_DRIVE_SHARE_TYPE_CAN_COMMENT" desc="Label text of 'Can comment' share type. Please use the same string with Google Drive.">
-    Can comment
-  </message>
-  <message name="IDS_FILE_BROWSER_DRIVE_SHARE_TYPE_CAN_VIEW" desc="Label text of 'Can view' share type. Please use the same string with Google Drive.">
-    Can view
   </message>
   <message name="IDS_FILE_BROWSER_DRIVE_MOBILE_CONNECTION_OPTION" desc="Option that determines if we will allow Google Drive content sync over mobile connections.">
     Do not use mobile data for sync

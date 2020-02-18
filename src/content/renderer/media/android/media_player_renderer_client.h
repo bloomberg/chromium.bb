@@ -20,7 +20,10 @@
 #include "media/mojo/clients/mojo_renderer.h"
 #include "media/mojo/clients/mojo_renderer_wrapper.h"
 #include "media/mojo/mojom/renderer_extensions.mojom.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 namespace content {
 
@@ -38,15 +41,12 @@ class CONTENT_EXPORT MediaPlayerRendererClient
     : public media::mojom::MediaPlayerRendererClientExtension,
       public media::MojoRendererWrapper {
  public:
-  using RendererExtentionPtr = media::mojom::MediaPlayerRendererExtensionPtr;
-  using RendererExtentionPtrInfo =
-      media::mojom::MediaPlayerRendererExtensionPtrInfo;
-  using ClientExtentionRequest =
-      media::mojom::MediaPlayerRendererClientExtensionRequest;
+  using RendererExtention = media::mojom::MediaPlayerRendererExtension;
+  using ClientExtention = media::mojom::MediaPlayerRendererClientExtension;
 
   MediaPlayerRendererClient(
-      RendererExtentionPtr renderer_extension_ptr,
-      ClientExtentionRequest client_extension_request,
+      mojo::PendingRemote<RendererExtention> renderer_extension_remote,
+      mojo::PendingReceiver<ClientExtention> client_extension_receiver,
       scoped_refptr<base::SingleThreadTaskRunner> media_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner,
       std::unique_ptr<media::MojoRenderer> mojo_renderer,
@@ -60,9 +60,9 @@ class CONTENT_EXPORT MediaPlayerRendererClient
   // and do not support encrypted media.
   void Initialize(media::MediaResource* media_resource,
                   media::RendererClient* client,
-                  const media::PipelineStatusCB& init_cb) override;
+                  media::PipelineStatusCallback init_cb) override;
   void SetCdm(media::CdmContext* cdm_context,
-              const media::CdmAttachedCB& cdm_attached_cb) override;
+              media::CdmAttachedCB cdm_attached_cb) override;
 
   // media::mojom::MediaPlayerRendererClientExtension implementation
   void OnDurationChange(base::TimeDelta duration) override;
@@ -97,21 +97,24 @@ class CONTENT_EXPORT MediaPlayerRendererClient
   // VideoFrames to |sink_| on the right thread.
   scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;
 
-  media::PipelineStatusCB init_cb_;
+  media::PipelineStatusCallback init_cb_;
 
   // This class is constructed on the main task runner, and used on
   // |media_task_runner_|. These member are used to delay calls to Bind() for
   // |renderer_extension_ptr_| and |client_extension_binding_|, until we are on
   // |media_task_runner_|.
   // Both are set in the constructor, and consumed in Initialize().
-  ClientExtentionRequest delayed_bind_client_extension_request_;
-  RendererExtentionPtrInfo delayed_bind_renderer_extention_ptr_info_;
+  mojo::PendingReceiver<ClientExtention>
+      delayed_bind_client_extension_receiver_;
+  mojo::PendingRemote<RendererExtention>
+      delayed_bind_renderer_extention_remote_;
 
   // Used to call methods on the MediaPlayerRenderer in the browser process.
-  RendererExtentionPtr renderer_extension_ptr_;
+  mojo::Remote<RendererExtention> renderer_extension_remote_;
 
   // Used to receive events from MediaPlayerRenderer in the browser process.
-  mojo::Binding<MediaPlayerRendererClientExtension> client_extension_binding_;
+  mojo::Receiver<MediaPlayerRendererClientExtension> client_extension_receiver_{
+      this};
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<MediaPlayerRendererClient> weak_factory_{this};

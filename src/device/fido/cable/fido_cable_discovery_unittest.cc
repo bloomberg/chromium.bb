@@ -25,14 +25,17 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::_;
-using ::testing::Sequence;
 using ::testing::NiceMock;
+using ::testing::Sequence;
 
 namespace device {
 
 namespace {
 
-constexpr uint8_t kTestCableVersionNumber = 0x01;
+constexpr auto kTestCableVersion = CableDiscoveryData::Version::V1;
+#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS)
+constexpr auto kTestCableVersionNumber = 1;
+#endif
 
 // Constants required for discovering and constructing a Cable device that
 // are given by the relying party via an extension.
@@ -291,20 +294,19 @@ class FakeFidoCableDiscovery : public FidoCableDiscovery {
  public:
   explicit FakeFidoCableDiscovery(
       std::vector<CableDiscoveryData> discovery_data)
-      : FidoCableDiscovery(std::move(discovery_data), BogusQRGeneratorKey()) {}
+      : FidoCableDiscovery(std::move(discovery_data),
+                           BogusQRGeneratorKey(),
+                           /*pairing_callback=*/base::nullopt) {}
   ~FakeFidoCableDiscovery() override = default;
 
  private:
   base::Optional<std::unique_ptr<FidoCableHandshakeHandler>>
   CreateHandshakeHandler(FidoCableDevice* device,
-                         const CableDiscoveryData* discovery_data) override {
-    // Nonce is embedded as first 8 bytes of client EID.
-    std::array<uint8_t, 8> nonce;
-    const bool ok =
-        fido_parsing_utils::ExtractArray(discovery_data->client_eid, 0, &nonce);
-    DCHECK(ok);
+                         const CableDiscoveryData& discovery_data,
+                         const CableNonce& nonce,
+                         const CableEidArray& eid) override {
     return std::make_unique<FakeHandshakeHandler>(
-        device, nonce, discovery_data->session_pre_key);
+        device, nonce, discovery_data.v1->session_pre_key);
   }
 
   static std::array<uint8_t, 32> BogusQRGeneratorKey() {
@@ -320,18 +322,63 @@ class FidoCableDiscoveryTest : public ::testing::Test {
  public:
   std::unique_ptr<FidoCableDiscovery> CreateDiscovery() {
     std::vector<CableDiscoveryData> discovery_data;
-    discovery_data.emplace_back(kTestCableVersionNumber, kClientEid,
+    discovery_data.emplace_back(kTestCableVersion, kClientEid,
                                 kAuthenticatorEid, kTestSessionPreKey);
     return std::make_unique<FakeFidoCableDiscovery>(std::move(discovery_data));
   }
 
-  base::test::TaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
 };
+
+// Tests discovery without a BLE adapter.
+TEST_F(FidoCableDiscoveryTest, TestDiscoveryFails) {
+  auto cable_discovery = CreateDiscovery();
+  NiceMock<MockFidoDiscoveryObserver> mock_observer;
+  EXPECT_CALL(mock_observer,
+              DiscoveryStarted(cable_discovery.get(), false,
+                               std::vector<FidoAuthenticator*>()));
+  EXPECT_CALL(mock_observer, AuthenticatorAdded(_, _)).Times(0);
+  cable_discovery->set_observer(&mock_observer);
+
+  auto mock_adapter =
+      base::MakeRefCounted<::testing::NiceMock<CableMockAdapter>>();
+  EXPECT_CALL(*mock_adapter, IsPresent()).WillOnce(::testing::Return(false));
+
+  BluetoothAdapterFactory::SetAdapterForTesting(mock_adapter);
+  cable_discovery->Start();
+  task_environment_.FastForwardUntilNoTasksRemain();
+}
+
+// Tests discovery with a powered-off BLE adapter.  Not calling
+// DiscoveryStarted() in the case of a present-but-unpowered adapter leads to a
+// deadlock between the discovery and the UI (see crbug.com/1018416).
+TEST_F(FidoCableDiscoveryTest, TestDiscoveryStartedWithUnpoweredAdapter) {
+  auto cable_discovery = CreateDiscovery();
+  NiceMock<MockFidoDiscoveryObserver> mock_observer;
+  EXPECT_CALL(mock_observer,
+              DiscoveryStarted(cable_discovery.get(), true,
+                               std::vector<FidoAuthenticator*>()));
+  EXPECT_CALL(mock_observer, AuthenticatorAdded(_, _)).Times(0);
+  cable_discovery->set_observer(&mock_observer);
+
+  auto mock_adapter =
+      base::MakeRefCounted<::testing::NiceMock<CableMockAdapter>>();
+  EXPECT_CALL(*mock_adapter, IsPresent()).WillOnce(::testing::Return(true));
+  EXPECT_CALL(*mock_adapter, IsPowered()).WillOnce(::testing::Return(false));
+
+  BluetoothAdapterFactory::SetAdapterForTesting(mock_adapter);
+  cable_discovery->Start();
+  task_environment_.FastForwardUntilNoTasksRemain();
+}
 
 // Tests regular successful discovery flow for Cable device.
 TEST_F(FidoCableDiscoveryTest, TestDiscoveryFindsNewDevice) {
   auto cable_discovery = CreateDiscovery();
   NiceMock<MockFidoDiscoveryObserver> mock_observer;
+  EXPECT_CALL(mock_observer,
+              DiscoveryStarted(cable_discovery.get(), true,
+                               std::vector<FidoAuthenticator*>()));
   EXPECT_CALL(mock_observer, AuthenticatorAdded(_, _));
   cable_discovery->set_observer(&mock_observer);
 
@@ -344,13 +391,16 @@ TEST_F(FidoCableDiscoveryTest, TestDiscoveryFindsNewDevice) {
 
   BluetoothAdapterFactory::SetAdapterForTesting(mock_adapter);
   cable_discovery->Start();
-  task_environment_.RunUntilIdle();
+  task_environment_.FastForwardUntilNoTasksRemain();
 }
 
 // Tests successful discovery flow for Apple Cable device.
 TEST_F(FidoCableDiscoveryTest, TestDiscoveryFindsNewAppleDevice) {
   auto cable_discovery = CreateDiscovery();
   NiceMock<MockFidoDiscoveryObserver> mock_observer;
+  EXPECT_CALL(mock_observer,
+              DiscoveryStarted(cable_discovery.get(), true,
+                               std::vector<FidoAuthenticator*>()));
   EXPECT_CALL(mock_observer, AuthenticatorAdded(_, _));
   cable_discovery->set_observer(&mock_observer);
 
@@ -363,7 +413,7 @@ TEST_F(FidoCableDiscoveryTest, TestDiscoveryFindsNewAppleDevice) {
 
   BluetoothAdapterFactory::SetAdapterForTesting(mock_adapter);
   cable_discovery->Start();
-  task_environment_.RunUntilIdle();
+  task_environment_.FastForwardUntilNoTasksRemain();
 }
 
 // Tests a scenario where upon broadcasting advertisement and scanning, client
@@ -373,6 +423,8 @@ TEST_F(FidoCableDiscoveryTest, TestDiscoveryFindsIncorrectDevice) {
   auto cable_discovery = CreateDiscovery();
   NiceMock<MockFidoDiscoveryObserver> mock_observer;
   EXPECT_CALL(mock_observer, AuthenticatorAdded(_, _)).Times(0);
+  EXPECT_CALL(mock_observer, DiscoveryStarted(cable_discovery.get(), true,
+                                              testing::IsEmpty()));
   cable_discovery->set_observer(&mock_observer);
 
   auto mock_adapter =
@@ -384,7 +436,7 @@ TEST_F(FidoCableDiscoveryTest, TestDiscoveryFindsIncorrectDevice) {
 
   BluetoothAdapterFactory::SetAdapterForTesting(mock_adapter);
   cable_discovery->Start();
-  task_environment_.RunUntilIdle();
+  task_environment_.FastForwardUntilNoTasksRemain();
 }
 
 // Windows currently does not support multiple EIDs, so the following tests are
@@ -397,9 +449,9 @@ TEST_F(FidoCableDiscoveryTest, TestDiscoveryFindsIncorrectDevice) {
 // BluetoothAdapter::RegisterAdvertisement().
 TEST_F(FidoCableDiscoveryTest, TestDiscoveryWithMultipleEids) {
   std::vector<CableDiscoveryData> discovery_data;
-  discovery_data.emplace_back(kTestCableVersionNumber, kClientEid,
-                              kAuthenticatorEid, kTestSessionPreKey);
-  discovery_data.emplace_back(kTestCableVersionNumber, kSecondaryClientEid,
+  discovery_data.emplace_back(kTestCableVersion, kClientEid, kAuthenticatorEid,
+                              kTestSessionPreKey);
+  discovery_data.emplace_back(kTestCableVersion, kSecondaryClientEid,
                               kSecondaryAuthenticatorEid,
                               kSecondarySessionPreKey);
   auto cable_discovery =
@@ -410,6 +462,9 @@ TEST_F(FidoCableDiscoveryTest, TestDiscoveryWithMultipleEids) {
   mock_adapter->ExpectDiscoveryWithScanCallback(kAuthenticatorEid);
 
   NiceMock<MockFidoDiscoveryObserver> mock_observer;
+  EXPECT_CALL(mock_observer,
+              DiscoveryStarted(cable_discovery.get(), true,
+                               std::vector<FidoAuthenticator*>()));
   EXPECT_CALL(mock_observer, AuthenticatorAdded(_, _));
   cable_discovery->set_observer(&mock_observer);
 
@@ -423,7 +478,7 @@ TEST_F(FidoCableDiscoveryTest, TestDiscoveryWithMultipleEids) {
 
   BluetoothAdapterFactory::SetAdapterForTesting(mock_adapter);
   cable_discovery->Start();
-  task_environment_.RunUntilIdle();
+  task_environment_.FastForwardUntilNoTasksRemain();
 }
 
 // Tests a scenario where only one of the two client EID's are advertised
@@ -431,14 +486,17 @@ TEST_F(FidoCableDiscoveryTest, TestDiscoveryWithMultipleEids) {
 // scanning process should be invoked.
 TEST_F(FidoCableDiscoveryTest, TestDiscoveryWithPartialAdvertisementSuccess) {
   std::vector<CableDiscoveryData> discovery_data;
-  discovery_data.emplace_back(kTestCableVersionNumber, kClientEid,
-                              kAuthenticatorEid, kTestSessionPreKey);
-  discovery_data.emplace_back(kTestCableVersionNumber, kSecondaryClientEid,
+  discovery_data.emplace_back(kTestCableVersion, kClientEid, kAuthenticatorEid,
+                              kTestSessionPreKey);
+  discovery_data.emplace_back(kTestCableVersion, kSecondaryClientEid,
                               kSecondaryAuthenticatorEid,
                               kSecondarySessionPreKey);
   auto cable_discovery =
       std::make_unique<FakeFidoCableDiscovery>(std::move(discovery_data));
   NiceMock<MockFidoDiscoveryObserver> mock_observer;
+  EXPECT_CALL(mock_observer,
+              DiscoveryStarted(cable_discovery.get(), true,
+                               std::vector<FidoAuthenticator*>()));
   EXPECT_CALL(mock_observer, AuthenticatorAdded(_, _));
   cable_discovery->set_observer(&mock_observer);
 
@@ -456,15 +514,15 @@ TEST_F(FidoCableDiscoveryTest, TestDiscoveryWithPartialAdvertisementSuccess) {
 
   BluetoothAdapterFactory::SetAdapterForTesting(mock_adapter);
   cable_discovery->Start();
-  task_environment_.RunUntilIdle();
+  task_environment_.FastForwardUntilNoTasksRemain();
 }
 
 // Test the scenario when all advertisement for client EID's fails.
 TEST_F(FidoCableDiscoveryTest, TestDiscoveryWithAdvertisementFailures) {
   std::vector<CableDiscoveryData> discovery_data;
-  discovery_data.emplace_back(kTestCableVersionNumber, kClientEid,
-                              kAuthenticatorEid, kTestSessionPreKey);
-  discovery_data.emplace_back(kTestCableVersionNumber, kSecondaryClientEid,
+  discovery_data.emplace_back(kTestCableVersion, kClientEid, kAuthenticatorEid,
+                              kTestSessionPreKey);
+  discovery_data.emplace_back(kTestCableVersion, kSecondaryClientEid,
                               kSecondaryAuthenticatorEid,
                               kSecondarySessionPreKey);
   auto cable_discovery =
@@ -472,6 +530,8 @@ TEST_F(FidoCableDiscoveryTest, TestDiscoveryWithAdvertisementFailures) {
 
   NiceMock<MockFidoDiscoveryObserver> mock_observer;
   EXPECT_CALL(mock_observer, AuthenticatorAdded(_, _)).Times(0);
+  EXPECT_CALL(mock_observer, DiscoveryStarted(cable_discovery.get(), true,
+                                              testing::IsEmpty()));
   cable_discovery->set_observer(&mock_observer);
 
   auto mock_adapter =
@@ -488,7 +548,7 @@ TEST_F(FidoCableDiscoveryTest, TestDiscoveryWithAdvertisementFailures) {
 
   BluetoothAdapterFactory::SetAdapterForTesting(mock_adapter);
   cable_discovery->Start();
-  task_environment_.RunUntilIdle();
+  task_environment_.FastForwardUntilNoTasksRemain();
   EXPECT_TRUE(cable_discovery->advertisements_.empty());
 }
 #endif  // !defined(OS_WIN)
@@ -509,7 +569,7 @@ TEST_F(FidoCableDiscoveryTest, TestUnregisterAdvertisementUponDestruction) {
 
   BluetoothAdapterFactory::SetAdapterForTesting(mock_adapter);
   cable_discovery->Start();
-  task_environment_.RunUntilIdle();
+  task_environment_.FastForwardUntilNoTasksRemain();
 
   EXPECT_EQ(1u, cable_discovery->advertisements_.size());
   cable_discovery.reset();
@@ -519,7 +579,10 @@ TEST_F(FidoCableDiscoveryTest, TestUnregisterAdvertisementUponDestruction) {
 TEST_F(FidoCableDiscoveryTest, TestResumeDiscoveryAfterPoweredOn) {
   auto cable_discovery = CreateDiscovery();
   NiceMock<MockFidoDiscoveryObserver> mock_observer;
-  EXPECT_CALL(mock_observer, AuthenticatorAdded);
+  EXPECT_CALL(mock_observer,
+              DiscoveryStarted(cable_discovery.get(), true,
+                               std::vector<FidoAuthenticator*>()));
+  EXPECT_CALL(mock_observer, AuthenticatorAdded(_, _));
   cable_discovery->set_observer(&mock_observer);
 
   auto mock_adapter =
@@ -548,6 +611,7 @@ TEST_F(FidoCableDiscoveryTest, TestResumeDiscoveryAfterPoweredOn) {
   }
 
   mock_adapter->NotifyAdapterPoweredChanged(true);
+  task_environment_.FastForwardUntilNoTasksRemain();
 }
 
 }  // namespace device

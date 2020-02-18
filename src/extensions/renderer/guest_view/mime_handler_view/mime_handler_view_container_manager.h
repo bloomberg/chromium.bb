@@ -14,7 +14,9 @@
 #include "extensions/common/guest_view/mime_handler_view_uma_types.h"
 #include "extensions/common/mojom/guest_view.mojom.h"
 #include "extensions/renderer/guest_view/mime_handler_view/post_message_support.h"
-#include "mojo/public/cpp/bindings/associated_binding_set.h"
+#include "mojo/public/cpp/bindings/associated_receiver_set.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "third_party/blink/public/web/web_element.h"
 #include "url/gurl.h"
 
@@ -47,9 +49,10 @@ class MimeHandlerViewContainerManager
       public mime_handler::BeforeUnloadControl,
       public PostMessageSupport::Delegate {
  public:
-  static void BindRequest(
+  static void BindReceiver(
       int32_t routing_id,
-      mojom::MimeHandlerViewContainerManagerAssociatedRequest request);
+      mojo::PendingAssociatedReceiver<mojom::MimeHandlerViewContainerManager>
+          receiver);
   // Returns the container manager associated with |render_frame|. If none
   // exists and |create_if_does_not_exist| is set true, creates and returns a
   // new instance for |render_frame|.
@@ -77,9 +80,12 @@ class MimeHandlerViewContainerManager
       v8::Isolate* isolate);
   // Removes the |frame_container| from |frame_containers_| and destroys it. The
   // |reason| is emitted for UMA.
+  // Note: Calling this function may delete |this| if we are removing the last
+  // frame container, unless |retain_manager| is set to true.
   void RemoveFrameContainerForReason(
       MimeHandlerViewFrameContainer* frame_container,
-      MimeHandlerViewUMATypes::Type reason);
+      MimeHandlerViewUMATypes::Type reason,
+      bool retain_manager);
   MimeHandlerViewFrameContainer* GetFrameContainer(
       const blink::WebElement& plugin_element);
   MimeHandlerViewFrameContainer* GetFrameContainer(int32_t element_instance_id);
@@ -97,6 +103,9 @@ class MimeHandlerViewContainerManager
   void LoadEmptyPage(const GURL& resource_url) override;
   void CreateBeforeUnloadControl(
       CreateBeforeUnloadControlCallback callback) override;
+
+  // Note: Calling this function may delete |this| if we are destroying the last
+  // frame container.
   void DestroyFrameContainer(int32_t element_instance_id) override;
   void DidLoad(int32_t mime_handler_view_guest_element_instance_id,
                const GURL& resource_url) override;
@@ -108,7 +117,10 @@ class MimeHandlerViewContainerManager
   bool IsEmbedded() const override;
   bool IsResourceAccessibleBySource() const override;
 
-  bool RemoveFrameContainer(MimeHandlerViewFrameContainer* frame_container);
+  // Note: Calling this function may delete |this| if we are removing the last
+  // frame container, unless |retain_manager| is set to true.
+  bool RemoveFrameContainer(MimeHandlerViewFrameContainer* frame_container,
+                            bool retain_manager);
   // mime_handler::BeforeUnloadControl implementation.
   void SetShowBeforeUnloadDialog(
       bool show_dialog,
@@ -120,6 +132,11 @@ class MimeHandlerViewContainerManager
   // MimeHandlerViewContainerManager; this would be the element that is added by
   // the HTML string injected at MimeHandlerViewAttachHelper.
   bool IsManagedByContainerManager(const blink::WebElement& plugin_element);
+
+  // If this MimeHandlerViewContainerManager isn't serving a full-page PDF, and
+  // there are no frame containers, then it should delete itself. This function
+  // looks after this.
+  void SelfDeleteIfNecessary();
 
   // Instantiated if this MHVFC is for a full-page MHV. This means MHV is
   // created when a frame was navigated to MHV resource by means other than
@@ -134,14 +151,15 @@ class MimeHandlerViewContainerManager
   // Used to match against plugin elements that request a scriptable object. The
   // one that matches is the one inserted in the HTML string injected by the
   // MimeHandlerViewAttachHelper (and hence requires a scriptable object to for
-  // postMessage purposes).
+  // postMessage purposes). This will only be non-empty for full-page MHV.
   std::string internal_id_;
   // The plugin element that is managed by MimeHandlerViewContainerManager.
   blink::WebElement plugin_element_;
 
-  mojo::AssociatedBindingSet<mojom::MimeHandlerViewContainerManager> bindings_;
-  mojo::Binding<mime_handler::BeforeUnloadControl>
-      before_unload_control_binding_;
+  mojo::AssociatedReceiverSet<mojom::MimeHandlerViewContainerManager>
+      receivers_;
+  mojo::Receiver<mime_handler::BeforeUnloadControl>
+      before_unload_control_receiver_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MimeHandlerViewContainerManager);
 };

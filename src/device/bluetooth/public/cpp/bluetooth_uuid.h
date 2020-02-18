@@ -6,6 +6,7 @@
 #define DEVICE_BLUETOOTH_PUBLIC_CPP_BLUETOOTH_UUID_H_
 
 #include <string>
+#include <vector>
 
 #include "build/build_config.h"
 
@@ -81,6 +82,10 @@ class BluetoothUUID {
   //   xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
   // where x is a lowercase hex digit.
   const std::string& canonical_value() const { return canonical_value_; }
+
+  // Returns the bytes of the canonical 128-bit UUID, or empty vector if
+  // invalid.
+  std::vector<uint8_t> GetBytes() const;
 
   // Permit sufficient comparison to allow a UUID to be used as a key in a
   // std::map.

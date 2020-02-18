@@ -1,9 +1,9 @@
 /*
-* Copyright 2016 Google Inc.
-*
-* Use of this source code is governed by a BSD-style license that can be
-* found in the LICENSE file.
-*/
+ * Copyright 2016 Google Inc.
+ *
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
 
 #include "src/gpu/vk/GrVkOpsRenderPass.h"
 
@@ -25,25 +25,6 @@
 #include "src/gpu/vk/GrVkResourceProvider.h"
 #include "src/gpu/vk/GrVkSemaphore.h"
 #include "src/gpu/vk/GrVkTexture.h"
-
-GrVkPrimaryCommandBufferTask::~GrVkPrimaryCommandBufferTask() = default;
-GrVkPrimaryCommandBufferTask::GrVkPrimaryCommandBufferTask() = default;
-
-namespace {
-
-class InlineUpload : public GrVkPrimaryCommandBufferTask {
-public:
-    InlineUpload(GrOpFlushState* state, const GrDeferredTextureUploadFn& upload)
-            : fFlushState(state), fUpload(upload) {}
-
-    void execute(const Args& args) override { fFlushState->doUpload(fUpload, true); }
-
-private:
-    GrOpFlushState* fFlushState;
-    GrDeferredTextureUploadFn fUpload;
-};
-
-}  // anonymous namespace
 
 /////////////////////////////////////////////////////////////////////////////
 
@@ -79,64 +60,103 @@ void get_vk_load_store_ops(GrLoadOp loadOpIn, GrStoreOp storeOpIn,
 
 GrVkOpsRenderPass::GrVkOpsRenderPass(GrVkGpu* gpu) : fGpu(gpu) {}
 
-void GrVkOpsRenderPass::init() {
-    GrVkRenderPass::LoadStoreOps vkColorOps(fVkColorLoadOp, fVkColorStoreOp);
-    GrVkRenderPass::LoadStoreOps vkStencilOps(fVkStencilLoadOp, fVkStencilStoreOp);
+bool GrVkOpsRenderPass::init(const GrOpsRenderPass::LoadAndStoreInfo& colorInfo,
+                             const GrOpsRenderPass::StencilLoadAndStoreInfo& stencilInfo,
+                             const SkPMColor4f& clearColor) {
 
-    CommandBufferInfo& cbInfo = fCommandBufferInfos.push_back();
-    SkASSERT(fCommandBufferInfos.count() == 1);
-    fCurrentCmdInfo = 0;
+    VkAttachmentLoadOp loadOp;
+    VkAttachmentStoreOp storeOp;
+    get_vk_load_store_ops(colorInfo.fLoadOp, colorInfo.fStoreOp,
+                          &loadOp, &storeOp);
+    GrVkRenderPass::LoadStoreOps vkColorOps(loadOp, storeOp);
+
+    get_vk_load_store_ops(stencilInfo.fLoadOp, stencilInfo.fStoreOp,
+                          &loadOp, &storeOp);
+    GrVkRenderPass::LoadStoreOps vkStencilOps(loadOp, storeOp);
 
     GrVkRenderTarget* vkRT = static_cast<GrVkRenderTarget*>(fRenderTarget);
-    const GrVkResourceProvider::CompatibleRPHandle& rpHandle = vkRT->compatibleRenderPassHandle();
+    GrVkImage* targetImage = vkRT->msaaImage() ? vkRT->msaaImage() : vkRT;
+
+    // Change layout of our render target so it can be used as the color attachment.
+    // TODO: If we know that we will never be blending or loading the attachment we could drop the
+    // VK_ACCESS_COLOR_ATTACHMENT_READ_BIT.
+    targetImage->setImageLayout(fGpu,
+                                VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+                                VK_ACCESS_COLOR_ATTACHMENT_READ_BIT |
+                                VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+                                VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+                                false);
+
+    // If we are using a stencil attachment we also need to update its layout
+    if (GrStencilAttachment* stencil = fRenderTarget->renderTargetPriv().getStencilAttachment()) {
+        GrVkStencilAttachment* vkStencil = (GrVkStencilAttachment*)stencil;
+        // We need the write and read access bits since we may load and store the stencil.
+        // The initial load happens in the VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT so we
+        // wait there.
+        vkStencil->setImageLayout(fGpu,
+                                  VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+                                  VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT |
+                                  VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT,
+                                  VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT,
+                                  false);
+    }
+
+    const GrVkResourceProvider::CompatibleRPHandle& rpHandle =
+            vkRT->compatibleRenderPassHandle();
     if (rpHandle.isValid()) {
-        cbInfo.fRenderPass = fGpu->resourceProvider().findRenderPass(rpHandle,
+        fCurrentRenderPass = fGpu->resourceProvider().findRenderPass(rpHandle,
                                                                      vkColorOps,
                                                                      vkStencilOps);
     } else {
-        cbInfo.fRenderPass = fGpu->resourceProvider().findRenderPass(*vkRT,
+        fCurrentRenderPass = fGpu->resourceProvider().findRenderPass(vkRT,
                                                                      vkColorOps,
                                                                      vkStencilOps);
     }
-
-    cbInfo.fColorClearValue.color.float32[0] = fClearColor[0];
-    cbInfo.fColorClearValue.color.float32[1] = fClearColor[1];
-    cbInfo.fColorClearValue.color.float32[2] = fClearColor[2];
-    cbInfo.fColorClearValue.color.float32[3] = fClearColor[3];
-
-    if (VK_ATTACHMENT_LOAD_OP_CLEAR == fVkColorLoadOp) {
-        cbInfo.fBounds = SkRect::MakeWH(vkRT->width(), vkRT->height());
-    } else {
-        cbInfo.fBounds.setEmpty();
+    if (!fCurrentRenderPass) {
+        return false;
     }
 
-    if (VK_ATTACHMENT_LOAD_OP_CLEAR == fVkColorLoadOp) {
-        cbInfo.fLoadStoreState = LoadStoreState::kStartsWithClear;
-    } else if (VK_ATTACHMENT_LOAD_OP_LOAD == fVkColorLoadOp &&
-               VK_ATTACHMENT_STORE_OP_STORE == fVkColorStoreOp) {
-        cbInfo.fLoadStoreState = LoadStoreState::kLoadAndStore;
-    } else if (VK_ATTACHMENT_LOAD_OP_DONT_CARE == fVkColorLoadOp) {
-        cbInfo.fLoadStoreState = LoadStoreState::kStartsWithDiscard;
+    VkClearValue vkClearColor;
+    vkClearColor.color.float32[0] = clearColor[0];
+    vkClearColor.color.float32[1] = clearColor[1];
+    vkClearColor.color.float32[2] = clearColor[2];
+    vkClearColor.color.float32[3] = clearColor[3];
+
+    if (!fGpu->vkCaps().preferPrimaryOverSecondaryCommandBuffers()) {
+        SkASSERT(fGpu->cmdPool());
+        fCurrentSecondaryCommandBuffer = fGpu->cmdPool()->findOrCreateSecondaryCommandBuffer(fGpu);
+        if (!fCurrentSecondaryCommandBuffer) {
+            fCurrentRenderPass = nullptr;
+            return false;
+        }
+        fCurrentSecondaryCommandBuffer->begin(fGpu, vkRT->getFramebuffer(), fCurrentRenderPass);
     }
 
-    cbInfo.fCommandBuffer = fGpu->cmdPool()->findOrCreateSecondaryCommandBuffer(fGpu);
-    cbInfo.currentCmdBuf()->begin(fGpu, vkRT->framebuffer(), cbInfo.fRenderPass);
+    if (!fGpu->beginRenderPass(fCurrentRenderPass, &vkClearColor, vkRT, fOrigin, fBounds,
+                               SkToBool(fCurrentSecondaryCommandBuffer))) {
+        if (fCurrentSecondaryCommandBuffer) {
+            fCurrentSecondaryCommandBuffer->end(fGpu);
+        }
+        fCurrentRenderPass = nullptr;
+        return false;
+    }
+    return true;
 }
 
-void GrVkOpsRenderPass::initWrapped() {
-    CommandBufferInfo& cbInfo = fCommandBufferInfos.push_back();
-    SkASSERT(fCommandBufferInfos.count() == 1);
-    fCurrentCmdInfo = 0;
-
+bool GrVkOpsRenderPass::initWrapped() {
     GrVkRenderTarget* vkRT = static_cast<GrVkRenderTarget*>(fRenderTarget);
     SkASSERT(vkRT->wrapsSecondaryCommandBuffer());
-    cbInfo.fRenderPass = vkRT->externalRenderPass();
-    cbInfo.fRenderPass->ref();
+    fCurrentRenderPass = vkRT->externalRenderPass();
+    SkASSERT(fCurrentRenderPass);
+    fCurrentRenderPass->ref();
 
-    cbInfo.fBounds.setEmpty();
-    cbInfo.fCommandBuffer.reset(
+    fCurrentSecondaryCommandBuffer.reset(
             GrVkSecondaryCommandBuffer::Create(vkRT->getExternalSecondaryCommandBuffer()));
-    cbInfo.currentCmdBuf()->begin(fGpu, nullptr, cbInfo.fRenderPass);
+    if (!fCurrentSecondaryCommandBuffer) {
+        return false;
+    }
+    fCurrentSecondaryCommandBuffer->begin(fGpu, nullptr, fCurrentRenderPass);
+    return true;
 }
 
 GrVkOpsRenderPass::~GrVkOpsRenderPass() {
@@ -145,9 +165,16 @@ GrVkOpsRenderPass::~GrVkOpsRenderPass() {
 
 GrGpu* GrVkOpsRenderPass::gpu() { return fGpu; }
 
+GrVkCommandBuffer* GrVkOpsRenderPass::currentCommandBuffer() {
+    if (fCurrentSecondaryCommandBuffer) {
+        return fCurrentSecondaryCommandBuffer.get();
+    }
+    return fGpu->currentCommandBuffer();
+}
+
 void GrVkOpsRenderPass::end() {
-    if (fCurrentCmdInfo >= 0) {
-        fCommandBufferInfos[fCurrentCmdInfo].currentCmdBuf()->end(fGpu);
+    if (fCurrentSecondaryCommandBuffer) {
+        fCurrentSecondaryCommandBuffer->end(fGpu);
     }
 }
 
@@ -155,97 +182,33 @@ void GrVkOpsRenderPass::submit() {
     if (!fRenderTarget) {
         return;
     }
-
-    GrVkRenderTarget* vkRT = static_cast<GrVkRenderTarget*>(fRenderTarget);
-    GrVkImage* targetImage = vkRT->msaaImage() ? vkRT->msaaImage() : vkRT;
-    GrStencilAttachment* stencil = fRenderTarget->renderTargetPriv().getStencilAttachment();
-    auto currPreCmd = fPreCommandBufferTasks.begin();
-
-    GrVkPrimaryCommandBufferTask::Args taskArgs{fGpu, fRenderTarget};
-    for (int i = 0; i < fCommandBufferInfos.count(); ++i) {
-        CommandBufferInfo& cbInfo = fCommandBufferInfos[i];
-
-        for (int c = 0; c < cbInfo.fNumPreCmds; ++c, ++currPreCmd) {
-            currPreCmd->execute(taskArgs);
-        }
-
-        // TODO: Many things create a scratch texture which adds the discard immediately, but then
-        // don't draw to it right away. This causes the discard to be ignored and we get yelled at
-        // for loading uninitialized data. However, once MDB lands with reordering, the discard will
-        // get reordered with the rest of the draw commands and we can remove the discard check.
-        if (cbInfo.fIsEmpty &&
-            cbInfo.fLoadStoreState != LoadStoreState::kStartsWithClear &&
-            cbInfo.fLoadStoreState != LoadStoreState::kStartsWithDiscard) {
-            // We have sumbitted no actual draw commands to the command buffer and we are not using
-            // the render pass to do a clear so there is no need to submit anything.
-            continue;
-        }
-
-        // We don't want to actually submit the secondary command buffer if it is wrapped.
-        if (this->wrapsSecondaryCommandBuffer()) {
-            // There should have only been one secondary command buffer in the wrapped case so it is
-            // safe to just return here.
-            SkASSERT(fCommandBufferInfos.count() == 1);
-            return;
-        }
-
-        // Make sure if we only have a discard load that we execute the discard on the whole image.
-        // TODO: Once we improve our tracking of discards so that we never end up flushing a discard
-        // call with no actually ops, remove this.
-        if (cbInfo.fIsEmpty && cbInfo.fLoadStoreState == LoadStoreState::kStartsWithDiscard) {
-            cbInfo.fBounds = SkRect::MakeWH(vkRT->width(), vkRT->height());
-        }
-
-        if (cbInfo.fBounds.intersect(SkRect::MakeIWH(fRenderTarget->width(),
-                                                     fRenderTarget->height()))) {
-            // Make sure we do the following layout changes after all copies, uploads, or any other
-            // pre-work is done since we may change the layouts in the pre-work. Also since the
-            // draws will be submitted in different render passes, we need to guard againts write
-            // and write issues.
-
-            // Change layout of our render target so it can be used as the color attachment.
-            // TODO: If we know that we will never be blending or loading the attachment we could
-            // drop the VK_ACCESS_COLOR_ATTACHMENT_READ_BIT.
-            targetImage->setImageLayout(fGpu,
-                                        VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-                                        VK_ACCESS_COLOR_ATTACHMENT_READ_BIT |
-                                        VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
-                                        VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-                                        false);
-
-            // If we are using a stencil attachment we also need to update its layout
-            if (stencil) {
-                GrVkStencilAttachment* vkStencil = (GrVkStencilAttachment*)stencil;
-                // We need the write and read access bits since we may load and store the stencil.
-                // The initial load happens in the VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT so we
-                // wait there.
-                vkStencil->setImageLayout(fGpu,
-                                          VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
-                                          VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT |
-                                          VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT,
-                                          VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT,
-                                          false);
-            }
-
-            SkIRect iBounds;
-            cbInfo.fBounds.roundOut(&iBounds);
-
-            fGpu->submitSecondaryCommandBuffer(std::move(cbInfo.fCommandBuffer), cbInfo.fRenderPass,
-                                               &cbInfo.fColorClearValue, vkRT, fOrigin, iBounds);
-        }
+    if (!fCurrentRenderPass) {
+        SkASSERT(fGpu->isDeviceLost());
+        return;
     }
-    SkASSERT(currPreCmd == fPreCommandBufferTasks.end());
+
+    // We don't want to actually submit the secondary command buffer if it is wrapped.
+    if (this->wrapsSecondaryCommandBuffer()) {
+        // We pass the ownership of the GrVkSecondaryCommandBuffer to the special wrapped
+        // GrVkRenderTarget since it's lifetime matches the lifetime we need to keep the
+        // GrVkResources on the GrVkSecondaryCommandBuffer alive.
+        static_cast<GrVkRenderTarget*>(fRenderTarget)->addWrappedGrSecondaryCommandBuffer(
+                std::move(fCurrentSecondaryCommandBuffer));
+        return;
+    }
+
+    if (fCurrentSecondaryCommandBuffer) {
+        fGpu->submitSecondaryCommandBuffer(std::move(fCurrentSecondaryCommandBuffer));
+    }
+    fGpu->endRenderPass(fRenderTarget, fOrigin, fBounds);
 }
 
-void GrVkOpsRenderPass::set(GrRenderTarget* rt, GrSurfaceOrigin origin,
+bool GrVkOpsRenderPass::set(GrRenderTarget* rt, GrSurfaceOrigin origin, const SkIRect& bounds,
                             const GrOpsRenderPass::LoadAndStoreInfo& colorInfo,
                             const GrOpsRenderPass::StencilLoadAndStoreInfo& stencilInfo,
-                            const SkTArray<GrTextureProxy*, true>& sampledProxies) {
+                            const SkTArray<GrSurfaceProxy*, true>& sampledProxies) {
     SkASSERT(!fRenderTarget);
-    SkASSERT(fCommandBufferInfos.empty());
-    SkASSERT(-1 == fCurrentCmdInfo);
     SkASSERT(fGpu == rt->getContext()->priv().getGpu());
-    SkASSERT(!fLastPipelineState);
 
 #ifdef SK_DEBUG
     fIsActive = true;
@@ -255,6 +218,7 @@ void GrVkOpsRenderPass::set(GrRenderTarget* rt, GrSurfaceOrigin origin,
 
     for (int i = 0; i < sampledProxies.count(); ++i) {
         if (sampledProxies[i]->isInstantiated()) {
+            SkASSERT(sampledProxies[i]->asTextureProxy());
             GrVkTexture* vkTex = static_cast<GrVkTexture*>(sampledProxies[i]->peekTexture());
             SkASSERT(vkTex);
             vkTex->setImageLayout(
@@ -263,36 +227,29 @@ void GrVkOpsRenderPass::set(GrRenderTarget* rt, GrSurfaceOrigin origin,
         }
     }
 
+    SkASSERT(bounds.isEmpty() || SkIRect::MakeWH(rt->width(), rt->height()).contains(bounds));
+    fBounds = bounds;
+
     if (this->wrapsSecondaryCommandBuffer()) {
-        this->initWrapped();
-        return;
+        return this->initWrapped();
     }
 
-    fClearColor = colorInfo.fClearColor;
-
-    get_vk_load_store_ops(colorInfo.fLoadOp, colorInfo.fStoreOp,
-                          &fVkColorLoadOp, &fVkColorStoreOp);
-
-    get_vk_load_store_ops(stencilInfo.fLoadOp, stencilInfo.fStoreOp,
-                          &fVkStencilLoadOp, &fVkStencilStoreOp);
-
-    this->init();
+    return this->init(colorInfo, stencilInfo, colorInfo.fClearColor);
 }
 
 void GrVkOpsRenderPass::reset() {
-    for (int i = 0; i < fCommandBufferInfos.count(); ++i) {
-        CommandBufferInfo& cbInfo = fCommandBufferInfos[i];
-        if (cbInfo.fCommandBuffer) {
-            cbInfo.fCommandBuffer.release()->recycle(fGpu);
-        }
-        cbInfo.fRenderPass->unref(fGpu);
+    if (fCurrentSecondaryCommandBuffer) {
+        // The active GrVkCommandPool on the GrVkGpu should still be the same pool we got the
+        // secondary command buffer from since we haven't submitted any work yet.
+        SkASSERT(fGpu->cmdPool());
+        fCurrentSecondaryCommandBuffer.release()->recycle(fGpu->cmdPool());
     }
-    fCommandBufferInfos.reset();
-    fPreCommandBufferTasks.reset();
+    if (fCurrentRenderPass) {
+        fCurrentRenderPass->unref(fGpu);
+        fCurrentRenderPass = nullptr;
+    }
+    fCurrentCBIsEmpty = true;
 
-    fCurrentCmdInfo = -1;
-
-    fLastPipelineState = nullptr;
     fRenderTarget = nullptr;
 
 #ifdef SK_DEBUG
@@ -312,9 +269,12 @@ void GrVkOpsRenderPass::insertEventMarker(const char* msg) {
 }
 
 void GrVkOpsRenderPass::onClearStencilClip(const GrFixedClip& clip, bool insideStencilMask) {
-    SkASSERT(!clip.hasWindowRectangles());
+    if (!fCurrentRenderPass) {
+        SkASSERT(fGpu->isDeviceLost());
+        return;
+    }
 
-    CommandBufferInfo& cbInfo = fCommandBufferInfos[fCurrentCmdInfo];
+    SkASSERT(!clip.hasWindowRectangles());
 
     GrStencilAttachment* sb = fRenderTarget->renderTargetPriv().getStencilAttachment();
     // this should only be called internally when we know we have a
@@ -353,29 +313,25 @@ void GrVkOpsRenderPass::onClearStencilClip(const GrFixedClip& clip, bool insideS
     clearRect.layerCount = 1;
 
     uint32_t stencilIndex;
-    SkAssertResult(cbInfo.fRenderPass->stencilAttachmentIndex(&stencilIndex));
+    SkAssertResult(fCurrentRenderPass->stencilAttachmentIndex(&stencilIndex));
 
     VkClearAttachment attachment;
     attachment.aspectMask = VK_IMAGE_ASPECT_STENCIL_BIT;
     attachment.colorAttachment = 0; // this value shouldn't matter
     attachment.clearValue.depthStencil = vkStencilColor;
 
-    cbInfo.currentCmdBuf()->clearAttachments(fGpu, 1, &attachment, 1, &clearRect);
-    cbInfo.fIsEmpty = false;
-
-    // Update command buffer bounds
-    if (!clip.scissorEnabled()) {
-        cbInfo.fBounds.join(fRenderTarget->getBoundsRect());
-    } else {
-        cbInfo.fBounds.join(SkRect::Make(clip.scissorRect()));
-    }
+    this->currentCommandBuffer()->clearAttachments(fGpu, 1, &attachment, 1, &clearRect);
+    fCurrentCBIsEmpty = false;
 }
 
 void GrVkOpsRenderPass::onClear(const GrFixedClip& clip, const SkPMColor4f& color) {
+    if (!fCurrentRenderPass) {
+        SkASSERT(fGpu->isDeviceLost());
+        return;
+    }
+
     // parent class should never let us get here with no RT
     SkASSERT(!clip.hasWindowRectangles());
-
-    CommandBufferInfo& cbInfo = fCommandBufferInfos[fCurrentCmdInfo];
 
     VkClearColorValue vkColor = {{color.fR, color.fG, color.fB, color.fA}};
 
@@ -385,7 +341,7 @@ void GrVkOpsRenderPass::onClear(const GrFixedClip& clip, const SkPMColor4f& colo
     // load op (e.g. if we needed to execute a wait op). Thus we also have the empty check here.
     // TODO: Make the waitOp a RenderTask instead so we can clear out the GrOpsTask for a clear. We
     // can then reenable this assert assuming we can't get messed up by a waitOp.
-    //SkASSERT(!cbInfo.fIsEmpty || clip.scissorEnabled());
+    //SkASSERT(!fCurrentCBIsEmpty || clip.scissorEnabled());
 
     // We always do a sub rect clear with clearAttachments since we are inside a render pass
     VkClearRect clearRect;
@@ -406,34 +362,23 @@ void GrVkOpsRenderPass::onClear(const GrFixedClip& clip, const SkPMColor4f& colo
     clearRect.layerCount = 1;
 
     uint32_t colorIndex;
-    SkAssertResult(cbInfo.fRenderPass->colorAttachmentIndex(&colorIndex));
+    SkAssertResult(fCurrentRenderPass->colorAttachmentIndex(&colorIndex));
 
     VkClearAttachment attachment;
     attachment.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
     attachment.colorAttachment = colorIndex;
     attachment.clearValue.color = vkColor;
 
-    cbInfo.currentCmdBuf()->clearAttachments(fGpu, 1, &attachment, 1, &clearRect);
-    cbInfo.fIsEmpty = false;
-
-    // Update command buffer bounds
-    if (!clip.scissorEnabled()) {
-        cbInfo.fBounds.join(fRenderTarget->getBoundsRect());
-    } else {
-        cbInfo.fBounds.join(SkRect::Make(clip.scissorRect()));
-    }
+    this->currentCommandBuffer()->clearAttachments(fGpu, 1, &attachment, 1, &clearRect);
+    fCurrentCBIsEmpty = false;
     return;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void GrVkOpsRenderPass::addAdditionalRenderPass() {
+void GrVkOpsRenderPass::addAdditionalRenderPass(bool mustUseSecondaryCommandBuffer) {
+    SkASSERT(!this->wrapsSecondaryCommandBuffer());
     GrVkRenderTarget* vkRT = static_cast<GrVkRenderTarget*>(fRenderTarget);
-
-    fCommandBufferInfos[fCurrentCmdInfo].currentCmdBuf()->end(fGpu);
-
-    CommandBufferInfo& cbInfo = fCommandBufferInfos.push_back();
-    fCurrentCmdInfo++;
 
     GrVkRenderPass::LoadStoreOps vkColorOps(VK_ATTACHMENT_LOAD_OP_LOAD,
                                             VK_ATTACHMENT_STORE_OP_STORE);
@@ -442,34 +387,62 @@ void GrVkOpsRenderPass::addAdditionalRenderPass() {
 
     const GrVkResourceProvider::CompatibleRPHandle& rpHandle =
             vkRT->compatibleRenderPassHandle();
+    SkASSERT(fCurrentRenderPass);
+    fCurrentRenderPass->unref(fGpu);
     if (rpHandle.isValid()) {
-        cbInfo.fRenderPass = fGpu->resourceProvider().findRenderPass(rpHandle,
+        fCurrentRenderPass = fGpu->resourceProvider().findRenderPass(rpHandle,
                                                                      vkColorOps,
                                                                      vkStencilOps);
     } else {
-        cbInfo.fRenderPass = fGpu->resourceProvider().findRenderPass(*vkRT,
+        fCurrentRenderPass = fGpu->resourceProvider().findRenderPass(vkRT,
                                                                      vkColorOps,
                                                                      vkStencilOps);
     }
-    cbInfo.fLoadStoreState = LoadStoreState::kLoadAndStore;
-
-    cbInfo.fCommandBuffer = fGpu->cmdPool()->findOrCreateSecondaryCommandBuffer(fGpu);
-    // It shouldn't matter what we set the clear color to here since we will assume loading of the
-    // attachment.
-    memset(&cbInfo.fColorClearValue, 0, sizeof(VkClearValue));
-    cbInfo.fBounds.setEmpty();
-
-    cbInfo.currentCmdBuf()->begin(fGpu, vkRT->framebuffer(), cbInfo.fRenderPass);
-}
-
-void GrVkOpsRenderPass::inlineUpload(GrOpFlushState* state,
-                                          GrDeferredTextureUploadFn& upload) {
-    if (!fCommandBufferInfos[fCurrentCmdInfo].fIsEmpty) {
-        this->addAdditionalRenderPass();
+    if (!fCurrentRenderPass) {
+        return;
     }
 
-    fPreCommandBufferTasks.emplace<InlineUpload>(state, upload);
-    ++fCommandBufferInfos[fCurrentCmdInfo].fNumPreCmds;
+    VkClearValue vkClearColor;
+    memset(&vkClearColor, 0, sizeof(VkClearValue));
+
+    if (!fGpu->vkCaps().preferPrimaryOverSecondaryCommandBuffers() ||
+        mustUseSecondaryCommandBuffer) {
+        SkASSERT(fGpu->cmdPool());
+        fCurrentSecondaryCommandBuffer = fGpu->cmdPool()->findOrCreateSecondaryCommandBuffer(fGpu);
+        if (!fCurrentSecondaryCommandBuffer) {
+            fCurrentRenderPass = nullptr;
+            return;
+        }
+        fCurrentSecondaryCommandBuffer->begin(fGpu, vkRT->getFramebuffer(), fCurrentRenderPass);
+    }
+
+    // We use the same fBounds as the whole GrVkOpsRenderPass since we have no way of tracking the
+    // bounds in GrOpsTask for parts before and after inline uploads separately.
+    if (!fGpu->beginRenderPass(fCurrentRenderPass, &vkClearColor, vkRT, fOrigin, fBounds,
+                               SkToBool(fCurrentSecondaryCommandBuffer))) {
+        if (fCurrentSecondaryCommandBuffer) {
+            fCurrentSecondaryCommandBuffer->end(fGpu);
+        }
+        fCurrentRenderPass = nullptr;
+    }
+}
+
+void GrVkOpsRenderPass::inlineUpload(GrOpFlushState* state, GrDeferredTextureUploadFn& upload) {
+    if (!fCurrentRenderPass) {
+        SkASSERT(fGpu->isDeviceLost());
+        return;
+    }
+    if (fCurrentSecondaryCommandBuffer) {
+        fCurrentSecondaryCommandBuffer->end(fGpu);
+        fGpu->submitSecondaryCommandBuffer(std::move(fCurrentSecondaryCommandBuffer));
+    }
+    fGpu->endRenderPass(fRenderTarget, fOrigin, fBounds);
+
+    // We pass in true here to signal that after the upload we need to set the upload textures
+    // layout back to VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL.
+    state->doUpload(upload, true);
+
+    this->addAdditionalRenderPass(false);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -477,7 +450,7 @@ void GrVkOpsRenderPass::inlineUpload(GrOpFlushState* state,
 void GrVkOpsRenderPass::bindGeometry(const GrGpuBuffer* indexBuffer,
                                           const GrGpuBuffer* vertexBuffer,
                                           const GrGpuBuffer* instanceBuffer) {
-    GrVkSecondaryCommandBuffer* currCmdBuf = fCommandBufferInfos[fCurrentCmdInfo].currentCmdBuf();
+    GrVkCommandBuffer* currCmdBuf = this->currentCommandBuffer();
     // There is no need to put any memory barriers to make sure host writes have finished here.
     // When a command buffer is submitted to a queue, there is an implicit memory barrier that
     // occurs for all host writes. Additionally, BufferMemoryBarriers are not allowed inside of
@@ -511,65 +484,58 @@ void GrVkOpsRenderPass::bindGeometry(const GrGpuBuffer* indexBuffer,
 }
 
 GrVkPipelineState* GrVkOpsRenderPass::prepareDrawState(
-        const GrPrimitiveProcessor& primProc,
-        const GrPipeline& pipeline,
-        const GrPipeline::FixedDynamicState* fixedDynamicState,
-        const GrPipeline::DynamicStateArrays* dynamicStateArrays,
-        GrPrimitiveType primitiveType) {
-    CommandBufferInfo& cbInfo = fCommandBufferInfos[fCurrentCmdInfo];
-    SkASSERT(cbInfo.fRenderPass);
+        const GrProgramInfo& programInfo,
+        const SkIRect& renderPassScissorRect) {
+    GrVkCommandBuffer* currentCB = this->currentCommandBuffer();
+    SkASSERT(fCurrentRenderPass);
 
-    VkRenderPass compatibleRenderPass = cbInfo.fRenderPass->vkRenderPass();
-
-    const GrTextureProxy* const* primProcProxies = nullptr;
-    if (dynamicStateArrays && dynamicStateArrays->fPrimitiveProcessorTextures) {
-        primProcProxies = dynamicStateArrays->fPrimitiveProcessorTextures;
-    } else if (fixedDynamicState) {
-        primProcProxies = fixedDynamicState->fPrimitiveProcessorTextures;
-    }
-
-    SkASSERT(SkToBool(primProcProxies) == SkToBool(primProc.numTextureSamplers()));
+    VkRenderPass compatibleRenderPass = fCurrentRenderPass->vkRenderPass();
 
     GrVkPipelineState* pipelineState =
-        fGpu->resourceProvider().findOrCreateCompatiblePipelineState(fRenderTarget, fOrigin,
-                                                                     pipeline,
-                                                                     primProc,
-                                                                     primProcProxies,
-                                                                     primitiveType,
+        fGpu->resourceProvider().findOrCreateCompatiblePipelineState(fRenderTarget,
+                                                                     programInfo,
                                                                      compatibleRenderPass);
     if (!pipelineState) {
         return pipelineState;
     }
 
-    fLastPipelineState = pipelineState;
+    pipelineState->bindPipeline(fGpu, currentCB);
 
-    pipelineState->bindPipeline(fGpu, cbInfo.currentCmdBuf());
+    // Both the 'programInfo' and this renderPass have an origin. Since they come from the
+    // same place (i.e., the target renderTargetProxy) they had best agree.
+    SkASSERT(programInfo.origin() == fOrigin);
 
-    pipelineState->setAndBindUniforms(fGpu, fRenderTarget, fOrigin,
-                                      primProc, pipeline, cbInfo.currentCmdBuf());
+    if (!pipelineState->setAndBindUniforms(fGpu, fRenderTarget, programInfo, currentCB)) {
+        return nullptr;
+    }
 
     // Check whether we need to bind textures between each GrMesh. If not we can bind them all now.
-    bool setTextures = !(dynamicStateArrays && dynamicStateArrays->fPrimitiveProcessorTextures);
-    if (setTextures) {
-        pipelineState->setAndBindTextures(fGpu, primProc, pipeline, primProcProxies,
-                                          cbInfo.currentCmdBuf());
+    if (!programInfo.hasDynamicPrimProcTextures()) {
+        auto proxies = programInfo.hasFixedPrimProcTextures() ? programInfo.fixedPrimProcTextures()
+                                                              : nullptr;
+        if (!pipelineState->setAndBindTextures(fGpu, programInfo.primProc(), programInfo.pipeline(),
+                                               proxies, currentCB)) {
+            return nullptr;
+        }
     }
 
-    if (!pipeline.isScissorEnabled()) {
-        GrVkPipeline::SetDynamicScissorRectState(fGpu, cbInfo.currentCmdBuf(),
-                                                 fRenderTarget, fOrigin,
-                                                 SkIRect::MakeWH(fRenderTarget->width(),
-                                                                 fRenderTarget->height()));
-    } else if (!dynamicStateArrays || !dynamicStateArrays->fScissorRects) {
-        SkASSERT(fixedDynamicState);
-        GrVkPipeline::SetDynamicScissorRectState(fGpu, cbInfo.currentCmdBuf(), fRenderTarget,
-                                                 fOrigin,
-                                                 fixedDynamicState->fScissorRect);
+    if (!programInfo.pipeline().isScissorEnabled()) {
+        GrVkPipeline::SetDynamicScissorRectState(fGpu, currentCB, fRenderTarget, fOrigin,
+                                                 renderPassScissorRect);
+    } else if (!programInfo.hasDynamicScissors()) {
+        SkASSERT(programInfo.hasFixedScissor());
+
+        SkIRect combinedScissorRect;
+        if (!combinedScissorRect.intersect(renderPassScissorRect, programInfo.fixedScissor())) {
+            combinedScissorRect = SkIRect::MakeEmpty();
+        }
+        GrVkPipeline::SetDynamicScissorRectState(fGpu, currentCB, fRenderTarget, fOrigin,
+                                                 combinedScissorRect);
     }
-    GrVkPipeline::SetDynamicViewportState(fGpu, cbInfo.currentCmdBuf(), fRenderTarget);
-    GrVkPipeline::SetDynamicBlendConstantState(fGpu, cbInfo.currentCmdBuf(),
-                                               pipeline.outputSwizzle(),
-                                               pipeline.getXferProcessor());
+    GrVkPipeline::SetDynamicViewportState(fGpu, currentCB, fRenderTarget);
+    GrVkPipeline::SetDynamicBlendConstantState(fGpu, currentCB,
+                                               programInfo.pipeline().outputSwizzle(),
+                                               programInfo.pipeline().getXferProcessor());
 
     return pipelineState;
 }
@@ -583,85 +549,94 @@ void check_sampled_texture(GrTexture* tex, GrRenderTarget* rt, GrVkGpu* gpu) {
 #endif
 
 
-void GrVkOpsRenderPass::onDraw(const GrPrimitiveProcessor& primProc,
-                                    const GrPipeline& pipeline,
-                                    const GrPipeline::FixedDynamicState* fixedDynamicState,
-                                    const GrPipeline::DynamicStateArrays* dynamicStateArrays,
-                                    const GrMesh meshes[],
-                                    int meshCount,
-                                    const SkRect& bounds) {
-    if (!meshCount) {
+void GrVkOpsRenderPass::onDraw(const GrProgramInfo& programInfo,
+                               const GrMesh meshes[], int meshCount,
+                               const SkRect& bounds) {
+    if (!fCurrentRenderPass) {
+        SkASSERT(fGpu->isDeviceLost());
         return;
     }
 
-    CommandBufferInfo& cbInfo = fCommandBufferInfos[fCurrentCmdInfo];
+    SkASSERT(meshCount); // guaranteed by GrOpsRenderPass::draw
 
 #ifdef SK_DEBUG
-    if (dynamicStateArrays && dynamicStateArrays->fPrimitiveProcessorTextures) {
-        for (int m = 0, i = 0; m < meshCount; ++m) {
-            for (int s = 0; s < primProc.numTextureSamplers(); ++s, ++i) {
-                auto texture = dynamicStateArrays->fPrimitiveProcessorTextures[i]->peekTexture();
+    if (programInfo.hasDynamicPrimProcTextures()) {
+        for (int m = 0; m < meshCount; ++m) {
+            auto dynamicPrimProcTextures = programInfo.dynamicPrimProcTextures(m);
+
+            for (int s = 0; s < programInfo.primProc().numTextureSamplers(); ++s) {
+                auto texture = dynamicPrimProcTextures[s]->peekTexture();
                 check_sampled_texture(texture, fRenderTarget, fGpu);
             }
         }
-    } else {
-        for (int i = 0; i < primProc.numTextureSamplers(); ++i) {
-            auto texture = fixedDynamicState->fPrimitiveProcessorTextures[i]->peekTexture();
+    } else if (programInfo.hasFixedPrimProcTextures()) {
+        auto fixedPrimProcTextures = programInfo.fixedPrimProcTextures();
+
+        for (int s = 0; s < programInfo.primProc().numTextureSamplers(); ++s) {
+            auto texture = fixedPrimProcTextures[s]->peekTexture();
             check_sampled_texture(texture, fRenderTarget, fGpu);
         }
     }
-    GrFragmentProcessor::Iter iter(pipeline);
-    while (const GrFragmentProcessor* fp = iter.next()) {
-        for (int i = 0; i < fp->numTextureSamplers(); ++i) {
-            const GrFragmentProcessor::TextureSampler& sampler = fp->textureSampler(i);
-            check_sampled_texture(sampler.peekTexture(), fRenderTarget, fGpu);
-        }
+
+    GrFragmentProcessor::PipelineTextureSamplerRange textureSamplerRange(programInfo.pipeline());
+    for (auto [sampler, fp] : textureSamplerRange) {
+        check_sampled_texture(sampler.peekTexture(), fRenderTarget, fGpu);
     }
-    if (GrTexture* dstTexture = pipeline.peekDstTexture()) {
+    if (GrTexture* dstTexture = programInfo.pipeline().peekDstTexture()) {
         check_sampled_texture(dstTexture, fRenderTarget, fGpu);
     }
+
+    // Both the 'programInfo' and this renderPass have an origin. Since they come from the
+    // same place (i.e., the target renderTargetProxy) they had best agree.
+    SkASSERT(programInfo.origin() == fOrigin);
 #endif
 
-    GrPrimitiveType primitiveType = meshes[0].primitiveType();
-    GrVkPipelineState* pipelineState = this->prepareDrawState(primProc, pipeline, fixedDynamicState,
-                                                              dynamicStateArrays, primitiveType);
+    SkRect scissorRect = SkRect::Make(fBounds);
+    SkIRect renderPassScissorRect = SkIRect::MakeEmpty();
+    if (scissorRect.intersect(bounds)) {
+        scissorRect.roundOut(&renderPassScissorRect);
+    }
+
+    GrVkPipelineState* pipelineState = this->prepareDrawState(programInfo, renderPassScissorRect);
     if (!pipelineState) {
         return;
     }
 
-    bool dynamicScissor =
-            pipeline.isScissorEnabled() && dynamicStateArrays && dynamicStateArrays->fScissorRects;
-    bool dynamicTextures = dynamicStateArrays && dynamicStateArrays->fPrimitiveProcessorTextures;
+    bool hasDynamicScissors = programInfo.hasDynamicScissors();
+    bool hasDynamicTextures = programInfo.hasDynamicPrimProcTextures();
 
     for (int i = 0; i < meshCount; ++i) {
         const GrMesh& mesh = meshes[i];
-        if (mesh.primitiveType() != primitiveType) {
-            SkDEBUGCODE(pipelineState = nullptr);
-            primitiveType = mesh.primitiveType();
-            pipelineState = this->prepareDrawState(primProc, pipeline, fixedDynamicState,
-                                                   dynamicStateArrays, primitiveType);
-            if (!pipelineState) {
-                return;
-            }
-        }
 
-        if (dynamicScissor) {
-            GrVkPipeline::SetDynamicScissorRectState(fGpu, cbInfo.currentCmdBuf(), fRenderTarget,
-                                                     fOrigin,
-                                                     dynamicStateArrays->fScissorRects[i]);
+        SkASSERT(programInfo.primitiveType() == mesh.primitiveType());
+
+        if (hasDynamicScissors) {
+            SkIRect combinedScissorRect;
+            if (!combinedScissorRect.intersect(renderPassScissorRect,
+                                               programInfo.dynamicScissor(i))) {
+                combinedScissorRect = SkIRect::MakeEmpty();
+            }
+            GrVkPipeline::SetDynamicScissorRectState(fGpu, this->currentCommandBuffer(),
+                                                     fRenderTarget, fOrigin,
+                                                     combinedScissorRect);
         }
-        if (dynamicTextures) {
-            GrTextureProxy* const* meshProxies = dynamicStateArrays->fPrimitiveProcessorTextures +
-                                                 primProc.numTextureSamplers() * i;
-            pipelineState->setAndBindTextures(fGpu, primProc, pipeline, meshProxies,
-                                              cbInfo.currentCmdBuf());
+        if (hasDynamicTextures) {
+            auto meshProxies = programInfo.dynamicPrimProcTextures(i);
+            if (!pipelineState->setAndBindTextures(fGpu, programInfo.primProc(),
+                                                   programInfo.pipeline(), meshProxies,
+                                                   this->currentCommandBuffer())) {
+                if (fGpu->isDeviceLost()) {
+                    return;
+                } else {
+                    continue;
+                }
+            }
         }
         SkASSERT(pipelineState);
         mesh.sendToGpu(this);
     }
 
-    cbInfo.fBounds.join(bounds);
-    cbInfo.fIsEmpty = false;
+    fCurrentCBIsEmpty = false;
 }
 
 void GrVkOpsRenderPass::sendInstancedMeshToGpu(GrPrimitiveType,
@@ -671,13 +646,12 @@ void GrVkOpsRenderPass::sendInstancedMeshToGpu(GrPrimitiveType,
                                                const GrBuffer* instanceBuffer,
                                                int instanceCount,
                                                int baseInstance) {
-    CommandBufferInfo& cbInfo = fCommandBufferInfos[fCurrentCmdInfo];
     SkASSERT(!vertexBuffer || !vertexBuffer->isCpuBuffer());
     SkASSERT(!instanceBuffer || !instanceBuffer->isCpuBuffer());
     auto gpuVertexBuffer = static_cast<const GrGpuBuffer*>(vertexBuffer);
     auto gpuInstanceBuffer = static_cast<const GrGpuBuffer*>(instanceBuffer);
     this->bindGeometry(nullptr, gpuVertexBuffer, gpuInstanceBuffer);
-    cbInfo.currentCmdBuf()->draw(fGpu, vertexCount, instanceCount, baseVertex, baseInstance);
+    this->currentCommandBuffer()->draw(fGpu, vertexCount, instanceCount, baseVertex, baseInstance);
     fGpu->stats()->incNumDraws();
 }
 
@@ -692,7 +666,6 @@ void GrVkOpsRenderPass::sendIndexedInstancedMeshToGpu(GrPrimitiveType,
                                                       int baseInstance,
                                                       GrPrimitiveRestart restart) {
     SkASSERT(restart == GrPrimitiveRestart::kNo);
-    CommandBufferInfo& cbInfo = fCommandBufferInfos[fCurrentCmdInfo];
     SkASSERT(!vertexBuffer || !vertexBuffer->isCpuBuffer());
     SkASSERT(!instanceBuffer || !instanceBuffer->isCpuBuffer());
     SkASSERT(!indexBuffer->isCpuBuffer());
@@ -700,27 +673,41 @@ void GrVkOpsRenderPass::sendIndexedInstancedMeshToGpu(GrPrimitiveType,
     auto gpuVertexBuffer = static_cast<const GrGpuBuffer*>(vertexBuffer);
     auto gpuInstanceBuffer = static_cast<const GrGpuBuffer*>(instanceBuffer);
     this->bindGeometry(gpuIndexxBuffer, gpuVertexBuffer, gpuInstanceBuffer);
-    cbInfo.currentCmdBuf()->drawIndexed(fGpu, indexCount, instanceCount,
-                                        baseIndex, baseVertex, baseInstance);
+    this->currentCommandBuffer()->drawIndexed(fGpu, indexCount, instanceCount,
+                                              baseIndex, baseVertex, baseInstance);
     fGpu->stats()->incNumDraws();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 void GrVkOpsRenderPass::executeDrawable(std::unique_ptr<SkDrawable::GpuDrawHandler> drawable) {
+    if (!fCurrentRenderPass) {
+        SkASSERT(fGpu->isDeviceLost());
+        return;
+    }
     GrVkRenderTarget* target = static_cast<GrVkRenderTarget*>(fRenderTarget);
 
     GrVkImage* targetImage = target->msaaImage() ? target->msaaImage() : target;
 
-    CommandBufferInfo& cbInfo = fCommandBufferInfos[fCurrentCmdInfo];
     VkRect2D bounds;
     bounds.offset = { 0, 0 };
     bounds.extent = { 0, 0 };
 
+    if (!fCurrentSecondaryCommandBuffer) {
+        fGpu->endRenderPass(fRenderTarget, fOrigin, fBounds);
+        this->addAdditionalRenderPass(true);
+        // We may have failed to start a new render pass
+        if (!fCurrentRenderPass) {
+            SkASSERT(fGpu->isDeviceLost());
+            return;
+        }
+    }
+    SkASSERT(fCurrentSecondaryCommandBuffer);
+
     GrVkDrawableInfo vkInfo;
-    vkInfo.fSecondaryCommandBuffer = cbInfo.currentCmdBuf()->vkCommandBuffer();
-    vkInfo.fCompatibleRenderPass = cbInfo.fRenderPass->vkRenderPass();
-    SkAssertResult(cbInfo.fRenderPass->colorAttachmentIndex(&vkInfo.fColorAttachmentIndex));
+    vkInfo.fSecondaryCommandBuffer = fCurrentSecondaryCommandBuffer->vkCommandBuffer();
+    vkInfo.fCompatibleRenderPass = fCurrentRenderPass->vkRenderPass();
+    SkAssertResult(fCurrentRenderPass->colorAttachmentIndex(&vkInfo.fColorAttachmentIndex));
     vkInfo.fFormat = targetImage->imageFormat();
     vkInfo.fDrawBounds = &bounds;
 #ifdef SK_BUILD_FOR_ANDROID_FRAMEWORK
@@ -732,18 +719,11 @@ void GrVkOpsRenderPass::executeDrawable(std::unique_ptr<SkDrawable::GpuDrawHandl
     GrBackendDrawableInfo info(vkInfo);
 
     // After we draw into the command buffer via the drawable, cached state we have may be invalid.
-    cbInfo.currentCmdBuf()->invalidateState();
+    this->currentCommandBuffer()->invalidateState();
     // Also assume that the drawable produced output.
-    cbInfo.fIsEmpty = false;
+    fCurrentCBIsEmpty = false;
 
     drawable->draw(info);
     fGpu->addDrawable(std::move(drawable));
-
-    if (bounds.extent.width == 0 || bounds.extent.height == 0) {
-        cbInfo.fBounds.join(target->getBoundsRect());
-    } else {
-        cbInfo.fBounds.join(SkRect::MakeXYWH(bounds.offset.x, bounds.offset.y,
-                                             bounds.extent.width, bounds.extent.height));
-    }
 }
 

@@ -37,19 +37,24 @@ perfetto_host_executable("trace_to_text_lite") {
 }
 
 source_set("utils") {
-  public_deps = [
+  deps = [
+    ":symbolizer",
     "../../gn:default_deps",
-    "../../include/perfetto/base",
+    "../../include/perfetto/profiling:deobfuscator",
+    "../../include/perfetto/protozero",
+    "../../include/perfetto/trace_processor",
+    "../../protos/perfetto/trace:zero",
+    "../../protos/perfetto/trace/interned_data:zero",
+    "../../protos/perfetto/trace/profiling:zero",
+    "../../src/profiling:deobfuscator",
+  ]
+  public_deps = [
+    "../../gn:zlib",
     "../../include/perfetto/ext/base",
-    "../../include/perfetto/ext/traced:sys_stats_counters",
-    "../../protos/perfetto/trace:lite",
-    "../../protos/perfetto/trace/ftrace:lite",
-    "../../protos/perfetto/trace/interned_data:lite",
-    "../../protos/perfetto/trace/profiling:lite",
+    "../../include/perfetto/profiling:deobfuscator",
+    "../../include/perfetto/profiling:symbolizer",
   ]
   sources = [
-    "profile_visitor.cc",
-    "profile_visitor.h",
     "utils.cc",
     "utils.h",
   ]
@@ -57,16 +62,14 @@ source_set("utils") {
 
 source_set("local_symbolizer") {
   public_deps = [
+    "../../include/perfetto/ext/base",
+    "../../include/perfetto/profiling:symbolizer",
+  ]
+  deps = [
     ":symbolizer",
     ":utils",
     "../../gn:default_deps",
-    "../../include/perfetto/base",
-    "../../include/perfetto/ext/base",
     "../../include/perfetto/protozero",
-    "../../protos/perfetto/trace:lite",
-    "../../protos/perfetto/trace:zero",
-    "../../protos/perfetto/trace/interned_data:lite",
-    "../../protos/perfetto/trace/profiling:lite",
   ]
   sources = [
     "local_symbolizer.cc",
@@ -75,22 +78,12 @@ source_set("local_symbolizer") {
 }
 
 source_set("symbolizer") {
-  public_deps = [
-    ":utils",
+  deps = [
     "../../gn:default_deps",
-    "../../include/perfetto/base",
-    "../../include/perfetto/ext/base",
-    "../../include/perfetto/protozero",
-    "../../protos/perfetto/trace:lite",
-    "../../protos/perfetto/trace:zero",
-    "../../protos/perfetto/trace/interned_data:lite",
-    "../../protos/perfetto/trace/profiling:lite",
+    "../../include/perfetto/profiling:symbolizer",
   ]
   sources = [
     "symbolizer.cc",
-    "symbolizer.h",
-    "trace_symbol_table.cc",
-    "trace_symbol_table.h",
   ]
 }
 
@@ -100,14 +93,15 @@ source_set("pprofbuilder") {
     ":utils",
     "../../gn:default_deps",
     "../../include/perfetto/base",
-    "../../protos/perfetto/trace:lite",
-    "../../protos/perfetto/trace/profiling:lite",
-    "../../protos/third_party/pprof:lite",
-    "../../src/base",
+    "../../include/perfetto/profiling:symbolizer",
+    "../../include/perfetto/protozero",
+    "../../include/perfetto/trace_processor",
+    "../../protos/perfetto/trace:zero",
+    "../../protos/perfetto/trace/profiling:zero",
+    "../../protos/third_party/pprof:zero",
   ]
   sources = [
     "pprof_builder.cc",
-    "pprof_builder.h",
   ]
 }
 
@@ -123,39 +117,31 @@ static_library("libpprofbuilder") {
 # executable) and by the "lite" version (the WASM module for the UI).
 source_set("common") {
   deps = [
+    ":local_symbolizer",
     ":pprofbuilder",
-    ":symbolizer",
     ":utils",
-  ]
-  public_deps = [
     "../../gn:default_deps",
     "../../include/perfetto/base",
     "../../include/perfetto/ext/traced:sys_stats_counters",
+    "../../include/perfetto/profiling:deobfuscator",
     "../../include/perfetto/protozero",
-    "../../protos/perfetto/trace:lite",
     "../../protos/perfetto/trace:zero",
-    "../../protos/perfetto/trace/ftrace:lite",
-    "../../protos/perfetto/trace/interned_data:lite",
-    "../../protos/perfetto/trace/profiling:lite",
-    "../../src/base",
     "../../src/trace_processor:lib",
   ]
   sources = [
+    "deobfuscate_profile.cc",
+    "deobfuscate_profile.h",
     "main.cc",
     "symbolize_profile.cc",
     "symbolize_profile.h",
+    "trace_to_json.cc",
+    "trace_to_json.h",
     "trace_to_profile.cc",
     "trace_to_profile.h",
     "trace_to_systrace.cc",
     "trace_to_systrace.h",
     "trace_to_text.h",
   ]
-  defines = []
-  if (is_linux || is_android) {
-    deps += [ ":local_symbolizer" ]
-  } else {
-    defines += [ "PERFETTO_NOLOCALSYMBOLIZE" ]
-  }
   if (enable_perfetto_version_gen) {
     deps += [ "//gn/standalone:gen_git_revision" ]
   }
@@ -166,13 +152,14 @@ source_set("lite") {
   deps = [
     ":common",
     "../../gn:default_deps",
+    "../../include/perfetto/base",
   ]
   sources = [
     "lite_fallbacks.cc",
   ]
 }
 
-# Full traget for the host. Depends on libprotobuf-full.
+# Full target for the host. Depends on libprotobuf-full.
 source_set("full") {
   testonly = true
   deps = [
@@ -180,6 +167,8 @@ source_set("full") {
     ":utils",
     "../../gn:default_deps",
     "../../gn:protobuf_full",
+    "../../gn:zlib",
+    "../../protos/perfetto/trace:zero",
   ]
   sources = [
     "proto_full_utils.cc",

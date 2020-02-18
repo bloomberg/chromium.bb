@@ -6,12 +6,14 @@ package org.chromium.chrome.browser.autofill_assistant.user_data;
 
 import android.content.Context;
 import android.content.res.Resources;
-import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import androidx.annotation.DrawableRes;
+import androidx.annotation.Nullable;
 
 import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
@@ -30,6 +32,7 @@ public class AssistantPaymentMethodSection
     private boolean mIgnorePaymentMethodsChangeNotifications;
     private boolean mRequiresBillingPostalCode;
     private String mBillingPostalCodeMissingText;
+    private String mCreditCardExpiredText;
 
     AssistantPaymentMethodSection(Context context, ViewGroup parent) {
         super(context, parent, R.layout.autofill_assistant_payment_method_summary,
@@ -37,7 +40,7 @@ public class AssistantPaymentMethodSection
                 context.getResources().getDimensionPixelSize(
                         R.dimen.autofill_assistant_payment_request_payment_method_title_padding),
                 context.getString(R.string.payments_add_card),
-                context.getString(R.string.payments_add_card), /*canEditItems=*/true);
+                context.getString(R.string.payments_add_card));
         setTitle(context.getString(R.string.payments_method_of_payment_label));
     }
 
@@ -114,9 +117,24 @@ public class AssistantPaymentMethodSection
                 method.getCard().getFormattedExpirationDate(summaryView.getContext()));
         hideIfEmpty(cardExpirationView);
 
-        TextView methodIncompleteView = summaryView.findViewById(R.id.incomplete_error);
-        setIncompleteErrorMessage(methodIncompleteView, method);
-        hideIfEmpty(methodIncompleteView);
+        TextView errorMessageView = summaryView.findViewById(R.id.incomplete_error);
+        setErrorMessage(errorMessageView, method);
+        hideIfEmpty(errorMessageView);
+    }
+
+    @Override
+    protected boolean canEditOption(AutofillPaymentInstrument method) {
+        return true;
+    }
+
+    @Override
+    protected @DrawableRes int getEditButtonDrawable(AutofillPaymentInstrument method) {
+        return R.drawable.ic_edit_24dp;
+    }
+
+    @Override
+    protected String getEditButtonContentDescription(AutofillPaymentInstrument method) {
+        return mContext.getString(R.string.autofill_edit_credit_card);
     }
 
     void onProfilesChanged(List<PersonalDataManager.AutofillProfile> profiles) {
@@ -156,6 +174,10 @@ public class AssistantPaymentMethodSection
         mBillingPostalCodeMissingText = text;
     }
 
+    void setCreditCardExpiredText(String text) {
+        mCreditCardExpiredText = text;
+    }
+
     private void addAutocompleteInformationToEditor(PersonalDataManager.AutofillProfile profile) {
         // The check for non-null label is necessary to prevent crash in editor when opening.
         if (mEditor == null || profile.getLabel() == null) {
@@ -164,41 +186,26 @@ public class AssistantPaymentMethodSection
         mEditor.updateBillingAddressIfComplete(new AutofillAddress(mContext, profile));
     }
 
-    private boolean hasAllRequiredFields(AutofillPaymentInstrument method) {
+    private void setErrorMessage(TextView errorMessageView, AutofillPaymentInstrument method) {
         if (!method.isComplete()) {
-            return false;
-        }
-
-        if (!mRequiresBillingPostalCode) {
-            return true;
-        }
-
-        // TODO: Inject the PersonalDataManager instance.
-        PersonalDataManager personalDataManager = PersonalDataManager.getInstance();
-        String billingAddressId = method.getCard().getBillingAddressId();
-        PersonalDataManager.AutofillProfile profile =
-                personalDataManager.getProfile(billingAddressId);
-        if (profile == null || TextUtils.isEmpty(profile.getPostalCode())) {
-            return false;
-        }
-
-        return true;
-    }
-
-    private void setIncompleteErrorMessage(
-            TextView methodIncompleteView, AutofillPaymentInstrument method) {
-        if (hasAllRequiredFields(method)) {
-            methodIncompleteView.setText("");
+            errorMessageView.setText(R.string.autofill_assistant_payment_information_missing);
             return;
         }
 
-        // we have to show an error message either because the payment method is incomplete (missing
-        // information), or because a postcode is required and the billing address does not have
-        // one.
-        if (method.isComplete()) {
-            methodIncompleteView.setText(mBillingPostalCodeMissingText);
-        } else {
-            methodIncompleteView.setText(R.string.autofill_assistant_payment_information_missing);
+        if (mRequiresBillingPostalCode
+                && (method.getBillingProfile() == null
+                        || TextUtils.isEmpty(method.getBillingProfile().getPostalCode()))) {
+            errorMessageView.setText(mBillingPostalCodeMissingText);
+            return;
         }
+
+        if ((method.getMissingFields()
+                    & AutofillPaymentInstrument.CompletionStatus.CREDIT_CARD_EXPIRED)
+                == 1) {
+            errorMessageView.setText(mCreditCardExpiredText);
+            return;
+        }
+
+        errorMessageView.setText("");
     }
 }

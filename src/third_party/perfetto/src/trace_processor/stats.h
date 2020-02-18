@@ -50,6 +50,7 @@ namespace stats {
   F(ftrace_cpu_read_events_end,               kIndexed, kInfo,     kTrace),    \
   F(fuchsia_non_numeric_counters,             kSingle,  kError,    kAnalysis), \
   F(fuchsia_timestamp_overflow,               kSingle,  kError,    kAnalysis), \
+  F(fuchsia_invalid_event,                    kSingle,  kError,    kAnalysis), \
   F(gpu_counters_invalid_spec,                kSingle,  kError,    kAnalysis), \
   F(gpu_counters_missing_spec,                kSingle,  kError,    kAnalysis), \
   F(graphics_frame_event_parser_errors,       kSingle,  kInfo,     kAnalysis), \
@@ -102,17 +103,29 @@ namespace stats {
   F(traced_tracing_sessions,                  kSingle,  kInfo,     kTrace),    \
   F(track_event_parser_errors,                kSingle,  kInfo,     kAnalysis), \
   F(track_event_tokenizer_errors,             kSingle,  kInfo,     kAnalysis), \
-  F(track_event_tokenizer_skipped_packets,    kSingle,  kInfo,     kAnalysis), \
+  F(tokenizer_skipped_packets,                kSingle,  kInfo,     kAnalysis), \
   F(vmstat_unknown_keys,                      kSingle,  kError,    kAnalysis), \
+  F(vulkan_allocations_invalid_string_id,     kSingle,  kError,    kTrace),    \
   F(clock_sync_failure,                       kSingle,  kError,    kAnalysis), \
   F(process_tracker_errors,                   kSingle,  kError,    kAnalysis), \
   F(json_tokenizer_failure,                   kSingle,  kError,    kTrace),    \
+  F(heap_graph_invalid_string_id,             kIndexed, kError,    kTrace),    \
+  F(heap_graph_non_finalized_graph,           kSingle,  kError,    kTrace),    \
+  F(heap_graph_malformed_packet,              kIndexed, kError,    kTrace),    \
+  F(heap_graph_missing_packet,                kIndexed, kDataLoss, kTrace),    \
   F(heapprofd_buffer_corrupted,               kIndexed, kError,    kTrace),    \
   F(heapprofd_buffer_overran,                 kIndexed, kDataLoss, kTrace),    \
+  F(heapprofd_missing_packet,                 kSingle,  kError,    kTrace),    \
   F(heapprofd_rejected_concurrent,            kIndexed, kError,    kTrace),    \
   F(metatrace_overruns,                       kSingle,  kError,    kTrace),    \
   F(packages_list_has_parse_errors,           kSingle,  kError,    kTrace),    \
-  F(packages_list_has_read_errors,            kSingle,  kError,    kTrace)
+  F(packages_list_has_read_errors,            kSingle,  kError,    kTrace),    \
+  F(compact_sched_has_parse_errors,           kSingle,  kError,    kTrace),    \
+  F(misplaced_end_event,                      kSingle,  kDataLoss, kAnalysis), \
+  F(sched_waking_out_of_order,                kSingle,  kError,    kAnalysis), \
+  F(compact_sched_switch_skipped,             kSingle,  kInfo,     kAnalysis), \
+  F(compact_sched_waking_skipped,             kSingle,  kInfo,     kAnalysis), \
+  F(empty_chrome_metadata,                    kSingle,  kError,    kTrace)
 // clang-format on
 
 enum Type {

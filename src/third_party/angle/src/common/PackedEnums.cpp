@@ -252,7 +252,7 @@ std::ostream &operator<<(std::ostream &os, VertexAttribType value)
     switch (value)
     {
         case VertexAttribType::Byte:
-            os << "GL_UNSIGNED_BYTE";
+            os << "GL_BYTE";
             break;
         case VertexAttribType::Fixed:
             os << "GL_FIXED";
@@ -269,6 +269,9 @@ std::ostream &operator<<(std::ostream &os, VertexAttribType value)
         case VertexAttribType::Int2101010:
             os << "GL_INT_10_10_10_2";
             break;
+        case VertexAttribType::Int1010102:
+            os << "GL_INT_10_10_10_2_OES";
+            break;
         case VertexAttribType::Short:
             os << "GL_SHORT";
             break;
@@ -280,6 +283,9 @@ std::ostream &operator<<(std::ostream &os, VertexAttribType value)
             break;
         case VertexAttribType::UnsignedInt2101010:
             os << "GL_UNSIGNED_INT_10_10_10_2";
+            break;
+        case VertexAttribType::UnsignedInt1010102:
+            os << "GL_UNSIGNED_INT_10_10_10_2_OES";
             break;
         case VertexAttribType::UnsignedShort:
             os << "GL_UNSIGNED_SHORT";

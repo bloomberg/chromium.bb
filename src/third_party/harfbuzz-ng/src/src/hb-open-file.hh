@@ -92,9 +92,9 @@ typedef struct OffsetTable
     if (table_count)
     {
       if (start_offset >= tables.len)
-        *table_count = 0;
+	*table_count = 0;
       else
-        *table_count = hb_min (*table_count, tables.len - start_offset);
+	*table_count = hb_min (*table_count, tables.len - start_offset);
 
       const TableRecord *sub_tables = tables.arrayZ + start_offset;
       unsigned int count = *table_count;
@@ -287,7 +287,7 @@ struct ResourceRecord
   { return CastR<OpenTypeFontFace> ((data_base+offset).arrayZ); }
 
   bool sanitize (hb_sanitize_context_t *c,
-			const void *data_base) const
+		 const void *data_base) const
   {
     TRACE_SANITIZE (this);
     return_trace (c->check_struct (this) &&

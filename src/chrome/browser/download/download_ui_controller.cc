@@ -20,7 +20,7 @@
 #include "content/public/browser/web_contents_delegate.h"
 
 #if defined(OS_ANDROID)
-#include "chrome/browser/android/download/download_controller_base.h"
+#include "chrome/browser/download/android/download_controller_base.h"
 #else
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -111,13 +111,9 @@ void DownloadShelfUIControllerDelegate::OnNewDownloadReady(
 DownloadUIController::Delegate::~Delegate() {
 }
 
-DownloadUIController::DownloadUIController(
-    content::DownloadManager* manager,
-    std::unique_ptr<Delegate> delegate,
-    DownloadOfflineContentProvider* provider)
-    : download_notifier_(manager, this),
-      delegate_(std::move(delegate)),
-      download_provider_(provider) {
+DownloadUIController::DownloadUIController(content::DownloadManager* manager,
+                                           std::unique_ptr<Delegate> delegate)
+    : download_notifier_(manager, this), delegate_(std::move(delegate)) {
 #if defined(OS_ANDROID)
   if (!delegate_)
     delegate_.reset(new AndroidUIControllerDelegate());
@@ -159,7 +155,11 @@ void DownloadUIController::OnDownloadCreated(content::DownloadManager* manager,
       UMA_HISTOGRAM_ENUMERATION(
           "Security.SafetyTips.DownloadStarted",
           security_state_tab_helper->GetVisibleSecurityState()
-              ->safety_tip_status);
+              ->safety_tip_info.status);
+      UMA_HISTOGRAM_BOOLEAN(
+          "Security.LegacyTLS.DownloadStarted",
+          security_state::GetLegacyTLSWarningStatus(
+              *security_state_tab_helper->GetVisibleSecurityState()));
     }
   }
 
@@ -207,6 +207,4 @@ void DownloadUIController::OnDownloadUpdated(content::DownloadManager* manager,
 
   DownloadItemModel(item).SetWasUINotified(true);
   delegate_->OnNewDownloadReady(item);
-  if (download_provider_)
-    download_provider_->OnDownloadStarted(item);
 }

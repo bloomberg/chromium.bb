@@ -11,16 +11,16 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 
-import com.google.android.libraries.feed.api.client.stream.Stream;
-import com.google.android.libraries.feed.api.host.action.ActionApi;
+import androidx.annotation.VisibleForTesting;
 
-import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.feed.action.FeedActionHandler;
+import org.chromium.chrome.browser.feed.library.api.client.stream.Stream;
+import org.chromium.chrome.browser.feed.library.api.host.action.ActionApi;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.native_page.ContextMenuManager;
 import org.chromium.chrome.browser.native_page.NativePageHost;
@@ -28,8 +28,10 @@ import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.ntp.NewTabPageLayout;
 import org.chromium.chrome.browser.ntp.NewTabPageUma;
 import org.chromium.chrome.browser.ntp.SnapScrollHelper;
+import org.chromium.chrome.browser.ntp.snippets.SectionHeaderView;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
+import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.ui.base.DeviceFormFactor;
 
@@ -80,14 +82,17 @@ public class FeedNewTabPage
         ActionApi actionApi = new FeedActionHandler(mNewTabPageManager.getNavigationDelegate(),
                 FeedProcessScopeFactory.getFeedConsumptionObserver(),
                 FeedProcessScopeFactory.getFeedOfflineIndicator(),
-                OfflinePageBridge.getForProfile(mTab.getProfile()),
+                OfflinePageBridge.getForProfile(((TabImpl) mTab).getProfile()),
                 FeedProcessScopeFactory.getFeedLoggingBridge());
-        mNewTabPageLayout = (NewTabPageLayout) LayoutInflater.from(mTab.getActivity())
-                                    .inflate(R.layout.new_tab_page_layout, null);
-        mCoordinator = new FeedSurfaceCoordinator(mTab.getActivity(),
+        LayoutInflater inflater = LayoutInflater.from(((TabImpl) mTab).getActivity());
+        mNewTabPageLayout = (NewTabPageLayout) inflater.inflate(R.layout.new_tab_page_layout, null);
+        SectionHeaderView sectionHeaderView = (SectionHeaderView) inflater.inflate(
+                R.layout.new_tab_page_snippets_expandable_header, null, false);
+        mCoordinator = new FeedSurfaceCoordinator(((TabImpl) mTab).getActivity(),
                 host.createHistoryNavigationDelegate(),
                 new SnapScrollHelper(mNewTabPageManager, mNewTabPageLayout), mNewTabPageLayout,
-                actionApi, mTab.getActivity().getNightModeStateProvider().isInNightMode(), this);
+                sectionHeaderView, actionApi,
+                ((TabImpl) mTab).getActivity().getNightModeStateProvider().isInNightMode(), this);
 
         // Record the timestamp at which the new tab page's construction started.
         NewTabPageUma.trackTimeToFirstDraw(mCoordinator.getView(), mConstructedTimeNs);

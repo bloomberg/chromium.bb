@@ -18,6 +18,7 @@
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_types.h"
 #include "ash/public/cpp/keyboard/keyboard_switches.h"
+#include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/test/shell_test_api.h"
 #include "ash/public/cpp/window_properties.h"
@@ -26,7 +27,6 @@
 #include "ash/session/session_controller_impl.h"
 #include "ash/session/test_session_controller_client.h"
 #include "ash/shelf/shelf.h"
-#include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
 #include "ash/shell_observer.h"
@@ -267,7 +267,7 @@ TEST_F(WorkspaceLayoutManagerTest, MaximizeInDisplayToBeRestored) {
   window_state->Maximize();
   EXPECT_EQ(root_windows[1], window->GetRootWindow());
   EXPECT_EQ(
-      gfx::Rect(300, 0, 400, 500 - ShelfConstants::shelf_size()).ToString(),
+      gfx::Rect(300, 0, 400, 500 - ShelfConfig::Get()->shelf_size()).ToString(),
       window->GetBoundsInScreen().ToString());
 
   window_state->Restore();
@@ -280,7 +280,7 @@ TEST_F(WorkspaceLayoutManagerTest, MaximizeInDisplayToBeRestored) {
   window_state->Maximize();
   EXPECT_EQ(root_windows[1], window->GetRootWindow());
   EXPECT_EQ(
-      gfx::Rect(300, 0, 400, 500 - ShelfConstants::shelf_size()).ToString(),
+      gfx::Rect(300, 0, 400, 500 - ShelfConfig::Get()->shelf_size()).ToString(),
       window->GetBoundsInScreen().ToString());
 
   window_state->Restore();
@@ -299,7 +299,7 @@ TEST_F(WorkspaceLayoutManagerTest, MaximizeInDisplayToBeRestored) {
   EXPECT_TRUE(w1->IsMaximized());
   EXPECT_EQ(root_windows[1], w1->GetNativeWindow()->GetRootWindow());
   EXPECT_EQ(
-      gfx::Rect(300, 0, 400, 500 - ShelfConstants::shelf_size()).ToString(),
+      gfx::Rect(300, 0, 400, 500 - ShelfConfig::Get()->shelf_size()).ToString(),
       w1->GetWindowBoundsInScreen().ToString());
   w1->Restore();
   EXPECT_EQ(root_windows[1], w1->GetNativeWindow()->GetRootWindow());
@@ -616,7 +616,7 @@ TEST_F(WorkspaceLayoutManagerTest, AdjustSnappedBoundsWidth) {
 
   // Set shelf alignment to left, which will change display work area.
   Shelf* shelf = GetPrimaryShelf();
-  shelf->SetAlignment(SHELF_ALIGNMENT_LEFT);
+  shelf->SetAlignment(ShelfAlignment::kLeft);
   const gfx::Rect new_work_area =
       display::Screen::GetScreen()->GetPrimaryDisplay().work_area();
   EXPECT_NE(work_area, new_work_area);
@@ -631,7 +631,7 @@ TEST_F(WorkspaceLayoutManagerTest, AdjustSnappedBoundsWidth) {
   EXPECT_EQ(new_expected_right_snapped_bounds, window2->bounds());
 
   // Set shelf alignment to bottom again.
-  shelf->SetAlignment(SHELF_ALIGNMENT_BOTTOM);
+  shelf->SetAlignment(ShelfAlignment::kBottom);
   EXPECT_EQ(expected_left_snapped_bounds, window1->bounds());
   EXPECT_EQ(expected_right_snapped_bounds, window2->bounds());
 }
@@ -1141,6 +1141,10 @@ class WorkspaceLayoutManagerBackdropTest : public AshTestBase {
 
   // Return the default container.
   aura::Window* default_container() { return default_container_; }
+
+  SplitViewController* split_view_controller() {
+    return SplitViewController::Get(Shell::GetPrimaryRootWindow());
+  }
 
   // Return the order of windows (top most first) as they are in the default
   // container. If the window is visible it will be a big letter, otherwise a
@@ -1814,9 +1818,6 @@ TEST_F(WorkspaceLayoutManagerBackdropTest, BackdropForSplitScreenTest) {
     return window;
   };
 
-  SplitViewController* split_view_controller =
-      Shell::Get()->split_view_controller();
-
   const gfx::Rect bounds(0, 0, 400, 400);
   std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
   window1->Show();
@@ -1833,7 +1834,7 @@ TEST_F(WorkspaceLayoutManagerBackdropTest, BackdropForSplitScreenTest) {
   // Snap the window to left. Test that the backdrop window is still visible
   // and is the second child in the container. Its bounds should be the same
   // as the snapped window's bounds.
-  split_view_controller->SnapWindow(window1.get(), SplitViewController::LEFT);
+  split_view_controller()->SnapWindow(window1.get(), SplitViewController::LEFT);
   EXPECT_EQ(2U, default_container()->children().size());
   for (auto* child : default_container()->children())
     EXPECT_TRUE(child->IsVisible());
@@ -1844,7 +1845,8 @@ TEST_F(WorkspaceLayoutManagerBackdropTest, BackdropForSplitScreenTest) {
   // visible but is now the third window in the container. Its bounds should
   // still be the same as the container bounds.
   std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
-  split_view_controller->SnapWindow(window2.get(), SplitViewController::RIGHT);
+  split_view_controller()->SnapWindow(window2.get(),
+                                      SplitViewController::RIGHT);
 
   EXPECT_EQ(3U, default_container()->children().size());
   for (auto* child : default_container()->children())

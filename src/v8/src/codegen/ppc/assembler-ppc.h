@@ -41,6 +41,7 @@
 #define V8_CODEGEN_PPC_ASSEMBLER_PPC_H_
 
 #include <stdio.h>
+#include <memory>
 #include <vector>
 
 #include "src/codegen/assembler.h"
@@ -839,8 +840,6 @@ class Assembler : public AssemblerBase {
   void mtfprwa(DoubleRegister dst, Register src);
 #endif
 
-  void function_descriptor();
-
   // Exception-generating instructions and debugging support
   void stop(Condition cond = al, int32_t code = kDefaultStopCode,
             CRegister cr = cr7);
@@ -1159,6 +1158,7 @@ class Assembler : public AssemblerBase {
   // not have to check for overflow. The same is true for writes of large
   // relocation info entries.
   static constexpr int kGap = 32;
+  STATIC_ASSERT(AssemblerBase::kMinimalBufferSize >= 2 * kGap);
 
   RelocInfoWriter reloc_info_writer;
 

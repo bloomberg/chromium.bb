@@ -36,7 +36,7 @@ bool IsFirstPartyOrigin(Frame* frame, const KURL& url) {
       .Top()
       .GetSecurityContext()
       ->GetSecurityOrigin()
-      ->IsSameSchemeHostPort(SecurityOrigin::Create(url).get());
+      ->IsSameOriginWith(SecurityOrigin::Create(url).get());
 }
 
 // Returns true if execution of scripts from the url are allowed. Compared to
@@ -57,8 +57,14 @@ bool AllowScriptFromSourceWithoutNotifying(
 
 // Notifies content settings client of persistent client hint headers.
 void NotifyPersistentClientHintsToContentSettingsClient(Document& document) {
-  base::TimeDelta persist_duration =
-      document.GetFrame()->GetClientHintsPreferences().GetPersistDuration();
+  base::TimeDelta persist_duration;
+  if (RuntimeEnabledFeatures::FeaturePolicyForClientHintsEnabled()) {
+    persist_duration = base::TimeDelta::Max();
+  } else {
+    persist_duration =
+        document.GetFrame()->GetClientHintsPreferences().GetPersistDuration();
+  }
+
   if (persist_duration.InSeconds() <= 0)
     return;
 
@@ -165,6 +171,9 @@ void HttpEquiv::ProcessHttpEquivAcceptCHLifetime(Document& document,
                                                  const AtomicString& content) {
   LocalFrame* frame = document.GetFrame();
   if (!frame)
+    return;
+
+  if (RuntimeEnabledFeatures::FeaturePolicyForClientHintsEnabled())
     return;
 
   UseCounter::Count(document, WebFeature::kClientHintsMetaAcceptCHLifetime);

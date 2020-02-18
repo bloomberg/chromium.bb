@@ -13,7 +13,6 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/win/scoped_co_mem.h"
-#include "base/win/win_client_metrics.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
@@ -43,17 +42,9 @@ TEST(BaseWinUtilTest, TestIsUACEnabled) {
 }
 
 TEST(BaseWinUtilTest, TestGetUserSidString) {
-  string16 user_sid;
+  std::wstring user_sid;
   EXPECT_TRUE(GetUserSidString(&user_sid));
   EXPECT_TRUE(!user_sid.empty());
-}
-
-TEST(BaseWinUtilTest, TestGetNonClientMetrics) {
-  NONCLIENTMETRICS_XP metrics = {0};
-  GetNonClientMetrics(&metrics);
-  EXPECT_GT(metrics.cbSize, 0u);
-  EXPECT_GT(metrics.iScrollWidth, 0);
-  EXPECT_GT(metrics.iScrollHeight, 0);
 }
 
 TEST(BaseWinUtilTest, TestGetLoadedModulesSnapshot) {
@@ -66,8 +57,8 @@ TEST(BaseWinUtilTest, TestGetLoadedModulesSnapshot) {
 
   // Load in a new module. Pick zipfldr.dll as it is present from WinXP to
   // Win10, including ARM64 Win10, and yet rarely used.
-  const char16 dll_name[] = FILE_PATH_LITERAL("zipfldr.dll");
-  ASSERT_EQ(NULL, ::GetModuleHandle(as_wcstr(dll_name)));
+  const FilePath::CharType dll_name[] = FILE_PATH_LITERAL("zipfldr.dll");
+  ASSERT_EQ(NULL, ::GetModuleHandle(dll_name));
 
   ScopedNativeLibrary new_dll((FilePath(dll_name)));
   ASSERT_NE(static_cast<HMODULE>(NULL), new_dll.get());
@@ -101,9 +92,9 @@ TEST(BaseWinUtilTest, String16FromGUID) {
 }
 
 TEST(BaseWinUtilTest, GetWindowObjectName) {
-  base::string16 created_desktop_name(STRING16_LITERAL("test_desktop"));
+  std::wstring created_desktop_name(L"test_desktop");
   HDESK desktop_handle =
-      ::CreateDesktop(as_wcstr(created_desktop_name), nullptr, nullptr, 0,
+      ::CreateDesktop(created_desktop_name.c_str(), nullptr, nullptr, 0,
                       DESKTOP_CREATEWINDOW | DESKTOP_READOBJECTS |
                           READ_CONTROL | WRITE_DAC | WRITE_OWNER,
                       nullptr);
@@ -117,13 +108,15 @@ TEST(BaseWinUtilTest, IsRunningUnderDesktopName) {
   HDESK thread_desktop = ::GetThreadDesktop(::GetCurrentThreadId());
 
   ASSERT_NE(thread_desktop, nullptr);
-  base::string16 desktop_name = GetWindowObjectName(thread_desktop);
+  std::wstring desktop_name = GetWindowObjectName(thread_desktop);
 
   EXPECT_TRUE(IsRunningUnderDesktopName(desktop_name));
-  EXPECT_TRUE(IsRunningUnderDesktopName(base::ToLowerASCII(desktop_name)));
-  EXPECT_TRUE(IsRunningUnderDesktopName(base::ToUpperASCII(desktop_name)));
-  EXPECT_FALSE(IsRunningUnderDesktopName(
-      desktop_name + STRING16_LITERAL("_non_existent_desktop_name")));
+  EXPECT_TRUE(IsRunningUnderDesktopName(
+      AsWString(ToLowerASCII(AsStringPiece16(desktop_name)))));
+  EXPECT_TRUE(IsRunningUnderDesktopName(
+      AsWString(ToUpperASCII(AsStringPiece16(desktop_name)))));
+  EXPECT_FALSE(
+      IsRunningUnderDesktopName(desktop_name + L"_non_existent_desktop_name"));
 }
 
 }  // namespace win

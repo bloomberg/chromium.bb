@@ -23,13 +23,19 @@ class BrowserMainPartsImpl : public content::BrowserMainParts {
   ~BrowserMainPartsImpl() override;
 
   // BrowserMainParts overrides.
+  int PreCreateThreads() override;
   int PreEarlyInitialization() override;
   void PreMainMessageLoopStart() override;
   void PreMainMessageLoopRun() override;
+  bool MainMessageLoopRun(int* result_code) override;
   void PreDefaultMainMessageLoopRun(base::OnceClosure quit_closure) override;
 
  private:
   MainParams* params_;
+
+  // For running weblayer_browsertests.
+  const content::MainFunctionParams main_function_params_;
+  bool run_message_loop_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserMainPartsImpl);
 };

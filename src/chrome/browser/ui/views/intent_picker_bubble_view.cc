@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/feature_list.h"
 #include "base/i18n/rtl.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
@@ -13,9 +14,12 @@
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/sharing/click_to_call/click_to_call_ui_controller.h"
 #include "chrome/browser/ui/browser_dialogs.h"
+#include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_ink_drop_util.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/url_formatter/elide_url.h"
 #include "content/public/browser/navigation_handle.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -31,7 +35,6 @@
 #include "ui/views/controls/separator.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/grid_layout.h"
-#include "ui/views/window/dialog_client_view.h"
 
 #if defined(OS_CHROMEOS)
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
@@ -64,6 +67,21 @@ std::unique_ptr<views::Separator> CreateHorizontalSeparator() {
   return separator;
 }
 
+// Creates a label that is identical to CreateFrontElidingTitleLabel but has a
+// different style as it is not shown as a title label.
+std::unique_ptr<views::View> CreateOriginView(const url::Origin& origin,
+                                              int text_id) {
+  base::string16 origin_text = l10n_util::GetStringFUTF16(
+      text_id, url_formatter::FormatOriginForSecurityDisplay(origin));
+  auto label = std::make_unique<views::Label>(
+      origin_text, ChromeTextContext::CONTEXT_BODY_TEXT_SMALL,
+      views::style::STYLE_SECONDARY);
+  label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  label->SetElideBehavior(gfx::ELIDE_HEAD);
+  label->SetMultiLine(false);
+  return label;
+}
+
 }  // namespace
 
 // IntentPickerLabelButton
@@ -73,11 +91,9 @@ class IntentPickerLabelButton : public views::LabelButton {
  public:
   IntentPickerLabelButton(views::ButtonListener* listener,
                           const gfx::Image* icon,
-                          const std::string& launch_name,
                           const std::string& display_name)
       : LabelButton(listener,
-                    base::UTF8ToUTF16(base::StringPiece(display_name))),
-        launch_name_(launch_name) {
+                    base::UTF8ToUTF16(base::StringPiece(display_name))) {
     SetHorizontalAlignment(gfx::ALIGN_LEFT);
     SetMinSize(gfx::Size(kMaxIntentPickerLabelButtonWidth, kRowHeight));
     SetInkDropMode(InkDropMode::ON);
@@ -104,8 +120,6 @@ class IntentPickerLabelButton : public views::LabelButton {
   }
 
  private:
-  std::string launch_name_;
-
   DISALLOW_COPY_AND_ASSIGN(IntentPickerLabelButton);
 };
 
@@ -121,6 +135,7 @@ views::Widget* IntentPickerBubbleView::ShowBubble(
     std::vector<AppInfo> app_info,
     bool show_stay_in_chrome,
     bool show_remember_selection,
+    const base::Optional<url::Origin>& initiating_origin,
     IntentPickerResponse intent_picker_cb) {
   if (intent_picker_bubble_) {
     intent_picker_bubble_->Initialize();
@@ -132,14 +147,17 @@ views::Widget* IntentPickerBubbleView::ShowBubble(
   intent_picker_bubble_ = new IntentPickerBubbleView(
       anchor_view, icon_view, icon_type, std::move(app_info),
       std::move(intent_picker_cb), web_contents, show_stay_in_chrome,
-      show_remember_selection);
+      show_remember_selection, initiating_origin);
   if (icon_view)
     intent_picker_bubble_->SetHighlightedButton(icon_view);
   intent_picker_bubble_->set_margins(gfx::Insets());
   intent_picker_bubble_->Initialize();
   views::Widget* widget =
       views::BubbleDialogDelegateView::CreateBubble(intent_picker_bubble_);
-  intent_picker_bubble_->GetDialogClientView()->Layout();
+  // TODO(ellyjones): It should not at all be necessary to call Layout() here;
+  // it should have just happened during ::CreateBubble(). Figure out why this
+  // is here and/or simply delete it.
+  intent_picker_bubble_->GetWidget()->GetRootView()->Layout();
   // TODO(aleventhal) Should not need to be focusable as only descendant widgets
   // are interactive; however, it does call RequestFocus(). If it is going to be
   // focusable, it needs an accessible name so that it can pass accessibility
@@ -176,12 +194,13 @@ IntentPickerBubbleView::CreateBubbleViewForTesting(
     std::vector<AppInfo> app_info,
     bool show_stay_in_chrome,
     bool show_remember_selection,
+    const base::Optional<url::Origin>& initiating_origin,
     IntentPickerResponse intent_picker_cb,
     content::WebContents* web_contents) {
   auto bubble = std::make_unique<IntentPickerBubbleView>(
       anchor_view, icon_view, icon_type, std::move(app_info),
       std::move(intent_picker_cb), web_contents, show_stay_in_chrome,
-      show_remember_selection);
+      show_remember_selection, initiating_origin);
   bubble->Initialize();
   return bubble;
 }
@@ -235,13 +254,6 @@ bool IntentPickerBubbleView::ShouldShowCloseButton() const {
   return true;
 }
 
-int IntentPickerBubbleView::GetDialogButtons() const {
-  // The cancel button here refers to the 'Stay in Chrome' button
-  if (show_stay_in_chrome_)
-    return ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL;
-  return ui::DIALOG_BUTTON_OK;
-}
-
 base::string16 IntentPickerBubbleView::GetWindowTitle() const {
   if (icon_type_ == PageActionIconType::kClickToCall) {
     return l10n_util::GetStringUTF16(
@@ -252,22 +264,6 @@ base::string16 IntentPickerBubbleView::GetWindowTitle() const {
   return l10n_util::GetStringUTF16(IDS_INTENT_PICKER_BUBBLE_VIEW_OPEN_WITH);
 }
 
-base::string16 IntentPickerBubbleView::GetDialogButtonLabel(
-    ui::DialogButton button) const {
-  if (button != ui::DIALOG_BUTTON_OK) {
-    return l10n_util::GetStringUTF16(
-        IDS_INTENT_PICKER_BUBBLE_VIEW_STAY_IN_CHROME);
-  }
-
-  if (icon_type_ == PageActionIconType::kClickToCall) {
-    return l10n_util::GetStringUTF16(
-        IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_CALL_BUTTON_LABEL);
-  }
-
-  DCHECK(icon_type_ == PageActionIconType::kIntentPicker);
-  return l10n_util::GetStringUTF16(IDS_INTENT_PICKER_BUBBLE_VIEW_OPEN);
-}
-
 IntentPickerBubbleView::IntentPickerBubbleView(
     views::View* anchor_view,
     PageActionIconView* icon_view,
@@ -276,7 +272,8 @@ IntentPickerBubbleView::IntentPickerBubbleView(
     IntentPickerResponse intent_picker_cb,
     content::WebContents* web_contents,
     bool show_stay_in_chrome,
-    bool show_remember_selection)
+    bool show_remember_selection,
+    const base::Optional<url::Origin>& initiating_origin)
     : LocationBarBubbleDelegateView(anchor_view, web_contents),
       intent_picker_cb_(std::move(intent_picker_cb)),
       selected_app_tag_(0),
@@ -284,7 +281,23 @@ IntentPickerBubbleView::IntentPickerBubbleView(
       show_stay_in_chrome_(show_stay_in_chrome),
       show_remember_selection_(show_remember_selection),
       icon_view_(icon_view),
-      icon_type_(icon_type) {
+      icon_type_(icon_type),
+      initiating_origin_(initiating_origin) {
+  DialogDelegate::set_buttons(
+      show_stay_in_chrome_ ? (ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL)
+                           : ui::DIALOG_BUTTON_OK);
+  DialogDelegate::set_button_label(
+      ui::DIALOG_BUTTON_OK,
+      l10n_util::GetStringUTF16(
+          icon_type_ == PageActionIconType::kClickToCall
+              ? IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_CALL_BUTTON_LABEL
+              : IDS_INTENT_PICKER_BUBBLE_VIEW_OPEN));
+  DialogDelegate::set_button_label(
+      ui::DIALOG_BUTTON_CANCEL,
+      l10n_util::GetStringUTF16(IDS_INTENT_PICKER_BUBBLE_VIEW_STAY_IN_CHROME));
+
+  set_close_on_main_frame_origin_navigation(true);
+
   chrome::RecordDialogCreation(chrome::DialogIdentifier::INTENT_PICKER);
 }
 
@@ -359,7 +372,7 @@ void IntentPickerBubbleView::Initialize() {
     }
 #endif  // defined(OS_CHROMEOS)
     auto app_button = std::make_unique<IntentPickerLabelButton>(
-        this, &app_info.icon, app_info.launch_name, app_info.display_name);
+        this, &app_info.icon, app_info.display_name);
     app_button->set_tag(i);
     scrollable_view->AddChildViewAt(std::move(app_button), i++);
   }
@@ -377,12 +390,7 @@ void IntentPickerBubbleView::Initialize() {
   // how many app candidates we got and how many we actually want to show.
   // The added 0.5 on the else block allow us to let the user know there are
   // more than |kMaxAppResults| apps accessible by scrolling the list.
-  size_t rows = scroll_view->contents()->children().size();
-  if (rows <= kMaxAppResults) {
-    scroll_view->ClipHeightTo(kRowHeight, rows * kRowHeight);
-  } else {
-    scroll_view->ClipHeightTo(kRowHeight, (kMaxAppResults + 0.5) * kRowHeight);
-  }
+  scroll_view->ClipHeightTo(kRowHeight, (kMaxAppResults + 0.5) * kRowHeight);
 
   constexpr int kColumnSetId = 0;
   views::ColumnSet* cs = layout->AddColumnSet(kColumnSetId);
@@ -393,6 +401,29 @@ void IntentPickerBubbleView::Initialize() {
   layout->StartRowWithPadding(views::GridLayout::kFixedSize, kColumnSetId,
                               views::GridLayout::kFixedSize, kTitlePadding);
   scroll_view_ = layout->AddView(std::move(scroll_view));
+
+  if (initiating_origin_ &&
+      !initiating_origin_->IsSameOriginWith(
+          web_contents()->GetMainFrame()->GetLastCommittedOrigin())) {
+    constexpr int kColumnSetIdOrigin = 1;
+    views::ColumnSet* cs_origin = layout->AddColumnSet(kColumnSetIdOrigin);
+    cs_origin->AddPaddingColumn(views::GridLayout::kFixedSize, kTitlePadding);
+    cs_origin->AddColumn(
+        views::GridLayout::FILL, views::GridLayout::CENTER,
+        views::GridLayout::kFixedSize, views::GridLayout::FIXED,
+        kMaxIntentPickerLabelButtonWidth - 2 * kTitlePadding, 0);
+
+    layout->StartRowWithPadding(views::GridLayout::kFixedSize,
+                                kColumnSetIdOrigin,
+                                views::GridLayout::kFixedSize, kTitlePadding);
+
+    layout->AddView(CreateOriginView(
+        *initiating_origin_,
+        icon_type_ == PageActionIconType::kClickToCall
+            ? IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_INITIATING_ORIGIN
+            : IDS_INTENT_PICKER_BUBBLE_VIEW_INITIATING_ORIGIN));
+  }
+
   layout->StartRow(views::GridLayout::kFixedSize, kColumnSetId, 0);
 
   if (show_remember_selection_) {
@@ -400,7 +431,7 @@ void IntentPickerBubbleView::Initialize() {
 
     // This second ColumnSet has a padding column in order to manipulate the
     // Checkbox positioning freely.
-    constexpr int kColumnSetIdPadded = 1;
+    constexpr int kColumnSetIdPadded = 2;
     views::ColumnSet* cs_padded = layout->AddColumnSet(kColumnSetIdPadded);
     cs_padded->AddPaddingColumn(views::GridLayout::kFixedSize, kTitlePadding);
     cs_padded->AddColumn(
@@ -480,11 +511,14 @@ void IntentPickerBubbleView::UpdateCheckboxState() {
   // TODO(crbug.com/826982): allow PWAs to have their decision persisted when
   // there is a central Chrome OS apps registry to store persistence.
   // TODO(crbug.com/1000037): allow to persist remote devices too.
-  auto selected_app_type = app_info_[selected_app_tag_].type;
-  const bool should_enable =
-      selected_app_type != apps::PickerEntryType::kWeb &&
-      selected_app_type != apps::PickerEntryType::kDevice;
-
+  bool should_enable = false;
+  if (base::FeatureList::IsEnabled(features::kAppServiceIntentHandling)) {
+    should_enable = true;
+  } else {
+    auto selected_app_type = app_info_[selected_app_tag_].type;
+    should_enable = selected_app_type != apps::PickerEntryType::kWeb &&
+                    selected_app_type != apps::PickerEntryType::kDevice;
+  }
   // Reset the checkbox state to the default unchecked if becomes disabled.
   if (!should_enable)
     remember_selection_checkbox_->SetChecked(false);

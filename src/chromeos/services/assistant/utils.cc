@@ -82,6 +82,10 @@ std::string CreateLibAssistantConfig() {
   // the startup sequence when the version of LibAssistant has been upgraded.
   internal.SetKey("override_ready_message", Value(true));
 
+  // Set DeviceProperties.visibility to Visibility::PRIVATE.
+  // See //libassistant/shared/proto/device_properties.proto.
+  internal.SetKey("visibility", Value(1));
+
   if (base::SysInfo::IsRunningOnChromeOS()) {
     Value logging(Type::DICTIONARY);
     // Redirect libassistant logging to /var/log/chrome/ if has the switch,
@@ -115,7 +119,7 @@ std::string CreateLibAssistantConfig() {
   dict.SetKey("enable_eraser", Value(features::IsAudioEraserEnabled()));
   dict.SetKey("enable_eraser_toggling",
               Value(features::IsAudioEraserEnabled()));
-  sources.GetList().push_back(std::move(dict));
+  sources.Append(std::move(dict));
   audio_input.SetKey("sources", std::move(sources));
 
   config.SetKey("audio_input", std::move(audio_input));

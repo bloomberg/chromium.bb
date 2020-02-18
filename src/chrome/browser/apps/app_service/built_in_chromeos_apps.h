@@ -9,7 +9,9 @@
 
 #include "base/macros.h"
 #include "chrome/services/app_service/public/mojom/app_service.mojom.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 class Profile;
 
@@ -20,17 +22,19 @@ namespace apps {
 // See chrome/services/app_service/README.md.
 class BuiltInChromeOsApps : public apps::mojom::Publisher {
  public:
-  BuiltInChromeOsApps();
+  BuiltInChromeOsApps(const mojo::Remote<apps::mojom::AppService>& app_service,
+                      Profile* profile);
   ~BuiltInChromeOsApps() override;
 
-  void Initialize(const apps::mojom::AppServicePtr& app_service,
-                  Profile* profile);
+  void FlushMojoCallsForTesting();
 
   static bool SetHideSettingsAppForTesting(bool hide);
 
  private:
+  void Initialize(const mojo::Remote<apps::mojom::AppService>& app_service);
+
   // apps::mojom::Publisher overrides.
-  void Connect(apps::mojom::SubscriberPtr subscriber,
+  void Connect(mojo::PendingRemote<apps::mojom::Subscriber> subscriber_remote,
                apps::mojom::ConnectOptionsPtr opts) override;
   void LoadIcon(const std::string& app_id,
                 apps::mojom::IconKeyPtr icon_key,
@@ -42,12 +46,24 @@ class BuiltInChromeOsApps : public apps::mojom::Publisher {
               int32_t event_flags,
               apps::mojom::LaunchSource launch_source,
               int64_t display_id) override;
+  void LaunchAppWithIntent(const std::string& app_id,
+                           apps::mojom::IntentPtr intent,
+                           apps::mojom::LaunchSource launch_source,
+                           int64_t display_id) override;
   void SetPermission(const std::string& app_id,
                      apps::mojom::PermissionPtr permission) override;
-  void Uninstall(const std::string& app_id) override;
+  void PromptUninstall(const std::string& app_id) override;
+  void Uninstall(const std::string& app_id,
+                 bool clear_site_data,
+                 bool report_abuse) override;
+  void PauseApp(const std::string& app_id) override;
+  void UnpauseApps(const std::string& app_id) override;
   void OpenNativeSettings(const std::string& app_id) override;
+  void OnPreferredAppSet(const std::string& app_id,
+                         apps::mojom::IntentFilterPtr intent_filter,
+                         apps::mojom::IntentPtr intent) override;
 
-  mojo::Binding<apps::mojom::Publisher> binding_;
+  mojo::Receiver<apps::mojom::Publisher> receiver_{this};
 
   Profile* profile_;
 

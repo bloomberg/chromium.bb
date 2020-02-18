@@ -64,6 +64,8 @@
 //
 // <include src="../../../../webui/resources/js/cr/ui/grid.js">
 //
+// <include
+// src="../../../../webui/resources/js/cr/ui/keyboard_shortcut_list.js">
 // <include src="../../../../webui/resources/js/cr/ui/command.js">
 // <include src="../../../../webui/resources/js/cr/ui/position_util.js">
 // <include src="../../../../webui/resources/js/cr/ui/menu_item.js">
@@ -173,7 +175,6 @@
 // <include src="ui/import_crostini_image_dialog.js">
 // <include src="ui/list_container.js">
 // <include src="ui/location_line.js">
-// <include src="ui/multi_profile_share_dialog.js">
 // <include src="ui/multi_menu.js">
 // <include src="ui/progress_center_panel.js">
 // <include src="ui/providers_menu.js">

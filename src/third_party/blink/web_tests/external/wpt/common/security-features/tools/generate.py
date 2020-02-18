@@ -110,6 +110,18 @@ def handle_deliveries(policy_deliveries):
             else:
                 raise Exception(
                     'Invalid delivery_type: %s' % delivery.delivery_type)
+        elif delivery.key == 'upgradeInsecureRequests':
+            # https://w3c.github.io/webappsec-upgrade-insecure-requests/#delivery
+            assert (delivery.value == 'upgrade')
+            if delivery.delivery_type == 'meta':
+                meta += '<meta http-equiv="Content-Security-Policy" ' + \
+                       'content="upgrade-insecure-requests">'
+            elif delivery.delivery_type == 'http-rp':
+                headers[
+                    'Content-Security-Policy'] = 'upgrade-insecure-requests'
+            else:
+                raise Exception(
+                    'Invalid delivery_type: %s' % delivery.delivery_type)
         else:
             raise Exception('Invalid delivery_key: %s' % delivery.key)
     return {"meta": meta, "headers": headers}
@@ -153,22 +165,14 @@ def generate_selection(spec_json, config, selection, spec,
             ['supported_delivery_type'][selection['subresource']])
 
     # We process the top source context below, and do not include it in
-    # `test_parameters` in JavaScript.
+    # `scenario` field in JavaScript.
     top_source_context = selection['source_context_list'].pop(0)
     assert (top_source_context.source_context_type == 'top')
 
-    test_parameters = dump_test_parameters(selection)
     # Adjust the template for the test invoking JS. Indent it to look nice.
     indent = "\n" + " " * 8
-    test_parameters = test_parameters.replace("\n", indent)
-
-    selection['test_js'] = '''
-      %s(
-        %s,
-        document.querySelector("meta[name=assert]").content,
-        new SanityChecker()
-      ).start();
-      ''' % (config.test_case_name, test_parameters)
+    selection['scenario'] = dump_test_parameters(selection).replace(
+        "\n", indent)
 
     selection['spec_name'] = spec['name']
     selection[

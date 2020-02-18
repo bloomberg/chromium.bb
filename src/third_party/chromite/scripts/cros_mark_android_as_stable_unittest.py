@@ -26,12 +26,6 @@ from chromite.lib import portage_util
 from chromite.scripts import cros_mark_android_as_stable
 
 
-class _StubCommandResult(object):
-  """Helper for mocking RunCommand results."""
-  def __init__(self, msg):
-    self.output = msg
-
-
 class CrosMarkAndroidAsStable(cros_test_lib.MockTempDirTestCase):
   """Tests for cros_mark_android_as_stable."""
 
@@ -52,7 +46,7 @@ class CrosMarkAndroidAsStable(cros_test_lib.MockTempDirTestCase):
 
   def setUp(self):
     """Setup vars and create mock dir."""
-    self.android_package = 'test_package'
+    self.android_package = constants.ANDROID_CONTAINER_PACKAGE_KEYWORD
 
     self.tmp_overlay = os.path.join(self.tempdir, 'chromiumos-overlay')
     self.mock_android_dir = os.path.join(
@@ -116,7 +110,7 @@ class CrosMarkAndroidAsStable(cros_test_lib.MockTempDirTestCase):
     self.gs_mock = self.StartPatcher(gs_unittest.GSContextMock())
     self.arc_bucket_url = 'gs://a'
     self.targets = cros_mark_android_as_stable.MakeBuildTargetDict(
-        self.build_branch).copy()
+        self.android_package, self.build_branch).copy()
     # Internal targets share path with main targets.
     # Redefine them for decoupled testing.
     self.targets['X86_INTERNAL'] = (
@@ -317,32 +311,32 @@ class CrosMarkAndroidAsStable(cros_test_lib.MockTempDirTestCase):
                                                           self.old_version,
                                                           self.targets)
     self.assertTrue(subpaths)
-    self.assertEquals(len(subpaths), 12)
-    self.assertEquals(subpaths['ARM'], 'linux-cheets_arm-user25')
-    self.assertEquals(subpaths['ARM64'], 'linux-cheets_arm64-user25')
-    self.assertEquals(subpaths['X86'], 'linux-cheets_x86-user25')
-    self.assertEquals(subpaths['X86_INTERNAL'],
-                      'linux-cheets_x86-user-internal25')
-    self.assertEquals(subpaths['X86_64'], 'linux-cheets_x86_64-user25')
-    self.assertEquals(subpaths['ARM64_USERDEBUG'],
-                      'linux-cheets_arm64-userdebug25')
-    self.assertEquals(subpaths['X86_USERDEBUG'],
-                      'linux-cheets_x86-userdebug25')
-    self.assertEquals(subpaths['X86_64_USERDEBUG'],
-                      'linux-cheets_x86_64-userdebug25')
-    self.assertEquals(subpaths['AOSP_X86_USERDEBUG'],
-                      'linux-aosp_cheets_x86-userdebug25')
-    self.assertEquals(subpaths['SDK_GOOGLE_X86_USERDEBUG'],
-                      'linux-sdk_google_cheets_x86-userdebug25')
-    self.assertEquals(subpaths['SDK_GOOGLE_X86_64_USERDEBUG'],
-                      'linux-sdk_google_cheets_x86_64-userdebug25')
-    self.assertEquals(subpaths['SDK_TOOLS'], 'linux-static_sdk_tools25')
+    self.assertEqual(len(subpaths), 12)
+    self.assertEqual(subpaths['ARM'], 'linux-cheets_arm-user25')
+    self.assertEqual(subpaths['ARM64'], 'linux-cheets_arm64-user25')
+    self.assertEqual(subpaths['X86'], 'linux-cheets_x86-user25')
+    self.assertEqual(subpaths['X86_INTERNAL'],
+                     'linux-cheets_x86-user-internal25')
+    self.assertEqual(subpaths['X86_64'], 'linux-cheets_x86_64-user25')
+    self.assertEqual(subpaths['ARM64_USERDEBUG'],
+                     'linux-cheets_arm64-userdebug25')
+    self.assertEqual(subpaths['X86_USERDEBUG'],
+                     'linux-cheets_x86-userdebug25')
+    self.assertEqual(subpaths['X86_64_USERDEBUG'],
+                     'linux-cheets_x86_64-userdebug25')
+    self.assertEqual(subpaths['AOSP_X86_USERDEBUG'],
+                     'linux-aosp_cheets_x86-userdebug25')
+    self.assertEqual(subpaths['SDK_GOOGLE_X86_USERDEBUG'],
+                     'linux-sdk_google_cheets_x86-userdebug25')
+    self.assertEqual(subpaths['SDK_GOOGLE_X86_64_USERDEBUG'],
+                     'linux-sdk_google_cheets_x86_64-userdebug25')
+    self.assertEqual(subpaths['SDK_TOOLS'], 'linux-static_sdk_tools25')
 
     subpaths = cros_mark_android_as_stable.IsBuildIdValid(self.bucket_url,
                                                           self.build_branch,
                                                           self.new_version,
                                                           self.targets)
-    self.assertEquals(subpaths, self.new_subpaths)
+    self.assertEqual(subpaths, self.new_subpaths)
 
     subpaths = cros_mark_android_as_stable.IsBuildIdValid(
         self.bucket_url, self.build_branch, self.partial_new_version,
@@ -372,26 +366,26 @@ class CrosMarkAndroidAsStable(cros_test_lib.MockTempDirTestCase):
         self.bucket_url, self.build_branch, self.targets)
     self.assertEqual(version, self.new_version)
     self.assertTrue(subpaths)
-    self.assertEquals(len(subpaths), 12)
-    self.assertEquals(subpaths['ARM'], 'linux-cheets_arm-user100')
-    self.assertEquals(subpaths['ARM64'], 'linux-cheets_arm64-user100')
-    self.assertEquals(subpaths['X86'], 'linux-cheets_x86-user100')
-    self.assertEquals(subpaths['X86_INTERNAL'],
-                      'linux-cheets_x86-user-internal100')
-    self.assertEquals(subpaths['X86_64'], 'linux-cheets_x86_64-user100')
-    self.assertEquals(subpaths['ARM64_USERDEBUG'],
-                      'linux-cheets_arm64-userdebug100')
-    self.assertEquals(subpaths['X86_USERDEBUG'],
-                      'linux-cheets_x86-userdebug100')
-    self.assertEquals(subpaths['X86_64_USERDEBUG'],
-                      'linux-cheets_x86_64-userdebug100')
-    self.assertEquals(subpaths['AOSP_X86_USERDEBUG'],
-                      'linux-aosp_cheets_x86-userdebug100')
-    self.assertEquals(subpaths['SDK_GOOGLE_X86_USERDEBUG'],
-                      'linux-sdk_google_cheets_x86-userdebug100')
-    self.assertEquals(subpaths['SDK_GOOGLE_X86_64_USERDEBUG'],
-                      'linux-sdk_google_cheets_x86_64-userdebug100')
-    self.assertEquals(subpaths['SDK_TOOLS'], 'linux-static_sdk_tools100')
+    self.assertEqual(len(subpaths), 12)
+    self.assertEqual(subpaths['ARM'], 'linux-cheets_arm-user100')
+    self.assertEqual(subpaths['ARM64'], 'linux-cheets_arm64-user100')
+    self.assertEqual(subpaths['X86'], 'linux-cheets_x86-user100')
+    self.assertEqual(subpaths['X86_INTERNAL'],
+                     'linux-cheets_x86-user-internal100')
+    self.assertEqual(subpaths['X86_64'], 'linux-cheets_x86_64-user100')
+    self.assertEqual(subpaths['ARM64_USERDEBUG'],
+                     'linux-cheets_arm64-userdebug100')
+    self.assertEqual(subpaths['X86_USERDEBUG'],
+                     'linux-cheets_x86-userdebug100')
+    self.assertEqual(subpaths['X86_64_USERDEBUG'],
+                     'linux-cheets_x86_64-userdebug100')
+    self.assertEqual(subpaths['AOSP_X86_USERDEBUG'],
+                     'linux-aosp_cheets_x86-userdebug100')
+    self.assertEqual(subpaths['SDK_GOOGLE_X86_USERDEBUG'],
+                     'linux-sdk_google_cheets_x86-userdebug100')
+    self.assertEqual(subpaths['SDK_GOOGLE_X86_64_USERDEBUG'],
+                     'linux-sdk_google_cheets_x86_64-userdebug100')
+    self.assertEqual(subpaths['SDK_TOOLS'], 'linux-static_sdk_tools100')
 
   def _AuxGetArcBasename(self, build, basename):
     """Helper function for readability."""
@@ -403,12 +397,11 @@ class CrosMarkAndroidAsStable(cros_test_lib.MockTempDirTestCase):
     default_bn = 'do_not_rename_basename'
     no_rename_build_targets = ['ARM', 'ARM64', 'X86', 'SDK_TOOLS', 'XTS']
     for build in no_rename_build_targets:
-      self.assertEquals(self._AuxGetArcBasename(build, default_bn), default_bn)
+      self.assertEqual(self._AuxGetArcBasename(build, default_bn), default_bn)
 
-    self.assertEquals(self._AuxGetArcBasename('UNKNOWN', default_bn),
-                      default_bn)
-    self.assertEquals(self._AuxGetArcBasename('', default_bn), default_bn)
-    self.assertEquals(self._AuxGetArcBasename(None, default_bn), default_bn)
+    self.assertEqual(self._AuxGetArcBasename('UNKNOWN', default_bn), default_bn)
+    self.assertEqual(self._AuxGetArcBasename('', default_bn), default_bn)
+    self.assertEqual(self._AuxGetArcBasename(None, default_bn), default_bn)
 
   def testGetArcBasenameRenameValid(self):
     """Test renaming when input basename is valid."""
@@ -425,7 +418,7 @@ class CrosMarkAndroidAsStable(cros_test_lib.MockTempDirTestCase):
              'cheets_sdk_google_x86_userdebug-target_files-25.zip'),
     }
     for build, (src, dst) in build_targets.items():
-      self.assertEquals(self._AuxGetArcBasename(build, src), dst)
+      self.assertEqual(self._AuxGetArcBasename(build, src), dst)
 
     # More generic name patterns.
     build_targets['X86_USERDEBUG'] = (
@@ -438,7 +431,7 @@ class CrosMarkAndroidAsStable(cros_test_lib.MockTempDirTestCase):
         ('cheets_-XXX', 'cheets_sdk_google_x86_userdebug-XXX')
     )
     for build, (src, dst) in build_targets.items():
-      self.assertEquals(self._AuxGetArcBasename(build, src), dst)
+      self.assertEqual(self._AuxGetArcBasename(build, src), dst)
 
     # Check bertha also.
     build_targets['X86_USERDEBUG'] = (
@@ -451,21 +444,21 @@ class CrosMarkAndroidAsStable(cros_test_lib.MockTempDirTestCase):
         ('bertha_-XXX', 'bertha_sdk_google_x86_userdebug-XXX')
     )
     for build, (src, dst) in build_targets.items():
-      self.assertEquals(self._AuxGetArcBasename(build, src), dst)
+      self.assertEqual(self._AuxGetArcBasename(build, src), dst)
 
   def testGetArcBasenameRenameInvalid(self):
     """Test that basename is unchanged if it's not as expected."""
     # Missing hyphen.
-    self.assertEquals(self._AuxGetArcBasename('X86_USERDEBUG',
-                                              'cheets_x86.zip'),
-                      'cheets_x86.zip')
+    self.assertEqual(self._AuxGetArcBasename('X86_USERDEBUG',
+                                             'cheets_x86.zip'),
+                     'cheets_x86.zip')
     # Missing 'cheets_' before first hyphen.
-    self.assertEquals(self._AuxGetArcBasename('X86_USERDEBUG',
-                                              'marlin_x86-25.zip'),
-                      'marlin_x86-25.zip')
-    self.assertEquals(self._AuxGetArcBasename('X86_USERDEBUG',
-                                              'XX-cheets_x86-25.zip'),
-                      'XX-cheets_x86-25.zip')
+    self.assertEqual(self._AuxGetArcBasename('X86_USERDEBUG',
+                                             'marlin_x86-25.zip'),
+                     'marlin_x86-25.zip')
+    self.assertEqual(self._AuxGetArcBasename('X86_USERDEBUG',
+                                             'XX-cheets_x86-25.zip'),
+                     'XX-cheets_x86-25.zip')
 
   def testCopyToArcBucket(self):
     """Test copying of images to ARC bucket."""
@@ -491,38 +484,48 @@ class CrosMarkAndroidAsStable(cros_test_lib.MockTempDirTestCase):
   def testMakeAclDict(self):
     """Test generation of acls dictionary."""
     acls = cros_mark_android_as_stable.MakeAclDict(self.mock_android_dir)
-    self.assertEquals(acls['ARM'], os.path.join(self.mock_android_dir,
-                                                'googlestorage_acl_arm.txt'))
-    self.assertEquals(acls['ARM64'], os.path.join(self.mock_android_dir,
-                                                  'googlestorage_acl_arm.txt'))
-    self.assertEquals(acls['ARM64_USERDEBUG'],
-                      os.path.join(self.mock_android_dir,
-                                   'googlestorage_acl_arm.txt'))
-    self.assertEquals(acls['X86'], os.path.join(self.mock_android_dir,
-                                                'googlestorage_acl_x86.txt'))
-    self.assertEquals(acls['X86_INTERNAL'],
-                      os.path.join(self.mock_android_dir,
-                                   'googlestorage_acl_internal.txt'))
+    self.assertEqual(acls['ARM'], os.path.join(self.mock_android_dir,
+                                               'googlestorage_acl_arm.txt'))
+    self.assertEqual(acls['ARM64'], os.path.join(self.mock_android_dir,
+                                                 'googlestorage_acl_arm.txt'))
+    self.assertEqual(acls['ARM64_USERDEBUG'],
+                     os.path.join(self.mock_android_dir,
+                                  'googlestorage_acl_arm.txt'))
+    self.assertEqual(acls['X86'], os.path.join(self.mock_android_dir,
+                                               'googlestorage_acl_x86.txt'))
+    self.assertEqual(acls['X86_INTERNAL'],
+                     os.path.join(self.mock_android_dir,
+                                  'googlestorage_acl_internal.txt'))
     # Test that all MST targets have their ACLs set.
     for t in cros_mark_android_as_stable.MakeBuildTargetDict(
+        constants.ANDROID_CONTAINER_PACKAGE_KEYWORD,
         constants.ANDROID_MST_BUILD_BRANCH).keys():
-      self.assertTrue(t in acls)
+      self.assertIn(t, acls)
     # Test that all NYC targets have their ACLS set.
     for t in cros_mark_android_as_stable.MakeBuildTargetDict(
+        constants.ANDROID_CONTAINER_PACKAGE_KEYWORD,
         constants.ANDROID_NYC_BUILD_BRANCH).keys():
-      self.assertTrue(t in acls)
+      self.assertIn(t, acls)
     # Test that all PI targets have their ACLS set.
     for t in cros_mark_android_as_stable.MakeBuildTargetDict(
+        constants.ANDROID_CONTAINER_PACKAGE_KEYWORD,
         constants.ANDROID_PI_BUILD_BRANCH).keys():
-      self.assertTrue(t in acls)
+      self.assertIn(t, acls)
     # Test that all QT targets have their ACLS set.
     for t in cros_mark_android_as_stable.MakeBuildTargetDict(
+        constants.ANDROID_CONTAINER_PACKAGE_KEYWORD,
         constants.ANDROID_QT_BUILD_BRANCH).keys():
-      self.assertTrue(t in acls)
+      self.assertIn(t, acls)
     # Test that all VMPI targets have their ACLS set.
     for t in cros_mark_android_as_stable.MakeBuildTargetDict(
+        constants.ANDROID_VM_PACKAGE_KEYWORD,
         constants.ANDROID_VMPI_BUILD_BRANCH).keys():
-      self.assertTrue(t in acls)
+      self.assertIn(t, acls)
+    # Test that all VMMST targets have their ACLS set.
+    for t in cros_mark_android_as_stable.MakeBuildTargetDict(
+        constants.ANDROID_VM_PACKAGE_KEYWORD,
+        constants.ANDROID_VMMST_BUILD_BRANCH).keys():
+      self.assertIn(t, acls)
 
   def testMakeBuildTargetDictMST(self):
     """Test generation of MST build target dictionary.
@@ -531,14 +534,15 @@ class CrosMarkAndroidAsStable(cros_test_lib.MockTempDirTestCase):
     present, then the dictionary is correct.
     """
     targets = cros_mark_android_as_stable.MakeBuildTargetDict(
+        'android-container-master-arc-dev',
         constants.ANDROID_MST_BUILD_BRANCH)
     # Test the number of targets.
-    self.assertEquals(len(targets),
-                      len(constants.ANDROID_MST_BUILD_TARGETS))
+    self.assertEqual(len(targets),
+                     len(constants.ANDROID_MST_BUILD_TARGETS))
     # Test that all MASTER-specific targets are in the dictionary.
     for target in constants.ANDROID_MST_BUILD_TARGETS:
-      self.assertEquals(targets[target],
-                        constants.ANDROID_MST_BUILD_TARGETS[target])
+      self.assertEqual(targets[target],
+                       constants.ANDROID_MST_BUILD_TARGETS[target])
 
   def testMakeBuildTargetDictNYC(self):
     """Test generation of NYC build target dictionary.
@@ -547,14 +551,15 @@ class CrosMarkAndroidAsStable(cros_test_lib.MockTempDirTestCase):
     then the dictionary is correct.
     """
     targets = cros_mark_android_as_stable.MakeBuildTargetDict(
+        'android-container-nyc',
         constants.ANDROID_NYC_BUILD_BRANCH)
     # Test the number of targets.
-    self.assertEquals(len(targets),
-                      len(constants.ANDROID_NYC_BUILD_TARGETS))
+    self.assertEqual(len(targets),
+                     len(constants.ANDROID_NYC_BUILD_TARGETS))
     # Test that all NYC-specific targets are in the dictionary.
     for target in constants.ANDROID_NYC_BUILD_TARGETS:
-      self.assertEquals(targets[target],
-                        constants.ANDROID_NYC_BUILD_TARGETS[target])
+      self.assertEqual(targets[target],
+                       constants.ANDROID_NYC_BUILD_TARGETS[target])
 
   def testMakeBuildTargetDictPI(self):
     """Test generation of PI build target dictionary.
@@ -563,14 +568,15 @@ class CrosMarkAndroidAsStable(cros_test_lib.MockTempDirTestCase):
     present, then the dictionary is correct.
     """
     targets = cros_mark_android_as_stable.MakeBuildTargetDict(
+        'android-container-pi',
         constants.ANDROID_PI_BUILD_BRANCH)
     # Test the number of targets.
-    self.assertEquals(len(targets),
-                      len(constants.ANDROID_PI_BUILD_TARGETS))
+    self.assertEqual(len(targets),
+                     len(constants.ANDROID_PI_BUILD_TARGETS))
     # Test that all PI-specific targets are in the dictionary.
     for target in constants.ANDROID_PI_BUILD_TARGETS:
-      self.assertEquals(targets[target],
-                        constants.ANDROID_PI_BUILD_TARGETS[target])
+      self.assertEqual(targets[target],
+                       constants.ANDROID_PI_BUILD_TARGETS[target])
 
   def testMakeBuildTargetDictQT(self):
     """Test generation of QT build target dictionary.
@@ -579,14 +585,15 @@ class CrosMarkAndroidAsStable(cros_test_lib.MockTempDirTestCase):
     present, then the dictionary is correct.
     """
     targets = cros_mark_android_as_stable.MakeBuildTargetDict(
+        'android-container-qt',
         constants.ANDROID_QT_BUILD_BRANCH)
     # Test the number of targets.
-    self.assertEquals(len(targets),
-                      len(constants.ANDROID_QT_BUILD_TARGETS))
+    self.assertEqual(len(targets),
+                     len(constants.ANDROID_QT_BUILD_TARGETS))
     # Test that all QT-specific targets are in the dictionary.
     for target in constants.ANDROID_QT_BUILD_TARGETS:
-      self.assertEquals(targets[target],
-                        constants.ANDROID_QT_BUILD_TARGETS[target])
+      self.assertEqual(targets[target],
+                       constants.ANDROID_QT_BUILD_TARGETS[target])
 
   def testMakeBuildTargetDictVMPI(self):
     """Test generation of VMPI build target dictionary.
@@ -595,20 +602,43 @@ class CrosMarkAndroidAsStable(cros_test_lib.MockTempDirTestCase):
     present, then the dictionary is correct.
     """
     targets = cros_mark_android_as_stable.MakeBuildTargetDict(
+        'android-vm-pi',
         constants.ANDROID_VMPI_BUILD_BRANCH)
     # Test the number of targets.
-    self.assertEquals(len(targets),
-                      len(constants.ANDROID_VMPI_BUILD_TARGETS))
+    self.assertEqual(len(targets),
+                     len(constants.ANDROID_VMPI_BUILD_TARGETS))
     # Test that all VMPI-specific targets are in the dictionary.
     for target in constants.ANDROID_VMPI_BUILD_TARGETS:
-      self.assertEquals(targets[target],
-                        constants.ANDROID_VMPI_BUILD_TARGETS[target])
+      self.assertEqual(targets[target],
+                       constants.ANDROID_VMPI_BUILD_TARGETS[target])
+
+  def testMakeBuildTargetDictVMMst(self):
+    """Test generation of VMMst build target dictionary.
+
+    If the number of targets is correct and VMMst-specific targets are
+    present, then the dictionary is correct.
+    """
+    targets = cros_mark_android_as_stable.MakeBuildTargetDict(
+        'android-vm-master',
+        constants.ANDROID_VMMST_BUILD_BRANCH)
+    # Test the number of targets.
+    self.assertEqual(len(targets),
+                     len(constants.ANDROID_VMMST_BUILD_TARGETS))
+    # Test that all VMMst-specific targets are in the dictionary.
+    for target in constants.ANDROID_VMMST_BUILD_TARGETS:
+      self.assertEqual(targets[target],
+                       constants.ANDROID_VMMST_BUILD_TARGETS[target])
 
   def testMakeBuildTargetDictException(self):
     """Test that passing invalid branch names throws ValueError exception."""
     self.assertRaises(ValueError,
                       cros_mark_android_as_stable.MakeBuildTargetDict,
+                      constants.ANDROID_CONTAINER_PACKAGE_KEYWORD,
                       'INVALID_BRANCH_NAME')
+    self.assertRaises(ValueError,
+                      cros_mark_android_as_stable.MakeBuildTargetDict,
+                      'invalid-package',
+                      constants.ANDROID_VMPI_BUILD_BRANCH)
 
   def testGetAndroidRevisionListLink(self):
     """Test generation of revision diff list."""
@@ -622,7 +652,7 @@ class CrosMarkAndroidAsStable(cros_test_lib.MockTempDirTestCase):
 
   def testMarkAndroidEBuildAsStable(self):
     """Test updating of ebuild."""
-    self.PatchObject(cros_build_lib, 'RunCommand')
+    self.PatchObject(cros_build_lib, 'run')
     self.PatchObject(portage_util.EBuild, 'GetCrosWorkonVars',
                      return_value=None)
     git_mock = self.PatchObject(git, 'RunGit')

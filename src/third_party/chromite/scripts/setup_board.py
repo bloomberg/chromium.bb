@@ -139,4 +139,4 @@ def main(argv):
         "Double check the --board setting and make sure you're syncing the "
         'right manifest (internal-vs-external).', e)
   except sysroot.Error as e:
-    cros_build_lib.Die(e.message)
+    cros_build_lib.Die(e)

@@ -84,6 +84,7 @@ bool GpuMemoryBufferSupport::IsNativeGpuMemoryBufferConfigurationSupported(
     case gfx::BufferUsage::SCANOUT_VDA_WRITE:
     case gfx::BufferUsage::SCANOUT_CAMERA_READ_WRITE:
     case gfx::BufferUsage::CAMERA_AND_CPU_READ_WRITE:
+    case gfx::BufferUsage::SCANOUT_VEA_READ_CAMERA_AND_CPU_READ_WRITE:
       return false;
   }
   NOTREACHED();
@@ -103,13 +104,14 @@ bool GpuMemoryBufferSupport::IsNativeGpuMemoryBufferConfigurationSupported(
     case gfx::BufferUsage::SCANOUT_VDA_WRITE:
     case gfx::BufferUsage::SCANOUT_CAMERA_READ_WRITE:
     case gfx::BufferUsage::CAMERA_AND_CPU_READ_WRITE:
+    case gfx::BufferUsage::SCANOUT_VEA_READ_CAMERA_AND_CPU_READ_WRITE:
       return false;
   }
   NOTREACHED();
   return false;
 #elif defined(USE_OZONE)
-  return ui::OzonePlatform::EnsureInstance()->IsNativePixmapConfigSupported(
-      format, usage);
+  return ui::OzonePlatform::GetInstance()->IsNativePixmapConfigSupported(format,
+                                                                         usage);
 #elif defined(OS_LINUX)
   return false;  // TODO(julian.isorce): Add linux support.
 #elif defined(OS_WIN)
@@ -123,11 +125,11 @@ bool GpuMemoryBufferSupport::IsNativeGpuMemoryBufferConfigurationSupported(
     case gfx::BufferUsage::SCANOUT_VDA_WRITE:
     case gfx::BufferUsage::SCANOUT_CAMERA_READ_WRITE:
     case gfx::BufferUsage::CAMERA_AND_CPU_READ_WRITE:
-      return false;
-    default:
-      NOTREACHED();
+    case gfx::BufferUsage::SCANOUT_VEA_READ_CAMERA_AND_CPU_READ_WRITE:
       return false;
   }
+  NOTREACHED();
+  return false;
 #else
   DCHECK_EQ(GetNativeGpuMemoryBufferType(), gfx::EMPTY_BUFFER);
   return false;

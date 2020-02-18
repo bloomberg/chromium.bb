@@ -22,11 +22,10 @@
 #include <type_traits>
 #include <utility>
 
-#include <google/protobuf/io/zero_copy_stream_impl_lite.h>
 #include "perfetto/base/logging.h"
 #include "perfetto/ext/base/utils.h"
 
-#include "src/ipc/wire_protocol.pb.h"
+#include "protos/perfetto/ipc/wire_protocol.gen.h"
 
 namespace perfetto {
 namespace ipc {
@@ -167,25 +166,18 @@ void BufferedFrameDeserializer::DecodeFrame(const char* data, size_t size) {
   if (size == 0)
     return;
   std::unique_ptr<Frame> frame(new Frame);
-  const int sz = static_cast<int>(size);
-  ::google::protobuf::io::ArrayInputStream stream(data, sz);
-  if (frame->ParseFromBoundedZeroCopyStream(&stream, sz))
+  if (frame->ParseFromArray(data, size))
     decoded_frames_.push_back(std::move(frame));
 }
 
 // static
 std::string BufferedFrameDeserializer::Serialize(const Frame& frame) {
+  std::vector<uint8_t> payload = frame.SerializeAsArray();
+  const uint32_t payload_size = static_cast<uint32_t>(payload.size());
   std::string buf;
-  buf.reserve(1024);  // Just an educated guess to avoid trivial expansions.
-  buf.insert(0, kHeaderSize, 0);  // Reserve the space for the header.
-  frame.AppendToString(&buf);
-  const uint32_t payload_size = static_cast<uint32_t>(buf.size() - kHeaderSize);
-  PERFETTO_DCHECK(payload_size == static_cast<uint32_t>(frame.GetCachedSize()));
-  // Don't send messages larger than what the receiver can handle.
-  PERFETTO_DCHECK(kHeaderSize + payload_size <= kIPCBufferSize);
-  char header[kHeaderSize];
-  memcpy(header, base::AssumeLittleEndian(&payload_size), kHeaderSize);
-  buf.replace(0, kHeaderSize, header, kHeaderSize);
+  buf.resize(kHeaderSize + payload_size);
+  memcpy(&buf[0], base::AssumeLittleEndian(&payload_size), kHeaderSize);
+  memcpy(&buf[kHeaderSize], payload.data(), payload.size());
   return buf;
 }
 

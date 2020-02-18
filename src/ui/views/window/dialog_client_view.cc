@@ -121,14 +121,6 @@ bool DialogClientView::CanClose() {
   return delegate_allowed_close_;
 }
 
-DialogClientView* DialogClientView::AsDialogClientView() {
-  return this;
-}
-
-const DialogClientView* DialogClientView::AsDialogClientView() const {
-  return this;
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // DialogClientView, View overrides:
 
@@ -225,7 +217,7 @@ void DialogClientView::OnThemeChanged() {
   // dialog style simply inherits the bubble's frame view color.
   const DialogDelegate* dialog = GetDialogDelegate();
 
-  if (dialog && !dialog->ShouldUseCustomFrame()) {
+  if (dialog && !dialog->use_custom_frame()) {
     SetBackground(views::CreateSolidBackground(GetNativeTheme()->GetSystemColor(
         ui::NativeTheme::kColorId_DialogBackground)));
   }
@@ -286,41 +278,38 @@ void DialogClientView::UpdateDialogButton(LabelButton** member,
     return;
   }
 
-  if (!*member) {
-    // In theory, this should only need to assign a newly constructed Button to
-    // |*member|. DialogDelegate::UpdateButton(), and any overrides of that,
-    // should be responsible for the rest. TODO(tapted): When there is only
-    // MdTextButton, make it so. Note that some overrides may not always update
-    // the title (they should). See http://crbug.com/697303 .
-    const base::string16 title = delegate->GetDialogButtonLabel(type);
-    std::unique_ptr<LabelButton> button;
+  const bool is_default = delegate->GetDefaultDialogButton() == type &&
+                          (type != ui::DIALOG_BUTTON_CANCEL ||
+                           PlatformStyle::kDialogDefaultButtonCanBeCancel);
+  const base::string16 title = delegate->GetDialogButtonLabel(type);
 
-    const bool is_default = delegate->GetDefaultDialogButton() == type &&
-                            (type != ui::DIALOG_BUTTON_CANCEL ||
-                             PlatformStyle::kDialogDefaultButtonCanBeCancel);
-
-    button = is_default ? MdTextButton::CreateSecondaryUiBlueButton(this, title)
-                        : MdTextButton::CreateSecondaryUiButton(this, title);
-
-    const int minimum_width = LayoutProvider::Get()->GetDistanceMetric(
-        views::DISTANCE_DIALOG_BUTTON_MINIMUM_WIDTH);
-    button->SetMinSize(gfx::Size(minimum_width, 0));
-
-    button->SetGroup(kButtonGroup);
-
-    *member = button_row_container_->AddChildView(std::move(button));
+  if (*member) {
+    LabelButton* button = *member;
+    button->SetEnabled(delegate->IsDialogButtonEnabled(type));
+    button->SetIsDefault(is_default);
+    button->SetText(title);
+    return;
   }
 
-  delegate->UpdateButton(*member, type);
+  std::unique_ptr<LabelButton> button =
+      is_default ? MdTextButton::CreateSecondaryUiBlueButton(this, title)
+                 : MdTextButton::CreateSecondaryUiButton(this, title);
+
+  button->SetIsDefault(is_default);
+  button->SetEnabled(delegate->IsDialogButtonEnabled(type));
+
+  const int minimum_width = LayoutProvider::Get()->GetDistanceMetric(
+      views::DISTANCE_DIALOG_BUTTON_MINIMUM_WIDTH);
+  button->SetMinSize(gfx::Size(minimum_width, 0));
+
+  button->SetGroup(kButtonGroup);
+
+  *member = button_row_container_->AddChildView(std::move(button));
 }
 
 int DialogClientView::GetExtraViewSpacing() const {
   if (!ShouldShow(extra_view_) || !(ok_button_ || cancel_button_))
     return 0;
-
-  int extra_view_padding = 0;
-  if (GetDialogDelegate()->GetExtraViewPadding(&extra_view_padding))
-    return extra_view_padding;
 
   return LayoutProvider::Get()->GetDistanceMetric(
       views::DISTANCE_RELATED_BUTTON_HORIZONTAL);
@@ -399,15 +388,23 @@ void DialogClientView::SetupLayout() {
 
   // Track which columns to link sizes under MD.
   constexpr int kViewToColumnIndex[] = {1, 3, 5};
-  int link[] = {-1, -1, -1};
-  size_t link_index = 0;
+  std::vector<int> columns_to_link;
+
+  // Skip views that are not a button, or are a specific subclass of Button
+  // that should never be linked. Otherwise, link everything.
+  auto should_link = [](views::View* view) {
+    return Button::AsButton(view) &&
+           view->GetClassName() != Checkbox::kViewClassName &&
+           view->GetClassName() != ImageButton::kViewClassName;
+  };
 
   layout->StartRowWithPadding(kFixed, kButtonRowId, kFixed,
                               button_row_insets_.top());
   for (size_t view_index = 0; view_index < kNumButtons; ++view_index) {
     if (views[view_index]) {
       layout->AddExistingView(views[view_index]);
-      link[link_index++] = kViewToColumnIndex[view_index];
+      if (should_link(views[view_index]))
+        columns_to_link.push_back(kViewToColumnIndex[view_index]);
     } else {
       layout->SkipColumns(1);
     }
@@ -415,19 +412,7 @@ void DialogClientView::SetupLayout() {
 
   column_set->set_linked_column_size_limit(
       layout_provider->GetDistanceMetric(DISTANCE_BUTTON_MAX_LINKABLE_WIDTH));
-
-  // If |views[0]| is non-null, it is a visible |extra_view_| and its column
-  // will be in |link[0]|. Skip that if it is not a button, or if it is a
-  // specific subclass of Button that should never be linked. Otherwise, link
-  // everything.
-  bool skip_first_link =
-      views[0] && (!Button::AsButton(views[0]) ||
-                   views[0]->GetClassName() == Checkbox::kViewClassName ||
-                   views[0]->GetClassName() == ImageButton::kViewClassName);
-  if (skip_first_link)
-    column_set->LinkColumnSizes(link[1], link[2], -1);
-  else
-    column_set->LinkColumnSizes(link[0], link[1], link[2], -1);
+  column_set->LinkColumnSizes(columns_to_link);
 
   layout->AddPaddingRow(kFixed, button_row_insets_.bottom());
 
@@ -449,10 +434,12 @@ void DialogClientView::SetupViews() {
     UpdateDialogButton(&ok_button_, ui::DIALOG_BUTTON_OK);
   }
 
-  if (extra_view_)
+  auto disowned_extra_view = GetDialogDelegate()->DisownExtraView();
+  if (!disowned_extra_view)
     return;
 
-  extra_view_ = GetDialogDelegate()->CreateExtraView().release();
+  delete extra_view_;
+  extra_view_ = disowned_extra_view.release();
   if (extra_view_ && Button::AsButton(extra_view_))
     extra_view_->SetGroup(kButtonGroup);
 }

@@ -17,9 +17,8 @@
 #include <memory>
 
 #include "absl/types/optional.h"
+#include "api/neteq/tick_timer.h"
 #include "modules/audio_coding/neteq/histogram.h"
-#include "modules/audio_coding/neteq/statistics_calculator.h"
-#include "modules/audio_coding/neteq/tick_timer.h"
 #include "rtc_base/constructor_magic.h"
 
 namespace webrtc {
@@ -41,7 +40,6 @@ class DelayManager {
                bool enable_rtx_handling,
                DelayPeakDetector* peak_detector,
                const TickTimer* tick_timer,
-               StatisticsCalculator* statistics,
                std::unique_ptr<Histogram> histogram);
 
   // Create a DelayManager object. Notify the delay manager that the packet
@@ -53,8 +51,7 @@ class DelayManager {
                                               int base_minimum_delay_ms,
                                               bool enable_rtx_handling,
                                               DelayPeakDetector* peak_detector,
-                                              const TickTimer* tick_timer,
-                                              StatisticsCalculator* statistics);
+                                              const TickTimer* tick_timer);
 
   virtual ~DelayManager();
 
@@ -62,10 +59,10 @@ class DelayManager {
   // |sequence_number| and |timestamp| from the RTP header. This updates the
   // inter-arrival time histogram and other statistics, as well as the
   // associated DelayPeakDetector. A new target buffer level is calculated.
-  // Returns 0 on success, -1 on failure (invalid sample rate).
-  virtual int Update(uint16_t sequence_number,
-                     uint32_t timestamp,
-                     int sample_rate_hz);
+  // Returns the relative delay if it can be calculated.
+  virtual absl::optional<int> Update(uint16_t sequence_number,
+                                     uint32_t timestamp,
+                                     int sample_rate_hz);
 
   // Calculates a new target buffer level. Called from the Update() method.
   // Sets target_level_ (in Q8) and returns the same value. Also calculates
@@ -124,11 +121,6 @@ class DelayManager {
     return effective_minimum_delay_ms_;
   }
 
-  // This accessor is only intended for testing purposes.
-  absl::optional<int> deceleration_target_level_offset_ms() const {
-    return deceleration_target_level_offset_ms_;
-  }
-
   // These accessors are only intended for testing purposes.
   HistogramMode histogram_mode() const { return histogram_mode_; }
   int histogram_quantile() const { return histogram_quantile_; }
@@ -173,7 +165,6 @@ class DelayManager {
   const int histogram_quantile_;
   const HistogramMode histogram_mode_;
   const TickTimer* tick_timer_;
-  StatisticsCalculator* statistics_;
   int base_minimum_delay_ms_;
   // Provides delay which is used by LimitTargetLevel as lower bound on target
   // delay.
@@ -204,11 +195,6 @@ class DelayManager {
   };
   std::deque<PacketDelay> delay_history_;
 
-  // When current buffer level is more than
-  // |deceleration_target_level_offset_ms_| below the target level, NetEq will
-  // impose deceleration to increase the buffer level. The value is in Q8, and
-  // measured in milliseconds.
-  const absl::optional<int> deceleration_target_level_offset_ms_;
   const absl::optional<int> extra_delay_ms_;
 
   RTC_DISALLOW_COPY_AND_ASSIGN(DelayManager);

@@ -8,7 +8,7 @@
 #include <limits>
 #include <string>
 
-#include "net/third_party/quiche/src/quic/core/qpack/qpack_constants.h"
+#include "net/third_party/quiche/src/quic/core/qpack/qpack_instructions.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
 
 namespace quic {
@@ -19,43 +19,39 @@ void QpackEncoderStreamSender::SendInsertWithNameReference(
     bool is_static,
     uint64_t name_index,
     QuicStringPiece value) {
-  values_.s_bit = is_static;
-  values_.varint = name_index;
-  values_.value = value;
-
-  std::string output;
-  instruction_encoder_.Encode(InsertWithNameReferenceInstruction(), values_,
-                              &output);
-  delegate_->WriteStreamData(output);
+  instruction_encoder_.Encode(
+      QpackInstructionWithValues::InsertWithNameReference(is_static, name_index,
+                                                          value),
+      &buffer_);
 }
 
 void QpackEncoderStreamSender::SendInsertWithoutNameReference(
     QuicStringPiece name,
     QuicStringPiece value) {
-  values_.name = name;
-  values_.value = value;
-
-  std::string output;
-  instruction_encoder_.Encode(InsertWithoutNameReferenceInstruction(), values_,
-                              &output);
-  delegate_->WriteStreamData(output);
+  instruction_encoder_.Encode(
+      QpackInstructionWithValues::InsertWithoutNameReference(name, value),
+      &buffer_);
 }
 
 void QpackEncoderStreamSender::SendDuplicate(uint64_t index) {
-  values_.varint = index;
-
-  std::string output;
-  instruction_encoder_.Encode(DuplicateInstruction(), values_, &output);
-  delegate_->WriteStreamData(output);
+  instruction_encoder_.Encode(QpackInstructionWithValues::Duplicate(index),
+                              &buffer_);
 }
 
 void QpackEncoderStreamSender::SendSetDynamicTableCapacity(uint64_t capacity) {
-  values_.varint = capacity;
+  instruction_encoder_.Encode(
+      QpackInstructionWithValues::SetDynamicTableCapacity(capacity), &buffer_);
+}
 
-  std::string output;
-  instruction_encoder_.Encode(SetDynamicTableCapacityInstruction(), values_,
-                              &output);
-  delegate_->WriteStreamData(output);
+QuicByteCount QpackEncoderStreamSender::Flush() {
+  if (buffer_.empty()) {
+    return 0;
+  }
+
+  delegate_->WriteStreamData(buffer_);
+  const QuicByteCount bytes_written = buffer_.size();
+  buffer_.clear();
+  return bytes_written;
 }
 
 }  // namespace quic

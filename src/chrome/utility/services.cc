@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/no_destructor.h"
 #include "build/build_config.h"
+#include "components/paint_preview/buildflags/buildflags.h"
 #include "components/safe_browsing/buildflags.h"
 #include "components/services/patch/file_patcher_impl.h"
 #include "components/services/patch/public/mojom/file_patcher.mojom.h"
@@ -74,6 +75,9 @@
 #include "components/services/pdf_compositor/public/mojom/pdf_compositor.mojom.h"  // nogncheck
 #endif
 
+#include "components/services/paint_preview_compositor/paint_preview_compositor_collection_impl.h"
+#include "components/services/paint_preview_compositor/public/mojom/paint_preview_compositor.mojom.h"
+
 #if defined(OS_CHROMEOS)
 #include "chromeos/assistant/buildflags.h"  // nogncheck
 #include "chromeos/services/ime/ime_service.h"
@@ -122,7 +126,6 @@ auto RunProfileImporter(
 auto RunMirroringService(
     mojo::PendingReceiver<mirroring::mojom::MirroringService> receiver) {
   DCHECK(base::FeatureList::IsEnabled(mirroring::features::kMirroringService));
-  DCHECK(base::FeatureList::IsEnabled(features::kAudioServiceAudioStreams));
   return std::make_unique<mirroring::MirroringService>(
       std::move(receiver), content::UtilityThread::Get()->GetIOTaskRunner());
 }
@@ -170,6 +173,16 @@ auto RunPrintingService(
   return std::make_unique<printing::PrintingService>(std::move(receiver));
 }
 #endif
+
+#if BUILDFLAG(ENABLE_PAINT_PREVIEW)
+auto RunPaintPreviewCompositor(
+    mojo::PendingReceiver<
+        paint_preview::mojom::PaintPreviewCompositorCollection> receiver) {
+  return std::make_unique<paint_preview::PaintPreviewCompositorCollectionImpl>(
+      std::move(receiver), /*initialize_environment=*/true,
+      content::UtilityThread::Get()->GetIOTaskRunner());
+}
+#endif  // BUILDFLAG(ENABLE_PAINT_PREVIEW)
 
 #if BUILDFLAG(ENABLE_PRINTING)
 auto RunPdfCompositor(
@@ -256,6 +269,10 @@ mojo::ServiceFactory* GetMainThreadServiceFactory() {
 
 #if BUILDFLAG(ENABLE_PRINTING)
     RunPdfCompositor,
+#endif
+
+#if BUILDFLAG(ENABLE_PAINT_PREVIEW)
+    RunPaintPreviewCompositor,
 #endif
 
 #if defined(OS_CHROMEOS)

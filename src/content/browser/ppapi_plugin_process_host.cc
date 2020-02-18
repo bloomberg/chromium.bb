@@ -27,12 +27,12 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/network_service_instance.h"
+#include "content/public/common/content_client.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/pepper_plugin_info.h"
 #include "content/public/common/process_type.h"
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
-#include "content/public/common/service_names.mojom.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/shared_impl/ppapi_permissions.h"
 #include "services/network/public/cpp/network_connection_tracker.h"
@@ -48,11 +48,6 @@
 #include "services/service_manager/sandbox/win/sandbox_win.h"
 #include "ui/display/win/dpi.h"
 #include "ui/gfx/font_render_params.h"
-#endif
-
-#if defined(OS_LINUX)
-#include "components/services/font/public/mojom/font_service.mojom.h"  // nogncheck
-#include "content/browser/font_service.h"  // nogncheck
 #endif
 
 #if BUILDFLAG(USE_ZYGOTE_HANDLE)
@@ -326,7 +321,7 @@ PpapiPluginProcessHost::PpapiPluginProcessHost(
   permissions_ = ppapi::PpapiPermissions::GetForCommandLine(base_permissions);
 
   process_ = std::make_unique<BrowserChildProcessHostImpl>(
-      PROCESS_TYPE_PPAPI_PLUGIN, this, mojom::kPluginServiceName);
+      PROCESS_TYPE_PPAPI_PLUGIN, this, ChildProcessHost::IpcMode::kNormal);
 
   host_impl_ = std::make_unique<BrowserPpapiHostImpl>(
       this, permissions_, info.name, info.path, profile_data_directory,
@@ -345,7 +340,7 @@ PpapiPluginProcessHost::PpapiPluginProcessHost(
 
 PpapiPluginProcessHost::PpapiPluginProcessHost() : is_broker_(true) {
   process_ = std::make_unique<BrowserChildProcessHostImpl>(
-      PROCESS_TYPE_PPAPI_BROKER, this, mojom::kPluginServiceName);
+      PROCESS_TYPE_PPAPI_BROKER, this, ChildProcessHost::IpcMode::kNormal);
 
   ppapi::PpapiPermissions permissions;  // No permissions.
   // The plugin name, path and profile data directory shouldn't be needed for
@@ -487,19 +482,11 @@ void PpapiPluginProcessHost::OnProcessLaunched() {
 
 void PpapiPluginProcessHost::OnProcessCrashed(int exit_code) {
   VLOG(1) << "ppapi plugin process crashed.";
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&PluginServiceImpl::RegisterPluginCrash,
                      base::Unretained(PluginServiceImpl::GetInstance()),
                      plugin_path_));
-}
-
-void PpapiPluginProcessHost::BindHostReceiver(
-    mojo::GenericPendingReceiver receiver) {
-#if defined(OS_LINUX)
-  if (auto font_receiver = receiver.As<font_service::mojom::FontService>())
-    ConnectToFontService(std::move(font_receiver));
-#endif
 }
 
 bool PpapiPluginProcessHost::OnMessageReceived(const IPC::Message& msg) {

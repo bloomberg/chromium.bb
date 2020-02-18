@@ -9,8 +9,11 @@
 #include "ash/public/cpp/app_list/app_list_switches.h"
 #include "base/bind.h"
 #include "base/feature_list.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
+#include "chrome/browser/apps/app_service/app_service_proxy.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/install_tracker_factory.h"
 #include "chrome/browser/extensions/launch_util.h"
@@ -19,6 +22,7 @@
 #include "chrome/browser/ui/apps/app_info_dialog.h"
 #include "chrome/browser/ui/ash/tablet_mode_page_behavior.h"
 #include "chrome/browser/ui/chrome_pages.h"
+#include "chrome/browser/ui/webui/settings/chromeos/app_management/app_management_uma.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
@@ -84,7 +88,7 @@ bool AppListControllerDelegate::UninstallAllowed(Profile* profile,
 }
 
 bool AppListControllerDelegate::CanDoShowAppInfoFlow() {
-  return CanShowAppInfoDialog();
+  return CanPlatformShowAppInfoDialog();
 }
 
 void AppListControllerDelegate::DoShowAppInfoFlow(
@@ -98,6 +102,16 @@ void AppListControllerDelegate::DoShowAppInfoFlow(
   if (base::FeatureList::IsEnabled(chromeos::features::kSplitSettings) &&
       base::FeatureList::IsEnabled(features::kAppManagement)) {
     chrome::ShowAppManagementPage(profile, extension_id);
+
+    if (extension->is_hosted_app() && extension->from_bookmark()) {
+      base::UmaHistogramEnumeration(
+          kAppManagementEntryPointsHistogramName,
+          AppManagementEntryPoint::kAppListContextMenuAppInfoWebApp);
+    } else {
+      base::UmaHistogramEnumeration(
+          kAppManagementEntryPointsHistogramName,
+          AppManagementEntryPoint::kAppListContextMenuAppInfoChromeApp);
+    }
     return;
   }
 
@@ -127,10 +141,10 @@ void AppListControllerDelegate::DoShowAppInfoFlow(
 
 void AppListControllerDelegate::UninstallApp(Profile* profile,
                                              const std::string& app_id) {
-  // ExtensionUninstall deletes itself when done or aborted.
-  ExtensionUninstaller* uninstaller =
-      new ExtensionUninstaller(profile, app_id, GetAppListWindow());
-  uninstaller->Run();
+  apps::AppServiceProxy* proxy =
+      apps::AppServiceProxyFactory::GetForProfile(profile);
+  DCHECK(proxy);
+  proxy->Uninstall(app_id, GetAppListWindow());
 }
 
 bool AppListControllerDelegate::IsAppFromWebStore(Profile* profile,

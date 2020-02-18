@@ -9,31 +9,17 @@
 
 #include "base/bind.h"
 #include "base/feature_list.h"
-#include "base/single_thread_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
-#include "content/public/common/content_switches.h"
 #include "content/public/common/network_service_util.h"
-#include "content/public/common/origin_util.h"
 #include "content/renderer/loader/child_url_loader_factory_bundle.h"
 #include "content/renderer/loader/navigation_response_override_parameters.h"
 #include "content/renderer/loader/web_worker_fetch_context_impl.h"
-#include "content/renderer/renderer_blink_platform_impl.h"
-#include "ipc/ipc_message_macros.h"
-#include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/loader/url_loader_factory_bundle.h"
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
-#include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
-#include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
-#include "third_party/blink/public/mojom/service_worker/controller_service_worker.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
-#include "third_party/blink/public/platform/interface_provider.h"
-#include "third_party/blink/public/platform/task_type.h"
-#include "third_party/blink/public/platform/url_conversion.h"
-#include "third_party/blink/public/platform/web_security_origin.h"
+#include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/web/web_shared_worker.h"
-#include "third_party/blink/public/web/web_shared_worker_client.h"
 #include "url/origin.h"
 
 namespace content {
@@ -52,12 +38,11 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
         service_worker_provider_info,
     const base::UnguessableToken& appcache_host_id,
     blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params,
-    std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
-        subresource_loader_factory_bundle_info,
+    std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
+        pending_subresource_loader_factory_bundle,
     blink::mojom::ControllerServiceWorkerInfoPtr controller_info,
     mojo::PendingRemote<blink::mojom::SharedWorkerHost> host,
     mojo::PendingReceiver<blink::mojom::SharedWorker> receiver,
-    service_manager::mojom::InterfaceProviderPtr interface_provider,
     mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
         browser_interface_broker)
     : receiver_(this, std::move(receiver)),
@@ -66,7 +51,7 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
       renderer_preferences_(renderer_preferences),
       preference_watcher_receiver_(std::move(preference_watcher_receiver)) {
   DCHECK(main_script_load_params);
-  DCHECK(subresource_loader_factory_bundle_info);
+  DCHECK(pending_subresource_loader_factory_bundle);
 
   // Initialize the response override for the main worker script loaded by the
   // browser process.
@@ -85,22 +70,22 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
   // stuck with a worker with a broken loader. Self-destruction is effectively
   // the same as the worker's process crashing.
   if (IsOutOfProcessNetworkService()) {
-    default_factory_connection_error_handler_holder_.Bind(std::move(
-        subresource_loader_factory_bundle_info->pending_default_factory()));
-    default_factory_connection_error_handler_holder_->Clone(
-        subresource_loader_factory_bundle_info->pending_default_factory()
+    default_factory_disconnect_handler_holder_.Bind(std::move(
+        pending_subresource_loader_factory_bundle->pending_default_factory()));
+    default_factory_disconnect_handler_holder_->Clone(
+        pending_subresource_loader_factory_bundle->pending_default_factory()
             .InitWithNewPipeAndPassReceiver());
-    default_factory_connection_error_handler_holder_
-        .set_connection_error_handler(base::BindOnce(
-            &EmbeddedSharedWorkerStub::Terminate, base::Unretained(this)));
+    default_factory_disconnect_handler_holder_.set_disconnect_handler(
+        base::BindOnce(&EmbeddedSharedWorkerStub::Terminate,
+                       base::Unretained(this)));
   }
 
   // Initialize the subresource loader factory bundle passed by the browser
   // process.
   subresource_loader_factory_bundle_ =
       base::MakeRefCounted<ChildURLLoaderFactoryBundle>(
-          std::make_unique<ChildURLLoaderFactoryBundleInfo>(
-              std::move(subresource_loader_factory_bundle_info)));
+          std::make_unique<ChildPendingURLLoaderFactoryBundle>(
+              std::move(pending_subresource_loader_factory_bundle)));
 
   if (service_worker_provider_info) {
     service_worker_provider_context_ =
@@ -118,7 +103,6 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
       blink::WebString::FromUTF8(info->content_security_policy),
       info->content_security_policy_type, info->creation_address_space,
       appcache_host_id, devtools_worker_token, content_settings.PassPipe(),
-      interface_provider.PassInterface().PassHandle(),
       browser_interface_broker.PassPipe(), pause_on_start);
 
   // If the host drops its connection, then self-destruct.
@@ -172,16 +156,18 @@ scoped_refptr<blink::WebWorkerFetchContext>
 EmbeddedSharedWorkerStub::CreateWorkerFetchContext() {
   // Make the factory used for service worker network fallback (that should
   // skip AppCache if it is provided).
-  std::unique_ptr<network::SharedURLLoaderFactoryInfo> fallback_factory =
+  std::unique_ptr<network::PendingSharedURLLoaderFactory> fallback_factory =
       subresource_loader_factory_bundle_->CloneWithoutAppCacheFactory();
 
+  // |pending_subresource_loader_updater| is not used for shared workers.
   scoped_refptr<WebWorkerFetchContextImpl> worker_fetch_context =
       WebWorkerFetchContextImpl::Create(
           service_worker_provider_context_.get(),
           std::move(renderer_preferences_),
           std::move(preference_watcher_receiver_),
           subresource_loader_factory_bundle_->Clone(),
-          std::move(fallback_factory));
+          std::move(fallback_factory),
+          /*pending_subresource_loader_updater*/ mojo::NullReceiver());
 
   // TODO(horo): To get the correct first_party_to_cookies for the shared
   // worker, we need to check the all documents bounded by the shared worker.

@@ -23,6 +23,7 @@ group("telemetry_chrome_test") {
     data_deps += [
       "//android_webview/test:webview_instrumentation_apk",
       "//chrome/android:chrome_public_apk",
+      ":telemetry_weblayer_apks",
     ]
 
     if (enable_chrome_android_internal) {
@@ -68,18 +69,22 @@ group("telemetry_chrome_test") {
       "//build/win:copy_cdb_to_output",
       "//third_party/crashpad/crashpad/tools:crashpad_database_util",
     ]
+  }
+}
 
-    # TODO(GYP): These should be provided automatically through data_deps.
-    data += [ "$root_out_dir/chrome.exe.pdb" ]
-    if (is_component_build) {
-      data += [
-        "$root_out_dir/base.dll.pdb",
-        "$root_out_dir/blink_platform.dll.pdb",
-        "$root_out_dir/content.dll.pdb",
-      ]
-    } else {
-      data += [ "$root_out_dir/chrome_child.dll.pdb" ]
-    }
+group("telemetry_weblayer_apks") {
+  testonly = true
+
+  data_deps = []
+  if (is_android) {
+    data_deps += [
+      # TODO(crbug.com/1022823): Remove the following two deps once our tooling
+      # is configured to use weblayer_shell_system_webview_apk.
+      "//weblayer/shell/android:weblayer_support_apk",
+      "//weblayer/shell/android:weblayer_shell_apk",
+
+      "//weblayer/shell/android:weblayer_shell_system_webview_apk",
+    ]
   }
 }
 
@@ -94,6 +99,12 @@ group("telemetry_chrome_test_without_chrome") {
   data_deps = [
     "//third_party/catapult:telemetry_chrome_test_support",
   ]
+  if (is_chromeos) {
+    data_deps += [
+      "//third_party/breakpad:minidump_stackwalk",
+      "//third_party/breakpad:dump_syms",
+    ]
+  }
   if (is_android) {
     data += [
       "//build/android/stacktrace/",

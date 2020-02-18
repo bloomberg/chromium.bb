@@ -122,7 +122,6 @@ cr.define('settings_passwords_section', function() {
       const element = document.createElement('passwords-section');
       element.prefs = {
         credentials_enable_service: {},
-        profile: {password_manager_leak_detection: {}},
       };
       document.body.appendChild(element);
 
@@ -170,7 +169,7 @@ cr.define('settings_passwords_section', function() {
 
     // Test verifies that removing a password will update the elements.
     test('verifyPasswordListRemove', function() {
-      let passwordList = [
+      const passwordList = [
         FakeDataMaker.passwordEntry('anotherwebsite.com', 'luigi', 1, 0),
         FakeDataMaker.passwordEntry('longwebsite.com', 'peach', 7, 1),
         FakeDataMaker.passwordEntry('website.com', 'mario', 70, 2)
@@ -196,7 +195,7 @@ cr.define('settings_passwords_section', function() {
 
     // Test verifies that adding a password will update the elements.
     test('verifyPasswordListAdd', function() {
-      let passwordList = [
+      const passwordList = [
         FakeDataMaker.passwordEntry('anotherwebsite.com', 'luigi', 1, 0),
         FakeDataMaker.passwordEntry('longwebsite.com', 'peach', 7, 1),
       ];
@@ -307,7 +306,7 @@ cr.define('settings_passwords_section', function() {
     });
 
     test('verifyFilterPasswordsWithRemoval', function() {
-      let passwordList = [
+      const passwordList = [
         FakeDataMaker.passwordEntry('one.com', 'SHOW', 5, 0),
         FakeDataMaker.passwordEntry('two.com', 'shower', 3, 1),
         FakeDataMaker.passwordEntry('three.com/show', 'four', 1, 2),
@@ -562,7 +561,7 @@ cr.define('settings_passwords_section', function() {
       const passwordEntry = FakeDataMaker.passwordEntry('goo.gl', 'bart', 1);
       const passwordsSection = elementFactory.createPasswordsSection(
           passwordManager, [passwordEntry], []);
-      const toastManager = cr.toastManager.getInstance();
+      const toastManager = cr.toastManager.getToastManager();
 
       // Click the remove button on the first password and assert that an undo
       // toast is shown.
@@ -642,7 +641,7 @@ cr.define('settings_passwords_section', function() {
       const progressCallback = passwordManager.progressCallback;
 
       // Use this to freeze the delayed progress bar and avoid flakiness.
-      let mockTimer = new MockTimer();
+      const mockTimer = new MockTimer();
       mockTimer.install();
 
       assertTrue(exportDialog.$$('#dialog_start').open);
@@ -670,7 +669,7 @@ cr.define('settings_passwords_section', function() {
       const progressCallback = passwordManager.progressCallback;
 
       // Use this to freeze the delayed progress bar and avoid flakiness.
-      let mockTimer = new MockTimer();
+      const mockTimer = new MockTimer();
       mockTimer.install();
 
       assertTrue(exportDialog.$$('#dialog_start').open);
@@ -702,7 +701,7 @@ cr.define('settings_passwords_section', function() {
           elementFactory.createExportPasswordsDialog(passwordManager);
       const progressCallback = passwordManager.progressCallback;
       // Use this to freeze the delayed progress bar and avoid flakiness.
-      let mockTimer = new MockTimer();
+      const mockTimer = new MockTimer();
 
       new Promise(resolve => {
         mockTimer.install();
@@ -741,7 +740,7 @@ cr.define('settings_passwords_section', function() {
           elementFactory.createExportPasswordsDialog(passwordManager);
       const progressCallback = passwordManager.progressCallback;
 
-      let mockTimer = new MockTimer();
+      const mockTimer = new MockTimer();
       mockTimer.install();
 
       // The initial dialog remains open for 100ms after export enters the
@@ -790,7 +789,7 @@ cr.define('settings_passwords_section', function() {
         done();
       };
 
-      let mockTimer = new MockTimer();
+      const mockTimer = new MockTimer();
       mockTimer.install();
 
       // The initial dialog remains open for 100ms after export enters the
@@ -877,128 +876,6 @@ cr.define('settings_passwords_section', function() {
       cr.webUIListenerCallback('sync-prefs-changed', syncPrefs);
       Polymer.dom.flush();
       assertFalse(passwordsSection.$.manageLink.hidden);
-    });
-
-    test('leakDetectionToggleSignedOutWithFalsePref', function() {
-      const passwordsSection =
-          elementFactory.createPasswordsSection(passwordManager, [], []);
-      const syncPrefs = sync_test_util.getSyncAllPrefs();
-
-      passwordsSection.set(
-          'prefs.profile.password_manager_leak_detection.value', false);
-      sync_test_util.simulateSyncStatus({signedIn: false});
-      sync_test_util.simulateStoredAccounts([]);
-      cr.webUIListenerCallback('sync-prefs-changed', syncPrefs);
-      Polymer.dom.flush();
-
-      assertTrue(passwordsSection.$.passwordsLeakDetectionCheckbox.disabled);
-      assertFalse(passwordsSection.$.passwordsLeakDetectionCheckbox.checked);
-      assertEquals(
-          loadTimeData.getString(
-              'passwordsLeakDetectionSignedOutDisabledDescription'),
-          passwordsSection.$.passwordsLeakDetectionCheckbox.subLabel);
-    });
-
-    test('leakDetectionToggleSignedOutWithTruePref', function() {
-      const passwordsSection =
-          elementFactory.createPasswordsSection(passwordManager, [], []);
-      const syncPrefs = sync_test_util.getSyncAllPrefs();
-
-      sync_test_util.simulateSyncStatus({signedIn: false});
-      sync_test_util.simulateStoredAccounts([]);
-      cr.webUIListenerCallback('sync-prefs-changed', syncPrefs);
-      Polymer.dom.flush();
-
-      assertTrue(passwordsSection.$.passwordsLeakDetectionCheckbox.disabled);
-      assertFalse(passwordsSection.$.passwordsLeakDetectionCheckbox.checked);
-      assertEquals(
-          loadTimeData.getString(
-              'passwordsLeakDetectionSignedOutEnabledDescription'),
-          passwordsSection.$.passwordsLeakDetectionCheckbox.subLabel);
-    });
-
-    if (!cr.isChromeOS) {
-      test('leakDetectionToggleSignedInNotSyncingWithFalsePref', function() {
-        const passwordsSection =
-            elementFactory.createPasswordsSection(passwordManager, [], []);
-        const syncPrefs = sync_test_util.getSyncAllPrefs();
-
-        passwordsSection.set(
-            'prefs.profile.password_manager_leak_detection.value', false);
-        sync_test_util.simulateSyncStatus({signedIn: false});
-        sync_test_util.simulateStoredAccounts([
-          {
-            fullName: 'testName',
-            givenName: 'test',
-            email: 'test@test.com',
-          },
-        ]);
-        cr.webUIListenerCallback('sync-prefs-changed', syncPrefs);
-        Polymer.dom.flush();
-
-        assertFalse(passwordsSection.$.passwordsLeakDetectionCheckbox.disabled);
-        assertFalse(passwordsSection.$.passwordsLeakDetectionCheckbox.checked);
-        assertEquals(
-            loadTimeData.getString('passwordsLeakDetectionSignedInDescription'),
-            passwordsSection.$.passwordsLeakDetectionCheckbox.subLabel);
-      });
-
-      test('leakDetectionToggleSignedInNotSyncingWithTruePref', function() {
-        const passwordsSection =
-            elementFactory.createPasswordsSection(passwordManager, [], []);
-        const syncPrefs = sync_test_util.getSyncAllPrefs();
-
-        sync_test_util.simulateSyncStatus({signedIn: false});
-        sync_test_util.simulateStoredAccounts([
-          {
-            fullName: 'testName',
-            givenName: 'test',
-            email: 'test@test.com',
-          },
-        ]);
-        cr.webUIListenerCallback('sync-prefs-changed', syncPrefs);
-        Polymer.dom.flush();
-
-        assertFalse(passwordsSection.$.passwordsLeakDetectionCheckbox.disabled);
-        assertTrue(passwordsSection.$.passwordsLeakDetectionCheckbox.checked);
-        assertEquals(
-            loadTimeData.getString('passwordsLeakDetectionSignedInDescription'),
-            passwordsSection.$.passwordsLeakDetectionCheckbox.subLabel);
-      });
-    }
-
-    test('leakDetectionToggleSignedInAndSyncingWithFalsePref', function() {
-      const passwordsSection =
-          elementFactory.createPasswordsSection(passwordManager, [], []);
-      const syncPrefs = sync_test_util.getSyncAllPrefs();
-
-      passwordsSection.set(
-          'prefs.profile.password_manager_leak_detection.value', false);
-      sync_test_util.simulateSyncStatus({signedIn: true});
-      cr.webUIListenerCallback('sync-prefs-changed', syncPrefs);
-      Polymer.dom.flush();
-
-      assertFalse(passwordsSection.$.passwordsLeakDetectionCheckbox.disabled);
-      assertFalse(passwordsSection.$.passwordsLeakDetectionCheckbox.checked);
-      assertEquals(
-          loadTimeData.getString('passwordsLeakDetectionSignedInDescription'),
-          passwordsSection.$.passwordsLeakDetectionCheckbox.subLabel);
-    });
-
-    test('leakDetectionToggleSignedInAndSyncingWithTruePref', function() {
-      const passwordsSection =
-          elementFactory.createPasswordsSection(passwordManager, [], []);
-      const syncPrefs = sync_test_util.getSyncAllPrefs();
-
-      sync_test_util.simulateSyncStatus({signedIn: true});
-      cr.webUIListenerCallback('sync-prefs-changed', syncPrefs);
-      Polymer.dom.flush();
-
-      assertFalse(passwordsSection.$.passwordsLeakDetectionCheckbox.disabled);
-      assertTrue(passwordsSection.$.passwordsLeakDetectionCheckbox.checked);
-      assertEquals(
-          loadTimeData.getString('passwordsLeakDetectionSignedInDescription'),
-          passwordsSection.$.passwordsLeakDetectionCheckbox.subLabel);
     });
   });
 });

@@ -250,10 +250,7 @@ bool MseTrackBuffer::EnqueueProcessedFrame(
       if (!num_keyframe_time_greater_than_dependant_warnings_) {
         // At most once per each track (but potentially multiple times per
         // playback, if there are more than one tracks that exhibit this
-        // sequence in a playback) report a RAPPOR URL instance and also run the
-        // warning's callback.
-        media_log_->RecordRapporWithSecurityOrigin(
-            "Media.OriginUrl.MSE.KeyframeTimeGreaterThanDependant");
+        // sequence in a playback) run the warning's callback.
         DCHECK(parse_warning_cb_);
         parse_warning_cb_.Run(
             SourceBufferParseWarning::kKeyframeTimeGreaterThanDependant);
@@ -396,10 +393,7 @@ bool FrameProcessor::ProcessFrames(
     if (!num_muxed_sequence_mode_warnings_) {
       // At most once per SourceBuffer (but potentially multiple times per
       // playback, if there are more than one SourceBuffers used this way in a
-      // playback) report a RAPPOR URL instance and also run the warning's
-      // callback.
-      media_log_->RecordRapporWithSecurityOrigin(
-          "Media.OriginUrl.MSE.MuxedSequenceModeSourceBuffer");
+      // playback) run the warning's callback.
       DCHECK(parse_warning_cb_);
       parse_warning_cb_.Run(SourceBufferParseWarning::kMuxedSequenceMode);
     }
@@ -412,6 +406,17 @@ bool FrameProcessor::ProcessFrames(
            "recommended to instead use 'segments' mode for a multitrack "
            "SourceBuffer.";
   }
+
+  // Monitor |group_end_timestamp_| to detect any cases where it decreases while
+  // processing |frames| (which should all be from no more than 1 media
+  // segment), to see if (outside of mediasource fuzzers) real API usage hits
+  // this case frequently enough to potentially warrant MSE spec clarification
+  // of the last step in the coded frame processing algorithm. The previous
+  // value is not used as a baseline, since the spec would already handle that
+  // case interoperably (since we may be starting the processing of frames from
+  // a new media segment.) See https://crbug.com/920853 and
+  // https://github.com/w3c/media-source/issues/203.
+  base::TimeDelta max_group_end_timestamp = kNoTimestamp;
 
   // Implements the coded frame processing algorithm's outer loop for step 1.
   // Note that ProcessFrame() implements an inner loop for a single frame that
@@ -439,6 +444,9 @@ bool FrameProcessor::ProcessFrames(
       FlushProcessedFrames();
       return false;
     }
+
+    max_group_end_timestamp =
+        std::max(group_end_timestamp_, max_group_end_timestamp);
   }
 
   if (!FlushProcessedFrames())
@@ -449,6 +457,13 @@ bool FrameProcessor::ProcessFrames(
   // 5. If the media segment contains data beyond the current duration, then run
   //    the duration change algorithm with new duration set to the maximum of
   //    the current duration and the group end timestamp.
+  if (max_group_end_timestamp > group_end_timestamp_) {
+    // Log a parse warning. For now at least, we don't also log this to
+    // media-internals.
+    DCHECK(parse_warning_cb_);
+    parse_warning_cb_.Run(
+        SourceBufferParseWarning::kGroupEndTimestampDecreaseWithinMediaSegment);
+  }
   update_duration_cb_.Run(group_end_timestamp_);
 
   return true;
@@ -462,7 +477,7 @@ void FrameProcessor::SetGroupStartTimestampIfInSequenceMode(
     group_start_timestamp_ = timestamp_offset;
 
   // Changes to timestampOffset should invalidate the preroll buffer.
-  audio_preroll_buffer_ = NULL;
+  audio_preroll_buffer_.reset();
 }
 
 bool FrameProcessor::AddTrack(StreamParser::TrackId id,
@@ -542,7 +557,7 @@ void FrameProcessor::OnPossibleAudioConfigUpdate(
   DCHECK(config.IsValidConfig());
 
   // Always clear the preroll buffer when a config update is received.
-  audio_preroll_buffer_ = NULL;
+  audio_preroll_buffer_.reset();
 
   if (config.Matches(current_audio_config_))
     return;
@@ -638,7 +653,7 @@ bool FrameProcessor::HandlePartialAppendWindowTrimming(
           << "us that ends too far (" << delta
           << "us) from next buffer with PTS "
           << buffer->timestamp().InMicroseconds() << "us";
-      audio_preroll_buffer_ = NULL;
+      audio_preroll_buffer_.reset();
     }
   }
 

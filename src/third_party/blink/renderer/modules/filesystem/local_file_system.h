@@ -35,9 +35,9 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "third_party/blink/public/mojom/filesystem/file_system.mojom-blink.h"
+#include "third_party/blink/public/mojom/filesystem/file_system.mojom-blink-forward.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
-#include "third_party/blink/renderer/core/workers/worker_clients.h"
+#include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/platform/bindings/name_client.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
@@ -46,15 +46,14 @@
 
 namespace blink {
 
-class FileSystemClient;
 class ExecutionContext;
 class FileSystemCallbacks;
 class KURL;
 class ResolveURICallbacks;
 
-class LocalFileSystem final : public GarbageCollectedFinalized<LocalFileSystem>,
+class LocalFileSystem final : public GarbageCollected<LocalFileSystem>,
                               public Supplement<LocalFrame>,
-                              public Supplement<WorkerClients>,
+                              public Supplement<WorkerGlobalScope>,
                               public NameClient {
   USING_GARBAGE_COLLECTED_MIXIN(LocalFileSystem);
 
@@ -63,8 +62,8 @@ class LocalFileSystem final : public GarbageCollectedFinalized<LocalFileSystem>,
 
   static const char kSupplementName[];
 
-  LocalFileSystem(LocalFrame&, std::unique_ptr<FileSystemClient>);
-  LocalFileSystem(WorkerClients&, std::unique_ptr<FileSystemClient>);
+  explicit LocalFileSystem(LocalFrame&);
+  explicit LocalFileSystem(WorkerGlobalScope&);
   ~LocalFileSystem();
 
   void ResolveURL(ExecutionContext*,
@@ -76,8 +75,6 @@ class LocalFileSystem final : public GarbageCollectedFinalized<LocalFileSystem>,
                          int64_t size,
                          std::unique_ptr<FileSystemCallbacks>,
                          SynchronousType sync_type);
-
-  FileSystemClient& Client() const { return *client_; }
 
   static LocalFileSystem* From(ExecutionContext&);
 
@@ -110,10 +107,11 @@ class LocalFileSystem final : public GarbageCollectedFinalized<LocalFileSystem>,
                           std::unique_ptr<ResolveURICallbacks>,
                           SynchronousType sync_type);
 
-  const std::unique_ptr<FileSystemClient> client_;
-
   DISALLOW_COPY_AND_ASSIGN(LocalFileSystem);
 };
+
+void ProvideLocalFileSystemTo(LocalFrame&);
+void ProvideLocalFileSystemToWorker(WorkerGlobalScope&);
 
 }  // namespace blink
 

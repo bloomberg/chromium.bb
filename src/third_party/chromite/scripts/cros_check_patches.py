@@ -51,9 +51,9 @@ class PatchReporter(object):
     self.overlay_dir = os.path.realpath(overlay_dir)
     self.ebuild_cmd = ebuild_cmd
     self.equery_cmd = equery_cmd
-    self._invoke_command = cros_build_lib.RunCommand
+    self._invoke_command = cros_build_lib.run
     if sudo:
-      self._invoke_command = functools.partial(cros_build_lib.SudoRunCommand,
+      self._invoke_command = functools.partial(cros_build_lib.sudo_run,
                                                strict=False)
     self.ignored_packages = config['ignored_packages']
     self.package_count = 0
@@ -130,7 +130,7 @@ class PatchReporter(object):
     # "various patches (bugfixes/updates)", which isn't very useful for us.
     # So, if you noticed these omissions, it was intentional, not a bug. :-)
     patch_regex = r'^ [*] Applying ([^ ]*) [.][.][.].*'
-    output = cros_build_lib.RunCommand(
+    output = cros_build_lib.run(
         ['egrep', '-r', patch_regex, temp_space], print_cmd=False,
         redirect_stdout=True).output
     lines = output.splitlines()
@@ -151,7 +151,7 @@ class PatchReporter(object):
     Returns:
       An int representing the total number of discrepancies found.
     """
-    expected_patches = set(self.patches.keys())
+    expected_patches = set(self.patches)
     observed_patches = set(observed_patches)
     missing_patches = sorted(list(expected_patches - observed_patches))
     unexpected_patches = sorted(list(observed_patches - expected_patches))
@@ -227,7 +227,7 @@ def main(argv):
 
   deps = depgraph.DepGraphGenerator()
   deps.Initialize(depgraph_argv)
-  deps_tree, deps_info = deps.GenDependencyTree()
+  deps_tree, deps_info, _ = deps.GenDependencyTree()
   deps_map = deps.GenDependencyGraph(deps_tree, deps_info)
 
   reporter = PatchReporter(config, overlay_dir, ebuild_cmd, equery_cmd,
@@ -237,5 +237,5 @@ def main(argv):
 
   print('Packages analyzed: %d' % reporter.package_count)
   print('Patches observed: %d' % len(observed))
-  print('Patches expected: %d' % len(reporter.patches.keys()))
+  print('Patches expected: %d' % len(reporter.patches))
   sys.exit(diff_count)

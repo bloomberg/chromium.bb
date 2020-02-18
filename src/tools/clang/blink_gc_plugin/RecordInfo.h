@@ -88,6 +88,7 @@ class RecordInfo {
   const std::string& name() const { return name_; }
   Fields& GetFields();
   Bases& GetBases();
+  const clang::CXXBaseSpecifier* GetDirectGCBase();
   clang::CXXMethodDecl* GetTraceMethod();
   clang::CXXMethodDecl* GetTraceWrappersMethod();
   clang::CXXMethodDecl* GetTraceDispatchMethod();
@@ -97,8 +98,8 @@ class RecordInfo {
 
   bool IsHeapAllocatedCollection();
   bool IsGCDerived();
+  bool IsGCDirectlyDerived();
   bool IsGCAllocated();
-  bool IsGCFinalized();
   bool IsGCMixin();
   bool IsStackAllocated();
   bool IsNonNewable();
@@ -156,6 +157,8 @@ class RecordInfo {
   bool is_gc_derived_;
 
   std::vector<std::string> gc_base_names_;
+
+  const clang::CXXBaseSpecifier* directly_derived_gc_base_;
 
   friend class RecordCache;
 };

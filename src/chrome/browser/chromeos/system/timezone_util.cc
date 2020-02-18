@@ -20,6 +20,7 @@
 #include "base/synchronization/lock.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
@@ -150,6 +151,17 @@ base::string16 GetTimezoneName(const icu::TimeZone& timezone) {
   return result;
 }
 
+bool CanSetSystemTimezoneFromManagedGuestSession() {
+  const int automatic_detection_policy =
+      g_browser_process->local_state()->GetInteger(
+          prefs::kSystemTimezoneAutomaticDetectionPolicy);
+
+  return (automatic_detection_policy ==
+          enterprise_management::SystemTimezoneProto::DISABLED) ||
+         (automatic_detection_policy ==
+          enterprise_management::SystemTimezoneProto::USERS_DECIDE);
+}
+
 // Returns true if the given user is allowed to set the system timezone - that
 // is, the single timezone at TimezoneSettings::GetInstance()->GetTimezone(),
 // which is also stored in a file at /var/lib/timezone/localtime.
@@ -163,15 +175,18 @@ bool CanSetSystemTimezone(const user_manager::User* user) {
     case user_manager::USER_TYPE_KIOSK_APP:
     case user_manager::USER_TYPE_ARC_KIOSK_APP:
     case user_manager::USER_TYPE_ACTIVE_DIRECTORY:
+    case user_manager::USER_TYPE_WEB_KIOSK_APP:
       return true;
 
     case user_manager::USER_TYPE_GUEST:
-    case user_manager::USER_TYPE_PUBLIC_ACCOUNT:
       return false;
 
     case user_manager::USER_TYPE_CHILD:
       return base::FeatureList::IsEnabled(
           features::kParentAccessCodeForTimeChange);
+
+    case user_manager::USER_TYPE_PUBLIC_ACCOUNT:
+      return CanSetSystemTimezoneFromManagedGuestSession();
 
     case user_manager::NUM_USER_TYPES:
       NOTREACHED();

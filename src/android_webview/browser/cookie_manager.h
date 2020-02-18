@@ -8,12 +8,13 @@
 #include <memory>
 #include <vector>
 
+#include "base/android/scoped_java_ref.h"
 #include "base/containers/circular_deque.h"
-#include "base/lazy_instance.h"
+#include "base/no_destructor.h"
+#include "base/thread_annotations.h"
 #include "base/threading/thread.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "net/cookies/canonical_cookie.h"
 #include "services/network/public/mojom/cookie_manager.mojom-forward.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 
@@ -25,10 +26,7 @@ class SingleThreadTaskRunner;
 
 namespace net {
 class CookieStore;
-}
-
-namespace network {
-class CookieManager;
+class CanonicalCookie;
 }
 
 namespace android_webview {
@@ -39,6 +37,49 @@ namespace android_webview {
 // Since Java calls can be made on the IO Thread, and must synchronously return
 // a result, and the CookieStore API allows it to asynchronously return results,
 // the CookieStore must be run on its own thread, to prevent deadlock.
+//
+// Initialization:
+//
+// There are two possible scenarios: 1) The CookieManager is used before the
+// Network Service is initialized. 2) The CookieManager is not used until after
+// the Network Service is initialized (during content initialization).
+//
+// Case 2) is straightforward: Once the NetworkContext and the
+// network::mojom::CookieManager are created, the AwContentBrowserClient calls
+// PassMojoCookieManagerToAwCookieManager, which ends up calling
+// CookieManager::SwapMojoCookieManagerAsync, setting the |mojo_cookie_manager_|
+// member of CookieManager (the AW one; it's an unfortunately overloaded term).
+//
+// In case 1), the CookieManager creates a provisional CookieStore
+// |cookie_store_|, which it uses for all operations (because the
+// network::mojom::CookieManager doesn't exist yet): For every cookie task
+// it receives, the CookieManager first checks for the presence of a
+// |mojo_cookie_manager_|, and if it doesn't exist, the CookieManager checks for
+// the presence of a provisionally-created CookieStore, creating one if it
+// doesn't exist (in GetCookieStore). Then whichever one it found will handle
+// the cookie task.
+//
+// When it comes time to create the NetworkContext, which comes with a
+// network::mojom::CookieManager, the provisionally-created CookieStore needs to
+// transfer its contents (with the results of the pre-content-initialization
+// cookie tasks) to the newly created network::mojom::CookieManager. It does
+// this by flushing its contents to disk and then calling the same method,
+// CookieManager::SwapMojoCookieManagerAsync, which binds the newly created
+// network::mojom::CookieManager to |mojo_cookie_manager_|. Thereafter, any
+// cookie tasks will be handled by |mojo_cookie_manager_| because it now exists.
+//
+// This works because the newly created network::mojom::CookieManager reads from
+// the same on-disk backing store that the provisionally-created CookieStore
+// just flushed its contents to.
+//
+// Why is this not a race condition? This was addressed in crbug.com/933461.
+// If the CookieManager receives cookie tasks while the flush is in progress,
+// those tasks are added to a task queue, which is not executed until after the
+// new |mojo_cookie_manager_| has finished being set. The new
+// |mojo_cookie_manager_| only loads from disk upon receiving a task (*not* upon
+// creation, importantly; see CookieMonster::FetchAllCookiesIfNecessary, which
+// is only called if cookie tasks are received), so it will not try to load from
+// disk until the flush is complete.
 class CookieManager {
  public:
   static CookieManager* GetInstance();
@@ -91,19 +132,29 @@ class CookieManager {
                         const base::android::JavaParamRef<jobject>& obj);
   jboolean HasCookies(JNIEnv* env,
                       const base::android::JavaParamRef<jobject>& obj);
-  bool AllowFileSchemeCookies();
-  jboolean AllowFileSchemeCookies(
+  bool GetAllowFileSchemeCookies();
+  jboolean GetAllowFileSchemeCookies(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
-  void SetAcceptFileSchemeCookies(
+
+  // Configures whether CookieManager and WebView instances will honor requests
+  // to set cookies for file:// scheme URLs. This method must be called (and
+  // must finish execution) before calling any other WebView APIs which modify
+  // the cookie store (otherwise, this is not guaranteed to succeed).
+  //
+  // This blocks the calling thread until its work is done to achieve this
+  // guarantee (otherwise other mojo::Remote<network::mojom::CookieManager>
+  // instances might be able to modify the underlying net::CookieStore before
+  // this call finishes.
+  void SetAllowFileSchemeCookies(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
-      jboolean accept);
+      jboolean allow);
 
   base::FilePath GetCookieStorePath();
 
  private:
-  friend struct base::LazyInstanceTraitsBase<CookieManager>;
+  friend class base::NoDestructor<CookieManager>;
 
   CookieManager();
   ~CookieManager();
@@ -160,25 +211,25 @@ class CookieManager {
                            bool* result,
                            const net::CookieList& cookies);
 
-  // |result| indicates whether or not this call was successful, indicating
-  // whether we may update |accept_file_scheme_cookies_|.
-  void AllowFileSchemeCookiesAsyncHelper(bool accept,
-                                         bool* result,
-                                         base::OnceClosure complete);
-  void AllowFileSchemeCookiesCompleted(base::OnceClosure complete,
-                                       bool* result,
-                                       bool value);
+  void SetAllowFileSchemeCookiesAsyncHelper(bool allow,
+                                            base::OnceClosure complete);
+  // |can_change_schemes| indicates whether or not this call was successful,
+  // indicating whether we may update |allow_file_scheme_cookies_|.
+  void SetAllowFileSchemeCookiesCompleted(base::OnceClosure complete,
+                                          bool allow,
+                                          bool can_change_schemes);
   void MigrateCookieStorePath();
 
   base::FilePath cookie_store_path_;
 
-  // This protects the following two bools, as they're used on multiple threads.
-  base::Lock accept_file_scheme_cookies_lock_;
+  // This protects the following bool, as it's used on multiple threads.
+  base::Lock allow_file_scheme_cookies_lock_;
   // True if cookies should be allowed for file URLs. Can only be changed prior
   // to creating the CookieStore.
-  bool accept_file_scheme_cookies_;
+  bool allow_file_scheme_cookies_ GUARDED_BY(allow_file_scheme_cookies_lock_);
   // True once the cookie store has been created. Just used to track when
-  // |accept_file_scheme_cookies_| can no longer be modified.
+  // |allow_file_scheme_cookies_| can no longer be modified. Only accessed on
+  // |cookie_store_task_runner_|.
   bool cookie_store_created_;
 
   base::Thread cookie_store_client_thread_;
@@ -196,7 +247,7 @@ class CookieManager {
   // SetMojoCookieManager()'s work is done. This is modified on different
   // threads, so accesses must be guarded by |task_queue_lock_|.
   base::Lock task_queue_lock_;
-  base::circular_deque<base::OnceClosure> tasks_;
+  base::circular_deque<base::OnceClosure> tasks_ GUARDED_BY(task_queue_lock_);
 
   // The CookieManager shared with the NetworkContext.
   mojo::Remote<network::mojom::CookieManager> mojo_cookie_manager_;

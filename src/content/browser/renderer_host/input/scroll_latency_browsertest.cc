@@ -5,7 +5,6 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
@@ -101,15 +100,9 @@ class ScrollLatencyBrowserTest : public ContentBrowserTest {
     // instead of starting a new one.
     command_line->AppendSwitchASCII(
         cc::switches::kCCScrollAnimationDurationForTesting, "10000000");
-    command_line->AppendSwitch(switches::kAllowPreCommitInput);
   }
 
   void LoadURL() {
-    WebContents* contents = shell()->web_contents();
-    WebPreferences prefs =
-        contents->GetRenderViewHost()->GetWebkitPreferences();
-    prefs.mock_scrollbars_enabled = true;
-    contents->GetRenderViewHost()->UpdateWebkitPreferences(prefs);
     const GURL data_url(kDataURL);
     EXPECT_TRUE(NavigateToURL(shell(), data_url));
 
@@ -275,12 +268,9 @@ class ScrollLatencyScrollbarBrowserTest : public ScrollLatencyBrowserTest {
   void SetUpCommandLine(base::CommandLine* command_line) override {
     ScrollLatencyBrowserTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(::switches::kDisableSmoothScrolling);
-    // Enable |kScrollbarInjectScrollGestures|, as these tests depend on it
-    // being on. Disable kOverlayScrollbar since overlay scrollbars are not
+    // Disable kOverlayScrollbar since overlay scrollbars are not
     // hit-testable (thus input is not routed to scrollbars).
-    scoped_feature_list_.InitWithFeatures(
-        {blink::features::kScrollbarInjectScrollGestures},
-        {features::kOverlayScrollbar});
+    scoped_feature_list_.InitAndDisableFeature({features::kOverlayScrollbar});
   }
 
   ~ScrollLatencyScrollbarBrowserTest() override {}
@@ -294,9 +284,9 @@ class ScrollLatencyScrollbarBrowserTest : public ScrollLatencyBrowserTest {
     //    coordinates to manipulate the scrollbar is different from other
     //    platforms.
     // We could overcome the first limitation, by toggling various features
-    // and WebPreferences (e.g. kOverlayScrollbar feature, and
-    // viewport_enabled and use_solid_color_scrollbars WebPreferences) but at
-    // that point, we're not really testing a shipping configuration.
+    // and WebPreferences (e.g. kOverlayScrollbar feature, and viewport_enabled
+    // WebPreferences) but at that point, we're not really testing a shipping
+    // configuration.
 #if !defined(OS_ANDROID)
 
     // Click on the forward scrollbar button to induce a compositor thread
@@ -442,8 +432,9 @@ IN_PROC_BROWSER_TEST_F(ScrollLatencyScrollbarBrowserTest,
   RunScrollbarButtonLatencyTest();
 }
 
+// Disabled due to test failures (crbug.com/1026720).
 IN_PROC_BROWSER_TEST_F(ScrollLatencyScrollbarBrowserTest,
-                       ScrollbarThumbDragLatency) {
+                       DISABLED_ScrollbarThumbDragLatency) {
   LoadURL();
 
   RunScrollbarThumbDragLatencyTest();

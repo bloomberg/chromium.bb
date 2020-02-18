@@ -5,9 +5,12 @@
 #include "ui/events/ozone/evdev/touch_filter/open_palm_detection_filter.h"
 
 namespace ui {
+
 OpenPalmDetectionFilter::OpenPalmDetectionFilter(
     SharedPalmDetectionFilterState* shared_palm_state)
     : PalmDetectionFilter(shared_palm_state) {}
+
+OpenPalmDetectionFilter::~OpenPalmDetectionFilter() {}
 
 void OpenPalmDetectionFilter::Filter(
     const std::vector<InProgressTouchEvdev>& touches,
@@ -16,12 +19,14 @@ void OpenPalmDetectionFilter::Filter(
     std::bitset<kNumTouchEvdevSlots>* slots_to_suppress) {
   slots_to_hold->reset();
   slots_to_suppress->reset();
+  // Open Palm doesn't know if it's running on a stylus device, or a
+  // touchscreen. It doesn't track active fingers/palms on the device.
 }
 
 const char OpenPalmDetectionFilter::kFilterName[] = "OpenPalmDetectionFilter";
+
 std::string OpenPalmDetectionFilter::FilterNameForTesting() const {
   return kFilterName;
 }
 
-OpenPalmDetectionFilter::~OpenPalmDetectionFilter() {}
 }  // namespace ui

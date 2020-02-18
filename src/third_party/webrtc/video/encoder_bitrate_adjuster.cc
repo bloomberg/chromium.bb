@@ -11,9 +11,9 @@
 #include "video/encoder_bitrate_adjuster.h"
 
 #include <algorithm>
+#include <memory>
 #include <vector>
 
-#include "absl/memory/memory.h"
 #include "rtc_base/experiments/rate_control_settings.h"
 #include "rtc_base/logging.h"
 #include "rtc_base/time_utils.h"
@@ -87,7 +87,7 @@ VideoBitrateAllocation EncoderBitrateAdjuster::AdjustRateAllocation(
         ++active_tls_[si];
         if (!overshoot_detectors_[si][ti]) {
           overshoot_detectors_[si][ti] =
-              absl::make_unique<EncoderOvershootDetector>(kWindowSizeMs);
+              std::make_unique<EncoderOvershootDetector>(kWindowSizeMs);
           frames_since_layout_change_ = 0;
         }
       } else if (overshoot_detectors_[si][ti]) {
@@ -288,6 +288,10 @@ VideoBitrateAllocation EncoderBitrateAdjuster::AdjustRateAllocation(
       }
     }
   }
+
+  // Since no spatial layers or streams are toggled by the adjustment
+  // bw-limited flag stays the same.
+  adjusted_allocation.set_bw_limited(rates.bitrate.is_bw_limited());
 
   return adjusted_allocation;
 }

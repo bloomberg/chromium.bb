@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/macros.h"
-#include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
+#include "components/page_load_metrics/browser/page_load_metrics_observer.h"
 #include "net/cookies/canonical_cookie.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -38,6 +38,12 @@ class ThirdPartyMetricsObserver
                             const GURL& first_party_url,
                             bool local,
                             bool blocked_by_policy) override;
+  void OnDidFinishSubFrameNavigation(
+      content::NavigationHandle* navigation_handle) override;
+  void OnFrameDeleted(content::RenderFrameHost* render_frame_host) override;
+  void OnTimingUpdate(
+      content::RenderFrameHost* subframe_rfh,
+      const page_load_metrics::mojom::PageLoadTiming& timing) override;
 
  private:
   enum class AccessType { kRead, kWrite };
@@ -66,14 +72,18 @@ class ThirdPartyMetricsObserver
   // third party document.cookie access happens when the context's registrable
   // domain differs from the main frame's. A third party resource request
   // happens when the URL request's registrable domain differs from the main
-  // frame's. URLs which have no registrable domain are not considered third
-  // party.
+  // frame's. For URLs which have no registrable domain, the hostname is used
+  // instead.
   std::map<std::string, CookieAccessTypes> third_party_cookie_access_types_;
 
   // A map of third parties that have accessed storage other than cookies. A
   // third party access happens when the context's origin differs from the main
   // frame's.
   std::map<url::Origin, StorageAccessTypes> third_party_storage_access_types_;
+
+  // A set of RenderFrameHosts that we've recorded timing data for. The
+  // RenderFrameHosts are later removed when they navigate again or are deleted.
+  std::set<content::RenderFrameHost*> recorded_frames_;
 
   // If the page has any blocked_by_policy cookie or DOM storage access (e.g.,
   // block third-party cookies is enabled) then we don't want to record any

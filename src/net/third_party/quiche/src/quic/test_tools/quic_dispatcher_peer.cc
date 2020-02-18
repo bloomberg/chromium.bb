@@ -11,6 +11,12 @@ namespace quic {
 namespace test {
 
 // static
+QuicTimeWaitListManager* QuicDispatcherPeer::GetTimeWaitListManager(
+    QuicDispatcher* dispatcher) {
+  return dispatcher->time_wait_list_manager_.get();
+}
+
+// static
 void QuicDispatcherPeer::SetTimeWaitListManager(
     QuicDispatcher* dispatcher,
     QuicTimeWaitListManager* time_wait_list_manager) {
@@ -77,8 +83,7 @@ const QuicDispatcher::SessionMap& QuicDispatcherPeer::session_map(
 void QuicDispatcherPeer::set_new_sessions_allowed_per_event_loop(
     QuicDispatcher* dispatcher,
     size_t num_session_allowed) {
-  return dispatcher->set_new_sessions_allowed_per_event_loop(
-      num_session_allowed);
+  dispatcher->new_sessions_allowed_per_event_loop_ = num_session_allowed;
 }
 
 // static

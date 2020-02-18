@@ -9,6 +9,7 @@
 #include <algorithm>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/containers/circular_deque.h"
 #include "base/files/file_util.h"
 #include "base/guid.h"
@@ -71,9 +72,9 @@
 #include "net/url_request/url_request_job.h"
 #include "net/url_request/url_request_job_factory.h"
 #include "net/url_request/url_request_job_factory_impl.h"
-#include "storage/browser/fileapi/file_system_context.h"
-#include "storage/browser/fileapi/file_system_operation_runner.h"
-#include "storage/browser/fileapi/file_system_url.h"
+#include "storage/browser/file_system/file_system_context.h"
+#include "storage/browser/file_system/file_system_operation_runner.h"
+#include "storage/browser/file_system/file_system_url.h"
 #include "ui/base/page_transition_types.h"
 #include "url/origin.h"
 
@@ -932,7 +933,7 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
   scoped_refptr<DownloadsOpenFunction> scoped_open(new DownloadsOpenFunction());
   scoped_open->set_user_gesture(true);
   base::Value args_list(base::Value::Type::LIST);
-  args_list.GetList().emplace_back(static_cast<int>(download_item->GetId()));
+  args_list.Append(static_cast<int>(download_item->GetId()));
   scoped_open->SetArgs(std::move(args_list));
   scoped_open->set_browser_context(current_browser()->profile());
   scoped_open->set_extension(extension());
@@ -1789,9 +1790,8 @@ class CustomResponse : public net::test_server::HttpResponse {
         first_request_(first_request) {}
   ~CustomResponse() override {}
 
-  void SendResponse(
-      const net::test_server::SendBytesCallback& send,
-      const net::test_server::SendCompleteCallback& done) override {
+  void SendResponse(const net::test_server::SendBytesCallback& send,
+                    net::test_server::SendCompleteCallback done) override {
     std::string response(
         "HTTP/1.1 200 OK\r\n"
         "Content-type: application/octet-stream\r\n"
@@ -1802,7 +1802,7 @@ class CustomResponse : public net::test_server::HttpResponse {
     if (first_request_) {
       *callback_ = std::move(done);
       *task_runner_ = base::ThreadTaskRunnerHandle::Get().get();
-      send.Run(response, base::BindRepeating([]() {}));
+      send.Run(response, base::DoNothing());
     } else {
       send.Run(response, std::move(done));
     }
@@ -1858,7 +1858,8 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
 
   item->SimulateErrorForTesting(
       download::DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED);
-  embedded_test_server_io_runner->PostTask(FROM_HERE, complete_callback);
+  embedded_test_server_io_runner->PostTask(FROM_HERE,
+                                           std::move(complete_callback));
 
   ASSERT_TRUE(WaitFor(downloads::OnChanged::kEventName,
                       base::StringPrintf("[{\"id\":%d,"
@@ -1900,31 +1901,31 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
   GoOnTheRecord();
 
   static const char* const kUnsafeHeaders[] = {
-    "Accept-chArsEt",
-    "accept-eNcoding",
-    "coNNection",
-    "coNteNt-leNgth",
-    "cooKIE",
-    "cOOkie2",
-    "coNteNt-traNsfer-eNcodiNg",
-    "dAtE",
-    "ExpEcT",
-    "hOsT",
-    "kEEp-aLivE",
-    "rEfErEr",
-    "tE",
-    "trAilER",
-    "trANsfer-eNcodiNg",
-    "upGRAde",
-    "usER-agENt",
-    "viA",
-    "pRoxY-",
-    "sEc-",
-    "pRoxY-probably-not-evil",
-    "sEc-probably-not-evil",
-    "oRiGiN",
-    "Access-Control-Request-Headers",
-    "Access-Control-Request-Method",
+      "Accept-chArsEt",
+      "accept-eNcoding",
+      "coNNection",
+      "coNteNt-leNgth",
+      "cooKIE",
+      "cOOkie2",
+      "dAtE",
+      "DNT",
+      "ExpEcT",
+      "hOsT",
+      "kEEp-aLivE",
+      "rEfErEr",
+      "tE",
+      "trAilER",
+      "trANsfer-eNcodiNg",
+      "upGRAde",
+      "usER-agENt",
+      "viA",
+      "pRoxY-",
+      "sEc-",
+      "pRoxY-probably-not-evil",
+      "sEc-probably-not-evil",
+      "oRiGiN",
+      "Access-Control-Request-Headers",
+      "Access-Control-Request-Method",
   };
 
   for (size_t index = 0; index < base::size(kUnsafeHeaders); ++index) {

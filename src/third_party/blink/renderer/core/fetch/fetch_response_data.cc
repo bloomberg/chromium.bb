@@ -4,6 +4,10 @@
 
 #include "third_party/blink/renderer/core/fetch/fetch_response_data.h"
 
+#include "services/network/public/cpp/content_security_policy.h"
+#include "services/network/public/cpp/features.h"
+#include "services/network/public/mojom/content_security_policy.mojom-blink.h"
+#include "third_party/blink/public/mojom/fetch/fetch_api_response.mojom-blink.h"
 #include "third_party/blink/renderer/core/fetch/fetch_header_list.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
@@ -11,10 +15,60 @@
 #include "third_party/blink/renderer/platform/loader/cors/cors.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_utils.h"
 #include "third_party/blink/renderer/platform/network/http_names.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
+#include "url/gurl.h"
 
 using Type = network::mojom::FetchResponseType;
 using ResponseSource = network::mojom::FetchResponseSource;
+
+// TODO(lfg): Stop converting from/to blink type. Instead use mojo to
+// automagically convert this.
+namespace network {
+namespace mojom {
+
+blink::CSPSourcePtr ConvertToBlink(CSPSourcePtr source) {
+  return blink::CSPSource::New(
+      String::FromUTF8(source->scheme), String::FromUTF8(source->host),
+      source->port, String::FromUTF8(source->path), source->is_host_wildcard,
+      source->is_port_wildcard);
+}
+
+blink::CSPSourceListPtr ConvertToBlink(CSPSourceListPtr source_list) {
+  WTF::Vector<blink::CSPSourcePtr> sources;
+  for (auto& it : source_list->sources)
+    sources.push_back(ConvertToBlink(std::move(it)));
+
+  return blink::CSPSourceList::New(std::move(sources), source_list->allow_self,
+                                   source_list->allow_star);
+}
+
+blink::CSPDirective::Name ConvertToBlink(CSPDirective::Name name) {
+  return static_cast<blink::CSPDirective::Name>(name);
+}
+
+blink::CSPDirectivePtr ConvertToBlink(CSPDirectivePtr csp) {
+  return blink::CSPDirective::New(ConvertToBlink(csp->name),
+                                  ConvertToBlink(std::move(csp->source_list)));
+}
+
+blink::ContentSecurityPolicyPtr ConvertToBlink(ContentSecurityPolicyPtr csp) {
+  WTF::Vector<blink::CSPDirectivePtr> directives;
+  for (auto& directive : csp->directives)
+    directives.push_back(ConvertToBlink(std::move(directive)));
+
+  WTF::Vector<WTF::String> report_endpoints;
+  for (auto& endpoint : csp->report_endpoints)
+    report_endpoints.push_back(String::FromUTF8(endpoint));
+
+  return blink::ContentSecurityPolicy::New(std::move(directives),
+                                           csp->use_reporting_api,
+                                           std::move(report_endpoints));
+}
+
+}  // namespace mojom
+}  // namespace network
 
 namespace blink {
 
@@ -138,6 +192,13 @@ const KURL* FetchResponseData::Url() const {
   return &url_list_.back();
 }
 
+FetchHeaderList* FetchResponseData::InternalHeaderList() const {
+  if (internal_response_) {
+    return internal_response_->HeaderList();
+  }
+  return HeaderList();
+}
+
 String FetchResponseData::MimeType() const {
   return mime_type_;
 }
@@ -229,11 +290,11 @@ FetchResponseData* FetchResponseData::Clone(ScriptState* script_state,
   return new_response;
 }
 
-mojom::blink::FetchAPIResponsePtr
-FetchResponseData::PopulateFetchAPIResponse() {
+mojom::blink::FetchAPIResponsePtr FetchResponseData::PopulateFetchAPIResponse(
+    const KURL& request_url) {
   if (internal_response_) {
     mojom::blink::FetchAPIResponsePtr response =
-        internal_response_->PopulateFetchAPIResponse();
+        internal_response_->PopulateFetchAPIResponse(request_url);
     response->response_type = type_;
     response->response_source = response_source_;
     response->cors_exposed_header_names =
@@ -251,8 +312,27 @@ FetchResponseData::PopulateFetchAPIResponse() {
   response->cache_storage_cache_name = cache_storage_cache_name_;
   response->cors_exposed_header_names =
       HeaderSetToVector(cors_exposed_header_names_);
+  response->side_data_blob = side_data_blob_;
   for (const auto& header : HeaderList()->List())
     response->headers.insert(header.first, header.second);
+
+  // Check if there's a Content-Security-Policy header and parse it if
+  // necessary.
+  // TODO(lfg). What about report only header?
+  if (base::FeatureList::IsEnabled(
+          network::features::kOutOfBlinkFrameAncestors)) {
+    String content_security_policy_header;
+    if (HeaderList()->Get("content-security-policy",
+                          content_security_policy_header)) {
+      network::ContentSecurityPolicy policy;
+      if (policy.Parse(request_url,
+                       StringUTF8Adaptor(content_security_policy_header)
+                           .AsStringPiece())) {
+        response->content_security_policy =
+            ConvertToBlink(policy.TakeContentSecurityPolicy());
+      }
+    }
+  }
   return response;
 }
 

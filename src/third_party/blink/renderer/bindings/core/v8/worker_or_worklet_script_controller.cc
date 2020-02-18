@@ -33,7 +33,6 @@
 #include <memory>
 
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/renderer/bindings/core/v8/initialize_v8_extras_binding.h"
 #include "third_party/blink/renderer/bindings/core/v8/referrer_script_info.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"
@@ -115,9 +114,8 @@ void WorkerOrWorkletScriptController::Dispose() {
   rejected_promises_->Dispose();
   rejected_promises_ = nullptr;
 
-  world_->Dispose();
-
   DisposeContextIfNeeded();
+  world_->Dispose();
 }
 
 void WorkerOrWorkletScriptController::DisposeContextIfNeeded() {
@@ -133,9 +131,23 @@ void WorkerOrWorkletScriptController::DisposeContextIfNeeded() {
 
   {
     ScriptState::Scope scope(script_state_);
+    v8::Local<v8::Context> context = script_state_->GetContext();
+    // After disposing the world, all Blink->V8 references are gone. Blink
+    // stand-alone GCs may collect the WorkerOrWorkletGlobalScope because there
+    // are no more roots (V8->Blink references that are actually found by
+    // iterating Blink->V8 references). Clear the back pointers to avoid
+    // referring to cleared memory on the next GC in case the JS wrapper objects
+    // survived.
+    v8::Local<v8::Object> global_proxy_object = context->Global();
+    v8::Local<v8::Object> global_object =
+        global_proxy_object->GetPrototype().As<v8::Object>();
+    DCHECK(!global_object.IsEmpty());
+    V8DOMWrapper::ClearNativeInfo(isolate_, global_object);
+    V8DOMWrapper::ClearNativeInfo(isolate_, global_proxy_object);
+
     // This detaches v8::MicrotaskQueue pointer from v8::Context, so that we can
     // destroy EventLoop safely.
-    script_state_->GetContext()->DetachGlobal();
+    context->DetachGlobal();
   }
 
   script_state_->DisposePerContextData();
@@ -308,10 +320,6 @@ void WorkerOrWorkletScriptController::PrepareForEvaluation() {
   wrapper_type_info->InstallConditionalFeatures(
       context, *world_, global_object, v8::Local<v8::Object>(),
       v8::Local<v8::Function>(), global_interface_template);
-
-  // This can only be called after the global object is fully initialised, as it
-  // reads values from it.
-  InitializeV8ExtrasBinding(script_state_);
 }
 
 void WorkerOrWorkletScriptController::DisableEvalInternal(
@@ -372,7 +380,8 @@ ScriptValue WorkerOrWorkletScriptController::EvaluateInternal(
     execution_state_->error_message = ToCoreString(message->Get());
     execution_state_->location_ = SourceLocation::FromMessage(
         isolate_, message, ExecutionContext::From(script_state_));
-    execution_state_->exception = ScriptValue(script_state_, block.Exception());
+    execution_state_->exception =
+        ScriptValue(script_state_->GetIsolate(), block.Exception());
     block.Reset();
   } else {
     execution_state_->had_exception = false;
@@ -382,7 +391,7 @@ ScriptValue WorkerOrWorkletScriptController::EvaluateInternal(
   if (!maybe_result.ToLocal(&result) || result->IsUndefined())
     return ScriptValue();
 
-  return ScriptValue(script_state_, result);
+  return ScriptValue(script_state_->GetIsolate(), result);
 }
 
 bool WorkerOrWorkletScriptController::Evaluate(

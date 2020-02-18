@@ -38,10 +38,8 @@
 
 namespace blink {
 
-using namespace html_names;
-
 HTMLFieldSetElement::HTMLFieldSetElement(Document& document)
-    : HTMLFormControlElement(kFieldsetTag, document) {}
+    : HTMLFormControlElement(html_names::kFieldsetTag, document) {}
 
 bool HTMLFieldSetElement::MatchesValidityPseudoClasses() const {
   return true;
@@ -137,10 +135,6 @@ HTMLLegendElement* HTMLFieldSetElement::Legend() const {
 
 HTMLCollection* HTMLFieldSetElement::elements() {
   return EnsureCachedCollection<HTMLCollection>(kFormControls);
-}
-
-int HTMLFieldSetElement::tabIndex() const {
-  return HTMLElement::tabIndex();
 }
 
 }  // namespace blink

@@ -1,17 +1,6 @@
 {
   "layers": [
     {
-      "name": "LayoutView #document",
-      "bounds": [800, 600],
-      "drawsContent": false,
-      "backgroundColor": "#FFFFFF"
-    },
-    {
-      "name": "Scrolling Layer",
-      "bounds": [800, 600],
-      "drawsContent": false
-    },
-    {
       "name": "Scrolling Contents Layer",
       "bounds": [800, 600],
       "contentsOpaque": true,
@@ -26,11 +15,6 @@
           "object": "LayoutNGBlockFlow HTML",
           "rect": [0, 50, 106, 106],
           "reason": "chunk disappeared"
-        },
-        {
-          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (positioned) DIV",
-          "rect": [0, 50, 106, 106],
-          "reason": "chunk appeared"
         },
         {
           "object": "VerticalScrollbar",

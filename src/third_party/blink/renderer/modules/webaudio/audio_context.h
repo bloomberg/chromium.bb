@@ -56,6 +56,8 @@ class MODULES_EXPORT AudioContext : public BaseAudioContext {
 
   bool HasRealtimeConstraint() final { return true; }
 
+  bool IsPullingAudioGraph() const final;
+
   AudioTimestamp* getOutputTimestamp(ScriptState*) const;
   double baseLatency() const;
 
@@ -173,6 +175,9 @@ class MODULES_EXPORT AudioContext : public BaseAudioContext {
 
   // Represents whether a context is suspended by explicit |context.suspend()|.
   bool suspended_by_user_ = false;
+
+  // baseLatency for this context
+  double base_latency_ = 0;
 
   // AudioContextManager for reporting audibility.
   mojo::Remote<mojom::blink::AudioContextManager> audio_context_manager_;

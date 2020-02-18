@@ -5,72 +5,100 @@
 package org.chromium.weblayer_private;
 
 import android.os.RemoteException;
-import android.util.AndroidRuntimeException;
 
-import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
-import org.chromium.weblayer_private.aidl.INavigationController;
-import org.chromium.weblayer_private.aidl.INavigationControllerClient;
+import org.chromium.base.annotations.NativeMethods;
+import org.chromium.weblayer_private.interfaces.INavigationController;
+import org.chromium.weblayer_private.interfaces.INavigationControllerClient;
+import org.chromium.weblayer_private.interfaces.StrictModeWorkaround;
 
 /**
  * Acts as the bridge between java and the C++ implementation of of NavigationController.
  */
 @JNINamespace("weblayer")
 public final class NavigationControllerImpl extends INavigationController.Stub {
-    private static final String TAG = "WebLayer";
-
     private long mNativeNavigationController;
-    private BrowserControllerImpl mBrowserController;
+    private TabImpl mTab;
     private INavigationControllerClient mNavigationControllerClient;
 
-    public NavigationControllerImpl(
-            BrowserControllerImpl browserController, INavigationControllerClient client) {
+    public NavigationControllerImpl(TabImpl tab, INavigationControllerClient client) {
         mNavigationControllerClient = client;
-        mBrowserController = browserController;
+        mTab = tab;
         mNativeNavigationController =
-                nativeGetNavigationController(browserController.getNativeBrowserController());
-        nativeSetNavigationControllerImpl(mNativeNavigationController);
+                NavigationControllerImplJni.get().getNavigationController(tab.getNativeTab());
+        NavigationControllerImplJni.get().setNavigationControllerImpl(
+                mNativeNavigationController, NavigationControllerImpl.this);
     }
 
     @Override
     public void navigate(String uri) {
-        nativeNavigate(mNativeNavigationController, uri);
+        StrictModeWorkaround.apply();
+        NavigationControllerImplJni.get().navigate(
+                mNativeNavigationController, NavigationControllerImpl.this, uri);
     }
 
     @Override
     public void goBack() {
-        nativeGoBack(mNativeNavigationController);
+        StrictModeWorkaround.apply();
+        NavigationControllerImplJni.get().goBack(
+                mNativeNavigationController, NavigationControllerImpl.this);
     }
 
     @Override
     public void goForward() {
-        nativeGoForward(mNativeNavigationController);
+        StrictModeWorkaround.apply();
+        NavigationControllerImplJni.get().goForward(
+                mNativeNavigationController, NavigationControllerImpl.this);
+    }
+
+    @Override
+    public boolean canGoBack() {
+        StrictModeWorkaround.apply();
+        return NavigationControllerImplJni.get().canGoBack(
+                mNativeNavigationController, NavigationControllerImpl.this);
+    }
+
+    @Override
+    public boolean canGoForward() {
+        StrictModeWorkaround.apply();
+        return NavigationControllerImplJni.get().canGoForward(
+                mNativeNavigationController, NavigationControllerImpl.this);
     }
 
     @Override
     public void reload() {
-        nativeReload(mNativeNavigationController);
+        StrictModeWorkaround.apply();
+        NavigationControllerImplJni.get().reload(
+                mNativeNavigationController, NavigationControllerImpl.this);
     }
 
     @Override
     public void stop() {
-        nativeStop(mNativeNavigationController);
+        StrictModeWorkaround.apply();
+        NavigationControllerImplJni.get().stop(
+                mNativeNavigationController, NavigationControllerImpl.this);
     }
 
     @Override
     public int getNavigationListSize() {
-        return nativeGetNavigationListSize(mNativeNavigationController);
+        StrictModeWorkaround.apply();
+        return NavigationControllerImplJni.get().getNavigationListSize(
+                mNativeNavigationController, NavigationControllerImpl.this);
     }
 
     @Override
     public int getNavigationListCurrentIndex() {
-        return nativeGetNavigationListCurrentIndex(mNativeNavigationController);
+        StrictModeWorkaround.apply();
+        return NavigationControllerImplJni.get().getNavigationListCurrentIndex(
+                mNativeNavigationController, NavigationControllerImpl.this);
     }
 
     @Override
     public String getNavigationEntryDisplayUri(int index) {
-        return nativeGetNavigationEntryDisplayUri(mNativeNavigationController, index);
+        StrictModeWorkaround.apply();
+        return NavigationControllerImplJni.get().getNavigationEntryDisplayUri(
+                mNativeNavigationController, NavigationControllerImpl.this, index);
     }
 
     @CalledByNative
@@ -79,65 +107,64 @@ public final class NavigationControllerImpl extends INavigationController.Stub {
     }
 
     @CalledByNative
-    private void navigationStarted(NavigationImpl navigation) {
-        try {
-            mNavigationControllerClient.navigationStarted(navigation.getClientNavigation());
-        } catch (RemoteException e) {
-            Log.e(TAG, "Failed to call navigationStarted.", e);
-            throw new AndroidRuntimeException(e);
-        }
+    private void navigationStarted(NavigationImpl navigation) throws RemoteException {
+        mNavigationControllerClient.navigationStarted(navigation.getClientNavigation());
     }
 
     @CalledByNative
-    private void navigationRedirected(NavigationImpl navigation) {
-        try {
-            mNavigationControllerClient.navigationRedirected(navigation.getClientNavigation());
-        } catch (RemoteException e) {
-            Log.e(TAG, "Failed to call navigationRedirected.", e);
-            throw new AndroidRuntimeException(e);
-        }
+    private void navigationRedirected(NavigationImpl navigation) throws RemoteException {
+        mNavigationControllerClient.navigationRedirected(navigation.getClientNavigation());
     }
 
     @CalledByNative
-    private void navigationCommitted(NavigationImpl navigation) {
-        try {
-            mNavigationControllerClient.navigationCommitted(navigation.getClientNavigation());
-        } catch (RemoteException e) {
-            Log.e(TAG, "Failed to call navigationCommitted.", e);
-            throw new AndroidRuntimeException(e);
-        }
+    private void readyToCommitNavigation(NavigationImpl navigation) throws RemoteException {
+        mNavigationControllerClient.readyToCommitNavigation(navigation.getClientNavigation());
     }
 
     @CalledByNative
-    private void navigationCompleted(NavigationImpl navigation) {
-        try {
-            mNavigationControllerClient.navigationCompleted(navigation.getClientNavigation());
-        } catch (RemoteException e) {
-            Log.e(TAG, "Failed to call navigationCompleted.", e);
-            throw new AndroidRuntimeException(e);
-        }
+    private void navigationCompleted(NavigationImpl navigation) throws RemoteException {
+        mNavigationControllerClient.navigationCompleted(navigation.getClientNavigation());
     }
 
     @CalledByNative
-    private void navigationFailed(NavigationImpl navigation) {
-        try {
-            mNavigationControllerClient.navigationFailed(navigation.getClientNavigation());
-        } catch (RemoteException e) {
-            Log.e(TAG, "Failed to call navigationFailed.", e);
-            throw new AndroidRuntimeException(e);
-        }
+    private void navigationFailed(NavigationImpl navigation) throws RemoteException {
+        mNavigationControllerClient.navigationFailed(navigation.getClientNavigation());
     }
 
-    private native void nativeSetNavigationControllerImpl(long nativeNavigationControllerImpl);
+    @CalledByNative
+    private void loadStateChanged(boolean isLoading, boolean toDifferentDocument)
+            throws RemoteException {
+        mNavigationControllerClient.loadStateChanged(isLoading, toDifferentDocument);
+    }
 
-    private static native long nativeGetNavigationController(long browserController);
-    private native void nativeNavigate(long nativeNavigationControllerImpl, String uri);
-    private native void nativeGoBack(long nativeNavigationControllerImpl);
-    private native void nativeGoForward(long nativeNavigationControllerImpl);
-    private native void nativeReload(long nativeNavigationControllerImpl);
-    private native void nativeStop(long nativeNavigationControllerImpl);
-    private native int nativeGetNavigationListSize(long nativeNavigationControllerImpl);
-    private native int nativeGetNavigationListCurrentIndex(long nativeNavigationControllerImpl);
-    private native String nativeGetNavigationEntryDisplayUri(
-            long nativeNavigationControllerImpl, int index);
+    @CalledByNative
+    private void loadProgressChanged(double progress) throws RemoteException {
+        mNavigationControllerClient.loadProgressChanged(progress);
+    }
+
+    @CalledByNative
+    private void onFirstContentfulPaint() throws RemoteException {
+        mNavigationControllerClient.onFirstContentfulPaint();
+    }
+
+    @NativeMethods
+    interface Natives {
+        void setNavigationControllerImpl(
+                long nativeNavigationControllerImpl, NavigationControllerImpl caller);
+        long getNavigationController(long tab);
+        void navigate(
+                long nativeNavigationControllerImpl, NavigationControllerImpl caller, String uri);
+        void goBack(long nativeNavigationControllerImpl, NavigationControllerImpl caller);
+        void goForward(long nativeNavigationControllerImpl, NavigationControllerImpl caller);
+        boolean canGoBack(long nativeNavigationControllerImpl, NavigationControllerImpl caller);
+        boolean canGoForward(long nativeNavigationControllerImpl, NavigationControllerImpl caller);
+        void reload(long nativeNavigationControllerImpl, NavigationControllerImpl caller);
+        void stop(long nativeNavigationControllerImpl, NavigationControllerImpl caller);
+        int getNavigationListSize(
+                long nativeNavigationControllerImpl, NavigationControllerImpl caller);
+        int getNavigationListCurrentIndex(
+                long nativeNavigationControllerImpl, NavigationControllerImpl caller);
+        String getNavigationEntryDisplayUri(
+                long nativeNavigationControllerImpl, NavigationControllerImpl caller, int index);
+    }
 }

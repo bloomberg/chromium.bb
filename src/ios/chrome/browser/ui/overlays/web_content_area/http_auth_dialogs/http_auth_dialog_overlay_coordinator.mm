@@ -6,58 +6,18 @@
 
 #include "ios/chrome/browser/overlays/public/overlay_request.h"
 #include "ios/chrome/browser/overlays/public/web_content_area/http_auth_overlay.h"
-#import "ios/chrome/browser/ui/alert_view_controller/alert_view_controller.h"
-#import "ios/chrome/browser/ui/overlays/overlay_request_coordinator_delegate.h"
+#import "ios/chrome/browser/ui/alert_view/alert_view_controller.h"
+#import "ios/chrome/browser/ui/overlays/common/alerts/alert_overlay_coordinator+subclassing.h"
 #import "ios/chrome/browser/ui/overlays/web_content_area/http_auth_dialogs/http_auth_dialog_overlay_mediator.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
-@interface HTTPAuthDialogOverlayCoordinator () <
-    HTTPAuthDialogOverlayMediatorDataSource,
-    HTTPAuthDialogOverlayMediatorDelegate>
-// Whether the coordinator has been started.
-@property(nonatomic, getter=isStarted) BOOL started;
-
-@property(nonatomic) AlertViewController* alertViewController;
-@property(nonatomic) HTTPAuthDialogOverlayMediator* mediator;
+@interface HTTPAuthDialogOverlayCoordinator ()
 @end
 
 @implementation HTTPAuthDialogOverlayCoordinator
-
-#pragma mark - Accessors
-
-- (void)setMediator:(HTTPAuthDialogOverlayMediator*)mediator {
-  if (_mediator == mediator)
-    return;
-  _mediator.delegate = nil;
-  _mediator.dataSource = nil;
-  _mediator = mediator;
-  _mediator.dataSource = self;
-  _mediator.delegate = self;
-}
-
-#pragma mark - HTTPAuthDialogOverlayMediatorDataSource
-
-- (NSString*)userForMediator:(HTTPAuthDialogOverlayMediator*)mediator {
-  DCHECK(!self.alertViewController ||
-         self.alertViewController.textFieldResults.count == 2);
-  return self.alertViewController.textFieldResults[0];
-}
-
-- (NSString*)passwordForMediator:(HTTPAuthDialogOverlayMediator*)mediator {
-  DCHECK(!self.alertViewController ||
-         self.alertViewController.textFieldResults.count == 2);
-  return self.alertViewController.textFieldResults[1];
-}
-
-#pragma mark - HTTPAuthDialogOverlayMediatorDelegate
-
-- (void)stopDialogForMediator:(HTTPAuthDialogOverlayMediator*)mediator {
-  DCHECK_EQ(self.mediator, mediator);
-  [self stopAnimated:YES];
-}
 
 #pragma mark - OverlayCoordinator
 
@@ -65,47 +25,12 @@
   return !!request->GetConfig<HTTPAuthOverlayRequestConfig>();
 }
 
-- (UIViewController*)viewController {
-  return self.alertViewController;
-}
+@end
 
-- (void)startAnimated:(BOOL)animated {
-  if (self.started)
-    return;
-  self.alertViewController = [[AlertViewController alloc] init];
-  self.alertViewController.modalPresentationStyle =
-      UIModalPresentationOverCurrentContext;
-  self.alertViewController.modalTransitionStyle =
-      UIModalTransitionStyleCrossDissolve;
-  self.mediator =
-      [[HTTPAuthDialogOverlayMediator alloc] initWithRequest:self.request];
-  self.mediator.consumer = self.alertViewController;
-  __weak __typeof__(self) weakSelf = self;
-  [self.baseViewController
-      presentViewController:self.alertViewController
-                   animated:animated
-                 completion:^{
-                   weakSelf.delegate->OverlayUIDidFinishPresentation(
-                       weakSelf.request);
-                 }];
-  self.started = YES;
-}
+@implementation HTTPAuthDialogOverlayCoordinator (Subclassing)
 
-- (void)stopAnimated:(BOOL)animated {
-  if (!self.started)
-    return;
-  __weak __typeof__(self) weakSelf = self;
-  [self.baseViewController
-      dismissViewControllerAnimated:animated
-                         completion:^{
-                           __typeof__(self) strongSelf = weakSelf;
-                           if (!strongSelf)
-                             return;
-                           strongSelf.alertViewController = nil;
-                           strongSelf.delegate->OverlayUIDidFinishDismissal(
-                               weakSelf.request);
-                         }];
-  self.started = NO;
+- (AlertOverlayMediator*)newMediator {
+  return [[HTTPAuthDialogOverlayMediator alloc] initWithRequest:self.request];
 }
 
 @end

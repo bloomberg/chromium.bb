@@ -4,13 +4,17 @@
 
 package org.chromium.chrome.browser.password_manager;
 
+import static org.chromium.chrome.browser.password_manager.PasswordManagerDialogProperties.DETAILS;
+import static org.chromium.chrome.browser.password_manager.PasswordManagerDialogProperties.HELP_BUTTON_CALLBACK;
+import static org.chromium.chrome.browser.password_manager.PasswordManagerDialogProperties.ILLUSTRATION;
+import static org.chromium.chrome.browser.password_manager.PasswordManagerDialogProperties.TITLE;
+
 import android.content.Context;
-import android.support.annotation.DrawableRes;
 import android.view.LayoutInflater;
 import android.view.View;
 
-import org.chromium.base.Callback;
-import org.chromium.base.VisibleForTesting;
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.ui.modaldialog.DialogDismissalCause;
@@ -25,43 +29,41 @@ import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
  */
 public class PasswordManagerDialogCoordinator {
     private final PasswordManagerDialogMediator mMediator;
+    private PropertyModel mModel;
 
-    PasswordManagerDialogCoordinator(Context context, ModalDialogManager modalDialogManager,
-            View androidContentView, ChromeFullscreenManager fullscreenManager,
-            int containerHeightResource) {
-        PropertyModel mModel = PasswordManagerDialogProperties.defaultModelBuilder().build();
-        View customView =
-                LayoutInflater.from(context).inflate(R.layout.password_manager_dialog, null);
-        mMediator = new PasswordManagerDialogMediator(mModel, createDialogModelBuilder(customView),
-                modalDialogManager, androidContentView, customView.getResources(),
-                fullscreenManager, containerHeightResource);
+    PasswordManagerDialogCoordinator(ModalDialogManager modalDialogManager, View androidContentView,
+            ChromeFullscreenManager fullscreenManager, int containerHeightResource) {
+        mMediator = new PasswordManagerDialogMediator(
+                new PropertyModel.Builder(ModalDialogProperties.ALL_KEYS), modalDialogManager,
+                androidContentView, fullscreenManager, containerHeightResource);
+    }
+
+    public void initialize(Context context, PasswordManagerDialogContents contents) {
+        View customView = contents.getHelpButtonCallback() != null
+                ? LayoutInflater.from(context).inflate(
+                        R.layout.password_manager_dialog_with_help_button, null)
+                : LayoutInflater.from(context).inflate(R.layout.password_manager_dialog, null);
+        mModel = buildModel(contents);
+        mMediator.initialize(mModel, customView, contents);
         PropertyModelChangeProcessor.create(
                 mModel, customView, PasswordManagerDialogViewBinder::bind);
     }
 
-    public void showDialog(String title, String details, int boldRangeStart, int boldRangeEnd,
-            @DrawableRes int drawableId, String positiveButtonText, String negativeButtonText,
-            Callback<Integer> onClick, boolean primaryButtonFilled,
-            @ModalDialogManager.ModalDialogType int type) {
-        mMediator.setContents(title, details, boldRangeStart, boldRangeEnd, drawableId);
-        mMediator.setButtons(positiveButtonText, negativeButtonText, onClick, primaryButtonFilled);
-        mMediator.showDialog(type);
-    }
-
-    public void showDialog(String title, String details, @DrawableRes int drawableId,
-            String positiveButtonText, String negativeButtonText, Callback<Integer> onClick,
-            boolean primaryButtonFilled, @ModalDialogManager.ModalDialogType int type) {
-        showDialog(title, details, 0, 0, drawableId, positiveButtonText, negativeButtonText,
-                onClick, primaryButtonFilled, type);
+    public void showDialog() {
+        mMediator.showDialog();
     }
 
     public void dismissDialog(@DialogDismissalCause int dismissalCause) {
         mMediator.dismissDialog(dismissalCause);
     }
 
-    private static PropertyModel.Builder createDialogModelBuilder(View customView) {
-        return new PropertyModel.Builder(ModalDialogProperties.ALL_KEYS)
-                .with(ModalDialogProperties.CUSTOM_VIEW, customView);
+    private PropertyModel buildModel(PasswordManagerDialogContents contents) {
+        return PasswordManagerDialogProperties.defaultModelBuilder()
+                .with(TITLE, contents.getTitle())
+                .with(DETAILS, contents.getDetails())
+                .with(ILLUSTRATION, contents.getIllustrationId())
+                .with(HELP_BUTTON_CALLBACK, contents.getHelpButtonCallback())
+                .build();
     }
 
     @VisibleForTesting

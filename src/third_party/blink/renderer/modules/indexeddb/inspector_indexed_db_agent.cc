@@ -326,7 +326,7 @@ IDBTransaction* TransactionForDatabase(
   StringOrStringSequence scope;
   scope.SetString(object_store_name);
   IDBTransactionOptions options;
-  options.setRelaxedDurability(true);
+  options.setDurability("relaxed");
   IDBTransaction* idb_transaction = idb_database->transaction(
       script_state, scope, mode, &options, exception_state);
   if (exception_state.HadException())
@@ -896,7 +896,8 @@ class GetMetadata final : public ExecutableWithDatabase<GetMetadataCallback> {
     ScriptState::Scope scope(script_state);
     DummyExceptionStateForTesting exception_state;
     IDBRequest* idb_request_get_entries_count = idb_object_store->count(
-        script_state, ScriptValue::CreateNull(script_state), exception_state);
+        script_state, ScriptValue::CreateNull(script_state->GetIsolate()),
+        exception_state);
     DCHECK(!exception_state.HadException());
     if (exception_state.HadException()) {
       ExceptionCode ec = exception_state.Code();

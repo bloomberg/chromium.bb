@@ -475,9 +475,16 @@ struct SSLSocketDataProvider {
 
   // Result for Connect().
   MockConnect connect;
+  // Callback to run when Connect() is called. This is called at most once per
+  // socket but is repeating because SSLSocketDataProvider is copyable.
+  base::RepeatingClosure connect_callback;
 
-  // Result for Confirm().
+  // Result for ConfirmHandshake().
   MockConfirm confirm;
+  // Callback to run when ConfirmHandshake() is called. This is called at most
+  // once per socket but is repeating because SSLSocketDataProvider is
+  // copyable.
+  base::RepeatingClosure confirm_callback;
 
   // Result for GetNegotiatedProtocol().
   NextProto next_proto;
@@ -540,7 +547,7 @@ class SequencedSocketData : public SocketDataProvider {
   // should use a SYNCHRONOUS event with a return value of ERR_IO_PENDING
   // instead.
   bool IsPaused() const;
-  // Resumes events once |this| is in the paused state.  The next even will
+  // Resumes events once |this| is in the paused state.  The next event will
   // occur synchronously with the call if it can.
   void Resume();
   void RunUntilPaused();
@@ -561,7 +568,7 @@ class SequencedSocketData : public SocketDataProvider {
   // Defines the state for the read or write path.
   enum IoState {
     IDLE,        // No async operation is in progress.
-    PENDING,     // An async operation in waiting for another opteration to
+    PENDING,     // An async operation in waiting for another operation to
                  // complete.
     COMPLETING,  // A task has been posted to complete an async operation.
     PAUSED,      // IO is paused until Resume() is called.
@@ -629,10 +636,9 @@ class MockSSLClientSocket;
 class MockProxyClientSocket;
 
 // ClientSocketFactory which contains arrays of sockets of each type.
-// You should first fill the arrays using AddMock{SSL,}Socket. When the factory
-// is asked to create a socket, it takes next entry from appropriate array.
-// You can use ResetNextMockIndexes to reset that next entry index for all mock
-// socket types.
+// You should first fill the arrays using Add{SSL,ProxyClient,}SocketDataProvider(). When the
+// factory is asked to create a socket, it takes next entry from appropriate array. You can use
+// ResetNextMockIndexes to reset that next entry index for all mock socket types.
 class MockClientSocketFactory : public ClientSocketFactory {
  public:
   MockClientSocketFactory();

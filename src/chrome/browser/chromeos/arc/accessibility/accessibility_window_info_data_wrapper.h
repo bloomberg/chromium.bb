@@ -7,7 +7,7 @@
 
 #include <vector>
 
-#include "chrome/browser/chromeos/arc/accessibility/arc_accessibility_info_data.h"
+#include "chrome/browser/chromeos/arc/accessibility/accessibility_info_data_wrapper.h"
 #include "ui/accessibility/ax_node_data.h"
 
 namespace arc {
@@ -15,26 +15,25 @@ namespace arc {
 class AXTreeSourceArc;
 
 // Wrapper class for an AccessibilityWindowInfoData.
-class AccessibilityWindowInfoDataWrapper : public ArcAccessibilityInfoData {
+class AccessibilityWindowInfoDataWrapper : public AccessibilityInfoDataWrapper {
  public:
-  explicit AccessibilityWindowInfoDataWrapper(
+  AccessibilityWindowInfoDataWrapper(
       AXTreeSourceArc* tree_source,
       mojom::AccessibilityWindowInfoData* window);
 
-  // ArcAccessibilityInfoData overrides.
+  // AccessibilityInfoDataWrapper overrides.
   bool IsNode() const override;
   mojom::AccessibilityNodeInfoData* GetNode() const override;
   mojom::AccessibilityWindowInfoData* GetWindow() const override;
   int32_t GetId() const override;
   const gfx::Rect GetBounds() const override;
   bool IsVisibleToUser() const override;
-  bool IsFocused() const override;
   bool CanBeAccessibilityFocused() const override;
   void PopulateAXRole(ui::AXNodeData* out_data) const override;
   void PopulateAXState(ui::AXNodeData* out_data) const override;
   void Serialize(ui::AXNodeData* out_data) const override;
   void GetChildren(
-      std::vector<ArcAccessibilityInfoData*>* children) const override;
+      std::vector<AccessibilityInfoDataWrapper*>* children) const override;
 
  private:
   bool GetProperty(mojom::AccessibilityWindowBooleanProperty prop) const;
@@ -46,7 +45,6 @@ class AccessibilityWindowInfoDataWrapper : public ArcAccessibilityInfoData {
   bool GetProperty(mojom::AccessibilityWindowIntListProperty prop,
                    std::vector<int32_t>* out_value) const;
 
-  AXTreeSourceArc* tree_source_ = nullptr;
   mojom::AccessibilityWindowInfoData* window_ptr_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(AccessibilityWindowInfoDataWrapper);

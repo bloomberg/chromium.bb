@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
-#include "chrome/browser/ui/ash/launcher/launcher_context_menu.h"
+#include "chrome/browser/ui/ash/launcher/shelf_context_menu.h"
 #include "chrome/browser/ui/ash/launcher/shelf_spinner_controller.h"
 
 ShelfSpinnerItemController::ShelfSpinnerItemController(
@@ -25,10 +25,6 @@ void ShelfSpinnerItemController::SetHost(
   host_ = host;
 }
 
-base::TimeDelta ShelfSpinnerItemController::GetActiveTime() const {
-  return base::Time::Now() - start_time_;
-}
-
 void ShelfSpinnerItemController::ExecuteCommand(bool from_context_menu,
                                                 int64_t command_id,
                                                 int32_t event_flags,
@@ -44,7 +40,7 @@ void ShelfSpinnerItemController::GetContextMenu(
     GetContextMenuCallback callback) {
   ChromeLauncherController* controller = ChromeLauncherController::instance();
   const ash::ShelfItem* item = controller->GetItem(shelf_id());
-  context_menu_ = LauncherContextMenu::Create(controller, item, display_id);
+  context_menu_ = ShelfContextMenu::Create(controller, item, display_id);
   context_menu_->GetMenuModel(std::move(callback));
 }
 

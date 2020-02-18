@@ -7,16 +7,15 @@
 
 from __future__ import print_function
 
+import email
 import json
 import os
 import smtplib
 import socket
-import urllib
 
 import mock
 
 from chromite.lib import alerts
-from chromite.lib import constants
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 
@@ -137,6 +136,43 @@ class GmailServerTest(cros_test_lib.MockTempDirTestCase):
     self.assertTrue(invalid_cache['invalid'])
 
 
+class CreateEmailTest(cros_test_lib.TestCase):
+  """Tests for CreateEmail."""
+
+  def testBasic(self):
+    """Check default basic call."""
+    msg = alerts.CreateEmail('subj', ['fake@localhost'])
+    self.assertIsNotNone(msg)
+    self.assertNotEqual('', msg['From'])
+    self.assertEqual('subj', msg['Subject'])
+    self.assertEqual('fake@localhost', msg['To'])
+
+  def testNoRecipients(self):
+    """Check empty recipients behavior."""
+    msg = alerts.CreateEmail('subj', [])
+    self.assertIsNone(msg)
+
+  def testMultipleRecipients(self):
+    """Check multiple recipients behavior."""
+    msg = alerts.CreateEmail('subj', ['fake1@localhost', 'fake2@localhost'])
+    self.assertEqual('fake1@localhost, fake2@localhost', msg['To'])
+
+  def testExtraFields(self):
+    """Check extra fields are added correctly."""
+    msg = alerts.CreateEmail('subj', ['fake@localhost'],
+                             extra_fields={'X-Hi': 'bye', 'field': 'data'})
+    self.assertEqual('subj', msg['Subject'])
+    self.assertEqual('bye', msg['X-Hi'])
+    self.assertEqual('data', msg['field'])
+
+  def testAttachment(self):
+    """Check attachment behavior."""
+    msg = alerts.CreateEmail('subj', ['fake@localhost'], attachment='blah')
+    # Make sure there's a payload in there somewhere.
+    self.assertTrue(any(isinstance(x, email.mime.application.MIMEApplication)
+                        for x in msg.get_payload()))
+
+
 class SendEmailTest(cros_test_lib.MockTestCase):
   """Tests for SendEmail."""
 
@@ -171,28 +207,6 @@ class SendEmailLogTest(cros_test_lib.MockTestCase):
     self.assertEqual(send_mock.call_count, 1)
 
 
-class GetGardenerEmailAddressesTest(cros_test_lib.MockTestCase):
-  """Tests functions related to retrieving the gardener's email address."""
-
-  def _SetEmails(self, emails):
-    gardener_json = ('{"updated_unix_timestamp":1547254144,'
-                     '"emails":[%s]}' % emails)
-    response = mock.MagicMock(json=gardener_json, getcode=lambda: 200,
-                              read=lambda: gardener_json)
-    self.PatchObject(urllib, 'urlopen', autospec=True,
-                     side_effect=[response])
-
-  def testParsingGardenerEmails(self):
-    self._SetEmails('"gardener@google.com"')
-    self.assertEqual(alerts.GetGardenerEmailAddresses(),
-                     ['gardener@google.com'])
-
-    # Test multiple gardeners.
-    self._SetEmails('"gardener@google.com", "gardener2@chromium.org"')
-    self.assertEqual(alerts.GetGardenerEmailAddresses(),
-                     ['gardener@google.com', 'gardener2@chromium.org'])
-
-
 class GetHealthAlertRecipientsTest(cros_test_lib.MockTestCase):
   """Tests for GetHealthAlertRecipients."""
 
@@ -206,13 +220,6 @@ class GetHealthAlertRecipientsTest(cros_test_lib.MockTestCase):
     """Test GetHealthAlertRecipients returns a non-gardener recipient."""
     expected = ['jeff@google.com']
     self.SetRecipients(expected)
-    actual = alerts.GetHealthAlertRecipients(self.builder_run)
-    self.assertEqual(actual, expected)
-
-  def testGardenerRecipient(self):
-    expected = ['gardener@chromium.org']
-    self.PatchObject(alerts, 'GetGardenerEmailAddresses', return_value=expected)
-    self.SetRecipients([constants.CHROME_GARDENER])
     actual = alerts.GetHealthAlertRecipients(self.builder_run)
     self.assertEqual(actual, expected)
 

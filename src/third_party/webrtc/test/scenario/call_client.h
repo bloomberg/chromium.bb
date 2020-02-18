@@ -17,6 +17,7 @@
 #include <vector>
 
 #include "api/rtc_event_log/rtc_event_log.h"
+#include "api/test/time_controller.h"
 #include "call/call.h"
 #include "modules/audio_device/include/test_audio_device.h"
 #include "modules/congestion_controller/goog_cc/test/goog_cc_printer.h"
@@ -28,7 +29,6 @@
 #include "test/scenario/column_printer.h"
 #include "test/scenario/network_node.h"
 #include "test/scenario/scenario_config.h"
-#include "test/time_controller/time_controller.h"
 
 namespace webrtc {
 
@@ -108,7 +108,6 @@ class CallClient : public EmulatedNetworkReceiverInterface {
   }
   DataRate target_rate() const;
   DataRate stable_target_rate() const;
-  DataRate link_capacity() const;
   DataRate padding_rate() const;
 
   void OnPacketReceived(EmulatedIpPacket packet) override;
@@ -153,6 +152,8 @@ class CallClient : public EmulatedNetworkReceiverInterface {
   std::map<uint32_t, MediaType> ssrc_media_types_;
   // Defined last so it's destroyed first.
   TaskQueueForTest task_queue_;
+
+  const FieldTrialBasedConfig field_trials_;
 };
 
 class CallClientPair {

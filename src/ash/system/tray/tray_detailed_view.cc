@@ -30,6 +30,7 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/skia_paint_util.h"
 #include "ui/gfx/vector_icon_types.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/image_view.h"
@@ -337,6 +338,10 @@ HoverHighlightView* TrayDetailedView::AddScrollListCheckableItem(
     bool checked,
     bool enterprise_managed) {
   HoverHighlightView* item = AddScrollListItem(icon, text);
+  if (enterprise_managed) {
+    item->SetAccessibleName(l10n_util::GetStringFUTF16(
+        IDS_ASH_ACCESSIBILITY_FEATURE_MANAGED, text));
+  }
   TrayPopupUtils::InitializeAsCheckableRow(item, checked, enterprise_managed);
   return item;
 }
@@ -357,6 +362,8 @@ void TrayDetailedView::SetupConnectedScrollListItem(
     HoverHighlightView* view,
     base::Optional<uint8_t> battery_percentage) {
   DCHECK(view->is_populated());
+
+  base::string16 status;
 
   if (battery_percentage) {
     view->SetSubText(l10n_util::GetStringFUTF16(
@@ -417,6 +424,9 @@ void TrayDetailedView::ShowProgress(double value, bool visible) {
   DCHECK(tri_view_);
   if (!progress_bar_) {
     progress_bar_ = new views::ProgressBar(kTitleRowProgressBarHeight);
+    progress_bar_->GetViewAccessibility().OverrideName(
+        l10n_util::GetStringUTF16(
+            IDS_ASH_STATUS_TRAY_NETWORK_PROGRESS_ACCESSIBLE_NAME));
     progress_bar_->SetVisible(false);
     AddChildViewAt(progress_bar_, kTitleRowSeparatorIndex + 1);
   }

@@ -12,13 +12,13 @@
 #include "ash/system/model/virtual_keyboard_model.h"
 #include "ash/system/tray/actionable_view.h"
 #include "ash/system/tray/tray_bubble_view.h"
+#include "ash/system/user/login_status.h"
 #include "base/macros.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/gfx/geometry/insets.h"
 
 namespace ash {
 class Shelf;
-class TrayBackground;
 class TrayContainer;
 class TrayEventFilter;
 
@@ -43,13 +43,6 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
   // Initializes animations for the bubble.
   static void InitializeBubbleAnimations(views::Widget* bubble_widget);
 
-  // views::View:
-  void SetVisible(bool visible) override;
-  const char* GetClassName() const override;
-  void AboutToRequestFocusFromTabTraversal(bool reverse) override;
-  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
-  void ChildPreferredSizeChanged(views::View* child) override;
-
   // ActionableView:
   std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override;
   std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
@@ -70,12 +63,18 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
   // whether the showing operation is initiated by mouse or gesture click.
   virtual void ShowBubble(bool show_by_click);
 
-  // Called whenever the shelf alignment changes.
-  virtual void UpdateAfterShelfAlignmentChange();
+  // Called whenever the shelf alignment or configuration changes.
+  virtual void UpdateAfterShelfChange();
+
+  // Called to update the tray button after the login status changes.
+  virtual void UpdateAfterLoginStatusChange(LoginStatus login_status);
 
   // Called whenever the bounds of the root window changes.
   virtual void UpdateAfterRootWindowBoundsChange(const gfx::Rect& old_bounds,
                                                  const gfx::Rect& new_bounds);
+
+  // Called whenever the status area's collapse state changes.
+  virtual void UpdateAfterStatusAreaCollapseChange();
 
   // Called when the anchor (tray or bubble) may have moved or changed.
   virtual void AnchorUpdated() {}
@@ -107,6 +106,11 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
   // Updates the visibility of this tray's separator.
   void set_separator_visibility(bool visible) { separator_visible_ = visible; }
 
+  // Sets whether to show the view when the status area is collapsed.
+  void set_show_when_collapsed(bool show_when_collapsed) {
+    show_when_collapsed_ = show_when_collapsed;
+  }
+
   // Gets the anchor for bubbles, which is tray_container().
   views::View* GetBubbleAnchor() const;
 
@@ -120,6 +124,13 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
   // Helper function that calculates background bounds relative to local bounds
   // based on background insets returned from GetBackgroundInsets().
   gfx::Rect GetBackgroundBounds() const;
+
+  // Sets whether the tray item should be shown by default (e.g. it is
+  // activated). The effective visibility of the tray item is determined by the
+  // current state of the status tray (i.e. whether the virtual keyboard is
+  // showing or if it is collapsed).
+  virtual void SetVisiblePreferred(bool visible_preferred);
+  bool visible_preferred() const { return visible_preferred_; }
 
  protected:
   // ActionableView:
@@ -135,7 +146,16 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
   }
 
  private:
+  class HighlightPathGenerator;
   class TrayWidgetObserver;
+
+  void StartVisibilityAnimation(bool visible);
+
+  // views::View:
+  void AboutToRequestFocusFromTabTraversal(bool reverse) override;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
+  void ChildPreferredSizeChanged(views::View* child) override;
+  const char* GetClassName() const override;
 
   // ui::ImplicitAnimationObserver:
   void OnImplicitAnimationsCompleted() override;
@@ -148,15 +168,18 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
   // Helper function that calculates background insets relative to local bounds.
   gfx::Insets GetBackgroundInsets() const;
 
+  // Updates the background layer.
+  virtual void UpdateBackground();
+
+  // Returns the effective visibility of the tray item based on the current
+  // state.
+  bool GetEffectiveVisibility();
 
   // The shelf containing the system tray for this view.
   Shelf* shelf_;
 
   // Convenience pointer to the contents view.
   TrayContainer* tray_container_;
-
-  // Owned by the view passed to SetContents().
-  TrayBackground* background_;
 
   // Determines if the view is active. This changes how  the ink drop ripples
   // behave.
@@ -173,6 +196,9 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
 
   // If true, the view always shows up when virtual keyboard is visible.
   bool show_with_virtual_keyboard_;
+
+  // If true, the view is visible when the status area is collapsed.
+  bool show_when_collapsed_;
 
   std::unique_ptr<TrayWidgetObserver> widget_observer_;
   std::unique_ptr<TrayEventFilter> tray_event_filter_;

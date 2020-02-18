@@ -1,17 +1,6 @@
 {
   "layers": [
     {
-      "name": "LayoutView #document",
-      "bounds": [800, 600],
-      "drawsContent": false,
-      "backgroundColor": "#FFFFFF"
-    },
-    {
-      "name": "Scrolling Layer",
-      "bounds": [800, 600],
-      "drawsContent": false
-    },
-    {
       "name": "Scrolling Contents Layer",
       "bounds": [800, 600],
       "contentsOpaque": true,
@@ -20,17 +9,12 @@
         {
           "object": "LayoutNGBlockFlow (relative positioned) DIV",
           "rect": [108, 8, 100, 100],
-          "reason": "disappeared"
-        },
-        {
-          "object": "LayoutNGBlockFlow (relative positioned) DIV",
-          "rect": [108, 8, 100, 100],
           "reason": "chunk appeared"
         },
         {
-          "object": "LayoutNGBlockFlow DIV",
-          "rect": [8, 8, 100, 100],
-          "reason": "appeared"
+          "object": "LayoutNGBlockFlow HTML",
+          "rect": [108, 8, 100, 100],
+          "reason": "chunk disappeared"
         },
         {
           "object": "LayoutNGBlockFlow DIV",
@@ -38,9 +22,9 @@
           "reason": "chunk disappeared"
         },
         {
-          "object": "NGPhysicalTextFragment '\u00A0'",
-          "rect": [108, 8, 4, 18],
-          "reason": "disappeared"
+          "object": "LayoutNGBlockFlow HTML",
+          "rect": [8, 8, 100, 100],
+          "reason": "chunk appeared"
         },
         {
           "object": "LayoutNGBlockFlow HTML",

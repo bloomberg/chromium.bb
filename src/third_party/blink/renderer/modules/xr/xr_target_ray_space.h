@@ -13,19 +13,21 @@ namespace blink {
 
 class XRTargetRaySpace : public XRSpace {
  public:
-  XRTargetRaySpace(XRSession*, XRInputSource*);
+  XRTargetRaySpace(XRSession* session, XRInputSource* input_space);
   XRPose* getPose(XRSpace* other_space,
                   const TransformationMatrix* base_pose_matrix) override;
+
+  base::Optional<XRNativeOriginInformation> NativeOrigin() const override;
 
   void Trace(blink::Visitor*) override;
 
  private:
-  std::unique_ptr<TransformationMatrix> GetPointerPoseForScreen(
+  std::unique_ptr<TransformationMatrix> OtherSpaceFromScreenTap(
       XRSpace* other_space,
-      const TransformationMatrix& base_pose_matrix);
-  std::unique_ptr<TransformationMatrix> GetTrackedPointerPose(
+      const TransformationMatrix& mojo_from_viewer);
+  std::unique_ptr<TransformationMatrix> OtherSpaceFromTrackedPointer(
       XRSpace* other_space,
-      const TransformationMatrix& base_pose_matrix);
+      const TransformationMatrix& mojo_from_viewer);
 
   Member<XRInputSource> input_source_;
 };

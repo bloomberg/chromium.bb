@@ -32,6 +32,7 @@ import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler.Overrid
 import org.chromium.chrome.browser.tab.InterceptNavigationDelegateImpl;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabDelegateFactory;
+import org.chromium.chrome.browser.tab.TabTestUtils;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
@@ -71,12 +72,12 @@ public class CustomTabFromChromeExternalNavigationTest {
         });
     }
 
-    private void startCustomTabFromChrome(String url) throws InterruptedException {
+    private void startCustomTabFromChrome(String url) {
         Intent intent = getCustomTabFromChromeIntent(url, true);
         mActivityRule.startCustomTabActivityWithIntent(intent);
     }
 
-    private void startPaymentRequestUIFromChrome(String url) throws InterruptedException {
+    private void startPaymentRequestUIFromChrome(String url) {
         Intent intent = getCustomTabFromChromeIntent(url, false);
         CustomTabIntentDataProvider.addPaymentRequestUIExtras(intent);
 
@@ -87,11 +88,11 @@ public class CustomTabFromChromeExternalNavigationTest {
     @Test
     @Feature("CustomTabFromChrome")
     @MediumTest
-    public void testUsingStandardExternalNavigationHandler() throws Exception {
+    public void testUsingStandardExternalNavigationHandler() {
         startCustomTabFromChrome("about:blank");
 
         Tab tab = mActivityRule.getActivity().getActivityTab();
-        TabDelegateFactory delegateFactory = tab.getDelegateFactory();
+        TabDelegateFactory delegateFactory = TabTestUtils.getDelegateFactory(tab);
         Assert.assertTrue(delegateFactory instanceof CustomTabDelegateFactory);
         CustomTabDelegateFactory customTabDelegateFactory =
                 ((CustomTabDelegateFactory) delegateFactory);
@@ -105,7 +106,7 @@ public class CustomTabFromChromeExternalNavigationTest {
     @DisableIf.Build(message = "Flaky on K, https://crbug.com/962974",
             sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP)
     public void
-    testIntentWithRedirectToApp() throws Exception {
+    testIntentWithRedirectToApp() {
         final String redirectUrl = "https://maps.google.com/maps?q=1600+amphitheatre+parkway";
         final String initialUrl =
                 mServerRule.getServer().getURL("/chrome/test/data/android/redirect/js_redirect.html"
@@ -151,7 +152,7 @@ public class CustomTabFromChromeExternalNavigationTest {
         startPaymentRequestUIFromChrome("about:blank");
 
         Tab tab = mActivityRule.getActivity().getActivityTab();
-        TabDelegateFactory delegateFactory = tab.getDelegateFactory();
+        TabDelegateFactory delegateFactory = TabTestUtils.getDelegateFactory(tab);
         Assert.assertTrue(delegateFactory instanceof CustomTabDelegateFactory);
         CustomTabDelegateFactory customTabDelegateFactory =
                 ((CustomTabDelegateFactory) delegateFactory);

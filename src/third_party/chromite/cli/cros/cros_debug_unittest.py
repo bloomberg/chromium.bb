@@ -40,7 +40,7 @@ class MockDebugCommand(command_unittest.MockCommand):
 class DebugRunThroughTest(cros_test_lib.MockTempDirTestCase):
   """Test the flow of DebugCommand.run with the debug methods mocked out."""
 
-  DEVICE = '1.1.1.1'
+  DEVICE = remote_access.TEST_IP
   EXE = '/path/to/exe'
   PID = '1'
 

@@ -428,6 +428,9 @@ TEST_P(CopyTexImageTest, CopyTexSubImageFromCubeMap)
 // Calling CopyTexSubImage to a non-cube-complete texture.
 TEST_P(CopyTexImageTest, CopyTexSubImageToNonCubeCompleteDestination)
 {
+    // TODO(hqle): Find what wrong with NVIDIA GPU. http://anglebug.com/4137
+    ANGLE_SKIP_TEST_IF(IsNVIDIA() && IsMetal());
+
     constexpr GLsizei kCubeMapFaceCount = 6;
 
     // The framebuffer will be a 1x6 image with 6 different colors.  Each glCopyTexSubImage2D will
@@ -551,8 +554,6 @@ TEST_P(CopyTexImageTestES3, 2DArraySubImage)
 {
     // Seems to fail on AMD OpenGL Windows.
     ANGLE_SKIP_TEST_IF(IsAMD() && IsOpenGL() & IsWindows());
-    // TODO(anglebug.com/3189): Need full 2D-array texture support
-    ANGLE_SKIP_TEST_IF(IsVulkan());
 
     GLTexture tex;
     glBindTexture(GL_TEXTURE_2D_ARRAY, tex);
@@ -806,14 +807,11 @@ ANGLE_INSTANTIATE_TEST(CopyTexImageTest,
                        ES2_D3D9(),
                        ES2_D3D11(),
                        ES2_D3D11_PRESENT_PATH_FAST(),
+                       ES2_METAL(),
                        ES2_OPENGL(),
                        ES2_OPENGLES(),
                        ES2_VULKAN(),
                        ES3_VULKAN());
 
-ANGLE_INSTANTIATE_TEST(CopyTexImageTestES3,
-                       ES3_D3D11(),
-                       ES3_OPENGL(),
-                       ES3_OPENGLES(),
-                       ES3_VULKAN());
+ANGLE_INSTANTIATE_TEST_ES3(CopyTexImageTestES3);
 }  // namespace angle

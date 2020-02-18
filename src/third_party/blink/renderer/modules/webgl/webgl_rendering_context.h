@@ -45,6 +45,7 @@ class EXTsRGB;
 class EXTTextureFilterAnisotropic;
 class KHRParallelShaderCompile;
 class OESElementIndexUint;
+class OESFboRenderMipmap;
 class OESStandardDerivatives;
 class OESTextureFloat;
 class OESTextureFloatLinear;
@@ -55,7 +56,6 @@ class WebGLDebugRendererInfo;
 class WebGLDepthTexture;
 class WebGLLoseContext;
 class WebGLMultiDraw;
-class WebGLMultiDrawInstanced;
 class WebGLVideoTexture;
 
 class WebGLRenderingContext final : public WebGLRenderingContextBase {
@@ -109,6 +109,7 @@ class WebGLRenderingContext final : public WebGLRenderingContextBase {
   Member<EXTsRGB> exts_rgb_;
   Member<KHRParallelShaderCompile> khr_parallel_shader_compile_;
   Member<OESElementIndexUint> oes_element_index_uint_;
+  Member<OESFboRenderMipmap> oes_fbo_render_mipmap_;
   Member<OESStandardDerivatives> oes_standard_derivatives_;
   Member<OESTextureFloat> oes_texture_float_;
   Member<OESTextureFloatLinear> oes_texture_float_linear_;
@@ -128,7 +129,6 @@ class WebGLRenderingContext final : public WebGLRenderingContextBase {
   Member<WebGLDrawBuffers> webgl_draw_buffers_;
   Member<WebGLLoseContext> webgl_lose_context_;
   Member<WebGLMultiDraw> webgl_multi_draw_;
-  Member<WebGLMultiDrawInstanced> webgl_multi_draw_instanced_;
   Member<WebGLVideoTexture> webgl_video_texture_;
 };
 

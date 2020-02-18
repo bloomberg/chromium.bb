@@ -51,7 +51,8 @@ KILL_PROC_MAX_WAIT = 10
 POST_KILL_WAIT = 2
 
 MOUNT_RW_COMMAND = 'mount -o remount,rw /'
-LSOF_COMMAND = 'lsof %s/chrome'
+LSOF_COMMAND_CHROME = 'lsof %s/chrome'
+LSOF_COMMAND = 'lsof %s'
 DBUS_RELOAD_COMMAND = 'killall -HUP dbus-daemon'
 
 _ANDROID_DIR = '/system/chrome'
@@ -64,6 +65,7 @@ _UMOUNT_DIR_IF_MOUNTPOINT_CMD = (
     'if mountpoint -q %(dir)s; then umount %(dir)s; fi')
 _BIND_TO_FINAL_DIR_CMD = 'mount --rbind %s %s'
 _SET_MOUNT_FLAGS_CMD = 'mount -o remount,exec,suid %s'
+_MKDIR_P_CMD = 'mkdir -p --mode 0775 %s'
 
 DF_COMMAND = 'df -k %s'
 
@@ -118,17 +120,18 @@ class DeployChrome(object):
 
   def _GetRemoteDirSize(self, remote_dir):
     result = self.device.RunCommand('du -ks %s' % remote_dir,
-                                    capture_output=True)
+                                    capture_output=True, encoding='utf-8')
     return int(result.output.split()[0])
 
   def _GetStagingDirSize(self):
-    result = cros_build_lib.DebugRunCommand(['du', '-ks', self.staging_dir],
-                                            redirect_stdout=True,
-                                            capture_output=True)
+    result = cros_build_lib.dbg_run(['du', '-ks', self.staging_dir],
+                                    redirect_stdout=True, capture_output=True,
+                                    encoding='utf-8')
     return int(result.output.split()[0])
 
   def _ChromeFileInUse(self):
-    result = self.device.RunCommand(LSOF_COMMAND % (self.options.target_dir,),
+    result = self.device.RunCommand(LSOF_COMMAND_CHROME %
+                                    (self.options.target_dir,),
                                     error_code_ok=True, capture_output=True)
     return result.returncode == 0
 
@@ -171,7 +174,8 @@ class DeployChrome(object):
     # <job_name> <status> ['process' <pid>].
     # <status> is in the format <goal>/<state>.
     try:
-      result = self.device.RunCommand('status ui', capture_output=True)
+      result = self.device.RunCommand('status ui', capture_output=True,
+                                      encoding='utf-8')
     except cros_build_lib.RunCommandError as e:
       if 'Unknown job' in e.result.error:
         return False
@@ -216,7 +220,7 @@ class DeployChrome(object):
     # TODO: Should migrate to use the remount functions in remote_access.
     result = self.device.RunCommand(MOUNT_RW_COMMAND,
                                     error_code_ok=error_code_ok,
-                                    capture_output=True)
+                                    capture_output=True, encoding='utf-8')
     if result.returncode and not self.device.IsDirWritable('/'):
       self._root_dir_is_still_readonly.set()
 
@@ -329,14 +333,25 @@ class DeployChrome(object):
   def _MountTarget(self):
     logging.info('Mounting Chrome...')
 
-    # Create directory if does not exist
-    self.device.RunCommand(['mkdir', '-p', '--mode', '0775',
-                            self.options.mount_dir])
-    # Umount the existing mount on mount_dir if present first
-    self.device.RunCommand(_UMOUNT_DIR_IF_MOUNTPOINT_CMD %
-                           {'dir': self.options.mount_dir})
+    # Create directory if does not exist.
+    self.device.RunCommand(_MKDIR_P_CMD % self.options.mount_dir)
+    try:
+      # Umount the existing mount on mount_dir if present first.
+      self.device.RunCommand(_UMOUNT_DIR_IF_MOUNTPOINT_CMD %
+                             {'dir': self.options.mount_dir})
+    except cros_build_lib.RunCommandError as e:
+      logging.error('Failed to umount %s', self.options.mount_dir)
+      # If there is a failure, check if some processs is using the mount_dir.
+      result = self.device.RunCommand(LSOF_COMMAND % (self.options.mount_dir,),
+                                      check=False, capture_output=True,
+                                      encoding='utf-8')
+      logging.error('lsof %s -->', self.options.mount_dir)
+      logging.error(result.stdout)
+      raise e
+
     self.device.RunCommand(_BIND_TO_FINAL_DIR_CMD % (self.options.target_dir,
                                                      self.options.mount_dir))
+
     # Chrome needs partition to have exec and suid flags set
     self.device.RunCommand(_SET_MOUNT_FLAGS_CMD % (self.options.mount_dir,))
 
@@ -662,14 +677,14 @@ def _PrepareStagingDir(options, tempdir, staging_dir, copy_paths=None,
     # Extract only the ./opt/google/chrome contents, directly into the staging
     # dir, collapsing the directory hierarchy.
     if pkg_path[-4:] == '.zip':
-      cros_build_lib.DebugRunCommand(
+      cros_build_lib.dbg_run(
           ['unzip', '-X', pkg_path, _ANDROID_DIR_EXTRACT_PATH, '-d',
            staging_dir])
       for filename in glob.glob(os.path.join(staging_dir, 'system/chrome/*')):
         shutil.move(filename, staging_dir)
       osutils.RmDir(os.path.join(staging_dir, 'system'), ignore_missing=True)
     else:
-      cros_build_lib.DebugRunCommand(
+      cros_build_lib.dbg_run(
           ['tar', '--strip-components', '4', '--extract',
            '--preserve-permissions', '--file', pkg_path, '.%s' % chrome_dir],
           cwd=staging_dir)

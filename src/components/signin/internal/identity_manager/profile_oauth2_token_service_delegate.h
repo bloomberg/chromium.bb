@@ -20,6 +20,10 @@
 #include "google_apis/gaia/oauth2_access_token_manager.h"
 #include "net/base/backoff_entry.h"
 
+#if defined(OS_ANDROID)
+#include "base/android/jni_android.h"
+#endif
+
 namespace network {
 class SharedURLLoaderFactory;
 }
@@ -133,10 +137,13 @@ class ProfileOAuth2TokenServiceDelegate {
 #endif
 
 #if defined(OS_ANDROID)
+  // Returns a reference to the corresponding Java object.
+  virtual base::android::ScopedJavaLocalRef<jobject> GetJavaObject() = 0;
+
   // Triggers platform specific implementation for Android to reload accounts
   // from system.
-  virtual void ReloadAccountsFromSystem(
-      const CoreAccountId& primary_account_id) {}
+  virtual void ReloadAllAccountsFromSystemWithPrimaryAccount(
+      const base::Optional<CoreAccountId>& primary_account_id) {}
 #endif
 
   // -----------------------------------------------------------------------

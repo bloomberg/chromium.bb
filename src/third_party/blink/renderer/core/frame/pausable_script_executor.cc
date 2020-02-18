@@ -17,7 +17,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_persistent_value_vector.h"
 #include "third_party/blink/renderer/bindings/core/v8/window_proxy.h"
 #include "third_party/blink/renderer/core/dom/document.h"
-#include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
@@ -53,11 +52,8 @@ WebScriptExecutor::WebScriptExecutor(
     : sources_(sources), world_id_(world_id), user_gesture_(user_gesture) {}
 
 Vector<v8::Local<v8::Value>> WebScriptExecutor::Execute(LocalFrame* frame) {
-  std::unique_ptr<UserGestureIndicator> indicator;
-  if (user_gesture_) {
-    indicator =
-        LocalFrame::NotifyUserActivation(frame, UserGestureToken::kNewGesture);
-  }
+  if (user_gesture_)
+    LocalFrame::NotifyUserActivation(frame);
 
   Vector<v8::Local<v8::Value>> results;
   for (const auto& source : sources_) {
@@ -87,9 +83,11 @@ class V8FunctionExecutor : public PausableScriptExecutor::Executor {
 
   Vector<v8::Local<v8::Value>> Execute(LocalFrame*) override;
 
+  void Trace(Visitor*) override;
+
  private:
-  ScopedPersistent<v8::Function> function_;
-  ScopedPersistent<v8::Value> receiver_;
+  TraceWrapperV8Reference<v8::Function> function_;
+  TraceWrapperV8Reference<v8::Value> receiver_;
   V8PersistentValueVector<v8::Value> args_;
 };
 
@@ -124,6 +122,12 @@ Vector<v8::Local<v8::Value>> V8FunctionExecutor::Execute(LocalFrame* frame) {
       results.push_back(single_result);
   }
   return results;
+}
+
+void V8FunctionExecutor::Trace(Visitor* visitor) {
+  visitor->Trace(function_);
+  visitor->Trace(receiver_);
+  PausableScriptExecutor::Executor::Trace(visitor);
 }
 
 }  // namespace

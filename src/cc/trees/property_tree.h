@@ -11,9 +11,12 @@
 #include <unordered_map>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/containers/flat_map.h"
+#include "base/memory/weak_ptr.h"
 #include "cc/base/synced_property.h"
 #include "cc/cc_export.h"
+#include "cc/input/scroll_snap_data.h"
 #include "cc/paint/element_id.h"
 #include "cc/paint/filter_operations.h"
 #include "cc/trees/mutator_host_client.h"
@@ -26,7 +29,7 @@ namespace base {
 namespace trace_event {
 class TracedValue;
 }
-}
+}  // namespace base
 
 namespace viz {
 class CopyOutputRequest;
@@ -36,7 +39,6 @@ namespace cc {
 
 class LayerTreeImpl;
 class RenderSurfaceImpl;
-class ScrollState;
 struct ClipNode;
 struct EffectNode;
 struct ScrollAndScaleSet;
@@ -137,16 +139,6 @@ class CC_EXPORT TransformTree final : public PropertyTree<TransformNode> {
   TransformNode* FindNodeFromElementId(ElementId id);
   bool OnTransformAnimated(ElementId element_id,
                            const gfx::Transform& transform);
-  // Computes the change of basis transform from node |source_id| to |dest_id|.
-  // This is used by scroll children to compute transform from their scroll
-  // parent space (source) to their parent space (destination) and it can atmost
-  // be a translation. This function assumes that the path from source to
-  // destination has only translations. So, it should not be called when there
-  // can be intermediate 3d transforms but the end result is a translation.
-  bool ComputeTranslation(int source_id,
-                          int dest_id,
-                          gfx::Transform* transform) const;
-
   void ResetChangeTracking();
   // Updates the parent, target, and screen space transforms and snapping.
   void UpdateTransforms(int id);
@@ -325,9 +317,6 @@ class CC_EXPORT EffectTree final : public PropertyTree<EffectNode> {
   // surface.
   int LowestCommonAncestorWithRenderSurface(int id_1, int id_2) const;
 
-  void AddMaskLayerId(int id);
-  const std::vector<int>& mask_layer_ids() const { return mask_layer_ids_; }
-
   RenderSurfaceImpl* GetRenderSurface(int id) {
     return render_surfaces_[id].get();
   }
@@ -371,11 +360,25 @@ class CC_EXPORT EffectTree final : public PropertyTree<EffectNode> {
   std::unordered_multimap<int, std::unique_ptr<viz::CopyOutputRequest>>
       copy_requests_;
 
-  // Unsorted list of all mask layer ids that effect nodes refer to.
-  std::vector<int> mask_layer_ids_;
-
   // Indexed by node id.
   std::vector<std::unique_ptr<RenderSurfaceImpl>> render_surfaces_;
+};
+
+// These callbacks are called in the main thread to notify changes of scroll
+// information in the compositor thread during commit.
+class ScrollCallbacks {
+ public:
+  // Called after the composited scroll offset changed.
+  virtual void DidScroll(ElementId scroll_element_id,
+                         const gfx::ScrollOffset&,
+                         const base::Optional<TargetSnapAreaElementIds>&) = 0;
+  // Called after the hidden status of composited scrollbars changed. Note that
+  // |scroll_element_id| is the element id of the scroll not of the scrollbars.
+  virtual void DidChangeScrollbarsHidden(ElementId scroll_element_id,
+                                         bool hidden) = 0;
+
+ protected:
+  virtual ~ScrollCallbacks() {}
 };
 
 class CC_EXPORT ScrollTree final : public PropertyTree<ScrollNode> {
@@ -458,7 +461,6 @@ class CC_EXPORT ScrollTree final : public PropertyTree<ScrollNode> {
   const gfx::ScrollOffset GetScrollOffsetDeltaForTesting(ElementId id) const;
   void CollectScrollDeltasForTesting();
 
-  void DistributeScroll(ScrollNode* scroll_node, ScrollState* scroll_state);
   gfx::Vector2dF ScrollBy(ScrollNode* scroll_node,
                           const gfx::Vector2dF& scroll,
                           LayerTreeImpl* layer_tree_impl);
@@ -475,6 +477,15 @@ class CC_EXPORT ScrollTree final : public PropertyTree<ScrollNode> {
   ScrollNode* FindNodeFromElementId(ElementId id);
   const ScrollNode* FindNodeFromElementId(ElementId id) const;
 
+  void SetScrollCallbacks(base::WeakPtr<ScrollCallbacks> callbacks);
+
+  void NotifyDidScroll(
+      ElementId scroll_element_id,
+      const gfx::ScrollOffset& scroll_offset,
+      const base::Optional<TargetSnapAreaElementIds>& snap_target_ids);
+  void NotifyDidChangeScrollbarsHidden(ElementId scroll_element_id,
+                                       bool hidden);
+
  private:
   using ScrollOffsetMap = base::flat_map<ElementId, gfx::ScrollOffset>;
   using SyncedScrollOffsetMap =
@@ -489,6 +500,8 @@ class CC_EXPORT ScrollTree final : public PropertyTree<ScrollNode> {
   // and impl threads.
   ScrollOffsetMap scroll_offset_map_;
   SyncedScrollOffsetMap synced_scroll_offset_map_;
+
+  base::WeakPtr<ScrollCallbacks> callbacks_;
 
   SyncedScrollOffset* GetOrCreateSyncedScrollOffset(ElementId id);
   gfx::ScrollOffset PullDeltaForMainThread(SyncedScrollOffset* scroll_offset,
@@ -644,7 +657,6 @@ class CC_EXPORT PropertyTrees final {
                               float starting_scale);
   void SetInnerViewportContainerBoundsDelta(gfx::Vector2dF bounds_delta);
   void SetOuterViewportContainerBoundsDelta(gfx::Vector2dF bounds_delta);
-  void SetInnerViewportScrollBoundsDelta(gfx::Vector2dF bounds_delta);
   void UpdateChangeTracking();
   void PushChangeTrackingTo(PropertyTrees* tree);
   void ResetAllChangeTracking();
@@ -652,13 +664,13 @@ class CC_EXPORT PropertyTrees final {
   gfx::Vector2dF inner_viewport_container_bounds_delta() const {
     return inner_viewport_container_bounds_delta_;
   }
-
-  gfx::Vector2dF outer_viewport_container_bounds_delta() const {
+  gfx::Vector2dF inner_viewport_scroll_bounds_delta() const {
+    // Inner viewport scroll bounds are always the same as outer viewport
+    // container bounds.
     return outer_viewport_container_bounds_delta_;
   }
-
-  gfx::Vector2dF inner_viewport_scroll_bounds_delta() const {
-    return inner_viewport_scroll_bounds_delta_;
+  gfx::Vector2dF outer_viewport_container_bounds_delta() const {
+    return outer_viewport_container_bounds_delta_;
   }
 
   std::unique_ptr<base::trace_event::TracedValue> AsTracedValue() const;
@@ -690,7 +702,6 @@ class CC_EXPORT PropertyTrees final {
  private:
   gfx::Vector2dF inner_viewport_container_bounds_delta_;
   gfx::Vector2dF outer_viewport_container_bounds_delta_;
-  gfx::Vector2dF inner_viewport_scroll_bounds_delta_;
 
   // GetDrawTransforms may change the value of cached_data_.
   DrawTransforms& GetDrawTransforms(int transform_id, int effect_id) const;

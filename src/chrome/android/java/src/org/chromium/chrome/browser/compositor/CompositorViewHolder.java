@@ -14,7 +14,6 @@ import android.graphics.RectF;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.annotation.Nullable;
 import android.support.v4.view.ViewCompat;
 import android.support.v4.view.accessibility.AccessibilityEventCompat;
 import android.support.v4.view.accessibility.AccessibilityNodeInfoCompat;
@@ -29,8 +28,11 @@ import android.view.ViewGroup;
 import android.view.accessibility.AccessibilityEvent;
 import android.widget.FrameLayout;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.base.SysUtils;
 import org.chromium.base.TraceEvent;
+import org.chromium.base.compat.ApiHelperForN;
 import org.chromium.base.compat.ApiHelperForO;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.InsetObserverView;
@@ -52,13 +54,15 @@ import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
-import org.chromium.chrome.browser.util.ColorUtils;
-import org.chromium.chrome.browser.widget.ControlContainer;
+import org.chromium.chrome.browser.toolbar.ControlContainer;
+import org.chromium.chrome.browser.toolbar.ToolbarColors;
 import org.chromium.components.content_capture.ContentCaptureConsumer;
+import org.chromium.components.content_capture.ContentCaptureConsumerImpl;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.KeyboardVisibilityDelegate;
 import org.chromium.ui.UiUtils;
 import org.chromium.ui.base.EventForwarder;
+import org.chromium.ui.base.EventOffsetHandler;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.resources.ResourceManager;
 import org.chromium.ui.resources.dynamics.DynamicResourceLoader;
@@ -202,7 +206,7 @@ public class CompositorViewHolder extends FrameLayout
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) return null;
         View activeView = getContentView();
         if (activeView == null || !ViewCompat.isAttachedToWindow(activeView)) return null;
-        return activeView.onResolvePointerIcon(event, pointerIndex);
+        return ApiHelperForN.onResolvePointerIcon(activeView, event, pointerIndex);
     }
 
     /**
@@ -223,18 +227,18 @@ public class CompositorViewHolder extends FrameLayout
                     private final RectF mCacheViewport = new RectF();
 
                     @Override
-                    public RectF getViewport() {
+                    public float getTop() {
                         if (mLayoutManager != null) mLayoutManager.getViewportPixel(mCacheViewport);
-                        return mCacheViewport;
+                        return mCacheViewport.top;
                     }
 
                     @Override
-                    public void setCurrentTouchEventOffsets(float x, float y) {
+                    public void setCurrentTouchEventOffsets(float top) {
                         if (mTabVisible == null) return;
                         WebContents webContents = mTabVisible.getWebContents();
                         if (webContents == null) return;
                         EventForwarder forwarder = webContents.getEventForwarder();
-                        forwarder.setCurrentTouchEventOffsets(x, y);
+                        forwarder.setCurrentTouchEventOffsets(0, top);
                     }
                 });
 
@@ -760,7 +764,8 @@ public class CompositorViewHolder extends FrameLayout
     }
 
     @Override
-    public void onBottomControlsHeightChanged(int bottomControlsHeight) {
+    public void onBottomControlsHeightChanged(
+            int bottomControlsHeight, int bottomControlsMinHeight) {
         if (mTabVisible == null) return;
         Point viewportSize = getViewportSize();
         setSize(mTabVisible.getWebContents(), mTabVisible.getContentView(), viewportSize.x,
@@ -769,7 +774,8 @@ public class CompositorViewHolder extends FrameLayout
     }
 
     @Override
-    public void onTopControlsHeightChanged(int topControlsHeight, boolean controlsResizeView) {
+    public void onTopControlsHeightChanged(
+            int topControlsHeight, int topControlsMinHeight, boolean controlsResizeView) {
         if (mTabVisible == null) return;
         Point viewportSize = getViewportSize();
         setSize(mTabVisible.getWebContents(), mTabVisible.getContentView(), viewportSize.x,
@@ -957,7 +963,7 @@ public class CompositorViewHolder extends FrameLayout
     @Override
     public int getBrowserControlsBackgroundColor() {
         return mTabVisible == null ? Color.WHITE
-                                   : ColorUtils.getToolbarSceneLayerBackground(mTabVisible);
+                                   : ToolbarColors.getToolbarSceneLayerBackground(mTabVisible);
     }
 
     @Override
@@ -1138,22 +1144,16 @@ public class CompositorViewHolder extends FrameLayout
 
         if (mTabVisible != null) initializeTab(mTabVisible);
 
-        if (mShouldCreateContentCaptureConsumer) {
-            mContentCaptureConsumer = createContentCaptureConsumer();
-            mShouldCreateContentCaptureConsumer = false;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            if (mShouldCreateContentCaptureConsumer) {
+                mContentCaptureConsumer =
+                        ContentCaptureConsumerImpl.create(getContext(), this, getWebContents());
+                mShouldCreateContentCaptureConsumer = false;
+            }
         }
         if (mContentCaptureConsumer != null) {
             mContentCaptureConsumer.onWebContentsChanged(getWebContents());
         }
-    }
-
-    /**
-     * This method is used by subclass to provide ContentCaptureConsumer.
-     *
-     * @return the ContentCaptureConsumer or null if it is not available.
-     */
-    protected ContentCaptureConsumer createContentCaptureConsumer() {
-        return null;
     }
 
     /**

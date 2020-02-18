@@ -31,6 +31,7 @@
 #include "media/audio/mock_audio_source_callback.h"
 #include "media/audio/test_audio_thread.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -42,8 +43,8 @@ using testing::NiceMock;
 namespace {
 
 std::unique_ptr<service_manager::Connector> CreateConnector() {
-  service_manager::mojom::ConnectorRequest request;
-  return service_manager::Connector::Create(&request);
+  mojo::PendingReceiver<service_manager::mojom::Connector> receiver;
+  return service_manager::Connector::Create(&receiver);
 }
 
 std::string DummyGetSessionId(std::string /* audio_group_id */) {
@@ -519,11 +520,8 @@ TEST_F(CastAudioOutputStreamTest, StartStopStart) {
   ASSERT_TRUE(stream->Open());
   RunThreadsUntilIdle();
 
-  // Set to busy, so that the OnPushBufferComplete callback is not called after
-  // the backend is stopped.
   FakeAudioDecoder* audio_decoder = GetAudioDecoder();
   ASSERT_TRUE(audio_decoder);
-  audio_decoder->set_pipeline_status(FakeAudioDecoder::PIPELINE_STATUS_BUSY);
 
   ::media::MockAudioSourceCallback source_callback;
   EXPECT_CALL(source_callback, OnMoreData(_, _, _, _))
@@ -531,8 +529,13 @@ TEST_F(CastAudioOutputStreamTest, StartStopStart) {
   stream->Start(&source_callback);
   RunThreadsUntilIdle();
   stream->Stop();
+  EXPECT_CALL(source_callback, OnMoreData(_, _, _, _)).Times(0);
+  RunThreadsUntilIdle();
+  testing::Mock::VerifyAndClearExpectations(&source_callback);
 
   // Ensure we fetch new data when restarting.
+  EXPECT_CALL(source_callback, OnMoreData(_, _, _, _))
+      .WillRepeatedly(Invoke(OnMoreData));
   int last_on_more_data_call_count = on_more_data_call_count_;
   stream->Start(&source_callback);
   RunThreadsUntilIdle();
@@ -551,8 +554,6 @@ TEST_F(CastAudioOutputStreamTest, StopPreventsCallbacks) {
   ASSERT_TRUE(stream->Open());
   RunThreadsUntilIdle();
 
-  // Set to busy, so that the OnPushBufferComplete callback is not called after
-  // the backend is stopped.
   FakeAudioDecoder* audio_decoder = GetAudioDecoder();
   ASSERT_TRUE(audio_decoder);
 
@@ -698,7 +699,7 @@ TEST_F(CastAudioOutputStreamTest, PushFrame) {
   EXPECT_CALL(source_callback, OnMoreData(_, _, _, _))
       .WillRepeatedly(Invoke(OnMoreData));
   // No error must be reported to source callback.
-  EXPECT_CALL(source_callback, OnError()).Times(0);
+  EXPECT_CALL(source_callback, OnError(_)).Times(0);
   stream->Start(&source_callback);
   RunThreadsUntilIdle();
   stream->Stop();
@@ -733,7 +734,7 @@ TEST_F(CastAudioOutputStreamTest, PushFrameAfterStop) {
   EXPECT_CALL(source_callback, OnMoreData(_, _, _, _))
       .WillRepeatedly(Invoke(OnMoreData));
   // No error must be reported to source callback.
-  EXPECT_CALL(source_callback, OnError()).Times(0);
+  EXPECT_CALL(source_callback, OnError(_)).Times(0);
   stream->Start(&source_callback);
   RunThreadsUntilIdle();
 
@@ -764,7 +765,7 @@ TEST_F(CastAudioOutputStreamTest, PushFrameAfterClose) {
   EXPECT_CALL(source_callback, OnMoreData(_, _, _, _))
       .WillRepeatedly(Invoke(OnMoreData));
   // No error must be reported to source callback.
-  EXPECT_CALL(source_callback, OnError()).Times(0);
+  EXPECT_CALL(source_callback, OnError(_)).Times(0);
   stream->Start(&source_callback);
   RunThreadsUntilIdle();
 
@@ -795,7 +796,7 @@ TEST_F(CastAudioOutputStreamTest, DISABLED_DeviceBusy) {
   EXPECT_CALL(source_callback, OnMoreData(_, _, _, _))
       .WillRepeatedly(Invoke(OnMoreData));
   // No error must be reported to source callback.
-  EXPECT_CALL(source_callback, OnError()).Times(0);
+  EXPECT_CALL(source_callback, OnError(_)).Times(0);
   stream->Start(&source_callback);
   RunThreadsUntilIdle();
   // Make sure that one frame was pushed.
@@ -830,7 +831,7 @@ TEST_F(CastAudioOutputStreamTest, DeviceError) {
   EXPECT_CALL(source_callback, OnMoreData(_, _, _, _))
       .WillRepeatedly(Invoke(OnMoreData));
   // AudioOutputStream must report error to source callback.
-  EXPECT_CALL(source_callback, OnError());
+  EXPECT_CALL(source_callback, OnError(_));
   stream->Start(&source_callback);
   RunThreadsUntilIdle();
   // Make sure that AudioOutputStream attempted to push the initial frame.
@@ -855,7 +856,7 @@ TEST_F(CastAudioOutputStreamTest, DeviceAsyncError) {
   EXPECT_CALL(source_callback, OnMoreData(_, _, _, _))
       .WillRepeatedly(Invoke(OnMoreData));
   // AudioOutputStream must report error to source callback.
-  EXPECT_CALL(source_callback, OnError()).Times(testing::AtLeast(1));
+  EXPECT_CALL(source_callback, OnError(_)).Times(testing::AtLeast(1));
   stream->Start(&source_callback);
   RunThreadsUntilIdle();
 

@@ -38,10 +38,6 @@ class CORE_EXPORT SVGAElement final : public SVGGraphicsElement,
 
   explicit SVGAElement(Document&);
 
-  const AttrNameToTrustedType& GetCheckedAttributeTypes() const override {
-    return SVGURIReference::GetCheckedAttributeTypes();
-  }
-
   void Trace(blink::Visitor*) override;
 
  private:
@@ -62,7 +58,7 @@ class CORE_EXPORT SVGAElement final : public SVGGraphicsElement,
   bool IsKeyboardFocusable() const override;
   bool IsURLAttribute(const Attribute&) const override;
   bool CanStartSelection() const override;
-  int tabIndex() const override;
+  int DefaultTabIndex() const override;
 
   bool WillRespondToMouseClickEvents() override;
 

@@ -50,10 +50,10 @@ class SigninHeaderHelperTest : public testing::Test {
   void TearDown() override { settings_map_->ShutdownOnUIThread(); }
 
   void CheckMirrorCookieRequest(const GURL& url,
-                                const std::string& account_id,
+                                const std::string& gaia_id,
                                 const std::string& expected_request) {
     EXPECT_EQ(BuildMirrorRequestCookieIfPossible(
-                  url, account_id, account_consistency_, cookie_settings_.get(),
+                  url, gaia_id, account_consistency_, cookie_settings_.get(),
                   PROFILE_MODE_DEFAULT),
               expected_request);
   }
@@ -112,7 +112,7 @@ class SigninHeaderHelperTest : public testing::Test {
   }
 #endif
 
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
 
   bool sync_enabled_ = false;
   std::string device_id_ = kTestDeviceId;
@@ -319,7 +319,7 @@ TEST_F(SigninHeaderHelperTest, TestNoDiceRequestWhenDisabled) {
 }
 
 TEST_F(SigninHeaderHelperTest, TestDiceEmptyDeviceID) {
-  account_consistency_ = AccountConsistencyMethod::kDiceMigration;
+  account_consistency_ = AccountConsistencyMethod::kDice;
   std::string client_id = GaiaUrls::GetInstance()->oauth2_chrome_client_id();
   ASSERT_FALSE(client_id.empty());
 
@@ -330,29 +330,16 @@ TEST_F(SigninHeaderHelperTest, TestDiceEmptyDeviceID) {
       "mode=0,enable_account_consistency=false,"
       "consistency_enabled_by_default=false",
       base::StringPrintf("version=%s,client_id=%s,signin_mode=all_accounts,"
-                         "signout_mode=no_confirmation",
+                         "signout_mode=show_confirmation",
                          kDiceProtocolVersion, client_id.c_str()));
 }
 
-// Tests that the signout confirmation is requested iff the Dice migration is
-// complete.
-TEST_F(SigninHeaderHelperTest, TestDiceMigration) {
-  account_consistency_ = AccountConsistencyMethod::kDiceMigration;
+// Tests that the signout confirmation is requested.
+TEST_F(SigninHeaderHelperTest, TestSignoutConfirmation) {
+  account_consistency_ = AccountConsistencyMethod::kDice;
   std::string client_id = GaiaUrls::GetInstance()->oauth2_chrome_client_id();
   ASSERT_FALSE(client_id.empty());
 
-  // No signout confirmation by default.
-  CheckDiceHeaderRequest(
-      GURL("https://accounts.google.com"), "0123456789",
-      "mode=0,enable_account_consistency=false,"
-      "consistency_enabled_by_default=false",
-      base::StringPrintf(
-          "version=%s,client_id=%s,device_id=DeviceID,signin_mode=all_accounts,"
-          "signout_mode=no_confirmation",
-          kDiceProtocolVersion, client_id.c_str()));
-
-  // Signout confirmation after the migration is complete.
-  account_consistency_ = AccountConsistencyMethod::kDice;
   CheckDiceHeaderRequest(
       GURL("https://accounts.google.com"), "0123456789",
       "mode=0,enable_account_consistency=false,"

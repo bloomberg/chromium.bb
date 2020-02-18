@@ -193,6 +193,8 @@ class MODULES_EXPORT BaseRenderingContext2D : public GarbageCollectedMixin,
                              ImageDataColorSettings*,
                              ExceptionState&) const;
 
+  // For deferred canvases this will have the side effect of drawing recorded
+  // commands in order to finalize the frame
   ImageData* getImageData(int sx, int sy, int sw, int sh, ExceptionState&);
   void putImageData(ImageData*, int dx, int dy, ExceptionState&);
   void putImageData(ImageData*,
@@ -246,7 +248,7 @@ class MODULES_EXPORT BaseRenderingContext2D : public GarbageCollectedMixin,
     return kSRGBCanvasColorSpaceName;
   }
   virtual CanvasPixelFormat PixelFormat() const {
-    return kRGBA8CanvasPixelFormat;
+    return CanvasPixelFormat::kRGBA8;
   }
 
   void RestoreMatrixClipStack(cc::PaintCanvas*) const;
@@ -341,7 +343,7 @@ class MODULES_EXPORT BaseRenderingContext2D : public GarbageCollectedMixin,
     NOTREACHED();
     return false;
   }
-  virtual scoped_refptr<StaticBitmapImage> GetImage(AccelerationHint) const {
+  virtual scoped_refptr<StaticBitmapImage> GetImage(AccelerationHint) {
     NOTREACHED();
     return nullptr;
   }
@@ -361,7 +363,7 @@ class MODULES_EXPORT BaseRenderingContext2D : public GarbageCollectedMixin,
 
   mutable UsageCounters usage_counters_;
 
-  virtual void NeedsFinalizeFrame() {}
+  virtual void FinalizeFrame() {}
 
   float GetFontBaseline(const SimpleFontData&) const;
 
@@ -384,7 +386,7 @@ class MODULES_EXPORT BaseRenderingContext2D : public GarbageCollectedMixin,
 
   void DrawPathInternal(const Path&,
                         CanvasRenderingContext2DState::PaintType,
-                        SkPath::FillType = SkPath::kWinding_FillType);
+                        SkPathFillType = SkPathFillType::kWinding);
   void DrawImageInternal(cc::PaintCanvas*,
                          CanvasImageSource*,
                          Image*,
@@ -406,6 +408,12 @@ class MODULES_EXPORT BaseRenderingContext2D : public GarbageCollectedMixin,
                       cc::PaintCanvas*,
                       CanvasRenderingContext2DState::PaintType,
                       CanvasRenderingContext2DState::ImageType);
+
+  template <typename T>
+  bool ValidateRectForCanvas(T x, T y, T width, T height);
+
+  template <typename T>
+  void AdjustRectForCanvas(T& x, T& y, T& width, T& height);
 
   void ClearCanvas();
   bool RectContainsTransformedRect(const FloatRect&, const SkIRect&) const;
@@ -518,6 +526,31 @@ void BaseRenderingContext2D::CompositedDraw(
   draw_func(c, &foreground_flags);
   c->restore();
   c->setMatrix(ctm);
+}
+
+template <typename T>
+bool BaseRenderingContext2D::ValidateRectForCanvas(T x,
+                                                   T y,
+                                                   T width,
+                                                   T height) {
+  return (std::isfinite(x) && std::isfinite(y) && std::isfinite(width) &&
+          std::isfinite(height) && (width || height));
+}
+
+template <typename T>
+void BaseRenderingContext2D::AdjustRectForCanvas(T& x,
+                                                 T& y,
+                                                 T& width,
+                                                 T& height) {
+  if (width < 0) {
+    width = -width;
+    x -= width;
+  }
+
+  if (height < 0) {
+    height = -height;
+    y -= height;
+  }
 }
 
 }  // namespace blink

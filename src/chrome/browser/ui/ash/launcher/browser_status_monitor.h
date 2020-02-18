@@ -8,9 +8,11 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
+#include "chrome/browser/ui/ash/launcher/app_service_instance_registry_helper.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/browser_tab_strip_tracker.h"
@@ -78,6 +80,10 @@ class BrowserStatusMonitor : public BrowserTabStripTrackerDelegate,
   bool IsV1AppInShelf(Browser* browser);
   bool IsV1AppInShelfWithAppId(const std::string& app_id);
 
+  AppServiceInstanceRegistryHelper* app_service_instance_helper() const {
+    return app_service_instance_helper_.get();
+  }
+
  private:
   class LocalWebContentsObserver;
 
@@ -108,6 +114,9 @@ class BrowserStatusMonitor : public BrowserTabStripTrackerDelegate,
 
   BrowserTabStripTracker browser_tab_strip_tracker_;
   bool initialized_ = false;
+
+  std::unique_ptr<AppServiceInstanceRegistryHelper>
+      app_service_instance_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserStatusMonitor);
 };

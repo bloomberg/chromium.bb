@@ -15,10 +15,11 @@
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/safe_browsing/browser_feature_extractor.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
+#include "components/safe_browsing/common/safe_browsing.mojom-shared.h"
 #include "components/safe_browsing/common/safe_browsing.mojom.h"
 #include "components/safe_browsing/db/database_manager.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "url/gurl.h"
 
@@ -83,8 +84,10 @@ class ClientSideDetectionHost : public content::WebContentsObserver,
   // classifiers.
   void OnPhishingPreClassificationDone(bool should_classify);
 
-  // Verdict is an encoded ClientPhishingRequest protocol message.
-  void PhishingDetectionDone(const std::string& verdict);
+  // |verdict| is an encoded ClientPhishingRequest protocol message, |result| is
+  // the outcome of the renderer classification.
+  void PhishingDetectionDone(mojom::PhishingDetectorResult result,
+                             const std::string& verdict);
 
   // Callback that is called when the server ping back is
   // done. Display an interstitial if |is_phishing| is true.
@@ -155,7 +158,7 @@ class ClientSideDetectionHost : public content::WebContentsObserver,
   // Current host, used to help determine cur_host_redirects_.
   std::string cur_host_;
   // The currently active message pipe to the renderer PhishingDetector.
-  mojom::PhishingDetectorPtr phishing_detector_;
+  mojo::Remote<mojom::PhishingDetector> phishing_detector_;
 
   // Max number of ips we save for each browse
   static const size_t kMaxIPsPerBrowse;

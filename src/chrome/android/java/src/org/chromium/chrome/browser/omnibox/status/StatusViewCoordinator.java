@@ -5,12 +5,17 @@
 package org.chromium.chrome.browser.omnibox.status;
 
 import android.content.res.Resources;
-import android.support.annotation.DrawableRes;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.View;
 
-import org.chromium.base.VisibleForTesting;
+import androidx.annotation.DrawableRes;
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.omnibox.UrlBarEditingTextStateProvider;
 import org.chromium.chrome.browser.page_info.PageInfoController;
+import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
@@ -19,12 +24,11 @@ import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
  * A component for displaying a status icon (e.g. security icon or navigation icon) and optional
  * verbose status text.
  */
-public class StatusViewCoordinator implements View.OnClickListener {
+public class StatusViewCoordinator implements View.OnClickListener, TextWatcher {
     private final StatusView mStatusView;
     private final StatusMediator mMediator;
     private final PropertyModel mModel;
     private final boolean mIsTablet;
-
     private ToolbarDataProvider mToolbarDataProvider;
     private boolean mUrlHasFocus;
 
@@ -32,8 +36,10 @@ public class StatusViewCoordinator implements View.OnClickListener {
      * Creates a new StatusViewCoordinator.
      * @param isTablet Whether the UI is shown on a tablet.
      * @param statusView The status view, used to supply and manipulate child views.
+     * @param urlBarEditingTextStateProvider The url coordinator.
      */
-    public StatusViewCoordinator(boolean isTablet, StatusView statusView) {
+    public StatusViewCoordinator(boolean isTablet, StatusView statusView,
+            UrlBarEditingTextStateProvider urlBarEditingTextStateProvider) {
         mIsTablet = isTablet;
         mStatusView = statusView;
 
@@ -42,7 +48,8 @@ public class StatusViewCoordinator implements View.OnClickListener {
                          .build();
 
         PropertyModelChangeProcessor.create(mModel, mStatusView, new StatusViewBinder());
-        mMediator = new StatusMediator(mModel, mStatusView.getResources());
+        mMediator = new StatusMediator(
+                mModel, mStatusView.getResources(), urlBarEditingTextStateProvider);
 
         Resources res = mStatusView.getResources();
         mMediator.setUrlMinWidth(res.getDimensionPixelSize(R.dimen.location_bar_min_url_width)
@@ -63,7 +70,8 @@ public class StatusViewCoordinator implements View.OnClickListener {
      */
     public void setToolbarDataProvider(ToolbarDataProvider toolbarDataProvider) {
         mToolbarDataProvider = toolbarDataProvider;
-        mMediator.setToolbarDataProvider(mToolbarDataProvider);
+        mMediator.setToolbarCommonPropertiesModel(mToolbarDataProvider);
+        mStatusView.setToolbarCommonPropertiesModel(mToolbarDataProvider);
         // Update status immediately after receiving the data provider to avoid initial presence
         // glitch on tablet devices. This glitch would be typically seen upon launch of app, right
         // before the landing page is presented to the user.
@@ -84,6 +92,24 @@ public class StatusViewCoordinator implements View.OnClickListener {
         mMediator.setUrlHasFocus(urlHasFocus);
         mUrlHasFocus = urlHasFocus;
         updateVerboseStatusVisibility();
+    }
+
+    /** @param urlHasFocus Whether the url currently has focus. */
+    public void onUrlAnimationFinished(boolean urlHasFocus) {
+        mMediator.setUrlAnimationFinished(urlHasFocus);
+    }
+
+    /** @param show Whether the status icon should be VISIBLE, otherwise GONE. */
+    public void setStatusIconShown(boolean show) {
+        mMediator.setStatusIconShown(show);
+    }
+
+    /**
+     * Set the url focus change percent.
+     * @param percent The current focus percent.
+     */
+    public void setUrlFocusChangePercent(float percent) {
+        mMediator.setUrlFocusChangePercent(percent);
     }
 
     /**
@@ -162,7 +188,7 @@ public class StatusViewCoordinator implements View.OnClickListener {
             return;
         }
 
-        PageInfoController.show(mToolbarDataProvider.getTab().getActivity(),
+        PageInfoController.show(((TabImpl) mToolbarDataProvider.getTab()).getActivity(),
                 mToolbarDataProvider.getTab(), null, PageInfoController.OpenedFromSource.TOOLBAR);
     }
 
@@ -204,4 +230,22 @@ public class StatusViewCoordinator implements View.OnClickListener {
         mMediator.updateSearchEngineStatusIcon(
                 shouldShowSearchEngineLogo, isSearchEngineGoogle, searchEngineUrl);
     }
+
+    /**
+     * @return Width of the status icon including start/end margins.
+     */
+    public int getStatusIconWidth() {
+        return mStatusView.getStatusIconWidth();
+    }
+
+    @Override
+    public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+    @Override
+    public void onTextChanged(CharSequence charSequence, int start, int before, int count) {
+        mMediator.onTextChanged(charSequence);
+    }
+
+    @Override
+    public void afterTextChanged(Editable editable) {}
 }

@@ -30,14 +30,16 @@ namespace dawn_native {
     // re-compute it.
     struct PassResourceUsage {
         std::vector<BufferBase*> buffers;
-        std::vector<dawn::BufferUsage> bufferUsages;
+        std::vector<wgpu::BufferUsage> bufferUsages;
 
         std::vector<TextureBase*> textures;
-        std::vector<dawn::TextureUsage> textureUsages;
+        std::vector<wgpu::TextureUsage> textureUsages;
     };
 
+    using PerPassUsages = std::vector<PassResourceUsage>;
+
     struct CommandBufferResourceUsage {
-        std::vector<PassResourceUsage> perPass;
+        PerPassUsages perPass;
         std::set<BufferBase*> topLevelBuffers;
         std::set<TextureBase*> topLevelTextures;
     };

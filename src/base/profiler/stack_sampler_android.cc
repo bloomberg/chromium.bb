@@ -7,18 +7,20 @@
 #include <pthread.h>
 
 #include "base/profiler/native_unwinder_android.h"
+#include "base/profiler/stack_copier_signal.h"
 #include "base/profiler/stack_sampler_impl.h"
-#include "base/profiler/thread_delegate_android.h"
+#include "base/profiler/thread_delegate_posix.h"
 #include "base/threading/platform_thread.h"
 
 namespace base {
 
 std::unique_ptr<StackSampler> StackSampler::Create(
-    PlatformThreadId thread_id,
+    SamplingProfilerThreadToken thread_token,
     ModuleCache* module_cache,
     StackSamplerTestDelegate* test_delegate) {
   return std::make_unique<StackSamplerImpl>(
-      std::make_unique<ThreadDelegateAndroid>(),
+      std::make_unique<StackCopierSignal>(
+          std::make_unique<ThreadDelegatePosix>(thread_token)),
       std::make_unique<NativeUnwinderAndroid>(), module_cache, test_delegate);
 }
 

@@ -50,6 +50,8 @@ namespace sw
 		VertexCache vertexCache;
 	};
 
+	using VertexRoutineFunction = FunctionT<void(Vertex* output, unsigned int* batch, VertexTask* vertextask, DrawData* draw)>;
+
 	class VertexProcessor
 	{
 	public:
@@ -68,6 +70,8 @@ namespace sw
 					return count != 0;
 				}
 
+				unsigned int bytesPerAttrib() const;
+
 				StreamType type    : BITS(STREAMTYPE_LAST);
 				unsigned int count : 3;
 				bool normalized    : 1;
@@ -75,6 +79,8 @@ namespace sw
 			};
 
 			Input input[MAX_INTERFACE_COMPONENTS / 4];
+			bool robustBufferAccess : 1;
+			bool isPoint : 1;
 		};
 
 		struct State : States
@@ -84,7 +90,7 @@ namespace sw
 			uint32_t hash;
 		};
 
-		typedef void (*RoutinePointer)(Vertex *output, unsigned int *batch, VertexTask *vertexTask, DrawData *draw);
+		using RoutineType = VertexRoutineFunction::RoutineType;
 
 		VertexProcessor();
 
@@ -92,13 +98,14 @@ namespace sw
 
 	protected:
 		const State update(const sw::Context* context);
-		std::shared_ptr<Routine> routine(const State &state, vk::PipelineLayout const *pipelineLayout,
+		RoutineType routine(const State &state, vk::PipelineLayout const *pipelineLayout,
 		                                 SpirvShader const *vertexShader, const vk::DescriptorSet::Bindings &descriptorSets);
 
 		void setRoutineCacheSize(int cacheSize);
 
 	private:
-		RoutineCache<State> *routineCache;
+		using RoutineCacheType = RoutineCacheT<State, VertexRoutineFunction::CFunctionType>;
+		RoutineCacheType *routineCache;
 	};
 }
 

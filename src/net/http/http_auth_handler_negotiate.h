@@ -15,7 +15,7 @@
 #include "net/dns/host_resolver.h"
 #include "net/http/http_auth_handler.h"
 #include "net/http/http_auth_handler_factory.h"
-#include "net/http/http_negotiate_auth_system.h"
+#include "net/http/http_auth_mechanism.h"
 
 #if defined(OS_ANDROID)
 #include "net/android/http_auth_negotiate_android.h"
@@ -44,7 +44,7 @@ class NET_EXPORT_PRIVATE HttpAuthHandlerNegotiate : public HttpAuthHandler {
 
   class NET_EXPORT_PRIVATE Factory : public HttpAuthHandlerFactory {
    public:
-    explicit Factory(NegotiateAuthSystemFactory negotiate_auth_system_factory);
+    explicit Factory(HttpAuthMechanismFactory negotiate_auth_system_factory);
     ~Factory() override;
 
 #if !defined(OS_ANDROID)
@@ -71,17 +71,14 @@ class NET_EXPORT_PRIVATE HttpAuthHandlerNegotiate : public HttpAuthHandler {
                           std::unique_ptr<HttpAuthHandler>* handler) override;
 
    private:
-    NegotiateAuthSystemFactory negotiate_auth_system_factory_;
-#if defined(OS_WIN)
-    ULONG max_token_length_ = 0;
-#endif
+    HttpAuthMechanismFactory negotiate_auth_system_factory_;
     bool is_unsupported_ = false;
 #if !defined(OS_ANDROID)
     std::unique_ptr<AuthLibrary> auth_library_;
 #endif  // !defined(OS_ANDROID)
   };
 
-  HttpAuthHandlerNegotiate(std::unique_ptr<HttpNegotiateAuthSystem> auth_system,
+  HttpAuthHandlerNegotiate(std::unique_ptr<HttpAuthMechanism> auth_system,
                            const HttpAuthPreferences* prefs,
                            HostResolver* host_resolver);
 
@@ -126,7 +123,7 @@ class NET_EXPORT_PRIVATE HttpAuthHandlerNegotiate : public HttpAuthHandler {
   int DoGenerateAuthTokenComplete(int rv);
   HttpAuth::DelegationType GetDelegationType() const;
 
-  std::unique_ptr<HttpNegotiateAuthSystem> auth_system_;
+  std::unique_ptr<HttpAuthMechanism> auth_system_;
   HostResolver* const resolver_;
 
   // Members which are needed for DNS lookup + SPN.

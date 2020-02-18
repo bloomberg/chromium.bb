@@ -9,6 +9,9 @@
 
 #include "base/macros.h"
 #include "base/time/time.h"
+#include "content/public/common/client_hints.mojom.h"
+#include "content/shell/utility/mock_client_hints_utils.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/platform/web_client_hints_type.h"
 #include "third_party/blink/public/platform/web_content_settings_client.h"
 #include "url/origin.h"
@@ -34,9 +37,7 @@ class MockContentSettingsClient : public blink::WebContentSettingsClient {
                              const blink::WebURL& script_url) override;
   bool AllowStorage(bool local) override;
   bool AllowRunningInsecureContent(bool enabled_per_settings,
-                                   const blink::WebSecurityOrigin& context,
                                    const blink::WebURL& url) override;
-  bool AllowAutoplay(bool default_value) override;
   void PersistClientHints(
       const blink::WebEnabledClientHints& enabled_client_hints,
       base::TimeDelta duration,
@@ -53,13 +54,9 @@ class MockContentSettingsClient : public blink::WebContentSettingsClient {
   WebTestDelegate* delegate_;
 
   WebTestRuntimeFlags* flags_;
+  mojo::Remote<client_hints::mojom::ClientHints> remote_;
 
-  struct ClientHintsPersistencyData {
-    blink::WebEnabledClientHints client_hints;
-    base::Time expiration;
-  };
-
-  std::map<const url::Origin, ClientHintsPersistencyData> client_hints_map_;
+  content::ClientHintsContainer client_hints_map_;
 
   DISALLOW_COPY_AND_ASSIGN(MockContentSettingsClient);
 };

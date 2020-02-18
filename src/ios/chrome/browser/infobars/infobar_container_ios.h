@@ -35,9 +35,9 @@ class InfoBarContainerIOS : public infobars::InfoBarContainer {
   void PlatformSpecificInfoBarStateChanged(bool is_animating) override;
 
  private:
+  infobars::InfoBarManager* info_bar_manager_ = nullptr;
   __weak id<InfobarContainerConsumer> consumer_;
   __weak id<InfobarContainerConsumer> legacyConsumer_;
-  infobars::InfoBarManager* info_bar_manager_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(InfoBarContainerIOS);
 };

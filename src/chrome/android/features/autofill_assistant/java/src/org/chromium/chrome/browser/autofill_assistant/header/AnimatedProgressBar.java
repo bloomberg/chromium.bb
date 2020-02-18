@@ -9,9 +9,10 @@ import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
 import android.view.View;
 
-import org.chromium.base.VisibleForTesting;
-import org.chromium.chrome.browser.compositor.animation.CompositorAnimator;
-import org.chromium.chrome.browser.widget.MaterialProgressBar;
+import androidx.annotation.VisibleForTesting;
+
+import org.chromium.chrome.browser.ui.widget.MaterialProgressBar;
+import org.chromium.chrome.browser.ui.widget.animation.Interpolators;
 
 import java.util.ArrayDeque;
 import java.util.Queue;
@@ -54,7 +55,7 @@ class AnimatedProgressBar {
         ValueAnimator progressAnimation = ValueAnimator.ofInt(mLastProgress, progress);
         progressAnimation.setDuration(
                 mProgressBarSpeedMs * Math.abs(progress - mLastProgress) / 100);
-        progressAnimation.setInterpolator(CompositorAnimator.ACCELERATE_INTERPOLATOR);
+        progressAnimation.setInterpolator(Interpolators.ACCELERATE_INTERPOLATOR);
         progressAnimation.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {

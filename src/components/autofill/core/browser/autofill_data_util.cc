@@ -5,6 +5,7 @@
 #include "components/autofill/core/browser/autofill_data_util.h"
 
 #include <algorithm>
+#include <iterator>
 #include <vector>
 
 #include "base/i18n/char_iterator.h"
@@ -54,12 +55,6 @@ const PaymentRequestData kPaymentRequestData[]{
      IDS_AUTOFILL_CC_UNION_PAY},
     {autofill::kVisaCard, "visa", IDR_AUTOFILL_CC_VISA, IDS_AUTOFILL_CC_VISA},
 };
-
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-const PaymentRequestData kGooglePayBrandingRequestData = {
-    "googlePay", "googlePay", IDR_AUTOFILL_GOOGLE_PAY,
-    IDS_AUTOFILL_CC_GOOGLE_PAY};
-#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
 const PaymentRequestData kGenericPaymentRequestData = {
     autofill::kGenericCard, "generic", IDR_AUTOFILL_CC_GENERIC,
@@ -464,70 +459,12 @@ base::string16 JoinNameParts(base::StringPiece16 given,
   return base::JoinString(full_name, base::ASCIIToUTF16(separator));
 }
 
-bool ProfileMatchesFullName(base::StringPiece16 full_name,
-                            const autofill::AutofillProfile& profile) {
-  const base::string16 kSpace = base::ASCIIToUTF16(" ");
-  const base::string16 kPeriodSpace = base::ASCIIToUTF16(". ");
-
-  // First Last
-  base::string16 candidate = profile.GetRawInfo(autofill::NAME_FIRST) + kSpace +
-                             profile.GetRawInfo(autofill::NAME_LAST);
-  if (!full_name.compare(candidate)) {
-    return true;
-  }
-
-  // First Middle Last
-  candidate = profile.GetRawInfo(autofill::NAME_FIRST) + kSpace +
-              profile.GetRawInfo(autofill::NAME_MIDDLE) + kSpace +
-              profile.GetRawInfo(autofill::NAME_LAST);
-  if (!full_name.compare(candidate)) {
-    return true;
-  }
-
-  // First M Last
-  candidate = profile.GetRawInfo(autofill::NAME_FIRST) + kSpace +
-              profile.GetRawInfo(autofill::NAME_MIDDLE_INITIAL) + kSpace +
-              profile.GetRawInfo(autofill::NAME_LAST);
-  if (!full_name.compare(candidate)) {
-    return true;
-  }
-
-  // First M. Last
-  candidate = profile.GetRawInfo(autofill::NAME_FIRST) + kSpace +
-              profile.GetRawInfo(autofill::NAME_MIDDLE_INITIAL) + kPeriodSpace +
-              profile.GetRawInfo(autofill::NAME_LAST);
-  if (!full_name.compare(candidate)) {
-    return true;
-  }
-
-  // Last First
-  candidate = profile.GetRawInfo(autofill::NAME_LAST) + kSpace +
-              profile.GetRawInfo(autofill::NAME_FIRST);
-  if (!full_name.compare(candidate)) {
-    return true;
-  }
-
-  // LastFirst
-  candidate = profile.GetRawInfo(autofill::NAME_LAST) +
-              profile.GetRawInfo(autofill::NAME_FIRST);
-  if (!full_name.compare(candidate)) {
-    return true;
-  }
-
-  return false;
-}
-
 const PaymentRequestData& GetPaymentRequestData(
     const std::string& issuer_network) {
   for (const PaymentRequestData& data : kPaymentRequestData) {
     if (issuer_network == data.issuer_network)
       return data;
   }
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-  if (issuer_network == kGooglePayBrandingRequestData.issuer_network) {
-    return kGooglePayBrandingRequestData;
-  }
-#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
   return kGenericPaymentRequestData;
 }
 
@@ -539,6 +476,16 @@ const char* GetIssuerNetworkForBasicCardIssuerNetwork(
     }
   }
   return kGenericPaymentRequestData.issuer_network;
+}
+
+bool IsValidBasicCardIssuerNetwork(
+    const std::string& basic_card_issuer_network) {
+  auto* it = std::find_if(
+      std::begin(kPaymentRequestData), std::end(kPaymentRequestData),
+      [basic_card_issuer_network](const auto& data) {
+        return data.basic_card_issuer_network == basic_card_issuer_network;
+      });
+  return it != std::end(kPaymentRequestData);
 }
 
 bool IsValidCountryCode(const std::string& country_code) {

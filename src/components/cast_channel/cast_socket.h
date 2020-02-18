@@ -22,19 +22,23 @@
 #include "components/cast_channel/cast_channel_enum.h"
 #include "components/cast_channel/cast_socket.h"
 #include "components/cast_channel/cast_transport.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_endpoint.h"
 #include "net/log/net_log_source.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/tls_socket.mojom.h"
+#include "third_party/openscreen/src/cast/common/channel/proto/cast_channel.pb.h"
 
 namespace net {
 class X509Certificate;
 }
 
 namespace cast_channel {
-class CastMessage;
+
+using ::cast::channel::CastMessage;
+
 class Logger;
 class MojoDataPump;
 struct LastError;
@@ -347,11 +351,11 @@ class CastSocketImpl : public CastSocket {
 
   NetworkContextGetter network_context_getter_;
 
-  // Owned ptr to the underlying TCP socket.
-  network::mojom::TCPConnectedSocketPtr tcp_socket_;
+  // Owned remote to the underlying TCP socket.
+  mojo::Remote<network::mojom::TCPConnectedSocket> tcp_socket_;
 
-  // Owned ptr to the underlying SSL socket.
-  network::mojom::TLSClientSocketPtr socket_;
+  // Owned remote to the underlying SSL socket.
+  mojo::Remote<network::mojom::TLSClientSocket> socket_;
 
   // Helper class to write to the SSL socket.
   std::unique_ptr<MojoDataPump> mojo_data_pump_;

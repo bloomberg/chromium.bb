@@ -6,12 +6,12 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 
 #include "net/third_party/quiche/src/quic/core/http/quic_spdy_client_session.h"
 #include "net/third_party/quiche/src/quic/core/http/spdy_server_push_utils.h"
 #include "net/third_party/quiche/src/quic/core/quic_utils.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_ptr_util.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_socket_address.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_test.h"
 #include "net/third_party/quiche/src/quic/test_tools/crypto_test_utils.h"
@@ -80,16 +80,15 @@ class QuicClientPromisedInfoTest : public QuicTest {
     headers_[":status"] = "200";
     headers_["content-length"] = "11";
 
-    stream_ = QuicMakeUnique<QuicSpdyClientStream>(
+    stream_ = std::make_unique<QuicSpdyClientStream>(
         GetNthClientInitiatedBidirectionalStreamId(
             connection_->transport_version(), 0),
         &session_, BIDIRECTIONAL);
-    stream_visitor_ = QuicMakeUnique<StreamVisitor>();
+    stream_visitor_ = std::make_unique<StreamVisitor>();
     stream_->set_visitor(stream_visitor_.get());
 
     push_promise_[":path"] = "/bar";
     push_promise_[":authority"] = "www.google.com";
-    push_promise_[":version"] = "HTTP/1.1";
     push_promise_[":method"] = "GET";
     push_promise_[":scheme"] = "https";
 

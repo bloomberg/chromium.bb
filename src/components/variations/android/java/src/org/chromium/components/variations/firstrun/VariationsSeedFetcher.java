@@ -6,13 +6,15 @@ package org.chromium.components.variations.firstrun;
 
 import android.content.SharedPreferences;
 import android.os.SystemClock;
-import android.support.annotation.IntDef;
 
+import androidx.annotation.IntDef;
+import androidx.annotation.VisibleForTesting;
+
+import org.chromium.base.BuildConfig;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.FileUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.CachedMetrics.SparseHistogramSample;
 import org.chromium.base.metrics.CachedMetrics.TimesHistogramSample;
 
@@ -53,6 +55,7 @@ public class VariationsSeedFetcher {
     // Values for the "Variations.FirstRun.SeedFetchResult" sparse histogram, which also logs
     // HTTP result codes. These are negative so that they don't conflict with the HTTP codes.
     // These values should not be renumbered or re-used since they are logged to UMA.
+    private static final int SEED_FETCH_RESULT_INVALID_DATE_HEADER = -4;
     private static final int SEED_FETCH_RESULT_UNKNOWN_HOST_EXCEPTION = -3;
     private static final int SEED_FETCH_RESULT_TIMEOUT = -2;
     private static final int SEED_FETCH_RESULT_IOEXCEPTION = -1;
@@ -132,22 +135,30 @@ public class VariationsSeedFetcher {
         // If you add fields, see VariationsTestUtils.
         public String signature;
         public String country;
-        public String date;
+        // Date according to the Variations server in milliseconds since UNIX epoch GMT.
+        public long date;
         public boolean isGzipCompressed;
         public byte[] seedData;
 
-        public Date parseDate() throws ParseException {
-            // The date field comes from the HTTP "Date" header, which has this format. (See RFC
-            // 2616, sections 3.3.1 and 14.18.) SimpleDateFormat is weirdly not thread-safe, so
-            // instantiate a new one for each call.
-            return new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.US).parse(date);
+        // TODO(crbug.com/1013390): Delete once Date header to timestamp migration is done (~M81).
+        @Deprecated
+        public static long parseDateHeader(String header) throws ParseException {
+            // The date field comes from the HTTP "Date" header, which has this format.
+            // (See RFC 2616, sections 3.3.1 and 14.18.) SimpleDateFormat is weirdly not
+            // thread-safe, so instantiate a new one for each call.
+            return new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.US)
+                    .parse(header)
+                    .getTime();
         }
 
         @Override
         public String toString() {
-            return "SeedInfo{signature=\"" + signature + "\" country=\"" + country
-                    + "\" date=\"" + date + " isGzipCompressed=" + isGzipCompressed
-                    + " seedData=" + Arrays.toString(seedData);
+            if (BuildConfig.DCHECK_IS_ON) {
+                return "SeedInfo{signature=\"" + signature + "\" country=\"" + country
+                        + "\" date=\"" + date + " isGzipCompressed=" + isGzipCompressed
+                        + " seedData=" + Arrays.toString(seedData);
+            }
+            return super.toString();
         }
     }
 
@@ -179,7 +190,7 @@ public class VariationsSeedFetcher {
                 VariationsSeedBridge.setVariationsFirstRunSeed(info.seedData, info.signature,
                         info.country, info.date, info.isGzipCompressed);
             } catch (IOException e) {
-                Log.e(TAG, "IOException when fetching variations seed.", e);
+                Log.e(TAG, "Exception when fetching variations seed.", e);
                 // Exceptions are handled and logged in the downloadContent method, so we don't
                 // need any exception handling here. The only reason we need a catch-statement here
                 // is because those exceptions are re-thrown from downloadContent to skip the
@@ -248,7 +259,7 @@ public class VariationsSeedFetcher {
             info.seedData = getRawSeed(connection);
             info.signature = getHeaderFieldOrEmpty(connection, "X-Seed-Signature");
             info.country = getHeaderFieldOrEmpty(connection, "X-Country");
-            info.date = getHeaderFieldOrEmpty(connection, "Date");
+            info.date = new Date().getTime();
             info.isGzipCompressed = getHeaderFieldOrEmpty(connection, "IM").equals("gzip");
             recordSeedFetchTime(SystemClock.elapsedRealtime() - startTimeMillis);
             return info;

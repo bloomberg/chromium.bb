@@ -15,11 +15,11 @@
 #include "net/third_party/quiche/src/quic/platform/api/quic_aligned.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_arraysize.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_bug_tracker.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_endian.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_flag_utils.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_prefetch.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_uint128.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_endian.h"
 
 namespace quic {
 namespace {
@@ -142,33 +142,6 @@ void QuicUtils::SerializeUint128Short(QuicUint128 v, uint8_t* out) {
   case x:                        \
     return #x;
 
-// static
-const char* QuicUtils::EncryptionLevelToString(EncryptionLevel level) {
-  switch (level) {
-    RETURN_STRING_LITERAL(ENCRYPTION_INITIAL);
-    RETURN_STRING_LITERAL(ENCRYPTION_HANDSHAKE);
-    RETURN_STRING_LITERAL(ENCRYPTION_ZERO_RTT);
-    RETURN_STRING_LITERAL(ENCRYPTION_FORWARD_SECURE);
-    RETURN_STRING_LITERAL(NUM_ENCRYPTION_LEVELS);
-  }
-  return "INVALID_ENCRYPTION_LEVEL";
-}
-
-// static
-const char* QuicUtils::TransmissionTypeToString(TransmissionType type) {
-  switch (type) {
-    RETURN_STRING_LITERAL(NOT_RETRANSMISSION);
-    RETURN_STRING_LITERAL(HANDSHAKE_RETRANSMISSION);
-    RETURN_STRING_LITERAL(LOSS_RETRANSMISSION);
-    RETURN_STRING_LITERAL(ALL_UNACKED_RETRANSMISSION);
-    RETURN_STRING_LITERAL(ALL_INITIAL_RETRANSMISSION);
-    RETURN_STRING_LITERAL(RTO_RETRANSMISSION);
-    RETURN_STRING_LITERAL(TLP_RETRANSMISSION);
-    RETURN_STRING_LITERAL(PROBING_RETRANSMISSION);
-  }
-  return "INVALID_TRANSMISSION_TYPE";
-}
-
 std::string QuicUtils::AddressChangeTypeToString(AddressChangeType type) {
   switch (type) {
     RETURN_STRING_LITERAL(NO_CHANGE);
@@ -188,10 +161,12 @@ const char* QuicUtils::SentPacketStateToString(SentPacketState state) {
     RETURN_STRING_LITERAL(NEVER_SENT);
     RETURN_STRING_LITERAL(ACKED);
     RETURN_STRING_LITERAL(UNACKABLE);
+    RETURN_STRING_LITERAL(NEUTERED);
     RETURN_STRING_LITERAL(HANDSHAKE_RETRANSMITTED);
     RETURN_STRING_LITERAL(LOST);
     RETURN_STRING_LITERAL(TLP_RETRANSMITTED);
     RETURN_STRING_LITERAL(RTO_RETRANSMITTED);
+    RETURN_STRING_LITERAL(PTO_RETRANSMITTED);
     RETURN_STRING_LITERAL(PROBE_RETRANSMITTED);
   }
   return "INVALID_SENT_PACKET_STATE";
@@ -356,10 +331,12 @@ SentPacketState QuicUtils::RetransmissionTypeToPacketState(
       return TLP_RETRANSMITTED;
     case RTO_RETRANSMISSION:
       return RTO_RETRANSMITTED;
+    case PTO_RETRANSMISSION:
+      return PTO_RETRANSMITTED;
     case PROBING_RETRANSMISSION:
       return PROBE_RETRANSMITTED;
     default:
-      QUIC_BUG << QuicUtils::TransmissionTypeToString(retransmission_type)
+      QUIC_BUG << TransmissionTypeToString(retransmission_type)
                << " is not a retransmission_type";
       return UNACKABLE;
   }
@@ -401,7 +378,7 @@ bool QuicUtils::IsCryptoStreamId(QuicTransportVersion version,
 
 // static
 QuicStreamId QuicUtils::GetHeadersStreamId(QuicTransportVersion version) {
-  DCHECK(!VersionUsesQpack(version));
+  DCHECK(!VersionUsesHttp3(version));
   return GetFirstBidirectionalStreamId(version, Perspective::IS_CLIENT);
 }
 
@@ -421,6 +398,19 @@ bool QuicUtils::IsServerInitiatedStreamId(QuicTransportVersion version,
     return false;
   }
   return VersionHasIetfQuicFrames(version) ? id % 2 != 0 : id % 2 == 0;
+}
+
+// static
+bool QuicUtils::IsOutgoingStreamId(ParsedQuicVersion version,
+                                   QuicStreamId id,
+                                   Perspective perspective) {
+  // Streams are outgoing streams, iff:
+  // - we are the server and the stream is server-initiated
+  // - we are the client and the stream is client-initiated.
+  const bool perspective_is_server = perspective == Perspective::IS_SERVER;
+  const bool stream_is_server =
+      QuicUtils::IsServerInitiatedStreamId(version.transport_version, id);
+  return perspective_is_server == stream_is_server;
 }
 
 // static
@@ -528,7 +518,7 @@ bool QuicUtils::VariableLengthConnectionIdAllowedForVersion(
   // We allow variable length connection IDs for unsupported versions to
   // ensure that IETF version negotiation works when other implementations
   // trigger version negotiation with custom connection ID lengths.
-  return version >= QUIC_VERSION_47 || version == QUIC_VERSION_UNSUPPORTED;
+  return version > QUIC_VERSION_46 || version == QUIC_VERSION_UNSUPPORTED;
 }
 
 // static
@@ -578,20 +568,6 @@ bool QuicUtils::IsConnectionIdValidForVersion(
 
 QuicUint128 QuicUtils::GenerateStatelessResetToken(
     QuicConnectionId connection_id) {
-  if (!GetQuicRestartFlag(quic_use_hashed_stateless_reset_tokens)) {
-    uint64_t data_bytes[3] = {0, 0, 0};
-    static_assert(sizeof(data_bytes) >= kQuicMaxConnectionIdAllVersionsLength,
-                  "kQuicMaxConnectionIdAllVersionsLength changed");
-    memcpy(data_bytes, connection_id.data(), connection_id.length());
-    // This is designed so that the common case of 64bit connection IDs
-    // produces a stateless reset token that is equal to the connection ID
-    // interpreted as a 64bit unsigned integer, to facilitate debugging.
-    return MakeQuicUint128(
-        QuicEndian::NetToHost64(sizeof(uint64_t) ^ connection_id.length() ^
-                                data_bytes[1] ^ data_bytes[2]),
-        QuicEndian::NetToHost64(data_bytes[0]));
-  }
-  QUIC_RESTART_FLAG_COUNT(quic_use_hashed_stateless_reset_tokens);
   return FNV1a_128_Hash(
       QuicStringPiece(connection_id.data(), connection_id.length()));
 }

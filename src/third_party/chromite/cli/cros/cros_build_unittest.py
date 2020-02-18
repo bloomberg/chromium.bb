@@ -93,11 +93,11 @@ class BuildCommandTest(cros_test_lib.MockTempDirTestCase,
                        return_value=fake_workon_helper)
       with MockBuildCommand(cmd) as build:
         build.inst.Run()
-        self.assertEquals(1 if update_chroot else 0, build.chroot_update_called)
-        self.assertEquals(1 if enable_only_latest else 0,
-                          fake_workon_helper.start_called)
-        self.assertEquals(True if enable_only_latest else None,
-                          fake_workon_helper.use_workon_only)
+        self.assertEqual(1 if update_chroot else 0, build.chroot_update_called)
+        self.assertEqual(1 if enable_only_latest else 0,
+                         fake_workon_helper.start_called)
+        self.assertEqual(True if enable_only_latest else None,
+                         fake_workon_helper.use_workon_only)
 
   def testFailedDeps(self):
     """Test that failures are detected correctly."""

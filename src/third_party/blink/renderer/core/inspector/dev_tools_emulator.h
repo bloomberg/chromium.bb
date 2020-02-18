@@ -22,7 +22,7 @@ class IntRect;
 class WebViewImpl;
 
 class CORE_EXPORT DevToolsEmulator final
-    : public GarbageCollectedFinalized<DevToolsEmulator> {
+    : public GarbageCollected<DevToolsEmulator> {
  public:
   explicit DevToolsEmulator(WebViewImpl*);
   ~DevToolsEmulator();
@@ -110,7 +110,6 @@ class CORE_EXPORT DevToolsEmulator final
   struct ViewportOverride {
     FloatPoint position;
     double scale;
-    bool original_visual_viewport_masking;
   };
   base::Optional<ViewportOverride> viewport_override_;
 
@@ -119,7 +118,6 @@ class CORE_EXPORT DevToolsEmulator final
   bool is_mobile_layout_theme_enabled_;
   float original_default_minimum_page_scale_factor_;
   float original_default_maximum_page_scale_factor_;
-  bool use_solid_color_scrollbar_;
   bool embedder_text_autosizing_enabled_;
   float embedder_device_scale_adjustment_;
   bool embedder_prefer_compositing_to_lcd_text_enabled_;

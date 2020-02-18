@@ -21,9 +21,8 @@
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
-#include "third_party/blink/public/common/origin_trials/trial_token_validator.h"
-#include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
-#include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
+#include "third_party/blink/public/mojom/service_worker/navigation_preload_state.mojom.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_registration_options.mojom.h"
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -53,6 +52,8 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
   ~ServiceWorkerDatabase();
 
   // Used in UMA. A new value must be appended only.
+  // TODO(bashi): Change this enum to an enum class and migrate from legacy
+  // histogram APIs to new ones. See //tools/metrics/histograms/README.md.
   enum Status {
     STATUS_OK,
     STATUS_ERROR_NOT_FOUND,
@@ -63,6 +64,9 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
     STATUS_ERROR_MAX,
   };
   static const char* StatusToString(Status status);
+
+  using FeatureToTokensMap = std::map<std::string /* feature_name */,
+                                      std::vector<std::string /* token */>>;
 
   struct CONTENT_EXPORT RegistrationData {
     // These values are immutable for the life of a registration.
@@ -80,8 +84,7 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
     bool has_fetch_handler;
     base::Time last_update_check;
     base::Time script_response_time;
-    base::Optional<blink::TrialTokenValidator::FeatureToTokensMap>
-        origin_trial_tokens;
+    base::Optional<FeatureToTokensMap> origin_trial_tokens;
     blink::mojom::NavigationPreloadState navigation_preload_state;
     std::set<blink::mojom::WebFeature> used_features;
 
@@ -432,7 +435,7 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
 
   bool IsDatabaseInMemory() const;
 
-  base::SequenceChecker sequence_checker_;
+  SEQUENCE_CHECKER(sequence_checker_);
 
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerDatabaseTest, OpenDatabase);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerDatabaseTest, OpenDatabase_InMemory);

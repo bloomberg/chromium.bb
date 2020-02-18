@@ -44,9 +44,11 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
+#include "gpu/ipc/service/gpu_memory_buffer_factory.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/bitstream_buffer.h"
 #include "media/base/cdm_context.h"
+#include "media/base/color_plane_layout.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/media.h"
 #include "media/base/media_switches.h"
@@ -124,10 +126,10 @@ const unsigned int kMinFramesForBitrateTests = 300;
 const unsigned int kLoggedLatencyPercentiles[] = {50, 75, 95};
 // Timeout between each BitstreamBufferReady() call and flush callback.
 // In the multiple encoder test case, the FPS might be lower than expected.
-// Currently the largest resolution we run at lab is 4K. The FPS of the slowest
-// device in MultipleEncoders test case is 3. Here we set the timeout 10x of the
-// expected period for margin.
-const unsigned int kBitstreamBufferReadyTimeoutMs = 3000;
+// To rule out a flakiness on low-end devices, the timeout is set to 10 sec,
+// https://crbug.com/1019307.
+const unsigned int kBitstreamBufferReadyTimeoutMs =
+    10 * base::Time::kMillisecondsPerSecond;
 
 // The syntax of multiple test streams is:
 //  test-stream1;test-stream2;test-stream3
@@ -824,7 +826,6 @@ class VideoEncodeAcceleratorTestEnvironment : public ::testing::Environment {
     ui::OzonePlatform::InitParams params;
     params.single_process = true;
     ui::OzonePlatform::InitializeForGPU(params);
-    ui::OzonePlatform::GetInstance()->AfterSandboxEntry();
     done->Signal();
   }
 #endif
@@ -1169,17 +1170,17 @@ void VideoFrameQualityValidator::Initialize(const gfx::Size& coded_size,
   if (IsVP8(profile_)) {
     config.Initialize(kCodecVP8, VP8PROFILE_ANY, alpha_mode, VideoColorSpace(),
                       kNoTransformation, coded_size, visible_size, natural_size,
-                      EmptyExtraData(), Unencrypted());
+                      EmptyExtraData(), EncryptionScheme::kUnencrypted);
   } else if (IsVP9(profile_)) {
     config.Initialize(kCodecVP9, VP9PROFILE_PROFILE0, alpha_mode,
                       VideoColorSpace(), kNoTransformation, coded_size,
                       visible_size, natural_size, EmptyExtraData(),
-                      Unencrypted());
+                      EncryptionScheme::kUnencrypted);
   } else if (IsH264(profile_)) {
     config.Initialize(kCodecH264, H264PROFILE_MAIN, alpha_mode,
                       VideoColorSpace(), kNoTransformation, coded_size,
                       visible_size, natural_size, EmptyExtraData(),
-                      Unencrypted());
+                      EncryptionScheme::kUnencrypted);
   } else {
     LOG_ASSERT(0) << "Invalid profile " << GetProfileName(profile_);
   }
@@ -1736,6 +1737,9 @@ class VEAClient : public VEAClientBase {
 
   // The last timestamp popped from |frame_timestamps_|.
   base::TimeDelta previous_timestamp_;
+
+  // Buffer factory for use with CloneVideoFrame.
+  std::unique_ptr<gpu::GpuMemoryBufferFactory> gpu_memory_buffer_factory_;
 };
 
 VEAClient::VEAClient(TestStream* test_stream,
@@ -1810,6 +1814,9 @@ VEAClient::VEAClient(TestStream* test_stream,
     // Without it, AppendToFile() will not work.
     EXPECT_EQ(0, base::WriteFile(out_filename, NULL, 0));
   }
+
+  gpu_memory_buffer_factory_ =
+      gpu::GpuMemoryBufferFactory::CreateNativeType(nullptr);
 
   // Initialize the parameters of the test streams.
   UpdateTestStreamData(mid_stream_bitrate_switch, mid_stream_framerate_switch);
@@ -2114,7 +2121,7 @@ scoped_refptr<VideoFrame> VEAClient::CreateFrame(off_t position) {
   CHECK_LE(num_planes, 3u);
 
   uint8_t* frame_data[3] = {};
-  std::vector<VideoFrameLayout::Plane> planes(num_planes);
+  std::vector<ColorPlaneLayout> planes(num_planes);
   size_t offset = position;
   // All the planes are stored in the same buffer, aligned_in_file_data[0].
   for (size_t i = 0; i < num_planes; i++) {
@@ -2147,7 +2154,9 @@ scoped_refptr<VideoFrame> VEAClient::CreateFrame(off_t position) {
   if (video_frame && g_native_input) {
 #if defined(OS_LINUX)
     video_frame = test::CloneVideoFrame(
-        video_frame.get(), video_frame->layout(), VideoFrame::STORAGE_DMABUFS);
+        gpu_memory_buffer_factory_.get(), video_frame.get(),
+        video_frame->layout(), VideoFrame::STORAGE_GPU_MEMORY_BUFFER,
+        gfx::BufferUsage::SCANOUT_VEA_READ_CAMERA_AND_CPU_READ_WRITE);
 #else
     video_frame = nullptr;
 #endif
@@ -2670,7 +2679,7 @@ void VEACacheLineUnalignedInputClient::FeedEncoderWithOneInput(
   CHECK_LE(num_planes, 3u);
   std::vector<char, AlignedAllocator<char, kPlatformBufferAlignment>>
       aligned_data[3];
-  std::vector<VideoFrameLayout::Plane> planes(num_planes);
+  std::vector<ColorPlaneLayout> planes(num_planes);
   std::vector<size_t> buffer_sizes(num_planes);
   uint8_t* frame_data[3] = {};
   // This VideoFrame is dummy. Each plane is stored in a separate buffer and
@@ -3106,11 +3115,13 @@ class VEATestSuite : public base::TestSuite {
 
 #if BUILDFLAG(USE_VAAPI)
     base::test::ScopedFeatureList scoped_feature_list;
-    // TODO(crbug.com/811912): remove once enabled by default.
-    scoped_feature_list.InitAndEnableFeature(media::kVaapiVP9Encoder);
-    // TODO(crbug.com/828482): Remove once H264 encoder on AMD is enabled by
-    // default.
-    scoped_feature_list.InitAndEnableFeature(media::kVaapiH264AMDEncoder);
+    std::vector<base::Feature> enabled_features = {
+        // TODO(crbug.com/811912): remove once enabled by default.
+        media::kVaapiVP9Encoder,
+        // TODO(crbug.com/828482): Remove once H264 encoder on AMD is enabled by
+        // default.
+        media::kVaapiH264AMDEncoder};
+    scoped_feature_list.InitWithFeatures(enabled_features, {});
     media::VaapiWrapper::PreSandboxInitialization();
 #elif defined(OS_WIN)
     media::MediaFoundationVideoEncodeAccelerator::PreSandboxInitialization();

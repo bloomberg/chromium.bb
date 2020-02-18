@@ -43,8 +43,6 @@
 
 namespace blink {
 
-using namespace html_names;
-
 struct SameSizeAsLayoutTableCell : public LayoutBlockFlow,
                                    public LayoutNGTableCellInterface {
   unsigned bitfields;
@@ -203,7 +201,7 @@ void LayoutTableCell::ComputePreferredLogicalWidths() {
     // See if nowrap was set.
     Length w = StyleOrColLogicalWidth();
     const AtomicString& nowrap =
-        To<Element>(GetNode())->getAttribute(kNowrapAttr);
+        To<Element>(GetNode())->FastGetAttribute(html_names::kNowrapAttr);
     if (!nowrap.IsNull() && w.IsFixed()) {
       // Nowrap is set, but we didn't actually use it because of the fixed width
       // set on the cell. Even so, it is a WinIE/Moz trait to make the minwidth
@@ -1061,6 +1059,8 @@ void LayoutTableCell::UpdateCollapsedBorderValues() const {
     }
   } else {
     Table()->InvalidateCollapsedBordersForAllCellsIfNeeded();
+    if (Section())
+      Section()->RecalcCellsIfNeeded();
     if (collapsed_border_values_valid_)
       return;
 

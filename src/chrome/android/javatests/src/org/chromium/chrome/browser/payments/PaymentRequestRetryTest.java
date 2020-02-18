@@ -54,7 +54,7 @@ public class PaymentRequestRetryTest implements MainActivityStartCallback {
             new RenderTestRule("components/test/data/payments/render_tests");
 
     @Override
-    public void onMainActivityStarted() throws InterruptedException, TimeoutException {
+    public void onMainActivityStarted() throws TimeoutException {
         AutofillTestHelper helper = new AutofillTestHelper();
 
         String billing_address_id = helper.setProfile(new AutofillProfile("", "https://example.com",
@@ -64,8 +64,66 @@ public class PaymentRequestRetryTest implements MainActivityStartCallback {
                 true /* isCached */, "Jon Doe", "5555555555554444", "" /* obfuscatedNumber */, "12",
                 "2050", "mastercard", R.drawable.mc_card, CardType.UNKNOWN, billing_address_id,
                 "" /* serverId */));
+        helper.setCreditCard(new CreditCard("", "https://example.com", true /* isLocal */,
+                true /* isCached */, "Jon Doe", "4111111111111111", "" /* obfuscatedNumber */, "12",
+                "2050", "visa", R.drawable.mc_card, CardType.UNKNOWN, billing_address_id,
+                "" /* serverId */));
 
         mPaymentRequestTestRule.installPaymentApp(HAVE_INSTRUMENTS, IMMEDIATE_RESPONSE);
+    }
+
+    /**
+     * Tests that only the initially selected payment instrument is available during retry().
+     */
+    @Test
+    @MediumTest
+    @Feature({"Payments"})
+    public void testDoNotAllowPaymentInstrumentChange() throws TimeoutException {
+        mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyForInput());
+        mPaymentRequestTestRule.clickAndWait(
+                R.id.button_primary, mPaymentRequestTestRule.getReadyForUnmaskInput());
+
+        // Confirm that two payment instruments are available for payment.
+        Assert.assertEquals(2, mPaymentRequestTestRule.getNumberOfPaymentInstruments());
+
+        mPaymentRequestTestRule.setTextInCardUnmaskDialogAndWait(
+                R.id.card_unmask_input, "123", mPaymentRequestTestRule.getReadyToUnmask());
+        mPaymentRequestTestRule.clickCardUnmaskButtonAndWait(
+                ModalDialogProperties.ButtonType.POSITIVE,
+                mPaymentRequestTestRule.getPaymentResponseReady());
+
+        // Confirm that only one payment instrument is available for retry().
+        mPaymentRequestTestRule.retryPaymentRequest("{}", mPaymentRequestTestRule.getReadyToPay());
+        Assert.assertEquals(1, mPaymentRequestTestRule.getNumberOfPaymentInstruments());
+    }
+
+    /**
+     * Tests that adding new cards is disabled during retry().
+     */
+    @Test
+    @MediumTest
+    @Feature({"Payments"})
+    public void testDoNotAllowAddingCards() throws TimeoutException {
+        mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyForInput());
+        mPaymentRequestTestRule.clickAndWait(
+                R.id.button_primary, mPaymentRequestTestRule.getReadyForUnmaskInput());
+
+        // Confirm that "Add Card" option is available.
+        Assert.assertNotNull(mPaymentRequestTestRule.getPaymentRequestUI()
+                                     .getPaymentMethodSectionForTest()
+                                     .findViewById(R.id.payments_add_option_button));
+
+        mPaymentRequestTestRule.setTextInCardUnmaskDialogAndWait(
+                R.id.card_unmask_input, "123", mPaymentRequestTestRule.getReadyToUnmask());
+        mPaymentRequestTestRule.clickCardUnmaskButtonAndWait(
+                ModalDialogProperties.ButtonType.POSITIVE,
+                mPaymentRequestTestRule.getPaymentResponseReady());
+
+        // Confirm that "Add Card" option does not exist during retry.
+        mPaymentRequestTestRule.retryPaymentRequest("{}", mPaymentRequestTestRule.getReadyToPay());
+        Assert.assertNull(mPaymentRequestTestRule.getPaymentRequestUI()
+                                  .getPaymentMethodSectionForTest()
+                                  .findViewById(R.id.payments_add_option_button));
     }
 
     /**
@@ -74,7 +132,7 @@ public class PaymentRequestRetryTest implements MainActivityStartCallback {
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testRetryWithDefaultError() throws InterruptedException, TimeoutException {
+    public void testRetryWithDefaultError() throws TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyForInput());
         mPaymentRequestTestRule.clickAndWait(
                 R.id.button_primary, mPaymentRequestTestRule.getReadyForUnmaskInput());
@@ -97,7 +155,7 @@ public class PaymentRequestRetryTest implements MainActivityStartCallback {
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testRetryWithCustomError() throws InterruptedException, TimeoutException {
+    public void testRetryWithCustomError() throws TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyForInput());
         mPaymentRequestTestRule.clickAndWait(
                 R.id.button_primary, mPaymentRequestTestRule.getReadyForUnmaskInput());
@@ -216,8 +274,7 @@ public class PaymentRequestRetryTest implements MainActivityStartCallback {
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testRetryWithShippingAddressErrorsAndPayerErrors()
-            throws InterruptedException, TimeoutException {
+    public void testRetryWithShippingAddressErrorsAndPayerErrors() throws TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyForInput());
         mPaymentRequestTestRule.clickAndWait(
                 R.id.button_primary, mPaymentRequestTestRule.getReadyForUnmaskInput());
@@ -259,7 +316,7 @@ public class PaymentRequestRetryTest implements MainActivityStartCallback {
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testRetryAndPayerDetailChangeEvent() throws InterruptedException, TimeoutException {
+    public void testRetryAndPayerDetailChangeEvent() throws TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyForInput());
         mPaymentRequestTestRule.clickAndWait(
                 R.id.button_primary, mPaymentRequestTestRule.getReadyForUnmaskInput());
@@ -298,7 +355,7 @@ public class PaymentRequestRetryTest implements MainActivityStartCallback {
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testRetryAndReselectContactDetail() throws InterruptedException, TimeoutException {
+    public void testRetryAndReselectContactDetail() throws TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyForInput());
         mPaymentRequestTestRule.clickAndWait(
                 R.id.button_primary, mPaymentRequestTestRule.getReadyForUnmaskInput());

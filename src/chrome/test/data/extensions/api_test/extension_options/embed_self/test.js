@@ -14,10 +14,10 @@ function optionsPageLoaded() {
 }
 
 function assertSenderIsOptionsPage(sender) {
-  chrome.test.assertEq({
-    'id': chrome.runtime.id,
-    'url': chrome.runtime.getURL('options.html')
-  }, sender);
+  var url = chrome.runtime.getURL('options.html');
+  var origin = new URL(url).origin;
+  chrome.test.assertEq(
+      {'id': chrome.runtime.id, 'url': url, 'origin': origin}, sender);
 }
 
 chrome.test.runTests([
@@ -133,7 +133,8 @@ chrome.test.runTests([
         try {
           chrome.tabs.query({url: 'http://www.chromium.org/'}, function(tabs) {
             chrome.test.assertEq(1, tabs.length);
-            chrome.test.assertEq('http://www.chromium.org/', tabs[0].url);
+            chrome.test.assertEq('http://www.chromium.org/',
+                                 tabs[0].url || tabs[0].pendingUrl);
             done();
           });
         } finally {

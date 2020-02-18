@@ -110,22 +110,14 @@
       }
     ]
   },
-  "WebRTC Chromium FYI Linux Builder": {
-    "additional_compile_targets": [
-      "frame_analyzer",
-      "remoting/webapp:webapp"
-    ]
-  },
   "WebRTC Chromium FYI Linux Builder (dbg)": {
     "additional_compile_targets": [
       "browser_tests",
       "capture_unittests",
       "content_browsertests",
       "content_unittests",
-      "frame_analyzer",
       "jingle_unittests",
-      "remoting_unittests",
-      "remoting/webapp:webapp"
+      "remoting_unittests"
     ]
   },
   "WebRTC Chromium FYI Linux Tester": {
@@ -196,7 +188,8 @@
         "args": [
           "--gtest_filter=WebRtc*MANUAL*:-UsingRealWebcam*",
           "--run-manual",
-          "--ui-test-action-max-timeout=120000"
+          "--ui-test-action-max-timeout=110000",
+          "--test-launcher-timeout=120000"
         ],
         "merge": {
           "args": [],
@@ -270,22 +263,14 @@
       }
     ]
   },
-  "WebRTC Chromium FYI Mac Builder": {
-    "additional_compile_targets": [
-      "frame_analyzer",
-      "remoting/webapp:webapp"
-    ]
-  },
   "WebRTC Chromium FYI Mac Builder (dbg)": {
     "additional_compile_targets": [
       "browser_tests",
       "capture_unittests",
       "content_browsertests",
       "content_unittests",
-      "frame_analyzer",
       "jingle_unittests",
-      "remoting_unittests",
-      "remoting/webapp:webapp"
+      "remoting_unittests"
     ]
   },
   "WebRTC Chromium FYI Mac Tester": {
@@ -356,7 +341,8 @@
         "args": [
           "--gtest_filter=WebRtc*MANUAL*:-UsingRealWebcam*",
           "--run-manual",
-          "--ui-test-action-max-timeout=120000"
+          "--ui-test-action-max-timeout=110000",
+          "--test-launcher-timeout=120000"
         ],
         "merge": {
           "args": [],
@@ -430,22 +416,14 @@
       }
     ]
   },
-  "WebRTC Chromium FYI Win Builder": {
-    "additional_compile_targets": [
-      "frame_analyzer",
-      "remoting/webapp:webapp"
-    ]
-  },
   "WebRTC Chromium FYI Win Builder (dbg)": {
     "additional_compile_targets": [
       "browser_tests",
       "capture_unittests",
       "content_browsertests",
       "content_unittests",
-      "frame_analyzer",
       "jingle_unittests",
-      "remoting_unittests",
-      "remoting/webapp:webapp"
+      "remoting_unittests"
     ]
   },
   "WebRTC Chromium FYI Win10 Tester": {
@@ -516,7 +494,8 @@
         "args": [
           "--gtest_filter=WebRtc*MANUAL*:-UsingRealWebcam*",
           "--run-manual",
-          "--ui-test-action-max-timeout=120000"
+          "--ui-test-action-max-timeout=110000",
+          "--test-launcher-timeout=120000"
         ],
         "merge": {
           "args": [],
@@ -658,7 +637,8 @@
         "args": [
           "--gtest_filter=WebRtc*MANUAL*:-UsingRealWebcam*",
           "--run-manual",
-          "--ui-test-action-max-timeout=120000"
+          "--ui-test-action-max-timeout=110000",
+          "--test-launcher-timeout=120000"
         ],
         "merge": {
           "args": [],
@@ -800,7 +780,8 @@
         "args": [
           "--gtest_filter=WebRtc*MANUAL*:-UsingRealWebcam*",
           "--run-manual",
-          "--ui-test-action-max-timeout=120000"
+          "--ui-test-action-max-timeout=110000",
+          "--test-launcher-timeout=120000"
         ],
         "merge": {
           "args": [],

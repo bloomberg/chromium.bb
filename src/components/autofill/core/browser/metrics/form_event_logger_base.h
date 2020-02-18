@@ -17,6 +17,8 @@
 
 namespace autofill {
 
+class LogManager;
+
 // Utility to log autofill form events in the relevant histograms depending on
 // the presence of server and/or local data.
 class FormEventLoggerBase {
@@ -24,7 +26,8 @@ class FormEventLoggerBase {
   FormEventLoggerBase(
       const std::string& form_type_name,
       bool is_in_main_frame,
-      AutofillMetrics::FormInteractionsUkmLogger* form_interactions_ukm_logger);
+      AutofillMetrics::FormInteractionsUkmLogger* form_interactions_ukm_logger,
+      LogManager* log_manager);
 
   inline void set_server_record_type_count(size_t server_record_type_count) {
     server_record_type_count_ = server_record_type_count;
@@ -43,6 +46,9 @@ class FormEventLoggerBase {
   void OnDidParseForm(const FormStructure& form);
 
   void OnPopupSuppressed(const FormStructure& form, const AutofillField& field);
+
+  void OnUserHideSuggestions(const FormStructure& form,
+                             const AutofillField& field);
 
   void OnDidShowSuggestions(const FormStructure& form,
                             const AutofillField& field,
@@ -102,6 +108,7 @@ class FormEventLoggerBase {
   bool has_parsed_form_ = false;
   bool has_logged_interacted_ = false;
   bool has_logged_popup_suppressed_ = false;
+  bool has_logged_user_hide_suggestions_ = false;
   bool has_logged_suggestions_shown_ = false;
   bool has_logged_suggestion_filled_ = false;
   bool has_logged_will_submit_ = false;
@@ -115,6 +122,9 @@ class FormEventLoggerBase {
 
   // Weak reference.
   AutofillMetrics::FormInteractionsUkmLogger* form_interactions_ukm_logger_;
+
+  // Weak reference.
+  LogManager* const log_manager_;
 
   AutofillSyncSigninState sync_state_ = AutofillSyncSigninState::kNumSyncStates;
 };

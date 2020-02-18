@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/supports_user_data.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
@@ -70,9 +71,10 @@ class BrowserState : public base::SupportsUserData {
   // Returns an provider to create ProtoDatabase tied to the profile directory.
   leveldb_proto::ProtoDatabaseProvider* GetProtoDatabaseProvider();
 
-  // Binds a ProxyResolvingSocketFactory request to NetworkContext.
+  // Binds a ProxyResolvingSocketFactory receiver to NetworkContext.
   void GetProxyResolvingSocketFactory(
-      network::mojom::ProxyResolvingSocketFactoryRequest request);
+      mojo::PendingReceiver<network::mojom::ProxyResolvingSocketFactory>
+          receiver);
 
   // Like URLLoaderFactory, but wrapped inside SharedURLLoaderFactory
   virtual scoped_refptr<network::SharedURLLoaderFactory>
@@ -104,13 +106,13 @@ class BrowserState : public base::SupportsUserData {
 
   void CreateNetworkContextIfNecessary();
 
-  network::mojom::URLLoaderFactoryPtr url_loader_factory_;
+  mojo::Remote<network::mojom::URLLoaderFactory> url_loader_factory_;
   mojo::Remote<network::mojom::CookieManager> cookie_manager_;
   std::unique_ptr<leveldb_proto::ProtoDatabaseProvider>
       proto_database_provider_;
   scoped_refptr<network::WeakWrapperSharedURLLoaderFactory>
       shared_url_loader_factory_;
-  network::mojom::NetworkContextPtr network_context_;
+  mojo::Remote<network::mojom::NetworkContext> network_context_;
 
   // Owns the network::NetworkContext that backs |url_loader_factory_|. Created
   // on the UI thread, destroyed on the IO thread.

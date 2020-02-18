@@ -12,6 +12,8 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/test/test_storage_partition.h"
 #include "extensions/browser/api/socket/tcp_socket.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/address_list.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
@@ -89,10 +91,10 @@ class TCPSocketUnitTestBase : public extensions::ExtensionServiceTestBase {
   void Initialize() {
     url_request_context_.Init();
     network_context_ = std::make_unique<network::NetworkContext>(
-        nullptr, mojo::MakeRequest(&network_context_ptr_),
+        nullptr, network_context_remote_.BindNewPipeAndPassReceiver(),
         &url_request_context_,
         /*cors_exempt_header_list=*/std::vector<std::string>());
-    partition_.set_network_context(network_context_ptr_.get());
+    partition_.set_network_context(network_context_remote_.get());
   }
 
   net::TestURLRequestContext url_request_context_;
@@ -101,7 +103,7 @@ class TCPSocketUnitTestBase : public extensions::ExtensionServiceTestBase {
   TestingProfile profile_;
   content::TestStoragePartition partition_;
   std::unique_ptr<network::NetworkContext> network_context_;
-  network::mojom::NetworkContextPtr network_context_ptr_;
+  mojo::Remote<network::mojom::NetworkContext> network_context_remote_;
 };
 
 }  // namespace
@@ -635,7 +637,9 @@ TEST_F(TCPSocketServerTest, ListenAccept) {
   base::RunLoop accept_run_loop;
   net::IPEndPoint accept_client_addr;
   socket->Accept(base::BindLambdaForTesting(
-      [&](int result, network::mojom::TCPConnectedSocketPtr accepted_socket,
+      [&](int result,
+          mojo::PendingRemote<network::mojom::TCPConnectedSocket>
+              accepted_socket,
           const base::Optional<net::IPEndPoint>& remote_addr,
           mojo::ScopedDataPipeConsumerHandle receive_handle,
           mojo::ScopedDataPipeProducerHandle send_handle) {
@@ -690,7 +694,9 @@ TEST_F(TCPSocketServerTest, ReadAndWrite) {
   std::unique_ptr<TCPSocket> accepted_socket;
 
   socket->Accept(base::BindLambdaForTesting(
-      [&](int result, network::mojom::TCPConnectedSocketPtr connected_socket,
+      [&](int result,
+          mojo::PendingRemote<network::mojom::TCPConnectedSocket>
+              connected_socket,
           const base::Optional<net::IPEndPoint>& remote_addr,
           mojo::ScopedDataPipeConsumerHandle receive_handle,
           mojo::ScopedDataPipeProducerHandle send_handle) {

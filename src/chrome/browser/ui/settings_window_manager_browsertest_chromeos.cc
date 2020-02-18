@@ -11,8 +11,10 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
+#include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/browser/ui/settings_window_manager_observer_chromeos.h"
+#include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
 #include "chrome/browser/web_applications/system_web_app_manager.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/chrome_features.h"
@@ -20,6 +22,7 @@
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chromeos/constants/chromeos_features.h"
+#include "content/public/browser/web_contents.h"
 #include "url/gurl.h"
 
 namespace {
@@ -116,6 +119,22 @@ IN_PROC_BROWSER_TEST_P(SettingsWindowManagerTest, OpenSettingsWindow) {
             settings_manager_->FindBrowserForProfile(browser()->profile()));
   EXPECT_EQ(1u, observer_.new_settings_count());
 
+  // Launching via application_launch.h should also dedupe to the same browser.
+  if (EnableSystemWebApps()) {
+    web_app::AppId settings_app_id = *web_app::GetAppIdForSystemWebApp(
+        browser()->profile(), web_app::SystemAppType::SETTINGS);
+    content::WebContents* contents = OpenApplication(
+        browser()->profile(),
+        apps::AppLaunchParams(
+            settings_app_id,
+            apps::mojom::LaunchContainer::kLaunchContainerWindow,
+            WindowOpenDisposition::NEW_WINDOW,
+            apps::mojom::AppLaunchSource::kSourceCommandLine));
+    EXPECT_EQ(contents,
+              settings_browser->tab_strip_model()->GetActiveWebContents());
+    EXPECT_EQ(1u, observer_.new_settings_count());
+  }
+
   // Close the settings window.
   CloseBrowserSynchronously(settings_browser);
   EXPECT_FALSE(settings_manager_->FindBrowserForProfile(browser()->profile()));
@@ -157,29 +176,47 @@ IN_PROC_BROWSER_TEST_P(SettingsWindowManagerTest, OpenChromePages) {
   EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
 }
 
-// TODO(crbug/950007): Remove ScopedFeatureList when kSplitSettings flag is on
-// by default.
-IN_PROC_BROWSER_TEST_P(SettingsWindowManagerTest, OpenAboutPageSplitSettings) {
+// TODO(crbug/950007): Remove when kSplitSettings flag is on by default.
+class SettingsWindowManagerTestWithSplitSettings
+    : public SettingsWindowManagerTest {
+ public:
+  SettingsWindowManagerTestWithSplitSettings() {
+    feature_list_.InitAndEnableFeature(chromeos::features::kSplitSettings);
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+// TODO(crbug/950007): Remove when kSplitSettings flag is on by default.
+class SettingsWindowManagerTestWithoutSplitSettings
+    : public SettingsWindowManagerTest {
+ public:
+  SettingsWindowManagerTestWithoutSplitSettings() {
+    feature_list_.InitAndDisableFeature(chromeos::features::kSplitSettings);
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_P(SettingsWindowManagerTestWithSplitSettings,
+                       OpenAboutPageSplitSettings) {
   // About should open settings window when split settings feature flag is on.
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(chromeos::features::kSplitSettings);
   chrome::ShowAboutChrome(browser());
   EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
 }
 
-// TODO(crbug/950007): Remove when kSplitSettings flag is on by default.
-IN_PROC_BROWSER_TEST_P(SettingsWindowManagerTest, OpenAboutPage) {
+IN_PROC_BROWSER_TEST_P(SettingsWindowManagerTestWithoutSplitSettings,
+                       OpenAboutPage) {
   // About should open a new browser window when split settings feature flag is
   // off.
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(chromeos::features::kSplitSettings);
   chrome::ShowAboutChrome(browser());
   EXPECT_EQ(2u, chrome::GetTotalBrowserCount());
 }
 
-IN_PROC_BROWSER_TEST_P(SettingsWindowManagerTest, SplitSettings) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(chromeos::features::kSplitSettings);
+IN_PROC_BROWSER_TEST_P(SettingsWindowManagerTestWithSplitSettings,
+                       SplitSettings) {
   EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
 
   // Browser settings opens in the existing browser window.

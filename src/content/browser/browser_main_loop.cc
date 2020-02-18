@@ -21,11 +21,12 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/memory_pressure_monitor.h"
-#include "base/message_loop/message_loop.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
+#include "base/no_destructor.h"
 #include "base/path_service.h"
 #include "base/pending_task.h"
 #include "base/power_monitor/power_monitor.h"
@@ -52,6 +53,7 @@
 #include "build/build_config.h"
 #include "cc/base/histograms.h"
 #include "components/discardable_memory/service/discardable_shared_memory_manager.h"
+#include "components/services/storage/dom_storage/storage_area_impl.h"
 #include "components/tracing/common/trace_startup_config.h"
 #include "components/tracing/common/trace_to_console.h"
 #include "components/tracing/common/tracing_switches.h"
@@ -66,7 +68,6 @@
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/compositor/surface_utils.h"
 #include "content/browser/compositor/viz_process_transport_factory.h"
-#include "content/browser/dom_storage/storage_area_impl.h"
 #include "content/browser/download/save_file_manager.h"
 #include "content/browser/gpu/browser_gpu_channel_host_factory.h"
 #include "content/browser/gpu/browser_gpu_client_delegate.h"
@@ -79,6 +80,7 @@
 #include "content/browser/media/media_internals.h"
 #include "content/browser/media/media_keys_listener_manager_impl.h"
 #include "content/browser/net/browser_online_state_observer.h"
+#include "content/browser/network_service_instance_impl.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/scheduler/browser_task_executor.h"
@@ -102,7 +104,9 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/gpu_data_manager_observer.h"
+#include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/service_process_host.h"
 #include "content/public/browser/site_isolation_policy.h"
 #include "content/public/browser/system_connector.h"
 #include "content/public/common/content_client.h"
@@ -133,6 +137,7 @@
 #include "services/audio/public/mojom/constants.mojom.h"
 #include "services/audio/service.h"
 #include "services/content/public/cpp/navigable_contents_view.h"
+#include "services/data_decoder/public/cpp/service_provider.h"
 #include "services/network/transitional_url_loader_factory_owner.h"
 #include "services/service_manager/zygote/common/zygote_buildflags.h"
 #include "skia/ext/event_tracer_impl.h"
@@ -173,7 +178,6 @@
 #include "content/browser/renderer_host/browser_compositor_view_mac.h"
 #include "content/browser/theme_helper_mac.h"
 #include "ui/accelerated_widget_mac/window_resize_helper_mac.h"
-#include "ui/base/now_playing/remote_command_center_delegate.h"
 #endif
 
 #if defined(OS_WIN)
@@ -190,7 +194,7 @@
 #if defined(OS_CHROMEOS)
 #include "chromeos/constants/chromeos_switches.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
-#include "services/data_decoder/public/mojom/constants.mojom.h"
+#include "services/data_decoder/public/cpp/data_decoder.h"
 #endif
 
 #if defined(USE_GLIB)
@@ -366,21 +370,27 @@ std::unique_ptr<base::MemoryPressureMonitor> CreateMemoryPressureMonitor(
   if (command_line.HasSwitch(switches::kBrowserTest))
     return nullptr;
 
+  std::unique_ptr<util::MultiSourceMemoryPressureMonitor> monitor;
+
 #if defined(OS_CHROMEOS)
   if (chromeos::switches::MemoryPressureHandlingEnabled())
-    return std::make_unique<util::MultiSourceMemoryPressureMonitor>();
-#elif defined(OS_MACOSX) || defined(OS_WIN)
-  return std::make_unique<util::MultiSourceMemoryPressureMonitor>();
+    monitor = std::make_unique<util::MultiSourceMemoryPressureMonitor>();
+#elif defined(OS_MACOSX) || defined(OS_WIN) || defined(OS_FUCHSIA)
+  monitor = std::make_unique<util::MultiSourceMemoryPressureMonitor>();
 #endif
   // No memory monitor on other platforms...
-  return nullptr;
+
+  if (monitor)
+    monitor->Start();
+
+  return monitor;
 }
 
 #if defined(OS_CHROMEOS)
 mojo::PendingRemote<data_decoder::mojom::BleScanParser> GetBleScanParser() {
+  static base::NoDestructor<data_decoder::DataDecoder> decoder;
   mojo::PendingRemote<data_decoder::mojom::BleScanParser> ble_scan_parser;
-  GetSystemConnector()->Connect(
-      data_decoder::mojom::kServiceName,
+  decoder->GetService()->BindBleScanParser(
       ble_scan_parser.InitWithNewPipeAndPassReceiver());
   return ble_scan_parser;
 }
@@ -394,6 +404,27 @@ mojo::PendingRemote<data_decoder::mojom::BleScanParser> GetBleScanParser() {
 const base::Feature kBrowserDynamicCodeDisabled{
     "BrowserDynamicCodeDisabled", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // defined(OS_WIN)
+
+class OopDataDecoder : public data_decoder::ServiceProvider {
+ public:
+  OopDataDecoder() { data_decoder::ServiceProvider::Set(this); }
+  ~OopDataDecoder() override { data_decoder::ServiceProvider::Set(nullptr); }
+
+  // data_decoder::ServiceProvider implementation:
+  void BindDataDecoderService(
+      mojo::PendingReceiver<data_decoder::mojom::DataDecoderService> receiver)
+      override {
+    ServiceProcessHost::Launch(
+        std::move(receiver),
+        ServiceProcessHost::Options()
+            .WithSandboxType(service_manager::SANDBOX_TYPE_UTILITY)
+            .WithDisplayName("Data Decoder Service")
+            .Pass());
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(OopDataDecoder);
+};
 
 }  // namespace
 
@@ -484,7 +515,6 @@ class HDRProxy {
 BrowserMainLoop* g_current_browser_main_loop = nullptr;
 
 #if defined(OS_ANDROID)
-bool g_browser_main_loop_shutting_down = false;
 
 namespace {
 // Whether or not BrowserMainLoop::CreateStartupTasks() posts any tasks.
@@ -669,9 +699,9 @@ int BrowserMainLoop::EarlyInitialization() {
 }
 
 void BrowserMainLoop::PreMainMessageLoopStart() {
+  TRACE_EVENT0("startup",
+               "BrowserMainLoop::MainMessageLoopStart:PreMainMessageLoopStart");
   if (parts_) {
-    TRACE_EVENT0("startup",
-        "BrowserMainLoop::MainMessageLoopStart:PreMainMessageLoopStart");
     parts_->PreMainMessageLoopStart();
   }
 }
@@ -705,8 +735,7 @@ void BrowserMainLoop::PostMainMessageLoopStart() {
     TRACE_EVENT0("startup", "BrowserMainLoop::Subsystem:NetworkChangeNotifier");
     // On Android if reduced mode started network service this would already be
     //  created.
-    if (!net::NetworkChangeNotifier::HasNetworkChangeNotifier())
-      network_change_notifier_ = net::NetworkChangeNotifier::Create();
+    network_change_notifier_ = net::NetworkChangeNotifier::CreateIfNeeded();
   }
   {
     TRACE_EVENT0("startup", "BrowserMainLoop::Subsystem:ScreenlockMonitor");
@@ -772,7 +801,7 @@ void BrowserMainLoop::PostMainMessageLoopStart() {
           switches::kEnableAggressiveDOMStorageFlushing)) {
     TRACE_EVENT0("startup",
                  "BrowserMainLoop::Subsystem:EnableAggressiveCommitDelay");
-    StorageAreaImpl::EnableAggressiveCommitDelay();
+    storage::StorageAreaImpl::EnableAggressiveCommitDelay();
   }
 
   // Enable memory-infra dump providers.
@@ -883,23 +912,23 @@ void BrowserMainLoop::CreateStartupTasks() {
   startup_task_runner_ = std::make_unique<StartupTaskRunner>(
       base::OnceCallback<void(int)>(), base::ThreadTaskRunnerHandle::Get());
 #endif
-  StartupTask pre_create_threads =
-      base::Bind(&BrowserMainLoop::PreCreateThreads, base::Unretained(this));
+  StartupTask pre_create_threads = base::BindOnce(
+      &BrowserMainLoop::PreCreateThreads, base::Unretained(this));
   startup_task_runner_->AddTask(std::move(pre_create_threads));
 
   StartupTask create_threads =
-      base::Bind(&BrowserMainLoop::CreateThreads, base::Unretained(this));
+      base::BindOnce(&BrowserMainLoop::CreateThreads, base::Unretained(this));
   startup_task_runner_->AddTask(std::move(create_threads));
 
-  StartupTask post_create_threads =
-      base::Bind(&BrowserMainLoop::PostCreateThreads, base::Unretained(this));
+  StartupTask post_create_threads = base::BindOnce(
+      &BrowserMainLoop::PostCreateThreads, base::Unretained(this));
   startup_task_runner_->AddTask(std::move(post_create_threads));
 
-  StartupTask browser_thread_started = base::Bind(
+  StartupTask browser_thread_started = base::BindOnce(
       &BrowserMainLoop::BrowserThreadsStarted, base::Unretained(this));
   startup_task_runner_->AddTask(std::move(browser_thread_started));
 
-  StartupTask pre_main_message_loop_run = base::Bind(
+  StartupTask pre_main_message_loop_run = base::BindOnce(
       &BrowserMainLoop::PreMainMessageLoopRun, base::Unretained(this));
   startup_task_runner_->AddTask(std::move(pre_main_message_loop_run));
 
@@ -1010,9 +1039,13 @@ int BrowserMainLoop::PreMainMessageLoopRun() {
   }
 #endif
 
-  // If the UI thread blocks, the whole UI is unresponsive.
-  // Do not allow unresponsive tasks from the UI thread.
+  // If the UI thread blocks, the whole UI is unresponsive. Do not allow
+  // unresponsive tasks from the UI thread and instantiate a
+  // responsiveness::Watcher to catch jank induced by any blocking tasks not
+  // instrumented with ScopedBlockingCall's assert.
   base::DisallowUnresponsiveTasks();
+  responsiveness_watcher_ = new responsiveness::Watcher;
+  responsiveness_watcher_->SetUp();
   return result_code_;
 }
 
@@ -1057,10 +1090,6 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
       base::BindOnce(
           base::IgnoreResult(&base::ThreadRestrictions::SetWaitAllowed), true));
 
-#if defined(OS_ANDROID)
-  g_browser_main_loop_shutting_down = true;
-#endif
-
   if (RenderProcessHost::run_renderer_in_process())
     RenderProcessHostImpl::ShutDownInProcessRenderer();
 
@@ -1082,6 +1111,8 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
                                         speech_recognition_manager_.release());
 
   memory_pressure_monitor_.reset();
+
+  ShutDownNetworkService();
 
 #if defined(OS_MACOSX)
   BrowserCompositorMac::DisableRecyclingForShutdown();
@@ -1193,13 +1224,13 @@ viz::ServerSharedBitmapManager* BrowserMainLoop::GetServerSharedBitmapManager()
 #endif
 
 void BrowserMainLoop::GetCompositingModeReporter(
-    viz::mojom::CompositingModeReporterRequest request) {
+    mojo::PendingReceiver<viz::mojom::CompositingModeReporter> receiver) {
 #if defined(OS_ANDROID)
   // Android doesn't support non-gpu compositing modes, and doesn't make a
   // CompositingModeReporter.
   return;
 #else
-  compositing_mode_reporter_impl_->BindRequest(std::move(request));
+  compositing_mode_reporter_impl_->BindReceiver(std::move(receiver));
 #endif
 }
 
@@ -1222,6 +1253,8 @@ int BrowserMainLoop::BrowserThreadsStarted() {
   // Initializaing mojo requires the IO thread to have been initialized first,
   // so this cannot happen any earlier than now.
   InitializeMojo();
+
+  data_decoder_service_provider_ = std::make_unique<OopDataDecoder>();
 
   HistogramSynchronizer::GetInstance();
 
@@ -1416,17 +1449,13 @@ int BrowserMainLoop::BrowserThreadsStarted() {
     // The default is to delay the secondary GPU process for 120 seconds.
     bool delayed = !parsed_command_line_.HasSwitch(
         switches::kNoDelayForDX12VulkanInfoCollection);
-    GpuDataManagerImpl::GetInstance()->RequestGpuSupportedRuntimeVersion(
-        delayed);
+    GpuDataManagerImpl::GetInstance()->RequestDxdiagDx12VulkanGpuInfoIfNeeded(
+        kGpuInfoRequestDx12Vulkan, delayed);
   }
 
 #endif
 
   if (MediaKeysListenerManager::IsMediaKeysListenerManagerEnabled()) {
-#if defined(OS_MACOSX)
-    remote_command_center_delegate_ =
-        now_playing::RemoteCommandCenterDelegate::Create();
-#endif
     media_keys_listener_manager_ =
         std::make_unique<MediaKeysListenerManagerImpl>(GetSystemConnector());
   }
@@ -1434,9 +1463,6 @@ int BrowserMainLoop::BrowserThreadsStarted() {
 #if defined(OS_MACOSX)
   ThemeHelperMac::GetInstance();
 #endif  // defined(OS_MACOSX)
-
-  responsiveness_watcher_ = new responsiveness::Watcher;
-  responsiveness_watcher_->SetUp();
 
 #if defined(OS_ANDROID)
   media::SetMediaDrmBridgeClient(GetContentClient()->GetMediaDrmBridgeClient());

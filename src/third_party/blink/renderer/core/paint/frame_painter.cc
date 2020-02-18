@@ -11,7 +11,6 @@
 #include "third_party/blink/renderer/core/paint/frame_paint_timing.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_painter.h"
-#include "third_party/blink/renderer/core/paint/scrollbar_painter.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
 #include "third_party/blink/renderer/platform/graphics/paint/cull_rect.h"
@@ -77,7 +76,7 @@ void FramePainter::PaintContents(GraphicsContext& context,
   PaintLayerFlags root_layer_paint_flags = 0;
   // This will prevent clipping the root PaintLayer to its visible content
   // rect when root layer scrolling is enabled.
-  if (document->Printing())
+  if (document->IsCapturingLayout())
     root_layer_paint_flags = kPaintLayerPaintingOverflowContents;
 
   PaintLayer* root_layer = layout_view->Layer();

@@ -27,11 +27,15 @@ class COMPONENT_EXPORT(UI_BASE_IME) IMEInputContextHandlerInterface {
 
 #if defined(OS_CHROMEOS)
   // Called when the engine changes the composition range.
-  // Returns whether the operation was successful.
+  // Returns true if the operation was successful.
   virtual bool SetCompositionRange(
       uint32_t before,
       uint32_t after,
       const std::vector<ui::ImeTextSpan>& text_spans) = 0;
+
+  // Called when the engine changes the selection range.
+  // Returns true if the operation was successful.
+  virtual bool SetSelectionRange(uint32_t start, uint32_t end) = 0;
 #endif
 
   // Called when the engine updates composition text.
@@ -53,7 +57,8 @@ class COMPONENT_EXPORT(UI_BASE_IME) IMEInputContextHandlerInterface {
 
   // Commits any composition text.
   // Set |reset_engine| to false if this was triggered from the extension.
-  virtual void ConfirmCompositionText(bool reset_engine) = 0;
+  virtual void ConfirmCompositionText(bool reset_engine,
+                                      bool keep_selection) = 0;
 
   // Returns true if there is any composition text.
   virtual bool HasCompositionText() = 0;

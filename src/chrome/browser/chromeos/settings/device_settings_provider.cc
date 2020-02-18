@@ -80,6 +80,8 @@ const char* const kKnownSettings[] = {
     kDeviceLoginScreenExtensions,
     kDeviceLoginScreenInputMethods,
     kDeviceLoginScreenLocales,
+    kDeviceLoginScreenSystemInfoEnforced,
+    kDeviceShowNumericKeyboardForPassword,
     kDeviceOffHours,
     kDeviceOwner,
     kDeviceNativePrintersAccessMode,
@@ -91,6 +93,7 @@ const char* const kKnownSettings[] = {
     kDeviceScheduledUpdateCheck,
     kDeviceSecondFactorAuthenticationMode,
     kDeviceUnaffiliatedCrostiniAllowed,
+    kDeviceWebBasedAttestationAllowedUrls,
     kDeviceWiFiAllowed,
     kDeviceWilcoDtcAllowed,
     kDisplayRotationDefault,
@@ -273,6 +276,11 @@ void DecodeLoginPolicies(const em::ChromeDeviceSettingsProto& policy,
             chromeos::kAccountsPrefDeviceLocalAccountsKeyArcKioskDisplayName,
             base::Value(entry.android_kiosk_app().display_name()));
       }
+      if (entry.web_kiosk_app().has_url()) {
+        entry_dict.SetKey(
+            chromeos::kAccountsPrefDeviceLocalAccountsKeyWebKioskUrl,
+            base::Value(entry.web_kiosk_app().url()));
+      }
     } else if (entry.has_deprecated_public_session_id()) {
       // Deprecated public session specification.
       entry_dict.SetKey(kAccountsPrefDeviceLocalAccountsKeyId,
@@ -390,12 +398,39 @@ void DecodeLoginPolicies(const em::ChromeDeviceSettingsProto& policy,
                                base::Value(std::move(input_methods)));
   }
 
+  if (policy.has_device_login_screen_system_info_enforced() &&
+      policy.device_login_screen_system_info_enforced().has_value()) {
+    new_values_cache->SetBoolean(
+        kDeviceLoginScreenSystemInfoEnforced,
+        policy.device_login_screen_system_info_enforced().value());
+  }
+
+  if (policy.has_device_show_numeric_keyboard_for_password() &&
+      policy.device_show_numeric_keyboard_for_password().has_value()) {
+    new_values_cache->SetBoolean(
+        kDeviceShowNumericKeyboardForPassword,
+        policy.device_show_numeric_keyboard_for_password().value());
+  }
+
   if (policy.has_saml_login_authentication_type() &&
       policy.saml_login_authentication_type()
           .has_saml_login_authentication_type()) {
     new_values_cache->SetInteger(kSamlLoginAuthenticationType,
                                  policy.saml_login_authentication_type()
                                      .saml_login_authentication_type());
+  }
+
+  if (policy.has_device_web_based_attestation_allowed_urls()) {
+    const em::StringListPolicyProto& container(
+        policy.device_web_based_attestation_allowed_urls());
+
+    base::Value urls(base::Value::Type::LIST);
+    for (const std::string& entry : container.value().entries()) {
+      urls.Append(entry);
+    }
+
+    new_values_cache->SetValue(kDeviceWebBasedAttestationAllowedUrls,
+                               std::move(urls));
   }
 }
 
@@ -764,7 +799,7 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
     const em::DeviceNativePrintersBlacklistProto& proto(
         policy.native_device_printers_blacklist());
     for (const auto& id : proto.blacklist())
-      list.GetList().emplace_back(id);
+      list.Append(id);
     new_values_cache->SetValue(kDeviceNativePrintersBlacklist, std::move(list));
   }
 
@@ -773,7 +808,7 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
     const em::DeviceNativePrintersWhitelistProto& proto(
         policy.native_device_printers_whitelist());
     for (const auto& id : proto.whitelist())
-      list.GetList().emplace_back(id);
+      list.Append(id);
     new_values_cache->SetValue(kDeviceNativePrintersWhitelist, std::move(list));
   }
 
@@ -811,14 +846,16 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
         policy.device_second_factor_authentication().mode());
   }
 
+  // Default value of the policy in case it's missing.
+  bool is_powerwash_allowed = true;
   if (policy.has_device_powerwash_allowed()) {
     const em::DevicePowerwashAllowedProto& container(
         policy.device_powerwash_allowed());
     if (container.has_device_powerwash_allowed()) {
-      new_values_cache->SetBoolean(kDevicePowerwashAllowed,
-                                   container.device_powerwash_allowed());
+      is_powerwash_allowed = container.device_powerwash_allowed();
     }
   }
+  new_values_cache->SetBoolean(kDevicePowerwashAllowed, is_powerwash_allowed);
 }
 
 void DecodeLogUploadPolicies(const em::ChromeDeviceSettingsProto& policy,
@@ -1110,10 +1147,10 @@ const base::Value* DeviceSettingsProvider::Get(const std::string& path) const {
 }
 
 DeviceSettingsProvider::TrustedStatus
-DeviceSettingsProvider::PrepareTrustedValues(const base::Closure& cb) {
+DeviceSettingsProvider::PrepareTrustedValues(base::OnceClosure callback) {
   TrustedStatus status = RequestTrustedEntity();
-  if (status == TEMPORARILY_UNTRUSTED && !cb.is_null())
-    callbacks_.push_back(cb);
+  if (status == TEMPORARILY_UNTRUSTED && !callback.is_null())
+    callbacks_.push_back(std::move(callback));
   return status;
 }
 
@@ -1176,10 +1213,10 @@ bool DeviceSettingsProvider::UpdateFromService() {
   }
 
   // Notify the observers we are done.
-  std::vector<base::Closure> callbacks;
+  std::vector<base::OnceClosure> callbacks;
   callbacks.swap(callbacks_);
-  for (size_t i = 0; i < callbacks.size(); ++i)
-    callbacks[i].Run();
+  for (auto& callback : callbacks)
+    std::move(callback).Run();
 
   return settings_loaded;
 }

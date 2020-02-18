@@ -5,6 +5,7 @@ vars = {
   'chromium_git': 'https://chromium.googlesource.com',
   'dawn_git': 'https://dawn.googlesource.com',
   'github_git': 'https://github.com',
+  'swiftshader_git': 'https://swiftshader.googlesource.com',
 
   'dawn_standalone': True,
 }
@@ -50,25 +51,36 @@ deps = {
 
   # SPIRV-Cross
   'third_party/spirv-cross': {
-    'url': '{chromium_git}/external/github.com/KhronosGroup/SPIRV-Cross@f24654db8c6da93855803fa7fa5bed0ae3263ee5',
+    'url': '{chromium_git}/external/github.com/KhronosGroup/SPIRV-Cross@fd5aa3ad51ece55a1b51fe6bfb271db6844ae291',
     'condition': 'dawn_standalone',
   },
 
   # SPIRV compiler dependencies: SPIRV-Tools, SPIRV-headers, glslang and shaderc
   'third_party/SPIRV-Tools': {
-    'url': '{chromium_git}/external/github.com/KhronosGroup/SPIRV-Tools@19b256616d96bdad580c036bc8619706bc177d96',
+    'url': '{chromium_git}/external/github.com/KhronosGroup/SPIRV-Tools@85f3e93d13f32d45bd7f9999aa51baddf2452aae',
     'condition': 'dawn_standalone',
   },
   'third_party/spirv-headers': {
-    'url': '{chromium_git}/external/github.com/KhronosGroup/SPIRV-Headers@38cafab379e5d16137cb97a485b9385191039b92',
+    'url': '{chromium_git}/external/github.com/KhronosGroup/SPIRV-Headers@204cd131c42b90d129073719f2766293ce35c081',
     'condition': 'dawn_standalone',
   },
   'third_party/glslang': {
-    'url': '{chromium_git}/external/github.com/KhronosGroup/glslang@56f61ccceffab3225da20c4751cf03a5884431c2',
+    'url': '{chromium_git}/external/github.com/KhronosGroup/glslang@38b4db48f98c4e3a9cc405de3a76547b857e1c37',
     'condition': 'dawn_standalone',
   },
   'third_party/shaderc': {
-    'url': '{chromium_git}/external/github.com/google/shaderc@3b038fa1c3172c5659df35f700447abf82707e40',
+    'url': '{chromium_git}/external/github.com/google/shaderc@efedd6739684bb2d4183b45af111b4942b465e5b',
+    'condition': 'dawn_standalone',
+  },
+
+  # jsoncpp for perf tests trace events
+  'third_party/jsoncpp': {
+    'url': '{chromium_git}/chromium/src/third_party/jsoncpp@571788934b5ee8643d53e5d054534abbe6006168',
+    'condition': 'dawn_standalone',
+  },
+
+  'third_party/jsoncpp/source': {
+    'url' : '{chromium_git}/external/github.com/open-source-parsers/jsoncpp@645250b6690785be60ab6780ce4b58698d884d11',
     'condition': 'dawn_standalone',
   },
 
@@ -89,6 +101,24 @@ deps = {
     'url': '{dawn_git}/clang-format@2451c56cd368676cdb230fd5ad11731ab859f1a3',
     'condition': 'dawn_standalone and checkout_linux',
   },
+
+  # Khronos Vulkan-Headers
+  'third_party/vulkan-headers': {
+    'url': '{chromium_git}/external/github.com/KhronosGroup/Vulkan-Headers@5b44df19e040fca0048ab30c553a8c2d2cb9623e',
+    'condition': 'dawn_standalone',
+  },
+
+  # Khronos Vulkan-ValidationLayers
+  'third_party/vulkan-validation-layers': {
+    'url': '{chromium_git}/external/github.com/KhronosGroup/Vulkan-ValidationLayers@9fba37afae13a11bd49ae942bf82e5bf1098e381',
+    'condition': 'dawn_standalone',
+  },
+
+  'third_party/swiftshader': {
+    'url': '{swiftshader_git}/SwiftShader@e7ce4e53915d026720005ca2c1831a5c28f77b3f',
+    'condition': 'dawn_standalone',
+  },
+
 }
 
 hooks = [

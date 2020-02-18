@@ -4,6 +4,7 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
+#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -80,21 +81,20 @@ class BookmarkBrowsertest : public InProcessBrowserTest {
     return browser()->bookmark_bar_state() == BookmarkBar::SHOW;
   }
 
-  static void CheckAnimation(Browser* browser, const base::Closure& quit_task) {
+  static void CheckAnimation(Browser* browser, base::RunLoop* loop) {
     if (!browser->window()->IsBookmarkBarAnimating())
-      quit_task.Run();
+      loop->Quit();
   }
 
   base::TimeDelta WaitForBookmarkBarAnimationToFinish() {
     base::Time start(base::Time::Now());
-    scoped_refptr<content::MessageLoopRunner> runner =
-        new content::MessageLoopRunner;
-
-    base::RepeatingTimer timer;
-    timer.Start(
-        FROM_HERE, base::TimeDelta::FromMilliseconds(15),
-        base::BindRepeating(&CheckAnimation, browser(), runner->QuitClosure()));
-    runner->Run();
+    {
+      base::RunLoop loop;
+      base::RepeatingTimer timer;
+      timer.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(15),
+                  base::BindRepeating(&CheckAnimation, browser(), &loop));
+      loop.Run();
+    }
     return base::Time::Now() - start;
   }
 
@@ -368,7 +368,14 @@ IN_PROC_BROWSER_TEST_F(BookmarkBrowsertest, PRE_EmitUmaForEmptyTitles) {
                          GURL("http://e.com"));
 }
 
-IN_PROC_BROWSER_TEST_F(BookmarkBrowsertest, EmitUmaForEmptyTitles) {
+// TODO(crbug.com/1017731): Flaky on Windows
+#if defined(OS_WIN)
+#define MAYBE_EmitUmaForEmptyTitles DISABLED_EmitUmaForEmptyTitles
+#else
+#define MAYBE_EmitUmaForEmptyTitles EmitUmaForEmptyTitles
+#endif
+
+IN_PROC_BROWSER_TEST_F(BookmarkBrowsertest, MAYBE_EmitUmaForEmptyTitles) {
   WaitForBookmarkModel(browser()->profile());
 
   ASSERT_THAT(

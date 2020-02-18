@@ -6,6 +6,7 @@
 
 #include "src/torque/ast.h"
 #include "src/torque/server-data.h"
+#include "src/torque/type-inference.h"
 #include "src/torque/type-visitor.h"
 
 namespace v8 {
@@ -32,8 +33,11 @@ void PredeclarationVisitor::Predeclare(Declaration* decl) {
 #undef ENUM_ITEM
     case AstNode::Kind::kNamespaceDeclaration:
       return Predeclare(NamespaceDeclaration::cast(decl));
-    case AstNode::Kind::kGenericDeclaration:
-      return Predeclare(GenericDeclaration::cast(decl));
+    case AstNode::Kind::kGenericCallableDeclaration:
+      return Predeclare(GenericCallableDeclaration::cast(decl));
+    case AstNode::Kind::kGenericTypeDeclaration:
+      return Predeclare(GenericTypeDeclaration::cast(decl));
+
     default:
       // Only processes type declaration nodes, namespaces and generics.
       break;
@@ -90,20 +94,6 @@ Builtin* DeclarationVisitor::CreateBuiltin(BuiltinDeclaration* decl,
       Error("Builtin '", decl->name, "' uses the struct '", type->name(),
             "' as argument '", signature.parameter_names[i],
             "', which is not supported.");
-    }
-  }
-
-  if (TorqueBuiltinDeclaration::DynamicCast(decl)) {
-    for (size_t i = 0; i < signature.types().size(); ++i) {
-      const Type* type = signature.types()[i];
-      if (!type->IsSubtypeOf(TypeOracle::GetTaggedType())) {
-        const Identifier* id = signature.parameter_names.size() > i
-                                   ? signature.parameter_names[i]
-                                   : nullptr;
-        Error("Untagged argument ", id ? (id->value + " ") : "", "at position ",
-              i, " to builtin ", decl->name, " is not supported.")
-            .Position(id ? id->pos : decl->pos);
-      }
     }
   }
 
@@ -186,15 +176,21 @@ void DeclarationVisitor::Visit(ConstDeclaration* decl) {
 }
 
 void DeclarationVisitor::Visit(SpecializationDeclaration* decl) {
-  std::vector<Generic*> generic_list =
+  std::vector<GenericCallable*> generic_list =
       Declarations::LookupGeneric(decl->name->value);
   // Find the matching generic specialization based on the concrete parameter
   // list.
-  Generic* matching_generic = nullptr;
+  GenericCallable* matching_generic = nullptr;
   Signature signature_with_types = TypeVisitor::MakeSignature(decl);
-  for (Generic* generic : generic_list) {
+  for (GenericCallable* generic : generic_list) {
+    // This argument inference is just to trigger constraint checking on the
+    // generic arguments.
+    TypeArgumentInference inference = generic->InferSpecializationTypes(
+        TypeVisitor::ComputeTypeVector(decl->generic_parameters),
+        signature_with_types.GetExplicitTypes());
+    if (inference.HasFailed()) continue;
     Signature generic_signature_with_types =
-        MakeSpecializedSignature(SpecializationKey<Generic>{
+        MakeSpecializedSignature(SpecializationKey<GenericCallable>{
             generic, TypeVisitor::ComputeTypeVector(decl->generic_parameters)});
     if (signature_with_types.HasSameTypesAs(generic_signature_with_types,
                                             ParameterMode::kIgnoreImplicit)) {
@@ -220,9 +216,9 @@ void DeclarationVisitor::Visit(SpecializationDeclaration* decl) {
     stream << "specialization signature:";
     stream << "\n  " << signature_with_types;
     stream << "\ncandidates are:";
-    for (Generic* generic : generic_list) {
+    for (GenericCallable* generic : generic_list) {
       stream << "\n  "
-             << MakeSpecializedSignature(SpecializationKey<Generic>{
+             << MakeSpecializedSignature(SpecializationKey<GenericCallable>{
                     generic,
                     TypeVisitor::ComputeTypeVector(decl->generic_parameters)});
     }
@@ -236,9 +232,9 @@ void DeclarationVisitor::Visit(SpecializationDeclaration* decl) {
 
   CallableDeclaration* generic_declaration = matching_generic->declaration();
 
-  Specialize(SpecializationKey<Generic>{matching_generic,
-                                        TypeVisitor::ComputeTypeVector(
-                                            decl->generic_parameters)},
+  Specialize(SpecializationKey<GenericCallable>{matching_generic,
+                                                TypeVisitor::ComputeTypeVector(
+                                                    decl->generic_parameters)},
              generic_declaration, decl, decl->body, decl->pos);
 }
 
@@ -259,7 +255,7 @@ void DeclarationVisitor::Visit(CppIncludeDeclaration* decl) {
 }
 
 void DeclarationVisitor::DeclareSpecializedTypes(
-    const SpecializationKey<Generic>& key) {
+    const SpecializationKey<GenericCallable>& key) {
   size_t i = 0;
   const std::size_t generic_parameter_count =
       key.generic->generic_parameters().size();
@@ -272,14 +268,14 @@ void DeclarationVisitor::DeclareSpecializedTypes(
   }
 
   for (auto type : key.specialized_types) {
-    Identifier* generic_type_name = key.generic->generic_parameters()[i++];
+    Identifier* generic_type_name = key.generic->generic_parameters()[i++].name;
     TypeAlias* alias = Declarations::DeclareType(generic_type_name, type);
     alias->SetIsUserDefined(false);
   }
 }
 
 Signature DeclarationVisitor::MakeSpecializedSignature(
-    const SpecializationKey<Generic>& key) {
+    const SpecializationKey<GenericCallable>& key) {
   CurrentScope::Scope generic_scope(key.generic->ParentScope());
   // Create a temporary fake-namespace just to temporarily declare the
   // specialization aliases for the generic types to create a signature.
@@ -290,7 +286,7 @@ Signature DeclarationVisitor::MakeSpecializedSignature(
 }
 
 Callable* DeclarationVisitor::SpecializeImplicit(
-    const SpecializationKey<Generic>& key) {
+    const SpecializationKey<GenericCallable>& key) {
   base::Optional<Statement*> body = key.generic->CallableBody();
   if (!body && IntrinsicDeclaration::DynamicCast(key.generic->declaration()) ==
                    nullptr) {
@@ -298,17 +294,22 @@ Callable* DeclarationVisitor::SpecializeImplicit(
                 " with types <", key.specialized_types, "> declared at ",
                 key.generic->Position());
   }
+  SpecializationRequester requester{CurrentSourcePosition::Get(),
+                                    CurrentScope::Get(), ""};
   CurrentScope::Scope generic_scope(key.generic->ParentScope());
   Callable* result = Specialize(key, key.generic->declaration(), base::nullopt,
                                 body, CurrentSourcePosition::Get());
   result->SetIsUserDefined(false);
+  requester.name = result->ReadableName();
+  result->SetSpecializationRequester(requester);
   CurrentScope::Scope callable_scope(result);
   DeclareSpecializedTypes(key);
   return result;
 }
 
 Callable* DeclarationVisitor::Specialize(
-    const SpecializationKey<Generic>& key, CallableDeclaration* declaration,
+    const SpecializationKey<GenericCallable>& key,
+    CallableDeclaration* declaration,
     base::Optional<const SpecializationDeclaration*> explicit_specialization,
     base::Optional<Statement*> body, SourcePosition position) {
   CurrentSourcePosition::Scope pos_scope(position);
@@ -322,7 +323,7 @@ Callable* DeclarationVisitor::Specialize(
            << std::to_string(generic_parameter_count) << ")";
     ReportError(stream.str());
   }
-  if (key.generic->specializations().Get(key.specialized_types)) {
+  if (key.generic->GetSpecialization(key.specialized_types)) {
     ReportError("cannot redeclare specialization of ", key.generic->name(),
                 " with types <", key.specialized_types, ">");
   }
@@ -353,10 +354,11 @@ Callable* DeclarationVisitor::Specialize(
         Declarations::CreateIntrinsic(declaration->name->value, type_signature);
   } else {
     BuiltinDeclaration* builtin = BuiltinDeclaration::cast(declaration);
-    callable = CreateBuiltin(builtin, generated_name, readable_name.str(),
-                             type_signature, *body);
+    callable =
+        CreateBuiltin(builtin, GlobalContext::MakeUniqueName(generated_name),
+                      readable_name.str(), type_signature, *body);
   }
-  key.generic->specializations().Add(key.specialized_types, callable);
+  key.generic->AddSpecialization(key.specialized_types, callable);
   return callable;
 }
 

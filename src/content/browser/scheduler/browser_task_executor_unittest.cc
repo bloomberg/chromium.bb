@@ -15,6 +15,7 @@
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/gtest_util.h"
 #include "base/test/mock_callback.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -33,6 +34,7 @@ using ::base::TaskPriority;
 using ::testing::ElementsAre;
 using ::testing::Invoke;
 using ::testing::Mock;
+using ::testing::NotNull;
 using ::testing::SizeIs;
 
 using QueueType = BrowserTaskQueues::QueueType;
@@ -46,6 +48,21 @@ class BrowserTaskExecutorTest : public testing::Test {
 
 using StrictMockTask =
     testing::StrictMock<base::MockCallback<base::RepeatingCallback<void()>>>;
+
+TEST_F(BrowserTaskExecutorTest, RegisterExecutorForBothThreads) {
+  base::PostTask(FROM_HERE, {BrowserThread::UI}, base::BindOnce([]() {
+                   EXPECT_THAT(base::GetTaskExecutorForCurrentThread(),
+                               NotNull());
+                 }));
+
+  base::PostTask(FROM_HERE, {BrowserThread::IO}, base::BindOnce([]() {
+                   EXPECT_THAT(base::GetTaskExecutorForCurrentThread(),
+                               NotNull());
+                 }));
+
+  BrowserTaskExecutor::RunAllPendingTasksOnThreadForTesting(BrowserThread::UI);
+  BrowserTaskExecutor::RunAllPendingTasksOnThreadForTesting(BrowserThread::IO);
+}
 
 TEST_F(BrowserTaskExecutorTest, RunAllPendingTasksForTestingOnUI) {
   StrictMockTask task_1;
@@ -108,6 +125,24 @@ TEST_F(BrowserTaskExecutorTest, RunAllPendingTasksForTestingOnIOIsReentrant) {
 // Helper to perform the same tets for all BrowserThread::ID values.
 class BrowserTaskTraitsMappingTest : public BrowserTaskExecutorTest {
  protected:
+  class TestExecutor : public BaseBrowserTaskExecutor {
+   public:
+    ~TestExecutor() override = default;
+
+    BrowserThread::ID GetCurrentThreadID() const override {
+      NOTREACHED();
+      return BrowserThread::UI;
+    }
+
+    const scoped_refptr<base::SequencedTaskRunner>& GetContinuationTaskRunner()
+        override {
+      return dummy_;
+    }
+
+   private:
+    scoped_refptr<base::SequencedTaskRunner> dummy_;
+  };
+
   template <BrowserThread::ID ID>
   void CheckExpectations() {
     EXPECT_EQ(GetQueueType({ID, TaskPriority::BEST_EFFORT}),
@@ -131,8 +166,10 @@ class BrowserTaskTraitsMappingTest : public BrowserTaskExecutorTest {
 
  private:
   QueueType GetQueueType(const base::TaskTraits& traits) {
-    return BrowserTaskExecutor::GetThreadIdAndQueueType(traits).queue_type;
+    return test_executor_.GetThreadIdAndQueueType(traits).queue_type;
   }
+
+  TestExecutor test_executor_;
 };
 
 TEST_F(BrowserTaskTraitsMappingTest, BrowserTaskTraitsMapToProperPriorities) {
@@ -179,7 +216,8 @@ class BrowserTaskExecutorWithCustomSchedulerTest : public testing::Test {
               QueueType::kDefault));
       BrowserTaskExecutor::CreateForTesting(
           std::move(browser_ui_thread_scheduler),
-          std::make_unique<BrowserIOThreadDelegate>());
+          BrowserIOThreadDelegate::CreateForTesting(sequence_manager()));
+      BrowserTaskExecutor::BindToUIThreadForTesting();
     }
   };
 
@@ -237,6 +275,79 @@ TEST_F(BrowserTaskExecutorWithCustomSchedulerTest,
   BrowserTaskExecutor::EnableAllQueues();
   EXPECT_CALL(best_effort, Run).Times(4);
   task_environment_.FastForwardBy(base::TimeDelta::FromMilliseconds(100));
+}
+
+TEST_F(BrowserTaskExecutorTest, CurrentThread) {
+  base::PostTask(
+      FROM_HERE, {BrowserThread::UI}, base::BindOnce([]() {
+        base::PostTask(
+            FROM_HERE, {base::CurrentThread()}, base::BindOnce([]() {
+              EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::UI));
+            }));
+      }));
+  BrowserTaskExecutor::RunAllPendingTasksOnThreadForTesting(BrowserThread::UI);
+
+  base::PostTask(
+      FROM_HERE, {BrowserThread::IO}, base::BindOnce([]() {
+        base::PostTask(
+            FROM_HERE, {base::CurrentThread()}, base::BindOnce([]() {
+              EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
+            }));
+      }));
+
+  BrowserTaskExecutor::RunAllPendingTasksOnThreadForTesting(BrowserThread::IO);
+}
+
+TEST_F(BrowserTaskExecutorTest, CurrentThreadAndOtherTraits) {
+  EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  auto ui_task_runner = base::CreateSingleThreadTaskRunner({BrowserThread::UI});
+  auto ui_best_effort_runner = base::CreateSingleThreadTaskRunner(
+      {BrowserThread::UI, base::TaskPriority::BEST_EFFORT});
+  auto ui_best_navigation_runner = base::CreateSingleThreadTaskRunner(
+      {BrowserThread::UI, BrowserTaskType::kNavigation});
+
+  EXPECT_EQ(ui_task_runner,
+            base::CreateSingleThreadTaskRunner({base::CurrentThread()}));
+
+  EXPECT_EQ(ui_best_effort_runner,
+            base::CreateSingleThreadTaskRunner(
+                {base::CurrentThread(), base::TaskPriority::BEST_EFFORT}));
+
+  EXPECT_EQ(ui_best_navigation_runner,
+            base::CreateSingleThreadTaskRunner(
+                {base::CurrentThread(), BrowserTaskType::kNavigation}));
+}
+
+TEST_F(BrowserTaskExecutorTest, GetContinuationTaskRunner) {
+  // Ensure task queue priorities are set.
+  BrowserTaskExecutor::PostFeatureListSetup();
+  std::vector<int> order;
+  base::RunLoop run_loop;
+
+  auto task1 = base::BindLambdaForTesting([&]() {
+    order.push_back(1);
+    run_loop.Quit();
+  });
+  auto task2 = base::BindLambdaForTesting([&]() { order.push_back(2); });
+  auto task3 = base::BindLambdaForTesting([&]() { order.push_back(3); });
+
+  base::PostTask(FROM_HERE, {BrowserThread::UI}, task1);
+
+  // Post a bootstrap task whose continuation tasks should run before |task1|.
+  base::PostTask(
+      FROM_HERE, {BrowserThread::UI, BrowserTaskType::kBootstrap},
+      base::BindLambdaForTesting([&]() {
+        base::GetContinuationTaskRunner()->PostTask(FROM_HERE, task2);
+        base::GetContinuationTaskRunner()->PostTask(FROM_HERE, task3);
+      }));
+
+  run_loop.Run();
+  EXPECT_THAT(order, ElementsAre(2, 3, 1));
+}
+
+TEST_F(BrowserTaskExecutorTest, GetContinuationTaskRunnerWithNoTaskExecuting) {
+  EXPECT_DCHECK_DEATH(base::GetContinuationTaskRunner());
 }
 
 }  // namespace content

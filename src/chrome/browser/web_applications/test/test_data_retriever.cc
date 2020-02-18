@@ -45,7 +45,7 @@ void TestDataRetriever::CheckInstallabilityAndRetrieveManifest(
 void TestDataRetriever::GetIcons(content::WebContents* web_contents,
                                  const std::vector<GURL>& icon_urls,
                                  bool skip_page_favicons,
-                                 WebappInstallSource install_source,
+                                 WebAppIconDownloader::Histogram histogram,
                                  GetIconsCallback callback) {
   if (get_icons_delegate_) {
     icons_map_ =
@@ -62,6 +62,10 @@ void TestDataRetriever::GetIcons(content::WebContents* web_contents,
 void TestDataRetriever::SetRendererWebApplicationInfo(
     std::unique_ptr<WebApplicationInfo> web_app_info) {
   web_app_info_ = std::move(web_app_info);
+}
+
+void TestDataRetriever::SetEmptyRendererWebApplicationInfo() {
+  SetRendererWebApplicationInfo(std::make_unique<WebApplicationInfo>());
 }
 
 void TestDataRetriever::SetManifest(std::unique_ptr<blink::Manifest> manifest,
@@ -87,7 +91,7 @@ void TestDataRetriever::SetDestructionCallback(base::OnceClosure callback) {
 
 void TestDataRetriever::BuildDefaultDataToRetrieve(const GURL& url,
                                                    const GURL& scope) {
-  SetRendererWebApplicationInfo(std::make_unique<WebApplicationInfo>());
+  SetEmptyRendererWebApplicationInfo();
 
   auto manifest = std::make_unique<blink::Manifest>();
   manifest->start_url = url;

@@ -12,9 +12,11 @@
 #include <vector>
 
 #include "ash/ash_export.h"
-#include "ash/public/cpp/split_view.h"
 #include "ash/shell_observer.h"
 #include "ash/wm/overview/scoped_overview_hide_windows.h"
+#include "ash/wm/splitview/split_view_controller.h"
+#include "ash/wm/splitview/split_view_drag_indicators.h"
+#include "ash/wm/splitview/split_view_observer.h"
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/time/time.h"
@@ -24,7 +26,6 @@
 #include "ui/wm/public/activation_change_observer.h"
 
 namespace gfx {
-class Point;
 class PointF;
 }  // namespace gfx
 
@@ -44,9 +45,6 @@ class OverviewHighlightController;
 class OverviewItem;
 class OverviewWindowDragController;
 class RoundedLabelWidget;
-class SplitViewDragIndicators;
-
-enum class IndicatorState;
 
 // The Overview shows a grid of all of your windows, allowing to select
 // one by clicking or tapping on it.
@@ -57,9 +55,9 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
                                    public SplitViewObserver {
  public:
   enum class OverviewTransition {
-    kEnter,       // In the entering process of overview.
+    kEnter,       // Entering overview.
     kInOverview,  // Already in overview.
-    kExit         // In the exiting process of overview.
+    kExit         // Exiting overview.
   };
 
   // Enum describing the different ways overview can be entered or exited.
@@ -90,6 +88,15 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
     // the source desk is in overview mode, while the target desk is not.
     // This should not be used for entering overview mode.
     kImmediateExit,
+    // Fades all windows in to enter overview. This can happen when
+    // transitioning to overview from home screen (in a state where all windows
+    // are minimized).
+    kFadeInEnter,
+    // Fades all windows out to exit overview (when going to a state where all
+    // windows are minimized). This will minimize windows on exit if needed, so
+    // that we do not need to add a delayed observer to handle minimizing the
+    // windows after overview exit animations are finished.
+    kFadeOutExit
   };
 
   // Callback which fills out the passed settings object. Used by several
@@ -122,12 +129,23 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
   // Activates |item's| window.
   void SelectWindow(OverviewItem* item);
 
-  // Called to show or hide the split view drag indicators. This will do
-  // nothing if split view is not enabled. |event_location| is used to reparent
-  // |split_view_drag_indicators_|'s widget, if necessary.
-  void SetSplitViewDragIndicatorsIndicatorState(
-      IndicatorState indicator_state,
-      const gfx::Point& event_location);
+  // Sets the dragged window on the split view drag indicators.
+  void SetSplitViewDragIndicatorsDraggedWindow(aura::Window* dragged_window);
+
+  // This function sets the window dragging state on the split view drag
+  // indicators on every root window. On |root_window_being_dragged_in|, the
+  // state is determined by forwarding the other three arguments to
+  // |SplitViewDragIndicators::ComputeWindowDraggingState|. On other root
+  // windows, as snap previews are not appropriate, the state is determined
+  // similarly but with |SplitViewController::NONE| instead of |snap_position|.
+  void UpdateSplitViewDragIndicatorsWindowDraggingStates(
+      const aura::Window* root_window_being_dragged_in,
+      bool is_dragging,
+      SplitViewDragIndicators::WindowDraggingState non_snap_state,
+      SplitViewController::SnapPosition snap_position);
+
+  // See |OverviewGrid::RearrangeDuringDrag|.
+  void RearrangeDuringDrag(aura::Window* dragged_window);
 
   // Retrieves the window grid whose root window matches |root_window|. Returns
   // nullptr if the window grid is not found.
@@ -146,6 +164,8 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
                size_t index = 0);
 
   // Similar to the above function, but adds the window at the end of the grid.
+  // This will use the spawn-item animation.
+  // TODO(afakhry): Expose |use_spawn_animation| if needed.
   void AppendItem(aura::Window* window, bool reposition, bool animate);
 
   // Removes |overview_item| from the corresponding grid. No items are
@@ -166,16 +186,24 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
   void ResetDraggedWindowGesture();
 
   // Called when a window (either it's browser window or an app window)
-  // start/continue/end being dragged in tablet mode.
+  // start/continue/end being dragged in tablet mode by swiping from the top
+  // of the screen to drag from top or by swiping from the shelf to drag from
+  // bottom .
   // TODO(xdai): Currently it doesn't work for multi-display scenario.
   void OnWindowDragStarted(aura::Window* dragged_window, bool animate);
-  void OnWindowDragContinued(aura::Window* dragged_window,
-                             const gfx::PointF& location_in_screen,
-                             IndicatorState indicator_state);
+  void OnWindowDragContinued(
+      aura::Window* dragged_window,
+      const gfx::PointF& location_in_screen,
+      SplitViewDragIndicators::WindowDraggingState window_dragging_state);
   void OnWindowDragEnded(aura::Window* dragged_window,
                          const gfx::PointF& location_in_screen,
                          bool should_drop_window_into_overview,
                          bool snap);
+  // Shows or Hides all windows (including drop target window & desk widget) in
+  // overview. It's used when dragging a window from bottom, when the user slows
+  // down or stops dragging the window, shows overview windows and when the user
+  // resumes dragging, hides overview windows.
+  void SetVisibleDuringWindowDragging(bool visible, bool animate);
 
   // Positions all overview items except those in |ignored_items|.
   void PositionWindows(bool animate,
@@ -238,13 +266,24 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
   // Returns true if all its window grids don't have any window item.
   bool IsEmpty() const;
 
+  // If |focus| is true, restores focus to |restore_focus_window_|. Sets
+  // |restore_focus_window_| to null regardless of |focus|.
+  void ResetFocusRestoreWindow(bool focus);
+
   // Handles requests to active or close the currently highlighted |item|.
   void OnHighlightedItemActivated(OverviewItem* item);
   void OnHighlightedItemClosed(OverviewItem* item);
 
+  // Called explicitly (with no list of observers) by the |RootWindowController|
+  // of |root|, so that the associated grid is properly removed and destroyed.
+  // Note: Usually, when a display is removed, it causes a window activation
+  // which ends overview mode, and then this function does not get called. This
+  // function is only needed for when overview mode cannot be ended (see
+  // |OverviewController::CanEndOverview| and https://crbug.com/1024325).
+  void OnRootWindowClosing(aura::Window* root);
+
   // display::DisplayObserver:
   void OnDisplayAdded(const display::Display& display) override;
-  void OnDisplayRemoved(const display::Display& display) override;
   void OnDisplayMetricsChanged(const display::Display& display,
                                uint32_t metrics) override;
 
@@ -260,8 +299,8 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
   void OnKeyEvent(ui::KeyEvent* event) override;
 
   // SplitViewObserver:
-  void OnSplitViewStateChanged(SplitViewState previous_state,
-                               SplitViewState state) override;
+  void OnSplitViewStateChanged(SplitViewController::State previous_state,
+                               SplitViewController::State state) override;
   void OnSplitViewDividerPositionChanged() override;
 
   OverviewDelegate* delegate() { return delegate_; }
@@ -269,10 +308,6 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
   bool is_shutting_down() const { return is_shutting_down_; }
   void set_is_shutting_down(bool is_shutting_down) {
     is_shutting_down_ = is_shutting_down;
-  }
-
-  SplitViewDragIndicators* split_view_drag_indicators() {
-    return split_view_drag_indicators_.get();
   }
 
   const std::vector<std::unique_ptr<OverviewGrid>>& grid_list() const {
@@ -304,9 +339,6 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
   friend class DesksAcceleratorsTest;
   friend class OverviewSessionTest;
 
-  // |focus|, restores focus to the stored window.
-  void ResetFocusRestoreWindow(bool focus);
-
   // Helper function that moves the selection widget to forward or backward on
   // the corresponding window grid.
   void Move(bool reverse);
@@ -318,9 +350,6 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
   // Removes all observers that were registered during construction and/or
   // initialization.
   void RemoveAllObservers();
-
-  // Called when the display area for the overview window grids changed.
-  void OnDisplayBoundsChanged();
 
   void UpdateNoWindowsWidget();
 
@@ -361,10 +390,6 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
 
   // List of all the window overview grids, one for each root window.
   std::vector<std::unique_ptr<OverviewGrid>> grid_list_;
-
-  // The owner of the widget which displays splitview related information in
-  // overview mode. This will be nullptr if split view is not enabled.
-  std::unique_ptr<SplitViewDragIndicators> split_view_drag_indicators_;
 
   // The following variables are used for metric collection purposes. All of
   // them refer to this particular overview session and are not cumulative:

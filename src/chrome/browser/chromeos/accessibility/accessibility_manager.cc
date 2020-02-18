@@ -48,7 +48,6 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/extensions/api/braille_display_private/stub_braille_controller.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/singleton_tabs.h"
@@ -241,8 +240,6 @@ AccessibilityManager::AccessibilityManager() {
   notification_registrar_.Add(this,
                               chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
                               content::NotificationService::AllSources());
-  notification_registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
-                              content::NotificationService::AllSources());
   notification_registrar_.Add(this, chrome::NOTIFICATION_APP_TERMINATING,
                               content::NotificationService::AllSources());
   notification_registrar_.Add(this, content::NOTIFICATION_FOCUS_CHANGED_IN_PAGE,
@@ -315,8 +312,9 @@ AccessibilityManager::AccessibilityManager() {
                           weak_ptr_factory_.GetWeakPtr())));
 
   // Connect to the media session service.
-  content::GetSystemConnector()->BindInterface(
-      media_session::mojom::kServiceName, &audio_focus_manager_ptr_);
+  content::GetSystemConnector()->Connect(
+      media_session::mojom::kServiceName,
+      audio_focus_manager_.BindNewPipeAndPassReceiver());
 
   ash::AcceleratorController::SetVolumeAdjustmentSoundCallback(
       base::BindRepeating(&AccessibilityManager::PlayVolumeAdjustSound,
@@ -908,7 +906,7 @@ bool AccessibilityManager::IsSwitchAccessEnabled() const {
   return switch_access_enabled_;
 }
 
-void AccessibilityManager::UpdateSwitchAccessFromPref() {
+void AccessibilityManager::OnSwitchAccessChanged() {
   if (!profile_)
     return;
 
@@ -921,8 +919,8 @@ void AccessibilityManager::UpdateSwitchAccessFromPref() {
   if (!command_line->HasSwitch(
           ::switches::kEnableExperimentalAccessibilitySwitchAccess)) {
     if (enabled) {
-      LOG(WARNING) << "Switch access enabled but experimental accessibility "
-                   << "switch access flag is not set.";
+      LOG(WARNING) << "Switch Access enabled but experimental accessibility "
+                   << "Switch Access flag is not set.";
     }
     return;
   }
@@ -1051,9 +1049,18 @@ void AccessibilityManager::OnActiveOutputNodeChanged() {
   }
 }
 
+void AccessibilityManager::OnProfileWillBeDestroyed(Profile* profile) {
+  DCHECK_EQ(profile_, profile);
+  SetProfile(nullptr);
+}
+
 void AccessibilityManager::SetProfile(Profile* profile) {
   if (profile_ == profile)
     return;
+
+  if (profile_)
+    profile_observer_.Remove(profile_);
+  DCHECK(!profile_observer_.IsObservingSources());
 
   pref_change_registrar_.reset();
   local_state_pref_change_registrar_.reset();
@@ -1115,7 +1122,7 @@ void AccessibilityManager::SetProfile(Profile* profile) {
                    base::Unretained(this)));
     pref_change_registrar_->Add(
         ash::prefs::kAccessibilitySwitchAccessEnabled,
-        base::Bind(&AccessibilityManager::UpdateSwitchAccessFromPref,
+        base::Bind(&AccessibilityManager::OnSwitchAccessChanged,
                    base::Unretained(this)));
     pref_change_registrar_->Add(
         ash::prefs::kAccessibilityAutoclickEnabled,
@@ -1140,6 +1147,8 @@ void AccessibilityManager::SetProfile(Profile* profile) {
         extensions::ExtensionRegistry::Get(profile);
     if (!extension_registry_observer_.IsObserving(registry))
       extension_registry_observer_.Add(registry);
+
+    profile_observer_.Add(profile);
   }
 
   bool had_profile = (profile_ != NULL);
@@ -1150,11 +1159,11 @@ void AccessibilityManager::SetProfile(Profile* profile) {
   else
     UpdateBrailleImeState();
   UpdateAlwaysShowMenuFromPref();
-  UpdateSwitchAccessFromPref();
 
   // TODO(warx): reconcile to ash once the prefs registration above is moved to
   // ash.
   OnSpokenFeedbackChanged();
+  OnSwitchAccessChanged();
   OnSelectToSpeakChanged();
   OnAutoclickChanged();
 }
@@ -1277,13 +1286,6 @@ void AccessibilityManager::Observe(
         SetProfile(profile);
       break;
     }
-    case chrome::NOTIFICATION_PROFILE_DESTROYED: {
-      // Update |profile_| when exiting a session or shutting down.
-      Profile* profile = content::Source<Profile>(source).ptr();
-      if (profile_ == profile)
-        SetProfile(nullptr);
-      break;
-    }
     case chrome::NOTIFICATION_APP_TERMINATING: {
       app_terminating_ = true;
       break;
@@ -1341,10 +1343,18 @@ void AccessibilityManager::PostLoadChromeVox() {
     return;
 
   // Do any setup work needed immediately after ChromeVox actually loads.
-  // Maybe start brltty, if we have a bluetooth device stored for connection.
   const std::string& address = GetBluetoothBrailleDisplayAddress();
-  if (!address.empty())
+  if (!address.empty()) {
+    // Maybe start brltty, when we have a bluetooth device stored for
+    // connection.
     RestartBrltty(address);
+  } else {
+    // Otherwise, start brltty without an address. This covers cases when
+    // ChromeVox is toggled off then back on all while a usb braille display is
+    // connected.
+    chromeos::UpstartClient::Get()->StartJob(kBrlttyUpstartJobName, {},
+                                             EmptyVoidDBusMethodCallback());
+  }
 
   PlayEarcon(SOUND_SPOKEN_FEEDBACK_ENABLED, PlaySoundOption::ALWAYS);
 
@@ -1369,7 +1379,7 @@ void AccessibilityManager::PostLoadChromeVox() {
                        base::Unretained(this))));
   }
 
-  audio_focus_manager_ptr_->SetEnforcementMode(
+  audio_focus_manager_->SetEnforcementMode(
       media_session::mojom::EnforcementMode::kNone);
 
   InitializeFocusRings(extension_id);
@@ -1396,7 +1406,7 @@ void AccessibilityManager::PostUnloadChromeVox() {
   // Stop speech.
   content::TtsController::GetInstance()->Stop();
 
-  audio_focus_manager_ptr_->SetEnforcementMode(
+  audio_focus_manager_->SetEnforcementMode(
       media_session::mojom::EnforcementMode::kDefault);
 }
 

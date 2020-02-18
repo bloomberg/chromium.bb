@@ -19,6 +19,7 @@
 #include "base/values.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/signin/public/identity_manager/identity_test_environment.h"
+#include "components/signin/public/identity_manager/identity_test_utils.h"
 #include "components/signin/public/identity_manager/primary_account_mutator.h"
 #include "components/sync/base/pref_names.h"
 #include "components/sync/base/user_demographics.h"
@@ -35,6 +36,7 @@
 #include "components/sync/engine/fake_sync_engine.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/version_info/version_info_values.h"
+#include "crypto/ec_private_key.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/metrics_proto/user_demographics.pb.h"
@@ -50,6 +52,8 @@ namespace {
 // Age of a user that is old enough to provide demographics when now time is
 // |kNowTimeInStringFormat|.
 constexpr int kOldEnoughForDemographicsUserBirthYear = 1983;
+
+constexpr char kTestUser[] = "test_user@gmail.com";
 
 // Now time in string format.
 constexpr char kNowTimeInStringFormat[] = "23 Mar 2019 16:00:00 UDT";
@@ -117,7 +121,7 @@ class FakeSyncEngineNoReturn : public FakeSyncEngine {
 class FakeSyncEngineCollectCredentials : public FakeSyncEngine {
  public:
   explicit FakeSyncEngineCollectCredentials(
-      std::string* init_account_id,
+      CoreAccountId* init_account_id,
       const base::RepeatingClosure& invalidate_credentials_callback)
       : init_account_id_(init_account_id),
         invalidate_credentials_callback_(invalidate_credentials_callback) {}
@@ -135,7 +139,7 @@ class FakeSyncEngineCollectCredentials : public FakeSyncEngine {
   }
 
  private:
-  std::string* init_account_id_;
+  CoreAccountId* init_account_id_;
   base::RepeatingClosure invalidate_credentials_callback_;
 };
 
@@ -167,9 +171,7 @@ class ProfileSyncServiceTest : public ::testing::Test {
     ShutdownAndDeleteService();
   }
 
-  void SignIn() {
-    identity_test_env()->MakePrimaryAccountAvailable("test_user@gmail.com");
-  }
+  void SignIn() { identity_test_env()->MakePrimaryAccountAvailable(kTestUser); }
 
   void CreateService(ProfileSyncService::StartBehavior behavior) {
     DCHECK(!service_);
@@ -448,7 +450,8 @@ TEST_F(ProfileSyncServiceTest, DisabledByPolicyBeforeInitThenPolicyRemoved) {
 
   // Once we mark first setup complete again (it was cleared by the policy) and
   // sign in, sync starts up.
-  service()->GetUserSettings()->SetFirstSetupComplete();
+  service()->GetUserSettings()->SetFirstSetupComplete(
+      syncer::SyncFirstSetupCompleteSource::BASIC_FLOW);
   SignIn();
   EXPECT_EQ(SyncService::TransportState::ACTIVE,
             service()->GetTransportState());
@@ -586,7 +589,7 @@ TEST_F(ProfileSyncServiceTest, EnableSyncSignOutAndChangeAccount) {
             service()->GetDisableReasons());
   EXPECT_EQ(SyncService::TransportState::DISABLED,
             service()->GetTransportState());
-  EXPECT_EQ("", identity_provider()->GetActiveAccountId());
+  EXPECT_EQ(CoreAccountId(), identity_provider()->GetActiveAccountId());
 
   identity_test_env()->MakePrimaryAccountAvailable("new_user@gmail.com");
   EXPECT_EQ(identity_manager()->GetPrimaryAccountId(),
@@ -643,7 +646,7 @@ TEST_F(ProfileSyncServiceTest, GetSyncTokenStatus) {
 }
 
 TEST_F(ProfileSyncServiceTest, RevokeAccessTokenFromTokenService) {
-  std::string init_account_id;
+  CoreAccountId init_account_id;
 
   CreateService(ProfileSyncService::AUTO_START);
   SignIn();
@@ -655,7 +658,7 @@ TEST_F(ProfileSyncServiceTest, RevokeAccessTokenFromTokenService) {
   ASSERT_EQ(SyncService::TransportState::ACTIVE,
             service()->GetTransportState());
 
-  const std::string primary_account_id =
+  const CoreAccountId primary_account_id =
       identity_manager()->GetPrimaryAccountId();
 
   // Make sure the expected account_id was passed to the SyncEngine.
@@ -686,7 +689,7 @@ TEST_F(ProfileSyncServiceTest, CredentialsRejectedByClient_StopSync) {
   base::test::ScopedFeatureList feature;
   feature.InitAndEnableFeature(switches::kStopSyncInPausedState);
 
-  std::string init_account_id;
+  CoreAccountId init_account_id;
 
   CreateService(ProfileSyncService::AUTO_START);
   SignIn();
@@ -701,7 +704,7 @@ TEST_F(ProfileSyncServiceTest, CredentialsRejectedByClient_StopSync) {
   TestSyncServiceObserver observer;
   service()->AddObserver(&observer);
 
-  const std::string primary_account_id =
+  const CoreAccountId primary_account_id =
       identity_manager()->GetPrimaryAccountId();
 
   // Make sure the expected account_id was passed to the SyncEngine.
@@ -745,7 +748,7 @@ TEST_F(ProfileSyncServiceTest, CredentialsRejectedByClient_DoNotStopSync) {
   base::test::ScopedFeatureList feature;
   feature.InitAndDisableFeature(switches::kStopSyncInPausedState);
 
-  std::string init_account_id;
+  CoreAccountId init_account_id;
 
   bool invalidate_credentials_called = false;
   base::RepeatingClosure invalidate_credentials_callback =
@@ -765,7 +768,7 @@ TEST_F(ProfileSyncServiceTest, CredentialsRejectedByClient_DoNotStopSync) {
   TestSyncServiceObserver observer;
   service()->AddObserver(&observer);
 
-  const std::string primary_account_id =
+  const CoreAccountId primary_account_id =
       identity_manager()->GetPrimaryAccountId();
 
   // Make sure the expected account_id was passed to the SyncEngine.
@@ -808,7 +811,7 @@ TEST_F(ProfileSyncServiceTest, CredentialsRejectedByClient_DoNotStopSync) {
 // CrOS does not support signout.
 #if !defined(OS_CHROMEOS)
 TEST_F(ProfileSyncServiceTest, SignOutRevokeAccessToken) {
-  std::string init_account_id;
+  CoreAccountId init_account_id;
 
   CreateService(ProfileSyncService::AUTO_START);
   SignIn();
@@ -820,7 +823,7 @@ TEST_F(ProfileSyncServiceTest, SignOutRevokeAccessToken) {
   ASSERT_EQ(SyncService::TransportState::ACTIVE,
             service()->GetTransportState());
 
-  const std::string primary_account_id =
+  const CoreAccountId primary_account_id =
       identity_manager()->GetPrimaryAccountId();
 
   // Make sure the expected account_id was passed to the SyncEngine.
@@ -956,7 +959,7 @@ TEST_F(ProfileSyncServiceTest, CredentialErrorReturned) {
   // automatic replies to access token requests.
   identity_test_env()->SetAutomaticIssueOfAccessTokens(false);
 
-  std::string init_account_id;
+  CoreAccountId init_account_id;
 
   CreateService(ProfileSyncService::AUTO_START);
   SignIn();
@@ -968,7 +971,7 @@ TEST_F(ProfileSyncServiceTest, CredentialErrorReturned) {
   ASSERT_EQ(SyncService::TransportState::ACTIVE,
             service()->GetTransportState());
 
-  const std::string primary_account_id =
+  const CoreAccountId primary_account_id =
       identity_manager()->GetPrimaryAccountId();
 
   // Make sure the expected account_id was passed to the SyncEngine.
@@ -1017,7 +1020,7 @@ TEST_F(ProfileSyncServiceTest, CredentialErrorClearsOnNewToken) {
   // automatic replies to access token requests.
   identity_test_env()->SetAutomaticIssueOfAccessTokens(false);
 
-  std::string init_account_id;
+  CoreAccountId init_account_id;
 
   CreateService(ProfileSyncService::AUTO_START);
   SignIn();
@@ -1029,7 +1032,7 @@ TEST_F(ProfileSyncServiceTest, CredentialErrorClearsOnNewToken) {
   ASSERT_EQ(SyncService::TransportState::ACTIVE,
             service()->GetTransportState());
 
-  const std::string primary_account_id =
+  const CoreAccountId primary_account_id =
       identity_manager()->GetPrimaryAccountId();
 
   // Make sure the expected account_id was passed to the SyncEngine.
@@ -1460,6 +1463,54 @@ TEST_F(ProfileSyncServiceTest,
   EXPECT_TRUE(HasBirthYearDemographic(prefs()));
   EXPECT_TRUE(HasGenderDemographic(prefs()));
   EXPECT_TRUE(HasBirthYearOffset(prefs()));
+}
+
+TEST_F(ProfileSyncServiceTest, GetExperimentalAuthenticationKey) {
+  const std::vector<uint8_t> kExpectedPrivateKeyInfo = {
+      0x30, 0x81, 0x87, 0x02, 0x01, 0x00, 0x30, 0x13, 0x06, 0x07, 0x2a, 0x86,
+      0x48, 0xce, 0x3d, 0x02, 0x01, 0x06, 0x08, 0x2a, 0x86, 0x48, 0xce, 0x3d,
+      0x03, 0x01, 0x07, 0x04, 0x6d, 0x30, 0x6b, 0x02, 0x01, 0x01, 0x04, 0x20,
+      0xae, 0xf3, 0x15, 0x62, 0x31, 0x99, 0x3f, 0xe2, 0x96, 0xd4, 0xe6, 0x9c,
+      0x33, 0x25, 0x38, 0x58, 0x97, 0xcc, 0x40, 0x0d, 0xab, 0xbf, 0x2b, 0xb7,
+      0xd4, 0xcd, 0x79, 0xb9, 0x1f, 0x95, 0x19, 0x66, 0xa1, 0x44, 0x03, 0x42,
+      0x00, 0x04, 0x5e, 0xf4, 0x5d, 0x00, 0xaa, 0xea, 0xc9, 0x33, 0xed, 0xcd,
+      0xe5, 0xaf, 0xe6, 0x42, 0xef, 0x2b, 0xd2, 0xe0, 0xd6, 0x74, 0x5c, 0x90,
+      0x45, 0xad, 0x3f, 0x60, 0xfd, 0xc1, 0xcd, 0x09, 0x0a, 0x9a, 0xda, 0x3d,
+      0xf8, 0x18, 0xc6, 0x16, 0x46, 0x79, 0x53, 0x75, 0x92, 0xf2, 0x77, 0xcc,
+      0x38, 0x65, 0xa1, 0xcc, 0x79, 0xb3, 0x06, 0xd9, 0x9c, 0xb6, 0x8b, 0x96,
+      0x33, 0x88, 0x09, 0xc4, 0x07, 0x44};
+
+  SignIn();
+  CreateService(ProfileSyncService::AUTO_START);
+  InitializeForNthSync();
+  ASSERT_EQ(SyncService::TransportState::ACTIVE,
+            service()->GetTransportState());
+
+  const std::string kSeparator("|");
+  const std::string kGaiaId = signin::GetTestGaiaIdForEmail(kTestUser);
+  const std::string expected_secret =
+      kGaiaId + kSeparator + FakeSyncEngine::kTestBirthday + kSeparator +
+      FakeSyncEngine::kTestKeystoreKey;
+
+  EXPECT_EQ(expected_secret,
+            service()->GetExperimentalAuthenticationSecretForTest());
+
+  std::unique_ptr<crypto::ECPrivateKey> actual_key =
+      service()->GetExperimentalAuthenticationKey();
+  ASSERT_TRUE(actual_key);
+  std::vector<uint8_t> actual_private_key;
+  EXPECT_TRUE(actual_key->ExportPrivateKey(&actual_private_key));
+  EXPECT_EQ(kExpectedPrivateKeyInfo, actual_private_key);
+}
+
+TEST_F(ProfileSyncServiceTest, GetExperimentalAuthenticationKeyLocalSync) {
+  CreateServiceWithLocalSyncBackend();
+  InitializeForNthSync();
+  EXPECT_EQ(SyncService::TransportState::ACTIVE,
+            service()->GetTransportState());
+
+  EXPECT_TRUE(service()->GetExperimentalAuthenticationSecretForTest().empty());
+  EXPECT_FALSE(service()->GetExperimentalAuthenticationKey());
 }
 
 }  // namespace

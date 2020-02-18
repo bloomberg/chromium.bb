@@ -4,6 +4,9 @@
 
 #include "chrome/browser/ui/views/desktop_capture/desktop_media_picker_views.h"
 
+#include <string>
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/task/post_task.h"
@@ -33,7 +36,6 @@
 #include "ui/views/controls/tabbed_pane/tabbed_pane.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/widget/widget.h"
-#include "ui/views/window/dialog_client_view.h"
 
 #if defined(USE_AURA)
 #include "ui/aura/window_tree_host.h"
@@ -60,9 +62,20 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
     const DesktopMediaPicker::Params& params,
     DesktopMediaPickerViews* parent,
     std::vector<std::unique_ptr<DesktopMediaList>> source_lists)
-    : parent_(parent),
-      modality_(params.modality) {
+    : parent_(parent), modality_(params.modality) {
+  DialogDelegate::set_button_label(
+      ui::DIALOG_BUTTON_OK,
+      l10n_util::GetStringUTF16(IDS_DESKTOP_MEDIA_PICKER_SHARE));
   const ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
+
+  std::unique_ptr<views::Checkbox> audio_share_checkbox;
+  if (params.request_audio) {
+    audio_share_checkbox = std::make_unique<views::Checkbox>(
+        l10n_util::GetStringUTF16(IDS_DESKTOP_MEDIA_PICKER_AUDIO_SHARE));
+    audio_share_checkbox->SetChecked(params.approve_audio_by_default);
+    audio_share_checkbox_ =
+        DialogDelegate::SetExtraView(std::move(audio_share_checkbox));
+  }
 
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical,
@@ -92,7 +105,6 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
             gfx::Rect(),                             // label_rect
             gfx::HorizontalAlignment::ALIGN_CENTER,  // text_alignment
             gfx::Rect(20, 20, 320, 240),             // image_rect
-            4,   // selection_border_thickness
             5);  // focus_rectangle_inset
 
         const DesktopMediaSourceViewStyle kGenericScreenStyle(
@@ -102,7 +114,6 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
             gfx::Rect(15, 165, 240, 40),             // label_rect
             gfx::HorizontalAlignment::ALIGN_CENTER,  // text_alignment
             gfx::Rect(15, 15, 240, 150),             // image_rect
-            2,   // selection_border_thickness
             5);  // focus_rectangle_inset
 
         std::unique_ptr<views::ScrollView> screen_scroll_view =
@@ -134,7 +145,6 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
             gfx::Rect(32, 110, 138, 40),           // label_rect
             gfx::HorizontalAlignment::ALIGN_LEFT,  // text_alignment
             gfx::Rect(8, 8, 164, 104),             // image_rect
-            2,                                     // selection_border_thickness
             5);                                    // focus_rectangle_inset
 
         std::unique_ptr<views::ScrollView> window_scroll_view =
@@ -192,9 +202,6 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
   }
 
   DCHECK(!source_types_.empty());
-
-  request_audio_ = params.request_audio;
-  approve_audio_by_default_ = params.approve_audio_by_default;
 
   // Focus on the first non-null media_list.
   OnSourceTypeSwitched(0);
@@ -341,32 +348,7 @@ bool DesktopMediaPickerDialogView::IsDialogButtonEnabled(
 }
 
 views::View* DesktopMediaPickerDialogView::GetInitiallyFocusedView() {
-  return list_controllers_.front()->GetViewForInitialFocus();
-}
-
-int DesktopMediaPickerDialogView::GetDefaultDialogButton() const {
-  // OK button will be active only when there is a selection by user. So it's OK
-  // to set it as the primary.
-  return ui::DIALOG_BUTTON_OK;
-}
-
-base::string16 DesktopMediaPickerDialogView::GetDialogButtonLabel(
-    ui::DialogButton button) const {
-  return l10n_util::GetStringUTF16(button == ui::DIALOG_BUTTON_OK
-                                       ? IDS_DESKTOP_MEDIA_PICKER_SHARE
-                                       : IDS_CANCEL);
-}
-
-std::unique_ptr<views::View> DesktopMediaPickerDialogView::CreateExtraView() {
-  std::unique_ptr<views::Checkbox> audio_share_checkbox;
-  if (request_audio_) {
-    audio_share_checkbox = std::make_unique<views::Checkbox>(
-        l10n_util::GetStringUTF16(IDS_DESKTOP_MEDIA_PICKER_AUDIO_SHARE));
-    audio_share_checkbox->SetChecked(approve_audio_by_default_);
-    audio_share_checkbox_ = audio_share_checkbox.get();
-  }
-  OnSourceTypeSwitched(0);
-  return audio_share_checkbox;
+  return GetCancelButton();
 }
 
 bool DesktopMediaPickerDialogView::Accept() {
@@ -425,7 +407,7 @@ void DesktopMediaPickerDialogView::OnSelectionChanged() {
 
 void DesktopMediaPickerDialogView::AcceptSource() {
   // This will call Accept() and close the dialog.
-  GetDialogClientView()->AcceptWindow();
+  AcceptDialog();
 }
 
 void DesktopMediaPickerDialogView::AcceptSpecificSource(DesktopMediaID source) {
@@ -478,10 +460,10 @@ DesktopMediaPickerViews::~DesktopMediaPickerViews() {
 void DesktopMediaPickerViews::Show(
     const DesktopMediaPicker::Params& params,
     std::vector<std::unique_ptr<DesktopMediaList>> source_lists,
-    const DoneCallback& done_callback) {
+    DoneCallback done_callback) {
   DesktopMediaPickerManager::Get()->OnShowDialog();
 
-  callback_ = done_callback;
+  callback_ = std::move(done_callback);
   dialog_ =
       new DesktopMediaPickerDialogView(params, this, std::move(source_lists));
 }
@@ -499,8 +481,7 @@ void DesktopMediaPickerViews::NotifyDialogResult(DesktopMediaID source) {
   // Notify the |callback_| asynchronously because it may need to destroy
   // DesktopMediaPicker.
   base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindOnce(callback_, source));
-  callback_.Reset();
+                 base::BindOnce(std::move(callback_), source));
 }
 
 // static

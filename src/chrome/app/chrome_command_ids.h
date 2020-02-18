@@ -25,7 +25,6 @@
 #define IDC_OPEN_CURRENT_URL            33004
 #define IDC_STOP                        33006
 #define IDC_RELOAD_BYPASSING_CACHE      33007
-#define IDC_LOAD_NEW_TAB_PAGE           33008
 #define IDC_RELOAD_CLEARING_CACHE       33009
 
 // Window management commands
@@ -70,11 +69,11 @@
 
 #define IDC_OPEN_IN_PWA_WINDOW          34053
 
-// Hosted app commands
+// Web app window commands
 #define IDC_COPY_URL                    34060
 #define IDC_OPEN_IN_CHROME              34061
 #define IDC_SITE_SETTINGS               34062
-#define IDC_HOSTED_APP_MENU_APP_INFO    34063
+#define IDC_WEB_APP_MENU_APP_INFO    34063
 
 #if defined(OS_CHROMEOS)
 // Terminal system app commands
@@ -102,6 +101,15 @@
 #define IDC_CONTENT_LINK_SEND_TAB_TO_SELF 35017
 #define IDC_SEND_TAB_TO_SELF_SINGLE_TARGET  35018
 #define IDC_CONTENT_LINK_SEND_TAB_TO_SELF_SINGLE_TARGET  35019
+#define IDC_QRCODE_GENERATOR            35020
+#define IDC_WINDOW_CLOSE_TABS_TO_RIGHT  35021
+#define IDC_WINDOW_CLOSE_OTHER_TABS     35022
+
+// Page-manipulation commands that target a specified tab, which may not be the
+// active one.
+#define IDC_MUTE_TARGET_SITE            35050
+#define IDC_PIN_TARGET_TAB              35051
+#define IDC_DUPLICATE_TARGET_TAB        35052
 
 // Clipboard commands
 #define IDC_CUT                         36000
@@ -141,9 +149,7 @@
 #define IDC_DEV_TOOLS_CONSOLE           40005
 #define IDC_TASK_MANAGER                40006
 #define IDC_DEV_TOOLS_DEVICES           40007
-#if defined(GOOGLE_CHROME_BUILD)
 #define IDC_FEEDBACK                    40008
-#endif
 #define IDC_SHOW_BOOKMARK_BAR           40009
 #define IDC_SHOW_HISTORY                40010
 #define IDC_SHOW_BOOKMARK_MANAGER       40011
@@ -190,6 +196,8 @@
 #define IDC_INSTALL_PWA                 40254
 #define IDC_SHOW_MANAGEMENT_PAGE             40255
 #define IDC_PASTE_AND_GO                40256
+#define IDC_SHOW_SAVE_LOCAL_CARD_SIGN_IN_PROMO_IF_APPLICABLE 40257
+#define IDC_CLOSE_SIGN_IN_PROMO        40258
 
 // Spell-check
 // Insert any additional suggestions before _LAST; these have to be consecutive.
@@ -341,6 +349,7 @@
 #define IDC_CONTENT_CONTEXT_SHARING_CLICK_TO_CALL_MULTIPLE_DEVICES 51031
 #define IDC_CONTENT_CONTEXT_SHARING_SHARED_CLIPBOARD_SINGLE_DEVICE 51032
 #define IDC_CONTENT_CONTEXT_SHARING_SHARED_CLIPBOARD_MULTIPLE_DEVICES 51033
+#define IDC_CONTENT_CONTEXT_GENERATE_QR_CODE 51034
 
 // Context menu items in the status tray
 #define IDC_STATUS_TRAY_KEEP_CHROME_RUNNING_IN_BACKGROUND 51100

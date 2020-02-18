@@ -14,13 +14,14 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/unguessable_token.h"
-#include "content/browser/devtools/devtools_url_loader_interceptor.h"
 #include "content/browser/devtools/protocol/devtools_domain_handler.h"
 #include "content/browser/devtools/protocol/network.h"
+#include "content/public/common/resource_type.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "net/base/net_errors.h"
 #include "net/cookies/canonical_cookie.h"
 #include "services/network/public/mojom/network_service.mojom.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 
 namespace net {
 class HttpRequestHeaders;
@@ -29,7 +30,6 @@ class X509Certificate;
 }  // namespace net
 
 namespace network {
-struct ResourceResponseHead;
 struct ResourceRequest;
 struct URLLoaderCompletionStatus;
 }  // namespace network
@@ -38,6 +38,7 @@ namespace content {
 class BrowserContext;
 class DevToolsAgentHostImpl;
 class DevToolsIOContext;
+class DevToolsURLLoaderInterceptor;
 class RenderFrameHostImpl;
 class RenderProcessHost;
 class NavigationRequest;
@@ -68,6 +69,12 @@ class NetworkHandler : public DevToolsDomainHandler,
   static bool AddInterceptedResourceType(
       const std::string& resource_type,
       base::flat_set<ResourceType>* intercepted_resource_types);
+  static std::unique_ptr<Array<Network::Cookie>> BuildCookieArray(
+      const std::vector<net::CanonicalCookie>& cookie_list);
+  static void SetCookies(
+      StoragePartition* storage_partition,
+      std::unique_ptr<protocol::Array<Network::CookieParam>> cookies,
+      base::OnceCallback<void(bool)> callback);
 
   void Wire(UberDispatcher* dispatcher) override;
   void SetRenderer(int render_process_id,
@@ -157,17 +164,19 @@ class NetworkHandler : public DevToolsDomainHandler,
   void ApplyOverrides(net::HttpRequestHeaders* headers,
                       bool* skip_service_worker,
                       bool* disable_cache);
-  void NavigationRequestWillBeSent(const NavigationRequest& nav_request);
+  void NavigationRequestWillBeSent(const NavigationRequest& nav_request,
+                                   base::TimeTicks timestamp);
   void RequestSent(const std::string& request_id,
                    const std::string& loader_id,
                    const network::ResourceRequest& request,
                    const char* initiator_type,
-                   const base::Optional<GURL>& initiator_url);
+                   const base::Optional<GURL>& initiator_url,
+                   base::TimeTicks timestamp);
   void ResponseReceived(const std::string& request_id,
                         const std::string& loader_id,
                         const GURL& url,
                         const char* resource_type,
-                        const network::ResourceResponseHead& head,
+                        const network::mojom::URLResponseHead& head,
                         Maybe<std::string> frame_id);
   void LoadingComplete(
       const std::string& request_id,
@@ -177,7 +186,7 @@ class NetworkHandler : public DevToolsDomainHandler,
   void OnSignedExchangeReceived(
       base::Optional<const base::UnguessableToken> devtools_navigation_token,
       const GURL& outer_request_url,
-      const network::ResourceResponseHead& outer_response,
+      const network::mojom::URLResponseHead& outer_response,
       const base::Optional<SignedExchangeEnvelope>& header,
       const scoped_refptr<net::X509Certificate>& certificate,
       const base::Optional<net::SSLInfo>& ssl_info,

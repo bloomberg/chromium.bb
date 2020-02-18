@@ -28,6 +28,7 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity2;
 import org.chromium.chrome.browser.multiwindow.MultiWindowTestHelper;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ChromeTabUtils;
@@ -108,10 +109,10 @@ public class UndoTabModelTest {
     }
 
     private void closeTabOnUiThread(final TabModel model, final Tab tab, final boolean undoable)
-            throws InterruptedException, TimeoutException {
+            throws TimeoutException {
         // Check preconditions.
-        Assert.assertFalse(tab.isClosing());
-        Assert.assertTrue(tab.isInitialized());
+        Assert.assertFalse(((TabImpl) tab).isClosing());
+        Assert.assertTrue(((TabImpl) tab).isInitialized());
         Assert.assertFalse(model.isClosurePending(tab.getId()));
         Assert.assertNotNull(TabModelUtils.getTabById(model, tab.getId()));
 
@@ -136,8 +137,8 @@ public class UndoTabModelTest {
         // Check post conditions
         Assert.assertEquals(didUndo, model.isClosurePending(tab.getId()));
         Assert.assertNull(TabModelUtils.getTabById(model, tab.getId()));
-        Assert.assertTrue(tab.isClosing());
-        Assert.assertEquals(didUndo, tab.isInitialized());
+        Assert.assertTrue(((TabImpl) tab).isClosing());
+        Assert.assertEquals(didUndo, ((TabImpl) tab).isInitialized());
     }
 
     private void closeAllTabsOnUiThread(final TabModel model) {
@@ -149,10 +150,10 @@ public class UndoTabModelTest {
     }
 
     private void cancelTabClosureOnUiThread(final TabModel model, final Tab tab)
-            throws InterruptedException, TimeoutException {
+            throws TimeoutException {
         // Check preconditions.
-        Assert.assertTrue(tab.isClosing());
-        Assert.assertTrue(tab.isInitialized());
+        Assert.assertTrue(((TabImpl) tab).isClosing());
+        Assert.assertTrue(((TabImpl) tab).isInitialized());
         Assert.assertTrue(model.isClosurePending(tab.getId()));
         Assert.assertNull(TabModelUtils.getTabById(model, tab.getId()));
 
@@ -175,18 +176,18 @@ public class UndoTabModelTest {
         // Check post conditions.
         Assert.assertFalse(model.isClosurePending(tab.getId()));
         Assert.assertNotNull(TabModelUtils.getTabById(model, tab.getId()));
-        Assert.assertFalse(tab.isClosing());
-        Assert.assertTrue(tab.isInitialized());
+        Assert.assertFalse(((TabImpl) tab).isClosing());
+        Assert.assertTrue(((TabImpl) tab).isInitialized());
     }
 
     private void cancelAllTabClosuresOnUiThread(final TabModel model, final Tab[] expectedToClose)
-            throws InterruptedException, TimeoutException {
+            throws TimeoutException {
         final CallbackHelper tabClosureUndoneHelper = new CallbackHelper();
 
         for (int i = 0; i < expectedToClose.length; i++) {
             Tab tab = expectedToClose[i];
-            Assert.assertTrue(tab.isClosing());
-            Assert.assertTrue(tab.isInitialized());
+            Assert.assertTrue(((TabImpl) tab).isClosing());
+            Assert.assertTrue(((TabImpl) tab).isInitialized());
             Assert.assertTrue(model.isClosurePending(tab.getId()));
             Assert.assertNull(TabModelUtils.getTabById(model, tab.getId()));
 
@@ -212,16 +213,16 @@ public class UndoTabModelTest {
             final Tab tab = expectedToClose[i];
             Assert.assertFalse(model.isClosurePending(tab.getId()));
             Assert.assertNotNull(TabModelUtils.getTabById(model, tab.getId()));
-            Assert.assertFalse(tab.isClosing());
-            Assert.assertTrue(tab.isInitialized());
+            Assert.assertFalse(((TabImpl) tab).isClosing());
+            Assert.assertTrue(((TabImpl) tab).isInitialized());
         }
     }
 
     private void commitTabClosureOnUiThread(final TabModel model, final Tab tab)
-            throws InterruptedException, TimeoutException {
+            throws TimeoutException {
         // Check preconditions.
-        Assert.assertTrue(tab.isClosing());
-        Assert.assertTrue(tab.isInitialized());
+        Assert.assertTrue(((TabImpl) tab).isClosing());
+        Assert.assertTrue(((TabImpl) tab).isInitialized());
         Assert.assertTrue(model.isClosurePending(tab.getId()));
         Assert.assertNull(TabModelUtils.getTabById(model, tab.getId()));
 
@@ -244,18 +245,18 @@ public class UndoTabModelTest {
         // Check post conditions
         Assert.assertFalse(model.isClosurePending(tab.getId()));
         Assert.assertNull(TabModelUtils.getTabById(model, tab.getId()));
-        Assert.assertTrue(tab.isClosing());
-        Assert.assertFalse(tab.isInitialized());
+        Assert.assertTrue(((TabImpl) tab).isClosing());
+        Assert.assertFalse(((TabImpl) tab).isInitialized());
     }
 
     private void commitAllTabClosuresOnUiThread(final TabModel model, Tab[] expectedToClose)
-            throws InterruptedException, TimeoutException {
+            throws TimeoutException {
         final CallbackHelper tabClosureCommittedHelper = new CallbackHelper();
 
         for (int i = 0; i < expectedToClose.length; i++) {
             Tab tab = expectedToClose[i];
-            Assert.assertTrue(tab.isClosing());
-            Assert.assertTrue(tab.isInitialized());
+            Assert.assertTrue(((TabImpl) tab).isClosing());
+            Assert.assertTrue(((TabImpl) tab).isInitialized());
             Assert.assertTrue(model.isClosurePending(tab.getId()));
 
             // Make sure that this TabModel throws the right events.
@@ -272,8 +273,8 @@ public class UndoTabModelTest {
         tabClosureCommittedHelper.waitForCallback(0, expectedToClose.length);
         for (int i = 0; i < expectedToClose.length; i++) {
             final Tab tab = expectedToClose[i];
-            Assert.assertTrue(tab.isClosing());
-            Assert.assertFalse(tab.isInitialized());
+            Assert.assertTrue(((TabImpl) tab).isClosing());
+            Assert.assertFalse(((TabImpl) tab).isInitialized());
             Assert.assertFalse(model.isClosurePending(tab.getId()));
         }
     }
@@ -324,12 +325,11 @@ public class UndoTabModelTest {
      * 9.  CreateTab(0)               [ 0s ]             -                 [ 0s ]
      * 10. CloseTab(0, disallow undo) -                  -                 -
      *
-     * @throws InterruptedException
      */
     @Test
     @MediumTest
     @RetryOnFailure
-    public void testSingleTab() throws InterruptedException, TimeoutException {
+    public void testSingleTab() throws TimeoutException {
         TabModel model = mActivityTestRule.getActivity().getTabModelSelector().getModel(false);
         ChromeTabCreator tabCreator = mActivityTestRule.getActivity().getTabCreator(false);
 
@@ -382,8 +382,8 @@ public class UndoTabModelTest {
         closeTabOnUiThread(model, tab0, false);
         fullList = EMPTY;
         checkState(model, EMPTY, null, EMPTY, fullList, null);
-        Assert.assertTrue(tab0.isClosing());
-        Assert.assertFalse(tab0.isInitialized());
+        Assert.assertTrue(((TabImpl) tab0).isClosing());
+        Assert.assertFalse(((TabImpl) tab0).isInitialized());
     }
 
     /**
@@ -415,7 +415,6 @@ public class UndoTabModelTest {
      * 24. CloseTab(1, allow undo)    -                  [ 1 0 ]           [ 1s 0 ]
      * 25. CommitAllClose             -                  -                 -
      *
-     * @throws InterruptedException
      */
     @Test
     // @MediumTest
@@ -423,7 +422,7 @@ public class UndoTabModelTest {
     @DisabledTest(
             message = "Flaky on all Android configurations except Swarming.  See crbug.com/620014.")
     public void
-    testTwoTabs() throws InterruptedException, TimeoutException {
+    testTwoTabs() throws TimeoutException {
         TabModel model = mActivityTestRule.getActivity().getTabModelSelector().getModel(false);
         ChromeTabCreator tabCreator = mActivityTestRule.getActivity().getTabCreator(false);
         createTabOnUiThread(tabCreator);
@@ -567,12 +566,11 @@ public class UndoTabModelTest {
      * 23. CancelClose(0)             [ 0 1s 3 ]         [ 2 ]             [ 0 1s 2 3 ]
      * 24. CancelClose(2)             [ 0 1s 2 3 ]       -                 [ 0 1s 2 3 ]
      *
-     * @throws InterruptedException
      */
     @Test
     @MediumTest
     @RetryOnFailure
-    public void testInOrderRestore() throws InterruptedException, TimeoutException {
+    public void testInOrderRestore() throws TimeoutException {
         TabModel model = mActivityTestRule.getActivity().getTabModelSelector().getModel(false);
         ChromeTabCreator tabCreator = mActivityTestRule.getActivity().getTabCreator(false);
         createTabOnUiThread(tabCreator);
@@ -699,7 +697,6 @@ public class UndoTabModelTest {
         checkState(model, new Tab[] { tab0, tab1, tab2, tab3 }, tab1, EMPTY, fullList, tab1);
     }
 
-
     /**
      * Test restoring in the reverse of closing with the following actions/expected states:
      *     Action                     Model List         Close List        Comprehensive List
@@ -728,12 +725,11 @@ public class UndoTabModelTest {
      * 23. CancelClose(0)             [ 0 1s 2 ]         [ 3 ]             [ 0 1s 2 3 ]
      * 24. CancelClose(3)             [ 0 1s 2 3 ]       -                 [ 0 1s 2 3 ]
      *
-     * @throws InterruptedException
      */
     @Test
     @MediumTest
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE) // See crbug.com/633607
-    public void testReverseOrderRestore() throws InterruptedException, TimeoutException {
+    public void testReverseOrderRestore() throws TimeoutException {
         TabModel model = mActivityTestRule.getActivity().getTabModelSelector().getModel(false);
         ChromeTabCreator tabCreator = mActivityTestRule.getActivity().getTabCreator(false);
         createTabOnUiThread(tabCreator);
@@ -881,12 +877,11 @@ public class UndoTabModelTest {
      * 16. CancelClose(1)             [ 1 2s ]           -                 [ 1 2s ]
      * 17. CloseTab(2, disallow undo) [ 1s ]             -                 [ 1s ]
      *
-     * @throws InterruptedException
      */
     @Test
     @MediumTest
     @RetryOnFailure
-    public void testOutOfOrder1() throws InterruptedException, TimeoutException {
+    public void testOutOfOrder1() throws TimeoutException {
         TabModel model = mActivityTestRule.getActivity().getTabModelSelector().getModel(false);
         ChromeTabCreator tabCreator = mActivityTestRule.getActivity().getTabCreator(false);
         createTabOnUiThread(tabCreator);
@@ -998,12 +993,11 @@ public class UndoTabModelTest {
      * 13. CloseTab(1, allow undo)    -                  [ 1 3 ]           [ 1s 3 ]
      * 14. CommitAll                  -                  -                 -
      *
-     * @throws InterruptedException
      */
     @Test
     @MediumTest
     @FlakyTest(message = "crbug.com/592969")
-    public void testOutOfOrder2() throws InterruptedException, TimeoutException {
+    public void testOutOfOrder2() throws TimeoutException {
         TabModel model = mActivityTestRule.getActivity().getTabModelSelector().getModel(false);
         ChromeTabCreator tabCreator = mActivityTestRule.getActivity().getTabCreator(false);
         createTabOnUiThread(tabCreator);
@@ -1096,12 +1090,11 @@ public class UndoTabModelTest {
      * 8.  CreateTab(0)               [ 0s ]             -                 [ 0s ]
      * 9.  CloseAll                   -                  [ 0 ]             [ 0s ]
      *
-     * @throws InterruptedException
      */
     @Test
     @MediumTest
     @DisabledTest(message = "crbug.com/633607")
-    public void testCloseAll() throws InterruptedException, TimeoutException {
+    public void testCloseAll() throws TimeoutException {
         TabModel model = mActivityTestRule.getActivity().getTabModelSelector().getModel(false);
         ChromeTabCreator tabCreator = mActivityTestRule.getActivity().getTabCreator(false);
         createTabOnUiThread(tabCreator);
@@ -1141,14 +1134,14 @@ public class UndoTabModelTest {
         // 7.
         commitAllTabClosuresOnUiThread(model, fullList);
         checkState(model, EMPTY, null, EMPTY, EMPTY, null);
-        Assert.assertTrue(tab0.isClosing());
-        Assert.assertTrue(tab1.isClosing());
-        Assert.assertTrue(tab2.isClosing());
-        Assert.assertTrue(tab3.isClosing());
-        Assert.assertFalse(tab0.isInitialized());
-        Assert.assertFalse(tab1.isInitialized());
-        Assert.assertFalse(tab2.isInitialized());
-        Assert.assertFalse(tab3.isInitialized());
+        Assert.assertTrue(((TabImpl) tab0).isClosing());
+        Assert.assertTrue(((TabImpl) tab1).isClosing());
+        Assert.assertTrue(((TabImpl) tab2).isClosing());
+        Assert.assertTrue(((TabImpl) tab3).isClosing());
+        Assert.assertFalse(((TabImpl) tab0).isInitialized());
+        Assert.assertFalse(((TabImpl) tab1).isInitialized());
+        Assert.assertFalse(((TabImpl) tab2).isInitialized());
+        Assert.assertFalse(((TabImpl) tab3).isInitialized());
 
         // 8.
         createTabOnUiThread(tabCreator);
@@ -1159,8 +1152,8 @@ public class UndoTabModelTest {
         // 9.
         closeAllTabsOnUiThread(model);
         checkState(model, EMPTY, null, fullList, fullList, tab0);
-        Assert.assertTrue(tab0.isClosing());
-        Assert.assertTrue(tab0.isInitialized());
+        Assert.assertTrue(((TabImpl) tab0).isClosing());
+        Assert.assertTrue(((TabImpl) tab0).isInitialized());
     }
 
     /**
@@ -1172,11 +1165,10 @@ public class UndoTabModelTest {
      * 3.  CloseTab(2, allow undo)    [ 0 3s ]           [ 2 1 ]           [ 0 1 2 3s ]
      * 4.  CloseTab(3, disallow undo) [ 0s ]             -                 [ 0s ]
      *
-     * @throws InterruptedException
      */
     @Test
     @MediumTest
-    public void testCloseTab() throws InterruptedException, TimeoutException {
+    public void testCloseTab() throws TimeoutException {
         TabModel model = mActivityTestRule.getActivity().getTabModelSelector().getModel(false);
         ChromeTabCreator tabCreator = mActivityTestRule.getActivity().getTabCreator(false);
         createTabOnUiThread(tabCreator);
@@ -1205,10 +1197,10 @@ public class UndoTabModelTest {
         closeTabOnUiThread(model, tab3, false);
         fullList = new Tab[] { tab0 };
         checkState(model, new Tab[] { tab0 }, tab0, EMPTY, fullList, tab0);
-        Assert.assertTrue(tab1.isClosing());
-        Assert.assertTrue(tab2.isClosing());
-        Assert.assertFalse(tab1.isInitialized());
-        Assert.assertFalse(tab2.isInitialized());
+        Assert.assertTrue(((TabImpl) tab1).isClosing());
+        Assert.assertTrue(((TabImpl) tab2).isClosing());
+        Assert.assertFalse(((TabImpl) tab1).isInitialized());
+        Assert.assertFalse(((TabImpl) tab2).isInitialized());
     }
 
     /**
@@ -1219,12 +1211,11 @@ public class UndoTabModelTest {
      * 3.  CloseTab(2, allow undo)    [ 0 3s ]           [ 2 1 ]           [ 0 1 2 3s ]
      * 4.  MoveTab(0, 2)              [ 3s 0 ]           -                 [ 3s 0 ]
      *
-     * @throws InterruptedException
      */
     @Test
     @MediumTest
     @RetryOnFailure
-    public void testMoveTab() throws InterruptedException, TimeoutException {
+    public void testMoveTab() throws TimeoutException {
         TabModel model = mActivityTestRule.getActivity().getTabModelSelector().getModel(false);
         ChromeTabCreator tabCreator = mActivityTestRule.getActivity().getTabCreator(false);
         createTabOnUiThread(tabCreator);
@@ -1253,10 +1244,10 @@ public class UndoTabModelTest {
         moveTabOnUiThread(model, tab0, 2);
         fullList = new Tab[] { tab3, tab0 };
         checkState(model, new Tab[] { tab3, tab0 }, tab3, EMPTY, fullList, tab3);
-        Assert.assertTrue(tab1.isClosing());
-        Assert.assertTrue(tab2.isClosing());
-        Assert.assertFalse(tab1.isInitialized());
-        Assert.assertFalse(tab1.isInitialized());
+        Assert.assertTrue(((TabImpl) tab1).isClosing());
+        Assert.assertTrue(((TabImpl) tab2).isClosing());
+        Assert.assertFalse(((TabImpl) tab1).isInitialized());
+        Assert.assertFalse(((TabImpl) tab1).isInitialized());
     }
 
     /**
@@ -1270,14 +1261,13 @@ public class UndoTabModelTest {
      * 6.  CloseTab(3, allow undo)    [ 4s ]             [ 3 0 ]           [ 0 3 4s ]
      * 7.  CloseTab(4, allow undo)    -                  [ 4 3 0 ]         [ 0s 3 4 ]
      * 8.  CreateTab(5)               [ 5s ]             -                 [ 5s ]
-     * @throws InterruptedException
      */
     //@MediumTest
     //@Restriction(UiRestriction.RESTRICTION_TYPE_PHONE) // See crbug.com/633607
     // Disabled due to flakiness on linux_android_rel_ng (crbug.com/661429)
     @Test
     @DisabledTest
-    public void testAddTab() throws InterruptedException, TimeoutException {
+    public void testAddTab() throws TimeoutException {
         TabModel model = mActivityTestRule.getActivity().getTabModelSelector().getModel(false);
         ChromeTabCreator tabCreator = mActivityTestRule.getActivity().getTabCreator(false);
         createTabOnUiThread(tabCreator);
@@ -1307,10 +1297,10 @@ public class UndoTabModelTest {
         Tab tab4 = model.getTabAt(2);
         fullList = new Tab[] { tab0, tab3, tab4 };
         checkState(model, new Tab[] { tab0, tab3, tab4 }, tab4, EMPTY, fullList, tab4);
-        Assert.assertTrue(tab1.isClosing());
-        Assert.assertTrue(tab2.isClosing());
-        Assert.assertFalse(tab1.isInitialized());
-        Assert.assertFalse(tab2.isInitialized());
+        Assert.assertTrue(((TabImpl) tab1).isClosing());
+        Assert.assertTrue(((TabImpl) tab2).isClosing());
+        Assert.assertFalse(((TabImpl) tab1).isInitialized());
+        Assert.assertFalse(((TabImpl) tab2).isInitialized());
 
         // 5.
         closeTabOnUiThread(model, tab0, true);
@@ -1331,12 +1321,12 @@ public class UndoTabModelTest {
         Tab tab5 = model.getTabAt(0);
         fullList = new Tab[] { tab5 };
         checkState(model, new Tab[] { tab5 }, tab5, EMPTY, fullList, tab5);
-        Assert.assertTrue(tab0.isClosing());
-        Assert.assertTrue(tab3.isClosing());
-        Assert.assertTrue(tab4.isClosing());
-        Assert.assertFalse(tab0.isInitialized());
-        Assert.assertFalse(tab3.isInitialized());
-        Assert.assertFalse(tab4.isInitialized());
+        Assert.assertTrue(((TabImpl) tab0).isClosing());
+        Assert.assertTrue(((TabImpl) tab3).isClosing());
+        Assert.assertTrue(((TabImpl) tab4).isClosing());
+        Assert.assertFalse(((TabImpl) tab0).isInitialized());
+        Assert.assertFalse(((TabImpl) tab3).isInitialized());
+        Assert.assertFalse(((TabImpl) tab4).isInitialized());
     }
 
     /**
@@ -1346,12 +1336,11 @@ public class UndoTabModelTest {
      * 2.  CloseTab(1, allow undo)    [ 0 2 3s ]         -                 [ 0 2 3s ]
      * 3.  CloseAll                   -                  -                 -
      *
-     * @throws InterruptedException
      */
     @Test
     @MediumTest
     @RetryOnFailure
-    public void testUndoNotSupported() throws InterruptedException, TimeoutException {
+    public void testUndoNotSupported() throws TimeoutException {
         TabModel model = mActivityTestRule.getActivity().getTabModelSelector().getModel(true);
         ChromeTabCreator tabCreator = mActivityTestRule.getActivity().getTabCreator(true);
         createTabOnUiThread(tabCreator);
@@ -1374,18 +1363,18 @@ public class UndoTabModelTest {
         closeTabOnUiThread(model, tab1, true);
         fullList = new Tab[] { tab0, tab2, tab3 };
         checkState(model, new Tab[] { tab0, tab2, tab3 }, tab3, EMPTY, fullList, tab3);
-        Assert.assertTrue(tab1.isClosing());
-        Assert.assertFalse(tab1.isInitialized());
+        Assert.assertTrue(((TabImpl) tab1).isClosing());
+        Assert.assertFalse(((TabImpl) tab1).isInitialized());
 
         // 3.
         closeAllTabsOnUiThread(model);
         checkState(model, EMPTY, null, EMPTY, EMPTY, null);
-        Assert.assertTrue(tab0.isClosing());
-        Assert.assertTrue(tab2.isClosing());
-        Assert.assertTrue(tab3.isClosing());
-        Assert.assertFalse(tab0.isInitialized());
-        Assert.assertFalse(tab2.isInitialized());
-        Assert.assertFalse(tab3.isInitialized());
+        Assert.assertTrue(((TabImpl) tab0).isClosing());
+        Assert.assertTrue(((TabImpl) tab2).isClosing());
+        Assert.assertTrue(((TabImpl) tab3).isClosing());
+        Assert.assertFalse(((TabImpl) tab0).isInitialized());
+        Assert.assertFalse(((TabImpl) tab2).isInitialized());
+        Assert.assertFalse(((TabImpl) tab3).isInitialized());
     }
 
     /**
@@ -1398,7 +1387,7 @@ public class UndoTabModelTest {
     @Test
     @MediumTest
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE) // See crbug.com/633607
-    public void testSaveStateCommitsUndos() throws InterruptedException, TimeoutException {
+    public void testSaveStateCommitsUndos() throws TimeoutException {
         TabModelSelector selector = mActivityTestRule.getActivity().getTabModelSelector();
         TabModel model = selector.getModel(false);
         ChromeTabCreator tabCreator = mActivityTestRule.getActivity().getTabCreator(false);
@@ -1420,18 +1409,17 @@ public class UndoTabModelTest {
         saveStateOnUiThread(selector);
         fullList = new Tab[] { tab1 };
         checkState(model, new Tab[] { tab1 }, tab1, EMPTY, fullList, tab1);
-        Assert.assertTrue(tab0.isClosing());
-        Assert.assertFalse(tab0.isInitialized());
+        Assert.assertTrue(((TabImpl) tab0).isClosing());
+        Assert.assertFalse(((TabImpl) tab0).isInitialized());
     }
 
     /**
      * Test opening recently closed tabs using the rewound list in Java.
-     * @throws InterruptedException
      */
     @Test
     @MediumTest
     @RetryOnFailure
-    public void testOpenRecentlyClosedTab() throws InterruptedException, TimeoutException {
+    public void testOpenRecentlyClosedTab() throws TimeoutException {
         TabModelSelector selector = mActivityTestRule.getActivity().getTabModelSelector();
         TabModel model = selector.getModel(false);
         ChromeTabCreator tabCreator = mActivityTestRule.getActivity().getTabCreator(false);
@@ -1452,11 +1440,10 @@ public class UndoTabModelTest {
 
     /**
      * Test opening recently closed tab using native tab restore service.
-     * @throws InterruptedException
      */
     @Test
     @MediumTest
-    public void testOpenRecentlyClosedTabNative() throws InterruptedException, TimeoutException {
+    public void testOpenRecentlyClosedTabNative() throws TimeoutException {
         final TabModelSelector selector = mActivityTestRule.getActivity().getTabModelSelector();
         final TabModel model = selector.getModel(false);
 
@@ -1495,15 +1482,13 @@ public class UndoTabModelTest {
      * 5. Close tab in window 2.    |
      * 6. Restore tab.              | Tab restored in window 2.
      * 7. Restore tab.              | Tab restored in window 1.
-     * @throws InterruptedException
      */
     @Test
     @MediumTest
     @MinAndroidSdkLevel(24)
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     @CommandLineFlags.Add(ChromeSwitches.DISABLE_TAB_MERGING_FOR_TESTING)
-    public void testOpenRecentlyClosedTabMultiWindow()
-            throws InterruptedException, TimeoutException {
+    public void testOpenRecentlyClosedTabMultiWindow() throws TimeoutException {
         final ChromeTabbedActivity2 secondActivity =
                 MultiWindowTestHelper.createSecondChromeTabbedActivity(
                         mActivityTestRule.getActivity());
@@ -1577,15 +1562,13 @@ public class UndoTabModelTest {
      * 3. Close tab in window 2.    |
      * 4. Close second window.      |
      * 5. Restore tab.              | Tab restored in first window.
-     * @throws InterruptedException
      */
     @Test
     @MediumTest
     @MinAndroidSdkLevel(24)
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     @CommandLineFlags.Add(ChromeSwitches.DISABLE_TAB_MERGING_FOR_TESTING)
-    public void testOpenRecentlyClosedTabMultiWindowFallback()
-            throws InterruptedException, TimeoutException {
+    public void testOpenRecentlyClosedTabMultiWindowFallback() throws TimeoutException {
         final ChromeTabbedActivity2 secondActivity =
                 MultiWindowTestHelper.createSecondChromeTabbedActivity(
                         mActivityTestRule.getActivity());

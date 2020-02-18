@@ -6,7 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_VIEWPORT_DATA_H_
 
 #include "mojo/public/cpp/bindings/associated_remote.h"
-#include "third_party/blink/public/mojom/page/display_cutout.mojom-blink.h"
+#include "third_party/blink/public/mojom/page/display_cutout.mojom-blink-forward.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/page/viewport_description.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -15,7 +15,7 @@ namespace blink {
 
 class Document;
 
-class ViewportData : public GarbageCollectedFinalized<ViewportData> {
+class ViewportData final : public GarbageCollected<ViewportData> {
  public:
   ViewportData(Document& document);
   void Trace(Visitor* visitor);

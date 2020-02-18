@@ -2,17 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import <EarlGrey/EarlGrey.h>
-#import <XCTest/XCTest.h>
-
 #include "base/bind.h"
 #include "components/strings/grit/components_strings.h"
-#import "ios/chrome/browser/ui/util/uikit_ui_util.h"
-#import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #include "ios/net/url_test_util.h"
+#import "ios/testing/earl_grey/earl_grey_test.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -24,7 +21,6 @@
 using chrome_test_util::ContentSuggestionCollectionView;
 using chrome_test_util::BackButton;
 using chrome_test_util::ForwardButton;
-using chrome_test_util::PurgeCachedWebViewPages;
 using chrome_test_util::OmniboxText;
 
 namespace {
@@ -332,7 +328,9 @@ std::unique_ptr<net::test_server::HttpResponse> WindowLocationHashHandlers(
   // Tap the forward button and verify test page is loaded.
   [[EarlGrey selectElementWithMatcher:ForwardButton()]
       performAction:grey_tap()];
-  [ChromeEarlGrey waitForWebStateContainingText:"pony"];
+  const NSTimeInterval kWaitForWebStateTimeout = 10;
+  [ChromeEarlGrey waitForWebStateContainingText:"pony"
+                                        timeout:kWaitForWebStateTimeout];
 }
 
 #pragma mark window.location.hash operations
@@ -516,8 +514,7 @@ std::unique_ptr<net::test_server::HttpResponse> WindowLocationHashHandlers(
                      "});",
                     kNoHashChangeText, content.c_str()];
 
-  NSError* error = nil;
-  chrome_test_util::ExecuteJavaScript(script, &error);
+  [ChromeEarlGrey executeJavaScript:script];
 }
 
 - (void)verifyBackAndForwardAfterRedirect:(std::string)redirectLabel {
@@ -570,7 +567,7 @@ std::unique_ptr<net::test_server::HttpResponse> WindowLocationHashHandlers(
   [ChromeEarlGrey loadURL:destinationURL];
   [ChromeEarlGrey goBack];
 
-  GREYAssert(PurgeCachedWebViewPages(), @"History not restored");
+  [ChromeEarlGrey triggerRestoreViaTabGridRemoveAllUndo];
 
   [ChromeEarlGrey waitForWebStateContainingText:"Revision"];
   [[EarlGrey selectElementWithMatcher:OmniboxText("chrome://version")]
@@ -589,11 +586,22 @@ std::unique_ptr<net::test_server::HttpResponse> WindowLocationHashHandlers(
   [ChromeEarlGrey loadURL:destinationURL];
   [ChromeEarlGrey goBack];
 
-  GREYAssert(PurgeCachedWebViewPages(), @"History not restored");
+  [ChromeEarlGrey triggerRestoreViaTabGridRemoveAllUndo];
 
   [ChromeEarlGrey goForward];
   [ChromeEarlGrey waitForWebStateContainingText:"pony"];
   [[EarlGrey selectElementWithMatcher:OmniboxText(destinationURL.GetContent())]
+      assertWithMatcher:grey_notNil()];
+}
+
+// Tests that restoring a placeholder URL is correctly restored.  This is a
+// regression test from http://crbug.com/1011758.
+- (void)testRestoreHistoryToPlaceholderURL {
+  GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
+  const GURL destinationURL("chrome://crash");
+  [ChromeEarlGrey loadURL:destinationURL];
+  [ChromeEarlGrey triggerRestoreViaTabGridRemoveAllUndo];
+  [[EarlGrey selectElementWithMatcher:OmniboxText("chrome://crash")]
       assertWithMatcher:grey_notNil()];
 }
 

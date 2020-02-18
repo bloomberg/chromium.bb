@@ -19,10 +19,11 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.Log;
 import org.chromium.base.compat.ApiHelperForM;
-import org.chromium.base.library_loader.LibraryLoaderConfig;
+import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LoadStatusRecorder.LoadLibraryStatus;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
@@ -75,7 +76,7 @@ public class StartupLoadingMetricsTest {
     private EmbeddedTestServer mTestServer;
 
     @Before
-    public void setUp() throws InterruptedException {
+    public void setUp() {
         Context appContext = InstrumentationRegistry.getInstrumentation()
                                      .getTargetContext()
                                      .getApplicationContext();
@@ -120,7 +121,7 @@ public class StartupLoadingMetricsTest {
                         FIRST_CONTENTFUL_PAINT_HISTOGRAM + histogramSuffix));
     }
 
-    private void startWebApkActivity(final String startUrl) throws InterruptedException {
+    private void startWebApkActivity(final String startUrl) {
         Intent intent =
                 new Intent(InstrumentationRegistry.getTargetContext(), WebApkActivity.class);
         intent.putExtra(WebApkConstants.EXTRA_WEBAPK_PACKAGE_NAME, "org.chromium.webapk.test");
@@ -150,6 +151,8 @@ public class StartupLoadingMetricsTest {
     @Test
     @LargeTest
     @RetryOnFailure
+    @DisableIf.Build(sdk_is_greater_than = Build.VERSION_CODES.N_MR1,
+            message = "https://crbug.com/1023433")
     public void testStartWithURLRecorded() throws Exception {
         runAndWaitForPageLoadMetricsRecorded(
                 () -> mTabbedActivityTestRule.startMainActivityWithURL(mTestPage));
@@ -158,7 +161,7 @@ public class StartupLoadingMetricsTest {
         assertHistogramsRecorded(1, TABBED_SUFFIX);
 
         // LibraryLoader checks.
-        if (!LibraryLoaderConfig.useChromiumLinker()) {
+        if (!LibraryLoader.getInstance().useChromiumLinker()) {
             Log.w(TAG, "Skipping test because not using ChromiumLinker.");
             return;
         }
@@ -218,6 +221,8 @@ public class StartupLoadingMetricsTest {
     @Test
     @LargeTest
     @RetryOnFailure
+    @DisableIf.Build(sdk_is_greater_than = Build.VERSION_CODES.N_MR1,
+            message = "https://crbug.com/1023433")
     public void testFromExternalAppRecorded() throws Exception {
         runAndWaitForPageLoadMetricsRecorded(
                 () -> mTabbedActivityTestRule.startMainActivityFromExternalApp(mTestPage, null));

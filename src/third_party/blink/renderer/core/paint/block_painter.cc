@@ -69,9 +69,10 @@ void BlockPainter::Paint(const PaintInfo& paint_info) {
     layout_block_.PaintObject(local_paint_info, paint_offset);
   } else if (original_phase != PaintPhase::kSelfBlockBackgroundOnly &&
              original_phase != PaintPhase::kSelfOutlineOnly &&
-             // For now all scrollers with overlay scrollbars are self-painting
-             // layers, so we don't need to traverse descendants here.
-             original_phase != PaintPhase::kOverlayScrollbars) {
+             // For now all scrollers with overlay overflow controls are
+             // self-painting layers, so we don't need to traverse descendants
+             // here.
+             original_phase != PaintPhase::kOverlayOverflowControls) {
     ScopedBoxContentsPaintState contents_paint_state(paint_state,
                                                      layout_block_);
     layout_block_.PaintObject(contents_paint_state.GetPaintInfo(),
@@ -211,19 +212,16 @@ void BlockPainter::PaintObject(const PaintInfo& paint_info,
 
   ScopedPaintTimingDetectorBlockPaintHook
       scoped_paint_timing_detector_block_paint_hook;
-  if (RuntimeEnabledFeatures::FirstContentfulPaintPlusPlusEnabled() ||
-      RuntimeEnabledFeatures::ElementTimingEnabled(
-          &layout_block_.GetDocument())) {
-    if (paint_info.phase == PaintPhase::kForeground) {
-      scoped_paint_timing_detector_block_paint_hook.EmplaceIfNeeded(
-          layout_block_, paint_info.context.GetPaintController()
-                             .CurrentPaintChunkProperties());
-    }
+  if (paint_info.phase == PaintPhase::kForeground) {
+    scoped_paint_timing_detector_block_paint_hook.EmplaceIfNeeded(
+        layout_block_,
+        paint_info.context.GetPaintController().CurrentPaintChunkProperties());
   }
-  // If we're *printing* the foreground, paint the URL.
-  if (paint_phase == PaintPhase::kForeground && paint_info.IsPrinting()) {
-    ObjectPainter(layout_block_)
-        .AddPDFURLRectIfNeeded(paint_info, paint_offset);
+  // If we're *printing or creating a paint preview of* the foreground, paint
+  // the URL.
+  if (paint_phase == PaintPhase::kForeground &&
+      paint_info.ShouldAddUrlMetadata()) {
+    ObjectPainter(layout_block_).AddURLRectIfNeeded(paint_info, paint_offset);
   }
 
   // If we're painting our background (either 1. kBlockBackground - background
@@ -355,7 +353,8 @@ PhysicalRect BlockPainter::OverflowRectForCullRectTesting(
 
   if (include_layout_overflow) {
     overflow_rect.Unite(layout_block_.PhysicalLayoutOverflowRect());
-    overflow_rect.Move(-PhysicalOffset(layout_block_.ScrolledContentOffset()));
+    overflow_rect.Move(
+        -PhysicalOffset(layout_block_.PixelSnappedScrolledContentOffset()));
   }
   return overflow_rect;
 }

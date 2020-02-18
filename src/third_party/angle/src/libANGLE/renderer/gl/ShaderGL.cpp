@@ -338,6 +338,26 @@ std::shared_ptr<WaitableCompileEvent> ShaderGL::compile(const gl::Context *conte
         additionalOptions |= SH_ADD_BASE_VERTEX_TO_VERTEX_ID;
     }
 
+    if (features.unfoldShortCircuits.enabled)
+    {
+        additionalOptions |= SH_UNFOLD_SHORT_CIRCUIT;
+    }
+
+    if (features.removeDynamicIndexingOfSwizzledVector.enabled)
+    {
+        additionalOptions |= SH_REMOVE_DYNAMIC_INDEXING_OF_SWIZZLED_VECTOR;
+    }
+
+    if (features.preAddTexelFetchOffsets.enabled)
+    {
+        additionalOptions |= SH_REWRITE_TEXELFETCHOFFSET_TO_TEXELFETCH;
+    }
+
+    if (features.regenerateStructNames.enabled)
+    {
+        additionalOptions |= SH_REGENERATE_STRUCT_NAMES;
+    }
+
     options |= additionalOptions;
 
     auto workerThreadPool = context->getWorkerThreadPool();

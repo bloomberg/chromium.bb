@@ -11,6 +11,8 @@
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/bind_test_util.h"
+#include "base/test/simple_test_clock.h"
 #include "base/test/task_environment.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/sync/base/time.h"
@@ -24,6 +26,7 @@
 #include "components/sync/protocol/model_type_state.pb.h"
 #include "components/sync/test/test_matchers.h"
 #include "components/sync_device_info/device_info_prefs.h"
+#include "components/sync_device_info/local_device_info_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {
@@ -59,6 +62,36 @@ MATCHER_P(EqualsProto, expected, "") {
 }
 
 MATCHER_P(ModelEqualsSpecifics, expected_specifics, "") {
+  if (expected_specifics.has_sharing_fields() != arg.sharing_info().has_value())
+    return false;
+
+  if (expected_specifics.has_sharing_fields()) {
+    auto& expected_fields = expected_specifics.sharing_fields();
+    auto& arg_info = *arg.sharing_info();
+    if (expected_fields.vapid_fcm_token() !=
+            arg_info.vapid_target_info.fcm_token ||
+        expected_fields.vapid_p256dh() != arg_info.vapid_target_info.p256dh ||
+        expected_fields.vapid_auth_secret() !=
+            arg_info.vapid_target_info.auth_secret ||
+        expected_fields.sender_id_fcm_token() !=
+            arg_info.sender_id_target_info.fcm_token ||
+        expected_fields.sender_id_p256dh() !=
+            arg_info.sender_id_target_info.p256dh ||
+        expected_fields.sender_id_auth_secret() !=
+            arg_info.sender_id_target_info.auth_secret ||
+        static_cast<size_t>(expected_fields.enabled_features_size()) !=
+            arg_info.enabled_features.size()) {
+      return false;
+    }
+
+    for (int i = 0; i < expected_fields.enabled_features_size(); ++i) {
+      if (!arg_info.enabled_features.count(expected_fields.enabled_features(i)))
+        return false;
+    }
+  }
+
+  base::SysInfo::HardwareInfo hardware_info = arg.hardware_info();
+
   // Note that we ignore the device name here to avoid having to inject the
   // local device's.
   return expected_specifics.cache_guid() == arg.guid() &&
@@ -67,6 +100,8 @@ MATCHER_P(ModelEqualsSpecifics, expected_specifics, "") {
          expected_specifics.chrome_version() == arg.chrome_version() &&
          expected_specifics.signin_scoped_device_id() ==
              arg.signin_scoped_device_id() &&
+         expected_specifics.model() == hardware_info.model &&
+         expected_specifics.manufacturer() == hardware_info.manufacturer &&
          expected_specifics.feature_fields()
                  .send_tab_to_self_receiving_enabled() ==
              arg.send_tab_to_self_receiving_enabled();
@@ -115,9 +150,65 @@ std::string SigninScopedDeviceIdForSuffix(int suffix) {
   return base::StringPrintf("signin scoped device id %d", suffix);
 }
 
-DataTypeActivationRequest TestDataTypeActivationRequest() {
+base::SysInfo::HardwareInfo GetLocalHardwareInfoBlocking() {
+  base::RunLoop run_loop;
+  base::SysInfo::HardwareInfo info;
+  base::SysInfo::GetHardwareInfo(base::BindLambdaForTesting(
+      [&](base::SysInfo::HardwareInfo hardware_info) {
+        info = std::move(hardware_info);
+#if defined(OS_CHROMEOS)
+        // For ChromeOS the returned model values are product code names like
+        // Eve. We want to use generic names like Chromebook.
+        info.model = GetChromeOSDeviceNameFromType();
+#endif
+        run_loop.Quit();
+      }));
+  run_loop.Run();
+  return info;
+}
+
+std::string ModelForSuffix(int suffix) {
+  return base::StringPrintf("model %d", suffix);
+}
+
+std::string ManufacturerForSuffix(int suffix) {
+  return base::StringPrintf("manufacturer %d", suffix);
+}
+
+std::string SharingVapidFcmTokenForSuffix(int suffix) {
+  return base::StringPrintf("sharing vapid fcm token %d", suffix);
+}
+
+std::string SharingVapidP256dhForSuffix(int suffix) {
+  return base::StringPrintf("sharing vapid p256dh %d", suffix);
+}
+
+std::string SharingVapidAuthSecretForSuffix(int suffix) {
+  return base::StringPrintf("sharing vapid auth secret %d", suffix);
+}
+
+std::string SharingSenderIdFcmTokenForSuffix(int suffix) {
+  return base::StringPrintf("sharing sender-id fcm token %d", suffix);
+}
+
+std::string SharingSenderIdP256dhForSuffix(int suffix) {
+  return base::StringPrintf("sharing sender-id p256dh %d", suffix);
+}
+
+std::string SharingSenderIdAuthSecretForSuffix(int suffix) {
+  return base::StringPrintf("sharing sender-id auth secret %d", suffix);
+}
+
+sync_pb::SharingSpecificFields::EnabledFeatures SharingEnabledFeaturesForSuffix(
+    int suffix) {
+  return suffix % 2 ? sync_pb::SharingSpecificFields::CLICK_TO_CALL
+                    : sync_pb::SharingSpecificFields::SHARED_CLIPBOARD;
+}
+
+DataTypeActivationRequest TestDataTypeActivationRequest(SyncMode sync_mode) {
   DataTypeActivationRequest request;
   request.cache_guid = CacheGuidForSuffix(kLocalSuffix);
+  request.sync_mode = sync_mode;
   return request;
 }
 
@@ -131,9 +222,25 @@ DeviceInfoSpecifics CreateSpecifics(
   specifics.set_sync_user_agent(SyncUserAgentForSuffix(suffix));
   specifics.set_chrome_version(ChromeVersionForSuffix(suffix));
   specifics.set_signin_scoped_device_id(SigninScopedDeviceIdForSuffix(suffix));
+  specifics.set_model(ModelForSuffix(suffix));
+  specifics.set_manufacturer(ManufacturerForSuffix(suffix));
   specifics.set_last_updated_timestamp(TimeToProtoTime(last_updated));
   specifics.mutable_feature_fields()->set_send_tab_to_self_receiving_enabled(
       true);
+  specifics.mutable_sharing_fields()->set_vapid_fcm_token(
+      SharingVapidFcmTokenForSuffix(suffix));
+  specifics.mutable_sharing_fields()->set_vapid_p256dh(
+      SharingVapidP256dhForSuffix(suffix));
+  specifics.mutable_sharing_fields()->set_vapid_auth_secret(
+      SharingVapidAuthSecretForSuffix(suffix));
+  specifics.mutable_sharing_fields()->set_sender_id_fcm_token(
+      SharingSenderIdFcmTokenForSuffix(suffix));
+  specifics.mutable_sharing_fields()->set_sender_id_p256dh(
+      SharingSenderIdP256dhForSuffix(suffix));
+  specifics.mutable_sharing_fields()->set_sender_id_auth_secret(
+      SharingSenderIdAuthSecretForSuffix(suffix));
+  specifics.mutable_sharing_fields()->add_enabled_features(
+      SharingEnabledFeaturesForSuffix(suffix));
   return specifics;
 }
 
@@ -187,15 +294,33 @@ class TestLocalDeviceInfoProvider : public MutableLocalDeviceInfoProvider {
 
   // MutableLocalDeviceInfoProvider implementation.
   void Initialize(const std::string& cache_guid,
-                  const std::string& session_name) override {
+                  const std::string& session_name,
+                  const base::SysInfo::HardwareInfo& hardware_info) override {
+    std::set<sync_pb::SharingSpecificFields::EnabledFeatures>
+        sharing_enabled_features{SharingEnabledFeaturesForSuffix(kLocalSuffix)};
     local_device_info_ = std::make_unique<DeviceInfo>(
         cache_guid, session_name, ChromeVersionForSuffix(kLocalSuffix),
         SyncUserAgentForSuffix(kLocalSuffix),
         sync_pb::SyncEnums_DeviceType_TYPE_LINUX,
-        SigninScopedDeviceIdForSuffix(kLocalSuffix), base::Time(), true);
+        SigninScopedDeviceIdForSuffix(kLocalSuffix), hardware_info,
+        base::Time(),
+        /*send_tab_to_self_receiving_enabled=*/true,
+        DeviceInfo::SharingInfo(
+            {SharingVapidFcmTokenForSuffix(kLocalSuffix),
+             SharingVapidP256dhForSuffix(kLocalSuffix),
+             SharingVapidAuthSecretForSuffix(kLocalSuffix)},
+            {SharingSenderIdFcmTokenForSuffix(kLocalSuffix),
+             SharingSenderIdP256dhForSuffix(kLocalSuffix),
+             SharingSenderIdAuthSecretForSuffix(kLocalSuffix)},
+            sharing_enabled_features));
   }
 
   void Clear() override { local_device_info_.reset(); }
+
+  void UpdateClientName(const std::string& client_name) override {
+    ASSERT_TRUE(local_device_info_);
+    local_device_info_->set_client_name(client_name);
+  }
 
   version_info::Channel GetChannel() const override {
     return version_info::Channel::UNKNOWN;
@@ -215,15 +340,23 @@ class TestLocalDeviceInfoProvider : public MutableLocalDeviceInfoProvider {
   std::unique_ptr<DeviceInfo> local_device_info_;
 
   DISALLOW_COPY_AND_ASSIGN(TestLocalDeviceInfoProvider);
-};
+};  // namespace
 
 class DeviceInfoSyncBridgeTest : public testing::Test,
                                  public DeviceInfoTracker::Observer {
  protected:
   DeviceInfoSyncBridgeTest()
-      : store_(ModelTypeStoreTestUtil::CreateInMemoryStoreForTest()) {
+      : store_(ModelTypeStoreTestUtil::CreateInMemoryStoreForTest()),
+        local_hardware_info_(GetLocalHardwareInfoBlocking()) {
     DeviceInfoPrefs::RegisterProfilePrefs(pref_service_.registry());
-    ON_CALL(*processor(), IsTrackingMetadata()).WillByDefault(Return(true));
+
+    // By default, mimic a real processor's behavior for IsTrackingMetadata().
+    ON_CALL(mock_processor_, ModelReadyToSync(_))
+        .WillByDefault([this](std::unique_ptr<MetadataBatch> batch) {
+          ON_CALL(mock_processor_, IsTrackingMetadata())
+              .WillByDefault(
+                  Return(batch->GetModelTypeState().initial_sync_done()));
+        });
   }
 
   ~DeviceInfoSyncBridgeTest() override {
@@ -235,6 +368,14 @@ class DeviceInfoSyncBridgeTest : public testing::Test,
     base::RunLoop().RunUntilIdle();
   }
 
+  DeviceInfoSpecifics CreateLocalDeviceSpecifics(
+      const base::Time last_updated = base::Time::Now()) {
+    DeviceInfoSpecifics specifics = CreateSpecifics(kLocalSuffix, last_updated);
+    specifics.set_model(local_hardware_info_.model);
+    specifics.set_manufacturer(local_hardware_info_.manufacturer);
+    return specifics;
+  }
+
   void OnDeviceInfoChange() override { change_count_++; }
 
   // Initialized the bridge based on the current local device and store.
@@ -243,7 +384,7 @@ class DeviceInfoSyncBridgeTest : public testing::Test,
         std::make_unique<TestLocalDeviceInfoProvider>(),
         ModelTypeStoreTestUtil::FactoryForForwardingStore(store_.get()),
         mock_processor_.CreateForwardingProcessor(),
-        std::make_unique<DeviceInfoPrefs>(&pref_service_));
+        std::make_unique<DeviceInfoPrefs>(&pref_service_, &clock_));
     bridge_->AddObserver(this);
   }
 
@@ -251,19 +392,20 @@ class DeviceInfoSyncBridgeTest : public testing::Test,
   // cause all initialization callbacks between the sevice and store to fire.
   void InitializeAndPump() {
     InitializeBridge();
-    base::RunLoop().RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
   // Creates the bridge with no prior data on the store, and mimics sync being
   // enabled by the user with no remote data.
-  void InitializeAndMergeInitialData() {
+  void InitializeAndMergeInitialData(SyncMode sync_mode) {
     InitializeAndPump();
-    bridge()->OnSyncStarting(TestDataTypeActivationRequest());
+    bridge()->OnSyncStarting(TestDataTypeActivationRequest(sync_mode));
 
     std::unique_ptr<MetadataChangeList> metadata_change_list =
         bridge()->CreateMetadataChangeList();
 
     metadata_change_list->UpdateModelTypeState(StateWithEncryption(""));
+    ON_CALL(*processor(), IsTrackingMetadata()).WillByDefault(Return(true));
     bridge()->MergeSyncData(std::move(metadata_change_list),
                             EntityChangeList());
   }
@@ -304,6 +446,8 @@ class DeviceInfoSyncBridgeTest : public testing::Test,
   }
 
   void ForcePulse() { bridge()->ForcePulseForTest(); }
+
+  void RefreshLocalDeviceInfo() { bridge()->RefreshLocalDeviceInfo(); }
 
   void CommitToStoreAndWait(std::unique_ptr<WriteBatch> batch) {
     base::RunLoop loop;
@@ -396,6 +540,8 @@ class DeviceInfoSyncBridgeTest : public testing::Test,
   }
 
  private:
+  base::SimpleTestClock clock_;
+
   int change_count_ = 0;
 
   // In memory model type store needs to be able to post tasks.
@@ -405,6 +551,9 @@ class DeviceInfoSyncBridgeTest : public testing::Test,
 
   // Holds the store.
   const std::unique_ptr<ModelTypeStore> store_;
+
+  // Stores the local device's hardware information.
+  const base::SysInfo::HardwareInfo local_hardware_info_;
 
   TestingPrefServiceSimple pref_service_;
   // Not initialized immediately (upon test's constructor). This allows each
@@ -459,7 +608,7 @@ TEST_F(DeviceInfoSyncBridgeTest, TestWithLocalMetadata) {
 }
 
 TEST_F(DeviceInfoSyncBridgeTest, TestWithLocalDataAndMetadata) {
-  const DeviceInfoSpecifics local_specifics = CreateSpecifics(kLocalSuffix);
+  const DeviceInfoSpecifics local_specifics = CreateLocalDeviceSpecifics();
   ModelTypeState state = StateWithEncryption("ekn");
   WriteToStoreWithMetadata({local_specifics}, state);
 
@@ -475,7 +624,7 @@ TEST_F(DeviceInfoSyncBridgeTest, TestWithLocalDataAndMetadata) {
 }
 
 TEST_F(DeviceInfoSyncBridgeTest, TestWithMultipleLocalDataAndMetadata) {
-  const DeviceInfoSpecifics local_specifics = CreateSpecifics(kLocalSuffix);
+  const DeviceInfoSpecifics local_specifics = CreateLocalDeviceSpecifics();
   const DeviceInfoSpecifics remote_specifics = CreateSpecifics(1);
   ModelTypeState state = StateWithEncryption("ekn");
   WriteToStoreWithMetadata({local_specifics, remote_specifics}, state);
@@ -493,7 +642,7 @@ TEST_F(DeviceInfoSyncBridgeTest, TestWithMultipleLocalDataAndMetadata) {
 }
 
 TEST_F(DeviceInfoSyncBridgeTest, GetData) {
-  const DeviceInfoSpecifics local_specifics = CreateSpecifics(kLocalSuffix);
+  const DeviceInfoSpecifics local_specifics = CreateLocalDeviceSpecifics();
   const DeviceInfoSpecifics specifics1 = CreateSpecifics(1);
   const DeviceInfoSpecifics specifics2 = CreateSpecifics(2);
   const DeviceInfoSpecifics specifics3 = CreateSpecifics(3);
@@ -525,7 +674,7 @@ TEST_F(DeviceInfoSyncBridgeTest, GetDataMissing) {
 }
 
 TEST_F(DeviceInfoSyncBridgeTest, GetAllData) {
-  const DeviceInfoSpecifics local_specifics = CreateSpecifics(kLocalSuffix);
+  const DeviceInfoSpecifics local_specifics = CreateLocalDeviceSpecifics();
   const DeviceInfoSpecifics specifics1 = CreateSpecifics(1);
   const DeviceInfoSpecifics specifics2 = CreateSpecifics(2);
   WriteToStoreWithMetadata({local_specifics, specifics1, specifics2},
@@ -540,7 +689,7 @@ TEST_F(DeviceInfoSyncBridgeTest, GetAllData) {
 }
 
 TEST_F(DeviceInfoSyncBridgeTest, ApplySyncChangesEmpty) {
-  InitializeAndMergeInitialData();
+  InitializeAndMergeInitialData(SyncMode::kFull);
   ASSERT_EQ(1, change_count());
 
   auto error = bridge()->ApplySyncChanges(bridge()->CreateMetadataChangeList(),
@@ -550,7 +699,7 @@ TEST_F(DeviceInfoSyncBridgeTest, ApplySyncChangesEmpty) {
 }
 
 TEST_F(DeviceInfoSyncBridgeTest, ApplySyncChangesInMemory) {
-  InitializeAndMergeInitialData();
+  InitializeAndMergeInitialData(SyncMode::kFull);
   ASSERT_EQ(1, change_count());
 
   const DeviceInfoSpecifics specifics = CreateSpecifics(1);
@@ -576,7 +725,7 @@ TEST_F(DeviceInfoSyncBridgeTest, ApplySyncChangesInMemory) {
 }
 
 TEST_F(DeviceInfoSyncBridgeTest, ApplySyncChangesStore) {
-  InitializeAndMergeInitialData();
+  InitializeAndMergeInitialData(SyncMode::kFull);
   ASSERT_EQ(1, change_count());
 
   const DeviceInfoSpecifics specifics = CreateSpecifics(1);
@@ -602,7 +751,7 @@ TEST_F(DeviceInfoSyncBridgeTest, ApplySyncChangesStore) {
 }
 
 TEST_F(DeviceInfoSyncBridgeTest, ApplySyncChangesWithLocalGuid) {
-  InitializeAndMergeInitialData();
+  InitializeAndMergeInitialData(SyncMode::kFull);
   ASSERT_EQ(1, change_count());
 
   ASSERT_TRUE(
@@ -613,7 +762,7 @@ TEST_F(DeviceInfoSyncBridgeTest, ApplySyncChangesWithLocalGuid) {
   // guid will match the local device.
   EXPECT_CALL(*processor(), Put(_, _, _)).Times(0);
 
-  const DeviceInfoSpecifics specifics = CreateSpecifics(kLocalSuffix);
+  const DeviceInfoSpecifics specifics = CreateLocalDeviceSpecifics();
   auto error_on_add = bridge()->ApplySyncChanges(
       bridge()->CreateMetadataChangeList(), EntityAddList({specifics}));
   EXPECT_FALSE(error_on_add);
@@ -629,7 +778,7 @@ TEST_F(DeviceInfoSyncBridgeTest, ApplySyncChangesWithLocalGuid) {
 }
 
 TEST_F(DeviceInfoSyncBridgeTest, ApplyDeleteNonexistent) {
-  InitializeAndMergeInitialData();
+  InitializeAndMergeInitialData(SyncMode::kFull);
   ASSERT_EQ(1, change_count());
 
   syncer::EntityChangeList entity_change_list;
@@ -652,7 +801,8 @@ TEST_F(DeviceInfoSyncBridgeTest, MergeEmpty) {
   EXPECT_CALL(*processor(), Put(kLocalGuid, _, _));
   EXPECT_CALL(*processor(), Delete(_, _)).Times(0);
 
-  bridge()->OnSyncStarting(TestDataTypeActivationRequest());
+  bridge()->OnSyncStarting(TestDataTypeActivationRequest(SyncMode::kFull));
+  ON_CALL(*processor(), IsTrackingMetadata()).WillByDefault(Return(true));
   auto error = bridge()->MergeSyncData(bridge()->CreateMetadataChangeList(),
                                        EntityChangeList());
   EXPECT_FALSE(error);
@@ -673,10 +823,11 @@ TEST_F(DeviceInfoSyncBridgeTest, MergeLocalGuid) {
   EXPECT_CALL(*processor(), Put(kLocalGuid, _, _));
   EXPECT_CALL(*processor(), Delete(_, _)).Times(0);
 
-  bridge()->OnSyncStarting(TestDataTypeActivationRequest());
+  bridge()->OnSyncStarting(TestDataTypeActivationRequest(SyncMode::kFull));
+  ON_CALL(*processor(), IsTrackingMetadata()).WillByDefault(Return(true));
   auto error =
       bridge()->MergeSyncData(bridge()->CreateMetadataChangeList(),
-                              EntityAddList({CreateSpecifics(kLocalSuffix)}));
+                              EntityAddList({CreateLocalDeviceSpecifics()}));
 
   EXPECT_FALSE(error);
   EXPECT_EQ(1, change_count());
@@ -686,7 +837,7 @@ TEST_F(DeviceInfoSyncBridgeTest, MergeLocalGuid) {
 }
 
 TEST_F(DeviceInfoSyncBridgeTest, CountActiveDevices) {
-  InitializeAndMergeInitialData();
+  InitializeAndMergeInitialData(SyncMode::kFull);
   // Local device.
   EXPECT_EQ(1, bridge()->CountActiveDevices());
 
@@ -698,11 +849,11 @@ TEST_F(DeviceInfoSyncBridgeTest, CountActiveDevices) {
   // Regardless of the time, these following two ApplySyncChanges(...) calls
   // have the same guid as the local device.
   bridge()->ApplySyncChanges(bridge()->CreateMetadataChangeList(),
-                             EntityAddList({CreateSpecifics(kLocalSuffix)}));
+                             EntityAddList({CreateLocalDeviceSpecifics()}));
   EXPECT_EQ(1, bridge()->CountActiveDevices());
 
   bridge()->ApplySyncChanges(bridge()->CreateMetadataChangeList(),
-                             EntityAddList({CreateSpecifics(kLocalSuffix)}));
+                             EntityAddList({CreateLocalDeviceSpecifics()}));
   EXPECT_EQ(1, bridge()->CountActiveDevices());
 
   // A different guid will actually contribute to the count.
@@ -719,7 +870,7 @@ TEST_F(DeviceInfoSyncBridgeTest, CountActiveDevices) {
 }
 
 TEST_F(DeviceInfoSyncBridgeTest, CountActiveDevicesWithOverlappingTime) {
-  InitializeAndMergeInitialData();
+  InitializeAndMergeInitialData(SyncMode::kFull);
   // Local device.
   ASSERT_EQ(1, bridge()->CountActiveDevices());
 
@@ -764,7 +915,7 @@ TEST_F(DeviceInfoSyncBridgeTest, CountActiveDevicesWithOverlappingTime) {
 }
 
 TEST_F(DeviceInfoSyncBridgeTest, CountActiveDevicesWithNonOverlappingTime) {
-  InitializeAndMergeInitialData();
+  InitializeAndMergeInitialData(SyncMode::kFull);
   // Local device.
   ASSERT_EQ(1, bridge()->CountActiveDevices());
 
@@ -802,7 +953,7 @@ TEST_F(DeviceInfoSyncBridgeTest, CountActiveDevicesWithNonOverlappingTime) {
 
 TEST_F(DeviceInfoSyncBridgeTest,
        CountActiveDevicesWithNonOverlappingTimeAndDistictType) {
-  InitializeAndMergeInitialData();
+  InitializeAndMergeInitialData(SyncMode::kFull);
   // Local device.
   ASSERT_EQ(1, bridge()->CountActiveDevices());
 
@@ -844,7 +995,7 @@ TEST_F(DeviceInfoSyncBridgeTest,
 }
 
 TEST_F(DeviceInfoSyncBridgeTest, CountActiveDevicesWithMalformedTimestamps) {
-  InitializeAndMergeInitialData();
+  InitializeAndMergeInitialData(SyncMode::kFull);
   // Local device.
   ASSERT_EQ(1, bridge()->CountActiveDevices());
 
@@ -876,7 +1027,7 @@ TEST_F(DeviceInfoSyncBridgeTest, CountActiveDevicesWithMalformedTimestamps) {
 TEST_F(DeviceInfoSyncBridgeTest, SendLocalData) {
   // Ensure |last_updated| is about now, plus or minus a little bit.
   EXPECT_CALL(*processor(), Put(_, HasSpecifics(HasLastUpdatedAboutNow()), _));
-  InitializeAndMergeInitialData();
+  InitializeAndMergeInitialData(SyncMode::kFull);
   EXPECT_EQ(1, change_count());
   testing::Mock::VerifyAndClearExpectations(processor());
 
@@ -887,7 +1038,7 @@ TEST_F(DeviceInfoSyncBridgeTest, SendLocalData) {
 }
 
 TEST_F(DeviceInfoSyncBridgeTest, ApplyStopSyncChangesWithClearData) {
-  InitializeAndMergeInitialData();
+  InitializeAndMergeInitialData(SyncMode::kFull);
   ASSERT_EQ(1u, bridge()->GetAllDeviceInfo().size());
   ASSERT_EQ(1, change_count());
   ASSERT_FALSE(ReadAllFromStore().empty());
@@ -914,7 +1065,8 @@ TEST_F(DeviceInfoSyncBridgeTest, ApplyStopSyncChangesWithClearData) {
 
   // If sync is re-enabled and the remote data is now empty, we shouldn't
   // contain remote data.
-  bridge()->OnSyncStarting(TestDataTypeActivationRequest());
+  bridge()->OnSyncStarting(TestDataTypeActivationRequest(SyncMode::kFull));
+  ON_CALL(*processor(), IsTrackingMetadata()).WillByDefault(Return(true));
   bridge()->MergeSyncData(bridge()->CreateMetadataChangeList(),
                           EntityChangeList());
   // Local device.
@@ -923,7 +1075,7 @@ TEST_F(DeviceInfoSyncBridgeTest, ApplyStopSyncChangesWithClearData) {
 }
 
 TEST_F(DeviceInfoSyncBridgeTest, ApplyStopSyncChangesWithKeepData) {
-  InitializeAndMergeInitialData();
+  InitializeAndMergeInitialData(SyncMode::kFull);
   ASSERT_EQ(1u, bridge()->GetAllDeviceInfo().size());
   ASSERT_EQ(1, change_count());
   ASSERT_FALSE(ReadAllFromStore().empty());
@@ -948,6 +1100,137 @@ TEST_F(DeviceInfoSyncBridgeTest, ApplyStopSyncChangesWithKeepData) {
   RestartBridge();
   EXPECT_EQ(2u, bridge()->GetAllDeviceInfo().size());
   EXPECT_TRUE(bridge()->IsPulseTimerRunningForTest());
+}
+
+TEST_F(DeviceInfoSyncBridgeTest, ExpireOldEntriesUponStartup) {
+  InitializeAndMergeInitialData(SyncMode::kFull);
+  ASSERT_EQ(1u, bridge()->GetAllDeviceInfo().size());
+  ASSERT_EQ(1, change_count());
+  ASSERT_FALSE(ReadAllFromStore().empty());
+
+  const DeviceInfoSpecifics specifics_old =
+      CreateSpecifics(1, base::Time::Now() - base::TimeDelta::FromDays(57));
+  const DeviceInfoSpecifics specifics_fresh =
+      CreateSpecifics(1, base::Time::Now() - base::TimeDelta::FromDays(55));
+  auto error = bridge()->ApplySyncChanges(
+      bridge()->CreateMetadataChangeList(),
+      EntityAddList({specifics_old, specifics_fresh}));
+
+  ASSERT_FALSE(error);
+  ASSERT_EQ(2u, bridge()->GetAllDeviceInfo().size());
+  ASSERT_EQ(2, change_count());
+
+  // Reloading from storage should expire the old remote entity (but keep the
+  // fresh one).
+  RestartBridge();
+  EXPECT_EQ(2u, bridge()->GetAllDeviceInfo().size());
+  // Make sure this is well persisted to the DB store.
+  EXPECT_THAT(ReadAllFromStore(),
+              UnorderedElementsAre(
+                  Pair(local_device()->GetLocalDeviceInfo()->guid(), _),
+                  Pair(specifics_fresh.cache_guid(), _)));
+}
+
+TEST_F(DeviceInfoSyncBridgeTest, RefreshLocalDeviceInfo) {
+  // Ensure |last_updated| is about now, plus or minus a little bit.
+  EXPECT_CALL(*processor(), Put(_, HasSpecifics(HasLastUpdatedAboutNow()), _));
+  InitializeAndMergeInitialData(SyncMode::kFull);
+  EXPECT_EQ(1, change_count());
+  testing::Mock::VerifyAndClearExpectations(processor());
+
+  // Ensure |last_updated| is about now, plus or minus a little bit.
+  EXPECT_CALL(*processor(), Put(_, HasSpecifics(HasLastUpdatedAboutNow()), _));
+  RefreshLocalDeviceInfo();
+  EXPECT_EQ(2, change_count());
+}
+
+TEST_F(DeviceInfoSyncBridgeTest, DeviceNameForTransportOnlySyncMode) {
+  InitializeAndMergeInitialData(SyncMode::kTransportOnly);
+  ASSERT_EQ(1, change_count());
+  ASSERT_TRUE(local_device()->GetLocalDeviceInfo());
+
+  EXPECT_EQ(GetLocalHardwareInfoBlocking().model,
+            local_device()->GetLocalDeviceInfo()->client_name());
+}
+
+TEST_F(DeviceInfoSyncBridgeTest, DeviceNameForFullSyncMode) {
+  InitializeAndMergeInitialData(SyncMode::kFull);
+  ASSERT_EQ(1, change_count());
+  ASSERT_TRUE(local_device()->GetLocalDeviceInfo());
+
+  EXPECT_EQ(GetPersonalizableDeviceNameBlocking(),
+            local_device()->GetLocalDeviceInfo()->client_name());
+}
+
+// Tests local client name when device is initially synced with transport only
+// sync mode, but the sync mode is not available after restart since it is not
+// persisted.
+TEST_F(DeviceInfoSyncBridgeTest,
+       DeviceNameForTransportOnlySyncMode_RestartBridge) {
+  std::string expected_device_name = GetLocalHardwareInfoBlocking().model;
+  InitializeAndMergeInitialData(SyncMode::kTransportOnly);
+
+  ASSERT_TRUE(local_device()->GetLocalDeviceInfo());
+  ASSERT_EQ(expected_device_name,
+            local_device()->GetLocalDeviceInfo()->client_name());
+
+  EXPECT_CALL(*processor(),
+              Put(local_device()->GetLocalDeviceInfo()->guid(), _, _))
+      .Times(0);
+  RestartBridge();
+  ASSERT_TRUE(local_device()->GetLocalDeviceInfo());
+  EXPECT_EQ(expected_device_name,
+            local_device()->GetLocalDeviceInfo()->client_name());
+}
+
+// Tests local client name when device is initially synced with full sync mode,
+// but the sync mode is not available after restart since it is not persisted.
+TEST_F(DeviceInfoSyncBridgeTest, DeviceNameForFullSyncMode_RestartBridge) {
+  std::string expected_device_name = GetPersonalizableDeviceNameBlocking();
+  InitializeAndMergeInitialData(SyncMode::kFull);
+
+  ASSERT_TRUE(local_device()->GetLocalDeviceInfo());
+  ASSERT_EQ(expected_device_name,
+            local_device()->GetLocalDeviceInfo()->client_name());
+
+  EXPECT_CALL(*processor(),
+              Put(local_device()->GetLocalDeviceInfo()->guid(), _, _))
+      .Times(0);
+  RestartBridge();
+  ASSERT_TRUE(local_device()->GetLocalDeviceInfo());
+  EXPECT_EQ(expected_device_name,
+            local_device()->GetLocalDeviceInfo()->client_name());
+}
+
+TEST_F(DeviceInfoSyncBridgeTest, RefreshLocalDeviceNameForSyncModeToggle) {
+  std::string expected_device_name_full_sync =
+      GetPersonalizableDeviceNameBlocking();
+  std::string expected_device_name_transport_only =
+      GetLocalHardwareInfoBlocking().model;
+
+  // Initialize with full sync mode.
+  InitializeAndMergeInitialData(SyncMode::kFull);
+  const syncer::DeviceInfo* device = local_device()->GetLocalDeviceInfo();
+
+  ASSERT_TRUE(device);
+  ASSERT_EQ(expected_device_name_full_sync, device->client_name());
+
+  // Toggle to transport only sync mode.
+  bridge()->ApplyStopSyncChanges(/*delete_metadata_change_list=*/nullptr);
+  bridge()->OnSyncStarting(
+      TestDataTypeActivationRequest(SyncMode::kTransportOnly));
+
+  device = local_device()->GetLocalDeviceInfo();
+  ASSERT_TRUE(device);
+  ASSERT_EQ(expected_device_name_transport_only, device->client_name());
+
+  // Toggle to full sync mode.
+  bridge()->ApplyStopSyncChanges(/*delete_metadata_change_list=*/nullptr);
+  bridge()->OnSyncStarting(TestDataTypeActivationRequest(SyncMode::kFull));
+
+  device = local_device()->GetLocalDeviceInfo();
+  ASSERT_TRUE(device);
+  ASSERT_EQ(expected_device_name_full_sync, device->client_name());
 }
 
 }  // namespace

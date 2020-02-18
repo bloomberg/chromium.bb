@@ -60,8 +60,8 @@ class BASE_EXPORT ThreadPoolImpl : public ThreadPoolInstance,
       TaskTracker;
 #endif
 
-  // Creates a ThreadPoolImpl with a production TaskTracker.
-  //|histogram_label| is used to label histograms, it must not be empty.
+  // Creates a ThreadPoolImpl with a production TaskTracker. |histogram_label|
+  // is used to label histograms. No histograms are recorded if it is empty.
   explicit ThreadPoolImpl(StringPiece histogram_label);
 
   // For testing only. Creates a ThreadPoolImpl with a custom TaskTracker.
@@ -79,8 +79,10 @@ class BASE_EXPORT ThreadPoolImpl : public ThreadPoolInstance,
   void FlushForTesting() override;
   void FlushAsyncForTesting(OnceClosure flush_callback) override;
   void JoinForTesting() override;
-  void SetHasFence(bool has_fence) override;
-  void SetHasBestEffortFence(bool has_best_effort_fence) override;
+  void BeginFence() override;
+  void EndFence() override;
+  void BeginBestEffortFence() override;
+  void EndBestEffortFence() override;
 
   // TaskExecutor:
   bool PostDelayedTask(const Location& from_here,
@@ -98,11 +100,14 @@ class BASE_EXPORT ThreadPoolImpl : public ThreadPoolInstance,
       const TaskTraits& traits,
       SingleThreadTaskRunnerThreadMode thread_mode) override;
 #endif  // defined(OS_WIN)
+  const scoped_refptr<SequencedTaskRunner>& GetContinuationTaskRunner()
+      override;
   scoped_refptr<UpdateableSequencedTaskRunner>
   CreateUpdateableSequencedTaskRunner(const TaskTraits& traits);
 
   // PooledTaskRunnerDelegate:
   bool EnqueueJobTaskSource(scoped_refptr<JobTaskSource> task_source) override;
+  void RemoveJobTaskSource(scoped_refptr<JobTaskSource> task_source) override;
   void UpdatePriority(scoped_refptr<TaskSource> task_source,
                       TaskPriority priority) override;
 
@@ -117,8 +122,8 @@ class BASE_EXPORT ThreadPoolImpl : public ThreadPoolInstance,
   void ProcessRipeDelayedTasksForTesting();
 
  private:
-  // Invoked after |has_fence_| or |has_best_effort_fence_| is updated. Sets the
-  // CanRunPolicy in TaskTracker and wakes up workers as appropriate.
+  // Invoked after |num_fences_| or |num_best_effort_fences_| is updated. Sets
+  // the CanRunPolicy in TaskTracker and wakes up workers as appropriate.
   void UpdateCanRunPolicy();
 
   // Returns |traits|, with priority set to TaskPriority::USER_BLOCKING if
@@ -167,10 +172,10 @@ class BASE_EXPORT ThreadPoolImpl : public ThreadPoolInstance,
   // BEST_EFFORT tasks until shutdown.
   const bool has_disable_best_effort_switch_;
 
-  // Whether a fence is preventing execution of tasks of any/BEST_EFFORT
-  // priority. Access controlled by |sequence_checker_|.
-  bool has_fence_ = false;
-  bool has_best_effort_fence_ = false;
+  // Number of fences preventing execution of tasks of any/BEST_EFFORT priority.
+  // Access controlled by |sequence_checker_|.
+  int num_fences_ = 0;
+  int num_best_effort_fences_ = 0;
 
 #if DCHECK_IS_ON()
   // Set once JoinForTesting() has returned.

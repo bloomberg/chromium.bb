@@ -27,7 +27,6 @@ MojoAudioOutputIPC::MojoAudioOutputIPC(
     FactoryAccessorCB factory_accessor,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner)
     : factory_accessor_(std::move(factory_accessor)),
-      binding_(this),
       io_task_runner_(std::move(io_task_runner)) {}
 
 MojoAudioOutputIPC::~MojoAudioOutputIPC() {
@@ -82,16 +81,17 @@ void MojoAudioOutputIPC::CreateStream(
   }
 
   DCHECK_EQ(delegate_, delegate);
-  // Since the creation callback won't fire if the provider binding is gone
+  // Since the creation callback won't fire if the provider receiver is gone
   // and |this| owns |stream_provider_|, unretained is safe.
   stream_creation_start_time_ = base::TimeTicks::Now();
-  media::mojom::AudioOutputStreamProviderClientPtr client_ptr;
-  binding_.Bind(mojo::MakeRequest(&client_ptr));
-  // Unretained is safe because |this| owns |binding_|.
-  binding_.set_connection_error_with_reason_handler(
+  mojo::PendingRemote<media::mojom::AudioOutputStreamProviderClient>
+      client_remote;
+  receiver_.Bind(client_remote.InitWithNewPipeAndPassReceiver());
+  // Unretained is safe because |this| owns |receiver_|.
+  receiver_.set_disconnect_with_reason_handler(
       base::BindOnce(&MojoAudioOutputIPC::ProviderClientBindingDisconnected,
                      base::Unretained(this)));
-  stream_provider_->Acquire(params, std::move(client_ptr), processing_id);
+  stream_provider_->Acquire(params, std::move(client_remote), processing_id);
 }
 
 void MojoAudioOutputIPC::PlayStream() {
@@ -118,7 +118,7 @@ void MojoAudioOutputIPC::CloseStream() {
   DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
   stream_provider_.reset();
   stream_.reset();
-  binding_.Close();
+  receiver_.reset();
   delegate_ = nullptr;
   expected_state_ = kPaused;
   volume_ = base::nullopt;
@@ -155,15 +155,13 @@ bool MojoAudioOutputIPC::AuthorizationRequested() const {
 }
 
 bool MojoAudioOutputIPC::StreamCreationRequested() const {
-  return binding_.is_bound();
+  return receiver_.is_bound();
 }
 
-media::mojom::AudioOutputStreamProviderRequest
-MojoAudioOutputIPC::MakeProviderRequest() {
+mojo::PendingReceiver<media::mojom::AudioOutputStreamProvider>
+MojoAudioOutputIPC::MakeProviderReceiver() {
   DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(!AuthorizationRequested());
-  media::mojom::AudioOutputStreamProviderRequest request =
-      mojo::MakeRequest(&stream_provider_);
 
   // Don't set a connection error handler.
   // There are three possible reasons for a connection error.
@@ -176,7 +174,7 @@ MojoAudioOutputIPC::MakeProviderRequest() {
   // 3. The connection was broken after authorization succeeded. This is because
   //    of the frame owning this stream being destructed, and this object will
   //    be cleaned up soon.
-  return request;
+  return stream_provider_.BindNewPipeAndPassReceiver();
 }
 
 void MojoAudioOutputIPC::DoRequestDeviceAuthorization(
@@ -188,8 +186,8 @@ void MojoAudioOutputIPC::DoRequestDeviceAuthorization(
   if (!factory) {
     LOG(ERROR) << "MojoAudioOutputIPC failed to acquire factory";
 
-    // Create a provider request for consistency with the normal case.
-    MakeProviderRequest();
+    // Create a provider receiver for consistency with the normal case.
+    MakeProviderReceiver();
     // Resetting the callback asynchronously ensures consistent behaviour with
     // when the factory is destroyed before reply, i.e. calling
     // OnDeviceAuthorized with ERROR_INTERNAL in the normal case.
@@ -203,7 +201,7 @@ void MojoAudioOutputIPC::DoRequestDeviceAuthorization(
   static_assert(sizeof(int) == sizeof(int32_t),
                 "sizeof(int) == sizeof(int32_t)");
   factory->RequestDeviceAuthorization(
-      MakeProviderRequest(),
+      MakeProviderReceiver(),
       session_id.is_empty() ? base::Optional<base::UnguessableToken>()
                             : session_id,
       device_id, std::move(callback));
@@ -228,14 +226,15 @@ void MojoAudioOutputIPC::ReceivedDeviceAuthorization(
 }
 
 void MojoAudioOutputIPC::Created(
-    media::mojom::AudioOutputStreamPtr stream,
+    mojo::PendingRemote<media::mojom::AudioOutputStream> pending_stream,
     media::mojom::ReadWriteAudioDataPipePtr data_pipe) {
   DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(delegate_);
 
   UMA_HISTOGRAM_TIMES("Media.Audio.Render.OutputDeviceStreamCreationTime",
                       base::TimeTicks::Now() - stream_creation_start_time_);
-  stream_ = std::move(stream);
+  stream_.reset();
+  stream_.Bind(std::move(pending_stream));
 
   base::PlatformFile socket_handle;
   auto result =

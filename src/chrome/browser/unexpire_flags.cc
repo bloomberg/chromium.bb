@@ -4,11 +4,39 @@
 
 #include "chrome/browser/unexpire_flags.h"
 
+#include "base/no_destructor.h"
 #include "chrome/browser/expired_flags_list.h"
 
 namespace flags {
 
-const base::Feature kUnexpireFlagsM76{"TemporaryUnexpireFlagsM76",
+namespace {
+
+class FlagPredicateSingleton {
+ public:
+  FlagPredicateSingleton() = default;
+  ~FlagPredicateSingleton() = default;
+
+  static const testing::FlagPredicate& GetPredicate() {
+    return GetInstance()->predicate_;
+  }
+  static void SetPredicate(testing::FlagPredicate predicate) {
+    GetInstance()->predicate_ = predicate;
+  }
+
+ private:
+  static FlagPredicateSingleton* GetInstance() {
+    static base::NoDestructor<FlagPredicateSingleton> instance;
+    return instance.get();
+  }
+
+  testing::FlagPredicate predicate_;
+};
+
+}  // namespace
+
+const base::Feature kUnexpireFlagsM78{"TemporaryUnexpireFlagsM78",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kUnexpireFlagsM80{"TemporaryUnexpireFlagsM80",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
 bool ExpiryEnabledForMstone(int mstone) {
@@ -23,18 +51,24 @@ bool ExpiryEnabledForMstone(int mstone) {
   if (mstone == -1)
     return false;
 
-  // Currently expiration targets flags expiring in M76 or earlier. In M79 this
-  // will become M78 or earlier; in M80 it will become M80 or earlier, and in
-  // all future milestones Mx it will be Mx or earlier, so this logic will cease
-  // to hardcode a milestone and instead target the current major version.
-  if (mstone < 76)
+  // In M78 this expired flags with their expirations set to M76 or earlier.
+  // In M79 this expires flags with their expirations set to M78 or earlier.
+  // In M80 and later, this will expire any flags whose expiration is <= the
+  // current mstone, and this block comment will go away along with these
+  // special cases.
+  if (mstone <= 76)
     return true;
-  if (mstone == 76)
-    return !base::FeatureList::IsEnabled(kUnexpireFlagsM76);
+  if (mstone == 77 || mstone == 78)
+    return !base::FeatureList::IsEnabled(kUnexpireFlagsM78);
+  if (mstone == 79 || mstone == 80)
+    return !base::FeatureList::IsEnabled(kUnexpireFlagsM80);
   return false;
 }
 
 bool IsFlagExpired(const char* internal_name) {
+  if (FlagPredicateSingleton::GetPredicate())
+    return FlagPredicateSingleton::GetPredicate().Run(internal_name);
+
   for (int i = 0; kExpiredFlags[i].name; ++i) {
     const ExpiredFlag* f = &kExpiredFlags[i];
     if (!strcmp(f->name, internal_name) && ExpiryEnabledForMstone(f->mstone))
@@ -42,5 +76,13 @@ bool IsFlagExpired(const char* internal_name) {
   }
   return false;
 }
+
+namespace testing {
+
+void SetFlagExpiredPredicate(FlagPredicate predicate) {
+  FlagPredicateSingleton::SetPredicate(predicate);
+}
+
+}  // namespace testing
 
 }  // namespace flags

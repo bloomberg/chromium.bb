@@ -8,6 +8,7 @@
 
 #include <memory>
 #include <tuple>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -18,10 +19,9 @@
 #include "base/test/task_environment.h"
 #include "base/test/test_simple_task_runner.h"
 #include "chrome/browser/apps/app_shim/app_shim_host_bootstrap_mac.h"
-#include "chrome/common/mac/app_shim_param_traits.h"
+#include "chrome/common/mac/app_shim.mojom.h"
 #include "ipc/ipc_message.h"
-#include "mojo/public/cpp/bindings/pending_receiver.h"
-#include "mojo/public/cpp/bindings/remote.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -30,9 +30,9 @@ class TestingAppShim : public chrome::mojom::AppShim {
  public:
   TestingAppShim() {}
 
-  chrome::mojom::AppShimHostBootstrap::LaunchAppCallback
-  GetLaunchAppCallback() {
-    return base::BindOnce(&TestingAppShim::LaunchAppDone,
+  chrome::mojom::AppShimHostBootstrap::OnShimConnectedCallback
+  GetOnShimConnectedCallback() {
+    return base::BindOnce(&TestingAppShim::OnShimConnectedDone,
                           base::Unretained(this));
   }
   mojo::PendingReceiver<chrome::mojom::AppShimHostBootstrap>
@@ -40,27 +40,33 @@ class TestingAppShim : public chrome::mojom::AppShim {
     return host_bootstrap_remote_.BindNewPipeAndPassReceiver();
   }
 
-  apps::AppShimLaunchResult GetLaunchResult() const {
+  chrome::mojom::AppShimLaunchResult GetLaunchResult() const {
     EXPECT_TRUE(received_launch_done_result_);
     return launch_done_result_;
   }
 
  private:
-  void LaunchAppDone(apps::AppShimLaunchResult result,
-                     chrome::mojom::AppShimRequest app_shim_request) {
+  void OnShimConnectedDone(
+      chrome::mojom::AppShimLaunchResult result,
+      mojo::PendingReceiver<chrome::mojom::AppShim> app_shim_receiver) {
     received_launch_done_result_ = true;
     launch_done_result_ = result;
   }
 
   // chrome::mojom::AppShim implementation.
   void CreateRemoteCocoaApplication(
-      remote_cocoa::mojom::ApplicationAssociatedRequest request) override {}
+      mojo::PendingAssociatedReceiver<remote_cocoa::mojom::Application>
+          receiver) override {}
   void CreateCommandDispatcherForWidget(uint64_t widget_id) override {}
-  void SetUserAttention(apps::AppShimAttentionType attention_type) override {}
+  void SetUserAttention(
+      chrome::mojom::AppShimAttentionType attention_type) override {}
   void SetBadgeLabel(const std::string& badge_label) override {}
+  void UpdateProfileMenu(std::vector<chrome::mojom::ProfileMenuItemPtr>
+                             profile_menu_items) override {}
 
   bool received_launch_done_result_ = false;
-  apps::AppShimLaunchResult launch_done_result_ = apps::APP_SHIM_LAUNCH_SUCCESS;
+  chrome::mojom::AppShimLaunchResult launch_done_result_ =
+      chrome::mojom::AppShimLaunchResult::kSuccess;
 
   mojo::Remote<chrome::mojom::AppShimHostBootstrap> host_bootstrap_remote_;
   DISALLOW_COPY_AND_ASSIGN(TestingAppShim);
@@ -95,7 +101,7 @@ class TestingAppShimHostBootstrap : public AppShimHostBootstrap {
     return test_weak_factory_.GetWeakPtr();
   }
 
-  using AppShimHostBootstrap::LaunchApp;
+  using AppShimHostBootstrap::OnShimConnected;
 
  private:
   base::WeakPtrFactory<TestingAppShimHostBootstrap> test_weak_factory_;
@@ -104,6 +110,7 @@ class TestingAppShimHostBootstrap : public AppShimHostBootstrap {
 
 const char kTestAppId[] = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
 const char kTestProfileDir[] = "Profile 1";
+const GURL kTestUrl("https://example.com");
 
 class AppShimHostTest : public testing::Test,
                         public AppShimHostBootstrap::Client,
@@ -117,34 +124,38 @@ class AppShimHostTest : public testing::Test,
     return task_runner_;
   }
   AppShimHost* host() { return host_.get(); }
-  chrome::mojom::AppShimHost* GetMojoHost() { return host_ptr_.get(); }
+  chrome::mojom::AppShimHost* GetMojoHost() { return host_remote_.get(); }
 
-  void LaunchApp(apps::AppShimLaunchType launch_type) {
+  void DoOnShimConnected(chrome::mojom::AppShimLaunchType launch_type) {
+    auto app_shim_info = chrome::mojom::AppShimInfo::New();
+    app_shim_info->profile_path = base::FilePath(kTestProfileDir);
+    app_shim_info->app_id = kTestAppId;
+    app_shim_info->app_url = kTestUrl;
+    app_shim_info->launch_type = launch_type;
     // Ownership of TestingAppShimHostBootstrap will be transferred to its host.
     (new TestingAppShimHostBootstrap(shim_->GetHostBootstrapReceiver()))
-        ->LaunchApp(mojo::MakeRequest(&host_ptr_),
-                    base::FilePath(kTestProfileDir), kTestAppId, launch_type,
-                    std::vector<base::FilePath>(),
-                    shim_->GetLaunchAppCallback());
+        ->OnShimConnected(host_remote_.BindNewPipeAndPassReceiver(),
+                          std::move(app_shim_info),
+                          shim_->GetOnShimConnectedCallback());
   }
 
-  apps::AppShimLaunchResult GetLaunchResult() {
+  chrome::mojom::AppShimLaunchResult GetLaunchResult() {
     RunUntilIdle();
     return shim_->GetLaunchResult();
   }
 
-  void SimulateDisconnect() { host_ptr_.reset(); }
+  void SimulateDisconnect() { host_remote_.reset(); }
 
  protected:
   // AppShimHostBootstrap::Client:
   void OnShimProcessConnected(
       std::unique_ptr<AppShimHostBootstrap> bootstrap) override {
     ++launch_count_;
-    if (bootstrap->GetLaunchType() == apps::APP_SHIM_LAUNCH_NORMAL)
+    if (bootstrap->GetLaunchType() == chrome::mojom::AppShimLaunchType::kNormal)
       ++launch_now_count_;
     host_ = std::make_unique<TestingAppShimHost>(this, bootstrap->GetAppId(),
                                                  bootstrap->GetProfilePath());
-    if (launch_result_ == apps::APP_SHIM_LAUNCH_SUCCESS)
+    if (launch_result_ == chrome::mojom::AppShimLaunchResult::kSuccess)
       host_->OnBootstrapConnected(std::move(bootstrap));
     else
       bootstrap->OnFailedToConnectToHost(launch_result_);
@@ -162,12 +173,15 @@ class AppShimHostTest : public testing::Test,
     ++close_count_;
   }
   void OnShimFocus(AppShimHost* host,
-                   apps::AppShimFocusType focus_type,
+                   chrome::mojom::AppShimFocusType focus_type,
                    const std::vector<base::FilePath>& file) override {
     ++focus_count_;
   }
+  void OnShimSelectedProfile(AppShimHost* host,
+                             const base::FilePath& profile_path) override {}
 
-  apps::AppShimLaunchResult launch_result_ = apps::APP_SHIM_LAUNCH_SUCCESS;
+  chrome::mojom::AppShimLaunchResult launch_result_ =
+      chrome::mojom::AppShimLaunchResult::kSuccess;
   int launch_count_ = 0;
   int launch_now_count_ = 0;
   int close_count_ = 0;
@@ -189,24 +203,24 @@ class AppShimHostTest : public testing::Test,
   // AppShimHost will destroy itself in AppShimHost::Close, so use a weak
   // pointer here to avoid lifetime issues.
   std::unique_ptr<TestingAppShimHost> host_;
-  chrome::mojom::AppShimHostPtr host_ptr_;
+  mojo::Remote<chrome::mojom::AppShimHost> host_remote_;
 
   DISALLOW_COPY_AND_ASSIGN(AppShimHostTest);
 };
 
 }  // namespace
 
-TEST_F(AppShimHostTest, TestLaunchAppWithHandler) {
+TEST_F(AppShimHostTest, TestOnShimConnectedWithHandler) {
   AppShimHostBootstrap::SetClient(this);
-  LaunchApp(apps::APP_SHIM_LAUNCH_NORMAL);
+  DoOnShimConnected(chrome::mojom::AppShimLaunchType::kNormal);
   EXPECT_EQ(kTestAppId, host()->GetAppId());
-  EXPECT_EQ(apps::APP_SHIM_LAUNCH_SUCCESS, GetLaunchResult());
+  EXPECT_EQ(chrome::mojom::AppShimLaunchResult::kSuccess, GetLaunchResult());
   EXPECT_EQ(1, launch_count_);
   EXPECT_EQ(1, launch_now_count_);
   EXPECT_EQ(0, focus_count_);
   EXPECT_EQ(0, close_count_);
 
-  GetMojoHost()->FocusApp(apps::APP_SHIM_FOCUS_NORMAL,
+  GetMojoHost()->FocusApp(chrome::mojom::AppShimFocusType::kNormal,
                           std::vector<base::FilePath>());
   RunUntilIdle();
   EXPECT_EQ(1, focus_count_);
@@ -220,9 +234,9 @@ TEST_F(AppShimHostTest, TestLaunchAppWithHandler) {
 
 TEST_F(AppShimHostTest, TestNoLaunchNow) {
   AppShimHostBootstrap::SetClient(this);
-  LaunchApp(apps::APP_SHIM_LAUNCH_REGISTER_ONLY);
+  DoOnShimConnected(chrome::mojom::AppShimLaunchType::kRegisterOnly);
   EXPECT_EQ(kTestAppId, host()->GetAppId());
-  EXPECT_EQ(apps::APP_SHIM_LAUNCH_SUCCESS, GetLaunchResult());
+  EXPECT_EQ(chrome::mojom::AppShimLaunchResult::kSuccess, GetLaunchResult());
   EXPECT_EQ(1, launch_count_);
   EXPECT_EQ(0, launch_now_count_);
   EXPECT_EQ(0, focus_count_);
@@ -232,8 +246,9 @@ TEST_F(AppShimHostTest, TestNoLaunchNow) {
 
 TEST_F(AppShimHostTest, TestFailLaunch) {
   AppShimHostBootstrap::SetClient(this);
-  launch_result_ = apps::APP_SHIM_LAUNCH_APP_NOT_FOUND;
-  LaunchApp(apps::APP_SHIM_LAUNCH_NORMAL);
-  EXPECT_EQ(apps::APP_SHIM_LAUNCH_APP_NOT_FOUND, GetLaunchResult());
+  launch_result_ = chrome::mojom::AppShimLaunchResult::kAppNotFound;
+  DoOnShimConnected(chrome::mojom::AppShimLaunchType::kNormal);
+  EXPECT_EQ(chrome::mojom::AppShimLaunchResult::kAppNotFound,
+            GetLaunchResult());
   AppShimHostBootstrap::SetClient(nullptr);
 }

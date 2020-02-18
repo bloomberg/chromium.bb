@@ -22,12 +22,12 @@ import org.chromium.chrome.browser.download.home.toolbar.ToolbarCoordinator;
 import org.chromium.chrome.browser.download.items.OfflineContentAggregatorFactory;
 import org.chromium.chrome.browser.gesturenav.HistoryNavigationDelegate;
 import org.chromium.chrome.browser.gesturenav.HistoryNavigationLayout;
-import org.chromium.chrome.browser.preferences.PreferencesLauncher;
-import org.chromium.chrome.browser.preferences.download.DownloadPreferences;
-import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.settings.PreferencesLauncher;
+import org.chromium.chrome.browser.settings.download.DownloadPreferences;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
 import org.chromium.chrome.download.R;
+import org.chromium.components.feature_engagement.Tracker;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 
 import java.io.Closeable;
@@ -53,18 +53,18 @@ class DownloadManagerCoordinatorImpl
     private boolean mMuteFilterChanges;
 
     /** Builds a {@link DownloadManagerCoordinatorImpl} instance. */
-    public DownloadManagerCoordinatorImpl(Profile profile, Activity activity,
-            DownloadManagerUiConfig config, SnackbarManager snackbarManager,
-            ModalDialogManager modalDialogManager) {
+    public DownloadManagerCoordinatorImpl(Activity activity, DownloadManagerUiConfig config,
+            SnackbarManager snackbarManager, ModalDialogManager modalDialogManager, Tracker tracker,
+            FaviconProvider faviconProvider) {
         mActivity = activity;
         mDeleteCoordinator = new DeleteUndoCoordinator(snackbarManager);
         mSelectionDelegate = new SelectionDelegate<ListItem>();
         mListCoordinator = new DateOrderedListCoordinator(mActivity, config,
                 OfflineContentAggregatorFactory.get(), mDeleteCoordinator::showSnackbar,
                 mSelectionDelegate, this::notifyFilterChanged, createDateOrderedListObserver(),
-                modalDialogManager);
+                modalDialogManager, faviconProvider);
         mToolbarCoordinator = new ToolbarCoordinator(mActivity, this, mListCoordinator,
-                mSelectionDelegate, config.isSeparateActivity, profile);
+                mSelectionDelegate, config.isSeparateActivity, tracker);
 
         initializeView();
         RecordUserAction.record("Android.DownloadManager.Open");
@@ -138,11 +138,6 @@ class DownloadManagerCoordinatorImpl
         try (FilterChangeBlock block = new FilterChangeBlock()) {
             mListCoordinator.setSelectedFilter(Filters.fromUrl(url));
         }
-    }
-
-    @Override
-    public void showPrefetchSection() {
-        updateForUrl(Filters.toUrl(Filters.FilterType.PREFETCHED));
     }
 
     @Override

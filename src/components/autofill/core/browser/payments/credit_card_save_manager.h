@@ -19,10 +19,13 @@
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/payments/credit_card_save_strike_database.h"
+#include "components/autofill/core/browser/payments/legal_message_line.h"
 #include "components/autofill/core/browser/payments/local_card_migration_strike_database.h"
 #include "components/autofill/core/browser/payments/payments_client.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "url/origin.h"
+
+class SaveCardOfferObserver;
 
 namespace autofill {
 
@@ -79,12 +82,14 @@ class CreditCardSaveManager {
   // particular actions occur.
   class ObserverForTest {
    public:
-    virtual void OnOfferLocalSave() = 0;
-    virtual void OnDecideToRequestUploadSave() = 0;
-    virtual void OnReceivedGetUploadDetailsResponse() = 0;
-    virtual void OnSentUploadCardRequest() = 0;
-    virtual void OnReceivedUploadCardResponse() = 0;
-    virtual void OnStrikeChangeComplete() = 0;
+    virtual ~ObserverForTest() {}
+    virtual void OnOfferLocalSave() {}
+    virtual void OnDecideToRequestUploadSave() {}
+    virtual void OnReceivedGetUploadDetailsResponse() {}
+    virtual void OnSentUploadCardRequest() {}
+    virtual void OnReceivedUploadCardResponse() {}
+    virtual void OnShowCardSavedFeedback() {}
+    virtual void OnStrikeChangeComplete() {}
   };
 
   // The parameters should outlive the CreditCardSaveManager.
@@ -138,10 +143,14 @@ class CreditCardSaveManager {
   friend class TestCreditCardSaveManager;
   friend class SaveCardBubbleViewsFullFormBrowserTest;
   friend class SaveCardInfobarEGTestHelper;
+  friend class ::SaveCardOfferObserver;
+  FRIEND_TEST_ALL_PREFIXES(
+      SaveCardBubbleViewsFullFormBrowserTestWithAutofillUpstream,
+      StrikeDatabase_Upload_FullFlowTest);
   FRIEND_TEST_ALL_PREFIXES(SaveCardBubbleViewsFullFormBrowserTest,
                            StrikeDatabase_Local_FullFlowTest);
-  FRIEND_TEST_ALL_PREFIXES(SaveCardBubbleViewsFullFormBrowserTest,
-                           StrikeDatabase_Upload_FullFlowTest);
+  FRIEND_TEST_ALL_PREFIXES(SaveCardBubbleViewsFullFormBrowserTestForStatusChip,
+                           Feedback_CardSavingAnimation);
 
   // Returns the CreditCardSaveStrikeDatabase for |client_|.
   CreditCardSaveStrikeDatabase* GetCreditCardSaveStrikeDatabase();
@@ -210,7 +219,7 @@ class CreditCardSaveManager {
       const AutofillClient::UserProvidedCardDetails&
           user_provided_card_details);
 
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_IOS)
   // Upload the card details with the user provided cardholder_name.
   // Only relevant for mobile as fix flow is two steps on mobile compared to
   // one step on desktop.
@@ -221,7 +230,7 @@ class CreditCardSaveManager {
   // to one step on desktop.
   void OnUserDidAcceptExpirationDateFixFlow(const base::string16& month,
                                             const base::string16& year);
-#endif  // defined(OS_ANDROID)
+#endif  // defined(OS_ANDROID) || defined(OS_IOS)
 
   // Helper function that calls SendUploadCardRequest by setting
   // UserProvidedCardDetails.
@@ -332,8 +341,8 @@ class CreditCardSaveManager {
   // The origin of the top level frame from which a form is uploaded.
   url::Origin pending_upload_request_origin_;
 
-  // The returned legal message from a GetUploadDetails call to Google Payments.
-  std::unique_ptr<base::DictionaryValue> legal_message_;
+  // The parsed lines from the legal message returned from GetUploadDetails.
+  LegalMessageLines legal_message_lines_;
 
   std::unique_ptr<CreditCardSaveStrikeDatabase>
       credit_card_save_strike_database_;

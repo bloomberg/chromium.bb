@@ -34,9 +34,9 @@ import re
 
 from blinkpy.common.path_finder import WEB_TESTS_LAST_COMPONENT
 from blinkpy.common.memoized import memoized
-from blinkpy.common.net.buildbot import Build
+from blinkpy.common.net.results_fetcher import Build
 from blinkpy.tool.commands.command import Command
-from blinkpy.web_tests.controllers.test_result_writer import TestResultWriter
+from blinkpy.web_tests.models import test_failures
 from blinkpy.web_tests.models.test_expectations import TestExpectations
 from blinkpy.web_tests.port import base, factory
 
@@ -101,12 +101,12 @@ class AbstractRebaseliningCommand(Command):
     def _file_name_for_actual_result(self, test_name, suffix):
         # output_filename takes extensions starting with '.'.
         return self._host_port.output_filename(
-            test_name, TestResultWriter.FILENAME_SUFFIX_ACTUAL, '.' + suffix)
+            test_name, test_failures.FILENAME_SUFFIX_ACTUAL, '.' + suffix)
 
     def _file_name_for_expected_result(self, test_name, suffix):
         # output_filename takes extensions starting with '.'.
         return self._host_port.output_filename(
-            test_name, TestResultWriter.FILENAME_SUFFIX_EXPECTED, '.' + suffix)
+            test_name, test_failures.FILENAME_SUFFIX_EXPECTED, '.' + suffix)
 
 
 class ChangeSet(object):
@@ -312,7 +312,7 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
             if options.results_directory:
                 args.extend(['--results-directory', options.results_directory])
 
-            step_name = self._tool.buildbot.get_layout_test_step_name(build)
+            step_name = self._tool.results_fetcher.get_layout_test_step_name(build)
             if step_name:
                 args.extend(['--step-name', step_name])
 
@@ -483,7 +483,7 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
         test_result = self._result_for_test(test, build)
         if not test_result:
             return set()
-        return TestExpectations.suffixes_for_test_result(test_result)
+        return test_result.suffixes_for_test_result()
 
     def _test_passed_unexpectedly(self, test, build, port_name):
         """Determines if a test passed unexpectedly in a build.
@@ -512,7 +512,7 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
     def _result_for_test(self, test, build):
         # We need full results to know if a test passed or was skipped.
         # TODO(robertma): Make memoized support kwargs, and use full=True here.
-        results = self._tool.buildbot.fetch_results(build, True)
+        results = self._tool.results_fetcher.fetch_results(build, True)
         if not results:
             _log.debug('No results found for build %s', build)
             return None

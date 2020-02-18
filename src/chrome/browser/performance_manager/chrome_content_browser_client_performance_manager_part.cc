@@ -9,17 +9,19 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/threading/sequenced_task_runner_handle.h"
-#include "chrome/browser/performance_manager/graph/process_node_impl.h"
-#include "chrome/browser/performance_manager/performance_manager.h"
-#include "chrome/browser/performance_manager/render_process_user_data.h"
+#include "components/performance_manager/graph/process_node_impl.h"
+#include "components/performance_manager/performance_manager_impl.h"
+#include "components/performance_manager/public/mojom/coordination_unit.mojom.h"
+#include "components/performance_manager/render_process_user_data.h"
 #include "content/public/browser/render_process_host.h"
-#include "services/resource_coordinator/public/mojom/coordination_unit.mojom.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 
 namespace {
 
 void BindProcessNode(
     int render_process_host_id,
-    resource_coordinator::mojom::ProcessCoordinationUnitRequest request) {
+    mojo::PendingReceiver<performance_manager::mojom::ProcessCoordinationUnit>
+        receiver) {
   content::RenderProcessHost* render_process_host =
       content::RenderProcessHost::FromID(render_process_host_id);
   if (!render_process_host)
@@ -29,14 +31,11 @@ void BindProcessNode(
       performance_manager::RenderProcessUserData::GetForRenderProcessHost(
           render_process_host);
 
-  performance_manager::PerformanceManager* performance_manager =
-      performance_manager::PerformanceManager::GetInstance();
-  DCHECK(performance_manager);
-
-  performance_manager->task_runner()->PostTask(
+  DCHECK(performance_manager::PerformanceManagerImpl::GetInstance());
+  performance_manager::PerformanceManagerImpl::GetTaskRunner()->PostTask(
       FROM_HERE, base::BindOnce(&performance_manager::ProcessNodeImpl::Bind,
                                 base::Unretained(user_data->process_node()),
-                                std::move(request)));
+                                std::move(receiver)));
 }
 
 }  // namespace

@@ -218,12 +218,21 @@ def _copy_func_details(func, funcopy):
     funcopy.__name__ = func.__name__
     funcopy.__doc__ = func.__doc__
     #funcopy.__dict__.update(func.__dict__)
-    funcopy.__module__ = func.__module__
+    try:
+        funcopy.__module__ = func.__module__
+    except AttributeError:
+        pass
     if not inPy3k:
         funcopy.func_defaults = func.func_defaults
         return
-    funcopy.__defaults__ = func.__defaults__
-    funcopy.__kwdefaults__ = func.__kwdefaults__
+    try:
+        funcopy.__defaults__ = func.__defaults__
+    except AttributeError:
+        pass
+    try:
+        funcopy.__kwdefaults__ = func.__kwdefaults__
+    except AttributeError:
+        pass
 
 
 def _callable(obj):

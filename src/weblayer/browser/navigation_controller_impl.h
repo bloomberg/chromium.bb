@@ -19,12 +19,12 @@
 #endif
 
 namespace weblayer {
-class BrowserControllerImpl;
+class TabImpl;
 
 class NavigationControllerImpl : public NavigationController,
                                  public content::WebContentsObserver {
  public:
-  explicit NavigationControllerImpl(BrowserControllerImpl* browser_controller);
+  explicit NavigationControllerImpl(TabImpl* tab);
   ~NavigationControllerImpl() override;
 
 #if defined(OS_ANDROID)
@@ -39,6 +39,13 @@ class NavigationControllerImpl : public NavigationController,
   }
   void GoForward(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj) {
     GoForward();
+  }
+  bool CanGoBack(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj) {
+    return CanGoBack();
+  }
+  bool CanGoForward(JNIEnv* env,
+                    const base::android::JavaParamRef<jobject>& obj) {
+    return CanGoForward();
   }
   void Reload(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj) {
     Reload();
@@ -68,6 +75,8 @@ class NavigationControllerImpl : public NavigationController,
   void Navigate(const GURL& url) override;
   void GoBack() override;
   void GoForward() override;
+  bool CanGoBack() override;
+  bool CanGoForward() override;
   void Reload() override;
   void Stop() override;
   int GetNavigationListSize() override;
@@ -83,8 +92,13 @@ class NavigationControllerImpl : public NavigationController,
       content::NavigationHandle* navigation_handle) override;
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
+  void DidStartLoading() override;
+  void DidStopLoading() override;
+  void LoadProgressChanged(double progress) override;
+  void DidFirstVisuallyNonEmptyPaint() override;
 
-  BrowserControllerImpl* browser_controller_;
+  void NotifyLoadStateChanged();
+
   base::ObserverList<NavigationObserver>::Unchecked observers_;
   std::map<content::NavigationHandle*, std::unique_ptr<NavigationImpl>>
       navigation_map_;

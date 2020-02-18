@@ -38,6 +38,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/optional.h"
 #include "services/network/public/cpp/request_mode.h"
+#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/resource_request_blocked_reason.h"
 #include "third_party/blink/public/platform/task_type.h"
@@ -58,6 +59,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource_error.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
 #include "third_party/blink/renderer/platform/network/http_parsers.h"
+#include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/timer.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
@@ -95,7 +97,7 @@ void HTTPRequestHeaderValidator::VisitHeader(const WebString& name,
 // It forwards its ThreadableLoaderClient notifications to a
 // WebAssociatedURLLoaderClient.
 class WebAssociatedURLLoaderImpl::ClientAdapter final
-    : public GarbageCollectedFinalized<ClientAdapter>,
+    : public GarbageCollected<ClientAdapter>,
       public ThreadableLoaderClient {
   USING_GARBAGE_COLLECTED_MIXIN(ClientAdapter);
 

@@ -33,7 +33,6 @@
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_type.h"
 #include "third_party/re2/src/re2/re2.h"
-#include "ui/base/user_activity/user_activity_detector.h"
 
 namespace chromeos {
 
@@ -64,7 +63,7 @@ DemoModeResourcesRemover::RemovalResult RemoveDirectory(
   if (!base::DirectoryExists(path) || base::IsDirectoryEmpty(path))
     return DemoModeResourcesRemover::RemovalResult::kNotFound;
 
-  if (!base::DeleteFile(path, true /*recursive*/))
+  if (!base::DeleteFileRecursively(path))
     return DemoModeResourcesRemover::RemovalResult::kFailed;
 
   return DemoModeResourcesRemover::RemovalResult::kSuccess;
@@ -250,9 +249,7 @@ void DemoModeResourcesRemover::OverrideTimeForTesting(
 
 DemoModeResourcesRemover::DemoModeResourcesRemover(PrefService* local_state)
     : local_state_(local_state),
-      tick_clock_(base::DefaultTickClock::GetInstance()),
-      cryptohome_observer_(this),
-      user_activity_observer_(this) {
+      tick_clock_(base::DefaultTickClock::GetInstance()) {
   CHECK(!g_instance);
   g_instance = this;
 

@@ -28,16 +28,6 @@ TabStripModelChange::Remove::~Remove() = default;
 //
 TabStripModelChange::TabStripModelChange() = default;
 
-TabStripModelChange::GroupChange::GroupChange() = default;
-
-TabStripModelChange::GroupChange::GroupChange(const GroupChange& other) =
-    default;
-
-TabStripModelChange::GroupChange& TabStripModelChange::GroupChange::operator=(
-    const GroupChange& other) = default;
-
-TabStripModelChange::GroupChange::~GroupChange() = default;
-
 TabStripModelChange::TabStripModelChange(Insert delta)
     : TabStripModelChange(Type::kInserted,
                           std::make_unique<Insert>(std::move(delta))) {}
@@ -53,10 +43,6 @@ TabStripModelChange::TabStripModelChange(Move delta)
 TabStripModelChange::TabStripModelChange(Replace delta)
     : TabStripModelChange(Type::kReplaced,
                           std::make_unique<Replace>(std::move(delta))) {}
-
-TabStripModelChange::TabStripModelChange(GroupChange delta)
-    : TabStripModelChange(Type::kGroupChanged,
-                          std::make_unique<GroupChange>(std::move(delta))) {}
 
 TabStripModelChange::~TabStripModelChange() = default;
 
@@ -78,12 +64,6 @@ const TabStripModelChange::Move* TabStripModelChange::GetMove() const {
 const TabStripModelChange::Replace* TabStripModelChange::GetReplace() const {
   DCHECK_EQ(type_, Type::kReplaced);
   return static_cast<const Replace*>(delta_.get());
-}
-
-const TabStripModelChange::GroupChange* TabStripModelChange::GetGroupChange()
-    const {
-  DCHECK_EQ(type_, Type::kGroupChanged);
-  return static_cast<const GroupChange*>(delta_.get());
 }
 
 TabStripModelChange::TabStripModelChange(Type type,
@@ -113,6 +93,14 @@ TabStripSelectionChange& TabStripSelectionChange::operator=(
     const TabStripSelectionChange& other) = default;
 
 ////////////////////////////////////////////////////////////////////////////////
+// TabGroupChange
+//
+TabGroupChange::TabGroupChange(TabGroupId group, Type type)
+    : group(group), type(type) {}
+
+TabGroupChange::~TabGroupChange() = default;
+
+////////////////////////////////////////////////////////////////////////////////
 // TabStripModelObserver
 //
 TabStripModelObserver::TabStripModelObserver() {}
@@ -130,10 +118,7 @@ void TabStripModelObserver::OnTabStripModelChanged(
     const TabStripModelChange& change,
     const TabStripSelectionChange& selection) {}
 
-void TabStripModelObserver::OnTabGroupVisualDataChanged(
-    TabStripModel* tab_strip_model,
-    TabGroupId group,
-    const TabGroupVisualData* visual_data) {}
+void TabStripModelObserver::OnTabGroupChanged(const TabGroupChange& change) {}
 
 void TabStripModelObserver::TabChangedAt(WebContents* contents,
                                          int index,
@@ -149,6 +134,10 @@ void TabStripModelObserver::TabPinnedStateChanged(
 void TabStripModelObserver::TabBlockedStateChanged(WebContents* contents,
                                                    int index) {
 }
+
+void TabStripModelObserver::TabGroupedStateChanged(
+    base::Optional<TabGroupId> group,
+    int index) {}
 
 void TabStripModelObserver::TabStripEmpty() {
 }

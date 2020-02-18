@@ -47,7 +47,7 @@ class DOMArrayBuffer;
 class KURL;
 
 class MODULES_EXPORT WebSocketChannel
-    : public GarbageCollectedFinalized<WebSocketChannel> {
+    : public GarbageCollected<WebSocketChannel> {
  public:
   enum class SendResult { SENT_SYNCHRONOUSLY, CALLBACK_WILL_BE_CALLED };
 
@@ -77,8 +77,8 @@ class MODULES_EXPORT WebSocketChannel
   virtual SendResult Send(const std::string&,
                           base::OnceClosure completion_callback) = 0;
   virtual SendResult Send(const DOMArrayBuffer&,
-                          unsigned byte_offset,
-                          unsigned byte_length,
+                          size_t byte_offset,
+                          size_t byte_length,
                           base::OnceClosure completion_callback) = 0;
 
   // Blobs are always sent asynchronously. No callers currently need completion
@@ -101,6 +101,10 @@ class MODULES_EXPORT WebSocketChannel
 
   // Do not call any methods after calling this method.
   virtual void Disconnect() = 0;  // Will suppress didClose().
+
+  // Cancel the WebSocket handshake. Does nothing if the connection is already
+  // established. Do not call any other methods after this one.
+  virtual void CancelHandshake() = 0;
 
   // Clients can call ApplyBackpressure() to indicate that they want to stop
   // receiving new messages. WebSocketChannelClient::DidReceive*Message() may

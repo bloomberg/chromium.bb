@@ -43,10 +43,11 @@
 <translation id="2441202986792279177">التبديل بين النوافذ بسرعة</translation>
 <translation id="2454251766545114447">تصغير العرض</translation>
 <translation id="2478303094958140141">‏تفعيل ChromeVox (التعليقات والملاحظات المنطوقة) أو إيقافه</translation>
+<translation id="2480851840841871861">‏فتح "مساعد Google"</translation>
 <translation id="2488661730534396940">تفعيل المكتب على يمين الصفحة</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2530339807289914946">التمرير إلى أسفل صفحة الويب</translation>
-<translation id="2574014812750545982">إعادة ضبط مستوى التكبير/التصغير في الصفحة</translation>
+<translation id="2574014812750545982">إعادة ضبط مستوى التكبير أو التصغير في الصفحة</translation>
 <translation id="2596078834055697711">أخذ لقطة شاشة للنافذة</translation>
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />، ثم <ph name="TAB" /> أو <ph name="RIGHT" /></translation>
 <translation id="2750942583782703988">إعادة تحميل الصفحة الحالية</translation>
@@ -97,7 +98,9 @@
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> أو <ph name="ENTER" /></translation>
 <translation id="4240486403425279990">وضع "النظرة العامة"</translation>
 <translation id="4382340674111381977">الرجوع إلى الصفحة السابقة</translation>
+<translation id="4458670250301149821">نقل رمز تطبيق داخل مجلد في شبكة التطبيق أو خارجه</translation>
 <translation id="4472417192667361414">النظام وإعدادات العرض</translation>
+<translation id="449214506787633354"><ph name="CTRL" />، ثم <ph name="LEFT" /> أو <ph name="RIGHT" /> أو <ph name="UP" /> أو <ph name="DOWN" /></translation>
 <translation id="4556221320735744018">الاطلاع على "مساعد اختصارات لوحة المفاتيح"</translation>
 <translation id="4628718545549558538">فتح منطقة الحالة (التي تظهر فيها صورة الحساب)</translation>
 <translation id="4642092649622328492">أخذ لقطة شاشة جزئية</translation>
@@ -169,6 +172,7 @@
 <translation id="7439718573248533901">حذف الحرف التالي (حذف باتجاه الأمام)</translation>
 <translation id="7500368597227394048">واصلة</translation>
 <translation id="7611271430932669992">نقل التركيز إلى النوافذ المنبثقة ومربعات الحوار</translation>
+<translation id="7635348532214572995">نقل رمز تطبيق داخل شبكة التطبيق</translation>
 <translation id="766326951329901120">لصق المحتوى من الحافظة كنص عادي</translation>
 <translation id="7703010453515335249">القوس الأيسر</translation>
 <translation id="7724603315864178912">قص</translation>
@@ -178,11 +182,11 @@
 <translation id="8026334261755873520">محو بيانات التصفُّح</translation>
 <translation id="8130528849632411619">الانتقال إلى بداية المستند</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> أو <ph name="E" /></translation>
-<translation id="8232835244134740473">يمكنك تبديل التركيز بين: منطقة الحالة (في مكان ظهور صورة حسابك) ومشغِّل التطبيقات وشريط العناوين وشريط الإشارات (إن كان ظاهرًا) وصفحة الويب المفتوحة وشريط التنزيلات (إن كان ظاهرًا).</translation>
+<translation id="8232835244134740473">يمكنك تبديل التركيز بين: منطقة الحالة (في مكان ظهور صورة حسابك) ومشغِّل التطبيقات وشريط العناوين وشريط الإشارات (إن كان ظاهرًا) وصفحة الويب المفتوحة وشريط عمليات التنزيل (إن كان ظاهرًا).</translation>
 <translation id="8234414138295101081">تدوير الشاشة بزاوية 90 درجة</translation>
 <translation id="8241665785394195545">القوس الأيمن</translation>
 <translation id="8264941229485248811">إظهار مراقب "أدوات المطوِّرين" أو إخفاؤه</translation>
-<translation id="836869401750819675">فتح صفحة "التنزيلات"</translation>
+<translation id="836869401750819675">فتح صفحة "عمليات التنزيل"</translation>
 <translation id="8388247778047144397">اسحب الرابط إلى منطقة فارغة على شريط علامات التبويب</translation>
 <translation id="8389638407792712197">فتح نافذة جديدة</translation>
 <translation id="8429696719963529183">‏استخدام مفاتيح F (من F1 إلى F12)</translation>
@@ -203,6 +207,7 @@
 <translation id="9041599225465145264">لصق المحتوى من الحافظة</translation>
 <translation id="9052808072970550123">التبديل إلى المستخدم التالي</translation>
 <translation id="906458777597946297">تكبير النافذة</translation>
+<translation id="9072882242928138086"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="SHIFT" />، ثم <ph name="LEFT" /> أو <ph name="RIGHT" /> أو <ph name="UP" /> أو <ph name="DOWN" /></translation>
 <translation id="9091855755813503076">الانتقال إلى بداية السطر</translation>
 <translation id="9106898733795143799">الصفحة ومتصفّح الويب</translation>
 <translation id="9162942292291287644">لم يتم العثور على أي نتائج بحث <ph name="QUERY" /></translation>

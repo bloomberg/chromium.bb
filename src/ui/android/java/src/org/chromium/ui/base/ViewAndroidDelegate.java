@@ -18,8 +18,9 @@ import android.view.inputmethod.InputConnection;
 import android.widget.FrameLayout.LayoutParams;
 import android.widget.ImageView;
 
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.ObserverList;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.compat.ApiHelperForN;
@@ -347,13 +348,10 @@ public class ViewAndroidDelegate {
     public void onBottomControlsChanged(int bottomControlsOffsetY, int bottomContentOffsetY) {}
 
     /**
-     * Returns the bottom system window inset in pixels. The system window inset represents the area
-     * of a full-screen window that is partially or fully obscured by the status bar, navigation
-     * bar, IME or other system windows.
-     * @return The bottom system window inset.
+     * @return The Visual Viewport bottom inset in pixels.
      */
     @CalledByNative
-    public int getSystemWindowInsetBottom() {
+    protected int getViewportInsetBottom() {
         return 0;
     }
 

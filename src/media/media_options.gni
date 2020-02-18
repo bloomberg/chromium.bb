@@ -29,6 +29,13 @@ media_subcomponent_deps = [
   "//media/video",
 ]
 
+if (is_fuchsia) {
+  media_subcomponent_deps += [
+    "//media/fuchsia/cdm",
+    "//media/fuchsia/common",
+  ]
+}
+
 declare_args() {
   # Allows distributions to link pulseaudio directly (DT_NEEDED) instead of
   # using dlopen. This helps with automated detection of ABI mismatches and
@@ -56,34 +63,31 @@ declare_args() {
   # Enables AC3/EAC3 audio demuxing. This is enabled only on Chromecast, since
   # it only provides demuxing, and is only useful for AC3/EAC3 audio
   # pass-through to HDMI sink on Chromecast.
-  enable_ac3_eac3_audio_demuxing = proprietary_codecs && is_chromecast
+  enable_platform_ac3_eac3_audio = proprietary_codecs && is_chromecast
 
-  enable_mpeg_h_audio_demuxing = proprietary_codecs && is_chromecast
+  enable_platform_mpeg_h_audio = proprietary_codecs && is_chromecast
 
   enable_mse_mpeg2ts_stream_parser =
       proprietary_codecs && (is_chromecast || is_fuchsia || use_fuzzing_engine)
 
-  # Enable parsing for the 'cbcs' encryption scheme added by MPEG Common
-  # Encryption 3rd Edition (ISO/IEC 23001-7), published 02/15/2016.
-  enable_cbcs_encryption_scheme =
-      is_chromecast || is_mac || is_win || is_linux || is_android
-
   # Enable HEVC/H265 demuxing. Actual decoding must be provided by the
-  # platform. Enable by default for Chromecast.
-  enable_hevc_demuxing = proprietary_codecs && is_chromecast
+  # platform. Enabled by default for Chromecast.
+  enable_platform_hevc = proprietary_codecs && is_chromecast
 
   # Enable Dolby Vision demuxing. Enable by default for Chromecast. Actual
   # decoding must be provided by the platform. Note some Dolby Vision profiles
-  # which are encoded using HEVC require |enable_hevc_demuxing| to be enabled.
-  enable_dolby_vision_demuxing = proprietary_codecs && is_chromecast
+  # which are encoded using HEVC require |enable_platform_hevc| to be enabled.
+  enable_platform_dolby_vision = proprietary_codecs && is_chromecast
 
   # Enable HLS with SAMPLE-AES decryption.
-  enable_hls_sample_aes = proprietary_codecs && is_chromecast
+  enable_hls_sample_aes = proprietary_codecs && (is_chromecast || is_fuchsia)
 
   # Enable logging override, e.g. enable DVLOGs at build time. Must not be
   # enabled when |use_jumbo_build| is true, in which case multiple .cc files
   # are combined and we could override more logging than expected.
-  enable_logging_override = !use_jumbo_build && is_chromecast
+  # TODO(1021274): Disable this for Fuchsia once we're confident on the media
+  # playback quality.
+  enable_logging_override = !use_jumbo_build && (is_chromecast || is_fuchsia)
 
   enable_dav1d_decoder = !is_android && !is_ios
 }
@@ -179,6 +183,9 @@ declare_args() {
   # (which takes precedence), or by setting |alternate_cdm_storage_id_key|.
   # The key must be a string of at least 32 characters.
   alternate_cdm_storage_id_key = ""
+
+  # This feature is still under development. See crbug.com/641132.
+  enable_cdm_proxy = false
 }
 
 # This feature can only be enabled when using Mojo media. Furthermore, the
@@ -190,6 +197,9 @@ assert(
 
 assert(!enable_cdm_host_verification || is_mac || is_win,
        "CDM host verification is only supported on Mac and Windows.")
+
+assert(enable_library_cdms || !enable_cdm_proxy,
+       "CDM Proxy should only be enabled when library CDM is enabled.")
 
 _default_mojo_media_services = []
 _default_mojo_media_host = "none"

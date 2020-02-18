@@ -16,12 +16,12 @@
 
 #include "common/Assert.h"
 #include "utils/ComboRenderPipelineDescriptor.h"
-#include "utils/DawnHelpers.h"
+#include "utils/WGPUHelpers.h"
 
 class MultisampledRenderingTest : public DawnTest {
   protected:
-    void SetUp() override {
-        DawnTest::SetUp();
+    void TestSetUp() override {
+        DawnTest::TestSetUp();
 
         InitTexturesForTest();
     }
@@ -36,7 +36,7 @@ class MultisampledRenderingTest : public DawnTest {
         mDepthStencilView = mDepthStencilTexture.CreateView();
     }
 
-    dawn::RenderPipeline CreateRenderPipelineWithOneOutputForTest(bool testDepth) {
+    wgpu::RenderPipeline CreateRenderPipelineWithOneOutputForTest(bool testDepth) {
         const char* kFsOneOutputWithDepth =
             R"(#version 450
             layout(location = 0) out vec4 fragColor;
@@ -65,7 +65,7 @@ class MultisampledRenderingTest : public DawnTest {
         return CreateRenderPipelineForTest(fs, 1, testDepth);
     }
 
-    dawn::RenderPipeline CreateRenderPipelineWithTwoOutputsForTest() {
+    wgpu::RenderPipeline CreateRenderPipelineWithTwoOutputsForTest() {
         const char* kFsTwoOutputs =
             R"(#version 450
             layout(location = 0) out vec4 fragColor1;
@@ -82,12 +82,12 @@ class MultisampledRenderingTest : public DawnTest {
         return CreateRenderPipelineForTest(kFsTwoOutputs, 2, false);
     }
 
-    dawn::Texture CreateTextureForOutputAttachment(dawn::TextureFormat format,
+    wgpu::Texture CreateTextureForOutputAttachment(wgpu::TextureFormat format,
                                                    uint32_t sampleCount,
                                                    uint32_t mipLevelCount = 1,
                                                    uint32_t arrayLayerCount = 1) {
-        dawn::TextureDescriptor descriptor;
-        descriptor.dimension = dawn::TextureDimension::e2D;
+        wgpu::TextureDescriptor descriptor;
+        descriptor.dimension = wgpu::TextureDimension::e2D;
         descriptor.size.width = kWidth << (mipLevelCount - 1);
         descriptor.size.height = kHeight << (mipLevelCount - 1);
         descriptor.size.depth = 1;
@@ -95,45 +95,44 @@ class MultisampledRenderingTest : public DawnTest {
         descriptor.sampleCount = sampleCount;
         descriptor.format = format;
         descriptor.mipLevelCount = mipLevelCount;
-        descriptor.usage = dawn::TextureUsage::OutputAttachment | dawn::TextureUsage::CopySrc;
+        descriptor.usage = wgpu::TextureUsage::OutputAttachment | wgpu::TextureUsage::CopySrc;
         return device.CreateTexture(&descriptor);
     }
 
-    void EncodeRenderPassForTest(dawn::CommandEncoder commandEncoder,
-                                 const dawn::RenderPassDescriptor& renderPass,
-                                 const dawn::RenderPipeline& pipeline,
+    void EncodeRenderPassForTest(wgpu::CommandEncoder commandEncoder,
+                                 const wgpu::RenderPassDescriptor& renderPass,
+                                 const wgpu::RenderPipeline& pipeline,
                                  const float* uniformData,
                                  uint32_t uniformDataSize) {
-        dawn::Buffer uniformBuffer = utils::CreateBufferFromData(
-            device, uniformData, uniformDataSize, dawn::BufferUsage::Uniform);
-        dawn::BindGroup bindGroup =
-            utils::MakeBindGroup(device, mBindGroupLayout,
-                                 {{0, uniformBuffer, 0, uniformDataSize}});
+        wgpu::Buffer uniformBuffer = utils::CreateBufferFromData(
+            device, uniformData, uniformDataSize, wgpu::BufferUsage::Uniform);
+        wgpu::BindGroup bindGroup = utils::MakeBindGroup(device, pipeline.GetBindGroupLayout(0),
+                                                         {{0, uniformBuffer, 0, uniformDataSize}});
 
-        dawn::RenderPassEncoder renderPassEncoder = commandEncoder.BeginRenderPass(&renderPass);
+        wgpu::RenderPassEncoder renderPassEncoder = commandEncoder.BeginRenderPass(&renderPass);
         renderPassEncoder.SetPipeline(pipeline);
-        renderPassEncoder.SetBindGroup(0, bindGroup, 0, nullptr);
+        renderPassEncoder.SetBindGroup(0, bindGroup);
         renderPassEncoder.Draw(3, 1, 0, 0);
         renderPassEncoder.EndPass();
     }
 
     utils::ComboRenderPassDescriptor CreateComboRenderPassDescriptorForTest(
-        std::initializer_list<dawn::TextureView> colorViews,
-        std::initializer_list<dawn::TextureView> resolveTargetViews,
-        dawn::LoadOp colorLoadOp,
-        dawn::LoadOp depthStencilLoadOp,
+        std::initializer_list<wgpu::TextureView> colorViews,
+        std::initializer_list<wgpu::TextureView> resolveTargetViews,
+        wgpu::LoadOp colorLoadOp,
+        wgpu::LoadOp depthStencilLoadOp,
         bool hasDepthStencilAttachment) {
         ASSERT(colorViews.size() == resolveTargetViews.size());
 
-        constexpr dawn::Color kClearColor = {0.0f, 0.0f, 0.0f, 0.0f};
+        constexpr wgpu::Color kClearColor = {0.0f, 0.0f, 0.0f, 0.0f};
         constexpr float kClearDepth = 1.0f;
 
         utils::ComboRenderPassDescriptor renderPass(colorViews);
         uint32_t i = 0;
-        for (const dawn::TextureView& resolveTargetView : resolveTargetViews) {
-            renderPass.cColorAttachmentsInfoPtr[i]->loadOp = colorLoadOp;
-            renderPass.cColorAttachmentsInfoPtr[i]->clearColor = kClearColor;
-            renderPass.cColorAttachmentsInfoPtr[i]->resolveTarget = resolveTargetView;
+        for (const wgpu::TextureView& resolveTargetView : resolveTargetViews) {
+            renderPass.cColorAttachments[i].loadOp = colorLoadOp;
+            renderPass.cColorAttachments[i].clearColor = kClearColor;
+            renderPass.cColorAttachments[i].resolveTarget = resolveTargetView;
             ++i;
         }
 
@@ -148,8 +147,8 @@ class MultisampledRenderingTest : public DawnTest {
         return renderPass;
     }
 
-    void VerifyResolveTarget(const dawn::Color& inputColor,
-                             dawn::Texture resolveTexture,
+    void VerifyResolveTarget(const wgpu::Color& inputColor,
+                             wgpu::Texture resolveTexture,
                              uint32_t mipmapLevel = 0,
                              uint32_t arrayLayer = 0) {
         constexpr float kMSAACoverage = 0.5f;
@@ -171,19 +170,18 @@ class MultisampledRenderingTest : public DawnTest {
     constexpr static uint32_t kWidth = 3;
     constexpr static uint32_t kHeight = 3;
     constexpr static uint32_t kSampleCount = 4;
-    constexpr static dawn::TextureFormat kColorFormat = dawn::TextureFormat::RGBA8Unorm;
-    constexpr static dawn::TextureFormat kDepthStencilFormat =
-        dawn::TextureFormat::Depth24PlusStencil8;
+    constexpr static wgpu::TextureFormat kColorFormat = wgpu::TextureFormat::RGBA8Unorm;
+    constexpr static wgpu::TextureFormat kDepthStencilFormat =
+        wgpu::TextureFormat::Depth24PlusStencil8;
 
-    dawn::TextureView mMultisampledColorView;
-    dawn::Texture mResolveTexture;
-    dawn::TextureView mResolveView;
-    dawn::Texture mDepthStencilTexture;
-    dawn::TextureView mDepthStencilView;
-    dawn::BindGroupLayout mBindGroupLayout;
+    wgpu::TextureView mMultisampledColorView;
+    wgpu::Texture mResolveTexture;
+    wgpu::TextureView mResolveView;
+    wgpu::Texture mDepthStencilTexture;
+    wgpu::TextureView mDepthStencilView;
 
   private:
-    dawn::RenderPipeline CreateRenderPipelineForTest(const char* fs,
+    wgpu::RenderPipeline CreateRenderPipelineForTest(const char* fs,
                                                      uint32_t numColorAttachments,
                                                      bool hasDepthStencilAttachment) {
         utils::ComboRenderPipelineDescriptor pipelineDescriptor(device);
@@ -202,18 +200,10 @@ class MultisampledRenderingTest : public DawnTest {
         pipelineDescriptor.cFragmentStage.module =
             utils::CreateShaderModule(device, utils::SingleShaderStage::Fragment, fs);
 
-        mBindGroupLayout = utils::MakeBindGroupLayout(
-            device, {
-                        {0, dawn::ShaderStage::Fragment, dawn::BindingType::UniformBuffer},
-                    });
-        dawn::PipelineLayout pipelineLayout =
-            utils::MakeBasicPipelineLayout(device, &mBindGroupLayout);
-        pipelineDescriptor.layout = pipelineLayout;
-
         if (hasDepthStencilAttachment) {
             pipelineDescriptor.cDepthStencilState.format = kDepthStencilFormat;
             pipelineDescriptor.cDepthStencilState.depthWriteEnabled = true;
-            pipelineDescriptor.cDepthStencilState.depthCompare = dawn::CompareFunction::Less;
+            pipelineDescriptor.cDepthStencilState.depthCompare = wgpu::CompareFunction::Less;
             pipelineDescriptor.depthStencilState = &pipelineDescriptor.cDepthStencilState;
         }
 
@@ -221,33 +211,34 @@ class MultisampledRenderingTest : public DawnTest {
 
         pipelineDescriptor.colorStateCount = numColorAttachments;
         for (uint32_t i = 0; i < numColorAttachments; ++i) {
-            pipelineDescriptor.cColorStates[i]->format = kColorFormat;
+            pipelineDescriptor.cColorStates[i].format = kColorFormat;
         }
 
-        return device.CreateRenderPipeline(&pipelineDescriptor);
+        wgpu::RenderPipeline pipeline = device.CreateRenderPipeline(&pipelineDescriptor);
+        return pipeline;
     }
 };
 
 // Test using one multisampled color attachment with resolve target can render correctly.
 TEST_P(MultisampledRenderingTest, ResolveInto2DTexture) {
     constexpr bool kTestDepth = false;
-    dawn::CommandEncoder commandEncoder = device.CreateCommandEncoder();
-    dawn::RenderPipeline pipeline = CreateRenderPipelineWithOneOutputForTest(kTestDepth);
+    wgpu::CommandEncoder commandEncoder = device.CreateCommandEncoder();
+    wgpu::RenderPipeline pipeline = CreateRenderPipelineWithOneOutputForTest(kTestDepth);
 
-    constexpr dawn::Color kGreen = {0.0f, 0.8f, 0.0f, 0.8f};
+    constexpr wgpu::Color kGreen = {0.0f, 0.8f, 0.0f, 0.8f};
     constexpr uint32_t kSize = sizeof(kGreen);
 
     // Draw a green triangle.
     {
         utils::ComboRenderPassDescriptor renderPass = CreateComboRenderPassDescriptorForTest(
-            {mMultisampledColorView}, {mResolveView}, dawn::LoadOp::Clear, dawn::LoadOp::Clear,
+            {mMultisampledColorView}, {mResolveView}, wgpu::LoadOp::Clear, wgpu::LoadOp::Clear,
             kTestDepth);
 
         EncodeRenderPassForTest(commandEncoder, renderPass, pipeline, &kGreen.r, kSize);
     }
 
-    dawn::CommandBuffer commandBuffer = commandEncoder.Finish();
-    dawn::Queue queue = device.CreateQueue();
+    wgpu::CommandBuffer commandBuffer = commandEncoder.Finish();
+    wgpu::Queue queue = device.CreateQueue();
     queue.Submit(1, &commandBuffer);
 
     VerifyResolveTarget(kGreen, mResolveTexture);
@@ -255,23 +246,18 @@ TEST_P(MultisampledRenderingTest, ResolveInto2DTexture) {
 
 // Test multisampled rendering with depth test works correctly.
 TEST_P(MultisampledRenderingTest, MultisampledRenderingWithDepthTest) {
-    // TODO(hao.x.li@intel.com): Test failing on Metal with validation layer on, which blocks
-    // end2end tests run with validation layer in bots. Suppress this while we're fixing.
-    // See https://bugs.chromium.org/p/dawn/issues/detail?id=139
-    DAWN_SKIP_TEST_IF(IsMetal() && IsBackendValidationEnabled());
-
     constexpr bool kTestDepth = true;
-    dawn::CommandEncoder commandEncoder = device.CreateCommandEncoder();
-    dawn::RenderPipeline pipeline = CreateRenderPipelineWithOneOutputForTest(kTestDepth);
+    wgpu::CommandEncoder commandEncoder = device.CreateCommandEncoder();
+    wgpu::RenderPipeline pipeline = CreateRenderPipelineWithOneOutputForTest(kTestDepth);
 
-    constexpr dawn::Color kGreen = {0.0f, 0.8f, 0.0f, 0.8f};
-    constexpr dawn::Color kRed = {0.8f, 0.0f, 0.0f, 0.8f};
+    constexpr wgpu::Color kGreen = {0.0f, 0.8f, 0.0f, 0.8f};
+    constexpr wgpu::Color kRed = {0.8f, 0.0f, 0.0f, 0.8f};
 
     // In first render pass we draw a green triangle with depth value == 0.2f.
     {
-        utils::ComboRenderPassDescriptor renderPass = CreateComboRenderPassDescriptorForTest(
-            {mMultisampledColorView}, {mResolveView}, dawn::LoadOp::Clear, dawn::LoadOp::Clear,
-            true);
+        utils::ComboRenderPassDescriptor renderPass =
+            CreateComboRenderPassDescriptorForTest({mMultisampledColorView}, {mResolveView},
+                                                   wgpu::LoadOp::Clear, wgpu::LoadOp::Clear, true);
         std::array<float, 5> kUniformData = {kGreen.r, kGreen.g, kGreen.b, kGreen.a, // Color
                                              0.2f};                                  // depth
         constexpr uint32_t kSize = sizeof(kUniformData);
@@ -283,7 +269,7 @@ TEST_P(MultisampledRenderingTest, MultisampledRenderingWithDepthTest) {
     // the last render pass.
     {
         utils::ComboRenderPassDescriptor renderPass = CreateComboRenderPassDescriptorForTest(
-            {mMultisampledColorView}, {mResolveView}, dawn::LoadOp::Load, dawn::LoadOp::Load,
+            {mMultisampledColorView}, {mResolveView}, wgpu::LoadOp::Load, wgpu::LoadOp::Load,
             kTestDepth);
 
         std::array<float, 8> kUniformData = {kRed.r, kRed.g, kRed.b, kRed.a, // color
@@ -292,8 +278,8 @@ TEST_P(MultisampledRenderingTest, MultisampledRenderingWithDepthTest) {
         EncodeRenderPassForTest(commandEncoder, renderPass, pipeline, kUniformData.data(), kSize);
     }
 
-    dawn::CommandBuffer commandBuffer = commandEncoder.Finish();
-    dawn::Queue queue = device.CreateQueue();
+    wgpu::CommandBuffer commandBuffer = commandEncoder.Finish();
+    wgpu::Queue queue = device.CreateQueue();
     queue.Submit(1, &commandBuffer);
 
     // The color of the pixel in the middle of mResolveTexture should be green if MSAA resolve runs
@@ -305,16 +291,16 @@ TEST_P(MultisampledRenderingTest, MultisampledRenderingWithDepthTest) {
 // works correctly.
 TEST_P(MultisampledRenderingTest, ResolveInAnotherRenderPass) {
     constexpr bool kTestDepth = false;
-    dawn::CommandEncoder commandEncoder = device.CreateCommandEncoder();
-    dawn::RenderPipeline pipeline = CreateRenderPipelineWithOneOutputForTest(kTestDepth);
+    wgpu::CommandEncoder commandEncoder = device.CreateCommandEncoder();
+    wgpu::RenderPipeline pipeline = CreateRenderPipelineWithOneOutputForTest(kTestDepth);
 
-    constexpr dawn::Color kGreen = {0.0f, 0.8f, 0.0f, 0.8f};
+    constexpr wgpu::Color kGreen = {0.0f, 0.8f, 0.0f, 0.8f};
     constexpr uint32_t kSize = sizeof(kGreen);
 
     // In first render pass we draw a green triangle and do not set the resolve target.
     {
         utils::ComboRenderPassDescriptor renderPass = CreateComboRenderPassDescriptorForTest(
-            {mMultisampledColorView}, {nullptr}, dawn::LoadOp::Clear, dawn::LoadOp::Clear,
+            {mMultisampledColorView}, {nullptr}, wgpu::LoadOp::Clear, wgpu::LoadOp::Clear,
             kTestDepth);
 
         EncodeRenderPassForTest(commandEncoder, renderPass, pipeline, &kGreen.r, kSize);
@@ -323,15 +309,15 @@ TEST_P(MultisampledRenderingTest, ResolveInAnotherRenderPass) {
     // In second render pass we ony do MSAA resolve with no draw call.
     {
         utils::ComboRenderPassDescriptor renderPass = CreateComboRenderPassDescriptorForTest(
-            {mMultisampledColorView}, {mResolveView}, dawn::LoadOp::Load, dawn::LoadOp::Load,
+            {mMultisampledColorView}, {mResolveView}, wgpu::LoadOp::Load, wgpu::LoadOp::Load,
             kTestDepth);
 
-        dawn::RenderPassEncoder renderPassEncoder = commandEncoder.BeginRenderPass(&renderPass);
+        wgpu::RenderPassEncoder renderPassEncoder = commandEncoder.BeginRenderPass(&renderPass);
         renderPassEncoder.EndPass();
     }
 
-    dawn::CommandBuffer commandBuffer = commandEncoder.Finish();
-    dawn::Queue queue = device.CreateQueue();
+    wgpu::CommandBuffer commandBuffer = commandEncoder.Finish();
+    wgpu::Queue queue = device.CreateQueue();
     queue.Submit(1, &commandBuffer);
 
     VerifyResolveTarget(kGreen, mResolveTexture);
@@ -339,16 +325,16 @@ TEST_P(MultisampledRenderingTest, ResolveInAnotherRenderPass) {
 
 // Test doing MSAA resolve into multiple resolve targets works correctly.
 TEST_P(MultisampledRenderingTest, ResolveIntoMultipleResolveTargets) {
-    dawn::TextureView multisampledColorView2 =
+    wgpu::TextureView multisampledColorView2 =
         CreateTextureForOutputAttachment(kColorFormat, kSampleCount).CreateView();
-    dawn::Texture resolveTexture2 = CreateTextureForOutputAttachment(kColorFormat, 1);
-    dawn::TextureView resolveView2 = resolveTexture2.CreateView();
+    wgpu::Texture resolveTexture2 = CreateTextureForOutputAttachment(kColorFormat, 1);
+    wgpu::TextureView resolveView2 = resolveTexture2.CreateView();
 
-    dawn::CommandEncoder commandEncoder = device.CreateCommandEncoder();
-    dawn::RenderPipeline pipeline = CreateRenderPipelineWithTwoOutputsForTest();
+    wgpu::CommandEncoder commandEncoder = device.CreateCommandEncoder();
+    wgpu::RenderPipeline pipeline = CreateRenderPipelineWithTwoOutputsForTest();
 
-    constexpr dawn::Color kGreen = {0.0f, 0.8f, 0.0f, 0.8f};
-    constexpr dawn::Color kRed = {0.8f, 0.0f, 0.0f, 0.8f};
+    constexpr wgpu::Color kGreen = {0.0f, 0.8f, 0.0f, 0.8f};
+    constexpr wgpu::Color kRed = {0.8f, 0.0f, 0.0f, 0.8f};
     constexpr bool kTestDepth = false;
 
     // Draw a red triangle to the first color attachment, and a blue triangle to the second color
@@ -356,7 +342,7 @@ TEST_P(MultisampledRenderingTest, ResolveIntoMultipleResolveTargets) {
     {
         utils::ComboRenderPassDescriptor renderPass = CreateComboRenderPassDescriptorForTest(
             {mMultisampledColorView, multisampledColorView2}, {mResolveView, resolveView2},
-            dawn::LoadOp::Clear, dawn::LoadOp::Clear, kTestDepth);
+            wgpu::LoadOp::Clear, wgpu::LoadOp::Clear, kTestDepth);
 
         std::array<float, 8> kUniformData = {kRed.r, kRed.g, kRed.b, kRed.a,          // color1
                                              kGreen.r, kGreen.g, kGreen.b, kGreen.a}; // color2
@@ -364,8 +350,8 @@ TEST_P(MultisampledRenderingTest, ResolveIntoMultipleResolveTargets) {
         EncodeRenderPassForTest(commandEncoder, renderPass, pipeline, kUniformData.data(), kSize);
     }
 
-    dawn::CommandBuffer commandBuffer = commandEncoder.Finish();
-    dawn::Queue queue = device.CreateQueue();
+    wgpu::CommandBuffer commandBuffer = commandEncoder.Finish();
+    wgpu::Queue queue = device.CreateQueue();
     queue.Submit(1, &commandBuffer);
 
     VerifyResolveTarget(kRed, mResolveTexture);
@@ -375,18 +361,18 @@ TEST_P(MultisampledRenderingTest, ResolveIntoMultipleResolveTargets) {
 // Test doing MSAA resolve on one multisampled texture twice works correctly.
 TEST_P(MultisampledRenderingTest, ResolveOneMultisampledTextureTwice) {
     constexpr bool kTestDepth = false;
-    dawn::CommandEncoder commandEncoder = device.CreateCommandEncoder();
-    dawn::RenderPipeline pipeline = CreateRenderPipelineWithOneOutputForTest(kTestDepth);
+    wgpu::CommandEncoder commandEncoder = device.CreateCommandEncoder();
+    wgpu::RenderPipeline pipeline = CreateRenderPipelineWithOneOutputForTest(kTestDepth);
 
-    constexpr dawn::Color kGreen = {0.0f, 0.8f, 0.0f, 0.8f};
+    constexpr wgpu::Color kGreen = {0.0f, 0.8f, 0.0f, 0.8f};
     constexpr uint32_t kSize = sizeof(kGreen);
 
-    dawn::Texture resolveTexture2 = CreateTextureForOutputAttachment(kColorFormat, 1);
+    wgpu::Texture resolveTexture2 = CreateTextureForOutputAttachment(kColorFormat, 1);
 
     // In first render pass we draw a green triangle and specify mResolveView as the resolve target.
     {
         utils::ComboRenderPassDescriptor renderPass = CreateComboRenderPassDescriptorForTest(
-            {mMultisampledColorView}, {mResolveView}, dawn::LoadOp::Clear, dawn::LoadOp::Clear,
+            {mMultisampledColorView}, {mResolveView}, wgpu::LoadOp::Clear, wgpu::LoadOp::Clear,
             kTestDepth);
 
         EncodeRenderPassForTest(commandEncoder, renderPass, pipeline, &kGreen.r, kSize);
@@ -394,17 +380,17 @@ TEST_P(MultisampledRenderingTest, ResolveOneMultisampledTextureTwice) {
 
     // In second render pass we do MSAA resolve into resolveTexture2.
     {
-        dawn::TextureView resolveView2 = resolveTexture2.CreateView();
+        wgpu::TextureView resolveView2 = resolveTexture2.CreateView();
         utils::ComboRenderPassDescriptor renderPass = CreateComboRenderPassDescriptorForTest(
-            {mMultisampledColorView}, {resolveView2}, dawn::LoadOp::Load, dawn::LoadOp::Load,
+            {mMultisampledColorView}, {resolveView2}, wgpu::LoadOp::Load, wgpu::LoadOp::Load,
             kTestDepth);
 
-        dawn::RenderPassEncoder renderPassEncoder = commandEncoder.BeginRenderPass(&renderPass);
+        wgpu::RenderPassEncoder renderPassEncoder = commandEncoder.BeginRenderPass(&renderPass);
         renderPassEncoder.EndPass();
     }
 
-    dawn::CommandBuffer commandBuffer = commandEncoder.Finish();
-    dawn::Queue queue = device.CreateQueue();
+    wgpu::CommandBuffer commandBuffer = commandEncoder.Finish();
+    wgpu::Queue queue = device.CreateQueue();
     queue.Submit(1, &commandBuffer);
 
     VerifyResolveTarget(kGreen, mResolveTexture);
@@ -415,35 +401,35 @@ TEST_P(MultisampledRenderingTest, ResolveOneMultisampledTextureTwice) {
 TEST_P(MultisampledRenderingTest, ResolveIntoOneMipmapLevelOf2DTexture) {
     constexpr uint32_t kBaseMipLevel = 2;
 
-    dawn::TextureViewDescriptor textureViewDescriptor;
-    textureViewDescriptor.dimension = dawn::TextureViewDimension::e2D;
+    wgpu::TextureViewDescriptor textureViewDescriptor;
+    textureViewDescriptor.dimension = wgpu::TextureViewDimension::e2D;
     textureViewDescriptor.format = kColorFormat;
     textureViewDescriptor.baseArrayLayer = 0;
     textureViewDescriptor.arrayLayerCount = 1;
     textureViewDescriptor.mipLevelCount = 1;
     textureViewDescriptor.baseMipLevel = kBaseMipLevel;
 
-    dawn::Texture resolveTexture =
+    wgpu::Texture resolveTexture =
         CreateTextureForOutputAttachment(kColorFormat, 1, kBaseMipLevel + 1, 1);
-    dawn::TextureView resolveView = resolveTexture.CreateView(&textureViewDescriptor);
+    wgpu::TextureView resolveView = resolveTexture.CreateView(&textureViewDescriptor);
 
-    dawn::CommandEncoder commandEncoder = device.CreateCommandEncoder();
-    constexpr dawn::Color kGreen = {0.0f, 0.8f, 0.0f, 0.8f};
+    wgpu::CommandEncoder commandEncoder = device.CreateCommandEncoder();
+    constexpr wgpu::Color kGreen = {0.0f, 0.8f, 0.0f, 0.8f};
     constexpr uint32_t kSize = sizeof(kGreen);
     constexpr bool kTestDepth = false;
 
     // Draw a green triangle and do MSAA resolve.
     {
         utils::ComboRenderPassDescriptor renderPass = CreateComboRenderPassDescriptorForTest(
-            {mMultisampledColorView}, {resolveView}, dawn::LoadOp::Clear, dawn::LoadOp::Clear,
+            {mMultisampledColorView}, {resolveView}, wgpu::LoadOp::Clear, wgpu::LoadOp::Clear,
             kTestDepth);
-        dawn::RenderPipeline pipeline = CreateRenderPipelineWithOneOutputForTest(kTestDepth);
+        wgpu::RenderPipeline pipeline = CreateRenderPipelineWithOneOutputForTest(kTestDepth);
 
         EncodeRenderPassForTest(commandEncoder, renderPass, pipeline, &kGreen.r, kSize);
     }
 
-    dawn::CommandBuffer commandBuffer = commandEncoder.Finish();
-    dawn::Queue queue = device.CreateQueue();
+    wgpu::CommandBuffer commandBuffer = commandEncoder.Finish();
+    wgpu::Queue queue = device.CreateQueue();
     queue.Submit(1, &commandBuffer);
 
     VerifyResolveTarget(kGreen, resolveTexture, kBaseMipLevel, 0);
@@ -451,11 +437,11 @@ TEST_P(MultisampledRenderingTest, ResolveIntoOneMipmapLevelOf2DTexture) {
 
 // Test using a level or a layer of a 2D array texture as resolve target works correctly.
 TEST_P(MultisampledRenderingTest, ResolveInto2DArrayTexture) {
-    dawn::TextureView multisampledColorView2 =
+    wgpu::TextureView multisampledColorView2 =
         CreateTextureForOutputAttachment(kColorFormat, kSampleCount).CreateView();
 
-    dawn::TextureViewDescriptor baseTextureViewDescriptor;
-    baseTextureViewDescriptor.dimension = dawn::TextureViewDimension::e2D;
+    wgpu::TextureViewDescriptor baseTextureViewDescriptor;
+    baseTextureViewDescriptor.dimension = wgpu::TextureViewDimension::e2D;
     baseTextureViewDescriptor.format = kColorFormat;
     baseTextureViewDescriptor.arrayLayerCount = 1;
     baseTextureViewDescriptor.mipLevelCount = 1;
@@ -463,29 +449,29 @@ TEST_P(MultisampledRenderingTest, ResolveInto2DArrayTexture) {
     // Create resolveTexture1 with only 1 mipmap level.
     constexpr uint32_t kBaseArrayLayer1 = 2;
     constexpr uint32_t kBaseMipLevel1 = 0;
-    dawn::Texture resolveTexture1 =
+    wgpu::Texture resolveTexture1 =
         CreateTextureForOutputAttachment(kColorFormat, 1, kBaseMipLevel1 + 1, kBaseArrayLayer1 + 1);
-    dawn::TextureViewDescriptor resolveViewDescriptor1 = baseTextureViewDescriptor;
+    wgpu::TextureViewDescriptor resolveViewDescriptor1 = baseTextureViewDescriptor;
     resolveViewDescriptor1.baseArrayLayer = kBaseArrayLayer1;
     resolveViewDescriptor1.baseMipLevel = kBaseMipLevel1;
-    dawn::TextureView resolveView1 = resolveTexture1.CreateView(&resolveViewDescriptor1);
+    wgpu::TextureView resolveView1 = resolveTexture1.CreateView(&resolveViewDescriptor1);
 
     // Create resolveTexture2 with (kBaseMipLevel2 + 1) mipmap levels and resolve into its last
     // mipmap level.
     constexpr uint32_t kBaseArrayLayer2 = 5;
     constexpr uint32_t kBaseMipLevel2 = 3;
-    dawn::Texture resolveTexture2 =
+    wgpu::Texture resolveTexture2 =
         CreateTextureForOutputAttachment(kColorFormat, 1, kBaseMipLevel2 + 1, kBaseArrayLayer2 + 1);
-    dawn::TextureViewDescriptor resolveViewDescriptor2 = baseTextureViewDescriptor;
+    wgpu::TextureViewDescriptor resolveViewDescriptor2 = baseTextureViewDescriptor;
     resolveViewDescriptor2.baseArrayLayer = kBaseArrayLayer2;
     resolveViewDescriptor2.baseMipLevel = kBaseMipLevel2;
-    dawn::TextureView resolveView2 = resolveTexture2.CreateView(&resolveViewDescriptor2);
+    wgpu::TextureView resolveView2 = resolveTexture2.CreateView(&resolveViewDescriptor2);
 
-    dawn::CommandEncoder commandEncoder = device.CreateCommandEncoder();
-    dawn::RenderPipeline pipeline = CreateRenderPipelineWithTwoOutputsForTest();
+    wgpu::CommandEncoder commandEncoder = device.CreateCommandEncoder();
+    wgpu::RenderPipeline pipeline = CreateRenderPipelineWithTwoOutputsForTest();
 
-    constexpr dawn::Color kGreen = {0.0f, 0.8f, 0.0f, 0.8f};
-    constexpr dawn::Color kRed = {0.8f, 0.0f, 0.0f, 0.8f};
+    constexpr wgpu::Color kGreen = {0.0f, 0.8f, 0.0f, 0.8f};
+    constexpr wgpu::Color kRed = {0.8f, 0.0f, 0.0f, 0.8f};
     constexpr bool kTestDepth = false;
 
     // Draw a red triangle to the first color attachment, and a green triangle to the second color
@@ -493,7 +479,7 @@ TEST_P(MultisampledRenderingTest, ResolveInto2DArrayTexture) {
     {
         utils::ComboRenderPassDescriptor renderPass = CreateComboRenderPassDescriptorForTest(
             {mMultisampledColorView, multisampledColorView2}, {resolveView1, resolveView2},
-            dawn::LoadOp::Clear, dawn::LoadOp::Clear, kTestDepth);
+            wgpu::LoadOp::Clear, wgpu::LoadOp::Clear, kTestDepth);
 
         std::array<float, 8> kUniformData = {kRed.r, kRed.g, kRed.b, kRed.a,          // color1
                                              kGreen.r, kGreen.g, kGreen.b, kGreen.a}; // color2
@@ -501,8 +487,8 @@ TEST_P(MultisampledRenderingTest, ResolveInto2DArrayTexture) {
         EncodeRenderPassForTest(commandEncoder, renderPass, pipeline, kUniformData.data(), kSize);
     }
 
-    dawn::CommandBuffer commandBuffer = commandEncoder.Finish();
-    dawn::Queue queue = device.CreateQueue();
+    wgpu::CommandBuffer commandBuffer = commandEncoder.Finish();
+    wgpu::Queue queue = device.CreateQueue();
     queue.Submit(1, &commandBuffer);
 
     VerifyResolveTarget(kRed, resolveTexture1, kBaseMipLevel1, kBaseArrayLayer1);
@@ -511,6 +497,8 @@ TEST_P(MultisampledRenderingTest, ResolveInto2DArrayTexture) {
 
 DAWN_INSTANTIATE_TEST(MultisampledRenderingTest,
                       D3D12Backend,
+                      ForceWorkarounds(D3D12Backend, {}, {"use_d3d12_resource_heap_tier2"}),
+                      ForceWorkarounds(D3D12Backend, {}, {"use_d3d12_render_pass"}),
                       MetalBackend,
                       OpenGLBackend,
                       VulkanBackend,

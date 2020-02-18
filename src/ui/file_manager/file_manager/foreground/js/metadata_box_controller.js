@@ -71,7 +71,6 @@ class MetadataBoxController {
    * @param{!FilesQuickView} quickView
    */
   init(quickView) {
-    this.metadataBox_ = quickView.getFilesMetadataBox();
     this.quickView_ = quickView;
 
     this.fileMetadataFormatter_.addEventListener(
@@ -83,6 +82,7 @@ class MetadataBoxController {
     this.quickViewModel_.addEventListener(
         'selected-entry-changed', this.updateView_.bind(this));
 
+    this.metadataBox_ = this.quickView_.getFilesMetadataBox();
     this.metadataBox_.clear(false);
   }
 
@@ -141,7 +141,7 @@ class MetadataBoxController {
       this.setDirectorySize_(directory, isSameEntry);
     } else if (item.size) {
       this.metadataBox_.size =
-          this.fileMetadataFormatter_.formatSize(item.size, item.hosted);
+          this.fileMetadataFormatter_.formatSize(item.size, item.hosted, true);
       this.metadataBox_.metadataRendered('size');
     }
 
@@ -170,16 +170,18 @@ class MetadataBoxController {
         const data = MetadataBoxController.EXTRA_METADATA_NAMES;
         this.metadataModel_.get([entry], data).then(items => {
           const item = items[0];
-          this.metadataBox_.ifd = item.ifd || null;
-          this.metadataBox_.imageHeight = item.imageHeight || 0;
-          this.metadataBox_.imageWidth = item.imageWidth || 0;
-          this.metadataBox_.mediaAlbum = item.mediaAlbum || '';
-          this.metadataBox_.mediaArtist = item.mediaArtist || '';
-          this.metadataBox_.mediaDuration = item.mediaDuration || 0;
-          this.metadataBox_.mediaGenre = item.mediaGenre || '';
-          this.metadataBox_.mediaTitle = item.mediaTitle || '';
-          this.metadataBox_.mediaTrack = item.mediaTrack || '';
-          this.metadataBox_.mediaYearRecorded = item.mediaYearRecorded || '';
+          this.metadataBox_.setProperties({
+            ifd: item.ifd || null,
+            imageHeight: item.imageHeight || 0,
+            imageWidth: item.imageWidth || 0,
+            mediaAlbum: item.mediaAlbum || '',
+            mediaArtist: item.mediaArtist || '',
+            mediaDuration: item.mediaDuration || 0,
+            mediaGenre: item.mediaGenre || '',
+            mediaTitle: item.mediaTitle || '',
+            mediaTrack: item.mediaTrack || '',
+            mediaYearRecorded: item.mediaYearRecorded || '',
+          });
           this.metadataBox_.setFileTypeInfo(type);
           this.metadataBox_.metadataRendered('meta');
         });
@@ -274,7 +276,7 @@ class MetadataBoxController {
       }
 
       this.metadataBox_.size =
-          this.fileMetadataFormatter_.formatSize(size, true);
+          this.fileMetadataFormatter_.formatSize(size, true, true);
       this.metadataBox_.isSizeLoading = false;
       this.metadataBox_.metadataRendered('size');
     });

@@ -5,6 +5,8 @@
 #ifndef UI_VIEWS_LAYOUT_LAYOUT_MANAGER_H_
 #define UI_VIEWS_LAYOUT_LAYOUT_MANAGER_H_
 
+#include <vector>
+
 #include "ui/views/views_export.h"
 
 namespace gfx {
@@ -74,13 +76,23 @@ class VIEWS_EXPORT LayoutManager {
 
   // Called when View::SetVisible() is called by external code. Classes derived
   // from LayoutManager can call SetViewVisibility() below to avoid triggering
-  // this event.
-  virtual void ViewVisibilitySet(View* host, View* view, bool visible);
+  // this event. Note that |old_visibility| and |new_visibility| can be the
+  // same, because the old visibility may have been set by the layout and not
+  // external code.
+  virtual void ViewVisibilitySet(View* host,
+                                 View* view,
+                                 bool old_visibility,
+                                 bool new_visibility);
 
  protected:
   // Sets the visibility of a view without triggering ViewVisibilitySet().
   // During Layout(), use this method instead of View::SetVisibility().
   void SetViewVisibility(View* view, bool visible);
+
+  // Gets the child views of the specified view in paint order (reverse
+  // Z-order). Defaults to returning host->children(). Called by
+  // View::GetChildrenInZOrder().
+  virtual std::vector<View*> GetChildViewsInPaintOrder(const View* host) const;
 
  private:
   friend class views::View;

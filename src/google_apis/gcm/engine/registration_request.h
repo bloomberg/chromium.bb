@@ -106,8 +106,11 @@ class GCM_EXPORT RegistrationRequest {
     // |body|. Note that the request body is encoded in HTTP form format.
     virtual void BuildRequestBody(std::string* body) = 0;
 
-    // Reports various UMAs.
-    virtual void ReportUMAs(Status status) = 0;
+    // Reports the status of a request.
+    virtual void ReportStatusToUMA(Status status) = 0;
+
+    // Reports the net error code from a request.
+    virtual void ReportNetErrorCodeToUMA(int net_error_code) = 0;
   };
 
   RegistrationRequest(

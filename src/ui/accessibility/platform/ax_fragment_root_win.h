@@ -20,8 +20,8 @@ class AXFragmentRootPlatformNodeWin;
 // deserialize the document for an iframe before the host document. Because of
 // this, and because COM rules require that the list of interfaces returned by
 // QueryInterface remain static over the lifetime of an object instance, we
-// implement IRawElementProviderFragmentRoot on its own node, with the root of
-// our internal accessibility tree as its sole child.
+// implement IRawElementProviderFragmentRoot on its own node for each HWND, with
+// the root of our internal accessibility tree for that HWND as its sole child.
 //
 // Since UIA derives some information from the underlying HWND hierarchy, we
 // expose one fragment root per HWND. The class that owns the HWND is expected
@@ -38,8 +38,13 @@ class AX_EXPORT AXFragmentRootWin : public ui::AXPlatformNodeDelegateBase {
   static AXFragmentRootWin* GetForAcceleratedWidget(
       gfx::AcceleratedWidget widget);
 
+  // If the given NativeViewAccessible is the direct descendant of a fragment
+  // root, return the corresponding fragment root.
+  static AXFragmentRootWin* GetFragmentRootParentOf(
+      gfx::NativeViewAccessible accessible);
+
   // Returns the NativeViewAccessible for this fragment root.
-  gfx::NativeViewAccessible GetNativeViewAccessible();
+  gfx::NativeViewAccessible GetNativeViewAccessible() override;
 
   // Assistive technologies will typically use UI Automation's control or
   // content view rather than the raw view.
@@ -47,18 +52,31 @@ class AX_EXPORT AXFragmentRootWin : public ui::AXPlatformNodeDelegateBase {
   // content views or false if it should be excluded.
   bool IsControlElement();
 
+  // If a child node is available, return its delegate.
+  AXPlatformNodeDelegate* GetChildNodeDelegate() const;
+
  private:
   // AXPlatformNodeDelegate overrides.
   gfx::NativeViewAccessible GetParent() override;
   int GetChildCount() override;
   gfx::NativeViewAccessible ChildAtIndex(int index) override;
+  gfx::NativeViewAccessible GetNextSibling() override;
+  gfx::NativeViewAccessible GetPreviousSibling() override;
   gfx::NativeViewAccessible HitTestSync(int x, int y) override;
   gfx::NativeViewAccessible GetFocus() override;
   const ui::AXUniqueId& GetUniqueId() const override;
   gfx::AcceleratedWidget GetTargetForNativeAccessibilityEvent() override;
+  AXPlatformNode* GetFromTreeIDAndNodeID(const ui::AXTreeID& ax_tree_id,
+                                         int32_t id) override;
 
-  // If a child node is available, return its delegate.
-  AXPlatformNodeDelegate* GetChildNodeDelegate();
+  // A fragment root does not correspond to any node in the platform neutral
+  // accessibility tree. Rather, the fragment root's child is a child of the
+  // fragment root's parent. This helper computes the child's index in the
+  // parent's array of children.
+  int GetIndexInParentOfChild() const;
+
+  // If a parent node is available, return its delegate.
+  AXPlatformNodeDelegate* GetParentNodeDelegate() const;
 
   gfx::AcceleratedWidget widget_;
   AXFragmentRootDelegateWin* const delegate_;

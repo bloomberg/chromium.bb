@@ -43,7 +43,7 @@ using InstallError = update_client::InstallError;
 
 }  // namespace
 
-ComponentInstallerPolicy::~ComponentInstallerPolicy() {}
+ComponentInstallerPolicy::~ComponentInstallerPolicy() = default;
 
 ComponentInstaller::RegistrationInfo::RegistrationInfo()
     : version(kNullVersion) {}
@@ -51,13 +51,14 @@ ComponentInstaller::RegistrationInfo::RegistrationInfo()
 ComponentInstaller::RegistrationInfo::~RegistrationInfo() = default;
 
 ComponentInstaller::ComponentInstaller(
-    std::unique_ptr<ComponentInstallerPolicy> installer_policy)
+    std::unique_ptr<ComponentInstallerPolicy> installer_policy,
+    scoped_refptr<update_client::ActionHandler> action_handler)
     : current_version_(kNullVersion),
-      main_task_runner_(base::ThreadTaskRunnerHandle::Get()) {
-  installer_policy_ = std::move(installer_policy);
-}
+      installer_policy_(std::move(installer_policy)),
+      action_handler_(action_handler),
+      main_task_runner_(base::ThreadTaskRunnerHandle::Get()) {}
 
-ComponentInstaller::~ComponentInstaller() {}
+ComponentInstaller::~ComponentInstaller() = default;
 
 void ComponentInstaller::Register(ComponentUpdateService* cus,
                                   base::OnceClosure callback) {
@@ -114,7 +115,7 @@ Result ComponentInstaller::InstallHelper(
       local_install_path.Append(installer_policy_->GetRelativeInstallDir())
           .AppendASCII(manifest_version.GetString());
   if (base::PathExists(local_install_path)) {
-    if (!base::DeleteFile(local_install_path, true))
+    if (!base::DeleteFileRecursively(local_install_path))
       return Result(InstallError::CLEAN_INSTALL_DIR_FAILED);
   }
 
@@ -123,7 +124,7 @@ Result ComponentInstaller::InstallHelper(
 
   if (!base::Move(unpack_path, local_install_path)) {
     PLOG(ERROR) << "Move failed.";
-    base::DeleteFile(local_install_path, true);
+    base::DeleteFileRecursively(local_install_path);
     return Result(InstallError::MOVE_FILES_ERROR);
   }
 
@@ -166,7 +167,7 @@ void ComponentInstaller::Install(const base::FilePath& unpack_path,
   base::FilePath install_path;
   const Result result =
       InstallHelper(unpack_path, &manifest, &version, &install_path);
-  base::DeleteFile(unpack_path, true);
+  base::DeleteFileRecursively(unpack_path);
   if (result.error) {
     main_task_runner_->PostTask(FROM_HERE,
                                 base::BindOnce(std::move(callback), result));
@@ -345,7 +346,7 @@ void ComponentInstaller::StartRegistration(
   // Remove older versions of the component. None should be in use during
   // browser startup.
   for (const auto& older_path : older_paths)
-    base::DeleteFile(older_path, true);
+    base::DeleteFileRecursively(older_path);
 }
 
 void ComponentInstaller::UninstallOnTaskRunner() {
@@ -371,7 +372,7 @@ void ComponentInstaller::UninstallOnTaskRunner() {
     if (!version.IsValid())
       continue;
 
-    if (!base::DeleteFile(path, true))
+    if (!base::DeleteFileRecursively(path))
       DLOG(ERROR) << "Couldn't delete " << path.value();
   }
 
@@ -398,7 +399,9 @@ void ComponentInstaller::FinishRegistration(
 
   update_client::CrxComponent crx;
   installer_policy_->GetHash(&crx.pk_hash);
+  crx.app_id = update_client::GetCrxIdFromPublicKeyHash(crx.pk_hash);
   crx.installer = this;
+  crx.action_handler = action_handler_;
   crx.version = current_version_;
   crx.fingerprint = current_fingerprint_;
   crx.name = installer_policy_->GetName();

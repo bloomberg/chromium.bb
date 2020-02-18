@@ -13,11 +13,12 @@
 #include "osp/public/message_demuxer.h"
 #include "osp/public/network_service_manager.h"
 #include "osp/public/protocol_connection.h"
-#include "platform/api/logging.h"
 #include "platform/base/error.h"
 #include "platform/base/macros.h"
+#include "util/logging.h"
 
 namespace openscreen {
+namespace osp {
 
 template <typename T>
 using MessageDecodingFunction = ssize_t (*)(const uint8_t*, size_t, T*);
@@ -220,6 +221,7 @@ class RequestResponseHandler : public MessageDemuxer::MessageCallback {
   OSP_DISALLOW_COPY_AND_ASSIGN(RequestResponseHandler);
 };
 
+}  // namespace osp
 }  // namespace openscreen
 
 #endif  // OSP_MSGS_REQUEST_RESPONSE_HANDLER_H_

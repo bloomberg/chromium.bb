@@ -14,7 +14,6 @@
 #include "base/trace_event/trace_event.h"
 #include "cc/base/histograms.h"
 #include "cc/trees/layer_tree_frame_sink_client.h"
-#include "components/viz/client/hit_test_data_provider.h"
 #include "components/viz/common/features.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/hit_test/hit_test_region_list.h"
@@ -66,9 +65,9 @@ AsyncLayerTreeFrameSink::UnboundMessagePipes::UnboundMessagePipes() = default;
 AsyncLayerTreeFrameSink::UnboundMessagePipes::~UnboundMessagePipes() = default;
 
 bool AsyncLayerTreeFrameSink::UnboundMessagePipes::HasUnbound() const {
-  return client_request.is_pending() &&
-         (compositor_frame_sink_info.is_valid() ^
-          compositor_frame_sink_associated_info.is_valid());
+  return client_receiver.is_valid() &&
+         (compositor_frame_sink_remote.is_valid() ^
+          compositor_frame_sink_associated_remote.is_valid());
 }
 
 AsyncLayerTreeFrameSink::UnboundMessagePipes::UnboundMessagePipes(
@@ -82,11 +81,9 @@ AsyncLayerTreeFrameSink::AsyncLayerTreeFrameSink(
                          std::move(worker_context_provider),
                          std::move(params->compositor_task_runner),
                          params->gpu_memory_buffer_manager),
-      hit_test_data_provider_(std::move(params->hit_test_data_provider)),
       synthetic_begin_frame_source_(
           std::move(params->synthetic_begin_frame_source)),
       pipes_(std::move(params->pipes)),
-      client_binding_(this),
       wants_animate_only_begin_frames_(params->wants_animate_only_begin_frames),
       receive_begin_frame_histogram_(
           GetHistogramNamed("GraphicsPipeline.%s.ReceivedBeginFrame",
@@ -94,10 +91,6 @@ AsyncLayerTreeFrameSink::AsyncLayerTreeFrameSink(
       submit_begin_frame_histogram_(GetHistogramNamed(
           "GraphicsPipeline.%s.SubmitCompositorFrameAfterBeginFrame",
           params->client_name)) {
-  // We should not create hit test data provider if we want to use cc layer tree
-  // to generated data.
-  if (features::IsVizHitTestingSurfaceLayerEnabled())
-    DCHECK(!params->hit_test_data_provider);
   DETACH_FROM_THREAD(thread_checker_);
 }
 
@@ -110,22 +103,22 @@ bool AsyncLayerTreeFrameSink::BindToClient(LayerTreeFrameSinkClient* client) {
     return false;
 
   DCHECK(pipes_.HasUnbound());
-  if (pipes_.compositor_frame_sink_info.is_valid()) {
-    compositor_frame_sink_.Bind(std::move(pipes_.compositor_frame_sink_info));
-    compositor_frame_sink_.set_connection_error_with_reason_handler(
+  if (pipes_.compositor_frame_sink_remote.is_valid()) {
+    compositor_frame_sink_.Bind(std::move(pipes_.compositor_frame_sink_remote));
+    compositor_frame_sink_.set_disconnect_with_reason_handler(
         base::BindOnce(&AsyncLayerTreeFrameSink::OnMojoConnectionError,
                        weak_factory_.GetWeakPtr()));
     compositor_frame_sink_ptr_ = compositor_frame_sink_.get();
-  } else if (pipes_.compositor_frame_sink_associated_info.is_valid()) {
+  } else if (pipes_.compositor_frame_sink_associated_remote.is_valid()) {
     compositor_frame_sink_associated_.Bind(
-        std::move(pipes_.compositor_frame_sink_associated_info));
-    compositor_frame_sink_associated_.set_connection_error_with_reason_handler(
+        std::move(pipes_.compositor_frame_sink_associated_remote));
+    compositor_frame_sink_associated_.set_disconnect_with_reason_handler(
         base::BindOnce(&AsyncLayerTreeFrameSink::OnMojoConnectionError,
                        weak_factory_.GetWeakPtr()));
     compositor_frame_sink_ptr_ = compositor_frame_sink_associated_.get();
   }
-  client_binding_.Bind(std::move(pipes_.client_request),
-                       compositor_task_runner_);
+  client_receiver_.Bind(std::move(pipes_.client_receiver),
+                        compositor_task_runner_);
 
   if (synthetic_begin_frame_source_) {
     client->SetBeginFrameSource(synthetic_begin_frame_source_.get());
@@ -146,7 +139,7 @@ void AsyncLayerTreeFrameSink::DetachFromClient() {
   client_->SetBeginFrameSource(nullptr);
   begin_frame_source_.reset();
   synthetic_begin_frame_source_.reset();
-  client_binding_.Close();
+  client_receiver_.reset();
   compositor_frame_sink_.reset();
   compositor_frame_sink_associated_.reset();
   compositor_frame_sink_ptr_ = nullptr;
@@ -187,11 +180,8 @@ void AsyncLayerTreeFrameSink::SubmitCompositorFrame(
               frame.size_in_pixels().width());
   }
 
-  base::Optional<viz::HitTestRegionList> hit_test_region_list;
-  if (hit_test_data_provider_)
-    hit_test_region_list = hit_test_data_provider_->GetHitTestData(frame);
-  else
-    hit_test_region_list = client_->BuildHitTestData();
+  base::Optional<viz::HitTestRegionList> hit_test_region_list =
+      client_->BuildHitTestData();
 
   if (show_hit_test_borders && hit_test_region_list)
     hit_test_region_list->flags |= viz::HitTestRegionFlags::kHitTestDebug;
@@ -292,8 +282,7 @@ void AsyncLayerTreeFrameSink::OnBeginFrame(
     const viz::BeginFrameArgs& args,
     const viz::FrameTimingDetailsMap& timing_details) {
   for (const auto& pair : timing_details) {
-    client_->DidPresentCompositorFrame(pair.first,
-                                       pair.second.presentation_feedback);
+    client_->DidPresentCompositorFrame(pair.first, pair.second);
   }
 
   DCHECK_LE(pipeline_reporting_frame_times_.size(), 25u);

@@ -19,7 +19,6 @@
 #include "cc/cc_export.h"
 #include "cc/paint/image_transfer_cache_entry.h"
 #include "cc/tiles/image_decode_cache.h"
-#include "third_party/skia/include/core/SkData.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/core/SkYUVAIndex.h"
 #include "third_party/skia/include/gpu/gl/GrGLTypes.h"
@@ -177,7 +176,7 @@ class CC_EXPORT GpuImageDecodeCache
 
   // Called by Decode / Upload tasks.
   void DecodeImageInTask(const DrawImage& image, TaskType task_type);
-  void UploadImageInTask(const DrawImage& image, sk_sp<SkData> encoded_data);
+  void UploadImageInTask(const DrawImage& image);
 
   // Called by Decode / Upload tasks when tasks are finished.
   void OnImageDecodeTaskCompleted(const DrawImage& image,
@@ -250,6 +249,7 @@ class CC_EXPORT GpuImageDecodeCache
   // Stores the CPU-side decoded bits of an image and supporting fields.
   struct DecodedImageData : public ImageDataBase {
     explicit DecodedImageData(bool is_bitmap_backed,
+                              bool can_do_hardware_accelerated_decode,
                               bool do_hardware_accelerated_decode);
     ~DecodedImageData();
 
@@ -289,6 +289,10 @@ class CC_EXPORT GpuImageDecodeCache
 
     bool is_yuv() const { return image_yuv_planes_.has_value(); }
 
+    bool can_do_hardware_accelerated_decode() const {
+      return can_do_hardware_accelerated_decode_;
+    }
+
     bool do_hardware_accelerated_decode() const {
       return do_hardware_accelerated_decode_;
     }
@@ -319,6 +323,11 @@ class CC_EXPORT GpuImageDecodeCache
     // Otherwise it was filled out with a default "identity" value by the
     // decoder.
     base::Optional<YUVSkImages> image_yuv_planes_;
+
+    // Keeps tracks of images that could go through hardware decode acceleration
+    // though they're possibly prevented from doing so because of a disabled
+    // feature flag.
+    bool can_do_hardware_accelerated_decode_;
 
     // |do_hardware_accelerated_decode_| keeps track of images that should go
     // through hardware decode acceleration. Currently, this path is intended
@@ -494,6 +503,7 @@ class CC_EXPORT GpuImageDecodeCache
               int upload_scale_mip_level,
               bool needs_mips,
               bool is_bitmap_backed,
+              bool can_do_hardware_accelerated_decode,
               bool do_hardware_accelerated_decode,
               bool is_yuv_format,
               SkYUVColorSpace yuv_cs);
@@ -611,8 +621,7 @@ class CC_EXPORT GpuImageDecodeCache
 
   scoped_refptr<GpuImageDecodeCache::ImageData> CreateImageData(
       const DrawImage& image,
-      bool allow_hardware_decode,
-      sk_sp<SkData>* encoded_data);
+      bool allow_hardware_decode);
   void WillAddCacheEntry(const DrawImage& draw_image);
   SkImageInfo CreateImageInfoForDrawImage(const DrawImage& draw_image,
                                           int upload_scale_mip_level) const;
@@ -646,8 +655,7 @@ class CC_EXPORT GpuImageDecodeCache
 
   // Requires that the |context_| lock be held when calling.
   void UploadImageIfNecessary(const DrawImage& draw_image,
-                              ImageData* image_data,
-                              sk_sp<SkData> encoded_data);
+                              ImageData* image_data);
 
   // Flush pending operations on context_->GrContext() for each element of
   // |yuv_images| and then clear the vector.
@@ -701,6 +709,8 @@ class CC_EXPORT GpuImageDecodeCache
   viz::RasterContextProvider* context_;
   int max_texture_size_ = 0;
   const PaintImage::GeneratorClientId generator_client_id_;
+  bool allow_accelerated_jpeg_decodes_ = false;
+  bool allow_accelerated_webp_decodes_ = false;
 
   // All members below this point must only be accessed while holding |lock_|.
   // The exception are const members like |normal_max_cache_bytes_| that can

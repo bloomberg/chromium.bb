@@ -49,7 +49,6 @@
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/native_cursor.h"
-#include "ui/views/window/dialog_client_view.h"
 
 namespace {
 
@@ -403,6 +402,19 @@ ContentSettingBubbleContents::ContentSettingBubbleContents(
       content_setting_bubble_model_(std::move(content_setting_bubble_model)) {
   chrome::RecordDialogCreation(
       chrome::DialogIdentifier::CONTENT_SETTING_CONTENTS);
+
+  // Although other code in this class treats content_setting_bubble_model_ as
+  // though it's optional, in fact it can only become null if
+  // WebContentsDestroyed() is called, which can't happen until the constructor
+  // has run - so it is never null here.
+  DCHECK(content_setting_bubble_model_);
+  const base::string16& done_text =
+      content_setting_bubble_model_->bubble_content().done_button_text;
+  DialogDelegate::set_buttons(ui::DIALOG_BUTTON_OK);
+  DialogDelegate::set_button_label(
+      ui::DIALOG_BUTTON_OK,
+      done_text.empty() ? l10n_util::GetStringUTF16(IDS_DONE) : done_text);
+  DialogDelegate::SetExtraView(CreateHelpAndManageView());
 }
 
 ContentSettingBubbleContents::~ContentSettingBubbleContents() {
@@ -570,7 +582,26 @@ void ContentSettingBubbleContents::Init() {
   content_setting_bubble_model_->set_owner(this);
 }
 
-std::unique_ptr<views::View> ContentSettingBubbleContents::CreateExtraView() {
+bool ContentSettingBubbleContents::Accept() {
+  content_setting_bubble_model_->OnDoneButtonClicked();
+
+  return true;
+}
+
+bool ContentSettingBubbleContents::Close() {
+  return true;
+}
+
+void ContentSettingBubbleContents::StyleLearnMoreButton() {
+  DCHECK(learn_more_button_);
+  SkColor text_color = GetNativeTheme()->GetSystemColor(
+      ui::NativeTheme::kColorId_LabelEnabledColor);
+  views::SetImageFromVectorIcon(learn_more_button_,
+                                vector_icons::kHelpOutlineIcon, text_color);
+}
+
+std::unique_ptr<views::View>
+ContentSettingBubbleContents::CreateHelpAndManageView() {
   DCHECK(content_setting_bubble_model_);
   const auto& bubble_content = content_setting_bubble_model_->bubble_content();
   const auto* layout = ChromeLayoutProvider::Get();
@@ -613,38 +644,6 @@ std::unique_ptr<views::View> ContentSettingBubbleContents::CreateExtraView() {
   return container;
 }
 
-bool ContentSettingBubbleContents::Accept() {
-  content_setting_bubble_model_->OnDoneButtonClicked();
-
-  return true;
-}
-
-bool ContentSettingBubbleContents::Close() {
-  return true;
-}
-
-int ContentSettingBubbleContents::GetDialogButtons() const {
-  return ui::DIALOG_BUTTON_OK;
-}
-
-base::string16 ContentSettingBubbleContents::GetDialogButtonLabel(
-    ui::DialogButton button) const {
-  if (!content_setting_bubble_model_)
-    return base::string16();
-
-  const base::string16& done_text =
-      content_setting_bubble_model_->bubble_content().done_button_text;
-  return done_text.empty() ? l10n_util::GetStringUTF16(IDS_DONE) : done_text;
-}
-
-void ContentSettingBubbleContents::StyleLearnMoreButton() {
-  DCHECK(learn_more_button_);
-  SkColor text_color = GetNativeTheme()->GetSystemColor(
-      ui::NativeTheme::kColorId_LabelEnabledColor);
-  views::SetImageFromVectorIcon(learn_more_button_,
-                                vector_icons::kHelpOutlineIcon, text_color);
-}
-
 void ContentSettingBubbleContents::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
   if (!navigation_handle->IsInMainFrame() || !navigation_handle->HasCommitted())
@@ -682,7 +681,6 @@ void ContentSettingBubbleContents::ButtonPressed(views::Button* sender,
 
     // Toggling the check state may change the dialog button text.
     DialogModelChanged();
-    GetDialogClientView()->Layout();
   } else if (sender == learn_more_button_) {
     GetWidget()->Close();
     content_setting_bubble_model_->OnLearnMoreClicked();

@@ -225,6 +225,43 @@ std::vector<InteractionsStats> TestPasswordStore::GetAllSiteStatsImpl() {
   return std::vector<InteractionsStats>();
 }
 
+void TestPasswordStore::AddCompromisedCredentialsImpl(
+    const CompromisedCredentials& stats) {
+  NOTIMPLEMENTED();
+}
+
+void TestPasswordStore::RemoveCompromisedCredentialsImpl(
+    const GURL& url,
+    const base::string16& username) {
+  NOTIMPLEMENTED();
+}
+
+std::vector<CompromisedCredentials>
+TestPasswordStore::GetAllCompromisedCredentialsImpl() {
+  NOTIMPLEMENTED();
+  return std::vector<CompromisedCredentials>();
+}
+
+void TestPasswordStore::RemoveCompromisedCredentialsByUrlAndTimeImpl(
+    const base::RepeatingCallback<bool(const GURL&)>& url_filter,
+    base::Time remove_begin,
+    base::Time remove_end) {
+  NOTIMPLEMENTED();
+}
+
+void TestPasswordStore::AddFieldInfoImpl(const FieldInfo& field_info) {
+  NOTIMPLEMENTED();
+}
+std::vector<FieldInfo> TestPasswordStore::GetAllFieldInfoImpl() {
+  NOTIMPLEMENTED();
+  return std::vector<FieldInfo>();
+}
+
+void TestPasswordStore::RemoveFieldInfoByTimeImpl(base::Time remove_begin,
+                                                  base::Time remove_end) {
+  NOTIMPLEMENTED();
+}
+
 bool TestPasswordStore::BeginTransaction() {
   return true;
 }

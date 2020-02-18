@@ -25,6 +25,7 @@
 #include "core/fpdfapi/parser/cpdf_string.h"
 #include "core/fxcodec/fx_codec.h"
 #include "core/fxcodec/jpeg/jpegmodule.h"
+#include "core/fxcrt/fx_memory_wrappers.h"
 #include "core/fxcrt/fx_stream.h"
 #include "core/fxge/dib/cfx_dibitmap.h"
 #include "core/fxge/fx_dib.h"
@@ -141,8 +142,8 @@ void CPDF_Image::SetJpegImage(const RetainPtr<IFX_SeekableReadStream>& pFile) {
   RetainPtr<CPDF_Dictionary> pDict = InitJPEG(data);
   if (!pDict && size > dwEstimateSize) {
     data.resize(size);
-    pFile->ReadBlockAtOffset(data.data(), 0, size);
-    pDict = InitJPEG(data);
+    if (pFile->ReadBlockAtOffset(data.data(), 0, size))
+      pDict = InitJPEG(data);
   }
   if (!pDict)
     return;

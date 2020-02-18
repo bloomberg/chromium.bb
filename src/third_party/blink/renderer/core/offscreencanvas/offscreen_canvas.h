@@ -46,9 +46,11 @@ class CORE_EXPORT OffscreenCanvas final
   USING_PRE_FINALIZER(OffscreenCanvas, Dispose);
 
  public:
-  static OffscreenCanvas* Create(unsigned width, unsigned height);
+  static OffscreenCanvas* Create(ExecutionContext*,
+                                 unsigned width,
+                                 unsigned height);
 
-  explicit OffscreenCanvas(const IntSize&);
+  OffscreenCanvas(ExecutionContext*, const IntSize&);
   ~OffscreenCanvas() override;
   void Dispose();
 
@@ -60,7 +62,8 @@ class CORE_EXPORT OffscreenCanvas final
   void setHeight(unsigned);
 
   // CanvasResourceDispatcherClient
-  void BeginFrame() override;
+  bool BeginFrame() override;
+  void SetFilterQualityInResource(SkFilterQuality filter_quality) override;
 
   // API Methods
   ImageBitmap* transferToImageBitmap(ScriptState*, ExceptionState&);
@@ -70,6 +73,7 @@ class CORE_EXPORT OffscreenCanvas final
   void RecordTransfer();
 
   void SetPlaceholderCanvasId(DOMNodeId canvas_id);
+  void DeregisterFromAnimationFrameProvider();
   DOMNodeId PlaceholderCanvasId() const { return placeholder_canvas_id_; }
   bool HasPlaceholderCanvas() const;
   bool IsNeutered() const override { return is_neutered_; }
@@ -90,7 +94,6 @@ class CORE_EXPORT OffscreenCanvas final
   }
 
   CanvasResourceProvider* GetOrCreateResourceProvider();
-  void DiscardResourceProvider() override;
 
   void SetFrameSinkId(uint32_t client_id, uint32_t sink_id) {
     client_id_ = client_id;
@@ -103,12 +106,18 @@ class CORE_EXPORT OffscreenCanvas final
     filter_quality_ = quality;
   }
 
+  void AllowHighPerformancePowerPreference() {
+    allow_high_performance_power_preference_ = true;
+  }
+
   // CanvasRenderingContextHost implementation.
-  void FinalizeFrame() override {}
+  void PreFinalizeFrame() override {}
+  void PostFinalizeFrame() override {}
   void DetachContext() override { context_ = nullptr; }
   CanvasRenderingContext* RenderingContext() const override { return context_; }
-  void PushFrameIfNeeded();
-  void PushFrame(scoped_refptr<CanvasResource> frame,
+
+  bool PushFrameIfNeeded();
+  bool PushFrame(scoped_refptr<CanvasResource> frame,
                  const SkIRect& damage_rect) override;
   void DidDraw(const FloatRect&) override;
   void DidDraw() override;
@@ -171,6 +180,51 @@ class CORE_EXPORT OffscreenCanvas final
 
   void Trace(blink::Visitor*) override;
 
+  class ScopedInsideWorkerRAF {
+    STACK_ALLOCATED();
+
+   public:
+    ScopedInsideWorkerRAF(const viz::BeginFrameArgs& args)
+        : abort_raf_(false), begin_frame_args_(args) {}
+
+    bool AddOffscreenCanvas(OffscreenCanvas* canvas) {
+      DCHECK(!abort_raf_);
+      DCHECK(!canvas->inside_worker_raf_);
+      if (canvas->GetOrCreateResourceDispatcher()) {
+        // If we are blocked with too many frames, we must stop.
+        if (canvas->GetOrCreateResourceDispatcher()
+                ->HasTooManyPendingFrames()) {
+          abort_raf_ = true;
+          return false;
+        }
+      }
+
+      canvas->inside_worker_raf_ = true;
+      canvases_.push_back(canvas);
+      return true;
+    }
+
+    ~ScopedInsideWorkerRAF() {
+      for (auto canvas : canvases_) {
+        DCHECK(canvas->inside_worker_raf_);
+        canvas->inside_worker_raf_ = false;
+        // If we have skipped raf, don't push frames.
+        if (abort_raf_)
+          continue;
+        if (canvas->GetOrCreateResourceDispatcher()) {
+          canvas->GetOrCreateResourceDispatcher()->ReplaceBeginFrameAck(
+              begin_frame_args_);
+        }
+        canvas->PushFrameIfNeeded();
+      }
+    }
+
+   private:
+    bool abort_raf_;
+    const viz::BeginFrameArgs& begin_frame_args_;
+    HeapVector<Member<OffscreenCanvas>> canvases_;
+  };
+
  private:
   int32_t memory_usage_ = 0;
 
@@ -187,7 +241,6 @@ class CORE_EXPORT OffscreenCanvas final
 
   IntSize size_;
   bool is_neutered_ = false;
-
   bool origin_clean_ = true;
   bool disable_reading_from_canvas_ = false;
 
@@ -197,8 +250,14 @@ class CORE_EXPORT OffscreenCanvas final
 
   bool needs_matrix_clip_restore_ = false;
   bool needs_push_frame_ = false;
+  bool inside_worker_raf_ = false;
 
   SkFilterQuality filter_quality_ = kLow_SkFilterQuality;
+
+  // An offscreen canvas should only prefer the high-performance GPU if it is
+  // initialized by transferring control from an HTML canvas that is not
+  // cross-origin.
+  bool allow_high_performance_power_preference_ = false;
 
   // cc::FrameSinkId is broken into two integer components as this can be used
   // in transfer of OffscreenCanvas across threads

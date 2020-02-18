@@ -18,6 +18,7 @@
 #include "ash/login/ui/login_pin_view.h"
 #include "ash/login/ui/login_user_view.h"
 #include "ash/login/ui/non_accessible_view.h"
+#include "ash/login/ui/parent_access_view.h"
 #include "ash/login/ui/pin_keyboard_animation.h"
 #include "ash/login/ui/views_utils.h"
 #include "ash/public/cpp/login_constants.h"
@@ -32,6 +33,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/timer/timer.h"
 #include "components/user_manager/user.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -49,6 +51,7 @@
 #include "ui/views/border.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/md_text_button.h"
+#include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/flex_layout.h"
@@ -63,30 +66,21 @@ constexpr const char kLoginAuthUserViewClassName[] = "LoginAuthUserView";
 
 // Distance between the user view (ie, the icon and name) and the password
 // textfield.
-const int kDistanceBetweenUserViewAndPasswordDp = 28;
+const int kDistanceBetweenUserViewAndPasswordDp = 24;
 
 // Distance between the password textfield and the the pin keyboard.
-const int kDistanceBetweenPasswordFieldAndPinKeyboardDp = 20;
+const int kDistanceBetweenPasswordFieldAndPinKeyboardDp = 16;
 
 // Distance from the end of pin keyboard to the bottom of the big user view.
 const int kDistanceFromPinKeyboardToBigUserViewBottomDp = 50;
 
 // Distance from the top of the user view to the user icon.
-constexpr int kDistanceFromTopOfBigUserViewToUserIconDp = 54;
+constexpr int kDistanceFromTopOfBigUserViewToUserIconDp = 24;
 
 constexpr SkColor kChallengeResponseArrowBackgroundColor =
     SkColorSetARGB(0x2B, 0xFF, 0xFF, 0xFF);
 constexpr SkColor kChallengeResponseErrorColor =
     SkColorSetRGB(0xEE, 0x67, 0x5C);
-
-// The color of the online sign-in message text.
-constexpr SkColor kOnlineSignInMessageColor = SkColorSetRGB(0xE6, 0x7C, 0x73);
-
-// The color of the disabled auth message bubble when the color extracted from
-// wallpaper is transparent or invalid (i.e. color calculation fails or is
-// disabled).
-constexpr SkColor kDisabledAuthMessageBubbleColor =
-    SkColorSetRGB(0x20, 0x21, 0x24);
 
 // Date time format containing only the day of the week, for example: "Tuesday".
 constexpr char kDayOfWeekOnlyTimeFormat[] = "EEEE";
@@ -102,10 +96,10 @@ constexpr int kFingerprintFailedAnimationNumFrames = 45;
 
 constexpr base::TimeDelta kChallengeResponseResetAfterFailureDelay =
     base::TimeDelta::FromSeconds(5);
-constexpr int kChallengeResponseArrowSizeDp = 40;
-constexpr int kSpacingBetweenChallengeResponseArrowAndIconDp = 64;
+constexpr int kChallengeResponseArrowSizeDp = 48;
+constexpr int kSpacingBetweenChallengeResponseArrowAndIconDp = 100;
 constexpr int kSpacingBetweenChallengeResponseIconAndLabelDp = 15;
-constexpr int kChallengeResponseIconSizeDp = 32;
+constexpr int kChallengeResponseIconSizeDp = 28;
 constexpr int kDistanceBetweenPasswordFieldAndChallengeResponseViewDp = 0;
 
 constexpr int kDisabledAuthMessageVerticalBorderDp = 16;
@@ -120,11 +114,29 @@ constexpr int kDisabledAuthMessageRoundedCornerRadiusDp = 8;
 
 constexpr int kNonEmptyWidthDp = 1;
 
+// The color of the required online sign-in  message text.
+constexpr SkColor kSystemButtonMessageColor = SK_ColorBLACK;
+// The background color of the required online sign-in button.
+constexpr SkColor kSystemButtonBackgroundColor =
+    SkColorSetA(gfx::kGoogleRed300, SK_AlphaOPAQUE);
+
+constexpr int kUserInfoBubbleWidth = 192;
+constexpr int kUserInfoBubbleExternalPadding = 8;
+constexpr int kSystemButtonIconSize = 20;
+constexpr int kSystemButtonMarginTopBottomDp = 6;
+constexpr int kSystemButtonMarginLeftRightDp = 16;
+constexpr int kSystemButtonBorderRadius = 16;
+constexpr int kSystemButtonImageLabelSpacing = 8;
+constexpr int kSystemButtonMaxLabelWidthDp =
+    kUserInfoBubbleWidth - 2 * kUserInfoBubbleExternalPadding -
+    kSystemButtonIconSize - kSystemButtonImageLabelSpacing -
+    2 * kSystemButtonBorderRadius;
+
 // Returns an observer that will hide |view| when it fires. The observer will
 // delete itself after firing (by returning true). Make sure to call
 // |observer->SetActive()| after attaching it.
 ui::CallbackLayerAnimationObserver* BuildObserverToHideView(views::View* view) {
-  return new ui::CallbackLayerAnimationObserver(base::Bind(
+  return new ui::CallbackLayerAnimationObserver(base::BindRepeating(
       [](views::View* view,
          const ui::CallbackLayerAnimationObserver& observer) {
         // Don't hide the view if the animation is aborted, as |view| may no
@@ -160,21 +172,68 @@ class ClearPasswordAndHideAnimationObserver
   DISALLOW_COPY_AND_ASSIGN(ClearPasswordAndHideAnimationObserver);
 };
 
-void DecorateOnlineSignInMessage(views::LabelButton* label_button) {
-  label_button->SetPaintToLayer();
-  label_button->layer()->SetFillsBoundsOpaquely(false);
-  label_button->SetImage(
-      views::Button::STATE_NORMAL,
-      CreateVectorIcon(kLockScreenAlertIcon, kOnlineSignInMessageColor));
-  label_button->SetTextSubpixelRenderingEnabled(false);
-  label_button->SetTextColor(views::Button::STATE_NORMAL,
-                             kOnlineSignInMessageColor);
-  label_button->SetTextColor(views::Button::STATE_HOVERED,
-                             kOnlineSignInMessageColor);
-  label_button->SetTextColor(views::Button::STATE_PRESSED,
-                             kOnlineSignInMessageColor);
-  label_button->SetBorder(views::CreateEmptyBorder(gfx::Insets(9, 0)));
+SkPath GetSystemButtonHighlightPath(const views::View* view) {
+  gfx::Rect rect(view->GetLocalBounds());
+  return SkPath().addRoundRect(gfx::RectToSkRect(rect),
+                               kSystemButtonBorderRadius,
+                               kSystemButtonBorderRadius);
 }
+
+class SystemButtonHighlightPathGenerator
+    : public views::HighlightPathGenerator {
+ public:
+  SystemButtonHighlightPathGenerator() = default;
+  SystemButtonHighlightPathGenerator(
+      const SystemButtonHighlightPathGenerator&) = delete;
+  SystemButtonHighlightPathGenerator& operator=(
+      const SystemButtonHighlightPathGenerator&) = delete;
+
+  // views::HighlightPathGenerator:
+  SkPath GetHighlightPath(const views::View* view) override {
+    return GetSystemButtonHighlightPath(view);
+  }
+};
+
+class SystemButton : public views::LabelButton {
+ public:
+  SystemButton(views::ButtonListener* listener, const base::string16& text)
+      : LabelButton(listener, text) {
+    SetImageLabelSpacing(kSystemButtonImageLabelSpacing);
+    label()->SetMultiLine(true);
+    label()->SetMaximumWidth(kSystemButtonMaxLabelWidthDp);
+    label()->SetFontList(
+        gfx::FontList().DeriveWithWeight(gfx::Font::Weight::MEDIUM));
+    SetPaintToLayer();
+    layer()->SetFillsBoundsOpaquely(false);
+    SetImage(views::Button::STATE_NORMAL,
+             CreateVectorIcon(kLockScreenAlertIcon, kSystemButtonMessageColor));
+    SetTextSubpixelRenderingEnabled(false);
+    SetTextColor(views::Button::STATE_NORMAL, kSystemButtonMessageColor);
+    SetTextColor(views::Button::STATE_HOVERED, kSystemButtonMessageColor);
+    SetTextColor(views::Button::STATE_PRESSED, kSystemButtonMessageColor);
+    views::HighlightPathGenerator::Install(
+        this, std::make_unique<SystemButtonHighlightPathGenerator>());
+  }
+
+  SystemButton(const SystemButton&) = delete;
+  SystemButton& operator=(const SystemButton&) = delete;
+  ~SystemButton() override = default;
+
+  // views::LabelButton:
+  void PaintButtonContents(gfx::Canvas* canvas) override {
+    cc::PaintFlags flags;
+    flags.setAntiAlias(true);
+    flags.setColor(kSystemButtonBackgroundColor);
+    flags.setStyle(cc::PaintFlags::kFill_Style);
+    canvas->DrawPath(GetSystemButtonHighlightPath(this), flags);
+  }
+
+  gfx::Insets GetInsets() const override {
+    return gfx::Insets(
+        kSystemButtonMarginTopBottomDp, kSystemButtonMarginLeftRightDp,
+        kSystemButtonMarginTopBottomDp, kSystemButtonMarginLeftRightDp);
+  }
+};
 
 // The label shown below the fingerprint icon.
 class FingerprintLabel : public views::Label {
@@ -490,7 +549,8 @@ class LoginAuthUserView::ChallengeResponseView : public views::View,
     label_ = AddChildView(std::make_unique<views::Label>(
         GetTextForLabel(), views::style::CONTEXT_LABEL,
         views::style::STYLE_PRIMARY));
-    label_->SetEnabledColor(SK_ColorWHITE);
+    label_->SetAutoColorReadabilityEnabled(false);
+    label_->SetEnabledColor(login_constants::kAuthMethodsTextColor);
     label_->SetSubpixelRenderingEnabled(false);
     label_->SetFontList(views::Label::GetDefaultFontList().Derive(
         /*size_delta=*/1, gfx::Font::FontStyle::ITALIC,
@@ -646,12 +706,8 @@ class LoginAuthUserView::DisabledAuthMessageView : public views::View {
 
     cc::PaintFlags flags;
     flags.setStyle(cc::PaintFlags::kFill_Style);
-    SkColor color = Shell::Get()->wallpaper_controller()->GetProminentColor(
-        color_utils::ColorProfile(color_utils::LumaRange::NORMAL,
-                                  color_utils::SaturationRange::MUTED));
-    if (color == kInvalidWallpaperColor || color == SK_ColorTRANSPARENT)
-      color = kDisabledAuthMessageBubbleColor;
-    flags.setColor(color);
+    flags.setColor(
+        ParentAccessView::GetChildUserDialogColor(false /*using blur*/));
     canvas->DrawRoundRect(GetContentsBounds(),
                           kDisabledAuthMessageRoundedCornerRadiusDp, flags);
   }
@@ -767,17 +823,16 @@ LoginAuthUserView::LoginAuthUserView(const LoginUserInfo& user,
 
   // Initialization of |password_view| is deferred because it needs the
   // |pin_view| pointer.
-  password_view->Init(
-      base::Bind(&LoginAuthUserView::OnAuthSubmit, base::Unretained(this)),
-      base::Bind(&LoginPinView::OnPasswordTextChanged,
-                 base::Unretained(pin_view.get())),
-      callbacks.on_easy_unlock_icon_hovered,
-      callbacks.on_easy_unlock_icon_tapped);
+  password_view->Init(base::BindRepeating(&LoginAuthUserView::OnAuthSubmit,
+                                          base::Unretained(this)),
+                      base::BindRepeating(&LoginPinView::OnPasswordTextChanged,
+                                          base::Unretained(pin_view.get())),
+                      callbacks.on_easy_unlock_icon_hovered,
+                      callbacks.on_easy_unlock_icon_tapped);
 
-  auto online_sign_in_message = std::make_unique<views::LabelButton>(
-      this, base::UTF8ToUTF16(user.basic_user_info.display_name));
+  auto online_sign_in_message = std::make_unique<SystemButton>(
+      this, l10n_util::GetStringUTF16(IDS_ASH_LOGIN_SIGN_IN_REQUIRED_MESSAGE));
   online_sign_in_message_ = online_sign_in_message.get();
-  DecorateOnlineSignInMessage(online_sign_in_message_);
 
   auto disabled_auth_message = std::make_unique<DisabledAuthMessageView>();
   disabled_auth_message_ = disabled_auth_message.get();
@@ -914,7 +969,7 @@ void LoginAuthUserView::SetAuthMethods(uint32_t auth_methods,
 
   auth_methods_ = static_cast<AuthMethods>(auth_methods);
   bool has_password = HasAuthMethod(AUTH_PASSWORD);
-  bool has_pin = HasAuthMethod(AUTH_PIN);
+  bool has_pin_pad = HasAuthMethod(AUTH_PIN);
   bool has_tap = HasAuthMethod(AUTH_TAP);
   bool force_online_sign_in = HasAuthMethod(AUTH_ONLINE_SIGN_IN);
   bool has_fingerprint = HasAuthMethod(AUTH_FINGERPRINT);
@@ -932,7 +987,7 @@ void LoginAuthUserView::SetAuthMethods(uint32_t auth_methods,
     // The security token PIN request is a special mode that uses the password
     // and the PIN views, regardless of the user's auth methods.
     has_password = true;
-    has_pin = true;
+    has_pin_pad = true;
     has_tap = false;
     force_online_sign_in = false;
     has_fingerprint = false;
@@ -942,9 +997,6 @@ void LoginAuthUserView::SetAuthMethods(uint32_t auth_methods,
 
   bool hide_auth = auth_disabled || force_online_sign_in;
 
-  // The pin UI should be used only when it's allowed.
-  DCHECK(!has_pin || can_use_pin || security_token_pin_request_);
-
   online_sign_in_message_->SetVisible(force_online_sign_in);
   disabled_auth_message_->SetVisible(auth_disabled);
   if (auth_disabled)
@@ -953,7 +1005,7 @@ void LoginAuthUserView::SetAuthMethods(uint32_t auth_methods,
   // Adjust the PIN keyboard visibility before the password textfield's one, so
   // that when both are about to be hidden the focus doesn't jump to the "1"
   // keyboard button, causing unexpected accessibility effects.
-  pin_view_->SetVisible(has_pin);
+  pin_view_->SetVisible(has_pin_pad);
 
   pin_view_->SetBackButtonVisible(security_token_pin_request_.has_value());
 
@@ -977,9 +1029,9 @@ void LoginAuthUserView::SetAuthMethods(uint32_t auth_methods,
   }
 
   int padding_view_height = kDistanceBetweenPasswordFieldAndPinKeyboardDp;
-  if (has_fingerprint && !has_pin) {
+  if (has_fingerprint && !has_pin_pad) {
     padding_view_height = kDistanceBetweenPasswordFieldAndFingerprintViewDp;
-  } else if (has_challenge_response && !has_pin) {
+  } else if (has_challenge_response && !has_pin_pad) {
     padding_view_height =
         kDistanceBetweenPasswordFieldAndChallengeResponseViewDp;
   }
@@ -987,14 +1039,14 @@ void LoginAuthUserView::SetAuthMethods(uint32_t auth_methods,
       gfx::Size(kNonEmptyWidthDp, padding_view_height));
 
   // Note: both |security_token_pin_request_| and |has_tap| must have higher
-  // priority than |has_pin| when determining the placeholder.
+  // priority than |has_pin_pad| when determining the placeholder.
   if (security_token_pin_request_) {
     password_view_->SetPlaceholderText(l10n_util::GetStringUTF16(
         IDS_ASH_LOGIN_POD_PASSWORD_SMART_CARD_PIN_PLACEHOLDER));
   } else if (has_tap) {
     password_view_->SetPlaceholderText(
         l10n_util::GetStringUTF16(IDS_ASH_LOGIN_POD_PASSWORD_TAP_PLACEHOLDER));
-  } else if (has_pin) {
+  } else if (can_use_pin) {
     password_view_->SetPlaceholderText(
         l10n_util::GetStringUTF16(IDS_ASH_LOGIN_POD_PASSWORD_PIN_PLACEHOLDER));
   } else {
@@ -1030,6 +1082,18 @@ void LoginAuthUserView::SetEasyUnlockIcon(
     EasyUnlockIconId id,
     const base::string16& accessibility_label) {
   password_view_->SetEasyUnlockIcon(id, accessibility_label);
+
+  const std::string& user_display_email =
+      current_user().basic_user_info.display_email;
+  if (id == EasyUnlockIconId::UNLOCKED) {
+    password_view_->SetAccessibleName(l10n_util::GetStringFUTF16(
+        IDS_ASH_LOGIN_POD_AUTH_TAP_PASSWORD_FIELD_ACCESSIBLE_NAME,
+        base::UTF8ToUTF16(user_display_email)));
+  } else {
+    password_view_->SetAccessibleName(l10n_util::GetStringFUTF16(
+        IDS_ASH_LOGIN_POD_PASSWORD_FIELD_ACCESSIBLE_NAME,
+        base::UTF8ToUTF16(user_display_email)));
+  }
 }
 
 void LoginAuthUserView::CaptureStateForAnimationPreLayout() {
@@ -1174,7 +1238,7 @@ void LoginAuthUserView::UpdateForUser(const LoginUserInfo& user) {
   if (user_changed)
     password_view_->Clear();
   online_sign_in_message_->SetText(
-      base::UTF8ToUTF16(user.basic_user_info.display_name));
+      l10n_util::GetStringUTF16(IDS_ASH_LOGIN_SIGN_IN_REQUIRED_MESSAGE));
 }
 
 void LoginAuthUserView::SetFingerprintState(FingerprintState state) {

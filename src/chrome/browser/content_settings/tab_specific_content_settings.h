@@ -21,13 +21,12 @@
 #include "chrome/common/custom_handlers/protocol_handler.h"
 #include "components/content_settings/core/browser/content_settings_observer.h"
 #include "components/content_settings/core/browser/content_settings_usages_state.h"
+#include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "net/cookies/canonical_cookie.h"
-
-class HostContentSettingsMap;
 
 namespace content {
 class NavigationHandle;
@@ -152,14 +151,14 @@ class TabSpecificContentSettings
                                    bool blocked_by_policy);
 
   // Resets the |content_settings_status_|, except for
-  // information which are needed for navigation: CONTENT_SETTINGS_TYPE_COOKIES
-  // for cookies and service workers, and CONTENT_SETTINGS_TYPE_JAVASCRIPT for
+  // information which are needed for navigation: ContentSettingsType::COOKIES
+  // for cookies and service workers, and ContentSettingsType::JAVASCRIPT for
   // service workers.
   // Only public for tests.
   void ClearContentSettingsExceptForNavigationRelatedSettings();
 
-  // Resets navigation related information (CONTENT_SETTINGS_TYPE_COOKIES and
-  // CONTENT_SETTINGS_TYPE_JAVASCRIPT).
+  // Resets navigation related information (ContentSettingsType::COOKIES and
+  // ContentSettingsType::JAVASCRIPT).
   // Only public for tests.
   void ClearNavigationRelatedContentSettings();
 
@@ -200,6 +199,14 @@ class TabSpecificContentSettings
   // Only public for tests.
   const std::string& media_stream_selected_video_device() const {
     return media_stream_selected_video_device_;
+  }
+
+  bool camera_was_just_granted_on_site_level() {
+    return camera_was_just_granted_on_site_level_;
+  }
+
+  bool mic_was_just_granted_on_site_level() {
+    return mic_was_just_granted_on_site_level_;
   }
 
   // Returns the state of the camera and microphone usage.
@@ -276,15 +283,11 @@ class TabSpecificContentSettings
   // blocked.
   void SetPepperBrokerAllowed(bool allowed);
 
-  // Message handlers.
-  // Only public for tests.
   void OnContentBlocked(ContentSettingsType type);
-  void OnContentBlockedWithDetail(ContentSettingsType type,
-                                  const base::string16& details);
   void OnContentAllowed(ContentSettingsType type);
 
   // These methods are invoked on the UI thread forwarded from the
-  // ChromeRenderMessageFilter.
+  // ContentSettingsManagerImpl.
   void OnDomStorageAccessed(const GURL& url,
                             bool local,
                             bool blocked_by_policy);
@@ -352,8 +355,6 @@ class TabSpecificContentSettings
   // content::WebContentsObserver overrides.
   void RenderFrameForInterstitialPageCreated(
       content::RenderFrameHost* render_frame_host) override;
-  bool OnMessageReceived(const IPC::Message& message,
-                         content::RenderFrameHost* render_frame_host) override;
   void DidStartNavigation(
       content::NavigationHandle* navigation_handle) override;
   void ReadyToCommitNavigation(
@@ -452,8 +453,14 @@ class TabSpecificContentSettings
   std::string media_stream_requested_audio_device_;
   std::string media_stream_requested_video_device_;
 
+  // The camera and/or microphone permission was granted to this origin from a
+  // permission prompt that was triggered by the currently active document.
+  bool camera_was_just_granted_on_site_level_ = false;
+  bool mic_was_just_granted_on_site_level_ = false;
+
   // Observer to watch for content settings changed.
-  ScopedObserver<HostContentSettingsMap, content_settings::Observer> observer_;
+  ScopedObserver<HostContentSettingsMap, content_settings::Observer> observer_{
+      this};
 
   // Stores content settings changed by the user via page info since the last
   // navigation. Used to determine whether to display the settings in page info.

@@ -6,12 +6,14 @@
 <link rel="help" href="https://github.com/WICG/display-locking">
 <link rel="match" href="selection-shadow-ref.html">
 <script src="/common/reftest-wait.js"></script>
-<style>
-  div {
-    contain: style layout;
-  }
-</style>
+<script src="resources/utils.js"></script>
 
+<style>
+div:not([rendersubtree~="invisible"]) {
+  intrinsic-size: legacy !important;
+}
+</style>
+</div>
 <div id="host">
   <div id="slottedToFirst" slot="first">
     slotted to first slot
@@ -39,8 +41,6 @@ Structure:
 
 async function runTest() {
   const shadowRoot = host.attachShadow({ mode: "open" });
-  shadowRoot.innerHTML = "<style> div { contain: style layout; } </style>";
-
   const firstSlot = document.createElement("slot");
   firstSlot.name = "first";
   shadowRoot.appendChild(firstSlot);
@@ -52,10 +52,13 @@ async function runTest() {
   secondSlot.name = "second";
   shadowRoot.appendChild(secondSlot);
 
-  // TODO(rakina): make this use rendersubtree once sizing is implemented.
-  await host.displayLock.acquire({ timeout: Infinity, activatable: true, size: [100, 100] });
-  await nonActivatable.displayLock.acquire({ timeout: Infinity, activatable: false, size: [20, 20] });
-  await slottedToFirst.displayLock.acquire({ timeout: Infinity, activatable: true, size: [40, 40] });
+  host.style = "intrinsic-size: 100px 100px;"
+  nonActivatable.style = "intrinsic-size: 20px 20px;"
+  slottedToFirst.style = "intrinsic-size: 40px 40px;"
+  await setInvisibleActivatable(host);
+  await setInvisible(nonActivatable);
+  await setInvisibleActivatable(slottedToFirst);
+
   window.getSelection().removeAllRanges();
   const selectionRange = document.createRange();
   selectionRange.setStart(slottedToFirst.firstChild, 8);

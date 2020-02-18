@@ -1,6 +1,6 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
-<link rel="import" href="chrome://resources/cr_elements/chromeos/network/cr_network_listener_behavior.html">
+<link rel="import" href="chrome://resources/cr_components/chromeos/network/network_listener_behavior.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_link_row/cr_link_row.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
@@ -28,12 +28,12 @@
         --feature-item-border-top-style: none;
       }
 
-      #feature-items-container {
-        @apply --settings-list-frame-padding;
+      cr-button {
+        white-space: nowrap;
       }
 
-      #forget-device-container {
-        border-top: var(--cr-separator-line);
+      #feature-items-container {
+        padding-inline-start: var(--cr-section-indent-padding);
       }
     </style>
     <div class="settings-box first">
@@ -99,11 +99,17 @@
         </template>
       </div>
     </template>
-    <div id="forget-device-container">
-      <cr-link-row id="forget-device" class="hr"
-          on-click="handleForgetDeviceClick_"
-          label="$i18n{multideviceForgetDevice}"
-          sub-label="$i18n{multideviceForgetDeviceSummary}"></cr-link-row>
+    <div class="settings-box two-line">
+        <div id="forget-device-label" class="start">
+            $i18n{multideviceForgetDevice}
+            <div class="secondary">
+                $i18n{multideviceForgetDeviceSummary}
+            </div>
+        </div>
+        <cr-button on-click="handleForgetDeviceClick_"
+          aria-labelledby="forgetDeviceLabel">
+           $i18n{multideviceForgetDeviceDisconnect}
+        </cr-button>
     </div>
     <cr-dialog id="forgetDeviceDialog">
       <div slot="title">$i18n{multideviceForgetDevice}</div>
@@ -120,7 +126,7 @@
         <cr-button id="confirmButton"
             class="action-button"
             on-click="onForgetDeviceDialogConfirmClick_">
-          $i18n{confirm}
+          $i18n{multideviceForgetDeviceDisconnect}
         </cr-button>
       </div>
     </cr-dialog>

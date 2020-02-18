@@ -98,19 +98,27 @@ class WorkspaceArchiveBase(workspace_stages.WorkspaceStageBase,
       upload_urls += [self.UniqifyArchiveUrl(url) for url in extra_upload_urls]
     return upload_urls
 
-  def UploadDummyArtifact(self, path):
+  def UploadDummyArtifact(self, path, faft_hack=False):
     """Upload artifacts to the dummy build results."""
     logging.info('UploadDummyArtifact: %s', path)
     with osutils.TempDir(prefix='dummy') as tempdir:
       artifact_path = os.path.join(
           tempdir,
-          '%s_%s' % (self._current_board, os.path.basename(path)))
+          '%s/%s' % (self._current_board, os.path.basename(path)))
 
       logging.info('Rename: %s -> %s', path, artifact_path)
+      os.mkdir(os.path.join(tempdir, self._current_board))
       shutil.copyfile(path, artifact_path)
 
       logging.info('Main artifact from: %s', artifact_path)
-      self.UploadArtifact(artifact_path, archive=True)
+
+      if faft_hack:
+        # We put the firmware artifact in a directory named by board so that
+        # immutable FAFT infrastructure can find it. We should remove this.
+        self.UploadArtifact(
+            artifact_path, archive=True, prefix=self._current_board)
+      else:
+        self.UploadArtifact(artifact_path, archive=True)
 
     gs_context = gs.GSContext(dry_run=self._run.options.debug_forced)
     for url in self.GetDummyArchiveUrls():
@@ -180,7 +188,7 @@ class WorkspaceArchiveBase(workspace_stages.WorkspaceStageBase,
 class FirmwareArchiveStage(WorkspaceArchiveBase):
   """Generates and publishes firmware specific build artifacts.
 
-  This stage publishes <board>_firmware_from_source.tar.bz2 to this
+  This stage publishes <board>/firmware_from_source.tar.bz2 to this
   builds standard build artifacts, and also generates a 'fake' build
   result (called a Dummy result) that looks like it came from a
   traditional style firmware builder for a single board on the
@@ -202,7 +210,7 @@ class FirmwareArchiveStage(WorkspaceArchiveBase):
           self._build_root, self._current_board,
           self.archive_path, firmware_path)
 
-      self.UploadDummyArtifact(firmware_path)
+      self.UploadDummyArtifact(firmware_path, faft_hack=True)
 
   def PerformStage(self):
     """Archive and publish the firmware build artifacts."""

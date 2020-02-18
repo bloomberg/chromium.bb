@@ -114,7 +114,10 @@ void ExpectAllContainers() {
       Shell::GetContainer(root_window, kShellWindowId_LockScreenContainer));
   EXPECT_TRUE(Shell::GetContainer(root_window,
                                   kShellWindowId_LockSystemModalContainer));
-  EXPECT_TRUE(Shell::GetContainer(root_window, kShellWindowId_StatusContainer));
+  EXPECT_TRUE(
+      Shell::GetContainer(root_window, kShellWindowId_ShelfControlContainer));
+  EXPECT_TRUE(
+      Shell::GetContainer(root_window, kShellWindowId_OverviewFocusContainer));
   EXPECT_TRUE(Shell::GetContainer(root_window, kShellWindowId_MenuContainer));
   EXPECT_TRUE(Shell::GetContainer(root_window,
                                   kShellWindowId_DragImageAndTooltipContainer));
@@ -637,7 +640,7 @@ TEST_P(NoDuplicateShellContainerIdsTest, ValidateContainersIds) {
   ExpectAllContainers();
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          NoDuplicateShellContainerIdsTest,
                          ::testing::Values(false, true));
 

@@ -26,13 +26,22 @@ UTILS_METRICS_LOG_ENVVAR = 'BUILD_API_METRICS_LOG'
 
 OP_START_TIMER = 'start-timer'
 OP_STOP_TIMER = 'stop-timer'
+OP_GAUGE = 'gauge'
 OP_NAMED_EVENT = 'event'
-VALID_OPS = (OP_START_TIMER, OP_STOP_TIMER, OP_NAMED_EVENT)
+OP_EXPECTS_ARG = {
+    OP_START_TIMER: True,
+    OP_STOP_TIMER: True,
+    OP_NAMED_EVENT: False,
+    OP_GAUGE: True,
+}
+VALID_OPS = set(OP_EXPECTS_ARG)
 
-# MetricEvent store a start or a stop to a timer. Timers are keyed
-# with a unique value to make matching the bookends easier.
+# MetricEvent stores one of a few different types of metric events. The 'arg'
+# parameter is an overloaded value which is discriminated by the 'op' parameter.
+# Timers utilize 'arg' as a key value for disambiguation, and gauges use the arg
+# as their gauge value.
 MetricEvent = collections.namedtuple('MetricEvent', ('timestamp_epoch_millis',
-                                                     'name', 'op', 'key'))
+                                                     'name', 'op', 'arg'))
 
 
 class Error(Exception):
@@ -70,14 +79,14 @@ def parse_timer(terms):
                            (len(terms), terms))
 
   assert terms[2] in {OP_START_TIMER, OP_STOP_TIMER}
-  return MetricEvent(int(terms[0]), terms[1], terms[2], terms[3])
+  return MetricEvent(int(terms[0]), terms[1], terms[2], arg=terms[3])
 
 
 def parse_named_event(terms):
   """Parse a named event line.
 
   Args:
-    terms: A list of the subdimensions of the MetricEvent type, omitting "key".
+    terms: A list of the subdimensions of the MetricEvent type, omitting "arg".
 
   Returns:
     A MetricEvent from the content of the terms.
@@ -91,7 +100,29 @@ def parse_named_event(terms):
                            (len(terms), terms))
 
   assert terms[2] == OP_NAMED_EVENT
-  return MetricEvent(int(terms[0]), terms[1], terms[2], key=None)
+  return MetricEvent(int(terms[0]), terms[1], terms[2], arg=None)
+
+
+def parse_gauge(terms):
+  """Parse a gauge, which is an event with an associated integer value.
+
+  Args:
+    terms: A list of the subdimensions of the MetricEvent type, leveraging |arg|
+           as a container for the actual gauge value.
+
+  Returns:
+    A MetricEvent from the content of the terms.
+
+  Raises:
+    ParseMetricError: An error occurred parsing the data from the list of terms.
+  """
+  if len(terms) != 4:
+    raise ParseMetricError('Incorrect number of terms for gauge. Should '
+                           'have been 4, instead it is %d. See terms %s.' %
+                           (len(terms), terms))
+
+  assert terms[2] == OP_GAUGE
+  return MetricEvent(int(terms[0]), terms[1], terms[2], arg=int(terms[3]))
 
 
 def get_metric_parser(op):
@@ -100,6 +131,7 @@ def get_metric_parser(op):
       OP_START_TIMER: parse_timer,
       OP_STOP_TIMER: parse_timer,
       OP_NAMED_EVENT: parse_named_event,
+      OP_GAUGE: parse_gauge,
   }[op]
 
 
@@ -121,7 +153,10 @@ def read_metrics_events():
   if not metrics_logfile:
     return
 
-  logging.debug('reading metrics logs from %s', metrics_logfile)
+  logging.info('reading metrics logs from %s', metrics_logfile)
+  # TODO(wbbradley): Drop this once it's stable https://crbug.com/1001909.
+  with open(metrics_logfile) as f:
+    logging.info('[metrics log file]\n%s', f.read())
   with open(metrics_logfile, 'r') as f:
     for line in f:
       yield parse_metric(line)
@@ -150,7 +185,7 @@ def collect_metrics(functor):
   return wrapper
 
 
-def append_metrics_log(timestamp, name, op, key=None):
+def append_metrics_log(timestamp, name, op, arg=None):
   """Handle appending a list of terms to the metrics log.
 
   If the environment does not specify a metrics log, then skip silently.
@@ -159,12 +194,12 @@ def append_metrics_log(timestamp, name, op, key=None):
     timestamp: A millisecond epoch timestamp.
     name: A period-separated string describing the event.
     op: One of the OP_* values, determining which type of event this is.
-    key: An optional key to disambiguate equivalenty named events.
+    arg: An accessory value for use based on the related |op|.
   """
   metrics_log = os.environ.get(UTILS_METRICS_LOG_ENVVAR)
   terms = [timestamp, name.replace('|', '_'), op]
-  if key:
-    terms.append(key)
+  if arg is not None:
+    terms.append(arg)
 
   # Format the actual line to log.
   line = '|'.join(str(x) for x in terms)
@@ -184,14 +219,14 @@ def timer(name):
   Yields:
     Context for context manager surrounding event emission.
   """
-  # Timer events use a "key" to disambiguate in case of multiple concurrent or
+  # Timer events use a |arg| to disambiguate in case of multiple concurrent or
   # overlapping timers with the same name.
   key = uuid.uuid4()
   try:
-    append_metrics_log(current_milli_time(), name, OP_START_TIMER, key=key)
+    append_metrics_log(current_milli_time(), name, OP_START_TIMER, arg=key)
     yield
   finally:
-    append_metrics_log(current_milli_time(), name, OP_STOP_TIMER, key=key)
+    append_metrics_log(current_milli_time(), name, OP_STOP_TIMER, arg=key)
 
 
 def event(name):

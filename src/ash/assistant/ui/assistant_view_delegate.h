@@ -42,12 +42,6 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantViewDelegateObserver
  public:
   using AssistantSuggestion = chromeos::assistant::mojom::AssistantSuggestion;
 
-  // Invoked when Assistant has received a deep link of the specified |type|
-  // with the given |params|.
-  virtual void OnDeepLinkReceived(
-      assistant::util::DeepLinkType type,
-      const std::map<std::string, std::string>& params) {}
-
   // Invoked when the dialog plate button identified by |id| is pressed.
   virtual void OnDialogPlateButtonPressed(AssistantButtonId id) {}
 
@@ -141,6 +135,9 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantViewDelegate {
   virtual void GetNavigableContentsFactoryForView(
       mojo::PendingReceiver<content::mojom::NavigableContentsFactory>
           receiver) = 0;
+
+  // Returns the root window for the specified |display_id|.
+  virtual aura::Window* GetRootWindowForDisplayId(int64_t display_id) = 0;
 
   // Returns the root window that newly created windows should be added to.
   virtual aura::Window* GetRootWindowForNewWindows() = 0;

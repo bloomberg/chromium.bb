@@ -15,7 +15,6 @@ import cgi
 import codecs
 import os
 import re
-import tempfile
 
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
@@ -239,7 +238,7 @@ inherit() {
       'overlay_list': ' '.join(overlays),
   }
 
-  with tempfile.NamedTemporaryFile(bufsize=0) as f:
+  with cros_build_lib.UnbufferedNamedTemporaryFile() as f:
     osutils.WriteFile(f.name, ebuild_env_tmpl % tmpl_env)
     env = osutils.SourceEnvironment(
         f.name, whitelist=['LICENSE'], ifs=' ', multiline=True)
@@ -354,9 +353,9 @@ class PackageInfo(object):
     """
     ebuild_cmd = cros_build_lib.GetSysrootToolPath(
         cros_build_lib.GetSysroot(self.board), 'ebuild')
-    return cros_build_lib.RunCommand(
+    return cros_build_lib.run(
         [ebuild_cmd, ebuild_path] + phases, print_cmd=debug,
-        redirect_stdout=True)
+        redirect_stdout=True, encoding='utf-8')
 
   def _GetOverrideLicense(self):
     """Look in COPYRIGHT_ATTRIBUTION_DIR for license with copyright attribution.
@@ -462,10 +461,10 @@ class PackageInfo(object):
     # to find the MIT license:
     # dev-libs/libatomic_ops-7.2d/work/gc-7.2/libatomic_ops/doc/LICENSING.txt
     args = ['find', src_dir, '-type', 'f']
-    result = cros_build_lib.RunCommand(args, print_cmd=debug,
-                                       redirect_stdout=True).output.splitlines()
+    result = cros_build_lib.run(args, print_cmd=debug, redirect_stdout=True,
+                                encoding='utf-8')
     # Truncate results to look like this: swig-2.0.4/COPYRIGHT
-    files = [x[len(src_dir):].lstrip('/') for x in result]
+    files = [x[len(src_dir):].lstrip('/') for x in result.stdout.splitlines()]
     license_files = []
     for name in files:
       # When we scan a source tree managed by git, this can contain license
@@ -569,8 +568,8 @@ being scraped currently).""",
         cros_build_lib.GetSysroot(self.board), 'equery')
     args = [equery_cmd, '-q', '-C', 'which', self.fullnamerev]
     try:
-      path = cros_build_lib.RunCommand(args, print_cmd=True,
-                                       redirect_stdout=True).output.strip()
+      path = cros_build_lib.run(args, print_cmd=True, encoding='utf-8',
+                                redirect_stdout=True).output.strip()
     except cros_build_lib.RunCommandError:
       path = None
 
@@ -583,7 +582,7 @@ being scraped currently).""",
     logging.debug('%s -> %s', ' '.join(args), path)
 
     if not os.access(path, os.F_OK):
-      raise AssertionError("Can't access %s", path)
+      raise AssertionError("Can't access %s" % (path,))
 
     return path
 
@@ -759,7 +758,7 @@ being scraped currently).""",
       save_file: File to save the yaml contents into.
     """
     logging.debug('Saving license to %s', save_file)
-    yaml_dump = self.__dict__.items()
+    yaml_dump = list(self.__dict__.items())
     osutils.WriteFile(save_file, yaml.dump(yaml_dump), makedirs=True)
 
 
@@ -817,7 +816,7 @@ class Licensing(object):
 
   @property
   def sorted_licenses(self):
-    return sorted(self.licenses.keys(), key=str.lower)
+    return sorted(self.licenses, key=lambda x: x.lower())
 
   def _LoadLicenseDump(self, pkg):
     save_file = pkg.license_dump_path
@@ -897,6 +896,159 @@ class Licensing(object):
       )
       if not any(fullnamerev.startswith(x) for x in LEGACY_PKGS):
         raise AssertionError('Proprietary-Binary is not a valid license.')
+
+    # TODO(crbug.com/1019728): Remove this entirely.
+    # We allow a few packages for now so new packages will stop showing up.
+    if 'Google-TOS' in license_names:
+      # Note: DO NOT ADD ANY MORE PACKAGES HERE.
+      LEGACY_PKGS = {
+          'chromeos-base/android-flashstation-app',
+          'chromeos-base/app-shell-apps-rialto',
+          'chromeos-base/chromeos-board-default-apps-atlas',
+          'chromeos-base/chromeos-board-default-apps-blaze',
+          'chromeos-base/chromeos-board-default-apps-butterfly',
+          'chromeos-base/chromeos-board-default-apps-candy',
+          'chromeos-base/chromeos-board-default-apps-cave',
+          'chromeos-base/chromeos-board-default-apps-chell',
+          'chromeos-base/chromeos-board-default-apps-falco',
+          'chromeos-base/chromeos-board-default-apps-kip',
+          'chromeos-base/chromeos-board-default-apps-link',
+          'chromeos-base/chromeos-board-default-apps-mickey',
+          'chromeos-base/chromeos-board-default-apps-minnie',
+          'chromeos-base/chromeos-board-default-apps-nocturne',
+          'chromeos-base/chromeos-board-default-apps-paine',
+          'chromeos-base/chromeos-board-default-apps-pi',
+          'chromeos-base/chromeos-board-default-apps-pit',
+          'chromeos-base/chromeos-board-default-apps-quawks',
+          'chromeos-base/chromeos-board-default-apps-setzer',
+          'chromeos-base/chromeos-board-default-apps-skate',
+          'chromeos-base/chromeos-board-default-apps-snappy',
+          'chromeos-base/chromeos-board-default-apps-soraka',
+          'chromeos-base/chromeos-board-default-apps-speedy',
+          'chromeos-base/chromeos-board-default-apps-squawks',
+          'chromeos-base/chromeos-board-default-apps-terra',
+          'chromeos-base/chromeos-board-default-apps-winky',
+          'chromeos-base/chromeos-board-default-apps-yuna',
+          'chromeos-base/chromeos-board-default-apps-zako',
+          'chromeos-base/chromeos-chrome',
+          'chromeos-base/chromeos-default-apps',
+          'chromeos-base/chromeos-disk-firmware-enguarde',
+          'chromeos-base/chromeos-disk-firmware-falco',
+          'chromeos-base/chromeos-disk-firmware-gnawty',
+          'chromeos-base/chromeos-disk-firmware-samus',
+          'chromeos-base/chromeos-disk-firmware-squawks',
+          'chromeos-base/chromeos-disk-firmware-test-enguarde',
+          'chromeos-base/chromeos-disk-firmware-test-gnawty',
+          'chromeos-base/chromeos-disk-firmware-test-samus',
+          'chromeos-base/chromeos-disk-firmware-test-squawks',
+          'chromeos-base/chromeos-firmware-anx7688',
+          'chromeos-base/fibocom-firmware',
+          'chromeos-base/google-sans-fonts',
+          'chromeos-base/houdini',
+          'chromeos-base/houdini-pi',
+          'chromeos-base/houdini-qt',
+          'chromeos-base/intel-hdcp',
+          'chromeos-base/intel-wifi-fw-dump',
+          'chromeos-base/monotype-fonts',
+          'chromeos-base/rialto-cellular-autoconnect',
+          'chromeos-base/rialto-modem-watchdog',
+          'chromeos-base/rialto-override-apn',
+          'chromeos-base/rialto-override-scanresponse',
+          'chromeos-base/rialto-services',
+          'chromeos-base/widevine-cdm',
+          'dev-embedded/meta-embedded-toolkit',
+          'dev-util/PVRPerfServer',
+          'dev-util/PVRTrace',
+          'media-libs/a630-fw',
+          'media-libs/adreno-drivers',
+          'media-libs/apl-hotword-support',
+          'media-libs/arc-img-ddk',
+          'media-libs/arc-mali-drivers',
+          'media-libs/arc-mali-drivers-bifrost',
+          'media-libs/dlm',
+          'media-libs/glk-hotword-support',
+          'media-libs/go2001-fw',
+          'media-libs/img-ddk',
+          'media-libs/img-ddk-bin',
+          'media-libs/kbl-hotword-support',
+          'media-libs/kbl-rt5514-hotword-support',
+          'media-libs/mali-drivers',
+          'media-libs/mali-drivers-bifrost',
+          'media-libs/mali-drivers-bifrost-bin',
+          'media-libs/mali-drivers-bin',
+          'media-libs/mfc-fw',
+          'media-libs/mfc-fw-v7',
+          'media-libs/mfc-fw-v8',
+          'media-libs/rk3399-hotword-support',
+          'media-libs/skl-hotword-support',
+          'media-libs/vpu-fw',
+          'sys-apps/accelerator-bootstrap',
+          'sys-apps/eid',
+          'sys-apps/loonix-hydrogen',
+          'sys-boot/chromeos-firmware-ps8751',
+          'sys-boot/chromeos-firmware-ps8805',
+          'sys-boot/chromeos-vendor-strings-wilco',
+          'sys-boot/coreboot-private-files-amenia',
+          'sys-boot/coreboot-private-files-aplrvp',
+          'sys-boot/coreboot-private-files-atlas',
+          'sys-boot/coreboot-private-files-baseboard-auron',
+          'sys-boot/coreboot-private-files-baseboard-coral',
+          'sys-boot/coreboot-private-files-baseboard-fizz',
+          'sys-boot/coreboot-private-files-baseboard-glados',
+          'sys-boot/coreboot-private-files-baseboard-jecht',
+          'sys-boot/coreboot-private-files-baseboard-kalista',
+          'sys-boot/coreboot-private-files-baseboard-kblrvp',
+          'sys-boot/coreboot-private-files-baseboard-kunimitsu',
+          'sys-boot/coreboot-private-files-baseboard-nami',
+          'sys-boot/coreboot-private-files-baseboard-octopus',
+          'sys-boot/coreboot-private-files-baseboard-poppy',
+          'sys-boot/coreboot-private-files-baseboard-rammus',
+          'sys-boot/coreboot-private-files-baseboard-reef',
+          'sys-boot/coreboot-private-files-baseboard-strago',
+          'sys-boot/coreboot-private-files-bolt',
+          'sys-boot/coreboot-private-files-chipset-picasso',
+          'sys-boot/coreboot-private-files-chipset-stnyridge',
+          'sys-boot/coreboot-private-files-cnlrvp',
+          'sys-boot/coreboot-private-files-drallion',
+          'sys-boot/coreboot-private-files-eve',
+          'sys-boot/coreboot-private-files-falco',
+          'sys-boot/coreboot-private-files-fizz',
+          'sys-boot/coreboot-private-files-glkrvp',
+          'sys-boot/coreboot-private-files-grunt',
+          'sys-boot/coreboot-private-files-hatch',
+          'sys-boot/coreboot-private-files-kalista',
+          'sys-boot/coreboot-private-files-mistral',
+          'sys-boot/coreboot-private-files-nami',
+          'sys-boot/coreboot-private-files-nautilus',
+          'sys-boot/coreboot-private-files-nocturne',
+          'sys-boot/coreboot-private-files-panther',
+          'sys-boot/coreboot-private-files-peppy',
+          'sys-boot/coreboot-private-files-poppy',
+          'sys-boot/coreboot-private-files-pyro',
+          'sys-boot/coreboot-private-files-rambi',
+          'sys-boot/coreboot-private-files-rammus',
+          'sys-boot/coreboot-private-files-reef',
+          'sys-boot/coreboot-private-files-samus',
+          'sys-boot/coreboot-private-files-sand',
+          'sys-boot/coreboot-private-files-sarien',
+          'sys-boot/coreboot-private-files-sklrvp',
+          'sys-boot/coreboot-private-files-snappy',
+          'sys-boot/coreboot-private-files-soraka',
+          'sys-boot/exynos-pre-boot',
+          'sys-boot/intel-cflfsp',
+          'sys-boot/intel-glkfsp',
+          'sys-boot/intel-iclfsp',
+          'sys-boot/mma-blobs',
+          'sys-boot/nhlt-blobs',
+          'sys-boot/rk3399-hdcp-fw',
+          'sys-firmware/displaylink-firmware',
+          'sys-firmware/huddly-firmware',
+          'sys-firmware/iq-firmware',
+          'sys-firmware/sis-firmware',
+          'www-servers/spacecast',
+      }
+      if not any(fullnamerev.startswith(x) for x in LEGACY_PKGS):
+        raise AssertionError('Google-TOS is not a valid license.')
 
     pkg = PackageInfo(self.board, fullnamerev)
     pkg.homepages = homepages
@@ -1052,9 +1204,9 @@ after fixing the license.""" % (license_name, '\n'.join(set(stock + custom))))
         self.licenses.setdefault(sln, []).append(pkg.fullnamerev)
 
     # Find licenses only used once, and roll them in the package that uses them.
-    # We use keys() because licenses is modified in the loop, so we can't use
+    # We use list() because licenses is modified in the loop, so we can't use
     # an iterator.
-    for sln in self.licenses.keys():
+    for sln in list(self.licenses):
       if len(self.licenses[sln]) == 1:
         pkg_fullnamerev = self.licenses[sln][0]
         logging.info('Collapsing shared license %s into single use license '
@@ -1097,7 +1249,8 @@ after fixing the license.""" % (license_name, '\n'.join(set(stock + custom))))
         'licenses': '\n'.join(licenses_txt),
     }
     osutils.WriteFile(output_file,
-                      self.EvaluateTemplate(file_template, env).encode('UTF-8'))
+                      self.EvaluateTemplate(file_template, env).encode('utf-8'),
+                      mode='wb')
 
 
 def ListInstalledPackages(board, all_packages=False):
@@ -1119,9 +1272,8 @@ def ListInstalledPackages(board, all_packages=False):
     equery_cmd = cros_build_lib.GetSysrootToolPath(
         cros_build_lib.GetSysroot(board), 'equery')
     args = [equery_cmd, 'list', '*']
-    packages = cros_build_lib.RunCommand(args, print_cmd=debug,
-                                         redirect_stdout=True
-                                        ).output.splitlines()
+    packages = cros_build_lib.run(args, print_cmd=debug, encoding='utf-8',
+                                  redirect_stdout=True).output.splitlines()
   else:
     # The following returns all packages that were part of the build tree
     # (many get built or used during the build, but do not get shipped).
@@ -1131,8 +1283,8 @@ def ListInstalledPackages(board, all_packages=False):
         cros_build_lib.GetSysroot(board), 'emerge')
     args = [emerge_cmd, '--with-bdeps=y', '--usepkgonly',
             '--emptytree', '--pretend', '--color=n', 'virtual/target-os']
-    emerge = cros_build_lib.RunCommand(args, print_cmd=debug,
-                                       redirect_stdout=True).output.splitlines()
+    emerge = cros_build_lib.run(args, print_cmd=debug, encoding='utf-8',
+                                redirect_stdout=True).output.splitlines()
     # Another option which we've decided not to use, is bdeps=n.  This outputs
     # just the packages we ship, but does not packages that were used to build
     # them, including a package like flex which generates a .a that is included
@@ -1190,6 +1342,11 @@ def ReadUnknownEncodedFile(file_path, logging_text=None):
   # XML 1.0 acceptable character range:
   # Char ::= #x9 | #xA | #xD | [#x20-#xD7FF] | [#xE000-#xFFFD] | \
   #          [#x10000-#x10FFFF]
+
+  # Strip out common/OK values silently.
+  silent_chars_re = re.compile(u'[\x0c]')
+  file_txt = silent_chars_re.sub('', file_txt)
+
   illegal_chars_re = re.compile(
       u'[\x00-\x08\x0b\x0c\x0e-\x1F\uD800-\uDFFF\uFFFE\uFFFF]')
 

@@ -13,13 +13,7 @@ import static org.mockito.Mockito.when;
 import android.app.Activity;
 import android.support.test.filters.SmallTest;
 
-import com.google.android.libraries.feed.api.client.lifecycle.AppLifecycleListener;
-import com.google.android.libraries.feed.api.host.network.NetworkClient;
-import com.google.android.libraries.feed.hostimpl.storage.testing.InMemoryContentStorage;
-import com.google.android.libraries.feed.hostimpl.storage.testing.InMemoryJournalStorage;
-
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -29,7 +23,6 @@ import org.mockito.MockitoAnnotations;
 
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
-import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.test.util.CallbackHelper;
@@ -40,6 +33,10 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.DeferredStartupHandler;
 import org.chromium.chrome.browser.feed.FeedAppLifecycle.AppLifecycleEvent;
+import org.chromium.chrome.browser.feed.library.api.client.lifecycle.AppLifecycleListener;
+import org.chromium.chrome.browser.feed.library.api.host.network.NetworkClient;
+import org.chromium.chrome.browser.feed.library.hostimpl.storage.testing.InMemoryContentStorage;
+import org.chromium.chrome.browser.feed.library.hostimpl.storage.testing.InMemoryJournalStorage;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.multiwindow.MultiWindowTestHelper;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
@@ -107,11 +104,7 @@ public class FeedAppLifecycleTest {
         DeferredStartupHandler.setInstanceForTests(mTestDeferredStartupHandler);
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            try {
-                ChromeBrowserInitializer.getInstance().handleSynchronousStartup();
-            } catch (ProcessInitException e) {
-                Assert.fail("Native initialization failed");
-            }
+            ChromeBrowserInitializer.getInstance().handleSynchronousStartup();
             Profile profile = Profile.getLastUsedProfile().getOriginalProfile();
             mLifecycleBridge = new FeedLifecycleBridge(profile);
             mAppLifecycle =
@@ -140,8 +133,7 @@ public class FeedAppLifecycleTest {
     @Test
     @SmallTest
     @Feature({"Feed"})
-    public void testActivityStateChangesIncrementStateCounters()
-            throws InterruptedException, TimeoutException {
+    public void testActivityStateChangesIncrementStateCounters() throws TimeoutException {
         verifyHistogram(mHistogramAppLifecycleEvents, AppLifecycleEvent.ENTER_BACKGROUND, 0);
         verify(mAppLifecycleListener, times(1)).onEnterForeground();
         signalActivityStop(mActivity);
@@ -157,7 +149,7 @@ public class FeedAppLifecycleTest {
     @SmallTest
     @Feature({"Feed"})
     @EnableFeatures({ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS})
-    public void testNtpOpeningTriggersInitializeOnlyOnce() throws InterruptedException {
+    public void testNtpOpeningTriggersInitializeOnlyOnce() {
         // We open to about:blank initially so we shouldn't have called initialize() yet.
         verify(mAppLifecycleListener, times(0)).initialize();
         mActivityTestRule.loadUrl(UrlConstants.NTP_URL);
@@ -262,8 +254,7 @@ public class FeedAppLifecycleTest {
     @Test
     @SmallTest
     @Feature({"Feed"})
-    public void testSecondWindowDoesNotTriggerForegroundOrBackground()
-            throws InterruptedException, TimeoutException {
+    public void testSecondWindowDoesNotTriggerForegroundOrBackground() throws TimeoutException {
         verify(mAppLifecycleListener, times(1)).onEnterForeground();
 
         MultiWindowUtils.getInstance().setIsInMultiWindowModeForTesting(true);
@@ -288,7 +279,7 @@ public class FeedAppLifecycleTest {
     @SmallTest
     @Feature({"Feed"})
     @EnableFeatures({ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS})
-    public void testMultiWindowDoesNotCauseMultipleInitialize() throws InterruptedException {
+    public void testMultiWindowDoesNotCauseMultipleInitialize() {
         mActivityTestRule.loadUrl(UrlConstants.NTP_URL);
         verify(mAppLifecycleListener, times(1)).initialize();
 
@@ -302,8 +293,7 @@ public class FeedAppLifecycleTest {
     @Test
     @SmallTest
     @Feature({"Feed"})
-    public void testResumeTriggersSchedulerForegrounded()
-            throws InterruptedException, TimeoutException {
+    public void testResumeTriggersSchedulerForegrounded() throws TimeoutException {
         verify(mFeedScheduler, times(1)).onForegrounded();
         signalActivityResume(mActivity);
         verify(mFeedScheduler, times(2)).onForegrounded();
@@ -327,7 +317,7 @@ public class FeedAppLifecycleTest {
     public void testDelayedInitNoParam() {
         verify(mAppLifecycleListener, times(1)).onEnterForeground();
         mTestDeferredStartupHandler.runAllTasks();
-        verify(mAppLifecycleListener, times(1)).initialize();
+        verify(mAppLifecycleListener, times(0)).initialize();
     }
 
     @Test
@@ -367,26 +357,23 @@ public class FeedAppLifecycleTest {
     testDelayedInitZeroParamNotBoolean() {
         verify(mAppLifecycleListener, times(1)).onEnterForeground();
         mTestDeferredStartupHandler.runAllTasks();
-        verify(mAppLifecycleListener, times(1)).initialize();
+        verify(mAppLifecycleListener, times(0)).initialize();
     }
 
-    private void signalActivityStart(Activity activity)
-            throws InterruptedException, TimeoutException {
+    private void signalActivityStart(Activity activity) throws TimeoutException {
         signalActivityState(activity, ActivityState.STARTED);
     }
 
-    private void signalActivityResume(Activity activity)
-            throws InterruptedException, TimeoutException {
+    private void signalActivityResume(Activity activity) throws TimeoutException {
         signalActivityState(activity, ActivityState.RESUMED);
     }
 
-    private void signalActivityStop(Activity activity)
-            throws InterruptedException, TimeoutException {
+    private void signalActivityStop(Activity activity) throws TimeoutException {
         signalActivityState(activity, ActivityState.STOPPED);
     }
 
     private void signalActivityState(final Activity activity,
-            final @ActivityState int activityState) throws InterruptedException, TimeoutException {
+            final @ActivityState int activityState) throws TimeoutException {
         final CallbackHelper waitForStateChangeHelper = new CallbackHelper();
         PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
             ApplicationStatus.onStateChangeForTesting(activity, activityState);

@@ -12,6 +12,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -29,8 +30,11 @@ import android.content.SharedPreferences;
 import android.os.ParcelFileDescriptor;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.robolectric.annotation.Config;
@@ -40,8 +44,8 @@ import org.robolectric.annotation.Implements;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.PathUtils;
-import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.browser.firstrun.FirstRunSignInProcessor;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.init.AsyncInitTaskRunner;
@@ -85,6 +89,11 @@ public class ChromeBackupAgentTest {
         }
     }
 
+    @Rule
+    public JniMocker mocker = new JniMocker();
+    @Mock
+    private ChromeBackupAgent.Natives mChromeBackupAgentJniMock;
+
     private ChromeBackupAgent mAgent;
     private AsyncInitTaskRunner mTaskRunner;
 
@@ -98,28 +107,23 @@ public class ChromeBackupAgentTest {
 
     @Before
     public void setUp() {
-        // Create the agent to test; override the native calls and fetching the task runner, and
-        // spy on the agent to allow us to validate calls to these methods.
+        // Create the agent to test; override fetching the task runner, and spy on the agent to
+        // allow us to validate calls to these methods.
         mAgent = spy(new ChromeBackupAgent() {
             @Override
             AsyncInitTaskRunner createAsyncInitTaskRunner(CountDownLatch latch) {
                 latch.countDown();
                 return mTaskRunner;
             }
-
-            @Override
-            protected String[] nativeGetBoolBackupNames() {
-                return new String[] {"pref1"};
-            }
-
-            @Override
-            protected boolean[] nativeGetBoolBackupValues() {
-                return new boolean[] {true};
-            }
-
-            @Override
-            protected void nativeSetBoolBackupPrefs(String[] s, boolean[] b) {}
         });
+
+        MockitoAnnotations.initMocks(this);
+        mocker.mock(ChromeBackupAgentJni.TEST_HOOKS, mChromeBackupAgentJniMock);
+
+        when(mChromeBackupAgentJniMock.getBoolBackupNames(mAgent))
+                .thenReturn(new String[] {"pref1"});
+        when(mChromeBackupAgentJniMock.getBoolBackupValues(mAgent))
+                .thenReturn(new boolean[] {true});
 
         // Mock initializing the browser
         doReturn(true).when(mAgent).initializeBrowser(any(Context.class));
@@ -133,12 +137,10 @@ public class ChromeBackupAgentTest {
     /**
      * Test method for {@link ChromeBackupAgent#onBackup} testing first backup
      *
-     * @throws ProcessInitException
      */
     @Test
     @SuppressWarnings("unchecked")
-    public void testOnBackup_firstBackup() throws FileNotFoundException, IOException,
-                                                  ClassNotFoundException, ProcessInitException {
+    public void testOnBackup_firstBackup() throws IOException, ClassNotFoundException {
         // Mock the backup data.
         BackupDataOutput backupData = mock(BackupDataOutput.class);
 
@@ -371,7 +373,7 @@ public class ChromeBackupAgentTest {
             private int mPos;
 
             @Override
-            public String answer(InvocationOnMock invocation) throws Throwable {
+            public String answer(InvocationOnMock invocation) {
                 return keys[mPos++];
             }
         });
@@ -380,7 +382,7 @@ public class ChromeBackupAgentTest {
             private int mPos;
 
             @Override
-            public Integer answer(InvocationOnMock invocation) throws Throwable {
+            public Integer answer(InvocationOnMock invocation) {
                 return values[mPos++].length;
             }
         });
@@ -390,7 +392,7 @@ public class ChromeBackupAgentTest {
                     private int mPos;
 
                     @Override
-                    public Integer answer(InvocationOnMock invocation) throws Throwable {
+                    public Integer answer(InvocationOnMock invocation) {
                         byte[] buffer = invocation.getArgument(0);
                         for (int i = 0; i < values[mPos].length; i++) {
                             buffer[i] = values[mPos][i];
@@ -403,7 +405,7 @@ public class ChromeBackupAgentTest {
             private int mPos;
 
             @Override
-            public Boolean answer(InvocationOnMock invocation) throws Throwable {
+            public Boolean answer(InvocationOnMock invocation) {
                 return mPos++ < 5;
             }
         });
@@ -414,13 +416,9 @@ public class ChromeBackupAgentTest {
      * Test method for {@link ChromeBackupAgent#onRestore}.
      *
      * @throws IOException
-     * @throws ClassNotFoundException
-     * @throws ProcessInitException
-     * @throws InterruptedException
      */
     @Test
-    public void testOnRestore_normal()
-            throws IOException, ClassNotFoundException, ProcessInitException, InterruptedException {
+    public void testOnRestore_normal() throws IOException {
         // Create a state file.
         File stateFile = File.createTempFile("Test", "");
         ParcelFileDescriptor newState =
@@ -434,8 +432,9 @@ public class ChromeBackupAgentTest {
         SharedPreferences prefs = ContextUtils.getAppSharedPreferences();
         assertTrue(prefs.getBoolean(FirstRunStatus.FIRST_RUN_FLOW_COMPLETE, false));
         assertFalse(prefs.contains("junk"));
-        verify(mAgent).nativeSetBoolBackupPrefs(
-                new String[] {"pref1", "pref2"}, new boolean[] {false, true});
+        verify(mChromeBackupAgentJniMock)
+                .setBoolBackupPrefs(
+                        mAgent, new String[] {"pref1", "pref2"}, new boolean[] {false, true});
         verify(mTaskRunner)
                 .startBackgroundTasks(
                         false /* allocateChildConnection */, true /* initVariationSeed */);
@@ -455,12 +454,9 @@ public class ChromeBackupAgentTest {
      * device
      *
      * @throws IOException
-     * @throws ClassNotFoundException
-     * @throws ProcessInitException
      */
     @Test
-    public void testOnRestore_badUser()
-            throws IOException, ClassNotFoundException, ProcessInitException {
+    public void testOnRestore_badUser() throws IOException {
         // Create a state file.
         File stateFile = File.createTempFile("Test", "");
         ParcelFileDescriptor newState =
@@ -473,7 +469,8 @@ public class ChromeBackupAgentTest {
         mAgent.onRestore(backupData, 0, newState);
         SharedPreferences prefs = ContextUtils.getAppSharedPreferences();
         assertFalse(prefs.contains(FirstRunStatus.FIRST_RUN_FLOW_COMPLETE));
-        verify(mAgent, never()).nativeSetBoolBackupPrefs(any(String[].class), any(boolean[].class));
+        verify(mChromeBackupAgentJniMock, never())
+                .setBoolBackupPrefs(eq(mAgent), any(String[].class), any(boolean[].class));
         verify(mTaskRunner)
                 .startBackgroundTasks(
                         false /* allocateChildConnection */, true /* initVariationSeed */);
@@ -492,12 +489,9 @@ public class ChromeBackupAgentTest {
      * Test method for {@link ChromeBackupAgent#onRestore} for browser startup failure
      *
      * @throws IOException
-     * @throws ClassNotFoundException
-     * @throws ProcessInitException
      */
     @Test
-    public void testOnRestore_browserStartupFails()
-            throws IOException, ClassNotFoundException, ProcessInitException {
+    public void testOnRestore_browserStartupFails() throws IOException {
         // Create a state file.
         File stateFile = File.createTempFile("Test", "");
         ParcelFileDescriptor newState =
@@ -525,12 +519,9 @@ public class ChromeBackupAgentTest {
      * Test method for {@link ChromeBackupAgent#onRestore} for browser startup failure
      *
      * @throws IOException
-     * @throws ClassNotFoundException
-     * @throws ProcessInitException
      */
     @Test
-    public void testOnRestore_afterFirstRun()
-            throws IOException, ClassNotFoundException, ProcessInitException {
+    public void testOnRestore_afterFirstRun() throws IOException {
         // Create a state file.
         File stateFile = File.createTempFile("Test", "");
         ParcelFileDescriptor newState =

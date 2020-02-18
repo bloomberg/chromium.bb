@@ -434,7 +434,7 @@ def get_client(service_url, package_template, version, cache_dir, timeout=None):
     file_path.ensure_tree(cipd_bin_dir)
 
   with instance_cache.getfileobj(instance_id) as f:
-    isolateserver.putfile(f, binary_path, 0511)  # -r-x--x--x
+    isolateserver.putfile(f, binary_path, 0o511)  # -r-x--x--x
 
   _ensure_batfile(binary_path)
 

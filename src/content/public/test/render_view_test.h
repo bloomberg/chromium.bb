@@ -20,14 +20,10 @@
 #include "content/public/common/page_state.h"
 #include "content/public/test/mock_render_thread.h"
 #include "mojo/core/embedder/scoped_ipc_support.h"
-#include "services/service_manager/public/cpp/binder_registry.h"
+#include "mojo/public/cpp/bindings/binder_map.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/web/web_frame.h"
-
-namespace base {
-class FieldTrialList;
-}
 
 namespace blink {
 namespace scheduler {
@@ -182,6 +178,10 @@ class RenderViewTest : public testing::Test {
   // These are all methods from RenderViewImpl that we expose to testing code.
   void OnSameDocumentNavigation(blink::WebLocalFrame* frame,
                                 bool is_new_navigation);
+
+  // Enables to use zoom for device scale.
+  void SetUseZoomForDSFEnabled(bool zoom_for_dsf);
+
   blink::WebWidget* GetWebWidget();
 
   // Allows a subclass to override the various content client implementations.
@@ -190,7 +190,7 @@ class RenderViewTest : public testing::Test {
   virtual ContentRendererClient* CreateContentRendererClient();
 
   // Allows a subclass to customize the initial size of the RenderView.
-  virtual std::unique_ptr<VisualProperties> InitialVisualProperties();
+  virtual VisualProperties InitialVisualProperties();
 
   // Override this to change the CompositorDependencies for the test.
   virtual std::unique_ptr<CompositorDependencies>
@@ -221,12 +221,11 @@ class RenderViewTest : public testing::Test {
   std::unique_ptr<RendererMainPlatformDelegate> platform_;
   std::unique_ptr<MainFunctionParams> params_;
   std::unique_ptr<base::CommandLine> command_line_;
-  std::unique_ptr<base::FieldTrialList> field_trial_list_;
 
   // For Mojo.
   std::unique_ptr<base::TestIOThread> test_io_thread_;
   std::unique_ptr<mojo::core::ScopedIPCSupport> ipc_support_;
-  service_manager::BinderRegistry binder_registry_;
+  mojo::BinderMap binders_;
 
 #if defined(OS_MACOSX)
   std::unique_ptr<base::mac::ScopedNSAutoreleasePool> autorelease_pool_;

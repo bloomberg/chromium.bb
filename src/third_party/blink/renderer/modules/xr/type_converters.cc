@@ -4,6 +4,8 @@
 
 #include "third_party/blink/renderer/modules/xr/type_converters.h"
 
+#include "third_party/blink/renderer/platform/geometry/float_point_3d.h"
+
 namespace mojo {
 
 base::Optional<blink::XRPlane::Orientation>
@@ -45,10 +47,39 @@ TypeConverter<blink::TransformationMatrix, device::mojom::blink::VRPosePtr>::
   }
 
   if (pose->position) {
-    decomp.translate_x = pose->position->x;
-    decomp.translate_y = pose->position->y;
-    decomp.translate_z = pose->position->z;
+    decomp.translate_x = pose->position->X();
+    decomp.translate_y = pose->position->Y();
+    decomp.translate_z = pose->position->Z();
   }
+
+  result.Recompose(decomp);
+
+  return result;
+}
+
+blink::TransformationMatrix
+TypeConverter<blink::TransformationMatrix, device::mojom::blink::PosePtr>::
+    Convert(const device::mojom::blink::PosePtr& pose) {
+  DCHECK(pose);
+
+  blink::TransformationMatrix result;
+  blink::TransformationMatrix::DecomposedType decomp = {};
+
+  decomp.perspective_w = 1;
+  decomp.scale_x = 1;
+  decomp.scale_y = 1;
+  decomp.scale_z = 1;
+
+  // TODO(https://crbug.com/929841): Remove negation once the bug is fixed.
+  gfx::Quaternion quat = pose->orientation.inverse();
+  decomp.quaternion_x = quat.x();
+  decomp.quaternion_y = quat.y();
+  decomp.quaternion_z = quat.z();
+  decomp.quaternion_w = quat.w();
+
+  decomp.translate_x = pose->position.X();
+  decomp.translate_y = pose->position.Y();
+  decomp.translate_z = pose->position.Z();
 
   result.Recompose(decomp);
 
@@ -57,9 +88,8 @@ TypeConverter<blink::TransformationMatrix, device::mojom::blink::VRPosePtr>::
 
 blink::HeapVector<blink::Member<blink::DOMPointReadOnly>>
 TypeConverter<blink::HeapVector<blink::Member<blink::DOMPointReadOnly>>,
-              WTF::Vector<device::mojom::blink::XRPlanePointDataPtr>>::
-    Convert(const WTF::Vector<device::mojom::blink::XRPlanePointDataPtr>&
-                vertices) {
+              Vector<device::mojom::blink::XRPlanePointDataPtr>>::
+    Convert(const Vector<device::mojom::blink::XRPlanePointDataPtr>& vertices) {
   blink::HeapVector<blink::Member<blink::DOMPointReadOnly>> result;
 
   for (const auto& vertex_data : vertices) {

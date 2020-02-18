@@ -6,7 +6,12 @@ import errno
 import fnmatch
 import os
 import re
-import StringIO
+import sys
+
+if sys.version_info.major == 2:
+  from StringIO import StringIO
+else:
+  from io import StringIO
 
 
 def _RaiseNotFound(path):
@@ -63,7 +68,7 @@ class MockFileSystem(object):
     # We need to use a copy of the keys here in order to avoid switching
     # to a different thread and potentially modifying the dict in
     # mid-iteration.
-    files = self.files.keys()[:]
+    files = list(self.files.keys())[:]
     return any(f.startswith(path) for f in files)
 
   def join(self, *comps):
@@ -75,7 +80,20 @@ class MockFileSystem(object):
     return fnmatch.filter(self.files.keys(), path)
 
   def open_for_reading(self, path):
-    return StringIO.StringIO(self.read_binary_file(path))
+    return StringIO(self.read_binary_file(path))
+
+  def normpath(self, path):
+    # This is not a complete implementation of normpath. Only covers what we
+    # use in tests.
+    result = []
+    for part in path.split(self.sep):
+      if part == '..':
+        result.pop()
+      elif part == '.':
+        continue
+      else:
+        result.append(part)
+    return self.sep.join(result)
 
   def read_binary_file(self, path):
     # Intentionally raises KeyError if we don't recognize the path.

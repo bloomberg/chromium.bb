@@ -18,10 +18,11 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.test.params.ParameterizedCommandLineFlags;
+import org.chromium.base.test.params.ParameterizedCommandLineFlags.Switches;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
-import org.chromium.base.test.util.parameter.CommandLineParameter;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -29,6 +30,7 @@ import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.OmniboxTestUtils;
+import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -42,7 +44,12 @@ import java.util.concurrent.Callable;
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
-@CommandLineParameter({"", "disable-features=" + ChromeFeatureList.SPANNABLE_INLINE_AUTOCOMPLETE})
+// clang-format off
+@ParameterizedCommandLineFlags({
+  @Switches(),
+  @Switches("disable-features=" + ChromeFeatureList.SPANNABLE_INLINE_AUTOCOMPLETE),
+})
+// clang-format on
 public class UrlBarIntegrationTest {
     // 9000+ chars of goodness
     private static final String HUGE_URL =
@@ -106,7 +113,7 @@ public class UrlBarIntegrationTest {
     @SmallTest
     @Feature({"Omnibox"})
     @RetryOnFailure
-    public void testCopyHuge() throws InterruptedException {
+    public void testCopyHuge() {
         mActivityTestRule.startMainActivityWithURL(HUGE_URL);
         OmniboxTestUtils.toggleUrlBarFocus(getUrlBar(), true);
         Assert.assertEquals(HUGE_URL, copyUrlToClipboard(android.R.id.copy));
@@ -116,7 +123,7 @@ public class UrlBarIntegrationTest {
     @SmallTest
     @Feature({"Omnibox"})
     @RetryOnFailure
-    public void testCutHuge() throws InterruptedException {
+    public void testCutHuge() {
         mActivityTestRule.startMainActivityWithURL(HUGE_URL);
         OmniboxTestUtils.toggleUrlBarFocus(getUrlBar(), true);
         Assert.assertEquals(HUGE_URL, copyUrlToClipboard(android.R.id.cut));
@@ -150,8 +157,10 @@ public class UrlBarIntegrationTest {
     @Test
     @SmallTest
     @Feature({"Omnibox"})
+    // TODO(crbug.com/1048469): Investigate and enable this test for the search engine logo feature.
+    @DisableFeatures("OmniboxSearchEngineLogo")
     @RetryOnFailure
-    public void testLongPress() throws InterruptedException {
+    public void testLongPress() {
         // This is a more realistic test than HUGE_URL because ita's full of separator characters
         // which have historically been known to trigger odd behavior with long-pressing.
         final String longPressUrl = "data:text/plain,hi.hi.hi.hi.hi.hi.hi.hi.hi.hi/hi/hi/hi/hi/hi/";

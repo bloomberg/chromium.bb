@@ -153,11 +153,6 @@ Polymer({
       this.showChangePassword = visibility;
     });
 
-    if (loadTimeData.getBoolean('passwordProtectionAvailable')) {
-      settings.ChangePasswordBrowserProxyImpl.getInstance()
-          .initializeChangePasswordHandler();
-    }
-
     if (settings.AndroidAppsBrowserProxyImpl) {
       this.addWebUIListener(
           'android-apps-info-update', this.androidAppsInfoUpdate_.bind(this));
@@ -205,6 +200,20 @@ Polymer({
    */
   showPage_: function(visibility) {
     return visibility !== false;
+  },
+
+  /**
+   * @param {boolean|undefined} visibility
+   * @param {string} location
+   * @return {boolean}
+   * @private
+   */
+  showPrivacyPageAndRedesign_: function(visibility, location) {
+    if (!this.showPage_(visibility)) {
+      return false;
+    }
+    return (location == 'BASIC') ==
+        loadTimeData.getBoolean('privacySettingsRedesignEnabled');
   },
 
   /**

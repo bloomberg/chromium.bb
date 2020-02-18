@@ -6,8 +6,10 @@
 
 #include <utility>
 
+#include "build/build_config.h"
 #include "components/signin/internal/identity_manager/account_tracker_service.h"
 #include "components/signin/internal/identity_manager/gaia_cookie_manager_service.h"
+#include "components/signin/public/base/multilogin_parameters.h"
 #include "google_apis/gaia/core_account_id.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 
@@ -42,22 +44,29 @@ void AccountsCookieMutatorImpl::AddAccountToCookieWithToken(
 }
 
 void AccountsCookieMutatorImpl::SetAccountsInCookie(
-    const std::vector<CoreAccountId>& account_ids,
+    const MultiloginParameters& parameters,
     gaia::GaiaSource source,
     base::OnceCallback<void(SetAccountsInCookieResult)>
         set_accounts_in_cookies_completed_callback) {
   std::vector<GaiaCookieManagerService::AccountIdGaiaIdPair> accounts;
-  for (const auto& account_id : account_ids) {
+  for (const auto& account_id : parameters.accounts_to_send) {
     accounts.push_back(make_pair(
         account_id, account_tracker_service_->GetAccountInfo(account_id).gaia));
   }
   gaia_cookie_manager_service_->SetAccountsInCookie(
-      accounts, source, std::move(set_accounts_in_cookies_completed_callback));
+      parameters.mode, accounts, source,
+      std::move(set_accounts_in_cookies_completed_callback));
 }
 
 void AccountsCookieMutatorImpl::TriggerCookieJarUpdate() {
   gaia_cookie_manager_service_->TriggerListAccounts();
 }
+
+#if defined(OS_IOS)
+void AccountsCookieMutatorImpl::ForceTriggerOnCookieChange() {
+  gaia_cookie_manager_service_->ForceOnCookieChangeProcessing();
+}
+#endif
 
 void AccountsCookieMutatorImpl::LogOutAllAccounts(gaia::GaiaSource source) {
   gaia_cookie_manager_service_->LogOutAllAccounts(source);

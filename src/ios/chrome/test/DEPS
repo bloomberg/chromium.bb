@@ -21,12 +21,12 @@ include_rules = [
   "+ios/chrome/app",
   "+ios/chrome/browser",
   "+ios/public/provider/chrome",
+  "+ios/web/web_state/ui",
   "+ios/public/test",
   "+mojo/core/embedder",
   "+net/url_request",
   "+services/network/public/cpp",
   "+third_party/breakpad/breakpad/src/client/ios",
-  "+third_party/google_toolbox_for_mac",
   "+ui",
 
   # Strings and resources.

@@ -10,6 +10,8 @@ import android.os.Process;
 import android.os.StrictMode;
 import android.os.SystemClock;
 
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.MainDex;
@@ -129,8 +131,7 @@ public class EarlyTraceEvent {
     @VisibleForTesting
     static List<String> sPendingAsyncEvents;
 
-    /** @see TraceEvent#MaybeEnableEarlyTracing().
-     */
+    /** @see TraceEvent#maybeEnableEarlyTracing() */
     static void maybeEnable() {
         ThreadUtils.assertOnUiThread();
         if (sState != STATE_DISABLED) return;
@@ -142,7 +143,7 @@ public class EarlyTraceEvent {
                 shouldEnable = true;
             } else {
                 try {
-                    shouldEnable = (new File(TRACE_CONFIG_FILENAME)).exists();
+                    shouldEnable = new File(TRACE_CONFIG_FILENAME).exists();
                 } catch (SecurityException e) {
                     // Access denied, not enabled.
                 }
@@ -228,7 +229,7 @@ public class EarlyTraceEvent {
         return sCachedBackgroundStartupTracingFlag;
     }
 
-    /** @see {@link TraceEvent#begin()}. */
+    /** @see TraceEvent#begin */
     public static void begin(String name) {
         // begin() and end() are going to be called once per TraceEvent, this avoids entering a
         // synchronized block at each and every call.
@@ -245,7 +246,7 @@ public class EarlyTraceEvent {
         }
     }
 
-    /** @see {@link TraceEvent#end()}. */
+    /** @see TraceEvent#end */
     public static void end(String name) {
         if (!isActive()) return;
         synchronized (sLock) {
@@ -258,7 +259,7 @@ public class EarlyTraceEvent {
         }
     }
 
-    /** @see {@link TraceEvent#startAsync()}. */
+    /** @see TraceEvent#startAsync */
     public static void startAsync(String name, long id) {
         if (!enabled()) return;
         AsyncEvent event = new AsyncEvent(name, id, true /*isStart*/);
@@ -269,7 +270,7 @@ public class EarlyTraceEvent {
         }
     }
 
-    /** @see {@link TraceEvent#finishAsync()}. */
+    /** @see TraceEvent#finishAsync */
     public static void finishAsync(String name, long id) {
         if (!isActive()) return;
         AsyncEvent event = new AsyncEvent(name, id, false /*isStart*/);

@@ -2,32 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-source_set("ukm_url_recorder") {
-  configs += [ "//build/config/compiler:enable_arc" ]
-  sources = [
-    "ukm_url_recorder.h",
-    "ukm_url_recorder.mm",
-  ]
-  public_deps = [
-    "//services/metrics/public/cpp:metrics_cpp",
-  ]
-  deps = [
-    "//base",
-    "//ios/web",
-    "//url",
-  ]
-}
-
-source_set("features") {
-  sources = [
-    "features.cc",
-    "features.h",
-  ]
-  deps = [
-    "//base",
-  ]
-}
-
 source_set("chrome_browser_state_client") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
@@ -68,11 +42,10 @@ source_set("metrics") {
     "previous_session_info_private.h",
   ]
   public_deps = [
-    ":ukm_url_recorder",
+    "//components/ukm/ios:ukm_url_recorder",
   ]
   deps = [
     ":chrome_browser_state_client",
-    ":features",
     "//base",
     "//components/browser_sync",
     "//components/crash/core/common",
@@ -109,6 +82,7 @@ source_set("metrics") {
     "//ios/chrome/browser/web_state_list",
     "//ios/chrome/common",
     "//ios/public/provider/chrome/browser",
+    "//ios/web/common",
     "//ios/web/public/deprecated",
     "//url",
   ]
@@ -124,7 +98,6 @@ source_set("unit_tests") {
     "ios_chrome_stability_metrics_provider_unittest.mm",
     "mobile_session_shutdown_metrics_provider_unittest.mm",
     "previous_session_info_unittest.mm",
-    "ukm_url_recorder_unittest.mm",
   ]
   deps = [
     ":chrome_browser_state_client",
@@ -137,13 +110,14 @@ source_set("unit_tests") {
     "//components/network_time:network_time",
     "//components/prefs",
     "//components/prefs:test_support",
-    "//components/ukm:test_support",
+    "//components/ukm",
     "//components/version_info",
     "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state:test_support",
     "//ios/chrome/browser/web:test_support",
     "//ios/chrome/test:test_support",
-    "//ios/web/public:public",
+    "//ios/web/common",
+    "//ios/web/public",
     "//ios/web/public/test",
     "//ios/web/public/test/fakes",
     "//net:test_support",
@@ -211,6 +185,7 @@ source_set("unit_tests_internal") {
 }
 
 source_set("eg_tests") {
+  defines = [ "CHROME_EARL_GREY_1" ]
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
@@ -239,6 +214,7 @@ source_set("eg_tests") {
     "//ios/chrome/browser/ui/authentication/cells",
     "//ios/chrome/browser/ui/popup_menu:constants",
     "//ios/chrome/browser/ui/settings",
+    "//ios/chrome/browser/ui/settings/google_services",
     "//ios/chrome/browser/ui/toolbar/buttons",
     "//ios/chrome/browser/ui/toolbar/public",
     "//ios/chrome/browser/ui/util",
@@ -246,26 +222,61 @@ source_set("eg_tests") {
     "//ios/chrome/test/app:test_support",
     "//ios/chrome/test/earl_grey:test_support",
     "//ios/public/provider/chrome/browser/signin:test_support",
+    "//ios/testing/earl_grey:earl_grey_support",
     "//ios/web:earl_grey_test_support",
     "//ios/web/public/test",
     "//ios/web/public/test:element_selector",
     "//ios/web/public/test/http_server",
+    "//net:test_support",
     "//ui/base",
     "//url",
   ]
   libs = [ "XCTest.framework" ]
 }
 
-source_set("test_support") {
+source_set("eg2_tests") {
+  defines = [ "CHROME_EARL_GREY_2" ]
+  configs += [
+    "//build/config/compiler:enable_arc",
+    "//build/config/ios:xctest_config",
+  ]
   testonly = true
   sources = [
+    "ukm_egtest.mm",
+  ]
+  deps = [
+    ":eg_test_support+eg2",
+    "//base/test:test_support",
+    "//components/strings:components_strings_grit",
+    "//ios/chrome/app/strings:ios_strings_grit",
+    "//ios/chrome/browser/ui/authentication:eg_test_support+eg2",
+    "//ios/chrome/test/earl_grey:eg_test_support+eg2",
+    "//ios/public/provider/chrome/browser/signin:test_support",
+    "//ios/testing/earl_grey:eg_test_support+eg2",
+    "//ios/third_party/earl_grey2:test_lib",
+    "//ui/base:base",
+  ]
+  libs = [ "UIKit.framework" ]
+}
+
+source_set("test_support") {
+  defines = [ "CHROME_EARL_GREY_1" ]
+  testonly = true
+  sources = [
+    "metrics_app_interface.h",
+    "metrics_app_interface.mm",
     "tab_usage_recorder_test_util.h",
     "tab_usage_recorder_test_util.mm",
   ]
   deps = [
+    ":metrics",
     "//base",
+    "//base/test:test_support",
+    "//components/metrics_services_manager",
+    "//components/ukm",
     "//ios/chrome/app:app_internal",
     "//ios/chrome/app/strings",
+    "//ios/chrome/browser",
     "//ios/chrome/browser/tabs",
     "//ios/chrome/browser/ui/main",
     "//ios/chrome/browser/ui/popup_menu:constants",
@@ -274,6 +285,9 @@ source_set("test_support") {
     "//ios/chrome/test:eg_test_support",
     "//ios/chrome/test/app:test_support",
     "//ios/chrome/test/earl_grey:test_support",
+    "//ios/testing/earl_grey:earl_grey_support",
+    "//net:test_support",
+    "//services/metrics/public/cpp:metrics_cpp",
     "//ui/base",
   ]
   configs += [ "//build/config/compiler:enable_arc" ]
@@ -290,4 +304,47 @@ generate_expired_histograms_array("expired_histograms_array") {
   header_filename = "ios_expired_histograms_array.h"
   major_branch_date_filepath = "//chrome/MAJOR_BRANCH_DATE"
   milestone_filepath = "//chrome/VERSION"
+}
+
+source_set("eg_app_support+eg2") {
+  defines = [ "CHROME_EARL_GREY_2" ]
+  configs += [
+    "//build/config/compiler:enable_arc",
+    "//build/config/ios:xctest_config",
+  ]
+  testonly = true
+  sources = [
+    "metrics_app_interface.h",
+    "metrics_app_interface.mm",
+  ]
+  deps = [
+    "//base",
+    "//base/test:test_support",
+    "//components/metrics_services_manager",
+    "//components/metrics_services_manager:metrics_services_manager",
+    "//components/ukm",
+    "//ios/chrome/browser",
+    "//ios/chrome/browser/metrics",
+    "//ios/chrome/test/app:test_support",
+    "//ios/testing:nserror_support",
+    "//services/metrics/public/cpp:metrics_cpp",
+  ]
+}
+
+source_set("eg_test_support+eg2") {
+  defines = [ "CHROME_EARL_GREY_2" ]
+  configs += [
+    "//build/config/compiler:enable_arc",
+    "//build/config/ios:xctest_config",
+  ]
+  testonly = true
+  sources = [
+    "metrics_app_interface.h",
+    "metrics_app_interface_stub.mm",
+  ]
+  deps = [
+    "//base",
+    "//ios/testing/earl_grey:eg_test_support+eg2",
+    "//ios/third_party/earl_grey2:test_lib",
+  ]
 }

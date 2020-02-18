@@ -9,11 +9,12 @@
 
 #include "ash/ash_export.h"
 #include "ash/frame/header_view.h"
-#include "ash/public/cpp/split_view.h"
 #include "ash/wm/overview/overview_observer.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/aura/window_observer.h"
 #include "ui/views/window/non_client_view.h"
 
 namespace views {
@@ -23,9 +24,7 @@ class Widget;
 namespace ash {
 
 class FrameCaptionButtonContainerView;
-class HeaderView;
 class ImmersiveFullscreenController;
-class ImmersiveFullscreenControllerDelegate;
 class NonClientFrameViewAshImmersiveHelper;
 
 // A NonClientFrameView used for packaged apps, dialogs and other non-browser
@@ -34,7 +33,8 @@ class NonClientFrameViewAshImmersiveHelper;
 // The window header overlay slides onscreen when the user hovers the mouse at
 // the top of the screen. See also views::CustomFrameView and
 // BrowserNonClientFrameViewAsh.
-class ASH_EXPORT NonClientFrameViewAsh : public views::NonClientFrameView {
+class ASH_EXPORT NonClientFrameViewAsh : public views::NonClientFrameView,
+                                         public aura::WindowObserver {
  public:
   // Internal class name.
   static const char kViewClassName[];
@@ -43,8 +43,6 @@ class ASH_EXPORT NonClientFrameViewAsh : public views::NonClientFrameView {
   // created for the NonClientFrameViewAsh; if true and a WindowStateDelegate
   // has not been set on the WindowState associated with |frame|, then an
   // ImmersiveFullscreenController is created.
-  // If ImmersiveFullscreenControllerDelegate is not supplied, HeaderView is
-  // used as the ImmersiveFullscreenControllerDelegate.
   explicit NonClientFrameViewAsh(views::Widget* frame);
   ~NonClientFrameViewAsh() override;
 
@@ -63,10 +61,6 @@ class ASH_EXPORT NonClientFrameViewAsh : public views::NonClientFrameView {
   // Sets the active and inactive frame colors. Note the inactive frame color
   // will have some transparency added when the frame is drawn.
   void SetFrameColors(SkColor active_frame_color, SkColor inactive_frame_color);
-
-  // Sets the height of the header. If |height| has no value (the default), the
-  // preferred height is used.
-  void SetHeaderHeight(base::Optional<int> height);
 
   // Get the view of the header.
   HeaderView* GetHeaderView();
@@ -94,6 +88,13 @@ class ASH_EXPORT NonClientFrameViewAsh : public views::NonClientFrameView {
   gfx::Size GetMinimumSize() const override;
   gfx::Size GetMaximumSize() const override;
   void SetVisible(bool visible) override;
+
+  // aura::WindowObserver:
+  void OnWindowBoundsChanged(aura::Window* window,
+                             const gfx::Rect& old_bounds,
+                             const gfx::Rect& new_bounds,
+                             ui::PropertyChangeReason reason) override;
+  void OnWindowDestroying(aura::Window* window) override;
 
   // If |paint| is false, we should not paint the header. Used for overview mode
   // with OnOverviewModeStarting() and OnOverviewModeEnded() to hide/show the
@@ -137,6 +138,8 @@ class ASH_EXPORT NonClientFrameViewAsh : public views::NonClientFrameView {
   OverlayView* overlay_view_ = nullptr;
 
   std::unique_ptr<NonClientFrameViewAshImmersiveHelper> immersive_helper_;
+
+  base::WeakPtrFactory<NonClientFrameViewAsh> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(NonClientFrameViewAsh);
 };

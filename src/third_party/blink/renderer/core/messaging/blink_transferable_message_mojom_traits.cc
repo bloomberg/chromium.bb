@@ -75,20 +75,20 @@ bool StructTraits<blink::mojom::blink::TransferableMessage::DataView,
 }
 
 bool StructTraits<blink::mojom::blink::SerializedArrayBufferContents::DataView,
-                  WTF::ArrayBufferContents>::
+                  blink::ArrayBufferContents>::
     Read(blink::mojom::blink::SerializedArrayBufferContents::DataView data,
-         WTF::ArrayBufferContents* out) {
+         blink::ArrayBufferContents* out) {
   mojo_base::BigBufferView contents_view;
   if (!data.ReadContents(&contents_view))
     return false;
   auto contents_data = contents_view.data();
-  auto handle = WTF::ArrayBufferContents::CreateDataHandle(
-      contents_data.size(), WTF::ArrayBufferContents::kZeroInitialize);
-  if (!handle)
-    return false;
 
-  WTF::ArrayBufferContents array_buffer_contents(
-      std::move(handle), WTF::ArrayBufferContents::kNotShared);
+  blink::ArrayBufferContents array_buffer_contents(
+      contents_data.size(), 1, blink::ArrayBufferContents::kNotShared,
+      blink::ArrayBufferContents::kDontInitialize);
+  if (contents_data.size() != array_buffer_contents.DataLength()) {
+    return false;
+  }
   memcpy(array_buffer_contents.Data(), contents_data.data(),
          contents_data.size());
   *out = std::move(array_buffer_contents);

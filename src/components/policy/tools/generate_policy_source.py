@@ -7,7 +7,7 @@
 Pass at least:
 --chrome-version-file <path to src/chrome/VERSION> or --all-chrome-versions
 --target-platform <which platform the target code will be generated for and can
-  be one of (win, mac, linux, chromeos, fuchsia)>
+  be one of (win, mac, linux, chromeos, fuchsia, ios)>
 --policy_templates <path to the policy_templates.json input file>.'''
 
 
@@ -20,8 +20,12 @@ from optparse import OptionParser
 import re
 import sys
 import textwrap
-import types
 from xml.sax.saxutils import escape as xml_escape
+
+if sys.version_info.major == 2:
+  string_type = basestring
+else:
+  string_type = str
 
 CHROME_POLICY_KEY = 'SOFTWARE\\\\Policies\\\\Google\\\\Chrome'
 CHROMIUM_POLICY_KEY = 'SOFTWARE\\\\Policies\\\\Chromium'
@@ -88,6 +92,7 @@ class PolicyDetails:
           'chrome_os',
           'android',
           'webview_android',
+          'ios',
           'chrome.win',
           'chrome.linux',
           'chrome.mac',
@@ -125,7 +130,7 @@ class PolicyDetails:
     self.platforms.sort()
     self.is_supported = target_platform in self.platforms
 
-    if not PolicyDetails.TYPE_MAP.has_key(policy['type']):
+    if policy['type'] not in PolicyDetails.TYPE_MAP:
       raise NotImplementedError(
           'Unknown policy type for %s: %s' % (policy['name'], policy['type']))
     self.policy_type, self.protobuf_type, self.policy_protobuf_type, \
@@ -193,7 +198,7 @@ class PolicyAtomicGroup:
                            'in policy_templates.json)!')
       policies_already_in_group.add(policy)
       if not policy in available_policies:
-        raise RuntimeError('Invalid policy:' + policy + ' in atomic group ' +
+        raise RuntimeError('Invalid policy: ' + policy + ' in atomic group ' +
                            self.name + '.\n')
 
 
@@ -240,6 +245,16 @@ def main():
       '--chrome-settings-protobuf',
       dest='chrome_settings_proto_path',
       help='generate chrome settings protobuf file',
+      metavar='FILE')
+  parser.add_option(
+      '--policy-common-definitions-protobuf',
+      dest='policy_common_definitions_proto_path',
+      help='policy common definitions protobuf file path',
+      metavar='FILE')
+  parser.add_option(
+      '--policy-common-definitions-full-runtime-protobuf',
+      dest='policy_common_definitions_full_runtime_proto_path',
+      help='generate policy common definitions full runtime protobuf file',
       metavar='FILE')
   parser.add_option(
       '--csfrp',
@@ -345,7 +360,7 @@ def main():
   risk_tags.ComputeMaxTags(policy_details)
   sorted_policy_details = sorted(policy_details, key=lambda policy: policy.name)
 
-  policy_details_set = map((lambda x: x.name), policy_details)
+  policy_details_set = list(map((lambda x: x.name), policy_details))
   policies_already_in_group = set()
   policy_atomic_groups = [
       PolicyAtomicGroup(group, policy_details_set, policies_already_in_group)
@@ -371,6 +386,12 @@ def main():
     GenerateFile(opts.risk_header_path, _WritePolicyRiskTagHeader)
   if opts.cloud_policy_proto_path:
     GenerateFile(opts.cloud_policy_proto_path, _WriteCloudPolicyProtobuf)
+  if (opts.policy_common_definitions_full_runtime_proto_path and
+      opts.policy_common_definitions_proto_path):
+    GenerateFile(
+        opts.policy_common_definitions_full_runtime_proto_path,
+        partial(_WritePolicyCommonDefinitionsFullRuntimeProtobuf,
+                opts.policy_common_definitions_proto_path))
   if opts.cloud_policy_full_runtime_proto_path:
     GenerateFile(opts.cloud_policy_full_runtime_proto_path,
                  _WriteCloudPolicyFullRuntimeProtobuf)
@@ -642,8 +663,8 @@ class SchemaNodesGenerator:
 
   def IsConsecutiveInterval(self, seq):
     sortedSeq = sorted(seq)
-    return all(sortedSeq[i] + 1 == sortedSeq[i + 1]
-               for i in xrange(len(sortedSeq) - 1))
+    return all(
+        sortedSeq[i] + 1 == sortedSeq[i + 1] for i in range(len(sortedSeq) - 1))
 
   def GetEnumIntegerType(self, schema, is_sensitive_value, name):
     assert all(type(x) == int for x in schema['enum'])
@@ -718,10 +739,10 @@ class SchemaNodesGenerator:
 
     |schema|: a valid JSON schema in a dictionary.
     |name|: the name of the current node, for the generated comments."""
-    if schema.has_key('$ref'):
-      if schema.has_key('id'):
+    if '$ref' in schema:
+      if 'id' in schema:
         raise RuntimeError("Schemas with a $ref can't have an id")
-      if not isinstance(schema['$ref'], types.StringTypes):
+      if not isinstance(schema['$ref'], string_type):
         raise RuntimeError("$ref attribute must be a string")
       return schema['$ref']
 
@@ -801,7 +822,7 @@ class SchemaNodesGenerator:
       # Check that each string in |required_properties| is in |properties|.
       properties = schema.get('properties', {})
       for name in required_properties:
-        assert properties.has_key(name)
+        assert name in properties
 
       extra = len(self.properties_nodes)
       self.properties_nodes.append(
@@ -821,10 +842,10 @@ class SchemaNodesGenerator:
     Generate().
     """
     index = self.Generate(schema, name)
-    if not schema.has_key('id'):
+    if 'id' not in schema:
       return index
     id_str = schema['id']
-    if self.id_map.has_key(id_str):
+    if id_str in self.id_map:
       raise RuntimeError('Duplicated id: ' + id_str)
     self.id_map[id_str] = index
     return index
@@ -905,9 +926,9 @@ class SchemaNodesGenerator:
     f.write('};\n\n')
 
   def GetByID(self, id_str):
-    if not isinstance(id_str, types.StringTypes):
+    if not isinstance(id_str, string_type):
       return id_str
-    if not self.id_map.has_key(id_str):
+    if id_str not in self.id_map:
       raise RuntimeError('Invalid $ref: ' + id_str)
     return self.id_map[id_str]
 
@@ -925,12 +946,12 @@ class SchemaNodesGenerator:
     simple as looking up for corresponding ID in self.id_map, and replace the
     old index with the mapped index.
     """
-    self.schema_nodes = map(
-        partial(self.ResolveID, 1, SchemaNode), self.schema_nodes)
-    self.property_nodes = map(
-        partial(self.ResolveID, 1, PropertyNode), self.property_nodes)
-    self.properties_nodes = map(
-        partial(self.ResolveID, 3, PropertiesNode), self.properties_nodes)
+    self.schema_nodes = list(
+        map(partial(self.ResolveID, 1, SchemaNode), self.schema_nodes))
+    self.property_nodes = list(
+        map(partial(self.ResolveID, 1, PropertyNode), self.property_nodes))
+    self.properties_nodes = list(
+        map(partial(self.ResolveID, 3, PropertiesNode), self.properties_nodes))
 
   def FindSensitiveChildren(self):
     """Wrapper function, which calls FindSensitiveChildrenRecursive().
@@ -1327,7 +1348,7 @@ option optimize_for = LITE_RUNTIME;
 package enterprise_management;
 
 // For StringList and PolicyOptions.
-import "cloud_policy.proto";
+import "policy_common_definitions.proto";
 
 '''
 
@@ -1338,42 +1359,7 @@ option optimize_for = LITE_RUNTIME;
 
 package enterprise_management;
 
-message StringList {
-  repeated string entries = 1;
-}
-
-message PolicyOptions {
-  enum PolicyMode {
-    // The given settings are applied regardless of user choice.
-    MANDATORY = 0;
-    // The user may choose to override the given settings.
-    RECOMMENDED = 1;
-    // No policy value is present and the policy should be ignored.
-    UNSET = 2;
-  }
-  optional PolicyMode mode = 1 [default = MANDATORY];
-}
-
-message BooleanPolicyProto {
-  optional PolicyOptions policy_options = 1;
-  optional bool value = 2;
-}
-
-message IntegerPolicyProto {
-  optional PolicyOptions policy_options = 1;
-  optional int64 value = 2;
-}
-
-message StringPolicyProto {
-  optional PolicyOptions policy_options = 1;
-  optional string value = 2;
-}
-
-message StringListPolicyProto {
-  optional PolicyOptions policy_options = 1;
-  optional StringList value = 2;
-}
-
+import "policy_common_definitions.proto";
 '''
 
 # Field IDs [1..RESERVED_IDS] will not be used in the wrapping protobuf.
@@ -1432,7 +1418,9 @@ def _WriteChromeSettingsFullRuntimeProtobuf(policies, policy_atomic_groups,
           "option optimize_for = LITE_RUNTIME;",
           "//option optimize_for = LITE_RUNTIME;").replace(
               "import \"cloud_policy.proto\";",
-              "import \"cloud_policy_full_runtime.proto\";"))
+              "import \"cloud_policy_full_runtime.proto\";").replace(
+                  "import \"policy_common_definitions.proto\";",
+                  "import \"policy_common_definitions_full_runtime.proto\";"))
   fields = []
   f.write('// PBs for individual settings.\n\n')
   for policy in policies:
@@ -1464,8 +1452,11 @@ def _WriteCloudPolicyFullRuntimeProtobuf(policies, policy_atomic_groups,
                                          target_platform, f, risk_tags):
   # For full runtime, disable LITE_RUNTIME switch
   f.write(
-      CLOUD_POLICY_PROTO_HEAD.replace("option optimize_for = LITE_RUNTIME;",
-                                      "//option optimize_for = LITE_RUNTIME;"))
+      CLOUD_POLICY_PROTO_HEAD.replace(
+          "option optimize_for = LITE_RUNTIME;",
+          "//option optimize_for = LITE_RUNTIME;").replace(
+              "import \"policy_common_definitions.proto\";",
+              "import \"policy_common_definitions_full_runtime.proto\";"))
   f.write('message CloudPolicySettings {\n')
   for policy in policies:
     if policy.is_supported and not policy.is_device_only:
@@ -1473,6 +1464,18 @@ def _WriteCloudPolicyFullRuntimeProtobuf(policies, policy_atomic_groups,
           '  optional %sPolicyProto %s = %s;\n' %
           (policy.policy_protobuf_type, policy.name, policy.id + RESERVED_IDS))
   f.write('}\n\n')
+
+
+def _WritePolicyCommonDefinitionsFullRuntimeProtobuf(
+    policy_common_definitions_proto_path, policies, policy_atomic_groups,
+    target_platform, f, risk_tags):
+  # For full runtime, disable LITE_RUNTIME switch
+  with open(policy_common_definitions_proto_path, 'r') as proto_file:
+    policy_common_definitions_proto_code = proto_file.read()
+  f.write(
+      policy_common_definitions_proto_code.replace(
+          "option optimize_for = LITE_RUNTIME;",
+          "//option optimize_for = LITE_RUNTIME;"))
 
 
 #------------------ Chrome OS policy constants header --------------#

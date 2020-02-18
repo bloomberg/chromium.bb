@@ -8,15 +8,16 @@
 
 #include <limits>
 #include <memory>
+#include <string>
 
 #include "base/logging.h"
 #include "base/trace_event/trace_event.h"
 #include "components/services/font/public/cpp/font_loader.h"
 #include "components/services/font/public/mojom/font_service.mojom.h"
-#include "third_party/blink/public/platform/linux/out_of_process_font.h"
 #include "third_party/blink/public/platform/web_font_render_style.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_vector.h"
+#include "ui/gfx/font_fallback_linux.h"
 
 namespace content {
 
@@ -26,10 +27,10 @@ WebSandboxSupportLinux::WebSandboxSupportLinux(
 
 WebSandboxSupportLinux::~WebSandboxSupportLinux() = default;
 
-void WebSandboxSupportLinux::GetFallbackFontForCharacter(
+bool WebSandboxSupportLinux::GetFallbackFontForCharacter(
     blink::WebUChar32 character,
     const char* preferred_locale,
-    blink::OutOfProcessFont* fallback_font) {
+    gfx::FallbackFontData* fallback_font) {
   TRACE_EVENT0("fonts", "WebSandboxSupportLinux::GetFallbackFontForCharacter");
 
   {
@@ -37,7 +38,7 @@ void WebSandboxSupportLinux::GetFallbackFontForCharacter(
     const auto iter = unicode_font_families_.find(character);
     if (iter != unicode_font_families_.end()) {
       *fallback_font = iter->second;
-      return;
+      return true;
     }
   }
 
@@ -47,29 +48,26 @@ void WebSandboxSupportLinux::GetFallbackFontForCharacter(
   std::string family_name;
   if (!font_loader_->FallbackFontForCharacter(character, preferred_locale,
                                               &font_identity, &family_name,
-                                              &is_bold, &is_italic)) {
-    LOG(ERROR) << "FontService fallback request does not receive a response.";
-    return;
-  }
+                                              &is_bold, &is_italic))
+    return false;
 
-  // TODO(drott): Perhaps take OutOfProcessFont out of the picture here and pass
-  // mojo FontIdentityPtr directly?
-  fallback_font->name =
-      blink::WebString::FromUTF8(family_name.c_str(), family_name.length());
+  // mojom::FontIdentityPtr cannot be exposed on the blink/public interface.
+  // Use gfx::FallbackFontData as the container to pass this to blink.
+  fallback_font->name = family_name;
   fallback_font->fontconfig_interface_id = font_identity->id;
-  fallback_font->filename.Assign(font_identity->str_representation.c_str(),
-                                 font_identity->str_representation.length());
+  fallback_font->filepath = font_identity->filepath;
   fallback_font->ttc_index = font_identity->ttc_index;
   fallback_font->is_bold = is_bold;
   fallback_font->is_italic = is_italic;
 
   base::AutoLock lock(lock_);
   unicode_font_families_.emplace(character, *fallback_font);
+  return true;
 }
 
-void WebSandboxSupportLinux::MatchFontByPostscriptNameOrFullFontName(
+bool WebSandboxSupportLinux::MatchFontByPostscriptNameOrFullFontName(
     const char* font_unique_name,
-    blink::OutOfProcessFont* fallback_font) {
+    gfx::FallbackFontData* fallback_font) {
   TRACE_EVENT0(
       "fonts",
       "WebSandboxSupportLinux::MatchFontByPostscriptNameOrFullFontName");
@@ -80,13 +78,13 @@ void WebSandboxSupportLinux::MatchFontByPostscriptNameOrFullFontName(
                                                              &font_identity)) {
     LOG(ERROR) << "FontService unique font name matching request did not "
                   "receive a response.";
-    return;
+    return false;
   }
 
   fallback_font->fontconfig_interface_id = font_identity->id;
-  fallback_font->filename.Assign(font_identity->str_representation.c_str(),
-                                 font_identity->str_representation.length());
+  fallback_font->filepath = font_identity->filepath;
   fallback_font->ttc_index = font_identity->ttc_index;
+  return true;
 }
 
 void WebSandboxSupportLinux::GetWebFontRenderStyleForStrike(
@@ -98,8 +96,6 @@ void WebSandboxSupportLinux::GetWebFontRenderStyleForStrike(
     blink::WebFontRenderStyle* out) {
   TRACE_EVENT0("fonts",
                "WebSandboxSupportLinux::GetWebFontRenderStyleForStrike");
-
-  font_service::mojom::FontIdentityPtr font_identity;
 
   *out = blink::WebFontRenderStyle();
 

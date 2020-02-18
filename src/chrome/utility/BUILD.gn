@@ -13,6 +13,8 @@ import("//printing/buildflags/buildflags.gni")
 
 static_library("utility") {
   sources = [
+    "browser_exposed_utility_interfaces.cc",
+    "browser_exposed_utility_interfaces.h",
     "chrome_content_utility_client.cc",
     "chrome_content_utility_client.h",
     "services.cc",
@@ -33,8 +35,10 @@ static_library("utility") {
     "//chrome/common",
     "//chrome/common:mojo_bindings",
     "//components/mirroring/service:mirroring_service",
+    "//components/paint_preview/buildflags",
     "//components/safe_browsing:buildflags",
     "//components/search_engines",
+    "//components/services/paint_preview_compositor",
     "//components/services/patch:lib",
     "//components/services/unzip:lib",
     "//components/strings",
@@ -46,13 +50,13 @@ static_library("utility") {
     "//extensions/buildflags",
     "//ipc",
     "//media",
-    "//net:net_with_v8",
+    "//net",
     "//printing/buildflags",
+    "//services/data_decoder:lib",
     "//services/network:network_service",
     "//services/service_manager/public/cpp",
     "//skia",
     "//sql",
-    "//third_party/libxml",
     "//third_party/zlib/google:zip",
     "//ui/base:buildflags",
   ]
@@ -101,7 +105,6 @@ static_library("utility") {
       "//chrome/common:mojo_bindings",
       "//chrome/common/importer:interfaces",
       "//components/autofill/core/common",
-      "//services/data_decoder:lib",
       "//services/proxy_resolver:lib",
     ]
   }
@@ -124,7 +127,11 @@ static_library("utility") {
       "//chrome/services/removable_storage_writer:lib",
     ]
 
-    public_deps += [ "//chrome/common/extensions/api" ]
+    public_deps += [
+      "//chrome/common/extensions/api",
+      "//chrome/services/removable_storage_writer/public/mojom",
+      "//mojo/public/cpp/bindings",
+    ]
 
     # Prevent wininet from loading in the renderer. http://crbug.com/460679
     if (is_win) {

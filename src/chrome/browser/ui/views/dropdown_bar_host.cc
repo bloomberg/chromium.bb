@@ -55,7 +55,7 @@ void DropdownBarHost::Init(views::View* host_view,
   params.name = "DropdownBarHost";
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.parent = browser_view_->GetWidget()->GetNativeView();
-  params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
+  params.opacity = views::Widget::InitParams::WindowOpacity::kTranslucent;
   host_->Init(std::move(params));
   host_->SetContentsView(clip_view.release());
 
@@ -74,7 +74,7 @@ void DropdownBarHost::Init(views::View* host_view,
 
   animation_ = std::make_unique<gfx::SlideAnimation>(this);
   if (!gfx::Animation::ShouldRenderRichAnimation())
-    animation_->SetSlideDuration(0);
+    animation_->SetSlideDuration(base::TimeDelta());
 
   // Update the widget and |view_| bounds to the hidden state.
   AnimationProgressed(animation_.get());

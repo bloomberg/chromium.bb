@@ -112,21 +112,40 @@ directories and place them in any location.
 
 ### Building Dependent Repositories with Known-Good Revisions
 
-There is a Python utility script, `scripts/update_deps.py`, that you can use
-to gather and build the dependent repositories mentioned above. This program
-also uses information stored in the `scripts/known-good.json` file to checkout
-dependent repository revisions that are known to be compatible with the
-revision of this repository that you currently have checked out.
+There is a Python utility script, `scripts/update_deps.py`, that you can use to
+gather and build the dependent repositories mentioned above. This script uses
+information stored in the `scripts/known_good.json` file to check out dependent
+repository revisions that are known to be compatible with the revision of this
+repository that you currently have checked out. As such, this script is useful
+as a quick-start tool for common use cases and default configurations.
 
-Here is a usage example for this repository:
+For all platforms, start with:
 
     git clone git@github.com:KhronosGroup/Vulkan-Tools.git
     cd Vulkan-Tools
     mkdir build
     cd build
+
+For 64-bit Linux and MacOS, continue with:
+
     ../scripts/update_deps.py
     cmake -C helper.cmake ..
     cmake --build .
+
+For 64-bit Windows, continue with:
+
+    ..\scripts\update_deps.py --arch x64
+    cmake -A x64 -C helper.cmake ..
+    cmake --build .
+
+For 32-bit Windows, continue with:
+
+    ..\scripts\update_deps.py --arch Win32
+    cmake -A Win32 -C helper.cmake ..
+    cmake --build .
+
+Please see the more detailed build information later in this file if you have
+specific requirements for configuring and building these components.
 
 #### Notes
 
@@ -156,6 +175,19 @@ Here is a usage example for this repository:
 - Please use `update_deps.py --help` to list additional options and read the
   internal documentation in `update_deps.py` for further information.
 
+### Generated source code
+
+This repository contains generated source code in the `icd/generated`
+directory which is not intended to be modified directly. Instead, changes should be
+made to the corresponding generator in the `scripts` directory. The source files can
+then be regenerated using `scripts/generate_source.py`:
+
+    python3 scripts/generate_source.py PATH_TO_VULKAN_HEADERS_REGISTRY_DIR
+
+A helper CMake target `VulkanTools_generated_source` is also provided to simplify
+the invocation of `scripts/generate_source.py` from the build directory:
+
+    cmake --build . --target VulkanTools_generated_source
 
 ### Build Options
 
@@ -197,7 +229,7 @@ generate the native platform files.
     - [2017](https://www.visualstudio.com/vs/downloads/)
   - The Community Edition of each of the above versions is sufficient, as
     well as any more capable edition.
-- [CMake](http://www.cmake.org/download/) (Version 2.8.11 or better)
+- [CMake 3.10.2](https://cmake.org/files/v3.10/cmake-3.10.2-win64-x64.zip) is recommended.
   - Use the installer option to add CMake to the system PATH
 - Git Client Support
   - [Git for Windows](http://git-scm.com/download/win) is a popular solution
@@ -339,10 +371,12 @@ include:
 ### Linux Build Requirements
 
 This repository has been built and tested on the two most recent Ubuntu LTS
-versions. Currently, the oldest supported version is Ubuntu 14.04, meaning
-that the minimum supported compiler versions are GCC 4.8.2 and Clang 3.4,
+versions. Currently, the oldest supported version is Ubuntu 16.04, meaning
+that the minimum officially supported C++11 compiler version is GCC 5.4.0,
 although earlier versions may work. It should be straightforward to adapt this
 repository to other Linux distributions.
+
+[CMake 3.10.2](https://cmake.org/files/v3.10/cmake-3.10.2-Linux-x86_64.tar.gz) is recommended.
 
 #### Required Package List
 
@@ -590,7 +624,7 @@ Setup Homebrew and components
 
 - Add packages with the following:
 
-      brew install cmake python
+      brew install python
 
 ### Android Build
 
@@ -686,6 +720,8 @@ first build layers using steps above, then run:
 
 Tested on OSX version 10.12.6
 
+- [CMake 3.10.2](https://cmake.org/files/v3.10/cmake-3.10.2-Darwin-x86_64.tar.gz) is recommended.
+
 Setup Homebrew and components
 
 - Follow instructions on [brew.sh](http://brew.sh) to get Homebrew installed.
@@ -699,7 +735,7 @@ Setup Homebrew and components
 
 - Add packages with the following (may need refinement)
 
-      brew install cmake python python3 git
+      brew install python python3 git
 
 ### Clone the Repository
 

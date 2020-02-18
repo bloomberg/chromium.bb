@@ -3,15 +3,16 @@
 // found in the LICENSE file.
 package org.chromium.chrome.browser.download.home.rename;
 
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.FileUtils;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.NativeMethods;
 
 /**
  * A class containing some utility static methods for rename.
  */
 public class RenameUtils {
-    static private boolean sIsDisabledNativeForTesting;
+    private static boolean sIsDisabledNativeForTesting;
 
     /**
      * Determine the extension of a downloaded item.

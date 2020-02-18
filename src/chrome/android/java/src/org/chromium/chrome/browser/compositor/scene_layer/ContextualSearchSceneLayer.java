@@ -8,7 +8,7 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchBarBannerControl;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchBarControl;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchImageControl;
@@ -65,13 +65,11 @@ public class ContextualSearchSceneLayer extends SceneOverlayLayer {
         int searchTermViewId = searchBarControl.getSearchTermViewId();
         int searchCaptionViewId = searchBarControl.getCaptionViewId();
 
-        int openNewTabIconId = (ChromeFeatureList.isEnabled(ChromeFeatureList.OVERLAY_NEW_LAYOUT)
-                                       && panel.canPromoteToNewTab())
+        int openNewTabIconId = OverlayPanel.isNewLayout() && panel.canPromoteToNewTab()
                 ? R.drawable.open_in_new_tab
                 : INVALID_RESOURCE_ID;
-        int dragHandlebarId = ChromeFeatureList.isEnabled(ChromeFeatureList.OVERLAY_NEW_LAYOUT)
-                ? R.drawable.drag_handlebar
-                : INVALID_RESOURCE_ID;
+        int dragHandlebarId =
+                OverlayPanel.isNewLayout() ? R.drawable.drag_handlebar : INVALID_RESOURCE_ID;
 
         int searchPromoViewId = promoControl.getViewId();
         boolean searchPromoVisible = promoControl.isVisible();
@@ -114,8 +112,6 @@ public class ContextualSearchSceneLayer extends SceneOverlayLayer {
         boolean searchBarBorderVisible = panel.isBarBorderVisible();
         float searchBarBorderHeight = panel.getBarBorderHeight();
 
-        boolean searchBarShadowVisible = panel.getBarShadowVisible();
-
         final int iconColor = panel.getIconColor();
         final int dragHandlebarColor = panel.getDragHandlebarColor();
         float arrowIconOpacity = panel.getArrowIconOpacity();
@@ -127,7 +123,7 @@ public class ContextualSearchSceneLayer extends SceneOverlayLayer {
 
         float progressBarHeight = panel.getProgressBarHeight();
         float progressBarOpacity = panel.getProgressBarOpacity();
-        int progressBarCompletion = panel.getProgressBarCompletion();
+        float progressBarCompletion = panel.getProgressBarCompletion();
 
         float dividerLineVisibilityPercentage =
                 searchBarControl.getDividerLineVisibilityPercentage();
@@ -143,14 +139,15 @@ public class ContextualSearchSceneLayer extends SceneOverlayLayer {
         WebContents panelWebContents = panel.getWebContents();
 
         int roundedBarTopResourceId =
-                ChromeFeatureList.isEnabled(ChromeFeatureList.OVERLAY_NEW_LAYOUT)
-                ? R.drawable.top_round
-                : INVALID_RESOURCE_ID;
+                OverlayPanel.isNewLayout() ? R.drawable.top_round : INVALID_RESOURCE_ID;
         int separatorLineColor = panel.getSeparatorLineColor();
-        int panelShadowResourceId = panel.getPanelShadowVisible()
-                ? R.drawable.contextual_search_bar_background
-                : INVALID_RESOURCE_ID;
-        int closeIconResourceId = ChromeFeatureList.isEnabled(ChromeFeatureList.OVERLAY_NEW_LAYOUT)
+        // The panel shadow goes all the way around in the old layout, but in the new layout
+        // the top_round resource also includes the shadow so we only need a side shadow.
+        // In either case there's just one shadow-only resource needed.
+        int panelShadowResourceId = OverlayPanel.isNewLayout()
+                ? R.drawable.overlay_side_shadow
+                : R.drawable.contextual_search_bar_background;
+        int closeIconResourceId = OverlayPanel.isNewLayout()
                 ? INVALID_RESOURCE_ID
                 : ContextualSearchPanel.CLOSE_ICON_DRAWABLE_ID;
 
@@ -174,7 +171,7 @@ public class ContextualSearchSceneLayer extends SceneOverlayLayer {
                 searchBarControl.getTextLayerMinHeight(), searchTermOpacity,
                 searchBarControl.getSearchTermCaptionSpacing(), searchCaptionAnimationPercentage,
                 searchCaptionVisible, searchBarBorderVisible, searchBarBorderHeight * mDpToPx,
-                searchBarShadowVisible, quickActionIconVisible, thumbnailVisible, thumbnailUrl,
+                quickActionIconVisible, thumbnailVisible, thumbnailUrl,
                 customImageVisibilityPercentage, barImageSize, iconColor, dragHandlebarColor,
                 arrowIconOpacity, arrowIconRotation, closeIconOpacity, isProgressBarVisible,
                 progressBarHeight * mDpToPx, progressBarOpacity, progressBarCompletion,
@@ -249,12 +246,12 @@ public class ContextualSearchSceneLayer extends SceneOverlayLayer {
                 float searchTextLayerMinHeight, float searchTermOpacity,
                 float searchTermCaptionSpacing, float searchCaptionAnimationPercentage,
                 boolean searchCaptionVisible, boolean searchBarBorderVisible,
-                float searchBarBorderHeight, boolean searchBarShadowVisible,
-                boolean quickActionIconVisible, boolean thumbnailVisible, String thumbnailUrl,
+                float searchBarBorderHeight, boolean quickActionIconVisible,
+                boolean thumbnailVisible, String thumbnailUrl,
                 float customImageVisibilityPercentage, int barImageSize, int iconColor,
                 int dragHandlebarColor, float arrowIconOpacity, float arrowIconRotation,
                 float closeIconOpacity, boolean isProgressBarVisible, float progressBarHeight,
-                float progressBarOpacity, int progressBarCompletion,
+                float progressBarOpacity, float progressBarCompletion,
                 float dividerLineVisibilityPercentage, float dividerLineWidth,
                 float dividerLineHeight, int dividerLineColor, float dividerLineXOffset,
                 boolean touchHighlightVisible, float touchHighlightXOffset,

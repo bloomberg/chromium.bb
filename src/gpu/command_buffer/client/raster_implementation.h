@@ -140,10 +140,13 @@ class RASTER_EXPORT RasterImplementation : public RasterInterface,
                                 uint32_t transfer_cache_entry_id,
                                 const gfx::ColorSpace& target_color_space,
                                 bool needs_mips) override;
-  GLuint CreateAndConsumeForGpuRaster(const GLbyte* mailbox) override;
+  GLuint CreateAndConsumeForGpuRaster(const gpu::Mailbox& mailbox) override;
   void DeleteGpuRasterTexture(GLuint texture) override;
   void BeginGpuRaster() override;
   void EndGpuRaster() override;
+  void BeginSharedImageAccessDirectCHROMIUM(GLuint texture,
+                                            GLenum mode) override;
+  void EndSharedImageAccessDirectCHROMIUM(GLuint texture) override;
 
   // ContextSupport implementation.
   void SetAggressivelyFreeResources(bool aggressively_free_resources) override;
@@ -183,8 +186,10 @@ class RASTER_EXPORT RasterImplementation : public RasterInterface,
       const std::vector<std::pair<uint32_t, uint32_t>>& entries) override;
   void DeleteTransferCacheEntry(uint32_t type, uint32_t id) override;
   unsigned int GetTransferBufferFreeSize() const override;
+  bool IsJpegDecodeAccelerationSupported() const override;
+  bool IsWebPDecodeAccelerationSupported() const override;
   bool CanDecodeWithHardwareAcceleration(
-      base::span<const uint8_t> encoded_data) const override;
+      const cc::ImageHeaderMetadata* image_metadata) const override;
 
   // InterfaceBase implementation.
   void GenSyncTokenCHROMIUM(GLbyte* sync_token) override;

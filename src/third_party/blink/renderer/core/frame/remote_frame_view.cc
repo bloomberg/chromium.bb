@@ -70,7 +70,8 @@ void RemoteFrameView::AttachToLayout() {
   UpdateRenderThrottlingStatus(
       IsHiddenForThrottling(),
       ParentFrameView()->CanThrottleRenderingForPropagation());
-  FrameRectsChanged(FrameRect());
+  needs_frame_rect_propagation_ = true;
+  ParentFrameView()->SetNeedsUpdateGeometries();
 }
 
 void RemoteFrameView::DetachFromLayout() {
@@ -86,14 +87,11 @@ bool RemoteFrameView::UpdateViewportIntersectionsForSubtree(
 }
 
 void RemoteFrameView::SetViewportIntersection(
-    const IntRect& viewport_intersection,
-    FrameOcclusionState occlusion_state) {
-  if (viewport_intersection != last_viewport_intersection_ ||
-      occlusion_state != last_occlusion_state_) {
-    last_viewport_intersection_ = viewport_intersection;
-    last_occlusion_state_ = occlusion_state;
+    const ViewportIntersectionState& intersection_state) {
+  if (intersection_state != last_intersection_state_) {
+    last_intersection_state_ = intersection_state;
     remote_frame_->Client()->UpdateRemoteViewportIntersection(
-        viewport_intersection, occlusion_state);
+        intersection_state);
   }
 }
 
@@ -147,12 +145,13 @@ IntRect RemoteFrameView::GetCompositingRect() {
   converted_viewport_size.SetHeight(
       std::min(frame_size.Height(), converted_viewport_size.Height()));
   IntPoint expanded_origin;
-  if (!last_viewport_intersection_.IsEmpty()) {
+  const IntRect& last_rect = last_intersection_state_.viewport_intersection;
+  if (!last_rect.IsEmpty()) {
     IntSize expanded_size =
-        last_viewport_intersection_.Size().ExpandedTo(converted_viewport_size);
-    expanded_size -= last_viewport_intersection_.Size();
+        last_rect.Size().ExpandedTo(converted_viewport_size);
+    expanded_size -= last_rect.Size();
     expanded_size.Scale(0.5f, 0.5f);
-    expanded_origin = last_viewport_intersection_.Location() - expanded_size;
+    expanded_origin = last_rect.Location() - expanded_size;
     expanded_origin.ClampNegativeToZero();
   }
   return IntRect(expanded_origin, converted_viewport_size);
@@ -178,10 +177,17 @@ void RemoteFrameView::InvalidateRect(const IntRect& rect) {
   object->InvalidatePaintRectangle(repaint_rect);
 }
 
+void RemoteFrameView::SetFrameRect(const IntRect& rect) {
+  EmbeddedContentView::SetFrameRect(rect);
+  if (needs_frame_rect_propagation_)
+    PropagateFrameRects();
+}
+
 void RemoteFrameView::PropagateFrameRects() {
   // Update the rect to reflect the position of the frame relative to the
   // containing local frame root. The position of the local root within
   // any remote frames, if any, is accounted for by the embedder.
+  needs_frame_rect_propagation_ = false;
   IntRect frame_rect(FrameRect());
   IntRect screen_space_rect = frame_rect;
 
@@ -223,17 +229,21 @@ void RemoteFrameView::UpdateGeometry() {
 
 void RemoteFrameView::Hide() {
   SetSelfVisible(false);
-  UpdateFrameVisibility(!last_viewport_intersection_.IsEmpty());
+  UpdateFrameVisibility(
+      !last_intersection_state_.viewport_intersection.IsEmpty());
 }
 
 void RemoteFrameView::Show() {
   SetSelfVisible(true);
-  UpdateFrameVisibility(!last_viewport_intersection_.IsEmpty());
+  UpdateFrameVisibility(
+      !last_intersection_state_.viewport_intersection.IsEmpty());
 }
 
 void RemoteFrameView::ParentVisibleChanged() {
-  if (IsSelfVisible())
-    UpdateFrameVisibility(!last_viewport_intersection_.IsEmpty());
+  if (IsSelfVisible()) {
+    UpdateFrameVisibility(
+        !last_intersection_state_.viewport_intersection.IsEmpty());
+  }
 }
 
 void RemoteFrameView::VisibilityForThrottlingChanged() {
@@ -242,6 +252,11 @@ void RemoteFrameView::VisibilityForThrottlingChanged() {
     return;
   remote_frame_->Client()->UpdateRenderThrottlingStatus(IsHiddenForThrottling(),
                                                         IsSubtreeThrottled());
+}
+
+void RemoteFrameView::VisibilityChanged(
+    blink::mojom::FrameVisibility visibility) {
+  remote_frame_->GetRemoteFrameHostRemote().VisibilityChanged(visibility);
 }
 
 bool RemoteFrameView::CanThrottleRendering() const {

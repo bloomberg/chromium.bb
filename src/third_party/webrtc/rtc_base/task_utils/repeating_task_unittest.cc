@@ -15,7 +15,6 @@
 #include <memory>
 #include <thread>  // Not allowed in production per Chromium style guide.
 
-#include "absl/memory/memory.h"
 #include "rtc_base/event.h"
 #include "rtc_base/task_queue_for_test.h"
 #include "test/gmock.h"
@@ -61,18 +60,6 @@ class MoveOnlyClosure {
  private:
   MockClosure* mock_;
 };
-
-// Helper closure class to stop repeating task on a task queue. This is
-// equivalent to [handle{move(handle)}] { handle.Stop(); } in c++14.
-class TaskHandleStopper {
- public:
-  explicit TaskHandleStopper(RepeatingTaskHandle handle)
-      : handle_(std::move(handle)) {}
-  void operator()() { handle_.Stop(); }
-
- private:
-  RepeatingTaskHandle handle_;
-};
 }  // namespace
 
 TEST(RepeatingTaskTest, TaskIsStoppedOnStop) {
@@ -92,7 +79,8 @@ TEST(RepeatingTaskTest, TaskIsStoppedOnStop) {
   Sleep(kShortInterval * (kShortIntervalCount + kMargin));
   EXPECT_EQ(counter.load(), kShortIntervalCount);
 
-  task_queue.PostTask(TaskHandleStopper(std::move(handle)));
+  task_queue.PostTask(
+      [handle = std::move(handle)]() mutable { handle.Stop(); });
   // Sleep long enough that the task would run at least once more if not
   // stopped.
   Sleep(kLongInterval * 2);
@@ -145,7 +133,8 @@ TEST(RepeatingTaskTest, CancelDelayedTaskBeforeItRuns) {
   TaskQueueForTest task_queue("queue");
   auto handle = RepeatingTaskHandle::DelayedStart(
       task_queue.Get(), TimeDelta::ms(100), MoveOnlyClosure(&mock));
-  task_queue.PostTask(TaskHandleStopper(std::move(handle)));
+  task_queue.PostTask(
+      [handle = std::move(handle)]() mutable { handle.Stop(); });
   EXPECT_TRUE(done.Wait(kTimeout.ms()));
 }
 
@@ -157,7 +146,8 @@ TEST(RepeatingTaskTest, CancelTaskAfterItRuns) {
   TaskQueueForTest task_queue("queue");
   auto handle =
       RepeatingTaskHandle::Start(task_queue.Get(), MoveOnlyClosure(&mock));
-  task_queue.PostTask(TaskHandleStopper(std::move(handle)));
+  task_queue.PostTask(
+      [handle = std::move(handle)]() mutable { handle.Stop(); });
   EXPECT_TRUE(done.Wait(kTimeout.ms()));
 }
 
@@ -219,14 +209,16 @@ TEST(RepeatingTaskTest, Example) {
     }
   };
   TaskQueueForTest task_queue("queue");
-  auto object = absl::make_unique<ObjectOnTaskQueue>();
+  auto object = std::make_unique<ObjectOnTaskQueue>();
   // Create and start the periodic task.
   RepeatingTaskHandle handle;
   object->StartPeriodicTask(&handle, task_queue.Get());
   // Restart the task
-  task_queue.PostTask(TaskHandleStopper(std::move(handle)));
+  task_queue.PostTask(
+      [handle = std::move(handle)]() mutable { handle.Stop(); });
   object->StartPeriodicTask(&handle, task_queue.Get());
-  task_queue.PostTask(TaskHandleStopper(std::move(handle)));
+  task_queue.PostTask(
+      [handle = std::move(handle)]() mutable { handle.Stop(); });
   struct Destructor {
     void operator()() { object.reset(); }
     std::unique_ptr<ObjectOnTaskQueue> object;

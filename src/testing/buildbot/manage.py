@@ -99,7 +99,10 @@ SKIP_GN_ISOLATE_MAP_TARGETS = {
   'ios_chrome_ui_egtests',
   'ios_chrome_unittests',
   'ios_chrome_web_egtests',
+  'ios_chrome_integration_eg2tests_module',
+  'ios_chrome_settings_eg2tests_module',
   'ios_chrome_smoke_eg2tests_module',
+'ios_showcase_eg2tests_module',
   'ios_chrome_ui_eg2tests_module',
   'ios_chrome_web_eg2tests_module',
   'ios_web_shell_eg2tests_module',
@@ -112,7 +115,7 @@ SKIP_GN_ISOLATE_MAP_TARGETS = {
   'ios_web_unittests',
   'ios_web_view_inttests',
   'ios_web_view_unittests',
-  'ocmock_support_unittests',
+  'ios_testing_unittests',
 
   # These are listed in Builders that are skipped for other reasons.
   'chrome_junit_tests',
@@ -129,12 +132,12 @@ SKIP_GN_ISOLATE_MAP_TARGETS = {
   'media_router_e2e_tests',
   'media_router_junit_tests',
   'media_router_perf_tests',
-  'motopho_latency_test',
   'net_junit_tests',
   'net_junit_tests',
   'service_junit_tests',
   'shipped_binaries',
   'system_webview_apk',
+  'touch_to_fill_junit_tests',
   'ui_junit_tests',
   'vr_common_perftests',
   'vr_perf_tests',
@@ -149,7 +152,6 @@ SKIP_GN_ISOLATE_MAP_TARGETS = {
   'audio_decoder_unittests',
   'common_audio_unittests',
   'common_video_unittests',
-  'frame_analyzer',
   'libjingle_peerconnection_android_unittest',
   'modules_tests',
   'modules_unittests',
@@ -165,11 +167,6 @@ SKIP_GN_ISOLATE_MAP_TARGETS = {
   'voice_engine_unittests',
   'webrtc_nonparallel_tests',
   'xmllite_xmpp_unittests',
-
-  # isolate is currently too slow for this target.
-  # http://crbug.com/524758
-  'webkit_layout_tests',
-  'webkit_layout_tests_exparchive',
 
   # These are only run on V8 CI.
   'pdfium_test',

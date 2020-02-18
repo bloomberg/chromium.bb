@@ -118,9 +118,10 @@ void MojoVideoDecoderService::GetSupportedConfigs(
 }
 
 void MojoVideoDecoderService::Construct(
-    mojom::VideoDecoderClientAssociatedPtrInfo client,
-    mojom::MediaLogAssociatedPtrInfo media_log,
-    mojom::VideoFrameHandleReleaserRequest video_frame_handle_releaser,
+    mojo::PendingAssociatedRemote<mojom::VideoDecoderClient> client,
+    mojo::PendingAssociatedRemote<mojom::MediaLog> media_log,
+    mojo::PendingReceiver<mojom::VideoFrameHandleReleaser>
+        video_frame_handle_releaser_receiver,
     mojo::ScopedDataPipeConsumerHandle decoder_buffer_pipe,
     mojom::CommandBufferIdPtr command_buffer_id,
     VideoDecoderImplementation implementation,
@@ -141,9 +142,9 @@ void MojoVideoDecoderService::Construct(
   media_log_ =
       std::make_unique<MojoMediaLog>(std::move(media_log), task_runner);
 
-  video_frame_handle_releaser_ =
-      mojo::MakeStrongBinding(std::make_unique<VideoFrameHandleReleaserImpl>(),
-                              std::move(video_frame_handle_releaser));
+  video_frame_handle_releaser_ = mojo::MakeSelfOwnedReceiver(
+      std::make_unique<VideoFrameHandleReleaserImpl>(),
+      std::move(video_frame_handle_releaser_receiver));
 
   mojo_decoder_buffer_reader_.reset(
       new MojoDecoderBufferReader(std::move(decoder_buffer_pipe)));
@@ -175,21 +176,23 @@ void MojoVideoDecoderService::Initialize(const VideoDecoderConfig& config,
     return;
   }
 
-  // Get CdmContext from cdm_id if the stream is encrypted.
+  // Get CdmContext from |cdm_id|, which could be null.
   CdmContext* cdm_context = nullptr;
   if (cdm_id != CdmContext::kInvalidCdmId) {
     auto cdm_context_ref = mojo_cdm_service_context_->GetCdmContextRef(cdm_id);
-    if (!cdm_context_ref) {
-      DVLOG(1) << "CdmContextRef not found for CDM id: " << cdm_id;
-      OnDecoderInitialized(false);
-      return;
+    if (cdm_context_ref) {
+      // |cdm_context_ref_| must be kept as long as |cdm_context| is used by the
+      // |decoder_|.
+      cdm_context_ref_ = std::move(cdm_context_ref);
+      cdm_context = cdm_context_ref_->GetCdmContext();
+      DCHECK(cdm_context);
     }
+  }
 
-    // |cdm_context_ref_| must be kept as long as |cdm_context| is used by the
-    // |decoder_|.
-    cdm_context_ref_ = std::move(cdm_context_ref);
-    cdm_context = cdm_context_ref_->GetCdmContext();
-    DCHECK(cdm_context);
+  if (config.is_encrypted() && !cdm_context) {
+    DVLOG(1) << "CdmContext for " << cdm_id << " not found for encrypted video";
+    OnDecoderInitialized(false);
+    return;
   }
 
   using Self = MojoVideoDecoderService;

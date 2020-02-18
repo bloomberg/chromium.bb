@@ -115,7 +115,7 @@ class ArchiveChromeEbuildEnvTest(cros_test_lib.MockTempDirTestCase):
     # Create a environment.bz2 file to put into folders.
     env_file = os.path.join(self.tempdir, 'environment')
     osutils.Touch(env_file)
-    cros_build_lib.RunCommand(['bzip2', env_file])
+    cros_build_lib.run(['bzip2', env_file])
     self.env_bz2 = '%s.bz2' % env_file
 
   def _CreateChromeDir(self, path, populate=True):
@@ -156,6 +156,36 @@ class ArchiveChromeEbuildEnvTest(cros_test_lib.MockTempDirTestCase):
       artifacts.ArchiveChromeEbuildEnv(self.sysroot, self.output_dir)
 
 
+class ArchiveImagesTest(cros_test_lib.TempDirTestCase):
+  """ArchiveImages tests."""
+
+  def setUp(self):
+    self.image_dir = os.path.join(self.tempdir, 'images')
+    osutils.SafeMakedirs(self.image_dir)
+    self.output_dir = os.path.join(self.tempdir, 'output')
+    osutils.SafeMakedirs(self.output_dir)
+
+    self.images = []
+    for img in artifacts.IMAGE_TARS.keys():
+      full_path = os.path.join(self.image_dir, img)
+      self.images.append(full_path)
+      osutils.Touch(full_path)
+
+    osutils.Touch(os.path.join(self.image_dir, 'irrelevant_image.bin'))
+    osutils.Touch(os.path.join(self.image_dir, 'foo.txt'))
+    osutils.Touch(os.path.join(self.image_dir, 'bar'))
+
+  def testNoImages(self):
+    """Test an empty directory handling."""
+    artifacts.ArchiveImages(self.tempdir, self.output_dir)
+    self.assertFalse(os.listdir(self.output_dir))
+
+  def testAllImages(self):
+    """Test each image gets picked up."""
+    created = artifacts.ArchiveImages(self.image_dir, self.output_dir)
+    self.assertCountEqual(list(artifacts.IMAGE_TARS.values()), created)
+
+
 class CreateChromeRootTest(cros_test_lib.RunCommandTempDirTestCase):
   """CreateChromeRoot tests."""
 
@@ -175,9 +205,8 @@ class CreateChromeRootTest(cros_test_lib.RunCommandTempDirTestCase):
 
   def testRunCommandError(self):
     """Test handling when the run command call is not successful."""
-    result = cros_build_lib.CommandResult()
     self.rc.SetDefaultCmdResult(
-        side_effect=cros_build_lib.RunCommandError('Error', result))
+        side_effect=cros_build_lib.RunCommandError('Error'))
 
     with self.assertRaises(artifacts.CrosGenerateSysrootError):
       artifacts.CreateChromeRoot(self.chroot, self.build_target,
@@ -204,7 +233,7 @@ class CreateChromeRootTest(cros_test_lib.RunCommandTempDirTestCase):
     self.assertCommandContains(['cros_generate_sysroot',
                                 '--board', self.build_target.name])
     # Make sure we
-    self.assertItemsEqual(expected_files, created)
+    self.assertCountEqual(expected_files, created)
     for f in created:
       self.assertExists(f)
 
@@ -342,7 +371,7 @@ class BundleVmFilesTest(cros_test_lib.TempDirTestCase):
     expected_archive_files = [
         output_dir + '/chromiumos_qemu_disk.bin' + '123.tar',
         output_dir + '/chromiumos_qemu_mem.bin.tar']
-    self.assertItemsEqual(archives, expected_archive_files)
+    self.assertCountEqual(archives, expected_archive_files)
 
 
 class BuildFirmwareArchiveTest(cros_test_lib.TempDirTestCase):
@@ -405,6 +434,8 @@ class BundleAFDOGenerationArtifacts(cros_test_lib.MockTempDirTestCase):
     self.output_dir = os.path.join(self.tempdir, 'output_dir')
     osutils.SafeMakedirs(self.output_dir)
 
+    self.chrome_root = os.path.join(self.tempdir, 'chrome_root')
+
   def testRunSuccess(self):
     """Generic function for testing success cases for different types."""
 
@@ -421,7 +452,7 @@ class BundleAFDOGenerationArtifacts(cros_test_lib.MockTempDirTestCase):
         toolchain_util, 'GenerateBenchmarkAFDOProfile',
         autospec=True)
 
-    #Test both orderfile and AFDO.
+    # Test both orderfile and AFDO.
     for is_orderfile in [False, True]:
       # Set up files in the tempdir since the command isn't being called to
       # generate anything for it to handle.
@@ -431,26 +462,28 @@ class BundleAFDOGenerationArtifacts(cros_test_lib.MockTempDirTestCase):
         osutils.Touch(os.path.join(call_tempdir, f))
 
       created = artifacts.BundleAFDOGenerationArtifacts(
-          is_orderfile, self.chroot, self.build_target, self.output_dir)
+          is_orderfile, self.chroot, self.chrome_root,
+          self.build_target, self.output_dir)
 
       # Test right class is called with right arguments
       if is_orderfile:
         mock_orderfile_generate.assert_called_once_with(
             board=self.build_target.name,
+            chrome_root=self.chrome_root,
             output_dir=call_tempdir,
             chroot_path=self.chroot.path,
-            chroot_args=self.chroot.GetEnterArgs()
+            chroot_args=self.chroot.get_enter_args()
         )
       else:
         mock_afdo_generate.assert_called_once_with(
             board=self.build_target.name,
             output_dir=call_tempdir,
             chroot_path=self.chroot.path,
-            chroot_args=self.chroot.GetEnterArgs(),
+            chroot_args=self.chroot.get_enter_args(),
         )
 
       # Make sure we get all the expected files
-      self.assertItemsEqual(expected_files, created)
+      self.assertCountEqual(expected_files, created)
       for f in created:
         self.assertExists(f)
         os.remove(f)
@@ -485,7 +518,7 @@ class FetchPinnedGuestImagesTest(cros_test_lib.TempDirTestCase):
     ]
 
     pins = artifacts.FetchPinnedGuestImages(self.chroot, self.sysroot)
-    self.assertItemsEqual(expected, pins)
+    self.assertCountEqual(expected, pins)
 
   def testBadPin(self):
     """Tests that generating a guest images tarball with a bad pin file."""
@@ -550,15 +583,17 @@ class GeneratePayloadsTest(cros_test_lib.MockTempDirTestCase):
     artifacts.GenerateQuickProvisionPayloads(self.target_image, self.tempdir)
 
     extract_kernel_mock.assert_called_once_with(
-        self.target_image, partial_mock.HasString('full_dev_part_KERN.bin'))
+        self.target_image, partial_mock.HasString('kernel.bin'))
     extract_root_mock.assert_called_once_with(
-        self.target_image, partial_mock.HasString('full_dev_part_ROOT.bin'),
+        self.target_image, partial_mock.HasString('rootfs.bin'),
         truncate=False)
 
-    calls = [mock.call(partial_mock.HasString('full_dev_part_KERN.bin'),
-                       partial_mock.HasString('full_dev_part_KERN.bin.gz')),
-             mock.call(partial_mock.HasString('full_dev_part_ROOT.bin'),
-                       partial_mock.HasString('full_dev_part_ROOT.bin.gz'))]
+    calls = [mock.call(partial_mock.HasString('kernel.bin'),
+                       partial_mock.HasString(
+                           constants.QUICK_PROVISION_PAYLOAD_KERNEL)),
+             mock.call(partial_mock.HasString('rootfs.bin'),
+                       partial_mock.HasString(
+                           constants.QUICK_PROVISION_PAYLOAD_ROOTFS))]
     compress_file_mock.assert_has_calls(calls)
 
 

@@ -82,6 +82,9 @@ class COMPONENT_EXPORT(DBUS_POWER) PowerManagerClient {
     virtual void ScreenBrightnessChanged(
         const power_manager::BacklightBrightnessChange& change) {}
 
+    // Called when the ambient light changed.
+    virtual void AmbientColorChanged(const int32_t color_temperature) {}
+
     // Called when the keyboard brightness is changed.
     virtual void KeyboardBrightnessChanged(
         const power_manager::BacklightBrightnessChange& change) {}
@@ -290,6 +293,9 @@ class COMPONENT_EXPORT(DBUS_POWER) PowerManagerClient {
   // Used to indicate that the client code which passed |token| before is now
   // ready for a suspend.
   virtual void UnblockSuspend(const base::UnguessableToken& token) = 0;
+
+  // Whether the device supports Ambient color.
+  virtual bool SupportsAmbientColor() = 0;
 
   // Creates timers corresponding to clocks present in |arc_timer_requests|.
   // ScopedFDs are used to indicate timer expiration as described in

@@ -5,7 +5,8 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_SHARED_IMAGE_REPRESENTATION_H_
 #define GPU_COMMAND_BUFFER_SERVICE_SHARED_IMAGE_REPRESENTATION_H_
 
-#include <dawn/dawn.h>
+#include <dawn/dawn_proc_table.h>
+#include <dawn/webgpu.h>
 
 #include "base/callback_helpers.h"
 #include "build/build_config.h"
@@ -21,6 +22,10 @@
 
 typedef unsigned int GLenum;
 class SkPromiseImageTexture;
+
+namespace gl {
+class GLImage;
+}
 
 namespace gpu {
 namespace gles2 {
@@ -211,6 +216,8 @@ class GPU_GLES2_EXPORT SharedImageRepresentationGLTexturePassthrough
   GetTexturePassthrough() = 0;
 
  protected:
+  friend class SharedImageRepresentationSkiaGL;
+
   // TODO(ericrk): Make these pure virtual and ensure real implementations
   // exist.
   virtual bool BeginAccess(GLenum mode);
@@ -304,7 +311,7 @@ class SharedImageRepresentationDawn : public SharedImageRepresentation {
   // TODO(penghuang): Add ScopedAccess helper class.
   // This can return null in case of a Dawn validation error, for example if
   // usage is invalid.
-  virtual DawnTexture BeginAccess(DawnTextureUsage usage) = 0;
+  virtual WGPUTexture BeginAccess(WGPUTextureUsage usage) = 0;
   virtual void EndAccess() = 0;
 };
 
@@ -315,6 +322,44 @@ class SharedImageRepresentationOverlay : public SharedImageRepresentation {
                                    MemoryTypeTracker* tracker)
       : SharedImageRepresentation(manager, backing, tracker) {}
 
+  class ScopedReadAccess {
+   public:
+    ScopedReadAccess(SharedImageRepresentationOverlay* representation,
+                              bool needs_gl_image)
+        : representation_(representation) {
+      representation_->BeginReadAccess();
+      gl_image_ = needs_gl_image ? representation_->GetGLImage() : nullptr;
+    }
+    ScopedReadAccess(ScopedReadAccess&& other) { *this = std::move(other); }
+    ~ScopedReadAccess() {
+      if (representation_)
+        representation_->EndReadAccess();
+    }
+
+    ScopedReadAccess& operator=(ScopedReadAccess&& other) {
+      representation_ = other.representation_;
+      other.representation_ = nullptr;
+      gl_image_ = other.gl_image_;
+      other.gl_image_ = nullptr;
+      return *this;
+    }
+
+    gl::GLImage* gl_image() const {
+      DCHECK(representation_);
+      return gl_image_;
+    }
+
+   private:
+    SharedImageRepresentationOverlay* representation_;
+    gl::GLImage* gl_image_;
+  };
+
+#if defined(OS_ANDROID)
+  virtual void NotifyOverlayPromotion(bool promotion,
+                                      const gfx::Rect& bounds) = 0;
+#endif
+
+ protected:
   // TODO(weiliangc): Currently this only handles Android pre-SurfaceControl
   // case. Add appropriate fence later.
   virtual void BeginReadAccess() = 0;
@@ -322,10 +367,9 @@ class SharedImageRepresentationOverlay : public SharedImageRepresentation {
 
   // TODO(weiliangc): Add API to backing AHardwareBuffer.
 
-#if defined(OS_ANDROID)
-  virtual void NotifyOverlayPromotion(bool promotion,
-                                      const gfx::Rect& bounds) = 0;
-#endif
+  // TODO(penghuang): Refactor it to not depend on GL.
+  // Get the backing as GLImage for GLSurface::ScheduleOverlayPlane.
+  virtual gl::GLImage* GetGLImage() = 0;
 };
 
 }  // namespace gpu

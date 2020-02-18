@@ -9,6 +9,7 @@ from __future__ import print_function
 import os
 import copy
 import owners as owners_module
+import random
 
 
 def first(iterable):
@@ -161,9 +162,12 @@ class OwnersFinder(object):
     self.selected_owners = set()
     self.deselected_owners = set()
 
-    # Initialize owners queue, sort it by the score
-    self.owners_queue = list(sorted(self.owners_to_files.keys(),
-                                    key=lambda owner: self.owners_score[owner]))
+    # Randomize owners' names so that if many reviewers have identical scores
+    # they will be randomly ordered to avoid bias.
+    owners = list(self.owners_to_files.keys())
+    random.shuffle(owners)
+    self.owners_queue = sorted(owners,
+                               key=lambda owner: self.owners_score[owner])
     self.find_mandatory_owners()
 
   def select_owner(self, owner, findMandatoryOwners=True):

@@ -38,8 +38,6 @@ class AccountChooserDialogView : public views::BubbleDialogDelegateView,
   // DialogDelegate:
   bool Accept() override;
   int GetDialogButtons() const override;
-  base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
-  std::unique_ptr<views::View> CreateFootnoteView() override;
 
   // ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;

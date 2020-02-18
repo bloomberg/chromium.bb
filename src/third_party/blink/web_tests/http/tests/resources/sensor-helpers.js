@@ -292,7 +292,7 @@ function sensorMocks() {
   class MockSensorProvider {
     constructor() {
       this.readingSizeInBytes_ =
-          device.mojom.SensorInitParams.kReadBufferSizeForTests;
+          device.mojom.SensorInitParams.READ_BUFFER_SIZE_FOR_TESTS;
       this.sharedBufferSizeInBytes_ = this.readingSizeInBytes_ *
               (device.mojom.SensorType.MAX_VALUE + 1);
       const rv = Mojo.createSharedBuffer(this.sharedBufferSizeInBytes_);
@@ -306,7 +306,7 @@ function sensorMocks() {
       this.resetSensorTypeSettings();
       this.binding_ = new mojo.Binding(device.mojom.SensorProvider, this);
       this.interceptor_ = new MojoInterfaceInterceptor(
-          device.mojom.SensorProvider.name);
+          device.mojom.SensorProvider.name, "context", true);
       this.interceptor_.oninterfacerequest = e => {
         this.bindToPipe(e.handle);
       };
@@ -359,7 +359,7 @@ function sensorMocks() {
 
       const initParams = new device.mojom.SensorInitParams({
         sensor: sensorPtr,
-        clientRequest: mojo.makeRequest(this.activeSensors_.get(mojoSensorType).client_),
+        clientReceiver: mojo.makeRequest(this.activeSensors_.get(mojoSensorType).client_),
         memory: rv.handle,
         bufferOffset: offset,
         mode: reportingMode,

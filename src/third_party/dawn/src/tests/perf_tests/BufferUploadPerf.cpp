@@ -15,24 +15,37 @@
 #include "tests/perf_tests/DawnPerfTest.h"
 
 #include "tests/ParamGenerator.h"
-#include "utils/DawnHelpers.h"
+#include "utils/WGPUHelpers.h"
 
 namespace {
 
     constexpr unsigned int kNumIterations = 50;
-    constexpr uint32_t kBufferSize = 1024 * 1024;
 
     enum class UploadMethod {
         SetSubData,
         CreateBufferMapped,
     };
 
+    // Perf delta exists between ranges [0, 1MB] vs [1MB, MAX_SIZE).
+    // These are sample buffer sizes within each range.
+    enum class UploadSize {
+        BufferSize_1KB = 1 * 1024,
+        BufferSize_64KB = 64 * 1024,
+        BufferSize_1MB = 1 * 1024 * 1024,
+
+        BufferSize_4MB = 4 * 1024 * 1024,
+        BufferSize_16MB = 16 * 1024 * 1024,
+    };
+
     struct BufferUploadParams : DawnTestParam {
-        BufferUploadParams(const DawnTestParam& param, UploadMethod uploadMethod)
-            : DawnTestParam(param), uploadMethod(uploadMethod) {
+        BufferUploadParams(const DawnTestParam& param,
+                           UploadMethod uploadMethod,
+                           UploadSize uploadSize)
+            : DawnTestParam(param), uploadMethod(uploadMethod), uploadSize(uploadSize) {
         }
 
         UploadMethod uploadMethod;
+        UploadSize uploadSize;
     };
 
     std::ostream& operator<<(std::ostream& ostream, const BufferUploadParams& param) {
@@ -46,6 +59,25 @@ namespace {
                 ostream << "_CreateBufferMapped";
                 break;
         }
+
+        switch (param.uploadSize) {
+            case UploadSize::BufferSize_1KB:
+                ostream << "_BufferSize_1KB";
+                break;
+            case UploadSize::BufferSize_64KB:
+                ostream << "_BufferSize_64KB";
+                break;
+            case UploadSize::BufferSize_1MB:
+                ostream << "_BufferSize_1MB";
+                break;
+            case UploadSize::BufferSize_4MB:
+                ostream << "_BufferSize_4MB";
+                break;
+            case UploadSize::BufferSize_16MB:
+                ostream << "_BufferSize_16MB";
+                break;
+        }
+
         return ostream;
     }
 
@@ -54,25 +86,27 @@ namespace {
 // Test uploading |kBufferSize| bytes of data |kNumIterations| times.
 class BufferUploadPerf : public DawnPerfTestWithParams<BufferUploadParams> {
   public:
-    BufferUploadPerf() : DawnPerfTestWithParams(kNumIterations), data(kBufferSize) {
+    BufferUploadPerf()
+        : DawnPerfTestWithParams(kNumIterations, 1),
+          data(static_cast<size_t>(GetParam().uploadSize)) {
     }
     ~BufferUploadPerf() override = default;
 
-    void SetUp() override;
+    void TestSetUp() override;
 
   private:
     void Step() override;
 
-    dawn::Buffer dst;
+    wgpu::Buffer dst;
     std::vector<uint8_t> data;
 };
 
-void BufferUploadPerf::SetUp() {
-    DawnPerfTestWithParams<BufferUploadParams>::SetUp();
+void BufferUploadPerf::TestSetUp() {
+    DawnPerfTestWithParams<BufferUploadParams>::TestSetUp();
 
-    dawn::BufferDescriptor desc = {};
-    desc.size = kBufferSize;
-    desc.usage = dawn::BufferUsage::CopyDst;
+    wgpu::BufferDescriptor desc = {};
+    desc.size = data.size();
+    desc.usage = wgpu::BufferUsage::CopyDst;
 
     dst = device.CreateBuffer(&desc);
 }
@@ -81,36 +115,30 @@ void BufferUploadPerf::Step() {
     switch (GetParam().uploadMethod) {
         case UploadMethod::SetSubData: {
             for (unsigned int i = 0; i < kNumIterations; ++i) {
-                dst.SetSubData(0, kBufferSize, data.data());
+                dst.SetSubData(0, data.size(), data.data());
             }
             // Make sure all SetSubData's are flushed.
             queue.Submit(0, nullptr);
         } break;
 
         case UploadMethod::CreateBufferMapped: {
-            dawn::BufferDescriptor desc = {};
-            desc.size = kBufferSize;
-            desc.usage = dawn::BufferUsage::CopySrc | dawn::BufferUsage::MapWrite;
+            wgpu::BufferDescriptor desc = {};
+            desc.size = data.size();
+            desc.usage = wgpu::BufferUsage::CopySrc | wgpu::BufferUsage::MapWrite;
 
-            dawn::CommandEncoder encoder = device.CreateCommandEncoder();
+            wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
 
             for (unsigned int i = 0; i < kNumIterations; ++i) {
                 auto result = device.CreateBufferMapped(&desc);
-                memcpy(result.data, data.data(), kBufferSize);
+                memcpy(result.data, data.data(), data.size());
                 result.buffer.Unmap();
-                encoder.CopyBufferToBuffer(result.buffer, 0, dst, 0, kBufferSize);
+                encoder.CopyBufferToBuffer(result.buffer, 0, dst, 0, data.size());
             }
 
-            dawn::CommandBuffer commands = encoder.Finish();
+            wgpu::CommandBuffer commands = encoder.Finish();
             queue.Submit(1, &commands);
         } break;
     }
-
-    // Wait for the GPU in this batch of iterations.
-    // If we don't wait, we can't properly compute the number of steps to run during
-    // calibration.
-    // The wait time gets amortized over the kNumIterations.
-    WaitForGPU();
 }
 
 TEST_P(BufferUploadPerf, Run) {
@@ -119,4 +147,7 @@ TEST_P(BufferUploadPerf, Run) {
 
 DAWN_INSTANTIATE_PERF_TEST_SUITE_P(BufferUploadPerf,
                                    {D3D12Backend, MetalBackend, OpenGLBackend, VulkanBackend},
-                                   {UploadMethod::SetSubData, UploadMethod::CreateBufferMapped});
+                                   {UploadMethod::SetSubData, UploadMethod::CreateBufferMapped},
+                                   {UploadSize::BufferSize_1KB, UploadSize::BufferSize_64KB,
+                                    UploadSize::BufferSize_1MB, UploadSize::BufferSize_4MB,
+                                    UploadSize::BufferSize_16MB});

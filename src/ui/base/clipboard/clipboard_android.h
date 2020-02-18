@@ -39,6 +39,9 @@ class ClipboardAndroid : public Clipboard {
       const base::android::JavaParamRef<jobject>& obj,
       const jlong j_timestamp_ms);
 
+  // Called by Java side.
+  int64_t GetLastModifiedTimeToJavaTime(JNIEnv* env);
+
   // Sets the callback called whenever the clipboard is modified.
   COMPONENT_EXPORT(BASE_CLIPBOARD)
   void SetModifiedCallback(ModifiedCallback cb);
@@ -80,7 +83,12 @@ class ClipboardAndroid : public Clipboard {
                 std::string* result) const override;
   base::Time GetLastModifiedTime() const override;
   void ClearLastModifiedTime() override;
-  void WriteObjects(ClipboardBuffer buffer, const ObjectMap& objects) override;
+  void WritePortableRepresentations(ClipboardBuffer buffer,
+                                    const ObjectMap& objects) override;
+  void WritePlatformRepresentations(
+      ClipboardBuffer buffer,
+      std::vector<Clipboard::PlatformRepresentation> platform_representations)
+      override;
   void WriteText(const char* text_data, size_t text_len) override;
   void WriteHTML(const char* markup_data,
                  size_t markup_len,

@@ -117,8 +117,7 @@ template <typename T>
 class PassedWrapper final {
  public:
   explicit PassedWrapper(T&& scoper) : scoper_(std::move(scoper)) {}
-  PassedWrapper(PassedWrapper&& other) noexcept
-      : scoper_(std::move(other.scoper_)) {}
+  PassedWrapper(PassedWrapper&& other) : scoper_(std::move(other.scoper_)) {}
   T MoveOut() const { return std::move(scoper_); }
 
  private:
@@ -210,6 +209,9 @@ struct CheckGCedTypeRestriction {
                 "GCed types are forbidden as bound parameters.");
   static_assert(!WTF::IsStackAllocatedType<T>::value,
                 "Stack allocated types are forbidden as bound parameters.");
+  static_assert(
+      !(WTF::IsDisallowNew<T>::value && WTF::IsTraceable<T>::value),
+      "Traceable disallow new types are forbidden as bound parameters.");
 };
 
 template <typename Index, typename... Args>
@@ -312,16 +314,15 @@ class CrossThreadFunction<R(Args...)> {
 
  public:
   CrossThreadFunction() = default;
-  explicit CrossThreadFunction(base::Callback<R(Args...)> callback)
+  explicit CrossThreadFunction(base::RepeatingCallback<R(Args...)> callback)
       : callback_(std::move(callback)) {}
   ~CrossThreadFunction() = default;
 
   CrossThreadFunction(const CrossThreadFunction&) = delete;
   CrossThreadFunction& operator=(const CrossThreadFunction&) = delete;
 
-  CrossThreadFunction(CrossThreadFunction&& other) noexcept = default;
-  CrossThreadFunction& operator=(CrossThreadFunction&& other) noexcept =
-      default;
+  CrossThreadFunction(CrossThreadFunction&& other) = default;
+  CrossThreadFunction& operator=(CrossThreadFunction&& other) = default;
 
   R Run(Args... args) const & {
     return callback_.Run(std::forward<Args>(args)...);
@@ -331,13 +332,13 @@ class CrossThreadFunction<R(Args...)> {
   void Reset() { callback_.Reset(); }
   explicit operator bool() const { return static_cast<bool>(callback_); }
 
-  friend base::Callback<R(Args...)> ConvertToBaseCallback(
+  friend base::RepeatingCallback<R(Args...)> ConvertToBaseRepeatingCallback(
       CrossThreadFunction function) {
     return std::move(function.callback_);
   }
 
  private:
-  base::Callback<R(Args...)> callback_;
+  base::RepeatingCallback<R(Args...)> callback_;
 };
 
 template <typename Signature>
@@ -356,9 +357,8 @@ class CrossThreadOnceFunction<R(Args...)> {
   CrossThreadOnceFunction(const CrossThreadOnceFunction&) = delete;
   CrossThreadOnceFunction& operator=(const CrossThreadOnceFunction&) = delete;
 
-  CrossThreadOnceFunction(CrossThreadOnceFunction&& other) noexcept = default;
-  CrossThreadOnceFunction& operator=(CrossThreadOnceFunction&& other) noexcept =
-      default;
+  CrossThreadOnceFunction(CrossThreadOnceFunction&& other) = default;
+  CrossThreadOnceFunction& operator=(CrossThreadOnceFunction&& other) = default;
 
   R Run(Args... args) && {
     return std::move(callback_).Run(std::forward<Args>(args)...);

@@ -25,7 +25,8 @@ MojoLearningTaskControllerService::~MojoLearningTaskControllerService() =
 
 void MojoLearningTaskControllerService::BeginObservation(
     const base::UnguessableToken& id,
-    const FeatureVector& features) {
+    const FeatureVector& features,
+    const base::Optional<TargetValue>& default_target) {
   // Drop the observation if it doesn't match the feature description size.
   if (features.size() != task_.feature_descriptions.size())
     return;
@@ -37,7 +38,7 @@ void MojoLearningTaskControllerService::BeginObservation(
 
   // Since we own |impl_|, we don't need to keep track of in-flight
   // observations.  We'll release |impl_| on destruction, which cancels them.
-  impl_->BeginObservation(id, features);
+  impl_->BeginObservation(id, features, default_target);
 }
 
 void MojoLearningTaskControllerService::CompleteObservation(
@@ -59,6 +60,16 @@ void MojoLearningTaskControllerService::CancelObservation(
   in_flight_observations_.erase(iter);
 
   impl_->CancelObservation(id);
+}
+
+void MojoLearningTaskControllerService::UpdateDefaultTarget(
+    const base::UnguessableToken& id,
+    const base::Optional<TargetValue>& default_target) {
+  auto iter = in_flight_observations_.find(id);
+  if (iter == in_flight_observations_.end())
+    return;
+
+  impl_->UpdateDefaultTarget(id, default_target);
 }
 
 }  // namespace learning

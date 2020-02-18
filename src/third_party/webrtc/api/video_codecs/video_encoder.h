@@ -141,10 +141,15 @@ class RTC_EXPORT VideoEncoder {
     int min_bitrate_bps = 0;
     // Recommended maximum bitrate.
     int max_bitrate_bps = 0;
+
+    bool operator==(const ResolutionBitrateLimits& rhs) const;
+    bool operator!=(const ResolutionBitrateLimits& rhs) const {
+      return !(*this == rhs);
+    }
   };
 
   // Struct containing metadata about the encoder implementing this interface.
-  struct EncoderInfo {
+  struct RTC_EXPORT EncoderInfo {
     static constexpr uint8_t kMaxFramerateFraction =
         std::numeric_limits<uint8_t>::max();
 
@@ -152,6 +157,10 @@ class RTC_EXPORT VideoEncoder {
     EncoderInfo(const EncoderInfo&);
 
     ~EncoderInfo();
+
+    std::string ToString() const;
+    bool operator==(const EncoderInfo& rhs) const;
+    bool operator!=(const EncoderInfo& rhs) const { return !(*this == rhs); }
 
     // Any encoder implementation wishing to use the WebRTC provided
     // quality scaler must populate this field.
@@ -216,9 +225,16 @@ class RTC_EXPORT VideoEncoder {
 
     // Recommended bitrate limits for different resolutions.
     std::vector<ResolutionBitrateLimits> resolution_bitrate_limits;
+
+    // If true, this encoder has internal support for generating simulcast
+    // streams. Otherwise, an adapter class will be needed.
+    // Even if true, the config provided to InitEncode() might not be supported,
+    // in such case the encoder should return
+    // WEBRTC_VIDEO_CODEC_ERR_SIMULCAST_PARAMETERS_NOT_SUPPORTED.
+    bool supports_simulcast;
   };
 
-  struct RateControlParameters {
+  struct RTC_EXPORT RateControlParameters {
     RateControlParameters();
     RateControlParameters(const VideoBitrateAllocation& bitrate,
                           double framerate_fps);
@@ -239,6 +255,9 @@ class RTC_EXPORT VideoEncoder {
     // |bitrate.get_sum_bps()|, but may be higher if the application is not
     // network constrained.
     DataRate bandwidth_allocation;
+
+    bool operator==(const RateControlParameters& rhs) const;
+    bool operator!=(const RateControlParameters& rhs) const;
   };
 
   struct LossNotification {

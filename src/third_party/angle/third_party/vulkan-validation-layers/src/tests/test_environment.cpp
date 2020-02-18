@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2015-2016 The Khronos Group Inc.
- * Copyright (c) 2015-2016 Valve Corporation
- * Copyright (c) 2015-2016 LunarG, Inc.
+ * Copyright (c) 2015-2019 The Khronos Group Inc.
+ * Copyright (c) 2015-2019 Valve Corporation
+ * Copyright (c) 2015-2019 LunarG, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,13 +25,8 @@
  */
 
 #include "test_common.h"
+#include "lvt_function_pointers.h"
 #include "test_environment.h"
-
-#if defined(NDEBUG) && defined(__GNUC__)
-#define U_ASSERT_ONLY __attribute__((unused))
-#else
-#define U_ASSERT_ONLY
-#endif
 
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
 
@@ -75,9 +70,6 @@ bool Environment::parse_args(int argc, char **argv) {
 }
 
 void Environment::SetUp() {
-    uint32_t count;
-    VkResult U_ASSERT_ONLY err;
-    VkInstanceCreateInfo inst_info = {};
     std::vector<VkExtensionProperties> instance_extensions;
     std::vector<VkExtensionProperties> device_extensions;
 
@@ -107,6 +99,7 @@ void Environment::SetUp() {
         ASSERT_EQ(extFound, 1) << "ERROR: Cannot find extension named " << instance_extension_names[i]
                                << " which is necessary to pass this test";
     }
+    VkInstanceCreateInfo inst_info = {};
     inst_info.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
     inst_info.pNext = NULL;
     inst_info.pApplicationInfo = &app_;
@@ -114,12 +107,15 @@ void Environment::SetUp() {
     inst_info.ppEnabledExtensionNames = (instance_extension_names.size()) ? &instance_extension_names[0] : NULL;
     inst_info.enabledLayerCount = 0;
     inst_info.ppEnabledLayerNames = NULL;
-    err = vkCreateInstance(&inst_info, NULL, &inst);
+
+    VkResult err;
+    uint32_t count;
+    err = vk::CreateInstance(&inst_info, NULL, &inst);
     ASSERT_EQ(VK_SUCCESS, err);
-    err = vkEnumeratePhysicalDevices(inst, &count, NULL);
+    err = vk::EnumeratePhysicalDevices(inst, &count, NULL);
     ASSERT_EQ(VK_SUCCESS, err);
     ASSERT_LE(count, ARRAY_SIZE(gpus));
-    err = vkEnumeratePhysicalDevices(inst, &count, gpus);
+    err = vk::EnumeratePhysicalDevices(inst, &count, gpus);
     ASSERT_EQ(VK_SUCCESS, err);
     ASSERT_GT(count, default_dev_);
 
@@ -152,6 +148,6 @@ void Environment::TearDown() {
     for (std::vector<Device *>::iterator it = devs_.begin(); it != devs_.end(); it++) delete *it;
     devs_.clear();
 
-    if (inst) vkDestroyInstance(inst, NULL);
+    if (inst) vk::DestroyInstance(inst, NULL);
 }
 }  // namespace vk_testing

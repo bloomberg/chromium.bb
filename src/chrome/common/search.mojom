@@ -28,8 +28,34 @@ interface EmbeddedSearchConnector {
   // client will use to query the embedded search interface. |client| is the
   // connection used by the embedded search interface implementation to push
   // browser state updates to the client.
-  Connect(associated EmbeddedSearch & embedded_search,
-          associated EmbeddedSearchClient client);
+  Connect(pending_associated_receiver<EmbeddedSearch> embedded_search,
+          pending_associated_remote<EmbeddedSearchClient> client);
+};
+
+// See components/omnibox/browser/autocomplete_match.h.
+struct ACMatchClassification {
+  uint32 offset;
+  int32 style;
+};
+
+struct AutocompleteMatch {
+  bool allowed_to_be_default_match;
+  mojo_base.mojom.String16 contents;
+  array<ACMatchClassification> contents_class;
+  mojo_base.mojom.String16 description;
+  array<ACMatchClassification> description_class;
+  string destination_url;
+  mojo_base.mojom.String16 inline_autocompletion;
+  mojo_base.mojom.String16 fill_into_edit;
+  bool is_search_type;  // Result of AutocompleteMatch::IsSearchType().
+  string type;  // Result of AutocompleteMatchType::ToString().
+  bool swap_contents_and_description;
+  bool supports_deletion;
+};
+
+struct AutocompleteResult {
+  mojo_base.mojom.String16 input;
+  array<AutocompleteMatch> matches;
 };
 
 // Browser interface to support embedded search. Render frames connect to this
@@ -142,6 +168,35 @@ interface EmbeddedSearch {
 
   // Confirms applied theme changes.
   ConfirmThemeChanges();
+
+  // Queries autocomplete matches from the browser.
+  QueryAutocomplete(mojo_base.mojom.String16 input,
+                    bool prevent_inline_autocomplete);
+
+  // Deletes the AutocompleteMatch in the current results by |line| number if
+  // it is deletable.
+  DeleteAutocompleteMatch(uint8 line);
+
+  // Cancels the current autocomplete query. Clears the result set if
+  // |clear_result| is true.
+  StopAutocomplete(bool clear_result);
+
+  // Called when a user dismisses a promo.
+  BlocklistPromo(string promo_id);
+
+  // Handles navigation to an autocomplete match (i.e. an item in the realbox's
+  // list of matches). Note: |url| is passed solely to verify that the browser
+  // and renderer are in sync; don't trust this content or use it for anything
+  // other than verification purposes (i.e. is the URL still the same?).
+  OpenAutocompleteMatch(uint8 line,
+                        url.mojom.Url url,
+                        bool are_matches_showing,
+                        double time_elapsed_since_last_focus,
+                        double button,
+                        bool alt_key,
+                        bool ctrl_key,
+                        bool meta_key,
+                        bool shift_key);
 };
 
 [Native]
@@ -151,11 +206,17 @@ enum OmniboxFocusChangeReason;
 struct InstantMostVisitedInfo;
 
 [Native]
-struct ThemeBackgroundInfo;
+struct NtpTheme;
+
+[Native]
+struct SearchBoxTheme;
 
 // Renderer interface used by the browser to push updates to the client. For
 // example, the browser will tell the frame if the omnibox got focus.
 interface EmbeddedSearchClient {
+  // Updates the NTP realbox with the autocomplete results.
+  AutocompleteResultChanged(AutocompleteResult result);
+
   // Update the page sequence number for the page.
   SetPageSequenceNumber(int32 page_seq_no);
 
@@ -171,8 +232,8 @@ interface EmbeddedSearchClient {
   // Input into the Omnibox has started/stopped.
   SetInputInProgress(bool input_in_progress);
 
-  // The browser theme has changed, the NTP should be updated accordingly.
-  ThemeChanged(ThemeBackgroundInfo value);
+  // The NTP theme has changed; update accordingly.
+  ThemeChanged(NtpTheme theme);
 
   // A background image was selected from the file upload dialog.
   LocalBackgroundSelected();

@@ -426,14 +426,17 @@ message GetEnrollmentIdReply {
   optional string enrollment_id = 2;
 }
 
+// Gets a copy of the specific NV data, signed using the key with the specified
+// label, eg "attest-ent-machine".
 message GetCertifiedNvIndexRequest {
   optional int32 nv_index = 1;
   optional int32 nv_size = 2;
+  optional string key_label = 3;
 }
 
 message GetCertifiedNvIndexReply {
   optional AttestationStatus status = 1;
   optional bytes certified_data = 2;
   optional bytes signature = 3;
-  optional bytes identity_certificate = 4;
+  optional bytes key_certificate = 4;
 }

@@ -7,11 +7,12 @@ and assigned a bug to you! What should you do? Read on...
 
 ## About our performance tests
 
-The [chromium.perf waterfall](perf_waterfall.md) is a continuous build which
-runs performance tests on dozens of devices across Windows, Mac, Linux, and
-Android Chrome and WebView. Often, a performance regression only affects a
-certain type of hardware or a certain operating system, which may be different
-than what you tested locally before landing your CL.
+The [chrome.perf waterfall](perf_waterfall.md) is a continuous build which
+runs performance tests on dozens of devices across Android, Windows,
+Mac, and Linux hardware; see [list of platforms](perf_lab_platforms.md).
+Often, a performance regression only affects a certain type of hardware or a
+certain operating system, which may be different than what you tested locally
+before landing your CL.
 
 Each test has an owner, named in
 [this spreadsheet](https://docs.google.com/spreadsheets/d/1xaAo0_SU3iDfGdqDJZX_jRV0QtkufwHUKH3kQKF3YQs/edit#gid=0),
@@ -32,7 +33,7 @@ The bisect service spits out a comment on the bug that looks like this:
 > **Roll src/third_party/depot_tools/ 0f7b2007a..fd4ad2416 (1 commit)**
 > by depot-tools-roller@chromium.org<br>
 > https://chromium.googlesource.com/chromium/src/+/14fc99e3fd3614096caab7c7a8362edde8327a5d
-> 
+>
 > Understanding performance regressions:<br>
 > &nbsp;&nbsp;http://g.co/ChromePerformanceRegressions
 
@@ -89,7 +90,8 @@ making the regression more likely to reproduce. From the Pinpoint Job page,
 clicking the `+` button in the bottom-right corner to test a patch with the
 current configuration.
 
-You can also run locally:
+You can also run locally (note that running this successfully on Android
+requires the device to be rooted):
 ```
 src$ tools/perf/run_benchmark benchmark_name --story-filter story_name
 ```

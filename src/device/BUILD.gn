@@ -20,6 +20,7 @@ is_linux_without_udev = is_linux && !use_udev
 test("device_unittests") {
   sources = [
     "base/synchronization/one_writer_seqlock_unittest.cc",
+    "bluetooth/bluetooth_adapter_android_unittest.cc",
     "bluetooth/bluetooth_adapter_mac_metrics_unittest.mm",
     "bluetooth/bluetooth_adapter_mac_unittest.mm",
     "bluetooth/bluetooth_adapter_unittest.cc",
@@ -328,6 +329,7 @@ test("device_unittests") {
       "vr/orientation/orientation_device_unittest.cc",
       "vr/util/fps_meter_unittest.cc",
       "vr/util/sliding_average_unittest.cc",
+      "vr/util/stage_utils_unittest.cc",
       "vr/vr_device_base_unittest.cc",
     ]
 
@@ -363,9 +365,11 @@ test("device_unittests") {
 if (is_android) {
   bluetooth_java_sources_needing_jni = [
     "bluetooth/test/android/java/src/org/chromium/device/bluetooth/Fakes.java",
+    "bluetooth/test/android/java/src/org/chromium/device/bluetooth/ChromeBluetoothScanFilter.java",
   ]
 
   generate_jni("bluetooth_test_jni_headers") {
+    testonly = true
     sources = bluetooth_java_sources_needing_jni
   }
 
@@ -376,7 +380,7 @@ if (is_android) {
       "//base:base_java",
       "//components/location/android:location_java",
       "//device/bluetooth:java",
-      "//third_party/android_deps:com_android_support_support_annotations_java",
+      "//third_party/android_deps:androidx_annotation_annotation_java",
       "//third_party/android_sdk:android_test_mock_java",
     ]
 
@@ -394,7 +398,7 @@ if (is_android) {
       "//base:base_junit_test_support",
       "//device/gamepad:java",
       "//mojo/public/java:bindings_java",
-      "//third_party/android_deps:com_android_support_support_annotations_java",
+      "//third_party/android_deps:androidx_annotation_annotation_java",
     ]
     srcjar_deps = [ "//device/gamepad:java_enums_srcjar" ]
   }

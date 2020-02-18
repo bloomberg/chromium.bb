@@ -51,6 +51,7 @@
 #include "third_party/blink/renderer/core/layout/line/inline_iterator.h"
 #include "third_party/blink/renderer/core/layout/line/inline_text_box.h"
 #include "third_party/blink/renderer/core/layout/line/line_width.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_cursor.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_line_height_metrics.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_offset_mapping.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_block_flow.h"
@@ -1234,7 +1235,14 @@ void LayoutBlockFlow::AdjustLinePositionForPagination(RootInlineBox& line_box,
     // Moving to a different page or column may mean that its height is
     // different.
     page_logical_height = PageLogicalHeightForOffset(new_logical_offset);
-    if (line_height > page_logical_height) {
+    // We need to insert a break now, either because there's no room for the
+    // line in the current column / page, or because we have determined that we
+    // need a break to satisfy widow requirements.
+    if (ShouldBreakAtLineToAvoidWidow() &&
+        LineBreakToAvoidWidow() == line_index) {
+      ClearShouldBreakAtLineToAvoidWidow();
+      SetDidBreakAtLineToAvoidWidow();
+    } else if (line_height > page_logical_height) {
       // Too tall to fit in one page / column. Give up. Don't push to the next
       // page / column.
       // TODO(mstensho): Get rid of this. This is just utter weirdness, but the
@@ -1245,14 +1253,6 @@ void LayoutBlockFlow::AdjustLinePositionForPagination(RootInlineBox& line_box,
       return;
     }
 
-    // We need to insert a break now, either because there's no room for the
-    // line in the current column / page, or because we have determined that we
-    // need a break to satisfy widow requirements.
-    if (ShouldBreakAtLineToAvoidWidow() &&
-        LineBreakToAvoidWidow() == line_index) {
-      ClearShouldBreakAtLineToAvoidWidow();
-      SetDidBreakAtLineToAvoidWidow();
-    }
     if (ShouldSetStrutOnBlock(*this, line_box, logical_offset, line_index,
                               page_logical_height)) {
       // Note that when setting the strut on a block, it may be propagated to
@@ -2576,6 +2576,12 @@ void LayoutBlockFlow::AddLayoutOverflowFromFloats() {
 void LayoutBlockFlow::SetPaintFragment(
     const NGBlockBreakToken*,
     scoped_refptr<const NGPhysicalFragment>) {}
+
+const NGFragmentItems* LayoutBlockFlow::FragmentItems() const {
+  if (const NGPhysicalBoxFragment* box_fragment = CurrentFragment())
+    return box_fragment->Items();
+  return nullptr;
+}
 
 void LayoutBlockFlow::ComputeVisualOverflow(
     bool recompute_floats) {
@@ -4195,7 +4201,7 @@ bool LayoutBlockFlow::HitTestChildren(HitTestResult& result,
                                       HitTestAction hit_test_action) {
   PhysicalOffset scrolled_offset = accumulated_offset;
   if (HasOverflowClip())
-    scrolled_offset -= PhysicalOffset(ScrolledContentOffset());
+    scrolled_offset -= PhysicalOffset(PixelSnappedScrolledContentOffset());
 
   if (hit_test_action == kHitTestFloat && !IsLayoutNGObject()) {
     // Hit-test the floats using the FloatingObjects list if we're in legacy
@@ -4620,16 +4626,48 @@ void LayoutBlockFlow::RecalcInlineChildrenVisualOverflow() {
     return;
   }
 
+  if (UNLIKELY(RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled())) {
+    if (const NGPhysicalBoxFragment* fragment = CurrentFragment()) {
+      if (const NGFragmentItems* items = fragment->Items()) {
+        NGInlineCursor cursor(*items);
+        NGFragmentItem::RecalcInkOverflowForCursor(&cursor);
+      }
+
+      if (fragment->HasFloatingDescendantsForPaint())
+        RecalcFloatingDescendantsVisualOverflow(*fragment);
+      return;
+    }
+  }
+
   for (InlineWalker walker(LineLayoutBlockFlow(this)); !walker.AtEnd();
        walker.Advance()) {
     LayoutObject* layout_object = walker.Current().GetLayoutObject();
-    RecalcNormalFlowChildVisualOverflowIfNeeded(layout_object);
+    layout_object->RecalcNormalFlowChildVisualOverflowIfNeeded();
   }
 
   // Child inline boxes' self visual overflow is already computed at the same
   // time as layout overflow. But we need to add replaced children visual rects.
   for (RootInlineBox* box = FirstRootBox(); box; box = box->NextRootBox())
     box->AddReplacedChildrenVisualOverflow(box->LineTop(), box->LineBottom());
+}
+
+void LayoutBlockFlow::RecalcFloatingDescendantsVisualOverflow(
+    const NGPhysicalContainerFragment& fragment) {
+  DCHECK(fragment.HasFloatingDescendantsForPaint());
+
+  for (const NGLink& child : fragment.Children()) {
+    if (child->IsFloating()) {
+      child->GetMutableLayoutObject()
+          ->RecalcNormalFlowChildVisualOverflowIfNeeded();
+      continue;
+    }
+
+    if (const NGPhysicalContainerFragment* child_container_fragment =
+            DynamicTo<NGPhysicalContainerFragment>(child.get())) {
+      if (child_container_fragment->HasFloatingDescendantsForPaint())
+        RecalcFloatingDescendantsVisualOverflow(*child_container_fragment);
+    }
+  }
 }
 
 PositionWithAffinity LayoutBlockFlow::PositionForPoint(
@@ -4646,7 +4684,7 @@ PositionWithAffinity LayoutBlockFlow::PositionForPoint(
   // offset of this |LayoutBlockFlow|.
   if (HasOverflowClip()) {
     PhysicalOffset offset_in_this = offset;
-    offset_in_this -= PhysicalOffset(ScrolledContentOffset());
+    offset_in_this -= PhysicalOffset(PixelSnappedScrolledContentOffset());
     return PositionForPoint(offset_in_this);
   }
 

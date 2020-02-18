@@ -33,6 +33,15 @@ namespace {
 // Minimum width for the multi-line label.
 const int kMinimumDialogLabelWidth = 400;
 
+std::unique_ptr<views::Link> CreateExtraView(views::LinkListener* listener) {
+  auto advanced_link = std::make_unique<views::Link>(
+      l10n_util::GetStringUTF16(IDS_ONE_CLICK_SIGNIN_DIALOG_ADVANCED));
+
+  advanced_link->set_listener(listener);
+  advanced_link->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  return advanced_link;
+}
+
 }  // namespace
 
 // static
@@ -74,6 +83,14 @@ OneClickSigninDialogView::OneClickSigninDialogView(
       confirmed_callback_(std::move(confirmed_callback)),
       advanced_link_(nullptr),
       learn_more_link_(nullptr) {
+  DialogDelegate::set_button_label(
+      ui::DIALOG_BUTTON_OK,
+      l10n_util::GetStringUTF16(IDS_ONE_CLICK_SIGNIN_DIALOG_OK_BUTTON));
+  DialogDelegate::set_button_label(
+      ui::DIALOG_BUTTON_CANCEL,
+      l10n_util::GetStringUTF16(IDS_ONE_CLICK_SIGNIN_DIALOG_UNDO_BUTTON));
+  advanced_link_ = DialogDelegate::SetExtraView(::CreateExtraView(this));
+
   DCHECK(!confirmed_callback_.is_null());
   set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(
       views::TEXT, views::TEXT));
@@ -128,23 +145,6 @@ void OneClickSigninDialogView::WindowClosing() {
   // before then.
   DCHECK_EQ(dialog_view_, this);
   dialog_view_ = NULL;
-}
-
-std::unique_ptr<views::View> OneClickSigninDialogView::CreateExtraView() {
-  auto advanced_link = std::make_unique<views::Link>(
-      l10n_util::GetStringUTF16(IDS_ONE_CLICK_SIGNIN_DIALOG_ADVANCED));
-
-  advanced_link->set_listener(this);
-  advanced_link->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  advanced_link_ = advanced_link.get();
-  return advanced_link;
-}
-
-base::string16 OneClickSigninDialogView::GetDialogButtonLabel(
-    ui::DialogButton button) const {
-  return l10n_util::GetStringUTF16(
-      button == ui::DIALOG_BUTTON_OK ? IDS_ONE_CLICK_SIGNIN_DIALOG_OK_BUTTON
-                                     : IDS_ONE_CLICK_SIGNIN_DIALOG_UNDO_BUTTON);
 }
 
 void OneClickSigninDialogView::LinkClicked(views::Link* source,

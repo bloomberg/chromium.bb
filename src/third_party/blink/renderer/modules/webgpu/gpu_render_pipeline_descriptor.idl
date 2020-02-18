@@ -5,14 +5,14 @@
 // https://gpuweb.github.io/gpuweb/
 
 dictionary GPURenderPipelineDescriptor : GPUPipelineDescriptorBase {
-    required GPUPipelineStageDescriptor vertexStage;
-    GPUPipelineStageDescriptor fragmentStage;
+    required GPUProgrammableStageDescriptor vertexStage;
+    GPUProgrammableStageDescriptor fragmentStage;
 
     required GPUPrimitiveTopology primitiveTopology;
-    GPURasterizationStateDescriptor rasterizationState;
+    GPURasterizationStateDescriptor rasterizationState = {};
     required sequence<GPUColorStateDescriptor> colorStates;
     GPUDepthStencilStateDescriptor depthStencilState;
-    GPUVertexInputDescriptor vertexInput;
+    GPUVertexStateDescriptor vertexState = {};
 
     unsigned long sampleCount = 1;
 

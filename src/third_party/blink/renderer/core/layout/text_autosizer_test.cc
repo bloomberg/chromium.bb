@@ -19,7 +19,7 @@
 namespace blink {
 class TextAutosizerClient : public RenderingTestChromeClient {
  public:
-  float WindowToViewportScalar(const float value) const override {
+  float WindowToViewportScalar(LocalFrame*, const float value) const override {
     return value * device_scale_factor_;
   }
   IntRect ViewportToScreen(const IntRect& rect,

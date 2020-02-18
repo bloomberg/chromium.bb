@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import("//build_overrides/build.gni")
+import("../../gn/fuzzer.gni")
 import("../../gn/perfetto.gni")
 import("../../gn/test.gni")
 
@@ -21,9 +22,6 @@ source_set("tracing") {
   public_deps = [
     ":common",
     "../../include/perfetto/ext/tracing/core",
-    "../../protos/perfetto/common:lite",
-    "../../protos/perfetto/trace:minimal_lite",
-    "../../protos/perfetto/trace:trusted_lite",
     "../../protos/perfetto/trace:zero",
     "../../protos/perfetto/trace/interned_data:zero",
     "../../protos/perfetto/trace/track_event:zero",
@@ -31,51 +29,62 @@ source_set("tracing") {
   deps = [
     "../../gn:default_deps",
     "../../include/perfetto/tracing",
-    "../../protos/perfetto/config:lite",
+    "../../protos/perfetto/common:zero",
+    "../../protos/perfetto/config:zero",
     "../../protos/perfetto/trace/perfetto:zero",  # For MetatraceWriter.
     "../base",
     "../protozero",
   ]
   sources = [
-    "core/chrome_config.cc",
-    "core/commit_data_request.cc",
-    "core/data_source_config.cc",
-    "core/data_source_descriptor.cc",
     "core/id_allocator.cc",
     "core/id_allocator.h",
     "core/metatrace_writer.cc",
     "core/metatrace_writer.h",
     "core/null_trace_writer.cc",
     "core/null_trace_writer.h",
-    "core/observable_events.cc",
     "core/packet_stream_validator.cc",
     "core/packet_stream_validator.h",
     "core/patch_list.h",
     "core/shared_memory_abi.cc",
     "core/shared_memory_arbiter_impl.cc",
     "core/shared_memory_arbiter_impl.h",
-    "core/sliced_protobuf_input_stream.cc",
-    "core/sliced_protobuf_input_stream.h",
     "core/startup_trace_writer.cc",
     "core/startup_trace_writer_registry.cc",
-    "core/test_config.cc",
     "core/trace_buffer.cc",
     "core/trace_buffer.h",
-    "core/trace_config.cc",
     "core/trace_packet.cc",
-    "core/trace_stats.cc",
     "core/trace_writer_impl.cc",
     "core/trace_writer_impl.h",
     "core/tracing_service_impl.cc",
     "core/tracing_service_impl.h",
-    "core/tracing_service_state.cc",
     "core/virtual_destructors.cc",
+  ]
+}
+
+# TODO(primiano): Remove this target as soon as chromium's
+# track_event_json_exporter.cc (which is the only user of this file) is no more.
+# This causes a dependency on libprotobuf, which we want to avoid for our
+# codebase.
+source_set("sliced_protobuf_input_stream") {
+  public_deps = [
+    "../../include/perfetto/base",
+    "../../include/perfetto/ext/tracing/core",
+    "../../protos/perfetto/common:lite",
+  ]
+  deps = [
+    ":tracing",
+    "../../gn:default_deps",
+  ]
+  sources = [
+    "../../include/perfetto/ext/tracing/core/sliced_protobuf_input_stream.h",
+    "core/sliced_protobuf_input_stream.cc",
   ]
 }
 
 perfetto_unittest_source_set("unittests") {
   testonly = true
   deps = [
+    ":sliced_protobuf_input_stream",
     ":test_support",
     ":tracing",
     "../../gn:default_deps",
@@ -167,7 +176,7 @@ if (perfetto_build_standalone || perfetto_build_with_android) {
       ":tracing",
       "../../gn:default_deps",
       "../../include/perfetto/public",
-      "../../protos/perfetto/config:lite",
+      "../../protos/perfetto/config:cpp",
       "../base",
     ]
     sources = [
@@ -179,7 +188,7 @@ if (perfetto_build_standalone || perfetto_build_with_android) {
 if (enable_perfetto_ipc) {
   # Posix specialization of the tracing library for Linux / Android / Mac.
   # Provides an IPC transport over a UNIX domain socket.
-  static_library("ipc") {
+  source_set("ipc") {
     public_deps = [
       "../../include/perfetto/ext/tracing/core",
       "../../include/perfetto/ext/tracing/ipc",
@@ -240,6 +249,8 @@ source_set("common") {
 source_set("client_api") {
   deps = [
     ":common",
+    "../../include/perfetto/tracing/core",
+    "../../protos/perfetto/config:cpp",
     "../base",
     "../tracing",
   ]
@@ -249,17 +260,21 @@ source_set("client_api") {
   ]
   sources = [
     "data_source.cc",
+    "debug_annotation.cc",
+    "event_context.cc",
     "internal/in_process_tracing_backend.cc",
     "internal/in_process_tracing_backend.h",
     "internal/tracing_muxer_impl.cc",
+    "internal/tracing_muxer_impl.h",
+    "internal/track_event_internal.cc",
     "platform.cc",
     "tracing.cc",
-    "track_event.cc",
+    "track_event_category_registry.cc",
     "virtual_destructors.cc",
   ]
 
   if (enable_perfetto_ipc) {
-    deps += [ "../tracing:ipc" ]
+    deps += [ ":ipc" ]
     sources += [
       "internal/system_tracing_backend.cc",
       "internal/system_tracing_backend.h",
@@ -279,11 +294,43 @@ if (enable_perfetto_integration_tests) {
       "../../include/perfetto/tracing/core",
       "../../protos/perfetto/trace:lite",
       "../../protos/perfetto/trace:zero",
+      "../../protos/perfetto/trace/interned_data:zero",
       "../base",
       "test:api_test_support",
     ]
     sources = [
       "api_integrationtest.cc",
+      "test/tracing_module.cc",
+      "test/tracing_module.h",
+      "test/tracing_module2.cc",
+      "test/tracing_module_categories.h",
     ]
   }
+}
+
+if (enable_perfetto_benchmarks) {
+  source_set("benchmarks") {
+    testonly = true
+    deps = [
+      ":tracing",
+      "../../../../gn:benchmark",
+      "../../../../gn:default_deps",
+      "../../protos/perfetto/trace:zero",
+      "../../protos/perfetto/trace/ftrace:zero",
+      "../protozero",
+    ]
+    sources = [
+      "core/packet_stream_validator_benchmark.cc",
+    ]
+  }
+}
+
+perfetto_fuzzer_test("packet_stream_validator_fuzzer") {
+  sources = [
+    "core/packet_stream_validator_fuzzer.cc",
+  ]
+  deps = [
+    ":tracing",
+    "../../../../gn:default_deps",
+  ]
 }

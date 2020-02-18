@@ -47,7 +47,7 @@ class CONTENT_EXPORT Compositor {
   // Creates a GL context for the provided |handle|. If a null handle is passed,
   // an offscreen context is created. This must be called on the UI thread.
   using ContextProviderCallback =
-      base::Callback<void(scoped_refptr<viz::ContextProvider>)>;
+      base::OnceCallback<void(scoped_refptr<viz::ContextProvider>)>;
   static void CreateContextProvider(
       gpu::SurfaceHandle handle,
       gpu::ContextCreationAttribs attributes,
@@ -82,6 +82,9 @@ class CONTENT_EXPORT Compositor {
   // Request layout and draw. You only need to call this if you need to trigger
   // Composite *without* having modified the layer tree.
   virtual void SetNeedsComposite() = 0;
+
+  // Request a draw and swap even if there is no change to the layer tree.
+  virtual void SetNeedsRedraw() = 0;
 
   // Returns the UI resource provider associated with the compositor.
   virtual ui::UIResourceProvider& GetUIResourceProvider() = 0;

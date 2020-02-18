@@ -12,12 +12,14 @@
 #include "osp/public/message_demuxer.h"
 #include "osp/public/network_service_manager.h"
 #include "osp/public/protocol_connection_server.h"
-#include "platform/api/logging.h"
 #include "platform/api/time.h"
-#include "platform/api/trace_logging.h"
+#include "util/logging.h"
+#include "util/trace_logging.h"
+
+using openscreen::platform::TraceCategory;
 
 namespace openscreen {
-namespace presentation {
+namespace osp {
 namespace {
 
 msgs::PresentationConnectionCloseEvent_reason GetEventCloseReason(
@@ -321,9 +323,9 @@ ErrorOr<size_t> Receiver::OnStreamMessage(uint64_t endpoint_id,
   }
 }
 
-// TODO(issue/31): Remove singletons in the embedder API and protocol
-// implementation layers and in presentation_connection, as well as unit tests.
-// static
+// TODO(crbug.com/openscreen/31): Remove singletons in the embedder API and
+// protocol implementation layers and in presentation_connection, as well as
+// unit tests. static
 Receiver* Receiver::Get() {
   static Receiver& receiver = *new Receiver();
   return &receiver;
@@ -565,5 +567,5 @@ uint64_t Receiver::GetNextConnectionId() {
   return request_id++;
 }
 
-}  // namespace presentation
+}  // namespace osp
 }  // namespace openscreen

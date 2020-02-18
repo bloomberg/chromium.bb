@@ -11,8 +11,7 @@
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/threading/sequenced_task_runner_handle.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "base/values.h"
@@ -59,11 +58,10 @@ const int kUnknownContentLength = -1;
 
 DownloadFileImpl::SourceStream::SourceStream(
     int64_t offset,
-    int64_t length,
     int64_t starting_file_write_offset,
     std::unique_ptr<InputStream> stream)
     : offset_(offset),
-      length_(length),
+      length_(DownloadSaveInfo::kLengthFullContent),
       starting_file_write_offset_(starting_file_write_offset),
       bytes_read_(0),
       bytes_written_(0),
@@ -72,11 +70,6 @@ DownloadFileImpl::SourceStream::SourceStream(
       input_stream_(std::move(stream)) {
   CHECK_LE(offset_, starting_file_write_offset_);
   CHECK_GE(offset_, 0);
-  DCHECK(length <= 0 || length >= starting_file_write_offset - offset)
-      << "Not enough for content validation. offset = " << offset
-      << ", length = " << length
-      << " , starting_file_write_offset = " << starting_file_write_offset
-      << ".";
 }
 
 DownloadFileImpl::SourceStream::~SourceStream() = default;
@@ -126,6 +119,7 @@ void DownloadFileImpl::SourceStream::RegisterDataReadyCallback(
 }
 
 void DownloadFileImpl::SourceStream::ClearDataReadyCallback() {
+  read_stream_callback_.Cancel();
   input_stream_->ClearDataReadyCallback();
 }
 
@@ -176,8 +170,8 @@ DownloadFileImpl::DownloadFileImpl(
                                     download_id);
 
   source_streams_[save_info_->offset] = std::make_unique<SourceStream>(
-      save_info_->offset, save_info_->length,
-      save_info_->GetStartingFileWriteOffset(), std::move(stream));
+      save_info_->offset, save_info_->GetStartingFileWriteOffset(),
+      std::move(stream));
 
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
@@ -200,6 +194,8 @@ void DownloadFileImpl::Initialize(
   int64_t bytes_so_far = 0;
   cancel_request_callback_ = cancel_request_callback;
   received_slices_ = received_slices;
+  if (!task_runner_)
+    task_runner_ = base::GetContinuationTaskRunner();
 
   // If the last slice is finished, then we know the actual content size.
   if (!received_slices_.empty() && received_slices_.back().finished) {
@@ -208,9 +204,10 @@ void DownloadFileImpl::Initialize(
   }
 
   if (IsSparseFile()) {
-    for (const auto& received_slice : received_slices_) {
+    for (const auto& received_slice : received_slices_)
       bytes_so_far += received_slice.received_bytes;
-    }
+    slice_to_download_ = FindSlicesToDownload(received_slices_);
+
   } else {
     bytes_so_far = save_info_->GetStartingFileWriteOffset();
   }
@@ -243,8 +240,7 @@ void DownloadFileImpl::Initialize(
 }
 
 void DownloadFileImpl::AddInputStream(std::unique_ptr<InputStream> stream,
-                                      int64_t offset,
-                                      int64_t length) {
+                                      int64_t offset) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // UI thread may not be notified about completion and detach download file,
@@ -255,7 +251,7 @@ void DownloadFileImpl::AddInputStream(std::unique_ptr<InputStream> stream,
   }
   DCHECK(source_streams_.find(offset) == source_streams_.end());
   source_streams_[offset] =
-      std::make_unique<SourceStream>(offset, length, offset, std::move(stream));
+      std::make_unique<SourceStream>(offset, offset, std::move(stream));
   OnSourceStreamAdded(source_streams_[offset].get());
 }
 
@@ -342,11 +338,10 @@ bool DownloadFileImpl::CalculateBytesToWrite(SourceStream* source_stream,
   return false;
 }
 
-void DownloadFileImpl::RenameAndUniquify(
-    const base::FilePath& full_path,
-    const RenameCompletionCallback& callback) {
+void DownloadFileImpl::RenameAndUniquify(const base::FilePath& full_path,
+                                         RenameCompletionCallback callback) {
   std::unique_ptr<RenameParameters> parameters(
-      new RenameParameters(UNIQUIFY, full_path, callback));
+      new RenameParameters(UNIQUIFY, full_path, std::move(callback)));
   RenameWithRetryInternal(std::move(parameters));
 }
 
@@ -356,9 +351,9 @@ void DownloadFileImpl::RenameAndAnnotate(
     const GURL& source_url,
     const GURL& referrer_url,
     mojo::PendingRemote<quarantine::mojom::Quarantine> remote_quarantine,
-    const RenameCompletionCallback& callback) {
+    RenameCompletionCallback callback) {
   std::unique_ptr<RenameParameters> parameters(new RenameParameters(
-      ANNOTATE_WITH_SOURCE_INFORMATION, full_path, callback));
+      ANNOTATE_WITH_SOURCE_INFORMATION, full_path, std::move(callback)));
   parameters->client_guid = client_guid;
   parameters->source_url = source_url;
   parameters->referrer_url = referrer_url;
@@ -373,7 +368,7 @@ void DownloadFileImpl::RenameToIntermediateUri(
     const base::FilePath& file_name,
     const std::string& mime_type,
     const base::FilePath& current_path,
-    const RenameCompletionCallback& callback) {
+    RenameCompletionCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Create new content URI if |current_path| is not content URI
   // or if it is already deleted.
@@ -389,13 +384,12 @@ void DownloadFileImpl::RenameToIntermediateUri(
   }
   if (display_name_.empty())
     display_name_ = file_name;
-  OnRenameComplete(content_path, callback, reason);
+  OnRenameComplete(content_path, std::move(callback), reason);
 }
 
-void DownloadFileImpl::PublishDownload(
-    const RenameCompletionCallback& callback) {
+void DownloadFileImpl::PublishDownload(RenameCompletionCallback callback) {
   DownloadInterruptReason reason = file_.PublishDownload();
-  OnRenameComplete(file_.full_path(), callback, reason);
+  OnRenameComplete(file_.full_path(), std::move(callback), reason);
 }
 
 base::FilePath DownloadFileImpl::GetDisplayName() {
@@ -457,7 +451,7 @@ void DownloadFileImpl::RenameWithRetryInternal(
     --parameters->retries_left;
     if (parameters->time_of_first_failure.is_null())
       parameters->time_of_first_failure = base::TimeTicks::Now();
-    base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+    task_runner_->PostDelayedTask(
         FROM_HERE,
         base::BindOnce(&DownloadFileImpl::RenameWithRetryInternal,
                        weak_factory_.GetWeakPtr(), std::move(parameters)),
@@ -478,28 +472,22 @@ void DownloadFileImpl::RenameWithRetryInternal(
     // asynchronous quarantine file may cause a file to be stamped with
     // incorrect mark-of-the-web data. Therefore, fall back to non-service
     // QuarantineFile when kPreventDownloadsWithSamePath is disabled.
-    if (base::FeatureList::IsEnabled(
-            download::features::kPreventDownloadsWithSamePath)) {
-      file_.AnnotateWithSourceInformation(
-          parameters->client_guid, parameters->source_url,
-          parameters->referrer_url, std::move(parameters->remote_quarantine),
-          base::BindOnce(&DownloadFileImpl::OnRenameComplete,
-                         weak_factory_.GetWeakPtr(), new_path,
-                         parameters->completion_callback));
-      return;
-    }
-    reason = file_.AnnotateWithSourceInformationSync(parameters->client_guid,
-                                                     parameters->source_url,
-                                                     parameters->referrer_url);
+    file_.AnnotateWithSourceInformation(
+        parameters->client_guid, parameters->source_url,
+        parameters->referrer_url, std::move(parameters->remote_quarantine),
+        base::BindOnce(&DownloadFileImpl::OnRenameComplete,
+                       weak_factory_.GetWeakPtr(), new_path,
+                       std::move(parameters->completion_callback)));
+    return;
   }
 
-  OnRenameComplete(new_path, parameters->completion_callback, reason);
+  OnRenameComplete(new_path, std::move(parameters->completion_callback),
+                   reason);
 }
 
-void DownloadFileImpl::OnRenameComplete(
-    const base::FilePath& new_path,
-    const RenameCompletionCallback& callback,
-    DownloadInterruptReason reason) {
+void DownloadFileImpl::OnRenameComplete(const base::FilePath& new_path,
+                                        RenameCompletionCallback callback,
+                                        DownloadInterruptReason reason) {
   if (reason != DOWNLOAD_INTERRUPT_REASON_NONE) {
     // Make sure our information is updated, since we're about to
     // error out.
@@ -513,7 +501,7 @@ void DownloadFileImpl::OnRenameComplete(
   }
 
   main_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(callback, reason,
+      FROM_HERE, base::BindOnce(std::move(callback), reason,
                                 reason == DOWNLOAD_INTERRUPT_REASON_NONE
                                     ? new_path
                                     : base::FilePath()));
@@ -566,9 +554,8 @@ void DownloadFileImpl::Resume() {
 
   for (auto& stream : source_streams_) {
     SourceStream* source_stream = stream.second.get();
-    if (!source_stream->is_finished()) {
-      ActivateStream(source_stream);
-    }
+    if (!source_stream->is_finished())
+      StreamActive(source_stream, MOJO_RESULT_OK);
   }
 }
 
@@ -591,7 +578,6 @@ void DownloadFileImpl::StreamActive(SourceStream* source_stream,
   DownloadInterruptReason reason = DOWNLOAD_INTERRUPT_REASON_NONE;
   base::TimeDelta delta(
       base::TimeDelta::FromMilliseconds(kMaxTimeBlockingFileThreadMs));
-
   // Take care of any file local activity required.
   do {
     state = source_stream->Read(&incoming_data, &incoming_data_size);
@@ -645,10 +631,15 @@ void DownloadFileImpl::StreamActive(SourceStream* source_stream,
   // If we're stopping to yield the thread, post a task so we come back.
   if (state == InputStream::HAS_DATA && now - start > delta &&
       !should_terminate) {
-    base::SequencedTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(&DownloadFileImpl::StreamActive,
-                                  weak_factory_.GetWeakPtr(), source_stream,
-                                  MOJO_RESULT_OK));
+    source_stream->read_stream_callback()->Reset(base::BindOnce(
+        &DownloadFileImpl::StreamActive, weak_factory_.GetWeakPtr(),
+        source_stream, MOJO_RESULT_OK));
+    task_runner_->PostTask(FROM_HERE,
+                           source_stream->read_stream_callback()->callback());
+  } else if (state == InputStream::EMPTY && !should_terminate) {
+    source_stream->RegisterDataReadyCallback(
+        base::Bind(&DownloadFileImpl::StreamActive, weak_factory_.GetWeakPtr(),
+                   source_stream));
   }
 
   if (state == InputStream::COMPLETE)
@@ -688,9 +679,10 @@ void DownloadFileImpl::NotifyObserver(SourceStream* source_stream,
             << "Received slice index out of bound!";
         received_slices_[source_stream->index()].finished = true;
       }
-
-      SetPotentialFileLength(source_stream->offset() +
-                             source_stream->bytes_read());
+      if (!should_terminate) {
+        SetPotentialFileLength(source_stream->offset() +
+                               source_stream->bytes_read());
+      }
     }
     num_active_streams_--;
 
@@ -716,6 +708,11 @@ void DownloadFileImpl::NotifyObserver(SourceStream* source_stream,
           base::BindOnce(&DownloadDestinationObserver::DestinationCompleted,
                          observer_, TotalBytesReceived(),
                          std::move(hash_state)));
+    } else {
+      // If all the stream completes and we still not able to complete, trigger
+      // a content length mismatch error so auto resumption will be performed.
+      SendErrorUpdateIfFinished(
+          DOWNLOAD_INTERRUPT_REASON_SERVER_CONTENT_LENGTH_MISMATCH);
     }
   }
 }
@@ -730,13 +727,6 @@ void DownloadFileImpl::RegisterAndActivateStream(SourceStream* source_stream) {
         received_slice.offset, received_slice.received_bytes);
   }
   num_active_streams_++;
-  ActivateStream(source_stream);
-}
-
-void DownloadFileImpl::ActivateStream(SourceStream* source_stream) {
-  source_stream->RegisterDataReadyCallback(
-      base::Bind(&DownloadFileImpl::StreamActive, weak_factory_.GetWeakPtr(),
-                 source_stream));
   StreamActive(source_stream, MOJO_RESULT_OK);
 }
 
@@ -847,18 +837,36 @@ void DownloadFileImpl::HandleStreamError(SourceStream* source_stream,
 
   SendUpdate();  // Make info up to date before error.
 
-  if (!can_recover_from_error) {
-    // Error case for both upstream source and file write.
-    // Shut down processing and signal an error to our observer.
-    // Our observer will clean us up.
-    weak_factory_.InvalidateWeakPtrs();
-    std::unique_ptr<crypto::SecureHash> hash_state = file_.Finish();
-    main_task_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce(&DownloadDestinationObserver::DestinationError,
-                       observer_, reason, TotalBytesReceived(),
-                       std::move(hash_state)));
+  if (!can_recover_from_error)
+    SendErrorUpdateIfFinished(reason);
+}
+
+void DownloadFileImpl::SendErrorUpdateIfFinished(
+    DownloadInterruptReason reason) {
+  // If there are still active streams, let them finish before
+  // sending out the error to the observer.
+  if (num_active_streams_ > 0)
+    return;
+
+  if (IsSparseFile()) {
+    for (const auto& slice : slice_to_download_) {
+      // Ignore last slice beyond file length.
+      if (slice.offset > 0 && slice.offset == potential_file_length_)
+        continue;
+      if (source_streams_.find(slice.offset) == source_streams_.end())
+        return;
+    }
   }
+
+  // Error case for both upstream source and file write.
+  // Shut down processing and signal an error to our observer.
+  // Our observer will clean us up.
+  weak_factory_.InvalidateWeakPtrs();
+  std::unique_ptr<crypto::SecureHash> hash_state = file_.Finish();
+  main_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&DownloadDestinationObserver::DestinationError, observer_,
+                     reason, TotalBytesReceived(), std::move(hash_state)));
 }
 
 bool DownloadFileImpl::IsSparseFile() const {
@@ -904,14 +912,19 @@ void DownloadFileImpl::DebugStates() const {
   DebugSlicesInfo(received_slices_);
 }
 
+void DownloadFileImpl::SetTaskRunnerForTesting(
+    scoped_refptr<base::SequencedTaskRunner> task_runner) {
+  task_runner_ = std::move(task_runner);
+}
+
 DownloadFileImpl::RenameParameters::RenameParameters(
     RenameOption option,
     const base::FilePath& new_path,
-    const RenameCompletionCallback& completion_callback)
+    RenameCompletionCallback completion_callback)
     : option(option),
       new_path(new_path),
       retries_left(kMaxRenameRetries),
-      completion_callback(completion_callback) {}
+      completion_callback(std::move(completion_callback)) {}
 
 DownloadFileImpl::RenameParameters::~RenameParameters() {}
 

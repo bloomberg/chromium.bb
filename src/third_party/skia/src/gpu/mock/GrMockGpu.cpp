@@ -53,10 +53,10 @@ sk_sp<GrGpu> GrMockGpu::Make(const GrMockOptions* mockOptions,
 }
 
 GrOpsRenderPass* GrMockGpu::getOpsRenderPass(
-                                GrRenderTarget* rt, GrSurfaceOrigin origin, const SkRect& bounds,
+                                GrRenderTarget* rt, GrSurfaceOrigin origin, const SkIRect& bounds,
                                 const GrOpsRenderPass::LoadAndStoreInfo& colorInfo,
                                 const GrOpsRenderPass::StencilLoadAndStoreInfo&,
-                                const SkTArray<GrTextureProxy*, true>& sampledProxies) {
+                                const SkTArray<GrSurfaceProxy*, true>& sampledProxies) {
     return new GrMockOpsRenderPass(this, rt, origin, colorInfo);
 }
 
@@ -137,8 +137,8 @@ sk_sp<GrTexture> GrMockGpu::onCreateTexture(const GrSurfaceDesc& desc,
                                             int renderTargetSampleCnt,
                                             SkBudgeted budgeted,
                                             GrProtected isProtected,
-                                            const GrMipLevel texels[],
-                                            int mipLevelCount) {
+                                            int mipLevelCount,
+                                            uint32_t levelClearMask) {
     if (fMockOptions.fFailTextureAllocations) {
         return nullptr;
     }
@@ -146,14 +146,8 @@ sk_sp<GrTexture> GrMockGpu::onCreateTexture(const GrSurfaceDesc& desc,
     GrColorType ct = format.asMockColorType();
     SkASSERT(ct != GrColorType::kUnknown);
 
-    GrMipMapsStatus mipMapsStatus = mipLevelCount > 1 ? GrMipMapsStatus::kValid
-                                                      : GrMipMapsStatus::kNotAllocated;
-    for (int i = 0; i < mipLevelCount; ++i) {
-        if (!texels[i].fPixels) {
-            mipMapsStatus = GrMipMapsStatus::kDirty;
-            break;
-        }
-    }
+    GrMipMapsStatus mipMapsStatus =
+            mipLevelCount > 1 ? GrMipMapsStatus::kDirty : GrMipMapsStatus::kNotAllocated;
     GrMockTextureInfo texInfo(ct, NextInternalTextureID());
     if (renderable == GrRenderable::kYes) {
         GrMockRenderTargetInfo rtInfo(ct, NextInternalRenderTargetID());
@@ -264,14 +258,12 @@ GrStencilAttachment* GrMockGpu::createStencilAttachmentForRenderTarget(
     return new GrMockStencilAttachment(this, width, height, kBits, rt->numSamples());
 }
 
-GrBackendTexture GrMockGpu::createBackendTexture(int w, int h,
-                                                 const GrBackendFormat& format,
-                                                 GrMipMapped mipMapped,
-                                                 GrRenderable /* renderable */,
-                                                 const void* /* pixels */,
-                                                 size_t /* rowBytes */,
-                                                 const SkColor4f* /* color */,
-                                                 GrProtected /* isProtected */) {
+GrBackendTexture GrMockGpu::onCreateBackendTexture(SkISize dimensions,
+                                                   const GrBackendFormat& format,
+                                                   GrRenderable,
+                                                   const BackendTextureData*,
+                                                   int numMipLevels,
+                                                   GrProtected) {
     auto colorType = format.asMockColorType();
     if (!this->caps()->isFormatTexturable(format)) {
         return GrBackendTexture();  // invalid
@@ -280,7 +272,8 @@ GrBackendTexture GrMockGpu::createBackendTexture(int w, int h,
     GrMockTextureInfo info(colorType, NextExternalTextureID());
 
     fOutstandingTestingOnlyTextureIDs.add(info.fID);
-    return GrBackendTexture(w, h, mipMapped, info);
+    auto mipMapped = numMipLevels > 1 ? GrMipMapped::kYes : GrMipMapped::kNo;
+    return GrBackendTexture(dimensions.width(), dimensions.height(), mipMapped, info);
 }
 
 void GrMockGpu::deleteBackendTexture(const GrBackendTexture& tex) {

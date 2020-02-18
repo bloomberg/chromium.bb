@@ -17,7 +17,6 @@ from chromite.lib import git
 
 class GitBisectorException(Exception):
   """Exception raised for GitBisector error."""
-  pass
 
 
 class GitBisector(common.OptionsChecker):
@@ -340,7 +339,7 @@ class GitBisector(common.OptionsChecker):
       eval_label = self.current_commit.sha1
 
     score = self.evaluator.CheckLastEvaluate(eval_label, self.eval_repeat)
-    if len(score) > 0:
+    if score:
       logging.info('Found last evaluated result for %s: %s', eval_label,
                    score)
       self.current_commit.score = score

@@ -8,6 +8,7 @@
 #include <sys/types.h>
 
 #include <memory>
+#include <utility>
 
 #include "net/third_party/quiche/src/quic/platform/api/quic_epoll.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_port_utils.h"
@@ -69,7 +70,7 @@ class QuicClientTest : public QuicTest {
     QuicSocketAddress server_address(QuicSocketAddress(TestLoopback(), port));
     QuicServerId server_id("hostname", server_address.port(), false);
     ParsedQuicVersionVector versions = AllSupportedVersions();
-    auto client = QuicMakeUnique<QuicClient>(
+    auto client = std::make_unique<QuicClient>(
         server_address, server_id, versions, &epoll_server_,
         crypto_test_utils::ProofVerifierForTesting());
     EXPECT_TRUE(client->Initialize());

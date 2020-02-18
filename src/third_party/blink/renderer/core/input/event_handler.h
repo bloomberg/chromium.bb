@@ -33,7 +33,6 @@
 #include "third_party/blink/public/platform/web_input_event_result.h"
 #include "third_party/blink/public/platform/web_menu_source_type.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
 #include "third_party/blink/renderer/core/events/text_event_input_type.h"
 #include "third_party/blink/renderer/core/input/fallback_cursor_event_manager.h"
 #include "third_party/blink/renderer/core/input/gesture_manager.h"
@@ -63,7 +62,6 @@ class Element;
 class Event;
 template <typename EventType>
 class EventWithHitTestResults;
-class FloatQuad;
 class HTMLFrameSetElement;
 class HitTestRequest;
 class HitTestResult;
@@ -79,8 +77,7 @@ class WebMouseEvent;
 class WebMouseWheelEvent;
 
 // Handles events for Pointers (Mouse/Touch), HitTests, DragAndDrop, etc.
-class CORE_EXPORT EventHandler final
-    : public GarbageCollectedFinalized<EventHandler> {
+class CORE_EXPORT EventHandler final : public GarbageCollected<EventHandler> {
  public:
   explicit EventHandler(LocalFrame&);
   void Trace(blink::Visitor*);
@@ -99,7 +96,7 @@ class CORE_EXPORT EventHandler final
 
   void MayUpdateHoverWhenContentUnderMouseChanged(
       MouseEventManager::UpdateHoverReason);
-  void MayUpdateHoverAfterScroll(const FloatQuad&);
+  void MayUpdateHoverAfterScroll(const FloatRect&);
 
   HitTestResult HitTestResultAtLocation(
       const HitTestLocation&,
@@ -250,10 +247,6 @@ class CORE_EXPORT EventHandler final
 
   void NotifyElementActivated();
 
-  scoped_refptr<UserGestureToken> TakeLastMouseDownGestureToken() {
-    return std::move(last_mouse_down_user_gesture_token_);
-  }
-
   SelectionController& GetSelectionController() const {
     return *selection_controller_;
   }
@@ -298,6 +291,8 @@ class CORE_EXPORT EventHandler final
   // Reset the last mouse position so that movement after unlock will be
   // restart from the lock position.
   void ResetMousePositionForPointerUnlock();
+
+  bool LongTapShouldInvokeContextMenu();
 
  private:
   enum NoCursorChangeType { kNoCursorChange };
@@ -447,8 +442,6 @@ class CORE_EXPORT EventHandler final
 
   Member<HTMLFrameSetElement> frame_set_being_resized_;
 
-  scoped_refptr<UserGestureToken> last_mouse_down_user_gesture_token_;
-
   // Local frames in the same local root share the same EventHandlerRegistry.
   Member<EventHandlerRegistry> event_handler_registry_;
   Member<ScrollManager> scroll_manager_;
@@ -460,8 +453,6 @@ class CORE_EXPORT EventHandler final
   Member<FallbackCursorEventManager> fallback_cursor_event_manager_;
 
   double max_mouse_moved_duration_;
-
-  bool long_tap_should_invoke_context_menu_;
 
   TaskRunnerTimer<EventHandler> active_interval_timer_;
 
@@ -504,6 +495,15 @@ class CORE_EXPORT EventHandler final
                            EditableAnchorTextCanStartSelection);
   FRIEND_TEST_ALL_PREFIXES(EventHandlerTest,
                            ReadOnlyInputDoesNotInheritUserSelect);
+  FRIEND_TEST_ALL_PREFIXES(EventHandlerTest,
+                           CursorForVerticalResizableTextArea);
+  FRIEND_TEST_ALL_PREFIXES(EventHandlerTest,
+                           CursorForHorizontalResizableTextArea);
+  FRIEND_TEST_ALL_PREFIXES(EventHandlerTest, CursorForResizableTextArea);
+  FRIEND_TEST_ALL_PREFIXES(EventHandlerTest, CursorForRtlResizableTextArea);
+  FRIEND_TEST_ALL_PREFIXES(EventHandlerTest,
+                           CursorForInlineVerticalWritingMode);
+  FRIEND_TEST_ALL_PREFIXES(EventHandlerTest, CursorForBlockVerticalWritingMode);
 
   FRIEND_TEST_ALL_PREFIXES(FallbackCursorEventManagerTest,
                            MouseMoveCursorLockOnDiv);

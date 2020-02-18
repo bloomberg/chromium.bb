@@ -11,15 +11,6 @@
 #include "third_party/blink/renderer/platform/heap/unified_heap_marking_visitor.h"
 #include "v8/include/v8.h"
 
-namespace v8 {
-
-template <typename T>
-struct TracedGlobalTrait<v8::TracedGlobal<T>> {
-  static constexpr bool kRequiresExplicitDestruction = false;
-};
-
-}  // namespace v8
-
 namespace blink {
 
 /**
@@ -50,8 +41,8 @@ class TraceWrapperV8Reference {
 
   bool IsEmpty() const { return handle_.IsEmpty(); }
   void Clear() { handle_.Reset(); }
-  ALWAYS_INLINE const v8::TracedGlobal<T>& Get() const { return handle_; }
-  ALWAYS_INLINE v8::TracedGlobal<T>& Get() { return handle_; }
+  ALWAYS_INLINE const v8::TracedReference<T>& Get() const { return handle_; }
+  ALWAYS_INLINE v8::TracedReference<T>& Get() { return handle_; }
 
   template <typename S>
   const TraceWrapperV8Reference<S>& Cast() const {
@@ -124,9 +115,30 @@ class TraceWrapperV8Reference {
     UnifiedHeapMarkingVisitor::WriteBarrier(UnsafeCast<v8::Value>());
   }
 
-  v8::TracedGlobal<T> handle_;
+  v8::TracedReference<T> handle_;
 };
 
 }  // namespace blink
+
+namespace WTF {
+
+template <typename T>
+struct IsTraceable<blink::TraceWrapperV8Reference<T>> {
+  STATIC_ONLY(IsTraceable);
+  static const bool value = true;
+};
+
+template <typename T>
+struct VectorTraits<blink::TraceWrapperV8Reference<T>>
+    : VectorTraitsBase<blink::TraceWrapperV8Reference<T>> {
+  STATIC_ONLY(VectorTraits);
+  static const bool kNeedsDestruction = false;
+  static const bool kCanInitializeWithMemset = true;
+  static const bool kCanClearUnusedSlotsWithMemset = true;
+  static const bool kCanCopyWithMemcpy = false;
+  static const bool kCanMoveWithMemcpy = false;
+};
+
+}  // namespace WTF
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_TRACE_WRAPPER_V8_REFERENCE_H_

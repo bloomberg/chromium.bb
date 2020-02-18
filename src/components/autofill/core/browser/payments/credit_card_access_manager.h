@@ -29,6 +29,7 @@
 namespace autofill {
 
 class AutofillManager;
+enum class WebauthnDialogCallbackType;
 
 // Manages logic for accessing credit cards either stored locally or stored
 // with Google Payments. Owned by AutofillManager.
@@ -91,8 +92,11 @@ class CreditCardAccessManager : public CreditCardCVCAuthenticator::Requester,
   // If |opt_in| = true, opts the user into using FIDO authentication for card
   // unmasking. Otherwise, opts the user out. If |creation_options| is set,
   // WebAuthn registration prompt will be invoked to create a new credential.
-  void FIDOAuthOptChange(bool opt_in,
-                         base::Value creation_options = base::Value());
+  void FIDOAuthOptChange(bool opt_in);
+
+  // Makes a call to FIDOAuthOptChange() with |opt_in|.
+  // TODO(crbug/949269): Add a rate limiter to counter spam clicking.
+  void OnSettingsPageFIDOAuthToggled(bool opt_in);
 
   CreditCardCVCAuthenticator* GetOrCreateCVCAuthenticator();
 
@@ -128,10 +132,12 @@ class CreditCardAccessManager : public CreditCardCVCAuthenticator::Requester,
   void OnDidGetUnmaskDetails(AutofillClient::PaymentsRpcResult result,
                              AutofillClient::UnmaskDetails& unmask_details);
 
-  // Calls either CreditCardFIDOAuthenticator::Authenticate() or
-  // CreditCardCVCAuthenticator::Authenticate() depending on the response
-  // contained in |unmask_details_|.
-  void Authenticate(bool did_get_unmask_details = false);
+  // If OnDidGetUnmaskDetails() was invoked by PaymentsClient, then
+  // |get_unmask_details_returned| should be set to true. Based on the
+  // contents of |unmask_details_|, either FIDO authentication or CVC
+  // authentication will be prompted. If |get_unmask_details_returned| is false,
+  // then only CVC authentication will be prompted.
+  void Authenticate(bool get_unmask_details_returned = false);
 
   // CreditCardCVCAuthenticator::Requester:
   void OnCVCAuthenticationComplete(
@@ -142,6 +148,7 @@ class CreditCardAccessManager : public CreditCardCVCAuthenticator::Requester,
   // CreditCardFIDOAuthenticator::Requester:
   void OnFIDOAuthenticationComplete(bool did_succeed,
                                     const CreditCard* card = nullptr) override;
+  void OnFidoAuthorizationComplete(bool did_succeed) override;
 #endif
 
   bool is_authentication_in_progress() {
@@ -154,11 +161,35 @@ class CreditCardAccessManager : public CreditCardCVCAuthenticator::Requester,
   // If true, FetchCreditCard() should wait for OnDidGetUnmaskDetails() to begin
   // authentication. If false, FetchCreditCard() can begin authentication
   // immediately.
-  bool AuthenticationRequiresUnmaskDetails();
+  bool IsFidoAuthenticationEnabled();
+
+  // TODO(crbug.com/991037): Move this function under the build flags after the
+  // refactoring is done.
+  // Offer the option to use WebAuthn for authenticating future card unmasking.
+  void ShowWebauthnOfferDialog(std::string card_authorization_token);
+
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+  // After card verification starts, shows the verify pending dialog if WebAuthn
+  // is enabled, indicating some verification steps are in progress.
+  void ShowVerifyPendingDialog();
+
+  // Invokes the corresponding callback on different user's responses on either
+  // the Webauthn offer dialog or verify pending dialog.
+  void HandleDialogUserResponse(WebauthnDialogCallbackType type);
+#endif
+
+  // Used with PostTaskWithDelay() to signal |can_fetch_unmask_details_| event
+  // after a timeout.
+  void SignalCanFetchUnmaskDetails();
 
   // Is set to true only when waiting for the callback to
   // OnCVCAuthenticationComplete() to be executed.
   bool is_authentication_in_progress_ = false;
+
+  // Set to true if the card selected needs to be authenticated through CVC
+  // first, and then FIDO. This happens when a user is opted-in but has not
+  // previously authenticated this card with CVC on this device.
+  bool should_follow_up_cvc_with_fido_auth_ = false;
 
   // The associated autofill driver. Weak reference.
   AutofillDriver* const driver_;
@@ -177,6 +208,9 @@ class CreditCardAccessManager : public CreditCardCVCAuthenticator::Requester,
 
   // For logging metrics. May be NULL for tests.
   CreditCardFormEventLogger* form_event_logger_;
+
+  // Timestamp used for metrics.
+  base::TimeTicks preflight_call_timestamp_;
 
   // Meant for histograms recorded in FullCardRequest.
   base::TimeTicks form_parsed_timestamp_;
@@ -203,7 +237,12 @@ class CreditCardAccessManager : public CreditCardCVCAuthenticator::Requester,
   base::WaitableEvent can_fetch_unmask_details_;
 
   // The credit card being accessed.
-  const CreditCard* card_;
+  std::unique_ptr<CreditCard> card_;
+
+  // When authorizing a new card, the CVC will be temporarily stored after the
+  // first CVC check, and then will be used to fill the form after FIDO
+  // authentication is complete.
+  base::string16 cvc_ = base::string16();
 
   // Set to true only if user has a verifying platform authenticator.
   // e.g. Touch/Face ID, Windows Hello, Android fingerprint, etc., is available

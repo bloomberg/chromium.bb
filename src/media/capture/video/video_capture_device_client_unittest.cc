@@ -55,7 +55,8 @@ class VideoCaptureDeviceClientTest : public ::testing::Test {
   VideoCaptureDeviceClientTest() {
     scoped_refptr<VideoCaptureBufferPoolImpl> buffer_pool(
         new VideoCaptureBufferPoolImpl(
-            std::make_unique<VideoCaptureBufferTrackerFactoryImpl>(), 2));
+            std::make_unique<VideoCaptureBufferTrackerFactoryImpl>(),
+            VideoCaptureBufferType::kSharedMemory, 2));
     auto controller = std::make_unique<NiceMock<MockVideoFrameReceiver>>();
     receiver_ = controller.get();
     gpu_memory_buffer_manager_ =
@@ -224,7 +225,6 @@ TEST_F(VideoCaptureDeviceClientTest, DataCaptureGoodPixelFormats) {
     PIXEL_FORMAT_NV12,
     PIXEL_FORMAT_NV21,
     PIXEL_FORMAT_YUY2,
-    PIXEL_FORMAT_UYVY,
 #if defined(OS_WIN) || defined(OS_LINUX)
     PIXEL_FORMAT_RGB24,
 #endif

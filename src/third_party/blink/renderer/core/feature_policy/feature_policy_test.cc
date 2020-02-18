@@ -8,6 +8,7 @@
 #include <string>
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/loader/empty_clients.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
@@ -975,7 +976,7 @@ const AllowlistHistogramData FeaturePolicyAllowlistHistogramTest::kCases[] = {
       FeaturePolicyAllowlistType::kOrigins}}};
 
 INSTANTIATE_TEST_SUITE_P(
-    ,
+    All,
     FeaturePolicyAllowlistHistogramTest,
     ::testing::ValuesIn(FeaturePolicyAllowlistHistogramTest::kCases),
     [](const testing::TestParamInfo<AllowlistHistogramData>& param_info) {

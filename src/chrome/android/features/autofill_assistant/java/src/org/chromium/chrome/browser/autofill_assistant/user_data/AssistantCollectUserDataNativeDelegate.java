@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.autofill_assistant.user_data;
 
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
@@ -64,7 +64,8 @@ public class AssistantCollectUserDataNativeDelegate implements AssistantCollectU
             AssistantCollectUserDataNativeDelegateJni.get().onCreditCardChanged(
                     mNativeAssistantCollectUserDataDelegate,
                     AssistantCollectUserDataNativeDelegate.this,
-                    paymentInstrument != null ? paymentInstrument.getCard() : null);
+                    paymentInstrument != null ? paymentInstrument.getCard() : null,
+                    paymentInstrument != null ? paymentInstrument.getBillingProfile() : null);
         }
     }
 
@@ -96,6 +97,37 @@ public class AssistantCollectUserDataNativeDelegate implements AssistantCollectU
         }
     }
 
+    @Override
+    public void onDateTimeRangeStartChanged(
+            int year, int month, int day, int hour, int minute, int second) {
+        if (mNativeAssistantCollectUserDataDelegate != 0) {
+            AssistantCollectUserDataNativeDelegateJni.get().onDateTimeRangeStartChanged(
+                    mNativeAssistantCollectUserDataDelegate,
+                    AssistantCollectUserDataNativeDelegate.this, year, month, day, hour, minute,
+                    second);
+        }
+    }
+
+    @Override
+    public void onDateTimeRangeEndChanged(
+            int year, int month, int day, int hour, int minute, int second) {
+        if (mNativeAssistantCollectUserDataDelegate != 0) {
+            AssistantCollectUserDataNativeDelegateJni.get().onDateTimeRangeEndChanged(
+                    mNativeAssistantCollectUserDataDelegate,
+                    AssistantCollectUserDataNativeDelegate.this, year, month, day, hour, minute,
+                    second);
+        }
+    }
+
+    @Override
+    public void onKeyValueChanged(String key, String value) {
+        if (mNativeAssistantCollectUserDataDelegate != 0) {
+            AssistantCollectUserDataNativeDelegateJni.get().onKeyValueChanged(
+                    mNativeAssistantCollectUserDataDelegate,
+                    AssistantCollectUserDataNativeDelegate.this, key, value);
+        }
+    }
+
     @CalledByNative
     private void clearNativePtr() {
         mNativeAssistantCollectUserDataDelegate = 0;
@@ -111,12 +143,21 @@ public class AssistantCollectUserDataNativeDelegate implements AssistantCollectU
                 @Nullable PersonalDataManager.AutofillProfile address);
         void onCreditCardChanged(long nativeAssistantCollectUserDataDelegate,
                 AssistantCollectUserDataNativeDelegate caller,
-                @Nullable PersonalDataManager.CreditCard card);
+                @Nullable PersonalDataManager.CreditCard card,
+                @Nullable PersonalDataManager.AutofillProfile billingProfile);
         void onTermsAndConditionsChanged(long nativeAssistantCollectUserDataDelegate,
                 AssistantCollectUserDataNativeDelegate caller, int state);
         void onTermsAndConditionsLinkClicked(long nativeAssistantCollectUserDataDelegate,
                 AssistantCollectUserDataNativeDelegate caller, int link);
         void onLoginChoiceChanged(long nativeAssistantCollectUserDataDelegate,
                 AssistantCollectUserDataNativeDelegate caller, String choice);
+        void onDateTimeRangeStartChanged(long nativeAssistantCollectUserDataDelegate,
+                AssistantCollectUserDataNativeDelegate caller, int year, int month, int day,
+                int hour, int minute, int second);
+        void onDateTimeRangeEndChanged(long nativeAssistantCollectUserDataDelegate,
+                AssistantCollectUserDataNativeDelegate caller, int year, int month, int day,
+                int hour, int minute, int second);
+        void onKeyValueChanged(long nativeAssistantCollectUserDataDelegate,
+                AssistantCollectUserDataNativeDelegate caller, String key, String value);
     }
 }

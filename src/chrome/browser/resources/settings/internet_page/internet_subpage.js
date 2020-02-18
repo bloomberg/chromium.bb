@@ -15,9 +15,10 @@ Polymer({
   is: 'settings-internet-subpage',
 
   behaviors: [
-    CrNetworkListenerBehavior,
+    NetworkListenerBehavior,
     CrPolicyNetworkBehaviorMojo,
     settings.RouteObserverBehavior,
+    settings.RouteOriginBehavior,
     I18nBehavior,
   ],
 
@@ -112,6 +113,9 @@ Polymer({
     },
   },
 
+  /** settings.RouteOriginBehavior override */
+  route_: settings.routes.INTERNET_NETWORKS,
+
   observers: ['deviceStateChanged_(deviceState)'],
 
   /** @private {number|null} */
@@ -120,12 +124,7 @@ Polymer({
   /** @private  {settings.InternetPageBrowserProxy} */
   browserProxy_: null,
 
-  /**
-   * This UI will use both the networkingPrivate extension API and the
-   * networkConfig mojo API until we provide all of the required functionality
-   * in networkConfig. TODO(stevenjb): Remove use of networkingPrivate api.
-   * @private {?chromeos.networkConfig.mojom.CrosNetworkConfigRemote}
-   */
+  /** @private {?chromeos.networkConfig.mojom.CrosNetworkConfigRemote} */
   networkConfig_: null,
 
   /** @override */
@@ -140,6 +139,9 @@ Polymer({
     this.browserProxy_.setGmsCoreNotificationsDisabledDeviceNamesCallback(
         this.onNotificationsDisabledDeviceNamesReceived_.bind(this));
     this.browserProxy_.requestGmsCoreNotificationsDisabledDeviceNames();
+
+    this.addFocusConfig_(
+        settings.routes.KNOWN_NETWORKS, '#knownNetworksSubpageButton');
   },
 
   /** override */
@@ -149,15 +151,18 @@ Polymer({
 
   /**
    * settings.RouteObserverBehavior
-   * @param {!settings.Route} route
+   * @param {!settings.Route} newRoute
+   * @param {!settings.Route} oldRoute
    * @protected
    */
-  currentRouteChanged: function(route) {
-    if (route != settings.routes.INTERNET_NETWORKS) {
+  currentRouteChanged: function(newRoute, oldRoute) {
+    if (newRoute != settings.routes.INTERNET_NETWORKS) {
       this.stopScanning_();
       return;
     }
     this.init();
+    settings.RouteOriginBehaviorImpl.currentRouteChanged.call(
+        this, newRoute, oldRoute);
   },
 
   init: function() {
@@ -173,19 +178,19 @@ Polymer({
   },
 
   /**
-   * CrNetworkListenerBehavior override
+   * NetworkListenerBehavior override
    * @param {!Array<OncMojo.NetworkStateProperties>} networks
    */
   onActiveNetworksChanged: function(networks) {
     this.getNetworkStateList_();
   },
 
-  /** CrNetworkListenerBehavior override */
+  /** NetworkListenerBehavior override */
   onNetworkStateListChanged: function() {
     this.getNetworkStateList_();
   },
 
-  /** CrNetworkListenerBehavior override */
+  /** NetworkListenerBehavior override */
   onVpnProvidersChanged: function() {
     if (this.deviceState.type != mojom.NetworkType.kVPN) {
       return;
@@ -253,9 +258,13 @@ Polymer({
       return;
     }
     const INTERVAL_MS = 10 * 1000;
-    this.networkConfig_.requestNetworkScan(this.deviceState.type);
+    let type = this.deviceState.type;
+    if (type == mojom.NetworkType.kCellular && this.tetherDeviceState) {
+      type = mojom.NetworkType.kMobile;
+    }
+    this.networkConfig_.requestNetworkScan(type);
     this.scanIntervalId_ = window.setInterval(() => {
-      this.networkConfig_.requestNetworkScan(this.deviceState.type);
+      this.networkConfig_.requestNetworkScan(type);
     }, INTERVAL_MS);
   },
 
@@ -275,7 +284,7 @@ Polymer({
     }
     const filter = {
       filter: chromeos.networkConfig.mojom.FilterType.kVisible,
-      limit: chromeos.networkConfig.mojom.kNoLimit,
+      limit: chromeos.networkConfig.mojom.NO_LIMIT,
       networkType: this.deviceState.type,
     };
     this.networkConfig_.getNetworkStateList(filter).then(response => {
@@ -298,7 +307,7 @@ Polymer({
         this.tetherDeviceState) {
       const filter = {
         filter: chromeos.networkConfig.mojom.FilterType.kVisible,
-        limit: chromeos.networkConfig.mojom.kNoLimit,
+        limit: chromeos.networkConfig.mojom.NO_LIMIT,
         networkType: mojom.NetworkType.kTether,
       };
       this.networkConfig_.getNetworkStateList(filter).then(response => {
@@ -314,7 +323,7 @@ Polymer({
       const thirdPartyVpns = {};
       networkStates.forEach(state => {
         assert(state.type == mojom.NetworkType.kVPN);
-        switch (state.vpn.type) {
+        switch (state.typeState.vpn.type) {
           case mojom.VpnType.kL2TPIPsec:
           case mojom.VpnType.kOpenVPN:
             builtinNetworkStates.push(state);
@@ -326,7 +335,7 @@ Polymer({
             }
             // Otherwise Arc VPNs are treated the same as Extension VPNs.
           case mojom.VpnType.kExtension:
-            const providerId = state.vpn.providerId;
+            const providerId = state.typeState.vpn.providerId;
             thirdPartyVpns[providerId] = thirdPartyVpns[providerId] || [];
             thirdPartyVpns[providerId].push(state);
             break;
@@ -354,7 +363,7 @@ Polymer({
     for (const vpnList of Object.values(thirdPartyVpns)) {
       assert(vpnList.length > 0);
       // All vpns in the list will have the same type and provider id.
-      const vpn = vpnList[0].vpn;
+      const vpn = vpnList[0].typeState.vpn;
       const provider = {
         type: vpn.type,
         providerId: vpn.providerId,
@@ -584,7 +593,8 @@ Polymer({
         (!!this.globalPolicy.allowOnlyPolicyNetworksToConnectIfAvailable &&
          !!this.deviceState && !!this.deviceState.managedNetworkAvailable) ||
         (!!this.globalPolicy.blockedHexSsids &&
-         this.globalPolicy.blockedHexSsids.includes(state.wifi.hexSsid));
+         this.globalPolicy.blockedHexSsids.includes(
+             state.typeState.wifi.hexSsid));
   },
 
   /**

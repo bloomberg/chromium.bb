@@ -2,15 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
 #include "net/third_party/quiche/src/quic/core/proto/crypto_server_config_proto.h"
 #include "net/third_party/quiche/src/quic/core/quic_alarm_factory.h"
 #include "net/third_party/quiche/src/quic/core/quic_epoll_alarm_factory.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_expect_bug.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_port_utils.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_ptr_util.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_test.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_test_loopback.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_text_utils.h"
+#include "net/third_party/quiche/src/quic/qbone/platform/icmp_packet.h"
 #include "net/third_party/quiche/src/quic/qbone/qbone_client_session.h"
 #include "net/third_party/quiche/src/quic/qbone/qbone_constants.h"
 #include "net/third_party/quiche/src/quic/qbone/qbone_control_placeholder.pb.h"
@@ -169,7 +171,7 @@ class DataSavingQboneControlHandler : public QboneControlHandler<T> {
 class FakeTaskRunner {
  public:
   explicit FakeTaskRunner(MockQuicConnectionHelper* helper)
-      : tasks_([this](const TaskType& l, const TaskType& r) {
+      : tasks_([](const TaskType& l, const TaskType& r) {
           // Items at a later time should run after items at an earlier time.
           // Priority queue comparisons should return true if l appears after r.
           return l->time() > r->time();
@@ -244,13 +246,13 @@ class QboneSessionTest : public QuicTest {
                                      bool send_qbone_alpn = true) {
     // Quic crashes if packets are sent at time 0, and the clock defaults to 0.
     helper_.AdvanceTime(QuicTime::Delta::FromMilliseconds(1000));
-    alarm_factory_ = QuicMakeUnique<QuicEpollAlarmFactory>(&epoll_server_);
-    client_writer_ = QuicMakeUnique<DataSavingQbonePacketWriter>();
-    server_writer_ = QuicMakeUnique<DataSavingQbonePacketWriter>();
+    alarm_factory_ = std::make_unique<QuicEpollAlarmFactory>(&epoll_server_);
+    client_writer_ = std::make_unique<DataSavingQbonePacketWriter>();
+    server_writer_ = std::make_unique<DataSavingQbonePacketWriter>();
     client_handler_ =
-        QuicMakeUnique<DataSavingQboneControlHandler<QboneClientRequest>>();
+        std::make_unique<DataSavingQboneControlHandler<QboneClientRequest>>();
     server_handler_ =
-        QuicMakeUnique<DataSavingQboneControlHandler<QboneServerRequest>>();
+        std::make_unique<DataSavingQboneControlHandler<QboneServerRequest>>();
     QuicSocketAddress server_address(TestLoopback(),
                                      QuicPickServerPortForTestsOrDie());
     QuicSocketAddress client_address;
@@ -267,12 +269,12 @@ class QboneSessionTest : public QuicTest {
           ParsedVersionOfIndex(AllSupportedVersions(), 0));
       client_connection_->SetSelfAddress(client_address);
       QuicConfig config;
-      client_crypto_config_ = QuicMakeUnique<QuicCryptoClientConfig>(
-          QuicMakeUnique<FakeProofVerifier>(client_handshake_success));
+      client_crypto_config_ = std::make_unique<QuicCryptoClientConfig>(
+          std::make_unique<FakeProofVerifier>(client_handshake_success));
       if (send_qbone_alpn) {
         client_crypto_config_->set_alpn("qbone");
       }
-      client_peer_ = QuicMakeUnique<QboneClientSession>(
+      client_peer_ = std::make_unique<QboneClientSession>(
           client_connection_, client_crypto_config_.get(),
           /*owner=*/nullptr, config,
           ParsedVersionOfIndex(AllSupportedVersions(), 0),
@@ -287,7 +289,7 @@ class QboneSessionTest : public QuicTest {
           ParsedVersionOfIndex(AllSupportedVersions(), 0));
       server_connection_->SetSelfAddress(server_address);
       QuicConfig config;
-      server_crypto_config_ = QuicMakeUnique<QuicCryptoServerConfig>(
+      server_crypto_config_ = std::make_unique<QuicCryptoServerConfig>(
           "TESTING", QuicRandom::GetInstance(),
           std::unique_ptr<FakeProofSource>(
               new FakeProofSource(server_handshake_success)),
@@ -297,10 +299,10 @@ class QboneSessionTest : public QuicTest {
           server_crypto_config_->GenerateConfig(QuicRandom::GetInstance(),
                                                 GetClock(), options);
       std::unique_ptr<CryptoHandshakeMessage> message(
-          server_crypto_config_->AddConfig(std::move(primary_config),
+          server_crypto_config_->AddConfig(primary_config,
                                            GetClock()->WallNow()));
 
-      server_peer_ = QuicMakeUnique<QboneServerSession>(
+      server_peer_ = std::make_unique<QboneServerSession>(
           AllSupportedVersions(), server_connection_, nullptr, config,
           server_crypto_config_.get(), &compressed_certs_cache_,
           server_writer_.get(), TestLoopback6(), TestLoopback6(), 64,
@@ -352,9 +354,26 @@ class QboneSessionTest : public QuicTest {
     runner_.Run();
   }
 
+  void ExpectICMPTooBigResponse(const std::vector<string>& written_packets,
+                                const int mtu,
+                                const string& packet) {
+    auto* header = reinterpret_cast<const ip6_hdr*>(packet.data());
+    icmp6_hdr icmp_header{};
+    icmp_header.icmp6_type = ICMP6_PACKET_TOO_BIG;
+    icmp_header.icmp6_mtu = mtu;
+
+    string expected;
+    CreateIcmpPacket(header->ip6_dst, header->ip6_src, icmp_header, packet,
+                     [&expected](QuicStringPiece icmp_packet) {
+                       expected = string(icmp_packet);
+                     });
+
+    EXPECT_THAT(written_packets, Contains(expected));
+  }
+
   // Test handshake establishment and sending/receiving of data for two
   // directions.
-  void TestStreamConnection() {
+  void TestStreamConnection(bool use_messages) {
     ASSERT_TRUE(server_peer_->IsCryptoHandshakeConfirmed());
     ASSERT_TRUE(client_peer_->IsCryptoHandshakeConfirmed());
     ASSERT_TRUE(server_peer_->IsEncryptionEstablished());
@@ -394,7 +413,14 @@ class QboneSessionTest : public QuicTest {
     QUIC_LOG(INFO) << "Sending server -> client long data";
     server_peer_->ProcessPacketFromNetwork(TestPacketIn(long_data));
     runner_.Run();
-    EXPECT_THAT(client_writer_->data(), Contains(TestPacketOut(long_data)));
+    if (use_messages) {
+      ExpectICMPTooBigResponse(
+          server_writer_->data(),
+          server_peer_->connection()->GetGuaranteedLargestMessagePayload(),
+          TestPacketOut(long_data));
+    } else {
+      EXPECT_THAT(client_writer_->data(), Contains(TestPacketOut(long_data)));
+    }
     EXPECT_THAT(server_writer_->data(),
                 Not(Contains(TestPacketOut(long_data))));
     EXPECT_EQ(0u, server_peer_->GetNumActiveStreams());
@@ -403,13 +429,33 @@ class QboneSessionTest : public QuicTest {
     QUIC_LOG(INFO) << "Sending client -> server long data";
     client_peer_->ProcessPacketFromNetwork(TestPacketIn(long_data));
     runner_.Run();
-    EXPECT_THAT(server_writer_->data(), Contains(TestPacketOut(long_data)));
+    if (use_messages) {
+      ExpectICMPTooBigResponse(
+          client_writer_->data(),
+          client_peer_->connection()->GetGuaranteedLargestMessagePayload(),
+          TestPacketIn(long_data));
+    } else {
+      EXPECT_THAT(server_writer_->data(), Contains(TestPacketOut(long_data)));
+    }
     EXPECT_THAT(client_peer_->GetNumSentClientHellos(), Eq(2));
     EXPECT_THAT(client_peer_->GetNumReceivedServerConfigUpdates(), Eq(0));
-    EXPECT_THAT(client_peer_->GetNumEphemeralPackets(), Eq(2));
-    EXPECT_THAT(client_peer_->GetNumStreamedPackets(), Eq(1));
-    EXPECT_THAT(server_peer_->GetNumEphemeralPackets(), Eq(2));
-    EXPECT_THAT(server_peer_->GetNumStreamedPackets(), Eq(1));
+
+    if (!use_messages) {
+      EXPECT_THAT(client_peer_->GetNumStreamedPackets(), Eq(1));
+      EXPECT_THAT(server_peer_->GetNumStreamedPackets(), Eq(1));
+    }
+
+    if (use_messages) {
+      EXPECT_THAT(client_peer_->GetNumEphemeralPackets(), Eq(0));
+      EXPECT_THAT(server_peer_->GetNumEphemeralPackets(), Eq(0));
+      EXPECT_THAT(client_peer_->GetNumMessagePackets(), Eq(2));
+      EXPECT_THAT(server_peer_->GetNumMessagePackets(), Eq(2));
+    } else {
+      EXPECT_THAT(client_peer_->GetNumEphemeralPackets(), Eq(2));
+      EXPECT_THAT(server_peer_->GetNumEphemeralPackets(), Eq(2));
+      EXPECT_THAT(client_peer_->GetNumMessagePackets(), Eq(0));
+      EXPECT_THAT(server_peer_->GetNumMessagePackets(), Eq(0));
+    }
 
     // All streams are ephemeral and should be gone.
     EXPECT_EQ(0u, server_peer_->GetNumActiveStreams());
@@ -449,8 +495,18 @@ class QboneSessionTest : public QuicTest {
 
 TEST_F(QboneSessionTest, StreamConnection) {
   CreateClientAndServerSessions();
+  client_peer_->set_send_packets_as_messages(false);
+  server_peer_->set_send_packets_as_messages(false);
   StartHandshake();
-  TestStreamConnection();
+  TestStreamConnection(false);
+}
+
+TEST_F(QboneSessionTest, Messages) {
+  CreateClientAndServerSessions();
+  client_peer_->set_send_packets_as_messages(true);
+  server_peer_->set_send_packets_as_messages(true);
+  StartHandshake();
+  TestStreamConnection(true);
 }
 
 TEST_F(QboneSessionTest, ClientRejection) {
@@ -481,9 +537,9 @@ TEST_F(QboneSessionTest, ServerRejection) {
 TEST_F(QboneSessionTest, CannotCreateDataStreamBeforeHandshake) {
   CreateClientAndServerSessions();
   EXPECT_QUIC_BUG(client_peer_->ProcessPacketFromNetwork(TestPacketIn("hello")),
-                  "Failed to create an outgoing QBONE stream");
+                  "Attempting to send packet before encryption established");
   EXPECT_QUIC_BUG(server_peer_->ProcessPacketFromNetwork(TestPacketIn("hello")),
-                  "Failed to create an outgoing QBONE stream");
+                  "Attempting to send packet before encryption established");
   EXPECT_EQ(0u, server_peer_->GetNumActiveStreams());
   EXPECT_EQ(0u, client_peer_->GetNumActiveStreams());
 }

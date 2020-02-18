@@ -15,8 +15,11 @@
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/views/painter.h"
 #include "ui/views/view.h"
+#include "ui/views/widget/widget.h"
+#include "ui/views/widget/widget_observer.h"
 
 class ContentSettingImageModel;
+class FeaturePromoBubbleView;
 
 namespace content {
 class WebContents;
@@ -67,6 +70,8 @@ class ContentSettingImageView : public IconLabelBubbleView,
 
   void disable_animation() { can_animate_ = false; }
 
+  bool ShowBubbleImpl();
+
   // IconLabelBubbleView:
   const char* GetClassName() const override;
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
@@ -78,8 +83,11 @@ class ContentSettingImageView : public IconLabelBubbleView,
   bool ShowBubble(const ui::Event& event) override;
   bool IsBubbleShowing() const override;
   SkColor GetInkDropBaseColor() const override;
+  void AnimationEnded(const gfx::Animation* animation) override;
 
   ContentSettingImageModel::ImageType GetTypeForTesting() const;
+
+  FeaturePromoBubbleView* indicator_promo() { return indicator_promo_; }
 
  private:
   // views::WidgetObserver:
@@ -93,6 +101,13 @@ class ContentSettingImageView : public IconLabelBubbleView,
   views::BubbleDialogDelegateView* bubble_view_;
   base::Optional<SkColor> icon_color_;
 
+  // Promotional UI that appears under the indicator icon in the right side of
+  // the omnibox and encourages its use. Owned by |indicator_promo_|'s
+  // NativeWidget.
+  FeaturePromoBubbleView* indicator_promo_ = nullptr;
+
+  // Observes destruction of bubble's Widgets spawned by this ImageView.
+  ScopedObserver<views::Widget, views::WidgetObserver> observer_{this};
   bool can_animate_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(ContentSettingImageView);

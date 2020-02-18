@@ -31,8 +31,10 @@ source_set("module_info") {
 
   deps = [
     "//base:i18n",
-    "//chrome/common/safe_browsing:binary_feature_extractor",
+    "//chrome/common/safe_browsing:pe_image_reader",
   ]
+
+  libs = [ "crypt32.lib" ]
 }
 
 loadable_module("conflicts_dll") {

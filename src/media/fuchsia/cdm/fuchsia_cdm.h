@@ -13,10 +13,14 @@
 #include "media/base/cdm_context.h"
 #include "media/base/cdm_promise_adapter.h"
 #include "media/base/content_decryption_module.h"
+#include "media/fuchsia/cdm/fuchsia_cdm_context.h"
+#include "media/fuchsia/cdm/fuchsia_decryptor.h"
 
 namespace media {
 
-class FuchsiaCdm : public ContentDecryptionModule, public CdmContext {
+class FuchsiaCdm : public ContentDecryptionModule,
+                   public CdmContext,
+                   public FuchsiaCdmContext {
  public:
   struct SessionCallbacks {
     SessionCallbacks();
@@ -61,6 +65,11 @@ class FuchsiaCdm : public ContentDecryptionModule, public CdmContext {
       EventCB event_cb) override;
   Decryptor* GetDecryptor() override;
   int GetCdmId() const override;
+  FuchsiaCdmContext* GetFuchsiaCdmContext() override;
+
+  // FuchsiaCdmContext implementation:
+  std::unique_ptr<FuchsiaSecureStreamDecryptor> CreateVideoDecryptor(
+      FuchsiaSecureStreamDecryptor::Client* client) override;
 
  private:
   class CdmSession;
@@ -78,13 +87,20 @@ class FuchsiaCdm : public ContentDecryptionModule, public CdmContext {
       uint32_t promise_id,
       base::Optional<CdmPromise::Exception> exception);
 
-  void OnCdmError(zx_status_t status);
+  // TODO(crbug.com/1012525): Remove |key_id| once fxb/38253 is resolved.
+  void OnNewKey(const std::string& key_id);
 
   CdmPromiseAdapter promises_;
   base::flat_map<std::string, std::unique_ptr<CdmSession>> session_map_;
 
   fuchsia::media::drm::ContentDecryptionModulePtr cdm_;
   SessionCallbacks session_callbacks_;
+
+  FuchsiaDecryptor decryptor_;
+
+  base::Lock new_key_cb_for_video_lock_;
+  FuchsiaSecureStreamDecryptor::NewKeyCB new_key_cb_for_video_
+      GUARDED_BY(new_key_cb_for_video_lock_);
 
   DISALLOW_COPY_AND_ASSIGN(FuchsiaCdm);
 };

@@ -11,12 +11,13 @@ import static org.chromium.chrome.browser.keyboard_accessory.sheet_component.Acc
 import static org.chromium.chrome.browser.keyboard_accessory.sheet_component.AccessorySheetProperties.TOP_SHADOW_VISIBLE;
 import static org.chromium.chrome.browser.keyboard_accessory.sheet_component.AccessorySheetProperties.VISIBLE;
 
-import android.support.annotation.Nullable;
-import android.support.annotation.Px;
 import android.support.v4.view.ViewPager;
 import android.support.v7.widget.RecyclerView;
 
-import org.chromium.base.VisibleForTesting;
+import androidx.annotation.Nullable;
+import androidx.annotation.Px;
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;

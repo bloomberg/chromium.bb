@@ -20,6 +20,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
+#include "src/traced/probes/ftrace/compact_sched.h"
 #include "src/traced/probes/ftrace/cpu_reader.h"
 #include "src/traced/probes/ftrace/ftrace_config_muxer.h"
 #include "src/traced/probes/ftrace/ftrace_config_utils.h"
@@ -45,6 +46,7 @@ using testing::Mock;
 using testing::NiceMock;
 using testing::Pair;
 using testing::Return;
+using testing::UnorderedElementsAre;
 
 using Table = perfetto::ProtoTranslationTable;
 using FtraceEventBundle = perfetto::protos::pbzero::FtraceEventBundle;
@@ -85,7 +87,8 @@ std::unique_ptr<Table> FakeTable(FtraceProcfs* ftrace) {
 
   return std::unique_ptr<Table>(
       new Table(ftrace, events, std::move(common_fields),
-                ProtoTranslationTable::DefaultPageHeaderSpecForTesting()));
+                ProtoTranslationTable::DefaultPageHeaderSpecForTesting(),
+                InvalidCompactSchedEventFormatForTesting()));
 }
 
 std::unique_ptr<FtraceConfigMuxer> FakeModel(FtraceProcfs* ftrace,
@@ -471,14 +474,12 @@ TEST(FtraceControllerTest, PeriodicDrainConfig) {
 
 TEST(FtraceMetadataTest, Clear) {
   FtraceMetadata metadata;
-  metadata.inode_and_device.push_back(std::make_pair(1, 1));
-  metadata.pids.push_back(2);
-  metadata.lost_events = true;
+  metadata.inode_and_device.insert(std::make_pair(1, 1));
+  metadata.pids.insert(2);
   metadata.last_seen_device_id = 100;
   metadata.Clear();
   EXPECT_THAT(metadata.inode_and_device, IsEmpty());
   EXPECT_THAT(metadata.pids, IsEmpty());
-  EXPECT_FALSE(metadata.lost_events);
   EXPECT_EQ(BlockDeviceID(0), metadata.last_seen_device_id);
 }
 
@@ -506,7 +507,7 @@ TEST(FtraceMetadataTest, AddInode) {
   metadata.AddInode(5);
 
   EXPECT_THAT(metadata.inode_and_device,
-              ElementsAre(Pair(2, 3), Pair(1, 3), Pair(3, 4)));
+              UnorderedElementsAre(Pair(2, 3), Pair(1, 3), Pair(3, 4)));
 }
 
 TEST(FtraceMetadataTest, AddPid) {

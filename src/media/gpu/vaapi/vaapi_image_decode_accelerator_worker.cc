@@ -73,8 +73,7 @@ void DecodeTask(
     DVLOGF(1) << "No decoder is available for supplied image";
     return;
   }
-  VaapiImageDecodeStatus status = decoder->Decode(
-      base::make_span<const uint8_t>(encoded_data.data(), encoded_data.size()));
+  VaapiImageDecodeStatus status = decoder->Decode(encoded_data);
   if (status != VaapiImageDecodeStatus::kSuccess) {
     DVLOGF(1) << "Failed to decode - status = "
               << static_cast<uint32_t>(status);
@@ -127,19 +126,17 @@ VaapiImageDecodeAcceleratorWorker::Create() {
                           VAJDAWorkerDecoderFailure::kVaapiError);
   VaapiImageDecoderVector decoders;
 
-  if (base::FeatureList::IsEnabled(
-          features::kVaapiJpegImageDecodeAcceleration)) {
-    auto jpeg_decoder = std::make_unique<VaapiJpegDecoder>();
-    if (jpeg_decoder->Initialize(uma_cb))
-      decoders.push_back(std::move(jpeg_decoder));
+  auto jpeg_decoder = std::make_unique<VaapiJpegDecoder>();
+  // TODO(crbug.com/974438): we can't advertise accelerated image decoding in
+  // AMD until we support VAAPI surfaces with multiple buffer objects.
+  if (VaapiWrapper::GetImplementationType() != VAImplementation::kMesaGallium &&
+      jpeg_decoder->Initialize(uma_cb)) {
+    decoders.push_back(std::move(jpeg_decoder));
   }
 
-  if (base::FeatureList::IsEnabled(
-          features::kVaapiWebPImageDecodeAcceleration)) {
-    auto webp_decoder = std::make_unique<VaapiWebPDecoder>();
-    if (webp_decoder->Initialize(uma_cb))
-      decoders.push_back(std::move(webp_decoder));
-  }
+  auto webp_decoder = std::make_unique<VaapiWebPDecoder>();
+  if (webp_decoder->Initialize(uma_cb))
+    decoders.push_back(std::move(webp_decoder));
 
   // If there are no decoders due to disabled flags or initialization failure,
   // return nullptr.
@@ -153,8 +150,7 @@ VaapiImageDecodeAcceleratorWorker::Create() {
 VaapiImageDecodeAcceleratorWorker::VaapiImageDecodeAcceleratorWorker(
     VaapiImageDecoderVector decoders) {
   DETACH_FROM_SEQUENCE(io_sequence_checker_);
-  decoder_task_runner_ =
-      base::CreateSequencedTaskRunnerWithTraits({base::ThreadPool()});
+  decoder_task_runner_ = base::CreateSequencedTaskRunner({base::ThreadPool()});
   DCHECK(decoder_task_runner_);
 
   DCHECK(!decoders.empty());
@@ -180,14 +176,17 @@ VaapiImageDecodeAcceleratorWorker::GetSupportedProfiles() {
 VaapiImageDecoder* VaapiImageDecodeAcceleratorWorker::GetDecoderForImage(
     const std::vector<uint8_t>& encoded_data) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(io_sequence_checker_);
-  auto encoded_data_span =
-      base::make_span<const uint8_t>(encoded_data.data(), encoded_data.size());
   auto result = decoders_.end();
 
-  if (IsJpegImage(encoded_data_span))
+  if (base::FeatureList::IsEnabled(
+          features::kVaapiJpegImageDecodeAcceleration) &&
+      IsJpegImage(encoded_data)) {
     result = decoders_.find(gpu::ImageDecodeAcceleratorType::kJpeg);
-  else if (IsLossyWebPImage(encoded_data_span))
+  } else if (base::FeatureList::IsEnabled(
+                 features::kVaapiWebPImageDecodeAcceleration) &&
+             IsLossyWebPImage(encoded_data)) {
     result = decoders_.find(gpu::ImageDecodeAcceleratorType::kWebP);
+  }
 
   return result == decoders_.end() ? nullptr : result->second.get();
 }

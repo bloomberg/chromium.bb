@@ -18,7 +18,6 @@
 #import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
 #import "ios/chrome/browser/search_engines/search_engine_observer_bridge.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
-#include "ios/chrome/browser/signin/feature_flags.h"
 #import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
@@ -55,7 +54,7 @@
 #import "ios/web/public/navigation/navigation_manager.h"
 #include "ios/web/public/navigation/referrer.h"
 #import "ios/web/public/web_state.h"
-#import "ios/web/public/web_state/web_state_observer_bridge.h"
+#import "ios/web/public/web_state_observer_bridge.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
@@ -444,7 +443,7 @@ const char kNTPHelpURL[] =
 
 - (void)removeMostVisited:(ContentSuggestionsMostVisitedItem*)item {
   base::RecordAction(base::UserMetricsAction("MostVisited_UrlBlacklisted"));
-  [self.suggestionsMediator blacklistMostVisitedURL:item.URL];
+  [self.suggestionsMediator blockMostVisitedURL:item.URL];
   [self showMostVisitedUndoForURL:item.URL];
 }
 
@@ -550,7 +549,7 @@ const char kNTPHelpURL[] =
     NTPHomeMediator* strongSelf = weakSelf;
     if (!strongSelf)
       return;
-    [strongSelf.suggestionsMediator whitelistMostVisitedURL:copiedURL];
+    [strongSelf.suggestionsMediator allowMostVisitedURL:copiedURL];
   };
   action.title = l10n_util::GetNSString(IDS_NEW_TAB_UNDO_THUMBNAIL_REMOVE);
   action.accessibilityIdentifier = @"Undo";
@@ -600,10 +599,6 @@ const char kNTPHelpURL[] =
 // Fetches and update user's avatar on NTP, or use default avatar if user is
 // not signed in.
 - (void)updateAccountImage {
-  // Early return here to avoid doing all that work to fetch an image that
-  // won't be used.
-  if (!IsIdentityDiscFeatureEnabled())
-    return;
   UIImage* image;
   // Fetches user's identity from Authentication Service.
   ChromeIdentity* identity = self.authService->GetAuthenticatedIdentity();

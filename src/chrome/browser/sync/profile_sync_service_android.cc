@@ -31,7 +31,6 @@
 #include "components/sync/base/user_selectable_type.h"
 #include "components/sync/driver/profile_sync_service.h"
 #include "components/sync/driver/sync_service_utils.h"
-#include "components/sync/engine/net/network_resources.h"
 #include "components/sync_device_info/device_info.h"
 #include "components/sync_device_info/device_info_sync_service.h"
 #include "components/sync_device_info/device_info_tracker.h"
@@ -120,13 +119,6 @@ void ProfileSyncServiceAndroid::OnStateChanged(syncer::SyncService* sync) {
       env, weak_java_profile_sync_service_.get(env));
 }
 
-bool ProfileSyncServiceAndroid::IsSyncAllowedByAndroid() const {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  JNIEnv* env = AttachCurrentThread();
-  return Java_ProfileSyncService_isMasterSyncEnabled(
-      env, weak_java_profile_sync_service_.get(env));
-}
-
 // Pure ProfileSyncService calls.
 
 jboolean ProfileSyncServiceAndroid::IsSyncRequested(
@@ -184,6 +176,14 @@ jboolean ProfileSyncServiceAndroid::IsEngineInitialized(
   return sync_service_->IsEngineInitialized();
 }
 
+jboolean ProfileSyncServiceAndroid::IsTransportStateActive(
+    JNIEnv* env,
+    const JavaParamRef<jobject>&) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  return sync_service_->GetTransportState() ==
+         syncer::SyncService::TransportState::ACTIVE;
+}
+
 void ProfileSyncServiceAndroid::SetSetupInProgress(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
@@ -207,9 +207,11 @@ jboolean ProfileSyncServiceAndroid::IsFirstSetupComplete(
 
 void ProfileSyncServiceAndroid::SetFirstSetupComplete(
     JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
+    const JavaParamRef<jobject>& obj,
+    jint source) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  sync_service_->GetUserSettings()->SetFirstSetupComplete();
+  sync_service_->GetUserSettings()->SetFirstSetupComplete(
+      static_cast<syncer::SyncFirstSetupCompleteSource>(source));
 }
 
 ScopedJavaLocalRef<jintArray> ProfileSyncServiceAndroid::GetActiveDataTypes(
@@ -283,11 +285,21 @@ void ProfileSyncServiceAndroid::EnableEncryptEverything(
   sync_service_->GetUserSettings()->EnableEncryptEverything();
 }
 
-jboolean ProfileSyncServiceAndroid::IsPassphraseRequiredForDecryption(
+jboolean ProfileSyncServiceAndroid::IsPassphraseRequiredForPreferredDataTypes(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  return sync_service_->GetUserSettings()->IsPassphraseRequiredForDecryption();
+  return sync_service_->GetUserSettings()
+      ->IsPassphraseRequiredForPreferredDataTypes();
+}
+
+jboolean
+ProfileSyncServiceAndroid::IsTrustedVaultKeyRequiredForPreferredDataTypes(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  return sync_service_->GetUserSettings()
+      ->IsTrustedVaultKeyRequiredForPreferredDataTypes();
 }
 
 jboolean ProfileSyncServiceAndroid::IsUsingSecondaryPassphrase(
@@ -479,6 +491,12 @@ ProfileSyncServiceAndroid::GetSyncEnterCustomPassphraseBodyText(
 
 // Functionality only available for testing purposes.
 
+jlong ProfileSyncServiceAndroid::GetProfileSyncServiceForTest(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj) {
+  return reinterpret_cast<intptr_t>(sync_service_);
+}
+
 jlong ProfileSyncServiceAndroid::GetLastSyncedTimeForTest(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
@@ -487,22 +505,10 @@ jlong ProfileSyncServiceAndroid::GetLastSyncedTimeForTest(
       (last_sync_time - base::Time::UnixEpoch()).InMicroseconds());
 }
 
-void ProfileSyncServiceAndroid::OverrideNetworkResourcesForTest(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
-    jlong network_resources) {
-  syncer::NetworkResources* resources =
-      reinterpret_cast<syncer::NetworkResources*>(network_resources);
-  sync_service_->OverrideNetworkResourcesForTest(
-      base::WrapUnique<syncer::NetworkResources>(resources));
-}
-
-// static
-ProfileSyncServiceAndroid*
-    ProfileSyncServiceAndroid::GetProfileSyncServiceAndroid() {
-  return reinterpret_cast<ProfileSyncServiceAndroid*>(
-      Java_ProfileSyncService_getProfileSyncServiceAndroid(
-          AttachCurrentThread()));
+void ProfileSyncServiceAndroid::OverrideNetworkForTest(
+    const syncer::CreateHttpPostProviderFactory&
+        create_http_post_provider_factory_cb) {
+  sync_service_->OverrideNetworkForTest(create_http_post_provider_factory_cb);
 }
 
 void ProfileSyncServiceAndroid::TriggerRefresh(

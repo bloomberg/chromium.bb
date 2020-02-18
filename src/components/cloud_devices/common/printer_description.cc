@@ -27,117 +27,117 @@ namespace printer {
 
 namespace {
 
-const int32_t kMaxPageNumber = 1000000;
+constexpr int32_t kMaxPageNumber = 1000000;
 
-const char kSectionPrint[] = "print";
-const char kSectionPrinter[] = "printer";
+constexpr char kSectionPrint[] = "print";
+constexpr char kSectionPrinter[] = "printer";
 
-const char kKeyCustomDisplayName[] = "custom_display_name";
-const char kKeyContentType[] = "content_type";
-const char kKeyDisplayName[] = "display_name";
-const char kKeyId[] = "id";
-const char kKeyName[] = "name";
-const char kKeyType[] = "type";
-const char kKeyValue[] = "value";
-const char kKeyValueType[] = "value_type";
-const char kKeyVendorId[] = "vendor_id";
+constexpr char kKeyCustomDisplayName[] = "custom_display_name";
+constexpr char kKeyContentType[] = "content_type";
+constexpr char kKeyDisplayName[] = "display_name";
+constexpr char kKeyId[] = "id";
+constexpr char kKeyName[] = "name";
+constexpr char kKeyType[] = "type";
+constexpr char kKeyValue[] = "value";
+constexpr char kKeyValueType[] = "value_type";
+constexpr char kKeyVendorId[] = "vendor_id";
 
 // extern is required to be used in templates.
-extern const char kOptionCollate[] = "collate";
-extern const char kOptionColor[] = "color";
-extern const char kOptionContentType[] = "supported_content_type";
-extern const char kOptionCopies[] = "copies";
-extern const char kOptionDpi[] = "dpi";
-extern const char kOptionDuplex[] = "duplex";
-extern const char kOptionFitToPage[] = "fit_to_page";
-extern const char kOptionMargins[] = "margins";
-extern const char kOptionMediaSize[] = "media_size";
-extern const char kOptionPageOrientation[] = "page_orientation";
-extern const char kOptionPageRange[] = "page_range";
-extern const char kOptionReverse[] = "reverse_order";
-extern const char kOptionPwgRasterConfig[] = "pwg_raster_config";
-extern const char kOptionRangeCapability[] = "range_cap";
-extern const char kOptionSelectCapability[] = "select_cap";
-extern const char kOptionTypedValueCapability[] = "typed_value_cap";
-extern const char kOptionVendorCapability[] = "vendor_capability";
+extern constexpr char kOptionCollate[] = "collate";
+extern constexpr char kOptionColor[] = "color";
+extern constexpr char kOptionContentType[] = "supported_content_type";
+extern constexpr char kOptionCopies[] = "copies";
+extern constexpr char kOptionDpi[] = "dpi";
+extern constexpr char kOptionDuplex[] = "duplex";
+extern constexpr char kOptionFitToPage[] = "fit_to_page";
+extern constexpr char kOptionMargins[] = "margins";
+extern constexpr char kOptionMediaSize[] = "media_size";
+extern constexpr char kOptionPageOrientation[] = "page_orientation";
+extern constexpr char kOptionPageRange[] = "page_range";
+extern constexpr char kOptionReverse[] = "reverse_order";
+extern constexpr char kOptionPwgRasterConfig[] = "pwg_raster_config";
+extern constexpr char kOptionRangeCapability[] = "range_cap";
+extern constexpr char kOptionSelectCapability[] = "select_cap";
+extern constexpr char kOptionTypedValueCapability[] = "typed_value_cap";
+extern constexpr char kOptionVendorCapability[] = "vendor_capability";
 #if defined(OS_CHROMEOS)
-extern const char kOptionPin[] = "pin";
+extern constexpr char kOptionPin[] = "pin";
 #endif  // defined(OS_CHROMEOS)
 
-const char kMarginBottom[] = "bottom_microns";
-const char kMarginLeft[] = "left_microns";
-const char kMarginRight[] = "right_microns";
-const char kMarginTop[] = "top_microns";
+constexpr char kMarginBottom[] = "bottom_microns";
+constexpr char kMarginLeft[] = "left_microns";
+constexpr char kMarginRight[] = "right_microns";
+constexpr char kMarginTop[] = "top_microns";
 
-const char kDpiHorizontal[] = "horizontal_dpi";
-const char kDpiVertical[] = "vertical_dpi";
+constexpr char kDpiHorizontal[] = "horizontal_dpi";
+constexpr char kDpiVertical[] = "vertical_dpi";
 
-const char kMediaWidth[] = "width_microns";
-const char kMediaHeight[] = "height_microns";
+constexpr char kMediaWidth[] = "width_microns";
+constexpr char kMediaHeight[] = "height_microns";
 const char kMediaIsContinuous[] = "is_continuous_feed";
 
-const char kPageRangeInterval[] = "interval";
-const char kPageRangeEnd[] = "end";
-const char kPageRangeStart[] = "start";
+constexpr char kPageRangeInterval[] = "interval";
+constexpr char kPageRangeEnd[] = "end";
+constexpr char kPageRangeStart[] = "start";
 
-const char kPwgRasterDocumentTypeSupported[] = "document_type_supported";
-const char kPwgRasterDocumentSheetBack[] = "document_sheet_back";
-const char kPwgRasterReverseOrderStreaming[] = "reverse_order_streaming";
-const char kPwgRasterRotateAllPages[] = "rotate_all_pages";
+constexpr char kPwgRasterDocumentTypeSupported[] = "document_type_supported";
+constexpr char kPwgRasterDocumentSheetBack[] = "document_sheet_back";
+constexpr char kPwgRasterReverseOrderStreaming[] = "reverse_order_streaming";
+constexpr char kPwgRasterRotateAllPages[] = "rotate_all_pages";
 
-const char kVendorCapabilityMinValue[] = "min";
-const char kVendorCapabilityMaxValue[] = "max";
-const char kVendorCapabilityDefaultValue[] = "default";
+constexpr char kVendorCapabilityMinValue[] = "min";
+constexpr char kVendorCapabilityMaxValue[] = "max";
+constexpr char kVendorCapabilityDefaultValue[] = "default";
 
 #if defined(OS_CHROMEOS)
-const char kPinSupported[] = "supported";
+constexpr char kPinSupported[] = "supported";
 #endif  // defined(OS_CHROMEOS)
 
-const char kTypeRangeVendorCapabilityFloat[] = "FLOAT";
-const char kTypeRangeVendorCapabilityInteger[] = "INTEGER";
+constexpr char kTypeRangeVendorCapabilityFloat[] = "FLOAT";
+constexpr char kTypeRangeVendorCapabilityInteger[] = "INTEGER";
 
-const char kTypeTypedValueVendorCapabilityBoolean[] = "BOOLEAN";
-const char kTypeTypedValueVendorCapabilityFloat[] = "FLOAT";
-const char kTypeTypedValueVendorCapabilityInteger[] = "INTEGER";
-const char kTypeTypedValueVendorCapabilityString[] = "STRING";
+constexpr char kTypeTypedValueVendorCapabilityBoolean[] = "BOOLEAN";
+constexpr char kTypeTypedValueVendorCapabilityFloat[] = "FLOAT";
+constexpr char kTypeTypedValueVendorCapabilityInteger[] = "INTEGER";
+constexpr char kTypeTypedValueVendorCapabilityString[] = "STRING";
 
-const char kTypeVendorCapabilityRange[] = "RANGE";
-const char kTypeVendorCapabilitySelect[] = "SELECT";
-const char kTypeVendorCapabilityTypedValue[] = "TYPED_VALUE";
+constexpr char kTypeVendorCapabilityRange[] = "RANGE";
+constexpr char kTypeVendorCapabilitySelect[] = "SELECT";
+constexpr char kTypeVendorCapabilityTypedValue[] = "TYPED_VALUE";
 
-const char kTypeColorColor[] = "STANDARD_COLOR";
-const char kTypeColorMonochrome[] = "STANDARD_MONOCHROME";
-const char kTypeColorCustomColor[] = "CUSTOM_COLOR";
-const char kTypeColorCustomMonochrome[] = "CUSTOM_MONOCHROME";
-const char kTypeColorAuto[] = "AUTO";
+constexpr char kTypeColorColor[] = "STANDARD_COLOR";
+constexpr char kTypeColorMonochrome[] = "STANDARD_MONOCHROME";
+constexpr char kTypeColorCustomColor[] = "CUSTOM_COLOR";
+constexpr char kTypeColorCustomMonochrome[] = "CUSTOM_MONOCHROME";
+constexpr char kTypeColorAuto[] = "AUTO";
 
-const char kTypeDuplexLongEdge[] = "LONG_EDGE";
-const char kTypeDuplexNoDuplex[] = "NO_DUPLEX";
-const char kTypeDuplexShortEdge[] = "SHORT_EDGE";
+constexpr char kTypeDuplexLongEdge[] = "LONG_EDGE";
+constexpr char kTypeDuplexNoDuplex[] = "NO_DUPLEX";
+constexpr char kTypeDuplexShortEdge[] = "SHORT_EDGE";
 
-const char kTypeFitToPageFillPage[] = "FILL_PAGE";
-const char kTypeFitToPageFitToPage[] = "FIT_TO_PAGE";
-const char kTypeFitToPageGrowToPage[] = "GROW_TO_PAGE";
-const char kTypeFitToPageNoFitting[] = "NO_FITTING";
-const char kTypeFitToPageShrinkToPage[] = "SHRINK_TO_PAGE";
+constexpr char kTypeFitToPageFillPage[] = "FILL_PAGE";
+constexpr char kTypeFitToPageFitToPage[] = "FIT_TO_PAGE";
+constexpr char kTypeFitToPageGrowToPage[] = "GROW_TO_PAGE";
+constexpr char kTypeFitToPageNoFitting[] = "NO_FITTING";
+constexpr char kTypeFitToPageShrinkToPage[] = "SHRINK_TO_PAGE";
 
-const char kTypeMarginsBorderless[] = "BORDERLESS";
-const char kTypeMarginsCustom[] = "CUSTOM";
-const char kTypeMarginsStandard[] = "STANDARD";
-const char kTypeOrientationAuto[] = "AUTO";
+constexpr char kTypeMarginsBorderless[] = "BORDERLESS";
+constexpr char kTypeMarginsCustom[] = "CUSTOM";
+constexpr char kTypeMarginsStandard[] = "STANDARD";
+constexpr char kTypeOrientationAuto[] = "AUTO";
 
-const char kTypeOrientationLandscape[] = "LANDSCAPE";
-const char kTypeOrientationPortrait[] = "PORTRAIT";
+constexpr char kTypeOrientationLandscape[] = "LANDSCAPE";
+constexpr char kTypeOrientationPortrait[] = "PORTRAIT";
 
-const char kTypeDocumentSupportedTypeSRGB8[] = "SRGB_8";
-const char kTypeDocumentSupportedTypeSGRAY8[] = "SGRAY_8";
+constexpr char kTypeDocumentSupportedTypeSRGB8[] = "SRGB_8";
+constexpr char kTypeDocumentSupportedTypeSGRAY8[] = "SGRAY_8";
 
-const char kTypeDocumentSheetBackNormal[] = "NORMAL";
-const char kTypeDocumentSheetBackRotated[] = "ROTATED";
-const char kTypeDocumentSheetBackManualTumble[] = "MANUAL_TUMBLE";
-const char kTypeDocumentSheetBackFlipped[] = "FLIPPED";
+constexpr char kTypeDocumentSheetBackNormal[] = "NORMAL";
+constexpr char kTypeDocumentSheetBackRotated[] = "ROTATED";
+constexpr char kTypeDocumentSheetBackManualTumble[] = "MANUAL_TUMBLE";
+constexpr char kTypeDocumentSheetBackFlipped[] = "FLIPPED";
 
-const struct RangeVendorCapabilityTypeNames {
+constexpr struct RangeVendorCapabilityTypeNames {
   RangeVendorCapability::ValueType id;
   const char* json_name;
 } kRangeVendorCapabilityTypeNames[] = {
@@ -146,7 +146,7 @@ const struct RangeVendorCapabilityTypeNames {
      kTypeRangeVendorCapabilityInteger},
 };
 
-const struct TypedValueVendorCapabilityTypeNames {
+constexpr struct TypedValueVendorCapabilityTypeNames {
   TypedValueVendorCapability::ValueType id;
   const char* json_name;
 } kTypedValueVendorCapabilityTypeNames[] = {
@@ -160,7 +160,7 @@ const struct TypedValueVendorCapabilityTypeNames {
      kTypeTypedValueVendorCapabilityString},
 };
 
-const struct VendorCapabilityTypeNames {
+constexpr struct VendorCapabilityTypeNames {
   VendorCapability::Type id;
   const char* json_name;
 } kVendorCapabilityTypeNames[] = {
@@ -169,7 +169,7 @@ const struct VendorCapabilityTypeNames {
     {VendorCapability::Type::TYPED_VALUE, kTypeVendorCapabilityTypedValue},
 };
 
-const struct ColorNames {
+constexpr struct ColorNames {
   ColorType id;
   const char* const json_name;
 } kColorNames[] = {
@@ -180,7 +180,7 @@ const struct ColorNames {
     {ColorType::AUTO_COLOR, kTypeColorAuto},
 };
 
-const struct DuplexNames {
+constexpr struct DuplexNames {
   DuplexType id;
   const char* const json_name;
 } kDuplexNames[] = {
@@ -189,7 +189,7 @@ const struct DuplexNames {
     {DuplexType::SHORT_EDGE, kTypeDuplexShortEdge},
 };
 
-const struct OrientationNames {
+constexpr struct OrientationNames {
   OrientationType id;
   const char* const json_name;
 } kOrientationNames[] = {
@@ -198,7 +198,7 @@ const struct OrientationNames {
     {OrientationType::AUTO_ORIENTATION, kTypeOrientationAuto},
 };
 
-const struct MarginsNames {
+constexpr struct MarginsNames {
   MarginsType id;
   const char* const json_name;
 } kMarginsNames[] = {
@@ -207,7 +207,7 @@ const struct MarginsNames {
     {MarginsType::CUSTOM_MARGINS, kTypeMarginsCustom},
 };
 
-const struct FitToPageNames {
+constexpr struct FitToPageNames {
   FitToPageType id;
   const char* const json_name;
 } kFitToPageNames[] = {
@@ -218,7 +218,7 @@ const struct FitToPageNames {
     {FitToPageType::FILL_PAGE, kTypeFitToPageFillPage},
 };
 
-const struct DocumentSheetBackNames {
+constexpr struct DocumentSheetBackNames {
   DocumentSheetBack id;
   const char* const json_name;
 } kDocumentSheetBackNames[] = {
@@ -227,20 +227,22 @@ const struct DocumentSheetBackNames {
     {DocumentSheetBack::MANUAL_TUMBLE, kTypeDocumentSheetBackManualTumble},
     {DocumentSheetBack::FLIPPED, kTypeDocumentSheetBackFlipped}};
 
-const int32_t kInchToUm = 25400;
-const int32_t kMmToUm = 1000;
-const int32_t kSizeTrasholdUm = 1000;
+constexpr int32_t kInchToUm = 25400;
+constexpr int32_t kMmToUm = 1000;
+constexpr int32_t kSizeThresholdUm = 1000;
+
+constexpr size_t kEnumClassPrefixLen = base::size("MediaType::") - 1;
 
 // Json name of media type is constructed by removing "MediaType::" enum class
 // prefix from it.
 #define MAP_CLOUD_PRINT_MEDIA_TYPE(type, width, height, unit_um) \
   {                                                              \
-    type, &#type[strlen("MediaType::")],                         \
+    type, &#type[kEnumClassPrefixLen],                           \
         static_cast<int>(width * unit_um + 0.5),                 \
         static_cast<int>(height * unit_um + 0.5)                 \
   }
 
-const struct MediaDefinition {
+constexpr struct MediaDefinition {
   MediaType id;
   const char* const json_name;
   int width_um;
@@ -446,7 +448,7 @@ const MediaDefinition* FindMediaBySize(int32_t width_um, int32_t height_um) {
     int32_t diff =
         std::max(std::abs(width_um - kMediaDefinitions[i].width_um),
                  std::abs(height_um - kMediaDefinitions[i].height_um));
-    if (diff < kSizeTrasholdUm)
+    if (diff < kSizeThresholdUm)
       result = &kMediaDefinitions[i];
   }
   return result;
@@ -1305,8 +1307,7 @@ class PageRangeTraits : public ItemsTraits<kOptionPageRange> {
         dict.FindKeyOfType(kPageRangeInterval, base::Value::Type::LIST);
     if (!list_value)
       return false;
-    const base::Value::ListStorage& list = list_value->GetList();
-    for (const base::Value& interval : list) {
+    for (const base::Value& interval : list_value->GetList()) {
       int page_range_start = interval.FindIntKey(kPageRangeStart).value_or(1);
       int page_range_end =
           interval.FindIntKey(kPageRangeEnd).value_or(kMaxPageNumber);
@@ -1323,7 +1324,7 @@ class PageRangeTraits : public ItemsTraits<kOptionPageRange> {
         interval.SetKey(kPageRangeStart, base::Value(option[i].start));
         if (option[i].end < kMaxPageNumber)
           interval.SetKey(kPageRangeEnd, base::Value(option[i].end));
-        list.GetList().emplace_back(std::move(interval));
+        list.Append(std::move(interval));
       }
       dict->SetKey(kPageRangeInterval, std::move(list));
     }
@@ -1434,39 +1435,42 @@ class PinTraits : public NoValueValidation, public ItemsTraits<kOptionPin> {
 
 }  // namespace printer
 
-using namespace printer;
-
-template class ListCapability<ContentType, ContentTypeTraits>;
-template class ValueCapability<PwgRasterConfig, PwgRasterConfigTraits>;
-template class ListCapability<VendorCapability, VendorCapabilityTraits>;
-template class SelectionCapability<SelectVendorCapabilityOption,
-                                   SelectVendorCapabilityTraits>;
-template class SelectionCapability<Color, ColorTraits>;
-template class SelectionCapability<DuplexType, DuplexTraits>;
-template class SelectionCapability<OrientationType, OrientationTraits>;
-template class SelectionCapability<Margins, MarginsTraits>;
-template class SelectionCapability<Dpi, DpiTraits>;
-template class SelectionCapability<FitToPageType, FitToPageTraits>;
-template class SelectionCapability<Media, MediaTraits>;
-template class EmptyCapability<class CopiesTraits>;
-template class EmptyCapability<class PageRangeTraits>;
-template class BooleanCapability<class CollateTraits>;
-template class BooleanCapability<class ReverseTraits>;
+template class ListCapability<printer::ContentType, printer::ContentTypeTraits>;
+template class ValueCapability<printer::PwgRasterConfig,
+                               printer::PwgRasterConfigTraits>;
+template class ListCapability<printer::VendorCapability,
+                              printer::VendorCapabilityTraits>;
+template class SelectionCapability<printer::SelectVendorCapabilityOption,
+                                   printer::SelectVendorCapabilityTraits>;
+template class SelectionCapability<printer::Color, printer::ColorTraits>;
+template class SelectionCapability<printer::DuplexType, printer::DuplexTraits>;
+template class SelectionCapability<printer::OrientationType,
+                                   printer::OrientationTraits>;
+template class SelectionCapability<printer::Margins, printer::MarginsTraits>;
+template class SelectionCapability<printer::Dpi, printer::DpiTraits>;
+template class SelectionCapability<printer::FitToPageType,
+                                   printer::FitToPageTraits>;
+template class SelectionCapability<printer::Media, printer::MediaTraits>;
+template class EmptyCapability<printer::CopiesTraits>;
+template class EmptyCapability<printer::PageRangeTraits>;
+template class BooleanCapability<printer::CollateTraits>;
+template class BooleanCapability<printer::ReverseTraits>;
 #if defined(OS_CHROMEOS)
-template class ValueCapability<bool, class PinTraits>;
+template class ValueCapability<bool, printer::PinTraits>;
 #endif  // defined(OS_CHROMEOS)
 
-template class TicketItem<PwgRasterConfig, PwgRasterConfigTraits>;
-template class TicketItem<Color, ColorTraits>;
-template class TicketItem<DuplexType, DuplexTraits>;
-template class TicketItem<OrientationType, OrientationTraits>;
-template class TicketItem<Margins, MarginsTraits>;
-template class TicketItem<Dpi, DpiTraits>;
-template class TicketItem<FitToPageType, FitToPageTraits>;
-template class TicketItem<Media, MediaTraits>;
-template class TicketItem<int32_t, CopiesTraits>;
-template class TicketItem<PageRange, PageRangeTraits>;
-template class TicketItem<bool, CollateTraits>;
-template class TicketItem<bool, ReverseTraits>;
+template class TicketItem<printer::PwgRasterConfig,
+                          printer::PwgRasterConfigTraits>;
+template class TicketItem<printer::Color, printer::ColorTraits>;
+template class TicketItem<printer::DuplexType, printer::DuplexTraits>;
+template class TicketItem<printer::OrientationType, printer::OrientationTraits>;
+template class TicketItem<printer::Margins, printer::MarginsTraits>;
+template class TicketItem<printer::Dpi, printer::DpiTraits>;
+template class TicketItem<printer::FitToPageType, printer::FitToPageTraits>;
+template class TicketItem<printer::Media, printer::MediaTraits>;
+template class TicketItem<int32_t, printer::CopiesTraits>;
+template class TicketItem<printer::PageRange, printer::PageRangeTraits>;
+template class TicketItem<bool, printer::CollateTraits>;
+template class TicketItem<bool, printer::ReverseTraits>;
 
 }  // namespace cloud_devices

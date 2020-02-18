@@ -16,7 +16,7 @@
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/arc/test/fake_app_instance.h"
-#include "services/data_decoder/public/cpp/test_data_decoder_service.h"
+#include "services/data_decoder/public/cpp/test_support/in_process_data_decoder.h"
 #include "url/gurl.h"
 
 namespace {
@@ -27,12 +27,14 @@ arc::mojom::WebAppInfoPtr GetWebAppInfo() {
                                      "https://www.google.com/", 10000);
 }
 
+constexpr int kGeneratedIconSize = 128;
+
 const std::vector<uint8_t> GetIconBytes() {
   auto fake_app_instance =
       std::make_unique<arc::FakeAppInstance>(/*app_host=*/nullptr);
   std::string png_data_as_string;
-  EXPECT_TRUE(fake_app_instance->GenerateIconResponse(128, /*app_icon=*/true,
-                                                      &png_data_as_string));
+  EXPECT_TRUE(fake_app_instance->GenerateIconResponse(
+      kGeneratedIconSize, /*app_icon=*/true, &png_data_as_string));
   return std::vector<uint8_t>(png_data_as_string.begin(),
                               png_data_as_string.end());
 }
@@ -90,11 +92,7 @@ class ApkWebAppInstallerTest : public ChromeRenderViewHostTestHarness,
   ~ApkWebAppInstallerTest() override = default;
 
  protected:
-  service_manager::Connector* connector() const {
-    return test_data_decoder_service_.connector();
-  }
-
-  data_decoder::TestDataDecoderService test_data_decoder_service_;
+  data_decoder::test::InProcessDataDecoder in_process_data_decoder_;
 
   // Must stay as last member.
   base::WeakPtrFactory<ApkWebAppInstallerTest> weak_ptr_factory_{this};
@@ -105,7 +103,7 @@ TEST_F(ApkWebAppInstallerTest, IconDecodeCallsWebAppInstallManager) {
   FakeApkWebAppInstaller apk_web_app_installer(
       profile(), weak_ptr_factory_.GetWeakPtr(), run_loop.QuitClosure());
 
-  apk_web_app_installer.Start(connector(), GetWebAppInfo(), GetIconBytes());
+  apk_web_app_installer.Start(GetWebAppInfo(), GetIconBytes());
   run_loop.Run();
 
   EXPECT_FALSE(apk_web_app_installer.complete_installation_called());
@@ -121,9 +119,10 @@ TEST_F(ApkWebAppInstallerTest, IconDecodeCallsWebAppInstallManager) {
             static_cast<int32_t>(
                 apk_web_app_installer.web_app_info().theme_color.value()));
 
-  EXPECT_EQ(1u, apk_web_app_installer.web_app_info().icons.size());
-  EXPECT_FALSE(
-      apk_web_app_installer.web_app_info().icons[0].data.drawsNothing());
+  EXPECT_EQ(1u, apk_web_app_installer.web_app_info().icon_bitmaps.size());
+  EXPECT_FALSE(apk_web_app_installer.web_app_info()
+                   .icon_bitmaps.at(kGeneratedIconSize)
+                   .drawsNothing());
 }
 
 TEST_F(ApkWebAppInstallerTest,
@@ -133,7 +132,7 @@ TEST_F(ApkWebAppInstallerTest,
       profile(), weak_ptr_factory_.GetWeakPtr(), run_loop.QuitClosure());
 
   weak_ptr_factory_.InvalidateWeakPtrs();
-  apk_web_app_installer.Start(connector(), GetWebAppInfo(), GetIconBytes());
+  apk_web_app_installer.Start(GetWebAppInfo(), GetIconBytes());
   run_loop.Run();
 
   EXPECT_EQ("", apk_web_app_installer.id());
@@ -149,7 +148,7 @@ TEST_F(ApkWebAppInstallerTest,
   FakeApkWebAppInstaller apk_web_app_installer(
       profile(), weak_ptr_factory_.GetWeakPtr(), run_loop.QuitClosure());
 
-  apk_web_app_installer.Start(connector(), GetWebAppInfo(), GetIconBytes());
+  apk_web_app_installer.Start(GetWebAppInfo(), GetIconBytes());
   weak_ptr_factory_.InvalidateWeakPtrs();
   run_loop.Run();
 
@@ -163,8 +162,7 @@ TEST_F(ApkWebAppInstallerTest, NullWebAppInfoCallsCompleteInstallation) {
   FakeApkWebAppInstaller apk_web_app_installer(
       profile(), weak_ptr_factory_.GetWeakPtr(), run_loop.QuitClosure());
 
-  apk_web_app_installer.Start(connector(), /*web_app_info=*/nullptr,
-                              GetIconBytes());
+  apk_web_app_installer.Start(/*web_app_info=*/nullptr, GetIconBytes());
   run_loop.Run();
 
   EXPECT_EQ("", apk_web_app_installer.id());
@@ -179,7 +177,7 @@ TEST_F(ApkWebAppInstallerTest, NullIconCallsCompleteInstallation) {
   FakeApkWebAppInstaller apk_web_app_installer(
       profile(), weak_ptr_factory_.GetWeakPtr(), run_loop.QuitClosure());
 
-  apk_web_app_installer.Start(connector(), GetWebAppInfo(), {});
+  apk_web_app_installer.Start(GetWebAppInfo(), {});
   run_loop.Run();
 
   EXPECT_EQ("", apk_web_app_installer.id());

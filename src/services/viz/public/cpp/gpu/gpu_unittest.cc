@@ -13,7 +13,9 @@
 #include "build/build_config.h"
 #include "gpu/config/gpu_feature_info.h"
 #include "gpu/config/gpu_info.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace viz {
@@ -31,18 +33,18 @@ class TestGpuImpl : public mojom::Gpu {
 
   void CloseBindingOnRequest() { close_binding_on_request_ = true; }
 
-  void BindRequest(mojom::GpuRequest request) {
-    bindings_.AddBinding(this, std::move(request));
+  void BindReceiver(mojo::PendingReceiver<mojom::Gpu> receiver) {
+    receivers_.Add(this, std::move(receiver));
   }
 
   // mojom::Gpu overrides:
   void CreateGpuMemoryBufferFactory(
-      mojom::GpuMemoryBufferFactoryRequest request) override {}
+      mojo::PendingReceiver<mojom::GpuMemoryBufferFactory> receiver) override {}
 
   void EstablishGpuChannel(EstablishGpuChannelCallback callback) override {
     if (close_binding_on_request_) {
       // Don't run |callback| and trigger a connection error on the other end.
-      bindings_.CloseAllBindings();
+      receivers_.Clear();
       return;
     }
 
@@ -60,17 +62,18 @@ class TestGpuImpl : public mojom::Gpu {
 
 #if defined(OS_CHROMEOS)
   void CreateJpegDecodeAccelerator(
-      chromeos_camera::mojom::MjpegDecodeAcceleratorRequest jda_request)
-      override {}
+      mojo::PendingReceiver<chromeos_camera::mojom::MjpegDecodeAccelerator>
+          jda_receiver) override {}
 #endif  // defined(OS_CHROMEOS)
 
   void CreateVideoEncodeAcceleratorProvider(
-      media::mojom::VideoEncodeAcceleratorProviderRequest request) override {}
+      mojo::PendingReceiver<media::mojom::VideoEncodeAcceleratorProvider>
+          receiver) override {}
 
  private:
   bool request_will_succeed_ = true;
   bool close_binding_on_request_ = false;
-  mojo::BindingSet<mojom::Gpu> bindings_;
+  mojo::ReceiverSet<mojom::Gpu> receivers_;
 
   // Closing this handle will result in GpuChannelHost being lost.
   mojo::ScopedMessagePipeHandle gpu_channel_handle_;
@@ -99,8 +102,9 @@ class GpuTest : public testing::Test {
     base::RunLoop run_loop;
     io_thread_.task_runner()->PostTask(
         FROM_HERE,
-        base::BindOnce([](base::Closure callback) { callback.Run(); },
-                       run_loop.QuitClosure()));
+        base::BindOnce(
+            [](base::OnceClosure callback) { std::move(callback).Run(); },
+            run_loop.QuitClosure()));
     run_loop.Run();
   }
 
@@ -125,7 +129,7 @@ class GpuTest : public testing::Test {
   // testing::Test:
   void SetUp() override {
     gpu_impl_ = std::make_unique<TestGpuImpl>();
-    gpu_ = base::WrapUnique(new Gpu(GetPtr(), io_thread_.task_runner()));
+    gpu_ = base::WrapUnique(new Gpu(GetRemote(), io_thread_.task_runner()));
   }
 
   void TearDown() override {
@@ -134,13 +138,14 @@ class GpuTest : public testing::Test {
   }
 
  private:
-  mojom::GpuPtr GetPtr() {
-    mojom::GpuPtr ptr;
+  mojo::PendingRemote<mojom::Gpu> GetRemote() {
+    mojo::PendingRemote<mojom::Gpu> remote;
     io_thread_.task_runner()->PostTask(
-        FROM_HERE, base::BindOnce(&TestGpuImpl::BindRequest,
-                                  base::Unretained(gpu_impl_.get()),
-                                  base::Passed(MakeRequest(&ptr))));
-    return ptr;
+        FROM_HERE,
+        base::BindOnce(&TestGpuImpl::BindReceiver,
+                       base::Unretained(gpu_impl_.get()),
+                       base::Passed(remote.InitWithNewPipeAndPassReceiver())));
+    return remote;
   }
 
   void DestroyGpuImplOnIO() {
@@ -172,13 +177,13 @@ TEST_F(GpuTest, EstablishRequestsQueued) {
   base::RunLoop run_loop;
   // A callback that decrements the counter, and runs the callback when the
   // counter reaches 0.
-  auto callback = base::Bind(
-      [](int* counter, const base::Closure& callback,
+  auto callback = base::BindRepeating(
+      [](int* counter, base::OnceClosure callback,
          scoped_refptr<gpu::GpuChannelHost> channel) {
         EXPECT_TRUE(channel);
         --(*counter);
         if (*counter == 0)
-          callback.Run();
+          std::move(callback).Run();
       },
       &counter, run_loop.QuitClosure());
   gpu()->EstablishGpuChannel(callback);
@@ -198,9 +203,8 @@ TEST_F(GpuTest, EstablishRequestOnFailureOnPreviousRequest) {
   scoped_refptr<gpu::GpuChannelHost> host;
   auto callback = base::BindOnce(
       [](scoped_refptr<gpu::GpuChannelHost>* out_host,
-         const base::Closure& callback,
-         scoped_refptr<gpu::GpuChannelHost> host) {
-        callback.Run();
+         base::OnceClosure callback, scoped_refptr<gpu::GpuChannelHost> host) {
+        std::move(callback).Run();
         *out_host = std::move(host);
       },
       &host, run_loop.QuitClosure());
@@ -225,10 +229,9 @@ TEST_F(GpuTest, EstablishRequestOnFailureOnPreviousRequest) {
 TEST_F(GpuTest, EstablishRequestResponseSynchronouslyOnSuccess) {
   base::RunLoop run_loop;
   gpu()->EstablishGpuChannel(base::BindOnce(
-      [](const base::Closure& callback,
-         scoped_refptr<gpu::GpuChannelHost> host) {
+      [](base::OnceClosure callback, scoped_refptr<gpu::GpuChannelHost> host) {
         EXPECT_TRUE(host);
-        callback.Run();
+        std::move(callback).Run();
       },
       run_loop.QuitClosure()));
   run_loop.Run();

@@ -7,11 +7,14 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     style="@style/BottomToolbarButtonWrapper"
+    android:id="@+id/ss_explore_tab"
     android:background="@null"
     android:contentDescription="@string/accessibility_start_surface_bottom_explore_button" >
     <org.chromium.ui.widget.ChromeImageView
         android:id="@+id/ss_explore_button"
         style="@style/SplitToolbarButton"
+        android:clickable="false"
+        android:importantForAccessibility="no"
         android:src="@drawable/ic_explore" />
     <TextView
         android:id="@+id/ss_explore_button_label"

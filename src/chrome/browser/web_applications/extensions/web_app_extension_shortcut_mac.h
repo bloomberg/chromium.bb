@@ -5,6 +5,12 @@
 #ifndef CHROME_BROWSER_WEB_APPLICATIONS_EXTENSIONS_WEB_APP_EXTENSION_SHORTCUT_MAC_H_
 #define CHROME_BROWSER_WEB_APPLICATIONS_EXTENSIONS_WEB_APP_EXTENSION_SHORTCUT_MAC_H_
 
+#include <string>
+#include <vector>
+
+#include "base/callback_forward.h"
+#include "base/files/file_path.h"
+
 class Profile;
 
 namespace base {

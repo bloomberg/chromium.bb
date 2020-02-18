@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NGPhysicalContainerFragment_h
-#define NGPhysicalContainerFragment_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_NG_PHYSICAL_CONTAINER_FRAGMENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_NG_PHYSICAL_CONTAINER_FRAGMENT_H_
 
 #include "base/containers/span.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -101,8 +101,11 @@ class CORE_EXPORT NGPhysicalContainerFragment : public NGPhysicalFragment {
     return PostLayoutChildLinkList(num_children_, buffer_);
   }
 
-  // Returns true if we have any floating descendants.
-  bool HasFloatingDescendants() const { return has_floating_descendants_; }
+  // Returns true if we have any floating descendants which need to be
+  // traversed during the float paint phase.
+  bool HasFloatingDescendantsForPaint() const {
+    return has_floating_descendants_for_paint_;
+  }
 
   // Returns true if we have any adjoining-object descendants (floats, or
   // inline-level OOF-positioned objects).
@@ -179,4 +182,4 @@ struct DowncastTraits<NGPhysicalContainerFragment> {
 
 }  // namespace blink
 
-#endif  // NGPhysicalContainerFragment_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_NG_PHYSICAL_CONTAINER_FRAGMENT_H_

@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
+#include "base/numerics/ranges.h"
 #include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -231,7 +232,8 @@ void SpeechRecognizerImpl::StartRecognition(const std::string& device_id) {
 
 void SpeechRecognizerImpl::AbortRecognition() {
   base::PostTask(FROM_HERE, {BrowserThread::IO},
-                 base::BindOnce(&SpeechRecognizerImpl::DispatchEvent, this,
+                 base::BindOnce(&SpeechRecognizerImpl::DispatchEvent,
+                                weak_ptr_factory_.GetWeakPtr(),
                                 FSMEventArgs(EVENT_ABORT)));
 }
 
@@ -847,15 +849,15 @@ void SpeechRecognizerImpl::UpdateSignalAndNoiseLevels(const float& rms,
   // Perhaps it might be quite expensive on mobile.
   float level = (rms - kAudioMeterMinDb) /
       (kAudioMeterDbRange / kAudioMeterRangeMaxUnclipped);
-  level = std::min(std::max(0.0f, level), kAudioMeterRangeMaxUnclipped);
+  level = base::ClampToRange(level, 0.0f, kAudioMeterRangeMaxUnclipped);
   const float smoothing_factor = (level > audio_level_) ? kUpSmoothingFactor :
                                                           kDownSmoothingFactor;
   audio_level_ += (level - audio_level_) * smoothing_factor;
 
   float noise_level = (endpointer_.NoiseLevelDb() - kAudioMeterMinDb) /
       (kAudioMeterDbRange / kAudioMeterRangeMaxUnclipped);
-  noise_level = std::min(std::max(0.0f, noise_level),
-                         kAudioMeterRangeMaxUnclipped);
+  noise_level =
+      base::ClampToRange(noise_level, 0.0f, kAudioMeterRangeMaxUnclipped);
 
   listener()->OnAudioLevelsChange(
       session_id(), clip_detected ? 1.0f : audio_level_, noise_level);
@@ -878,10 +880,9 @@ void SpeechRecognizerImpl::CreateAudioCapturerSource() {
   if (connector) {
     audio_capturer_source_ = audio::CreateInputDevice(
         connector->Clone(), device_id_,
-        MediaInternals::GetInstance()
-            ->CreateMojoAudioLog(media::AudioLogFactory::AUDIO_INPUT_CONTROLLER,
-                                 0 /* component_id */)
-            .PassInterface());
+        MediaInternals::GetInstance()->CreateMojoAudioLog(
+            media::AudioLogFactory::AUDIO_INPUT_CONTROLLER,
+            0 /* component_id */));
   }
 }
 

@@ -11,10 +11,8 @@
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
-#include "services/service_manager/public/cpp/interface_provider.h"
-#include "third_party/blink/public/platform/modules/mediastream/webrtc_uma_histograms.h"
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/platform/modules/webrtc/webrtc_logging.h"
-#include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_media_constraints.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
 #include "third_party/blink/public/web/modules/mediastream/web_media_stream_device_observer.h"
@@ -25,6 +23,8 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/modules/mediastream/apply_constraints_processor.h"
+#include "third_party/blink/renderer/modules/peerconnection/peer_connection_tracker.h"
+#include "third_party/blink/renderer/platform/mediastream/webrtc_uma_histograms.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
@@ -35,13 +35,13 @@ static int g_next_request_id = 0;
 // The histogram counts the number of calls to the JS API
 // getUserMedia or getDisplayMedia().
 void UpdateAPICount(blink::WebUserMediaRequest::MediaType media_type) {
-  blink::WebRTCAPIName api_name = blink::WebRTCAPIName::kGetUserMedia;
+  RTCAPIName api_name = RTCAPIName::kGetUserMedia;
   switch (media_type) {
     case blink::WebUserMediaRequest::MediaType::kUserMedia:
-      api_name = blink::WebRTCAPIName::kGetUserMedia;
+      api_name = RTCAPIName::kGetUserMedia;
       break;
     case blink::WebUserMediaRequest::MediaType::kDisplayMedia:
-      api_name = blink::WebRTCAPIName::kGetDisplayMedia;
+      api_name = RTCAPIName::kGetDisplayMedia;
       break;
   }
   UpdateWebRTCMethodCount(api_name);
@@ -88,7 +88,7 @@ UserMediaClient::UserMediaClient(
           MakeGarbageCollected<ApplyConstraintsProcessor>(
               WTF::BindRepeating(
                   [](UserMediaClient* client)
-                      -> const mojom::blink::MediaDevicesDispatcherHostPtr& {
+                      -> mojom::blink::MediaDevicesDispatcherHost* {
                     // |client| is guaranteed to be not null because |client|
                     // owns this ApplyConstraintsProcessor.
                     DCHECK(client);
@@ -113,7 +113,7 @@ UserMediaClient::UserMediaClient(
               frame,
               WTF::BindRepeating(
                   [](UserMediaClient* client)
-                      -> const mojom::blink::MediaDevicesDispatcherHostPtr& {
+                      -> mojom::blink::MediaDevicesDispatcherHost* {
                     // |client| is guaranteed to be not null because |client|
                     // owns this UserMediaProcessor.
                     DCHECK(client);
@@ -148,7 +148,7 @@ void UserMediaClient::RequestUserMedia(
 
   // TODO(crbug.com/787254): Communicate directly with the
   // PeerConnectionTrackerHost mojo object once it is available from Blink.
-  Platform::Current()->TrackGetUserMedia(web_request);
+  PeerConnectionTracker::GetInstance()->TrackGetUserMedia(web_request);
 
   int request_id = g_next_request_id++;
   blink::WebRtcLogMessage(base::StringPrintf(
@@ -295,19 +295,19 @@ void UserMediaClient::Trace(Visitor* visitor) {
 }
 
 void UserMediaClient::SetMediaDevicesDispatcherForTesting(
-    blink::mojom::blink::MediaDevicesDispatcherHostPtr
+    mojo::PendingRemote<blink::mojom::blink::MediaDevicesDispatcherHost>
         media_devices_dispatcher) {
-  media_devices_dispatcher_ = std::move(media_devices_dispatcher);
+  media_devices_dispatcher_.Bind(std::move(media_devices_dispatcher));
 }
 
-const blink::mojom::blink::MediaDevicesDispatcherHostPtr&
+blink::mojom::blink::MediaDevicesDispatcherHost*
 UserMediaClient::GetMediaDevicesDispatcher() {
   if (!media_devices_dispatcher_) {
-    frame_->GetInterfaceProvider().GetInterface(
-        mojo::MakeRequest(&media_devices_dispatcher_));
+    frame_->GetBrowserInterfaceBroker().GetInterface(
+        media_devices_dispatcher_.BindNewPipeAndPassReceiver());
   }
 
-  return media_devices_dispatcher_;
+  return media_devices_dispatcher_.get();
 }
 
 }  // namespace blink

@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/html/custom/element_internals.h"
 
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
+#include "third_party/blink/renderer/core/dom/dom_token_list.h"
 #include "third_party/blink/renderer/core/dom/node_lists_node_data.h"
 #include "third_party/blink/renderer/core/fileapi/file.h"
 #include "third_party/blink/renderer/core/html/custom/custom_element.h"
@@ -31,6 +32,20 @@ bool IsValidityStateFlagsValid(const ValidityStateFlags* flags) {
 }
 }  // anonymous namespace
 
+class CustomStatesTokenList : public DOMTokenList {
+ public:
+  CustomStatesTokenList(Element& element)
+      : DOMTokenList(element, g_null_name) {}
+
+  AtomicString value() const override { return TokenSet().SerializeToString(); }
+
+  void setValue(const AtomicString& new_value) override {
+    DidUpdateAttributeValue(value(), new_value);
+    // Should we have invalidation set for each of state tokens?
+    GetElement().PseudoStateChanged(CSSSelector::kPseudoState);
+  }
+};
+
 ElementInternals::ElementInternals(HTMLElement& target) : target_(target) {
   value_.SetUSVString(String());
 }
@@ -41,7 +56,8 @@ void ElementInternals::Trace(Visitor* visitor) {
   visitor->Trace(state_);
   visitor->Trace(validity_flags_);
   visitor->Trace(validation_anchor_);
-  visitor->Trace(explicitly_set_attr_element_map);
+  visitor->Trace(custom_states_);
+  visitor->Trace(explicitly_set_attr_elements_map_);
   ListedElement::Trace(visitor);
   ScriptWrappable::Trace(visitor);
 }
@@ -213,6 +229,16 @@ LabelsNodeList* ElementInternals::labels(ExceptionState& exception_state) {
   return Target().labels();
 }
 
+DOMTokenList* ElementInternals::states() {
+  if (!custom_states_)
+    custom_states_ = MakeGarbageCollected<CustomStatesTokenList>(Target());
+  return custom_states_;
+}
+
+bool ElementInternals::HasState(const AtomicString& state) const {
+  return custom_states_ && custom_states_->contains(state);
+}
+
 const AtomicString& ElementInternals::FastGetAttribute(
     const QualifiedName& attribute) const {
   return accessibility_semantics_map_.at(attribute);
@@ -256,11 +282,47 @@ void ElementInternals::DidUpgrade() {
 
 void ElementInternals::SetElementAttribute(const QualifiedName& name,
                                            Element* element) {
-  explicitly_set_attr_element_map.Set(name, element);
+  auto result = explicitly_set_attr_elements_map_.insert(name, nullptr);
+  if (result.is_new_entry) {
+    result.stored_value->value =
+        MakeGarbageCollected<HeapVector<Member<Element>>>();
+  } else {
+    result.stored_value->value->clear();
+  }
+  result.stored_value->value->push_back(element);
 }
 
 Element* ElementInternals::GetElementAttribute(const QualifiedName& name) {
-  return explicitly_set_attr_element_map.at(name);
+  HeapVector<Member<Element>>* element_vector =
+      explicitly_set_attr_elements_map_.at(name);
+  if (!element_vector)
+    return nullptr;
+  DCHECK_EQ(element_vector->size(), 1u);
+  return element_vector->at(0);
+}
+
+HeapVector<Member<Element>> ElementInternals::GetElementArrayAttribute(
+    const QualifiedName& name,
+    bool is_null) {
+  is_null = true;
+  auto iter = explicitly_set_attr_elements_map_.find(name);
+  if (iter != explicitly_set_attr_elements_map_.end()) {
+    is_null = false;
+    return *(iter->value);
+  }
+  return HeapVector<Member<Element>>();
+}
+
+void ElementInternals::SetElementArrayAttribute(
+    const QualifiedName& name,
+    HeapVector<Member<Element>> elements,
+    bool is_null) {
+  if (is_null) {
+    explicitly_set_attr_elements_map_.erase(name);
+    return;
+  }
+  explicitly_set_attr_elements_map_.Set(
+      name, MakeGarbageCollected<HeapVector<Member<Element>>>(elements));
 }
 
 bool ElementInternals::IsTargetFormAssociated() const {

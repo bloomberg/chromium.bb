@@ -1,7 +1,7 @@
 [
   {
     "cmd": [
-      "python",
+      "vpython",
       "-u",
       "RECIPE_REPO[depot_tools]/gerrit_client.py",
       "changes",
@@ -169,7 +169,8 @@
       "--revision",
       "src@f27fede2220bcd326aee3e86ddfd4ebd0fe58cb9",
       "--revision",
-      "src/third_party/webrtc@HEAD"
+      "src/third_party/webrtc@HEAD",
+      "--no_fetch_tags"
     ],
     "env_suffixes": {
       "PATH": [

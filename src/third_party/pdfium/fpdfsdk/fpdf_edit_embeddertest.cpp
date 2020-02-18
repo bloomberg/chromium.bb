@@ -54,7 +54,7 @@ class FPDFEditEmbedderTest : public EmbedderTest {
     ASSERT_TRUE(font_desc->KeyExist("Flags"));
 
     int font_flags = font_desc->GetIntegerFor("Flags");
-    EXPECT_EQ(bold, FontStyleIsBold(font_flags));
+    EXPECT_EQ(bold, FontStyleIsForceBold(font_flags));
     EXPECT_EQ(italic, FontStyleIsItalic(font_flags));
     EXPECT_TRUE(FontStyleIsNonSymbolic(font_flags));
     ASSERT_TRUE(font_desc->KeyExist("FontBBox"));
@@ -235,7 +235,13 @@ TEST_F(FPDFEditEmbedderTest, RasterizePDF) {
   VerifySavedDocument(612, 792, kAllBlackMd5sum);
 }
 
-TEST_F(FPDFEditEmbedderTest, AddPaths) {
+// TODO(crbug.com/pdfium/11): Fix this test and enable.
+#if defined(_SKIA_SUPPORT_) || defined(_SKIA_SUPPORT_PATHS_)
+#define MAYBE_AddPaths DISABLED_AddPaths
+#else
+#define MAYBE_AddPaths AddPaths
+#endif
+TEST_F(FPDFEditEmbedderTest, MAYBE_AddPaths) {
   // Start with a blank page
   FPDF_PAGE page = FPDFPage_New(CreateNewDocument(), 0, 612, 792);
   ASSERT_TRUE(page);
@@ -527,7 +533,52 @@ TEST_F(FPDFEditEmbedderTest, ClipPath) {
   UnloadPage(page);
 }
 
-TEST_F(FPDFEditEmbedderTest, SetText) {
+TEST_F(FPDFEditEmbedderTest, BUG_1399) {
+  // Load document with a clipped rectangle.
+  EXPECT_TRUE(OpenDocument("bug_1399.pdf"));
+  FPDF_PAGE page = LoadPage(0);
+  ASSERT_TRUE(page);
+
+  ASSERT_EQ(7, FPDFPage_CountObjects(page));
+
+  FPDF_PAGEOBJECT obj = FPDFPage_GetObject(page, 0);
+  ASSERT_TRUE(obj);
+
+  ASSERT_EQ(2, FPDFPath_CountSegments(obj));
+
+  FPDF_PATHSEGMENT segment = FPDFPath_GetPathSegment(obj, 0);
+  float x;
+  float y;
+  EXPECT_TRUE(FPDFPathSegment_GetPoint(segment, &x, &y));
+  EXPECT_FLOAT_EQ(107.718f, x);
+  EXPECT_FLOAT_EQ(719.922f, y);
+  EXPECT_EQ(FPDF_SEGMENT_MOVETO, FPDFPathSegment_GetType(segment));
+  EXPECT_FALSE(FPDFPathSegment_GetClose(segment));
+
+  segment = FPDFPath_GetPathSegment(obj, 1);
+  EXPECT_TRUE(FPDFPathSegment_GetPoint(segment, &x, &y));
+  EXPECT_FLOAT_EQ(394.718f, x);
+  EXPECT_FLOAT_EQ(719.922f, y);
+  EXPECT_EQ(FPDF_SEGMENT_LINETO, FPDFPathSegment_GetType(segment));
+  EXPECT_FALSE(FPDFPathSegment_GetClose(segment));
+
+  FPDF_CLIPPATH clip_path = FPDFPageObj_GetClipPath(obj);
+  ASSERT_TRUE(clip_path);
+
+  EXPECT_EQ(-1, FPDFClipPath_CountPaths(clip_path));
+  EXPECT_EQ(-1, FPDFClipPath_CountPathSegments(clip_path, 0));
+  EXPECT_FALSE(FPDFClipPath_GetPathSegment(clip_path, 0, 0));
+
+  UnloadPage(page);
+}
+
+// TODO(crbug.com/pdfium/11): Fix this test and enable.
+#if defined(_SKIA_SUPPORT_) || defined(_SKIA_SUPPORT_PATHS_)
+#define MAYBE_SetText DISABLED_SetText
+#else
+#define MAYBE_SetText SetText
+#endif
+TEST_F(FPDFEditEmbedderTest, MAYBE_SetText) {
   // Load document with some text.
   EXPECT_TRUE(OpenDocument("hello_world.pdf"));
   FPDF_PAGE page = LoadPage(0);
@@ -574,7 +625,13 @@ TEST_F(FPDFEditEmbedderTest, SetText) {
   CloseSavedDocument();
 }
 
-TEST_F(FPDFEditEmbedderTest, RemovePageObject) {
+// TODO(crbug.com/pdfium/11): Fix this test and enable.
+#if defined(_SKIA_SUPPORT_) || defined(_SKIA_SUPPORT_PATHS_)
+#define MAYBE_RemovePageObject DISABLED_RemovePageObject
+#else
+#define MAYBE_RemovePageObject RemovePageObject
+#endif
+TEST_F(FPDFEditEmbedderTest, MAYBE_RemovePageObject) {
   // Load document with some text.
   EXPECT_TRUE(OpenDocument("hello_world.pdf"));
   FPDF_PAGE page = LoadPage(0);
@@ -730,7 +787,13 @@ TEST_F(FPDFEditEmbedderTest, ReadMarkedObjectsIndirectDict) {
   UnloadPage(page);
 }
 
-TEST_F(FPDFEditEmbedderTest, RemoveMarkedObjectsPrime) {
+// TODO(crbug.com/pdfium/11): Fix this test and enable.
+#if defined(_SKIA_SUPPORT_) || defined(_SKIA_SUPPORT_PATHS_)
+#define MAYBE_RemoveMarkedObjectsPrime DISABLED_RemoveMarkedObjectsPrime
+#else
+#define MAYBE_RemoveMarkedObjectsPrime RemoveMarkedObjectsPrime
+#endif
+TEST_F(FPDFEditEmbedderTest, MAYBE_RemoveMarkedObjectsPrime) {
   // Load document with some text.
   EXPECT_TRUE(OpenDocument("text_in_page_marked.pdf"));
   FPDF_PAGE page = LoadPage(0);
@@ -1045,7 +1108,16 @@ TEST_F(FPDFEditEmbedderTest, RemoveExistingPageObject) {
   CloseSavedDocument();
 }
 
-TEST_F(FPDFEditEmbedderTest, RemoveExistingPageObjectSplitStreamsNotLonely) {
+// TODO(crbug.com/pdfium/11): Fix this test and enable.
+#if defined(_SKIA_SUPPORT_) || defined(_SKIA_SUPPORT_PATHS_)
+#define MAYBE_RemoveExistingPageObjectSplitStreamsNotLonely \
+  DISABLED_RemoveExistingPageObjectSplitStreamsNotLonely
+#else
+#define MAYBE_RemoveExistingPageObjectSplitStreamsNotLonely \
+  RemoveExistingPageObjectSplitStreamsNotLonely
+#endif
+TEST_F(FPDFEditEmbedderTest,
+       MAYBE_RemoveExistingPageObjectSplitStreamsNotLonely) {
   // Load document with some text.
   EXPECT_TRUE(OpenDocument("hello_world_split_streams.pdf"));
   FPDF_PAGE page = LoadPage(0);
@@ -1092,7 +1164,15 @@ TEST_F(FPDFEditEmbedderTest, RemoveExistingPageObjectSplitStreamsNotLonely) {
   CloseSavedDocument();
 }
 
-TEST_F(FPDFEditEmbedderTest, RemoveExistingPageObjectSplitStreamsLonely) {
+// TODO(crbug.com/pdfium/11): Fix this test and enable.
+#if defined(_SKIA_SUPPORT_) || defined(_SKIA_SUPPORT_PATHS_)
+#define MAYBE_RemoveExistingPageObjectSplitStreamsLonely \
+  DISABLED_RemoveExistingPageObjectSplitStreamsLonely
+#else
+#define MAYBE_RemoveExistingPageObjectSplitStreamsLonely \
+  RemoveExistingPageObjectSplitStreamsLonely
+#endif
+TEST_F(FPDFEditEmbedderTest, MAYBE_RemoveExistingPageObjectSplitStreamsLonely) {
   // Load document with some text.
   EXPECT_TRUE(OpenDocument("hello_world_split_streams.pdf"));
   FPDF_PAGE page = LoadPage(0);
@@ -1165,7 +1245,13 @@ TEST_F(FPDFEditEmbedderTest, GetContentStream) {
   UnloadPage(page);
 }
 
-TEST_F(FPDFEditEmbedderTest, RemoveAllFromStream) {
+// TODO(crbug.com/pdfium/11): Fix this test and enable.
+#if defined(_SKIA_SUPPORT_) || defined(_SKIA_SUPPORT_PATHS_)
+#define MAYBE_RemoveAllFromStream DISABLED_RemoveAllFromStream
+#else
+#define MAYBE_RemoveAllFromStream RemoveAllFromStream
+#endif
+TEST_F(FPDFEditEmbedderTest, MAYBE_RemoveAllFromStream) {
   // Load document with some text split across streams.
   EXPECT_TRUE(OpenDocument("split_streams.pdf"));
   FPDF_PAGE page = LoadPage(0);
@@ -1321,7 +1407,13 @@ TEST_F(FPDFEditEmbedderTest, RemoveAllFromSingleStream) {
   CloseSavedDocument();
 }
 
-TEST_F(FPDFEditEmbedderTest, RemoveFirstFromSingleStream) {
+// TODO(crbug.com/pdfium/11): Fix this test and enable.
+#if defined(_SKIA_SUPPORT_) || defined(_SKIA_SUPPORT_PATHS_)
+#define MAYBE_RemoveFirstFromSingleStream DISABLED_RemoveFirstFromSingleStream
+#else
+#define MAYBE_RemoveFirstFromSingleStream RemoveFirstFromSingleStream
+#endif
+TEST_F(FPDFEditEmbedderTest, MAYBE_RemoveFirstFromSingleStream) {
   // Load document with a single stream.
   EXPECT_TRUE(OpenDocument("hello_world.pdf"));
   FPDF_PAGE page = LoadPage(0);
@@ -1389,7 +1481,13 @@ TEST_F(FPDFEditEmbedderTest, RemoveFirstFromSingleStream) {
   CloseSavedDocument();
 }
 
-TEST_F(FPDFEditEmbedderTest, RemoveLastFromSingleStream) {
+// TODO(crbug.com/pdfium/11): Fix this test and enable.
+#if defined(_SKIA_SUPPORT_) || defined(_SKIA_SUPPORT_PATHS_)
+#define MAYBE_RemoveLastFromSingleStream DISABLED_RemoveLastFromSingleStream
+#else
+#define MAYBE_RemoveLastFromSingleStream RemoveLastFromSingleStream
+#endif
+TEST_F(FPDFEditEmbedderTest, MAYBE_RemoveLastFromSingleStream) {
   // Load document with a single stream.
   EXPECT_TRUE(OpenDocument("hello_world.pdf"));
   FPDF_PAGE page = LoadPage(0);
@@ -1571,7 +1669,13 @@ TEST_F(FPDFEditEmbedderTest, InsertPageObjectEditAndSave) {
   CloseSavedDocument();
 }
 
-TEST_F(FPDFEditEmbedderTest, InsertAndRemoveLargeFile) {
+// TODO(crbug.com/pdfium/11): Fix this test and enable.
+#if defined(_SKIA_SUPPORT_) || defined(_SKIA_SUPPORT_PATHS_)
+#define MAYBE_InsertAndRemoveLargeFile DISABLED_InsertAndRemoveLargeFile
+#else
+#define MAYBE_InsertAndRemoveLargeFile InsertAndRemoveLargeFile
+#endif
+TEST_F(FPDFEditEmbedderTest, MAYBE_InsertAndRemoveLargeFile) {
   const int kOriginalObjectCount = 600;
 
   // Load document with many objects.
@@ -1714,7 +1818,13 @@ TEST_F(FPDFEditEmbedderTest, PathsPoints) {
   FPDFPageObj_Destroy(img);
 }
 
-TEST_F(FPDFEditEmbedderTest, PathOnTopOfText) {
+// TODO(crbug.com/pdfium/11): Fix this test and enable.
+#if defined(_SKIA_SUPPORT_) || defined(_SKIA_SUPPORT_PATHS_)
+#define MAYBE_PathOnTopOfText DISABLED_PathOnTopOfText
+#else
+#define MAYBE_PathOnTopOfText PathOnTopOfText
+#endif
+TEST_F(FPDFEditEmbedderTest, MAYBE_PathOnTopOfText) {
   // Load document with some text
   EXPECT_TRUE(OpenDocument("hello_world.pdf"));
   FPDF_PAGE page = LoadPage(0);
@@ -1748,7 +1858,13 @@ TEST_F(FPDFEditEmbedderTest, PathOnTopOfText) {
   UnloadPage(page);
 }
 
-TEST_F(FPDFEditEmbedderTest, EditOverExistingContent) {
+// TODO(crbug.com/pdfium/11): Fix this test and enable.
+#if defined(_SKIA_SUPPORT_) || defined(_SKIA_SUPPORT_PATHS_)
+#define MAYBE_EditOverExistingContent DISABLED_EditOverExistingContent
+#else
+#define MAYBE_EditOverExistingContent EditOverExistingContent
+#endif
+TEST_F(FPDFEditEmbedderTest, MAYBE_EditOverExistingContent) {
   // Load document with existing content
   EXPECT_TRUE(OpenDocument("bug_717.pdf"));
   FPDF_PAGE page = LoadPage(0);
@@ -1808,7 +1924,13 @@ TEST_F(FPDFEditEmbedderTest, EditOverExistingContent) {
   VerifySavedDocument(612, 792, kLastMD5);
 }
 
-TEST_F(FPDFEditEmbedderTest, AddStrokedPaths) {
+// TODO(crbug.com/pdfium/11): Fix this test and enable.
+#if defined(_SKIA_SUPPORT_) || defined(_SKIA_SUPPORT_PATHS_)
+#define MAYBE_AddStrokedPaths DISABLED_AddStrokedPaths
+#else
+#define MAYBE_AddStrokedPaths AddStrokedPaths
+#endif
+TEST_F(FPDFEditEmbedderTest, MAYBE_AddStrokedPaths) {
   // Start with a blank page
   FPDF_PAGE page = FPDFPage_New(CreateNewDocument(), 0, 612, 792);
 
@@ -1866,7 +1988,13 @@ TEST_F(FPDFEditEmbedderTest, AddStrokedPaths) {
 }
 
 // Tests adding text from standard font using FPDFPageObj_NewTextObj.
-TEST_F(FPDFEditEmbedderTest, AddStandardFontText) {
+// TODO(crbug.com/pdfium/11): Fix this test and enable.
+#if defined(_SKIA_SUPPORT_) || defined(_SKIA_SUPPORT_PATHS_)
+#define MAYBE_AddStandardFontText DISABLED_AddStandardFontText
+#else
+#define MAYBE_AddStandardFontText AddStandardFontText
+#endif
+TEST_F(FPDFEditEmbedderTest, MAYBE_AddStandardFontText) {
   // Start with a blank page
   FPDF_PAGE page = FPDFPage_New(CreateNewDocument(), 0, 612, 792);
 
@@ -1950,10 +2078,11 @@ TEST_F(FPDFEditEmbedderTest, AddStandardFontText) {
   double matrix_d = 0;
   double matrix_e = 0;
   double matrix_f = 0;
-  EXPECT_FALSE(FPDFText_GetMatrix(nullptr, &matrix_a, &matrix_b, &matrix_c,
-                                  &matrix_d, &matrix_e, &matrix_f));
-  EXPECT_TRUE(FPDFText_GetMatrix(text_object3, &matrix_a, &matrix_b, &matrix_c,
-                                 &matrix_d, &matrix_e, &matrix_f));
+  EXPECT_FALSE(FPDFTextObj_GetMatrix(nullptr, &matrix_a, &matrix_b, &matrix_c,
+                                     &matrix_d, &matrix_e, &matrix_f));
+  EXPECT_TRUE(FPDFTextObj_GetMatrix(text_object3, &matrix_a, &matrix_b,
+                                    &matrix_c, &matrix_d, &matrix_e,
+                                    &matrix_f));
   EXPECT_EQ(1., matrix_a);
   EXPECT_EQ(1.5, matrix_b);
   EXPECT_EQ(2., matrix_c);
@@ -1975,13 +2104,13 @@ TEST_F(FPDFEditEmbedderTest, TestGetTextRenderMode) {
   ASSERT_TRUE(page);
   ASSERT_EQ(2, FPDFPage_CountObjects(page));
 
-  ASSERT_EQ(-1, FPDFText_GetTextRenderMode(nullptr));
+  ASSERT_EQ(-1, FPDFTextObj_GetTextRenderMode(nullptr));
 
   FPDF_PAGEOBJECT fill = FPDFPage_GetObject(page, 0);
-  ASSERT_EQ(FPDF_TEXTRENDERMODE_FILL, FPDFText_GetTextRenderMode(fill));
+  ASSERT_EQ(FPDF_TEXTRENDERMODE_FILL, FPDFTextObj_GetTextRenderMode(fill));
 
   FPDF_PAGEOBJECT stroke = FPDFPage_GetObject(page, 1);
-  ASSERT_EQ(FPDF_TEXTRENDERMODE_STROKE, FPDFText_GetTextRenderMode(stroke));
+  ASSERT_EQ(FPDF_TEXTRENDERMODE_STROKE, FPDFTextObj_GetTextRenderMode(stroke));
 
   UnloadPage(page);
 }
@@ -2082,7 +2211,13 @@ TEST_F(FPDFEditEmbedderTest, TestFormGetObjects) {
 }
 
 // Tests adding text from standard font using FPDFText_LoadStandardFont.
-TEST_F(FPDFEditEmbedderTest, AddStandardFontText2) {
+// TODO(crbug.com/pdfium/11): Fix this test and enable.
+#if defined(_SKIA_SUPPORT_) || defined(_SKIA_SUPPORT_PATHS_)
+#define MAYBE_AddStandardFontText2 DISABLED_AddStandardFontText2
+#else
+#define MAYBE_AddStandardFontText2 AddStandardFontText2
+#endif
+TEST_F(FPDFEditEmbedderTest, MAYBE_AddStandardFontText2) {
   // Start with a blank page
   ScopedFPDFPage page(FPDFPage_New(CreateNewDocument(), 0, 612, 792));
 
@@ -2427,7 +2562,13 @@ TEST_F(FPDFEditEmbedderTest, NormalizeNegativeRotation) {
   UnloadPage(page);
 }
 
-TEST_F(FPDFEditEmbedderTest, AddTrueTypeFontText) {
+// TODO(crbug.com/pdfium/11): Fix this test and enable.
+#if defined(_SKIA_SUPPORT_) || defined(_SKIA_SUPPORT_PATHS_)
+#define MAYBE_AddTrueTypeFontText DISABLED_AddTrueTypeFontText
+#else
+#define MAYBE_AddTrueTypeFontText AddTrueTypeFontText
+#endif
+TEST_F(FPDFEditEmbedderTest, MAYBE_AddTrueTypeFontText) {
   // Start with a blank page
   FPDF_PAGE page = FPDFPage_New(CreateNewDocument(), 0, 612, 792);
   {
@@ -2503,7 +2644,13 @@ TEST_F(FPDFEditEmbedderTest, TransformAnnot) {
 
 // TODO(npm): Add tests using Japanese fonts in other OS.
 #if _FX_PLATFORM_ == _FX_PLATFORM_LINUX_
-TEST_F(FPDFEditEmbedderTest, AddCIDFontText) {
+// TODO(crbug.com/pdfium/11): Fix this test and enable.
+#if defined(_SKIA_SUPPORT_) || defined(_SKIA_SUPPORT_PATHS_)
+#define MAYBE_AddCIDFontText DISABLED_AddCIDFontText
+#else
+#define MAYBE_AddCIDFontText AddCIDFontText
+#endif
+TEST_F(FPDFEditEmbedderTest, MAYBE_AddCIDFontText) {
   // Start with a blank page
   FPDF_PAGE page = FPDFPage_New(CreateNewDocument(), 0, 612, 792);
   CFX_Font CIDfont;
@@ -2557,7 +2704,13 @@ TEST_F(FPDFEditEmbedderTest, AddCIDFontText) {
 }
 #endif  // _FX_PLATFORM_ == _FX_PLATFORM_LINUX_
 
-TEST_F(FPDFEditEmbedderTest, SaveAndRender) {
+// TODO(crbug.com/pdfium/11): Fix this test and enable.
+#if defined(_SKIA_SUPPORT_) || defined(_SKIA_SUPPORT_PATHS_)
+#define MAYBE_SaveAndRender DISABLED_SaveAndRender
+#else
+#define MAYBE_SaveAndRender SaveAndRender
+#endif
+TEST_F(FPDFEditEmbedderTest, MAYBE_SaveAndRender) {
   const char md5[] = "3c20472b0552c0c22b88ab1ed8c6202b";
   {
     EXPECT_TRUE(OpenDocument("bug_779.pdf"));
@@ -2620,7 +2773,13 @@ TEST_F(FPDFEditEmbedderTest, AddMark) {
   CloseSavedDocument();
 }
 
-TEST_F(FPDFEditEmbedderTest, AddMarkCompressedStream) {
+// TODO(crbug.com/pdfium/11): Fix this test and enable.
+#if defined(_SKIA_SUPPORT_) || defined(_SKIA_SUPPORT_PATHS_)
+#define MAYBE_AddMarkCompressedStream DISABLED_AddMarkCompressedStream
+#else
+#define MAYBE_AddMarkCompressedStream AddMarkCompressedStream
+#endif
+TEST_F(FPDFEditEmbedderTest, MAYBE_AddMarkCompressedStream) {
 #if defined(OS_MACOSX)
   const char kOriginalMD5[] = "b90475ca64d1348c3bf5e2b77ad9187a";
 #elif defined(OS_WIN)
@@ -2738,7 +2897,13 @@ TEST_F(FPDFEditEmbedderTest, SetMarkParam) {
   CloseSavedDocument();
 }
 
-TEST_F(FPDFEditEmbedderTest, AddMarkedText) {
+// TODO(crbug.com/pdfium/11): Fix this test and enable.
+#if defined(_SKIA_SUPPORT_) || defined(_SKIA_SUPPORT_PATHS_)
+#define MAYBE_AddMarkedText DISABLED_AddMarkedText
+#else
+#define MAYBE_AddMarkedText AddMarkedText
+#endif
+TEST_F(FPDFEditEmbedderTest, MAYBE_AddMarkedText) {
   // Start with a blank page.
   FPDF_PAGE page = FPDFPage_New(CreateNewDocument(), 0, 612, 792);
 

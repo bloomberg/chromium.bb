@@ -13,6 +13,7 @@ import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.graphics.Bitmap;
@@ -37,6 +38,7 @@ import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
+import android.webkit.CookieManager;
 import android.webkit.GeolocationPermissions;
 import android.webkit.PermissionRequest;
 import android.webkit.TracingConfig;
@@ -52,6 +54,7 @@ import android.widget.Toast;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Log;
+import org.chromium.base.PackageManagerUtils;
 import org.chromium.base.StrictModeContext;
 
 import java.io.File;
@@ -325,6 +328,11 @@ public class WebViewBrowserActivity extends AppCompatActivity {
         WebView webview = new WebView(this);
         WebSettings settings = webview.getSettings();
         initializeSettings(settings);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            // Third party cookies are off by default on L+;
+            // turn them on for consistency with normal browsers.
+            CookieManager.getInstance().setAcceptThirdPartyCookies(webview, true);
+        }
 
         Matcher matcher = WEBVIEW_VERSION_PATTERN.matcher(settings.getUserAgentString());
         if (matcher.find()) {
@@ -512,6 +520,11 @@ public class WebViewBrowserActivity extends AppCompatActivity {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) {
             menu.findItem(R.id.menu_enable_tracing).setEnabled(false);
         }
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+            menu.findItem(R.id.menu_force_dark_off).setEnabled(false);
+            menu.findItem(R.id.menu_force_dark_auto).setEnabled(false);
+            menu.findItem(R.id.menu_force_dark_on).setEnabled(false);
+        }
         return true;
     }
 
@@ -519,6 +532,20 @@ public class WebViewBrowserActivity extends AppCompatActivity {
     public boolean onPrepareOptionsMenu(Menu menu) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             menu.findItem(R.id.menu_enable_tracing).setChecked(mEnableTracing);
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            int fdState = mWebView.getSettings().getForceDark();
+            switch (fdState) {
+                case WebSettings.FORCE_DARK_OFF:
+                    menu.findItem(R.id.menu_force_dark_off).setChecked(true);
+                    break;
+                case WebSettings.FORCE_DARK_AUTO:
+                    menu.findItem(R.id.menu_force_dark_auto).setChecked(true);
+                    break;
+                case WebSettings.FORCE_DARK_ON:
+                    menu.findItem(R.id.menu_force_dark_on).setChecked(true);
+                    break;
+            }
         }
         return true;
     }
@@ -565,6 +592,18 @@ public class WebViewBrowserActivity extends AppCompatActivity {
                     }
                 }
                 return true;
+            case R.id.menu_force_dark_off:
+                mWebView.getSettings().setForceDark(WebSettings.FORCE_DARK_OFF);
+                item.setChecked(true);
+                return true;
+            case R.id.menu_force_dark_auto:
+                mWebView.getSettings().setForceDark(WebSettings.FORCE_DARK_AUTO);
+                item.setChecked(true);
+                return true;
+            case R.id.menu_force_dark_on:
+                mWebView.getSettings().setForceDark(WebSettings.FORCE_DARK_ON);
+                item.setChecked(true);
+                return true;
             case R.id.start_animation_activity:
                 startActivity(new Intent(this, WebViewAnimationTestActivity.class));
                 return true;
@@ -577,6 +616,9 @@ public class WebViewBrowserActivity extends AppCompatActivity {
             case R.id.menu_about:
                 about();
                 hideKeyboard(mUrlBar);
+                return true;
+            case R.id.menu_devui:
+                launchWebViewDevUI();
                 return true;
             default:
                 break;
@@ -632,6 +674,31 @@ public class WebViewBrowserActivity extends AppCompatActivity {
                 .create();
         dialog.show();
         dialog.getWindow().setLayout(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
+    }
+
+    private void launchWebViewDevUI() {
+        PackageInfo currentWebViewPackage = WebViewPackageHelper.getCurrentWebViewPackage(this);
+        if (currentWebViewPackage == null) {
+            Log.e(TAG, "Couldn't find current WebView package");
+            Toast.makeText(this, "WebView package isn't found", Toast.LENGTH_LONG).show();
+            return;
+        }
+        String currentWebViewPackageName = currentWebViewPackage.packageName;
+        Intent intent = new Intent("com.android.webview.SHOW_DEV_UI");
+        intent.setPackage(currentWebViewPackageName);
+
+        // Check if the intent is resolved, i.e current WebView package has a developer UI that
+        // responds to "com.android.webview.SHOW_DEV_UI" action.
+        List<ResolveInfo> intentResolveInfo = getPackageManager().queryIntentActivities(intent, 0);
+        if (intentResolveInfo.size() > 0) {
+            startActivity(intent);
+        } else {
+            Log.e(TAG,
+                    "Couldn't launch developer UI from current WebView package: "
+                            + currentWebViewPackage);
+            Toast.makeText(this, "No DevTools in " + currentWebViewPackageName, Toast.LENGTH_LONG)
+                    .show();
+        }
     }
 
     // Returns true is a method has no arguments and returns either a boolean or a String.
@@ -703,7 +770,7 @@ public class WebViewBrowserActivity extends AppCompatActivity {
         // check if there is a specialized app that had registered itself
         // for this kind of an intent.
         Matcher m = BROWSER_URI_SCHEMA.matcher(url);
-        if (m.matches() && !isSpecializedHandlerAvailable(context, intent)) {
+        if (m.matches() && !isSpecializedHandlerAvailable(intent)) {
             return false;
         }
         // Sanitize the Intent, ensuring web pages can not bypass browser
@@ -737,10 +804,9 @@ public class WebViewBrowserActivity extends AppCompatActivity {
     /**
      * Search for intent handlers that are specific to the scheme of the URL in the intent.
      */
-    private static boolean isSpecializedHandlerAvailable(Context context, Intent intent) {
-        PackageManager pm = context.getPackageManager();
-        List<ResolveInfo> handlers = pm.queryIntentActivities(intent,
-                PackageManager.GET_RESOLVED_FILTER);
+    private static boolean isSpecializedHandlerAvailable(Intent intent) {
+        List<ResolveInfo> handlers = PackageManagerUtils.queryIntentActivities(
+                intent, PackageManager.GET_RESOLVED_FILTER);
         if (handlers == null || handlers.size() == 0) {
             return false;
         }

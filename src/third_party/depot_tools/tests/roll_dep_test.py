@@ -56,6 +56,10 @@ class RollDepTest(fake_repos.FakeReposTestBase):
     self.env = os.environ.copy()
     self.env['DEPOT_TOOLS_UPDATE'] = '0'
     self.env['DEPOT_TOOLS_METRICS'] = '0'
+    # Suppress Python 3 warnings and other test undesirables.
+    self.env['GCLIENT_TEST'] = '1'
+
+    self.maxDiff = None
 
     self.enabled = self.FAKE_REPOS.set_up_git()
     self.src_dir = os.path.join(self.root_dir, 'src')
@@ -73,6 +77,8 @@ class RollDepTest(fake_repos.FakeReposTestBase):
     stdout, stderr = process.communicate()
     logging.debug("XXX: %s\n%s\nXXX" % (' '.join(cmd), stdout))
     logging.debug("YYY: %s\n%s\nYYY" % (' '.join(cmd), stderr))
+    stdout = stdout.decode('utf-8')
+    stderr = stderr.decode('utf-8')
     return (stdout.replace('\r\n', '\n'), stderr.replace('\r\n', '\n'),
             process.returncode)
 

@@ -106,10 +106,12 @@ void WaveShaperNode::setCurve(NotShared<DOMFloat32Array> curve,
                               ExceptionState& exception_state) {
   DCHECK(IsMainThread());
 
-  if (curve)
-    SetCurveImpl(curve.View()->Data(), curve.View()->length(), exception_state);
-  else
+  if (curve) {
+    SetCurveImpl(curve.View()->Data(),
+                 curve.View()->deprecatedLengthAsUnsigned(), exception_state);
+  } else {
     SetCurveImpl(nullptr, 0, exception_state);
+  }
 }
 
 void WaveShaperNode::setCurve(const Vector<float>& curve,
@@ -125,12 +127,11 @@ NotShared<DOMFloat32Array> WaveShaperNode::curve() {
     return NotShared<DOMFloat32Array>(nullptr);
 
   unsigned size = curve->size();
-  scoped_refptr<WTF::Float32Array> new_curve = WTF::Float32Array::Create(size);
 
-  memcpy(new_curve->Data(), curve->data(), sizeof(float) * size);
+  NotShared<DOMFloat32Array> result(DOMFloat32Array::Create(size));
+  memcpy(result.View()->Data(), curve->data(), sizeof(float) * size);
 
-  return NotShared<DOMFloat32Array>(
-      DOMFloat32Array::Create(std::move(new_curve)));
+  return result;
 }
 
 void WaveShaperNode::setOversample(const String& type) {

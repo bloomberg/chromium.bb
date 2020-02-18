@@ -18,15 +18,13 @@
 
 namespace content {
 
+class ServiceWorkerContainerHost;
 class ServiceWorkerContextCore;
 class ServiceWorkerVersion;
 
 // ServiceWorkerRegistrationObjectHost has a 1:1 correspondence to
-// WebServiceWorkerRegistration in the renderer process.
-// The host stays alive while the WebServiceWorkerRegistration is alive, and
-// also initiates destruction of the WebServiceWorkerRegistration once detected
-// that it's no longer needed. See the class documentation in
-// WebServiceWorkerRegistrationImpl for details.
+// blink::ServiceWorkerRegistration in the renderer process.
+// The host stays alive while the blink::ServiceWorkerRegistration is alive.
 //
 // Has a reference to the corresponding ServiceWorkerRegistration in order to
 // ensure that the registration is alive while this object host is around.
@@ -36,7 +34,7 @@ class CONTENT_EXPORT ServiceWorkerRegistrationObjectHost
  public:
   ServiceWorkerRegistrationObjectHost(
       base::WeakPtr<ServiceWorkerContextCore> context,
-      ServiceWorkerProviderHost* provider_host,
+      ServiceWorkerContainerHost* container_host,
       scoped_refptr<ServiceWorkerRegistration> registration);
   ~ServiceWorkerRegistrationObjectHost() override;
 
@@ -62,7 +60,9 @@ class CONTENT_EXPORT ServiceWorkerRegistrationObjectHost
   void OnUpdateFound(ServiceWorkerRegistration* registration) override;
 
   // Implements blink::mojom::ServiceWorkerRegistrationObjectHost.
-  void Update(UpdateCallback callback) override;
+  void Update(blink::mojom::FetchClientSettingsObjectPtr
+                  outside_fetch_client_settings_object,
+              UpdateCallback callback) override;
   void Unregister(UnregisterCallback callback) override;
   void EnableNavigationPreload(
       bool enable,
@@ -133,9 +133,9 @@ class CONTENT_EXPORT ServiceWorkerRegistrationObjectHost
   std::string ComposeUpdateErrorMessagePrefix(
       const ServiceWorkerVersion* version_to_update) const;
 
-  // |provider_host_| is valid throughout lifetime of |this| because it owns
+  // |container_host_| is valid throughout lifetime of |this| because it owns
   // |this|.
-  ServiceWorkerProviderHost* provider_host_;
+  ServiceWorkerContainerHost* container_host_;
   base::WeakPtr<ServiceWorkerContextCore> context_;
   scoped_refptr<ServiceWorkerRegistration> registration_;
 

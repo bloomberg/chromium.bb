@@ -122,6 +122,14 @@ void RecordSigninUserActionForAccessPoint(AccessPoint access_point) {
       base::RecordAction(
           base::UserMetricsAction("Signin_Signin_FromGoogleServicesSettings"));
       break;
+    case AccessPoint::ACCESS_POINT_SYNC_ERROR_CARD:
+    case AccessPoint::ACCESS_POINT_FORCED_SIGNIN:
+    case AccessPoint::ACCESS_POINT_ACCOUNT_RENAMED:
+      NOTREACHED() << "Access point " << static_cast<int>(access_point)
+                   << " is only used on Android, where"
+                   << " RecordSigninUserActionForAccessPoint is not used"
+                   << " for logging user actions.";
+      break;
     case AccessPoint::ACCESS_POINT_MAX:
       NOTREACHED();
       break;
@@ -191,6 +199,9 @@ void RecordSigninWithDefaultUserActionForAccessPoint(
     case AccessPoint::ACCESS_POINT_UNKNOWN:
     case AccessPoint::ACCESS_POINT_MACHINE_LOGON:
     case AccessPoint::ACCESS_POINT_GOOGLE_SERVICES_SETTINGS:
+    case AccessPoint::ACCESS_POINT_SYNC_ERROR_CARD:
+    case AccessPoint::ACCESS_POINT_FORCED_SIGNIN:
+    case AccessPoint::ACCESS_POINT_ACCOUNT_RENAMED:
       NOTREACHED() << "Signin_SigninWithDefault_From* user actions"
                    << " are not recorded for access_point "
                    << static_cast<int>(access_point)
@@ -265,91 +276,13 @@ void RecordSigninNotDefaultUserActionForAccessPoint(
     case AccessPoint::ACCESS_POINT_UNKNOWN:
     case AccessPoint::ACCESS_POINT_MACHINE_LOGON:
     case AccessPoint::ACCESS_POINT_GOOGLE_SERVICES_SETTINGS:
+    case AccessPoint::ACCESS_POINT_SYNC_ERROR_CARD:
+    case AccessPoint::ACCESS_POINT_FORCED_SIGNIN:
+    case AccessPoint::ACCESS_POINT_ACCOUNT_RENAMED:
       NOTREACHED() << "Signin_SigninNotDefault_From* user actions"
                    << " are not recorded for access point "
                    << static_cast<int>(access_point)
                    << " as it does not support a personalized sign-in promo.";
-      break;
-    case AccessPoint::ACCESS_POINT_MAX:
-      NOTREACHED();
-      break;
-  }
-}
-
-void RecordSigninNewAccountPreDiceUserActionForAccessPoint(
-    signin_metrics::AccessPoint access_point) {
-  switch (access_point) {
-    case signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS:
-      base::RecordAction(base::UserMetricsAction(
-          "Signin_SigninNewAccountPreDice_FromSettings"));
-      break;
-    case AccessPoint::ACCESS_POINT_EXTENSION_INSTALL_BUBBLE:
-      base::RecordAction(base::UserMetricsAction(
-          "Signin_SigninNewAccountPreDice_FromExtensionInstallBubble"));
-      break;
-    case AccessPoint::ACCESS_POINT_BOOKMARK_BUBBLE:
-      base::RecordAction(base::UserMetricsAction(
-          "Signin_SigninNewAccountPreDice_FromBookmarkBubble"));
-      break;
-    case signin_metrics::AccessPoint::ACCESS_POINT_BOOKMARK_MANAGER:
-      base::RecordAction(base::UserMetricsAction(
-          "Signin_SigninNewAccountPreDice_FromBookmarkManager"));
-      break;
-    case AccessPoint::ACCESS_POINT_AVATAR_BUBBLE_SIGN_IN:
-      base::RecordAction(base::UserMetricsAction(
-          "Signin_SigninNewAccountPreDice_FromAvatarBubbleSignin"));
-      break;
-    case signin_metrics::AccessPoint::ACCESS_POINT_RECENT_TABS:
-      base::RecordAction(base::UserMetricsAction(
-          "Signin_SigninNewAccountPreDice_FromRecentTabs"));
-      break;
-    case AccessPoint::ACCESS_POINT_PASSWORD_BUBBLE:
-      base::RecordAction(base::UserMetricsAction(
-          "Signin_SigninNewAccountPreDice_FromPasswordBubble"));
-      break;
-    case signin_metrics::AccessPoint::ACCESS_POINT_TAB_SWITCHER:
-      base::RecordAction(base::UserMetricsAction(
-          "Signin_SigninNewAccountPreDice_FromTabSwitcher"));
-      break;
-    case AccessPoint::ACCESS_POINT_NTP_CONTENT_SUGGESTIONS:
-      base::RecordAction(base::UserMetricsAction(
-          "Signin_SigninNewAccountPreDice_FromNTPContentSuggestions"));
-      break;
-    case AccessPoint::ACCESS_POINT_SAVE_CARD_BUBBLE:
-      base::RecordAction(base::UserMetricsAction(
-          "Signin_SigninNewAccountPreDice_FromSaveCardBubble"));
-      break;
-    case AccessPoint::ACCESS_POINT_MANAGE_CARDS_BUBBLE:
-      base::RecordAction(base::UserMetricsAction(
-          "Signin_SigninNewAccountPreDice_FromManageCardsBubble"));
-      break;
-    case AccessPoint::ACCESS_POINT_START_PAGE:
-    case AccessPoint::ACCESS_POINT_NTP_LINK:
-    case AccessPoint::ACCESS_POINT_MENU:
-    case AccessPoint::ACCESS_POINT_SUPERVISED_USER:
-    case AccessPoint::ACCESS_POINT_EXTENSIONS:
-    case AccessPoint::ACCESS_POINT_APPS_PAGE_LINK:
-    case AccessPoint::ACCESS_POINT_USER_MANAGER:
-    case AccessPoint::ACCESS_POINT_DEVICES_PAGE:
-    case AccessPoint::ACCESS_POINT_CLOUD_PRINT:
-    case AccessPoint::ACCESS_POINT_CONTENT_AREA:
-    case AccessPoint::ACCESS_POINT_SIGNIN_PROMO:
-    case AccessPoint::ACCESS_POINT_AUTOFILL_DROPDOWN:
-    case AccessPoint::ACCESS_POINT_RESIGNIN_INFOBAR:
-    case AccessPoint::ACCESS_POINT_UNKNOWN:
-    case AccessPoint::ACCESS_POINT_MACHINE_LOGON:
-    case AccessPoint::ACCESS_POINT_GOOGLE_SERVICES_SETTINGS:
-      // These access points do not support personalized sign-in promos, so
-      // |Signin_SigninNewAccountPreDice_From*| user actions should not
-      // be recorded for them. Note: To avoid bloating the sign-in APIs, the
-      // sign-in metrics simply ignore if the caller passes
-      // |PROMO_ACTION_NEW_ACCOUNT_PRE_DICE| when a sign-in flow is
-      // started from any access point instead of treating it as an error like
-      // in the other cases (|WithDefault| and |NotDefault|).
-      VLOG(1) << "Signin_SigninNewAccountPreDice_From* user actions"
-              << " are not recorded for access point "
-              << static_cast<int>(access_point)
-              << " as it does not support a personalized sign-in promo.";
       break;
     case AccessPoint::ACCESS_POINT_MAX:
       NOTREACHED();
@@ -424,6 +357,9 @@ void RecordSigninNewAccountNoExistingAccountUserActionForAccessPoint(
     case AccessPoint::ACCESS_POINT_UNKNOWN:
     case AccessPoint::ACCESS_POINT_MACHINE_LOGON:
     case AccessPoint::ACCESS_POINT_GOOGLE_SERVICES_SETTINGS:
+    case AccessPoint::ACCESS_POINT_SYNC_ERROR_CARD:
+    case AccessPoint::ACCESS_POINT_FORCED_SIGNIN:
+    case AccessPoint::ACCESS_POINT_ACCOUNT_RENAMED:
       // These access points do not support personalized sign-in promos, so
       // |Signin_SigninNewAccountNoExistingAccount_From*| user actions should
       // not be recorded for them. Note: To avoid bloating the sign-in APIs, the
@@ -505,6 +441,9 @@ void RecordSigninNewAccountExistingAccountUserActionForAccessPoint(
     case AccessPoint::ACCESS_POINT_UNKNOWN:
     case AccessPoint::ACCESS_POINT_MACHINE_LOGON:
     case AccessPoint::ACCESS_POINT_GOOGLE_SERVICES_SETTINGS:
+    case AccessPoint::ACCESS_POINT_SYNC_ERROR_CARD:
+    case AccessPoint::ACCESS_POINT_FORCED_SIGNIN:
+    case AccessPoint::ACCESS_POINT_ACCOUNT_RENAMED:
       // These access points do not support personalized sign-in promos, so
       // |Signin_SigninNewAccountExistingAccount_From*| user actions should not
       // be recorded for them. Note: To avoid bloating the sign-in APIs, the
@@ -591,12 +530,6 @@ void LogSigninAccessPointStarted(AccessPoint access_point,
           static_cast<int>(access_point),
           static_cast<int>(AccessPoint::ACCESS_POINT_MAX));
       break;
-    case PromoAction::PROMO_ACTION_NEW_ACCOUNT_PRE_DICE:
-      UMA_HISTOGRAM_ENUMERATION(
-          "Signin.SigninStartedAccessPoint.NewAccountPreDice",
-          static_cast<int>(access_point),
-          static_cast<int>(AccessPoint::ACCESS_POINT_MAX));
-      break;
     case PromoAction::PROMO_ACTION_NEW_ACCOUNT_NO_EXISTING_ACCOUNT:
       UMA_HISTOGRAM_ENUMERATION(
           "Signin.SigninStartedAccessPoint.NewAccountNoExistingAccount",
@@ -629,12 +562,6 @@ void LogSigninAccessPointCompleted(AccessPoint access_point,
     case PromoAction::PROMO_ACTION_NOT_DEFAULT:
       UMA_HISTOGRAM_ENUMERATION(
           "Signin.SigninCompletedAccessPoint.NotDefault",
-          static_cast<int>(access_point),
-          static_cast<int>(AccessPoint::ACCESS_POINT_MAX));
-      break;
-    case PromoAction::PROMO_ACTION_NEW_ACCOUNT_PRE_DICE:
-      UMA_HISTOGRAM_ENUMERATION(
-          "Signin.SigninCompletedAccessPoint.NewAccountPreDice",
           static_cast<int>(access_point),
           static_cast<int>(AccessPoint::ACCESS_POINT_MAX));
       break;
@@ -742,11 +669,6 @@ void LogAuthError(const GoogleServiceAuthError& auth_error) {
   }
 }
 
-void LogSigninConfirmHistogramValue(ConfirmationUsage action) {
-  UMA_HISTOGRAM_ENUMERATION("Signin.OneClickConfirmation", action,
-                            HISTOGRAM_CONFIRM_MAX);
-}
-
 void LogAccountReconcilorStateOnGaiaResponse(AccountReconcilorState state) {
   UMA_HISTOGRAM_ENUMERATION("Signin.AccountReconcilorState.OnGaiaResponse",
                             state, ACCOUNT_RECONCILOR_HISTOGRAM_COUNT);
@@ -823,9 +745,6 @@ void RecordSigninUserActionForAccessPoint(AccessPoint access_point,
       break;
     case PromoAction::PROMO_ACTION_NOT_DEFAULT:
       RecordSigninNotDefaultUserActionForAccessPoint(access_point);
-      break;
-    case PromoAction::PROMO_ACTION_NEW_ACCOUNT_PRE_DICE:
-      RecordSigninNewAccountPreDiceUserActionForAccessPoint(access_point);
       break;
     case PromoAction::PROMO_ACTION_NEW_ACCOUNT_NO_EXISTING_ACCOUNT:
       RecordSigninNewAccountNoExistingAccountUserActionForAccessPoint(
@@ -928,6 +847,9 @@ void RecordSigninImpressionUserActionForAccessPoint(AccessPoint access_point) {
     case AccessPoint::ACCESS_POINT_USER_MANAGER:
     case AccessPoint::ACCESS_POINT_UNKNOWN:
     case AccessPoint::ACCESS_POINT_MACHINE_LOGON:
+    case AccessPoint::ACCESS_POINT_SYNC_ERROR_CARD:
+    case AccessPoint::ACCESS_POINT_FORCED_SIGNIN:
+    case AccessPoint::ACCESS_POINT_ACCOUNT_RENAMED:
       NOTREACHED() << "Signin_Impression_From* user actions"
                    << " are not recorded for access point "
                    << static_cast<int>(access_point);
@@ -1057,6 +979,9 @@ void RecordSigninImpressionWithAccountUserActionForAccessPoint(
     case AccessPoint::ACCESS_POINT_UNKNOWN:
     case AccessPoint::ACCESS_POINT_MACHINE_LOGON:
     case AccessPoint::ACCESS_POINT_GOOGLE_SERVICES_SETTINGS:
+    case AccessPoint::ACCESS_POINT_SYNC_ERROR_CARD:
+    case AccessPoint::ACCESS_POINT_FORCED_SIGNIN:
+    case AccessPoint::ACCESS_POINT_ACCOUNT_RENAMED:
       NOTREACHED() << "Signin_Impression{With|WithNo}Account_From* user actions"
                    << " are not recorded for access point "
                    << static_cast<int>(access_point)

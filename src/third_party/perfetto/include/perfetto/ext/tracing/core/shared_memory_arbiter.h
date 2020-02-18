@@ -25,8 +25,8 @@
 
 #include "perfetto/base/export.h"
 #include "perfetto/ext/tracing/core/basic_types.h"
-#include "perfetto/ext/tracing/core/buffer_exhausted_policy.h"
 #include "perfetto/ext/tracing/core/tracing_service.h"
+#include "perfetto/tracing/buffer_exhausted_policy.h"
 
 namespace perfetto {
 
@@ -34,7 +34,6 @@ namespace base {
 class TaskRunner;
 }
 
-class CommitDataRequest;
 class StartupTraceWriter;
 class StartupTraceWriterRegistry;
 class SharedMemory;

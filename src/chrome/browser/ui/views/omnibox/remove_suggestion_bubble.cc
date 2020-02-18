@@ -28,11 +28,16 @@ class RemoveSuggestionBubbleDialogDelegateView
       const AutocompleteMatch& match,
       base::OnceClosure remove_closure)
       : views::BubbleDialogDelegateView(anchor_view,
-                                        views::BubbleBorder::TOP_LEFT),
+                                        views::BubbleBorder::TOP_RIGHT),
         match_(match),
         remove_closure_(std::move(remove_closure)) {
     DCHECK(template_url_service);
     DCHECK(match_.SupportsDeletion());
+
+    DialogDelegate::set_button_label(ui::DIALOG_BUTTON_OK,
+                                     l10n_util::GetStringUTF16(IDS_REMOVE));
+    DialogDelegate::set_button_label(ui::DIALOG_BUTTON_CANCEL,
+                                     l10n_util::GetStringUTF16(IDS_CANCEL));
 
     auto* layout_manager = SetLayoutManager(std::make_unique<views::BoxLayout>(
         views::BoxLayout::Orientation::kVertical));
@@ -75,10 +80,6 @@ class RemoveSuggestionBubbleDialogDelegateView
   int GetDialogButtons() const override {
     return ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL;
   }
-  base::string16 GetDialogButtonLabel(ui::DialogButton button) const override {
-    return l10n_util::GetStringUTF16(
-        button == ui::DIALOG_BUTTON_OK ? IDS_REMOVE : IDS_CANCEL);
-  }
   bool Accept() override {
     std::move(remove_closure_).Run();
     return true;
@@ -112,9 +113,4 @@ void ShowRemoveSuggestion(TemplateURLService* template_url_service,
       new RemoveSuggestionBubbleDialogDelegateView(
           template_url_service, anchor_view, match, std::move(remove_closure)))
       ->Show();
-}
-
-void ShowWhyThisSuggestion(views::View* anchor_view,
-                           const AutocompleteMatch& match) {
-  // TODO(tommycli): Implement this.
 }

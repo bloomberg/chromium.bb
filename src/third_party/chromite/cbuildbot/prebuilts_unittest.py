@@ -110,7 +110,7 @@ class PrebuiltTest(cros_test_lib.RunCommandTempDirTestCase):
                            return_value=packages):
       prebuilts.UploadDevInstallerPrebuilts(*args, buildroot=self._buildroot,
                                             board=self._board)
-    self.assertCommandContains([constants.CANARY_TYPE] + args[2:] + args[0:2])
+    self.assertCommandContains(args[2:] + args[0:2])
 
   def testAddPackagesForPrebuilt(self):
     """Test AddPackagesForPrebuilt."""
@@ -147,7 +147,8 @@ class BinhostConfWriterTest(
   RELEASE_TAG = '1234.5.6'
   VERSION = 'R%s-%s' % (DEFAULT_CHROME_BRANCH, RELEASE_TAG)
 
-  def _Prepare(self, bot_id=None, **kwargs):
+  # Our API here is not great when it comes to kwargs passing.
+  def _Prepare(self, bot_id=None, **kwargs):  # pylint: disable=arguments-differ
     super(BinhostConfWriterTest, self)._Prepare(bot_id, **kwargs)
     self.cmd = os.path.join(self.build_root, constants.CHROMITE_BIN_SUBDIR,
                             'upload_prebuilts')
@@ -207,13 +208,3 @@ class BinhostConfWriterTest(
     # We expect --set-version so long as build config has manifest_version=True.
     self.assertCommandContains([self.cmd, '--set-version', self.VERSION],
                                expected=self._run.config.manifest_version)
-
-  def testMasterChromiumPFQUpload(self):
-    self._Run('master-chromium-pfq')
-
-    # Provide a sample of private/public slave boards that are expected.
-    public_slave_boards = ('amd64-generic', 'scarlet')
-    private_slave_boards = ('cyan', 'nocturne', 'reef')
-
-    self._VerifyResults(public_slave_boards=public_slave_boards,
-                        private_slave_boards=private_slave_boards)

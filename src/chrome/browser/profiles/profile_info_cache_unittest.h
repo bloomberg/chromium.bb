@@ -38,7 +38,7 @@ class ProfileNameVerifierObserver : public ProfileInfoCacheObserver {
 
  private:
   ProfileInfoCache* GetCache();
-  std::set<base::string16> profile_names_;
+  std::map<base::FilePath, base::string16> profile_names_;
   TestingProfileManager* testing_profile_manager_;
   DISALLOW_COPY_AND_ASSIGN(ProfileNameVerifierObserver);
 };
@@ -54,6 +54,7 @@ class ProfileInfoCacheTest : public testing::Test {
   ProfileInfoCache* GetCache();
   base::FilePath GetProfilePath(const std::string& base_name);
   void ResetCache();
+  void RemoveObserver();
 
  private:
   // BrowserTaskEnvironment needs to be up through the destruction of the

@@ -37,6 +37,10 @@ bool SkiaOutputSurfaceDependencyWebView::IsUsingVulkan() {
   return shared_context_state_ && shared_context_state_->GrContextIsVulkan();
 }
 
+bool SkiaOutputSurfaceDependencyWebView::IsUsingDawn() {
+  return false;
+}
+
 gpu::SharedImageManager*
 SkiaOutputSurfaceDependencyWebView::GetSharedImageManager() {
   return gpu_service_->shared_image_manager();
@@ -67,6 +71,11 @@ SkiaOutputSurfaceDependencyWebView::GetVulkanContextProvider() {
   return shared_context_state_->vk_context_provider();
 }
 
+viz::DawnContextProvider*
+SkiaOutputSurfaceDependencyWebView::GetDawnContextProvider() {
+  return nullptr;
+}
+
 const gpu::GpuPreferences&
 SkiaOutputSurfaceDependencyWebView::GetGpuPreferences() {
   return gpu_service_->gpu_preferences();
@@ -90,6 +99,10 @@ void SkiaOutputSurfaceDependencyWebView::PostTaskToClientThread(
   task_queue_->ScheduleClientTask(std::move(closure));
 }
 
+gpu::ImageFactory* SkiaOutputSurfaceDependencyWebView::GetGpuImageFactory() {
+  return nullptr;
+}
+
 bool SkiaOutputSurfaceDependencyWebView::IsOffscreen() {
   return false;
 }
@@ -102,6 +115,36 @@ scoped_refptr<gl::GLSurface>
 SkiaOutputSurfaceDependencyWebView::CreateGLSurface(
     base::WeakPtr<gpu::ImageTransportSurfaceDelegate> stub) {
   return gl_surface_;
+}
+
+base::ScopedClosureRunner SkiaOutputSurfaceDependencyWebView::CacheGLSurface(
+    gl::GLSurface* surface) {
+  NOTREACHED();
+  return base::ScopedClosureRunner();
+}
+
+void SkiaOutputSurfaceDependencyWebView::RegisterDisplayContext(
+    gpu::DisplayContext* display_context) {
+  // No GpuChannelManagerDelegate here, so leave it no-op for now.
+}
+
+void SkiaOutputSurfaceDependencyWebView::UnregisterDisplayContext(
+    gpu::DisplayContext* display_context) {
+  // No GpuChannelManagerDelegate here, so leave it no-op for now.
+}
+
+void SkiaOutputSurfaceDependencyWebView::DidLoseContext(
+    bool offscreen,
+    gpu::error::ContextLostReason reason,
+    const GURL& active_url) {
+  // No GpuChannelManagerDelegate here, so leave it no-op for now.
+  LOG(ERROR) << "SkiaRenderer detected lost context.";
+}
+
+base::TimeDelta
+SkiaOutputSurfaceDependencyWebView::GetGpuBlockedTimeSinceLastSwap() {
+  // WebView doesn't track how long GPU thread was blocked
+  return base::TimeDelta();
 }
 
 }  // namespace android_webview

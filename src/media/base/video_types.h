@@ -37,8 +37,7 @@ enum VideoPixelFormat {
       6,  // 12bpp with Y plane followed by a 2x2 interleaved UV plane.
   PIXEL_FORMAT_NV21 =
       7,  // 12bpp with Y plane followed by a 2x2 interleaved VU plane.
-  PIXEL_FORMAT_UYVY =
-      8,  // 16bpp interleaved 2x1 U, 1x1 Y, 2x1 V, 1x1 Y samples.
+  /* PIXEL_FORMAT_UYVY = 8,  Deprecated */
   PIXEL_FORMAT_YUY2 =
       9,  // 16bpp interleaved 1x1 Y, 2x1 U, 1x1 Y, 2x1 V samples.
   PIXEL_FORMAT_ARGB = 10,   // 32bpp BGRA (byte-order), 1 plane.
@@ -70,9 +69,16 @@ enum VideoPixelFormat {
 
   PIXEL_FORMAT_P016LE = 29,  // 24bpp NV12, 16 bits per channel
 
+  PIXEL_FORMAT_XR30 =
+      30,  // 32bpp BGRX, 10 bits per channel, 2 bits ignored, 1 plane
+  PIXEL_FORMAT_XB30 =
+      31,  // 32bpp RGBX, 10 bits per channel, 2 bits ignored, 1 plane
+
+  PIXEL_FORMAT_BGRA = 32,  // 32bpp ARGB (byte-order), 1 plane.
+
   // Please update UMA histogram enumeration when adding new formats here.
   PIXEL_FORMAT_MAX =
-      PIXEL_FORMAT_P016LE,  // Must always be equal to largest entry logged.
+      PIXEL_FORMAT_BGRA,  // Must always be equal to largest entry logged.
 };
 
 // Returns the name of a Format as a string.

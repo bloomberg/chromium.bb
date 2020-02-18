@@ -355,6 +355,20 @@ class DirectoryModel extends cr.EventTarget {
   }
 
   /**
+   * @public
+   * @return {string}
+   */
+  getCurrentDirName() {
+    const dirEntry = this.getCurrentDirEntry();
+    if (!dirEntry) {
+      return '';
+    }
+
+    const locationInfo = this.volumeManager_.getLocationInfo(dirEntry);
+    return util.getEntryLabel(locationInfo, dirEntry);
+  }
+
+  /**
    * @return {Array<Entry>} Array of selected entries.
    * @private
    */
@@ -1291,7 +1305,7 @@ class DirectoryModel extends cr.EventTarget {
     const locationInfo = this.volumeManager_.getLocationInfo(entry);
     const canUseDriveSearch =
         this.volumeManager_.getDriveConnectionState().type !==
-            VolumeManagerCommon.DriveConnectionType.OFFLINE &&
+            chrome.fileManagerPrivate.DriveConnectionStateType.OFFLINE &&
         (locationInfo && locationInfo.isDriveBased);
 
     if (entry.rootType == VolumeManagerCommon.RootType.RECENT) {

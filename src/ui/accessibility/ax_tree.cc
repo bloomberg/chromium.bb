@@ -249,9 +249,14 @@ struct AXTreeUpdateState {
     return base::Contains(removed_node_ids, node->id());
   }
 
+  // Returns whether this update creates a node marked by |node_id|.
+  bool IsCreatedNode(AXNode::AXID node_id) const {
+    return base::Contains(new_node_ids, node_id);
+  }
+
   // Returns whether this update creates |node|.
   bool IsCreatedNode(const AXNode* node) const {
-    return base::Contains(new_node_ids, node->id());
+    return IsCreatedNode(node->id());
   }
 
   // If this node is removed, it should be considered reparented.
@@ -556,7 +561,7 @@ AXTree::AXTree(const AXTreeUpdate& initial_state) {
 
 AXTree::~AXTree() {
   if (root_) {
-    RecursivelyNotifyNodeWillBeDeleted(root_);
+    RecursivelyNotifyNodeDeletedForTreeTeardown(root_);
     base::AutoReset<bool> update_state_resetter(&tree_update_in_progress_,
                                                 true);
     DestroyNodeAndSubtree(root_, nullptr);
@@ -578,6 +583,10 @@ void AXTree::RemoveObserver(const AXTreeObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
+AXTreeID AXTree::GetAXTreeID() const {
+  return data().tree_id;
+}
+
 AXNode* AXTree::GetFromId(int32_t id) const {
   auto iter = id_map_.find(id);
   return iter != id_map_.end() ? iter->second : nullptr;
@@ -593,10 +602,11 @@ void AXTree::UpdateData(const AXTreeData& new_data) {
     observer.OnTreeDataChanged(this, old_data, new_data);
 }
 
-gfx::RectF AXTree::RelativeToTreeBounds(const AXNode* node,
-                                        gfx::RectF bounds,
-                                        bool* offscreen,
-                                        bool clip_bounds) const {
+gfx::RectF AXTree::RelativeToTreeBoundsInternal(const AXNode* node,
+                                                gfx::RectF bounds,
+                                                bool* offscreen,
+                                                bool clip_bounds,
+                                                bool allow_recursion) const {
   // If |bounds| is uninitialized, which is not the same as empty,
   // start with the node bounds.
   if (bounds.width() == 0 && bounds.height() == 0) {
@@ -606,10 +616,16 @@ gfx::RectF AXTree::RelativeToTreeBounds(const AXNode* node,
     // try to compute good bounds from the children.
     // If a tree update is in progress, skip this step as children may be in a
     // bad state.
-    if (bounds.IsEmpty() && !GetTreeUpdateInProgressState()) {
+    if (bounds.IsEmpty() && !GetTreeUpdateInProgressState() &&
+        allow_recursion) {
       for (size_t i = 0; i < node->children().size(); i++) {
         ui::AXNode* child = node->children()[i];
-        bounds.Union(GetTreeBounds(child));
+
+        bool ignore_offscreen;
+        gfx::RectF child_bounds = RelativeToTreeBoundsInternal(
+            child, gfx::RectF(), &ignore_offscreen, clip_bounds,
+            /* allow_recursion = */ false);
+        bounds.Union(child_bounds);
       }
       if (bounds.width() > 0 && bounds.height() > 0) {
         return bounds;
@@ -620,19 +636,15 @@ gfx::RectF AXTree::RelativeToTreeBounds(const AXNode* node,
                   node->data().relative_bounds.bounds.y());
   }
 
+  const AXNode* original_node = node;
   while (node != nullptr) {
     if (node->data().relative_bounds.transform)
       node->data().relative_bounds.transform->TransformRect(&bounds);
-    const AXNode* container;
-
-    // Normally we apply any transforms and offsets for each node and
-    // then walk up to its offset container - however, if the node has
-    // no width or height, walk up to its nearest ancestor until we find
-    // one that has bounds.
-    if (bounds.width() == 0 && bounds.height() == 0)
-      container = node->parent();
-    else
-      container = GetFromId(node->data().relative_bounds.offset_container_id);
+    // Apply any transforms and offsets for each node and then walk up to
+    // its offset container. If no offset container is specified, coordinates
+    // are relative to the root node.
+    const AXNode* container =
+        GetFromId(node->data().relative_bounds.offset_container_id);
     if (!container && container != root())
       container = root();
     if (!container || container == node)
@@ -640,18 +652,6 @@ gfx::RectF AXTree::RelativeToTreeBounds(const AXNode* node,
 
     gfx::RectF container_bounds = container->data().relative_bounds.bounds;
     bounds.Offset(container_bounds.x(), container_bounds.y());
-
-    // If we don't have any size yet, take the size from this ancestor.
-    // The rationale is that it's not useful to the user for an object to
-    // have no width or height and it's probably a bug; it's better to
-    // reflect the bounds of the nearest ancestor rather than a 0x0 box.
-    // Tag this node as 'offscreen' because it has no true size, just a
-    // size inherited from the ancestor.
-    if (bounds.width() == 0 && bounds.height() == 0) {
-      bounds.set_size(container_bounds.size());
-      if (offscreen != nullptr)
-        *offscreen |= true;
-    }
 
     int scroll_x = 0;
     int scroll_y = 0;
@@ -668,7 +668,7 @@ gfx::RectF AXTree::RelativeToTreeBounds(const AXNode* node,
 
     // Calculate the clipped bounds to determine offscreen state.
     gfx::RectF clipped = bounds;
-    // If this is the root web area, make sure we clip the node to fit.
+    // If this node has the kClipsChildren attribute set, clip the rect to fit.
     if (container->data().GetBoolAttribute(
             ax::mojom::BoolAttribute::kClipsChildren)) {
       if (!intersection.IsEmpty()) {
@@ -714,7 +714,54 @@ gfx::RectF AXTree::RelativeToTreeBounds(const AXNode* node,
     node = container;
   }
 
+  // If we don't have any size yet, try to adjust the bounds to fill the
+  // nearest ancestor that does have bounds.
+  //
+  // The rationale is that it's not useful to the user for an object to
+  // have no width or height and it's probably a bug; it's better to
+  // reflect the bounds of the nearest ancestor rather than a 0x0 box.
+  // Tag this node as 'offscreen' because it has no true size, just a
+  // size inherited from the ancestor.
+  if (bounds.width() == 0 && bounds.height() == 0) {
+    const AXNode* ancestor = original_node->parent();
+    gfx::RectF ancestor_bounds;
+    while (ancestor) {
+      ancestor_bounds = ancestor->data().relative_bounds.bounds;
+      if (ancestor_bounds.width() > 0 || ancestor_bounds.height() > 0)
+        break;
+      ancestor = ancestor->parent();
+    }
+
+    if (ancestor && allow_recursion) {
+      bool ignore_offscreen;
+      bool allow_recursion = false;
+      ancestor_bounds = RelativeToTreeBoundsInternal(
+          ancestor, gfx::RectF(), &ignore_offscreen, clip_bounds,
+          allow_recursion);
+
+      gfx::RectF original_bounds = original_node->data().relative_bounds.bounds;
+      if (original_bounds.x() == 0 && original_bounds.y() == 0) {
+        bounds = ancestor_bounds;
+      } else {
+        bounds.set_width(std::max(0.0f, ancestor_bounds.right() - bounds.x()));
+        bounds.set_height(
+            std::max(0.0f, ancestor_bounds.bottom() - bounds.y()));
+      }
+      if (offscreen != nullptr)
+        *offscreen |= true;
+    }
+  }
+
   return bounds;
+}
+
+gfx::RectF AXTree::RelativeToTreeBounds(const AXNode* node,
+                                        gfx::RectF bounds,
+                                        bool* offscreen,
+                                        bool clip_bounds) const {
+  bool allow_recursion = true;
+  return RelativeToTreeBoundsInternal(node, bounds, offscreen, clip_bounds,
+                                      allow_recursion);
 }
 
 gfx::RectF AXTree::GetTreeBounds(const AXNode* node,
@@ -976,10 +1023,16 @@ bool AXTree::Unserialize(const AXTreeUpdate& update) {
   }
 
   // Now that the unignored cached values are up to date, update observers to
-  // new nodes in the tree.
-  for (AXNode::AXID node_id : update_state.new_node_ids) {
-    NotifyNodeHasBeenReparentedOrCreated(GetFromId(node_id), &update_state);
+  // the nodes that were deleted from the tree but not reparented.
+  for (AXNode::AXID node_id : update_state.removed_node_ids) {
+    if (!update_state.IsCreatedNode(node_id))
+      NotifyNodeHasBeenDeleted(node_id);
   }
+
+  // Now that the unignored cached values are up to date, update observers to
+  // new nodes in the tree.
+  for (AXNode::AXID node_id : update_state.new_node_ids)
+    NotifyNodeHasBeenReparentedOrCreated(GetFromId(node_id), &update_state);
 
   // Now that the unignored cached values are up to date, update observers to
   // node changes.
@@ -1004,9 +1057,8 @@ bool AXTree::Unserialize(const AXTreeUpdate& update) {
       observer.OnNodeChanged(this, node);
   }
 
-  for (AXTreeObserver& observer : observers_) {
+  for (AXTreeObserver& observer : observers_)
     observer.OnAtomicUpdateFinished(this, root_->id() != old_root_id, changes);
-  }
 
   return true;
 }
@@ -1137,6 +1189,15 @@ bool AXTree::ComputePendingChanges(const AXTreeUpdate& update,
 bool AXTree::ComputePendingChangesToNode(const AXNodeData& new_data,
                                          bool is_new_root,
                                          AXTreeUpdateState* update_state) {
+  // Compare every child's index in parent in the update with the existing
+  // index in parent.  If the order has changed, invalidate the cached
+  // unignored index in parent.
+  for (size_t j = 0; j < new_data.child_ids.size(); j++) {
+    AXNode* node = GetFromId(new_data.child_ids[j]);
+    if (node && node->GetIndexInParent() != j)
+      update_state->InvalidateParentNodeUnignoredCacheValues(node->id());
+  }
+
   // If the node does not exist in the tree throw an error unless this
   // is the new root and it can be created.
   if (!update_state->ShouldPendingNodeExistInTree(new_data.id)) {
@@ -1354,15 +1415,25 @@ void AXTree::NotifyNodeWillBeReparentedOrDeleted(
   }
 }
 
-void AXTree::RecursivelyNotifyNodeWillBeDeleted(AXNode* node) {
+void AXTree::RecursivelyNotifyNodeDeletedForTreeTeardown(AXNode* node) {
   DCHECK(!GetTreeUpdateInProgressState());
   if (node->id() == AXNode::kInvalidAXID)
     return;
 
   for (AXTreeObserver& observer : observers_)
-    observer.OnNodeWillBeDeleted(this, node);
+    observer.OnNodeDeleted(this, node->id());
   for (auto* child : node->children())
-    RecursivelyNotifyNodeWillBeDeleted(child);
+    RecursivelyNotifyNodeDeletedForTreeTeardown(child);
+}
+
+void AXTree::NotifyNodeHasBeenDeleted(AXNode::AXID node_id) {
+  DCHECK(!GetTreeUpdateInProgressState());
+
+  if (node_id == AXNode::kInvalidAXID)
+    return;
+
+  for (AXTreeObserver& observer : observers_)
+    observer.OnNodeDeleted(this, node_id);
 }
 
 void AXTree::NotifyNodeHasBeenReparentedOrCreated(
@@ -1719,7 +1790,14 @@ bool AXTree::CreateNewChildVector(AXNode* node,
 }
 
 void AXTree::SetEnableExtraMacNodes(bool enabled) {
-  DCHECK(enable_extra_mac_nodes_ != enabled);
+  if (enable_extra_mac_nodes_ == enabled)
+    return;  // No change.
+  if (enable_extra_mac_nodes_ && !enabled) {
+    NOTREACHED()
+        << "We don't support disabling the extra Mac nodes once enabled.";
+    return;
+  }
+
   DCHECK_EQ(0U, table_info_map_.size());
   enable_extra_mac_nodes_ = enabled;
 }
@@ -1789,34 +1867,32 @@ void AXTree::PopulateOrderedSetItems(const AXNode* ordered_set,
       continue;
     }
 
-    int child_level =
-        child->GetIntAttribute(ax::mojom::IntAttribute::kHierarchicalLevel);
-
-    if (child_level < original_level) {
-      // If a decrease in level occurs after the original node has been
-      // examined, stop adding to this set.
-      if (original_node_index < i)
-        break;
-
-      // If a decrease in level has been detected before the original node
-      // has been examined, then everything previously added to items actually
-      // belongs to a different set. Clear items vector.
-      items.clear();
-      continue;
-    } else if (child_level > original_level) {
-      continue;
-    }
-
-    // If role of node is kRadioButton, only add other kRadioButtons.
-    if (node_is_radio_button &&
-        child->data().role == ax::mojom::Role::kRadioButton)
-      items.push_back(child);
-
     // Add child to items if role matches with ordered set's role. If role of
     // node is kRadioButton, don't add items of other roles, even if item role
     // matches ordered set role.
-    if (!node_is_radio_button && child->SetRoleMatchesItemRole(ordered_set))
+    if ((node_is_radio_button &&
+         child->data().role == ax::mojom::Role::kRadioButton) ||
+        (!node_is_radio_button && child->SetRoleMatchesItemRole(ordered_set))) {
+      int child_level =
+          child->GetIntAttribute(ax::mojom::IntAttribute::kHierarchicalLevel);
+
+      if (child_level < original_level) {
+        // If a decrease in level occurs after the original node has been
+        // examined, stop adding to this set.
+        if (original_node_index < i)
+          break;
+
+        // If a decrease in level has been detected before the original node
+        // has been examined, then everything previously added to items actually
+        // belongs to a different set. Clear items vector.
+        items.clear();
+        continue;
+      } else if (child_level > original_level) {
+        continue;
+      }
+
       items.push_back(child);
+    }
 
     // Recurse if there is a generic container, ignored, or unknown.
     if (child->IsIgnored() ||

@@ -25,9 +25,29 @@
 #include "ui/views/style/typography.h"
 #include "ui/views/widget/widget.h"
 
+namespace {
+
+std::unique_ptr<views::View> CreateExtraView(views::ButtonListener* listener) {
+  auto help_button = CreateVectorImageButton(listener);
+  help_button->SetFocusForPlatform();
+  help_button->SetTooltipText(l10n_util::GetStringUTF16(IDS_LEARN_MORE));
+  SetImageFromVectorIcon(help_button.get(), vector_icons::kHelpOutlineIcon);
+  return help_button;
+}
+
+}  // namespace
+
 ConfirmBubbleViews::ConfirmBubbleViews(
     std::unique_ptr<ConfirmBubbleModel> model)
     : model_(std::move(model)), help_button_(nullptr) {
+  DialogDelegate::set_button_label(
+      ui::DIALOG_BUTTON_OK,
+      model_->GetButtonLabel(ConfirmBubbleModel::BUTTON_OK));
+  DialogDelegate::set_button_label(
+      ui::DIALOG_BUTTON_CANCEL,
+      model_->GetButtonLabel(ConfirmBubbleModel::BUTTON_CANCEL));
+  help_button_ = DialogDelegate::SetExtraView(::CreateExtraView(this));
+
   set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(
       views::TEXT, views::TEXT));
   views::GridLayout* layout =
@@ -57,19 +77,6 @@ ConfirmBubbleViews::ConfirmBubbleViews(
 ConfirmBubbleViews::~ConfirmBubbleViews() {
 }
 
-base::string16 ConfirmBubbleViews::GetDialogButtonLabel(
-    ui::DialogButton button) const {
-  switch (button) {
-    case ui::DIALOG_BUTTON_OK:
-      return model_->GetButtonLabel(ConfirmBubbleModel::BUTTON_OK);
-    case ui::DIALOG_BUTTON_CANCEL:
-      return model_->GetButtonLabel(ConfirmBubbleModel::BUTTON_CANCEL);
-    default:
-      NOTREACHED();
-      return DialogDelegateView::GetDialogButtonLabel(button);
-  }
-}
-
 bool ConfirmBubbleViews::IsDialogButtonEnabled(ui::DialogButton button) const {
   switch (button) {
     case ui::DIALOG_BUTTON_OK:
@@ -80,15 +87,6 @@ bool ConfirmBubbleViews::IsDialogButtonEnabled(ui::DialogButton button) const {
       NOTREACHED();
       return false;
   }
-}
-
-std::unique_ptr<views::View> ConfirmBubbleViews::CreateExtraView() {
-  auto help_button = CreateVectorImageButton(this);
-  help_button->SetFocusForPlatform();
-  help_button->SetTooltipText(l10n_util::GetStringUTF16(IDS_LEARN_MORE));
-  help_button_ = help_button.get();
-  SetImageFromVectorIcon(help_button_, vector_icons::kHelpOutlineIcon);
-  return help_button;
 }
 
 bool ConfirmBubbleViews::Cancel() {

@@ -15,7 +15,6 @@
 #include <utility>
 #include <vector>
 
-#include "absl/memory/memory.h"
 #include "absl/types/optional.h"
 #include "api/audio/audio_mixer.h"
 #include "api/audio_codecs/audio_decoder_factory.h"
@@ -138,13 +137,13 @@ class PeerConnectionRtpBaseTest : public ::testing::Test {
   // adjustment.
   std::unique_ptr<PeerConnectionWrapper> CreatePeerConnectionInternal(
       const RTCConfiguration& config) {
-    auto observer = absl::make_unique<MockPeerConnectionObserver>();
+    auto observer = std::make_unique<MockPeerConnectionObserver>();
     auto pc = pc_factory_->CreatePeerConnection(config, nullptr, nullptr,
                                                 observer.get());
     EXPECT_TRUE(pc.get());
     observer->SetPeerConnectionInterface(pc.get());
-    return absl::make_unique<PeerConnectionWrapper>(pc_factory_, pc,
-                                                    std::move(observer));
+    return std::make_unique<PeerConnectionWrapper>(pc_factory_, pc,
+                                                   std::move(observer));
   }
 };
 
@@ -1461,53 +1460,6 @@ TEST_F(PeerConnectionRtpTestUnifiedPlan,
                 .error()
                 .type());
   init.send_encodings = default_send_encodings;
-
-  init.send_encodings[0].codec_payload_type = 1;
-  EXPECT_EQ(RTCErrorType::UNSUPPORTED_PARAMETER,
-            caller->pc()
-                ->AddTransceiver(cricket::MEDIA_TYPE_AUDIO, init)
-                .error()
-                .type());
-  init.send_encodings = default_send_encodings;
-
-  init.send_encodings[0].fec = RtpFecParameters();
-  EXPECT_EQ(RTCErrorType::UNSUPPORTED_PARAMETER,
-            caller->pc()
-                ->AddTransceiver(cricket::MEDIA_TYPE_AUDIO, init)
-                .error()
-                .type());
-  init.send_encodings = default_send_encodings;
-
-  init.send_encodings[0].rtx = RtpRtxParameters();
-  EXPECT_EQ(RTCErrorType::UNSUPPORTED_PARAMETER,
-            caller->pc()
-                ->AddTransceiver(cricket::MEDIA_TYPE_AUDIO, init)
-                .error()
-                .type());
-  init.send_encodings = default_send_encodings;
-
-  init.send_encodings[0].dtx = DtxStatus::ENABLED;
-  EXPECT_EQ(RTCErrorType::UNSUPPORTED_PARAMETER,
-            caller->pc()
-                ->AddTransceiver(cricket::MEDIA_TYPE_AUDIO, init)
-                .error()
-                .type());
-  init.send_encodings = default_send_encodings;
-
-  init.send_encodings[0].ptime = 1;
-  EXPECT_EQ(RTCErrorType::UNSUPPORTED_PARAMETER,
-            caller->pc()
-                ->AddTransceiver(cricket::MEDIA_TYPE_AUDIO, init)
-                .error()
-                .type());
-  init.send_encodings = default_send_encodings;
-
-  init.send_encodings[0].dependency_rids.push_back("dummy_rid");
-  EXPECT_EQ(RTCErrorType::UNSUPPORTED_PARAMETER,
-            caller->pc()
-                ->AddTransceiver(cricket::MEDIA_TYPE_AUDIO, init)
-                .error()
-                .type());
 }
 
 // Test that AddTransceiver fails if trying to use invalid RTP encoding

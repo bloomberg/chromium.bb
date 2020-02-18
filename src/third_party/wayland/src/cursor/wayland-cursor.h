@@ -33,6 +33,8 @@ extern "C" {
 #endif
 
 struct wl_cursor_theme;
+struct wl_buffer;
+struct wl_shm;
 
 struct wl_cursor_image {
 	uint32_t width;		/* actual width */
@@ -47,8 +49,6 @@ struct wl_cursor {
 	struct wl_cursor_image **images;
 	char *name;
 };
-
-struct wl_shm;
 
 struct wl_cursor_theme *
 wl_cursor_theme_load(const char *name, int size, struct wl_shm *shm);

@@ -14,7 +14,10 @@
 #include "components/viz/common/surfaces/local_surface_id.h"
 #include "components/viz/service/display/display_client.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/viz/privileged/mojom/compositing/display_private.mojom.h"
 #include "services/viz/privileged/mojom/compositing/frame_sink_manager.mojom.h"
 #include "services/viz/public/mojom/compositing/compositor_frame_sink.mojom.h"
@@ -55,7 +58,6 @@ class RootCompositorFrameSinkImpl : public mojom::CompositorFrameSink,
   void SetDisplayVSyncParameters(base::TimeTicks timebase,
                                  base::TimeDelta interval) override;
   void ForceImmediateDrawAndSwapIfPossible() override;
-  void SetDisplayTransformHint(gfx::OverlayTransform transform) override;
 #if defined(OS_ANDROID)
   void SetVSyncPaused(bool paused) override;
   void UpdateRefreshRate(float refresh_rate) override;
@@ -63,7 +65,7 @@ class RootCompositorFrameSinkImpl : public mojom::CompositorFrameSink,
       const std::vector<float>& supported_refresh_rates) override;
 #endif
   void AddVSyncParameterObserver(
-      mojom::VSyncParameterObserverPtr observer) override;
+      mojo::PendingRemote<mojom::VSyncParameterObserver> observer) override;
 
   // mojom::CompositorFrameSink:
   void SetNeedsBeginFrame(bool needs_begin_frame) override;
@@ -90,10 +92,11 @@ class RootCompositorFrameSinkImpl : public mojom::CompositorFrameSink,
   RootCompositorFrameSinkImpl(
       FrameSinkManagerImpl* frame_sink_manager,
       const FrameSinkId& frame_sink_id,
-      mojom::CompositorFrameSinkAssociatedRequest frame_sink_request,
-      mojom::CompositorFrameSinkClientPtr frame_sink_client,
-      mojom::DisplayPrivateAssociatedRequest display_request,
-      mojom::DisplayClientPtr display_client,
+      mojo::PendingAssociatedReceiver<mojom::CompositorFrameSink>
+          frame_sink_receiver,
+      mojo::PendingRemote<mojom::CompositorFrameSinkClient> frame_sink_client,
+      mojo::PendingAssociatedReceiver<mojom::DisplayPrivate> display_receiver,
+      mojo::Remote<mojom::DisplayClient> display_client,
       std::unique_ptr<SyntheticBeginFrameSource> synthetic_begin_frame_source,
       std::unique_ptr<ExternalBeginFrameSource> external_begin_frame_source,
       std::unique_ptr<Display> display);
@@ -112,12 +115,12 @@ class RootCompositorFrameSinkImpl : public mojom::CompositorFrameSink,
 
   BeginFrameSource* begin_frame_source();
 
-  mojom::CompositorFrameSinkClientPtr compositor_frame_sink_client_;
-  mojo::AssociatedBinding<mojom::CompositorFrameSink>
-      compositor_frame_sink_binding_;
-  // |display_client_| may be nullptr on platforms that do not use it.
-  mojom::DisplayClientPtr display_client_;
-  mojo::AssociatedBinding<mojom::DisplayPrivate> display_private_binding_;
+  mojo::Remote<mojom::CompositorFrameSinkClient> compositor_frame_sink_client_;
+  mojo::AssociatedReceiver<mojom::CompositorFrameSink>
+      compositor_frame_sink_receiver_;
+  // |display_client_| may be NullRemote on platforms that do not use it.
+  mojo::Remote<mojom::DisplayClient> display_client_;
+  mojo::AssociatedReceiver<mojom::DisplayPrivate> display_private_receiver_;
 
   std::unique_ptr<VSyncParameterListener> vsync_listener_;
 
@@ -135,7 +138,7 @@ class RootCompositorFrameSinkImpl : public mojom::CompositorFrameSink,
   // to the BFS.
   std::unique_ptr<Display> display_;
 
-#if defined(USE_X11)
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   gfx::Size last_swap_pixel_size_;
 #endif
 

@@ -21,8 +21,6 @@
 // <include src="cr_ui.js">
 // <include src="oobe_screen_reset.js">
 // <include src="oobe_screen_autolaunch.js">
-// <include src="oobe_screen_enable_kiosk.js">
-// <include src="oobe_screen_terms_of_service.js">
 // <include src="oobe_screen_supervision_transition.js">
 // <include src="oobe_screen_assistant_optin_flow.js">
 // <include src="oobe_select.js">
@@ -74,11 +72,9 @@ cr.define('cr.ui.Oobe', function() {
       login.AccountPickerScreen.register();
       login.ResetScreen.register();
       login.AutolaunchScreen.register();
-      login.KioskEnableScreen.register();
       login.ErrorMessageScreen.register();
       login.TPMErrorMessageScreen.register();
       login.PasswordChangedScreen.register();
-      login.TermsOfServiceScreen.register();
       login.SyncConsentScreen.register();
       login.FingerprintSetupScreen.register();
       login.ArcTermsOfServiceScreen.register();
@@ -97,6 +93,7 @@ cr.define('cr.ui.Oobe', function() {
       login.MarketingOptInScreen.register();
       login.AssistantOptInFlowScreen.register();
       login.MultiDeviceSetupScreen.register();
+      login.UpdateRequiredScreen.register();
 
       cr.ui.Bubble.decorate($('bubble-persistent'));
       $('bubble-persistent').persistent = true;

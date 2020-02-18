@@ -29,13 +29,11 @@ IsExplicitlyRegisteredForTiming(const LayoutObject* layout_object) {
   if (!element)
     return false;
 
-  // If the element has no 'elementtiming' attribute or an empty value, do not
+  // If the element has no 'elementtiming' attribute, do not
   // generate timing entries for the element. See
   // https://wicg.github.io/element-timing/#sec-modifications-DOM for report
   // vs. ignore criteria.
-  const AtomicString& attr =
-      element->FastGetAttribute(html_names::kElementtimingAttr);
-  return !attr.IsEmpty();
+  return element->FastHasAttribute(html_names::kElementtimingAttr);
 }
 
 }  // namespace internal
@@ -60,10 +58,7 @@ ImageElementTiming& ImageElementTiming::From(LocalDOMWindow& window) {
 }
 
 ImageElementTiming::ImageElementTiming(LocalDOMWindow& window)
-    : Supplement<LocalDOMWindow>(window) {
-  DCHECK(RuntimeEnabledFeatures::ElementTimingEnabled(
-      GetSupplementable()->document()));
-}
+    : Supplement<LocalDOMWindow>(window) {}
 
 void ImageElementTiming::NotifyImageFinished(
     const LayoutObject& layout_object,
@@ -100,8 +95,9 @@ void ImageElementTiming::NotifyImagePainted(
     return;
 
   auto it = images_notified_.find(std::make_pair(layout_object, cached_image));
-  DCHECK(it != images_notified_.end());
-  if (!it->value.is_painted_ && cached_image) {
+  // It is possible that the pair is not in |images_notified_|. See
+  // https://crbug.com/1027948
+  if (it != images_notified_.end() && !it->value.is_painted_ && cached_image) {
     it->value.is_painted_ = true;
     NotifyImagePaintedInternal(layout_object->GetNode(), *layout_object,
                                *cached_image, current_paint_chunk_properties,
@@ -151,11 +147,14 @@ void ImageElementTiming::NotifyImagePaintedInternal(
   DCHECK(layout_object.GetDocument().GetSecurityOrigin());
   // It's ok to expose rendering timestamp for data URIs so exclude those from
   // the Timing-Allow-Origin check.
+  bool response_tainting_not_basic = false;
+  bool tainted_origin_flag = false;
   if (!url.ProtocolIsData() &&
       !Performance::PassesTimingAllowCheck(
-          cached_image.GetResponse(),
+          cached_image.GetResponse(), cached_image.GetResponse(),
           *layout_object.GetDocument().GetSecurityOrigin(),
-          &layout_object.GetDocument())) {
+          &layout_object.GetDocument(), &response_tainting_not_basic,
+          &tainted_origin_flag)) {
     WindowPerformance* performance =
         DOMWindowPerformance::performance(*GetSupplementable());
     if (performance) {

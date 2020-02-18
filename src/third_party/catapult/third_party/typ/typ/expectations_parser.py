@@ -11,6 +11,7 @@
 import fnmatch
 import itertools
 import re
+import logging
 
 from collections import OrderedDict
 from collections import defaultdict
@@ -25,6 +26,11 @@ _EXPECTATION_MAP = {
     'timeout': ResultType.Timeout,
     'skip': ResultType.Skip
 }
+
+
+class ConflictResolutionTypes(object):
+    UNION = 1
+    OVERRIDE = 2
 
 
 def _group_to_string(group):
@@ -44,8 +50,9 @@ class ParseError(Exception):
 
 
 class Expectation(object):
-    def __init__(self, reason, test, tags, results, lineno,
-                 retry_on_failure=False):
+    def __init__(self, reason='', test='*', tags=None, results=None, lineno=0,
+                 retry_on_failure=False, is_slow_test=False,
+                 conflict_resolution=ConflictResolutionTypes.UNION):
         """Constructor for expectations.
 
         Args:
@@ -58,6 +65,8 @@ class Expectation(object):
               set; just 'Mac', or 'Mac' and 'Release', would not qualify.
           results: List of outcomes for test. Example: ['Skip', 'Pass']
         """
+        tags = tags or []
+        results = results or {ResultType.Pass}
         assert python_2_3_compat.is_str(reason) or reason is None
         assert python_2_3_compat.is_str(test)
         self._reason = reason
@@ -66,9 +75,13 @@ class Expectation(object):
         self._results = frozenset(results)
         self._lineno = lineno
         self.should_retry_on_failure = retry_on_failure
+        self.is_slow_test = is_slow_test
+        self.conflict_resolution = conflict_resolution
 
     def __eq__(self, other):
         return (self.reason == other.reason and self.test == other.test
+                and self.should_retry_on_failure == other.should_retry_on_failure
+                and self.is_slow_test == other.is_slow_test
                 and self.tags == other.tags and self.results == other.results
                 and self.lineno == other.lineno)
 
@@ -91,6 +104,7 @@ class Expectation(object):
     @property
     def lineno(self):
         return self._lineno
+
 
 class TaggedTestListParser(object):
     """Parses lists of tests and expectations for them.
@@ -123,12 +137,13 @@ class TaggedTestListParser(object):
     _MATCH_STRING += r'(\s+#.*)?$'  # End comment (optional).
     MATCHER = re.compile(_MATCH_STRING)
 
-    def __init__(self, raw_data):
+    def __init__(self, raw_data, conflict_resolution=ConflictResolutionTypes.UNION):
         self.tag_sets = []
         self.conflicts_allowed = False
         self.expectations = []
         self._allowed_results = set()
         self._tag_to_tag_set = {}
+        self._conflict_resolution = conflict_resolution
         self._parse_raw_expectation_data(raw_data)
 
     def _parse_raw_expectation_data(self, raw_data):
@@ -255,6 +270,7 @@ class TaggedTestListParser(object):
 
         results = []
         retry_on_failure = False
+        is_slow_test = False
         for r in raw_results.split():
             r = r.lower()
             if r not in self._allowed_results:
@@ -266,6 +282,8 @@ class TaggedTestListParser(object):
                     results.append(_EXPECTATION_MAP[r])
                 elif r == 'retryonfailure':
                     retry_on_failure = True
+                elif r == 'slow':
+                    is_slow_test = True
                 else:
                     raise KeyError
             except KeyError:
@@ -275,12 +293,13 @@ class TaggedTestListParser(object):
         # instance. These tags will be compared to the tags passed in to
         # the Runner instance which are also stored in lower case.
         return Expectation(
-            reason, test, tags, results, lineno, retry_on_failure)
+            reason, test, tags, results, lineno, retry_on_failure, is_slow_test, self._conflict_resolution)
 
 
 class TestExpectations(object):
 
     def __init__(self, tags=None):
+        self.tag_sets = []
         self.set_tags(tags or [])
         # Expectations may either refer to individual tests, or globs of
         # tests. Each test (or glob) may have multiple sets of tags and
@@ -289,26 +308,54 @@ class TestExpectations(object):
         # a regular dict for reasons given below.
         self.individual_exps = {}
         self.glob_exps = OrderedDict()
+        self._tags_conflict = _default_tags_conflict
 
-    def set_tags(self, tags):
-        self.tags = [tag.lower() for tag in tags]
+    def set_tags(self, tags, raise_ex_for_bad_tags=False):
+        self.validate_condition_tags(tags, raise_ex_for_bad_tags)
+        self._tags = [tag.lower() for tag in tags]
 
-    def add_tags(self, new_tags):
-        self.tags = list(
-            set(self.tags) | set([tag.lower() for tag in new_tags]))
+    def add_tags(self, new_tags, raise_ex_for_bad_tags=False):
+        self.validate_condition_tags(new_tags, raise_ex_for_bad_tags)
+        self._tags = list(
+            set(self._tags) | set([tag.lower() for tag in new_tags]))
+
+    @property
+    def tags(self):
+        return self._tags[:]
+
+    def validate_condition_tags(self, tags, raise_ex_for_bad_tags):
+        # This function will be used to validate if each tag in the tags list
+        # is declared in a test expectations file. This validation will make
+        # sure that the tags written in the test expectations files match tags
+        # that are generated by the test runner.
+        def _pluralize_unknown(missing):
+            if len(missing) > 1:
+                return ('s %s ' % ', '.join(missing[:-1]) + 'and %s ' % missing[-1] + 'are',
+                        's are')
+            else:
+                return (' %s ' % missing[0] + 'is', ' is')
+        tags = [t.lower() for t in tags]
+        unknown_tags = sorted([
+            t for t in tags
+            if self.tag_sets and all(t not in tag_set for tag_set in self.tag_sets)])
+        if unknown_tags:
+            msg = (
+                'Tag%s not declared in the expectations file. '
+                'There may have been a typo in the expectations file. '
+                'Please make sure the aforementioned tag%s declared at '
+                'the top of the expectations file.' % _pluralize_unknown(unknown_tags))
+            if raise_ex_for_bad_tags:
+                raise ValueError(msg)
+            else:
+                logging.warning(msg)
 
     def parse_tagged_list(self, raw_data, file_name='',
-                          tags_conflict=_default_tags_conflict):
+                          tags_conflict=_default_tags_conflict,
+                          conflict_resolution=ConflictResolutionTypes.UNION):
         ret = 0
-        # TODO(rmhasan): If we decide to support multiple test expectations in
-        # one TestExpectations instance, then we should make the file_name field
-        # mandatory.
-        assert not self.individual_exps and not self.glob_exps, (
-            'Currently there is no support for multiple test expectations'
-            ' files in a TestExpectations instance')
         self.file_name = file_name
         try:
-            parser = TaggedTestListParser(raw_data)
+            parser = TaggedTestListParser(raw_data, conflict_resolution)
         except ParseError as e:
             return 1, str(e)
         self.tag_sets = parser.tag_sets
@@ -336,6 +383,21 @@ class TestExpectations(object):
             ret = 1 if errors else 0
         return ret, errors
 
+    def merge_test_expectations(self, other):
+        # Merges another TestExpectation instance into this instance.
+        # It will merge the other instance's and this instance's
+        # individual_exps and glob_exps dictionaries.
+        self.add_tags(other.tags)
+        for pattern, exps in other.individual_exps.items():
+            self.individual_exps.setdefault(pattern, []).extend(exps)
+        for pattern, exps in other.glob_exps.items():
+            self.glob_exps.setdefault(pattern, []).extend(exps)
+        glob_exps = self.glob_exps
+        self.glob_exps = OrderedDict()
+        for pattern, exps in sorted(
+              glob_exps.items(), key=lambda item: len(item[0]), reverse=True):
+            self.glob_exps[pattern] = exps
+
     def expectations_for(self, test):
         # Returns a tuple of (expectations, should_retry_on_failure)
         #
@@ -355,18 +417,35 @@ class TestExpectations(object):
         # should_retry_on_failure flag set to true
         #
         # The longest matching test string (name or glob) has priority.
-        results = set()
-        reasons = set()
-        should_retry_on_failure = False
+        self._results = set()
+        self._reasons = set()
+        self._should_retry_on_failure = False
+        self._is_slow_test = False
+
+        def _update_expected_results(exp):
+            if exp.tags.issubset(self._tags):
+                if exp.conflict_resolution == ConflictResolutionTypes.UNION:
+                    self._results.update(exp.results)
+                    self._should_retry_on_failure |= exp.should_retry_on_failure
+                    self._is_slow_test |= exp.is_slow_test
+                    if exp.reason:
+                        self._reasons.update([exp.reason])
+                else:
+                    self._results = set(exp.results)
+                    self._should_retry_on_failure = exp.should_retry_on_failure
+                    self._is_slow_test = exp.is_slow_test
+                    if exp.reason:
+                        self._reasons = {exp.reason}
+
         # First, check for an exact match on the test name.
         for exp in self.individual_exps.get(test, []):
-            if exp.tags.issubset(self.tags):
-                results.update(exp.results)
-                should_retry_on_failure |= exp.should_retry_on_failure
-                if exp.reason:
-                    reasons.update([exp.reason])
-        if results or should_retry_on_failure:
-            return (results or {ResultType.Pass}), should_retry_on_failure, reasons
+            _update_expected_results(exp)
+
+        if self._results or self._should_retry_on_failure:
+            return Expectation(
+                    test=test, results=self._results,
+                    retry_on_failure=self._should_retry_on_failure,
+                    is_slow_test=self._is_slow_test, reason=' '.join(self._reasons))
 
         # If we didn't find an exact match, check for matching globs. Match by
         # the most specific (i.e., longest) glob first. Because self.globs is
@@ -374,20 +453,18 @@ class TestExpectations(object):
         for glob, exps in self.glob_exps.items():
             if fnmatch.fnmatch(test, glob):
                 for exp in exps:
-                    if exp.tags.issubset(self.tags):
-                        results.update(exp.results)
-                        should_retry_on_failure |= exp.should_retry_on_failure
-                        if exp.reason:
-                            reasons.update([exp.reason])
+                    _update_expected_results(exp)
                 # if *any* of the exps matched, results will be non-empty,
                 # and we're done. If not, keep looking through ever-shorter
                 # globs.
-                if results or should_retry_on_failure:
-                    return ((results or {ResultType.Pass}),
-                            should_retry_on_failure, reasons)
+                if self._results or self._should_retry_on_failure:
+                    return Expectation(
+                            test=test, results=self._results,
+                            retry_on_failure=self._should_retry_on_failure,
+                            is_slow_test=self._is_slow_test, reason=' '.join(self._reasons))
 
         # Nothing matched, so by default, the test is expected to pass.
-        return {ResultType.Pass}, False, set()
+        return Expectation(test=test)
 
     def tag_sets_conflict(self, s1, s2):
         # Tag sets s1 and s2 have no conflict when there exists a tag in s1

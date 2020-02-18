@@ -10,6 +10,7 @@ import sys
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 CLIENT_DIR = os.path.dirname(os.path.dirname(THIS_DIR))
 sys.path.insert(0, CLIENT_DIR)
+sys.path.insert(0, os.path.join(CLIENT_DIR, 'third_party'))
 
 from utils import logging_utils
 

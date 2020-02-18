@@ -131,7 +131,7 @@ class EntryImpl::UserBuffer {
   // Prepare this buffer for reuse.
   void Reset();
 
-  char* Data() { return buffer_.size() ? &buffer_[0] : nullptr; }
+  char* Data() { return buffer_.data(); }
   int Size() { return static_cast<int>(buffer_.size()); }
   int Start() { return offset_; }
   int End() { return offset_ + Size(); }
@@ -648,7 +648,7 @@ bool EntryImpl::DataSanityCheck() {
   if (!key_addr.is_initialized() && stored->key[stored->key_len])
     return false;
 
-  if (stored->hash != base::Hash(GetKey()))
+  if (stored->hash != base::PersistentHash(GetKey()))
     return false;
 
   for (int i = 0; i < kNumStreams; i++) {

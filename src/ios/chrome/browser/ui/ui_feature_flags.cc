@@ -4,10 +4,6 @@
 
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 
-// TODO(crbug.com/893314) : Remove this flag.
-const base::Feature kClosingLastIncognitoTab{"ClosingLastIncognitoTab",
-                                             base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kBrowserContainerKeepsContentView{
     "BrowserContainerKeepsContentView", base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -20,9 +16,6 @@ const base::Feature kOmniboxPopupShortcutIconsInZeroState{
 const base::Feature kSnapshotDrawView{"SnapshotDrawView",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kCopiedContentBehavior{"CopiedContentBehavior",
-                                           base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kSettingsRefresh{"SettingsRefresh",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -33,7 +26,16 @@ const base::Feature kOmniboxUseDefaultSearchEngineFavicon{
     "OmniboxUseDefaultSearchEngineFavicon", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kLanguageSettings{"LanguageSettings",
-                                      base::FEATURE_DISABLED_BY_DEFAULT};
+                                      base::FEATURE_ENABLED_BY_DEFAULT};
 
-const base::Feature kOptionalArticleThumbnail{"OptionalArticleThumbnail",
-                                              base::FEATURE_ENABLED_BY_DEFAULT};
+const base::Feature kEmbedderBlockRestoreUrl{"EmbedderBlockRestoreUrl",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kDisableAnimationOnLowBattery{
+    "DisableAnimationOnLowBattery", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kVoiceOverUnstackedTabstrip{
+    "VoiceOverUnstackedTabstrip", base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kForceUnstackedTabstrip{"ForceUnstackedTabstrip",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};

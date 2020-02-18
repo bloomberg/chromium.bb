@@ -37,7 +37,7 @@ def main():
     new_content = parse_cipd(args.root, f.readlines())
 
   # Install new packages
-  for path, packages in new_content.iteritems():
+  for path, packages in new_content.items():
     if not os.path.exists(path):
       os.makedirs(path)
     with open(os.path.join(path, '_cipd'), 'w') as f:

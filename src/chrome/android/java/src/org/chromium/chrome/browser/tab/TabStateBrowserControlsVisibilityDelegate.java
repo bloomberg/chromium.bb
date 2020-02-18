@@ -32,7 +32,7 @@ public class TabStateBrowserControlsVisibilityDelegate
 
     private static boolean sDisableLoadingCheck;
 
-    protected final Tab mTab;
+    protected final TabImpl mTab;
 
     private boolean mIsFullscreenWaitingForLoad;
 
@@ -41,7 +41,7 @@ public class TabStateBrowserControlsVisibilityDelegate
      * @param tab The associated {@link Tab}.
      */
     public TabStateBrowserControlsVisibilityDelegate(Tab tab) {
-        mTab = tab;
+        mTab = (TabImpl) tab;
 
         mTab.addObserver(new EmptyTabObserver() {
             @SuppressLint("HandlerLeak")
@@ -63,7 +63,7 @@ public class TabStateBrowserControlsVisibilityDelegate
                 if (!mIsFullscreenWaitingForLoad) return;
 
                 mIsFullscreenWaitingForLoad = false;
-                TabBrowserControlsState.updateEnabledState(mTab);
+                TabBrowserControlsConstraintsHelper.updateEnabledState(mTab);
             }
 
             private void cancelEnableFullscreenLoadDelay() {
@@ -94,13 +94,13 @@ public class TabStateBrowserControlsVisibilityDelegate
                 mHandler.removeMessages(MSG_ID_ENABLE_FULLSCREEN_AFTER_LOAD);
                 mHandler.sendEmptyMessageDelayed(
                         MSG_ID_ENABLE_FULLSCREEN_AFTER_LOAD, getLoadDelayMs());
-                TabBrowserControlsState.updateEnabledState(mTab);
+                TabBrowserControlsConstraintsHelper.updateEnabledState(mTab);
             }
 
             @Override
             public void onPageLoadStarted(Tab tab, String url) {
                 mIsFullscreenWaitingForLoad = !DomDistillerUrlUtils.isDistilledPage(url);
-                TabBrowserControlsState.updateEnabledState(mTab);
+                TabBrowserControlsConstraintsHelper.updateEnabledState(mTab);
             }
 
             @Override
@@ -108,13 +108,13 @@ public class TabStateBrowserControlsVisibilityDelegate
                 // Handle the case where a commit or prerender swap notification failed to arrive
                 // and the enable fullscreen message was never enqueued.
                 scheduleEnableFullscreenLoadDelayIfNecessary();
-                TabBrowserControlsState.updateEnabledState(mTab);
+                TabBrowserControlsConstraintsHelper.updateEnabledState(mTab);
             }
 
             @Override
             public void onPageLoadFailed(Tab tab, int errorCode) {
                 cancelEnableFullscreenLoadDelay();
-                TabBrowserControlsState.updateEnabledState(mTab);
+                TabBrowserControlsConstraintsHelper.updateEnabledState(mTab);
             }
 
             @Override

@@ -24,9 +24,9 @@ namespace {
 bool ShouldAssignToCustomSlot(const Node& node) {
   if (IsA<HTMLDetailsElement>(node.parentElement()))
     return HTMLDetailsElement::IsFirstSummary(node);
-  if (IsHTMLSelectElement(node.parentElement()))
+  if (IsA<HTMLSelectElement>(node.parentElement()))
     return HTMLSelectElement::CanAssignToSelectSlot(node);
-  if (IsHTMLOptGroupElement(node.parentElement()))
+  if (IsA<HTMLOptGroupElement>(node.parentElement()))
     return HTMLOptGroupElement::CanAssignToOptGroupSlot(node);
   return false;
 }
@@ -358,7 +358,7 @@ HTMLSlotElement* SlotAssignment::GetCachedFirstSlotWithoutAccessingNodeTree(
     const AtomicString& slot_name) {
   if (Element* slot =
           slot_map_->GetCachedFirstElementWithoutAccessingNodeTree(slot_name)) {
-    return ToHTMLSlotElement(slot);
+    return To<HTMLSlotElement>(slot);
   }
   return nullptr;
 }

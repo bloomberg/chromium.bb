@@ -19,7 +19,6 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram_base.h"
 #include "base/metrics/histogram_samples.h"
@@ -42,6 +41,7 @@
 #include "components/history/core/browser/in_memory_database.h"
 #include "components/history/core/browser/in_memory_history_backend.h"
 #include "components/history/core/browser/keyword_search_term.h"
+#include "components/history/core/browser/sync/typed_url_sync_bridge.h"
 #include "components/history/core/browser/visit_delegate.h"
 #include "components/history/core/test/database_test_utils.h"
 #include "components/history/core/test/history_client_fake_bookmarks.h"
@@ -266,7 +266,7 @@ class HistoryBackendTestBase : public testing::Test {
       backend_->Closing();
     backend_ = nullptr;
     mem_backend_.reset();
-    base::DeleteFile(test_dir_, true);
+    base::DeleteFileRecursively(test_dir_);
     base::RunLoop().RunUntilIdle();
     history_client_.ClearAllBookmarks();
   }
@@ -1662,7 +1662,7 @@ TEST_F(HistoryBackendTest, MigrationVisitSource) {
   // Copy history database file to current directory so that it will be deleted
   // in Teardown.
   base::FilePath new_history_path(test_dir());
-  base::DeleteFile(new_history_path, true);
+  base::DeleteFileRecursively(new_history_path);
   base::CreateDirectory(new_history_path);
   base::FilePath new_history_file = new_history_path.Append(kHistoryFilename);
   ASSERT_TRUE(base::CopyFile(old_history_path, new_history_file));
@@ -3354,7 +3354,7 @@ TEST_F(HistoryBackendTest, MigrationVisitDuration) {
   // Copy history database file to current directory so that it will be deleted
   // in Teardown.
   base::FilePath new_history_path(test_dir());
-  base::DeleteFile(new_history_path, true);
+  base::DeleteFileRecursively(new_history_path);
   base::CreateDirectory(new_history_path);
   base::FilePath new_history_file = new_history_path.Append(kHistoryFilename);
   ASSERT_TRUE(base::CopyFile(old_history, new_history_file));
@@ -3587,7 +3587,7 @@ TEST_F(HistoryBackendTest, RemoveNotification) {
   // Add a URL.
   GURL url("http://www.google.com");
   std::unique_ptr<HistoryService> service(
-      new HistoryService(base::WrapUnique(new HistoryClientFakeBookmarks),
+      new HistoryService(std::make_unique<HistoryClientFakeBookmarks>(),
                          std::unique_ptr<history::VisitDelegate>()));
   EXPECT_TRUE(service->Init(
       TestHistoryDatabaseParamsForPath(scoped_temp_dir.GetPath())));
@@ -3597,7 +3597,7 @@ TEST_F(HistoryBackendTest, RemoveNotification) {
 
   // This won't actually delete the URL, rather it'll empty out the visits.
   // This triggers blocking on the BookmarkModel.
-  service->DeleteURL(url);
+  service->DeleteURLs({url});
 }
 
 // Test DeleteFTSIndexDatabases deletes expected files.

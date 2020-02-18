@@ -31,7 +31,6 @@ enum SelectionMode { "select", "start", "end", "preserve" };
     [CEReactions, Reflect] attribute DOMString accept;
     [CEReactions, Reflect] attribute DOMString alt;
     [CEReactions, ImplementedAs=IDLExposedAutofillValue] attribute DOMString autocomplete;
-    [CEReactions, Reflect] attribute boolean autofocus;
     [CEReactions, Reflect=checked] attribute boolean defaultChecked;
     attribute boolean checked;
     [CEReactions, Reflect] attribute DOMString dirName;
@@ -40,7 +39,7 @@ enum SelectionMode { "select", "start", "end", "preserve" };
     // The 'files' attribute is intentionally not readonly.
     // https://www.w3.org/Bugs/Public/show_bug.cgi?id=22682
     attribute FileList? files;
-    [CEReactions, RaisesException=Setter] attribute URLString formAction;
+    [CEReactions] attribute DOMString formAction;
     [CEReactions, CustomElementCallbacks] attribute DOMString formEnctype;
     [CEReactions, CustomElementCallbacks] attribute DOMString formMethod;
     [CEReactions, Reflect] attribute boolean formNoValidate;
@@ -59,12 +58,12 @@ enum SelectionMode { "select", "start", "end", "preserve" };
     [CEReactions, Reflect] attribute boolean readOnly;
     [CEReactions, Reflect] attribute boolean required;
     [CEReactions, RaisesException=Setter, CustomElementCallbacks] attribute unsigned long size;
-    [CEReactions, Reflect, URL, RaisesException=Setter] attribute URLString src;
+    [CEReactions, Reflect, URL] attribute DOMString src;
     [CEReactions, Reflect] attribute DOMString step;
     [CEReactions, CustomElementCallbacks] attribute DOMString type;
     [CEReactions, Reflect=value, CustomElementCallbacks] attribute DOMString defaultValue;
     [CEReactions, RaisesException=Setter, CustomElementCallbacks] attribute [TreatNullAs=EmptyString] DOMString value;
-    [CEReactions, RaisesException=Setter, CustomElementCallbacks] attribute Date? valueAsDate;
+    [CEReactions, RaisesException=Setter, CustomElementCallbacks, CallWith=ScriptState] attribute object? valueAsDate;
     [RaisesException=Setter, CustomElementCallbacks] attribute unrestricted double valueAsNumber;
     // Note: The spec has valueLow and valueHigh for two-valued range controls.
     // https://www.w3.org/Bugs/Public/show_bug.cgi?id=13154

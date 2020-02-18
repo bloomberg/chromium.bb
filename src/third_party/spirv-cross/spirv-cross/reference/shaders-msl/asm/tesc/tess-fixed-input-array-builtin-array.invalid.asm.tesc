@@ -1,9 +1,48 @@
 #pragma clang diagnostic ignored "-Wmissing-prototypes"
+#pragma clang diagnostic ignored "-Wmissing-braces"
 
 #include <metal_stdlib>
 #include <simd/simd.h>
 
 using namespace metal;
+
+template<typename T, size_t Num>
+struct spvUnsafeArray
+{
+    T elements[Num ? Num : 1];
+    
+    thread T& operator [] (size_t pos) thread
+    {
+        return elements[pos];
+    }
+    constexpr const thread T& operator [] (size_t pos) const thread
+    {
+        return elements[pos];
+    }
+    
+    device T& operator [] (size_t pos) device
+    {
+        return elements[pos];
+    }
+    constexpr const device T& operator [] (size_t pos) const device
+    {
+        return elements[pos];
+    }
+    
+    constexpr const constant T& operator [] (size_t pos) const constant
+    {
+        return elements[pos];
+    }
+    
+    threadgroup T& operator [] (size_t pos) threadgroup
+    {
+        return elements[pos];
+    }
+    constexpr const threadgroup T& operator [] (size_t pos) const threadgroup
+    {
+        return elements[pos];
+    }
+};
 
 struct VertexOutput
 {
@@ -19,7 +58,7 @@ struct HSOut
 
 struct HSConstantOut
 {
-    float EdgeTess[3];
+    spvUnsafeArray<float, 3> EdgeTess;
     float InsideTess;
 };
 
@@ -45,20 +84,8 @@ struct main0_in
     float4 gl_Position [[attribute(1)]];
 };
 
-// Implementation of an array copy function to cover GLSL's ability to copy an array via assignment.
-template<typename T, uint N>
-void spvArrayCopyFromStack1(thread T (&dst)[N], thread const T (&src)[N])
-{
-    for (uint i = 0; i < N; dst[i] = src[i], i++);
-}
-
-template<typename T, uint N>
-void spvArrayCopyFromConstant1(thread T (&dst)[N], constant T (&src)[N])
-{
-    for (uint i = 0; i < N; dst[i] = src[i], i++);
-}
-
-HSOut _hs_main(thread const VertexOutput (&p)[3], thread const uint& i)
+static inline __attribute__((always_inline))
+HSOut _hs_main(thread const spvUnsafeArray<VertexOutput, 3> (&p), thread const uint& i)
 {
     HSOut _output;
     _output.pos = p[i].pos;
@@ -66,7 +93,8 @@ HSOut _hs_main(thread const VertexOutput (&p)[3], thread const uint& i)
     return _output;
 }
 
-HSConstantOut PatchHS(thread const VertexOutput (&_patch)[3])
+static inline __attribute__((always_inline))
+HSConstantOut PatchHS(thread const spvUnsafeArray<VertexOutput, 3> (&_patch))
 {
     HSConstantOut _output;
     _output.EdgeTess[0] = (float2(1.0) + _patch[0].uv).x;
@@ -84,7 +112,7 @@ kernel void main0(main0_in in [[stage_in]], uint gl_InvocationID [[thread_index_
     threadgroup_barrier(mem_flags::mem_threadgroup);
     if (gl_InvocationID >= 3)
         return;
-    VertexOutput p[3];
+    spvUnsafeArray<VertexOutput, 3> p;
     p[0].pos = gl_in[0].gl_Position;
     p[0].uv = gl_in[0].VertexOutput_uv;
     p[1].pos = gl_in[1].gl_Position;
@@ -92,17 +120,17 @@ kernel void main0(main0_in in [[stage_in]], uint gl_InvocationID [[thread_index_
     p[2].pos = gl_in[2].gl_Position;
     p[2].uv = gl_in[2].VertexOutput_uv;
     uint i = gl_InvocationID;
-    VertexOutput param[3];
-    spvArrayCopyFromStack1(param, p);
+    spvUnsafeArray<VertexOutput, 3> param;
+    param = p;
     uint param_1 = i;
     HSOut flattenTemp = _hs_main(param, param_1);
     gl_out[gl_InvocationID].gl_Position = flattenTemp.pos;
     gl_out[gl_InvocationID]._entryPointOutput.uv = flattenTemp.uv;
-    threadgroup_barrier(mem_flags::mem_device);
+    threadgroup_barrier(mem_flags::mem_device | mem_flags::mem_threadgroup);
     if (int(gl_InvocationID) == 0)
     {
-        VertexOutput param_2[3];
-        spvArrayCopyFromStack1(param_2, p);
+        spvUnsafeArray<VertexOutput, 3> param_2;
+        param_2 = p;
         HSConstantOut _patchConstantResult = PatchHS(param_2);
         spvTessLevel[gl_PrimitiveID].edgeTessellationFactor[0] = half(_patchConstantResult.EdgeTess[0]);
         spvTessLevel[gl_PrimitiveID].edgeTessellationFactor[1] = half(_patchConstantResult.EdgeTess[1]);

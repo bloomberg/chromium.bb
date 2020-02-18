@@ -2,84 +2,86 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('welcome_module_metrics', function() {
-  suite('ModuleMetricsTest', function() {
-    /** @type {welcome.ModuleMetricsProxy} */
-    let testMetricsProxy;
+import {ModuleMetricsManager} from 'chrome://welcome/shared/module_metrics_proxy.js';
 
-    /** @type {welcome.ModuleMetricsManager} */
-    let testMetricsManager;
+import {TestMetricsProxy} from './test_metrics_proxy.js';
 
-    setup(function() {
-      testMetricsProxy = new TestMetricsProxy();
-      testMetricsManager = new welcome.ModuleMetricsManager(testMetricsProxy);
+suite('ModuleMetricsTest', function() {
+  /** @type {ModuleMetricsProxy} */
+  let testMetricsProxy;
 
-      testMetricsManager.recordPageInitialized();
+  /** @type {ModuleMetricsManager} */
+  let testMetricsManager;
 
-      return testMetricsProxy.whenCalled('recordPageShown');
-    });
+  setup(function() {
+    testMetricsProxy = new TestMetricsProxy();
+    testMetricsManager = new ModuleMetricsManager(testMetricsProxy);
 
-    test('do nothing, click skip', function() {
-      testMetricsManager.recordNoThanks();
-      return testMetricsProxy.whenCalled('recordDidNothingAndChoseSkip');
-    });
+    testMetricsManager.recordPageInitialized();
 
-    test('do nothing, click next', function() {
-      testMetricsManager.recordGetStarted();
-      return testMetricsProxy.whenCalled('recordDidNothingAndChoseNext');
-    });
+    return testMetricsProxy.whenCalled('recordPageShown');
+  });
 
-    test('do nothing, navigate away', function() {
-      testMetricsManager.recordNavigatedAway();
-      return testMetricsProxy.whenCalled('recordDidNothingAndNavigatedAway');
-    });
+  test('do nothing, click skip', function() {
+    testMetricsManager.recordNoThanks();
+    return testMetricsProxy.whenCalled('recordDidNothingAndChoseSkip');
+  });
 
-    test('choose option, click skip', function() {
-      testMetricsManager.recordClickedOption();
-      testMetricsManager.recordNoThanks();
-      return testMetricsProxy.whenCalled('recordChoseAnOptionAndChoseSkip');
-    });
+  test('do nothing, click next', function() {
+    testMetricsManager.recordGetStarted();
+    return testMetricsProxy.whenCalled('recordDidNothingAndChoseNext');
+  });
 
-    test('choose option, click next', function() {
-      testMetricsManager.recordClickedOption();
-      testMetricsManager.recordGetStarted();
-      return testMetricsProxy.whenCalled('recordChoseAnOptionAndChoseNext');
-    });
+  test('do nothing, navigate away', function() {
+    testMetricsManager.recordNavigatedAway();
+    return testMetricsProxy.whenCalled('recordDidNothingAndNavigatedAway');
+  });
 
-    test('choose option, navigate away', function() {
-      testMetricsManager.recordClickedOption();
-      testMetricsManager.recordNavigatedAway();
-      return testMetricsProxy.whenCalled('recordChoseAnOptionAndNavigatedAway');
-    });
+  test('choose option, click skip', function() {
+    testMetricsManager.recordClickedOption();
+    testMetricsManager.recordNoThanks();
+    return testMetricsProxy.whenCalled('recordChoseAnOptionAndChoseSkip');
+  });
 
-    test('click disabled next, click skip', function() {
-      testMetricsManager.recordClickedDisabledButton();
-      testMetricsManager.recordNoThanks();
-      return testMetricsProxy.whenCalled(
-          'recordClickedDisabledNextButtonAndChoseSkip');
-    });
+  test('choose option, click next', function() {
+    testMetricsManager.recordClickedOption();
+    testMetricsManager.recordGetStarted();
+    return testMetricsProxy.whenCalled('recordChoseAnOptionAndChoseNext');
+  });
 
-    test('click disabled next, click next', function() {
-      testMetricsManager.recordClickedDisabledButton();
-      // 'Next' should become enabled only after clicking another option.
-      testMetricsManager.recordClickedOption();
-      testMetricsManager.recordGetStarted();
-      return testMetricsProxy.whenCalled(
-          'recordClickedDisabledNextButtonAndChoseNext');
-    });
+  test('choose option, navigate away', function() {
+    testMetricsManager.recordClickedOption();
+    testMetricsManager.recordNavigatedAway();
+    return testMetricsProxy.whenCalled('recordChoseAnOptionAndNavigatedAway');
+  });
 
-    test('click disabled next, navigate away', function() {
-      testMetricsManager.recordClickedDisabledButton();
-      testMetricsManager.recordNavigatedAway();
-      return testMetricsProxy.whenCalled(
-          'recordClickedDisabledNextButtonAndNavigatedAway');
-    });
+  test('click disabled next, click skip', function() {
+    testMetricsManager.recordClickedDisabledButton();
+    testMetricsManager.recordNoThanks();
+    return testMetricsProxy.whenCalled(
+        'recordClickedDisabledNextButtonAndChoseSkip');
+  });
 
-    test('choose option, click disabled next, click next', function() {
-      testMetricsManager.recordClickedOption();
-      testMetricsManager.recordClickedDisabledButton();
-      testMetricsManager.recordGetStarted();
-      return testMetricsProxy.whenCalled('recordChoseAnOptionAndChoseNext');
-    });
+  test('click disabled next, click next', function() {
+    testMetricsManager.recordClickedDisabledButton();
+    // 'Next' should become enabled only after clicking another option.
+    testMetricsManager.recordClickedOption();
+    testMetricsManager.recordGetStarted();
+    return testMetricsProxy.whenCalled(
+        'recordClickedDisabledNextButtonAndChoseNext');
+  });
+
+  test('click disabled next, navigate away', function() {
+    testMetricsManager.recordClickedDisabledButton();
+    testMetricsManager.recordNavigatedAway();
+    return testMetricsProxy.whenCalled(
+        'recordClickedDisabledNextButtonAndNavigatedAway');
+  });
+
+  test('choose option, click disabled next, click next', function() {
+    testMetricsManager.recordClickedOption();
+    testMetricsManager.recordClickedDisabledButton();
+    testMetricsManager.recordGetStarted();
+    return testMetricsProxy.whenCalled('recordChoseAnOptionAndChoseNext');
   });
 });

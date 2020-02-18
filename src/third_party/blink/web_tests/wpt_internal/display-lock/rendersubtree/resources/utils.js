@@ -1,14 +1,16 @@
+const INVISIBLE_ACTIVATABLE = "invisible";
+const INVISIBLE_NOT_ACTIVATABLE = "invisible skip-activation";
 
 function setInvisible(element) {
-  return setRenderSubtree(element, "invisible");
+  return setRenderSubtree(element, INVISIBLE_NOT_ACTIVATABLE);
 }
 
 function setInvisibleActivatable(element) {
-  return setRenderSubtree(element, "invisible activatable");
+  return setRenderSubtree(element, INVISIBLE_ACTIVATABLE);
 }
 
 function setVisible(element) {
-  return setRenderSubtree(element, "visible");
+  return setRenderSubtree(element, "");
 }
 
 function setRenderSubtree(element, value) {

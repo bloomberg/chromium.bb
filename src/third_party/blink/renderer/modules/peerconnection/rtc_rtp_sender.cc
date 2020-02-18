@@ -9,22 +9,27 @@
 #include <tuple>
 #include <utility>
 
-#include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/public/platform/web_rtc_dtmf_sender_handler.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_track.h"
+#include "third_party/blink/renderer/modules/peerconnection/peer_connection_dependency_factory.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_dtls_transport.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_dtmf_sender.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_error_util.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_peer_connection.h"
+#include "third_party/blink/renderer/modules/peerconnection/rtc_rtcp_parameters.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_rtp_capabilities.h"
+#include "third_party/blink/renderer/modules/peerconnection/rtc_rtp_codec_parameters.h"
+#include "third_party/blink/renderer/modules/peerconnection/rtc_rtp_header_extension_capability.h"
+#include "third_party/blink/renderer/modules/peerconnection/rtc_rtp_header_extension_parameters.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_stats_report.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_void_request_script_promise_resolver_impl.h"
 #include "third_party/blink/renderer/modules/peerconnection/web_rtc_stats_report_callback_resolver.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
+#include "third_party/blink/renderer/platform/peerconnection/rtc_dtmf_sender_handler.h"
+#include "third_party/blink/renderer/platform/peerconnection/rtc_stats.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_void_request.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
@@ -320,7 +325,7 @@ RTCRtpCodecParameters* ToRtpCodecParameters(
 }
 
 RTCRtpSender::RTCRtpSender(RTCPeerConnection* pc,
-                           std::unique_ptr<WebRTCRtpSender> sender,
+                           std::unique_ptr<RTCRtpSenderPlatform> sender,
                            String kind,
                            MediaStreamTrack* track,
                            MediaStreamVector streams)
@@ -487,7 +492,7 @@ ScriptPromise RTCRtpSender::getStats(ScriptState* script_state) {
   return promise;
 }
 
-WebRTCRtpSender* RTCRtpSender::web_sender() {
+RTCRtpSenderPlatform* RTCRtpSender::web_sender() {
   return sender_.get();
 }
 
@@ -574,7 +579,8 @@ RTCRtpCapabilities* RTCRtpSender::getCapabilities(const String& kind) {
       HeapVector<Member<RTCRtpHeaderExtensionCapability>>());
 
   std::unique_ptr<webrtc::RtpCapabilities> rtc_capabilities =
-      blink::Platform::Current()->GetRtpSenderCapabilities(kind);
+      PeerConnectionDependencyFactory::GetInstance()->GetSenderCapabilities(
+          kind.Utf8());
 
   HeapVector<Member<RTCRtpCodecCapability>> codecs;
   codecs.ReserveInitialCapacity(

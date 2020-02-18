@@ -15,7 +15,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 
 namespace content {
 
@@ -73,14 +73,15 @@ VideoCaptureHost::VideoCaptureHost(
 }
 
 // static
-void VideoCaptureHost::Create(uint32_t render_process_id,
-                              MediaStreamManager* media_stream_manager,
-                              media::mojom::VideoCaptureHostRequest request) {
+void VideoCaptureHost::Create(
+    uint32_t render_process_id,
+    MediaStreamManager* media_stream_manager,
+    mojo::PendingReceiver<media::mojom::VideoCaptureHost> receiver) {
   DVLOG(1) << __func__;
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  mojo::MakeStrongBinding(std::make_unique<VideoCaptureHost>(
-                              render_process_id, media_stream_manager),
-                          std::move(request));
+  mojo::MakeSelfOwnedReceiver(std::make_unique<VideoCaptureHost>(
+                                  render_process_id, media_stream_manager),
+                              std::move(receiver));
 }
 
 VideoCaptureHost::~VideoCaptureHost() {
@@ -102,8 +103,8 @@ VideoCaptureHost::~VideoCaptureHost() {
   }
 
   NotifyAllStreamsRemoved();
-  BrowserThread::DeleteSoon(BrowserThread::UI, FROM_HERE,
-                            render_process_host_delegate_.release());
+  base::DeleteSoon(FROM_HERE, {BrowserThread::UI},
+                   render_process_host_delegate_.release());
 }
 
 void VideoCaptureHost::OnError(const VideoCaptureControllerID& controller_id,
@@ -181,17 +182,18 @@ void VideoCaptureHost::OnStarted(
 void VideoCaptureHost::OnStartedUsingGpuDecode(
     const VideoCaptureControllerID& id) {}
 
-void VideoCaptureHost::Start(const base::UnguessableToken& device_id,
-                             const base::UnguessableToken& session_id,
-                             const media::VideoCaptureParams& params,
-                             media::mojom::VideoCaptureObserverPtr observer) {
+void VideoCaptureHost::Start(
+    const base::UnguessableToken& device_id,
+    const base::UnguessableToken& session_id,
+    const media::VideoCaptureParams& params,
+    mojo::PendingRemote<media::mojom::VideoCaptureObserver> observer) {
   DVLOG(1) << __func__ << " session_id=" << session_id
            << ", device_id=" << device_id << ", format="
            << media::VideoCaptureFormat::ToString(params.requested_format);
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   DCHECK(!base::Contains(device_id_to_observer_map_, device_id));
-  device_id_to_observer_map_[device_id] = std::move(observer);
+  device_id_to_observer_map_[device_id].Bind(std::move(observer));
 
   const VideoCaptureControllerID controller_id(device_id);
   if (controllers_.find(controller_id) != controllers_.end()) {

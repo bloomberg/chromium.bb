@@ -14,6 +14,7 @@ group("system") {
 }
 
 generate_jni("jni_headers") {
+  testonly = true
   sources = [
     "javatests/src/org/chromium/mojo/MojoTestRule.java",
     "javatests/src/org/chromium/mojo/bindings/ValidationTestUtil.java",
@@ -61,8 +62,10 @@ android_library("system_impl_java") {
 
   deps = [
     "//base:base_java",
+    "//base:jni_java",
     "//mojo/public/java:system_java",
   ]
+  annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
 }
 
 # Targets should also depend on :test_support for the native side.
@@ -125,7 +128,8 @@ android_library("mojo_javatests") {
     "//mojo/public/interfaces/bindings/tests:test_mojom_import_java",
     "//mojo/public/java:bindings_java",
     "//mojo/public/java:system_java",
-    "//third_party/android_support_test_runner:runner_java",
+    "//third_party/android_deps:androidx_test_monitor_java",
+    "//third_party/android_deps:androidx_test_runner_java",
     "//third_party/junit",
   ]
 
@@ -165,7 +169,8 @@ instrumentation_test_apk("mojo_test_apk") {
     "//base:base_java",
     "//mojo/public/interfaces/bindings/tests:test_interfaces",
     "//mojo/public/java:bindings_java",
-    "//third_party/android_support_test_runner:runner_java",
+    "//third_party/android_deps:androidx_test_monitor_java",
+    "//third_party/android_deps:androidx_test_runner_java",
   ]
   shared_libraries = [ ":mojo_java_unittests" ]
   apk_name = "MojoTest"

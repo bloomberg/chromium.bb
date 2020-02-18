@@ -46,9 +46,9 @@ class TestMostVisitedIframeSource : public MostVisitedIframeSource {
   }
 
   void StartDataRequest(
-      const std::string& path,
+      const GURL& url,
       const content::WebContents::Getter& wc_getter,
-      const content::URLDataSource::GotDataCallback& callback) override {}
+      content::URLDataSource::GotDataCallback callback) override {}
 
   // RenderFrameHost is hard to mock in concert with everything else, so stub
   // this method out for testing.
@@ -72,8 +72,8 @@ class MostVisitedIframeSourceTest : public testing::Test {
   // those constraints.
   MostVisitedIframeSourceTest()
       : task_environment_(content::BrowserTaskEnvironment::IO_MAINLOOP),
-        instant_io_context_(NULL),
-        response_(NULL) {}
+        instant_io_context_(nullptr),
+        response_(nullptr) {}
 
   TestMostVisitedIframeSource* source() { return source_.get(); }
 
@@ -85,12 +85,16 @@ class MostVisitedIframeSourceTest : public testing::Test {
   }
 
   void SendResource(int resource_id) {
-    source()->SendResource(resource_id, callback_);
+    source()->SendResource(
+        resource_id, base::BindOnce(&MostVisitedIframeSourceTest::SaveResponse,
+                                    base::Unretained(this)));
   }
 
   void SendJSWithOrigin(int resource_id) {
-    source()->SendJSWithOrigin(resource_id, content::WebContents::Getter(),
-                               callback_);
+    source()->SendJSWithOrigin(
+        resource_id, content::WebContents::Getter(),
+        base::BindOnce(&MostVisitedIframeSourceTest::SaveResponse,
+                       base::Unretained(this)));
   }
 
   bool ShouldService(const std::string& path, int process_id) {
@@ -101,14 +105,12 @@ class MostVisitedIframeSourceTest : public testing::Test {
  private:
   void SetUp() override {
     source_ = std::make_unique<TestMostVisitedIframeSource>();
-    callback_ = base::Bind(&MostVisitedIframeSourceTest::SaveResponse,
-                           base::Unretained(this));
     instant_io_context_ = new InstantIOContext;
     InstantIOContext::SetUserDataOnIO(&resource_context_, instant_io_context_);
     source_->set_origin(kInstantOrigin);
     InstantIOContext::AddInstantProcessOnIO(instant_io_context_,
                                             kInstantRendererPID);
-    response_ = NULL;
+    response_ = nullptr;
   }
 
   void TearDown() override { source_.reset(); }
@@ -122,7 +124,6 @@ class MostVisitedIframeSourceTest : public testing::Test {
   net::TestURLRequestContext test_url_request_context_;
   content::MockResourceContext resource_context_;
   std::unique_ptr<TestMostVisitedIframeSource> source_;
-  content::URLDataSource::GotDataCallback callback_;
   scoped_refptr<InstantIOContext> instant_io_context_;
   scoped_refptr<base::RefCountedMemory> response_;
 };

@@ -129,14 +129,16 @@ void ClipboardPromise::RejectFromReadOrDecodeFailure() {
 
 void ClipboardPromise::HandleRead() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  RequestReadPermission(WTF::Bind(&ClipboardPromise::HandleReadWithPermission,
-                                  WrapPersistent(this)));
+  RequestPermission(mojom::blink::PermissionName::CLIPBOARD_READ,
+                    WTF::Bind(&ClipboardPromise::HandleReadWithPermission,
+                              WrapPersistent(this)));
 }
 
 void ClipboardPromise::HandleReadText() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  RequestReadPermission(WTF::Bind(
-      &ClipboardPromise::HandleReadTextWithPermission, WrapPersistent(this)));
+  RequestPermission(mojom::blink::PermissionName::CLIPBOARD_READ,
+                    WTF::Bind(&ClipboardPromise::HandleReadTextWithPermission,
+                              WrapPersistent(this)));
 }
 
 void ClipboardPromise::HandleWrite(
@@ -160,15 +162,17 @@ void ClipboardPromise::HandleWrite(
   ClipboardItem* clipboard_item = (*clipboard_items)[0];
   clipboard_item_data_ = clipboard_item->GetItems();
 
-  CheckWritePermission(WTF::Bind(&ClipboardPromise::HandleWriteWithPermission,
-                                 WrapPersistent(this)));
+  RequestPermission(mojom::blink::PermissionName::CLIPBOARD_WRITE,
+                    WTF::Bind(&ClipboardPromise::HandleWriteWithPermission,
+                              WrapPersistent(this)));
 }
 
 void ClipboardPromise::HandleWriteText(const String& data) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   plain_text_ = data;
-  CheckWritePermission(WTF::Bind(
-      &ClipboardPromise::HandleWriteTextWithPermission, WrapPersistent(this)));
+  RequestPermission(mojom::blink::PermissionName::CLIPBOARD_WRITE,
+                    WTF::Bind(&ClipboardPromise::HandleWriteTextWithPermission,
+                              WrapPersistent(this)));
 }
 
 void ClipboardPromise::HandleReadWithPermission(PermissionStatus status) {
@@ -270,12 +274,20 @@ PermissionService* ClipboardPromise::GetPermissionService() {
   return permission_service_.get();
 }
 
-void ClipboardPromise::RequestReadPermission(
-    PermissionService::RequestPermissionCallback callback) {
+void ClipboardPromise::RequestPermission(
+    mojom::blink::PermissionName permission,
+    base::OnceCallback<void(::blink::mojom::PermissionStatus)> callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(script_promise_resolver_);
+  DCHECK(permission == mojom::blink::PermissionName::CLIPBOARD_READ ||
+         permission == mojom::blink::PermissionName::CLIPBOARD_WRITE);
 
-  if (!IsFocusedDocument(ExecutionContext::From(script_state_))) {
+  ExecutionContext* context = ExecutionContext::From(script_state_);
+  DCHECK(context);
+  const Document& document = *To<Document>(context);
+  DCHECK(document.IsSecureContext());  // [SecureContext] in IDL
+
+  if (!document.hasFocus()) {
     script_promise_resolver_->Reject(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kNotAllowedError, "Document is not focused."));
     return;
@@ -287,37 +299,19 @@ void ClipboardPromise::RequestReadPermission(
     return;
   }
 
-  // Query for permission if necessary.
-  // See crbug.com/795929 for moving this check into the Browser process.
-  permission_service_->RequestPermission(
-      CreateClipboardPermissionDescriptor(
-          mojom::blink::PermissionName::CLIPBOARD_READ, false),
-      false, std::move(callback));
-}
-
-void ClipboardPromise::CheckWritePermission(
-    PermissionService::HasPermissionCallback callback) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(script_promise_resolver_);
-
-  if (!IsFocusedDocument(ExecutionContext::From(script_state_))) {
-    script_promise_resolver_->Reject(MakeGarbageCollected<DOMException>(
-        DOMExceptionCode::kNotAllowedError, "Document is not focused."));
+  auto permission_descriptor =
+      CreateClipboardPermissionDescriptor(permission, false);
+  if (permission == mojom::blink::PermissionName::CLIPBOARD_WRITE) {
+    // Check permission (but do not query the user).
+    // See crbug.com/795929 for moving this check into the Browser process.
+    permission_service_->HasPermission(std::move(permission_descriptor),
+                                       std::move(callback));
     return;
   }
-  if (!GetPermissionService()) {
-    script_promise_resolver_->Reject(MakeGarbageCollected<DOMException>(
-        DOMExceptionCode::kNotAllowedError,
-        "Permission Service could not connect."));
-    return;
-  }
-
-  // Check current permission (but do not query the user).
+  // Check permission, and query if necessary.
   // See crbug.com/795929 for moving this check into the Browser process.
-  permission_service_->HasPermission(
-      CreateClipboardPermissionDescriptor(
-          mojom::blink::PermissionName::CLIPBOARD_WRITE, false),
-      std::move(callback));
+  permission_service_->RequestPermission(std::move(permission_descriptor),
+                                         false, std::move(callback));
 }
 
 scoped_refptr<base::SingleThreadTaskRunner> ClipboardPromise::GetTaskRunner() {
@@ -325,14 +319,6 @@ scoped_refptr<base::SingleThreadTaskRunner> ClipboardPromise::GetTaskRunner() {
   // Get the User Interaction task runner, as Async Clipboard API calls require
   // user interaction, as specified in https://w3c.github.io/clipboard-apis/
   return GetExecutionContext()->GetTaskRunner(TaskType::kUserInteraction);
-}
-
-bool ClipboardPromise::IsFocusedDocument(ExecutionContext* context) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(context);
-  DCHECK(context->IsSecureContext());  // [SecureContext] in IDL
-  Document* doc = To<Document>(context);
-  return doc && doc->hasFocus();
 }
 
 void ClipboardPromise::Trace(blink::Visitor* visitor) {

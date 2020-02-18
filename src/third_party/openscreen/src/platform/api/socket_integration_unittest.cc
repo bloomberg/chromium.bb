@@ -6,10 +6,12 @@
 #include "platform/api/time.h"
 #include "platform/test/fake_clock.h"
 #include "platform/test/fake_task_runner.h"
-#include "platform/test/mock_udp_socket.h"
+#include "platform/test/fake_udp_socket.h"
 
 namespace openscreen {
 namespace platform {
+
+using testing::_;
 
 // Tests that a UdpSocket that does not specify any address or port will
 // successfully Bind(), and that the operating system will return the
@@ -18,13 +20,13 @@ TEST(SocketIntegrationTest, ResolvesLocalEndpoint_IPv4) {
   const uint8_t kIpV4AddrAny[4] = {};
   FakeClock clock(Clock::now());
   FakeTaskRunner task_runner(&clock);
-  MockUdpSocket::MockClient client;
+  FakeUdpSocket::MockClient client;
   ErrorOr<UdpSocketUniquePtr> create_result = UdpSocket::Create(
       &task_runner, &client, IPEndpoint{IPAddress(kIpV4AddrAny), 0});
   ASSERT_TRUE(create_result) << create_result.error();
-  const auto socket = create_result.MoveValue();
-  const Error bind_result = socket->Bind();
-  ASSERT_TRUE(bind_result.ok()) << bind_result;
+  const auto socket = std::move(create_result.value());
+  EXPECT_CALL(client, OnError(_, _)).Times(0);
+  socket->Bind();
   const IPEndpoint local_endpoint = socket->GetLocalEndpoint();
   EXPECT_NE(local_endpoint.port, 0) << local_endpoint;
 }
@@ -36,13 +38,13 @@ TEST(SocketIntegrationTest, ResolvesLocalEndpoint_IPv6) {
   const uint8_t kIpV6AddrAny[16] = {};
   FakeClock clock(Clock::now());
   FakeTaskRunner task_runner(&clock);
-  MockUdpSocket::MockClient client;
+  FakeUdpSocket::MockClient client;
   ErrorOr<UdpSocketUniquePtr> create_result = UdpSocket::Create(
       &task_runner, &client, IPEndpoint{IPAddress(kIpV6AddrAny), 0});
   ASSERT_TRUE(create_result) << create_result.error();
-  const auto socket = create_result.MoveValue();
-  const Error bind_result = socket->Bind();
-  ASSERT_TRUE(bind_result.ok()) << bind_result;
+  const auto socket = std::move(create_result.value());
+  EXPECT_CALL(client, OnError(_, _)).Times(0);
+  socket->Bind();
   const IPEndpoint local_endpoint = socket->GetLocalEndpoint();
   EXPECT_NE(local_endpoint.port, 0) << local_endpoint;
 }

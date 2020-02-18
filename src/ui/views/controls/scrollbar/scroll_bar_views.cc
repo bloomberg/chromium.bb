@@ -12,6 +12,8 @@
 #include "ui/views/controls/scrollbar/base_scroll_bar_button.h"
 #include "ui/views/controls/scrollbar/base_scroll_bar_thumb.h"
 #include "ui/views/controls/scrollbar/scroll_bar.h"
+#include "ui/views/layout/flex_layout.h"
+#include "ui/views/view_class_properties.h"
 
 namespace views {
 
@@ -67,6 +69,7 @@ class ScrollBarThumb : public BaseScrollBarThumb {
 
 ScrollBarButton::ScrollBarButton(ButtonListener* listener, Type type)
     : BaseScrollBarButton(listener), type_(type) {
+  EnableCanvasFlippingForRTLUI(true);
   SetFocusBehavior(FocusBehavior::NEVER);
 }
 
@@ -196,27 +199,39 @@ ui::NativeTheme::State ScrollBarThumb::GetNativeThemeState() const {
 // ScrollBarViews, public:
 
 ScrollBarViews::ScrollBarViews(bool horizontal) : ScrollBar(horizontal) {
+  EnableCanvasFlippingForRTLUI(true);
+  state_ = ui::NativeTheme::kNormal;
+
+  auto* layout = SetLayoutManager(std::make_unique<views::FlexLayout>());
+
+  std::unique_ptr<ScrollBarButton> prev_button, next_button;
   using Type = ScrollBarButton::Type;
-  SetThumb(new ScrollBarThumb(this));
   if (horizontal) {
-    prev_button_ = new ScrollBarButton(this, Type::kLeft);
-    next_button_ = new ScrollBarButton(this, Type::kRight);
+    prev_button = std::make_unique<ScrollBarButton>(this, Type::kLeft);
+    next_button = std::make_unique<ScrollBarButton>(this, Type::kRight);
 
     part_ = ui::NativeTheme::kScrollbarHorizontalTrack;
   } else {
-    prev_button_ = new ScrollBarButton(this, Type::kUp);
-    next_button_ = new ScrollBarButton(this, Type::kDown);
+    layout->SetOrientation(views::LayoutOrientation::kVertical);
+
+    prev_button = std::make_unique<ScrollBarButton>(this, Type::kUp);
+    next_button = std::make_unique<ScrollBarButton>(this, Type::kDown);
 
     part_ = ui::NativeTheme::kScrollbarVerticalTrack;
   }
+  prev_button->set_context_menu_controller(this);
+  next_button->set_context_menu_controller(this);
 
-  state_ = ui::NativeTheme::kNormal;
-
-  AddChildView(prev_button_);
-  AddChildView(next_button_);
-
-  prev_button_->set_context_menu_controller(this);
-  next_button_->set_context_menu_controller(this);
+  prev_button_ = AddChildView(std::move(prev_button));
+  SetThumb(new ScrollBarThumb(this));
+  // Allow the thumb to take up the whole size of the scrollbar, save for the
+  // prev/next buttons.  Layout need only set the thumb cross-axis coordinate;
+  // ScrollBar::Update() will set the thumb size/offset.
+  GetThumb()->SetProperty(views::kFlexBehaviorKey,
+                          views::FlexSpecification::ForSizeRule(
+                              views::MinimumFlexSizeRule::kPreferred,
+                              views::MaximumFlexSizeRule::kUnbounded));
+  next_button_ = AddChildView(std::move(next_button));
 }
 
 ScrollBarViews::~ScrollBarViews() = default;
@@ -241,24 +256,8 @@ int ScrollBarViews::GetVerticalScrollBarWidth(const ui::NativeTheme* theme) {
 ////////////////////////////////////////////////////////////////////////////////
 // ScrollBarViews, View overrides:
 
-void ScrollBarViews::Layout() {
-  gfx::Size size = prev_button_->GetPreferredSize();
-  prev_button_->SetBounds(0, 0, size.width(), size.height());
-
-  if (IsHorizontal()) {
-    next_button_->SetBounds(width() - size.width(), 0, size.width(),
-                            size.height());
-  } else {
-    next_button_->SetBounds(0, height() - size.height(), size.width(),
-                            size.height());
-  }
-
-  GetThumb()->SetBoundsRect(GetTrackBounds());
-}
-
 void ScrollBarViews::OnPaint(gfx::Canvas* canvas) {
   gfx::Rect bounds = GetTrackBounds();
-
   if (bounds.IsEmpty())
     return;
 
@@ -267,30 +266,43 @@ void ScrollBarViews::OnPaint(gfx::Canvas* canvas) {
   params_.scrollbar_track.track_width = bounds.width();
   params_.scrollbar_track.track_height = bounds.height();
   params_.scrollbar_track.classic_state = 0;
+  const BaseScrollBarThumb* thumb = GetThumb();
 
-  GetNativeTheme()->Paint(canvas->sk_canvas(), part_, state_, bounds, params_);
-}
+  params_.scrollbar_track.is_upper = true;
+  gfx::Rect upper_bounds = bounds;
+  if (IsHorizontal())
+    upper_bounds.set_width(thumb->x() - upper_bounds.x());
+  else
+    upper_bounds.set_height(thumb->y() - upper_bounds.y());
+  if (!upper_bounds.IsEmpty()) {
+    GetNativeTheme()->Paint(canvas->sk_canvas(), part_, state_, upper_bounds,
+                            params_);
+  }
 
-gfx::Size ScrollBarViews::CalculatePreferredSize() const {
-  return gfx::Size(IsHorizontal() ? 0 : GetThickness(),
-                   IsHorizontal() ? GetThickness() : 0);
+  params_.scrollbar_track.is_upper = false;
+  if (IsHorizontal())
+    bounds.Inset(thumb->bounds().right() - bounds.x(), 0, 0, 0);
+  else
+    bounds.Inset(0, thumb->bounds().bottom() - bounds.y(), 0, 0);
+  if (!bounds.IsEmpty()) {
+    GetNativeTheme()->Paint(canvas->sk_canvas(), part_, state_, bounds,
+                            params_);
+  }
 }
 
 int ScrollBarViews::GetThickness() const {
-  const ui::NativeTheme* theme = GetNativeTheme();
-  return IsHorizontal() ? GetHorizontalScrollBarHeight(theme)
-                        : GetVerticalScrollBarWidth(theme);
+  const gfx::Size size = GetPreferredSize();
+  return IsHorizontal() ? size.height() : size.width();
 }
 
 //////////////////////////////////////////////////////////////////////////////
 // BaseButton::ButtonListener overrides:
 
 void ScrollBarViews::ButtonPressed(Button* sender, const ui::Event& event) {
-  if (sender == prev_button_) {
-    ScrollByAmount(ScrollBar::ScrollAmount::kPrevLine);
-  } else if (sender == next_button_) {
-    ScrollByAmount(ScrollBar::ScrollAmount::kNextLine);
-  }
+  const bool is_prev = sender == prev_button_;
+  DCHECK(is_prev || sender == next_button_);
+  ScrollByAmount(is_prev ? ScrollBar::ScrollAmount::kPrevLine
+                         : ScrollBar::ScrollAmount::kNextLine);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -312,23 +324,6 @@ gfx::Rect ScrollBarViews::GetTrackBounds() const {
   }
 
   return bounds;
-}
-
-// static
-int ScrollBarViews::GetHorizontalScrollBarHeight(const ui::NativeTheme* theme) {
-  ui::NativeTheme::ExtraParams button_params;
-  button_params.scrollbar_arrow.is_hovering = false;
-  gfx::Size button_size =
-      theme->GetPartSize(ui::NativeTheme::kScrollbarLeftArrow,
-                         ui::NativeTheme::kNormal, button_params);
-
-  ui::NativeTheme::ExtraParams thumb_params;
-  thumb_params.scrollbar_thumb.is_hovering = false;
-  gfx::Size track_size =
-      theme->GetPartSize(ui::NativeTheme::kScrollbarHorizontalThumb,
-                         ui::NativeTheme::kNormal, thumb_params);
-
-  return std::max(track_size.height(), button_size.height());
 }
 
 BEGIN_METADATA(ScrollBarViews)

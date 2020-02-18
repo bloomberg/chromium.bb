@@ -19,7 +19,8 @@ class QUIC_EXPORT_PRIVATE QuicEncrypter : public QuicCrypter {
  public:
   virtual ~QuicEncrypter() {}
 
-  static std::unique_ptr<QuicEncrypter> Create(QuicTag algorithm);
+  static std::unique_ptr<QuicEncrypter> Create(const ParsedQuicVersion& version,
+                                               QuicTag algorithm);
 
   // Creates an IETF QuicEncrypter based on |cipher_suite| which must be an id
   // returned by SSL_CIPHER_get_id. The caller is responsible for taking
@@ -46,14 +47,6 @@ class QUIC_EXPORT_PRIVATE QuicEncrypter : public QuicCrypter {
   // success, the mask will be at least 5 bytes long; on failure the string will
   // be empty.
   virtual std::string GenerateHeaderProtectionMask(QuicStringPiece sample) = 0;
-
-  // GetKeySize() and GetNoncePrefixSize() tell the HKDF class how many bytes
-  // of key material needs to be derived from the master secret.
-  // NOTE: the sizes returned by GetKeySize() and GetNoncePrefixSize() are
-  // also correct for the QuicDecrypter of the same algorithm.
-
-  // Returns the size in bytes of the fixed initial part of the nonce.
-  virtual size_t GetNoncePrefixSize() const = 0;
 
   // Returns the maximum length of plaintext that can be encrypted
   // to ciphertext no larger than |ciphertext_size|.

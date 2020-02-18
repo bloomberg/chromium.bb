@@ -11,6 +11,8 @@ from .composition_parts import WithExposure
 from .composition_parts import WithExtendedAttributes
 from .composition_parts import WithOwner
 from .constant import Constant
+from .constructor import Constructor
+from .constructor import ConstructorGroup
 from .exposure import Exposure
 from .idl_type import IdlType
 from .ir_map import IRMap
@@ -34,6 +36,7 @@ class Interface(UserDefinedType, WithExtendedAttributes, WithCodeGeneratorInfo,
                      inherited=None,
                      attributes=None,
                      constants=None,
+                     constructors=None,
                      operations=None,
                      stringifier=None,
                      iterable=None,
@@ -47,6 +50,8 @@ class Interface(UserDefinedType, WithExtendedAttributes, WithCodeGeneratorInfo,
             assert inherited is None or isinstance(inherited, RefById)
             assert attributes is None or isinstance(attributes, (list, tuple))
             assert constants is None or isinstance(constants, (list, tuple))
+            assert constructors is None or isinstance(constructors,
+                                                      (list, tuple))
             assert operations is None or isinstance(operations, (list, tuple))
             assert stringifier is None or isinstance(stringifier,
                                                      Stringifier.IR)
@@ -56,12 +61,16 @@ class Interface(UserDefinedType, WithExtendedAttributes, WithCodeGeneratorInfo,
 
             attributes = attributes or []
             constants = constants or []
+            constructors = constructors or []
             operations = operations or []
             assert all(
                 isinstance(attribute, Attribute.IR)
                 for attribute in attributes)
             assert all(
                 isinstance(constant, Constant.IR) for constant in constants)
+            assert all(
+                isinstance(constructor, Constructor.IR)
+                for constructor in constructors)
             assert all(
                 isinstance(operation, Operation.IR)
                 for operation in operations)
@@ -81,7 +90,7 @@ class Interface(UserDefinedType, WithExtendedAttributes, WithCodeGeneratorInfo,
             WithExtendedAttributes.__init__(self, extended_attributes)
             WithCodeGeneratorInfo.__init__(self)
             WithExposure.__init__(self)
-            WithComponent.__init__(self, component=component)
+            WithComponent.__init__(self, component)
             WithDebugInfo.__init__(self, debug_info)
 
             self.is_partial = is_partial
@@ -89,6 +98,8 @@ class Interface(UserDefinedType, WithExtendedAttributes, WithCodeGeneratorInfo,
             self.inherited = inherited
             self.attributes = list(attributes)
             self.constants = list(constants)
+            self.constructors = list(constructors)
+            self.constructor_groups = []
             self.operations = list(operations)
             self.operation_groups = []
             self.stringifier = stringifier
@@ -101,6 +112,8 @@ class Interface(UserDefinedType, WithExtendedAttributes, WithCodeGeneratorInfo,
                 yield attribute
             for constant in self.constants:
                 yield constant
+            for constructor in self.constructors:
+                yield constructor
             for operation in self.operations:
                 yield operation
 
@@ -110,12 +123,11 @@ class Interface(UserDefinedType, WithExtendedAttributes, WithCodeGeneratorInfo,
 
         ir = make_copy(ir)
         UserDefinedType.__init__(self, ir.identifier)
-        WithExtendedAttributes.__init__(self, ir.extended_attributes)
-        WithCodeGeneratorInfo.__init__(
-            self, CodeGeneratorInfo(ir.code_generator_info))
-        WithExposure.__init__(self, Exposure(ir.exposure))
-        WithComponent.__init__(self, components=ir.components)
-        WithDebugInfo.__init__(self, ir.debug_info)
+        WithExtendedAttributes.__init__(self, ir)
+        WithCodeGeneratorInfo.__init__(self, ir, readonly=True)
+        WithExposure.__init__(self, ir, readonly=True)
+        WithComponent.__init__(self, ir, readonly=True)
+        WithDebugInfo.__init__(self, ir)
 
         self._is_mixin = ir.is_mixin
         self._inherited = ir.inherited
@@ -126,6 +138,19 @@ class Interface(UserDefinedType, WithExtendedAttributes, WithCodeGeneratorInfo,
         self._constants = tuple([
             Constant(constant_ir, owner=self) for constant_ir in ir.constants
         ])
+        self._constructors = tuple([
+            Constructor(constructor_ir, owner=self)
+            for constructor_ir in ir.constructors
+        ])
+        self._constructor_groups = tuple([
+            ConstructorGroup(
+                constructor_group_ir,
+                filter(
+                    lambda x: x.identifier == constructor_group_ir.identifier,
+                    self._constructors),
+                owner=self) for constructor_group_ir in ir.constructor_groups
+        ])
+        assert len(self._constructor_groups) <= 1
         self._operations = tuple([
             Operation(operation_ir, owner=self)
             for operation_ir in ir.operations
@@ -167,22 +192,25 @@ class Interface(UserDefinedType, WithExtendedAttributes, WithCodeGeneratorInfo,
         return self._inherited.target_object if self._inherited else None
 
     @property
+    def inclusive_inherited_interfaces(self):
+        """
+        Returns the list of inclusive inherited interfaces.
+
+        https://heycam.github.io/webidl/#interface-inclusive-inherited-interfaces
+        """
+        result = []
+        interface = self
+        while interface is not None:
+            result.append(interface)
+            interface = interface.inherited
+        return result
+
+    @property
     def attributes(self):
         """
         Returns attributes, including [Unforgeable] attributes in ancestors.
         """
         return self._attributes
-
-    @property
-    def operation_groups(self):
-        """
-        Returns groups of operations, including [Unforgeable] operations in
-        ancestors.  Operation groups are sorted by their identifier.
-
-        All operations are grouped by their identifier in OperationGroup's,
-        even when there exists a single operation with that identifier.
-        """
-        assert False, "Not implemented yet."
 
     @property
     def constants(self):
@@ -191,8 +219,39 @@ class Interface(UserDefinedType, WithExtendedAttributes, WithCodeGeneratorInfo,
 
     @property
     def constructors(self):
-        """Returns a constructor group."""
-        assert False, "Not implemented yet."
+        """Returns constructors."""
+        return self._constructors
+
+    @property
+    def constructor_groups(self):
+        """
+        Returns groups of constructors.
+
+        Constructors are grouped as operations are. There is 0 or 1 group.
+        """
+        return self._constructor_groups
+
+    @property
+    def operations(self):
+        """
+        Returns all operations, including special operations without an
+        identifier, as well as [Unforgeable] operations in ancestors.
+        """
+        return self._operations
+
+    @property
+    def operation_groups(self):
+        """
+        Returns groups of overloaded operations, including [Unforgeable]
+        operations in ancestors.
+
+        All operations that have an identifier are grouped by identifier, thus
+        it's possible that there is a single operation in a certain operation
+        group.  If an operation doesn't have an identifier, i.e. if it's a
+        merely special operation, then the operation doesn't appear in any
+        operation group.
+        """
+        return self._operation_groups
 
     @property
     def named_constructor(self):
@@ -273,7 +332,7 @@ class Stringifier(WithOwner, WithDebugInfo):
         assert attribute is None or isinstance(attribute, Attribute)
 
         WithOwner.__init__(self, owner)
-        WithDebugInfo.__init__(self, ir.debug_info)
+        WithDebugInfo.__init__(self, ir)
 
         self._operation = operation
         self._attribute = attribute

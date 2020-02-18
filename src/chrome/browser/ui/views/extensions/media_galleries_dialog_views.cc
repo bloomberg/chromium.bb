@@ -62,6 +62,14 @@ void ScrollableView::Layout() {
   views::View::Layout();
 }
 
+std::unique_ptr<views::LabelButton> CreateAuxiliaryButton(
+    views::ButtonListener* listener,
+    const base::string16& label) {
+  return label.empty()
+             ? nullptr
+             : views::MdTextButton::CreateSecondaryUiButton(listener, label);
+}
+
 }  // namespace
 
 MediaGalleriesDialogViews::MediaGalleriesDialogViews(
@@ -71,6 +79,11 @@ MediaGalleriesDialogViews::MediaGalleriesDialogViews(
       auxiliary_button_(nullptr),
       confirm_available_(false),
       accepted_(false) {
+  DialogDelegate::set_button_label(ui::DIALOG_BUTTON_OK,
+                                   controller_->GetAcceptButtonText());
+  auxiliary_button_ = DialogDelegate::SetExtraView(
+      CreateAuxiliaryButton(this, controller_->GetAuxiliaryButtonText()));
+
   InitChildViews();
   if (ControllerHasWebContents()) {
     constrained_window::ShowWebModalDialogViews(this,
@@ -236,13 +249,6 @@ views::View* MediaGalleriesDialogViews::GetContentsView() {
   return contents_;
 }
 
-base::string16 MediaGalleriesDialogViews::GetDialogButtonLabel(
-    ui::DialogButton button) const {
-  if (button == ui::DIALOG_BUTTON_OK)
-    return controller_->GetAcceptButtonText();
-  return l10n_util::GetStringUTF16(IDS_MEDIA_GALLERIES_DIALOG_CANCEL);
-}
-
 bool MediaGalleriesDialogViews::IsDialogButtonEnabled(
     ui::DialogButton button) const {
   return button != ui::DIALOG_BUTTON_OK || confirm_available_;
@@ -250,18 +256,6 @@ bool MediaGalleriesDialogViews::IsDialogButtonEnabled(
 
 ui::ModalType MediaGalleriesDialogViews::GetModalType() const {
   return ui::MODAL_TYPE_CHILD;
-}
-
-std::unique_ptr<views::View> MediaGalleriesDialogViews::CreateExtraView() {
-  DCHECK(!auxiliary_button_);
-  base::string16 button_label = controller_->GetAuxiliaryButtonText();
-  std::unique_ptr<views::LabelButton> auxiliary_button;
-  if (!button_label.empty()) {
-    auxiliary_button =
-        views::MdTextButton::CreateSecondaryUiButton(this, button_label);
-    auxiliary_button_ = auxiliary_button.get();
-  }
-  return auxiliary_button;
 }
 
 bool MediaGalleriesDialogViews::Cancel() {

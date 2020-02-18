@@ -1,17 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <grit-part>
 
-  <message name="IDS_AUTOFILL_SIGNIN_PROMO_MESSAGE" desc="Promo message for Sign-in Promo bubble (shown after a local save) to get people to sign in.">
-    To use your cards on all devices, sign in and turn on sync.
-  </message>
   <message name="IDS_AUTOFILL_SYNC_PROMO_MESSAGE" desc="Promo message for Sign-in Promo bubble (shown after a local save) to get people to sync.">
     To use your cards on all devices, turn on sync.
-  </message>
-  <message name="IDS_AUTOFILL_SIGNIN_PROMO_MESSAGE_DICE_DISABLED" desc="Text of the sign in promo bubble and manage cards footnote.">
-    To use your cards on all your devices, <ph name="SIGN_IN_LINK">$1<ex>sign in</ex></ph>.
-  </message>
-  <message name="IDS_AUTOFILL_SIGNIN_PROMO_LINK_DICE_DISABLED" desc="Text of the link to sign in from the save card sync promo.">
-    sign in to Chrome
   </message>
 
   <if expr="not use_titlecase">
@@ -107,9 +98,18 @@
       Confirm
     </message>
   </if>
-  <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_CONTINUE" desc="Text to show for the Autofill upload save credit card prompt accept button when more information (e.g., CVC) was needed in order to save the card and was entered.">
-    Continue
-  </message>
+  <if expr="is_ios">
+    <then>
+      <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_CONTINUE" desc="Text to show for the Autofill upload save credit card prompt accept button when more information (e.g., CVC) was needed in order to save the card and was entered.">
+        Save...
+      </message>
+    </then>
+    <else>
+      <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_CONTINUE" desc="Text to show for the Autofill upload save credit card prompt accept button when more information (e.g., CVC) was needed in order to save the card and was entered.">
+        Continue
+      </message>
+    </else>
+  </if>
   <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_TITLE_LOCAL" desc="Title text for the Autofill save card prompt when the card is to be saved locally. The prompt can be either a bubble or an infobar.">
     Save card?
   </message>
@@ -147,7 +147,7 @@
     Can't save card
   </message>
   <message name="IDS_AUTOFILL_FAILURE_BUBBLE_EXPLANATION" desc="Explanation text for the Autofill credit card upload failure bubble main content. Shown as user-facing descripion.">
-    Sorry, your card can't be saved right now
+    Your card can't be saved right now
   </message>
   <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION" desc="Explanation of the effect of the Autofill save card prompt when the card is to be saved by uploading it to Google Payments and also saved locally. The prompt can be either a bubble or an infobar.">
     Pay quickly on sites and apps across devices using cards you have saved with Google.
@@ -164,9 +164,19 @@
   <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_V3_WITH_NAME_AND_DEVICE" desc="Explanation of the effect of the Autofill save card prompt when the card is to be saved by uploading it to Google Payments and also saved locally, according to April 2018 UI guidelines. The prompt can be either a bubble or an infobar.">
     To pay faster next time, save your card, name, and billing address to your Google Account and to this device.
   </message>
-  <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_CARDHOLDER_NAME" desc="The label text for the cardholder name textfield.">
-    Cardholder name
-  </message>
+
+  <if expr="is_ios">
+    <then>
+      <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_CARDHOLDER_NAME" desc="The label text for the cardholder name textfield.">
+        Name on Card
+      </message>
+    </then>
+    <else>
+      <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_CARDHOLDER_NAME" desc="The label text for the cardholder name textfield.">
+        Cardholder name
+      </message>
+    </else>
+  </if>
   <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_CARDHOLDER_NAME_TOOLTIP" desc="The tooltip text for the cardholder name textfield. Note that the translation should not have period" formatter_data="android_java">
     This name is from your Google Account
   </message>
@@ -176,58 +186,19 @@
   <message name="IDS_AUTOFILL_SAVE_CARD_UPDATE_EXPIRATION_DATE_TITLE" desc="Title for the dialog requesting the user to fill in the expiration date of the credit card during the save card to google flow.">
     Enter expiration date
   </message>
+  <if expr="is_android or is_ios">
+    <message name="IDS_AUTOFILL_SAVE_CARD_UPDATE_EXPIRATION_DATE_TOOLTIP" desc="The tooltip text for the credit card expiration date textfield. Note that the translation should not have period.">
+      Expiration date
+    </message>
+    <message name="IDS_AUTOFILL_SAVE_CARD_UPDATE_EXPIRATION_DATE_ERROR_TRY_AGAIN" desc="Error message that encourages the user to try to re-enter their credit card expiration date after selecting an invalid expiration date.">
+      Enter an expiration date in the future and try again
+    </message>
+  </if>
   <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_TOOLTIP" desc="The tooltip hover text that explains why credit card upload to Google Payments is being offered.">
     Chrome is offering to save your cards in your Google Account because you are signed in. You can change this behavior in settings.
   </message>
   <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_AND_CARDHOLDER_NAME_TOOLTIP" desc="The tooltip hover text that explains why credit card upload to Google Account is being offered and where the suggested cardholder name came from.">
     Chrome is offering to save your cards in your Google Account because you are signed in. You can change this behavior in settings. The cardholder name comes from your account.
-  </message>
-
-  <!-- Chrome Autofill Upstream Copy Tests -->
-  <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_TITLE_TO_CLOUD_COPY_TEST_STORE_CARD" desc="Title text for the Autofill save card prompt when the card is to be saved by uploading it to Google Payments. The title is used as one variation of the string experiment. The prompt can be either a bubble or an infobar.">
-    Store card in Google Account?
-  </message>
-  <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_TITLE_TO_CLOUD_COPY_TEST_STORE_BILLING_DETAILS" desc="Title text for the Autofill save card prompt when the card is to be saved by uploading it to Google Payments. The title is used as one variation of the string experiment. The prompt can be either a bubble or an infobar.">
-    Store billing details in Google Account?
-  </message>
-  <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_TITLE_TO_CLOUD_COPY_TEST_ADD_CARD" desc="Title text for the Autofill save card prompt when the card is to be saved by uploading it to Google Payments. The title is used as one variation of the string experiment. The prompt can be either a bubble or an infobar.">
-    Add card to Google Account?
-  </message>
-  <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_TITLE_TO_CLOUD_COPY_TEST_CONFIRM_AND_SAVE_CARD" desc="Title text for the Autofill save card prompt when the card is to be saved by uploading it to Google Payments. The title is used as one variation of the string experiment. The prompt can be either a bubble or an infobar.">
-    Confirm &amp; save card to Google Account?
-  </message>
-  <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_COPY_TEST_STORE_WITH_DEVICE" desc="Explanation of the effect of the Autofill save card prompt when the card is to be saved by uploading it to Google Payments. The explanation is used as one variation of the string experiment.">
-    To pay faster next time, store your card and billing address in your Google Account and on this device.
-  </message>
-  <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_COPY_TEST_ADD_CARD_WITH_DEVICE" desc="Explanation of the effect of the Autofill save card prompt when the card is to be saved by uploading it to Google Payments. The explanation is used as one variation of the string experiment.">
-    To pay faster next time, add your card and billing address to your Google Account and to this device.
-  </message>
-  <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_COPY_TEST_CONFIRM_AND_SAVE_CARD_WITH_DEVICE" desc="Explanation of the effect of the Autofill save card prompt when the card is to be saved by uploading it to Google Payments. The explanation is used as one variation of the string experiment.">
-    To pay faster next time, save your card and billing address to your Google Account and to this device.
-  </message>
-  <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_COPY_TEST_STORE" desc="Explanation of the effect of the Autofill save card prompt when the card is to be saved by uploading it to Google Payments. The explanation is used as one variation of the string experiment. It will be used when local saving of an uploaded card is disabled.">
-    To pay faster next time, store your card and billing address in your Google Account.
-  </message>
-  <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_COPY_TEST_ADD_CARD" desc="Explanation of the effect of the Autofill save card prompt when the card is to be saved by uploading it to Google Payments. The explanation is used as one variation of the string experiment. It will be used when local saving of an uploaded card is disabled.">
-    To pay faster next time, add your card and billing address to your Google Account.
-  </message>
-  <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_COPY_TEST_CONFIRM_AND_SAVE_CARD" desc="Explanation of the effect of the Autofill save card prompt when the card is to be saved by uploading it to Google Payments. The explanation is used as one variation of the string experiment. It will be used when local saving of an uploaded card is disabled.">
-    To pay faster next time, save your card and billing address to your Google Account.
-  </message>
-  <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_ACCEPT_COPY_TEST_STORE" desc="Text to show for the Autofill save credit card prompt ok button. The label is used as one variation of the Chrome Upstream string experiment. The prompt can be either a bubble or an infobar.">
-    Yes, store
-  </message>
-  <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_DECLINE_COPY_TEST_STORE" desc="Text to show for the Autofill save credit card prompt no-thanks button. The label is used as one variation of the Chrome Upstream string experiment. The prompt can be either a bubble or an infobar.">
-    Don't store
-  </message>
-  <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_ACCEPT_COPY_TEST_ADD" desc="Text to show for the Autofill save credit card prompt ok button. The label is used as one variation of the Chrome Upstream string experiment. The prompt can be either a bubble or an infobar.">
-    Yes, add
-  </message>
-  <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_DECLINE_COPY_TEST_ADD" desc="Text to show for the Autofill save credit card prompt no-thanks button. The label is used as one variation of the Chrome Upstream string experiment. The prompt can be either a bubble or an infobar.">
-    No, don't add
-  </message>
-  <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_ACCEPT_COPY_TEST_CONFIRM_AND_SAVE" desc="Text to show for the Autofill save credit card prompt ok button. The label is used as one variation of the Chrome Upstream string experiment. The prompt can be either a bubble or an infobar.">
-    Confirm &amp; save
   </message>
 
   <!-- Autofill Local card migration bubble or dialog -->
@@ -440,6 +411,12 @@
       <message name="IDS_AUTOFILL_WEBAUTHN_OPT_IN_DIALOG_TITLE" desc="Headline asking the user if they want to use their device's platform authenticator to confirm their cards in the future instead of CVC.">
         Use Touch ID instead of CVC?
       </message>
+      <message name="IDS_AUTOFILL_WEBAUTHN_OPT_IN_DIALOG_TITLE_ERROR" desc="Headline explaining to users there were errors in the attempt to opt in using platform's authenticator.">
+        Couldn't use Touch ID
+      </message>
+      <message name="IDS_AUTOFILL_WEBAUTHN_OPT_IN_DIALOG_INSTRUCTION" desc="Subheading that appears below the headline explaining to the user that they won't have to enter their card's security code if they decide to use their device's platform authenticator in the future.">
+        Confirm your cards faster by using Touch ID from now on
+      </message>
       <message name="IDS_AUTOFILL_WEBAUTHN_OPT_IN_DIALOG_OK_BUTTON_LABEL" desc="Button that allows the user to use their device's platform authenticator to confirm card use in the future.">
         Use Touch ID
       </message>
@@ -447,6 +424,12 @@
     <if expr="is_win">
       <message name="IDS_AUTOFILL_WEBAUTHN_OPT_IN_DIALOG_TITLE" desc="Headline asking the user if they want to use their device's platform authenticator to confirm their cards in the future instead of CVC.">
         Use Windows Hello instead of CVC?
+      </message>
+      <message name="IDS_AUTOFILL_WEBAUTHN_OPT_IN_DIALOG_TITLE_ERROR" desc="Headline explaining to users there were errors in the attempt to opt in using platform's authenticator.">
+        Couldn't use Windows Hello
+      </message>
+      <message name="IDS_AUTOFILL_WEBAUTHN_OPT_IN_DIALOG_INSTRUCTION" desc="Subheading that appears below the headline explaining to the user that they won't have to enter their card's security code if they decide to use their device's platform authenticator in the future.">
+        Confirm your cards faster by using Windows Hello from now on
       </message>
       <message name="IDS_AUTOFILL_WEBAUTHN_OPT_IN_DIALOG_OK_BUTTON_LABEL" desc="Button that allows the user to use their device's platform authenticator to confirm card use in the future.">
         Use Windows Hello
@@ -456,15 +439,35 @@
       <message name="IDS_AUTOFILL_WEBAUTHN_OPT_IN_DIALOG_TITLE" desc="Headline asking the user if they want to use their device's platform authenticator to confirm their cards in the future instead of CVC.">
         Use WebAuthn instead of CVC?
       </message>
+      <message name="IDS_AUTOFILL_WEBAUTHN_OPT_IN_DIALOG_TITLE_ERROR" desc="Headline explaining to users there were errors in the attempt to opt in using platform's authenticator.">
+        Couldn't use WebAuthn
+      </message>
+      <message name="IDS_AUTOFILL_WEBAUTHN_OPT_IN_DIALOG_INSTRUCTION" desc="Subheading that appears below the headline explaining to the user that they won't have to enter their card's security code if they decide to use their device's platform authenticator in the future.">
+        Confirm your cards faster by using WebAuthn from now on
+      </message>
       <message name="IDS_AUTOFILL_WEBAUTHN_OPT_IN_DIALOG_OK_BUTTON_LABEL" desc="Button that allows the user to use their device's platform authenticator to confirm card use in the future.">
         Use WebAuthn
       </message>
     </if>
-    <message name="IDS_AUTOFILL_WEBAUTHN_OPT_IN_DIALOG_INSTRUCTION" desc="Subheading that appears below the headline explaining to the user that they won't have to enter their card's security code if they decide to use their device's platform authenticator in the future.">
-      You won't need to enter a card security code from now on
+    <message name="IDS_AUTOFILL_WEBAUTHN_OPT_IN_DIALOG_INSTRUCTION_ERROR" desc="Subheading that appears below the headline, acknowledging the current error and encouraging users to retry later.">
+      Please try again next time
     </message>
     <message name="IDS_AUTOFILL_WEBAUTHN_OPT_IN_DIALOG_CANCEL_BUTTON_LABEL" desc="Button that allows the user to decline the option of using their device's platform authenticator for card confirmation.">
       Not now
+    </message>
+    <message name="IDS_AUTOFILL_WEBAUTHN_OPT_IN_DIALOG_CANCEL_BUTTON_LABEL_ERROR" desc="Button that allows the user to close the dialog.">
+      Close
+    </message>
+  </if>
+
+  <!-- Webauthn verify pending dialog -->
+  <!-- Desktop only -->
+  <if expr="not is_ios and not is_android">
+    <message name="IDS_AUTOFILL_WEBAUTHN_VERIFY_PENDING_DIALOG_TITLE" desc="Headline of the dialog shown when user has opted in to use platform biometric authenticator and has selected one card to fill the form. This shows the verification of the selected card is in progress.">
+        Verifying your identity...
+    </message>
+    <message name="IDS_AUTOFILL_WEBAUTHN_VERIFY_PENDING_DIALOG_CANCEL_BUTTON_LABEL" desc="Label of the cancel button in the dialog shown when user has opted in to use platform biometric authenticator and has selected one card to fill the form. This cancel button allows the user to cancel the entire the verification process.">
+        Cancel
     </message>
   </if>
 

@@ -4,6 +4,8 @@
 
 #include "net/third_party/quiche/src/quic/core/quic_crypto_client_handshaker.h"
 
+#include <utility>
+
 #include "net/third_party/quiche/src/quic/core/proto/crypto_server_config_proto.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_test.h"
 #include "net/third_party/quiche/src/quic/test_tools/quic_test_utils.h"
@@ -131,7 +133,7 @@ class QuicCryptoClientHandshakerTest : public Test {
                                                  &alarm_factory_,
                                                  Perspective::IS_CLIENT)),
         session_(connection_, false),
-        crypto_client_config_(QuicMakeUnique<InsecureProofVerifier>()),
+        crypto_client_config_(std::make_unique<InsecureProofVerifier>()),
         client_stream_(new QuicCryptoClientStream(server_id_,
                                                   &session_,
                                                   nullptr,

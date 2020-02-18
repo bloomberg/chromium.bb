@@ -37,6 +37,7 @@
 #include "third_party/blink/renderer/platform/instrumentation/instance_counters.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/traced_value.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_load_priority.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_load_timing.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
@@ -257,6 +258,7 @@ const char* PseudoTypeToString(CSSSelector::PseudoType pseudo_type) {
     DEFINE_STRING_MAPPING(PseudoNthLastChild)
     DEFINE_STRING_MAPPING(PseudoNthLastOfType)
     DEFINE_STRING_MAPPING(PseudoPart)
+    DEFINE_STRING_MAPPING(PseudoState)
     DEFINE_STRING_MAPPING(PseudoLink)
     DEFINE_STRING_MAPPING(PseudoVisited)
     DEFINE_STRING_MAPPING(PseudoAny)
@@ -289,6 +291,7 @@ const char* PseudoTypeToString(CSSSelector::PseudoType pseudo_type) {
     DEFINE_STRING_MAPPING(PseudoTarget)
     DEFINE_STRING_MAPPING(PseudoBefore)
     DEFINE_STRING_MAPPING(PseudoAfter)
+    DEFINE_STRING_MAPPING(PseudoMarker)
     DEFINE_STRING_MAPPING(PseudoBackdrop)
     DEFINE_STRING_MAPPING(PseudoLang)
     DEFINE_STRING_MAPPING(PseudoNot)
@@ -339,9 +342,11 @@ const char* PseudoTypeToString(CSSSelector::PseudoType pseudo_type) {
     DEFINE_STRING_MAPPING(PseudoSpatialNavigationInterest)
     DEFINE_STRING_MAPPING(PseudoIsHtml)
     DEFINE_STRING_MAPPING(PseudoListBox)
+    DEFINE_STRING_MAPPING(PseudoMultiSelectFocus)
     DEFINE_STRING_MAPPING(PseudoHostHasAppearance)
     DEFINE_STRING_MAPPING(PseudoVideoPersistent)
     DEFINE_STRING_MAPPING(PseudoVideoPersistentAncestor)
+    DEFINE_STRING_MAPPING(PseudoXrImmersiveDomOverlay)
 #undef DEFINE_STRING_MAPPING
   }
 

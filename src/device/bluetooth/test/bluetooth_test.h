@@ -332,6 +332,9 @@ class BluetoothTestBase : public testing::Test {
   virtual void SimulateGattNameChange(BluetoothDevice* device,
                                       const std::string& new_name) {}
 
+  // Simulates a connection status change to disconnect.
+  virtual void SimulateStatusChangeToDisconnect(BluetoothDevice* device) {}
+
   // Simulates success of discovering services. |uuids| is used to create a
   // service for each UUID string. Multiple UUIDs with the same value produce
   // multiple service instances.
@@ -608,6 +611,7 @@ class BluetoothTestBase : public testing::Test {
 
   // Accessors to get callbacks bound to this fixture:
   base::Closure GetCallback(Call expected);
+  base::OnceClosure GetOnceCallback(Call expected);
   BluetoothAdapter::CreateAdvertisementCallback GetCreateAdvertisementCallback(
       Call expected);
   BluetoothAdapter::DiscoverySessionCallback GetDiscoverySessionCallback(
@@ -623,6 +627,7 @@ class BluetoothTestBase : public testing::Test {
   BluetoothRemoteGattCharacteristic::ValueCallback GetReadValueCallback(
       Call expected);
   BluetoothAdapter::ErrorCallback GetErrorCallback(Call expected);
+  BluetoothAdapter::ErrorOnceCallback GetErrorOnceCallback(Call expected);
   BluetoothAdapter::AdvertisementErrorCallback GetAdvertisementErrorCallback(
       Call expected);
   BluetoothDevice::ConnectErrorCallback GetConnectErrorCallback(Call expected);

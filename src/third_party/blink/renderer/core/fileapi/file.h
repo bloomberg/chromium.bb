@@ -27,6 +27,8 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_FILEAPI_FILE_H_
 
 #include "base/memory/scoped_refptr.h"
+#include "base/optional.h"
+#include "base/time/time.h"
 #include "third_party/blink/renderer/bindings/core/v8/array_buffer_or_array_buffer_view_or_blob_or_usv_string.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/fileapi/blob.h"
@@ -66,18 +68,6 @@ class CORE_EXPORT File final : public Blob {
       const String& file_name,
       const FilePropertyBag*);
 
-  static File* Create(const String& path,
-                      ContentTypeLookupPolicy policy = kWellKnownContentTypes) {
-    return MakeGarbageCollected<File>(path, policy, File::kIsUserVisible);
-  }
-
-  static File* Create(const String& name,
-                      double modification_time,
-                      scoped_refptr<BlobDataHandle> blob_data_handle) {
-    return MakeGarbageCollected<File>(name, modification_time,
-                                      std::move(blob_data_handle));
-  }
-
   // For deserialization.
   static File* CreateFromSerialization(
       const String& path,
@@ -86,7 +76,7 @@ class CORE_EXPORT File final : public Blob {
       UserVisibility user_visibility,
       bool has_snapshot_data,
       uint64_t size,
-      double last_modified,
+      const base::Optional<base::Time>& last_modified,
       scoped_refptr<BlobDataHandle> blob_data_handle) {
     return MakeGarbageCollected<File>(
         path, name, relative_path, user_visibility, has_snapshot_data, size,
@@ -96,7 +86,7 @@ class CORE_EXPORT File final : public Blob {
       const String& path,
       const String& name,
       uint64_t size,
-      double last_modified,
+      const base::Optional<base::Time>& last_modified,
       scoped_refptr<BlobDataHandle> blob_data_handle) {
     return MakeGarbageCollected<File>(path, name, String(), kIsNotUserVisible,
                                       true, size, last_modified,
@@ -131,7 +121,9 @@ class CORE_EXPORT File final : public Blob {
     return MakeGarbageCollected<File>(url, metadata, user_visibility);
   }
 
-  File(const String& path, ContentTypeLookupPolicy, UserVisibility);
+  File(const String& path,
+       ContentTypeLookupPolicy = kWellKnownContentTypes,
+       UserVisibility = File::kIsUserVisible);
   File(const String& path,
        const String& name,
        ContentTypeLookupPolicy,
@@ -142,10 +134,10 @@ class CORE_EXPORT File final : public Blob {
        UserVisibility,
        bool has_snapshot_data,
        uint64_t size,
-       double last_modified,
+       const base::Optional<base::Time>& last_modified,
        scoped_refptr<BlobDataHandle>);
   File(const String& name,
-       double modification_time,
+       const base::Optional<base::Time>& modification_time,
        scoped_refptr<BlobDataHandle>);
   File(const String& name, const FileMetadata&, UserVisibility);
   File(const KURL& file_system_url, const FileMetadata&, UserVisibility);
@@ -207,7 +199,11 @@ class CORE_EXPORT File final : public Blob {
 
   // Getter for the lastModifiedDate IDL attribute,
   // http://www.w3.org/TR/FileAPI/#dfn-lastModifiedDate
-  double lastModifiedDate() const;
+  ScriptValue lastModifiedDate(ScriptState* script_state) const;
+
+  // Returns File's last modified time.
+  // If the modification time isn't known, the current time is returned.
+  base::Time LastModifiedTime() const;
 
   UserVisibility GetUserVisibility() const { return user_visibility_; }
 
@@ -217,11 +213,12 @@ class CORE_EXPORT File final : public Blob {
 
   // Note that this involves synchronous file operation. Think twice before
   // calling this function.
-  void CaptureSnapshot(uint64_t& snapshot_size,
-                       double& snapshot_modification_time_ms) const;
+  void CaptureSnapshot(
+      uint64_t& snapshot_size,
+      base::Optional<base::Time>& snapshot_modification_time) const;
 
   // Returns true if this has a valid snapshot metadata
-  // (i.e. m_snapshotSize >= 0).
+  // (i.e. snapshot_size_.has_value()).
   bool HasValidSnapshotMetadata() const { return snapshot_size_.has_value(); }
 
   // Returns true if the sources (file path, file system URL, or blob handler)
@@ -233,10 +230,6 @@ class CORE_EXPORT File final : public Blob {
 
  private:
   void InvalidateSnapshotMetadata() { snapshot_size_.reset(); }
-
-  // Returns File's last modified time (in MS since Epoch.)
-  // If the modification time isn't known, the current time is returned.
-  double LastModifiedMS() const;
 
 #if DCHECK_IS_ON()
   // Instances backed by a file must have an empty file system URL.
@@ -254,12 +247,12 @@ class CORE_EXPORT File final : public Blob {
 
   KURL file_system_url_;
 
-  // If m_snapshotSize is negative (initialized to -1 by default), the snapshot
-  // metadata is invalid and we retrieve the latest metadata synchronously in
-  // size(), lastModifiedTime() and slice().
+  // If snapshot_size_ has no value, the snapshot metadata is invalid and
+  // we retrieve the latest metadata synchronously in size(),
+  // LastModifiedTime() and slice().
   // Otherwise, the snapshot metadata are used directly in those methods.
   base::Optional<uint64_t> snapshot_size_;
-  const double snapshot_modification_time_ms_;
+  const base::Optional<base::Time> snapshot_modification_time_;
 
   String relative_path_;
 };

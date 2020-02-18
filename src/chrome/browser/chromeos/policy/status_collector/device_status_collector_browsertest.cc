@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <iterator>
 #include <memory>
 #include <string>
 #include <utility>
@@ -30,6 +31,7 @@
 #include "chrome/browser/chromeos/app_mode/arc/arc_kiosk_app_manager.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_data.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
+#include "chrome/browser/chromeos/app_mode/kiosk_cryptohome_remover.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service_factory.h"
@@ -50,9 +52,9 @@
 #include "chrome/test/base/testing_profile_manager.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/dbus/cros_disks_client.h"
+#include "chromeos/dbus/cros_healthd/cros_healthd_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_update_engine_client.h"
-#include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "chromeos/dbus/power_manager/idle.pb.h"
 #include "chromeos/dbus/shill/shill_device_client.h"
 #include "chromeos/dbus/shill/shill_ipconfig_client.h"
@@ -75,16 +77,18 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/testing_pref_service.h"
+#include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "components/user_manager/user_type.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_client.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_utils.h"
-#include "storage/browser/fileapi/external_mount_points.h"
-#include "storage/browser/fileapi/mount_points.h"
-#include "storage/common/fileapi/file_system_mount_option.h"
-#include "storage/common/fileapi/file_system_types.h"
+#include "mojo/core/embedder/embedder.h"
+#include "storage/browser/file_system/external_mount_points.h"
+#include "storage/browser/file_system/mount_points.h"
+#include "storage/common/file_system/file_system_mount_option.h"
+#include "storage/common/file_system/file_system_types.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -133,6 +137,7 @@ const char kActualLastLaunchTimeFormatted[] = "Sat, 1 Sep 2018 11:50:50 GMT";
 const char kLastLaunchTimeWindowStartFormatted[] =
     "Sat, 1 Sep 2018 00:00:00 GMT";
 const long kLastLaunchTimeWindowStartInJavaTime = 1535760000000;
+const char kDefaultPlatformVersion[] = "1234.0.0";
 
 class TestingDeviceStatusCollector : public policy::DeviceStatusCollector {
  public:
@@ -148,7 +153,10 @@ class TestingDeviceStatusCollector : public policy::DeviceStatusCollector {
       const policy::DeviceStatusCollector::TpmStatusFetcher& tpm_status_fetcher,
       const policy::DeviceStatusCollector::EMMCLifetimeFetcher&
           emmc_lifetime_fetcher,
-      bool is_enterprise_device)
+      const policy::DeviceStatusCollector::StatefulPartitionInfoFetcher&
+          stateful_partition_info_fetcher,
+      const policy::DeviceStatusCollector::CrosHealthdDataFetcher&
+          cros_healthd_data_fetcher)
       : policy::DeviceStatusCollector(pref_service,
                                       provider,
                                       volume_info_fetcher,
@@ -157,13 +165,12 @@ class TestingDeviceStatusCollector : public policy::DeviceStatusCollector {
                                       android_status_fetcher,
                                       tpm_status_fetcher,
                                       emmc_lifetime_fetcher,
-                                      is_enterprise_device) {
+                                      stateful_partition_info_fetcher,
+                                      cros_healthd_data_fetcher) {
     // Set the baseline time to a fixed value (1 hour after day start) to
     // prevent test flakiness due to a single activity period spanning two days.
     SetBaselineTime(Time::Now().LocalMidnight() + kHour);
   }
-
-  void UpdateUsageTime() { UpdateChildUsageTime(); }
 
   void Simulate(ui::IdleState* states, int len) {
     for (int i = 0; i < len; i++)
@@ -337,6 +344,49 @@ em::DiskLifetimeEstimation GetFakeEMMCLifetiemEstimation(
   return value;
 }
 
+em::StatefulPartitionInfo GetEmptyStatefulPartitionInfo() {
+  return em::StatefulPartitionInfo();
+}
+
+em::StatefulPartitionInfo GetFakeStatefulPartitionInfo(
+    const em::StatefulPartitionInfo& value) {
+  return value;
+}
+
+void GetEmptyCrosHealthdData(
+    policy::DeviceStatusCollector::CrosHealthdDataReceiver receiver) {
+  chromeos::cros_healthd::mojom::TelemetryInfoPtr empty_info;
+  base::circular_deque<std::unique_ptr<policy::SampledData>> empty_samples;
+  std::move(receiver).Run(std::move(empty_info), empty_samples);
+}
+
+void GetFakeCrosHealthdData(
+    const chromeos::cros_healthd::mojom::BatteryInfo& battery_info,
+    const chromeos::cros_healthd::mojom::CachedVpdInfo& cached_vpd_info,
+    const chromeos::cros_healthd::mojom::NonRemovableBlockDeviceInfo&
+        storage_info,
+    const em::CPUTempInfo& cpu_sample,
+    const em::BatterySample& battery_sample,
+    policy::DeviceStatusCollector::CrosHealthdDataReceiver receiver) {
+  std::vector<chromeos::cros_healthd::mojom::NonRemovableBlockDeviceInfoPtr>
+      storage_vector;
+  storage_vector.push_back(storage_info.Clone());
+  base::Optional<std::vector<
+      chromeos::cros_healthd::mojom::NonRemovableBlockDeviceInfoPtr>>
+      block_device_info(std::move(storage_vector));
+  chromeos::cros_healthd::mojom::TelemetryInfo fake_info(
+      battery_info.Clone(), std::move(block_device_info),
+      cached_vpd_info.Clone());
+
+  auto sample = std::make_unique<policy::SampledData>();
+  sample->cpu_samples[cpu_sample.cpu_label()] = cpu_sample;
+  sample->battery_samples[battery_info.model_name] = battery_sample;
+  base::circular_deque<std::unique_ptr<policy::SampledData>> samples;
+  samples.push_back(std::move(sample));
+
+  std::move(receiver).Run(fake_info.Clone(), samples);
+}
+
 }  // namespace
 
 namespace policy {
@@ -366,6 +416,10 @@ class DeviceStatusCollectorTest : public testing::Test {
     scoped_stub_install_attributes_.Get()->SetCloudManaged("managed.com",
                                                            "device_id");
     EXPECT_CALL(*user_manager_, Shutdown()).Times(1);
+
+    // Ensure mojo is started, otherwise browser context keyed services that
+    // rely on mojo will explode.
+    mojo::core::Init();
 
     // Although this is really a unit test which runs in the browser_tests
     // binary, it doesn't get the unit setup which normally happens in the unit
@@ -408,11 +462,10 @@ class DeviceStatusCollectorTest : public testing::Test {
     TestingDeviceStatusCollector::RegisterProfilePrefs(
         profile_pref_service_.registry());
 
-    owner_settings_service_.set_ignore_profile_creation_notification(true);
-
-    // Set up a fake local state for KioskAppManager.
+    // Set up a fake local state for KioskAppManager and KioskCryptohomeRemover.
     TestingBrowserProcess::GetGlobal()->SetLocalState(&local_state_);
     chromeos::KioskAppManager::RegisterPrefs(local_state_.registry());
+    chromeos::KioskCryptohomeRemover::RegisterPrefs(local_state_.registry());
 
     // Use FakeUpdateEngineClient.
     std::unique_ptr<chromeos::DBusThreadManagerSetter> dbus_setter =
@@ -441,13 +494,14 @@ class DeviceStatusCollectorTest : public testing::Test {
   }
 
   void SetUp() override {
-    RestartStatusCollector(
-        base::BindRepeating(&GetEmptyVolumeInfo),
-        base::BindRepeating(&GetEmptyCPUStatistics),
-        base::BindRepeating(&GetEmptyCPUTempInfo),
-        base::BindRepeating(&GetEmptyAndroidStatus),
-        base::BindRepeating(&GetEmptyTpmStatus),
-        base::BindRepeating(&GetEmptyEMMCLifetimeEstimation));
+    RestartStatusCollector(base::BindRepeating(&GetEmptyVolumeInfo),
+                           base::BindRepeating(&GetEmptyCPUStatistics),
+                           base::BindRepeating(&GetEmptyCPUTempInfo),
+                           base::BindRepeating(&GetEmptyAndroidStatus),
+                           base::BindRepeating(&GetEmptyTpmStatus),
+                           base::BindRepeating(&GetEmptyEMMCLifetimeEstimation),
+                           base::BindRepeating(&GetEmptyStatefulPartitionInfo),
+                           base::BindRepeating(&GetEmptyCrosHealthdData));
 
     // Disable network interface reporting since it requires additional setup.
     scoped_testing_cros_settings_.device_settings()->SetBoolean(
@@ -457,56 +511,6 @@ class DeviceStatusCollectorTest : public testing::Test {
   void TearDown() override { status_collector_.reset(); }
 
  protected:
-  // States tracked to calculate a child's active time.
-  enum class DeviceStateTransitions {
-    kEnterIdleState,
-    kLeaveIdleState,
-    kEnterSleep,
-    kLeaveSleep,
-    kEnterSessionActive,
-    kLeaveSessionActive,
-    kPeriodicCheckTriggered
-  };
-
-  void SimulateStateChanges(DeviceStateTransitions* states, int len) {
-    for (int i = 0; i < len; i++) {
-      switch (states[i]) {
-        case DeviceStateTransitions::kEnterIdleState: {
-          power_manager::ScreenIdleState state;
-          state.set_off(true);
-          chromeos::FakePowerManagerClient::Get()->SendScreenIdleStateChanged(
-              state);
-        } break;
-        case DeviceStateTransitions::kLeaveIdleState: {
-          power_manager::ScreenIdleState state;
-          state.set_off(false);
-          chromeos::FakePowerManagerClient::Get()->SendScreenIdleStateChanged(
-              state);
-        } break;
-        case DeviceStateTransitions::kEnterSleep:
-          chromeos::FakePowerManagerClient::Get()->SendSuspendImminent(
-              power_manager::SuspendImminent_Reason_LID_CLOSED);
-          break;
-        case DeviceStateTransitions::kLeaveSleep:
-          chromeos::FakePowerManagerClient::Get()->SendSuspendDone(
-              base::TimeDelta::FromSeconds(
-                  policy::DeviceStatusCollector::kIdlePollIntervalSeconds));
-          break;
-        case DeviceStateTransitions::kEnterSessionActive:
-          session_manager::SessionManager::Get()->SetSessionState(
-              session_manager::SessionState::ACTIVE);
-          break;
-        case DeviceStateTransitions::kLeaveSessionActive:
-          session_manager::SessionManager::Get()->SetSessionState(
-              session_manager::SessionState::LOCKED);
-          break;
-        case DeviceStateTransitions::kPeriodicCheckTriggered:
-          status_collector_->UpdateUsageTime();
-          break;
-      }
-    }
-  }
-
   void AddMountPoint(const std::string& mount_point) {
     mount_point_map_.insert(DiskMountManager::MountPointMap::value_type(
         mount_point, DiskMountManager::MountPointInfo(
@@ -522,12 +526,17 @@ class DeviceStatusCollectorTest : public testing::Test {
           android_status_fetcher,
       const policy::DeviceStatusCollector::TpmStatusFetcher& tpm_status_fetcher,
       const policy::DeviceStatusCollector::EMMCLifetimeFetcher&
-          emmc_lifetime_fetcher) {
+          emmc_lifetime_fetcher,
+      const policy::DeviceStatusCollector::StatefulPartitionInfoFetcher&
+          stateful_partition_info_fetcher,
+      const policy::DeviceStatusCollector::CrosHealthdDataFetcher&
+          cros_healthd_data_fetcher) {
     std::vector<em::VolumeInfo> expected_volume_info;
     status_collector_ = std::make_unique<TestingDeviceStatusCollector>(
         &local_state_, &fake_statistics_provider_, volume_info, cpu_stats,
         cpu_temp_fetcher, android_status_fetcher, tpm_status_fetcher,
-        emmc_lifetime_fetcher, true /* is_enterprise_device */);
+        emmc_lifetime_fetcher, stateful_partition_info_fetcher,
+        cros_healthd_data_fetcher);
   }
 
   void GetStatus() {
@@ -576,13 +585,6 @@ class DeviceStatusCollectorTest : public testing::Test {
                                       bool is_affiliated) {
     MockUserWithTypeAndAffiliation(account_id, user_manager::USER_TYPE_REGULAR,
                                    is_affiliated);
-  }
-
-  void MockChildUser(const AccountId& account_id) {
-    MockUserWithTypeAndAffiliation(account_id, user_manager::USER_TYPE_CHILD,
-                                   false);
-    EXPECT_CALL(*user_manager_, IsLoggedInAsChildUser())
-        .WillRepeatedly(Return(true));
   }
 
   void MockRunningKioskApp(const DeviceLocalAccount& account, bool arc_kiosk) {
@@ -842,7 +844,9 @@ TEST_F(DeviceStatusCollectorTest, StateKeptInPref) {
                          base::BindRepeating(&GetEmptyCPUTempInfo),
                          base::BindRepeating(&GetEmptyAndroidStatus),
                          base::BindRepeating(&GetEmptyTpmStatus),
-                         base::BindRepeating(&GetEmptyEMMCLifetimeEstimation));
+                         base::BindRepeating(&GetEmptyEMMCLifetimeEstimation),
+                         base::BindRepeating(&GetEmptyStatefulPartitionInfo),
+                         base::BindRepeating(&GetEmptyCrosHealthdData));
   status_collector_->Simulate(test_states,
                               sizeof(test_states) / sizeof(ui::IdleState));
 
@@ -1302,7 +1306,9 @@ TEST_F(DeviceStatusCollectorTest, TestVolumeInfo) {
       base::BindRepeating(&GetEmptyCPUTempInfo),
       base::BindRepeating(&GetEmptyAndroidStatus),
       base::BindRepeating(&GetEmptyTpmStatus),
-      base::BindRepeating(&GetEmptyEMMCLifetimeEstimation));
+      base::BindRepeating(&GetEmptyEMMCLifetimeEstimation),
+      base::BindRepeating(&GetEmptyStatefulPartitionInfo),
+      base::BindRepeating(&GetEmptyCrosHealthdData));
   // Force finishing tasks posted by ctor of DeviceStatusCollector.
   content::RunAllTasksUntilIdle();
 
@@ -1350,6 +1356,44 @@ TEST_F(DeviceStatusCollectorTest, TestAvailableMemory) {
   EXPECT_GT(device_status_.system_ram_total(), 0);
 }
 
+TEST_F(DeviceStatusCollectorTest, TestSystemFreeRamInfo) {
+  const int sample_count =
+      static_cast<const int>(DeviceStatusCollector::kMaxResourceUsageSamples);
+  std::vector<int64_t> timestamp_lowerbounds;
+  std::vector<int64_t> timestamp_upperbounds;
+
+  // Refresh our samples. Sample more than kMaxHardwareSamples times to
+  // make sure that the code correctly caps the number of cached samples.
+  status_collector_->RefreshSampleResourceUsage();
+  base::RunLoop().RunUntilIdle();
+
+  for (int i = 0; i < sample_count; ++i) {
+    timestamp_lowerbounds.push_back(base::Time::Now().ToJavaTime());
+    status_collector_->RefreshSampleResourceUsage();
+    base::RunLoop().RunUntilIdle();
+    timestamp_upperbounds.push_back(base::Time::Now().ToJavaTime());
+  }
+  GetStatus();
+
+  EXPECT_TRUE(device_status_.has_system_ram_total());
+  EXPECT_GT(device_status_.system_ram_total(), 0);
+
+  EXPECT_EQ(sample_count, device_status_.system_ram_free_infos().size());
+  for (int i = 0; i < sample_count; ++i) {
+    // Make sure 0 < free RAM < total Ram.
+    EXPECT_GT(device_status_.system_ram_free_infos(i).size_in_bytes(), 0);
+    EXPECT_LT(device_status_.system_ram_free_infos(i).size_in_bytes(),
+              device_status_.system_ram_total());
+
+    // Make sure timestamp is in a valid range though we cannot inject specific
+    // test values.
+    EXPECT_GE(device_status_.system_ram_free_infos(i).timestamp(),
+              timestamp_lowerbounds[i]);
+    EXPECT_LE(device_status_.system_ram_free_infos(i).timestamp(),
+              timestamp_upperbounds[i]);
+  }
+}
+
 TEST_F(DeviceStatusCollectorTest, TestCPUSamples) {
   // Mock 100% CPU usage.
   std::string full_cpu_usage("cpu  500 0 500 0 0 0 0");
@@ -1359,7 +1403,9 @@ TEST_F(DeviceStatusCollectorTest, TestCPUSamples) {
       base::BindRepeating(&GetEmptyCPUTempInfo),
       base::BindRepeating(&GetEmptyAndroidStatus),
       base::BindRepeating(&GetEmptyTpmStatus),
-      base::BindRepeating(&GetEmptyEMMCLifetimeEstimation));
+      base::BindRepeating(&GetEmptyEMMCLifetimeEstimation),
+      base::BindRepeating(&GetEmptyStatefulPartitionInfo),
+      base::BindRepeating(&GetEmptyCrosHealthdData));
   // Force finishing tasks posted by ctor of DeviceStatusCollector.
   content::RunAllTasksUntilIdle();
   GetStatus();
@@ -1398,6 +1444,80 @@ TEST_F(DeviceStatusCollectorTest, TestCPUSamples) {
   EXPECT_EQ(0, device_status_.cpu_utilization_pct_samples().size());
 }
 
+TEST_F(DeviceStatusCollectorTest, TestCPUInfos) {
+  // Mock 100% CPU usage.
+  std::string full_cpu_usage("cpu  500 0 500 0 0 0 0");
+  int64_t timestamp_lowerbound = base::Time::Now().ToJavaTime();
+  RestartStatusCollector(
+      base::BindRepeating(&GetEmptyVolumeInfo),
+      base::BindRepeating(&GetFakeCPUStatistics, full_cpu_usage),
+      base::BindRepeating(&GetEmptyCPUTempInfo),
+      base::BindRepeating(&GetEmptyAndroidStatus),
+      base::BindRepeating(&GetEmptyTpmStatus),
+      base::BindRepeating(&GetEmptyEMMCLifetimeEstimation),
+      base::BindRepeating(&GetEmptyStatefulPartitionInfo),
+      base::BindRepeating(&GetEmptyCrosHealthdData));
+  // Force finishing tasks posted by ctor of DeviceStatusCollector.
+  content::RunAllTasksUntilIdle();
+  int64_t timestamp_upperbound = base::Time::Now().ToJavaTime();
+  GetStatus();
+  ASSERT_EQ(1, device_status_.cpu_utilization_infos().size());
+  EXPECT_EQ(100, device_status_.cpu_utilization_infos(0).cpu_utilization_pct());
+  EXPECT_GE(device_status_.cpu_utilization_infos(0).timestamp(),
+            timestamp_lowerbound);
+  EXPECT_LE(device_status_.cpu_utilization_infos(0).timestamp(),
+            timestamp_upperbound);
+
+  // Now sample CPU usage again (active usage counters will not increase
+  // so should show 0% cpu usage).
+  timestamp_lowerbound = base::Time::Now().ToJavaTime();
+  status_collector_->RefreshSampleResourceUsage();
+  base::RunLoop().RunUntilIdle();
+  timestamp_upperbound = base::Time::Now().ToJavaTime();
+  GetStatus();
+  ASSERT_EQ(2, device_status_.cpu_utilization_infos().size());
+  EXPECT_EQ(0, device_status_.cpu_utilization_infos(1).cpu_utilization_pct());
+  EXPECT_GE(device_status_.cpu_utilization_infos(1).timestamp(),
+            timestamp_lowerbound);
+  EXPECT_LE(device_status_.cpu_utilization_infos(1).timestamp(),
+            timestamp_upperbound);
+
+  // Now store a bunch of 0% cpu usage and make sure we cap the max number of
+  // samples.
+  const int sample_count =
+      static_cast<const int>(DeviceStatusCollector::kMaxResourceUsageSamples);
+  std::vector<int64_t> timestamp_lowerbounds;
+  std::vector<int64_t> timestamp_upperbounds;
+
+  for (int i = 0; i < sample_count; ++i) {
+    timestamp_lowerbounds.push_back(base::Time::Now().ToJavaTime());
+    status_collector_->RefreshSampleResourceUsage();
+    base::RunLoop().RunUntilIdle();
+    timestamp_upperbounds.push_back(base::Time::Now().ToJavaTime());
+  }
+  GetStatus();
+
+  // Should not be more than kMaxResourceUsageSamples, and they should all show
+  // the CPU is idle.
+  EXPECT_EQ(sample_count, device_status_.cpu_utilization_infos().size());
+  for (int i = 0; i < sample_count; ++i) {
+    EXPECT_EQ(device_status_.cpu_utilization_infos(i).cpu_utilization_pct(), 0);
+
+    // Make sure timestamp is in a valid range though we cannot inject specific
+    // test values.
+    EXPECT_GE(device_status_.cpu_utilization_infos(i).timestamp(),
+              timestamp_lowerbounds[i]);
+    EXPECT_LE(device_status_.cpu_utilization_infos(i).timestamp(),
+              timestamp_upperbounds[i]);
+  }
+
+  // Turning off hardware reporting should not report CPU utilization.
+  scoped_testing_cros_settings_.device_settings()->SetBoolean(
+      chromeos::kReportDeviceHardwareStatus, false);
+  GetStatus();
+  EXPECT_EQ(0, device_status_.cpu_utilization_infos().size());
+}
+
 TEST_F(DeviceStatusCollectorTest, TestCPUTemp) {
   std::vector<em::CPUTempInfo> expected_temp_info;
   int cpu_cnt = 12;
@@ -1414,7 +1534,9 @@ TEST_F(DeviceStatusCollectorTest, TestCPUTemp) {
       base::BindRepeating(&GetFakeCPUTempInfo, expected_temp_info),
       base::BindRepeating(&GetEmptyAndroidStatus),
       base::BindRepeating(&GetEmptyTpmStatus),
-      base::BindRepeating(&GetEmptyEMMCLifetimeEstimation));
+      base::BindRepeating(&GetEmptyEMMCLifetimeEstimation),
+      base::BindRepeating(&GetEmptyStatefulPartitionInfo),
+      base::BindRepeating(&GetEmptyCrosHealthdData));
   // Force finishing tasks posted by ctor of DeviceStatusCollector.
   content::RunAllTasksUntilIdle();
 
@@ -1453,7 +1575,9 @@ TEST_F(DeviceStatusCollectorTest, TestDiskLifetimeEstimation) {
       base::BindRepeating(&GetEmptyCPUTempInfo),
       base::BindRepeating(&GetEmptyAndroidStatus),
       base::BindRepeating(&GetEmptyTpmStatus),
-      base::BindRepeating(&GetFakeEMMCLifetiemEstimation, est));
+      base::BindRepeating(&GetFakeEMMCLifetiemEstimation, est),
+      base::BindRepeating(&GetEmptyStatefulPartitionInfo),
+      base::BindRepeating(&GetEmptyCrosHealthdData));
   // Force finishing tasks posted by ctor of DeviceStatusCollector.
   content::RunAllTasksUntilIdle();
   scoped_testing_cros_settings_.device_settings()->SetBoolean(
@@ -1480,7 +1604,9 @@ TEST_F(DeviceStatusCollectorTest, KioskAndroidReporting) {
       base::BindRepeating(&GetEmptyCPUTempInfo),
       base::BindRepeating(&GetFakeAndroidStatus, kArcStatus, kDroidGuardInfo),
       base::BindRepeating(&GetEmptyTpmStatus),
-      base::BindRepeating(&GetEmptyEMMCLifetimeEstimation));
+      base::BindRepeating(&GetEmptyEMMCLifetimeEstimation),
+      base::BindRepeating(&GetEmptyStatefulPartitionInfo),
+      base::BindRepeating(&GetEmptyCrosHealthdData));
   status_collector_->set_kiosk_account(
       std::make_unique<DeviceLocalAccount>(fake_kiosk_device_local_account_));
   MockRunningKioskApp(fake_kiosk_device_local_account_, false /* arc_kiosk */);
@@ -1502,7 +1628,9 @@ TEST_F(DeviceStatusCollectorTest, NoKioskAndroidReportingWhenDisabled) {
       base::BindRepeating(&GetEmptyCPUTempInfo),
       base::BindRepeating(&GetFakeAndroidStatus, kArcStatus, kDroidGuardInfo),
       base::BindRepeating(&GetEmptyTpmStatus),
-      base::BindRepeating(&GetEmptyEMMCLifetimeEstimation));
+      base::BindRepeating(&GetEmptyEMMCLifetimeEstimation),
+      base::BindRepeating(&GetEmptyStatefulPartitionInfo),
+      base::BindRepeating(&GetEmptyCrosHealthdData));
 
   // Mock Kiosk app, so some session status is reported
   status_collector_->set_kiosk_account(
@@ -1523,7 +1651,9 @@ TEST_F(DeviceStatusCollectorTest, RegularUserAndroidReporting) {
       base::BindRepeating(&GetEmptyCPUTempInfo),
       base::BindRepeating(&GetFakeAndroidStatus, kArcStatus, kDroidGuardInfo),
       base::BindRepeating(&GetEmptyTpmStatus),
-      base::BindRepeating(&GetEmptyEMMCLifetimeEstimation));
+      base::BindRepeating(&GetEmptyEMMCLifetimeEstimation),
+      base::BindRepeating(&GetEmptyStatefulPartitionInfo),
+      base::BindRepeating(&GetEmptyCrosHealthdData));
 
   const AccountId account_id(AccountId::FromUserEmail("user0@managed.com"));
   MockRegularUserWithAffiliation(account_id, true);
@@ -1546,7 +1676,9 @@ TEST_F(DeviceStatusCollectorTest, RegularUserCrostiniReporting) {
       base::BindRepeating(&GetEmptyCPUTempInfo),
       base::BindRepeating(&GetFakeAndroidStatus, kArcStatus, kDroidGuardInfo),
       base::BindRepeating(&GetEmptyTpmStatus),
-      base::BindRepeating(&GetEmptyEMMCLifetimeEstimation));
+      base::BindRepeating(&GetEmptyEMMCLifetimeEstimation),
+      base::BindRepeating(&GetEmptyStatefulPartitionInfo),
+      base::BindRepeating(&GetEmptyCrosHealthdData));
 
   const AccountId account_id(AccountId::FromUserEmail(kCrostiniUserEmail));
   MockRegularUserWithAffiliation(account_id, true);
@@ -1577,7 +1709,9 @@ TEST_F(DeviceStatusCollectorTest, RegularUserCrostiniReportingNoData) {
       base::BindRepeating(&GetEmptyCPUTempInfo),
       base::BindRepeating(&GetFakeAndroidStatus, kArcStatus, kDroidGuardInfo),
       base::BindRepeating(&GetEmptyTpmStatus),
-      base::BindRepeating(&GetEmptyEMMCLifetimeEstimation));
+      base::BindRepeating(&GetEmptyEMMCLifetimeEstimation),
+      base::BindRepeating(&GetEmptyStatefulPartitionInfo),
+      base::BindRepeating(&GetEmptyCrosHealthdData));
 
   const AccountId account_id(AccountId::FromUserEmail(kCrostiniUserEmail));
   MockRegularUserWithAffiliation(account_id, true);
@@ -1599,7 +1733,9 @@ TEST_F(DeviceStatusCollectorTest, CrostiniTerminaVmKernelVersionReporting) {
       base::BindRepeating(&GetEmptyCPUTempInfo),
       base::BindRepeating(&GetFakeAndroidStatus, kArcStatus, kDroidGuardInfo),
       base::BindRepeating(&GetEmptyTpmStatus),
-      base::BindRepeating(&GetEmptyEMMCLifetimeEstimation));
+      base::BindRepeating(&GetEmptyEMMCLifetimeEstimation),
+      base::BindRepeating(&GetEmptyStatefulPartitionInfo),
+      base::BindRepeating(&GetEmptyCrosHealthdData));
 
   // Prerequisites for any Crostini reporting to take place:
   const AccountId account_id(AccountId::FromUserEmail(kCrostiniUserEmail));
@@ -1640,7 +1776,9 @@ TEST_F(DeviceStatusCollectorTest, CrostiniAppUsageReporting) {
       base::BindRepeating(&GetEmptyCPUTempInfo),
       base::BindRepeating(&GetFakeAndroidStatus, kArcStatus, kDroidGuardInfo),
       base::BindRepeating(&GetEmptyTpmStatus),
-      base::BindRepeating(&GetEmptyEMMCLifetimeEstimation));
+      base::BindRepeating(&GetEmptyEMMCLifetimeEstimation),
+      base::BindRepeating(&GetEmptyStatefulPartitionInfo),
+      base::BindRepeating(&GetEmptyCrosHealthdData));
 
   const AccountId account_id(AccountId::FromUserEmail(kCrostiniUserEmail));
   MockRegularUserWithAffiliation(account_id, true);
@@ -1728,7 +1866,9 @@ TEST_F(DeviceStatusCollectorTest,
       base::BindRepeating(&GetEmptyCPUTempInfo),
       base::BindRepeating(&GetFakeAndroidStatus, kArcStatus, kDroidGuardInfo),
       base::BindRepeating(&GetEmptyTpmStatus),
-      base::BindRepeating(&GetEmptyEMMCLifetimeEstimation));
+      base::BindRepeating(&GetEmptyEMMCLifetimeEstimation),
+      base::BindRepeating(&GetEmptyStatefulPartitionInfo),
+      base::BindRepeating(&GetEmptyCrosHealthdData));
 
   const AccountId account_id(AccountId::FromUserEmail(kCrostiniUserEmail));
   MockRegularUserWithAffiliation(account_id, true);
@@ -1768,7 +1908,9 @@ TEST_F(DeviceStatusCollectorTest, NoRegularUserReportingByDefault) {
       base::BindRepeating(&GetEmptyCPUTempInfo),
       base::BindRepeating(&GetFakeAndroidStatus, kArcStatus, kDroidGuardInfo),
       base::BindRepeating(&GetEmptyTpmStatus),
-      base::BindRepeating(&GetEmptyEMMCLifetimeEstimation));
+      base::BindRepeating(&GetEmptyEMMCLifetimeEstimation),
+      base::BindRepeating(&GetEmptyStatefulPartitionInfo),
+      base::BindRepeating(&GetEmptyCrosHealthdData));
 
   const AccountId account_id(AccountId::FromUserEmail("user0@managed.com"));
   MockRegularUserWithAffiliation(account_id, true);
@@ -1790,7 +1932,9 @@ TEST_F(DeviceStatusCollectorTest,
       base::BindRepeating(&GetEmptyCPUTempInfo),
       base::BindRepeating(&GetFakeAndroidStatus, kArcStatus, kDroidGuardInfo),
       base::BindRepeating(&GetEmptyTpmStatus),
-      base::BindRepeating(&GetEmptyEMMCLifetimeEstimation));
+      base::BindRepeating(&GetEmptyEMMCLifetimeEstimation),
+      base::BindRepeating(&GetEmptyStatefulPartitionInfo),
+      base::BindRepeating(&GetEmptyCrosHealthdData));
 
   const AccountId account_id(AccountId::FromUserEmail("user0@managed.com"));
   MockRegularUserWithAffiliation(account_id, false);
@@ -1822,7 +1966,9 @@ TEST_F(DeviceStatusCollectorTest, TpmStatusReporting) {
                          base::BindRepeating(&GetEmptyCPUTempInfo),
                          base::BindRepeating(&GetEmptyAndroidStatus),
                          base::BindRepeating(&GetFakeTpmStatus, kFakeTpmStatus),
-                         base::BindRepeating(&GetEmptyEMMCLifetimeEstimation));
+                         base::BindRepeating(&GetEmptyEMMCLifetimeEstimation),
+                         base::BindRepeating(&GetEmptyStatefulPartitionInfo),
+                         base::BindRepeating(&GetEmptyCrosHealthdData));
 
   GetStatus();
 
@@ -1935,16 +2081,16 @@ TEST_F(DeviceStatusCollectorTest, ReportArcKioskSessionStatus) {
 }
 
 TEST_F(DeviceStatusCollectorTest, NoOsUpdateStatusByDefault) {
-  MockPlatformVersion("1234.0.0");
+  MockPlatformVersion(kDefaultPlatformVersion);
   MockAutoLaunchKioskAppWithRequiredPlatformVersion(
-      fake_kiosk_device_local_account_, "1234.0.0");
+      fake_kiosk_device_local_account_, kDefaultPlatformVersion);
 
   GetStatus();
   EXPECT_FALSE(device_status_.has_os_update_status());
 }
 
 TEST_F(DeviceStatusCollectorTest, ReportOsUpdateStatusUpToDate) {
-  MockPlatformVersion("1234.0.0");
+  MockPlatformVersion(kDefaultPlatformVersion);
   scoped_testing_cros_settings_.device_settings()->SetBoolean(
       chromeos::kReportOsUpdateStatus, true);
 
@@ -1967,30 +2113,29 @@ TEST_F(DeviceStatusCollectorTest, ReportOsUpdateStatusUpToDate) {
 }
 
 TEST_F(DeviceStatusCollectorTest, ReportOsUpdateStatus) {
-  MockPlatformVersion("1234.0.0");
+  MockPlatformVersion(kDefaultPlatformVersion);
   scoped_testing_cros_settings_.device_settings()->SetBoolean(
       chromeos::kReportOsUpdateStatus, true);
   MockAutoLaunchKioskAppWithRequiredPlatformVersion(
       fake_kiosk_device_local_account_, "1235");
 
-  chromeos::UpdateEngineClient::Status update_status;
-  update_status.status = chromeos::UpdateEngineClient::UPDATE_STATUS_IDLE;
+  update_engine::StatusResult update_status;
+  update_status.set_current_operation(update_engine::Operation::IDLE);
 
   GetStatus();
   ASSERT_TRUE(device_status_.has_os_update_status());
   EXPECT_EQ(em::OsUpdateStatus::OS_IMAGE_DOWNLOAD_NOT_STARTED,
             device_status_.os_update_status().update_status());
 
-  const chromeos::UpdateEngineClient::UpdateStatusOperation kUpdateEngineOps[] =
-      {
-          chromeos::UpdateEngineClient::UPDATE_STATUS_DOWNLOADING,
-          chromeos::UpdateEngineClient::UPDATE_STATUS_VERIFYING,
-          chromeos::UpdateEngineClient::UPDATE_STATUS_FINALIZING,
-      };
+  const update_engine::Operation kUpdateEngineOps[] = {
+      update_engine::Operation::DOWNLOADING,
+      update_engine::Operation::VERIFYING,
+      update_engine::Operation::FINALIZING,
+  };
 
   for (size_t i = 0; i < base::size(kUpdateEngineOps); ++i) {
-    update_status.status = kUpdateEngineOps[i];
-    update_status.new_version = "1235.1.2";
+    update_status.set_current_operation(kUpdateEngineOps[i]);
+    update_status.set_new_version("1235.1.2");
     update_engine_client_->PushLastStatus(update_status);
 
     GetStatus();
@@ -2004,8 +2149,8 @@ TEST_F(DeviceStatusCollectorTest, ReportOsUpdateStatus) {
         device_status_.os_update_status().new_required_platform_version());
   }
 
-  update_status.status =
-      chromeos::UpdateEngineClient::UPDATE_STATUS_UPDATED_NEED_REBOOT;
+  update_status.set_current_operation(
+      update_engine::Operation::UPDATED_NEED_REBOOT);
   update_engine_client_->PushLastStatus(update_status);
   GetStatus();
   ASSERT_TRUE(device_status_.has_os_update_status());
@@ -2013,10 +2158,76 @@ TEST_F(DeviceStatusCollectorTest, ReportOsUpdateStatus) {
             device_status_.os_update_status().update_status());
 }
 
-TEST_F(DeviceStatusCollectorTest, NoRunningKioskAppByDefault) {
-  MockPlatformVersion("1234.0.0");
+TEST_F(DeviceStatusCollectorTest, NoLastCheckedTimestampByDefault) {
+  MockPlatformVersion(kDefaultPlatformVersion);
   MockAutoLaunchKioskAppWithRequiredPlatformVersion(
-      fake_kiosk_device_local_account_, "1234.0.0");
+      fake_kiosk_device_local_account_, kDefaultPlatformVersion);
+
+  GetStatus();
+  EXPECT_FALSE(device_status_.os_update_status().has_last_checked_timestamp());
+}
+
+TEST_F(DeviceStatusCollectorTest, ReportLastCheckedTimestamp) {
+  MockPlatformVersion(kDefaultPlatformVersion);
+  MockAutoLaunchKioskAppWithRequiredPlatformVersion(
+      fake_kiosk_device_local_account_, kDefaultPlatformVersion);
+
+  scoped_testing_cros_settings_.device_settings()->SetBoolean(
+      chromeos::kReportOsUpdateStatus, true);
+
+  // Check update multiple times, the timestamp stored in device status should
+  // change accordingly.
+  const int64 kLastCheckedTimes[] = {10, 20, 30};
+
+  for (size_t i = 0; i < base::size(kLastCheckedTimes); ++i) {
+    update_engine::StatusResult update_status;
+    update_status.set_new_version(kDefaultPlatformVersion);
+    update_status.set_last_checked_time(kLastCheckedTimes[i]);
+    update_engine_client_->PushLastStatus(update_status);
+
+    GetStatus();
+    ASSERT_TRUE(device_status_.os_update_status().has_last_checked_timestamp());
+
+    // The timestamp precision in UpdateEngine is in seconds, but the
+    // DeviceStatusCollector is in milliseconds. Therefore, the number should be
+    // multiplied by 1000 before validation.
+    ASSERT_EQ(kLastCheckedTimes[i] * 1000,
+              device_status_.os_update_status().last_checked_timestamp());
+  }
+}
+
+TEST_F(DeviceStatusCollectorTest, NoLastRebootTimestampByDefault) {
+  MockPlatformVersion(kDefaultPlatformVersion);
+  MockAutoLaunchKioskAppWithRequiredPlatformVersion(
+      fake_kiosk_device_local_account_, kDefaultPlatformVersion);
+
+  GetStatus();
+  EXPECT_FALSE(device_status_.os_update_status().has_last_reboot_timestamp());
+}
+
+TEST_F(DeviceStatusCollectorTest, ReportLastRebootTimestamp) {
+  MockPlatformVersion(kDefaultPlatformVersion);
+  MockAutoLaunchKioskAppWithRequiredPlatformVersion(
+      fake_kiosk_device_local_account_, kDefaultPlatformVersion);
+
+  scoped_testing_cros_settings_.device_settings()->SetBoolean(
+      chromeos::kReportOsUpdateStatus, true);
+
+  GetStatus();
+  ASSERT_TRUE(device_status_.os_update_status().has_last_reboot_timestamp());
+
+  // No good way to inject specific last reboot timestamp of the test machine,
+  // so just make sure UnixEpoch < RebootTime < Now.
+  EXPECT_GT(device_status_.os_update_status().last_reboot_timestamp(),
+            base::Time::UnixEpoch().ToJavaTime());
+  EXPECT_LT(device_status_.os_update_status().last_reboot_timestamp(),
+            base::Time::Now().ToJavaTime());
+}
+
+TEST_F(DeviceStatusCollectorTest, NoRunningKioskAppByDefault) {
+  MockPlatformVersion(kDefaultPlatformVersion);
+  MockAutoLaunchKioskAppWithRequiredPlatformVersion(
+      fake_kiosk_device_local_account_, kDefaultPlatformVersion);
   status_collector_->set_kiosk_account(
       std::make_unique<policy::DeviceLocalAccount>(
           fake_kiosk_device_local_account_));
@@ -2029,9 +2240,9 @@ TEST_F(DeviceStatusCollectorTest, NoRunningKioskAppByDefault) {
 TEST_F(DeviceStatusCollectorTest, NoRunningKioskAppWhenNotInKioskSession) {
   scoped_testing_cros_settings_.device_settings()->SetBoolean(
       chromeos::kReportRunningKioskApp, true);
-  MockPlatformVersion("1234.0.0");
+  MockPlatformVersion(kDefaultPlatformVersion);
   MockAutoLaunchKioskAppWithRequiredPlatformVersion(
-      fake_kiosk_device_local_account_, "1234.0.0");
+      fake_kiosk_device_local_account_, kDefaultPlatformVersion);
 
   GetStatus();
   EXPECT_FALSE(device_status_.has_running_kiosk_app());
@@ -2040,7 +2251,7 @@ TEST_F(DeviceStatusCollectorTest, NoRunningKioskAppWhenNotInKioskSession) {
 TEST_F(DeviceStatusCollectorTest, ReportRunningKioskApp) {
   scoped_testing_cros_settings_.device_settings()->SetBoolean(
       chromeos::kReportRunningKioskApp, true);
-  MockPlatformVersion("1234.0.0");
+  MockPlatformVersion(kDefaultPlatformVersion);
   MockAutoLaunchKioskAppWithRequiredPlatformVersion(
       fake_kiosk_device_local_account_, "1235");
   MockRunningKioskApp(fake_kiosk_device_local_account_, false /* arc_kiosk */);
@@ -2097,6 +2308,166 @@ TEST_F(DeviceStatusCollectorTest, TestSoundVolume) {
   chromeos::CrasAudioHandler::Get()->SetOutputVolumePercent(kCustomVolume);
   GetStatus();
   EXPECT_EQ(kCustomVolume, device_status_.sound_volume());
+}
+
+TEST_F(DeviceStatusCollectorTest, TestStatefulPartitionInfo) {
+  // Create a fake stateful partition info and populate it with some arbitrary
+  // values.
+  em::StatefulPartitionInfo fakeStatefulPartitionInfo;
+  fakeStatefulPartitionInfo.set_available_space(350);
+  fakeStatefulPartitionInfo.set_total_space(500);
+
+  RestartStatusCollector(base::BindRepeating(&GetEmptyVolumeInfo),
+                         base::BindRepeating(&GetEmptyCPUStatistics),
+                         base::BindRepeating(&GetEmptyCPUTempInfo),
+                         base::BindRepeating(&GetEmptyAndroidStatus),
+                         base::BindRepeating(&GetEmptyTpmStatus),
+                         base::BindRepeating(&GetEmptyEMMCLifetimeEstimation),
+                         base::BindRepeating(&GetFakeStatefulPartitionInfo,
+                                             fakeStatefulPartitionInfo),
+                         base::BindRepeating(&GetEmptyCrosHealthdData));
+
+  GetStatus();
+
+  EXPECT_TRUE(device_status_.has_stateful_partition_info());
+  EXPECT_EQ(fakeStatefulPartitionInfo.available_space(),
+            device_status_.stateful_partition_info().available_space());
+  EXPECT_EQ(fakeStatefulPartitionInfo.total_space(),
+            device_status_.stateful_partition_info().total_space());
+}
+
+TEST_F(DeviceStatusCollectorTest, TestCrosHealthdInfo) {
+  // Create a fake response from cros_healthd and populate it with some
+  // arbitrary values.
+
+  // Cached VPD test values.
+  constexpr char kFakeSkuNumber[] = "fake_sku_number";
+
+  // Storage test values.
+  constexpr char kFakeStoragePath[] = "fake_storage_path";
+  constexpr int kFakeStorageSize = 123;
+  constexpr char kFakeStorageType[] = "fake_storage_type";
+  constexpr uint8_t kFakeStorageManfid = 2;
+  constexpr char kFakeStorageName[] = "fake_storage_name";
+  constexpr int kFakeStorageSerial = 789;
+
+  // Battery test values.
+  constexpr int kFakeCycleCount = 3;
+  constexpr int kExpectedVoltageNow = 12574;                        // (mV)
+  constexpr double kFakeVoltageNow = kExpectedVoltageNow / 1000.0;  // (V)
+  constexpr char kFakeBatteryVendor[] = "fake_battery_vendor";
+  constexpr char kFakeBatterySerial[] = "fake_battery_serial";
+  constexpr int kExpectedChargeFullDesign = 5275;  // (mAh)
+  constexpr double kFakeChargeFullDesign =
+      kExpectedChargeFullDesign / 1000.0;                           // (Ah)
+  constexpr int kExpectedChargeFull = 5292;                         // (mAh)
+  constexpr double kFakeChargeFull = kExpectedChargeFull / 1000.0;  // (Ah)
+  constexpr int kExpectedVoltageMinDesign = 11550;                  // (mV)
+  constexpr double kFakeVoltageMinDesign =
+      kExpectedVoltageMinDesign / 1000.0;  // (V)
+  constexpr int kFakeManufactureDateSmart = 19718;
+  constexpr int kFakeTemperatureSmart = 3004;
+  constexpr char kFakeBatteryModel[] = "fake_battery_model";
+  constexpr int kExpectedChargeNow = 5281;                        // (mAh)
+  constexpr double kFakeChargeNow = kExpectedChargeNow / 1000.0;  // (Ah)
+
+  // CPU Temperature test values.
+  constexpr char kFakeCpuLabel[] = "fake_cpu_label";
+  constexpr int kFakeCpuTemp = 91832;
+  constexpr int kFakeCpuTimestamp = 912;
+
+  chromeos::cros_healthd::mojom::BatteryInfo battery_info(
+      kFakeCycleCount, kFakeVoltageNow, kFakeBatteryVendor, kFakeBatterySerial,
+      kFakeChargeFullDesign, kFakeChargeFull, kFakeVoltageMinDesign,
+      kFakeManufactureDateSmart, kFakeTemperatureSmart, kFakeBatteryModel,
+      kFakeChargeNow);
+  chromeos::cros_healthd::mojom::CachedVpdInfo cached_vpd_info(kFakeSkuNumber);
+  chromeos::cros_healthd::mojom::NonRemovableBlockDeviceInfo storage_info(
+      kFakeStoragePath, kFakeStorageSize, kFakeStorageType, kFakeStorageManfid,
+      kFakeStorageName, kFakeStorageSerial);
+
+  // Create a fake sample to test with.
+  em::CPUTempInfo fake_cpu_temp_sample;
+  fake_cpu_temp_sample.set_cpu_label(kFakeCpuLabel);
+  fake_cpu_temp_sample.set_cpu_temp(kFakeCpuTemp);
+  fake_cpu_temp_sample.set_timestamp(kFakeCpuTimestamp);
+  em::BatterySample fake_battery_sample;
+  // Convert from V to mV.
+  fake_battery_sample.set_voltage(kExpectedVoltageNow);
+  // Convert from Ah to mAh.
+  fake_battery_sample.set_remaining_capacity(kExpectedChargeNow);
+  fake_battery_sample.set_temperature(kFakeTemperatureSmart);
+
+  RestartStatusCollector(
+      base::BindRepeating(&GetEmptyVolumeInfo),
+      base::BindRepeating(&GetEmptyCPUStatistics),
+      base::BindRepeating(&GetEmptyCPUTempInfo),
+      base::BindRepeating(&GetEmptyAndroidStatus),
+      base::BindRepeating(&GetEmptyTpmStatus),
+      base::BindRepeating(&GetEmptyEMMCLifetimeEstimation),
+      base::BindRepeating(&GetEmptyStatefulPartitionInfo),
+      base::BindRepeating(&GetFakeCrosHealthdData, battery_info,
+                          cached_vpd_info, storage_info, fake_cpu_temp_sample,
+                          fake_battery_sample));
+
+  // If neither kReportDevicePowerStatus nor kReportDeviceStorageStatus are set,
+  // expect that the data from cros_healthd isn't present in the protobuf.
+  scoped_testing_cros_settings_.device_settings()->SetBoolean(
+      chromeos::kReportDevicePowerStatus, false);
+  scoped_testing_cros_settings_.device_settings()->SetBoolean(
+      chromeos::kReportDeviceStorageStatus, false);
+  GetStatus();
+  EXPECT_FALSE(device_status_.has_power_status());
+  EXPECT_FALSE(device_status_.has_storage_status());
+  EXPECT_FALSE(device_status_.has_system_status());
+
+  // When kReportDevicePowerStatus and kReportDeviceStorageStatus are set,
+  // expect the protobuf to have the data from cros_healthd.
+  scoped_testing_cros_settings_.device_settings()->SetBoolean(
+      chromeos::kReportDevicePowerStatus, true);
+  scoped_testing_cros_settings_.device_settings()->SetBoolean(
+      chromeos::kReportDeviceStorageStatus, true);
+  GetStatus();
+
+  // Check that the CPU temperature samples are stored correctly.
+  ASSERT_EQ(device_status_.cpu_temp_infos_size(), 1);
+  const auto& cpu_sample = device_status_.cpu_temp_infos(0);
+  EXPECT_EQ(cpu_sample.cpu_label(), kFakeCpuLabel);
+  EXPECT_EQ(cpu_sample.cpu_temp(), kFakeCpuTemp);
+  EXPECT_EQ(cpu_sample.timestamp(), kFakeCpuTimestamp);
+
+  // Verify the battery data.
+  ASSERT_TRUE(device_status_.has_power_status());
+  ASSERT_EQ(device_status_.power_status().batteries_size(), 1);
+  const auto& battery = device_status_.power_status().batteries(0);
+  EXPECT_EQ(battery.serial(), kFakeBatterySerial);
+  EXPECT_EQ(battery.manufacturer(), kFakeBatteryVendor);
+  EXPECT_EQ(battery.design_capacity(), kExpectedChargeFullDesign);
+  EXPECT_EQ(battery.full_charge_capacity(), kExpectedChargeFull);
+  EXPECT_EQ(battery.cycle_count(), kFakeCycleCount);
+  EXPECT_EQ(battery.design_min_voltage(), kExpectedVoltageMinDesign);
+  EXPECT_EQ(battery.manufacture_date(), "2018-08-06");
+
+  // Verify the battery sample data.
+  ASSERT_EQ(battery.samples_size(), 1);
+  const auto& battery_sample = battery.samples(0);
+  EXPECT_EQ(battery_sample.voltage(), kExpectedVoltageNow);
+  EXPECT_EQ(battery_sample.remaining_capacity(), kExpectedChargeNow);
+  EXPECT_EQ(battery_sample.temperature(), kFakeTemperatureSmart);
+
+  // Verify the storage data.
+  ASSERT_TRUE(device_status_.has_storage_status());
+  ASSERT_EQ(device_status_.storage_status().disks_size(), 1);
+  const auto& disk = device_status_.storage_status().disks(0);
+  EXPECT_EQ(disk.size(), kFakeStorageSize);
+  EXPECT_EQ(disk.type(), kFakeStorageType);
+  EXPECT_EQ(disk.manufacturer(), base::NumberToString(kFakeStorageManfid));
+  EXPECT_EQ(disk.model(), kFakeStorageName);
+  EXPECT_EQ(disk.serial(), base::NumberToString(kFakeStorageSerial));
+
+  // Verify the Cached VPD.
+  ASSERT_TRUE(device_status_.has_system_status());
+  EXPECT_EQ(device_status_.system_status().vpd_sku_number(), kFakeSkuNumber);
 }
 
 // Fake device state.

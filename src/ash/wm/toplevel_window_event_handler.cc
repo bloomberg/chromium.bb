@@ -4,10 +4,18 @@
 
 #include "ash/wm/toplevel_window_event_handler.h"
 
+#include "ash/app_list/app_list_controller_impl.h"
+#include "ash/home_screen/home_screen_controller.h"
+#include "ash/public/cpp/app_list/app_list_types.h"
 #include "ash/public/cpp/app_types.h"
+#include "ash/public/cpp/ash_features.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
+#include "ash/wm/back_gesture_affordance.h"
+#include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/resize_shadow_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "ash/wm/tablet_mode/tablet_mode_window_manager.h"
 #include "ash/wm/window_resizer.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_state_observer.h"
@@ -92,6 +100,52 @@ void OnDragCompleted(
     ToplevelWindowEventHandler::DragResult result) {
   *result_return_value = result;
   run_loop->Quit();
+}
+
+// True if we can start swiping from left edge to go to previous page.
+bool CanStartGoingBack() {
+  if (!features::IsSwipingFromLeftEdgeToGoBackEnabled())
+    return false;
+
+  Shell* shell = Shell::Get();
+  if (!shell->tablet_mode_controller()->InTabletMode())
+    return false;
+
+  // Do not enable back gesture if it is not in an ACTIVE session. e.g, login
+  // screen, lock screen.
+  if (shell->session_controller()->GetSessionState() !=
+      session_manager::SessionState::ACTIVE) {
+    return false;
+  }
+
+  // Do not enable back gesture if home screen is visible but not in
+  // |kFullscreenSearch| state.
+  if (shell->home_screen_controller()->IsHomeScreenVisible() &&
+      shell->app_list_controller()->GetAppListViewState() !=
+          AppListViewState::kFullscreenSearch) {
+    return false;
+  }
+
+  return true;
+}
+
+// True if |event| is scrolling away from the restricted left area of the
+// display.
+bool StartedAwayFromLeftArea(ui::GestureEvent* event) {
+  if (event->details().scroll_x_hint() < 0)
+    return false;
+
+  const gfx::Point location_in_screen =
+      event->target()->GetScreenLocation(*event);
+  const gfx::Rect work_area_bounds =
+      display::Screen::GetScreen()
+          ->GetDisplayNearestWindow(static_cast<aura::Window*>(event->target()))
+          .work_area();
+
+  gfx::Rect hit_bounds_in_screen(work_area_bounds);
+  hit_bounds_in_screen.set_width(
+      ToplevelWindowEventHandler::kStartGoingBackLeftEdgeInset);
+  return hit_bounds_in_screen.Contains(location_in_screen);
 }
 
 }  // namespace
@@ -203,6 +257,12 @@ ToplevelWindowEventHandler::~ToplevelWindowEventHandler() {
 void ToplevelWindowEventHandler::OnDisplayMetricsChanged(
     const display::Display& display,
     uint32_t metrics) {
+  // Cancel the left edge swipe back during screen rotation.
+  if (metrics & DISPLAY_METRIC_ROTATION) {
+    back_gesture_affordance_.reset();
+    going_back_started_ = false;
+  }
+
   if (!window_resizer_ || !(metrics & DISPLAY_METRIC_ROTATION))
     return;
 
@@ -264,6 +324,11 @@ void ToplevelWindowEventHandler::OnMouseEvent(ui::MouseEvent* event) {
 }
 
 void ToplevelWindowEventHandler::OnGestureEvent(ui::GestureEvent* event) {
+  if (HandleGoingBackFromLeftEdge(event)) {
+    event->StopPropagation();
+    return;
+  }
+
   aura::Window* target = static_cast<aura::Window*>(event->target());
   int component = window_util::GetNonClientComponent(target, event->location());
   gfx::Point event_location = event->location();
@@ -445,6 +510,30 @@ void ToplevelWindowEventHandler::OnGestureEvent(ui::GestureEvent* event) {
     default:
       return;
   }
+}
+
+void ToplevelWindowEventHandler::OnTouchEvent(ui::TouchEvent* event) {
+  if (first_touch_id_ == ui::kPointerIdUnknown)
+    first_touch_id_ = event->pointer_details().id;
+
+  if (event->pointer_details().id != first_touch_id_)
+    return;
+
+  if (event->type() == ui::ET_TOUCH_RELEASED)
+    first_touch_id_ = ui::kPointerIdUnknown;
+
+  if (event->type() == ui::ET_TOUCH_PRESSED) {
+    x_drag_amount_ = y_drag_amount_ = 0;
+    during_reverse_dragging_ = false;
+  } else {
+    const gfx::Point current_location = event->location();
+    x_drag_amount_ += (current_location.x() - last_touch_point_.x());
+    y_drag_amount_ += (current_location.y() - last_touch_point_.y());
+    during_reverse_dragging_ =
+        current_location.x() < last_touch_point_.x() ? true : false;
+  }
+
+  last_touch_point_ = event->location();
 }
 
 bool ToplevelWindowEventHandler::AttemptToStartDrag(
@@ -794,6 +883,66 @@ void ToplevelWindowEventHandler::UpdateGestureTarget(
   gesture_target_ = target;
   if (gesture_target_)
     gesture_target_->AddObserver(this);
+}
+
+bool ToplevelWindowEventHandler::HandleGoingBackFromLeftEdge(
+    ui::GestureEvent* event) {
+  aura::Window* target = static_cast<aura::Window*>(event->target());
+  if (!CanStartGoingBack())
+    return false;
+
+  gfx::Point screen_location = event->location();
+  ::wm::ConvertPointToScreen(target, &screen_location);
+  switch (event->type()) {
+    case ui::ET_GESTURE_SCROLL_BEGIN: {
+      going_back_started_ = StartedAwayFromLeftArea(event);
+      if (!going_back_started_)
+        break;
+      back_gesture_affordance_ =
+          std::make_unique<BackGestureAffordance>(screen_location);
+      return true;
+    }
+    case ui::ET_GESTURE_SCROLL_UPDATE:
+      if (!going_back_started_)
+        break;
+      DCHECK(back_gesture_affordance_);
+      back_gesture_affordance_->Update(x_drag_amount_, y_drag_amount_,
+                                       during_reverse_dragging_);
+      return true;
+    case ui::ET_GESTURE_SCROLL_END:
+    case ui::ET_SCROLL_FLING_START: {
+      if (!going_back_started_)
+        break;
+      DCHECK(back_gesture_affordance_);
+      if (back_gesture_affordance_->IsActivated() ||
+          (event->type() == ui::ET_SCROLL_FLING_START &&
+           event->details().velocity_x() >= kFlingVelocityForGoingBack)) {
+        if (TabletModeWindowManager::ShouldMinimizeTopWindowOnBack()) {
+          WindowState::Get(TabletModeWindowManager::GetTopWindow())->Minimize();
+        } else {
+          aura::Window* root_window =
+              window_util::GetRootWindowAt(screen_location);
+          ui::KeyEvent press_key_event(ui::ET_KEY_PRESSED,
+                                       ui::VKEY_BROWSER_BACK, ui::EF_NONE);
+          ignore_result(
+              root_window->GetHost()->SendEventToSink(&press_key_event));
+          ui::KeyEvent release_key_event(ui::ET_KEY_RELEASED,
+                                         ui::VKEY_BROWSER_BACK, ui::EF_NONE);
+          ignore_result(
+              root_window->GetHost()->SendEventToSink(&release_key_event));
+        }
+        back_gesture_affordance_->Complete();
+      } else {
+        back_gesture_affordance_->Abort();
+      }
+      going_back_started_ = false;
+      return true;
+    }
+    default:
+      break;
+  }
+
+  return false;
 }
 
 }  // namespace ash

@@ -4,8 +4,9 @@
 
 package org.chromium.chrome.browser.thinwebview;
 
-import android.support.annotation.Nullable;
 import android.view.View;
+
+import androidx.annotation.Nullable;
 
 import org.chromium.content_public.browser.WebContents;
 
@@ -27,6 +28,12 @@ public interface ThinWebView {
      * @param contentView A {@link ContentView} that can handle user inputs.
      */
     void attachWebContents(WebContents webContents, @Nullable View contentView);
+
+    /**
+     * Sets opacity for the view. {@link ThinWebViewConstraints#supportsOpacity} must be true for
+     * using this method.
+     */
+    void setAlpha(float alpha);
 
     /**
      * Should be called for cleanup when the CompositorView instance is no longer used.

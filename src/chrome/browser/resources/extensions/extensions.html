@@ -1,12 +1,10 @@
 <!doctype html>
 <html dir="$i18n{textdirection}" lang="$i18n{language}"
-    class="loading $i18n{loadTimeClasses}">
+    class="loading $i18n{loadTimeClasses}" $i18n{a11yenhanced}>
 <head>
   <meta charset="utf8">
   <title>$i18n{title}</title>
-<if expr="not optimize_webui">
   <base href="chrome://extensions">
-</if>
   <link rel="stylesheet" href="chrome://resources/css/md_colors.css">
   <style>
     html {
@@ -55,12 +53,10 @@
       width: 100%;
     }
   </style>
+  <script type="module" src="extensions.js"></script>
 </head>
 <body>
-  <script src="chrome://resources/polymer/v1_0/html-imports/html-imports.min.js">
-  </script>
   <extensions-manager></extensions-manager>
   <link rel="stylesheet" href="chrome://resources/css/text_defaults_md.css">
-  <link rel="import" href="chrome://extensions/manager.html">
 </body>
 </html>

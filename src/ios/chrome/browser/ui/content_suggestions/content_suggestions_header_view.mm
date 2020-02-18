@@ -9,7 +9,6 @@
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "components/strings/grit/components_strings.h"
-#import "ios/chrome/browser/signin/feature_flags.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_utils.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_header_constants.h"
@@ -305,8 +304,15 @@ CGFloat IdentityDiscToolbarOffset(id<UITraitEnvironment> environment) {
 
   CGFloat percent =
       [self searchFieldProgressForOffset:offset safeAreaInsets:safeAreaInsets];
+
   if (!IsSplitToolbarMode(self)) {
-    self.alpha = 1 - percent;
+    // When Voiceover is running, if the header's alpha is set to 0, voiceover
+    // can't scroll back to it, and it will never come back into view. To
+    // prevent that, set the alpha to non-zero when the header is fully
+    // offscreen. It will still not be seen, but it will be accessible to
+    // Voiceover.
+    self.alpha = std::max(1 - percent, 0.01);
+
     widthConstraint.constant = searchFieldNormalWidth;
     self.fakeLocationBarHeightConstraint.constant = ToolbarHeight();
     self.fakeLocationBar.layer.cornerRadius =
@@ -397,7 +403,6 @@ CGFloat IdentityDiscToolbarOffset(id<UITraitEnvironment> environment) {
   // identityDiscView may not be set if feature is not enabled.
   if (!self.identityDiscView)
     return;
-  DCHECK(IsIdentityDiscFeatureEnabled());
   if ((self.traitCollection.verticalSizeClass !=
        previousTraitCollection.verticalSizeClass) ||
       (self.traitCollection.horizontalSizeClass !=

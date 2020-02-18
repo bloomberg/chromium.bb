@@ -51,13 +51,14 @@ static_assert(base::size(g_field_desc) == FIELD_COUNT,
 namespace {
 
 // Initializes an object that implements IReauthCredential.
-HRESULT InitializeReauthCredential(CGaiaCredentialProvider* provider,
-                                   const base::string16& sid,
-                                   const base::string16& domain,
-                                   const base::string16& username,
-                                   const CComPtr<IGaiaCredential>& gaia_cred) {
-  CComPtr<IReauthCredential> reauth;
-  HRESULT hr = gaia_cred.QueryInterface(&reauth);
+HRESULT InitializeReauthCredential(
+    CGaiaCredentialProvider* provider,
+    const base::string16& sid,
+    const base::string16& domain,
+    const base::string16& username,
+    const Microsoft::WRL::ComPtr<IGaiaCredential>& gaia_cred) {
+  Microsoft::WRL::ComPtr<IReauthCredential> reauth;
+  HRESULT hr = gaia_cred.As(&reauth);
   if (FAILED(hr)) {
     LOG(ERROR) << "Could not get reauth credential interface hr=" << putHR(hr);
     return hr;
@@ -107,8 +108,7 @@ HRESULT CreateCredentialObject(
   }
 
   return CComCreator<CComObject<CredentialT>>::CreateInstance(
-      nullptr, IID_IGaiaCredential,
-      reinterpret_cast<void**>(&credential_com_ptr->gaia_cred));
+      nullptr, IID_PPV_ARGS(&credential_com_ptr->gaia_cred));
 }
 
 }  // namespace
@@ -224,7 +224,7 @@ bool CGaiaCredentialProvider::ProviderConcurrentState::
 }
 
 bool CGaiaCredentialProvider::ProviderConcurrentState::SetAutoLogonCredential(
-    const CComPtr<IGaiaCredential>& auto_logon_credential) {
+    const Microsoft::WRL::ComPtr<IGaiaCredential>& auto_logon_credential) {
   base::AutoLock locker(state_update_lock_);
   // Always update the credential.
   auto_logon_credential_ = auto_logon_credential;
@@ -282,7 +282,7 @@ void CGaiaCredentialProvider::ProviderConcurrentState::Reset() {
 
 void CGaiaCredentialProvider::ProviderConcurrentState::InternalReset() {
   users_need_to_be_refreshed_ = false;
-  auto_logon_credential_.Release();
+  auto_logon_credential_.Reset();
 }
 
 CGaiaCredentialProvider::CGaiaCredentialProvider() {}
@@ -318,10 +318,10 @@ void CGaiaCredentialProvider::ClearTransient() {
   CHECK(!token_handle_updater_);
   // Reset event support.
   advise_context_ = 0;
-  events_.Release();
+  events_.Reset();
   set_serialization_sid_.clear();
   concurrent_state_.Reset();
-  user_array_.Release();
+  user_array_.Reset();
 }
 
 void CGaiaCredentialProvider::CleanupOlderVersions() {
@@ -385,14 +385,8 @@ HRESULT CGaiaCredentialProvider::CreateReauthCredentials(
 
   LOGFN(INFO) << "count=" << count;
 
-  if (!AssociatedUserValidator::Get()->HasInternetConnection()) {
-    // When there is no internet, do not associate GCPW as a reauth
-    // credential for all sids.
-    return S_OK;
-  }
-
   for (DWORD i = 0; i < count; ++i) {
-    CComPtr<ICredentialProviderUser> user;
+    Microsoft::WRL::ComPtr<ICredentialProviderUser> user;
     hr = users->GetAt(i, &user);
     if (FAILED(hr)) {
       LOGFN(ERROR) << "users->GetAt hr=" << putHR(hr);
@@ -431,16 +425,24 @@ HRESULT CGaiaCredentialProvider::CreateReauthCredentials(
     bool is_token_handle_valid_for_user =
         (AssociatedUserValidator::Get()->IsTokenHandleValidForUser(sid));
 
-    // (1) For a domain joined user, only check for token validity if the
+    // (1) If device doesn't have internet and if the device online login
+    // attempt is not stale, then don't add the reauth credential.
+    // Note: The stale online login attempt is checked only if IT admin
+    // configured "validity_period_in_days" registry entry.
+    // (2) For a domain joined user, only check for token validity if the
     // user id is not empty. If user id is empty, we should create the
     // reauth credential by default for all AD user sids.
-    // (2) For a non-domain joined user, just check if the token handle is
+    // (3) For a non-domain joined user, just check if the token handle is
     // valid. If valid, then no need to create a re-auth credential for
     // this sid.
-    if (CGaiaCredentialBase::IsAdToGoogleAssociationEnabled() &&
-        OSUserManager::Get()->IsUserDomainJoined(sid)) {
-      if (user_id[0] && is_token_handle_valid_for_user)
+    if (!AssociatedUserValidator::Get()->HasInternetConnection() &&
+        !AssociatedUserValidator::Get()->IsOnlineLoginStale(sid)) {
+      continue;
+    } else if (CGaiaCredentialBase::IsAdToGoogleAssociationEnabled() &&
+               OSUserManager::Get()->IsUserDomainJoined(sid)) {
+      if (user_id[0] && is_token_handle_valid_for_user) {
         continue;
+      }
     } else if (is_token_handle_valid_for_user) {
       // If the token handle is valid, no need to create a reauth credential.
       // The user can just sign in using their password.
@@ -469,7 +471,7 @@ HRESULT CGaiaCredentialProvider::CreateReauthCredentials(
 }
 
 void CGaiaCredentialProvider::AddCredentialAndCheckAutoLogon(
-    const CComPtr<IGaiaCredential>& cred,
+    const Microsoft::WRL::ComPtr<IGaiaCredential>& cred,
     const base::string16& sid,
     GaiaCredentialComPtrStorage* auto_logon_credential) {
   USES_CONVERSION;
@@ -486,8 +488,8 @@ void CGaiaCredentialProvider::AddCredentialAndCheckAutoLogon(
 
   // If serialization sid is set, then try to see if this credential is a reauth
   // credential that needs to be auto signed in.
-  CComPtr<IReauthCredential> associated_user;
-  if (FAILED(cred.QueryInterface(&associated_user)))
+  Microsoft::WRL::ComPtr<IReauthCredential> associated_user;
+  if (FAILED(cred.As(&associated_user)))
     return;
 
   if (set_serialization_sid_ != sid)
@@ -512,7 +514,7 @@ void CGaiaCredentialProvider::RecreateCredentials(
   if (FAILED(hr))
     LOG(ERROR) << "Could not create anonymous credential hr=" << putHR(hr);
 
-  hr = CreateReauthCredentials(user_array_, auto_logon_credential);
+  hr = CreateReauthCredentials(user_array_.Get(), auto_logon_credential);
   if (FAILED(hr))
     LOG(ERROR) << "CreateReauthCredentials hr=" << putHR(hr);
 }
@@ -552,10 +554,8 @@ HRESULT CGaiaCredentialProvider::OnUserAuthenticatedImpl(
   CHECK(!credential ||
         AssociatedUserValidator::Get()->IsDenyAccessUpdateBlocked());
 
-  CComPtr<IGaiaCredential> gaia_credential;
-  if (credential->QueryInterface(IID_IGaiaCredential,
-                                 reinterpret_cast<void**>(&gaia_credential)) ==
-      S_OK) {
+  Microsoft::WRL::ComPtr<IGaiaCredential> gaia_credential;
+  if (credential->QueryInterface(IID_PPV_ARGS(&gaia_credential)) == S_OK) {
     // Try to set the auto logon credential. If it succeeds we can raise a
     // credential changed event.
     if (concurrent_state_.SetAutoLogonCredential(gaia_credential) && events_)
@@ -799,7 +799,7 @@ HRESULT CGaiaCredentialProvider::GetCredentialCount(
     for (size_t i = 0;
          i < users_.size() && *default_index == CREDENTIAL_PROVIDER_NO_DEFAULT;
          ++i) {
-      if (local_auto_logon_credential.gaia_cred.IsEqualObject(users_[i]))
+      if (local_auto_logon_credential.gaia_cred == users_[i])
         *default_index = i;
     }
 

@@ -27,7 +27,6 @@
 #include "content/public/browser/notification_service.h"
 #include "extensions/browser/extension_function_registry.h"
 #include "extensions/browser/extension_prefs.h"
-#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/notification_types.h"
 #include "extensions/common/feature_switch.h"
@@ -109,8 +108,7 @@ void CommandService::RegisterProfilePrefs(
 }
 
 CommandService::CommandService(content::BrowserContext* context)
-    : profile_(Profile::FromBrowserContext(context)),
-      extension_registry_observer_(this) {
+    : profile_(Profile::FromBrowserContext(context)) {
   ExtensionFunctionRegistry::GetInstance()
       .RegisterFunction<GetAllCommandsFunction>();
 
@@ -554,7 +552,6 @@ bool CommandService::CanAutoAssign(const Command &command,
     return true;
 
   if (command.global()) {
-    using namespace extensions;
     if (command.command_name() == manifest_values::kBrowserActionCommandEvent ||
         command.command_name() == manifest_values::kPageActionCommandEvent)
       return false;  // Browser and page actions are not global in nature.

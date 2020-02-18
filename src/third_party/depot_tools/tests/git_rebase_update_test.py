@@ -1,9 +1,12 @@
-#!/usr/bin/env python
+#!/usr/bin/env vpython3
 # Copyright 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
 """Unit tests for git_rebase_update.py"""
+
+from __future__ import print_function
+from __future__ import unicode_literals
 
 import os
 import sys
@@ -24,7 +27,7 @@ class GitRebaseUpdateTest(git_test_utils.GitRepoReadWriteTestBase):
   @classmethod
   def getRepoContent(cls, commit):
     # Every commit X gets a file X with the content X
-    return {commit: {'data': commit}}
+    return {commit: {'data': commit.encode('utf-8')}}
 
   @classmethod
   def setUpClass(cls):
@@ -115,11 +118,11 @@ class GitRebaseUpdateTest(git_test_utils.GitRepoReadWriteTestBase):
             E F G
     A old_file
     """)
-    self.assertEquals(self.repo['A'], self.origin['A'])
-    self.assertEquals(self.repo['E'], self.origin['E'])
+    self.assertEqual(self.repo['A'], self.origin['A'])
+    self.assertEqual(self.repo['E'], self.origin['E'])
 
     with self.repo.open('bob', 'wb') as f:
-      f.write('testing auto-freeze/thaw')
+      f.write(b'testing auto-freeze/thaw')
 
     output, _ = self.repo.capture_stdio(self.reup.main)
     self.assertIn('Cannot rebase-update', output)
@@ -158,7 +161,7 @@ class GitRebaseUpdateTest(git_test_utils.GitRepoReadWriteTestBase):
     self.assertIn('sub_K up-to-date', output)
 
     with self.repo.open('bob') as f:
-      self.assertEquals('testing auto-freeze/thaw', f.read())
+      self.assertEqual(b'testing auto-freeze/thaw', f.read())
 
     self.assertEqual(self.repo.git('status', '--porcelain').stdout, '?? bob\n')
 
@@ -340,8 +343,8 @@ class GitRebaseUpdateTest(git_test_utils.GitRepoReadWriteTestBase):
       B C D E F G
           D foobar1 foobar2
     """)
-    self.assertEquals(self.repo['A'], self.origin['A'])
-    self.assertEquals(self.repo['G'], self.origin['G'])
+    self.assertEqual(self.repo['A'], self.origin['A'])
+    self.assertEqual(self.repo['G'], self.origin['G'])
 
     output, _ = self.repo.capture_stdio(self.reup.main)
     self.assertIn('Fetching', output)
@@ -349,7 +352,7 @@ class GitRebaseUpdateTest(git_test_utils.GitRepoReadWriteTestBase):
     self.assertIn('Rebasing: branch_K', output)
     self.assertIn('Rebasing: branch_L', output)
     self.assertIn('Rebasing: foobar', output)
-    self.assertEquals(self.repo.git('rev-parse', 'lkgr').stdout.strip(),
+    self.assertEqual(self.repo.git('rev-parse', 'lkgr').stdout.strip(),
                       self.origin['M'])
 
     self.assertSchema("""

@@ -7,68 +7,71 @@ from __future__ import division
 from __future__ import absolute_import
 
 import datetime
-import json
 import logging
-import webapp2
 
 from google.appengine.api import datastore_errors
-from google.appengine.api import taskqueue
 from google.appengine.datastore import datastore_query
-from google.appengine.ext import ndb
+from google.appengine.ext import deferred
 
+from dashboard.api import api_request_handler
 from dashboard.common import stored_object
+from dashboard.common import utils
 from dashboard.pinpoint.models import job
 
 
-_BATCH_SIZE = 10
+_BATCH_SIZE = 50
 _STATUS_KEY = 'job_migration_status'
 
 
-class Migrate(webapp2.RequestHandler):
+class Migrate(api_request_handler.ApiRequestHandler):
 
-  def get(self):
-    self.response.write(json.dumps(stored_object.Get(_STATUS_KEY) or {}))
+  def _CheckUser(self):
+    self._CheckIsLoggedIn()
+    if not utils.IsAdministrator():
+      raise api_request_handler.ForbiddenError()
 
-  def post(self):
-    query = job.Job.query(job.Job.task == None)
+  def Get(self):
+    return stored_object.Get(_STATUS_KEY) or {}
+
+  def Post(self):
     status = stored_object.Get(_STATUS_KEY)
 
     if not status:
-      self._Start(query)
-      self.get()
-      return
+      _Start()
+    return self.Get()
 
-    self._Migrate(query, status)
-    self.get()
+def _Start():
+  query = job.Job.query(job.Job.task == None)
+  status = {
+      'count': 0,
+      'started': datetime.datetime.now().isoformat(),
+      'total': query.count(),
+      'errors': 0,
+  }
+  stored_object.Set(_STATUS_KEY, status)
+  deferred.defer(_Migrate, status, None)
 
-  def _Start(self, query):
-    status = {
-        'count': 0,
-        'started': datetime.datetime.now().isoformat(),
-        'total': query.count(),
-    }
-    stored_object.Set(_STATUS_KEY, status)
-    taskqueue.add(url='/api/migrate')
+def _Migrate(status, cursor=None):
+  if cursor:
+    cursor = datastore_query.Cursor(urlsafe=cursor)
+  query = job.Job.query(job.Job.task == None)
+  jobs, next_cursor, more = query.fetch_page(_BATCH_SIZE, start_cursor=cursor)
 
-  def _Migrate(self, query, status):
-    cursor = datastore_query.Cursor(urlsafe=self.request.get('cursor'))
-    jobs, next_cursor, more = query.fetch_page(_BATCH_SIZE, start_cursor=cursor)
-    for j in jobs:
-      _MigrateJob(j)
+  # Because individual job instances might fail to be persisted for some reason
+  # (e.g. entities exceeding the entity size limit) we'll perform the updates
+  # one at a time. This is not an ideal state, since we'll want to be able to
+  # migrate all jobs to an alternative structure in the future, but we recognise
+  # that partial success is better than total failure.
+  for j in jobs:
     try:
-      ndb.put_multi(jobs)
-    except datastore_errors.BadRequestError as e:
-      logging.critical(e)
-      logging.critical([j.job_id for j in jobs])
+      j.put()
+      status['count'] += 1
+    except datastore_errors.Error as e:
+      logging.error('Failed migrating job %s: %s', j.job_id, e)
+      status['errors'] += 1
 
-    if more:
-      status['count'] += len(jobs)
-      stored_object.Set(_STATUS_KEY, status)
-      params = {'cursor': next_cursor.urlsafe()}
-      taskqueue.add(url='/api/migrate', params=params)
-    else:
-      stored_object.Set(_STATUS_KEY, None)
-
-
-def _MigrateJob(j):
-  del j
+  if more:
+    stored_object.Set(_STATUS_KEY, status)
+    deferred.defer(_Migrate, status, next_cursor.urlsafe())
+  else:
+    stored_object.Set(_STATUS_KEY, None)

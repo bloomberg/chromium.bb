@@ -27,6 +27,9 @@ namespace {
 using input_prediction::PredictorType;
 }
 
+// Set to UINT_MAX to trigger querying feature flags.
+unsigned int PredictorFactory::predictor_options_ = UINT_MAX;
+
 PredictorType PredictorFactory::GetPredictorTypeFromName(
     const std::string& predictor_name) {
   if (predictor_name == input_prediction::kScrollPredictorNameLinearResampling)
@@ -50,7 +53,7 @@ std::unique_ptr<InputPredictor> PredictorFactory::GetPredictor(
   else if (predictor_type == PredictorType::kScrollPredictorTypeLsq)
     return std::make_unique<LeastSquaresPredictor>();
   else if (predictor_type == PredictorType::kScrollPredictorTypeKalman)
-    return std::make_unique<KalmanPredictor>();
+    return std::make_unique<KalmanPredictor>(GetKalmanPredictorOptions());
   else if (predictor_type == PredictorType::kScrollPredictorTypeLinearFirst)
     return std::make_unique<LinearPredictor>(
         LinearPredictor::EquationOrder::kFirstOrder);
@@ -59,6 +62,19 @@ std::unique_ptr<InputPredictor> PredictorFactory::GetPredictor(
         LinearPredictor::EquationOrder::kSecondOrder);
   else
     return std::make_unique<EmptyPredictor>();
+}
+
+unsigned int PredictorFactory::GetKalmanPredictorOptions() {
+  if (predictor_options_ == UINT_MAX) {
+    predictor_options_ =
+        (base::FeatureList::IsEnabled(features::kKalmanHeuristics)
+             ? KalmanPredictor::PredictionOptions::kHeuristicsEnabled
+             : 0) |
+        (base::FeatureList::IsEnabled(features::kKalmanDirectionCutOff)
+             ? KalmanPredictor::PredictionOptions::kDirectionCutOffEnabled
+             : 0);
+  }
+  return predictor_options_;
 }
 
 }  // namespace ui

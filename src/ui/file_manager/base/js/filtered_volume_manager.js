@@ -116,10 +116,6 @@ class FilteredVolumeManager extends cr.EventTarget {
       case AllowedPaths.ANY_PATH:
       case AllowedPaths.ANY_PATH_OR_URL:
         return true;
-      case AllowedPaths.NATIVE_OR_DRIVE_PATH:
-        return (
-            VolumeManagerCommon.VolumeType.isNative(volumeType) ||
-            volumeType == VolumeManagerCommon.VolumeType.DRIVE);
       case AllowedPaths.NATIVE_PATH:
         return VolumeManagerCommon.VolumeType.isNative(volumeType);
     }
@@ -286,15 +282,16 @@ class FilteredVolumeManager extends cr.EventTarget {
   }
 
   /**
-   * @return {VolumeManagerCommon.DriveConnectionState} Current drive connection
-   *     state.
+   * @return {chrome.fileManagerPrivate.DriveConnectionState} Current drive
+   *     connection state.
    */
   getDriveConnectionState() {
     if (!this.isAllowedVolumeType_(VolumeManagerCommon.VolumeType.DRIVE) ||
         !this.volumeManager_) {
       return {
-        type: VolumeManagerCommon.DriveConnectionType.OFFLINE,
-        reason: VolumeManagerCommon.DriveConnectionReason.NO_SERVICE
+        type: chrome.fileManagerPrivate.DriveConnectionStateType.OFFLINE,
+        reason: chrome.fileManagerPrivate.DriveOfflineReason.NO_SERVICE,
+        hasCellularNetworkAccess: false,
       };
     }
 

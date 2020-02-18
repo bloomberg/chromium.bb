@@ -43,8 +43,12 @@ namespace protozero {
 class ProtoDecoder {
  public:
   // Creates a ProtoDecoder using the given |buffer| with size |length| bytes.
-  inline ProtoDecoder(const uint8_t* buffer, size_t length)
-      : begin_(buffer), end_(buffer + length), read_ptr_(buffer) {}
+  ProtoDecoder(const void* buffer, size_t length)
+      : begin_(reinterpret_cast<const uint8_t*>(buffer)),
+        end_(begin_ + length),
+        read_ptr_(begin_) {}
+  ProtoDecoder(const std::string& str) : ProtoDecoder(str.data(), str.size()) {}
+  ProtoDecoder(const ConstBytes& cb) : ProtoDecoder(cb.data, cb.size) {}
 
   // Reads the next field from the buffer and advances the read cursor. If a
   // full field cannot be read, the returned Field will be invalid (i.e.
@@ -55,20 +59,18 @@ class ProtoDecoder {
   Field FindField(uint32_t field_id);
 
   // Resets the read cursor to the start of the buffer.
-  inline void Reset() { read_ptr_ = begin_; }
+  void Reset() { read_ptr_ = begin_; }
 
   // Resets the read cursor to the given position (must be within the buffer).
-  inline void Reset(const uint8_t* pos) {
+  void Reset(const uint8_t* pos) {
     PERFETTO_DCHECK(pos >= begin_ && pos < end_);
     read_ptr_ = pos;
   }
 
   // Returns the position of read cursor, relative to the start of the buffer.
-  inline size_t read_offset() const {
-    return static_cast<size_t>(read_ptr_ - begin_);
-  }
+  size_t read_offset() const { return static_cast<size_t>(read_ptr_ - begin_); }
 
-  inline size_t bytes_left() const {
+  size_t bytes_left() const {
     PERFETTO_DCHECK(read_ptr_ <= end_);
     return static_cast<size_t>(end_ - read_ptr_);
   }
@@ -95,6 +97,7 @@ class ProtoDecoder {
 //
 // We start the iteration @ fields_[num_fields], which is the start of the
 // repeated fields storage, proceed until the end and lastly jump @ fields_[id].
+template <typename T>
 class RepeatedFieldIterator {
  public:
   RepeatedFieldIterator(uint32_t field_id,
@@ -105,9 +108,15 @@ class RepeatedFieldIterator {
     FindNextMatchingId();
   }
 
-  inline const Field* operator->() const { return &*iter_; }
-  inline const Field& operator*() const { return *iter_; }
-  inline explicit operator bool() const { return iter_ != end_; }
+  explicit operator bool() const { return iter_ != end_; }
+  const Field& field() const { return *iter_; }
+
+  T operator*() const {
+    T val{};
+    iter_->get(&val);
+    return val;
+  }
+  const Field* operator->() const { return iter_; }
 
   RepeatedFieldIterator& operator++() {
     PERFETTO_DCHECK(iter_ != end_);
@@ -128,7 +137,7 @@ class RepeatedFieldIterator {
   }
 
  private:
-  inline void FindNextMatchingId() {
+  void FindNextMatchingId() {
     PERFETTO_DCHECK(iter_ != last_);
     for (; iter_ != end_; ++iter_) {
       if (iter_->id() == field_id_)
@@ -191,8 +200,8 @@ class PackedRepeatedFieldIterator {
     ++(*this);
   }
 
-  inline const CppType operator*() const { return curr_value_; }
-  inline explicit operator bool() const { return curr_value_valid_; }
+  const CppType operator*() const { return curr_value_; }
+  explicit operator bool() const { return curr_value_valid_; }
 
   PackedRepeatedFieldIterator& operator++() {
     using proto_utils::ProtoWireType;
@@ -268,16 +277,17 @@ class TypedProtoDecoderBase : public ProtoDecoder {
  public:
   // If the field |id| is known at compile time, prefer the templated
   // specialization at<kFieldNumber>().
-  inline const Field& Get(uint32_t id) const {
+  const Field& Get(uint32_t id) const {
     return PERFETTO_LIKELY(id < num_fields_) ? fields_[id] : fields_[0];
   }
 
   // Returns an object that allows to iterate over all instances of a repeated
   // field given its id. Example usage:
-  //   for (auto it = decoder.GetRepeated(N); it; ++it) { ... }
-  inline RepeatedFieldIterator GetRepeated(uint32_t field_id) const {
-    return RepeatedFieldIterator(field_id, &fields_[num_fields_],
-                                 &fields_[size_], &fields_[field_id]);
+  //   for (auto it = decoder.GetRepeated<int32_t>(N); it; ++it) { ... }
+  template <typename T>
+  RepeatedFieldIterator<T> GetRepeated(uint32_t field_id) const {
+    return RepeatedFieldIterator<T>(field_id, &fields_[num_fields_],
+                                    &fields_[size_], &fields_[field_id]);
   }
 
   // Returns an objects that allows to iterate over all entries of a packed
@@ -294,7 +304,7 @@ class TypedProtoDecoderBase : public ProtoDecoder {
   // not making the packed option forwards and backwards compatible). So
   // the caller needs to use the right accessor for correct results.
   template <proto_utils::ProtoWireType wire_type, typename cpp_type>
-  inline PackedRepeatedFieldIterator<wire_type, cpp_type> GetPackedRepeated(
+  PackedRepeatedFieldIterator<wire_type, cpp_type> GetPackedRepeated(
       uint32_t field_id,
       bool* parse_error_location) const {
     const Field& field = Get(field_id);
@@ -322,7 +332,7 @@ class TypedProtoDecoderBase : public ProtoDecoder {
     // implicit initializers on all the ~1000 entries. We need it to initialize
     // only on the first |max_field_id| fields, the remaining capacity doesn't
     // require initialization.
-    static_assert(PERFETTO_IS_TRIVIALLY_CONSTRUCTIBLE(Field) &&
+    static_assert(std::is_trivially_constructible<Field>::value &&
                       std::is_trivially_destructible<Field>::value &&
                       std::is_trivial<Field>::value,
                   "Field must be a trivial aggregate type");
@@ -377,7 +387,7 @@ class TypedProtoDecoder : public TypedProtoDecoderBase {
   }
 
   template <uint32_t FIELD_ID>
-  inline const Field& at() const {
+  const Field& at() const {
     static_assert(FIELD_ID <= MAX_FIELD_ID, "FIELD_ID > MAX_FIELD_ID");
     return fields_[FIELD_ID];
   }

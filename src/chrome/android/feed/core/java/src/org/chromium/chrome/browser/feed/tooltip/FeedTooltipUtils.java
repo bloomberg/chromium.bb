@@ -4,12 +4,11 @@
 
 package org.chromium.chrome.browser.feed.tooltip;
 
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 
-import com.google.android.libraries.feed.api.host.stream.TooltipApi;
-import com.google.android.libraries.feed.api.host.stream.TooltipInfo;
-import com.google.android.libraries.feed.api.host.stream.TooltipSupportedApi;
-
+import org.chromium.chrome.browser.feed.library.api.host.stream.TooltipApi;
+import org.chromium.chrome.browser.feed.library.api.host.stream.TooltipInfo;
+import org.chromium.chrome.browser.feed.library.api.host.stream.TooltipSupportedApi;
 import org.chromium.components.feature_engagement.FeatureConstants;
 
 /**

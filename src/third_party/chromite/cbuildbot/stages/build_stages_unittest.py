@@ -42,7 +42,24 @@ from chromite.cbuildbot.stages.generic_stages_unittest import patches
 # pylint: disable=protected-access
 
 
-class InitSDKTest(generic_stages_unittest.RunCommandAbstractStageTestCase):
+class _RunAbstractStageTestCase(
+    generic_stages_unittest.RunCommandAbstractStageTestCase):
+  """Helper with a RunStage wrapper."""
+
+  def _Run(self, dir_exists):
+    """Helper for running the build."""
+    with patch(os.path, 'isdir', return_value=dir_exists):
+      self.RunStage()
+
+  def ConstructStage(self):
+    """Returns an instance of the stage to be tested.
+
+    Note: Must be implemented in subclasses.
+    """
+    raise NotImplementedError(self, 'ConstructStage: Implement in your test')
+
+
+class InitSDKTest(_RunAbstractStageTestCase):
   """Test building the SDK"""
 
   def setUp(self):
@@ -94,7 +111,7 @@ class InitSDKTest(generic_stages_unittest.RunCommandAbstractStageTestCase):
     self.assertCommandContains(['./update_chroot'], expected=False)
 
 
-class UpdateSDKTest(generic_stages_unittest.RunCommandAbstractStageTestCase):
+class UpdateSDKTest(_RunAbstractStageTestCase):
   """Test UpdateSDKStage."""
 
   def ConstructStage(self):
@@ -144,7 +161,7 @@ class UpdateSDKTest(generic_stages_unittest.RunCommandAbstractStageTestCase):
     self._RunBin(dir_exists=False)
 
 
-class SetupBoardTest(generic_stages_unittest.RunCommandAbstractStageTestCase):
+class SetupBoardTest(_RunAbstractStageTestCase):
   """Test building the board"""
 
   def setUp(self):
@@ -335,7 +352,7 @@ class BuildPackagesStageTest(AllConfigsTestCase,
 
   def testNoTests(self):
     """Test that self.options.tests = False works."""
-    self.RunTestsWithBotId('amd64-generic-paladin', options_tests=False)
+    self.RunTestsWithBotId('amd64-generic-full', options_tests=False)
 
   def testIgnoreExtractDependenciesError(self):
     """Ignore errors when failing to extract dependencies."""
@@ -343,7 +360,7 @@ class BuildPackagesStageTest(AllConfigsTestCase,
         commands,
         'ExtractDependencies',
         side_effect=Exception('unmet dependency'))
-    self.RunTestsWithBotId('amd64-generic-paladin')
+    self.RunTestsWithBotId('amd64-generic-full')
 
   def testFirmwareVersionsMixedImage(self):
     """Test that firmware versions are extracted correctly."""
@@ -364,7 +381,7 @@ class BuildPackagesStageTest(AllConfigsTestCase,
     osutils.Touch(update, makedirs=True)
 
     self._mock_configurator = _HookRunCommandFirmwareUpdate
-    self.RunTestsWithBotId('amd64-generic-paladin', options_tests=False)
+    self.RunTestsWithBotId('amd64-generic-full', options_tests=False)
     board_metadata = (
         self._run.attrs.metadata.GetDict()['board-metadata'].get(
             'amd64-generic'))
@@ -395,7 +412,7 @@ class BuildPackagesStageTest(AllConfigsTestCase,
     osutils.Touch(update, makedirs=True)
 
     self._mock_configurator = _HookRunCommandFirmwareUpdate
-    self.RunTestsWithBotId('amd64-generic-paladin', options_tests=False)
+    self.RunTestsWithBotId('amd64-generic-full', options_tests=False)
     board_metadata = (
         self._run.attrs.metadata.GetDict()['board-metadata'].get(
             'amd64-generic'))
@@ -450,7 +467,7 @@ EC (RW) version: reef_v1.1.5909-bd1f0c9
     osutils.Touch(cros_config_host, makedirs=True)
 
     self._mock_configurator = _HookRunCommand
-    self.RunTestsWithBotId('amd64-generic-paladin', options_tests=False)
+    self.RunTestsWithBotId('amd64-generic-full', options_tests=False)
     board_metadata = (
         self._run.attrs.metadata.GetDict()['board-metadata'].get(
             'amd64-generic'))
@@ -458,21 +475,21 @@ EC (RW) version: reef_v1.1.5909-bd1f0c9
 
     if 'models' in board_metadata:
       reef = board_metadata['models']['reef']
-      self.assertEquals('Google_Reef.9042.87.1',
-                        reef['main-readonly-firmware-version'])
-      self.assertEquals('Google_Reef.9042.110.0',
-                        reef['main-readwrite-firmware-version'])
-      self.assertEquals('reef_v1.1.5909-bd1f0c9', reef['ec-firmware-version'])
-      self.assertEquals('key-123', reef['firmware-key-id'])
+      self.assertEqual('Google_Reef.9042.87.1',
+                       reef['main-readonly-firmware-version'])
+      self.assertEqual('Google_Reef.9042.110.0',
+                       reef['main-readwrite-firmware-version'])
+      self.assertEqual('reef_v1.1.5909-bd1f0c9', reef['ec-firmware-version'])
+      self.assertEqual('key-123', reef['firmware-key-id'])
 
       self.assertIn('pyro', board_metadata['models'])
       self.assertIn('electro', board_metadata['models'])
       electro = board_metadata['models']['electro']
-      self.assertEquals('Google_Reef.9042.87.1',
-                        electro['main-readonly-firmware-version'])
+      self.assertEqual('Google_Reef.9042.87.1',
+                       electro['main-readonly-firmware-version'])
       # Test RW firmware is defaulted to RO version if isn't specified.
-      self.assertEquals('Google_Reef.9042.87.1',
-                        electro['main-readwrite-firmware-version'])
+      self.assertEqual('Google_Reef.9042.87.1',
+                       electro['main-readwrite-firmware-version'])
 
   def testUnifiedBuilds(self):
     """Test that unified builds are marked as such."""
@@ -485,13 +502,13 @@ EC (RW) version: reef_v1.1.5909-bd1f0c9
                                     'chroot/usr/bin/cros_config_host')
     osutils.Touch(cros_config_host, makedirs=True)
     self._mock_configurator = _HookRunCommandCrosConfigHost
-    self.RunTestsWithBotId('amd64-generic-paladin', options_tests=False)
+    self.RunTestsWithBotId('amd64-generic-full', options_tests=False)
     self.assertTrue(self._run.attrs.metadata.GetDict()['unibuild'])
 
   def testGoma(self):
     self.PatchObject(
         build_stages.BuildPackagesStage, '_ShouldEnableGoma', return_value=True)
-    self._Prepare('amd64-generic-paladin')
+    self._Prepare('amd64-generic-full')
     # Set dummy dir name to enable goma.
     with osutils.TempDir() as goma_dir, \
          tempfile.NamedTemporaryFile() as temp_goma_client_json:
@@ -506,9 +523,8 @@ EC (RW) version: reef_v1.1.5909-bd1f0c9
           temp_goma_client_json.name
       ], chroot_args)
       portage_env = stage._portage_extra_env
-      self.assertRegexpMatches(
-          portage_env.get('GOMA_DIR', ''), '^/home/.*/goma$')
-      self.assertIn(portage_env.get('USE', ''), 'goma')
+      self.assertRegex(portage_env.get('GOMA_DIR', ''), '^/home/.*/goma$')
+      self.assertEqual(portage_env.get('USE_GOMA', ''), 'true')
       self.assertEqual(
           '/creds/service_accounts/service-account-goma-client.json',
           portage_env.get('GOMA_SERVICE_ACCOUNT_JSON_FILE', ''))
@@ -516,7 +532,7 @@ EC (RW) version: reef_v1.1.5909-bd1f0c9
   def testGomaWithMissingCertFile(self):
     self.PatchObject(
         build_stages.BuildPackagesStage, '_ShouldEnableGoma', return_value=True)
-    self._Prepare('amd64-generic-paladin')
+    self._Prepare('amd64-generic-full')
     # Set dummy dir name to enable goma.
     with osutils.TempDir() as goma_dir:
       self._run.options.goma_dir = goma_dir
@@ -524,22 +540,22 @@ EC (RW) version: reef_v1.1.5909-bd1f0c9
       self._run.options.chromeos_goma_dir = goma_dir
 
       stage = self.ConstructStage()
-      with self.assertRaisesRegexp(ValueError, 'json file is missing'):
+      with self.assertRaisesRegex(ValueError, 'json file is missing'):
         stage._SetupGomaIfNecessary()
 
   def testGomaOnBotWithoutCertFile(self):
     self.PatchObject(
         build_stages.BuildPackagesStage, '_ShouldEnableGoma', return_value=True)
     self.PatchObject(cros_build_lib, 'HostIsCIBuilder', return_value=True)
-    self._Prepare('amd64-generic-paladin')
+    self._Prepare('amd64-generic-full')
     # Set dummy dir name to enable goma.
     with osutils.TempDir() as goma_dir:
       self._run.options.goma_dir = goma_dir
       stage = self.ConstructStage()
       self._run.options.chromeos_goma_dir = goma_dir
 
-      with self.assertRaisesRegexp(ValueError,
-                                   'goma_client_json is not provided'):
+      with self.assertRaisesRegex(ValueError,
+                                  'goma_client_json is not provided'):
         stage._SetupGomaIfNecessary()
 
 
@@ -600,7 +616,7 @@ class BuildImageStageTest(BuildPackagesStageTest):
 class CleanUpStageTest(generic_stages_unittest.StageTestCase):
   """Test CleanUpStage."""
 
-  BOT_ID = 'master-paladin'
+  BOT_ID = 'amd64-generic-incremental'
 
   def setUp(self):
     self.PatchObject(buildbucket_lib, 'GetServiceAccount', return_value=True)
@@ -825,7 +841,7 @@ class CleanUpStageTest(generic_stages_unittest.StageTestCase):
   def testChrootRevertFailsWhenCommandsRaiseExceptions(self):
     self.PatchObject(
         cros_build_lib,
-        'SudoRunCommand',
+        'sudo_run',
         side_effect=cros_build_lib.RunCommandError(
             'error', cros_build_lib.CommandResult(cmd='error', returncode=5)))
     self._Prepare(extra_config={
@@ -840,7 +856,7 @@ class CleanUpStageTest(generic_stages_unittest.StageTestCase):
 
 class CleanUpStageCancelSlaveBuilds(generic_stages_unittest.StageTestCase):
   """Test CleanUpStage.CancelObsoleteSlaveBuilds."""
-  BOT_ID = 'master-paladin'
+  BOT_ID = 'master-full'
 
   def setUp(self):
     self.PatchObject(buildbucket_lib, 'GetServiceAccount', return_value=True)

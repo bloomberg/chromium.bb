@@ -13,6 +13,7 @@
 #include "core/fpdfapi/page/cpdf_clippath.h"
 #include "core/fpdfapi/page/cpdf_colorspace.h"
 #include "core/fpdfapi/page/cpdf_graphicstates.h"
+#include "core/fxcrt/fx_memory_wrappers.h"
 #include "core/fxcrt/retain_ptr.h"
 #include "core/fxcrt/unowned_ptr.h"
 #include "core/fxge/dib/cfx_dibbase.h"
@@ -124,6 +125,7 @@ class CPDF_DIBBase final : public CFX_DIBBase {
                                int clip_left,
                                int clip_width) const;
   bool TransMask() const;
+  void SetMaskProperties();
 
   UnownedPtr<CPDF_Document> m_pDocument;
   RetainPtr<const CPDF_Stream> m_pStream;

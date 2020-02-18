@@ -19,9 +19,9 @@ class FileManager extends cr.EventTarget {
 
     /**
      * Volume manager.
-     * @private {?FilteredVolumeManager}
+     * @private {!FilteredVolumeManager}
      */
-    this.volumeManager_ = null;
+    this.volumeManager_;
 
     /** @private {?importer.HistoryLoader} */
     this.historyLoader_ = null;
@@ -438,7 +438,7 @@ class FileManager extends cr.EventTarget {
   }
 
   /**
-   * @return {FilteredVolumeManager}
+   * @return {!FilteredVolumeManager}
    */
   get volumeManager() {
     return this.volumeManager_;
@@ -625,9 +625,7 @@ class FileManager extends cr.EventTarget {
     this.ui_.decorateFilesMenuItems();
     this.ui_.selectionMenuButton.hidden = false;
 
-    console.warn('Files app sync started');
     await Promise.all([fileListPromise, currentDirectoryPromise]);
-    console.warn('Files app sync finished');
   }
 
   /**
@@ -642,7 +640,7 @@ class FileManager extends cr.EventTarget {
 
     this.fileTransferController_ = new FileTransferController(
         assert(this.document_), assert(this.ui_.listContainer),
-        assert(this.ui_.directoryTree), this.ui_.multiProfileShareDialog,
+        assert(this.ui_.directoryTree),
         this.ui_.showConfirmationDialog.bind(this.ui_),
         assert(this.fileBrowserBackground_.progressCenter),
         assert(this.fileOperationManager_), assert(this.metadataModel_),
@@ -750,6 +748,7 @@ class FileManager extends cr.EventTarget {
    * @return {!Promise<void>}
    */
   async initializeUI(dialogDom) {
+    console.warn('Files app starting up');
     this.dialogDom_ = dialogDom;
     this.document_ = this.dialogDom_.ownerDocument;
 
@@ -759,6 +758,9 @@ class FileManager extends cr.EventTarget {
     metrics.recordInterval('Load.InitDocuments');
 
     metrics.startInterval('Load.InitUI');
+    if (util.isFilesNg()) {
+      this.dialogDom_.classList.add('files-ng');
+    }
     this.initEssentialUI_();
     this.initAdditionalUI_();
     await this.initSettingsPromise_;
@@ -776,7 +778,6 @@ class FileManager extends cr.EventTarget {
   initGeneral_() {
     // Initialize the application state.
     // TODO(mtomasz): Unify window.appState with location.search format.
-    console.warn('Files app starting up');
     if (window.appState) {
       const params = {};
 
@@ -1217,7 +1218,7 @@ class FileManager extends cr.EventTarget {
    */
   async onCrostiniChanged_(event) {
     // The background |this.crostini_| object also listens to all crostini
-    // events including enable/disable, allow/disallow and share/unshare.
+    // events including enable/disable, and share/unshare.
     // But to ensure we don't have any race conditions between bg and fg, we
     // set enabled status on it before calling |setupCrostini_| which reads
     // enabled status from it to determine whether 'Linux files' is shown.
@@ -1400,10 +1401,8 @@ class FileManager extends cr.EventTarget {
       directoryEntry, opt_selectionEntry, opt_suggestedName) {
     // Open the directory, and select the selection (if passed).
     const promise = (async () => {
+      console.warn('Files app has started');
       if (directoryEntry) {
-        const entryDescription = util.entryDebugString(directoryEntry);
-        console.warn(
-            `Files app start up: Changing to directory: ${entryDescription}`);
         await new Promise(resolve => {
           this.directoryModel_.changeDirectoryEntry(
               assert(directoryEntry), resolve);
@@ -1411,8 +1410,6 @@ class FileManager extends cr.EventTarget {
         if (opt_selectionEntry) {
           this.directoryModel_.selectEntry(opt_selectionEntry);
         }
-        console.warn(
-            `Files app start up: Changed to directory: ${entryDescription}`);
       } else {
         console.warn('No entry for finishSetupCurrentDirectory_');
       }
@@ -1484,12 +1481,10 @@ class FileManager extends cr.EventTarget {
     // The native implementation of the Files app creates snapshot files for
     // non-native files. But it does not work for folders (e.g., dialog for
     // loading unpacked extensions).
-    if ((allowedPaths === AllowedPaths.NATIVE_PATH ||
-         allowedPaths === AllowedPaths.NATIVE_OR_DRIVE_PATH) &&
+    if (allowedPaths === AllowedPaths.NATIVE_PATH &&
         !DialogType.isFolderDialog(this.launchParams_.type)) {
       if (this.launchParams_.type == DialogType.SELECT_SAVEAS_FILE) {
-        // Only drive can create snapshot files for saving.
-        allowedPaths = AllowedPaths.NATIVE_OR_DRIVE_PATH;
+        allowedPaths = AllowedPaths.NATIVE_PATH;
       } else {
         allowedPaths = AllowedPaths.ANY_PATH;
       }
@@ -1506,9 +1501,6 @@ class FileManager extends cr.EventTarget {
     const allowedPaths = this.getAllowedPaths_();
     if (allowedPaths == AllowedPaths.NATIVE_PATH) {
       return chrome.fileManagerPrivate.SourceRestriction.NATIVE_SOURCE;
-    }
-    if (allowedPaths == AllowedPaths.NATIVE_OR_DRIVE_PATH) {
-      return chrome.fileManagerPrivate.SourceRestriction.NATIVE_OR_DRIVE_SOURCE;
     }
     return chrome.fileManagerPrivate.SourceRestriction.ANY_SOURCE;
   }

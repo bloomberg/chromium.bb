@@ -8,7 +8,6 @@
 #include "content/common/content_export.h"
 
 namespace blink {
-class WebMouseEvent;
 class WebWidget;
 struct WebDeviceEmulationParams;
 }  // namespace blink
@@ -24,11 +23,6 @@ namespace content {
 class CONTENT_EXPORT RenderWidgetDelegate {
  public:
   virtual ~RenderWidgetDelegate() = default;
-
-  // As in RenderWidgetInputHandlerDelegate. Return true if the event was
-  // handled.
-  virtual bool RenderWidgetWillHandleMouseEventForWidget(
-      const blink::WebMouseEvent& event) = 0;
 
   // See comment in RenderWidgetHost::SetActive().
   virtual void SetActiveForWidget(bool active) = 0;
@@ -52,7 +46,7 @@ class CONTENT_EXPORT RenderWidgetDelegate {
   // display mode that will be applied to the RenderWidget. The display mode in
   // the RenderWidget is already changed when this method is called.
   virtual void ApplyNewDisplayModeForWidget(
-      const blink::WebDisplayMode& new_display_mode) = 0;
+      blink::mojom::DisplayMode new_display_mode) = 0;
   // Called during handling a SynchronizeVisualProperties message, if auto
   // resize is enabled, with the new auto size limits.
   virtual void ApplyAutoResizeLimitsForWidget(const gfx::Size& min_size,
@@ -80,20 +74,13 @@ class CONTENT_EXPORT RenderWidgetDelegate {
   // happens.
   virtual void ResizeWebWidgetForWidget(
       const gfx::Size& size,
-      float top_controls_height,
-      float bottom_controls_height,
-      bool browser_controls_shrink_blink_size) = 0;
+      cc::BrowserControlsParams browser_controls_params) = 0;
 
   // Called when RenderWidget services RenderWidgetScreenMetricsEmulatorDelegate
   // SetScreenMetricsEmulationParameters().
   virtual void SetScreenMetricsEmulationParametersForWidget(
       bool enabled,
       const blink::WebDeviceEmulationParams& params) = 0;
-
-  // Called when the VisualViewport needs to be updated. Expects coordinates
-  // scaled to account for DeviceScaleFactor.
-  virtual void ResizeVisualViewportForWidget(
-      const gfx::Size& scaled_viewport_size) = 0;
 };
 
 }  // namespace content

@@ -85,7 +85,6 @@ SpdySessionPool::SpdySessionPool(
     bool enable_ping_based_connection_checking,
     bool is_http2_enabled,
     bool is_quic_enabled,
-    bool support_ietf_format_quic_altsvc,
     size_t session_max_recv_window_size,
     int session_max_queued_capped_frames,
     const spdy::SettingsMap& initial_settings,
@@ -102,7 +101,6 @@ SpdySessionPool::SpdySessionPool(
           enable_ping_based_connection_checking),
       is_http2_enabled_(is_http2_enabled),
       is_quic_enabled_(is_quic_enabled),
-      support_ietf_format_quic_altsvc_(support_ietf_format_quic_altsvc),
       session_max_recv_window_size_(session_max_recv_window_size),
       session_max_queued_capped_frames_(session_max_queued_capped_frames),
       initial_settings_(initial_settings),
@@ -281,7 +279,8 @@ OnHostResolutionCallbackResult SpdySessionPool::OnHostResolutionComplete(
       if (!(alias_key.proxy_server() == key.proxy_server()) ||
           !(alias_key.privacy_mode() == key.privacy_mode()) ||
           !(alias_key.is_proxy_session() == key.is_proxy_session()) ||
-          !(alias_key.network_isolation_key() == key.network_isolation_key())) {
+          !(alias_key.network_isolation_key() == key.network_isolation_key()) ||
+          !(alias_key.disable_secure_dns() == key.disable_secure_dns())) {
         continue;
       }
 
@@ -310,7 +309,8 @@ OnHostResolutionCallbackResult SpdySessionPool::OnHostResolutionComplete(
         SpdySessionKey new_key(old_key.host_port_pair(), old_key.proxy_server(),
                                old_key.privacy_mode(),
                                old_key.is_proxy_session(), key.socket_tag(),
-                               old_key.network_isolation_key());
+                               old_key.network_isolation_key(),
+                               old_key.disable_secure_dns());
 
         // If there is already a session with |new_key|, skip this one.
         // It will be found in |aliases_| in a future iteration.
@@ -346,10 +346,10 @@ OnHostResolutionCallbackResult SpdySessionPool::OnHostResolutionComplete(
           }
 
           UnmapKey(*it);
-          SpdySessionKey new_pool_alias_key =
-              SpdySessionKey(it->host_port_pair(), it->proxy_server(),
-                             it->privacy_mode(), it->is_proxy_session(),
-                             key.socket_tag(), it->network_isolation_key());
+          SpdySessionKey new_pool_alias_key = SpdySessionKey(
+              it->host_port_pair(), it->proxy_server(), it->privacy_mode(),
+              it->is_proxy_session(), key.socket_tag(),
+              it->network_isolation_key(), it->disable_secure_dns());
           MapKeyToAvailableSession(new_pool_alias_key, available_session);
           auto old_it = it;
           ++it;
@@ -446,7 +446,7 @@ std::unique_ptr<base::Value> SpdySessionPool::SpdySessionPoolInfoToValue()
     const SpdySessionKey& key = it->first;
     const SpdySessionKey& session_key = it->second->spdy_session_key();
     if (key == session_key)
-      list->GetList().push_back(it->second->GetInfoAsValue());
+      list->Append(it->second->GetInfoAsValue());
   }
   return std::move(list);
 }
@@ -668,9 +668,9 @@ std::unique_ptr<SpdySession> SpdySessionPool::CreateSession(
       ssl_client_context_ ? ssl_client_context_->ssl_config_service() : nullptr,
       quic_supported_versions_, enable_sending_initial_data_,
       enable_ping_based_connection_checking_, is_http2_enabled_,
-      is_quic_enabled_, support_ietf_format_quic_altsvc_, is_trusted_proxy,
-      session_max_recv_window_size_, session_max_queued_capped_frames_,
-      initial_settings_, greased_http2_frame_, time_func_, push_delegate_,
+      is_quic_enabled_, is_trusted_proxy, session_max_recv_window_size_,
+      session_max_queued_capped_frames_, initial_settings_,
+      greased_http2_frame_, time_func_, push_delegate_,
       network_quality_estimator_, net_log);
 }
 

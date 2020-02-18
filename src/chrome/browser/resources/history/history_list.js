@@ -5,6 +5,8 @@
 Polymer({
   is: 'history-list',
 
+  behaviors: [I18nBehavior, WebUIListenerBehavior],
+
   properties: {
     // The search term for the current query. Set when the query returns.
     searchedTerm: {
@@ -46,6 +48,12 @@ Polymer({
 
     lastSelectedIndex: Number,
 
+    pendingDelete: {
+      notify: true,
+      type: Boolean,
+      value: false,
+    },
+
     /** @type {!QueryState} */
     queryState: Object,
 
@@ -58,6 +66,10 @@ Polymer({
      * }}
      */
     actionMenuModel_: Object,
+  },
+
+  hostAttributes: {
+    role: 'application',
   },
 
   listeners: {
@@ -74,6 +86,9 @@ Polymer({
     /** @type {IronListElement} */ (this.$['infinite-list']).notifyResize();
     this.$['infinite-list'].scrollTarget = this;
     this.$['scroll-threshold'].scrollTarget = this;
+    this.setAttribute('aria-roledescription', this.i18n('ariaRoleDescription'));
+
+    this.addWebUIListener('history-deleted', () => this.onHistoryDeleted_());
   },
 
   /////////////////////////////////////////////////////////////////////////////
@@ -135,7 +150,8 @@ Polymer({
     this.resultLoadingDisabled_ = finished;
   },
 
-  historyDeleted: function() {
+  /** @private */
+  onHistoryDeleted_: function() {
     // Do not reload the list when there are items checked.
     if (this.getSelectedItemCount() > 0) {
       return;
@@ -228,19 +244,20 @@ Polymer({
    * @private
    */
   deleteSelected_: function() {
+    assert(!this.pendingDelete);
+
     const toBeRemoved = Array.from(this.selectedItems.values())
                             .map((index) => this.get(`historyData_.${index}`));
 
-    history.BrowserService.getInstance()
-        .deleteItems(toBeRemoved)
-        .then((items) => {
-          this.removeItemsByIndex_(Array.from(this.selectedItems));
-          this.fire('unselect-all');
-          if (this.historyData_.length == 0) {
-            // Try reloading if nothing is rendered.
-            this.fire('query-history', false);
-          }
-        });
+    this.deleteItems_(toBeRemoved).then(() => {
+      this.pendingDelete = false;
+      this.removeItemsByIndex_(Array.from(this.selectedItems));
+      this.fire('unselect-all');
+      if (this.historyData_.length == 0) {
+        // Try reloading if nothing is rendered.
+        this.fire('query-history', false);
+      }
+    });
   },
 
   /**
@@ -366,18 +383,37 @@ Polymer({
     this.closeMenu_();
   },
 
+  /**
+   * @param {!Array<!HistoryEntry>} items
+   * @return {!Promise}
+   * @private
+   */
+  deleteItems_: function(items) {
+    const removalList = items.map(item => ({
+                                    url: item.url,
+                                    timestamps: item.allTimestamps,
+                                  }));
+
+    this.pendingDelete = true;
+    return history.BrowserService.getInstance().removeVisits(removalList);
+  },
+
   /** @private */
   onRemoveFromHistoryTap_: function() {
     const browserService = history.BrowserService.getInstance();
     browserService.recordAction('EntryMenuRemoveFromHistory');
+
+    assert(!this.pendingDelete);
     const menu = assert(this.$.sharedMenu.getIfExists());
     const itemData = this.actionMenuModel_;
-    browserService.deleteItems([itemData.item]).then((items) => {
+
+    this.deleteItems_([itemData.item]).then(() => {
       // This unselect-all resets the toolbar when deleting a selected item
       // and clears selection state which can be invalid if items move
       // around during deletion.
       // TODO(tsergeant): Make this automatic based on observing list
       // modifications.
+      this.pendingDelete = false;
       this.fire('unselect-all');
       this.removeItemsByIndex_([itemData.index]);
 
@@ -391,7 +427,7 @@ Polymer({
         if (item) {
           item.focusOnMenuButton();
         }
-      });
+      }, 1);
 
       const browserService = history.BrowserService.getInstance();
       browserService.recordHistogram(

@@ -40,7 +40,6 @@ void InitializeOneOffHelper(bool init_extensions) {
   ui::OzonePlatform::InitParams params;
   params.single_process = true;
   ui::OzonePlatform::InitializeForGPU(params);
-  ui::OzonePlatform::GetInstance()->AfterSandboxEntry();
 #endif
 
 #if defined(OS_LINUX)
@@ -78,8 +77,10 @@ void InitializeOneOffHelper(bool init_extensions) {
   bool gpu_service_logging = false;
   bool disable_gl_drawing = true;
 
-  CHECK(init::InitializeGLOneOffImplementation(
-      impl, fallback_to_software_gl, gpu_service_logging, disable_gl_drawing,
+  CHECK(gl::init::InitializeStaticGLBindingsImplementation(
+      impl, fallback_to_software_gl));
+  CHECK(gl::init::InitializeGLOneOffPlatformImplementation(
+      fallback_to_software_gl, gpu_service_logging, disable_gl_drawing,
       init_extensions));
 }
 }  // namespace
@@ -108,9 +109,10 @@ void GLSurfaceTestSupport::InitializeOneOffImplementation(
   bool gpu_service_logging = false;
   bool disable_gl_drawing = false;
 
-  CHECK(init::InitializeGLOneOffImplementation(impl, fallback_to_software_gl,
-                                               gpu_service_logging,
-                                               disable_gl_drawing, true));
+  CHECK(gl::init::InitializeStaticGLBindingsImplementation(
+      impl, fallback_to_software_gl));
+  CHECK(gl::init::InitializeGLOneOffPlatformImplementation(
+      fallback_to_software_gl, gpu_service_logging, disable_gl_drawing, true));
 }
 
 // static
@@ -119,7 +121,6 @@ void GLSurfaceTestSupport::InitializeOneOffWithMockBindings() {
   ui::OzonePlatform::InitParams params;
   params.single_process = true;
   ui::OzonePlatform::InitializeForGPU(params);
-  ui::OzonePlatform::GetInstance()->AfterSandboxEntry();
 #endif
 
   InitializeOneOffImplementation(kGLImplementationMockGL, false);
@@ -131,7 +132,6 @@ void GLSurfaceTestSupport::InitializeOneOffWithStubBindings() {
   ui::OzonePlatform::InitParams params;
   params.single_process = true;
   ui::OzonePlatform::InitializeForGPU(params);
-  ui::OzonePlatform::GetInstance()->AfterSandboxEntry();
 #endif
 
   InitializeOneOffImplementation(kGLImplementationStubGL, false);

@@ -47,7 +47,7 @@ int CPDF_SimpleFont::GlyphFromCharCode(uint32_t charcode, bool* pVertGlyph) {
     return -1;
 
   int index = m_GlyphIndex[charcode];
-  if (index == 0xffff || (index == 0 && IsTrueTypeFont()))
+  if (index == 0xffff)
     return -1;
 
   return index;
@@ -262,14 +262,8 @@ void CPDF_SimpleFont::LoadSubstFont() {
     if (i == 256 && width)
       m_Flags |= FXFONT_FIXED_PITCH;
   }
-  pdfium::base::CheckedNumeric<int> safeStemV(m_StemV);
-  if (m_StemV < 140)
-    safeStemV *= 5;
-  else
-    safeStemV = safeStemV * 4 + 140;
-  m_Font.LoadSubst(m_BaseFontName, IsTrueTypeFont(), m_Flags,
-                   safeStemV.ValueOrDefault(FXFONT_FW_NORMAL), m_ItalicAngle, 0,
-                   false);
+  m_Font.LoadSubst(m_BaseFontName, IsTrueTypeFont(), m_Flags, GetFontWeight(),
+                   m_ItalicAngle, 0, false);
 }
 
 bool CPDF_SimpleFont::IsUnicodeCompatible() const {

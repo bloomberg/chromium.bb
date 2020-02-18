@@ -20,6 +20,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_length_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_out_of_flow_positioned_node.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_fragment.h"
+#include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 
@@ -30,6 +31,20 @@ namespace {
 bool IsAnonymousContainer(const LayoutObject* layout_object) {
   return layout_object->IsAnonymousBlock() &&
          layout_object->CanContainAbsolutePositionObjects();
+}
+
+// This saves the static-position for an OOF-positioned object into its
+// paint-layer.
+void SaveStaticPositionForLegacy(const LayoutBox* layout_box,
+                                 const LayoutObject* container,
+                                 const LogicalOffset& offset) {
+  const LayoutObject* parent = layout_box->Parent();
+  if (parent == container ||
+      (parent->IsLayoutInline() && parent->ContainingBlock() == container)) {
+    DCHECK(layout_box->Layer());
+    layout_box->Layer()->SetStaticInlinePosition(offset.inline_offset);
+    layout_box->Layer()->SetStaticBlockPosition(offset.block_offset);
+  }
 }
 
 // When the containing block is a split inline, Legacy and NG use different
@@ -90,7 +105,8 @@ NGOutOfFlowLayoutPart::NGOutOfFlowLayoutPart(
       container_builder_(container_builder),
       writing_mode_(container_style.GetWritingMode()),
       is_absolute_container_(is_absolute_container),
-      is_fixed_container_(is_fixed_container) {
+      is_fixed_container_(is_fixed_container),
+      allow_first_tier_oof_cache_(border_scrollbar.IsEmpty()) {
   if (!container_builder->HasOutOfFlowPositionedCandidates() &&
       !To<LayoutBlock>(container_builder_->GetLayoutObject())
            ->HasPositionedObjects())
@@ -111,9 +127,13 @@ NGOutOfFlowLayoutPart::NGOutOfFlowLayoutPart(
 void NGOutOfFlowLayoutPart::Run(const LayoutBox* only_layout) {
   Vector<NGLogicalOutOfFlowPositionedNode> candidates;
   const LayoutObject* current_container = container_builder_->GetLayoutObject();
+  // If the container is display-locked, then we skip the layout of descendants,
+  // so we can early out immediately.
+  if (current_container->LayoutBlockedByDisplayLock(
+          DisplayLockLifecycleTarget::kChildren))
+    return;
 
-  container_builder_->SwapOutOfFlowPositionedCandidates(&candidates,
-                                                        current_container);
+  container_builder_->SwapOutOfFlowPositionedCandidates(&candidates);
 
   if (candidates.IsEmpty() &&
       !To<LayoutBlock>(current_container)->HasPositionedObjects())
@@ -166,8 +186,7 @@ void NGOutOfFlowLayoutPart::Run(const LayoutBox* only_layout) {
 
   wtf_size_t prev_placed_objects_size = placed_objects.size();
   while (SweepLegacyCandidates(&placed_objects)) {
-    container_builder_->SwapOutOfFlowPositionedCandidates(&candidates,
-                                                          current_container);
+    container_builder_->SwapOutOfFlowPositionedCandidates(&candidates);
 
     // We must have at least one new candidate, otherwise we shouldn't have
     // entered this branch.
@@ -406,25 +425,28 @@ void NGOutOfFlowLayoutPart::LayoutCandidates(
   while (candidates->size() > 0) {
     ComputeInlineContainingBlocks(*candidates);
     for (auto& candidate : *candidates) {
+      const LayoutBox* layout_box = candidate.node.GetLayoutBox();
       if (IsContainingBlockForCandidate(candidate) &&
-          (!only_layout || candidate.node.GetLayoutBox() == only_layout)) {
+          (!only_layout || layout_box == only_layout)) {
         scoped_refptr<const NGLayoutResult> result =
             LayoutCandidate(candidate, only_layout);
         container_builder_->AddChild(result->PhysicalFragment(),
                                      result->OutOfFlowPositionedOffset(),
                                      candidate.inline_container);
         placed_objects->insert(candidate.node.GetLayoutBox());
-        if (candidate.node.GetLayoutBox() != only_layout)
+        if (layout_box != only_layout)
           candidate.node.UseLegacyOutOfFlowPositioning();
       } else {
+        SaveStaticPositionForLegacy(layout_box,
+                                    container_builder_->GetLayoutObject(),
+                                    candidate.static_position.offset);
         container_builder_->AddOutOfFlowDescendant(candidate);
       }
     }
     // Sweep any candidates that might have been added.
     // This happens when an absolute container has a fixed child.
     candidates->Shrink(0);
-    container_builder_->SwapOutOfFlowPositionedCandidates(
-        candidates, container_builder_->GetLayoutObject());
+    container_builder_->SwapOutOfFlowPositionedCandidates(candidates);
   }
 }
 
@@ -455,10 +477,13 @@ scoped_refptr<const NGLayoutResult> NGOutOfFlowLayoutPart::LayoutCandidate(
   // Determine if we need to actually run the full OOF-positioned sizing, and
   // positioning algorithm.
   //
-  // When this candidate has an inline container, the container may move without
-  // setting |NeedsLayout()| to the candidate and that there are cases where the
-  // cache validity cannot be determined.
-  if (!candidate.inline_container) {
+  // The first-tier cache compares the given available-size. However we can't
+  // reuse the result if the |ContainingBlockInfo::container_offset| may change.
+  // This can occur when:
+  //  - The default containing-block has borders and/or scrollbars.
+  //  - The candidate has an inline container (instead of the default
+  //    containing-block).
+  if (allow_first_tier_oof_cache_ && !candidate.inline_container) {
     LogicalSize container_content_size_in_candidate_writing_mode =
         container_physical_content_size.ConvertToLogical(
             candidate_writing_mode);
@@ -565,9 +590,21 @@ scoped_refptr<const NGLayoutResult> NGOutOfFlowLayoutPart::Layout(
   }
 
   base::Optional<LogicalSize> replaced_size;
+  base::Optional<LogicalSize> replaced_aspect_ratio;
+  bool is_replaced_with_only_aspect_ratio = false;
   if (is_replaced) {
-    replaced_size =
-        ComputeReplacedSize(node, candidate_constraint_space, min_max_size);
+    ComputeReplacedSize(node, candidate_constraint_space, min_max_size,
+                        &replaced_size, &replaced_aspect_ratio);
+    is_replaced_with_only_aspect_ratio = !replaced_size &&
+                                         replaced_aspect_ratio &&
+                                         !replaced_aspect_ratio->IsEmpty();
+    // If we only have aspect ratio, and no replaced size, intrinsic size
+    // defaults to 300x150. min_max_size gets computed from the intrinsic size.
+    // We reset the min_max_size because spec says that OOF-positioned size
+    // should not be constrained by intrinsic size in this case.
+    // https://www.w3.org/TR/CSS22/visudet.html#inline-replaced-width
+    if (is_replaced_with_only_aspect_ratio)
+      min_max_size = MinMaxSize{LayoutUnit(), LayoutUnit::NearlyMax()};
   } else if (should_be_considered_as_replaced) {
     replaced_size =
         LogicalSize{min_max_size->ShrinkToFit(
@@ -585,6 +622,17 @@ scoped_refptr<const NGLayoutResult> NGOutOfFlowLayoutPart::Layout(
   if (!is_replaced && should_be_considered_as_replaced)
     replaced_size.reset();
 
+  // Replaced elements with only aspect ratio compute their block size from
+  // inline size and aspect ratio.
+  // https://www.w3.org/TR/css-sizing-3/#intrinsic-sizes
+  if (is_replaced_with_only_aspect_ratio) {
+    replaced_size = LogicalSize(
+        node_position.size.inline_size,
+        (replaced_aspect_ratio->block_size *
+         ((node_position.size.inline_size - border_padding.InlineSum()) /
+          replaced_aspect_ratio->inline_size)) +
+            border_padding.BlockSum());
+  }
   if (AbsoluteNeedsChildBlockSize(candidate_style)) {
     layout_result =
         GenerateFragment(node, container_content_size_in_candidate_writing_mode,
@@ -704,7 +752,8 @@ scoped_refptr<const NGLayoutResult> NGOutOfFlowLayoutPart::Layout(
       offset.inline_offset = *y;
   }
 
-  layout_result->GetMutableForOutOfFlow().SetOutOfFlowPositionedOffset(offset);
+  layout_result->GetMutableForOutOfFlow().SetOutOfFlowPositionedOffset(
+      offset, allow_first_tier_oof_cache_);
   return layout_result;
 }
 
@@ -712,8 +761,8 @@ bool NGOutOfFlowLayoutPart::IsContainingBlockForCandidate(
     const NGLogicalOutOfFlowPositionedNode& candidate) {
   EPosition position = candidate.node.Style().GetPosition();
 
-  // Candidates whose containing block is inline are always positioned
-  // inside closest parent block flow.
+  // Candidates whose containing block is inline are always positioned inside
+  // closest parent block flow.
   if (candidate.inline_container) {
     DCHECK(
         candidate.node.Style().GetPosition() == EPosition::kAbsolute &&
@@ -737,15 +786,13 @@ scoped_refptr<const NGLayoutResult> NGOutOfFlowLayoutPart::GenerateFragment(
     const LogicalSize& container_content_size_in_candidate_writing_mode,
     const base::Optional<LayoutUnit>& block_estimate,
     const NGLogicalOutOfFlowPosition& node_position) {
-  // As the |block_estimate| is always in the node's writing mode, we
-  // build the constraint space in the node's writing mode.
+  // As the |block_estimate| is always in the node's writing mode, we build the
+  // constraint space in the node's writing mode.
   WritingMode writing_mode = node.Style().GetWritingMode();
 
   LayoutUnit inline_size = node_position.size.inline_size;
-  LayoutUnit block_size =
-      block_estimate
-          ? *block_estimate
-          : container_content_size_in_candidate_writing_mode.block_size;
+  LayoutUnit block_size = block_estimate.value_or(
+      container_content_size_in_candidate_writing_mode.block_size);
 
   LogicalSize available_size(inline_size, block_size);
 

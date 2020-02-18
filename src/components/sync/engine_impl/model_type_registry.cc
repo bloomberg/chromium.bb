@@ -101,7 +101,7 @@ void ModelTypeRegistry::ConnectNonBlockingType(
 
   std::unique_ptr<Cryptographer> cryptographer_copy;
   if (encrypted_types_.Has(type))
-    cryptographer_copy = std::make_unique<Cryptographer>(*cryptographer_);
+    cryptographer_copy = cryptographer_->Clone();
 
   DataTypeDebugInfoEmitter* emitter = GetEmitter(type);
   if (emitter == nullptr) {
@@ -135,19 +135,15 @@ void ModelTypeRegistry::ConnectNonBlockingType(
     int migrated_entity_count = 0;
     if (uss_migrator_.Run(type, user_share_, worker_ptr,
                           &migrated_entity_count)) {
-      // TODO(wychen): enum uma should be strongly typed. crbug.com/661401
       UMA_HISTOGRAM_ENUMERATION("Sync.USSMigrationSuccess",
-                                ModelTypeToHistogramInt(type),
-                                static_cast<int>(ModelType::NUM_ENTRIES));
+                                ModelTypeHistogramValue(type));
       // If we succesfully migrated, purge the directory of data for the type.
       // Purging removes the directory's local copy of the data only.
       directory()->PurgeEntriesWithTypeIn(ModelTypeSet(type), ModelTypeSet(),
                                           ModelTypeSet());
     } else {
-      // TODO(wychen): enum uma should be strongly typed. crbug.com/661401
       UMA_HISTOGRAM_ENUMERATION("Sync.USSMigrationFailure",
-                                ModelTypeToHistogramInt(type),
-                                static_cast<int>(ModelType::NUM_ENTRIES));
+                                ModelTypeHistogramValue(type));
     }
 
     // Note that a partial failure may still contribute to the counts histogram.
@@ -333,6 +329,16 @@ void ModelTypeRegistry::OnPassphraseAccepted() {
   }
 }
 
+void ModelTypeRegistry::OnTrustedVaultKeyRequired() {}
+
+void ModelTypeRegistry::OnTrustedVaultKeyAccepted() {
+  for (const auto& worker : model_type_workers_) {
+    if (encrypted_types_.Has(worker->GetModelType())) {
+      worker->EncryptionAcceptedMaybeApplyUpdates();
+    }
+  }
+}
+
 void ModelTypeRegistry::OnBootstrapTokenUpdated(
     const std::string& bootstrap_token,
     BootstrapTokenType type) {}
@@ -351,8 +357,9 @@ void ModelTypeRegistry::OnEncryptedTypesChanged(ModelTypeSet encrypted_types,
 void ModelTypeRegistry::OnEncryptionComplete() {}
 
 void ModelTypeRegistry::OnCryptographerStateChanged(
-    Cryptographer* cryptographer) {
-  cryptographer_ = std::make_unique<Cryptographer>(*cryptographer);
+    Cryptographer* cryptographer,
+    bool has_pending_keys) {
+  cryptographer_ = cryptographer->Clone();
   OnEncryptionStateChanged();
 }
 
@@ -369,8 +376,7 @@ void ModelTypeRegistry::OnPassphraseTypeChanged(PassphraseType type,
 void ModelTypeRegistry::OnEncryptionStateChanged() {
   for (const auto& worker : model_type_workers_) {
     if (encrypted_types_.Has(worker->GetModelType())) {
-      worker->UpdateCryptographer(
-          std::make_unique<Cryptographer>(*cryptographer_));
+      worker->UpdateCryptographer(cryptographer_->Clone());
     }
   }
 }

@@ -23,8 +23,8 @@ namespace content {
 namespace {
 using ::testing::Unused;
 using OverrideStatus = PermissionControllerImpl::OverrideStatus;
-using RequestsCallback =
-    base::Callback<void(const std::vector<blink::mojom::PermissionStatus>&)>;
+using RequestsCallback = base::OnceCallback<void(
+    const std::vector<blink::mojom::PermissionStatus>&)>;
 
 constexpr char kTestUrl[] = "https://google.com";
 
@@ -300,7 +300,7 @@ TEST_F(PermissionControllerImplTest,
 TEST_F(PermissionControllerImplTest,
        NotifyChangedSubscriptionsCallsOnChangeOnly) {
   using PermissionStatusCallback =
-      base::Callback<void(blink::mojom::PermissionStatus)>;
+      base::RepeatingCallback<void(blink::mojom::PermissionStatus)>;
   GURL kUrl = GURL(kTestUrl);
   url::Origin kTestOrigin = url::Origin::Create(kUrl);
 

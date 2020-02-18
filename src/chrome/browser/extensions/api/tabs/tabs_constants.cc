@@ -48,6 +48,7 @@ const char kTitleKey[] = "title";
 const char kToIndexKey[] = "toIndex";
 const char kTopKey[] = "top";
 const char kUrlKey[] = "url";
+const char kPendingUrlKey[] = "pendingUrl";
 const char kWindowClosing[] = "isWindowClosing";
 const char kWidthKey[] = "width";
 const char kWindowIdKey[] = "windowId";
@@ -117,6 +118,8 @@ const char kJavaScriptUrlsNotAllowedInTabsUpdate[] =
     "JavaScript URLs are not allowed in chrome.tabs.update. Use "
     "chrome.tabs.executeScript instead.";
 const char kBrowserWindowNotAllowed[] = "Browser windows not allowed.";
+const char kLockedFullscreenModeNewTabError[] =
+    "You cannot create new tabs while in locked fullscreen mode.";
 
 }  // namespace tabs_constants
 }  // namespace extensions

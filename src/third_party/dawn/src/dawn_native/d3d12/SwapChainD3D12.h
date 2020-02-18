@@ -28,9 +28,9 @@ namespace dawn_native { namespace d3d12 {
 
       protected:
         TextureBase* GetNextTextureImpl(const TextureDescriptor* descriptor) override;
-        void OnBeforePresent(TextureBase* texture) override;
+        MaybeError OnBeforePresent(TextureBase* texture) override;
 
-        dawn::TextureUsage mTextureUsage;
+        wgpu::TextureUsage mTextureUsage;
     };
 
 }}  // namespace dawn_native::d3d12

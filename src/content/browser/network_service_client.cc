@@ -24,16 +24,20 @@
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/network_service_instance.h"
+#include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/network_service_util.h"
 #include "content/public/common/resource_type.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/network/public/cpp/load_info_util.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/content_uri_utils.h"
+#endif
+
+#if defined(OS_MACOSX)
+#include "base/message_loop/message_loop_current.h"
 #endif
 
 namespace content {
@@ -49,8 +53,9 @@ WebContents* GetWebContents(int process_id, int routing_id) {
 }  // namespace
 
 NetworkServiceClient::NetworkServiceClient(
-    network::mojom::NetworkServiceClientRequest network_service_client_request)
-    : binding_(this, std::move(network_service_client_request))
+    mojo::PendingReceiver<network::mojom::NetworkServiceClient>
+        network_service_client_receiver)
+    : receiver_(this, std::move(network_service_client_receiver))
 #if defined(OS_ANDROID)
       ,
       app_status_listener_(base::android::ApplicationStatusListener::New(
@@ -71,9 +76,9 @@ NetworkServiceClient::NetworkServiceClient(
             &NetworkServiceClient::OnMemoryPressure, base::Unretained(this)));
 
 #if defined(OS_ANDROID)
-    DCHECK(net::NetworkChangeNotifier::HasNetworkChangeNotifier());
+    DCHECK(!net::NetworkChangeNotifier::CreateIfNeeded());
     GetNetworkService()->GetNetworkChangeManager(
-        mojo::MakeRequest(&network_change_manager_));
+        network_change_manager_.BindNewPipeAndPassReceiver());
     net::NetworkChangeNotifier::AddConnectionTypeObserver(this);
     net::NetworkChangeNotifier::AddMaxBandwidthObserver(this);
     net::NetworkChangeNotifier::AddIPAddressObserver(this);
@@ -183,17 +188,6 @@ void NetworkServiceClient::OnIPAddressChanged() {
 }
 
 void NetworkServiceClient::OnDNSChanged() {
-  network_change_manager_->OnNetworkChanged(
-      true /* dns_changed */, false /* ip_address_changed */,
-      false /* connection_type_changed */,
-      network::mojom::ConnectionType(
-          net::NetworkChangeNotifier::GetConnectionType()),
-      false /* connection_subtype_changed */,
-      network::mojom::ConnectionSubtype(
-          net::NetworkChangeNotifier::GetConnectionSubtype()));
-}
-
-void NetworkServiceClient::OnInitialDNSConfigRead() {
   network_change_manager_->OnNetworkChanged(
       true /* dns_changed */, false /* ip_address_changed */,
       false /* connection_type_changed */,

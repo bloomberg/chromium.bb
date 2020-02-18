@@ -6,6 +6,7 @@
 #define COMPONENTS_VIZ_SERVICE_DISPLAY_SOFTWARE_RENDERER_H_
 
 #include "base/macros.h"
+#include "build/build_config.h"
 #include "components/viz/service/display/direct_renderer.h"
 #include "components/viz/service/viz_service_export.h"
 #include "ui/latency/latency_info.h"
@@ -29,7 +30,7 @@ class VIZ_SERVICE_EXPORT SoftwareRenderer : public DirectRenderer {
 
   ~SoftwareRenderer() override;
 
-  void SwapBuffers(std::vector<ui::LatencyInfo> latency_info) override;
+  void SwapBuffers(SwapFrameData swap_frame_data) override;
 
   void SetDisablePictureQuadImageFiltering(bool disable) {
     disable_picture_quad_image_filtering_ = disable;
@@ -61,7 +62,9 @@ class VIZ_SERVICE_EXPORT SoftwareRenderer : public DirectRenderer {
   void EnsureScissorTestDisabled() override;
   void CopyDrawnRenderPass(const copy_output::RenderPassGeometry& geometry,
                            std::unique_ptr<CopyOutputRequest> request) override;
+#if defined(OS_WIN)
   void SetEnableDCLayers(bool enable) override;
+#endif
   void DidChangeVisibility() override;
   void GenerateMipmap() override;
 
@@ -79,8 +82,8 @@ class VIZ_SERVICE_EXPORT SoftwareRenderer : public DirectRenderer {
   void DrawTextureQuad(const TextureDrawQuad* quad);
   void DrawTileQuad(const TileDrawQuad* quad);
   void DrawUnsupportedQuad(const DrawQuad* quad);
-  bool ShouldApplyBackdropFilters(
-      const cc::FilterOperations* backdrop_filters) const;
+  bool ShouldApplyBackdropFilters(const cc::FilterOperations* backdrop_filters,
+                                  const RenderPassDrawQuad* quad) const;
   sk_sp<SkImage> ApplyImageFilter(SkImageFilter* filter,
                                   const RenderPassDrawQuad* quad,
                                   const SkBitmap& to_filter,

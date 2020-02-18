@@ -112,7 +112,7 @@ class ToolPrefixFinder(_PathFinder):
           err_lines = ['tool-prefix not found: %s' % ret]
           if ret.endswith('llvm-'):
             err_lines.append('Probably need to run: '
-                             'tools/clang/scripts/download_objdump.py')
+                             'tools/clang/scripts/update.py --package=objdump')
           raise Exception('\n'.join(err_lines))
     from_path = distutils.spawn.find_executable(_SAMPLE_TOOL_SUFFIX)
     if from_path:
@@ -163,16 +163,15 @@ def GetNmPath(tool_prefix):
   return tool_prefix + 'nm'
 
 
-def GetApkAnalyzerPath(output_directory):
-  build_vars = _LoadBuildVars(output_directory)
-  sdk_analyzer = os.path.normpath(os.path.join(
-      output_directory, build_vars['android_sdk_root'], 'tools', 'bin',
-      'apkanalyzer'))
-  if os.path.exists(sdk_analyzer):
-    return sdk_analyzer
-  # Older SDKs do not contain the tool, so fall back to the one we know exists.
-  return os.path.join(SRC_ROOT, 'third_party', 'android_sdk', 'public',
-                      'tools', 'bin', 'apkanalyzer')
+def GetApkAnalyzerPath():
+  default_path = FromSrcRootRelative(
+      os.path.join('third_party', 'android_sdk', 'public', 'cmdline-tools',
+                   'latest', 'bin', 'apkanalyzer'))
+  return os.environ.get('APK_ANALYZER', default_path)
+
+
+def GetJavaHome():
+  return FromSrcRootRelative(os.path.join('third_party', 'jdk', 'current'))
 
 
 def GetObjDumpPath(tool_prefix):
@@ -180,10 +179,6 @@ def GetObjDumpPath(tool_prefix):
 
 
 def GetReadElfPath(tool_prefix):
-  # Work-around for llvm-readobj bug where 'File: ...' info is not printed:
-  # https://bugs.llvm.org/show_bug.cgi?id=35351
-  if tool_prefix[-5:] == 'llvm-':
-    return 'readelf'
   return tool_prefix + 'readelf'
 
 

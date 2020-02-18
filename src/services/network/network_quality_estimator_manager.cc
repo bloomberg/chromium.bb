@@ -110,19 +110,21 @@ NetworkQualityEstimatorManager::~NetworkQualityEstimatorManager() {
   network_quality_estimator_->RemoveRTTAndThroughputEstimatesObserver(this);
 }
 
-void NetworkQualityEstimatorManager::AddRequest(
-    mojom::NetworkQualityEstimatorManagerRequest request) {
+void NetworkQualityEstimatorManager::AddReceiver(
+    mojo::PendingReceiver<mojom::NetworkQualityEstimatorManager> receiver) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  bindings_.AddBinding(this, std::move(request));
+  receivers_.Add(this, std::move(receiver));
 }
 
 void NetworkQualityEstimatorManager::RequestNotifications(
-    mojom::NetworkQualityEstimatorManagerClientPtr client_ptr) {
+    mojo::PendingRemote<mojom::NetworkQualityEstimatorManagerClient>
+        pending_client) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  client_ptr->OnNetworkQualityChanged(effective_connection_type_, http_rtt_,
-                                      transport_rtt_,
-                                      downstream_throughput_kbps_);
-  clients_.AddPtr(std::move(client_ptr));
+  mojo::Remote<mojom::NetworkQualityEstimatorManagerClient> client(
+      std::move(pending_client));
+  client->OnNetworkQualityChanged(effective_connection_type_, http_rtt_,
+                                  transport_rtt_, downstream_throughput_kbps_);
+  clients_.Add(std::move(client));
 }
 
 void NetworkQualityEstimatorManager::OnEffectiveConnectionTypeChanged(
@@ -136,12 +138,10 @@ void NetworkQualityEstimatorManager::OnEffectiveConnectionTypeChanged(
     return;
 
   effective_connection_type_ = effective_connection_type;
-  clients_.ForAllPtrs([effective_connection_type, http_rtt, transport_rtt,
-                       downstream_throughput_kbps](
-                          mojom::NetworkQualityEstimatorManagerClient* client) {
+  for (auto& client : clients_) {
     client->OnNetworkQualityChanged(effective_connection_type, http_rtt,
                                     transport_rtt, downstream_throughput_kbps);
-  });
+  }
 }
 
 void NetworkQualityEstimatorManager::OnRTTOrThroughputEstimatesComputed(
@@ -168,12 +168,10 @@ void NetworkQualityEstimatorManager::OnRTTOrThroughputEstimatesComputed(
   transport_rtt_ = transport_rtt;
   downstream_throughput_kbps_ = downstream_throughput_kbps;
 
-  clients_.ForAllPtrs([effective_connection_type, http_rtt, transport_rtt,
-                       downstream_throughput_kbps](
-                          mojom::NetworkQualityEstimatorManagerClient* client) {
+  for (auto& client : clients_) {
     client->OnNetworkQualityChanged(effective_connection_type, http_rtt,
                                     transport_rtt, downstream_throughput_kbps);
-  });
+  }
 }
 
 net::NetworkQualityEstimator*

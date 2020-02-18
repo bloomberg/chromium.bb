@@ -63,27 +63,11 @@ void LayoutTextControl::StyleDidChange(StyleDifference diff,
     // (see: GetUncachedSelectionStyle in SelectionPaintingUtils.cpp) so ensure
     // the inner editor selection is invalidated anytime style changes and a
     // ::selection style is or was present on LayoutTextControl.
-    if (StyleRef().HasPseudoStyle(kPseudoIdSelection) ||
-        (old_style && old_style->HasPseudoStyle(kPseudoIdSelection))) {
+    if (StyleRef().HasPseudoElementStyle(kPseudoIdSelection) ||
+        (old_style && old_style->HasPseudoElementStyle(kPseudoIdSelection))) {
       inner_editor_layout_object->InvalidateSelectedChildrenOnStyleChange();
     }
   }
-}
-
-int LayoutTextControl::TextBlockLogicalHeight() const {
-  return (LogicalHeight() - BorderAndPaddingLogicalHeight()).ToInt();
-}
-
-int LayoutTextControl::TextBlockLogicalWidth() const {
-  Element* inner_editor = InnerEditorElement();
-  DCHECK(inner_editor);
-
-  LayoutUnit unit_width = LogicalWidth() - BorderAndPaddingLogicalWidth();
-  if (inner_editor->GetLayoutObject())
-    unit_width -= inner_editor->GetLayoutBox()->PaddingStart() +
-                  inner_editor->GetLayoutBox()->PaddingEnd();
-
-  return unit_width.ToInt();
 }
 
 int LayoutTextControl::ScrollbarThickness() const {
@@ -222,14 +206,6 @@ float LayoutTextControl::GetAvgCharWidth(const AtomicString& family) const {
   TextRun text_run =
       ConstructTextRun(font, str, StyleRef(), TextRun::kAllowTrailingExpansion);
   return font.Width(text_run);
-}
-
-float LayoutTextControl::ScaleEmToUnits(int x) const {
-  // This matches the unitsPerEm value for MS Shell Dlg and Courier New from the
-  // "head" font table.
-  float units_per_em = 2048.0f;
-  return roundf(StyleRef().GetFont().GetFontDescription().ComputedSize() * x /
-                units_per_em);
 }
 
 void LayoutTextControl::ComputeIntrinsicLogicalWidths(

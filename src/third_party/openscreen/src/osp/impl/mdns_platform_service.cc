@@ -6,9 +6,10 @@
 
 #include <cstring>
 
-#include "platform/api/logging.h"
+#include "util/logging.h"
 
 namespace openscreen {
+namespace osp {
 
 MdnsPlatformService::BoundInterface::BoundInterface(
     const platform::InterfaceInfo& interface_info,
@@ -22,7 +23,7 @@ MdnsPlatformService::BoundInterface::~BoundInterface() = default;
 
 bool MdnsPlatformService::BoundInterface::operator==(
     const MdnsPlatformService::BoundInterface& other) const {
-  if (interface_info != other.interface_info)
+  if (interface_info.index != other.interface_info.index)
     return false;
 
   if (subnet.address != other.subnet.address ||
@@ -41,4 +42,5 @@ bool MdnsPlatformService::BoundInterface::operator!=(
   return !(*this == other);
 }
 
+}  // namespace osp
 }  // namespace openscreen

@@ -37,7 +37,7 @@ CardUnmaskPromptControllerImpl::~CardUnmaskPromptControllerImpl() {
 }
 
 void CardUnmaskPromptControllerImpl::ShowPrompt(
-    CardUnmaskPromptView* card_unmask_view,
+    CardUnmaskPromptViewFactory card_unmask_view_factory,
     const CreditCard& card,
     AutofillClient::UnmaskCardReason reason,
     base::WeakPtr<CardUnmaskDelegate> delegate) {
@@ -47,10 +47,10 @@ void CardUnmaskPromptControllerImpl::ShowPrompt(
   new_card_link_clicked_ = false;
   shown_timestamp_ = AutofillClock::Now();
   pending_details_ = CardUnmaskDelegate::UserProvidedUnmaskDetails();
-  card_unmask_view_ = card_unmask_view;
   card_ = card;
   reason_ = reason;
   delegate_ = delegate;
+  card_unmask_view_ = std::move(card_unmask_view_factory).Run();
   card_unmask_view_->Show();
   unmasking_result_ = AutofillClient::NONE;
   unmasking_number_of_attempts_ = 0;
@@ -132,6 +132,16 @@ void CardUnmaskPromptControllerImpl::OnUnmaskPromptAccepted(
   } else {
     DCHECK(!should_store_pan);
     pending_details_.should_store_pan = false;
+  }
+
+  // The FIDO authentication checkbox is only shown when the local storage
+  // checkbox is not shown and the flag is turned on. If it is shown, then
+  // remember the last choice the user made on this device.
+  if (base::FeatureList::IsEnabled(
+          features::kAutofillCreditCardAuthentication) &&
+      !CanStoreLocally()) {
+    pref_service_->SetBoolean(
+        prefs::kAutofillCreditCardFidoAuthOfferCheckboxState, enable_fido_auth);
   }
 
   // There is a chance the delegate has disappeared (i.e. tab closed) before the
@@ -217,6 +227,11 @@ bool CardUnmaskPromptControllerImpl::CanStoreLocally() const {
 bool CardUnmaskPromptControllerImpl::GetStoreLocallyStartState() const {
   return pref_service_->GetBoolean(
       prefs::kAutofillWalletImportStorageCheckboxState);
+}
+
+bool CardUnmaskPromptControllerImpl::GetWebauthnOfferStartState() const {
+  return pref_service_->GetBoolean(
+      prefs::kAutofillCreditCardFidoAuthOfferCheckboxState);
 }
 
 bool CardUnmaskPromptControllerImpl::InputCvcIsValid(

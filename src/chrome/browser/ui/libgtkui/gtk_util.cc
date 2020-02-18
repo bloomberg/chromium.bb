@@ -13,18 +13,17 @@
 #include <memory>
 
 #include "base/command_line.h"
+#include "base/compiler_specific.h"
 #include "base/debug/leak_annotations.h"
 #include "base/environment.h"
-#include "base/memory/protected_memory.h"
-#include "base/memory/protected_memory_cfi.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
-#include "build/branding_buildflags.h"
-#include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/accelerators/accelerator.h"
-#include "ui/events/event_constants.h"
+#include "ui/events/event.h"
+#include "ui/events/event_utils.h"
+#include "ui/events/keycodes/dom/keycode_converter.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/views/linux_ui/linux_ui.h"
@@ -33,6 +32,7 @@
 #include <gdk/gdkx.h>
 
 #include "ui/events/keycodes/keyboard_code_conversion_x.h"  // nogncheck
+#include "ui/gfx/x/x11_types.h"                             // nogncheck
 #endif
 
 namespace {
@@ -72,6 +72,58 @@ void CommonInitFromCommandLine(const base::CommandLine& command_line) {
 #endif
 }
 
+GdkModifierType GetIbusFlags(const ui::KeyEvent& key_event) {
+  auto* properties = key_event.properties();
+  if (!properties)
+    return static_cast<GdkModifierType>(0);
+  auto it = properties->find(ui::kPropertyKeyboardIBusFlag);
+  DCHECK(it == properties->end() || it->second.size() == 1);
+  uint8_t flags = (it != properties->end()) ? it->second[0] : 0;
+  return static_cast<GdkModifierType>(flags
+                                      << ui::kPropertyKeyboardIBusFlagOffset);
+}
+
+GdkModifierType ExtractGdkEventStateFromKeyEvent(
+    const ui::KeyEvent& key_event) {
+  auto event_flags = static_cast<ui::EventFlags>(key_event.flags());
+  static const struct {
+    ui::EventFlags event_flag;
+    GdkModifierType gdk_modifier;
+  } mapping[] = {
+      {ui::EF_SHIFT_DOWN, GDK_SHIFT_MASK},
+      {ui::EF_CAPS_LOCK_ON, GDK_LOCK_MASK},
+      {ui::EF_CONTROL_DOWN, GDK_CONTROL_MASK},
+      {ui::EF_ALT_DOWN, GDK_MOD1_MASK},
+      {ui::EF_NUM_LOCK_ON, GDK_MOD2_MASK},
+      {ui::EF_MOD3_DOWN, GDK_MOD3_MASK},
+      {ui::EF_COMMAND_DOWN, GDK_MOD4_MASK},
+      {ui::EF_ALTGR_DOWN, GDK_MOD5_MASK},
+      {ui::EF_LEFT_MOUSE_BUTTON, GDK_BUTTON1_MASK},
+      {ui::EF_MIDDLE_MOUSE_BUTTON, GDK_BUTTON2_MASK},
+      {ui::EF_RIGHT_MOUSE_BUTTON, GDK_BUTTON3_MASK},
+      {ui::EF_BACK_MOUSE_BUTTON, GDK_BUTTON4_MASK},
+      {ui::EF_FORWARD_MOUSE_BUTTON, GDK_BUTTON5_MASK},
+  };
+  unsigned int gdk_modifier_type = 0;
+  for (const auto& map : mapping) {
+    if (event_flags & map.event_flag) {
+      gdk_modifier_type = gdk_modifier_type | map.gdk_modifier;
+    }
+  }
+  return static_cast<GdkModifierType>(gdk_modifier_type |
+                                      GetIbusFlags(key_event));
+}
+
+int GetKeyEventProperty(const ui::KeyEvent& key_event,
+                        const char* property_key) {
+  auto* properties = key_event.properties();
+  if (!properties)
+    return 0;
+  auto it = properties->find(property_key);
+  DCHECK(it == properties->end() || it->second.size() == 1);
+  return (it != properties->end()) ? it->second[0] : 0;
+}
+
 }  // namespace
 
 namespace libgtkui {
@@ -83,54 +135,6 @@ const color_utils::HSL kDefaultTintFrameIncognito = {-1, 0.2f, 0.35f};
 
 void GtkInitFromCommandLine(const base::CommandLine& command_line) {
   CommonInitFromCommandLine(command_line);
-}
-
-// TODO(erg): This method was copied out of shell_integration_linux.cc. Because
-// of how this library is structured as a stand alone .so, we can't call code
-// from browser and above.
-std::string GetDesktopName(base::Environment* env) {
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-  return "google-chrome.desktop";
-#else  // BUILDFLAG(CHROMIUM_BRANDING)
-  // Allow $CHROME_DESKTOP to override the built-in value, so that development
-  // versions can set themselves as the default without interfering with
-  // non-official, packaged versions using the built-in value.
-  std::string name;
-  if (env->GetVar("CHROME_DESKTOP", &name) && !name.empty())
-    return name;
-  return "chromium-browser.desktop";
-#endif
-}
-
-GdkModifierType GetGdkModifierForAccelerator(
-    const ui::Accelerator& accelerator) {
-  int event_flag = accelerator.modifiers();
-  int modifier = 0;
-  if (event_flag & ui::EF_SHIFT_DOWN)
-    modifier |= GDK_SHIFT_MASK;
-  if (event_flag & ui::EF_CONTROL_DOWN)
-    modifier |= GDK_CONTROL_MASK;
-  if (event_flag & ui::EF_ALT_DOWN)
-    modifier |= GDK_MOD1_MASK;
-  return static_cast<GdkModifierType>(modifier);
-}
-
-int EventFlagsFromGdkState(guint state) {
-  int flags = ui::EF_NONE;
-  flags |= (state & GDK_SHIFT_MASK) ? ui::EF_SHIFT_DOWN : ui::EF_NONE;
-  flags |= (state & GDK_LOCK_MASK) ? ui::EF_CAPS_LOCK_ON : ui::EF_NONE;
-  flags |= (state & GDK_CONTROL_MASK) ? ui::EF_CONTROL_DOWN : ui::EF_NONE;
-  flags |= (state & GDK_MOD1_MASK) ? ui::EF_ALT_DOWN : ui::EF_NONE;
-  flags |= (state & GDK_BUTTON1_MASK) ? ui::EF_LEFT_MOUSE_BUTTON : ui::EF_NONE;
-  flags |=
-      (state & GDK_BUTTON2_MASK) ? ui::EF_MIDDLE_MOUSE_BUTTON : ui::EF_NONE;
-  flags |= (state & GDK_BUTTON3_MASK) ? ui::EF_RIGHT_MOUSE_BUTTON : ui::EF_NONE;
-  return flags;
-}
-
-void TurnButtonBlue(GtkWidget* button) {
-  gtk_style_context_add_class(gtk_widget_get_style_context(button),
-                              "suggested-action");
 }
 
 void SetGtkTransientForAura(GtkWidget* dialog, aura::Window* parent) {
@@ -197,23 +201,7 @@ float GetDeviceScaleFactor() {
   return linux_ui ? linux_ui->GetDeviceScaleFactor() : 1;
 }
 
-using GtkSetState = void (*)(GtkWidgetPath*, gint, GtkStateFlags);
-PROTECTED_MEMORY_SECTION base::ProtectedMemory<GtkSetState>
-    _gtk_widget_path_iter_set_state;
-
-using GtkSetObjectName = void (*)(GtkWidgetPath*, gint, const char*);
-PROTECTED_MEMORY_SECTION base::ProtectedMemory<GtkSetObjectName>
-    _gtk_widget_path_iter_set_object_name;
-
 }  // namespace
-
-void* GetGdkSharedLibrary() {
-  std::string lib_name =
-      "libgdk-" + std::to_string(GTK_MAJOR_VERSION) + ".so.0";
-  static void* gdk_lib = dlopen(lib_name.c_str(), RTLD_LAZY);
-  DCHECK(gdk_lib);
-  return gdk_lib;
-}
 
 void* GetGtkSharedLibrary() {
   std::string lib_name =
@@ -311,6 +299,7 @@ GtkStateFlags StateToStateFlags(ui::NativeTheme::State state) {
   }
 }
 
+NO_SANITIZE("cfi-icall")
 ScopedStyleContext AppendCssNodeToStyleContext(GtkStyleContext* context,
                                                const std::string& css_node) {
   GtkWidgetPath* path =
@@ -361,15 +350,14 @@ ScopedStyleContext AppendCssNodeToStyleContext(GtkStyleContext* context,
           NOTREACHED();
       }
     } else {
-      static base::ProtectedMemory<GtkSetObjectName>::Initializer init(
-          &_gtk_widget_path_iter_set_object_name,
+      using GtkSetObjectName = void (*)(GtkWidgetPath*, gint, const char*);
+      static GtkSetObjectName _gtk_widget_path_iter_set_object_name =
           reinterpret_cast<GtkSetObjectName>(dlsym(
-              GetGtkSharedLibrary(), "gtk_widget_path_iter_set_object_name")));
+              GetGtkSharedLibrary(), "gtk_widget_path_iter_set_object_name"));
       switch (part_type) {
         case CSS_NAME: {
           if (GtkVersionCheck(3, 20)) {
-            base::UnsanitizedCfiCall(_gtk_widget_path_iter_set_object_name)(
-                path, -1, t.token().c_str());
+            _gtk_widget_path_iter_set_object_name(path, -1, t.token().c_str());
           } else {
             gtk_widget_path_iter_add_class(path, -1, t.token().c_str());
           }
@@ -381,8 +369,7 @@ ScopedStyleContext AppendCssNodeToStyleContext(GtkStyleContext* context,
           gtk_widget_path_append_type(path, type);
           if (GtkVersionCheck(3, 20)) {
             if (t.token() == "GtkLabel")
-              base::UnsanitizedCfiCall(_gtk_widget_path_iter_set_object_name)(
-                  path, -1, "label");
+              _gtk_widget_path_iter_set_object_name(path, -1, "label");
           }
           break;
         }
@@ -410,12 +397,12 @@ ScopedStyleContext AppendCssNodeToStyleContext(GtkStyleContext* context,
   gtk_widget_path_iter_add_class(path, -1, "chromium");
 
   if (GtkVersionCheck(3, 14)) {
-    static base::ProtectedMemory<GtkSetState>::Initializer init(
-        &_gtk_widget_path_iter_set_state,
+    using GtkSetState = void (*)(GtkWidgetPath*, gint, GtkStateFlags);
+    static GtkSetState _gtk_widget_path_iter_set_state =
         reinterpret_cast<GtkSetState>(
-            dlsym(GetGtkSharedLibrary(), "gtk_widget_path_iter_set_state")));
-    DCHECK(*_gtk_widget_path_iter_set_state);
-    base::UnsanitizedCfiCall(_gtk_widget_path_iter_set_state)(path, -1, state);
+            dlsym(GetGtkSharedLibrary(), "gtk_widget_path_iter_set_state"));
+    DCHECK(_gtk_widget_path_iter_set_state);
+    _gtk_widget_path_iter_set_state(path, -1, state);
   }
 
   ScopedStyleContext child_context(gtk_style_context_new());
@@ -609,12 +596,56 @@ std::string GetGtkSettingsStringProperty(GtkSettings* settings,
   return prop_value;
 }
 
+GdkDisplay* GetGdkDisplay() {
+  GdkDisplay* display = nullptr;
+  // TODO(crbug.com/1002674): Remove once GtkIM-based LinuxInputMethodContext
+  // implementation is moved out of libgtkui.
 #if defined(USE_X11)
-guint GetGdkKeyCodeForAccelerator(const ui::Accelerator& accelerator) {
-  // The second parameter is false because accelerator keys are expressed in
-  // terms of the non-shift-modified key.
-  return XKeysymForWindowsKeyCode(accelerator.key_code(), false);
-}
+  display = gdk_x11_lookup_xdisplay(gfx::GetXDisplay());
 #endif
+  if (!display)  // Fall back to the default display.
+    display = gdk_display_get_default();
+  return display;
+}
+
+int BuildXkbStateFromGdkEvent(unsigned int state, unsigned char group) {
+  DCHECK_EQ(0u, ((state >> 13) & 0x3));
+  return state | ((group & 0x3) << 13);
+}
+
+GdkEvent* GdkEventFromKeyEvent(const ui::KeyEvent& key_event) {
+  GdkEventType event_type =
+      key_event.type() == ui::ET_KEY_PRESSED ? GDK_KEY_PRESS : GDK_KEY_RELEASE;
+  auto event_time = key_event.time_stamp() - base::TimeTicks();
+  int hw_code = GetKeyEventProperty(key_event, ui::kPropertyKeyboardHwKeyCode);
+  int group = GetKeyEventProperty(key_event, ui::kPropertyKeyboardGroup);
+
+  // Get GdkKeymap
+  GdkKeymap* keymap = gdk_keymap_get_for_display(GetGdkDisplay());
+
+  // Get keyval and state
+  GdkModifierType state = ExtractGdkEventStateFromKeyEvent(key_event);
+  guint keyval = GDK_KEY_VoidSymbol;
+  GdkModifierType consumed;
+  gdk_keymap_translate_keyboard_state(keymap, hw_code, state, group, &keyval,
+                                      nullptr, nullptr, &consumed);
+  gdk_keymap_add_virtual_modifiers(keymap, &state);
+  DCHECK(keyval != GDK_KEY_VoidSymbol);
+
+  // Build GdkEvent
+  GdkEvent* gdk_event = gdk_event_new(event_type);
+  gdk_event->type = event_type;
+  gdk_event->key.time = event_time.InMilliseconds();
+  gdk_event->key.hardware_keycode = hw_code;
+  gdk_event->key.keyval = keyval;
+  gdk_event->key.state = BuildXkbStateFromGdkEvent(state, group);
+  gdk_event->key.group = group;
+  gdk_event->key.send_event = key_event.flags() & ui::EF_FINAL;
+  gdk_event->key.is_modifier = state & GDK_MODIFIER_MASK;
+  gdk_event->key.length = 0;
+  gdk_event->key.string = nullptr;
+
+  return gdk_event;
+}
 
 }  // namespace libgtkui

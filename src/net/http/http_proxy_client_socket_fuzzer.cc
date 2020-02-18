@@ -17,12 +17,12 @@
 #include "net/base/address_list.h"
 #include "net/base/auth.h"
 #include "net/base/host_port_pair.h"
+#include "net/base/network_isolation_key.h"
 #include "net/base/test_completion_callback.h"
 #include "net/http/http_auth_cache.h"
 #include "net/http/http_auth_handler_basic.h"
 #include "net/http/http_auth_handler_digest.h"
 #include "net/http/http_auth_handler_factory.h"
-#include "net/http/http_auth_preferences.h"
 #include "net/http/http_auth_scheme.h"
 #include "net/log/test_net_log.h"
 #include "net/socket/fuzzed_socket.h"
@@ -36,7 +36,7 @@
 // class for details.
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   // Use a test NetLog, to exercise logging code.
-  net::TestNetLog test_net_log;
+  net::RecordingTestNetLog test_net_log;
 
   FuzzedDataProvider data_provider(data, size);
 
@@ -47,7 +47,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
 
   // Create auth handler supporting basic and digest schemes.  Other schemes can
   // make system calls, which doesn't seem like a great idea.
-  net::HttpAuthCache auth_cache;
+  net::HttpAuthCache auth_cache(
+      false /* key_server_entries_by_network_isolation_key */);
   net::HttpAuthHandlerRegistryFactory auth_handler_factory;
   auth_handler_factory.RegisterSchemeFactory(
       net::kBasicAuthScheme, new net::HttpAuthHandlerBasic::Factory());
@@ -55,10 +56,10 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
       net::kDigestAuthScheme, new net::HttpAuthHandlerDigest::Factory());
 
   scoped_refptr<net::HttpAuthController> auth_controller(
-      new net::HttpAuthController(
-          net::HttpAuth::AUTH_PROXY, GURL("http://proxy:42/"), &auth_cache,
-          &auth_handler_factory, nullptr,
-          net::HttpAuthPreferences::ALLOW_DEFAULT_CREDENTIALS));
+      base::MakeRefCounted<net::HttpAuthController>(
+          net::HttpAuth::AUTH_PROXY, GURL("http://proxy:42/"),
+          net::NetworkIsolationKey(), &auth_cache, &auth_handler_factory,
+          nullptr));
   // Determine if the HttpProxyClientSocket should be told the underlying socket
   // is HTTPS.
   net::HttpProxyClientSocket socket(

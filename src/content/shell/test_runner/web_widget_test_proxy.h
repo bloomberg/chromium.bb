@@ -77,6 +77,7 @@ class TEST_RUNNER_EXPORT WebWidgetTestProxy : public content::RenderWidget {
                      blink::WebDragOperationsMask mask,
                      const SkBitmap& drag_image,
                      const gfx::Point& image_offset) override;
+  blink::WebScreenInfo GetScreenInfo() override;
 
   // In the test runner code, it can be expected that the RenderViewImpl will
   // actually be a WebViewTestProxy as the creation of RenderView/Frame/Widget
@@ -93,6 +94,8 @@ class TEST_RUNNER_EXPORT WebWidgetTestProxy : public content::RenderWidget {
   // When |do_raster| is false, only a main frame animation step is performed,
   // but when true, a full composite is performed and a frame submitted to the
   // display compositor if there is any damage.
+  // Note that compositing has the potential to detach the current frame and
+  // thus destroy |this| before returning.
   void SynchronouslyComposite(bool do_raster);
 
  private:
@@ -114,6 +117,9 @@ class TEST_RUNNER_EXPORT WebWidgetTestProxy : public content::RenderWidget {
   // https://chromium.googlesource.com/chromium/src/+/master/docs/testing/writing_web_tests.md
   // for details on the optimization.
   bool composite_requested_ = false;
+  // Synchronous composites should not be nested inside another
+  // composite, and this bool is used to guard against that.
+  bool in_synchronous_composite_ = false;
 
   base::WeakPtrFactory<WebWidgetTestProxy> weak_factory_{this};
 

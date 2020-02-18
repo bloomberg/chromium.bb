@@ -14,7 +14,7 @@
 #include <utility>
 #include <vector>
 
-#include "absl/memory/memory.h"
+#include "api/test/time_controller.h"
 #include "rtc_base/constructor_magic.h"
 #include "rtc_base/fake_clock.h"
 #include "rtc_base/task_queue.h"
@@ -27,7 +27,6 @@
 #include "test/scenario/network_node.h"
 #include "test/scenario/scenario_config.h"
 #include "test/scenario/video_stream.h"
-#include "test/time_controller/time_controller.h"
 
 namespace webrtc {
 namespace test {
@@ -148,7 +147,7 @@ class Scenario {
       std::string name) {
     if (!log_writer_factory_ || name.empty())
       return nullptr;
-    return absl::make_unique<LogWriterFactoryAddPrefix>(
+    return std::make_unique<LogWriterFactoryAddPrefix>(
         log_writer_factory_.get(), name);
   }
 

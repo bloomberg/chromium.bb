@@ -18,6 +18,7 @@
 namespace blink {
 
 class NGBlockBreakToken;
+class NGInlineCursor;
 struct LayoutSelectionStatus;
 struct NGContainerInkOverflow;
 enum class NGOutlineType;
@@ -51,7 +52,7 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
       scoped_refptr<NGPaintFragment> previous_instance = nullptr);
 
   const NGPhysicalFragment& PhysicalFragment() const {
-    CHECK(!is_layout_object_destroyed_);
+    CHECK(IsAlive());
     return *physical_fragment_;
   }
 
@@ -130,12 +131,19 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
   NGPaintFragment* NextSibling() const {
     return FirstAlive(next_sibling_.get());
   }
+  NGPaintFragment* NextForSameLayoutObject() const {
+    return next_for_same_layout_object_;
+  }
   ChildList Children() const { return ChildList(FirstChild()); }
+  bool IsEllipsis() const;
 
   // Note, as the name implies, |IsDescendantOfNotSelf| returns false for the
   // same object. This is different from |LayoutObject::IsDescendant| but is
   // same as |Node::IsDescendant|.
   bool IsDescendantOfNotSelf(const NGPaintFragment&) const;
+
+  // Returns the root box containing this.
+  const NGPaintFragment* Root() const;
 
   // Returns the first line box for a block-level container.
   NGPaintFragment* FirstLineBox() const;
@@ -164,10 +172,6 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
 
   void RecalcInlineChildrenInkOverflow() const;
 
-  void AddSelfOutlineRects(Vector<PhysicalRect>*,
-                           const PhysicalOffset& offset,
-                           NGOutlineType) const;
-
   // TODO(layout-dev): Implement when we have oveflow support.
   // TODO(eae): Switch to using NG geometry types.
   bool HasOverflowClip() const { return PhysicalFragment().HasOverflowClip(); }
@@ -176,10 +180,6 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
   // This is equivalent to LayoutObject::VisualRect
   IntRect VisualRect() const override;
   IntRect PartialInvalidationVisualRect() const override;
-
-  PhysicalRect ComputeLocalSelectionRectForText(
-      const LayoutSelectionStatus&) const;
-  PhysicalRect ComputeLocalSelectionRectForReplaced() const;
 
   // Set ShouldDoFullPaintInvalidation flag in the corresponding LayoutObject.
   void SetShouldDoFullPaintInvalidation();
@@ -209,14 +209,11 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
     return offset_;
   }
   PhysicalSize Size() const { return PhysicalFragment().Size(); }
+  PhysicalRect Rect() const { return {Offset(), Size()}; }
 
   // Converts the given point, relative to the fragment itself, into a position
   // in DOM tree.
   PositionWithAffinity PositionForPoint(const PhysicalOffset&) const;
-
-  // The node to return when hit-testing on this fragment. This can be different
-  // from GetNode() when this fragment is content of a pseudo node.
-  Node* NodeForHitTest() const;
 
   // Returns true when associated fragment of |layout_object| has line box.
   static bool TryMarkFirstLineBoxDirtyFor(const LayoutObject& layout_object);
@@ -249,27 +246,9 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
     bool is_in_layout_ng_inline_formatting_context_;
   };
 
-  // Returns NGPaintFragment for the inline formatting context the LayoutObject
-  // belongs to.
-  //
-  // When the LayoutObject is an inline block, it belongs to an inline
-  // formatting context while it creates its own for its descendants. This
-  // function always returns the one it belongs to.
-  static const NGPaintFragment* GetForInlineContainer(const LayoutObject*);
-
   // Returns a range of NGPaintFragment in an inline formatting context that are
   // for a LayoutObject.
   static FragmentRange InlineFragmentsFor(const LayoutObject*);
-  // A safer version that returns empty if the block flow is dirty.
-  // TODO(kojii): If the block flow is dirty, children of these fragments maybe
-  // already deleted. crbug.com/963103
-  static FragmentRange SafeInlineFragmentsFor(const LayoutObject*);
-
-  // Same as |InlineFragmentsFor()| but this function includes descendants if
-  // the |layout_object| is culled (i.e., did not generate fragments.)
-  template <typename Callback>
-  static void InlineFragmentsIncludingCulledFor(const LayoutObject&,
-                                                Callback callback);
 
   const NGPaintFragment* LastForSameLayoutObject() const;
   NGPaintFragment* LastForSameLayoutObject();
@@ -295,10 +274,12 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
   static base::Optional<PhysicalRect> LocalVisualRectFor(const LayoutObject&);
 
  private:
+  bool IsAlive() const { return !is_layout_object_destroyed_; }
+
   // Returns the first "alive" fragment; i.e., fragment that doesn't have
   // destroyed LayoutObject.
   static NGPaintFragment* FirstAlive(NGPaintFragment* fragment) {
-    while (UNLIKELY(fragment && fragment->is_layout_object_destroyed_))
+    while (UNLIKELY(fragment && !fragment->IsAlive()))
       fragment = fragment->next_sibling_.get();
     return fragment;
   }
@@ -379,6 +360,7 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
   std::unique_ptr<NGContainerInkOverflow> ink_overflow_;
 
   // Set when the corresponding LayoutObject is destroyed.
+  // TODO(kojii): This should move to |NGPhysicalFragment|.
   unsigned is_layout_object_destroyed_ : 1;
 
   // For a line box, this indicates it is dirty. This helps to determine if the
@@ -388,38 +370,16 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
   unsigned is_dirty_inline_ : 1;
 };
 
-template <typename Callback>
-void NGPaintFragment::InlineFragmentsIncludingCulledFor(
-    const LayoutObject& layout_object,
-    Callback callback) {
-  DCHECK(layout_object.IsInLayoutNGInlineFormattingContext());
-
-  auto fragments = InlineFragmentsFor(&layout_object);
-  if (!fragments.IsEmpty()) {
-    for (const NGPaintFragment* fragment : fragments)
-      callback(fragment);
-    return;
-  }
-
-  // This is a culled LayoutInline. Iterate children's fragments.
-  if (const LayoutInline* layout_inline =
-          ToLayoutInlineOrNull(&layout_object)) {
-    for (LayoutObject* child = layout_inline->FirstChild(); child;
-         child = child->NextSibling()) {
-      // |layout_inline| may still have non-inline children, e.g.,
-      // 'position:absolute'. Skip them as they don't contribute to the culled
-      // rects of |layout_inline|.
-      if (!child->IsInline())
-        continue;
-      InlineFragmentsIncludingCulledFor(*child, callback);
-    }
-  }
-}
-
 extern template class CORE_EXTERN_TEMPLATE_EXPORT
     NGPaintFragment::List<NGPaintFragment::TraverseNextForSameLayoutObject>;
 extern template class CORE_EXTERN_TEMPLATE_EXPORT
     NGPaintFragment::List<NGPaintFragment::TraverseNextSibling>;
+
+PhysicalRect ComputeLocalSelectionRectForText(
+    const NGInlineCursor& cursor,
+    const LayoutSelectionStatus& selection_status);
+
+PhysicalRect ComputeLocalSelectionRectForReplaced(const NGInlineCursor& cursor);
 
 }  // namespace blink
 

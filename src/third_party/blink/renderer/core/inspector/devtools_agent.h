@@ -29,9 +29,8 @@ class InspectorTaskRunner;
 class WorkerThread;
 struct WorkerDevToolsParams;
 
-class CORE_EXPORT DevToolsAgent
-    : public GarbageCollectedFinalized<DevToolsAgent>,
-      public mojom::blink::DevToolsAgent {
+class CORE_EXPORT DevToolsAgent : public GarbageCollected<DevToolsAgent>,
+                                  public mojom::blink::DevToolsAgent {
  public:
   class Client {
    public:
@@ -60,10 +59,10 @@ class CORE_EXPORT DevToolsAgent
 
   void Dispose();
   void FlushProtocolNotifications();
-  void BindRequest(mojo::PendingRemote<mojom::blink::DevToolsAgentHost>,
-                   mojo::PendingReceiver<mojom::blink::DevToolsAgent>,
-                   scoped_refptr<base::SingleThreadTaskRunner>);
-  void BindRequest(
+  void BindReceiver(mojo::PendingRemote<mojom::blink::DevToolsAgentHost>,
+                    mojo::PendingReceiver<mojom::blink::DevToolsAgent>,
+                    scoped_refptr<base::SingleThreadTaskRunner>);
+  void BindReceiver(
       mojo::PendingAssociatedRemote<mojom::blink::DevToolsAgentHost>,
       mojo::PendingAssociatedReceiver<mojom::blink::DevToolsAgent>,
       scoped_refptr<base::SingleThreadTaskRunner>);

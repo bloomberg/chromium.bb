@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/css/media_values_dynamic.h"
 
 #include "third_party/blink/public/common/css/forced_colors.h"
+#include "third_party/blink/public/common/css/navigation_controls.h"
 #include "third_party/blink/public/common/css/preferred_color_scheme.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
 #include "third_party/blink/renderer/core/css/css_resolution_units.h"
@@ -127,7 +128,7 @@ const String MediaValuesDynamic::MediaType() const {
   return CalculateMediaType(frame_);
 }
 
-WebDisplayMode MediaValuesDynamic::DisplayMode() const {
+blink::mojom::DisplayMode MediaValuesDynamic::DisplayMode() const {
   return CalculateDisplayMode(frame_);
 }
 
@@ -152,7 +153,11 @@ bool MediaValuesDynamic::PrefersReducedMotion() const {
 }
 
 ForcedColors MediaValuesDynamic::GetForcedColors() const {
-  return CalculateForcedColors(frame_);
+  return CalculateForcedColors();
+}
+
+NavigationControls MediaValuesDynamic::GetNavigationControls() const {
+  return CalculateNavigationControls(frame_);
 }
 
 Document* MediaValuesDynamic::GetDocument() const {

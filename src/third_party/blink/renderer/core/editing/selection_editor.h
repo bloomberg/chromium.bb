@@ -39,7 +39,7 @@ namespace blink {
 // TODO(yosin): We will rename |SelectionEditor| to appropriate name since
 // it is no longer have a changing selection functionality, it was moved to
 // |SelectionModifier| class.
-class SelectionEditor final : public GarbageCollectedFinalized<SelectionEditor>,
+class SelectionEditor final : public GarbageCollected<SelectionEditor>,
                               public SynchronousMutationObserver {
   USING_GARBAGE_COLLECTED_MIXIN(SelectionEditor);
 
@@ -52,6 +52,7 @@ class SelectionEditor final : public GarbageCollectedFinalized<SelectionEditor>,
 
   VisibleSelection ComputeVisibleSelectionInDOMTree() const;
   VisibleSelectionInFlatTree ComputeVisibleSelectionInFlatTree() const;
+  bool ComputeAbsoluteBounds(IntRect& anchor, IntRect& focus) const;
   void SetSelectionAndEndTyping(const SelectionInDOMTree&);
 
   void DidAttachDocument(Document*);
@@ -77,6 +78,10 @@ class SelectionEditor final : public GarbageCollectedFinalized<SelectionEditor>,
   bool NeedsUpdateVisibleSelectionInFlatTree() const;
   void UpdateCachedVisibleSelectionIfNeeded() const;
   void UpdateCachedVisibleSelectionInFlatTreeIfNeeded() const;
+
+  // AbsoluteBounds cache related
+  bool NeedsUpdateAbsoluteBounds() const;
+  void UpdateCachedAbsoluteBoundsIfNeeded() const;
 
   void DidFinishTextChange(const Position& base, const Position& extent);
   void DidFinishDOMMutation();
@@ -109,6 +114,13 @@ class SelectionEditor final : public GarbageCollectedFinalized<SelectionEditor>,
   mutable uint64_t style_version_for_flat_tree_ = static_cast<uint64_t>(-1);
   mutable bool cached_visible_selection_in_dom_tree_is_dirty_ = false;
   mutable bool cached_visible_selection_in_flat_tree_is_dirty_ = false;
+
+  mutable IntRect cached_anchor_bounds_;
+  mutable IntRect cached_focus_bounds_;
+  mutable uint64_t style_version_for_absolute_bounds_ =
+      static_cast<uint64_t>(-1);
+  mutable bool cached_absolute_bounds_are_dirty_ = false;
+  mutable bool has_selection_bounds_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(SelectionEditor);
 };

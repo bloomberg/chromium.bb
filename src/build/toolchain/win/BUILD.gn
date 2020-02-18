@@ -102,8 +102,12 @@ template("msvc_toolchain") {
 
       # lld-link includes a replacement for lib.exe that can produce thin
       # archives and understands bitcode (for lto builds).
-      lib = "$prefix/$lld_link /lib"
       link = "$prefix/$lld_link"
+      if (host_os == "win") {
+        # Flip the slashes so that copy/paste of the commands works.
+        link = string_replace(link, "/", "\\")
+      }
+      lib = "$link /lib"
       if (host_os != "win") {
         # See comment adding --rsp-quoting to $cl above for more information.
         link = "$link --rsp-quoting=posix"
@@ -130,21 +134,53 @@ template("msvc_toolchain") {
 
     # ninja does not have -t msvc other than windows, and lld doesn't depend on
     # mt.exe in PATH on non-Windows, so it's not needed there anyways.
-    if (defined(invoker.sys_lib_flags)) {
+    if (host_os != "win") {
       linker_wrapper = ""
       sys_lib_flags = "${invoker.sys_lib_flags} "  # Note trailing space
-    } else if (use_lld) {
+    } else if (defined(invoker.sys_lib_flags)) {
       # Invoke ninja as wrapper instead of tool wrapper, because python
       # invocation requires higher cpu usage compared to ninja invocation, and
       # the python wrapper is only needed to work around link.exe problems.
       # TODO(thakis): Remove wrapper once lld-link can merge manifests without
       # relying on mt.exe being in %PATH% on Windows, https://crbug.com/872740
       linker_wrapper = "ninja -t msvc -e $env -- "  # Note trailing space.
-      sys_lib_flags = ""
+      sys_lib_flags = "${invoker.sys_lib_flags} "  # Note trailing space
     } else {
       linker_wrapper =
           "$python_path $tool_wrapper_path link-wrapper $env False "  # Note trailing space.
       sys_lib_flags = ""
+    }
+
+    if (defined(toolchain_args.use_clang_coverage)) {
+      toolchain_use_clang_coverage = toolchain_args.use_clang_coverage
+    } else {
+      toolchain_use_clang_coverage = use_clang_coverage
+    }
+
+    if (toolchain_use_clang_coverage) {
+      assert(toolchain_args.is_clang,
+             "use_clang_coverage should only be used with Clang")
+      if (defined(toolchain_args.coverage_instrumentation_input_file)) {
+        toolchain_coverage_instrumentation_input_file =
+            toolchain_args.coverage_instrumentation_input_file
+      } else {
+        toolchain_coverage_instrumentation_input_file =
+            coverage_instrumentation_input_file
+      }
+
+      coverage_wrapper =
+          rebase_path("//build/toolchain/clang_code_coverage_wrapper.py",
+                      root_build_dir)
+      coverage_wrapper = coverage_wrapper + " --target-os=" + target_os
+      if (toolchain_coverage_instrumentation_input_file != "") {
+        coverage_wrapper =
+            coverage_wrapper + " --files-to-instrument=" +
+            rebase_path(toolchain_coverage_instrumentation_input_file,
+                        root_build_dir)
+      }
+      coverage_wrapper = "$python_path " + coverage_wrapper + " "
+    } else {
+      coverage_wrapper = ""
     }
 
     tool("cc") {
@@ -160,7 +196,7 @@ template("msvc_toolchain") {
         "$object_subdir/{{source_name_part}}.obj",
       ]
 
-      command = "$env_wrapper$cl /nologo /showIncludes $sys_include_flags{{defines}} {{include_dirs}} {{cflags}} {{cflags_c}} /c {{source}} /Fo{{output}} /Fd\"$pdbname\""
+      command = "$coverage_wrapper$env_wrapper$cl /nologo /showIncludes $sys_include_flags{{defines}} {{include_dirs}} {{cflags}} {{cflags_c}} /c {{source}} /Fo{{output}} /Fd\"$pdbname\""
     }
 
     tool("cxx") {
@@ -176,11 +212,11 @@ template("msvc_toolchain") {
         "$object_subdir/{{source_name_part}}.obj",
       ]
 
-      command = "$env_wrapper$cl /nologo /showIncludes $sys_include_flags{{defines}} {{include_dirs}} {{cflags}} {{cflags_cc}} /c {{source}} /Fo{{output}} /Fd\"$pdbname\""
+      command = "$coverage_wrapper$env_wrapper$cl /nologo /showIncludes $sys_include_flags{{defines}} {{include_dirs}} {{cflags}} {{cflags_cc}} /c {{source}} /Fo{{output}} /Fd\"$pdbname\""
     }
 
     tool("rc") {
-      command = "$python_path $tool_wrapper_path rc-wrapper $env rc.exe /nologo {{defines}} {{include_dirs}} /fo{{output}} {{source}}"
+      command = "$python_path $tool_wrapper_path rc-wrapper $env rc.exe /nologo $sys_include_flags{{defines}} {{include_dirs}} /fo{{output}} {{source}}"
       depsformat = "msvc"
       outputs = [
         "$object_subdir/{{source_name_part}}.res",
@@ -356,21 +392,23 @@ template("win_toolchains") {
                                    ],
                                    "scope")
 
-  msvc_toolchain(target_name) {
-    environment = "environment." + toolchain_arch
-    cl = "${goma_prefix}\"${win_toolchain_data.vc_bin_dir}/cl.exe\""
-    if (host_os != "win") {
-      # For win cross build
-      sys_lib_flags = "${win_toolchain_data.libpath_flags}"
-    }
+  # The toolchain using MSVC only makes sense when not doing cross builds.
+  # Chromium exclusively uses the win_clang_ toolchain below, but V8 and
+  # WebRTC still use this MSVC toolchain in some cases.
+  if (host_os == "win") {
+    msvc_toolchain(target_name) {
+      environment = "environment." + toolchain_arch
+      cl = "${goma_prefix}\"${win_toolchain_data.vc_bin_dir}/cl.exe\""
 
-    toolchain_args = {
-      if (defined(invoker.toolchain_args)) {
-        forward_variables_from(invoker.toolchain_args, "*")
+      toolchain_args = {
+        if (defined(invoker.toolchain_args)) {
+          forward_variables_from(invoker.toolchain_args, "*")
+        }
+        is_clang = false
+        use_clang_coverage = false
+        current_os = "win"
+        current_cpu = toolchain_arch
       }
-      is_clang = false
-      current_os = "win"
-      current_cpu = toolchain_arch
     }
   }
 
@@ -383,10 +421,7 @@ template("win_toolchains") {
       cl = string_replace(cl, "/", "\\")
     }
     sys_include_flags = "${win_toolchain_data.include_flags_imsvc}"
-    if (host_os != "win") {
-      # For win cross build
-      sys_lib_flags = "${win_toolchain_data.libpath_flags}"
-    }
+    sys_lib_flags = "${win_toolchain_data.libpath_flags}"
 
     toolchain_args = {
       if (defined(invoker.toolchain_args)) {

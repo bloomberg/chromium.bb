@@ -28,15 +28,13 @@ class NET_EXPORT_PRIVATE SpdySessionKey {
   };
   SpdySessionKey();
 
-  // TODO(mmenke): Remove default |network_isolation_key| value (only used by
-  // tests).
-  SpdySessionKey(
-      const HostPortPair& host_port_pair,
-      const ProxyServer& proxy_server,
-      PrivacyMode privacy_mode,
-      IsProxySession is_proxy_session,
-      const SocketTag& socket_tag,
-      const NetworkIsolationKey& network_isolation_key = NetworkIsolationKey());
+  SpdySessionKey(const HostPortPair& host_port_pair,
+                 const ProxyServer& proxy_server,
+                 PrivacyMode privacy_mode,
+                 IsProxySession is_proxy_session,
+                 const SocketTag& socket_tag,
+                 const NetworkIsolationKey& network_isolation_key,
+                 bool disable_secure_dns);
 
   SpdySessionKey(const SpdySessionKey& other);
 
@@ -73,6 +71,8 @@ class NET_EXPORT_PRIVATE SpdySessionKey {
     return network_isolation_key_;
   }
 
+  bool disable_secure_dns() const { return disable_secure_dns_; }
+
   // Returns the estimate of dynamically allocated memory in bytes.
   size_t EstimateMemoryUsage() const;
 
@@ -84,6 +84,7 @@ class NET_EXPORT_PRIVATE SpdySessionKey {
   SocketTag socket_tag_;
   // Used to separate requests made in different contexts.
   NetworkIsolationKey network_isolation_key_;
+  bool disable_secure_dns_;
 };
 
 }  // namespace net

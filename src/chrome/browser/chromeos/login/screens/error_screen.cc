@@ -164,6 +164,11 @@ void ErrorScreen::ShowConnectingIndicator(bool show) {
     view_->SetShowConnectingIndicator(show);
 }
 
+void ErrorScreen::SetIsPersistentError(bool is_persistent) {
+  if (view_)
+    view_->SetIsPersistentError(is_persistent);
+}
+
 ErrorScreen::ConnectRequestCallbackSubscription
 ErrorScreen::RegisterConnectRequestCallback(const base::Closure& callback) {
   return connect_request_callbacks_.Add(callback);
@@ -293,11 +298,10 @@ void ErrorScreen::OnDiagnoseButtonClicked() {
       IDR_CONNECTIVITY_DIAGNOSTICS_MANIFEST,
       base::FilePath(extension_misc::kConnectivityDiagnosticsPath));
 
-  apps::LaunchService::Get(profile)->OpenApplication(
-      AppLaunchParams(profile, extension_id,
-                      apps::mojom::LaunchContainer::kLaunchContainerWindow,
-                      WindowOpenDisposition::NEW_WINDOW,
-                      apps::mojom::AppLaunchSource::kSourceChromeInternal));
+  apps::LaunchService::Get(profile)->OpenApplication(apps::AppLaunchParams(
+      extension_id, apps::mojom::LaunchContainer::kLaunchContainerWindow,
+      WindowOpenDisposition::NEW_WINDOW,
+      apps::mojom::AppLaunchSource::kSourceChromeInternal));
   KioskAppManager::Get()->InitSession(profile, extension_id);
 
   LoginDisplayHost::default_host()->Finalize(base::BindOnce(

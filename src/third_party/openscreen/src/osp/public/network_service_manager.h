@@ -13,6 +13,7 @@
 #include "osp/public/service_publisher.h"
 
 namespace openscreen {
+namespace osp {
 
 // Manages services run as part of the Open Screen Protocol Library.  Library
 // embedders should pass instances of required services to Create(), which will
@@ -71,6 +72,7 @@ class NetworkServiceManager final {
   std::unique_ptr<ProtocolConnectionServer> connection_server_;
 };
 
+}  // namespace osp
 }  // namespace openscreen
 
 #endif  // OSP_PUBLIC_NETWORK_SERVICE_MANAGER_H_

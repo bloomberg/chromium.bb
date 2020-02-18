@@ -18,18 +18,61 @@ namespace blink {
 
 class DisplayLockSuspendedHandle;
 class Element;
-class DisplayLockOptions;
 class DisplayLockScopedLogger;
-class TaskHandle;
+class StyleRecalcChange;
 
 enum class DisplayLockLifecycleTarget { kSelf, kChildren };
+enum class DisplayLockActivationReason {
+  // Accessibility driven activation
+  kAccessibility = 1 << 0,
+  // Activation as a result of find-in-page
+  kFindInPage = 1 << 1,
+  // Fragment link navigation
+  kFragmentNavigation = 1 << 2,
+  // Script invoked focus().
+  kScriptFocus = 1 << 3,
+  // scrollIntoView()
+  kScrollIntoView = 1 << 4,
+  // User / script selection
+  kSelection = 1 << 5,
+  // Simulated click (Node::DispatchSimulatedClick)
+  kSimulatedClick = 1 << 6,
+  // User focus (e.g. tab navigation)
+  kUserFocus = 1 << 7,
+  // Intersection observer activation
+  kViewportIntersection = 1 << 8,
+
+  // Shorthands
+  kViewport = static_cast<uint16_t>(kSelection) |
+              static_cast<uint16_t>(kUserFocus) |
+              static_cast<uint16_t>(kViewportIntersection),
+  kAny = static_cast<uint16_t>(kAccessibility) |
+         static_cast<uint16_t>(kFindInPage) |
+         static_cast<uint16_t>(kFragmentNavigation) |
+         static_cast<uint16_t>(kScriptFocus) |
+         static_cast<uint16_t>(kScrollIntoView) |
+         static_cast<uint16_t>(kSelection) |
+         static_cast<uint16_t>(kSimulatedClick) |
+         static_cast<uint16_t>(kUserFocus) |
+         static_cast<uint16_t>(kViewportIntersection)
+};
+
+// Instead of specifying an underlying type, which would propagate throughout
+// forward declarations, we static assert that the activation reasons enum is
+// small-ish.
+static_assert(static_cast<uint32_t>(DisplayLockActivationReason::kAny) <
+                  std::numeric_limits<uint16_t>::max(),
+              "DisplayLockActivationReason is too large");
+
+// Since we currently, and temporarily, support both CSS and attribute version,
+// we need to distinguish the two so that lack of CSS, for example, doesn't
+// unlock the attribute version and vice versa.
+enum class DisplayLockContextCreateMethod { kUnknown, kCSS, kAttribute };
 
 class CORE_EXPORT DisplayLockContext final
-    : public ScriptWrappable,
-      public ActiveScriptWrappable<DisplayLockContext>,
+    : public GarbageCollected<DisplayLockContext>,
       public ContextLifecycleObserver,
       public LocalFrameView::LifecycleNotificationObserver {
-  DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(DisplayLockContext);
   USING_PRE_FINALIZER(DisplayLockContext, Dispose);
 
@@ -66,6 +109,7 @@ class CORE_EXPORT DisplayLockContext final
   enum StyleType {
     kStyleUpdateNotRequired,
     kStyleUpdateSelf,
+    kStyleUpdatePseudoElements,
     kStyleUpdateChildren,
     kStyleUpdateDescendants
   };
@@ -75,7 +119,7 @@ class CORE_EXPORT DisplayLockContext final
     DISALLOW_NEW();
 
    public:
-    ScopedForcedUpdate(ScopedForcedUpdate&&) noexcept;
+    ScopedForcedUpdate(ScopedForcedUpdate&&);
     ~ScopedForcedUpdate();
 
    private:
@@ -87,7 +131,7 @@ class CORE_EXPORT DisplayLockContext final
   };
 
   DisplayLockContext(Element*, ExecutionContext*);
-  ~DisplayLockContext() override;
+  ~DisplayLockContext();
 
   // GC functions.
   void Trace(blink::Visitor*) override;
@@ -95,23 +139,22 @@ class CORE_EXPORT DisplayLockContext final
 
   // ContextLifecycleObserver overrides.
   void ContextDestroyed(ExecutionContext*) override;
-  // ActiveScriptWrappable overrides. This keeps the context alive as long as we
-  // have an element and we're not unlocked.
-  bool HasPendingActivity() const final;
 
-  // JavaScript interface implementation. See display_lock_context.idl for
-  // description.
-  ScriptPromise acquire(ScriptState*, DisplayLockOptions*);
-  ScriptPromise update(ScriptState*);
-  ScriptPromise commit(ScriptState*);
-  ScriptPromise updateAndCommit(ScriptState*);
+  // Set which reasons activate, as a mask of DisplayLockActivationReason enums.
+  void SetActivatable(uint16_t activatable_mask);
 
-  void SetActivatable(bool activatable);
+  // Returns true if this lock has been activated and the activation has not yet
+  // been cleared.
+  bool IsActivated() const;
+  // Clear the activated flag.
+  void ClearActivated();
 
   // Acquire the lock, should only be called when unlocked.
   void StartAcquire();
   // Initiate a commit.
   void StartCommit();
+  // Update rendering of the subtree.
+  ScriptPromise UpdateRendering(ScriptState*);
 
   // Lifecycle observation / state functions.
   bool ShouldStyle(DisplayLockLifecycleTarget) const;
@@ -130,14 +173,18 @@ class CORE_EXPORT DisplayLockContext final
   }
 
   // Returns true if the contents of the associated element should be visible
-  // from and activatable by find-in-page, tab order, anchor links, etc.
-  bool IsActivatable() const;
+  // from and activatable by a specified reason. Note that passing
+  // kAny will return true if the lock is activatable for any
+  // reason.
+  bool IsActivatable(DisplayLockActivationReason reason) const;
 
   // Trigger commit because of activation from tab order, url fragment,
-  // find-in-page, etc.
-  void CommitForActivation();
+  // find-in-page, scrolling, etc.
+  // This issues a before activate signal with the given element as the
+  // activated element.
+  void CommitForActivationWithSignal(Element* activated_element);
 
-  bool ShouldCommitForActivation() const;
+  bool ShouldCommitForActivation(DisplayLockActivationReason reason) const;
 
   // Returns true if this lock is locked. Note from the outside perspective, the
   // lock is locked any time the state is not kUnlocked or kCommitting.
@@ -186,8 +233,16 @@ class CORE_EXPORT DisplayLockContext final
     needs_graphics_layer_collection_ = true;
   }
 
+  void NotifyCompositingRequirementsUpdateWasBlocked() {
+    needs_compositing_requirements_update_ = true;
+  }
+
   // Notify this element will be disconnected.
   void NotifyWillDisconnect();
+
+  // Called when the element disconnects or connects.
+  void ElementDisconnected();
+  void ElementConnected();
 
   void SetNeedsPrePaintSubtreeWalk(
       bool needs_effective_allowed_touch_action_update) {
@@ -196,14 +251,25 @@ class CORE_EXPORT DisplayLockContext final
     needs_prepaint_subtree_walk_ = true;
   }
 
-  LayoutUnit GetLockedContentLogicalWidth() const {
-    return is_horizontal_writing_mode_ ? locked_content_logical_size_.Width()
-                                       : locked_content_logical_size_.Height();
+  void SetMethod(DisplayLockContextCreateMethod method) { method_ = method; }
+  DisplayLockContextCreateMethod GetMethod() const {
+    DCHECK(method_ != DisplayLockContextCreateMethod::kUnknown);
+    return method_;
   }
-  LayoutUnit GetLockedContentLogicalHeight() const {
-    return is_horizontal_writing_mode_ ? locked_content_logical_size_.Height()
-                                       : locked_content_logical_size_.Width();
+
+  // Note that this returns true if there is no context at all, so in order to
+  // check whether this is strictly an attribute version, as opposed to a null
+  // context, one needs to compare context with nullptr first.
+  static bool IsAttributeVersion(DisplayLockContext* context) {
+    return !context ||
+           context->GetMethod() == DisplayLockContextCreateMethod::kAttribute;
   }
+
+  // This is called by the style recalc code in lieu of
+  // MarkForStyleRecalcIfNeeded() in order to adjust the child change if we need
+  // to recalc children nodes here.
+  StyleRecalcChange AdjustStyleRecalcChangeForChildren(
+      StyleRecalcChange change);
 
  private:
   friend class DisplayLockContextTest;
@@ -242,6 +308,7 @@ class CORE_EXPORT DisplayLockContext final
   bool MarkForLayoutIfNeeded();
   bool MarkAncestorsForPrePaintIfNeeded();
   bool MarkPaintLayerNeedsRepaint();
+  bool MarkForCompositingUpdatesIfNeeded();
 
   bool IsElementDirtyForStyleRecalc() const;
   bool IsElementDirtyForLayout() const;
@@ -262,22 +329,11 @@ class CORE_EXPORT DisplayLockContext final
   // frame.
   void ScheduleAnimation();
 
-  // Timeout implementation. When the lock is acquired, we kick off a timeout
-  // task that will trigger a commit (which can be canceled by other calls to
-  // schedule or by a call to commit). Note that calling RescheduleTimeoutTask()
-  // will cancel any previously scheduled task.
-  void RescheduleTimeoutTask(double delay);
-  void CancelTimeoutTask();
-  void TriggerTimeout();
-
   // Helper functions to resolve the update/commit promises.
   enum ResolverState { kResolve, kReject, kDetach };
   void MakeResolver(ScriptState*, Member<ScriptPromiseResolver>*);
   bool HasResolver();
   void FinishUpdateResolver(ResolverState, const char* reject_reason = nullptr);
-  void FinishCommitResolver(ResolverState, const char* reject_reason = nullptr);
-  void FinishAcquireResolver(ResolverState,
-                             const char* reject_reason = nullptr);
   void FinishResolver(Member<ScriptPromiseResolver>*,
                       ResolverState,
                       const char* reject_reason);
@@ -305,11 +361,19 @@ class CORE_EXPORT DisplayLockContext final
   // promises if the lock is not connected to the tree.
   bool CleanupAndRejectCommitIfNotConnected();
 
+  // Registers or unregisters the element for intersection observations in the
+  // document. This is used to activate on visibily changes. This can be safely
+  // called even if changes are not required, since it will only act if a
+  // register/unregister is required.
+  void UpdateActivationObservationIfNeeded();
+
+  // This function is called from within a task to fire the activation event.
+  // Scheduled by CommitForActivationWithSignal.
+  void FireActivationEvent(Element* activated_element);
+
   std::unique_ptr<DisplayLockBudget> update_budget_;
 
-  Member<ScriptPromiseResolver> commit_resolver_;
   Member<ScriptPromiseResolver> update_resolver_;
-  Member<ScriptPromiseResolver> acquire_resolver_;
   WeakMember<Element> element_;
   WeakMember<Document> document_;
 
@@ -323,12 +387,9 @@ class CORE_EXPORT DisplayLockContext final
   HeapHashSet<Member<Element>> whitespace_reattach_set_;
 
   StateChangeHelper state_;
-  LayoutSize locked_content_logical_size_;
 
   bool update_forced_ = false;
-  bool activatable_ = false;
 
-  bool is_locked_after_connect_ = false;
   StyleType blocked_style_traversal_type_ = kStyleUpdateNotRequired;
   // Signifies whether we've blocked a layout tree reattachment on |element_|'s
   // descendants or not, so that we can mark |element_| for reattachment when
@@ -339,13 +400,27 @@ class CORE_EXPORT DisplayLockContext final
   bool needs_prepaint_subtree_walk_ = false;
   bool is_horizontal_writing_mode_ = true;
   bool needs_graphics_layer_collection_ = false;
+  bool needs_compositing_requirements_update_ = false;
+
   // Will be true if child traversal was blocked on a previous layout run on the
   // locked element. We need to keep track of this to ensure that on the next
   // layout run where the descendants of the locked element are allowed to be
   // traversed into, we will traverse to the children of the locked element.
   bool child_layout_was_blocked_ = false;
 
-  TaskHandle timeout_task_handle_;
+  // Tracks whether the element associated with this lock is being tracked by a
+  // document level intersection observer.
+  bool is_observed_ = false;
+
+  uint16_t activatable_mask_ =
+      static_cast<uint16_t>(DisplayLockActivationReason::kAny);
+
+  bool is_activated_ = false;
+
+  DisplayLockContextCreateMethod method_ =
+      DisplayLockContextCreateMethod::kUnknown;
+
+  base::WeakPtrFactory<DisplayLockContext> weak_factory_{this};
 };
 
 }  // namespace blink

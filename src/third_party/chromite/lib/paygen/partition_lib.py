@@ -13,6 +13,7 @@ import tempfile
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
+from chromite.lib import image_lib
 from chromite.lib import path_util
 
 from chromite.lib.paygen import filelib
@@ -30,7 +31,7 @@ def ExtractPartition(filename, partition, out_part):
     partition: The partition name. e.g. ROOT or KERNEL.
     out_part: The output partition file.
   """
-  parts = cros_build_lib.GetImageDiskPartitionInfo(filename)
+  parts = image_lib.GetImageDiskPartitionInfo(filename)
   part_info = [p for p in parts if p.name == partition][0]
 
   offset = int(part_info.start)
@@ -46,8 +47,8 @@ def Ext2FileSystemSize(ext2_file):
     ext2_file: The path to the ext2 file.
   """
   # dumpe2fs is normally installed in /sbin but doesn't require root.
-  dump = cros_build_lib.RunCommand(['/sbin/dumpe2fs', '-h', ext2_file],
-                                   print_cmd=False, capture_output=True).output
+  dump = cros_build_lib.run(['/sbin/dumpe2fs', '-h', ext2_file],
+                            print_cmd=False, capture_output=True).output
   fs_blocks = 0
   fs_blocksize = 0
   for line in dump.split('\n'):
@@ -73,7 +74,7 @@ def PatchKernel(image, kern_file):
   with tempfile.NamedTemporaryFile(prefix='stateful') as state_out, \
        tempfile.NamedTemporaryFile(prefix='vmlinuz_hd.vblock') as vblock:
     ExtractPartition(image, constants.PART_STATE, state_out)
-    cros_build_lib.RunCommand(
+    cros_build_lib.run(
         ['e2cp', '%s:/vmlinuz_hd.vblock' % state_out, vblock])
     filelib.CopyFileSegment(
         vblock, 'r', os.path.getsize(vblock), kern_file, 'r+')
@@ -122,7 +123,7 @@ def IsSquashfsImage(image):
   """Returns true if the image is detected to be Squashfs."""
   try:
     # -s: Display file system superblock.
-    cros_build_lib.RunCommand(
+    cros_build_lib.run(
         ['unsquashfs', '-s', path_util.ToChrootPath(image)],
         redirect_stdout=True,
         enter_chroot=True)
@@ -135,7 +136,7 @@ def IsExt4Image(image):
   """Returns true if the image is detected to be ext2/ext3/ext4."""
   try:
     # -l: Listing the content of the superblock structure.
-    cros_build_lib.SudoRunCommand(
+    cros_build_lib.sudo_run(
         ['tune2fs', '-l', path_util.ToChrootPath(image)], redirect_stdout=True,
         enter_chroot=True)
     return True
@@ -146,7 +147,7 @@ def IsExt4Image(image):
 def IsGptImage(image):
   """Returns true if the image is a GPT image."""
   try:
-    return bool(cros_build_lib.GetImageDiskPartitionInfo(image))
+    return bool(image_lib.GetImageDiskPartitionInfo(image))
   except cros_build_lib.RunCommandError:
     return False
 

@@ -9,21 +9,25 @@ from __future__ import print_function
 
 import collections
 import contextlib
-import cStringIO
 import ctypes
 import ctypes.util
 import datetime
 import errno
 import glob
+import hashlib
 import os
 import pwd
 import re
 import shutil
+import stat
 import tempfile
+
+import six
 
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import retry_util
+from chromite.utils import key_value_store
 
 
 # Env vars that tempdir can be gotten from; minimally, this
@@ -64,8 +68,8 @@ def IsChildProcess(pid, name=None):
     an incorrect match might be possible.
   """
   cmd = ['pstree', '-Ap', str(os.getpid())]
-  pstree = cros_build_lib.RunCommand(
-      cmd, capture_output=True, print_cmd=False).output
+  pstree = cros_build_lib.run(cmd, capture_output=True, print_cmd=False,
+                              encoding='utf-8').stdout
   if name is None:
     match = '(%d)' % pid
   else:
@@ -102,42 +106,80 @@ def AllocateFile(path, size, makedirs=False):
     out.truncate(size)
 
 
-def WriteFile(path, content, mode='w', atomic=False, makedirs=False,
-              sudo=False):
+# All the modes that we allow people to pass to WriteFile.  This allows us to
+# make assumptions about the input so we can update it if needed.
+_VALID_WRITE_MODES = {
+    # Read & write, but no truncation, and file offset is 0.
+    'r+', 'r+b',
+    # Writing (and maybe reading) with truncation.
+    'w', 'wb', 'w+', 'w+b',
+    # Writing (and maybe reading), but no truncation, and file offset is at end.
+    'a', 'ab', 'a+', 'a+b',
+}
+
+
+def WriteFile(path, content, mode='w', encoding=None, errors=None, atomic=False,
+              makedirs=False, sudo=False):
   """Write the given content to disk.
 
   Args:
     path: Pathway to write the content to.
     content: Content to write.  May be either an iterable, or a string.
-    mode: Optional; if binary mode is necessary, pass 'wb'.  If appending is
-          desired, 'w+', etc.
+    mode: The mode to use when opening the file.  'w' is for text files (see the
+      following settings) and 'wb' is for binary files.  If appending, pass
+      'w+', etc...
+    encoding: The encoding of the file content.  Text files default to 'utf-8'.
+    errors: How to handle encoding errors.  Text files default to 'strict'.
     atomic: If the updating of the file should be done atomically.  Note this
             option is incompatible w/ append mode.
     makedirs: If True, create missing leading directories in the path.
     sudo: If True, write the file as root.
   """
+  if mode not in _VALID_WRITE_MODES:
+    raise ValueError('mode must be one of {"%s"}, not %r' %
+                     ('", "'.join(sorted(_VALID_WRITE_MODES)), mode))
+
   if sudo and ('a' in mode or '+' in mode):
     raise ValueError('append mode does not work in sudo mode')
 
+  if 'b' in mode:
+    if encoding is not None or errors is not None:
+      raise ValueError('binary mode does not use encoding/errors')
+  else:
+    if encoding is None:
+      encoding = 'utf-8'
+    if errors is None:
+      errors = 'strict'
+
   if makedirs:
     SafeMakedirs(os.path.dirname(path), sudo=sudo)
+
+  # TODO(vapier): We can merge encoding/errors into the open call once we are
+  # Python 3 only.  Until then, we have to handle it ourselves.
+  if 'b' in mode:
+    write_wrapper = lambda x: x
+  else:
+    mode += 'b'
+    def write_wrapper(iterable):
+      for item in iterable:
+        yield item.encode(encoding, errors)
 
   # If the file needs to be written as root and we are not root, write to a temp
   # file, move it and change the permission.
   if sudo and os.getuid() != 0:
     with tempfile.NamedTemporaryFile(mode=mode, delete=False) as temp:
       write_path = temp.name
-      temp.writelines(cros_build_lib.iflatten_instance(content))
+      temp.writelines(write_wrapper(cros_build_lib.iflatten_instance(content)))
     os.chmod(write_path, 0o644)
 
     try:
       mv_target = path if not atomic else path + '.tmp'
-      cros_build_lib.SudoRunCommand(['mv', write_path, mv_target],
-                                    print_cmd=False, redirect_stderr=True)
+      cros_build_lib.sudo_run(['mv', write_path, mv_target],
+                              print_cmd=False, redirect_stderr=True)
       Chown(mv_target, user='root', group='root')
       if atomic:
-        cros_build_lib.SudoRunCommand(['mv', mv_target, path],
-                                      print_cmd=False, redirect_stderr=True)
+        cros_build_lib.sudo_run(['mv', mv_target, path],
+                                print_cmd=False, redirect_stderr=True)
 
     except cros_build_lib.RunCommandError:
       SafeUnlink(write_path)
@@ -150,7 +192,7 @@ def WriteFile(path, content, mode='w', atomic=False, makedirs=False,
     if atomic:
       write_path = path + '.tmp'
     with open(write_path, mode) as f:
-      f.writelines(cros_build_lib.iflatten_instance(content))
+      f.writelines(write_wrapper(cros_build_lib.iflatten_instance(content)))
 
     if not atomic:
       return
@@ -182,7 +224,7 @@ def Touch(path, makedirs=False, mode=None):
   os.utime(path, None)
 
 
-def Chown(path, user=None, group=None):
+def Chown(path, user=None, group=None, recursive=False):
   """Simple sudo chown path to the user.
 
   Defaults to user running command. Does nothing if run as root user unless
@@ -192,6 +234,7 @@ def Chown(path, user=None, group=None):
     path: str - File/directory to chown.
     user: str|int|None - User to chown the file to. Defaults to current user.
     group: str|int|None - Group to assign the file to.
+    recursive: Also chown child files/directories recursively.
   """
   if user is None:
     user = GetNonRootUser() or ''
@@ -201,15 +244,62 @@ def Chown(path, user=None, group=None):
   group = '' if group is None else str(group)
 
   if user or group:
-    owner = '%s:%s' % (user, group)
-    cros_build_lib.SudoRunCommand(['chown', owner, path], print_cmd=False,
-                                  redirect_stderr=True, redirect_stdout=True)
+    cmd = ['chown']
+    if recursive:
+      cmd += ['-R']
+    cmd += ['%s:%s' % (user, group), path]
+    cros_build_lib.sudo_run(cmd, print_cmd=False,
+                            redirect_stderr=True, redirect_stdout=True)
 
 
-def ReadFile(path, mode='r'):
-  """Read a given file on disk.  Primarily useful for one off small files."""
-  with open(path, mode) as f:
-    return f.read()
+def ReadFile(path, mode='r', encoding=None, errors=None):
+  """Read a given file on disk.  Primarily useful for one off small files.
+
+  The defaults are geared towards reading UTF-8 encoded text.
+
+  Args:
+    path: The file to read.
+    mode: The mode to use when opening the file.  'r' is for text files (see the
+      following settings) and 'rb' is for binary files.
+    encoding: The encoding of the file content.  Text files default to 'utf-8'.
+    errors: How to handle encoding errors.  Text files default to 'strict'.
+
+  Returns:
+    The content of the file, either as bytes or a string (with the specified
+    encoding).
+  """
+  if mode not in ('r', 'rb'):
+    raise ValueError('mode may only be "r" or "rb", not %r' % (mode,))
+
+  if 'b' in mode:
+    if encoding is not None or errors is not None:
+      raise ValueError('binary mode does not use encoding/errors')
+  else:
+    if encoding is None:
+      encoding = 'utf-8'
+    if errors is None:
+      errors = 'strict'
+
+  with open(path, 'rb') as f:
+    # TODO(vapier): We can merge encoding/errors into the open call once we are
+    # Python 3 only.  Until then, we have to handle it ourselves.
+    ret = f.read()
+    if 'b' not in mode:
+      ret = ret.decode(encoding, errors)
+    return ret
+
+
+def MD5HashFile(path):
+  """Calculate the md5 hash of a given file path.
+
+  Args:
+    path: The path of the file to hash.
+
+  Returns:
+    The hex digest of the md5 hash of the file.
+  """
+  contents = ReadFile(path, mode='rb')
+  return hashlib.md5(contents).hexdigest()
 
 
 def SafeSymlink(source, dest, sudo=False):
@@ -224,8 +314,8 @@ def SafeSymlink(source, dest, sudo=False):
     sudo: If True, create the link as root.
   """
   if sudo and os.getuid() != 0:
-    cros_build_lib.SudoRunCommand(['ln', '-sfT', source, dest],
-                                  print_cmd=False, redirect_stderr=True)
+    cros_build_lib.sudo_run(['ln', '-sfT', source, dest],
+                            print_cmd=False, redirect_stderr=True)
   else:
     SafeUnlink(dest)
     os.symlink(source, dest)
@@ -239,7 +329,7 @@ def SafeUnlink(path, sudo=False):
   """
   if sudo:
     try:
-      cros_build_lib.SudoRunCommand(
+      cros_build_lib.sudo_run(
           ['rm', '--', path], print_cmd=False, redirect_stderr=True)
       return True
     except cros_build_lib.RunCommandError:
@@ -271,23 +361,38 @@ def SafeMakedirs(path, mode=0o775, sudo=False, user='root'):
 
   Raises:
     EnvironmentError: If the makedir failed.
-    RunCommandError: If using RunCommand and the command failed for any reason.
+    RunCommandError: If using run and the command failed for any reason.
   """
   if sudo and not (os.getuid() == 0 and user == 'root'):
     if os.path.isdir(path):
       return False
-    cros_build_lib.SudoRunCommand(
-        ['mkdir', '-p', '--mode', oct(mode), path], user=user, print_cmd=False,
-        redirect_stderr=True, redirect_stdout=True)
+    cros_build_lib.sudo_run(
+        ['mkdir', '-p', '--mode', '%o' % mode, path], user=user,
+        print_cmd=False, redirect_stderr=True, redirect_stdout=True)
+    cros_build_lib.sudo_run(
+        ['chmod', '%o' % mode, path],
+        print_cmd=False, redirect_stderr=True, redirect_stdout=True)
     return True
 
   try:
     os.makedirs(path, mode)
+    # If we made the directory, force the mode.
+    os.chmod(path, mode)
     return True
   except EnvironmentError as e:
     if e.errno != errno.EEXIST or not os.path.isdir(path):
       raise
 
+  # If the mode on the directory does not match the request, log it.
+  # It is the callers responsibility to coordinate mode values if there is a
+  # need for that.
+  if stat.S_IMODE(os.stat(path).st_mode) != mode:
+    try:
+      os.chmod(path, mode)
+    except EnvironmentError:
+      # Just make sure it's a directory.
+      if not os.path.isdir(path):
+        raise
   return False
 
 
@@ -332,7 +437,7 @@ class BadPathsException(Exception):
   """Raised by various osutils path manipulation functions on bad input."""
 
 
-def CopyDirContents(from_dir, to_dir, symlink=False, allow_nonempty=False):
+def CopyDirContents(from_dir, to_dir, symlinks=False, allow_nonempty=False):
   """Copy contents of from_dir to to_dir. Both should exist.
 
   shutil.copytree allows one to copy a rooted directory tree along with the
@@ -360,7 +465,9 @@ def CopyDirContents(from_dir, to_dir, symlink=False, allow_nonempty=False):
   Args:
     from_dir: The directory whose contents should be copied. Must exist.
     to_dir: The directory to which contents should be copied. Must exist.
-    symlink: Whether symlinks should be copied.
+    symlinks: Whether symlinks should be copied or dereferenced. When True, all
+        symlinks will be copied as symlinks into the destination. When False,
+        the symlinks will be dereferenced and the contents copied over.
     allow_nonempty: If True, do not die when to_dir is nonempty.
 
   Raises:
@@ -378,10 +485,10 @@ def CopyDirContents(from_dir, to_dir, symlink=False, allow_nonempty=False):
   for name in os.listdir(from_dir):
     from_path = os.path.join(from_dir, name)
     to_path = os.path.join(to_dir, name)
-    if os.path.isdir(from_path):
-      shutil.copytree(from_path, to_path)
-    elif symlink and os.path.islink(from_path):
+    if symlinks and os.path.islink(from_path):
       os.symlink(os.readlink(from_path), to_path)
+    elif os.path.isdir(from_path):
+      shutil.copytree(from_path, to_path, symlinks=symlinks)
     elif os.path.isfile(from_path):
       shutil.copy2(from_path, to_path)
 
@@ -396,7 +503,7 @@ def RmDir(path, ignore_missing=False, sudo=False):
   """
   if sudo:
     try:
-      cros_build_lib.SudoRunCommand(
+      cros_build_lib.sudo_run(
           ['rm', '-r%s' % ('f' if ignore_missing else '',), '--', path],
           debug_level=logging.DEBUG,
           redirect_stdout=True, redirect_stderr=True)
@@ -729,7 +836,7 @@ class TempDir(object):
 
           # Log all mounts at the time of the failure, since that's the most
           # common cause.
-          mount_results = cros_build_lib.RunCommand(
+          mount_results = cros_build_lib.run(
               ['mount'], redirect_stdout=True, combine_stdout_stderr=True,
               error_code_ok=True)
           logging.error('Mounts were:')
@@ -800,7 +907,12 @@ MS_NOUSER = 1 << 31
 def Mount(source, target, fstype, flags, data=''):
   """Call the mount(2) func; see the man page for details."""
   libc = ctypes.CDLL(ctypes.util.find_library('c'), use_errno=True)
-  if libc.mount(source, target, fstype, ctypes.c_int(flags), data) != 0:
+  # These fields might be a string or 0 (for NULL).  Convert to bytes.
+  def _MaybeEncode(s):
+    return s.encode('utf-8') if isinstance(s, six.string_types) else s
+  if libc.mount(_MaybeEncode(source), _MaybeEncode(target),
+                _MaybeEncode(fstype), ctypes.c_int(flags),
+                _MaybeEncode(data)) != 0:
     e = ctypes.get_errno()
     raise OSError(e, os.strerror(e))
 
@@ -818,12 +930,12 @@ def MountDir(src_path, dst_path, fs_type=None, sudo=True, makedirs=True,
     makedirs: Create |dst_path| if it doesn't exist.
     mount_opts: List of options to pass to `mount`.
     skip_mtab: Whether to write new entries to /etc/mtab.
-    kwargs: Pass all other args to RunCommand.
+    kwargs: Pass all other args to run.
   """
   if sudo:
-    runcmd = cros_build_lib.SudoRunCommand
+    runcmd = cros_build_lib.sudo_run
   else:
-    runcmd = cros_build_lib.RunCommand
+    runcmd = cros_build_lib.run
 
   if makedirs:
     SafeMakedirs(dst_path, sudo=sudo)
@@ -833,7 +945,9 @@ def MountDir(src_path, dst_path, fs_type=None, sudo=True, makedirs=True,
     cmd += ['-n']
   if fs_type:
     cmd += ['-t', fs_type]
-  runcmd(cmd + ['-o', ','.join(mount_opts)], **kwargs)
+  if mount_opts:
+    cmd += ['-o', ','.join(mount_opts)]
+  runcmd(cmd, **kwargs)
 
 
 def MountTmpfsDir(path, name='osutils.tmpfs', size='5G',
@@ -862,14 +976,14 @@ def UmountDir(path, lazy=True, sudo=True, cleanup=True):
              Note: Does not work when |lazy| is set.
   """
   if sudo:
-    runcmd = cros_build_lib.SudoRunCommand
+    runcmd = cros_build_lib.sudo_run
   else:
-    runcmd = cros_build_lib.RunCommand
+    runcmd = cros_build_lib.run
 
   cmd = ['umount', '-d', path]
   if lazy:
     cmd += ['-l']
-  runcmd(cmd, print_cmd=False)
+  runcmd(cmd, debug_level=logging.DEBUG)
 
   if cleanup:
     # We will randomly get EBUSY here even when the umount worked.  Suspect
@@ -950,11 +1064,11 @@ def SourceEnvironment(script, whitelist, ifs=',', env=None, multiline=False):
     env = {}
   elif env is True:
     env = None
-  output = cros_build_lib.RunCommand(['bash'], env=env, redirect_stdout=True,
-                                     redirect_stderr=True, print_cmd=False,
-                                     input='\n'.join(dump_script)).output
-  return cros_build_lib.LoadKeyValueFile(cStringIO.StringIO(output),
-                                         multiline=multiline)
+  output = cros_build_lib.run(['bash'], env=env, redirect_stdout=True,
+                              redirect_stderr=True, print_cmd=False,
+                              encoding='utf-8',
+                              input='\n'.join(dump_script)).output
+  return key_value_store.LoadData(output, multiline=multiline)
 
 
 def ListBlockDevices(device_path=None, in_bytes=False):
@@ -979,10 +1093,9 @@ def ListBlockDevices(device_path=None, in_bytes=False):
     cmd.append(device_path)
 
   cmd += ['--output', ','.join(keys)]
-  output = cros_build_lib.RunCommand(
-      cmd, debug_level=logging.DEBUG, capture_output=True).output.strip()
+  result = cros_build_lib.dbg_run(cmd, capture_output=True, encoding='utf-8')
   devices = []
-  for line in output.splitlines():
+  for line in result.stdout.strip().splitlines():
     d = {}
     for k, v in re.findall(r'(\S+?)=\"(.+?)\"', line):
       d[k] = v
@@ -1055,12 +1168,12 @@ def StatFilesInDirectory(path, recursive=False, to_string=False):
     returns a string of metadata of the files.
   """
   path = ExpandPath(path)
-  def ToFileInfo(path, stat):
+  def ToFileInfo(path, stat_val):
     return FileInfo(path,
-                    pwd.getpwuid(stat.st_uid)[0],
-                    stat.st_size,
-                    datetime.datetime.fromtimestamp(stat.st_atime),
-                    datetime.datetime.fromtimestamp(stat.st_mtime))
+                    pwd.getpwuid(stat_val.st_uid)[0],
+                    stat_val.st_size,
+                    datetime.datetime.fromtimestamp(stat_val.st_atime),
+                    datetime.datetime.fromtimestamp(stat_val.st_mtime))
 
   file_infos = []
   for root, dirs, files in os.walk(path, topdown=True):
@@ -1083,48 +1196,6 @@ def StatFilesInDirectory(path, recursive=False, to_string=False):
   return msg
 
 
-def MountImagePartition(image_file, part_id, destination, gpt_table=None,
-                        sudo=True, makedirs=True, mount_opts=('ro', ),
-                        skip_mtab=False):
-  """Mount a |partition| from |image_file| to |destination|.
-
-  If there is a GPT table (GetImageDiskPartitionInfo), it will be used for
-  start offset and size of the selected partition. Otherwise, the GPT will
-  be read again from |image_file|.
-
-  The mount option will be:
-
-    -o offset=XXX,sizelimit=YYY,(*mount_opts)
-
-  Args:
-    image_file: A path to the image file (chromiumos_base_image.bin).
-    part_id: A partition name or number.
-    destination: A path to the mount point.
-    gpt_table: A list of PartitionInfo objects. See
-      cros_build_lib.GetImageDiskPartitionInfo.
-    sudo: Same as MountDir.
-    makedirs: Same as MountDir.
-    mount_opts: Same as MountDir.
-    skip_mtab: Same as MountDir.
-  """
-
-  if gpt_table is None:
-    gpt_table = cros_build_lib.GetImageDiskPartitionInfo(image_file)
-
-  for part in gpt_table:
-    if part_id == part.name or part_id == part.number:
-      break
-  else:
-    part = None
-    raise ValueError('Partition number %s not found in the GPT %r.' %
-                     (part_id, gpt_table))
-
-  opts = ['loop', 'offset=%d' % part.start, 'sizelimit=%d' % part.size]
-  opts += mount_opts
-  MountDir(image_file, destination, sudo=sudo, makedirs=makedirs,
-           mount_opts=opts, skip_mtab=skip_mtab)
-
-
 @contextlib.contextmanager
 def ChdirContext(target_dir):
   """A context manager to chdir() into |target_dir| and back out on exit.
@@ -1139,137 +1210,6 @@ def ChdirContext(target_dir):
     yield
   finally:
     os.chdir(cwd)
-
-
-class MountImageContext(object):
-  """A context manager to mount an image."""
-
-  # TODO(lamontjones): convert all users of this class to
-  # image_lib.LoopbackPartitions and remove this class.
-  def __init__(self, image_file, destination, part_selects=(1, 3),
-               mount_opts=('ro',)):
-    """Construct a context manager object to actually do the job.
-
-    This class is deprecated.  Please use image_lib.LoopbackPartition, which
-    implements a superset of this class.  This class will be removed soon.
-
-    Specified partitions will be mounted under |destination| according to the
-    pattern:
-
-      partition ---mount--> dir-<partition number>
-
-    Symlinks with labels "dir-<label>" will also be created in |destination| to
-    point to the mounted partitions. If there is a conflict in symlinks, the
-    first one wins.
-
-    The image is unmounted when this context manager exits.
-
-      with MountImageContext('build/images/wolf/latest', 'root_mount_point'):
-        # "dir-1", and "dir-3" will be mounted in root_mount_point
-        ...
-
-    Args:
-      image_file: A path to the image file.
-      destination: A directory in which all mount points and symlinks will be
-        created. This parameter is relative to the CWD at the time __init__ is
-        called.
-      part_selects: A list of partition numbers or labels to be mounted. If an
-        element is an integer, it is matched as partition number, otherwise
-        a partition label.
-      mount_opts: Tuple of options to mount with.
-    """
-    self._image_file = image_file
-    self._gpt_table = cros_build_lib.GetImageDiskPartitionInfo(self._image_file)
-    # Target dir is absolute path so that we do not have to worry about
-    # CWD being changed later.
-    self._target_dir = ExpandPath(destination)
-    self._part_selects = part_selects
-    self._mount_opts = mount_opts
-    self._mounted = set()
-    self._linked_labels = set()
-
-  def _GetMountPointAndSymlink(self, part):
-    """Given a PartitionInfo, return a tuple of mount point and symlink.
-
-    Args:
-      part: A PartitionInfo object.
-
-    Returns:
-      A tuple (mount_point, symlink).
-    """
-    dest_number = os.path.join(self._target_dir, 'dir-%d' % part.number)
-    dest_label = os.path.join(self._target_dir, 'dir-%s' % part.name)
-    return dest_number, dest_label
-
-  def _Mount(self, part):
-    """Mount the partition and create a symlink to the mount point.
-
-    The partition is mounted as "dir-partNumber", and the symlink "dir-label".
-    If "dir-label" already exists, no symlink is created.
-
-    Args:
-      part: A PartitionInfo object.
-
-    Raises:
-      ValueError if mount point already exists.
-    """
-    if part in self._mounted:
-      return
-
-    dest_number, dest_label = self._GetMountPointAndSymlink(part)
-    if os.path.exists(dest_number):
-      raise ValueError('Mount point %s already exists.' % dest_number)
-
-    MountImagePartition(self._image_file, part.number, dest_number,
-                        self._gpt_table, mount_opts=self._mount_opts)
-    self._mounted.add(part)
-
-    if not os.path.exists(dest_label):
-      os.symlink(os.path.basename(dest_number), dest_label)
-      self._linked_labels.add(dest_label)
-
-  def _Unmount(self, part):
-    """Unmount a partition that was mounted by _Mount."""
-    dest_number, dest_label = self._GetMountPointAndSymlink(part)
-    # Due to crosbug/358933, the RmDir call might fail. So we skip the cleanup.
-    UmountDir(dest_number, cleanup=False)
-    self._mounted.remove(part)
-
-    if dest_label in self._linked_labels:
-      SafeUnlink(dest_label)
-      self._linked_labels.remove(dest_label)
-
-  def _CleanUp(self):
-    """Unmount all mounted partitions."""
-    to_be_rmdir = []
-    for part in list(self._mounted):
-      self._Unmount(part)
-      dest_number, _ = self._GetMountPointAndSymlink(part)
-      to_be_rmdir.append(dest_number)
-    # Because _Unmount did not RmDir the mount points, we do that here.
-    for path in to_be_rmdir:
-      retry_util.RetryException(cros_build_lib.RunCommandError, 60,
-                                RmDir, path, sudo=True, sleep=1)
-
-  def __enter__(self):
-    for selector in self._part_selects:
-      for part in self._gpt_table:
-        if selector == part.name or selector == part.number:
-          try:
-            self._Mount(part)
-          except:
-            self._CleanUp()
-            raise
-          break
-      else:
-        self._CleanUp()
-        raise ValueError('Partition %r not found in the GPT %r.' %
-                         (selector, self._gpt_table))
-
-    return self
-
-  def __exit__(self, exc_type, exc_value, traceback):
-    self._CleanUp()
 
 
 def _SameFileSystem(path1, path2):
@@ -1288,19 +1228,21 @@ class MountOverlayContext(object):
 
   An overlay filesystem will be mounted at |mount_dir|, and will be unmounted
   when the context exits.
-
-  Args:
-    lower_dir: The lower directory (read-only).
-    upper_dir: The upper directory (read-write).
-    mount_dir: The mount point for the merged overlay.
-    cleanup: Whether to remove the mount point after unmounting. This uses an
-        internal retry logic for cases where unmount is successful but the
-        directory still appears busy, and is generally more resilient than
-        removing it independently.
   """
 
   OVERLAY_FS_MOUNT_ERRORS = (32,)
   def __init__(self, lower_dir, upper_dir, mount_dir, cleanup=False):
+    """Initialize.
+
+    Args:
+      lower_dir: The lower directory (read-only).
+      upper_dir: The upper directory (read-write).
+      mount_dir: The mount point for the merged overlay.
+      cleanup: Whether to remove the mount point after unmounting. This uses an
+          internal retry logic for cases where unmount is successful but the
+          directory still appears busy, and is generally more resilient than
+          removing it independently.
+    """
     self._lower_dir = lower_dir
     self._upper_dir = upper_dir
     self._mount_dir = mount_dir

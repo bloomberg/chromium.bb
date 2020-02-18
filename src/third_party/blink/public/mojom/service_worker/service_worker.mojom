@@ -12,7 +12,6 @@ import "services/network/public/mojom/url_loader_factory.mojom";
 import "third_party/blink/public/mojom/background_fetch/background_fetch.mojom";
 import "third_party/blink/public/mojom/devtools/console_message.mojom";
 import "third_party/blink/public/mojom/fetch/fetch_api_response.mojom";
-import "third_party/blink/public/mojom/loader/url_loader_factory_bundle.mojom";
 import "third_party/blink/public/mojom/messaging/transferable_message.mojom";
 import "third_party/blink/public/mojom/notifications/notification.mojom";
 import "third_party/blink/public/mojom/payments/payment_app.mojom";
@@ -168,11 +167,13 @@ interface ServiceWorker {
   // ServiceWorker is the first interface available on the
   // service worker thread. It establishes the |service_worker_host| connection
   // and passes information used to populate
-  // ServiceWorkerGlobalScope#registration object. JavaScript execution of the
+  // ServiceWorkerGlobalScope#registration object and
+  // ServiceWorkerGlobalScope#serviceWorker object. JavaScript execution of the
   // service worker does not start until this message is received.
   InitializeGlobalScope(
       pending_associated_remote<ServiceWorkerHost> service_worker_host,
       ServiceWorkerRegistrationObjectInfo registration_info,
+      ServiceWorkerObjectInfo service_worker_info,
       FetchHandlerExistence fetch_handler_existence);
 
   DispatchInstallEvent()
@@ -202,9 +203,7 @@ interface ServiceWorker {
   // https://github.com/WICG/cookie-store/
   // The callback is called once the event handler has run and the waitUntil()
   // promise has settled.
-  DispatchCookieChangeEvent(
-      network.mojom.CanonicalCookie cookie,
-      network.mojom.CookieChangeCause cause)
+  DispatchCookieChangeEvent(network.mojom.CookieChangeInfo change)
       => (ServiceWorkerEventStatus status);
 
   // The Dispatch*FetchEvent() callback is called once the event finishes,
@@ -268,12 +267,6 @@ interface ServiceWorker {
   // Ref: https://github.com/rknoll/content-index
   DispatchContentDeleteEvent(string id) => (ServiceWorkerEventStatus status);
 
-  // TODO(crbug.com/869714): Remove this code for long living service workers
-  // when Android Messages no longer requires it.
-  DispatchExtendableMessageEventWithCustomTimeout(ExtendableMessageEvent event,
-                                 mojo_base.mojom.TimeDelta timeout)
-      => (ServiceWorkerEventStatus status);
-
   // Pings the service worker to check if it is responsive. If the callback is
   // not called within a certain period of time, the browser will terminate the
   // worker.
@@ -285,21 +278,4 @@ interface ServiceWorker {
 
   // Adds a message to DevTools console which is associated with this worker.
   AddMessageToConsole(ConsoleMessageLevel level, string message);
-};
-
-// This is another interface for talking to a running service worker in
-// addition to the ServiceWorker interface defined above. The reason we have two
-// interfaces is that implementations of these two interfaces live in different
-// places (one in blink and the other in content). Ideally these two interfaces
-// should be merged but we separate them to avoid cumbersome type conversions
-// between blink and content.
-interface ServiceWorkerSubresourceLoaderUpdater {
-  // Provides the worker an updated |subresource_loader_factories|.
-  //
-  // Pushes updated set of subresource URL loader factories to the worker
-  // (for example, after DevTools network interception has been enabled).
-  // Note this does not affect the script loader factory, whose
-  // implementation lives in the browser and may be updated there.
-  UpdateSubresourceLoaderFactories(
-      URLLoaderFactoryBundle subresource_loader_factories);
 };

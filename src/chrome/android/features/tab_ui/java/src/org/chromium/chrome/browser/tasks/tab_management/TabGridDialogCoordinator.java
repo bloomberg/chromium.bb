@@ -6,12 +6,14 @@ package org.chromium.chrome.browser.tasks.tab_management;
 
 import android.content.Context;
 import android.graphics.Rect;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.view.ViewGroup;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
+import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
@@ -26,39 +28,48 @@ import java.util.List;
  */
 public class TabGridDialogCoordinator implements TabGridDialogMediator.DialogController {
     private final String mComponentName;
-    private final Context mContext;
     private final TabListCoordinator mTabListCoordinator;
     private final TabGridDialogMediator mMediator;
     private final PropertyModel mToolbarPropertyModel;
-    private final TabGridSheetToolbarCoordinator mToolbarCoordinator;
-    private TabGridDialogParent mParentLayout;
+    private final TabGridPanelToolbarCoordinator mToolbarCoordinator;
+    private final TabSelectionEditorCoordinator mTabSelectionEditorCoordinator;
+    private final TabGridDialogParent mParentLayout;
 
     TabGridDialogCoordinator(Context context, TabModelSelector tabModelSelector,
             TabContentManager tabContentManager, TabCreatorManager tabCreatorManager,
             ViewGroup containerView, TabSwitcherMediator.ResetHandler resetHandler,
             TabListMediator.GridCardOnClickListenerProvider gridCardOnClickListenerProvider,
-            TabGridDialogMediator.AnimationParamsProvider animationParamsProvider) {
-        mContext = context;
+            TabGridDialogMediator.AnimationSourceViewProvider animationSourceViewProvider,
+            TabGroupTitleEditor tabGroupTitleEditor) {
+        mComponentName = animationSourceViewProvider == null ? "TabGridDialogFromStrip"
+                                                             : "TabGridDialogInSwitcher";
 
-        mComponentName = animationParamsProvider == null ? "TabGridDialogFromStrip"
-                                                         : "TabGridDialogInSwitcher";
+        mToolbarPropertyModel = new PropertyModel(TabGridPanelProperties.ALL_KEYS);
 
-        mToolbarPropertyModel = new PropertyModel(TabGridSheetProperties.ALL_KEYS);
+        mParentLayout = new TabGridDialogParent(context, containerView);
 
-        mMediator =
-                new TabGridDialogMediator(context, this, mToolbarPropertyModel, tabModelSelector,
-                        tabCreatorManager, resetHandler, animationParamsProvider, mComponentName);
+        TabSelectionEditorCoordinator.TabSelectionEditorController controller = null;
+        if (FeatureUtilities.isTabGroupsAndroidContinuationEnabled()) {
+            mTabSelectionEditorCoordinator = new TabSelectionEditorCoordinator(
+                    context, containerView, tabModelSelector, tabContentManager, mParentLayout);
+
+            controller = mTabSelectionEditorCoordinator.getController();
+        } else {
+            mTabSelectionEditorCoordinator = null;
+        }
+
+        mMediator = new TabGridDialogMediator(context, this, mToolbarPropertyModel,
+                tabModelSelector, tabCreatorManager, resetHandler, animationSourceViewProvider,
+                controller, tabGroupTitleEditor, mComponentName);
 
         mTabListCoordinator = new TabListCoordinator(TabListCoordinator.TabListMode.GRID, context,
                 tabModelSelector, tabContentManager::getTabThumbnailWithCallback, null, false, null,
                 gridCardOnClickListenerProvider, mMediator.getTabGridDialogHandler(),
                 TabProperties.UiType.CLOSABLE, null, containerView, null, false, mComponentName);
 
-        mParentLayout = new TabGridDialogParent(context, containerView);
-
         TabListRecyclerView recyclerView = mTabListCoordinator.getContainerView();
-        mToolbarCoordinator = new TabGridSheetToolbarCoordinator(
-                mContext, recyclerView, mToolbarPropertyModel, mParentLayout);
+        mToolbarCoordinator = new TabGridPanelToolbarCoordinator(
+                context, recyclerView, mToolbarPropertyModel, mParentLayout);
     }
 
     /**
@@ -69,6 +80,9 @@ public class TabGridDialogCoordinator implements TabGridDialogMediator.DialogCon
         mMediator.destroy();
         mToolbarCoordinator.destroy();
         mParentLayout.destroy();
+        if (mTabSelectionEditorCoordinator != null) {
+            mTabSelectionEditorCoordinator.destroy();
+        }
         if (mToolbarCoordinator != null) {
             mToolbarCoordinator.destroy();
         }

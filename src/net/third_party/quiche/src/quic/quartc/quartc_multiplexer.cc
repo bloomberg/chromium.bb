@@ -5,11 +5,11 @@
 #include "net/third_party/quiche/src/quic/quartc/quartc_multiplexer.h"
 
 #include <cstdint>
+#include <utility>
 
 #include "net/third_party/quiche/src/quic/core/quic_data_writer.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_mem_slice.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_mem_slice_span.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_ptr_util.h"
 
 namespace quic {
 
@@ -114,7 +114,7 @@ QuartcMultiplexer::QuartcMultiplexer(
 QuartcSendChannel* QuartcMultiplexer::CreateSendChannel(
     uint64_t channel_id,
     QuartcSendChannel::Delegate* delegate) {
-  send_channels_.push_back(QuicMakeUnique<QuartcSendChannel>(
+  send_channels_.push_back(std::make_unique<QuartcSendChannel>(
       this, channel_id, allocator_, delegate));
   if (session_) {
     send_channels_.back()->OnSessionCreated(session_);

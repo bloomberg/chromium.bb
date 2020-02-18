@@ -4,6 +4,7 @@
 
 #include "ash/accelerometer/accelerometer_types.h"
 
+#include "base/numerics/math_constants.h"
 #include "ui/gfx/geometry/vector3d_f.h"
 
 namespace ash {
@@ -12,9 +13,6 @@ namespace {
 // The maximum deviation from the acceleration expected due to gravity for which
 // the device will be considered stable: 1g.
 constexpr float kDeviationFromGravityThreshold = 1.0f;
-
-// The mean acceleration due to gravity on Earth in m/s^2.
-constexpr float kMeanGravity = 9.80665f;
 
 }  // namespace
 
@@ -36,7 +34,7 @@ bool AccelerometerUpdate::IsReadingStable(AccelerometerSource source) const {
   if (!has(source))
     return false;
 
-  return std::abs(GetVector(source).Length() - kMeanGravity) <=
+  return std::abs(GetVector(source).Length() - base::kMeanGravityFloat) <=
          kDeviationFromGravityThreshold;
 }
 

@@ -11,7 +11,8 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/sequence_checker.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/cpp/resolve_host_client_base.h"
 #include "services/network/public/mojom/host_resolver.mojom.h"
 
@@ -70,24 +71,25 @@ class DnsProbeRunner : public network::ResolveHostClientBase {
   // network::ResolveHostClientBase impl:
   void OnComplete(
       int32_t result,
+      const net::ResolveErrorInfo& resolve_error_info,
       const base::Optional<net::AddressList>& resolved_addresses) override;
 
  private:
   void CreateHostResolver();
   void OnMojoConnectionError();
 
-  mojo::Binding<network::mojom::ResolveHostClient> binding_;
+  mojo::Receiver<network::mojom::ResolveHostClient> receiver_{this};
 
   net::DnsConfigOverrides dns_config_overrides_;
   NetworkContextGetter network_context_getter_;
 
-  network::mojom::HostResolverPtr host_resolver_;
+  mojo::Remote<network::mojom::HostResolver> host_resolver_;
 
   // The callback passed to |RunProbe|.  Cleared right before calling the
   // callback.
   base::OnceClosure callback_;
 
-  Result result_;
+  Result result_{UNKNOWN};
 
   SEQUENCE_CHECKER(sequence_checker_);
 

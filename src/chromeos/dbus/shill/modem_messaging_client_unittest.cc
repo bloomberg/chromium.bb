@@ -120,7 +120,7 @@ class ModemMessagingClientTest : public testing::Test {
  protected:
   ModemMessagingClient* client_ = nullptr;  // Unowned convenience pointer.
   // A message loop to emulate asynchronous behavior.
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   // The mock bus.
   scoped_refptr<dbus::MockBus> mock_bus_;
   // The mock object proxy.
@@ -156,7 +156,8 @@ TEST_F(ModemMessagingClientTest, SmsReceived) {
   // Set handler.
   client_->SetSmsReceivedHandler(
       kServiceName, dbus::ObjectPath(kObjectPath),
-      base::Bind(&MockSmsReceivedHandler::Run, base::Unretained(&handler)));
+      base::BindRepeating(&MockSmsReceivedHandler::Run,
+                          base::Unretained(&handler)));
 
   // Run the message loop to run the signal connection result callback.
   base::RunLoop().RunUntilIdle();

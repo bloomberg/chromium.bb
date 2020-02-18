@@ -65,8 +65,8 @@ const char kMetricNameNetworkConnectivityCheckingErrorType[] =
 // static
 scoped_refptr<ConnectivityCheckerImpl> ConnectivityCheckerImpl::Create(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    std::unique_ptr<network::SharedURLLoaderFactoryInfo>
-        url_loader_factory_info,
+    std::unique_ptr<network::PendingSharedURLLoaderFactory>
+        pending_url_loader_factory,
     network::NetworkConnectionTracker* network_connection_tracker) {
   DCHECK(task_runner);
 
@@ -75,7 +75,7 @@ scoped_refptr<ConnectivityCheckerImpl> ConnectivityCheckerImpl::Create(
   task_runner->PostTask(
       FROM_HERE,
       base::BindOnce(&ConnectivityCheckerImpl::Initialize, connectivity_checker,
-                     std::move(url_loader_factory_info)));
+                     std::move(pending_url_loader_factory)));
   return connectivity_checker;
 }
 
@@ -88,18 +88,20 @@ ConnectivityCheckerImpl::ConnectivityCheckerImpl(
       connected_(false),
       connection_type_(network::mojom::ConnectionType::CONNECTION_NONE),
       check_errors_(0),
-      network_changed_pending_(false) {
-  DCHECK(task_runner_.get());
+      network_changed_pending_(false),
+      weak_factory_(this) {
+  DCHECK(task_runner_);
   DCHECK(network_connection_tracker_);
+  weak_this_ = weak_factory_.GetWeakPtr();
 }
 
 void ConnectivityCheckerImpl::Initialize(
-    std::unique_ptr<network::SharedURLLoaderFactoryInfo>
-        url_loader_factory_info) {
+    std::unique_ptr<network::PendingSharedURLLoaderFactory>
+        pending_url_loader_factory) {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  DCHECK(url_loader_factory_info);
+  DCHECK(pending_url_loader_factory);
   url_loader_factory_ = network::SharedURLLoaderFactory::Create(
-      std::move(url_loader_factory_info));
+      std::move(pending_url_loader_factory));
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   base::CommandLine::StringType check_url_str =
@@ -108,12 +110,12 @@ void ConnectivityCheckerImpl::Initialize(
       check_url_str.empty() ? kDefaultConnectivityCheckUrl : check_url_str));
 
   network_connection_tracker_->AddNetworkConnectionObserver(this);
-  task_runner_->PostTask(FROM_HERE,
-                         base::BindOnce(&ConnectivityCheckerImpl::Check, this));
+
+  Check();
 }
 
 ConnectivityCheckerImpl::~ConnectivityCheckerImpl() {
-  DCHECK(task_runner_.get());
+  DCHECK(task_runner_);
   DCHECK(task_runner_->BelongsToCurrentThread());
   network_connection_tracker_->RemoveNetworkConnectionObserver(this);
 }
@@ -127,8 +129,9 @@ void ConnectivityCheckerImpl::SetConnected(bool connected) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   {
     base::AutoLock auto_lock(connected_lock_);
-    if (connected_ == connected)
+    if (connected_ == connected) {
       return;
+    }
     connected_ = connected;
   }
 
@@ -147,7 +150,8 @@ void ConnectivityCheckerImpl::SetConnected(bool connected) {
 
 void ConnectivityCheckerImpl::Check() {
   task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&ConnectivityCheckerImpl::CheckInternal, this));
+      FROM_HERE,
+      base::BindOnce(&ConnectivityCheckerImpl::CheckInternal, weak_this_));
 }
 
 void ConnectivityCheckerImpl::CheckInternal() {
@@ -156,13 +160,20 @@ void ConnectivityCheckerImpl::CheckInternal() {
 
   // Don't check connectivity if network is offline, because Internet could be
   // accessible via netifs ignored.
-  if (network_connection_tracker_->IsOffline())
+  auto connection_type = network::mojom::ConnectionType::CONNECTION_UNKNOWN;
+  network_connection_tracker_->GetConnectionType(
+      &connection_type,
+      base::BindOnce(&ConnectivityCheckerImpl::OnConnectionChanged,
+                     weak_this_));
+  if (connection_type == network::mojom::ConnectionType::CONNECTION_NONE) {
     return;
+  }
 
   // If url_loader_ is non-null, there is already a check going on. Don't
   // start another.
-  if (url_loader_)
+  if (url_loader_) {
     return;
+  }
 
   VLOG(1) << "Connectivity check: url=" << *connectivity_check_url_;
   auto resource_request = std::make_unique<network::ResourceRequest>();
@@ -174,14 +185,13 @@ void ConnectivityCheckerImpl::CheckInternal() {
 
   url_loader_ = network::SimpleURLLoader::Create(std::move(resource_request),
                                                  MISSING_TRAFFIC_ANNOTATION);
-  network::SimpleURLLoader::HeadersOnlyCallback callback =
-      base::BindOnce(&ConnectivityCheckerImpl::OnConnectivityCheckComplete,
-                     base::Unretained(this));
+  network::SimpleURLLoader::HeadersOnlyCallback callback = base::BindOnce(
+      &ConnectivityCheckerImpl::OnConnectivityCheckComplete, weak_this_);
   url_loader_->DownloadHeadersOnly(url_loader_factory_.get(),
                                    std::move(callback));
 
-  timeout_.Reset(base::Bind(&ConnectivityCheckerImpl::OnUrlRequestTimeout,
-                            this));
+  timeout_.Reset(
+      base::Bind(&ConnectivityCheckerImpl::OnUrlRequestTimeout, weak_this_));
   // Exponential backoff for timeout in 3, 6 and 12 sec.
   const int timeout = kRequestTimeoutInSeconds
                       << (check_errors_ > 2 ? 2 : check_errors_);
@@ -191,7 +201,7 @@ void ConnectivityCheckerImpl::CheckInternal() {
 
 void ConnectivityCheckerImpl::OnConnectionChanged(
     network::mojom::ConnectionType type) {
-  DVLOG(2) << "OnNetworkChanged " << type;
+  DVLOG(2) << "OnConnectionChanged " << type;
   connection_type_ = type;
 
   if (network_changed_pending_)
@@ -200,7 +210,7 @@ void ConnectivityCheckerImpl::OnConnectionChanged(
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&ConnectivityCheckerImpl::OnConnectionChangedInternal,
-                     this),
+                     weak_this_),
       base::TimeDelta::FromSeconds(kNetworkChangedDelayInSeconds));
 }
 
@@ -244,7 +254,7 @@ void ConnectivityCheckerImpl::OnConnectivityCheckComplete(
     // requests. Schedule another check to ensure connectivity hasn't dropped.
     task_runner_->PostDelayedTask(
         FROM_HERE,
-        base::BindOnce(&ConnectivityCheckerImpl::CheckInternal, this),
+        base::BindOnce(&ConnectivityCheckerImpl::CheckInternal, weak_this_),
         base::TimeDelta::FromSeconds(kConnectivitySuccessPeriodSeconds));
     return;
   }
@@ -268,7 +278,7 @@ void ConnectivityCheckerImpl::OnUrlRequestError(ErrorType type) {
   url_loader_.reset(nullptr);
   // Check again.
   task_runner_->PostDelayedTask(
-      FROM_HERE, base::BindOnce(&ConnectivityCheckerImpl::Check, this),
+      FROM_HERE, base::BindOnce(&ConnectivityCheckerImpl::Check, weak_this_),
       base::TimeDelta::FromSeconds(kConnectivityPeriodSeconds));
 }
 

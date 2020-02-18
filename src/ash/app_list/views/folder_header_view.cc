@@ -23,8 +23,9 @@
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/painter.h"
+#include "ui/views/view_targeter_delegate.h"
 
-namespace app_list {
+namespace ash {
 
 namespace {
 
@@ -34,12 +35,14 @@ constexpr SkColor kFolderTitleHintTextColor = SkColorSetRGB(0xA0, 0xA0, 0xA0);
 
 }  // namespace
 
-class FolderHeaderView::FolderNameView : public views::Textfield {
+class FolderHeaderView::FolderNameView : public views::Textfield,
+                                         public views::ViewTargeterDelegate {
  public:
   explicit FolderNameView(FolderHeaderView* folder_header_view)
       : folder_header_view_(folder_header_view) {
     DCHECK(folder_header_view_);
     SetBorder(views::CreateEmptyBorder(1, 1, 1, 1));
+    SetEventTargeter(std::make_unique<views::ViewTargeter>(this));
   }
 
   ~FolderNameView() override = default;
@@ -78,6 +81,15 @@ class FolderHeaderView::FolderNameView : public views::Textfield {
     }
 
     Textfield::OnBlur();
+  }
+
+  bool DoesIntersectRect(const views::View* target,
+                         const gfx::Rect& rect) const override {
+    DCHECK_EQ(target, this);
+    gfx::Rect textfield_bounds = target->GetLocalBounds();
+    int horizontal_padding = -(textfield_bounds.height() * 1.5);
+    textfield_bounds.Inset(gfx::Insets(0, horizontal_padding));
+    return textfield_bounds.Intersects(rect);
   }
 
  private:
@@ -143,7 +155,7 @@ void FolderHeaderView::UpdateFolderNameVisibility(bool visible) {
 }
 
 void FolderHeaderView::OnFolderItemRemoved() {
-  folder_item_ = NULL;
+  folder_item_ = nullptr;
 }
 
 void FolderHeaderView::SetTextFocus() {
@@ -310,4 +322,4 @@ void FolderHeaderView::SetPreviousFolderNameForTest(
   previous_folder_name_ = previous_name;
 }
 
-}  // namespace app_list
+}  // namespace ash

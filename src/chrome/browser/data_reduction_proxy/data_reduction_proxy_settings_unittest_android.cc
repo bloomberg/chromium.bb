@@ -183,8 +183,8 @@ class DataReductionProxySettingsAndroidTest : public ::testing::Test {
   }
 
  private:
-  base::test::TaskEnvironment task_environment_{
-      base::test::TaskEnvironment::MainThreadType::IO};
+  base::test::SingleThreadTaskEnvironment task_environment_{
+      base::test::SingleThreadTaskEnvironment::MainThreadType::IO};
   JNIEnv* env_;
   net::MockClientSocketFactory mock_socket_factory_;
   std::unique_ptr<data_reduction_proxy::DataReductionProxyTestContext>
@@ -333,7 +333,6 @@ TEST_F(DataReductionProxySettingsAndroidTest,
 
 TEST_F(DataReductionProxySettingsAndroidTest,
        MaybeRewriteWebliteUrlWithHoldbackEnabled) {
-  base::FieldTrialList field_trial_list(nullptr);
   ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
       "DataCompressionProxyHoldback", "Enabled"));
 

@@ -13,6 +13,7 @@
 #include "base/scoped_observer.h"
 #include "chrome/browser/chromeos/login/screens/base_screen.h"
 #include "chrome/browser/ui/webui/chromeos/login/sync_consent_screen_handler.h"
+#include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_service_observer.h"
 #include "components/user_manager/user.h"
 
@@ -32,6 +33,8 @@ class SyncConsentScreen : public BaseScreen,
   };
 
  public:
+  enum ConsentGiven { CONSENT_NOT_GIVEN, CONSENT_GIVEN };
+
   class SyncConsentScreenTestDelegate {
    public:
     SyncConsentScreenTestDelegate() = default;
@@ -39,8 +42,9 @@ class SyncConsentScreen : public BaseScreen,
     // This is called from SyncConsentScreen when user consent is passed to
     // consent auditor with resource ids recorder as consent.
     virtual void OnConsentRecordedIds(
+        ConsentGiven consent_given,
         const std::vector<int>& consent_description,
-        const int consent_confirmation) = 0;
+        int consent_confirmation) = 0;
 
     // This is called from SyncConsentScreenHandler when user consent is passed
     // to consent auditor with resource strings recorder as consent.
@@ -63,7 +67,6 @@ class SyncConsentScreen : public BaseScreen,
   // BaseScreen:
   void Show() override;
   void Hide() override;
-  void OnUserAction(const std::string& action_id) override;
 
   // syncer::SyncServiceObserver:
   void OnStateChanged(syncer::SyncService* sync) override;
@@ -75,6 +78,11 @@ class SyncConsentScreen : public BaseScreen,
   // Reacts to "Continue with default settings"
   void OnContinueWithDefaults(const std::vector<int>& consent_description,
                               const int consent_confirmation);
+
+  // Reacts to "Accept and Continue".
+  void OnAcceptAndContinue(const std::vector<int>& consent_description,
+                           int consent_confirmation,
+                           bool enable_os_sync);
 
   // Sets internal condition "Sync disabled by policy" for tests.
   void SetProfileSyncDisabledByPolicyForTesting(bool value);
@@ -95,8 +103,9 @@ class SyncConsentScreen : public BaseScreen,
   void UpdateScreen();
 
   // Records user Sync consent.
-  void RecordConsent(const std::vector<int>& consent_description,
-                     const int consent_confirmation);
+  void RecordConsent(ConsentGiven consent_given,
+                     const std::vector<int>& consent_description,
+                     int consent_confirmation);
 
   // Returns true if profile sync is disabled by policy.
   bool IsProfileSyncDisabledByPolicy() const;

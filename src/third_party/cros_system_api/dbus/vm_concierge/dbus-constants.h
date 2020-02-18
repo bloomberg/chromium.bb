@@ -39,6 +39,8 @@ const char kSetVmCpuRestrictionMethod[] = "SetVmCpuRestriction";
 const char kContainerStartupFailedSignal[] = "ContainerStartupFailed";
 const char kDiskImageProgressSignal[] = "DiskImageProgress";
 const char kDnsSettingsChangedSignal[] = "DnsSettingsChanged";
+const char kVmStartedSignal[] = "VmStartedSignal";
+const char kVmStoppedSignal[] = "VmStoppedSignal";
 
 }  // namespace concierge
 }  // namespace vm_tools

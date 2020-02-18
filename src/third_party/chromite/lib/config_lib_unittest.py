@@ -301,8 +301,8 @@ class BuildConfigClassTest(cros_test_lib.TestCase):
     bc1 = MockBuildConfig()
     bc2 = pickle.loads(pickle.dumps(bc1))
 
-    self.assertEquals(bc1.boards, bc2.boards)
-    self.assertEquals(bc1.name, bc2.name)
+    self.assertEqual(bc1.boards, bc2.boards)
+    self.assertEqual(bc1.name, bc2.name)
 
 
 class GetSiteParamsTest(cros_test_lib.TestCase):
@@ -322,7 +322,7 @@ class GetSiteParamsTest(cros_test_lib.TestCase):
 
     # Test the dot-accessor.
     site_params.update({'foo': 'bar'})
-    self.assertEquals('bar', site_params.foo)
+    self.assertEqual('bar', site_params.foo)
 
 
 class SiteConfigTest(cros_test_lib.TestCase):
@@ -500,11 +500,11 @@ class SiteConfigTest(cros_test_lib.TestCase):
     }
 
     # Make sure our expected build configs exist.
-    self.assertItemsEqual(self.site_config.keys(), expected.keys())
+    self.assertCountEqual(list(self.site_config), list(expected))
 
     # Make sure each one contains
     self.longMessage = True
-    for name in expected.keys():
+    for name in expected:
       self.assertDictContainsSubset(expected[name],
                                     self.site_config[name],
                                     name)
@@ -662,7 +662,7 @@ class SiteConfigTest(cros_test_lib.TestCase):
 
     # This for loop is to make differences easier to find/read.
     self.longMessage = True
-    for name in site_config.keys():
+    for name in site_config:
       self.assertDictEqual(loaded[name], site_config[name], name)
 
     # This includes templates and the default build config.
@@ -690,8 +690,8 @@ class SiteConfigTest(cros_test_lib.TestCase):
 
     loaded = self._verifyLoadSave(site_config)
 
-    self.assertEqual(loaded.keys(), [])
-    self.assertEqual(loaded._templates.keys(), [])
+    self.assertEqual(list(loaded), [])
+    self.assertEqual(list(loaded._templates), [])
     self.assertDictEqual(
         loaded.GetDefault(), config_lib.DefaultSettings())
 
@@ -706,7 +706,8 @@ class SiteConfigTest(cros_test_lib.TestCase):
     self.assertDictEqual(loaded.GetDefault(), expected_defaults)
 
     # Ensure that expected templates are present.
-    self.assertItemsEqual(loaded.templates.keys(), ['template', 'callable'])
+    self.assertCountEqual(list(loaded.templates),
+                          ['template', 'callable'])
 
   def testTemplatesToSave(self):
     def _invert(x):
@@ -721,7 +722,7 @@ class SiteConfigTest(cros_test_lib.TestCase):
     config.Add('build3', config.templates.base, var=3)
     config.Add('build4', config.templates.callable, var=4)
 
-    self.assertItemsEqual(
+    self.assertCountEqual(
         config.templates,
         {
             'base': {'_template': 'base', 'foo': True, 'important': False},
@@ -732,7 +733,7 @@ class SiteConfigTest(cros_test_lib.TestCase):
 
     results = config._MarshalTemplates()
 
-    self.assertItemsEqual(
+    self.assertCountEqual(
         results,
         {
             'base': {'_template': 'base', 'foo': True},
@@ -776,7 +777,7 @@ class SiteConfigFindTests(cros_test_lib.TestCase):
                                                     important_only=False)
 
     self.assertEqual(results_map, {'slave_a': slave_a, 'slave_b': slave_b})
-    self.assertItemsEqual(results_slaves, [slave_a, slave_b])
+    self.assertCountEqual(results_slaves, [slave_a, slave_b])
 
   def testGetSlaveConfigMapForMasterImportant(self):
     """Test GetSlaveConfigMapForMaster, GetSlavesForMaster important only."""
@@ -792,7 +793,7 @@ class SiteConfigFindTests(cros_test_lib.TestCase):
     results_slaves = site_config.GetSlavesForMaster(master)
 
     self.assertEqual(results_map, {'slave_a': slave_a})
-    self.assertItemsEqual(results_slaves, [slave_a])
+    self.assertCountEqual(results_slaves, [slave_a])
 
 
 class GetConfigTests(cros_test_lib.TestCase):
@@ -865,8 +866,8 @@ class GEBuildConfigTests(cros_test_lib.TestCase):
   def testGetUnifiedBuildConfigAllBuilds(self):
     uni_builds = config_lib.GetUnifiedBuildConfigAllBuilds(
         self._fake_ge_build_config)
-    self.assertEquals(1, len(uni_builds))
+    self.assertEqual(1, len(uni_builds))
 
   def testGetUnifiedBuildConfigAllBuildsWithNoBuilds(self):
     uni_builds = config_lib.GetUnifiedBuildConfigAllBuilds({})
-    self.assertEquals(0, len(uni_builds))
+    self.assertEqual(0, len(uni_builds))

@@ -19,8 +19,8 @@
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "chrome/browser/chromeos/app_mode/arc/arc_kiosk_app_manager.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
+#include "chrome/browser/chromeos/app_mode/kiosk_app_manager_observer.h"
 #include "chrome/browser/chromeos/login/screens/encryption_migration_mode.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/login/ui/login_display.h"
@@ -64,9 +64,9 @@ class ExistingUserController
     : public LoginDisplay::Delegate,
       public content::NotificationObserver,
       public LoginPerformer::Delegate,
+      public KioskAppManagerObserver,
       public UserSessionManagerDelegate,
       public user_manager::UserManager::Observer,
-      public ArcKioskAppManager::ArcKioskAppManagerObserver,
       public policy::MinimumVersionPolicyHandler::Observer {
  public:
   // Returns the current existing user controller fetched from the current
@@ -127,8 +127,8 @@ class ExistingUserController
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
 
-  // ArcKioskAppManager::ArcKioskAppManagerObserver overrides.
-  void OnArcKioskAppsChanged() override;
+  // KioskAppManagerObserver overrides.
+  void OnKioskAppsSettingsChanged() override;
 
   // policy::MinimumVersionPolicyHandler::Observer overrides.
   void OnMinimumVersionStateChanged() override;
@@ -161,6 +161,7 @@ class ExistingUserController
   void LoginAsPublicSession(const UserContext& user_context);
   void LoginAsKioskApp(const std::string& app_id, bool diagnostic_mode);
   void LoginAsArcKioskApp(const AccountId& account_id);
+  void LoginAsWebKioskApp(const AccountId& account_id);
   // Retrieve public session and ARC kiosk auto-login policy and update the
   // timer.
   void ConfigureAutoLogin();
@@ -383,9 +384,9 @@ class ExistingUserController
   bool password_changed_ = false;
 
   // Set in OnLoginSuccess. Before that use LoginPerformer::auth_mode().
-  // Initialized with AUTH_MODE_EXTENSION as more restricted mode.
+  // Initialized with |kExternal| as more restricted mode.
   LoginPerformer::AuthorizationMode auth_mode_ =
-      LoginPerformer::AUTH_MODE_EXTENSION;
+      LoginPerformer::AuthorizationMode::kExternal;
 
   // Indicates use of local (not GAIA) authentication.
   bool auth_flow_offline_ = false;

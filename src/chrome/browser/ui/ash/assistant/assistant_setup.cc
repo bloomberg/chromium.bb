@@ -25,11 +25,11 @@ using chromeos::assistant::ConsentFlowUi;
 AssistantSetup::AssistantSetup(
     chromeos::assistant::mojom::AssistantService* service)
     : service_(service) {
-  arc::VoiceInteractionControllerClient::Get()->AddObserver(this);
+  ash::AssistantState::Get()->AddObserver(this);
 }
 
 AssistantSetup::~AssistantSetup() {
-  arc::VoiceInteractionControllerClient::Get()->RemoveObserver(this);
+  ash::AssistantState::Get()->RemoveObserver(this);
 }
 
 void AssistantSetup::StartAssistantOptInFlow(
@@ -42,8 +42,9 @@ bool AssistantSetup::BounceOptInWindowIfActive() {
   return chromeos::AssistantOptInDialog::BounceIfActive();
 }
 
-void AssistantSetup::OnStateChanged(ash::mojom::VoiceInteractionState state) {
-  if (state == ash::mojom::VoiceInteractionState::NOT_READY)
+void AssistantSetup::OnAssistantStatusChanged(
+    ash::mojom::AssistantState state) {
+  if (state == ash::mojom::AssistantState::NOT_READY)
     return;
 
   // Sync settings state when Assistant service started.
@@ -53,7 +54,7 @@ void AssistantSetup::OnStateChanged(ash::mojom::VoiceInteractionState state) {
 
 void AssistantSetup::SyncSettingsState() {
   // Set up settings mojom.
-  service_->BindSettingsManager(mojo::MakeRequest(&settings_manager_));
+  service_->BindSettingsManager(settings_manager_.BindNewPipeAndPassReceiver());
 
   chromeos::assistant::SettingsUiSelector selector;
   chromeos::assistant::ConsentFlowUiSelector* consent_flow_ui =

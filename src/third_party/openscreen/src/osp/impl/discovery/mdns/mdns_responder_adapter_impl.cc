@@ -10,11 +10,13 @@
 #include <iostream>
 #include <memory>
 
-#include "platform/api/logging.h"
-#include "platform/api/trace_logging.h"
+#include "util/logging.h"
+#include "util/trace_logging.h"
+
+using openscreen::platform::TraceCategory;
 
 namespace openscreen {
-namespace mdns {
+namespace osp {
 namespace {
 
 // RFC 1035 specifies a max string length of 256, including the leading length
@@ -269,7 +271,9 @@ Error MdnsResponderAdapterImpl::RegisterInterface(
                                      interface_address.prefix_length);
   }
 
-  interface_info.CopyHardwareAddressTo(info.MAC.b);
+  static_assert(sizeof(info.MAC.b) == sizeof(interface_info.hardware_address),
+                "MAC addresss size mismatch.");
+  memcpy(info.MAC.b, interface_info.hardware_address, sizeof(info.MAC.b));
   info.McastTxRx = 1;
   platform_storage_.sockets.push_back(socket);
   auto result = mDNS_RegisterInterface(&mdns_, &info, mDNSfalse);
@@ -300,8 +304,14 @@ Error MdnsResponderAdapterImpl::DeregisterInterface(
   responder_interface_info_.erase(info_it);
   return Error::None();
 }
-void MdnsResponderAdapterImpl::OnRead(platform::UdpPacket packet,
-                                      platform::NetworkRunner* network_runner) {
+void MdnsResponderAdapterImpl::OnRead(
+    platform::UdpSocket* socket,
+    ErrorOr<platform::UdpPacket> packet_or_error) {
+  if (packet_or_error.is_error()) {
+    return;
+  }
+
+  platform::UdpPacket packet = std::move(packet_or_error.value());
   TRACE_SCOPED(TraceCategory::mDNS, "MdnsResponderAdapterImpl::OnRead");
   mDNSAddr src;
   if (packet.source().address.IsV4()) {
@@ -331,7 +341,19 @@ void MdnsResponderAdapterImpl::OnRead(platform::UdpPacket packet,
                   reinterpret_cast<mDNSInterfaceID>(packet.socket()));
 }
 
-absl::optional<platform::Clock::duration> MdnsResponderAdapterImpl::RunTasks() {
+void MdnsResponderAdapterImpl::OnSendError(platform::UdpSocket* socket,
+                                           Error error) {
+  // TODO(crbug.com/openscreen/67): Implement this method.
+  OSP_UNIMPLEMENTED();
+}
+
+void MdnsResponderAdapterImpl::OnError(platform::UdpSocket* socket,
+                                       Error error) {
+  // TODO(crbug.com/openscreen/67): Implement this method.
+  OSP_UNIMPLEMENTED();
+}
+
+platform::Clock::duration MdnsResponderAdapterImpl::RunTasks() {
   TRACE_SCOPED(TraceCategory::mDNS, "MdnsResponderAdapterImpl::RunTasks");
 
   mDNS_Execute(&mdns_);
@@ -1015,5 +1037,5 @@ void MdnsResponderAdapterImpl::RemoveQuestionsIfEmpty(
     socket_to_questions_.erase(entry);
 }
 
-}  // namespace mdns
+}  // namespace osp
 }  // namespace openscreen

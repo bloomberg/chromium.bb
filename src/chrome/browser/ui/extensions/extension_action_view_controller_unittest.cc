@@ -11,6 +11,7 @@
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/extensions/chrome_extensions_browser_client.h"
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_action_runner.h"
@@ -23,7 +24,9 @@
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar_unittest.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
+#include "content/public/browser/notification_service.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/notification_types.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/user_script.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -256,6 +259,12 @@ void ExtensionActionViewControllerGrayscaleTest::RunGrayscaleTest(
   permissions_modifier.SetWithholdHostPermissions(true);
   ASSERT_EQ(1u, toolbar_actions_bar()->GetIconCount());
   const GURL kUrl("https://www.google.com/");
+
+  // Make sure UserScriptListener doesn't hold up the navigation.
+  extensions::ExtensionsBrowserClient::Get()
+      ->GetUserScriptListener()
+      ->TriggerUserScriptsReadyForTesting(browser()->profile());
+
   AddTab(browser(), kUrl);
 
   enum class ActionState {
@@ -397,7 +406,7 @@ TEST_P(ExtensionActionViewControllerGrayscaleTest,
   RunGrayscaleTest(PermissionType::kScriptableHost);
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          ExtensionActionViewControllerGrayscaleTest,
                          testing::Values(false, true));
 

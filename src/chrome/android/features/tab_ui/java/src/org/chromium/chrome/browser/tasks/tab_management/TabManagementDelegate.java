@@ -5,18 +5,23 @@
 package org.chromium.chrome.browser.tasks.tab_management;
 
 import android.content.Context;
+import android.view.View;
 import android.view.ViewGroup;
 
+import org.chromium.base.ObservableSupplier;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ThemeColorProvider;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.compositor.layouts.LayoutRenderHost;
 import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
+import org.chromium.chrome.browser.ntp.FakeboxDelegate;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tasks.TasksSurface;
+import org.chromium.chrome.browser.tasks.TasksSurfaceProperties;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
+import org.chromium.chrome.browser.tasks.tab_management.suggestions.TabSuggestions;
 import org.chromium.chrome.features.start_surface.StartSurface;
-import org.chromium.components.module_installer.ModuleInterface;
+import org.chromium.components.module_installer.builder.ModuleInterface;
 import org.chromium.ui.modelutil.PropertyModel;
 
 /**
@@ -29,13 +34,14 @@ public interface TabManagementDelegate {
     /**
      * Create the {@link TasksSurface}
      * @param activity The {@link ChromeActivity} that creates this surface.
-     * @param isTabCarousel Whether show the Tabs in carousel mode.
      * @param propertyModel The {@link PropertyModel} contains the {@link TasksSurfaceProperties} to
      *         communicate with this surface.
-     * @return The {@TasksSurface}.
+     * @param fakeboxDelegate The delegate of the fake search box.
+     * @param isTabCarousel Whether show the Tabs in carousel mode.
+     * @return The {@link TasksSurface}.
      */
-    TasksSurface createTasksSurface(
-            ChromeActivity activity, boolean isTabCarousel, PropertyModel propertyModel);
+    TasksSurface createTasksSurface(ChromeActivity activity, PropertyModel propertyModel,
+            FakeboxDelegate fakeboxDelegate, boolean isTabCarousel);
 
     /**
      * Create the {@link TabSwitcher} to display Tabs in grid.
@@ -84,4 +90,21 @@ public interface TabManagementDelegate {
      * @return The {@link TabGroupModelFilter}.
      */
     TabGroupModelFilter createTabGroupModelFilter(TabModel tabModel);
+
+    /**
+     * Create a {@link TabSuggestions} for the given {@link ChromeActivity}
+     * @param activity the {@link ChromeActivity} creates this {@link TabSuggestions}.
+     * @return the {@link TabSuggestions} for the activity
+     */
+    TabSuggestions createTabSuggestions(ChromeActivity activity);
+
+    /**
+     * Create the {@link TabGroupPopupUi}.
+     * @param themeColorProvider The {@link ThemeColorProvider} for this UI.
+     * @param parentViewSupplier The {@link ObservableSupplier} that provides parent view of this
+     *         component.
+     * @return The {@link TabGroupPopupUi}.
+     */
+    TabGroupPopupUi createTabGroupPopUi(
+            ThemeColorProvider themeColorProvider, ObservableSupplier<View> parentViewSupplier);
 }

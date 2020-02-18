@@ -68,12 +68,12 @@ class InterceptingPrefFilter : public PrefFilter {
 
   // PrefFilter implementation:
   void FilterOnLoad(
-      const PostFilterOnLoadCallback& post_filter_on_load_callback,
+      PostFilterOnLoadCallback post_filter_on_load_callback,
       std::unique_ptr<base::DictionaryValue> pref_store_contents) override;
   void FilterUpdate(const std::string& path) override {}
   OnWriteCallbackPair FilterSerializeData(
       base::DictionaryValue* pref_store_contents) override {
-    return on_write_callback_pair_;
+    return std::move(on_write_callback_pair_);
   }
   void OnStoreDeletionFromDisk() override {}
 
@@ -95,22 +95,22 @@ InterceptingPrefFilter::InterceptingPrefFilter() {}
 
 InterceptingPrefFilter::InterceptingPrefFilter(
     OnWriteCallbackPair callback_pair) {
-  on_write_callback_pair_ = callback_pair;
+  on_write_callback_pair_ = std::move(callback_pair);
 }
 
 InterceptingPrefFilter::~InterceptingPrefFilter() {}
 
 void InterceptingPrefFilter::FilterOnLoad(
-    const PostFilterOnLoadCallback& post_filter_on_load_callback,
+    PostFilterOnLoadCallback post_filter_on_load_callback,
     std::unique_ptr<base::DictionaryValue> pref_store_contents) {
-  post_filter_on_load_callback_ = post_filter_on_load_callback;
+  post_filter_on_load_callback_ = std::move(post_filter_on_load_callback);
   intercepted_prefs_ = std::move(pref_store_contents);
 }
 
 void InterceptingPrefFilter::ReleasePrefs() {
   EXPECT_FALSE(post_filter_on_load_callback_.is_null());
-  post_filter_on_load_callback_.Run(std::move(intercepted_prefs_), false);
-  post_filter_on_load_callback_.Reset();
+  std::move(post_filter_on_load_callback_)
+      .Run(std::move(intercepted_prefs_), false);
 }
 
 class MockPrefStoreObserver : public PrefStore::Observer {
@@ -183,10 +183,10 @@ class JsonPrefStoreTest
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
   }
 
-  base::test::TaskEnvironment task_environment_;
-
   // The path to temporary directory used to contain the test operations.
   base::ScopedTempDir temp_dir_;
+
+  base::test::TaskEnvironment task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(JsonPrefStoreTest);
 };
@@ -732,8 +732,8 @@ class SuccessfulWriteReplyObserver {
 void SuccessfulWriteReplyObserver::ObserveNextWriteCallback(
     JsonPrefStore* json_pref_store) {
   json_pref_store->RegisterOnNextSuccessfulWriteReply(
-      base::Bind(&SuccessfulWriteReplyObserver::OnSuccessfulWrite,
-                 base::Unretained(this)));
+      base::BindOnce(&SuccessfulWriteReplyObserver::OnSuccessfulWrite,
+                     base::Unretained(this)));
 }
 
 enum WriteCallbackObservationState {
@@ -758,10 +758,10 @@ class WriteCallbacksObserver {
   WriteCallbackObservationState GetAndResetPostWriteObservationState();
 
   JsonPrefStore::OnWriteCallbackPair GetCallbackPair() {
-    return std::make_pair(
-        base::Bind(&WriteCallbacksObserver::OnPreWrite, base::Unretained(this)),
-        base::Bind(&WriteCallbacksObserver::OnPostWrite,
-                   base::Unretained(this)));
+    return std::make_pair(base::BindOnce(&WriteCallbacksObserver::OnPreWrite,
+                                         base::Unretained(this)),
+                          base::BindOnce(&WriteCallbacksObserver::OnPostWrite,
+                                         base::Unretained(this)));
   }
 
   void OnPreWrite() {
@@ -821,10 +821,10 @@ class JsonPrefStoreCallbackTest : public testing::Test {
 
   void TriggerFakeWriteForCallback(JsonPrefStore* pref_store, bool success) {
     JsonPrefStore::PostWriteCallback(
-        base::Bind(&JsonPrefStore::RunOrScheduleNextSuccessfulWriteCallback,
-                   pref_store->AsWeakPtr()),
-        base::Bind(&WriteCallbacksObserver::OnPostWrite,
-                   base::Unretained(&write_callback_observer_)),
+        base::BindOnce(&JsonPrefStore::RunOrScheduleNextSuccessfulWriteCallback,
+                       pref_store->AsWeakPtr()),
+        base::BindOnce(&WriteCallbacksObserver::OnPostWrite,
+                       base::Unretained(&write_callback_observer_)),
         base::SequencedTaskRunnerHandle::Get(), success);
   }
 

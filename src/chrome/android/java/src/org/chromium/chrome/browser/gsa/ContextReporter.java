@@ -4,8 +4,9 @@
 
 package org.chromium.chrome.browser.gsa;
 
-import android.support.annotation.Nullable;
 import android.text.TextUtils;
+
+import androidx.annotation.Nullable;
 
 import org.chromium.base.Log;
 import org.chromium.base.metrics.RecordHistogram;
@@ -19,7 +20,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
 import org.chromium.chrome.browser.tabmodel.TabSelectionType;
 import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.components.sync.ModelType;
-import org.chromium.components.sync.Passphrase;
+import org.chromium.components.sync.PassphraseType;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -216,7 +217,8 @@ public class ContextReporter {
             reportStatus(STATUS_SYNC_NOT_INITIALIZED);
         } else if (!syncService.getActiveDataTypes().contains(ModelType.TYPED_URLS)) {
             reportStatus(STATUS_SYNC_NOT_SYNCING_URLS);
-        } else if (syncService.getPassphraseType() != Passphrase.Type.KEYSTORE) {
+        } else if (syncService.getPassphraseType() != PassphraseType.KEYSTORE_PASSPHRASE
+                && syncService.getPassphraseType() != PassphraseType.TRUSTED_VAULT_PASSPHRASE) {
             reportStatus(STATUS_SYNC_NOT_KEYSTORE_PASSPHRASE);
         } else {
             reportStatus(STATUS_SYNC_OTHER);

@@ -17,7 +17,6 @@ import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
 import android.graphics.drawable.Drawable;
-import android.support.annotation.ColorInt;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.util.Property;
@@ -26,11 +25,13 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.FrameLayout;
 
+import androidx.annotation.ColorInt;
+
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ntp.LogoBridge.Logo;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
-import org.chromium.chrome.browser.widget.LoadingView;
+import org.chromium.chrome.browser.ui.widget.LoadingView;
 
 import java.lang.ref.WeakReference;
 

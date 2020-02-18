@@ -64,7 +64,7 @@ void Socket::WriteData() {
 }
 
 void Socket::OnWriteComplete(int result) {
-  io_buffer_write_ = NULL;
+  io_buffer_write_.reset();
 
   WriteRequest& request = write_queue_.front();
 
@@ -103,8 +103,8 @@ void Socket::Listen(const std::string& address,
 }
 
 void Socket::Accept(AcceptCompletionCallback callback) {
-  std::move(callback).Run(net::ERR_FAILED, nullptr /* socket */, base::nullopt,
-                          mojo::ScopedDataPipeConsumerHandle(),
+  std::move(callback).Run(net::ERR_FAILED, mojo::NullRemote() /* socket */,
+                          base::nullopt, mojo::ScopedDataPipeConsumerHandle(),
                           mojo::ScopedDataPipeProducerHandle());
 }
 

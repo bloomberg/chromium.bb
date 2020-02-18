@@ -120,7 +120,7 @@ class BarcodeDetectionImplMacTest : public TestWithParam<struct TestParams> {
   MOCK_METHOD0(Detection, void(void));
 
   std::unique_ptr<mojom::BarcodeDetection> impl_;
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   void* vision_framework_ = nullptr;
 };
 
@@ -178,9 +178,8 @@ TEST_P(BarcodeDetectionImplMacTest, ScanOneBarcode) {
   ASSERT_TRUE(SkCreateBitmapFromCGImage(&bitmap, cg_image));
 
   base::RunLoop run_loop;
-  base::Closure quit_closure = run_loop.QuitClosure();
   // Send the image Detect() and expect the response in callback.
-  EXPECT_CALL(*this, Detection()).WillOnce(RunClosure(quit_closure));
+  EXPECT_CALL(*this, Detection()).WillOnce(RunClosure(run_loop.QuitClosure()));
   // TODO(crbug.com/938663): expect detected symbology.
   impl_->Detect(bitmap,
                 base::BindOnce(&BarcodeDetectionImplMacTest::DetectCallback,

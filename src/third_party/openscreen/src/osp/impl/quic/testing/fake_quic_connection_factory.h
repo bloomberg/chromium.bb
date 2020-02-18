@@ -13,6 +13,7 @@
 #include "osp/public/message_demuxer.h"
 
 namespace openscreen {
+namespace osp {
 
 class FakeQuicConnectionFactoryBridge {
  public:
@@ -53,10 +54,6 @@ class FakeClientQuicConnectionFactory final : public QuicConnectionFactory {
       FakeQuicConnectionFactoryBridge* bridge);
   ~FakeClientQuicConnectionFactory() override;
 
-  // UdpReadCallback overrides.
-  void OnRead(platform::UdpPacket data,
-              platform::NetworkRunner* network_runner) override;
-
   // UdpSocket::Client overrides.
   void OnError(platform::UdpSocket* socket, Error error) override;
   void OnSendError(platform::UdpSocket* socket, Error error) override;
@@ -85,10 +82,6 @@ class FakeServerQuicConnectionFactory final : public QuicConnectionFactory {
       FakeQuicConnectionFactoryBridge* bridge);
   ~FakeServerQuicConnectionFactory() override;
 
-  // UdpReadCallback overrides.
-  void OnRead(platform::UdpPacket data,
-              platform::NetworkRunner* network_runner) override;
-
   // UdpSocket::Client overrides.
   void OnError(platform::UdpSocket* socket, Error error) override;
   void OnSendError(platform::UdpSocket* socket, Error error) override;
@@ -109,6 +102,7 @@ class FakeServerQuicConnectionFactory final : public QuicConnectionFactory {
   bool idle_ = true;
 };
 
+}  // namespace osp
 }  // namespace openscreen
 
 #endif  // OSP_IMPL_QUIC_TESTING_FAKE_QUIC_CONNECTION_FACTORY_H_

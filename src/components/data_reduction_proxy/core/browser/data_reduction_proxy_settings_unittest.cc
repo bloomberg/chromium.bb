@@ -179,14 +179,13 @@ TEST(DataReductionProxySettingsStandaloneTest, TestEndToEndSecureProxyCheck) {
     drp_test_context->SetDataReductionProxyEnabled(true);
     drp_test_context->RunUntilIdle();
 
-    network::ResourceResponseHead resource_response_head;
+    auto url_response_head = network::mojom::URLResponseHead::New();
     std::string headers(test_case.response_headers);
-    resource_response_head.headers =
-        base::MakeRefCounted<net::HttpResponseHeaders>(
-            net::HttpUtil::AssembleRawHeaders(headers));
+    url_response_head->headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+        net::HttpUtil::AssembleRawHeaders(headers));
     test_url_loader_factory.SimulateResponseWithoutRemovingFromPendingList(
-        test_url_loader_factory.GetPendingRequest(0), resource_response_head,
-        test_case.response_body,
+        test_url_loader_factory.GetPendingRequest(0),
+        std::move(url_response_head), test_case.response_body,
         network::URLLoaderCompletionStatus(test_case.net_error_code));
 
     if (test_case.expected_restricted) {
@@ -502,28 +501,6 @@ TEST(DataReductionProxySettingsStandaloneTest,
   histogram_tester.ExpectTotalCount("DataReductionProxy.DaysSinceEnabled", 0);
   EXPECT_EQ(0, drp_test_context->pref_service()->GetInt64(
                    prefs::kDataReductionProxyLastEnabledTime));
-}
-
-TEST_F(DataReductionProxySettingsTest, TestDaysSinceSavingsCleared) {
-  base::SimpleTestClock clock;
-  clock.Advance(base::TimeDelta::FromDays(1));
-  ResetSettings(&clock);
-
-  base::HistogramTester histogram_tester;
-  test_context_->pref_service()->SetInt64(
-      prefs::kDataReductionProxySavingsClearedNegativeSystemClock,
-      clock.Now().ToInternalValue());
-
-  test_context_->RunUntilIdle();
-
-  clock.Advance(base::TimeDelta::FromDays(100));
-
-  // Simulate Chromium startup with data reduction proxy already enabled.
-  test_context_->SetDataReductionProxyEnabled(true);
-  settings_->MaybeActivateDataReductionProxy(true /* at_startup */);
-  test_context_->RunUntilIdle();
-  histogram_tester.ExpectUniqueSample(
-      "DataReductionProxy.DaysSinceSavingsCleared.NegativeSystemClock", 100, 1);
 }
 
 TEST_F(DataReductionProxySettingsTest, TestGetDailyContentLengths) {

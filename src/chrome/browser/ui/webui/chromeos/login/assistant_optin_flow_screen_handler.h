@@ -9,11 +9,12 @@
 #include <string>
 
 #include "ash/public/cpp/assistant/assistant_setup.h"
+#include "ash/public/cpp/assistant/assistant_state.h"
 #include "base/macros.h"
-#include "chrome/browser/chromeos/arc/voice_interaction/voice_interaction_controller_client.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 #include "chromeos/services/assistant/public/mojom/settings.mojom.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 namespace chromeos {
 
@@ -43,7 +44,7 @@ class AssistantOptInFlowScreenView {
 class AssistantOptInFlowScreenHandler
     : public BaseScreenHandler,
       public AssistantOptInFlowScreenView,
-      public arc::VoiceInteractionControllerClient::Observer,
+      public ash::AssistantStateObserver,
       assistant::mojom::SpeakerIdEnrollmentClient {
  public:
   using TView = AssistantOptInFlowScreenView;
@@ -63,6 +64,7 @@ class AssistantOptInFlowScreenHandler
   void DeclareLocalizedValues(
       ::login::LocalizedValuesBuilder* builder) override;
   void RegisterMessages() override;
+  void GetAdditionalParameters(base::DictionaryValue* dict) override;
 
   // AssistantOptInFlowScreenView:
   void Bind(AssistantOptInFlowScreen* screen) override;
@@ -93,8 +95,8 @@ class AssistantOptInFlowScreenHandler
   // BaseScreenHandler:
   void Initialize() override;
 
-  // arc::VoiceInteractionControllerClient::Observer overrides
-  void OnStateChanged(ash::mojom::VoiceInteractionState state) override;
+  // ash::AssistantStateObserver:
+  void OnAssistantStatusChanged(ash::mojom::AssistantState state) override;
 
   // Connect to assistant settings manager.
   void BindAssistantSettingsManager();
@@ -161,8 +163,9 @@ class AssistantOptInFlowScreenHandler
   // Whether the screen has been initialized.
   bool initialized_ = false;
 
-  mojo::Binding<assistant::mojom::SpeakerIdEnrollmentClient> client_binding_;
-  assistant::mojom::AssistantSettingsManagerPtr settings_manager_;
+  mojo::Receiver<assistant::mojom::SpeakerIdEnrollmentClient> client_receiver_{
+      this};
+  mojo::Remote<assistant::mojom::AssistantSettingsManager> settings_manager_;
   base::WeakPtrFactory<AssistantOptInFlowScreenHandler> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AssistantOptInFlowScreenHandler);

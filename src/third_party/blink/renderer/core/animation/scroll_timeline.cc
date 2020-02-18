@@ -136,6 +136,12 @@ bool ScrollTimeline::IsActive() const {
   return layout_box && layout_box->HasOverflowClip();
 }
 
+// Scroll-linked animations are initialized with the start time of zero.
+base::Optional<base::TimeDelta>
+ScrollTimeline::InitialStartTimeForAnimations() {
+  return base::TimeDelta();
+}
+
 double ScrollTimeline::currentTime(bool& is_null) {
   is_null = true;
 
@@ -315,17 +321,6 @@ void ScrollTimeline::AnimationAttached(Animation*) {
     return;
 
   GetActiveScrollTimelineSet().insert(resolved_scroll_source_);
-  if (auto* element = DynamicTo<Element>(resolved_scroll_source_.Get()))
-    element->SetNeedsCompositingUpdate();
-  resolved_scroll_source_->GetDocument()
-      .GetLayoutView()
-      ->Compositor()
-      ->SetNeedsCompositingUpdate(kCompositingUpdateRebuildTree);
-  LayoutBoxModelObject* object = scroll_source_->GetLayoutBoxModelObject();
-  if (object && object->HasLayer())
-    object->Layer()->SetNeedsCompositingInputsUpdate();
-  if (object)
-    object->SetNeedsPaintPropertyUpdate();
 }
 
 void ScrollTimeline::AnimationDetached(Animation*) {
@@ -333,19 +328,6 @@ void ScrollTimeline::AnimationDetached(Animation*) {
     return;
 
   GetActiveScrollTimelineSet().erase(resolved_scroll_source_);
-  if (auto* element = DynamicTo<Element>(resolved_scroll_source_.Get()))
-    element->SetNeedsCompositingUpdate();
-  auto* layout_view = resolved_scroll_source_->GetDocument().GetLayoutView();
-  if (layout_view && layout_view->Compositor()) {
-    layout_view->Compositor()->SetNeedsCompositingUpdate(
-        kCompositingUpdateRebuildTree);
-
-    LayoutBoxModelObject* object = scroll_source_->GetLayoutBoxModelObject();
-    if (object && object->HasLayer())
-      object->Layer()->SetNeedsCompositingInputsUpdate();
-    if (object)
-      object->SetNeedsPaintPropertyUpdate();
-  }
 }
 
 void ScrollTimeline::Trace(blink::Visitor* visitor) {

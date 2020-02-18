@@ -31,6 +31,9 @@ class Lock;
 }
 
 namespace mojo {
+namespace internal {
+class MessageQuotaChecker;
+}
 
 // The Connector class is responsible for performing read/write operations on a
 // MessagePipe. It writes messages it receives through the MessageReceiver
@@ -196,6 +199,10 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) Connector : public MessageReceiver {
   // |tag| must be a const string literal.
   void SetWatcherHeapProfilerTag(const char* tag);
 
+  // Sets the quota checker.
+  void SetMessageQuotaChecker(
+      scoped_refptr<internal::MessageQuotaChecker> checker);
+
   // Allows testing environments to override the default serialization behavior
   // of newly constructed Connector instances. Must be called before any
   // Connector instances are constructed.
@@ -225,6 +232,13 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) Connector : public MessageReceiver {
   // accepted by the receiver, and |false| otherwise (e.g. if it failed
   // validation).
   bool DispatchMessage(Message message);
+
+  // Posts a task to dispatch the next message in |dispatch_queue_|. These two
+  // functions keep |num_pending_dispatch_tasks_| up to date, so as to allow
+  // bounding the number of posted tasks when the Connector is e.g. paused and
+  // resumed repeatedly.
+  void PostDispatchNextMessageInQueue();
+  void CallDispatchNextMessageInQueue();
 
   // Used to schedule dispatch of a single message from the front of
   // |dispatch_queue_|. Returns |true| if the dispatch succeeded and |false|
@@ -307,6 +321,9 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) Connector : public MessageReceiver {
 
   SEQUENCE_CHECKER(sequence_checker_);
 
+  // The quota checker associate with this connector, if any.
+  scoped_refptr<internal::MessageQuotaChecker> quota_checker_;
+
   base::Lock connected_lock_;
   bool connected_ = true;
 
@@ -321,6 +338,9 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) Connector : public MessageReceiver {
   // |true| iff the Connector is currently dispatching a message. Used to detect
   // nested dispatch operations.
   bool is_dispatching_ = false;
+
+  // The number of outstanding tasks for CallDispatchNextMessageInQueue.
+  size_t num_pending_dispatch_tasks_ = 0;
 
 #if defined(ENABLE_IPC_FUZZER)
   std::unique_ptr<MessageReceiver> message_dumper_;

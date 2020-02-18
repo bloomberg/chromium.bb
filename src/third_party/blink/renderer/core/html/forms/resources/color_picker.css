@@ -4,7 +4,12 @@
  */
 
 body {
-  font-family: "Segoe UI", system-ui, Roboto, Ubuntu, sans-serif;
+  font-family: sans-serif;
+}
+
+.color-picker-main {
+  border: 0;
+  padding: 0;
 }
 
 color-picker {
@@ -17,6 +22,7 @@ color-picker {
 
 visual-color-picker {
   height: 59%;
+  min-height: 0;
 }
 
 color-well {
@@ -90,6 +96,7 @@ hue-slider > color-selection-ring {
 
 manual-color-picker {
   height: 28%;
+  min-height: 0;
 }
 
 color-value-container:not(.hidden-color-value-container) {
@@ -136,6 +143,11 @@ format-toggler:hover {
   background-color: #F7F7F7;
 }
 
+#up-down-icon {
+  display: flex;
+  align-items: center;
+}
+
 format-label:not(.hidden-format-label) {
   border-radius: 2px;
   display: flex;
@@ -161,6 +173,7 @@ submission-controls {
   display: flex;
   flex-direction: row;
   height: 13%;
+  min-height: 0;
 }
 
 #submission-controls-padding {
@@ -177,4 +190,25 @@ submission-button {
 submission-button:hover {
   background-color: #F3F3F3;
   border-radius: 2px;
+}
+
+@media (forced-colors: active) {
+  color-viewer {
+    forced-color-adjust: none;
+    border-color: WindowText;
+  }
+  color-well {
+    border-bottom: 1px solid WindowText;
+    border-radius: 0;
+  }
+  color-selection-ring {
+    forced-color-adjust: none;
+  }
+  color-picker {
+    border: 1px solid WindowText;
+    border-radius: 2px;
+  }
+  format-toggler {
+    border: 1px solid WindowText;
+  }
 }

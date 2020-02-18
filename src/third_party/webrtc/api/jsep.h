@@ -52,7 +52,7 @@ struct SdpParseError {
 // a time and is therefore not expected to be thread safe.
 //
 // An instance can be created by CreateIceCandidate.
-class IceCandidateInterface {
+class RTC_EXPORT IceCandidateInterface {
  public:
   virtual ~IceCandidateInterface() {}
   // If present, this is the value of the "a=mid" attribute of the candidate's
@@ -103,13 +103,16 @@ enum class SdpType {
   kOffer,     // Description must be treated as an SDP offer.
   kPrAnswer,  // Description must be treated as an SDP answer, but not a final
               // answer.
-  kAnswer  // Description must be treated as an SDP final answer, and the offer-
-           // answer exchange must be considered complete after receiving this.
+  kAnswer,    // Description must be treated as an SDP final answer, and the
+              // offer-answer exchange must be considered complete after
+              // receiving this.
+  kRollback   // Resets any pending offers and sets signaling state back to
+              // stable.
 };
 
 // Returns the string form of the given SDP type. String forms are defined in
 // SessionDescriptionInterface.
-const char* SdpTypeToString(SdpType type);
+RTC_EXPORT const char* SdpTypeToString(SdpType type);
 
 // Returns the SdpType from its string form. The string form can be one of the
 // constants defined in SessionDescriptionInterface. Passing in any other string
@@ -128,6 +131,7 @@ class RTC_EXPORT SessionDescriptionInterface {
   static const char kOffer[];
   static const char kPrAnswer[];
   static const char kAnswer[];
+  static const char kRollback[];
 
   virtual ~SessionDescriptionInterface() {}
 

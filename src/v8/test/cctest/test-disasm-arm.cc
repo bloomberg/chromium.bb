@@ -997,9 +997,14 @@ TEST(Neon) {
       COMPARE(vmovl(NeonS16, q4, d2), "f2908a12       vmovl.s16 q4, d2");
       COMPARE(vmovl(NeonU32, q4, d2), "f3a08a12       vmovl.u32 q4, d2");
 
-      COMPARE(vqmovn(NeonU8, d16, q8), "f3f202e0       vqmovn.u16 d16, q8");
-      COMPARE(vqmovn(NeonS16, d16, q8), "f3f602a0       vqmovn.s32 d16, q8");
-      COMPARE(vqmovn(NeonU32, d2, q4), "f3ba22c8       vqmovn.u64 d2, q4");
+      COMPARE(vqmovn(NeonU8, NeonU8, d16, q8),
+              "f3f202e0       vqmovn.u16 d16, q8");
+      COMPARE(vqmovn(NeonS16, NeonS16, d16, q8),
+              "f3f602a0       vqmovn.s32 d16, q8");
+      COMPARE(vqmovn(NeonU32, NeonU32, d2, q4),
+              "f3ba22c8       vqmovn.u64 d2, q4");
+      COMPARE(vqmovn(NeonU32, NeonS32, d2, q4),
+              "f3ba2248       vqmovun.s64 d2, q4");
 
       COMPARE(vmov(NeonS8, d0, 0, r0), "ee400b10       vmov.8 d0[0], r0");
       COMPARE(vmov(NeonU8, d1, 1, r1), "ee411b30       vmov.8 d1[1], r1");
@@ -1038,6 +1043,10 @@ TEST(Neon) {
               "f22e01fe       vmov q0, q15");
       COMPARE(vmov(q8, q9),
               "f26201f2       vmov q8, q9");
+      COMPARE(vmov(q1, 0),
+              "f2802050       vmov.i32 q1, 0");
+      COMPARE(vmov(q1, 0x0000001200000012),
+              "f2812052       vmov.i32 q1, 18");
       COMPARE(vmvn(q0, q15),
               "f3b005ee       vmvn q0, q15");
       COMPARE(vmvn(q8, q9),
@@ -1166,6 +1175,12 @@ TEST(Neon) {
               "f2dae550       vshl.i16 q15, q0, #10");
       COMPARE(vshl(NeonS32, q15, q0, 17),
               "f2f1e550       vshl.i32 q15, q0, #17");
+      COMPARE(vshl(NeonS8, q15, q0, q1),
+              "f242e440       vshl.s8 q15, q0, q1");
+      COMPARE(vshl(NeonU16, q15, q2, q3),
+              "f356e444       vshl.u16 q15, q2, q3");
+      COMPARE(vshl(NeonS32, q15, q4, q5),
+              "f26ae448       vshl.s32 q15, q4, q5");
       COMPARE(vshr(NeonS8, q15, q0, 6),
               "f2cae050       vshr.s8 q15, q0, #6");
       COMPARE(vshr(NeonU16, q15, q0, 10),

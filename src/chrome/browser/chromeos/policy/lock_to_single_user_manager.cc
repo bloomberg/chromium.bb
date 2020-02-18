@@ -7,16 +7,17 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
-#include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/chromeos/crostini/crostini_manager.h"
+#include "chrome/browser/chromeos/plugin_vm/plugin_vm_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/cryptohome/cryptohome_client.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/login/session/session_termination_manager.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
-#include "content/public/browser/notification_service.h"
 
 using RebootOnSignOutPolicy =
     enterprise_management::DeviceRebootOnUserSignoutProto;
@@ -30,7 +31,11 @@ namespace policy {
 
 namespace {
 
-// The result from D-Bus call to lock the device to single user.
+chromeos::ConciergeClient* GetConciergeClient() {
+  return chromeos::DBusThreadManager::Get()->GetConciergeClient();
+}
+
+// The result of locking the device to single user.
 // These values are logged to UMA. Entries should not be renumbered and
 // numeric values should never be reused. Please keep in sync with
 // "LockToSingleUserResult" in src/tools/metrics/histograms/enums.xml.
@@ -41,46 +46,70 @@ enum class LockToSingleUserResult {
   kNoResponse = 1,
   // Request failed on Chrome OS side.
   kFailedToLock = 2,
-  kMaxValue = kFailedToLock,
+  // Expected device to already be locked to a single user
+  kUnexpectedLockState = 3,
+  kMaxValue = kUnexpectedLockState,
 };
 
 void RecordDBusResult(LockToSingleUserResult result) {
   base::UmaHistogramEnumeration("Enterprise.LockToSingleUserResult", result);
 }
 
+LockToSingleUserManager* g_lock_to_single_user_manager_instance;
 }  // namespace
 
-LockToSingleUserManager::LockToSingleUserManager() {
-  notification_registrar_.Add(this, chrome::NOTIFICATION_PROFILE_CREATED,
-                              content::NotificationService::AllSources());
+// static
+LockToSingleUserManager*
+LockToSingleUserManager::GetLockToSingleUserManagerInstance() {
+  return g_lock_to_single_user_manager_instance;
 }
 
-LockToSingleUserManager::~LockToSingleUserManager() = default;
+LockToSingleUserManager::LockToSingleUserManager() {
+  user_manager::UserManager::Get()->AddSessionStateObserver(this);
 
-void LockToSingleUserManager::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK_EQ(chrome::NOTIFICATION_PROFILE_CREATED, type);
-  const user_manager::User* user =
-      chromeos::ProfileHelper::Get()->GetUserByProfile(
-          content::Source<Profile>(source).ptr());
-  if (!user || user->IsAffiliated()) {
+  DCHECK(!g_lock_to_single_user_manager_instance);
+  g_lock_to_single_user_manager_instance = this;
+}
+
+LockToSingleUserManager::~LockToSingleUserManager() {
+  user_manager::UserManager::Get()->RemoveSessionStateObserver(this);
+
+  g_lock_to_single_user_manager_instance = nullptr;
+}
+
+void LockToSingleUserManager::DbusNotifyVmStarting() {
+  if (lock_to_single_user_on_dbus_call_)
+    LockToSingleUser();
+}
+
+void LockToSingleUserManager::ActiveUserChanged(user_manager::User* user) {
+  if (user->IsAffiliated())
     return;
-  }
+
   int policy_value = -1;
   if (!chromeos::CrosSettings::Get()->GetInteger(
           chromeos::kDeviceRebootOnUserSignout, &policy_value)) {
     return;
   }
-  notification_registrar_.RemoveAll();
+
+  user_manager::UserManager::Get()->RemoveSessionStateObserver(this);
   switch (policy_value) {
+    default:
     case RebootOnSignOutPolicy::ALWAYS:
-      LockToSingleUser();
+      user->AddProfileCreatedObserver(
+          base::BindOnce(&LockToSingleUserManager::LockToSingleUser,
+                         weak_factory_.GetWeakPtr()));
+      break;
+    case RebootOnSignOutPolicy::VM_STARTED_OR_ARC_SESSION:
+      user->AddProfileCreatedObserver(
+          base::BindOnce(&LockToSingleUserManager::AddVmStartingObservers,
+                         weak_factory_.GetWeakPtr(), user));
+      arc_session_observer_.Add(arc::ArcSessionManager::Get());
       break;
     case RebootOnSignOutPolicy::ARC_SESSION:
       arc_session_observer_.Add(arc::ArcSessionManager::Get());
+      break;
+    case RebootOnSignOutPolicy::NEVER:
       break;
   }
 }
@@ -88,6 +117,36 @@ void LockToSingleUserManager::Observe(
 void LockToSingleUserManager::OnArcStarted() {
   arc_session_observer_.RemoveAll();
   LockToSingleUser();
+}
+
+void LockToSingleUserManager::OnVmStarted(
+    const vm_tools::concierge::VmStartedSignal& signal) {
+  // When we receive the VmStarted signal we expect to already be locked to a
+  // single user.
+
+  GetConciergeClient()->RemoveVmObserver(this);
+  LockToSingleUser();
+  expect_to_be_locked_ = true;
+}
+
+void LockToSingleUserManager::OnVmStopped(
+    const vm_tools::concierge::VmStoppedSignal& signal) {}
+
+void LockToSingleUserManager::OnVmStarting() {
+  LockToSingleUser();
+}
+
+void LockToSingleUserManager::AddVmStartingObservers(user_manager::User* user) {
+  Profile* profile = chromeos::ProfileHelper::Get()->GetProfileByUser(user);
+
+  crostini::CrostiniManager::GetForProfile(profile)->AddVmStartingObserver(
+      this);
+  plugin_vm::PluginVmManager::GetForProfile(profile)->AddVmStartingObserver(
+      this);
+
+  GetConciergeClient()->AddVmObserver(this);
+
+  lock_to_single_user_on_dbus_call_ = true;
 }
 
 void LockToSingleUserManager::LockToSingleUser() {
@@ -116,12 +175,19 @@ void LockToSingleUserManager::OnLockToSingleUserMountUntilRebootDone(
   // Force user logout if failed to lock the device to single user mount.
   const RebootOnSignOutReply extension =
       reply->GetExtension(RebootOnSignOutReply::reply);
+
   if (extension.result() == RebootOnSignOutResult::SUCCESS ||
       extension.result() == RebootOnSignOutResult::PCR_ALREADY_EXTENDED) {
     // The device is locked to single user on TPM level. Update the cache in
     // SessionTerminationManager, so that it triggers reboot on sign out.
     chromeos::SessionTerminationManager::Get()->SetDeviceLockedToSingleUser();
-    RecordDBusResult(LockToSingleUserResult::kSuccess);
+
+    if (expect_to_be_locked_ &&
+        extension.result() != RebootOnSignOutResult::PCR_ALREADY_EXTENDED) {
+      RecordDBusResult(LockToSingleUserResult::kUnexpectedLockState);
+    } else {
+      RecordDBusResult(LockToSingleUserResult::kSuccess);
+    }
   } else {
     LOG(ERROR) << "Signing out user: failed to lock device to single user: "
                << extension.result();

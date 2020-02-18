@@ -38,7 +38,7 @@
 #pragma warning(pop)
 #endif
 #include <limits.h>
-#include <math.h>
+#include <cmath>
 
 #if defined(PATH_MAX) && !defined(MAX_PATH)
 #define MAX_PATH PATH_MAX
@@ -59,22 +59,6 @@
         exit(1);                     \
     } while (0)
 #endif  // _WIN32
-
-#define GET_INSTANCE_PROC_ADDR(inst, entrypoint)                                                              \
-    {                                                                                                         \
-        m_fp##entrypoint = (PFN_vk##entrypoint)vkGetInstanceProcAddr(inst, "vk" #entrypoint);                 \
-        if (m_fp##entrypoint == NULL) {                                                                       \
-            ERR_EXIT("vkGetInstanceProcAddr failed to find vk" #entrypoint, "vkGetInstanceProcAddr Failure"); \
-        }                                                                                                     \
-    }
-
-#define GET_DEVICE_PROC_ADDR(dev, entrypoint)                                                             \
-    {                                                                                                     \
-        m_fp##entrypoint = (PFN_vk##entrypoint)vkGetDeviceProcAddr(dev, "vk" #entrypoint);                \
-        if (m_fp##entrypoint == NULL) {                                                                   \
-            ERR_EXIT("vkGetDeviceProcAddr failed to find vk" #entrypoint, "vkGetDeviceProcAddr Failure"); \
-        }                                                                                                 \
-    }
 
 // Command-line options
 enum TOptions {
@@ -131,6 +115,8 @@ void TestEnvironment::SetUp() {
     glslang::InitializeProcess();
 
     vk_testing::set_error_callback(test_error_callback);
+
+    vk::InitDispatchTable();
 }
 
 void TestEnvironment::TearDown() { glslang::FinalizeProcess(); }
@@ -210,12 +196,12 @@ void VkTestFramework::InitArgs(int *argc, char *argv[]) {
 VkFormat VkTestFramework::GetFormat(VkInstance instance, vk_testing::Device *device) {
     VkFormatProperties format_props;
 
-    vkGetPhysicalDeviceFormatProperties(device->phy().handle(), VK_FORMAT_B8G8R8A8_UNORM, &format_props);
+    vk::GetPhysicalDeviceFormatProperties(device->phy().handle(), VK_FORMAT_B8G8R8A8_UNORM, &format_props);
     if (format_props.linearTilingFeatures & VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BIT ||
         format_props.optimalTilingFeatures & VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BIT) {
         return VK_FORMAT_B8G8R8A8_UNORM;
     }
-    vkGetPhysicalDeviceFormatProperties(device->phy().handle(), VK_FORMAT_R8G8B8A8_UNORM, &format_props);
+    vk::GetPhysicalDeviceFormatProperties(device->phy().handle(), VK_FORMAT_R8G8B8A8_UNORM, &format_props);
     if (format_props.linearTilingFeatures & VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BIT ||
         format_props.optimalTilingFeatures & VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BIT) {
         return VK_FORMAT_R8G8B8A8_UNORM;
@@ -352,14 +338,16 @@ bool VkTestFramework::SetConfigFile(const std::string &name) {
 //
 // Parse either a .conf file provided by the user or the default string above.
 //
-void VkTestFramework::ProcessConfigFile() {
+void VkTestFramework::ProcessConfigFile(VkPhysicalDeviceLimits const *const device_limits) {
     char **configStrings = 0;
     char *config = 0;
+    bool config_file_specified = false;
     if (ConfigFile.size() > 0) {
         configStrings = ReadFileData(ConfigFile.c_str());
-        if (configStrings)
+        if (configStrings) {
             config = *configStrings;
-        else {
+            config_file_specified = true;
+        } else {
             printf("Error opening configuration file; will instead use the default configuration\n");
         }
     }
@@ -418,19 +406,19 @@ void VkTestFramework::ProcessConfigFile() {
         else if (strcmp(token, "MaxProgramTexelOffset") == 0)
             Resources.maxProgramTexelOffset = value;
         else if (strcmp(token, "MaxClipDistances") == 0)
-            Resources.maxClipDistances = value;
+            Resources.maxClipDistances = (config_file_specified ? value : device_limits->maxClipDistances);
         else if (strcmp(token, "MaxComputeWorkGroupCountX") == 0)
-            Resources.maxComputeWorkGroupCountX = value;
+            Resources.maxComputeWorkGroupCountX = (config_file_specified ? value : device_limits->maxComputeWorkGroupCount[0]);
         else if (strcmp(token, "MaxComputeWorkGroupCountY") == 0)
-            Resources.maxComputeWorkGroupCountY = value;
+            Resources.maxComputeWorkGroupCountY = (config_file_specified ? value : device_limits->maxComputeWorkGroupCount[1]);
         else if (strcmp(token, "MaxComputeWorkGroupCountZ") == 0)
-            Resources.maxComputeWorkGroupCountZ = value;
+            Resources.maxComputeWorkGroupCountZ = (config_file_specified ? value : device_limits->maxComputeWorkGroupCount[2]);
         else if (strcmp(token, "MaxComputeWorkGroupSizeX") == 0)
-            Resources.maxComputeWorkGroupSizeX = value;
+            Resources.maxComputeWorkGroupSizeX = (config_file_specified ? value : device_limits->maxComputeWorkGroupSize[0]);
         else if (strcmp(token, "MaxComputeWorkGroupSizeY") == 0)
-            Resources.maxComputeWorkGroupSizeY = value;
+            Resources.maxComputeWorkGroupSizeY = (config_file_specified ? value : device_limits->maxComputeWorkGroupSize[1]);
         else if (strcmp(token, "MaxComputeWorkGroupSizeZ") == 0)
-            Resources.maxComputeWorkGroupSizeZ = value;
+            Resources.maxComputeWorkGroupSizeZ = (config_file_specified ? value : device_limits->maxComputeWorkGroupSize[2]);
         else if (strcmp(token, "MaxComputeUniformComponents") == 0)
             Resources.maxComputeUniformComponents = value;
         else if (strcmp(token, "MaxComputeTextureImageUnits") == 0)
@@ -444,13 +432,13 @@ void VkTestFramework::ProcessConfigFile() {
         else if (strcmp(token, "MaxVaryingComponents") == 0)
             Resources.maxVaryingComponents = value;
         else if (strcmp(token, "MaxVertexOutputComponents") == 0)
-            Resources.maxVertexOutputComponents = value;
+            Resources.maxVertexOutputComponents = (config_file_specified ? value : device_limits->maxVertexOutputComponents);
         else if (strcmp(token, "MaxGeometryInputComponents") == 0)
-            Resources.maxGeometryInputComponents = value;
+            Resources.maxGeometryInputComponents = (config_file_specified ? value : device_limits->maxGeometryInputComponents);
         else if (strcmp(token, "MaxGeometryOutputComponents") == 0)
-            Resources.maxGeometryOutputComponents = value;
+            Resources.maxGeometryOutputComponents = (config_file_specified ? value : device_limits->maxGeometryOutputComponents);
         else if (strcmp(token, "MaxFragmentInputComponents") == 0)
-            Resources.maxFragmentInputComponents = value;
+            Resources.maxFragmentInputComponents = (config_file_specified ? value : device_limits->maxFragmentInputComponents);
         else if (strcmp(token, "MaxImageUnits") == 0)
             Resources.maxImageUnits = value;
         else if (strcmp(token, "MaxCombinedImageUnitsAndFragmentOutputs") == 0)
@@ -474,9 +462,10 @@ void VkTestFramework::ProcessConfigFile() {
         else if (strcmp(token, "MaxGeometryTextureImageUnits") == 0)
             Resources.maxGeometryTextureImageUnits = value;
         else if (strcmp(token, "MaxGeometryOutputVertices") == 0)
-            Resources.maxGeometryOutputVertices = value;
+            Resources.maxGeometryOutputVertices = (config_file_specified ? value : device_limits->maxGeometryOutputVertices);
         else if (strcmp(token, "MaxGeometryTotalOutputComponents") == 0)
-            Resources.maxGeometryTotalOutputComponents = value;
+            Resources.maxGeometryTotalOutputComponents =
+                (config_file_specified ? value : device_limits->maxGeometryTotalOutputComponents);
         else if (strcmp(token, "MaxGeometryUniformComponents") == 0)
             Resources.maxGeometryUniformComponents = value;
         else if (strcmp(token, "MaxGeometryVaryingComponents") == 0)
@@ -506,7 +495,7 @@ void VkTestFramework::ProcessConfigFile() {
         else if (strcmp(token, "MaxTessGenLevel") == 0)
             Resources.maxTessGenLevel = value;
         else if (strcmp(token, "MaxViewports") == 0)
-            Resources.maxViewports = value;
+            Resources.maxViewports = (config_file_specified ? value : device_limits->maxViewports);
         else if (strcmp(token, "MaxVertexAtomicCounters") == 0)
             Resources.maxVertexAtomicCounters = value;
         else if (strcmp(token, "MaxTessControlAtomicCounters") == 0)
@@ -540,7 +529,7 @@ void VkTestFramework::ProcessConfigFile() {
         else if (strcmp(token, "MaxTransformFeedbackInterleavedComponents") == 0)
             Resources.maxTransformFeedbackInterleavedComponents = value;
         else if (strcmp(token, "MaxCullDistances") == 0)
-            Resources.maxCullDistances = value;
+            Resources.maxCullDistances = (config_file_specified ? value : device_limits->maxCullDistances);
         else if (strcmp(token, "MaxCombinedClipAndCullDistances") == 0)
             Resources.maxCombinedClipAndCullDistances = value;
         else if (strcmp(token, "MaxSamples") == 0)
@@ -754,8 +743,8 @@ EShLanguage VkTestFramework::FindLanguage(const VkShaderStageFlagBits shader_typ
 // Compile a given string containing GLSL into SPV for use by VK
 // Return value of false means an error was encountered.
 //
-bool VkTestFramework::GLSLtoSPV(const VkShaderStageFlagBits shader_type, const char *pshader, std::vector<unsigned int> &spirv,
-                                bool debug) {
+bool VkTestFramework::GLSLtoSPV(VkPhysicalDeviceLimits const *const device_limits, const VkShaderStageFlagBits shader_type,
+                                const char *pshader, std::vector<unsigned int> &spirv, bool debug, uint32_t spirv_minor_version) {
     glslang::TProgram program;
     const char *shaderStrings[1];
 
@@ -763,7 +752,7 @@ bool VkTestFramework::GLSLtoSPV(const VkShaderStageFlagBits shader_type, const c
     // shader source? Optional name maybe?
     //    SetConfigFile(fileName);
 
-    ProcessConfigFile();
+    ProcessConfigFile(device_limits);
 
     EShMessages messages = EShMsgDefault;
     SetMessageOptions(messages);
@@ -774,6 +763,27 @@ bool VkTestFramework::GLSLtoSPV(const VkShaderStageFlagBits shader_type, const c
 
     EShLanguage stage = FindLanguage(shader_type);
     glslang::TShader *shader = new glslang::TShader(stage);
+    switch (spirv_minor_version) {
+        default:
+        case 0:
+            shader->setEnvTarget(glslang::EShTargetSpv, glslang::EShTargetSpv_1_0);
+            break;
+        case 1:
+            shader->setEnvTarget(glslang::EShTargetSpv, glslang::EShTargetSpv_1_1);
+            break;
+        case 2:
+            shader->setEnvTarget(glslang::EShTargetSpv, glslang::EShTargetSpv_1_2);
+            break;
+        case 3:
+            shader->setEnvTarget(glslang::EShTargetSpv, glslang::EShTargetSpv_1_3);
+            break;
+        case 4:
+            shader->setEnvTarget(glslang::EShTargetSpv, glslang::EShTargetSpv_1_4);
+            break;
+        case 5:
+            shader->setEnvTarget(glslang::EShTargetSpv, glslang::EShTargetSpv_1_5);
+            break;
+    }
 
     shaderStrings[0] = pshader;
     shader->setStrings(shaderStrings, 1);

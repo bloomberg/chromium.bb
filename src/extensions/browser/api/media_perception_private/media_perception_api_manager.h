@@ -15,6 +15,8 @@
 #include "chromeos/services/media_perception/public/mojom/media_perception_service.mojom.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/common/api/media_perception_private.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 namespace extensions {
 
@@ -48,7 +50,8 @@ class MediaPerceptionAPIManager
 
   // Handler for clients of the API requesting a MediaPerception Mojo interface.
   void ActivateMediaPerception(
-      chromeos::media_perception::mojom::MediaPerceptionRequest request);
+      mojo::PendingReceiver<chromeos::media_perception::mojom::MediaPerception>
+          receiver);
 
   // Public functions for MediaPerceptionPrivateAPI implementation.
   void SetAnalyticsComponent(
@@ -150,10 +153,10 @@ class MediaPerceptionAPIManager
 
   // Pointer to the MediaPerceptionService interface for communicating with the
   // service over Mojo.
-  chromeos::media_perception::mojom::MediaPerceptionServicePtr
+  mojo::Remote<chromeos::media_perception::mojom::MediaPerceptionService>
       media_perception_service_;
 
-  chromeos::media_perception::mojom::MediaPerceptionControllerPtr
+  mojo::Remote<chromeos::media_perception::mojom::MediaPerceptionController>
       media_perception_controller_;
 
   std::unique_ptr<MediaPerceptionControllerClient>

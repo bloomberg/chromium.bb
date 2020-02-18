@@ -48,9 +48,12 @@ const char* kServiceAccountRedirectUri = "oob";
 
 // Features supported in addition to the base protocol.
 const char* kSupportedFeatures[] = {
-  "pairingRegistry",
-  "oauthClient",
-  "getRefreshTokenFromAuthCode",
+    "pairingRegistry",
+    "oauthClient",
+    "getRefreshTokenFromAuthCode",
+#if defined(OS_MACOSX)
+    "it2mePermissionCheck",
+#endif  // defined(OS_MACOSX)
 };
 
 // Helper to extract the "config" part of a message as a DictionaryValue.
@@ -153,6 +156,8 @@ void Me2MeNativeMessagingHost::OnMessage(const std::string& message) {
   } else if (type == "getRefreshTokenFromAuthCode") {
     ProcessGetCredentialsFromAuthCode(
         std::move(message_dict), std::move(response), false);
+  } else if (type == "it2mePermissionCheck") {
+    ProcessIt2mePermissionCheck(std::move(message_dict), std::move(response));
   } else {
     OnError("Unsupported request type: " + type);
   }
@@ -176,10 +181,10 @@ void Me2MeNativeMessagingHost::ProcessHello(
   DCHECK(task_runner()->BelongsToCurrentThread());
 
   response->SetString("version", STRINGIZE(VERSION));
-  std::unique_ptr<base::ListValue> supported_features_list(
-      new base::ListValue());
-  supported_features_list->AppendStrings(std::vector<std::string>(
-      kSupportedFeatures, kSupportedFeatures + base::size(kSupportedFeatures)));
+  auto supported_features_list = std::make_unique<base::ListValue>();
+  for (const char* feature : kSupportedFeatures) {
+    supported_features_list->Append(feature);
+  }
   response->Set("supportedFeatures", std::move(supported_features_list));
   SendMessageToClient(std::move(response));
 }
@@ -471,6 +476,16 @@ void Me2MeNativeMessagingHost::ProcessGetCredentialsFromAuthCode(
       oauth_client_info, auth_code, need_user_email, base::Bind(
           &Me2MeNativeMessagingHost::SendCredentialsResponse, weak_ptr_,
           base::Passed(&response)));
+}
+
+void Me2MeNativeMessagingHost::ProcessIt2mePermissionCheck(
+    std::unique_ptr<base::DictionaryValue> message,
+    std::unique_ptr<base::DictionaryValue> response) {
+  DCHECK(task_runner()->BelongsToCurrentThread());
+
+  daemon_controller_->CheckPermission(
+      /* it2me */ true, base::Bind(&Me2MeNativeMessagingHost::SendBooleanResult,
+                                   weak_ptr_, base::Passed(&response)));
 }
 
 void Me2MeNativeMessagingHost::SendConfigResponse(

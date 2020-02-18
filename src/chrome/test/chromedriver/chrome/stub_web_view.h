@@ -69,6 +69,9 @@ class StubWebView : public WebView {
                             bool async_dispatch_events = false) override;
   Status DispatchTouchEvents(const std::list<TouchEvent>& events,
                              bool async_dispatch_events = false) override;
+  Status DispatchTouchEventWithMultiPoints(
+      const std::list<TouchEvent>& events,
+      bool async_dispatch_events = false) override;
   Status DispatchKeyEvents(const std::list<KeyEvent>& events,
                            bool async_dispatch_events = false) override;
   Status GetCookies(std::unique_ptr<base::ListValue>* cookies,
@@ -82,6 +85,7 @@ class StubWebView : public WebView {
                    const std::string& value,
                    const std::string& domain,
                    const std::string& path,
+                   const std::string& sameSite,
                    bool secure,
                    bool httpOnly,
                    double expiry) override;
@@ -90,7 +94,7 @@ class StubWebView : public WebView {
                                    bool stop_load_on_timeout) override;
   Status IsPendingNavigation(const std::string& frame_id,
                              const Timeout* timeout,
-                             bool* is_pending) override;
+                             bool* is_pending) const override;
   JavaScriptDialogManager* GetJavaScriptDialogManager() override;
   Status OverrideGeolocation(const Geoposition& geoposition) override;
   Status OverrideNetworkConditions(
@@ -115,11 +119,12 @@ class StubWebView : public WebView {
                                  int y,
                                  int xoffset,
                                  int yoffset) override;
-  bool IsNonBlocking() override;
+  bool IsNonBlocking() const override;
   bool IsOOPIF(const std::string& frame_id) override;
   FrameTracker* GetFrameTracker() const override;
   std::unique_ptr<base::Value> GetCastSinks() override;
   std::unique_ptr<base::Value> GetCastIssueMessage() override;
+  void ClearNavigationState(const std::string& new_frame_id) override;
 
  private:
   std::string id_;

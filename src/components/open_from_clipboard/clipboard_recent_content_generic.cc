@@ -4,6 +4,8 @@
 
 #include "components/open_from_clipboard/clipboard_recent_content_generic.h"
 
+#include <string>
+
 #include "base/strings/string_util.h"
 #include "ui/base/clipboard/clipboard.h"
 
@@ -14,8 +16,7 @@ const char* kAuthorizedSchemes[] = {
     // TODO(mpearson): add support for chrome:// URLs.  Right now the scheme
     // for that lives in content and is accessible via
     // GetEmbedderRepresentationOfAboutScheme() or content::kChromeUIScheme
-    // TODO(mpearson): when adding desktop support, add kFileScheme, kFtpScheme,
-    // and kGopherScheme.
+    // TODO(mpearson): when adding desktop support, add kFileScheme, kFtpScheme.
 };
 
 }  // namespace
@@ -101,6 +102,10 @@ void ClipboardRecentContentGeneric::SuppressClipboardContent() {
   // omnibox list.  Do this by pretending the current clipboard is ancient,
   // not recent.
   ui::Clipboard::GetForCurrentThread()->ClearLastModifiedTime();
+}
+
+void ClipboardRecentContentGeneric::ClearClipboardContent() {
+  ui::Clipboard::GetForCurrentThread()->Clear(ui::ClipboardBuffer::kCopyPaste);
 }
 
 // static

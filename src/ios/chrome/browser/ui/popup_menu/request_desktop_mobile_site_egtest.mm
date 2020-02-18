@@ -2,19 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import <EarlGrey/EarlGrey.h>
-#import <XCTest/XCTest.h>
-
 #include "base/strings/sys_string_conversions.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_constants.h"
-#import "ios/chrome/browser/ui/util/uikit_ui_util.h"
-#include "ios/chrome/browser/web/chrome_web_client.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
+#import "ios/testing/earl_grey/earl_grey_test.h"
+#include "ios/web/common/user_agent.h"
 #include "ios/web/public/test/http_server/data_response_provider.h"
 #import "ios/web/public/test/http_server/http_server.h"
 #include "ios/web/public/test/http_server/http_server_util.h"
@@ -32,6 +29,10 @@ const char kUserAgentTestURL[] =
 const char kMobileSiteLabel[] = "Mobile";
 
 const char kDesktopSiteLabel[] = "Desktop";
+
+// Custom timeout used when waiting for a web state after requesting desktop
+// or mobile mode.
+const NSTimeInterval kWaitForUserAgentChangeTimeout = 10.0;
 
 // Select the button to request desktop site by scrolling the collection.
 // 200 is a reasonable scroll displacement that works for all UI elements, while
@@ -79,8 +80,10 @@ class UserAgentResponseProvider : public web::DataResponseProvider {
 
     *headers = web::ResponseProvider::GetDefaultResponseHeaders();
     std::string userAgent;
+    std::string desktop_user_agent =
+        web::BuildUserAgentFromProduct(web::UserAgentType::DESKTOP, "");
     if (request.headers.GetHeader("User-Agent", &userAgent) &&
-        userAgent == kDesktopUserAgent) {
+        userAgent == desktop_user_agent) {
       response_body->assign("Desktop");
     } else {
       response_body->assign("Mobile");
@@ -109,7 +112,8 @@ class UserAgentResponseProvider : public web::DataResponseProvider {
   // Request and verify reception of the desktop site.
   [ChromeEarlGreyUI openToolsMenu];
   [RequestDesktopButton() performAction:grey_tap()];
-  [ChromeEarlGrey waitForWebStateContainingText:kDesktopSiteLabel];
+  [ChromeEarlGrey waitForWebStateContainingText:kDesktopSiteLabel
+                                        timeout:kWaitForUserAgentChangeTimeout];
 
   // Verify that desktop user agent propagates.
   [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl("http://2.com")];
@@ -130,7 +134,8 @@ class UserAgentResponseProvider : public web::DataResponseProvider {
   // Request and verify reception of the desktop site.
   [ChromeEarlGreyUI openToolsMenu];
   [RequestDesktopButton() performAction:grey_tap()];
-  [ChromeEarlGrey waitForWebStateContainingText:kDesktopSiteLabel];
+  [ChromeEarlGrey waitForWebStateContainingText:kDesktopSiteLabel
+                                        timeout:kWaitForUserAgentChangeTimeout];
 
   // Verify that desktop user agent does not propagate to new tab.
   [ChromeEarlGreyUI openNewTab];
@@ -156,7 +161,8 @@ class UserAgentResponseProvider : public web::DataResponseProvider {
   // Request and verify reception of the desktop site.
   [ChromeEarlGreyUI openToolsMenu];
   [RequestDesktopButton() performAction:grey_tap()];
-  [ChromeEarlGrey waitForWebStateContainingText:kDesktopSiteLabel];
+  [ChromeEarlGrey waitForWebStateContainingText:kDesktopSiteLabel
+                                        timeout:kWaitForUserAgentChangeTimeout];
 
   // Verify that going back returns to the mobile site.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::BackButton()]
@@ -178,12 +184,14 @@ class UserAgentResponseProvider : public web::DataResponseProvider {
   // Request and verify reception of the desktop site.
   [ChromeEarlGreyUI openToolsMenu];
   [RequestDesktopButton() performAction:grey_tap()];
-  [ChromeEarlGrey waitForWebStateContainingText:kDesktopSiteLabel];
+  [ChromeEarlGrey waitForWebStateContainingText:kDesktopSiteLabel
+                                        timeout:kWaitForUserAgentChangeTimeout];
 
   // Request and verify reception of the mobile site.
   [ChromeEarlGreyUI openToolsMenu];
   [RequestMobileButton() performAction:grey_tap()];
-  [ChromeEarlGrey waitForWebStateContainingText:kMobileSiteLabel];
+  [ChromeEarlGrey waitForWebStateContainingText:kMobileSiteLabel
+                                        timeout:kWaitForUserAgentChangeTimeout];
 
   // Verify that mobile user agent propagates.
   [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl("http://2.com")];
@@ -208,12 +216,14 @@ class UserAgentResponseProvider : public web::DataResponseProvider {
   // Request and verify reception of the desktop site.
   [ChromeEarlGreyUI openToolsMenu];
   [RequestDesktopButton() performAction:grey_tap()];
-  [ChromeEarlGrey waitForWebStateContainingText:kDesktopSiteLabel];
+  [ChromeEarlGrey waitForWebStateContainingText:kDesktopSiteLabel
+                                        timeout:kWaitForUserAgentChangeTimeout];
 
   // Request and verify reception of the mobile site.
   [ChromeEarlGreyUI openToolsMenu];
   [RequestMobileButton() performAction:grey_tap()];
-  [ChromeEarlGrey waitForWebStateContainingText:kMobileSiteLabel];
+  [ChromeEarlGrey waitForWebStateContainingText:kMobileSiteLabel
+                                        timeout:kWaitForUserAgentChangeTimeout];
 
   // Verify that going back returns to the desktop site.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::BackButton()]
@@ -266,12 +276,14 @@ class UserAgentResponseProvider : public web::DataResponseProvider {
   // Request and verify reception of the desktop site.
   [ChromeEarlGreyUI openToolsMenu];
   [RequestDesktopButton() performAction:grey_tap()];
-  [ChromeEarlGrey waitForWebStateContainingText:kDesktopSiteLabel];
+  [ChromeEarlGrey waitForWebStateContainingText:kDesktopSiteLabel
+                                        timeout:kWaitForUserAgentChangeTimeout];
 
   // Request and verify reception of the mobile site.
   [ChromeEarlGreyUI openToolsMenu];
   [RequestMobileButton() performAction:grey_tap()];
-  [ChromeEarlGrey waitForWebStateContainingText:kMobileSiteLabel];
+  [ChromeEarlGrey waitForWebStateContainingText:kMobileSiteLabel
+                                        timeout:kWaitForUserAgentChangeTimeout];
 }
 
 @end

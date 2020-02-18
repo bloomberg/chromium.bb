@@ -281,7 +281,7 @@ shm_create_pool(struct wl_client *client, struct wl_resource *resource,
 	if (pool->data == MAP_FAILED) {
 		wl_resource_post_error(resource,
 				       WL_SHM_ERROR_INVALID_FD,
-				       "failed mmap fd %d", fd);
+				       "failed mmap fd %d: %m", fd);
 		goto err_free;
 	}
 	close(fd);

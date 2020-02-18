@@ -7,6 +7,7 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/idl_types.h"
 #include "third_party/blink/renderer/bindings/core/v8/native_value_traits.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_iterator.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -15,6 +16,10 @@
 namespace blink {
 
 class CallbackFunctionBase;
+
+namespace bindings {
+class DictionaryBase;
+}  // namespace bindings
 
 // Boolean
 template <>
@@ -395,12 +400,13 @@ struct CORE_EXPORT NativeValueTraits<IDLPromise>
 
 // Type-specific overloads
 template <>
-struct CORE_EXPORT NativeValueTraits<IDLDate>
-    : public NativeValueTraitsBase<IDLDate> {
-  static double NativeValue(v8::Isolate* isolate,
-                            v8::Local<v8::Value> value,
-                            ExceptionState& exception_state) {
-    return ToCoreDate(isolate, value, exception_state);
+struct CORE_EXPORT NativeValueTraits<IDLDateOrNull>
+    : public NativeValueTraitsBase<IDLDateOrNull> {
+  static base::Optional<base::Time> NativeValue(
+      v8::Isolate* isolate,
+      v8::Local<v8::Value> value,
+      ExceptionState& exception_state) {
+    return ToCoreNullableDate(isolate, value, exception_state);
   }
 };
 
@@ -415,6 +421,7 @@ struct NativeValueTraits<IDLSequence<T>>
   static ImplType NativeValue(v8::Isolate* isolate,
                               v8::Local<v8::Value> value,
                               ExceptionState& exception_state) {
+    // 1. If Type(V) is not Object, throw a TypeError.
     if (!value->IsObject()) {
       exception_state.ThrowTypeError(
           "The provided value cannot be converted to a sequence.");
@@ -422,19 +429,47 @@ struct NativeValueTraits<IDLSequence<T>>
     }
 
     ImplType result;
-    // TODO(rakuco): Checking for IsArray() may not be enough. Other engines
-    // also prefer regular array iteration over a custom @@iterator when the
-    // latter is defined, but it is not clear if this is a valid optimization.
+    // TODO(https://crbug.com/715122): Checking for IsArray() may not be
+    // enough. Other engines also prefer regular array iteration over a custom
+    // @@iterator when the latter is defined, but it is not clear if this is a
+    // valid optimization.
     if (value->IsArray()) {
       ConvertSequenceFast(isolate, value.As<v8::Array>(), exception_state,
                           result);
     } else {
-      ConvertSequenceSlow(isolate, value.As<v8::Object>(), exception_state,
+      // 2. Let method be ? GetMethod(V, @@iterator).
+      // 3. If method is undefined, throw a TypeError.
+      // 4. Return the result of creating a sequence from V and method.
+      auto script_iterator = ScriptIterator::FromIterable(
+          isolate, value.As<v8::Object>(), exception_state);
+      if (exception_state.HadException())
+        return ImplType();
+      if (script_iterator.IsNull()) {
+        // A null ScriptIterator with an empty |exception_state| means the
+        // object is lacking a callable @@iterator property.
+        exception_state.ThrowTypeError(
+            "The object must have a callable @@iterator property.");
+        return ImplType();
+      }
+      ConvertSequenceSlow(isolate, std::move(script_iterator), exception_state,
                           result);
     }
 
     if (exception_state.HadException())
       return ImplType();
+    return result;
+  }
+
+  // https://heycam.github.io/webidl/#es-sequence
+  // This is a special case, used when converting an IDL union that contains a
+  // sequence or frozen array type.
+  static ImplType NativeValue(v8::Isolate* isolate,
+                              ScriptIterator script_iterator,
+                              ExceptionState& exception_state) {
+    DCHECK(!script_iterator.IsNull());
+    ImplType result;
+    ConvertSequenceSlow(isolate, std::move(script_iterator), exception_state,
+                        result);
     return result;
   }
 
@@ -468,56 +503,34 @@ struct NativeValueTraits<IDLSequence<T>>
 
   // Slow case: follow WebIDL's "Creating a sequence from an iterable" steps to
   // iterate through each element.
-  // https://heycam.github.io/webidl/#create-sequence-from-iterable
   static void ConvertSequenceSlow(v8::Isolate* isolate,
-                                  v8::Local<v8::Object> v8_object,
+                                  ScriptIterator script_iterator,
                                   ExceptionState& exception_state,
                                   ImplType& result) {
-    v8::TryCatch block(isolate);
+    // https://heycam.github.io/webidl/#create-sequence-from-iterable
+    // 2. Initialize i to be 0.
+    // 3. Repeat:
+    ExecutionContext* execution_context =
+        ToExecutionContext(isolate->GetCurrentContext());
+    while (script_iterator.Next(execution_context, exception_state)) {
+      // 3.1. Let next be ? IteratorStep(iter).
+      // 3.2. If next is false, then return an IDL sequence value of type
+      //      sequence<T> of length i, where the value of the element at index
+      //      j is Sj.
+      // 3.3. Let nextItem be ? IteratorValue(next).
+      if (exception_state.HadException())
+        return;
 
-    v8::Local<v8::Object> iterator =
-        GetEsIterator(isolate, v8_object, exception_state);
-    if (exception_state.HadException())
-      return;
+      // The value should already be non-empty, as guaranteed by the call to
+      // Next() and the |exception_state| check above.
+      v8::Local<v8::Value> element =
+          script_iterator.GetValue().ToLocalChecked();
+      DCHECK(!element.IsEmpty());
 
-    v8::Local<v8::String> next_key = V8AtomicString(isolate, "next");
-    v8::Local<v8::String> value_key = V8AtomicString(isolate, "value");
-    v8::Local<v8::String> done_key = V8AtomicString(isolate, "done");
-    v8::Local<v8::Context> context = isolate->GetCurrentContext();
-    while (true) {
-      v8::Local<v8::Value> next;
-      if (!iterator->Get(context, next_key).ToLocal(&next)) {
-        exception_state.RethrowV8Exception(block.Exception());
-        return;
-      }
-      if (!next->IsFunction()) {
-        exception_state.ThrowTypeError("Iterator.next should be callable.");
-        return;
-      }
-      v8::Local<v8::Value> next_result;
-      if (!V8ScriptRunner::CallFunction(next.As<v8::Function>(),
-                                        ToExecutionContext(context), iterator,
-                                        0, nullptr, isolate)
-               .ToLocal(&next_result)) {
-        exception_state.RethrowV8Exception(block.Exception());
-        return;
-      }
-      if (!next_result->IsObject()) {
-        exception_state.ThrowTypeError(
-            "Iterator.next() did not return an object.");
-        return;
-      }
-      v8::Local<v8::Object> result_object = next_result.As<v8::Object>();
-      v8::Local<v8::Value> element;
-      v8::Local<v8::Value> done;
-      if (!result_object->Get(context, value_key).ToLocal(&element) ||
-          !result_object->Get(context, done_key).ToLocal(&done)) {
-        exception_state.RethrowV8Exception(block.Exception());
-        return;
-      }
-      if (done->BooleanValue(isolate))
-        break;
-      result.emplace_back(
+      // 3.4. Initialize Si to the result of converting nextItem to an IDL
+      //      value of type T.
+      // 3.5. Set i to i + 1.
+      result.push_back(
           NativeValueTraits<T>::NativeValue(isolate, element, exception_state));
       if (exception_state.HadException())
         return;
@@ -552,12 +565,13 @@ struct NativeValueTraits<IDLRecord<K, V>>
     // "3. Let keys be ? O.[[OwnPropertyKeys]]()."
     v8::Local<v8::Array> keys;
     // While we could pass v8::ONLY_ENUMERABLE below, doing so breaks
-    // web-platform-tests' headers-record.html and deviates from the spec
-    // algorithm.
+    // web-platform-tests' headers-record.html. It might be worthwhile to try
+    // changing the test.
     if (!v8_object
              ->GetOwnPropertyNames(context,
                                    static_cast<v8::PropertyFilter>(
-                                       v8::PropertyFilter::ALL_PROPERTIES))
+                                       v8::PropertyFilter::ALL_PROPERTIES),
+                                   v8::KeyConversionMode::kConvertToString)
              .ToLocal(&keys)) {
       exception_state.RethrowV8Exception(block.Exception());
       return ImplType();
@@ -585,11 +599,6 @@ struct NativeValueTraits<IDLRecord<K, V>>
         return ImplType();
       }
 
-      // V8's GetOwnPropertyNames() does not convert numeric property indices
-      // to strings, so we have to do it ourselves.
-      if (!key->IsName())
-        key = key->ToString(context).ToLocalChecked();
-
       // "4.1. Let desc be ? O.[[GetOwnProperty]](key)."
       v8::Local<v8::Value> desc;
       if (!v8_object->GetOwnPropertyDescriptor(context, key.As<v8::Name>())
@@ -608,7 +617,7 @@ struct NativeValueTraits<IDLRecord<K, V>>
       DCHECK(desc->IsObject());
       v8::Local<v8::Value> enumerable =
           v8::Local<v8::Object>::Cast(desc)
-              ->Get(context, V8String(isolate, "enumerable"))
+              ->Get(context, V8AtomicString(isolate, "enumerable"))
               .ToLocalChecked();
       if (!enumerable->BooleanValue(isolate))
         continue;
@@ -637,14 +646,15 @@ struct NativeValueTraits<IDLRecord<K, V>>
         //         typedValue.
         //         Note: This can happen when O is a proxy object."
         const uint32_t pos = seen_keys.at(typed_key);
-        result[pos] = std::make_pair(typed_key, typed_value);
+        result[pos].second = std::move(typed_value);
       } else {
         // "4.2.5. Otherwise, append to result a mapping (typedKey,
         // typedValue)."
         // Note we can take this shortcut because we are always appending.
         const uint32_t pos = result.size();
         seen_keys.Set(typed_key, pos);
-        result.UncheckedAppend(std::make_pair(typed_key, typed_value));
+        result.UncheckedAppend(
+            std::make_pair(std::move(typed_key), std::move(typed_value)));
       }
     }
     // "5. Return result."
@@ -652,12 +662,25 @@ struct NativeValueTraits<IDLRecord<K, V>>
   }
 };
 
-// Callback functions
+// Dictionary
 template <typename T>
 struct NativeValueTraits<
     T,
     typename std::enable_if<
-        std::is_base_of<CallbackFunctionBase, T>::value>::type>
+        std::is_base_of<bindings::DictionaryBase, T>::value>::type>
+    : public NativeValueTraitsBase<T> {
+  static T* NativeValue(v8::Isolate* isolate,
+                        v8::Local<v8::Value> value,
+                        ExceptionState& exception_state) {
+    return T::Create(isolate, value, exception_state);
+  }
+};
+
+// Callback functions
+template <typename T>
+struct NativeValueTraits<
+    T,
+    std::enable_if_t<std::is_base_of<CallbackFunctionBase, T>::value>>
     : public NativeValueTraitsBase<T> {
   static T* NativeValue(v8::Isolate* isolate,
                         v8::Local<v8::Value> value,

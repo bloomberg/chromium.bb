@@ -7,6 +7,8 @@
 #include "base/auto_reset.h"
 #include "base/mac/foundation_util.h"
 #include "components/metrics/metrics_pref_names.h"
+#include "components/password_manager/core/common/password_manager_features.h"
+#include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_service.h"
 #import "components/signin/public/identity_manager/objc/identity_manager_observer_bridge.h"
 #include "components/sync/driver/sync_service.h"
@@ -21,6 +23,7 @@
 #import "ios/chrome/browser/ui/authentication/resized_avatar_cache.h"
 #import "ios/chrome/browser/ui/settings/cells/account_sign_in_item.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_image_detail_text_item.h"
+#import "ios/chrome/browser/ui/settings/cells/settings_switch_item.h"
 #import "ios/chrome/browser/ui/settings/cells/sync_switch_item.h"
 #import "ios/chrome/browser/ui/settings/google_services/google_services_settings_command_handler.h"
 #import "ios/chrome/browser/ui/settings/sync/utils/sync_util.h"
@@ -72,6 +75,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   RestartAuthenticationFlowErrorItemType,
   ReauthDialogAsSyncIsInAuthErrorItemType,
   ShowPassphraseDialogErrorItemType,
+  SyncNeedsTrustedVaultKeyErrorItemType,
   SyncDisabledByAdministratorErrorItemType,
   SyncSettingsNotCofirmedErrorItemType,
   SyncChromeDataItemType,
@@ -80,6 +84,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   AutocompleteSearchesAndURLsItemType,
   ImproveChromeItemType,
   BetterSearchAndBrowsingItemType,
+  ItemTypePasswordLeakCheckSwitch,
 };
 
 // Enterprise icon.
@@ -143,6 +148,15 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
 // Preference value for the "Make searches and browsing better" feature.
 @property(nonatomic, strong, readonly)
     PrefBackedBoolean* anonymizedDataCollectionPreference;
+// The observable boolean that binds to the password leak check settings
+// state.
+@property(nonatomic, strong, readonly)
+    PrefBackedBoolean* passwordLeakCheckEnabled;
+// The item related to the switch for the automatic password leak detection
+// setting.
+@property(nonatomic, strong, null_resettable)
+    SettingsSwitchItem* passwordLeakCheckItem;
+
 // All the items for the non-personalized section.
 @property(nonatomic, strong, readonly) ItemArray nonPersonalizedItems;
 
@@ -177,6 +191,14 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
       _sendDataUsageWifiOnlyPreference = [[PrefBackedBoolean alloc]
           initWithPrefService:localPrefService
                      prefName:prefs::kMetricsReportingWifiOnly];
+    }
+    if (base::FeatureList::IsEnabled(
+            password_manager::features::kLeakDetection)) {
+      _passwordLeakCheckEnabled = [[PrefBackedBoolean alloc]
+          initWithPrefService:userPrefService
+                     prefName:password_manager::prefs::
+                                  kPasswordLeakDetectionEnabled];
+      _passwordLeakCheckEnabled.observer = self;
     }
     _anonymizedDataCollectionPreference = [[PrefBackedBoolean alloc]
         initWithPrefService:userPrefService
@@ -357,6 +379,10 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
         type = ShowPassphraseDialogErrorItemType;
         hasError = YES;
         break;
+      case SyncSetupService::kSyncServiceNeedsTrustedVaultKey:
+        type = SyncNeedsTrustedVaultKeyErrorItemType;
+        hasError = YES;
+        break;
       case SyncSetupService::kSyncSettingsNotConfirmed:
         if (self.mode == GoogleServicesSettingsModeSettings) {
           type = SyncSettingsNotCofirmedErrorItemType;
@@ -484,8 +510,7 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
 - (void)updateNonPersonalizedSection {
   for (TableViewItem* item in self.nonPersonalizedItems) {
     ItemType type = static_cast<ItemType>(item.type);
-    SyncSwitchItem* switchItem =
-        base::mac::ObjCCastStrict<SyncSwitchItem>(item);
+    SyncSwitchItem* switchItem = base::mac::ObjCCast<SyncSwitchItem>(item);
     switch (type) {
       case AutocompleteSearchesAndURLsItemType:
         switchItem.on = self.autocompleteSearchPreference.value;
@@ -496,12 +521,18 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
       case BetterSearchAndBrowsingItemType:
         switchItem.on = self.anonymizedDataCollectionPreference.value;
         break;
+      case ItemTypePasswordLeakCheckSwitch:
+        DCHECK(base::FeatureList::IsEnabled(
+            password_manager::features::kLeakDetection));
+        [self updateLeakCheckItem];
+        break;
       case IdentityItemType:
       case ManageGoogleAccountItemType:
       case SignInItemType:
       case RestartAuthenticationFlowErrorItemType:
       case ReauthDialogAsSyncIsInAuthErrorItemType:
       case ShowPassphraseDialogErrorItemType:
+      case SyncNeedsTrustedVaultKeyErrorItemType:
       case SyncDisabledByAdministratorErrorItemType:
       case SyncSettingsNotCofirmedErrorItemType:
       case SyncChromeDataItemType:
@@ -562,12 +593,37 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
                       dataType:0];
     betterSearchAndBrowsingItemType.accessibilityIdentifier =
         kBetterSearchAndBrowsingItemAccessibilityID;
-    _nonPersonalizedItems = @[
-      autocompleteSearchesAndURLsItem, improveChromeItem,
-      betterSearchAndBrowsingItemType
-    ];
+    if (base::FeatureList::IsEnabled(
+            password_manager::features::kLeakDetection)) {
+      _nonPersonalizedItems = @[
+        autocompleteSearchesAndURLsItem, self.passwordLeakCheckItem,
+        improveChromeItem, betterSearchAndBrowsingItemType
+      ];
+    } else {
+      _nonPersonalizedItems = @[
+        autocompleteSearchesAndURLsItem, improveChromeItem,
+        betterSearchAndBrowsingItemType
+      ];
+    }
   }
   return _nonPersonalizedItems;
+}
+
+- (SettingsSwitchItem*)passwordLeakCheckItem {
+  DCHECK(
+      base::FeatureList::IsEnabled(password_manager::features::kLeakDetection));
+  if (!_passwordLeakCheckItem) {
+    SettingsSwitchItem* passwordLeakCheckItem = [[SettingsSwitchItem alloc]
+        initWithType:ItemTypePasswordLeakCheckSwitch];
+    passwordLeakCheckItem.text =
+        l10n_util::GetNSString(IDS_IOS_LEAK_CHECK_SWITCH);
+    passwordLeakCheckItem.on = [self passwordLeakCheckItemOnState];
+    passwordLeakCheckItem.accessibilityIdentifier =
+        @"passwordLeakCheckItem_switch";
+    passwordLeakCheckItem.enabled = self.isAuthenticated;
+    _passwordLeakCheckItem = passwordLeakCheckItem;
+  }
+  return _passwordLeakCheckItem;
 }
 
 #pragma mark - Private
@@ -590,11 +646,13 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
 //   + RestartAuthenticationFlowErrorItemType
 //   + ReauthDialogAsSyncIsInAuthErrorItemType
 //   + ShowPassphraseDialogErrorItemType
+//   + SyncNeedsTrustedVaultKeyErrorItemType
 //   + SyncSettingsNotCofirmedErrorItemType
 - (TableViewItem*)createSyncErrorItemWithItemType:(NSInteger)itemType {
   DCHECK(itemType == RestartAuthenticationFlowErrorItemType ||
          itemType == ReauthDialogAsSyncIsInAuthErrorItemType ||
          itemType == ShowPassphraseDialogErrorItemType ||
+         itemType == SyncNeedsTrustedVaultKeyErrorItemType ||
          itemType == SyncSettingsNotCofirmedErrorItemType);
   SettingsImageDetailTextItem* syncErrorItem =
       [[SettingsImageDetailTextItem alloc] initWithType:itemType];
@@ -609,6 +667,17 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
     // error message should be still be displayed in the first settings screen.
     syncErrorItem.detailText = GetNSString(
         IDS_IOS_GOOGLE_SERVICES_SETTINGS_ENTER_PASSPHRASE_TO_START_SYNC);
+  } else if (itemType == SyncNeedsTrustedVaultKeyErrorItemType) {
+    // Special case only for the sync encryption key error message. The regular
+    // error message should be still be displayed in the first settings screen.
+    syncErrorItem.detailText =
+        GetNSString(IDS_IOS_GOOGLE_SERVICES_SETTINGS_SYNC_ENCRYPTION_FIX_NOW);
+
+    // Also override the title to be more accurate, if only passwords are being
+    // encrypted.
+    if (!self.syncSetupService->IsEncryptEverythingEnabled()) {
+      syncErrorItem.text = GetNSString(IDS_IOS_SYNC_PASSWORDS_ERROR_TITLE);
+    }
   }
   syncErrorItem.image = [UIImage imageNamed:kGoogleServicesSyncErrorImage];
   return syncErrorItem;
@@ -625,6 +694,42 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
   item.enabled = NO;
   item.textColor = UIColor.cr_secondaryLabelColor;
   return item;
+}
+
+// Returns a boolean indicating if the switch should appear as "On" or "Off"
+// based on the sync preference and the sign in status.
+- (BOOL)passwordLeakCheckItemOnState {
+  return [self.passwordLeakCheckEnabled value] && self.isAuthenticated;
+}
+
+// Updates the detail text and on state of the leak check item based on the
+// state.
+- (void)updateLeakCheckItem {
+  if (!base::FeatureList::IsEnabled(
+          password_manager::features::kLeakDetection)) {
+    return;
+  }
+
+  self.passwordLeakCheckItem.enabled = self.isAuthenticated;
+  self.passwordLeakCheckItem.on = [self passwordLeakCheckItemOnState];
+
+  if (!self.isAuthenticated && self.passwordLeakCheckEnabled.value) {
+    // If the user is signed out and the sync preference is enabled, this
+    // informs that it will be turned on on sign in.
+    self.passwordLeakCheckItem.detailText =
+        l10n_util::GetNSString(IDS_IOS_LEAK_CHECK_SIGNED_OUT_ENABLED_DESC);
+    return;
+  }
+  self.passwordLeakCheckItem.detailText = nil;
+}
+
+// Updates leak item and asks the consumer to reload it.
+- (void)updateLeakCheckItemAndReload {
+  if (base::FeatureList::IsEnabled(
+          password_manager::features::kLeakDetection)) {
+    [self updateLeakCheckItem];
+    [self.consumer reloadItem:self.passwordLeakCheckItem];
+  }
 }
 
 #pragma mark - GoogleServicesSettingsViewControllerModelDelegate
@@ -644,9 +749,10 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
 
 #pragma mark - GoogleServicesSettingsServiceDelegate
 
-- (void)toggleSwitchItem:(SyncSwitchItem*)switchItem withValue:(BOOL)value {
-  ItemType type = static_cast<ItemType>(switchItem.type);
-  switchItem.on = value;
+- (void)toggleSwitchItem:(TableViewItem*)item withValue:(BOOL)value {
+  ItemType type = static_cast<ItemType>(item.type);
+  SyncSwitchItem* syncSwitchItem = base::mac::ObjCCast<SyncSwitchItem>(item);
+  syncSwitchItem.on = value;
   switch (type) {
     case AutocompleteSearchesAndURLsItemType:
       self.autocompleteSearchPreference.value = value;
@@ -674,8 +780,15 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
         // button.
         CHECK(value);
         self.syncSetupService->PrepareForFirstSyncSetup();
-        self.syncSetupService->SetFirstSetupComplete();
+        self.syncSetupService->SetFirstSetupComplete(
+            syncer::SyncFirstSetupCompleteSource::BASIC_FLOW);
       }
+      break;
+    case ItemTypePasswordLeakCheckSwitch:
+      // Update the pref.
+      self.passwordLeakCheckEnabled.value = value;
+      // Update the item.
+      [self updateLeakCheckItem];
       break;
     case IdentityItemType:
     case ManageGoogleAccountItemType:
@@ -683,6 +796,7 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
     case RestartAuthenticationFlowErrorItemType:
     case ReauthDialogAsSyncIsInAuthErrorItemType:
     case ShowPassphraseDialogErrorItemType:
+    case SyncNeedsTrustedVaultKeyErrorItemType:
     case SyncDisabledByAdministratorErrorItemType:
     case SyncSettingsNotCofirmedErrorItemType:
     case ManageSyncItemType:
@@ -712,12 +826,16 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
     case ShowPassphraseDialogErrorItemType:
       [self.commandHandler openPassphraseDialog];
       break;
+    case SyncNeedsTrustedVaultKeyErrorItemType:
+      // TODO(crbug.com/1019685): Open key retrieval dialog.
+      break;
     case ManageSyncItemType:
       [self.commandHandler openManageSyncSettings];
       break;
     case SyncDisabledByAdministratorErrorItemType:
     case SyncSettingsNotCofirmedErrorItemType:
     case AutocompleteSearchesAndURLsItemType:
+    case ItemTypePasswordLeakCheckSwitch:
     case ImproveChromeItemType:
     case BetterSearchAndBrowsingItemType:
     case SyncChromeDataItemType:
@@ -739,12 +857,14 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
 - (void)onPrimaryAccountSet:(const CoreAccountInfo&)primaryAccountInfo {
   [self updateSyncSection:YES];
   [self updateIdentitySectionAndNotifyConsumer];
+  [self updateLeakCheckItemAndReload];
 }
 
 - (void)onPrimaryAccountCleared:
     (const CoreAccountInfo&)previousPrimaryAccountInfo {
   [self updateSyncSection:YES];
   [self updateIdentitySectionAndNotifyConsumer];
+  [self updateLeakCheckItemAndReload];
 }
 
 #pragma mark - BooleanObserver
@@ -762,6 +882,7 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
 
 - (void)profileUpdate:(ChromeIdentity*)identity {
   [self updateIdentitySectionAndNotifyConsumer];
+  [self updateLeakCheckItemAndReload];
 }
 
 - (void)chromeIdentityServiceWillBeDestroyed {

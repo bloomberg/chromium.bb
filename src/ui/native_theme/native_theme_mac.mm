@@ -179,7 +179,7 @@ SkColor NativeThemeMac::ApplySystemControlTint(SkColor color) {
 SkColor NativeThemeMac::GetSystemColor(ColorId color_id,
                                        ColorScheme color_scheme) const {
   if (color_scheme == ColorScheme::kDefault)
-    color_scheme = GetSystemColorScheme();
+    color_scheme = GetDefaultSystemColorScheme();
 
   // Empirically, currentAppearance is incorrect when switching
   // appearances. It's unclear exactly why right now, so work
@@ -298,6 +298,15 @@ NativeThemeMac::NativeThemeMac() {
                       theme->set_high_contrast(IsHighContrast());
                       theme->NotifyObservers();
                     }];
+  }
+
+  // Add the web native theme as an observer to stay in sync with dark mode,
+  // high contrast, and preferred color scheme changes.
+  if (features::IsFormControlsRefreshEnabled()) {
+    color_scheme_observer_ =
+        std::make_unique<NativeTheme::ColorSchemeNativeThemeObserver>(
+            NativeTheme::GetInstanceForWeb());
+    AddObserver(color_scheme_observer_.get());
   }
 }
 

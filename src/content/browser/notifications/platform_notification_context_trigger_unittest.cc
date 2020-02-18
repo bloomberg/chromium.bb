@@ -7,12 +7,14 @@
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "content/browser/notifications/notification_trigger_constants.h"
 #include "content/browser/notifications/platform_notification_context_impl.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/public/browser/notification_database_data.h"
+#include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_browser_context.h"
@@ -275,6 +277,24 @@ TEST_F(PlatformNotificationContextTriggerTest, EnforcesLimitOnUpdate) {
       std::to_string(kMaximumScheduledNotificationsPerOrigin + 1),
       Time::Now() +
           TimeDelta::FromSeconds(kMaximumScheduledNotificationsPerOrigin + 1)));
+}
+
+TEST_F(PlatformNotificationContextTriggerTest, RecordDisplayDelay) {
+  base::HistogramTester histogram_tester;
+  base::TimeDelta trigger_delay = TimeDelta::FromSeconds(10);
+  base::TimeDelta display_delay = TimeDelta::FromSeconds(8);
+
+  WriteNotificationData("1", Time::Now() + trigger_delay);
+  ASSERT_EQ(0u, GetDisplayedNotifications().size());
+
+  // Forward time until after the expected trigger time.
+  task_environment_.FastForwardBy(trigger_delay + display_delay);
+
+  // Trigger notification |display_delay| after it should have been displayed.
+  TriggerNotifications();
+
+  histogram_tester.ExpectUniqueSample("Notifications.Triggers.DisplayDelay",
+                                      display_delay.InMilliseconds(), 1);
 }
 
 }  // namespace content

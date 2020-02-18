@@ -107,6 +107,7 @@ bool StructTraits<autofill::mojom::FormDataDataView, autofill::FormData>::Read(
     return false;
   if (!data.ReadAction(&out->action))
     return false;
+  out->is_action_empty = data.is_action_empty();
   if (!data.ReadMainFrameOrigin(&out->main_frame_origin))
     return false;
 
@@ -168,14 +169,16 @@ bool StructTraits<autofill::mojom::FormDataPredictionsDataView,
 }
 
 // static
-bool StructTraits<autofill::mojom::PasswordAndRealmDataView,
-                  autofill::PasswordAndRealm>::
-    Read(autofill::mojom::PasswordAndRealmDataView data,
-         autofill::PasswordAndRealm* out) {
+bool StructTraits<autofill::mojom::PasswordAndMetadataDataView,
+                  autofill::PasswordAndMetadata>::
+    Read(autofill::mojom::PasswordAndMetadataDataView data,
+         autofill::PasswordAndMetadata* out) {
   if (!data.ReadPassword(&out->password))
     return false;
   if (!data.ReadRealm(&out->realm))
     return false;
+
+  out->uses_account_store = data.uses_account_store();
 
   return true;
 }
@@ -192,6 +195,7 @@ bool StructTraits<autofill::mojom::PasswordFormFillDataDataView,
       !data.ReadAdditionalLogins(&out->additional_logins))
     return false;
 
+  out->uses_account_store = data.uses_account_store();
   out->form_renderer_id = data.form_renderer_id();
   out->wait_for_username = data.wait_for_username();
   out->has_renderer_ids = data.has_renderer_ids();
@@ -222,6 +226,8 @@ bool StructTraits<autofill::mojom::PasswordGenerationUIDataDataView,
 
   out->max_length = data.max_length();
   out->generation_element_id = data.generation_element_id();
+  out->is_generation_element_password_type =
+      data.is_generation_element_password_type();
 
   if (!data.ReadGenerationElement(&out->generation_element) ||
       !data.ReadTextDirection(&out->text_direction) ||
@@ -298,98 +304,24 @@ bool StructTraits<
 }
 
 // static
-std::vector<autofill::FormFieldData>
-StructTraits<autofill::mojom::PasswordFormFieldPredictionMapDataView,
-             autofill::PasswordFormFieldPredictionMap>::
-    keys(const autofill::PasswordFormFieldPredictionMap& r) {
-  std::vector<autofill::FormFieldData> data;
-  for (const auto& i : r)
-    data.push_back(i.first);
-  return data;
-}
-
-// static
-std::vector<autofill::mojom::PasswordFormFieldPredictionType>
-StructTraits<autofill::mojom::PasswordFormFieldPredictionMapDataView,
-             autofill::PasswordFormFieldPredictionMap>::
-    values(const autofill::PasswordFormFieldPredictionMap& r) {
-  std::vector<autofill::mojom::PasswordFormFieldPredictionType> types;
-  for (const auto& i : r)
-    types.push_back(i.second);
-  return types;
-}
-
-// static
-bool StructTraits<autofill::mojom::PasswordFormFieldPredictionMapDataView,
-                  autofill::PasswordFormFieldPredictionMap>::
-    Read(autofill::mojom::PasswordFormFieldPredictionMapDataView data,
-         autofill::PasswordFormFieldPredictionMap* out) {
-  // Combines keys vector and values vector to the map.
-  std::vector<autofill::FormFieldData> keys;
-  if (!data.ReadKeys(&keys))
-    return false;
-  std::vector<autofill::mojom::PasswordFormFieldPredictionType> values;
-  if (!data.ReadValues(&values))
-    return false;
-  if (keys.size() != values.size())
-    return false;
-  out->clear();
-  for (size_t i = 0; i < keys.size(); ++i)
-    out->insert({keys[i], values[i]});
-
-  return true;
-}
-
-// static
-std::vector<autofill::FormData> StructTraits<
-    autofill::mojom::FormsPredictionsMapDataView,
-    autofill::FormsPredictionsMap>::keys(const autofill::FormsPredictionsMap&
-                                             r) {
-  std::vector<autofill::FormData> data;
-  for (const auto& i : r)
-    data.push_back(i.first);
-  return data;
-}
-
-// static
-std::vector<autofill::PasswordFormFieldPredictionMap> StructTraits<
-    autofill::mojom::FormsPredictionsMapDataView,
-    autofill::FormsPredictionsMap>::values(const autofill::FormsPredictionsMap&
-                                               r) {
-  std::vector<autofill::PasswordFormFieldPredictionMap> maps;
-  for (const auto& i : r)
-    maps.push_back(i.second);
-  return maps;
-}
-
-// static
-bool StructTraits<autofill::mojom::FormsPredictionsMapDataView,
-                  autofill::FormsPredictionsMap>::
-    Read(autofill::mojom::FormsPredictionsMapDataView data,
-         autofill::FormsPredictionsMap* out) {
-  // Combines keys vector and values vector to the map.
-  std::vector<autofill::FormData> keys;
-  if (!data.ReadKeys(&keys))
-    return false;
-  std::vector<autofill::PasswordFormFieldPredictionMap> values;
-  if (!data.ReadValues(&values))
-    return false;
-  if (keys.size() != values.size())
-    return false;
-  out->clear();
-  for (size_t i = 0; i < keys.size(); ++i)
-    out->insert({keys[i], values[i]});
-
-  return true;
-}
-
-// static
 bool StructTraits<autofill::mojom::ValueElementPairDataView,
                   autofill::ValueElementPair>::
     Read(autofill::mojom::ValueElementPairDataView data,
          autofill::ValueElementPair* out) {
   if (!data.ReadValue(&out->first) || !data.ReadFieldName(&out->second))
     return false;
+
+  return true;
+}
+
+bool StructTraits<
+    autofill::mojom::ParsingResultDataView,
+    autofill::ParsingResult>::Read(autofill::mojom::ParsingResultDataView data,
+                                   autofill::ParsingResult* out) {
+  out->username_renderer_id = data.username_renderer_id();
+  out->password_renderer_id = data.password_renderer_id();
+  out->new_password_renderer_id = data.new_password_renderer_id();
+  out->confirm_password_renderer_id = data.confirm_password_renderer_id();
 
   return true;
 }

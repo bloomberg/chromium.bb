@@ -10,11 +10,15 @@
 
 #include "base/macros.h"
 #include "base/observer_list.h"
+#include "base/scoped_observer.h"
 #include "build/build_config.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/signin/internal/identity_manager/primary_account_manager.h"
+#include "components/signin/internal/identity_manager/profile_oauth2_token_service.h"
 #include "components/signin/internal/identity_manager/profile_oauth2_token_service_observer.h"
 #include "components/signin/public/identity_manager/access_token_fetcher.h"
 #include "components/signin/public/identity_manager/account_info.h"
+#include "components/signin/public/identity_manager/identity_mutator.h"
 #include "components/signin/public/identity_manager/ubertoken_fetcher.h"
 #include "google_apis/gaia/oauth2_access_token_manager.h"
 #include "services/identity/public/cpp/scope_set.h"
@@ -38,19 +42,13 @@ class PrefRegistrySimple;
 class AccountFetcherService;
 class AccountTrackerService;
 class GaiaCookieManagerService;
-class PrimaryAccountManager;
-class ProfileOAuth2TokenService;
 
 namespace signin {
 
-class AccountsMutator;
-class AccountsCookieMutator;
 struct AccountsInCookieJarInfo;
 class IdentityManagerTest;
 class IdentityTestEnvironment;
-class DeviceAccountsSynchronizer;
 class DiagnosticsProvider;
-class PrimaryAccountMutator;
 enum class ClearPrimaryAccountPolicy;
 struct CookieParamsForTest;
 
@@ -58,6 +56,7 @@ struct CookieParamsForTest;
 // ./README.md for detailed documentation.
 class IdentityManager : public KeyedService,
                         public OAuth2AccessTokenManager::DiagnosticsObserver,
+                        public PrimaryAccountManager::Observer,
                         public ProfileOAuth2TokenServiceObserver {
  public:
   class Observer {
@@ -296,8 +295,7 @@ class IdentityManager : public KeyedService,
       const CoreAccountId& account_id,
       UbertokenFetcher::CompletionCallback callback,
       gaia::GaiaSource source,
-      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-      bool bound_to_channel_id = true);
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
 
   // Provides the information of all accounts that are present in the Gaia
   // cookie in the cookie jar, ordered by their order in the cookie.
@@ -421,38 +419,11 @@ class IdentityManager : public KeyedService,
   // Registers per-profile prefs used by this class.
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
-#if !defined(OS_IOS) && !defined(OS_ANDROID)
-  // Explicitly triggers the loading of accounts in the context of supervised
-  // users.
-  // TODO(https://crbug.com/860492): Remove this method when supervised users
-  // support is eliminated.
-  void DeprecatedLoadCredentialsForSupervisedUser(
-      const CoreAccountId& primary_account_id);
-#endif
-
   // Returns pointer to the object used to obtain diagnostics about the internal
   // state of IdentityManager.
   DiagnosticsProvider* GetDiagnosticsProvider();
 
-#if defined(OS_IOS)
-  // Forces the processing of GaiaCookieManagerService::OnCookieChange. On
-  // iOS, it's necessary to force-trigger the processing of cookie changes
-  // from the client as the normal mechanism for internally observing them
-  // is not wired up.
-  // TODO(https://crbug.com/930582) : Remove the need to expose this method
-  // or move it to the network::CookieManager.
-  void ForceTriggerOnCookieChange();
-#endif
-
 #if defined(OS_ANDROID)
-  // Reloads the accounts in the token service from the system accounts. This
-  // API calls ProfileOAuth2TokenServiceDelegate::ReloadAccountsFromSystem and
-  // it triggers platform specific implementation for Android. NOTE: In normal
-  // usage, this method SHOULD NOT be called.
-  // TODO(https://crbug.com/930094): Expose this through
-  // DeviceAccountsSynchronizer
-  void LegacyReloadAccountsFromSystem();
-
   // Returns a pointer to the AccountTrackerService Java instance associated
   // with this object.
   // TODO(https://crbug.com/934688): Eliminate this method once
@@ -460,16 +431,11 @@ class IdentityManager : public KeyedService,
   base::android::ScopedJavaLocalRef<jobject>
   LegacyGetAccountTrackerServiceJavaObject();
 
-  // Returns a pointer to the OAuth2TokenService Java instance associated
-  // with this object.
-  // TODO(https://crbug.com/934688): Eliminate this method once
-  // OAuth2TokenService.java has no more client usage.
-  base::android::ScopedJavaLocalRef<jobject>
-  LegacyGetOAuth2TokenServiceJavaObject();
-
-  // Get the reference on the java IdentityManager, InitializeJavaObject must
-  // be called before hand.
+  // Get the reference on the java IdentityManager.
   base::android::ScopedJavaLocalRef<jobject> GetJavaObject();
+
+  // Provide the reference on the java IdentityMutator.
+  base::android::ScopedJavaLocalRef<jobject> GetIdentityMutatorJavaObject();
 
   // This method has the contractual assumption that the account is a known
   // account and has as its semantics that it fetches the account info for the
@@ -479,6 +445,20 @@ class IdentityManager : public KeyedService,
 
   // Overloads for calls from java:
   bool HasPrimaryAccount(JNIEnv* env) const;
+
+  base::android::ScopedJavaLocalRef<jobject> GetPrimaryAccountInfo(
+      JNIEnv* env) const;
+
+  base::android::ScopedJavaLocalRef<jobject> GetPrimaryAccountId(
+      JNIEnv* env) const;
+
+  base::android::ScopedJavaLocalRef<jobject>
+  FindExtendedAccountInfoForAccountWithRefreshTokenByEmailAddress(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jstring>& j_email) const;
+
+  base::android::ScopedJavaLocalRef<jobjectArray> GetAccountsWithRefreshTokens(
+      JNIEnv* env) const;
 #endif
 
  private:
@@ -514,6 +494,9 @@ class IdentityManager : public KeyedService,
                                            const CoreAccountId& account_id);
   friend void UpdateAccountInfoForAccount(IdentityManager* identity_manager,
                                           AccountInfo account_info);
+  friend void SimulateAccountImageFetch(IdentityManager* identity_manager,
+                                        const CoreAccountId& account_id,
+                                        const gfx::Image& image);
   friend void SetFreshnessOfAccountsInGaiaCookie(
       IdentityManager* identity_manager,
       bool accounts_are_fresh);
@@ -617,13 +600,17 @@ class IdentityManager : public KeyedService,
 
   // Figures out and returns the current unconsented primary account based on
   // current cookies.
+  // Returns nullopt if the account could not be computed, and CoreAccountInfo()
+  // if there is no account.
   base::Optional<CoreAccountInfo> ComputeUnconsentedPrimaryAccountInfo() const;
 
-  // PrimaryAccountManager callbacks:
-  void GoogleSigninSucceeded(const AccountInfo& account_info);
-  void GoogleSignedOut(const AccountInfo& account_info);
-  void AuthenticatedAccountSet(const AccountInfo& account_info);
-  void AuthenticatedAccountCleared();
+  // PrimaryAccountManager::Observer:
+  void GoogleSigninSucceeded(const CoreAccountInfo& account_info) override;
+  void UnconsentedPrimaryAccountChanged(
+      const CoreAccountInfo& account_info) override;
+#if !defined(OS_CHROMEOS)
+  void GoogleSignedOut(const CoreAccountInfo& account_info) override;
+#endif
 
   // ProfileOAuth2TokenServiceObserver:
   void OnRefreshTokenAvailable(const CoreAccountId& account_id) override;
@@ -670,33 +657,22 @@ class IdentityManager : public KeyedService,
   std::unique_ptr<PrimaryAccountManager> primary_account_manager_;
   std::unique_ptr<AccountFetcherService> account_fetcher_service_;
 
-  // PrimaryAccountMutator instance. May be null if mutation of the primary
-  // account state is not supported on the current platform.
-  std::unique_ptr<PrimaryAccountMutator> primary_account_mutator_;
-
-  // AccountsMutator instance. May be null if mutation of accounts is not
-  // supported on the current platform.
-  std::unique_ptr<AccountsMutator> accounts_mutator_;
-
-  // AccountsCookieMutator instance. Guaranteed to be non-null, as this
-  // functionality is supported on all platforms.
-  std::unique_ptr<AccountsCookieMutator> accounts_cookie_mutator_;
+  IdentityMutator identity_mutator_;
 
   // DiagnosticsProvider instance.
   std::unique_ptr<DiagnosticsProvider> diagnostics_provider_;
 
-  // DeviceAccountsSynchronizer instance.
-  std::unique_ptr<DeviceAccountsSynchronizer> device_accounts_synchronizer_;
+  // Scoped observers.
+  ScopedObserver<PrimaryAccountManager, PrimaryAccountManager::Observer>
+      primary_account_manager_observer_{this};
+  ScopedObserver<ProfileOAuth2TokenService, ProfileOAuth2TokenServiceObserver>
+      token_service_observer_{this};
 
   // Lists of observers.
   // Makes sure lists are empty on destruction.
   base::ObserverList<Observer, true>::Unchecked observer_list_;
   base::ObserverList<DiagnosticsObserver, true>::Unchecked
       diagnostics_observer_list_;
-
-  // If |primary_account_| is set, it must equal |unconsented_primary_account_|.
-  base::Optional<CoreAccountInfo> primary_account_;
-  base::Optional<CoreAccountInfo> unconsented_primary_account_;
 
 #if defined(OS_ANDROID)
   // Java-side IdentityManager object.

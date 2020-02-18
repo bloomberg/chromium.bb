@@ -18,16 +18,13 @@
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/core_oobe_handler.h"
 #include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
-#include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"  // nogncheck
+#include "chromeos/services/network_config/public/mojom/cros_network_config.mojom-forward.h"  // nogncheck
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "ui/webui/mojo_web_ui_controller.h"
 
 namespace base {
 class DictionaryValue;
 }  // namespace base
-
-namespace service_manager {
-class Connector;
-}  // namespace service_manager
 
 namespace chromeos {
 
@@ -156,14 +153,16 @@ class OobeUI : public ui::MojoWebUIController {
   // display type.
   void ConfigureOobeDisplay();
 
-  // Adds Mojo bindings for this WebUIController.
-  service_manager::Connector* GetLoggedInUserMojoConnector();
+  // Adds Mojo receivers for this WebUIController.
   void BindMultiDeviceSetup(
-      multidevice_setup::mojom::MultiDeviceSetupRequest request);
+      mojo::PendingReceiver<multidevice_setup::mojom::MultiDeviceSetup>
+          receiver);
   void BindPrivilegedHostDeviceSetter(
-      multidevice_setup::mojom::PrivilegedHostDeviceSetterRequest request);
+      mojo::PendingReceiver<
+          multidevice_setup::mojom::PrivilegedHostDeviceSetter> receiver);
   void BindCrosNetworkConfig(
-      chromeos::network_config::mojom::CrosNetworkConfigRequest request);
+      mojo::PendingReceiver<chromeos::network_config::mojom::CrosNetworkConfig>
+          receiver);
 
   // Type of UI.
   std::string display_type_;

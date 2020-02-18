@@ -37,11 +37,12 @@ Vector<uint8_t> ConvertBufferSource(
   Vector<uint8_t> vector;
   if (buffer.IsArrayBuffer()) {
     vector.Append(static_cast<uint8_t*>(buffer.GetAsArrayBuffer()->Data()),
-                  buffer.GetAsArrayBuffer()->ByteLength());
+                  buffer.GetAsArrayBuffer()->DeprecatedByteLengthAsUnsigned());
   } else {
-    vector.Append(static_cast<uint8_t*>(
-                      buffer.GetAsArrayBufferView().View()->BaseAddress()),
-                  buffer.GetAsArrayBufferView().View()->byteLength());
+    vector.Append(
+        static_cast<uint8_t*>(
+            buffer.GetAsArrayBufferView().View()->BaseAddress()),
+        buffer.GetAsArrayBufferView().View()->deprecatedByteLengthAsUnsigned());
   }
   return vector;
 }
@@ -270,14 +271,15 @@ bool HIDDevice::EnsureNoDeviceChangeInProgress(
   return true;
 }
 
-void HIDDevice::FinishOpen(ScriptPromiseResolver* resolver,
-                           device::mojom::blink::HidConnectionPtr connection) {
+void HIDDevice::FinishOpen(
+    ScriptPromiseResolver* resolver,
+    mojo::PendingRemote<device::mojom::blink::HidConnection> connection) {
   MarkRequestComplete(resolver);
   device_state_change_in_progress_ = false;
 
   if (connection) {
-    connection_ = std::move(connection);
-    connection_.set_connection_error_handler(WTF::Bind(
+    connection_.Bind(std::move(connection));
+    connection_.set_disconnect_handler(WTF::Bind(
         &HIDDevice::OnServiceConnectionError, WrapWeakPersistent(this)));
     resolver->Resolve();
   } else {

@@ -12,7 +12,6 @@
 
 #include "base/command_line.h"
 #include "base/containers/flat_map.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
@@ -103,7 +102,7 @@ static_assert(FirstUserModifiableProviderIsHighestPrecedence(),
 // Returns true if the |content_type| supports a resource identifier.
 // Resource identifiers are supported (but not required) for plugins.
 bool SupportsResourceIdentifier(ContentSettingsType content_type) {
-  return content_type == CONTENT_SETTINGS_TYPE_PLUGINS;
+  return content_type == ContentSettingsType::PLUGINS;
 }
 
 bool SchemeCanBeWhitelisted(const std::string& scheme) {
@@ -209,9 +208,9 @@ enum class FlashPermissions {
 // is an affected histogram under the "ContentSetting" suffix.
 bool ShouldCollectFineGrainedExceptionHistograms(ContentSettingsType type) {
   switch (type) {
-    case CONTENT_SETTINGS_TYPE_COOKIES:
-    case CONTENT_SETTINGS_TYPE_POPUPS:
-    case CONTENT_SETTINGS_TYPE_ADS:
+    case ContentSettingsType::COOKIES:
+    case ContentSettingsType::POPUPS:
+    case ContentSettingsType::ADS:
       return true;
     default:
       return false;
@@ -253,22 +252,25 @@ HostContentSettingsMap::HostContentSettingsMap(
       store_last_modified_(store_last_modified) {
   TRACE_EVENT0("startup", "HostContentSettingsMap::HostContentSettingsMap");
 
-  content_settings::PolicyProvider* policy_provider =
-      new content_settings::PolicyProvider(prefs_);
-  content_settings_providers_[POLICY_PROVIDER] =
-      base::WrapUnique(policy_provider);
+  auto policy_provider_ptr =
+      std::make_unique<content_settings::PolicyProvider>(prefs_);
+  auto* policy_provider = policy_provider_ptr.get();
+  content_settings_providers_[POLICY_PROVIDER] = std::move(policy_provider_ptr);
   policy_provider->AddObserver(this);
 
-  pref_provider_ = new content_settings::PrefProvider(
+  auto pref_provider_ptr = std::make_unique<content_settings::PrefProvider>(
       prefs_, is_off_the_record_, store_last_modified_);
-  content_settings_providers_[PREF_PROVIDER] = base::WrapUnique(pref_provider_);
+  pref_provider_ = pref_provider_ptr.get();
+  content_settings_providers_[PREF_PROVIDER] = std::move(pref_provider_ptr);
   user_modifiable_providers_.push_back(pref_provider_);
   pref_provider_->AddObserver(this);
 
-  content_settings::EphemeralProvider* ephemeral_provider =
-      new content_settings::EphemeralProvider(store_last_modified_);
+  auto ephemeral_provider_ptr =
+      std::make_unique<content_settings::EphemeralProvider>(
+          store_last_modified_);
+  auto* ephemeral_provider = ephemeral_provider_ptr.get();
   content_settings_providers_[EPHEMERAL_PROVIDER] =
-      base::WrapUnique(ephemeral_provider);
+      std::move(ephemeral_provider_ptr);
   user_modifiable_providers_.push_back(ephemeral_provider);
   ephemeral_provider->AddObserver(this);
 
@@ -316,10 +318,8 @@ void HostContentSettingsMap::RegisterProvider(
       << "Used from multiple threads before initialization complete.";
 #endif
 
-  OnContentSettingChanged(ContentSettingsPattern(),
-                          ContentSettingsPattern(),
-                          CONTENT_SETTINGS_TYPE_DEFAULT,
-                          std::string());
+  OnContentSettingChanged(ContentSettingsPattern(), ContentSettingsPattern(),
+                          ContentSettingsType::DEFAULT, std::string());
 }
 
 ContentSetting HostContentSettingsMap::GetDefaultContentSettingFromProvider(
@@ -575,13 +575,13 @@ void HostContentSettingsMap::SetContentSettingCustomScope(
       content_type));
 
   // Record stats on Flash permission grants with ephemeral storage.
-  if (content_type == CONTENT_SETTINGS_TYPE_PLUGINS &&
+  if (content_type == ContentSettingsType::PLUGINS &&
       setting == CONTENT_SETTING_ALLOW) {
     GURL url(primary_pattern.ToString());
     ContentSettingsPattern temp_patterns[2];
     std::unique_ptr<base::Value> value(GetContentSettingValueAndPatterns(
         content_settings_providers_[PREF_PROVIDER].get(), url, url,
-        CONTENT_SETTINGS_TYPE_PLUGINS_DATA, resource_identifier,
+        ContentSettingsType::PLUGINS_DATA, resource_identifier,
         is_off_the_record_, temp_patterns, temp_patterns + 1));
 
     UMA_HISTOGRAM_ENUMERATION(
@@ -678,7 +678,7 @@ void HostContentSettingsMap::RecordExceptionMetrics() {
         if (content_info)
           ++num_exceptions_with_setting[setting_entry.GetContentSetting()];
         ++num_exceptions;
-        if (content_type == CONTENT_SETTINGS_TYPE_COOKIES &&
+        if (content_type == ContentSettingsType::COOKIES &&
             setting_entry.primary_pattern.MatchesAllHosts() &&
             !setting_entry.secondary_pattern.MatchesAllHosts() &&
             setting_entry.GetContentSetting() == CONTENT_SETTING_ALLOW) {
@@ -706,7 +706,7 @@ void HostContentSettingsMap::RecordExceptionMetrics() {
             1, 1000, 30);
       }
     }
-    if (content_type == CONTENT_SETTINGS_TYPE_COOKIES) {
+    if (content_type == ContentSettingsType::COOKIES) {
       base::UmaHistogramCustomCounts(
           "ContentSettings.Exceptions.cookies.AllowThirdParty",
           num_third_party_cookie_allow_exceptions, 1, 1000, 30);
@@ -752,7 +752,7 @@ void HostContentSettingsMap::ClearSettingsForOneTypeWithPredicate(
     ContentSettingsType content_type,
     base::Time begin_time,
     base::Time end_time,
-    const PatternSourcePredicate& pattern_predicate) {
+    PatternSourcePredicate pattern_predicate) {
   if (pattern_predicate.is_null() && begin_time.is_null() &&
       (end_time.is_null() || end_time.is_max())) {
     ClearSettingsForOneType(content_type);
@@ -982,14 +982,14 @@ HostContentSettingsMap::GetContentSettingValueAndPatterns(
 
 void HostContentSettingsMap::InitializePluginsDataSettings() {
   if (!content_settings::WebsiteSettingsRegistry::GetInstance()->Get(
-          CONTENT_SETTINGS_TYPE_PLUGINS_DATA)) {
+          ContentSettingsType::PLUGINS_DATA)) {
     return;
   }
   ContentSettingsForOneType host_settings;
-  GetSettingsForOneType(CONTENT_SETTINGS_TYPE_PLUGINS_DATA, std::string(),
+  GetSettingsForOneType(ContentSettingsType::PLUGINS_DATA, std::string(),
                         &host_settings);
   if (host_settings.empty()) {
-    GetSettingsForOneType(CONTENT_SETTINGS_TYPE_PLUGINS, std::string(),
+    GetSettingsForOneType(ContentSettingsType::PLUGINS, std::string(),
                           &host_settings);
     for (ContentSettingPatternSource pattern : host_settings) {
       if (pattern.source != "preference")
@@ -1004,7 +1004,7 @@ void HostContentSettingsMap::InitializePluginsDataSettings() {
       constexpr char kFlagKey[] = "flashPreviouslyChanged";
       dict->SetKey(kFlagKey, base::Value(true));
       SetWebsiteSettingDefaultScope(primary, primary,
-                                    CONTENT_SETTINGS_TYPE_PLUGINS_DATA,
+                                    ContentSettingsType::PLUGINS_DATA,
                                     std::string(), std::move(dict));
     }
   }
@@ -1016,9 +1016,9 @@ void HostContentSettingsMap::MigrateRequestingAndTopLevelOriginSettings() {
   for (const content_settings::ContentSettingsInfo* info : *registry) {
     // Only 3 types should be migrated.
     ContentSettingsType type = info->website_settings_info()->type();
-    if (type != CONTENT_SETTINGS_TYPE_GEOLOCATION &&
-        type != CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER &&
-        type != CONTENT_SETTINGS_TYPE_MIDI_SYSEX) {
+    if (type != ContentSettingsType::GEOLOCATION &&
+        type != ContentSettingsType::PROTECTED_MEDIA_IDENTIFIER &&
+        type != ContentSettingsType::MIDI_SYSEX) {
       continue;
     }
 

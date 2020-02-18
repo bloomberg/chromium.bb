@@ -19,8 +19,6 @@
 #include "ui/views/view_observer.h"
 #include "ui/views/views_export.h"
 
-class SkPath;
-
 namespace gfx {
 class AnimationContainer;
 class Size;
@@ -71,7 +69,7 @@ class VIEWS_EXPORT InstallableInkDrop : public InkDrop,
   void HostSizeChanged(const gfx::Size& new_size) override;
   InkDropState GetTargetInkDropState() const override;
   void AnimateToState(InkDropState ink_drop_state) override;
-  void SetHoverHighlightFadeDurationMs(int duration_ms) override;
+  void SetHoverHighlightFadeDuration(base::TimeDelta duration) override;
   void UseDefaultHoverHighlightFadeDuration() override;
   void SnapToActivated() override;
   void SnapToHidden() override;
@@ -93,10 +91,6 @@ class VIEWS_EXPORT InstallableInkDrop : public InkDrop,
   void OnPaintLayer(const ui::PaintContext& context) override;
   void OnDeviceScaleFactorChanged(float old_device_scale_factor,
                                   float new_device_scale_factor) override;
-
-  // Gets the path that the ink drop fills in for the highlight. This uses
-  // |kHighlightPathKey| if provided but falls back to a pill-shaped path.
-  static SkPath GetHighlightPathForView(const View* view);
 
  private:
   void SchedulePaint();

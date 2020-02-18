@@ -10,7 +10,8 @@
 #include "content/browser/native_file_system/native_file_system_handle_base.h"
 #include "content/browser/native_file_system/native_file_system_manager_impl.h"
 #include "content/common/content_export.h"
-#include "storage/browser/fileapi/file_system_url.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "storage/browser/file_system/file_system_url.h"
 #include "third_party/blink/public/mojom/native_file_system/native_file_system_file_handle.mojom.h"
 
 namespace content {
@@ -20,13 +21,8 @@ namespace content {
 // owned by the NativeFileSystemManagerImpl instance passed in to the
 // constructor.
 //
-// This class is not thread safe, all methods should be called on the IO thread.
-// The link to the IO thread is due to its dependencies on both the blob system
-// (via storage::BlobStorageContext) and the file system backends (via
-// storage::FileSystemContext and storage::FileSystemOperationRunner, which both
-// expect some of their methods to always be called on the IO thread).
-// See https://crbug.com/957249 for some thoughts about the blob system aspect
-// of this.
+// This class is not thread safe, all methods must be called from the same
+// sequence.
 class CONTENT_EXPORT NativeFileSystemFileHandleImpl
     : public NativeFileSystemHandleBase,
       public blink::mojom::NativeFileSystemFileHandle {
@@ -46,7 +42,8 @@ class CONTENT_EXPORT NativeFileSystemFileHandleImpl
   void CreateFileWriter(bool keep_existing_data,
                         CreateFileWriterCallback callback) override;
   void Transfer(
-      blink::mojom::NativeFileSystemTransferTokenRequest token) override;
+      mojo::PendingReceiver<blink::mojom::NativeFileSystemTransferToken> token)
+      override;
 
   void set_max_swap_files_for_testing(int max) { max_swap_files_ = max; }
 

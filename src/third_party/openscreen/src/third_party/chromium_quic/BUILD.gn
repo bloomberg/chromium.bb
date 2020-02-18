@@ -56,7 +56,7 @@ source_set("chromium_quic") {
   ]
 }
 
-executable("demo_client") {
+executable("quic_demo_client") {
   sources = [
     "demo/client.cc",
     "demo/delegates.cc",
@@ -65,11 +65,10 @@ executable("demo_client") {
   deps = [
     ":chromium_quic",
   ]
-  configs -= [ "//build:default_include_dirs" ]
   configs += [ ":chromium_quic_config" ]
 }
 
-executable("demo_server") {
+executable("quic_demo_server") {
   sources = [
     "demo/delegates.cc",
     "demo/delegates.h",
@@ -78,7 +77,6 @@ executable("demo_server") {
   deps = [
     ":chromium_quic",
   ]
-  configs -= [ "//build:default_include_dirs" ]
   configs += [ ":chromium_quic_config" ]
 }
 
@@ -212,7 +210,6 @@ source_set("core") {
   #   "src/net/third_party/quic/core/quic_packet_reader.cc",
   #   "src/net/third_party/quic/core/quic_packet_reader.h",
   # ]
-  configs -= [ "//build:default_include_dirs" ]
   configs += [
     ":chromium_quic_config",
     "//third_party/protobuf:using_proto",
@@ -257,7 +254,6 @@ source_set("congestion_control") {
     "src/net/third_party/quic/core/congestion_control/windowed_filter.h",
   ]
 
-  configs -= [ "//build:default_include_dirs" ]
   configs += [ ":chromium_quic_config" ]
 }
 
@@ -348,7 +344,6 @@ source_set("crypto") {
     ":proto",
   ]
 
-  configs -= [ "//build:default_include_dirs" ]
   configs += [ ":chromium_quic_config" ]
 }
 
@@ -394,45 +389,8 @@ source_set("frames") {
     "src/net/third_party/quic/core/frames/quic_window_update_frame.h",
   ]
 
-  configs -= [ "//build:default_include_dirs" ]
   configs += [ ":chromium_quic_config" ]
 }
-
-# NOTE: The http module depends on additional SPDY code in chromium, which we'd
-# rather not pull in, as we wouldn't use it.
-# source_set("http") {
-#   sources = [
-#     "src/net/third_party/quic/core/http/quic_client_promised_info.cc",
-#     "src/net/third_party/quic/core/http/quic_client_promised_info.h",
-#     "src/net/third_party/quic/core/http/quic_client_push_promise_index.cc",
-#     "src/net/third_party/quic/core/http/quic_client_push_promise_index.h",
-#     "src/net/third_party/quic/core/http/quic_header_list.cc",
-#     "src/net/third_party/quic/core/http/quic_header_list.h",
-#     "src/net/third_party/quic/core/http/quic_headers_stream.cc",
-#     "src/net/third_party/quic/core/http/quic_headers_stream.h",
-#     "src/net/third_party/quic/core/http/quic_server_session_base.cc",
-#     "src/net/third_party/quic/core/http/quic_server_session_base.h",
-#     "src/net/third_party/quic/core/http/quic_spdy_client_session_base.cc",
-#     "src/net/third_party/quic/core/http/quic_spdy_client_session_base.h",
-#     "src/net/third_party/quic/core/http/quic_spdy_client_session.cc",
-#     "src/net/third_party/quic/core/http/quic_spdy_client_session.h",
-#     "src/net/third_party/quic/core/http/quic_spdy_client_stream.cc",
-#     "src/net/third_party/quic/core/http/quic_spdy_client_stream.h",
-#     "src/net/third_party/quic/core/http/quic_spdy_server_stream_base.cc",
-#     "src/net/third_party/quic/core/http/quic_spdy_server_stream_base.h",
-#     "src/net/third_party/quic/core/http/quic_spdy_session.cc",
-#     "src/net/third_party/quic/core/http/quic_spdy_session.h",
-#     "src/net/third_party/quic/core/http/quic_spdy_stream.cc",
-#     "src/net/third_party/quic/core/http/quic_spdy_stream.h",
-#     "src/net/third_party/quic/core/http/spdy_utils.cc",
-#     "src/net/third_party/quic/core/http/spdy_utils.h",
-#   ]
-#
-#   configs -= [
-#     "//build:default_include_dirs",
-#   ]
-#   configs += [ ":chromium_quic_config" ]
-# }
 
 proto_library("proto") {
   sources = [
@@ -440,7 +398,6 @@ proto_library("proto") {
     "src/net/third_party/quic/core/proto/source_address_token.proto",
   ]
 
-  removed_configs = [ "//build:default_include_dirs" ]
   extra_configs = [ ":chromium_quic_config" ]
 }
 
@@ -460,7 +417,6 @@ source_set("quartc") {
     ":core",
   ]
 
-  configs -= [ "//build:default_include_dirs" ]
   configs += [ ":chromium_quic_config" ]
 }
 
@@ -568,161 +524,8 @@ source_set("platform") {
     "src/net/third_party/quic/platform/impl/quic_url_utils_impl.h",
   ]
 
-  # The following sources cause problems in the build, but since they are not
-  # needed, don't fix anything and don't build them.
-  #
-  # sources -= [
-  #   "src/net/third_party/quic/core/quic_epoll_alarm_factory.cc",
-  #   "src/net/third_party/quic/core/quic_epoll_alarm_factory.h",
-  #   "src/net/third_party/quic/core/quic_epoll_connection_helper.cc",
-  #   "src/net/third_party/quic/core/quic_epoll_connection_helper.h",
-  #   "src/net/third_party/quic/platform/impl/quic_epoll_clock.cc",
-  #   "src/net/third_party/quic/platform/impl/quic_epoll_clock.h",
-  #   "src/net/third_party/quic/platform/impl/quic_socket_utils.cc",
-  #   "src/net/third_party/quic/platform/impl/quic_socket_utils.h",
-  # ]
-
-  configs -= [ "//build:default_include_dirs" ]
   configs += [ ":chromium_quic_config" ]
 }
-
-# TODO(btolsch): Tests, if we ever care about building these locally.
-# source_set("chromium_quic_tests") {
-#   sources = [
-#     "src/net/third_party/quic/core/chlo_extractor_test.cc",
-#     "src/net/third_party/quic/core/packet_number_indexed_queue_test.cc",
-#     "src/net/third_party/quic/core/quic_alarm_test.cc",
-#     "src/net/third_party/quic/core/quic_arena_scoped_ptr_test.cc",
-#     "src/net/third_party/quic/core/quic_bandwidth_test.cc",
-#     "src/net/third_party/quic/core/quic_buffered_packet_store_test.cc",
-#     "src/net/third_party/quic/core/quic_config_test.cc",
-#     "src/net/third_party/quic/core/quic_connection_test.cc",
-#     "src/net/third_party/quic/core/quic_control_frame_manager_test.cc",
-#     "src/net/third_party/quic/core/quic_crypto_client_stream_test.cc",
-#     "src/net/third_party/quic/core/quic_crypto_server_stream_test.cc",
-#     "src/net/third_party/quic/core/quic_crypto_stream_test.cc",
-#     "src/net/third_party/quic/core/quic_data_writer_test.cc",
-#     "src/net/third_party/quic/core/quic_dispatcher_test.cc",
-#     "src/net/third_party/quic/core/quic_epoll_alarm_factory_test.cc",
-#     "src/net/third_party/quic/core/quic_epoll_connection_helper_test.cc",
-#     "src/net/third_party/quic/core/quic_error_codes_test.cc",
-#     "src/net/third_party/quic/core/quic_flow_controller_test.cc",
-#     "src/net/third_party/quic/core/quic_framer_test.cc",
-#     "src/net/third_party/quic/core/quic_ietf_framer_test.cc",
-#     "src/net/third_party/quic/core/quic_one_block_arena_test.cc",
-#     "src/net/third_party/quic/core/quic_packet_creator_test.cc",
-#     "src/net/third_party/quic/core/quic_packet_generator_test.cc",
-#     "src/net/third_party/quic/core/quic_received_packet_manager_test.cc",
-#     "src/net/third_party/quic/core/quic_sent_packet_manager_test.cc",
-#     "src/net/third_party/quic/core/quic_server_id_test.cc",
-#     "src/net/third_party/quic/core/quic_session_test.cc",
-#     "src/net/third_party/quic/core/quic_simple_buffer_allocator_test.cc",
-#     "src/net/third_party/quic/core/quic_socket_address_coder_test.cc",
-#     "src/net/third_party/quic/core/quic_stream_send_buffer_test.cc",
-#     "src/net/third_party/quic/core/quic_stream_sequencer_buffer_test.cc",
-#     "src/net/third_party/quic/core/quic_stream_sequencer_test.cc",
-#     "src/net/third_party/quic/core/quic_stream_test.cc",
-#     "src/net/third_party/quic/core/quic_sustained_bandwidth_recorder_test.cc",
-#     "src/net/third_party/quic/core/quic_tag_test.cc",
-#     "src/net/third_party/quic/core/quic_time_test.cc",
-#     "src/net/third_party/quic/core/quic_time_wait_list_manager_test.cc",
-#     "src/net/third_party/quic/core/quic_trace_visitor_test.cc",
-#     "src/net/third_party/quic/core/quic_unacked_packet_map_test.cc",
-#     "src/net/third_party/quic/core/quic_utils_test.cc",
-#     "src/net/third_party/quic/core/quic_version_manager_test.cc",
-#     "src/net/third_party/quic/core/quic_versions_test.cc",
-#     "src/net/third_party/quic/core/quic_write_blocked_list_test.cc",
-#     "src/net/third_party/quic/core/stateless_rejector_test.cc",
-#     "src/net/third_party/quic/core/tls_handshaker_test.cc",
-#     "src/net/third_party/quic/core/congestion_control/bandwidth_sampler_test.cc",
-#     "src/net/third_party/quic/core/congestion_control/bbr_sender_test.cc",
-#     "src/net/third_party/quic/core/congestion_control/cubic_bytes_test.cc",
-#     "src/net/third_party/quic/core/congestion_control/general_loss_algorithm_test.cc",
-#     "src/net/third_party/quic/core/congestion_control/hybrid_slow_start_test.cc",
-#     "src/net/third_party/quic/core/congestion_control/pacing_sender_test.cc",
-#     "src/net/third_party/quic/core/congestion_control/prr_sender_test.cc",
-#     "src/net/third_party/quic/core/congestion_control/rtt_stats_test.cc",
-#     "src/net/third_party/quic/core/congestion_control/send_algorithm_test.cc",
-#     "src/net/third_party/quic/core/congestion_control/tcp_cubic_sender_bytes_test.cc",
-#     "src/net/third_party/quic/core/congestion_control/windowed_filter_test.cc",
-#     "src/net/third_party/quic/core/crypto/aes_128_gcm_12_decrypter_test.cc",
-#     "src/net/third_party/quic/core/crypto/aes_128_gcm_12_encrypter_test.cc",
-#     "src/net/third_party/quic/core/crypto/aes_128_gcm_decrypter_test.cc",
-#     "src/net/third_party/quic/core/crypto/aes_128_gcm_encrypter_test.cc",
-#     "src/net/third_party/quic/core/crypto/aes_256_gcm_decrypter_test.cc",
-#     "src/net/third_party/quic/core/crypto/aes_256_gcm_encrypter_test.cc",
-#     "src/net/third_party/quic/core/crypto/cert_compressor_test.cc",
-#     "src/net/third_party/quic/core/crypto/chacha20_poly1305_decrypter_test.cc",
-#     "src/net/third_party/quic/core/crypto/chacha20_poly1305_encrypter_test.cc",
-#     "src/net/third_party/quic/core/crypto/chacha20_poly1305_tls_decrypter_test.cc",
-#     "src/net/third_party/quic/core/crypto/chacha20_poly1305_tls_encrypter_test.cc",
-#     "src/net/third_party/quic/core/crypto/channel_id_test.cc",
-#     "src/net/third_party/quic/core/crypto/common_cert_set_test.cc",
-#     "src/net/third_party/quic/core/crypto/crypto_framer_test.cc",
-#     "src/net/third_party/quic/core/crypto/crypto_handshake_message_test.cc",
-#     "src/net/third_party/quic/core/crypto/crypto_secret_boxer_test.cc",
-#     "src/net/third_party/quic/core/crypto/crypto_server_test.cc",
-#     "src/net/third_party/quic/core/crypto/crypto_utils_test.cc",
-#     "src/net/third_party/quic/core/crypto/curve25519_key_exchange_test.cc",
-#     "src/net/third_party/quic/core/crypto/null_decrypter_test.cc",
-#     "src/net/third_party/quic/core/crypto/null_encrypter_test.cc",
-#     "src/net/third_party/quic/core/crypto/p256_key_exchange_test.cc",
-#     "src/net/third_party/quic/core/crypto/quic_compressed_certs_cache_test.cc",
-#     "src/net/third_party/quic/core/crypto/quic_crypto_client_config_test.cc",
-#     "src/net/third_party/quic/core/crypto/quic_crypto_server_config_test.cc",
-#     "src/net/third_party/quic/core/crypto/quic_hkdf_test.cc",
-#     "src/net/third_party/quic/core/crypto/quic_random_test.cc",
-#     "src/net/third_party/quic/core/crypto/quic_tls_adapter_test.cc",
-#     "src/net/third_party/quic/core/crypto/transport_parameters_test.cc",
-#     "src/net/third_party/quic/core/frames/quic_frames_test.cc",
-#     "src/net/third_party/quic/core/http/end_to_end_test.cc",
-#     "src/net/third_party/quic/core/http/quic_client_promised_info_test.cc",
-#     "src/net/third_party/quic/core/http/quic_client_push_promise_index_test.cc",
-#     "src/net/third_party/quic/core/http/quic_header_list_test.cc",
-#     "src/net/third_party/quic/core/http/quic_headers_stream_test.cc",
-#     "src/net/third_party/quic/core/http/quic_server_session_base_test.cc",
-#     "src/net/third_party/quic/core/http/quic_spdy_client_session_test.cc",
-#     "src/net/third_party/quic/core/http/quic_spdy_client_stream_test.cc",
-#     "src/net/third_party/quic/core/http/quic_spdy_server_stream_base_test.cc",
-#     "src/net/third_party/quic/core/http/quic_spdy_session_test.cc",
-#     "src/net/third_party/quic/core/http/quic_spdy_stream_test.cc",
-#     "src/net/third_party/quic/core/http/spdy_utils_test.cc",
-#     "src/net/third_party/quic/platform/api/quic_endian_test.cc",
-#     "src/net/third_party/quic/platform/api/quic_hostname_utils_test.cc",
-#     "src/net/third_party/quic/platform/api/quic_lru_cache_test.cc",
-#     "src/net/third_party/quic/platform/api/quic_mem_slice_span_test.cc",
-#     "src/net/third_party/quic/platform/api/quic_mem_slice_test.cc",
-#     "src/net/third_party/quic/platform/api/quic_reference_counted_test.cc",
-#     "src/net/third_party/quic/platform/api/quic_singleton_test.cc",
-#     "src/net/third_party/quic/platform/api/quic_str_cat_test.cc",
-#     "src/net/third_party/quic/platform/api/quic_string_utils_test.cc",
-#     "src/net/third_party/quic/platform/api/quic_text_utils_test.cc",
-#     "src/net/third_party/quic/platform/api/quic_url_test.cc",
-#     "src/net/third_party/quic/platform/impl/quic_chromium_clock_test.cc",
-#     "src/net/third_party/quic/platform/impl/quic_epoll_clock_test.cc",
-#     "src/net/third_party/quic/platform/impl/quic_socket_utils_test.cc",
-#     "src/net/third_party/quic/platform/impl/quic_url_utils_impl_test.cc",
-#     "src/net/third_party/quic/platform/api/quic_test.h",
-#     "src/net/third_party/quic/platform/api/quic_test_loopback.cc",
-#     "src/net/third_party/quic/platform/api/quic_test_loopback.h",
-#     "src/net/third_party/quic/platform/api/quic_test_mem_slice_vector.h",
-#     "src/net/third_party/quic/platform/api/quic_test_output.h",
-#     "src/net/third_party/quic/platform/api/quic_test_random.h",
-#     "src/net/third_party/quic/platform/impl/quic_test_impl.cc",
-#     "src/net/third_party/quic/platform/impl/quic_test_impl.h",
-#     "src/net/third_party/quic/platform/impl/quic_test_loopback_impl.cc",
-#     "src/net/third_party/quic/platform/impl/quic_test_loopback_impl.h",
-#     "src/net/third_party/quic/platform/impl/quic_test_mem_slice_vector_impl.cc",
-#     "src/net/third_party/quic/platform/impl/quic_test_mem_slice_vector_impl.h",
-#     "src/net/third_party/quic/platform/impl/quic_test_output_impl.cc",
-#     "src/net/third_party/quic/platform/impl/quic_test_output_impl.h",
-#     "src/net/third_party/quic/platform/impl/quic_test_random_impl.cc",
-#     "src/net/third_party/quic/platform/impl/quic_test_random_impl.h",
-#   ]
-#
-#   configs -= [ "//build:default_include_dirs" ]
-#   configs += [ ":chromium_quic_config" ]
-# }
 
 source_set("chromium_other") {
   deps = [

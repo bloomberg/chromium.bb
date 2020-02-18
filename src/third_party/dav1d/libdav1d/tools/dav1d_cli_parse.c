@@ -27,7 +27,6 @@
 
 #include "config.h"
 
-#include <assert.h>
 #include <getopt.h>
 #include <limits.h>
 #include <math.h>
@@ -105,7 +104,7 @@ static void usage(const char *const app, const char *const reason, ...) {
     fprintf(stderr, "Supported options:\n"
             " --input/-i  $file:    input file\n"
             " --output/-o $file:    output file\n"
-            " --demuxer $name:      force demuxer type ('ivf' or 'annexb'; default: detect from extension)\n"
+            " --demuxer $name:      force demuxer type ('ivf', 'section5' or 'annexb'; default: detect from extension)\n"
             " --muxer $name:        force muxer type ('md5', 'yuv', 'yuv4mpeg2' or 'null'; default: detect from extension)\n"
             " --quiet/-q:           disable status messages\n"
             " --frametimes $file:   dump frame times to file\n"
@@ -193,7 +192,7 @@ static const EnumParseTable cpu_mask_tbl[] = {
 #if ARCH_AARCH64 || ARCH_ARM
     { "neon", DAV1D_ARM_CPU_FLAG_NEON },
 #elif ARCH_X86
-    { "sse2",   X86_CPU_MASK_SSE },
+    { "sse2",   X86_CPU_MASK_SSE2 },
     { "ssse3",  X86_CPU_MASK_SSSE3 },
     { "sse41",  X86_CPU_MASK_SSE41 },
     { "avx2",   X86_CPU_MASK_AVX2 },

@@ -189,7 +189,7 @@ class MarkAsStableCMDTest(cros_test_lib.MockTempDirTestCase):
         overlay : ['ebuild'] for overlay in self._overlays}
     overlay_ebuilds = cros_mark_as_stable._GetOverlayToEbuildsMap(
         self._commit_options, self._overlays, self._package_list)
-    self.assertItemsEqual(expected_overlay_dicts, overlay_ebuilds)
+    self.assertCountEqual(expected_overlay_dicts, overlay_ebuilds)
 
   def testCommitOverlays(self):
     """Test _CommitOverlays."""
@@ -230,13 +230,13 @@ class MarkAsStableCMDTest(cros_test_lib.MockTempDirTestCase):
           overlay, ebuild, self._manifest, self._commit_options,
           ebuild_paths_to_add, ebuild_paths_to_remove,
           messages, revved_packages, new_package_atoms)
-      self.assertItemsEqual(ebuild_paths_to_add, ['ebuild_new_ebuild'])
-      self.assertItemsEqual(ebuild_paths_to_remove, ['ebuild_old_ebuild'])
-      self.assertItemsEqual(messages,
+      self.assertCountEqual(ebuild_paths_to_add, ['ebuild_new_ebuild'])
+      self.assertCountEqual(ebuild_paths_to_remove, ['ebuild_old_ebuild'])
+      self.assertCountEqual(messages,
                             [cros_mark_as_stable._GIT_COMMIT_MESSAGE %
                              'ebuild_package'])
-      self.assertItemsEqual(revved_packages, ['ebuild_package'])
-      self.assertItemsEqual(new_package_atoms, ['=ebuild_new_package'])
+      self.assertCountEqual(revved_packages, ['ebuild_package'])
+      self.assertCountEqual(new_package_atoms, ['=ebuild_new_package'])
 
   def testWorkOnEbuildWithoutNewPackage(self):
     """Test _WorkOnEbuild without new packages."""

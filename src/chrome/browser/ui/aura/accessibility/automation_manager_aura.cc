@@ -9,12 +9,14 @@
 #include "base/bind.h"
 #include "base/no_destructor.h"
 #include "build/build_config.h"
+#include "components/crash/core/common/crash_key.h"
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_enum_util.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_event.h"
 #include "ui/accessibility/ax_event_bundle_sink.h"
 #include "ui/accessibility/ax_tree_id_registry.h"
+#include "ui/accessibility/ax_tree_source_checker.h"
 #include "ui/accessibility/platform/aura_window_properties.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
@@ -30,10 +32,6 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
 #include "ash/wm/window_util.h"
-#endif
-
-#if DCHECK_IS_ON()
-#include "ui/accessibility/ax_tree_source_checker.h"
 #endif
 
 // static
@@ -54,7 +52,10 @@ void AutomationManagerAura::Enable() {
     cache_->OnRootWindowObjCreated(root);
 #endif
 
-  SendEvent(current_tree_->GetRoot(), ax::mojom::Event::kLoadComplete);
+  // Send this event immediately to push the initial desktop tree state.
+  pending_events_.push_back({current_tree_->GetRoot()->GetUniqueId(),
+                             ax::mojom::Event::kLoadComplete});
+  SendPendingEvents();
   // Intentionally not reset at shutdown since we cannot rely on the shutdown
   // ordering of two base::Singletons.
   cache_->SetDelegate(this);
@@ -64,7 +65,7 @@ void AutomationManagerAura::Enable() {
   if (active_window) {
     views::AXAuraObjWrapper* focus = cache_->GetOrCreate(active_window);
     if (focus)
-      SendEvent(focus, ax::mojom::Event::kChildrenChanged);
+      PostEvent(focus->GetUniqueId(), ax::mojom::Event::kChildrenChanged);
   }
 #endif
 }
@@ -85,24 +86,7 @@ void AutomationManagerAura::OnViewEvent(views::View* view,
   if (!obj)
     return;
 
-  // Ignore toplevel window activate and deactivate events. These are causing
-  // issues with ChromeOS accessibility tests and are currently only used on
-  // desktop Linux platforms.
-  // TODO(https://crbug.com/89717): Need to harmonize the firing of
-  // accessibility events between platforms.
-  if (event_type == ax::mojom::Event::kWindowActivated ||
-      event_type == ax::mojom::Event::kWindowDeactivated) {
-    return;
-  }
-
-  // Post a task to handle the event at the end of the current call stack.
-  // This helps us avoid firing accessibility events for transient changes.
-  // because there's a chance that the underlying object being wrapped could
-  // be deleted, pass the ID of the object rather than the object pointer.
-  int32_t id = obj->GetUniqueId();
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(&AutomationManagerAura::SendEventOnObjectById,
-                                base::Unretained(this), id, event_type));
+  PostEvent(obj->GetUniqueId(), event_type);
 }
 
 void AutomationManagerAura::HandleEvent(ax::mojom::Event event_type) {
@@ -110,14 +94,7 @@ void AutomationManagerAura::HandleEvent(ax::mojom::Event event_type) {
   if (!obj)
     return;
 
-  AutomationManagerAura::SendEvent(obj, event_type);
-}
-
-void AutomationManagerAura::SendEventOnObjectById(int32_t id,
-                                                  ax::mojom::Event event_type) {
-  views::AXAuraObjWrapper* obj = cache_->Get(id);
-  if (obj)
-    SendEvent(obj, event_type);
+  AutomationManagerAura::PostEvent(obj->GetUniqueId(), event_type);
 }
 
 void AutomationManagerAura::HandleAlert(const std::string& text) {
@@ -146,18 +123,16 @@ void AutomationManagerAura::OnChildWindowRemoved(
   if (!parent)
     parent = current_tree_->GetRoot();
 
-  SendEvent(parent, ax::mojom::Event::kChildrenChanged);
+  PostEvent(parent->GetUniqueId(), ax::mojom::Event::kChildrenChanged);
 }
 
 void AutomationManagerAura::OnEvent(views::AXAuraObjWrapper* aura_obj,
                                     ax::mojom::Event event_type) {
-  SendEvent(aura_obj, event_type);
+  PostEvent(aura_obj->GetUniqueId(), event_type);
 }
 
 AutomationManagerAura::AutomationManagerAura()
-    : enabled_(false),
-      processing_events_(false),
-      cache_(std::make_unique<views::AXAuraObjCache>()) {
+    : cache_(std::make_unique<views::AXAuraObjCache>()) {
   views::AXEventManager::Get()->AddObserver(this);
 }
 
@@ -188,27 +163,56 @@ void AutomationManagerAura::Reset(bool reset_serializer) {
   }
 }
 
-void AutomationManagerAura::SendEvent(views::AXAuraObjWrapper* aura_obj,
-                                      ax::mojom::Event event_type) {
+void AutomationManagerAura::PostEvent(int32_t id, ax::mojom::Event event_type) {
+  pending_events_.push_back({id, event_type});
+
+  if (processing_posted_)
+    return;
+
+  processing_posted_ = true;
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(&AutomationManagerAura::SendPendingEvents,
+                                base::Unretained(this)));
+}
+
+void AutomationManagerAura::SendPendingEvents() {
+  processing_posted_ = false;
   if (!enabled_)
     return;
 
   if (!current_tree_serializer_)
     return;
 
-  if (processing_events_) {
-    pending_events_.push_back(std::make_pair(aura_obj, event_type));
-    return;
-  }
-  processing_events_ = true;
-
   std::vector<ui::AXTreeUpdate> tree_updates;
-  ui::AXTreeUpdate update;
-  if (!current_tree_serializer_->SerializeChanges(aura_obj, &update)) {
-    OnSerializeFailure(event_type, update);
-    return;
+  std::vector<ui::AXEvent> events;
+  auto pending_events_copy = pending_events_;
+  pending_events_.clear();
+  for (size_t i = 0; i < pending_events_copy.size(); ++i) {
+    int32_t id = pending_events_copy[i].first;
+    ax::mojom::Event event_type = pending_events_copy[i].second;
+    auto* aura_obj = cache_->Get(id);
+    if (!aura_obj)
+      continue;
+
+    ui::AXTreeUpdate update;
+    if (!current_tree_serializer_->SerializeChanges(aura_obj, &update)) {
+      OnSerializeFailure(event_type, update);
+      return;
+    }
+    tree_updates.push_back(update);
+
+    // Fire the event on the node, but only if it's actually in the tree.
+    // Sometimes we get events fired on nodes with an ancestor that's
+    // marked invisible, for example. In those cases we should still
+    // call SerializeChanges (because the change may have affected the
+    // ancestor) but we shouldn't fire the event on the node not in the tree.
+    if (current_tree_serializer_->IsInClientTree(aura_obj)) {
+      ui::AXEvent event;
+      event.id = aura_obj->GetUniqueId();
+      event.event_type = event_type;
+      events.push_back(event);
+    }
   }
-  tree_updates.push_back(update);
 
   // Make sure the focused node is serialized.
   views::AXAuraObjWrapper* focus = cache_->GetFocus();
@@ -218,30 +222,10 @@ void AutomationManagerAura::SendEvent(views::AXAuraObjWrapper* aura_obj,
     tree_updates.push_back(focused_node_update);
   }
 
-  std::vector<ui::AXEvent> events;
-  // Fire the event on the node, but only if it's actually in the tree.
-  // Sometimes we get events fired on nodes with an ancestor that's
-  // marked invisible, for example. In those cases we should still
-  // call SerializeChanges (because the change may have affected the
-  // ancestor) but we shouldn't fire the event on the node not in the tree.
-  if (current_tree_serializer_->IsInClientTree(aura_obj)) {
-    ui::AXEvent event;
-    event.id = aura_obj->GetUniqueId();
-    event.event_type = event_type;
-    events.push_back(event);
-  }
-
   if (event_bundle_sink_) {
     event_bundle_sink_->DispatchAccessibilityEvents(
         ax_tree_id(), std::move(tree_updates),
         aura::Env::GetInstance()->last_mouse_location(), std::move(events));
-  }
-
-  processing_events_ = false;
-  auto pending_events_copy = pending_events_;
-  pending_events_.clear();
-  for (size_t i = 0; i < pending_events_copy.size(); ++i) {
-    SendEvent(pending_events_copy[i].first, pending_events_copy[i].second);
   }
 }
 
@@ -300,18 +284,25 @@ void AutomationManagerAura::PerformHitTest(
   // Otherwise, fire the event directly on the Window.
   views::AXAuraObjWrapper* window_wrapper = cache_->GetOrCreate(window);
   if (window_wrapper)
-    SendEvent(window_wrapper, action.hit_test_event_to_fire);
+    PostEvent(window_wrapper->GetUniqueId(), action.hit_test_event_to_fire);
 #endif
 }
 
 void AutomationManagerAura::OnSerializeFailure(ax::mojom::Event event_type,
                                                const ui::AXTreeUpdate& update) {
-#if DCHECK_IS_ON()
+  std::string error_string;
   ui::AXTreeSourceChecker<views::AXAuraObjWrapper*, ui::AXNodeData,
                           ui::AXTreeData>
       checker(current_tree_.get());
-  checker.Check();
-#endif
-  LOG(FATAL) << "Unable to serialize accessibility event, type " << event_type
-             << " update " << update.ToString();
+  checker.CheckAndGetErrorString(&error_string);
+
+  // Add a crash key so we can figure out why this is happening.
+  static crash_reporter::CrashKeyString<256> ax_tree_source_error(
+      "ax_tree_source_error");
+  ax_tree_source_error.Set(error_string);
+
+  LOG(ERROR) << "Unable to serialize accessibility event!\n"
+             << "Event type: " << event_type << "\n"
+             << "Error: " << error_string << "\n"
+             << "Update: " << update.ToString();
 }

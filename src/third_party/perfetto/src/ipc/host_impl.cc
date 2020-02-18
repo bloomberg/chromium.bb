@@ -26,7 +26,7 @@
 #include "perfetto/ext/ipc/service.h"
 #include "perfetto/ext/ipc/service_descriptor.h"
 
-#include "src/ipc/wire_protocol.pb.h"
+#include "protos/perfetto/ipc/wire_protocol.gen.h"
 
 // TODO(primiano): put limits on #connections/uid and req. queue (b/69093705).
 
@@ -39,7 +39,7 @@ std::unique_ptr<Host> Host::CreateInstance(const char* socket_name,
   std::unique_ptr<HostImpl> host(new HostImpl(socket_name, task_runner));
   if (!host->sock() || !host->sock()->is_listening())
     return nullptr;
-  return std::move(host);
+  return std::unique_ptr<Host>(std::move(host));
 }
 
 // static
@@ -49,21 +49,23 @@ std::unique_ptr<Host> Host::CreateInstance(base::ScopedFile socket_fd,
       new HostImpl(std::move(socket_fd), task_runner));
   if (!host->sock() || !host->sock()->is_listening())
     return nullptr;
-  return std::move(host);
+  return std::unique_ptr<Host>(std::move(host));
 }
 
 HostImpl::HostImpl(base::ScopedFile socket_fd, base::TaskRunner* task_runner)
     : task_runner_(task_runner), weak_ptr_factory_(this) {
-  GOOGLE_PROTOBUF_VERIFY_VERSION;
   PERFETTO_DCHECK_THREAD(thread_checker_);
-  sock_ = base::UnixSocket::Listen(std::move(socket_fd), this, task_runner_);
+  sock_ = base::UnixSocket::Listen(std::move(socket_fd), this, task_runner_,
+                                   base::SockFamily::kUnix,
+                                   base::SockType::kStream);
 }
 
 HostImpl::HostImpl(const char* socket_name, base::TaskRunner* task_runner)
     : task_runner_(task_runner), weak_ptr_factory_(this) {
-  GOOGLE_PROTOBUF_VERIFY_VERSION;
   PERFETTO_DCHECK_THREAD(thread_checker_);
-  sock_ = base::UnixSocket::Listen(socket_name, this, task_runner_);
+  sock_ = base::UnixSocket::Listen(socket_name, this, task_runner_,
+                                   base::SockFamily::kUnix,
+                                   base::SockType::kStream);
 }
 
 HostImpl::~HostImpl() = default;
@@ -124,13 +126,12 @@ void HostImpl::OnDataAvailable(base::UnixSocket* sock) {
 
 void HostImpl::OnReceivedFrame(ClientConnection* client,
                                const Frame& req_frame) {
-  if (req_frame.msg_case() == Frame::kMsgBindService)
+  if (req_frame.has_msg_bind_service())
     return OnBindService(client, req_frame);
-  if (req_frame.msg_case() == Frame::kMsgInvokeMethod)
+  if (req_frame.has_msg_invoke_method())
     return OnInvokeMethod(client, req_frame);
 
-  PERFETTO_DLOG("Received invalid RPC frame %u from client %" PRIu64,
-                req_frame.msg_case(), client->id);
+  PERFETTO_DLOG("Received invalid RPC frame from client %" PRIu64, client->id);
   Frame reply_frame;
   reply_frame.set_request_id(req_frame.request_id());
   reply_frame.mutable_msg_request_error()->set_error("unknown request");
@@ -220,11 +221,9 @@ void HostImpl::ReplyToMethodInvocation(ClientID client_id,
   auto* reply_frame_data = reply_frame.mutable_msg_invoke_method_reply();
   reply_frame_data->set_has_more(reply.has_more());
   if (reply.success()) {
-    std::string reply_proto;
-    if (reply->SerializeToString(&reply_proto)) {
-      reply_frame_data->set_reply_proto(reply_proto);
-      reply_frame_data->set_success(true);
-    }
+    std::string reply_proto = reply->SerializeAsString();
+    reply_frame_data->set_reply_proto(reply_proto);
+    reply_frame_data->set_success(true);
   }
   SendFrame(client, reply_frame, reply.fd());
 }

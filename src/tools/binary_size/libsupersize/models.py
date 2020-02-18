@@ -44,6 +44,7 @@ METADATA_ELF_ARCHITECTURE = 'elf_arch'  # "Machine" field from readelf -h
 METADATA_ELF_FILENAME = 'elf_file_name'  # Path relative to output_directory.
 METADATA_ELF_MTIME = 'elf_mtime'  # int timestamp in utc.
 METADATA_ELF_BUILD_ID = 'elf_build_id'
+METADATA_ELF_RELOCATIONS_COUNT = 'elf_relocations_count'
 METADATA_GN_ARGS = 'gn_args'
 METADATA_LINKER_NAME = 'linker_name'
 METADATA_TOOL_PREFIX = 'tool_prefix'  # Path relative to SRC_ROOT.
@@ -167,7 +168,6 @@ DIFF_COUNT_DELTA = [0, 0, 1, -1]
 
 
 STRING_LITERAL_NAME = 'string literal'
-
 
 class BaseSizeInfo(object):
   """Base class for SizeInfo and DeltaSizeInfo.
@@ -359,7 +359,10 @@ class BaseSymbol(object):
         self.name.endswith(']') and not self.name.endswith('[]'))
 
   def IsStringLiteral(self):
-    return self.full_name == STRING_LITERAL_NAME
+    # String literals have names like "string" or "very_long_str[...]", while
+    # non-ASCII strings are named STRING_LITERAL_NAME.
+    return self.full_name.startswith(
+        '"') or self.full_name == STRING_LITERAL_NAME
 
   # Used for diffs to know whether or not it is accurate to consider two symbols
   # with the same name as being the same.
@@ -418,6 +421,12 @@ class Symbol(BaseSymbol):
         self.section_name, self.address, self.size_without_padding,
         self.padding, self.full_name, self.object_path, self.source_path,
         self.FlagsString(), self.num_aliases, self.component)
+
+  def SetName(self, full_name, template_name=None, name=None):
+    # Note that _NormalizeNames() will clobber these values.
+    self.full_name = full_name
+    self.template_name = full_name if template_name is None else template_name
+    self.name = full_name if name is None else name
 
   @property
   def pss(self):

@@ -4,8 +4,8 @@
 
 #include "ui/base/accelerators/system_media_controls_media_keys_listener.h"
 
+#include "components/system_media_controls/system_media_controls.h"
 #include "ui/base/accelerators/accelerator.h"
-#include "ui/base/win/system_media_controls/system_media_controls_service.h"
 
 namespace ui {
 
@@ -28,11 +28,11 @@ SystemMediaControlsMediaKeysListener::~SystemMediaControlsMediaKeysListener() {
 bool SystemMediaControlsMediaKeysListener::Initialize() {
   // |service_| can be set for tests.
   if (!service_)
-    service_ = system_media_controls::SystemMediaControlsService::GetInstance();
+    service_ = system_media_controls::SystemMediaControls::GetInstance();
 
-  // If we still don't have a service, then that means the
-  // SystemMediaControlsService failed to connect to the
-  // SystemMediaTransportControls. If that's the case, return false.
+  // If we still don't have a service, then either System Media Controls isn't
+  // supported on this platform or it failed to initialize. If that's the case,
+  // return false.
   if (!service_)
     return false;
 
@@ -54,8 +54,7 @@ bool SystemMediaControlsMediaKeysListener::StartWatchingMediaKey(
 
   switch (key_code) {
     case VKEY_MEDIA_PLAY_PAUSE:
-      service_->SetIsPlayEnabled(true);
-      service_->SetIsPauseEnabled(true);
+      service_->SetIsPlayPauseEnabled(true);
       break;
     case VKEY_MEDIA_NEXT_TRACK:
       service_->SetIsNextEnabled(true);
@@ -87,8 +86,7 @@ void SystemMediaControlsMediaKeysListener::StopWatchingMediaKey(
 
   switch (key_code) {
     case VKEY_MEDIA_PLAY_PAUSE:
-      service_->SetIsPlayEnabled(false);
-      service_->SetIsPauseEnabled(false);
+      service_->SetIsPlayPauseEnabled(false);
       break;
     case VKEY_MEDIA_NEXT_TRACK:
       service_->SetIsNextEnabled(false);
@@ -116,18 +114,22 @@ void SystemMediaControlsMediaKeysListener::OnPrevious() {
   MaybeSendKeyCode(VKEY_MEDIA_PREV_TRACK);
 }
 
+void SystemMediaControlsMediaKeysListener::OnPlay() {
+  if (!is_media_playing_)
+    MaybeSendKeyCode(VKEY_MEDIA_PLAY_PAUSE);
+}
+
 void SystemMediaControlsMediaKeysListener::OnPause() {
   if (is_media_playing_)
     MaybeSendKeyCode(VKEY_MEDIA_PLAY_PAUSE);
 }
 
-void SystemMediaControlsMediaKeysListener::OnStop() {
-  MaybeSendKeyCode(VKEY_MEDIA_STOP);
+void SystemMediaControlsMediaKeysListener::OnPlayPause() {
+  MaybeSendKeyCode(VKEY_MEDIA_PLAY_PAUSE);
 }
 
-void SystemMediaControlsMediaKeysListener::OnPlay() {
-  if (!is_media_playing_)
-    MaybeSendKeyCode(VKEY_MEDIA_PLAY_PAUSE);
+void SystemMediaControlsMediaKeysListener::OnStop() {
+  MaybeSendKeyCode(VKEY_MEDIA_STOP);
 }
 
 void SystemMediaControlsMediaKeysListener::MaybeSendKeyCode(

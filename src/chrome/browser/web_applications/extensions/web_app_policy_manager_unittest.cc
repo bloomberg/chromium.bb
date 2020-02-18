@@ -50,7 +50,7 @@ base::Value GetWindowedItem() {
 }
 
 ExternalInstallOptions GetWindowedInstallOptions() {
-  ExternalInstallOptions options(kWindowedUrl, LaunchContainer::kWindow,
+  ExternalInstallOptions options(kWindowedUrl, DisplayMode::kStandalone,
                                  ExternalInstallSource::kExternalPolicy);
   options.add_to_applications_menu = true;
   options.add_to_desktop = false;
@@ -70,7 +70,7 @@ base::Value GetTabbedItem() {
 }
 
 ExternalInstallOptions GetTabbedInstallOptions() {
-  ExternalInstallOptions options(kTabbedUrl, LaunchContainer::kTab,
+  ExternalInstallOptions options(kTabbedUrl, DisplayMode::kBrowser,
                                  ExternalInstallSource::kExternalPolicy);
   options.add_to_applications_menu = true;
   options.add_to_desktop = false;
@@ -88,7 +88,7 @@ base::Value GetNoContainerItem() {
 }
 
 ExternalInstallOptions GetNoContainerInstallOptions() {
-  ExternalInstallOptions options(kNoContainerUrl, LaunchContainer::kTab,
+  ExternalInstallOptions options(kNoContainerUrl, DisplayMode::kBrowser,
                                  ExternalInstallSource::kExternalPolicy);
   options.add_to_applications_menu = true;
   options.add_to_desktop = false;
@@ -106,7 +106,7 @@ base::Value GetCreateDesktopShorcutDefaultItem() {
 }
 
 ExternalInstallOptions GetCreateDesktopShorcutDefaultInstallOptions() {
-  ExternalInstallOptions options(kNoContainerUrl, LaunchContainer::kTab,
+  ExternalInstallOptions options(kNoContainerUrl, DisplayMode::kBrowser,
                                  ExternalInstallSource::kExternalPolicy);
   options.add_to_applications_menu = true;
   options.add_to_desktop = false;
@@ -125,7 +125,7 @@ base::Value GetCreateDesktopShorcutFalseItem() {
 }
 
 ExternalInstallOptions GetCreateDesktopShorcutFalseInstallOptions() {
-  ExternalInstallOptions options(kNoContainerUrl, LaunchContainer::kTab,
+  ExternalInstallOptions options(kNoContainerUrl, DisplayMode::kBrowser,
                                  ExternalInstallSource::kExternalPolicy);
   options.add_to_applications_menu = true;
   options.add_to_desktop = false;
@@ -144,7 +144,7 @@ base::Value GetCreateDesktopShorcutTrueItem() {
 }
 
 ExternalInstallOptions GetCreateDesktopShorcutTrueInstallOptions() {
-  ExternalInstallOptions options(kNoContainerUrl, LaunchContainer::kTab,
+  ExternalInstallOptions options(kNoContainerUrl, DisplayMode::kBrowser,
                                  ExternalInstallSource::kExternalPolicy);
   options.add_to_applications_menu = true;
   options.add_to_desktop = true;
@@ -166,7 +166,7 @@ class WebAppPolicyManagerTest : public ChromeRenderViewHostTestHarness {
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
 
-    auto* provider = web_app::TestWebAppProvider::Get(profile());
+    auto* provider = TestWebAppProvider::Get(profile());
 
     auto test_app_registrar = std::make_unique<TestAppRegistrar>();
     test_app_registrar_ = test_app_registrar.get();
@@ -228,8 +228,8 @@ TEST_F(WebAppPolicyManagerTest, NoForceInstalledApps) {
 TEST_F(WebAppPolicyManagerTest, TwoForceInstalledApps) {
   // Add two sites, one that opens in a window and one that opens in a tab.
   base::Value list(base::Value::Type::LIST);
-  list.GetList().push_back(GetWindowedItem());
-  list.GetList().push_back(GetTabbedItem());
+  list.Append(GetWindowedItem());
+  list.Append(GetTabbedItem());
   profile()->GetPrefs()->Set(prefs::kWebAppInstallForceList, std::move(list));
 
   policy_manager()->Start();
@@ -246,7 +246,7 @@ TEST_F(WebAppPolicyManagerTest, TwoForceInstalledApps) {
 
 TEST_F(WebAppPolicyManagerTest, ForceInstallAppWithNoDefaultLaunchContainer) {
   base::Value list(base::Value::Type::LIST);
-  list.GetList().push_back(GetNoContainerItem());
+  list.Append(GetNoContainerItem());
   profile()->GetPrefs()->Set(prefs::kWebAppInstallForceList, std::move(list));
 
   policy_manager()->Start();
@@ -263,7 +263,7 @@ TEST_F(WebAppPolicyManagerTest, ForceInstallAppWithNoDefaultLaunchContainer) {
 TEST_F(WebAppPolicyManagerTest,
        ForceInstallAppWithDefaultCreateDesktopShorcut) {
   base::Value list(base::Value::Type::LIST);
-  list.GetList().push_back(GetCreateDesktopShorcutDefaultItem());
+  list.Append(GetCreateDesktopShorcutDefaultItem());
   profile()->GetPrefs()->Set(prefs::kWebAppInstallForceList, std::move(list));
 
   policy_manager()->Start();
@@ -280,8 +280,8 @@ TEST_F(WebAppPolicyManagerTest,
 
 TEST_F(WebAppPolicyManagerTest, ForceInstallAppWithCreateDesktopShortcut) {
   base::Value list(base::Value::Type::LIST);
-  list.GetList().push_back(GetCreateDesktopShorcutFalseItem());
-  list.GetList().push_back(GetCreateDesktopShorcutTrueItem());
+  list.Append(GetCreateDesktopShorcutFalseItem());
+  list.Append(GetCreateDesktopShorcutTrueItem());
   profile()->GetPrefs()->Set(prefs::kWebAppInstallForceList, std::move(list));
 
   policy_manager()->Start();
@@ -300,7 +300,7 @@ TEST_F(WebAppPolicyManagerTest, ForceInstallAppWithCreateDesktopShortcut) {
 
 TEST_F(WebAppPolicyManagerTest, DynamicRefresh) {
   base::Value first_list(base::Value::Type::LIST);
-  first_list.GetList().push_back(GetWindowedItem());
+  first_list.Append(GetWindowedItem());
   profile()->GetPrefs()->Set(prefs::kWebAppInstallForceList,
                              std::move(first_list));
 
@@ -315,7 +315,7 @@ TEST_F(WebAppPolicyManagerTest, DynamicRefresh) {
   EXPECT_EQ(install_requests, expected_install_options_list);
 
   base::Value second_list(base::Value::Type::LIST);
-  second_list.GetList().push_back(GetTabbedItem());
+  second_list.Append(GetTabbedItem());
   profile()->GetPrefs()->Set(prefs::kWebAppInstallForceList,
                              std::move(second_list));
 
@@ -338,7 +338,7 @@ TEST_F(WebAppPolicyManagerTest, UninstallAppInstalledInPreviousSession) {
 
   // Push a policy with only one of the apps.
   base::Value first_list(base::Value::Type::LIST);
-  first_list.GetList().push_back(GetWindowedItem());
+  first_list.Append(GetWindowedItem());
   profile()->GetPrefs()->Set(prefs::kWebAppInstallForceList,
                              std::move(first_list));
 
@@ -364,8 +364,8 @@ TEST_F(WebAppPolicyManagerTest, UninstallAppInstalledInCurrentSession) {
 
   // Add two sites, one that opens in a window and one that opens in a tab.
   base::Value first_list(base::Value::Type::LIST);
-  first_list.GetList().push_back(GetWindowedItem());
-  first_list.GetList().push_back(GetTabbedItem());
+  first_list.Append(GetWindowedItem());
+  first_list.Append(GetTabbedItem());
   profile()->GetPrefs()->Set(prefs::kWebAppInstallForceList,
                              std::move(first_list));
   base::RunLoop().RunUntilIdle();
@@ -380,7 +380,7 @@ TEST_F(WebAppPolicyManagerTest, UninstallAppInstalledInCurrentSession) {
 
   // Push a new policy without the tabbed site.
   base::Value second_list(base::Value::Type::LIST);
-  second_list.GetList().push_back(GetWindowedItem());
+  second_list.Append(GetWindowedItem());
   profile()->GetPrefs()->Set(prefs::kWebAppInstallForceList,
                              std::move(second_list));
   base::RunLoop().RunUntilIdle();
@@ -398,7 +398,7 @@ TEST_F(WebAppPolicyManagerTest, UninstallAppInstalledInCurrentSession) {
 // Tests that we correctly reinstall a placeholder app.
 TEST_F(WebAppPolicyManagerTest, ReinstallPlaceholderApp) {
   base::Value list(base::Value::Type::LIST);
-  list.GetList().push_back(GetWindowedItem());
+  list.Append(GetWindowedItem());
   profile()->GetPrefs()->Set(prefs::kWebAppInstallForceList, std::move(list));
 
   policy_manager()->Start();
@@ -424,7 +424,7 @@ TEST_F(WebAppPolicyManagerTest, ReinstallPlaceholderApp) {
 
 TEST_F(WebAppPolicyManagerTest, TryToInexistentPlaceholderApp) {
   base::Value list(base::Value::Type::LIST);
-  list.GetList().push_back(GetWindowedItem());
+  list.Append(GetWindowedItem());
   profile()->GetPrefs()->Set(prefs::kWebAppInstallForceList, std::move(list));
 
   policy_manager()->Start();
@@ -449,13 +449,13 @@ TEST_F(WebAppPolicyManagerTest, SayRefreshTwoTimesQuickly) {
   // Add an app.
   {
     base::Value list(base::Value::Type::LIST);
-    list.GetList().push_back(GetWindowedItem());
+    list.Append(GetWindowedItem());
     profile()->GetPrefs()->Set(prefs::kWebAppInstallForceList, std::move(list));
   }
   // Before it gets installed, set a policy that uninstalls it.
   {
     base::Value list(base::Value::Type::LIST);
-    list.GetList().push_back(GetTabbedItem());
+    list.Append(GetTabbedItem());
     profile()->GetPrefs()->Set(prefs::kWebAppInstallForceList, std::move(list));
   }
   base::RunLoop().RunUntilIdle();
@@ -485,7 +485,7 @@ TEST_F(WebAppPolicyManagerTest, InstallResultHistogram) {
   policy_manager()->Start();
   {
     base::Value list(base::Value::Type::LIST);
-    list.GetList().push_back(GetWindowedItem());
+    list.Append(GetWindowedItem());
     profile()->GetPrefs()->Set(prefs::kWebAppInstallForceList, std::move(list));
 
     histograms.ExpectTotalCount(
@@ -501,8 +501,8 @@ TEST_F(WebAppPolicyManagerTest, InstallResultHistogram) {
   }
   {
     base::Value list(base::Value::Type::LIST);
-    list.GetList().push_back(GetTabbedItem());
-    list.GetList().push_back(GetNoContainerItem());
+    list.Append(GetTabbedItem());
+    list.Append(GetNoContainerItem());
     pending_app_manager()->SetInstallResultCode(
         InstallResultCode::kProfileDestroyed);
 

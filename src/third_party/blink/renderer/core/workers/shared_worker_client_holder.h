@@ -38,8 +38,8 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/unique_receiver_set.h"
-#include "third_party/blink/public/mojom/blob/blob_url_store.mojom-blink.h"
-#include "third_party/blink/public/mojom/worker/shared_worker_client.mojom-blink.h"
+#include "third_party/blink/public/mojom/blob/blob_url_store.mojom-blink-forward.h"
+#include "third_party/blink/public/mojom/worker/shared_worker_client.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/worker/shared_worker_connector.mojom-blink.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -61,7 +61,7 @@ class SharedWorker;
 // SharedWorkerClientHolder is a per-Document object and owned by Document via
 // Supplement<Document>.
 class CORE_EXPORT SharedWorkerClientHolder final
-    : public GarbageCollectedFinalized<SharedWorkerClientHolder>,
+    : public GarbageCollected<SharedWorkerClientHolder>,
       public Supplement<Document>,
       public ContextLifecycleObserver {
   USING_GARBAGE_COLLECTED_MIXIN(SharedWorkerClientHolder);

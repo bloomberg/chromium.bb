@@ -14,14 +14,12 @@ namespace message_center {
 class MessagePopupCollection;
 class MessageView;
 class Notification;
-class PopupAlignmentDelegate;
 
 // The widget delegate of a notification popup. The view is owned by the widget.
 class MESSAGE_CENTER_EXPORT MessagePopupView : public views::WidgetDelegateView,
                                                public views::WidgetObserver {
  public:
   MessagePopupView(const Notification& notification,
-                   PopupAlignmentDelegate* alignment_delegate,
                    MessagePopupCollection* popup_collection);
   ~MessagePopupView() override;
 
@@ -57,6 +55,7 @@ class MESSAGE_CENTER_EXPORT MessagePopupView : public views::WidgetDelegateView,
   const char* GetClassName() const override;
   void OnDisplayChanged() override;
   void OnWorkAreaChanged() override;
+  void OnFocus() override;
 
   // views::WidgetObserver:
   void OnWidgetActivationChanged(views::Widget* widget, bool active) override;
@@ -66,8 +65,7 @@ class MESSAGE_CENTER_EXPORT MessagePopupView : public views::WidgetDelegateView,
 
  protected:
   // For unit testing.
-  MessagePopupView(PopupAlignmentDelegate* alignment_delegate,
-                   MessagePopupCollection* popup_collection);
+  MessagePopupView(MessagePopupCollection* popup_collection);
 
  private:
   // True if the view has a widget and the widget is not closed.
@@ -77,7 +75,6 @@ class MESSAGE_CENTER_EXPORT MessagePopupView : public views::WidgetDelegateView,
   MessageView* message_view_;
 
   // Unowned.
-  PopupAlignmentDelegate* const alignment_delegate_;
   MessagePopupCollection* const popup_collection_;
 
   const bool a11y_feedback_on_init_;

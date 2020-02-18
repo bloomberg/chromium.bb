@@ -4,10 +4,13 @@
 
 #include "components/sync/nigori/nigori_model_type_processor.h"
 
+#include "base/metrics/histogram_macros.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "components/sync/base/client_tag_hash.h"
 #include "components/sync/base/data_type_histogram.h"
 #include "components/sync/base/time.h"
 #include "components/sync/engine/commit_queue.h"
+#include "components/sync/engine_impl/conflict_resolver.h"
 #include "components/sync/model_impl/processor_entity.h"
 #include "components/sync/nigori/forwarding_model_type_processor.h"
 #include "components/sync/nigori/nigori_sync_bridge.h"
@@ -21,7 +24,7 @@ namespace {
 // TODO(mamir): remove those and adjust the code accordingly. Similarly in
 // tests.
 const char kNigoriStorageKey[] = "NigoriStorageKey";
-const char kNigoriClientTagHash[] = "NigoriClientTagHash";
+const char kRawNigoriClientTagHash[] = "NigoriClientTagHash";
 
 }  // namespace
 
@@ -131,8 +134,8 @@ void NigoriModelTypeProcessor::OnUpdateReceived(
     } else {
       DCHECK(!updates[0]->entity->is_deleted());
       entity_ = ProcessorEntity::CreateNew(
-          kNigoriStorageKey, kNigoriClientTagHash, updates[0]->entity->id,
-          updates[0]->entity->creation_time);
+          kNigoriStorageKey, ClientTagHash::FromHashed(kRawNigoriClientTagHash),
+          updates[0]->entity->id, updates[0]->entity->creation_time);
       entity_->RecordAcceptedUpdate(*updates[0]);
       error = bridge_->MergeSyncData(std::move(*updates[0]->entity));
     }
@@ -159,8 +162,16 @@ void NigoriModelTypeProcessor::OnUpdateReceived(
   }
 
   if (entity_->IsUnsynced()) {
-    // TODO(mamir): conflict resolution
-    NOTIMPLEMENTED();
+    // Remote update always win in case of conflict, because bridge takes care
+    // of reapplying pending local changes after processing the remote update.
+    entity_->RecordForcedUpdate(*updates[0]);
+    error = bridge_->ApplySyncChanges(std::move(*updates[0]->entity));
+    UMA_HISTOGRAM_ENUMERATION("Sync.ResolveConflict",
+                              ConflictResolution::kUseRemote,
+                              ConflictResolution::kTypeSize);
+    UMA_HISTOGRAM_ENUMERATION("Sync.ResolveSimpleConflict",
+                              ConflictResolver::NIGORI_MERGE,
+                              ConflictResolver::CONFLICT_RESOLUTION_SIZE);
   } else if (!entity_->MatchesData(*updates[0]->entity)) {
     // Inform the bridge of the new or updated data.
     entity_->RecordAcceptedUpdate(*updates[0]);
@@ -228,35 +239,34 @@ void NigoriModelTypeProcessor::GetAllNodesForDebugging(
     AllNodesCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  std::unique_ptr<base::DictionaryValue> root_node;
   std::unique_ptr<EntityData> entity_data = bridge_->GetData();
-  if (entity_data) {
-    if (entity_) {
-      const sync_pb::EntityMetadata& metadata = entity_->metadata();
-      // Set id value as directory, "s" means server.
-      entity_data->id = "s" + metadata.server_id();
-      entity_data->creation_time = ProtoTimeToTime(metadata.creation_time());
-      entity_data->modification_time =
-          ProtoTimeToTime(metadata.modification_time());
-    }
-    root_node = entity_data->ToDictionaryValue();
-    if (entity_) {
-      root_node->Set("metadata", EntityMetadataToValue(entity_->metadata()));
-    }
-  } else {
-    root_node = std::make_unique<base::DictionaryValue>();
+  if (!entity_data) {
+    std::move(callback).Run(syncer::NIGORI,
+                            std::make_unique<base::ListValue>());
+    return;
+  }
+
+  if (entity_) {
+    const sync_pb::EntityMetadata& metadata = entity_->metadata();
+    // Set id value as directory, "s" means server.
+    entity_data->id = "s" + metadata.server_id();
+    entity_data->creation_time = ProtoTimeToTime(metadata.creation_time());
+    entity_data->modification_time =
+        ProtoTimeToTime(metadata.modification_time());
+  }
+  std::unique_ptr<base::DictionaryValue> root_node;
+  root_node = entity_data->ToDictionaryValue();
+  if (entity_) {
+    root_node->Set("metadata", EntityMetadataToValue(entity_->metadata()));
   }
 
   // Function isTypeRootNode in sync_node_browser.js use PARENT_ID and
   // UNIQUE_SERVER_TAG to check if the node is root node. isChildOf in
   // sync_node_browser.js uses modelType to check if root node is parent of real
-  // data node. NON_UNIQUE_NAME will be the name of node to display.
-  root_node->SetString("ID", "NIGORI_ROOT");
+  // data node.
   root_node->SetString("PARENT_ID", "r");
   root_node->SetString("UNIQUE_SERVER_TAG", "Nigori");
-  root_node->SetBoolean("IS_DIR", false);
-  root_node->SetString("modelType", "Nigori");
-  root_node->SetString("NON_UNIQUE_NAME", "Nigori");
+  root_node->SetString("modelType", ModelTypeToString(NIGORI));
 
   auto all_nodes = std::make_unique<base::ListValue>();
   all_nodes->Append(std::move(root_node));
@@ -300,7 +310,7 @@ void NigoriModelTypeProcessor::ModelReadyToSync(
     model_type_state_ = std::move(nigori_metadata.model_type_state);
     sync_pb::EntityMetadata metadata =
         std::move(*nigori_metadata.entity_metadata);
-    metadata.set_client_tag_hash(kNigoriClientTagHash);
+    metadata.set_client_tag_hash(kRawNigoriClientTagHash);
     entity_ = ProcessorEntity::CreateFromMetadata(kNigoriStorageKey,
                                                   std::move(metadata));
   } else {
@@ -333,6 +343,15 @@ void NigoriModelTypeProcessor::Put(std::unique_ptr<EntityData> entity_data) {
 
   entity_->MakeLocalChange(std::move(entity_data));
   NudgeForCommitIfNeeded();
+}
+
+bool NigoriModelTypeProcessor::IsEntityUnsynced() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (entity_ == nullptr) {
+    return false;
+  }
+
+  return entity_->IsUnsynced();
 }
 
 NigoriMetadataBatch NigoriModelTypeProcessor::GetMetadata() {
@@ -408,9 +427,8 @@ void NigoriModelTypeProcessor::ConnectIfReady() {
   }
 
   // Cache GUID verification earlier above guarantees the user is the same.
-  // TODO(https://crbug.com/959157): Use CoreAccountId instead of std::string.
   model_type_state_.set_authenticated_account_id(
-      activation_request_.authenticated_account_id.id);
+      activation_request_.authenticated_account_id.ToString());
 
   auto activation_response = std::make_unique<DataTypeActivationResponse>();
   activation_response->model_type_state = model_type_state_;

@@ -69,62 +69,43 @@ class CORE_EXPORT SVGAnimationElement : public SVGSMILElement {
   DEFINE_ATTRIBUTE_EVENT_LISTENER(end, kEndEvent)
   DEFINE_ATTRIBUTE_EVENT_LISTENER(repeat, kRepeatEvent)
 
-  virtual bool IsAdditive();
+  virtual bool IsAdditive() const;
   bool IsAccumulated() const;
   AnimationMode GetAnimationMode() const { return animation_mode_; }
   CalcMode GetCalcMode() const { return calc_mode_; }
 
-  bool OverwritesUnderlyingAnimationValue() override;
-
-  template <typename AnimatedType>
-  void AnimateDiscreteType(float percentage,
-                           const AnimatedType& from_type,
-                           const AnimatedType& to_type,
-                           AnimatedType& animated_type) {
-    if ((GetAnimationMode() == kFromToAnimation && percentage > 0.5) ||
-        GetAnimationMode() == kToAnimation || percentage == 1) {
-      animated_type = AnimatedType(to_type);
-      return;
-    }
-    animated_type = AnimatedType(from_type);
-  }
+  virtual void ResetAnimatedType() = 0;
+  virtual void ClearAnimatedType() = 0;
+  virtual void ApplyResultsToTarget() = 0;
+  // Returns true if this animation "sets" the value of the animation. Thus all
+  // previous animations are rendered useless.
+  bool OverwritesUnderlyingAnimationValue() const;
+  void ApplyAnimation(SVGAnimationElement* result_element);
 
   void AnimateAdditiveNumber(float percentage,
                              unsigned repeat_count,
                              float from_number,
                              float to_number,
                              float to_at_end_of_duration_number,
-                             float& animated_number) {
+                             float& animated_number) const {
     float number;
     if (GetCalcMode() == kCalcModeDiscrete)
       number = percentage < 0.5 ? from_number : to_number;
     else
       number = (to_number - from_number) * percentage + from_number;
-
-    if (IsAccumulated() && repeat_count)
-      number += to_at_end_of_duration_number * repeat_count;
-
-    if (IsAdditive() && GetAnimationMode() != kToAnimation)
-      animated_number += number;
-    else
-      animated_number = number;
+    if (GetAnimationMode() != kToAnimation) {
+      if (repeat_count && IsAccumulated())
+        number += to_at_end_of_duration_number * repeat_count;
+      if (IsAdditive())
+        number += animated_number;
+    }
+    animated_number = number;
   }
 
  protected:
   SVGAnimationElement(const QualifiedName&, Document&);
 
   void ParseAttribute(const AttributeModificationParams&) override;
-  void SvgAttributeChanged(const QualifiedName&) override;
-
-  String ToValue() const;
-  String ByValue() const;
-  String FromValue() const;
-
-  // from SVGSMILElement
-  void StartedActiveInterval() override;
-  void UpdateAnimation(float percent,
-                       unsigned repeat,
-                       SVGSMILElement* result_element) override;
 
   virtual void UpdateAnimationMode();
   void SetAnimationMode(AnimationMode animation_mode) {
@@ -134,6 +115,9 @@ class CORE_EXPORT SVGAnimationElement : public SVGSMILElement {
     use_paced_key_times_ = false;
     calc_mode_ = calc_mode;
   }
+  virtual bool HasValidAnimation() const = 0;
+  void UnregisterAnimation(const QualifiedName& attribute_name);
+  void RegisterAnimation(const QualifiedName& attribute_name);
 
   // Parses a list of values as specified by SVG, stripping leading
   // and trailing whitespace, and places them in result. If the
@@ -142,12 +126,17 @@ class CORE_EXPORT SVGAnimationElement : public SVGSMILElement {
   // http://www.w3.org/TR/SVG/animate.html#ValuesAttribute .
   static bool ParseValues(const String&, Vector<String>& result);
 
-  void InvalidatedValuesCache();
-  void AnimationAttributeChanged() override;
+  void WillChangeAnimationTarget() override;
+  void AnimationAttributeChanged();
 
  private:
   bool IsValid() const final { return SVGTests::IsValid(); }
 
+  String ToValue() const;
+  String ByValue() const;
+  String FromValue() const;
+
+  bool CheckAnimationParameters();
   virtual bool CalculateToAtEndOfDurationValue(
       const String& to_at_end_of_duration_string) = 0;
   virtual bool CalculateFromAndToValues(const String& from_string,
@@ -156,16 +145,16 @@ class CORE_EXPORT SVGAnimationElement : public SVGSMILElement {
                                         const String& by_string) = 0;
   virtual void CalculateAnimatedValue(float percent,
                                       unsigned repeat_count,
-                                      SVGSMILElement* result_element) = 0;
+                                      SVGSMILElement* result_element) const = 0;
   virtual float CalculateDistance(const String& /*fromString*/,
                                   const String& /*toString*/) {
     return -1.f;
   }
 
-  void CurrentValuesForValuesAnimation(float percent,
-                                       float& effective_percent,
-                                       String& from,
-                                       String& to);
+  bool CalculateValuesAnimation();
+  float CurrentValuesForValuesAnimation(float percent,
+                                        String& from,
+                                        String& to) const;
   // Also decides which list is to be used, either key_times_from_attribute_
   // or key_times_for_paced_ by toggling the flag use_paced_key_times_.
   void CalculateKeyTimesForCalcModePaced();
@@ -176,17 +165,22 @@ class CORE_EXPORT SVGAnimationElement : public SVGSMILElement {
   }
 
   float CalculatePercentFromKeyPoints(float percent) const;
-  void CurrentValuesFromKeyPoints(float percent,
-                                  float& effective_percent,
-                                  String& from,
-                                  String& to) const;
+  float CurrentValuesFromKeyPoints(float percent,
+                                   String& from,
+                                   String& to) const;
   float CalculatePercentForSpline(float percent, unsigned spline_index) const;
   float CalculatePercentForFromTo(float percent) const;
   unsigned CalculateKeyTimesIndex(float percent) const;
 
   void SetCalcMode(const AtomicString&);
 
-  bool animation_valid_;
+  enum class AnimationValidity : unsigned char {
+    kUnknown,
+    kValid,
+    kInvalid,
+  };
+  AnimationValidity animation_valid_;
+  bool registered_animation_;
   bool use_paced_key_times_;
 
   Vector<String> values_;

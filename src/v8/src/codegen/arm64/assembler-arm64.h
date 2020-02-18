@@ -8,6 +8,7 @@
 #include <deque>
 #include <list>
 #include <map>
+#include <memory>
 #include <vector>
 
 #include "src/base/optional.h"
@@ -105,6 +106,9 @@ class Operand {
   // which helps in the encoding of instructions that use the stack pointer.
   inline Operand ToExtendedRegister() const;
 
+  // Returns new Operand adapted for using with W registers.
+  inline Operand ToW() const;
+
   inline Immediate immediate() const;
   inline int64_t ImmediateValue() const;
   inline RelocInfo::Mode ImmediateRMode() const;
@@ -189,9 +193,9 @@ class V8_EXPORT_PRIVATE Assembler : public AssemblerBase {
   explicit Assembler(const AssemblerOptions&,
                      std::unique_ptr<AssemblerBuffer> = {});
 
-  virtual ~Assembler();
+  ~Assembler() override;
 
-  virtual void AbortedCodeGeneration();
+  void AbortedCodeGeneration() override;
 
   // System functions ---------------------------------------------------------
   // Start generating code from the beginning of the buffer, discarding any code
@@ -375,7 +379,7 @@ class V8_EXPORT_PRIVATE Assembler : public AssemblerBase {
   // Instruction set functions ------------------------------------------------
 
   // Branch / Jump instructions.
-  // For branches offsets are scaled, i.e. they in instrcutions not in bytes.
+  // For branches offsets are scaled, i.e. in instructions not in bytes.
   // Branch to register.
   void br(const Register& xn);
 
@@ -2634,7 +2638,8 @@ class V8_EXPORT_PRIVATE Assembler : public AssemblerBase {
   // not have to check for overflow. The same is true for writes of large
   // relocation info entries, and debug strings encoded in the instruction
   // stream.
-  static constexpr int kGap = 128;
+  static constexpr int kGap = 64;
+  STATIC_ASSERT(AssemblerBase::kMinimalBufferSize >= 2 * kGap);
 
  public:
 #ifdef DEBUG

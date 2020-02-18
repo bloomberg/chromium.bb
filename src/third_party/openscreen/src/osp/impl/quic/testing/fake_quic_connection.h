@@ -11,6 +11,7 @@
 #include "osp/impl/quic/quic_connection.h"
 
 namespace openscreen {
+namespace osp {
 
 class FakeQuicConnectionFactoryBridge;
 
@@ -56,9 +57,13 @@ class FakeQuicConnection final : public QuicConnection {
 
   std::unique_ptr<FakeQuicStream> MakeIncomingStream();
 
+  // UdpSocket::Client overrides.
+  void OnRead(platform::UdpSocket* socket,
+              ErrorOr<platform::UdpPacket> data) override;
+  void OnSendError(platform::UdpSocket* socket, Error error) override;
+  void OnError(platform::UdpSocket* socket, Error error) override;
+
   // QuicConnection overrides.
-  void OnRead(platform::UdpPacket data,
-              platform::NetworkRunner* network_runner) override;
   std::unique_ptr<QuicStream> MakeOutgoingStream(
       QuicStream::Delegate* delegate) override;
   void Close() override;
@@ -70,6 +75,7 @@ class FakeQuicConnection final : public QuicConnection {
   std::map<uint64_t, FakeQuicStream*> streams_;
 };
 
+}  // namespace osp
 }  // namespace openscreen
 
 #endif  // OSP_IMPL_QUIC_TESTING_FAKE_QUIC_CONNECTION_H_

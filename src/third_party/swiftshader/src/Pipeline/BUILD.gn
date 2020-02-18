@@ -39,8 +39,15 @@ swiftshader_source_set("Pipeline") {
     "SetupRoutine.cpp",
     "ShaderCore.cpp",
     "SpirvShader.cpp",
+    "SpirvShaderArithmetic.cpp",
+    "SpirvShaderControlFlow.cpp",
+    "SpirvShaderEnumNames.cpp",
+    "SpirvShaderGLSLstd450.cpp",
+    "SpirvShaderGroup.cpp",
+    "SpirvShaderImage.cpp",
+    "SpirvShaderMemory.cpp",
     "SpirvShaderSampling.cpp",
-    "SpirvShader_dbg.cpp",
+    "SpirvShaderSpec.cpp",
     "VertexProgram.cpp",
     "VertexRoutine.cpp",
   ]
@@ -52,10 +59,10 @@ swiftshader_source_set("Pipeline") {
   ]
 
   deps = [
+    "../../third_party/marl:Marl_headers",
     "../Device:Device_headers",
     "../System:System_headers",
     "../Vulkan:swiftshader_libvulkan_headers",
-    "../Yarn:Yarn_headers",
   ]
 
   public_deps = [

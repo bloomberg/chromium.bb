@@ -161,6 +161,7 @@ const AcceleratorData kAcceleratorData[] = {
     {true, ui::VKEY_OEM_PLUS, ui::EF_ALT_DOWN, TOGGLE_MAXIMIZED},
     {true, ui::VKEY_BROWSER_FORWARD, ui::EF_CONTROL_DOWN, FOCUS_NEXT_PANE},
     {true, ui::VKEY_BROWSER_BACK, ui::EF_CONTROL_DOWN, FOCUS_PREVIOUS_PANE},
+    {true, ui::VKEY_BROWSER_BACK, ui::EF_NONE, MINIMIZE_TOP_WINDOW_ON_BACK},
 
     // Moving active window between displays shortcut.
     {true, ui::VKEY_M, ui::EF_COMMAND_DOWN | ui::EF_ALT_DOWN,
@@ -177,9 +178,9 @@ const AcceleratorData kAcceleratorData[] = {
     {true, ui::VKEY_MEDIA_PLAY_PAUSE, ui::EF_NONE, MEDIA_PLAY_PAUSE},
     {true, ui::VKEY_MEDIA_PREV_TRACK, ui::EF_NONE, MEDIA_PREV_TRACK},
 
-    // Voice Interaction shortcuts.
-    {true, ui::VKEY_A, ui::EF_COMMAND_DOWN, START_VOICE_INTERACTION},
-    {true, ui::VKEY_ASSISTANT, ui::EF_NONE, START_VOICE_INTERACTION},
+    // Assistant shortcuts.
+    {true, ui::VKEY_A, ui::EF_COMMAND_DOWN, START_ASSISTANT},
+    {true, ui::VKEY_ASSISTANT, ui::EF_NONE, START_ASSISTANT},
 
     // IME mode change key.
     {true, ui::VKEY_MODECHANGE, ui::EF_NONE, SWITCH_TO_NEXT_IME},

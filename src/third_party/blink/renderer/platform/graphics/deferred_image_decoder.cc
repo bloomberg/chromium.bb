@@ -36,7 +36,6 @@
 #include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
 #include "third_party/blink/renderer/platform/image-decoders/segment_reader.h"
 #include "third_party/blink/renderer/platform/instrumentation/histogram.h"
-#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/shared_buffer.h"
 #include "third_party/skia/include/core/SkImage.h"
 
@@ -234,11 +233,14 @@ sk_sp<PaintImageGenerator> DeferredImageDecoder::CreateGenerator(size_t index) {
   // common, so we avoid worrying about this with the line below.
   can_yuv_decode_ &= !incremental_decode_needed_.value();
 
+  DCHECK(image_metadata_);
+  image_metadata_->all_data_received_prior_to_decode =
+      !incremental_decode_needed_.value();
+
   auto generator = DecodingImageGenerator::Create(
       frame_generator_, info, std::move(segment_reader), std::move(frames),
-      complete_frame_content_id_, all_data_received_,
-      !incremental_decode_needed_.value() /* able to do accelerated decoding */,
-      can_yuv_decode_, image_type);
+      complete_frame_content_id_, all_data_received_, can_yuv_decode_,
+      *image_metadata_);
   first_decoding_generator_created_ = true;
 
   size_t image_byte_size = ByteSize();
@@ -394,10 +396,23 @@ void DeferredImageDecoder::PrepareLazyDecodedFrames() {
   if (!metadata_decoder_ || !metadata_decoder_->IsSizeAvailable())
     return;
 
+  if (!image_metadata_)
+    image_metadata_ = metadata_decoder_->MakeMetadataForDecodeAcceleration();
+
+  // If the image contains a coded size with zero in either or both size
+  // dimensions, the image is invalid.
+  if (image_metadata_->coded_size.has_value() &&
+      image_metadata_->coded_size.value().IsEmpty())
+    return;
+
   ActivateLazyDecoding();
 
   const size_t previous_size = frame_data_.size();
   frame_data_.resize(metadata_decoder_->FrameCount());
+
+  // The decoder may be invalidated during a FrameCount(). Simply bail if so.
+  if (metadata_decoder_->Failed())
+    return;
 
   // We have encountered a broken image file. Simply bail.
   if (frame_data_.size() < previous_size)
@@ -418,7 +433,6 @@ void DeferredImageDecoder::PrepareLazyDecodedFrames() {
   }
 
   can_yuv_decode_ =
-      RuntimeEnabledFeatures::DecodeLossyWebPImagesToYUVEnabled() &&
       metadata_decoder_->CanDecodeToYUV() && all_data_received_ &&
       !frame_generator_->IsMultiFrame();
 

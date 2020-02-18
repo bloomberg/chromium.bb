@@ -63,8 +63,9 @@ class AudioTimestampValidatorTest
 TEST_P(AudioTimestampValidatorTest, WarnForEraticTimes) {
   AudioDecoderConfig decoder_config;
   decoder_config.Initialize(kCodec, kSampleFormat, kChannelLayout,
-                            kSamplesPerSecond, EmptyExtraData(), Unencrypted(),
-                            kSeekPreroll, codec_delay_);
+                            kSamplesPerSecond, EmptyExtraData(),
+                            EncryptionScheme::kUnencrypted, kSeekPreroll,
+                            codec_delay_);
 
   // Validator should fail to stabilize pattern for timestamp expectations.
   EXPECT_MEDIA_LOG(
@@ -112,8 +113,9 @@ TEST_P(AudioTimestampValidatorTest, WarnForEraticTimes) {
 TEST_P(AudioTimestampValidatorTest, NoWarningForValidTimes) {
   AudioDecoderConfig decoder_config;
   decoder_config.Initialize(kCodec, kSampleFormat, kChannelLayout,
-                            kSamplesPerSecond, EmptyExtraData(), Unencrypted(),
-                            kSeekPreroll, codec_delay_);
+                            kSamplesPerSecond, EmptyExtraData(),
+                            EncryptionScheme::kUnencrypted, kSeekPreroll,
+                            codec_delay_);
 
   // Validator should quickly stabilize pattern for timestamp expectations.
   EXPECT_MEDIA_LOG(HasSubstr("Failed to reconcile encoded audio times "
@@ -151,8 +153,9 @@ TEST_P(AudioTimestampValidatorTest, NoWarningForValidTimes) {
 TEST_P(AudioTimestampValidatorTest, SingleWarnForSingleLargeGap) {
   AudioDecoderConfig decoder_config;
   decoder_config.Initialize(kCodec, kSampleFormat, kChannelLayout,
-                            kSamplesPerSecond, EmptyExtraData(), Unencrypted(),
-                            kSeekPreroll, codec_delay_);
+                            kSamplesPerSecond, EmptyExtraData(),
+                            EncryptionScheme::kUnencrypted, kSeekPreroll,
+                            codec_delay_);
 
   AudioTimestampValidator validator(decoder_config, &media_log_);
 
@@ -196,8 +199,9 @@ TEST_P(AudioTimestampValidatorTest, SingleWarnForSingleLargeGap) {
 TEST_P(AudioTimestampValidatorTest, RepeatedWarnForSlowAccumulatingDrift) {
   AudioDecoderConfig decoder_config;
   decoder_config.Initialize(kCodec, kSampleFormat, kChannelLayout,
-                            kSamplesPerSecond, EmptyExtraData(), Unencrypted(),
-                            kSeekPreroll, codec_delay_);
+                            kSamplesPerSecond, EmptyExtraData(),
+                            EncryptionScheme::kUnencrypted, kSeekPreroll,
+                            codec_delay_);
 
   AudioTimestampValidator validator(decoder_config, &media_log_);
 
@@ -247,7 +251,7 @@ TEST_P(AudioTimestampValidatorTest, RepeatedWarnForSlowAccumulatingDrift) {
 // discard values. These simulate configurations for different containers/codecs
 // which present different challenges when building timestamp expectations.
 INSTANTIATE_TEST_SUITE_P(
-    ,
+    All,
     AudioTimestampValidatorTest,
     ::testing::Combine(
         ::testing::Values(0, 10),             // output delay

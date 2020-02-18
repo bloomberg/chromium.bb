@@ -146,19 +146,6 @@ PlatformSharedMemoryRegion PlatformSharedMemoryRegion::Take(
   return PlatformSharedMemoryRegion(std::move(handle), mode, size, guid);
 }
 
-// static
-PlatformSharedMemoryRegion
-PlatformSharedMemoryRegion::TakeFromSharedMemoryHandle(
-    const SharedMemoryHandle& handle,
-    Mode mode) {
-  CHECK(mode == Mode::kReadOnly || mode == Mode::kUnsafe);
-  if (!handle.IsValid())
-    return {};
-
-  return Take(base::win::ScopedHandle(handle.GetHandle()), mode,
-              handle.GetSize(), handle.GetGUID());
-}
-
 HANDLE PlatformSharedMemoryRegion::GetPlatformHandle() const {
   return handle_.Get();
 }
@@ -254,8 +241,10 @@ PlatformSharedMemoryRegion PlatformSharedMemoryRegion::Create(Mode mode,
     return {};
   }
 
+  // Aligning may overflow so check that the result doesn't decrease.
   size_t rounded_size = bits::Align(size, kSectionSize);
-  if (rounded_size > static_cast<size_t>(std::numeric_limits<int>::max())) {
+  if (rounded_size < size ||
+      rounded_size > static_cast<size_t>(std::numeric_limits<int>::max())) {
     LogError(CreateError::SIZE_TOO_LARGE, 0);
     return {};
   }

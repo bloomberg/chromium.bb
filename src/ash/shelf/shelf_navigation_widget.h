@@ -6,6 +6,7 @@
 #define ASH_SHELF_SHELF_NAVIGATION_WIDGET_H_
 
 #include "ash/ash_export.h"
+#include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/tablet_mode_observer.h"
 #include "ash/shell_observer.h"
 #include "ui/compositor/layer_animation_observer.h"
@@ -32,7 +33,8 @@ class ShelfView;
 class ASH_EXPORT ShelfNavigationWidget : public views::Widget,
                                          public TabletModeObserver,
                                          public ShellObserver,
-                                         public ui::ImplicitAnimationObserver {
+                                         public ui::ImplicitAnimationObserver,
+                                         public ShelfConfig::Observer {
  public:
   ShelfNavigationWidget(Shelf* shelf, ShelfView* shelf_view);
   ~ShelfNavigationWidget() override;
@@ -45,7 +47,9 @@ class ASH_EXPORT ShelfNavigationWidget : public views::Widget,
   gfx::Size GetIdealSize() const;
 
   // views::Widget:
+  void OnMouseEvent(ui::MouseEvent* event) override;
   bool OnNativeWidgetActivationChanged(bool active) override;
+  void OnGestureEvent(ui::GestureEvent* event) override;
 
   // Getters for the back and home buttons.
   BackButton* GetBackButton() const;
@@ -69,16 +73,19 @@ class ASH_EXPORT ShelfNavigationWidget : public views::Widget,
   // ui::ImplicitAnimationObserver:
   void OnImplicitAnimationsCompleted() override;
 
+  // ShelfConfig::Observer:
+  void OnShelfConfigUpdated() override;
+
+  // Updates this widget's layout according to current constraints: tablet
+  // mode and shelf orientation.
+  void UpdateLayout(bool animate);
+
   views::BoundsAnimator* get_bounds_animator_for_testing() {
     return bounds_animator_.get();
   }
 
  private:
   class Delegate;
-
-  // Updates this widget's layout according to current constraints: tablet
-  // mode and shelf orientation.
-  void UpdateLayout();
 
   Shelf* shelf_ = nullptr;
   Delegate* delegate_ = nullptr;

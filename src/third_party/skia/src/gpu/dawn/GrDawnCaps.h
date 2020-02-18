@@ -18,7 +18,8 @@ public:
     GrDawnCaps(const GrContextOptions& contextOptions);
 
     bool isFormatSRGB(const GrBackendFormat&) const override;
-    bool isFormatCompressed(const GrBackendFormat&) const override;
+    bool isFormatCompressed(const GrBackendFormat&,
+                            SkImage::CompressionType* compressionType = nullptr) const override;
 
     bool isFormatTexturableAndUploadable(GrColorType, const GrBackendFormat& format) const override;
     bool isFormatRenderable(const GrBackendFormat& format,
@@ -41,6 +42,8 @@ public:
         return SurfaceReadPixelsSupport::kSupported;
     }
 
+    size_t bytesPerPixel(const GrBackendFormat&) const override;
+
     int getRenderTargetSampleCount(int requestedCount,
                                    const GrBackendFormat&) const override;
 
@@ -48,14 +51,14 @@ public:
 
     GrBackendFormat getBackendFormatFromCompressionType(SkImage::CompressionType) const override;
 
-    bool canClearTextureOnCreation() const override;
-
     GrSwizzle getTextureSwizzle(const GrBackendFormat&, GrColorType) const override;
 
     GrSwizzle getOutputSwizzle(const GrBackendFormat&, GrColorType) const override;
 
     GrColorType getYUVAColorTypeFromBackendFormat(const GrBackendFormat&,
                                                   bool isAlphaChannel) const override;
+
+    GrProgramDesc makeDesc(const GrRenderTarget*, const GrProgramInfo&) const override;
 
 #if GR_TEST_UTILS
     std::vector<TestFormatColorTypeCombination> getTestingCombinations() const override;

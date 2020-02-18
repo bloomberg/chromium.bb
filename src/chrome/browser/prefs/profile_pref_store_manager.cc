@@ -18,7 +18,6 @@
 #include "components/prefs/json_pref_store.h"
 #include "components/prefs/persistent_pref_store.h"
 #include "components/prefs/pref_registry_simple.h"
-#include "services/preferences/public/cpp/persistent_pref_store_client.h"
 #include "services/preferences/public/mojom/preferences.mojom.h"
 #include "services/preferences/tracked/pref_hash_filter.h"
 #include "services/preferences/tracked/tracked_persistent_pref_store_factory.h"
@@ -88,8 +87,10 @@ PersistentPrefStore* ProfilePrefStoreManager::CreateProfilePrefStore(
         tracking_configuration,
     size_t reporting_ids_count,
     scoped_refptr<base::SequencedTaskRunner> io_task_runner,
-    prefs::mojom::ResetOnLoadObserverPtr reset_on_load_observer,
-    prefs::mojom::TrackedPreferenceValidationDelegatePtr validation_delegate) {
+    mojo::PendingRemote<prefs::mojom::ResetOnLoadObserver>
+        reset_on_load_observer,
+    mojo::PendingRemote<prefs::mojom::TrackedPreferenceValidationDelegate>
+        validation_delegate) {
   if (!kPlatformSupportsPreferenceTracking) {
     return new JsonPrefStore(profile_path_.Append(chrome::kPreferencesFilename),
                              nullptr, io_task_runner);
@@ -114,7 +115,8 @@ bool ProfilePrefStoreManager::InitializePrefsFromMasterPrefs(
   if (kPlatformSupportsPreferenceTracking) {
     InitializeMasterPrefsTracking(
         CreateTrackedPrefStoreConfiguration(std::move(tracking_configuration),
-                                            reporting_ids_count, {}, nullptr),
+                                            reporting_ids_count, {},
+                                            mojo::NullRemote()),
         master_prefs.get());
   }
 
@@ -138,8 +140,10 @@ ProfilePrefStoreManager::CreateTrackedPrefStoreConfiguration(
     std::vector<prefs::mojom::TrackedPreferenceMetadataPtr>
         tracking_configuration,
     size_t reporting_ids_count,
-    prefs::mojom::ResetOnLoadObserverPtr reset_on_load_observer,
-    prefs::mojom::TrackedPreferenceValidationDelegatePtr validation_delegate) {
+    mojo::PendingRemote<prefs::mojom::ResetOnLoadObserver>
+        reset_on_load_observer,
+    mojo::PendingRemote<prefs::mojom::TrackedPreferenceValidationDelegate>
+        validation_delegate) {
   return prefs::mojom::TrackedPersistentPrefStoreConfiguration::New(
       profile_path_.Append(chrome::kPreferencesFilename),
       profile_path_.Append(chrome::kSecurePreferencesFilename),
@@ -152,6 +156,5 @@ ProfilePrefStoreManager::CreateTrackedPrefStoreConfiguration(
 #else
       base::string16(),
 #endif
-      validation_delegate.PassInterface(),
-      reset_on_load_observer.PassInterface());
+      std::move(validation_delegate), std::move(reset_on_load_observer));
 }

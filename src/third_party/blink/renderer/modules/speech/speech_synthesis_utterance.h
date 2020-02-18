@@ -27,7 +27,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_SPEECH_SPEECH_SYNTHESIS_UTTERANCE_H_
 
 #include "mojo/public/cpp/bindings/receiver.h"
-#include "third_party/blink/public/mojom/speech/speech_synthesis.mojom-blink.h"
+#include "third_party/blink/public/mojom/speech/speech_synthesis.mojom-blink-forward.h"
 #include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/modules/event_target_modules.h"
 #include "third_party/blink/renderer/modules/speech/speech_synthesis_voice.h"
@@ -42,6 +42,7 @@ class SpeechSynthesisUtterance final
       public ContextClient,
       public mojom::blink::SpeechSynthesisClient {
   DEFINE_WRAPPERTYPEINFO();
+  USING_PRE_FINALIZER(SpeechSynthesisUtterance, Dispose);
   USING_GARBAGE_COLLECTED_MIXIN(SpeechSynthesisUtterance);
 
  public:
@@ -105,6 +106,10 @@ class SpeechSynthesisUtterance final
   void Start(SpeechSynthesis* synthesis);
 
  private:
+  // USING_PRE_FINALIZER interface.
+  // Called before the object gets garbage collected.
+  void Dispose();
+
   void OnDisconnected();
 
   // EventTarget

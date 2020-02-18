@@ -26,6 +26,7 @@ class GpuFeatureChecker;
 namespace extensions {
 
 class Extension;
+class ScopedActiveInstall;
 
 class WebstorePrivateApi {
  public:
@@ -313,6 +314,41 @@ class WebstorePrivateGetReferrerChainFunction : public ExtensionFunction {
   ChromeExtensionFunctionDetails chrome_details_;
 
   DISALLOW_COPY_AND_ASSIGN(WebstorePrivateGetReferrerChainFunction);
+};
+
+class WebstorePrivateGetExtensionStatusFunction : public ExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("webstorePrivate.getExtensionStatus",
+                             WEBSTOREPRIVATE_GETEXTENSIONSTATUS)
+
+  WebstorePrivateGetExtensionStatusFunction();
+
+ private:
+  ~WebstorePrivateGetExtensionStatusFunction() override;
+
+  // ExtensionFunction:
+  ExtensionFunction::ResponseAction Run() override;
+
+  ChromeExtensionFunctionDetails chrome_details_;
+
+  DISALLOW_COPY_AND_ASSIGN(WebstorePrivateGetExtensionStatusFunction);
+};
+
+class WebstorePrivateRequestExtensionFunction : public ExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("webstorePrivate.requestExtension",
+                             WEBSTOREPRIVATE_REQUESTEXTENSION)
+  WebstorePrivateRequestExtensionFunction();
+
+ private:
+  ~WebstorePrivateRequestExtensionFunction() override;
+
+  // Extensionfunction:
+  ExtensionFunction::ResponseAction Run() override;
+
+  void AddExtensionToPendingList(const ExtensionId& id);
+
+  DISALLOW_COPY_AND_ASSIGN(WebstorePrivateRequestExtensionFunction);
 };
 
 }  // namespace extensions

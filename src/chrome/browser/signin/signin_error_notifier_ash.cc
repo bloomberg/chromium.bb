@@ -15,6 +15,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/account_manager/account_manager_util.h"
 #include "chrome/browser/chromeos/login/user_flow.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
@@ -84,7 +85,23 @@ SigninErrorNotifier::SigninErrorNotifier(SigninErrorController* controller,
       device_account_notification_id_ + kSecondaryAccountNotificationIdSuffix;
 
   error_controller_->AddObserver(this);
+  const AccountId account_id =
+      multi_user_util::GetAccountIdFromProfile(profile_);
+  if (TokenHandleUtil::HasToken(account_id)) {
+    token_handle_util_ = std::make_unique<TokenHandleUtil>();
+    token_handle_util_->CheckToken(
+        account_id, base::Bind(&SigninErrorNotifier::OnTokenHandleCheck,
+                               weak_factory_.GetWeakPtr()));
+  }
   OnErrorChanged();
+}
+
+void SigninErrorNotifier::OnTokenHandleCheck(
+    const AccountId& account_id,
+    TokenHandleUtil::TokenHandleStatus status) {
+  if (status != TokenHandleUtil::INVALID)
+    return;
+  HandleDeviceAccountError();
 }
 
 SigninErrorNotifier::~SigninErrorNotifier() {
@@ -125,7 +142,7 @@ void SigninErrorNotifier::OnErrorChanged() {
     return;
   }
 
-  const std::string error_account_id = error_controller_->error_account_id();
+  const CoreAccountId error_account_id = error_controller_->error_account_id();
   if (error_account_id ==
       identity_manager_->GetPrimaryAccountInfo().account_id) {
     HandleDeviceAccountError();
@@ -141,6 +158,18 @@ void SigninErrorNotifier::HandleDeviceAccountError() {
       SupervisedUserServiceFactory::GetForProfile(profile_);
   if (service->signout_required_after_supervision_enabled())
     return;
+
+  const AccountId account_id =
+      multi_user_util::GetAccountIdFromProfile(profile_);
+  // We need to save the flag in the local state because
+  // TokenHandleUtil::CheckToken might fail on the login screen due to lack of
+  // network connectivity.
+  user_manager::UserManager::Get()->SaveForceOnlineSignin(
+      account_id, true /* force_online_signin */);
+
+  // We need to remove the handle so it won't be checked next time session is
+  // started.
+  TokenHandleUtil::DeleteHandle(account_id);
 
   // Add an accept button to sign the user out.
   message_center::RichNotificationData data;
@@ -176,7 +205,7 @@ void SigninErrorNotifier::HandleDeviceAccountError() {
 }
 
 void SigninErrorNotifier::HandleSecondaryAccountError(
-    const std::string& account_id) {
+    const CoreAccountId& account_id) {
   account_manager_->GetAccounts(base::BindOnce(
       &SigninErrorNotifier::OnGetAccounts, weak_factory_.GetWeakPtr()));
 }

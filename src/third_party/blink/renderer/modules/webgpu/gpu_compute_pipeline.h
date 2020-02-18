@@ -9,9 +9,10 @@
 
 namespace blink {
 
+class GPUBindGroupLayout;
 class GPUComputePipelineDescriptor;
 
-class GPUComputePipeline : public DawnObject<DawnComputePipeline> {
+class GPUComputePipeline : public DawnObject<WGPUComputePipeline> {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -19,8 +20,10 @@ class GPUComputePipeline : public DawnObject<DawnComputePipeline> {
       GPUDevice* device,
       const GPUComputePipelineDescriptor* webgpu_desc);
   explicit GPUComputePipeline(GPUDevice* device,
-                              DawnComputePipeline compute_pipeline);
+                              WGPUComputePipeline compute_pipeline);
   ~GPUComputePipeline() override;
+
+  GPUBindGroupLayout* getBindGroupLayout(uint32_t index);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GPUComputePipeline);

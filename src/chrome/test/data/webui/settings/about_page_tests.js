@@ -432,7 +432,7 @@ cr.define('settings_about_page', function() {
            * @return {!Promise}
            */
           async function checkHasEndOfLife(isShowing) {
-            await aboutBrowserProxy.whenCalled('getHasEndOfLife');
+            await aboutBrowserProxy.whenCalled('getEndOfLifeInfo');
             const endOfLifeMessageContainer = page.$.endOfLifeMessageContainer;
             assertTrue(!!endOfLifeMessageContainer);
             assertEquals(isShowing, !endOfLifeMessageContainer.hidden);
@@ -458,19 +458,29 @@ cr.define('settings_about_page', function() {
 
           // Force test proxy to not respond to JS requests.
           // End of life message should still be hidden in this case.
-          aboutBrowserProxy.setHasEndOfLife(new Promise(function(res, rej) {}));
+          aboutBrowserProxy.setEndOfLifeInfo(
+              new Promise(function(res, rej) {}));
           await initNewPage(true /* showOsSettings */);
           await checkHasEndOfLife(false);
-          aboutBrowserProxy.setHasEndOfLife(true);
+          aboutBrowserProxy.setEndOfLifeInfo({
+            hasEndOfLife: true,
+            aboutPageEndOfLifeMessage: '',
+          });
           await initNewPage(true /* showOsSettings */);
           await checkHasEndOfLife(true);
-          aboutBrowserProxy.setHasEndOfLife(false);
+          aboutBrowserProxy.setEndOfLifeInfo({
+            hasEndOfLife: false,
+            aboutPageEndOfLifeMessage: '',
+          });
           await initNewPage(true /* showOsSettings */);
           await checkHasEndOfLife(false);
         });
 
         test('showOsSettings=false, CrOS parts not visible', async () => {
-          aboutBrowserProxy.setHasEndOfLife(true);
+          aboutBrowserProxy.setEndOfLifeInfo({
+            hasEndOfLife: true,
+            aboutPageEndOfLifeMessage: '',
+          });
           aboutBrowserProxy.setRegulatoryInfo({text: 'text', url: 'url'});
           await initNewPage(true /* showOsSettings */);
           assertFalse(!!page.$.endOfLifeMessageContainer.hidden);
@@ -668,24 +678,13 @@ cr.define('settings_about_page', function() {
         });
 
         test('Initialization', async () => {
-          const versionInfo = {
-            arcVersion: 'dummyArcVersion',
-            osFirmware: 'dummyOsFirmware',
-            osVersion: 'dummyOsVersion',
-          };
-          browserProxy.setVersionInfo(versionInfo);
-
           page = document.createElement('settings-detailed-build-info');
           document.body.appendChild(page);
 
           await Promise.all([
             browserProxy.whenCalled('pageReady'),
-            browserProxy.whenCalled('getVersionInfo'),
             browserProxy.whenCalled('getChannelInfo'),
           ]);
-          assertEquals(versionInfo.arcVersion, page.$.arcVersion.textContent);
-          assertEquals(versionInfo.osVersion, page.$.osVersion.textContent);
-          assertEquals(versionInfo.osFirmware, page.$.osFirmware.textContent);
         });
 
         /**

@@ -30,7 +30,8 @@ OsAndPoliciesUpdateChecker::~OsAndPoliciesUpdateChecker() {
   ResetState();
 }
 
-void OsAndPoliciesUpdateChecker::Start(UpdateCheckCompletionCallback cb) {
+void OsAndPoliciesUpdateChecker::Start(UpdateCheckCompletionCallback cb,
+                                       base::TimeDelta timeout) {
   // Override any previous calls by resetting state.
   ResetState();
   is_running_ = true;
@@ -38,6 +39,12 @@ void OsAndPoliciesUpdateChecker::Start(UpdateCheckCompletionCallback cb) {
   // Must be set before starting the task runner, as callbacks may be called
   // synchronously.
   update_check_completion_cb_ = std::move(cb);
+
+  timeout_timer_.Start(
+      FROM_HERE, timeout,
+      base::BindOnce(
+          &OsAndPoliciesUpdateChecker::RunCompletionCallbackAndResetState,
+          base::Unretained(this), false /* update_check_result */));
 
   // If there is no network then wait for a network connection before starting
   // an update check. If then network isn't found for a maximum time then report
@@ -81,9 +88,8 @@ void OsAndPoliciesUpdateChecker::DefaultNetworkChanged(
 void OsAndPoliciesUpdateChecker::ScheduleUpdateCheck() {
   // If an update was downloaded but not applied then update engine won't do
   // anything. Move straight to the policy state.
-  if (update_engine_client_->GetLastStatus().status ==
-      chromeos::UpdateEngineClient::UpdateStatusOperation::
-          UPDATE_STATUS_UPDATED_NEED_REBOOT) {
+  if (update_engine_client_->GetLastStatus().current_operation() ==
+      update_engine::Operation::UPDATED_NEED_REBOOT) {
     RefreshPolicies(true /* update_check_result */);
     return;
   }
@@ -104,19 +110,19 @@ void OsAndPoliciesUpdateChecker::OnUpdateCheckFailure() {
 }
 
 void OsAndPoliciesUpdateChecker::RunCompletionCallbackAndResetState(
-    bool result) {
+    bool update_check_result) {
   // Flag must be set because |IsRunning| maybe queried when the callback is
   // called below.
   is_running_ = false;
   if (update_check_completion_cb_)
-    std::move(update_check_completion_cb_).Run(result);
+    std::move(update_check_completion_cb_).Run(update_check_result);
   ResetState();
 }
 
 void OsAndPoliciesUpdateChecker::OnNetworkWaitTimeout() {
   // No network has been detected, no point querying the server for an update
   // check or polivy refresh. Report failure to the caller.
-  RunCompletionCallbackAndResetState(false);
+  RunCompletionCallbackAndResetState(false /* update_check_result */);
 }
 
 void OsAndPoliciesUpdateChecker::StartUpdateCheck() {
@@ -138,17 +144,16 @@ void OsAndPoliciesUpdateChecker::StartUpdateCheck() {
 }
 
 void OsAndPoliciesUpdateChecker::UpdateStatusChanged(
-    const chromeos::UpdateEngineClient::Status& status) {
+    const update_engine::StatusResult& status) {
   // Only ignore idle state if it is the first and only non-error state in the
   // state machine.
   if (ignore_idle_status_ &&
-      status.status > chromeos::UpdateEngineClient::UPDATE_STATUS_IDLE) {
+      status.current_operation() > update_engine::Operation::IDLE) {
     ignore_idle_status_ = false;
   }
 
-  switch (status.status) {
-    case chromeos::UpdateEngineClient::UpdateStatusOperation::
-        UPDATE_STATUS_IDLE:
+  switch (status.current_operation()) {
+    case update_engine::Operation::IDLE:
       if (!ignore_idle_status_) {
         // No update to download or an error occured mid-way of an existing
         // update download.
@@ -158,38 +163,32 @@ void OsAndPoliciesUpdateChecker::UpdateStatusChanged(
       }
       break;
 
-    case chromeos::UpdateEngineClient::UpdateStatusOperation::
-        UPDATE_STATUS_UPDATED_NEED_REBOOT:
+    case update_engine::Operation::UPDATED_NEED_REBOOT:
       // Refresh policies after the update check is finished successfully or
       // unsuccessfully.
       RefreshPolicies(true /* update_check_result */);
       break;
 
-    case chromeos::UpdateEngineClient::UpdateStatusOperation::
-        UPDATE_STATUS_ERROR:
-    case chromeos::UpdateEngineClient::UpdateStatusOperation::
-        UPDATE_STATUS_NEED_PERMISSION_TO_UPDATE:
-    case chromeos::UpdateEngineClient::UpdateStatusOperation::
-        UPDATE_STATUS_REPORTING_ERROR_EVENT:
+    case update_engine::Operation::ERROR:
+    case update_engine::Operation::DISABLED:
+    case update_engine::Operation::NEED_PERMISSION_TO_UPDATE:
+    case update_engine::Operation::REPORTING_ERROR_EVENT:
       update_check_task_executor_.ScheduleRetry(
           base::BindOnce(&OsAndPoliciesUpdateChecker::StartUpdateCheck,
                          base::Unretained(this)));
       break;
 
-    case chromeos::UpdateEngineClient::UpdateStatusOperation::
-        UPDATE_STATUS_FINALIZING:
-    case chromeos::UpdateEngineClient::UpdateStatusOperation::
-        UPDATE_STATUS_VERIFYING:
-    case chromeos::UpdateEngineClient::UpdateStatusOperation::
-        UPDATE_STATUS_DOWNLOADING:
-    case chromeos::UpdateEngineClient::UpdateStatusOperation::
-        UPDATE_STATUS_UPDATE_AVAILABLE:
-    case chromeos::UpdateEngineClient::UpdateStatusOperation::
-        UPDATE_STATUS_CHECKING_FOR_UPDATE:
-    case chromeos::UpdateEngineClient::UpdateStatusOperation::
-        UPDATE_STATUS_ATTEMPTING_ROLLBACK:
+    case update_engine::Operation::FINALIZING:
+    case update_engine::Operation::VERIFYING:
+    case update_engine::Operation::DOWNLOADING:
+    case update_engine::Operation::UPDATE_AVAILABLE:
+    case update_engine::Operation::CHECKING_FOR_UPDATE:
+    case update_engine::Operation::ATTEMPTING_ROLLBACK:
       // Do nothing on intermediate states.
       break;
+
+    default:
+      NOTREACHED();
   }
 }
 
@@ -232,6 +231,7 @@ void OsAndPoliciesUpdateChecker::ResetState() {
   ignore_idle_status_ = true;
   is_running_ = false;
   wait_for_network_timer_.Stop();
+  timeout_timer_.Stop();
 }
 
 }  // namespace policy

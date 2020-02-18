@@ -16,6 +16,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.UrlUtils;
@@ -33,7 +34,6 @@ import org.chromium.content_public.browser.test.mock.MockNavigationController;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
-import org.chromium.content_public.browser.test.util.TouchCommon;
 import org.chromium.ui.modelutil.MVCListAdapter.ListItem;
 import org.chromium.ui.test.util.UiRestriction;
 
@@ -107,9 +107,6 @@ public class NavigationSheetTest {
         public void navigateToIndex(int index) {
             mNavigationController.goToNavigationIndex(index);
         }
-
-        @Override
-        public void setTabCloseRunnable(Runnable runnable) {}
     }
 
     @Test
@@ -138,10 +135,11 @@ public class NavigationSheetTest {
         NavigationSheetCoordinator sheet = (NavigationSheetCoordinator) showPopup(controller);
         ListView listview = sheet.getContentView().findViewById(R.id.navigation_entries);
 
-        CriteriaHelper.pollUiThread(sheet::isExpanded);
+        CriteriaHelper.pollUiThread(() -> listview.getChildCount() >= 2);
         Assert.assertEquals(INVALID_NAVIGATION_INDEX, controller.mNavigatedIndex);
 
-        TouchCommon.singleClickView(listview.getChildAt(1));
+        ThreadUtils.runOnUiThreadBlocking(() -> listview.getChildAt(1).callOnClick());
+
         CriteriaHelper.pollUiThread(sheet::isHidden);
         CriteriaHelper.pollUiThread(
                 Criteria.equals(NAVIGATION_INDEX_2, () -> controller.mNavigatedIndex));
@@ -155,7 +153,7 @@ public class NavigationSheetTest {
             "force-fieldtrial-params=GestureNavigation.Enabled:"
                     + "overscroll_history_navigation_bottom_sheet/true"})
     public void
-    testLongPressBackTriggering() throws ExecutionException {
+    testLongPressBackTriggering() {
         KeyEvent event = new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK);
         ChromeTabbedActivity activity = mActivityTestRule.getActivity();
         TestThreadUtils.runOnUiThreadBlocking(

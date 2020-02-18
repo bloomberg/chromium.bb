@@ -38,14 +38,13 @@ class AboutUIHTMLSource : public web::URLDataSourceIOS {
   std::string GetSource() const override;
   void StartDataRequest(
       const std::string& path,
-      const web::URLDataSourceIOS::GotDataCallback& callback) override;
+      web::URLDataSourceIOS::GotDataCallback callback) override;
   std::string GetMimeType(const std::string& path) const override;
   bool ShouldDenyXFrameOptions() const override;
 
   // Send the response data.
-  void FinishDataRequest(
-      const std::string& html,
-      const web::URLDataSourceIOS::GotDataCallback& callback);
+  void FinishDataRequest(const std::string& html,
+                         web::URLDataSourceIOS::GotDataCallback callback);
 
  private:
   ~AboutUIHTMLSource() override;
@@ -112,7 +111,7 @@ std::string AboutUIHTMLSource::GetSource() const {
 
 void AboutUIHTMLSource::StartDataRequest(
     const std::string& path,
-    const web::URLDataSourceIOS::GotDataCallback& callback) {
+    web::URLDataSourceIOS::GotDataCallback callback) {
   std::string response;
   // Add your data source here, in alphabetical order.
   if (source_name_ == kChromeUIChromeURLsHost) {
@@ -123,13 +122,7 @@ void AboutUIHTMLSource::StartDataRequest(
       idr = IDR_ABOUT_UI_CREDITS_JS;
     ui::ResourceBundle& resource_instance =
         ui::ResourceBundle::GetSharedInstance();
-    if (resource_instance.IsBrotli(idr)) {
-      response = resource_instance.DecompressDataResource(idr);
-    } else {
-      base::StringPiece raw_response =
-          resource_instance.GetRawDataResource(idr);
-      response = raw_response.as_string();
-    }
+    response = resource_instance.LoadDataResourceString(idr);
   } else if (source_name_ == kChromeUIHistogramHost) {
     // Note: On other platforms, this is implemented in //content. If there is
     // ever a need for embedders other than //ios/chrome to use
@@ -137,14 +130,14 @@ void AboutUIHTMLSource::StartDataRequest(
     base::StatisticsRecorder::WriteHTMLGraph("", &response);
   }
 
-  FinishDataRequest(response, callback);
+  FinishDataRequest(response, std::move(callback));
 }
 
 void AboutUIHTMLSource::FinishDataRequest(
     const std::string& html,
-    const web::URLDataSourceIOS::GotDataCallback& callback) {
+    web::URLDataSourceIOS::GotDataCallback callback) {
   std::string html_copy(html);
-  callback.Run(base::RefCountedString::TakeString(&html_copy));
+  std::move(callback).Run(base::RefCountedString::TakeString(&html_copy));
 }
 
 std::string AboutUIHTMLSource::GetMimeType(const std::string& path) const {

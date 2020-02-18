@@ -22,12 +22,6 @@ class CrostiniImpl {
      */
     this.shared_paths_ = {};
 
-    /**
-     * True if root access to specified VM is allowed.
-     * @private {Object<boolean>}
-     */
-    this.rootAccessAllowed_ = {};
-
     /** @private {?VolumeManager} */
     this.volumeManager_ = null;
   }
@@ -41,8 +35,6 @@ class CrostiniImpl {
         loadTimeData.getBoolean('CROSTINI_ENABLED');
     this.enabled_[CrostiniImpl.PLUGIN_VM] =
         loadTimeData.getBoolean('PLUGIN_VM_ENABLED');
-    this.rootAccessAllowed_[CrostiniImpl.DEFAULT_VM] =
-        loadTimeData.getBoolean('CROSTINI_ROOT_ACCESS_ALLOWED');
   }
 
   /**
@@ -77,24 +69,6 @@ class CrostiniImpl {
    */
   isEnabled(vmName) {
     return this.enabled_[vmName];
-  }
-
-  /**
-   * Set whether the specified VM allows root access.
-   * @param {string} vmName
-   * @param {boolean} allowed
-   */
-  setRootAccessAllowed(vmName, allowed) {
-    this.rootAccessAllowed_[vmName] = allowed;
-  }
-
-  /**
-   * Returns true if root access to specified VM is allowed.
-   * @param {string} vmName
-   * @return {boolean}
-   */
-  isRootAccessAllowed(vmName) {
-    return this.rootAccessAllowed_[vmName];
   }
 
   /**
@@ -134,7 +108,6 @@ class CrostiniImpl {
     // Record UMA.
     const root = this.getRoot_(entry);
     let suffix = CrostiniImpl.VALID_ROOT_TYPES_FOR_SHARE.get(root) ||
-        CrostiniImpl.VALID_DRIVE_FS_ROOT_TYPES_FOR_SHARE.get(root) ||
         CrostiniImpl.UMA_ROOT_TYPE_OTHER;
     metrics.recordSmallCount(
         'CrostiniSharedPaths.Depth.' + suffix,
@@ -180,12 +153,6 @@ class CrostiniImpl {
         break;
       case chrome.fileManagerPrivate.CrostiniEventType.DISABLE:
         this.setEnabled(event.vmName, false);
-        break;
-      case chrome.fileManagerPrivate.CrostiniEventType.ROOT_ACCESS_ALLOW:
-        this.setRootAccessAllowed(event.vmName, true);
-        break;
-      case chrome.fileManagerPrivate.CrostiniEventType.ROOT_ACCESS_DISALLOW:
-        this.setRootAccessAllowed(event.vmName, false);
         break;
       case chrome.fileManagerPrivate.CrostiniEventType.SHARE:
         for (const entry of event.entries) {
@@ -267,9 +234,13 @@ class CrostiniImpl {
       return false;
     }
 
-    return CrostiniImpl.VALID_ROOT_TYPES_FOR_SHARE.has(root) ||
-        (loadTimeData.getBoolean('DRIVE_FS_ENABLED') &&
-         CrostiniImpl.VALID_DRIVE_FS_ROOT_TYPES_FOR_SHARE.has(root));
+    // Disallow sharing LinuxFiles with itself.
+    if (vmName === CrostiniImpl.DEFAULT_VM &&
+        root === VolumeManagerCommon.RootType.CROSTINI) {
+      return false;
+    }
+
+    return CrostiniImpl.VALID_ROOT_TYPES_FOR_SHARE.has(root);
   }
 }
 
@@ -295,22 +266,12 @@ CrostiniImpl.VALID_ROOT_TYPES_FOR_SHARE = new Map([
   [VolumeManagerCommon.RootType.DOWNLOADS, 'Downloads'],
   [VolumeManagerCommon.RootType.REMOVABLE, 'Removable'],
   [VolumeManagerCommon.RootType.ANDROID_FILES, 'AndroidFiles'],
-]);
-
-/**
- * Can be collapsed into VALID_ROOT_TYPES_FOR_SHARE once
- * DriveFS flag is removed.
- * Keep in sync with histograms.xml:FileBrowserCrostiniSharedPathsDepth
- * histogram_suffix.
- * @type {!Map<?VolumeManagerCommon.RootType, string>}
- * @const
- */
-CrostiniImpl.VALID_DRIVE_FS_ROOT_TYPES_FOR_SHARE = new Map([
   [VolumeManagerCommon.RootType.COMPUTERS_GRAND_ROOT, 'DriveComputers'],
   [VolumeManagerCommon.RootType.COMPUTER, 'DriveComputers'],
   [VolumeManagerCommon.RootType.DRIVE, 'MyDrive'],
   [VolumeManagerCommon.RootType.SHARED_DRIVES_GRAND_ROOT, 'TeamDrive'],
   [VolumeManagerCommon.RootType.SHARED_DRIVE, 'TeamDrive'],
+  [VolumeManagerCommon.RootType.CROSTINI, 'Crostini'],
 ]);
 
 /**

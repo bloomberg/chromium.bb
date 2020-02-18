@@ -166,9 +166,9 @@ bool TIntermDeclaration::visit(Visit visit, TIntermTraverser *it)
     return it->visitDeclaration(visit, this);
 }
 
-bool TIntermInvariantDeclaration::visit(Visit visit, TIntermTraverser *it)
+bool TIntermGlobalQualifierDeclaration::visit(Visit visit, TIntermTraverser *it)
 {
-    return it->visitInvariantDeclaration(visit, this);
+    return it->visitGlobalQualifierDeclaration(visit, this);
 }
 
 bool TIntermBlock::visit(Visit visit, TIntermTraverser *it)
@@ -577,11 +577,11 @@ void TIntermTraverser::queueReplacementWithParent(TIntermNode *parent,
     mReplacements.push_back(NodeUpdateEntry(parent, original, replacement, originalBecomesChild));
 }
 
-TLValueTrackingTraverser::TLValueTrackingTraverser(bool preVisit,
-                                                   bool inVisit,
-                                                   bool postVisit,
+TLValueTrackingTraverser::TLValueTrackingTraverser(bool preVisitIn,
+                                                   bool inVisitIn,
+                                                   bool postVisitIn,
                                                    TSymbolTable *symbolTable)
-    : TIntermTraverser(preVisit, inVisit, postVisit, symbolTable),
+    : TIntermTraverser(preVisitIn, inVisitIn, postVisitIn, symbolTable),
       mOperatorRequiresLValue(false),
       mInFunctionCallOutParameter(false)
 {

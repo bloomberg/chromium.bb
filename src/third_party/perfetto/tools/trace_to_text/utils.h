@@ -26,9 +26,19 @@
 #include <memory>
 #include <vector>
 
+#include <zlib.h>
+
 #include "perfetto/base/build_config.h"
+#include "perfetto/ext/base/optional.h"
+#include "perfetto/ext/base/paged_memory.h"
+#include "perfetto/profiling/deobfuscator.h"
+#include "perfetto/profiling/symbolizer.h"
 
 namespace perfetto {
+
+namespace trace_processor {
+class TraceProcessor;
+}
 
 namespace protos {
 class TracePacket;
@@ -48,11 +58,55 @@ void ForEachPacketBlobInTrace(
     std::istream* input,
     const std::function<void(std::unique_ptr<char[]>, size_t)>&);
 
-void ForEachPacketInTrace(
-    std::istream* input,
-    const std::function<void(const protos::TracePacket&)>&);
-
 std::vector<std::string> GetPerfettoBinaryPath();
+base::Optional<std::string> GetPerfettoProguardMapPath();
+
+bool ReadTrace(trace_processor::TraceProcessor* tp, std::istream* input);
+
+void WriteTracePacket(const std::string& str, std::ostream* output);
+
+// Generate ModuleSymbol protos for all unsymbolized frames in the database.
+// Wrap them in proto-encoded TracePackets messages and call callback.
+void SymbolizeDatabase(trace_processor::TraceProcessor* tp,
+                       Symbolizer* symbolizer,
+                       std::function<void(const std::string&)> callback);
+
+// Generate ObfuscationMapping protos for all obfuscated java names in the
+// database.
+// Wrap them in proto-encoded TracePackets messages and call callback.
+void DeobfuscateDatabase(
+    trace_processor::TraceProcessor* tp,
+    const std::map<std::string, profiling::ObfuscatedClass>& mapping,
+    std::function<void(const std::string&)> callback);
+
+class TraceWriter {
+ public:
+  TraceWriter(std::ostream* output);
+  virtual ~TraceWriter();
+
+  void Write(std::string s);
+  virtual void Write(const char* data, size_t sz);
+
+ private:
+  std::ostream* output_;
+};
+
+class DeflateTraceWriter : public TraceWriter {
+ public:
+  DeflateTraceWriter(std::ostream* output);
+  ~DeflateTraceWriter() override;
+
+  void Write(const char* data, size_t sz) override;
+
+ private:
+  void Flush();
+  void CheckEq(int actual_code, int expected_code);
+
+  z_stream stream_{};
+  base::PagedMemory buf_;
+  uint8_t* const start_;
+  uint8_t* const end_;
+};
 
 }  // namespace trace_to_text
 }  // namespace perfetto

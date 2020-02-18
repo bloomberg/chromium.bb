@@ -26,6 +26,8 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "third_party/blink/public/common/page/page_visibility_state.h"
+#include "third_party/blink/public/platform/scheduler/web_scoped_virtual_time_pauser.h"
 #include "third_party/blink/public/platform/web_text_autosizer_page_info.h"
 #include "third_party/blink/public/web/web_window_features.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -50,6 +52,7 @@ class AnimationHost;
 }
 
 namespace blink {
+class AgentMetricsCollector;
 class AutoscrollController;
 class BrowserControls;
 class ChromeClient;
@@ -60,9 +63,10 @@ class DragCaret;
 class DragController;
 class FocusController;
 class Frame;
-class LinkHighlights;
+class LinkHighlight;
 class LocalFrame;
 class LocalFrameView;
+class MediaFeatureOverrides;
 class OverscrollController;
 struct PageScaleConstraints;
 class PageScaleConstraintsSet;
@@ -83,7 +87,7 @@ typedef uint64_t LinkHash;
 
 float DeviceScaleFactorDeprecated(LocalFrame*);
 
-class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
+class CORE_EXPORT Page final : public GarbageCollected<Page>,
                                public Supplementable<Page>,
                                public PageVisibilityNotifier,
                                public SettingsDelegate,
@@ -133,6 +137,7 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
   HeapVector<Member<Page>> RelatedPages();
 
   static void PlatformColorsChanged();
+  static void ColorSchemeChanged();
 
   void InitialStyleChanged();
   void UpdateAcceleratedCompositingSettings();
@@ -184,6 +189,9 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
   ValidationMessageClient& GetValidationMessageClient() const {
     return *validation_message_client_;
   }
+  AgentMetricsCollector* GetAgentMetricsCollector() const {
+    return agent_metrics_collector_.Get();
+  }
   void SetValidationMessageClientForTesting(ValidationMessageClient*);
 
   ScrollingCoordinator* GetScrollingCoordinator();
@@ -214,7 +222,7 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
   VisualViewport& GetVisualViewport();
   const VisualViewport& GetVisualViewport() const;
 
-  LinkHighlights& GetLinkHighlights();
+  LinkHighlight& GetLinkHighlight();
 
   OverscrollController& GetOverscrollController();
   const OverscrollController& GetOverscrollController() const;
@@ -255,7 +263,9 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
   static void AllVisitedStateChanged(bool invalidate_visited_link_hashes);
   static void VisitedStateChanged(LinkHash visited_hash);
 
-  void SetIsHidden(bool hidden, bool is_initial_state);
+  void SetVisibilityState(PageVisibilityState visibility_state,
+                          bool is_initial_state);
+  PageVisibilityState GetVisibilityState() const;
   bool IsPageVisible() const;
 
   PageLifecycleState LifecycleState() const;
@@ -323,6 +333,19 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
     return web_text_autosizer_page_info_;
   }
 
+  void SetMediaFeatureOverride(const AtomicString& media_feature,
+                               const String& value);
+  const MediaFeatureOverrides* GetMediaFeatureOverrides() const {
+    return media_feature_overrides_.get();
+  }
+  void ClearMediaFeatureOverrides();
+
+  WebScopedVirtualTimePauser& HistoryNavigationVirtualTimePauser() {
+    return history_navigation_virtual_time_pauser_;
+  }
+
+  static void PrepareForLeakDetection();
+
  private:
   friend class ScopedPagePauser;
 
@@ -368,12 +391,16 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
       global_root_scroller_controller_;
   const Member<VisualViewport> visual_viewport_;
   const Member<OverscrollController> overscroll_controller_;
-  const Member<LinkHighlights> link_highlights_;
+  const Member<LinkHighlight> link_highlight_;
   Member<SpatialNavigationController> spatial_navigation_controller_;
 
   Member<PluginData> plugin_data_;
 
   Member<ValidationMessageClient> validation_message_client_;
+
+  // Stored only for ordinary pages to avoid adding metrics from things like
+  // overlays, popups and SVG.
+  Member<AgentMetricsCollector> agent_metrics_collector_;
 
   Deprecation deprecation_;
   HostsUsingFeatures hosts_using_features_;
@@ -392,7 +419,7 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
 
   float device_scale_factor_;
 
-  bool is_hidden_;
+  PageVisibilityState visibility_state_;
 
   bool is_ordinary_;
 
@@ -419,6 +446,9 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
 
   std::unique_ptr<PageScheduler> page_scheduler_;
 
+  // Overrides for various media features set from the devtools.
+  std::unique_ptr<MediaFeatureOverrides> media_feature_overrides_;
+
   int32_t autoplay_flags_;
 
   // Accessed by frames to determine whether to expose the PortalHost object.
@@ -426,10 +456,18 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
 
   WebTextAutosizerPageInfo web_text_autosizer_page_info_;
 
+  WebScopedVirtualTimePauser history_navigation_virtual_time_pauser_;
+
   DISALLOW_COPY_AND_ASSIGN(Page);
 };
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT Supplement<Page>;
+
+class CORE_EXPORT InternalSettingsPageSupplementBase : public Supplement<Page> {
+ public:
+  using Supplement<Page>::Supplement;
+  static const char kSupplementName[];
+};
 
 }  // namespace blink
 

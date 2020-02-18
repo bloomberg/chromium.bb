@@ -159,9 +159,8 @@ class ASH_EXPORT AcceleratorControllerImpl : public ui::AcceleratorTarget,
   bool PerformActionIfEnabled(AcceleratorAction action,
                               const ui::Accelerator& accelerator) override;
   bool OnMenuAccelerator(const ui::Accelerator& accelerator) override;
-
-  // Returns true if the |accelerator| is registered.
-  bool IsRegistered(const ui::Accelerator& accelerator) const;
+  bool IsRegistered(const ui::Accelerator& accelerator) const override;
+  ui::AcceleratorHistory* GetAcceleratorHistory() override;
 
   // Returns true if the |accelerator| is preferred. A preferred accelerator
   // is handled before being passed to an window/web contents, unless
@@ -195,11 +194,12 @@ class ASH_EXPORT AcceleratorControllerImpl : public ui::AcceleratorTarget,
   // users would be aware of the shortcut they have just enabled, and to prevent
   // users from accidentally triggering the feature. The dialog is currently
   // shown when enabling the following features: high contrast, full screen
-  // magnifier and docked magnifier. The shown dialog is stored as a weak
-  // pointer in the variable |confirmation_dialog_| below.
+  // magnifier, docked magnifier and screen rotation. The shown dialog is stored
+  // as a weak pointer in the variable |confirmation_dialog_| below.
   void MaybeShowConfirmationDialog(int window_title_text_id,
                                    int dialog_text_id,
-                                   base::OnceClosure on_accept_callback);
+                                   base::OnceClosure on_accept_callback,
+                                   base::OnceClosure on_cancel_callback);
 
   // Read the side volume button location info from local file under
   // kSideVolumeButtonLocationFilePath, parse and write it into

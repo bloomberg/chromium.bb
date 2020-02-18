@@ -32,6 +32,7 @@
 #include <memory>
 #include <utility>
 
+#include "third_party/blink/public/strings/grit/blink_strings.h"
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/dom/events/scoped_event_queue.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
@@ -74,9 +75,6 @@
 #include "third_party/blink/renderer/platform/text/text_break_iterator.h"
 
 namespace blink {
-
-using blink::WebLocalizedString;
-using namespace html_names;
 
 using InputTypeFactoryFunction = InputType* (*)(HTMLInputElement&);
 using InputTypeFactoryMap = HashMap<AtomicString, InputTypeFactoryFunction>;
@@ -221,14 +219,15 @@ void InputType::AppendToFormData(FormData& form_data) const {
 }
 
 String InputType::ResultForDialogSubmit() const {
-  return GetElement().FastGetAttribute(kValueAttr);
+  return GetElement().FastGetAttribute(html_names::kValueAttr);
 }
 
 double InputType::ValueAsDate() const {
   return DateComponents::InvalidMilliseconds();
 }
 
-void InputType::SetValueAsDate(double, ExceptionState& exception_state) const {
+void InputType::SetValueAsDate(const base::Optional<base::Time>&,
+                               ExceptionState& exception_state) const {
   exception_state.ThrowDOMException(
       DOMExceptionCode::kInvalidStateError,
       "This input element does not support Date values.");
@@ -377,7 +376,7 @@ bool InputType::StepMismatch(const String& value) const {
 
 String InputType::BadInputText() const {
   NOTREACHED();
-  return GetLocale().QueryString(WebLocalizedString::kValidationTypeMismatch);
+  return GetLocale().QueryString(IDS_FORM_VALIDATION_TYPE_MISMATCH);
 }
 
 String InputType::RangeOverflowText(const Decimal&) const {
@@ -391,11 +390,11 @@ String InputType::RangeUnderflowText(const Decimal&) const {
 }
 
 String InputType::TypeMismatchText() const {
-  return GetLocale().QueryString(WebLocalizedString::kValidationTypeMismatch);
+  return GetLocale().QueryString(IDS_FORM_VALIDATION_TYPE_MISMATCH);
 }
 
 String InputType::ValueMissingText() const {
-  return GetLocale().QueryString(WebLocalizedString::kValidationValueMissing);
+  return GetLocale().QueryString(IDS_FORM_VALIDATION_VALUE_MISSING);
 }
 
 std::pair<String, String> InputType::ValidationMessage(
@@ -420,8 +419,8 @@ std::pair<String, String> InputType::ValidationMessage(
     //   pattern. User agents may use the contents of this attribute, if it
     //   is present, when informing the user that the pattern is not matched
     return std::make_pair(
-        GetLocale().QueryString(WebLocalizedString::kValidationPatternMismatch),
-        GetElement().FastGetAttribute(kTitleAttr).GetString());
+        GetLocale().QueryString(IDS_FORM_VALIDATION_PATTERN_MISMATCH),
+        GetElement().FastGetAttribute(html_names::kTitleAttr).GetString());
   }
 
   if (GetElement().TooLong()) {
@@ -464,19 +463,19 @@ std::pair<String, String> InputType::ValidationMessage(
         candidate2 > step_range.Maximum()) {
       return std::make_pair(
           GetLocale().QueryString(
-              WebLocalizedString::kValidationStepMismatchCloseToLimit,
+              IDS_FORM_VALIDATION_STEP_MISMATCH_CLOSE_TO_LIMIT,
               localized_candidate1),
           g_empty_string);
     }
     String localized_candidate2 = LocalizeValue(Serialize(candidate2));
     if (candidate1 < candidate2) {
       return std::make_pair(
-          GetLocale().QueryString(WebLocalizedString::kValidationStepMismatch,
+          GetLocale().QueryString(IDS_FORM_VALIDATION_STEP_MISMATCH,
                                   localized_candidate1, localized_candidate2),
           g_empty_string);
     }
     return std::make_pair(
-        GetLocale().QueryString(WebLocalizedString::kValidationStepMismatch,
+        GetLocale().QueryString(IDS_FORM_VALIDATION_STEP_MISMATCH,
                                 localized_candidate2, localized_candidate1),
         g_empty_string);
   }
@@ -764,7 +763,8 @@ void InputType::ApplyStep(const Decimal& current,
   Decimal step = step_range.Step();
   EventQueueScope scope;
   Decimal new_value = current;
-  const AtomicString& step_string = GetElement().FastGetAttribute(kStepAttr);
+  const AtomicString& step_string =
+      GetElement().FastGetAttribute(html_names::kStepAttr);
   if (!DeprecatedEqualIgnoringCase(step_string, "any") &&
       step_range.StepMismatch(current)) {
     // Snap-to-step / clamping steps
@@ -932,11 +932,11 @@ void InputType::CountUsageIfVisible(WebFeature feature) const {
 }
 
 Decimal InputType::FindStepBase(const Decimal& default_value) const {
-  Decimal step_base =
-      ParseToNumber(GetElement().FastGetAttribute(kMinAttr), Decimal::Nan());
+  Decimal step_base = ParseToNumber(
+      GetElement().FastGetAttribute(html_names::kMinAttr), Decimal::Nan());
   if (!step_base.IsFinite()) {
-    step_base =
-        ParseToNumber(GetElement().FastGetAttribute(kValueAttr), default_value);
+    step_base = ParseToNumber(
+        GetElement().FastGetAttribute(html_names::kValueAttr), default_value);
   }
   return step_base;
 }
@@ -949,19 +949,21 @@ StepRange InputType::CreateStepRange(
     const StepRange::StepDescription& step_description) const {
   bool has_range_limitations = false;
   const Decimal step_base = FindStepBase(step_base_default);
-  Decimal minimum = ParseToNumberOrNaN(GetElement().FastGetAttribute(kMinAttr));
+  Decimal minimum =
+      ParseToNumberOrNaN(GetElement().FastGetAttribute(html_names::kMinAttr));
   if (minimum.IsFinite())
     has_range_limitations = true;
   else
     minimum = minimum_default;
-  Decimal maximum = ParseToNumberOrNaN(GetElement().FastGetAttribute(kMaxAttr));
+  Decimal maximum =
+      ParseToNumberOrNaN(GetElement().FastGetAttribute(html_names::kMaxAttr));
   if (maximum.IsFinite())
     has_range_limitations = true;
   else
     maximum = maximum_default;
-  const Decimal step =
-      StepRange::ParseStep(any_step_handling, step_description,
-                           GetElement().FastGetAttribute(kStepAttr));
+  const Decimal step = StepRange::ParseStep(
+      any_step_handling, step_description,
+      GetElement().FastGetAttribute(html_names::kStepAttr));
   return StepRange(step_base, minimum, maximum, has_range_limitations, step,
                    step_description);
 }

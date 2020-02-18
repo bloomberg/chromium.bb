@@ -21,6 +21,7 @@
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_binding_macros.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -130,7 +131,7 @@ bool ScriptCustomElementDefinitionBuilder::RememberOriginalProperties() {
     }
   }
 
-  if (RuntimeEnabledFeatures::ElementInternalsEnabled()) {
+  {
     auto* isolate = Isolate();
     v8::Local<v8::Context> current_context = isolate->GetCurrentContext();
     v8::TryCatch try_catch(isolate);
@@ -153,7 +154,7 @@ bool ScriptCustomElementDefinitionBuilder::RememberOriginalProperties() {
     }
   }
 
-  if (RuntimeEnabledFeatures::FormAssociatedCustomElementsEnabled()) {
+  {
     auto* isolate = Isolate();
     v8::Local<v8::Context> current_context = isolate->GetCurrentContext();
     v8::TryCatch try_catch(isolate);
@@ -221,7 +222,8 @@ bool ScriptCustomElementDefinitionBuilder::RememberOriginalProperties() {
 CustomElementDefinition* ScriptCustomElementDefinitionBuilder::Build(
     const CustomElementDescriptor& descriptor,
     CustomElementDefinition::Id id) {
-  return ScriptCustomElementDefinition::Create(data_, descriptor, id);
+  return MakeGarbageCollected<ScriptCustomElementDefinition>(data_, descriptor,
+                                                             id);
 }
 
 v8::Isolate* ScriptCustomElementDefinitionBuilder::Isolate() {

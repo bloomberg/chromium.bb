@@ -373,6 +373,22 @@ cr.define('cr.ui', function() {
   };
 
   /**
+   * Sets the current height of the shelf area.
+   * @param {number} height current shelf height
+   */
+  Oobe.setShelfHeight = function(height) {
+    Oobe.getInstance().setShelfHeight(height);
+  };
+
+  /**
+   * Sets the hint for calculating OOBE dialog margins.
+   * @param {OobeTypes.DialogPaddingMode} mode.
+   */
+  Oobe.setDialogPaddingMode = function(mode) {
+    Oobe.getInstance().setDialogPaddingMode(mode);
+  };
+
+  /**
    * Get the primary display's name.
    *
    * Same as the displayInfo.name parameter returned by

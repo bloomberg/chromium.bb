@@ -5,6 +5,7 @@
 
 #include "third_party/blink/renderer/core/feature_policy/feature_policy_helper.h"
 
+#include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -36,10 +37,6 @@ const FeatureNameMap& GetDefaultFeatureNameMap() {
                                  mojom::FeaturePolicyFeature::k{{feature.name}});
     {% endif %}
     {% endfor %}
-    // TODO(crbug.com/960132): WebVR manually added here for compatibility.
-    // Remove this when WebVR is removed.
-    ASSERT_ORIGIN_TRIAL(WebVR);
-    default_feature_name_map.Set("vr", mojom::FeaturePolicyFeature::kWebVr);
     {% for runtime_feature_name, FP_features in runtime_to_feature_policy_map.items() %}
     if (RuntimeEnabledFeatures::{{runtime_feature_name}}Enabled()) {
       {% for feature in FP_features %}

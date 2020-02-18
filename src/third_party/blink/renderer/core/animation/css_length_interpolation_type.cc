@@ -150,9 +150,14 @@ void CSSLengthInterpolationType::ApplyStandardPropertyValue(
     DCHECK(LengthPropertyFunctions::GetLength(CssProperty(), style, after));
     DCHECK(before.IsSpecified());
     DCHECK(after.IsSpecified());
-    const float kSlack = 0.1;
-    float delta =
-        FloatValueForLength(after, 100) - FloatValueForLength(before, 100);
+    const float kSlack = 1e-6;
+    const float before_length = FloatValueForLength(before, 100);
+    const float after_length = FloatValueForLength(after, 100);
+    // Test relative difference for large values to avoid floating point
+    // inaccuracies tripping the check.
+    const float delta = std::abs(before_length) < kSlack
+                            ? after_length - before_length
+                            : (after_length - before_length) / before_length;
     DCHECK_LT(std::abs(delta), kSlack);
 #endif
     return;

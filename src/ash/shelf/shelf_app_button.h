@@ -45,7 +45,8 @@ class ASH_EXPORT ShelfAppButton : public ShelfButton {
     STATE_ACTIVE = 1 << 6,
   };
 
-  explicit ShelfAppButton(ShelfView* shelf_view);
+  ShelfAppButton(ShelfView* shelf_view,
+                 ShelfButtonDelegate* shelf_button_delegate);
   ~ShelfAppButton() override;
 
   // Sets the image to display for this entry.
@@ -88,6 +89,11 @@ class ASH_EXPORT ShelfAppButton : public ShelfButton {
   // Update button state from ShelfItem.
   void ReflectItemStatus(const ShelfItem& item);
 
+  // Returns whether the icon size is up to date.
+  bool IsIconSizeCurrent();
+
+  void FireRippleActivationTimerForTest();
+
  protected:
   // ui::EventHandler overrides:
   void OnGestureEvent(ui::GestureEvent* event) override;
@@ -102,6 +108,9 @@ class ASH_EXPORT ShelfAppButton : public ShelfButton {
  private:
   class AppNotificationIndicatorView;
   class AppStatusIndicatorView;
+
+  // views::View:
+  bool HandleAccessibleAction(const ui::AXActionData& action_data) override;
 
   // Updates the parts of the button to reflect the current |state_| and
   // alignment. This may add or remove views, layout and paint.

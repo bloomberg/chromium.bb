@@ -63,6 +63,9 @@ class ShortcutHelper {
   // Returns the ideal size for a badge icon of a WebAPK.
   static int GetIdealBadgeIconSizeInPx();
 
+  // Returns the ideal size for an adaptive launcher icon of a WebAPK
+  static int GetIdealAdaptiveLauncherIconSizeInPx();
+
   // Fetches the splash screen image and stores it inside the WebappDataStorage
   // of the webapp. The WebappDataStorage object *must* have been previously
   // created by AddToLauncherWithSkBitmap(); this method should be passed as a
@@ -100,6 +103,10 @@ class ShortcutHelper {
   // Sets a flag to force an update for the WebAPK corresponding to |id| on next
   // launch.
   static void SetForceWebApkUpdate(const std::string& id);
+
+  // Returns if the Android version supports Adaptive Icon (i.e. API level >=
+  // 26)
+  static bool DoesAndroidSupportMaskableIcons();
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(ShortcutHelper);

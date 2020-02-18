@@ -15,7 +15,7 @@ let {session, contextGroup, Protocol} =
     builder.addImportedGlobal('m', 'global', kWasmAnyRef, false);
     builder.addFunction('func', kSig_v_v)
         .addBody([
-          kExprGetGlobal, 0,  //
+          kExprGlobalGet, 0,  //
           kExprDrop,          //
         ])
         .exportAs('main');
@@ -39,7 +39,8 @@ let {session, contextGroup, Protocol} =
     let scriptId;
     while (true) {
       let msg = await Protocol.Debugger.onceScriptParsed();
-      if (msg.params.url.startsWith('wasm://')) {
+      if (msg.params.url.startsWith('wasm://') &&
+        msg.params.url.split('/').length == 5) {
         scriptId = msg.params.scriptId;
         break;
       }

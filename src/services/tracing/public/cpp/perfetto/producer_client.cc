@@ -10,13 +10,18 @@
 #include "base/no_destructor.h"
 #include "base/process/process.h"
 #include "base/task/post_task.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/tracing/public/cpp/perfetto/shared_memory.h"
 #include "services/tracing/public/cpp/perfetto/trace_event_data_source.h"
+#include "services/tracing/public/cpp/traced_process_impl.h"
 #include "services/tracing/public/mojom/constants.mojom.h"
 #include "third_party/perfetto/include/perfetto/ext/tracing/core/commit_data_request.h"
 #include "third_party/perfetto/include/perfetto/ext/tracing/core/shared_memory_arbiter.h"
 #include "third_party/perfetto/include/perfetto/ext/tracing/core/startup_trace_writer_registry.h"
 #include "third_party/perfetto/include/perfetto/ext/tracing/core/trace_writer.h"
+#include "third_party/perfetto/include/perfetto/protozero/scattered_heap_buffer.h"
+#include "third_party/perfetto/include/perfetto/protozero/scattered_stream_writer.h"
+#include "third_party/perfetto/protos/perfetto/common/track_event_descriptor.pbzero.h"
 
 namespace tracing {
 
@@ -29,27 +34,31 @@ ProducerClient::~ProducerClient() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
-void ProducerClient::Connect(mojom::PerfettoServicePtr perfetto_service) {
-  mojom::ProducerClientPtr client;
-  auto client_request = mojo::MakeRequest(&client);
-  mojom::ProducerHostPtrInfo host_info;
-  perfetto_service->ConnectToProducerHost(std::move(client),
-                                          mojo::MakeRequest(&host_info));
+void ProducerClient::Connect(
+    mojo::PendingRemote<mojom::PerfettoService> perfetto_service) {
+  mojo::PendingRemote<mojom::ProducerClient> client;
+  auto client_receiver = client.InitWithNewPipeAndPassReceiver();
+  mojo::PendingRemote<mojom::ProducerHost> producer_host_remote;
+  mojo::Remote<mojom::PerfettoService>(std::move(perfetto_service))
+      ->ConnectToProducerHost(
+          std::move(client),
+          producer_host_remote.InitWithNewPipeAndPassReceiver());
   task_runner()->GetOrCreateTaskRunner()->PostTask(
       FROM_HERE,
       base::BindOnce(&ProducerClient::BindClientAndHostPipesOnSequence,
-                     base::Unretained(this), std::move(client_request),
-                     std::move(host_info)));
+                     base::Unretained(this), std::move(client_receiver),
+                     std::move(producer_host_remote)));
 }
 
 void ProducerClient::BindClientAndHostPipesForTesting(
-    mojom::ProducerClientRequest producer_client_request,
-    mojom::ProducerHostPtrInfo producer_host_info) {
+    mojo::PendingReceiver<mojom::ProducerClient> producer_client_receiver,
+    mojo::PendingRemote<mojom::ProducerHost> producer_host_remote) {
   task_runner()->GetOrCreateTaskRunner()->PostTask(
       FROM_HERE,
       base::BindOnce(&ProducerClient::BindClientAndHostPipesOnSequence,
-                     base::Unretained(this), std::move(producer_client_request),
-                     std::move(producer_host_info)));
+                     base::Unretained(this),
+                     std::move(producer_client_receiver),
+                     std::move(producer_host_remote)));
 }
 
 void ProducerClient::ResetSequenceForTesting() {
@@ -59,16 +68,16 @@ void ProducerClient::ResetSequenceForTesting() {
 // The Mojo binding should run on the same sequence as the one we get
 // callbacks from Perfetto on, to avoid additional PostTasks.
 void ProducerClient::BindClientAndHostPipesOnSequence(
-    mojom::ProducerClientRequest producer_client_request,
-    mojom::ProducerHostPtrInfo producer_host_info) {
+    mojo::PendingReceiver<mojom::ProducerClient> producer_client_receiver,
+    mojo::PendingRemote<mojom::ProducerHost> producer_host_info) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  CHECK(!binding_ || !binding_->is_bound());
+  CHECK(!receiver_ || !receiver_->is_bound());
 
-  binding_ = std::make_unique<mojo::Binding<mojom::ProducerClient>>(
-      this, std::move(producer_client_request));
-  binding_->set_connection_error_handler(base::BindOnce(
+  receiver_ = std::make_unique<mojo::Receiver<mojom::ProducerClient>>(
+      this, std::move(producer_client_receiver));
+  receiver_->set_disconnect_handler(base::BindOnce(
       [](ProducerClient* producer_client) {
-        producer_client->binding_->Close();
+        producer_client->receiver_->reset();
       },
       base::Unretained(this)));
 
@@ -97,6 +106,24 @@ void ProducerClient::NewDataSourceAdded(
   new_registration.set_will_notify_on_start(true);
   new_registration.set_will_notify_on_stop(true);
   new_registration.set_handles_incremental_state_clear(true);
+
+  // Add categories to the DataSourceDescriptor.
+  protozero::ScatteredHeapBuffer buffer;
+  protozero::ScatteredStreamWriter stream(&buffer);
+  perfetto::protos::pbzero::TrackEventDescriptor proto;
+  proto.Reset(&stream);
+  buffer.set_writer(&stream);
+
+  std::set<std::string> category_set;
+  tracing::TracedProcessImpl::GetInstance()->GetCategories(&category_set);
+  for (const std::string& s : category_set) {
+    proto.add_available_categories(s.c_str());
+  }
+
+  auto raw_proto = buffer.StitchSlices();
+  std::string track_event_descriptor_raw(raw_proto.begin(), raw_proto.end());
+  new_registration.set_track_event_descriptor_raw(track_event_descriptor_raw);
+
   producer_host_->RegisterDataSource(std::move(new_registration));
 }
 

@@ -5,7 +5,6 @@
 #include "chrome/browser/chrome_browser_main_android.h"
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/path_service.h"
 #include "base/task/post_task.h"
@@ -14,13 +13,13 @@
 #include "chrome/browser/android/preferences/clipboard_android.h"
 #include "chrome/browser/android/seccomp_support_detector.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "components/crash/content/browser/child_exit_observer_android.h"
 #include "components/crash/content/browser/child_process_crash_observer_android.h"
 #include "components/metrics/stability_metrics_helper.h"
 #include "content/public/browser/android/compositor.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/main_function_params.h"
-#include "net/android/network_change_notifier_factory_android.h"
 #include "net/base/network_change_notifier.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/resource/resource_bundle_android.h"
@@ -65,14 +64,18 @@ void ChromeBrowserMainPartsAndroid::PostProfileInit() {
 int ChromeBrowserMainPartsAndroid::PreEarlyInitialization() {
   TRACE_EVENT0("startup",
     "ChromeBrowserMainPartsAndroid::PreEarlyInitialization")
-  net::NetworkChangeNotifier::SetFactory(
-      new net::NetworkChangeNotifierFactoryAndroid());
-
   content::Compositor::Initialize();
 
   CHECK(base::MessageLoopCurrent::IsSet());
 
   return ChromeBrowserMainParts::PreEarlyInitialization();
+}
+
+void ChromeBrowserMainPartsAndroid::PostEarlyInitialization() {
+  profile_manager_android_.reset(new ProfileManagerAndroid());
+  g_browser_process->profile_manager()->AddObserver(
+      profile_manager_android_.get());
+  ChromeBrowserMainParts::PostEarlyInitialization();
 }
 
 void ChromeBrowserMainPartsAndroid::PostBrowserStart() {

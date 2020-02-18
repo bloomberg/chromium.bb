@@ -27,10 +27,17 @@ struct TypeConverter<blink::TransformationMatrix,
 };
 
 template <>
+struct TypeConverter<blink::TransformationMatrix,
+                     device::mojom::blink::PosePtr> {
+  static blink::TransformationMatrix Convert(
+      const device::mojom::blink::PosePtr& pose);
+};
+
+template <>
 struct TypeConverter<blink::HeapVector<blink::Member<blink::DOMPointReadOnly>>,
-                     WTF::Vector<device::mojom::blink::XRPlanePointDataPtr>> {
+                     Vector<device::mojom::blink::XRPlanePointDataPtr>> {
   static blink::HeapVector<blink::Member<blink::DOMPointReadOnly>> Convert(
-      const WTF::Vector<device::mojom::blink::XRPlanePointDataPtr>& vertices);
+      const Vector<device::mojom::blink::XRPlanePointDataPtr>& vertices);
 };
 
 }  // namespace mojo

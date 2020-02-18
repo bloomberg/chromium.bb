@@ -13,26 +13,23 @@ class WebContents;
 }
 
 namespace headless {
-
-class HeadlessWebContentsImpl;
+class HeadlessBrowserImpl;
 
 namespace protocol {
 
 class HeadlessHandler : public DomainHandler,
                         public HeadlessExperimental::Backend {
  public:
-  HeadlessHandler(base::WeakPtr<HeadlessBrowserImpl> browser,
+  HeadlessHandler(HeadlessBrowserImpl* browser,
                   content::WebContents* web_contents);
   ~HeadlessHandler() override;
 
+  // DomainHandler implementation
   void Wire(UberDispatcher* dispatcher) override;
-
-  static void OnNeedsBeginFrames(HeadlessWebContentsImpl* headless_contents,
-                                 bool needs_begin_frames);
+  Response Disable() override;  // Also Headless::Backend implementation
 
   // Headless::Backend implementation
   Response Enable() override;
-  Response Disable() override;
   void BeginFrame(Maybe<double> in_frame_time_ticks,
                   Maybe<double> in_interval,
                   Maybe<bool> no_display_updates,
@@ -40,8 +37,8 @@ class HeadlessHandler : public DomainHandler,
                   std::unique_ptr<BeginFrameCallback> callback) override;
 
  private:
+  HeadlessBrowserImpl* browser_;
   content::WebContents* web_contents_;
-  bool enabled_ = false;
   std::unique_ptr<HeadlessExperimental::Frontend> frontend_;
   DISALLOW_COPY_AND_ASSIGN(HeadlessHandler);
 };

@@ -14,11 +14,12 @@ import android.view.animation.Animation;
 import android.view.animation.Animation.AnimationListener;
 import android.view.animation.AnimationSet;
 import android.view.animation.DecelerateInterpolator;
-import android.view.animation.LinearInterpolator;
 import android.view.animation.ScaleAnimation;
 import android.view.animation.Transformation;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.gesturenav.NavigationBubble.CloseTarget;
+import org.chromium.chrome.browser.ui.widget.animation.Interpolators;
 
 /**
  * The SideSlideLayout can be used whenever the user navigates the contents
@@ -64,7 +65,6 @@ public class SideSlideLayout extends ViewGroup {
     private static final int NAVIGATION_REVERSAL_MS = 3 * 1000;
 
     private final DecelerateInterpolator mDecelerateInterpolator;
-    private final LinearInterpolator mLinearInterpolator;
     private final float mTotalDragDistance;
     private final int mMediumAnimationDuration;
     private final int mCircleWidth;
@@ -96,10 +96,13 @@ public class SideSlideLayout extends ViewGroup {
     private int mAnimationViewWidth;
 
     private boolean mIsForward;
-    private boolean mCloseIndicatorEnabled;
+    private @CloseTarget int mCloseIndicator;
 
     // True while swiped to a distance where, if released, the navigation would be triggered.
     private boolean mWillNavigate;
+
+    // Used for metrics. Indicates user swiped over the threshold that turns the arrow blue.
+    private boolean mSwipedOverThreshold;
 
     private final AnimationListener mNavigateListener = new AnimationListener() {
         @Override
@@ -141,7 +144,6 @@ public class SideSlideLayout extends ViewGroup {
 
         setWillNotDraw(false);
         mDecelerateInterpolator = new DecelerateInterpolator(DECELERATE_INTERPOLATION_FACTOR);
-        mLinearInterpolator = new LinearInterpolator();
 
         mCircleWidth = (int) getResources().getDimensionPixelSize(R.dimen.navigation_bubble_size);
 
@@ -199,7 +201,7 @@ public class SideSlideLayout extends ViewGroup {
             mAnimationViewWidth = mArrowViewWidth;
             ScaleAnimation scalingDown =
                     new ScaleAnimation(1, 0, 1, 0, mArrowViewWidth / 2, mArrowView.getHeight() / 2);
-            scalingDown.setInterpolator(mLinearInterpolator);
+            scalingDown.setInterpolator(Interpolators.LINEAR_INTERPOLATOR);
             scalingDown.setDuration(SCALE_DOWN_DURATION_MS);
             Animation fadingOut = new AlphaAnimation(1, 0);
             fadingOut.setInterpolator(mDecelerateInterpolator);
@@ -223,8 +225,8 @@ public class SideSlideLayout extends ViewGroup {
                 forward ? R.drawable.ic_arrow_forward_blue_24dp : R.drawable.ic_arrow_back_24dp);
     }
 
-    public void setEnableCloseIndicator(boolean enable) {
-        mCloseIndicatorEnabled = enable;
+    public void setCloseIndicator(@CloseTarget int target) {
+        mCloseIndicator = target;
     }
 
     @Override
@@ -295,13 +297,16 @@ public class SideSlideLayout extends ViewGroup {
         boolean navigating = willNavigate();
         if (navigating != mWillNavigate) {
             mArrowView.setImageTint(navigating);
-            if (navigating) performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP);
+            if (navigating) {
+                performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP);
+                mSwipedOverThreshold = true;
+            }
         }
         mWillNavigate = navigating;
 
-        if (mCloseIndicatorEnabled) {
+        if (mCloseIndicator != CloseTarget.NONE) {
             if (mWillNavigate) {
-                mArrowView.showCaption(true);
+                mArrowView.showCaption(mCloseIndicator);
                 mArrowViewWidth = mArrowView.getMeasuredWidth();
             } else {
                 hideCloseIndicator();
@@ -339,7 +344,7 @@ public class SideSlideLayout extends ViewGroup {
     }
 
     private void hideCloseIndicator() {
-        mArrowView.showCaption(false);
+        mArrowView.showCaption(CloseTarget.NONE);
         // The width when indicator text view is hidden is slightly bigger than the height.
         // Set the width to circle's diameter for the widget to be of completely round shape.
         mArrowViewWidth = mCircleWidth;
@@ -363,6 +368,11 @@ public class SideSlideLayout extends ViewGroup {
         mIsBeingDragged = false;
 
         GestureNavMetrics.recordHistogram("GestureNavigation.Triggered", mIsForward);
+        if (mSwipedOverThreshold) {
+            GestureNavMetrics.recordHistogram("GestureNavigation.SwipedOverThreshold", mIsForward);
+            mSwipedOverThreshold = false;
+        }
+
         if (isEnabled() && willNavigate()) {
             if (allowNav) {
                 setNavigating(true);

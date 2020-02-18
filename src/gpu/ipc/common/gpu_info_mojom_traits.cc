@@ -8,6 +8,10 @@
 #include "base/logging.h"
 #include "mojo/public/cpp/base/time_mojom_traits.h"
 
+#if BUILDFLAG(ENABLE_VULKAN)
+#include "gpu/ipc/common/vulkan_info_mojom_traits.h"
+#endif
+
 namespace mojo {
 
 // static
@@ -16,6 +20,10 @@ bool StructTraits<gpu::mojom::GpuDeviceDataView, gpu::GPUInfo::GPUDevice>::Read(
     gpu::GPUInfo::GPUDevice* out) {
   out->vendor_id = data.vendor_id();
   out->device_id = data.device_id();
+#if defined(OS_WIN)
+  out->sub_sys_id = data.sub_sys_id();
+  out->revision = data.revision();
+#endif  // OS_WIN
   out->active = data.active();
   out->cuda_compute_capability_major = data.cuda_compute_capability_major();
   return data.ReadVendorString(&out->vendor_string) &&
@@ -224,8 +232,9 @@ bool StructTraits<gpu::mojom::VideoEncodeAcceleratorSupportedProfileDataView,
          gpu::VideoEncodeAcceleratorSupportedProfile* out) {
   out->max_framerate_numerator = data.max_framerate_numerator();
   out->max_framerate_denominator = data.max_framerate_denominator();
-  return data.ReadProfile(&out->profile) &&
-         data.ReadMaxResolution(&out->max_resolution);
+  return data.ReadMinResolution(&out->min_resolution) &&
+         data.ReadMaxResolution(&out->max_resolution) &&
+         data.ReadProfile(&out->profile);
 }
 
 // static
@@ -374,6 +383,7 @@ bool StructTraits<gpu::mojom::GpuInfoDataView, gpu::GPUInfo>::Read(
   out->rgba_visual = data.rgba_visual();
 #endif
   out->oop_rasterization_supported = data.oop_rasterization_supported();
+  out->subpixel_font_rendering = data.subpixel_font_rendering();
 
 #if defined(OS_WIN)
   out->direct_composition = data.direct_composition();
@@ -407,7 +417,11 @@ bool StructTraits<gpu::mojom::GpuInfoDataView, gpu::GPUInfo>::Read(
          data.ReadVideoEncodeAcceleratorSupportedProfiles(
              &out->video_encode_accelerator_supported_profiles) &&
          data.ReadImageDecodeAcceleratorSupportedProfiles(
-             &out->image_decode_accelerator_supported_profiles);
+             &out->image_decode_accelerator_supported_profiles) &&
+#if BUILDFLAG(ENABLE_VULKAN)
+         data.ReadVulkanInfo(&out->vulkan_info) &&
+#endif
+         true;
 }
 
 }  // namespace mojo

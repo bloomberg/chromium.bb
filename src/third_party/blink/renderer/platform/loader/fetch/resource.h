@@ -31,11 +31,10 @@
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "mojo/public/cpp/base/big_buffer.h"
-#include "third_party/blink/public/mojom/loader/code_cache.mojom-blink.h"
+#include "third_party/blink/public/mojom/loader/code_cache.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/scheduler/web_scoped_virtual_time_pauser.h"
 #include "third_party/blink/renderer/platform/instrumentation/memory_pressure_listener.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/web_process_memory_dump.h"
-#include "third_party/blink/renderer/platform/loader/fetch/cached_metadata_handler.h"
 #include "third_party/blink/renderer/platform/loader/fetch/integrity_metadata.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_error.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_load_priority.h"
@@ -63,11 +62,12 @@ class Clock;
 
 namespace blink {
 
+class CachedMetadataHandler;
+class CachedMetadataSender;
 class FetchParameters;
 class ResourceClient;
 class ResourceFetcher;
 class ResourceFinishObserver;
-class ResourceTimingInfo;
 class ResourceLoader;
 class ResponseBodyLoaderDrainableInterface;
 class SecurityOrigin;
@@ -97,7 +97,7 @@ enum class ResourceType : uint8_t {
 // should derive from ResourceClient, to get the function calls in case the
 // requested data has arrived. This class also does the actual communication
 // with the loader to obtain the resource from the network.
-class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
+class PLATFORM_EXPORT Resource : public GarbageCollected<Resource>,
                                  public MemoryPressureListener {
   USING_GARBAGE_COLLECTED_MIXIN(Resource);
 
@@ -237,9 +237,7 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
 
   size_t DecodedSize() const { return decoded_size_; }
   size_t OverheadSize() const { return overhead_size_; }
-  size_t CodeCacheSize() const {
-    return (cache_handler_) ? cache_handler_->GetCodeCacheSize() : 0;
-  }
+  size_t CodeCacheSize() const;
 
   bool IsLoaded() const { return status_ > ResourceStatus::kPending; }
 
@@ -275,8 +273,6 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
       scoped_refptr<base::SingleThreadTaskRunner> loader_task_runner) {}
   void SetResponse(const ResourceResponse&);
   const ResourceResponse& GetResponse() const { return response_; }
-
-  virtual void ReportResourceTimingToClients(const ResourceTimingInfo&) {}
 
   // Sets the serialized metadata retrieved from the platform's cache.
   // Subclasses of Resource that support cached metadata should override this
@@ -350,7 +346,7 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
   virtual void DidSendData(uint64_t /* bytesSent */,
                            uint64_t /* totalBytesToBeSent */) {}
   virtual void DidDownloadData(uint64_t) {}
-  virtual void DidDownloadToBlob(scoped_refptr<BlobDataHandle>) {}
+  virtual void DidDownloadToBlob(scoped_refptr<BlobDataHandle>);
 
   base::TimeTicks LoadResponseEnd() const { return load_response_end_; }
 
@@ -510,9 +506,7 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
   // override SetSerializedCachedMetadata with an implementation that fills the
   // cache handler.
   virtual CachedMetadataHandler* CreateCachedMetadataHandler(
-      std::unique_ptr<CachedMetadataSender> send_callback) {
-    return nullptr;
-  }
+      std::unique_ptr<CachedMetadataSender> send_callback);
 
   CachedMetadataHandler* CacheHandler() { return cache_handler_.Get(); }
 

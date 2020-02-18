@@ -9,7 +9,7 @@
 #include "base/json/json_string_value_serializer.h"
 #include "base/task_runner_util.h"
 #include "extensions/browser/extension_file_task_runner.h"
-#include "services/service_manager/public/cpp/connector.h"
+#include "services/data_decoder/public/cpp/data_decoder.h"
 
 namespace extensions {
 
@@ -36,15 +36,14 @@ int WriteStringToFile(const std::string& contents,
 
 // static
 std::unique_ptr<JsonFileSanitizer> JsonFileSanitizer::CreateAndStart(
-    service_manager::Connector* connector,
-    const service_manager::ServiceFilter& service_filter,
+    data_decoder::DataDecoder* decoder,
     const std::set<base::FilePath>& file_paths,
     Callback callback) {
   // Note we can't use std::make_unique as we want to keep the constructor
   // private.
   std::unique_ptr<JsonFileSanitizer> sanitizer(
       new JsonFileSanitizer(file_paths, std::move(callback)));
-  sanitizer->Start(connector, service_filter);
+  sanitizer->Start(decoder);
   return sanitizer;
 }
 
@@ -54,9 +53,7 @@ JsonFileSanitizer::JsonFileSanitizer(const std::set<base::FilePath>& file_paths,
 
 JsonFileSanitizer::~JsonFileSanitizer() = default;
 
-void JsonFileSanitizer::Start(
-    service_manager::Connector* connector,
-    const service_manager::ServiceFilter& service_filter) {
+void JsonFileSanitizer::Start(data_decoder::DataDecoder* decoder) {
   if (file_paths_.empty()) {
     base::SequencedTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(&JsonFileSanitizer::ReportSuccess,
@@ -64,7 +61,8 @@ void JsonFileSanitizer::Start(
     return;
   }
 
-  connector->BindInterface(service_filter, &json_parser_ptr_);
+  decoder->GetService()->BindJsonParser(
+      json_parser_.BindNewPipeAndPassReceiver());
 
   for (const base::FilePath& path : file_paths_) {
     base::PostTaskAndReplyWithResult(
@@ -86,10 +84,9 @@ void JsonFileSanitizer::JsonFileRead(
     ReportError(Status::kFileDeleteError, std::string());
     return;
   }
-  json_parser_ptr_->Parse(
-      std::get<0>(read_and_delete_result),
-      base::BindOnce(&JsonFileSanitizer::JsonParsingDone,
-                     weak_factory_.GetWeakPtr(), file_path));
+  json_parser_->Parse(std::get<0>(read_and_delete_result),
+                      base::BindOnce(&JsonFileSanitizer::JsonParsingDone,
+                                     weak_factory_.GetWeakPtr(), file_path));
 }
 
 void JsonFileSanitizer::JsonParsingDone(

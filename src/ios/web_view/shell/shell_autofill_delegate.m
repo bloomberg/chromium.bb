@@ -45,7 +45,8 @@
                         fieldType:(NSString*)fieldType
                          formName:(NSString*)formName
                           frameID:(NSString*)frameID
-                            value:(NSString*)value {
+                            value:(NSString*)value
+                    userInitiated:(BOOL)userInitiated {
   _autofillController = autofillController;
 
   __weak ShellAutofillDelegate* weakSelf = self;
@@ -59,6 +60,11 @@
         alertControllerWithTitle:@"Pick a suggestion"
                          message:nil
                   preferredStyle:UIAlertControllerStyleActionSheet];
+    alertController.popoverPresentationController.sourceView =
+        UIApplication.sharedApplication.keyWindow;
+    CGRect bounds = UIApplication.sharedApplication.keyWindow.bounds;
+    alertController.popoverPresentationController.sourceRect =
+        CGRectMake(CGRectGetWidth(bounds) / 2, 60, 1, 1);
     UIAlertAction* cancelAction =
         [UIAlertAction actionWithTitle:@"Cancel"
                                  style:UIAlertActionStyleCancel
@@ -84,7 +90,9 @@
     didInputInFieldWithIdentifier:(NSString*)fieldIdentifier
                         fieldType:(NSString*)fieldType
                          formName:(NSString*)formName
-                            value:(NSString*)value {
+                          frameID:(NSString*)frameID
+                            value:(NSString*)value
+                    userInitiated:(BOOL)userInitiated {
   // Not implemented.
 }
 
@@ -92,37 +100,66 @@
     didBlurOnFieldWithIdentifier:(NSString*)fieldIdentifier
                        fieldType:(NSString*)fieldType
                         formName:(NSString*)formName
-                           value:(NSString*)value {
+                         frameID:(NSString*)frameID
+                           value:(NSString*)value
+                   userInitiated:(BOOL)userInitiated {
   // Not implemented.
 }
 
 - (void)autofillController:(CWVAutofillController*)autofillController
      didSubmitFormWithName:(NSString*)formName
-             userInitiated:(BOOL)userInitiated
-               isMainFrame:(BOOL)isMainFrame {
+                   frameID:(NSString*)frameID
+             userInitiated:(BOOL)userInitiated {
   // Not implemented.
 }
 
-- (void)autofillControllerDidInsertFormElements:
-    (CWVAutofillController*)autofillController {
-  // Not implemented.
+- (void)autofillController:(CWVAutofillController*)autofillController
+              didFindForms:(NSArray<CWVAutofillForm*>*)forms
+                   frameID:(NSString*)frameID {
+  if (forms.count == 0) {
+    return;
+  }
+
+  NSArray<NSString*>* debugDescriptions =
+      [forms valueForKey:NSStringFromSelector(@selector(debugDescription))];
+  NSLog(@"Found forms in frame %@\n%@", frameID, debugDescriptions);
+}
+
+- (void)autofillController:(CWVAutofillController*)autofillController
+    decideSavePolicyForAutofillProfile:(CWVAutofillProfile*)autofillProfile
+                       decisionHandler:
+                           (void (^)(BOOL decision))decisionHandler {
+  UIAlertController* alertController = [UIAlertController
+      alertControllerWithTitle:@"Save profile?"
+                       message:autofillProfile.debugDescription
+                preferredStyle:UIAlertControllerStyleAlert];
+  UIAlertAction* allowAction =
+      [UIAlertAction actionWithTitle:@"Allow"
+                               style:UIAlertActionStyleDefault
+                             handler:^(UIAlertAction* _Nonnull action) {
+                               decisionHandler(YES);
+                             }];
+  UIAlertAction* cancelAction =
+      [UIAlertAction actionWithTitle:@"Cancel"
+                               style:UIAlertActionStyleCancel
+                             handler:^(UIAlertAction* _Nonnull action) {
+                               decisionHandler(NO);
+                             }];
+  [alertController addAction:allowAction];
+  [alertController addAction:cancelAction];
+  [UIApplication.sharedApplication.keyWindow.rootViewController
+      presentViewController:alertController
+                   animated:YES
+                 completion:nil];
 }
 
 - (void)autofillController:(CWVAutofillController*)autofillController
     saveCreditCardWithSaver:(CWVCreditCardSaver*)saver {
   CWVCreditCard* creditCard = saver.creditCard;
-  NSString* cardSummary = [NSString
-      stringWithFormat:@"%@ %@ %@/%@", creditCard.cardHolderFullName,
-                       creditCard.cardNumber, creditCard.expirationMonth,
-                       creditCard.expirationYear];
-  NSArray<NSString*>* legalMessages =
-      [saver.legalMessages valueForKey:@"string"];
-  NSString* message = [[legalMessages arrayByAddingObject:cardSummary]
-      componentsJoinedByString:@"\n"];
-  UIAlertController* alertController = [UIAlertController
-      alertControllerWithTitle:@"Save card?"
-                       message:message
-                preferredStyle:UIAlertControllerStyleActionSheet];
+  UIAlertController* alertController =
+      [UIAlertController alertControllerWithTitle:@"Save card?"
+                                          message:creditCard.debugDescription
+                                   preferredStyle:UIAlertControllerStyleAlert];
   UIAlertAction* allowAction = [UIAlertAction
       actionWithTitle:@"Allow"
                 style:UIAlertActionStyleDefault
@@ -150,14 +187,13 @@
 }
 
 - (void)autofillController:(CWVAutofillController*)autofillController
-    decidePasswordSavingPolicyForUsername:(NSString*)userName
-                          decisionHandler:(void (^)(CWVPasswordUserDecision))
-                                              decisionHandler {
-  UIAlertController* alertController = [UIAlertController
-      alertControllerWithTitle:@"Save Password"
-                       message:@"Do you want to save your password on "
-                               @"this site?"
-                preferredStyle:UIAlertControllerStyleActionSheet];
+    decideSavePolicyForPassword:(CWVPassword*)password
+                decisionHandler:(void (^)(CWVPasswordUserDecision decision))
+                                    decisionHandler {
+  UIAlertController* alertController =
+      [UIAlertController alertControllerWithTitle:@"Save password?"
+                                          message:password.debugDescription
+                                   preferredStyle:UIAlertControllerStyleAlert];
 
   UIAlertAction* noAction = [UIAlertAction
       actionWithTitle:@"Not this time"
@@ -190,17 +226,13 @@
 }
 
 - (void)autofillController:(CWVAutofillController*)autofillController
-    decidePasswordUpdatingPolicyForUsername:(NSString*)userName
-                            decisionHandler:(void (^)(CWVPasswordUserDecision))
-                                                decisionHandler {
-  NSString* message =
-      [NSString stringWithFormat:@"Do you want to update your password "
-                                 @"for %@ on this site?",
-                                 userName];
-  UIAlertController* alertController = [UIAlertController
-      alertControllerWithTitle:@"Update Password"
-                       message:message
-                preferredStyle:UIAlertControllerStyleActionSheet];
+    decideUpdatePolicyForPassword:(CWVPassword*)password
+                  decisionHandler:(void (^)(CWVPasswordUserDecision decision))
+                                      decisionHandler {
+  UIAlertController* alertController =
+      [UIAlertController alertControllerWithTitle:@"Update password?"
+                                          message:password.debugDescription
+                                   preferredStyle:UIAlertControllerStyleAlert];
 
   UIAlertAction* noAction = [UIAlertAction
       actionWithTitle:@"Not this time"

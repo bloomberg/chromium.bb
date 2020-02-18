@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/time/time.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/views/widget/widget_observer.h"
 #include "ui/wm/public/activation_change_observer.h"
 
@@ -61,11 +62,23 @@ class ASH_EXPORT UnifiedSystemTrayBubble
   // Close the bubble immediately.
   void CloseNow();
 
+  // Collapse the message center bubble.
+  void CollapseMessageCenter();
+
+  // Expand the message center bubble.
+  void ExpandMessageCenter();
+
+  // Ensure the bubble is collapsed.
+  void EnsureCollapsed();
+
   // Ensure the bubble is expanded.
   void EnsureExpanded();
 
   // Show audio settings detailed view.
   void ShowAudioDetailedView();
+
+  // Show network settings detailed view.
+  void ShowNetworkDetailedView(bool force);
 
   // Update bubble bounds and focus if necessary.
   void UpdateBubble();
@@ -83,6 +96,15 @@ class ASH_EXPORT UnifiedSystemTrayBubble
   // Return the current visible height of the tray, even when partially
   // collapsed / expanded.
   int GetCurrentTrayHeight() const;
+
+  // Relinquish focus and transfer it to the message center widget.
+  bool FocusOut(bool reverse);
+
+  // Inform UnifiedSystemTrayView of focus being acquired.
+  void FocusEntered(bool reverse);
+
+  // Called when the message center widget is activated.
+  void OnMessageCenterActivated();
 
   // TrayBubbleBase:
   TrayBackgroundView* GetTray() const override;
@@ -112,6 +134,10 @@ class ASH_EXPORT UnifiedSystemTrayBubble
 
   UnifiedSystemTrayView* unified_view() { return unified_view_; }
 
+  UnifiedSystemTrayController* controller_for_test() {
+    return controller_.get();
+  }
+
  private:
   friend class UnifiedSystemTrayTestApi;
 
@@ -124,6 +150,9 @@ class ASH_EXPORT UnifiedSystemTrayBubble
   // Set visibility of bubble frame border. Used for disabling the border during
   // animation.
   void SetFrameVisible(bool visible);
+
+  // Returns the insets for the bubble.
+  gfx::Insets GetInsets();
 
   // Controller of UnifiedSystemTrayView. As the view is owned by views
   // hierarchy, we have to own the controller here.

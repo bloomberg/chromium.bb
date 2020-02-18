@@ -27,6 +27,7 @@
 #include "ui/ozone/public/gpu_platform_support_host.h"
 #include "ui/ozone/public/input_controller.h"
 #include "ui/ozone/public/ozone_platform.h"
+#include "ui/ozone/public/platform_screen.h"
 #include "ui/ozone/public/system_input_injector.h"
 #include "ui/platform_window/platform_window_init_properties.h"
 
@@ -87,6 +88,10 @@ class OzonePlatformCast : public OzonePlatform {
   InputController* GetInputController() override {
     return event_factory_ozone_->input_controller();
   }
+  std::unique_ptr<PlatformScreen> CreateScreen() override {
+    NOTREACHED();
+    return nullptr;
+  }
   GpuPlatformSupportHost* GetGpuPlatformSupportHost() override {
     return gpu_platform_support_host_.get();
   }
@@ -131,10 +136,10 @@ class OzonePlatformCast : public OzonePlatform {
         base::CommandLine::ForCurrentProcess()->HasSwitch("disable-gpu");
 #endif  // BUILDFLAG(IS_CAST_AUDIO_ONLY)
 
+    keyboard_layout_engine_ = std::make_unique<StubKeyboardLayoutEngine>();
     KeyboardLayoutEngineManager::SetKeyboardLayoutEngine(
-        std::make_unique<StubKeyboardLayoutEngine>());
-    ui::KeyboardLayoutEngineManager::GetKeyboardLayoutEngine()
-        ->SetCurrentLayoutByName("us");
+        keyboard_layout_engine_.get());
+
     event_factory_ozone_ = std::make_unique<EventFactoryEvdev>(
         nullptr, device_manager_.get(),
         KeyboardLayoutEngineManager::GetKeyboardLayoutEngine());
@@ -151,6 +156,7 @@ class OzonePlatformCast : public OzonePlatform {
   }
 
  private:
+  std::unique_ptr<KeyboardLayoutEngine> keyboard_layout_engine_;
   std::unique_ptr<DeviceManager> device_manager_;
   std::unique_ptr<CastEglPlatform> egl_platform_;
   std::unique_ptr<SurfaceFactoryCast> surface_factory_;

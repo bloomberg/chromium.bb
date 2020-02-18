@@ -110,24 +110,6 @@ enum InkDropSubAnimations {
 // The scale factor used to burst the ACTION_TRIGGERED bubble as it fades out.
 constexpr float kQuickActionBurstScale = 1.3f;
 
-// Duration constants for InkDropStateSubAnimations. See the
-// InkDropStateSubAnimations enum documentation for more info.
-int kAnimationDurationInMs[] = {
-    150,  // HIDDEN_FADE_OUT
-    200,  // HIDDEN_TRANSFORM
-    0,    // ACTION_PENDING_FADE_IN
-    160,  // ACTION_PENDING_TRANSFORM
-    150,  // ACTION_TRIGGERED_FADE_OUT
-    160,  // ACTION_TRIGGERED_TRANSFORM
-    200,  // ALTERNATE_ACTION_PENDING
-    150,  // ALTERNATE_ACTION_TRIGGERED_FADE_OUT
-    200,  // ALTERNATE_ACTION_TRIGGERED_TRANSFORM
-    200,  // ACTIVATED_CIRCLE_TRANSFORM
-    160,  // ACTIVATED_RECT_TRANSFORM
-    150,  // DEACTIVATED_FADE_OUT
-    200,  // DEACTIVATED_TRANSFORM
-};
-
 // Returns the InkDropState sub animation duration for the given |state|.
 base::TimeDelta GetAnimationDuration(InkDropSubAnimations state) {
   if (!PlatformStyle::kUseRipples ||
@@ -135,7 +117,24 @@ base::TimeDelta GetAnimationDuration(InkDropSubAnimations state) {
     return base::TimeDelta();
   }
 
-  return base::TimeDelta::FromMilliseconds(kAnimationDurationInMs[state]);
+  // Duration constants for InkDropStateSubAnimations. See the
+  // InkDropStateSubAnimations enum documentation for more info.
+  constexpr base::TimeDelta kAnimationDuration[] = {
+      base::TimeDelta::FromMilliseconds(150),  // HIDDEN_FADE_OUT
+      base::TimeDelta::FromMilliseconds(200),  // HIDDEN_TRANSFORM
+      base::TimeDelta(),                       // ACTION_PENDING_FADE_IN
+      base::TimeDelta::FromMilliseconds(160),  // ACTION_PENDING_TRANSFORM
+      base::TimeDelta::FromMilliseconds(150),  // ACTION_TRIGGERED_FADE_OUT
+      base::TimeDelta::FromMilliseconds(160),  // ACTION_TRIGGERED_TRANSFORM
+      base::TimeDelta::FromMilliseconds(200),  // ALTERNATE_ACTION_PENDING
+      base::TimeDelta::FromMilliseconds(150),  // ALTERNAT..._TRIGGERED_FADE_OUT
+      base::TimeDelta::FromMilliseconds(200),  // ALTERNA..._TRIGGERED_TRANSFORM
+      base::TimeDelta::FromMilliseconds(200),  // ACTIVATED_CIRCLE_TRANSFORM
+      base::TimeDelta::FromMilliseconds(160),  // ACTIVATED_RECT_TRANSFORM
+      base::TimeDelta::FromMilliseconds(150),  // DEACTIVATED_FADE_OUT
+      base::TimeDelta::FromMilliseconds(200),  // DEACTIVATED_TRANSFORM
+  };
+  return kAnimationDuration[state];
 }
 
 }  // namespace
@@ -147,7 +146,7 @@ SquareInkDropRipple::SquareInkDropRipple(const gfx::Size& large_size,
                                          const gfx::Point& center_point,
                                          SkColor color,
                                          float visible_opacity)
-    : activated_shape_(ROUNDED_RECT),
+    : activated_shape_(ActivatedShape::kRoundedRect),
       visible_opacity_(visible_opacity),
       large_size_(large_size),
       large_corner_radius_(large_corner_radius),
@@ -543,10 +542,10 @@ void SquareInkDropRipple::GetCurrentTransforms(
 void SquareInkDropRipple::GetActivatedTargetTransforms(
     InkDropTransforms* transforms_out) const {
   switch (activated_shape_) {
-    case CIRCLE:
+    case ActivatedShape::kCircle:
       CalculateCircleTransforms(small_size_, transforms_out);
       break;
-    case ROUNDED_RECT:
+    case ActivatedShape::kRoundedRect:
       CalculateRectTransforms(small_size_, small_corner_radius_,
                               transforms_out);
       break;
@@ -556,10 +555,10 @@ void SquareInkDropRipple::GetActivatedTargetTransforms(
 void SquareInkDropRipple::GetDeactivatedTargetTransforms(
     InkDropTransforms* transforms_out) const {
   switch (activated_shape_) {
-    case CIRCLE:
+    case ActivatedShape::kCircle:
       CalculateCircleTransforms(large_size_, transforms_out);
       break;
-    case ROUNDED_RECT:
+    case ActivatedShape::kRoundedRect:
       CalculateRectTransforms(large_size_, small_corner_radius_,
                               transforms_out);
       break;

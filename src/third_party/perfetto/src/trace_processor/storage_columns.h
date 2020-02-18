@@ -1,4 +1,6 @@
 /*
+ * Copyright (C) 2019 The Android Open Source Project
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -334,7 +336,7 @@ class StringVectorAccessor : public Accessor<NullTermStringView> {
   }
 
   NullTermStringView Get(uint32_t idx) const override {
-    const char* ptr = (*string_map_)[(*deque_)[idx]];
+    const char* ptr = (*string_map_)[static_cast<size_t>((*deque_)[idx])];
     return ptr ? NullTermStringView(ptr) : NullTermStringView();
   }
 

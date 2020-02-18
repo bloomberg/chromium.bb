@@ -18,18 +18,18 @@
 #include "content/browser/appcache/appcache_request_handler.h"
 #include "content/browser/appcache/appcache_service_impl.h"
 #include "content/browser/loader/navigation_loader_interceptor.h"
+#include "content/browser/loader/single_request_url_loader_factory.h"
 #include "content/common/content_export.h"
 #include "content/public/common/resource_type.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/mojom/url_response_head.mojom-forward.h"
 
 namespace net {
 class NetworkDelegate;
 class URLRequest;
 }  // namespace net
-
-namespace network {
-struct ResourceResponseHead;
-}
 
 namespace content {
 class AppCacheJob;
@@ -50,6 +50,9 @@ class CONTENT_EXPORT AppCacheRequestHandler
       public AppCacheStorage::Delegate,
       public NavigationLoaderInterceptor {
  public:
+  using AppCacheLoaderCallback =
+      base::OnceCallback<void(SingleRequestURLLoaderFactory::RequestHandler)>;
+
   ~AppCacheRequestHandler() override;
 
   // NetworkService loading
@@ -67,12 +70,13 @@ class CONTENT_EXPORT AppCacheRequestHandler
   // MaybeCreateLoaderForResponse always returns synchronously.
   bool MaybeCreateLoaderForResponse(
       const network::ResourceRequest& request,
-      const network::ResourceResponseHead& response_head,
+      network::mojom::URLResponseHeadPtr* response_head,
       mojo::ScopedDataPipeConsumerHandle* response_body,
-      network::mojom::URLLoaderPtr* loader,
-      network::mojom::URLLoaderClientRequest* client_request,
-      ThrottlingURLLoader* url_loader,
-      bool* skip_other_interceptors) override;
+      mojo::PendingRemote<network::mojom::URLLoader>* loader,
+      mojo::PendingReceiver<network::mojom::URLLoaderClient>* client_receiver,
+      blink::ThrottlingURLLoader* url_loader,
+      bool* skip_other_interceptors,
+      bool* will_return_unsafe_redirect) override;
   base::Optional<SubresourceLoaderParams> MaybeCreateSubresourceLoaderParams()
       override;
 
@@ -83,15 +87,15 @@ class CONTENT_EXPORT AppCacheRequestHandler
   // methods is called and the LoaderCallback is invoked.
   void MaybeCreateSubresourceLoader(
       const network::ResourceRequest& resource_request,
-      LoaderCallback callback);
+      AppCacheLoaderCallback callback);
   void MaybeFallbackForSubresourceResponse(
-      const network::ResourceResponseHead& response,
-      LoaderCallback callback);
+      network::mojom::URLResponseHeadPtr response,
+      AppCacheLoaderCallback callback);
   void MaybeFallbackForSubresourceRedirect(
       const net::RedirectInfo& redirect_info,
-      LoaderCallback callback);
+      AppCacheLoaderCallback callback);
   void MaybeFollowSubresourceRedirect(const net::RedirectInfo& redirect_info,
-                                      LoaderCallback callback);
+                                      AppCacheLoaderCallback callback);
 
   static std::unique_ptr<AppCacheRequestHandler>
   InitializeForMainResourceNetworkService(
@@ -113,6 +117,10 @@ class CONTENT_EXPORT AppCacheRequestHandler
                          ResourceType resource_type,
                          bool should_reset_appcache,
                          std::unique_ptr<AppCacheRequest> request);
+
+  void MaybeCreateLoaderInternal(
+      const network::ResourceRequest& resource_request,
+      AppCacheLoaderCallback callback);
 
   // AppCacheHost::Observer.
   void OnDestructionImminent(AppCacheHost* host) override;
@@ -173,6 +181,8 @@ class CONTENT_EXPORT AppCacheRequestHandler
   // runs for the main resource. This flips |should_create_subresource_loader_|
   // if a non-null |handler| is given. Always invokes |callback| with |handler|.
   void RunLoaderCallbackForMainResource(
+      int frame_tree_node_id,
+      BrowserContext* browser_context,
       LoaderCallback callback,
       SingleRequestURLLoaderFactory::RequestHandler handler);
 
@@ -242,7 +252,7 @@ class CONTENT_EXPORT AppCacheRequestHandler
 
   // Network service related members.
 
-  LoaderCallback loader_callback_;
+  AppCacheLoaderCallback loader_callback_;
 
   // Flipped to true if AppCache wants to handle subresource requests
   // (i.e. when |loader_callback_| is fired with a non-null

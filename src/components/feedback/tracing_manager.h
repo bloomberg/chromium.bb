@@ -20,8 +20,8 @@ class RefCountedString;
 
 }
 // Callback used for getting the output of a trace.
-typedef base::Callback<void(scoped_refptr<base::RefCountedString> trace_data)>
-    TraceDataCallback;
+using TraceDataCallback =
+    base::OnceCallback<void(scoped_refptr<base::RefCountedString> trace_data)>;
 
 // This class is used to manage performance metrics that can be attached to
 // feedback reports.  This class is a Singleton that is owned by the preference
@@ -49,7 +49,7 @@ class TracingManager {
 
   // Get the trace data for |id|.  On success, true is returned, and the data is
   // returned via |callback|.  Returns false on failure.
-  bool GetTraceData(int id, const TraceDataCallback& callback);
+  bool GetTraceData(int id, TraceDataCallback callback);
 
   // Discard the data for trace |id|.
   void DiscardTraceData(int id);
@@ -58,9 +58,7 @@ class TracingManager {
   TracingManager();
 
   void StartTracing();
-  void OnTraceDataCollected(
-      std::unique_ptr<const base::DictionaryValue> metadata,
-      base::RefCountedString* data);
+  void OnTraceDataCollected(std::unique_ptr<std::string> data);
 
   // ID of the trace that is being collected.
   int current_trace_id_;

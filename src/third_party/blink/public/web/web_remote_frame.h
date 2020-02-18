@@ -5,11 +5,11 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_REMOTE_FRAME_H_
 #define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_REMOTE_FRAME_H_
 
+#include "services/network/public/mojom/content_security_policy.mojom-shared.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/common/frame/sandbox_flags.h"
 #include "third_party/blink/public/common/frame/user_activation_update_type.h"
-#include "third_party/blink/public/mojom/csp/content_security_policy.mojom-shared.h"
 #include "third_party/blink/public/platform/web_content_security_policy.h"
 #include "third_party/blink/public/platform/web_insecure_request_policy.h"
 #include "third_party/blink/public/platform/web_scroll_types.h"
@@ -24,6 +24,7 @@ class Layer;
 namespace blink {
 
 enum class WebTreeScopeType;
+class AssociatedInterfaceProvider;
 class InterfaceRegistry;
 class WebElement;
 class WebLocalFrameClient;
@@ -40,16 +41,24 @@ class WebRemoteFrame : public WebFrame {
   // Factory methods for creating a WebRemoteFrame. The WebRemoteFrameClient
   // argument must be non-null for all creation methods.
   BLINK_EXPORT static WebRemoteFrame* Create(WebTreeScopeType,
-                                             WebRemoteFrameClient*);
+                                             WebRemoteFrameClient*,
+                                             InterfaceRegistry*,
+                                             AssociatedInterfaceProvider*);
 
-  BLINK_EXPORT static WebRemoteFrame*
-  CreateMainFrame(WebView*, WebRemoteFrameClient*, WebFrame* opener = nullptr);
+  BLINK_EXPORT static WebRemoteFrame* CreateMainFrame(
+      WebView*,
+      WebRemoteFrameClient*,
+      InterfaceRegistry*,
+      AssociatedInterfaceProvider*,
+      WebFrame* opener);
 
   // Also performs core initialization to associate the created remote frame
   // with the provided <portal> element.
   BLINK_EXPORT static WebRemoteFrame* CreateForPortal(
       WebTreeScopeType,
       WebRemoteFrameClient*,
+      InterfaceRegistry*,
+      AssociatedInterfaceProvider*,
       const WebElement& portal_element);
 
   // Specialized factory methods to allow the embedder to replicate the frame
@@ -64,7 +73,6 @@ class WebRemoteFrame : public WebFrame {
                                           const FramePolicy&,
                                           WebLocalFrameClient*,
                                           blink::InterfaceRegistry*,
-                                          mojo::ScopedMessagePipeHandle,
                                           WebFrame* previous_sibling,
                                           const WebFrameOwnerProperties&,
                                           FrameOwnerElementType,
@@ -75,6 +83,8 @@ class WebRemoteFrame : public WebFrame {
                                             const FramePolicy&,
                                             FrameOwnerElementType,
                                             WebRemoteFrameClient*,
+                                            blink::InterfaceRegistry*,
+                                            AssociatedInterfaceProvider*,
                                             WebFrame* opener) = 0;
 
   // Layer for the in-process compositor.
@@ -104,8 +114,8 @@ class WebRemoteFrame : public WebFrame {
   // Adds |header| to the set of replicated CSP headers.
   virtual void AddReplicatedContentSecurityPolicyHeader(
       const WebString& header_value,
-      mojom::ContentSecurityPolicyType,
-      WebContentSecurityPolicySource) = 0;
+      network::mojom::ContentSecurityPolicyType,
+      network::mojom::ContentSecurityPolicySource) = 0;
 
   // Resets replicated CSP headers to an empty set.
   virtual void ResetReplicatedContentSecurityPolicy() = 0;
@@ -119,8 +129,6 @@ class WebRemoteFrame : public WebFrame {
   // Reports resource timing info for a navigation in this frame.
   virtual void ForwardResourceTimingToParent(const WebResourceTimingInfo&) = 0;
 
-  virtual void DispatchLoadEventForFrameOwner() = 0;
-
   virtual void SetNeedsOcclusionTracking(bool) = 0;
 
   virtual void DidStartLoading() = 0;
@@ -128,13 +136,6 @@ class WebRemoteFrame : public WebFrame {
 
   // Returns true if this frame should be ignored during hittesting.
   virtual bool IsIgnoredForHitTest() const = 0;
-
-  // This is called in OOPIF scenarios when an element contained in this
-  // frame is about to enter fullscreen.  This frame's owner
-  // corresponds to the HTMLFrameOwnerElement to be fullscreened. Calling
-  // this prepares FullscreenController to enter fullscreen for that frame
-  // owner.
-  virtual void WillEnterFullscreen() = 0;
 
   // Update the user activation state in appropriate part of this frame's
   // "local" frame tree (ancestors-only vs all-nodes).

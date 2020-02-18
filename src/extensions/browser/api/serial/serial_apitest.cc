@@ -20,7 +20,10 @@
 #include "extensions/common/api/serial.h"
 #include "extensions/common/switches.h"
 #include "extensions/test/result_catcher.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
 #include "services/device/public/mojom/constants.mojom.h"
@@ -75,8 +78,8 @@ class FakeSerialPort : public device::mojom::SerialPort {
 
   const device::mojom::SerialPortInfo& info() { return *info_; }
 
-  void Bind(device::mojom::SerialPortRequest request) {
-    bindings_.AddBinding(this, std::move(request));
+  void Bind(mojo::PendingReceiver<device::mojom::SerialPort> receiver) {
+    receivers_.Add(this, std::move(receiver));
   }
 
  private:
@@ -84,7 +87,7 @@ class FakeSerialPort : public device::mojom::SerialPort {
   void Open(device::mojom::SerialConnectionOptionsPtr options,
             mojo::ScopedDataPipeConsumerHandle in_stream,
             mojo::ScopedDataPipeProducerHandle out_stream,
-            device::mojom::SerialPortClientPtr client,
+            mojo::PendingRemote<device::mojom::SerialPortClient> client,
             OpenCallback callback) override {
     if (client_) {
       // Port is already open.
@@ -94,7 +97,7 @@ class FakeSerialPort : public device::mojom::SerialPort {
 
     DoConfigurePort(*options);
     DCHECK(client);
-    client_ = std::move(client);
+    client_.Bind(std::move(client));
     SetUpInStreamPipe(std::move(in_stream));
     SetUpOutStreamPipe(std::move(out_stream));
     std::move(callback).Run(true);
@@ -263,14 +266,14 @@ class FakeSerialPort : public device::mojom::SerialPort {
   }
 
   device::mojom::SerialPortInfoPtr info_;
-  mojo::BindingSet<device::mojom::SerialPort> bindings_;
+  mojo::ReceiverSet<device::mojom::SerialPort> receivers_;
 
   // Currently applied connection options.
   device::mojom::SerialConnectionOptions options_;
   std::vector<uint8_t> buffer_;
   int read_step_ = 0;
   int write_step_ = 0;
-  device::mojom::SerialPortClientPtr client_;
+  mojo::Remote<device::mojom::SerialPortClient> client_;
   mojo::ScopedDataPipeConsumerHandle in_stream_;
   mojo::SimpleWatcher in_stream_watcher_;
   mojo::ScopedDataPipeProducerHandle out_stream_;
@@ -288,8 +291,8 @@ class FakeSerialPortManager : public device::mojom::SerialPortManager {
 
   ~FakeSerialPortManager() override = default;
 
-  void Bind(device::mojom::SerialPortManagerRequest request) {
-    bindings_.AddBinding(this, std::move(request));
+  void Bind(mojo::PendingReceiver<device::mojom::SerialPortManager> receiver) {
+    receivers_.Add(this, std::move(receiver));
   }
 
  private:
@@ -302,12 +305,13 @@ class FakeSerialPortManager : public device::mojom::SerialPortManager {
   }
 
   void GetPort(const base::UnguessableToken& token,
-               device::mojom::SerialPortRequest request,
-               device::mojom::SerialPortConnectionWatcherPtr watcher) override {
+               mojo::PendingReceiver<device::mojom::SerialPort> receiver,
+               mojo::PendingRemote<device::mojom::SerialPortConnectionWatcher>
+                   watcher) override {
     DCHECK(!watcher);
     auto it = ports_.find(token);
     DCHECK(it != ports_.end());
-    it->second->Bind(std::move(request));
+    it->second->Bind(std::move(receiver));
   }
 
   void AddPort(const base::FilePath& path) {
@@ -319,7 +323,7 @@ class FakeSerialPortManager : public device::mojom::SerialPortManager {
         token, std::make_unique<FakeSerialPort>(std::move(port))));
   }
 
-  mojo::BindingSet<device::mojom::SerialPortManager> bindings_;
+  mojo::ReceiverSet<device::mojom::SerialPortManager> receivers_;
   std::map<base::UnguessableToken, std::unique_ptr<FakeSerialPort>> ports_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeSerialPortManager);
@@ -356,11 +360,12 @@ class SerialApiTest : public ExtensionApiTest {
   void FailEnumeratorRequest() { fail_enumerator_request_ = true; }
 
  protected:
-  void BindSerialPortManager(device::mojom::SerialPortManagerRequest request) {
+  void BindSerialPortManager(
+      mojo::PendingReceiver<device::mojom::SerialPortManager> receiver) {
     if (fail_enumerator_request_)
       return;
 
-    port_manager_->Bind(std::move(request));
+    port_manager_->Bind(std::move(receiver));
   }
 
   bool fail_enumerator_request_ = false;

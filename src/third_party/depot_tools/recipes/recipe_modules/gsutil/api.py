@@ -160,7 +160,7 @@ class GSUtilApi(recipe_api.RecipeApi):
   def _generate_metadata_args(self, metadata):
     result = []
     if metadata:
-      for k, v in sorted(metadata.iteritems(), key=lambda (k, _): k):
+      for k, v in sorted(metadata.items(), key=lambda (k, _): k):
         field = self._get_metadata_field(k)
         param = (field) if v is None else ('%s:%s' % (field, v))
         result += ['-h', param]

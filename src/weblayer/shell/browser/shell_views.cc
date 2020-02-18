@@ -29,7 +29,7 @@
 #include "ui/views/widget/desktop_aura/desktop_screen.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
-#include "weblayer/public/browser_controller.h"
+#include "weblayer/public/tab.h"
 
 #if defined(USE_AURA)
 #include "ui/wm/core/wm_state.h"
@@ -60,8 +60,7 @@ class ShellWindowDelegateView : public views::WidgetDelegateView,
     url_entry_->SetText(base::ASCIIToUTF16(url.spec()));
   }
 
-  void AttachBrowserController(BrowserController* browser_controller,
-                               const gfx::Size& size) {
+  void AttachTab(Tab* tab, const gfx::Size& size) {
     contents_view_->SetLayoutManager(std::make_unique<views::FillLayout>());
     // If there was a previous WebView in this Shell it should be removed and
     // deleted.
@@ -70,7 +69,7 @@ class ShellWindowDelegateView : public views::WidgetDelegateView,
       delete web_view_;
     }
     auto web_view = std::make_unique<views::WebView>(nullptr);
-    browser_controller->AttachToView(web_view.get());
+    tab->AttachToView(web_view.get());
     web_view->SetPreferredSize(size);
     web_view_ = contents_view_->AddChildView(std::move(web_view));
     Layout();
@@ -82,6 +81,7 @@ class ShellWindowDelegateView : public views::WidgetDelegateView,
   }
 
   void SetWindowTitle(const base::string16& title) { title_ = title; }
+
   void EnableUIControl(UIControl control, bool is_enabled) {
     if (control == BACK_BUTTON) {
       back_button_->SetState(is_enabled ? views::Button::STATE_NORMAL
@@ -92,7 +92,16 @@ class ShellWindowDelegateView : public views::WidgetDelegateView,
     } else if (control == STOP_BUTTON) {
       stop_button_->SetState(is_enabled ? views::Button::STATE_NORMAL
                                         : views::Button::STATE_DISABLED);
+      if (!is_enabled)
+        UpdateLoadProgress();
     }
+  }
+
+  void UpdateLoadProgress(double progress = 0.) {
+    std::string stop_text("Stop");
+    if (stop_button_->state() == views::Button::STATE_NORMAL)
+      stop_text = base::StringPrintf("Stop (%.0f%%)", progress * 100);
+    stop_button_->SetText(base::ASCIIToUTF16(stop_text));
   }
 
  private:
@@ -145,12 +154,11 @@ class ShellWindowDelegateView : public views::WidgetDelegateView,
         refresh_button_size.width() / 2);
     // Stop button
     auto stop_button =
-        views::MdTextButton::Create(this, base::ASCIIToUTF16("Stop"));
-    gfx::Size stop_button_size = stop_button->GetPreferredSize();
+        views::MdTextButton::Create(this, base::ASCIIToUTF16("Stop (100%)"));
+    int stop_button_width = stop_button->GetPreferredSize().width();
     toolbar_column_set->AddColumn(
-        views::GridLayout::CENTER, views::GridLayout::CENTER, 0,
-        views::GridLayout::FIXED, stop_button_size.width(),
-        stop_button_size.width() / 2);
+        views::GridLayout::FILL, views::GridLayout::CENTER, 0,
+        views::GridLayout::FIXED, stop_button_width, stop_button_width / 2);
     toolbar_column_set->AddPaddingColumn(0, 2);
     // URL entry
     auto url_entry = std::make_unique<views::Textfield>();
@@ -184,6 +192,7 @@ class ShellWindowDelegateView : public views::WidgetDelegateView,
 
     InitAccelerators();
   }
+
   void InitAccelerators() {
     static const ui::KeyboardCode keys[] = {ui::VKEY_F5, ui::VKEY_BROWSER_BACK,
                                             ui::VKEY_BROWSER_FORWARD};
@@ -193,9 +202,11 @@ class ShellWindowDelegateView : public views::WidgetDelegateView,
           ui::AcceleratorManager::kNormalPriority, this);
     }
   }
+
   // Overridden from TextfieldController
   void ContentsChanged(views::Textfield* sender,
                        const base::string16& new_contents) override {}
+
   bool HandleKeyEvent(views::Textfield* sender,
                       const ui::KeyEvent& key_event) override {
     if (key_event.type() == ui::ET_KEY_PRESSED && sender == url_entry_ &&
@@ -278,7 +289,7 @@ class ShellWindowDelegateView : public views::WidgetDelegateView,
   views::Button* back_button_ = nullptr;
   views::Button* forward_button_ = nullptr;
   views::Button* refresh_button_ = nullptr;
-  views::Button* stop_button_ = nullptr;
+  views::MdTextButton* stop_button_ = nullptr;
   views::Textfield* url_entry_ = nullptr;
 
   // Contents view contains the WebBrowser view
@@ -342,7 +353,11 @@ void Shell::PlatformSetAddressBarURL(const GURL& url) {
   delegate_view->SetAddressBarURL(url);
 }
 
-void Shell::PlatformSetIsLoading(bool loading) {}
+void Shell::PlatformSetLoadProgress(double progress) {
+  ShellWindowDelegateView* delegate_view =
+      static_cast<ShellWindowDelegateView*>(window_widget_->widget_delegate());
+  delegate_view->UpdateLoadProgress(progress);
+}
 
 void Shell::PlatformCreateWindow(int width, int height) {
   window_widget_ = new views::Widget;
@@ -364,8 +379,7 @@ void Shell::PlatformSetContents() {
   views::WidgetDelegate* widget_delegate = window_widget_->widget_delegate();
   ShellWindowDelegateView* delegate_view =
       static_cast<ShellWindowDelegateView*>(widget_delegate);
-  delegate_view->AttachBrowserController(browser_controller_.get(),
-                                         content_size_);
+  delegate_view->AttachTab(tab_.get(), content_size_);
   window_->GetHost()->Show();
   window_widget_->Show();
 }

@@ -89,7 +89,7 @@ class TestPreviewsBlackList : public PreviewsBlackList {
 
 class PreviewsBlackListTest : public testing::Test {
  public:
-  PreviewsBlackListTest() : field_trial_list_(nullptr), passed_reasons_({}) {}
+  PreviewsBlackListTest() : passed_reasons_({}) {}
   ~PreviewsBlackListTest() override {}
 
   void TearDown() override { variations::testing::ClearAllVariationParams(); }
@@ -152,14 +152,13 @@ class PreviewsBlackListTest : public testing::Test {
   }
 
  protected:
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
 
   // Observer to |black_list_|.
   TestOptOutBlacklistDelegate blacklist_delegate_;
 
   base::SimpleTestClock test_clock_;
   std::map<std::string, std::string> params_;
-  base::FieldTrialList field_trial_list_;
 
   std::unique_ptr<TestPreviewsBlackList> black_list_;
   std::vector<PreviewsEligibilityReason> passed_reasons_;

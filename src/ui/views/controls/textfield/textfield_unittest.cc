@@ -20,6 +20,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
@@ -221,7 +222,7 @@ void MockInputMethod::OnWillChangeFocusedClient(
     ui::TextInputClient* focused) {
   ui::TextInputClient* client = GetTextInputClient();
   if (client && client->HasCompositionText())
-    client->ConfirmCompositionText();
+    client->ConfirmCompositionText(/* keep_selection */ false);
   ClearComposition();
 }
 
@@ -410,8 +411,7 @@ class TextfieldTest : public ViewsTestBase, public TextfieldController {
   void SetUp() override {
     // OS clipboard is a global resource, which causes flakiness when unit tests
     // run in parallel. So, use a per-instance test clipboard.
-    ui::Clipboard::SetClipboardForCurrentThread(
-        std::make_unique<ui::TestClipboard>());
+    ui::TestClipboard::CreateForCurrentThread();
     ViewsTestBase::SetUp();
   }
 
@@ -1764,7 +1764,7 @@ TEST_F(TextfieldTest, DragAndDrop_AcceptDrop) {
   bad_data.SetFileContents(base::FilePath(L"x"), "x");
   bad_data.SetHtml(base::string16(ASCIIToUTF16("x")), GURL("x.org"));
   ui::OSExchangeData::DownloadFileInfo download(base::FilePath(), nullptr);
-  bad_data.SetDownloadFileInfo(download);
+  bad_data.SetDownloadFileInfo(&download);
   EXPECT_FALSE(textfield_->CanDrop(bad_data));
 }
 #endif

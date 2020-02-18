@@ -18,7 +18,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
-#include "chrome/common/plugin.mojom.h"
+#include "chrome/common/media/webrtc_logging.mojom.h"
 #include "chrome/renderer/media/chrome_key_systems_provider.h"
 #include "components/nacl/common/buildflags.h"
 #include "components/rappor/public/mojom/rappor_recorder.mojom.h"
@@ -28,10 +28,11 @@
 #include "extensions/buildflags/buildflags.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "media/media_buildflags.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/generic_pending_receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "printing/buildflags/buildflags.h"
-#include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/local_interface_provider.h"
 #include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 #include "v8/include/v8.h"
@@ -40,11 +41,14 @@
 #include "chrome/common/conflicts/remote_module_watcher_win.h"
 #endif
 
+#if BUILDFLAG(ENABLE_PLUGINS)
+#include "chrome/common/plugin.mojom.h"
+#endif
+
 class ChromeRenderThreadObserver;
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 class ChromePDFPrintClient;
 #endif
-class PrescientNetworkingDispatcher;
 #if BUILDFLAG(ENABLE_SPELLCHECK)
 class SpellCheck;
 #endif
@@ -62,10 +66,6 @@ namespace content {
 class BrowserPluginDelegate;
 struct WebPluginInfo;
 }  // namespace content
-
-namespace network_hints {
-class PrescientNetworkingDispatcher;
-}
 
 namespace extensions {
 class Extension;
@@ -91,6 +91,7 @@ class ChromeContentRendererClient
   ~ChromeContentRendererClient() override;
 
   void RenderThreadStarted() override;
+  void ExposeInterfacesToBrowser(mojo::BinderMap* binders) override;
   void RenderFrameCreated(content::RenderFrame* render_frame) override;
   void RenderViewCreated(content::RenderView* render_view) override;
   SkBitmap* GetSadPluginBitmap() override;
@@ -115,12 +116,10 @@ class ChromeContentRendererClient
   void PrepareErrorPage(content::RenderFrame* render_frame,
                         const blink::WebURLError& error,
                         const std::string& http_method,
-                        bool ignoring_cache,
                         std::string* error_html) override;
   void PrepareErrorPageForHttpStatusError(content::RenderFrame* render_frame,
                                           const GURL& unreachable_url,
                                           const std::string& http_method,
-                                          bool ignoring_cache,
                                           int http_status,
                                           std::string* error_html) override;
 
@@ -145,6 +144,7 @@ class ChromeContentRendererClient
   void WillSendRequest(blink::WebLocalFrame* frame,
                        ui::PageTransition transition_type,
                        const blink::WebURL& url,
+                       const blink::WebURL& site_for_cookies,
                        const url::Origin* initiator_origin,
                        GURL* new_url,
                        bool* attach_same_site_cookies) override;
@@ -152,7 +152,8 @@ class ChromeContentRendererClient
                       const blink::WebURLRequest& request) override;
   uint64_t VisitedLinkHash(const char* canonical_url, size_t length) override;
   bool IsLinkVisited(uint64_t link_hash) override;
-  blink::WebPrescientNetworking* GetPrescientNetworking() override;
+  std::unique_ptr<blink::WebPrescientNetworking> CreatePrescientNetworking(
+      content::RenderFrame* render_frame) override;
   bool IsExternalPepperPlugin(const std::string& module_name) override;
   bool IsOriginIsolatedPepperPlugin(const base::FilePath& plugin_path) override;
   std::unique_ptr<content::WebSocketHandshakeThrottleProvider>
@@ -181,6 +182,10 @@ class ChromeContentRendererClient
   void RunScriptsAtDocumentIdle(content::RenderFrame* render_frame) override;
   void SetRuntimeFeaturesDefaultsBeforeBlinkInitialization() override;
   void WillInitializeServiceWorkerContextOnWorkerThread() override;
+  void DidInitializeServiceWorkerContextOnWorkerThread(
+      blink::WebServiceWorkerContextProxy* context_proxy,
+      const GURL& service_worker_scope,
+      const GURL& script_url) override;
   void WillEvaluateServiceWorkerOnWorkerThread(
       blink::WebServiceWorkerContextProxy* context_proxy,
       v8::Local<v8::Context> v8_context,
@@ -207,11 +212,11 @@ class ChromeContentRendererClient
                              const std::string& name) override;
   bool IsSafeRedirectTarget(const GURL& url) override;
   void DidSetUserAgent(const std::string& user_agent) override;
-  bool RequiresHtmlImports(const GURL& url) override;
-  void BindReceiverOnMainThread(mojo::GenericPendingReceiver receiver) override;
+  bool RequiresWebComponentsV0(const GURL& url) override;
 
 #if BUILDFLAG(ENABLE_PLUGINS)
-  static chrome::mojom::PluginInfoHostAssociatedPtr& GetPluginInfoHost();
+  static mojo::AssociatedRemote<chrome::mojom::PluginInfoHost>&
+  GetPluginInfoHost();
 
   static blink::WebPlugin* CreatePlugin(
       content::RenderFrame* render_frame,
@@ -234,6 +239,12 @@ class ChromeContentRendererClient
   }
 
   ChromeRenderThreadObserver* GetChromeObserver() const;
+  web_cache::WebCacheImpl* GetWebCache();
+  chrome::WebRtcLoggingAgentImpl* GetWebRtcLoggingAgent();
+
+#if BUILDFLAG(ENABLE_SPELLCHECK)
+  SpellCheck* GetSpellCheck();
+#endif
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ChromeContentRendererClientTest, NaClRestriction);
@@ -247,6 +258,9 @@ class ChromeContentRendererClient
   void GetInterface(const std::string& name,
                     mojo::ScopedMessagePipeHandle request_handle) override;
 
+  void BindWebRTCLoggingAgent(
+      mojo::PendingReceiver<chrome::mojom::WebRtcLoggingAgent> receiver);
+
   // Time at which this object was created. This is very close to the time at
   // which the RendererMain function was entered.
   base::TimeTicks main_entry_time_;
@@ -257,6 +271,9 @@ class ChromeContentRendererClient
   static bool IsNativeNaClAllowed(const GURL& app_url,
                                   bool is_nacl_unrestricted,
                                   const extensions::Extension* extension);
+  static void ReportNaClAppType(bool is_pnacl,
+                                bool is_extension_or_app,
+                                bool is_hosted_app);
 #endif
 
 #if defined(OS_WIN)
@@ -269,14 +286,11 @@ class ChromeContentRendererClient
   // Used to profile main thread.
   std::unique_ptr<ThreadProfiler> main_thread_profiler_;
 
-  rappor::mojom::RapporRecorderPtr rappor_recorder_;
+  mojo::Remote<rappor::mojom::RapporRecorder> rappor_recorder_;
 
   std::unique_ptr<ChromeRenderThreadObserver> chrome_observer_;
   std::unique_ptr<web_cache::WebCacheImpl> web_cache_impl_;
   std::unique_ptr<chrome::WebRtcLoggingAgentImpl> webrtc_logging_agent_impl_;
-
-  std::unique_ptr<network_hints::PrescientNetworkingDispatcher>
-      prescient_networking_dispatcher_;
 
   ChromeKeySystemsProvider key_systems_provider_;
 
@@ -293,7 +307,6 @@ class ChromeContentRendererClient
   std::set<std::string> allowed_camera_device_origins_;
 #endif
 
-  service_manager::BinderRegistry registry_;
   scoped_refptr<blink::ThreadSafeBrowserInterfaceBrokerProxy>
       browser_interface_broker_;
 

@@ -217,7 +217,7 @@ class SQLitePersistentCookieStoreTest : public TestWithTaskEnvironment {
   base::ScopedTempDir temp_dir_;
   scoped_refptr<SQLitePersistentCookieStore> store_;
   std::unique_ptr<CookieCryptor> cookie_crypto_delegate_;
-  BoundTestNetLog net_log_;
+  RecordingBoundTestNetLog net_log_;
 };
 
 TEST_F(SQLitePersistentCookieStoreTest, TestInvalidMetaTableRecovery) {
@@ -388,7 +388,7 @@ TEST_F(SQLitePersistentCookieStoreTest, TestLoadCookiesForKey) {
   background_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&SQLitePersistentCookieStoreTest::WaitOnDBEvent,
                                 base::Unretained(this)));
-  BoundTestNetLog net_log;
+  RecordingBoundTestNetLog net_log;
   store_->Load(base::BindOnce(&SQLitePersistentCookieStoreTest::OnLoaded,
                               base::Unretained(this)),
                net_log.bound());
@@ -761,7 +761,7 @@ TEST_F(SQLitePersistentCookieStoreTest, SameSiteIsPersistent) {
 
   InitializeStore(false, true);
 
-  // Add a non-samesite cookie.
+  // Add a non-samesite persistent cookie.
   store_->AddCookie(CanonicalCookie(
       kNoneName, kCookieValue, kDomain, kCookiePath,
       base::Time::Now() - base::TimeDelta::FromMinutes(1),
@@ -805,8 +805,47 @@ TEST_F(SQLitePersistentCookieStoreTest, SameSiteIsPersistent) {
 
   ASSERT_EQ(1u, cookie_map.count(kStrictName));
   EXPECT_EQ(CookieSameSite::STRICT_MODE, cookie_map[kStrictName]->SameSite());
+}
 
-  cookies.clear();
+TEST_F(SQLitePersistentCookieStoreTest, SameSiteExtendedTreatedAsUnspecified) {
+  constexpr char kDomain[] = "sessioncookie.com";
+  constexpr char kExtendedName[] = "extended";
+  constexpr char kCookieValue[] = "value";
+  constexpr char kCookiePath[] = "/";
+
+  InitializeStore(false, true);
+
+  // Add an extended-samesite persistent cookie by first adding a strict-same
+  // site cookie, then turning that into the legacy extended-samesite state with
+  // direct SQL DB access.
+  store_->AddCookie(CanonicalCookie(
+      kExtendedName, kCookieValue, kDomain, kCookiePath,
+      base::Time::Now() - base::TimeDelta::FromMinutes(1),
+      base::Time::Now() + base::TimeDelta::FromDays(1), base::Time(), false,
+      false, CookieSameSite::STRICT_MODE, COOKIE_PRIORITY_DEFAULT));
+
+  // Force the store to write its data to the disk.
+  DestroyStore();
+
+  // Open db
+  sql::Database connection;
+  ASSERT_TRUE(connection.Open(temp_dir_.GetPath().Append(kCookieFilename)));
+  std::string update_stmt(
+      "UPDATE cookies SET samesite=3"  // 3 is Extended.
+      " WHERE samesite=2"              // 2 is Strict.
+  );
+  ASSERT_TRUE(connection.Execute(update_stmt.c_str()));
+  connection.Close();
+
+  // Create a store that loads session cookie and test that the
+  // SameSite=Extended attribute values is ignored.
+  CanonicalCookieVector cookies;
+  CreateAndLoad(false, true, &cookies);
+  ASSERT_EQ(1U, cookies.size());
+
+  // Validate that the cookie has the correct SameSite.
+  EXPECT_EQ(kExtendedName, cookies[0]->Name());
+  EXPECT_EQ(CookieSameSite::UNSPECIFIED, cookies[0]->SameSite());
 }
 
 TEST_F(SQLitePersistentCookieStoreTest, UpdateToEncryption) {
@@ -1229,17 +1268,17 @@ TEST_F(SQLitePersistentCookieStoreTest, KeyInconsistency) {
   std::unique_ptr<CookieMonster> cookie_monster =
       std::make_unique<CookieMonster>(store_.get(), nullptr);
   ResultSavingCookieCallback<bool> cookie_scheme_callback1;
-  cookie_monster->SetCookieableSchemes({"gopher", "http"},
+  cookie_monster->SetCookieableSchemes({"ftp", "http"},
                                        cookie_scheme_callback1.MakeCallback());
   cookie_scheme_callback1.WaitUntilDone();
   EXPECT_TRUE(cookie_scheme_callback1.result());
   ResultSavingCookieCallback<CanonicalCookie::CookieInclusionStatus>
       set_cookie_callback;
   auto cookie = CanonicalCookie::Create(
-      GURL("gopher://subdomain.gopheriffic.com/page"), "A=B; max-age=3600",
+      GURL("ftp://subdomain.ftperiffic.com/page"), "A=B; max-age=3600",
       base::Time::Now(), base::nullopt /* server_time */);
   cookie_monster->SetCanonicalCookieAsync(
-      std::move(cookie), "gopher", CookieOptions(),
+      std::move(cookie), "ftp", CookieOptions::MakeAllInclusive(),
       base::BindOnce(&ResultSavingCookieCallback<
                          CanonicalCookie::CookieInclusionStatus>::Run,
                      base::Unretained(&set_cookie_callback)));
@@ -1256,7 +1295,7 @@ TEST_F(SQLitePersistentCookieStoreTest, KeyInconsistency) {
         "A=B; max-age=3600", base::Time::Now(),
         base::nullopt /* server_time */);
     cookie_monster->SetCanonicalCookieAsync(
-        std::move(canonical_cookie), "http", CookieOptions(),
+        std::move(canonical_cookie), "http", CookieOptions::MakeAllInclusive(),
         base::BindOnce(&ResultSavingCookieCallback<
                            CanonicalCookie::CookieInclusionStatus>::Run,
                        base::Unretained(&set_cookie_callback2)));
@@ -1276,7 +1315,7 @@ TEST_F(SQLitePersistentCookieStoreTest, KeyInconsistency) {
   Create(false, false, true /* want current thread to invoke cookie monster */);
   cookie_monster = std::make_unique<CookieMonster>(store_.get(), nullptr);
   ResultSavingCookieCallback<bool> cookie_scheme_callback2;
-  cookie_monster->SetCookieableSchemes({"gopher", "http"},
+  cookie_monster->SetCookieableSchemes({"ftp", "http"},
                                        cookie_scheme_callback2.MakeCallback());
   cookie_scheme_callback2.WaitUntilDone();
   EXPECT_TRUE(cookie_scheme_callback2.result());
@@ -1284,14 +1323,15 @@ TEST_F(SQLitePersistentCookieStoreTest, KeyInconsistency) {
   // Now try to get the cookie back.
   GetCookieListCallback get_callback;
   cookie_monster->GetCookieListWithOptionsAsync(
-      GURL("gopher://subdomain.gopheriffic.com/page"), CookieOptions(),
+      GURL("ftp://subdomain.ftperiffic.com/page"),
+      CookieOptions::MakeAllInclusive(),
       base::BindOnce(&GetCookieListCallback::Run,
                      base::Unretained(&get_callback)));
   get_callback.WaitUntilDone();
   ASSERT_EQ(1u, get_callback.cookies().size());
   EXPECT_EQ("A", get_callback.cookies()[0].Name());
   EXPECT_EQ("B", get_callback.cookies()[0].Value());
-  EXPECT_EQ("subdomain.gopheriffic.com", get_callback.cookies()[0].Domain());
+  EXPECT_EQ("subdomain.ftperiffic.com", get_callback.cookies()[0].Domain());
 }
 
 TEST_F(SQLitePersistentCookieStoreTest, OpsIfInitFailed) {
@@ -1311,7 +1351,7 @@ TEST_F(SQLitePersistentCookieStoreTest, OpsIfInitFailed) {
                                         "A=B; max-age=3600", base::Time::Now(),
                                         base::nullopt /* server_time */);
   cookie_monster->SetCanonicalCookieAsync(
-      std::move(cookie), "http", CookieOptions(),
+      std::move(cookie), "http", CookieOptions::MakeAllInclusive(),
       base::BindOnce(&ResultSavingCookieCallback<
                          CanonicalCookie::CookieInclusionStatus>::Run,
                      base::Unretained(&set_cookie_callback)));
@@ -1439,7 +1479,8 @@ bool CreateV10Schema(sql::Database* db) {
       "is_persistent INTEGER NOT NULL DEFAULT 1,"
       "priority INTEGER NOT NULL DEFAULT 1,"  // COOKIE_PRIORITY_DEFAULT
       "encrypted_value BLOB DEFAULT '',"
-      "firstpartyonly INTEGER NOT NULL DEFAULT 0 "  // NO_RESTRICTION
+      "firstpartyonly INTEGER NOT NULL DEFAULT 0,"  // NO_RESTRICTION
+      "UNIQUE (host_key, name, path)"
       ")");
   if (!db->Execute(stmt.c_str()))
     return false;
@@ -1590,6 +1631,190 @@ TEST_F(SQLitePersistentCookieStoreTest, UpgradeToSchemaVersion11) {
   std::vector<std::unique_ptr<CanonicalCookie>> read_in_cookies;
   CreateAndLoad(false, false, &read_in_cookies);
   ConfirmV10CookiesFromDB(std::move(read_in_cookies));
+}
+
+bool CreateV11Schema(sql::Database* db) {
+  sql::MetaTable meta_table;
+  if (!meta_table.Init(db, /* version = */ 11,
+                       /* earliest compatible version = */ 11)) {
+    return false;
+  }
+
+  // Version 11 schema
+  std::string stmt(
+      "CREATE TABLE cookies("
+      "creation_utc INTEGER NOT NULL,"
+      "host_key TEXT NOT NULL,"
+      "name TEXT NOT NULL,"
+      "value TEXT NOT NULL,"
+      "path TEXT NOT NULL,"
+      "expires_utc INTEGER NOT NULL,"
+      "is_secure INTEGER NOT NULL,"
+      "is_httponly INTEGER NOT NULL,"
+      "last_access_utc INTEGER NOT NULL,"
+      "has_expires INTEGER NOT NULL DEFAULT 1,"
+      "is_persistent INTEGER NOT NULL DEFAULT 1,"
+      "priority INTEGER NOT NULL DEFAULT 1,"  // COOKIE_PRIORITY_DEFAULT
+      "encrypted_value BLOB DEFAULT '',"
+      "samesite INTEGER NOT NULL DEFAULT -1,"  // UNSPECIFIED
+      "UNIQUE (host_key, name, path))");
+  if (!db->Execute(stmt.c_str()))
+    return false;
+
+  return true;
+}
+
+bool AddV11CookiesToDBImpl(sql::Database* db,
+                           const std::vector<CanonicalCookie>& cookies);
+
+// Add a selection of cookies to the DB.
+bool AddV11CookiesToDB(sql::Database* db) {
+  static base::Time now = base::Time::Now();
+
+  std::vector<CanonicalCookie> cookies;
+  // Note: These are all constructed with the default value of
+  // is_source_scheme_secure, which is false, but that doesn't matter because
+  // v11 doesn't store that info.
+  cookies.push_back(CanonicalCookie("A", "B", "example.com", "/", now, now, now,
+                                    true /* secure */, false /* httponly */,
+                                    CookieSameSite::UNSPECIFIED,
+                                    COOKIE_PRIORITY_DEFAULT));
+  cookies.push_back(CanonicalCookie("C", "B", "example.com", "/", now, now, now,
+                                    true /* secure */, false /* httponly */,
+                                    CookieSameSite::UNSPECIFIED,
+                                    COOKIE_PRIORITY_DEFAULT));
+  cookies.push_back(
+      CanonicalCookie("A", "B", "example2.com", "/", now, now, now,
+                      true /* secure */, false /* httponly */,
+                      CookieSameSite::UNSPECIFIED, COOKIE_PRIORITY_DEFAULT));
+  cookies.push_back(
+      CanonicalCookie("C", "B", "example2.com", "/", now, now, now,
+                      false /* secure */, false /* httponly */,
+                      CookieSameSite::UNSPECIFIED, COOKIE_PRIORITY_DEFAULT));
+  cookies.push_back(
+      CanonicalCookie("A", "B", "example.com", "/path", now, now, now,
+                      false /* secure */, false /* httponly */,
+                      CookieSameSite::UNSPECIFIED, COOKIE_PRIORITY_DEFAULT));
+  cookies.push_back(
+      CanonicalCookie("C", "B", "example.com", "/path", now, now, now,
+                      false /* secure */, false /* httponly */,
+                      CookieSameSite::UNSPECIFIED, COOKIE_PRIORITY_DEFAULT));
+  return AddV11CookiesToDBImpl(db, cookies);
+}
+
+bool AddV11CookiesToDBImpl(sql::Database* db,
+                           const std::vector<CanonicalCookie>& cookies) {
+  sql::Statement add_smt(db->GetCachedStatement(
+      SQL_FROM_HERE,
+      "INSERT INTO cookies (creation_utc, host_key, name, value, "
+      "encrypted_value, path, expires_utc, is_secure, is_httponly, "
+      "samesite, last_access_utc, has_expires, is_persistent, priority)"
+      "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)"));
+  if (!add_smt.is_valid())
+    return false;
+  sql::Transaction transaction(db);
+  transaction.Begin();
+  for (size_t i = 0; i < cookies.size(); ++i) {
+    add_smt.Reset(true);
+    add_smt.BindInt64(
+        0,
+        cookies[i].CreationDate().ToDeltaSinceWindowsEpoch().InMicroseconds());
+    add_smt.BindString(1, cookies[i].Domain());
+    add_smt.BindString(2, cookies[i].Name());
+    add_smt.BindString(3, cookies[i].Value());
+    add_smt.BindBlob(4, "", 0);  // encrypted_value
+    add_smt.BindString(5, cookies[i].Path());
+    add_smt.BindInt64(
+        6, cookies[i].ExpiryDate().ToDeltaSinceWindowsEpoch().InMicroseconds());
+    add_smt.BindInt(7, cookies[i].IsSecure());
+    add_smt.BindInt(8, cookies[i].IsHttpOnly());
+    // Note that this and Priority() below nominally rely on the enums in
+    // sqlite_persistent_cookie_store.cc having the same values as the
+    // ones in ../../cookies/cookie_constants.h.  But nothing in this test
+    // relies on that equivalence, so it's not worth the hassle to guarantee
+    // that.
+    add_smt.BindInt(9, static_cast<int>(cookies[i].SameSite()));
+    add_smt.BindInt64(10, cookies[i]
+                              .LastAccessDate()
+                              .ToDeltaSinceWindowsEpoch()
+                              .InMicroseconds());
+    add_smt.BindInt(11, cookies[i].IsPersistent());
+    add_smt.BindInt(12, cookies[i].IsPersistent());
+    add_smt.BindInt(13, static_cast<int>(cookies[i].Priority()));
+    if (!add_smt.Run())
+      return false;
+  }
+  if (!transaction.Commit())
+    return false;
+
+  return true;
+}
+
+// Confirm the cookie list passed in has the above cookies in it.
+void ConfirmV11CookiesFromDB(
+    std::vector<std::unique_ptr<CanonicalCookie>> read_in_cookies) {
+  std::sort(read_in_cookies.begin(), read_in_cookies.end(), &CompareCookies);
+  int i = 0;
+  EXPECT_EQ("A", read_in_cookies[i]->Name());
+  EXPECT_EQ("B", read_in_cookies[i]->Value());
+  EXPECT_EQ("example.com", read_in_cookies[i]->Domain());
+  EXPECT_EQ("/", read_in_cookies[i]->Path());
+  EXPECT_TRUE(read_in_cookies[i]->IsSecure());
+  EXPECT_EQ(CookieSourceScheme::kUnset, read_in_cookies[i]->SourceScheme());
+
+  i++;
+  EXPECT_EQ("A", read_in_cookies[i]->Name());
+  EXPECT_EQ("B", read_in_cookies[i]->Value());
+  EXPECT_EQ("example.com", read_in_cookies[i]->Domain());
+  EXPECT_EQ("/path", read_in_cookies[i]->Path());
+  EXPECT_FALSE(read_in_cookies[i]->IsSecure());
+  EXPECT_EQ(CookieSourceScheme::kUnset, read_in_cookies[i]->SourceScheme());
+
+  i++;
+  EXPECT_EQ("A", read_in_cookies[i]->Name());
+  EXPECT_EQ("B", read_in_cookies[i]->Value());
+  EXPECT_EQ("example2.com", read_in_cookies[i]->Domain());
+  EXPECT_EQ("/", read_in_cookies[i]->Path());
+  EXPECT_TRUE(read_in_cookies[i]->IsSecure());
+  EXPECT_EQ(CookieSourceScheme::kUnset, read_in_cookies[i]->SourceScheme());
+
+  i++;
+  EXPECT_EQ("C", read_in_cookies[i]->Name());
+  EXPECT_EQ("B", read_in_cookies[i]->Value());
+  EXPECT_EQ("example.com", read_in_cookies[i]->Domain());
+  EXPECT_EQ("/", read_in_cookies[i]->Path());
+  EXPECT_TRUE(read_in_cookies[i]->IsSecure());
+  EXPECT_EQ(CookieSourceScheme::kUnset, read_in_cookies[i]->SourceScheme());
+
+  i++;
+  EXPECT_EQ("C", read_in_cookies[i]->Name());
+  EXPECT_EQ("B", read_in_cookies[i]->Value());
+  EXPECT_EQ("example.com", read_in_cookies[i]->Domain());
+  EXPECT_EQ("/path", read_in_cookies[i]->Path());
+  EXPECT_FALSE(read_in_cookies[i]->IsSecure());
+  EXPECT_EQ(CookieSourceScheme::kUnset, read_in_cookies[i]->SourceScheme());
+
+  i++;
+  EXPECT_EQ("C", read_in_cookies[i]->Name());
+  EXPECT_EQ("B", read_in_cookies[i]->Value());
+  EXPECT_EQ("example2.com", read_in_cookies[i]->Domain());
+  EXPECT_EQ("/", read_in_cookies[i]->Path());
+  EXPECT_FALSE(read_in_cookies[i]->IsSecure());
+  EXPECT_EQ(CookieSourceScheme::kUnset, read_in_cookies[i]->SourceScheme());
+}
+
+// Confirm that source_scheme gets added and is set to "Unset".
+TEST_F(SQLitePersistentCookieStoreTest, UpgradeToSchemaVersion12) {
+  // Open db
+  sql::Database connection;
+  ASSERT_TRUE(connection.Open(temp_dir_.GetPath().Append(kCookieFilename)));
+  ASSERT_TRUE(CreateV11Schema(&connection));
+  ASSERT_TRUE(AddV11CookiesToDB(&connection));
+  connection.Close();
+
+  std::vector<std::unique_ptr<CanonicalCookie>> read_in_cookies;
+  CreateAndLoad(false, false, &read_in_cookies);
+  ConfirmV11CookiesFromDB(std::move(read_in_cookies));
 }
 
 }  // namespace net

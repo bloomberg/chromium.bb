@@ -29,8 +29,11 @@
 #include "content/common/frame_owner_properties.h"
 #include "content/common/unfreezable_frame_messages.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "ipc/ipc_message.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
+#include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 
 namespace content {
 
@@ -65,8 +68,7 @@ RenderFrameProxyHost::RenderFrameProxyHost(
       process_(site_instance->GetProcess()),
       frame_tree_node_(frame_tree_node),
       render_frame_proxy_created_(false),
-      render_view_host_(std::move(render_view_host)),
-      frame_proxy_host_associated_binding_(this) {
+      render_view_host_(std::move(render_view_host)) {
   GetProcess()->AddRoute(routing_id_, this);
   CHECK(
       g_routing_id_frame_proxy_map.Get()
@@ -135,11 +137,12 @@ RenderViewHostImpl* RenderFrameProxyHost::GetRenderViewHost() {
 }
 
 RenderWidgetHostView* RenderFrameProxyHost::GetRenderWidgetHostView() {
-  return frame_tree_node_->parent()->render_manager()
+  return frame_tree_node_->parent()
+      ->render_manager()
       ->GetRenderWidgetHostView();
 }
 
-bool RenderFrameProxyHost::Send(IPC::Message *msg) {
+bool RenderFrameProxyHost::Send(IPC::Message* msg) {
   return GetProcess()->Send(msg);
 }
 
@@ -215,7 +218,8 @@ bool RenderFrameProxyHost::InitRenderFrameProxy() {
   }
 
   int view_routing_id = frame_tree_node_->frame_tree()
-      ->GetRenderViewHost(site_instance_.get())->GetRoutingID();
+                            ->GetRenderViewHost(site_instance_.get())
+                            ->GetRoutingID();
   GetProcess()->GetRendererInterface()->CreateFrameProxy(
       routing_id_, view_routing_id, opener_routing_id, parent_routing_id,
       frame_tree_node_->current_replication_state(),
@@ -244,17 +248,66 @@ bool RenderFrameProxyHost::InitRenderFrameProxy() {
 void RenderFrameProxyHost::OnAssociatedInterfaceRequest(
     const std::string& interface_name,
     mojo::ScopedInterfaceEndpointHandle handle) {
-  frame_proxy_host_associated_binding_.Bind(
-      mojom::RenderFrameProxyHostAssociatedRequest(std::move(handle)));
+  if (interface_name == mojom::RenderFrameProxyHost::Name_) {
+    frame_proxy_host_associated_receiver_.Bind(
+        mojo::PendingAssociatedReceiver<mojom::RenderFrameProxyHost>(
+            std::move(handle)));
+  } else if (interface_name == blink::mojom::RemoteFrameHost::Name_) {
+    remote_frame_host_receiver_.Bind(
+        mojo::PendingAssociatedReceiver<blink::mojom::RemoteFrameHost>(
+            std::move(handle)));
+  }
+}
+
+blink::AssociatedInterfaceProvider*
+RenderFrameProxyHost::GetRemoteAssociatedInterfaces() {
+  if (!remote_associated_interfaces_) {
+    mojo::AssociatedRemote<blink::mojom::AssociatedInterfaceProvider>
+        remote_interfaces;
+    IPC::ChannelProxy* channel = GetProcess()->GetChannel();
+    if (channel) {
+      RenderProcessHostImpl* process =
+          static_cast<RenderProcessHostImpl*>(GetProcess());
+      process->GetRemoteRouteProvider()->GetRoute(
+          GetRoutingID(), remote_interfaces.BindNewEndpointAndPassReceiver());
+    } else {
+      // The channel may not be initialized in some tests environments. In this
+      // case we set up a dummy interface provider.
+      ignore_result(remote_interfaces
+                        .BindNewEndpointAndPassDedicatedReceiverForTesting());
+    }
+    remote_associated_interfaces_ =
+        std::make_unique<blink::AssociatedInterfaceProvider>(
+            remote_interfaces.Unbind());
+  }
+  return remote_associated_interfaces_.get();
 }
 
 void RenderFrameProxyHost::SetRenderFrameProxyCreated(bool created) {
   if (!created) {
     // If the renderer process has gone away, created can be false. In that
     // case, invalidate the mojo connection.
-    frame_proxy_host_associated_binding_.Close();
+    frame_proxy_host_associated_receiver_.reset();
   }
   render_frame_proxy_created_ = created;
+}
+
+const mojo::AssociatedRemote<blink::mojom::RemoteFrame>&
+RenderFrameProxyHost::GetAssociatedRemoteFrame() {
+  if (!remote_frame_)
+    GetRemoteAssociatedInterfaces()->GetInterface(&remote_frame_);
+  return remote_frame_;
+}
+
+void RenderFrameProxyHost::SetInheritedEffectiveTouchAction(
+    cc::TouchAction touch_action) {
+  cross_process_frame_connector_->OnSetInheritedEffectiveTouchAction(
+      touch_action);
+}
+
+void RenderFrameProxyHost::VisibilityChanged(
+    blink::mojom::FrameVisibility visibility) {
+  cross_process_frame_connector_->OnVisibilityChanged(visibility);
 }
 
 void RenderFrameProxyHost::UpdateOpener() {
@@ -272,7 +325,7 @@ void RenderFrameProxyHost::UpdateOpener() {
 }
 
 void RenderFrameProxyHost::SetFocusedFrame() {
-  Send(new FrameMsg_SetFocusedFrame(routing_id_));
+  GetAssociatedRemoteFrame()->Focus();
 }
 
 void RenderFrameProxyHost::ScrollRectToVisible(
@@ -353,14 +406,13 @@ void RenderFrameProxyHost::OnOpenURL(
       current_rfh, validated_url, params.initiator_origin, site_instance_.get(),
       params.referrer, ui::PAGE_TRANSITION_LINK,
       params.should_replace_current_entry, download_policy,
-      params.uses_post ? "POST" : "GET", params.resource_request_body,
-      params.extra_headers, std::move(blob_url_loader_factory),
-      params.user_gesture);
+      params.post_body ? "POST" : "GET", params.post_body, params.extra_headers,
+      std::move(blob_url_loader_factory), params.user_gesture);
 }
 
 void RenderFrameProxyHost::OnCheckCompleted() {
   RenderFrameHostImpl* target_rfh = frame_tree_node()->current_frame_host();
-  target_rfh->Send(new FrameMsg_CheckCompleted(target_rfh->GetRoutingID()));
+  target_rfh->GetAssociatedLocalFrame()->CheckCompleted();
 }
 
 void RenderFrameProxyHost::OnRouteMessageEvent(
@@ -514,18 +566,17 @@ void RenderFrameProxyHost::OnAdvanceFocus(blink::WebFocusType type,
   RenderFrameHostImpl* source_rfh =
       RenderFrameHostImpl::FromID(GetProcess()->GetID(), source_routing_id);
   RenderFrameProxyHost* source_proxy =
-      source_rfh
-          ? source_rfh->frame_tree_node()
-                ->render_manager()
-                ->GetRenderFrameProxyHost(target_rfh->GetSiteInstance())
-          : nullptr;
+      source_rfh ? source_rfh->frame_tree_node()
+                       ->render_manager()
+                       ->GetRenderFrameProxyHost(target_rfh->GetSiteInstance())
+                 : nullptr;
 
   target_rfh->AdvanceFocus(type, source_proxy);
   frame_tree_node_->current_frame_host()->delegate()->OnAdvanceFocus(
       source_rfh);
 }
 
-void RenderFrameProxyHost::FrameFocused() {
+void RenderFrameProxyHost::DidFocusFrame() {
   frame_tree_node_->current_frame_host()->delegate()->SetFocusedFrame(
       frame_tree_node_, GetSiteInstance());
 }

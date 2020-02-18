@@ -8,7 +8,7 @@
 #include <memory>
 #include <utility>
 
-#include <xdg-shell-unstable-v5-server-protocol.h>
+#include <xdg-shell-server-protocol.h>
 #include <xdg-shell-unstable-v6-server-protocol.h>
 
 #include "testing/gmock/include/gmock/gmock.h"
@@ -20,6 +20,7 @@ struct wl_resource;
 namespace wl {
 
 extern const struct xdg_surface_interface kMockXdgSurfaceImpl;
+extern const struct xdg_toplevel_interface kMockXdgToplevelImpl;
 extern const struct zxdg_surface_v6_interface kMockZxdgSurfaceV6Impl;
 extern const struct zxdg_toplevel_v6_interface kMockZxdgToplevelV6Impl;
 
@@ -48,6 +49,10 @@ class MockXdgSurface : public ServerObject {
   MOCK_METHOD0(UnsetFullscreen, void());
   MOCK_METHOD0(SetMinimized, void());
 
+  // These methods are for zxdg_toplevel only.
+  MOCK_METHOD2(SetMaxSize, void(int32_t width, int32_t height));
+  MOCK_METHOD2(SetMinSize, void(int32_t width, int32_t height));
+
   void set_xdg_toplevel(std::unique_ptr<MockXdgTopLevel> xdg_toplevel) {
     xdg_toplevel_ = std::move(xdg_toplevel);
   }
@@ -70,7 +75,7 @@ class MockXdgSurface : public ServerObject {
 // Manage zxdg_toplevel for providing desktop UI.
 class MockXdgTopLevel : public MockXdgSurface {
  public:
-  explicit MockXdgTopLevel(wl_resource* resource);
+  explicit MockXdgTopLevel(wl_resource* resource, const void* implementation);
   ~MockXdgTopLevel() override;
 
   // TODO(msisov): mock other zxdg_toplevel specific methods once

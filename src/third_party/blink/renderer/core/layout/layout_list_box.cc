@@ -52,13 +52,13 @@ const int kDefaultPaddingBottom = 1;
 LayoutListBox::LayoutListBox(Element* element) : LayoutBlockFlow(element) {
   DCHECK(element);
   DCHECK(element->IsHTMLElement());
-  DCHECK(IsHTMLSelectElement(element));
+  DCHECK(IsA<HTMLSelectElement>(element));
 }
 
 LayoutListBox::~LayoutListBox() = default;
 
 inline HTMLSelectElement* LayoutListBox::SelectElement() const {
-  return ToHTMLSelectElement(GetNode());
+  return To<HTMLSelectElement>(GetNode());
 }
 
 unsigned LayoutListBox::size() const {
@@ -78,10 +78,9 @@ LayoutUnit LayoutListBox::DefaultItemHeight() const {
 }
 
 LayoutUnit LayoutListBox::ItemHeight() const {
-  // If the content-size is specified while we have size containment, then we
-  // shouldn't ever need to get the ItemHeight.
-  DCHECK(!ShouldApplySizeContainment() ||
-         !HasSpecifiedContentSizeForSizeContainment());
+  // If the intrinsic-inline-size is specified, then we shouldn't ever need to
+  // get the ItemHeight.
+  DCHECK(!HasOverrideIntrinsicContentLogicalHeight());
 
   HTMLSelectElement* select = SelectElement();
   if (!select)
@@ -93,7 +92,7 @@ LayoutUnit LayoutListBox::ItemHeight() const {
 
   LayoutUnit max_height;
   for (Element* element : items) {
-    if (auto* optgroup = ToHTMLOptGroupElementOrNull(element))
+    if (auto* optgroup = DynamicTo<HTMLOptGroupElement>(element))
       element = &optgroup->OptGroupLabelElement();
     LayoutObject* layout_object = element->GetLayoutObject();
     LayoutUnit item_height;
@@ -111,9 +110,8 @@ void LayoutListBox::ComputeLogicalHeight(
     LayoutUnit logical_top,
     LogicalExtentComputedValues& computed_values) const {
   LayoutUnit height;
-  if (ShouldApplySizeContainment() &&
-      HasSpecifiedContentSizeForSizeContainment()) {
-    height = ContentLogicalHeightForSizeContainment();
+  if (HasOverrideIntrinsicContentLogicalHeight()) {
+    height = OverrideIntrinsicContentLogicalHeight();
   } else {
     height = ItemHeight() * size();
   }

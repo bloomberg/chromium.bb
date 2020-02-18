@@ -8,6 +8,7 @@ import "mojo/public/mojom/base/time.mojom";
 import "services/network/public/mojom/address_list.mojom";
 import "services/network/public/mojom/ip_address.mojom";
 import "services/network/public/mojom/ip_endpoint.mojom";
+import "services/network/public/mojom/network_isolation_key.mojom";
 import "services/network/public/mojom/network_param.mojom";
 import "services/network/public/mojom/url_loader.mojom";
 
@@ -111,6 +112,13 @@ struct DnsConfigOverrides {
   array<string>? disabled_upgrade_providers;
 };
 
+// Host resolution error info.
+struct ResolveErrorInfo {
+  // Underlying network error code. See net/base/net_error_list.h for error
+  // descriptions.
+  int32 error;
+};
+
 // Control handle used to control outstanding NetworkContext::ResolveHost
 // requests. Handle is optional for all requests, and may be closed at any time
 // without affecting the request.
@@ -133,14 +141,20 @@ interface ResolveHostHandle {
 // implementation that allows overriding just expected result types.
 interface ResolveHostClient {
   // Called on completion of a resolve host request. Results are a network error
-  // code, and on success (network error code OK) and when results are in
-  // address form, an AddressList.
+  // code, additional error info, and on success (result == OK,
+  // resolve_error_info.error == OK) and when results are in address form, an
+  // AddressList. The error code in |resolve_error_info.error| should be used
+  // when detailed error information is needed, whereas the error code in
+  // |result| should be used when less specific error information (i.e. OK vs
+  // ERR_NAME_NOT_RESOLVED) is sufficient.
   //
   // Always called last to signal completion of the ResolveHost() request.
   // Unless the ResolveHostClient is closed, this method will always be called
   // exactly once, and afterwards, no more methods in the interface will be
   // called.
-  OnComplete(int32 result, AddressList? resolved_addresses);
+  OnComplete(int32 result,
+             ResolveErrorInfo resolve_error_info,
+             AddressList? resolved_addresses);
 
   // One or more On...Results() methods may be called when non-address results
   // are available. Always called before OnComplete().
@@ -205,7 +219,7 @@ struct ResolveHostParameters {
 
   // If set, the outstanding request can be controlled, eg cancelled, via the
   // handle.
-  ResolveHostHandle&? control_handle;
+  pending_receiver<ResolveHostHandle>? control_handle;
 
   // If |true|, requests that the resolver include AddressList::canonical_name
   // in the results. If the resolver can do so without significant performance
@@ -263,6 +277,12 @@ interface HostResolver {
   // error code, and on success (network error code OK), an AddressList. All
   // results are sent via the passed |response_client|.
   //
+  // |network_isolation_key| specifies what NetworkIsolationKey to use as an
+  // index into the host cache. This both allows a URLLoader created with the
+  // same NetworkIsolationKey to access the host cache entry populated by a
+  // call to the HostResolver, and prevents the result from being leaked to
+  // URLLoaders made using a different NetworkIsolationKey.
+  //
   // Additional optional parameters may be set using |optional_parameters|. If
   // unset, reasonable defaults will be used, equivalent to using a
   // ResolveHostParameters struct without changing any fields from their default
@@ -275,8 +295,9 @@ interface HostResolver {
   // NetworkContext are destroyed. Such requests will receive ERR_FAILED via
   // |response_client|.
   ResolveHost(HostPortPair host,
+              NetworkIsolationKey network_isolation_key,
               ResolveHostParameters? optional_parameters,
-              ResolveHostClient response_client);
+              pending_remote<ResolveHostClient> response_client);
 
   // Starts a listener to watch for updates to a multicast DNS result. Result is
   // a network error code indicating the success of starting the listener. On
@@ -287,19 +308,21 @@ interface HostResolver {
   // notifications if the HostResolver or parent NetworkContext are destroyed.
   MdnsListen(HostPortPair host,
              DnsQueryType query_type,
-             MdnsListenClient response_client) => (int32 result);
+             pending_remote<MdnsListenClient> response_client)
+      => (int32 result);
 };
 
 // A client interface that subscribes to DNS config change events from
 // DnsConfigChangeManager.
 interface DnsConfigChangeManagerClient {
-  // Notifies that a potential change has been detected in the DNS settings of
-  // the system that may affect results of host resolution.
-  OnSystemDnsConfigChanged();
+  // Notifies that a potential change has been detected in the DNS configuration
+  // that may affect results of host resolution. May be a change in system DNS
+  // settings or effective changes added on top by Chrome net code.
+  OnDnsConfigChanged();
 };
 
 // An interface that broadcasts DNS config change events.
 interface DnsConfigChangeManager {
   // Requests to receive notification when there is a DNS config change.
-  RequestNotifications(DnsConfigChangeManagerClient client_ptr);
+  RequestNotifications(pending_remote<DnsConfigChangeManagerClient> client);
 };

@@ -18,11 +18,22 @@
 #include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
+// We implement two variants of specs:
+// - When |support_builtin_modules| is false, import maps without built-in
+//   module & fallback supports are implemented.
+//   This follows the ToT spec https://wicg.github.io/import-maps/, which is
+//   marked by <spec> tags.
+// - When |support_builtin_modules| is true, import maps with built-in module &
+//   fallback supports are implemented.
+//   This basically follows the spec before
+//   https://github.com/WICG/import-maps/pull/176, which is marked as
+//   [Spec w/ Built-in].
+//   This is needed for the fallback mechanism for built-in modules, which was
+//   temporarily removed from the spec but is still implemented behind the flag.
+
 namespace blink {
 
 namespace {
-
-static const char kStdScheme[] = "std";
 
 // TODO(https://crbug.com/928549): Audit and improve error messages throughout
 // this file.
@@ -47,81 +58,69 @@ void AddIgnoredValueMessage(ConsoleLogger& logger,
 // href="https://wicg.github.io/import-maps/#normalize-a-specifier-key">
 String NormalizeSpecifierKey(const String& key_string,
                              const KURL& base_url,
+                             bool support_builtin_modules,
                              ConsoleLogger& logger) {
   // <spec step="1">If specifierKey is the empty string, then:</spec>
-  //
-  // TODO(hiroshige): Implement this step explicitly. Anyway currently empty
-  // strings are considered as invalid by ParsedSpecifier.
+  if (key_string.IsEmpty()) {
+    // <spec step="1.1">Report a warning to the console that specifier keys
+    // cannot be the empty string.</spec>
+    AddIgnoredKeyMessage(logger, key_string,
+                         "specifier keys cannot be the empty string.");
+
+    // <spec step="1.2">Return null.</spec>
+    return String();
+  }
 
   // <spec step="2">Let url be the result of parsing a URL-like import
   // specifier, given specifierKey and baseURL.</spec>
-  ParsedSpecifier key = ParsedSpecifier::Create(key_string, base_url);
+  ParsedSpecifier key =
+      ParsedSpecifier::Create(key_string, base_url, support_builtin_modules);
 
   switch (key.GetType()) {
     case ParsedSpecifier::Type::kInvalid:
-      // TODO(hiroshige): According to the spec, this should be considered as a
-      // bare specifier.
-      AddIgnoredKeyMessage(logger, key_string, "Invalid key (invalid URL)");
-      return String();
-
     case ParsedSpecifier::Type::kBare:
       // <spec step="4">Return specifierKey.</spec>
-      return key.GetImportMapKeyString();
+      return key_string;
 
     case ParsedSpecifier::Type::kURL:
-      // <spec
-      // href="https://wicg.github.io/import-maps/#parse-a-url-like-import-specifier"
-      // step="4">If url’s scheme is either a fetch scheme or "std", then return
-      // url.</spec>
-      //
-      // TODO(hiroshige): Perhaps we should move this into ParsedSpecifier.
-      if (!SchemeRegistry::IsFetchScheme(key.GetUrl().Protocol()) &&
-          key.GetUrl().Protocol() != kStdScheme) {
-        AddIgnoredKeyMessage(logger, key_string,
-                             "Invalid key (non-fetch scheme)");
-        return String();
-      }
       // <spec step="3">If url is not null, then return the serialization of
       // url.</spec>
       return key.GetImportMapKeyString();
   }
 }
 
-// Step 3.3 of
+// Step 2.4-2.7 of
 // <specdef
 // href="https://wicg.github.io/import-maps/#sort-and-normalize-a-specifier-map">
 KURL NormalizeValue(const String& key,
                     const String& value_string,
                     const KURL& base_url,
+                    bool support_builtin_modules,
                     ConsoleLogger& logger) {
-  // <spec step="3.3.2">Let addressURL be the result of parsing a URL-like
-  // import specifier given potentialAddress and baseURL.</spec>
-  ParsedSpecifier value = ParsedSpecifier::Create(value_string, base_url);
+  // <spec step="2.4">Let addressURL be the result of parsing a URL-like import
+  // specifier given value and baseURL.</spec>
+  ParsedSpecifier value =
+      ParsedSpecifier::Create(value_string, base_url, support_builtin_modules);
 
   switch (value.GetType()) {
     case ParsedSpecifier::Type::kInvalid:
-      // <spec step="3.3.3">If addressURL is null, then:</spec>
+      // <spec step="2.5">If addressURL is null, then:</spec>
       //
-      // <spec step="3.3.3.1">Report a warning to the console that the address
-      // was invalid.</spec>
+      // <spec step="2.5.1">Report a warning to the console that the address was
+      // invalid.</spec>
       AddIgnoredValueMessage(logger, key, "Invalid URL: " + value_string);
-      // <spec step="3.3.1.2">Continue.</spec>
+      // <spec step="2.5.2">Continue.</spec>
       return NullURL();
 
     case ParsedSpecifier::Type::kBare:
-      // TODO(hiroshige): Switch this into aliasing with std: URLs.
-      if (value.GetImportMapKeyString().StartsWith("@std/"))
-        return KURL("import:" + value.GetImportMapKeyString());
-
-      // Do not allow bare specifiers except for @std/.
       AddIgnoredValueMessage(logger, key, "Bare specifier: " + value_string);
       return NullURL();
 
     case ParsedSpecifier::Type::kURL:
-      // <spec step="3.3.4">If specifierKey ends with U+002F (/), and the
+      // <spec step="2.6">If specifierKey ends with U+002F (/), and the
       // serialization of addressURL does not end with U+002F (/), then:</spec>
       if (key.EndsWith("/") && !value.GetUrl().GetString().EndsWith("/")) {
-        // <spec step="3.3.4.1">Report a warning to the console that an invalid
+        // <spec step="2.6.1">Report a warning to the console that an invalid
         // address was given for the specifier key specifierKey; since
         // specifierKey ended in a slash, so must the address.</spec>
         AddIgnoredValueMessage(
@@ -129,12 +128,10 @@ KURL NormalizeValue(const String& key,
             "Since specifierKey ended in a slash, so must the address: " +
                 value_string);
 
-        // <spec step="3.3.4.2">Continue.</spec>
+        // <spec step="2.6.2">Continue.</spec>
         return NullURL();
       }
 
-      // <spec step="3.3.5">Append addressURL to
-      // validNormalizedAddresses.</spec>
       return value.GetUrl();
   }
 }
@@ -150,6 +147,7 @@ KURL NormalizeValue(const String& key,
 ImportMap* ImportMap::Parse(const Modulator& modulator,
                             const String& input,
                             const KURL& base_url,
+                            bool support_builtin_modules,
                             ConsoleLogger& logger,
                             ScriptValue* error_to_rethrow) {
   DCHECK(error_to_rethrow);
@@ -161,7 +159,7 @@ ImportMap* ImportMap::Parse(const Modulator& modulator,
   if (!parsed) {
     *error_to_rethrow =
         modulator.CreateSyntaxError("Failed to parse import map: invalid JSON");
-    return MakeGarbageCollected<ImportMap>(modulator, SpecifierMap());
+    return MakeGarbageCollected<ImportMap>();
   }
 
   // <spec step="2">If parsed is not a map, then throw a TypeError indicating
@@ -170,7 +168,7 @@ ImportMap* ImportMap::Parse(const Modulator& modulator,
   if (!parsed_map) {
     *error_to_rethrow =
         modulator.CreateTypeError("Failed to parse import map: not an object");
-    return MakeGarbageCollected<ImportMap>(modulator, SpecifierMap());
+    return MakeGarbageCollected<ImportMap>();
   }
 
   // <spec step="3">Let sortedAndNormalizedImports be an empty map.</spec>
@@ -186,25 +184,109 @@ ImportMap* ImportMap::Parse(const Modulator& modulator,
       *error_to_rethrow = modulator.CreateTypeError(
           "Failed to parse import map: \"imports\" "
           "top-level key must be a JSON object.");
-      return MakeGarbageCollected<ImportMap>(modulator, SpecifierMap());
+      return MakeGarbageCollected<ImportMap>();
     }
 
     // <spec step="4.2">Set sortedAndNormalizedImports to the result of sorting
     // and normalizing a specifier map given parsed["imports"] and
     // baseURL.</spec>
-    sorted_and_normalized_imports =
-        SortAndNormalizeSpecifierMap(imports, base_url, logger);
+    sorted_and_normalized_imports = SortAndNormalizeSpecifierMap(
+        imports, base_url, support_builtin_modules, logger);
   }
 
-  // TODO(crbug.com/927181): Process "scopes" entry (Steps 5 and 6).
+  // <spec step="5">Let sortedAndNormalizedScopes be an empty map.</spec>
+  ScopeType sorted_and_normalized_scopes;
+
+  // <spec step="6">If parsed["scopes"] exists, then:</spec>
+  if (parsed_map->Get("scopes")) {
+    // <spec step="6.1">If parsed["scopes"] is not a map, then throw a TypeError
+    // indicating that the "scopes" top-level key must be a JSON object.</spec>
+    JSONObject* scopes = parsed_map->GetJSONObject("scopes");
+    if (!scopes) {
+      *error_to_rethrow = modulator.CreateTypeError(
+          "Failed to parse import map: \"scopes\" "
+          "top-level key must be a JSON object.");
+      return MakeGarbageCollected<ImportMap>();
+    }
+
+    // <spec step="6.2">Set sortedAndNormalizedScopes to the result of sorting
+    // and normalizing scopes given parsed["scopes"] and baseURL.</spec>
+
+    // <specdef label="sort-and-normalize-scopes"
+    // href="https://wicg.github.io/import-maps/#sort-and-normalize-scopes">
+
+    // <spec label="sort-and-normalize-scopes" step="1">Let normalized be an
+    // empty map.</spec>
+    ScopeType normalized;
+
+    // <spec label="sort-and-normalize-scopes" step="2">For each scopePrefix →
+    // potentialSpecifierMap of originalMap,</spec>
+    for (wtf_size_t i = 0; i < scopes->size(); ++i) {
+      const JSONObject::Entry& entry = scopes->at(i);
+
+      JSONObject* specifier_map = scopes->GetJSONObject(entry.first);
+      if (!specifier_map) {
+        // <spec label="sort-and-normalize-scopes" step="2.1">If
+        // potentialSpecifierMap is not a map, then throw a TypeError indicating
+        // that the value of the scope with prefix scopePrefix must be a JSON
+        // object.</spec>
+        *error_to_rethrow = modulator.CreateTypeError(
+            "Failed to parse import map: the value of the scope with prefix "
+            "\"" +
+            entry.first + "\" must be a JSON object.");
+        return MakeGarbageCollected<ImportMap>();
+      }
+
+      // <spec label="sort-and-normalize-scopes" step="2.2">Let scopePrefixURL
+      // be the result of parsing scopePrefix with baseURL as the base
+      // URL.</spec>
+      const KURL prefix_url(base_url, entry.first);
+
+      // <spec label="sort-and-normalize-scopes" step="2.3">If scopePrefixURL is
+      // failure, then:</spec>
+      if (!prefix_url.IsValid()) {
+        // <spec label="sort-and-normalize-scopes" step="2.3.1">Report a warning
+        // to the console that the scope prefix URL was not parseable.</spec>
+        logger.AddConsoleMessage(
+            mojom::ConsoleMessageSource::kOther,
+            mojom::ConsoleMessageLevel::kWarning,
+            "Ignored scope \"" + entry.first + "\": not parsable as a URL.");
+
+        // <spec label="sort-and-normalize-scopes" step="2.3.2">Continue.</spec>
+        continue;
+      }
+
+      // <spec label="sort-and-normalize-scopes" step="2.5">Let
+      // normalizedScopePrefix be the serialization of scopePrefixURL.</spec>
+      //
+      // <spec label="sort-and-normalize-scopes" step="2.6">Set
+      // normalized[normalizedScopePrefix] to the result of sorting and
+      // normalizing a specifier map given potentialSpecifierMap and
+      // baseURL.</spec>
+      sorted_and_normalized_scopes.push_back(std::make_pair(
+          prefix_url.GetString(),
+          SortAndNormalizeSpecifierMap(specifier_map, base_url,
+                                       support_builtin_modules, logger)));
+    }
+    // <spec label="sort-and-normalize-scopes" step="3">Return the result of
+    // sorting normalized, with an entry a being less than an entry b if a’s key
+    // is longer or code unit less than b’s key.</spec>
+    std::sort(sorted_and_normalized_scopes.begin(),
+              sorted_and_normalized_scopes.end(),
+              [](const ScopeEntryType& a, const ScopeEntryType& b) {
+                return CodeUnitCompareLessThan(b.first, a.first);
+              });
+  }
 
   // TODO(hiroshige): Implement Step 7.
 
   // <spec step="8">Return the import map whose imports are
   // sortedAndNormalizedImports and whose scopes scopes are
   // sortedAndNormalizedScopes.</spec>
-  return MakeGarbageCollected<ImportMap>(modulator,
-                                         sorted_and_normalized_imports);
+  return MakeGarbageCollected<ImportMap>(
+      modulator, support_builtin_modules,
+      std::move(sorted_and_normalized_imports),
+      std::move(sorted_and_normalized_scopes));
 }
 
 // <specdef
@@ -212,19 +294,19 @@ ImportMap* ImportMap::Parse(const Modulator& modulator,
 ImportMap::SpecifierMap ImportMap::SortAndNormalizeSpecifierMap(
     const JSONObject* imports,
     const KURL& base_url,
+    bool support_builtin_modules,
     ConsoleLogger& logger) {
   // <spec step="1">Let normalized be an empty map.</spec>
   SpecifierMap normalized;
 
-  // <spec step="2">First, normalize all entries so that their values are lists.
-  // For each specifierKey → value of originalMap,</spec>
+  // <spec step="2">For each specifierKey → value of originalMap,</spec>
   for (wtf_size_t i = 0; i < imports->size(); ++i) {
     const JSONObject::Entry& entry = imports->at(i);
 
     // <spec step="2.1">Let normalizedSpecifierKey be the result of normalizing
     // a specifier key given specifierKey and baseURL.</spec>
-    const String normalized_specifier_key =
-        NormalizeSpecifierKey(entry.first, base_url, logger);
+    const String normalized_specifier_key = NormalizeSpecifierKey(
+        entry.first, base_url, support_builtin_modules, logger);
 
     // <spec step="2.2">If normalizedSpecifierKey is null, then continue.</spec>
     if (normalized_specifier_key.IsEmpty())
@@ -233,44 +315,67 @@ ImportMap::SpecifierMap ImportMap::SortAndNormalizeSpecifierMap(
     Vector<KURL> values;
     switch (entry.second->GetType()) {
       case JSONValue::ValueType::kTypeNull:
-        // <spec step="2.4">Otherwise, if value is null, then set
-        // normalized[normalizedSpecifierKey] to a new empty list.</spec>
+        if (!support_builtin_modules) {
+          // <spec step="2.3">If value is not a string, then:</spec>
+          //
+          // <spec step="2.3.1">Report a warning to the console that addresses
+          // must be strings.</spec>
+          AddIgnoredValueMessage(logger, entry.first, "Invalid value type.");
+
+          // <spec step="2.3.2">Continue.</spec>
+          continue;
+        }
+        // [Spec w/ Built-in] Otherwise, if value is null, then set
+        // normalized[normalizedSpecifierKey] to a new empty list.
         break;
 
       case JSONValue::ValueType::kTypeBoolean:
       case JSONValue::ValueType::kTypeInteger:
       case JSONValue::ValueType::kTypeDouble:
       case JSONValue::ValueType::kTypeObject:
-        // <spec step="2.6">Otherwise, report a warning to the console that
-        // addresses must be strings, arrays, or null.</spec>
+        // <spec step="2.3">If value is not a string, then:</spec>
+        //
+        // <spec step="2.3.1">Report a warning to the console that addresses
+        // must be strings.</spec>
         AddIgnoredValueMessage(logger, entry.first, "Invalid value type.");
 
+        // <spec step="2.3.2">Continue.</spec>
+        //
         // By continuing here, we leave |normalized[normalized_specifier_key]|
         // unset, and continue processing.
         continue;
 
       case JSONValue::ValueType::kTypeString: {
-        // <spec step="2.3">If value is a string, then set
-        // normalized[normalizedSpecifierKey] to «value».</spec>
+        // Steps 2.4-2.6 are implemented in NormalizeValue().
         String value_string;
         if (!imports->GetString(entry.first, &value_string)) {
           AddIgnoredValueMessage(logger, entry.first,
                                  "Internal error in GetString().");
           break;
         }
-        KURL value =
-            NormalizeValue(entry.first, value_string, base_url, logger);
+        KURL value = NormalizeValue(entry.first, value_string, base_url,
+                                    support_builtin_modules, logger);
 
-        // <spec step="3.3.5">Append addressURL to
-        // validNormalizedAddresses.</spec>
+        // <spec step="2.7">Set normalized[specifierKey] to addressURL.</spec>
         if (value.IsValid())
           values.push_back(value);
         break;
       }
 
       case JSONValue::ValueType::kTypeArray: {
-        // <spec step="2.5">Otherwise, if value is a list, then set
-        // normalized[normalizedSpecifierKey] to value.</spec>
+        if (!support_builtin_modules) {
+          // <spec step="2.3">If value is not a string, then:</spec>
+          //
+          // <spec step="2.3.1">Report a warning to the console that addresses
+          // must be strings.</spec>
+          AddIgnoredValueMessage(logger, entry.first, "Invalid value type.");
+
+          // <spec step="2.3.2">Continue.</spec>
+          continue;
+        }
+
+        // [Spec w/ Built-in] Otherwise, if value is a list, then set
+        // normalized[normalizedSpecifierKey] to value.
         JSONArray* array = imports->GetArray(entry.first);
         if (!array) {
           AddIgnoredValueMessage(logger, entry.first,
@@ -278,30 +383,30 @@ ImportMap::SpecifierMap ImportMap::SortAndNormalizeSpecifierMap(
           break;
         }
 
-        // <spec step="3.3">For each potentialAddress of
-        // potentialAddresses,</spec>
+        // <spec step="2">For each specifierKey → value of ...</spec>
         for (wtf_size_t j = 0; j < array->size(); ++j) {
-          // <spec step="3.3.1">If potentialAddress is not a string,
-          // then:</spec>
+          // <spec step="2.3">If value is not a string, then:</spec>
           String value_string;
           if (!array->at(j)->AsString(&value_string)) {
-            // <spec step="3.3.1.1">Report a warning to the console that the
-            // contents of address arrays must be strings.</spec>
+            // <spec step="2.3.1">Report a warning to the console that addresses
+            // must be strings.</spec>
             AddIgnoredValueMessage(logger, entry.first,
                                    "Non-string in the value.");
-            // <spec step="3.3.1.2">Continue.</spec>
+            // <spec step="2.3.2">Continue.</spec>
             continue;
           }
-          KURL value =
-              NormalizeValue(entry.first, value_string, base_url, logger);
+          KURL value = NormalizeValue(entry.first, value_string, base_url,
+                                      support_builtin_modules, logger);
 
-          // <spec step="3.3.5">Append addressURL to
-          // validNormalizedAddresses.</spec>
           if (value.IsValid())
             values.push_back(value);
         }
         break;
       }
+    }
+
+    if (!support_builtin_modules) {
+      DCHECK_LE(values.size(), 1u);
     }
 
     // TODO(hiroshige): Move these checks to resolution time.
@@ -323,8 +428,7 @@ ImportMap::SpecifierMap ImportMap::SortAndNormalizeSpecifierMap(
       }
     }
 
-    // <spec step="3.4">Set normalized[specifierKey] to
-    // validNormalizedAddresses.</spec>
+    // <spec step="2.7">Set normalized[specifierKey] to addressURL.</spec>
     normalized.Set(normalized_specifier_key, values);
   }
 
@@ -333,7 +437,8 @@ ImportMap::SpecifierMap ImportMap::SortAndNormalizeSpecifierMap(
 
 // <specdef href="https://wicg.github.io/import-maps/#resolve-an-imports-match">
 base::Optional<ImportMap::MatchResult> ImportMap::MatchPrefix(
-    const ParsedSpecifier& parsed_specifier) const {
+    const ParsedSpecifier& parsed_specifier,
+    const SpecifierMap& specifier_map) const {
   // Do not perform prefix match for non-bare specifiers.
   if (parsed_specifier.GetType() != ParsedSpecifier::Type::kBare)
     return base::nullopt;
@@ -352,8 +457,8 @@ base::Optional<ImportMap::MatchResult> ImportMap::MatchPrefix(
   // https://github.com/WICG/import-maps/issues/102
   base::Optional<MatchResult> best_match;
 
-  // <spec step="1">For each specifierKey → addresses of specifierMap,</spec>
-  for (auto it = imports_.begin(); it != imports_.end(); ++it) {
+  // <spec step="1">For each specifierKey → address of specifierMap,</spec>
+  for (auto it = specifier_map.begin(); it != specifier_map.end(); ++it) {
     // <spec step="1.2">If specifierKey ends with U+002F (/) and
     // normalizedSpecifier starts with specifierKey, then:</spec>
     if (!it->key.EndsWith('/'))
@@ -373,26 +478,70 @@ base::Optional<ImportMap::MatchResult> ImportMap::MatchPrefix(
   return best_match;
 }
 
+ImportMap::ImportMap()
+    : support_builtin_modules_(false),
+      modulator_for_built_in_modules_(nullptr) {}
+
 ImportMap::ImportMap(const Modulator& modulator_for_built_in_modules,
-                     const HashMap<String, Vector<KURL>>& imports)
-    : imports_(imports),
+                     bool support_builtin_modules,
+                     SpecifierMap&& imports,
+                     ScopeType&& scopes)
+    : imports_(std::move(imports)),
+      scopes_(std::move(scopes)),
+      support_builtin_modules_(support_builtin_modules),
       modulator_for_built_in_modules_(&modulator_for_built_in_modules) {}
+
+// <specdef
+// href="https://wicg.github.io/import-maps/#resolve-a-module-specifier">
+base::Optional<KURL> ImportMap::Resolve(const ParsedSpecifier& parsed_specifier,
+                                        const KURL& base_url,
+                                        String* debug_message) const {
+  DCHECK(debug_message);
+
+  // <spec step="8">For each scopePrefix → scopeImports of importMap’s
+  // scopes,</spec>
+  for (const auto& entry : scopes_) {
+    // <spec step="8.1">If scopePrefix is baseURLString, or if scopePrefix ends
+    // with U+002F (/) and baseURLString starts with scopePrefix, then:</spec>
+    if (entry.first == base_url.GetString() ||
+        (entry.first.EndsWith("/") &&
+         base_url.GetString().StartsWith(entry.first))) {
+      // <spec step="8.1.1">Let scopeImportsMatch be the result of resolving an
+      // imports match given normalizedSpecifier and scopeImports.</spec>
+      base::Optional<KURL> scope_match =
+          ResolveImportsMatch(parsed_specifier, entry.second, debug_message);
+
+      // <spec step="8.1.2">If scopeImportsMatch is not null, then return
+      // scopeImportsMatch.</spec>
+      if (scope_match)
+        return scope_match;
+    }
+  }
+
+  // <spec step="9">Let topLevelImportsMatch be the result of resolving an
+  // imports match given normalizedSpecifier and importMap’s imports.</spec>
+  //
+  // <spec step="10">If topLevelImportsMatch is not null, then return
+  // topLevelImportsMatch.</spec>
+  return ResolveImportsMatch(parsed_specifier, imports_, debug_message);
+}
 
 // <specdef href="https://wicg.github.io/import-maps/#resolve-an-imports-match">
 base::Optional<KURL> ImportMap::ResolveImportsMatch(
     const ParsedSpecifier& parsed_specifier,
+    const SpecifierMap& specifier_map,
     String* debug_message) const {
   DCHECK(debug_message);
   const String key = parsed_specifier.GetImportMapKeyString();
 
-  // <spec step="1.1">If specifierKey is normalizedSpecifier, then:</spec>
-  MatchResult exact = imports_.find(key);
-  if (exact != imports_.end()) {
+  // <spec step="1.1">If specifierKey is normalizedSpecifier, then ...</spec>
+  MatchResult exact = specifier_map.find(key);
+  if (exact != specifier_map.end()) {
     return ResolveImportsMatchInternal(key, exact, debug_message);
   }
 
   // Step 1.2.
-  if (auto prefix_match = MatchPrefix(parsed_specifier)) {
+  if (auto prefix_match = MatchPrefix(parsed_specifier, specifier_map)) {
     return ResolveImportsMatchInternal(key, *prefix_match, debug_message);
   }
 
@@ -407,77 +556,100 @@ base::Optional<KURL> ImportMap::ResolveImportsMatchInternal(
     const String& key,
     const MatchResult& matched,
     String* debug_message) const {
-  // <spec step="1.2.2.1">Let afterPrefix be the portion of normalizedSpecifier
-  // after the initial specifierKey prefix.</spec>
-  //
-  // <spec step="1.2.3.1">Let afterPrefix be the portion of normalizedSpecifier
+  // <spec step="1.2.1">Let afterPrefix be the portion of normalizedSpecifier
   // after the initial specifierKey prefix.</spec>
   const String after_prefix = key.Substring(matched->key.length());
 
-  // <spec step="1.1.3">If addresses’s size is 2, and addresses[0]'s scheme is
-  // "std", and addresses[1]'s scheme is not "std", then:</spec>
-  //
-  // <spec step="1.2.3">If addresses’s size is 2, and addresses[0]'s scheme is
-  // "std", and addresses[1]'s scheme is not "std", then:</spec>
-  //
-  // TODO(hiroshige): Add these checks here. Currently they are checked at
-  // parsing.
-
   for (const KURL& value : matched->value) {
-    // <spec step="1.2.2.3">Let url be the result of parsing the concatenation
-    // of the serialization of addresses[0] with afterPrefix.</spec>
+    // <spec step="1.1">If specifierKey is normalizedSpecifier, then return
+    // address.</spec>
     //
-    // <spec step="1.2.3.3">Let url0 be the result of parsing the concatenation
-    // of the serialization of addresses[0] with afterPrefix; similarly, let
-    // url1 be the result of parsing the concatenation of the serialization of
-    // addresses[1] with afterPrefix.</spec>
+    // <spec step="1.2">If specifierKey ends with U+002F (/) and
+    // normalizedSpecifier starts with specifierKey, then:</spec>
     //
-    // TODO(hiroshige): Update this according to the spec.
+    // <spec step="1.2.3">Let url be the result of parsing afterPrefix relative
+    // to the base URL address.</spec>
     const KURL url = after_prefix.IsEmpty() ? value : KURL(value, after_prefix);
 
-    // <spec step="1.2.3.5">Return url0, if moduleMap[url0] exists; otherwise,
-    // return url1.</spec>
+    // [Spec w/ Built-in] Return url0, if moduleMap[url0] exists; otherwise,
+    // return url1.
     //
     // Note: Here we filter out non-existing built-in modules in all cases.
-    if (layered_api::ResolveFetchingURL(*modulator_for_built_in_modules_, url)
+    if (!support_builtin_modules_ ||
+        layered_api::ResolveFetchingURL(*modulator_for_built_in_modules_, url)
             .IsValid()) {
       *debug_message = "Import Map: \"" + key + "\" matches with \"" +
                        matched->key + "\" and is mapped to " +
                        url.ElidedString();
+
+      // <spec step="1.2.4">If url is failure, then return null.</spec>
+      //
+      // <spec step="1.2.5">Return url.</spec>
       return url;
     }
   }
 
-  // <spec step="1.1.1">If addresses’s size is 0, then throw a TypeError
-  // indicating that normalizedSpecifier was mapped to no addresses.</spec>
+  // [Spec w/ Built-in] If addresses’s size is 0, then throw a TypeError
+  // indicating that normalizedSpecifier was mapped to no addresses.
   *debug_message = "Import Map: \"" + key + "\" matches with \"" +
                    matched->key + "\" but fails to be mapped (no viable URLs)";
   return NullURL();
 }
 
-String ImportMap::ToString() const {
-  StringBuilder builder;
+static void SpecifierMapToString(StringBuilder& builder,
+                                 bool support_builtin_modules,
+                                 const ImportMap::SpecifierMap& specifier_map) {
   builder.Append("{");
   bool is_first_key = true;
-  for (const auto& it : imports_) {
+  for (const auto& it : specifier_map) {
     if (!is_first_key)
       builder.Append(",");
     is_first_key = false;
-    builder.Append("\n  \"");
-    builder.Append(it.key);
-    builder.Append("\": [");
-    bool is_first_value = true;
-    for (const auto& v : it.value) {
-      if (!is_first_value)
-        builder.Append(",");
-      is_first_value = false;
-      builder.Append("\n    \"");
-      builder.Append(v.GetString());
-      builder.Append("\"");
+    builder.Append(it.key.EncodeForDebugging());
+    builder.Append(":");
+    if (support_builtin_modules) {
+      builder.Append("[");
+      bool is_first_value = true;
+      for (const auto& v : it.value) {
+        if (!is_first_value)
+          builder.Append(",");
+        is_first_value = false;
+        builder.Append(v.GetString().EncodeForDebugging());
+      }
+      builder.Append("]");
+    } else {
+      if (it.value.size() == 0) {
+        builder.Append("[]");
+      } else {
+        DCHECK_EQ(it.value.size(), 1u);
+        builder.Append(it.value[0].GetString().EncodeForDebugging());
+      }
     }
-    builder.Append("\n  ]");
   }
-  builder.Append("\n}\n");
+  builder.Append("}");
+}
+
+String ImportMap::ToString() const {
+  StringBuilder builder;
+  builder.Append("{\"imports\":");
+  SpecifierMapToString(builder, support_builtin_modules_, imports_);
+
+  builder.Append(",\"scopes\":{");
+
+  bool is_first_scope = true;
+  for (const auto& entry : scopes_) {
+    if (!is_first_scope)
+      builder.Append(",");
+    is_first_scope = false;
+    builder.Append(entry.first.EncodeForDebugging());
+    builder.Append(":");
+    SpecifierMapToString(builder, support_builtin_modules_, entry.second);
+  }
+
+  builder.Append("}");
+
+  builder.Append("}");
+
   return builder.ToString();
 }
 

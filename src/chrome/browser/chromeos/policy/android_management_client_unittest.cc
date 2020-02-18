@@ -34,7 +34,7 @@ namespace policy {
 
 namespace {
 
-const char kAccountId[] = "fake-account-id";
+const char kAccountEmail[] = "fake-account-id@gmail.com";
 const char kOAuthToken[] = "fake-oauth-token";
 
 }  // namespace
@@ -52,7 +52,7 @@ class AndroidManagementClientTest : public testing::Test {
         base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
             &url_loader_factory_);
     client_.reset(new AndroidManagementClient(
-        &service_, shared_url_loader_factory_, kAccountId,
+        &service_, shared_url_loader_factory_, CoreAccountId(kAccountEmail),
         identity_test_environment_.identity_manager()));
 
     service_.ScheduleInitialization(0);
@@ -62,7 +62,7 @@ class AndroidManagementClientTest : public testing::Test {
   // Protobuf is used in successfil responsees.
   em::DeviceManagementResponse android_management_response_;
 
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   MockDeviceManagementService service_;
   StrictMock<base::MockCallback<AndroidManagementClient::StatusCallback>>
       callback_observer_;
@@ -78,14 +78,14 @@ TEST_F(AndroidManagementClientTest, CheckAndroidManagementCall) {
   EXPECT_CALL(service_, StartJob(_))
       .WillOnce(DoAll(service_.CaptureJobType(&job_type),
                       service_.CaptureQueryParams(&params),
-                      service_.StartJobOKSync(android_management_response_)));
+                      service_.StartJobOKAsync(android_management_response_)));
   EXPECT_CALL(callback_observer_,
               Run(AndroidManagementClient::Result::UNMANAGED))
       .Times(1);
 
   // On ChromeOS platform, account_id and email are same.
   AccountInfo account_info =
-      identity_test_environment_.MakeAccountAvailable(kAccountId);
+      identity_test_environment_.MakeAccountAvailable(kAccountEmail);
 
   client_->StartCheckAndroidManagement(callback_observer_.Get());
 
@@ -93,6 +93,7 @@ TEST_F(AndroidManagementClientTest, CheckAndroidManagementCall) {
       .WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
           account_info.account_id, kOAuthToken, base::Time::Max());
 
+  base::RunLoop().RunUntilIdle();
   ASSERT_EQ(
       DeviceManagementService::JobConfiguration::TYPE_ANDROID_MANAGEMENT_CHECK,
       job_type);

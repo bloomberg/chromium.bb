@@ -4,12 +4,17 @@
 
 #include <vector>
 
+#include "ash/display/screen_orientation_controller.h"
 #include "ash/display/screen_orientation_controller_test_api.h"
 #include "ash/multi_user/multi_user_window_manager_impl.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/event_rewriter_controller.h"
 #include "ash/public/cpp/multi_user_window_manager.h"
 #include "ash/public/cpp/multi_user_window_manager_delegate.h"
+#include "ash/public/cpp/shelf_types.h"
+#include "ash/screen_util.h"
+#include "ash/shelf/shelf.h"
+#include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
 #include "ash/sticky_keys/sticky_keys_controller.h"
 #include "ash/style/ash_color_provider.h"
@@ -18,6 +23,7 @@
 #include "ash/wm/desks/close_desk_button.h"
 #include "ash/wm/desks/desk.h"
 #include "ash/wm/desks/desk_mini_view.h"
+#include "ash/wm/desks/desk_preview_view.h"
 #include "ash/wm/desks/desks_bar_view.h"
 #include "ash/wm/desks/desks_controller.h"
 #include "ash/wm/desks/desks_test_util.h"
@@ -28,8 +34,10 @@
 #include "ash/wm/overview/overview_grid.h"
 #include "ash/wm/overview/overview_item.h"
 #include "ash/wm/overview/overview_session.h"
+#include "ash/wm/overview/overview_window_drag_controller.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/splitview/split_view_drag_indicators.h"
+#include "ash/wm/splitview/split_view_utils.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
@@ -39,11 +47,14 @@
 #include "ash/wm/workspace_controller.h"
 #include "base/stl_util.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "components/session_manager/session_manager_types.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/window_parenting_client.h"
+#include "ui/aura/test/test_window_delegate.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/chromeos/events/event_rewriter_chromeos.h"
+#include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/compositor_extra/shadow.h"
 #include "ui/display/display.h"
 #include "ui/display/test/display_manager_test_api.h"
@@ -127,10 +138,10 @@ void ClickOnMiniView(const DeskMiniView* desk_mini_view,
   event_generator->ClickLeftButton();
 }
 
-void LongGestureTapOnView(const views::View* view,
-                          ui::test::EventGenerator* event_generator) {
-  event_generator->set_current_screen_location(
-      view->GetBoundsInScreen().CenterPoint());
+void LongGestureTap(const gfx::Point& screen_location,
+                    ui::test::EventGenerator* event_generator,
+                    bool release_touch = true) {
+  event_generator->set_current_screen_location(screen_location);
   event_generator->PressTouch();
   ui::GestureConfiguration* gesture_config =
       ui::GestureConfiguration::GetInstance();
@@ -141,7 +152,8 @@ void LongGestureTapOnView(const views::View* view,
       FROM_HERE, run_loop.QuitClosure(),
       base::TimeDelta::FromMilliseconds(long_press_delay_ms));
   run_loop.Run();
-  event_generator->ReleaseTouch();
+  if (release_touch)
+    event_generator->ReleaseTouch();
 }
 
 void GestureTapOnView(const views::View* view,
@@ -199,6 +211,20 @@ bool IsStackedBelow(aura::Window* win1, aura::Window* win2) {
   return win1_iter < win2_iter;
 }
 
+// Verifies DesksBarView layout under different screen sizes
+void DesksBarViewLayoutTestHelper(const DesksBarView* desks_bar_view,
+                                  bool use_compact_layout) {
+  DCHECK(desks_bar_view);
+  const NewDeskButton* button = desks_bar_view->new_desk_button();
+  EXPECT_EQ(button->IsLabelVisibleForTesting(), !use_compact_layout);
+
+  for (const auto& mini_view : desks_bar_view->mini_views()) {
+    EXPECT_EQ(mini_view->GetDeskPreviewForTesting()->height(),
+              DeskPreviewView::GetHeight(use_compact_layout));
+    EXPECT_EQ(mini_view->IsLabelVisibleForTesting(), !use_compact_layout);
+  }
+}
+
 // Defines an observer to test DesksController notifications.
 class TestObserver : public DesksController::Observer {
  public:
@@ -220,6 +246,7 @@ class TestObserver : public DesksController::Observer {
                                const Desk* deactivated) override {
     EXPECT_TRUE(DesksController::Get()->AreDesksBeingModified());
   }
+  void OnDeskSwitchAnimationLaunching() override {}
   void OnDeskSwitchAnimationFinished() override {
     EXPECT_FALSE(DesksController::Get()->AreDesksBeingModified());
   }
@@ -266,6 +293,25 @@ class DesksTest : public AshTestBase,
   DISALLOW_COPY_AND_ASSIGN(DesksTest);
 };
 
+TEST_F(DesksTest, LongPressOverviewItemInClamshellModeWithOnlyOneVirtualDesk) {
+  std::unique_ptr<aura::Window> window(CreateTestWindow());
+  OverviewController* overview_controller = Shell::Get()->overview_controller();
+  ASSERT_TRUE(overview_controller->StartOverview());
+  OverviewSession* overview_session = overview_controller->overview_session();
+  OverviewItem* overview_item =
+      overview_session->GetOverviewItemForWindow(window.get());
+  ui::test::EventGenerator* event_generator = GetEventGenerator();
+  LongGestureTap(
+      gfx::ToRoundedPoint(overview_item->target_bounds().CenterPoint()),
+      event_generator, /*release_touch=*/false);
+  EXPECT_TRUE(overview_item->IsDragItem());
+  EXPECT_EQ(
+      OverviewWindowDragController::DragBehavior::kUndefined,
+      overview_session->window_drag_controller()->current_drag_behavior());
+  event_generator->ReleaseTouch();
+  EXPECT_FALSE(overview_item->IsDragItem());
+}
+
 TEST_F(DesksTest, DesksCreationAndRemoval) {
   TestObserver observer;
   auto* controller = DesksController::Get();
@@ -300,7 +346,6 @@ TEST_F(DesksTest, DesksCreationAndRemoval) {
 }
 
 TEST_F(DesksTest, DesksBarViewDeskCreation) {
-  TestObserver observer;
   auto* controller = DesksController::Get();
 
   auto* overview_controller = Shell::Get()->overview_controller();
@@ -377,6 +422,40 @@ TEST_F(DesksTest, DesksBarViewDeskCreation) {
   DCHECK(desks_bar_view);
   EXPECT_EQ(controller->desks().size(), desks_bar_view->mini_views().size());
   EXPECT_TRUE(desks_bar_view->new_desk_button()->GetEnabled());
+}
+
+TEST_F(DesksTest, DesksBarViewScreenLayoutTest) {
+  UpdateDisplay("1600x1200");
+  DesksController* controller = DesksController::Get();
+  OverviewController* overview_controller = Shell::Get()->overview_controller();
+  overview_controller->StartOverview();
+  EXPECT_TRUE(overview_controller->InOverviewSession());
+  const OverviewGrid* overview_grid =
+      GetOverviewGridForRoot(Shell::GetPrimaryRootWindow());
+
+  EXPECT_FALSE(overview_grid->IsDesksBarViewActive());
+  const DesksBarView* desks_bar_view = overview_grid->desks_bar_view();
+  while (controller->CanCreateDesks()) {
+    NewDesk();
+    DesksBarViewLayoutTestHelper(desks_bar_view,
+                                 /*use_compact_layout=*/false);
+  };
+
+  UpdateDisplay("500x480");
+  ASSERT_TRUE(overview_controller->InOverviewSession());
+  while (controller->CanRemoveDesks()) {
+    DesksBarViewLayoutTestHelper(desks_bar_view,
+                                 /*use_compact_layout=*/true);
+    RemoveDesk(controller->desks().back().get());
+  }
+
+  UpdateDisplay("1600x480");
+  ASSERT_TRUE(overview_controller->InOverviewSession());
+  while (controller->CanCreateDesks()) {
+    DesksBarViewLayoutTestHelper(desks_bar_view,
+                                 /*use_compact_layout=*/false);
+    NewDesk();
+  }
 }
 
 TEST_F(DesksTest, DeskActivation) {
@@ -1395,6 +1474,10 @@ class TabletModeDesksTest : public DesksTest {
     Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
   }
 
+  SplitViewController* split_view_controller() {
+    return SplitViewController::Get(Shell::GetPrimaryRootWindow());
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(TabletModeDesksTest);
 };
@@ -1559,18 +1642,16 @@ TEST_F(TabletModeDesksTest, RestoreSplitViewOnDeskSwitch) {
 
   auto win1 = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
   auto win2 = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
-  SplitViewController* split_view_controller =
-      Shell::Get()->split_view_controller();
-  split_view_controller->SnapWindow(win1.get(), SplitViewController::LEFT);
-  split_view_controller->SnapWindow(win2.get(), SplitViewController::RIGHT);
-  EXPECT_EQ(win1.get(), split_view_controller->left_window());
-  EXPECT_EQ(win2.get(), split_view_controller->right_window());
+  split_view_controller()->SnapWindow(win1.get(), SplitViewController::LEFT);
+  split_view_controller()->SnapWindow(win2.get(), SplitViewController::RIGHT);
+  EXPECT_EQ(win1.get(), split_view_controller()->left_window());
+  EXPECT_EQ(win2.get(), split_view_controller()->right_window());
 
   // Desk 2 has no windows, so the SplitViewController should be tracking no
   // windows.
   ActivateDesk(desk_2);
-  EXPECT_EQ(nullptr, split_view_controller->left_window());
-  EXPECT_EQ(nullptr, split_view_controller->right_window());
+  EXPECT_EQ(nullptr, split_view_controller()->left_window());
+  EXPECT_EQ(nullptr, split_view_controller()->right_window());
   // However, the snapped windows on desk 1 should retain their snapped state.
   EXPECT_TRUE(WindowState::Get(win1.get())->IsSnapped());
   EXPECT_TRUE(WindowState::Get(win2.get())->IsSnapped());
@@ -1578,15 +1659,15 @@ TEST_F(TabletModeDesksTest, RestoreSplitViewOnDeskSwitch) {
   // Snap two other windows in desk 2.
   auto win3 = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
   auto win4 = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
-  split_view_controller->SnapWindow(win3.get(), SplitViewController::LEFT);
-  split_view_controller->SnapWindow(win4.get(), SplitViewController::RIGHT);
-  EXPECT_EQ(win3.get(), split_view_controller->left_window());
-  EXPECT_EQ(win4.get(), split_view_controller->right_window());
+  split_view_controller()->SnapWindow(win3.get(), SplitViewController::LEFT);
+  split_view_controller()->SnapWindow(win4.get(), SplitViewController::RIGHT);
+  EXPECT_EQ(win3.get(), split_view_controller()->left_window());
+  EXPECT_EQ(win4.get(), split_view_controller()->right_window());
 
   // Switch back to desk 1, and expect the snapped windows are restored.
   ActivateDesk(desk_1);
-  EXPECT_EQ(win1.get(), split_view_controller->left_window());
-  EXPECT_EQ(win2.get(), split_view_controller->right_window());
+  EXPECT_EQ(win1.get(), split_view_controller()->left_window());
+  EXPECT_EQ(win2.get(), split_view_controller()->right_window());
   EXPECT_TRUE(WindowState::Get(win3.get())->IsSnapped());
   EXPECT_TRUE(WindowState::Get(win4.get())->IsSnapped());
 }
@@ -1597,12 +1678,10 @@ TEST_F(TabletModeDesksTest, SnappedStateRetainedOnSwitchingDesksFromOverview) {
   ASSERT_EQ(2u, desks_controller->desks().size());
   auto win1 = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
   auto win2 = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
-  SplitViewController* split_view_controller =
-      Shell::Get()->split_view_controller();
-  split_view_controller->SnapWindow(win1.get(), SplitViewController::LEFT);
-  split_view_controller->SnapWindow(win2.get(), SplitViewController::RIGHT);
-  EXPECT_EQ(win1.get(), split_view_controller->left_window());
-  EXPECT_EQ(win2.get(), split_view_controller->right_window());
+  split_view_controller()->SnapWindow(win1.get(), SplitViewController::LEFT);
+  split_view_controller()->SnapWindow(win2.get(), SplitViewController::RIGHT);
+  EXPECT_EQ(win1.get(), split_view_controller()->left_window());
+  EXPECT_EQ(win2.get(), split_view_controller()->right_window());
 
   // Enter overview and switch to desk_2 using its mini_view. Overview should
   // end, but TabletModeWindowManager should not maximize the snapped windows
@@ -1629,10 +1708,10 @@ TEST_F(TabletModeDesksTest, SnappedStateRetainedOnSwitchingDesksFromOverview) {
   // destination desks.
   auto win3 = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
   auto win4 = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
-  split_view_controller->SnapWindow(win3.get(), SplitViewController::LEFT);
-  split_view_controller->SnapWindow(win4.get(), SplitViewController::RIGHT);
-  EXPECT_EQ(win3.get(), split_view_controller->left_window());
-  EXPECT_EQ(win4.get(), split_view_controller->right_window());
+  split_view_controller()->SnapWindow(win3.get(), SplitViewController::LEFT);
+  split_view_controller()->SnapWindow(win4.get(), SplitViewController::RIGHT);
+  EXPECT_EQ(win3.get(), split_view_controller()->left_window());
+  EXPECT_EQ(win4.get(), split_view_controller()->right_window());
   overview_controller->StartOverview();
   EXPECT_TRUE(overview_controller->InOverviewSession());
   overview_grid = GetOverviewGridForRoot(Shell::GetPrimaryRootWindow());
@@ -1652,6 +1731,71 @@ TEST_F(TabletModeDesksTest, SnappedStateRetainedOnSwitchingDesksFromOverview) {
   EXPECT_FALSE(overview_controller->InOverviewSession());
 }
 
+TEST_F(
+    TabletModeDesksTest,
+    SnappedStateRetainedOnSwitchingDesksWithOverviewFullOfUnsnappableWindows) {
+  auto* desks_controller = DesksController::Get();
+  NewDesk();
+  ASSERT_EQ(2u, desks_controller->desks().size());
+  const gfx::Rect work_area =
+      screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
+          Shell::GetPrimaryRootWindow());
+  const gfx::Size big(work_area.width() * 2 / 3, work_area.height() * 2 / 3);
+  const gfx::Size small(250, 100);
+  std::unique_ptr<aura::Window> win1 = CreateTestWindow(gfx::Rect(small));
+  aura::test::TestWindowDelegate win2_delegate;
+  win2_delegate.set_minimum_size(big);
+  std::unique_ptr<aura::Window> win2(CreateTestWindowInShellWithDelegate(
+      &win2_delegate, /*id=*/-1, gfx::Rect(big)));
+  aura::test::TestWindowDelegate win3_delegate;
+  win3_delegate.set_minimum_size(big);
+  std::unique_ptr<aura::Window> win3(CreateTestWindowInShellWithDelegate(
+      &win3_delegate, /*id=*/-1, gfx::Rect(big)));
+  OverviewController* overview_controller = Shell::Get()->overview_controller();
+  EXPECT_TRUE(overview_controller->StartOverview());
+  split_view_controller()->SnapWindow(win1.get(), SplitViewController::LEFT);
+  EXPECT_EQ(win1.get(), split_view_controller()->left_window());
+  EXPECT_FALSE(split_view_controller()->CanSnapWindow(win2.get()));
+  EXPECT_FALSE(split_view_controller()->CanSnapWindow(win3.get()));
+
+  // Switch to |desk_2| using its |mini_view|. Split view and overview should
+  // end, but |win1| should retain its snapped state.
+  ASSERT_TRUE(overview_controller->InOverviewSession());
+  auto* overview_grid = GetOverviewGridForRoot(Shell::GetPrimaryRootWindow());
+  auto* desks_bar_view = overview_grid->desks_bar_view();
+  auto* mini_view = desks_bar_view->mini_views()[1].get();
+  Desk* desk_2 = desks_controller->desks()[1].get();
+  EXPECT_EQ(desk_2, mini_view->desk());
+  {
+    DeskSwitchAnimationWaiter waiter;
+    ClickOnMiniView(mini_view, GetEventGenerator());
+    waiter.Wait();
+  }
+  EXPECT_TRUE(WindowState::Get(win1.get())->IsSnapped());
+  EXPECT_EQ(SplitViewController::State::kNoSnap,
+            split_view_controller()->state());
+  EXPECT_FALSE(overview_controller->InOverviewSession());
+
+  // Switch back to |desk_1| and verify that split view is arranged as before.
+  EXPECT_TRUE(overview_controller->StartOverview());
+  ASSERT_TRUE(overview_controller->InOverviewSession());
+  overview_grid = GetOverviewGridForRoot(Shell::GetPrimaryRootWindow());
+  desks_bar_view = overview_grid->desks_bar_view();
+  mini_view = desks_bar_view->mini_views()[0].get();
+  Desk* desk_1 = desks_controller->desks()[0].get();
+  EXPECT_EQ(desk_1, mini_view->desk());
+  {
+    DeskSwitchAnimationWaiter waiter;
+    ClickOnMiniView(mini_view, GetEventGenerator());
+    waiter.Wait();
+  }
+  EXPECT_TRUE(WindowState::Get(win1.get())->IsSnapped());
+  EXPECT_EQ(SplitViewController::State::kLeftSnapped,
+            split_view_controller()->state());
+  EXPECT_EQ(win1.get(), split_view_controller()->left_window());
+  EXPECT_TRUE(overview_controller->InOverviewSession());
+}
+
 TEST_F(TabletModeDesksTest, OverviewStateOnSwitchToDeskWithSplitView) {
   // Setup two desks, one (desk_1) with two snapped windows, and the other
   // (desk_2) with only one snapped window.
@@ -1662,20 +1806,18 @@ TEST_F(TabletModeDesksTest, OverviewStateOnSwitchToDeskWithSplitView) {
   Desk* desk_2 = desks_controller->desks()[1].get();
   auto win1 = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
   auto win2 = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
-  SplitViewController* split_view_controller =
-      Shell::Get()->split_view_controller();
-  split_view_controller->SnapWindow(win1.get(), SplitViewController::LEFT);
-  split_view_controller->SnapWindow(win2.get(), SplitViewController::RIGHT);
-  EXPECT_EQ(win1.get(), split_view_controller->left_window());
-  EXPECT_EQ(win2.get(), split_view_controller->right_window());
+  split_view_controller()->SnapWindow(win1.get(), SplitViewController::LEFT);
+  split_view_controller()->SnapWindow(win2.get(), SplitViewController::RIGHT);
+  EXPECT_EQ(win1.get(), split_view_controller()->left_window());
+  EXPECT_EQ(win2.get(), split_view_controller()->right_window());
   auto* overview_controller = Shell::Get()->overview_controller();
   EXPECT_FALSE(overview_controller->InOverviewSession());
   ActivateDesk(desk_2);
   EXPECT_FALSE(overview_controller->InOverviewSession());
   auto win3 = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
-  split_view_controller->SnapWindow(win3.get(), SplitViewController::LEFT);
-  EXPECT_EQ(win3.get(), split_view_controller->left_window());
-  EXPECT_EQ(nullptr, split_view_controller->right_window());
+  split_view_controller()->SnapWindow(win3.get(), SplitViewController::LEFT);
+  EXPECT_EQ(win3.get(), split_view_controller()->left_window());
+  EXPECT_EQ(nullptr, split_view_controller()->right_window());
 
   // Switching to the desk that has only one snapped window to be restored in
   // SplitView should enter overview mode, whereas switching to one that has two
@@ -1694,22 +1836,21 @@ TEST_F(TabletModeDesksTest, RemovingDesksWithSplitView) {
   ASSERT_EQ(2u, desks_controller->desks().size());
   Desk* desk_2 = desks_controller->desks()[1].get();
   auto win1 = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
-  SplitViewController* split_view_controller =
-      Shell::Get()->split_view_controller();
-  split_view_controller->SnapWindow(win1.get(), SplitViewController::LEFT);
-  EXPECT_EQ(win1.get(), split_view_controller->left_window());
-  EXPECT_EQ(nullptr, split_view_controller->right_window());
+  split_view_controller()->SnapWindow(win1.get(), SplitViewController::LEFT);
+  EXPECT_EQ(win1.get(), split_view_controller()->left_window());
+  EXPECT_EQ(nullptr, split_view_controller()->right_window());
   ActivateDesk(desk_2);
   auto win2 = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
-  split_view_controller->SnapWindow(win2.get(), SplitViewController::RIGHT);
-  EXPECT_EQ(nullptr, split_view_controller->left_window());
-  EXPECT_EQ(win2.get(), split_view_controller->right_window());
+  split_view_controller()->SnapWindow(win2.get(), SplitViewController::RIGHT);
+  EXPECT_EQ(nullptr, split_view_controller()->left_window());
+  EXPECT_EQ(win2.get(), split_view_controller()->right_window());
 
   // Removing desk_2 will cause both snapped windows to merge in SplitView.
   RemoveDesk(desk_2);
-  EXPECT_EQ(win1.get(), split_view_controller->left_window());
-  EXPECT_EQ(win2.get(), split_view_controller->right_window());
-  EXPECT_EQ(SplitViewState::kBothSnapped, split_view_controller->state());
+  EXPECT_EQ(win1.get(), split_view_controller()->left_window());
+  EXPECT_EQ(win2.get(), split_view_controller()->right_window());
+  EXPECT_EQ(SplitViewController::State::kBothSnapped,
+            split_view_controller()->state());
 }
 
 TEST_F(TabletModeDesksTest, RemoveDeskWithMaximizedWindowAndMergeWithSnapped) {
@@ -1718,24 +1859,23 @@ TEST_F(TabletModeDesksTest, RemoveDeskWithMaximizedWindowAndMergeWithSnapped) {
   ASSERT_EQ(2u, desks_controller->desks().size());
   Desk* desk_2 = desks_controller->desks()[1].get();
   auto win1 = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
-  SplitViewController* split_view_controller =
-      Shell::Get()->split_view_controller();
-  split_view_controller->SnapWindow(win1.get(), SplitViewController::LEFT);
-  EXPECT_EQ(win1.get(), split_view_controller->left_window());
-  EXPECT_EQ(nullptr, split_view_controller->right_window());
+  split_view_controller()->SnapWindow(win1.get(), SplitViewController::LEFT);
+  EXPECT_EQ(win1.get(), split_view_controller()->left_window());
+  EXPECT_EQ(nullptr, split_view_controller()->right_window());
   ActivateDesk(desk_2);
   auto win2 = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
-  EXPECT_EQ(nullptr, split_view_controller->left_window());
-  EXPECT_EQ(nullptr, split_view_controller->right_window());
+  EXPECT_EQ(nullptr, split_view_controller()->left_window());
+  EXPECT_EQ(nullptr, split_view_controller()->right_window());
   EXPECT_TRUE(WindowState::Get(win2.get())->IsMaximized());
 
   // Removing desk_2 will cause us to enter overview mode without any crashes.
   // SplitView will remain left snapped.
   RemoveDesk(desk_2);
   EXPECT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
-  EXPECT_EQ(win1.get(), split_view_controller->left_window());
-  EXPECT_EQ(nullptr, split_view_controller->right_window());
-  EXPECT_EQ(SplitViewState::kLeftSnapped, split_view_controller->state());
+  EXPECT_EQ(win1.get(), split_view_controller()->left_window());
+  EXPECT_EQ(nullptr, split_view_controller()->right_window());
+  EXPECT_EQ(SplitViewController::State::kLeftSnapped,
+            split_view_controller()->state());
 }
 
 TEST_F(TabletModeDesksTest, BackdropsStacking) {
@@ -1747,10 +1887,8 @@ TEST_F(TabletModeDesksTest, BackdropsStacking) {
 
   auto win1 = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
   auto win2 = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
-  SplitViewController* split_view_controller =
-      Shell::Get()->split_view_controller();
-  split_view_controller->SnapWindow(win1.get(), SplitViewController::LEFT);
-  split_view_controller->SnapWindow(win2.get(), SplitViewController::RIGHT);
+  split_view_controller()->SnapWindow(win1.get(), SplitViewController::LEFT);
+  split_view_controller()->SnapWindow(win2.get(), SplitViewController::RIGHT);
   auto* desk_1_backdrop_controller =
       GetDeskBackdropController(desk_1, Shell::GetPrimaryRootWindow());
   auto* desk_2_backdrop_controller =
@@ -1775,8 +1913,8 @@ TEST_F(TabletModeDesksTest, BackdropsStacking) {
   // but should not affect desk_1.
   auto win3 = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
   auto win4 = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
-  split_view_controller->SnapWindow(win3.get(), SplitViewController::LEFT);
-  split_view_controller->SnapWindow(win4.get(), SplitViewController::RIGHT);
+  split_view_controller()->SnapWindow(win3.get(), SplitViewController::LEFT);
+  split_view_controller()->SnapWindow(win4.get(), SplitViewController::RIGHT);
   ASSERT_TRUE(desk_1_backdrop_controller->backdrop_window());
   ASSERT_TRUE(desk_2_backdrop_controller->backdrop_window());
   auto* desk_2_backdrop = desk_2_backdrop_controller->backdrop_window();
@@ -1817,7 +1955,7 @@ TEST_F(TabletModeDesksTest, RestoringUnsnappableWindowsInSplitView) {
   views::Widget* widget = views::Widget::GetWidgetForNativeWindow(window.get());
   widget->non_client_view()->set_client_view(
       new TestClientView(widget, gfx::Size(350, 100)));
-  EXPECT_FALSE(CanSnapInSplitview(window.get()));
+  EXPECT_FALSE(split_view_controller()->CanSnapWindow(window.get()));
 
   // Change to a portrait orientation and expect it's possible to snap the
   // window.
@@ -1827,14 +1965,12 @@ TEST_F(TabletModeDesksTest, RestoringUnsnappableWindowsInSplitView) {
                               display::Display::RotationSource::ACTIVE);
   EXPECT_EQ(test_api.GetCurrentOrientation(),
             OrientationLockType::kPortraitPrimary);
-  EXPECT_TRUE(CanSnapInSplitview(window.get()));
+  EXPECT_TRUE(split_view_controller()->CanSnapWindow(window.get()));
 
   // Snap the window in this orientation.
-  SplitViewController* split_view_controller =
-      Shell::Get()->split_view_controller();
-  split_view_controller->SnapWindow(window.get(), SplitViewController::LEFT);
-  EXPECT_EQ(window.get(), split_view_controller->left_window());
-  EXPECT_TRUE(split_view_controller->InSplitViewMode());
+  split_view_controller()->SnapWindow(window.get(), SplitViewController::LEFT);
+  EXPECT_EQ(window.get(), split_view_controller()->left_window());
+  EXPECT_TRUE(split_view_controller()->InSplitViewMode());
 
   // Create a second desk, switch to it, and change back the orientation to
   // landscape, in which the window is not snappable. The window still exists on
@@ -1855,7 +1991,7 @@ TEST_F(TabletModeDesksTest, RestoringUnsnappableWindowsInSplitView) {
   const Desk* desk_1 = controller->desks()[0].get();
   ActivateDesk(desk_1);
   EXPECT_EQ(desk_1, controller->active_desk());
-  EXPECT_FALSE(split_view_controller->InSplitViewMode());
+  EXPECT_FALSE(split_view_controller()->InSplitViewMode());
   EXPECT_TRUE(WindowState::Get(window.get())->IsMaximized());
 }
 
@@ -1885,11 +2021,13 @@ TEST_F(DesksTest, MiniViewsTouchGestures) {
   // Long gesture tapping on one mini_view shows its close button, and hides
   // those of other mini_views.
   auto* event_generator = GetEventGenerator();
-  LongGestureTapOnView(desk_1_mini_view, event_generator);
+  LongGestureTap(desk_1_mini_view->GetBoundsInScreen().CenterPoint(),
+                 event_generator);
   EXPECT_TRUE(desk_1_mini_view->close_desk_button()->GetVisible());
   EXPECT_FALSE(desk_2_mini_view->close_desk_button()->GetVisible());
   EXPECT_FALSE(desk_3_mini_view->close_desk_button()->GetVisible());
-  LongGestureTapOnView(desk_2_mini_view, event_generator);
+  LongGestureTap(desk_2_mini_view->GetBoundsInScreen().CenterPoint(),
+                 event_generator);
   EXPECT_FALSE(desk_1_mini_view->close_desk_button()->GetVisible());
   EXPECT_TRUE(desk_2_mini_view->close_desk_button()->GetVisible());
   EXPECT_FALSE(desk_3_mini_view->close_desk_button()->GetVisible());
@@ -1910,6 +2048,48 @@ TEST_F(DesksTest, MiniViewsTouchGestures) {
   EXPECT_TRUE(controller->desks()[0]->is_active());
 }
 
+TEST_F(DesksTest, AutohiddenShelfAnimatesAfterDeskSwitch) {
+  Shelf* shelf = GetPrimaryShelf();
+  ShelfWidget* shelf_widget = shelf->shelf_widget();
+  const gfx::Rect shown_shelf_bounds = shelf_widget->GetWindowBoundsInScreen();
+
+  shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+
+  // Enable animations so that we can make sure that they occur.
+  ui::ScopedAnimationDurationScaleMode regular_animations(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+
+  NewDesk();
+
+  // Create a window on the first desk so that the shelf will auto-hide there.
+  std::unique_ptr<views::Widget> widget = CreateTestWidget();
+  widget->Maximize();
+  // LayoutShelf() forces the animation to completion, at which point the
+  // shelf should go off the screen.
+  shelf->shelf_layout_manager()->LayoutShelf();
+  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
+  EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
+  const gfx::Rect hidden_shelf_bounds = shelf_widget->GetWindowBoundsInScreen();
+  EXPECT_NE(shown_shelf_bounds, hidden_shelf_bounds);
+
+  // Go to the second desk.
+  ActivateDesk(DesksController::Get()->desks()[1].get());
+  // The shelf should now want to show itself, but as the shelf animation is
+  // just starting, it should still be hidden. If this fails, the change was
+  // not animated.
+  EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
+  EXPECT_EQ(shelf_widget->GetWindowBoundsInScreen(), hidden_shelf_bounds);
+  // Let's wait until the shelf animates to a fully shown state.
+  while (shelf_widget->GetWindowBoundsInScreen() != shown_shelf_bounds) {
+    base::RunLoop run_loop;
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, run_loop.QuitClosure(),
+        base::TimeDelta::FromMilliseconds(200));
+    run_loop.Run();
+  }
+  EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
+}
+
 class DesksWithSplitViewTest : public AshTestBase {
  public:
   DesksWithSplitViewTest() = default;
@@ -1925,6 +2105,10 @@ class DesksWithSplitViewTest : public AshTestBase {
     AshTestBase::SetUp();
   }
 
+  SplitViewController* split_view_controller() {
+    return SplitViewController::Get(Shell::GetPrimaryRootWindow());
+  }
+
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
 
@@ -1934,7 +2118,6 @@ class DesksWithSplitViewTest : public AshTestBase {
 TEST_F(DesksWithSplitViewTest, SwitchToDeskWithSnappedActiveWindow) {
   auto* desks_controller = DesksController::Get();
   auto* overview_controller = Shell::Get()->overview_controller();
-  auto* split_view_controller = Shell::Get()->split_view_controller();
 
   // Two virtual desks: |desk_1| (active) and |desk_2|.
   NewDesk();
@@ -1952,13 +2135,13 @@ TEST_F(DesksWithSplitViewTest, SwitchToDeskWithSnappedActiveWindow) {
 
   // Switch to |desk_2| and then back to |desk_1|. Verify that neither split
   // view nor overview arises.
-  EXPECT_FALSE(split_view_controller->InSplitViewMode());
+  EXPECT_FALSE(split_view_controller()->InSplitViewMode());
   EXPECT_FALSE(overview_controller->InOverviewSession());
   ActivateDesk(desk_2);
-  EXPECT_FALSE(split_view_controller->InSplitViewMode());
+  EXPECT_FALSE(split_view_controller()->InSplitViewMode());
   EXPECT_FALSE(overview_controller->InOverviewSession());
   ActivateDesk(desk_1);
-  EXPECT_FALSE(split_view_controller->InSplitViewMode());
+  EXPECT_FALSE(split_view_controller()->InSplitViewMode());
   EXPECT_FALSE(overview_controller->InOverviewSession());
 }
 
@@ -1994,9 +2177,10 @@ TEST_F(DesksWithSplitViewTest, SuccessfulDragToDeskRemovesSplitViewIndicators) {
   // Validate that before dropping, the SplitView indicators and the drop target
   // widget are created.
   EXPECT_TRUE(overview_grid->drop_target_widget());
-  EXPECT_EQ(IndicatorState::kDragArea,
-            overview_session->split_view_drag_indicators()
-                ->current_indicator_state());
+  EXPECT_EQ(SplitViewDragIndicators::WindowDraggingState::kFromOverview,
+            overview_session->grid_list()[0]
+                ->split_view_drag_indicators()
+                ->current_window_dragging_state());
   // Now drop the window, and validate the indicators and the drop target were
   // removed.
   GetEventGenerator()->ReleaseLeftButton();
@@ -2005,9 +2189,10 @@ TEST_F(DesksWithSplitViewTest, SuccessfulDragToDeskRemovesSplitViewIndicators) {
   EXPECT_FALSE(DoesActiveDeskContainWindow(window.get()));
   EXPECT_TRUE(overview_session->no_windows_widget_for_testing());
   EXPECT_FALSE(overview_grid->drop_target_widget());
-  EXPECT_EQ(IndicatorState::kNone,
-            overview_session->split_view_drag_indicators()
-                ->current_indicator_state());
+  EXPECT_EQ(SplitViewDragIndicators::WindowDraggingState::kNoDrag,
+            overview_session->grid_list()[0]
+                ->split_view_drag_indicators()
+                ->current_window_dragging_state());
 }
 
 namespace {
@@ -2531,7 +2716,7 @@ TEST_F(DesksAcceleratorsTest, CannotMoveAlwaysOnTopWindows) {
 // - Reusing containers when desks are removed and created.
 
 // Instantiate the parametrized tests.
-INSTANTIATE_TEST_SUITE_P(, DesksTest, ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All, DesksTest, ::testing::Bool());
 
 }  // namespace
 

@@ -139,15 +139,8 @@ PermissionDescriptorPtr ParsePermission(ScriptState* script_state,
     return CreatePermissionDescriptor(PermissionName::BACKGROUND_FETCH);
   if (name == "idle-detection")
     return CreatePermissionDescriptor(PermissionName::IDLE_DETECTION);
-  if (name == "periodic-background-sync") {
-    if (!RuntimeEnabledFeatures::PeriodicBackgroundSyncEnabled(
-            ExecutionContext::From(script_state))) {
-      exception_state.ThrowTypeError(
-          "Periodic Background Sync is not enabled.");
-      return nullptr;
-    }
+  if (name == "periodic-background-sync")
     return CreatePermissionDescriptor(PermissionName::PERIODIC_BACKGROUND_SYNC);
-  }
   if (name == "wake-lock") {
     if (!RuntimeEnabledFeatures::WakeLockEnabled(
             ExecutionContext::From(script_state))) {
@@ -158,6 +151,8 @@ PermissionDescriptorPtr ParsePermission(ScriptState* script_state,
         NativeValueTraits<WakeLockPermissionDescriptor>::NativeValue(
             script_state->GetIsolate(), raw_permission.V8Value(),
             exception_state);
+    if (exception_state.HadException())
+      return nullptr;
     const String& type = wake_lock_permission->type();
     if (type == "screen") {
       return CreateWakeLockPermissionDescriptor(
@@ -169,7 +164,14 @@ PermissionDescriptorPtr ParsePermission(ScriptState* script_state,
       NOTREACHED();
     }
   }
-
+  if (name == "nfc") {
+    if (!RuntimeEnabledFeatures::WebNFCEnabled(
+            ExecutionContext::From(script_state))) {
+      exception_state.ThrowTypeError("Web NFC is not enabled.");
+      return nullptr;
+    }
+    return CreatePermissionDescriptor(PermissionName::NFC);
+  }
   return nullptr;
 }
 
@@ -217,9 +219,7 @@ ScriptPromise Permissions::request(ScriptState* script_state,
   LocalFrame* frame = doc ? doc->GetFrame() : nullptr;
   GetService(ExecutionContext::From(script_state))
       ->RequestPermission(
-          std::move(descriptor),
-          LocalFrame::HasTransientUserActivation(
-              frame, true /* check_if_main_thread */),
+          std::move(descriptor), LocalFrame::HasTransientUserActivation(frame),
           WTF::Bind(&Permissions::TaskComplete, WrapPersistent(this),
                     WrapPersistent(resolver),
                     WTF::Passed(std::move(descriptor_copy))));
@@ -249,7 +249,7 @@ ScriptPromise Permissions::revoke(ScriptState* script_state,
 
 ScriptPromise Permissions::requestAll(
     ScriptState* script_state,
-    const Vector<ScriptValue>& raw_permissions,
+    const HeapVector<ScriptValue>& raw_permissions,
     ExceptionState& exception_state) {
   Vector<PermissionDescriptorPtr> internal_permissions;
   Vector<int> caller_index_to_internal_index;
@@ -293,8 +293,7 @@ ScriptPromise Permissions::requestAll(
   GetService(ExecutionContext::From(script_state))
       ->RequestPermissions(
           std::move(internal_permissions),
-          LocalFrame::HasTransientUserActivation(
-              frame, true /* check_if_main_thread */),
+          LocalFrame::HasTransientUserActivation(frame),
           WTF::Bind(&Permissions::BatchTaskComplete, WrapPersistent(this),
                     WrapPersistent(resolver),
                     WTF::Passed(std::move(internal_permissions_copy)),

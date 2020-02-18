@@ -55,6 +55,11 @@ enum wl_proxy_flag {
 	WL_PROXY_FLAG_WRAPPER = (1 << 2),
 };
 
+struct wl_zombie {
+	int event_count;
+	int *fd_count;
+};
+
 struct wl_proxy {
 	struct wl_object object;
 	struct wl_display *display;
@@ -64,13 +69,6 @@ struct wl_proxy {
 	void *user_data;
 	wl_dispatcher_func_t dispatcher;
 	uint32_t version;
-};
-
-struct wl_global {
-	uint32_t id;
-	char *interface;
-	uint32_t version;
-	struct wl_list link;
 };
 
 struct wl_event_queue {
@@ -187,6 +185,9 @@ display_protocol_error(struct wl_display *display, uint32_t code,
 		case WL_DISPLAY_ERROR_NO_MEMORY:
 			err = ENOMEM;
 			break;
+		case WL_DISPLAY_ERROR_IMPLEMENTATION:
+			err = EPROTO;
+			break;
 		default:
 			err = EFAULT;
 		}
@@ -223,7 +224,20 @@ wl_event_queue_init(struct wl_event_queue *queue, struct wl_display *display)
 }
 
 static void
-decrease_closure_args_refcount(struct wl_closure *closure)
+wl_proxy_unref(struct wl_proxy *proxy)
+{
+	assert(proxy->refcount > 0);
+	if (--proxy->refcount > 0)
+		return;
+
+	/* If we get here, the client must have explicitly requested
+	 * deletion. */
+	assert(proxy->flags & WL_PROXY_FLAG_DESTROYED);
+	free(proxy);
+}
+
+static void
+validate_closure_objects(struct wl_closure *closure)
 {
 	const char *signature;
 	struct argument_details arg;
@@ -238,14 +252,8 @@ decrease_closure_args_refcount(struct wl_closure *closure)
 		case 'n':
 		case 'o':
 			proxy = (struct wl_proxy *) closure->args[i].o;
-			if (proxy) {
-				if (proxy->flags & WL_PROXY_FLAG_DESTROYED)
-					closure->args[i].o = NULL;
-
-				proxy->refcount--;
-				if (!proxy->refcount)
-					free(proxy);
-			}
+			if (proxy && proxy->flags & WL_PROXY_FLAG_DESTROYED)
+				closure->args[i].o = NULL;
 			break;
 		default:
 			break;
@@ -253,28 +261,47 @@ decrease_closure_args_refcount(struct wl_closure *closure)
 	}
 }
 
+/* Destroys a closure which was demarshaled for dispatch; unrefs all the
+ * proxies in its arguments, as well as its own proxy, and destroys the
+ * closure itself. */
+static void
+destroy_queued_closure(struct wl_closure *closure)
+{
+	const char *signature;
+	struct argument_details arg;
+	struct wl_proxy *proxy;
+	int i, count;
+
+	signature = closure->message->signature;
+	count = arg_count_for_signature(signature);
+	for (i = 0; i < count; i++) {
+		signature = get_next_argument(signature, &arg);
+		switch (arg.type) {
+		case 'n':
+		case 'o':
+			proxy = (struct wl_proxy *) closure->args[i].o;
+			if (proxy)
+				wl_proxy_unref(proxy);
+			break;
+		default:
+			break;
+		}
+	}
+
+	wl_proxy_unref(closure->proxy);
+	wl_closure_destroy(closure);
+}
+
 static void
 wl_event_queue_release(struct wl_event_queue *queue)
 {
 	struct wl_closure *closure;
-	struct wl_proxy *proxy;
-	bool proxy_destroyed;
 
 	while (!wl_list_empty(&queue->event_list)) {
 		closure = container_of(queue->event_list.next,
 				       struct wl_closure, link);
 		wl_list_remove(&closure->link);
-
-		decrease_closure_args_refcount(closure);
-
-		proxy = closure->proxy;
-		proxy_destroyed = !!(proxy->flags & WL_PROXY_FLAG_DESTROYED);
-
-		proxy->refcount--;
-		if (proxy_destroyed && !proxy->refcount)
-			free(proxy);
-
-		wl_closure_destroy(closure);
+		destroy_queued_closure(closure);
 	}
 }
 
@@ -322,6 +349,66 @@ wl_display_create_queue(struct wl_display *display)
 	wl_event_queue_init(queue, display);
 
 	return queue;
+}
+
+static int
+message_count_fds(const char *signature)
+{
+	unsigned int count, i, fds = 0;
+	struct argument_details arg;
+
+	count = arg_count_for_signature(signature);
+	for (i = 0; i < count; i++) {
+		signature = get_next_argument(signature, &arg);
+		if (arg.type == 'h')
+			fds++;
+	}
+
+	return fds;
+}
+
+static struct wl_zombie *
+prepare_zombie(struct wl_proxy *proxy)
+{
+	const struct wl_interface *interface = proxy->object.interface;
+	const struct wl_message *message;
+	int i, count;
+	struct wl_zombie *zombie = NULL;
+
+	/* If we hit an event with an FD, ensure we have a zombie object and
+	 * fill the fd_count slot for that event with the number of FDs for
+	 * that event. Interfaces with no events containing FDs will not have
+	 * zombie objects created. */
+	for (i = 0; i < interface->event_count; i++) {
+		message = &interface->events[i];
+		count = message_count_fds(message->signature);
+
+		if (!count)
+			continue;
+
+		if (!zombie) {
+			zombie = zalloc(sizeof(*zombie) +
+				        (interface->event_count * sizeof(int)));
+			if (!zombie)
+				return NULL;
+
+			zombie->event_count = interface->event_count;
+			zombie->fd_count = (int *) &zombie[1];
+		}
+
+		zombie->fd_count[i] = count;
+	}
+
+	return zombie;
+}
+
+static enum wl_iterator_result
+free_zombies(void *element, void *data, uint32_t flags)
+{
+	if (flags & WL_MAP_ENTRY_ZOMBIE)
+		free(element);
+
+	return WL_ITERATOR_CONTINUE;
 }
 
 static struct wl_proxy *
@@ -405,21 +492,25 @@ wl_proxy_create_for_id(struct wl_proxy *factory,
 static void
 proxy_destroy(struct wl_proxy *proxy)
 {
-	if (proxy->flags & WL_PROXY_FLAG_ID_DELETED)
+	if (proxy->flags & WL_PROXY_FLAG_ID_DELETED) {
 		wl_map_remove(&proxy->display->objects, proxy->object.id);
-	else if (proxy->object.id < WL_SERVER_ID_START)
-		wl_map_insert_at(&proxy->display->objects, 0,
-				 proxy->object.id, WL_ZOMBIE_OBJECT);
-	else
+	} else if (proxy->object.id < WL_SERVER_ID_START) {
+		struct wl_zombie *zombie = prepare_zombie(proxy);
+
+		/* The map now contains the zombie entry, until the delete_id
+		 * event arrives. */
+		wl_map_insert_at(&proxy->display->objects,
+				 WL_MAP_ENTRY_ZOMBIE,
+				 proxy->object.id,
+				 zombie);
+	} else {
 		wl_map_insert_at(&proxy->display->objects, 0,
 				 proxy->object.id, NULL);
-
+	}
 
 	proxy->flags |= WL_PROXY_FLAG_DESTROYED;
 
-	proxy->refcount--;
-	if (!proxy->refcount)
-		free(proxy);
+	wl_proxy_unref(proxy);
 }
 
 /** Destroy a proxy object
@@ -834,13 +925,16 @@ display_handle_delete_id(void *data, struct wl_display *display, uint32_t id)
 
 	proxy = wl_map_lookup(&display->objects, id);
 
-	if (!proxy)
-		wl_log("error: received delete_id for unknown id (%u)\n", id);
-
-	if (proxy && proxy != WL_ZOMBIE_OBJECT)
-		proxy->flags |= WL_PROXY_FLAG_ID_DELETED;
-	else
+	if (wl_object_is_zombie(&display->objects, id)) {
+		/* For zombie objects, the 'proxy' is actually the zombie
+		 * event-information structure, which we can free. */
+		free(proxy);
 		wl_map_remove(&display->objects, id);
+	} else if (proxy) {
+		proxy->flags |= WL_PROXY_FLAG_ID_DELETED;
+	} else {
+		wl_log("error: received delete_id for unknown id (%u)\n", id);
+	}
 
 	pthread_mutex_unlock(&display->mutex);
 }
@@ -857,9 +951,17 @@ connect_to_socket(const char *name)
 	socklen_t size;
 	const char *runtime_dir;
 	int name_size, fd;
+	bool path_is_absolute;
+
+	if (name == NULL)
+		name = getenv("WAYLAND_DISPLAY");
+	if (name == NULL)
+		name = "wayland-0";
+
+	path_is_absolute = name[0] == '/';
 
 	runtime_dir = getenv("XDG_RUNTIME_DIR");
-	if (!runtime_dir) {
+	if (!runtime_dir && !path_is_absolute) {
 		wl_log("error: XDG_RUNTIME_DIR not set in the environment.\n");
 		/* to prevent programs reporting
 		 * "failed to create display: Success" */
@@ -867,25 +969,32 @@ connect_to_socket(const char *name)
 		return -1;
 	}
 
-	if (name == NULL)
-		name = getenv("WAYLAND_DISPLAY");
-	if (name == NULL)
-		name = "wayland-0";
-
 	fd = wl_os_socket_cloexec(PF_LOCAL, SOCK_STREAM, 0);
 	if (fd < 0)
 		return -1;
 
 	memset(&addr, 0, sizeof addr);
 	addr.sun_family = AF_LOCAL;
-	name_size =
-		snprintf(addr.sun_path, sizeof addr.sun_path,
-			 "%s/%s", runtime_dir, name) + 1;
+	if (!path_is_absolute) {
+		name_size =
+			snprintf(addr.sun_path, sizeof addr.sun_path,
+			         "%s/%s", runtime_dir, name) + 1;
+	} else {
+		/* absolute path */
+		name_size =
+			snprintf(addr.sun_path, sizeof addr.sun_path,
+			         "%s", name) + 1;
+	}
 
 	assert(name_size > 0);
 	if (name_size > (int)sizeof addr.sun_path) {
-		wl_log("error: socket path \"%s/%s\" plus null terminator"
-		       " exceeds 108 bytes\n", runtime_dir, name);
+		if (!path_is_absolute) {
+			wl_log("error: socket path \"%s/%s\" plus null terminator"
+			       " exceeds %i bytes\n", runtime_dir, name, (int) sizeof(addr.sun_path));
+		} else {
+			wl_log("error: socket path \"%s\" plus null terminator"
+			       " exceeds %i bytes\n", name, (int) sizeof(addr.sun_path));
+		}
 		close(fd);
 		/* to prevent programs reporting
 		 * "failed to add socket: Success" */
@@ -994,6 +1103,16 @@ wl_display_connect_to_fd(int fd)
  * its value will be replaced with the WAYLAND_DISPLAY environment
  * variable if it is set, otherwise display "wayland-0" will be used.
  *
+ * If \c name is an absolute path, then that path is used as-is for
+ * the location of the socket at which the Wayland server is listening;
+ * no qualification inside XDG_RUNTIME_DIR is attempted.
+ *
+ * If \c name is \c NULL and the WAYLAND_DISPLAY environment variable
+ * is set to an absolute pathname, then that pathname is used as-is
+ * for the socket in the same manner as if \c name held an absolute
+ * path. Support for absolute paths in \c name and WAYLAND_DISPLAY
+ * is present since Wayland version 1.15.
+ *
  * \memberof wl_display
  */
 WL_EXPORT struct wl_display *
@@ -1037,6 +1156,7 @@ WL_EXPORT void
 wl_display_disconnect(struct wl_display *display)
 {
 	wl_connection_destroy(display->connection);
+	wl_map_for_each(&display->objects, free_zombies, NULL);
 	wl_map_release(&display->objects);
 	wl_event_queue_release(&display->default_queue);
 	wl_event_queue_release(&display->display_queue);
@@ -1208,6 +1328,8 @@ increase_closure_args_refcount(struct wl_closure *closure)
 			break;
 		}
 	}
+
+	closure->proxy->refcount++;
 }
 
 static int
@@ -1227,11 +1349,16 @@ queue_event(struct wl_display *display, int len)
 	if (len < size)
 		return 0;
 
+	/* If our proxy is gone or a zombie, just eat the event (and any FDs,
+	 * if applicable). */
 	proxy = wl_map_lookup(&display->objects, id);
-	if (proxy == WL_ZOMBIE_OBJECT) {
-		wl_connection_consume(display->connection, size);
-		return size;
-	} else if (proxy == NULL) {
+	if (!proxy || wl_object_is_zombie(&display->objects, id)) {
+		struct wl_zombie *zombie = wl_map_lookup(&display->objects, id);
+
+		if (zombie && zombie->fd_count[opcode])
+			wl_connection_close_fds_in(display->connection,
+						   zombie->fd_count[opcode]);
+
 		wl_connection_consume(display->connection, size);
 		return size;
 	}
@@ -1252,9 +1379,8 @@ queue_event(struct wl_display *display, int len)
 		return -1;
 	}
 
-	increase_closure_args_refcount(closure);
-	proxy->refcount++;
 	closure->proxy = proxy;
+	increase_closure_args_refcount(closure);
 
 	if (proxy == &display->proxy)
 		queue = &display->display_queue;
@@ -1281,17 +1407,11 @@ dispatch_event(struct wl_display *display, struct wl_event_queue *queue)
 
 	/* Verify that the receiving object is still valid by checking if has
 	 * been destroyed by the application. */
-
-	decrease_closure_args_refcount(closure);
+	validate_closure_objects(closure);
 	proxy = closure->proxy;
 	proxy_destroyed = !!(proxy->flags & WL_PROXY_FLAG_DESTROYED);
-
-	proxy->refcount--;
 	if (proxy_destroyed) {
-		if (!proxy->refcount)
-			free(proxy);
-
-		wl_closure_destroy(closure);
+		destroy_queued_closure(closure);
 		return;
 	}
 
@@ -1311,9 +1431,9 @@ dispatch_event(struct wl_display *display, struct wl_event_queue *queue)
 				  &proxy->object, opcode, proxy->user_data);
 	}
 
-	wl_closure_destroy(closure);
-
 	pthread_mutex_lock(&display->mutex);
+
+	destroy_queued_closure(closure);
 }
 
 static int

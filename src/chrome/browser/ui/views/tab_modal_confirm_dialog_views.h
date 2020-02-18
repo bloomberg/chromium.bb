@@ -37,11 +37,12 @@ class TabModalConfirmDialogViews : public TabModalConfirmDialog,
       content::WebContents* web_contents);
 
   // views::DialogDelegate:
+  int GetDialogButtons() const override;
   base::string16 GetWindowTitle() const override;
-  base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
   bool Cancel() override;
   bool Accept() override;
   bool Close() override;
+  bool ShouldShowCloseButton() const override;
 
   // views::WidgetDelegate:
   views::View* GetContentsView() override;
@@ -63,7 +64,6 @@ class TabModalConfirmDialogViews : public TabModalConfirmDialog,
   // views::LinkListener:
   void LinkClicked(views::Link* source, int event_flags) override;
 
-  int GetDefaultDialogButton() const override;
   views::View* GetInitiallyFocusedView() override;
 
   std::unique_ptr<TabModalConfirmDialogDelegate> delegate_;

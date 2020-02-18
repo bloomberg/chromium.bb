@@ -11,23 +11,25 @@ import android.app.ActivityManager;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
-import android.support.annotation.Nullable;
+
+import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ObservableSupplier;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.MenuOrKeyboardActionController;
-import org.chromium.chrome.browser.document.DocumentUtils;
+import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.lifecycle.NativeInitObserver;
 import org.chromium.chrome.browser.lifecycle.PauseResumeWithNativeObserver;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab_activity_glue.ReparentingTask;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
-import org.chromium.chrome.browser.util.FeatureUtilities;
+import org.chromium.chrome.browser.util.AndroidTaskUtils;
 
 import java.util.List;
 
@@ -301,7 +303,7 @@ public class MultiInstanceManager
         ActivityManager manager =
                 (ActivityManager) mContext.getSystemService(Context.ACTIVITY_SERVICE);
         for (ActivityManager.AppTask task : manager.getAppTasks()) {
-            ActivityManager.RecentTaskInfo info = DocumentUtils.getTaskInfoFromTask(task);
+            ActivityManager.RecentTaskInfo info = AndroidTaskUtils.getTaskInfoFromTask(task);
             if (info == null) continue;
             if (info.id == sMergedInstanceTaskId) return true;
         }
@@ -313,7 +315,7 @@ public class MultiInstanceManager
         if (intent == null) return;
 
         onMultiInstanceModeStarted();
-        tab.detachAndStartReparenting(intent,
+        ReparentingTask.from(tab).begin(mContext, intent,
                 mMultiWindowModeStateDispatcher.getOpenInOtherWindowActivityOptions(), null);
     }
 }

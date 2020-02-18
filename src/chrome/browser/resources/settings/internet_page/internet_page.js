@@ -15,21 +15,13 @@ Polymer({
   is: 'settings-internet-page',
 
   behaviors: [
-    CrNetworkListenerBehavior,
+    NetworkListenerBehavior,
     I18nBehavior,
     settings.RouteObserverBehavior,
     WebUIListenerBehavior,
   ],
 
   properties: {
-    /**
-     * Interface for networkingPrivate calls. May be overriden by tests.
-     * @type {NetworkingPrivate}
-     */
-    networkingPrivate: {
-      type: Object,
-      value: chrome.networkingPrivate,
-    },
 
     /** Preferences state. */
     prefs: {
@@ -65,16 +57,18 @@ Polymer({
     showSpinner_: Boolean,
 
     /**
-     * The network type for the networks subpage. Used in the subpage header.
+     * The network type for the networks subpage when shown.
+     * @type {chromeos.networkConfig.mojom.NetworkType}
      * @private
      */
-    subpageType_: String,
+    subpageType_: Number,
 
     /**
-     * The network type for the known networks subpage.
+     * The network type for the known networks subpage when shown.
+     * @type {chromeos.networkConfig.mojom.NetworkType}
      * @private
      */
-    knownNetworksType_: String,
+    knownNetworksType_: Number,
 
     /**
      * Whether the 'Add connection' section is expanded.
@@ -109,6 +103,12 @@ Polymer({
       }
     },
 
+    /** @private {boolean} */
+    showInternetConfig_: {
+      type: Boolean,
+      value: false,
+    },
+
     /** @private {!Map<string, Element>} */
     focusConfig_: {
       type: Object,
@@ -118,8 +118,11 @@ Polymer({
     },
   },
 
-  /** @private {string} Type of last detail page visited. */
-  detailType_: '',
+  /**
+   * Type of last detail page visited
+   * @private {chromeos.networkConfig.mojom.NetworkType|undefined}
+   */
+  detailType_: undefined,
 
   // Element event listeners
   listeners: {
@@ -134,12 +137,7 @@ Polymer({
   /** @private  {?settings.InternetPageBrowserProxy} */
   browserProxy_: null,
 
-  /**
-   * This UI will use both the networkingPrivate extension API and the
-   * networkConfig mojo API until we provide all of the required functionality
-   * in networkConfig. TODO(stevenjb): Remove use of networkingPrivate api.
-   * @private {?chromeos.networkConfig.mojom.CrosNetworkConfigRemote}
-   */
+  /** @private {?chromeos.networkConfig.mojom.CrosNetworkConfigRemote} */
   networkConfig_: null,
 
   /** @override */
@@ -170,7 +168,7 @@ Polymer({
       const queryParams = settings.getQueryParameters();
       const type = queryParams.get('type');
       if (type) {
-        this.subpageType_ = type;
+        this.subpageType_ = OncMojo.getNetworkTypeFromString(type);
       }
     } else if (route == settings.routes.KNOWN_NETWORKS) {
       // Handle direct navigation to the known networks page,
@@ -178,7 +176,7 @@ Polymer({
       const queryParams = settings.getQueryParameters();
       const type = queryParams.get('type');
       if (type) {
-        this.knownNetworksType_ = type;
+        this.knownNetworksType_ = OncMojo.getNetworkTypeFromString(type);
       }
     } else if (
         route != settings.routes.INTERNET && route != settings.routes.BASIC) {
@@ -201,9 +199,9 @@ Polymer({
       if (subPage) {
         element = subPage.$$('#networkList');
       }
-    } else if (this.detailType_) {
-      const rowForDetailType =
-          this.$$('network-summary').$$(`#${this.detailType_}`);
+    } else if (this.detailType_ !== undefined) {
+      const oncType = OncMojo.getNetworkTypeString(this.detailType_);
+      const rowForDetailType = this.$$('network-summary').$$(`#${oncType}`);
 
       // Note: It is possible that the row is no longer present in the DOM
       // (e.g., when a Cellular dongle is unplugged or when Instant Tethering
@@ -219,7 +217,7 @@ Polymer({
     }
   },
 
-  /** CrosNetworkConfigObserver impl */
+  /** NetworkListenerBehavior override */
   onVpnProvidersChanged: function() {
     this.networkConfig_.getVpnProviders().then(response => {
       const providers = response.providers;
@@ -246,33 +244,48 @@ Polymer({
    * @private
    */
   onShowConfig_: function(event) {
+    const type = OncMojo.getNetworkTypeFromString(event.detail.type);
     if (!event.detail.guid) {
       // New configuration
-      this.showConfig_(true /* configAndConnect */, event.detail.type);
+      this.showConfig_(true /* configAndConnect */, type);
     } else {
       this.showConfig_(
-          false /* configAndConnect */, event.detail.type, event.detail.guid,
+          false /* configAndConnect */, type, event.detail.guid,
           event.detail.name);
     }
   },
 
   /**
    * @param {boolean} configAndConnect
-   * @param {string} type
+   * @param {chromeos.networkConfig.mojom.NetworkType} type
    * @param {?string=} opt_guid
    * @param {?string=} opt_name
    * @private
    */
   showConfig_: function(configAndConnect, type, opt_guid, opt_name) {
-    assert(type != CrOnc.Type.CELLULAR && type != CrOnc.Type.TETHER);
-    const configDialog =
-        /** @type {!InternetConfigElement} */ (this.$.configDialog);
-    configDialog.type =
-        /** @type {chrome.networkingPrivate.NetworkType} */ (type);
-    configDialog.guid = opt_guid || '';
-    configDialog.name = opt_name || '';
-    configDialog.showConnect = configAndConnect;
-    configDialog.open();
+    assert(
+        type != chromeos.networkConfig.mojom.NetworkType.kCellular &&
+        type != chromeos.networkConfig.mojom.NetworkType.kTether);
+    if (this.showInternetConfig_) {
+      return;
+    }
+    this.showInternetConfig_ = true;
+    // Async call to ensure dialog is stamped.
+    setTimeout(() => {
+      const configDialog =
+          /** @type {!InternetConfigElement} */ (this.$$('#configDialog'));
+      assert(!!configDialog);
+      configDialog.type = OncMojo.getNetworkTypeString(type);
+      configDialog.guid = opt_guid || '';
+      configDialog.name = opt_name || '';
+      configDialog.showConnect = configAndConnect;
+      configDialog.open();
+    });
+  },
+
+  /** @private */
+  onInternetConfigClose_: function() {
+    this.showInternetConfig_ = false;
   },
 
   /**
@@ -281,11 +294,10 @@ Polymer({
    */
   onShowDetail_: function(event) {
     const networkState = event.detail;
-    const oncType = OncMojo.getNetworkTypeString(networkState.type);
-    this.detailType_ = oncType;
+    this.detailType_ = networkState.type;
     const params = new URLSearchParams;
     params.append('guid', networkState.guid);
-    params.append('type', oncType);
+    params.append('type', OncMojo.getNetworkTypeString(networkState.type));
     params.append('name', OncMojo.getNetworkStateDisplayName(networkState));
     settings.navigateTo(settings.routes.NETWORK_DETAIL, params);
   },
@@ -306,39 +318,31 @@ Polymer({
     // The shared Cellular/Tether subpage is referred to as "Mobile".
     // TODO(khorimoto): Remove once Cellular/Tether are split into their own
     // sections.
-    if (this.subpageType_ == CrOnc.Type.CELLULAR ||
-        this.subpageType_ == CrOnc.Type.TETHER) {
+    if (this.subpageType_ == mojom.NetworkType.kCellular ||
+        this.subpageType_ == mojom.NetworkType.kTether) {
       return this.i18n('OncTypeMobile');
     }
-    return this.i18n('OncType' + this.subpageType_);
+    return this.i18n(
+        'OncType' + OncMojo.getNetworkTypeString(this.subpageType_));
   },
 
   /**
-   * @param {string} type
-   * @return {string}
-   * @private
-   */
-  getAddNetworkClass_: function(type) {
-    return type == CrOnc.Type.WI_FI ? 'icon-add-wifi' : 'icon-add-circle';
-  },
-
-  /**
-   * @param {string} subpageType
+   * @param {chromeos.networkConfig.mojom.NetworkType} subpageType
    * @param {!Object<!OncMojo.DeviceStateProperties>|undefined} deviceStates
    * @return {!OncMojo.DeviceStateProperties|undefined}
    * @private
    */
   getDeviceState_: function(subpageType, deviceStates) {
-    if (!subpageType) {
+    if (subpageType === undefined) {
       return undefined;
     }
     // If both Tether and Cellular are enabled, use the Cellular device state
     // when directly navigating to the Tether page.
-    if (subpageType == CrOnc.Type.TETHER &&
+    if (subpageType == mojom.NetworkType.kTether &&
         this.deviceStates[mojom.NetworkType.kCellular]) {
-      subpageType = CrOnc.Type.CELLULAR;
+      subpageType = mojom.NetworkType.kCellular;
     }
-    return deviceStates[OncMojo.getNetworkTypeFromString(subpageType)];
+    return deviceStates[subpageType];
   },
 
   /**
@@ -356,7 +360,8 @@ Polymer({
    * @private
    */
   onDeviceStatesChanged_: function(newValue, oldValue) {
-    const wifiDeviceState = this.getDeviceState_(CrOnc.Type.WI_FI, newValue);
+    const wifiDeviceState =
+        this.getDeviceState_(mojom.NetworkType.kWiFi, newValue);
     let managedNetworkAvailable = false;
     if (wifiDeviceState) {
       managedNetworkAvailable = !!wifiDeviceState.managedNetworkAvailable;
@@ -366,9 +371,7 @@ Polymer({
       this.managedNetworkAvailable = managedNetworkAvailable;
     }
 
-    if (this.detailType_ &&
-        !this.deviceStates[OncMojo.getNetworkTypeFromString(
-            this.detailType_)]) {
+    if (this.detailType_ && !this.deviceStates[this.detailType_]) {
       // If the device type associated with the current network has been
       // removed (e.g., due to unplugging a Cellular dongle), the details page,
       // if visible, displays controls which are no longer functional. If this
@@ -385,22 +388,26 @@ Polymer({
    * @private
    */
   onShowKnownNetworks_: function(event) {
-    const oncType = OncMojo.getNetworkTypeString(event.detail);
-    this.detailType_ = oncType;
-    this.knownNetworksType_ = oncType;
+    const type = event.detail;
+    this.detailType_ = type;
+    this.knownNetworksType_ = type;
     const params = new URLSearchParams;
-    params.append('type', oncType);
+    params.append('type', OncMojo.getNetworkTypeString(type));
     settings.navigateTo(settings.routes.KNOWN_NETWORKS, params);
   },
 
   /** @private */
   onAddWiFiTap_: function() {
-    this.showConfig_(true /* configAndConnect */, CrOnc.Type.WI_FI);
+    this.showConfig_(
+        true /* configAndConnect */,
+        chromeos.networkConfig.mojom.NetworkType.kWiFi);
   },
 
   /** @private */
   onAddVPNTap_: function() {
-    this.showConfig_(true /* configAndConnect */, CrOnc.Type.VPN);
+    this.showConfig_(
+        true /* configAndConnect */,
+        chromeos.networkConfig.mojom.NetworkType.kVPN);
   },
 
   /**
@@ -417,11 +424,10 @@ Polymer({
    * @private
    */
   showNetworksSubpage_: function(type) {
-    const oncType = OncMojo.getNetworkTypeString(type);
-    this.detailType_ = oncType;
+    this.detailType_ = type;
     const params = new URLSearchParams;
-    params.append('type', oncType);
-    this.subpageType_ = oncType;
+    params.append('type', OncMojo.getNetworkTypeString(type));
+    this.subpageType_ = type;
     settings.navigateTo(settings.routes.INTERNET_NETWORKS, params);
   },
 
@@ -452,14 +458,13 @@ Polymer({
 
   /**
    * @param {!Array<!OncMojo.DeviceStateProperties>} deviceStates
-   * @param {string} type
    * @return {boolean}
    * @private
    */
-  deviceIsEnabled_: function(deviceStates, type) {
-    const device = deviceStates[OncMojo.getNetworkTypeFromString(type)];
-    return !!device &&
-        device.deviceState ==
+  wifiIsEnabled_: function(deviceStates) {
+    const wifi = deviceStates[mojom.NetworkType.kWiFi];
+    return !!wifi &&
+        wifi.deviceState ==
         chromeos.networkConfig.mojom.DeviceStateType.kEnabled;
   },
 
@@ -497,15 +502,15 @@ Polymer({
    */
   onNetworkConnect_: function(event) {
     const networkState = event.detail.networkState;
-    const oncType = OncMojo.getNetworkTypeString(networkState.type);
+    const type = networkState.type;
     const displayName = OncMojo.getNetworkStateDisplayName(networkState);
 
     if (!event.detail.bypassConnectionDialog &&
-        networkState.type == mojom.NetworkType.kTether &&
-        !networkState.tether.hasConnectedToHost) {
+        type == mojom.NetworkType.kTether &&
+        !networkState.typeState.tether.hasConnectedToHost) {
       const params = new URLSearchParams;
       params.append('guid', networkState.guid);
-      params.append('type', oncType);
+      params.append('type', OncMojo.getNetworkTypeString(type));
       params.append('name', displayName);
       params.append('showConfigure', true.toString());
 
@@ -513,10 +518,10 @@ Polymer({
       return;
     }
 
-    const isMobile = OncMojo.networkTypeIsMobile(networkState.type);
+    const isMobile = OncMojo.networkTypeIsMobile(type);
     if (!isMobile && (!networkState.connectable || !!networkState.errorState)) {
       this.showConfig_(
-          true /* configAndConnect */, oncType, networkState.guid, displayName);
+          true /* configAndConnect */, type, networkState.guid, displayName);
       return;
     }
 
@@ -532,7 +537,7 @@ Polymer({
         case mojom.StartConnectResult.kNotConfigured:
           if (!isMobile) {
             this.showConfig_(
-                true /* configAndConnect */, oncType, networkState.guid,
+                true /* configAndConnect */, type, networkState.guid,
                 displayName);
           }
           return;

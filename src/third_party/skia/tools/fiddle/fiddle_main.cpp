@@ -167,9 +167,9 @@ static bool setup_backend_objects(GrContext* context,
             texels[i].fRowBytes = 0;
         }
 
-        backingTexture = resourceProvider->createTexture(backingDesc, format, GrRenderable::kNo, 1,
-                                                         SkBudgeted::kNo, GrProtected::kNo,
-                                                         texels.get(), mipLevelCount);
+        backingTexture = resourceProvider->createTexture(
+                backingDesc, format, GrColorType::kRGBA_8888, GrRenderable::kNo, 1, SkBudgeted::kNo,
+                GrProtected::kNo, texels.get(), mipLevelCount);
         if (!backingTexture) {
             return false;
         }
@@ -194,8 +194,8 @@ static bool setup_backend_objects(GrContext* context,
         GrMipLevel level0 = { data.get(), backingDesc.fWidth*sizeof(uint32_t) };
 
         sk_sp<GrTexture> tmp = resourceProvider->createTexture(
-                backingDesc, renderableFormat, GrRenderable::kYes, options.fOffScreenSampleCount,
-                SkBudgeted::kNo, GrProtected::kNo, &level0, 1);
+                backingDesc, renderableFormat, GrColorType::kRGBA_8888, GrRenderable::kYes,
+                options.fOffScreenSampleCount, SkBudgeted::kNo, GrProtected::kNo, &level0, 1);
         if (!tmp || !tmp->asRenderTarget()) {
             return false;
         }
@@ -223,8 +223,9 @@ static bool setup_backend_objects(GrContext* context,
         }
 
         backingTextureRenderTarget = resourceProvider->createTexture(
-                backingDesc, renderableFormat, GrRenderable::kYes, options.fOffScreenSampleCount,
-                SkBudgeted::kNo, GrProtected::kNo, texels.get(), mipLevelCount);
+                backingDesc, renderableFormat, GrColorType::kRGBA_8888, GrRenderable::kYes,
+                options.fOffScreenSampleCount, SkBudgeted::kNo, GrProtected::kNo, texels.get(),
+                mipLevelCount);
         if (!backingTextureRenderTarget || !backingTextureRenderTarget->asRenderTarget()) {
             return false;
         }
@@ -316,8 +317,7 @@ int main(int argc, char** argv) {
         }
     }
     if (options.skp) {
-        SkSize size;
-        size = options.size;
+        auto size = SkSize::Make(options.size);
         SkPictureRecorder recorder;
         srand(0);
         draw(prepare_canvas(recorder.beginRecording(size.width(), size.height())));

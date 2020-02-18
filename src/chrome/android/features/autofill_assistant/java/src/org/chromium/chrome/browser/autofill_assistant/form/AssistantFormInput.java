@@ -7,9 +7,11 @@ package org.chromium.chrome.browser.autofill_assistant.form;
 import android.content.Context;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.chrome.autofill_assistant.R;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -45,16 +47,18 @@ public abstract class AssistantFormInput {
     }
 
     @CalledByNative
-    private static AssistantFormCounter createCounter(String label, String subtext,
-            int initialValue, int minValue, int maxValue, int[] allowedValues) {
-        return AssistantFormCounter.create(
-                label, subtext, initialValue, minValue, maxValue, allowedValues);
+    private static AssistantFormCounter createCounter(String label, String descriptionLine1,
+            String descriptionLine2, int initialValue, int minValue, int maxValue,
+            int[] allowedValues) {
+        return AssistantFormCounter.create(label, descriptionLine1, descriptionLine2, initialValue,
+                minValue, maxValue, allowedValues);
     }
 
     @CalledByNative
-    private static AssistantFormSelectionChoice createChoice(
-            String label, boolean initiallySelected) {
-        return new AssistantFormSelectionChoice(label, initiallySelected);
+    private static AssistantFormSelectionChoice createChoice(String label, String descriptionLine1,
+            String descriptionLine2, boolean initiallySelected) {
+        return new AssistantFormSelectionChoice(
+                label, descriptionLine1, descriptionLine2, initiallySelected);
     }
 
     @CalledByNative
@@ -64,16 +68,51 @@ public abstract class AssistantFormInput {
             AssistantFormDelegate delegate) {
         return new AssistantFormCounterInput(label, expandText, minimizeText, counters,
                 minimizedCount, minCountersSum, maxCountersSum,
-                (counterIndex,
-                        value) -> delegate.onCounterChanged(inputIndex, counterIndex, value));
+                new AssistantFormCounterInput.Delegate() {
+                    @Override
+                    public void onCounterChanged(int counterIndex, int value) {
+                        delegate.onCounterChanged(inputIndex, counterIndex, value);
+                    }
+
+                    @Override
+                    public void onLinkClicked(int link) {
+                        delegate.onLinkClicked(link);
+                    }
+                });
     }
 
     @CalledByNative
     private static AssistantFormSelectionInput createSelectionInput(int inputIndex, String label,
             List<AssistantFormSelectionChoice> choices, boolean allowMultipleChoices,
             AssistantFormDelegate delegate) {
-        return new AssistantFormSelectionInput(label, choices, allowMultipleChoices,
-                (choiceIndex, selected)
-                        -> delegate.onChoiceSelectionChanged(inputIndex, choiceIndex, selected));
+        return new AssistantFormSelectionInput(
+                label, choices, allowMultipleChoices, new AssistantFormSelectionInput.Delegate() {
+                    @Override
+                    public void onChoiceSelectionChanged(int choiceIndex, boolean selected) {
+                        delegate.onChoiceSelectionChanged(inputIndex, choiceIndex, selected);
+                    }
+
+                    @Override
+                    public void onLinkClicked(int link) {
+                        delegate.onLinkClicked(link);
+                    }
+                });
+    }
+
+    protected void hideIfEmpty(TextView view) {
+        view.setVisibility(view.length() == 0 ? View.GONE : View.VISIBLE);
+    }
+
+    protected void setMinimumHeight(View view, TextView line1, TextView line2) {
+        if (line1.length() == 0 && line2.length() == 0) {
+            view.setMinimumHeight(view.getContext().getResources().getDimensionPixelSize(
+                    R.dimen.autofill_assistant_form_line_height_1));
+        } else if (line2.length() == 0) {
+            view.setMinimumHeight(view.getContext().getResources().getDimensionPixelSize(
+                    R.dimen.autofill_assistant_form_line_height_2));
+        } else {
+            view.setMinimumHeight(view.getContext().getResources().getDimensionPixelSize(
+                    R.dimen.autofill_assistant_form_line_height_3));
+        }
     }
 }

@@ -36,6 +36,7 @@ class FakeScriptExecutorDelegate : public ScriptExecutorDelegate {
   WebsiteLoginFetcher* GetWebsiteLoginFetcher() override;
   content::WebContents* GetWebContents() override;
   std::string GetAccountEmailAddress() override;
+  std::string GetLocale() override;
   void EnterState(AutofillAssistantState state) override;
   void SetTouchableElementArea(const ElementAreaProto& element) override;
   void SetStatusMessage(const std::string& message) override;
@@ -49,16 +50,17 @@ class FakeScriptExecutorDelegate : public ScriptExecutorDelegate {
   void SetProgressVisible(bool visible) override;
   void SetUserActions(
       std::unique_ptr<std::vector<UserAction>> user_actions) override;
-  void SetCollectUserDataOptions(
-      std::unique_ptr<CollectUserDataOptions> options,
-      std::unique_ptr<UserData> information) override;
+  void SetCollectUserDataOptions(CollectUserDataOptions* options) override;
+  void WriteUserData(
+      base::OnceCallback<void(UserData*, UserData::FieldChange*)>) override;
   void SetViewportMode(ViewportMode mode) override;
   ViewportMode GetViewportMode() override;
   void SetPeekMode(ConfigureBottomSheetProto::PeekMode peek_mode) override;
   ConfigureBottomSheetProto::PeekMode GetPeekMode() override;
-  bool SetForm(std::unique_ptr<FormProto> form,
-               base::RepeatingCallback<void(const FormProto::Result*)> callback)
-      override;
+  bool SetForm(
+      std::unique_ptr<FormProto> form,
+      base::RepeatingCallback<void(const FormProto::Result*)> changed_callback,
+      base::OnceCallback<void(const ClientStatus&)> cancel_callback) override;
   bool HasNavigationError() override;
   bool IsNavigatingToNewDocument() override;
   void RequireUI() override;
@@ -87,9 +89,7 @@ class FakeScriptExecutorDelegate : public ScriptExecutorDelegate {
 
   std::vector<UserAction>* GetUserActions() { return user_actions_.get(); }
 
-  CollectUserDataOptions* GetOptions() {
-    return payment_request_options_.get();
-  }
+  CollectUserDataOptions* GetOptions() { return payment_request_options_; }
 
   void UpdateNavigationState(bool navigating, bool error) {
     navigating_to_new_document_ = navigating;
@@ -116,7 +116,7 @@ class FakeScriptExecutorDelegate : public ScriptExecutorDelegate {
   std::unique_ptr<Details> details_;
   std::unique_ptr<InfoBox> info_box_;
   std::unique_ptr<std::vector<UserAction>> user_actions_;
-  std::unique_ptr<CollectUserDataOptions> payment_request_options_;
+  CollectUserDataOptions* payment_request_options_;
   std::unique_ptr<UserData> payment_request_info_;
   bool navigating_to_new_document_ = false;
   bool navigation_error_ = false;

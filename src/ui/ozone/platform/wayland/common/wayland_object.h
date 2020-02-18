@@ -8,6 +8,10 @@
 #include <wayland-client-core.h>
 #include <memory>
 
+struct gtk_primary_selection_device;
+struct gtk_primary_selection_device_manager;
+struct gtk_primary_selection_offer;
+struct gtk_primary_selection_source;
 struct wl_buffer;
 struct wl_callback;
 struct wl_compositor;
@@ -15,6 +19,7 @@ struct wl_data_device_manager;
 struct wl_data_device;
 struct wl_data_offer;
 struct wl_data_source;
+struct wl_drm;
 struct wl_keyboard;
 struct wl_output;
 struct wl_pointer;
@@ -29,9 +34,11 @@ struct wl_surface;
 struct wl_touch;
 struct wp_presentation;
 struct wp_presentation_feedback;
-struct xdg_shell;
+struct xdg_wm_base;
 struct xdg_surface;
+struct xdg_toplevel;
 struct xdg_popup;
+struct xdg_positioner;
 struct zwp_linux_dmabuf_v1;
 struct zxdg_shell_v6;
 struct zxdg_surface_v6;
@@ -45,6 +52,30 @@ namespace wl {
 
 template <typename T>
 struct ObjectTraits;
+
+template <>
+struct ObjectTraits<gtk_primary_selection_device_manager> {
+  static const wl_interface* interface;
+  static void (*deleter)(gtk_primary_selection_device_manager*);
+};
+
+template <>
+struct ObjectTraits<gtk_primary_selection_device> {
+  static const wl_interface* interface;
+  static void (*deleter)(gtk_primary_selection_device*);
+};
+
+template <>
+struct ObjectTraits<gtk_primary_selection_offer> {
+  static const wl_interface* interface;
+  static void (*deleter)(gtk_primary_selection_offer*);
+};
+
+template <>
+struct ObjectTraits<gtk_primary_selection_source> {
+  static const wl_interface* interface;
+  static void (*deleter)(gtk_primary_selection_source*);
+};
 
 template <>
 struct ObjectTraits<wl_buffer> {
@@ -86,6 +117,12 @@ template <>
 struct ObjectTraits<wl_data_source> {
   static const wl_interface* interface;
   static void (*deleter)(wl_data_source*);
+};
+
+template <>
+struct ObjectTraits<wl_drm> {
+  static const wl_interface* interface;
+  static void (*deleter)(wl_drm*);
 };
 
 template <>
@@ -179,9 +216,9 @@ struct ObjectTraits<wp_presentation_feedback> {
 };
 
 template <>
-struct ObjectTraits<xdg_shell> {
+struct ObjectTraits<xdg_wm_base> {
   static const wl_interface* interface;
-  static void (*deleter)(xdg_shell*);
+  static void (*deleter)(xdg_wm_base*);
 };
 
 template <>
@@ -191,9 +228,21 @@ struct ObjectTraits<xdg_surface> {
 };
 
 template <>
+struct ObjectTraits<xdg_toplevel> {
+  static const wl_interface* interface;
+  static void (*deleter)(xdg_toplevel*);
+};
+
+template <>
 struct ObjectTraits<xdg_popup> {
   static const wl_interface* interface;
   static void (*deleter)(xdg_popup*);
+};
+
+template <>
+struct ObjectTraits<xdg_positioner> {
+  static const wl_interface* interface;
+  static void (*deleter)(xdg_positioner*);
 };
 
 template <>

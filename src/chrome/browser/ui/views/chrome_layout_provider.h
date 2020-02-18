@@ -19,9 +19,6 @@ enum ChromeInsetsMetric {
   INSETS_BOOKMARKS_BAR_BUTTON = views::VIEWS_INSETS_END,
   // Margins used by toasts.
   INSETS_TOAST,
-  // Margins around the title of a tab group header, that form the bounds of the
-  // title chip.
-  INSETS_TAB_GROUP_TITLE_CHIP,
 };
 
 enum ChromeDistanceMetric {
@@ -51,9 +48,6 @@ enum ChromeDistanceMetric {
   // Horizontal indent of a subsection relative to related items above, e.g.
   // checkboxes below explanatory text/headings.
   DISTANCE_SUBSECTION_HORIZONTAL_INDENT,
-  // The horizontal padding on each side of a tab group header's title chip that
-  // creates visual space between it and the adjacent tabs.
-  DISTANCE_TAB_GROUP_TITLE_CHIP_MARGIN,
   // Vertical margin for controls in a toast.
   DISTANCE_TOAST_CONTROL_VERTICAL,
   // Vertical margin for labels in a toast.
@@ -69,9 +63,14 @@ enum ChromeDistanceMetric {
   DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH,
   // Width of larger modal dialogs that require extra width.
   DISTANCE_LARGE_MODAL_DIALOG_PREFERRED_WIDTH,
+  // Width of a bubble attached to the tabstrip.
+  DISTANCE_BUBBLE_TABSTRIP_PREFERRED_WIDTH,
   // Width of a bubble unless the content is too wide to make that
   // feasible.
   DISTANCE_BUBBLE_PREFERRED_WIDTH,
+  // Width of a bubble that appears mid-screen (like a standalone dialog)
+  // instead of being anchored.
+  DISTANCE_STANDALONE_BUBBLE_PREFERRED_WIDTH,
   // Horizontal spacing between value and description in the row.
   DISTANCE_BETWEEN_PRIMARY_AND_SECONDARY_LABELS_HORIZONTAL
 };
@@ -89,10 +88,6 @@ class ChromeLayoutProvider : public views::LayoutProvider {
   int GetDistanceMetric(int metric) const override;
   int GetSnappedDialogWidth(int min_width) const override;
   const views::TypographyProvider& GetTypographyProvider() const override;
-  int GetCornerRadiusMetric(views::EmphasisMetric emphasis_metric,
-                            const gfx::Size& size = gfx::Size()) const override;
-  int GetShadowElevationMetric(
-      views::EmphasisMetric emphasis_metric) const override;
   gfx::ShadowValues MakeShadowValues(int elevation,
                                      SkColor color) const override;
 

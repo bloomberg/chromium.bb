@@ -179,6 +179,7 @@ class InstallableManager
   void SetManifestDependentTasksComplete();
 
   // Methods coordinating and dispatching work for the current task.
+  void CleanupAndStartNextTask();
   void RunCallback(InstallableTask task,
                    std::vector<InstallableStatusCode> errors);
   void WorkOnTask();
@@ -206,6 +207,7 @@ class InstallableManager
 
   // content::ServiceWorkerContextObserver overrides
   void OnRegistrationCompleted(const GURL& pattern) override;
+  void OnDestruct(content::ServiceWorkerContext* context) override;
 
   // content::WebContentsObserver overrides
   void DidFinishNavigation(content::NavigationHandle* handle) override;

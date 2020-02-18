@@ -8,10 +8,10 @@
 
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/webui/localized_string.h"
 #include "chrome/browser/ui/webui/policy_ui_handler.h"
+#include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/url_constants.h"
-#include "chrome/grit/browser_resources.h"
+#include "components/grit/components_resources.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_ui.h"
 
@@ -22,7 +22,7 @@ content::WebUIDataSource* CreatePolicyUIHtmlSource() {
       content::WebUIDataSource::Create(chrome::kChromeUIPolicyHost);
   PolicyUIHandler::AddCommonLocalizedStringsToSource(source);
 
-  static constexpr LocalizedString kStrings[] = {
+  static constexpr webui::LocalizedString kStrings[] = {
       // Localized strings (alphabetical order).
       {"exportPoliciesJSON", IDS_EXPORT_POLICIES_JSON},
       {"filterPlaceholder", IDS_POLICY_FILTER_PLACEHOLDER},
@@ -64,12 +64,13 @@ content::WebUIDataSource* CreatePolicyUIHtmlSource() {
       {"showLess", IDS_POLICY_SHOW_LESS},
       {"showMore", IDS_POLICY_SHOW_MORE},
       {"showUnset", IDS_POLICY_SHOW_UNSET},
+      {"signinProfile", IDS_POLICY_SIGNIN_PROFILE},
       {"status", IDS_POLICY_STATUS},
       {"statusDevice", IDS_POLICY_STATUS_DEVICE},
       {"statusMachine", IDS_POLICY_STATUS_MACHINE},
       {"statusUser", IDS_POLICY_STATUS_USER},
   };
-  AddLocalizedStringsBulk(source, kStrings, base::size(kStrings));
+  AddLocalizedStringsBulk(source, kStrings);
 
   source->AddResourcePath("policy.css", IDR_POLICY_CSS);
   source->AddResourcePath("policy_base.js", IDR_POLICY_BASE_JS);

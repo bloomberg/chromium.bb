@@ -22,8 +22,8 @@ import {trackRegistry} from '../../frontend/track_registry';
 
 import {Config, Data, SLICE_TRACK_KIND} from './common';
 
-const SLICE_HEIGHT = 20;
-const TRACK_PADDING = 5;
+const SLICE_HEIGHT = 18;
+const TRACK_PADDING = 4;
 
 function hash(s: string): number {
   let hash = 0x811c9dc5 & 0xfffffff;
@@ -34,9 +34,9 @@ function hash(s: string): number {
   return hash & 0xff;
 }
 
-class ChromeSliceTrack extends Track<Config, Data> {
-  static readonly kind = SLICE_TRACK_KIND;
-  static create(trackState: TrackState): ChromeSliceTrack {
+export class ChromeSliceTrack extends Track<Config, Data> {
+  static readonly kind: string = SLICE_TRACK_KIND;
+  static create(trackState: TrackState): Track {
     return new ChromeSliceTrack(trackState);
   }
 
@@ -81,7 +81,7 @@ class ChromeSliceTrack extends Track<Config, Data> {
       const tEnd = data.ends[i];
       const depth = data.depths[i];
       const titleId = data.titles[i];
-      const sliceId = data.slice_ids[i];
+      const sliceId = data.sliceIds[i];
       const title = data.strings[titleId];
       if (tEnd <= visibleWindowTime.start || tStart >= visibleWindowTime.end) {
         continue;
@@ -157,9 +157,10 @@ class ChromeSliceTrack extends Track<Config, Data> {
     if (sliceIndex === undefined) return false;
     const data = this.data();
     if (data === undefined) return false;
-    const sliceId = data.slice_ids[sliceIndex];
+    const sliceId = data.sliceIds[sliceIndex];
     if (sliceId) {
-      globals.dispatch(Actions.selectChromeSlice({slice_id: sliceId}));
+      globals.makeSelection(Actions.selectChromeSlice(
+          {id: sliceId, trackId: this.trackState.id}));
       return true;
     }
     return false;

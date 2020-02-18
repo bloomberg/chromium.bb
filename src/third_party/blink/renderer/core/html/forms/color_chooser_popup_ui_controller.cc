@@ -26,6 +26,7 @@
 #include "third_party/blink/renderer/core/html/forms/color_chooser_popup_ui_controller.h"
 
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/strings/grit/blink_strings.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/html/forms/chooser_resource_loader.h"
@@ -110,7 +111,7 @@ void ColorChooserPopupUIController::WriteColorPickerDocument(
   PagePopupClient::AddProperty("selectedColor",
                                client_->CurrentColor().Serialized(), data);
   AddProperty("anchorRectInScreen", anchor_rect_in_screen, data);
-  AddProperty("zoomFactor", ZoomFactor(), data);
+  AddProperty("zoomFactor", ScaledZoomFactor(), data);
   AddProperty("shouldShowColorSuggestionPicker", false, data);
   PagePopupClient::AddString("};\n", data);
   data->Append(ChooserResourceLoader::GetPickerCommonJS());
@@ -143,14 +144,14 @@ void ColorChooserPopupUIController::WriteColorSuggestionPickerDocument(
       data);
   PagePopupClient::AddProperty("values", suggestion_values, data);
   PagePopupClient::AddProperty(
-      "otherColorLabel",
-      GetLocale().QueryString(WebLocalizedString::kOtherColorLabel), data);
+      "otherColorLabel", GetLocale().QueryString(IDS_FORM_OTHER_COLOR_LABEL),
+      data);
   if (RuntimeEnabledFeatures::FormControlsRefreshEnabled()) {
     PagePopupClient::AddProperty("selectedColor",
                                  client_->CurrentColor().Serialized(), data);
   }
   AddProperty("anchorRectInScreen", anchor_rect_in_screen, data);
-  AddProperty("zoomFactor", ZoomFactor(), data);
+  AddProperty("zoomFactor", ScaledZoomFactor(), data);
   AddProperty("shouldShowColorSuggestionPicker", true, data);
   AddProperty("isFormControlsRefreshEnabled",
               RuntimeEnabledFeatures::FormControlsRefreshEnabled(), data);
@@ -198,6 +199,10 @@ void ColorChooserPopupUIController::DidClosePopup() {
 
 Element& ColorChooserPopupUIController::OwnerElement() {
   return client_->OwnerElement();
+}
+
+ChromeClient& ColorChooserPopupUIController::GetChromeClient() {
+  return *chrome_client_;
 }
 
 void ColorChooserPopupUIController::OpenPopup() {

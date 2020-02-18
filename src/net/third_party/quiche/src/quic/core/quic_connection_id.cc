@@ -14,11 +14,11 @@
 #include "net/third_party/quiche/src/quic/core/crypto/quic_random.h"
 #include "net/third_party/quiche/src/quic/core/quic_types.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_bug_tracker.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_endian.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_flag_utils.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_text_utils.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_endian.h"
 
 namespace quic {
 
@@ -144,18 +144,6 @@ bool QuicConnectionId::IsEmpty() const {
 }
 
 size_t QuicConnectionId::Hash() const {
-  if (!GetQuicRestartFlag(quic_connection_id_use_siphash)) {
-    uint64_t data_bytes[3] = {0, 0, 0};
-    static_assert(sizeof(data_bytes) >= kQuicMaxConnectionIdAllVersionsLength,
-                  "kQuicMaxConnectionIdAllVersionsLength changed");
-    memcpy(data_bytes, data(), length_);
-    // This Hash function is designed to return the same value as the host byte
-    // order representation when the connection ID length is 64 bits.
-    return QuicEndian::NetToHost64(kQuicDefaultConnectionIdLength ^ length_ ^
-                                   data_bytes[0] ^ data_bytes[1] ^
-                                   data_bytes[2]);
-  }
-  QUIC_RESTART_FLAG_COUNT(quic_connection_id_use_siphash);
   static const QuicConnectionIdHasher hasher = QuicConnectionIdHasher();
   return hasher.Hash(data(), length_);
 }

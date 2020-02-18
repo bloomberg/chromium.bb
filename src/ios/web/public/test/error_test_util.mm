@@ -7,7 +7,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#import "ios/web/public/web_state/web_state.h"
+#import "ios/web/public/web_state.h"
 #import "ios/web/web_view/error_translation_util.h"
 #include "url/gurl.h"
 
@@ -27,11 +27,13 @@ std::string GetErrorText(WebState* web_state,
                          const std::string& error_domain,
                          long error_code,
                          bool is_post,
-                         bool is_off_the_record) {
-  return base::StringPrintf(
-      "web_state: %p url: %s domain: %s code: %ld post: %d otr: %d", web_state,
-      url.spec().c_str(), error_domain.c_str(), error_code, is_post,
-      is_off_the_record);
+                         bool is_off_the_record,
+                         bool has_ssl_info) {
+  return base::StringPrintf("web_state: %p url: %s domain: %s code: %ld post: "
+                            "%d otr: %d ssl_info: %d",
+                            web_state, url.spec().c_str(), error_domain.c_str(),
+                            error_code, is_post, is_off_the_record,
+                            has_ssl_info);
 }
 
 }  // namespace testing

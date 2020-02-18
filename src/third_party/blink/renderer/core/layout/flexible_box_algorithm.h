@@ -65,25 +65,46 @@ enum class TransformedWritingMode {
 
 typedef Vector<FlexItem, 8> FlexItemVector;
 
-class AutoClearOverrideHeight {
+class AutoClearOverrideLogicalHeight {
  public:
-  explicit AutoClearOverrideHeight(LayoutBlock* block)
-      : block_(block), old_override_height_(-1) {
-    if (block_ && block_->HasOverrideLogicalHeight()) {
-      old_override_height_ = block_->OverrideLogicalHeight();
-      block_->ClearOverrideLogicalHeight();
+  explicit AutoClearOverrideLogicalHeight(LayoutBox* box)
+      : box_(box), old_override_height_(-1) {
+    if (box_ && box_->HasOverrideLogicalHeight()) {
+      old_override_height_ = box_->OverrideLogicalHeight();
+      box_->ClearOverrideLogicalHeight();
     }
   }
-  ~AutoClearOverrideHeight() {
+  ~AutoClearOverrideLogicalHeight() {
     if (old_override_height_ != LayoutUnit(-1)) {
-      DCHECK(block_);
-      block_->SetOverrideLogicalHeight(old_override_height_);
+      DCHECK(box_);
+      box_->SetOverrideLogicalHeight(old_override_height_);
     }
   }
 
  private:
-  LayoutBlock* block_;
+  LayoutBox* box_;
   LayoutUnit old_override_height_;
+};
+
+class AutoClearOverrideLogicalWidth {
+ public:
+  explicit AutoClearOverrideLogicalWidth(LayoutBox* box)
+      : box_(box), old_override_width_(-1) {
+    if (box_ && box_->HasOverrideLogicalWidth()) {
+      old_override_width_ = box_->OverrideLogicalWidth();
+      box_->ClearOverrideLogicalWidth();
+    }
+  }
+  ~AutoClearOverrideLogicalWidth() {
+    if (old_override_width_ != LayoutUnit(-1)) {
+      DCHECK(box_);
+      box_->SetOverrideLogicalWidth(old_override_width_);
+    }
+  }
+
+ private:
+  LayoutBox* box_;
+  LayoutUnit old_override_width_;
 };
 
 class FlexItem {
@@ -150,6 +171,13 @@ class FlexItem {
 
   inline const FlexLine* Line() const;
 
+  static LayoutUnit AlignmentOffset(LayoutUnit available_free_space,
+                                    ItemPosition position,
+                                    LayoutUnit ascent,
+                                    LayoutUnit max_ascent,
+                                    bool is_wrap_reverse,
+                                    bool is_deprecated_webkit_box);
+
   FlexLayoutAlgorithm* algorithm;
   wtf_size_t line_number;
   LayoutBox* box;
@@ -167,6 +195,11 @@ class FlexItem {
   LayoutPoint desired_location;
 
   bool frozen;
+
+  // Legacy partially relies on FlexLayoutAlgorithm::AlignChildren to determine
+  // if the child is eligible for stretching (specifically, checking for auto
+  // margins). FlexLayoutAlgorithm uses this flag to report back to legacy.
+  bool needs_relayout_for_stretch;
 
   NGBlockNode ng_input_node;
   scoped_refptr<const NGLayoutResult> layout_result;
@@ -256,6 +289,7 @@ class FlexLine {
   // cross_axis_size needs to be set correctly on each flex item (to the size
   // the item has without stretching).
   void ComputeLineItemsPosition(LayoutUnit main_axis_offset,
+                                LayoutUnit main_axis_end_offset,
                                 LayoutUnit& cross_axis_offset);
 
   FlexLayoutAlgorithm* algorithm;
@@ -357,6 +391,13 @@ class FlexLayoutAlgorithm {
   // FlexLine::cross_axis_extent.
   void AlignFlexLines(LayoutUnit cross_axis_content_extent);
 
+  // Positions flex items by modifying FlexItem::desired_location.
+  // When lines stretch, also modifies FlexItem::cross_axis_size.
+  void AlignChildren();
+
+  void FlipForWrapReverse(LayoutUnit cross_axis_start_edge,
+                          LayoutUnit cross_axis_content_size);
+
   static TransformedWritingMode GetTransformedWritingMode(const ComputedStyle&);
 
   static const StyleContentAlignmentData& ContentAlignmentNormalBehavior();
@@ -366,6 +407,7 @@ class FlexLayoutAlgorithm {
                                         const ComputedStyle& child_style);
 
   static LayoutUnit InitialContentPositionOffset(
+      const ComputedStyle& style,
       LayoutUnit available_free_space,
       const StyleContentAlignmentData&,
       unsigned number_of_items);
@@ -373,6 +415,10 @@ class FlexLayoutAlgorithm {
       LayoutUnit available_free_space,
       const StyleContentAlignmentData&,
       unsigned number_of_items);
+
+  void LayoutColumnReverse(LayoutUnit main_axis_content_size,
+                           LayoutUnit border_scrollbar_padding_before);
+  bool IsNGFlexBox() const;
 
  private:
   EOverflow MainAxisOverflowForChild(const LayoutBox& child) const;

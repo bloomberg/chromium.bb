@@ -18,8 +18,9 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "chrome/chrome_cleaner/ipc/ipc_test_util.h"
 #include "chrome/chrome_cleaner/logging/scoped_logging.h"
+#include "chrome/chrome_cleaner/mojom/chrome_prompt.mojom.h"
 #include "chrome/chrome_cleaner/test/test_util.h"
-#include "components/chrome_cleaner/public/interfaces/chrome_prompt.mojom.h"
+#include "components/chrome_cleaner/public/proto/chrome_prompt.pb.h"
 #include "components/chrome_cleaner/test/test_name_helper.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/message_pipe.h"
@@ -32,9 +33,7 @@ namespace {
 using testing::Bool;
 using testing::Values;
 
-constexpr char kIncludeUwESwitch[] = "include-uwe";
 constexpr char kIncludeUwSSwitch[] = "include-uws";
-constexpr char kIncludeRegistryKeysSwitch[] = "include-registry-keys";
 constexpr char kExpectedPromptResultSwitch[] = "expected-prompt-result";
 constexpr char kExpectedParentDisconnectedSwitch[] =
     "expected-parent-disconnected";
@@ -81,9 +80,7 @@ std::ostream& operator<<(std::ostream& stream,
 
 struct TestConfig {
   bool uws_expected;
-  bool uwe_expected;
-  bool with_registry_keys;
-  mojom::PromptAcceptance expected_prompt_acceptance;
+  PromptUserResponse::PromptAcceptance expected_prompt_acceptance;
   ParentDisconnected expected_parent_disconnected;
 };
 
@@ -104,28 +101,18 @@ class MockChromePrompt : public mojom::ChromePrompt {
     if (test_config_.uws_expected) {
       EXPECT_EQ(1UL, files_to_delete.size());
       EXPECT_EQ(kBadFilePath, files_to_delete.front());
-    }
-    if (test_config_.with_registry_keys) {
       EXPECT_EQ(1UL, registry_keys->size());
       EXPECT_EQ(kBadRegistryKey, registry_keys->front());
     }
     CloseConnectionIf(ParentDisconnected::kWhileProcessingChildRequest);
-    std::move(callback).Run(test_config_.expected_prompt_acceptance);
-    if (!test_config_.uwe_expected) {
-      CloseConnectionIf(ParentDisconnected::kOnDone);
-    }
+    std::move(callback).Run(static_cast<mojom::PromptAcceptance>(
+        test_config_.expected_prompt_acceptance));
+    CloseConnectionIf(ParentDisconnected::kOnDone);
   }
 
   void DisableExtensions(const std::vector<base::string16>& extension_ids,
                          DisableExtensionsCallback callback) override {
-    EXPECT_NE(test_config_.uwe_expected, extension_ids.empty());
-    if (test_config_.uwe_expected) {
-      EXPECT_EQ(kExtensionId, extension_ids.front());
-    } else {
-      EXPECT_EQ(0UL, extension_ids.size());
-    }
-    std::move(callback).Run(true);
-    CloseConnectionIf(ParentDisconnected::kOnDone);
+    FAIL() << "No tests include UwE so DisableExtensions should not be called.";
   }
 
   // Close the IPC connection on the parent process depending on the value of
@@ -146,11 +133,6 @@ class ChromePromptIPCParentProcess : public ParentProcess {
       : ParentProcess(std::move(mojo_task_runner)), test_config_(test_config) {
     if (test_config.uws_expected)
       AppendSwitch(kIncludeUwSSwitch);
-    if (test_config.uwe_expected) {
-      AppendSwitch(kIncludeUwESwitch);
-    }
-    if (test_config.with_registry_keys)
-      AppendSwitch(kIncludeRegistryKeysSwitch);
 
     AppendSwitch(kExpectedPromptResultSwitch,
                  base::NumberToString(
@@ -162,8 +144,7 @@ class ChromePromptIPCParentProcess : public ParentProcess {
 
  protected:
   void CreateImpl(mojo::ScopedMessagePipeHandle mojo_pipe) override {
-    chrome_cleaner::mojom::ChromePromptRequest chrome_prompt_request(
-        std::move(mojo_pipe));
+    mojom::ChromePromptRequest chrome_prompt_request(std::move(mojo_pipe));
     mock_chrome_prompt_ = std::make_unique<MockChromePrompt>(
         test_config_, std::move(chrome_prompt_request));
     // At this point, the child process should be connected.
@@ -186,23 +167,6 @@ class ChromePromptIPCChildProcess : public ChildProcess {
       scoped_refptr<MojoTaskRunner> mojo_task_runner)
       : ChildProcess(std::move(mojo_task_runner)) {}
 
-  void SendUwEDataToParentProcess(ChromePromptIPC* chrome_prompt_ipc,
-                                  base::OnceClosure done) {
-    CHECK(chrome_prompt_ipc);
-    std::vector<base::string16> extensions;
-    if (uwe_expected()) {
-      extensions.push_back(kExtensionId);
-    } else {
-      std::move(done).Run();
-      return;
-    }
-    chrome_prompt_ipc->PostDisableExtensionsTask(
-        std::move(extensions),
-        base::BindOnce(
-            &ChromePromptIPCChildProcess::ReceiveDisableExtensionsResult,
-            base::Unretained(this), base::Passed(&done)));
-  }
-
   void SendUwSDataToParentProcess(ChromePromptIPC* chrome_prompt_ipc,
                                   base::OnceClosure done) {
     CHECK(chrome_prompt_ipc);
@@ -212,8 +176,7 @@ class ChromePromptIPCChildProcess : public ChildProcess {
     std::vector<base::string16> extension_ids;
     if (uws_expected()) {
       files_to_delete.push_back(kBadFilePath);
-      if (with_registry_keys())
-        registry_keys.push_back(kBadRegistryKey);
+      registry_keys.push_back(kBadRegistryKey);
     }
 
     chrome_prompt_ipc->PostPromptUserTask(
@@ -234,8 +197,9 @@ class ChromePromptIPCChildProcess : public ChildProcess {
  private:
   ~ChromePromptIPCChildProcess() override = default;
 
-  void ReceivePromptResult(base::OnceClosure done,
-                           mojom::PromptAcceptance prompt_acceptance) {
+  void ReceivePromptResult(
+      base::OnceClosure done,
+      PromptUserResponse::PromptAcceptance prompt_acceptance) {
     CHECK_EQ(expected_prompt_acceptance(), prompt_acceptance);
     // Unblocks the main thread.
     std::move(done).Run();
@@ -250,20 +214,11 @@ class ChromePromptIPCChildProcess : public ChildProcess {
     return command_line().HasSwitch(kIncludeUwSSwitch);
   }
 
-  bool uwe_expected() const {
-    return command_line().HasSwitch(kIncludeUwESwitch);
-  }
-
-  bool with_registry_keys() const {
-    return uws_expected() &&
-           command_line().HasSwitch(kIncludeRegistryKeysSwitch);
-  }
-
-  mojom::PromptAcceptance expected_prompt_acceptance() const {
+  PromptUserResponse::PromptAcceptance expected_prompt_acceptance() const {
     int val = -1;
     CHECK(base::StringToInt(
         command_line().GetSwitchValueASCII(kExpectedPromptResultSwitch), &val));
-    return static_cast<mojom::PromptAcceptance>(val);
+    return static_cast<PromptUserResponse::PromptAcceptance>(val);
   }
 };
 
@@ -307,13 +262,9 @@ MULTIPROCESS_TEST_MAIN(ChromePromptIPCClientMain) {
   // task to unblock the child process's main thread. Not blocking the main
   // thread can lead to race condition on exit.
   base::RunLoop prompt_user_run_loop;
-  base::RunLoop extension_run_loop;
   child_process->SendUwSDataToParentProcess(chrome_prompt_ipc,
                                             prompt_user_run_loop.QuitClosure());
   prompt_user_run_loop.Run();
-  child_process->SendUwEDataToParentProcess(chrome_prompt_ipc,
-                                            extension_run_loop.QuitClosure());
-  extension_run_loop.Run();
 
   if (child_process->expected_parent_disconnected() ==
       ParentDisconnected::kOnDone) {
@@ -326,12 +277,10 @@ MULTIPROCESS_TEST_MAIN(ChromePromptIPCClientMain) {
                                        : kSuccessExitCode;
 }
 
-class ChromePromptIPCTest
-    : public ::testing::TestWithParam<std::tuple<bool,
-                                                 bool,
-                                                 bool,
-                                                 mojom::PromptAcceptance,
-                                                 ParentDisconnected>> {
+class ChromePromptIPCTest : public ::testing::TestWithParam<
+                                std::tuple<bool,
+                                           PromptUserResponse::PromptAcceptance,
+                                           ParentDisconnected>> {
  public:
   void SetUp() override { mojo_task_runner_ = MojoTaskRunner::Create(); }
 
@@ -341,13 +290,8 @@ class ChromePromptIPCTest
 
 TEST_P(ChromePromptIPCTest, Communication) {
   TestConfig test_config;
-  std::tie(test_config.uws_expected, test_config.uwe_expected,
-           test_config.with_registry_keys,
-           test_config.expected_prompt_acceptance,
+  std::tie(test_config.uws_expected, test_config.expected_prompt_acceptance,
            test_config.expected_parent_disconnected) = GetParam();
-  if (test_config.with_registry_keys)
-    ASSERT_TRUE(test_config.uws_expected);
-
   parent_process_ = base::MakeRefCounted<ChromePromptIPCParentProcess>(
       test_config, mojo_task_runner_);
 
@@ -364,32 +308,41 @@ TEST_P(ChromePromptIPCTest, Communication) {
   EXPECT_EQ(expected_exit_code, exit_code);
 }
 
+// Tests disconnection handling for all possible disconnection points when no
+// UwS is present.
 INSTANTIATE_TEST_SUITE_P(NoUwSPresent,
                          ChromePromptIPCTest,
                          testing::Combine(
                              /*uws_expected=*/Values(false),
-                             /*uwe_expected=*/Values(false),
-                             /*with_registry_keys=*/Values(false),
-                             Values(mojom::PromptAcceptance::DENIED),
+                             Values(PromptUserResponse::DENIED),
                              Values(ParentDisconnected::kNone,
                                     ParentDisconnected::kOnStartup)),
                          GetParamNameForTest());
 
+// Tests disconnection handling for all possible disconnection points when UwS
+// is present.
 INSTANTIATE_TEST_SUITE_P(
     UwSPresent,
     ChromePromptIPCTest,
     testing::Combine(
         /*uws_expected=*/Values(true),
-        /*uwe_expected=*/Bool(),
-        /*with_registry_keys=*/Bool(),
-        Values(mojom::PromptAcceptance::ACCEPTED_WITH_LOGS,
-               mojom::PromptAcceptance::ACCEPTED_WITHOUT_LOGS,
-               mojom::PromptAcceptance::DENIED),
+        Values(PromptUserResponse::ACCEPTED_WITH_LOGS),
         Values(ParentDisconnected::kNone,
                ParentDisconnected::kOnStartup,
                ParentDisconnected::kWhileProcessingChildRequest,
                ParentDisconnected::kOnDone)),
     GetParamNameForTest());
+
+// Tests that all possible PromptUserResponse values are passed correctly.
+INSTANTIATE_TEST_SUITE_P(PromptUserResponse,
+                         ChromePromptIPCTest,
+                         testing::Combine(
+                             /*uws_expected=*/Values(true),
+                             Values(PromptUserResponse::ACCEPTED_WITH_LOGS,
+                                    PromptUserResponse::ACCEPTED_WITHOUT_LOGS,
+                                    PromptUserResponse::DENIED),
+                             Values(ParentDisconnected::kNone)),
+                         GetParamNameForTest());
 
 }  // namespace
 }  // namespace chrome_cleaner

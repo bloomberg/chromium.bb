@@ -190,13 +190,20 @@ const CGFloat kTopInset = 10;
   cell.tile.titleLabel.text = TitleForCollectionShortcutType(type);
   cell.tile.iconView.image = ImageForCollectionShortcutType(type);
   cell.accessibilityLabel = cell.tile.titleLabel.text;
+  if (@available(iOS 13, *)) {
+    // The accessibilityUserInputLabel should just be the title, with nothing
+    // extra for the reading list tile.
+    cell.accessibilityUserInputLabels = @[ cell.tile.titleLabel.text ];
+  }
 
   if (type == NTPCollectionShortcutTypeReadingList) {
     if (self.readingListBadgeValue > 0) {
       cell.tile.countLabel.text = [@(self.readingListBadgeValue) stringValue];
       cell.tile.countContainer.hidden = NO;
-      cell.accessibilityLabel = AccessibilityLabelForReadingListCellWithCount(
-          self.readingListBadgeValue);
+      cell.accessibilityLabel = [NSString
+          stringWithFormat:@"%@, %@", cell.accessibilityLabel,
+                           AccessibilityLabelForReadingListCellWithCount(
+                               self.readingListBadgeValue)];
     }
   }
 }

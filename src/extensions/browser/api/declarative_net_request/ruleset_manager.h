@@ -14,12 +14,10 @@
 #include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
-#include "extensions/browser/api/declarative_net_request/action_tracker.h"
 #include "extensions/browser/api/declarative_net_request/utils.h"
 #include "extensions/common/extension_id.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/url_pattern_set.h"
-#include "url/gurl.h"
 
 namespace content {
 class BrowserContext;
@@ -32,6 +30,7 @@ struct WebRequestInfo;
 
 namespace declarative_net_request {
 class CompositeMatcher;
+struct RequestAction;
 struct RequestParams;
 
 // Manages the set of active rulesets for the Declarative Net Request API. Can
@@ -39,42 +38,6 @@ struct RequestParams;
 // same sequence.
 class RulesetManager {
  public:
-  struct Action {
-    enum class Type {
-      NONE,
-      // Block the network request.
-      BLOCK,
-      // Block the network request and collapse the corresponding DOM element.
-      COLLAPSE,
-      // Redirect the network request.
-      REDIRECT,
-      // Remove request/response headers.
-      REMOVE_HEADERS,
-    };
-
-    explicit Action(Type type);
-    ~Action();
-    Action(Action&&);
-    Action& operator=(Action&&);
-
-    Type type = Type::NONE;
-
-    // Valid iff |type| is |REDIRECT|.
-    base::Optional<GURL> redirect_url;
-
-    // The ids of the extensions the action is attributed to.
-    // TODO(crbug.com/991420): This is not exactly correct for attributing
-    // an Action to the extension(s) for |REMOVE_HEADERS| rules.
-    std::vector<ExtensionId> extension_ids;
-
-    // Valid iff |type| is |REMOVE_HEADERS|. The vectors point to strings of
-    // static storage duration.
-    std::vector<const char*> request_headers_to_remove;
-    std::vector<const char*> response_headers_to_remove;
-
-    DISALLOW_COPY_AND_ASSIGN(Action);
-  };
-
   explicit RulesetManager(content::BrowserContext* browser_context);
   ~RulesetManager();
 
@@ -108,13 +71,14 @@ class RulesetManager {
   void UpdateAllowedPages(const ExtensionId& extension_id,
                           URLPatternSet allowed_pages);
 
-  // Returns the action to take for the given request. Note: the returned action
-  // is owned by |request|.
+  // Returns the action to take for the given request; does not return an
+  // |ALLOW| action. Note: the returned action is owned by |request|.
   // Precedence order: Allow > Blocking > Redirect rules.
   // For redirect rules, most recently installed extensions are given
   // preference.
-  const Action& EvaluateRequest(const WebRequestInfo& request,
-                                bool is_incognito_context) const;
+  const std::vector<RequestAction>& EvaluateRequest(
+      const WebRequestInfo& request,
+      bool is_incognito_context) const;
 
   // Returns true if there is an active matcher which modifies "extraHeaders".
   bool HasAnyExtraHeadersMatcher() const;
@@ -129,9 +93,6 @@ class RulesetManager {
 
   // Sets the TestObserver. Client maintains ownership of |observer|.
   void SetObserverForTest(TestObserver* observer);
-
-  const ActionTracker& action_tracker() const { return action_tracker_; }
-  ActionTracker& action_tracker() { return action_tracker_; }
 
  private:
   struct ExtensionRulesetData {
@@ -153,22 +114,23 @@ class RulesetManager {
     DISALLOW_COPY_AND_ASSIGN(ExtensionRulesetData);
   };
 
-  base::Optional<Action> GetBlockOrCollapseAction(
+  base::Optional<RequestAction> GetBlockOrCollapseAction(
       const std::vector<const ExtensionRulesetData*>& rulesets,
       const RequestParams& params) const;
-  base::Optional<Action> GetRedirectOrUpgradeAction(
+  base::Optional<RequestAction> GetRedirectOrUpgradeAction(
       const std::vector<const ExtensionRulesetData*>& rulesets,
       const WebRequestInfo& request,
       const int tab_id,
       const bool crosses_incognito,
       const RequestParams& params) const;
-  base::Optional<Action> GetRemoveHeadersAction(
+  std::vector<RequestAction> GetRemoveHeadersActions(
       const std::vector<const ExtensionRulesetData*>& rulesets,
       const RequestParams& params) const;
 
   // Helper for EvaluateRequest.
-  Action EvaluateRequestInternal(const WebRequestInfo& request,
-                                 bool is_incognito_context) const;
+  std::vector<RequestAction> EvaluateRequestInternal(
+      const WebRequestInfo& request,
+      bool is_incognito_context) const;
 
   // Returns true if the given |request| should be evaluated for
   // blocking/redirection.
@@ -195,10 +157,6 @@ class RulesetManager {
 
   // Non-owning pointer to TestObserver.
   TestObserver* test_observer_ = nullptr;
-
-  // Mutable because this is updated in multiple const methods where we create
-  // and return the appropriate action based on the rule matched.
-  mutable ActionTracker action_tracker_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

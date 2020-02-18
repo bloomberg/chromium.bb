@@ -13,13 +13,17 @@
 #include "base/threading/thread_checker.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/prefs/pref_member.h"
-#include "components/signin/public/identity_manager/identity_manager.h"
 
 namespace policy {
 class UserCloudPolicyManager;
 class UserPolicySigninService;
 }  // namespace policy
 
+namespace signin {
+class IdentityManager;
+}
+
+struct CoreAccountInfo;
 class Profile;
 
 // Android wrapper of Chrome's C++ identity management code which provides
@@ -30,8 +34,7 @@ class Profile;
 //
 // This class implements parts of the sign-in flow, to make sure that policy
 // is available before sign-in completes.
-class SigninManagerAndroid : public KeyedService,
-                             public signin::IdentityManager::Observer {
+class SigninManagerAndroid : public KeyedService {
  public:
   SigninManagerAndroid(Profile* profile,
                        signin::IdentityManager* identity_manager);
@@ -42,41 +45,23 @@ class SigninManagerAndroid : public KeyedService,
 
   base::android::ScopedJavaLocalRef<jobject> GetJavaObject();
 
-  // Indicates that the user has made the choice to sign-in. |username|
-  // contains the email address of the account to use as primary.
-  jboolean SetPrimaryAccount(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jstring>& username);
-
-  void SignOut(JNIEnv* env,
-               jint signoutReason);
-
-  void LogInSignedInUser(JNIEnv* env);
-
-  void ClearLastSignedInUser(JNIEnv* env);
-
   jboolean IsSigninAllowedByPolicy(JNIEnv* env) const;
 
   jboolean IsForceSigninEnabled(JNIEnv* env);
-
-  jboolean IsSignedInOnNative(JNIEnv* env);
-
-  // signin::IdentityManager::Observer implementation.
-  void OnPrimaryAccountCleared(
-      const CoreAccountInfo& previous_primary_account_info) override;
 
   // Registers a CloudPolicyClient for fetching policy for a user and fetches
   // the policy if necessary.
   void FetchAndApplyCloudPolicy(
       JNIEnv* env,
-      const base::android::JavaParamRef<jstring>& username,
+      const base::android::JavaParamRef<jobject>& j_account_info,
       const base::android::JavaParamRef<jobject>& j_callback);
 
   void StopApplyingCloudPolicy(JNIEnv* env);
 
-  void IsAccountManaged(JNIEnv* env,
-                        const base::android::JavaParamRef<jstring>& j_username,
-                        const base::android::JavaParamRef<jobject>& j_callback);
+  void IsAccountManaged(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& j_account_info,
+      const base::android::JavaParamRef<jobject>& j_callback);
 
   base::android::ScopedJavaLocalRef<jstring> GetManagementDomain(JNIEnv* env);
 

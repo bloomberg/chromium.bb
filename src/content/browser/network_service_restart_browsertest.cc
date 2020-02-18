@@ -4,6 +4,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/files/file_util.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
@@ -11,6 +12,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_command_line.h"
 #include "base/test/scoped_environment_variable_override.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/test_timeouts.h"
 #include "base/thread_annotations.h"
 #include "base/threading/thread_restrictions.h"
@@ -28,11 +30,9 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/network_service_instance.h"
-#include "content/public/browser/system_connector.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/network_service_util.h"
-#include "content/public/common/service_names.mojom.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -42,6 +42,8 @@
 #include "content/shell/browser/shell.h"
 #include "content/shell/browser/shell_browser_context.h"
 #include "content/test/storage_partition_test_utils.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/sync_call_restrictions.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/http_request.h"
@@ -49,7 +51,7 @@
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/network/public/mojom/network_service_test.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
+#include "third_party/blink/public/common/features.h"
 
 #if BUILDFLAG(ENABLE_PLUGINS)
 #include "content/public/test/ppapi_test_utils.h"
@@ -62,12 +64,13 @@ namespace {
 using SharedURLLoaderFactoryGetterCallback =
     base::OnceCallback<scoped_refptr<network::SharedURLLoaderFactory>()>;
 
-network::mojom::NetworkContextPtr CreateNetworkContext() {
-  network::mojom::NetworkContextPtr network_context;
+mojo::PendingRemote<network::mojom::NetworkContext> CreateNetworkContext() {
+  mojo::PendingRemote<network::mojom::NetworkContext> network_context;
   network::mojom::NetworkContextParamsPtr context_params =
       network::mojom::NetworkContextParams::New();
-  GetNetworkService()->CreateNetworkContext(mojo::MakeRequest(&network_context),
-                                            std::move(context_params));
+  GetNetworkService()->CreateNetworkContext(
+      network_context.InitWithNewPipeAndPassReceiver(),
+      std::move(context_params));
   return network_context;
 }
 
@@ -125,30 +128,24 @@ void WaitForCondition(base::RepeatingCallback<bool()> condition) {
 
 class ServiceWorkerStatusObserver : public ServiceWorkerContextCoreObserver {
  public:
-  void WaitForState(EmbeddedWorkerStatus expected_status) {
-    for (const auto& status : statuses_in_past_) {
-      if (status == expected_status)
-        return;
-    }
+  void WaitForStopped() {
+    if (stopped_)
+      return;
 
-    expected_status_ = expected_status;
     base::RunLoop loop;
     callback_ = loop.QuitClosure();
     loop.Run();
   }
 
  private:
-  void OnRunningStateChanged(int64_t version_id,
-                             EmbeddedWorkerStatus running_status) override {
-    statuses_in_past_.push_back(running_status);
-    if (expected_status_.has_value() &&
-        running_status == expected_status_.value()) {
+  void OnStopped(int64_t version_id) override {
+    stopped_ = true;
+
+    if (callback_)
       std::move(callback_).Run();
-    }
   }
 
-  base::Optional<EmbeddedWorkerStatus> expected_status_;
-  std::vector<EmbeddedWorkerStatus> statuses_in_past_;
+  bool stopped_ = false;
   base::OnceClosure callback_;
 };
 
@@ -313,29 +310,31 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest,
                        NetworkServiceProcessRecovery) {
   if (IsInProcessNetworkService())
     return;
-  network::mojom::NetworkContextPtr network_context = CreateNetworkContext();
+  mojo::Remote<network::mojom::NetworkContext> network_context(
+      CreateNetworkContext());
   EXPECT_EQ(net::OK, LoadBasicRequest(network_context.get(), GetTestURL()));
   EXPECT_TRUE(network_context.is_bound());
-  EXPECT_FALSE(network_context.encountered_error());
+  EXPECT_TRUE(network_context.is_connected());
 
   // Crash the NetworkService process. Existing interfaces should receive error
   // notifications at some point.
   SimulateNetworkServiceCrash();
   // |network_context| will receive an error notification, but it's not
-  // guaranteed to have arrived at this point. Flush the pointer to make sure
+  // guaranteed to have arrived at this point. Flush the remote to make sure
   // the notification has been received.
   network_context.FlushForTesting();
   EXPECT_TRUE(network_context.is_bound());
-  EXPECT_TRUE(network_context.encountered_error());
+  EXPECT_FALSE(network_context.is_connected());
   // Make sure we could get |net::ERR_FAILED| with an invalid |network_context|.
   EXPECT_EQ(net::ERR_FAILED,
             LoadBasicRequest(network_context.get(), GetTestURL()));
 
   // NetworkService should restart automatically and return valid interface.
-  network::mojom::NetworkContextPtr network_context2 = CreateNetworkContext();
+  mojo::Remote<network::mojom::NetworkContext> network_context2(
+      CreateNetworkContext());
   EXPECT_EQ(net::OK, LoadBasicRequest(network_context2.get(), GetTestURL()));
   EXPECT_TRUE(network_context2.is_bound());
-  EXPECT_FALSE(network_context2.encountered_error());
+  EXPECT_TRUE(network_context2.is_connected());
 }
 
 void IncrementInt(int* i) {
@@ -347,7 +346,8 @@ void IncrementInt(int* i) {
 IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest, CrashHandlers) {
   if (IsInProcessNetworkService())
     return;
-  network::mojom::NetworkContextPtr network_context = CreateNetworkContext();
+  mojo::Remote<network::mojom::NetworkContext> network_context(
+      CreateNetworkContext());
   EXPECT_TRUE(network_context.is_bound());
 
   // Register 2 crash handlers.
@@ -361,18 +361,19 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest, CrashHandlers) {
   // Crash the NetworkService process.
   SimulateNetworkServiceCrash();
   // |network_context| will receive an error notification, but it's not
-  // guaranteed to have arrived at this point. Flush the pointer to make sure
+  // guaranteed to have arrived at this point. Flush the remote to make sure
   // the notification has been received.
   network_context.FlushForTesting();
   EXPECT_TRUE(network_context.is_bound());
-  EXPECT_TRUE(network_context.encountered_error());
+  EXPECT_FALSE(network_context.is_connected());
 
   // Verify the crash handlers executed.
   EXPECT_EQ(1, counter1);
   EXPECT_EQ(1, counter2);
 
   // Revive the NetworkService process.
-  network_context = CreateNetworkContext();
+  network_context.reset();
+  network_context.Bind(CreateNetworkContext());
   EXPECT_TRUE(network_context.is_bound());
 
   // Unregister one of the handlers.
@@ -381,11 +382,11 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest, CrashHandlers) {
   // Crash the NetworkService process.
   SimulateNetworkServiceCrash();
   // |network_context| will receive an error notification, but it's not
-  // guaranteed to have arrived at this point. Flush the pointer to make sure
+  // guaranteed to have arrived at this point. Flush the remote to make sure
   // the notification has been received.
   network_context.FlushForTesting();
   EXPECT_TRUE(network_context.is_bound());
-  EXPECT_TRUE(network_context.encountered_error());
+  EXPECT_FALSE(network_context.is_connected());
 
   // Verify only the first crash handler executed.
   EXPECT_EQ(2, counter1);
@@ -586,22 +587,22 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest,
             LoadBasicRequestOnUIThread(factory.get(), GetTestURL()));
 }
 
-// Make sure the factory info returned from
+// Make sure the factory pending factory returned from
 // |StoragePartition::GetURLLoaderFactoryForBrowserProcessIOThread()| can be
 // used after crashes.
 // Flaky on Windows. https://crbug.com/840127
 #if defined(OS_WIN)
-#define MAYBE_BrowserIOFactoryInfo DISABLED_BrowserIOFactoryInfo
+#define MAYBE_BrowserIOPendingFactory DISABLED_BrowserIOPendingFactory
 #else
-#define MAYBE_BrowserIOFactoryInfo BrowserIOFactoryInfo
+#define MAYBE_BrowserIOPendingFactory BrowserIOPendingFactory
 #endif
 IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest,
-                       MAYBE_BrowserIOFactoryInfo) {
+                       MAYBE_BrowserIOPendingFactory) {
   if (IsInProcessNetworkService())
     return;
   auto* partition =
       BrowserContext::GetDefaultStoragePartition(browser_context());
-  auto shared_url_loader_factory_info =
+  auto pending_shared_url_loader_factory =
       partition->GetURLLoaderFactoryForBrowserProcessIOThread();
 
   SimulateNetworkServiceCrash();
@@ -612,7 +613,7 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest,
       ->FlushNetworkInterfaceOnIOThreadForTesting();
 
   auto factory_owner = IOThreadSharedURLLoaderFactoryOwner::Create(
-      std::move(shared_url_loader_factory_info));
+      std::move(pending_shared_url_loader_factory));
 
   EXPECT_EQ(net::OK, factory_owner->LoadBasicRequestOnIOThread(GetTestURL()));
 }
@@ -665,8 +666,34 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest, WindowOpenXHR) {
   EXPECT_EQ(last_request_relative_url(), "/title2.html");
 }
 
+// Run tests with PlzDedicatedWorker.
+// TODO(https://crbug.com/906991): Merge this test fixture into
+// NetworkServiceRestartBrowserTest once PlzDedicatedWorker is enabled by
+// default.
+class NetworkServiceRestartForWorkerBrowserTest
+    : public NetworkServiceRestartBrowserTest,
+      public ::testing::WithParamInterface<bool> {
+ public:
+  NetworkServiceRestartForWorkerBrowserTest() {
+    if (GetParam()) {
+      scoped_feature_list_.InitAndEnableFeature(
+          blink::features::kPlzDedicatedWorker);
+    } else {
+      scoped_feature_list_.InitAndDisableFeature(
+          blink::features::kPlzDedicatedWorker);
+    }
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         NetworkServiceRestartForWorkerBrowserTest,
+                         ::testing::Values(false, true));
+
 // Make sure worker fetch works after crash.
-IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest, WorkerFetch) {
+IN_PROC_BROWSER_TEST_P(NetworkServiceRestartForWorkerBrowserTest, WorkerFetch) {
   if (IsInProcessNetworkService())
     return;
   StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
@@ -691,7 +718,8 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest, WorkerFetch) {
 }
 
 // Make sure multiple workers are tracked correctly and work after crash.
-IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest, MultipleWorkerFetch) {
+IN_PROC_BROWSER_TEST_P(NetworkServiceRestartForWorkerBrowserTest,
+                       MultipleWorkerFetch) {
   if (IsInProcessNetworkService())
     return;
   StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
@@ -766,7 +794,7 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest,
   partition->FlushNetworkInterfaceForTesting();
 
   // Service worker should be stopped when network service crashes.
-  observer.WaitForState(EmbeddedWorkerStatus::STOPPED);
+  observer.WaitForStopped();
 
   // Fetch from the controlled page again.
   EXPECT_EQ("Echo", EvalJs(shell(), script));
@@ -809,7 +837,7 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest,
   partition->FlushNetworkInterfaceForTesting();
 
   // Service worker should be stopped when network service crashes.
-  observer.WaitForState(EmbeddedWorkerStatus::STOPPED);
+  observer.WaitForStopped();
 
   // Fetch from the controlled page again.
   EXPECT_EQ("Echo", EvalJs(shell(), script));
@@ -853,7 +881,7 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest,
   partition->FlushNetworkInterfaceForTesting();
 
   // Service worker should be stopped when network service crashes.
-  observer.WaitForState(EmbeddedWorkerStatus::STOPPED);
+  observer.WaitForStopped();
 
   // Fetch from the controlled page again.
   EXPECT_EQ("Echo", EvalJs(shell(), script));
@@ -892,7 +920,7 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest, ServiceWorkerFetch) {
   partition->FlushNetworkInterfaceForTesting();
 
   // Service worker should be stopped when network service crashes.
-  observer.WaitForState(EmbeddedWorkerStatus::STOPPED);
+  observer.WaitForStopped();
 
   // Fetch from the service worker again.
   EXPECT_EQ("Echo", EvalJs(shell(), script));
@@ -1172,18 +1200,19 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest,
                        MAYBE_SyncCallDuringRestart) {
   if (IsInProcessNetworkService())
     return;
-  network::mojom::NetworkServiceTestPtr network_service_test;
   base::RunLoop run_loop;
-  GetSystemConnector()->BindInterface(mojom::kNetworkServiceName,
-                                      &network_service_test);
+  mojo::Remote<network::mojom::NetworkServiceTest> network_service_test;
+  content::GetNetworkService()->BindTestInterface(
+      network_service_test.BindNewPipeAndPassReceiver());
 
   // Crash the network service, but do not wait for full startup.
-  network_service_test.set_connection_error_handler(run_loop.QuitClosure());
+  network_service_test.set_disconnect_handler(run_loop.QuitClosure());
   network_service_test->SimulateCrash();
   run_loop.Run();
 
-  GetSystemConnector()->BindInterface(mojom::kNetworkServiceName,
-                                      &network_service_test);
+  network_service_test.reset();
+  content::GetNetworkService()->BindTestInterface(
+      network_service_test.BindNewPipeAndPassReceiver());
 
   // Sync call should be fine, even though network process is still starting up.
   mojo::ScopedAllowSyncCallForTesting allow_sync_call;

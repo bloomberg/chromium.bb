@@ -14,7 +14,7 @@
 #include "components/viz/common/quads/texture_draw_quad.h"
 #include "components/viz/common/quads/yuv_video_draw_quad.h"
 #include "components/viz/service/display/display_resource_provider.h"
-#include "components/viz/service/display/output_surface.h"
+#include "components/viz/service/display/overlay_processor.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/config/gpu_finch_features.h"
 #include "ui/gfx/geometry/insets.h"
@@ -318,11 +318,9 @@ DCLayerOverlayProcessor::RenderPassData::RenderPassData(
 DCLayerOverlayProcessor::RenderPassData::~RenderPassData() = default;
 
 DCLayerOverlayProcessor::DCLayerOverlayProcessor(
-    const ContextProvider* context_provider,
+    const OutputSurface::Capabilities& capabilities,
     const RendererSettings& settings)
-    : has_hw_overlay_support_(
-          context_provider &&
-          context_provider->ContextCapabilities().use_dc_overlays_for_video),
+    : has_hw_overlay_support_(capabilities.supports_dc_video_overlays),
       show_debug_borders_(settings.show_dc_layer_debug_borders) {}
 
 DCLayerOverlayProcessor::DCLayerOverlayProcessor()
@@ -696,11 +694,12 @@ void DCLayerOverlayProcessor::ProcessForUnderlay(
   //    SrcOver_quad uses opacity of source quad (V_alpha)
   //    SrcOver_premul uses alpha channel and assumes premultipled alpha
   bool is_opaque = false;
+  SharedQuadState* new_shared_quad_state =
+      render_pass->shared_quad_state_list.AllocateAndCopyFrom(
+          shared_quad_state);
+
   if (it->ShouldDrawWithBlending() &&
       shared_quad_state->blend_mode == SkBlendMode::kSrcOver) {
-    SharedQuadState* new_shared_quad_state =
-        render_pass->shared_quad_state_list.AllocateAndCopyFrom(
-            shared_quad_state);
     new_shared_quad_state->blend_mode = SkBlendMode::kDstOut;
 
     auto* replacement =
@@ -710,6 +709,11 @@ void DCLayerOverlayProcessor::ProcessForUnderlay(
     replacement->SetAll(new_shared_quad_state, rect, rect, needs_blending,
                         SK_ColorBLACK, true /* force_anti_aliasing_off */);
   } else {
+    // Set |are_contents_opaque| true so SkiaRenderer draws the replacement quad
+    // with SkBlendMode::kSrc.
+    new_shared_quad_state->are_contents_opaque = false;
+    it->shared_quad_state = new_shared_quad_state;
+
     // When the opacity == 1.0, drawing with transparent will be done without
     // blending and will have the proper effect of completely clearing the
     // layer.

@@ -4,10 +4,11 @@
 
 package org.chromium.chrome.browser;
 
-import android.support.annotation.IntDef;
+import androidx.annotation.IntDef;
+import androidx.annotation.VisibleForTesting;
 
-import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.metrics.RecordHistogram;
 
 import java.lang.annotation.Retention;
@@ -25,12 +26,11 @@ public class IntentHeadersRecorder {
     /** Determines whether a header is CORS Safelisted or not. */
     @JNINamespace("chrome::android")
     /* package */ static class HeaderClassifier {
-        /* package */ boolean isCorsSafelistedHeader(String name, String value) {
-            return nativeIsCorsSafelistedHeader(name, value);
+        /* package */ boolean isCorsSafelistedHeader(
+                String name, String value, boolean firstParty) {
+            return IntentHeadersRecorderJni.get().isCorsSafelistedHeader(name, value, firstParty);
         }
     }
-
-    private static native boolean nativeIsCorsSafelistedHeader(String name, String value);
 
     @Retention(RetentionPolicy.SOURCE)
     @IntDef({IntentHeadersResult.FIRST_PARTY_NO_HEADERS,
@@ -66,9 +66,12 @@ public class IntentHeadersRecorder {
     }
 
     /* Records that a HTTP header has been used. */
-    public void recordHeader(String name, String value) {
-        if (mClassifier.isCorsSafelistedHeader(name, value)) mSafeHeaders++;
-        else mUnsafeHeaders++;
+    public void recordHeader(String name, String value, boolean firstParty) {
+        if (mClassifier.isCorsSafelistedHeader(name, value, firstParty)) {
+            mSafeHeaders++;
+        } else {
+            mUnsafeHeaders++;
+        }
     }
 
     /**
@@ -99,5 +102,10 @@ public class IntentHeadersRecorder {
     private static void record(@IntentHeadersResult int result) {
         RecordHistogram.recordEnumeratedHistogram("Android.IntentHeaders", result,
                 IntentHeadersResult.NUM_ENTRIES);
+    }
+
+    @NativeMethods
+    interface Natives {
+        boolean isCorsSafelistedHeader(String name, String value, boolean firstParty);
     }
 }

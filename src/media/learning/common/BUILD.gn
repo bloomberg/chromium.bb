@@ -14,6 +14,7 @@ component("common") {
     "//media/learning/common:unit_tests",
 
     # Actual client code
+    "//media/blink",
     "//media/capabilities",
 
     # Test code
@@ -34,6 +35,8 @@ component("common") {
     "learning_task.cc",
     "learning_task.h",
     "learning_task_controller.h",
+    "media_learning_tasks.cc",
+    "media_learning_tasks.h",
     "value.cc",
     "value.h",
   ]
@@ -49,6 +52,7 @@ source_set("unit_tests") {
   sources = [
     "feature_dictionary_unittest.cc",
     "labelled_example_unittest.cc",
+    "media_learning_tasks_unittest.cc",
     "value_unittest.cc",
   ]
 
@@ -56,6 +60,7 @@ source_set("unit_tests") {
     ":common",
     "//base/test:test_support",
     "//media:test_support",
+    "//testing/gmock",
     "//testing/gtest",
   ]
 }

@@ -6,6 +6,7 @@
 
 #include "base/auto_reset.h"
 #include "base/logging.h"
+#include "base/mac/foundation_util.h"
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/sync/driver/sync_service.h"
@@ -252,6 +253,7 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
       GetNSString(IDS_IOS_MANAGE_SYNC_GOOGLE_ACTIVITY_CONTROLS_TITLE);
   googleActivityControlsItem.detailText =
       GetNSString(IDS_IOS_MANAGE_SYNC_GOOGLE_ACTIVITY_CONTROLS_DESCRIPTION);
+  googleActivityControlsItem.accessibilityTraits |= UIAccessibilityTraitButton;
   [model addItem:googleActivityControlsItem
       toSectionWithIdentifier:AdvancedSettingsSectionIdentifier];
 
@@ -264,6 +266,7 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
       GetNSString(IDS_IOS_MANAGE_SYNC_DATA_FROM_CHROME_SYNC_DESCRIPTION);
   dataFromChromeSyncItem.accessibilityIdentifier =
       kDataFromChromeSyncAccessibilityIdentifier;
+  dataFromChromeSyncItem.accessibilityTraits |= UIAccessibilityTraitButton;
   [model addItem:dataFromChromeSyncItem
       toSectionWithIdentifier:AdvancedSettingsSectionIdentifier];
 }
@@ -282,6 +285,14 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
         [UIImage imageNamed:kGoogleServicesSyncErrorImage];
     self.encryptionItem.detailText = GetNSString(
         IDS_IOS_GOOGLE_SERVICES_SETTINGS_ENTER_PASSPHRASE_TO_START_SYNC);
+  } else if (self.shouldEncryptionItemBeEnabled &&
+             self.syncSetupService->GetSyncServiceState() ==
+                 SyncSetupService::kSyncServiceNeedsTrustedVaultKey) {
+    needsUpdate = needsUpdate || self.encryptionItem.image == nil;
+    self.encryptionItem.image =
+        [UIImage imageNamed:kGoogleServicesSyncErrorImage];
+    self.encryptionItem.detailText =
+        GetNSString(IDS_IOS_GOOGLE_SERVICES_SETTINGS_SYNC_ENCRYPTION_FIX_NOW);
   } else {
     needsUpdate = needsUpdate || self.encryptionItem.image != nil;
     self.encryptionItem.image = nil;
@@ -352,7 +363,8 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
   SyncSetupService::SyncServiceState state =
       self.syncSetupService->GetSyncServiceState();
   return state != SyncSetupService::kNoSyncServiceError &&
-         state != SyncSetupService::kSyncServiceNeedsPassphrase;
+         state != SyncSetupService::kSyncServiceNeedsPassphrase &&
+         state != SyncSetupService::kSyncServiceNeedsTrustedVaultKey;
 }
 
 - (BOOL)shouldSyncDataItemEnabled {
@@ -396,14 +408,15 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
 
 #pragma mark - ManageSyncSettingsServiceDelegate
 
-- (void)toggleSwitchItem:(SyncSwitchItem*)switchItem withValue:(BOOL)value {
+- (void)toggleSwitchItem:(TableViewItem*)item withValue:(BOOL)value {
   {
     // The notifications should be ignored to get smooth switch animations.
     // Notifications are sent by SyncObserverModelBridge while changing
     // settings.
     base::AutoReset<BOOL> autoReset(&_ignoreSyncStateChanges, YES);
-    switchItem.on = value;
-    ItemType itemType = static_cast<ItemType>(switchItem.type);
+    SyncSwitchItem* syncSwitchItem = base::mac::ObjCCast<SyncSwitchItem>(item);
+    syncSwitchItem.on = value;
+    ItemType itemType = static_cast<ItemType>(item.type);
     switch (itemType) {
       case SyncEverythingItemType:
         self.syncSetupService->SetSyncingAllDataTypes(value);
@@ -421,9 +434,10 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
       case PasswordsDataTypeItemType:
       case ReadingListDataTypeItemType:
       case SettingsDataTypeItemType: {
+        DCHECK(syncSwitchItem);
         SyncSetupService::SyncableDatatype dataType =
             static_cast<SyncSetupService::SyncableDatatype>(
-                switchItem.dataType);
+                syncSwitchItem.dataType);
         syncer::ModelType modelType =
             self.syncSetupService->GetModelType(dataType);
         self.syncSetupService->SetDataTypeEnabled(modelType, value);
@@ -455,6 +469,11 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
   ItemType itemType = static_cast<ItemType>(item.type);
   switch (itemType) {
     case EncryptionItemType:
+      if (self.syncSetupService->GetSyncServiceState() ==
+          SyncSetupService::kSyncServiceNeedsTrustedVaultKey) {
+        // TODO(crbug.com/1019685): Open key retrieval dialog.
+        break;
+      }
       [self.commandHandler openPassphraseDialog];
       break;
     case GoogleActivityControlsItemType:

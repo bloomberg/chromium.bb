@@ -37,7 +37,6 @@ class BackingVisitor : public Visitor {
   ~BackingVisitor() final {}
 
   void ProcessBackingStore(HeapObjectHeader* header) {
-    EXPECT_TRUE(header->IsValid());
     EXPECT_TRUE(header->IsMarked());
     header->Unmark();
     GCInfoTable::Get()
@@ -57,6 +56,19 @@ class BackingVisitor : public Visitor {
       header->Mark();
   }
 
+  bool VisitEphemeronKeyValuePair(
+      void* key,
+      void* value,
+      EphemeronTracingCallback key_trace_callback,
+      EphemeronTracingCallback value_trace_callback) final {
+    const bool key_is_dead = key_trace_callback(this, key);
+    if (key_is_dead)
+      return true;
+    const bool value_is_dead = value_trace_callback(this, value);
+    DCHECK(!value_is_dead);
+    return false;
+  }
+
   // Unused overrides.
   void VisitWeak(void* object,
                  void* object_weak_ref,
@@ -68,11 +80,12 @@ class BackingVisitor : public Visitor {
   void VisitBackingStoreWeakly(void*,
                                void**,
                                TraceDescriptor,
+                               TraceDescriptor,
                                WeakCallback,
                                void*) final {}
   void VisitBackingStoreOnly(void*, void**) final {}
   void RegisterBackingStoreCallback(void* slot, MovingObjectCallback) final {}
-  void RegisterWeakCallback(void* closure, WeakCallback) final {}
+  void RegisterWeakCallback(WeakCallback, void*) final {}
   void Visit(const TraceWrapperV8Reference<v8::Value>&) final {}
 
  private:
@@ -111,12 +124,14 @@ class IncrementalMarkingScope : public IncrementalMarkingScopeBase {
       : IncrementalMarkingScopeBase(thread_state),
         gc_forbidden_scope_(thread_state),
         marking_worklist_(heap_.GetMarkingWorklist()),
+        write_barrier_worklist_(heap_.GetWriteBarrierWorklist()),
         not_fully_constructed_worklist_(
             heap_.GetNotFullyConstructedWorklist()) {
     thread_state_->SetGCPhase(ThreadState::GCPhase::kMarking);
     ThreadState::AtomicPauseScope atomic_pause_scope_(thread_state_);
     ScriptForbiddenScope script_forbidden_scope;
     EXPECT_TRUE(marking_worklist_->IsGlobalEmpty());
+    EXPECT_TRUE(write_barrier_worklist_->IsGlobalEmpty());
     EXPECT_TRUE(not_fully_constructed_worklist_->IsGlobalEmpty());
     thread_state->EnableIncrementalMarkingBarrier();
     thread_state->current_gc_data_.visitor = std::make_unique<MarkingVisitor>(
@@ -125,6 +140,7 @@ class IncrementalMarkingScope : public IncrementalMarkingScopeBase {
 
   ~IncrementalMarkingScope() {
     EXPECT_TRUE(marking_worklist_->IsGlobalEmpty());
+    EXPECT_TRUE(write_barrier_worklist_->IsGlobalEmpty());
     EXPECT_TRUE(not_fully_constructed_worklist_->IsGlobalEmpty());
     thread_state_->DisableIncrementalMarkingBarrier();
     // Need to clear out unused worklists that might have been polluted during
@@ -135,6 +151,9 @@ class IncrementalMarkingScope : public IncrementalMarkingScopeBase {
   }
 
   MarkingWorklist* marking_worklist() const { return marking_worklist_; }
+  WriteBarrierWorklist* write_barrier_worklist() const {
+    return write_barrier_worklist_;
+  }
   NotFullyConstructedWorklist* not_fully_constructed_worklist() const {
     return not_fully_constructed_worklist_;
   }
@@ -142,6 +161,7 @@ class IncrementalMarkingScope : public IncrementalMarkingScopeBase {
  protected:
   ThreadState::GCForbiddenScope gc_forbidden_scope_;
   MarkingWorklist* const marking_worklist_;
+  WriteBarrierWorklist* const write_barrier_worklist_;
   NotFullyConstructedWorklist* const not_fully_constructed_worklist_;
 };
 
@@ -156,6 +176,7 @@ class ExpectWriteBarrierFires : public IncrementalMarkingScope {
         objects_(objects),
         backing_visitor_(thread_state_, &objects_) {
     EXPECT_TRUE(marking_worklist_->IsGlobalEmpty());
+    EXPECT_TRUE(write_barrier_worklist_->IsGlobalEmpty());
     for (void* object : objects_) {
       // Ensure that the object is in the normal arena so we can ignore backing
       // objects on the marking stack.
@@ -168,19 +189,36 @@ class ExpectWriteBarrierFires : public IncrementalMarkingScope {
   }
 
   ~ExpectWriteBarrierFires() {
-    EXPECT_FALSE(marking_worklist_->IsGlobalEmpty());
+    // All objects watched should be on the marking or write barrier worklist.
     MarkingItem item;
-    // All objects watched should be on the marking stack.
-    while (marking_worklist_->Pop(WorklistTaskId::MainThread, &item)) {
+    while (marking_worklist_->Pop(WorklistTaskId::MutatorThread, &item)) {
       // Inspect backing stores to allow specifying objects that are only
       // reachable through a backing store.
       if (!ThreadHeap::IsNormalArenaIndex(
-              PageFromObject(item.object)->Arena()->ArenaIndex())) {
+              PageFromObject(item.base_object_payload)
+                  ->Arena()
+                  ->ArenaIndex())) {
         backing_visitor_.ProcessBackingStore(
-            HeapObjectHeader::FromPayload(item.object));
+            HeapObjectHeader::FromPayload(item.base_object_payload));
         continue;
       }
-      auto** pos = std::find(objects_.begin(), objects_.end(), item.object);
+      auto** pos =
+          std::find(objects_.begin(), objects_.end(), item.base_object_payload);
+      if (objects_.end() != pos)
+        objects_.erase(pos);
+    }
+    HeapObjectHeader* header;
+    while (
+        write_barrier_worklist_->Pop(WorklistTaskId::MutatorThread, &header)) {
+      // Inspect backing stores to allow specifying objects that are only
+      // reachable through a backing store.
+      if (!ThreadHeap::IsNormalArenaIndex(
+              PageFromObject(header->Payload())->Arena()->ArenaIndex())) {
+        backing_visitor_.ProcessBackingStore(header);
+        continue;
+      }
+      auto** pos =
+          std::find(objects_.begin(), objects_.end(), header->Payload());
       if (objects_.end() != pos)
         objects_.erase(pos);
     }
@@ -191,6 +229,7 @@ class ExpectWriteBarrierFires : public IncrementalMarkingScope {
       header->Unmark();
     }
     EXPECT_TRUE(marking_worklist_->IsGlobalEmpty());
+    EXPECT_TRUE(write_barrier_worklist_->IsGlobalEmpty());
   }
 
  private:
@@ -208,6 +247,7 @@ class ExpectNoWriteBarrierFires : public IncrementalMarkingScope {
                             std::initializer_list<void*> objects)
       : IncrementalMarkingScope(thread_state) {
     EXPECT_TRUE(marking_worklist_->IsGlobalEmpty());
+    EXPECT_TRUE(write_barrier_worklist_->IsGlobalEmpty());
     for (void* object : objects_) {
       HeapObjectHeader* header = HeapObjectHeader::FromPayload(object);
       headers_.push_back(std::make_pair(header, header->IsMarked()));
@@ -216,6 +256,7 @@ class ExpectNoWriteBarrierFires : public IncrementalMarkingScope {
 
   ~ExpectNoWriteBarrierFires() {
     EXPECT_TRUE(marking_worklist_->IsGlobalEmpty());
+    EXPECT_TRUE(write_barrier_worklist_->IsGlobalEmpty());
     for (const auto& pair : headers_) {
       EXPECT_EQ(pair.second, pair.first->IsMarked());
       pair.first->Unmark();
@@ -859,120 +900,6 @@ TEST_F(IncrementalMarkingTest, HeapHashSetSwap) {
   Swap<HeapHashSet<WeakMember<Object>>>();
 }
 
-class StrongWeakPair : public std::pair<Member<Object>, WeakMember<Object>> {
-  DISALLOW_NEW();
-
-  typedef std::pair<Member<Object>, WeakMember<Object>> Base;
-
- public:
-  StrongWeakPair(Object* obj1, Object* obj2) : Base(obj1, obj2) {}
-
-  StrongWeakPair(WTF::HashTableDeletedValueType)
-      : Base(WTF::kHashTableDeletedValue, nullptr) {}
-
-  bool IsHashTableDeletedValue() const {
-    return first.IsHashTableDeletedValue();
-  }
-
-  // Trace will be called for write barrier invocations. Only strong members
-  // are interesting.
-  void Trace(blink::Visitor* visitor) { visitor->Trace(first); }
-
-  // TraceInCollection will be called for weak processing.
-  template <typename VisitorDispatcher>
-  bool TraceInCollection(VisitorDispatcher visitor,
-                         WTF::WeakHandlingFlag weakness) {
-    visitor->Trace(first);
-    if (weakness == WTF::kNoWeakHandling) {
-      visitor->Trace(second);
-    }
-    return false;
-  }
-};
-
-}  // namespace incremental_marking_test
-}  // namespace blink
-
-namespace WTF {
-
-template <>
-struct HashTraits<blink::incremental_marking_test::StrongWeakPair>
-    : SimpleClassHashTraits<blink::incremental_marking_test::StrongWeakPair> {
-  static const WTF::WeakHandlingFlag kWeakHandlingFlag = WTF::kWeakHandling;
-
-  template <typename U = void>
-  struct IsTraceableInCollection {
-    static const bool value = true;
-  };
-
-  static const bool kHasIsEmptyValueFunction = true;
-  static bool IsEmptyValue(
-      const blink::incremental_marking_test::StrongWeakPair& value) {
-    return !value.first;
-  }
-
-  static void ConstructDeletedValue(
-      blink::incremental_marking_test::StrongWeakPair& slot,
-      bool) {
-    new (NotNull, &slot)
-        blink::incremental_marking_test::StrongWeakPair(kHashTableDeletedValue);
-  }
-
-  static bool IsDeletedValue(
-      const blink::incremental_marking_test::StrongWeakPair& value) {
-    return value.IsHashTableDeletedValue();
-  }
-
-  template <typename VisitorDispatcher>
-  static bool TraceInCollection(
-      VisitorDispatcher visitor,
-      blink::incremental_marking_test::StrongWeakPair& t,
-      WTF::WeakHandlingFlag weakness) {
-    return t.TraceInCollection(visitor, weakness);
-  }
-};
-
-template <>
-struct DefaultHash<blink::incremental_marking_test::StrongWeakPair> {
-  typedef PairHash<blink::Member<blink::incremental_marking_test::Object>,
-                   blink::WeakMember<blink::incremental_marking_test::Object>>
-      Hash;
-};
-
-template <>
-struct IsTraceable<blink::incremental_marking_test::StrongWeakPair> {
-  static const bool value = IsTraceable<std::pair<
-      blink::Member<blink::incremental_marking_test::Object>,
-      blink::WeakMember<blink::incremental_marking_test::Object>>>::value;
-};
-
-}  // namespace WTF
-
-namespace blink {
-namespace incremental_marking_test {
-
-TEST_F(IncrementalMarkingTest, HeapHashSetStrongWeakPair) {
-  auto* obj1 = MakeGarbageCollected<Object>();
-  auto* obj2 = MakeGarbageCollected<Object>();
-  HeapHashSet<StrongWeakPair> set;
-  {
-    // Both, the weak and the strong field, are hit by the write barrier.
-    ExpectWriteBarrierFires scope(ThreadState::Current(), {obj1, obj2});
-    set.insert(StrongWeakPair(obj1, obj2));
-  }
-}
-
-TEST_F(IncrementalMarkingTest, HeapLinkedHashSetStrongWeakPair) {
-  auto* obj1 = MakeGarbageCollected<Object>();
-  auto* obj2 = MakeGarbageCollected<Object>();
-  HeapLinkedHashSet<StrongWeakPair> set;
-  {
-    // Both, the weak and the strong field, are hit by the write barrier.
-    ExpectWriteBarrierFires scope(ThreadState::Current(), {obj1, obj2});
-    set.insert(StrongWeakPair(obj1, obj2));
-  }
-}
-
 // =============================================================================
 // HeapLinkedHashSet support. ==================================================
 // =============================================================================
@@ -1316,32 +1243,6 @@ TEST_F(IncrementalMarkingTest, HeapHashMapSwapWeakMemberMember) {
   }
 }
 
-TEST_F(IncrementalMarkingTest, HeapHashMapInsertStrongWeakPairMember) {
-  auto* obj1 = MakeGarbageCollected<Object>();
-  auto* obj2 = MakeGarbageCollected<Object>();
-  auto* obj3 = MakeGarbageCollected<Object>();
-  HeapHashMap<StrongWeakPair, Member<Object>> map;
-  {
-    // Tests that the write barrier also fires for entities such as
-    // StrongWeakPair that don't overload assignment operators in translators.
-    ExpectWriteBarrierFires scope(ThreadState::Current(), {obj1, obj3});
-    map.insert(StrongWeakPair(obj1, obj2), obj3);
-  }
-}
-
-TEST_F(IncrementalMarkingTest, HeapHashMapInsertMemberStrongWeakPair) {
-  auto* obj1 = MakeGarbageCollected<Object>();
-  auto* obj2 = MakeGarbageCollected<Object>();
-  auto* obj3 = MakeGarbageCollected<Object>();
-  HeapHashMap<Member<Object>, StrongWeakPair> map;
-  {
-    // Tests that the write barrier also fires for entities such as
-    // StrongWeakPair that don't overload assignment operators in translators.
-    ExpectWriteBarrierFires scope(ThreadState::Current(), {obj1, obj2});
-    map.insert(obj1, StrongWeakPair(obj2, obj3));
-  }
-}
-
 TEST_F(IncrementalMarkingTest, HeapHashMapCopyKeysToVectorMember) {
   auto* obj1 = MakeGarbageCollected<Object>();
   auto* obj2 = MakeGarbageCollected<Object>();
@@ -1442,24 +1343,31 @@ TEST_F(IncrementalMarkingTest, WriteBarrierDuringMixinConstruction) {
 
   // Clear any objects that have been added to the regular marking worklist in
   // the process of calling the constructor.
-  EXPECT_FALSE(scope.marking_worklist()->IsGlobalEmpty());
   MarkingItem marking_item;
-  while (scope.marking_worklist()->Pop(WorklistTaskId::MainThread,
+  while (scope.marking_worklist()->Pop(WorklistTaskId::MutatorThread,
                                        &marking_item)) {
     HeapObjectHeader* header =
-        HeapObjectHeader::FromPayload(marking_item.object);
+        HeapObjectHeader::FromPayload(marking_item.base_object_payload);
     if (header->IsMarked())
       header->Unmark();
   }
   EXPECT_TRUE(scope.marking_worklist()->IsGlobalEmpty());
+  // Clear any write barriers so far.
+  HeapObjectHeader* header;
+  while (scope.write_barrier_worklist()->Pop(WorklistTaskId::MutatorThread,
+                                             &header)) {
+    if (header->IsMarked())
+      header->Unmark();
+  }
+  EXPECT_TRUE(scope.write_barrier_worklist()->IsGlobalEmpty());
 
   EXPECT_FALSE(scope.not_fully_constructed_worklist()->IsGlobalEmpty());
   NotFullyConstructedItem partial_item;
   bool found_mixin_object = false;
   // The same object may be on the marking work list because of expanding
   // and rehashing of the backing store in the registry.
-  while (scope.not_fully_constructed_worklist()->Pop(WorklistTaskId::MainThread,
-                                                     &partial_item)) {
+  while (scope.not_fully_constructed_worklist()->Pop(
+      WorklistTaskId::MutatorThread, &partial_item)) {
     if (object == partial_item)
       found_mixin_object = true;
     HeapObjectHeader* header = HeapObjectHeader::FromPayload(partial_item);
@@ -1481,60 +1389,6 @@ TEST_F(IncrementalMarkingTest, OverrideAfterMixinConstruction) {
 // =============================================================================
 // Tests that execute complete incremental garbage collections. ================
 // =============================================================================
-
-// Test driver for incremental marking. Assumes that no stack handling is
-// required.
-class IncrementalMarkingTestDriver {
- public:
-  explicit IncrementalMarkingTestDriver(ThreadState* thread_state)
-      : thread_state_(thread_state) {}
-  ~IncrementalMarkingTestDriver() {
-    if (thread_state_->IsIncrementalMarking())
-      FinishGC();
-  }
-
-  void Start() {
-    thread_state_->IncrementalMarkingStart(
-        BlinkGC::GCReason::kForcedGCForTesting);
-  }
-
-  bool SingleStep(BlinkGC::StackState stack_state =
-                      BlinkGC::StackState::kNoHeapPointersOnStack) {
-    CHECK(thread_state_->IsIncrementalMarking());
-    if (thread_state_->GetGCState() ==
-        ThreadState::kIncrementalMarkingStepScheduled) {
-      thread_state_->IncrementalMarkingStep(stack_state);
-      return true;
-    }
-    return false;
-  }
-
-  void FinishSteps(BlinkGC::StackState stack_state =
-                       BlinkGC::StackState::kNoHeapPointersOnStack) {
-    CHECK(thread_state_->IsIncrementalMarking());
-    while (SingleStep(stack_state)) {
-    }
-  }
-
-  void FinishGC(bool complete_sweep = true) {
-    CHECK(thread_state_->IsIncrementalMarking());
-    FinishSteps(BlinkGC::StackState::kNoHeapPointersOnStack);
-    CHECK_EQ(ThreadState::kIncrementalMarkingFinalizeScheduled,
-             thread_state_->GetGCState());
-    thread_state_->RunScheduledGC(BlinkGC::StackState::kNoHeapPointersOnStack);
-    CHECK(!thread_state_->IsIncrementalMarking());
-    if (complete_sweep)
-      thread_state_->CompleteSweep();
-  }
-
-  size_t GetHeapCompactLastFixupCount() {
-    HeapCompact* compaction = ThreadState::Current()->Heap().Compaction();
-    return compaction->LastFixupCountForTesting();
-  }
-
- private:
-  ThreadState* const thread_state_;
-};
 
 TEST_F(IncrementalMarkingTest, TestDriver) {
   IncrementalMarkingTestDriver driver(ThreadState::Current());
@@ -1669,7 +1523,7 @@ TEST_F(IncrementalMarkingTest, WeakHashMapHeapCompaction) {
   driver.FinishGC();
 
   // Weak callback should register the slot.
-  EXPECT_EQ(driver.GetHeapCompactLastFixupCount(), 1u);
+  EXPECT_EQ(driver.GetHeapCompactLastFixupCount(), 2u);
 }
 
 TEST_F(IncrementalMarkingTest, ConservativeGCWhileCompactionScheduled) {
@@ -1772,15 +1626,12 @@ TEST_F(IncrementalMarkingTest, StepDuringObjectConstruction) {
             // Publish not-fully-constructed object |thiz| by triggering write
             // barrier for the object.
             holder->set_value(thiz);
-            CHECK(HeapObjectHeader::FromPayload(holder->value())->IsValid());
             // Finish call incremental steps.
             driver->FinishSteps(BlinkGC::StackState::kHeapPointersOnStack);
           },
           &driver, holder.Get()),
       MakeGarbageCollected<Object>());
   driver.FinishGC();
-  CHECK(HeapObjectHeader::FromPayload(holder->value())->IsValid());
-  CHECK(HeapObjectHeader::FromPayload(holder->value()->value())->IsValid());
   PreciselyCollectGarbage();
 }
 
@@ -1808,8 +1659,6 @@ TEST_F(IncrementalMarkingTest, StepDuringMixinObjectConstruction) {
           &driver, holder.Get()),
       MakeGarbageCollected<Object>());
   driver.FinishGC();
-  CHECK(holder->value()->GetHeapObjectHeader()->IsValid());
-  CHECK(HeapObjectHeader::FromPayload(holder->value()->value())->IsValid());
   PreciselyCollectGarbage();
 }
 
@@ -1860,7 +1709,8 @@ TEST_F(IncrementalMarkingTest,
   driver.FinishSteps();
   // GCs here are without stack. This is just to show that we don't want this
   // object marked.
-  CHECK(!HeapObjectHeader::FromPayload(nested)->IsMarked());
+  CHECK(!HeapObjectHeader::FromPayload(nested)
+             ->IsMarked<HeapObjectHeader::AccessMode::kAtomic>());
   nested = nullptr;
   driver.FinishGC();
 }
@@ -1892,7 +1742,8 @@ TEST_F(IncrementalMarkingTest, AdjustMarkedBytesOnMarkedBackingStore) {
   driver.Start();
   driver.FinishSteps();
   // The object is marked at this point.
-  CHECK(HeapObjectHeader::FromPayload(holder.Get())->IsMarked());
+  CHECK(HeapObjectHeader::FromPayload(holder.Get())
+            ->IsMarked<HeapObjectHeader::AccessMode::kAtomic>());
   driver.FinishGC(false);
   // The object is still marked as sweeping did not make any progress.
   CHECK(HeapObjectHeader::FromPayload(holder.Get())->IsMarked());
@@ -1930,7 +1781,7 @@ TEST_F(IncrementalMarkingTest, HeapCompactWithStaleSlotInNestedContainer) {
   driver.FinishGC();
 }
 
-class Destructed : public GarbageCollectedFinalized<Destructed> {
+class Destructed final : public GarbageCollected<Destructed> {
  public:
   ~Destructed() { n_destructed++; }
 
@@ -1941,7 +1792,7 @@ class Destructed : public GarbageCollectedFinalized<Destructed> {
 
 size_t Destructed::n_destructed = 0;
 
-class Wrapper : public GarbageCollectedFinalized<Wrapper> {
+class Wrapper final : public GarbageCollected<Wrapper> {
  public:
   using HashType = HeapLinkedHashSet<Member<Destructed>>;
 

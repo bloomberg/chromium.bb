@@ -10,6 +10,4 @@ message InputProperties {
   bool runhooks = 1;
   // Timeout for presubmit execution, in seconds.
   int32 timeout_s = 2;
-  // The path to the vpython spec to use, relative to the repository root.
-  string vpython_spec_path = 3;
 }

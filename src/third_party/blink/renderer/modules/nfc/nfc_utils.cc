@@ -9,28 +9,25 @@
 
 #include "services/device/public/mojom/nfc.mojom-blink.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
-#include "third_party/blink/renderer/modules/nfc/nfc_constants.h"
 #include "third_party/blink/renderer/modules/nfc/nfc_type_converters.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 
-using device::mojom::blink::NDEFCompatibility;
-using device::mojom::blink::NDEFRecordType;
-using device::mojom::blink::NFCPushTarget;
+using device::mojom::blink::NDEFPushTarget;
 
 namespace blink {
 
-size_t GetNDEFMessageSize(const device::mojom::blink::NDEFMessagePtr& message) {
-  size_t message_size = message->url.CharactersSizeInBytes();
-  for (wtf_size_t i = 0; i < message->data.size(); ++i) {
-    message_size += message->data[i]->media_type.CharactersSizeInBytes();
-    message_size += message->data[i]->data.size();
+size_t GetNDEFMessageSize(const device::mojom::blink::NDEFMessage& message) {
+  size_t message_size = message.url.CharactersSizeInBytes();
+  for (wtf_size_t i = 0; i < message.data.size(); ++i) {
+    message_size += message.data[i]->media_type.CharactersSizeInBytes();
+    message_size += message.data[i]->data.size();
   }
   return message_size;
 }
 
 bool SetNDEFMessageURL(const String& origin,
-                       device::mojom::blink::NDEFMessagePtr& message) {
+                       device::mojom::blink::NDEFMessage* message) {
   KURL origin_url(origin);
 
   if (!message->url.IsEmpty() && origin_url.CanSetPathname()) {
@@ -41,99 +38,47 @@ bool SetNDEFMessageURL(const String& origin,
   return origin_url.IsValid();
 }
 
-String NDEFRecordTypeToString(const NDEFRecordType& type) {
-  switch (type) {
-    case NDEFRecordType::TEXT:
-      return "text";
-    case NDEFRecordType::URL:
-      return "url";
-    case NDEFRecordType::JSON:
-      return "json";
-    case NDEFRecordType::OPAQUE_RECORD:
-      return "opaque";
-    case NDEFRecordType::EMPTY:
-      return "empty";
-  }
-
-  NOTREACHED();
-  return String();
-}
-
-NDEFCompatibility StringToNDEFCompatibility(const String& compatibility) {
-  if (compatibility == "nfc-forum")
-    return NDEFCompatibility::NFC_FORUM;
-
-  if (compatibility == "vendor")
-    return NDEFCompatibility::VENDOR;
-
-  if (compatibility == "any")
-    return NDEFCompatibility::ANY;
-
-  NOTREACHED();
-  return NDEFCompatibility::NFC_FORUM;
-}
-
-NDEFRecordType StringToNDEFRecordType(const String& recordType) {
-  if (recordType == "empty")
-    return NDEFRecordType::EMPTY;
-
-  if (recordType == "text")
-    return NDEFRecordType::TEXT;
-
-  if (recordType == "url")
-    return NDEFRecordType::URL;
-
-  if (recordType == "json")
-    return NDEFRecordType::JSON;
-
-  if (recordType == "opaque")
-    return NDEFRecordType::OPAQUE_RECORD;
-
-  NOTREACHED();
-  return NDEFRecordType::EMPTY;
-}
-
-NFCPushTarget StringToNFCPushTarget(const String& target) {
+NDEFPushTarget StringToNDEFPushTarget(const String& target) {
   if (target == "tag")
-    return NFCPushTarget::TAG;
+    return NDEFPushTarget::TAG;
 
   if (target == "peer")
-    return NFCPushTarget::PEER;
+    return NDEFPushTarget::PEER;
 
-  return NFCPushTarget::ANY;
+  return NDEFPushTarget::ANY;
 }
 
-DOMException* NFCErrorTypeToDOMException(
-    device::mojom::blink::NFCErrorType error_type) {
+DOMException* NDEFErrorTypeToDOMException(
+    device::mojom::blink::NDEFErrorType error_type) {
   switch (error_type) {
-    case device::mojom::blink::NFCErrorType::NOT_ALLOWED:
+    case device::mojom::blink::NDEFErrorType::NOT_ALLOWED:
       return MakeGarbageCollected<DOMException>(
-          DOMExceptionCode::kNotAllowedError, kNfcNotAllowed);
-    case device::mojom::blink::NFCErrorType::NOT_SUPPORTED:
+          DOMExceptionCode::kNotAllowedError, "NFC operation not allowed.");
+    case device::mojom::blink::NDEFErrorType::NOT_SUPPORTED:
       return MakeGarbageCollected<DOMException>(
-          DOMExceptionCode::kNotSupportedError, kNfcNotSupported);
-    case device::mojom::blink::NFCErrorType::NOT_READABLE:
+          DOMExceptionCode::kNotSupportedError,
+          "No NFC adapter or cannot establish connection.");
+    case device::mojom::blink::NDEFErrorType::NOT_READABLE:
       return MakeGarbageCollected<DOMException>(
-          DOMExceptionCode::kNotReadableError, kNfcNotReadable);
-    case device::mojom::blink::NFCErrorType::NOT_FOUND:
+          DOMExceptionCode::kNotReadableError, "NFC is not enabled.");
+    case device::mojom::blink::NDEFErrorType::NOT_FOUND:
       return MakeGarbageCollected<DOMException>(
-          DOMExceptionCode::kNotFoundError, kNfcWatchIdNotFound);
-    case device::mojom::blink::NFCErrorType::INVALID_MESSAGE:
-      return MakeGarbageCollected<DOMException>(DOMExceptionCode::kSyntaxError,
-                                                kNfcInvalidMsg);
-    case device::mojom::blink::NFCErrorType::OPERATION_CANCELLED:
-      return MakeGarbageCollected<DOMException>(DOMExceptionCode::kAbortError,
-                                                kNfcCancelled);
-    case device::mojom::blink::NFCErrorType::TIMER_EXPIRED:
-      return MakeGarbageCollected<DOMException>(DOMExceptionCode::kTimeoutError,
-                                                kNfcTimeout);
-    case device::mojom::blink::NFCErrorType::CANNOT_CANCEL:
+          DOMExceptionCode::kNotFoundError,
+          "Provided watch id cannot be found.");
+    case device::mojom::blink::NDEFErrorType::INVALID_MESSAGE:
+      return MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kSyntaxError, "Invalid NFC message was provided.");
+    case device::mojom::blink::NDEFErrorType::OPERATION_CANCELLED:
+      return MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kAbortError, "The NFC operation was cancelled.");
+    case device::mojom::blink::NDEFErrorType::CANNOT_CANCEL:
       return MakeGarbageCollected<DOMException>(
           DOMExceptionCode::kNoModificationAllowedError,
-          kNfcNoModificationAllowed);
-    case device::mojom::blink::NFCErrorType::IO_ERROR:
-      return MakeGarbageCollected<DOMException>(DOMExceptionCode::kNetworkError,
-                                                kNfcDataTransferError);
+          "NFC operation cannot be cancelled.");
+    case device::mojom::blink::NDEFErrorType::IO_ERROR:
+      return MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kNetworkError,
+          "NFC data transfer error has occurred.");
   }
   NOTREACHED();
   // Don't need to handle the case after a NOTREACHED().

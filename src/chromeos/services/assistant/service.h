@@ -20,24 +20,27 @@
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "chromeos/dbus/power/power_manager_client.h"
+#include "chromeos/services/assistant/assistant_manager_service.h"
 #include "chromeos/services/assistant/assistant_state_proxy.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "chromeos/services/assistant/public/mojom/settings.mojom.h"
 #include "components/account_id/account_id.h"
-#include "components/prefs/pref_registry_simple.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/identity/public/mojom/identity_accessor.mojom.h"
 
 class GoogleServiceAuthError;
+class PrefService;
 
 namespace base {
 class OneShotTimer;
 }  // namespace base
 
 namespace network {
-class SharedURLLoaderFactoryInfo;
+class PendingSharedURLLoaderFactory;
 }  // namespace network
 
 namespace power_manager {
@@ -47,9 +50,8 @@ class PowerSupplyProperties;
 namespace chromeos {
 namespace assistant {
 
-class AssistantManagerService;
 class AssistantSettingsManager;
-class PrefConnectionDelegate;
+class ServiceContext;
 
 // |AssistantManagerService|'s state won't update if it's currently in the
 // process of starting up. This is the delay before we will try to update
@@ -60,71 +62,33 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
     : public mojom::AssistantService,
       public chromeos::PowerManagerClient::Observer,
       public ash::SessionActivationObserver,
-      public ash::AssistantStateObserver {
+      public ash::AssistantStateObserver,
+      public AssistantManagerService::CommunicationErrorObserver,
+      public AssistantManagerService::StateObserver {
  public:
   Service(mojo::PendingReceiver<mojom::AssistantService> receiver,
-          std::unique_ptr<network::SharedURLLoaderFactoryInfo>
-              url_loader_factory_info);
+          std::unique_ptr<network::PendingSharedURLLoaderFactory>
+              pending_url_loader_factory,
+          PrefService* profile_prefs);
   ~Service() override;
 
   // Allows tests to override the AssistantSettingsManager bound by the service.
   static void OverrideSettingsManagerForTesting(
       AssistantSettingsManager* manager);
 
-  mojom::Client* client() { return client_.get(); }
-
-  mojom::DeviceActions* device_actions() { return device_actions_.get(); }
-
-  mojom::AssistantController* assistant_controller() {
-    return assistant_controller_.get();
-  }
-
-  ash::mojom::AssistantAlarmTimerController*
-  assistant_alarm_timer_controller() {
-    return assistant_alarm_timer_controller_.get();
-  }
-
-  ash::mojom::AssistantNotificationController*
-  assistant_notification_controller() {
-    return assistant_notification_controller_.get();
-  }
-
-  ash::mojom::AssistantScreenContextController*
-  assistant_screen_context_controller() {
-    return assistant_screen_context_controller_.get();
-  }
-
-  ash::AssistantStateBase* assistant_state() { return &assistant_state_; }
-
-  scoped_refptr<base::SequencedTaskRunner> main_task_runner() {
-    return main_task_runner_;
-  }
-
-  bool is_signed_out_mode() const { return is_signed_out_mode_; }
-
-  void RequestAccessToken();
-
-  // Returns the "actual" hotword status. In addition to the hotword pref, this
-  // method also take power status into account if dsp support is not available
-  // for the device.
-  bool ShouldEnableHotword();
-
   void SetIdentityAccessorForTesting(
-      identity::mojom::IdentityAccessorPtr identity_accessor);
+      mojo::PendingRemote<identity::mojom::IdentityAccessor> identity_accessor);
 
   void SetTimerForTesting(std::unique_ptr<base::OneShotTimer> timer);
-
-  void SetPrefConnectionDelegateForTesting(
-      std::unique_ptr<PrefConnectionDelegate> pref_connection_delegate);
-
-  AssistantStateProxy* GetAssistantStateProxyForTesting();
 
  private:
   friend class AssistantServiceTest;
 
+  class Context;
+
   // mojom::AssistantService overrides
-  void Init(mojom::ClientPtr client,
-            mojom::DeviceActionsPtr device_actions,
+  void Init(mojo::PendingRemote<mojom::Client> client,
+            mojo::PendingRemote<mojom::DeviceActions> device_actions,
             bool is_test) override;
   void BindAssistant(mojo::PendingReceiver<mojom::Assistant> receiver) override;
   void BindSettingsManager(
@@ -138,7 +102,8 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
   void OnSessionActivated(bool activated) override;
   void OnLockStateChanged(bool locked) override;
 
-  // ash::AssistantStateObserver:
+  // ash::AssistantStateObserver overrides:
+  void OnAssistantConsentStatusChanged(int consent_status) override;
   void OnAssistantHotwordAlwaysOn(bool hotword_always_on) override;
   void OnAssistantSettingsEnabled(bool enabled) override;
   void OnAssistantHotwordEnabled(bool enabled) override;
@@ -146,9 +111,18 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
   void OnArcPlayStoreEnabledChanged(bool enabled) override;
   void OnLockedFullScreenStateChanged(bool enabled) override;
 
+  // AssistantManagerService::CommunicationErrorObserver overrides:
+  void OnCommunicationError(
+      AssistantManagerService::CommunicationErrorType error_type) override;
+
+  // AssistantManagerService::StateObserver overrides:
+  void OnStateChanged(AssistantManagerService::State new_state) override;
+
   void UpdateAssistantManagerState();
 
   identity::mojom::IdentityAccessor* GetIdentityAccessor();
+
+  void RequestAccessToken();
 
   void GetPrimaryAccountInfoCallback(
       const base::Optional<CoreAccountId>& account_id,
@@ -162,6 +136,8 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
   void RetryRefreshToken();
 
   void CreateAssistantManagerService();
+  std::unique_ptr<AssistantManagerService>
+  CreateAndReturnAssistantManagerService();
 
   void FinalizeAssistantManagerService();
 
@@ -171,14 +147,21 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
 
   void UpdateListeningState();
 
+  ServiceContext* context() { return context_.get(); }
+
+  // Returns the "actual" hotword status. In addition to the hotword pref, this
+  // method also take power status into account if dsp support is not available
+  // for the device.
+  bool ShouldEnableHotword();
+
   mojo::Receiver<mojom::AssistantService> receiver_;
   mojo::ReceiverSet<mojom::Assistant> assistant_receivers_;
 
   bool observing_ash_session_ = false;
-  mojom::ClientPtr client_;
-  mojom::DeviceActionsPtr device_actions_;
+  mojo::Remote<mojom::Client> client_;
+  mojo::Remote<mojom::DeviceActions> device_actions_;
 
-  identity::mojom::IdentityAccessorPtr identity_accessor_;
+  mojo::Remote<identity::mojom::IdentityAccessor> identity_accessor_;
 
   AccountId account_id_;
   std::unique_ptr<AssistantManagerService> assistant_manager_service_;
@@ -203,18 +186,26 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
 
   base::Optional<std::string> access_token_;
 
-  mojom::AssistantControllerPtr assistant_controller_;
+  mojo::Remote<mojom::AssistantController> assistant_controller_;
 
-  ash::mojom::AssistantAlarmTimerControllerPtr
+  mojo::Remote<ash::mojom::AssistantAlarmTimerController>
       assistant_alarm_timer_controller_;
-  ash::mojom::AssistantNotificationControllerPtr
+  mojo::Remote<ash::mojom::AssistantNotificationController>
       assistant_notification_controller_;
-  ash::mojom::AssistantScreenContextControllerPtr
+  mojo::Remote<ash::mojom::AssistantScreenContextController>
       assistant_screen_context_controller_;
   AssistantStateProxy assistant_state_;
 
+  // |ServiceContext| object passed to child classes so they can access some of
+  // our functionality without depending on us.
+  std::unique_ptr<ServiceContext> context_;
+
   // non-null until |assistant_manager_service_| is created.
-  std::unique_ptr<network::SharedURLLoaderFactoryInfo> url_loader_factory_info_;
+  std::unique_ptr<network::PendingSharedURLLoaderFactory>
+      pending_url_loader_factory_;
+
+  // User profile preferences.
+  PrefService* const profile_prefs_;
 
   base::CancelableOnceClosure update_assistant_manager_callback_;
 

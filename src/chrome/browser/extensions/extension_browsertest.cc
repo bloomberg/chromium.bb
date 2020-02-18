@@ -35,7 +35,6 @@
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/load_error_reporter.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
-#include "chrome/browser/extensions/updater/extension_cache_fake.h"
 #include "chrome/browser/extensions/updater/extension_updater.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -69,13 +68,13 @@
 #include "extensions/browser/notification_types.h"
 #include "extensions/browser/test_extension_registry_observer.h"
 #include "extensions/browser/uninstall_reason.h"
+#include "extensions/browser/updater/extension_cache_fake.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/file_test_util.h"
 #include "extensions/common/file_util.h"
 #include "extensions/common/switches.h"
 #include "extensions/common/value_builder.h"
-#include "net/url_request/url_request_file_job.h"
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/constants/chromeos_switches.h"
@@ -156,6 +155,15 @@ bool ExtensionBrowserTest::ShouldEnableInstallVerification() {
   return false;
 }
 
+base::FilePath ExtensionBrowserTest::GetTestResourcesParentDir() {
+  // Don't use |test_data_dir_| here (even though it points to
+  // chrome/test/data/extensions by default) because subclasses have the ability
+  // to alter it by overriding the SetUpCommandLine() method.
+  base::FilePath test_root_path;
+  base::PathService::Get(chrome::DIR_TEST_DATA, &test_root_path);
+  return test_root_path.AppendASCII("extensions");
+}
+
 // static
 const Extension* ExtensionBrowserTest::GetExtensionByPath(
     const ExtensionSet& extensions,
@@ -213,14 +221,8 @@ void ExtensionBrowserTest::SetUpOnMainThread() {
         test_extension_cache_.get());
   }
 
-  // We don't use test_data_dir_ here because we want this to point to
-  // chrome/test/data/extensions, and subclasses have a nasty habit of altering
-  // the data dir in SetUpCommandLine().
-  base::FilePath test_root_path;
-  base::PathService::Get(chrome::DIR_TEST_DATA, &test_root_path);
-  test_root_path = test_root_path.AppendASCII("extensions");
-  test_protocol_handler_ =
-      base::Bind(&ExtensionProtocolTestResourcesHandler, test_root_path);
+  test_protocol_handler_ = base::Bind(&ExtensionProtocolTestResourcesHandler,
+                                      GetTestResourcesParentDir());
   SetExtensionProtocolTestHandler(&test_protocol_handler_);
 }
 
@@ -423,9 +425,9 @@ const Extension* ExtensionBrowserTest::LoadAndLaunchApp(
   content::WindowedNotificationObserver app_loaded_observer(
       content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
       content::NotificationService::AllSources());
-  AppLaunchParams params(
-      profile(), app->id(), LaunchContainer::kLaunchContainerNone,
-      WindowOpenDisposition::NEW_WINDOW, AppLaunchSource::kSourceTest);
+  apps::AppLaunchParams params(app->id(), LaunchContainer::kLaunchContainerNone,
+                               WindowOpenDisposition::NEW_WINDOW,
+                               AppLaunchSource::kSourceTest);
   params.command_line = *base::CommandLine::ForCurrentProcess();
   apps::LaunchService::Get(profile())->OpenApplication(params);
   app_loaded_observer.Wait();
@@ -724,22 +726,11 @@ void ExtensionBrowserTest::OpenWindow(content::WebContents* contents,
 
 void ExtensionBrowserTest::NavigateInRenderer(content::WebContents* contents,
                                               const GURL& url) {
-  // Ensure any existing navigations complete before trying to navigate anew, to
-  // avoid triggering of the unload event for the wrong navigation.
+  // Note: We use ExecuteScript instead of ExecJS here, because ExecuteScript
+  // works on pages with a Content Security Policy.
+  EXPECT_TRUE(content::ExecuteScript(
+      contents, "window.location = '" + url.spec() + "';"));
   content::WaitForLoadStop(contents);
-  bool result = false;
-  content::WindowedNotificationObserver windowed_observer(
-      content::NOTIFICATION_LOAD_STOP,
-      content::NotificationService::AllSources());
-  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
-      contents,
-      "window.addEventListener('unload', function() {"
-      "    window.domAutomationController.send(true);"
-      "}, false);"
-      "window.location = '" + url.spec() + "';",
-      &result));
-  ASSERT_TRUE(result);
-  windowed_observer.Wait();
   EXPECT_EQ(url, contents->GetController().GetLastCommittedEntry()->GetURL());
 }
 

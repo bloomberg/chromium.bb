@@ -75,11 +75,9 @@
 <translation id="1829129547161959350">Chim cánh cụt</translation>
 <translation id="183183971458492120">Đang tải thông tin...</translation>
 <translation id="1838709767668011582">Trang web Google</translation>
-<translation id="1839704667838141620">Thay đổi cách chia sẻ tệp này</translation>
 <translation id="1844692022597038441">Tệp này không có khi ngoại tuyến.</translation>
 <translation id="184633654410729720">Bàn phím tiếng Thái (Kedmanee)</translation>
 <translation id="1847880352285315359">Đã lưu</translation>
-<translation id="1864676585353837027">Thay đổi cách chia sẻ các tệp này</translation>
 <translation id="1864756863218646478">Không thể tìm thấy tệp.</translation>
 <translation id="1921986354447415460">Bàn phím tiếng Thổ Nhĩ Kỳ-F</translation>
 <translation id="1931134289871235022">Tiếng Slovak</translation>
@@ -89,7 +87,6 @@
 <translation id="1943097386230153518">Cài đặt dịch vụ mới</translation>
 <translation id="1947424002851288782">Bàn phím tiếng Đức</translation>
 <translation id="1972984168337863910">Mở rộng bảng dữ liệu phản hồi về tệp</translation>
-<translation id="197560921582345123">Có thể chỉnh sửa</translation>
 <translation id="1984603991036629094">Bàn phím ngữ âm Armenia</translation>
 <translation id="2001796770603320721">Quản lý trong Drive</translation>
 <translation id="2009067268969781306">Thao tác định dạng ổ sẽ xóa toàn bộ dữ liệu lưu trữ trên ổ đó. Bạn không thể hủy thao tác này sau khi đã thực hiện.</translation>
@@ -226,6 +223,7 @@
 <translation id="3645531960514756307">Bỏ ghim thư mục</translation>
 <translation id="3678559383040232393">Bàn phím tiếng Malta</translation>
 <translation id="3685122418104378273">Tính năng đồng bộ hóa Google Drive được tắt theo mặc định khi sử dụng dữ liệu di động.</translation>
+<translation id="3689865792480713551">Hủy <ph name="ACTIVITY_DESCRIPTION" />.</translation>
 <translation id="3726463242007121105">Thiết bị này không thể mở được vì hệ thống tệp của thiết bị không được hỗ trợ.</translation>
 <translation id="3741243925913727067">Sao lưu ảnh và video trên thiết bị truyền thông của bạn vào Google Drive.</translation>
 <translation id="3749289110408117711">Tên tệp</translation>
@@ -286,7 +284,6 @@
 <translation id="4522570452068850558">Chi tiết</translation>
 <translation id="4552678318981539154">Mua thêm dung lượng lưu trữ</translation>
 <translation id="4559767610552730302">Hiệu ứng Bokeh</translation>
-<translation id="4568854179928172494">Thời gian sửa đổi</translation>
 <translation id="4572815280350369984">Tệp <ph name="FILE_TYPE" /></translation>
 <translation id="457386861538956877">Thêm...</translation>
 <translation id="4579744207439506346">Đã thêm <ph name="ENTRY_NAME" /> vào lựa chọn.</translation>
@@ -467,6 +464,7 @@
 <translation id="6339145975392024142">Bàn phím quốc tế Hoa Kỳ (PC)</translation>
 <translation id="6346310558342052870">Truy cập bị hạn chế</translation>
 <translation id="6353618411602605519">Bàn phím tiếng Croatia</translation>
+<translation id="6356685157277930264">Cửa sổ phản hồi về tệp</translation>
 <translation id="6358884629796491903">Rồng</translation>
 <translation id="637062427944097960">Tệp này được mở trên máy tính khác. Chuyển sang <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />) để xem tệp này.</translation>
 <translation id="6395575651121294044"><ph name="NUMBER_OF_FILES" /> mục</translation>
@@ -566,6 +564,7 @@
 <translation id="7589661784326793847">Xin đợi một chút</translation>
 <translation id="7603724359189955920">Lưới</translation>
 <translation id="7627790789328695202">Rất tiếc, <ph name="FILE_NAME" /> đã tồn tại. Hãy đổi tên tệp và thử lại.</translation>
+<translation id="7628656427739290098">Đã hoàn tất <ph name="PERCENT" />%.</translation>
 <translation id="7649070708921625228">Trợ giúp</translation>
 <translation id="7654209398114106148">Đang di chuyển <ph name="NUMBER_OF_ITEMS" /> mục...</translation>
 <translation id="7658239707568436148">Hủy</translation>
@@ -592,7 +591,6 @@
 <translation id="7827012282502221009"><ph name="NUMBER_OF_TB" /> TB</translation>
 <translation id="7839804798877833423">Tìm nạp các tệp này sẽ sử dụng khoảng <ph name="FILE_SIZE" /> dữ liệu di động.</translation>
 <translation id="7846076177841592234">Hủy chọn</translation>
-<translation id="7850851215703745691">Những tệp Drive này chưa được chia sẻ</translation>
 <translation id="7853966320808728790">BÉPO tiếng Pháp</translation>
 <translation id="7864662577698025113">Thêm dịch vụ mới</translation>
 <translation id="7873831373602885875">Không thể lưu vào <ph name="FOLDER_NAME" />. Tất cả các mục chỉnh sửa sẽ được lưu vào <ph name="DOWNLOADS_FOLDER" /> trong thư mục Tệp đã tải xuống.</translation>
@@ -608,7 +606,6 @@
 <translation id="7969525169268594403">Tiếng Sloven</translation>
 <translation id="7982283708762922719">Chiều cao</translation>
 <translation id="7987485481246785146">Bàn phím tiếng Kurd Sorani dựa trên tiếng Ả Rập</translation>
-<translation id="799923393800005025">Có thể xem</translation>
 <translation id="8008366997883261463">Chó</translation>
 <translation id="8028993641010258682">Kích thước</translation>
 <translation id="8031722894461705849">Bàn phím Slovak</translation>
@@ -670,8 +667,6 @@
 <translation id="8600173386174225982">Danh sách tệp đã thay đổi thành chế độ xem hình thu nhỏ.</translation>
 <translation id="8601932370724196034">Tệp hình ảnh Crostini</translation>
 <translation id="8669949407341943408">Đang di chuyển...</translation>
-<translation id="8671210955687109937">Có thể nhận xét</translation>
-<translation id="8686213429977032554">Tệp Drive này chưa được chia sẻ</translation>
 <translation id="8698464937041809063">Bản vẽ Google</translation>
 <translation id="8714406895390098252">Xe đạp</translation>
 <translation id="8719721339511222681">Đã chọn <ph name="ENTRY_NAME" />.</translation>

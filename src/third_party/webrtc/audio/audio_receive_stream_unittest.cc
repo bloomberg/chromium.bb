@@ -62,8 +62,9 @@ const int kPlayoutBufferDelay = 302;
 const unsigned int kSpeechOutputLevel = 99;
 const double kTotalOutputEnergy = 0.25;
 const double kTotalOutputDuration = 0.5;
+const int64_t kPlayoutNtpTimestampMs = 5678;
 
-const CallReceiveStatistics kCallStats = {678, 234, -12, 567, 890, 123};
+const CallReceiveStatistics kCallStats = {678, 234, -12, 567, 78, 890, 123};
 const std::pair<int, SdpAudioFormat> kReceiveCodec = {
     123,
     {"codec_name_recv", 96000, 0}};
@@ -145,6 +146,8 @@ struct ConfigHelper {
         .WillOnce(Return(kAudioDecodeStats));
     EXPECT_CALL(*channel_receive_, GetReceiveCodec())
         .WillOnce(Return(kReceiveCodec));
+    EXPECT_CALL(*channel_receive_, GetCurrentEstimatedPlayoutNtpTimestampMs(_))
+        .WillOnce(Return(kPlayoutNtpTimestampMs));
   }
 
  private:
@@ -220,8 +223,7 @@ TEST(AudioReceiveStreamTest, ConfigToString) {
       "{rtp: {remote_ssrc: 1234, local_ssrc: 5678, transport_cc: off, nack: "
       "{rtp_history_ms: 0}, extensions: [{uri: "
       "urn:ietf:params:rtp-hdrext:ssrc-audio-level, id: 3}]}, "
-      "rtcp_send_transport: null, media_transport_config: {media_transport: "
-      "null}}",
+      "rtcp_send_transport: null}",
       config.ToString());
 }
 
@@ -266,7 +268,9 @@ TEST(AudioReceiveStreamTest, GetStats) {
   helper.SetupMockForGetStats();
   AudioReceiveStream::Stats stats = recv_stream->GetStats();
   EXPECT_EQ(kRemoteSsrc, stats.remote_ssrc);
-  EXPECT_EQ(static_cast<int64_t>(kCallStats.bytesReceived), stats.bytes_rcvd);
+  EXPECT_EQ(kCallStats.payload_bytes_rcvd, stats.payload_bytes_rcvd);
+  EXPECT_EQ(kCallStats.header_and_padding_bytes_rcvd,
+            stats.header_and_padding_bytes_rcvd);
   EXPECT_EQ(static_cast<uint32_t>(kCallStats.packetsReceived),
             stats.packets_rcvd);
   EXPECT_EQ(kCallStats.cumulativeLost, stats.packets_lost);
@@ -313,6 +317,7 @@ TEST(AudioReceiveStreamTest, GetStats) {
             stats.decoding_muted_output);
   EXPECT_EQ(kCallStats.capture_start_ntp_time_ms_,
             stats.capture_start_ntp_time_ms);
+  EXPECT_EQ(kPlayoutNtpTimestampMs, stats.estimated_playout_ntp_timestamp_ms);
 }
 
 TEST(AudioReceiveStreamTest, SetGain) {

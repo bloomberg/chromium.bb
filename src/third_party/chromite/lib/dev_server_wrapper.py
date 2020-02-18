@@ -10,12 +10,18 @@ from __future__ import print_function
 
 import multiprocessing
 import os
+import re
 import socket
-import sys
 import tempfile
-import httplib
-import urllib2
-import urlparse
+
+from six.moves import http_client as httplib
+from six.moves import urllib
+
+# cherrypy may not be available outside the chroot.
+try:
+  import cherrypy  # pylint: disable=import-error
+except ImportError:
+  cherrypy = None
 
 from chromite.lib import constants
 from chromite.cli import command
@@ -26,23 +32,25 @@ from chromite.lib import osutils
 from chromite.lib import path_util
 from chromite.lib import remote_access
 from chromite.lib import timeout_util
+from chromite.lib.xbuddy import build_artifact
+from chromite.lib.xbuddy import xbuddy
 
 
 DEFAULT_PORT = 8080
 
-DEVSERVER_PKG_DIR = os.path.join(constants.SOURCE_ROOT, 'src/platform/dev')
 DEFAULT_STATIC_DIR = path_util.FromChrootPath(
     os.path.join(constants.SOURCE_ROOT, 'src', 'platform', 'dev', 'static'))
 
 XBUDDY_REMOTE = 'remote'
 XBUDDY_LOCAL = 'local'
 
-ROOTFS_FILENAME = 'update.gz'
-STATEFUL_FILENAME = 'stateful.tgz'
-
 
 class ImagePathError(Exception):
   """Raised when the provided path can't be resolved to an image."""
+
+
+class ArtifactDownloadError(Exception):
+  """Raised when the artifact could not be downloaded."""
 
 
 def ConvertTranslatedPath(original_path, translated_path):
@@ -87,7 +95,7 @@ def GetXbuddyPath(path):
   Raises:
     ValueError if |path| uses any scheme other than xbuddy://.
   """
-  parsed = urlparse.urlparse(path)
+  parsed = urllib.parse.urlparse(path)
 
   if parsed.scheme == 'xbuddy':
     return '%s%s' % (parsed.netloc, parsed.path)
@@ -95,11 +103,12 @@ def GetXbuddyPath(path):
     logging.debug('Assuming %s is an xbuddy path.', path)
     return path
   else:
-    raise ValueError('Do not support scheme %s.', parsed.scheme)
+    raise ValueError('Do not support scheme %s.' % (parsed.scheme,))
 
 
 def GetImagePathWithXbuddy(path, board, version=None,
-                           static_dir=DEFAULT_STATIC_DIR, lookup_only=False):
+                           static_dir=DEFAULT_STATIC_DIR,
+                           lookup_only=False, silent=False):
   """Gets image path and resolved XBuddy path using xbuddy.
 
   Ask xbuddy to translate |path|, and if necessary, download and stage the
@@ -114,6 +123,7 @@ def GetImagePathWithXbuddy(path, board, version=None,
     static_dir: Static directory to stage the image in.
     lookup_only: Caller only wants to translate the path not download the
       artifact.
+    silent: Suppress error messages.
 
   Returns:
     A tuple consisting of a translated path to the image
@@ -126,17 +136,8 @@ def GetImagePathWithXbuddy(path, board, version=None,
   upath.insert(0, os.path.dirname(gs.GSContext.GetDefaultGSUtilBin()))
   os.environ['PATH'] = os.pathsep.join(upath)
 
-  # Import xbuddy for translating, downloading and staging the image.
-  if not os.path.exists(DEVSERVER_PKG_DIR):
-    raise Exception('Cannot find xbuddy module. Devserver package directory '
-                    'does not exist: %s' % DEVSERVER_PKG_DIR)
-  sys.path.append(DEVSERVER_PKG_DIR)
-  # pylint: disable=import-error
-  import xbuddy
-  import cherrypy
-
   # If we are using the progress bar, quiet the logging output of cherrypy.
-  if command.UseProgressBar():
+  if cherrypy and command.UseProgressBar():
     if (hasattr(cherrypy.log, 'access_log') and
         hasattr(cherrypy.log, 'error_log')):
       cherrypy.log.access_log.setLevel(logging.NOTICE)
@@ -156,9 +157,14 @@ def GetImagePathWithXbuddy(path, board, version=None,
     resolved_path, _ = xb.LookupAlias(os.path.sep.join(path_list))
     return os.path.join(build_id, file_name), resolved_path
   except xbuddy.XBuddyException as e:
-    logging.error('Locating image "%s" failed. The path might not be valid or '
-                  'the image might not exist.', path)
+    if not silent:
+      logging.error('Locating image "%s" failed. The path might not be valid '
+                    'or the image might not exist.', path)
     raise ImagePathError('Cannot locate image %s: %s' % (path, e))
+  except build_artifact.ArtifactDownloadError as e:
+    if not silent:
+      logging.error('Downloading image "%s" failed.', path)
+    raise ArtifactDownloadError('Cannot download image %s: %s' % (path, e))
 
 
 def GenerateXbuddyRequest(path, req_type):
@@ -225,6 +231,32 @@ def GenerateUpdateId(target, src, key, for_vm):
     update_id = '+'.join([update_id, 'patched_kernel'])
 
   return update_id
+
+
+def GetIPv4Address(dev=None, global_ip=True):
+  """Returns any global/host IP address or the IP address of the given device.
+
+  socket.gethostname() is insufficient for machines where the host files are
+  not set up "correctly."  Since some of our builders may have this issue,
+  this method gives you a generic way to get the address so you are reachable
+  either via a VM or remote machine on the same network.
+
+  Args:
+    dev: Get the IP address of the device (e.g. 'eth0').
+    global_ip: If set True, returns a globally valid IP address. Otherwise,
+      returns a local IP address (default: True).
+  """
+  cmd = ['ip', 'addr', 'show']
+  cmd += ['scope', 'global' if global_ip else 'host']
+  cmd += [] if dev is None else ['dev', dev]
+
+  result = cros_build_lib.run(cmd, print_cmd=False, capture_output=True,
+                              encoding='utf-8')
+  matches = re.findall(r'\binet (\d+\.\d+\.\d+\.\d+).*', result.output)
+  if matches:
+    return matches[0]
+  logging.warning('Failed to find ip address in %r', result.output)
+  return None
 
 
 class DevServerException(Exception):
@@ -311,7 +343,7 @@ class DevServerWrapper(multiprocessing.Process):
       port: Port number of devserver.
       sub_dir: The subdirectory of the devserver url.
     """
-    ip = cros_build_lib.GetIPv4Address() if not ip else ip
+    ip = GetIPv4Address() if not ip else ip
     # If port number is not given, assume 8080 for backward
     # compatibility.
     port = DEFAULT_PORT if not port else port
@@ -327,11 +359,11 @@ class DevServerWrapper(multiprocessing.Process):
     """Returns the HTTP response of a URL."""
     logging.debug('Retrieving %s', url)
     try:
-      res = urllib2.urlopen(url, timeout=timeout)
-    except (urllib2.HTTPError, httplib.HTTPException) as e:
+      res = urllib.request.urlopen(url, timeout=timeout)
+    except (urllib.error.HTTPError, httplib.HTTPException) as e:
       logging.error('Devserver responded with HTTP error (%s)', e)
       raise DevServerResponseError(e)
-    except (urllib2.URLError, socket.timeout) as e:
+    except (urllib.error.URLError, socket.timeout) as e:
       if not ignore_url_error:
         logging.error('Cannot connect to devserver (%s)', e)
         raise DevServerConnectionError(e)
@@ -363,7 +395,7 @@ class DevServerWrapper(multiprocessing.Process):
     if static_dir:
       cmd.append('--static_dir=%s' % path_util.ToChrootPath(static_dir))
 
-    cros_build_lib.SudoRunCommand(
+    cros_build_lib.sudo_run(
         cmd, enter_chroot=True, print_cmd=False, combine_stdout_stderr=True,
         redirect_stdout=True, redirect_stderr=True, cwd=constants.SOURCE_ROOT)
 
@@ -456,7 +488,7 @@ class DevServerWrapper(multiprocessing.Process):
     result = self._RunCommand(
         cmd, enter_chroot=True, chroot_args=chroot_args,
         cwd=constants.SOURCE_ROOT, extra_env=extra_env, error_code_ok=True,
-        redirect_stdout=True, combine_stdout_stderr=True)
+        redirect_stdout=True, combine_stdout_stderr=True, encoding='utf-8')
     if result.returncode != 0:
       msg = ('Devserver failed to start!\n'
              '--- Start output from the devserver startup command ---\n'
@@ -503,12 +535,11 @@ class DevServerWrapper(multiprocessing.Process):
   def TailLog(self, num_lines=50):
     """Returns the most recent |num_lines| lines of the devserver log file."""
     fname = self.log_file
-    # We use self._RunCommand here to check the existence of the log
-    # file, so it works for RemoteDevserverWrapper as well.
+    # We use self._RunCommand here to check the existence of the log file.
     if self._RunCommand(
         ['test', '-f', fname], error_code_ok=True).returncode == 0:
       result = self._RunCommand(['tail', '-n', str(num_lines), fname],
-                                capture_output=True)
+                                capture_output=True, encoding='utf-8')
       output = '--- Start output from %s ---' % fname
       output += result.output
       output += '--- End output from %s ---' % fname
@@ -517,171 +548,4 @@ class DevServerWrapper(multiprocessing.Process):
   def _RunCommand(self, *args, **kwargs):
     """Runs a shell commmand."""
     kwargs.setdefault('debug_level', logging.DEBUG)
-    return cros_build_lib.SudoRunCommand(*args, **kwargs)
-
-
-class RemoteDevServerWrapper(DevServerWrapper):
-  """A wrapper of a devserver on a remote device.
-
-  Devserver wrapper for RemoteDevice. This wrapper kills all existing
-  running devserver instances before startup, thus allowing one
-  devserver running at a time.
-
-  We assume there is no chroot on the device, thus we do not launch
-  devserver inside chroot.
-  """
-
-  # Shorter timeout because the remote devserver instance does not
-  # need to generate payloads.
-  DEV_SERVER_TIMEOUT = 30
-  KILL_TIMEOUT = 10
-  PID_FILE_PATH = '/tmp/devserver_wrapper.pid'
-
-  CHERRYPY_ERROR_MSG = """
-Your device does not have cherrypy package installed; cherrypy is
-necessary for launching devserver on the device. Your device may be
-running an older image (<R33-4986.0.0), where cherrypy is not
-installed by default.
-
-You can fix this with one of the following three options:
-  1. Update the device to a newer image with a USB stick.
-  2. Run 'cros deploy device cherrypy' to install cherrpy.
-  3. Run cros flash with --no-rootfs-update to update only the stateful
-     parition to a newer image (with the risk that the rootfs/stateful version
-    mismatch may cause some problems).
-  """
-
-  def __init__(self, remote_device, devserver_bin, host_log, **kwargs):
-    """Initializes a RemoteDevserverPortal object with the remote device.
-
-    Args:
-      remote_device: A RemoteDevice object.
-      devserver_bin: The path to the devserver script on the device.
-      host_log: boolean whether to start the devserver with host_log enabled.
-      **kwargs: See DevServerWrapper documentation.
-    """
-    super(RemoteDevServerWrapper, self).__init__(**kwargs)
-    self.device = remote_device
-    self.devserver_bin = devserver_bin
-    self.hostname = remote_device.hostname
-    self.host_log = host_log
-
-  def _GetPID(self):
-    """Returns the pid read from pid file."""
-    result = self._RunCommand(['cat', self._pid_file])
-    return result.output
-
-  def _GetPIDFilePath(self):
-    """Returns the pid filename"""
-    return self.PID_FILE_PATH
-
-  def _RunCommand(self, *args, **kwargs):
-    """Runs a remote shell command.
-
-    Args:
-      *args: See RemoteAccess.RemoteDevice documentation.
-      **kwargs: See RemoteAccess.RemoteDevice documentation.
-    """
-    kwargs.setdefault('debug_level', logging.DEBUG)
-    return self.device.RunCommand(*args, **kwargs)
-
-  def _ReadPortNumber(self):
-    """Read port number from file."""
-    if not self.is_alive():
-      raise DevServerStartupError('Devserver not alive '
-                                  'therefore no port number')
-
-    def PortFileExists():
-      result = self._RunCommand(['test', '-f', self.port_file],
-                                error_code_ok=True)
-      return result.returncode == 0
-
-    try:
-      timeout_util.WaitForReturnTrue(PortFileExists,
-                                     timeout=self.DEV_SERVER_TIMEOUT,
-                                     period=5)
-    except timeout_util.TimeoutError:
-      self.terminate()
-      raise DevServerStartupError('Timeout (%s) waiting for remote devserver'
-                                  ' port_file' % self.DEV_SERVER_TIMEOUT)
-
-    self.port = int(self._RunCommand(
-        ['cat', self.port_file], capture_output=True).output.strip())
-
-  def IsReady(self):
-    """Returns True if devserver is ready to accept requests."""
-    if not self.is_alive():
-      raise DevServerStartupError('Devserver not alive therefore not ready')
-
-    url = os.path.join('http://127.0.0.1:%d' % self.port, 'check_health')
-    # Running wget through ssh because the port on the device is not
-    # accessible by default.
-    result = self.device.RunCommand(
-        ['curl', url, '-o', '/dev/null'], error_code_ok=True)
-    return result.returncode == 0
-
-  def run(self):
-    """Launches a devserver process on the device."""
-    self._RunCommand(['cat', '/dev/null', '>|', self.log_file])
-
-    port = self.port if self.port else 0
-    cmd = ['python2', self.devserver_bin,
-           '--logfile=%s' % self.log_file,
-           '--pidfile', self._pid_file,
-           '--port=%d' % port,
-           '--critical_update']
-
-    if not self.port:
-      cmd.append('--portfile=%s' % self.port_file)
-
-    if self.static_dir:
-      cmd.append('--static_dir=%s' % self.static_dir)
-
-    if self.host_log:
-      cmd.append('--host_log')
-
-    logging.info('Starting devserver on %s', self.hostname)
-    result = self._RunCommand(cmd, error_code_ok=True, redirect_stdout=True,
-                              combine_stdout_stderr=True)
-    if result.returncode != 0:
-      msg = (('Remote devserver failed to start!\n'
-              '--- Start output from the devserver startup command ---\n'
-              '%s'
-              '--- End output from the devserver startup command ---') %
-             (result.output))
-      logging.error(msg)
-      if 'ImportError: No module named cherrypy' in result.output:
-        logging.error(self.CHERRYPY_ERROR_MSG)
-
-  def GetURL(self, sub_dir=None):
-    """Returns the URL of this devserver instance."""
-    return self.GetDevServerURL(ip=self.hostname, port=self.port,
-                                sub_dir=sub_dir)
-
-  @classmethod
-  def WipePayloadCache(cls, devserver_bin='start_devserver', static_dir=None):
-    """Cleans up devserver cache of payloads."""
-    raise NotImplementedError()
-
-  @classmethod
-  def WipeStaticDirectory(cls, static_dir):
-    """Cleans up |static_dir|."""
-    raise NotImplementedError()
-
-  def GetDevServerHostLogURL(self, ip=None, port=None, host=None):
-    """Returns the dev server host log url.
-
-    Args:
-      ip: IP address of the devserver.
-      port: Port number of devserver.
-      host: The host to get the hostlog for.
-    """
-    if self.is_alive():
-      host_log = 'api/hostlog?ip=%s' % host
-      devserver_host_log = self.GetDevServerURL(ip=ip, port=port,
-                                                sub_dir=host_log)
-      logging.debug('Host Log URL: %s', devserver_host_log)
-      return devserver_host_log
-    else:
-      logging.error('Cannot get hostlog URL. Devserver not alive.')
-      raise DevServerException('Cannot get hostlog URL. Devserver not alive.')
+    return cros_build_lib.sudo_run(*args, **kwargs)

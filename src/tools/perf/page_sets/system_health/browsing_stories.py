@@ -161,6 +161,22 @@ class InstagramMobileStory(_ArticleBrowsingStory):
     action_runner.NavigateBack()
 
 
+class InstagramMobileStory2019(_ArticleBrowsingStory):
+  NAME = 'browse:social:instagram:2019'
+  URL = 'https://www.instagram.com/badgalriri/'
+  ITEM_SELECTOR = '[class="v1Nh3 kIKUG  _bz0w"] a'
+  ITEMS_TO_VISIT = 8
+
+  SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
+  TAGS = [story_tags.EMERGING_MARKET, story_tags.YEAR_2019]
+
+  def _WaitForNavigation(self, action_runner):
+    action_runner.WaitForElement(selector='[title="badgalriri"]')
+
+  def _NavigateBack(self, action_runner):
+    action_runner.NavigateBack()
+
+
 class FlipboardDesktopStory2018(_ArticleBrowsingStory):
   NAME = 'browse:news:flipboard:2018'
   URL = 'https://flipboard.com/explore'
@@ -191,6 +207,13 @@ class NytimesDesktopStory2018(_ArticleBrowsingStory):
   SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
   TAGS = [story_tags.YEAR_2018]
 
+class NytimesMobileStory2019(_ArticleBrowsingStory):
+  """The third top website in http://www.alexa.com/topsites/category/News"""
+  NAME = 'browse:news:nytimes:2019'
+  URL = 'http://mobile.nytimes.com'
+  ITEM_SELECTOR = '.css-1yjtett a'
+  SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
+  TAGS = [story_tags.YEAR_2019]
 
 # Desktop qq.com opens a news item in a separate tab, for which the back button
 # does not work.
@@ -222,6 +245,30 @@ class RedditMobileStory(_ArticleBrowsingStory):
   SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
   TAGS = [story_tags.YEAR_2016]
 
+class RedditMobileStory2019(_ArticleBrowsingStory):
+  NAME = 'browse:news:reddit:2019'
+  URL = 'https://www.reddit.com/r/news/top/?sort=top&t=week'
+  IS_SINGLE_PAGE_APP = True
+  ITEM_SELECTOR = '.PostHeader__post-title-line'
+  SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
+  TAGS = [story_tags.YEAR_2019]
+
+  def _DidLoadDocument(self, action_runner):
+    # We encountered ads disguised as articles on the Reddit one so far. The
+    # following code skips that ad.
+    # If we encounter it more often it will make sense to have a more generic
+    # approach, e.g an OFFSET to start iterating from, or an index to skip.
+
+    # Add one to the items to visit since we are going to skip the ad and we
+    # want to still visit the same amount of articles.
+    for i in xrange(self.ITEMS_TO_VISIT + 1):
+      # Skip the ad disguised as an article.
+      if i == 1:
+        continue
+      self._NavigateToItem(action_runner, i)
+      self._ReadNextArticle(action_runner)
+      self._NavigateBack(action_runner)
+      self._ScrollMainPage(action_runner)
 
 class TwitterMobileStory(_ArticleBrowsingStory):
   NAME = 'browse:social:twitter'
@@ -231,6 +278,17 @@ class TwitterMobileStory(_ArticleBrowsingStory):
   SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
   TAGS = [story_tags.YEAR_2016]
 
+class TwitterMobileStory2019(_ArticleBrowsingStory):
+  NAME = 'browse:social:twitter:2019'
+  URL = 'https://www.twitter.com/nasa'
+  ITEM_SELECTOR = ('[class="css-901oao r-hkyrab r-1qd0xha r-1b43r93 r-16dba41 '
+      'r-ad9z0x r-bcqeeo r-bnwqim r-qvutc0"]')
+  SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
+  TAGS = [story_tags.YEAR_2019]
+
+  def _WaitForNavigation(self, action_runner):
+    action_runner.WaitForElement(selector=('[class="css-901oao css-16my406 '
+        'r-1qd0xha r-ad9z0x r-bcqeeo r-qvutc0"]'))
 
 class TwitterDesktopStory2018(_ArticleBrowsingStory):
   NAME = 'browse:social:twitter:2018'
@@ -262,6 +320,29 @@ class WashingtonPostMobileStory(_ArticleBrowsingStory):
     if has_button:
       action_runner.ClickElement(selector=self._CLOSE_BUTTON_SELECTOR)
     super(WashingtonPostMobileStory, self)._DidLoadDocument(action_runner)
+
+
+class WashingtonPostMobileStory2019(_ArticleBrowsingStory):
+  """Progressive website"""
+  NAME = 'browse:news:washingtonpost:2019'
+  URL = 'https://www.washingtonpost.com/pwa'
+  IS_SINGLE_PAGE_APP = True
+  ITEM_SELECTOR = '.headline > a'
+  SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
+  _BROWSE_FREE_SELECTOR = '[class="continue-btn button free"]'
+  _I_AGREE_SELECTOR = '.agree-ckb'
+  _CONTINUE_SELECTOR = '[class="continue-btn button accept-consent"]'
+  TAGS = [story_tags.YEAR_2019]
+
+  def _DidLoadDocument(self, action_runner):
+    # Get past GDPR and subscription dialog.
+    action_runner.WaitForElement(selector=self._BROWSE_FREE_SELECTOR)
+    action_runner.ClickElement(selector=self._BROWSE_FREE_SELECTOR)
+    action_runner.WaitForElement(selector=self._I_AGREE_SELECTOR)
+    action_runner.ClickElement(selector=self._I_AGREE_SELECTOR)
+    action_runner.ClickElement(selector=self._CONTINUE_SELECTOR)
+
+    super(WashingtonPostMobileStory2019, self)._DidLoadDocument(action_runner)
 
 
 ##############################################################################
@@ -530,11 +611,25 @@ class YouTubeMobileStory(_MediaBrowsingStory):
           story_tags.HEALTH_CHECK, story_tags.YEAR_2016]
 
 
-class YouTubeDesktopStory2018(_MediaBrowsingStory):
+class YouTubeMobileStory2019(_MediaBrowsingStory):
+  """Load a typical YouTube video then navigate to a next few videos. Stop and
+  watch each video for few seconds.
+  """
+  NAME = 'browse:media:youtube:2019'
+  URL = 'https://m.youtube.com/watch?v=TcMBFSGVi1c&autoplay=false'
+  ITEM_SELECTOR = '.compact-media-item > a'
+  SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
+  IS_SINGLE_PAGE_APP = True
+  ITEM_SELECTOR_INDEX = 3
+  TAGS = [story_tags.JAVASCRIPT_HEAVY, story_tags.EMERGING_MARKET,
+          story_tags.HEALTH_CHECK, story_tags.YEAR_2019]
+
+
+class YouTubeDesktopStory2019(_MediaBrowsingStory):
   """Load a typical YouTube video then navigate to a next few videos. Stop and
   watch each video for a few seconds.
   """
-  NAME = 'browse:media:youtube:2018'
+  NAME = 'browse:media:youtube:2019'
   URL = 'https://www.youtube.com/watch?v=QGfhS1hfTWw&autoplay=0'
   ITEM_SELECTOR = 'ytd-compact-video-renderer.ytd-watch-next-secondary-results-renderer a'
   SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
@@ -544,7 +639,7 @@ class YouTubeDesktopStory2018(_MediaBrowsingStory):
   ITEMS_TO_VISIT = 8
   ITEM_SELECTOR_INDEX = 3
   PLATFORM_SPECIFIC = True
-  TAGS = [story_tags.JAVASCRIPT_HEAVY, story_tags.YEAR_2018]
+  TAGS = [story_tags.JAVASCRIPT_HEAVY, story_tags.YEAR_2019]
 
 
 class YouTubeTVDesktopStory2019(_MediaBrowsingStory):
@@ -811,6 +906,16 @@ class BrowseAmazonMobileStory(_ArticleBrowsingStory):
   ITEMS_TO_VISIT = 4
 
 
+class BrowseAmazonMobileStory2019(_ArticleBrowsingStory):
+  NAME = 'browse:shopping:amazon:2019'
+  URL = 'https://www.amazon.com.br/s/?k=telefone+celular'
+  SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
+  TAGS = [story_tags.EMERGING_MARKET, story_tags.YEAR_2019]
+
+  ITEM_SELECTOR = '[class="a-size-base a-color-base a-text-normal"]'
+  ITEMS_TO_VISIT = 4
+
+
 class BrowseLazadaMobileStory(_ArticleBrowsingStory):
   NAME = 'browse:shopping:lazada'
   URL = 'https://www.lazada.co.id/catalog/?q=Wrist+watch'
@@ -852,6 +957,14 @@ class BrowseGloboMobileStory(_ArticleBrowsingStory):
   ITEM_SELECTOR = '.hui-premium__title'
   COMPLETE_STATE_WAIT_TIMEOUT = 150
 
+class BrowseGloboMobileStory2019(_ArticleBrowsingStory):
+  NAME = 'browse:news:globo:2019'
+  URL = 'http://www.globo.com'
+  SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
+  TAGS = [story_tags.EMERGING_MARKET, story_tags.YEAR_2019]
+  ITEMS_TO_VISIT = 2  # 4 links causes renderer OOM crbug.com/714650.
+  ITEM_SELECTOR = '.hui-premium__link'
+  COMPLETE_STATE_WAIT_TIMEOUT = 150
 
 class BrowseCricBuzzMobileStory(_ArticleBrowsingStory):
   NAME = 'browse:news:cricbuzz'
@@ -862,7 +975,14 @@ class BrowseCricBuzzMobileStory(_ArticleBrowsingStory):
   ITEMS_TO_VISIT = 3
   ITEM_SELECTOR = '.list-content'
 
+class BrowseCricBuzzMobileStory2019(_ArticleBrowsingStory):
+  NAME = 'browse:news:cricbuzz:2019'
+  URL = 'http://m.cricbuzz.com'
+  SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
+  TAGS = [story_tags.EMERGING_MARKET, story_tags.YEAR_2019]
 
+  ITEMS_TO_VISIT = 3
+  ITEM_SELECTOR = '.list-content'
 
 ##############################################################################
 # Maps browsing stories.
@@ -909,6 +1029,61 @@ class GoogleMapsMobileStory(system_health_story.SystemHealthStory):
     self._ClickLink(self._DIRECTIONS_LINK, action_runner)
     action_runner.Wait(0.5)
     action_runner.EnterText('Google Mountain View')
+    action_runner.PressKey('Return')
+    action_runner.WaitForElement(selector=self._DIRECTIONS_LOADED)
+    action_runner.WaitForNetworkQuiescence()
+    action_runner.Wait(2) # Seeing direction
+
+  def _ClickLink(self, selector, action_runner):
+    action_runner.WaitForElement(selector=selector)
+    action_runner.ClickElement(selector=selector)
+
+
+class GoogleMapsMobileStory2019(system_health_story.SystemHealthStory):
+  """Story that browses google maps mobile page
+
+  This story searches for nearby restaurants on google maps website and finds
+  directions to a chosen restaurant from search results.
+  """
+  NAME = 'browse:tools:maps:2019'
+  URL = 'https://maps.google.com/maps?force=pwa&source=mlpwa'
+  SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
+  TAGS = [story_tags.EMERGING_MARKET, story_tags.YEAR_2019]
+
+  _MAPS_SEARCH_BOX_SELECTOR = '.ml-searchbox-pwa-textarea'
+  _MAPS_SEARCH_BOX_FORM = '[id="ml-searchboxform"]'
+  _RESTAURANTS_LOADED = '.ml-panes-categorical-bottom-bar button'
+  _RESTAURANTS_LINK = '.ml-entity-list-item-info'
+  _DIRECTIONS_LINK = ('.ml-panes-entity-bottom-bar.'
+                      'ml-panes-entity-bottom-bar-expanded '
+                      'button[class$="last"]')
+  _DIRECTIONS_LOADED = ('.ml-panes-directions-bottom-bar.'
+                        'ml-panes-directions-bottom-bar-collapsed '
+                        'button[class$="last"]')
+  _MAP_LAYER = '.ml-map'
+
+  def _DidLoadDocument(self, action_runner):
+    # Submit search query.
+    self._ClickLink(self._MAPS_SEARCH_BOX_SELECTOR, action_runner)
+    action_runner.WaitForElement(selector=self._MAPS_SEARCH_BOX_FORM)
+    action_runner.Wait(1) # Waiting to type
+    action_runner.EnterText('restaurants near me')
+    action_runner.PressKey('Return')
+    action_runner.WaitForElement(selector=self._RESTAURANTS_LOADED)
+    action_runner.WaitForNetworkQuiescence()
+    action_runner.Wait(4) # User looking at restaurants
+
+    # Open the restaurant list and select the first.
+    self._ClickLink(self._RESTAURANTS_LOADED, action_runner)
+    action_runner.WaitForElement(selector=self._RESTAURANTS_LINK)
+    action_runner.Wait(3) # User reads about restaurant
+    self._ClickLink(self._RESTAURANTS_LINK, action_runner)
+    action_runner.Wait(1) # Reading description
+
+    # Open directions to the restaurant from Google.
+    self._ClickLink(self._DIRECTIONS_LINK, action_runner)
+    action_runner.Wait(0.5)
+    action_runner.EnterText('Google UK')
     action_runner.PressKey('Return')
     action_runner.WaitForElement(selector=self._DIRECTIONS_LOADED)
     action_runner.WaitForNetworkQuiescence()
@@ -1030,6 +1205,141 @@ class GoogleMapsStory(_BrowsingStory):
     action_runner.Wait(2)
 
 
+class GoogleMapsStory2019(_BrowsingStory):
+  """
+  Google maps story:
+    _ Start at https://www.maps.google.com/maps
+    _ Search for "restaurents near me" and wait for 4 sec.
+    _ Click ZoomIn two times, waiting for 3 sec in between.
+    _ Scroll the map horizontally and vertically.
+    _ Pick a restaurant and ask for directions.
+  """
+  # When recording this story:
+  # Force tactile using this: http://google.com/maps?force=tt
+  # Force webgl using this: http://google.com/maps?force=webgl
+  # Reduce the speed as mentioned in the comment below for
+  # RepeatableBrowserDrivenScroll
+  NAME = 'browse:tools:maps:2019'
+  URL = 'https://www.google.com/maps'
+  _MAPS_SEARCH_BOX_SELECTOR = '#searchboxinput'
+  _MAPS_UPDATE_RESULTS_SELECTOR = '#section-query-on-pan-checkbox-id'
+  _MAPS_ZOOM_IN_SELECTOR = '#widget-zoom-in'
+  _MAPS_ZOOM_OUT_SELECTOR = '#widget-zoom-out'
+  _RESTAURANTS_LOADED = ('[class="searchbox searchbox-shadow noprint '
+                         'clear-button-shown"]')
+  _RESTAURANT_LINK = '[data-result-index="1"]'
+  _DIRECTIONS_LINK = '.section-action-chip-button[data-value=Directions]'
+  _DIRECTIONS_FROM_BOX = '[class="tactile-searchbox-input"]'
+  _DIRECTIONS_LOADED = '[class="section-directions-trip clearfix selected"]'
+  # Get the current server response hash and store it for use
+  # in _CHECK_RESTAURANTS_UPDATED.
+  _GET_RESTAURANT_RESPONSE_HASH = '''
+    document.querySelector({{restaurant_link}}).textContent
+  '''
+  # Check if the current restaurant server response hash is different from
+  # the old one to checks that restaurants started to update. Also wait for
+  # the completion of the loading by waiting for the button to change to loaded.
+  # The response hash gets updated when we scroll or zoom since server provides
+  # a new response for the updated locations with a new hash value.
+  _CHECK_RESTAURANTS_UPDATED = '''
+    (document.querySelector({{restaurant_link}}).textContent
+        != {{ old_restaurant }})
+    && (document.querySelector(
+          '[class="searchbox searchbox-shadow noprint clear-button-shown"]')
+          != null)
+    '''
+  SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
+  TAGS = [story_tags.JAVASCRIPT_HEAVY, story_tags.WEBGL,
+          story_tags.YEAR_2018]
+
+  def _DidLoadDocument(self, action_runner):
+    # Click on the search box.
+    action_runner.WaitForElement(selector=self._MAPS_SEARCH_BOX_SELECTOR)
+    action_runner.WaitForElement(selector=self._MAPS_ZOOM_IN_SELECTOR)
+
+    # Submit search query.
+    action_runner.ClickElement(selector=self._MAPS_SEARCH_BOX_SELECTOR)
+    action_runner.EnterText('restaurants near me')
+    action_runner.PressKey('Return')
+    action_runner.WaitForElement(selector=self._RESTAURANTS_LOADED)
+    action_runner.Wait(1)
+
+    # Enable updating the results on map move/zoom.
+    action_runner.WaitForElement(selector=self._MAPS_UPDATE_RESULTS_SELECTOR)
+    action_runner.ClickElement(selector=self._MAPS_UPDATE_RESULTS_SELECTOR)
+
+    # ZoomIn two times.
+    prev_restaurant_hash = action_runner.EvaluateJavaScript(
+        self._GET_RESTAURANT_RESPONSE_HASH,
+        restaurant_link=self._RESTAURANT_LINK)
+    action_runner.ClickElement(selector=self._MAPS_ZOOM_IN_SELECTOR)
+    action_runner.Wait(0.5)
+    action_runner.ClickElement(selector=self._MAPS_ZOOM_IN_SELECTOR)
+    action_runner.Wait(0.5)
+    action_runner.ClickElement(selector=self._MAPS_ZOOM_IN_SELECTOR)
+    action_runner.WaitForJavaScriptCondition(
+        self._CHECK_RESTAURANTS_UPDATED, restaurant_link=self._RESTAURANT_LINK,
+        old_restaurant=prev_restaurant_hash, timeout=90)
+    # This wait is required to fetch the data for all the tiles in the map.
+    action_runner.Wait(1)
+
+    prev_restaurant_hash = action_runner.EvaluateJavaScript(
+        self._GET_RESTAURANT_RESPONSE_HASH,
+        restaurant_link=self._RESTAURANT_LINK)
+    action_runner.ClickElement(selector=self._MAPS_ZOOM_OUT_SELECTOR)
+    action_runner.Wait(0.5)
+    action_runner.ClickElement(selector=self._MAPS_ZOOM_OUT_SELECTOR)
+    action_runner.WaitForJavaScriptCondition(
+        self._CHECK_RESTAURANTS_UPDATED, restaurant_link=self._RESTAURANT_LINK,
+        old_restaurant=prev_restaurant_hash, timeout=90)
+    # This wait is required to fetch the data for all the tiles in the map.
+    action_runner.Wait(1)
+
+    # Reduce the speed (the current wpr is recorded with speed set to 50)  when
+    # recording the wpr. If we scroll too fast, the data will not be recorded
+    # well. After recording reset it back to the original value to have a more
+    # realistic scroll.
+    prev_restaurant_hash = action_runner.EvaluateJavaScript(
+        self._GET_RESTAURANT_RESPONSE_HASH,
+        restaurant_link=self._RESTAURANT_LINK)
+    action_runner.RepeatableBrowserDrivenScroll(
+        x_scroll_distance_ratio=0.0, y_scroll_distance_ratio=0.5,
+        repeat_count=2, speed=500, timeout=120, repeat_delay_ms=2000)
+    action_runner.WaitForJavaScriptCondition(
+        self._CHECK_RESTAURANTS_UPDATED, restaurant_link=self._RESTAURANT_LINK,
+        old_restaurant=prev_restaurant_hash, timeout=90)
+
+    prev_restaurant_hash = action_runner.EvaluateJavaScript(
+        self._GET_RESTAURANT_RESPONSE_HASH,
+        restaurant_link=self._RESTAURANT_LINK)
+    action_runner.RepeatableBrowserDrivenScroll(
+        x_scroll_distance_ratio=0.5, y_scroll_distance_ratio=0,
+        repeat_count=2, speed=500, timeout=120, repeat_delay_ms=2000)
+    action_runner.WaitForJavaScriptCondition(
+        self._CHECK_RESTAURANTS_UPDATED, restaurant_link=self._RESTAURANT_LINK,
+        old_restaurant=prev_restaurant_hash, timeout=90)
+
+    # To make the recording more realistic.
+    action_runner.Wait(1)
+    action_runner.ClickElement(selector=self._RESTAURANT_LINK)
+    # To make the recording more realistic.
+    action_runner.Wait(1)
+    action_runner.WaitForElement(selector=self._DIRECTIONS_LINK)
+    action_runner.ClickElement(selector=self._DIRECTIONS_LINK)
+    action_runner.ClickElement(selector=self._DIRECTIONS_FROM_BOX)
+    action_runner.EnterText('6 Pancras Road London')
+    action_runner.PressKey('Return')
+    action_runner.WaitForElement(selector=self._DIRECTIONS_LOADED)
+    action_runner.Wait(1)
+
+    # Cycle trough the travel modes.
+    for travel_mode in [0,1,2,3,4,6]:
+      selector = 'div[data-travel_mode="%s"]' % travel_mode
+      action_runner.WaitForElement(selector=selector)
+      action_runner.ClickElement(selector=selector)
+      action_runner.Wait(3)
+
+
 class GoogleEarthStory(_BrowsingStory):
   """
   Google Earth story:
@@ -1077,6 +1387,116 @@ class GoogleEarthStory(_BrowsingStory):
     action_runner.RepeatableBrowserDrivenScroll(
         x_scroll_distance_ratio = 1, y_scroll_distance_ratio = 0,
         repeat_count=3, speed=500, timeout=120)
+
+
+##############################################################################
+# Google sheets browsing story.
+##############################################################################
+
+
+class GoogleSheetsDesktopStory(system_health_story.SystemHealthStory):
+  NAME = 'browse:tools:sheets:2019'
+  URL = ('https://docs.google.com/spreadsheets/d/' +
+         '16jfsJs14QrWKhsbxpdJXgoYumxNpnDt08DTK82Puc2A/' +
+         'edit#gid=896027318&range=C:C')
+  SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
+  TAGS = [story_tags.JAVASCRIPT_HEAVY, story_tags.YEAR_2019]
+
+  # This map translates page-specific event names to event names needed for
+  # the reported_by_page:* metric.
+  EVENTS_REPORTED_BY_PAGE = '''
+    window.__telemetry_reported_page_events = {
+      'ccv':
+          'telemetry:reported_by_page:viewable',
+      'fcoe':
+          'telemetry:reported_by_page:interactive',
+      'first_meaningful_calc_begin':
+          'telemetry:reported_by_page:benchmark_begin',
+      'first_meaningful_calc_end':
+          'telemetry:reported_by_page:benchmark_end'
+    };
+  '''
+
+  # Patch performance.mark to get notified about page events.
+  PERFOMANCE_MARK = '''
+    window.__telemetry_observed_page_events = new Set();
+    (function () {
+      let reported = window.__telemetry_reported_page_events;
+      let observed = window.__telemetry_observed_page_events;
+      let performance_mark = window.performance.mark;
+      window.performance.mark = function (label) {
+        performance_mark.call(window.performance, label);
+        if (reported.hasOwnProperty(label)) {
+          performance_mark.call(
+              window.performance, reported[label]);
+          observed.add(reported[label]);
+        }
+      }
+    })();
+  '''
+
+  # Page event queries.
+  INTERACTIVE_EVENT = '''
+    (window.__telemetry_observed_page_events.has(
+        "telemetry:reported_by_page:interactive"))
+  '''
+  CALC_BEGIN_EVENT = '''
+    (window.__telemetry_observed_page_events.has(
+        "telemetry:reported_by_page:benchmark_begin"))
+  '''
+  CALC_END_EVENT = '''
+    (window.__telemetry_observed_page_events.has(
+        "telemetry:reported_by_page:benchmark_end"))
+  '''
+  CLEAR_EVENTS = 'window.__telemetry_observed_page_events.clear()'
+
+  # Start recalculation of the current column by invoking
+  # trixApp.module$contents$waffle$DesktopRitzApp_DesktopRitzApp$actionRegistry_
+  #   .f_actions__com_google_apps_docs_xplat_controller_ActionRegistryImpl_
+  #   ['trix-fill-right'].fireAction()
+  RECALCULATE_COLUMN = "trixApp.Cb.D['trix-fill-right'].Eb();"
+
+  # Patch the goog$Uri.prototype.setParameterValue to fix the
+  # session parameters that depend on Math.random and Date.now.
+  DETERMINISITIC_SESSION = '''
+    if (window.xk) {
+      window.xk.prototype.wc = function (a, b) {
+          if (a === "rand") { b = "1566829321650"; }
+          if (a === "zx") { b = "9azccr4i1bz5"; }
+          if (a === "ssfi") { b = "0"; }
+          this.C.set(a, b);
+          return this;
+      }
+    }
+  '''
+
+  def __init__(self, story_set, take_memory_measurement):
+    super(GoogleSheetsDesktopStory, self).__init__(story_set,
+        take_memory_measurement)
+    self.script_to_evaluate_on_commit = js_template.Render(
+        '''{{@events_reported_by_page}}
+        {{@performance_mark}}
+        document.addEventListener('readystatechange', event => {
+          if (event.target.readyState === 'interactive') {
+            {{@deterministic_session}}
+          }
+        });''',
+        events_reported_by_page=self.EVENTS_REPORTED_BY_PAGE,
+        performance_mark=self.PERFOMANCE_MARK,
+        deterministic_session=self.DETERMINISITIC_SESSION)
+
+  def _DidLoadDocument(self, action_runner):
+    # 1. Wait until the spreadsheet loads.
+    action_runner.WaitForJavaScriptCondition(self.INTERACTIVE_EVENT)
+    # 2. Idle for 5 seconds for Chrome's timeToInteractive metric.
+    action_runner.Wait(5)
+    # 3. Prepare for observing calcuation events.
+    action_runner.EvaluateJavaScript(self.CLEAR_EVENTS)
+    # 4. Recalculate the column.
+    action_runner.EvaluateJavaScript(self.RECALCULATE_COLUMN)
+    # 5. Wait for calculation completion.
+    action_runner.WaitForJavaScriptCondition(self.CALC_BEGIN_EVENT)
+    action_runner.WaitForJavaScriptCondition(self.CALC_END_EVENT)
 
 
 ##############################################################################

@@ -8,22 +8,58 @@
 
 namespace syncer {
 
+bool DeviceInfo::SharingTargetInfo::operator==(
+    const SharingTargetInfo& other) const {
+  return fcm_token == other.fcm_token && p256dh == other.p256dh &&
+         auth_secret == other.auth_secret;
+}
+
+DeviceInfo::SharingInfo::SharingInfo(
+    SharingTargetInfo vapid_target_info,
+    SharingTargetInfo sender_id_target_info,
+    std::set<sync_pb::SharingSpecificFields::EnabledFeatures> enabled_features)
+    : vapid_target_info(std::move(vapid_target_info)),
+      sender_id_target_info(std::move(sender_id_target_info)),
+      enabled_features(std::move(enabled_features)) {}
+
+DeviceInfo::SharingInfo::SharingInfo(const SharingInfo& other) = default;
+
+DeviceInfo::SharingInfo::SharingInfo(SharingInfo&& other) = default;
+
+DeviceInfo::SharingInfo& DeviceInfo::SharingInfo::operator=(
+    const SharingInfo& other) = default;
+
+DeviceInfo::SharingInfo::~SharingInfo() = default;
+
+bool DeviceInfo::SharingInfo::operator==(const SharingInfo& other) const {
+  return vapid_target_info == other.vapid_target_info &&
+         sender_id_target_info == other.sender_id_target_info &&
+         enabled_features == other.enabled_features;
+}
+
 DeviceInfo::DeviceInfo(const std::string& guid,
                        const std::string& client_name,
                        const std::string& chrome_version,
                        const std::string& sync_user_agent,
                        const sync_pb::SyncEnums::DeviceType device_type,
                        const std::string& signin_scoped_device_id,
+                       const base::SysInfo::HardwareInfo& hardware_info,
                        base::Time last_updated_timestamp,
-                       bool send_tab_to_self_receiving_enabled)
+                       bool send_tab_to_self_receiving_enabled,
+                       const base::Optional<SharingInfo>& sharing_info)
     : guid_(guid),
       client_name_(client_name),
       chrome_version_(chrome_version),
       sync_user_agent_(sync_user_agent),
       device_type_(device_type),
       signin_scoped_device_id_(signin_scoped_device_id),
+      hardware_info_(hardware_info),
       last_updated_timestamp_(last_updated_timestamp),
-      send_tab_to_self_receiving_enabled_(send_tab_to_self_receiving_enabled) {}
+      send_tab_to_self_receiving_enabled_(send_tab_to_self_receiving_enabled),
+      sharing_info_(sharing_info) {
+  // We do not store device's serial number in DeviceInfo.
+  hardware_info_.serial_number.clear();
+}
 
 DeviceInfo::~DeviceInfo() {}
 
@@ -55,12 +91,21 @@ const std::string& DeviceInfo::signin_scoped_device_id() const {
   return signin_scoped_device_id_;
 }
 
+const base::SysInfo::HardwareInfo& DeviceInfo::hardware_info() const {
+  return hardware_info_;
+}
+
 base::Time DeviceInfo::last_updated_timestamp() const {
   return last_updated_timestamp_;
 }
 
 bool DeviceInfo::send_tab_to_self_receiving_enabled() const {
   return send_tab_to_self_receiving_enabled_;
+}
+
+const base::Optional<DeviceInfo::SharingInfo>& DeviceInfo::sharing_info()
+    const {
+  return sharing_info_;
 }
 
 std::string DeviceInfo::GetOSString() const {
@@ -106,8 +151,10 @@ bool DeviceInfo::Equals(const DeviceInfo& other) const {
          this->sync_user_agent() == other.sync_user_agent() &&
          this->device_type() == other.device_type() &&
          this->signin_scoped_device_id() == other.signin_scoped_device_id() &&
+         this->hardware_info() == other.hardware_info() &&
          this->send_tab_to_self_receiving_enabled() ==
-             other.send_tab_to_self_receiving_enabled();
+             other.send_tab_to_self_receiving_enabled() &&
+         this->sharing_info() == other.sharing_info();
 }
 
 std::unique_ptr<base::DictionaryValue> DeviceInfo::ToValue() {
@@ -120,6 +167,7 @@ std::unique_ptr<base::DictionaryValue> DeviceInfo::ToValue() {
   value->SetInteger("lastUpdatedTimestamp", last_updated_timestamp().ToTimeT());
   value->SetBoolean("sendTabToSelfReceivingEnabled",
                     send_tab_to_self_receiving_enabled());
+  value->SetBoolean("hasSharingInfo", sharing_info().has_value());
   return value;
 }
 
@@ -129,6 +177,15 @@ void DeviceInfo::set_public_id(const std::string& id) {
 
 void DeviceInfo::set_send_tab_to_self_receiving_enabled(bool new_value) {
   send_tab_to_self_receiving_enabled_ = new_value;
+}
+
+void DeviceInfo::set_sharing_info(
+    const base::Optional<SharingInfo>& sharing_info) {
+  sharing_info_ = sharing_info;
+}
+
+void DeviceInfo::set_client_name(const std::string& client_name) {
+  client_name_ = client_name;
 }
 
 }  // namespace syncer

@@ -20,7 +20,7 @@
 #include "chrome/browser/ui/ash/launcher/shelf_spinner_item_controller.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/debug_daemon_client.h"
+#include "chromeos/dbus/debug_daemon/debug_daemon_client.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "components/prefs/pref_service.h"
@@ -121,6 +121,10 @@ void PluginVmManager::LaunchPluginVm() {
     return;
   }
 
+  for (auto& observer : vm_starting_observers_) {
+    observer.OnVmStarting();
+  }
+
   // Show a spinner for the first launch (state UNKNOWN) or if we will have to
   // wait before starting the VM.
   if (vm_state_ == vm_tools::plugin_dispatcher::VmState::VM_STATE_UNKNOWN ||
@@ -140,14 +144,23 @@ void PluginVmManager::LaunchPluginVm() {
   chromeos::DBusThreadManager::Get()
       ->GetDebugDaemonClient()
       ->StartPluginVmDispatcher(
-          base::BindOnce(&PluginVmManager::OnStartPluginVmDispatcher,
-                         weak_ptr_factory_.GetWeakPtr()));
+          owner_id_, base::BindOnce(&PluginVmManager::OnStartPluginVmDispatcher,
+                                    weak_ptr_factory_.GetWeakPtr()));
 }
 
-void PluginVmManager::StopPluginVm() {
+void PluginVmManager::AddVmStartingObserver(
+    chromeos::VmStartingObserver* observer) {
+  vm_starting_observers_.AddObserver(observer);
+}
+void PluginVmManager::RemoveVmStartingObserver(
+    chromeos::VmStartingObserver* observer) {
+  vm_starting_observers_.RemoveObserver(observer);
+}
+
+void PluginVmManager::StopPluginVm(const std::string& name) {
   vm_tools::plugin_dispatcher::StopVmRequest request;
   request.set_owner_id(owner_id_);
-  request.set_vm_name_uuid(kPluginVmName);
+  request.set_vm_name_uuid(name);
 
   chromeos::DBusThreadManager::Get()->GetVmPluginDispatcherClient()->StopVm(
       std::move(request), base::DoNothing());

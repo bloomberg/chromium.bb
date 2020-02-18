@@ -13,15 +13,17 @@ namespace device {
 
 VROrientationSession::VROrientationSession(
     VROrientationDevice* device,
-    mojom::XRFrameDataProviderRequest magic_window_request,
-    mojom::XRSessionControllerRequest session_request)
-    : magic_window_binding_(this, std::move(magic_window_request)),
-      session_controller_binding_(this, std::move(session_request)),
+    mojo::PendingReceiver<mojom::XRFrameDataProvider> magic_window_receiver,
+    mojo::PendingReceiver<mojom::XRSessionController> session_receiver)
+    : magic_window_receiver_(this, std::move(magic_window_receiver)),
+      session_controller_receiver_(this, std::move(session_receiver)),
       device_(device) {
-  // Unretained is safe because the binding will close when we are destroyed,
-  // so we won't receive any more callbacks after that.
-  session_controller_binding_.set_connection_error_handler(base::BindOnce(
-      &VROrientationSession::OnMojoConnectionError, base::Unretained(this)));
+  magic_window_receiver_.set_disconnect_handler(
+      base::BindOnce(&VROrientationSession::OnMojoConnectionError,
+                     weak_ptr_factory_.GetWeakPtr()));
+  session_controller_receiver_.set_disconnect_handler(
+      base::BindOnce(&VROrientationSession::OnMojoConnectionError,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 VROrientationSession::~VROrientationSession() = default;
@@ -42,15 +44,15 @@ void VROrientationSession::GetFrameData(
 }
 
 void VROrientationSession::GetEnvironmentIntegrationProvider(
-    mojom::XREnvironmentIntegrationProviderAssociatedRequest
-        environment_request) {
+    mojo::PendingAssociatedReceiver<mojom::XREnvironmentIntegrationProvider>
+        environment_provider) {
   // Environment integration is not supported. This call should not
   // be made on this device.
   mojo::ReportBadMessage("Environment integration is not supported.");
 }
 
 void VROrientationSession::SetInputSourceButtonListener(
-    device::mojom::XRInputSourceButtonListenerAssociatedPtrInfo) {
+    mojo::PendingAssociatedRemote<device::mojom::XRInputSourceButtonListener>) {
   // Input eventing is not supported. This call should not
   // be made on this device.
   mojo::ReportBadMessage("Input eventing is not supported.");
@@ -62,8 +64,8 @@ void VROrientationSession::SetFrameDataRestricted(bool frame_data_restricted) {
 }
 
 void VROrientationSession::OnMojoConnectionError() {
-  magic_window_binding_.Close();
-  session_controller_binding_.Close();
+  magic_window_receiver_.reset();
+  session_controller_receiver_.reset();
   device_->EndMagicWindowSession(this);  // This call will destroy us.
 }
 

@@ -32,8 +32,13 @@ void FillTextureFormatCaps(RendererVk *renderer, VkFormat format, gl::TextureCap
         renderer->hasImageFormatFeatureBits(format, VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT);
     outTextureCaps->filterable = renderer->hasImageFormatFeatureBits(
         format, VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT);
+
+    // For renderbuffer and texture attachments we require transfer and sampling for
+    // GLES 2.0 CopyTexImage support. Sampling is also required for other features like
+    // blits and EGLImages.
     outTextureCaps->textureAttachment =
-        hasColorAttachmentFeatureBit || hasDepthAttachmentFeatureBit;
+        outTextureCaps->texturable &&
+        (hasColorAttachmentFeatureBit || hasDepthAttachmentFeatureBit);
     outTextureCaps->renderbuffer = outTextureCaps->textureAttachment;
 
     if (outTextureCaps->renderbuffer)
@@ -89,11 +94,11 @@ namespace vk
 
 // Format implementation.
 Format::Format()
-    : angleFormatID(angle::FormatID::NONE),
+    : intendedFormatID(angle::FormatID::NONE),
       internalFormat(GL_NONE),
-      imageFormatID(angle::FormatID::NONE),
+      actualImageFormatID(angle::FormatID::NONE),
       vkImageFormat(VK_FORMAT_UNDEFINED),
-      bufferFormatID(angle::FormatID::NONE),
+      actualBufferFormatID(angle::FormatID::NONE),
       vkBufferFormat(VK_FORMAT_UNDEFINED),
       imageInitializerFunction(nullptr),
       textureLoadFunctions(),
@@ -127,7 +132,7 @@ void Format::initImageFallback(RendererVk *renderer, const ImageFormatInitInfo *
                                 testFunction);
     i += skip;
 
-    imageFormatID            = info[i].format;
+    actualImageFormatID      = info[i].format;
     vkImageFormat            = info[i].vkFormat;
     imageInitializerFunction = info[i].initializer;
 }
@@ -139,7 +144,7 @@ void Format::initBufferFallback(RendererVk *renderer, const BufferFormatInitInfo
                                 HasFullBufferFormatSupport);
     i += skip;
 
-    bufferFormatID               = info[i].format;
+    actualBufferFormatID         = info[i].format;
     vkBufferFormat               = info[i].vkFormat;
     vkBufferFormatIsPacked       = info[i].vkFormatIsPacked;
     vertexLoadFunction           = info[i].vertexLoadFunction;
@@ -167,7 +172,7 @@ size_t Format::getImageCopyBufferAlignment() const
     // - else texelSize % 4 != 0 gives a 2x multiplier
     // - else there's no multiplier.
     //
-    const angle::Format &format = imageFormat();
+    const angle::Format &format = actualImageFormat();
 
     ASSERT(format.pixelBytes != 0);
     const size_t texelSize  = format.pixelBytes;
@@ -179,8 +184,8 @@ size_t Format::getImageCopyBufferAlignment() const
 
 bool Format::hasEmulatedImageChannels() const
 {
-    const angle::Format &angleFmt   = angleFormat();
-    const angle::Format &textureFmt = imageFormat();
+    const angle::Format &angleFmt   = intendedFormat();
+    const angle::Format &textureFmt = actualImageFormat();
 
     return (angleFmt.alphaBits == 0 && textureFmt.alphaBits > 0) ||
            (angleFmt.blueBits == 0 && textureFmt.blueBits > 0) ||
@@ -216,7 +221,7 @@ void FormatTable::initialize(RendererVk *renderer,
 
         format.initialize(renderer, angleFormat);
         const GLenum internalFormat = format.internalFormat;
-        format.angleFormatID        = formatID;
+        format.intendedFormatID     = formatID;
 
         if (!format.valid())
         {
@@ -229,7 +234,8 @@ void FormatTable::initialize(RendererVk *renderer,
 
         if (textureCaps.texturable)
         {
-            format.textureLoadFunctions = GetLoadFunctionsMap(internalFormat, format.imageFormatID);
+            format.textureLoadFunctions =
+                GetLoadFunctionsMap(internalFormat, format.actualImageFormatID);
         }
 
         if (angleFormat.isBlock)
@@ -299,7 +305,7 @@ bool HasNonRenderableTextureFormatSupport(RendererVk *renderer, VkFormat vkForma
 
 size_t GetVertexInputAlignment(const vk::Format &format)
 {
-    const angle::Format &bufferFormat = format.bufferFormat();
+    const angle::Format &bufferFormat = format.actualBufferFormat();
     size_t pixelBytes                 = bufferFormat.pixelBytes;
     return format.vkBufferFormatIsPacked ? pixelBytes : (pixelBytes / bufferFormat.channelCount);
 }
@@ -338,59 +344,55 @@ void MapSwizzleState(const ContextVk *contextVk,
                      const gl::SwizzleState &swizzleState,
                      gl::SwizzleState *swizzleStateOut)
 {
-    const angle::Format &angleFormat = format.angleFormat();
+    const angle::Format &angleFormat = format.intendedFormat();
 
     gl::SwizzleState internalSwizzle;
 
-    switch (format.internalFormat)
+    if (angleFormat.isLUMA())
     {
-        case GL_LUMINANCE8_OES:
-            internalSwizzle.swizzleRed   = GL_RED;
-            internalSwizzle.swizzleGreen = GL_RED;
-            internalSwizzle.swizzleBlue  = GL_RED;
-            internalSwizzle.swizzleAlpha = GL_ONE;
-            break;
-        case GL_LUMINANCE8_ALPHA8_OES:
-            internalSwizzle.swizzleRed   = GL_RED;
-            internalSwizzle.swizzleGreen = GL_RED;
-            internalSwizzle.swizzleBlue  = GL_RED;
-            internalSwizzle.swizzleAlpha = GL_GREEN;
-            break;
-        case GL_ALPHA8_OES:
-            internalSwizzle.swizzleRed   = GL_ZERO;
-            internalSwizzle.swizzleGreen = GL_ZERO;
-            internalSwizzle.swizzleBlue  = GL_ZERO;
-            internalSwizzle.swizzleAlpha = GL_RED;
-            break;
-        default:
-            if (angleFormat.hasDepthOrStencilBits())
-            {
-                bool hasRed = angleFormat.depthBits > 0;
-                // In OES_depth_texture/ARB_depth_texture, depth
-                // textures are treated as luminance.
-                // If the internalformat was not sized, use OES_depth_texture behavior
-                bool hasGB = hasRed && !sized;
+        GLenum swizzleRGB, swizzleA;
+        if (angleFormat.luminanceBits > 0)
+        {
+            swizzleRGB = GL_RED;
+            swizzleA   = (angleFormat.alphaBits > 0 ? GL_GREEN : GL_ONE);
+        }
+        else
+        {
+            swizzleRGB = GL_ZERO;
+            swizzleA   = GL_RED;
+        }
+        internalSwizzle.swizzleRed   = swizzleRGB;
+        internalSwizzle.swizzleGreen = swizzleRGB;
+        internalSwizzle.swizzleBlue  = swizzleRGB;
+        internalSwizzle.swizzleAlpha = swizzleA;
+    }
+    else
+    {
+        if (angleFormat.hasDepthOrStencilBits())
+        {
+            bool hasRed = angleFormat.depthBits > 0;
+            // In OES_depth_texture/ARB_depth_texture, depth
+            // textures are treated as luminance.
+            // If the internalformat was not sized, use OES_depth_texture behavior
+            bool hasGB = hasRed && !sized;
 
-                internalSwizzle.swizzleRed   = hasRed ? GL_RED : GL_ZERO;
-                internalSwizzle.swizzleGreen = hasGB ? GL_RED : GL_ZERO;
-                internalSwizzle.swizzleBlue  = hasGB ? GL_RED : GL_ZERO;
-                internalSwizzle.swizzleAlpha = GL_ONE;
-            }
-            else
+            internalSwizzle.swizzleRed   = hasRed ? GL_RED : GL_ZERO;
+            internalSwizzle.swizzleGreen = hasGB ? GL_RED : GL_ZERO;
+            internalSwizzle.swizzleBlue  = hasGB ? GL_RED : GL_ZERO;
+            internalSwizzle.swizzleAlpha = GL_ONE;
+        }
+        else
+        {
+            // Color bits are all zero for blocked formats
+            if (!angleFormat.isBlock)
             {
-                if (angleFormat.isBlock)
-                {
-                    // Color bits are all zero for blocked formats, so the
-                    // below will erroneously set swizzle to (0, 0, 0, 1).
-                    break;
-                }
                 // Set any missing channel to default in case the emulated format has that channel.
                 internalSwizzle.swizzleRed   = angleFormat.redBits > 0 ? GL_RED : GL_ZERO;
                 internalSwizzle.swizzleGreen = angleFormat.greenBits > 0 ? GL_GREEN : GL_ZERO;
                 internalSwizzle.swizzleBlue  = angleFormat.blueBits > 0 ? GL_BLUE : GL_ZERO;
                 internalSwizzle.swizzleAlpha = angleFormat.alphaBits > 0 ? GL_ALPHA : GL_ONE;
             }
-            break;
+        }
     }
     ComposeSwizzleState(internalSwizzle, swizzleState, swizzleStateOut);
 }

@@ -92,7 +92,7 @@ void OffscreenCanvasTest::SetUp() {
 
   DummyExceptionStateForTesting exception_state;
   offscreen_canvas_ = HTMLCanvasElementModule::transferControlToOffscreen(
-      *canvas_element, exception_state);
+      &GetDocument(), *canvas_element, exception_state);
   // |offscreen_canvas_| should inherit the FrameSinkId from |canvas_element|s
   // SurfaceLayerBridge, but in tests this id is zero; fill it up by hand.
   offscreen_canvas_->SetFrameSinkId(kClientId, kSinkId);
@@ -196,5 +196,5 @@ const TestParams kTestCases[] = {
     {true, false},
     {true, true}};
 
-INSTANTIATE_TEST_SUITE_P(, OffscreenCanvasTest, ValuesIn(kTestCases));
+INSTANTIATE_TEST_SUITE_P(All, OffscreenCanvasTest, ValuesIn(kTestCases));
 }  // namespace blink

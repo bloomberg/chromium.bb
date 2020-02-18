@@ -100,7 +100,7 @@ void ManifestManager::RequestManifestForTesting(
 bool ManifestManager::CanFetchManifest() {
   if (!GetSupplementable())
     return false;
-  // Do not fetch the manifest if we are on an opqaue origin.
+  // Do not fetch the manifest if we are on an opaque origin.
   return !GetSupplementable()->GetDocument()->GetSecurityOrigin()->IsOpaque();
 }
 
@@ -149,7 +149,7 @@ void ManifestManager::DidCommitLoad() {
 
 void ManifestManager::FetchManifest() {
   if (!CanFetchManifest()) {
-    ManifestUmaUtil::FetchFailed(ManifestUmaUtil::FETCH_FROM_UNIQUE_ORIGIN);
+    ManifestUmaUtil::FetchFailed(ManifestUmaUtil::FETCH_FROM_OPAQUE_ORIGIN);
     ResolveCallbacks(ResolveStateFailure);
     return;
   }
@@ -255,10 +255,6 @@ void ManifestManager::BindReceiver(
 }
 
 void ManifestManager::ContextDestroyed(ExecutionContext*) {
-  Dispose();
-}
-
-void ManifestManager::Dispose() {
   if (fetcher_)
     fetcher_->Cancel();
 
@@ -267,6 +263,10 @@ void ManifestManager::Dispose() {
   // in the renderer process should be correctly notified.
   ResolveCallbacks(ResolveStateFailure);
 
+  receivers_.Clear();
+}
+
+void ManifestManager::Prefinalize() {
   receivers_.Clear();
 }
 

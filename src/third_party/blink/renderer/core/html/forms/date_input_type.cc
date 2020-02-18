@@ -30,6 +30,7 @@
 
 #include "third_party/blink/renderer/core/html/forms/date_input_type.h"
 
+#include "third_party/blink/public/strings/grit/blink_strings.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/html/forms/date_time_fields_state.h"
@@ -40,9 +41,6 @@
 #include "third_party/blink/renderer/platform/text/platform_locale.h"
 
 namespace blink {
-
-using blink::WebLocalizedString;
-using namespace html_names;
 
 static const int kDateDefaultStep = 1;
 static const int kDateDefaultStepBase = 0;
@@ -109,18 +107,20 @@ void DateInputType::SetupLayoutParameters(
     const DateComponents& date) const {
   layout_parameters.date_time_format = layout_parameters.locale.DateFormat();
   layout_parameters.fallback_date_time_format = "yyyy-MM-dd";
-  if (!ParseToDateComponents(GetElement().FastGetAttribute(kMinAttr),
-                             &layout_parameters.minimum))
+  if (!ParseToDateComponents(
+          GetElement().FastGetAttribute(html_names::kMinAttr),
+          &layout_parameters.minimum))
     layout_parameters.minimum = DateComponents();
-  if (!ParseToDateComponents(GetElement().FastGetAttribute(kMaxAttr),
-                             &layout_parameters.maximum))
+  if (!ParseToDateComponents(
+          GetElement().FastGetAttribute(html_names::kMaxAttr),
+          &layout_parameters.maximum))
     layout_parameters.maximum = DateComponents();
-  layout_parameters.placeholder_for_day = GetLocale().QueryString(
-      WebLocalizedString::kPlaceholderForDayOfMonthField);
+  layout_parameters.placeholder_for_day =
+      GetLocale().QueryString(IDS_FORM_PLACEHOLDER_FOR_DAY_OF_MONTH_FIELD);
   layout_parameters.placeholder_for_month =
-      GetLocale().QueryString(WebLocalizedString::kPlaceholderForMonthField);
+      GetLocale().QueryString(IDS_FORM_PLACEHOLDER_FOR_MONTH_FIELD);
   layout_parameters.placeholder_for_year =
-      GetLocale().QueryString(WebLocalizedString::kPlaceholderForYearField);
+      GetLocale().QueryString(IDS_FORM_PLACEHOLDER_FOR_YEAR_FIELD);
 }
 
 bool DateInputType::IsValidFormat(bool has_year,

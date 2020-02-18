@@ -224,21 +224,29 @@ base::TimeDelta OmniboxFieldTrial::StopTimerFieldTrialDuration() {
 }
 
 // static
-std::string OmniboxFieldTrial::GetZeroSuggestVariant(
+std::vector<std::string> OmniboxFieldTrial::GetZeroSuggestVariants(
     OmniboxEventProto::PageClassification page_classification) {
-  // Note: This code is required since at this point we have no way to set the
-  // ZeroSuggestVariant parameter state with Finch Forcing groups.
-  if (base::FeatureList::IsEnabled(omnibox::kZeroSuggestionsOnNTP)) {
-    auto result = internal::GetValueForRuleInContextByFeature(
-        omnibox::kZeroSuggestionsOnNTP, kZeroSuggestVariantRule,
-        page_classification);
-    if (!result.empty())
-      return result;
+  // We check all these features for ZeroSuggestVariant because it's not
+  // possible to enable multiple features using Finch Forcing groups
+  // (omnibox::kOnFocusSuggestions as well as another feature). Therefore, in
+  // order to specify the ZeroSuggestVariant parameter in those groups we allow
+  // it to be associated with the feature that is being force enabled.
+  const base::Feature* features_to_check[] = {
+      &omnibox::kZeroSuggestionsOnNTP,
+      &omnibox::kZeroSuggestionsOnNTPRealbox,
+      &omnibox::kZeroSuggestionsOnSERP,
+      &omnibox::kOnFocusSuggestions,
+  };
+  for (const base::Feature* feature : features_to_check) {
+    auto parameter_value = internal::GetValueForRuleInContextByFeature(
+        *feature, kZeroSuggestVariantRule, page_classification);
+    if (!parameter_value.empty()) {
+      return base::SplitString(parameter_value, ",", base::TRIM_WHITESPACE,
+                               base::SPLIT_WANT_NONEMPTY);
+    }
   }
 
-  return internal::GetValueForRuleInContextByFeature(
-      omnibox::kOnFocusSuggestions, kZeroSuggestVariantRule,
-      page_classification);
+  return {};
 }
 
 bool OmniboxFieldTrial::ShortcutsScoringMaxRelevance(
@@ -273,9 +281,19 @@ void OmniboxFieldTrial::GetDemotionsByType(
     OmniboxEventProto::PageClassification current_page_classification,
     DemotionMultipliers* demotions_by_type) {
   demotions_by_type->clear();
+
+  // Explicitly check whether the feature is enabled before calling
+  // |GetValueForRuleInContextByFeature| because it is possible for
+  // |GetValueForRuleInContextByFeature| to return an empty string even if the
+  // feature is enabled, and we don't want to fallback to
+  // |GetValueForRuleInContext| in this case.
   std::string demotion_rule =
-      OmniboxFieldTrial::internal::GetValueForRuleInContext(
-          kDemoteByTypeRule, current_page_classification);
+      base::FeatureList::IsEnabled(omnibox::kOmniboxDemoteByType)
+          ? OmniboxFieldTrial::internal::GetValueForRuleInContextByFeature(
+                omnibox::kOmniboxDemoteByType, kDemoteByTypeRule,
+                current_page_classification)
+          : OmniboxFieldTrial::internal::GetValueForRuleInContext(
+                kDemoteByTypeRule, current_page_classification);
   // If there is no demotion rule for this context, then use the default
   // value for that context.
   if (demotion_rule.empty()) {
@@ -287,15 +305,14 @@ void OmniboxFieldTrial::GetDemotionsByType(
     // enough to be inline autocompleted (1400+), even after demotion it will
     // score above 850 ( 1400 * 0.61 > 850).  850 is the maximum score for
     // queries when the input has been detected as URL-seeking.
-    constexpr char kDemoteURLs[] = "1:61,2:61,3:61,4:61,16:61,24:61";
 #if defined(OS_ANDROID)
     if (current_page_classification == OmniboxEventProto::
         SEARCH_RESULT_PAGE_NO_SEARCH_TERM_REPLACEMENT)
-      demotion_rule = kDemoteURLs;
+      demotion_rule = "1:61,2:61,3:61,4:61,16:61,24:61";
 #endif
     if (current_page_classification ==
         OmniboxEventProto::INSTANT_NTP_WITH_FAKEBOX_AS_STARTING_FOCUS)
-      demotion_rule = kDemoteURLs;
+      demotion_rule = "1:10,2:10,3:10,4:10,5:10,16:10,17:10,24:10";
   }
 
   // The value of the DemoteByType rule is a comma-separated list of
@@ -617,10 +634,10 @@ OmniboxFieldTrial::GetEmphasizeTitlesConditionForInput(
 }
 
 size_t OmniboxFieldTrial::GetMaxURLMatches() {
+  constexpr size_t kDefaultMaxURLMatches = 7;
   return base::GetFieldTrialParamByFeatureAsInt(
       omnibox::kOmniboxMaxURLMatches,
-      OmniboxFieldTrial::kOmniboxMaxURLMatchesParam,
-      0);  // default
+      OmniboxFieldTrial::kOmniboxMaxURLMatchesParam, kDefaultMaxURLMatches);
 }
 
 bool OmniboxFieldTrial::IsPreserveDefaultMatchScoreEnabled() {
@@ -634,20 +651,22 @@ bool OmniboxFieldTrial::IsReverseAnswersEnabled() {
 
 bool OmniboxFieldTrial::IsShortBookmarkSuggestionsEnabled() {
   return base::FeatureList::IsEnabled(
-      omnibox::kOmniboxShortBookmarkSuggestions);
+             omnibox::kOmniboxShortBookmarkSuggestions) ||
+         base::FeatureList::IsEnabled(omnibox::kAutocompleteTitles);
 }
 
 bool OmniboxFieldTrial::IsTabSwitchSuggestionsEnabled() {
   return base::FeatureList::IsEnabled(omnibox::kOmniboxTabSwitchSuggestions);
 }
 
-bool OmniboxFieldTrial::IsTabSwitchLogicReversed() {
-  return base::FeatureList::IsEnabled(omnibox::kOmniboxReverseTabSwitchLogic);
-}
-
 bool OmniboxFieldTrial::IsTabSwitchSuggestionsDedicatedRowEnabled() {
   return base::FeatureList::IsEnabled(
       omnibox::kOmniboxTabSwitchSuggestionsDedicatedRow);
+}
+
+bool OmniboxFieldTrial::IsLooseMaxLimitOnDedicatedRowsEnabled() {
+  return base::FeatureList::IsEnabled(
+      omnibox::kOmniboxLooseMaxLimitOnDedicatedRows);
 }
 
 bool OmniboxFieldTrial::IsPedalSuggestionsEnabled() {
@@ -674,15 +693,6 @@ bool OmniboxFieldTrial::IsGroupSuggestionsBySearchVsUrlFeatureEnabled() {
 
 bool OmniboxFieldTrial::IsMaxURLMatchesFeatureEnabled() {
   return base::FeatureList::IsEnabled(omnibox::kOmniboxMaxURLMatches);
-}
-
-bool OmniboxFieldTrial::IsOmniboxWrapPopupPositionEnabled() {
-  return base::FeatureList::IsEnabled(omnibox::kOmniboxWrapPopupPosition);
-}
-
-bool OmniboxFieldTrial::IsOnDeviceHeadProviderEnabledForIncognito() {
-  return base::GetFieldTrialParamByFeatureAsBool(omnibox::kOnDeviceHeadProvider,
-                                                 "EnableForIncongnito", false);
 }
 
 const char OmniboxFieldTrial::kBundledExperimentFieldTrialName[] =

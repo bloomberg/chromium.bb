@@ -13,28 +13,29 @@
 #include "components/signin/public/base/signin_client.h"
 #include "components/signin/public/base/signin_pref_names.h"
 
+const base::Feature kUseMultiloginEndpoint{"UseMultiloginEndpoint",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
+
 namespace signin {
 
 DiceAccountReconcilorDelegate::DiceAccountReconcilorDelegate(
     SigninClient* signin_client,
-    AccountConsistencyMethod account_consistency,
     bool migration_completed)
     : signin_client_(signin_client),
-      account_consistency_(account_consistency),
       migration_completed_(migration_completed) {
   DCHECK(signin_client_);
-  DCHECK(DiceMethodGreaterOrEqual(account_consistency_,
-                                  AccountConsistencyMethod::kDiceMigration));
-  DCHECK(account_consistency == AccountConsistencyMethod::kDice ||
-         !migration_completed);
 }
 
 bool DiceAccountReconcilorDelegate::IsReconcileEnabled() const {
   return true;
 }
 
+bool DiceAccountReconcilorDelegate::IsMultiloginEndpointEnabled() const {
+  return base::FeatureList::IsEnabled(kUseMultiloginEndpoint);
+}
+
 bool DiceAccountReconcilorDelegate::IsAccountConsistencyEnforced() const {
-  return account_consistency_ == AccountConsistencyMethod::kDice;
+  return true;
 }
 
 DiceAccountReconcilorDelegate::InconsistencyReason
@@ -92,28 +93,6 @@ DiceAccountReconcilorDelegate::GetInconsistencyReason(
     return InconsistencyReason::kSyncCookieNotFirst;
 
   return InconsistencyReason::kNone;
-}
-
-void DiceAccountReconcilorDelegate::MaybeLogInconsistencyReason(
-    const CoreAccountId& primary_account,
-    const std::vector<CoreAccountId>& chrome_accounts,
-    const std::vector<gaia::ListedAccount>& gaia_accounts,
-    bool first_execution) const {
-  if (account_consistency_ != AccountConsistencyMethod::kDiceMigration)
-    return;
-
-  InconsistencyReason inconsistency_reason = GetInconsistencyReason(
-      primary_account, chrome_accounts, gaia_accounts, first_execution);
-
-  if (first_execution) {
-    UMA_HISTOGRAM_ENUMERATION(
-        "Signin.DiceMigrationNotReady.Reason.FirstExecution",
-        inconsistency_reason);
-  } else {
-    UMA_HISTOGRAM_ENUMERATION(
-        "Signin.DiceMigrationNotReady.Reason.NotFirstExecution",
-        inconsistency_reason);
-  }
 }
 
 gaia::GaiaSource DiceAccountReconcilorDelegate::GetGaiaApiSource() const {
@@ -233,21 +212,11 @@ DiceAccountReconcilorDelegate::GetChromeAccountsForReconcile(
 AccountReconcilorDelegate::RevokeTokenOption
 DiceAccountReconcilorDelegate::ShouldRevokeSecondaryTokensBeforeReconcile(
     const std::vector<gaia::ListedAccount>& gaia_accounts) {
-  // During the Dice migration step, before Dice is actually enabled, chrome
-  // tokens must be cleared when the cookies are cleared.
-  if ((account_consistency_ == AccountConsistencyMethod::kDiceMigration) &&
-      gaia_accounts.empty()) {
-    return RevokeTokenOption::kRevoke;
-  }
-
-  return account_consistency_ == AccountConsistencyMethod::kDice
-             ? RevokeTokenOption::kRevokeIfInError
-             : RevokeTokenOption::kDoNotRevoke;
+  return RevokeTokenOption::kRevokeIfInError;
 }
 
 bool DiceAccountReconcilorDelegate::ShouldRevokeTokensNotInCookies() const {
-  return account_consistency_ == AccountConsistencyMethod::kDice &&
-         !migration_completed_;
+  return !migration_completed_;
 }
 
 void DiceAccountReconcilorDelegate::OnRevokeTokensNotInCookiesCompleted(
@@ -259,19 +228,12 @@ void DiceAccountReconcilorDelegate::OnRevokeTokensNotInCookiesCompleted(
 }
 
 bool DiceAccountReconcilorDelegate::ShouldRevokeTokensOnCookieDeleted() {
-  return account_consistency_ == AccountConsistencyMethod::kDice;
+  return true;
 }
 
 void DiceAccountReconcilorDelegate::OnReconcileFinished(
-    const CoreAccountId& first_account,
-    bool reconcile_is_noop) {
+    const CoreAccountId& first_account) {
   last_known_first_account_ = first_account;
-
-  // Migration happens on startup if the last reconcile was a no-op and the
-  // refresh tokens are Dice-compatible.
-  signin_client_->SetReadyForDiceMigration(
-      reconcile_is_noop && signin_client_->GetPrefs()->GetBoolean(
-                               prefs::kTokenServiceDiceCompatible));
 }
 
 }  // namespace signin

@@ -56,21 +56,9 @@ bool LayoutTextControlMultiLine::NodeAtPoint(
   return true;
 }
 
-float LayoutTextControlMultiLine::GetAvgCharWidth(
-    const AtomicString& family) const {
-  // Match the default system font to the width of MS Shell Dlg, the default
-  // font for textareas in Firefox, Safari Win and IE for some encodings (in
-  // IE, the default font is encoding specific). 1229 is the avgCharWidth
-  // value in the OS/2 table for Courier New.
-  if (LayoutTheme::GetTheme().NeedsHackForTextControlWithFontFamily(family))
-    return ScaleEmToUnits(1229);
-
-  return LayoutTextControl::GetAvgCharWidth(family);
-}
-
 LayoutUnit LayoutTextControlMultiLine::PreferredContentLogicalWidth(
     float char_width) const {
-  int factor = ToHTMLTextAreaElement(GetNode())->cols();
+  int factor = To<HTMLTextAreaElement>(GetNode())->cols();
   return static_cast<LayoutUnit>(ceilf(char_width * factor)) +
          ScrollbarThickness();
 }
@@ -78,7 +66,7 @@ LayoutUnit LayoutTextControlMultiLine::PreferredContentLogicalWidth(
 LayoutUnit LayoutTextControlMultiLine::ComputeControlLogicalHeight(
     LayoutUnit line_height,
     LayoutUnit non_content_height) const {
-  return line_height * ToHTMLTextAreaElement(GetNode())->rows() +
+  return line_height * To<HTMLTextAreaElement>(GetNode())->rows() +
          non_content_height;
 }
 
@@ -106,6 +94,22 @@ LayoutObject* LayoutTextControlMultiLine::LayoutSpecialExcludedChild(
   placeholder_box->SetX(BorderLeft() + PaddingLeft());
   placeholder_box->SetY(BorderTop() + PaddingTop());
   return placeholder_layout_object;
+}
+
+LayoutUnit LayoutTextControlMultiLine::ScrollWidth() const {
+  // If in preview state, fake the scroll width to prevent that any information
+  // about the suggested content can be derived from the size.
+  if (!GetTextControlElement()->SuggestedValue().IsEmpty())
+    return ClientWidth();
+  return LayoutTextControl::ScrollWidth();
+}
+
+LayoutUnit LayoutTextControlMultiLine::ScrollHeight() const {
+  // If in preview state, fake the scroll height to prevent that any information
+  // about the suggested content can be derived from the size.
+  if (!GetTextControlElement()->SuggestedValue().IsEmpty())
+    return ClientHeight();
+  return LayoutTextControl::ScrollHeight();
 }
 
 }  // namespace blink

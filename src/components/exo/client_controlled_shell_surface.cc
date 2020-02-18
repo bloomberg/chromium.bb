@@ -38,6 +38,7 @@
 #include "components/exo/surface.h"
 #include "components/exo/wm_helper.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/aura/scoped_window_event_targeting_blocker.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_observer.h"
@@ -53,6 +54,20 @@
 namespace exo {
 
 namespace {
+
+// Client controlled specific accelerators.
+const struct {
+  ui::KeyboardCode keycode;
+  int modifiers;
+  ClientControlledAcceleratorAction action;
+} kAccelerators[] = {
+    {ui::VKEY_OEM_MINUS, ui::EF_CONTROL_DOWN,
+     ClientControlledAcceleratorAction::ZOOM_OUT},
+    {ui::VKEY_OEM_PLUS, ui::EF_CONTROL_DOWN,
+     ClientControlledAcceleratorAction::ZOOM_IN},
+    {ui::VKEY_0, ui::EF_CONTROL_DOWN,
+     ClientControlledAcceleratorAction::ZOOM_RESET},
+};
 
 ClientControlledShellSurface::DelegateFactoryCallback& GetFactoryForTesting() {
   using CallbackType = ClientControlledShellSurface::DelegateFactoryCallback;
@@ -214,8 +229,9 @@ class CaptionButtonModel : public ash::CaptionButtonModel {
   DISALLOW_COPY_AND_ASSIGN(CaptionButtonModel);
 };
 
-// EventTargetingBlocker blocks the event targeting by settnig NONE targeting
-// policy to the window subtrees. It resets to the origial policy upon deletion.
+// EventTargetingBlocker blocks the event targeting by setting NONE targeting
+// policy to the window subtrees. It resets to the original policy upon
+// deletion.
 class EventTargetingBlocker : aura::WindowObserver {
  public:
   EventTargetingBlocker() = default;
@@ -233,29 +249,28 @@ class EventTargetingBlocker : aura::WindowObserver {
  private:
   void Register(aura::Window* window) {
     window->AddObserver(this);
-    auto policy = window->event_targeting_policy();
-    window->SetEventTargetingPolicy(aura::EventTargetingPolicy::kNone);
-    policy_map_.emplace(window, policy);
+    event_targeting_blocker_map_[window] =
+        std::make_unique<aura::ScopedWindowEventTargetingBlocker>(window);
     for (auto* child : window->children())
       Register(child);
   }
 
   void Unregister(aura::Window* window) {
     window->RemoveObserver(this);
-    DCHECK(policy_map_.find(window) != policy_map_.end());
-    window->SetEventTargetingPolicy(policy_map_[window]);
+    event_targeting_blocker_map_.erase(window);
     for (auto* child : window->children())
       Unregister(child);
   }
 
   void OnWindowDestroying(aura::Window* window) override {
-    auto it = policy_map_.find(window);
-    DCHECK(it != policy_map_.end());
-    policy_map_.erase(it);
-    window->RemoveObserver(this);
+    Unregister(window);
+    if (window_ == window)
+      window_ = nullptr;
   }
 
-  std::map<aura::Window*, aura::EventTargetingPolicy> policy_map_;
+  std::map<aura::Window*,
+           std::unique_ptr<aura::ScopedWindowEventTargetingBlocker>>
+      event_targeting_blocker_map_;
   aura::Window* window_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(EventTargetingBlocker);
@@ -307,6 +322,8 @@ ClientControlledShellSurface::~ClientControlledShellSurface() {
   // operation on a to-be-destroyed window. |widget_| can be nullptr in tests.
   if (GetWidget())
     GetWindowState()->SetDelegate(nullptr);
+  if (client_controlled_state_)
+    client_controlled_state_->ResetDelegate();
   wide_frame_.reset();
   display::Screen::GetScreen()->RemoveObserver(this);
   if (current_pin_ != ash::WindowPinType::kNone)
@@ -610,6 +627,11 @@ void ClientControlledShellSurface::OnBoundsChangeEvent(
   }
 }
 
+void ClientControlledShellSurface::ChangeZoomLevel(ZoomChange change) {
+  if (change_zoom_level_callback_)
+    change_zoom_level_callback_.Run(change);
+}
+
 void ClientControlledShellSurface::OnDragStarted(int component) {
   in_drag_ = true;
   if (drag_started_callback_)
@@ -903,6 +925,19 @@ void ClientControlledShellSurface::InitializeWindowState(
   UpdateFrameWidth();
   if (initial_orientation_lock_ != ash::OrientationLockType::kAny)
     SetOrientationLock(initial_orientation_lock_);
+
+  // Register Client controlled accelerators.
+  views::FocusManager* focus_manager = widget_->GetFocusManager();
+  accelerator_target_ =
+      std::make_unique<ClientControlledAcceleratorTarget>(this);
+
+  for (const auto& entry : kAccelerators) {
+    focus_manager->RegisterAccelerator(
+        ui::Accelerator(entry.keycode, entry.modifiers),
+        ui::AcceleratorManager::kNormalPriority, accelerator_target_.get());
+    accelerator_target_->RegisterAccelerator(
+        ui::Accelerator(entry.keycode, entry.modifiers), entry.action);
+  }
 }
 
 float ClientControlledShellSurface::GetScale() const {
@@ -938,10 +973,10 @@ bool ClientControlledShellSurface::OnPreWidgetCommit() {
   state_changed_ = window_state->GetStateType() != pending_window_state_;
   if (!state_changed_) {
     // Animate PIP window movement unless it is being dragged.
-    if (window_state->IsPip() && !window_state->is_dragged()) {
-      client_controlled_state_->set_next_bounds_change_animation_type(
-          ash::ClientControlledState::kAnimationAnimated);
-    }
+    client_controlled_state_->set_next_bounds_change_animation_type(
+        window_state->IsPip() && !window_state->is_dragged()
+            ? ash::ClientControlledState::kAnimationAnimated
+            : ash::ClientControlledState::kAnimationNone);
     return true;
   }
 
@@ -990,9 +1025,15 @@ bool ClientControlledShellSurface::OnPreWidgetCommit() {
   }
 
   if (wasPip && !window_state->IsMinimized()) {
-    // Expanding PIP should end split-view. See crbug.com/941788.
-    ash::Shell::Get()->split_view_controller()->EndSplitView(
-        ash::SplitViewController::EndReason::kPipExpanded);
+    // Expanding PIP should end tablet split view (see crbug.com/941788).
+    // Clamshell split view does not require special handling. We activate the
+    // PIP window, and so overview ends, which means clamshell split view ends.
+    // TODO(edcourtney): Consider not ending tablet split view on PIP expand.
+    // See crbug.com/950827.
+    ash::SplitViewController* split_view_controller =
+        ash::SplitViewController::Get(ash::Shell::GetPrimaryRootWindow());
+    if (split_view_controller->InTabletSplitViewMode())
+      split_view_controller->EndSplitView();
     // As Android doesn't activate PIP tasks after they are expanded, we need
     // to do it here explicitly.
     // TODO(937738): Investigate if we can activate PIP windows inside commit.
@@ -1025,11 +1066,30 @@ void ClientControlledShellSurface::OnPostWidgetCommit() {
   if (expected_orientation_ == orientation_)
     orientation_compositor_lock_.reset();
 
-  widget_->GetNativeWindow()->SetProperty(aura::client::kZOrderingKey,
-                                          pending_always_on_top_
-                                          ? ui::ZOrderLevel::kFloatingWindow
-                                          : ui::ZOrderLevel::kNormal);
+  ui::ZOrderLevel z_order_level = pending_always_on_top_
+                                   ? ui::ZOrderLevel::kFloatingWindow
+                                   : ui::ZOrderLevel::kNormal;
+  ash::WindowState* window_state = GetWindowState();
+  if (window_state->IsPip()) {
+    // CTS requires a PIP window to stay at the initial position that Android
+    // calculates. UpdatePipBounds() is triggered by setting the window always
+    // on top, and depending on the density, it's adjusted by one pixel, which
+    // makes CTS fail.
+    // TODO(takise): Remove this workaround once ARC P is gone. See b/147847272
+    // for more detail.
+    base::AutoReset<bool> resetter(&ignore_bounds_change_request_, true);
+    widget_->GetNativeWindow()->SetProperty(aura::client::kZOrderingKey,
+                                            z_order_level);
+  } else {
+    widget_->GetNativeWindow()->SetProperty(aura::client::kZOrderingKey,
+                                            z_order_level);
+  }
+}
 
+void ClientControlledShellSurface::OnSurfaceDestroying(Surface* surface) {
+  if (client_controlled_state_)
+    client_controlled_state_->ResetDelegate();
+  ShellSurfaceBase::OnSurfaceDestroying(surface);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1106,7 +1166,7 @@ void ClientControlledShellSurface::UpdateBackdrop() {
 
   ash::BackdropWindowMode target_backdrop_mode =
       enable_backdrop ? ash::BackdropWindowMode::kEnabled
-                      : ash::BackdropWindowMode::kAuto;
+                      : ash::BackdropWindowMode::kAutoOpaque;
 
   if (window->GetProperty(ash::kBackdropWindowMode) != target_backdrop_mode)
     window->SetProperty(ash::kBackdropWindowMode, target_backdrop_mode);

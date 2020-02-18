@@ -12,6 +12,7 @@
 #include "third_party/blink/public/mojom/renderer_preference_watcher.mojom.h"
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker.mojom.h"
+#include "third_party/blink/public/mojom/worker/subresource_loader_updater.mojom.h"
 #include "third_party/blink/public/platform/web_worker_fetch_context.h"
 #include "url/gurl.h"
 
@@ -22,34 +23,35 @@ class WebSocketHandshakeThrottleProvider;
 
 class CONTENT_EXPORT ServiceWorkerFetchContextImpl final
     : public blink::WebWorkerFetchContext,
-      public blink::mojom::ServiceWorkerSubresourceLoaderUpdater,
+      public blink::mojom::SubresourceLoaderUpdater,
       public blink::mojom::RendererPreferenceWatcher {
  public:
-  // |url_loader_factory_info| is used for regular loads from the service worker
-  // (i.e., Fetch API). It typically goes to network, but it might internally
-  // contain non-NetworkService factories for handling non-http(s) URLs like
-  // chrome-extension://.
-  // |script_loader_factory_info| is used for importScripts() from the service
-  // worker when InstalledScriptsManager doesn't have the requested script. It
-  // is a ServiceWorkerScriptLoaderFactory, which loads and installs the script.
+  // |pending_url_loader_factory| is used for regular loads from the service
+  // worker (i.e., Fetch API). It typically goes to network, but it might
+  // internally contain non-NetworkService factories for handling non-http(s)
+  // URLs like chrome-extension://. |pending_script_loader_factory| is used for
+  // importScripts() from the service worker when InstalledScriptsManager
+  // doesn't have the requested script. It is a
+  // ServiceWorkerScriptLoaderFactory, which loads and installs the script.
   // |script_url_to_skip_throttling| is a URL which is already throttled in the
   // browser process so that it doesn't need to be throttled in the renderer
   // again.
   ServiceWorkerFetchContextImpl(
       const blink::mojom::RendererPreferences& renderer_preferences,
       const GURL& worker_script_url,
-      std::unique_ptr<network::SharedURLLoaderFactoryInfo>
-          url_loader_factory_info,
-      std::unique_ptr<network::SharedURLLoaderFactoryInfo>
-          script_loader_factory_info,
+      std::unique_ptr<network::PendingSharedURLLoaderFactory>
+          pending_url_loader_factory,
+      std::unique_ptr<network::PendingSharedURLLoaderFactory>
+          pending_script_loader_factory,
       const GURL& script_url_to_skip_throttling,
       std::unique_ptr<URLLoaderThrottleProvider> throttle_provider,
       std::unique_ptr<WebSocketHandshakeThrottleProvider>
           websocket_handshake_throttle_provider,
       mojo::PendingReceiver<blink::mojom::RendererPreferenceWatcher>
           preference_watcher_receiver,
-      mojo::PendingReceiver<blink::mojom::ServiceWorkerSubresourceLoaderUpdater>
-          pending_subresource_loader_updater);
+      mojo::PendingReceiver<blink::mojom::SubresourceLoaderUpdater>
+          pending_subresource_loader_updater,
+      int32_t service_worker_route_id);
 
   // blink::WebWorkerFetchContext implementation:
   void SetTerminateSyncLoadEvent(base::WaitableEvent*) override;
@@ -68,13 +70,15 @@ class CONTENT_EXPORT ServiceWorkerFetchContextImpl final
   CreateWebSocketHandshakeThrottle(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner) override;
   blink::WebString GetAcceptLanguages() const override;
+  mojo::ScopedMessagePipeHandle TakePendingWorkerTimingReceiver(
+      int request_id) override;
 
  private:
   ~ServiceWorkerFetchContextImpl() override;
 
   // Implements blink::mojom::ServiceWorkerFetchContext
   void UpdateSubresourceLoaderFactories(
-      std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
+      std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
           subresource_loader_factories) override;
 
   // Implements blink::mojom::RendererPreferenceWatcher.
@@ -83,10 +87,11 @@ class CONTENT_EXPORT ServiceWorkerFetchContextImpl final
   blink::mojom::RendererPreferences renderer_preferences_;
   const GURL worker_script_url_;
   // Consumed on the worker thread to create |web_url_loader_factory_|.
-  std::unique_ptr<network::SharedURLLoaderFactoryInfo> url_loader_factory_info_;
+  std::unique_ptr<network::PendingSharedURLLoaderFactory>
+      pending_url_loader_factory_;
   // Consumed on the worker thread to create |web_script_loader_factory_|.
-  std::unique_ptr<network::SharedURLLoaderFactoryInfo>
-      script_loader_factory_info_;
+  std::unique_ptr<network::PendingSharedURLLoaderFactory>
+      pending_script_loader_factory_;
 
   // A script URL that should skip throttling when loaded because it's already
   // being loaded in the browser process and went through throttles there. It's
@@ -108,20 +113,22 @@ class CONTENT_EXPORT ServiceWorkerFetchContextImpl final
 
   mojo::Receiver<blink::mojom::RendererPreferenceWatcher>
       preference_watcher_receiver_{this};
-  mojo::Receiver<blink::mojom::ServiceWorkerSubresourceLoaderUpdater>
+  mojo::Receiver<blink::mojom::SubresourceLoaderUpdater>
       subresource_loader_updater_{this};
 
   // These mojo objects are kept while starting up the worker thread. Valid
   // until InitializeOnWorkerThread().
   mojo::PendingReceiver<blink::mojom::RendererPreferenceWatcher>
       preference_watcher_pending_receiver_;
-  mojo::PendingReceiver<blink::mojom::ServiceWorkerSubresourceLoaderUpdater>
+  mojo::PendingReceiver<blink::mojom::SubresourceLoaderUpdater>
       pending_subresource_loader_updater_;
 
   // This is owned by ThreadedMessagingProxyBase on the main thread.
   base::WaitableEvent* terminate_sync_load_event_ = nullptr;
 
   blink::AcceptLanguagesWatcher* accept_languages_watcher_ = nullptr;
+
+  int32_t service_worker_route_id_;
 };
 
 }  // namespace content

@@ -31,6 +31,7 @@
 #include "base/win/scoped_com_initializer.h"
 #include "base/win/windows_version.h"
 #include "build/branding_buildflags.h"
+#include "gpu/config/gpu_util.h"
 #include "third_party/vulkan/include/vulkan/vulkan.h"
 
 namespace gpu {
@@ -62,30 +63,6 @@ inline D3D12FeatureLevel ConvertToHistogramFeatureLevel(
   }
 }
 
-// These values are persisted to logs. Entries should not be renumbered and
-// numeric values should never be reused.
-// This should match enum VulkanVersion in \tools\metrics\histograms\enums.xml
-enum class VulkanVersion {
-  kVulkanVersionUnknown = 0,
-  kVulkanVersion_1_0_0 = 1,
-  kVulkanVersion_1_1_0 = 2,
-  kMaxValue = kVulkanVersion_1_1_0,
-};
-
-inline VulkanVersion ConvertToHistogramVulkanVersion(uint32_t vulkan_version) {
-  switch (vulkan_version) {
-    case 0:
-      return VulkanVersion::kVulkanVersionUnknown;
-    case VK_MAKE_VERSION(1, 0, 0):
-      return VulkanVersion::kVulkanVersion_1_0_0;
-    case VK_MAKE_VERSION(1, 1, 0):
-      return VulkanVersion::kVulkanVersion_1_1_0;
-    default:
-      NOTREACHED();
-      return VulkanVersion::kVulkanVersionUnknown;
-  }
-}
-
 }  // namespace
 
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING) && defined(OFFICIAL_BUILD)
@@ -106,7 +83,7 @@ bool CollectDriverInfoD3D(GPUInfo* gpu_info) {
   TRACE_EVENT0("gpu", "CollectDriverInfoD3D");
 
   Microsoft::WRL::ComPtr<IDXGIFactory> dxgi_factory;
-  const HRESULT hr = ::CreateDXGIFactory(IID_PPV_ARGS(&dxgi_factory));
+  HRESULT hr = ::CreateDXGIFactory(IID_PPV_ARGS(&dxgi_factory));
   if (FAILED(hr))
     return false;
 
@@ -123,10 +100,12 @@ bool CollectDriverInfoD3D(GPUInfo* gpu_info) {
     GPUInfo::GPUDevice device;
     device.vendor_id = desc.VendorId;
     device.device_id = desc.DeviceId;
+    device.sub_sys_id = desc.SubSysId;
+    device.revision = desc.Revision;
 
     LARGE_INTEGER umd_version;
-    const HRESULT hr = dxgi_adapter->CheckInterfaceSupport(
-        __uuidof(IDXGIDevice), &umd_version);
+    hr = dxgi_adapter->CheckInterfaceSupport(__uuidof(IDXGIDevice),
+                                             &umd_version);
     if (SUCCEEDED(hr)) {
       device.driver_version = base::StringPrintf(
           "%d.%d.%d.%d", HIWORD(umd_version.HighPart),
@@ -227,21 +206,13 @@ bool BadAMDVulkanDriverVersion() {
       return false;
   }
 
-  const VS_FIXEDFILEINFO* fixed_file_info =
-      file_version_info->fixed_file_info();
-  const int major = HIWORD(fixed_file_info->dwFileVersionMS);
-  const int minor = LOWORD(fixed_file_info->dwFileVersionMS);
-  const int minor_1 = HIWORD(fixed_file_info->dwFileVersionLS);
-
   // From the Canary crash logs, the broken amdvlk64.dll versions
   // are 1.0.39.0, 1.0.51.0 and 1.0.54.0. In the manual test, version
   // 9.2.10.1 dated 12/6/2017 works and version 1.0.54.0 dated 11/2/1017
   // crashes. All version numbers small than 1.0.54.0 will be marked as
   // broken.
-  if (major == 1 && minor == 0 && minor_1 <= 54) {
-    return true;
-  }
-  return false;
+  const base::Version kBadAMDVulkanDriverVersion("1.0.54.0");
+  return file_version_info->GetFileVersion() <= kBadAMDVulkanDriverVersion;
 }
 
 bool BadVulkanDllVersion() {
@@ -250,13 +221,6 @@ bool BadVulkanDllVersion() {
           base::FilePath(FILE_PATH_LITERAL("vulkan-1.dll")));
   if (!file_version_info)
     return false;
-
-  const VS_FIXEDFILEINFO* fixed_file_info =
-      file_version_info->fixed_file_info();
-  const int major = HIWORD(fixed_file_info->dwFileVersionMS);
-  const int minor = LOWORD(fixed_file_info->dwFileVersionMS);
-  const int build_1 = HIWORD(fixed_file_info->dwFileVersionLS);
-  const int build_2 = LOWORD(fixed_file_info->dwFileVersionLS);
 
   // From the logs, most vulkan-1.dll crashs are from the following versions.
   // As of 7/23/2018.
@@ -269,13 +233,12 @@ bool BadVulkanDllVersion() {
   // The GPU could be from any vendor, but only some certain models would crash.
   // For those that don't crash, they usually return failures upon GPU vulkan
   // support querying even though the GPU drivers can support it.
-  if ((major == 0 && minor == 0 && build_1 == 0 && build_2 == 0) ||
-      (major == 1 && minor == 0 && build_1 == 26 && build_2 == 0) ||
-      (major == 1 && minor == 0 && build_1 == 33 && build_2 == 0) ||
-      (major == 1 && minor == 0 && build_1 == 42 && build_2 == 0) ||
-      (major == 1 && minor == 0 && build_1 == 42 && build_2 == 1) ||
-      (major == 1 && minor == 0 && build_1 == 51 && build_2 == 0)) {
-    return true;
+  base::Version fv = file_version_info->GetFileVersion();
+  const char* const kBadVulkanDllVersion[] = {
+      "0.0.0.0", "1.0.26.0", "1.0.33.0", "1.0.42.0", "1.0.42.1", "1.0.51.0"};
+  for (const char* bad_version : kBadVulkanDllVersion) {
+    if (fv == base::Version(bad_version))
+      return true;
   }
   return false;
 }

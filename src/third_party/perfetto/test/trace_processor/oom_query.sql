@@ -1,29 +1,50 @@
+--
+-- Copyright 2019 The Android Open Source Project
+--
+-- Licensed under the Apache License, Version 2.0 (the "License");
+-- you may not use this file except in compliance with the License.
+-- You may obtain a copy of the License at
+--
+--     https://www.apache.org/licenses/LICENSE-2.0
+--
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- See the License for the specific language governing permissions and
+-- limitations under the License.
+--
 /* Create the file RSS table. */
 CREATE VIEW file_rss AS
 SELECT ts,
-       LEAD(ts, 1, ts) OVER(PARTITION BY ref ORDER BY ts) - ts as dur,
-       ref AS upid,
+       LEAD(ts, 1, ts) OVER(PARTITION BY track_id ORDER BY ts) - ts as dur,
+       upid,
        value AS file
-FROM counters
-WHERE ref_type = 'upid' AND counters.name IN ("mem.rss.file", "rss_stat.mm_filepages");
+FROM counter
+JOIN process_counter_track
+  ON counter.track_id = process_counter_track.id
+WHERE process_counter_track.name IN ("mem.rss.file", "rss_stat.mm_filepages");
 
 /* Create the anon RSS table. */
 create view anon_rss as
 select ts,
-       lead(ts, 1, ts) over(PARTITION by ref order by ts) - ts as dur,
-       ref as upid,
+       LEAD(ts, 1, ts) OVER(PARTITION BY track_id ORDER BY ts) - ts as dur,
+       upid,
        value as anon
-from counters
-where ref_type = 'upid' and counters.name in ("mem.rss.anon", "rss_stat.mm_anonpages");
+FROM counter
+JOIN process_counter_track
+  ON counter.track_id = process_counter_track.id
+where process_counter_track.name in ("mem.rss.anon", "rss_stat.mm_anonpages");
 
 /* Create the oom adj table. */
 create view oom_adj as
 select ts,
-       lead(ts, 1, ts) over(PARTITION by ref order by ts) - ts as dur,
-       ref as upid,
+       LEAD(ts, 1, ts) OVER(PARTITION BY track_id ORDER BY ts) - ts as dur,
+       upid,
        value as oom_score_adj
-from counters
-where ref_type = 'upid' and counters.name = 'oom_score_adj';
+FROM counter
+JOIN process_counter_track
+  ON counter.track_id = process_counter_track.id
+where process_counter_track.name = 'oom_score_adj';
 
 /* Harmonise the three tables above into a single table. */
 CREATE VIRTUAL TABLE anon_file USING span_join(anon_rss PARTITIONED upid, file_rss PARTITIONED upid);
@@ -64,7 +85,7 @@ WINDOW win AS (PARTITION BY upid ORDER BY ts);
  */
 CREATE VIEW output AS
 SELECT ts,
-       lead(ts, 1, ts) over win - ts as dur,
+       lead(ts, 1, ts + dur) over win - ts as dur,
        SUM(rss_oom_lt_zero_diff) OVER win as rss_oom_lt_zero,
        SUM(rss_oom_eq_zero_diff) OVER win as rss_oom_eq_zero,
        SUM(rss_fg_diff) OVER win as rss_fg,

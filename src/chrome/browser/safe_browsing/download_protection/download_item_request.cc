@@ -6,7 +6,7 @@
 
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
-#include "chrome/browser/safe_browsing/download_protection/binary_upload_service.h"
+#include "chrome/browser/browser_process.h"
 #include "components/download/public/common/download_item.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -40,11 +40,12 @@ std::string GetFileContentsBlocking(base::FilePath path) {
 }  // namespace
 
 DownloadItemRequest::DownloadItemRequest(download::DownloadItem* item,
+                                         bool read_immediately,
                                          BinaryUploadService::Callback callback)
-    : Request(std::move(callback)),
-      item_(item),
-      download_item_renamed_(false),
-      weakptr_factory_(this) {
+    : Request(std::move(callback)), item_(item), weakptr_factory_(this) {
+  if (read_immediately)
+    ReadFile();
+
   item_->AddObserver(this);
 }
 
@@ -53,43 +54,40 @@ DownloadItemRequest::~DownloadItemRequest() {
     item_->RemoveObserver(this);
 }
 
-void DownloadItemRequest::GetFileContents(
-    base::OnceCallback<void(const std::string&)> callback) {
+void DownloadItemRequest::GetRequestData(DataCallback callback) {
   if (item_ == nullptr) {
-    std::move(callback).Run("");
+    std::move(callback).Run(BinaryUploadService::Result::UNKNOWN, Data());
+    return;
+  }
+
+  if (static_cast<size_t>(item_->GetTotalBytes()) >
+      BinaryUploadService::kMaxUploadSizeBytes) {
+    std::move(callback).Run(BinaryUploadService::Result::FILE_TOO_LARGE,
+                            Data());
+    return;
+  }
+
+  if (is_data_valid_) {
+    std::move(callback).Run(BinaryUploadService::Result::SUCCESS, data_);
     return;
   }
 
   pending_callbacks_.push_back(std::move(callback));
-
-  if (download_item_renamed_)
-    RunPendingGetFileContentsCallbacks();
 }
 
 void DownloadItemRequest::RunPendingGetFileContentsCallbacks() {
   for (auto it = pending_callbacks_.begin(); it != pending_callbacks_.end();
        it++) {
-    base::PostTaskAndReplyWithResult(
-        FROM_HERE,
-        {base::ThreadPool(), base::TaskPriority::USER_VISIBLE,
-         base::MayBlock()},
-        base::BindOnce(&GetFileContentsBlocking, item_->GetFullPath()),
-        base::BindOnce(&DownloadItemRequest::OnGotFileContents,
-                       weakptr_factory_.GetWeakPtr(), std::move(*it)));
+    std::move(*it).Run(BinaryUploadService::Result::SUCCESS, data_);
   }
 
   pending_callbacks_.clear();
 }
 
-size_t DownloadItemRequest::GetFileSize() {
-  return item_ == nullptr ? 0 : item_->GetTotalBytes();
-}
-
 void DownloadItemRequest::OnDownloadUpdated(download::DownloadItem* download) {
-  if (download == item_ && item_->GetFullPath() == item_->GetTargetFilePath()) {
-    download_item_renamed_ = true;
-    RunPendingGetFileContentsCallbacks();
-  }
+  if (!is_data_valid_ && download == item_ &&
+      item_->GetFullPath() == item_->GetTargetFilePath())
+    ReadFile();
 }
 
 void DownloadItemRequest::OnDownloadDestroyed(
@@ -98,10 +96,19 @@ void DownloadItemRequest::OnDownloadDestroyed(
     item_ = nullptr;
 }
 
-void DownloadItemRequest::OnGotFileContents(
-    base::OnceCallback<void(const std::string&)> callback,
-    const std::string& contents) {
-  std::move(callback).Run(contents);
+void DownloadItemRequest::ReadFile() {
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE,
+      {base::ThreadPool(), base::TaskPriority::USER_VISIBLE, base::MayBlock()},
+      base::BindOnce(&GetFileContentsBlocking, item_->GetFullPath()),
+      base::BindOnce(&DownloadItemRequest::OnGotFileContents,
+                     weakptr_factory_.GetWeakPtr()));
+}
+
+void DownloadItemRequest::OnGotFileContents(std::string contents) {
+  data_.contents = std::move(contents);
+  is_data_valid_ = true;
+  RunPendingGetFileContentsCallbacks();
 }
 
 }  // namespace safe_browsing

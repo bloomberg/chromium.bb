@@ -8,8 +8,11 @@ The commands module wraps operations that have side-effects.
 import os
 import plistlib
 import shutil
+import stat
 import subprocess
 import tempfile
+
+from . import logger
 
 
 def file_exists(path):
@@ -61,13 +64,29 @@ def write_file(path, contents):
         f.write(contents)
 
 
+def read_file(path):
+    with open(path, 'r') as f:
+        return f.read()
+
+
+def set_executable(path):
+    """Makes the file at the specified path executable.
+
+    Args:
+        path: The path to the file to make executable.
+    """
+    os.chmod(path, stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR
+             | stat.S_IRGRP | stat.S_IXGRP | stat.S_IROTH
+             | stat.S_IXOTH)  # -rwxr-xr-x a.k.a. 0755
+
+
 def run_command(args, **kwargs):
-    print('Running command: {}'.format(args))
+    logger.info('Running command: %s', args)
     subprocess.check_call(args, **kwargs)
 
 
 def run_command_output(args, **kwargs):
-    print('Running command: {}'.format(args))
+    logger.info('Running command: %s', args)
     return subprocess.check_output(args, **kwargs)
 
 
@@ -75,15 +94,20 @@ class PlistContext(object):
     """
     PlistContext is a context manager that reads a plist on entry, providing
     the contents as a dictionary. If |rewrite| is True, then the same dictionary
-    is re-serialized on exit.
+    is re-serialized on exit. If |create_new| is True, then the file is not read
+    but rather an empty dictionary is created.
     """
 
-    def __init__(self, plist_path, rewrite=False):
+    def __init__(self, plist_path, rewrite=False, create_new=False):
         self._path = plist_path
         self._rewrite = rewrite
+        self._create_new = create_new
 
     def __enter__(self):
-        self._plist = plistlib.readPlist(self._path)
+        if self._create_new:
+            self._plist = {}
+        else:
+            self._plist = plistlib.readPlist(self._path)
         return self._plist
 
     def __exit__(self, exc_type, exc_value, exc_tb):

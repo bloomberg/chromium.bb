@@ -20,8 +20,8 @@
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_file_system_operation_runner.h"
 #include "components/arc/mojom/file_system.mojom.h"
-#include "storage/browser/fileapi/async_file_util.h"
-#include "storage/browser/fileapi/watcher_manager.h"
+#include "storage/browser/file_system/async_file_util.h"
+#include "storage/browser/file_system/watcher_manager.h"
 
 class GURL;
 
@@ -163,13 +163,13 @@ class ArcDocumentsProviderRoot : public ArcFileSystemOperationRunner::Observer {
   //   2. Keep consistency of installed watchers so that the caller can avoid
   //      dangling watchers.
   void AddWatcher(const base::FilePath& path,
-                  const WatcherNotificationCallback& watcher_callback,
-                  const WatcherStatusCallback& callback);
+                  WatcherNotificationCallback watcher_callback,
+                  WatcherStatusCallback callback);
 
   // Uninstalls a document watcher.
   // See the documentation of AddWatcher() above.
   void RemoveWatcher(const base::FilePath& path,
-                     const WatcherStatusCallback& callback);
+                     WatcherStatusCallback callback);
 
   // Resolves a file path into a content:// URL pointing to the file
   // on DocumentsProvider. Returns URL that can be passed to
@@ -289,17 +289,16 @@ class ArcDocumentsProviderRoot : public ArcFileSystemOperationRunner::Observer {
                    const std::string& target_display_name_to_rename,
                    mojom::DocumentPtr document);
 
-  void AddWatcherWithDocumentId(
-      const base::FilePath& path,
-      uint64_t watcher_request_id,
-      const WatcherNotificationCallback& watcher_callback,
-      const std::string& document_id);
+  void AddWatcherWithDocumentId(const base::FilePath& path,
+                                uint64_t watcher_request_id,
+                                WatcherNotificationCallback watcher_callback,
+                                const std::string& document_id);
   void OnWatcherAdded(const base::FilePath& path,
                       uint64_t watcher_request_id,
                       int64_t watcher_id);
   void OnWatcherAddedButRemoved(bool success);
 
-  void OnWatcherRemoved(const WatcherStatusCallback& callback, bool success);
+  void OnWatcherRemoved(WatcherStatusCallback callback, bool success);
 
   // Returns true if the specified watcher request has been canceled.
   // This function should be called only while the request is in-flight.

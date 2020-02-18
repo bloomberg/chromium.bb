@@ -42,7 +42,7 @@ class MediaUrlDemuxerTest : public testing::Test {
   std::unique_ptr<Demuxer> demuxer_;
 
   // Necessary, or else base::ThreadTaskRunnerHandle::Get() fails.
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MediaUrlDemuxerTest);
@@ -71,8 +71,8 @@ TEST_F(MediaUrlDemuxerTest, AcceptsEmptyStrings) {
 TEST_F(MediaUrlDemuxerTest, InitializeReturnsPipelineOk) {
   InitializeTest();
   demuxer_->Initialize(nullptr,
-                       base::Bind(&MediaUrlDemuxerTest::VerifyCallbackOk,
-                                  base::Unretained(this)));
+                       base::BindOnce(&MediaUrlDemuxerTest::VerifyCallbackOk,
+                                      base::Unretained(this)));
 
   base::RunLoop().RunUntilIdle();
 }
@@ -80,8 +80,8 @@ TEST_F(MediaUrlDemuxerTest, InitializeReturnsPipelineOk) {
 TEST_F(MediaUrlDemuxerTest, SeekReturnsPipelineOk) {
   InitializeTest();
   demuxer_->Seek(base::TimeDelta(),
-                 base::Bind(&MediaUrlDemuxerTest::VerifyCallbackOk,
-                            base::Unretained(this)));
+                 base::BindOnce(&MediaUrlDemuxerTest::VerifyCallbackOk,
+                                base::Unretained(this)));
 
   base::RunLoop().RunUntilIdle();
 }

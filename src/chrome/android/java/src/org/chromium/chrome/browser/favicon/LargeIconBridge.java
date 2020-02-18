@@ -5,10 +5,11 @@
 package org.chromium.chrome.browser.favicon;
 
 import android.graphics.Bitmap;
-import android.support.annotation.Nullable;
 import android.util.LruCache;
 
-import org.chromium.base.VisibleForTesting;
+import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.profiles.Profile;

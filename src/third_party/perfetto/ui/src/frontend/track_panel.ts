@@ -14,14 +14,15 @@
 
 import * as m from 'mithril';
 
-import {Actions, DeferredAction} from '../common/actions';
+import {Actions} from '../common/actions';
 import {TrackState} from '../common/state';
 
+import {TRACK_SHELL_WIDTH} from './css_constants';
 import {globals} from './globals';
 import {drawGridLines} from './gridline_helper';
 import {Panel, PanelSize} from './panel';
+import {verticalScrollToTrack} from './scroll_helper';
 import {Track} from './track';
-import {TRACK_SHELL_WIDTH} from './track_constants';
 import {trackRegistry} from './track_registry';
 import {
   drawVerticalLineAtTime,
@@ -33,6 +34,7 @@ function isPinned(id: string) {
 }
 
 interface TrackShellAttrs {
+  track: Track;
   trackState: TrackState;
 }
 
@@ -47,11 +49,30 @@ class TrackShell implements m.ClassComponent<TrackShellAttrs> {
   }
 
   view({attrs}: m.CVnode<TrackShellAttrs>) {
-    const dragClass = this.dragging ? `.drag` : '';
-    const dropClass = this.dropping ? `.drop-${this.dropping}` : '';
+    // The shell should be highlighted if the current search result is inside
+    // this track.
+    let highlightClass = '';
+    const searchIndex = globals.frontendLocalState.searchIndex;
+    if (searchIndex !== -1) {
+      const trackId = globals.currentSearchResults
+                          .trackIds[globals.frontendLocalState.searchIndex];
+      if (trackId === attrs.trackState.id) {
+        highlightClass = 'flash';
+      }
+    }
+
+    const dragClass = this.dragging ? `drag` : '';
+    const dropClass = this.dropping ? `drop-${this.dropping}` : '';
+    const selectedArea = globals.frontendLocalState.selectedArea.area;
+    const markSelectedClass =
+        selectedArea && selectedArea.tracks.includes(attrs.trackState.id) ?
+        'selected' :
+        '';
     return m(
-        `.track-shell${dragClass}${dropClass}[draggable=true]`,
+        `.track-shell[draggable=true]`,
         {
+          class: `${highlightClass} ${markSelectedClass} ${dragClass} ${
+              dropClass}`,
           onmousedown: this.onmousedown.bind(this),
           ondragstart: this.ondragstart.bind(this),
           ondragend: this.ondragend.bind(this),
@@ -64,9 +85,15 @@ class TrackShell implements m.ClassComponent<TrackShellAttrs> {
             title: attrs.trackState.name,
           },
           attrs.trackState.name),
+        attrs.track.getTrackShellButtons(),
         m(TrackButton, {
-          action: Actions.toggleTrackPinned({trackId: attrs.trackState.id}),
+          action: () => {
+            globals.dispatch(
+                Actions.toggleTrackPinned({trackId: attrs.trackState.id}));
+          },
           i: isPinned(attrs.trackState.id) ? 'star' : 'star_border',
+          tooltip: isPinned(attrs.trackState.id) ? 'Unpin' : 'Pin to top',
+          selected: isPinned(attrs.trackState.id),
         }));
   }
 
@@ -132,19 +159,27 @@ export class TrackContent implements m.ClassComponent<TrackContentAttrs> {
   view({attrs}: m.CVnode<TrackContentAttrs>) {
     return m('.track-content', {
       onmousemove: (e: MouseEvent) => {
-        attrs.track.onMouseMove({x: e.layerX, y: e.layerY});
+        attrs.track.onMouseMove({x: e.layerX - TRACK_SHELL_WIDTH, y: e.layerY});
         globals.rafScheduler.scheduleRedraw();
       },
       onmouseout: () => {
         attrs.track.onMouseOut();
         globals.rafScheduler.scheduleRedraw();
       },
-      onclick: (e:MouseEvent) => {
-        // If we are selecting a timespan - do not pass the click to the track.
-        const selection = globals.state.currentSelection;
-        if (selection && selection.kind === 'TIMESPAN') return;
-
-        if (attrs.track.onMouseClick({x: e.layerX, y: e.layerY})) {
+      onclick: (e: MouseEvent) => {
+        // If we are selecting a time range - do not pass the click to the
+        // track.
+        if (e.shiftKey) return;
+        // If the click is outside of the current time range, clear it.
+        const clickTime = globals.frontendLocalState.timeScale.pxToTime(
+            e.layerX - TRACK_SHELL_WIDTH);
+        const area = globals.frontendLocalState.selectedArea.area;
+        if (area !== undefined &&
+            (clickTime < area.startSec || clickTime > area.endSec)) {
+          globals.frontendLocalState.deselectArea();
+          e.stopPropagation();
+        } else if (attrs.track.onMouseClick(
+                       {x: e.layerX - TRACK_SHELL_WIDTH, y: e.layerY})) {
           e.stopPropagation();
         }
         globals.rafScheduler.scheduleRedraw();
@@ -164,25 +199,37 @@ class TrackComponent implements m.ClassComponent<TrackComponentAttrs> {
         {
           style: {
             height: `${attrs.track.getHeight()}px`,
-          }
+          },
+          id: 'track_' + attrs.trackState.id,
         },
         [
-          m(TrackShell, {trackState: attrs.trackState}),
+          m(TrackShell, {track: attrs.track, trackState: attrs.trackState}),
           m(TrackContent, {track: attrs.track})
         ]);
   }
+
+  oncreate({attrs}: m.CVnode<TrackComponentAttrs>) {
+    if (globals.frontendLocalState.scrollToTrackId === attrs.trackState.id) {
+      verticalScrollToTrack(attrs.trackState.id);
+      globals.frontendLocalState.scrollToTrackId = undefined;
+    }
+  }
 }
 
-interface TrackButtonAttrs {
-  action: DeferredAction;
+export interface TrackButtonAttrs {
+  action: () => void;
   i: string;
+  tooltip: string;
+  selected: boolean;
 }
-class TrackButton implements m.ClassComponent<TrackButtonAttrs> {
+export class TrackButton implements m.ClassComponent<TrackButtonAttrs> {
   view({attrs}: m.CVnode<TrackButtonAttrs>) {
     return m(
         'i.material-icons.track-button',
         {
-          onclick: () => globals.dispatch(attrs.action),
+          class: `${attrs.selected ? 'show' : ''}`,
+          onclick: attrs.action,
+          title: attrs.tooltip,
         },
         attrs.i);
   }
@@ -224,11 +271,12 @@ export class TrackPanel extends Panel<TrackPanelAttrs> {
     const localState = globals.frontendLocalState;
     // Draw vertical line when hovering on the notes panel.
     if (localState.showNotePreview) {
-      drawVerticalLineAtTime(ctx,
-                             localState.timeScale,
-                             localState.hoveredTimestamp,
-                             size.height,
-                             `#aaa`);
+      drawVerticalLineAtTime(
+          ctx,
+          localState.timeScale,
+          localState.hoveredTimestamp,
+          size.height,
+          `#aaa`);
     }
     // Draw vertical line when shift is pressed.
     if (localState.showTimeSelectPreview) {
@@ -238,7 +286,15 @@ export class TrackPanel extends Panel<TrackPanelAttrs> {
                              size.height,
                              `rgb(52,69,150)`);
     }
-
+    if (localState.selectedArea.area !== undefined) {
+      drawVerticalSelection(
+          ctx,
+          localState.timeScale,
+          localState.selectedArea.area.startSec,
+          localState.selectedArea.area.endSec,
+          size.height,
+          `rgba(0,0,0,0.5)`);
+    }
     if (globals.state.currentSelection !== null) {
       if (globals.state.currentSelection.kind === 'NOTE') {
         const note = globals.state.notes[globals.state.currentSelection.id];
@@ -247,15 +303,6 @@ export class TrackPanel extends Panel<TrackPanelAttrs> {
                                note.timestamp,
                                size.height,
                                note.color);
-      }
-      if (globals.state.currentSelection.kind === 'TIMESPAN') {
-        drawVerticalSelection(
-            ctx,
-            localState.timeScale,
-            globals.state.currentSelection.startTs,
-            globals.state.currentSelection.endTs,
-            size.height,
-            `rgba(0,0,0,0.5)`);
       }
       if (globals.state.currentSelection.kind === 'SLICE' &&
           globals.sliceDetails.wakeupTs !== undefined) {

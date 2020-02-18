@@ -47,6 +47,9 @@
 #include "test-runner.h"
 #include "test-compositor.h"
 
+#include "tests-server-protocol.h"
+#include "tests-client-protocol.h"
+
 struct display_destroy_listener {
 	struct wl_listener listener;
 	int done;
@@ -411,6 +414,46 @@ TEST(post_nomem_tst)
 
 	assert(cl->data);
 	wl_client_post_no_memory(cl->wl_client);
+	display_resume(d);
+
+	display_destroy(d);
+}
+
+static void
+post_implementation_error_main(void)
+{
+	struct client *c = client_connect();
+	struct wl_seat *seat = client_get_seat(c);
+	uint32_t object_id, protocol_error;
+	const struct wl_interface *interface;
+
+	assert(stop_display(c, 1) == -1);
+	int err = wl_display_get_error(c->wl_display);
+	fprintf(stderr, "Err is %i\n", err);
+	assert(err == EPROTO);
+	protocol_error = wl_display_get_protocol_error(c->wl_display,
+						       &interface,
+						       &object_id);
+	assert(protocol_error == WL_DISPLAY_ERROR_IMPLEMENTATION);
+	assert(interface == &wl_display_interface);
+
+	wl_proxy_destroy((struct wl_proxy *) seat);
+	client_disconnect_nocheck(c);
+}
+
+TEST(post_internal_error_tst)
+{
+	struct display *d = display_create();
+	struct client_info *cl;
+
+	wl_global_create(d->wl_display, &wl_seat_interface,
+			 1, d, bind_seat);
+
+	cl = client_create_noarg(d, post_implementation_error_main);
+	display_run(d);
+
+	wl_client_post_implementation_error(cl->wl_client, "Error %i", 20);
+
 	display_resume(d);
 
 	display_destroy(d);
@@ -1060,6 +1103,252 @@ TEST(bind_fails_on_filtered_global)
 
 	/* Try to bind to the interface name when a global filter is in place */
 	client_create(d, force_bind, name);
+	display_run(d);
+
+	wl_global_destroy(g);
+
+	display_destroy(d);
+}
+
+static void
+pre_fd(void *data, struct fd_passer *fdp)
+{
+	fd_passer_destroy(fdp);
+}
+
+static void
+fd(void *data, struct fd_passer *fdp, int32_t fd)
+{
+	/* We destroyed the resource before this event */
+	assert(false);
+}
+
+struct fd_passer_listener fd_passer_listener = {
+	pre_fd,
+	fd,
+};
+
+static void
+zombie_fd_handle_globals(void *data, struct wl_registry *registry,
+			 uint32_t id, const char *intf, uint32_t ver)
+{
+	struct fd_passer *fdp;
+
+	if (!strcmp(intf, "fd_passer")) {
+		fdp = wl_registry_bind(registry, id, &fd_passer_interface, 1);
+		fd_passer_add_listener(fdp, &fd_passer_listener, NULL);
+	}
+}
+
+static const struct wl_registry_listener zombie_fd_registry_listener = {
+	zombie_fd_handle_globals,
+	NULL
+};
+
+static void
+zombie_client(void *data)
+{
+	struct client *c = client_connect();
+	struct wl_registry *registry;
+
+	registry = wl_display_get_registry(c->wl_display);
+	wl_registry_add_listener(registry, &zombie_fd_registry_listener, NULL);
+
+	/* Gets the registry */
+	wl_display_roundtrip(c->wl_display);
+
+	/* push out the fd_passer bind */
+	wl_display_roundtrip(c->wl_display);
+
+	/* push out our fd_passer.destroy */
+	wl_display_roundtrip(c->wl_display);
+
+	wl_registry_destroy(registry);
+
+	client_disconnect_nocheck(c);
+}
+
+struct passer_data {
+	struct wl_resource *conjoined_passer;
+};
+
+static void
+feed_pipe(int fd, char tosend)
+{
+	int count;
+
+	do {
+		count = write(fd, &tosend, 1);
+	} while (count != 1 && errno == EAGAIN);
+	assert(count == 1);
+	close(fd);
+}
+
+static void
+fd_passer_clobber(struct wl_client *client, struct wl_resource *res)
+{
+	struct passer_data *pdata = wl_resource_get_user_data(res);
+	int pipes1[2], pipes2[2], ret;
+
+	if (pdata->conjoined_passer) {
+		ret = pipe(pipes1);
+		assert(ret == 0);
+		ret = pipe(pipes2);
+		assert(ret == 0);
+
+		wl_resource_queue_event(res, FD_PASSER_FD, pipes1[0]);
+		fd_passer_send_fd(pdata->conjoined_passer, pipes2[0]);
+		feed_pipe(pipes1[1], '1');
+		feed_pipe(pipes2[1], '2');
+		close(pipes1[0]);
+		close(pipes2[0]);
+	}
+	wl_resource_destroy(res);
+}
+
+static void
+fd_passer_twin(struct wl_client *client, struct wl_resource *res, struct wl_resource *passer)
+{
+	struct passer_data *pdata = wl_resource_get_user_data(res);
+
+	pdata->conjoined_passer = passer;
+}
+
+static const struct fd_passer_interface fdp_interface = {
+	fd_passer_clobber,
+	fd_passer_twin
+};
+
+static void
+pdata_destroy(struct wl_resource *res)
+{
+	struct passer_data *pdata = wl_resource_get_user_data(res);
+
+	free(pdata);
+}
+
+static void
+bind_fd_passer(struct wl_client *client, void *data,
+	       uint32_t vers, uint32_t id)
+{
+	struct wl_resource *res;
+	struct passer_data *pdata;
+
+	pdata = malloc(sizeof(*pdata));
+	assert(pdata);
+	pdata->conjoined_passer = NULL;
+
+	res = wl_resource_create(client, &fd_passer_interface, vers, id);
+	wl_resource_set_implementation(res, &fdp_interface, pdata, pdata_destroy);
+	assert(res);
+	if (vers == 1) {
+		fd_passer_send_pre_fd(res);
+		fd_passer_send_fd(res, fileno(stdin));
+	}
+}
+
+TEST(zombie_fd)
+{
+	struct display *d;
+	struct wl_global *g;
+
+	d = display_create();
+
+	g = wl_global_create(d->wl_display, &fd_passer_interface,
+			     1, d, bind_fd_passer);
+
+	client_create_noarg(d, zombie_client);
+	display_run(d);
+
+	wl_global_destroy(g);
+
+	display_destroy(d);
+}
+
+
+static void
+double_pre_fd(void *data, struct fd_passer *fdp)
+{
+	assert(false);
+}
+
+static void
+double_fd(void *data, struct fd_passer *fdp, int32_t fd)
+{
+	char buf;
+	int count;
+
+	do {
+		count = read(fd, &buf, 1);
+	} while (count != 1 && errno == EAGAIN);
+	assert(count == 1);
+
+	close(fd);
+	fd_passer_destroy(fdp);
+	assert(buf == '2');
+}
+
+struct fd_passer_listener double_fd_passer_listener = {
+	double_pre_fd,
+	double_fd,
+};
+
+
+static void
+double_zombie_fd_handle_globals(void *data, struct wl_registry *registry,
+			 uint32_t id, const char *intf, uint32_t ver)
+{
+	struct fd_passer *fdp1, *fdp2;
+
+	if (!strcmp(intf, "fd_passer")) {
+		fdp1 = wl_registry_bind(registry, id, &fd_passer_interface, 2);
+		fd_passer_add_listener(fdp1, &double_fd_passer_listener, NULL);
+		fdp2 = wl_registry_bind(registry, id, &fd_passer_interface, 2);
+		fd_passer_add_listener(fdp2, &double_fd_passer_listener, NULL);
+		fd_passer_conjoin(fdp1, fdp2);
+		fd_passer_destroy(fdp1);
+	}
+}
+
+static const struct wl_registry_listener double_zombie_fd_registry_listener = {
+	double_zombie_fd_handle_globals,
+	NULL
+};
+
+static void
+double_zombie_client(void *data)
+{
+	struct client *c = client_connect();
+	struct wl_registry *registry;
+
+	registry = wl_display_get_registry(c->wl_display);
+	wl_registry_add_listener(registry, &double_zombie_fd_registry_listener, NULL);
+
+	/* Gets the registry */
+	wl_display_roundtrip(c->wl_display);
+
+	/* One more so server can respond to conjoin+destroy */
+	wl_display_roundtrip(c->wl_display);
+
+	/* And finally push out our last fd_passer.destroy */
+	wl_display_roundtrip(c->wl_display);
+
+	wl_registry_destroy(registry);
+
+	client_disconnect_nocheck(c);
+}
+
+TEST(zombie_fd_errant_consumption)
+{
+	struct display *d;
+	struct wl_global *g;
+
+	d = display_create();
+
+	g = wl_global_create(d->wl_display, &fd_passer_interface,
+			     2, d, bind_fd_passer);
+
+	client_create_noarg(d, double_zombie_client);
 	display_run(d);
 
 	wl_global_destroy(g);

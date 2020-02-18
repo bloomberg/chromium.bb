@@ -12,17 +12,19 @@
 #include "chrome/browser/chromeos/apps/apk_web_app_service_factory.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/web_applications/components/externally_installed_web_app_prefs.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
+#include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/common/chrome_features.h"
 #include "components/arc/mojom/app.mojom.h"
 #include "components/arc/session/connection_holder.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/scoped_user_pref_update.h"
-#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/uninstall_reason.h"
 #include "extensions/common/extension.h"
+#include "url/gurl.h"
 
 namespace {
 
@@ -45,6 +47,8 @@ namespace {
 const char kWebAppToApkDictPref[] = "web_app_apks";
 const char kPackageNameKey[] = "package_name";
 const char kShouldRemoveKey[] = "should_remove";
+constexpr char kLastAppId[] = "last_app_id";
+constexpr char kPinIndex[] = "pin_index";
 
 // Default icon size in pixels to request from ARC for an icon.
 const int kDefaultIconSize = 192;
@@ -65,9 +69,7 @@ void ApkWebAppService::RegisterProfilePrefs(
 }
 
 ApkWebAppService::ApkWebAppService(Profile* profile)
-    : profile_(profile),
-      arc_app_list_prefs_(ArcAppListPrefs::Get(profile)),
-      observer_(this) {
+    : profile_(profile), arc_app_list_prefs_(ArcAppListPrefs::Get(profile)) {
   // Can be null in tests.
   if (arc_app_list_prefs_)
     arc_app_list_prefs_->AddObserver(this);
@@ -116,6 +118,60 @@ void ApkWebAppService::UninstallWebApp(const web_app::AppId& web_app_id) {
   }
 }
 
+void ApkWebAppService::UpdateShelfPin(
+    const arc::mojom::ArcPackageInfo* package_info) {
+  std::string new_app_id;
+  // Compute the current app id. It may have changed if the package has been
+  // updated from an Android app to a web app, or vice versa.
+  if (!package_info->web_app_info.is_null()) {
+    new_app_id = web_app::GenerateAppIdFromURL(
+        GURL(package_info->web_app_info->start_url));
+  } else {
+    // Get the first app in the package. If there are multiple apps in the
+    // package there is no way to determine which app is more suitable to
+    // replace the previous web app shortcut. For simplicity we will just use
+    // the first one.
+    std::unordered_set<std::string> apps =
+        arc_app_list_prefs_->GetAppsForPackage(package_info->package_name);
+    if (!apps.empty())
+      new_app_id = *apps.begin();
+  }
+
+  // Query for the old app id, which is cached in the package dict to ensure it
+  // isn't overwritten before this method can run.
+  const base::Value* last_app_id_value = arc_app_list_prefs_->GetPackagePrefs(
+      package_info->package_name, kLastAppId);
+
+  std::string last_app_id;
+  if (last_app_id_value && last_app_id_value->is_string())
+    last_app_id = last_app_id_value->GetString();
+
+  if (new_app_id != last_app_id && !new_app_id.empty()) {
+    arc_app_list_prefs_->SetPackagePrefs(package_info->package_name, kLastAppId,
+                                         base::Value(new_app_id));
+    if (!last_app_id.empty()) {
+      auto* launcher_controller = ChromeLauncherController::instance();
+      if (!launcher_controller)
+        return;
+      int index = launcher_controller->PinnedItemIndexByAppID(last_app_id);
+      // The previously installed app has been uninstalled or hidden, in this
+      // instance get the saved pin index and pin at that place.
+      if (index == ChromeLauncherController::kInvalidIndex) {
+        const base::Value* saved_index = arc_app_list_prefs_->GetPackagePrefs(
+            package_info->package_name, kPinIndex);
+        if (!(saved_index && saved_index->is_int()))
+          return;
+        launcher_controller->PinAppAtIndex(new_app_id, saved_index->GetInt());
+        arc_app_list_prefs_->SetPackagePrefs(
+            package_info->package_name, kPinIndex,
+            base::Value(ChromeLauncherController::kInvalidIndex));
+      } else {
+        launcher_controller->ReplacePinnedItem(last_app_id, new_app_id);
+      }
+    }
+  }
+}
+
 void ApkWebAppService::Shutdown() {
   // Can be null in tests.
   if (arc_app_list_prefs_) {
@@ -155,6 +211,10 @@ void ApkWebAppService::OnPackageInstalled(
   // The previous and current states match. Nothing to do.
   if (is_now_web_app == was_previously_web_app)
     return;
+
+  // Only call this function if there has been a state change from web app to
+  // Android app or vice-versa.
+  UpdateShelfPin(&package_info);
 
   if (was_previously_web_app) {
     // The package was a web app, but now isn't. Remove the web app.
@@ -337,6 +397,7 @@ void ApkWebAppService::OnDidFinishInstall(const std::string& package_name,
   // when the container starts up again.
   dict_update->SetPath({web_app_id, kShouldRemoveKey}, base::Value(false));
 
+  // For testing.
   if (web_app_installed_callback_)
     std::move(web_app_installed_callback_).Run(package_name, web_app_id);
 }

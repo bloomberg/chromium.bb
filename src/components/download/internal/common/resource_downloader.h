@@ -10,7 +10,7 @@
 #include "components/download/public/common/download_response_handler.h"
 #include "components/download/public/common/download_utils.h"
 #include "components/download/public/common/url_download_handler.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/cert/cert_status_flags.h"
 #include "services/device/public/mojom/wake_lock.mojom.h"
@@ -56,7 +56,7 @@ class COMPONENTS_DOWNLOAD_EXPORT ResourceDownloader
       const GURL& tab_referrer_url,
       std::vector<GURL> url_chain,
       net::CertStatus cert_status,
-      const scoped_refptr<network::ResourceResponse>& response_head,
+      network::mojom::URLResponseHeadPtr response_head,
       mojo::ScopedDataPipeConsumerHandle response_body,
       network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
@@ -99,12 +99,9 @@ class COMPONENTS_DOWNLOAD_EXPORT ResourceDownloader
   void InterceptResponse(
       std::vector<GURL> url_chain,
       net::CertStatus cert_status,
-      const scoped_refptr<network::ResourceResponse>& response_head,
+      network::mojom::URLResponseHeadPtr response_head,
       mojo::ScopedDataPipeConsumerHandle response_body,
       network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints);
-
-  // UrlDownloadHandler implementations.
-  void CancelRequest() override;
 
   // Ask the |delegate_| to destroy this object.
   void Destroy();
@@ -120,12 +117,13 @@ class COMPONENTS_DOWNLOAD_EXPORT ResourceDownloader
   // Object that will handle the response.
   std::unique_ptr<network::mojom::URLLoaderClient> url_loader_client_;
 
-  // URLLoaderClient binding. It sends any requests to the |url_loader_client_|.
-  std::unique_ptr<mojo::Binding<network::mojom::URLLoaderClient>>
-      url_loader_client_binding_;
+  // URLLoaderClient receiver. It sends any requests to the
+  // |url_loader_client_|.
+  std::unique_ptr<mojo::Receiver<network::mojom::URLLoaderClient>>
+      url_loader_client_receiver_;
 
   // URLLoader for sending out the request.
-  network::mojom::URLLoaderPtr url_loader_;
+  mojo::Remote<network::mojom::URLLoader> url_loader_;
 
   // Whether this is a new download.
   bool is_new_download_;

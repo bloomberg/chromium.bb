@@ -113,6 +113,7 @@ class PolicyTemplateGenerator:
         product, platform = {
             'android': ('chrome', 'android'),
             'webview_android': ('webview', 'android'),
+            'ios': ('chrome', 'ios'),
             'chrome_os': ('chrome_os', 'chrome_os'),
             'chrome_frame': ('chrome_frame', 'win'),
         }[product_platform_part]
@@ -148,6 +149,8 @@ class PolicyTemplateGenerator:
       # Iterate through all the items of an enum-type policy, and add captions.
       for item in policy['items']:
         item['caption'] = self._ImportMessage(item['caption'])
+      if 'supported_on' in item:
+        item['supported_on'] = self._ProcessSupportedOn(item['supported_on'])
     if not IsGroupOrAtomicGroup(policy):
       if not 'label' in policy:
         # If 'label' is not specified, then it defaults to 'caption':

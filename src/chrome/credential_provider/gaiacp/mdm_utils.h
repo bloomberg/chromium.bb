@@ -10,6 +10,7 @@
 #include "base/strings/string16.h"
 #include "base/values.h"
 #include "base/win/windows_types.h"
+#include "chrome/credential_provider/gaiacp/os_user_manager.h"
 #include "url/gurl.h"
 
 namespace credential_provider {
@@ -22,13 +23,16 @@ namespace credential_provider {
 extern const wchar_t kRegMdmUrl[];
 
 // Base server url for the password recovery escrow service.
-extern const wchar_t kRegMdmEscrowServiceServerUrl[];
+extern const wchar_t kRegEscrowServiceServerUrl[];
 
 // Determines if multiple users can be added to a system managed by MDM.
 extern const wchar_t kRegMdmSupportsMultiUser[];
 
 // Allow sign in using normal consumer accounts.
 extern const wchar_t kRegMdmAllowConsumerAccounts[];
+
+// Enables force password reset option in forgot password flow.
+extern const wchar_t kRegMdmEnableForcePasswordReset[];
 
 // Password lsa store key prefix.
 extern const wchar_t kUserPasswordLsaStoreKeyPrefix[];
@@ -48,15 +52,20 @@ class GoogleMdmEnrolledStatusForTesting {
   ~GoogleMdmEnrolledStatusForTesting();
 };
 
-#if !defined(GOOGLE_CHROME_BUILD)
+// Class used in tests to set registration data for testing.
+class GoogleRegistrationDataForTesting {
+ public:
+  explicit GoogleRegistrationDataForTesting(base::string16 serial_number);
+  ~GoogleRegistrationDataForTesting();
+};
+
 // Class used in tests to force password escrow service availability when not
-// in a Google Chrome build.
+// in a Google Chrome build (where the service is disabled).
 class GoogleMdmEscrowServiceEnablerForTesting {
  public:
-  explicit GoogleMdmEscrowServiceEnablerForTesting(bool enable);
+  GoogleMdmEscrowServiceEnablerForTesting();
   ~GoogleMdmEscrowServiceEnablerForTesting();
 };
-#endif
 
 // If MdmEnrollmentEnabled returns true, this function verifies that the machine
 // is enrolled to MDM AND that the server to which it is enrolled is the same
@@ -67,13 +76,13 @@ bool NeedsToEnrollWithMdm();
 // to a valid URL. Returns false otherwise.
 bool MdmEnrollmentEnabled();
 
-// Checks whether the |kRegMdmEscrowServiceServerUrl| is not empty on this
+// Checks whether the |kRegEscrowServiceServerUrl| is not empty on this
 // machine.
-bool MdmPasswordRecoveryEnabled();
+bool PasswordRecoveryEnabled();
 
 // Gets the escrow service URL as defined in the registry or a default value if
 // nothing is set.
-GURL MdmEscrowServiceUrl();
+GURL EscrowServiceUrl();
 
 // Enrolls the machine to with the Google MDM server if not already.
 HRESULT EnrollToGoogleMdmIfNeeded(const base::Value& properties);

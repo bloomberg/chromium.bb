@@ -80,6 +80,9 @@ class QUIC_EXPORT_PRIVATE QuicCryptoStream : public QuicStream {
   // Provides the message parser to use when data is received on this stream.
   virtual CryptoMessageParser* crypto_message_parser() = 0;
 
+  // Called when a packet of encryption |level| has been successfully decrypted.
+  virtual void OnPacketDecrypted(EncryptionLevel level) = 0;
+
   // Returns the maximum number of bytes that can be buffered at a particular
   // encryption level |level|.
   virtual size_t BufferSizeLimitForLevel(EncryptionLevel level) const;
@@ -155,7 +158,7 @@ class QUIC_EXPORT_PRIVATE QuicCryptoStream : public QuicStream {
   // levels. Some of the state for the single logical crypto stream is split
   // across encryption levels, and a CryptoSubstream is used to manage that
   // state for a particular encryption level.
-  struct CryptoSubstream {
+  struct QUIC_EXPORT_PRIVATE CryptoSubstream {
     CryptoSubstream(QuicCryptoStream* crypto_stream, EncryptionLevel);
 
     QuicStreamSequencer sequencer;

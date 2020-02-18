@@ -38,7 +38,8 @@ from __future__ import print_function
 import getpass
 import os
 import tempfile
-import urllib
+
+from six.moves import urllib
 
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
@@ -134,7 +135,7 @@ def main(argv):
       'tests': '%s/%s' % (opts.test, data_name),
       'bots': opts.bot,
   }
-  view_url = os.path.join(opts.url, 'report?%s' % urllib.urlencode(args))
+  view_url = os.path.join(opts.url, 'report?%s' % urllib.parse.urlencode(args))
   logging.info('View results at %s', view_url)
   logging.info('Note: To make tests public, visit %s',
                os.path.join(opts.url, 'change_internal_only'))

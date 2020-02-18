@@ -9,7 +9,7 @@
 #include "base/optional.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-blink.h"
+#include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/web_blob_info.h"
 #include "third_party/blink/public/web/web_heap.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_database_error.h"
@@ -26,7 +26,7 @@ class MockWebIDBCallbacks : public WebIDBCallbacks {
 
   void SetState(base::WeakPtr<WebIDBCursorImpl>, int64_t);
 
-  MOCK_METHOD2(Error, void(int32_t, const String&));
+  MOCK_METHOD2(Error, void(mojom::blink::IDBException, const String&));
 
   void SuccessCursorContinue(
       std::unique_ptr<IDBKey>,

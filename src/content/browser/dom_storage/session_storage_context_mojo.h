@@ -18,28 +18,24 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "base/threading/sequence_bound.h"
+#include "base/trace_event/memory_allocator_dump.h"
 #include "base/trace_event/memory_dump_provider.h"
+#include "components/services/storage/dom_storage/async_dom_storage_database.h"
+#include "components/services/storage/dom_storage/dom_storage_database.h"
 #include "content/browser/dom_storage/session_storage_data_map.h"
 #include "content/browser/dom_storage/session_storage_metadata.h"
 #include "content/browser/dom_storage/session_storage_namespace_impl_mojo.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/session_storage_usage_info.h"
-#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/message.h"
-#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
-#include "mojo/public/cpp/bindings/remote.h"
-#include "services/file/public/mojom/file_system.mojom.h"
 #include "third_party/blink/public/mojom/dom_storage/session_storage_namespace.mojom.h"
 #include "url/origin.h"
 
 namespace base {
 class SequencedTaskRunner;
 }  // namespace base
-
-namespace service_manager {
-class Connector;
-}  // namespace service_manager
 
 namespace content {
 struct SessionStorageUsageInfo;
@@ -81,10 +77,10 @@ class CONTENT_EXPORT SessionStorageContextMojo
   };
 
   SessionStorageContextMojo(
-      scoped_refptr<base::SequencedTaskRunner> task_runner,
-      service_manager::Connector* connector,
+      const base::FilePath& partition_directory,
+      scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
+      scoped_refptr<base::SequencedTaskRunner> memory_dump_task_runner,
       BackingMode backing_option,
-      base::FilePath local_partition_directory,
       std::string leveldb_name);
 
   void OpenSessionStorage(
@@ -139,16 +135,25 @@ class CONTENT_EXPORT SessionStorageContextMojo
   bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
                     base::trace_event::ProcessMemoryDump* pmd) override;
 
-  // Sets the database for testing.
-  void SetDatabaseForTesting(
-      mojo::PendingAssociatedRemote<leveldb::mojom::LevelDBDatabase> database);
+  void PretendToConnectForTesting();
 
-  leveldb::mojom::LevelDBDatabase* DatabaseForTesting() {
+  storage::AsyncDomStorageDatabase* DatabaseForTesting() {
     return database_.get();
   }
 
   void FlushAreaForTesting(const std::string& namespace_id,
                            const url::Origin& origin);
+
+  // Access the underlying DomStorageDatabase. May be null if the database is
+  // not yet open.
+  const base::SequenceBound<storage::DomStorageDatabase>&
+  GetDatabaseForTesting() const {
+    return database_->database();
+  }
+
+  // Wait for the database to be opened, or for opening to fail. If the database
+  // is already opened, |callback| is invoked immediately.
+  void SetDatabaseOpenCallbackForTesting(base::OnceClosure callback);
 
  private:
   friend class DOMStorageBrowserTest;
@@ -178,9 +183,9 @@ class CONTENT_EXPORT SessionStorageContextMojo
   void OnDataMapCreation(const std::vector<uint8_t>& map_prefix,
                          SessionStorageDataMap* map) override;
   void OnDataMapDestruction(const std::vector<uint8_t>& map_prefix) override;
-  void OnCommitResult(leveldb::mojom::DatabaseError error) override;
+  void OnCommitResult(leveldb::Status status) override;
   void OnCommitResultWithCallback(base::OnceClosure callback,
-                                  leveldb::mojom::DatabaseError error);
+                                  leveldb::Status status);
 
   // SessionStorageNamespaceImplMojo::Delegate implementation:
   scoped_refptr<SessionStorageDataMap> MaybeGetExistingDataMapForId(
@@ -203,33 +208,47 @@ class CONTENT_EXPORT SessionStorageContextMojo
 
   // Part of our asynchronous directory opening called from RunWhenConnected().
   void InitiateConnection(bool in_memory_only = false);
-  void OnDirectoryOpened(base::File::Error err);
-  void OnDatabaseOpened(bool in_memory, leveldb::mojom::DatabaseError status);
+  void OnDatabaseOpened(leveldb::Status status);
 
-  void OnGotDatabaseMetadata(
-      std::vector<leveldb::mojom::GetManyResultPtr> results);
+  struct ValueAndStatus {
+    ValueAndStatus();
+    ValueAndStatus(ValueAndStatus&&);
+    ~ValueAndStatus();
+    leveldb::Status status;
+    storage::DomStorageDatabase::Value value;
+  };
 
-  using OpenResultAndHistogramName = std::tuple<OpenResult, const char*>;
-  OpenResultAndHistogramName ParseDatabaseVersion(
-      const leveldb::mojom::GetManyResultPtr& result,
-      std::vector<leveldb::mojom::BatchedOperationPtr>* migration_operations);
-  OpenResultAndHistogramName ParseNamespaces(
-      const leveldb::mojom::GetManyResultPtr& result,
-      std::vector<leveldb::mojom::BatchedOperationPtr> migration_operations);
-  OpenResultAndHistogramName ParseNextMapId(
-      const leveldb::mojom::GetManyResultPtr& result);
+  struct KeyValuePairsAndStatus {
+    KeyValuePairsAndStatus();
+    KeyValuePairsAndStatus(KeyValuePairsAndStatus&&);
+    ~KeyValuePairsAndStatus();
+    leveldb::Status status;
+    std::vector<storage::DomStorageDatabase::KeyValuePair> key_value_pairs;
+  };
+
+  void OnGotDatabaseMetadata(ValueAndStatus version,
+                             KeyValuePairsAndStatus namespaces,
+                             ValueAndStatus next_map_id);
+
+  struct MetadataParseResult {
+    OpenResult open_result;
+    const char* histogram_name;
+  };
+  MetadataParseResult ParseDatabaseVersion(
+      ValueAndStatus version,
+      std::vector<storage::AsyncDomStorageDatabase::BatchDatabaseTask>*
+          migration_tasks);
+  MetadataParseResult ParseNamespaces(
+      KeyValuePairsAndStatus namespaces,
+      std::vector<storage::AsyncDomStorageDatabase::BatchDatabaseTask>
+          migration_tasks);
+  MetadataParseResult ParseNextMapId(ValueAndStatus next_map_id);
 
   void OnConnectionFinished();
   void DeleteAndRecreateDatabase(const char* histogram_name);
-  void OnDBDestroyed(bool recreate_in_memory,
-                     leveldb::mojom::DatabaseError status);
-  void OnMojoConnectionDestroyed();
+  void OnDBDestroyed(bool recreate_in_memory, leveldb::Status status);
 
-  void OnGotMetaData(GetStorageUsageCallback callback,
-                     leveldb::mojom::DatabaseError status,
-                     std::vector<leveldb::mojom::KeyValuePtr> data);
-
-  void OnShutdownComplete(leveldb::mojom::DatabaseError error);
+  void OnShutdownComplete(leveldb::Status status);
 
   void GetStatistics(size_t* total_cache_size, size_t* unused_areas_count);
 
@@ -240,9 +259,7 @@ class CONTENT_EXPORT SessionStorageContextMojo
   // the metadata, make sure it is destroyed last on destruction.
   SessionStorageMetadata metadata_;
 
-  std::unique_ptr<service_manager::Connector> connector_;
   BackingMode backing_mode_;
-  base::FilePath partition_directory_path_;
   std::string leveldb_name_;
 
   enum ConnectionState {
@@ -253,13 +270,13 @@ class CONTENT_EXPORT SessionStorageContextMojo
   } connection_state_ = NO_CONNECTION;
   bool database_initialized_ = false;
 
-  file::mojom::FileSystemPtr file_system_;
-  filesystem::mojom::DirectoryPtr partition_directory_;
+  const base::FilePath partition_directory_;
+  const scoped_refptr<base::SequencedTaskRunner> leveldb_task_runner_;
 
   base::trace_event::MemoryAllocatorDumpGuid memory_dump_id_;
 
-  mojo::Remote<leveldb::mojom::LevelDBService> leveldb_service_;
-  mojo::AssociatedRemote<leveldb::mojom::LevelDBDatabase> database_;
+  std::unique_ptr<storage::AsyncDomStorageDatabase> database_;
+  bool in_memory_ = false;
   bool tried_to_recreate_during_open_ = false;
 
   std::vector<base::OnceClosure> on_database_opened_callbacks_;

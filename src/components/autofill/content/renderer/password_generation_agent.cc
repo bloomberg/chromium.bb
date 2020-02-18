@@ -293,7 +293,7 @@ void PasswordGenerationAgent::FoundFormEligibleForGeneration(
     if (doc.IsNull())
       return;
     WebFormControlElement new_password_input =
-        form_util::FindFormControlElementsByUniqueRendererId(
+        form_util::FindFormControlElementByUniqueRendererId(
             doc, form.new_password_renderer_id);
     if (!new_password_input.IsNull()) {
       // Mark the input element with renderer id
@@ -307,15 +307,22 @@ void PasswordGenerationAgent::UserTriggeredGeneratePassword(
     UserTriggeredGeneratePasswordCallback callback) {
   if (SetUpUserTriggeredGeneration()) {
     LogMessage(Logger::STRING_GENERATION_RENDERER_SHOW_MANUAL_GENERATION_POPUP);
+    // If the field is not |type=password|, the list of suggestions
+    // should not be populated with passwords to avoid filling them in a
+    // clear-text field.
+    // |IsPasswordFieldForAutofill()| is deliberately not used.
+    bool is_generation_element_password_type =
+        current_generation_item_->generation_element_.IsPasswordField();
     autofill::password_generation::PasswordGenerationUIData
         password_generation_ui_data(
-            render_frame()->GetRenderView()->ElementBoundsInWindow(
+            render_frame()->ElementBoundsInWindow(
                 current_generation_item_->generation_element_),
             current_generation_item_->generation_element_.MaxLength(),
             current_generation_item_->generation_element_.NameForAutofill()
                 .Utf16(),
             current_generation_item_->generation_element_
                 .UniqueRendererFormControlId(),
+            is_generation_element_password_type,
             GetTextDirectionForElement(
                 current_generation_item_->generation_element_),
             current_generation_item_->form_);
@@ -511,15 +518,22 @@ void PasswordGenerationAgent::AutomaticGenerationAvailable() {
   DCHECK(current_generation_item_);
   DCHECK(!current_generation_item_->generation_element_.IsNull());
   LogMessage(Logger::STRING_GENERATION_RENDERER_AUTOMATIC_GENERATION_AVAILABLE);
+  // If the field is not |type=password|, the list of suggestions
+  // should not be populated with passwordS to avoid filling them in a
+  // clear-text field.
+  // |IsPasswordFieldForAutofill()| is deliberately not used.
+  bool is_generation_element_password_type =
+      current_generation_item_->generation_element_.IsPasswordField();
   autofill::password_generation::PasswordGenerationUIData
       password_generation_ui_data(
-          render_frame()->GetRenderView()->ElementBoundsInWindow(
+          render_frame()->ElementBoundsInWindow(
               current_generation_item_->generation_element_),
           current_generation_item_->generation_element_.MaxLength(),
           current_generation_item_->generation_element_.NameForAutofill()
               .Utf16(),
           current_generation_item_->generation_element_
               .UniqueRendererFormControlId(),
+          is_generation_element_password_type,
           GetTextDirectionForElement(
               current_generation_item_->generation_element_),
           current_generation_item_->form_);
@@ -532,9 +546,8 @@ void PasswordGenerationAgent::ShowEditingPopup() {
   if (!render_frame())
     return;
 
-  gfx::RectF bounding_box =
-      render_frame()->GetRenderView()->ElementBoundsInWindow(
-          current_generation_item_->generation_element_);
+  gfx::RectF bounding_box = render_frame()->ElementBoundsInWindow(
+      current_generation_item_->generation_element_);
 
   std::unique_ptr<PasswordForm> password_form = CreatePasswordFormToPresave();
   DCHECK(password_form);
@@ -599,7 +612,7 @@ void PasswordGenerationAgent::MaybeCreateCurrentGenerationItem(
   std::vector<blink::WebInputElement> passwords = {generation_element};
 
   WebFormControlElement confirmation_password =
-      form_util::FindFormControlElementsByUniqueRendererId(
+      form_util::FindFormControlElementByUniqueRendererId(
           generation_element.GetDocument(), confirmation_password_renderer_id);
 
   if (!confirmation_password.IsNull()) {

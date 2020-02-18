@@ -114,7 +114,8 @@ class NonBlockingInvalidator::Core
       const NonBlockingInvalidator::InitializeOptions& initialize_options);
   void Teardown();
   void UpdateRegisteredIds(const ObjectIdSet& ids);
-  void UpdateCredentials(const std::string& email, const std::string& token);
+  void UpdateCredentials(const CoreAccountId& account_id,
+                         const std::string& token);
   void RequestDetailedStatus(
       base::Callback<void(const base::DictionaryValue&)> callback) const;
 
@@ -182,10 +183,11 @@ void NonBlockingInvalidator::Core::UpdateRegisteredIds(const ObjectIdSet& ids) {
   invalidation_notifier_->UpdateRegisteredIds(this, ids);
 }
 
-void NonBlockingInvalidator::Core::UpdateCredentials(const std::string& email,
-                                                     const std::string& token) {
+void NonBlockingInvalidator::Core::UpdateCredentials(
+    const CoreAccountId& account_id,
+    const std::string& token) {
   DCHECK(network_task_runner_->BelongsToCurrentThread());
-  invalidation_notifier_->UpdateCredentials(email, token);
+  invalidation_notifier_->UpdateCredentials(account_id, token);
 }
 
 void NonBlockingInvalidator::Core::RequestDetailedStatus(
@@ -282,13 +284,13 @@ InvalidatorState NonBlockingInvalidator::GetInvalidatorState() const {
   return registrar_.GetInvalidatorState();
 }
 
-void NonBlockingInvalidator::UpdateCredentials(const std::string& email,
+void NonBlockingInvalidator::UpdateCredentials(const CoreAccountId& account_id,
                                                const std::string& token) {
   DCHECK(parent_task_runner_->BelongsToCurrentThread());
   if (!network_task_runner_->PostTask(
           FROM_HERE,
           base::BindOnce(&NonBlockingInvalidator::Core::UpdateCredentials,
-                         core_, email, token))) {
+                         core_, account_id, token))) {
     NOTREACHED();
   }
 }
@@ -314,12 +316,12 @@ NetworkChannelCreator
 }
 
 NetworkChannelCreator NonBlockingInvalidator::MakeGCMNetworkChannelCreator(
-    std::unique_ptr<network::SharedURLLoaderFactoryInfo>
-        url_loader_factory_info,
+    std::unique_ptr<network::PendingSharedURLLoaderFactory>
+        pending_url_loader_factory,
     network::NetworkConnectionTracker* network_connection_tracker,
     std::unique_ptr<GCMNetworkChannelDelegate> delegate) {
   return base::Bind(&SyncNetworkChannel::CreateGCMNetworkChannel,
-                    base::Passed(&url_loader_factory_info),
+                    base::Passed(&pending_url_loader_factory),
                     // NetworkConnectionTracker is a global singleton guaranteed
                     // to be alive when this is used.
                     base::Unretained(network_connection_tracker),

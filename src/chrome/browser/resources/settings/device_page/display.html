@@ -56,6 +56,10 @@
         margin-inline-end: var(--cr-controlled-by-spacing);
       }
 
+      .underbar {
+        border-bottom: var(--cr-separator-line);
+      }
+
       #controlsDiv > .settings-box:first-of-type {
         border-top: none;
       }
@@ -69,38 +73,43 @@
        width: 100%;
       }
     </style>
-    <div class="settings-box first layout vertical self-stretch">
-      <h2 class="layout self-start">
-        $i18n{displayArrangementTitle}
-      </h2>
-      <div class="secondary layout self-start"
-          hidden="[[!hasMultipleDisplays_(displays)]]">
-        $i18n{displayArrangementText}
-      </div>
-      <display-layout id="displayLayout"
-          selected-display="[[selectedDisplay]]"
-          on-select-display="onSelectDisplay_">
-      </display-layout>
 
-    <template is="dom-if" if="[[showMirror_(unifiedDesktopMode_, displays)]]"
-        restamp>
-      <div class="secondary self-start">
-        <cr-checkbox checked="[[isMirrored_(displays)]]"
-            on-click="onMirroredTap_"
-            aria-label="[[getDisplayMirrorText_(displays)]]">
-          <div class="text-area">[[getDisplayMirrorText_(displays)]]</div>
-        </cr-checkbox>
+    <!-- Arrangement section -->
+    <template is="dom-if"
+        if="[[shouldShowArrangementSection_(displays)]]" restamp>
+      <div class="settings-box first layout vertical self-stretch underbar"
+          id="arrangement-section">
+        <h2 class="layout self-start">
+          $i18n{displayArrangementTitle}
+        </h2>`
+        <div class="secondary layout self-start">
+          $i18n{displayArrangementText}
+        </div>
+        <display-layout id="displayLayout"
+            selected-display="[[selectedDisplay]]"
+            on-select-display="onSelectDisplay_">
+        </display-layout>
+
+        <template is="dom-if"
+            if="[[showMirror_(unifiedDesktopMode_, displays)]]" restamp>
+          <div class="secondary self-start">
+            <cr-checkbox checked="[[isMirrored_(displays)]]"
+                on-click="onMirroredTap_"
+                aria-label="[[getDisplayMirrorText_(displays)]]">
+              <div class="text-area">[[getDisplayMirrorText_(displays)]]</div>
+            </cr-checkbox>
+          </div>
+        </template>
       </div>
     </template>
 
-    </div>
-    <div hidden="[[!hasMultipleDisplays_(displays)]]" class="settings-box">
+    <!-- Display tabs -->
+    <div hidden="[[!hasMultipleDisplays_(displays)]]"
+        class="settings-box first">
       <cr-tabs selected="[[selectedTab_]]" class="display-tabs"
           on-selected-changed="onSelectDisplayTab_"
           tab-names="[[displayTabNames_]]"></cr-tabs>
     </div>
-    <div hidden="[[hasMultipleDisplays_(displays)]]"
-        class="settings-box line-only"></div>
 
     <div id="controlsDiv" class="settings-box layout vertical first">
       <h2>[[selectedDisplay.name]]</h2>
@@ -135,17 +144,21 @@
             <option value="0">$i18n{displayScreenPrimary}</option>
             <option value="1">$i18n{displayScreenExtended}</option>
           </select>
-          </div>
         </div>
       </template>
 
       <!-- Display zoom selection slider -->
-      <div class="settings-box indented two-line">
+      <div class="settings-box indented two-line first">
         <div class="start text-area layout vertical">
-          <div>$i18n{displayZoomTitle}</div>
-          <div class="secondary self-start">$i18n{displayZoomSublabel}</div>
-          <div class="secondary self-start"
-              hidden$="[[!logicalResolutionText_]]">
+          <div id="displayZoomTitle" aria-hidden="true">
+            $i18n{displayZoomTitle}
+          </div>
+          <div id="displayZoomSublabel" class="secondary self-start"
+              aria-hidden="true">
+            $i18n{displayZoomSublabel}
+          </div>
+          <div id="logicalResolutionText" class="secondary self-start"
+              hidden$="[[!logicalResolutionText_]]" aria-hidden="true">
             [[logicalResolutionText_]]
           </div>
         </div>
@@ -158,12 +171,14 @@
         </template>
         <settings-slider id="displaySizeSlider"
             ticks="[[zoomValues_]]" pref="{{selectedZoomPref_}}"
+            label-aria="$i18n{displayZoomTitle}"
             label-min="$i18n{displaySizeSliderMinLabel}"
             label-max="$i18n{displaySizeSliderMaxLabel}"
             disabled="[[isDisplayScaleMandatory_(
                 selectedDisplay,
                 prefs.cros.device_display_resolution)]]"
-            on-cr-slider-value-changed="onDisplaySizeSliderDrag_">
+            on-cr-slider-value-changed="onDisplaySizeSliderDrag_"
+            aria-describedby="displayZoomSublabel logicalResolutionText">
         </settings-slider>
       </div>
 
@@ -203,16 +218,30 @@
                 icon-aria-label="$i18n{displayOrientation}">
             </cr-policy-pref-indicator>
           </template>
-          <select class="md-select" value="[[selectedDisplay.rotation]]"
-              disabled="[[selectedDisplay.isTabletMode]]"
+          <select class="md-select"
+              value="[[selectedDisplay.rotation]]"
               aria-labelledby="displayOrientation"
               on-change="onOrientationChange_">
+            <option value="-1"
+                hidden$="[[!showAutoRotateOption_(selectedDisplay)]]">
+              $i18n{displayOrientationAutoRotate}
+            </option>
             <option value="0">$i18n{displayOrientationStandard}</option>
             <option value="90">90&deg;</option>
             <option value="180">180&deg;</option>
             <option value="270">270&deg;</option>
           </select>
         </div>
+      </template>
+
+      <template is="dom-if" if="[[showAmbientColorSetting_(
+          ambientColorAvailable_, selectedDisplay)]]">
+        <settings-toggle-button id="ambientColor"
+            class="indented"
+            pref="{{prefs.ash.ambient_color.enabled}}"
+            label="$i18n{displayAmbientColorTitle}"
+            sub-label="$i18n{displayAmbientColorSubtitle}">
+        </settings-toggle-button>
       </template>
 
       <cr-link-row class="indented hr" id="overscan"
@@ -226,6 +255,7 @@
           on-close="onCloseOverscanDialog_">
       </settings-display-overscan-dialog>
 
+      <!-- Link row to touch calibration -->
       <cr-link-row class="indented hr" id="touchCalibration"
           label="$i18n{displayTouchCalibrationTitle}"
           sub-label="$i18n{displayTouchCalibrationText}"
@@ -241,12 +271,13 @@
         pref="{{prefs.ash.night_light.enabled}}"
         sub-label="$i18n{displayNightLightText}">
     </settings-toggle-button>
+
     <div id="nightLightSettingsDiv"
         class="settings-box continuation start layout vertical">
       <!-- Color temperature slider -->
       <div id="nightLightTemperatureDiv"
           class="settings-box indented continuation"
-          disabled$="[[!prefs.ash.night_light.enabled.value]]">
+          hidden$="[[!prefs.ash.night_light.enabled.value]]">
         <div class="start text-area" id="colorTemperatureLabel">
           $i18n{displayNightLightTemperatureLabel}
         </div>
@@ -254,8 +285,7 @@
             aria-labelledby="colorTemperatureLabel" min="0" max="100"
             scale="100" label-min="$i18n{displayNightLightTempSliderMinLabel}"
             label-max="$i18n{displayNightLightTempSliderMaxLabel}"
-            pref="{{prefs.ash.night_light.color_temperature}}"
-            disabled$="[[!prefs.ash.night_light.enabled.value]]">
+            pref="{{prefs.ash.night_light.color_temperature}}">
         </settings-slider>
       </div>
       <!-- Schedule settings -->
@@ -278,7 +308,7 @@
       </div>
       <!-- Custom schedule slider -->
       <iron-collapse id="nightLightCustomScheduleCollapse"
-           opened="[[shouldOpenCustomScheduleCollapse_]]">
+          opened="[[shouldOpenCustomScheduleCollapse_]]">
         <div class="settings-box indented continuation">
           <div class="start text-area layout vertical">
             <div class="settings-box continuation self-stretch">

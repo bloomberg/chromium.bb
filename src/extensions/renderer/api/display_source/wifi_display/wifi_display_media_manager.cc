@@ -87,7 +87,7 @@ class WiFiDisplayVideoSink : public content::MediaStreamVideoSink {
 WiFiDisplayMediaManager::WiFiDisplayMediaManager(
     const blink::WebMediaStreamTrack& video_track,
     const blink::WebMediaStreamTrack& audio_track,
-    const std::string& sink_ip_address,
+    const net::IPAddress& sink_ip_address,
     service_manager::InterfaceProvider* interface_provider,
     const ErrorCallback& error_callback)
     : video_track_(video_track),
@@ -476,21 +476,20 @@ void WiFiDisplayMediaManager::OnMediaPipelineInitialized(bool success) {
 // Note: invoked on IO thread
 void WiFiDisplayMediaManager::RegisterMediaService(
     const scoped_refptr<base::SingleThreadTaskRunner>& main_runner,
-    mojom::WiFiDisplayMediaServiceRequest request,
+    mojo::PendingReceiver<mojom::WiFiDisplayMediaService> receiver,
     const base::Closure& on_completed) {
   auto connect_service_callback =
       base::Bind(&WiFiDisplayMediaManager::ConnectToRemoteService,
-                 base::Unretained(this),
-                 base::Passed(&request));
+                 base::Unretained(this), base::Passed(&receiver));
   main_runner->PostTaskAndReply(FROM_HERE,
       connect_service_callback,
       media::BindToCurrentLoop(on_completed));
 }
 
 void WiFiDisplayMediaManager::ConnectToRemoteService(
-    mojom::WiFiDisplayMediaServiceRequest request) {
+    mojo::PendingReceiver<mojom::WiFiDisplayMediaService> receiver) {
   DCHECK(content::RenderThread::Get());
-  interface_provider_->GetInterface(std::move(request));
+  interface_provider_->GetInterface(std::move(receiver));
 }
 
 }  // namespace extensions

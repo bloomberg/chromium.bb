@@ -7,8 +7,9 @@ import static org.chromium.chrome.browser.download.home.metrics.UmaUtils.recordR
 import static org.chromium.chrome.browser.download.home.metrics.UmaUtils.recordRenameResult;
 
 import android.content.Context;
-import android.support.annotation.IntDef;
 import android.text.TextUtils;
+
+import androidx.annotation.IntDef;
 
 import org.chromium.base.Callback;
 import org.chromium.chrome.browser.download.home.metrics.UmaUtils;
@@ -115,9 +116,11 @@ public class RenameDialogManager {
     private void processDialogState(@RenameDialogState int nextState, int dismissalCause) {
         switch (nextState) {
             case RenameDialogState.NO_DIALOG:
-                if (mCurState == RenameDialogState.RENAME_EXTENSION_DIALOG_DEFAULT) {
+                if (mCurState == RenameDialogState.RENAME_EXTENSION_DIALOG_DEFAULT
+                        || mCurState == RenameDialogState.RENAME_EXTENSION_DIALOG_COMMIT_ERROR) {
                     mRenameExtensionDialogCoordinator.dismissDialog(dismissalCause);
-                } else if (mCurState == RenameDialogState.RENAME_DIALOG_DEFAULT) {
+                } else if (mCurState == RenameDialogState.RENAME_DIALOG_DEFAULT
+                        || mCurState == RenameDialogState.RENAME_DIALOG_COMMIT_ERROR) {
                     mRenameDialogCoordinator.dismissDialog(dismissalCause);
                 }
                 break;

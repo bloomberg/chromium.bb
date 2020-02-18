@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 // Bookmark Manager API test for Chrome.
+import {simulateChromeExtensionAPITest} from 'chrome://test/bookmarks/test_util.js';
 
 test('bookmarkManagerPrivate', async () => {
   const bookmarkManager = chrome.bookmarkManagerPrivate;
@@ -84,7 +85,7 @@ test('bookmarkManagerPrivate', async () => {
 
     function getSubtree() {
       bookmarkManager.getSubtree(childFolder.id, false, pass(function(result) {
-                                   let children = result[0].children;
+                                   const children = result[0].children;
                                    assertEquals(3, children.length);
                                    assertEquals(childNodeA.id, children[0].id);
                                    assertEquals(childNodeB.id, children[1].id);
@@ -95,7 +96,7 @@ test('bookmarkManagerPrivate', async () => {
 
     function getSubtreeFoldersOnly() {
       bookmarkManager.getSubtree(childFolder.id, true, pass(function(result) {
-                                   let children = result[0].children;
+                                   const children = result[0].children;
                                    assertEquals(1, children.length);
                                    assertEquals(
                                        grandChildFolder.id, children[0].id);
@@ -157,6 +158,12 @@ test('bookmarkManagerPrivate', async () => {
       // Copy the fooNode.
       doCopy([fooNode.id]);
 
+      // Ensure canPaste is now true.
+      bookmarkManager.canPaste('1', pass(function(result) {
+                                 assertTrue(
+                                     result, 'Should be able to paste now');
+                               }));
+
       // Paste it.
       doPaste('1');
 
@@ -183,6 +190,12 @@ test('bookmarkManagerPrivate', async () => {
                                      count -= 2;
                                      assertEquals(count, result.length);
                                    }));
+
+      // Ensure canPaste is still true.
+      bookmarkManager.canPaste('1', pass(function(result) {
+                                 assertTrue(
+                                     result, 'Should be able to paste now');
+                               }));
     },
 
     function clipboard4() {
@@ -196,15 +209,16 @@ test('bookmarkManagerPrivate', async () => {
             assertEquals(count, result.length);
 
             // Look for barNode's index.
-            for (let barIndex = 0; barIndex < result.length; barIndex++) {
+            let barIndex;
+            for (barIndex = 0; barIndex < result.length; barIndex++) {
               if (result[barIndex].id == barNode.id) {
                 break;
               }
             }
             assertTrue(barIndex + 2 < result.length);
 
-            let last = result[barIndex + 1];
-            let last2 = result[barIndex + 2];
+            const last = result[barIndex + 1];
+            const last2 = result[barIndex + 2];
             assertEquals(fooNode.title, last.title);
             assertEquals(fooNode.url, last.url);
             assertEquals(fooNode.parentId, last.parentId);
@@ -222,6 +236,12 @@ test('bookmarkManagerPrivate', async () => {
       // Copy it.
       doCopy([emptyFolder.id]);
 
+      // Ensure canPaste is now true.
+      bookmarkManager.canPaste('1', pass(function(result) {
+                                 assertTrue(
+                                     result, 'Should be able to paste now');
+                               }));
+
       // Paste it at the end of a multiple selection.
       doPaste('1', [barNode.id, fooNode2.id]);
 
@@ -232,7 +252,8 @@ test('bookmarkManagerPrivate', async () => {
             assertEquals(count, result.length);
 
             // Look for fooNode2's index.
-            for (let foo2Index = 0; foo2Index < result.length; foo2Index++) {
+            let foo2Index;
+            for (foo2Index = 0; foo2Index < result.length; foo2Index++) {
               if (result[foo2Index].id == fooNode2.id) {
                 break;
               }
@@ -260,6 +281,14 @@ test('bookmarkManagerPrivate', async () => {
 
             // Pasting to a managed folder is not allowed.
             assertTrue(result[1].url === undefined);
+
+            bookmarkManager.canPaste(
+                result[1].id, pass(function(result) {
+                  assertFalse(
+                      result,
+                      'Should not be able to paste to managed folders.');
+                }));
+
             bookmarkManager.paste(result[1].id, fail(error));
           }));
     },

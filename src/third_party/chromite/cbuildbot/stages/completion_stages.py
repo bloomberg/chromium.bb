@@ -6,6 +6,7 @@
 """Module containing the completion stages."""
 
 from __future__ import print_function
+from __future__ import division
 
 from infra_libs import ts_mon
 
@@ -566,175 +567,16 @@ class CanaryCompletionStage(MasterSlaveSyncCompletionStage):
       return super(CanaryCompletionStage, self)._HandleStageException(exc_info)
 
 
-class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
-  """Commits or reports errors to CL's that failed to be validated."""
-
-  category = constants.CI_INFRA_STAGE
-
-  def _IsFailureFatal(self, failing, inflight, no_stat, self_destructed=False):
-    """Returns a boolean indicating whether the build should fail.
-
-    Args:
-      failing: Set of build config names of builders that failed.
-      inflight: Set of build config names of builders that are inflight
-      no_stat: Set of build config names of builders that had status None.
-      self_destructed: Boolean indicating whether this is a master which
-        self-destructed and stopped waiting for the running slaves. Default to
-        False.
-
-    Returns:
-      False if this is a CQ-master and the sync_stage.validation_pool hasn't
-      picked up any chump CLs or new CLs, else see the return type of
-      _IsFailureFatal of the parent class MasterSlaveSyncCompletionStage.
-    """
-    if (config_lib.IsMasterCQ(self._run.config) and
-        not self.sync_stage.pool.HasPickedUpCLs()):
-      # If it's a CQ-master build and the validation pool hasn't picked up any
-      # CLs, no slave CQ builds have been scheduled.
-      return False
-
-    return super(CommitQueueCompletionStage, self)._IsFailureFatal(
-        failing, inflight, no_stat, self_destructed=self_destructed)
-
-  def HandleFailure(self, failing, inflight, no_stat, self_destructed):
-    """Handle a build failure or timeout in the Commit Queue.
-
-    Runs MasterSlaveSyncCompletionStage.HandleFailure, and send out infra alerts
-    (if needed) for a master build.
-
-    Args:
-      failing: Set of builder names that failed.
-      inflight: Set of builder names that timed out.
-      no_stat: Set of builder names that had status None.
-      self_destructed: Boolean indicating whether it's a master build and it
-        self-destructed and stopped waiting completion of its slaves.
-    """
-    # Print out the status about what builds failed or not.
-    super(CommitQueueCompletionStage, self).HandleFailure(
-        failing, inflight, no_stat, self_destructed)
-
-    if self._run.config.master:
-      self.SendInfraAlertIfNeeded(failing, inflight, no_stat, self_destructed)
-
-  def _GetInfraFailMessages(self, failing):
-    """Returns a list of messages containing infra failures.
-
-    Args:
-      failing: The names of the failing builders.
-
-    Returns:
-      A list of build_failure_message.BuildFailureMessage objects.
-    """
-    msgs = builder_status_lib.GetFailedMessages(self._slave_statuses, failing)
-    # Filter out None messages because we cannot analyze them.
-    return [
-        x for x in msgs if x and x.HasExceptionCategories({
-            constants.EXCEPTION_CATEGORY_INFRA, constants.EXCEPTION_CATEGORY_LAB
-        })
-    ]
-
-  def SendInfraAlertIfNeeded(self, failing, inflight, no_stat, self_destructed):
-    """Send infra alerts if needed.
-
-    Args:
-      failing: The names of the failing builders.
-      inflight: The names of the builders that are still running.
-      no_stat: The names of the builders that had status None.
-      self_destructed: Boolean indicating whether the master build destructed
-                       itself and stopped waiting completion of its slaves.
-    """
-    msgs = [str(x) for x in self._GetInfraFailMessages(failing)]
-    # Failed to report a non-None messages is an infra failure.
-    slaves = builder_status_lib.GetBuildersWithNoneMessages(
-        self._slave_statuses, failing)
-    msgs += ['%s failed with unknown reason.' % x for x in slaves]
-
-    if not self_destructed:
-      msgs += ['%s timed out' % x for x in inflight]
-      msgs += ['%s did not start' % x for x in no_stat]
-    elif msgs:
-      msgs += [
-          'The master destructed itself and stopped waiting for the '
-          'following slaves:'
-      ]
-      msgs += ['%s was still running' % x for x in inflight]
-      msgs += ['%s was waiting to start' % x for x in no_stat]
-
-    if msgs:
-      builder_name = self._run.config.name
-      title = '%s has encountered infra failures:' % (builder_name,)
-      msgs.insert(0, title)
-      msgs.append('See %s' % self.ConstructDashboardURL())
-      msg = '\n\n'.join(msgs)
-      subject = '%s infra failures' % (builder_name,)
-      extra_fields = {'X-cbuildbot-alert': 'cq-infra-alert'}
-      alerts.SendHealthAlert(
-          self._run, subject, msg, extra_fields=extra_fields)
-
-  def _WaitForSlavesToComplete(self, manager, build_identifier, builders_array,
-                               timeout):
-    """Wait for slave builds to complete.
-
-    Args:
-      manager: An instance of BuildSpecsManager.
-      build_identifier: The BuildIdentifier instance of the master build.
-      db: An instance of cidb.CIDBConnection.
-      builders_array: A list of builder names (strings) of slave builds.
-      timeout: Number of seconds to wait for the results.
-    """
-    # CQ master build needs needs validation_pool to keep track of applied
-    # changes and change dependencies.
-    return manager.WaitForSlavesToComplete(
-        build_identifier,
-        builders_array,
-        pool=self.sync_stage.pool,
-        timeout=timeout)
-
-  def PerformStage(self):
-    """Run CommitQueueCompletionStage."""
-    super(CommitQueueCompletionStage, self).PerformStage()
-
-
-class PreCQCompletionStage(generic_stages.BuilderStage):
-  """Reports the status of a trybot run to Google Storage and Gerrit."""
-
-  category = constants.CI_INFRA_STAGE
-
-  def __init__(self, builder_run, buildstore, sync_stage, success, **kwargs):
-    super(PreCQCompletionStage, self).__init__(builder_run, buildstore,
-                                               **kwargs)
-    self.sync_stage = sync_stage
-    self.success = success
-
-  def PerformStage(self):
-    # Update Gerrit and Google Storage with the Pre-CQ status.
-    if not self.sync_stage.pool:
-      logging.warning('No validation pool available. Skipping PreCQCompletion.')
-      return
-
-    if self.success:
-      self.sync_stage.pool.HandlePreCQPerConfigSuccess()
-    else:
-      message = self.GetBuildFailureMessage()
-      self.sync_stage.pool.HandleValidationFailure([message])
-
-
 class UpdateChromeosLKGMStage(generic_stages.BuilderStage):
   """Update the CHROMEOS_LKGM file in the chromium repository."""
 
   category = constants.CI_INFRA_STAGE
 
-  def __init__(self, builder_run, buildstore, **kwargs):
-    """Constructor.
-
-    Args:
-      builder_run: BuilderRun object.
-      buildstore: BuildStore instance to make DB calls with.
-    """
-    super(UpdateChromeosLKGMStage, self).__init__(builder_run, buildstore,
-                                                  **kwargs)
-
   def PerformStage(self):
+    if not self._build_threshold_successful():
+      logging.info('Insufficient number of successful builders. '
+                   'Skipping LKGM update.')
+
     manager = self._run.attrs.manifest_manager
     cmd = ['chrome_chromeos_lkgm', '--lkgm=%s' % manager.current_version]
     # Always do a dryrun for now so that we can check the output and ensure it
@@ -742,6 +584,17 @@ class UpdateChromeosLKGMStage(generic_stages.BuilderStage):
     if self._run.options.debug:
       cmd.append('--dryrun')
     commands.RunBuildScript(self._build_root, cmd, chromite_cmd=True)
+
+  def _build_threshold_successful(self):
+    """Whether the percentage of successful child builders exceeds threshold"""
+    all_builds = self.GetScheduledSlaveBuildbucketIds()
+    len_all_builds = float(len(all_builds))
+    len_child_failures = float(
+        len(self.buildstore.GetBuildsFailures(all_builds)))
+
+    pctn_succeeded = 100.0 * (
+        (len_all_builds - len_child_failures) / len_all_builds)
+    return pctn_succeeded >= constants.LKGM_THRESHOLD
 
 
 class PublishUprevChangesStage(generic_stages.BuilderStage):
@@ -946,7 +799,5 @@ class PublishUprevChangesStage(generic_stages.BuilderStage):
         overlay_type=self._run.config.push_overlays,
         dryrun=self._run.options.debug,
         staging_branch=staging_branch)
-    if config_lib.IsMasterChromePFQ(self._run.config) and self.success:
-      self._run.attrs.metadata.UpdateWithDict({'UprevvedChrome': True})
     if config_lib.IsMasterAndroidPFQ(self._run.config) and self.success:
       self._run.attrs.metadata.UpdateWithDict({'UprevvedAndroid': True})

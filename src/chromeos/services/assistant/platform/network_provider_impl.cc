@@ -23,11 +23,11 @@ NetworkProviderImpl::NetworkProviderImpl(mojom::Client* client)
     : connection_status_(ConnectionStatus::UNKNOWN) {
   if (!client)
     return;
-  client->RequestNetworkConfig(mojo::MakeRequest(&cros_network_config_ptr_));
-  network_config::mojom::CrosNetworkConfigObserverPtr observer_ptr;
-  binding_.Bind(mojo::MakeRequest(&observer_ptr));
-  cros_network_config_ptr_->AddObserver(std::move(observer_ptr));
-  cros_network_config_ptr_->GetNetworkStateList(
+  client->RequestNetworkConfig(
+      cros_network_config_remote_.BindNewPipeAndPassReceiver());
+  cros_network_config_remote_->AddObserver(
+      receiver_.BindNewPipeAndPassRemote());
+  cros_network_config_remote_->GetNetworkStateList(
       network_config::mojom::NetworkFilter::New(
           network_config::mojom::FilterType::kActive,
           network_config::mojom::NetworkType::kAll,

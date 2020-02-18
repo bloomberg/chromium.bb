@@ -13,7 +13,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 
 namespace dom_distiller {
 
@@ -46,12 +46,10 @@ class DistillabilityServiceImpl : public mojom::DistillabilityService {
 };
 
 DistillabilityDriver::DistillabilityDriver(content::WebContents* web_contents)
-    : content::WebContentsObserver(web_contents) {
+    : content::WebContentsObserver(web_contents),
+      latest_result_(base::nullopt) {
   if (!web_contents)
     return;
-  frame_interfaces_.AddInterface(
-      base::BindRepeating(&DistillabilityDriver::CreateDistillabilityService,
-                          base::Unretained(this)));
 }
 
 DistillabilityDriver::~DistillabilityDriver() {
@@ -59,29 +57,17 @@ DistillabilityDriver::~DistillabilityDriver() {
 }
 
 void DistillabilityDriver::CreateDistillabilityService(
-    mojom::DistillabilityServiceRequest request) {
-  mojo::MakeStrongBinding(
+    mojo::PendingReceiver<mojom::DistillabilityService> receiver) {
+  mojo::MakeSelfOwnedReceiver(
       std::make_unique<DistillabilityServiceImpl>(weak_factory_.GetWeakPtr()),
-      std::move(request));
-}
-
-void DistillabilityDriver::AddObserver(DistillabilityObserver* observer) {
-  if (!observers_.HasObserver(observer)) {
-    observers_.AddObserver(observer);
-  }
+      std::move(receiver));
 }
 
 void DistillabilityDriver::OnDistillability(
     const DistillabilityResult& result) {
+  latest_result_ = result;
   for (auto& observer : observers_)
     observer.OnResult(result);
-}
-
-void DistillabilityDriver::OnInterfaceRequestFromFrame(
-    content::RenderFrameHost* render_frame_host,
-    const std::string& interface_name,
-    mojo::ScopedMessagePipeHandle* interface_pipe) {
-  frame_interfaces_.TryBindInterface(interface_name, interface_pipe);
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(DistillabilityDriver)

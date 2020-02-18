@@ -11,7 +11,6 @@ import android.app.Activity;
 import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
-import android.support.annotation.ColorInt;
 import android.support.test.filters.MediumTest;
 import android.text.TextUtils;
 import android.view.ContextThemeWrapper;
@@ -19,6 +18,8 @@ import android.view.LayoutInflater;
 import android.widget.FrameLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
+
+import androidx.annotation.ColorInt;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -31,6 +32,7 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.night_mode.NightModeTestUtils;
 import org.chromium.chrome.browser.night_mode.NightModeTestUtils.NightModeParams;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
+import org.chromium.chrome.test.R;
 import org.chromium.chrome.test.ui.DummyUiActivityTestCase;
 import org.chromium.chrome.test.util.RenderTestRule;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -73,11 +75,6 @@ public class ModalDialogViewRenderTest extends DummyUiActivityTestCase {
     }
 
     @Override
-    public void setUpTest() throws Exception {
-        super.setUpTest();
-    }
-
-    @Override
     public void tearDownTest() throws Exception {
         NightModeTestUtils.tearDownNightModeForDummyUiActivity();
         super.tearDownTest();
@@ -99,9 +96,9 @@ public class ModalDialogViewRenderTest extends DummyUiActivityTestCase {
 
             mCustomScrollView = new ScrollView(activity);
             mCustomTextView1 = new TextView(activity);
-            mCustomTextView1.setId(org.chromium.chrome.R.id.button_one);
+            mCustomTextView1.setId(R.id.test_view_one);
             mCustomTextView2 = new TextView(activity);
-            mCustomTextView2.setId(org.chromium.chrome.R.id.button_two);
+            mCustomTextView2.setId(R.id.test_view_two);
         });
     }
 

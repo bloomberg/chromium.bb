@@ -19,6 +19,15 @@ const size_t kOverflowIntAlloc2D = kMaxIntAlloc / kWidth + 10;
 
 }  // namespace
 
+TEST(fxcrt, FX_AllocZero) {
+  uint8_t* ptr = FX_Alloc(uint8_t, 0);
+  uint8_t* ptr2 = FX_Alloc(uint8_t, 0);
+  EXPECT_TRUE(ptr);  // Malloc(0) is distinguishable from OOM.
+  EXPECT_NE(ptr, ptr2);  // Each malloc(0) is distinguishable.
+  FX_Free(ptr2);
+  FX_Free(ptr);
+}
+
 // TODO(tsepez): re-enable OOM tests if we can find a way to
 // prevent it from hosing the bots.
 TEST(fxcrt, DISABLED_FX_AllocOOM) {

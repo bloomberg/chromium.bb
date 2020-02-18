@@ -10,8 +10,11 @@
 
 #include "include/gpu/GrTexture.h"
 #include "include/gpu/vk/GrVkTypes.h"
+#include "src/core/SkLRUCache.h"
+#include "src/gpu/GrSamplerState.h"
 #include "src/gpu/vk/GrVkImage.h"
 
+class GrVkDescriptorSet;
 class GrVkGpu;
 class GrVkImageView;
 struct GrVkImageInfo;
@@ -41,6 +44,15 @@ public:
     void addIdleProc(sk_sp<GrRefCntedCallback>, IdleState) override;
     void callIdleProcsOnBehalfOfResource();
 
+    // For each GrVkTexture, there is a cache of GrVkDescriptorSets which only contain a single
+    // texture/sampler descriptor. If there is a cached descriptor set that matches the passed in
+    // GrSamplerState, then a pointer to it is returned. The ref count is not incremented on the
+    // returned pointer, thus the caller must call ref it if they wish to keep ownership of the
+    // GrVkDescriptorSet.
+    const GrVkDescriptorSet* cachedSingleDescSet(const GrSamplerState&);
+
+    void addDescriptorSetToCache(const GrVkDescriptorSet*, const GrSamplerState&);
+
 protected:
     GrVkTexture(GrVkGpu*, const GrSurfaceDesc&, const GrVkImageInfo&, sk_sp<GrVkImageLayout>,
                 const GrVkImageView*, GrMipMapsStatus, GrBackendObjectOwnership);
@@ -54,7 +66,7 @@ protected:
         return false;
     }
 
-    void willRemoveLastRefOrPendingIO() override;
+    void willRemoveLastRef() override;
 
 private:
     GrVkTexture(GrVkGpu*, SkBudgeted, const GrSurfaceDesc&, const GrVkImageInfo&,
@@ -62,7 +74,7 @@ private:
                 GrMipMapsStatus);
     GrVkTexture(GrVkGpu*, const GrSurfaceDesc&, const GrVkImageInfo&, sk_sp<GrVkImageLayout>,
                 const GrVkImageView*, GrMipMapsStatus, GrBackendObjectOwnership, GrWrapCacheable,
-                GrIOType);
+                GrIOType, bool isExternal);
 
     // In Vulkan we call the release proc after we are finished with the underlying
     // GrVkImage::Resource object (which occurs after the GPU has finished all work on it).
@@ -74,6 +86,16 @@ private:
     void removeFinishIdleProcs();
 
     const GrVkImageView* fTextureView;
+
+    struct SamplerHash {
+        uint32_t operator()(const GrSamplerState& state) const {
+            return GrSamplerState::GenerateKey(state);
+        }
+    };
+    struct DescriptorCacheEntry;
+    SkLRUCache<const GrSamplerState, std::unique_ptr<DescriptorCacheEntry>, SamplerHash>
+            fDescSetCache;
+    static constexpr int kMaxCachedDescSets = 8;
 
     typedef GrTexture INHERITED;
 };

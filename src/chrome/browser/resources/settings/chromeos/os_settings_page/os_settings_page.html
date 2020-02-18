@@ -34,7 +34,7 @@
 
       .banner {
         align-items: center;
-        background-color: var(--cr-card-background-color);
+        background-color: var(--cros-default-bg-color);
         border: var(--cr-hairline);
         border-radius: var(--cr-card-border-radius);
         display: flex;
@@ -62,7 +62,7 @@
       }
 
       #browserSettingsBanner {
-        color: var(--cr-secondary-text-color);
+        color: var(--cros-default-text-color-secondary);
         font-weight: 500;
       }
 
@@ -71,14 +71,12 @@
       }
 
       #openInNewBrowserSettingsIcon {
-        fill: var(--cr-link-color);
+        fill: var(--cros-link-color);
         margin-inline-start: 0;
       }
 
       #secondaryUserIcon {
-        /* TODO(stevenjb): Replace this with the correct variable or color once
-         * established by UX, see crbug.com/687749. */
-        background-color : rgb(210, 210, 212);
+        background-color : var(--cros-user-icon-color-secondary);
         background-image: url(chrome://theme/IDR_SECONDARY_USER_SETTINGS);
         background-position: center;
         background-repeat: no-repeat;
@@ -89,7 +87,7 @@
 
       #toggleContainer {
         align-items: center;
-        color: var(--cr-primary-text-color);
+        color: var(--cros-default-text-color);
         display: flex;
         font: inherit;
         justify-content: center;
@@ -116,7 +114,7 @@
             </div>
             <cr-icon-button class="icon-clear"
                 id="closeBrowserSettings"
-                aria-label="$i18n{clear}"
+                title="$i18n{close}"
                 on-click="onBrowserSettingsBannerClosed_">
             </cr-icon-button>
           </div>
@@ -136,14 +134,14 @@
           <settings-bluetooth-page prefs="{{prefs}}">
           </settings-bluetooth-page>
         </settings-section>
-        <template is="dom-if" if="[[!isGuestMode_]]">
+        <template is="dom-if" if="[[!isGuestMode_]]" restamp>
           <settings-section page-title="$i18n{multidevicePageTitle}"
               section="multidevice">
             <settings-multidevice-page prefs="{{prefs}}">
             </settings-multidevice-page>
           </settings-section>
         </template>
-        <template is="dom-if" if="[[!isGuestMode_]]">
+        <template is="dom-if" if="[[!isGuestMode_]]" restamp>
           <settings-section page-title="$i18n{peoplePageTitle}"
               section="people">
             <os-settings-people-page prefs="{{prefs}}"
@@ -157,7 +155,7 @@
               show-crostini="[[showCrostini]]">
           </settings-device-page>
         </settings-section>
-        <template is="dom-if" if="[[!isGuestMode_]]">
+        <template is="dom-if" if="[[!isGuestMode_]]" restamp>
           <settings-section page-title="$i18n{personalizationPageTitle}"
               section="personalization">
             <settings-personalization-page></settings-personalization-page>
@@ -170,18 +168,13 @@
         </settings-section>
         <template is="dom-if" if="[[showApps]]" restamp>
           <settings-section page-title="$i18n{appsPageTitle}" section="apps">
-            <os-settings-apps-page>
-            </os-settings-apps-page>
-          </settings-section>
-        </template>
-        <template is="dom-if" if="[[showAndroidApps]]" restamp>
-          <settings-section page-title="$i18n{androidAppsPageTitle}"
-              section="androidApps" hidden$="[[!shouldShowAndroidAppsSection_(
-              androidAppsInfo)]]">
-            <settings-android-apps-page prefs="{{prefs}}"
+            <os-settings-apps-page
+                prefs="{{prefs}}"
                 android-apps-info="[[androidAppsInfo]]"
-                have-play-store-app="[[havePlayStoreApp]]">
-            </settings-android-apps-page>
+                have-play-store-app="[[havePlayStoreApp]]"
+                show-android-apps="[[showAndroidApps]]"
+                show-app-management="[[showAppManagement]]">
+            </os-settings-apps-page>
           </settings-section>
         </template>
         <template is="dom-if" if="[[showCrostini]]" restamp>

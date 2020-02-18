@@ -10,6 +10,9 @@ PASS computedStyleText.stroke is computedStyleDiv.color
 Testing system colorActiveCaption
 PASS computedStyleText.fill is computedStyleDiv.color
 PASS computedStyleText.stroke is computedStyleDiv.color
+Testing system colorActiveText
+PASS computedStyleText.fill is computedStyleDiv.color
+PASS computedStyleText.stroke is computedStyleDiv.color
 Testing system colorAppWorkspace
 PASS computedStyleText.fill is computedStyleDiv.color
 PASS computedStyleText.stroke is computedStyleDiv.color
@@ -28,7 +31,19 @@ PASS computedStyleText.stroke is computedStyleDiv.color
 Testing system colorButtonText
 PASS computedStyleText.fill is computedStyleDiv.color
 PASS computedStyleText.stroke is computedStyleDiv.color
+Testing system colorCanvas
+PASS computedStyleText.fill is computedStyleDiv.color
+PASS computedStyleText.stroke is computedStyleDiv.color
+Testing system colorCanvasText
+PASS computedStyleText.fill is computedStyleDiv.color
+PASS computedStyleText.stroke is computedStyleDiv.color
 Testing system colorCaptionText
+PASS computedStyleText.fill is computedStyleDiv.color
+PASS computedStyleText.stroke is computedStyleDiv.color
+Testing system colorField
+PASS computedStyleText.fill is computedStyleDiv.color
+PASS computedStyleText.stroke is computedStyleDiv.color
+Testing system colorFieldText
 PASS computedStyleText.fill is computedStyleDiv.color
 PASS computedStyleText.stroke is computedStyleDiv.color
 Testing system colorGrayText
@@ -57,7 +72,7 @@ PASS computedStyleText.fill is computedStyleDiv.color
 PASS computedStyleText.stroke is computedStyleDiv.color
 Testing system colorLinkText
 PASS computedStyleText.fill is computedStyleDiv.color
-FAIL computedStyleText.stroke should be rgb(0, 0, 0). Was rgb(0, 0, 238).
+PASS computedStyleText.stroke is computedStyleDiv.color
 Testing system colorMenu
 PASS computedStyleText.fill is computedStyleDiv.color
 PASS computedStyleText.stroke is computedStyleDiv.color
@@ -84,7 +99,7 @@ PASS computedStyleText.fill is computedStyleDiv.color
 PASS computedStyleText.stroke is computedStyleDiv.color
 Testing system colorVisitedText
 PASS computedStyleText.fill is computedStyleDiv.color
-FAIL computedStyleText.stroke should be rgb(0, 0, 0). Was rgb(85, 26, 139).
+PASS computedStyleText.stroke is computedStyleDiv.color
 Testing system colorWindow
 PASS computedStyleText.fill is computedStyleDiv.color
 PASS computedStyleText.stroke is computedStyleDiv.color

@@ -108,6 +108,8 @@ source_set("automation_client_lib") {
     "chrome/devtools_client.h",
     "chrome/devtools_client_impl.cc",
     "chrome/devtools_client_impl.h",
+    "chrome/devtools_endpoint.cc",
+    "chrome/devtools_endpoint.h",
     "chrome/devtools_event_listener.cc",
     "chrome/devtools_event_listener.h",
     "chrome/devtools_http_client.cc",
@@ -234,6 +236,7 @@ source_set("lib") {
     "command_listener_proxy.h",
     "commands.cc",
     "commands.h",
+    "constants/version.h",
     "devtools_events_logger.cc",
     "devtools_events_logger.h",
     "element_commands.cc",
@@ -258,8 +261,6 @@ source_set("lib") {
     "session_thread_map.h",
     "util.cc",
     "util.h",
-    "version.cc",
-    "version.h",
     "webauthn_commands.cc",
     "webauthn_commands.h",
     "window_commands.cc",
@@ -273,17 +274,14 @@ source_set("lib") {
     sources += [ "keycode_text_conversion_x.cc" ]
   }
 
-  # The X11 implementation uses part of Ozone implementation.
-  if (use_ozone || use_x11) {
-    sources += [ "keycode_text_conversion_ozone.cc" ]
-  }
-
   deps = [
     ":automation_client_lib",
     "//base",
     "//base/third_party/dynamic_annotations",
+    "//build:branding_buildflags",
     "//chrome/common:constants",
     "//chrome/common:version_header",
+    "//chrome/test/chromedriver/constants:version_header",
     "//components/crx_file",
     "//components/version_info:generate_version_info",
     "//crypto",
@@ -296,10 +294,15 @@ source_set("lib") {
     "//ui/base",
     "//ui/events:dom_keycode_converter",
     "//ui/events:events_base",
-    "//ui/events/ozone:events_ozone_layout",
     "//ui/gfx",
     "//ui/gfx/geometry",
   ]
+
+  # The X11 implementation uses part of Ozone implementation.
+  if (use_ozone || use_x11) {
+    sources += [ "keycode_text_conversion_ozone.cc" ]
+    deps += [ "//ui/events/ozone/layout" ]
+  }
 
   if (use_x11) {
     configs += [ "//build/config/linux:x11" ]
@@ -376,6 +379,7 @@ test("chromedriver_unittests") {
     "chrome/console_logger_unittest.cc",
     "chrome/device_manager_unittest.cc",
     "chrome/devtools_client_impl_unittest.cc",
+    "chrome/devtools_endpoint_unittest.cc",
     "chrome/devtools_http_client_unittest.cc",
     "chrome/dom_tracker_unittest.cc",
     "chrome/download_directory_override_manager_unittest.cc",

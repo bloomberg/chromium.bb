@@ -18,9 +18,9 @@
 #include "net/base/test_completion_callback.h"
 #include "net/proxy_resolution/mock_proxy_resolver.h"
 #include "net/proxy_resolution/proxy_resolve_dns_operation.h"
-#include "net/proxy_resolution/proxy_resolver_v8_tracing.h"
 #include "net/test/event_waiter.h"
 #include "net/test/gtest_util.h"
+#include "services/proxy_resolver/proxy_resolver_v8_tracing.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -32,7 +32,7 @@ namespace {
 
 const char kScriptData[] = "FooBarBaz";
 
-class FakeProxyResolver : public net::ProxyResolverV8Tracing {
+class FakeProxyResolver : public ProxyResolverV8Tracing {
  public:
   explicit FakeProxyResolver(base::OnceClosure on_destruction)
       : on_destruction_(std::move(on_destruction)) {}
@@ -40,8 +40,9 @@ class FakeProxyResolver : public net::ProxyResolverV8Tracing {
   ~FakeProxyResolver() override { std::move(on_destruction_).Run(); }
 
  private:
-  // net::ProxyResolverV8Tracing overrides.
+  // ProxyResolverV8Tracing overrides.
   void GetProxyForURL(const GURL& url,
+                      const net::NetworkIsolationKey& network_isolation_key,
                       net::ProxyInfo* results,
                       net::CompletionOnceCallback callback,
                       std::unique_ptr<net::ProxyResolver::Request>* request,
@@ -57,10 +58,10 @@ enum Event {
   RESOLVER_DESTROYED,
 };
 
-class TestProxyResolverFactory : public net::ProxyResolverV8TracingFactory {
+class TestProxyResolverFactory : public ProxyResolverV8TracingFactory {
  public:
   struct PendingRequest {
-    std::unique_ptr<net::ProxyResolverV8Tracing>* resolver;
+    std::unique_ptr<ProxyResolverV8Tracing>* resolver;
     net::CompletionOnceCallback callback;
   };
 
@@ -71,8 +72,8 @@ class TestProxyResolverFactory : public net::ProxyResolverV8TracingFactory {
 
   void CreateProxyResolverV8Tracing(
       const scoped_refptr<net::PacFileData>& pac_script,
-      std::unique_ptr<net::ProxyResolverV8Tracing::Bindings> bindings,
-      std::unique_ptr<net::ProxyResolverV8Tracing>* resolver,
+      std::unique_ptr<ProxyResolverV8Tracing::Bindings> bindings,
+      std::unique_ptr<ProxyResolverV8Tracing>* resolver,
       net::CompletionOnceCallback callback,
       std::unique_ptr<net::ProxyResolverFactory::Request>* request) override {
     requests_handled_++;
@@ -103,7 +104,7 @@ class TestProxyResolverFactoryImpl : public ProxyResolverFactoryImpl {
  public:
   TestProxyResolverFactoryImpl(
       mojo::PendingReceiver<mojom::ProxyResolverFactory> receiver,
-      std::unique_ptr<net::ProxyResolverV8TracingFactory> factory)
+      std::unique_ptr<ProxyResolverV8TracingFactory> factory)
       : ProxyResolverFactoryImpl(std::move(receiver), std::move(factory)) {}
 };
 
@@ -145,6 +146,7 @@ class ProxyResolverFactoryImplTest
   void ResolveDns(
       const std::string& hostname,
       net::ProxyResolveDnsOperation operation,
+      const net::NetworkIsolationKey& network_isolation_key,
       mojo::PendingRemote<mojom::HostResolverRequestClient> client) override {}
 
   void set_idle_callback(base::OnceClosure callback) {

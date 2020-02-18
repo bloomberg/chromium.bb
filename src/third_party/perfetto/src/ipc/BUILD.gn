@@ -13,7 +13,6 @@
 # limitations under the License.
 
 import("../../gn/fuzzer.gni")
-import("../../gn/ipc_library.gni")
 import("../../gn/perfetto.gni")
 import("../../gn/proto_library.gni")
 import("../../gn/test.gni")
@@ -29,8 +28,8 @@ source_set("ipc") {
     "../base:unix_socket",
   ]
   deps = [
-    ":wire_protocol",
     "../../gn:default_deps",
+    "../../protos/perfetto/ipc:wire_protocol_cpp",
     "../base",
   ]
   sources = [
@@ -52,8 +51,8 @@ perfetto_fuzzer_test("buffered_frame_deserializer_fuzzer") {
   ]
   deps = [
     ":ipc",
-    ":wire_protocol",
     "../../gn:default_deps",
+    "../../protos/perfetto/ipc:wire_protocol_cpp",
   ]
 }
 
@@ -61,10 +60,11 @@ perfetto_unittest_source_set("unittests") {
   testonly = true
   deps = [
     ":ipc",
-    ":test_messages",
-    ":wire_protocol",
+    ":test_messages_cpp",
+    ":test_messages_ipc",
     "../../gn:default_deps",
     "../../gn:gtest_and_gmock",
+    "../../protos/perfetto/ipc:wire_protocol_cpp",
     "../base",
     "../base:test_support",
   ]
@@ -77,20 +77,24 @@ perfetto_unittest_source_set("unittests") {
   ]
 }
 
-perfetto_proto_library("wire_protocol") {
-  proto_generators = [ "lite" ]
-  sources = [
-    "wire_protocol.proto",
+perfetto_proto_library("test_messages_@TYPE@") {
+  proto_generators = [
+    "ipc",
+    "zero",
+    "cpp",
   ]
-  proto_path = perfetto_root_path
-}
-
-ipc_library("test_messages") {
   sources = [
     "test/client_unittest_messages.proto",
     "test/deferred_unittest_messages.proto",
     "test/greeter_service.proto",
   ]
-  proto_in_dir = perfetto_root_path
-  proto_out_dir = perfetto_root_path
+}
+
+# This is used by Bazel BUILD rules.
+static_library("perfetto_ipc") {
+  complete_static_lib = true
+  deps = [
+    ":ipc",
+    "../../gn:default_deps",
+  ]
 }

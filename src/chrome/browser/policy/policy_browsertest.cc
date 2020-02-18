@@ -1,6 +1,21 @@
 // Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+//
+// This file is in maintenance mode, please do NOT add new tests into this file.
+//
+// policy_browsertests.cc contains lots of tests for multiple policies. However,
+// it became huge with hundreds of policies. Instead of adding even more tests
+// here, please put new ones with the policy implementation. For example, a
+// network policy test can be moved to chrome/browser/net.
+//
+// Policy component dependency is not necessary for policy test. Most of
+// policy values are copied into local state or Profile prefs. They can be used
+// to enable policy during test.
+//
+// Simple policy to prefs mapping can be tested with policy_test_cases.json. If
+// the conversion is complicated and requires custom policy handler, we
+// recommend to test the handler separately.
 
 #include <stddef.h>
 #include <stdint.h>
@@ -25,12 +40,10 @@
 #include "base/json/json_reader.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/metrics/histogram_base.h"
 #include "base/metrics/histogram_samples.h"
 #include "base/metrics/statistics_recorder.h"
-#include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/strcat.h"
@@ -48,28 +61,16 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
-#include "chrome/browser/background/background_contents_service.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/chromeos/policy/configuration_policy_handler_chromeos.h"
+#include "chrome/browser/chromeos/login/test/session_manager_state_waiter.h"
+#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/component_updater/chrome_component_updater_configurator.h"
-#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/devtools/devtools_window_testing.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/extensions/api/chrome_extensions_api_client.h"
-#include "chrome/browser/extensions/chrome_test_extension_loader.h"
-#include "chrome/browser/extensions/component_loader.h"
-#include "chrome/browser/extensions/crx_installer.h"
-#include "chrome/browser/extensions/extension_management_constants.h"
-#include "chrome/browser/extensions/extension_management_test_util.h"
-#include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/forced_extensions/installation_reporter.h"
-#include "chrome/browser/extensions/install_verifier.h"
-#include "chrome/browser/extensions/shared_module_service.h"
-#include "chrome/browser/extensions/unpacked_installer.h"
-#include "chrome/browser/extensions/updater/extension_cache_fake.h"
-#include "chrome/browser/extensions/updater/extension_updater.h"
 #include "chrome/browser/interstitials/security_interstitial_page_test_utils.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/webrtc/media_stream_devices_controller.h"
@@ -78,14 +79,13 @@
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
+#include "chrome/browser/policy/policy_test_utils.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/resource_coordinator/tab_load_tracker_test_support.h"
-#include "chrome/browser/safe_browsing/chrome_password_protection_service.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
-#include "chrome/browser/ssl/ssl_blocking_page.h"
 #include "chrome/browser/task_manager/task_manager_interface.h"
 #include "chrome/browser/ui/bookmarks/bookmark_bar.h"
 #include "chrome/browser/ui/browser.h"
@@ -100,19 +100,13 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
 #include "chrome/browser/ui/webui/welcome/helpers.h"
-#include "chrome/browser/usb/usb_chooser_context.h"
-#include "chrome/browser/usb/usb_chooser_context_factory.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_features.h"
-#include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "chrome/common/extensions/extension_test_util.h"
-#include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/net/safe_search_util.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
-#include "chrome/common/web_application_info.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/locale_settings.h"
@@ -125,7 +119,6 @@
 #include "components/browsing_data/core/pref_names.h"
 #include "components/component_updater/component_updater_service.h"
 #include "components/component_updater/component_updater_switches.h"
-#include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/content_settings/core/common/pref_names.h"
@@ -147,13 +140,10 @@
 #include "components/policy/core/common/policy_types.h"
 #include "components/policy/policy_constants.h"
 #include "components/prefs/pref_service.h"
-#include "components/safe_browsing/features.h"
-#include "components/safe_browsing/realtime/policy_engine.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/security_interstitials/content/security_interstitial_page.h"
 #include "components/security_interstitials/content/security_interstitial_tab_helper.h"
-#include "components/security_interstitials/core/controller_client.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/unified_consent/pref_names.h"
@@ -162,7 +152,6 @@
 #include "components/update_client/update_client_errors.h"
 #include "components/user_prefs/user_prefs.h"
 #include "components/variations/service/variations_service.h"
-#include "components/variations/variations_params_manager.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -171,6 +160,7 @@
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/browser/interstitial_page.h"
+#include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -179,18 +169,14 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/storage_partition.h"
-#include "content/public/browser/system_connector.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/network_service_util.h"
-#include "content/public/common/result_codes.h"
-#include "content/public/common/service_names.mojom.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/web_preferences.h"
 #include "content/public/test/browser_test_utils.h"
@@ -199,53 +185,32 @@
 #include "content/public/test/network_service_test_helper.h"
 #include "content/public/test/no_renderer_crashes_assertion.h"
 #include "content/public/test/signed_exchange_browser_test_helper.h"
-#include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "content/public/test/url_loader_interceptor.h"
-#include "device/bluetooth/bluetooth_adapter_factory.h"
-#include "device/bluetooth/test/mock_bluetooth_adapter.h"
 #include "extensions/browser/api/messaging/messaging_delegate.h"
 #include "extensions/browser/disable_reason.h"
-#include "extensions/browser/extension_dialog_auto_confirm.h"
-#include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_prefs.h"
-#include "extensions/browser/extension_registry.h"
-#include "extensions/browser/extension_system.h"
 #include "extensions/browser/process_manager.h"
-#include "extensions/browser/scoped_ignore_content_verifier_for_test.h"
-#include "extensions/browser/test_extension_registry_observer.h"
 #include "extensions/browser/uninstall_reason.h"
-#include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
-#include "extensions/common/features/feature_channel.h"
-#include "extensions/common/manifest_handlers/shared_module_info.h"
 #include "extensions/common/switches.h"
-#include "extensions/common/value_builder.h"
 #include "media/media_buildflags.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/hash_value.h"
 #include "net/base/net_errors.h"
 #include "net/base/url_util.h"
 #include "net/cert/x509_util.h"
 #include "net/dns/mock_host_resolver.h"
-#include "net/http/http_stream_factory.h"
-#include "net/http/transport_security_state.h"
-#include "net/http/transport_security_state_test_util.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
-#include "net/test/url_request/url_request_failed_job.h"
-#include "net/test/url_request/url_request_mock_http_job.h"
-#include "net/url_request/test_url_request_interceptor.h"
-#include "net/url_request/url_request.h"
-#include "net/url_request/url_request_filter.h"
-#include "net/url_request/url_request_interceptor.h"
-#include "services/device/public/cpp/test/fake_usb_device_info.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/network_switches.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/network/public/mojom/network_service_test.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "services/service_manager/sandbox/sandbox_type.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom-shared.h"
@@ -261,10 +226,6 @@
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/shell.h"
-#include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
-#include "chrome/browser/chromeos/accessibility/magnification_manager.h"
-#include "chrome/browser/chromeos/accessibility/magnifier_type.h"
-#include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
 #include "chrome/browser/chromeos/note_taking_helper.h"
@@ -274,17 +235,14 @@
 #include "chrome/browser/chromeos/system/timezone_resolver_manager.h"
 #include "chrome/browser/ui/ash/chrome_screenshot_grabber.h"
 #include "chrome/browser/ui/ash/chrome_screenshot_grabber_test_observer.h"
-#include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/constants/chromeos_features.h"
+#include "chromeos/constants/chromeos_pref_names.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "components/account_id/account_id.h"
-#include "components/arc/arc_prefs.h"
-#include "components/arc/arc_util.h"
-#include "components/arc/session/arc_session_runner.h"
-#include "components/arc/test/fake_arc_session.h"
 #include "components/user_manager/user_manager.h"
+#include "ui/base/ime/chromeos/input_method_manager.h"
 #include "ui/snapshot/screenshot_grabber.h"
 #endif
 
@@ -298,10 +256,6 @@
 #include "ui/base/window_open_disposition.h"
 #endif
 
-#if defined(OS_WIN)
-#include "base/win/win_util.h"
-#endif
-
 #if !defined(OS_ANDROID)
 #include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -310,14 +264,17 @@
 #include "chrome/browser/ui/toolbar/media_router_action_controller.h"
 #endif
 
+#if defined(OS_WIN) || defined(OS_MACOSX) || \
+    (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+#include "media/webrtc/webrtc_switches.h"
+#include "services/service_manager/sandbox/features.h"
+#endif
+
 using content::BrowserThread;
-using net::URLRequestMockHTTPJob;
-using safe_browsing::ReusedPasswordAccountType;
 using testing::_;
 using testing::AtLeast;
 using testing::Mock;
 using testing::Return;
-using testing::Sequence;
 using webrtc_event_logging::WebRtcEventLogManager;
 
 namespace policy {
@@ -329,34 +286,6 @@ const int kOneHourInMs = 60 * 60 * 1000;
 const int kThreeHoursInMs = 180 * 60 * 1000;
 #endif
 
-const char kURL[] = "http://example.com";
-const char kCookieValue[] = "converted=true";
-// Assigned to Philip J. Fry to fix eventually.
-// TODO(maksims): use year 3000 when we get rid off the 32-bit
-// versions. https://crbug.com/619828
-const char kCookieOptions[] = ";expires=Wed Jan 01 2038 00:00:00 GMT";
-
-const base::FilePath::CharType kTestExtensionsDir[] =
-    FILE_PATH_LITERAL("extensions");
-const base::FilePath::CharType kGoodCrxName[] = FILE_PATH_LITERAL("good.crx");
-const base::FilePath::CharType kSimpleWithIconCrxName[] =
-    FILE_PATH_LITERAL("simple_with_icon.crx");
-const base::FilePath::CharType kHostedAppCrxName[] =
-    FILE_PATH_LITERAL("hosted_app.crx");
-
-const char kGoodCrxId[] = "ldnnhddmnhbkjipkidpdiheffobcpfmf";
-const char kSimpleWithIconCrxId[] = "dehdlahnlebladnfleagmjdapdjdcnlp";
-const char kHostedAppCrxId[] = "kbmnembihfiondgfjekmnmcbddelicoi";
-
-const base::FilePath::CharType kGoodV1CrxName[] =
-    FILE_PATH_LITERAL("good_v1.crx");
-const base::FilePath::CharType kSimpleWithPopupExt[] =
-    FILE_PATH_LITERAL("simple_with_popup");
-const base::FilePath::CharType kAppUnpackedExt[] =
-    FILE_PATH_LITERAL("app");
-
-const char kAutoplayTestPageURL[] = "/media/autoplay_iframe.html";
-
 #if !defined(OS_MACOSX)
 const base::FilePath::CharType kUnpackedFullscreenAppName[] =
     FILE_PATH_LITERAL("fullscreen_app");
@@ -367,122 +296,12 @@ const char kTestWebRtcUdpPortRange[] = "10000-10100";
 
 constexpr size_t kWebAppId = 42;
 
-void GetTestDataDirectory(base::FilePath* test_data_directory) {
-  ASSERT_TRUE(
-      base::PathService::Get(chrome::DIR_TEST_DATA, test_data_directory));
-}
-
 content::RenderFrameHost* GetMostVisitedIframe(content::WebContents* tab) {
   for (content::RenderFrameHost* frame : tab->GetAllFrames()) {
     if (frame->GetFrameName() == "mv-single")
       return frame;
   }
   return nullptr;
-}
-
-// Filters requests to the hosts in |urls| and redirects them to the test data
-// dir through URLRequestMockHTTPJobs.
-void RedirectHostsToTestData(const char* const urls[], size_t size) {
-  // Map the given hosts to the test data dir.
-  net::URLRequestFilter* filter = net::URLRequestFilter::GetInstance();
-  base::FilePath base_path;
-  GetTestDataDirectory(&base_path);
-  for (size_t i = 0; i < size; ++i) {
-    const GURL url(urls[i]);
-    EXPECT_TRUE(url.is_valid());
-    filter->AddUrlInterceptor(
-        url, URLRequestMockHTTPJob::CreateInterceptor(base_path));
-  }
-}
-
-// Fails requests using ERR_CONNECTION_RESET.
-class FailedJobInterceptor : public net::URLRequestInterceptor {
- public:
-  FailedJobInterceptor() {}
-  ~FailedJobInterceptor() override {}
-
-  // URLRequestInterceptor implementation:
-  net::URLRequestJob* MaybeInterceptRequest(
-      net::URLRequest* request,
-      net::NetworkDelegate* network_delegate) const override {
-    return new net::URLRequestFailedJob(request, network_delegate,
-                                        net::ERR_CONNECTION_RESET);
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(FailedJobInterceptor);
-};
-
-// While |MakeRequestFail| is in scope URLRequests to |host| will fail.
-class MakeRequestFail {
- public:
-  // Sets up the filter on IO thread such that requests to |host| fail.
-  explicit MakeRequestFail(const std::string& host) : host_(host) {
-    base::RunLoop run_loop;
-    base::PostTaskAndReply(FROM_HERE, {BrowserThread::IO},
-                           base::BindOnce(MakeRequestFailOnIO, host_),
-                           run_loop.QuitClosure());
-    run_loop.Run();
-  }
-  ~MakeRequestFail() {
-    base::RunLoop run_loop;
-    base::PostTaskAndReply(FROM_HERE, {BrowserThread::IO},
-                           base::BindOnce(UndoMakeRequestFailOnIO, host_),
-                           run_loop.QuitClosure());
-    run_loop.Run();
-  }
-
- private:
-  // Filters requests to the |host| such that they fail. Run on IO thread.
-  static void MakeRequestFailOnIO(const std::string& host) {
-    net::URLRequestFilter* filter = net::URLRequestFilter::GetInstance();
-    filter->AddHostnameInterceptor("http", host,
-                                   std::unique_ptr<net::URLRequestInterceptor>(
-                                       new FailedJobInterceptor()));
-    filter->AddHostnameInterceptor("https", host,
-                                   std::unique_ptr<net::URLRequestInterceptor>(
-                                       new FailedJobInterceptor()));
-  }
-
-  // Remove filters for requests to the |host|. Run on IO thread.
-  static void UndoMakeRequestFailOnIO(const std::string& host) {
-    net::URLRequestFilter* filter = net::URLRequestFilter::GetInstance();
-    filter->RemoveHostnameHandler("http", host);
-    filter->RemoveHostnameHandler("https", host);
-  }
-
-  const std::string host_;
-};
-
-// Registers a handler to respond to requests whose path matches |match_path|.
-// The response contents are generated from |template_file|, by replacing all
-// "${URL_PLACEHOLDER}" substrings in the file with the request URL excluding
-// filename, query values and fragment.
-void RegisterURLReplacingHandler(net::EmbeddedTestServer* test_server,
-                                 const std::string& match_path,
-                                 const base::FilePath& template_file) {
-  test_server->RegisterRequestHandler(base::Bind(
-      [](net::EmbeddedTestServer* test_server, const std::string& match_path,
-         const base::FilePath& template_file,
-         const net::test_server::HttpRequest& request)
-          -> std::unique_ptr<net::test_server::HttpResponse> {
-        GURL url = test_server->GetURL(request.relative_url);
-        if (url.path() != match_path)
-          return nullptr;
-
-        std::string contents;
-        CHECK(base::ReadFileToString(template_file, &contents));
-
-        GURL url_base = url.GetWithoutFilename();
-        base::ReplaceSubstringsAfterOffset(&contents, 0, "${URL_PLACEHOLDER}",
-                                           url_base.spec());
-
-        auto response = std::make_unique<net::test_server::BasicHttpResponse>();
-        response->set_content(contents);
-        response->set_content_type("text/plain");
-        return response;
-      },
-      base::Unretained(test_server), match_path, template_file));
 }
 
 // Verifies that the given url |spec| can be opened. This assumes that |spec|
@@ -592,12 +411,6 @@ bool IsWebGLEnabled(content::WebContents* contents) {
   return result;
 }
 
-bool IsJavascriptEnabled(content::WebContents* contents) {
-  base::Value value =
-      content::ExecuteScriptAndGetValue(contents->GetMainFrame(), "123");
-  return value.is_int() && value.GetInt() == 123;
-}
-
 bool IsNetworkPredictionEnabled(PrefService* prefs) {
   return chrome_browser_net::CanPrefetchAndPrerenderUI(prefs) ==
       chrome_browser_net::NetworkPredictionStatus::ENABLED;
@@ -657,47 +470,6 @@ class TestAudioObserver : public chromeos::CrasAudioHandler::AudioObserver {
 };
 #endif
 
-// This class waits until either a load stops or the WebContents is destroyed.
-class WebContentsLoadedOrDestroyedWatcher
-    : public content::WebContentsObserver {
- public:
-  explicit WebContentsLoadedOrDestroyedWatcher(
-      content::WebContents* web_contents);
-  ~WebContentsLoadedOrDestroyedWatcher() override;
-
-  // Waits until the WebContents's load is done or until it is destroyed.
-  void Wait();
-
-  // Overridden WebContentsObserver methods.
-  void WebContentsDestroyed() override;
-  void DidStopLoading() override;
-
- private:
-  scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
-
-  DISALLOW_COPY_AND_ASSIGN(WebContentsLoadedOrDestroyedWatcher);
-};
-
-WebContentsLoadedOrDestroyedWatcher::WebContentsLoadedOrDestroyedWatcher(
-    content::WebContents* web_contents)
-    : content::WebContentsObserver(web_contents),
-      message_loop_runner_(new content::MessageLoopRunner) {
-}
-
-WebContentsLoadedOrDestroyedWatcher::~WebContentsLoadedOrDestroyedWatcher() {}
-
-void WebContentsLoadedOrDestroyedWatcher::Wait() {
-  message_loop_runner_->Run();
-}
-
-void WebContentsLoadedOrDestroyedWatcher::WebContentsDestroyed() {
-  message_loop_runner_->Quit();
-}
-
-void WebContentsLoadedOrDestroyedWatcher::DidStopLoading() {
-  message_loop_runner_->Quit();
-}
-
 #if !defined(OS_MACOSX)
 
 // Observer used to wait for the creation of a new app window.
@@ -755,414 +527,7 @@ extensions::MessagingDelegate::PolicyPermission IsNativeMessagingHostAllowed(
 }
 #endif
 
-class MockPasswordProtectionService
-    : public safe_browsing::ChromePasswordProtectionService {
- public:
-  MockPasswordProtectionService(safe_browsing::SafeBrowsingService* sb_service,
-                                Profile* profile)
-      : safe_browsing::ChromePasswordProtectionService(sb_service, profile) {}
-  ~MockPasswordProtectionService() override {}
-
-  MOCK_CONST_METHOD0(IsPrimaryAccountGmail, bool());
-
-  AccountInfo GetAccountInfo() const override {
-    AccountInfo info;
-    info.email = "user@mycompany.com";
-    return info;
-  }
-};
-
 }  // namespace
-
-class PolicyTest : public InProcessBrowserTest {
- protected:
-  PolicyTest() {}
-  ~PolicyTest() override {}
-
-  void SetUp() override {
-    test_extension_cache_.reset(new extensions::ExtensionCacheFake());
-    InProcessBrowserTest::SetUp();
-  }
-
-  void SetUpInProcessBrowserTestFixture() override {
-    base::CommandLine::ForCurrentProcess()->AppendSwitch("noerrdialogs");
-    EXPECT_CALL(provider_, IsInitializationComplete(_))
-        .WillRepeatedly(Return(true));
-    BrowserPolicyConnector::SetPolicyProviderForTesting(&provider_);
-  }
-
-  void SetUpOnMainThread() override {
-    host_resolver()->AddRule("*", "127.0.0.1");
-    if (extension_service()->updater()) {
-      extension_service()->updater()->SetExtensionCacheForTesting(
-          test_extension_cache_.get());
-    }
-  }
-
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    variations::testing::VariationParamsManager::AppendVariationParams(
-        "ReportCertificateErrors", "ShowAndPossiblySend",
-        {{"sendingThreshold", "1.0"}}, command_line);
-  }
-
-  void SetScreenshotPolicy(bool enabled) {
-    PolicyMap policies;
-    policies.Set(key::kDisableScreenshots, POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-                 std::make_unique<base::Value>(!enabled), nullptr);
-    UpdateProviderPolicy(policies);
-  }
-
-  void SetShouldRequireCTForTesting(bool* required) {
-    if (content::IsOutOfProcessNetworkService()) {
-      network::mojom::NetworkServiceTestPtr network_service_test;
-      content::GetSystemConnector()->BindInterface(
-          content::mojom::kNetworkServiceName, &network_service_test);
-      network::mojom::NetworkServiceTest::ShouldRequireCT required_ct;
-      if (!required) {
-        required_ct =
-            network::mojom::NetworkServiceTest::ShouldRequireCT::RESET;
-      } else {
-        required_ct =
-            *required
-                ? network::mojom::NetworkServiceTest::ShouldRequireCT::REQUIRE
-                : network::mojom::NetworkServiceTest::ShouldRequireCT::
-                      DONT_REQUIRE;
-      }
-
-      mojo::ScopedAllowSyncCallForTesting allow_sync_call;
-      network_service_test->SetShouldRequireCT(required_ct);
-      return;
-    }
-
-    base::PostTask(
-        FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(
-            &net::TransportSecurityState::SetShouldRequireCTForTesting,
-            required));
-  }
-
-#if defined(OS_CHROMEOS)
-  class QuitMessageLoopAfterScreenshot
-      : public ChromeScreenshotGrabberTestObserver {
-   public:
-    explicit QuitMessageLoopAfterScreenshot(base::OnceClosure done)
-        : done_(std::move(done)) {}
-    void OnScreenshotCompleted(
-        ui::ScreenshotResult screenshot_result,
-        const base::FilePath& screenshot_path) override {
-      base::PostTaskAndReply(FROM_HERE, {BrowserThread::IO}, base::DoNothing(),
-                             std::move(done_));
-    }
-
-    ~QuitMessageLoopAfterScreenshot() override {}
-
-   private:
-    base::OnceClosure done_;
-  };
-
-  void TestScreenshotFile(bool enabled) {
-    base::RunLoop run_loop;
-    QuitMessageLoopAfterScreenshot observer_(run_loop.QuitClosure());
-
-    ChromeScreenshotGrabber* grabber = ChromeScreenshotGrabber::Get();
-    grabber->test_observer_ = &observer_;
-    SetScreenshotPolicy(enabled);
-    grabber->HandleTakeScreenshotForAllRootWindows();
-    run_loop.Run();
-
-    grabber->test_observer_ = nullptr;
-  }
-#endif  // defined(OS_CHROMEOS)
-
-  extensions::ExtensionService* extension_service() {
-    extensions::ExtensionSystem* system =
-        extensions::ExtensionSystem::Get(browser()->profile());
-    return system->extension_service();
-  }
-
-  extensions::ExtensionRegistry* extension_registry() {
-    return extensions::ExtensionRegistry::Get(browser()->profile());
-  }
-
-  const extensions::Extension* InstallExtension(
-      const base::FilePath::StringType& name) {
-    base::FilePath extension_path(ui_test_utils::GetTestFilePath(
-        base::FilePath(kTestExtensionsDir), base::FilePath(name)));
-    scoped_refptr<extensions::CrxInstaller> installer =
-        extensions::CrxInstaller::CreateSilent(extension_service());
-    installer->set_allow_silent_install(true);
-    installer->set_install_cause(extension_misc::INSTALL_CAUSE_UPDATE);
-    installer->set_creation_flags(extensions::Extension::FROM_WEBSTORE);
-    installer->set_off_store_install_allow_reason(
-        extensions::CrxInstaller::OffStoreInstallAllowReason::
-            OffStoreInstallAllowedInTest);
-
-    content::WindowedNotificationObserver observer(
-        extensions::NOTIFICATION_CRX_INSTALLER_DONE,
-        content::NotificationService::AllSources());
-    installer->InstallCrx(extension_path);
-    observer.Wait();
-    content::Details<const extensions::Extension> details = observer.details();
-    return details.ptr();
-  }
-
-  const extensions::Extension* InstallBookmarkApp() {
-    WebApplicationInfo web_app;
-    web_app.title = base::ASCIIToUTF16("Bookmark App");
-    web_app.app_url = GURL("http://www.google.com");
-
-    scoped_refptr<extensions::CrxInstaller> installer =
-        extensions::CrxInstaller::CreateSilent(extension_service());
-
-    content::WindowedNotificationObserver observer(
-        extensions::NOTIFICATION_CRX_INSTALLER_DONE,
-        content::NotificationService::AllSources());
-    installer->InstallWebApp(web_app);
-    observer.Wait();
-    content::Details<const extensions::Extension> details = observer.details();
-    return details.ptr();
-  }
-
-  scoped_refptr<const extensions::Extension> LoadUnpackedExtension(
-      const base::FilePath::StringType& name) {
-    base::FilePath extension_path(ui_test_utils::GetTestFilePath(
-        base::FilePath(kTestExtensionsDir), base::FilePath(name)));
-    extensions::ChromeTestExtensionLoader loader(browser()->profile());
-    return loader.LoadExtension(extension_path);
-  }
-
-  void UninstallExtension(const std::string& id, bool expect_success) {
-    if (expect_success) {
-      extensions::TestExtensionRegistryObserver observer(extension_registry());
-      extension_service()->UninstallExtension(
-          id, extensions::UNINSTALL_REASON_FOR_TESTING, NULL);
-      observer.WaitForExtensionUninstalled();
-    } else {
-      content::WindowedNotificationObserver observer(
-          extensions::NOTIFICATION_EXTENSION_UNINSTALL_NOT_ALLOWED,
-          content::NotificationService::AllSources());
-      extension_service()->UninstallExtension(
-          id,
-          extensions::UNINSTALL_REASON_FOR_TESTING,
-          NULL);
-      observer.Wait();
-    }
-  }
-
-  void DisableExtension(const std::string& id) {
-    extensions::TestExtensionRegistryObserver observer(extension_registry());
-    extension_service()->DisableExtension(
-        id, extensions::disable_reason::DISABLE_USER_ACTION);
-    observer.WaitForExtensionUnloaded();
-  }
-
-  void UpdateProviderPolicy(const PolicyMap& policy) {
-    PolicyMap policy_with_defaults;
-    policy_with_defaults.CopyFrom(policy);
-#if defined(OS_CHROMEOS)
-    SetEnterpriseUsersDefaults(&policy_with_defaults);
-#endif
-    provider_.UpdateChromePolicy(policy_with_defaults);
-    DCHECK(base::MessageLoopCurrent::Get());
-    base::RunLoop loop;
-    loop.RunUntilIdle();
-  }
-
-  // Sends a mouse click at the given coordinates to the current renderer.
-  void PerformClick(int x, int y) {
-    content::WebContents* contents =
-        browser()->tab_strip_model()->GetActiveWebContents();
-    blink::WebMouseEvent click_event(
-        blink::WebInputEvent::kMouseDown, blink::WebInputEvent::kNoModifiers,
-        blink::WebInputEvent::GetStaticTimeStampForTests());
-    click_event.button = blink::WebMouseEvent::Button::kLeft;
-    click_event.click_count = 1;
-    click_event.SetPositionInWidget(x, y);
-    contents->GetRenderViewHost()->GetWidget()->ForwardMouseEvent(click_event);
-    click_event.SetType(blink::WebInputEvent::kMouseUp);
-    contents->GetRenderViewHost()->GetWidget()->ForwardMouseEvent(click_event);
-  }
-
-  void SetPolicy(PolicyMap* policies,
-                 const char* key,
-                 std::unique_ptr<base::Value> value) {
-    if (value) {
-      policies->Set(key, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                    POLICY_SOURCE_CLOUD, std::move(value), nullptr);
-    } else {
-      policies->Erase(key);
-    }
-  }
-
-  void ApplySafeSearchPolicy(std::unique_ptr<base::Value> legacy_safe_search,
-                             std::unique_ptr<base::Value> google_safe_search,
-                             std::unique_ptr<base::Value> legacy_youtube,
-                             std::unique_ptr<base::Value> youtube_restrict) {
-    PolicyMap policies;
-    SetPolicy(&policies, key::kForceSafeSearch, std::move(legacy_safe_search));
-    SetPolicy(&policies, key::kForceGoogleSafeSearch,
-              std::move(google_safe_search));
-    SetPolicy(&policies, key::kForceYouTubeSafetyMode,
-              std::move(legacy_youtube));
-    SetPolicy(&policies, key::kForceYouTubeRestrict,
-              std::move(youtube_restrict));
-    UpdateProviderPolicy(policies);
-  }
-
-#if defined(OS_CHROMEOS)
-  void SetEnableFlag(const keyboard::KeyboardEnableFlag& flag) {
-    auto* keyboard_client = ChromeKeyboardControllerClient::Get();
-    keyboard_client->SetEnableFlag(flag);
-  }
-
-  void ClearEnableFlag(const keyboard::KeyboardEnableFlag& flag) {
-    auto* keyboard_client = ChromeKeyboardControllerClient::Get();
-    keyboard_client->ClearEnableFlag(flag);
-  }
-#endif
-
-  static GURL GetExpectedSearchURL(bool expect_safe_search) {
-    std::string expected_url("http://google.com/");
-    if (expect_safe_search) {
-      expected_url += "?" +
-                      std::string(safe_search_util::kSafeSearchSafeParameter) +
-                      "&" + safe_search_util::kSafeSearchSsuiParameter;
-    }
-    return GURL(expected_url);
-  }
-
-  static void CheckSafeSearch(Browser* browser,
-                              bool expect_safe_search,
-                              const std::string& url = "http://google.com/") {
-    content::WebContents* web_contents =
-        browser->tab_strip_model()->GetActiveWebContents();
-    content::TestNavigationObserver observer(web_contents);
-    ui_test_utils::SendToOmniboxAndSubmit(browser, url);
-    observer.Wait();
-    OmniboxEditModel* model =
-        browser->window()->GetLocationBar()->GetOmniboxView()->model();
-    EXPECT_TRUE(model->CurrentMatch(NULL).destination_url.is_valid());
-    EXPECT_EQ(GetExpectedSearchURL(expect_safe_search), web_contents->GetURL());
-  }
-
-  static void CheckYouTubeRestricted(
-      int youtube_restrict_mode,
-      const std::map<GURL, net::HttpRequestHeaders>& urls_requested,
-      const GURL& url) {
-    auto iter = urls_requested.find(url);
-    ASSERT_TRUE(iter != urls_requested.end());
-    std::string header;
-    iter->second.GetHeader(safe_search_util::kYouTubeRestrictHeaderName,
-                           &header);
-    if (youtube_restrict_mode == safe_search_util::YOUTUBE_RESTRICT_OFF) {
-      EXPECT_TRUE(header.empty());
-    } else if (youtube_restrict_mode ==
-               safe_search_util::YOUTUBE_RESTRICT_MODERATE) {
-      EXPECT_EQ(header, safe_search_util::kYouTubeRestrictHeaderValueModerate);
-    } else if (youtube_restrict_mode ==
-               safe_search_util::YOUTUBE_RESTRICT_STRICT) {
-      EXPECT_EQ(header, safe_search_util::kYouTubeRestrictHeaderValueStrict);
-    }
-  }
-
-  static void CheckAllowedDomainsHeader(
-      const std::string& allowed_domain,
-      const std::map<GURL, net::HttpRequestHeaders>& urls_requested,
-      const GURL& url) {
-    auto iter = urls_requested.find(url);
-    ASSERT_TRUE(iter != urls_requested.end());
-    if (allowed_domain.empty()) {
-      EXPECT_TRUE(
-          !iter->second.HasHeader(safe_search_util::kGoogleAppsAllowedDomains));
-      return;
-    }
-
-    std::string header;
-    iter->second.GetHeader(safe_search_util::kGoogleAppsAllowedDomains,
-                           &header);
-    EXPECT_EQ(header, allowed_domain);
-  }
-
-  static bool FetchSubresource(content::WebContents* web_contents,
-                               const GURL& url) {
-    std::string script(
-        "var xhr = new XMLHttpRequest();"
-        "xhr.open('GET', '");
-    script += url.spec() +
-              "', true);"
-              "xhr.onload = function (e) {"
-              "  if (xhr.readyState === 4) {"
-              "    window.domAutomationController.send(xhr.status === 200);"
-              "  }"
-              "};"
-              "xhr.onerror = function () {"
-              "  window.domAutomationController.send(false);"
-              "};"
-              "xhr.send(null)";
-    bool xhr_result = false;
-    bool execute_result =
-        content::ExecuteScriptAndExtractBool(web_contents, script, &xhr_result);
-    return xhr_result && execute_result;
-  }
-
-  bool IsShowingInterstitial(content::WebContents* tab) {
-    security_interstitials::SecurityInterstitialTabHelper* helper =
-        security_interstitials::SecurityInterstitialTabHelper::FromWebContents(
-            tab);
-    if (!helper) {
-      return false;
-    }
-    return helper->GetBlockingPageForCurrentlyCommittedNavigationForTesting() !=
-           nullptr;
-  }
-
-  void WaitForInterstitial(content::WebContents* tab) {
-    ASSERT_TRUE(IsShowingInterstitial(tab));
-    ASSERT_TRUE(WaitForRenderFrameReady(tab->GetMainFrame()));
-  }
-
-  int IsExtendedReportingCheckboxVisibleOnInterstitial() {
-    const std::string command = base::StringPrintf(
-        "var node = document.getElementById('extended-reporting-opt-in');"
-        "if (node) {"
-        "  window.domAutomationController.send(node.offsetWidth > 0 || "
-        "      node.offsetHeight > 0 ? %d : %d);"
-        "} else {"
-        // The node should be present but not visible, so trigger an error
-        // by sending false if it's not present.
-        "  window.domAutomationController.send(%d);"
-        "}",
-        security_interstitials::CMD_TEXT_FOUND,
-        security_interstitials::CMD_TEXT_NOT_FOUND,
-        security_interstitials::CMD_ERROR);
-
-    content::WebContents* tab =
-        browser()->tab_strip_model()->GetActiveWebContents();
-    WaitForInterstitial(tab);
-    int result = 0;
-    EXPECT_TRUE(content::ExecuteScriptAndExtractInt(tab->GetMainFrame(),
-                                                    command, &result));
-    return result;
-  }
-
-  void SendInterstitialCommand(
-      content::WebContents* tab,
-      security_interstitials::SecurityInterstitialCommand command) {
-    security_interstitials::SecurityInterstitialTabHelper* helper =
-        security_interstitials::SecurityInterstitialTabHelper::FromWebContents(
-            tab);
-    helper->GetBlockingPageForCurrentlyCommittedNavigationForTesting()
-        ->CommandReceived(base::NumberToString(command));
-    return;
-  }
-
-  MockConfigurationPolicyProvider provider_;
-  std::unique_ptr<extensions::ExtensionCacheFake> test_extension_cache_;
-  extensions::ScopedIgnoreContentVerifierForTest ignore_content_verifier_;
-  extensions::ExtensionUpdater::ScopedSkipScheduledCheckForTest
-      skip_scheduled_extension_checks_;
-};
 
 #if defined(OS_WIN)
 // This policy only exists on Windows.
@@ -1373,6 +738,61 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserWindowLaunchSuppressedTest,
   CheckLaunchedBrowserCount(1u);
 }
 
+class PrimaryUserPoliciesProxiedTest : public LoginPolicyTestBase {
+ public:
+  PrimaryUserPoliciesProxiedTest() = default;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(PrimaryUserPoliciesProxiedTest);
+};
+
+IN_PROC_BROWSER_TEST_F(PrimaryUserPoliciesProxiedTest,
+                       AvailableInLocalStateEarly) {
+  PolicyService* const device_wide_policy_service =
+      g_browser_process->platform_part()
+          ->browser_policy_connector_chromeos()
+          ->GetPolicyService();
+
+  // Sanity check default state without a policy active.
+  EXPECT_FALSE(device_wide_policy_service
+                   ->GetPolicies(PolicyNamespace(
+                       POLICY_DOMAIN_CHROME, std::string() /* component_id */))
+                   .GetValue(key::kAudioOutputAllowed));
+  const PrefService::Preference* pref =
+      g_browser_process->local_state()->FindPreference(
+          chromeos::prefs::kAudioOutputAllowed);
+  EXPECT_FALSE(pref->IsManaged());
+  EXPECT_TRUE(pref->GetValue()->GetBool());
+
+  base::DictionaryValue policy;
+  policy.SetKey(key::kAudioOutputAllowed, base::Value(false));
+  user_policy_helper()->SetPolicy(policy, base::DictionaryValue());
+
+  SkipToLoginScreen();
+
+  content::WindowedNotificationObserver profile_created_observer(
+      chrome::NOTIFICATION_PROFILE_CREATED,
+      content::NotificationService::AllSources());
+  TriggerLogIn(kAccountId, kAccountPassword, kEmptyServices);
+  profile_created_observer.Wait();
+
+  const base::Value* policy_value =
+      device_wide_policy_service
+          ->GetPolicies(PolicyNamespace(POLICY_DOMAIN_CHROME,
+                                        std::string() /* component_id */))
+          .GetValue(key::kAudioOutputAllowed);
+  ASSERT_TRUE(policy_value);
+  EXPECT_FALSE(policy_value->GetBool());
+
+  EXPECT_TRUE(pref->IsManaged());
+  EXPECT_FALSE(pref->GetValue()->GetBool());
+
+  // Make sure that session startup finishes before letting chrome exit.
+  // Rationale: We've seen CHECK-failures when exiting chrome right after
+  // NOTIFICATION_PROFILE_CREATED, see e.g. https://crbug.com/1002066 .
+  chromeos::test::WaitForPrimaryUserSessionStart();
+}
+
 #endif  // defined(OS_CHROMEOS)
 
 IN_PROC_BROWSER_TEST_F(PolicyTest, BookmarkBarEnabled) {
@@ -1394,71 +814,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, BookmarkBarEnabled) {
   EXPECT_EQ(BookmarkBar::SHOW, browser()->bookmark_bar_state());
 }
 
-IN_PROC_BROWSER_TEST_F(PolicyTest, PRE_PRE_DefaultCookiesSetting) {
-  // Verifies that cookies are deleted on shutdown. This test is split in 3
-  // parts because it spans 2 browser restarts.
-
-  Profile* profile = browser()->profile();
-  GURL url(kURL);
-  // No cookies at startup.
-  EXPECT_TRUE(content::GetCookies(profile, url).empty());
-  // Set a cookie now.
-  std::string value = base::StrCat({kCookieValue, kCookieOptions});
-  EXPECT_TRUE(content::SetCookie(profile, url, value));
-  // Verify it was set.
-  EXPECT_EQ(kCookieValue, GetCookies(profile, url));
-}
-
-IN_PROC_BROWSER_TEST_F(PolicyTest, PRE_DefaultCookiesSetting) {
-  // Verify that the cookie persists across restarts.
-  EXPECT_EQ(kCookieValue, GetCookies(browser()->profile(), GURL(kURL)));
-  // Now set the policy and the cookie should be gone after another restart.
-  PolicyMap policies;
-  policies.Set(key::kDefaultCookiesSetting, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               std::make_unique<base::Value>(CONTENT_SETTING_SESSION_ONLY),
-               nullptr);
-  UpdateProviderPolicy(policies);
-}
-
-IN_PROC_BROWSER_TEST_F(PolicyTest, DefaultCookiesSetting) {
-  // Verify that the cookie is gone.
-  EXPECT_TRUE(GetCookies(browser()->profile(), GURL(kURL)).empty());
-}
-
-IN_PROC_BROWSER_TEST_F(PolicyTest, PRE_PRE_WebsiteCookiesSetting) {
-  // Verifies that cookies are deleted on shutdown. This test is split in 3
-  // parts because it spans 2 browser restarts.
-
-  Profile* profile = browser()->profile();
-  GURL url(kURL);
-  // No cookies at startup.
-  EXPECT_TRUE(content::GetCookies(profile, url).empty());
-  // Set a cookie now.
-  std::string value = base::StrCat({kCookieValue, kCookieOptions});
-  EXPECT_TRUE(content::SetCookie(profile, url, value));
-  // Verify it was set.
-  EXPECT_EQ(kCookieValue, GetCookies(profile, url));
-}
-
-IN_PROC_BROWSER_TEST_F(PolicyTest, PRE_WebsiteCookiesSetting) {
-  // Verify that the cookie persists across restarts.
-  EXPECT_EQ(kCookieValue, GetCookies(browser()->profile(), GURL(kURL)));
-  // Now set the policy and the cookie should be gone after another restart.
-  HostContentSettingsMapFactory::GetForProfile(browser()->profile())
-      ->SetWebsiteSettingDefaultScope(
-          GURL(kURL), GURL(kURL), CONTENT_SETTINGS_TYPE_COOKIES, std::string(),
-          std::make_unique<base::Value>(CONTENT_SETTING_SESSION_ONLY));
-}
-
-IN_PROC_BROWSER_TEST_F(PolicyTest, WebsiteCookiesSetting) {
-  // Verify that the cookie is gone.
-  EXPECT_TRUE(GetCookies(browser()->profile(), GURL(kURL)).empty());
-}
-
 IN_PROC_BROWSER_TEST_F(PolicyTest, DefaultSearchProvider) {
-  MakeRequestFail make_request_fail("search.example");
-
   // Verifies that a default search is made using the provider configured via
   // policy. Also checks that default search can be completely disabled.
   const base::string16 kKeyword(base::ASCIIToUTF16("testsearch"));
@@ -2092,24 +1448,8 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DownloadDirectory) {
 }
 
 #if defined(OS_CHROMEOS)
-class DrivePolicyTest : public PolicyTest,
-                        public testing::WithParamInterface<bool> {
- public:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    PolicyTest::SetUpCommandLine(command_line);
-    if (GetParam()) {
-      scoped_feature_list_.InitAndEnableFeature(chromeos::features::kDriveFs);
-    } else {
-      scoped_feature_list_.InitAndDisableFeature(chromeos::features::kDriveFs);
-    }
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-};
-
 // Verifies that the download directory can be forced to Google Drive by policy.
-IN_PROC_BROWSER_TEST_P(DrivePolicyTest, DownloadDirectory_Drive) {
+IN_PROC_BROWSER_TEST_F(PolicyTest, DownloadDirectory_Drive) {
   // Override the download directory with the policy.
   {
     PolicyMap policies;
@@ -2142,1013 +1482,7 @@ IN_PROC_BROWSER_TEST_P(DrivePolicyTest, DownloadDirectory_Drive) {
                 .DownloadPath()
                 .StripTrailingSeparators());
 }
-
-INSTANTIATE_TEST_SUITE_P(DrivePolicyTestInstance,
-                         DrivePolicyTest,
-                         testing::Bool());
-
-// Check that component extension can't be blacklisted, besides the camera app
-// that can be disabled by extension policy. This is a temporary solution until
-// there's a dedicated policy to disable the camera, at which point the special
-// check should be removed.
-// TODO(http://crbug.com/1002935)
-IN_PROC_BROWSER_TEST_F(PolicyTest,
-                       ExtensionInstallBlacklistComponentApps) {
-  extensions::ExtensionPrefs* extension_prefs =
-      extensions::ExtensionPrefs::Get(browser()->profile());
-
-  // Load all component extensions.
-  extensions::ComponentLoader::EnableBackgroundExtensionsForTesting();
-  extension_service()->component_loader()->AddDefaultComponentExtensions(false);
-  base::RunLoop().RunUntilIdle();
-
-  extensions::ExtensionRegistry* registry = extension_registry();
-  ASSERT_TRUE(
-      registry->enabled_extensions().GetByID(extension_misc::kCameraAppId));
-  ASSERT_TRUE(
-      registry->enabled_extensions().GetByID(extensions::kWebStoreAppId));
-  const size_t enabled_count = registry->enabled_extensions().size();
-
-  // Verify that only Camera app can be blacklisted.
-  base::ListValue blacklist;
-  blacklist.AppendString(extension_misc::kCameraAppId);
-  blacklist.AppendString(extensions::kWebStoreAppId);
-  PolicyMap policies;
-  policies.Set(key::kExtensionInstallBlacklist, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               blacklist.CreateDeepCopy(), nullptr);
-  UpdateProviderPolicy(policies);
-
-  ASSERT_FALSE(
-      registry->enabled_extensions().GetByID(extension_misc::kCameraAppId));
-  ASSERT_TRUE(
-      registry->disabled_extensions().GetByID(extension_misc::kCameraAppId));
-  EXPECT_EQ(1u, registry->disabled_extensions().size());
-  EXPECT_EQ(extensions::disable_reason::DISABLE_BLOCKED_BY_POLICY,
-            extension_prefs->GetDisableReasons(extension_misc::kCameraAppId));
-  ASSERT_TRUE(
-      registry->enabled_extensions().GetByID(extensions::kWebStoreAppId));
-  EXPECT_EQ(enabled_count - 1, registry->enabled_extensions().size());
-}
 #endif  // !defined(OS_CHROMEOS)
-
-IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionInstallBlacklistSelective) {
-  // Verifies that blacklisted extensions can't be installed.
-  extensions::ExtensionRegistry* registry = extension_registry();
-  ASSERT_FALSE(registry->GetExtensionById(
-      kGoodCrxId, extensions::ExtensionRegistry::COMPATIBILITY));
-  ASSERT_FALSE(registry->GetExtensionById(
-      kSimpleWithIconCrxId, extensions::ExtensionRegistry::COMPATIBILITY));
-  base::ListValue blacklist;
-  blacklist.AppendString(kGoodCrxId);
-  PolicyMap policies;
-  policies.Set(key::kExtensionInstallBlacklist, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               blacklist.CreateDeepCopy(), nullptr);
-  UpdateProviderPolicy(policies);
-
-  // "good.crx" is blacklisted.
-  EXPECT_FALSE(InstallExtension(kGoodCrxName));
-  EXPECT_FALSE(registry->GetExtensionById(
-      kGoodCrxId, extensions::ExtensionRegistry::COMPATIBILITY));
-
-  // "simple_with_icon.crx" is not.
-  const extensions::Extension* simple_with_icon =
-      InstallExtension(kSimpleWithIconCrxName);
-  ASSERT_TRUE(simple_with_icon);
-  EXPECT_EQ(kSimpleWithIconCrxId, simple_with_icon->id());
-  EXPECT_EQ(
-      simple_with_icon,
-      registry->GetExtensionById(kSimpleWithIconCrxId,
-                                 extensions::ExtensionRegistry::COMPATIBILITY));
-}
-
-// Ensure that bookmark apps are not blocked by the ExtensionInstallBlacklist
-// policy.
-IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionInstallBlacklist_BookmarkApp) {
-  const extensions::Extension* bookmark_app = InstallBookmarkApp();
-  ASSERT_TRUE(bookmark_app);
-  EXPECT_TRUE(InstallExtension(kGoodCrxName));
-
-  extensions::ExtensionService* service = extension_service();
-  EXPECT_TRUE(service->IsExtensionEnabled(kGoodCrxId));
-  EXPECT_TRUE(service->IsExtensionEnabled(bookmark_app->id()));
-
-  // Now set ExtensionInstallBlacklist policy to block all extensions.
-  PolicyMap policies;
-  policies.Set(key::kExtensionInstallBlacklist, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               extensions::ListBuilder().Append("*").Build(), nullptr);
-  UpdateProviderPolicy(policies);
-
-  // The bookmark app should still be enabled, with |kGoodCrxId| being disabled.
-  EXPECT_FALSE(service->IsExtensionEnabled(kGoodCrxId));
-  EXPECT_TRUE(service->IsExtensionEnabled(bookmark_app->id()));
-}
-
-// Ensure that when INSTALLATION_REMOVED is set
-// that blacklisted extensions are removed from the device.
-IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionInstallRemovedPolicy) {
-  EXPECT_TRUE(InstallExtension(kGoodCrxName));
-
-  extensions::ExtensionService* service = extension_service();
-  EXPECT_TRUE(service->GetInstalledExtension(kGoodCrxId));
-
-  // Should uninstall good_v1.crx.
-  base::DictionaryValue dict_value;
-  dict_value.SetString(std::string(kGoodCrxId) + "." +
-                           extensions::schema_constants::kInstallationMode,
-                       extensions::schema_constants::kRemoved);
-  PolicyMap policies;
-  policies.Set(key::kExtensionSettings, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               dict_value.CreateDeepCopy(), nullptr);
-  extensions::TestExtensionRegistryObserver observer(extension_registry());
-  UpdateProviderPolicy(policies);
-  observer.WaitForExtensionUnloaded();
-
-  EXPECT_FALSE(service->GetInstalledExtension(kGoodCrxId));
-}
-
-// Ensure that when INSTALLATION_REMOVED is set for wildcard
-// that blacklisted extensions are removed from the device.
-IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionWildcardRemovedPolicy) {
-  EXPECT_TRUE(InstallExtension(kGoodCrxName));
-
-  extensions::ExtensionService* service = extension_service();
-  EXPECT_TRUE(service->GetInstalledExtension(kGoodCrxId));
-
-  // Should uninstall good_v1.crx.
-  base::DictionaryValue dict_value;
-  dict_value.SetString(
-      std::string("*") + "." + extensions::schema_constants::kInstallationMode,
-      extensions::schema_constants::kRemoved);
-  PolicyMap policies;
-  policies.Set(key::kExtensionSettings, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               dict_value.CreateDeepCopy(), nullptr);
-  extensions::TestExtensionRegistryObserver observer(extension_registry());
-  UpdateProviderPolicy(policies);
-  observer.WaitForExtensionUnloaded();
-
-  EXPECT_FALSE(service->GetInstalledExtension(kGoodCrxId));
-}
-
-// Ensure that bookmark apps are not blocked by the ExtensionAllowedTypes
-// policy.
-IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionAllowedTypes_BookmarkApp) {
-  const extensions::Extension* bookmark_app = InstallBookmarkApp();
-  ASSERT_TRUE(bookmark_app);
-  EXPECT_TRUE(InstallExtension(kGoodCrxName));
-
-  extensions::ExtensionService* service = extension_service();
-  EXPECT_TRUE(service->IsExtensionEnabled(kGoodCrxId));
-  EXPECT_TRUE(service->IsExtensionEnabled(bookmark_app->id()));
-
-  // Now set policy to only allow themes. Note: Bookmark apps are hosted
-  // apps.
-  PolicyMap policies;
-  policies.Set(key::kExtensionAllowedTypes, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               extensions::ListBuilder().Append("theme").Build(), nullptr);
-  UpdateProviderPolicy(policies);
-
-  // The bookmark app should still be enabled, with |kGoodCrxId| being disabled.
-  EXPECT_FALSE(service->IsExtensionEnabled(kGoodCrxId));
-  EXPECT_TRUE(service->IsExtensionEnabled(bookmark_app->id()));
-}
-
-// Ensure that bookmark apps are not blocked by the ExtensionSettings
-// policy.
-IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionSettings_BookmarkApp) {
-  const extensions::Extension* bookmark_app = InstallBookmarkApp();
-  ASSERT_TRUE(bookmark_app);
-  EXPECT_TRUE(InstallExtension(kGoodCrxName));
-
-  extensions::ExtensionService* service = extension_service();
-  EXPECT_TRUE(service->IsExtensionEnabled(kGoodCrxId));
-  EXPECT_TRUE(service->IsExtensionEnabled(bookmark_app->id()));
-
-  // Now set policy to block all extensions.
-  PolicyMap policies;
-  policies.Set(key::kExtensionSettings, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               extensions::DictionaryBuilder()
-                   .Set("*", extensions::DictionaryBuilder()
-                                 .Set("installation_mode", "blocked")
-                                 .Build())
-                   .Build(),
-               nullptr);
-  UpdateProviderPolicy(policies);
-
-  // The bookmark app should still be enabled, with |kGoodCrxId| being disabled.
-  EXPECT_FALSE(service->IsExtensionEnabled(kGoodCrxId));
-  EXPECT_TRUE(service->IsExtensionEnabled(bookmark_app->id()));
-
-  // Clear all policies.
-  policies.Clear();
-  UpdateProviderPolicy(policies);
-
-  EXPECT_TRUE(service->IsExtensionEnabled(kGoodCrxId));
-  EXPECT_TRUE(service->IsExtensionEnabled(bookmark_app->id()));
-
-  // Now set policy to only allow themes. Note: Bookmark apps are hosted
-  // apps.
-  policies.Set(
-      key::kExtensionSettings, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-      POLICY_SOURCE_CLOUD,
-      extensions::DictionaryBuilder()
-          .Set("*", extensions::DictionaryBuilder()
-                        .Set("allowed_types",
-                             extensions::ListBuilder().Append("theme").Build())
-                        .Build())
-          .Build(),
-      nullptr);
-  UpdateProviderPolicy(policies);
-
-  // The bookmark app should still be enabled, with |kGoodCrxId| being disabled.
-  EXPECT_FALSE(service->IsExtensionEnabled(kGoodCrxId));
-  EXPECT_TRUE(service->IsExtensionEnabled(bookmark_app->id()));
-}
-
-// Flaky on windows; http://crbug.com/307994.
-#if defined(OS_WIN)
-#define MAYBE_ExtensionInstallBlacklistWildcard DISABLED_ExtensionInstallBlacklistWildcard
-#else
-#define MAYBE_ExtensionInstallBlacklistWildcard ExtensionInstallBlacklistWildcard
-#endif
-IN_PROC_BROWSER_TEST_F(PolicyTest, MAYBE_ExtensionInstallBlacklistWildcard) {
-  // Verify that a wildcard blacklist takes effect.
-  EXPECT_TRUE(InstallExtension(kSimpleWithIconCrxName));
-  extensions::ExtensionService* service = extension_service();
-  extensions::ExtensionRegistry* registry = extension_registry();
-  ASSERT_FALSE(registry->GetExtensionById(
-      kGoodCrxId, extensions::ExtensionRegistry::COMPATIBILITY));
-  ASSERT_TRUE(registry->GetExtensionById(
-      kSimpleWithIconCrxId, extensions::ExtensionRegistry::COMPATIBILITY));
-  base::ListValue blacklist;
-  blacklist.AppendString("*");
-  PolicyMap policies;
-  policies.Set(key::kExtensionInstallBlacklist, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               blacklist.CreateDeepCopy(), nullptr);
-  UpdateProviderPolicy(policies);
-
-  // "simple_with_icon" should be disabled.
-  EXPECT_TRUE(registry->GetExtensionById(
-      kSimpleWithIconCrxId, extensions::ExtensionRegistry::COMPATIBILITY));
-  EXPECT_FALSE(service->IsExtensionEnabled(kSimpleWithIconCrxId));
-
-  // It shouldn't be possible to re-enable "simple_with_icon", until it
-  // satisfies management policy.
-  service->EnableExtension(kSimpleWithIconCrxId);
-  EXPECT_FALSE(service->IsExtensionEnabled(kSimpleWithIconCrxId));
-
-  // It shouldn't be possible to install good.crx.
-  EXPECT_FALSE(InstallExtension(kGoodCrxName));
-  EXPECT_FALSE(registry->GetExtensionById(
-      kGoodCrxId, extensions::ExtensionRegistry::COMPATIBILITY));
-}
-
-IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionInstallBlacklistSharedModules) {
-  // Verifies that shared_modules are not affected by the blacklist.
-
-  base::FilePath base_path;
-  GetTestDataDirectory(&base_path);
-  base::FilePath update_xml_template_path =
-      base_path.Append(kTestExtensionsDir)
-          .AppendASCII("policy_shared_module")
-          .AppendASCII("update_template.xml");
-
-  std::string update_xml_path =
-      "/" + base::FilePath(kTestExtensionsDir).MaybeAsASCII() +
-      "/policy_shared_module/gen_update.xml";
-  RegisterURLReplacingHandler(embedded_test_server(), update_xml_path,
-                              update_xml_template_path);
-  ASSERT_TRUE(embedded_test_server()->Start());
-
-  const char kImporterId[] = "pchakhniekfaeoddkifplhnfbffomabh";
-  const char kSharedModuleId[] = "nfgclafboonjbiafbllihiailjlhelpm";
-
-  // Make sure that "import" and "export" are available to these extension IDs
-  // by mocking the release channel.
-  extensions::ScopedCurrentChannel channel(version_info::Channel::DEV);
-
-  // Verify that the extensions are not installed initially.
-  extensions::ExtensionService* service = extension_service();
-  extensions::ExtensionRegistry* registry = extension_registry();
-  ASSERT_FALSE(registry->GetExtensionById(
-      kImporterId, extensions::ExtensionRegistry::COMPATIBILITY));
-  ASSERT_FALSE(registry->GetExtensionById(
-      kSharedModuleId, extensions::ExtensionRegistry::COMPATIBILITY));
-
-  // Mock the webstore update URL. This is where the shared module extension
-  // will be installed from.
-  GURL update_xml_url = embedded_test_server()->GetURL(update_xml_path);
-  extension_test_util::SetGalleryUpdateURL(update_xml_url);
-  ui_test_utils::NavigateToURL(browser(), update_xml_url);
-
-  // Blacklist "*" but force-install the importer extension. The shared module
-  // should be automatically installed too.
-  base::ListValue blacklist;
-  blacklist.AppendString("*");
-  base::ListValue forcelist;
-  forcelist.AppendString(
-      base::StringPrintf("%s;%s", kImporterId, update_xml_url.spec().c_str()));
-  PolicyMap policies;
-  policies.Set(key::kExtensionInstallBlacklist, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               blacklist.CreateDeepCopy(), nullptr);
-  policies.Set(key::kExtensionInstallForcelist, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               forcelist.CreateDeepCopy(), nullptr);
-
-  extensions::TestExtensionRegistryObserver observe_importer(
-      registry, kImporterId);
-  extensions::TestExtensionRegistryObserver observe_shared_module(
-      registry, kSharedModuleId);
-  UpdateProviderPolicy(policies);
-  observe_importer.WaitForExtensionLoaded();
-  observe_shared_module.WaitForExtensionLoaded();
-
-  // Verify that both extensions got installed.
-  const extensions::Extension* importer = registry->GetExtensionById(
-      kImporterId, extensions::ExtensionRegistry::COMPATIBILITY);
-  ASSERT_TRUE(importer);
-  EXPECT_EQ(kImporterId, importer->id());
-  const extensions::Extension* shared_module = registry->GetExtensionById(
-      kSharedModuleId, extensions::ExtensionRegistry::COMPATIBILITY);
-  ASSERT_TRUE(shared_module);
-  EXPECT_EQ(kSharedModuleId, shared_module->id());
-  EXPECT_TRUE(shared_module->is_shared_module());
-
-  // Verify the dependency.
-  std::unique_ptr<extensions::ExtensionSet> set =
-      service->shared_module_service()->GetDependentExtensions(shared_module);
-  ASSERT_TRUE(set);
-  EXPECT_EQ(1u, set->size());
-  EXPECT_TRUE(set->Contains(importer->id()));
-
-  std::vector<extensions::SharedModuleInfo::ImportInfo> imports =
-      extensions::SharedModuleInfo::GetImports(importer);
-  ASSERT_EQ(1u, imports.size());
-  EXPECT_EQ(kSharedModuleId, imports[0].extension_id);
-}
-
-IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionInstallWhitelist) {
-  // Verifies that the whitelist can open exceptions to the blacklist.
-  extensions::ExtensionRegistry* registry = extension_registry();
-  ASSERT_FALSE(registry->GetExtensionById(
-      kGoodCrxId, extensions::ExtensionRegistry::COMPATIBILITY));
-  ASSERT_FALSE(registry->GetExtensionById(
-      kSimpleWithIconCrxId, extensions::ExtensionRegistry::COMPATIBILITY));
-  base::ListValue blacklist;
-  blacklist.AppendString("*");
-  base::ListValue whitelist;
-  whitelist.AppendString(kGoodCrxId);
-  PolicyMap policies;
-  policies.Set(key::kExtensionInstallBlacklist, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               blacklist.CreateDeepCopy(), nullptr);
-  policies.Set(key::kExtensionInstallWhitelist, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               whitelist.CreateDeepCopy(), nullptr);
-  UpdateProviderPolicy(policies);
-  // "simple_with_icon.crx" is blacklisted.
-  EXPECT_FALSE(InstallExtension(kSimpleWithIconCrxName));
-  EXPECT_FALSE(registry->GetExtensionById(
-      kSimpleWithIconCrxId, extensions::ExtensionRegistry::COMPATIBILITY));
-  // "good.crx" has a whitelist exception.
-  const extensions::Extension* good = InstallExtension(kGoodCrxName);
-  ASSERT_TRUE(good);
-  EXPECT_EQ(kGoodCrxId, good->id());
-  EXPECT_EQ(good,
-            registry->GetExtensionById(
-                kGoodCrxId, extensions::ExtensionRegistry::COMPATIBILITY));
-  // The user can also remove this extension.
-  UninstallExtension(kGoodCrxId, true);
-}
-
-namespace {
-
-class ExtensionRequestInterceptor {
- public:
-  ExtensionRequestInterceptor()
-      : interceptor_(
-            base::BindRepeating(&ExtensionRequestInterceptor::OnRequest,
-                                base::Unretained(this))) {}
-
-  void set_interceptor_hook(
-      content::URLLoaderInterceptor::InterceptCallback callback) {
-    callback_ = std::move(callback);
-  }
-
- private:
-  bool OnRequest(content::URLLoaderInterceptor::RequestParams* params) {
-    if (callback_ && callback_.Run(params))
-      return true;
-    // Mock out requests to the Web Store.
-    if (params->url_request.url.host() == "clients2.google.com" &&
-        params->url_request.url.path() == "/service/update2/crx") {
-      content::URLLoaderInterceptor::WriteResponse(
-          "chrome/test/data/extensions/good2_update_manifest.xml",
-          params->client.get());
-      return true;
-    }
-
-    if (params->url_request.url.path() == "/good_update_manifest.xml") {
-      content::URLLoaderInterceptor::WriteResponse(
-          "chrome/test/data/extensions/good2_update_manifest.xml",
-          params->client.get());
-      return true;
-    }
-    if (params->url_request.url.path() == "/extensions/good_v1.crx") {
-      content::URLLoaderInterceptor::WriteResponse(
-          "chrome/test/data/extensions/good_v1.crx", params->client.get());
-      return true;
-    }
-    if (params->url_request.url.path() == "/extensions/good2.crx") {
-      content::URLLoaderInterceptor::WriteResponse(
-          "chrome/test/data/extensions/good2.crx", params->client.get());
-      return true;
-    }
-
-    return false;
-  }
-
-  content::URLLoaderInterceptor::InterceptCallback callback_;
-  content::URLLoaderInterceptor interceptor_;
-};
-
-class MockedInstallationReporterObserver
-    : public extensions::InstallationReporter::TestObserver {
- public:
-  explicit MockedInstallationReporterObserver(const Profile* profile)
-      : profile_(profile) {}
-  ~MockedInstallationReporterObserver() override = default;
-
-  MOCK_METHOD1(ExtensionStageChanged,
-               void(extensions::InstallationReporter::Stage));
-
-  void OnExtensionDataChanged(
-      const extensions::ExtensionId& id,
-      const Profile* profile,
-      const extensions::InstallationReporter::InstallationData& data) override {
-    // For simplicity policies are pushed into all profiles, so we need to track
-    // only one here.
-    if (profile != profile_) {
-      return;
-    }
-    if (data.install_stage && stage_ != data.install_stage.value()) {
-      stage_ = data.install_stage.value();
-      ExtensionStageChanged(stage_);
-    }
-  }
-
- private:
-  extensions::InstallationReporter::Stage stage_ =
-      extensions::InstallationReporter::Stage::CREATED;
-  const Profile* profile_;
-};
-
-}  // namespace
-
-IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionInstallForcelist) {
-  // Verifies that extensions that are force-installed by policies are
-  // installed and can't be uninstalled.
-
-  ExtensionRequestInterceptor interceptor;
-
-  extensions::ExtensionService* service = extension_service();
-  extensions::ExtensionRegistry* registry = extension_registry();
-  ASSERT_FALSE(registry->GetExtensionById(
-      kGoodCrxId, extensions::ExtensionRegistry::COMPATIBILITY));
-
-  // Extensions that are force-installed come from an update URL, which defaults
-  // to the webstore. Use a test URL for this test with an update manifest
-  // that includes "good_v1.crx".
-  ASSERT_TRUE(embedded_test_server()->Start());
-  GURL url =
-      embedded_test_server()->GetURL("/extensions/good_v1_update_manifest.xml");
-
-  // Setting the forcelist extension should install "good_v1.crx".
-  base::ListValue forcelist;
-  forcelist.AppendString(
-      base::StringPrintf("%s;%s", kGoodCrxId, url.spec().c_str()));
-  PolicyMap policies;
-  policies.Set(key::kExtensionInstallForcelist, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               forcelist.CreateDeepCopy(), nullptr);
-  extensions::TestExtensionRegistryObserver observer(extension_registry());
-  MockedInstallationReporterObserver reporter_observer(browser()->profile());
-  // CREATED is the default stage in MockedInstallationReporterObserver, so it
-  // wouldn't be reported here.
-  Sequence sequence;
-  EXPECT_CALL(
-      reporter_observer,
-      ExtensionStageChanged(
-          extensions::InstallationReporter::Stage::NOTIFIED_FROM_MANAGEMENT))
-      .InSequence(sequence);
-  EXPECT_CALL(
-      reporter_observer,
-      ExtensionStageChanged(
-          extensions::InstallationReporter::Stage::SEEN_BY_POLICY_LOADER))
-      .InSequence(sequence);
-  EXPECT_CALL(
-      reporter_observer,
-      ExtensionStageChanged(
-          extensions::InstallationReporter::Stage::SEEN_BY_EXTERNAL_PROVIDER))
-      .InSequence(sequence);
-  EXPECT_CALL(
-      reporter_observer,
-      ExtensionStageChanged(extensions::InstallationReporter::Stage::PENDING))
-      .InSequence(sequence);
-  EXPECT_CALL(reporter_observer,
-              ExtensionStageChanged(
-                  extensions::InstallationReporter::Stage::DOWNLOADING))
-      .InSequence(sequence);
-  EXPECT_CALL(reporter_observer,
-              ExtensionStageChanged(
-                  extensions::InstallationReporter::Stage::INSTALLING))
-      .InSequence(sequence);
-  EXPECT_CALL(
-      reporter_observer,
-      ExtensionStageChanged(extensions::InstallationReporter::Stage::COMPLETE))
-      .InSequence(sequence);
-  extensions::InstallationReporter::SetTestObserver(&reporter_observer);
-  UpdateProviderPolicy(policies);
-  observer.WaitForExtensionWillBeInstalled();
-  extensions::InstallationReporter::SetTestObserver(nullptr);
-  // Note: Cannot check that the notification details match the expected
-  // exception, since the details object has already been freed prior to
-  // the completion of observer.WaitForExtensionWillBeInstalled().
-
-  EXPECT_TRUE(registry->GetExtensionById(
-      kGoodCrxId, extensions::ExtensionRegistry::COMPATIBILITY));
-
-  // The user is not allowed to uninstall force-installed extensions.
-  UninstallExtension(kGoodCrxId, false);
-
-  scoped_refptr<extensions::UnpackedInstaller> installer =
-      extensions::UnpackedInstaller::Create(extension_service());
-
-  // The user is not allowed to load an unpacked extension with the
-  // same ID as a force-installed extension.
-  base::FilePath good_extension_path(ui_test_utils::GetTestFilePath(
-      base::FilePath(kTestExtensionsDir), base::FilePath(kSimpleWithPopupExt)));
-  content::WindowedNotificationObserver extension_load_error_observer(
-      extensions::NOTIFICATION_EXTENSION_LOAD_ERROR,
-      content::NotificationService::AllSources());
-  installer->Load(good_extension_path);
-  extension_load_error_observer.Wait();
-
-  // Loading other unpacked extensions are not blocked.
-  scoped_refptr<const extensions::Extension> extension =
-      LoadUnpackedExtension(kAppUnpackedExt);
-  ASSERT_TRUE(extension);
-
-  const std::string old_version_number =
-      registry
-          ->GetExtensionById(kGoodCrxId,
-                             extensions::ExtensionRegistry::COMPATIBILITY)
-          ->version()
-          .GetString();
-
-  content::WindowedNotificationObserver new_process_observer(
-      content::NOTIFICATION_RENDERER_PROCESS_CREATED,
-      content::NotificationService::AllSources());
-
-  // Updating the force-installed extension.
-  extensions::ExtensionUpdater* updater = service->updater();
-  extensions::ExtensionUpdater::CheckParams params;
-  params.install_immediately = true;
-  extensions::TestExtensionRegistryObserver update_observer(
-      extension_registry());
-  updater->CheckNow(std::move(params));
-  update_observer.WaitForExtensionWillBeInstalled();
-
-  const base::Version& new_version =
-      registry
-          ->GetExtensionById(kGoodCrxId,
-                             extensions::ExtensionRegistry::COMPATIBILITY)
-          ->version();
-  ASSERT_TRUE(new_version.IsValid());
-  base::Version old_version(old_version_number);
-  ASSERT_TRUE(old_version.IsValid());
-
-  EXPECT_EQ(1, new_version.CompareTo(old_version));
-
-  // Wait for the new extension process to launch.
-  new_process_observer.Wait();
-
-  // Wait until any background pages belonging to force-installed extensions
-  // have been loaded.
-  extensions::ProcessManager* manager =
-      extensions::ProcessManager::Get(browser()->profile());
-  extensions::ProcessManager::FrameSet all_frames = manager->GetAllFrames();
-  for (auto iter = all_frames.begin(); iter != all_frames.end();) {
-    content::WebContents* web_contents =
-        content::WebContents::FromRenderFrameHost(*iter);
-    ASSERT_TRUE(web_contents);
-    if (!web_contents->IsLoading()) {
-      ++iter;
-    } else {
-      WebContentsLoadedOrDestroyedWatcher(web_contents).Wait();
-
-      // Test activity may have modified the set of extension processes during
-      // message processing, so re-start the iteration to catch added/removed
-      // processes.
-      all_frames = manager->GetAllFrames();
-      iter = all_frames.begin();
-    }
-  }
-
-  // Test policy-installed extensions are reloaded when killed.
-  {
-    BackgroundContentsService::
-        SetRestartDelayForForceInstalledAppsAndExtensionsForTesting(0);
-    content::WindowedNotificationObserver extension_crashed_observer(
-        extensions::NOTIFICATION_EXTENSION_PROCESS_TERMINATED,
-        content::NotificationService::AllSources());
-    extensions::TestExtensionRegistryObserver extension_loaded_observer(
-        extension_registry(), kGoodCrxId);
-    extensions::ExtensionHost* extension_host =
-        extensions::ProcessManager::Get(browser()->profile())
-            ->GetBackgroundHostForExtension(kGoodCrxId);
-    content::RenderProcessHost* process = extension_host->render_process_host();
-    content::ScopedAllowRendererCrashes allow_renderer_crashes(process);
-    process->Shutdown(content::RESULT_CODE_KILLED);
-    extension_crashed_observer.Wait();
-    extension_loaded_observer.WaitForExtensionLoaded();
-  }
-}
-
-IN_PROC_BROWSER_TEST_F(PolicyTest,
-                       ExtensionInstallForcelist_DefaultedUpdateUrl) {
-  // Verifies the ExtensionInstallForcelist policy with an empty (defaulted)
-  // "update" URL.
-
-  ExtensionRequestInterceptor interceptor;
-
-  extensions::ExtensionRegistry* registry = extension_registry();
-  ASSERT_FALSE(registry->GetExtensionById(
-      kGoodCrxId, extensions::ExtensionRegistry::COMPATIBILITY));
-
-  // Setting the forcelist extension should install "good_v1.crx".
-  base::ListValue forcelist;
-  forcelist.AppendString(kGoodCrxId);
-  PolicyMap policies;
-  policies.Set(key::kExtensionInstallForcelist, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               forcelist.CreateDeepCopy(), nullptr);
-  extensions::TestExtensionRegistryObserver observer(registry);
-  UpdateProviderPolicy(policies);
-  observer.WaitForExtensionWillBeInstalled();
-
-  EXPECT_TRUE(registry->GetExtensionById(
-      kGoodCrxId, extensions::ExtensionRegistry::COMPATIBILITY));
-}
-
-IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionRecommendedInstallationMode) {
-  // Verifies that extensions that are recommended-installed by policies are
-  // installed, can be disabled but not uninstalled.
-
-  ExtensionRequestInterceptor interceptor;
-
-  // Extensions that are force-installed come from an update URL, which defaults
-  // to the webstore. Use a test URL for this test with an update manifest
-  // that includes "good_v1.crx".
-  ASSERT_TRUE(embedded_test_server()->Start());
-  GURL url =
-      embedded_test_server()->GetURL("/extensions/good_v1_update_manifest.xml");
-
-// Mark as enterprise managed.
-#if defined(OS_WIN)
-  base::win::ScopedDomainStateForTesting scoped_domain(true);
-#endif
-
-  extensions::ExtensionService* service = extension_service();
-  extensions::ExtensionRegistry* registry = extension_registry();
-  ASSERT_FALSE(registry->GetExtensionById(
-      kGoodCrxId, extensions::ExtensionRegistry::COMPATIBILITY));
-
-  // Setting the forcelist extension should install "good_v1.crx".
-  base::DictionaryValue dict_value;
-  dict_value.SetString(std::string(kGoodCrxId) + "." +
-                           extensions::schema_constants::kInstallationMode,
-                       extensions::schema_constants::kNormalInstalled);
-  dict_value.SetString(
-      std::string(kGoodCrxId) + "." + extensions::schema_constants::kUpdateUrl,
-      url.spec());
-  PolicyMap policies;
-  policies.Set(key::kExtensionSettings, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               dict_value.CreateDeepCopy(), nullptr);
-  extensions::TestExtensionRegistryObserver observer(registry);
-  UpdateProviderPolicy(policies);
-  observer.WaitForExtensionWillBeInstalled();
-
-  EXPECT_TRUE(registry->GetExtensionById(
-      kGoodCrxId, extensions::ExtensionRegistry::COMPATIBILITY));
-
-  // The user is not allowed to uninstall recommended-installed extensions.
-  UninstallExtension(kGoodCrxId, false);
-
-  // Explictly re-enables the extension.
-  service->EnableExtension(kGoodCrxId);
-
-  // But the user is allowed to disable them.
-  EXPECT_TRUE(service->IsExtensionEnabled(kGoodCrxId));
-  DisableExtension(kGoodCrxId);
-  EXPECT_FALSE(service->IsExtensionEnabled(kGoodCrxId));
-}
-
-IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionAllowedTypes) {
-  // Verifies that extensions are blocked if policy specifies an allowed types
-  // list and the extension's type is not on that list.
-  extensions::ExtensionRegistry* registry = extension_registry();
-  ASSERT_FALSE(registry->GetExtensionById(
-      kGoodCrxId, extensions::ExtensionRegistry::COMPATIBILITY));
-  ASSERT_FALSE(registry->GetExtensionById(
-      kHostedAppCrxId, extensions::ExtensionRegistry::COMPATIBILITY));
-
-  base::ListValue allowed_types;
-  allowed_types.AppendString("hosted_app");
-  PolicyMap policies;
-  policies.Set(key::kExtensionAllowedTypes, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               allowed_types.CreateDeepCopy(), nullptr);
-  UpdateProviderPolicy(policies);
-
-  // "good.crx" is blocked.
-  EXPECT_FALSE(InstallExtension(kGoodCrxName));
-  EXPECT_FALSE(registry->GetExtensionById(
-      kGoodCrxId, extensions::ExtensionRegistry::COMPATIBILITY));
-
-  // "hosted_app.crx" is of a whitelisted type.
-  const extensions::Extension* hosted_app = InstallExtension(kHostedAppCrxName);
-  ASSERT_TRUE(hosted_app);
-  EXPECT_EQ(kHostedAppCrxId, hosted_app->id());
-  EXPECT_EQ(hosted_app,
-            registry->GetExtensionById(
-                kHostedAppCrxId, extensions::ExtensionRegistry::COMPATIBILITY));
-
-  // The user can remove the extension.
-  UninstallExtension(kHostedAppCrxId, true);
-}
-
-// Checks that a click on an extension CRX download triggers the extension
-// installation prompt without further user interaction when the source is
-// whitelisted by policy.
-// Flaky on windows; http://crbug.com/295729 .
-#if defined(OS_WIN)
-#define MAYBE_ExtensionInstallSources DISABLED_ExtensionInstallSources
-#else
-#define MAYBE_ExtensionInstallSources ExtensionInstallSources
-#endif
-IN_PROC_BROWSER_TEST_F(PolicyTest, MAYBE_ExtensionInstallSources) {
-  extensions::ScopedTestDialogAutoConfirm auto_confirm(
-      extensions::ScopedTestDialogAutoConfirm::ACCEPT);
-  extensions::ScopedInstallVerifierBypassForTest install_verifier_bypass;
-
-  ASSERT_TRUE(embedded_test_server()->Start());
-
-  GURL download_page_url = embedded_test_server()->GetURL(
-      "/policy/extension_install_sources_test.html");
-  ui_test_utils::NavigateToURL(browser(), download_page_url);
-
-  const GURL install_source_url(
-      embedded_test_server()->GetURL("/extensions/*"));
-  const GURL referrer_url(embedded_test_server()->GetURL("/policy/*"));
-
-  // As long as the policy is not present, extensions are considered dangerous.
-  content::DownloadTestObserverTerminal download_observer(
-      content::BrowserContext::GetDownloadManager(browser()->profile()), 1,
-      content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_DENY);
-  PerformClick(0, 0);
-  download_observer.WaitForFinished();
-
-  // Install the policy and trigger another download.
-  base::ListValue install_sources;
-  install_sources.AppendString(install_source_url.spec());
-  install_sources.AppendString(referrer_url.spec());
-  PolicyMap policies;
-  policies.Set(key::kExtensionInstallSources, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               install_sources.CreateDeepCopy(), nullptr);
-  UpdateProviderPolicy(policies);
-
-  extensions::TestExtensionRegistryObserver observer(extension_registry());
-  PerformClick(1, 0);
-  observer.WaitForExtensionWillBeInstalled();
-  // Note: Cannot check that the notification details match the expected
-  // exception, since the details object has already been freed prior to
-  // the completion of observer.WaitForExtensionWillBeInstalled().
-
-  // The first extension shouldn't be present, the second should be there.
-  EXPECT_FALSE(extension_registry()->GetExtensionById(
-      kGoodCrxId, extensions::ExtensionRegistry::COMPATIBILITY));
-  EXPECT_TRUE(extension_registry()->GetExtensionById(
-      kSimpleWithIconCrxId, extensions::ExtensionRegistry::ENABLED));
-}
-
-// Verifies that extensions with version older than the minimum version required
-// by policy will get disabled, and will be auto-updated and/or re-enabled upon
-// policy changes as well as regular auto-updater scheduled updates.
-IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionMinimumVersionRequired) {
-  ExtensionRequestInterceptor interceptor;
-
-  base::AtomicRefCount update_extension_count;
-  base::RunLoop first_update_extension_runloop;
-  interceptor.set_interceptor_hook(base::BindLambdaForTesting(
-      [&](content::URLLoaderInterceptor::RequestParams* params) {
-        if (params->url_request.url.host() != "update.extension")
-          return false;
-
-        if (!update_extension_count.IsZero() && !update_extension_count.IsOne())
-          return false;
-
-        if (update_extension_count.IsZero()) {
-          content::URLLoaderInterceptor::WriteResponse(
-              "400 Bad request", std::string(), params->client.get());
-        } else {
-          content::URLLoaderInterceptor::WriteResponse(
-              "chrome/test/data/extensions/good2_update_manifest.xml",
-              params->client.get());
-        }
-        if (update_extension_count.IsZero())
-          first_update_extension_runloop.Quit();
-        update_extension_count.Increment();
-        return true;
-      }));
-
-  extensions::ExtensionService* service = extension_service();
-  extensions::ExtensionRegistry* registry = extension_registry();
-  extensions::ExtensionPrefs* extension_prefs =
-      extensions::ExtensionPrefs::Get(browser()->profile());
-
-  // Install the extension.
-  EXPECT_TRUE(InstallExtension(kGoodV1CrxName));
-  EXPECT_TRUE(registry->enabled_extensions().Contains(kGoodCrxId));
-
-  // Update policy to set a minimum version of 1.0.0.0, the extension (with
-  // version 1.0.0.0) should still be enabled.
-  {
-    extensions::ExtensionManagementPolicyUpdater management_policy(&provider_);
-    management_policy.SetMinimumVersionRequired(kGoodCrxId, "1.0.0.0");
-  }
-  base::RunLoop().RunUntilIdle();
-
-  EXPECT_TRUE(registry->enabled_extensions().Contains(kGoodCrxId));
-
-  // Update policy to set a minimum version of 1.0.0.1, the extension (with
-  // version 1.0.0.0) should now be disabled.
-  EXPECT_TRUE(update_extension_count.IsZero());
-  {
-    extensions::ExtensionManagementPolicyUpdater management_policy(&provider_);
-    management_policy.SetMinimumVersionRequired(kGoodCrxId, "1.0.0.1");
-  }
-  first_update_extension_runloop.Run();
-  EXPECT_TRUE(update_extension_count.IsOne());
-
-  EXPECT_TRUE(registry->disabled_extensions().Contains(kGoodCrxId));
-  EXPECT_EQ(extensions::disable_reason::DISABLE_UPDATE_REQUIRED_BY_POLICY,
-            extension_prefs->GetDisableReasons(kGoodCrxId));
-
-  // Provide a new version (1.0.0.1) which is expected to be auto updated to
-  // via the update URL in the manifest of the older version.
-  EXPECT_TRUE(update_extension_count.IsOne());
-  {
-    extensions::TestExtensionRegistryObserver update_observer(registry);
-    service->updater()->CheckSoon();
-    update_observer.WaitForExtensionWillBeInstalled();
-  }
-  EXPECT_EQ(2, update_extension_count.SubtleRefCountForDebug());
-
-  // The extension should be auto-updated to newer version and re-enabled.
-  EXPECT_EQ("1.0.0.1",
-            service->GetInstalledExtension(kGoodCrxId)->version().GetString());
-  EXPECT_TRUE(registry->enabled_extensions().Contains(kGoodCrxId));
-}
-
-// Similar to ExtensionMinimumVersionRequired test, but with different settings
-// and orders.
-IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionMinimumVersionRequiredAlt) {
-  ExtensionRequestInterceptor interceptor;
-
-  base::AtomicRefCount update_extension_count;
-  interceptor.set_interceptor_hook(base::BindLambdaForTesting(
-      [&](content::URLLoaderInterceptor::RequestParams* params) {
-        if (params->url_request.url.host() == "update.extension" &&
-            update_extension_count.IsZero()) {
-          content::URLLoaderInterceptor::WriteResponse(
-              "chrome/test/data/extensions/good2_update_manifest.xml",
-              params->client.get());
-          update_extension_count.Increment();
-          return true;
-        }
-        return false;
-      }));
-
-  extensions::ExtensionService* service = extension_service();
-  extensions::ExtensionRegistry* registry = extension_registry();
-  extensions::ExtensionPrefs* extension_prefs =
-      extensions::ExtensionPrefs::Get(browser()->profile());
-
-  // Set the policy to require an even higher minimum version this time.
-  {
-    extensions::ExtensionManagementPolicyUpdater management_policy(&provider_);
-    management_policy.SetMinimumVersionRequired(kGoodCrxId, "1.0.0.2");
-  }
-  base::RunLoop().RunUntilIdle();
-
-  // Install the 1.0.0.0 version, it should be installed but disabled.
-  EXPECT_TRUE(InstallExtension(kGoodV1CrxName));
-  EXPECT_TRUE(registry->disabled_extensions().Contains(kGoodCrxId));
-  EXPECT_EQ(extensions::disable_reason::DISABLE_UPDATE_REQUIRED_BY_POLICY,
-            extension_prefs->GetDisableReasons(kGoodCrxId));
-  EXPECT_EQ("1.0.0.0",
-            service->GetInstalledExtension(kGoodCrxId)->version().GetString());
-
-  // An extension management policy update should trigger an update as well.
-  EXPECT_TRUE(update_extension_count.IsZero());
-  {
-    extensions::TestExtensionRegistryObserver update_observer(registry);
-    {
-      // Set a higher minimum version, just intend to trigger a policy update.
-      extensions::ExtensionManagementPolicyUpdater management_policy(
-          &provider_);
-      management_policy.SetMinimumVersionRequired(kGoodCrxId, "1.0.0.3");
-    }
-    base::RunLoop().RunUntilIdle();
-    update_observer.WaitForExtensionWillBeInstalled();
-  }
-  EXPECT_TRUE(update_extension_count.IsOne());
-
-  // It should be updated to 1.0.0.1 but remain disabled.
-  EXPECT_EQ("1.0.0.1",
-            service->GetInstalledExtension(kGoodCrxId)->version().GetString());
-  EXPECT_TRUE(registry->disabled_extensions().Contains(kGoodCrxId));
-  EXPECT_EQ(extensions::disable_reason::DISABLE_UPDATE_REQUIRED_BY_POLICY,
-            extension_prefs->GetDisableReasons(kGoodCrxId));
-
-  // Remove the minimum version requirement. The extension should be re-enabled.
-  {
-    extensions::ExtensionManagementPolicyUpdater management_policy(&provider_);
-    management_policy.UnsetMinimumVersionRequired(kGoodCrxId);
-  }
-  base::RunLoop().RunUntilIdle();
-
-  EXPECT_TRUE(registry->enabled_extensions().Contains(kGoodCrxId));
-  EXPECT_FALSE(extension_prefs->HasDisableReason(
-      kGoodCrxId,
-      extensions::disable_reason::DISABLE_UPDATE_REQUIRED_BY_POLICY));
-}
-
-// Verifies that a force-installed extension which does not meet a subsequently
-// set minimum version requirement is handled well.
-IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionMinimumVersionForceInstalled) {
-  ExtensionRequestInterceptor interceptor;
-
-// Mark as enterprise managed.
-#if defined(OS_WIN)
-  base::win::ScopedDomainStateForTesting scoped_domain(true);
-#endif
-  extensions::ExtensionRegistry* registry = extension_registry();
-  extensions::ExtensionPrefs* extension_prefs =
-      extensions::ExtensionPrefs::Get(browser()->profile());
-
-  // Prepare the update URL for force installing.
-  ASSERT_TRUE(embedded_test_server()->Start());
-  GURL url =
-      embedded_test_server()->GetURL("/extensions/good_v1_update_manifest.xml");
-
-  // Set policy to force-install the extension, it should be installed and
-  // enabled.
-  extensions::TestExtensionRegistryObserver install_observer(registry);
-  EXPECT_FALSE(registry->enabled_extensions().Contains(kGoodCrxId));
-  {
-    extensions::ExtensionManagementPolicyUpdater management_policy(&provider_);
-    management_policy.SetIndividualExtensionAutoInstalled(kGoodCrxId,
-                                                          url.spec(), true);
-  }
-  base::RunLoop().RunUntilIdle();
-  install_observer.WaitForExtensionWillBeInstalled();
-
-  EXPECT_TRUE(registry->enabled_extensions().Contains(kGoodCrxId));
-
-  // Set policy a minimum version of "1.0.0.1", the extension now should be
-  // disabled.
-  {
-    extensions::ExtensionManagementPolicyUpdater management_policy(&provider_);
-    management_policy.SetMinimumVersionRequired(kGoodCrxId, "1.0.0.1");
-  }
-  base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(registry->enabled_extensions().Contains(kGoodCrxId));
-  EXPECT_TRUE(registry->disabled_extensions().Contains(kGoodCrxId));
-  EXPECT_EQ(extensions::disable_reason::DISABLE_UPDATE_REQUIRED_BY_POLICY,
-            extension_prefs->GetDisableReasons(kGoodCrxId));
-}
 
 IN_PROC_BROWSER_TEST_F(PolicyTest, HomepageLocation) {
   // Verifies that the homepage can be configured with policies.
@@ -3217,43 +1551,6 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, MAYBE_IncognitoEnabled) {
   EXPECT_TRUE(chrome::ExecuteCommand(browser(), IDC_NEW_INCOGNITO_WINDOW));
   EXPECT_EQ(2u, active_browser_list->size());
   EXPECT_TRUE(BrowserList::IsIncognitoSessionActive());
-}
-
-IN_PROC_BROWSER_TEST_F(PolicyTest, Javascript) {
-  // Verifies that Javascript can be disabled.
-  content::WebContents* contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  EXPECT_TRUE(IsJavascriptEnabled(contents));
-  EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_DEV_TOOLS));
-  EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_DEV_TOOLS_CONSOLE));
-  EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_DEV_TOOLS_DEVICES));
-
-  // Disable Javascript via policy.
-  PolicyMap policies;
-  policies.Set(key::kJavascriptEnabled, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               std::make_unique<base::Value>(false), nullptr);
-  UpdateProviderPolicy(policies);
-  // Reload the page.
-  ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
-  EXPECT_FALSE(IsJavascriptEnabled(contents));
-  // Developer tools still work when javascript is disabled.
-  EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_DEV_TOOLS));
-  EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_DEV_TOOLS_CONSOLE));
-  EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_DEV_TOOLS_DEVICES));
-  // Javascript is always enabled for the internal pages.
-  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIAboutURL));
-  EXPECT_TRUE(IsJavascriptEnabled(contents));
-
-  // The javascript content setting policy overrides the javascript policy.
-  ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
-  EXPECT_FALSE(IsJavascriptEnabled(contents));
-  policies.Set(key::kDefaultJavaScriptSetting, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               std::make_unique<base::Value>(CONTENT_SETTING_ALLOW), nullptr);
-  UpdateProviderPolicy(policies);
-  ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
-  EXPECT_TRUE(IsJavascriptEnabled(contents));
 }
 
 IN_PROC_BROWSER_TEST_F(PolicyTest, NetworkPrediction) {
@@ -3688,11 +1985,10 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, FullscreenAllowedApp) {
   TestAddAppWindowObserver add_window_observer(
       extensions::AppWindowRegistry::Get(browser()->profile()));
   apps::LaunchService::Get(browser()->profile())
-      ->OpenApplication(
-          AppLaunchParams(browser()->profile(), extension->id(),
-                          apps::mojom::LaunchContainer::kLaunchContainerNone,
-                          WindowOpenDisposition::NEW_WINDOW,
-                          apps::mojom::AppLaunchSource::kSourceTest));
+      ->OpenApplication(apps::AppLaunchParams(
+          extension->id(), apps::mojom::LaunchContainer::kLaunchContainerNone,
+          WindowOpenDisposition::NEW_WINDOW,
+          apps::mojom::AppLaunchSource::kSourceTest));
   extensions::AppWindow* window = add_window_observer.WaitForAppWindow();
   ASSERT_TRUE(window);
 
@@ -3896,446 +2192,6 @@ IN_PROC_BROWSER_TEST_F(PolicyTest,
   Mock::VerifyAndClearExpectations(&observer);
 }
 
-IN_PROC_BROWSER_TEST_F(PolicyTest, LargeCursorEnabled) {
-  // Verifies that the large cursor accessibility feature can be controlled
-  // through policy.
-  chromeos::AccessibilityManager* accessibility_manager =
-      chromeos::AccessibilityManager::Get();
-
-  // Manually enable the large cursor.
-  accessibility_manager->EnableLargeCursor(true);
-  EXPECT_TRUE(accessibility_manager->IsLargeCursorEnabled());
-
-  // Verify that policy overrides the manual setting.
-  PolicyMap policies;
-  policies.Set(key::kLargeCursorEnabled, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               std::make_unique<base::Value>(false), nullptr);
-  UpdateProviderPolicy(policies);
-  EXPECT_FALSE(accessibility_manager->IsLargeCursorEnabled());
-
-  // Verify that the large cursor cannot be enabled manually anymore.
-  accessibility_manager->EnableLargeCursor(true);
-  EXPECT_FALSE(accessibility_manager->IsLargeCursorEnabled());
-}
-
-IN_PROC_BROWSER_TEST_F(PolicyTest, SpokenFeedbackEnabled) {
-  // Verifies that the spoken feedback accessibility feature can be controlled
-  // through policy.
-  chromeos::AccessibilityManager* accessibility_manager =
-      chromeos::AccessibilityManager::Get();
-
-  // Manually enable spoken feedback.
-  accessibility_manager->EnableSpokenFeedback(true);
-  EXPECT_TRUE(accessibility_manager->IsSpokenFeedbackEnabled());
-
-  // Verify that policy overrides the manual setting.
-  PolicyMap policies;
-  policies.Set(key::kSpokenFeedbackEnabled, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               std::make_unique<base::Value>(false), nullptr);
-  UpdateProviderPolicy(policies);
-  EXPECT_FALSE(accessibility_manager->IsSpokenFeedbackEnabled());
-
-  // Verify that spoken feedback cannot be enabled manually anymore.
-  accessibility_manager->EnableSpokenFeedback(true);
-  EXPECT_FALSE(accessibility_manager->IsSpokenFeedbackEnabled());
-}
-
-IN_PROC_BROWSER_TEST_F(PolicyTest, HighContrastEnabled) {
-  // Verifies that the high contrast mode accessibility feature can be
-  // controlled through policy.
-  chromeos::AccessibilityManager* accessibility_manager =
-      chromeos::AccessibilityManager::Get();
-
-  // Manually enable high contrast mode.
-  accessibility_manager->EnableHighContrast(true);
-  EXPECT_TRUE(accessibility_manager->IsHighContrastEnabled());
-
-  // Verify that policy overrides the manual setting.
-  PolicyMap policies;
-  policies.Set(key::kHighContrastEnabled, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               std::make_unique<base::Value>(false), nullptr);
-  UpdateProviderPolicy(policies);
-  EXPECT_FALSE(accessibility_manager->IsHighContrastEnabled());
-
-  // Verify that high contrast mode cannot be enabled manually anymore.
-  accessibility_manager->EnableHighContrast(true);
-  EXPECT_FALSE(accessibility_manager->IsHighContrastEnabled());
-}
-
-IN_PROC_BROWSER_TEST_F(PolicyTest, ScreenMagnifierTypeNone) {
-  // Verifies that the screen magnifier can be disabled through policy.
-  chromeos::MagnificationManager* magnification_manager =
-      chromeos::MagnificationManager::Get();
-
-  // Manually enable the full-screen magnifier.
-  magnification_manager->SetMagnifierEnabled(true);
-  EXPECT_TRUE(magnification_manager->IsMagnifierEnabled());
-
-  // Verify that policy overrides the manual setting.
-  PolicyMap policies;
-  policies.Set(key::kScreenMagnifierType, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               std::make_unique<base::Value>(0), nullptr);
-  UpdateProviderPolicy(policies);
-  EXPECT_FALSE(magnification_manager->IsMagnifierEnabled());
-
-  // Verify that the screen magnifier cannot be enabled manually anymore.
-  magnification_manager->SetMagnifierEnabled(true);
-  EXPECT_FALSE(magnification_manager->IsMagnifierEnabled());
-  // Verify that the docked magnifier cannot be enabled manually anymore.
-  magnification_manager->SetDockedMagnifierEnabled(true);
-  EXPECT_FALSE(magnification_manager->IsDockedMagnifierEnabled());
-}
-
-IN_PROC_BROWSER_TEST_F(PolicyTest, ScreenMagnifierTypeFull) {
-  // Verifies that the full-screen magnifier can be enabled through policy.
-  chromeos::MagnificationManager* magnification_manager =
-      chromeos::MagnificationManager::Get();
-
-  // Verify that the screen magnifier is initially disabled.
-  EXPECT_FALSE(magnification_manager->IsMagnifierEnabled());
-
-  // Verify that policy can enable the full-screen magnifier.
-  PolicyMap policies;
-  policies.Set(key::kScreenMagnifierType, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               std::make_unique<base::Value>(chromeos::MAGNIFIER_FULL),
-               nullptr);
-  UpdateProviderPolicy(policies);
-  EXPECT_TRUE(magnification_manager->IsMagnifierEnabled());
-
-  // Verify that the screen magnifier cannot be disabled manually anymore.
-  magnification_manager->SetMagnifierEnabled(false);
-  EXPECT_TRUE(magnification_manager->IsMagnifierEnabled());
-}
-
-IN_PROC_BROWSER_TEST_F(PolicyTest, ScreenMagnifierTypeDocked) {
-  // Verifies that the docked magnifier accessibility feature can be
-  // controlled through policy.
-  chromeos::MagnificationManager* magnification_manager =
-      chromeos::MagnificationManager::Get();
-
-  // Verify that the docked magnifier is initially disabled
-  EXPECT_FALSE(magnification_manager->IsDockedMagnifierEnabled());
-
-  // Verify that policy overrides the manual setting.
-  PolicyMap policies;
-  policies.Set(key::kScreenMagnifierType, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               std::make_unique<base::Value>(chromeos::MAGNIFIER_DOCKED),
-               nullptr);
-  UpdateProviderPolicy(policies);
-  EXPECT_TRUE(magnification_manager->IsDockedMagnifierEnabled());
-
-  // Verify that the docked magnifier cannot be disabled manually anymore.
-  magnification_manager->SetDockedMagnifierEnabled(false);
-  EXPECT_TRUE(magnification_manager->IsDockedMagnifierEnabled());
-}
-
-IN_PROC_BROWSER_TEST_F(PolicyTest, AccessibilityVirtualKeyboardEnabled) {
-  // Verifies that the on-screen keyboard accessibility feature can be
-  // controlled through policy.
-  chromeos::AccessibilityManager* accessibility_manager =
-      chromeos::AccessibilityManager::Get();
-
-  // Manually enable the on-screen keyboard.
-  accessibility_manager->EnableVirtualKeyboard(true);
-  EXPECT_TRUE(accessibility_manager->IsVirtualKeyboardEnabled());
-
-  // Verify that policy overrides the manual setting.
-  PolicyMap policies;
-  policies.Set(key::kVirtualKeyboardEnabled, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               std::make_unique<base::Value>(false), nullptr);
-  UpdateProviderPolicy(policies);
-  EXPECT_FALSE(accessibility_manager->IsVirtualKeyboardEnabled());
-
-  // Verify that the on-screen keyboard cannot be enabled manually anymore.
-  accessibility_manager->EnableVirtualKeyboard(true);
-  EXPECT_FALSE(accessibility_manager->IsVirtualKeyboardEnabled());
-}
-
-IN_PROC_BROWSER_TEST_F(PolicyTest, StickyKeysEnabled) {
-  // Verifies that the sticky keys accessibility feature can be
-  // controlled through policy.
-  chromeos::AccessibilityManager* accessibility_manager =
-      chromeos::AccessibilityManager::Get();
-
-  // Verify that the sticky keys is initially disabled
-  EXPECT_FALSE(accessibility_manager->IsStickyKeysEnabled());
-
-  // Manually enable the sticky keys.
-  accessibility_manager->EnableStickyKeys(true);
-  EXPECT_TRUE(accessibility_manager->IsStickyKeysEnabled());
-
-  // Verify that policy overrides the manual setting.
-  PolicyMap policies;
-  policies.Set(key::kStickyKeysEnabled, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               std::make_unique<base::Value>(false), nullptr);
-  UpdateProviderPolicy(policies);
-  EXPECT_FALSE(accessibility_manager->IsStickyKeysEnabled());
-
-  // Verify that the sticky keys cannot be enabled manually anymore.
-  accessibility_manager->EnableStickyKeys(true);
-  EXPECT_FALSE(accessibility_manager->IsStickyKeysEnabled());
-}
-
-
-IN_PROC_BROWSER_TEST_F(PolicyTest, VirtualKeyboardEnabled) {
-  auto* keyboard_client = ChromeKeyboardControllerClient::Get();
-  ASSERT_TRUE(keyboard_client);
-
-  // Verify keyboard disabled by default.
-  EXPECT_FALSE(keyboard_client->is_keyboard_enabled());
-
-  // Verify keyboard can be toggled by default.
-  SetEnableFlag(keyboard::KeyboardEnableFlag::kTouchEnabled);
-  EXPECT_TRUE(keyboard_client->is_keyboard_enabled());
-  ClearEnableFlag(keyboard::KeyboardEnableFlag::kTouchEnabled);
-  EXPECT_FALSE(keyboard_client->is_keyboard_enabled());
-
-  // Verify enabling the policy takes effect immediately and that that user
-  // cannot disable the keyboard..
-  PolicyMap policies;
-  policies.Set(key::kTouchVirtualKeyboardEnabled, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               std::make_unique<base::Value>(true), nullptr);
-  UpdateProviderPolicy(policies);
-  EXPECT_TRUE(keyboard_client->is_keyboard_enabled());
-  ClearEnableFlag(keyboard::KeyboardEnableFlag::kTouchEnabled);
-  EXPECT_TRUE(keyboard_client->is_keyboard_enabled());
-
-  // Verify that disabling the policy takes effect immediately and that the user
-  // cannot enable the keyboard.
-  policies.Set(key::kTouchVirtualKeyboardEnabled, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               std::make_unique<base::Value>(false), nullptr);
-  UpdateProviderPolicy(policies);
-  EXPECT_FALSE(keyboard_client->is_keyboard_enabled());
-  SetEnableFlag(keyboard::KeyboardEnableFlag::kTouchEnabled);
-  EXPECT_FALSE(keyboard_client->is_keyboard_enabled());
-}
-
-IN_PROC_BROWSER_TEST_F(PolicyTest, SelectToSpeakEnabled) {
-  // Verifies that the select to speak accessibility feature can be
-  // controlled through policy.
-  chromeos::AccessibilityManager* accessibility_manager =
-      chromeos::AccessibilityManager::Get();
-
-  // Verify that the select to speak is initially disabled
-  EXPECT_FALSE(accessibility_manager->IsSelectToSpeakEnabled());
-
-  // Manually enable the select to speak.
-  accessibility_manager->SetSelectToSpeakEnabled(true);
-  EXPECT_TRUE(accessibility_manager->IsSelectToSpeakEnabled());
-
-  // Verify that policy overrides the manual setting.
-  PolicyMap policies;
-  policies.Set(key::kSelectToSpeakEnabled, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               std::make_unique<base::Value>(false), nullptr);
-  UpdateProviderPolicy(policies);
-  EXPECT_FALSE(accessibility_manager->IsSelectToSpeakEnabled());
-
-  // Verify that the select to speak cannot be enabled manually anymore.
-  accessibility_manager->SetSelectToSpeakEnabled(true);
-  EXPECT_FALSE(accessibility_manager->IsSelectToSpeakEnabled());
-}
-
-IN_PROC_BROWSER_TEST_F(PolicyTest, DictationEnabled) {
-  // Verifies that the dictation accessibility feature can be
-  // controlled through policy.
-  chromeos::AccessibilityManager* accessibility_manager =
-      chromeos::AccessibilityManager::Get();
-  PrefService* prefs = browser()->profile()->GetPrefs();
-
-  // Verify that the dictation is initially disabled
-  EXPECT_FALSE(accessibility_manager->IsDictationEnabled());
-
-  // Manually enable the dictation.
-  prefs->SetBoolean(ash::prefs::kAccessibilityDictationEnabled, true);
-  EXPECT_TRUE(accessibility_manager->IsDictationEnabled());
-
-  // Verify that policy overrides the manual setting.
-  PolicyMap policies;
-  policies.Set(key::kDictationEnabled, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               std::make_unique<base::Value>(false), nullptr);
-  UpdateProviderPolicy(policies);
-  EXPECT_FALSE(accessibility_manager->IsDictationEnabled());
-
-  // Verify that the dictation cannot be enabled manually anymore.
-  prefs->SetBoolean(ash::prefs::kAccessibilityDictationEnabled, true);
-  EXPECT_FALSE(accessibility_manager->IsDictationEnabled());
-}
-
-IN_PROC_BROWSER_TEST_F(PolicyTest, KeyboardFocusHighlightEnabled) {
-  // Verifies that the keyboard focus highlight objects accessibility feature
-  // can be controlled through policy.
-  chromeos::AccessibilityManager* const accessibility_manager =
-      chromeos::AccessibilityManager::Get();
-
-  // Verify that the keyboard focus highlight objects is initially disabled.
-  EXPECT_FALSE(accessibility_manager->IsFocusHighlightEnabled());
-
-  // Manually enable the keyboard focus highlight objects.
-  accessibility_manager->SetFocusHighlightEnabled(true);
-  EXPECT_TRUE(accessibility_manager->IsFocusHighlightEnabled());
-
-  // Verify that policy overrides the manual setting.
-  PolicyMap policies;
-  policies.Set(key::kKeyboardFocusHighlightEnabled, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               std::make_unique<base::Value>(false), nullptr);
-  UpdateProviderPolicy(policies);
-  EXPECT_FALSE(accessibility_manager->IsFocusHighlightEnabled());
-
-  // Verify that the keyboard focus highlight objects cannot be enabled manually
-  // anymore.
-  accessibility_manager->SetFocusHighlightEnabled(true);
-  EXPECT_FALSE(accessibility_manager->IsFocusHighlightEnabled());
-}
-
-IN_PROC_BROWSER_TEST_F(PolicyTest, CursorHighlightEnabled) {
-  // Verifies that the cursor highlight accessibility feature accessibility
-  // feature can be controlled through policy.
-  chromeos::AccessibilityManager* accessibility_manager =
-      chromeos::AccessibilityManager::Get();
-
-  // Verify that the cursor highlight is initially disabled.
-  EXPECT_FALSE(accessibility_manager->IsCursorHighlightEnabled());
-
-  // Manually enable the cursor highlight.
-  accessibility_manager->SetCursorHighlightEnabled(true);
-  EXPECT_TRUE(accessibility_manager->IsCursorHighlightEnabled());
-
-  // Verify that policy overrides the manual setting.
-  PolicyMap policies;
-  policies.Set(key::kCursorHighlightEnabled, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               std::make_unique<base::Value>(false), nullptr);
-  UpdateProviderPolicy(policies);
-  EXPECT_FALSE(accessibility_manager->IsCursorHighlightEnabled());
-
-  // Verify that the cursor highlight cannot be enabled manually anymore.
-  accessibility_manager->SetCursorHighlightEnabled(true);
-  EXPECT_FALSE(accessibility_manager->IsCursorHighlightEnabled());
-}
-
-IN_PROC_BROWSER_TEST_F(PolicyTest, CaretHighlightEnabled) {
-  // Verifies that the caret highlight accessibility feature can be controlled
-  // through policy.
-  chromeos::AccessibilityManager* accessibility_manager =
-      chromeos::AccessibilityManager::Get();
-
-  // Verify that the caret highlight is initially disabled.
-  EXPECT_FALSE(accessibility_manager->IsCaretHighlightEnabled());
-
-  // Manually enable the caret highlight.
-  accessibility_manager->SetCaretHighlightEnabled(true);
-  EXPECT_TRUE(accessibility_manager->IsCaretHighlightEnabled());
-
-  // Verify that policy overrides the manual setting.
-  PolicyMap policies;
-  policies.Set(key::kCaretHighlightEnabled, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               std::make_unique<base::Value>(false), nullptr);
-  UpdateProviderPolicy(policies);
-  EXPECT_FALSE(accessibility_manager->IsCaretHighlightEnabled());
-
-  // Verify that the caret highlight cannot be enabled manually anymore.
-  accessibility_manager->SetCaretHighlightEnabled(true);
-  EXPECT_FALSE(accessibility_manager->IsCaretHighlightEnabled());
-
-  policies.Set(key::kCaretHighlightEnabled, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               std::make_unique<base::Value>(true), nullptr);
-  UpdateProviderPolicy(policies);
-  EXPECT_TRUE(accessibility_manager->IsCaretHighlightEnabled());
-
-  // Verify that the caret highlight cannot be disabled manually anymore.
-  accessibility_manager->SetCaretHighlightEnabled(false);
-  EXPECT_TRUE(accessibility_manager->IsCaretHighlightEnabled());
-}
-
-IN_PROC_BROWSER_TEST_F(PolicyTest, MonoAudioEnabled) {
-  // Verifies that the mono audio accessibility feature can be controlled
-  // through policy.
-  chromeos::AccessibilityManager* accessibility_manager =
-      chromeos::AccessibilityManager::Get();
-
-  accessibility_manager->EnableMonoAudio(false);
-  // Verify that the mono audio is initially disabled.
-  EXPECT_FALSE(accessibility_manager->IsMonoAudioEnabled());
-
-  // Manually enable the mono audio.
-  accessibility_manager->EnableMonoAudio(true);
-  EXPECT_TRUE(accessibility_manager->IsMonoAudioEnabled());
-
-  // Verify that policy overrides the manual setting.
-  PolicyMap policies;
-  policies.Set(key::kMonoAudioEnabled, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               std::make_unique<base::Value>(false), nullptr);
-  UpdateProviderPolicy(policies);
-  EXPECT_FALSE(accessibility_manager->IsMonoAudioEnabled());
-
-  // Verify that the mono audio cannot be enabled manually anymore.
-  accessibility_manager->EnableMonoAudio(true);
-  EXPECT_FALSE(accessibility_manager->IsMonoAudioEnabled());
-
-  policies.Set(key::kMonoAudioEnabled, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               std::make_unique<base::Value>(true), nullptr);
-  UpdateProviderPolicy(policies);
-  EXPECT_TRUE(accessibility_manager->IsMonoAudioEnabled());
-
-  // Verify that the mono audio cannot be disabled manually anymore.
-  accessibility_manager->EnableMonoAudio(false);
-  EXPECT_TRUE(accessibility_manager->IsMonoAudioEnabled());
-}
-
-IN_PROC_BROWSER_TEST_F(PolicyTest, AutoclickEnabled) {
-  // Verifies that the autoclick accessibility feature can be controlled through
-  // policy.
-  chromeos::AccessibilityManager* accessibility_manager =
-      chromeos::AccessibilityManager::Get();
-
-  accessibility_manager->EnableAutoclick(false);
-  // Verify that the autoclick is initially disabled.
-  EXPECT_FALSE(accessibility_manager->IsAutoclickEnabled());
-
-  // Manually enable the autoclick.
-  accessibility_manager->EnableAutoclick(true);
-  EXPECT_TRUE(accessibility_manager->IsAutoclickEnabled());
-
-  // Verify that policy overrides the manual setting.
-  PolicyMap policies;
-  policies.Set(key::kAutoclickEnabled, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               std::make_unique<base::Value>(false), nullptr);
-  UpdateProviderPolicy(policies);
-  EXPECT_FALSE(accessibility_manager->IsAutoclickEnabled());
-
-  // Verify that the autoclick cannot be enabled manually anymore.
-  accessibility_manager->EnableAutoclick(true);
-  EXPECT_FALSE(accessibility_manager->IsAutoclickEnabled());
-
-  policies.Set(key::kAutoclickEnabled, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               std::make_unique<base::Value>(true), nullptr);
-  UpdateProviderPolicy(policies);
-  EXPECT_TRUE(accessibility_manager->IsAutoclickEnabled());
-
-  // Verify that the autoclick cannot be disabled manually anymore.
-  accessibility_manager->EnableAutoclick(false);
-  EXPECT_TRUE(accessibility_manager->IsAutoclickEnabled());
-}
-
 IN_PROC_BROWSER_TEST_F(PolicyTest, AssistantContextEnabled) {
   PrefService* prefs = browser()->profile()->GetPrefs();
   EXPECT_FALSE(prefs->IsManagedPreference(
@@ -4462,12 +2318,6 @@ class RestoreOnStartupPolicyTest
                            command_line->argv().begin()));
   }
 
-  void SetUpOnMainThread() override {
-    base::PostTask(FROM_HERE, {BrowserThread::IO},
-                   base::BindOnce(RedirectHostsToTestData, kRestoredURLs,
-                                  base::size(kRestoredURLs)));
-  }
-
   void ListOfURLs() {
     // Verifies that policy can set the startup pages to a list of URLs.
     base::ListValue urls;
@@ -4523,7 +2373,7 @@ class RestoreOnStartupPolicyTest
         nullptr);
     auto urls = std::make_unique<base::Value>(base::Value::Type::LIST);
     for (const auto* url_string : kRestoredURLs)
-      urls->GetList().emplace_back(url_string);
+      urls->Append(url_string);
     policies.Set(key::kURLBlacklist, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
                  POLICY_SOURCE_CLOUD, std::move(urls), nullptr);
     provider_.UpdateChromePolicy(policies);
@@ -4560,13 +2410,8 @@ IN_PROC_BROWSER_TEST_P(RestoreOnStartupPolicyTest, PRE_RunTest) {
   }
 }
 
-// Flaky on Linux; see https://crbug.com/701023.
-#if defined(OS_LINUX)
-#define MAYBE_RunTest DISABLED_RunTest
-#else
-#define MAYBE_RunTest RunTest
-#endif
-IN_PROC_BROWSER_TEST_P(RestoreOnStartupPolicyTest, MAYBE_RunTest) {
+// Flaky; see https://crbug.com/701023.
+IN_PROC_BROWSER_TEST_P(RestoreOnStartupPolicyTest, DISABLED_RunTest) {
   TabStripModel* model = browser()->tab_strip_model();
   int size = static_cast<int>(expected_urls_.size());
   EXPECT_EQ(size, model->count());
@@ -4581,7 +2426,6 @@ IN_PROC_BROWSER_TEST_P(RestoreOnStartupPolicyTest, MAYBE_RunTest) {
       EXPECT_EQ(expected_urls_[i], web_contents->GetURL());
   }
 }
-#undef MAYBE_RunTest
 
 INSTANTIATE_TEST_SUITE_P(
     RestoreOnStartupPolicyTestInstance,
@@ -4988,59 +2832,6 @@ INSTANTIATE_TEST_SUITE_P(MediaStreamDevicesControllerBrowserTestInstance,
                          MediaStreamDevicesControllerBrowserTest,
                          testing::Bool());
 
-class WebBluetoothPolicyTest : public PolicyTest {
-  void SetUpCommandLine(base::CommandLine* command_line)override {
-    // TODO(juncai): Remove this switch once Web Bluetooth is supported on Linux
-    // and Windows.
-    // https://crbug.com/570344
-    // https://crbug.com/507419
-    command_line->AppendSwitch(
-        switches::kEnableExperimentalWebPlatformFeatures);
-    PolicyTest::SetUpCommandLine(command_line);
-  }
-};
-
-IN_PROC_BROWSER_TEST_F(WebBluetoothPolicyTest, Block) {
-  // Fake the BluetoothAdapter to say it's present.
-  scoped_refptr<device::MockBluetoothAdapter> adapter =
-      new testing::NiceMock<device::MockBluetoothAdapter>;
-  EXPECT_CALL(*adapter, IsPresent()).WillRepeatedly(testing::Return(true));
-  auto bt_global_values =
-      device::BluetoothAdapterFactory::Get().InitGlobalValuesForTesting();
-  bt_global_values->SetLESupported(true);
-  device::BluetoothAdapterFactory::SetAdapterForTesting(adapter);
-
-  // Navigate to a secure context.
-  embedded_test_server()->ServeFilesFromSourceDirectory("content/test/data");
-  ASSERT_TRUE(embedded_test_server()->Start());
-  ui_test_utils::NavigateToURL(
-      browser(),
-      embedded_test_server()->GetURL("localhost", "/simple_page.html"));
-  content::WebContents* const web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  EXPECT_THAT(
-      web_contents->GetMainFrame()->GetLastCommittedOrigin().Serialize(),
-      testing::StartsWith("http://localhost:"));
-
-  // Set the policy to block Web Bluetooth.
-  PolicyMap policies;
-  policies.Set(key::kDefaultWebBluetoothGuardSetting, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               std::make_unique<base::Value>(2), nullptr);
-  UpdateProviderPolicy(policies);
-
-  std::string rejection;
-  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
-      web_contents,
-      "navigator.bluetooth.requestDevice({filters: [{name: 'Hello'}]})"
-      "  .then(() => { domAutomationController.send('Success'); },"
-      "        reason => {"
-      "      domAutomationController.send(reason.name + ': ' + reason.message);"
-      "  });",
-      &rejection));
-  EXPECT_THAT(rejection, testing::MatchesRegex("NotFoundError: .*policy.*"));
-}
-
 class CertificateTransparencyPolicyTest : public PolicyTest {
  public:
   CertificateTransparencyPolicyTest() : PolicyTest() {
@@ -5171,88 +2962,6 @@ IN_PROC_BROWSER_TEST_F(CertificateTransparencyPolicyTest,
             browser()->tab_strip_model()->GetActiveWebContents()->GetTitle());
 }
 
-// Test that when extended reporting opt-in is disabled by policy, the
-// opt-in checkbox does not appear on SSL blocking pages.
-// Note: SafeBrowsingExtendedReportingOptInAllowed policy is being deprecated.
-IN_PROC_BROWSER_TEST_F(PolicyTest, SafeBrowsingExtendedReportingOptInAllowed) {
-  net::EmbeddedTestServer https_server_expired(
-      net::EmbeddedTestServer::TYPE_HTTPS);
-  https_server_expired.SetSSLConfig(net::EmbeddedTestServer::CERT_EXPIRED);
-  https_server_expired.ServeFilesFromSourceDirectory("chrome/test/data");
-  ASSERT_TRUE(https_server_expired.Start());
-
-  // First, navigate to an SSL error page and make sure the checkbox appears by
-  // default.
-  ui_test_utils::NavigateToURL(browser(), https_server_expired.GetURL("/"));
-  EXPECT_EQ(security_interstitials::CMD_TEXT_FOUND,
-            IsExtendedReportingCheckboxVisibleOnInterstitial());
-
-  // Set the enterprise policy to disallow opt-in.
-  const PrefService* const prefs = browser()->profile()->GetPrefs();
-  EXPECT_TRUE(
-      prefs->GetBoolean(prefs::kSafeBrowsingExtendedReportingOptInAllowed));
-  PolicyMap policies;
-  policies.Set(key::kSafeBrowsingExtendedReportingOptInAllowed,
-               POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               base::WrapUnique(new base::Value(false)), nullptr);
-  UpdateProviderPolicy(policies);
-  EXPECT_FALSE(
-      prefs->GetBoolean(prefs::kSafeBrowsingExtendedReportingOptInAllowed));
-
-  // Navigate to an SSL error page, the checkbox should not appear.
-  ui_test_utils::NavigateToURL(browser(), https_server_expired.GetURL("/"));
-  EXPECT_EQ(security_interstitials::CMD_TEXT_NOT_FOUND,
-            IsExtendedReportingCheckboxVisibleOnInterstitial());
-}
-
-// Test that when extended reporting is managed by policy, the opt-in checkbox
-// does not appear on SSL blocking pages.
-IN_PROC_BROWSER_TEST_F(PolicyTest, SafeBrowsingExtendedReportingPolicyManaged) {
-  net::EmbeddedTestServer https_server_expired(
-      net::EmbeddedTestServer::TYPE_HTTPS);
-  https_server_expired.SetSSLConfig(net::EmbeddedTestServer::CERT_EXPIRED);
-  https_server_expired.ServeFilesFromSourceDirectory("chrome/test/data");
-  ASSERT_TRUE(https_server_expired.Start());
-
-  // Set the extended reporting pref to True and ensure the enterprise policy
-  // can overwrite it.
-  PrefService* prefs = browser()->profile()->GetPrefs();
-  prefs->SetBoolean(prefs::kSafeBrowsingScoutReportingEnabled, true);
-
-  // First, navigate to an SSL error page and make sure the checkbox appears by
-  // default.
-  ui_test_utils::NavigateToURL(browser(), https_server_expired.GetURL("/"));
-  EXPECT_EQ(security_interstitials::CMD_TEXT_FOUND,
-            IsExtendedReportingCheckboxVisibleOnInterstitial());
-
-  // Set the enterprise policy to disable extended reporting.
-  EXPECT_TRUE(
-      prefs->GetBoolean(prefs::kSafeBrowsingExtendedReportingOptInAllowed));
-  PolicyMap policies;
-  policies.Set(key::kSafeBrowsingExtendedReportingEnabled,
-               POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               base::WrapUnique(new base::Value(false)), nullptr);
-  UpdateProviderPolicy(policies);
-  // Policy should have overwritten the pref, and it should be managed.
-  EXPECT_FALSE(prefs->GetBoolean(prefs::kSafeBrowsingScoutReportingEnabled));
-  EXPECT_TRUE(
-      prefs->IsManagedPreference(prefs::kSafeBrowsingScoutReportingEnabled));
-
-  // Also make sure the SafeBrowsing prefs helper functions agree with the
-  // policy.
-  EXPECT_TRUE(safe_browsing::IsExtendedReportingPolicyManaged(*prefs));
-  // Note that making SBER policy managed does NOT affect the SBEROptInAllowed
-  // setting, which is intentionally kept distinct for now. When the latter is
-  // deprecated, then SBER's policy management will imply whether the checkbox
-  // is visible.
-  EXPECT_TRUE(safe_browsing::IsExtendedReportingOptInAllowed(*prefs));
-
-  // Navigate to an SSL error page, the checkbox should not appear.
-  ui_test_utils::NavigateToURL(browser(), https_server_expired.GetURL("/"));
-  EXPECT_EQ(security_interstitials::CMD_TEXT_NOT_FOUND,
-            IsExtendedReportingCheckboxVisibleOnInterstitial());
-}
-
 // Test that when SSL error overriding is allowed by policy (default), the
 // proceed link appears on SSL blocking pages.
 IN_PROC_BROWSER_TEST_F(PolicyTest, SSLErrorOverridingAllowed) {
@@ -5344,248 +3053,6 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, TaskManagerEndProcessEnabled) {
 
   // Policy should allow ending tasks again.
   EXPECT_TRUE(task_manager::TaskManagerInterface::IsEndProcessEnabled());
-}
-
-// Test that when password protection warning trigger is set for users who are
-// not signed-into Chrome, Chrome password protection service gets the correct
-// value.
-IN_PROC_BROWSER_TEST_F(PolicyTest,
-                       PasswordProtectionWarningTriggerNotLoggedIn) {
-  MockPasswordProtectionService mock_service(
-      g_browser_process->safe_browsing_service(), browser()->profile());
-
-  // If user is not signed-in, |GetPasswordProtectionWarningTriggerPref(...)|
-  // should return |PHISHING_REUSE| unless specified by policy.
-  const PrefService* const prefs = browser()->profile()->GetPrefs();
-  EXPECT_FALSE(prefs->FindPreference(prefs::kPasswordProtectionWarningTrigger)
-                   ->IsManaged());
-  EXPECT_EQ(safe_browsing::PHISHING_REUSE,
-            mock_service.GetPasswordProtectionWarningTriggerPref(
-                ReusedPasswordAccountType()));
-  // Sets the enterprise policy to 1 (a.k.a PASSWORD_REUSE).
-  PolicyMap policies;
-  policies.Set(key::kPasswordProtectionWarningTrigger, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               std::make_unique<base::Value>(1), nullptr);
-  UpdateProviderPolicy(policies);
-  EXPECT_TRUE(prefs->FindPreference(prefs::kPasswordProtectionWarningTrigger)
-                  ->IsManaged());
-  EXPECT_EQ(safe_browsing::PASSWORD_REUSE,
-            mock_service.GetPasswordProtectionWarningTriggerPref(
-                ReusedPasswordAccountType()));
-  // Sets the enterprise policy to 2 (a.k.a PHISHING_REUSE).
-  policies.Set(key::kPasswordProtectionWarningTrigger, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               std::make_unique<base::Value>(2), nullptr);
-  UpdateProviderPolicy(policies);
-  EXPECT_EQ(safe_browsing::PHISHING_REUSE,
-            mock_service.GetPasswordProtectionWarningTriggerPref(
-                ReusedPasswordAccountType()));
-}
-
-// Test that when password protection warning trigger is set for Gmail users,
-// Chrome password protection service gets the correct
-// value.
-IN_PROC_BROWSER_TEST_F(PolicyTest, PasswordProtectionWarningTriggerGmail) {
-  MockPasswordProtectionService mock_service(
-      g_browser_process->safe_browsing_service(), browser()->profile());
-
-  // If user is a Gmail user, |GetPasswordProtectionWarningTriggerPref(...)|
-  // should return |PHISHING_REUSE| unless specified by policy.
-  EXPECT_CALL(mock_service, IsPrimaryAccountGmail())
-      .WillRepeatedly(Return(true));
-  const PrefService* const prefs = browser()->profile()->GetPrefs();
-  EXPECT_FALSE(prefs->FindPreference(prefs::kPasswordProtectionWarningTrigger)
-                   ->IsManaged());
-  ReusedPasswordAccountType account_type;
-  account_type.set_account_type(ReusedPasswordAccountType::GMAIL);
-  account_type.set_is_account_syncing(true);
-  EXPECT_EQ(safe_browsing::PHISHING_REUSE,
-            mock_service.GetPasswordProtectionWarningTriggerPref(account_type));
-  // Sets the enterprise policy to 1 (a.k.a PASSWORD_REUSE). Gmail accounts
-  // should always return PHISHING_REUSE regardless of what the policy is set
-  // to.
-  PolicyMap policies;
-  policies.Set(key::kPasswordProtectionWarningTrigger, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               std::make_unique<base::Value>(1), nullptr);
-  UpdateProviderPolicy(policies);
-  EXPECT_TRUE(prefs->FindPreference(prefs::kPasswordProtectionWarningTrigger)
-                  ->IsManaged());
-  EXPECT_EQ(safe_browsing::PHISHING_REUSE,
-            mock_service.GetPasswordProtectionWarningTriggerPref(account_type));
-  // Sets the enterprise policy to 2 (a.k.a PHISHING_REUSE).
-  policies.Set(key::kPasswordProtectionWarningTrigger, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               std::make_unique<base::Value>(2), nullptr);
-  UpdateProviderPolicy(policies);
-  EXPECT_EQ(safe_browsing::PHISHING_REUSE,
-            mock_service.GetPasswordProtectionWarningTriggerPref(account_type));
-}
-
-// Test that when password protection warning trigger is set for GSuite users,
-// Chrome password protection service gets the correct value.
-IN_PROC_BROWSER_TEST_F(PolicyTest, PasswordProtectionWarningTriggerGSuite) {
-  MockPasswordProtectionService mock_service(
-      g_browser_process->safe_browsing_service(), browser()->profile());
-  const PrefService* const prefs = browser()->profile()->GetPrefs();
-  PolicyMap policies;
-
-  // If user is a GSuite user, |GetPasswordProtectionWarningTriggerPref(...)|
-  // should return |PHISHING_REUSE| unless specified by policy.
-  EXPECT_FALSE(prefs->FindPreference(prefs::kPasswordProtectionWarningTrigger)
-                   ->IsManaged());
-  EXPECT_EQ(safe_browsing::PHISHING_REUSE,
-            mock_service.GetPasswordProtectionWarningTriggerPref(
-                ReusedPasswordAccountType()));
-  // Sets the enterprise policy to 1 (a.k.a PASSWORD_REUSE).
-  policies.Set(key::kPasswordProtectionWarningTrigger, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               std::make_unique<base::Value>(1), nullptr);
-  UpdateProviderPolicy(policies);
-  EXPECT_TRUE(prefs->FindPreference(prefs::kPasswordProtectionWarningTrigger)
-                  ->IsManaged());
-  EXPECT_EQ(safe_browsing::PASSWORD_REUSE,
-            mock_service.GetPasswordProtectionWarningTriggerPref(
-                ReusedPasswordAccountType()));
-  // Sets the enterprise policy to 2 (a.k.a PHISHING_REUSE).
-  policies.Set(key::kPasswordProtectionWarningTrigger, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               std::make_unique<base::Value>(2), nullptr);
-  UpdateProviderPolicy(policies);
-  EXPECT_EQ(safe_browsing::PHISHING_REUSE,
-            mock_service.GetPasswordProtectionWarningTriggerPref(
-                ReusedPasswordAccountType()));
-}
-
-// Test that when safe browsing whitelist domains are set by policy, safe
-// browsing service gets the correct value.
-IN_PROC_BROWSER_TEST_F(PolicyTest, SafeBrowsingWhitelistDomains) {
-  // Without setting up the enterprise policy,
-  // |GetSafeBrowsingDomainsPref(..) should return empty list.
-  const PrefService* const prefs = browser()->profile()->GetPrefs();
-  EXPECT_FALSE(
-      prefs->FindPreference(prefs::kSafeBrowsingWhitelistDomains)->IsManaged());
-  std::vector<std::string> canonicalized_domains;
-  safe_browsing::GetSafeBrowsingWhitelistDomainsPref(*prefs,
-                                                     &canonicalized_domains);
-  EXPECT_TRUE(canonicalized_domains.empty());
-
-  // Add 2 whitelisted domains to this policy.
-  PolicyMap policies;
-  base::ListValue whitelist_domains;
-  whitelist_domains.AppendString("mydomain.com");
-  whitelist_domains.AppendString("mydomain.net");
-  policies.Set(key::kSafeBrowsingWhitelistDomains, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               whitelist_domains.CreateDeepCopy(), nullptr);
-  UpdateProviderPolicy(policies);
-  EXPECT_TRUE(
-      prefs->FindPreference(prefs::kSafeBrowsingWhitelistDomains)->IsManaged());
-  safe_browsing::GetSafeBrowsingWhitelistDomainsPref(*prefs,
-                                                     &canonicalized_domains);
-  EXPECT_EQ(2u, canonicalized_domains.size());
-  EXPECT_EQ("mydomain.com", canonicalized_domains[0]);
-  EXPECT_EQ("mydomain.net", canonicalized_domains[1]);
-
-  // Invalid domains will be skipped.
-  whitelist_domains.Clear();
-  whitelist_domains.AppendString(std::string("%EF%BF%BDzyx.com"));
-  policies.Set(key::kSafeBrowsingWhitelistDomains, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               whitelist_domains.CreateDeepCopy(), nullptr);
-  UpdateProviderPolicy(policies);
-  EXPECT_TRUE(
-      prefs->FindPreference(prefs::kSafeBrowsingWhitelistDomains)->IsManaged());
-  canonicalized_domains.clear();
-  safe_browsing::GetSafeBrowsingWhitelistDomainsPref(*prefs,
-                                                     &canonicalized_domains);
-  EXPECT_TRUE(canonicalized_domains.empty());
-}
-
-// Test that when password protection login URLs are set by policy, password
-// protection service gets the correct value.
-IN_PROC_BROWSER_TEST_F(PolicyTest, PasswordProtectionLoginURLs) {
-  // Without setting up the enterprise policy,
-  // |GetPasswordProtectionLoginURLsPref(..) should return empty list.
-  const PrefService* const prefs = browser()->profile()->GetPrefs();
-  EXPECT_FALSE(
-      prefs->FindPreference(prefs::kPasswordProtectionLoginURLs)->IsManaged());
-  std::vector<GURL> login_urls;
-  safe_browsing::GetPasswordProtectionLoginURLsPref(*prefs, &login_urls);
-  EXPECT_TRUE(login_urls.empty());
-
-  // Add 2 login URLs to this enterprise policy .
-  PolicyMap policies;
-  base::ListValue login_url_values;
-  login_url_values.AppendString("https://login.mydomain.com");
-  login_url_values.AppendString("https://mydomian.com/login.html");
-  policies.Set(key::kPasswordProtectionLoginURLs, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               login_url_values.CreateDeepCopy(), nullptr);
-  UpdateProviderPolicy(policies);
-  EXPECT_TRUE(
-      prefs->FindPreference(prefs::kPasswordProtectionLoginURLs)->IsManaged());
-  safe_browsing::GetPasswordProtectionLoginURLsPref(*prefs, &login_urls);
-  EXPECT_EQ(2u, login_urls.size());
-  EXPECT_EQ(GURL("https://login.mydomain.com"), login_urls[0]);
-  EXPECT_EQ(GURL("https://mydomian.com/login.html"), login_urls[1]);
-
-  // Verify non-http/https schemes, or invalid URLs will be skipped.
-  login_url_values.Clear();
-  login_url_values.AppendString(std::string("invalid"));
-  login_url_values.AppendString(std::string("ftp://login.mydomain.com"));
-  policies.Set(key::kPasswordProtectionLoginURLs, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               login_url_values.CreateDeepCopy(), nullptr);
-  UpdateProviderPolicy(policies);
-  EXPECT_TRUE(
-      prefs->FindPreference(prefs::kPasswordProtectionLoginURLs)->IsManaged());
-  login_urls.clear();
-  safe_browsing::GetPasswordProtectionLoginURLsPref(*prefs, &login_urls);
-  EXPECT_TRUE(login_urls.empty());
-}
-
-// Test that when password protection change password URL is set by policy,
-// password protection service gets the correct value.
-IN_PROC_BROWSER_TEST_F(PolicyTest, PasswordProtectionChangePasswordURL) {
-  // Without setting up the enterprise policy,
-  // |GetEnterpriseChangePasswordURL(..) should return default GAIA change
-  // password URL.
-  const PrefService* const prefs = browser()->profile()->GetPrefs();
-  const safe_browsing::ChromePasswordProtectionService* const service =
-      safe_browsing::ChromePasswordProtectionService::
-          GetPasswordProtectionService(browser()->profile());
-  EXPECT_FALSE(
-      prefs->FindPreference(prefs::kPasswordProtectionChangePasswordURL)
-          ->IsManaged());
-  EXPECT_FALSE(prefs->HasPrefPath(prefs::kPasswordProtectionChangePasswordURL));
-  EXPECT_TRUE(service->GetEnterpriseChangePasswordURL().DomainIs(
-      "accounts.google.com"));
-
-  // Add change password URL to this enterprise policy .
-  PolicyMap policies;
-  policies.Set(
-      key::kPasswordProtectionChangePasswordURL, POLICY_LEVEL_MANDATORY,
-      POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-      base::WrapUnique(new base::Value("https://changepassword.mydomain.com")),
-      nullptr);
-  UpdateProviderPolicy(policies);
-  EXPECT_TRUE(prefs->FindPreference(prefs::kPasswordProtectionChangePasswordURL)
-                  ->IsManaged());
-  EXPECT_EQ(GURL("https://changepassword.mydomain.com"),
-            service->GetEnterpriseChangePasswordURL());
-
-  // Verify non-http/https change password URL will be skipped.
-  policies.Set(key::kPasswordProtectionChangePasswordURL,
-               POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               base::WrapUnique(new base::Value("data:text/html,login page")),
-               nullptr);
-  UpdateProviderPolicy(policies);
-  EXPECT_TRUE(prefs->FindPreference(prefs::kPasswordProtectionChangePasswordURL)
-                  ->IsManaged());
-  EXPECT_TRUE(service->GetEnterpriseChangePasswordURL().DomainIs(
-      "accounts.google.com"));
 }
 
 // Sets the proper policy before the browser is started.
@@ -5717,6 +3184,48 @@ IN_PROC_BROWSER_TEST_F(WebRtcUdpPortRangeDisabledPolicyTest,
   pref->GetValue()->GetAsString(&port_range);
   EXPECT_TRUE(port_range.empty());
 }
+
+// Sets the proper policy before the browser is started.
+class WebRtcLocalIpsAllowedUrlsTest : public PolicyTest,
+                                      public testing::WithParamInterface<int> {
+ public:
+  void SetUpInProcessBrowserTestFixture() override {
+    PolicyTest::SetUpInProcessBrowserTestFixture();
+    PolicyMap policies;
+    policies.Set(key::kWebRtcLocalIpsAllowedUrls, POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+                 std::make_unique<base::ListValue>(GenerateUrlList()), nullptr);
+    provider_.UpdateChromePolicy(policies);
+  }
+
+  base::Value::ListStorage GenerateUrlList() {
+    int num_urls = GetParam();
+    base::Value::ListStorage ret;
+    for (int i = 0; i < num_urls; ++i)
+      ret.push_back(base::Value(base::NumberToString(i) + ".example.com"));
+
+    return ret;
+  }
+};
+
+IN_PROC_BROWSER_TEST_P(WebRtcLocalIpsAllowedUrlsTest, RunTest) {
+  const PrefService::Preference* pref =
+      user_prefs::UserPrefs::Get(browser()->profile())
+          ->FindPreference(prefs::kWebRtcLocalIpsAllowedUrls);
+  EXPECT_TRUE(pref->IsManaged());
+  base::Value::ConstListView allowed_urls = pref->GetValue()->GetList();
+  const auto& expected_urls = GenerateUrlList();
+  EXPECT_EQ(expected_urls.size(), allowed_urls.size());
+  for (const auto& allowed_url : allowed_urls) {
+    auto it =
+        std::find(expected_urls.begin(), expected_urls.end(), allowed_url);
+    EXPECT_TRUE(it != expected_urls.end());
+  }
+}
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         WebRtcLocalIpsAllowedUrlsTest,
+                         ::testing::Range(0, 3));
 
 // Tests the ComponentUpdater's EnabledComponentUpdates group policy by
 // calling the OnDemand interface. It uses the network interceptor to inspect
@@ -5860,6 +3369,7 @@ update_client::CrxComponent ComponentUpdaterPolicyTest::MakeCrxComponent(
   // The component uses HTTPS only for network interception purposes.
   update_client::CrxComponent crx_component;
   crx_component.pk_hash.assign(std::begin(jebg_hash), std::end(jebg_hash));
+  crx_component.app_id = "jebgalgnebhfojomionfpkfelancnnkf";
   crx_component.version = base::Version("0.9");
   crx_component.installer = scoped_refptr<MockInstaller>(new MockInstaller());
   crx_component.requires_network_encryption = true;
@@ -6172,203 +3682,6 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, UnifiedDesktopEnabledByDefault) {
   EXPECT_FALSE(display_manager->unified_desktop_enabled());
 }
 
-class ArcPolicyTest : public PolicyTest {
- public:
-  ArcPolicyTest() {}
-  ~ArcPolicyTest() override {}
-
- protected:
-  void SetUpOnMainThread() override {
-    PolicyTest::SetUpOnMainThread();
-    arc::ArcSessionManager::SetUiEnabledForTesting(false);
-    arc::ArcSessionManager::Get()->SetArcSessionRunnerForTesting(
-        std::make_unique<arc::ArcSessionRunner>(
-            base::BindRepeating(arc::FakeArcSession::Create)));
-
-    browser()->profile()->GetPrefs()->SetBoolean(arc::prefs::kArcSignedIn,
-                                                 true);
-    browser()->profile()->GetPrefs()->SetBoolean(arc::prefs::kArcTermsAccepted,
-                                                 true);
-  }
-
-  void TearDownOnMainThread() override {
-    arc::ArcSessionManager::Get()->Shutdown();
-    PolicyTest::TearDownOnMainThread();
-  }
-
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    PolicyTest::SetUpCommandLine(command_line);
-    arc::SetArcAvailableCommandLineForTesting(command_line);
-  }
-
-  void SetArcEnabledByPolicy(bool enabled) {
-    PolicyMap policies;
-    policies.Set(key::kArcEnabled, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                 POLICY_SOURCE_CLOUD,
-                 base::WrapUnique(new base::Value(enabled)), nullptr);
-    UpdateProviderPolicy(policies);
-    if (browser()) {
-      const PrefService* const prefs = browser()->profile()->GetPrefs();
-      EXPECT_EQ(prefs->GetBoolean(arc::prefs::kArcEnabled), enabled);
-    }
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ArcPolicyTest);
-};
-
-// Test ArcEnabled policy.
-IN_PROC_BROWSER_TEST_F(ArcPolicyTest, ArcEnabled) {
-  const PrefService* const pref = browser()->profile()->GetPrefs();
-  const auto* const arc_session_manager = arc::ArcSessionManager::Get();
-
-  // ARC is switched off by default.
-  EXPECT_FALSE(pref->GetBoolean(arc::prefs::kArcEnabled));
-  EXPECT_FALSE(arc_session_manager->enable_requested());
-
-  // Enable ARC.
-  SetArcEnabledByPolicy(true);
-  EXPECT_TRUE(arc_session_manager->enable_requested());
-
-  // Disable ARC.
-  SetArcEnabledByPolicy(false);
-  EXPECT_FALSE(arc_session_manager->enable_requested());
-}
-
-// Test ArcBackupRestoreServiceEnabled policy.
-IN_PROC_BROWSER_TEST_F(ArcPolicyTest, ArcBackupRestoreServiceEnabled) {
-  PrefService* const pref = browser()->profile()->GetPrefs();
-
-  // Enable ARC backup and restore in user prefs.
-  pref->SetBoolean(arc::prefs::kArcBackupRestoreEnabled, true);
-
-  // ARC backup and restore is disabled by policy by default.
-  UpdateProviderPolicy(PolicyMap());
-  EXPECT_FALSE(pref->GetBoolean(arc::prefs::kArcBackupRestoreEnabled));
-  EXPECT_TRUE(pref->IsManagedPreference(arc::prefs::kArcBackupRestoreEnabled));
-
-  // Set ARC backup and restore to user control via policy.
-  PolicyMap policies;
-  policies.Set(key::kArcBackupRestoreServiceEnabled, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               std::make_unique<base::Value>(
-                   static_cast<int>(ArcServicePolicyValue::kUnderUserControl)),
-               nullptr);
-  UpdateProviderPolicy(policies);
-
-  // User choice should be honored now.
-  EXPECT_TRUE(pref->GetBoolean(arc::prefs::kArcBackupRestoreEnabled));
-  EXPECT_FALSE(pref->IsManagedPreference(arc::prefs::kArcBackupRestoreEnabled));
-  pref->SetBoolean(arc::prefs::kArcBackupRestoreEnabled, false);
-  EXPECT_FALSE(pref->GetBoolean(arc::prefs::kArcBackupRestoreEnabled));
-  pref->SetBoolean(arc::prefs::kArcBackupRestoreEnabled, true);
-  EXPECT_TRUE(pref->GetBoolean(arc::prefs::kArcBackupRestoreEnabled));
-
-  // Set ARC backup and restore to disabled via policy.
-  policies.Set(key::kArcBackupRestoreServiceEnabled, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               std::make_unique<base::Value>(
-                   static_cast<int>(ArcServicePolicyValue::kDisabled)),
-               nullptr);
-  UpdateProviderPolicy(policies);
-  EXPECT_FALSE(pref->GetBoolean(arc::prefs::kArcBackupRestoreEnabled));
-  EXPECT_TRUE(pref->IsManagedPreference(arc::prefs::kArcBackupRestoreEnabled));
-
-  // Disable ARC backup and restore in user prefs.
-  pref->SetBoolean(arc::prefs::kArcBackupRestoreEnabled, true);
-
-  // Set ARC backup and restore to enabled via policy.
-  policies.Set(key::kArcBackupRestoreServiceEnabled, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               std::make_unique<base::Value>(
-                   static_cast<int>(ArcServicePolicyValue::kEnabled)),
-               nullptr);
-  UpdateProviderPolicy(policies);
-  EXPECT_TRUE(pref->GetBoolean(arc::prefs::kArcBackupRestoreEnabled));
-  EXPECT_TRUE(pref->IsManagedPreference(arc::prefs::kArcBackupRestoreEnabled));
-}
-
-// Test ArcGoogleLocationServicesEnabled policy and its interplay with the
-// DefaultGeolocationSetting policy.
-IN_PROC_BROWSER_TEST_F(ArcPolicyTest, ArcGoogleLocationServicesEnabled) {
-  PrefService* const pref = browser()->profile()->GetPrefs();
-
-  // Values of the ArcGoogleLocationServicesEnabled policy to be tested.
-  std::vector<base::Value> test_policy_values;
-  test_policy_values.emplace_back();  // unset
-  test_policy_values.emplace_back(
-      static_cast<int>(ArcServicePolicyValue::kDisabled));
-  test_policy_values.emplace_back(
-      static_cast<int>(ArcServicePolicyValue::kUnderUserControl));
-  test_policy_values.emplace_back(
-      static_cast<int>(ArcServicePolicyValue::kEnabled));
-
-  // Values of the DefaultGeolocationSetting policy to be tested.
-  std::vector<base::Value> test_default_geo_policy_values;
-  test_default_geo_policy_values.emplace_back();   // unset
-  test_default_geo_policy_values.emplace_back(1);  // 'AllowGeolocation'
-  test_default_geo_policy_values.emplace_back(2);  // 'BlockGeolocation'
-  test_default_geo_policy_values.emplace_back(3);  // 'AskGeolocation'
-
-  // Switch on the pref in user prefs.
-  pref->SetBoolean(arc::prefs::kArcLocationServiceEnabled, true);
-
-  // The pref is overridden to disabled by policy by default.
-  UpdateProviderPolicy(PolicyMap());
-  EXPECT_FALSE(pref->GetBoolean(arc::prefs::kArcLocationServiceEnabled));
-  EXPECT_TRUE(
-      pref->IsManagedPreference(arc::prefs::kArcLocationServiceEnabled));
-
-  for (const auto& test_policy_value : test_policy_values) {
-    for (const auto& test_default_geo_policy_value :
-         test_default_geo_policy_values) {
-      PolicyMap policies;
-      if (test_policy_value.is_int()) {
-        policies.Set(key::kArcGoogleLocationServicesEnabled,
-                     POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                     POLICY_SOURCE_CLOUD, test_policy_value.CreateDeepCopy(),
-                     nullptr);
-      }
-      if (test_default_geo_policy_value.is_int()) {
-        policies.Set(key::kDefaultGeolocationSetting, POLICY_LEVEL_MANDATORY,
-                     POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-                     test_default_geo_policy_value.CreateDeepCopy(), nullptr);
-      }
-      UpdateProviderPolicy(policies);
-
-      const bool should_be_disabled_by_policy =
-          test_policy_value.is_none() ||
-          (test_policy_value.GetInt() ==
-           static_cast<int>(ArcServicePolicyValue::kDisabled));
-      const bool should_be_enabled_by_policy =
-          test_policy_value.is_int() &&
-          test_policy_value.GetInt() ==
-              static_cast<int>(ArcServicePolicyValue::kEnabled);
-      const bool should_be_disabled_by_default_geo_policy =
-          test_default_geo_policy_value.is_int() &&
-          test_default_geo_policy_value.GetInt() == 2;
-      const bool expected_pref_value =
-          !(should_be_disabled_by_policy ||
-            should_be_disabled_by_default_geo_policy);
-      EXPECT_EQ(expected_pref_value,
-                pref->GetBoolean(arc::prefs::kArcLocationServiceEnabled))
-          << "ArcGoogleLocationServicesEnabled policy is set to "
-          << test_policy_value << "DefaultGeolocationSetting policy is set to "
-          << test_default_geo_policy_value;
-
-      const bool expected_pref_managed =
-          should_be_disabled_by_policy || should_be_enabled_by_policy ||
-          should_be_disabled_by_default_geo_policy;
-      EXPECT_EQ(
-          expected_pref_managed,
-          pref->IsManagedPreference(arc::prefs::kArcLocationServiceEnabled))
-          << "ArcGoogleLocationServicesEnabled policy is set to "
-          << test_policy_value << "DefaultGeolocationSetting policy is set to "
-          << test_default_geo_policy_value;
-    }
-  }
-}
-
 #endif  // defined(OS_CHROMEOS)
 
 class NetworkTimePolicyTest : public PolicyTest {
@@ -6409,7 +3722,11 @@ class NetworkTimePolicyTest : public PolicyTest {
   DISALLOW_COPY_AND_ASSIGN(NetworkTimePolicyTest);
 };
 
-IN_PROC_BROWSER_TEST_F(NetworkTimePolicyTest, NetworkTimeQueriesDisabled) {
+// TODO(https://crbug.com/1012853): This test is using ScopedFeatureList
+// incorrectly, and fixing it causes conflicts with PolicyTest's use of the
+// deprecated variations API.
+IN_PROC_BROWSER_TEST_F(NetworkTimePolicyTest,
+                       DISABLED_NetworkTimeQueriesDisabled) {
   // Set a policy to disable network time queries.
   PolicyMap policies;
   policies.Set(key::kBrowserNetworkTimeQueriesEnabled, POLICY_LEVEL_MANDATORY,
@@ -6535,7 +3852,7 @@ IN_PROC_BROWSER_TEST_F(NoteTakingOnLockScreenPolicyTest,
             GetAppLockScreenStatus(app->id()));
 
   auto policy = std::make_unique<base::ListValue>();
-  policy->GetList().emplace_back(base::Value(kTestAppId));
+  policy->Append(base::Value(kTestAppId));
   SetPolicyValue(std::move(policy));
 
   EXPECT_EQ(chromeos::NoteTakingLockScreenSupport::kSupported,
@@ -6547,323 +3864,6 @@ IN_PROC_BROWSER_TEST_F(NoteTakingOnLockScreenPolicyTest,
 }
 
 #endif  // defined(OS_CHROMEOS)
-
-#if !defined(OS_ANDROID)
-
-class AutoplayPolicyTest : public PolicyTest {
- public:
-  AutoplayPolicyTest() {
-    // Start two embedded test servers on different ports. This will ensure
-    // the test works correctly with cross origin iframes and site-per-process.
-    embedded_test_server2()->AddDefaultHandlers(GetChromeTestDataDir());
-    EXPECT_TRUE(embedded_test_server()->Start());
-    EXPECT_TRUE(embedded_test_server2()->Start());
-  }
-
-  void NavigateToTestPage() {
-    GURL origin = embedded_test_server()->GetURL(kAutoplayTestPageURL);
-    ui_test_utils::NavigateToURL(browser(), origin);
-
-    // Navigate the subframe to the test page but on the second origin.
-    GURL origin2 = embedded_test_server2()->GetURL(kAutoplayTestPageURL);
-    std::string script = base::StringPrintf(
-        "setTimeout(\""
-        "document.getElementById('subframe').src='%s';"
-        "\",0)",
-        origin2.spec().c_str());
-    content::TestNavigationObserver load_observer(GetWebContents());
-    EXPECT_TRUE(ExecuteScriptWithoutUserGesture(GetWebContents(), script));
-    load_observer.Wait();
-  }
-
-  net::EmbeddedTestServer* embedded_test_server2() {
-    return &embedded_test_server2_;
-  }
-
-  bool TryAutoplay(content::RenderFrameHost* rfh) {
-    bool result = false;
-
-    EXPECT_TRUE(content::ExecuteScriptWithoutUserGestureAndExtractBool(
-        rfh, "tryPlayback();", &result));
-
-    return result;
-  }
-
-  content::WebContents* GetWebContents() {
-    return browser()->tab_strip_model()->GetActiveWebContents();
-  }
-
-  content::RenderFrameHost* GetMainFrame() {
-    return GetWebContents()->GetMainFrame();
-  }
-
-  content::RenderFrameHost* GetChildFrame() {
-    return GetWebContents()->GetAllFrames()[1];
-  }
-
- private:
-  // Second instance of embedded test server to provide a second test origin.
-  net::EmbeddedTestServer embedded_test_server2_;
-};
-
-IN_PROC_BROWSER_TEST_F(AutoplayPolicyTest, AutoplayAllowedByPolicy) {
-  NavigateToTestPage();
-
-  // Check that autoplay was not allowed.
-  EXPECT_FALSE(TryAutoplay(GetMainFrame()));
-  EXPECT_FALSE(TryAutoplay(GetChildFrame()));
-
-  // Update policy to allow autoplay.
-  PolicyMap policies;
-  SetPolicy(&policies, key::kAutoplayAllowed,
-            std::make_unique<base::Value>(true));
-  UpdateProviderPolicy(policies);
-
-  // Check that autoplay was allowed by policy.
-  GetWebContents()->GetRenderViewHost()->OnWebkitPreferencesChanged();
-  EXPECT_TRUE(TryAutoplay(GetMainFrame()));
-  EXPECT_TRUE(TryAutoplay(GetChildFrame()));
-}
-
-IN_PROC_BROWSER_TEST_F(AutoplayPolicyTest, AutoplayWhitelist_Allowed) {
-  NavigateToTestPage();
-
-  // Check that autoplay was not allowed.
-  EXPECT_FALSE(TryAutoplay(GetMainFrame()));
-  EXPECT_FALSE(TryAutoplay(GetChildFrame()));
-
-  // Create a test whitelist with our origin.
-  std::vector<base::Value> whitelist;
-  whitelist.push_back(base::Value(embedded_test_server()->GetURL("/").spec()));
-
-  // Update policy to allow autoplay for our test origin.
-  PolicyMap policies;
-  SetPolicy(&policies, key::kAutoplayWhitelist,
-            std::make_unique<base::ListValue>(whitelist));
-  UpdateProviderPolicy(policies);
-
-  // Check that autoplay was allowed by policy.
-  GetWebContents()->GetRenderViewHost()->OnWebkitPreferencesChanged();
-  EXPECT_TRUE(TryAutoplay(GetMainFrame()));
-  EXPECT_TRUE(TryAutoplay(GetChildFrame()));
-}
-
-IN_PROC_BROWSER_TEST_F(AutoplayPolicyTest, AutoplayWhitelist_PatternAllowed) {
-  NavigateToTestPage();
-
-  // Check that autoplay was not allowed.
-  EXPECT_FALSE(TryAutoplay(GetMainFrame()));
-  EXPECT_FALSE(TryAutoplay(GetChildFrame()));
-
-  // Create a test whitelist with our origin.
-  std::vector<base::Value> whitelist;
-  whitelist.push_back(base::Value("127.0.0.1:*"));
-
-  // Update policy to allow autoplay for our test origin.
-  PolicyMap policies;
-  SetPolicy(&policies, key::kAutoplayWhitelist,
-            std::make_unique<base::ListValue>(whitelist));
-  UpdateProviderPolicy(policies);
-
-  // Check that autoplay was allowed by policy.
-  GetWebContents()->GetRenderViewHost()->OnWebkitPreferencesChanged();
-  EXPECT_TRUE(TryAutoplay(GetMainFrame()));
-  EXPECT_TRUE(TryAutoplay(GetChildFrame()));
-}
-
-IN_PROC_BROWSER_TEST_F(AutoplayPolicyTest, AutoplayWhitelist_Missing) {
-  NavigateToTestPage();
-
-  // Check that autoplay was not allowed.
-  EXPECT_FALSE(TryAutoplay(GetMainFrame()));
-  EXPECT_FALSE(TryAutoplay(GetChildFrame()));
-
-  // Create a test whitelist with a random origin.
-  std::vector<base::Value> whitelist;
-  whitelist.push_back(base::Value("https://www.example.com"));
-
-  // Update policy to allow autoplay for a random origin.
-  PolicyMap policies;
-  SetPolicy(&policies, key::kAutoplayWhitelist,
-            std::make_unique<base::ListValue>(whitelist));
-  UpdateProviderPolicy(policies);
-
-  // Check that autoplay was not allowed.
-  GetWebContents()->GetRenderViewHost()->OnWebkitPreferencesChanged();
-  EXPECT_FALSE(TryAutoplay(GetMainFrame()));
-  EXPECT_FALSE(TryAutoplay(GetChildFrame()));
-}
-
-IN_PROC_BROWSER_TEST_F(AutoplayPolicyTest, AutoplayDeniedByPolicy) {
-  NavigateToTestPage();
-
-  // Check that autoplay was not allowed.
-  EXPECT_FALSE(TryAutoplay(GetMainFrame()));
-  EXPECT_FALSE(TryAutoplay(GetChildFrame()));
-
-  // Update policy to forbid autoplay.
-  PolicyMap policies;
-  SetPolicy(&policies, key::kAutoplayAllowed,
-            std::make_unique<base::Value>(false));
-  UpdateProviderPolicy(policies);
-
-  // Check that autoplay was not allowed by policy.
-  GetWebContents()->GetRenderViewHost()->OnWebkitPreferencesChanged();
-  EXPECT_FALSE(TryAutoplay(GetMainFrame()));
-  EXPECT_FALSE(TryAutoplay(GetChildFrame()));
-
-  // Create a test whitelist with a random origin.
-  std::vector<base::Value> whitelist;
-  whitelist.push_back(base::Value("https://www.example.com"));
-
-  // Update policy to allow autoplay for a random origin.
-  SetPolicy(&policies, key::kAutoplayWhitelist,
-            std::make_unique<base::ListValue>(whitelist));
-  UpdateProviderPolicy(policies);
-
-  // Check that autoplay was not allowed.
-  GetWebContents()->GetRenderViewHost()->OnWebkitPreferencesChanged();
-  EXPECT_FALSE(TryAutoplay(GetMainFrame()));
-  EXPECT_FALSE(TryAutoplay(GetChildFrame()));
-}
-
-IN_PROC_BROWSER_TEST_F(AutoplayPolicyTest, AutoplayDeniedAllowedWithURL) {
-  NavigateToTestPage();
-
-  // Check that autoplay was not allowed.
-  EXPECT_FALSE(TryAutoplay(GetMainFrame()));
-  EXPECT_FALSE(TryAutoplay(GetChildFrame()));
-
-  // Update policy to forbid autoplay.
-  PolicyMap policies;
-  SetPolicy(&policies, key::kAutoplayAllowed,
-            std::make_unique<base::Value>(false));
-  UpdateProviderPolicy(policies);
-
-  // Check that autoplay was not allowed by policy.
-  GetWebContents()->GetRenderViewHost()->OnWebkitPreferencesChanged();
-  EXPECT_FALSE(TryAutoplay(GetMainFrame()));
-  EXPECT_FALSE(TryAutoplay(GetChildFrame()));
-
-  // Create a test whitelist with our test origin.
-  std::vector<base::Value> whitelist;
-  whitelist.push_back(base::Value(embedded_test_server()->GetURL("/").spec()));
-
-  // Update policy to allow autoplay for our test origin.
-  SetPolicy(&policies, key::kAutoplayWhitelist,
-            std::make_unique<base::ListValue>(whitelist));
-  UpdateProviderPolicy(policies);
-
-  // Check that autoplay was allowed by policy.
-  GetWebContents()->GetRenderViewHost()->OnWebkitPreferencesChanged();
-  EXPECT_TRUE(TryAutoplay(GetMainFrame()));
-  EXPECT_TRUE(TryAutoplay(GetChildFrame()));
-}
-
-IN_PROC_BROWSER_TEST_F(AutoplayPolicyTest, AutoplayAllowedGlobalAndURL) {
-  NavigateToTestPage();
-
-  // Check that autoplay was not allowed.
-  EXPECT_FALSE(TryAutoplay(GetMainFrame()));
-  EXPECT_FALSE(TryAutoplay(GetChildFrame()));
-
-  // Update policy to forbid autoplay.
-  PolicyMap policies;
-  SetPolicy(&policies, key::kAutoplayAllowed,
-            std::make_unique<base::Value>(false));
-  UpdateProviderPolicy(policies);
-
-  // Check that autoplay was not allowed by policy.
-  GetWebContents()->GetRenderViewHost()->OnWebkitPreferencesChanged();
-  EXPECT_FALSE(TryAutoplay(GetMainFrame()));
-  EXPECT_FALSE(TryAutoplay(GetChildFrame()));
-
-  // Create a test whitelist with our test origin.
-  std::vector<base::Value> whitelist;
-  whitelist.push_back(base::Value(embedded_test_server()->GetURL("/").spec()));
-
-  // Update policy to allow autoplay for our test origin.
-  SetPolicy(&policies, key::kAutoplayWhitelist,
-            std::make_unique<base::ListValue>(whitelist));
-  UpdateProviderPolicy(policies);
-
-  // Check that autoplay was allowed by policy.
-  GetWebContents()->GetRenderViewHost()->OnWebkitPreferencesChanged();
-  EXPECT_TRUE(TryAutoplay(GetMainFrame()));
-  EXPECT_TRUE(TryAutoplay(GetChildFrame()));
-}
-
-#endif  // !defined(OS_ANDROID)
-
-IN_PROC_BROWSER_TEST_F(PolicyTest, WebUsbDefault) {
-  const auto kTestOrigin = url::Origin::Create(GURL("https://foo.com:443"));
-
-  // Expect the default permission value to be 'ask'.
-  auto* context = UsbChooserContextFactory::GetForProfile(browser()->profile());
-  EXPECT_TRUE(context->CanRequestObjectPermission(kTestOrigin, kTestOrigin));
-
-  // Update policy to change the default permission value to 'block'.
-  PolicyMap policies;
-  SetPolicy(&policies, key::kDefaultWebUsbGuardSetting,
-            std::make_unique<base::Value>(2));
-  UpdateProviderPolicy(policies);
-  EXPECT_FALSE(context->CanRequestObjectPermission(kTestOrigin, kTestOrigin));
-
-  // Update policy to change the default permission value to 'ask'.
-  SetPolicy(&policies, key::kDefaultWebUsbGuardSetting,
-            std::make_unique<base::Value>(3));
-  UpdateProviderPolicy(policies);
-  EXPECT_TRUE(context->CanRequestObjectPermission(kTestOrigin, kTestOrigin));
-}
-
-IN_PROC_BROWSER_TEST_F(PolicyTest, WebUsbAllowDevicesForUrls) {
-  const auto kTestOrigin = url::Origin::Create(GURL("https://foo.com:443"));
-  scoped_refptr<device::FakeUsbDeviceInfo> device =
-      base::MakeRefCounted<device::FakeUsbDeviceInfo>(0, 0, "Google", "Gizmo",
-                                                      "123ABC");
-  const auto& device_info = device->GetDeviceInfo();
-
-  // Expect the default permission value to be empty.
-  auto* context = UsbChooserContextFactory::GetForProfile(browser()->profile());
-  EXPECT_FALSE(
-      context->HasDevicePermission(kTestOrigin, kTestOrigin, device_info));
-
-  // Update policy to add an entry to the permission value to allow
-  // |kTestOrigin| to access the device described by |device_info|.
-  PolicyMap policies;
-
-  base::Value device_value(base::Value::Type::DICTIONARY);
-  device_value.SetKey("vendor_id", base::Value(0));
-  device_value.SetKey("product_id", base::Value(0));
-
-  base::Value devices_value(base::Value::Type::LIST);
-  devices_value.GetList().push_back(std::move(device_value));
-
-  base::Value urls_value(base::Value::Type::LIST);
-  urls_value.GetList().emplace_back(base::Value("https://foo.com"));
-
-  base::Value entry(base::Value::Type::DICTIONARY);
-  entry.SetKey("devices", std::move(devices_value));
-  entry.SetKey("urls", std::move(urls_value));
-
-  auto policy_value = std::make_unique<base::Value>(base::Value::Type::LIST);
-  policy_value->GetList().push_back(std::move(entry));
-
-  SetPolicy(&policies, key::kWebUsbAllowDevicesForUrls,
-            std::move(policy_value));
-  UpdateProviderPolicy(policies);
-
-  EXPECT_TRUE(
-      context->HasDevicePermission(kTestOrigin, kTestOrigin, device_info));
-
-  // Remove the policy to ensure that it can be dynamically updated.
-  SetPolicy(&policies, key::kWebUsbAllowDevicesForUrls,
-            std::make_unique<base::Value>(base::Value::Type::LIST));
-  UpdateProviderPolicy(policies);
-
-  EXPECT_FALSE(
-      context->HasDevicePermission(kTestOrigin, kTestOrigin, device_info));
-}
 
 // Handler for embedded http-server, returns a small page with javascript
 // variable and a link to increment it. It's for JavascriptBlacklistable test.
@@ -6941,53 +3941,6 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, JavascriptBlacklistable) {
   EXPECT_EQ(JSIncrementerFetch(contents), 3);
 }
 
-// Similar to PolicyTest but sets the WebAppInstallForceList policy before the
-// browser is started.
-class WebAppInstallForceListPolicyTest : public PolicyTest {
- public:
-  WebAppInstallForceListPolicyTest() {}
-  ~WebAppInstallForceListPolicyTest() override {}
-
-  void SetUpInProcessBrowserTestFixture() override {
-    PolicyTest::SetUpInProcessBrowserTestFixture();
-    ASSERT_TRUE(embedded_test_server()->Start());
-
-    policy_app_url_ =
-        embedded_test_server()->GetURL("/banners/manifest_test_page.html");
-    base::Value url(policy_app_url_.spec());
-    base::Value launch_container("window");
-
-    base::Value item(base::Value::Type::DICTIONARY);
-    item.SetKey("url", std::move(url));
-    item.SetKey("default_launch_container", std::move(launch_container));
-
-    base::Value list(base::Value::Type::LIST);
-    list.GetList().push_back(std::move(item));
-
-    PolicyMap policies;
-    SetPolicy(&policies, key::kWebAppInstallForceList,
-              base::Value::ToUniquePtrValue(std::move(list)));
-    provider_.UpdateChromePolicy(policies);
-  }
-
- protected:
-  GURL policy_app_url_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(WebAppInstallForceListPolicyTest);
-};
-
-IN_PROC_BROWSER_TEST_F(WebAppInstallForceListPolicyTest, StartUpInstallation) {
-  extensions::TestExtensionRegistryObserver observer(extension_registry());
-  const extensions::Extension* installed_extension =
-      observer.WaitForExtensionWillBeInstalled();
-
-  ASSERT_TRUE(installed_extension);
-  const GURL installed_app_url =
-      extensions::AppLaunchInfo::GetFullLaunchURL(installed_extension);
-  EXPECT_EQ(policy_app_url_, installed_app_url);
-}
-
 #if defined(OS_WIN)
 
 class ForceNetworkInProcessTest
@@ -7016,7 +3969,15 @@ class ForceNetworkInProcessTest
 };
 
 IN_PROC_BROWSER_TEST_P(ForceNetworkInProcessTest, IsRespected) {
-  ASSERT_EQ(content::IsInProcessNetworkService(), GetParam());
+  bool expected_in_process = GetParam();
+
+  // When run with --enable-features=NetworkServiceInProcess, the Network
+  // Service will always be in process. This configuration is used on some
+  // bots - see https://crbug.com/1002752.
+  expected_in_process |=
+      base::FeatureList::IsEnabled(features::kNetworkServiceInProcess);
+
+  ASSERT_EQ(expected_in_process, content::IsInProcessNetworkService());
 }
 
 INSTANTIATE_TEST_SUITE_P(
@@ -7119,7 +4080,7 @@ IN_PROC_BROWSER_TEST_P(PromotionalTabsEnabledPolicyTest, RunTest) {
 }
 #undef MAYBE_RunTest
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          PromotionalTabsEnabledPolicyTest,
                          ::testing::Values(BooleanPolicy::kNotConfigured,
                                            BooleanPolicy::kFalse,
@@ -7229,7 +4190,7 @@ IN_PROC_BROWSER_TEST_P(WebRtcEventLogCollectionAllowedPolicyTest, RunTest) {
   }
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          WebRtcEventLogCollectionAllowedPolicyTest,
                          ::testing::Values(BooleanPolicy::kNotConfigured,
                                            BooleanPolicy::kFalse,
@@ -7330,21 +4291,6 @@ IN_PROC_BROWSER_TEST_F(SignedExchangePolicyTest, SignedExchangeEnabled) {
   ASSERT_TRUE(HadSignedExchangeInAcceptHeader(url));
 }
 
-IN_PROC_BROWSER_TEST_F(PolicyTest, CheckURLsInRealTime) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      safe_browsing::kRealTimeUrlLookupFetchAllowlist);
-
-  EXPECT_FALSE(safe_browsing::RealTimePolicyEngine::CanPerformFullURLLookup());
-
-  PolicyMap policies;
-  SetPolicy(&policies, key::kSafeBrowsingRealTimeLookupEnabled,
-            std::make_unique<base::Value>(true));
-  UpdateProviderPolicy(policies);
-
-  EXPECT_TRUE(safe_browsing::RealTimePolicyEngine::CanPerformFullURLLookup());
-}
-
 class HSTSPolicyTest : public PolicyTest {
   void SetUpInProcessBrowserTestFixture() override {
     PolicyTest::SetUpInProcessBrowserTestFixture();
@@ -7355,21 +4301,16 @@ class HSTSPolicyTest : public PolicyTest {
               std::make_unique<base::ListValue>(bypass_list));
     provider_.UpdateChromePolicy(policies);
   }
-
- private:
-  net::ScopedTransportSecurityStateSource hsts_source_;
 };
 
 IN_PROC_BROWSER_TEST_F(HSTSPolicyTest, HSTSPolicyBypassList) {
-  if (content::IsOutOfProcessNetworkService()) {
-    network::mojom::NetworkServiceTestPtr network_service_test;
-    content::GetSystemConnector()->BindInterface(
-        content::mojom::kNetworkServiceName, &network_service_test);
-    mojo::ScopedAllowSyncCallForTesting allow_sync_call;
-    // The port number 1234 here doesn't matter - it just needs to be a non-zero
-    // value so that we use the unittest_default preload list.
-    network_service_test->SetTransportSecurityStateSource(1234);
-  }
+  mojo::Remote<network::mojom::NetworkServiceTest> network_service_test;
+  content::GetNetworkService()->BindTestInterface(
+      network_service_test.BindNewPipeAndPassReceiver());
+  mojo::ScopedAllowSyncCallForTesting allow_sync_call;
+  // The port number 1234 here doesn't matter - it just needs to be a non-zero
+  // value so that we use the unittest_default preload list.
+  network_service_test->SetTransportSecurityStateSource(1234);
 
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url("http://example/");
@@ -7424,6 +4365,148 @@ IN_PROC_BROWSER_TEST_F(PolicyTestSyncXHR, CheckAllowSyncXHRInPageDismissal) {
   std::string message;
   EXPECT_TRUE(message_queue.WaitForMessage(&message));
   EXPECT_EQ("true", message);
+}
+
+class SharedClipboardPolicyTest : public PolicyTest {
+  void SetUpInProcessBrowserTestFixture() override {
+    PolicyTest::SetUpInProcessBrowserTestFixture();
+    PolicyMap policies;
+    policies.Set(policy::key::kSharedClipboardEnabled,
+                 policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
+                 policy::POLICY_SOURCE_CLOUD,
+                 std::make_unique<base::Value>(true), nullptr);
+    provider_.UpdateChromePolicy(policies);
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(SharedClipboardPolicyTest, SharedClipboardEnabled) {
+  PrefService* prefs = browser()->profile()->GetPrefs();
+  EXPECT_TRUE(prefs->IsManagedPreference(prefs::kSharedClipboardEnabled));
+  EXPECT_TRUE(prefs->GetBoolean(prefs::kSharedClipboardEnabled));
+}
+
+#if defined(OS_WIN) || defined(OS_MACOSX) || \
+    (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+
+class AudioSandboxEnabledTest
+    : public InProcessBrowserTest,
+      public ::testing::WithParamInterface<
+          /*policy::key::kAllowAudioSandbox=*/base::Optional<bool>> {
+ public:
+  // InProcessBrowserTest implementation:
+  void SetUp() override {
+    EXPECT_CALL(policy_provider_, IsInitializationComplete(testing::_))
+        .WillRepeatedly(testing::Return(true));
+    policy::PolicyMap values;
+    if (GetParam().has_value()) {
+      values.Set(policy::key::kAudioSandboxEnabled,
+                 policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_MACHINE,
+                 policy::POLICY_SOURCE_CLOUD,
+                 std::make_unique<base::Value>(*GetParam()), nullptr);
+    }
+    policy_provider_.UpdateChromePolicy(values);
+    policy::BrowserPolicyConnector::SetPolicyProviderForTesting(
+        &policy_provider_);
+
+    InProcessBrowserTest::SetUp();
+  }
+
+ private:
+  policy::MockConfigurationPolicyProvider policy_provider_;
+};
+
+IN_PROC_BROWSER_TEST_P(AudioSandboxEnabledTest, IsRespected) {
+  base::Optional<bool> enable_sandbox_via_policy = GetParam();
+  bool is_sandbox_enabled_by_default = base::FeatureList::IsEnabled(
+      service_manager::features::kAudioServiceSandbox);
+  bool is_apm_enabled_by_default =
+      base::FeatureList::IsEnabled(features::kWebRtcApmInAudioService);
+
+  ASSERT_EQ(enable_sandbox_via_policy.value_or(is_sandbox_enabled_by_default),
+            service_manager::IsAudioSandboxEnabled());
+  ASSERT_EQ(
+      is_apm_enabled_by_default && service_manager::IsAudioSandboxEnabled(),
+      media::IsWebRtcApmInAudioServiceEnabled());
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    Enabled,
+    AudioSandboxEnabledTest,
+    ::testing::Values(/*policy::key::kAudioSandboxEnabled=*/true));
+
+INSTANTIATE_TEST_SUITE_P(
+    Disabled,
+    AudioSandboxEnabledTest,
+    ::testing::Values(/*policy::key::kAudioSandboxEnabled=*/false));
+
+INSTANTIATE_TEST_SUITE_P(
+    NotSet,
+    AudioSandboxEnabledTest,
+    ::testing::Values(/*policy::key::kAudioSandboxEnabled=*/base::nullopt));
+
+#endif  //  defined(OS_WIN) || defined (OS_MACOSX) || (defined(OS_LINUX) &&
+        //  !defined(OS_CHROMEOS))
+
+// See CorsExtraSafelistedHeaderNamesTest for more complex end to end tests.
+IN_PROC_BROWSER_TEST_F(PolicyTest, CorsMitigationExtraHeadersTest) {
+  // The list should be initialized as an empty list, but should not be managed.
+  PrefService* prefs = browser()->profile()->GetPrefs();
+  EXPECT_TRUE(prefs->GetList(prefs::kCorsMitigationList));
+  EXPECT_TRUE(prefs->GetList(prefs::kCorsMitigationList)->empty());
+  EXPECT_FALSE(prefs->IsManagedPreference(prefs::kCorsMitigationList));
+
+  EXPECT_FALSE(extensions::ExtensionsBrowserClient::Get()
+                   ->ShouldForceWebRequestExtraHeaders(browser()->profile()));
+
+  PolicyMap policies;
+  policies.Set(key::kCorsMitigationList, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+               std::make_unique<base::ListValue>(), nullptr);
+  UpdateProviderPolicy(policies);
+
+  // Now the list is managed, and it enforces the webRequest API to use the
+  // extraHeaders option.
+  EXPECT_TRUE(prefs->GetList(prefs::kCorsMitigationList));
+  EXPECT_TRUE(prefs->GetList(prefs::kCorsMitigationList)->empty());
+  EXPECT_TRUE(prefs->IsManagedPreference(prefs::kCorsMitigationList));
+
+  EXPECT_EQ(network::features::ShouldEnableOutOfBlinkCorsForTesting(),
+            extensions::ExtensionsBrowserClient::Get()
+                ->ShouldForceWebRequestExtraHeaders(browser()->profile()));
+}
+
+IN_PROC_BROWSER_TEST_F(PolicyTest, CorsLegacyModeEnabledConsistencyTest) {
+  Profile* profile = browser()->profile();
+  PrefService* prefs = profile->GetPrefs();
+  bool is_out_of_blink_cors_enabled = profile->ShouldEnableOutOfBlinkCors();
+
+  // Check initial states.
+  EXPECT_FALSE(prefs->GetBoolean(prefs::kCorsLegacyModeEnabled));
+  EXPECT_FALSE(prefs->IsManagedPreference(prefs::kCorsLegacyModeEnabled));
+
+  // Check if updated policies are reflected. However, |profile| should keep
+  // returning a consistent value that returned at the first access.
+  PolicyMap policies;
+  policies.Set(key::kCorsLegacyModeEnabled, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+               std::make_unique<base::Value>(true), nullptr);
+  UpdateProviderPolicy(policies);
+
+  EXPECT_TRUE(prefs->GetBoolean(prefs::kCorsLegacyModeEnabled));
+  EXPECT_TRUE(prefs->IsManagedPreference(prefs::kCorsLegacyModeEnabled));
+  EXPECT_EQ(is_out_of_blink_cors_enabled,
+            profile->ShouldEnableOutOfBlinkCors());
+
+  // Flip the value, and check again.
+  policies.Set(key::kCorsLegacyModeEnabled, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+               std::make_unique<base::Value>(false), nullptr);
+  UpdateProviderPolicy(policies);
+
+  EXPECT_FALSE(prefs->GetBoolean(prefs::kCorsLegacyModeEnabled));
+  EXPECT_TRUE(prefs->IsManagedPreference(prefs::kCorsLegacyModeEnabled));
+  EXPECT_EQ(is_out_of_blink_cors_enabled,
+            profile->ShouldEnableOutOfBlinkCors());
 }
 
 }  // namespace policy

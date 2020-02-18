@@ -105,8 +105,9 @@ egl::Error SurfaceD3D::initialize(const egl::Display *display)
 
     if (mBuftype == EGL_D3D_TEXTURE_ANGLE)
     {
-        ANGLE_TRY(mRenderer->getD3DTextureInfo(mState.config, mD3DTexture, &mFixedWidth,
-                                               &mFixedHeight, nullptr, &mColorFormat));
+        ANGLE_TRY(mRenderer->getD3DTextureInfo(mState.config, mD3DTexture, mState.attributes,
+                                               &mFixedWidth, &mFixedHeight, nullptr, nullptr,
+                                               &mColorFormat));
         if (mState.attributes.contains(EGL_GL_COLORSPACE))
         {
             if (mColorFormat->id != angle::FormatID::R8G8B8A8_TYPELESS &&
@@ -159,6 +160,12 @@ egl::Error SurfaceD3D::releaseTexImage(const gl::Context *, EGLint)
 
 egl::Error SurfaceD3D::getSyncValues(EGLuint64KHR *ust, EGLuint64KHR *msc, EGLuint64KHR *sbc)
 {
+    if (!mState.directComposition)
+    {
+        return egl::EglBadSurface()
+               << "getSyncValues: surface requires Direct Composition to be enabled";
+    }
+
     return mSwapChain->getSyncValues(ust, msc, sbc);
 }
 

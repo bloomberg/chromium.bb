@@ -21,7 +21,7 @@ cca.models = cca.models || {};
  */
 cca.models.Gallery = function() {
   /**
-   * @type {Array<cca.models.Gallery.Observer>}
+   * @type {!Array<!cca.models.Gallery.Observer>}
    * @private
    */
   this.observers_ = [];
@@ -88,11 +88,15 @@ cca.models.Gallery.Picture.parseTimestamp_ = function(pictureEntry) {
   var name = cca.models.FileSystem.regulatePictureName(pictureEntry);
   // Match numeric parts from filenames, e.g. IMG_'yyyyMMdd_HHmmss (n)'.jpg.
   // Assume no more than one picture taken within one millisecond.
+  // Use String.raw instead of /...regex.../ here to avoid breaking syntax
+  // highlight on gerrit.
   var match = name.match(
-      /_(\d{4})(\d{2})(\d{2})_(\d{2})(\d{2})(\d{2})(?: \((\d+)\))?/);
-  return match ? new Date(num(match[1]), num(match[2]) - 1, num(match[3]),
-      num(match[4]), num(match[5]), num(match[6]),
-      match[7] ? num(match[7]) : 0) : new Date(0);
+      String.raw`_(\d{4})(\d{2})(\d{2})_(\d{2})(\d{2})(\d{2})(?: \((\d+)\))?/`);
+  return match ?
+      new Date(
+          num(match[1]), num(match[2]) - 1, num(match[3]), num(match[4]),
+          num(match[5]), num(match[6]), match[7] ? num(match[7]) : 0) :
+      new Date(0);
 };
 
 cca.models.Gallery.Picture.prototype = {
@@ -122,28 +126,25 @@ cca.models.Gallery.Picture.prototype.pictureURL = function() {
 
 /**
  * Observer interface for the pictures' model changes.
- * @constructor
+ * @interface
  */
-cca.models.Gallery.Observer = function() {
-};
+cca.models.Gallery.Observer = class {
+  /**
+   * Notifies about a deleted picture.
+   * @param {cca.models.Gallery.Picture} picture Picture deleted.
+   */
+  onPictureDeleted(picture) {}
 
-/**
- * Notifies about a deleted picture.
- * @param {cca.models.Gallery.Picture} picture Picture deleted.
- */
-cca.models.Gallery.Observer.prototype.onPictureDeleted = function(picture) {
-};
-
-/**
- * Notifies about an added picture.
- * @param {cca.models.Gallery.Picture} picture Picture added.
- */
-cca.models.Gallery.Observer.prototype.onPictureAdded = function(picture) {
+  /**
+   * Notifies about an added picture.
+   * @param {cca.models.Gallery.Picture} picture Picture added.
+   */
+  onPictureAdded(picture) {}
 };
 
 /**
  * Adds an observer.
- * @param {cca.models.Gallery.Observer} observer Observer to be added.
+ * @param {!cca.models.Gallery.Observer} observer Observer to be added.
  */
 cca.models.Gallery.prototype.addObserver = function(observer) {
   this.observers_.push(observer);
@@ -156,7 +157,7 @@ cca.models.Gallery.prototype.addObserver = function(observer) {
  * @private
  */
 cca.models.Gallery.prototype.notifyObservers_ = function(fn, picture) {
-  this.observers_.forEach((observer) => observer[fn](picture));
+  this.observers_.forEach((/** !Object */ observer) => observer[fn](picture));
 };
 
 /**
@@ -174,10 +175,10 @@ cca.models.Gallery.prototype.load = function() {
         // TODO(yuli): Remove unused thumbnails.
         return Promise.all(wrapped).then((pictures) => {
           return pictures.sort((a, b) => {
-            if (a.timestamp == null) {
+            if (a.timestamp === null) {
               return -1;
             }
-            if (b.timestamp == null) {
+            if (b.timestamp === null) {
               return 1;
             }
             return a.timestamp - b.timestamp;
@@ -210,9 +211,9 @@ cca.models.Gallery.prototype.checkLastPicture = function() {
     if (dir && picture) {
       var name = picture.pictureEntry.name;
       return cca.models.FileSystem.getFile(dir, name, false).then(
-          (entry) => [picture, (entry != null)]);
+          (entry) => [picture, (entry !== null)]);
     }
-    return [picture, (picture != null)];
+    return [picture, (picture !== null)];
   }).then(([picture, pictureEntryExist]) => {
     if (pictureEntryExist || !picture) {
       return picture;
@@ -239,7 +240,7 @@ cca.models.Gallery.prototype.deletePicture = function(
   });
   return Promise.all([this.loaded_, removed]).then(([pictures, _]) => {
     var removal = pictures.indexOf(picture);
-    if (removal != -1) {
+    if (removal !== -1) {
       pictures.splice(removal, 1);
     }
     this.notifyObservers_('onPictureDeleted', picture);
@@ -313,7 +314,7 @@ cca.models.Gallery.prototype.savePhoto = function(blob, name) {
  */
 cca.models.Gallery.prototype.startSaveVideo = async function() {
   const tempFile = await cca.models.FileSystem.createTempVideoFile();
-  return cca.models.VideoSaver.create(tempFile);
+  return cca.models.FileVideoSaver.create(tempFile);
 };
 
 /**

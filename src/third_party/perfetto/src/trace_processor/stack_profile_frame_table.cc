@@ -36,6 +36,7 @@ StorageSchema StackProfileFrameTable::CreateStorageSchema() {
       .AddStringColumn("name", &frames.names(), &storage_->string_pool())
       .AddNumericColumn("mapping", &frames.mappings())
       .AddNumericColumn("rel_pc", &frames.rel_pcs())
+      .AddNumericColumn("symbol_set_id", &frames.symbol_set_ids())
       .Build({"id"});
 }
 
@@ -45,7 +46,7 @@ uint32_t StackProfileFrameTable::RowCount() {
 
 int StackProfileFrameTable::BestIndex(const QueryConstraints& qc,
                                       BestIndexInfo* info) {
-  info->order_by_consumed = true;
+  info->sqlite_omit_order_by = true;
   info->estimated_cost = HasEqConstraint(qc, "id") ? 1 : RowCount();
   return SQLITE_OK;
 }

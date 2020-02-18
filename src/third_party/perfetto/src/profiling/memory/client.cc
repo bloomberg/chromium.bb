@@ -30,6 +30,7 @@
 #include <unwindstack/Regs.h>
 #include <unwindstack/RegsGetLocal.h>
 
+#include <algorithm>
 #include <atomic>
 #include <new>
 
@@ -81,6 +82,17 @@ int UnsetDumpable(int) {
   return 0;
 }
 
+constexpr uint64_t kInfiniteTries = 0;
+
+uint64_t GetMaxTries(const ClientConfiguration& client_config) {
+  if (!client_config.block_client)
+    return 1u;
+  if (client_config.block_client_timeout_us == 0)
+    return kInfiniteTries;
+  return std::min<uint64_t>(
+      1ul, client_config.block_client_timeout_us / kResendBackoffUs);
+}
+
 }  // namespace
 
 const char* GetThreadStackBase() {
@@ -101,7 +113,8 @@ const char* GetThreadStackBase() {
 // static
 base::Optional<base::UnixSocketRaw> Client::ConnectToHeapprofd(
     const std::string& sock_name) {
-  auto sock = base::UnixSocketRaw::CreateMayFail(base::SockType::kStream);
+  auto sock = base::UnixSocketRaw::CreateMayFail(base::SockFamily::kUnix,
+                                                 base::SockType::kStream);
   if (!sock || !sock.Connect(sock_name)) {
     PERFETTO_PLOG("Failed to connect to %s", sock_name.c_str());
     return base::nullopt;
@@ -212,10 +225,7 @@ std::shared_ptr<Client> Client::CreateAndHandshake(
   }
 
   PERFETTO_DCHECK(client_config.interval >= 1);
-  // TODO(fmayer): Always make this nonblocking.
-  // This is so that without block_client, we get the old behaviour that rate
-  // limits using the blocking socket. We do not want to change that for Q.
-  sock.SetBlocking(!client_config.block_client);
+  sock.SetBlocking(false);
   Sampler sampler{client_config.interval};
   // note: the shared_ptr will retain a copy of the unhooked_allocator
   return std::allocate_shared<Client>(unhooked_allocator, std::move(sock),
@@ -231,11 +241,26 @@ Client::Client(base::UnixSocketRaw sock,
                pid_t pid_at_creation,
                const char* main_thread_stack_base)
     : client_config_(client_config),
+      max_shmem_tries_(GetMaxTries(client_config_)),
       sampler_(std::move(sampler)),
       sock_(std::move(sock)),
       main_thread_stack_base_(main_thread_stack_base),
       shmem_(std::move(shmem)),
       pid_at_creation_(pid_at_creation) {}
+
+Client::~Client() {
+  // This is work-around for code like the following:
+  // https://android.googlesource.com/platform/libcore/+/4ecb71f94378716f88703b9f7548b5d24839262f/ojluni/src/main/native/UNIXProcess_md.c#427
+  // They fork, close all fds by iterating over /proc/self/fd using opendir.
+  // Unfortunately closedir calls free, which detects the fork, and then tries
+  // to destruct this Client.
+  //
+  // ScopedResource crashes on failure to close, so we explicitly ignore
+  // failures here.
+  int fd = sock_.ReleaseFd().release();
+  if (fd != -1)
+    close(fd);
+}
 
 const char* Client::GetStackBase() {
   if (IsMainThread()) {
@@ -309,17 +334,19 @@ bool Client::RecordMalloc(uint64_t sample_size,
 }
 
 bool Client::SendWireMessageWithRetriesIfBlocking(const WireMessage& msg) {
-  for (;;) {
+  for (uint64_t i = 0;
+       max_shmem_tries_ == kInfiniteTries || i < max_shmem_tries_; ++i) {
     if (PERFETTO_LIKELY(SendWireMessage(&shmem_, msg)))
       return true;
     // retry if in blocking mode and still connected
     if (client_config_.block_client && base::IsAgain(errno) && IsConnected()) {
       usleep(kResendBackoffUs);
-      continue;
+    } else {
+      break;
     }
-    PERFETTO_PLOG("Failed to write to shared ring buffer. Disconnecting.");
-    return false;
   }
+  PERFETTO_PLOG("Failed to write to shared ring buffer. Disconnecting.");
+  return false;
 }
 
 bool Client::RecordFree(const uint64_t alloc_address) {
@@ -378,10 +405,12 @@ bool Client::IsConnected() {
 }
 
 bool Client::SendControlSocketByte() {
-  // TODO(fmayer): Fix the special casing that only block_client uses a
-  // nonblocking socket.
+  // If base::IsAgain(errno), the socket buffer is full, so the service will
+  // pick up the notification even without adding another byte.
+  // In other error cases (usually EPIPE) we want to disconnect, because that
+  // is how the service signals the tracing session was torn down.
   if (sock_.Send(kSingleByte, sizeof(kSingleByte)) == -1 &&
-      (!client_config_.block_client || !base::IsAgain(errno))) {
+      !base::IsAgain(errno)) {
     PERFETTO_PLOG("Failed to send control socket byte.");
     return false;
   }

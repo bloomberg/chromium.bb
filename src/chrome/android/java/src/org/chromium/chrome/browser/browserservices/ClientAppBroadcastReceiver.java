@@ -105,8 +105,9 @@ public class ClientAppBroadcastReceiver extends BroadcastReceiver {
             String packageName = intent.getData().getSchemeSpecificPart();
             if (packageName != null
                     && packageName.startsWith(WebApkConstants.WEBAPK_PACKAGE_PREFIX)) {
-                // Native is likely not loaded. Defer recording UMA till the next browser launch.
-                WebApkUma.deferRecordWebApkUninstalled();
+                // Native is likely not loaded. Defer recording UMA and UKM till the next browser
+                // launch.
+                WebApkUma.deferRecordWebApkUninstalled(packageName);
             }
         }
 
@@ -143,8 +144,9 @@ public class ClientAppBroadcastReceiver extends BroadcastReceiver {
             Set<String> domains = register.getDomainsForRegisteredUid(uid);
             Set<String> origins = register.getOriginsForRegisteredUid(uid);
 
-            for (String origin : origins) {
-                permissionUpdater.onClientAppUninstalled(new Origin(origin));
+            for (String originAsString : origins) {
+                Origin origin = Origin.create(originAsString);
+                if (origin != null) permissionUpdater.onClientAppUninstalled(origin);
             }
 
             String appName = register.getAppNameForRegisteredUid(uid);

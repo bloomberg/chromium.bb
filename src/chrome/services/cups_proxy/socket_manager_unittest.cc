@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <algorithm>
+#include <memory>
 #include <string>
 #include <utility>
 
@@ -15,6 +16,7 @@
 #include "chrome/services/cups_proxy/fake_cups_proxy_service_delegate.h"
 #include "chrome/services/cups_proxy/public/cpp/type_conversions.h"
 #include "chrome/services/cups_proxy/socket_manager.h"
+#include "chrome/services/cups_proxy/test/paths.h"
 #include "net/base/io_buffer.h"
 #include "net/socket/unix_domain_client_socket_posix.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -22,22 +24,17 @@
 namespace cups_proxy {
 namespace {
 
-// CupsProxy testing data relative path.
-const base::FilePath::CharType kCupsProxyDataDirectory[] =
-    FILE_PATH_LITERAL("cups_proxy");
-
 // Returns base::nullopt on failure.
 base::Optional<std::string> GetTestFile(std::string test_name) {
   base::ScopedAllowBlockingForTesting allow_blocking;
 
   // Build file path.
   base::FilePath path;
-  if (!base::PathService::Get(chrome::DIR_TEST_DATA, &path)) {
+  if (!base::PathService::Get(Paths::DIR_TEST_DATA, &path)) {
     return base::nullopt;
   }
 
-  path = path.Append(kCupsProxyDataDirectory)
-             .Append(FILE_PATH_LITERAL(test_name))
+  path = path.Append(FILE_PATH_LITERAL(test_name))
              .AddExtension(FILE_PATH_LITERAL(".bin"));
 
   // Read in file contents.
@@ -178,14 +175,14 @@ class SocketManagerTest : public testing::Test {
     std::unique_ptr<FakeSocket> socket = std::make_unique<FakeSocket>();
     socket_ = socket.get();
 
-    manager_ = SocketManager::CreateForTesting(std::move(socket),
-                                               delegate_->GetWeakPtr());
+    manager_ =
+        SocketManager::CreateForTesting(std::move(socket), delegate_.get());
   }
 
-  base::Optional<std::vector<uint8_t>> ProxyToCups(std::string request) {
+  std::unique_ptr<std::vector<uint8_t>> ProxyToCups(std::string request) {
     std::vector<uint8_t> request_as_bytes =
         ipp_converter::ConvertToByteBuffer(request);
-    base::Optional<std::vector<uint8_t>> response;
+    std::unique_ptr<std::vector<uint8_t>> response;
 
     base::RunLoop run_loop;
     manager_->ProxyToCups(std::move(request_as_bytes),
@@ -201,8 +198,8 @@ class SocketManagerTest : public testing::Test {
   base::test::TaskEnvironment task_environment_;
 
   void OnProxyToCups(base::OnceClosure finish_cb,
-                     base::Optional<std::vector<uint8_t>>* ret,
-                     base::Optional<std::vector<uint8_t>> result) {
+                     std::unique_ptr<std::vector<uint8_t>>* ret,
+                     std::unique_ptr<std::vector<uint8_t>> result) {
     *ret = std::move(result);
     std::move(finish_cb).Run();
   }

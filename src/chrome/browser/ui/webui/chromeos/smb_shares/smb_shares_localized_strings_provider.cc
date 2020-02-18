@@ -4,8 +4,7 @@
 
 #include "chrome/browser/ui/webui/chromeos/smb_shares/smb_shares_localized_strings_provider.h"
 
-#include "base/stl_util.h"
-#include "chrome/browser/ui/webui/localized_string.h"
+#include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/web_ui_data_source.h"
 
@@ -13,7 +12,7 @@ namespace chromeos {
 namespace smb_dialog {
 
 void AddLocalizedStrings(content::WebUIDataSource* html_source) {
-  static constexpr LocalizedString kLocalizedStrings[] = {
+  static constexpr webui::LocalizedString kLocalizedStrings[] = {
       // TODO(baileyberro): Rename these resources since they are no longer in
       // settings.
       {"smbShareUrl", IDS_SETTINGS_DOWNLOADS_ADD_SHARE_URL},
@@ -44,9 +43,10 @@ void AddLocalizedStrings(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_DOWNLOADS_SHARE_ADDED_MOUNT_INVALID_URL_MESSAGE},
       {"smbShareAddedInvalidSSOURLMessage",
        IDS_SETTINGS_DOWNLOADS_SHARE_ADDED_MOUNT_INVALID_SSO_URL_MESSAGE},
+      {"smbShareDiscoveryMessage",
+       IDS_SETTINGS_DOWNLOADS_ADD_SHARE_DISCOVERY_MESSAGE},
   };
-  AddLocalizedStringsBulk(html_source, kLocalizedStrings,
-                          base::size(kLocalizedStrings));
+  AddLocalizedStringsBulk(html_source, kLocalizedStrings);
 }
 
 }  // namespace smb_dialog

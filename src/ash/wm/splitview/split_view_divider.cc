@@ -36,14 +36,6 @@ namespace ash {
 
 namespace {
 
-constexpr base::TimeDelta kDividerSelectionStatusChangeDuration =
-    base::TimeDelta::FromMilliseconds(
-        kSplitviewDividerSelectionStatusChangeDurationMs);
-constexpr base::TimeDelta kDividerSpawnDuration =
-    base::TimeDelta::FromMilliseconds(kSplitviewDividerSpawnDurationMs);
-constexpr base::TimeDelta kDividerSpawnDelay =
-    base::TimeDelta::FromMilliseconds(kSplitviewDividerSpawnDelayMs);
-
 // The distance to the divider edge in which a touch gesture will be considered
 // as a valid event on the divider.
 constexpr int kDividerEdgeInsetForTouch = 8;
@@ -82,8 +74,9 @@ class AlwaysOnTopWindowTargeter : public aura::WindowTargeter {
 // mouse/gesture events in the bounds of the |DividerView| object itself.
 class DividerView : public views::View, public views::ViewTargeterDelegate {
  public:
-  explicit DividerView(SplitViewDivider* divider)
-      : controller_(Shell::Get()->split_view_controller()), divider_(divider) {
+  explicit DividerView(SplitViewController* controller,
+                       SplitViewDivider* divider)
+      : controller_(controller), divider_(divider) {
     divider_view_ = new views::View();
     divider_view_->SetPaintToLayer(ui::LAYER_SOLID_COLOR);
     divider_view_->layer()->SetColor(kSplitviewDividerColor);
@@ -118,11 +111,11 @@ class DividerView : public views::View, public views::ViewTargeterDelegate {
     }
     ui::LayerAnimator* divider_animator = divider_view_->layer()->GetAnimator();
     ui::ScopedLayerAnimationSettings settings(divider_animator);
-    settings.SetTransitionDuration(kDividerSpawnDuration);
+    settings.SetTransitionDuration(kSplitviewDividerSpawnDuration);
     settings.SetTweenType(gfx::Tween::LINEAR_OUT_SLOW_IN);
     settings.SetPreemptionStrategy(ui::LayerAnimator::ENQUEUE_NEW_ANIMATION);
     divider_animator->SchedulePauseForProperties(
-        kDividerSpawnDelay, ui::LayerAnimationElement::BOUNDS);
+        kSplitviewDividerSpawnDelay, ui::LayerAnimationElement::BOUNDS);
     divider_view_->SetBounds(0, 0, bounds.width(), bounds.height());
     divider_handler_view_->DoSpawningAnimation(divider_signed_offset);
   }
@@ -130,7 +123,7 @@ class DividerView : public views::View, public views::ViewTargeterDelegate {
   // views::View:
   void Layout() override {
     divider_view_->SetBoundsRect(GetLocalBounds());
-    divider_handler_view_->Refresh();
+    divider_handler_view_->Refresh(controller_->is_resizing());
   }
 
   bool OnMousePressed(const ui::MouseEvent& event) override {
@@ -216,13 +209,14 @@ class DividerView : public views::View, public views::ViewTargeterDelegate {
         static_cast<float>(new_bounds.width()) / old_bounds.width(),
         static_cast<float>(new_bounds.height()) / old_bounds.height());
     ui::ScopedLayerAnimationSettings settings(divider_animator);
-    settings.SetTransitionDuration(kDividerSelectionStatusChangeDuration);
+    settings.SetTransitionDuration(
+        kSplitviewDividerSelectionStatusChangeDuration);
     settings.SetTweenType(gfx::Tween::FAST_OUT_SLOW_IN);
     settings.SetPreemptionStrategy(
         ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
     divider_view_->SetTransform(transform);
 
-    divider_handler_view_->Refresh();
+    divider_handler_view_->Refresh(controller_->is_resizing());
   }
 
   views::View* divider_view_ = nullptr;
@@ -235,14 +229,13 @@ class DividerView : public views::View, public views::ViewTargeterDelegate {
 
 }  // namespace
 
-SplitViewDivider::SplitViewDivider(SplitViewController* controller,
-                                   aura::Window* root_window)
+SplitViewDivider::SplitViewDivider(SplitViewController* controller)
     : controller_(controller) {
   Shell::Get()->activation_client()->AddObserver(this);
-  CreateDividerWidget(root_window);
+  CreateDividerWidget(controller);
 
-  aura::Window* always_on_top_container =
-      Shell::GetContainer(root_window, kShellWindowId_AlwaysOnTopContainer);
+  aura::Window* always_on_top_container = Shell::GetContainer(
+      controller->root_window(), kShellWindowId_AlwaysOnTopContainer);
   split_view_window_targeter_ = std::make_unique<aura::ScopedWindowTargeter>(
       always_on_top_container, std::make_unique<AlwaysOnTopWindowTargeter>(
                                    divider_widget_->GetNativeWindow()));
@@ -260,60 +253,36 @@ SplitViewDivider::~SplitViewDivider() {
 }
 
 // static
-gfx::Size SplitViewDivider::GetDividerSize(
-    const gfx::Rect& work_area_bounds,
-    OrientationLockType screen_orientation,
-    bool is_dragging) {
-  if (IsLandscapeOrientation(screen_orientation)) {
-    return is_dragging ? gfx::Size(kSplitviewDividerEnlargedShortSideLength,
-                                   work_area_bounds.height())
-                       : gfx::Size(kSplitviewDividerShortSideLength,
-                                   work_area_bounds.height());
-  } else {
-    return is_dragging ? gfx::Size(work_area_bounds.width(),
-                                   kSplitviewDividerEnlargedShortSideLength)
-                       : gfx::Size(work_area_bounds.width(),
-                                   kSplitviewDividerShortSideLength);
-  }
-}
-
-// static
 gfx::Rect SplitViewDivider::GetDividerBoundsInScreen(
     const gfx::Rect& work_area_bounds_in_screen,
-    OrientationLockType screen_orientation,
+    bool landscape,
     int divider_position,
     bool is_dragging) {
-  const gfx::Size divider_size = GetDividerSize(
-      work_area_bounds_in_screen, screen_orientation, is_dragging);
-  int dragging_diff = (kSplitviewDividerEnlargedShortSideLength -
-                       kSplitviewDividerShortSideLength) /
-                      2;
-  switch (screen_orientation) {
-    case OrientationLockType::kLandscapePrimary:
-    case OrientationLockType::kLandscapeSecondary:
-      return is_dragging
-                 ? gfx::Rect(work_area_bounds_in_screen.x() + divider_position -
-                                 dragging_diff,
-                             work_area_bounds_in_screen.y(),
-                             divider_size.width(), divider_size.height())
-                 : gfx::Rect(work_area_bounds_in_screen.x() + divider_position,
-                             work_area_bounds_in_screen.y(),
-                             divider_size.width(), divider_size.height());
-    case OrientationLockType::kPortraitPrimary:
-    case OrientationLockType::kPortraitSecondary:
-      return is_dragging
-                 ? gfx::Rect(work_area_bounds_in_screen.x(),
-                             work_area_bounds_in_screen.y() + divider_position -
-                                 (kSplitviewDividerEnlargedShortSideLength -
-                                  kSplitviewDividerShortSideLength) /
-                                     2,
-                             divider_size.width(), divider_size.height())
-                 : gfx::Rect(work_area_bounds_in_screen.x(),
-                             work_area_bounds_in_screen.y() + divider_position,
-                             divider_size.width(), divider_size.height());
-    default:
-      NOTREACHED();
-      return gfx::Rect();
+  const int dragging_diff = (kSplitviewDividerEnlargedShortSideLength -
+                             kSplitviewDividerShortSideLength) /
+                            2;
+  if (landscape) {
+    return is_dragging
+               ? gfx::Rect(work_area_bounds_in_screen.x() + divider_position -
+                               dragging_diff,
+                           work_area_bounds_in_screen.y(),
+                           kSplitviewDividerEnlargedShortSideLength,
+                           work_area_bounds_in_screen.height())
+               : gfx::Rect(work_area_bounds_in_screen.x() + divider_position,
+                           work_area_bounds_in_screen.y(),
+                           kSplitviewDividerShortSideLength,
+                           work_area_bounds_in_screen.height());
+  } else {
+    return is_dragging
+               ? gfx::Rect(work_area_bounds_in_screen.x(),
+                           work_area_bounds_in_screen.y() + divider_position -
+                               dragging_diff,
+                           work_area_bounds_in_screen.width(),
+                           kSplitviewDividerEnlargedShortSideLength)
+               : gfx::Rect(work_area_bounds_in_screen.x(),
+                           work_area_bounds_in_screen.y() + divider_position,
+                           work_area_bounds_in_screen.width(),
+                           kSplitviewDividerShortSideLength);
   }
 }
 
@@ -332,10 +301,25 @@ gfx::Rect SplitViewDivider::GetDividerBoundsInScreen(bool is_dragging) {
           Shell::GetPrimaryRootWindow()->GetChildById(
               desks_util::GetActiveDeskContainerId()));
   const int divider_position = controller_->divider_position();
-  const OrientationLockType screen_orientation = GetCurrentScreenOrientation();
-  return GetDividerBoundsInScreen(work_area_bounds_in_screen,
-                                  screen_orientation, divider_position,
-                                  is_dragging);
+  const bool landscape = IsCurrentScreenOrientationLandscape();
+  return GetDividerBoundsInScreen(work_area_bounds_in_screen, landscape,
+                                  divider_position, is_dragging);
+}
+
+void SplitViewDivider::SetAlwaysOnTop(bool on_top) {
+  if (on_top) {
+    divider_widget_->SetZOrderLevel(ui::ZOrderLevel::kFloatingUIElement);
+
+    // Special handling when put divider into always_on_top container. We want
+    // to put it at the bottom so it won't block other always_on_top windows.
+    aura::Window* always_on_top_container =
+        Shell::GetContainer(divider_widget_->GetNativeWindow()->GetRootWindow(),
+                            kShellWindowId_AlwaysOnTopContainer);
+    always_on_top_container->StackChildAtBottom(
+        divider_widget_->GetNativeWindow());
+  } else {
+    divider_widget_->SetZOrderLevel(ui::ZOrderLevel::kNormal);
+  }
 }
 
 void SplitViewDivider::AddObservedWindow(aura::Window* window) {
@@ -359,9 +343,12 @@ void SplitViewDivider::RemoveObservedWindow(aura::Window* window) {
 void SplitViewDivider::OnWindowDragStarted(aura::Window* dragged_window) {
   is_dragging_window_ = true;
   SetAlwaysOnTop(false);
-  // Make sure |divider_widget_| is placed below the dragged window.
-  dragged_window->parent()->StackChildBelow(divider_widget_->GetNativeWindow(),
-                                            dragged_window);
+
+  aura::Window* divider_window = divider_widget_->GetNativeWindow();
+  // If |divider_window| and |dragged_window| are siblings, then make sure that
+  // |divider_window| is stacked below |dragged_window|.
+  if (divider_window->parent() == dragged_window->parent())
+    divider_window->parent()->StackChildBelow(divider_window, dragged_window);
 }
 
 void SplitViewDivider::OnWindowDragEnded() {
@@ -377,6 +364,9 @@ void SplitViewDivider::OnWindowBoundsChanged(aura::Window* window,
                                              const gfx::Rect& old_bounds,
                                              const gfx::Rect& new_bounds,
                                              ui::PropertyChangeReason reason) {
+  if (!controller_->InSplitViewMode())
+    return;
+
   // We only care about the bounds change of windows in
   // |transient_windows_observer_|.
   if (!transient_windows_observer_.IsObserving(window))
@@ -434,17 +424,17 @@ void SplitViewDivider::OnTransientChildRemoved(aura::Window* window,
     transient_windows_observer_.Remove(transient);
 }
 
-void SplitViewDivider::CreateDividerWidget(aura::Window* root_window) {
+void SplitViewDivider::CreateDividerWidget(SplitViewController* controller) {
   DCHECK(!divider_widget_);
   // Native widget owns this widget.
   divider_widget_ = new views::Widget;
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
-  params.opacity = views::Widget::InitParams::OPAQUE_WINDOW;
+  params.opacity = views::Widget::InitParams::WindowOpacity::kOpaque;
   params.activatable = views::Widget::InitParams::ACTIVATABLE_NO;
-  params.parent =
-      Shell::GetContainer(root_window, kShellWindowId_AlwaysOnTopContainer);
+  params.parent = Shell::GetContainer(controller->root_window(),
+                                      kShellWindowId_AlwaysOnTopContainer);
   params.init_properties_container.SetProperty(kHideInDeskMiniViewKey, true);
-  DividerView* divider_view = new DividerView(this);
+  DividerView* divider_view = new DividerView(controller, this);
   divider_widget_->set_focus_on_creation(false);
   divider_widget_->Init(std::move(params));
   divider_widget_->SetVisibilityAnimationTransition(
@@ -452,22 +442,6 @@ void SplitViewDivider::CreateDividerWidget(aura::Window* root_window) {
   divider_widget_->SetContentsView(divider_view);
   divider_widget_->SetBounds(GetDividerBoundsInScreen(false /* is_dragging */));
   divider_widget_->Show();
-}
-
-void SplitViewDivider::SetAlwaysOnTop(bool on_top) {
-  if (on_top) {
-    divider_widget_->SetZOrderLevel(ui::ZOrderLevel::kFloatingUIElement);
-
-    // Special handling when put divider into always_on_top container. We want
-    // to put it at the bottom so it won't block other always_on_top windows.
-    aura::Window* always_on_top_container =
-        Shell::GetContainer(divider_widget_->GetNativeWindow()->GetRootWindow(),
-                            kShellWindowId_AlwaysOnTopContainer);
-    always_on_top_container->StackChildAtBottom(
-        divider_widget_->GetNativeWindow());
-  } else {
-    divider_widget_->SetZOrderLevel(ui::ZOrderLevel::kNormal);
-  }
 }
 
 }  // namespace ash

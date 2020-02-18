@@ -65,7 +65,11 @@ PrefService* StubPasswordManagerClient::GetPrefs() const {
   return nullptr;
 }
 
-PasswordStore* StubPasswordManagerClient::GetPasswordStore() const {
+PasswordStore* StubPasswordManagerClient::GetProfilePasswordStore() const {
+  return nullptr;
+}
+
+PasswordStore* StubPasswordManagerClient::GetAccountPasswordStore() const {
   return nullptr;
 }
 
@@ -80,6 +84,16 @@ const CredentialsFilter* StubPasswordManagerClient::GetStoreResultFilter()
 
 const autofill::LogManager* StubPasswordManagerClient::GetLogManager() const {
   return &log_manager_;
+}
+
+const PasswordFeatureManager*
+StubPasswordManagerClient::GetPasswordFeatureManager() const {
+  return &password_feature_manager_;
+}
+
+const MockPasswordFeatureManager*
+StubPasswordManagerClient::GetMockPasswordFeatureManager() const {
+  return &password_feature_manager_;
 }
 
 #if defined(ON_FOCUS_PING_ENABLED) || \
@@ -102,7 +116,9 @@ void StubPasswordManagerClient::CheckProtectedPasswordEntry(
     const std::string& username,
     const std::vector<std::string>& matching_domains,
     bool password_field_exists) {}
+#endif
 
+#if defined(SYNC_PASSWORD_REUSE_WARNING_ENABLED)
 void StubPasswordManagerClient::LogPasswordReuseDetectedEvent() {}
 #endif
 
@@ -133,6 +149,10 @@ bool StubPasswordManagerClient::IsIsolationForPasswordSitesEnabled() const {
 
 bool StubPasswordManagerClient::IsNewTabPage() const {
   return false;
+}
+
+FieldInfoManager* StubPasswordManagerClient::GetFieldInfoManager() const {
+  return nullptr;
 }
 
 }  // namespace password_manager

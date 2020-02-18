@@ -8,7 +8,9 @@
 #define V8_PARSING_SCANNER_H_
 
 #include <algorithm>
+#include <memory>
 
+#include "include/v8.h"
 #include "src/base/logging.h"
 #include "src/common/globals.h"
 #include "src/common/message-template.h"
@@ -255,7 +257,7 @@ class V8_EXPORT_PRIVATE Scanner {
     Location() : beg_pos(0), end_pos(0) { }
 
     int length() const { return end_pos - beg_pos; }
-    bool IsValid() const { return IsInRange(beg_pos, 0, end_pos); }
+    bool IsValid() const { return base::IsInRange(beg_pos, 0, end_pos); }
 
     static Location invalid() { return Location(-1, 0); }
 
@@ -443,14 +445,15 @@ class V8_EXPORT_PRIVATE Scanner {
 #ifdef DEBUG
     bool CanAccessLiteral() const {
       return token == Token::PRIVATE_NAME || token == Token::ILLEGAL ||
-             token == Token::UNINITIALIZED || token == Token::REGEXP_LITERAL ||
-             IsInRange(token, Token::NUMBER, Token::STRING) ||
+             token == Token::ESCAPED_KEYWORD || token == Token::UNINITIALIZED ||
+             token == Token::REGEXP_LITERAL ||
+             base::IsInRange(token, Token::NUMBER, Token::STRING) ||
              Token::IsAnyIdentifier(token) || Token::IsKeyword(token) ||
-             IsInRange(token, Token::TEMPLATE_SPAN, Token::TEMPLATE_TAIL);
+             base::IsInRange(token, Token::TEMPLATE_SPAN, Token::TEMPLATE_TAIL);
     }
     bool CanAccessRawLiteral() const {
       return token == Token::ILLEGAL || token == Token::UNINITIALIZED ||
-             IsInRange(token, Token::TEMPLATE_SPAN, Token::TEMPLATE_TAIL);
+             base::IsInRange(token, Token::TEMPLATE_SPAN, Token::TEMPLATE_TAIL);
     }
 #endif  // DEBUG
   };
@@ -465,11 +468,11 @@ class V8_EXPORT_PRIVATE Scanner {
   };
 
   inline bool IsValidBigIntKind(NumberKind kind) {
-    return IsInRange(kind, BINARY, DECIMAL);
+    return base::IsInRange(kind, BINARY, DECIMAL);
   }
 
   inline bool IsDecimalNumberKind(NumberKind kind) {
-    return IsInRange(kind, DECIMAL, DECIMAL_WITH_LEADING_ZERO);
+    return base::IsInRange(kind, DECIMAL, DECIMAL_WITH_LEADING_ZERO);
   }
 
   static const int kCharacterLookaheadBufferSize = 1;
@@ -585,15 +588,18 @@ class V8_EXPORT_PRIVATE Scanner {
   // token as a one-byte literal. E.g. Token::FUNCTION pretends to have a
   // literal "function".
   Vector<const uint8_t> literal_one_byte_string() const {
-    DCHECK(current().CanAccessLiteral() || Token::IsKeyword(current().token));
+    DCHECK(current().CanAccessLiteral() || Token::IsKeyword(current().token) ||
+           current().token == Token::ESCAPED_KEYWORD);
     return current().literal_chars.one_byte_literal();
   }
   Vector<const uint16_t> literal_two_byte_string() const {
-    DCHECK(current().CanAccessLiteral() || Token::IsKeyword(current().token));
+    DCHECK(current().CanAccessLiteral() || Token::IsKeyword(current().token) ||
+           current().token == Token::ESCAPED_KEYWORD);
     return current().literal_chars.two_byte_literal();
   }
   bool is_literal_one_byte() const {
-    DCHECK(current().CanAccessLiteral() || Token::IsKeyword(current().token));
+    DCHECK(current().CanAccessLiteral() || Token::IsKeyword(current().token) ||
+           current().token == Token::ESCAPED_KEYWORD);
     return current().literal_chars.is_one_byte();
   }
   // Returns the literal string for the next token (the token that

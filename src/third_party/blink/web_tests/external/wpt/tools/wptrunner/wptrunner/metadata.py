@@ -4,6 +4,7 @@ import os
 from collections import defaultdict, namedtuple
 
 from mozlog import structuredlog
+from six.moves import intern
 
 from . import manifestupdate
 from . import testloader
@@ -56,8 +57,16 @@ def update_expected(test_paths, serve_root, log_file_names,
     """Update the metadata files for web-platform-tests based on
     the results obtained in a previous run or runs
 
-    If disable_intermittent is not None, assume log_file_names refers to logs from repeated
-    test jobs, disable tests that don't behave as expected on all runs"""
+    If `disable_intermittent` is not None, assume log_file_names refers to logs from repeated
+    test jobs, disable tests that don't behave as expected on all runs
+
+    If `update_intermittent` is True, intermittent statuses will be recorded as `expected` in
+    the metadata.
+
+    If `remove_intermittent` is True and used in conjunction with `update_intermittent`, any
+    intermittent statuses which are not present in the current run will be removed from the
+    metadata, else they are left in."""
+
     do_delayed_imports(serve_root)
 
     id_test_map = load_test_data(test_paths)
@@ -206,6 +215,43 @@ run_info_intern = InternedData(8)
 status_intern = InternedData(4)
 
 
+def pack_result(data):
+    # As `status_intern` normally handles one status, if `known_intermittent` is present in
+    # the test logs, intern and store this with the `status` in an array until needed.
+    if not data.get("known_intermittent"):
+        return status_intern.store(data.get("status"))
+    result = array.array("B")
+    expected = data.get("expected")
+    if expected is None:
+        expected = data["status"]
+    result_parts = [data["status"], expected] + data["known_intermittent"]
+    for i, part in enumerate(result_parts):
+        value = status_intern.store(part)
+        if i % 2 == 0:
+            assert value < 16
+            result.append(value << 4)
+        else:
+            result[-1] += value
+    return result
+
+
+def unpack_result(data):
+    if isinstance(data, int):
+        return (status_intern.get(data), None)
+    if isinstance(data, unicode):
+        return (data, None)
+    # Unpack multiple statuses into a tuple to be used in the Results named tuple below,
+    # separating `status` and `known_intermittent`.
+    results = []
+    for packed_value in data:
+        first = status_intern.get(packed_value >> 4)
+        second = status_intern.get(packed_value & 0x0F)
+        results.append(first)
+        if second:
+            results.append(second)
+    return ((results[0],), tuple(results[1:]))
+
+
 def load_test_data(test_paths):
     manifest_loader = testloader.ManifestLoader(test_paths, False)
     manifests = manifest_loader.load()
@@ -228,7 +274,8 @@ def update_from_logs(id_test_map, update_properties, disable_intermittent, updat
             updater.update_from_log(f)
 
     for item in update_results(id_test_map, update_properties, full_update,
-                               disable_intermittent, update_intermittent, remove_intermittent):
+                               disable_intermittent, update_intermittent=update_intermittent,
+                               remove_intermittent=remove_intermittent):
         yield item
 
 
@@ -236,8 +283,8 @@ def update_results(id_test_map,
                    update_properties,
                    full_update,
                    disable_intermittent,
-                   update_intermittent=False,
-                   remove_intermittent=False):
+                   update_intermittent,
+                   remove_intermittent):
     test_file_items = set(id_test_map.itervalues())
 
     default_expected_by_type = {}
@@ -249,8 +296,8 @@ def update_results(id_test_map,
 
     for test_file in test_file_items:
         updated_expected = test_file.update(default_expected_by_type, update_properties,
-                                            full_update, disable_intermittent,
-                                            update_intermittent, remove_intermittent)
+                                            full_update, disable_intermittent, update_intermittent,
+                                            remove_intermittent)
         if updated_expected is not None and updated_expected.modified:
             yield test_file.metadata_path, updated_expected
 
@@ -306,18 +353,41 @@ class ExpectedUpdater(object):
         self.tests_visited = {}
 
     def update_from_log(self, log_file):
+        # We support three possible formats:
+        # * wptreport format; one json object in the file, possibly pretty-printed
+        # * wptreport format; one run per line
+        # * raw log format
+
+        # Try reading a single json object in wptreport format
         self.run_info = None
+        success = self.get_wptreport_data(log_file.read())
+
+        if success:
+            return
+
+        # Try line-separated json objects in wptreport format
+        log_file.seek(0)
+        for line in log_file:
+            success = self.get_wptreport_data(line)
+            if not success:
+                break
+        else:
+            return
+
+        # Assume the file is a raw log
+        log_file.seek(0)
+        self.update_from_raw_log(log_file)
+
+    def get_wptreport_data(self, input_str):
         try:
-            data = json.load(log_file)
+            data = json.loads(input_str)
         except Exception:
             pass
         else:
             if "action" not in data and "results" in data:
                 self.update_from_wptreport_log(data)
-                return
-
-        log_file.seek(0)
-        self.update_from_raw_log(log_file)
+                return True
+        return False
 
     def update_from_raw_log(self, log_file):
         action_map = self.action_map
@@ -386,7 +456,7 @@ class ExpectedUpdater(object):
 
         self.tests_visited[test_id].add(subtest)
 
-        result = status_intern.store(data["status"])
+        result = pack_result(data)
 
         test_data.set(test_id, subtest, "status", self.run_info, result)
         if data.get("expected") and data["expected"] != data["status"]:
@@ -401,10 +471,10 @@ class ExpectedUpdater(object):
         if test_data is None:
             return
 
-        result = status_intern.store(data["status"])
+        result = pack_result(data)
 
         test_data.set(test_id, None, "status", self.run_info, result)
-        if data.get("expected") and data["status"] != data["expected"]:
+        if data.get("expected") and data["expected"] != data["status"]:
             test_data.set_requires_update()
         del self.tests_visited[test_id]
 
@@ -454,7 +524,7 @@ def create_test_tree(metadata_path, test_manifest):
     """
     do_delayed_imports()
     id_test_map = {}
-    exclude_types = frozenset(["stub", "manual", "support", "conformancechecker"])
+    exclude_types = frozenset(["manual", "support", "conformancechecker"])
     all_types = set(manifestitem.item_types.keys())
     assert all_types > exclude_types
     include_types = all_types - exclude_types
@@ -509,7 +579,7 @@ class PackedResultList(object):
 
     def append(self, prop, run_info, value):
         out_val = (prop << 12) + run_info
-        if prop == prop_intern.store("status"):
+        if prop == prop_intern.store("status") and isinstance(value, int):
             out_val += value << 8
         else:
             if not hasattr(self, "raw_data"):
@@ -560,16 +630,20 @@ class TestFileData(object):
                                               run_info,
                                               value)
 
-    def expected(self, update_properties):
+    def expected(self, update_properties, update_intermittent, remove_intermittent):
         expected_data = load_expected(self.url_base,
                                       self.metadata_path,
                                       self.test_path,
                                       self.tests,
-                                      update_properties)
+                                      update_properties,
+                                      update_intermittent,
+                                      remove_intermittent)
         if expected_data is None:
             expected_data = create_expected(self.url_base,
                                             self.test_path,
-                                            update_properties)
+                                            update_properties,
+                                            update_intermittent,
+                                            remove_intermittent)
         return expected_data
 
     def is_disabled(self, test):
@@ -591,6 +665,11 @@ class TestFileData(object):
                 expected_subtest = test.get_subtest(item)
                 if not self.is_disabled(expected_subtest):
                     rv.append(expected_subtest)
+            for name in seen_subtests:
+                subtest = test.get_subtest(name)
+                # If any of the items have children (ie subsubtests) we want to prune thes
+                if subtest.children:
+                    rv.extend(subtest.children)
 
         return rv
 
@@ -602,7 +681,9 @@ class TestFileData(object):
         if not self.requires_update and not full_update:
             return
 
-        expected = self.expected(update_properties)
+        expected = self.expected(update_properties,
+                                 update_intermittent=update_intermittent,
+                                 remove_intermittent=remove_intermittent)
 
         if full_update:
             orphans = self.orphan_subtests(expected)
@@ -637,10 +718,6 @@ class TestFileData(object):
                             expected.set_leak_threshold(run_info, value)
                         continue
 
-                    if prop == "status":
-                        value = Result(value, default_expected_by_type[self.item_type,
-                                                                       subtest_id is not None])
-
                     test_expected = expected_by_test[test_id]
                     if subtest_id is None:
                         item_expected = test_expected
@@ -648,43 +725,47 @@ class TestFileData(object):
                         if isinstance(subtest_id, str):
                             subtest_id = subtest_id.decode("utf8")
                         item_expected = test_expected.get_subtest(subtest_id)
+
                     if prop == "status":
+                        status, known_intermittent = unpack_result(value)
+                        value = Result(status,
+                                       known_intermittent,
+                                       default_expected_by_type[self.item_type,
+                                                                subtest_id is not None])
                         item_expected.set_result(run_info, value)
                     elif prop == "asserts":
                         item_expected.set_asserts(run_info, value)
 
         expected.update(full_update=full_update,
-                        disable_intermittent=disable_intermittent,
-                        update_intermittent=update_intermittent,
-                        remove_intermittent=remove_intermittent)
+                        disable_intermittent=disable_intermittent)
         for test in expected.iterchildren():
             for subtest in test.iterchildren():
                 subtest.update(full_update=full_update,
-                               disable_intermittent=disable_intermittent,
-                               update_intermittent=update_intermittent,
-                               remove_intermittent=remove_intermittent)
+                               disable_intermittent=disable_intermittent)
             test.update(full_update=full_update,
-                        disable_intermittent=disable_intermittent,
-                        update_intermittent=update_intermittent,
-                        remove_intermittent=remove_intermittent)
+                        disable_intermittent=disable_intermittent)
 
         return expected
 
 
-Result = namedtuple("Result", ["status", "default_expected"])
+Result = namedtuple("Result", ["status", "known_intermittent", "default_expected"])
 
 
-def create_expected(url_base, test_path, run_info_properties):
+def create_expected(url_base, test_path, run_info_properties, update_intermittent, remove_intermittent):
     expected = manifestupdate.ExpectedManifest(None,
                                                test_path,
                                                url_base,
-                                               run_info_properties)
+                                               run_info_properties,
+                                               update_intermittent,
+                                               remove_intermittent)
     return expected
 
 
-def load_expected(url_base, metadata_path, test_path, tests, run_info_properties):
+def load_expected(url_base, metadata_path, test_path, tests, run_info_properties, update_intermittent, remove_intermittent):
     expected_manifest = manifestupdate.get_manifest(metadata_path,
                                                     test_path,
                                                     url_base,
-                                                    run_info_properties)
+                                                    run_info_properties,
+                                                    update_intermittent,
+                                                    remove_intermittent)
     return expected_manifest

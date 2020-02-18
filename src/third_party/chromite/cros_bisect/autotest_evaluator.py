@@ -161,9 +161,9 @@ class AutotestEvaluator(evaluator.Evaluator):
         '/tmp', 'test_that_latest', 'results-1-%s' % self.test_name))
     # Invoking "find" command is faster than using os.walkdir().
     try:
-      command_result = cros_build_lib.RunCommand(
+      command_result = cros_build_lib.run(
           ['find', '.', '-name', self.RESULT_FILENAME],
-          cwd=results_dir, capture_output=True)
+          cwd=results_dir, capture_output=True, encoding='utf-8')
     except cros_build_lib.RunCommandError as e:
       logging.error('Failed to look up %s under %s: %s', self.RESULT_FILENAME,
                     results_dir, e)
@@ -243,15 +243,15 @@ class AutotestEvaluator(evaluator.Evaluator):
       A CommandResult object.
 
     Raises:
-      RunCommandError:  Raises exception on error with optional error_message.
+      RunCommandError: Raised on error.
     """
     # --chrome_root is needed for autotests running Telemetry.
     # --no-ns-pid is used to prevent the program receiving SIGTTIN (e.g. go to
     # background and stopped) when asking user input.
     chroot_args = ['--chrome_root', self.chromium_dir,
                    '--no-ns-pid']
-    return cros_build_lib.RunCommand(command, enter_chroot=True,
-                                     chroot_args=chroot_args, cwd=self.cros_dir)
+    return cros_build_lib.run(command, enter_chroot=True,
+                              chroot_args=chroot_args, cwd=self.cros_dir)
 
   def RunTestFromHost(self, remote, report_file_to_store):
     """Runs autotest from host.

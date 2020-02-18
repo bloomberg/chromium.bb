@@ -332,26 +332,6 @@
         "test": "content_browsertests"
       },
       {
-        "args": [
-          "--disable-perfetto",
-          "--gtest_filter=TracingControllerTest.*:BackgroundTracingManagerBrowserTest.*"
-        ],
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "name": "nonperfetto_content_browsertests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-16.04"
-            }
-          ]
-        },
-        "test": "content_browsertests"
-      },
-      {
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -1134,26 +1114,6 @@
         "test": "content_browsertests"
       },
       {
-        "args": [
-          "--disable-perfetto",
-          "--gtest_filter=TracingControllerTest.*:BackgroundTracingManagerBrowserTest.*"
-        ],
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "name": "nonperfetto_content_browsertests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-16.04"
-            }
-          ]
-        },
-        "test": "content_browsertests"
-      },
-      {
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -1587,6 +1547,22 @@
           ]
         },
         "test": "url_unittests"
+      },
+      {
+        "experiment_percentage": 100,
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-16.04"
+            }
+          ]
+        },
+        "test": "views_unittests"
       },
       {
         "merge": {
@@ -2152,7 +2128,7 @@
           "--num-retries=3",
           "--platform=fuchsia"
         ],
-        "isolate_name": "blink_web_tests_exparchive",
+        "isolate_name": "blink_web_tests",
         "merge": {
           "args": [
             "--verbose"
@@ -2463,27 +2439,6 @@
         "test": "browser_tests"
       },
       {
-        "args": [
-          "--disable-blink-features=HTMLImports,ShadowDOMV0,CustomElementsV0",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_html_imports_polyfill_browser_tests.filter"
-        ],
-        "isolate_coverage_data": true,
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "name": "webui_html_imports_polyfill_browser_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-16.04"
-            }
-          ]
-        },
-        "test": "browser_tests"
-      },
-      {
         "isolate_coverage_data": true,
         "merge": {
           "args": [],
@@ -2649,28 +2604,7 @@
       },
       {
         "args": [
-          "--disable-perfetto",
-          "--gtest_filter=TracingControllerTest.*:BackgroundTracingManagerBrowserTest.*"
-        ],
-        "isolate_coverage_data": true,
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "name": "nonperfetto_content_browsertests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-16.04"
-            }
-          ]
-        },
-        "test": "content_browsertests"
-      },
-      {
-        "args": [
-          "--enable-features=VizDisplayCompositor,UseSkiaRenderer",
+          "--enable-features=UseSkiaRenderer",
           "--test-launcher-filter-file=../../testing/buildbot/filters/skia_renderer.content_browsertests.filter"
         ],
         "isolate_coverage_data": true,
@@ -3027,27 +2961,6 @@
         "test": "interactive_ui_tests"
       },
       {
-        "args": [
-          "--disable-blink-features=HTMLImports,ShadowDOMV0,CustomElementsV0",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_html_imports_polyfill_interactive_ui_tests.filter"
-        ],
-        "isolate_coverage_data": true,
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "name": "webui_html_imports_polyfill_interactive_ui_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-16.04"
-            }
-          ]
-        },
-        "test": "interactive_ui_tests"
-      },
-      {
         "isolate_coverage_data": true,
         "merge": {
           "args": [],
@@ -3094,22 +3007,6 @@
           ]
         },
         "test": "latency_unittests"
-      },
-      {
-        "isolate_coverage_data": true,
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-16.04"
-            }
-          ]
-        },
-        "test": "leveldb_service_unittests"
       },
       {
         "isolate_coverage_data": true,
@@ -3685,6 +3582,22 @@
             }
           ]
         },
+        "test": "weblayer_browsertests"
+      },
+      {
+        "isolate_coverage_data": true,
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-16.04"
+            }
+          ]
+        },
         "test": "wm_unittests"
       },
       {
@@ -3795,12 +3708,12 @@
       },
       {
         "isolate_coverage_data": true,
-        "isolate_name": "devtools_closure_compile",
+        "isolate_name": "devtools_lint_check",
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "devtools_closure_compile",
+        "name": "devtools_lint_check",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -3812,12 +3725,12 @@
       },
       {
         "isolate_coverage_data": true,
-        "isolate_name": "devtools_eslint",
+        "isolate_name": "devtools_type_check",
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "devtools_eslint",
+        "name": "devtools_type_check",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -3880,15 +3793,43 @@
       },
       {
         "args": [
+          "--num-retries=3",
+          "--additional-driver-flag=--disable-features=UseSkiaRenderer",
+          "--skipped=always",
+          "--test-list=../../testing/buildbot/filters/gpu.skiarenderer_vulkan_blink_web_tests.filter"
+        ],
+        "isolate_coverage_data": true,
+        "isolate_name": "blink_web_tests",
+        "merge": {
+          "args": [
+            "--verbose"
+          ],
+          "script": "//third_party/blink/tools/merge_web_test_results.py"
+        },
+        "name": "non_skia_renderer_swiftshader_blink_web_tests",
+        "results_handler": "layout tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-16.04"
+            }
+          ]
+        }
+      },
+      {
+        "args": [
           "--additional-driver-flag",
           "--disable-site-isolation-trials",
           "--additional-expectations",
           "src/third_party/blink/web_tests/FlagExpectations/disable-site-isolation-trials",
           "--num-retries=3",
-          "--additional-env-var=LLVM_PROFILE_FILE=${ISOLATED_OUTDIR}/profraw/default-%2m.profraw"
+          "--fuzzy-diff",
+          "--additional-env-var=LLVM_PROFILE_FILE=${ISOLATED_OUTDIR}/profraw/default-%2m.profraw",
+          "--fuzzy-diff"
         ],
         "isolate_coverage_data": true,
-        "isolate_name": "blink_web_tests_exparchive",
+        "isolate_name": "blink_web_tests",
         "merge": {
           "args": [
             "--verbose"
@@ -3905,40 +3846,6 @@
             }
           ],
           "shards": 10
-        }
-      },
-      {
-        "args": [
-          "--num-retries=3",
-          "--additional-driver-flag=--enable-gpu-rasterization",
-          "--additional-driver-flag=--enable-features=VizDisplayCompositor,UseSkiaRenderer",
-          "--additional-driver-flag=--use-gl=swiftshader",
-          "--additional-driver-flag=--force-gpu-rasterization",
-          "--additional-driver-flag=--enable-oop-rasterization",
-          "--fuzzy-diff",
-          "--skipped=always",
-          "--test-list=../../testing/buildbot/filters/gpu.skiarenderer_vulkan_blink_web_tests.filter",
-          "--additional-expectations=../../third_party/blink/web_tests/FlagExpectations/enable-features=UseSkiaRenderer",
-          "--additional-expectations=../../third_party/blink/web_tests/FlagExpectations/enable-gpu-rasterization",
-          "--additional-expectations=../../third_party/blink/web_tests/FlagExpectations/use-gl=swiftshader"
-        ],
-        "isolate_coverage_data": true,
-        "isolate_name": "blink_web_tests_exparchive",
-        "merge": {
-          "args": [
-            "--verbose"
-          ],
-          "script": "//third_party/blink/tools/merge_web_test_results.py"
-        },
-        "name": "skia_renderer_swiftshader_blink_web_tests",
-        "results_handler": "layout tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-16.04"
-            }
-          ]
         }
       },
       {
@@ -4031,9 +3938,10 @@
         "args": [
           "--num-retries=3",
           "--additional-driver-flag=--enable-gpu-rasterization",
-          "--additional-driver-flag=--enable-features=VizDisplayCompositor,UseSkiaRenderer",
+          "--additional-driver-flag=--enable-features=UseSkiaRenderer",
           "--additional-driver-flag=--force-gpu-rasterization",
           "--additional-driver-flag=--enable-oop-rasterization",
+          "--additional-driver-flag=--gr-context-type=vulkan",
           "--additional-driver-flag=--use-vulkan=swiftshader",
           "--additional-driver-flag=--disable-vulkan-fallback-to-gl-for-testing",
           "--fuzzy-diff",
@@ -4044,7 +3952,7 @@
           "--additional-expectations=../../third_party/blink/web_tests/FlagExpectations/use-vulkan=swiftshader"
         ],
         "isolate_coverage_data": true,
-        "isolate_name": "blink_web_tests_exparchive",
+        "isolate_name": "blink_web_tests",
         "merge": {
           "args": [
             "--verbose"
@@ -4065,10 +3973,11 @@
       {
         "args": [
           "--num-retries=3",
-          "--additional-env-var=LLVM_PROFILE_FILE=${ISOLATED_OUTDIR}/profraw/default-%2m.profraw"
+          "--additional-env-var=LLVM_PROFILE_FILE=${ISOLATED_OUTDIR}/profraw/default-%2m.profraw",
+          "--fuzzy-diff"
         ],
         "isolate_coverage_data": true,
-        "isolate_name": "blink_web_tests_exparchive",
+        "isolate_name": "blink_web_tests",
         "merge": {
           "args": [
             "--verbose"
@@ -4336,26 +4245,6 @@
         "test": "browser_tests"
       },
       {
-        "args": [
-          "--disable-blink-features=HTMLImports,ShadowDOMV0,CustomElementsV0",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_html_imports_polyfill_browser_tests.filter"
-        ],
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "name": "webui_html_imports_polyfill_browser_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-16.04"
-            }
-          ]
-        },
-        "test": "browser_tests"
-      },
-      {
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -4511,27 +4400,7 @@
       },
       {
         "args": [
-          "--disable-perfetto",
-          "--gtest_filter=TracingControllerTest.*:BackgroundTracingManagerBrowserTest.*"
-        ],
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "name": "nonperfetto_content_browsertests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-16.04"
-            }
-          ]
-        },
-        "test": "content_browsertests"
-      },
-      {
-        "args": [
-          "--enable-features=VizDisplayCompositor,UseSkiaRenderer",
+          "--enable-features=UseSkiaRenderer",
           "--test-launcher-filter-file=../../testing/buildbot/filters/skia_renderer.content_browsertests.filter"
         ],
         "merge": {
@@ -4866,26 +4735,6 @@
         "test": "interactive_ui_tests"
       },
       {
-        "args": [
-          "--disable-blink-features=HTMLImports,ShadowDOMV0,CustomElementsV0",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_html_imports_polyfill_interactive_ui_tests.filter"
-        ],
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "name": "webui_html_imports_polyfill_interactive_ui_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-16.04"
-            }
-          ]
-        },
-        "test": "interactive_ui_tests"
-      },
-      {
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -4929,21 +4778,6 @@
           ]
         },
         "test": "latency_unittests"
-      },
-      {
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-16.04"
-            }
-          ]
-        },
-        "test": "leveldb_service_unittests"
       },
       {
         "merge": {
@@ -5484,6 +5318,21 @@
             }
           ]
         },
+        "test": "weblayer_browsertests"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-16.04"
+            }
+          ]
+        },
         "test": "wm_unittests"
       },
       {
@@ -5552,12 +5401,12 @@
         }
       },
       {
-        "isolate_name": "devtools_closure_compile",
+        "isolate_name": "devtools_lint_check",
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "devtools_closure_compile",
+        "name": "devtools_lint_check",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -5568,12 +5417,12 @@
         }
       },
       {
-        "isolate_name": "devtools_eslint",
+        "isolate_name": "devtools_type_check",
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "devtools_eslint",
+        "name": "devtools_type_check",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -5735,9 +5584,10 @@
       {
         "args": [
           "--num-retries=3",
-          "--debug"
+          "--debug",
+          "--fuzzy-diff"
         ],
-        "isolate_name": "blink_web_tests_exparchive",
+        "isolate_name": "blink_web_tests",
         "merge": {
           "args": [
             "--verbose"
@@ -5770,14 +5620,14 @@
       "cast_test_lists"
     ]
   },
+  "fuchsia-x64-dbg": {
+    "additional_compile_targets": [
+      "all"
+    ]
+  },
   "linux-gcc-rel": {
     "additional_compile_targets": [
       "empty_main"
-    ]
-  },
-  "linux-jumbo-rel": {
-    "additional_compile_targets": [
-      "all"
     ]
   },
   "linux-ozone-rel": {
@@ -5808,7 +5658,6 @@
         "args": [
           "--ozone-platform=x11"
         ],
-        "experiment_percentage": 100,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -5823,6 +5672,22 @@
           ]
         },
         "test": "content_unittests"
+      },
+      {
+        "experiment_percentage": 100,
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-16.04"
+            }
+          ]
+        },
+        "test": "events_unittests"
       },
       {
         "merge": {
@@ -5868,6 +5733,26 @@
           ]
         },
         "test": "services_unittests"
+      },
+      {
+        "args": [
+          "--ozone-platform=x11",
+          "--test-launcher-filter-file=../../testing/buildbot/filters/ozone-linux.x11_views_unittests.filter"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "x11_views_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-16.04"
+            }
+          ]
+        },
+        "test": "views_unittests"
       }
     ]
   },
@@ -6070,6 +5955,9 @@
         "test": "boringssl_ssl_tests"
       },
       {
+        "args": [
+          "--test-launcher-filter-file=../../testing/buildbot/filters/linux_trusty_rel.browser_tests.filter"
+        ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -6082,26 +5970,6 @@
             }
           ],
           "shards": 10
-        },
-        "test": "browser_tests"
-      },
-      {
-        "args": [
-          "--disable-blink-features=HTMLImports,ShadowDOMV0,CustomElementsV0",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_html_imports_polyfill_browser_tests.filter"
-        ],
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "name": "webui_html_imports_polyfill_browser_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-14.04"
-            }
-          ]
         },
         "test": "browser_tests"
       },
@@ -6261,27 +6129,7 @@
       },
       {
         "args": [
-          "--disable-perfetto",
-          "--gtest_filter=TracingControllerTest.*:BackgroundTracingManagerBrowserTest.*"
-        ],
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "name": "nonperfetto_content_browsertests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-14.04"
-            }
-          ]
-        },
-        "test": "content_browsertests"
-      },
-      {
-        "args": [
-          "--enable-features=VizDisplayCompositor,UseSkiaRenderer",
+          "--enable-features=UseSkiaRenderer",
           "--test-launcher-filter-file=../../testing/buildbot/filters/skia_renderer.content_browsertests.filter"
         ],
         "merge": {
@@ -6616,26 +6464,6 @@
         "test": "interactive_ui_tests"
       },
       {
-        "args": [
-          "--disable-blink-features=HTMLImports,ShadowDOMV0,CustomElementsV0",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_html_imports_polyfill_interactive_ui_tests.filter"
-        ],
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "name": "webui_html_imports_polyfill_interactive_ui_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-14.04"
-            }
-          ]
-        },
-        "test": "interactive_ui_tests"
-      },
-      {
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -6679,21 +6507,6 @@
           ]
         },
         "test": "latency_unittests"
-      },
-      {
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-14.04"
-            }
-          ]
-        },
-        "test": "leveldb_service_unittests"
       },
       {
         "merge": {
@@ -7233,6 +7046,21 @@
             }
           ]
         },
+        "test": "weblayer_browsertests"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-14.04"
+            }
+          ]
+        },
         "test": "wm_unittests"
       },
       {
@@ -7336,12 +7164,12 @@
         }
       },
       {
-        "isolate_name": "devtools_closure_compile",
+        "isolate_name": "devtools_lint_check",
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "devtools_closure_compile",
+        "name": "devtools_lint_check",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -7352,12 +7180,12 @@
         }
       },
       {
-        "isolate_name": "devtools_eslint",
+        "isolate_name": "devtools_type_check",
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "devtools_eslint",
+        "name": "devtools_type_check",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -7417,13 +7245,39 @@
       },
       {
         "args": [
+          "--num-retries=3",
+          "--additional-driver-flag=--disable-features=UseSkiaRenderer",
+          "--skipped=always",
+          "--test-list=../../testing/buildbot/filters/gpu.skiarenderer_vulkan_blink_web_tests.filter"
+        ],
+        "isolate_name": "blink_web_tests",
+        "merge": {
+          "args": [
+            "--verbose"
+          ],
+          "script": "//third_party/blink/tools/merge_web_test_results.py"
+        },
+        "name": "non_skia_renderer_swiftshader_blink_web_tests",
+        "results_handler": "layout tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-14.04"
+            }
+          ]
+        }
+      },
+      {
+        "args": [
           "--additional-driver-flag",
           "--disable-site-isolation-trials",
           "--additional-expectations",
           "src/third_party/blink/web_tests/FlagExpectations/disable-site-isolation-trials",
-          "--num-retries=3"
+          "--num-retries=3",
+          "--fuzzy-diff"
         ],
-        "isolate_name": "blink_web_tests_exparchive",
+        "isolate_name": "blink_web_tests",
         "merge": {
           "args": [
             "--verbose"
@@ -7440,39 +7294,6 @@
             }
           ],
           "shards": 10
-        }
-      },
-      {
-        "args": [
-          "--num-retries=3",
-          "--additional-driver-flag=--enable-gpu-rasterization",
-          "--additional-driver-flag=--enable-features=VizDisplayCompositor,UseSkiaRenderer",
-          "--additional-driver-flag=--use-gl=swiftshader",
-          "--additional-driver-flag=--force-gpu-rasterization",
-          "--additional-driver-flag=--enable-oop-rasterization",
-          "--fuzzy-diff",
-          "--skipped=always",
-          "--test-list=../../testing/buildbot/filters/gpu.skiarenderer_vulkan_blink_web_tests.filter",
-          "--additional-expectations=../../third_party/blink/web_tests/FlagExpectations/enable-features=UseSkiaRenderer",
-          "--additional-expectations=../../third_party/blink/web_tests/FlagExpectations/enable-gpu-rasterization",
-          "--additional-expectations=../../third_party/blink/web_tests/FlagExpectations/use-gl=swiftshader"
-        ],
-        "isolate_name": "blink_web_tests_exparchive",
-        "merge": {
-          "args": [
-            "--verbose"
-          ],
-          "script": "//third_party/blink/tools/merge_web_test_results.py"
-        },
-        "name": "skia_renderer_swiftshader_blink_web_tests",
-        "results_handler": "layout tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-14.04"
-            }
-          ]
         }
       },
       {
@@ -7561,9 +7382,10 @@
         "args": [
           "--num-retries=3",
           "--additional-driver-flag=--enable-gpu-rasterization",
-          "--additional-driver-flag=--enable-features=VizDisplayCompositor,UseSkiaRenderer",
+          "--additional-driver-flag=--enable-features=UseSkiaRenderer",
           "--additional-driver-flag=--force-gpu-rasterization",
           "--additional-driver-flag=--enable-oop-rasterization",
+          "--additional-driver-flag=--gr-context-type=vulkan",
           "--additional-driver-flag=--use-vulkan=swiftshader",
           "--additional-driver-flag=--disable-vulkan-fallback-to-gl-for-testing",
           "--fuzzy-diff",
@@ -7573,7 +7395,7 @@
           "--additional-expectations=../../third_party/blink/web_tests/FlagExpectations/enable-gpu-rasterization",
           "--additional-expectations=../../third_party/blink/web_tests/FlagExpectations/use-vulkan=swiftshader"
         ],
-        "isolate_name": "blink_web_tests_exparchive",
+        "isolate_name": "blink_web_tests",
         "merge": {
           "args": [
             "--verbose"
@@ -7612,9 +7434,10 @@
       },
       {
         "args": [
-          "--num-retries=3"
+          "--num-retries=3",
+          "--fuzzy-diff"
         ],
-        "isolate_name": "blink_web_tests_exparchive",
+        "isolate_name": "blink_web_tests",
         "merge": {
           "args": [
             "--verbose"

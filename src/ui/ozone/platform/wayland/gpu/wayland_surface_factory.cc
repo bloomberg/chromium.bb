@@ -128,7 +128,8 @@ WaylandSurfaceFactory::WaylandSurfaceFactory(
 WaylandSurfaceFactory::~WaylandSurfaceFactory() = default;
 
 std::unique_ptr<SurfaceOzoneCanvas>
-WaylandSurfaceFactory::CreateCanvasForWidget(gfx::AcceleratedWidget widget) {
+WaylandSurfaceFactory::CreateCanvasForWidget(gfx::AcceleratedWidget widget,
+                                             base::TaskRunner* task_runner) {
   return std::make_unique<WaylandCanvasSurface>(buffer_manager_, widget);
 }
 
@@ -161,7 +162,11 @@ scoped_refptr<gfx::NativePixmap> WaylandSurfaceFactory::CreateNativePixmap(
     gfx::BufferUsage usage) {
 #if defined(WAYLAND_GBM)
   scoped_refptr<GbmPixmapWayland> pixmap =
-      base::MakeRefCounted<GbmPixmapWayland>(buffer_manager_, widget);
+      base::MakeRefCounted<GbmPixmapWayland>(buffer_manager_);
+
+  if (widget != gfx::kNullAcceleratedWidget)
+    pixmap->SetAcceleratedWiget(widget);
+
   if (!pixmap->InitializeBuffer(size, format, usage))
     return nullptr;
   return pixmap;

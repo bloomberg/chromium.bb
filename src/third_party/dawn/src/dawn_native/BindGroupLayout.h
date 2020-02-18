@@ -16,9 +16,9 @@
 #define DAWNNATIVE_BINDGROUPLAYOUT_H_
 
 #include "common/Constants.h"
+#include "dawn_native/CachedObject.h"
 #include "dawn_native/Error.h"
 #include "dawn_native/Forward.h"
-#include "dawn_native/ObjectBase.h"
 
 #include "dawn_native/dawn_platform.h"
 
@@ -30,20 +30,19 @@ namespace dawn_native {
     MaybeError ValidateBindGroupLayoutDescriptor(DeviceBase*,
                                                  const BindGroupLayoutDescriptor* descriptor);
 
-    class BindGroupLayoutBase : public ObjectBase {
+    class BindGroupLayoutBase : public CachedObject {
       public:
-        BindGroupLayoutBase(DeviceBase* device,
-                            const BindGroupLayoutDescriptor* descriptor,
-                            bool blueprint = false);
+        BindGroupLayoutBase(DeviceBase* device, const BindGroupLayoutDescriptor* descriptor);
         ~BindGroupLayoutBase() override;
 
         static BindGroupLayoutBase* MakeError(DeviceBase* device);
 
         struct LayoutBindingInfo {
-            std::array<dawn::ShaderStage, kMaxBindingsPerGroup> visibilities;
-            std::array<dawn::BindingType, kMaxBindingsPerGroup> types;
-            std::array<dawn::TextureComponentType, kMaxBindingsPerGroup> textureComponentTypes;
-            std::bitset<kMaxBindingsPerGroup> dynamic;
+            std::array<wgpu::ShaderStage, kMaxBindingsPerGroup> visibilities;
+            std::array<wgpu::BindingType, kMaxBindingsPerGroup> types;
+            std::array<wgpu::TextureComponentType, kMaxBindingsPerGroup> textureComponentTypes;
+            std::array<wgpu::TextureViewDimension, kMaxBindingsPerGroup> textureDimensions;
+            std::bitset<kMaxBindingsPerGroup> hasDynamicOffset;
             std::bitset<kMaxBindingsPerGroup> multisampled;
             std::bitset<kMaxBindingsPerGroup> mask;
         };
@@ -65,7 +64,6 @@ namespace dawn_native {
         BindGroupLayoutBase(DeviceBase* device, ObjectBase::ErrorTag tag);
 
         LayoutBindingInfo mBindingInfo;
-        bool mIsBlueprint = false;
         uint32_t mDynamicUniformBufferCount = 0;
         uint32_t mDynamicStorageBufferCount = 0;
     };

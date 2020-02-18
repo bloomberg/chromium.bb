@@ -10,7 +10,6 @@
 #include "src/wasm/graph-builder-interface.h"
 #include "src/wasm/module-compiler.h"
 #include "src/wasm/wasm-import-wrapper-cache.h"
-#include "src/wasm/wasm-memory.h"
 #include "src/wasm/wasm-objects-inl.h"
 
 namespace v8 {
@@ -23,7 +22,7 @@ TestingModuleBuilder::TestingModuleBuilder(
     : test_module_(std::make_shared<WasmModule>()),
       test_module_ptr_(test_module_.get()),
       isolate_(CcTest::InitIsolateOnce()),
-      enabled_features_(WasmFeaturesFromIsolate(isolate_)),
+      enabled_features_(WasmFeatures::FromIsolate(isolate_)),
       execution_tier_(tier),
       runtime_exception_support_(exception_support),
       lower_simd_(lower_simd) {
@@ -75,29 +74,23 @@ byte* TestingModuleBuilder::AddMemory(uint32_t size, SharedFlag shared) {
   CHECK_NULL(mem_start_);
   CHECK_EQ(0, mem_size_);
   DCHECK(!instance_object_->has_memory_object());
-  DCHECK_IMPLIES(test_module_->origin == kWasmOrigin,
-                 size % kWasmPageSize == 0);
+  uint32_t initial_pages = RoundUp(size, kWasmPageSize) / kWasmPageSize;
+  uint32_t maximum_pages = (test_module_->maximum_pages != 0)
+                               ? test_module_->maximum_pages
+                               : initial_pages;
   test_module_->has_memory = true;
-  uint32_t max_size =
-      (test_module_->maximum_pages != 0) ? test_module_->maximum_pages : size;
-  uint32_t alloc_size = RoundUp(size, kWasmPageSize);
-  Handle<JSArrayBuffer> new_buffer;
-  if (shared == SharedFlag::kShared) {
-    CHECK(NewSharedArrayBuffer(isolate_, alloc_size, max_size)
-              .ToHandle(&new_buffer));
-  } else {
-    CHECK(NewArrayBuffer(isolate_, alloc_size).ToHandle(&new_buffer));
-  }
-  CHECK(!new_buffer.is_null());
-  mem_start_ = reinterpret_cast<byte*>(new_buffer->backing_store());
-  mem_size_ = size;
-  CHECK(size == 0 || mem_start_);
-  memset(mem_start_, 0, size);
 
   // Create the WasmMemoryObject.
   Handle<WasmMemoryObject> memory_object =
-      WasmMemoryObject::New(isolate_, new_buffer, max_size);
+      WasmMemoryObject::New(isolate_, initial_pages, maximum_pages, shared)
+          .ToHandleChecked();
   instance_object_->set_memory_object(*memory_object);
+
+  mem_start_ =
+      reinterpret_cast<byte*>(memory_object->array_buffer().backing_store());
+  mem_size_ = size;
+  CHECK(size == 0 || mem_start_);
+
   WasmMemoryObject::AddInstance(isolate_, memory_object, instance_object_);
   // TODO(wasm): Delete the following two lines when test-run-wasm will use a
   // multiple of kPageSize as memory size. At the moment, the effect of these
@@ -248,7 +241,6 @@ uint32_t TestingModuleBuilder::AddPassiveDataSegment(Vector<const byte> bytes) {
   DCHECK_EQ(index, test_module_->data_segments.size());
   DCHECK_EQ(index, data_segment_starts_.size());
   DCHECK_EQ(index, data_segment_sizes_.size());
-  DCHECK_EQ(index, dropped_data_segments_.size());
 
   // Add a passive data segment. This isn't used by function compilation, but
   // but it keeps the index in sync. The data segment's source will not be
@@ -275,12 +267,10 @@ uint32_t TestingModuleBuilder::AddPassiveDataSegment(Vector<const byte> bytes) {
   }
   data_segment_starts_.push_back(new_data_address + old_data_size);
   data_segment_sizes_.push_back(bytes.length());
-  dropped_data_segments_.push_back(0);
 
   // The vector pointers may have moved, so update the instance object.
   instance_object_->set_data_segment_starts(data_segment_starts_.data());
   instance_object_->set_data_segment_sizes(data_segment_sizes_.data());
-  instance_object_->set_dropped_data_segments(dropped_data_segments_.data());
   return index;
 }
 
@@ -325,10 +315,13 @@ Handle<WasmInstanceObject> TestingModuleBuilder::InitInstanceObject() {
       isolate_->factory()->NewScript(isolate_->factory()->empty_string());
   script->set_type(Script::TYPE_WASM);
 
+  const bool kUsesLiftoff = true;
+  size_t code_size_estimate =
+      wasm::WasmCodeManager::EstimateNativeModuleCodeSize(test_module_.get(),
+                                                          kUsesLiftoff);
   auto native_module = isolate_->wasm_engine()->NewNativeModule(
-      isolate_, enabled_features_, test_module_);
+      isolate_, enabled_features_, test_module_, code_size_estimate);
   native_module->SetWireBytes(OwnedVector<const uint8_t>());
-  native_module->SetRuntimeStubs(isolate_);
 
   Handle<WasmModuleObject> module_object =
       WasmModuleObject::New(isolate_, std::move(native_module), script);
@@ -350,14 +343,14 @@ void TestBuildingGraphWithBuilder(compiler::WasmGraphBuilder* builder,
   WasmFeatures unused_detected_features;
   FunctionBody body(sig, 0, start, end);
   DecodeResult result =
-      BuildTFGraph(zone->allocator(), kAllWasmFeatures, nullptr, builder,
+      BuildTFGraph(zone->allocator(), WasmFeatures::All(), nullptr, builder,
                    &unused_detected_features, body, nullptr);
   if (result.failed()) {
 #ifdef DEBUG
     if (!FLAG_trace_wasm_decoder) {
       // Retry the compilation with the tracing flag on, to help in debugging.
       FLAG_trace_wasm_decoder = true;
-      result = BuildTFGraph(zone->allocator(), kAllWasmFeatures, nullptr,
+      result = BuildTFGraph(zone->allocator(), WasmFeatures::All(), nullptr,
                             builder, &unused_detected_features, body, nullptr);
     }
 #endif
@@ -487,7 +480,7 @@ Handle<Code> WasmFunctionWrapper::GetWrapperCode() {
       CodeTracer::Scope tracing_scope(isolate->GetCodeTracer());
       OFStream os(tracing_scope.file());
 
-      code->Disassemble("wasm wrapper", os);
+      code->Disassemble("wasm wrapper", os, isolate);
     }
 #endif
   }

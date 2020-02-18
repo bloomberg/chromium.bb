@@ -80,11 +80,15 @@ class Generator:
 # NOTE: If this argument appears several times, this only uses the first
 #       value, while argparse would typically keep the last one!
 kJinja2Path = '--jinja2-path'
-jinja2_path_argv_index = sys.argv.index(kJinja2Path)
-if jinja2_path_argv_index >= 0:
+try:
+    jinja2_path_argv_index = sys.argv.index(kJinja2Path)
     # Add parent path for the import to succeed.
     path = os.path.join(sys.argv[jinja2_path_argv_index + 1], os.pardir)
     sys.path.insert(1, path)
+except ValueError:
+    # --jinja2-path isn't passed, ignore the exception and just import Jinja2
+    # assuming it already is in the Python PATH.
+    pass
 
 import jinja2
 
@@ -207,6 +211,7 @@ def run_generator(generator):
     parser.add_argument('--depfile', default=None, type=str, help='Name of the Ninja depfile to create for the JSON tarball')
     parser.add_argument('--expected-outputs-file', default=None, type=str, help="File to compare outputs with and fail if it doesn't match")
     parser.add_argument('--root-dir', default=None, type=str, help='Optional source root directory for Python dependency computations')
+    parser.add_argument('--allowed-output-dirs-file', default=None, type=str, help="File containing a list of allowed directories where files can be output.")
 
     args = parser.parse_args()
 
@@ -226,6 +231,26 @@ def run_generator(generator):
             return 1
 
     outputs = _do_renders(renders, args.template_dir)
+
+    # The caller wants to assert that the outputs are only in specific directories.
+    if args.allowed_output_dirs_file != None:
+        with open(args.allowed_output_dirs_file) as f:
+            allowed_dirs = set([line.strip() for line in f.readlines()])
+
+        for directory in allowed_dirs:
+            if not directory.endswith('/'):
+                print('Allowed directory entry "{}" doesn\'t end with /'.format(directory))
+                return 1
+
+        def check_in_subdirectory(path, directory):
+            return path.startswith(directory) and not '/' in path[len(directory):]
+
+        for render in renders:
+            if not any(check_in_subdirectory(render.output, directory) for directory in allowed_dirs):
+                print('Output file "{}" is not in the allowed directory list below:'.format(render.output))
+                for directory in sorted(allowed_dirs):
+                    print('    "{}"'.format(directory))
+                return 1
 
     # Output the tarball and its depfile
     if args.output_json_tarball != None:

@@ -19,10 +19,10 @@
 #include "WSI/VkSwapchainKHR.hpp"
 #include "Device/Renderer.hpp"
 
-#include "Yarn/Defer.hpp"
-#include "Yarn/Scheduler.hpp"
-#include "Yarn/Thread.hpp"
-#include "Yarn/Trace.hpp"
+#include "marl/defer.h"
+#include "marl/scheduler.h"
+#include "marl/thread.h"
+#include "marl/trace.h"
 
 #include <cstring>
 
@@ -79,7 +79,7 @@ VkSubmitInfo* DeepCopySubmitInfo(uint32_t submitCount, const VkSubmitInfo* pSubm
 namespace vk
 {
 
-Queue::Queue(Device* device, yarn::Scheduler *scheduler) : device(device)
+Queue::Queue(Device* device, marl::Scheduler *scheduler) : device(device)
 {
 	queueThread = std::thread(&Queue::taskLoop, this, scheduler);
 }
@@ -160,9 +160,9 @@ void Queue::submitQueue(const Task& task)
 	}
 }
 
-void Queue::taskLoop(yarn::Scheduler* scheduler)
+void Queue::taskLoop(marl::Scheduler* scheduler)
 {
-	yarn::Thread::setName("Queue<%p>", this);
+	marl::Thread::setName("Queue<%p>", this);
 	scheduler->bind();
 	defer(scheduler->unbind());
 
@@ -213,13 +213,13 @@ void Queue::garbageCollect()
 }
 
 #ifndef __ANDROID__
-void Queue::present(const VkPresentInfoKHR* presentInfo)
+VkResult Queue::present(const VkPresentInfoKHR* presentInfo)
 {
 	// This is a hack to deal with screen tearing for now.
 	// Need to correctly implement threading using VkSemaphore
 	// to get rid of it. b/132458423
 	waitIdle();
-
+	VkResult result = VK_SUCCESS;
 	for(uint32_t i = 0; i < presentInfo->waitSemaphoreCount; i++)
 	{
 		vk::Cast(presentInfo->pWaitSemaphores[i])->wait();
@@ -227,8 +227,16 @@ void Queue::present(const VkPresentInfoKHR* presentInfo)
 
 	for(uint32_t i = 0; i < presentInfo->swapchainCount; i++)
 	{
-		vk::Cast(presentInfo->pSwapchains[i])->present(presentInfo->pImageIndices[i]);
+		VkResult res = vk::Cast(presentInfo->pSwapchains[i])->present(presentInfo->pImageIndices[i]);
+		if (presentInfo->pResults != nullptr)
+		{
+			presentInfo->pResults[i] = res;
+		}
+		if (res != VK_SUCCESS)
+			result = res;
 	}
+
+	return result;
 }
 #endif
 

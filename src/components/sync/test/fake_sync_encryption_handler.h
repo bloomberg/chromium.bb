@@ -12,8 +12,8 @@
 #include "base/observer_list.h"
 #include "base/time/time.h"
 #include "components/sync/engine/sync_encryption_handler.h"
-#include "components/sync/nigori/cryptographer.h"
 #include "components/sync/nigori/keystore_keys_handler.h"
+#include "components/sync/syncable/directory_cryptographer.h"
 #include "components/sync/syncable/nigori_handler.h"
 
 namespace syncer {
@@ -37,10 +37,13 @@ class FakeSyncEncryptionHandler : public KeystoreKeysHandler,
   bool Init() override;
   void SetEncryptionPassphrase(const std::string& passphrase) override;
   void SetDecryptionPassphrase(const std::string& passphrase) override;
+  void AddTrustedVaultDecryptionKeys(
+      const std::vector<std::string>& keys) override;
   void EnableEncryptEverything() override;
   bool IsEncryptEverythingEnabled() const override;
   base::Time GetKeystoreMigrationTime() const override;
   KeystoreKeysHandler* GetKeystoreKeysHandler() override;
+  std::string GetLastKeystoreKey() const override;
 
   // NigoriHandler implemenation.
   bool ApplyNigoriUpdate(const sync_pb::NigoriSpecifics& nigori,
@@ -49,6 +52,8 @@ class FakeSyncEncryptionHandler : public KeystoreKeysHandler,
       sync_pb::NigoriSpecifics* nigori,
       const syncable::BaseTransaction* const trans) const override;
   const Cryptographer* GetCryptographer(
+      const syncable::BaseTransaction* const trans) const override;
+  const DirectoryCryptographer* GetDirectoryCryptographer(
       const syncable::BaseTransaction* const trans) const override;
   ModelTypeSet GetEncryptedTypes(
       const syncable::BaseTransaction* const trans) const override;
@@ -60,7 +65,7 @@ class FakeSyncEncryptionHandler : public KeystoreKeysHandler,
   bool SetKeystoreKeys(const std::vector<std::string>& keys) override;
 
   // Own method, used in some tests to manipulate cryptographer directly.
-  Cryptographer* GetMutableCryptographer();
+  DirectoryCryptographer* GetMutableCryptographer();
 
  private:
   base::ObserverList<SyncEncryptionHandler::Observer>::Unchecked observers_;
@@ -68,7 +73,7 @@ class FakeSyncEncryptionHandler : public KeystoreKeysHandler,
   bool encrypt_everything_;
   PassphraseType passphrase_type_;
 
-  Cryptographer cryptographer_;
+  DirectoryCryptographer cryptographer_;
   std::string keystore_key_;
 };
 

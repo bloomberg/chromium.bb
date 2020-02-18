@@ -12,11 +12,11 @@
 #include "osp/public/message_demuxer.h"
 #include "osp/public/network_service_manager.h"
 #include "osp/public/protocol_connection_server.h"
-#include "platform/api/logging.h"
 #include "platform/api/time.h"
+#include "util/logging.h"
 
 namespace openscreen {
-namespace presentation {
+namespace osp {
 
 // This method asks the singleton NetworkServiceManager
 // to create a new protocol connection for the given endpoint.
@@ -43,7 +43,7 @@ class PresentationID {
   ErrorOr<std::string> id_;
 };
 
-}  // namespace presentation
+}  // namespace osp
 }  // namespace openscreen
 
 #endif  // OSP_IMPL_PRESENTATION_PRESENTATION_COMMON_H_

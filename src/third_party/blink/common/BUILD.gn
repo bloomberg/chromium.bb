@@ -33,6 +33,7 @@ jumbo_source_set("common") {
     "device_memory/approximated_device_memory.cc",
     "dom_storage/session_storage_namespace_id.cc",
     "experiments/memory_ablation_experiment.cc",
+    "feature_policy/document_policy.cc",
     "feature_policy/feature_policy.cc",
     "feature_policy/policy_value.cc",
     "features.cc",
@@ -40,12 +41,17 @@ jumbo_source_set("common") {
     "frame/frame_policy.cc",
     "frame/from_ad_state.cc",
     "frame/user_activation_state.cc",
+    "http/structured_header.cc",
     "indexeddb/indexed_db_default_mojom_traits.cc",
     "indexeddb/indexeddb_key.cc",
     "indexeddb/indexeddb_key_path.cc",
     "indexeddb/indexeddb_key_range.cc",
     "indexeddb/indexeddb_metadata.cc",
+    "loader/mime_sniffing_throttle.cc",
+    "loader/mime_sniffing_url_loader.cc",
     "loader/request_destination.cc",
+    "loader/throttling_url_loader.cc",
+    "loader/throttling_url_loader.h",
     "loader/url_loader_factory_bundle.cc",
     "loader/url_loader_factory_bundle_mojom_traits.cc",
     "loader/url_loader_throttle.cc",
@@ -75,12 +81,13 @@ jumbo_source_set("common") {
     "origin_policy/origin_policy_parser.h",
     "origin_trials/trial_token.cc",
     "origin_trials/trial_token_validator.cc",
-    "privacy_preferences.cc",
+    "page/page_zoom.cc",
+    "peerconnection/webrtc_ip_handling_policy.cc",
+    "scheduler/web_scheduler_tracked_feature.cc",
     "service_worker/service_worker_status_code.cc",
     "service_worker/service_worker_type_converters.cc",
     "service_worker/service_worker_utils.cc",
     "thread_safe_browser_interface_broker_proxy.cc",
-    "web_package/http_structured_header.cc",
     "web_package/signed_exchange_consts.cc",
     "web_package/signed_exchange_request_matcher.cc",
   ]
@@ -120,13 +127,13 @@ jumbo_source_set("common") {
 
 fuzzer_test("http_structured_header_fuzzer") {
   sources = [
-    "web_package/http_structured_header_fuzzer.cc",
+    "http/structured_header_fuzzer.cc",
   ]
   deps = [
     ":common",
     "//third_party/blink/renderer/platform:blink_fuzzer_test_support",
   ]
-  seed_corpus = "web_package/http_structured_header_corpus"
+  seed_corpus = "http/structured_header_corpus"
 }
 
 test("blink_common_unittests") {
@@ -152,7 +159,10 @@ jumbo_source_set("common_unittests_sources") {
     "device_memory/approximated_device_memory_unittest.cc",
     "feature_policy/feature_policy_unittest.cc",
     "frame/user_activation_state_unittest.cc",
+    "http/structured_header_unittest.cc",
     "indexeddb/indexeddb_key_unittest.cc",
+    "loader/mime_sniffing_throttle_unittest.cc",
+    "loader/throttling_url_loader_unittest.cc",
     "manifest/manifest_icon_selector_unittest.cc",
     "manifest/manifest_util_unittest.cc",
     "mediastream/media_devices_unittest.cc",
@@ -163,7 +173,6 @@ jumbo_source_set("common_unittests_sources") {
     "origin_trials/trial_token_unittest.cc",
     "origin_trials/trial_token_validator_unittest.cc",
     "test/run_all_unittests.cc",
-    "web_package/http_structured_header_unittest.cc",
     "web_package/signed_exchange_request_matcher_unittest.cc",
   ]
 
@@ -172,6 +181,7 @@ jumbo_source_set("common_unittests_sources") {
     "//base/test:test_support",
     "//mojo/core/embedder",
     "//net",
+    "//services/network:test_support",
     "//skia/public/mojom",
     "//testing/gmock",
     "//testing/gtest",

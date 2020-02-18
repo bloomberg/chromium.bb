@@ -8,7 +8,7 @@
 #include <cstdint>
 #include <string>
 
-#include "net/third_party/quiche/src/quic/core/qpack/qpack_constants.h"
+#include "net/third_party/quiche/src/quic/core/qpack/qpack_instructions.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_export.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_string_piece.h"
 
@@ -19,23 +19,12 @@ namespace quic {
 // fields that follow each instruction.
 class QUIC_EXPORT_PRIVATE QpackInstructionEncoder {
  public:
-  // Storage for field values to be encoded.
-  // The encoded instruction determines which values are actually used.
-  struct Values {
-    bool s_bit;
-    uint64_t varint;
-    uint64_t varint2;
-    QuicStringPiece name;
-    QuicStringPiece value;
-  };
-
   QpackInstructionEncoder();
   QpackInstructionEncoder(const QpackInstructionEncoder&) = delete;
   QpackInstructionEncoder& operator=(const QpackInstructionEncoder&) = delete;
 
   // Append encoded instruction to |output|.
-  void Encode(const QpackInstruction* instruction,
-              const Values& values,
+  void Encode(const QpackInstructionWithValues& instruction_with_values,
               std::string* output);
 
  private:

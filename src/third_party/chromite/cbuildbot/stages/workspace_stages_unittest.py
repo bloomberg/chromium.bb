@@ -144,7 +144,8 @@ class WorkspaceStageBaseTest(WorkspaceStageBase):
 class SyncStageTest(WorkspaceStageBase):
   """Test the SyncStage."""
 
-  def ConstructStage(self, **kwargs):
+  # Our API here is not great when it comes to kwargs passing.
+  def ConstructStage(self, **kwargs):  # pylint: disable=arguments-differ
     return workspace_stages.SyncStage(
         self._run, self.buildstore, **kwargs)
 
@@ -384,9 +385,6 @@ class WorkspaceSyncChromeStageTest(WorkspaceStageBase):
             mock.call([os.path.join(self.build_root,
                                     'chromite/bin/sync_chrome'),
                        '--reset', '--ignore_locks',
-                       '--gclient', os.path.join(
-                           self.workspace,
-                           'chromium/tools/depot_tools/gclient'),
                        '--tag', '0.0.1',
                        '--git_cache_dir', mock.ANY,
                        '--internal',

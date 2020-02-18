@@ -47,6 +47,7 @@
 #include "net/http/http_network_session.h"
 #include "net/http/http_request_info.h"
 #include "net/http/http_util.h"
+#include "net/http/webfonts_histogram.h"
 #include "net/log/net_log_event_type.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/ssl/ssl_config_service.h"
@@ -1006,10 +1007,6 @@ int HttpCache::Transaction::DoGetBackendComplete(int result) {
   // function can be invoked multiple times for a transaction.
   mode_ = NONE;
 
-  // Keep track of the fraction of requests that we can double-key.
-  UMA_HISTOGRAM_BOOLEAN("HttpCache.NetworkIsolationKeyPresent",
-                        request_->network_isolation_key.IsFullyPopulated());
-
   if (!ShouldPassThrough()) {
     cache_key_ = cache_->GenerateCacheKey(request_);
 
@@ -1433,8 +1430,15 @@ int HttpCache::Transaction::DoDoneHeadersAddToEntryComplete(int result) {
   DCHECK(response_.headers);
 
   cache_pending_ = false;
-  entry_ = new_entry_;
   done_headers_create_new_entry_ = false;
+
+  // Speculative fix for rare crash. crbug.com/959194
+  if (result == ERR_CACHE_RACE) {
+    TransitionToState(STATE_HEADERS_PHASE_CANNOT_PROCEED);
+    return OK;
+  }
+
+  entry_ = new_entry_;
   DCHECK_NE(response_.headers->response_code(), 304);
   DCHECK(cache_->CanTransactionWriteResponseHeaders(
       entry_, this, partial_ != nullptr, false));
@@ -1813,9 +1817,14 @@ int HttpCache::Transaction::DoSuccessfulSendRequest() {
     DoneWithEntry(true);
   }
 
-  // Invalidate any cached GET with a successful POST.
+  // Invalidate any cached GET with a successful POST. If the network isolation
+  // key isn't populated with the split cache active, there will be nothing to
+  // invalidate in the cache.
   if (!(effective_load_flags_ & LOAD_DISABLE_CACHE) && method_ == "POST" &&
-      NonErrorResponse(new_response_->headers->response_code())) {
+      NonErrorResponse(new_response_->headers->response_code()) &&
+      (!base::FeatureList::IsEnabled(
+           net::features::kSplitCacheByNetworkIsolationKey) ||
+       request_->network_isolation_key.IsFullyPopulated())) {
     cache_->DoomMainEntryForUrl(request_->url, request_->network_isolation_key);
   }
 
@@ -2081,6 +2090,7 @@ int HttpCache::Transaction::DoHeadersPhaseCannotProceed(int result) {
   SetRequest(net_log_);
 
   entry_ = nullptr;
+  new_entry_ = nullptr;
 
   // Bypass the cache for timeout scenario.
   if (result == ERR_CACHE_LOCK_TIMEOUT)
@@ -2407,41 +2417,45 @@ void HttpCache::Transaction::SetRequest(const NetLogWithSource& net_log) {
 }
 
 bool HttpCache::Transaction::ShouldPassThrough() {
+  bool cacheable = true;
+
   // We may have a null disk_cache if there is an error we cannot recover from,
   // like not enough disk space, or sharing violations.
-  if (!cache_->disk_cache_.get())
-    return true;
-
-  if (effective_load_flags_ & LOAD_DISABLE_CACHE)
-    return true;
-
+  if (!cache_->disk_cache_.get()) {
+    cacheable = false;
+  } else if (effective_load_flags_ & LOAD_DISABLE_CACHE) {
+    cacheable = false;
+  }
   // Prevent resources whose origin is opaque from being cached. Blink's memory
   // cache should take care of reusing resources within the current page load,
   // but otherwise a resource with an opaque top-frame origin won’t be used
   // again. Also, if the request does not have a top frame origin, bypass the
   // cache otherwise resources from different pages could share a cached entry
   // in such cases.
-  if (base::FeatureList::IsEnabled(
-          features::kSplitCacheByNetworkIsolationKey) &&
-      request_->network_isolation_key.IsTransient()) {
-    return true;
+  else if (base::FeatureList::IsEnabled(
+               features::kSplitCacheByNetworkIsolationKey) &&
+           request_->network_isolation_key.IsTransient()) {
+    cacheable = false;
+  } else if (method_ == "GET" || method_ == "HEAD") {
+  } else if (method_ == "POST" && request_->upload_data_stream &&
+             request_->upload_data_stream->identifier()) {
+  } else if (method_ == "PUT" && request_->upload_data_stream) {
+  } else if (method_ == "DELETE") {
+  } else {
+    cacheable = false;
   }
 
-  if (method_ == "GET" || method_ == "HEAD")
-    return false;
+  NetworkIsolationKeyPresent nik_present_enum =
+      request_->network_isolation_key.IsFullyPopulated()
+          ? NetworkIsolationKeyPresent::kPresent
+          : cacheable
+                ? NetworkIsolationKeyPresent::kNotPresentCacheableRequest
+                : NetworkIsolationKeyPresent::kNotPresentNonCacheableRequest;
 
-  if (method_ == "POST" && request_->upload_data_stream &&
-      request_->upload_data_stream->identifier()) {
-    return false;
-  }
+  UMA_HISTOGRAM_ENUMERATION("HttpCache.NetworkIsolationKeyPresent2",
+                            nik_present_enum);
 
-  if (method_ == "PUT" && request_->upload_data_stream)
-    return false;
-
-  if (method_ == "DELETE")
-    return false;
-
-  return true;
+  return !cacheable;
 }
 
 int HttpCache::Transaction::BeginCacheRead() {
@@ -3027,9 +3041,13 @@ int HttpCache::Transaction::DoSetupEntryForRead() {
   }
 
   if (partial_) {
-    if (truncated_ || is_sparse_ || !invalid_range_) {
+    if (truncated_ || is_sparse_ ||
+        (!invalid_range_ && (response_.headers->response_code() == 200 ||
+                             response_.headers->response_code() == 206))) {
       // We are going to return the saved response headers to the caller, so
-      // we may need to adjust them first.
+      // we may need to adjust them first. In cases we are handling a range
+      // request to a regular entry, we want the response to be a 200 or 206,
+      // since others can't really be turned into a 206.
       TransitionToState(STATE_PARTIAL_HEADERS_RECEIVED);
       return OK;
     } else {
@@ -3368,6 +3386,10 @@ void HttpCache::Transaction::SyncCacheEntryStatusToResponse() {
 void HttpCache::Transaction::RecordHistograms() {
   DCHECK(!recorded_histograms_);
   recorded_histograms_ = true;
+
+  web_fonts_histogram::MaybeRecordCacheStatus(
+      cache_entry_status_,
+      HttpCache::GetResourceURLFromHttpCacheKey(cache_key_));
 
   UMA_HISTOGRAM_ENUMERATION("HttpCache.ParallelWritingPattern",
                             parallel_writing_pattern_, PARALLEL_WRITING_MAX);

@@ -11,11 +11,12 @@
 #include "test/call_test.h"
 
 #include <algorithm>
+#include <memory>
 
-#include "absl/memory/memory.h"
 #include "api/audio_codecs/builtin_audio_decoder_factory.h"
 #include "api/audio_codecs/builtin_audio_encoder_factory.h"
 #include "api/task_queue/default_task_queue_factory.h"
+#include "api/task_queue/task_queue_base.h"
 #include "api/video/builtin_video_bitrate_allocator_factory.h"
 #include "api/video_codecs/video_encoder_config.h"
 #include "call/fake_network_pipe.h"
@@ -23,6 +24,7 @@
 #include "modules/audio_mixer/audio_mixer_impl.h"
 #include "rtc_base/checks.h"
 #include "rtc_base/event.h"
+#include "rtc_base/task_queue_for_test.h"
 #include "test/fake_encoder.h"
 #include "test/testsupport/file_utils.h"
 
@@ -32,43 +34,33 @@ namespace test {
 CallTest::CallTest()
     : clock_(Clock::GetRealTimeClock()),
       task_queue_factory_(CreateDefaultTaskQueueFactory()),
-      send_event_log_(absl::make_unique<RtcEventLogNull>()),
-      recv_event_log_(absl::make_unique<RtcEventLogNull>()),
-      audio_send_config_(/*send_transport=*/nullptr, MediaTransportConfig()),
+      send_event_log_(std::make_unique<RtcEventLogNull>()),
+      recv_event_log_(std::make_unique<RtcEventLogNull>()),
+      audio_send_config_(/*send_transport=*/nullptr),
       audio_send_stream_(nullptr),
       frame_generator_capturer_(nullptr),
       fake_encoder_factory_([this]() {
         std::unique_ptr<FakeEncoder> fake_encoder;
         if (video_encoder_configs_[0].codec_type == kVideoCodecVP8) {
-          fake_encoder = absl::make_unique<FakeVP8Encoder>(clock_);
+          fake_encoder = std::make_unique<FakeVP8Encoder>(clock_);
         } else {
-          fake_encoder = absl::make_unique<FakeEncoder>(clock_);
+          fake_encoder = std::make_unique<FakeEncoder>(clock_);
         }
         fake_encoder->SetMaxBitrate(fake_encoder_max_bitrate_);
         return fake_encoder;
       }),
-      fake_decoder_factory_([]() { return absl::make_unique<FakeDecoder>(); }),
+      fake_decoder_factory_([]() { return std::make_unique<FakeDecoder>(); }),
       bitrate_allocator_factory_(CreateBuiltinVideoBitrateAllocatorFactory()),
       num_video_streams_(1),
       num_audio_streams_(0),
       num_flexfec_streams_(0),
       audio_decoder_factory_(CreateBuiltinAudioDecoderFactory()),
       audio_encoder_factory_(CreateBuiltinAudioEncoderFactory()),
-      task_queue_("CallTestTaskQueue") {}
+      task_queue_(task_queue_factory_->CreateTaskQueue(
+          "CallTestTaskQueue",
+          TaskQueueFactory::Priority::NORMAL)) {}
 
-CallTest::~CallTest() {
-  // In most cases the task_queue_ should have been stopped by now, assuming
-  // the regular path of using CallTest to call PerformTest (followed by
-  // cleanup). However, there are some tests that don't use the class that way
-  // hence we need this special handling for cleaning up.
-  if (task_queue_.IsRunning()) {
-    task_queue_.SendTask([this]() {
-      fake_send_audio_device_ = nullptr;
-      fake_recv_audio_device_ = nullptr;
-      video_sources_.clear();
-    });
-  }
-}
+CallTest::~CallTest() = default;
 
 void CallTest::RegisterRtpExtension(const RtpExtension& extension) {
   for (const RtpExtension& registered_extension : rtp_extensions_) {
@@ -94,7 +86,7 @@ void CallTest::RegisterRtpExtension(const RtpExtension& extension) {
 }
 
 void CallTest::RunBaseTest(BaseTest* test) {
-  task_queue_.SendTask([this, test]() {
+  SendTask(RTC_FROM_HERE, task_queue(), [this, test]() {
     num_video_streams_ = test->GetNumVideoStreams();
     num_audio_streams_ = test->GetNumAudioStreams();
     num_flexfec_streams_ = test->GetNumFlexfecStreams();
@@ -133,9 +125,9 @@ void CallTest::RunBaseTest(BaseTest* test) {
       CreateReceiverCall(recv_config);
     }
     test->OnCallsCreated(sender_call_.get(), receiver_call_.get());
-    receive_transport_.reset(test->CreateReceiveTransport(&task_queue_));
-    send_transport_.reset(
-        test->CreateSendTransport(&task_queue_, sender_call_.get()));
+    receive_transport_ = test->CreateReceiveTransport(task_queue());
+    send_transport_ =
+        test->CreateSendTransport(task_queue(), sender_call_.get());
 
     if (test->ShouldCreateReceivers()) {
       send_transport_->SetReceiver(receiver_call_->Receiver());
@@ -194,7 +186,7 @@ void CallTest::RunBaseTest(BaseTest* test) {
 
   test->PerformTest();
 
-  task_queue_.SendTask([this, test]() {
+  SendTask(RTC_FROM_HERE, task_queue(), [this, test]() {
     Stop();
     test->OnStreamsStopped();
     DestroyStreams();
@@ -202,21 +194,11 @@ void CallTest::RunBaseTest(BaseTest* test) {
     receive_transport_.reset();
 
     frame_generator_capturer_ = nullptr;
-    video_sources_.clear();
     DestroyCalls();
 
     fake_send_audio_device_ = nullptr;
     fake_recv_audio_device_ = nullptr;
   });
-
-  // To avoid a race condition during destruction, which can happen while
-  // a derived class is being destructed but pending tasks might still run
-  // because the |task_queue_| is still in scope, we stop the TQ here.
-  // Note that tests should not be posting more tasks during teardown but
-  // as is, that's hard to control with the current test harness. E.g. transport
-  // classes continue to issue callbacks (e.g. OnSendRtp) during teardown, which
-  // can have a ripple effect.
-  task_queue_.Stop();
 }
 
 void CallTest::CreateCalls() {
@@ -240,12 +222,14 @@ void CallTest::CreateSenderCall(const Call::Config& config) {
   sender_config.network_state_predictor_factory =
       network_state_predictor_factory_.get();
   sender_config.network_controller_factory = network_controller_factory_.get();
+  sender_config.trials = &field_trials_;
   sender_call_.reset(Call::Create(sender_config));
 }
 
 void CallTest::CreateReceiverCall(const Call::Config& config) {
   auto receiver_config = config;
   receiver_config.task_queue_factory = task_queue_factory_.get();
+  receiver_config.trials = &field_trials_;
   receiver_call_.reset(Call::Create(receiver_config));
 }
 
@@ -293,8 +277,7 @@ void CallTest::CreateAudioAndFecSendConfigs(size_t num_audio_streams,
   RTC_DCHECK_LE(num_audio_streams, 1);
   RTC_DCHECK_LE(num_flexfec_streams, 1);
   if (num_audio_streams > 0) {
-    AudioSendStream::Config audio_send_config(send_transport,
-                                              MediaTransportConfig());
+    AudioSendStream::Config audio_send_config(send_transport);
     audio_send_config.rtp.ssrc = kAudioSendSsrc;
     audio_send_config.send_codec_spec = AudioSendStream::Config::SendCodecSpec(
         kAudioSendPayloadType, {"opus", 48000, 2, {{"stereo", "1"}}});
@@ -379,7 +362,6 @@ void CallTest::AddMatchingVideoReceiveConfigs(
     int rtp_history_ms) {
   RTC_DCHECK(!video_send_config.rtp.ssrcs.empty());
   VideoReceiveStream::Config default_config(rtcp_send_transport);
-  default_config.rtp.remb = !send_side_bwe;
   default_config.rtp.transport_cc = send_side_bwe;
   default_config.rtp.local_ssrc = kReceiverLocalVideoSsrc;
   for (const RtpExtension& extension : video_send_config.rtp.extensions)
@@ -484,7 +466,7 @@ void CallTest::CreateFrameGeneratorCapturerWithDrift(Clock* clock,
                                                      int height) {
   video_sources_.clear();
   auto frame_generator_capturer =
-      absl::make_unique<test::FrameGeneratorCapturer>(
+      std::make_unique<test::FrameGeneratorCapturer>(
           clock,
           test::FrameGenerator::CreateSquareGenerator(
               width, height, absl::nullopt, absl::nullopt),
@@ -500,7 +482,7 @@ void CallTest::CreateFrameGeneratorCapturer(int framerate,
                                             int height) {
   video_sources_.clear();
   auto frame_generator_capturer =
-      absl::make_unique<test::FrameGeneratorCapturer>(
+      std::make_unique<test::FrameGeneratorCapturer>(
           clock_,
           test::FrameGenerator::CreateSquareGenerator(
               width, height, absl::nullopt, absl::nullopt),
@@ -666,6 +648,7 @@ void CallTest::DestroyStreams() {
     receiver_call_->DestroyFlexfecReceiveStream(flexfec_recv_stream);
 
   video_receive_streams_.clear();
+  video_sources_.clear();
 }
 
 void CallTest::DestroyVideoSendStreams() {
@@ -777,25 +760,25 @@ void BaseTest::ModifyReceiverBitrateConfig(BitrateConstraints* bitrate_config) {
 
 void BaseTest::OnCallsCreated(Call* sender_call, Call* receiver_call) {}
 
-test::PacketTransport* BaseTest::CreateSendTransport(
-    DEPRECATED_SingleThreadedTaskQueueForTesting* task_queue,
+std::unique_ptr<PacketTransport> BaseTest::CreateSendTransport(
+    TaskQueueBase* task_queue,
     Call* sender_call) {
-  return new PacketTransport(
+  return std::make_unique<PacketTransport>(
       task_queue, sender_call, this, test::PacketTransport::kSender,
       CallTest::payload_type_map_,
-      absl::make_unique<FakeNetworkPipe>(
+      std::make_unique<FakeNetworkPipe>(
           Clock::GetRealTimeClock(),
-          absl::make_unique<SimulatedNetwork>(BuiltInNetworkBehaviorConfig())));
+          std::make_unique<SimulatedNetwork>(BuiltInNetworkBehaviorConfig())));
 }
 
-test::PacketTransport* BaseTest::CreateReceiveTransport(
-    DEPRECATED_SingleThreadedTaskQueueForTesting* task_queue) {
-  return new PacketTransport(
+std::unique_ptr<PacketTransport> BaseTest::CreateReceiveTransport(
+    TaskQueueBase* task_queue) {
+  return std::make_unique<PacketTransport>(
       task_queue, nullptr, this, test::PacketTransport::kReceiver,
       CallTest::payload_type_map_,
-      absl::make_unique<FakeNetworkPipe>(
+      std::make_unique<FakeNetworkPipe>(
           Clock::GetRealTimeClock(),
-          absl::make_unique<SimulatedNetwork>(BuiltInNetworkBehaviorConfig())));
+          std::make_unique<SimulatedNetwork>(BuiltInNetworkBehaviorConfig())));
 }
 
 size_t BaseTest::GetNumVideoStreams() const {

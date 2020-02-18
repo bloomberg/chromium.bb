@@ -35,13 +35,13 @@ class QUIC_EXPORT_PRIVATE LossDetectionInterface {
   // Returns QuicTime::Zero if no alarm needs to be set.
   virtual QuicTime GetLossTimeout() const = 0;
 
-  // Called when a |spurious_retransmission| is detected.  The original
-  // transmission must have been caused by DetectLosses.
-  virtual void SpuriousRetransmitDetected(
+  // Called when |packet_number| was detected lost but gets acked later.
+  virtual void SpuriousLossDetected(
       const QuicUnackedPacketMap& unacked_packets,
-      QuicTime time,
       const RttStats& rtt_stats,
-      QuicPacketNumber spurious_retransmission) = 0;
+      QuicTime ack_receive_time,
+      QuicPacketNumber packet_number,
+      QuicPacketNumber previous_largest_acked) = 0;
 };
 
 }  // namespace quic

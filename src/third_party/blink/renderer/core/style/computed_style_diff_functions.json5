@@ -34,7 +34,8 @@
         name: "ScrollAnchorDisablingPropertyChanged",
         fields_to_diff: ["width", "min-width", "max-width", "height", "min-height", "max-height", "margin-top", "margin-left", "margin-right", "margin-bottom", 
                   "left", "right", "top", "bottom", "padding-top", 
-                  "padding-left", "padding-right", "padding-bottom"],
+                  "padding-left", "padding-right", "padding-bottom",
+                  "intrinsic-width", "intrinsic-height"],
         methods_to_diff: [
           {
             method: "GetPosition()",
@@ -134,7 +135,7 @@
             field_dependencies: ["filter"]
           },
           {
-            method: "HasPseudoStyle(kPseudoIdScrollbar)",
+            method: "HasPseudoElementStyle(kPseudoIdScrollbar)",
             field_dependencies: ["StyleType"]
           },
           {
@@ -215,7 +216,11 @@
         methods_to_diff: [
           {
             method: "ListStyleType()",
-            field_dependencies: ["list-style-type"]
+            field_dependencies: ["ListStyleType"]
+          },
+          {
+            method: "ListStyleStringValue()",
+            field_dependencies: ["ListStyleStringValue"]
           },
           {
             method: "ListStylePosition()",
@@ -228,7 +233,7 @@
         fields_to_diff: ["width", "min-width", "max-width", "height", "min-height",
                 "max-height", "VerticalAlignLength", "box-sizing", "align-content",
                 "align-items", "align-self", "justify-content", "justify-items",
-                "justify-self", "contain"],
+                "justify-self", "contain", "intrinsic-width", "intrinsic-height"],
         methods_to_diff: [
           {
             method: "VerticalAlign()",

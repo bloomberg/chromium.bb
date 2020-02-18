@@ -24,9 +24,6 @@ using views::Widget;
 
 namespace {
 
-// This is 2x of the slide ainmation duration.
-constexpr int kColorUpdateDurationMs = 240;
-
 // Tiles an image into an area, rounding the top corners.
 void TileRoundRect(gfx::Canvas* canvas,
                    const cc::PaintFlags& flags,
@@ -47,7 +44,7 @@ void TileRoundRect(gfx::Canvas* canvas,
   // Extend 1dp to make sure it's fully opaque.
   rect.fBottom += 1;
   SkPath path;
-  path.addRoundRect(rect, radii, SkPath::kCW_Direction);
+  path.addRoundRect(rect, radii, SkPathDirection::kCW);
   canvas->DrawPath(path, flags);
 }
 
@@ -58,7 +55,7 @@ namespace ash {
 DefaultFrameHeader::ColorAnimator::ColorAnimator(
     gfx::AnimationDelegate* delegate)
     : animation_(delegate) {
-  animation_.SetSlideDuration(kColorUpdateDurationMs);
+  animation_.SetSlideDuration(base::TimeDelta::FromMilliseconds(240));
   animation_.SetTweenType(gfx::Tween::EASE_IN);
   animation_.Reset(1);
 }

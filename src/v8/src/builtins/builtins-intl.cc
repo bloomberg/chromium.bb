@@ -20,6 +20,7 @@
 #include "src/objects/js-break-iterator-inl.h"
 #include "src/objects/js-collator-inl.h"
 #include "src/objects/js-date-time-format-inl.h"
+#include "src/objects/js-display-names-inl.h"
 #include "src/objects/js-list-format-inl.h"
 #include "src/objects/js-locale-inl.h"
 #include "src/objects/js-number-format-inl.h"
@@ -83,13 +84,8 @@ BUILTIN(NumberFormatPrototypeFormatToParts) {
 
   Handle<Object> x;
   if (args.length() >= 2) {
-    if (FLAG_harmony_intl_bigint) {
-      ASSIGN_RETURN_FAILURE_ON_EXCEPTION(
-          isolate, x, Object::ToNumeric(isolate, args.at(1)));
-    } else {
-      ASSIGN_RETURN_FAILURE_ON_EXCEPTION(isolate, x,
-                                         Object::ToNumber(isolate, args.at(1)));
-    }
+    ASSIGN_RETURN_FAILURE_ON_EXCEPTION(isolate, x,
+                                       Object::ToNumeric(isolate, args.at(1)));
   } else {
     x = isolate->factory()->nan_value();
   }
@@ -282,8 +278,8 @@ Object LegacyFormatConstructor(BuiltinArguments args, Isolate* isolate,
 
   // 3. Perform ? Initialize<T>(Format, locales, options).
   Handle<T> format;
-  ASSIGN_RETURN_FAILURE_ON_EXCEPTION(isolate, format,
-                                     T::New(isolate, map, locales, options));
+  ASSIGN_RETURN_FAILURE_ON_EXCEPTION(
+      isolate, format, T::New(isolate, map, locales, options, method));
   // 4. Let this be the this value.
   Handle<Object> receiver = args.receiver();
 
@@ -367,7 +363,8 @@ Object DisallowCallConstructor(BuiltinArguments args, Isolate* isolate,
  * Common code shared by Collator and V8BreakIterator
  */
 template <class T>
-Object CallOrConstructConstructor(BuiltinArguments args, Isolate* isolate) {
+Object CallOrConstructConstructor(BuiltinArguments args, Isolate* isolate,
+                                  const char* method) {
   Handle<JSReceiver> new_target;
 
   if (args.new_target()->IsUndefined(isolate)) {
@@ -386,9 +383,49 @@ Object CallOrConstructConstructor(BuiltinArguments args, Isolate* isolate) {
   ASSIGN_RETURN_FAILURE_ON_EXCEPTION(
       isolate, map, JSFunction::GetDerivedMap(isolate, target, new_target));
 
-  RETURN_RESULT_OR_FAILURE(isolate, T::New(isolate, map, locales, options));
+  RETURN_RESULT_OR_FAILURE(isolate,
+                           T::New(isolate, map, locales, options, method));
 }
 }  // namespace
+
+// Intl.DisplayNames
+
+BUILTIN(DisplayNamesConstructor) {
+  HandleScope scope(isolate);
+
+  return DisallowCallConstructor<JSDisplayNames>(
+      args, isolate, v8::Isolate::UseCounterFeature::kDisplayNames,
+      "Intl.DisplayNames");
+}
+
+BUILTIN(DisplayNamesPrototypeResolvedOptions) {
+  HandleScope scope(isolate);
+  CHECK_RECEIVER(JSDisplayNames, holder,
+                 "Intl.DisplayNames.prototype.resolvedOptions");
+  return *JSDisplayNames::ResolvedOptions(isolate, holder);
+}
+
+BUILTIN(DisplayNamesSupportedLocalesOf) {
+  HandleScope scope(isolate);
+  Handle<Object> locales = args.atOrUndefined(isolate, 1);
+  Handle<Object> options = args.atOrUndefined(isolate, 2);
+
+  RETURN_RESULT_OR_FAILURE(
+      isolate, Intl::SupportedLocalesOf(
+                   isolate, "Intl.DisplayNames.supportedLocalesOf",
+                   JSDisplayNames::GetAvailableLocales(), locales, options));
+}
+
+BUILTIN(DisplayNamesPrototypeOf) {
+  HandleScope scope(isolate);
+  CHECK_RECEIVER(JSDisplayNames, holder, "Intl.DisplayNames.prototype.of");
+  Handle<Object> code_obj = args.atOrUndefined(isolate, 1);
+
+  RETURN_RESULT_OR_FAILURE(isolate,
+                           JSDisplayNames::Of(isolate, holder, code_obj));
+}
+
+// Intl.NumberFormat
 
 BUILTIN(NumberFormatConstructor) {
   HandleScope scope(isolate);
@@ -466,13 +503,8 @@ BUILTIN(NumberFormatInternalFormatNumber) {
 
   // 4. Let x be ? ToNumeric(value).
   Handle<Object> numeric_obj;
-  if (FLAG_harmony_intl_bigint) {
-    ASSIGN_RETURN_FAILURE_ON_EXCEPTION(isolate, numeric_obj,
-                                       Object::ToNumeric(isolate, value));
-  } else {
-    ASSIGN_RETURN_FAILURE_ON_EXCEPTION(isolate, numeric_obj,
-                                       Object::ToNumber(isolate, value));
-  }
+  ASSIGN_RETURN_FAILURE_ON_EXCEPTION(isolate, numeric_obj,
+                                     Object::ToNumeric(isolate, value));
 
   icu::number::LocalizedNumberFormatter* icu_localized_number_formatter =
       number_format->icu_number_formatter().raw();
@@ -884,7 +916,7 @@ BUILTIN(CollatorConstructor) {
 
   isolate->CountUsage(v8::Isolate::UseCounterFeature::kCollator);
 
-  return CallOrConstructConstructor<JSCollator>(args, isolate);
+  return CallOrConstructConstructor<JSCollator>(args, isolate, "Intl.Collator");
 }
 
 BUILTIN(CollatorPrototypeResolvedOptions) {
@@ -1069,7 +1101,8 @@ BUILTIN(SegmenterPrototypeSegment) {
 BUILTIN(V8BreakIteratorConstructor) {
   HandleScope scope(isolate);
 
-  return CallOrConstructConstructor<JSV8BreakIterator>(args, isolate);
+  return CallOrConstructConstructor<JSV8BreakIterator>(args, isolate,
+                                                       "Intl.v8BreakIterator");
 }
 
 BUILTIN(V8BreakIteratorPrototypeResolvedOptions) {

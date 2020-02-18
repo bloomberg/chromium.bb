@@ -4,8 +4,9 @@
 
 #include "net/third_party/quiche/src/quic/test_tools/simulator/quic_endpoint.h"
 
+#include <utility>
+
 #include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_ptr_util.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_test.h"
 #include "net/third_party/quiche/src/quic/test_tools/quic_connection_peer.h"
 #include "net/third_party/quiche/src/quic/test_tools/quic_test_utils.h"
@@ -37,14 +38,14 @@ class QuicEndpointTest : public QuicTest {
   Switch switch_;
 
   std::unique_ptr<SymmetricLink> Link(Endpoint* a, Endpoint* b) {
-    return QuicMakeUnique<SymmetricLink>(a, b, kDefaultBandwidth,
-                                         kDefaultPropagationDelay);
+    return std::make_unique<SymmetricLink>(a, b, kDefaultBandwidth,
+                                           kDefaultPropagationDelay);
   }
 
   std::unique_ptr<SymmetricLink> CustomLink(Endpoint* a,
                                             Endpoint* b,
                                             uint64_t extra_rtt_ms) {
-    return QuicMakeUnique<SymmetricLink>(
+    return std::make_unique<SymmetricLink>(
         a, b, kDefaultBandwidth,
         kDefaultPropagationDelay +
             QuicTime::Delta::FromMilliseconds(extra_rtt_ms));
@@ -103,8 +104,8 @@ TEST_F(QuicEndpointTest, WriteBlocked) {
   EXPECT_CALL(*sender, BandwidthEstimate())
       .WillRepeatedly(Return(10 * kDefaultBandwidth));
   EXPECT_CALL(*sender, GetCongestionWindow())
-      .WillRepeatedly(
-          Return(kMaxOutgoingPacketSize * kDefaultMaxCongestionWindowPackets));
+      .WillRepeatedly(Return(kMaxOutgoingPacketSize *
+                             GetQuicFlag(FLAGS_quic_max_congestion_window)));
   test::QuicConnectionPeer::SetSendAlgorithm(endpoint_a.connection(), sender);
 
   // First transmit a small, packet-size chunk of data.
@@ -156,22 +157,22 @@ TEST_F(QuicEndpointTest, TwoWayTransmission) {
 TEST_F(QuicEndpointTest, Competition) {
   // TODO(63765788): Turn back on this flag when the issue if fixed.
   SetQuicReloadableFlag(quic_bbr_one_mss_conservation, false);
-  auto endpoint_a = QuicMakeUnique<QuicEndpoint>(
+  auto endpoint_a = std::make_unique<QuicEndpoint>(
       &simulator_, "Endpoint A", "Endpoint D (A)", Perspective::IS_CLIENT,
       test::TestConnectionId(42));
-  auto endpoint_b = QuicMakeUnique<QuicEndpoint>(
+  auto endpoint_b = std::make_unique<QuicEndpoint>(
       &simulator_, "Endpoint B", "Endpoint D (B)", Perspective::IS_CLIENT,
       test::TestConnectionId(43));
-  auto endpoint_c = QuicMakeUnique<QuicEndpoint>(
+  auto endpoint_c = std::make_unique<QuicEndpoint>(
       &simulator_, "Endpoint C", "Endpoint D (C)", Perspective::IS_CLIENT,
       test::TestConnectionId(44));
-  auto endpoint_d_a = QuicMakeUnique<QuicEndpoint>(
+  auto endpoint_d_a = std::make_unique<QuicEndpoint>(
       &simulator_, "Endpoint D (A)", "Endpoint A", Perspective::IS_SERVER,
       test::TestConnectionId(42));
-  auto endpoint_d_b = QuicMakeUnique<QuicEndpoint>(
+  auto endpoint_d_b = std::make_unique<QuicEndpoint>(
       &simulator_, "Endpoint D (B)", "Endpoint B", Perspective::IS_SERVER,
       test::TestConnectionId(43));
-  auto endpoint_d_c = QuicMakeUnique<QuicEndpoint>(
+  auto endpoint_d_c = std::make_unique<QuicEndpoint>(
       &simulator_, "Endpoint D (C)", "Endpoint C", Perspective::IS_SERVER,
       test::TestConnectionId(44));
   QuicEndpointMultiplexer endpoint_d(

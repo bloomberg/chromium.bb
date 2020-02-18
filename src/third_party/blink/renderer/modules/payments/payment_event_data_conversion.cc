@@ -4,13 +4,16 @@
 
 #include "third_party/blink/renderer/modules/payments/payment_event_data_conversion.h"
 
+#include "third_party/blink/public/mojom/payments/payment_app.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/to_v8_for_core.h"
 #include "third_party/blink/renderer/modules/payments/can_make_payment_event_init.h"
 #include "third_party/blink/renderer/modules/payments/payment_currency_amount.h"
 #include "third_party/blink/renderer/modules/payments/payment_details_modifier.h"
 #include "third_party/blink/renderer/modules/payments/payment_item.h"
 #include "third_party/blink/renderer/modules/payments/payment_method_data.h"
+#include "third_party/blink/renderer/modules/payments/payment_options.h"
 #include "third_party/blink/renderer/modules/payments/payment_request_event_init.h"
+#include "third_party/blink/renderer/modules/payments/payment_shipping_option.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 
 namespace blink {
@@ -62,7 +65,7 @@ ScriptValue StringDataToScriptValue(ScriptState* script_state,
            .ToLocal(&v8_value)) {
     return ScriptValue();
   }
-  return ScriptValue(script_state, v8_value);
+  return ScriptValue(script_state->GetIsolate(), v8_value);
 }
 
 PaymentMethodData* ToPaymentMethodData(
@@ -74,6 +77,44 @@ PaymentMethodData* ToPaymentMethodData(
   method_data->setData(
       StringDataToScriptValue(script_state, data->stringified_data));
   return method_data;
+}
+
+PaymentOptions* ToPaymentOptions(
+    payments::mojom::blink::PaymentOptionsPtr options) {
+  DCHECK(options);
+  PaymentOptions* payment_options = PaymentOptions::Create();
+  payment_options->setRequestPayerName(options->request_payer_name);
+  payment_options->setRequestPayerEmail(options->request_payer_email);
+  payment_options->setRequestPayerPhone(options->request_payer_phone);
+  payment_options->setRequestShipping(options->request_shipping);
+
+  String shipping_type = "";
+  switch (options->shipping_type) {
+    case payments::mojom::PaymentShippingType::SHIPPING:
+      shipping_type = "shipping";
+      break;
+    case payments::mojom::PaymentShippingType::DELIVERY:
+      shipping_type = "delivery";
+      break;
+    case payments::mojom::PaymentShippingType::PICKUP:
+      shipping_type = "pickup";
+      break;
+  }
+  payment_options->setShippingType(shipping_type);
+  return payment_options;
+}
+
+PaymentShippingOption* ToShippingOption(
+    payments::mojom::blink::PaymentShippingOptionPtr option) {
+  DCHECK(option);
+  PaymentShippingOption* shipping_option = PaymentShippingOption::Create();
+
+  shipping_option->setAmount(
+      ToPaymentCurrencyAmount(std::move(option->amount)));
+  shipping_option->setLabel(option->label);
+  shipping_option->setId(option->id);
+  shipping_option->setSelected(option->selected);
+  return shipping_option;
 }
 
 }  // namespace
@@ -107,6 +148,21 @@ PaymentRequestEventInit* PaymentEventDataConversion::ToPaymentRequestEventInit(
   }
   event_init->setModifiers(modifiers);
   event_init->setInstrumentKey(event_data->instrument_key);
+
+  bool request_shipping = false;
+  if (event_data->payment_options) {
+    request_shipping = event_data->payment_options->request_shipping;
+    event_init->setPaymentOptions(
+        ToPaymentOptions(std::move(event_data->payment_options)));
+  }
+  if (event_data->shipping_options.has_value() && request_shipping) {
+    HeapVector<Member<PaymentShippingOption>> shipping_options;
+    for (auto& option : event_data->shipping_options.value()) {
+      shipping_options.push_back(ToShippingOption(std::move(option)));
+    }
+    event_init->setShippingOptions(shipping_options);
+  }
+
   return event_init;
 }
 

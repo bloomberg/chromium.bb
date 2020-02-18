@@ -15,21 +15,24 @@
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom-blink.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_source.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
-#include "third_party/blink/public/web/modules/mediastream/mock_media_stream_video_sink.h"
-#include "third_party/blink/public/web/modules/mediastream/mock_media_stream_video_source.h"
-#include "third_party/blink/public/web/modules/mediastream/video_track_adapter_settings.h"
 #include "third_party/blink/public/web/web_heap.h"
 #include "third_party/blink/renderer/modules/mediastream/mock_constraint_factory.h"
+#include "third_party/blink/renderer/modules/mediastream/mock_media_stream_video_sink.h"
+#include "third_party/blink/renderer/modules/mediastream/mock_media_stream_video_source.h"
+#include "third_party/blink/renderer/modules/mediastream/video_track_adapter_settings.h"
 #include "third_party/blink/renderer/platform/testing/io_task_runner_testing_platform_support.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
 using ::testing::_;
 using ::testing::DoAll;
+using ::testing::InSequence;
+using ::testing::Mock;
+using ::testing::Return;
 using ::testing::SaveArg;
 
 namespace blink {
 
-class MediaStreamVideoSourceTest : public ::testing::Test {
+class MediaStreamVideoSourceTest : public testing::Test {
  public:
   MediaStreamVideoSourceTest()
       : number_of_successful_constraints_applied_(0),
@@ -56,6 +59,7 @@ class MediaStreamVideoSourceTest : public ::testing::Test {
                            WebString::FromASCII("dummy_source_name"),
                            false /* remote */);
     web_source_.SetPlatformSource(base::WrapUnique(mock_source_));
+    ON_CALL(*mock_source_, SupportsEncodedOutput).WillByDefault(Return(true));
   }
 
   void TearDown() override {
@@ -73,8 +77,8 @@ class MediaStreamVideoSourceTest : public ::testing::Test {
     bool enabled = true;
     return MediaStreamVideoTrack::CreateVideoTrack(
         mock_source_,
-        base::Bind(&MediaStreamVideoSourceTest::OnConstraintsApplied,
-                   base::Unretained(this)),
+        WTF::Bind(&MediaStreamVideoSourceTest::OnConstraintsApplied,
+                  base::Unretained(this)),
         enabled);
   }
 
@@ -88,9 +92,15 @@ class MediaStreamVideoSourceTest : public ::testing::Test {
     return MediaStreamVideoTrack::CreateVideoTrack(
         mock_source_, adapter_settings, noise_reduction, is_screencast,
         min_frame_rate,
-        base::Bind(&MediaStreamVideoSourceTest::OnConstraintsApplied,
-                   base::Unretained(this)),
+        WTF::Bind(&MediaStreamVideoSourceTest::OnConstraintsApplied,
+                  base::Unretained(this)),
         enabled);
+  }
+
+  WebMediaStreamTrack CreateTrack() {
+    return CreateTrack("123",
+                       VideoTrackAdapterSettings(gfx::Size(100, 100), 30.0),
+                       base::Optional<bool>(), false, 0.0);
   }
 
   WebMediaStreamTrack CreateTrackAndStartSource(int width,
@@ -104,7 +114,7 @@ class MediaStreamVideoSourceTest : public ::testing::Test {
     EXPECT_EQ(0, NumberOfSuccessConstraintsCallbacks());
     mock_source_->StartMockedSource();
     // Once the source has started successfully we expect that the
-    // ConstraintsCallback in WebPlatformMediaStreamSource::AddTrack
+    // ConstraintsOnceCallback in WebPlatformMediaStreamSource::AddTrack
     // completes.
     EXPECT_EQ(1, NumberOfSuccessConstraintsCallbacks());
     return track;
@@ -706,6 +716,83 @@ TEST_F(MediaStreamVideoSourceTest, AddTrackAfterStoppingSource) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, NumberOfSuccessConstraintsCallbacks());
   EXPECT_EQ(1, NumberOfFailedConstraintsCallbacks());
+}
+
+TEST_F(MediaStreamVideoSourceTest, AddsEncodedSinkWhenEncodedConsumerAppears) {
+  EXPECT_CALL(*mock_source(), OnEncodedSinkEnabled).Times(1);
+  EXPECT_CALL(*mock_source(), OnEncodedSinkDisabled).Times(0);
+
+  WebMediaStreamTrack track = CreateTrack();
+  MockMediaStreamVideoSink sink;
+  sink.ConnectEncodedToTrack(track);
+
+  Mock::VerifyAndClearExpectations(mock_source());
+  sink.DisconnectEncodedFromTrack();
+}
+
+TEST_F(MediaStreamVideoSourceTest, AddsEncodedSinkWhenEncodedConsumersAppear) {
+  EXPECT_CALL(*mock_source(), OnEncodedSinkEnabled).Times(1);
+  EXPECT_CALL(*mock_source(), OnEncodedSinkDisabled).Times(0);
+
+  WebMediaStreamTrack track1 = CreateTrack();
+  MockMediaStreamVideoSink sink1;
+  sink1.ConnectEncodedToTrack(track1);
+  WebMediaStreamTrack track2 = CreateTrack();
+  MockMediaStreamVideoSink sink2;
+  sink2.ConnectEncodedToTrack(track2);
+
+  Mock::VerifyAndClearExpectations(mock_source());
+  sink1.DisconnectEncodedFromTrack();
+  sink2.DisconnectEncodedFromTrack();
+}
+
+TEST_F(MediaStreamVideoSourceTest,
+       RemovesEncodedSinkWhenEncodedConsumerDisappears) {
+  EXPECT_CALL(*mock_source(), OnEncodedSinkDisabled).Times(1);
+  WebMediaStreamTrack track = CreateTrack();
+  MockMediaStreamVideoSink sink;
+  sink.ConnectEncodedToTrack(track);
+  sink.DisconnectEncodedFromTrack();
+}
+
+TEST_F(MediaStreamVideoSourceTest,
+       RemovesEncodedSinkWhenEncodedConsumersDisappear) {
+  EXPECT_CALL(*mock_source(), OnEncodedSinkDisabled).Times(1);
+  WebMediaStreamTrack track1 = CreateTrack();
+  MockMediaStreamVideoSink sink1;
+  sink1.ConnectEncodedToTrack(track1);
+  WebMediaStreamTrack track2 = CreateTrack();
+  MockMediaStreamVideoSink sink2;
+  sink2.ConnectEncodedToTrack(track2);
+  sink1.DisconnectEncodedFromTrack();
+  sink2.DisconnectEncodedFromTrack();
+}
+
+TEST_F(MediaStreamVideoSourceTest, CapturingLinkSecureOnlyEncodedSinks) {
+  InSequence s;
+  EXPECT_CALL(*mock_source(), OnCapturingLinkSecured(false));
+  WebMediaStreamTrack track = CreateTrack();
+  MockMediaStreamVideoSink sink;
+  sink.ConnectEncodedToTrack(track);
+  EXPECT_CALL(*mock_source(), OnCapturingLinkSecured(true));
+  sink.DisconnectEncodedFromTrack();
+}
+
+TEST_F(MediaStreamVideoSourceTest, CapturingLinkSecureTracksAndEncodedSinks) {
+  InSequence s;
+  EXPECT_CALL(*mock_source(), OnCapturingLinkSecured(true));
+  WebMediaStreamTrack track = CreateTrack();
+  mock_source()->UpdateCapturingLinkSecure(
+      MediaStreamVideoTrack::GetVideoTrack(track), true);
+
+  EXPECT_CALL(*mock_source(), OnCapturingLinkSecured(false));
+  MockMediaStreamVideoSink sink;
+  sink.ConnectEncodedToTrack(track);
+  EXPECT_CALL(*mock_source(), OnCapturingLinkSecured(true));
+  sink.DisconnectEncodedFromTrack();
+  EXPECT_CALL(*mock_source(), OnCapturingLinkSecured(false));
+  mock_source()->UpdateCapturingLinkSecure(
+      MediaStreamVideoTrack::GetVideoTrack(track), false);
 }
 
 }  // namespace blink

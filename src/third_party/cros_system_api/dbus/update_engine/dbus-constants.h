@@ -18,8 +18,6 @@ const char kUpdateEngineServiceErrorFailed[] =
 const char kAttemptUpdate[] = "AttemptUpdate";
 const char kAttemptUpdateWithFlags[] = "AttemptUpdateWithFlags";
 const char kGetLastAttemptError[] = "GetLastAttemptError";
-// TODO(crbug.com/977320): Deprecate |GetStatus| method.
-const char kGetStatus[] = "GetStatus";
 const char kGetStatusAdvanced[] = "GetStatusAdvanced";
 const char kRebootIfNeeded[] = "RebootIfNeeded";
 const char kSetChannel[] = "SetChannel";
@@ -28,33 +26,23 @@ const char kSetCohortHint[] = "SetCohortHint";
 const char kGetCohortHint[] = "GetCohortHint";
 const char kAttemptRollback[] = "AttemptRollback";
 const char kCanRollback[] = "CanRollback";
-const char kGetEolStatus[] = "GetEolStatus";
 const char kSetUpdateOverCellularPermission[] =
     "SetUpdateOverCellularPermission";
 const char kSetUpdateOverCellularTarget[] =
     "SetUpdateOverCellularTarget";
 
 // Signals.
-// TODO(crbug.com/977320): Deprecate |StatusUpdate| signal.
-const char kStatusUpdate[] = "StatusUpdate";
 const char kStatusUpdateAdvanced[] = "StatusUpdateAdvanced";
 
 // TODO(crbug.com/978672): Move to update_engine.proto and add other values from
 // update_status.h:UpdateAttemptFlags to this enum.
 //
-// Flags used in the AttemptUpdateWithFlags() D-Bus method.
+// Flags used in the |AttemptUpdateWithFlags()| D-Bus method.
 typedef enum {
   kAttemptUpdateFlagNonInteractive = (1 << 0)
 } AttemptUpdateFlags;
 
-// End of Life status used in the GetEolStatus() D-Bus method.
-typedef enum {
-  kSupported = 0,
-  kSecurityOnly = 1,
-  kEol = 2,
-} EndOfLifeStatus;
-
-// Operations contained in StatusUpdate signals.
+// Operations contained in |StatusUpdate| signals.
 const char kUpdateStatusIdle[] = "UPDATE_STATUS_IDLE";
 const char kUpdateStatusCheckingForUpdate[] =
     "UPDATE_STATUS_CHECKING_FOR_UPDATE";

@@ -5,6 +5,7 @@
 #include "media/capture/video/chromeos/camera_device_delegate.h"
 
 #include <algorithm>
+#include <cmath>
 #include <memory>
 #include <string>
 #include <utility>
@@ -25,6 +26,7 @@
 #include "media/capture/video/chromeos/camera_hal_delegate.h"
 #include "media/capture/video/chromeos/camera_metadata_utils.h"
 #include "media/capture/video/chromeos/request_manager.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 
 namespace media {
 
@@ -83,6 +85,28 @@ void TakePhotoCallbackBundle(VideoCaptureDevice::TakePhotoCallback callback,
                              mojom::BlobPtr blob) {
   std::move(callback).Run(std::move(blob));
   std::move(on_photo_taken_callback).Run();
+}
+
+void SetFpsRangeInMetadata(cros::mojom::CameraMetadataPtr* settings,
+                           int32_t min_frame_rate,
+                           int32_t max_frame_rate) {
+  const int32_t entry_length = 2;
+
+  // CameraMetadata is represented as an uint8 array. According to the
+  // definition of the FPS metadata tag, its data type is int32, so we
+  // reinterpret_cast here.
+  std::vector<uint8_t> fps_range(sizeof(int32_t) * entry_length);
+  auto* fps_ptr = reinterpret_cast<int32_t*>(fps_range.data());
+  fps_ptr[0] = min_frame_rate;
+  fps_ptr[1] = max_frame_rate;
+  cros::mojom::CameraMetadataEntryPtr e =
+      cros::mojom::CameraMetadataEntry::New();
+  e->tag = cros::mojom::CameraMetadataTag::ANDROID_CONTROL_AE_TARGET_FPS_RANGE;
+  e->type = cros::mojom::EntryType::TYPE_INT32;
+  e->count = entry_length;
+  e->data = std::move(fps_range);
+
+  AddOrUpdateMetadataEntry(settings, std::move(e));
 }
 
 }  // namespace
@@ -202,17 +226,15 @@ void CameraDeviceDelegate::AllocateAndStart(
   }
   device_context_->SetSensorOrientation(sensor_orientation[0]);
 
-  // |device_ops_| is bound after the MakeRequest call.
-  cros::mojom::Camera3DeviceOpsRequest device_ops_request =
-      mojo::MakeRequest(&device_ops_);
-  device_ops_.set_connection_error_handler(base::BindOnce(
-      &CameraDeviceDelegate::OnMojoConnectionError, GetWeakPtr()));
+  // |device_ops_| is bound after the BindNewPipeAndPassReceiver call.
   camera_hal_delegate_->OpenDevice(
       camera_hal_delegate_->GetCameraIdFromDeviceId(
           device_descriptor_.device_id),
-      std::move(device_ops_request),
+      device_ops_.BindNewPipeAndPassReceiver(),
       BindToCurrentLoop(
           base::BindOnce(&CameraDeviceDelegate::OnOpenedDevice, GetWeakPtr())));
+  device_ops_.set_disconnect_handler(base::BindOnce(
+      &CameraDeviceDelegate::OnMojoConnectionError, GetWeakPtr()));
 }
 
 void CameraDeviceDelegate::StopAndDeAllocate(
@@ -478,11 +500,9 @@ void CameraDeviceDelegate::Initialize() {
   DCHECK(ipc_task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(device_context_->GetState(), CameraDeviceContext::State::kStarting);
 
-  cros::mojom::Camera3CallbackOpsPtr callback_ops_ptr;
-  cros::mojom::Camera3CallbackOpsRequest callback_ops_request =
-      mojo::MakeRequest(&callback_ops_ptr);
+  mojo::PendingRemote<cros::mojom::Camera3CallbackOps> callback_ops;
   request_manager_ = std::make_unique<RequestManager>(
-      std::move(callback_ops_request),
+      callback_ops.InitWithNewPipeAndPassReceiver(),
       std::make_unique<StreamCaptureInterfaceImpl>(GetWeakPtr()),
       device_context_, chrome_capture_params_.buffer_type,
       std::make_unique<CameraBufferFactory>(),
@@ -491,7 +511,7 @@ void CameraDeviceDelegate::Initialize() {
   camera_3a_controller_ = std::make_unique<Camera3AController>(
       static_metadata_, request_manager_.get(), ipc_task_runner_);
   device_ops_->Initialize(
-      std::move(callback_ops_ptr),
+      std::move(callback_ops),
       base::BindOnce(&CameraDeviceDelegate::OnInitialized, GetWeakPtr()));
 }
 
@@ -594,6 +614,8 @@ void CameraDeviceDelegate::ConfigureStreams(
     still_capture_stream->height = blob_height;
     still_capture_stream->format =
         cros::mojom::HalPixelFormat::HAL_PIXEL_FORMAT_BLOB;
+    // Set usage flag to allow HAL adapter to identify a still capture stream.
+    still_capture_stream->usage = cros::mojom::GRALLOC_USAGE_STILL_CAPTURE;
     still_capture_stream->data_space = 0;
     still_capture_stream->rotation =
         cros::mojom::Camera3StreamRotation::CAMERA3_STREAM_ROTATION_0;
@@ -623,6 +645,9 @@ void CameraDeviceDelegate::ConfigureStreams(
       reprocessing_stream_output->height = max_yuv_height;
       reprocessing_stream_output->format =
           cros::mojom::HalPixelFormat::HAL_PIXEL_FORMAT_YCbCr_420_888;
+      // Set usage flag to allow HAL adapter to identify a still capture stream.
+      reprocessing_stream_output->usage =
+          cros::mojom::GRALLOC_USAGE_STILL_CAPTURE;
       reprocessing_stream_output->data_space = 0;
       reprocessing_stream_output->rotation =
           cros::mojom::Camera3StreamRotation::CAMERA3_STREAM_ROTATION_0;
@@ -763,8 +788,15 @@ void CameraDeviceDelegate::ConstructDefaultRequestSettings(
          device_context_->GetState() == CameraDeviceContext::State::kCapturing);
 
   if (stream_type == StreamType::kPreviewOutput) {
+    // CCA uses the same stream for preview and video recording. Choose proper
+    // template here so the underlying camera HAL can set 3A tuning accordingly.
+    auto request_template =
+        camera_app_device_ && camera_app_device_->GetCaptureIntent() ==
+                                  cros::mojom::CaptureIntent::VIDEO_RECORD
+            ? cros::mojom::Camera3RequestTemplate::CAMERA3_TEMPLATE_VIDEO_RECORD
+            : cros::mojom::Camera3RequestTemplate::CAMERA3_TEMPLATE_PREVIEW;
     device_ops_->ConstructDefaultRequestSettings(
-        cros::mojom::Camera3RequestTemplate::CAMERA3_TEMPLATE_PREVIEW,
+        request_template,
         base::BindOnce(
             &CameraDeviceDelegate::OnConstructedDefaultPreviewRequestSettings,
             GetWeakPtr()));
@@ -838,24 +870,24 @@ void CameraDeviceDelegate::OnGotFpsRange(
   device_context_->SetState(CameraDeviceContext::State::kCapturing);
   camera_3a_controller_->SetAutoFocusModeForStillCapture();
   if (specified_fps_range.has_value()) {
-    const int32_t entry_length = 2;
-
-    // CameraMetadata is represented as an uint8 array. According to the
-    // definition of the FPS metadata tag, its data type is int32, so we
-    // reinterpret_cast here.
-    std::vector<uint8_t> fps_range(sizeof(int32_t) * entry_length);
-    auto* fps_ptr = reinterpret_cast<int32_t*>(fps_range.data());
-    fps_ptr[0] = specified_fps_range->GetMin();
-    fps_ptr[1] = specified_fps_range->GetMax();
-    cros::mojom::CameraMetadataEntryPtr e =
-        cros::mojom::CameraMetadataEntry::New();
-    e->tag =
-        cros::mojom::CameraMetadataTag::ANDROID_CONTROL_AE_TARGET_FPS_RANGE;
-    e->type = cros::mojom::EntryType::TYPE_INT32;
-    e->count = entry_length;
-    e->data = std::move(fps_range);
-
-    AddOrUpdateMetadataEntry(&settings, std::move(e));
+    SetFpsRangeInMetadata(&settings, specified_fps_range->GetMin(),
+                          specified_fps_range->GetMax());
+  } else {
+    auto default_range = GetMetadataEntryAsSpan<int32_t>(
+        settings,
+        cros::mojom::CameraMetadataTag::ANDROID_CONTROL_AE_TARGET_FPS_RANGE);
+    int32_t requested_frame_rate =
+        std::round(chrome_capture_params_.requested_format.frame_rate);
+    // We should respect the requested fps from standard API if the requested
+    // fps is out of the range of the default one or there is no default fps
+    // range. Otherwise, we could just use the default range which is given by
+    // camera HAL.
+    if (default_range.size() != 2 ||
+        (requested_frame_rate < default_range[0] ||
+         requested_frame_rate > default_range[1])) {
+      SetFpsRangeInMetadata(&settings, requested_frame_rate,
+                            requested_frame_rate);
+    }
   }
   request_manager_->StartPreview(std::move(settings));
 

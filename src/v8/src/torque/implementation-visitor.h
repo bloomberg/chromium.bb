@@ -5,6 +5,7 @@
 #ifndef V8_TORQUE_IMPLEMENTATION_VISITOR_H_
 #define V8_TORQUE_IMPLEMENTATION_VISITOR_H_
 
+#include <memory>
 #include <string>
 
 #include "src/base/macros.h"
@@ -53,8 +54,8 @@ class LocationReference {
   // pointer.
   static LocationReference HeapReference(VisitResult heap_reference) {
     LocationReference result;
-    DCHECK(StructType::MatchUnaryGeneric(heap_reference.type(),
-                                         TypeOracle::GetReferenceGeneric()));
+    DCHECK(Type::MatchUnaryGeneric(heap_reference.type(),
+                                   TypeOracle::GetReferenceGeneric()));
     result.heap_reference_ = std::move(heap_reference);
     return result;
   }
@@ -62,8 +63,8 @@ class LocationReference {
   // encode an inner pointer, and the number of elements.
   static LocationReference HeapSlice(VisitResult heap_slice) {
     LocationReference result;
-    DCHECK(StructType::MatchUnaryGeneric(heap_slice.type(),
-                                         TypeOracle::GetSliceGeneric()));
+    DCHECK(Type::MatchUnaryGeneric(heap_slice.type(),
+                                   TypeOracle::GetSliceGeneric()));
     result.heap_slice_ = std::move(heap_slice);
     return result;
   }
@@ -108,11 +109,11 @@ class LocationReference {
 
   const Type* ReferencedType() const {
     if (IsHeapReference()) {
-      return *StructType::MatchUnaryGeneric(heap_reference().type(),
-                                            TypeOracle::GetReferenceGeneric());
+      return *Type::MatchUnaryGeneric(heap_reference().type(),
+                                      TypeOracle::GetReferenceGeneric());
     } else if (IsHeapSlice()) {
-      return *StructType::MatchUnaryGeneric(heap_slice().type(),
-                                            TypeOracle::GetSliceGeneric());
+      return *Type::MatchUnaryGeneric(heap_slice().type(),
+                                      TypeOracle::GetSliceGeneric());
     }
     return GetVisitResult().type();
   }
@@ -260,7 +261,7 @@ class BlockBindings {
   void Add(std::string name, T value, bool mark_as_used = false) {
     ReportErrorIfAlreadyBound(name);
     auto binding =
-        base::make_unique<Binding<T>>(manager_, name, std::move(value));
+        std::make_unique<Binding<T>>(manager_, name, std::move(value));
     if (mark_as_used) binding->SetUsed();
     bindings_.push_back(std::move(binding));
   }
@@ -268,7 +269,7 @@ class BlockBindings {
   void Add(const Identifier* name, T value, bool mark_as_used = false) {
     ReportErrorIfAlreadyBound(name->value);
     auto binding =
-        base::make_unique<Binding<T>>(manager_, name, std::move(value));
+        std::make_unique<Binding<T>>(manager_, name, std::move(value));
     if (mark_as_used) binding->SetUsed();
     bindings_.push_back(std::move(binding));
   }
@@ -299,8 +300,7 @@ class BlockBindings {
 };
 
 struct LocalValue {
-  bool is_const;
-  VisitResult value;
+  LocationReference value;
 };
 
 struct LocalLabel {
@@ -320,7 +320,9 @@ template <>
 inline bool Binding<LocalValue>::CheckWritten() const {
   // Do the check only for non-const variables and non struct types.
   auto binding = *manager_->current_bindings_[name_];
-  return !binding->is_const && !binding->value.type()->IsStructType();
+  const LocationReference& ref = binding->value;
+  if (!ref.IsVariableAccess()) return false;
+  return !ref.GetVisitResult().type()->IsStructType();
 }
 template <>
 inline std::string Binding<LocalLabel>::BindingTypeString() const {
@@ -342,7 +344,8 @@ bool IsCompatibleSignature(const Signature& sig, const TypeVector& types,
 
 class ImplementationVisitor {
  public:
-  void GenerateBuiltinDefinitions(const std::string& output_directory);
+  void GenerateBuiltinDefinitionsAndInterfaceDescriptors(
+      const std::string& output_directory);
   void GenerateClassFieldOffsets(const std::string& output_directory);
   void GeneratePrintDefinitions(const std::string& output_directory);
   void GenerateClassDefinitions(const std::string& output_directory);

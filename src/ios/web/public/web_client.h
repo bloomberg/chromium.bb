@@ -38,6 +38,7 @@ namespace web {
 
 class BrowserState;
 class BrowserURLRewriter;
+class SerializableUserDataManager;
 class WebClient;
 class WebMainParts;
 class WebState;
@@ -85,6 +86,14 @@ class WebClient {
   // browser would return true for "chrome://about" URL.
   virtual bool IsAppSpecificURL(const GURL& url) const;
 
+  // Returns true if URL should not be restored.
+  virtual bool ShouldBlockUrlDuringRestore(const GURL& url,
+                                           WebState* web_state) const;
+
+  // Allow embedder to inject data.
+  virtual void AddSerializableData(
+      web::SerializableUserDataManager* user_data_manager,
+      web::WebState* web_state);
   // Returns text to be displayed for an unsupported plugin.
   virtual base::string16 GetPluginNotSupportedText() const;
 
@@ -141,27 +150,35 @@ class WebClient {
 
   // Informs the embedder that a certificate error has occurred. |cert_error| is
   // a network error code defined in //net/base/net_error_list.h. If
-  // |overridable| is true, the user can ignore the error and continue. The
-  // embedder can call the |callback| asynchronously (an argument of true means
-  // that |cert_error| should be ignored and web// should load the page).
+  // |overridable| is true, the user can ignore the error and continue.
+  // |navigation_id| is retrieved from NavigationContext::GetNavigationId() and
+  // indicates which navigation triggered the certificate error. The embedder
+  // can call the |callback| asynchronously (an argument of true means that
+  // |cert_error| should be ignored and web// should load the page).
   virtual void AllowCertificateError(
       WebState* web_state,
       int cert_error,
       const net::SSLInfo& ssl_info,
       const GURL& request_url,
       bool overridable,
+      int64_t navigation_id,
       const base::Callback<void(bool)>& callback);
 
   // Calls the given |callback| with the contents of an error page to display
   // when a navigation error occurs. |error| is always a valid pointer. The
   // string passed to |callback| will be nil if no error page should be
   // displayed. Otherwise, this string will contain the details of the error
-  // and maybe links to more info.
+  // and maybe links to more info. |info| will have a value for SSL cert errors
+  // and otherwise be nullopt. |navigation_id| is passed into this method so
+  // that in the case of an SSL cert error, the blocking page can be associated
+  // with the tab.
   virtual void PrepareErrorPage(WebState* web_state,
                                 const GURL& url,
                                 NSError* error,
                                 bool is_post,
                                 bool is_off_the_record,
+                                const base::Optional<net::SSLInfo>& info,
+                                int64_t navigation_id,
                                 base::OnceCallback<void(NSString*)> callback);
 
   // Allows upper layers to inject experimental flags to the web layer.
@@ -172,6 +189,13 @@ class WebClient {
 
   // Instructs the embedder to return a container that is attached to a window.
   virtual UIView* GetWindowedContainer();
+
+  // This method is used when the user didn't express any preference for the
+  // version of |url|. Returning true allows to make sure that for |url|, the
+  // mobile version will be used, unless the user explicitly requested the
+  // desktop version. This method can be overriden to avoid having specific URL
+  // being requested in desktop mode when the default mode is desktop.
+  virtual bool ForceMobileVersionByDefault(const GURL& url);
 };
 
 }  // namespace web

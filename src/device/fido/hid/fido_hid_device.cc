@@ -177,11 +177,12 @@ void FidoHidDevice::Connect(
     device::mojom::HidManager::ConnectCallback callback) {
   DCHECK(hid_manager_);
   hid_manager_->Connect(device_info_->guid,
-                        mojo::PendingRemote<mojom::HidConnectionClient>(),
-                        std::move(callback));
+                        /*connection_client=*/mojo::NullRemote(),
+                        /*watcher=*/mojo::NullRemote(), std::move(callback));
 }
 
-void FidoHidDevice::OnConnect(device::mojom::HidConnectionPtr connection) {
+void FidoHidDevice::OnConnect(
+    mojo::PendingRemote<device::mojom::HidConnection> connection) {
   timeout_callback_.Cancel();
 
   if (!connection) {
@@ -189,7 +190,7 @@ void FidoHidDevice::OnConnect(device::mojom::HidConnectionPtr connection) {
     return;
   }
 
-  connection_ = std::move(connection);
+  connection_.Bind(std::move(connection));
   // Send random nonce to device to verify received message.
   std::vector<uint8_t> nonce(8);
   crypto::RandBytes(nonce.data(), nonce.size());

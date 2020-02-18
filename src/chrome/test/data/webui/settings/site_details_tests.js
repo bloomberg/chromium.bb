@@ -87,10 +87,19 @@ suite('SiteDetails', function() {
           settings.ContentSettingsTypes.PAYMENT_HANDLER,
           [test_util.createRawSiteException('https://foo.com:443')]),
       test_util.createContentSettingTypeToValuePair(
+          settings.ContentSettingsTypes.SERIAL_PORTS,
+          [test_util.createRawSiteException('https://foo.com:443')]),
+      test_util.createContentSettingTypeToValuePair(
+          settings.ContentSettingsTypes.BLUETOOTH_SCANNING,
+          [test_util.createRawSiteException('https://foo.com:443')]),
+      test_util.createContentSettingTypeToValuePair(
           settings.ContentSettingsTypes.NATIVE_FILE_SYSTEM_WRITE,
           [test_util.createRawSiteException('https://foo.com:443', {
             setting: settings.ContentSetting.BLOCK,
           })]),
+      test_util.createContentSettingTypeToValuePair(
+          settings.ContentSettingsTypes.MIXEDSCRIPT,
+          [test_util.createRawSiteException('https://foo.com:443')]),
     ], [
       test_util.createContentSettingTypeToValuePair(
           settings.ContentSettingsTypes.USB_DEVICES,
@@ -126,6 +135,9 @@ suite('SiteDetails', function() {
       nonSiteDetailsContentSettingsTypes.push(
           settings.ContentSettingsTypes.PROTECTED_CONTENT);
     }
+    const experimentalSiteDetailsContentSettingsTypes = [
+      settings.ContentSettingsTypes.BLUETOOTH_SCANNING,
+    ];
 
     // A list of optionally shown content settings mapped to their loadTimeData
     // flag string.
@@ -137,15 +149,14 @@ suite('SiteDetails', function() {
     optionalSiteDetailsContentSettingsTypes[settings.ContentSettingsTypes
                                                 .PAYMENT_HANDLER] =
         'enablePaymentHandlerContentSetting';
-    optionalSiteDetailsContentSettingsTypes[settings.ContentSettingsTypes
-                                                .SERIAL_PORTS] =
-        'enableExperimentalWebPlatformFeatures';
-    optionalSiteDetailsContentSettingsTypes[settings.ContentSettingsTypes
-                                                .BLUETOOTH_SCANNING] =
-        'enableBluetoothScanningContentSetting';
+
     optionalSiteDetailsContentSettingsTypes[settings.ContentSettingsTypes
                                                 .NATIVE_FILE_SYSTEM_WRITE] =
         'enableNativeFileSystemWriteContentSetting';
+    optionalSiteDetailsContentSettingsTypes[settings.ContentSettingsTypes
+                                                .MIXEDSCRIPT] =
+        'enableInsecureContentContentSetting';
+
     browserProxy.setPrefs(prefs);
 
     // First, explicitly set all the optional settings to false.
@@ -162,6 +173,7 @@ suite('SiteDetails', function() {
       const numContentSettings =
           Object.keys(settings.ContentSettingsTypes).length -
           nonSiteDetailsContentSettingsTypes.length -
+          experimentalSiteDetailsContentSettingsTypes.length -
           Object.keys(optionalSiteDetailsContentSettingsTypes).length;
 
       const loadTimeDataOverride = {};
@@ -180,6 +192,27 @@ suite('SiteDetails', function() {
       testElement = createSiteDetails('https://foo.com:443');
       assertEquals(numContentSettings, testElement.getCategoryList().length);
     }
+
+    const numContentSettings =
+        Object.keys(settings.ContentSettingsTypes).length -
+        nonSiteDetailsContentSettingsTypes.length -
+        Object.keys(optionalSiteDetailsContentSettingsTypes).length;
+
+    // Explicitly set all the optional settings to true.
+    const loadTimeDataOverride = {};
+    loadTimeDataOverride['enableExperimentalWebPlatformFeatures'] = true;
+    loadTimeData.overrideValues(loadTimeDataOverride);
+    testElement = createSiteDetails('https://foo.com:443');
+    assertEquals(numContentSettings, testElement.getCategoryList().length);
+
+    // Check for setting = off at the end to ensure that the setting does
+    // not carry over for the next iteration.
+    loadTimeDataOverride['enableExperimentalWebPlatformFeatures'] = false;
+    loadTimeData.overrideValues(loadTimeDataOverride);
+    testElement = createSiteDetails('https://foo.com:443');
+    assertEquals(
+        numContentSettings - experimentalSiteDetailsContentSettingsTypes.length,
+        testElement.getCategoryList().length);
   });
 
   test('usage heading shows properly', function() {
@@ -394,7 +427,7 @@ suite('SiteDetails', function() {
       },
       clearUsage: function(origin) {},
     });
-    let api = document.createElement('mock1-website-usage-private-api');
+    const api = document.createElement('mock1-website-usage-private-api');
     testElement.$.usageApi = api;
     parent.appendChild(api);
     Polymer.dom.flush();

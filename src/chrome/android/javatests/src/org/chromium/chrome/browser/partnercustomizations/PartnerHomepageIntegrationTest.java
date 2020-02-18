@@ -13,6 +13,12 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
@@ -20,10 +26,10 @@ import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
-import org.chromium.chrome.browser.preferences.ChromeSwitchPreference;
-import org.chromium.chrome.browser.preferences.HomepageEditor;
-import org.chromium.chrome.browser.preferences.HomepagePreferences;
-import org.chromium.chrome.browser.preferences.Preferences;
+import org.chromium.chrome.browser.settings.ChromeSwitchPreference;
+import org.chromium.chrome.browser.settings.HomepageEditor;
+import org.chromium.chrome.browser.settings.HomepagePreferences;
+import org.chromium.chrome.browser.settings.SettingsActivity;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabList;
 import org.chromium.chrome.browser.tabmodel.TabModel;
@@ -36,11 +42,6 @@ import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.TouchCommon;
 import org.chromium.content_public.browser.test.util.UiUtils;
 import org.chromium.net.test.EmbeddedTestServer;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 
 import java.util.concurrent.TimeoutException;
 
@@ -57,7 +58,7 @@ public class PartnerHomepageIntegrationTest {
     private static final String TEST_PAGE = "/chrome/test/data/android/about.html";
 
     @Before
-    public void setUp() throws InterruptedException {
+    public void setUp() {
         mActivityTestRule.startMainActivityFromLauncher();
     }
 
@@ -144,10 +145,10 @@ public class PartnerHomepageIntegrationTest {
     @MediumTest
     @Feature({"Homepage"})
     @RetryOnFailure
-    public void testPreferenceCustomUriFixup() throws InterruptedException {
+    public void testPreferenceCustomUriFixup() {
         // Change home page custom URI on hompage edit screen.
-        final Preferences editHomepagePreferenceActivity =
-                mActivityTestRule.startPreferences(HomepageEditor.class.getName());
+        final SettingsActivity editHomepagePreferenceActivity =
+                mActivityTestRule.startSettingsActivity(HomepageEditor.class.getName());
         TestThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             // TODO(crbug.com/635567): Fix this properly.
@@ -178,7 +179,7 @@ public class PartnerHomepageIntegrationTest {
     @MediumTest
     @Feature({"Homepage"})
     @RetryOnFailure
-    public void testLastTabClosed() throws InterruptedException {
+    public void testLastTabClosed() {
         ChromeTabUtils.closeCurrentTab(InstrumentationRegistry.getInstrumentation(),
                 (ChromeTabbedActivity) mActivityTestRule.getActivity());
         Assert.assertTrue("Activity was not closed.",
@@ -192,7 +193,7 @@ public class PartnerHomepageIntegrationTest {
     @Test
     @MediumTest
     @Feature({"Homepage"})
-    public void testCloseAllTabs() throws InterruptedException {
+    public void testCloseAllTabs() {
         final CallbackHelper tabClosed = new CallbackHelper();
         final TabModel tabModel = mActivityTestRule.getActivity().getCurrentTabModel();
         mActivityTestRule.getActivity().getCurrentTabModel().addObserver(
@@ -235,8 +236,8 @@ public class PartnerHomepageIntegrationTest {
      */
     private void toggleHomepageSwitchPreference(boolean expected) {
         // Launch preference activity with Homepage settings fragment.
-        Preferences homepagePreferenceActivity =
-                mActivityTestRule.startPreferences(HomepagePreferences.class.getName());
+        SettingsActivity homepagePreferenceActivity =
+                mActivityTestRule.startSettingsActivity(HomepagePreferences.class.getName());
         PreferenceFragmentCompat fragment =
                 (PreferenceFragmentCompat) homepagePreferenceActivity.getSupportFragmentManager()
                         .findFragmentById(android.R.id.content);

@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import json
+import logging
 import os
 import shutil
 import subprocess
@@ -115,6 +116,8 @@ class ScriptsSmokeTest(unittest.TestCase):
               perf_results, 'json perf results should be populated: ' + stdout)
     except IOError as e:
       self.fail('json_test_results should be populated: ' + stdout + str(e))
+    except AssertionError as e:
+      self.fail('Caught assertion error: ' + str(e) + 'With stdout: ' + stdout)
     finally:
       shutil.rmtree(tempdir)
 
@@ -159,7 +162,7 @@ class ScriptsSmokeTest(unittest.TestCase):
 
   # Android: crbug.com/932301
   # ChromeOS: crbug.com/754913
-  # Linux: crbug.com/996003
+  # Linux: crbug.com/1024767
   @decorators.Disabled('chromeos', 'android', 'linux')
   def testRunPerformanceTestsTelemetrySharded_end2end(self):
     tempdir = tempfile.mkdtemp()
@@ -180,50 +183,55 @@ class ScriptsSmokeTest(unittest.TestCase):
             self.options.browser_type,
             os.path.join(tempdir, 'output.json')
         ), env=env)
-    self.assertEquals(return_code, 0, stdout)
+    test_results = None
     try:
+      self.assertEquals(return_code, 0)
       expected_benchmark_folders = (
           'dummy_benchmark.stable_benchmark_1',
           'dummy_benchmark.stable_benchmark_1.reference')
       with open(os.path.join(tempdir, 'output.json')) as f:
         test_results = json.load(f)
-        self.assertIsNotNone(
-            test_results, 'json_test_results should be populated: ' + stdout)
-        test_repeats = test_results['num_failures_by_type']['PASS']
-        self.assertEqual(
-            test_repeats, 2, '--isolated-script-test-repeat=2 should work.')
+      self.assertIsNotNone(
+          test_results, 'json_test_results should be populated.')
+      test_repeats = test_results['num_failures_by_type']['PASS']
+      self.assertEqual(
+          test_repeats, 2, '--isolated-script-test-repeat=2 should work.')
       for folder in expected_benchmark_folders:
         with open(os.path.join(tempdir, folder, 'test_results.json')) as f:
           test_results = json.load(f)
-          self.assertIsNotNone(
-              test_results, 'json test results should be populated: ' + stdout)
-          test_repeats = test_results['num_failures_by_type']['PASS']
-          self.assertEqual(
-              test_repeats, 2, '--isolated-script-test-repeat=2 should work.')
+        self.assertIsNotNone(
+            test_results, 'json test results should be populated.')
+        test_repeats = test_results['num_failures_by_type']['PASS']
+        self.assertEqual(
+            test_repeats, 2, '--isolated-script-test-repeat=2 should work.')
         with open(os.path.join(tempdir, folder, 'perf_results.json')) as f:
           perf_results = json.load(f)
-          self.assertIsNotNone(
-              perf_results, 'json perf results should be populated: ' + stdout)
-    except IOError as e:
-      self.fail('IOError: ' + stdout + str(e))
-    except KeyError as e:
-      self.fail('KeyError: ' + stdout + str(e))
+        self.assertIsNotNone(
+            perf_results, 'json perf results should be populated.')
+    except Exception as exc:
+      logging.error(
+          'Failed with error: %s\nOutput from run_performance_tests.py:\n\n%s',
+          exc, stdout)
+      if test_results is not None:
+        logging.error(
+            'Got test_results: %s\n', json.dumps(test_results, indent=2))
+      raise
     finally:
       shutil.rmtree(tempdir)
 
-  # Windows: ".exe" is auto-added which breaks Windows.
-  # ChromeOS: crbug.com/754913.
-  @decorators.Disabled('win', 'chromeos')
-  def testRunPerformanceTestsGtest_end2end(self):
+  def RunGtest(self, generate_trace):
     tempdir = tempfile.mkdtemp()
     benchmark = 'dummy_gtest'
     return_code, stdout = self.RunPerfScript(
         '../../testing/scripts/run_performance_tests.py ' +
-        os.path.join('..', '..', 'tools', 'perf', 'testdata', 'dummy_gtest') +
+        ('../../tools/perf/run_gtest_benchmark.py ' if generate_trace else '') +
+        os.path.join('..', '..', 'tools', 'perf', 'testdata',
+                     'dummy_gtest') +
+        (' --use-gtest-benchmark-script --output-format=histograms'
+             if generate_trace else '') +
         ' --non-telemetry=true '
         '--this-arg=passthrough '
         '--gtest-benchmark-name dummy_gtest '
-        '--isolated-script-test-output=/x/y/z/output.json '
         '--isolated-script-test-output=%s' % (
             os.path.join(tempdir, 'output.json')
         ))
@@ -245,6 +253,18 @@ class ScriptsSmokeTest(unittest.TestCase):
       self.fail('json_test_results should be populated: ' + stdout + str(e))
     finally:
       shutil.rmtree(tempdir)
+
+  # Windows: ".exe" is auto-added which breaks Windows.
+  # ChromeOS: crbug.com/754913.
+  @decorators.Disabled('win', 'chromeos')
+  def testRunPerformanceTestsGtest_end2end(self):
+    self.RunGtest(generate_trace=False)
+
+  # Windows: ".exe" is auto-added which breaks Windows.
+  # ChromeOS: crbug.com/754913.
+  @decorators.Disabled('win', 'chromeos')
+  def testRunPerformanceTestsGtestTrace_end2end(self):
+    self.RunGtest(generate_trace=True)
 
   def testRunPerformanceTestsTelemetryArgsParser(self):
     options = run_performance_tests.parse_arguments([
@@ -294,7 +314,7 @@ class ScriptsSmokeTest(unittest.TestCase):
     command = run_performance_tests.TelemetryCommandGenerator(
         'fake_benchmark_name', options, story_selection_config).generate(
             'fake_output_dir')
-    self.assertIn('--run-full-story-set', command)
+    self.assertNotIn('--run-abridged-story-set', command)
     self.assertIn('--story-shard-begin-index=1', command)
     self.assertIn('--story-shard-end-index=5', command)
 
@@ -310,7 +330,7 @@ class ScriptsSmokeTest(unittest.TestCase):
     command = run_performance_tests.TelemetryCommandGenerator(
         'fake_benchmark_name', options, story_selection_config).generate(
             'fake_output_dir')
-    self.assertNotIn('--run-full-story-set', command)
+    self.assertIn('--run-abridged-story-set', command)
 
   def testRunPerformanceTestsGtestArgsParser(self):
      options = run_performance_tests.parse_arguments([

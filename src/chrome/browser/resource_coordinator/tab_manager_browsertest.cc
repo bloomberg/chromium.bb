@@ -6,12 +6,11 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
-#include "base/memory/fake_memory_pressure_monitor.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
+#include "base/util/memory_pressure/fake_memory_pressure_monitor.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/devtools/devtools_window_testing.h"
@@ -153,8 +152,6 @@ class TabManagerTest : public InProcessBrowserTest {
     // Start with a non-null TimeTicks, as there is no discard protection for
     // a tab with a null focused timestamp.
     test_clock_.Advance(kShortDelay);
-    scoped_feature_list_.InitAndEnableFeature(
-        features::kSiteCharacteristicsDatabase);
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -300,7 +297,8 @@ class TabManagerTest : public InProcessBrowserTest {
   void SimulateFreezeSignal(content::WebContents* contents) {
     GetTabLifecycleUnitSource()
         ->GetTabLifecycleUnit(contents)
-        ->UpdateLifecycleState(mojom::LifecycleState::kFrozen);
+        ->UpdateLifecycleState(
+            performance_manager::mojom::LifecycleState::kFrozen);
   }
 
   TabManager* tab_manager() { return g_browser_process->GetTabManager(); }
@@ -315,10 +313,9 @@ class TabManagerTest : public InProcessBrowserTest {
         GetWebContentsAt(index));
   }
 
-  base::test::FakeMemoryPressureMonitor fake_memory_pressure_monitor_;
+  util::test::FakeMemoryPressureMonitor fake_memory_pressure_monitor_;
   base::SimpleTestTickClock test_clock_;
   ScopedSetTickClockForTesting scoped_set_tick_clock_for_testing_;
-  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 class TabManagerTestWithTwoTabs : public TabManagerTest {
@@ -338,13 +335,9 @@ class TabManagerTestWithTwoTabs : public TabManagerTest {
   DISALLOW_COPY_AND_ASSIGN(TabManagerTestWithTwoTabs);
 };
 
-// Flaky on Linux/ChromeOS only. http://crbug.com/997719
-#if defined(OS_LINUX) || defined(OS_CHROMEOS)
-#define MAYBE_TabManagerBasics DISABLED_TabManagerBasics
-#else
-#define MAYBE_TabManagerBasics TabManagerBasics
-#endif
-IN_PROC_BROWSER_TEST_F(TabManagerTest, MAYBE_TabManagerBasics) {
+IN_PROC_BROWSER_TEST_F(TabManagerTest, TabManagerBasics) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
   using content::WindowedNotificationObserver;
 
   // Get three tabs open.
@@ -353,8 +346,8 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, MAYBE_TabManagerBasics) {
   WindowedNotificationObserver load1(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED,
       content::NotificationService::AllSources());
-  OpenURLParams open1(GURL(chrome::kChromeUIAboutURL), content::Referrer(),
-                      WindowOpenDisposition::CURRENT_TAB,
+  OpenURLParams open1(embedded_test_server()->GetURL("a.com", "/title1.html"),
+                      content::Referrer(), WindowOpenDisposition::CURRENT_TAB,
                       ui::PAGE_TRANSITION_TYPED, false);
   browser()->OpenURL(open1);
   load1.Wait();
@@ -363,7 +356,8 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, MAYBE_TabManagerBasics) {
   WindowedNotificationObserver load2(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED,
       content::NotificationService::AllSources());
-  OpenURLParams open2(GURL(chrome::kChromeUICreditsURL), content::Referrer(),
+  OpenURLParams open2(embedded_test_server()->GetURL("a.com", "/title1.html"),
+                      content::Referrer(),
                       WindowOpenDisposition::NEW_FOREGROUND_TAB,
                       ui::PAGE_TRANSITION_TYPED, false);
   browser()->OpenURL(open2);
@@ -373,7 +367,8 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, MAYBE_TabManagerBasics) {
   WindowedNotificationObserver load3(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED,
       content::NotificationService::AllSources());
-  OpenURLParams open3(GURL(chrome::kChromeUITermsURL), content::Referrer(),
+  OpenURLParams open3(embedded_test_server()->GetURL("a.com", "/title1.html"),
+                      content::Referrer(),
                       WindowOpenDisposition::NEW_FOREGROUND_TAB,
                       ui::PAGE_TRANSITION_TYPED, false);
   browser()->OpenURL(open3);
@@ -385,8 +380,8 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, MAYBE_TabManagerBasics) {
   WindowedNotificationObserver load4(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED,
       content::NotificationService::AllSources());
-  OpenURLParams open4(GURL(chrome::kChromeUIVersionURL), content::Referrer(),
-                      WindowOpenDisposition::CURRENT_TAB,
+  OpenURLParams open4(embedded_test_server()->GetURL("a.com", "/title2.html"),
+                      content::Referrer(), WindowOpenDisposition::CURRENT_TAB,
                       ui::PAGE_TRANSITION_TYPED, false);
   browser()->OpenURL(open4);
   load4.Wait();
@@ -395,8 +390,8 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, MAYBE_TabManagerBasics) {
   WindowedNotificationObserver load5(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED,
       content::NotificationService::AllSources());
-  OpenURLParams open5(content::GetWebUIURL("dns"), content::Referrer(),
-                      WindowOpenDisposition::CURRENT_TAB,
+  OpenURLParams open5(embedded_test_server()->GetURL("a.com", "/title3.html"),
+                      content::Referrer(), WindowOpenDisposition::CURRENT_TAB,
                       ui::PAGE_TRANSITION_TYPED, false);
   browser()->OpenURL(open5);
   load5.Wait();
@@ -455,7 +450,7 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, MAYBE_TabManagerBasics) {
   WindowedNotificationObserver reload1(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED,
       base::Bind(&ObserveNavEntryCommitted,
-                 GURL(chrome::kChromeUIChromeURLsURL)));
+                 embedded_test_server()->GetURL("a.com", "/title1.html")));
   chrome::SelectNumberedTab(browser(), 0);
   reload1.Wait();
   // Make sure the FindBarController gets the right WebContents.
@@ -469,7 +464,8 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, MAYBE_TabManagerBasics) {
   // Select the third tab. It should reload.
   WindowedNotificationObserver reload2(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-      base::Bind(&ObserveNavEntryCommitted, content::GetWebUIURL("dns")));
+      base::Bind(&ObserveNavEntryCommitted,
+                 embedded_test_server()->GetURL("a.com", "/title3.html")));
   chrome::SelectNumberedTab(browser(), 2);
   reload2.Wait();
   EXPECT_EQ(2, tsm()->active_index());
@@ -483,14 +479,16 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, MAYBE_TabManagerBasics) {
   EXPECT_FALSE(chrome::CanGoForward(browser()));
   WindowedNotificationObserver back1(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-      base::Bind(&ObserveNavEntryCommitted, GURL(chrome::kChromeUIVersionURL)));
+      base::Bind(&ObserveNavEntryCommitted,
+                 embedded_test_server()->GetURL("a.com", "/title2.html")));
   chrome::GoBack(browser(), WindowOpenDisposition::CURRENT_TAB);
   back1.Wait();
   EXPECT_TRUE(chrome::CanGoBack(browser()));
   EXPECT_TRUE(chrome::CanGoForward(browser()));
   WindowedNotificationObserver back2(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-      base::Bind(&ObserveNavEntryCommitted, GURL(chrome::kChromeUITermsURL)));
+      base::Bind(&ObserveNavEntryCommitted,
+                 embedded_test_server()->GetURL("a.com", "/title1.html")));
   chrome::GoBack(browser(), WindowOpenDisposition::CURRENT_TAB);
   back2.Wait();
   EXPECT_FALSE(chrome::CanGoBack(browser()));

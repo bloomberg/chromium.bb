@@ -28,14 +28,15 @@
 #include "android_webview/browser/gfx/java_browser_view_renderer_helper.h"
 #include "android_webview/browser/gfx/render_thread_manager.h"
 #include "android_webview/browser/gfx/scoped_app_gl_state_restore.h"
+#include "android_webview/browser/page_load_metrics/page_load_metrics_initialize.h"
 #include "android_webview/browser/permission/aw_permission_request.h"
 #include "android_webview/browser/permission/permission_request_handler.h"
 #include "android_webview/browser/permission/simple_permission_request.h"
 #include "android_webview/browser/state_serializer.h"
+#include "android_webview/browser_jni_headers/AwContents_jni.h"
 #include "android_webview/common/aw_hit_test_data.h"
 #include "android_webview/common/aw_switches.h"
 #include "android_webview/common/devtools_instrumentation.h"
-#include "android_webview/native_jni/AwContents_jni.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
@@ -244,6 +245,8 @@ AwContents::AwContents(std::unique_ptr<WebContents> web_contents)
   browser_view_renderer_.SetActiveFrameSinkId(frame_sink_id);
   render_view_host_ext_.reset(
       new AwRenderViewHostExt(this, web_contents_.get()));
+
+  InitializePageLoadMetricsForWebContents(web_contents_.get());
 
   permission_request_handler_.reset(
       new PermissionRequestHandler(this, web_contents_.get()));
@@ -1290,33 +1293,21 @@ JsJavaConfiguratorHost* AwContents::GetJsJavaConfiguratorHost() {
   return js_java_configurator_host_.get();
 }
 
-base::android::ScopedJavaLocalRef<jstring> AwContents::SetJsApiService(
+base::android::ScopedJavaLocalRef<jstring> AwContents::AddWebMessageListener(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj,
-    jboolean need_to_inject_js_object,
+    const base::android::JavaParamRef<jobject>& listener,
     const base::android::JavaParamRef<jstring>& js_object_name,
     const base::android::JavaParamRef<jobjectArray>& allowed_origin_rules) {
-  return GetJsJavaConfiguratorHost()->SetJsApiService(
-      env, need_to_inject_js_object, js_object_name, allowed_origin_rules);
+  return GetJsJavaConfiguratorHost()->AddWebMessageListener(
+      env, listener, js_object_name, allowed_origin_rules);
 }
 
-bool AwContents::IsOriginAllowedForOnPostMessage(url::Origin& origin) {
-  return GetJsJavaConfiguratorHost()->IsOriginAllowedForOnPostMessage(origin);
-}
-
-void AwContents::OnPostMessage(
+void AwContents::RemoveWebMessageListener(
     JNIEnv* env,
-    const base::android::JavaRef<jstring>& message,
-    const base::android::JavaRef<jstring>& origin,
-    jboolean is_main_frame,
-    const base::android::JavaRef<jintArray>& ports,
-    const base::android::JavaRef<jobject>& reply_proxy) {
-  const ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
-  if (obj.is_null())
-    return;
-
-  Java_AwContents_onPostMessage(env, obj, message, origin, is_main_frame, ports,
-                                reply_proxy);
+    const base::android::JavaParamRef<jobject>& obj,
+    const base::android::JavaParamRef<jstring>& js_object_name) {
+  GetJsJavaConfiguratorHost()->RemoveWebMessageListener(env, js_object_name);
 }
 
 void AwContents::ClearView(JNIEnv* env, const JavaParamRef<jobject>& obj) {

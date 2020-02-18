@@ -25,15 +25,17 @@ export class ChromeSliceDetailsPanel extends Panel {
     if (sliceInfo.ts && sliceInfo.dur && sliceInfo.name) {
       return m(
           '.details-panel',
-          m('.details-panel-heading', `Slice Details:`),
+          m('.details-panel-heading', m('h2', `Slice Details`)),
           m(
               '.details-table',
               [m('table',
                  [
                    m('tr', m('th', `Name`), m('td', `${sliceInfo.name}`)),
-                   m('tr',
-                     m('th', `Category`),
-                     m('td', `${sliceInfo.category}`)),
+                   (sliceInfo.category === '[NULL]') ?
+                       null :
+                       m('tr',
+                         m('th', `Category`),
+                         m('td', `${sliceInfo.category}`)),
                    m('tr',
                      m('th', `Start time`),
                      m('td', `${timeToCode(sliceInfo.ts)}`)),
@@ -45,10 +47,11 @@ export class ChromeSliceDetailsPanel extends Panel {
     } else {
       return m(
           '.details-panel',
-          m(
-              '.details-panel-heading',
-              `Slice Details:`,
-              ));
+          m('.details-panel-heading',
+            m(
+                'h2',
+                `Slice Details`,
+                )));
     }
   }
   renderCanvas(_ctx: CanvasRenderingContext2D, _size: PanelSize) {}

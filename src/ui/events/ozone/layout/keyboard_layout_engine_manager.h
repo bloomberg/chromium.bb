@@ -7,26 +7,33 @@
 
 #include <memory>
 
+#include "base/component_export.h"
+#include "base/logging.h"
 #include "base/macros.h"
-#include "ui/events/ozone/layout/events_ozone_layout_export.h"
 
 namespace ui {
 
 class KeyboardLayoutEngine;
 
-class EVENTS_OZONE_LAYOUT_EXPORT KeyboardLayoutEngineManager {
+class COMPONENT_EXPORT(EVENTS_OZONE_LAYOUT) KeyboardLayoutEngineManager {
  public:
   virtual ~KeyboardLayoutEngineManager();
 
   static void SetKeyboardLayoutEngine(
-      std::unique_ptr<KeyboardLayoutEngine> engine);
-  static KeyboardLayoutEngine* GetKeyboardLayoutEngine();
+      KeyboardLayoutEngine* keyboard_layout_engine);
+
+  static void ResetKeyboardLayoutEngine();
+
+  static KeyboardLayoutEngine* GetKeyboardLayoutEngine() {
+    // Must run in a context with a KeyboardLayoutEngine.
+    // Hint: Tests can use ui::ScopedKeyboardLayout to create one.
+    // (production code should instead call InitializeForUI).
+    DCHECK(keyboard_layout_engine_);
+    return keyboard_layout_engine_;
+  }
 
  private:
-  KeyboardLayoutEngineManager(KeyboardLayoutEngine* engine);
-
-  static KeyboardLayoutEngineManager* instance_;
-  std::unique_ptr<KeyboardLayoutEngine> keyboard_layout_engine_;
+  static KeyboardLayoutEngine* keyboard_layout_engine_;
 
   DISALLOW_COPY_AND_ASSIGN(KeyboardLayoutEngineManager);
 };

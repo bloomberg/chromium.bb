@@ -20,15 +20,23 @@
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/frame_sinks/delay_based_time_source.h"
 
-namespace base {
-namespace trace_event {
-class ConvertableToTraceFormat;
+namespace perfetto {
+namespace protos {
+namespace pbzero {
+class ChromeCompositorSchedulerState;
 }
+}  // namespace protos
+}  // namespace perfetto
+namespace base {
 class SingleThreadTaskRunner;
 }
 
-namespace cc {
+namespace viz {
+struct FrameTimingDetails;
+}
 
+namespace cc {
+struct BeginMainFrameMetrics;
 class CompositorTimingHistory;
 
 class SchedulerClient {
@@ -63,6 +71,7 @@ class SchedulerClient {
   // Functions used for reporting animation targeting UMA, crbug.com/758439.
   virtual size_t CompositedAnimationsCount() const = 0;
   virtual size_t MainThreadAnimationsCount() const = 0;
+  virtual bool HasCustomPropertyAnimations() const = 0;
   virtual bool CurrentFrameHadRAF() const = 0;
   virtual bool NextFrameHasPendingRAF() const = 0;
 
@@ -165,7 +174,7 @@ class CC_EXPORT Scheduler : public viz::BeginFrameObserverBase {
   // BeginMainFrame request from the compositor, and blocks the main thread
   // to copy the layer tree to the compositor thread. Call this method when the
   // main thread updates are completed to signal it is ready for the commmit.
-  void NotifyReadyToCommit();
+  void NotifyReadyToCommit(std::unique_ptr<BeginMainFrameMetrics> details);
   void BeginMainFrameAborted(CommitEarlyOutReason reason);
   void DidCommit();
 
@@ -182,7 +191,7 @@ class CC_EXPORT Scheduler : public viz::BeginFrameObserverBase {
   // |DidPresentCompositorFrame| is called when the renderer receives
   // presentation feedback.
   void DidPresentCompositorFrame(uint32_t frame_token,
-                                 base::TimeTicks presentation_time);
+                                 const viz::FrameTimingDetails& details);
 
   void DidLoseLayerTreeFrameSink();
   void DidCreateAndInitializeLayerTreeFrameSink();
@@ -219,9 +228,8 @@ class CC_EXPORT Scheduler : public viz::BeginFrameObserverBase {
   // the main thread by the cc scheduler.
   void SetMainThreadWantsBeginMainFrameNotExpected(bool new_state);
 
-  std::unique_ptr<base::trace_event::ConvertableToTraceFormat> AsValue() const;
-
-  void AsValueInto(base::trace_event::TracedValue* state) const;
+  void AsProtozeroInto(
+      perfetto::protos::pbzero::ChromeCompositorSchedulerState* state) const;
 
   void SetVideoNeedsBeginFrames(bool video_needs_begin_frames);
 

@@ -13,7 +13,9 @@
 #include "content/common/input/input_handler.mojom.h"
 #include "content/common/navigation_params.mojom.h"
 #include "content/renderer/render_frame_impl.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
 
 namespace blink {
@@ -40,7 +42,7 @@ class TestRenderFrame : public RenderFrameImpl {
   // FrameLoader will always carry out the load renderer-side.
   void SetHTMLOverrideForNextNavigation(const std::string& html);
 
-  void Navigate(const network::ResourceResponseHead& head,
+  void Navigate(network::mojom::URLResponseHeadPtr head,
                 mojom::CommonNavigationParamsPtr common_params,
                 mojom::CommitNavigationParamsPtr commit_params);
   void Navigate(mojom::CommonNavigationParamsPtr common_params,
@@ -73,11 +75,8 @@ class TestRenderFrame : public RenderFrameImpl {
   void SetDidAddMessageToConsoleCallback(
       base::OnceCallback<void(const base::string16& msg)> callback);
 
-  service_manager::mojom::InterfaceProviderRequest
-  TakeLastInterfaceProviderRequest();
-
-  mojo::PendingReceiver<blink::mojom::DocumentInterfaceBroker>
-  TakeLastDocumentInterfaceBrokerReceiver();
+  mojo::PendingReceiver<service_manager::mojom::InterfaceProvider>
+  TakeLastInterfaceProviderReceiver();
 
   mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>
   TakeLastBrowserInterfaceBrokerReceiver();
@@ -91,9 +90,9 @@ class TestRenderFrame : public RenderFrameImpl {
 
   std::unique_ptr<MockFrameHost> mock_frame_host_;
   base::Optional<std::string> next_navigation_html_override_;
-  mojom::FrameInputHandlerPtr frame_input_handler_;
+  mojo::Remote<mojom::FrameInputHandler> frame_input_handler_;
 
-  mojom::NavigationClientAssociatedPtr mock_navigation_client_;
+  mojo::AssociatedRemote<mojom::NavigationClient> mock_navigation_client_;
 
   DISALLOW_COPY_AND_ASSIGN(TestRenderFrame);
 };

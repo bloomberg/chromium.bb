@@ -151,6 +151,8 @@ void BaseAudioContext::Clear() {
 void BaseAudioContext::Uninitialize() {
   DCHECK(IsMainThread());
 
+  MutexLocker locker(GetTearDownMutex());
+
   if (!IsDestinationInitialized())
     return;
 
@@ -320,7 +322,7 @@ ScriptPromise BaseAudioContext::decodeAudioData(
   ScriptPromise promise = resolver->Promise();
 
   v8::Isolate* isolate = script_state->GetIsolate();
-  WTF::ArrayBufferContents buffer_contents;
+  ArrayBufferContents buffer_contents;
   // Detach the audio array buffer from the main thread and start
   // async decoding of the data.
   if (audio_data->IsDetachable(isolate) &&
@@ -716,6 +718,11 @@ void BaseAudioContext::HandleStoppableSourceNodes() {
 
 void BaseAudioContext::PerformCleanupOnMainThread() {
   DCHECK(IsMainThread());
+
+  // When a posted task is performed, the execution context might be gone.
+  if (!GetExecutionContext())
+    return;
+
   GraphAutoLocker locker(this);
 
   if (is_resolving_resume_promises_) {
@@ -737,6 +744,8 @@ void BaseAudioContext::PerformCleanupOnMainThread() {
 }
 
 void BaseAudioContext::ScheduleMainThreadCleanup() {
+  DCHECK(IsAudioThread());
+
   if (has_posted_cleanup_task_)
     return;
   PostCrossThreadTask(

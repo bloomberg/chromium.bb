@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.autofill_assistant.user_data;
 
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 
 import org.chromium.chrome.browser.payments.AutofillAddress;
 import org.chromium.chrome.browser.payments.AutofillContact;
@@ -34,4 +34,14 @@ public interface AssistantCollectUserDataDelegate {
 
     /** The currently selected login choice has changed. */
     void onLoginChoiceChanged(@Nullable AssistantLoginChoice loginChoice);
+
+    /** The start of the date/time range has changed. */
+    void onDateTimeRangeStartChanged(
+            int year, int month, int day, int hour, int minute, int second);
+
+    /** The end of the date/time range has changed. */
+    void onDateTimeRangeEndChanged(int year, int month, int day, int hour, int minute, int second);
+
+    /** The value of a key/value pair has changed. */
+    void onKeyValueChanged(String key, String value);
 }

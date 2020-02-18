@@ -36,6 +36,10 @@ class SafeBrowsingApiHandler {
                              const GURL& url,
                              const SBThreatTypeSet& threat_types) = 0;
 
+  virtual bool StartCSDAllowlistCheck(const GURL& url) = 0;
+
+  virtual bool StartHighConfidenceAllowlistCheck(const GURL& url) = 0;
+
   virtual ~SafeBrowsingApiHandler() {}
 
  private:

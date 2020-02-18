@@ -49,7 +49,8 @@ TestConfigurator::TestConfigurator()
               &test_url_loader_factory_)),
       network_fetcher_factory_(
           base::MakeRefCounted<NetworkFetcherChromiumFactory>(
-              test_shared_loader_factory_)) {}
+              test_shared_loader_factory_,
+              base::BindRepeating([](const GURL& url) { return false; }))) {}
 
 TestConfigurator::~TestConfigurator() {
 }
@@ -181,10 +182,6 @@ void TestConfigurator::SetPingUrl(const GURL& url) {
   ping_url_ = url;
 }
 
-void TestConfigurator::SetAppGuid(const std::string& app_guid) {
-  app_guid_ = app_guid;
-}
-
 PrefService* TestConfigurator::GetPrefService() const {
   return nullptr;
 }
@@ -197,21 +194,9 @@ bool TestConfigurator::IsPerUserInstall() const {
   return true;
 }
 
-std::vector<uint8_t> TestConfigurator::GetRunActionKeyHash() const {
-  return std::vector<uint8_t>(std::begin(gjpm_hash), std::end(gjpm_hash));
-}
-
-std::string TestConfigurator::GetAppGuid() const {
-  return app_guid_;
-}
-
 std::unique_ptr<ProtocolHandlerFactory>
 TestConfigurator::GetProtocolHandlerFactory() const {
   return std::make_unique<ProtocolHandlerFactoryJSON>();
-}
-
-RecoveryCRXElevator TestConfigurator::GetRecoveryCRXElevator() const {
-  return {};
 }
 
 }  // namespace update_client

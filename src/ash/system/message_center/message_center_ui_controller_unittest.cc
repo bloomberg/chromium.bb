@@ -77,7 +77,7 @@ class MessageCenterUiControllerTest : public testing::Test {
   void TearDown() override {
     ui_controller_.reset();
     delegate_.reset();
-    message_center_ = NULL;
+    message_center_ = nullptr;
     message_center::MessageCenter::Shutdown();
   }
 
@@ -193,38 +193,6 @@ TEST_F(MessageCenterUiControllerTest, MessageCenterClosesPopups) {
   ui_controller_->ShowMessageCenterBubble(false /* show_by_click */);
   ui_controller_->HideMessageCenterBubble();
   ASSERT_FALSE(ui_controller_->popups_visible());
-  ASSERT_FALSE(ui_controller_->message_center_visible());
-}
-
-TEST_F(MessageCenterUiControllerTest,
-       MessageCenterReopenPopupsForSystemPriority) {
-  ASSERT_FALSE(ui_controller_->popups_visible());
-  ASSERT_FALSE(ui_controller_->message_center_visible());
-
-  std::unique_ptr<message_center::Notification> notification(
-      new message_center::Notification(
-          message_center::NOTIFICATION_TYPE_SIMPLE,
-          "MessageCenterReopnPopupsForSystemPriority",
-          ASCIIToUTF16("Test Web Notification"),
-          ASCIIToUTF16("Notification message body."), gfx::Image(),
-          ASCIIToUTF16("www.test.org"), GURL(), DummyNotifierId(),
-          message_center::RichNotificationData(), NULL /* delegate */));
-  notification->SetSystemPriority();
-  message_center_->AddNotification(std::move(notification));
-
-  ASSERT_TRUE(ui_controller_->popups_visible());
-  ASSERT_FALSE(ui_controller_->message_center_visible());
-
-  bool shown =
-      ui_controller_->ShowMessageCenterBubble(false /* show_by_click */);
-  EXPECT_TRUE(shown);
-
-  ASSERT_FALSE(ui_controller_->popups_visible());
-  ASSERT_TRUE(ui_controller_->message_center_visible());
-
-  ui_controller_->HideMessageCenterBubble();
-
-  ASSERT_TRUE(ui_controller_->popups_visible());
   ASSERT_FALSE(ui_controller_->message_center_visible());
 }
 

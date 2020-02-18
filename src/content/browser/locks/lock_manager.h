@@ -26,8 +26,13 @@ class LockManager : public base::RefCountedThreadSafe<LockManager>,
  public:
   LockManager();
 
-  void CreateService(mojo::PendingReceiver<blink::mojom::LockManager> receiver,
-                     const url::Origin& origin);
+  // Binds |receiver| to this LockManager. |receiver| belongs to a frame or
+  // worker at |origin| hosted by |render_process_id|. If it belongs to a frame,
+  // |render_frame_id| identifies it, otherwise it is MSG_ROUTING_NONE.
+  void BindReceiver(int render_process_id,
+                    int render_frame_id,
+                    const url::Origin& origin,
+                    mojo::PendingReceiver<blink::mojom::LockManager> receiver);
 
   // Request a lock. When the lock is acquired, |callback| will be invoked with
   // a LockHandle.
@@ -54,30 +59,53 @@ class LockManager : public base::RefCountedThreadSafe<LockManager>,
   // State for a particular origin.
   class OriginState;
 
-  // State for each client held in |receivers_|.
-  struct ReceiverState {
-    url::Origin origin;
-    std::string client_id;
+  // Describes a frame or a worker.
+  struct ExecutionContext {
+    // The identifier of the process hosting this frame or worker.
+    int render_process_id;
+
+    // The frame identifier, or MSG_ROUTING_NONE if this describes a worker
+    // (this means that dedicated/shared/service workers are not distinguished).
+    int render_frame_id;
+
+    // Returns true if this is a worker.
+    bool IsWorker() const;
   };
 
-  bool IsGrantable(const url::Origin& origin,
-                   const std::string& name,
-                   blink::mojom::LockMode mode) const;
+  // Comparator to use ExecutionContext in a map.
+  struct ExecutionContextComparator {
+    bool operator()(const ExecutionContext& left,
+                    const ExecutionContext& right) const;
+  };
+
+  // State for each client held in |receivers_|.
+  struct ReceiverState {
+    std::string client_id;
+
+    // ExecutionContext owning this receiver.
+    ExecutionContext execution_context;
+
+    // Origin of the frame or worker owning this receiver.
+    url::Origin origin;
+  };
 
   // Mints a monotonically increasing identifier. Used both for lock requests
   // and granted locks as keys in ordered maps.
   int64_t NextLockId();
 
-  void Break(const url::Origin& origin, const std::string& name);
-
-  // Called when a lock is requested and optionally when a lock is released,
-  // to process outstanding requests within the origin.
-  void ProcessRequests(const url::Origin& origin);
+  // Increments/decrements the number of locks held by the frame described by
+  // |execution_context|. No-ops if |execution_context| describes a worker.
+  void IncrementLocksHeldByFrame(const ExecutionContext& execution_context);
+  void DecrementLocksHeldByFrame(const ExecutionContext& execution_context);
 
   mojo::ReceiverSet<blink::mojom::LockManager, ReceiverState> receivers_;
 
   int64_t next_lock_id_ = 0;
   std::map<url::Origin, OriginState> origins_;
+
+  // Number of Locks held per frame.
+  std::map<ExecutionContext, int, ExecutionContextComparator>
+      num_locks_held_by_frame_{ExecutionContextComparator()};
 
   SEQUENCE_CHECKER(sequence_checker_);
   base::WeakPtrFactory<LockManager> weak_ptr_factory_{this};

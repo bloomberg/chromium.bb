@@ -160,12 +160,13 @@ SyncToken RasterImplementationGLES::ScheduleImageDecode(
 }
 
 GLuint RasterImplementationGLES::CreateAndConsumeForGpuRaster(
-    const GLbyte* mailbox) {
-  return gl_->CreateAndConsumeTextureCHROMIUM(mailbox);
+    const gpu::Mailbox& mailbox) {
+  DCHECK(mailbox.IsSharedImage());
+  return gl_->CreateAndTexStorage2DSharedImageCHROMIUM(mailbox.name);
 }
 
 void RasterImplementationGLES::DeleteGpuRasterTexture(GLuint texture) {
-  gl_->DeleteTextures(1, &texture);
+  gl_->DeleteTextures(1u, &texture);
 }
 
 void RasterImplementationGLES::BeginGpuRaster() {
@@ -184,6 +185,17 @@ void RasterImplementationGLES::EndGpuRaster() {
 
   // Reset cached raster state.
   gl_->ActiveTexture(GL_TEXTURE0);
+}
+
+void RasterImplementationGLES::BeginSharedImageAccessDirectCHROMIUM(
+    GLuint texture,
+    GLenum mode) {
+  gl_->BeginSharedImageAccessDirectCHROMIUM(texture, mode);
+}
+
+void RasterImplementationGLES::EndSharedImageAccessDirectCHROMIUM(
+    GLuint texture) {
+  gl_->EndSharedImageAccessDirectCHROMIUM(texture);
 }
 
 void RasterImplementationGLES::TraceBeginCHROMIUM(const char* category_name,

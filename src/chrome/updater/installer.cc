@@ -10,6 +10,7 @@
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
+#include "chrome/updater/action_handler.h"
 #include "chrome/updater/updater_constants.h"
 #include "chrome/updater/util.h"
 #include "components/crx_file/crx_verifier.h"
@@ -24,12 +25,12 @@ namespace {
 const char kNullVersion[] = "0.0.0.0";
 
 // Returns the full path to the installation directory for the application
-// identified by the |crx_id|.
-base::FilePath GetAppInstallDir(const std::string& crx_id) {
+// identified by the |app_id|.
+base::FilePath GetAppInstallDir(const std::string& app_id) {
   base::FilePath app_install_dir;
   if (GetProductDirectory(&app_install_dir)) {
     app_install_dir = app_install_dir.AppendASCII(kAppsDir);
-    app_install_dir = app_install_dir.AppendASCII(crx_id);
+    app_install_dir = app_install_dir.AppendASCII(app_id);
   }
   return app_install_dir;
 }
@@ -39,30 +40,44 @@ base::FilePath GetAppInstallDir(const std::string& crx_id) {
 Installer::InstallInfo::InstallInfo() : version(kNullVersion) {}
 Installer::InstallInfo::~InstallInfo() = default;
 
-Installer::Installer(const std::vector<uint8_t>& pk_hash)
-    : pk_hash_(pk_hash),
-      crx_id_(update_client::GetCrxIdFromPublicKeyHash(pk_hash)),
-      install_info_(std::make_unique<InstallInfo>()) {}
+Installer::Installer(const std::string& app_id)
+    : app_id_(app_id), install_info_(std::make_unique<InstallInfo>()) {}
 
 Installer::~Installer() = default;
 
 update_client::CrxComponent Installer::MakeCrxComponent() {
   update_client::CrxComponent component;
   component.installer = scoped_refptr<Installer>(this);
+  component.action_handler = MakeActionHandler();
   component.requires_network_encryption = false;
   component.crx_format_requirement =
       crx_file::VerifierFormat::CRX3_WITH_PUBLISHER_PROOF;
-  component.pk_hash = pk_hash_;
-  component.name = crx_id_;
+  component.app_id = app_id_;
+  component.name = app_id_;
   component.version = install_info_->version;
   component.fingerprint = install_info_->fingerprint;
   return component;
 }
 
-void Installer::FindInstallOfApp() {
-  VLOG(1) << __func__ << " for " << crx_id_;
+std::vector<std::string> Installer::FindAppIds() {
+  base::FilePath app_install_dir;
+  if (!GetProductDirectory(&app_install_dir))
+    return {};
+  app_install_dir = app_install_dir.AppendASCII(kAppsDir);
+  std::vector<std::string> app_ids;
+  base::FileEnumerator file_enumerator(app_install_dir, false,
+                                       base::FileEnumerator::DIRECTORIES);
+  for (auto path = file_enumerator.Next(); !path.value().empty();
+       path = file_enumerator.Next()) {
+    app_ids.push_back(path.BaseName().MaybeAsASCII());
+  }
+  return app_ids;
+}
 
-  const base::FilePath app_install_dir = GetAppInstallDir(crx_id_);
+void Installer::FindInstallOfApp() {
+  VLOG(1) << __func__ << " for " << app_id_;
+
+  const base::FilePath app_install_dir = GetAppInstallDir(app_id_);
   if (app_install_dir.empty() || !base::PathExists(app_install_dir)) {
     install_info_ = std::make_unique<InstallInfo>();
     return;
@@ -103,7 +118,7 @@ void Installer::FindInstallOfApp() {
                          &install_info_->fingerprint);
 
   for (const auto& older_path : older_paths)
-    base::DeleteFile(older_path, true);
+    base::DeleteFileRecursively(older_path);
 }
 
 Installer::Result Installer::InstallHelper(const base::FilePath& unpack_path) {
@@ -124,7 +139,7 @@ Installer::Result Installer::InstallHelper(const base::FilePath& unpack_path) {
   if (install_info_->version.CompareTo(manifest_version) > 0)
     return Result(update_client::InstallError::VERSION_NOT_UPGRADED);
 
-  const base::FilePath app_install_dir = GetAppInstallDir(crx_id_);
+  const base::FilePath app_install_dir = GetAppInstallDir(app_id_);
   if (app_install_dir.empty())
     return Result(update_client::InstallError::NO_DIR_COMPONENT_USER);
   if (!base::CreateDirectory(app_install_dir)) {
@@ -136,7 +151,7 @@ Installer::Result Installer::InstallHelper(const base::FilePath& unpack_path) {
   const auto versioned_install_dir =
       app_install_dir.AppendASCII(manifest_version.GetString());
   if (base::PathExists(versioned_install_dir)) {
-    if (!base::DeleteFile(versioned_install_dir, true))
+    if (!base::DeleteFileRecursively(versioned_install_dir))
       return Result(update_client::InstallError::CLEAN_INSTALL_DIR_FAILED);
   }
 
@@ -144,7 +159,7 @@ Installer::Result Installer::InstallHelper(const base::FilePath& unpack_path) {
 
   if (!base::Move(unpack_path, versioned_install_dir)) {
     PLOG(ERROR) << "Move failed.";
-    base::DeleteFile(versioned_install_dir, true);
+    base::DeleteFileRecursively(versioned_install_dir);
     return Result(update_client::InstallError::MOVE_FILES_ERROR);
   }
 
@@ -162,7 +177,7 @@ Installer::Result Installer::InstallHelper(const base::FilePath& unpack_path) {
 }
 
 void Installer::OnUpdateError(int error) {
-  LOG(ERROR) << "updater error: " << error << " for " << crx_id_;
+  LOG(ERROR) << "updater error: " << error << " for " << app_id_;
 }
 
 void Installer::Install(const base::FilePath& unpack_path,
@@ -173,13 +188,17 @@ void Installer::Install(const base::FilePath& unpack_path,
   base::FilePath install_path;
 
   const auto result = InstallHelper(unpack_path);
-  base::DeleteFile(unpack_path, true);
+  base::DeleteFileRecursively(unpack_path);
   std::move(callback).Run(result);
 }
 
 bool Installer::GetInstalledFile(const std::string& file,
                                  base::FilePath* installed_file) {
-  return false;
+  if (install_info_->version == base::Version(kNullVersion))
+    return false;  // No component has been installed yet.
+
+  *installed_file = install_info_->install_dir.AppendASCII(file);
+  return true;
 }
 
 bool Installer::Uninstall() {

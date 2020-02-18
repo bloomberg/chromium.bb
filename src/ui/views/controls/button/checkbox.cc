@@ -21,6 +21,7 @@
 #include "ui/views/animation/ink_drop_ripple.h"
 #include "ui/views/controls/button/label_button_border.h"
 #include "ui/views/controls/focus_ring.h"
+#include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/layout/layout_provider.h"
 #include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/painter.h"
@@ -30,6 +31,18 @@
 #include "ui/views/vector_icons.h"
 
 namespace views {
+
+class Checkbox::FocusRingHighlightPathGenerator
+    : public views::HighlightPathGenerator {
+ public:
+  SkPath GetHighlightPath(const views::View* view) override {
+    SkPath path;
+    auto* checkbox = static_cast<const views::Checkbox*>(view);
+    if (checkbox->image()->bounds().IsEmpty())
+      return path;
+    return checkbox->GetFocusRingPath();
+  }
+};
 
 Checkbox::Checkbox(const base::string16& label, ButtonListener* listener)
     : LabelButton(listener, label), checked_(false), label_ax_id_(0) {
@@ -47,6 +60,8 @@ Checkbox::Checkbox(const base::string16& label, ButtonListener* listener)
   // Checkboxes always have a focus ring, even when the platform otherwise
   // doesn't generally use them for buttons.
   SetInstallFocusRingOnFocus(true);
+  focus_ring()->SetPathGenerator(
+      std::make_unique<FocusRingHighlightPathGenerator>());
 }
 
 Checkbox::~Checkbox() = default;
@@ -155,12 +170,6 @@ std::unique_ptr<LabelButtonBorder> Checkbox::CreateDefaultBorder() const {
   return border;
 }
 
-void Checkbox::Layout() {
-  LabelButton::Layout();
-  if (focus_ring() && !image()->bounds().IsEmpty())
-    focus_ring()->SetPath(GetFocusRingPath());
-}
-
 SkPath Checkbox::GetFocusRingPath() const {
   SkPath path;
   gfx::Rect bounds = image()->GetMirroredBounds();
@@ -176,8 +185,8 @@ const gfx::VectorIcon& Checkbox::GetVectorIcon() const {
 SkColor Checkbox::GetIconImageColor(int icon_state) const {
   const SkColor active_color = GetNativeTheme()->GetSystemColor(
       (icon_state & IconState::CHECKED)
-          ? ui::NativeTheme::kColorId_ProminentButtonColor
-          : ui::NativeTheme::kColorId_ButtonEnabledColor);
+          ? ui::NativeTheme::kColorId_ButtonEnabledColor
+          : ui::NativeTheme::kColorId_ButtonUncheckedColor);
   return (icon_state & IconState::ENABLED)
              ? active_color
              : color_utils::BlendTowardMaxContrast(active_color,

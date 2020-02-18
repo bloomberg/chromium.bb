@@ -42,6 +42,7 @@ DISPLAY_LABEL_CQ = 'cq'
 DISPLAY_LABEL_RELEASE = 'release'
 DISPLAY_LABEL_CHROME_PFQ = 'chrome_pfq'
 DISPLAY_LABEL_MST_ANDROID_PFQ = 'mst_android_pfq'
+DISPLAY_LABEL_VMMST_ANDROID_PFQ = 'vmmst_android_pfq'
 DISPLAY_LABEL_MNC_ANDROID_PFQ = 'mnc_android_pfq'
 DISPLAY_LABEL_NYC_ANDROID_PFQ = 'nyc_android_pfq'
 DISPLAY_LABEL_PI_ANDROID_PFQ = 'pi_android_pfq'
@@ -65,6 +66,7 @@ ALL_DISPLAY_LABEL = {
     DISPLAY_LABEL_RELEASE,
     DISPLAY_LABEL_CHROME_PFQ,
     DISPLAY_LABEL_MST_ANDROID_PFQ,
+    DISPLAY_LABEL_VMMST_ANDROID_PFQ,
     DISPLAY_LABEL_MNC_ANDROID_PFQ,
     DISPLAY_LABEL_NYC_ANDROID_PFQ,
     DISPLAY_LABEL_PI_ANDROID_PFQ,
@@ -156,6 +158,11 @@ CONFIG_X86_INTERNAL = 'X86_INTERNAL'
 CONFIG_X86_EXTERNAL = 'X86_EXTERNAL'
 CONFIG_ARM_INTERNAL = 'ARM_INTERNAL'
 CONFIG_ARM_EXTERNAL = 'ARM_EXTERNAL'
+
+
+def IsCanaryMaster(config):
+  """Returns True if this build type is master-release"""
+  return config.build_type == constants.CANARY_TYPE and config.master
 
 
 def IsPFQType(b_type):
@@ -394,7 +401,7 @@ class BuildConfig(AttrDict):
 class VMTestConfig(object):
   """Config object for virtual machine tests suites.
 
-  Members:
+  Attributes:
     test_type: Test type to be run.
     test_suite: Test suite to be run in VMTest.
     timeout: Number of seconds to wait before timing out waiting for
@@ -431,7 +438,7 @@ class VMTestConfig(object):
 class GCETestConfig(object):
   """Config object for GCE tests suites.
 
-  Members:
+  Attributes:
     test_type: Test type to be run.
     test_suite: Test suite to be run in GCETest.
     timeout: Number of seconds to wait before timing out waiting for
@@ -458,7 +465,7 @@ class GCETestConfig(object):
 class TastVMTestConfig(object):
   """Config object for a Tast virtual-machine-based test suite.
 
-  Members:
+  Attributes:
     name: String containing short human-readable name describing test suite.
     test_exprs: List of string expressions describing which tests to run; this
                 is passed directly to the 'tast run' command. See
@@ -485,7 +492,7 @@ class TastVMTestConfig(object):
 class MoblabVMTestConfig(object):
   """Config object for moblab tests suites.
 
-  Members:
+  Attributes:
     test_type: Test type to be run.
     timeout: Number of seconds to wait before timing out waiting for
              results.
@@ -504,7 +511,7 @@ class MoblabVMTestConfig(object):
 class ModelTestConfig(object):
   """Model specific config that controls which test suites are executed.
 
-  Members:
+  Attributes:
     name: The name of the model that will be tested (matches model label)
     lab_board_name: The name of the board in the lab (matches board label)
     test_suites: List of hardware test suites that will be executed.
@@ -525,7 +532,7 @@ class ModelTestConfig(object):
 class HWTestConfig(object):
   """Config object for hardware tests suites.
 
-  Members:
+  Attributes:
     suite: Name of the test suite to run.
     timeout: Number of seconds to wait before timing out waiting for
              results.
@@ -572,7 +579,7 @@ class HWTestConfig(object):
   # timeouts equal.
   GTS_QUAL_HW_TEST_TIMEOUT = CTS_QUAL_HW_TEST_TIMEOUT
   SHARED_HW_TEST_TIMEOUT = int(3.0 * _HOUR)
-  PALADIN_HW_TEST_TIMEOUT = int(1.5 * _HOUR)
+  PALADIN_HW_TEST_TIMEOUT = int(2.0 * _HOUR)
   BRANCHED_HW_TEST_TIMEOUT = int(10.0 * _HOUR)
 
   # TODO(jrbarnette) Async HW test phases complete within seconds.
@@ -586,7 +593,6 @@ class HWTestConfig(object):
                suite,
                pool=constants.HWTEST_MACH_POOL,
                timeout=SHARED_HW_TEST_TIMEOUT,
-               async=False,
                warn_only=False,
                critical=False,
                blocking=False,
@@ -599,16 +605,20 @@ class HWTestConfig(object):
                suite_args=None,
                offload_failures_only=False,
                enable_skylab=True,
-               quota_account=None):
+               quota_account=None,
+               **kwargs):
     """Constructor -- see members above."""
+    # Python 3.7+ made async a reserved keyword.
+    asynchronous = kwargs.pop('async', False)
+    setattr(self, 'async', asynchronous)
+    assert not kwargs, 'Excess kwargs found: %s' % (kwargs,)
 
-    assert not async or not blocking, '%s is async and blocking' % suite
+    assert not asynchronous or not blocking, '%s is async and blocking' % suite
     assert not warn_only or not critical
     self.suite = suite
     self.pool = pool
     self.timeout = timeout
     self.blocking = blocking
-    self.async = async
     self.warn_only = warn_only
     self.critical = critical
     self.file_bugs = file_bugs
@@ -717,7 +727,7 @@ def DefaultSettings():
       debug_cidb=False,
 
       # Timeout for the build as a whole (in seconds).
-      build_timeout=(4 * 60 + 30) * 60,
+      build_timeout=(5 * 60 + 30) * 60,
 
       # An integer. If this builder fails this many times consecutively, send
       # an alert email to the recipients health_alert_recipients. This does
@@ -861,6 +871,9 @@ def DefaultSettings():
 
       # Verify and publish kernel profiles.
       kernel_afdo_verify=False,
+
+      # Verify and publish chrome profiles.
+      chrome_afdo_verify=False,
 
       # Generate Chrome orderfile. Will build Chrome with C3 ordering and
       # generate an orderfile for uploading as a result.
@@ -1453,7 +1466,7 @@ class SiteConfig(dict):
     """
     slave_map = self.GetSlaveConfigMapForMaster(
         master_config, options=options, important_only=important_only)
-    return slave_map.values()
+    return list(slave_map.values())
 
   #
   # Methods used when creating a Config programatically.
@@ -1844,7 +1857,9 @@ def GroupBoardsByBuilderAndBoardGroup(board_list):
 
   for b in board_list:
     name = b[CONFIG_TEMPLATE_NAME]
-    for config in b[CONFIG_TEMPLATE_CONFIGS]:
+    # Invalid build configs being written out with no config templates,
+    # thus the default. See https://crbug.com/1012278.
+    for config in b.get(CONFIG_TEMPLATE_CONFIGS, []):
       board = {'name': name}
       board.update(config)
 
@@ -1873,7 +1888,9 @@ def GroupBoardsByBuilder(board_list):
   builder_to_boards_dict = {}
 
   for b in board_list:
-    for config in b[CONFIG_TEMPLATE_CONFIGS]:
+    # Invalid build configs being written out with no configs array, thus the
+    # default. See https://crbug.com/1005803.
+    for config in b.get(CONFIG_TEMPLATE_CONFIGS, []):
       builder = config[CONFIG_TEMPLATE_BUILDER]
       if builder not in builder_to_boards_dict:
         builder_to_boards_dict[builder] = set()
@@ -1887,9 +1904,18 @@ def GetNonUniBuildLabBoardName(board):
   # Those special string represent special configuration used in the image,
   # and should run on DUT without those string.
   # We strip those string from the board so that lab can handle it correctly.
-  SPECIAL_SUFFIX = ['-arcnext$', '-arcvm$', '-kernelnext$']
+  SPECIAL_SUFFIX = [
+      '-arcnext$', '-arcvm$', '-kernelnext$', '-kvm$', '-ndktranslation$',
+      '-cfm$', '-campfire$'
+  ]
+  # ARM64 userspace boards use 64 suffix but can't put that in list above
+  # because of collisions with boards like kevin-arc64.
+  ARM64_BOARDS = ['cheza64', 'kevin64']
   for suffix in SPECIAL_SUFFIX:
     board = re.sub(suffix, '', board)
+  if board in ARM64_BOARDS:
+    # Remove '64' suffix from the board name.
+    board = board[:-2]
   return board
 
 
@@ -1927,8 +1953,8 @@ class ObjectJSONEncoder(json.JSONEncoder):
   """Json Encoder that encodes objects as their dictionaries."""
 
   # pylint: disable=method-hidden
-  def default(self, obj):
-    return self.encode(obj.__dict__)
+  def default(self, o):
+    return self.encode(o.__dict__)
 
 
 def PrettyJsonDict(dictionary):

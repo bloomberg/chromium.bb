@@ -16,9 +16,9 @@
 #define DAWNNATIVE_PIPELINELAYOUT_H_
 
 #include "common/Constants.h"
+#include "dawn_native/CachedObject.h"
 #include "dawn_native/Error.h"
 #include "dawn_native/Forward.h"
-#include "dawn_native/ObjectBase.h"
 
 #include "dawn_native/dawn_platform.h"
 
@@ -32,16 +32,17 @@ namespace dawn_native {
 
     using BindGroupLayoutArray = std::array<Ref<BindGroupLayoutBase>, kMaxBindGroups>;
 
-    class PipelineLayoutBase : public ObjectBase {
+    class PipelineLayoutBase : public CachedObject {
       public:
-        PipelineLayoutBase(DeviceBase* device,
-                           const PipelineLayoutDescriptor* descriptor,
-                           bool blueprint = false);
+        PipelineLayoutBase(DeviceBase* device, const PipelineLayoutDescriptor* descriptor);
         ~PipelineLayoutBase() override;
 
         static PipelineLayoutBase* MakeError(DeviceBase* device);
+        static ResultOrError<PipelineLayoutBase*>
+        CreateDefault(DeviceBase* device, const ShaderModuleBase* const* modules, uint32_t count);
 
-        const BindGroupLayoutBase* GetBindGroupLayout(size_t group) const;
+        const BindGroupLayoutBase* GetBindGroupLayout(uint32_t group) const;
+        BindGroupLayoutBase* GetBindGroupLayout(uint32_t group);
         const std::bitset<kMaxBindGroups> GetBindGroupLayoutsMask() const;
 
         // Utility functions to compute inherited bind groups.
@@ -65,7 +66,6 @@ namespace dawn_native {
 
         BindGroupLayoutArray mBindGroupLayouts;
         std::bitset<kMaxBindGroups> mMask;
-        bool mIsBlueprint = false;
     };
 
 }  // namespace dawn_native

@@ -90,7 +90,7 @@ class QRView : public views::View {
   ~QRView() override {}
 
   void RefreshQRCode(const uint8_t new_qr_data[QRCode::kInputBytes]) {
-    state_++;
+    state_ = (state_ + 1) % 6;
     qr_tiles_ = qr_.Generate(new_qr_data);
     SchedulePaint();
   }
@@ -108,7 +108,7 @@ class QRView : public views::View {
     // kV is the intensity of the colors in the QR code.
     constexpr uint8_t kV = 0x70;
     SkColor on;
-    switch (state_ % 6) {
+    switch (state_) {
       case 0:
         on = SkColorSetARGB(0xff, kV, 0, 0);
         break;
@@ -175,7 +175,7 @@ class QRView : public views::View {
 
     for (int y = 0; y < rows; y++) {
       uint8_t current_byte;
-      unsigned bits = 0;
+      int bits = 0;
 
       for (int x = 0; x < kDinoWidth; x++) {
         if (bits == 0) {
@@ -198,7 +198,7 @@ class QRView : public views::View {
 
   QRCode qr_;
   base::span<const uint8_t, QRCode::kTotalSize> qr_tiles_;
-  unsigned state_ = 0;
+  int state_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(QRView);
 };
@@ -215,30 +215,27 @@ constexpr size_t Base64EncodedSize(size_t input_length) {
 // valid.
 void QRDataForCurrentTime(uint8_t out_qr_data[QRCode::kInputBytes],
                           base::span<const uint8_t, 32> qr_generator_key) {
-  uint8_t qr_secret[device::kCableQRSecretSize];
-  uint8_t authenticator_eid[device::kCableEphemeralIdSize];
-  uint8_t session_pre_key[device::kCableSessionPreKeySize];
   const int64_t current_tick = device::CableDiscoveryData::CurrentTimeTick();
-  device::CableDiscoveryData::DeriveQRKeyMaterial(
-      qr_secret, authenticator_eid, session_pre_key, qr_generator_key,
-      current_tick);
+  auto qr_secret = device::CableDiscoveryData::DeriveQRSecret(qr_generator_key,
+                                                              current_tick);
 
-  std::string base64_eid;
+  std::string base64_qr_secret;
   base::Base64UrlEncode(
-      base::StringPiece(reinterpret_cast<const char*>(qr_secret),
-                        sizeof(qr_secret)),
-      base::Base64UrlEncodePolicy::OMIT_PADDING, &base64_eid);
-  static constexpr size_t kEncodedEIDLength =
+      base::StringPiece(reinterpret_cast<const char*>(qr_secret.data()),
+                        qr_secret.size()),
+      base::Base64UrlEncodePolicy::OMIT_PADDING, &base64_qr_secret);
+  static constexpr size_t kEncodedSecretLength =
       Base64EncodedSize(sizeof(qr_secret));
-  DCHECK_EQ(kEncodedEIDLength, base64_eid.size());
+  DCHECK_EQ(kEncodedSecretLength, base64_qr_secret.size());
 
   static constexpr char kPrefix[] = "fido://c1/";
   static constexpr size_t kPrefixLength = sizeof(kPrefix) - 1;
 
-  static_assert(QRCode::kInputBytes == kPrefixLength + kEncodedEIDLength,
+  static_assert(QRCode::kInputBytes == kPrefixLength + kEncodedSecretLength,
                 "unexpected QR input length");
   memcpy(out_qr_data, kPrefix, kPrefixLength);
-  memcpy(&out_qr_data[kPrefixLength], base64_eid.data(), kEncodedEIDLength);
+  memcpy(&out_qr_data[kPrefixLength], base64_qr_secret.data(),
+         kEncodedSecretLength);
 }
 
 }  // anonymous namespace

@@ -59,7 +59,7 @@ def download_gsutil(version, target_dir):
 
     metadata_url = '%s%s' % (API_URL, filename)
     metadata = json.load(urllib.urlopen(metadata_url))
-    remote_md5 = base64.b64decode(metadata['md5Hash'])
+    remote_md5 = base64.b64decode(metadata['md5Hash']).decode('utf-8')
 
     if local_md5 == remote_md5:
       return target_filename
@@ -140,7 +140,8 @@ def run_gsutil(force_version, fallback, target, args, clean=False):
     # This script requires Windows Python, so invoke with depot_tools'
     # Python.
     def winpath(path):
-      return subprocess.check_output(['cygpath', '-w', path]).strip()
+      stdout = subprocess.check_output(['cygpath', '-w', path])
+      return stdout.strip().decode('utf-8', 'replace')
     cmd = ['python.bat', winpath(__file__)]
     cmd.extend(args)
     sys.exit(subprocess.call(cmd))

@@ -15,10 +15,11 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_throttle_manager.h"
 #include "content/public/common/previews_state.h"
 #include "content/public/common/resource_type.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_request_headers.h"
-#include "services/network/public/cpp/resource_response.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace data_reduction_proxy {
@@ -46,13 +47,15 @@ class MockMojoDataReductionProxy : public mojom::DataReductionProxy {
   }
 
   void AddThrottleConfigObserver(
-      mojom::DataReductionProxyThrottleConfigObserverPtr /* observer */)
+      mojo::PendingRemote<
+          mojom::DataReductionProxyThrottleConfigObserver> /* observer */)
       override {
     ++observer_count_;
   }
 
-  void Clone(mojom::DataReductionProxyRequest request) override {
-    bindings_.AddBinding(this, std::move(request));
+  void Clone(
+      mojo::PendingReceiver<mojom::DataReductionProxy> receiver) override {
+    receivers_.Add(this, std::move(receiver));
   }
 
   // When mojom::DataReductionProxy methods are called via mojo, things are
@@ -69,12 +72,12 @@ class MockMojoDataReductionProxy : public mojom::DataReductionProxy {
   // +1 because MockMojoDataReductionProxy uses direct calls through the
   // mojom::DataReductionProxy interface by default, and mojo is only involved
   // after Clone().
-  size_t pipe_count() const { return bindings_.size() + 1u; }
+  size_t pipe_count() const { return receivers_.size() + 1u; }
 
   size_t observer_count() const { return observer_count_; }
 
  private:
-  mojo::BindingSet<mojom::DataReductionProxy> bindings_;
+  mojo::ReceiverSet<mojom::DataReductionProxy> receivers_;
   size_t observer_count_ = 0;
 
   base::OnceClosure waiting_for_mark_as_bad_closure_;
@@ -280,12 +283,12 @@ void RestartBypassProxyAndCacheHelper(
           ? drp_server.proxy_server()
           : net::ProxyServer::FromPacString("HTTPS otherproxy");
 
-  network::ResourceResponseHead response_head;
-  response_head.proxy_server = proxy_used_for_response;
-  response_head.headers = base::MakeRefCounted<net::HttpResponseHeaders>("");
-  response_head.headers->AddHeader("Chrome-Proxy: block-once");
+  auto response_head = network::mojom::URLResponseHead::New();
+  response_head->proxy_server = proxy_used_for_response;
+  response_head->headers = base::MakeRefCounted<net::HttpResponseHeaders>("");
+  response_head->headers->AddHeader("Chrome-Proxy: block-once");
 
-  throttle.BeforeWillProcessResponse(request.url, response_head, &defer);
+  throttle.BeforeWillProcessResponse(request.url, *response_head, &defer);
   EXPECT_FALSE(defer);
   EXPECT_EQ(0u, delegate.resume_called);
 
@@ -344,12 +347,12 @@ TEST_F(DataReductionProxyURLLoaderThrottleTest,
 
   // Construct a response that did not come from a proxy server, however
   // includes a Chrome-Proxy header.
-  network::ResourceResponseHead response_head;
-  response_head.proxy_server = net::ProxyServer::Direct();
-  response_head.headers = base::MakeRefCounted<net::HttpResponseHeaders>("");
-  response_head.headers->AddHeader("Chrome-Proxy: block-once");
+  auto response_head = network::mojom::URLResponseHead::New();
+  response_head->proxy_server = net::ProxyServer::Direct();
+  response_head->headers = base::MakeRefCounted<net::HttpResponseHeaders>("");
+  response_head->headers->AddHeader("Chrome-Proxy: block-once");
 
-  throttle.BeforeWillProcessResponse(request.url, response_head, &defer);
+  throttle.BeforeWillProcessResponse(request.url, *response_head, &defer);
   EXPECT_FALSE(defer);
   EXPECT_EQ(0u, delegate.resume_called);
   EXPECT_EQ(0u, delegate.restart_with_flags_called);
@@ -375,12 +378,12 @@ TEST_F(DataReductionProxyURLLoaderThrottleTest, MarkProxyAsBadAndRestart) {
   EXPECT_EQ(0u, delegate.resume_called);
   EXPECT_EQ(0u, delegate.restart_with_flags_called);
 
-  network::ResourceResponseHead response_head;
-  response_head.proxy_server = drp_server.proxy_server();
-  response_head.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+  auto response_head = network::mojom::URLResponseHead::New();
+  response_head->proxy_server = drp_server.proxy_server();
+  response_head->headers = base::MakeRefCounted<net::HttpResponseHeaders>(
       "HTTP/1.1 500 Server error\n");
 
-  throttle.BeforeWillProcessResponse(request.url, response_head, &defer);
+  throttle.BeforeWillProcessResponse(request.url, *response_head, &defer);
 
   // The throttle should have marked the proxy as bad.
   EXPECT_TRUE(defer);
@@ -421,12 +424,12 @@ TEST_F(DataReductionProxyURLLoaderThrottleTest, MarkProxyAsBadOnNewSequence) {
   throttle.WillStartRequest(&request, &defer);
   EXPECT_FALSE(defer);
 
-  network::ResourceResponseHead response_head;
-  response_head.proxy_server = drp_server.proxy_server();
-  response_head.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+  auto response_head = network::mojom::URLResponseHead::New();
+  response_head->proxy_server = drp_server.proxy_server();
+  response_head->headers = base::MakeRefCounted<net::HttpResponseHeaders>(
       "HTTP/1.1 500 Server error\n");
 
-  throttle.BeforeWillProcessResponse(request.url, response_head, &defer);
+  throttle.BeforeWillProcessResponse(request.url, *response_head, &defer);
 
   // The throttle should have marked the proxy as bad.
   EXPECT_TRUE(defer);

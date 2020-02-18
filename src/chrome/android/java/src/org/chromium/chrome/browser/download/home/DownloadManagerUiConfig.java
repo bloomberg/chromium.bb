@@ -54,8 +54,11 @@ public class DownloadManagerUiConfig {
     /** Whether or not rename feature should be shown in UI. */
     public final boolean isRenameEnabled;
 
-    /** Whether or not section headers should be shown in UI. */
-    public final boolean showSectionHeaders;
+    /** Whether or not grouping items into a single card is supported. */
+    public final boolean supportsGrouping;
+
+    /** Whether or not to show the pagination headers in the list. */
+    public final boolean showPaginationHeaders;
 
     /** Constructor. */
     private DownloadManagerUiConfig(Builder builder) {
@@ -69,15 +72,14 @@ public class DownloadManagerUiConfig {
         maxThumbnailScaleFactor = builder.mMaxThumbnailScaleFactor;
         justNowThresholdSeconds = builder.mJustNowThresholdSeconds;
         isRenameEnabled = builder.mIsRenameEnabled;
-        showSectionHeaders = builder.mShowSectionHeaders;
+        supportsGrouping = builder.mSupportsGrouping;
+        showPaginationHeaders = builder.mShowPaginationHeaders;
     }
 
     /** Helper class for building a {@link DownloadManagerUiConfig}. */
     public static class Builder {
-        private static final String JUST_NOW_THRESHOLD_SECONDS_PARAM = "just_now_threshold";
-
-        /** Default value for threshold time interval to show up in Just Now section. */
-        private static final int JUST_NOW_THRESHOLD_SECONDS_DEFAULT = 30 * 60;
+        /** The threshold time interval to show up in Just Now section. */
+        private static final int JUST_NOW_THRESHOLD_SECONDS = 30 * 60;
 
         private static final int IN_MEMORY_THUMBNAIL_CACHE_SIZE_BYTES = 15 * BYTES_PER_MEGABYTE;
 
@@ -91,7 +93,8 @@ public class DownloadManagerUiConfig {
         private float mMaxThumbnailScaleFactor = 1.5f; /* hdpi scale factor. */
         private long mJustNowThresholdSeconds;
         private boolean mIsRenameEnabled;
-        private boolean mShowSectionHeaders;
+        private boolean mSupportsGrouping;
+        private boolean mShowPaginationHeaders;
 
         public Builder() {
             readParamsFromFinch();
@@ -142,8 +145,8 @@ public class DownloadManagerUiConfig {
             return this;
         }
 
-        public Builder setShowSectionHeaders(boolean showSectionHeaders) {
-            mShowSectionHeaders = showSectionHeaders;
+        public Builder setShowPaginationHeaders(boolean showPaginationHeaders) {
+            mShowPaginationHeaders = showPaginationHeaders;
             return this;
         }
 
@@ -152,10 +155,10 @@ public class DownloadManagerUiConfig {
         }
 
         private void readParamsFromFinch() {
-            mJustNowThresholdSeconds = ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
-                    ChromeFeatureList.DOWNLOAD_HOME_V2, JUST_NOW_THRESHOLD_SECONDS_PARAM,
-                    JUST_NOW_THRESHOLD_SECONDS_DEFAULT);
+            mJustNowThresholdSeconds = JUST_NOW_THRESHOLD_SECONDS;
             mIsRenameEnabled = ChromeFeatureList.isEnabled(ChromeFeatureList.DOWNLOAD_RENAME);
+            mSupportsGrouping =
+                    ChromeFeatureList.isEnabled(ChromeFeatureList.CONTENT_INDEXING_DOWNLOAD_HOME);
         }
     }
 }

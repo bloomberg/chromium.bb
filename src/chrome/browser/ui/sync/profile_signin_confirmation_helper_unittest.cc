@@ -11,6 +11,7 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
@@ -62,12 +63,13 @@ void GetValueAndQuit(T* result, const base::Closure& quit, T actual) {
   quit.Run();
 }
 
-template<typename T>
+template <typename T>
 T GetCallbackResult(
-    const base::Callback<void(const base::Callback<void(T)>&)>& callback) {
+    const base::Callback<void(base::OnceCallback<void(T)>)>& callback) {
   T result = false;
   base::RunLoop loop;
-  callback.Run(base::Bind(&GetValueAndQuit<T>, &result, loop.QuitClosure()));
+  callback.Run(
+      base::BindOnce(&GetValueAndQuit<T>, &result, loop.QuitClosure()));
   loop.Run();
   return result;
 }
@@ -130,8 +132,11 @@ class ProfileSigninConfirmationHelperTest : public testing::Test {
   }
 
   void SetUp() override {
+    ASSERT_TRUE(profile_dir_.CreateUniqueTempDir());
+
     // Create the profile.
     TestingProfile::Builder builder;
+    builder.SetPath(profile_dir_.GetPath());
     user_prefs_ = new TestingPrefStoreWithCustomReadError;
     sync_preferences::TestingPrefServiceSyncable* pref_service =
         new sync_preferences::TestingPrefServiceSyncable(
@@ -167,6 +172,7 @@ class ProfileSigninConfirmationHelperTest : public testing::Test {
   }
 
  protected:
+  base::ScopedTempDir profile_dir_;
   content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<TestingProfile> profile_;
   TestingPrefStoreWithCustomReadError* user_prefs_;

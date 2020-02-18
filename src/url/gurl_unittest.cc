@@ -539,11 +539,14 @@ TEST(GURLTest, PathForRequest) {
 
   for (size_t i = 0; i < base::size(cases); i++) {
     GURL url(cases[i].input);
-    std::string path_request = url.PathForRequest();
-    EXPECT_EQ(cases[i].expected, path_request);
+    EXPECT_EQ(cases[i].expected, url.PathForRequest());
+    EXPECT_EQ(cases[i].expected, url.PathForRequestPiece());
     EXPECT_EQ(cases[i].inner_expected == NULL, url.inner_url() == NULL);
-    if (url.inner_url() && cases[i].inner_expected)
+    if (url.inner_url() && cases[i].inner_expected) {
       EXPECT_EQ(cases[i].inner_expected, url.inner_url()->PathForRequest());
+      EXPECT_EQ(cases[i].inner_expected,
+                url.inner_url()->PathForRequestPiece());
+    }
   }
 }
 
@@ -566,11 +569,6 @@ TEST(GURLTest, EffectiveIntPort) {
     {"ftp://www.google.com/", 21},
     {"ftp://www.google.com:21/", 21},
     {"ftp://www.google.com:80/", 80},
-
-    // gopher
-    {"gopher://www.google.com/", 70},
-    {"gopher://www.google.com:70/", 70},
-    {"gopher://www.google.com:80/", 80},
 
     // file - no port
     {"file://www.google.com/", PORT_UNSPECIFIED},

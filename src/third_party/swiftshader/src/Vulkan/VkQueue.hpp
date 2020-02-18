@@ -22,7 +22,7 @@
 
 #include "System/Synchronization.hpp"
 
-namespace yarn
+namespace marl
 {
 	class Scheduler;
 }
@@ -44,7 +44,7 @@ class Queue
 	VK_LOADER_DATA loaderData = { ICD_LOADER_MAGIC };
 
 public:
-	Queue(Device* device, yarn::Scheduler *scheduler);
+	Queue(Device* device, marl::Scheduler *scheduler);
 	~Queue();
 
 	operator VkQueue()
@@ -55,7 +55,7 @@ public:
 	VkResult submit(uint32_t submitCount, const VkSubmitInfo* pSubmits, Fence* fence);
 	VkResult waitIdle();
 #ifndef __ANDROID__
-	void present(const VkPresentInfoKHR* presentInfo);
+	VkResult present(const VkPresentInfoKHR* presentInfo);
 #endif
 
 private:
@@ -69,7 +69,7 @@ private:
 		Type type = SUBMIT_QUEUE;
 	};
 
-	void taskLoop(yarn::Scheduler* scheduler);
+	void taskLoop(marl::Scheduler* scheduler);
 	void garbageCollect();
 	void submitQueue(const Task& task);
 

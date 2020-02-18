@@ -215,7 +215,8 @@ base::string16 ProfileAttributesStorage::ChooseNameForNewProfile(
 
     if (std::none_of(entries.begin(), entries.end(),
                      [name](ProfileAttributesEntry* entry) {
-                       return entry->GetName() == name;
+                       return entry->GetLocalProfileName() == name ||
+                              entry->GetName() == name;
                      })) {
       return name;
     }
@@ -223,7 +224,23 @@ base::string16 ProfileAttributesStorage::ChooseNameForNewProfile(
 }
 
 bool ProfileAttributesStorage::IsDefaultProfileName(
-    const base::string16& name) const {
+    const base::string16& name,
+    bool include_check_for_legacy_profile_name) const {
+  // Check whether it's one of the "Person %d" style names.
+  std::string default_name_format = l10n_util::GetStringFUTF8(
+      IDS_NEW_NUMBERED_PROFILE_NAME, base::ASCIIToUTF16("%d"));
+  int generic_profile_number;  // Unused. Just a placeholder for sscanf.
+  int assignments =
+      sscanf(base::UTF16ToUTF8(name).c_str(), default_name_format.c_str(),
+             &generic_profile_number);
+  if (assignments == 1)
+    return true;
+
+#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
+  if (!include_check_for_legacy_profile_name)
+    return false;
+#endif
+
   // Check if it's a "First user" old-style name.
   if (name == l10n_util::GetStringUTF16(IDS_DEFAULT_PROFILE_NAME) ||
       name == l10n_util::GetStringUTF16(IDS_LEGACY_DEFAULT_PROFILE_NAME))
@@ -234,17 +251,7 @@ bool ProfileAttributesStorage::IsDefaultProfileName(
     if (name == l10n_util::GetStringUTF16(kDefaultNames[i]))
       return true;
   }
-
-  // Check whether it's one of the "Person %d" style names.
-  std::string default_name_format = l10n_util::GetStringFUTF8(
-      IDS_NEW_NUMBERED_PROFILE_NAME, base::ASCIIToUTF16("%d"));
-
-  int generic_profile_number;  // Unused. Just a placeholder for sscanf.
-  int assignments = sscanf(base::UTF16ToUTF8(name).c_str(),
-                           default_name_format.c_str(),
-                           &generic_profile_number);
-  // Unless it matched the format, this is a custom name.
-  return assignments == 1;
+  return false;
 }
 
 size_t ProfileAttributesStorage::ChooseAvatarIconIndexForNewProfile() const {
@@ -375,8 +382,8 @@ void ProfileAttributesStorage::SaveAvatarImageAtPath(
   if (downloader_iter != avatar_images_downloads_in_progress_.end()) {
     // We mustn't delete the avatar downloader right here, since we're being
     // called by it.
-    content::BrowserThread::DeleteSoon(content::BrowserThread::UI, FROM_HERE,
-                                       downloader_iter->second.release());
+    base::DeleteSoon(FROM_HERE, {content::BrowserThread::UI},
+                     downloader_iter->second.release());
     avatar_images_downloads_in_progress_.erase(downloader_iter);
   }
 

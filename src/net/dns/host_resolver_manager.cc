@@ -32,6 +32,7 @@
 #include "base/compiler_specific.h"
 #include "base/containers/linked_list.h"
 #include "base/debug/debugger.h"
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -59,10 +60,12 @@
 #include "build/build_config.h"
 #include "net/base/address_family.h"
 #include "net/base/address_list.h"
+#include "net/base/features.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
+#include "net/base/network_isolation_key.h"
 #include "net/base/request_priority.h"
 #include "net/base/trace_constants.h"
 #include "net/base/url_util.h"
@@ -72,11 +75,13 @@
 #include "net/dns/dns_response.h"
 #include "net/dns/dns_transaction.h"
 #include "net/dns/dns_util.h"
+#include "net/dns/host_resolver_histograms.h"
 #include "net/dns/host_resolver_mdns_listener_impl.h"
 #include "net/dns/host_resolver_mdns_task.h"
 #include "net/dns/host_resolver_proc.h"
 #include "net/dns/mdns_client.h"
 #include "net/dns/public/dns_protocol.h"
+#include "net/dns/public/resolve_error_info.h"
 #include "net/dns/record_parsed.h"
 #include "net/log/net_log.h"
 #include "net/log/net_log_capture_mode.h"
@@ -162,7 +167,7 @@ bool ResemblesMulticastDNSName(const std::string& hostname) {
   const char kSuffix[] = ".local.";
   const size_t kSuffixLen = sizeof(kSuffix) - 1;
   const size_t kSuffixLenTrimmed = kSuffixLen - 1;
-  if (hostname.back() == '.') {
+  if (!hostname.empty() && hostname.back() == '.') {
     return hostname.size() > kSuffixLen &&
            !hostname.compare(hostname.size() - kSuffixLen, kSuffixLen, kSuffix);
   }
@@ -312,19 +317,6 @@ base::Value NetLogDnsTaskFailedParams(const HostCache::Entry& results,
   return std::move(dict);
 }
 
-// Creates NetLog parameters containing the information of the request. Use
-// NetLogRequestInfoCallback if the request is specified via RequestInfo.
-base::Value NetLogRequestParams(const HostPortPair& host) {
-  base::DictionaryValue dict;
-
-  dict.SetString("host", host.ToString());
-  dict.SetInteger("address_family",
-                  static_cast<int>(ADDRESS_FAMILY_UNSPECIFIED));
-  dict.SetBoolean("allow_cached_response", true);
-  dict.SetBoolean("is_speculative", false);
-  return std::move(dict);
-}
-
 // Creates NetLog parameters for the creation of a HostResolverManager::Job.
 base::Value NetLogJobCreationParams(const NetLogSource& source,
                                     const std::string& host) {
@@ -352,26 +344,6 @@ base::Value NetLogIPv6AvailableParams(bool ipv6_available, bool cached) {
 
 // The logging routines are defined here because some requests are resolved
 // without a Request object.
-
-// Logs when a request has just been started. Overloads for whether or not the
-// request information is specified via a RequestInfo object.
-void LogStartRequest(const NetLogWithSource& source_net_log,
-                     const HostPortPair& host) {
-  source_net_log.BeginEvent(NetLogEventType::HOST_RESOLVER_IMPL_REQUEST,
-                            [&] { return NetLogRequestParams(host); });
-}
-
-// Logs when a request has just completed (before its callback is run).
-void LogFinishRequest(const NetLogWithSource& source_net_log, int net_error) {
-  source_net_log.EndEventWithNetErrorCode(
-      NetLogEventType::HOST_RESOLVER_IMPL_REQUEST, net_error);
-}
-
-// Logs when a request has been cancelled.
-void LogCancelRequest(const NetLogWithSource& source_net_log) {
-  source_net_log.AddEvent(NetLogEventType::CANCELLED);
-  source_net_log.EndEvent(NetLogEventType::HOST_RESOLVER_IMPL_REQUEST);
-}
 
 //-----------------------------------------------------------------------------
 
@@ -516,17 +488,23 @@ bool ResolveLocalHostname(base::StringPiece host, AddressList* address_list) {
 // cancellation is initiated by the Job (OnJobCancelled) vs by the end user
 // (~RequestImpl).
 class HostResolverManager::RequestImpl
-    : public CancellableRequest,
+    : public CancellableResolveHostRequest,
       public base::LinkNode<HostResolverManager::RequestImpl> {
  public:
   RequestImpl(const NetLogWithSource& source_net_log,
               const HostPortPair& request_host,
+              const NetworkIsolationKey& network_isolation_key,
               const base::Optional<ResolveHostParameters>& optional_parameters,
               URLRequestContext* request_context,
               HostCache* host_cache,
               base::WeakPtr<HostResolverManager> resolver)
       : source_net_log_(source_net_log),
         request_host_(request_host),
+        network_isolation_key_(
+            base::FeatureList::IsEnabled(
+                net::features::kSplitHostCacheByNetworkIsolationKey)
+                ? network_isolation_key
+                : NetworkIsolationKey()),
         parameters_(optional_parameters ? optional_parameters.value()
                                         : ResolveHostParameters()),
         request_context_(request_context),
@@ -555,6 +533,7 @@ class HostResolverManager::RequestImpl
     // Parent HostResolver must still be alive to call Start().
     DCHECK(resolver_);
 
+    LogStartRequest();
     int rv = resolver_->Resolve(this);
     DCHECK(!complete_);
     if (rv == ERR_IO_PENDING) {
@@ -563,6 +542,7 @@ class HostResolverManager::RequestImpl
     } else {
       DCHECK(!job_);
       complete_ = true;
+      LogFinishRequest(rv);
     }
     resolver_ = nullptr;
 
@@ -591,6 +571,17 @@ class HostResolverManager::RequestImpl
     return results_ ? results_.value().hostnames() : *nullopt_result;
   }
 
+  const base::Optional<EsniContent>& GetEsniResults() const override {
+    DCHECK(complete_);
+    static const base::NoDestructor<base::Optional<EsniContent>> nullopt_result;
+    return results_ ? results_.value().esni_data() : *nullopt_result;
+  }
+
+  net::ResolveErrorInfo GetResolveErrorInfo() const override {
+    DCHECK(complete_);
+    return error_info_;
+  }
+
   const base::Optional<HostCache::EntryStaleness>& GetStaleInfo()
       const override {
     DCHECK(complete_);
@@ -608,6 +599,8 @@ class HostResolverManager::RequestImpl
 
     results_ = std::move(results);
   }
+
+  void set_error_info(int error) { error_info_ = ResolveErrorInfo(error); }
 
   void set_stale_info(HostCache::EntryStaleness stale_info) {
     // Should only be called at most once and before request is marked
@@ -636,16 +629,22 @@ class HostResolverManager::RequestImpl
 
     // No results should be set.
     DCHECK(!results_);
+
+    LogCancelRequest();
   }
 
   // Cleans up Job assignment, marks request completed, and calls the completion
   // callback.
   void OnJobCompleted(Job* job, int error) {
+    set_error_info(error);
+
     DCHECK_EQ(job_, job);
     job_ = nullptr;
 
     DCHECK(!complete_);
     complete_ = true;
+
+    LogFinishRequest(error);
 
     DCHECK(callback_);
     std::move(callback_).Run(error);
@@ -657,6 +656,10 @@ class HostResolverManager::RequestImpl
   const NetLogWithSource& source_net_log() { return source_net_log_; }
 
   const HostPortPair& request_host() const { return request_host_; }
+
+  const NetworkIsolationKey& network_isolation_key() const {
+    return network_isolation_key_;
+  }
 
   const ResolveHostParameters& parameters() const { return parameters_; }
 
@@ -682,9 +685,40 @@ class HostResolverManager::RequestImpl
   }
 
  private:
+  // Logs when a request has just been started.
+  void LogStartRequest() {
+    source_net_log_.BeginEvent(
+        NetLogEventType::HOST_RESOLVER_IMPL_REQUEST, [this] {
+          base::Value dict(base::Value::Type::DICTIONARY);
+          dict.SetStringKey("host", request_host_.ToString());
+          dict.SetIntKey("dns_query_type",
+                         static_cast<int>(parameters_.dns_query_type));
+          dict.SetBoolKey("allow_cached_response",
+                          parameters_.cache_usage !=
+                              ResolveHostParameters::CacheUsage::DISALLOWED);
+          dict.SetBoolKey("is_speculative", parameters_.is_speculative);
+          dict.SetStringKey("network_isolation_key",
+                            network_isolation_key_.ToDebugString());
+          return dict;
+        });
+  }
+
+  // Logs when a request has just completed (before its callback is run).
+  void LogFinishRequest(int net_error) {
+    source_net_log_.EndEventWithNetErrorCode(
+        NetLogEventType::HOST_RESOLVER_IMPL_REQUEST, net_error);
+  }
+
+  // Logs when a request has been cancelled.
+  void LogCancelRequest() {
+    source_net_log_.AddEvent(NetLogEventType::CANCELLED);
+    source_net_log_.EndEvent(NetLogEventType::HOST_RESOLVER_IMPL_REQUEST);
+  }
+
   const NetLogWithSource source_net_log_;
 
   const HostPortPair request_host_;
+  const NetworkIsolationKey network_isolation_key_;
   ResolveHostParameters parameters_;
   URLRequestContext* const request_context_;
   HostCache* const host_cache_;
@@ -702,12 +736,50 @@ class HostResolverManager::RequestImpl
   bool complete_;
   base::Optional<HostCache::Entry> results_;
   base::Optional<HostCache::EntryStaleness> stale_info_;
+  ResolveErrorInfo error_info_;
 
   base::TimeTicks request_time_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(RequestImpl);
+};
+
+class HostResolverManager::ProbeRequestImpl : public CancellableProbeRequest {
+ public:
+  ProbeRequestImpl(URLRequestContext* context,
+                   base::WeakPtr<HostResolverManager> resolver)
+      : context_(context), resolver_(resolver) {
+    DCHECK(context_);
+  }
+
+  ProbeRequestImpl(const ProbeRequestImpl&) = delete;
+  ProbeRequestImpl& operator=(const ProbeRequestImpl&) = delete;
+
+  ~ProbeRequestImpl() override { Cancel(); }
+
+  void Cancel() override {
+    if (!needs_cancel_ || !resolver_)
+      return;
+
+    resolver_->CancelDohProbes();
+    needs_cancel_ = false;
+    context_ = nullptr;
+  }
+
+  int Start() override {
+    DCHECK(resolver_);
+    DCHECK(!needs_cancel_);
+
+    resolver_->ActivateDohProbes(context_);
+    needs_cancel_ = true;
+    return ERR_IO_PENDING;
+  }
+
+ private:
+  URLRequestContext* context_;
+  base::WeakPtr<HostResolverManager> resolver_;
+  bool needs_cancel_ = false;
 };
 
 //------------------------------------------------------------------------------
@@ -831,8 +903,8 @@ class HostResolverManager::ProcTask {
       AttemptCompletionCallback completion_callback) {
     AddressList results;
     int os_error = 0;
-    int error = resolver_proc->Resolve(std::move(hostname), address_family,
-                                       flags, &results, &os_error);
+    int error = resolver_proc->Resolve(hostname, address_family, flags,
+                                       &results, &os_error);
 
     network_task_runner->PostTask(
         FROM_HERE, base::BindOnce(std::move(completion_callback), results,
@@ -951,10 +1023,10 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
                                    const HostCache::Entry& results,
                                    bool secure) = 0;
 
-    // Called when the first of two jobs succeeds.  If the first completed
-    // transaction fails, this is not called.  Also not called when the DnsTask
-    // only needs to run one transaction.
-    virtual void OnFirstDnsTransactionComplete() = 0;
+    // Called when a job succeeds and there are more transactions needed.  If
+    // the current completed transaction fails, this is not called.  Also not
+    // called when the DnsTask only needs to run one transaction.
+    virtual void OnIntermediateTransactionComplete() = 0;
 
     virtual RequestPriority priority() const = 0;
 
@@ -974,12 +1046,12 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
           const base::TickClock* tick_clock)
       : client_(client),
         hostname_(hostname),
-        query_type_(query_type),
         request_context_(request_context),
         secure_(secure),
         secure_dns_mode_(secure_dns_mode),
         delegate_(delegate),
         net_log_(job_net_log),
+        query_type_(query_type),
         num_completed_transactions_(0),
         tick_clock_(tick_clock),
         task_start_time_(tick_clock_->NowTicks()) {
@@ -989,34 +1061,47 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
     else
       DCHECK(client_->CanUseInsecureDnsTransactions());
 
+    if (query_type != DnsQueryType::UNSPECIFIED) {
+      transactions_needed_.push(query_type);
+    } else {
+      transactions_needed_.push(DnsQueryType::A);
+      transactions_needed_.push(DnsQueryType::AAAA);
+
+      if (secure_ &&
+          base::FeatureList::IsEnabled(features::kRequestEsniDnsRecords)) {
+        transactions_needed_.push(DnsQueryType::ESNI);
+        dns_histograms::RecordEsniTransactionStatus(
+            dns_histograms::EsniSuccessOrTimeout::kStarted);
+      }
+    }
+    num_needed_transactions_ = transactions_needed_.size();
+
     DCHECK(delegate_);
   }
 
-  bool needs_two_transactions() const {
-    return query_type_ == DnsQueryType::UNSPECIFIED;
-  }
+  // The number of transactions required for the specified query type. Does not
+  // change as transactions are completed.
+  int num_needed_transactions() const { return num_needed_transactions_; }
 
   bool needs_another_transaction() const {
-    return needs_two_transactions() && !transaction2_;
+    return !transactions_needed_.empty();
   }
 
   bool secure() const { return secure_; }
 
-  void StartFirstTransaction() {
-    DCHECK_EQ(0u, num_completed_transactions_);
-    DCHECK(!transaction1_);
-
-    net_log_.BeginEvent(NetLogEventType::HOST_RESOLVER_IMPL_DNS_TASK);
-    transaction1_ = CreateTransaction(query_type_ == DnsQueryType::UNSPECIFIED
-                                          ? DnsQueryType::A
-                                          : query_type_);
-    transaction1_->Start();
-  }
-
-  void StartSecondTransaction() {
+  void StartNextTransaction() {
     DCHECK(needs_another_transaction());
-    transaction2_ = CreateTransaction(DnsQueryType::AAAA);
-    transaction2_->Start();
+
+    if (num_needed_transactions_ ==
+        static_cast<int>(transactions_needed_.size()))
+      net_log_.BeginEvent(NetLogEventType::HOST_RESOLVER_IMPL_DNS_TASK);
+
+    DnsQueryType type = transactions_needed_.front();
+    transactions_needed_.pop();
+
+    std::unique_ptr<DnsTransaction> transaction = CreateTransaction(type);
+    transaction->Start();
+    transactions_started_.insert(std::move(transaction));
   }
 
  private:
@@ -1040,12 +1125,43 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
     return trans;
   }
 
+  void OnEsniTransactionTimeout() {
+    // Currently, the ESNI transaction timer only gets started
+    // when all non-ESNI transactions have completed.
+    DCHECK(TaskIsCompleteOrOnlyEsniTransactionsRemain());
+
+    for (size_t i = 0; i < transactions_started_.size(); ++i) {
+      dns_histograms::RecordEsniTransactionStatus(
+          dns_histograms::EsniSuccessOrTimeout::kTimeout);
+    }
+
+    num_completed_transactions_ += transactions_started_.size();
+    DCHECK(num_completed_transactions_ == num_needed_transactions());
+    transactions_started_.clear();
+
+    ProcessResultsOnCompletion();
+  }
+
   void OnTransactionComplete(const base::TimeTicks& start_time,
                              DnsQueryType dns_query_type,
                              DnsTransaction* transaction,
                              int net_error,
                              const DnsResponse* response) {
     DCHECK(transaction);
+
+    // Once control leaves OnTransactionComplete, there's no further
+    // need for the transaction object. On the other hand, since it owns
+    // |*response|, it should stay around while OnTransactionComplete
+    // executes.
+    std::unique_ptr<DnsTransaction> destroy_transaction_on_return;
+    {
+      auto it = transactions_started_.find(transaction);
+      DCHECK(it != transactions_started_.end());
+
+      destroy_transaction_on_return = std::move(*it);
+      transactions_started_.erase(it);
+    }
+
     if (net_error != OK && !(net_error == ERR_NAME_NOT_RESOLVED && response &&
                              response->IsValid())) {
       OnFailure(net_error, DnsResponse::DNS_PARSE_OK, base::nullopt);
@@ -1056,7 +1172,7 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
     HostCache::Entry results(ERR_FAILED, HostCache::Entry::SOURCE_UNKNOWN);
     switch (dns_query_type) {
       case DnsQueryType::UNSPECIFIED:
-        // Should create two separate transactions with specified type.
+        // Should create multiple transactions with specified types.
         NOTREACHED();
         break;
       case DnsQueryType::A:
@@ -1072,6 +1188,9 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
       case DnsQueryType::SRV:
         parse_result = ParseServiceDnsResponse(response, &results);
         break;
+      case DnsQueryType::ESNI:
+        parse_result = ParseEsniDnsResponse(response, &results);
+        break;
     }
     DCHECK_LT(parse_result, DnsResponse::DNS_PARSE_RESULT_MAX);
 
@@ -1082,19 +1201,26 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
 
     // Merge results with saved results from previous transactions.
     if (saved_results_) {
-      DCHECK(needs_two_transactions());
-      DCHECK_GE(1u, num_completed_transactions_);
+      DCHECK_LE(2, num_needed_transactions());
+      DCHECK_LT(num_completed_transactions_, num_needed_transactions());
 
       switch (dns_query_type) {
         case DnsQueryType::A:
-          // A results in |results| go after other results in |saved_results_|,
-          // so merge |saved_results_| to the front.
+          // Canonical names from A results have lower priority than those
+          // from AAAA results, so merge to the back.
           results = HostCache::Entry::MergeEntries(
               std::move(saved_results_).value(), std::move(results));
           break;
         case DnsQueryType::AAAA:
-          // AAAA results in |results| go before other results in
-          // |saved_results_|, so merge |saved_results_| to the back.
+          // Canonical names from AAAA results take priority over those
+          // from A results, so merge to the front.
+          results = HostCache::Entry::MergeEntries(
+              std::move(results), std::move(saved_results_).value());
+          break;
+        case DnsQueryType::ESNI:
+          // It doesn't matter whether the ESNI record is the "front"
+          // or the "back" argument to the merge, since the logic for
+          // merging addresses from ESNI records is the same in each case.
           results = HostCache::Entry::MergeEntries(
               std::move(results), std::move(saved_results_).value());
           break;
@@ -1104,23 +1230,54 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
       }
     }
 
+    saved_results_ = std::move(results);
+
+    MaybeRecordMetricsOnSuccessfulTransaction(dns_query_type);
+
     // If not all transactions are complete, the task cannot yet be completed
     // and the results so far must be saved to merge with additional results.
     ++num_completed_transactions_;
-    if (needs_two_transactions() && num_completed_transactions_ == 1) {
-      saved_results_ = std::move(results);
-      delegate_->OnFirstDnsTransactionComplete();
+    if (num_completed_transactions_ < num_needed_transactions()) {
+      delegate_->OnIntermediateTransactionComplete();
+      MaybeStartEsniTimer();
       return;
     }
 
-    // If there are multiple addresses, and at least one is IPv6, need to sort
-    // them.  Note that IPv6 addresses are always put before IPv4 ones, so it's
-    // sufficient to just check the family of the first address.
-    if (results.addresses() && results.addresses().value().size() > 1 &&
-        results.addresses().value()[0].GetFamily() == ADDRESS_FAMILY_IPV6) {
+    // Since all transactions are complete, in particular, all ESNI transactions
+    // are complete (if any were started).
+    esni_cancellation_timer_.Stop();
+
+    ProcessResultsOnCompletion();
+  }
+
+  // Postprocesses the transactions' aggregated results after all
+  // transactions have completed.
+  void ProcessResultsOnCompletion() {
+    DCHECK(saved_results_.has_value());
+    HostCache::Entry results = std::move(*saved_results_);
+
+    // If there are multiple addresses, and at least one is IPv6, need to
+    // sort them.
+    // When there are no ESNI keys in the record, IPv6 addresses are always
+    // put before IPv4 ones, so it's sufficient to just check the family of
+    // the first address.
+    // When there are ESNI keys, there could be ESNI-equipped
+    // IPv4 addresses preceding the first IPv6 address, so it's necessary to
+    // scan the list.
+    bool at_least_one_ipv6_address =
+        results.addresses() && !results.addresses().value().empty() &&
+        (results.addresses().value()[0].GetFamily() == ADDRESS_FAMILY_IPV6 ||
+         (results.esni_data() &&
+          std::any_of(results.addresses().value().begin(),
+                      results.addresses().value().end(), [](auto& e) {
+                        return e.GetFamily() == ADDRESS_FAMILY_IPV6;
+                      })));
+
+    if (at_least_one_ipv6_address) {
       // Sort addresses if needed.  Sort could complete synchronously.
+      AddressList addresses = results.addresses().value();
       client_->GetAddressSorter()->Sort(
-          results.addresses().value(),
+          addresses,
           base::BindOnce(&DnsTask::OnSortComplete, AsWeakPtr(),
                          tick_clock_->NowTicks(), std::move(results), secure_));
       return;
@@ -1142,6 +1299,7 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
       *out_results = HostCache::Entry(ERR_NAME_NOT_RESOLVED, AddressList(),
                                       HostCache::Entry::SOURCE_DNS, ttl);
     } else {
+      addresses.Deduplicate();
       *out_results = HostCache::Entry(OK, std::move(addresses),
                                       HostCache::Entry::SOURCE_DNS, ttl);
     }
@@ -1230,6 +1388,58 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
         std::move(ordered_service_targets), HostCache::Entry::SOURCE_DNS,
         response_ttl);
     return DnsResponse::DNS_PARSE_OK;
+  }
+
+  DnsResponse::Result ParseEsniDnsResponse(const DnsResponse* response,
+                                           HostCache::Entry* out_results) {
+    std::vector<std::unique_ptr<const RecordParsed>> records;
+    base::Optional<base::TimeDelta> response_ttl;
+    DnsResponse::Result parse_result = ParseAndFilterResponseRecords(
+        response, dns_protocol::kExperimentalTypeEsniDraft4, &records,
+        &response_ttl);
+
+    if (parse_result != DnsResponse::DNS_PARSE_OK) {
+      *out_results = GetMalformedResponseResult();
+      return parse_result;
+    }
+
+    // Glom the ESNI response records into a single EsniContent;
+    // this also dedups keys and (key, address) associations.
+    EsniContent content;
+    for (const auto& record : records) {
+      const EsniRecordRdata& rdata = *record->rdata<EsniRecordRdata>();
+
+      for (const IPAddress& address : rdata.addresses())
+        content.AddKeyForAddress(address, rdata.esni_keys());
+    }
+
+    // As a first pass, deliberately ignore ESNI records with no addresses
+    // included. Later, the implementation can be extended to handle "at-large"
+    // ESNI keys not specifically associated with collections of addresses.
+    // (We're declining the "...clients MAY initiate..." choice in ESNI draft 4,
+    // Section 4.2.2 Step 2.)
+    if (content.keys_for_addresses().empty()) {
+      *out_results =
+          HostCache::Entry(ERR_NAME_NOT_RESOLVED, EsniContent(),
+                           HostCache::Entry::SOURCE_DNS, response_ttl);
+    } else {
+      AddressList addresses, ipv4_addresses_temporary;
+      addresses.set_canonical_name(hostname_);
+      for (const auto& kv : content.keys_for_addresses())
+        (kv.first.IsIPv6() ? addresses : ipv4_addresses_temporary)
+            .push_back(IPEndPoint(kv.first, 0));
+      addresses.insert(addresses.end(), ipv4_addresses_temporary.begin(),
+                       ipv4_addresses_temporary.end());
+
+      // Store the addresses separately from the ESNI key-address
+      // associations, so that the addresses can be merged later with
+      // addresses from A and AAAA records.
+      *out_results = HostCache::Entry(
+          OK, std::move(content), HostCache::Entry::SOURCE_DNS, response_ttl);
+      out_results->set_addresses(std::move(addresses));
+    }
+
+    return parse_result;
   }
 
   // Sort service targets per RFC2782.  In summary, sort first by |priority|,
@@ -1388,9 +1598,99 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
     delegate_->OnDnsTaskComplete(task_start_time_, results, secure_);
   }
 
+  // Returns whether all transactions left to execute are of transaction
+  // type ESNI. (In particular, this is the case if all transactions are
+  // complete.)
+  // Used for logging and starting the ESNI transaction timer (see
+  // MaybeStartEsniTimer).
+  bool TaskIsCompleteOrOnlyEsniTransactionsRemain() const {
+    // Since DoH runs all transactions concurrently and
+    // DnsQueryType::UNSPECIFIED-with-ESNI tasks are only run using DoH,
+    // this method only needs to check the transactions in transactions_started_
+    // because transactions_needed_ is empty from the time the first
+    // transaction is started.
+    DCHECK(transactions_needed_.empty());
+
+    return std::all_of(
+        transactions_started_.begin(), transactions_started_.end(),
+        [&](const std::unique_ptr<DnsTransaction>& p) {
+          DCHECK(p);
+          return p->GetType() == dns_protocol::kExperimentalTypeEsniDraft4;
+        });
+  }
+
+  // If ESNI transactions are being executed as part of this task
+  // and all transactions except the ESNI transactions have finished, and the
+  // ESNI transactions have not finished, starts a timer after which to abort
+  // the ESNI transactions.
+  //
+  // This timer has duration equal to the shorter of two parameterized values:
+  // - a fixed, absolute duration
+  // - a relative duration (as a proportion of the total time taken for
+  // the task's other transactions).
+  void MaybeStartEsniTimer() {
+    DCHECK(!transactions_started_.empty());
+    DCHECK(saved_results_);
+    if (!esni_cancellation_timer_.IsRunning() &&
+        TaskIsCompleteOrOnlyEsniTransactionsRemain()) {
+      base::TimeDelta total_time_taken_for_other_transactions =
+          tick_clock_->NowTicks() - task_start_time_;
+
+      esni_cancellation_timer_.Start(
+          FROM_HERE,
+          std::min(
+              features::EsniDnsMaxAbsoluteAdditionalWait(),
+              total_time_taken_for_other_transactions *
+                  (0.01 *
+                   features::kEsniDnsMaxRelativeAdditionalWaitPercent.Get())),
+          this, &DnsTask::OnEsniTransactionTimeout);
+    }
+  }
+
+  // Records transaction metrics (currently only concerning ESNI records).
+  //
+  // In DnsQueryType::ESNI tasks, records the time taken to complete
+  // the task's single transaction.
+  //
+  // In DnsQueryType::UNSPECIFIED tasks, records:
+  // 1) the end-to-end time elapsed at completion of the ESNI transaction;
+  // 2) the end-to-end time after all non-ESNI transactions.
+  // (The goal is to measure the marginal impact on total task time
+  // caused by adding ESNI queries to DnsQueryType::UNSPECIFIED tasks).
+  void MaybeRecordMetricsOnSuccessfulTransaction(
+      DnsQueryType transaction_type) {
+    auto elapsed = tick_clock_->NowTicks() - task_start_time_;
+
+    if (query_type_ != DnsQueryType::ESNI &&
+        query_type_ != DnsQueryType::UNSPECIFIED) {
+      return;
+    }
+
+    if (query_type_ == DnsQueryType::ESNI) {
+      dns_histograms::RecordEsniTimeForEsniTask(elapsed);
+      return;
+    }
+
+    if (transaction_type == DnsQueryType::ESNI) {
+      dns_histograms::RecordEsniTransactionStatus(
+          dns_histograms::EsniSuccessOrTimeout::kSuccess);
+      dns_histograms::RecordEsniTimeForUnspecTask(elapsed);
+      esni_elapsed_for_logging_ = elapsed;
+    } else if (base::FeatureList::IsEnabled(features::kRequestEsniDnsRecords) &&
+               TaskIsCompleteOrOnlyEsniTransactionsRemain()) {
+      dns_histograms::RecordNonEsniTimeForUnspecTask(elapsed);
+      non_esni_elapsed_for_logging_ = elapsed;
+    }
+
+    if (esni_elapsed_for_logging_ != base::TimeDelta() &&
+        non_esni_elapsed_for_logging_ != base::TimeDelta()) {
+      dns_histograms::RecordEsniVersusNonEsniTimes(
+          esni_elapsed_for_logging_, non_esni_elapsed_for_logging_);
+    }
+  }
+
   DnsClient* client_;
   std::string hostname_;
-  const DnsQueryType query_type_;
   URLRequestContext* const request_context_;
 
   // Whether lookups in this DnsTask should occur using DoH or plaintext.
@@ -1401,10 +1701,14 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
   Delegate* delegate_;
   const NetLogWithSource net_log_;
 
-  std::unique_ptr<DnsTransaction> transaction1_;
-  std::unique_ptr<DnsTransaction> transaction2_;
+  // The overall query type of the task.
+  DnsQueryType query_type_;
 
-  unsigned num_completed_transactions_;
+  base::queue<DnsQueryType> transactions_needed_;
+  base::flat_set<std::unique_ptr<DnsTransaction>, base::UniquePtrComparator>
+      transactions_started_;
+  int num_needed_transactions_;
+  int num_completed_transactions_;
 
   // Result from previously completed transactions. Only set if a transaction
   // has completed while others are still in progress.
@@ -1412,6 +1716,17 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
 
   const base::TickClock* tick_clock_;
   base::TimeTicks task_start_time_;
+
+  // In order to histogram the relative end-to-end elapsed times of
+  // a task's ESNI and non-ESNI transactions, store the end-to-end time
+  // elapsed from task start to the end of the task's ESNI transaction
+  // (if any) and its final non-ESNI transaction.
+  base::TimeDelta esni_elapsed_for_logging_;
+  base::TimeDelta non_esni_elapsed_for_logging_;
+
+  // Timer for early abort of ESNI transactions. See comments describing
+  // the timeout parameters in net/base/features.h.
+  base::OneShotTimer esni_cancellation_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(DnsTask);
 };
@@ -1421,12 +1736,14 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
 struct HostResolverManager::JobKey {
   bool operator<(const JobKey& other) const {
     return std::tie(query_type, flags, source, secure_dns_mode, request_context,
-                    hostname) < std::tie(other.query_type, other.flags,
-                                         other.source, other.secure_dns_mode,
-                                         other.request_context, other.hostname);
+                    hostname, network_isolation_key_) <
+           std::tie(other.query_type, other.flags, other.source,
+                    other.secure_dns_mode, other.request_context,
+                    other.hostname, other.network_isolation_key_);
   }
 
   std::string hostname;
+  NetworkIsolationKey network_isolation_key_;
   DnsQueryType query_type;
   HostResolverFlags flags;
   HostResolverSource source;
@@ -1442,6 +1759,7 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
   // request that spawned it.
   Job(const base::WeakPtr<HostResolverManager>& resolver,
       base::StringPiece hostname,
+      const NetworkIsolationKey& network_isolation_key,
       DnsQueryType query_type,
       HostResolverFlags host_resolver_flags,
       HostResolverSource requested_source,
@@ -1456,6 +1774,7 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
       const base::TickClock* tick_clock)
       : resolver_(resolver),
         hostname_(hostname),
+        network_isolation_key_(network_isolation_key),
         query_type_(query_type),
         host_resolver_flags_(host_resolver_flags),
         requested_source_(requested_source),
@@ -1471,6 +1790,7 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
         num_occupied_job_slots_(0),
         dispatcher_(nullptr),
         dns_task_error_(OK),
+        is_secure_dns_task_error_(false),
         tick_clock_(tick_clock),
         start_time_(base::TimeTicks()),
         net_log_(
@@ -1504,7 +1824,6 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
       RequestImpl* req = requests_.head()->value();
       req->RemoveFromList();
       DCHECK_EQ(this, req->job());
-      LogCancelRequest(req->source_net_log());
       req->OnJobCancelled(this);
     }
   }
@@ -1572,8 +1891,6 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
     DCHECK_EQ(hostname_, request->request_host().host());
     DCHECK(!requests_.empty());
 
-    LogCancelRequest(request->source_net_log());
-
     priority_tracker_.Remove(request->priority());
     net_log_.AddEvent(NetLogEventType::HOST_RESOLVER_IMPL_JOB_REQUEST_DETACH,
                       [&] {
@@ -1628,6 +1945,7 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
       if (has_proc_fallback) {
         KillDnsTask();
         dns_task_error_ = OK;
+        is_secure_dns_task_error_ = false;
         RunNextTask();
       } else if (!fallback_only) {
         CompleteRequestsWithError(error);
@@ -1769,25 +2087,28 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
  private:
   HostCache::Key GenerateCacheKey(bool secure) const {
     HostCache::Key cache_key(hostname_, query_type_, host_resolver_flags_,
-                             requested_source_);
+                             requested_source_, network_isolation_key_);
     cache_key.secure = secure;
     return cache_key;
   }
 
   void KillDnsTask() {
     if (dns_task_) {
-      if (dispatcher_)
-        ReduceToOneJobSlot();
+      if (dispatcher_) {
+        while (num_occupied_job_slots_ > 1 || is_queued()) {
+          ReduceByOneJobSlot();
+        }
+      }
       dns_task_.reset();
     }
   }
 
-  // Reduce the number of job slots occupied and queued in the dispatcher
-  // to one. If the second Job slot is queued in the dispatcher, cancels the
-  // queued job. Otherwise, the second Job has been started by the
-  // PrioritizedDispatcher, so signals it is complete.
-  void ReduceToOneJobSlot() {
-    DCHECK_GE(num_occupied_job_slots_, 1u);
+  // Reduce the number of job slots occupied and queued in the dispatcher by
+  // one. If the next Job slot is queued in the dispatcher, cancels the queued
+  // job. Otherwise, the next Job has been started by the PrioritizedDispatcher,
+  // so signals it is complete.
+  void ReduceByOneJobSlot() {
+    DCHECK_GE(num_occupied_job_slots_, 1);
     DCHECK(dispatcher_);
     if (is_queued()) {
       dispatcher_->Cancel(handle_);
@@ -1795,8 +2116,9 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
     } else if (num_occupied_job_slots_ > 1) {
       dispatcher_->OnJobFinished();
       --num_occupied_job_slots_;
+    } else {
+      NOTREACHED();
     }
-    DCHECK_EQ(1u, num_occupied_job_slots_);
   }
 
   void UpdatePriority() {
@@ -1806,13 +2128,19 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
 
   // PriorityDispatch::Job:
   void Start() override {
-    DCHECK_LE(num_occupied_job_slots_, 1u);
-
     handle_.Reset();
     ++num_occupied_job_slots_;
 
-    if (num_occupied_job_slots_ == 2) {
-      StartSecondDnsTransaction();
+    if (num_occupied_job_slots_ >= 2) {
+      if (!dns_task_) {
+        dispatcher_->OnJobFinished();
+        return;
+      }
+      DCHECK(dns_task_);
+      StartNextDnsTransaction();
+      if (dns_task_->needs_another_transaction()) {
+        Schedule(true);
+      }
       return;
     }
 
@@ -1828,7 +2156,7 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
   // PrioritizedDispatcher with tighter limits.
   void StartProcTask() {
     DCHECK(dispatcher_);
-    DCHECK_EQ(1u, num_occupied_job_slots_);
+    DCHECK_EQ(1, num_occupied_job_slots_);
     DCHECK(IsAddressType(query_type_));
 
     proc_task_ = std::make_unique<ProcTask>(
@@ -1850,6 +2178,15 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
     DCHECK(proc_task_);
 
     if (dns_task_error_ != OK) {
+      // If a secure DNS task previously failed and fell back to a ProcTask
+      // without issuing an insecure DNS task in between, record what happened
+      // to the fallback ProcTask.
+      if (is_secure_dns_task_error_) {
+        base::UmaHistogramSparse(
+            "Net.DNS.SecureDnsTaskFailure.FallbackProcTask.Error",
+            std::abs(net_error));
+      }
+
       // This ProcTask was a fallback resolution after a failed insecure
       // DnsTask.
       if (net_error == OK) {
@@ -1897,30 +2234,30 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
 
   void StartDnsTask(bool secure) {
     DCHECK_EQ(secure, !dispatcher_);
-    DCHECK_EQ(dispatcher_ ? 1u : 0, num_occupied_job_slots_);
+    DCHECK_EQ(dispatcher_ ? 1 : 0, num_occupied_job_slots_);
     DCHECK(!resolver_->HaveTestProcOverride());
     // Need to create the task even if we're going to post a failure instead of
     // running it, as a "started" job needs a task to be properly cleaned up.
     dns_task_.reset(new DnsTask(resolver_->dns_client_.get(), hostname_,
                                 query_type_, request_context_, secure,
                                 secure_dns_mode_, this, net_log_, tick_clock_));
-    dns_task_->StartFirstTransaction();
+    dns_task_->StartNextTransaction();
     // Schedule a second transaction, if needed. DoH queries can bypass the
-    // dispatcher and start immediately.
-    if (dns_task_->needs_two_transactions()) {
-      if (secure)
-        dns_task_->StartSecondTransaction();
-      else
-        Schedule(true);
+    // dispatcher and start all of their transactions immediately.
+    if (secure) {
+      while (dns_task_->needs_another_transaction())
+        dns_task_->StartNextTransaction();
+    } else if (dns_task_->needs_another_transaction()) {
+      Schedule(true);
     }
   }
 
-  void StartSecondDnsTransaction() {
+  void StartNextDnsTransaction() {
     DCHECK_EQ(dns_task_->secure(), !dispatcher_);
     DCHECK(!dispatcher_ || num_occupied_job_slots_ >= 1);
     DCHECK(dns_task_);
-    DCHECK(dns_task_->needs_two_transactions());
-    dns_task_->StartSecondTransaction();
+    DCHECK(dns_task_->needs_another_transaction());
+    dns_task_->StartNextTransaction();
   }
 
   // Called if DnsTask fails. It is posted from StartDnsTask, so Job may be
@@ -1968,6 +2305,7 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
     completion_results_.push_back({failure_results, ttl, secure});
 
     dns_task_error_ = failure_results.error();
+    is_secure_dns_task_error_ = secure;
     KillDnsTask();
     RunNextTask();
   }
@@ -1978,6 +2316,14 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
                          const HostCache::Entry& results,
                          bool secure) override {
     DCHECK(dns_task_);
+
+    // If a secure DNS task previously failed, record what happened to the
+    // fallback insecure DNS task.
+    if (dns_task_error_ != OK && is_secure_dns_task_error_) {
+      base::UmaHistogramSparse(
+          "Net.DNS.SecureDnsTaskFailure.FallbackDnsTask.Error",
+          std::abs(results.error()));
+    }
 
     base::TimeDelta duration = tick_clock_->NowTicks() - start_time;
     if (results.error() != OK) {
@@ -2004,18 +2350,28 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
     CompleteRequests(results, bounded_ttl, true /* allow_cache */, secure);
   }
 
-  void OnFirstDnsTransactionComplete() override {
-    DCHECK(dns_task_->needs_two_transactions());
+  void OnIntermediateTransactionComplete() override {
+    DCHECK_LE(2, dns_task_->num_needed_transactions());
     DCHECK_EQ(dns_task_->needs_another_transaction(), is_queued());
-    // No longer need to occupy two dispatcher slots.
-    if (dispatcher_)
-      ReduceToOneJobSlot();
 
-    // We already have a job slot at the dispatcher, so if the second
-    // transaction hasn't started, reuse it now instead of waiting in the queue
-    // for the second slot.
-    if (dns_task_->needs_another_transaction())
-      dns_task_->StartSecondTransaction();
+    if (dispatcher_) {
+      // We already have a job slot at the dispatcher, so if the next
+      // transaction hasn't started, reuse it now instead of waiting in the
+      // queue for another slot.
+      if (!dns_task_->needs_another_transaction()) {
+        // The DnsTask has no more transactions, so we can relinquish this slot.
+        DCHECK(!is_queued());
+        ReduceByOneJobSlot();
+      } else {
+        dns_task_->StartNextTransaction();
+        if (!dns_task_->needs_another_transaction() && is_queued()) {
+          dispatcher_->Cancel(handle_);
+          handle_.Reset();
+        }
+      }
+    } else if (dns_task_->needs_another_transaction()) {
+      dns_task_->StartNextTransaction();
+    }
   }
 
   void StartMdnsTask() {
@@ -2186,10 +2542,11 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
       proc_task_ = nullptr;
       KillDnsTask();
       mdns_task_ = nullptr;
+      job_running_ = false;
 
       if (dispatcher_) {
         // Signal dispatcher that a slot has opened.
-        DCHECK_EQ(1u, num_occupied_job_slots_);
+        DCHECK_EQ(1, num_occupied_job_slots_);
         dispatcher_->OnJobFinished();
       }
     } else if (is_queued()) {
@@ -2224,7 +2581,6 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
       req->RemoveFromList();
       DCHECK_EQ(this, req->job());
       // Update the net log and notify registered observers.
-      LogFinishRequest(req->source_net_log(), results.error());
       if (results.did_complete()) {
         // Record effective total time from creation to completion.
         resolver_->RecordTotalTime(
@@ -2252,7 +2608,7 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
       for (auto* node = requests_.head(); node != requests_.end();
            node = node->next()) {
         if (!node->value()->parameters().is_speculative)
-          node->value()->set_stale_info(std::move(stale_info).value());
+          node->value()->set_stale_info(stale_info.value());
       }
     }
     CompleteRequests(results, base::TimeDelta(), false /* allow_cache */,
@@ -2277,6 +2633,7 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
   base::WeakPtr<HostResolverManager> resolver_;
 
   const std::string hostname_;
+  const NetworkIsolationKey network_isolation_key_;
   const DnsQueryType query_type_;
   const HostResolverFlags host_resolver_flags_;
   const HostResolverSource requested_source_;
@@ -2314,7 +2671,7 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
 
   // Number of slots occupied by this Job in |dispatcher_|. Should be 0 when
   // the job is not registered with any dispatcher.
-  unsigned num_occupied_job_slots_;
+  int num_occupied_job_slots_;
 
   // The dispatcher with which this Job is currently registered. Is nullptr if
   // not registered with any dispatcher.
@@ -2322,6 +2679,10 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
 
   // Result of DnsTask.
   int dns_task_error_;
+
+  // Whether the error in |dns_task_error_| corresponds to an insecure or
+  // secure DnsTask.
+  bool is_secure_dns_task_error_;
 
   const base::TickClock* tick_clock_;
   base::TimeTicks start_time_;
@@ -2418,9 +2779,10 @@ HostResolverManager::~HostResolverManager() {
     system_dns_config_notifier_->RemoveObserver(this);
 }
 
-std::unique_ptr<HostResolverManager::CancellableRequest>
+std::unique_ptr<HostResolverManager::CancellableResolveHostRequest>
 HostResolverManager::CreateRequest(
     const HostPortPair& host,
+    const NetworkIsolationKey& network_isolation_key,
     const NetLogWithSource& net_log,
     const base::Optional<ResolveHostParameters>& optional_parameters,
     URLRequestContext* request_context,
@@ -2433,9 +2795,17 @@ HostResolverManager::CreateRequest(
   if (host_cache)
     DCHECK(host_cache_invalidators_.HasObserver(host_cache->invalidator()));
 
-  return std::make_unique<RequestImpl>(net_log, host, optional_parameters,
-                                       request_context, host_cache,
-                                       weak_ptr_factory_.GetWeakPtr());
+  return std::make_unique<RequestImpl>(
+      net_log, host, network_isolation_key, optional_parameters,
+      request_context, host_cache, weak_ptr_factory_.GetWeakPtr());
+}
+
+std::unique_ptr<HostResolverManager::CancellableProbeRequest>
+HostResolverManager::CreateDohProbeRequest(URLRequestContext* context) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  return std::make_unique<ProbeRequestImpl>(context,
+                                            weak_ptr_factory_.GetWeakPtr());
 }
 
 std::unique_ptr<HostResolver::MdnsListener>
@@ -2500,6 +2870,8 @@ void HostResolverManager::SetDnsConfigOverrides(DnsConfigOverrides overrides) {
   bool changed = dns_client_->SetConfigOverrides(std::move(overrides));
 
   if (changed) {
+    NetworkChangeNotifier::TriggerNonSystemDnsChange();
+
     // Only invalidate cache if new overrides have resulted in a config change.
     InvalidateCaches();
 
@@ -2509,12 +2881,6 @@ void HostResolverManager::SetDnsConfigOverrides(DnsConfigOverrides overrides) {
       UpdateJobsForChangedConfig();
     }
   }
-}
-
-void HostResolverManager::SetRequestContextForProbes(
-    URLRequestContext* url_request_context) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  dns_client_->SetRequestContextForProbes(url_request_context);
 }
 
 void HostResolverManager::AddHostCacheInvalidator(
@@ -2568,6 +2934,11 @@ void HostResolverManager::SetDnsClientForTesting(
   dns_client_ = std::move(dns_client);
 }
 
+void HostResolverManager::SetLastIPv6ProbeResultForTesting(
+    bool last_ipv6_probe_result) {
+  SetLastIPv6ProbeResult(last_ipv6_probe_result);
+}
+
 void HostResolverManager::SetTaskRunnerForTesting(
     scoped_refptr<base::TaskRunner> task_runner) {
   proc_task_runner_ = std::move(task_runner);
@@ -2589,16 +2960,15 @@ int HostResolverManager::Resolve(RequestImpl* request) {
 
   request->set_request_time(tick_clock_->NowTicks());
 
-  LogStartRequest(request->source_net_log(), request->request_host());
-
   DnsQueryType effective_query_type;
   HostResolverFlags effective_host_resolver_flags;
   DnsConfig::SecureDnsMode effective_secure_dns_mode;
   std::deque<TaskType> tasks;
   base::Optional<HostCache::EntryStaleness> stale_info;
   HostCache::Entry results = ResolveLocally(
-      request->request_host().host(), request->parameters().dns_query_type,
-      request->parameters().source, request->host_resolver_flags(),
+      request->request_host().host(), request->network_isolation_key(),
+      request->parameters().dns_query_type, request->parameters().source,
+      request->host_resolver_flags(),
       request->parameters().secure_dns_mode_override,
       request->parameters().cache_usage, request->source_net_log(),
       request->host_cache(), &effective_query_type,
@@ -2613,9 +2983,9 @@ int HostResolverManager::Resolve(RequestImpl* request) {
     }
     if (stale_info && !request->parameters().is_speculative)
       request->set_stale_info(std::move(stale_info).value());
-    LogFinishRequest(request->source_net_log(), results.error());
     RecordTotalTime(request->parameters().is_speculative, true /* from_cache */,
                     effective_secure_dns_mode, base::TimeDelta());
+    request->set_error_info(results.error());
     return results.error();
   }
 
@@ -2626,6 +2996,7 @@ int HostResolverManager::Resolve(RequestImpl* request) {
 
 HostCache::Entry HostResolverManager::ResolveLocally(
     const std::string& hostname,
+    const NetworkIsolationKey& network_isolation_key,
     DnsQueryType dns_query_type,
     HostResolverSource source,
     HostResolverFlags flags,
@@ -2699,7 +3070,8 @@ HostCache::Entry HostResolverManager::ResolveLocally(
        out_tasks->front() == TaskType::INSECURE_CACHE_LOOKUP ||
        out_tasks->front() == TaskType::CACHE_LOOKUP)) {
     HostCache::Key key(hostname, *out_effective_query_type,
-                       *out_effective_host_resolver_flags, source);
+                       *out_effective_host_resolver_flags, source,
+                       network_isolation_key);
 
     if (out_tasks->front() == TaskType::SECURE_CACHE_LOOKUP)
       key.secure = true;
@@ -2745,20 +3117,23 @@ void HostResolverManager::CreateAndStartJob(
     std::deque<TaskType> tasks,
     RequestImpl* request) {
   DCHECK(!tasks.empty());
-  JobKey key = {request->request_host().host(), effective_query_type,
-                effective_host_resolver_flags,  request->parameters().source,
-                effective_secure_dns_mode,      request->request_context()};
+  JobKey key = {
+      request->request_host().host(), request->network_isolation_key(),
+      effective_query_type,           effective_host_resolver_flags,
+      request->parameters().source,   effective_secure_dns_mode,
+      request->request_context()};
 
   auto jobit = jobs_.find(key);
   Job* job;
   if (jobit == jobs_.end()) {
     auto new_job = std::make_unique<Job>(
         weak_ptr_factory_.GetWeakPtr(), request->request_host().host(),
-        effective_query_type, effective_host_resolver_flags,
-        request->parameters().source, request->parameters().cache_usage,
-        effective_secure_dns_mode, request->request_context(),
-        request->host_cache(), std::move(tasks), request->priority(),
-        proc_task_runner_, request->source_net_log(), tick_clock_);
+        request->network_isolation_key(), effective_query_type,
+        effective_host_resolver_flags, request->parameters().source,
+        request->parameters().cache_usage, effective_secure_dns_mode,
+        request->request_context(), request->host_cache(), std::move(tasks),
+        request->priority(), proc_task_runner_, request->source_net_log(),
+        tick_clock_);
     job = new_job.get();
     auto insert_result = jobs_.emplace(std::move(key), std::move(new_job));
     DCHECK(insert_result.second);
@@ -2971,26 +3346,6 @@ DnsConfig::SecureDnsMode HostResolverManager::GetEffectiveSecureDnsMode(
   } else if (config) {
     secure_dns_mode = config->secure_dns_mode;
   }
-
-  // If the query name matches one of the DoH server names, downgrade to OFF to
-  // avoid infinite recursion.
-  // TODO(crbug.com/985589): Add a URLRequest-level parameter to skip DoH that
-  // can be set when a URLRequest to a DoH server is built, and use this
-  // parameters to set |secure_dns_mode_override| in ResolveHostParameters. This
-  // improvement will prevent us from unnecessarily skipping DoH when a
-  // connection to the DoH server has been established but the query happens to
-  // be for a DoH server hostname.
-  if (config) {
-    for (auto& server : config->dns_over_https_servers) {
-      if (hostname.compare(
-              GURL(GetURLFromTemplateWithoutParameters(server.server_template))
-                  .host()) == 0) {
-        secure_dns_mode = DnsConfig::SecureDnsMode::OFF;
-        break;
-      }
-    }
-  }
-
   return secure_dns_mode;
 }
 
@@ -3209,9 +3564,8 @@ bool HostResolverManager::IsIPv6Reachable(const NetLogWithSource& net_log) {
   bool cached = true;
   if ((tick_clock_->NowTicks() - last_ipv6_probe_time_).InMilliseconds() >
       kIPv6ProbePeriodMs) {
-    last_ipv6_probe_result_ =
-        IsGloballyReachable(IPAddress(kIPv6ProbeAddress), net_log);
-    last_ipv6_probe_time_ = tick_clock_->NowTicks();
+    SetLastIPv6ProbeResult(
+        IsGloballyReachable(IPAddress(kIPv6ProbeAddress), net_log));
     cached = false;
   }
   net_log.AddEvent(
@@ -3219,6 +3573,11 @@ bool HostResolverManager::IsIPv6Reachable(const NetLogWithSource& net_log) {
         return NetLogIPv6AvailableParams(last_ipv6_probe_result_, cached);
       });
   return last_ipv6_probe_result_;
+}
+
+void HostResolverManager::SetLastIPv6ProbeResult(bool last_ipv6_probe_result) {
+  last_ipv6_probe_result_ = last_ipv6_probe_result;
+  last_ipv6_probe_time_ = tick_clock_->NowTicks();
 }
 
 bool HostResolverManager::IsGloballyReachable(const IPAddress& dest,
@@ -3449,6 +3808,21 @@ void HostResolverManager::InvalidateCaches() {
 #endif
 }
 
+void HostResolverManager::ActivateDohProbes(
+    URLRequestContext* url_request_context) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(dns_client_);
+
+  dns_client_->ActivateDohProbes(url_request_context);
+}
+
+void HostResolverManager::CancelDohProbes() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(dns_client_);
+
+  dns_client_->CancelDohProbes();
+}
+
 void HostResolverManager::RequestImpl::Cancel() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!job_)
@@ -3457,6 +3831,8 @@ void HostResolverManager::RequestImpl::Cancel() {
   job_->CancelRequest(this);
   job_ = nullptr;
   callback_.Reset();
+
+  LogCancelRequest();
 }
 
 void HostResolverManager::RequestImpl::ChangeRequestPriority(

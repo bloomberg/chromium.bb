@@ -65,7 +65,7 @@ def _ParseArgs(argv):
     opts.image = image_lib.BuildImagePath(opts.board, opts.image)
   except image_lib.ImageDoesNotExistError as e:
     # Replace |arg| with --arg, otherwise messages still relevant.
-    message = re.sub(r'\|(\w+)\|', r'--\1', e.message)
+    message = re.sub(r'\|(\w+)\|', r'--\1', str(e))
     parser.error(message)
 
   opts.Freeze()
@@ -80,6 +80,6 @@ def main(argv):
                                      baselines=opts.baselines,
                                      vboot_hash=opts.vboot_hash)
   except image_lib.Error as e:
-    cros_build_lib.Die(e.message)
+    cros_build_lib.Die(e)
   else:
     return 0 if success else 1

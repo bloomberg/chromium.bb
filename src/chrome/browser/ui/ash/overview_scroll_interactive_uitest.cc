@@ -19,14 +19,15 @@
 // Test overview scroll performance when the new overview layout is active.
 class OverviewScrollTest : public UIPerformanceTest {
  public:
-  OverviewScrollTest() = default;
+  OverviewScrollTest() {
+    scoped_feature_list_.InitAndEnableFeature(
+        ash::features::kNewOverviewLayout);
+  }
+
   ~OverviewScrollTest() override = default;
 
   // UIPerformanceTest:
   void SetUpOnMainThread() override {
-    scoped_feature_list_.InitAndEnableFeature(
-        ash::features::kNewOverviewLayout);
-
     UIPerformanceTest::SetUpOnMainThread();
 
     // Create twelve windows total, scrolling is only needed when six or more
@@ -82,9 +83,8 @@ IN_PROC_BROWSER_TEST_F(OverviewScrollTest, Basic) {
   const gfx::Point start_point =
       display_bounds.top_right() + gfx::Vector2d(-1, 1);
   const gfx::Point end_point = display_bounds.origin() + gfx::Vector2d(1, 1);
-  ui_test_utils::DragEventGenerator generator(
+  auto generator = ui_test_utils::DragEventGenerator::CreateForTouch(
       std::make_unique<ui_test_utils::InterpolatedProducer>(
-          start_point, end_point, base::TimeDelta::FromMilliseconds(1000)),
-      /*touch=*/true);
-  generator.Wait();
+          start_point, end_point, base::TimeDelta::FromMilliseconds(1000)));
+  generator->Wait();
 }

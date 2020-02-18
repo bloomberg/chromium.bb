@@ -10,14 +10,15 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
-import android.support.annotation.ColorInt;
 import android.support.v7.content.res.AppCompatResources;
+
+import androidx.annotation.ColorInt;
 
 import org.chromium.base.Callback;
 import org.chromium.chrome.browser.favicon.FaviconHelper;
+import org.chromium.chrome.browser.favicon.FaviconUtils;
 import org.chromium.chrome.browser.native_page.NativePageFactory;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.util.ViewUtils;
 import org.chromium.chrome.tab_ui.R;
 
 /**
@@ -57,7 +58,7 @@ public class TabListFaviconProvider {
         }
         if (sRoundedChromeDrawable == null) {
             Bitmap chromeBitmap =
-                    BitmapFactory.decodeResource(context.getResources(), R.drawable.chromelogo16);
+                    BitmapFactory.decodeResource(mContext.getResources(), R.drawable.chromelogo16);
             sRoundedChromeDrawable = processBitmap(chromeBitmap);
         }
         mDefaultIconColor = mContext.getResources().getColor(R.color.default_icon_color);
@@ -65,9 +66,8 @@ public class TabListFaviconProvider {
     }
 
     private Drawable processBitmap(Bitmap bitmap) {
-        return ViewUtils.createRoundedBitmapDrawable(
-                Bitmap.createScaledBitmap(bitmap, mFaviconSize, mFaviconSize, true),
-                ViewUtils.DEFAULT_FAVICON_CORNER_RADIUS);
+        return FaviconUtils.createRoundedBitmapDrawable(mContext.getResources(),
+                Bitmap.createScaledBitmap(bitmap, mFaviconSize, mFaviconSize, true));
     }
 
     /**

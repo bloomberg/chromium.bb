@@ -228,7 +228,11 @@ void WorkerFetchContext::AddResourceTiming(const ResourceTimingInfo& info) {
                                               .GetSecurityOrigin();
   WebResourceTimingInfo web_info = Performance::GenerateResourceTiming(
       *security_origin, info, *global_scope_);
-  resource_timing_notifier_->AddResourceTiming(web_info, info.InitiatorType());
+  // |info| is taken const-ref but this can make destructive changes to
+  // WorkerTimingContainer on |info| when a page is controlled by a service
+  // worker.
+  resource_timing_notifier_->AddResourceTiming(web_info, info.InitiatorType(),
+                                               info.TakeWorkerTimingReceiver());
 }
 
 void WorkerFetchContext::PopulateResourceRequest(
@@ -239,10 +243,19 @@ void WorkerFetchContext::PopulateResourceRequest(
   MixedContentChecker::UpgradeInsecureRequest(
       out_request,
       &GetResourceFetcherProperties().GetFetchClientSettingsObject(),
-      global_scope_, network::mojom::RequestContextFrameType::kNone);
+      global_scope_, network::mojom::RequestContextFrameType::kNone,
+      global_scope_->ContentSettingsClient());
   SetFirstPartyCookie(out_request);
   if (!out_request.TopFrameOrigin())
     out_request.SetTopFrameOrigin(GetTopFrameOrigin());
+}
+
+mojo::PendingReceiver<mojom::blink::WorkerTimingContainer>
+WorkerFetchContext::TakePendingWorkerTimingReceiver(int request_id) {
+  mojo::ScopedMessagePipeHandle pipe =
+      GetWebWorkerFetchContext()->TakePendingWorkerTimingReceiver(request_id);
+  return mojo::PendingReceiver<mojom::blink::WorkerTimingContainer>(
+      std::move(pipe));
 }
 
 void WorkerFetchContext::SetFirstPartyCookie(ResourceRequest& out_request) {
@@ -257,12 +270,11 @@ WorkerSettings* WorkerFetchContext::GetWorkerSettings() const {
 
 bool WorkerFetchContext::AllowRunningInsecureContent(
     bool enabled_per_settings,
-    const SecurityOrigin* origin,
     const KURL& url) const {
   if (!global_scope_->ContentSettingsClient())
     return enabled_per_settings;
   return global_scope_->ContentSettingsClient()->AllowRunningInsecureContent(
-      enabled_per_settings, WebSecurityOrigin(origin), url);
+      enabled_per_settings, url);
 }
 
 void WorkerFetchContext::Trace(blink::Visitor* visitor) {

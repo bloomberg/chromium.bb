@@ -11,8 +11,8 @@ from .composition_parts import WithDebugInfo
 from .composition_parts import WithExtendedAttributes
 from .composition_parts import WithIdentifier
 from .extended_attribute import ExtendedAttributes
-from .reference import Proxy
 from .reference import RefById
+from .reference import RefByIdFactory
 from .typedef import Typedef
 from .user_defined_type import UserDefinedType
 
@@ -47,6 +47,14 @@ class IdlTypeFactory(object):
 
     def __init__(self):
         self._idl_types = []
+        # Factory to initialize instances of ReferenceType.
+        attrs_to_be_proxied = (
+            set(RefById.get_all_attributes(IdlType)).difference(
+                # attributes not to be proxied
+                set(('debug_info', 'extended_attributes', 'is_optional',
+                     'optionality'))))
+        self._ref_by_id_factory = RefByIdFactory(
+            target_attrs_with_priority=attrs_to_be_proxied)
         # |_is_frozen| is initially False and you can create new instances of
         # IdlType.  The first invocation of |for_each| freezes the factory and
         # you can no longer create a new instance of IdlType.
@@ -68,10 +76,26 @@ class IdlTypeFactory(object):
         for idl_type in self._idl_types:
             callback(idl_type)
 
+    def for_each_reference(self, callback):
+        """
+        Applies |callback| to all the instances of IdlType that is referencing
+        to another IdlType.
+
+        Instantiation of referencing IdlType is no longer possible, but it's
+        still possible to instantiate other IdlTypes.
+
+        Args:
+            callback: A callable that takes an IdlType as only the argument.
+                Return value is not used.
+        """
+        self._ref_by_id_factory.for_each(callback)
+
     def simple_type(self, *args, **kwargs):
         return self._create(SimpleType, args, kwargs)
 
     def reference_type(self, *args, **kwargs):
+        assert 'ref_by_id_factory' not in kwargs
+        kwargs['ref_by_id_factory'] = self._ref_by_id_factory
         return self._create(ReferenceType, args, kwargs)
 
     def definition_type(self, *args, **kwargs):
@@ -126,6 +150,16 @@ class IdlType(WithExtendedAttributes, WithDebugInfo):
     like record type and promise type.
     """
 
+    class Optionality(object):
+        """https://heycam.github.io/webidl/#dfn-optionality-value"""
+
+        class Type(str):
+            pass
+
+        REQUIRED = Type('required')
+        OPTIONAL = Type('optional')
+        VARIADIC = Type('variadic')
+
     def __init__(self,
                  is_optional=False,
                  extended_attributes=None,
@@ -169,6 +203,15 @@ class IdlType(WithExtendedAttributes, WithDebugInfo):
         """
         raise exceptions.NotImplementedError()
 
+    @property
+    def keyword_typename(self):
+        """
+        Returns the keyword name of the type if this is a simple built-in type,
+        e.g. "any", "boolean", "unsigned long long", "void", etc.  Otherwise,
+        returns None.
+        """
+        return None
+
     def apply_to_all_composing_elements(self, callback):
         """
         Applies |callback| to all instances of IdlType of which this IdlType
@@ -179,6 +222,41 @@ class IdlType(WithExtendedAttributes, WithDebugInfo):
         x.result_type.original_type, etc. if any.
         """
         callback(self)
+
+    def unwrap(self, nullable=None, typedef=None, variadic=None):
+        """
+        Returns the body part of the actual type, i.e. returns the interesting
+        part of this type.
+
+        Args:
+            nullable:
+            typedef:
+                All these arguments take tri-state value: True, False, or None.
+                True unwraps that type, False stops unwrapping that type.  All
+                of specified arguments' values must be consistent, and mixture
+                of True and False is not allowed.  Unspecified arguments are
+                automatically set to the opposite value.  If no argument is
+                specified, unwraps all types.
+        """
+        switches = {
+            'nullable': nullable,
+            'typedef': typedef,
+            'variadic': variadic,
+        }
+
+        value_counts = {None: 0, False: 0, True: 0}
+        for value in switches.itervalues():
+            assert value is None or isinstance(value, bool)
+            value_counts[value] += 1
+        assert value_counts[False] == 0 or value_counts[True] == 0, (
+            "Specify only True or False arguments.  Unspecified arguments are "
+            "automatically set to the opposite value.")
+        default = value_counts[True] == 0
+        for arg, value in switches.iteritems():
+            if value is None:
+                switches[arg] = default
+
+        return self._unwrap(switches)
 
     @property
     def does_include_nullable_type(self):
@@ -202,13 +280,40 @@ class IdlType(WithExtendedAttributes, WithDebugInfo):
         return False
 
     @property
+    def is_floating_point_numeric(self):
+        """Returns True if this is a floating point numeric type."""
+        return False
+
+    @property
     def is_boolean(self):
-        """Returns True if this is a boolean type."""
+        """Returns True if this is boolean."""
         return False
 
     @property
     def is_string(self):
-        """Returns True if this is a DOMString, ByteString, or USVString."""
+        """
+        Returns True if this is one of DOMString, ByteString, or USVString.
+        """
+        return False
+
+    @property
+    def is_buffer_source_type(self):
+        """Returns True if this is a buffer source type."""
+        return False
+
+    @property
+    def is_array_buffer(self):
+        """Returns True if this is ArrayBuffer."""
+        return False
+
+    @property
+    def is_data_view(self):
+        """Returns True if this is DataView."""
+        return False
+
+    @property
+    def is_typed_array_type(self):
+        """Returns True if this is a typed array type."""
         return False
 
     @property
@@ -333,6 +438,15 @@ class IdlType(WithExtendedAttributes, WithDebugInfo):
         return False
 
     @property
+    def optionality(self):
+        """Returns the optionality value."""
+        if self.is_variadic:
+            return IdlType.Optionality.VARIADIC
+        if self.is_optional:
+            return IdlType.Optionality.OPTIONAL
+        return IdlType.Optionality.REQUIRED
+
+    @property
     def original_type(self):
         """Returns the typedef'ed type."""
         return None
@@ -405,6 +519,9 @@ class IdlType(WithExtendedAttributes, WithDebugInfo):
         return '{}{}'.format(type_name_inner, ''.join(
             sorted(self.extended_attributes.keys())))
 
+    def _unwrap(self, switches):
+        return self
+
 
 class SimpleType(IdlType):
     """
@@ -415,11 +532,17 @@ class SimpleType(IdlType):
 
     _INTEGER_TYPES = ('byte', 'octet', 'short', 'unsigned short', 'long',
                       'unsigned long', 'long long', 'unsigned long long')
-    _NUMERIC_TYPES = ('float', 'unrestricted float', 'double',
-                      'unrestricted double') + _INTEGER_TYPES
+    _FLOATING_POINT_NUMERIC_TYPES = ('float', 'unrestricted float', 'double',
+                                     'unrestricted double')
+    _NUMERIC_TYPES = _FLOATING_POINT_NUMERIC_TYPES + _INTEGER_TYPES
     _STRING_TYPES = ('DOMString', 'ByteString', 'USVString')
-    _VALID_TYPES = ('any', 'boolean', 'object', 'symbol',
-                    'void') + _NUMERIC_TYPES + _STRING_TYPES
+    _TYPED_ARRAY_TYPES = ('Int8Array', 'Int16Array', 'Int32Array',
+                          'Uint8Array', 'Uint16Array', 'Uint32Array',
+                          'Uint8ClampedArray', 'Float32Array', 'Float64Array')
+    _BUFFER_SOURCE_TYPES = ('ArrayBuffer', 'DataView') + _TYPED_ARRAY_TYPES
+    _MISC_TYPES = ('any', 'boolean', 'object', 'symbol', 'void')
+    _VALID_TYPES = set(_NUMERIC_TYPES + _STRING_TYPES + _BUFFER_SOURCE_TYPES +
+                       _MISC_TYPES)
 
     def __init__(self,
                  name,
@@ -456,6 +579,10 @@ class SimpleType(IdlType):
             NameStyleConverter(name).to_upper_camel_case())
 
     @property
+    def keyword_typename(self):
+        return self._name
+
+    @property
     def is_numeric(self):
         return self._name in SimpleType._NUMERIC_TYPES
 
@@ -464,12 +591,32 @@ class SimpleType(IdlType):
         return self._name in SimpleType._INTEGER_TYPES
 
     @property
+    def is_floating_point_numeric(self):
+        return self._name in SimpleType._FLOATING_POINT_NUMERIC_TYPES
+
+    @property
     def is_boolean(self):
         return self._name == 'boolean'
 
     @property
     def is_string(self):
         return self._name in SimpleType._STRING_TYPES
+
+    @property
+    def is_buffer_source_type(self):
+        return self._name in SimpleType._BUFFER_SOURCE_TYPES
+
+    @property
+    def is_array_buffer(self):
+        return self._name == 'ArrayBuffer'
+
+    @property
+    def is_data_view(self):
+        return self._name == 'DataView'
+
+    @property
+    def is_typed_array_type(self):
+        return self._name in SimpleType._TYPED_ARRAY_TYPES
 
     @property
     def is_object(self):
@@ -488,7 +635,7 @@ class SimpleType(IdlType):
         return self._name == 'void'
 
 
-class ReferenceType(IdlType, WithIdentifier, Proxy):
+class ReferenceType(IdlType, RefById):
     """
     Represents a type specified with the given identifier.
 
@@ -500,28 +647,23 @@ class ReferenceType(IdlType, WithIdentifier, Proxy):
     identifier may be resolved to a TypedefType.
     """
 
-    _attrs_to_be_proxied = set(Proxy.get_all_attributes(IdlType)).difference(
-        # attributes not to be proxied
-        set(('debug_info', 'extended_attributes', 'is_optional')))
-
     def __init__(self,
-                 ref_to_idl_type,
+                 identifier,
                  is_optional=False,
                  extended_attributes=None,
                  debug_info=None,
+                 ref_by_id_factory=None,
                  pass_key=None):
-        assert isinstance(ref_to_idl_type, RefById)
+        assert isinstance(ref_by_id_factory, RefByIdFactory)
+
         IdlType.__init__(
             self,
             is_optional=is_optional,
             extended_attributes=extended_attributes,
             debug_info=debug_info,
             pass_key=pass_key)
-        WithIdentifier.__init__(self, ref_to_idl_type.identifier)
-        Proxy.__init__(
-            self,
-            target_object=ref_to_idl_type,
-            target_attrs_with_priority=ReferenceType._attrs_to_be_proxied)
+        ref_by_id_factory.init_subclass_instance(
+            self, identifier=identifier, debug_info=debug_info)
 
     def __eq__(self, other):
         return (IdlType.__eq__(self, other)
@@ -656,6 +798,11 @@ class TypedefType(IdlType, WithIdentifier):
     def original_type(self):
         return self._typedef.idl_type
 
+    def _unwrap(self, switches):
+        if switches['typedef']:
+            return self.original_type._unwrap(switches)
+        return self
+
 
 class _ArrayLikeType(IdlType):
     def __init__(self,
@@ -786,6 +933,11 @@ class VariadicType(_ArrayLikeType):
     @property
     def is_variadic(self):
         return True
+
+    def _unwrap(self, switches):
+        if switches['variadic']:
+            return self.element_type._unwrap(switches)
+        return self
 
 
 class RecordType(IdlType):
@@ -1043,3 +1195,8 @@ class NullableType(IdlType):
     @property
     def inner_type(self):
         return self._inner_type
+
+    def _unwrap(self, switches):
+        if switches['nullable']:
+            return self.inner_type._unwrap(switches)
+        return self

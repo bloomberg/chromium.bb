@@ -96,15 +96,16 @@ void RunExternalProtocolDialogWithDelegate(
     content::WebContents* web_contents,
     ui::PageTransition page_transition,
     bool has_user_gesture,
+    const base::Optional<url::Origin>& initiating_origin,
     ExternalProtocolHandler::Delegate* delegate) {
   DCHECK(web_contents);
   if (delegate) {
     delegate->RunExternalProtocolDialog(url, web_contents, page_transition,
-                                        has_user_gesture);
+                                        has_user_gesture, initiating_origin);
     return;
   }
   ExternalProtocolHandler::RunExternalProtocolDialog(
-      url, web_contents, page_transition, has_user_gesture);
+      url, web_contents, page_transition, has_user_gesture, initiating_origin);
 }
 
 void LaunchUrlWithoutSecurityCheckWithDelegate(
@@ -149,6 +150,7 @@ void OnDefaultProtocolClientWorkerFinished(
     bool prompt_user,
     ui::PageTransition page_transition,
     bool has_user_gesture,
+    const base::Optional<url::Origin>& initiating_origin,
     ExternalProtocolHandler::Delegate* delegate,
     shell_integration::DefaultWebClientState state) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -170,8 +172,8 @@ void OnDefaultProtocolClientWorkerFinished(
                           web_contents->GetBrowserContext(), escaped_url)) {
     // Handle tel links by opening the Click to Call dialog. This will call back
     // into LaunchUrlWithoutSecurityCheck if the user selects a system handler.
-    ClickToCallUiController::ShowDialog(web_contents, escaped_url,
-                                        chrome_is_default_handler);
+    ClickToCallUiController::ShowDialog(web_contents, initiating_origin,
+                                        escaped_url, chrome_is_default_handler);
     return;
   }
 #endif
@@ -192,8 +194,9 @@ void OnDefaultProtocolClientWorkerFinished(
     // Ask the user if they want to allow the protocol. This will call
     // LaunchUrlWithoutSecurityCheck if the user decides to accept the
     // protocol.
-    RunExternalProtocolDialogWithDelegate(
-        escaped_url, web_contents, page_transition, has_user_gesture, delegate);
+    RunExternalProtocolDialogWithDelegate(escaped_url, web_contents,
+                                          page_transition, has_user_gesture,
+                                          initiating_origin, delegate);
     return;
   }
 
@@ -274,14 +277,19 @@ void ExternalProtocolHandler::SetBlockState(const std::string& scheme,
     else
       update_excluded_schemas_profile->Remove(scheme, nullptr);
   }
+
+  if (g_external_protocol_handler_delegate)
+    g_external_protocol_handler_delegate->OnSetBlockState(scheme, state);
 }
 
 // static
-void ExternalProtocolHandler::LaunchUrl(const GURL& url,
-                                        int render_process_host_id,
-                                        int render_view_routing_id,
-                                        ui::PageTransition page_transition,
-                                        bool has_user_gesture) {
+void ExternalProtocolHandler::LaunchUrl(
+    const GURL& url,
+    int render_process_host_id,
+    int render_view_routing_id,
+    ui::PageTransition page_transition,
+    bool has_user_gesture,
+    const base::Optional<url::Origin>& initiating_origin) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   // Escape the input scheme to be sure that the command does not
@@ -310,10 +318,11 @@ void ExternalProtocolHandler::LaunchUrl(const GURL& url,
 
   // The worker creates tasks with references to itself and puts them into
   // message loops.
-  shell_integration::DefaultWebClientWorkerCallback callback = base::Bind(
-      &OnDefaultProtocolClientWorkerFinished, escaped_url,
-      render_process_host_id, render_view_routing_id, block_state == UNKNOWN,
-      page_transition, has_user_gesture, g_external_protocol_handler_delegate);
+  shell_integration::DefaultWebClientWorkerCallback callback =
+      base::Bind(&OnDefaultProtocolClientWorkerFinished, escaped_url,
+                 render_process_host_id, render_view_routing_id,
+                 block_state == UNKNOWN, page_transition, has_user_gesture,
+                 initiating_origin, g_external_protocol_handler_delegate);
 
   // Start the check process running. This will send tasks to a worker task
   // runner and when the answer is known will send the result back to

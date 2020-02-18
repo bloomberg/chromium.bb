@@ -9,6 +9,8 @@
 #include "base/logging.h"
 #include "cc/layers/solid_color_layer.h"
 #include "cc/layers/surface_layer.h"
+#include "cc/trees/layer_tree_host.h"
+#include "cc/trees/swap_promise.h"
 #include "components/viz/common/features.h"
 #include "components/viz/common/frame_sinks/copy_output_result.h"
 #include "components/viz/common/quads/compositor_frame.h"
@@ -25,6 +27,28 @@
 namespace ui {
 
 namespace {
+
+class TopControlsSwapPromise : public cc::SwapPromise {
+ public:
+  explicit TopControlsSwapPromise(float height) : height_(height) {}
+  ~TopControlsSwapPromise() override = default;
+
+  // cc::SwapPromise:
+  void DidActivate() override {}
+  void WillSwap(viz::CompositorFrameMetadata* metadata) override {
+    DCHECK_GT(metadata->frame_token, 0u);
+    metadata->top_controls_visible_height.emplace(height_);
+  }
+  void DidSwap() override {}
+  cc::SwapPromise::DidNotSwapAction DidNotSwap(
+      DidNotSwapReason reason) override {
+    return DidNotSwapAction::KEEP_ACTIVE;
+  }
+  int64_t TraceId() const override { return 0; }
+
+ private:
+  const float height_;
+};
 
 scoped_refptr<cc::SurfaceLayer> CreateSurfaceLayer(
     const viz::SurfaceId& primary_surface_id,
@@ -127,10 +151,8 @@ bool DelegatedFrameHostAndroid::CanCopyFromCompositingSurface() const {
 }
 
 void DelegatedFrameHostAndroid::EvictDelegatedFrame() {
-  if (content_layer_) {
-    content_layer_->SetSurfaceId(viz::SurfaceId(),
-                                 cc::DeadlinePolicy::UseDefaultDeadline());
-  }
+  content_layer_->SetSurfaceId(viz::SurfaceId(),
+                               cc::DeadlinePolicy::UseDefaultDeadline());
   if (!HasSavedFrame() || frame_evictor_->visible())
     return;
   std::vector<viz::SurfaceId> surface_ids = {
@@ -146,8 +168,6 @@ void DelegatedFrameHostAndroid::EvictDelegatedFrame() {
 }
 
 void DelegatedFrameHostAndroid::ResetFallbackToFirstNavigationSurface() {
-  if (!content_layer_)
-    return;
   // Don't update the fallback if it's already newer than the first id after
   // navigation.
   if (content_layer_->oldest_acceptable_fallback() &&
@@ -163,7 +183,7 @@ void DelegatedFrameHostAndroid::ResetFallbackToFirstNavigationSurface() {
 }
 
 bool DelegatedFrameHostAndroid::HasDelegatedContent() const {
-  return content_layer_ && content_layer_->surface_id().is_valid();
+  return content_layer_->surface_id().is_valid();
 }
 
 void DelegatedFrameHostAndroid::CompositorFrameSinkChanged() {
@@ -188,7 +208,7 @@ void DelegatedFrameHostAndroid::DetachFromCompositor() {
 }
 
 bool DelegatedFrameHostAndroid::IsPrimarySurfaceEvicted() const {
-  return !content_layer_ || !content_layer_->surface_id().is_valid();
+  return !content_layer_->surface_id().is_valid();
 }
 
 bool DelegatedFrameHostAndroid::HasSavedFrame() const {
@@ -277,11 +297,11 @@ viz::SurfaceId DelegatedFrameHostAndroid::SurfaceId() const {
 }
 
 bool DelegatedFrameHostAndroid::HasPrimarySurface() const {
-  return content_layer_ && content_layer_->surface_id().is_valid();
+  return content_layer_->surface_id().is_valid();
 }
 
 bool DelegatedFrameHostAndroid::HasFallbackSurface() const {
-  return content_layer_ && content_layer_->oldest_acceptable_fallback() &&
+  return content_layer_->oldest_acceptable_fallback() &&
          content_layer_->oldest_acceptable_fallback()->is_valid();
 }
 
@@ -306,6 +326,16 @@ void DelegatedFrameHostAndroid::TakeFallbackContentFrom(
 
 void DelegatedFrameHostAndroid::DidNavigate() {
   first_local_surface_id_after_navigation_ = local_surface_id_;
+}
+
+void DelegatedFrameHostAndroid::SetTopControlsVisibleHeight(float height) {
+  if (top_controls_visible_height_ == height)
+    return;
+  if (!content_layer_ || !content_layer_->layer_tree_host())
+    return;
+  top_controls_visible_height_ = height;
+  auto swap_promise = std::make_unique<TopControlsSwapPromise>(height);
+  content_layer_->layer_tree_host()->QueueSwapPromise(std::move(swap_promise));
 }
 
 }  // namespace ui

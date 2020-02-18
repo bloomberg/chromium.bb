@@ -11,7 +11,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/guid.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
@@ -25,23 +24,17 @@
 #include "content/browser/indexed_db/indexed_db_cursor.h"
 #include "content/browser/indexed_db/indexed_db_database_error.h"
 #include "content/browser/indexed_db/indexed_db_return_value.h"
-#include "content/browser/indexed_db/indexed_db_tracing.h"
 #include "content/browser/indexed_db/indexed_db_transaction.h"
 #include "content/browser/indexed_db/indexed_db_value.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/common/content_features.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
-#include "storage/browser/blob/blob_data_builder.h"
-#include "storage/browser/blob/blob_impl.h"
-#include "storage/browser/blob/blob_storage_context.h"
-#include "storage/browser/blob/shareable_file_reference.h"
 #include "storage/browser/quota/quota_manager.h"
 #include "third_party/blink/public/common/indexeddb/indexeddb_metadata.h"
 
 using blink::IndexedDBDatabaseMetadata;
 using blink::IndexedDBKey;
 using std::swap;
-using storage::ShareableFileReference;
 
 namespace content {
 
@@ -92,123 +85,7 @@ class SafeCursorWrapper {
   DISALLOW_COPY_AND_ASSIGN(SafeCursorWrapper);
 };
 
-std::unique_ptr<storage::BlobDataHandle> CreateBlobData(
-    std::string uuid,
-    storage::BlobStorageContext* blob_context,
-    base::SequencedTaskRunner* idb_runner,
-    const IndexedDBBlobInfo& blob_info) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (blob_info.blob_handle()) {
-    // We're sending back a live blob, not a reference into our backing store.
-    return std::make_unique<storage::BlobDataHandle>(*blob_info.blob_handle());
-  }
-  scoped_refptr<ShareableFileReference> shareable_file =
-      ShareableFileReference::Get(blob_info.file_path());
-  if (!shareable_file) {
-    shareable_file = ShareableFileReference::GetOrCreate(
-        blob_info.file_path(),
-        ShareableFileReference::DONT_DELETE_ON_FINAL_RELEASE, idb_runner);
-    if (!blob_info.release_callback().is_null())
-      shareable_file->AddFinalReleaseCallback(blob_info.release_callback());
-  }
-  auto blob_data_builder = std::make_unique<storage::BlobDataBuilder>(uuid);
-  blob_data_builder->set_content_type(base::UTF16ToUTF8(blob_info.type()));
-  blob_data_builder->AppendFile(blob_info.file_path(), 0, blob_info.size(),
-                                blob_info.last_modified());
-  return blob_context->AddFinishedBlob(std::move(blob_data_builder));
-}
-
 }  // namespace
-
-IndexedDBCallbacks::IndexedDBValueBlob::IndexedDBValueBlob(
-    const IndexedDBBlobInfo& blob_info,
-    blink::mojom::IDBBlobInfoPtr* blob_or_file_info)
-    : blob_info_(blob_info) {
-  if (blob_info_.blob_handle()) {
-    uuid_ = blob_info_.blob_handle()->uuid();
-  } else {
-    uuid_ = base::GenerateGUID();
-  }
-  (*blob_or_file_info)->uuid = uuid_;
-  receiver_ = mojo::MakeRequest(&(*blob_or_file_info)->blob);
-}
-IndexedDBCallbacks::IndexedDBValueBlob::IndexedDBValueBlob(
-    IndexedDBValueBlob&& other) = default;
-IndexedDBCallbacks::IndexedDBValueBlob::~IndexedDBValueBlob() = default;
-
-// static
-void IndexedDBCallbacks::IndexedDBValueBlob::GetIndexedDBValueBlobs(
-    std::vector<IndexedDBValueBlob>* value_blobs,
-    const std::vector<IndexedDBBlobInfo>& blob_info,
-    std::vector<blink::mojom::IDBBlobInfoPtr>* blob_or_file_info) {
-  DCHECK(value_blobs);
-  DCHECK(blob_or_file_info);
-  DCHECK_EQ(blob_info.size(), blob_or_file_info->size());
-  value_blobs->reserve(value_blobs->size() + blob_info.size());
-  for (size_t i = 0; i < blob_info.size(); i++) {
-    value_blobs->push_back(
-        IndexedDBValueBlob(blob_info[i], &(*blob_or_file_info)[i]));
-  }
-}
-
-// static
-std::vector<IndexedDBCallbacks::IndexedDBValueBlob>
-IndexedDBCallbacks::IndexedDBValueBlob::GetIndexedDBValueBlobs(
-    const std::vector<IndexedDBBlobInfo>& blob_info,
-    std::vector<blink::mojom::IDBBlobInfoPtr>* blob_or_file_info) {
-  std::vector<IndexedDBValueBlob> value_blobs;
-  IndexedDBValueBlob::GetIndexedDBValueBlobs(&value_blobs, blob_info,
-                                             blob_or_file_info);
-  return value_blobs;
-}
-
-// static
-bool IndexedDBCallbacks::CreateAllBlobs(
-    scoped_refptr<ChromeBlobStorageContext> blob_context,
-    std::vector<IndexedDBValueBlob> value_blobs) {
-  IDB_TRACE("IndexedDBCallbacks::CreateAllBlobs");
-
-  if (value_blobs.empty())
-    return true;
-
-  // TODO(crbug.com/932869): Remove IO thread hop entirely.
-  base::WaitableEvent signal_when_finished(
-      base::WaitableEvent::ResetPolicy::AUTOMATIC,
-      base::WaitableEvent::InitialState::NOT_SIGNALED);
-  bool result;
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(
-          [](scoped_refptr<ChromeBlobStorageContext> inner_blob_context,
-             scoped_refptr<base::SequencedTaskRunner> inner_idb_runner,
-             std::vector<IndexedDBValueBlob> inner_value_blobs,
-             base::WaitableEvent* inner_signal_when_finished,
-             bool* inner_result) {
-            base::ScopedClosureRunner signal_runner(base::BindOnce(
-                [](base::WaitableEvent* signal) { signal->Signal(); },
-                inner_signal_when_finished));
-
-            if (!inner_blob_context) {
-              *inner_result = false;
-              return;
-            }
-
-            for (size_t i = 0; i < inner_value_blobs.size(); ++i) {
-              std::unique_ptr<storage::BlobDataHandle> blob_data =
-                  CreateBlobData(
-                      inner_value_blobs[i].uuid_, inner_blob_context->context(),
-                      inner_idb_runner.get(), inner_value_blobs[i].blob_info_);
-              storage::BlobImpl::Create(
-                  std::move(blob_data),
-                  std::move(inner_value_blobs[i].receiver_));
-            }
-            *inner_result = true;
-          },
-          std::move(blob_context), base::SequencedTaskRunnerHandle::Get(),
-          std::move(value_blobs), &signal_when_finished, &result));
-  signal_when_finished.Wait();
-  return result;
-}
 
 IndexedDBCallbacks::IndexedDBCallbacks(
     base::WeakPtr<IndexedDBDispatcherHost> dispatcher_host,

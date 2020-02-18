@@ -63,6 +63,15 @@ class COMPONENT_EXPORT(SESSION_MANAGER) SessionManagerClient {
     COUNT
   };
 
+  enum class AdbSideloadResponseCode {
+    // ADB sideload operation has finished successfully.
+    SUCCESS = 1,
+    // ADB sideload operation has failed.
+    FAILED = 2,
+    // ADB sideload requires a powerwash to unblock (to define nvram).
+    NEED_POWERWASH = 3,
+  };
+
   // Interface for observing changes from the session manager.
   class Observer {
    public:
@@ -194,7 +203,7 @@ class COMPONENT_EXPORT(SESSION_MANAGER) SessionManagerClient {
 
   // Stops the current session. Don't call directly unless there's no user on
   // the device. Use SessionTerminationManager::StopSession instead.
-  virtual void StopSession() = 0;
+  virtual void StopSession(login_manager::SessionStopReason reason) = 0;
 
   // Starts the factory reset.
   virtual void StartDeviceWipe() = 0;
@@ -420,6 +429,25 @@ class COMPONENT_EXPORT(SESSION_MANAGER) SessionManagerClient {
   // Returns nullopt if there is no ARC instance or ARC is not available.
   virtual void GetArcStartTime(
       DBusMethodCallback<base::TimeTicks> callback) = 0;
+
+  using EnableAdbSideloadCallback =
+      base::OnceCallback<void(AdbSideloadResponseCode response_code)>;
+
+  // Asynchronously attempts to enable ARC APK Sideloading. Upon completion,
+  // invokes |callback| with the result; true on success, false on failure of
+  // any kind.
+  virtual void EnableAdbSideload(EnableAdbSideloadCallback callback) = 0;
+
+  using QueryAdbSideloadCallback =
+      base::OnceCallback<void(AdbSideloadResponseCode response_code,
+                              bool is_allowed)>;
+
+  // Asynchronously queries for the current status of ARC APK Sideloading. Upon
+  // completion, invokes |callback| with |succeeded| indicating if the query
+  // could be completed. If |succeeded| is true, |is_allowed| contains the
+  // current status of whether ARC APK Sideloading is allowed on this device,
+  // based on previous explicit user opt-in.
+  virtual void QueryAdbSideload(QueryAdbSideloadCallback callback) = 0;
 
  protected:
   // Use Initialize/Shutdown instead.

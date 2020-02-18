@@ -17,6 +17,7 @@
 #include "base/guid.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "content/browser/background_fetch/background_fetch.pb.h"
 #include "content/browser/background_fetch/background_fetch_data_manager_observer.h"
@@ -37,12 +38,14 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/test/test_utils.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe_drainer.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
 #include "storage/browser/blob/blob_data_builder.h"
 #include "storage/browser/blob/blob_data_handle.h"
 #include "storage/browser/blob/blob_impl.h"
 #include "storage/browser/blob/blob_storage_context.h"
+#include "storage/browser/test/blob_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/blink/public/mojom/background_fetch/background_fetch.mojom.h"
 #include "third_party/blink/public/mojom/cache_storage/cache_storage.mojom.h"
@@ -70,7 +73,7 @@ const char kInitialTitle[] = "Initial Title";
 constexpr size_t kResponseSize = 42u;
 
 void DidGetInitializationData(
-    base::Closure quit_closure,
+    base::OnceClosure quit_closure,
     std::vector<BackgroundFetchInitializationData>* out_result,
     blink::mojom::BackgroundFetchError error,
     std::vector<BackgroundFetchInitializationData> result) {
@@ -112,7 +115,7 @@ void DidStoreUserData(base::OnceClosure quit_closure,
   std::move(quit_closure).Run();
 }
 
-void GetNumUserData(base::Closure quit_closure,
+void GetNumUserData(base::OnceClosure quit_closure,
                     int* out_size,
                     const std::vector<std::string>& data,
                     blink::ServiceWorkerStatusCode status) {
@@ -194,6 +197,14 @@ class BackgroundFetchDataManagerTest
 
   ~BackgroundFetchDataManagerTest() override {
     background_fetch_data_manager_->RemoveObserver(this);
+  }
+
+  void TearDown() override {
+    // Allow remaining tasks on the cache thread and main thread to run to clean
+    // up all dangling file handles.
+    base::ThreadPoolInstance::Get()->FlushForTesting();
+    base::RunLoop().RunUntilIdle();
+    BackgroundFetchTestBase::TearDown();
   }
 
   // Re-creates the data manager. Useful for testing that data was persisted.
@@ -337,8 +348,8 @@ class BackgroundFetchDataManagerTest
     run_loop.Run();
 
     if (blob && blob->blob) {
-      blink::mojom::BlobPtr blob_ptr(std::move(blob->blob));
-      return CopyBody(blob_ptr.get());
+      mojo::Remote<blink::mojom::Blob> blob_remote(std::move(blob->blob));
+      return storage::BlobToString(blob_remote.get());
     }
 
     return std::string();
@@ -478,7 +489,7 @@ class BackgroundFetchDataManagerTest
     match_options->ignore_search = true;
     cache_storage.value()->MatchCache(
         kExampleUniqueId, BackgroundFetchSettledFetch::CloneRequest(request),
-        std::move(match_options),
+        std::move(match_options), CacheStorageSchedulerPriority::kNormal,
         /* trace_id= */ 0,
         base::BindOnce(&BackgroundFetchDataManagerTest::DidMatchCache,
                        base::Unretained(this), run_loop.QuitClosure(),
@@ -735,7 +746,7 @@ class BackgroundFetchDataManagerTest
     std::move(quit_closure).Run();
   }
 
-  void DidGetDeveloperIds(base::Closure quit_closure,
+  void DidGetDeveloperIds(base::OnceClosure quit_closure,
                           blink::mojom::BackgroundFetchError* out_error,
                           std::vector<std::string>* out_ids,
                           blink::mojom::BackgroundFetchError error,
@@ -833,32 +844,6 @@ class BackgroundFetchDataManagerTest
     std::move(quit_closure).Run();
   }
 
-  class DataPipeDrainerClient : public mojo::DataPipeDrainer::Client {
-   public:
-    explicit DataPipeDrainerClient(std::string* output) : output_(output) {}
-    void Run() { run_loop_.Run(); }
-
-    void OnDataAvailable(const void* data, size_t num_bytes) override {
-      output_->append(reinterpret_cast<const char*>(data), num_bytes);
-    }
-    void OnDataComplete() override { run_loop_.Quit(); }
-
-   private:
-    base::RunLoop run_loop_;
-    std::string* output_;
-  };
-
-  std::string CopyBody(blink::mojom::Blob* blob) {
-    mojo::DataPipe pipe;
-    blob->ReadAll(std::move(pipe.producer_handle), mojo::NullRemote());
-
-    std::string output;
-    DataPipeDrainerClient client(&output);
-    mojo::DataPipeDrainer drainer(&client, std::move(pipe.consumer_handle));
-    client.Run();
-    return output;
-  }
-
   blink::mojom::SerializedBlobPtr BuildBlob(const std::string data) {
     auto blob_data = std::make_unique<storage::BlobDataBuilder>(
         "blob-id:" + base::GenerateGUID());
@@ -872,7 +857,7 @@ class BackgroundFetchDataManagerTest
     blob->size = blob_handle->size();
     storage::BlobImpl::Create(
         std::make_unique<storage::BlobDataHandle>(*blob_handle),
-        MakeRequest(&blob->blob));
+        blob->blob.InitWithNewPipeAndPassReceiver());
     return blob;
   }
 
@@ -1880,8 +1865,8 @@ TEST_F(BackgroundFetchDataManagerTest, MatchRequestsWithBody) {
   EXPECT_EQ(request->blob->size, upload_data.size());
 
   ASSERT_TRUE(request->blob->blob);
-  blink::mojom::BlobPtr blob(std::move(request->blob->blob));
-  EXPECT_EQ(CopyBody(blob.get()), upload_data);
+  mojo::Remote<blink::mojom::Blob> blob(std::move(request->blob->blob));
+  EXPECT_EQ(storage::BlobToString(blob.get()), upload_data);
 }
 
 TEST_F(BackgroundFetchDataManagerTest, MatchRequestsFromCache) {

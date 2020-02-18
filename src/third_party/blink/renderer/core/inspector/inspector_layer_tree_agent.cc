@@ -117,9 +117,9 @@ BuildScrollRectsForLayer(const cc::Layer* layer, bool report_wheel_scrollers) {
   }
   if (report_wheel_scrollers) {
     scroll_rects->emplace_back(BuildScrollRect(
-        // TODO(yutak): This truncates the floating point position to integers.
-        gfx::Rect(layer->position().x(), layer->position().y(),
-                  layer->bounds().width(), layer->bounds().height()),
+        // TODO(pdr): Use the correct region for wheel event handlers, see
+        // https://crbug.com/841364.
+        gfx::Rect(0, 0, layer->bounds().width(), layer->bounds().height()),
         protocol::LayerTree::ScrollRect::TypeEnum::WheelEventHandler));
   }
   return scroll_rects->empty() ? nullptr : std::move(scroll_rects);
@@ -201,12 +201,15 @@ static std::unique_ptr<protocol::LayerTree::Layer> BuildObjectForLayer(
           .setOffsetY(0)
           .setWidth(layer->bounds().width())
           .setHeight(layer->bounds().height())
-          .setPaintCount(layer->paint_count())
+          .setPaintCount(layer->debug_info() ? layer->debug_info()->paint_count
+                                             : 0)
           .setDrawsContent(draws_content)
           .build();
 
-  if (auto node_id = layer->owner_node_id())
-    layer_object->setBackendNodeId(node_id);
+  if (layer->debug_info()) {
+    if (auto node_id = layer->debug_info()->owner_node_id)
+      layer_object->setBackendNodeId(node_id);
+  }
 
   if (const auto* parent = layer->parent())
     layer_object->setParentLayerId(IdForLayer(parent));
@@ -264,10 +267,12 @@ Response InspectorLayerTreeAgent::enable() {
   if (!document)
     return Response::Error("The root frame doesn't have document");
 
-  if (document->Lifecycle().GetState() >= DocumentLifecycle::kPaintClean) {
-    LayerTreePainted();
-    LayerTreeDidChange();
-  }
+  inspected_frames_->Root()->View()->UpdateAllLifecyclePhases(
+      DocumentLifecycle::LifecycleUpdateReason::kOther);
+
+  LayerTreePainted();
+  LayerTreeDidChange();
+
   return Response::OK();
 }
 
@@ -282,8 +287,7 @@ void InspectorLayerTreeAgent::LayerTreeDidChange() {
 }
 
 void InspectorLayerTreeAgent::LayerTreePainted() {
-  for (const auto& layer :
-       inspected_frames_->Root()->View()->RootCcLayer()->children()) {
+  for (const auto& layer : RootLayer()->children()) {
     if (!layer->update_rect().IsEmpty()) {
       GetFrontend()->layerPainted(IdForLayer(layer.get()),
                                   BuildObjectForRect(layer->update_rect()));
@@ -301,8 +305,7 @@ InspectorLayerTreeAgent::BuildLayerTree() {
   auto* root_frame = inspected_frames_->Root();
   auto* layer_for_scrolling =
       root_frame->View()->LayoutViewport()->LayerForScrolling();
-  int scrolling_layer_id =
-      layer_for_scrolling ? layer_for_scrolling->CcLayer()->id() : 0;
+  int scrolling_layer_id = layer_for_scrolling ? layer_for_scrolling->id() : 0;
   bool have_blocking_wheel_event_handlers =
       root_frame->GetChromeClient().EventListenerProperties(
           root_frame, cc::EventListenerClass::kMouseWheel) ==
@@ -319,6 +322,8 @@ void InspectorLayerTreeAgent::GatherLayers(
     bool has_wheel_event_handlers,
     int scrolling_layer_id) {
   if (client_->IsInspectorLayer(layer))
+    return;
+  if (layer->layer_tree_host()->is_hud_layer(layer))
     return;
   int layer_id = layer->id();
   layers->emplace_back(BuildObjectForLayer(
@@ -364,10 +369,11 @@ Response InspectorLayerTreeAgent::compositingReasons(
   Response response = LayerById(layer_id, layer);
   if (!response.isSuccess())
     return response;
-  CompositingReasons reasons = layer->compositing_reasons();
   *reason_strings = std::make_unique<protocol::Array<String>>();
-  for (const char* name : CompositingReason::ShortNames(reasons))
-    (*reason_strings)->emplace_back(name);
+  if (layer->debug_info()) {
+    for (const char* name : layer->debug_info()->compositing_reasons)
+      (*reason_strings)->emplace_back(name);
+  }
   return Response::OK();
 }
 

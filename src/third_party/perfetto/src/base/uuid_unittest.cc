@@ -18,19 +18,49 @@
 
 #include "test/gtest_and_gmock.h"
 
+#include "perfetto/ext/base/optional.h"
+
 namespace perfetto {
 namespace base {
 namespace {
+
+TEST(Uuid, DefaultConstructorIsBlank) {
+  Uuid a;
+  Uuid b;
+  EXPECT_EQ(a, b);
+  EXPECT_EQ(a.msb(), 0);
+  EXPECT_EQ(a.lsb(), 0);
+}
 
 TEST(Uuid, TwoUuidsShouldBeDifferent) {
   Uuid a = Uuidv4();
   Uuid b = Uuidv4();
   EXPECT_NE(a, b);
+  EXPECT_EQ(a, a);
+  EXPECT_EQ(b, b);
 }
 
 TEST(Uuid, CanRoundTripUuid) {
   Uuid uuid = Uuidv4();
-  EXPECT_EQ(StringToUuid(UuidToString(uuid)), uuid);
+  EXPECT_EQ(Uuid(uuid.ToString()), uuid);
+}
+
+TEST(Uuid, SetGet) {
+  Uuid a = Uuidv4();
+  Uuid b;
+  b.set_lsb_msb(a.lsb(), a.msb());
+  EXPECT_EQ(a, b);
+}
+
+TEST(Uuid, LsbMsbConstructor) {
+  Uuid uuid(-6605018796207623390, 1314564453825188563);
+  EXPECT_EQ(uuid.ToPrettyString(), "123e4567-e89b-12d3-a456-426655443322");
+}
+
+TEST(Uuid, UuidToPrettyString) {
+  Uuid uuid;
+  uuid.set_lsb_msb(-6605018796207623390, 1314564453825188563);
+  EXPECT_EQ(uuid.ToPrettyString(), "123e4567-e89b-12d3-a456-426655443322");
 }
 
 }  // namespace

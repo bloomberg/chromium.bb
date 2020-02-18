@@ -16,6 +16,8 @@ from chromite.lib import cros_build_lib
 from chromite.lib import osutils
 from chromite.lib import parallel
 from chromite.lib import portage_util
+from chromite.utils import key_value_store
+
 
 # The name of the ACL argument file.
 _GOOGLESTORAGE_GSUTIL_FILE = 'googlestorage_acl.txt'
@@ -54,7 +56,7 @@ def _ValidateBinhostConf(path, key):
     # If the conf file does not exist, e.g. with new targets, then whatever.
     return
 
-  kvs = cros_build_lib.LoadKeyValueFile(path)
+  kvs = key_value_store.LoadFile(path)
 
   if not kvs:
     raise ValueError(

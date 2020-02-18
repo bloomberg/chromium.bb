@@ -123,10 +123,10 @@ String ElementInnerTextCollector::RunOn(const Element& element) {
   // Note: Handles <select> and <option> here since they are implemented as
   // UA shadow DOM, e.g. Text nodes in <option> don't have layout object.
   // See also: https://github.com/whatwg/html/issues/3797
-  if (IsHTMLSelectElement(element))
-    ProcessSelectElement(ToHTMLSelectElement(element));
-  else if (IsHTMLOptionElement(element))
-    ProcessOptionElement(ToHTMLOptionElement(element));
+  if (auto* html_select_element = DynamicTo<HTMLSelectElement>(element))
+    ProcessSelectElement(*html_select_element);
+  else if (auto* option_element = DynamicTo<HTMLOptionElement>(element))
+    ProcessOptionElement(*option_element);
   else
     ProcessChildren(element);
   return result_.Finish();
@@ -309,13 +309,13 @@ void ElementInnerTextCollector::ProcessNode(const Node& node) {
   //   whose child boxes include only those of option element child nodes; and
   // * option element have an associated non-replaced block-level CSS box whose
   //   child boxes are as normal for non-replaced block-level CSS boxes.
-  if (IsHTMLSelectElement(node))
-    return ProcessSelectElement(ToHTMLSelectElement(node));
-  if (IsHTMLOptionElement(node)) {
+  if (auto* html_select_element = DynamicTo<HTMLSelectElement>(node))
+    return ProcessSelectElement(*html_select_element);
+  if (auto* option_element = DynamicTo<HTMLOptionElement>(node)) {
     // Since child nodes of OPTION are not rendered, we use dedicated function.
     // e.g. <div>ab<option>12</div>cd</div>innerText == "ab\n12\ncd"
     // Note: "label" attribute doesn't affect value of innerText.
-    return ProcessOptionElement(ToHTMLOptionElement(node));
+    return ProcessOptionElement(*option_element);
   }
 
   // 5. If node is a Text node, then for each CSS text box produced by node.
@@ -360,7 +360,7 @@ void ElementInnerTextCollector::ProcessNode(const Node& node) {
 
   // 9. If node is a p element, then append 2 (a required line break count) at
   // the beginning and end of items.
-  if (IsHTMLParagraphElement(node)) {
+  if (IsA<HTMLParagraphElement>(node)) {
     // Note: <p style="display:contents>foo</p> doesn't generate layout object
     // for P.
     ProcessChildrenWithRequiredLineBreaks(node, 2);
@@ -386,18 +386,18 @@ void ElementInnerTextCollector::ProcessOptionElement(
 void ElementInnerTextCollector::ProcessSelectElement(
     const HTMLSelectElement& select_element) {
   for (const Node& child : NodeTraversal::ChildrenOf(select_element)) {
-    if (IsHTMLOptionElement(child)) {
-      ProcessOptionElement(ToHTMLOptionElement(child));
+    if (auto* option_element = DynamicTo<HTMLOptionElement>(child)) {
+      ProcessOptionElement(*option_element);
       continue;
     }
-    if (!IsHTMLOptGroupElement(child))
+    if (!IsA<HTMLOptGroupElement>(child))
       continue;
     // Note: We should emit newline for OPTGROUP even if it has no OPTION.
     // e.g. <div>a<select><optgroup></select>b</div>.innerText == "a\nb"
     result_.EmitRequiredLineBreak(1);
     for (const Node& maybe_option : NodeTraversal::ChildrenOf(child)) {
-      if (IsHTMLOptionElement(maybe_option))
-        ProcessOptionElement(ToHTMLOptionElement(maybe_option));
+      if (auto* option_element = DynamicTo<HTMLOptionElement>(maybe_option))
+        ProcessOptionElement(*option_element);
     }
     result_.EmitRequiredLineBreak(1);
   }

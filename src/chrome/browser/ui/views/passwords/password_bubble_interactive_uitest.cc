@@ -26,6 +26,7 @@
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/test/test_utils.h"
@@ -33,7 +34,6 @@
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "ui/views/window/dialog_client_view.h"
 
 using net::test_server::BasicHttpResponse;
 using net::test_server::HttpRequest;
@@ -51,14 +51,6 @@ bool IsBubbleShowing() {
          PasswordBubbleViewBase::manage_password_bubble()
              ->GetWidget()
              ->IsVisible();
-}
-
-const views::DialogClientView* GetDialogClientView(
-    const LocationBarBubbleDelegateView* bubble) {
-  const views::DialogClientView* view =
-      bubble->GetWidget()->client_view()->AsDialogClientView();
-  DCHECK(view);
-  return view;
 }
 
 }  // namespace
@@ -126,9 +118,8 @@ IN_PROC_BROWSER_TEST_F(PasswordBubbleInteractiveUiTest, CommandControlsBubble) {
   EXPECT_TRUE(IsBubbleShowing());
   const LocationBarBubbleDelegateView* bubble =
       PasswordBubbleViewBase::manage_password_bubble();
-  EXPECT_TRUE(GetDialogClientView(bubble)->ok_button());
-  EXPECT_EQ(GetDialogClientView(bubble)->ok_button(),
-            bubble->GetFocusManager()->GetFocusedView());
+  EXPECT_TRUE(bubble->GetOkButton());
+  EXPECT_EQ(bubble->GetOkButton(), bubble->GetFocusManager()->GetFocusedView());
   PasswordBubbleViewBase::CloseCurrentBubble();
   EXPECT_FALSE(IsBubbleShowing());
   // Drain message pump to ensure the bubble view is cleared so that it can be
@@ -227,7 +218,8 @@ IN_PROC_BROWSER_TEST_F(PasswordBubbleInteractiveUiTest, CloseOnClick) {
                    ->GetFocusManager()
                    ->GetFocusedView());
   ui_test_utils::ClickOnView(browser(), VIEW_ID_TAB_CONTAINER);
-  EXPECT_FALSE(IsBubbleShowing());
+  EXPECT_EQ(IsBubbleShowing(), base::FeatureList::IsEnabled(
+                                   password_manager::features::kStickyBubble));
 }
 
 IN_PROC_BROWSER_TEST_F(PasswordBubbleInteractiveUiTest, CloseOnEsc) {
@@ -235,7 +227,8 @@ IN_PROC_BROWSER_TEST_F(PasswordBubbleInteractiveUiTest, CloseOnEsc) {
   EXPECT_TRUE(IsBubbleShowing());
   ASSERT_TRUE(ui_test_utils::SendKeyPressSync(browser(), ui::VKEY_ESCAPE, false,
                                               false, false, false));
-  EXPECT_FALSE(IsBubbleShowing());
+  EXPECT_EQ(IsBubbleShowing(), base::FeatureList::IsEnabled(
+                                   password_manager::features::kStickyBubble));
 }
 
 IN_PROC_BROWSER_TEST_F(PasswordBubbleInteractiveUiTest, CloseOnKey) {
@@ -257,7 +250,8 @@ IN_PROC_BROWSER_TEST_F(PasswordBubbleInteractiveUiTest, CloseOnKey) {
   EXPECT_TRUE(web_contents->IsFocusedElementEditable());
   ASSERT_TRUE(ui_test_utils::SendKeyPressSync(browser(), ui::VKEY_K, false,
                                               false, false, false));
-  EXPECT_FALSE(IsBubbleShowing());
+  EXPECT_EQ(IsBubbleShowing(), base::FeatureList::IsEnabled(
+                                   password_manager::features::kStickyBubble));
 }
 
 IN_PROC_BROWSER_TEST_F(PasswordBubbleInteractiveUiTest,

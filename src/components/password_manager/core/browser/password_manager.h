@@ -24,6 +24,7 @@
 #include "components/password_manager/core/browser/leak_detection/leak_detection_check_factory.h"
 #include "components/password_manager/core/browser/leak_detection_delegate.h"
 #include "components/password_manager/core/browser/password_manager_metrics_recorder.h"
+#include "components/password_manager/core/browser/possible_username_data.h"
 
 class PrefRegistrySimple;
 
@@ -42,15 +43,13 @@ class BrowserSavePasswordProgressLogger;
 class PasswordManagerClient;
 class PasswordManagerDriver;
 class PasswordFormManagerForUI;
-class PasswordFormManagerInterface;
-class PasswordFormMetricsRecorder;
-class PasswordManagerMetricsRecorder;
 class PasswordFormManager;
+class PasswordManagerMetricsRecorder;
+struct PossibleUsernameData;
 
 // Per-tab password manager. Handles creation and management of UI elements,
 // receiving password form data from the renderer and managing the password
-// database through the PasswordStore. The PasswordManager is a LoginModel
-// for purposes of supporting HTTP authentication dialogs.
+// database through the PasswordStore.
 class PasswordManager : public FormSubmissionObserver {
  public:
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
@@ -87,16 +86,6 @@ class PasswordManager : public FormSubmissionObserver {
       const base::string16& generation_element,
       bool is_manually_triggered);
 
-  // TODO(isherman): This should not be public, but is currently being used by
-  // the LoginPrompt code.
-  // When a form is submitted, we prepare to save the password but wait
-  // until we decide the user has successfully logged in. This is step 1
-  // of 2 (see SavePassword).
-  // |driver| is optional and if it's given it should be a driver that
-  // corresponds to a frame from which |form| comes from.
-  void ProvisionallySavePassword(const autofill::PasswordForm& form,
-                                 const PasswordManagerDriver* driver);
-
   // FormSubmissionObserver:
   void DidNavigateMainFrame(bool form_may_be_submitted) override;
 
@@ -115,21 +104,30 @@ class PasswordManager : public FormSubmissionObserver {
                                const autofill::PasswordForm& password_form);
 
   // Handles a password form being submitted, assumes that submission is
-  // successful and does not do any checks on success of submission.
-  // For example, this is called if |password_form| was filled
-  // upon in-page navigation. This often means history.pushState being
-  // called from JavaScript.
+  // successful and does not do any checks on success of submission. For
+  // example, this is called if |password_form| was filled upon in-page
+  // navigation. This often means history.pushState being called from
+  // JavaScript.
+  // TODO(crbug.com/949519): Rename this method together with
+  // SameDocumentNavigation in autofill::mojom::PasswordManagerDriver
   void OnPasswordFormSubmittedNoChecks(
       PasswordManagerDriver* driver,
+      autofill::mojom::SubmissionIndicatorEvent event);
+
+#if defined(OS_IOS)
+  // Similar to OnPasswordFormSubmittedNoChecks() but for iOS which is using a
+  // different signature for now.
+  void OnPasswordFormSubmittedNoChecksForiOS(
+      PasswordManagerDriver* driver,
       const autofill::PasswordForm& password_form);
+#endif
 
   // Called when a user changed a value in a non-password field. The field is in
   // a frame corresponding to |driver| and has a renderer id |renderer_id|.
   // |value| is the current value of the field.
-  void OnUserModifiedNonPasswordField(
-      password_manager::PasswordManagerDriver* driver,
-      int32_t renderer_id,
-      const base::string16& value);
+  void OnUserModifiedNonPasswordField(PasswordManagerDriver* driver,
+                                      int32_t renderer_id,
+                                      const base::string16& value);
 
   // Handles a request to show manual fallback for password saving, i.e. the
   // omnibox icon with the anchored hidden prompt.
@@ -162,23 +160,15 @@ class PasswordManager : public FormSubmissionObserver {
     return form_managers_;
   }
 
-  PasswordFormManagerInterface* GetSubmittedManagerForTest() const {
+  PasswordFormManager* GetSubmittedManagerForTest() const {
     return GetSubmittedManager();
   }
-#if !defined(OS_IOS)
+
   void set_leak_factory(std::unique_ptr<LeakDetectionCheckFactory> factory) {
     leak_delegate_.set_leak_factory(std::move(factory));
   }
-#endif  // !defined(OS_IOS)
 
 #endif  // defined(UNIT_TEST)
-
-  // Reports the priority of a PasswordGenerationRequirementsSpec for a
-  // generated password. See
-  // PasswordFormMetricsRecorder::ReportSpecPriorityForGeneratedPassword.
-  void ReportSpecPriorityForGeneratedPassword(
-      const autofill::PasswordForm& password_form,
-      uint32_t spec_priority);
 
   // Reports the success from the renderer's PasswordAutofillAgent to fill
   // credentials into a site. This may be called multiple times, but only
@@ -245,7 +235,7 @@ class PasswordManager : public FormSubmissionObserver {
 
   // Helper function called inside OnLoginSuccessful() to save password hash
   // data from |submitted_manager| for password reuse detection purpose.
-  void MaybeSavePasswordHash(PasswordFormManagerInterface* submitted_manager);
+  void MaybeSavePasswordHash(PasswordFormManager* submitted_manager);
 
   // Checks for every form in |forms| whether |pending_login_managers_| already
   // contain a manager for that form. If not, adds a manager for each such form.
@@ -272,10 +262,6 @@ class PasswordManager : public FormSubmissionObserver {
   // and the matched form manager has not recieved yet response from the
   // password store, then nullptr is returned. Returns manager which manages
   // |form|.
-  // |is_gaia_with_skip_save_password_form| is true iff this is Gaia form which
-  // should be skipped on saving.
-  // TODO(https://crbug.com/949519): move |is_gaia_with_skip_save_password_form|
-  // from PasswordForm to FormData, and remove it from arguments.
   PasswordFormManager* ProvisionallySaveForm(const autofill::FormData& form,
                                              PasswordManagerDriver* driver,
                                              bool is_manual_fallback);
@@ -284,7 +270,7 @@ class PasswordManager : public FormSubmissionObserver {
   // be nullptr if there is no submitted form.
   // TODO(https://crbug.com/831123): Remove when the old PasswordFormManager is
   // gone.
-  PasswordFormManagerInterface* GetSubmittedManager() const;
+  PasswordFormManager* GetSubmittedManager() const;
 
   // Returns the form manager that corresponds to the submitted form. It also
   // sets |submitted_form_manager_| to nullptr.
@@ -299,15 +285,10 @@ class PasswordManager : public FormSubmissionObserver {
       const GURL& form_origin,
       BrowserSavePasswordProgressLogger* logger);
 
-  scoped_refptr<PasswordFormMetricsRecorder>
-  GetMetricRecorderFromPasswordFormManager(const autofill::FormData& form,
-                                           const PasswordManagerDriver* driver);
-
   // Returns the manager which manages |form|. |driver| is needed to determine
   // the match. Returns nullptr when no matched manager is found.
-  PasswordFormManagerInterface* GetMatchedManager(
-      const PasswordManagerDriver* driver,
-      const autofill::PasswordForm& form);
+  PasswordFormManager* GetMatchedManager(const PasswordManagerDriver* driver,
+                                         const autofill::PasswordForm& form);
 
   // Returns the manager which manages |form|. |driver| is needed to determine
   // the match. Returns nullptr when no matched manager is found.
@@ -317,6 +298,11 @@ class PasswordManager : public FormSubmissionObserver {
   // Log a frame (main frame, iframe) of a submitted password form.
   void ReportSubmittedFormFrameMetric(const PasswordManagerDriver* driver,
                                       const autofill::PasswordForm& form);
+
+  //  If |possible_username_.form_predictions| is missing, this functions tries
+  //  to find predictions for the form which contains |possible_username_| in
+  //  |predictions_|.
+  void TryToFindPredictionsToPossibleUsernameData();
 
   // PasswordFormManager transition schemes:
   // 1. HTML submission with navigation afterwads.
@@ -364,10 +350,10 @@ class PasswordManager : public FormSubmissionObserver {
   // CredentialManagerImpl takes care of it.
   bool store_password_called_ = false;
 
-#if !defined(OS_IOS)
   // Helper for making the requests on leak detection.
   LeakDetectionDelegate leak_delegate_;
-#endif  // !defined(OS_IOS)
+
+  base::Optional<PossibleUsernameData> possible_username_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordManager);
 };

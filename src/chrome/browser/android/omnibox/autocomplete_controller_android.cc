@@ -12,6 +12,7 @@
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -80,6 +81,25 @@ enum class MatchValidationResult {
   COUNT = 3
 };
 
+void RecordClipboardMetrics(AutocompleteMatchType::Type match_type) {
+  if (match_type != AutocompleteMatchType::CLIPBOARD_URL &&
+      match_type != AutocompleteMatchType::CLIPBOARD_TEXT) {
+    return;
+  }
+
+  base::TimeDelta age =
+      ClipboardRecentContent::GetInstance()->GetClipboardContentAge();
+  UMA_HISTOGRAM_LONG_TIMES_100("MobileOmnibox.PressedClipboardSuggestionAge",
+                               age);
+  if (match_type == AutocompleteMatchType::CLIPBOARD_URL) {
+    UMA_HISTOGRAM_LONG_TIMES_100(
+        "MobileOmnibox.PressedClipboardSuggestionAge.URL", age);
+  } else if (match_type == AutocompleteMatchType::CLIPBOARD_TEXT) {
+    UMA_HISTOGRAM_LONG_TIMES_100(
+        "MobileOmnibox.PressedClipboardSuggestionAge.TEXT", age);
+  }
+}
+
 /**
  * A prefetcher class responsible for triggering zero suggest prefetch.
  * The prefetch occurs as a side-effect of calling OnOmniboxFocused() on
@@ -108,16 +128,18 @@ ZeroSuggestPrefetcher::ZeroSuggestPrefetcher(Profile* profile)
   // Creating an arbitrary fake_request_source to avoid passing in an invalid
   // AutocompleteInput object. This source is ignored entirely when
   // kZeroSuggestionsOnNTP feature flag is enabled.
-  base::string16 fake_request_source =
-      base::ASCIIToUTF16("chrome-native://newtab");
-  auto context = metrics::OmniboxEventProto::NTP;
+  base::string16 fake_request_source = base::ASCIIToUTF16("chrome://newtab");
+  base::string16 fake_omnibox_content;
+  auto context =
+      metrics::OmniboxEventProto::INSTANT_NTP_WITH_OMNIBOX_AS_STARTING_FOCUS;
 
   if (!base::FeatureList::IsEnabled(omnibox::kZeroSuggestionsOnNTP)) {
     fake_request_source = base::ASCIIToUTF16("http://www.foobarbazblah.com");
+    fake_omnibox_content = fake_request_source;
     context = metrics::OmniboxEventProto::OTHER;
   }
 
-  AutocompleteInput input(fake_request_source, context,
+  AutocompleteInput input(fake_omnibox_content, context,
                           ChromeAutocompleteSchemeClassifier(profile));
   input.set_current_url(GURL(fake_request_source));
   input.set_from_omnibox_focus(true);
@@ -281,11 +303,7 @@ void AutocompleteControllerAndroid::OnSuggestionSelected(
       "Omnibox.SuggestionUsed.RichEntity",
       match.type == AutocompleteMatchType::SEARCH_SUGGEST_ENTITY);
 
-  if (match.type == AutocompleteMatchType::CLIPBOARD_URL) {
-    UMA_HISTOGRAM_LONG_TIMES_100(
-        "MobileOmnibox.PressedClipboardSuggestionAge",
-        ClipboardRecentContent::GetInstance()->GetClipboardContentAge());
-  }
+  RecordClipboardMetrics(match.type);
 
   AutocompleteMatch::LogSearchEngineUsed(
       match, TemplateURLServiceFactory::GetForProfile(profile_));
@@ -426,12 +444,9 @@ void AutocompleteControllerAndroid::NotifySuggestionsReceived(
   }
 
   // Get the inline-autocomplete text.
-  const AutocompleteResult::const_iterator default_match(
-      autocomplete_result.default_match());
   base::string16 inline_autocomplete_text;
-  if (default_match != autocomplete_result.end()) {
+  if (auto* default_match = autocomplete_result.default_match())
     inline_autocomplete_text = default_match->inline_autocompletion;
-  }
   ScopedJavaLocalRef<jstring> inline_text =
       ConvertUTF16ToJavaString(env, inline_autocomplete_text);
   jlong j_autocomplete_result =
@@ -654,8 +669,9 @@ static void JNI_AutocompleteController_PrefetchZeroSuggestResults(JNIEnv* env) {
   // ZeroSuggestPrefetcher uses a fake AutocompleteInput classified as OTHER.
   // See its constructor.
   if (!base::FeatureList::IsEnabled(omnibox::kZeroSuggestionsOnNTP) &&
-      OmniboxFieldTrial::GetZeroSuggestVariant(OmniboxEventProto::OTHER) !=
-          ZeroSuggestProvider::kRemoteNoUrlVariant) {
+      !base::Contains(
+          OmniboxFieldTrial::GetZeroSuggestVariants(OmniboxEventProto::OTHER),
+          ZeroSuggestProvider::kRemoteNoUrlVariant)) {
     return;
   }
 

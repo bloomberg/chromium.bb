@@ -35,7 +35,8 @@
     InfobarPasswordTableViewController* modalViewController;
 // The InfobarType for the banner presented by this Coordinator.
 @property(nonatomic, assign, readonly) InfobarType infobarBannerType;
-
+// YES if the Infobar has been Accepted.
+@property(nonatomic, assign) BOOL infobarAccepted;
 @end
 
 @implementation InfobarPasswordCoordinator
@@ -48,6 +49,7 @@
                                             passwordInfoBarDelegate
                                    type:(InfobarType)infobarType {
   self = [super initWithInfoBarDelegate:passwordInfoBarDelegate
+                           badgeSupport:YES
                                    type:infobarType];
   if (self) {
     _passwordInfoBarDelegate = passwordInfoBarDelegate;
@@ -64,8 +66,10 @@
 - (void)start {
   if (!self.started) {
     self.started = YES;
+    self.infobarAccepted = NO;
     self.bannerViewController = [[InfobarBannerViewController alloc]
         initWithDelegate:self
+           presentsModal:self.hasBadge
                     type:self.infobarBannerType];
     self.bannerViewController.titleText = base::SysUTF16ToNSString(
         self.passwordInfoBarDelegate->GetMessageText());
@@ -97,7 +101,7 @@
     // from memory.
     self.delegate->RemoveInfoBar();
     _passwordInfoBarDelegate = nil;
-    [self.infobarContainer childCoordinatorStopped:self.infobarType];
+    [self.infobarContainer childCoordinatorStopped:self];
   }
 }
 
@@ -147,6 +151,14 @@
   return YES;
 }
 
+- (BOOL)isInfobarAccepted {
+  return self.infobarAccepted;
+}
+
+- (BOOL)infobarBannerActionWillPresentModal {
+  return NO;
+}
+
 - (void)infobarBannerWasPresented {
   // There's a chance the Delegate was destroyed while the presentation was
   // taking place e.g. User navigated away. Check if the delegate still exists.
@@ -163,12 +175,17 @@
   self.passwordInfoBarDelegate->InfobarPresenting(NO /*automatic*/);
 }
 
-- (void)dismissBannerWhenInteractionIsFinished {
+- (void)dismissBannerIfReady {
   [self.bannerViewController dismissWhenInteractionIsFinished];
+}
+
+- (BOOL)infobarActionInProgress {
+  return NO;
 }
 
 - (void)performInfobarAction {
   self.passwordInfoBarDelegate->Accept();
+  self.infobarAccepted = YES;
 }
 
 - (void)infobarBannerWillBeDismissed:(BOOL)userInitiated {
@@ -215,7 +232,7 @@
                    animated:YES
                  completion:^{
                    // Completely remove the Infobar along with its badge after
-                   // blacklisting the Website.
+                   // blocking the Website.
                    [self detachView];
                  }];
 }

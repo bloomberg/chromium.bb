@@ -35,21 +35,25 @@
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/form_parsing/field_candidates.h"
 #include "components/autofill/core/browser/form_parsing/form_field.h"
-#include "components/autofill/core/browser/logging/log_buffer.h"
+#include "components/autofill/core/browser/logging/log_manager.h"
 #include "components/autofill/core/browser/proto/legacy_proto_bridge.h"
 #include "components/autofill/core/browser/randomized_encoder.h"
 #include "components/autofill/core/browser/rationalization_util.h"
 #include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/autofill/core/common/autofill_features.h"
+#include "components/autofill/core/common/autofill_internals/log_message.h"
+#include "components/autofill/core/common/autofill_internals/logging_scope.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/autofill/core/common/autofill_regex_constants.h"
 #include "components/autofill/core/common/autofill_regexes.h"
+#include "components/autofill/core/common/autofill_tick_clock.h"
 #include "components/autofill/core/common/autofill_util.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_data_predictions.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/autofill/core/common/form_field_data_predictions.h"
+#include "components/autofill/core/common/logging/log_buffer.h"
 #include "components/autofill/core/common/signatures_util.h"
 #include "components/security_state/core/security_state.h"
 #include "url/origin.h"
@@ -339,7 +343,8 @@ HtmlFieldType FieldTypeFromAutocompleteAttributeValue(
       autocomplete_attribute_value == "phone_ext")
     return HTML_TYPE_TEL_EXTENSION;
 
-  if (autocomplete_attribute_value == "email")
+  if (autocomplete_attribute_value == "email" ||
+      autocomplete_attribute_value == "username")
     return HTML_TYPE_EMAIL;
 
   if (autocomplete_attribute_value == "upi-vpa" ||
@@ -408,13 +413,6 @@ void EncodePasswordAttributesVote(
     case PasswordAttribute::kHasLowercaseLetter:
       upload->set_password_has_lowercase_letter(
           password_attributes_vote.second);
-      break;
-    case PasswordAttribute::kHasUppercaseLetter:
-      upload->set_password_has_uppercase_letter(
-          password_attributes_vote.second);
-      break;
-    case PasswordAttribute::kHasNumeric:
-      upload->set_password_has_numeric(password_attributes_vote.second);
       break;
     case PasswordAttribute::kHasSpecialSymbol:
       upload->set_password_has_special_symbol(password_attributes_vote.second);
@@ -568,22 +566,13 @@ FormStructure::FormStructure(const FormData& form)
       name_attribute_(form.name_attribute),
       form_name_(form.name),
       button_titles_(form.button_titles),
-      submission_event_(SubmissionIndicatorEvent::NONE),
       source_url_(form.url),
       target_url_(form.action),
       main_frame_origin_(form.main_frame_origin),
-      autofill_count_(0),
-      active_field_count_(0),
-      upload_required_(USE_UPLOAD_RATES),
-      has_author_specified_types_(false),
-      has_author_specified_sections_(false),
-      has_author_specified_upi_vpa_hint_(false),
-      was_parsed_for_autocomplete_attributes_(false),
-      has_password_field_(false),
       is_form_tag_(form.is_form_tag),
       is_formless_checkout_(form.is_formless_checkout),
       all_fields_are_passwords_(!form.fields.empty()),
-      form_parsed_timestamp_(base::TimeTicks::Now()),
+      form_parsed_timestamp_(AutofillTickClock::NowTicks()),
       passwords_were_revealed_(false),
       password_symbol_vote_(0),
       developer_engagement_metrics_(0),
@@ -613,10 +602,19 @@ FormStructure::FormStructure(const FormData& form)
   ProcessExtractedFields();
 }
 
-FormStructure::~FormStructure() {}
+FormStructure::FormStructure(
+    FormSignature form_signature,
+    const std::vector<FieldSignature>& field_signatures)
+    : form_signature_(form_signature) {
+  for (const auto& signature : field_signatures)
+    fields_.push_back(AutofillField::CreateForPasswordManagerUpload(signature));
+}
+
+FormStructure::~FormStructure() = default;
 
 void FormStructure::DetermineHeuristicTypes(LogManager* log_manager) {
-  const auto determine_heuristic_types_start_time = base::TimeTicks::Now();
+  const auto determine_heuristic_types_start_time =
+      AutofillTickClock::NowTicks();
 
   // First, try to detect field types based on each field's |autocomplete|
   // attribute value.
@@ -660,7 +658,7 @@ void FormStructure::DetermineHeuristicTypes(LogManager* log_manager) {
   RationalizeFieldTypePredictions();
 
   AutofillMetrics::LogDetermineHeuristicTypesTiming(
-      base::TimeTicks::Now() - determine_heuristic_types_start_time);
+      AutofillTickClock::NowTicks() - determine_heuristic_types_start_time);
 }
 
 bool FormStructure::EncodeUploadRequest(
@@ -826,6 +824,14 @@ void FormStructure::ProcessQueryResponse(
       if (heuristic_type != UNKNOWN_TYPE)
         heuristics_detected_fillable_field = true;
 
+      // Clears the server prediction for CVC-fields if the corresponding Finch
+      // feature is not enabled.
+      if (!base::FeatureList::IsEnabled(
+              autofill::features::kAutofillUseServerCVCPrediction) &&
+          field_type == ServerFieldType::CREDIT_CARD_VERIFICATION_CODE) {
+        field_type = ServerFieldType::NO_SERVER_DATA;
+      }
+
       field->set_server_type(field_type);
       std::vector<AutofillQueryResponseContents::Field::FieldPrediction>
           server_predictions;
@@ -913,6 +919,14 @@ bool FormStructure::IsAutofillFieldMetadataEnabled() {
   return base::StartsWith(group_name, "Enabled", base::CompareCase::SENSITIVE);
 }
 
+std::unique_ptr<FormStructure> FormStructure::CreateForPasswordManagerUpload(
+    FormSignature form_signature,
+    const std::vector<FieldSignature>& field_signatures) {
+  std::unique_ptr<FormStructure> form;
+  form.reset(new FormStructure(form_signature, field_signatures));
+  return form;
+}
+
 std::string FormStructure::FormSignatureAsStr() const {
   return base::NumberToString(form_signature());
 }
@@ -951,10 +965,15 @@ void FormStructure::UpdateAutofillCount() {
   }
 }
 
-bool FormStructure::ShouldBeParsed() const {
+bool FormStructure::ShouldBeParsed(LogManager* log_manager) const {
   // Exclude URLs not on the web via HTTP(S).
-  if (!HasAllowedScheme(source_url_))
+  if (!HasAllowedScheme(source_url_)) {
+    if (log_manager) {
+      log_manager->Log() << LoggingScope::kAbortParsing
+                         << LogMessage::kAbortParsingNotAllowedScheme << *this;
+    }
     return false;
+  }
 
   size_t min_required_fields =
       std::min({MinRequiredFieldsForHeuristics(), MinRequiredFieldsForQuery(),
@@ -963,6 +982,11 @@ bool FormStructure::ShouldBeParsed() const {
       (!all_fields_are_passwords() ||
        active_field_count() < kRequiredFieldsForFormsWithOnlyPasswordFields) &&
       !has_author_specified_types_) {
+    if (log_manager) {
+      log_manager->Log() << LoggingScope::kAbortParsing
+                         << LogMessage::kAbortParsingNotEnoughFields
+                         << active_field_count() << *this;
+    }
     return false;
   }
 
@@ -971,12 +995,22 @@ bool FormStructure::ShouldBeParsed() const {
       base::UTF8ToUTF16(kUrlSearchActionRe);
   if (MatchesPattern(base::UTF8ToUTF16(target_url_.path_piece()),
                      kUrlSearchActionPattern)) {
+    if (log_manager) {
+      log_manager->Log() << LoggingScope::kAbortParsing
+                         << LogMessage::kAbortParsingUrlMatchesSearchRegex
+                         << *this;
+    }
     return false;
   }
 
   bool has_text_field = false;
   for (const auto& it : *this) {
     has_text_field |= it->form_control_type != "select-one";
+  }
+
+  if (!has_text_field && log_manager) {
+    log_manager->Log() << LoggingScope::kAbortParsing
+                       << LogMessage::kAbortParsingFormHasNoTextfield << *this;
   }
 
   return has_text_field;
@@ -1031,9 +1065,7 @@ void FormStructure::RetrieveFromCache(
         bool is_credit_card_field =
             AutofillType(cached_field->second->Type().GetStorableType())
                 .group() == CREDIT_CARD;
-        if (should_keep_cached_value && is_credit_card_field &&
-            base::FeatureList::IsEnabled(
-                features::kAutofillImportDynamicForms)) {
+        if (should_keep_cached_value && is_credit_card_field) {
           field->value = cached_field->second->value;
           value_from_dynamic_change_form_ = true;
         } else if (field->value == cached_field->second->value) {
@@ -2194,6 +2226,7 @@ LogBuffer& operator<<(LogBuffer& buffer, const FormStructure& form) {
                           base::NumberToString(
                               HashFormSignature(form.form_signature()))});
   buffer << Tr{} << "Form name:" << form.form_name();
+  buffer << Tr{} << "Unique renderer Id:" << form.unique_renderer_id();
   buffer << Tr{} << "Target URL:" << form.target_url();
   for (size_t i = 0; i < form.field_count(); ++i) {
     buffer << Tag{"tr"};

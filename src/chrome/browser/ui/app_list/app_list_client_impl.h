@@ -21,7 +21,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
-#include "chrome/browser/ui/app_list/search/logging/search_ranking_event_logger.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/search_engines/template_url_service_observer.h"
 #include "components/user_manager/user_manager.h"
@@ -38,7 +37,7 @@ class AppSyncUIStateWatcher;
 class Profile;
 
 class AppListClientImpl
-    : public app_list::AppListClient,
+    : public ash::AppListClient,
       public AppListControllerDelegate,
       public user_manager::UserManager::UserSessionStateObserver,
       public TemplateURLServiceObserver {
@@ -48,14 +47,15 @@ class AppListClientImpl
 
   static AppListClientImpl* GetInstance();
 
-  // app_list::AppListClient:
+  // ash::AppListClient:
   void OnAppListControllerDestroyed() override;
   void StartSearch(const base::string16& trimmed_query) override;
   void OpenSearchResult(const std::string& result_id,
                         int event_flags,
                         ash::AppListLaunchedFrom launched_from,
                         ash::AppListLaunchType launch_type,
-                        int suggestion_index) override;
+                        int suggestion_index,
+                        bool launch_as_default) override;
   void InvokeSearchResultAction(const std::string& result_id,
                                 int action_index,
                                 int event_flags) override;
@@ -70,7 +70,7 @@ class AppListClientImpl
   void GetContextMenuModel(int profile_id,
                            const std::string& id,
                            GetContextMenuModelCallback callback) override;
-  void OnAppListTargetVisibilityChanged(bool visible) override;
+  void OnAppListVisibilityWillChange(bool visible) override;
   void OnAppListVisibilityChanged(bool visible) override;
   void OnFolderCreated(int profile_id,
                        std::unique_ptr<ash::AppListItemMetadata> item) override;
@@ -124,10 +124,6 @@ class AppListClientImpl
   // client is accessed or active user is changed.
   void UpdateProfile();
 
-  // Shows the app list if it isn't already showing and switches to |state|,
-  // unless it is |INVALID_STATE| (in which case, opens on the default state).
-  void ShowAndSwitchToState(ash::AppListState state);
-
   void ShowAppList();
 
   bool app_list_target_visibility() const {
@@ -136,7 +132,7 @@ class AppListClientImpl
   bool app_list_visible() const { return app_list_visible_; }
 
   // Returns a pointer to control the app list views in ash.
-  app_list::AppListController* GetAppListController() const;
+  ash::AppListController* GetAppListController() const;
 
   AppListControllerDelegate* GetControllerDelegate();
   Profile* GetCurrentAppListProfile() const;
@@ -183,16 +179,13 @@ class AppListClientImpl
   std::unique_ptr<app_list::SearchController> search_controller_;
   std::unique_ptr<AppSyncUIStateWatcher> app_sync_ui_state_watcher_;
 
-  ScopedObserver<TemplateURLService, AppListClientImpl>
+  ScopedObserver<TemplateURLService, TemplateURLServiceObserver>
       template_url_service_observer_{this};
 
-  app_list::AppListController* app_list_controller_ = nullptr;
+  ash::AppListController* app_list_controller_ = nullptr;
 
   bool app_list_target_visibility_ = false;
   bool app_list_visible_ = false;
-
-  std::unique_ptr<app_list::SearchRankingEventLogger>
-      search_ranking_event_logger_;
 
   base::WeakPtrFactory<AppListClientImpl> weak_ptr_factory_{this};
 

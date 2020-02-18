@@ -18,6 +18,10 @@
 #include "VkObject.hpp"
 #include "VkFormat.h"
 
+#ifdef __ANDROID__
+#include <vulkan/vk_android_native_buffer.h> // For VkSwapchainImageUsageFlagsANDROID and buffer_handle_t
+#endif
+
 namespace vk
 {
 
@@ -25,11 +29,24 @@ class Buffer;
 class Device;
 class DeviceMemory;
 
+#ifdef __ANDROID__
+struct BackingMemory {
+	int stride = 0;
+	bool externalMemory = false;
+	buffer_handle_t nativeHandle = nullptr;
+	VkSwapchainImageUsageFlagsANDROID androidUsage = 0;
+};
+#endif
+
 class Image : public Object<Image, VkImage>
 {
 public:
 	Image(const VkImageCreateInfo* pCreateInfo, void* mem, Device *device);
 	void destroy(const VkAllocationCallbacks* pAllocator);
+
+#ifdef __ANDROID__
+	VkResult prepareForExternalUseANDROID() const;
+#endif
 
 	static size_t ComputeRequiredAllocationSize(const VkImageCreateInfo* pCreateInfo);
 
@@ -41,6 +58,7 @@ public:
 	void copyFrom(Buffer* srcBuffer, const VkBufferImageCopy& region);
 
 	void blit(Image* dstImage, const VkImageBlit& region, VkFilter filter) const;
+	void blitToBuffer(VkImageSubresourceLayers subresource, VkOffset3D offset, VkExtent3D extent, uint8_t* dst, int bufferRowPitch, int bufferSlicePitch) const;
 	void resolve(Image* dstImage, const VkImageResolve& region) const;
 	void clear(const VkClearValue& clearValue, const vk::Format& viewFormat, const VkRect2D& renderArea, const VkImageSubresourceRange& subresourceRange);
 	void clear(const VkClearColorValue& color, const VkImageSubresourceRange& subresourceRange);
@@ -63,14 +81,21 @@ public:
 	bool                     is3DSlice() const;
 	uint8_t*                 end() const;
 	VkDeviceSize             getLayerSize(VkImageAspectFlagBits aspect) const;
+	VkDeviceSize             getMipLevelSize(VkImageAspectFlagBits aspect, uint32_t mipLevel) const;
+	bool                     canBindToMemory(DeviceMemory* pDeviceMemory) const;
 
 	void                     prepareForSampling(const VkImageSubresourceRange& subresourceRange);
 	const Image*             getSampledImage(const vk::Format& imageViewFormat) const;
 
+#ifdef __ANDROID__
+	void                     setBackingMemory(BackingMemory& bm) { backingMemory = bm; }
+	bool                     hasExternalMemory() const { return backingMemory.externalMemory; }
+	VkDeviceMemory           getExternalMemory() const;
+#endif
+
 private:
 	void copy(Buffer* buffer, const VkBufferImageCopy& region, bool bufferIsSource);
 	VkDeviceSize getStorageSize(VkImageAspectFlags flags) const;
-	VkDeviceSize getMipLevelSize(VkImageAspectFlagBits aspect, uint32_t mipLevel) const;
 	VkDeviceSize getMultiSampledLevelSize(VkImageAspectFlagBits aspect, uint32_t mipLevel) const;
 	VkDeviceSize getLayerOffset(VkImageAspectFlagBits aspect, uint32_t mipLevel) const;
 	VkDeviceSize getMemoryOffset(VkImageAspectFlagBits aspect, uint32_t mipLevel) const;
@@ -98,6 +123,11 @@ private:
 	VkImageTiling            tiling = VK_IMAGE_TILING_OPTIMAL;
 	VkImageUsageFlags        usage = (VkImageUsageFlags)0;
 	Image*                   decompressedImage = nullptr;
+#ifdef __ANDROID__
+	BackingMemory            backingMemory = {};
+#endif
+
+	VkExternalMemoryHandleTypeFlags supportedExternalMemoryHandleTypes = (VkExternalMemoryHandleTypeFlags)0;
 };
 
 static inline Image* Cast(VkImage object)

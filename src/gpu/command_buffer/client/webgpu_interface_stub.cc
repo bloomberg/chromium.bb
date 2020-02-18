@@ -23,11 +23,22 @@ const DawnProcTable& WebGPUInterfaceStub::GetProcs() const {
   return null_procs_;
 }
 void WebGPUInterfaceStub::FlushCommands() {}
-DawnDevice WebGPUInterfaceStub::GetDefaultDevice() {
+WGPUDevice WebGPUInterfaceStub::GetDefaultDevice() {
   return nullptr;
 }
-ReservedTexture WebGPUInterfaceStub::ReserveTexture(DawnDevice device) {
+ReservedTexture WebGPUInterfaceStub::ReserveTexture(WGPUDevice device) {
   return {nullptr, 0, 0};
+}
+bool WebGPUInterfaceStub::RequestAdapterAsync(
+    PowerPreference power_preference,
+    base::OnceCallback<void(uint32_t, const WGPUDeviceProperties&)>
+        request_adapter_callback) {
+  return false;
+}
+bool WebGPUInterfaceStub::RequestDevice(
+    uint32_t adapter_service_id,
+    const WGPUDeviceProperties* requested_device_properties) {
+  return false;
 }
 
 // Include the auto-generated part of this class. We split this because

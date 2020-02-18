@@ -9,10 +9,11 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
+#include "third_party/blink/public/common/media/media_player_action.h"
 #include "third_party/blink/public/mojom/picture_in_picture/picture_in_picture.mojom-blink.h"
 #include "third_party/blink/public/platform/web_media_stream.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
-#include "third_party/blink/public/web/web_media_player_action.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
@@ -116,16 +117,9 @@ class PictureInPictureControllerFrameClient
 
   explicit PictureInPictureControllerFrameClient(
       std::unique_ptr<WebMediaPlayer> player)
-      : test::MediaStubLocalFrameClient(std::move(player)),
-        interface_provider_(new service_manager::InterfaceProvider()) {}
-
-  service_manager::InterfaceProvider* GetInterfaceProvider() override {
-    return interface_provider_.get();
-  }
+      : test::MediaStubLocalFrameClient(std::move(player)) {}
 
  private:
-  std::unique_ptr<service_manager::InterfaceProvider> interface_provider_;
-
   DISALLOW_COPY_AND_ASSIGN(PictureInPictureControllerFrameClient);
 };
 
@@ -158,9 +152,7 @@ class PictureInPictureControllerTest : public PageTestBase {
         nullptr, PictureInPictureControllerFrameClient::Create(
                      std::make_unique<PictureInPictureControllerPlayer>()));
 
-    service_manager::InterfaceProvider::TestApi test_api(
-        GetFrame().Client()->GetInterfaceProvider());
-    test_api.SetBinderForName(
+    GetDocument().GetBrowserInterfaceBroker().SetBinderForTesting(
         mojom::blink::PictureInPictureService::Name_,
         WTF::BindRepeating(&MockPictureInPictureService::Bind,
                            WTF::Unretained(&mock_service_)));
@@ -182,6 +174,11 @@ class PictureInPictureControllerTest : public PageTestBase {
     }
 
     test::RunPendingTasks();
+  }
+
+  void TearDown() override {
+    GetDocument().GetBrowserInterfaceBroker().SetBinderForTesting(
+        mojom::blink::PictureInPictureService::Name_, {});
   }
 
   HTMLVideoElement* Video() const { return video_.Get(); }
@@ -342,8 +339,7 @@ TEST_F(PictureInPictureControllerTest, PerformMediaPlayerAction) {
 
   frame->PerformMediaPlayerAction(
       WebPoint(bounds.X(), bounds.Y()),
-      WebMediaPlayerAction(WebMediaPlayerAction::Type::kPictureInPicture,
-                           true));
+      MediaPlayerAction(MediaPlayerAction::Type::kPictureInPicture, true));
 }
 
 }  // namespace blink

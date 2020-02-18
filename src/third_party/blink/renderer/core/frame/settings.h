@@ -31,9 +31,8 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "third_party/blink/public/common/css/forced_colors.h"
-#include "third_party/blink/public/common/css/preferred_color_scheme.h"
-#include "third_party/blink/public/common/manifest/web_display_mode.h"
+#include "third_party/blink/public/common/css/navigation_controls.h"
+#include "third_party/blink/public/mojom/manifest/display_mode.mojom-shared.h"
 #include "third_party/blink/public/platform/pointer_properties.h"
 #include "third_party/blink/public/platform/web_effective_connection_type.h"
 #include "third_party/blink/public/platform/web_viewport_style.h"
@@ -86,10 +85,6 @@ class CORE_EXPORT Settings {
   bool ForceDarkModeEnabled() const { return force_dark_mode_; }
 
   SETTINGS_GETTERS_AND_SETTERS
-
-  // FIXME: This does not belong here.
-  static void SetMockScrollbarsEnabled(bool flag);
-  static bool MockScrollbarsEnabled();
 
   void SetDelegate(SettingsDelegate*);
 

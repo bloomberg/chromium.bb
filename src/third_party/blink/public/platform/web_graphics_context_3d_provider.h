@@ -50,10 +50,15 @@ class VideoFrame;
 namespace gpu {
 struct Capabilities;
 struct GpuFeatureInfo;
+class InterfaceBase;
 class SharedImageInterface;
 
 namespace gles2 {
 class GLES2Interface;
+}
+
+namespace raster {
+class RasterInterface;
 }
 
 namespace webgpu {
@@ -71,7 +76,6 @@ enum AntialiasingMode {
   kAntialiasingModeNone,
   kAntialiasingModeMSAAImplicitResolve,
   kAntialiasingModeMSAAExplicitResolve,
-  kAntialiasingModeScreenSpaceAntialiasing,
 };
 
 struct WebglPreferences {
@@ -87,7 +91,9 @@ class WebGraphicsContext3DProvider {
  public:
   virtual ~WebGraphicsContext3DProvider() = default;
 
+  virtual gpu::InterfaceBase* InterfaceBase() = 0;
   virtual gpu::gles2::GLES2Interface* ContextGL() = 0;
+  virtual gpu::raster::RasterInterface* RasterInterface() = 0;
   virtual gpu::webgpu::WebGPUInterface* WebGPUInterface() = 0;
   virtual bool BindToCurrentThread() = 0;
   virtual GrContext* GetGrContext() = 0;

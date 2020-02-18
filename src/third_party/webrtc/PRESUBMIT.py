@@ -539,18 +539,21 @@ def CheckPublicDepsIsNotUsed(gn_files, input_api, output_api):
   return result
 
 
-def CheckCheckIncludesIsNotUsed(gn_files, output_api):
+def CheckCheckIncludesIsNotUsed(gn_files, input_api, output_api):
   result = []
   error_msg = ('check_includes overrides are not allowed since it can cause '
                'incorrect dependencies to form. It effectively means that your '
                'module can include any .h file without depending on its '
                'corresponding target. There are some exceptional cases when '
-               'this is allowed: if so, get approval from a .gn owner in the'
+               'this is allowed: if so, get approval from a .gn owner in the '
                'root OWNERS file.\n'
                'Used in: %s (line %d).')
+  no_presubmit_re = input_api.re.compile(
+      r'# no-presubmit-check TODO\(bugs\.webrtc\.org/\d+\)')
   for affected_file in gn_files:
     for (line_number, affected_line) in affected_file.ChangedContents():
-      if 'check_includes' in affected_line:
+      if ('check_includes' in affected_line
+          and not no_presubmit_re.search(affected_line)):
         result.append(
             output_api.PresubmitError(error_msg % (affected_file.LocalPath(),
                                                    line_number)))
@@ -573,7 +576,7 @@ def CheckGnChanges(input_api, output_api):
     result.extend(CheckNoPackageBoundaryViolations(input_api, gn_files,
                                                    output_api))
     result.extend(CheckPublicDepsIsNotUsed(gn_files, input_api, output_api))
-    result.extend(CheckCheckIncludesIsNotUsed(gn_files, output_api))
+    result.extend(CheckCheckIncludesIsNotUsed(gn_files, input_api, output_api))
     result.extend(CheckNoWarningSuppressionFlagsAreAdded(gn_files, input_api,
                                                           output_api))
   return result
@@ -891,6 +894,8 @@ def CommonChecks(input_api, output_api):
   results.extend(CheckApiDepsFileIsUpToDate(input_api, output_api))
   results.extend(CheckAbslMemoryInclude(
       input_api, output_api, non_third_party_sources))
+  results.extend(CheckBannedAbslMakeUnique(
+      input_api, output_api, non_third_party_sources))
   return results
 
 
@@ -910,13 +915,14 @@ def CheckApiDepsFileIsUpToDate(input_api, output_api):
     deps_content = _ParseDeps(f.read())
 
   include_rules = deps_content.get('include_rules', [])
+  dirs_to_skip = set(['api', 'docs'])
 
   # Only check top level directories affected by the current CL.
   dirs_to_check = set()
   for f in input_api.AffectedFiles():
     path_tokens = [t for t in f.LocalPath().split(os.sep) if t]
     if len(path_tokens) > 1:
-      if (path_tokens[0] != 'api' and
+      if (path_tokens[0] not in dirs_to_skip and
           os.path.isdir(os.path.join(input_api.PresubmitLocalPath(),
                                      path_tokens[0]))):
         dirs_to_check.add(path_tokens[0])
@@ -947,6 +953,25 @@ def CheckApiDepsFileIsUpToDate(input_api, output_api):
 
   return results
 
+def CheckBannedAbslMakeUnique(input_api, output_api, source_file_filter):
+  file_filter = lambda f: (f.LocalPath().endswith(('.cc', '.h'))
+                           and source_file_filter(f))
+
+  files = []
+  for f in input_api.AffectedFiles(
+      include_deletes=False, file_filter=file_filter):
+    for _, line in f.ChangedContents():
+      if 'absl::make_unique' in line:
+        files.append(f)
+        break
+
+  if len(files):
+    return [output_api.PresubmitError(
+        'Please use std::make_unique instead of absl::make_unique.\n'
+        'Affected files:',
+        files)]
+  return []
+
 def CheckAbslMemoryInclude(input_api, output_api, source_file_filter):
   pattern = input_api.re.compile(
       r'^#include\s*"absl/memory/memory.h"', input_api.re.MULTILINE)
@@ -960,16 +985,15 @@ def CheckAbslMemoryInclude(input_api, output_api, source_file_filter):
     if pattern.search(contents):
       continue
     for _, line in f.ChangedContents():
-      if 'absl::make_unique' in line or 'absl::WrapUnique' in line:
+      if 'absl::WrapUnique' in line:
         files.append(f)
         break
 
   if len(files):
     return [output_api.PresubmitError(
-        'Please include "absl/memory/memory.h" header for'
-        ' absl::make_unique or absl::WrapUnique.\nThis header may or'
-        ' may not be included transitively depending on the C++ standard'
-        ' version.',
+        'Please include "absl/memory/memory.h" header for  absl::WrapUnique.\n'
+        'This header may or may not be included transitively depending on the '
+        'C++ standard version.',
         files)]
   return []
 

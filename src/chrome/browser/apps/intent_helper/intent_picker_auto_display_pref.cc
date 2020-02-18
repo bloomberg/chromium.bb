@@ -17,6 +17,7 @@ namespace {
 constexpr int kDismissThreshold = 2;
 
 constexpr char kAutoDisplayKey[] = "picker_auto_display_key";
+constexpr char kPlatformKey[] = "picker_platform_key";
 
 // Retrieves or creates a new dictionary for the specific |origin|.
 std::unique_ptr<base::DictionaryValue> GetAutoDisplayDictForSettings(
@@ -27,7 +28,7 @@ std::unique_ptr<base::DictionaryValue> GetAutoDisplayDictForSettings(
 
   std::unique_ptr<base::DictionaryValue> value =
       base::DictionaryValue::From(settings->GetWebsiteSetting(
-          origin, origin, CONTENT_SETTINGS_TYPE_INTENT_PICKER_DISPLAY,
+          origin, origin, ContentSettingsType::INTENT_PICKER_DISPLAY,
           content_settings::ResourceIdentifier(), nullptr));
 
   if (value.get())
@@ -60,11 +61,28 @@ bool IntentPickerAutoDisplayPref::HasExceededThreshold() {
   return ui_dismissed_counter_ < kDismissThreshold;
 }
 
+IntentPickerAutoDisplayPref::Platform
+IntentPickerAutoDisplayPref::GetPlatform() {
+  return platform_;
+}
+
+void IntentPickerAutoDisplayPref::UpdatePlatform(Platform platform) {
+  if (!pref_dict_)
+    return;
+
+  DCHECK_GE(static_cast<int>(platform), static_cast<int>(Platform::kNone));
+  DCHECK_LE(static_cast<int>(platform), static_cast<int>(Platform::kMaxValue));
+  platform_ = platform;
+  pref_dict_->SetInteger(kPlatformKey, static_cast<int>(platform_));
+  Commit();
+}
+
 IntentPickerAutoDisplayPref::IntentPickerAutoDisplayPref(
     const GURL& origin,
     std::unique_ptr<base::DictionaryValue> pref_dict)
     : origin_(origin), pref_dict_(pref_dict.release()) {
   ui_dismissed_counter_ = QueryDismissedCounter();
+  platform_ = QueryPlatform();
 }
 
 int IntentPickerAutoDisplayPref::QueryDismissedCounter() {
@@ -73,6 +91,8 @@ int IntentPickerAutoDisplayPref::QueryDismissedCounter() {
 
   int counter = 0;
   pref_dict_->GetInteger(kAutoDisplayKey, &counter);
+  DCHECK_GE(counter, static_cast<int>(Platform::kNone));
+  DCHECK_LE(counter, static_cast<int>(Platform::kMaxValue));
 
   return counter;
 }
@@ -87,8 +107,21 @@ void IntentPickerAutoDisplayPref::SetDismissedCounter(int new_counter) {
   pref_dict_->SetInteger(kAutoDisplayKey, ui_dismissed_counter_);
 }
 
+IntentPickerAutoDisplayPref::Platform
+IntentPickerAutoDisplayPref::QueryPlatform() {
+  if (!pref_dict_)
+    return Platform::kNone;
+
+  int platform = 0;
+  pref_dict_->GetInteger(kPlatformKey, &platform);
+  DCHECK_GE(platform, static_cast<int>(Platform::kNone));
+  DCHECK_LE(platform, static_cast<int>(Platform::kMaxValue));
+
+  return static_cast<Platform>(platform);
+}
+
 void IntentPickerAutoDisplayPref::Commit() {
   settings_map_->SetWebsiteSettingDefaultScope(
-      origin_, origin_, CONTENT_SETTINGS_TYPE_INTENT_PICKER_DISPLAY,
+      origin_, origin_, ContentSettingsType::INTENT_PICKER_DISPLAY,
       content_settings::ResourceIdentifier(), std::move(pref_dict_));
 }

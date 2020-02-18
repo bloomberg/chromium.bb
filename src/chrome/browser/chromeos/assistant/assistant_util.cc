@@ -6,7 +6,6 @@
 
 #include <string>
 
-#include "ash/public/mojom/voice_interaction_controller.mojom-shared.h"
 #include "base/strings/string_util.h"
 #include "base/system/sys_info.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
@@ -20,8 +19,38 @@
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/user_manager/user_manager.h"
+#include "google_apis/gaia/gaia_auth_util.h"
 #include "third_party/icu/source/common/unicode/locid.h"
 #include "ui/chromeos/events/keyboard_layout_util.h"
+
+namespace {
+
+constexpr char kAtlasBoardType[] = "atlas";
+constexpr char kEveBoardType[] = "eve";
+constexpr char kNocturneBoardType[] = "nocturne";
+
+bool IsBoardType(const std::string& board_name, const std::string& board_type) {
+  // The sub-types of the board will have the form boardtype-XXX.
+  // To prevent the possibility of common prefix in board names we check the
+  // board type with '-' here. For example there might be two board types with
+  // codename boardtype1 and boardtype123.
+  return board_name == board_type ||
+         base::StartsWith(board_name, board_type + '-',
+                          base::CompareCase::SENSITIVE);
+}
+
+// TODO(updowndota): Merge this method with the IsGoogleDevice method in
+// ash::assistant::util, probably move to ash::public:cpp.
+//
+// Returns whether the device has a dedicated Assistant key.
+bool IsAssistantDevice() {
+  const std::string board_name = base::SysInfo::GetLsbReleaseBoard();
+  return IsBoardType(board_name, kAtlasBoardType) ||
+         IsBoardType(board_name, kEveBoardType) ||
+         IsBoardType(board_name, kNocturneBoardType);
+}
+
+}  // namespace
 
 namespace assistant {
 
@@ -42,8 +71,7 @@ ash::mojom::AssistantAllowedState IsAssistantAllowedForProfile(
   if (user_manager::UserManager::Get()->IsLoggedInAsPublicAccount())
     return ash::mojom::AssistantAllowedState::DISALLOWED_BY_PUBLIC_SESSION;
 
-  if (user_manager::UserManager::Get()->IsLoggedInAsKioskApp() ||
-      user_manager::UserManager::Get()->IsLoggedInAsArcKioskApp()) {
+  if (user_manager::UserManager::Get()->IsLoggedInAsAnyKioskApp()) {
     return ash::mojom::AssistantAllowedState::DISALLOWED_BY_KIOSK_MODE;
   }
 
@@ -62,9 +90,13 @@ ash::mojom::AssistantAllowedState IsAssistantAllowedForProfile(
                                          ULOC_US,
                                          "da",
                                          "en_AU",
+                                         "en_IN",
                                          "en_NZ",
+                                         "es_CO",
                                          "es_ES",
                                          "es_MX",
+                                         "fr_BE",
+                                         "it",
                                          "nb",
                                          "nl",
                                          "nn",
@@ -92,12 +124,8 @@ ash::mojom::AssistantAllowedState IsAssistantAllowedForProfile(
     return ash::mojom::AssistantAllowedState::DISALLOWED_BY_POLICY;
 
   // Bypass the account type check when using fake gaia login, e.g. in Tast
-  // tests, or the account is logged in a device with a physical Assistant key
-  // on keyboard.
-  if (!chromeos::switches::IsGaiaServicesDisabled() &&
-      !(ui::DeviceKeyboardHasAssistantKey() ||
-        base::EqualsCaseInsensitiveASCII(base::SysInfo::GetLsbReleaseBoard(),
-                                         "nocturne"))) {
+  // tests, or the account is logged in a device with dedicated Assistant key.
+  if (!chromeos::switches::IsGaiaServicesDisabled() && !(IsAssistantDevice())) {
     // Only enable non-dasher accounts for devices without physical key.
     bool account_supported = false;
     auto* identity_manager =
@@ -105,12 +133,10 @@ ash::mojom::AssistantAllowedState IsAssistantAllowedForProfile(
 
     if (identity_manager) {
       const std::string email = identity_manager->GetPrimaryAccountInfo().email;
-      if (base::EndsWith(email, "@gmail.com",
-                         base::CompareCase::INSENSITIVE_ASCII) ||
-          base::EndsWith(email, "@googlemail.com",
-                         base::CompareCase::INSENSITIVE_ASCII) ||
-          base::EndsWith(email, "@google.com",
-                         base::CompareCase::INSENSITIVE_ASCII)) {
+      if (!email.empty() &&
+          (gaia::ExtractDomainName(email) == "gmail.com" ||
+           gaia::ExtractDomainName(email) == "googlemail.com" ||
+           gaia::IsGoogleInternalAccountEmail(email))) {
         account_supported = true;
       }
     }

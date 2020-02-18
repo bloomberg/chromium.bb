@@ -6,6 +6,7 @@
 
 #include "base/i18n/time_formatting.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/font_list.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/label.h"
@@ -19,7 +20,8 @@ namespace media_message_center {
 
 namespace {
 
-constexpr int kProgressBarAndTimeSpacing = 3;
+constexpr SkColor kTimeColor = gfx::kGoogleGrey200;
+constexpr int kProgressBarAndTimeSpacing = 8;
 constexpr int kProgressTimeFontSize = 11;
 constexpr int kProgressBarHeight = 4;
 constexpr int kMinClickHeight = 14;
@@ -56,7 +58,7 @@ MediaControlsProgressView::MediaControlsProgressView(
 
   auto progress_time = std::make_unique<views::Label>();
   progress_time->SetFontList(font_list);
-  progress_time->SetEnabledColor(SK_ColorWHITE);
+  progress_time->SetEnabledColor(kTimeColor);
   progress_time->SetAutoColorReadabilityEnabled(false);
   progress_time_ = time_view->AddChildView(std::move(progress_time));
 
@@ -125,9 +127,17 @@ void MediaControlsProgressView::UpdateProgress(
         std::abs(1 / media_position.playback_rate()));
     update_progress_timer_.Start(
         FROM_HERE, update_frequency,
-        base::Bind(&MediaControlsProgressView::UpdateProgress,
-                   base::Unretained(this), media_position));
+        base::BindRepeating(&MediaControlsProgressView::UpdateProgress,
+                            base::Unretained(this), media_position));
   }
+}
+
+void MediaControlsProgressView::SetForegroundColor(SkColor color) {
+  progress_bar_->SetForegroundColor(color);
+}
+
+void MediaControlsProgressView::SetBackgroundColor(SkColor color) {
+  progress_bar_->SetBackgroundColor(color);
 }
 
 bool MediaControlsProgressView::OnMousePressed(const ui::MouseEvent& event) {

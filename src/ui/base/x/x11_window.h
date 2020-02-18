@@ -23,8 +23,11 @@
 #include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/x11_types.h"
 
+class SkPath;
+
 namespace gfx {
 class ImageSkia;
+class Transform;
 }  // namespace gfx
 
 namespace ui {
@@ -47,6 +50,8 @@ class XScopedEventSelector;
 class COMPONENT_EXPORT(UI_BASE_X) XWindow {
  public:
   class Delegate;
+
+  using NativeShapeRects = std::vector<gfx::Rect>;
 
   enum class WindowType {
     kWindow,
@@ -103,14 +108,15 @@ class COMPONENT_EXPORT(UI_BASE_X) XWindow {
   bool IsActive() const;
   void GrabPointer();
   void ReleasePointerGrab();
-  void StackAtTop();
+  void StackXWindowAbove(::Window window);
+  void StackXWindowAtTop();
   bool IsTargetedBy(const XEvent& xev) const;
   void WmMoveResize(int hittest, const gfx::Point& location) const;
   void ProcessEvent(XEvent* xev);
 
   void SetSize(const gfx::Size& size_in_pixels);
   void SetBounds(const gfx::Rect& requested_bounds);
-  bool IsVisible() const;
+  bool IsXWindowVisible() const;
   bool IsMinimized() const;
   bool IsMaximized() const;
   bool IsFullscreen() const;
@@ -118,23 +124,32 @@ class COMPONENT_EXPORT(UI_BASE_X) XWindow {
 
   void SetCursor(::Cursor cursor);
   bool SetTitle(base::string16 title);
-  void SetOpacity(float opacity);
-  void SetAspectRatio(const gfx::SizeF& aspect_ratio);
-  void SetWindowIcons(const gfx::ImageSkia& window_icon,
-                      const gfx::ImageSkia& app_icon);
-  void SetVisibleOnAllWorkspaces(bool visible);
-  bool IsVisibleOnAllWorkspaces() const;
+  void SetXWindowOpacity(float opacity);
+  void SetXWindowAspectRatio(const gfx::SizeF& aspect_ratio);
+  void SetXWindowIcons(const gfx::ImageSkia& window_icon,
+                       const gfx::ImageSkia& app_icon);
+  void SetXWindowVisibleOnAllWorkspaces(bool visible);
+  bool IsXWindowVisibleOnAllWorkspaces() const;
   void MoveCursorTo(const gfx::Point& location);
   void SetAlwaysOnTop(bool always_on_top);
-  void FlashFrame(bool flash_frame);
+  void SetFlashFrameHint(bool flash_frame);
   void UpdateMinAndMaxSize();
   void SetUseNativeFrame(bool use_native_frame);
-  void SetShape(_XRegion* xregion);
-  void UpdateWindowRegion(_XRegion* xregion);
   void DispatchResize();
   void CancelResize();
   void NotifySwapAfterResize();
   void ConfineCursorTo(const gfx::Rect& bounds);
+  void LowerWindow();
+
+  // Returns if the point is within XWindow shape. If shape is not set, always
+  // returns true.
+  bool ContainsPointInRegion(const gfx::Point& point) const;
+
+  void SetXWindowShape(std::unique_ptr<NativeShapeRects> native_shape,
+                       const gfx::Transform& transform);
+
+  // Resets the window region for the current window bounds if necessary.
+  void ResetWindowRegion();
 
   gfx::Rect bounds() const { return bounds_in_pixels_; }
   gfx::Rect previous_bounds() const { return previous_bounds_in_pixels_; }
@@ -208,6 +223,10 @@ class COMPONENT_EXPORT(UI_BASE_X) XWindow {
 
   void SetVisualId(base::Optional<int> visual_id);
 
+  void UpdateWindowRegion(XRegion* xregion);
+
+  void NotifyBoundsChanged(const gfx::Rect& new_bounds_in_px);
+
   // Interface that must be used by a class that inherits the XWindow to receive
   // different messages from X Server.
   virtual void OnXWindowCreated() = 0;
@@ -224,9 +243,10 @@ class COMPONENT_EXPORT(UI_BASE_X) XWindow {
   virtual void OnXWindowEvent(ui::Event* event) = 0;
   virtual void OnXWindowSelectionEvent(XEvent* xev) = 0;
   virtual void OnXWindowDragDropEvent(XEvent* xev) = 0;
-  virtual void OnXWindowRawKeyEvent(XEvent* xev) = 0;
   virtual base::Optional<gfx::Size> GetMinimumSizeForXWindow() = 0;
   virtual base::Optional<gfx::Size> GetMaximumSizeForXWindow() = 0;
+  virtual void GetWindowMaskForXWindow(const gfx::Size& size,
+                                       SkPath* window_mask) = 0;
 
   // The display and the native X window hosting the root window.
   XDisplay* xdisplay_ = nullptr;
@@ -333,7 +353,7 @@ class COMPONENT_EXPORT(UI_BASE_X) XWindow {
   gfx::Size max_size_in_pixels_;
 
   // The window shape if the window is non-rectangular.
-  gfx::XScopedPtr<_XRegion, gfx::XObjectDeleter<_XRegion, int, XDestroyRegion>>
+  gfx::XScopedPtr<XRegion, gfx::XObjectDeleter<XRegion, int, XDestroyRegion>>
       window_shape_;
 
   // Whether |window_shape_| was set via SetShape().

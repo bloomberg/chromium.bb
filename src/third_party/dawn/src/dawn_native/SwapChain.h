@@ -35,34 +35,35 @@ namespace dawn_native {
         static SwapChainBase* MakeError(DeviceBase* device);
 
         // Dawn API
-        void Configure(dawn::TextureFormat format,
-                       dawn::TextureUsage allowedUsage,
+        void Configure(wgpu::TextureFormat format,
+                       wgpu::TextureUsage allowedUsage,
                        uint32_t width,
                        uint32_t height);
-        TextureBase* GetNextTexture();
-        void Present(TextureBase* texture);
+        TextureViewBase* GetCurrentTextureView();
+        void Present();
 
       protected:
         SwapChainBase(DeviceBase* device, ObjectBase::ErrorTag tag);
 
         const DawnSwapChainImplementation& GetImplementation();
         virtual TextureBase* GetNextTextureImpl(const TextureDescriptor*) = 0;
-        virtual void OnBeforePresent(TextureBase* texture) = 0;
+        virtual MaybeError OnBeforePresent(TextureBase* texture) = 0;
 
       private:
-        MaybeError ValidateConfigure(dawn::TextureFormat format,
-                                     dawn::TextureUsage allowedUsage,
+        MaybeError ValidateConfigure(wgpu::TextureFormat format,
+                                     wgpu::TextureUsage allowedUsage,
                                      uint32_t width,
                                      uint32_t height) const;
-        MaybeError ValidateGetNextTexture() const;
-        MaybeError ValidatePresent(TextureBase* texture) const;
+        MaybeError ValidateGetCurrentTextureView() const;
+        MaybeError ValidatePresent() const;
 
         DawnSwapChainImplementation mImplementation = {};
-        dawn::TextureFormat mFormat = {};
-        dawn::TextureUsage mAllowedUsage;
+        wgpu::TextureFormat mFormat = {};
+        wgpu::TextureUsage mAllowedUsage;
         uint32_t mWidth = 0;
         uint32_t mHeight = 0;
-        TextureBase* mLastNextTexture = nullptr;
+        Ref<TextureBase> mCurrentTexture;
+        Ref<TextureViewBase> mCurrentTextureView;
     };
 
 }  // namespace dawn_native

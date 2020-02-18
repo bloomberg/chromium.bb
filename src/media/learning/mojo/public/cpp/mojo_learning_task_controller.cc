@@ -12,31 +12,39 @@ namespace media {
 namespace learning {
 
 MojoLearningTaskController::MojoLearningTaskController(
-    mojom::LearningTaskControllerPtr controller_ptr)
-    : controller_ptr_(std::move(controller_ptr)) {}
+    const LearningTask& task,
+    mojo::PendingRemote<mojom::LearningTaskController> controller)
+    : task_(task), controller_(std::move(controller)) {}
 
 MojoLearningTaskController::~MojoLearningTaskController() = default;
 
 void MojoLearningTaskController::BeginObservation(
     base::UnguessableToken id,
-    const FeatureVector& features) {
+    const FeatureVector& features,
+    const base::Optional<TargetValue>& default_target) {
   // We don't need to keep track of in-flight observations, since the service
   // side handles it for us.
-  controller_ptr_->BeginObservation(id, features);
+  controller_->BeginObservation(id, features, default_target);
 }
 
 void MojoLearningTaskController::CompleteObservation(
     base::UnguessableToken id,
     const ObservationCompletion& completion) {
-  controller_ptr_->CompleteObservation(id, completion);
+  controller_->CompleteObservation(id, completion);
 }
 
 void MojoLearningTaskController::CancelObservation(base::UnguessableToken id) {
-  controller_ptr_->CancelObservation(id);
+  controller_->CancelObservation(id);
+}
+
+void MojoLearningTaskController::UpdateDefaultTarget(
+    base::UnguessableToken id,
+    const base::Optional<TargetValue>& default_target) {
+  controller_->UpdateDefaultTarget(id, default_target);
 }
 
 const LearningTask& MojoLearningTaskController::GetLearningTask() {
-  return LearningTask::Empty();
+  return task_;
 }
 
 }  // namespace learning

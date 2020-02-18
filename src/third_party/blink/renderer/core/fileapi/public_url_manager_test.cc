@@ -32,12 +32,13 @@ class TestURLRegistrable : public URLRegistrable {
 
   URLRegistry& Registry() const override { return *registry_; }
 
-  mojo::PendingRemote<mojom::blink::Blob> AsMojoBlob() override {
+  bool IsMojoBlob() override { return bool{blob_}; }
+
+  void CloneMojoBlob(
+      mojo::PendingReceiver<mojom::blink::Blob> receiver) override {
     if (!blob_)
-      return mojo::NullRemote();
-    mojo::PendingRemote<mojom::blink::Blob> result;
-    blob_->Clone(result.InitWithNewPipeAndPassReceiver());
-    return result;
+      return;
+    blob_->Clone(std::move(receiver));
   }
 
  private:
@@ -109,13 +110,13 @@ TEST_F(PublicURLManagerTest, RegisterNonMojoBlob) {
   EXPECT_EQ(url, registry.registrations[0].url);
   EXPECT_EQ(&registrable, registry.registrations[0].registrable);
 
-  EXPECT_TRUE(SecurityOrigin::CreateFromString(url)->IsSameSchemeHostPort(
+  EXPECT_TRUE(SecurityOrigin::CreateFromString(url)->IsSameOriginWith(
       execution_context_->GetSecurityOrigin()));
   EXPECT_EQ(execution_context_->GetSecurityOrigin(),
             SecurityOrigin::CreateFromString(url));
 
   url_manager().Revoke(KURL(url));
-  EXPECT_FALSE(SecurityOrigin::CreateFromString(url)->IsSameSchemeHostPort(
+  EXPECT_FALSE(SecurityOrigin::CreateFromString(url)->IsSameOriginWith(
       execution_context_->GetSecurityOrigin()));
   url_store_receiver_.FlushForTesting();
   // Even though this was not a mojo blob, the PublicURLManager might not know
@@ -133,13 +134,13 @@ TEST_F(PublicURLManagerTest, RegisterMojoBlob) {
   ASSERT_EQ(1u, url_store_.registrations.size());
   EXPECT_EQ(url, url_store_.registrations.begin()->key);
 
-  EXPECT_TRUE(SecurityOrigin::CreateFromString(url)->IsSameSchemeHostPort(
+  EXPECT_TRUE(SecurityOrigin::CreateFromString(url)->IsSameOriginWith(
       execution_context_->GetSecurityOrigin()));
   EXPECT_EQ(execution_context_->GetSecurityOrigin(),
             SecurityOrigin::CreateFromString(url));
 
   url_manager().Revoke(KURL(url));
-  EXPECT_FALSE(SecurityOrigin::CreateFromString(url)->IsSameSchemeHostPort(
+  EXPECT_FALSE(SecurityOrigin::CreateFromString(url)->IsSameOriginWith(
       execution_context_->GetSecurityOrigin()));
   url_store_receiver_.FlushForTesting();
   ASSERT_EQ(1u, url_store_.revocations.size());

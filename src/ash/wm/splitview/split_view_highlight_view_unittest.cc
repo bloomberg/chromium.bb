@@ -5,6 +5,7 @@
 #include "ash/wm/splitview/split_view_highlight_view.h"
 
 #include "ash/test/ash_test_base.h"
+#include "ash/wm/splitview/split_view_constants.h"
 #include "ash/wm/splitview/split_view_highlight_view_test_api.h"
 #include "base/test/icu_test_util.h"
 #include "ui/gfx/transform.h"

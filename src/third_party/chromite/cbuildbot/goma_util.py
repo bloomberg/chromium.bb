@@ -27,6 +27,10 @@ _GOMA_COMPILER_PROXY_LOG_URL_TEMPLATE = (
     'https://chromium-build-stats.appspot.com/compiler_proxy_log/%s/%s')
 _GOMA_NINJA_LOG_URL_TEMPLATE = (
     'https://chromium-build-stats.appspot.com/ninja_log/%s/%s')
+GomaApproach = collections.namedtuple(
+    'GomaApproach', ['rpc_extra_params',
+                     'server_host',
+                     'arbitrary_toolchain_support'])
 
 
 class Goma(object):
@@ -74,7 +78,8 @@ class Goma(object):
   }
 
   def __init__(self, goma_dir, goma_client_json, goma_tmp_dir=None,
-               stage_name=None, chromeos_goma_dir=None):
+               stage_name=None, chromeos_goma_dir=None, chroot_dir=None,
+               goma_approach=None):
     """Initializes Goma instance.
 
     This ensures that |self.goma_log_dir| directory exists (if missing,
@@ -96,6 +101,10 @@ class Goma(object):
       chromeos_goma_dir: Path to the Goma client used for build package.
                          path should be represented as outside of chroot.
                          If None, goma_dir will be used instead.
+      chroot_dir: The base chroot path to use when the chroot path is not at
+        the default location.
+      goma_approach: Indicates some extra environment variables to set when
+        testing alternative goma approaches.
 
     Raises:
       ValueError if 1) |goma_dir| does not point to a directory, 2)
@@ -125,6 +134,7 @@ class Goma(object):
 
     self.linux_goma_dir = goma_dir
     self.chromeos_goma_dir = chromeos_goma_dir
+    self.goma_approach = goma_approach
     # If Goma dir for ChromeOS SDK does not set, fallback to use goma_dir.
     if self.chromeos_goma_dir is None:
       self.chromeos_goma_dir = goma_dir
@@ -141,17 +151,41 @@ class Goma(object):
       self.goma_cache = None
 
     if goma_tmp_dir is None:
+      # path_util depends on the chroot directory existing at
+      # SOURCE_ROOT/chroot. This assumption is not valid for Luci builders,
+      # but generally shouldn't be an assumption anyway since we allow setting
+      # the chroot location. This block, and the two a few lines down, bypass
+      # path_util to compensate for those assumptions.
+      # TODO(crbug.com/1014138) Cleanup when path_util can handle custom chroot.
+      if chroot_dir:
+        chroot_tmp = os.path.join(chroot_dir, 'tmp')
+      else:
+        chroot_tmp = path_util.FromChrootPath('/tmp')
+
       # If |goma_tmp_dir| is not given, create GOMA_TMP_DIR (goma
       # compiler_proxy's working directory), and its log directory.
       # Create unique directory by mkdtemp under chroot's /tmp.
       # Expect this directory is removed in next run's clean up phase.
       goma_tmp_dir = tempfile.mkdtemp(
-          prefix='goma_tmp_dir.', dir=path_util.FromChrootPath('/tmp'))
+          prefix='goma_tmp_dir.',
+          dir=chroot_tmp)
     self.goma_tmp_dir = goma_tmp_dir
+
+    if chroot_dir:
+      self.chroot_goma_tmp_dir = os.path.join(
+          '/', os.path.relpath(self.goma_tmp_dir, chroot_dir))
+    else:
+      self.chroot_goma_tmp_dir = path_util.ToChrootPath(self.goma_tmp_dir)
 
     # Create log directory if not exist.
     if not os.path.isdir(self.goma_log_dir):
       os.mkdir(self.goma_log_dir)
+
+    if chroot_dir:
+      self.chroot_goma_log_dir = os.path.join(
+          '/', os.path.relpath(self.goma_log_dir, chroot_dir))
+    else:
+      self.chroot_goma_log_dir = path_util.ToChrootPath(self.goma_log_dir)
 
   @property
   def goma_log_dir(self):
@@ -169,6 +203,11 @@ class Goma(object):
       result['GOMA_SERVICE_ACCOUNT_JSON_FILE'] = self.goma_client_json
     if self.goma_cache:
       result['GOMA_CACHE_DIR'] = self.goma_cache
+    if self.goma_approach:
+      result['GOMA_RPC_EXTRA_PARAMS'] = self.goma_approach.rpc_extra_params
+      result['GOMA_SERVER_HOST'] = self.goma_approach.server_host
+      result['GOMA_ARBITRARY_TOOLCHAIN_SUPPORT'] = (
+          'true' if self.goma_approach.arbitrary_toolchain_support else 'false')
     return result
 
   def GetChrootExtraEnv(self):
@@ -179,8 +218,8 @@ class Goma(object):
     result = dict(
         Goma._DEFAULT_ENV_VARS,
         GOMA_DIR=goma_dir,
-        GOMA_TMP_DIR=path_util.ToChrootPath(self.goma_tmp_dir),
-        GLOG_log_dir=path_util.ToChrootPath(self.goma_log_dir))
+        GOMA_TMP_DIR=self.chroot_goma_tmp_dir,
+        GLOG_log_dir=self.chroot_goma_log_dir)
     if self.goma_client_json:
       result['GOMA_SERVICE_ACCOUNT_JSON_FILE'] = (
           '/creds/service_accounts/service-account-goma-client.json')
@@ -192,8 +231,9 @@ class Goma(object):
 
   def _RunGomaCtl(self, command):
     goma_ctl = os.path.join(self.linux_goma_dir, 'goma_ctl.py')
-    cros_build_lib.RunCommand(
-        ['python', goma_ctl, command], extra_env=self.GetExtraEnv())
+    # TODO(crbug.com/1007384): Stop forcing Python 2.
+    cros_build_lib.run(
+        ['python2', goma_ctl, command], extra_env=self.GetExtraEnv())
 
   def Start(self):
     """Starts goma compiler proxy."""

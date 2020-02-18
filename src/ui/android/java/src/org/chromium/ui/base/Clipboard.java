@@ -22,6 +22,8 @@ import org.chromium.base.BuildInfo;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.NativeMethods;
+import org.chromium.base.compat.ApiHelperForO;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.ui.R;
 import org.chromium.ui.widget.Toast;
@@ -195,7 +197,9 @@ public class Clipboard implements ClipboardManager.OnPrimaryClipChangedListener 
     @Override
     public void onPrimaryClipChanged() {
         RecordUserAction.record("MobileClipboardChanged");
-        if (mNativeClipboard != 0) nativeOnPrimaryClipChanged(mNativeClipboard);
+        if (mNativeClipboard != 0) {
+            ClipboardJni.get().onPrimaryClipChanged(mNativeClipboard, Clipboard.this);
+        }
     }
 
     /**
@@ -223,11 +227,27 @@ public class Clipboard implements ClipboardManager.OnPrimaryClipChangedListener 
         ClipDescription clipDescription = mClipboardManager.getPrimaryClipDescription();
         if (clipDescription == null) return;
 
-        long timestamp = clipDescription.getTimestamp();
-        nativeOnPrimaryClipTimestampInvalidated(mNativeClipboard, timestamp);
+        long timestamp = ApiHelperForO.getTimestamp(clipDescription);
+        ClipboardJni.get().onPrimaryClipTimestampInvalidated(
+                mNativeClipboard, Clipboard.this, timestamp);
     }
 
-    private native void nativeOnPrimaryClipChanged(long nativeClipboardAndroid);
-    private native void nativeOnPrimaryClipTimestampInvalidated(
-            long nativeClipboardAndroid, long timestamp);
+    /**
+     * Gets the last modified timestamp observed by the native side ClipboardAndroid, not the
+     * Android framework.
+     *
+     * @return the last modified time in millisecond.
+     */
+    public long getLastModifiedTimeMs() {
+        if (mNativeClipboard == 0) return 0;
+        return ClipboardJni.get().getLastModifiedTimeToJavaTime(mNativeClipboard);
+    }
+
+    @NativeMethods
+    interface Natives {
+        void onPrimaryClipChanged(long nativeClipboardAndroid, Clipboard caller);
+        void onPrimaryClipTimestampInvalidated(
+                long nativeClipboardAndroid, Clipboard caller, long timestamp);
+        long getLastModifiedTimeToJavaTime(long nativeClipboardAndroid);
+    }
 }

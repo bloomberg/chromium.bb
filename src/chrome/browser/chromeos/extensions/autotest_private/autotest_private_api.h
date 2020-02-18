@@ -11,15 +11,21 @@
 
 #include "ash/public/cpp/assistant/assistant_state.h"
 #include "ash/public/cpp/window_state_type.h"
+#include "ash/rotator/screen_rotation_animator_observer.h"
 #include "base/compiler_specific.h"
+#include "base/scoped_observer.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/printing/cups_printers_manager.h"
+#include "chrome/browser/chromeos/settings/stats_reporting_controller.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
-#include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
+#include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chromeos/services/machine_learning/public/mojom/machine_learning_service.mojom.h"
 #include "chromeos/services/machine_learning/public/mojom/model.mojom.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/remote.h"
+#include "ui/base/clipboard/clipboard_monitor.h"
+#include "ui/base/clipboard/clipboard_observer.h"
+#include "ui/display/display.h"
 #include "ui/snapshot/screenshot_grabber.h"
 
 namespace crostini {
@@ -27,6 +33,20 @@ enum class CrostiniResult;
 }
 
 namespace extensions {
+
+class AssistantInteractionHelper;
+class WindowStateChangeObserver;
+class EventGenerator;
+
+class AutotestPrivateInitializeEventsFunction : public ExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.initializeEvents",
+                             AUTOTESTPRIVATE_INITIALIZEEVENTS)
+
+ private:
+  ~AutotestPrivateInitializeEventsFunction() override;
+  ResponseAction Run() override;
+};
 
 class AutotestPrivateLogoutFunction : public ExtensionFunction {
  public:
@@ -317,6 +337,26 @@ class AutotestPrivateCloseAppFunction : public ExtensionFunction {
   ResponseAction Run() override;
 };
 
+class AutotestPrivateGetClipboardTextDataFunction : public ExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.getClipboardTextData",
+                             AUTOTESTPRIVATE_GETCLIPBOARDTEXTDATA)
+
+ private:
+  ~AutotestPrivateGetClipboardTextDataFunction() override;
+  ResponseAction Run() override;
+};
+
+class AutotestPrivateSetClipboardTextDataFunction : public ExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.setClipboardTextData",
+                             AUTOTESTPRIVATE_SETCLIPBOARDTEXTDATA)
+
+ private:
+  ~AutotestPrivateSetClipboardTextDataFunction() override;
+  ResponseAction Run() override;
+};
+
 class AutotestPrivateSetCrostiniEnabledFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("autotestPrivate.setCrostiniEnabled",
@@ -375,6 +415,18 @@ class AutotestPrivateImportCrostiniFunction : public ExtensionFunction {
   void CrostiniImported(crostini::CrostiniResult);
 };
 
+class AutotestPrivateInstallPluginVMFunction : public ExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.installPluginVM",
+                             AUTOTESTPRIVATE_INSTALLPLUGINVM)
+
+ private:
+  ~AutotestPrivateInstallPluginVMFunction() override;
+  ResponseAction Run() override;
+
+  void OnInstallFinished(bool success);
+};
+
 class AutotestPrivateRegisterComponentFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("autotestPrivate.registerComponent",
@@ -392,6 +444,21 @@ class AutotestPrivateTakeScreenshotFunction : public ExtensionFunction {
 
  private:
   ~AutotestPrivateTakeScreenshotFunction() override;
+  ResponseAction Run() override;
+
+  void ScreenshotTaken(std::unique_ptr<ui::ScreenshotGrabber> grabber,
+                       ui::ScreenshotResult screenshot_result,
+                       scoped_refptr<base::RefCountedMemory> png_data);
+};
+
+class AutotestPrivateTakeScreenshotForDisplayFunction
+    : public ExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.takeScreenshotForDisplay",
+                             AUTOTESTPRIVATE_TAKESCREENSHOTFORDISPLAY)
+
+ private:
+  ~AutotestPrivateTakeScreenshotForDisplayFunction() override;
   ResponseAction Run() override;
 
   void ScreenshotTaken(std::unique_ptr<ui::ScreenshotGrabber> grabber,
@@ -450,6 +517,20 @@ class AutotestPrivateGetAllEnterprisePoliciesFunction
   ResponseAction Run() override;
 };
 
+class AutotestPrivateRefreshEnterprisePoliciesFunction
+    : public ExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.refreshEnterprisePolicies",
+                             AUTOTESTPRIVATE_REFRESHENTERPRISEPOLICIES)
+
+ private:
+  ~AutotestPrivateRefreshEnterprisePoliciesFunction() override;
+  ResponseAction Run() override;
+
+  // Called once all the policies have been refreshed.
+  void RefreshDone();
+};
+
 class AutotestPrivateBootstrapMachineLearningServiceFunction
     : public ExtensionFunction {
  public:
@@ -463,9 +544,9 @@ class AutotestPrivateBootstrapMachineLearningServiceFunction
 
   // Callbacks for a basic Mojo call to MachineLearningService.LoadModel.
   void ModelLoaded(chromeos::machine_learning::mojom::LoadModelResult result);
-  void ConnectionError();
+  void OnMojoDisconnect();
 
-  chromeos::machine_learning::mojom::ModelPtr model_;
+  mojo::Remote<chromeos::machine_learning::mojom::Model> model_;
 };
 
 // Enable/disable the Google Assistant feature. This toggles the Assistant user
@@ -483,21 +564,41 @@ class AutotestPrivateSetAssistantEnabledFunction
   ResponseAction Run() override;
 
   // ash::AssistantStateObserver overrides:
-  void OnAssistantStatusChanged(
-      ash::mojom::VoiceInteractionState state) override;
+  void OnAssistantStatusChanged(ash::mojom::AssistantState state) override;
 
   // Called when the Assistant service does not respond in a timely fashion. We
   // will respond with an error.
   void Timeout();
 
-  base::Optional<ash::mojom::VoiceInteractionState> expected_state_;
+  base::Optional<bool> enabled_;
   base::OneShotTimer timeout_timer_;
 };
 
-// Send text query to Assistant and return response.
-class AutotestPrivateSendAssistantTextQueryFunction
+// Bring up the Assistant service, and wait until the ready signal is received.
+class AutotestPrivateEnableAssistantAndWaitForReadyFunction
     : public ExtensionFunction,
-      public chromeos::assistant::mojom::AssistantInteractionSubscriber {
+      public ash::AssistantStateObserver {
+ public:
+  AutotestPrivateEnableAssistantAndWaitForReadyFunction();
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.enableAssistantAndWaitForReady",
+                             AUTOTESTPRIVATE_ENABLEASSISTANTANDWAITFORREADY)
+
+ private:
+  ~AutotestPrivateEnableAssistantAndWaitForReadyFunction() override;
+  ResponseAction Run() override;
+
+  void SubscribeToStatusChanges();
+
+  // ash::AssistantStateObserver overrides:
+  void OnAssistantStatusChanged(ash::mojom::AssistantState state) override;
+
+  // A reference to keep |this| alive while waiting for the Assistant to
+  // respond.
+  scoped_refptr<ExtensionFunction> self_;
+};
+
+// Send text query to Assistant and return response.
+class AutotestPrivateSendAssistantTextQueryFunction : public ExtensionFunction {
  public:
   AutotestPrivateSendAssistantTextQueryFunction();
   DECLARE_EXTENSION_FUNCTION("autotestPrivate.sendAssistantTextQuery",
@@ -507,44 +608,39 @@ class AutotestPrivateSendAssistantTextQueryFunction
   ~AutotestPrivateSendAssistantTextQueryFunction() override;
   ResponseAction Run() override;
 
-  using AssistantInteractionMetadataPtr =
-      chromeos::assistant::mojom::AssistantInteractionMetadataPtr;
-  using AssistantInteractionResolution =
-      chromeos::assistant::mojom::AssistantInteractionResolution;
-  using AssistantSuggestionPtr =
-      chromeos::assistant::mojom::AssistantSuggestionPtr;
-
-  // chromeos::assistant::mojom::AssistantInteractionSubscriber:
-  void OnHtmlResponse(const std::string& response,
-                      const std::string& fallback) override;
-  void OnTextResponse(const std::string& response) override;
-  void OnInteractionFinished(
-      AssistantInteractionResolution resolution) override;
-  void OnInteractionStarted(AssistantInteractionMetadataPtr metadata) override {
-  }
-  void OnSuggestionsResponse(
-      std::vector<AssistantSuggestionPtr> response) override {}
-  void OnOpenUrlResponse(const GURL& url, bool in_background) override {}
-  void OnSpeechRecognitionStarted() override {}
-  void OnSpeechRecognitionIntermediateResult(
-      const std::string& high_confidence_text,
-      const std::string& low_confidence_text) override {}
-  void OnSpeechRecognitionEndOfUtterance() override {}
-  void OnSpeechRecognitionFinalResult(
-      const std::string& final_result) override {}
-  void OnSpeechLevelUpdated(float speech_level) override {}
-  void OnTtsStarted(bool due_to_error) override {}
-  void OnWaitStarted() override {}
+  // Called when the interaction finished with non-empty response.
+  void OnInteractionFinishedCallback(bool success);
 
   // Called when Assistant service fails to respond in a certain amount of
   // time. We will respond with an error.
   void Timeout();
 
-  chromeos::assistant::mojom::AssistantPtr assistant_;
-  mojo::Binding<chromeos::assistant::mojom::AssistantInteractionSubscriber>
-      assistant_interaction_subscriber_binding_;
+  std::unique_ptr<AssistantInteractionHelper> interaction_helper_;
   base::OneShotTimer timeout_timer_;
-  std::unique_ptr<base::DictionaryValue> result_;
+};
+
+// Wait for the next text/voice query interaction completed and respond with
+// the query status if any valid response was caught before time out.
+class AutotestPrivateWaitForAssistantQueryStatusFunction
+    : public ExtensionFunction {
+ public:
+  AutotestPrivateWaitForAssistantQueryStatusFunction();
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.waitForAssistantQueryStatus",
+                             AUTOTESTPRIVATE_WAITFORASSISTANTQUERYSTATUS)
+
+ private:
+  ~AutotestPrivateWaitForAssistantQueryStatusFunction() override;
+  ResponseAction Run() override;
+
+  // Called when the current interaction finished with non-empty response.
+  void OnInteractionFinishedCallback(bool success);
+
+  // Called when Assistant service fails to respond in a certain amount of
+  // time. We will respond with an error.
+  void Timeout();
+
+  std::unique_ptr<AssistantInteractionHelper> interaction_helper_;
+  base::OneShotTimer timeout_timer_;
 };
 
 // Set user pref value in the pref tree.
@@ -570,7 +666,8 @@ class AutotestPrivateSetCrostiniAppScaledFunction : public ExtensionFunction {
 };
 
 // The profile-keyed service that manages the autotestPrivate extension API.
-class AutotestPrivateAPI : public BrowserContextKeyedAPI {
+class AutotestPrivateAPI : public BrowserContextKeyedAPI,
+                           public ui::ClipboardObserver {
  public:
   static BrowserContextKeyedAPIFactory<AutotestPrivateAPI>*
   GetFactoryInstance();
@@ -582,7 +679,7 @@ class AutotestPrivateAPI : public BrowserContextKeyedAPI {
  private:
   friend class BrowserContextKeyedAPIFactory<AutotestPrivateAPI>;
 
-  AutotestPrivateAPI();
+  explicit AutotestPrivateAPI(content::BrowserContext* context);
   ~AutotestPrivateAPI() override;
 
   // BrowserContextKeyedAPI implementation.
@@ -590,6 +687,13 @@ class AutotestPrivateAPI : public BrowserContextKeyedAPI {
   static const bool kServiceIsNULLWhileTesting = true;
   static const bool kServiceRedirectedInIncognito = true;
 
+  // ui::ClipboardObserver
+  void OnClipboardDataChanged() override;
+
+  ScopedObserver<ui::ClipboardMonitor, ui::ClipboardObserver>
+      clipboard_observer_;
+
+  content::BrowserContext* const browser_context_;
   bool test_mode_;  // true for AutotestPrivateApiTest.AutotestPrivate test.
 };
 
@@ -726,24 +830,6 @@ class AutotestPrivateShowVirtualKeyboardIfEnabledFunction
   ResponseAction Run() override;
 };
 
-class AutotestPrivateSetArcAppWindowStateFunction : public ExtensionFunction {
- public:
-  AutotestPrivateSetArcAppWindowStateFunction();
-  DECLARE_EXTENSION_FUNCTION("autotestPrivate.setArcAppWindowState",
-                             AUTOTESTPRIVATE_SETARCAPPWINDOWSTATE)
-
- private:
-  class WindowStateChangeObserver;
-
-  ~AutotestPrivateSetArcAppWindowStateFunction() override;
-  ResponseAction Run() override;
-
-  // Callback function to be called after window state is changed.
-  void WindowStateChanged(ash::WindowStateType expected_type, bool success);
-
-  std::unique_ptr<WindowStateChangeObserver> window_state_observer_;
-};
-
 class AutotestPrivateSetArcAppWindowFocusFunction : public ExtensionFunction {
  public:
   AutotestPrivateSetArcAppWindowFocusFunction();
@@ -755,27 +841,36 @@ class AutotestPrivateSetArcAppWindowFocusFunction : public ExtensionFunction {
   ResponseAction Run() override;
 };
 
-class AutotestPrivateGetArcAppWindowStateFunction : public ExtensionFunction {
+// Starts ARC app performance tracing for the current ARC app window.
+class AutotestPrivateArcAppTracingStartFunction : public ExtensionFunction {
  public:
-  AutotestPrivateGetArcAppWindowStateFunction();
-  DECLARE_EXTENSION_FUNCTION("autotestPrivate.getArcAppWindowState",
-                             AUTOTESTPRIVATE_GETARCAPPWINDOWSTATE)
+  AutotestPrivateArcAppTracingStartFunction();
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.arcAppTracingStart",
+                             AUTOTESTPRIVATE_ARCAPPTRACINGSTART)
 
  private:
-  ~AutotestPrivateGetArcAppWindowStateFunction() override;
+  ~AutotestPrivateArcAppTracingStartFunction() override;
   ResponseAction Run() override;
 };
 
-// Gets various window properties of an ARC window.
-class AutotestPrivateGetArcAppWindowInfoFunction : public ExtensionFunction {
+// Stops active ARC app performance tracing if it was active and analyzes
+// results. Result is returned to the previously registered callback for
+// traceActiveArcAppStart.
+class AutotestPrivateArcAppTracingStopAndAnalyzeFunction
+    : public ExtensionFunction {
  public:
-  AutotestPrivateGetArcAppWindowInfoFunction();
-  DECLARE_EXTENSION_FUNCTION("autotestPrivate.getArcAppWindowInfo",
-                             AUTOTESTPRIVATE_GETARCAPPWINDOWINFO)
+  AutotestPrivateArcAppTracingStopAndAnalyzeFunction();
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.arcAppTracingStopAndAnalyze",
+                             AUTOTESTPRIVATE_ARCAPPTRACINGSTOPANDANALYZE)
 
  private:
-  ~AutotestPrivateGetArcAppWindowInfoFunction() override;
+  ~AutotestPrivateArcAppTracingStopAndAnalyzeFunction() override;
   ResponseAction Run() override;
+
+  void OnTracingResult(bool success,
+                       double fps,
+                       double commit_deviation,
+                       double render_quality);
 };
 
 class AutotestPrivateSwapWindowsInSplitViewFunction : public ExtensionFunction {
@@ -787,6 +882,221 @@ class AutotestPrivateSwapWindowsInSplitViewFunction : public ExtensionFunction {
  private:
   ~AutotestPrivateSwapWindowsInSplitViewFunction() override;
   ResponseAction Run() override;
+};
+
+class AutotestPrivateWaitForDisplayRotationFunction
+    : public ExtensionFunction,
+      public ash::ScreenRotationAnimatorObserver {
+ public:
+  AutotestPrivateWaitForDisplayRotationFunction();
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.waitForDisplayRotation",
+                             AUTOTESTPRIVATE_WAITFORDISPLAYROTATION)
+
+  void OnScreenCopiedBeforeRotation() override;
+  void OnScreenRotationAnimationFinished(ash::ScreenRotationAnimator* animator,
+                                         bool canceled) override;
+
+ private:
+  ~AutotestPrivateWaitForDisplayRotationFunction() override;
+  ResponseAction Run() override;
+
+  int64_t display_id_ = display::kInvalidDisplayId;
+  display::Display::Rotation target_rotation_ = display::Display::ROTATE_0;
+  // A reference to keep the instance alive while waiting for rotation.
+  scoped_refptr<ExtensionFunction> self_;
+};
+
+class AutotestPrivateGetAppWindowListFunction : public ExtensionFunction {
+ public:
+  AutotestPrivateGetAppWindowListFunction();
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.getAppWindowList",
+                             AUTOTESTPRIVATE_GETAPPWINDOWLIST)
+
+ private:
+  ~AutotestPrivateGetAppWindowListFunction() override;
+  ResponseAction Run() override;
+};
+
+class AutotestPrivateSetAppWindowStateFunction : public ExtensionFunction {
+ public:
+  AutotestPrivateSetAppWindowStateFunction();
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.setAppWindowState",
+                             AUTOTESTPRIVATE_SETAPPWINDOWSTATE)
+
+ private:
+  ~AutotestPrivateSetAppWindowStateFunction() override;
+  ResponseAction Run() override;
+
+  void WindowStateChanged(ash::WindowStateType expected_type, bool success);
+
+  std::unique_ptr<WindowStateChangeObserver> window_state_observer_;
+};
+
+class AutotestPrivateCloseAppWindowFunction : public ExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.closeAppWindow",
+                             AUTOTESTPRIVATE_CLOSEAPPWINDOW)
+
+ private:
+  ~AutotestPrivateCloseAppWindowFunction() override;
+  ResponseAction Run() override;
+};
+
+class AutotestPrivateInstallPWAForCurrentURLFunction
+    : public ExtensionFunction {
+ public:
+  AutotestPrivateInstallPWAForCurrentURLFunction();
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.installPWAForCurrentURL",
+                             AUTOTESTPRIVATE_INSTALLPWAFORCURRENTURL)
+
+ private:
+  class PWABannerObserver;
+  class PWARegistrarObserver;
+  ~AutotestPrivateInstallPWAForCurrentURLFunction() override;
+  ResponseAction Run() override;
+
+  // Called when a PWA is loaded from a URL.
+  void PWALoaded();
+  // Called when a PWA is installed.
+  void PWAInstalled(const web_app::AppId& app_id);
+  // Called when intalling a PWA times out.
+  void PWATimeout();
+
+  std::unique_ptr<PWABannerObserver> banner_observer_;
+  std::unique_ptr<PWARegistrarObserver> registrar_observer_;
+  base::OneShotTimer timeout_timer_;
+};
+
+class AutotestPrivateActivateAcceleratorFunction : public ExtensionFunction {
+ public:
+  AutotestPrivateActivateAcceleratorFunction();
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.activateAccelerator",
+                             AUTOTESTPRIVATE_ACTIVATEACCELERATOR)
+
+ private:
+  ~AutotestPrivateActivateAcceleratorFunction() override;
+  ResponseAction Run() override;
+};
+
+class AutotestPrivateWaitForLauncherStateFunction : public ExtensionFunction {
+ public:
+  AutotestPrivateWaitForLauncherStateFunction();
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.waitForLauncherState",
+                             AUTOTESTPRIVATE_WAITFORLAUNCHERSTATE)
+
+ private:
+  ~AutotestPrivateWaitForLauncherStateFunction() override;
+  ResponseAction Run() override;
+
+  void Done();
+};
+
+class AutotestPrivateCreateNewDeskFunction : public ExtensionFunction {
+ public:
+  AutotestPrivateCreateNewDeskFunction();
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.createNewDesk",
+                             AUTOTESTPRIVATE_CREATENEWDESK)
+
+ private:
+  ~AutotestPrivateCreateNewDeskFunction() override;
+  ResponseAction Run() override;
+};
+
+class AutotestPrivateActivateDeskAtIndexFunction : public ExtensionFunction {
+ public:
+  AutotestPrivateActivateDeskAtIndexFunction();
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.activateDeskAtIndex",
+                             AUTOTESTPRIVATE_ACTIVATEDESKATINDEX)
+
+ private:
+  ~AutotestPrivateActivateDeskAtIndexFunction() override;
+  ResponseAction Run() override;
+
+  void OnAnimationComplete();
+};
+
+class AutotestPrivateRemoveActiveDeskFunction : public ExtensionFunction {
+ public:
+  AutotestPrivateRemoveActiveDeskFunction();
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.removeActiveDesk",
+                             AUTOTESTPRIVATE_REMOVEACTIVEDESK)
+
+ private:
+  ~AutotestPrivateRemoveActiveDeskFunction() override;
+  ResponseAction Run() override;
+
+  void OnAnimationComplete();
+};
+
+class AutotestPrivateMouseClickFunction : public ExtensionFunction {
+ public:
+  AutotestPrivateMouseClickFunction();
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.mouseClick",
+                             AUTOTESTPRIVATE_MOUSECLICK)
+
+ private:
+  ~AutotestPrivateMouseClickFunction() override;
+  ResponseAction Run() override;
+
+  std::unique_ptr<EventGenerator> event_generator_;
+};
+
+class AutotestPrivateMousePressFunction : public ExtensionFunction {
+ public:
+  AutotestPrivateMousePressFunction();
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.mousePress",
+                             AUTOTESTPRIVATE_MOUSEPRESS)
+
+ private:
+  ~AutotestPrivateMousePressFunction() override;
+  ResponseAction Run() override;
+
+  std::unique_ptr<EventGenerator> event_generator_;
+};
+
+class AutotestPrivateMouseReleaseFunction : public ExtensionFunction {
+ public:
+  AutotestPrivateMouseReleaseFunction();
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.mouseRelease",
+                             AUTOTESTPRIVATE_MOUSERELEASE)
+
+ private:
+  ~AutotestPrivateMouseReleaseFunction() override;
+  ResponseAction Run() override;
+
+  std::unique_ptr<EventGenerator> event_generator_;
+};
+
+class AutotestPrivateMouseMoveFunction : public ExtensionFunction {
+ public:
+  AutotestPrivateMouseMoveFunction();
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.mouseMove",
+                             AUTOTESTPRIVATE_MOUSEMOVE)
+
+ private:
+  ~AutotestPrivateMouseMoveFunction() override;
+  ResponseAction Run() override;
+
+  void OnDone();
+
+  std::unique_ptr<EventGenerator> event_generator_;
+};
+
+class AutotestPrivateSetMetricsEnabledFunction : public ExtensionFunction {
+ public:
+  AutotestPrivateSetMetricsEnabledFunction();
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.setMetricsEnabled",
+                             AUTOTESTPRIVATE_SETMETRICSENABLED)
+
+ private:
+  ~AutotestPrivateSetMetricsEnabledFunction() override;
+  ResponseAction Run() override;
+
+  void OnStatsReportingStateChanged();
+
+  std::unique_ptr<chromeos::StatsReportingController::ObserverSubscription>
+      stats_reporting_observer_subscription_;
+  bool target_value_ = false;
 };
 
 template <>

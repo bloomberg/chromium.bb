@@ -11,7 +11,6 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.net.Uri;
 import android.provider.Settings;
-import android.support.annotation.IntDef;
 import android.support.v4.view.ViewCompat;
 import android.text.Spannable;
 import android.text.SpannableString;
@@ -21,10 +20,12 @@ import android.text.style.ForegroundColorSpan;
 import android.text.style.TextAppearanceSpan;
 import android.view.Window;
 
+import androidx.annotation.IntDef;
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.ApiCompatibilityUtils;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
-import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
@@ -34,12 +35,13 @@ import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.omnibox.OmniboxUrlEmphasizer;
 import org.chromium.chrome.browser.page_info.PageInfoView.ConnectionInfoParams;
 import org.chromium.chrome.browser.page_info.PageInfoView.PageInfoViewParams;
-import org.chromium.chrome.browser.preferences.website.ContentSettingValues;
 import org.chromium.chrome.browser.previews.PreviewsAndroidBridge;
 import org.chromium.chrome.browser.previews.PreviewsUma;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.settings.website.ContentSettingValues;
 import org.chromium.chrome.browser.ssl.SecurityStateModel;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.components.feature_engagement.EventConstants;
@@ -180,7 +182,7 @@ public class PageInfoController
                 () -> Clipboard.getInstance().copyUrlToClipboard(mFullUrl);
 
         // Work out the URL and connection message and status visibility.
-        mFullUrl = isShowingOfflinePage() ? offlinePageUrl : mTab.getOriginalUrl();
+        mFullUrl = isShowingOfflinePage() ? offlinePageUrl : ((TabImpl) mTab).getOriginalUrl();
 
         // This can happen if an invalid chrome-distiller:// url was entered.
         if (mFullUrl == null) mFullUrl = "";
@@ -199,7 +201,7 @@ public class PageInfoController
         if (mSecurityLevel == ConnectionSecurityLevel.SECURE) {
             OmniboxUrlEmphasizer.EmphasizeComponentsResponse emphasizeResponse =
                     OmniboxUrlEmphasizer.parseForEmphasizeComponents(
-                            mTab.getProfile(), displayUrlBuilder.toString());
+                            ((TabImpl) mTab).getProfile(), displayUrlBuilder.toString());
             if (emphasizeResponse.schemeLength > 0) {
                 displayUrlBuilder.setSpan(
                         new TextAppearanceSpan(mContext, R.style.TextAppearance_RobotoMediumStyle),
@@ -208,12 +210,13 @@ public class PageInfoController
         }
 
         final boolean useDarkColors =
-                !mTab.getActivity().getNightModeStateProvider().isInNightMode();
+                !((TabImpl) mTab).getActivity().getNightModeStateProvider().isInNightMode();
         OmniboxUrlEmphasizer.emphasizeUrl(displayUrlBuilder, mContext.getResources(),
-                mTab.getProfile(), mSecurityLevel, mIsInternalPage, useDarkColors, true);
+                ((TabImpl) mTab).getProfile(), mSecurityLevel, mIsInternalPage, useDarkColors,
+                true);
         viewParams.url = displayUrlBuilder;
         viewParams.urlOriginLength = OmniboxUrlEmphasizer.getOriginEndIndex(
-                displayUrlBuilder.toString(), mTab.getProfile());
+                displayUrlBuilder.toString(), ((TabImpl) mTab).getProfile());
 
         if (SiteSettingsHelper.isSiteSettingsAvailable(mTab)) {
             viewParams.siteSettingsButtonClickCallback = () -> {
@@ -229,25 +232,15 @@ public class PageInfoController
 
         initPreviewUiParams(viewParams);
 
-        if (isShowingOfflinePage()) {
-            boolean isConnected = OfflinePageUtils.isConnected();
-            RecordHistogram.recordBooleanHistogram(
-                    "OfflinePages.WebsiteSettings.OpenOnlineButtonVisible", isConnected);
-            if (isConnected) {
-                viewParams.openOnlineButtonClickCallback = () -> {
-                    runAfterDismiss(() -> {
-                        // Attempt to reload to an online version of the viewed offline web page.
-                        // This attempt might fail if the user is offline, in which case an offline
-                        // copy will be reloaded.
-                        RecordHistogram.recordBooleanHistogram(
-                                "OfflinePages.WebsiteSettings.ConnectedWhenOpenOnlineButtonClicked",
-                                OfflinePageUtils.isConnected());
-                        OfflinePageUtils.reload(mTab);
-                    });
-                };
-            } else {
-                viewParams.openOnlineButtonShown = false;
-            }
+        if (isShowingOfflinePage() && OfflinePageUtils.isConnected()) {
+            viewParams.openOnlineButtonClickCallback = () -> {
+                runAfterDismiss(() -> {
+                    // Attempt to reload to an online version of the viewed offline web page.
+                    // This attempt might fail if the user is offline, in which case an offline
+                    // copy will be reloaded.
+                    OfflinePageUtils.reload(mTab);
+                });
+            };
         } else {
             viewParams.openOnlineButtonShown = false;
         }
@@ -276,7 +269,7 @@ public class PageInfoController
                 mContext, mWindowAndroid, mFullUrl, this, mView::setPermissions);
 
         // This needs to come after other member initialization.
-        mNativePageInfoController = nativeInit(this, mTab.getWebContents());
+        mNativePageInfoController = PageInfoControllerJni.get().init(this, mTab.getWebContents());
         mWebContentsObserver = new WebContentsObserver(mTab.getWebContents()) {
             @Override
             public void navigationEntryCommitted() {
@@ -302,7 +295,7 @@ public class PageInfoController
         };
 
         mDialog = new PageInfoDialog(mContext, mView, mTab.getView(), isSheet(),
-                mTab.getActivity().getModalDialogManager(), this);
+                ((TabImpl) mTab).getActivity().getModalDialogManager(), this);
         mDialog.show();
     }
 
@@ -473,13 +466,14 @@ public class PageInfoController
             mPendingRunAfterDismissTask = null;
         }
         mWebContentsObserver.destroy();
-        nativeDestroy(mNativePageInfoController);
+        PageInfoControllerJni.get().destroy(mNativePageInfoController, PageInfoController.this);
         mNativePageInfoController = 0;
     }
 
     private void recordAction(int action) {
         if (mNativePageInfoController != 0) {
-            nativeRecordPageInfoAction(mNativePageInfoController, action);
+            PageInfoControllerJni.get().recordPageInfoAction(
+                    mNativePageInfoController, PageInfoController.this, action);
         }
     }
 
@@ -579,10 +573,11 @@ public class PageInfoController
                 offlinePageCreationDate, offlinePageState, previewPageState, contentPublisher);
     }
 
-    private static native long nativeInit(PageInfoController controller, WebContents webContents);
-
-    private native void nativeDestroy(long nativePageInfoControllerAndroid);
-
-    private native void nativeRecordPageInfoAction(
-            long nativePageInfoControllerAndroid, int action);
+    @NativeMethods
+    interface Natives {
+        long init(PageInfoController controller, WebContents webContents);
+        void destroy(long nativePageInfoControllerAndroid, PageInfoController caller);
+        void recordPageInfoAction(
+                long nativePageInfoControllerAndroid, PageInfoController caller, int action);
+    }
 }

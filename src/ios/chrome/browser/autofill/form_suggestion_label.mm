@@ -16,6 +16,7 @@
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #import "components/autofill/ios/browser/form_suggestion.h"
 #import "ios/chrome/browser/autofill/form_suggestion_client.h"
+#import "ios/chrome/browser/autofill/form_suggestion_constants.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/colors/semantic_color_names.h"
@@ -26,10 +27,6 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
-
-// a11y identifier used to locate the autofill suggestion in automation
-NSString* const kFormSuggestionLabelAccessibilityIdentifier =
-    @"formSuggestionLabelAXID";
 
 namespace {
 
@@ -68,19 +65,16 @@ UILabel* TextLabel(NSString* text, UIColor* textColor, BOOL bold) {
   // Client of this view.
   __weak id<FormSuggestionClient> client_;
   FormSuggestion* suggestion_;
-  BOOL userInteractionEnabled_;
 }
 
 - (id)initWithSuggestion:(FormSuggestion*)suggestion
                      index:(NSUInteger)index
-    userInteractionEnabled:(BOOL)userInteractionEnabled
             numSuggestions:(NSUInteger)numSuggestions
                     client:(id<FormSuggestionClient>)client {
   self = [super initWithFrame:CGRectZero];
   if (self) {
     suggestion_ = suggestion;
     client_ = client;
-    userInteractionEnabled_ = userInteractionEnabled;
 
     UIStackView* stackView = [[UIStackView alloc] initWithArrangedSubviews:@[]];
     stackView.axis = UILayoutConstraintAxisHorizontal;
@@ -113,9 +107,7 @@ UILabel* TextLabel(NSString* text, UIColor* textColor, BOOL bold) {
       [stackView addArrangedSubview:description];
     }
 
-    if (userInteractionEnabled_) {
-      [self setBackgroundColor:[UIColor colorNamed:kGrey100Color]];
-    }
+    [self setBackgroundColor:[UIColor colorNamed:kGrey100Color]];
 
     [self setClipsToBounds:YES];
     [self setUserInteractionEnabled:YES];
@@ -143,22 +135,16 @@ UILabel* TextLabel(NSString* text, UIColor* textColor, BOOL bold) {
 #pragma mark UIResponder
 
 - (void)touchesBegan:(NSSet*)touches withEvent:(UIEvent*)event {
-  if (userInteractionEnabled_) {
-    [self setBackgroundColor:[UIColor colorNamed:kGrey300Color]];
-  }
+  [self setBackgroundColor:[UIColor colorNamed:kGrey300Color]];
 }
 
 - (void)touchesCancelled:(NSSet*)touches withEvent:(UIEvent*)event {
-  if (userInteractionEnabled_) {
-    [self setBackgroundColor:[UIColor colorNamed:kGrey100Color]];
-  }
+  [self setBackgroundColor:[UIColor colorNamed:kGrey100Color]];
 }
 
 - (void)touchesEnded:(NSSet*)touches withEvent:(UIEvent*)event {
-  if (userInteractionEnabled_) {
-    [self setBackgroundColor:[UIColor colorNamed:kGrey100Color]];
-    [client_ didSelectSuggestion:suggestion_];
-  }
+  [self setBackgroundColor:[UIColor colorNamed:kGrey100Color]];
+  [client_ didSelectSuggestion:suggestion_];
 }
 
 @end

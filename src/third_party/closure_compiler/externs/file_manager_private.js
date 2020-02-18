@@ -22,6 +22,7 @@ chrome.fileManagerPrivate.VolumeType = {
   ANDROID_FILES: 'android_files',
   DOCUMENTS_PROVIDER: 'documents_provider',
   TESTING: 'testing',
+  SMB: 'smb',
 };
 
 /** @enum {string} */
@@ -31,6 +32,24 @@ chrome.fileManagerPrivate.DeviceType = {
   OPTICAL: 'optical',
   MOBILE: 'mobile',
   UNKNOWN: 'unknown',
+};
+
+/**
+ * @enum {string}
+ */
+chrome.fileManagerPrivate.DriveConnectionStateType = {
+  OFFLINE: 'OFFLINE',
+  METERED: 'METERED',
+  ONLINE: 'ONLINE',
+};
+
+/**
+ * @enum {string}
+ */
+chrome.fileManagerPrivate.DriveOfflineReason = {
+  NOT_READY: 'NOT_READY',
+  NO_NETWORK: 'NO_NETWORK',
+  NO_SERVICE: 'NO_SERVICE',
 };
 
 /** @enum {string} */
@@ -220,7 +239,6 @@ chrome.fileManagerPrivate.Verb = {
 chrome.fileManagerPrivate.SourceRestriction = {
   ANY_SOURCE: 'any_source',
   NATIVE_SOURCE: 'native_source',
-  NATIVE_OR_DRIVE_SOURCE: 'native_or_drive_source',
 };
 
 /** @enum {string} */
@@ -234,8 +252,6 @@ chrome.fileManagerPrivate.InstallLinuxPackageResponse = {
 chrome.fileManagerPrivate.CrostiniEventType = {
   ENABLE: 'enable',
   DISABLE: 'disable',
-  ROOT_ACCESS_ALLOW: 'root_access_allow',
-  ROOT_ACCESS_DISALLOW: 'root_access_disallow',
   SHARE: 'share',
   UNSHARE: 'unshare',
 };
@@ -431,7 +447,7 @@ chrome.fileManagerPrivate.SearchParams;
 /**
  * @typedef {{
  *   query: string,
- *   types: string,
+ *   types: !chrome.fileManagerPrivate.SearchType,
  *   maxResults: number
  * }}
  */
@@ -444,12 +460,12 @@ chrome.fileManagerPrivate.SearchMetadataParams;
  *   availableOffline: (boolean|undefined)
  * }}
  */
-chrome.fileManagerPrivate.SearchResult;
+chrome.fileManagerPrivate.DriveMetadataSearchResult;
 
 /**
  * @typedef {{
- *   type: string,
- *   reason: (string|undefined),
+ *   type: !chrome.fileManagerPrivate.DriveConnectionStateType,
+ *   reason: (!chrome.fileManagerPrivate.DriveOfflineReason|undefined),
  *   hasCellularNetworkAccess: boolean
  * }}
  */
@@ -643,20 +659,6 @@ chrome.fileManagerPrivate.getEntryProperties = function(entries, names,
 chrome.fileManagerPrivate.pinDriveFile = function(entry, pin, callback) {};
 
 /**
- * If |entry| is a Drive file, ensures the file is downloaded to the cache.
- * Otherwise, finishes immediately in success. For example, when the file is
- * under Downloads, MTP, removeable media, or provided by extensions for
- * other cloud storage services than Google Drive, this does nothing.
- * This is a workaround to avoid intermittent and duplicated downloading of
- * a Drive file by current implementation of Drive integration when an
- * extension reads a file sequentially but intermittently.
- * @param {!Entry} entry A regular file entry to be read.
- * @param {function()} callback Callback called after having the file in cache.
- *     runtime.lastError will be set if there was an error.
- */
-chrome.fileManagerPrivate.ensureFileDownloaded = function(entry, callback) {};
-
-/**
  * Resolves file entries in the isolated file system and returns corresponding
  * entries in the external file system mounted to Chrome OS file manager
  * backend. If resolving entry fails, the entry will be just ignored and the
@@ -684,33 +686,12 @@ chrome.fileManagerPrivate.addMount = function(source, callback) {};
 chrome.fileManagerPrivate.removeMount = function(volumeId) {};
 
 /**
- * Marks a cache file of Drive as mounted or unmounted.
- * Does nothing if the file is not under Drive directory.
- * @param {string} sourcePath Mounted source file. Relative file path within
- *     external file system.
- * @param {boolean} isMounted Mark as mounted if true. Mark as unmounted
- *     otherwise.
- * @param {function()} callback Completion callback. runtime.lastError will be
- *     set if there was an error.
- */
-chrome.fileManagerPrivate.markCacheAsMounted = function(
-    sourcePath, isMounted, callback) {};
-
-/**
  * Get the list of mounted volumes. |callback|
  * @param {function((!Array<!chrome.fileManagerPrivate.VolumeMetadata>|undefined))}
  *     callback Callback with the list of
  *     chrome.fileManagerPrivate.VolumeMetadata representing mounted volumes.
  */
 chrome.fileManagerPrivate.getVolumeMetadataList = function(callback) {};
-
-/**
- * Cancels ongoing file transfers for selected files. |entries| Array of files
- * for which ongoing transfer should be canceled.
- * @param {!Array<!FileEntry>} entries
- * @param {function()} callback
- */
-chrome.fileManagerPrivate.cancelFileTransfers = function(entries, callback) {};
 
 /**
  * Starts to copy an entry. If the source is a directory, the copy is done
@@ -785,12 +766,11 @@ chrome.fileManagerPrivate.searchDrive = function(searchParams, callback) {};
 
 /**
  * Performs drive metadata search. |searchParams| |callback|
- * @param {chrome.fileManagerPrivate.SearchMetadataParams} searchParams
- * @param {function((!Array<!chrome.fileManagerPrivate.SearchResult>|undefined))}
+ * @param {!chrome.fileManagerPrivate.SearchMetadataParams} searchParams
+ * @param {function(!Array<!chrome.fileManagerPrivate.DriveMetadataSearchResult>):void}
  *     callback
  */
-chrome.fileManagerPrivate.searchDriveMetadata = function(searchParams,
-    callback) {};
+chrome.fileManagerPrivate.searchDriveMetadata = function(searchParams, callback) {};
 
 /**
  * Search for files in the given volume, whose content hash matches the list of
@@ -849,15 +829,6 @@ chrome.fileManagerPrivate.validatePathNameLength = function(
 chrome.fileManagerPrivate.zoom = function(operation) {};
 
 /**
- * Requests a Drive API OAuth2 access token. |refresh| Whether the token should
- * be refetched instead of using the cached one. |callback|
- * @param {boolean} refresh
- * @param {function((string|undefined))} callback |accessToken| OAuth2 access
- *     token, or an empty string if failed to fetch.
- */
-chrome.fileManagerPrivate.requestAccessToken = function(refresh, callback) {};
-
-/**
  * Requests a Webstore API OAuth2 access token. |callback|
  * @param {function((string|undefined))} callback |accessToken| OAuth2 access
  *     token, or an empty string if failed to fetch.
@@ -870,15 +841,6 @@ chrome.fileManagerPrivate.requestWebStoreAccessToken = function(callback) {};
  * @param {function((string|undefined))} callback Callback with the result url.
  */
 chrome.fileManagerPrivate.getDownloadUrl = function(entry, callback) {};
-
-/**
- * Requests to share drive files.
- * @param {!Entry} entry
- * @param {string} shareType
- * @param {function()} callback Callback that does not take arguments.
- */
-chrome.fileManagerPrivate.requestDriveShare = function(entry, shareType,
-    callback) {};
 
 /**
  * Obtains a list of profiles that are logged-in.
@@ -909,23 +871,6 @@ chrome.fileManagerPrivate.openSettingsSubpage = function(sub_page) {};
  * @param {function((string|undefined))} callback
  */
 chrome.fileManagerPrivate.computeChecksum = function(entry, callback) {};
-
-/**
- * Sets a tag on a file or a directory. Only Drive files are supported.
- * @param {!Entry} entry
- * @param {string} visibility 'private' or 'public'
- * @param {string} key
- * @param {string} value
- * @param {function()} callback
- */
-chrome.fileManagerPrivate.setEntryTag = function(entry, visibility, key,
-    value, callback) {};
-
-/**
- * Gets a flag indicating whether PiexLoader is enabled.
- * @param {function((boolean|undefined))} callback
- */
-chrome.fileManagerPrivate.isPiexLoaderEnabled = function(callback) {};
 
 /**
  * Returns list of available providers.

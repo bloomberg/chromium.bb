@@ -163,6 +163,24 @@ const QuicTag kCONH = TAG('C', 'O', 'N', 'H');   // Conservative Handshake
 const QuicTag kLFAK = TAG('L', 'F', 'A', 'K');   // Don't invoke FACK on the
                                                  // first ack.
 const QuicTag kSTMP = TAG('S', 'T', 'M', 'P');   // Send and process timestamps
+
+const QuicTag kILD0 = TAG('I', 'L', 'D', '0');   // IETF style loss detection
+                                                 // (default with 1/8 RTT time
+                                                 // threshold)
+const QuicTag kILD1 = TAG('I', 'L', 'D', '1');   // IETF style loss detection
+                                                 // with 1/4 RTT time threshold
+const QuicTag kILD2 = TAG('I', 'L', 'D', '2');   // IETF style loss detection
+                                                 // with adaptive packet
+                                                 // threshold
+const QuicTag kILD3 = TAG('I', 'L', 'D', '3');   // IETF style loss detection
+                                                 // with 1/4 RTT time threshold
+                                                 // and adaptive packet
+                                                 // threshold
+const QuicTag kILD4 = TAG('I', 'L', 'D', '4');   // IETF style loss detection
+                                                 // with both adaptive time
+                                                 // threshold (default 1/4 RTT)
+                                                 // and adaptive packet
+                                                 // threshold
 // TODO(fayang): Remove this connection option when QUIC_VERSION_35, is removed
 // Since MAX_HEADER_LIST_SIZE settings frame is supported instead.
 const QuicTag kSMHL = TAG('S', 'M', 'H', 'L');   // Support MAX_HEADER_LIST_SIZE
@@ -173,10 +191,24 @@ const QuicTag kNRTT = TAG('N', 'R', 'T', 'T');   // Ignore initial RTT
 const QuicTag k1PTO = TAG('1', 'P', 'T', 'O');   // Send 1 packet upon PTO.
 const QuicTag k2PTO = TAG('2', 'P', 'T', 'O');   // Send 2 packets upon PTO.
 
+const QuicTag k6PTO = TAG('6', 'P', 'T', 'O');   // Closes connection on 6
+                                                 // consecutive PTOs.
 const QuicTag k7PTO = TAG('7', 'P', 'T', 'O');   // Closes connection on 7
                                                  // consecutive PTOs.
 const QuicTag k8PTO = TAG('8', 'P', 'T', 'O');   // Closes connection on 8
                                                  // consecutive PTOs.
+const QuicTag kPTOS = TAG('P', 'T', 'O', 'S');   // Skip packet number before
+                                                 // sending the last PTO.
+const QuicTag kPTOA = TAG('P', 'T', 'O', 'A');   // Do not add max ack delay
+                                                 // when computing PTO timeout
+                                                 // if an immediate ACK is
+                                                 // expected.
+const QuicTag kPEB1 = TAG('P', 'E', 'B', '1');   // Start exponential backoff
+                                                 // since 1st PTO.
+const QuicTag kPEB2 = TAG('P', 'E', 'B', '2');   // Start exponential backoff
+                                                 // since 2nd PTO.
+const QuicTag kPVS1 = TAG('P', 'V', 'S', '1');   // Use 2 * rttvar when
+                                                 // calculating PTO timeout.
 
 // Optional support of truncated Connection IDs.  If sent by a peer, the value
 // is the minimum number of bytes allowed for the connection ID sent to the
@@ -200,6 +232,12 @@ const QuicTag kBWS2 = TAG('B', 'W', 'S', '2');  // Server bw resumption v2.
 const QuicTag kBWS3 = TAG('B', 'W', 'S', '3');  // QUIC Initial CWND - Control.
 const QuicTag kBWS4 = TAG('B', 'W', 'S', '4');  // QUIC Initial CWND - Enabled.
 const QuicTag kBWS5 = TAG('B', 'W', 'S', '5');  // QUIC Initial CWND up and down
+const QuicTag kBWS6 = TAG('B', 'W', 'S', '6');  // QUIC Initial CWND - Enabled
+                                                // with 0.5 * default
+                                                // multiplier.
+const QuicTag kBWS7 = TAG('B', 'W', 'S', '7');  // QUIC Initial CWND - Enabled
+                                                // with 0.75 * default
+                                                // multiplier.
 
 // Enable path MTU discovery experiment.
 const QuicTag kMTUH = TAG('M', 'T', 'U', 'H');  // High-target MTU discovery.
@@ -211,6 +249,7 @@ const QuicTag kFIFO = TAG('F', 'I', 'F', 'O');  // Stream with the smallest ID
                                                 // has the highest priority.
 const QuicTag kLIFO = TAG('L', 'I', 'F', 'O');  // Stream with the largest ID
                                                 // has the highest priority.
+const QuicTag kRRWS = TAG('R', 'R', 'W', 'S');  // Round robin write scheduling.
 
 // Proof types (i.e. certificate types)
 // NOTE: although it would be silly to do so, specifying both kX509 and kX59R

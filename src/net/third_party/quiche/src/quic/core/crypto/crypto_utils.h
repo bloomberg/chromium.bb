@@ -32,7 +32,7 @@ class QUIC_EXPORT_PRIVATE CryptoUtils {
   // Diversification is a utility class that's used to act like a union type.
   // Values can be created by calling the functions like |NoDiversification|,
   // below.
-  class Diversification {
+  class QUIC_EXPORT_PRIVATE Diversification {
    public:
     enum Mode {
       NEVER,  // Key diversification will never be used. Forward secure
@@ -80,16 +80,18 @@ class QUIC_EXPORT_PRIVATE CryptoUtils {
                           const std::vector<uint8_t>& pp_secret,
                           QuicCrypter* crypter);
 
-  // QUIC encrypts TLS handshake messages with a version-specific key (to
-  // prevent network observers that are not aware of that QUIC version from
+  // IETF QUIC encrypts ENCRYPTION_INITIAL messages with a version-specific key
+  // (to prevent network observers that are not aware of that QUIC version from
   // making decisions based on the TLS handshake). This packet protection secret
   // is derived from the connection ID in the client's Initial packet.
   //
   // This function takes that |connection_id| and creates the encrypter and
   // decrypter (put in |*crypters|) to use for this packet protection, as well
-  // as setting the key and IV on those crypters.
-  static void CreateTlsInitialCrypters(Perspective perspective,
-                                       QuicTransportVersion version,
+  // as setting the key and IV on those crypters. For older versions of QUIC
+  // that do not use the new IETF style ENCRYPTION_INITIAL obfuscators, this
+  // function puts a NullEncrypter and NullDecrypter in |*crypters|.
+  static void CreateInitialObfuscators(Perspective perspective,
+                                       ParsedQuicVersion version,
                                        QuicConnectionId connection_id,
                                        CrypterPair* crypters);
 
@@ -121,7 +123,8 @@ class QUIC_EXPORT_PRIVATE CryptoUtils {
   // decrypter will only be keyed to a preliminary state: a call to
   // |SetDiversificationNonce| with a diversification nonce will be needed to
   // complete keying.
-  static bool DeriveKeys(QuicStringPiece premaster_secret,
+  static bool DeriveKeys(const ParsedQuicVersion& version,
+                         QuicStringPiece premaster_secret,
                          QuicTag aead,
                          QuicStringPiece client_nonce,
                          QuicStringPiece server_nonce,
@@ -200,27 +203,6 @@ class QUIC_EXPORT_PRIVATE CryptoUtils {
   // Returns a hash of the serialized |message|.
   static std::string HashHandshakeMessage(const CryptoHandshakeMessage& message,
                                           Perspective perspective);
-
- private:
-  // Implements the HKDF-Expand-Label function as defined in section 7.1 of RFC
-  // 8446, except that it uses "quic " as the prefix instead of "tls13 ", as
-  // specified by draft-ietf-quic-tls-14. The HKDF-Expand-Label function takes 4
-  // explicit arguments (Secret, Label, Context, and Length), as well as
-  // implicit PRF which is the hash function negotiated by TLS. Its use in QUIC
-  // (as needed by the QUIC stack, instead of as used internally by the TLS
-  // stack) is only for deriving initial secrets for obfuscation and for
-  // calculating packet protection keys and IVs from the corresponding packet
-  // protection secret. Neither of these uses need a Context (a zero-length
-  // context is provided), so this argument is omitted here.
-  //
-  // The implicit PRF is explicitly passed into HkdfExpandLabel as |prf|; the
-  // Secret, Label, and Length are passed in as |secret|, |label|, and
-  // |out_len|, respectively. The resulting expanded secret is returned.
-  static std::vector<uint8_t> HkdfExpandLabel(
-      const EVP_MD* prf,
-      const std::vector<uint8_t>& secret,
-      const std::string& label,
-      size_t out_len);
 };
 
 }  // namespace quic

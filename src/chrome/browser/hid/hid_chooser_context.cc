@@ -34,8 +34,8 @@ base::Value DeviceInfoToValue(const device::mojom::HidDeviceInfo& device) {
 
 HidChooserContext::HidChooserContext(Profile* profile)
     : ChooserContextBase(profile,
-                         CONTENT_SETTINGS_TYPE_HID_GUARD,
-                         CONTENT_SETTINGS_TYPE_HID_CHOOSER_DATA),
+                         ContentSettingsType::HID_GUARD,
+                         ContentSettingsType::HID_CHOOSER_DATA),
       is_incognito_(profile->IsOffTheRecord()) {}
 
 HidChooserContext::~HidChooserContext() = default;
@@ -168,7 +168,7 @@ device::mojom::HidManager* HidChooserContext::GetHidManager() {
 }
 
 void HidChooserContext::SetHidManagerForTesting(
-    device::mojom::HidManagerPtr manager) {
+    mojo::PendingRemote<device::mojom::HidManager> manager) {
   SetUpHidManagerConnection(std::move(manager));
 }
 
@@ -180,16 +180,16 @@ void HidChooserContext::EnsureHidManagerConnection() {
   if (hid_manager_)
     return;
 
-  device::mojom::HidManagerPtr manager;
-  content::GetSystemConnector()->BindInterface(device::mojom::kServiceName,
-                                               mojo::MakeRequest(&manager));
+  mojo::PendingRemote<device::mojom::HidManager> manager;
+  content::GetSystemConnector()->Connect(
+      device::mojom::kServiceName, manager.InitWithNewPipeAndPassReceiver());
   SetUpHidManagerConnection(std::move(manager));
 }
 
 void HidChooserContext::SetUpHidManagerConnection(
-    device::mojom::HidManagerPtr manager) {
-  hid_manager_ = std::move(manager);
-  hid_manager_.set_connection_error_handler(base::BindOnce(
+    mojo::PendingRemote<device::mojom::HidManager> manager) {
+  hid_manager_.Bind(std::move(manager));
+  hid_manager_.set_disconnect_handler(base::BindOnce(
       &HidChooserContext::OnHidManagerConnectionError, base::Unretained(this)));
   // TODO(mattreynolds): Register a HidManagerClient to be notified when devices
   // are disconnected so that ephemeral permissions can be revoked.

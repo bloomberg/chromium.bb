@@ -9,19 +9,21 @@ from __future__ import print_function
 
 import base64
 import collections
-import cStringIO
 import gzip
+import io
 import json
 import os
 import smtplib
 import socket
 import sys
 import traceback
-import urllib
 
 from email.mime.application import MIMEApplication
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+
+import six
+from six.moves import http_client as httplib
 
 from chromite.lib import constants
 from chromite.lib import cros_logging as logging
@@ -30,10 +32,9 @@ from chromite.lib import retry_util
 # TODO(fdeng): Cleanup the try-catch once crbug.com/482063 is fixed.
 try:
   # pylint: disable=wrong-import-order
-  import httplib
   import httplib2
-  from apiclient.discovery import build as apiclient_build
-  from apiclient import errors as apiclient_errors
+  from googleapiclient.discovery import build as apiclient_build
+  from googleapiclient import errors as apiclient_errors
   from oauth2client import file as oauth_client_fileio
   from oauth2client import client
 except (RuntimeError, ImportError) as e:
@@ -176,7 +177,10 @@ class GmailServer(MailServer):
     service = apiclient_build('gmail', 'v1', http=http)
     try:
       # 'me' represents the default authorized user.
-      payload = {'raw': base64.urlsafe_b64encode(message.as_string())}
+      payload = {
+          'raw': base64.urlsafe_b64encode(
+              message.as_string().encode('utf-8')).decode('utf-8'),
+      }
       service.users().messages().send(userId='me', body=payload).execute()
       return True
     except (apiclient_errors.HttpError, httplib.HTTPException,
@@ -264,8 +268,10 @@ def CreateEmail(subject, recipients, message='', attachment=None,
 
   msg.attach(MIMEText(message))
   if attachment:
-    s = cStringIO.StringIO()
-    with gzip.GzipFile(fileobj=s, mode='w') as f:
+    if isinstance(attachment, six.string_types):
+      attachment = attachment.encode()
+    s = io.BytesIO()
+    with gzip.GzipFile(fileobj=s, mode='wb') as f:
       f.write(attachment)
     part = MIMEApplication(s.getvalue(), _subtype='x-gzip')
     s.close()
@@ -336,21 +342,6 @@ def SendEmailLog(subject, recipients, server=None, message='',
             attachment=attachment, extra_fields=extra_fields)
 
 
-def GetGardenerEmailAddresses():
-  """Get the email addresses of the gardeners.
-
-  Returns:
-    Gardener email addresses.
-  """
-  try:
-    response = urllib.urlopen(constants.CHROME_GARDENER_URL)
-    if response.getcode() == 200:
-      return json.load(response)['emails']
-  except (IOError, ValueError, KeyError) as e:
-    logging.error('Could not get gardener emails: %r', e)
-  return None
-
-
 def GetHealthAlertRecipients(builder_run):
   """Returns a list of email addresses of the health alert recipients."""
   recipients = []
@@ -358,9 +349,6 @@ def GetHealthAlertRecipients(builder_run):
     if '@' in entry:
       # If the entry is an email address, add it to the list.
       recipients.append(entry)
-    elif entry == constants.CHROME_GARDENER:
-      # Add gardener email address.
-      recipients.extend(GetGardenerEmailAddresses())
 
   return recipients
 

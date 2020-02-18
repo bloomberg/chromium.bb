@@ -23,6 +23,8 @@
 #include "chromeos/dbus/audio/audio_node.h"
 #include "chromeos/dbus/audio/fake_cras_audio_client.h"
 #include "media/base/video_facing.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "services/media_session/public/mojom/constants.mojom.h"
 #include "services/media_session/public/mojom/media_controller.mojom-test-utils.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
@@ -43,7 +45,7 @@ class FakeMediaSessionService
       service_manager::mojom::ServiceRequest request)
       : binding_(this, std::move(request)) {
     binder_registry_.AddInterface(base::BindRepeating(
-        &FakeMediaSessionService::BindMediaControllerManagerRequest,
+        &FakeMediaSessionService::BindMediaControllerManagerReceiver,
         base::Unretained(this)));
   }
 
@@ -63,14 +65,15 @@ class FakeMediaSessionService
     return nullptr;
   }
 
-  void BindMediaControllerManagerRequest(
-      media_session::mojom::MediaControllerManagerRequest request) {
-    bindings_.AddBinding(this, std::move(request));
+  void BindMediaControllerManagerReceiver(
+      mojo::PendingReceiver<media_session::mojom::MediaControllerManager>
+          receiver) {
+    receivers_.Add(this, std::move(receiver));
   }
 
   service_manager::ServiceBinding binding_;
   service_manager::BinderRegistry binder_registry_;
-  mojo::BindingSet<media_session::mojom::MediaControllerManager> bindings_;
+  mojo::ReceiverSet<media_session::mojom::MediaControllerManager> receivers_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeMediaSessionService);
 };
@@ -308,7 +311,8 @@ class FakeVideoCaptureManager {
 class CrasAudioHandlerTest : public testing::TestWithParam<int> {
  public:
   CrasAudioHandlerTest()
-      : task_environment_(base::test::TaskEnvironment::MainThreadType::UI) {}
+      : task_environment_(
+            base::test::SingleThreadTaskEnvironment::MainThreadType::UI) {}
   ~CrasAudioHandlerTest() override = default;
 
   void SetUp() override {
@@ -483,7 +487,7 @@ class CrasAudioHandlerTest : public testing::TestWithParam<int> {
     return FakeCrasAudioClient::Get();
   }
 
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   base::SystemMonitor system_monitor_;
   SystemMonitorObserver system_monitor_observer_;
   CrasAudioHandler* cras_audio_handler_ = nullptr;         // Not owned.
@@ -512,15 +516,15 @@ class HDMIRediscoverWaiter {
     run_loop.Run();
   }
 
-  void CheckHDMIRediscoverGracePeriodEnd(const base::Closure& quit_loop_func) {
+  void CheckHDMIRediscoverGracePeriodEnd(base::OnceClosure quit_loop_func) {
     if (!cras_audio_handler_test_->IsDuringHDMIRediscoverGracePeriod()) {
-      quit_loop_func.Run();
+      std::move(quit_loop_func).Run();
       return;
     }
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
         base::BindOnce(&HDMIRediscoverWaiter::CheckHDMIRediscoverGracePeriodEnd,
-                       base::Unretained(this), quit_loop_func),
+                       base::Unretained(this), std::move(quit_loop_func)),
         base::TimeDelta::FromMilliseconds(grace_period_duration_in_ms_ / 4));
   }
 

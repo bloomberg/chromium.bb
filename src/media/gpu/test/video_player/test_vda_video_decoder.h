@@ -13,7 +13,9 @@
 #include "base/containers/mru_cache.h"
 #include "base/macros.h"
 #include "base/sequence_checker.h"
+#include "gpu/ipc/service/gpu_memory_buffer_factory.h"
 #include "media/base/video_decoder.h"
+#include "media/gpu/buildflags.h"
 #include "media/gpu/test/video_player/video_decoder_client.h"
 #include "media/video/video_decode_accelerator.h"
 
@@ -36,7 +38,8 @@ class TestVDAVideoDecoder : public media::VideoDecoder,
   // delegated to the underlying VDA.
   TestVDAVideoDecoder(AllocationMode allocation_mode,
                       const gfx::ColorSpace& target_color_space,
-                      FrameRenderer* const frame_renderer);
+                      FrameRenderer* const frame_renderer,
+                      gpu::GpuMemoryBufferFactory* gpu_memory_buffer_factory);
   ~TestVDAVideoDecoder() override;
 
   // media::VideoDecoder implementation
@@ -71,12 +74,17 @@ class TestVDAVideoDecoder : public media::VideoDecoder,
                                             uint32_t texture_target) override;
   void DismissPictureBuffer(int32_t picture_buffer_id) override;
   void PictureReady(const Picture& picture) override;
-  void ReusePictureBufferTask(int32_t picture_buffer_id,
-                              scoped_refptr<VideoFrame> video_frame);
+  void ReusePictureBufferTask(int32_t picture_buffer_id);
   void NotifyEndOfBitstreamBuffer(int32_t bitstream_buffer_id) override;
   void NotifyFlushDone() override;
   void NotifyResetDone() override;
   void NotifyError(VideoDecodeAccelerator::Error error) override;
+
+  // Helper thunk to avoid dereferencing WeakPtrs on the wrong thread.
+  static void ReusePictureBufferThunk(
+      base::Optional<base::WeakPtr<TestVDAVideoDecoder>> decoder_client,
+      scoped_refptr<base::SequencedTaskRunner> task_runner,
+      int32_t picture_buffer_id);
 
   // Get the next bitstream buffer id to be used.
   int32_t GetNextBitstreamBufferId();
@@ -99,6 +107,11 @@ class TestVDAVideoDecoder : public media::VideoDecoder,
   // Frame renderer used to manage GL context.
   FrameRenderer* const frame_renderer_;
 
+#if BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
+  // Owned by VideoDecoderClient.
+  gpu::GpuMemoryBufferFactory* const gpu_memory_buffer_factory_;
+#endif  // BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
+
   // Map of video frames the decoder uses as output, keyed on picture buffer id.
   std::map<int32_t, scoped_refptr<VideoFrame>> video_frames_;
   // Map of video frame decoded callbacks, keyed on bitstream buffer id.
@@ -110,6 +123,8 @@ class TestVDAVideoDecoder : public media::VideoDecoder,
   int32_t next_picture_buffer_id_ = 0;
 
   std::unique_ptr<VideoDecodeAccelerator> decoder_;
+
+  scoped_refptr<base::SequencedTaskRunner> vda_wrapper_task_runner_;
 
   SEQUENCE_CHECKER(vda_wrapper_sequence_checker_);
 

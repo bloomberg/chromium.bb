@@ -24,6 +24,7 @@
 #import "ios/web/public/test/fakes/fake_web_frame.h"
 #import "ios/web/public/test/fakes/fake_web_frames_manager.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
+#include "ios/web/public/test/scoped_testing_web_client.h"
 #include "ios/web/public/test/web_task_environment.h"
 #include "ios/web/public/web_client.h"
 #import "ios/web_view/internal/autofill/cwv_autofill_suggestion_internal.h"
@@ -56,10 +57,9 @@ NSString* const kTestFieldValue = @"FieldValue";
 class CWVAutofillControllerTest : public TestWithLocaleAndResources {
  protected:
   CWVAutofillControllerTest()
-      : task_environment_(web::WebTaskEnvironment::IO_MAINLOOP),
+      : web_client_(std::make_unique<web::WebClient>()),
+        task_environment_(web::WebTaskEnvironment::IO_MAINLOOP),
         browser_state_(/*off_the_record=*/false) {
-    web::SetWebClient(&web_client_);
-
     test_web_state_.SetBrowserState(&browser_state_);
     CRWTestJSInjectionReceiver* injectionReceiver =
         [[CRWTestJSInjectionReceiver alloc] init];
@@ -92,7 +92,7 @@ class CWVAutofillControllerTest : public TestWithLocaleAndResources {
     test_web_state_.OnWebFrameDidBecomeAvailable(frame_ptr);
   }
 
-  web::WebClient web_client_;
+  web::ScopedTestingWebClient web_client_;
   web::WebTaskEnvironment task_environment_;
   ios_web_view::WebViewBrowserState browser_state_;
   web::TestWebState test_web_state_;
@@ -231,13 +231,15 @@ TEST_F(CWVAutofillControllerTest, FocusCallback) {
                                   fieldType:@""
                                    formName:kTestFormName
                                     frameID:kTestFrameId
-                                      value:kTestFieldValue];
+                                      value:kTestFieldValue
+                              userInitiated:YES];
 
       autofill::FormActivityParams params;
       params.form_name = base::SysNSStringToUTF8(kTestFormName);
       params.field_identifier = base::SysNSStringToUTF8(kTestFieldIdentifier);
       params.value = base::SysNSStringToUTF8(kTestFieldValue);
       params.frame_id = base::SysNSStringToUTF8(kTestFrameId);
+      params.has_user_gesture = true;
       params.type = "focus";
       web::FakeWebFrame frame(base::SysNSStringToUTF8(kTestFrameId), true,
                               GURL::EmptyGURL());
@@ -260,7 +262,8 @@ TEST_F(CWVAutofillControllerTest, InputCallback) {
                                   fieldType:@""
                                    formName:kTestFormName
                                     frameID:kTestFrameId
-                                      value:kTestFieldValue];
+                                      value:kTestFieldValue
+                              userInitiated:YES];
 
       autofill::FormActivityParams params;
       params.form_name = base::SysNSStringToUTF8(kTestFormName);
@@ -268,6 +271,7 @@ TEST_F(CWVAutofillControllerTest, InputCallback) {
       params.value = base::SysNSStringToUTF8(kTestFieldValue);
       params.frame_id = base::SysNSStringToUTF8(kTestFrameId);
       params.type = "input";
+      params.has_user_gesture = true;
       web::FakeWebFrame frame(base::SysNSStringToUTF8(kTestFrameId), true,
                               GURL::EmptyGURL());
       test_form_activity_tab_helper_->FormActivityRegistered(&frame, params);
@@ -288,7 +292,8 @@ TEST_F(CWVAutofillControllerTest, BlurCallback) {
                                 fieldType:@""
                                  formName:kTestFormName
                                   frameID:kTestFrameId
-                                    value:kTestFieldValue];
+                                    value:kTestFieldValue
+                            userInitiated:YES];
 
     autofill::FormActivityParams params;
     params.form_name = base::SysNSStringToUTF8(kTestFormName);
@@ -296,6 +301,7 @@ TEST_F(CWVAutofillControllerTest, BlurCallback) {
     params.value = base::SysNSStringToUTF8(kTestFieldValue);
     params.frame_id = base::SysNSStringToUTF8(kTestFrameId);
     params.type = "blur";
+    params.has_user_gesture = true;
     web::FakeWebFrame frame(base::SysNSStringToUTF8(kTestFrameId), true,
                             GURL::EmptyGURL());
     test_form_activity_tab_helper_->FormActivityRegistered(&frame, params);
@@ -314,8 +320,8 @@ TEST_F(CWVAutofillControllerTest, SubmitCallback) {
   @autoreleasepool {
     [[delegate expect] autofillController:autofill_controller_
                     didSubmitFormWithName:kTestFormName
-                            userInitiated:YES
-                              isMainFrame:YES];
+                                  frameID:kTestFrameId
+                            userInitiated:YES];
     web::FakeWebFrame frame(base::SysNSStringToUTF8(kTestFrameId), true,
                             GURL::EmptyGURL());
     test_form_activity_tab_helper_->DocumentSubmitted(
@@ -326,36 +332,14 @@ TEST_F(CWVAutofillControllerTest, SubmitCallback) {
 
     [[delegate expect] autofillController:autofill_controller_
                     didSubmitFormWithName:kTestFormName
-                            userInitiated:NO
-                              isMainFrame:YES];
+                                  frameID:kTestFrameId
+                            userInitiated:NO];
 
     test_form_activity_tab_helper_->DocumentSubmitted(
         /*sender_frame*/ &frame, base::SysNSStringToUTF8(kTestFormName),
         /*form_data=*/"",
         /*user_initiated=*/false,
         /*is_main_frame=*/true);
-
-    [delegate verify];
-  }
-}
-
-// Tests CWVAutofillController delegate form insertion callback is invoked.
-TEST_F(CWVAutofillControllerTest, DidInsertFormElementsCallback) {
-  id delegate = OCMProtocolMock(@protocol(CWVAutofillControllerDelegate));
-  autofill_controller_.delegate = delegate;
-
-  // [delegate expect] returns an autoreleased object, but it must be destroyed
-  // before this test exits to avoid holding on to |autofill_controller_|.
-  @autoreleasepool {
-    [[delegate expect]
-        autofillControllerDidInsertFormElements:autofill_controller_];
-
-    autofill::FormActivityParams params;
-    params.frame_id = base::SysNSStringToUTF8(kTestFrameId);
-    params.type = "form_changed";
-    web::FakeWebFrame frame(base::SysNSStringToUTF8(kTestFrameId), true,
-                            GURL::EmptyGURL());
-    test_form_activity_tab_helper_->FormActivityRegistered(&frame, params);
 
     [delegate verify];
   }

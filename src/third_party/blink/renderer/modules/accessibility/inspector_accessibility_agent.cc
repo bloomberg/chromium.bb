@@ -34,8 +34,7 @@ using protocol::Accessibility::AXRelatedNode;
 using protocol::Accessibility::AXValue;
 using protocol::Maybe;
 using protocol::Response;
-
-using namespace html_names;
+namespace AXPropertyNameEnum = protocol::Accessibility::AXPropertyNameEnum;
 
 namespace {
 
@@ -212,7 +211,7 @@ bool RoleAllowsSort(ax::mojom::Role role) {
 void FillWidgetProperties(AXObject& ax_object,
                           protocol::Array<AXProperty>& properties) {
   ax::mojom::Role role = ax_object.RoleValue();
-  String autocomplete = ax_object.AriaAutoComplete();
+  String autocomplete = ax_object.AutoComplete();
   if (!autocomplete.IsEmpty())
     properties.emplace_back(
         CreateProperty(AXPropertyNameEnum::Autocomplete,
@@ -450,13 +449,14 @@ class SparseAttributeAXPropertyAdapter
       HeapVector<Member<AXObject>>& objects) override {
     switch (attribute) {
       case AXObjectVectorAttribute::kAriaControls:
-        properties_.emplace_back(
-            CreateRelatedNodeListProperty(AXPropertyNameEnum::Controls, objects,
-                                          kAriaControlsAttr, *ax_object_));
+        properties_.emplace_back(CreateRelatedNodeListProperty(
+            AXPropertyNameEnum::Controls, objects,
+            html_names::kAriaControlsAttr, *ax_object_));
         break;
       case AXObjectVectorAttribute::kAriaFlowTo:
         properties_.emplace_back(CreateRelatedNodeListProperty(
-            AXPropertyNameEnum::Flowto, objects, kAriaFlowtoAttr, *ax_object_));
+            AXPropertyNameEnum::Flowto, objects, html_names::kAriaFlowtoAttr,
+            *ax_object_));
         break;
     }
   }
@@ -467,16 +467,17 @@ void FillRelationships(AXObject& ax_object,
   AXObject::AXObjectVector results;
   ax_object.AriaDescribedbyElements(results);
   if (!results.IsEmpty()) {
-    properties.emplace_back(
-        CreateRelatedNodeListProperty(AXPropertyNameEnum::Describedby, results,
-                                      kAriaDescribedbyAttr, ax_object));
+    properties.emplace_back(CreateRelatedNodeListProperty(
+        AXPropertyNameEnum::Describedby, results,
+        html_names::kAriaDescribedbyAttr, ax_object));
   }
   results.clear();
 
   ax_object.AriaOwnsElements(results);
   if (!results.IsEmpty()) {
-    properties.emplace_back(CreateRelatedNodeListProperty(
-        AXPropertyNameEnum::Owns, results, kAriaOwnsAttr, ax_object));
+    properties.emplace_back(
+        CreateRelatedNodeListProperty(AXPropertyNameEnum::Owns, results,
+                                      html_names::kAriaOwnsAttr, ax_object));
   }
   results.clear();
 }
@@ -566,9 +567,18 @@ void InspectorAccessibilityAgent::AddAncestors(
     std::unique_ptr<protocol::Array<AXNode>>& nodes,
     AXObjectCacheImpl& cache) const {
   AXObject* ancestor = &first_ancestor;
+  AXObject* child = inspected_ax_object;
   while (ancestor) {
-    nodes->emplace_back(BuildProtocolAXObject(*ancestor, inspected_ax_object,
-                                              true, nodes, cache));
+    std::unique_ptr<AXNode> parent_node_object = BuildProtocolAXObject(
+        *ancestor, inspected_ax_object, true, nodes, cache);
+    auto child_ids = std::make_unique<protocol::Array<AXNodeId>>();
+    if (child)
+      child_ids->emplace_back(String::Number(child->AXObjectID()));
+    else
+      child_ids->emplace_back(String::Number(kIDForInspectedNodeWithNoAXNode));
+    parent_node_object->setChildIds(std::move(child_ids));
+    nodes->emplace_back(std::move(parent_node_object));
+    child = ancestor;
     ancestor = ancestor->ParentObjectUnignored();
   }
 }
@@ -646,16 +656,7 @@ void InspectorAccessibilityAgent::PopulateDOMNodeAncestors(
     return;
 
   // Populate parent and ancestors.
-  std::unique_ptr<AXNode> parent_node_object =
-      BuildProtocolAXObject(*parent_ax_object, nullptr, true, nodes, cache);
-  auto child_ids = std::make_unique<protocol::Array<AXNodeId>>();
-  child_ids->emplace_back(String::Number(kIDForInspectedNodeWithNoAXNode));
-  parent_node_object->setChildIds(std::move(child_ids));
-  nodes->emplace_back(std::move(parent_node_object));
-
-  AXObject* grandparent_ax_object = parent_ax_object->ParentObjectUnignored();
-  if (grandparent_ax_object)
-    AddAncestors(*grandparent_ax_object, nullptr, nodes, cache);
+  AddAncestors(*parent_ax_object, nullptr, nodes, cache);
 }
 
 std::unique_ptr<AXNode> InspectorAccessibilityAgent::BuildProtocolAXObject(
@@ -717,6 +718,8 @@ Response InspectorAccessibilityAgent::getFullAXTree(
   Document* document = inspected_frames_->Root()->GetDocument();
   if (!document)
     return Response::Error("No document.");
+  if (document->View()->NeedsLayout() || document->NeedsLayoutTreeUpdate())
+    document->UpdateStyleAndLayout();
   *nodes = std::make_unique<protocol::Array<protocol::Accessibility::AXNode>>();
   AXContext ax_context(*document);
   AXObjectCacheImpl& cache = ToAXObjectCacheImpl(ax_context.GetAXObjectCache());

@@ -24,6 +24,7 @@
 #include "chrome/browser/ui/app_list/search/search_result_ranker/app_launch_data.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/app_launch_event_logger.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/recurrence_ranker_util.h"
+#include "chrome/browser/ui/app_list/search/search_result_ranker/search_ranking_event_logger.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/history_service_observer.h"
 
@@ -42,13 +43,12 @@ class SearchResultRanker : file_manager::file_tasks::FileTasksObserver,
                            history::HistoryServiceObserver {
  public:
   SearchResultRanker(Profile* profile,
-                     history::HistoryService* history_service,
-                     service_manager::Connector* connector);
+                     history::HistoryService* history_service);
   ~SearchResultRanker() override;
 
   // Performs all setup of rankers. This is separated from the constructor for
   // testing reasons.
-  void InitializeRankers();
+  void InitializeRankers(SearchController* search_controller);
 
   // Queries each model contained with the SearchResultRanker for its results,
   // and saves them for use on subsequent calls to Rank(). The given query may
@@ -84,6 +84,11 @@ class SearchResultRanker : file_manager::file_tasks::FileTasksObserver,
   // Updates the cache of recently shown results.
   void ZeroStateResultsDisplayed(
       const ash::SearchResultIdWithPositionIndices& results);
+
+  // Called when impressions need to be logged.
+  void LogSearchResults(const base::string16& trimmed_query,
+                        const ash::SearchResultIdWithPositionIndices& results,
+                        int launched_index);
 
   // Given a search results list containing zero-state results, ensure that at
   // least one result from each result group will be displayed if that group has
@@ -163,13 +168,16 @@ class SearchResultRanker : file_manager::file_tasks::FileTasksObserver,
   std::unique_ptr<RecurrenceRanker> app_ranker_;
   std::map<std::string, float> app_ranks_;
 
-  service_manager::Connector* connector_;
   // Testing-only closure to inform tests once a JSON config has been parsed.
   base::OnceClosure json_config_parsed_for_testing_;
 
   // Logs launch events and stores feature data for aggregated model.
-  std::unique_ptr<app_list::AppLaunchEventLogger> app_launch_event_logger_;
+  std::unique_ptr<AppLaunchEventLogger> app_launch_event_logger_;
   bool using_aggregated_app_inference_ = false;
+
+  // Logs impressions and stores feature data for aggregated model.
+  std::unique_ptr<SearchRankingEventLogger> search_ranking_event_logger_;
+  bool use_aggregated_search_ranking_inference_ = false;
 
   // Stores the time of the last histogram logging event for each zero state
   // search provider. Used to prevent scores from being logged multiple times

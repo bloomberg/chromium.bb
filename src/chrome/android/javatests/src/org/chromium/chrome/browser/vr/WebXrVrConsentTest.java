@@ -9,7 +9,6 @@ import static org.chromium.chrome.browser.vr.XrTestFramework.POLL_TIMEOUT_LONG_M
 import static org.chromium.chrome.browser.vr.XrTestFramework.POLL_TIMEOUT_SHORT_MS;
 
 import android.os.Build;
-import android.os.SystemClock;
 import android.support.test.filters.MediumTest;
 
 import org.junit.Before;
@@ -57,7 +56,7 @@ public class WebXrVrConsentTest {
     }
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         mWebXrVrConsentTestFramework = new WebXrVrConsentTestFramework(mTestRule);
     }
 
@@ -67,7 +66,7 @@ public class WebXrVrConsentTest {
     @Test
     @MediumTest
     @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
-    public void testConsentCancelFailsSessionCreation() throws InterruptedException {
+    public void testConsentCancelFailsSessionCreation() {
         mWebXrVrConsentTestFramework.setConsentDialogAction(
                 WebXrVrTestFramework.CONSENT_DIALOG_ACTION_DENY);
         mWebXrVrConsentTestFramework.setConsentDialogExpected(true);
@@ -91,15 +90,12 @@ public class WebXrVrConsentTest {
     @Test
     @MediumTest
     @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
-    public void testConsentPersistsSameLevel() throws InterruptedException {
+    public void testConsentPersistsSameLevel() {
         mWebXrVrConsentTestFramework.loadUrlAndAwaitInitialization(
                 WebXrVrTestFramework.getFileUrlForHtmlTestFile("generic_webxr_page"),
                 PAGE_LOAD_TIMEOUT_S);
         mWebXrVrConsentTestFramework.enterSessionWithUserGestureOrFail();
-        mWebXrVrConsentTestFramework.endSessionOrFail();
-
-        // TODO(https://crbug.com/998307): Remove this once root cause of entering VRB is found.
-        SystemClock.sleep(1000);
+        mWebXrVrConsentTestFramework.endSession();
 
         mWebXrVrConsentTestFramework.setConsentDialogExpected(false);
 
@@ -113,7 +109,7 @@ public class WebXrVrConsentTest {
     @Test
     @MediumTest
     @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
-    public void testConsentNotNeededForInline() throws InterruptedException {
+    public void testConsentNotNeededForInline() {
         mWebXrVrConsentTestFramework.setConsentDialogExpected(false);
 
         mWebXrVrConsentTestFramework.loadUrlAndAwaitInitialization(
@@ -133,7 +129,7 @@ public class WebXrVrConsentTest {
     @Test
     @MediumTest
     @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
-    public void testConsentPersistsLowerLevel() throws InterruptedException {
+    public void testConsentPersistsLowerLevel() {
         mWebXrVrConsentTestFramework.loadUrlAndAwaitInitialization(
                 WebXrVrTestFramework.getFileUrlForHtmlTestFile("test_webxr_consent"),
                 PAGE_LOAD_TIMEOUT_S);
@@ -142,10 +138,7 @@ public class WebXrVrConsentTest {
         mWebXrVrConsentTestFramework.runJavaScriptOrFail(
                 "setupImmersiveSessionToRequestHeight()", POLL_TIMEOUT_SHORT_MS);
         mWebXrVrConsentTestFramework.enterSessionWithUserGestureOrFail();
-        mWebXrVrConsentTestFramework.endSessionOrFail();
-
-        // TODO(https://crbug.com/998307): Remove this once root cause of entering VRB is found.
-        SystemClock.sleep(1000);
+        mWebXrVrConsentTestFramework.endSession();
 
         // Now set up to request the lower level of consent. The session should be entered without
         // the consent prompt.
@@ -161,7 +154,7 @@ public class WebXrVrConsentTest {
     @Test
     @MediumTest
     @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
-    public void testConsentRepromptsHigherLevel() throws InterruptedException {
+    public void testConsentRepromptsHigherLevel() {
         mWebXrVrConsentTestFramework.loadUrlAndAwaitInitialization(
                 WebXrVrTestFramework.getFileUrlForHtmlTestFile("test_webxr_consent"),
                 PAGE_LOAD_TIMEOUT_S);
@@ -170,10 +163,7 @@ public class WebXrVrConsentTest {
         mWebXrVrConsentTestFramework.runJavaScriptOrFail(
                 "setupImmersiveSessionToRequestDefault()", POLL_TIMEOUT_SHORT_MS);
         mWebXrVrConsentTestFramework.enterSessionWithUserGestureOrFail();
-        mWebXrVrConsentTestFramework.endSessionOrFail();
-
-        // TODO(https://crbug.com/998307): Remove this once root cause of entering VRB is found.
-        SystemClock.sleep(1000);
+        mWebXrVrConsentTestFramework.endSession();
 
         // Now request a session that requires a higher level of consent. It should still be
         // prompted for consent and the session should enter.
@@ -188,13 +178,13 @@ public class WebXrVrConsentTest {
     @Test
     @MediumTest
     @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
-    public void testConsentRepromptsAfterReload() throws InterruptedException {
+    public void testConsentRepromptsAfterReload() {
         mWebXrVrConsentTestFramework.loadUrlAndAwaitInitialization(
                 WebXrVrTestFramework.getFileUrlForHtmlTestFile("generic_webxr_page"),
                 PAGE_LOAD_TIMEOUT_S);
 
         mWebXrVrConsentTestFramework.enterSessionWithUserGestureOrFail();
-        mWebXrVrConsentTestFramework.endSessionOrFail();
+        mWebXrVrConsentTestFramework.endSession();
 
         mWebXrVrConsentTestFramework.loadUrlAndAwaitInitialization(
                 WebXrVrTestFramework.getFileUrlForHtmlTestFile("generic_webxr_page"),

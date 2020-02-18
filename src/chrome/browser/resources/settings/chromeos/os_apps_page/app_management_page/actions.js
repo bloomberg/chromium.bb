@@ -39,40 +39,12 @@ cr.define('app_management.actions', function() {
   }
 
   /**
-   * @param {PageType} pageType
-   * @param {string=} id
+   * @param {?string} appId
    */
-  function changePage(pageType, id) {
-    if (pageType === PageType.DETAIL && !id) {
-      console.warn(
-          'Tried to load app detail page without providing an app id.');
-    }
-
+  function updateSelectedAppId(appId) {
     return {
-      name: 'change-page',
-      pageType: pageType,
-      id: id,
-    };
-  }
-
-  /** @return {!cr.ui.Action} */
-  function clearSearch() {
-    return {
-      name: 'clear-search',
-    };
-  }
-
-  /**
-   * @param {string} term
-   * @return {!cr.ui.Action}
-   */
-  function setSearchTerm(term) {
-    if (!term) {
-      return clearSearch();
-    }
-    return {
-      name: 'start-search',
-      term: term,
+      name: 'update-selected-app-id',
+      value: appId,
     };
   }
 
@@ -92,9 +64,7 @@ cr.define('app_management.actions', function() {
     addApp: addApp,
     changeApp: changeApp,
     removeApp: removeApp,
-    changePage: changePage,
-    clearSearch: clearSearch,
-    setSearchTerm: setSearchTerm,
     updateArcSupported: updateArcSupported,
+    updateSelectedAppId: updateSelectedAppId,
   };
 });

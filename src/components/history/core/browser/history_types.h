@@ -31,8 +31,6 @@
 
 namespace history {
 
-// Forward declaration for friend statements.
-class HistoryBackend;
 class PageUsageData;
 
 // Container for a list of URLs.
@@ -50,9 +48,9 @@ typedef int64_t IconMappingID;    // For page url and icon mapping.
 // (Warning): Please don't change any existing values while it is ok to add
 // new values when needed.
 enum VisitSource {
-  SOURCE_SYNCED = 0,         // Synchronized from somewhere else.
-  SOURCE_BROWSED = 1,        // User browsed.
-  SOURCE_EXTENSION = 2,      // Added by an extension.
+  SOURCE_SYNCED = 0,     // Synchronized from somewhere else.
+  SOURCE_BROWSED = 1,    // User browsed.
+  SOURCE_EXTENSION = 2,  // Added by an extension.
   SOURCE_FIREFOX_IMPORTED = 3,
   SOURCE_IE_IMPORTED = 4,
   SOURCE_SAFARI_IMPORTED = 5,
@@ -307,27 +305,18 @@ struct VisibleVisitCountToHostResult {
 struct MostVisitedURL {
   MostVisitedURL();
   MostVisitedURL(const GURL& url, const base::string16& title);
-  MostVisitedURL(const GURL& url,
-                 const base::string16& title,
-                 const RedirectList& preceding_redirects);
   MostVisitedURL(const MostVisitedURL& other);
   MostVisitedURL(MostVisitedURL&& other) noexcept;
   ~MostVisitedURL();
-
-  // Initializes |redirects| from |preceding_redirects|, ensuring that |url| is
-  // always present as the last item.
-  void InitRedirects(const RedirectList& preceding_redirects);
-
-  GURL url;
-  base::string16 title;
-
-  RedirectList redirects;
 
   MostVisitedURL& operator=(const MostVisitedURL&);
 
   bool operator==(const MostVisitedURL& other) const {
     return url == other.url;
   }
+
+  GURL url;
+  base::string16 title;
 };
 
 // FilteredURL -----------------------------------------------------------------
@@ -427,8 +416,6 @@ struct TopSitesDelta {
   MostVisitedURLWithRankList moved;
 };
 
-typedef base::RefCountedData<MostVisitedURLList> MostVisitedThreadSafe;
-
 // Map from origins to a count of matching URLs and the last visited time to any
 // URL under that origin.
 typedef std::map<GURL, std::pair<int, base::Time>> OriginCountAndLastVisitMap;
@@ -443,6 +430,18 @@ struct HistoryCountResult {
   // is undefined.
   bool success = false;
   int count = 0;
+};
+
+// HistoryLastVisitToHostResult encapsulates the result of a call to
+// HistoryBackend::GetLastVisitToHost().
+struct HistoryLastVisitToHostResult {
+  // Indicates whether the call was successful or not. This can happen if there
+  // are internal database errors or the query was called with invalid
+  // arguments. |success| will be true and |last_visit| will be null if
+  // the host was never visited before. |last_visit| will always be null if
+  // |success| is false.
+  bool success = false;
+  base::Time last_visit;
 };
 
 // Favicons -------------------------------------------------------------------

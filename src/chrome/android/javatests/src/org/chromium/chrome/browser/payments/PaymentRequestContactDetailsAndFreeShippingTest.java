@@ -44,7 +44,7 @@ public class PaymentRequestContactDetailsAndFreeShippingTest implements MainActi
             "payment_request_contact_details_and_free_shipping_test.html", this);
 
     @Override
-    public void onMainActivityStarted() throws InterruptedException, TimeoutException {
+    public void onMainActivityStarted() throws TimeoutException {
         AutofillTestHelper helper = new AutofillTestHelper();
         // The user has a shipping address with a valid email address and a valid phone number on
         // disk.
@@ -63,7 +63,7 @@ public class PaymentRequestContactDetailsAndFreeShippingTest implements MainActi
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testPay() throws InterruptedException, TimeoutException {
+    public void testPay() throws TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());
         mPaymentRequestTestRule.clickAndWait(
                 R.id.button_primary, mPaymentRequestTestRule.getReadyForUnmaskInput());
@@ -85,7 +85,7 @@ public class PaymentRequestContactDetailsAndFreeShippingTest implements MainActi
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testPaymentRequestEventsMetric() throws InterruptedException, TimeoutException {
+    public void testPaymentRequestEventsMetric() throws TimeoutException {
         // Start and complete the Payment Request.
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());
         mPaymentRequestTestRule.clickAndWait(
@@ -104,7 +104,7 @@ public class PaymentRequestContactDetailsAndFreeShippingTest implements MainActi
                 | Event.HAD_NECESSARY_COMPLETE_SUGGESTIONS | Event.REQUEST_PAYER_PHONE
                 | Event.REQUEST_PAYER_EMAIL | Event.REQUEST_PAYER_NAME | Event.REQUEST_SHIPPING
                 | Event.REQUEST_METHOD_BASIC_CARD | Event.REQUEST_METHOD_OTHER
-                | Event.SELECTED_CREDIT_CARD;
+                | Event.AVAILABLE_METHOD_BASIC_CARD | Event.SELECTED_CREDIT_CARD;
         Assert.assertEquals(1,
                 RecordHistogram.getHistogramValueCountForTesting(
                         "PaymentRequest.Events", expectedSample));

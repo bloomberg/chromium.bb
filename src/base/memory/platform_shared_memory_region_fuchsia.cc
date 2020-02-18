@@ -40,19 +40,6 @@ PlatformSharedMemoryRegion PlatformSharedMemoryRegion::Take(
   return PlatformSharedMemoryRegion(std::move(handle), mode, size, guid);
 }
 
-// static
-PlatformSharedMemoryRegion
-PlatformSharedMemoryRegion::TakeFromSharedMemoryHandle(
-    const SharedMemoryHandle& handle,
-    Mode mode) {
-  CHECK(mode == Mode::kReadOnly || mode == Mode::kUnsafe);
-  if (!handle.IsValid())
-    return {};
-
-  return Take(zx::vmo(handle.GetHandle()), mode, handle.GetSize(),
-              handle.GetGUID());
-}
-
 zx::unowned_vmo PlatformSharedMemoryRegion::GetPlatformHandle() const {
   return zx::unowned_vmo(handle_);
 }
@@ -133,9 +120,12 @@ PlatformSharedMemoryRegion PlatformSharedMemoryRegion::Create(Mode mode,
   if (size == 0)
     return {};
 
+  // Aligning may overflow so check that the result doesn't decrease.
   size_t rounded_size = bits::Align(size, GetPageSize());
-  if (rounded_size > static_cast<size_t>(std::numeric_limits<int>::max()))
+  if (rounded_size < size ||
+      rounded_size > static_cast<size_t>(std::numeric_limits<int>::max())) {
     return {};
+  }
 
   CHECK_NE(mode, Mode::kReadOnly) << "Creating a region in read-only mode will "
                                      "lead to this region being non-modifiable";

@@ -2,8 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
+import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.m.js';
+import 'chrome://resources/cr_elements/cr_input/cr_input.m.js';
+import 'chrome://resources/cr_elements/shared_style_css.m.js';
+import './strings.m.js';
+
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {highlightUpdatedItems, trackUpdatedItems} from './api_listener.js';
+import {DialogFocusManager} from './dialog_focus_manager.js';
+import {BookmarkNode} from './types.js';
+
 Polymer({
   is: 'bookmarks-edit-dialog',
+
+  _template: html`{__html_template__}`,
 
   properties: {
     /** @private */
@@ -43,7 +59,7 @@ Polymer({
     this.isFolder_ = isFolder;
     this.parentId_ = parentId;
 
-    bookmarks.DialogFocusManager.getInstance().showDialog(this.$.dialog);
+    DialogFocusManager.getInstance().showDialog(this.$.dialog);
   },
 
   /**
@@ -61,7 +77,7 @@ Polymer({
       this.urlValue_ = assert(editItem.url);
     }
 
-    bookmarks.DialogFocusManager.getInstance().showDialog(this.$.dialog);
+    DialogFocusManager.getInstance().showDialog(this.$.dialog);
   },
 
   /**
@@ -132,9 +148,8 @@ Polymer({
       chrome.bookmarks.update(this.editItem_.id, edit);
     } else {
       edit['parentId'] = this.parentId_;
-      bookmarks.ApiListener.trackUpdatedItems();
-      chrome.bookmarks.create(
-          edit, bookmarks.ApiListener.highlightUpdatedItems);
+      trackUpdatedItems();
+      chrome.bookmarks.create(edit, highlightUpdatedItems);
     }
     this.$.dialog.close();
   },

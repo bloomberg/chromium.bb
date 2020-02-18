@@ -2,7 +2,7 @@
 
 This document aims to provide a brief overview of the different concepts in Mojo
 and how they work together.  For more details about more complex and/or
-Chrome-specific Mojo use cases, please consult the [Mojo cookbook](cookbook.md).
+Chrome-specific Mojo use cases, please consult [Intro to Mojo & Services](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/mojo_and_services.md).
 
 [TOC]
 
@@ -93,7 +93,7 @@ Message pipe endpoints are typically created using one of:
 
 ### mojo::Remote<T>::BindNewPipeAndPassReceiver
 
-Here, the sender/caller creates the endpoints. One endpoint is retained for
+Used when the sender/caller creates the endpoints. One endpoint is retained for
 itself to send IPCs, and the other endpoint is returned as an unbound
 `mojo::PendingReceiver<T>` for the receiver/callee to bind to a
 `mojo::Receiver<T>`.
@@ -115,10 +115,9 @@ remote_math->Add(2, 2, base::BindOnce(...));
 
 ### mojo::Receiver<T>::BindNewPipeAndPassRemote
 
-Alternatively, the receiver/callee can create the endpoints. One endpoint is
-retained for itself to receive IPCs, and the other endpoint is returned as an
-unbound `mojo::PendingRemote<T>` for the sender/callee to bind to a
-`mojo::Remote<T>`.
+Used when the receiver/callee creates the endpoints. One endpoint is retained
+for itself to receive IPCs, and the other endpoint is returned as an unbound
+`mojo::PendingRemote<T>` for the sender/callee to bind to a `mojo::Remote<T>`.
 
 ```c++
 class MathImpl : public math::mojom::MathImpl {
@@ -134,10 +133,12 @@ class MathImpl : public math::mojom::MathImpl {
 };
 ```
 
-### mojo::PendingReceiver<T>::InitWithNewPipeAndPassReceiver
+### mojo::PendingRemote<T>::InitWithNewPipeAndPassReceiver
 
-Less common, but very similar to `BindNewPipeAndPassReceiver()`, except it
-returns a `mojo::PendingReceiver<T>` instead of a `mojo::Receiver<T>`.
+Less common, but similar to `mojo::Remote<T>::BindNewPipeAndPassReceiver()`.
+Typically used by broker code that needs to hand off a `mojo::PendingRemote<T>`
+to the sender/caller side and hand off a `mojo::PendingReceiver<T>` to the
+receiver/callee side.
 
 ### mojo::Remote<T>/mojo::Receiver<T> and mojo::PendingRemote<T>/mojo::PendingReceiver<T>
 

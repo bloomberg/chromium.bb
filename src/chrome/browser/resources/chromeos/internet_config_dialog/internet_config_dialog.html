@@ -8,9 +8,8 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="chrome://resources/cr_components/chromeos/network/network_config.html">
+<link rel="import" href="chrome://resources/cr_components/chromeos/network/network_icon.html">
 <link rel="import" href="chrome://resources/cr_components/chromeos/network/network_shared_css.html">
-<link rel="import" href="chrome://resources/cr_elements/chromeos/network/cr_network_icon.html">
-<link rel="import" href="chrome://resources/cr_elements/chromeos/network/cr_onc_types.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_page_host_style_css.html">
@@ -23,6 +22,21 @@
 <script src="strings.js"></script>
 
 </head>
+
+<style>
+  body,
+  html {
+    height: 100%;
+    margin: 0;
+    overflow: hidden;
+    width: 100%;
+  }
+
+  #content {
+    height: 100%;
+    overflow: auto;
+  }
+</style>
 
 <body>
 
@@ -49,12 +63,10 @@
       </style>
 
       <cr-dialog id="dialog" no-cancel>
-        <div slot="title">[[getDialogTitle_(managedProperties_)]]</div>
+        <div slot="title">[[getDialogTitle_(type_)]]</div>
         <div slot="body">
           <network-config id="networkConfig" class="flex"
-              networking-private="[[networkingPrivate]]"
-              global-policy="[[globalPolicy_]]"
-              managed-properties="{{managedProperties_}}"
+              guid="[[guid_]]" type="{{type_}}"
               enable-connect="{{enableConnect_}}"
               share-allow-enable="[[shareAllowEnable_]]"
               share-default="[[shareDefault_]]"
@@ -81,7 +93,9 @@
     <script src="internet_config_dialog.js"></script>
   </dom-module>
 
-  <internet-config-dialog></internet-config-dialog>
+  <div id="content">
+    <internet-config-dialog></internet-config-dialog>
+  </div>
 
 </body>
 

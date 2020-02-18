@@ -108,7 +108,8 @@ class RunBuildStagesTest(cros_test_lib.RunCommandTempDirTestCase,
     self.options.prebuilts = False
 
     self._manager = parallel.Manager()
-    self._manager.__enter__()
+    # Pylint-1.9 has a false positive on this for some reason.
+    self._manager.__enter__()  # pylint: disable=no-value-for-parameter
     self.run = cbuildbot_run.BuilderRun(self.options, self.site_config,
                                         self.build_config, self._manager)
 
@@ -163,7 +164,7 @@ class LogTest(cros_test_lib.TempDirTestCase):
     cbuildbot._BackupPreviousLog(os.path.join(self.tempdir, 'cbuildbot.log'),
                                  backup_limit=25)
     with open(os.path.join(self.tempdir, 'cbuildbot.log.1')) as f:
-      self.assertEquals(f.readline(), '1')
+      self.assertEqual(f.readline(), '1')
 
   def testNineToTenLogs(self):
     """Test handling *.log.9 to *.log.10 (correct sorting)."""
@@ -171,7 +172,7 @@ class LogTest(cros_test_lib.TempDirTestCase):
     cbuildbot._BackupPreviousLog(os.path.join(self.tempdir, 'cbuildbot.log'),
                                  backup_limit=25)
     with open(os.path.join(self.tempdir, 'cbuildbot.log.10')) as f:
-      self.assertEquals(f.readline(), '10')
+      self.assertEqual(f.readline(), '10')
 
   def testOverLimit(self):
     """Test going over the limit and having to purge old logs."""
@@ -179,10 +180,10 @@ class LogTest(cros_test_lib.TempDirTestCase):
     cbuildbot._BackupPreviousLog(os.path.join(self.tempdir, 'cbuildbot.log'),
                                  backup_limit=25)
     with open(os.path.join(self.tempdir, 'cbuildbot.log.26')) as f:
-      self.assertEquals(f.readline(), '26')
+      self.assertEqual(f.readline(), '26')
 
-    self.assertEquals(len(glob.glob(os.path.join(self.tempdir, 'cbuildbot*'))),
-                      25)
+    self.assertEqual(len(glob.glob(os.path.join(self.tempdir, 'cbuildbot*'))),
+                     25)
 
 
 class InterfaceTest(cros_test_lib.MockTestCase, cros_test_lib.LoggingTestCase):
@@ -205,15 +206,15 @@ class InterfaceTest(cros_test_lib.MockTestCase, cros_test_lib.LoggingTestCase):
     # Verify the tests below actually are testing correct behaviour;
     # specifically that it doesn't always just return 0.
     self.assertRaises(cros_build_lib.RunCommandError,
-                      cros_build_lib.RunCommand,
+                      cros_build_lib.run,
                       ['cbuildbot', '--monkeys'], cwd=constants.SOURCE_ROOT)
 
     # Validate depot_tools lookup.
-    cros_build_lib.RunCommand(
+    cros_build_lib.run(
         ['cbuildbot', '--help'], cwd=constants.SOURCE_ROOT, capture_output=True)
 
     # Validate buildbot invocation pathway.
-    cros_build_lib.RunCommand(
+    cros_build_lib.run(
         [path, '--help'], cwd=constants.SOURCE_ROOT, capture_output=True)
 
   def testBuildBotOption(self):
@@ -247,14 +248,14 @@ class InterfaceTest(cros_test_lib.MockTestCase, cros_test_lib.LoggingTestCase):
     """Test that no --profile option gets defaulted."""
     args = ['-r', self._BUILD_ROOT, '--buildbot', self._GENERIC_PREFLIGHT]
     options = cbuildbot.ParseCommandLine(self.parser, args)
-    self.assertEquals(options.profile, None)
+    self.assertEqual(options.profile, None)
 
   def testBuildBotWithProfileOption(self):
     """Test that --profile option gets parsed."""
     args = ['-r', self._BUILD_ROOT, '--buildbot',
             '--profile', 'carp', self._GENERIC_PREFLIGHT]
     options = cbuildbot.ParseCommandLine(self.parser, args)
-    self.assertEquals(options.profile, 'carp')
+    self.assertEqual(options.profile, 'carp')
 
   def testValidateClobberUserDeclines_1(self):
     """Test case where user declines in prompt."""
@@ -320,8 +321,8 @@ class InterfaceTest(cros_test_lib.MockTestCase, cros_test_lib.LoggingTestCase):
         self._GENERIC_PREFLIGHT,
     ]
     options = cbuildbot.ParseCommandLine(self.parser, args)
-    self.assertEquals(options.chrome_rev, constants.CHROME_REV_LOCAL)
-    self.assertNotEquals(options.chrome_root, None)
+    self.assertEqual(options.chrome_rev, constants.CHROME_REV_LOCAL)
+    self.assertNotEqual(options.chrome_root, None)
 
   def testBuildBotWithGoodChromeRevAndRootOption(self):
     """chrome_rev can get reset around chrome_root."""
@@ -341,8 +342,8 @@ class InterfaceTest(cros_test_lib.MockTestCase, cros_test_lib.LoggingTestCase):
         self._GENERIC_PREFLIGHT,
     ]
     options = cbuildbot.ParseCommandLine(self.parser, args)
-    self.assertEquals(options.chrome_rev, constants.CHROME_REV_LOCAL)
-    self.assertNotEquals(options.chrome_root, None)
+    self.assertEqual(options.chrome_rev, constants.CHROME_REV_LOCAL)
+    self.assertNotEqual(options.chrome_root, None)
 
 
 class FullInterfaceTest(cros_test_lib.MockTempDirTestCase):
@@ -391,21 +392,21 @@ class FullInterfaceTest(cros_test_lib.MockTempDirTestCase):
   def testNullArgsStripped(self):
     """Test that null args are stripped out and don't cause error."""
     self.assertMain(['-r', self.buildroot, '', '',
-                     'amd64-generic-pre-cq'])
+                     'amd64-generic-full-tryjob'])
 
   def testMultipleConfigsError(self):
     """Test that multiple configs cause error."""
     with self.assertRaises(cros_build_lib.DieSystemExit):
       self.assertMain(['-r', self.buildroot,
-                       'arm-generic-pre-cq',
-                       'amd64-generic-pre-cq'])
+                       'arm-generic-full-tryjob',
+                       'amd64-generic-full-tryjob'])
 
   def testBuildbotDiesInChroot(self):
     """Buildbot should quit if run inside a chroot."""
     self.inchroot_mock.return_value = True
     with self.assertRaises(cros_build_lib.DieSystemExit):
       self.assertMain(['--debug', '-r', self.buildroot,
-                       'amd64-generic-pre-cq'])
+                       'amd64-generic-full-tryjob'])
 
   def testBuildBotOnNonCIBuilder(self):
     """Test BuildBot On Non-CIBuilder
@@ -415,4 +416,4 @@ class FullInterfaceTest(cros_test_lib.MockTempDirTestCase):
     """
     if not cros_build_lib.HostIsCIBuilder():
       with self.assertRaises(cros_build_lib.DieSystemExit):
-        self.assertMain(['--buildbot', 'amd64-generic-pre-cq'])
+        self.assertMain(['--buildbot', 'amd64-generic-full'])

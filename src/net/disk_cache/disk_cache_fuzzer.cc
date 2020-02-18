@@ -19,9 +19,12 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/numerics/checked_math.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "net/base/cache_type.h"
+#include "net/base/interval.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
@@ -58,6 +61,12 @@ const uint64_t kFirstSavedTime =
     5;  // Totally random number chosen by dice roll. ;)
 const uint32_t kMaxNumMillisToWait = 2019;
 const int kMaxFdsSimpleCache = 10;
+
+// Known colliding key values taken from SimpleCacheCreateCollision unittest.
+const std::string kCollidingKey1 =
+    "\xfb\x4e\x9c\x1d\x66\x71\xf7\x54\xa3\x11\xa0\x7e\x16\xa5\x68\xf6";
+const std::string kCollidingKey2 =
+    "\xbc\x60\x64\x92\xbc\xa0\x5c\x15\x17\x93\x29\x2d\xe4\x21\xbd\x03";
 
 #define IOTYPES_APPLY(F) \
   F(WriteData)           \
@@ -228,7 +237,15 @@ inline base::RepeatingCallback<void(int)> GetIOCallback(IOType iot) {
 }
 
 std::string ToKey(uint64_t key_num) {
-  return "Key" + std::to_string(key_num);
+  // Use one of the two colliding key values in 1% of executions.
+  if (key_num % 100 == 99)
+    return kCollidingKey1;
+  if (key_num % 100 == 98)
+    return kCollidingKey2;
+
+  // Otherwise, use a value based on the key id and fuzzy padding.
+  std::string padding(key_num & 0xFFFF, 'A');
+  return "Key" + padding + base::NumberToString(key_num);
 }
 
 net::RequestPriority GetRequestPriority(
@@ -246,9 +263,10 @@ net::CacheType GetCacheTypeAndPrint(
       MAYBE_PRINT << "Cache type = APP_CACHE." << std::endl;
       return net::CacheType::APP_CACHE;
       break;
-    case disk_cache_fuzzer::FuzzCommands::MEDIA_CACHE:
-      MAYBE_PRINT << "Cache type = MEDIA_CACHE." << std::endl;
-      return net::CacheType::MEDIA_CACHE;
+    case disk_cache_fuzzer::FuzzCommands::REMOVED_MEDIA_CACHE:
+      // Media cache no longer in use; handle as HTTP_CACHE
+      MAYBE_PRINT << "Cache type = REMOVED_MEDIA_CACHE." << std::endl;
+      return net::CacheType::DISK_CACHE;
       break;
     case disk_cache_fuzzer::FuzzCommands::SHADER_CACHE:
       MAYBE_PRINT << "Cache type = SHADER_CACHE." << std::endl;
@@ -419,6 +437,11 @@ bool DiskCacheLPMFuzzer::IsValidEntry(EntryInfo* ei) {
 
 void DiskCacheLPMFuzzer::RunCommands(
     const disk_cache_fuzzer::FuzzCommands& commands) {
+  // Skip too long command sequences, they are counterproductive for fuzzing.
+  // The number was chosen empirically using the existing fuzzing corpus.
+  if (commands.fuzz_commands_size() > 129)
+    return;
+
   uint32_t mask =
       commands.has_set_mask() ? (commands.set_mask() ? 0x1 : 0xf) : 0;
   net::CacheType type =
@@ -968,17 +991,27 @@ void DiskCacheLPMFuzzer::RunCommands(
                uint32_t offset, uint32_t len, int rv) {
               std::move(callback).Run(rv);
 
-              if (rv < 0)
+              if (rv <= 0)
                 return;
 
               int64_t* start_tmp = &start->data;
-              CHECK_LE(offset, *start_tmp);
-              CHECK_LE(*start_tmp, offset + len);
-              CHECK_LE(*start_tmp + rv, offset + len);
-              // Offsets are capped by kMaxEntrySize
-              CHECK_LE(*start_tmp, kMaxEntrySize);
-              // And size are also capped by kMaxEntrySize
-              CHECK_LE(*start_tmp + rv, kMaxEntrySize * 2);
+
+              // Make sure that the result is contained in what was
+              // requested. It doesn't have to be the same even if there was
+              // an exact corresponding write, since representation of ranges
+              // may be imprecise, and here we don't know that there was.
+
+              // No overflow thanks to % kMaxEntrySize.
+              net::Interval<uint32_t> requested(offset, offset + len);
+
+              uint32_t range_start, range_end;
+              base::CheckedNumeric<uint64_t> range_start64(*start_tmp);
+              CHECK(range_start64.AssignIfValid(&range_start));
+              base::CheckedNumeric<uint64_t> range_end64 = range_start + rv;
+              CHECK(range_end64.AssignIfValid(&range_end));
+              net::Interval<uint32_t> gotten(range_start, range_end);
+
+              CHECK(requested.Contains(gotten));
             },
             GetIOCallback(IOType::GetAvailableRange), start, offset, len);
 

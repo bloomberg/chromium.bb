@@ -117,12 +117,12 @@ void PolicyListMerger::DoMerge(PolicyMap::Entry* policy) const {
   if (value_changed) {
     base::ListValue* new_value = new base::ListValue();
     for (const base::Value* it : merged_values)
-      new_value->GetList().emplace_back(it->Clone());
+      new_value->Append(it->Clone());
 
     policy->value.reset(new_value);
   }
   policy->ClearConflicts();
-  policy->AddConflictingPolicy(new_conflict);
+  policy->AddConflictingPolicy(std::move(new_conflict));
   policy->source = POLICY_SOURCE_MERGED;
 }
 
@@ -212,7 +212,7 @@ void PolicyDictionaryMerger::DoMerge(PolicyMap::Entry* policy) const {
     policy->value = base::Value::ToUniquePtrValue(std::move(merged_dictionary));
 
   policy->ClearConflicts();
-  policy->AddConflictingPolicy(new_conflict);
+  policy->AddConflictingPolicy(std::move(new_conflict));
   policy->source = POLICY_SOURCE_MERGED;
 }
 

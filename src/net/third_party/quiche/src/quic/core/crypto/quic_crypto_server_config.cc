@@ -8,6 +8,7 @@
 #include <cstdlib>
 #include <memory>
 #include <string>
+#include <utility>
 
 #include "third_party/boringssl/src/include/openssl/sha.h"
 #include "third_party/boringssl/src/include/openssl/ssl.h"
@@ -37,13 +38,11 @@
 #include "net/third_party/quiche/src/quic/platform/api/quic_bug_tracker.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_cert_utils.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_clock.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_endian.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_fallthrough.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_flag_utils.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_hostname_utils.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_ptr_util.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_reference_counted.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_string_piece.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_text_utils.h"
@@ -118,7 +117,7 @@ bool ClientDemandsX509Proof(const CryptoHandshakeMessage& client_hello) {
 
 // static
 std::unique_ptr<KeyExchangeSource> KeyExchangeSource::Default() {
-  return QuicMakeUnique<DefaultKeyExchangeSource>();
+  return std::make_unique<DefaultKeyExchangeSource>();
 }
 
 class ValidateClientHelloHelper {
@@ -385,14 +384,14 @@ std::unique_ptr<CryptoHandshakeMessage> QuicCryptoServerConfig::AddConfig(
   std::unique_ptr<CryptoHandshakeMessage> msg =
       CryptoFramer::ParseMessage(protobuf.config());
 
-  if (!msg.get()) {
+  if (!msg) {
     QUIC_LOG(WARNING) << "Failed to parse server config message";
     return nullptr;
   }
 
   QuicReferenceCountedPointer<Config> config =
       ParseConfigProtobuf(protobuf, /* is_fallback = */ false);
-  if (!config.get()) {
+  if (!config) {
     QUIC_LOG(WARNING) << "Failed to parse server config message";
     return nullptr;
   }
@@ -665,7 +664,7 @@ void QuicCryptoServerConfig::ProcessClientHello(
     QuicByteCount chlo_packet_size,
     std::unique_ptr<ProcessClientHelloResultCallback> done_cb) const {
   DCHECK(done_cb);
-  auto context = QuicMakeUnique<ProcessClientHelloContext>(
+  auto context = std::make_unique<ProcessClientHelloContext>(
       validate_chlo_result, reject_only, connection_id, server_address,
       client_address, version, supported_versions, clock, rand,
       compressed_certs_cache, params, signed_config, total_framing_overhead,
@@ -709,7 +708,7 @@ void QuicCryptoServerConfig::ProcessClientHello(
     const std::string sni = std::string(context->info().sni);
     const QuicTransportVersion transport_version = context->transport_version();
 
-    auto cb = QuicMakeUnique<ProcessClientHelloCallback>(
+    auto cb = std::make_unique<ProcessClientHelloCallback>(
         this, std::move(context), configs);
 
     DCHECK(proof_source_.get());
@@ -739,7 +738,7 @@ void QuicCryptoServerConfig::ProcessClientHelloAfterGetProof(
     return;
   }
 
-  auto out_diversification_nonce = QuicMakeUnique<DiversificationNonce>();
+  auto out_diversification_nonce = std::make_unique<DiversificationNonce>();
 
   QuicStringPiece cert_sct;
   if (context->client_hello().GetStringPiece(kCertificateSCTTag, &cert_sct) &&
@@ -747,7 +746,7 @@ void QuicCryptoServerConfig::ProcessClientHelloAfterGetProof(
     context->params()->sct_supported_by_client = true;
   }
 
-  auto out = QuicMakeUnique<CryptoHandshakeMessage>();
+  auto out = std::make_unique<CryptoHandshakeMessage>();
   if (!context->info().reject_reasons.empty() || !configs.requested) {
     BuildRejectionAndRecordStats(*context, *configs.primary,
                                  context->info().reject_reasons, out.get());
@@ -795,7 +794,7 @@ void QuicCryptoServerConfig::ProcessClientHelloAfterGetProof(
       configs.requested->key_exchanges[key_exchange_index].get();
   std::string* initial_premaster_secret =
       &context->params()->initial_premaster_secret;
-  auto cb = QuicMakeUnique<ProcessClientHelloAfterGetProofCallback>(
+  auto cb = std::make_unique<ProcessClientHelloAfterGetProofCallback>(
       this, std::move(proof_source_details), key_exchange->type(),
       std::move(out), public_value, std::move(context), configs);
   key_exchange->CalculateSharedKeyAsync(public_value, initial_premaster_secret,
@@ -874,7 +873,7 @@ void QuicCryptoServerConfig::ProcessClientHelloAfterCalculateSharedKeys(
 
     CrypterPair crypters;
     if (!CryptoUtils::DeriveKeys(
-            context->params()->initial_premaster_secret,
+            context->version(), context->params()->initial_premaster_secret,
             context->params()->aead, context->info().client_nonce,
             context->info().server_nonce, pre_shared_key_, hkdf_input,
             Perspective::IS_SERVER, CryptoUtils::Diversification::Never(),
@@ -896,7 +895,7 @@ void QuicCryptoServerConfig::ProcessClientHelloAfterCalculateSharedKeys(
     }
     std::unique_ptr<CryptoHandshakeMessage> cetv(CryptoFramer::ParseMessage(
         QuicStringPiece(plaintext, plaintext_length)));
-    if (!cetv.get()) {
+    if (!cetv) {
       context->Fail(QUIC_INVALID_CRYPTO_MESSAGE_PARAMETER, "CETV parse error");
       return;
     }
@@ -920,15 +919,16 @@ void QuicCryptoServerConfig::ProcessClientHelloAfterCalculateSharedKeys(
   hkdf_input.append(QuicCryptoConfig::kInitialLabel, label_len);
   hkdf_input.append(hkdf_suffix);
 
-  auto out_diversification_nonce = QuicMakeUnique<DiversificationNonce>();
+  auto out_diversification_nonce = std::make_unique<DiversificationNonce>();
   context->rand()->RandBytes(out_diversification_nonce->data(),
                              out_diversification_nonce->size());
   CryptoUtils::Diversification diversification =
       CryptoUtils::Diversification::Now(out_diversification_nonce.get());
   if (!CryptoUtils::DeriveKeys(
-          context->params()->initial_premaster_secret, context->params()->aead,
-          context->info().client_nonce, context->info().server_nonce,
-          pre_shared_key_, hkdf_input, Perspective::IS_SERVER, diversification,
+          context->version(), context->params()->initial_premaster_secret,
+          context->params()->aead, context->info().client_nonce,
+          context->info().server_nonce, pre_shared_key_, hkdf_input,
+          Perspective::IS_SERVER, diversification,
           &context->params()->initial_crypters,
           &context->params()->initial_subkey_secret)) {
     context->Fail(QUIC_CRYPTO_SYMMETRIC_KEY_SETUP_FAILED,
@@ -967,6 +967,7 @@ void QuicCryptoServerConfig::ProcessClientHelloAfterCalculateSharedKeys(
   out->SetStringPiece(kServerNonceTag, shlo_nonce);
 
   if (!CryptoUtils::DeriveKeys(
+          context->version(),
           context->params()->forward_secure_premaster_secret,
           context->params()->aead, context->info().client_nonce,
           shlo_nonce.empty() ? context->info().server_nonce : shlo_nonce,
@@ -1009,7 +1010,7 @@ void QuicCryptoServerConfig::SendRejectWithFallbackConfig(
   const std::string sni(context->info().sni);
   const QuicTransportVersion transport_version = context->transport_version();
 
-  auto cb = QuicMakeUnique<SendRejectWithFallbackConfigCallback>(
+  auto cb = std::make_unique<SendRejectWithFallbackConfigCallback>(
       this, std::move(context), fallback_config);
   proof_source_->GetProof(server_address, sni, fallback_config->serialized,
                           transport_version, chlo_hash, std::move(cb));
@@ -1025,12 +1026,12 @@ void QuicCryptoServerConfig::SendRejectWithFallbackConfigAfterGetProof(
     return;
   }
 
-  auto out = QuicMakeUnique<CryptoHandshakeMessage>();
+  auto out = std::make_unique<CryptoHandshakeMessage>();
   BuildRejectionAndRecordStats(*context, *fallback_config,
                                {SERVER_CONFIG_UNKNOWN_CONFIG_FAILURE},
                                out.get());
 
-  context->Succeed(std::move(out), QuicMakeUnique<DiversificationNonce>(),
+  context->Succeed(std::move(out), std::make_unique<DiversificationNonce>(),
                    std::move(proof_source_details));
 }
 
@@ -1279,7 +1280,6 @@ void QuicCryptoServerConfig::EvaluateClientHello(
   // Server nonce is optional, and used for key derivation if present.
   client_hello.GetStringPiece(kServerNonceTag, &info->server_nonce);
 
-  QUIC_DVLOG(1) << "No 0-RTT replay protection in QUIC_VERSION_33 and higher.";
   // If the server nonce is empty and we're requiring handshake confirmation
   // for DoS reasons then we must reject the CHLO.
   if (GetQuicReloadableFlag(quic_require_handshake_confirmation) &&
@@ -1320,7 +1320,7 @@ void QuicCryptoServerConfig::BuildServerConfigUpdateMessage(
   message.SetStringPiece(kSourceAddressTokenTag, source_address_token);
 
   auto proof_source_cb =
-      QuicMakeUnique<BuildServerConfigUpdateMessageProofSourceCallback>(
+      std::make_unique<BuildServerConfigUpdateMessageProofSourceCallback>(
           this, compressed_certs_cache, common_cert_sets, params,
           std::move(message), std::move(cb));
 

@@ -12,10 +12,8 @@
 #include "chrome/browser/ui/browser.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/keyed_service/core/service_access_type.h"
-#include "components/send_tab_to_self/features.h"
 #include "components/send_tab_to_self/send_tab_to_self_model.h"
 #include "components/send_tab_to_self/send_tab_to_self_sync_service.h"
-#include "components/sync/driver/sync_driver_switches.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "url/gurl.h"
 
@@ -24,10 +22,6 @@ namespace {
 class SingleClientSendTabToSelfSyncTest : public SyncTest {
  public:
   SingleClientSendTabToSelfSyncTest() : SyncTest(SINGLE_CLIENT) {
-    scoped_list_.InitWithFeatures(
-        {switches::kSyncSendTabToSelf,
-         send_tab_to_self::kSendTabToSelfShowSendingUI},
-        {});
   }
 
   ~SingleClientSendTabToSelfSyncTest() override {}
@@ -80,12 +74,6 @@ IN_PROC_BROWSER_TEST_F(SingleClientSendTabToSelfSyncTest,
   EXPECT_FALSE(send_tab_to_self::HasValidTargetDevice(GetProfile(0)));
 }
 
-IN_PROC_BROWSER_TEST_F(SingleClientSendTabToSelfSyncTest, IsFlagEnabled) {
-  ASSERT_TRUE(SetupSync());
-
-  EXPECT_TRUE(send_tab_to_self::IsReceivingEnabled());
-}
-
 IN_PROC_BROWSER_TEST_F(SingleClientSendTabToSelfSyncTest, ShouldOfferFeature) {
   ASSERT_TRUE(SetupSync());
 
@@ -127,7 +115,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientSendTabToSelfSyncTest,
                   GURL(kUrl))
                   .Wait());
 
-  history_service->DeleteURL(GURL(kUrl));
+  history_service->DeleteURLs({GURL(kUrl)});
 
   EXPECT_TRUE(send_tab_to_self_helper::SendTabToSelfUrlDeletedChecker(
                   SendTabToSelfSyncServiceFactory::GetForProfile(GetProfile(0)),

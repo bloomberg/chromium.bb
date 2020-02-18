@@ -267,7 +267,8 @@ bool ValidateProgramResourceIndex(const Program *programObject,
     switch (programInterface)
     {
         case GL_PROGRAM_INPUT:
-            return (index < static_cast<GLuint>(programObject->getActiveAttributeCount()));
+            return (index <
+                    static_cast<GLuint>(programObject->getState().getProgramInputs().size()));
 
         case GL_PROGRAM_OUTPUT:
             return (index < static_cast<GLuint>(programObject->getOutputResourceCount()));
@@ -434,6 +435,12 @@ bool ValidateDrawIndirectBase(Context *context, PrimitiveMode mode, const void *
     if (state.getVertexArrayId().value == 0)
     {
         context->validationError(GL_INVALID_OPERATION, kDefaultVertexArray);
+        return false;
+    }
+
+    if (context->getStateCache().hasAnyActiveClientAttrib())
+    {
+        context->validationError(GL_INVALID_OPERATION, kClientDataInVertexArray);
         return false;
     }
 
@@ -1166,7 +1173,7 @@ bool ValidateBindVertexBuffer(Context *context,
     }
 
     const Caps &caps = context->getCaps();
-    if (bindingIndex >= caps.maxVertexAttribBindings)
+    if (bindingIndex >= static_cast<GLuint>(caps.maxVertexAttribBindings))
     {
         context->validationError(GL_INVALID_VALUE, kExceedsMaxVertexAttribBindings);
         return false;
@@ -1204,7 +1211,7 @@ bool ValidateVertexBindingDivisor(Context *context, GLuint bindingIndex, GLuint 
     }
 
     const Caps &caps = context->getCaps();
-    if (bindingIndex >= caps.maxVertexAttribBindings)
+    if (bindingIndex >= static_cast<GLuint>(caps.maxVertexAttribBindings))
     {
         context->validationError(GL_INVALID_VALUE, kExceedsMaxVertexAttribBindings);
         return false;
@@ -1267,13 +1274,13 @@ bool ValidateVertexAttribBinding(Context *context, GLuint attribIndex, GLuint bi
     }
 
     const Caps &caps = context->getCaps();
-    if (attribIndex >= caps.maxVertexAttributes)
+    if (attribIndex >= static_cast<GLuint>(caps.maxVertexAttributes))
     {
         context->validationError(GL_INVALID_VALUE, kIndexExceedsMaxVertexAttribute);
         return false;
     }
 
-    if (bindingIndex >= caps.maxVertexAttribBindings)
+    if (bindingIndex >= static_cast<GLuint>(caps.maxVertexAttribBindings))
     {
         context->validationError(GL_INVALID_VALUE, kExceedsMaxVertexAttribBindings);
         return false;
@@ -1344,17 +1351,17 @@ bool ValidateDispatchCompute(Context *context,
     }
 
     const Caps &caps = context->getCaps();
-    if (numGroupsX > caps.maxComputeWorkGroupCount[0])
+    if (numGroupsX > static_cast<GLuint>(caps.maxComputeWorkGroupCount[0]))
     {
         context->validationError(GL_INVALID_VALUE, kExceedsComputeWorkGroupCountX);
         return false;
     }
-    if (numGroupsY > caps.maxComputeWorkGroupCount[1])
+    if (numGroupsY > static_cast<GLuint>(caps.maxComputeWorkGroupCount[1]))
     {
         context->validationError(GL_INVALID_VALUE, kExceedsComputeWorkGroupCountY);
         return false;
     }
-    if (numGroupsZ > caps.maxComputeWorkGroupCount[2])
+    if (numGroupsZ > static_cast<GLuint>(caps.maxComputeWorkGroupCount[2]))
     {
         context->validationError(GL_INVALID_VALUE, kExceedsComputeWorkGroupCountZ);
         return false;
@@ -1420,7 +1427,7 @@ bool ValidateBindImageTexture(Context *context,
                               GLenum access,
                               GLenum format)
 {
-    GLuint maxImageUnits = context->getCaps().maxImageUnits;
+    GLuint maxImageUnits = static_cast<GLuint>(context->getCaps().maxImageUnits);
     if (unit >= maxImageUnits)
     {
         context->validationError(GL_INVALID_VALUE, kExceedsMaxImageUnits);

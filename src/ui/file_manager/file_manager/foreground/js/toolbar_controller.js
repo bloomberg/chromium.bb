@@ -68,7 +68,8 @@ class ToolbarController {
      * @const
      */
     this.deleteCommand_ = assertInstanceof(
-        queryRequiredElement('#delete', assert(this.toolbar_.ownerDocument)),
+        queryRequiredElement(
+            '#delete', assert(this.toolbar_.ownerDocument.body)),
         cr.ui.Command);
 
     /**
@@ -76,7 +77,8 @@ class ToolbarController {
      * @const
      */
     this.refreshCommand_ = assertInstanceof(
-        queryRequiredElement('#refresh', assert(this.toolbar_.ownerDocument)),
+        queryRequiredElement(
+            '#refresh', assert(this.toolbar_.ownerDocument.body)),
         cr.ui.Command);
 
     /**
@@ -85,7 +87,7 @@ class ToolbarController {
      */
     this.newFolderCommand_ = assertInstanceof(
         queryRequiredElement(
-            '#new-folder', assert(this.toolbar_.ownerDocument)),
+            '#new-folder', assert(this.toolbar_.ownerDocument.body)),
         cr.ui.Command);
 
     /**
@@ -170,7 +172,16 @@ class ToolbarController {
     const currentDirectory = this.directoryModel_.getCurrentDirEntry();
     const locationInfo = currentDirectory &&
         this.volumeManager_.getLocationInfo(currentDirectory);
-    this.readOnlyIndicator_.hidden = !(locationInfo && locationInfo.isReadOnly);
+    // Normally, isReadOnly can be used to show the label. This property
+    // is always true for fake volumes (eg. Google Drive root). However, "Linux
+    // files" is a fake volume on first access until the VM is loaded and the
+    // mount point is initialised. The volume is technically read-only since the
+    // temportary fake volume can (and should) not be written to. However,
+    // showing the read only label is not appropriate since the volume will
+    // become read-write once all loading has completed.
+    this.readOnlyIndicator_.hidden =
+        !(locationInfo && locationInfo.isReadOnly &&
+          locationInfo.rootType !== VolumeManagerCommon.RootType.CROSTINI);
   }
 
   /** @private */

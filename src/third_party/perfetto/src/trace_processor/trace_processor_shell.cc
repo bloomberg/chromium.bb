@@ -34,9 +34,14 @@
 #include "perfetto/ext/base/file_utils.h"
 #include "perfetto/ext/base/scoped_file.h"
 #include "perfetto/ext/base/string_splitter.h"
+#include "perfetto/trace_processor/read_trace.h"
 #include "perfetto/trace_processor/trace_processor.h"
 #include "src/trace_processor/metrics/metrics.descriptor.h"
 #include "src/trace_processor/proto_to_json.h"
+
+#if PERFETTO_BUILDFLAG(PERFETTO_TP_HTTPD)
+#include "src/trace_processor/rpc/httpd.h"
+#endif
 
 #if PERFETTO_BUILDFLAG(PERFETTO_OS_LINUX) ||   \
     PERFETTO_BUILDFLAG(PERFETTO_OS_ANDROID) || \
@@ -44,13 +49,6 @@
 #define PERFETTO_HAS_SIGNAL_H() 1
 #else
 #define PERFETTO_HAS_SIGNAL_H() 0
-#endif
-
-#if PERFETTO_BUILDFLAG(PERFETTO_OS_LINUX) || \
-    PERFETTO_BUILDFLAG(PERFETTO_OS_MACOSX)
-#define PERFETTO_HAS_AIO_H() 1
-#else
-#define PERFETTO_HAS_AIO_H() 0
 #endif
 
 #if PERFETTO_BUILDFLAG(PERFETTO_TP_LINENOISE)
@@ -67,10 +65,6 @@
 
 #if PERFETTO_HAS_SIGNAL_H()
 #include <signal.h>
-#endif
-
-#if PERFETTO_HAS_AIO_H()
-#include <aio.h>
 #endif
 
 #if PERFETTO_BUILDFLAG(PERFETTO_OS_WIN)
@@ -339,6 +333,7 @@ enum OutputFormat {
   kBinaryProto,
   kTextProto,
   kJson,
+  kNone,
 };
 
 int RunMetrics(const std::vector<std::string>& metric_names,
@@ -349,6 +344,9 @@ int RunMetrics(const std::vector<std::string>& metric_names,
   if (!status.ok()) {
     PERFETTO_ELOG("Error when computing metrics: %s", status.c_message());
     return 1;
+  }
+  if (format == OutputFormat::kNone) {
+    return 0;
   }
   if (format == OutputFormat::kBinaryProto) {
     fwrite(metric_result.data(), sizeof(uint8_t), metric_result.size(), stdout);
@@ -375,6 +373,7 @@ int RunMetrics(const std::vector<std::string>& metric_names,
       break;
     }
     case OutputFormat::kBinaryProto:
+    case OutputFormat::kNone:
       PERFETTO_FATAL("Unsupported output format.");
   }
   return 0;
@@ -445,7 +444,8 @@ void PrintShellUsage() {
       "Available commands:\n"
       ".quit, .q    Exit the shell.\n"
       ".help        This text.\n"
-      ".dump FILE   Export the trace as a sqlite database.\n");
+      ".dump FILE   Export the trace as a sqlite database.\n"
+      ".reset       Destroys all tables/view created by the user.\n");
 }
 
 int StartInteractiveShell(uint32_t column_width) {
@@ -468,6 +468,8 @@ int StartInteractiveShell(uint32_t column_width) {
       } else if (strcmp(command, "dump") == 0 && strlen(arg)) {
         if (ExportTraceToDatabase(arg) != 0)
           PERFETTO_ELOG("Database export failed");
+      } else if (strcmp(command, "reset") == 0) {
+        g_tp->RestoreInitialTables();
       } else {
         PrintShellUsage();
       }
@@ -640,96 +642,10 @@ struct CommandLineOptions {
   std::string metric_extra;
   std::string trace_file_path;
   bool launch_shell = false;
+  bool enable_httpd = false;
   bool wide = false;
+  bool force_full_sort = false;
 };
-
-#if PERFETTO_HAS_AIO_H()
-uint64_t ReadTrace(TraceProcessor* tp, int file_descriptor) {
-  // Load the trace in chunks using async IO. We create a simple pipeline where,
-  // at each iteration, we parse the current chunk and asynchronously start
-  // reading the next chunk.
-
-  // 1MB chunk size seems the best tradeoff on a MacBook Pro 2013 - i7 2.8 GHz.
-  constexpr size_t kChunkSize = 1024 * 1024;
-  uint64_t file_size = 0;
-
-  struct aiocb cb {};
-  cb.aio_nbytes = kChunkSize;
-  cb.aio_fildes = file_descriptor;
-
-  std::unique_ptr<uint8_t[]> aio_buf(new uint8_t[kChunkSize]);
-#if defined(MEMORY_SANITIZER)
-  // Just initialize the memory to make the memory sanitizer happy as it
-  // cannot track aio calls below.
-  memset(aio_buf.get(), 0, kChunkSize);
-#endif  // defined(MEMORY_SANITIZER)
-  cb.aio_buf = aio_buf.get();
-
-  PERFETTO_CHECK(aio_read(&cb) == 0);
-  struct aiocb* aio_list[1] = {&cb};
-
-  for (int i = 0;; i++) {
-    if (i % 128 == 0)
-      fprintf(stderr, "\rLoading trace: %.2f MB\r", file_size / 1E6);
-
-    // Block waiting for the pending read to complete.
-    PERFETTO_CHECK(aio_suspend(aio_list, 1, nullptr) == 0);
-    auto rsize = aio_return(&cb);
-    if (rsize <= 0)
-      break;
-    file_size += static_cast<uint64_t>(rsize);
-
-    // Take ownership of the completed buffer and enqueue a new async read
-    // with a fresh buffer.
-    std::unique_ptr<uint8_t[]> buf(std::move(aio_buf));
-    aio_buf.reset(new uint8_t[kChunkSize]);
-#if defined(MEMORY_SANITIZER)
-    // Just initialize the memory to make the memory sanitizer happy as it
-    // cannot track aio calls below.
-    memset(aio_buf.get(), 0, kChunkSize);
-#endif  // defined(MEMORY_SANITIZER)
-    cb.aio_buf = aio_buf.get();
-    cb.aio_offset += rsize;
-    PERFETTO_CHECK(aio_read(&cb) == 0);
-
-    // Parse the completed buffer while the async read is in-flight.
-    util::Status status = tp->Parse(std::move(buf), static_cast<size_t>(rsize));
-    if (PERFETTO_UNLIKELY(!status.ok())) {
-      PERFETTO_ELOG("Fatal error while parsing trace: %s", status.c_message());
-      exit(1);
-    }
-  }
-  tp->NotifyEndOfFile();
-  return file_size;
-}
-#else   // PERFETTO_HAS_AIO_H()
-uint64_t ReadTrace(TraceProcessor* tp, int file_descriptor) {
-  // Load the trace in chunks using ordinary read().
-  // This version is used on Windows, since there's no aio library.
-
-  constexpr size_t kChunkSize = 1024 * 1024;
-  uint64_t file_size = 0;
-
-  for (int i = 0;; i++) {
-    if (i % 128 == 0)
-      fprintf(stderr, "\rLoading trace: %.2f MB\r", file_size / 1E6);
-
-    std::unique_ptr<uint8_t[]> buf(new uint8_t[kChunkSize]);
-    auto rsize = read(file_descriptor, buf.get(), kChunkSize);
-    if (rsize <= 0)
-      break;
-    file_size += static_cast<uint64_t>(rsize);
-
-    util::Status status = tp->Parse(std::move(buf), static_cast<size_t>(rsize));
-    if (PERFETTO_UNLIKELY(!status.ok())) {
-      PERFETTO_ELOG("Fatal error while parsing trace: %s", status.c_message());
-      exit(1);
-    }
-  }
-  tp->NotifyEndOfFile();
-  return file_size;
-}
-#endif  // PERFETTO_HAS_AIO_H()
 
 #if PERFETTO_BUILDFLAG(PERFETTO_OS_WIN)
 void PrintUsage(char** argv) {
@@ -744,6 +660,7 @@ CommandLineOptions ParseCommandLineOptions(int argc, char** argv) {
 
   if (argc == 2) {
     command_line_options.trace_file_path = argv[1];
+    command_line_options.launch_shell = true;
   } else if (argc == 4) {
     if (strcmp(argv[1], "-q") != 0) {
       PrintUsage(argv);
@@ -771,31 +688,41 @@ Interactive trace processor shell.
 Usage: %s [OPTIONS] trace_file.pb
 
 Options:
- -h, --help                      Prints this guide.
- -v, --version                   Prints the version of trace processor.
- -d, --debug                     Enable virtual table debugging.
- -W, --wide                      Prints interactive output with double column
-                                 width.
- -p, --perf-file FILE            Writes the time taken to ingest the trace and
-                                 execute the queries to the given file. Only
-                                 valid with -q or --run-metrics and the file
-                                 will only be written if the execution
-                                 is successful.
- -q, --query-file FILE           Read and execute an SQL query from a file.
- -i, --interactive               Starts interactive mode even after a query file
-                                 is specified with -q or --run-metrics.
- -e, --export FILE               Export the trace into a SQLite database.
- --run-metrics x,y,z             Runs a comma separated list of metrics and
-                                 prints the result as a TraceMetrics proto to
-                                 stdout. The specified can either be in-built
-                                 metrics or SQL/proto files of extension
-                                 metrics.
- --metrics-output=[binary|text]  Allows the output of --run-metrics to be
-                                 specified in either proto binary or proto
-                                 text format (default: text).
- --extra-metrics PATH            Registers all SQL files at the given path to
-                                 the trace processor and extends the builtin
-                                 metrics proto with $PATH/metrics-ext.proto.)",
+ -h, --help                           Prints this guide.
+ -v, --version                        Prints the version of trace processor.
+ -d, --debug                          Enable virtual table debugging.
+ -W, --wide                           Prints interactive output with double
+                                      column width.
+ -p, --perf-file FILE                 Writes the time taken to ingest the trace
+                                      and execute the queries to the given file.
+                                      Only valid with -q or --run-metrics and
+                                      the file will only be written if the
+                                      execution is successful.
+ -q, --query-file FILE                Read and execute an SQL query from a file.
+                                      If used with --run-metrics, the query is
+                                      executed after the selected metrics and
+                                      the metrics output is suppressed.
+ -D, --httpd                          Enables the HTTP RPC server.
+ -i, --interactive                    Starts interactive mode even after a query
+                                      file is specified with -q or
+                                      --run-metrics.
+ -e, --export FILE                    Export the trace into a SQLite database.
+ --run-metrics x,y,z                  Runs a comma separated list of metrics and
+                                      prints the result as a TraceMetrics proto
+                                      to stdout. The specified can either be
+                                      in-built metrics or SQL/proto files of
+                                      extension metrics.
+ --metrics-output=[binary|text|json]  Allows the output of --run-metrics to be
+                                      specified in either proto binary, proto
+                                      text format or JSON format (default: proto
+                                      text).
+ --extra-metrics PATH                 Registers all SQL files at the given path
+                                      to the trace processor and extends the
+                                      builtin metrics proto with
+                                      $PATH/metrics-ext.proto.
+ --full-sort                          Forces the trace processor into performing
+                                      a full sort ignoring any windowing
+                                      logic.)",
                 argv[0]);
 }
 
@@ -805,12 +732,14 @@ CommandLineOptions ParseCommandLineOptions(int argc, char** argv) {
     OPT_RUN_METRICS = 1000,
     OPT_METRICS_OUTPUT,
     OPT_EXTRA_METRICS,
+    OPT_FORCE_FULL_SORT,
   };
 
   static const struct option long_options[] = {
       {"help", no_argument, nullptr, 'h'},
       {"version", no_argument, nullptr, 'v'},
       {"wide", no_argument, nullptr, 'W'},
+      {"httpd", no_argument, nullptr, 'D'},
       {"interactive", no_argument, nullptr, 'i'},
       {"debug", no_argument, nullptr, 'd'},
       {"perf-file", required_argument, nullptr, 'p'},
@@ -819,13 +748,14 @@ CommandLineOptions ParseCommandLineOptions(int argc, char** argv) {
       {"run-metrics", required_argument, nullptr, OPT_RUN_METRICS},
       {"metrics-output", required_argument, nullptr, OPT_METRICS_OUTPUT},
       {"extra-metrics", required_argument, nullptr, OPT_EXTRA_METRICS},
+      {"full-sort", no_argument, nullptr, OPT_FORCE_FULL_SORT},
       {nullptr, 0, nullptr, 0}};
 
   bool explicit_interactive = false;
   int option_index = 0;
   for (;;) {
     int option =
-        getopt_long(argc, argv, "hvWidp:q:e:", long_options, &option_index);
+        getopt_long(argc, argv, "hvWiDdp:q:e:", long_options, &option_index);
 
     if (option == -1)
       break;  // EOF.
@@ -837,6 +767,15 @@ CommandLineOptions ParseCommandLineOptions(int argc, char** argv) {
 
     if (option == 'i') {
       explicit_interactive = true;
+      continue;
+    }
+
+    if (option == 'D') {
+#if PERFETTO_BUILDFLAG(PERFETTO_TP_HTTPD)
+      command_line_options.enable_httpd = true;
+#else
+      PERFETTO_FATAL("HTTP RPC module not supported in this build");
+#endif
       continue;
     }
 
@@ -880,6 +819,11 @@ CommandLineOptions ParseCommandLineOptions(int argc, char** argv) {
       continue;
     }
 
+    if (option == OPT_FORCE_FULL_SORT) {
+      command_line_options.force_full_sort = true;
+      continue;
+    }
+
     PrintUsage(argv);
     exit(option == 'h' ? 0 : 1);
   }
@@ -895,14 +839,15 @@ CommandLineOptions ParseCommandLineOptions(int argc, char** argv) {
     exit(1);
   }
 
-  // Ensure that we have the tracefile argument only at the end.
-  if (optind != argc - 1 || argv[optind] == nullptr) {
+  // The only case where we allow omitting the trace file path is when running
+  // in --http mode. In all other cases, the last argument must be the trace
+  // file.
+  if (optind == argc - 1 && argv[optind]) {
+    command_line_options.trace_file_path = argv[optind];
+  } else if (!command_line_options.enable_httpd) {
     PrintUsage(argv);
     exit(1);
   }
-
-  command_line_options.trace_file_path = argv[optind];
-
   return command_line_options;
 }
 
@@ -950,22 +895,38 @@ int TraceProcessorMain(int argc, char** argv) {
 
   // Load the trace file into the trace processor.
   Config config;
-  std::unique_ptr<TraceProcessor> tp = TraceProcessor::CreateInstance(config);
-  base::ScopedFile fd(base::OpenFile(options.trace_file_path, O_RDONLY));
-  if (!fd) {
-    PERFETTO_ELOG("Could not open trace file (path: %s)",
-                  options.trace_file_path.c_str());
-    return 1;
-  }
+  config.force_full_sort = options.force_full_sort;
 
-  auto t_load_start = base::GetWallTimeNs();
-  uint64_t file_size = ReadTrace(tp.get(), *fd);
-  auto t_load = base::GetWallTimeNs() - t_load_start;
-  double t_load_s = t_load.count() / 1E9;
-  double size_mb = file_size / 1E6;
-  PERFETTO_ILOG("Trace loaded: %.2f MB (%.1f MB/s)", size_mb,
-                size_mb / t_load_s);
+  std::unique_ptr<TraceProcessor> tp = TraceProcessor::CreateInstance(config);
   g_tp = tp.get();
+
+  base::TimeNanos t_load{};
+  if (!options.trace_file_path.empty()) {
+    auto t_load_start = base::GetWallTimeNs();
+    double size_mb = 0;
+    util::Status read_status =
+        ReadTrace(tp.get(), options.trace_file_path.c_str(),
+                  [&size_mb](size_t parsed_size) {
+                    size_mb = parsed_size / 1E6;
+                    fprintf(stderr, "\rLoading trace: %.2f MB\r", size_mb);
+                  });
+    if (!read_status.ok()) {
+      PERFETTO_ELOG("Could not read trace file (path: %s): %s",
+                    options.trace_file_path.c_str(), read_status.c_message());
+      return 1;
+    }
+    t_load = base::GetWallTimeNs() - t_load_start;
+    double t_load_s = t_load.count() / 1E9;
+    PERFETTO_ILOG("Trace loaded: %.2f MB (%.1f MB/s)", size_mb,
+                  size_mb / t_load_s);
+  }  // if (!trace_file_path.empty())
+
+#if PERFETTO_BUILDFLAG(PERFETTO_TP_HTTPD)
+  if (options.enable_httpd) {
+    RunHttpRPCServer(std::move(tp));
+    return 0;
+  }
+#endif
 
 #if PERFETTO_HAS_SIGNAL_H()
   signal(SIGINT, [](int) { g_tp->InterruptQuery(); });
@@ -1045,7 +1006,9 @@ int TraceProcessorMain(int argc, char** argv) {
     }
 
     OutputFormat format;
-    if (options.metric_output == "binary") {
+    if (!options.query_file_path.empty()) {
+      format = OutputFormat::kNone;
+    } else if (options.metric_output == "binary") {
       format = OutputFormat::kBinaryProto;
     } else if (options.metric_output == "json") {
       format = OutputFormat::kJson;
@@ -1059,24 +1022,24 @@ int TraceProcessorMain(int argc, char** argv) {
     }
     if (ret)
       return ret;
-  } else {
-    // If we were given a query file, load contents
-    std::vector<std::string> queries;
-    if (!options.query_file_path.empty()) {
-      base::ScopedFstream file(fopen(options.query_file_path.c_str(), "r"));
-      if (!file) {
-        PERFETTO_ELOG("Could not open query file (path: %s)",
-                      options.query_file_path.c_str());
-        return 1;
-      }
-      if (!LoadQueries(file.get(), &queries)) {
-        return 1;
-      }
-    }
+  }
 
-    if (!RunQueryAndPrintResult(queries, stdout)) {
+  // If we were given a query file, load contents
+  std::vector<std::string> queries;
+  if (!options.query_file_path.empty()) {
+    base::ScopedFstream file(fopen(options.query_file_path.c_str(), "r"));
+    if (!file) {
+      PERFETTO_ELOG("Could not open query file (path: %s)",
+                    options.query_file_path.c_str());
       return 1;
     }
+    if (!LoadQueries(file.get(), &queries)) {
+      return 1;
+    }
+  }
+
+  if (!RunQueryAndPrintResult(queries, stdout)) {
+    return 1;
   }
 
   if (!options.sqlite_file_path.empty()) {

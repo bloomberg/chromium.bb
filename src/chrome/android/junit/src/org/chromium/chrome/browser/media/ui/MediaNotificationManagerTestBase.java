@@ -25,6 +25,7 @@ import android.view.KeyEvent;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.robolectric.RuntimeEnvironment;
@@ -32,6 +33,7 @@ import org.robolectric.shadows.ShadowLog;
 import org.robolectric.shadows.ShadowLooper;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.media.ui.MediaNotificationManager.ListenerService;
 import org.chromium.chrome.browser.notifications.ForegroundServiceUtils;
@@ -54,6 +56,14 @@ public class MediaNotificationManagerTestBase {
 
     MediaNotificationInfo.Builder mMediaNotificationInfoBuilder;
 
+    @Rule
+    public JniMocker mocker = new JniMocker();
+
+    protected MediaNotificationTestTabHolder createMediaNotificationTestTabHolder(
+            int tabId, String url, String title) {
+        return new MediaNotificationTestTabHolder(tabId, url, title, mocker);
+    }
+
     static class MockMediaNotificationManager extends MediaNotificationManager {
         public MockMediaNotificationManager(NotificationUmaTracker umaTracker, int notificationId) {
             super(umaTracker, notificationId);
@@ -64,11 +74,6 @@ public class MediaNotificationManagerTestBase {
         @Override
         protected int getNotificationId() {
             return MediaNotificationManagerTestBase.this.getNotificationId();
-        }
-
-        @Override
-        public int onStartCommand(Intent intent, int flags, int startId) {
-            return super.onStartCommand(intent, flags, startId);
         }
     }
 

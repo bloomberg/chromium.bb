@@ -11,6 +11,8 @@
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
+#include "gpu/config/gpu_finch_features.h"
+#include "skia/buildflags.h"
 #include "ui/gl/gl_switches.h"
 #include "ui/gl/gl_utils.h"
 
@@ -148,8 +150,6 @@ GpuPreferences ParseGpuPreferences(const base::CommandLine* command_line) {
       command_line->HasSwitch(switches::kEnableGPUServiceTracing);
   gpu_preferences.use_passthrough_cmd_decoder =
       gpu::gles2::UsePassthroughCommandDecoder(command_line);
-  gpu_preferences.disable_gpu_driver_bug_workarounds =
-      command_line->HasSwitch(switches::kDisableGpuDriverBugWorkarounds);
   gpu_preferences.ignore_gpu_blacklist =
       command_line->HasSwitch(switches::kIgnoreGpuBlacklist);
   gpu_preferences.enable_webgpu =
@@ -157,17 +157,59 @@ GpuPreferences ParseGpuPreferences(const base::CommandLine* command_line) {
   if (command_line->HasSwitch(switches::kUseVulkan)) {
     auto value = command_line->GetSwitchValueASCII(switches::kUseVulkan);
     if (value.empty() || value == switches::kVulkanImplementationNameNative) {
-      gpu_preferences.use_vulkan = VulkanImplementationName::kNative;
+      gpu_preferences.use_vulkan = VulkanImplementationName::kForcedNative;
     } else if (value == switches::kVulkanImplementationNameSwiftshader) {
       gpu_preferences.use_vulkan = VulkanImplementationName::kSwiftshader;
     } else {
       gpu_preferences.use_vulkan = VulkanImplementationName::kNone;
     }
-  } else {
-    gpu_preferences.use_vulkan = VulkanImplementationName::kNone;
   }
   gpu_preferences.disable_vulkan_surface =
       command_line->HasSwitch(switches::kDisableVulkanSurface);
+  if (command_line->HasSwitch(switches::kGrContextType)) {
+    auto value = command_line->GetSwitchValueASCII(switches::kGrContextType);
+    if (value == switches::kGrContextTypeGL) {
+      gpu_preferences.gr_context_type = GrContextType::kGL;
+    } else if (value == switches::kGrContextTypeVulkan) {
+      gpu_preferences.gr_context_type = GrContextType::kVulkan;
+    } else if (value == switches::kGrContextTypeMetal) {
+#if defined(OS_MACOSX)
+      DCHECK(base::FeatureList::IsEnabled(features::kMetal))
+          << "GrContextType is Metal, but Metal is not enabled.";
+      gpu_preferences.gr_context_type = GrContextType::kMetal;
+#endif
+#if BUILDFLAG(SKIA_USE_DAWN)
+    } else if (value == switches::kGrContextTypeDawn) {
+      gpu_preferences.gr_context_type = GrContextType::kDawn;
+#endif
+    } else {
+      NOTREACHED() << "Invalid GrContextType.";
+      gpu_preferences.gr_context_type = GrContextType::kGL;
+    }
+  } else {
+#if defined(OS_MACOSX)
+    gpu_preferences.gr_context_type =
+        base::FeatureList::IsEnabled(features::kMetal) ?
+            GrContextType::kMetal :
+            GrContextType::kGL;
+#else
+    if (base::FeatureList::IsEnabled(features::kVulkan)) {
+      gpu_preferences.gr_context_type = GrContextType::kVulkan;
+    } else {
+      gpu_preferences.gr_context_type = GrContextType::kGL;
+    }
+#endif
+  }
+  if (gpu_preferences.gr_context_type == GrContextType::kVulkan &&
+      gpu_preferences.use_vulkan == gpu::VulkanImplementationName::kNone) {
+    // If gpu_preferences.use_vulkan is not set from --use-vulkan, the native
+    // vulkan implementation will be used by default.
+    gpu_preferences.use_vulkan = gpu::VulkanImplementationName::kNative;
+  }
+
+  gpu_preferences.enable_gpu_blocked_time_metric =
+      command_line->HasSwitch(switches::kEnableGpuBlockedTime);
+
   return gpu_preferences;
 }
 

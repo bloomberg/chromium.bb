@@ -13,11 +13,11 @@
 #include <deque>
 #include <list>
 #include <map>
+#include <memory>
 #include <string>
 #include <thread>
 #include <vector>
 
-#include "absl/memory/memory.h"
 #include "absl/strings/string_view.h"
 
 namespace webrtc {
@@ -307,7 +307,7 @@ std::unique_ptr<ProcessThread> SimulatedTimeControllerImpl::CreateProcessThread(
     const char* thread_name) {
   rtc::CritScope lock(&lock_);
   auto process_thread =
-      absl::make_unique<SimulatedSequenceRunner>(this, thread_name);
+      std::make_unique<SimulatedSequenceRunner>(this, thread_name);
   runners_.push_back(process_thread.get());
   return process_thread;
 }
@@ -399,7 +399,7 @@ void SimulatedTimeControllerImpl::Unregister(SimulatedSequenceRunner* runner) {
 
 GlobalSimulatedTimeController::GlobalSimulatedTimeController(
     Timestamp start_time)
-    : sim_clock_(start_time.us()), impl_(start_time) {
+    : sim_clock_(start_time.us()), impl_(start_time), yield_policy_(&impl_) {
   global_clock_.SetTime(start_time);
 }
 
@@ -418,7 +418,7 @@ GlobalSimulatedTimeController::CreateProcessThread(const char* thread_name) {
   return impl_.CreateProcessThread(thread_name);
 }
 
-void GlobalSimulatedTimeController::Sleep(TimeDelta duration) {
+void GlobalSimulatedTimeController::AdvanceTime(TimeDelta duration) {
   rtc::ScopedYieldPolicy yield_policy(&impl_);
   Timestamp current_time = impl_.CurrentTime();
   Timestamp target_time = current_time + duration;
@@ -433,13 +433,5 @@ void GlobalSimulatedTimeController::Sleep(TimeDelta duration) {
     global_clock_.AdvanceTime(delta);
   }
 }
-
-void GlobalSimulatedTimeController::InvokeWithControlledYield(
-    std::function<void()> closure) {
-  rtc::ScopedYieldPolicy yield_policy(&impl_);
-  closure();
-}
-
-// namespace sim_time_impl
 
 }  // namespace webrtc

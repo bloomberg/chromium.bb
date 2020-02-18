@@ -49,11 +49,6 @@
       this.switchToEmailCard(true /* animated */);
     },
 
-    onAnimationFinish_: function() {
-      this.fire('backButton', !this.isEmailSectionActive_());
-      this.focus();
-    },
-
     onForgotPasswordClicked_: function() {
       this.disabled = true;
       this.fire('dialogShown');
@@ -150,6 +145,14 @@
       } else {
         this.fire('offline-gaia-cancel');
       }
+    },
+
+    onNextButtonClicked_: function() {
+      if (this.isEmailSectionActive_()) {
+        this.onEmailSubmitted_();
+        return;
+      }
+      this.onPasswordSubmitted_();
     },
   });
 }

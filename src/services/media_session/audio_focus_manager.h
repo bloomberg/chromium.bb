@@ -12,8 +12,8 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
-#include "mojo/public/cpp/bindings/interface_ptr.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote_set.h"
 #include "services/media_session/media_controller.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
@@ -88,15 +88,17 @@ class AudioFocusManager : public mojom::AudioFocusManager,
       const base::UnguessableToken& receiver_id) override;
   void SuspendAllSessions() override;
 
-  // Bind to a mojom::AudioFocusManagerRequest.
-  void BindToInterface(mojom::AudioFocusManagerRequest request);
+  // Bind to a receiver of mojom::AudioFocusManager.
+  void BindToInterface(
+      mojo::PendingReceiver<mojom::AudioFocusManager> receiver);
 
-  // Bind to a mojom::AudioFocusManagerDebugRequest.
-  void BindToDebugInterface(mojom::AudioFocusManagerDebugRequest request);
+  // Bind to a receiver of mojom::AudioFocusManagerDebug.
+  void BindToDebugInterface(
+      mojo::PendingReceiver<mojom::AudioFocusManagerDebug> receiver);
 
-  // Bind to a mojom::MediaControllerManagerRequest.
+  // Bind to a receiver of mojom::MediaControllerManager.
   void BindToControllerManagerInterface(
-      mojom::MediaControllerManagerRequest request);
+      mojo::PendingReceiver<mojom::MediaControllerManager> receiver);
 
  private:
   friend class AudioFocusManagerTest;
@@ -106,8 +108,8 @@ class AudioFocusManager : public mojom::AudioFocusManager,
 
   class SourceObserverHolder;
 
-  // BindingContext stores associated metadata for mojo binding.
-  struct BindingContext {
+  // ReceiverContext stores associated metadata for mojo binding.
+  struct ReceiverContext {
     // The source name is associated with a binding when a client calls
     // |SetSourceName|. It is used to provide more granularity than a
     // service_manager::Identity for metrics and for identifying where an audio
@@ -156,15 +158,15 @@ class AudioFocusManager : public mojom::AudioFocusManager,
   // |MediaSession| over mojo.
   MediaController active_media_controller_;
 
-  // Holds mojo bindings for the Audio Focus Manager API.
-  mojo::BindingSet<mojom::AudioFocusManager, std::unique_ptr<BindingContext>>
-      bindings_;
+  // Holds mojo receivers for the Audio Focus Manager API.
+  mojo::ReceiverSet<mojom::AudioFocusManager, std::unique_ptr<ReceiverContext>>
+      receivers_;
 
-  // Holds mojo bindings for the Audio Focus Manager Debug API.
-  mojo::BindingSet<mojom::AudioFocusManagerDebug> debug_bindings_;
+  // Holds mojo receivers for the Audio Focus Manager Debug API.
+  mojo::ReceiverSet<mojom::AudioFocusManagerDebug> debug_receivers_;
 
-  // Holds mojo bindings for the Media Controller Manager API.
-  mojo::BindingSet<mojom::MediaControllerManager> controller_bindings_;
+  // Holds mojo receivers for the Media Controller Manager API.
+  mojo::ReceiverSet<mojom::MediaControllerManager> controller_receivers_;
 
   // Weak reference of managed observers. Observers are expected to remove
   // themselves before being destroyed.

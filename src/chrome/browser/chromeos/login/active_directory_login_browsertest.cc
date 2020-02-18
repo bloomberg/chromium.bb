@@ -16,14 +16,13 @@
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 #include "chrome/browser/chromeos/login/test/session_manager_state_waiter.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
-#include "chromeos/dbus/auth_policy/fake_auth_policy_client.h"
+#include "chromeos/dbus/authpolicy/fake_authpolicy_client.h"
 #include "components/user_manager/user_names.h"
-#include "content/public/browser/system_connector.h"
+#include "content/public/browser/network_service_instance.h"
 #include "content/public/common/network_service_util.h"
-#include "content/public/common/service_names.mojom.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/sync_call_restrictions.h"
 #include "services/network/public/mojom/network_service_test.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 namespace chromeos {
 
@@ -39,9 +38,9 @@ void AssertNetworkServiceEnvEquals(const std::string& name,
                                    const std::string& expected_value) {
   std::string value;
   if (content::IsOutOfProcessNetworkService()) {
-    network::mojom::NetworkServiceTestPtr network_service_test;
-    content::GetSystemConnector()->BindInterface(
-        content::mojom::kNetworkServiceName, &network_service_test);
+    mojo::Remote<network::mojom::NetworkServiceTest> network_service_test;
+    content::GetNetworkService()->BindTestInterface(
+        network_service_test.BindNewPipeAndPassReceiver());
     mojo::ScopedAllowSyncCallForTesting allow_sync_call;
     network_service_test->GetEnvironmentVariableValue(name, &value);
   } else {
@@ -64,7 +63,7 @@ class ActiveDirectoryLoginTest : public OobeBaseTest {
   ~ActiveDirectoryLoginTest() override = default;
 
  protected:
-  FakeAuthPolicyClient* fake_auth_policy_client() {
+  FakeAuthPolicyClient* fake_authpolicy_client() {
     return FakeAuthPolicyClient::Get();
   }
 
@@ -88,7 +87,7 @@ class ActiveDirectoryLoginAutocompleteTest : public ActiveDirectoryLoginTest {
     enterprise_management::ChromeDeviceSettingsProto device_settings;
     device_settings.mutable_login_screen_domain_auto_complete()
         ->set_login_screen_domain_auto_complete(kTestUserRealm);
-    fake_auth_policy_client()->set_device_policy(device_settings);
+    fake_authpolicy_client()->set_device_policy(device_settings);
     autocomplete_realm_ = "@" + std::string(kTestUserRealm);
     ad_login_.set_autocomplete_realm(autocomplete_realm_);
   }
@@ -151,19 +150,19 @@ IN_PROC_BROWSER_TEST_F(ActiveDirectoryLoginTest, LoginErrors) {
   ad_login_.TestUserError();
   ad_login_.TestDomainHidden();
 
-  fake_auth_policy_client()->set_auth_error(authpolicy::ERROR_BAD_USER_NAME);
+  fake_authpolicy_client()->set_auth_error(authpolicy::ERROR_BAD_USER_NAME);
   ad_login_.SubmitActiveDirectoryCredentials(test_user_, kPassword);
   ad_login_.WaitForAuthError();
   ad_login_.TestUserError();
   ad_login_.TestDomainHidden();
 
-  fake_auth_policy_client()->set_auth_error(authpolicy::ERROR_BAD_PASSWORD);
+  fake_authpolicy_client()->set_auth_error(authpolicy::ERROR_BAD_PASSWORD);
   ad_login_.SubmitActiveDirectoryCredentials(test_user_, kPassword);
   ad_login_.WaitForAuthError();
   ad_login_.TestPasswordError();
   ad_login_.TestDomainHidden();
 
-  fake_auth_policy_client()->set_auth_error(authpolicy::ERROR_UNKNOWN);
+  fake_authpolicy_client()->set_auth_error(authpolicy::ERROR_UNKNOWN);
   ad_login_.SubmitActiveDirectoryCredentials(test_user_, kPassword);
   ad_login_.WaitForAuthError();
   // Inputs are not invalidated for the unknown error.
@@ -181,7 +180,7 @@ IN_PROC_BROWSER_TEST_F(ActiveDirectoryLoginTest, PasswordChange_LoginSuccess) {
   ad_login_.TriggerPasswordChangeScreen();
 
   // Password accepted by AuthPolicyClient.
-  fake_auth_policy_client()->set_auth_error(authpolicy::ERROR_NONE);
+  fake_authpolicy_client()->set_auth_error(authpolicy::ERROR_NONE);
   ad_login_.SubmitActiveDirectoryPasswordChangeCredentials(
       kPassword, kNewPassword, kNewPassword);
   test::WaitForPrimaryUserSessionStart();
@@ -215,7 +214,7 @@ IN_PROC_BROWSER_TEST_F(ActiveDirectoryLoginTest, PasswordChange_UIErrors) {
   ad_login_.TestPasswordChangeConfirmNewPasswordError();
 
   // Password rejected by AuthPolicyClient.
-  fake_auth_policy_client()->set_auth_error(authpolicy::ERROR_BAD_PASSWORD);
+  fake_authpolicy_client()->set_auth_error(authpolicy::ERROR_BAD_PASSWORD);
   ad_login_.SubmitActiveDirectoryPasswordChangeCredentials(
       kPassword, kNewPassword, kNewPassword);
   ad_login_.TestPasswordChangeOldPasswordError();
@@ -275,7 +274,7 @@ IN_PROC_BROWSER_TEST_F(ActiveDirectoryLoginAutocompleteTest, TestAutocomplete) {
 
   ad_login_.TestLoginVisible();
   ad_login_.TestDomainVisible();
-  fake_auth_policy_client()->set_auth_error(authpolicy::ERROR_BAD_PASSWORD);
+  fake_authpolicy_client()->set_auth_error(authpolicy::ERROR_BAD_PASSWORD);
 
   // Submit with a different domain.
   ad_login_.SetUserInput(test_user_);

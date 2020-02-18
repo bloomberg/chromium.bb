@@ -13,7 +13,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
 #include "cc/paint/element_id.h"
-#include "cc/trees/swap_promise_monitor.h"
+#include "cc/trees/latency_info_swap_promise_monitor.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "content/common/input/input_event_ack.h"
 #include "content/public/common/content_switches.h"
@@ -119,15 +119,6 @@ void LogPassiveEventListenersUma(WebInputEventResult result,
 
   UMA_HISTOGRAM_ENUMERATION("Event.PassiveListeners", enum_value,
                             PASSIVE_LISTENER_UMA_ENUM_COUNT);
-
-  if (base::TimeTicks::IsHighResolution()) {
-    if (enum_value == PASSIVE_LISTENER_UMA_ENUM_CANCELABLE) {
-      base::TimeTicks now = base::TimeTicks::Now();
-      UMA_HISTOGRAM_CUSTOM_COUNTS("Event.PassiveListeners.Latency",
-                                  GetEventLatencyMicros(event_timestamp, now),
-                                  1, 10000000, 100);
-    }
-  }
 }
 
 void LogAllPassiveEventListenersUma(const WebInputEvent& input_event,
@@ -270,7 +261,7 @@ viz::FrameSinkId RenderWidgetInputHandler::GetFrameSinkIdAtPoint(
 
 WebInputEventResult RenderWidgetInputHandler::HandleTouchEvent(
     const blink::WebCoalescedInputEvent& coalesced_event) {
-  // This method must only be called on non-frozen RenderWidget, which is
+  // This method must only be called on non-undead RenderWidget, which is
   // guaranteed to have a WebWidget.
   // TODO(https://crbug.com/995981): Eventually we should be able to remote this
   // DCHECK, since RenderWidget's lifetime [and thus this instance's] will be
@@ -309,7 +300,7 @@ void RenderWidgetInputHandler::HandleInputEvent(
     const blink::WebCoalescedInputEvent& coalesced_event,
     const ui::LatencyInfo& latency_info,
     HandledEventCallback callback) {
-  // This method must only be called on non-frozen RenderWidget, which is
+  // This method must only be called on non-undead RenderWidget, which is
   // guaranteed to have a WebWidget.
   // TODO(https://crbug.com/995981): Eventually we should be able to remote this
   // DCHECK, since RenderWidget's lifetime [and thus this instance's] will be
@@ -364,30 +355,33 @@ void RenderWidgetInputHandler::HandleInputEvent(
   if (!start_time.is_null())
     LogInputEventLatencyUma(input_event, start_time);
 
-  std::unique_ptr<cc::SwapPromiseMonitor> latency_info_swap_promise_monitor;
   ui::LatencyInfo swap_latency_info(latency_info);
-
   swap_latency_info.AddLatencyNumber(
       ui::LatencyComponentType::INPUT_EVENT_LATENCY_RENDERER_MAIN_COMPONENT);
-  if (widget_->layer_tree_view()) {
-    latency_info_swap_promise_monitor =
-        widget_->layer_tree_view()->CreateLatencyInfoSwapPromiseMonitor(
-            &swap_latency_info);
-  }
+  cc::LatencyInfoSwapPromiseMonitor swap_promise_monitor(
+      &swap_latency_info, widget_->layer_tree_host()->GetSwapPromiseManager(),
+      nullptr);
 
   bool prevent_default = false;
+  bool show_virtual_keyboard_for_mouse = false;
   if (WebInputEvent::IsMouseEventType(input_event.GetType())) {
     const WebMouseEvent& mouse_event =
         static_cast<const WebMouseEvent&>(input_event);
     TRACE_EVENT2("renderer", "HandleMouseMove", "x",
                  mouse_event.PositionInWidget().x, "y",
                  mouse_event.PositionInWidget().y);
+
     prevent_default = delegate_->WillHandleMouseEvent(mouse_event);
 
     // Reset the last known cursor if mouse has left this widget. So next
     // time that the mouse enters we always set the cursor accordingly.
     if (mouse_event.GetType() == WebInputEvent::kMouseLeave)
       current_cursor_.reset();
+
+    if (mouse_event.button == WebPointerProperties::Button::kLeft &&
+        mouse_event.GetType() == WebInputEvent::kMouseUp) {
+      show_virtual_keyboard_for_mouse = true;
+    }
   }
 
   if (WebInputEvent::IsKeyboardEventType(input_event.GetType())) {
@@ -494,9 +488,9 @@ void RenderWidgetInputHandler::HandleInputEvent(
 
   // Show the virtual keyboard if enabled and a user gesture triggers a focus
   // change.
-  if (processed != WebInputEventResult::kNotHandled &&
-      (input_event.GetType() == WebInputEvent::kTouchEnd ||
-       input_event.GetType() == WebInputEvent::kMouseUp)) {
+  if ((processed != WebInputEventResult::kNotHandled &&
+       input_event.GetType() == WebInputEvent::kTouchEnd) ||
+      show_virtual_keyboard_for_mouse) {
     delegate_->ShowVirtualKeyboard();
   }
 
@@ -586,7 +580,7 @@ void RenderWidgetInputHandler::InjectGestureScrollEvent(
                                           granularity);
     if (injected_type == WebInputEvent::Type::kGestureScrollBegin) {
       gesture_event->data.scroll_begin.scrollable_area_element_id =
-          scrollable_area_element_id.GetInternalValue();
+          scrollable_area_element_id.GetStableId();
     }
 
     ui::LatencyInfo latency_info;
@@ -603,7 +597,7 @@ void RenderWidgetInputHandler::HandleInjectedScrollGestures(
     std::vector<InjectScrollGestureParams> injected_scroll_params,
     const WebInputEvent& input_event,
     const ui::LatencyInfo& original_latency_info) {
-  // This method must only be called on non-frozen RenderWidget, which is
+  // This method must only be called on non-undead RenderWidget, which is
   // guaranteed to have a WebWidget.
   // TODO(https://crbug.com/995981): Eventually we should be able to remote this
   // DCHECK, since RenderWidget's lifetime [and thus this instance's] will be
@@ -659,27 +653,25 @@ void RenderWidgetInputHandler::HandleInjectedScrollGestures(
       }
     }
 
-    std::unique_ptr<cc::SwapPromiseMonitor> swap_promise_monitor;
-    if (widget_->layer_tree_view()) {
-      swap_promise_monitor =
-          widget_->layer_tree_view()->CreateLatencyInfoSwapPromiseMonitor(
-              &scrollbar_latency_info);
-    }
-
     std::unique_ptr<WebGestureEvent> gesture_event =
         ui::GenerateInjectedScrollGesture(
             params.type, input_event.TimeStamp(), params.device, position,
             params.scroll_delta, params.granularity);
     if (params.type == WebInputEvent::Type::kGestureScrollBegin) {
       gesture_event->data.scroll_begin.scrollable_area_element_id =
-          params.scrollable_area_element_id.GetInternalValue();
+          params.scrollable_area_element_id.GetStableId();
       last_injected_gesture_was_begin_ = true;
     } else {
       last_injected_gesture_was_begin_ = false;
     }
 
-    widget_->GetWebWidget()->HandleInputEvent(
-        blink::WebCoalescedInputEvent(*gesture_event.get()));
+    {
+      cc::LatencyInfoSwapPromiseMonitor swap_promise_monitor(
+          &scrollbar_latency_info,
+          widget_->layer_tree_host()->GetSwapPromiseManager(), nullptr);
+      widget_->GetWebWidget()->HandleInputEvent(
+          blink::WebCoalescedInputEvent(*gesture_event.get()));
+    }
   }
 }
 

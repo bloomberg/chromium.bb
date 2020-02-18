@@ -4,8 +4,9 @@
 
 package org.chromium.chrome.test.util.browser;
 
-import android.support.annotation.Nullable;
 import android.text.TextUtils;
+
+import androidx.annotation.Nullable;
 
 import org.chromium.base.CommandLine;
 import org.chromium.base.test.util.AnnotationRule;
@@ -151,13 +152,13 @@ public class Features {
      * to enable, or get rid of exceptions when the production code tries to check for enabled
      * features.
      */
-    private static abstract class Processor extends AnnotationRule {
+    private abstract static class Processor extends AnnotationRule {
         public Processor() {
             super(EnableFeatures.class, DisableFeatures.class);
         }
 
         @Override
-        protected void before() throws Throwable {
+        protected void before() {
             collectFeatures();
             applyFeatures();
         }
@@ -167,7 +168,7 @@ public class Features {
             reset();
         }
 
-        abstract protected void applyFeatures();
+        protected abstract void applyFeatures();
 
         private void collectFeatures() {
             for (Annotation annotation : getAnnotations()) {

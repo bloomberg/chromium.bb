@@ -18,7 +18,7 @@
 namespace blink {
 namespace {
 
-class MockClient final : public GarbageCollectedFinalized<MockClient>,
+class MockClient final : public GarbageCollected<MockClient>,
                          public ResourceLoadSchedulerClient {
   USING_GARBAGE_COLLECTED_MIXIN(MockClient);
 
@@ -70,9 +70,8 @@ class MockClient final : public GarbageCollectedFinalized<MockClient>,
 
 class ResourceLoadSchedulerTest : public testing::Test {
  public:
-  class MockConsoleLogger final
-      : public GarbageCollectedFinalized<MockConsoleLogger>,
-        public ConsoleLogger {
+  class MockConsoleLogger final : public GarbageCollected<MockConsoleLogger>,
+                                  public ConsoleLogger {
     USING_GARBAGE_COLLECTED_MIXIN(MockConsoleLogger);
 
    public:
@@ -90,7 +89,6 @@ class ResourceLoadSchedulerTest : public testing::Test {
 
   using ThrottleOption = ResourceLoadScheduler::ThrottleOption;
   void SetUp() override {
-    DCHECK(RuntimeEnabledFeatures::ResourceLoadSchedulerEnabled());
     auto* properties = MakeGarbageCollected<TestResourceFetcherProperties>();
     properties->SetShouldBlockLoadingSubResource(true);
     auto frame_scheduler = std::make_unique<scheduler::FakeFrameScheduler>();

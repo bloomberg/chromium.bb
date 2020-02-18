@@ -17,10 +17,6 @@
 #include "extensions/browser/api/declarative_net_request/ruleset_source.h"
 #include "extensions/common/extension_id.h"
 
-namespace service_manager {
-class Connector;
-}  // namespace service_manager
-
 namespace extensions {
 
 namespace api {
@@ -127,17 +123,16 @@ class FileSequenceHelper {
   // string.
   using UpdateDynamicRulesUICallback =
       base::OnceCallback<void(LoadRequestData, base::Optional<std::string>)>;
-  void UpdateDynamicRules(LoadRequestData load_data,
-                          std::vector<api::declarative_net_request::Rule> rules,
-                          DynamicRuleUpdateAction action,
-                          UpdateDynamicRulesUICallback ui_callback) const;
+  void UpdateDynamicRules(
+      LoadRequestData load_data,
+      std::vector<int> rule_ids_to_remove,
+      std::vector<api::declarative_net_request::Rule> rules_to_add,
+      UpdateDynamicRulesUICallback ui_callback) const;
 
  private:
   // Callback invoked when the JSON rulesets are reindexed.
   void OnRulesetsReindexed(LoadRulesetsUICallback ui_callback,
                            LoadRequestData load_data) const;
-
-  const std::unique_ptr<service_manager::Connector> connector_;
 
   // Must be the last member variable. See WeakPtrFactory documentation for
   // details. Mutable to allow GetWeakPtr() usage from const methods.

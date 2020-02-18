@@ -4,14 +4,15 @@
 
 package org.chromium.ui.modelutil;
 
-import android.support.annotation.Nullable;
 import android.util.Pair;
 import android.util.SparseArray;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 
-import org.chromium.base.VisibleForTesting;
+import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.ui.R;
 import org.chromium.ui.modelutil.ListObservable.ListObserver;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor.ViewBinder;

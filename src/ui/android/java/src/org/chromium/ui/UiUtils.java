@@ -13,9 +13,6 @@ import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Environment;
 import android.os.StrictMode;
-import android.support.annotation.ColorRes;
-import android.support.annotation.DrawableRes;
-import android.support.annotation.NonNull;
 import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatDelegate;
@@ -30,6 +27,10 @@ import android.view.inputmethod.InputMethodManager;
 import android.view.inputmethod.InputMethodSubtype;
 import android.widget.AbsListView;
 import android.widget.ListAdapter;
+
+import androidx.annotation.ColorRes;
+import androidx.annotation.DrawableRes;
+import androidx.annotation.NonNull;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Log;
@@ -97,12 +98,15 @@ public class UiUtils {
          * @param includeNames Whether to include names of the contacts shared.
          * @param includeEmails Whether to include emails of the contacts shared.
          * @param includeTel Whether to include telephone numbers of the contacts shared.
+         * @param includeAddresses Whether to include addresses of the contacts shared.
+         * @param includeIcons Whether to include addresses of the contacts shared.
          * @param formattedOrigin The origin the data will be shared with, formatted for display
          *                        with the scheme omitted.
          */
         void showContactsPicker(Context context, ContactsPickerListener listener,
                 boolean allowMultiple, boolean includeNames, boolean includeEmails,
-                boolean includeTel, String formattedOrigin);
+                boolean includeTel, boolean includeAddresses, boolean includeIcons,
+                String formattedOrigin);
 
         /**
          * Called when the contacts picker dialog has been dismissed.
@@ -155,14 +159,16 @@ public class UiUtils {
      * @param includeNames Whether to include names in the contact data returned.
      * @param includeEmails Whether to include emails in the contact data returned.
      * @param includeTel Whether to include telephone numbers in the contact data returned.
+     * @param includeAddresses Whether to include addresses of the contacts shared.
+     * @param includeIcons Whether to include icons of the contacts shared.
      * @param formattedOrigin The origin the data will be shared with.
      */
     public static boolean showContactsPicker(Context context, ContactsPickerListener listener,
             boolean allowMultiple, boolean includeNames, boolean includeEmails, boolean includeTel,
-            String formattedOrigin) {
+            boolean includeAddresses, boolean includeIcons, String formattedOrigin) {
         if (sContactsPickerDelegate == null) return false;
         sContactsPickerDelegate.showContactsPicker(context, listener, allowMultiple, includeNames,
-                includeEmails, includeTel, formattedOrigin);
+                includeEmails, includeTel, includeAddresses, includeIcons, formattedOrigin);
         return true;
     }
 

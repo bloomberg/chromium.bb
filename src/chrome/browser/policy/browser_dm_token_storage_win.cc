@@ -25,6 +25,7 @@
 #include "base/logging.h"
 #include "base/no_destructor.h"
 #include "base/strings/string16.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task_runner_util.h"
@@ -189,19 +190,22 @@ std::string BrowserDMTokenStorageWin::InitDMToken() {
   DCHECK_LE(size, installer::kMaxDMTokenLength);
   std::string dm_token;
   dm_token.assign(raw_value.data(), size);
-  return dm_token;
+  return base::TrimWhitespaceASCII(dm_token, base::TRIM_ALL).as_string();
 }
 
 bool BrowserDMTokenStorageWin::InitEnrollmentErrorOption() {
   return InstallUtil::ShouldCloudManagementBlockOnFailure();
 }
 
-void BrowserDMTokenStorageWin::SaveDMToken(const std::string& token) {
-  base::PostTaskAndReplyWithResult(
-      com_sta_task_runner_.get(), FROM_HERE,
-      base::BindOnce(&StoreDMTokenInRegistry, token),
-      base::BindOnce(&BrowserDMTokenStorage::OnDMTokenStored,
-                     weak_factory_.GetWeakPtr()));
+BrowserDMTokenStorage::StoreTask BrowserDMTokenStorageWin::SaveDMTokenTask(
+    const std::string& token,
+    const std::string& client_id) {
+  return base::BindOnce(&StoreDMTokenInRegistry, token);
+}
+
+scoped_refptr<base::TaskRunner>
+BrowserDMTokenStorageWin::SaveDMTokenTaskRunner() {
+  return com_sta_task_runner_;
 }
 
 // static

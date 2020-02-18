@@ -16,14 +16,10 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread.h"
-#include "components/services/leveldb/leveldb_service_impl.h"
-#include "components/services/leveldb/public/cpp/util.h"
-#include "components/services/leveldb/public/mojom/leveldb.mojom.h"
+#include "components/services/storage/dom_storage/async_dom_storage_database.h"
+#include "components/services/storage/dom_storage/storage_area_test_util.h"
 #include "content/browser/dom_storage/session_storage_data_map.h"
 #include "content/browser/dom_storage/session_storage_metadata.h"
-#include "content/browser/dom_storage/test/storage_area_test_util.h"
-#include "content/public/test/browser_task_environment.h"
-#include "content/test/fake_leveldb_database.h"
 #include "content/test/gmock_util.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
@@ -35,21 +31,15 @@
 #include "url/gurl.h"
 
 namespace content {
-namespace {
-using leveldb::StdStringToUint8Vector;
-using leveldb::Uint8VectorToStdString;
-using leveldb::mojom::DatabaseError;
 
-template <typename Interface, typename Impl>
-void CreateSelfOwnedreceiverOnTaskRunner(
-    scoped_refptr<base::SequencedTaskRunner> runner,
-    mojo::PendingReceiver<Interface> pending_receiver,
-    std::unique_ptr<Impl> interface) {
-  runner->PostTask(
-      FROM_HERE,
-      base::BindOnce(
-          base::IgnoreResult(&mojo::MakeSelfOwnedReceiver<Interface, Impl>),
-          std::move(interface), std::move(pending_receiver), runner));
+namespace {
+
+std::vector<uint8_t> StdStringToUint8Vector(const std::string& s) {
+  return std::vector<uint8_t>(s.begin(), s.end());
+}
+
+MATCHER(OKStatus, "Equality matcher for type OK leveldb::Status") {
+  return arg.ok();
 }
 
 class MockListener : public SessionStorageDataMap::Listener {
@@ -60,7 +50,7 @@ class MockListener : public SessionStorageDataMap::Listener {
                void(const std::vector<uint8_t>& map_id,
                     SessionStorageDataMap* map));
   MOCK_METHOD1(OnDataMapDestruction, void(const std::vector<uint8_t>& map_id));
-  MOCK_METHOD1(OnCommitResult, void(DatabaseError error));
+  MOCK_METHOD1(OnCommitResult, void(leveldb::Status));
 };
 
 class SessionStorageAreaImplTest : public testing::Test {
@@ -70,37 +60,32 @@ class SessionStorageAreaImplTest : public testing::Test {
         test_namespace_id2_(base::GenerateGUID()),
         test_origin1_(url::Origin::Create(GURL("https://host1.com:1/"))),
         test_origin2_(url::Origin::Create(GURL("https://host2.com:2/"))) {
-    auto file_runner =
-        base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock()});
-    CreateSelfOwnedreceiverOnTaskRunner(
-        base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock()}),
-        leveldb_service_.BindNewPipeAndPassReceiver(),
-        std::make_unique<leveldb::LevelDBServiceImpl>(std::move(file_runner)));
-
-    leveldb_service_->OpenInMemory(
+    leveldb_database_ = storage::AsyncDomStorageDatabase::OpenInMemory(
         base::nullopt, "SessionStorageAreaImplTestDatabase",
-        leveldb_database_.BindNewEndpointAndPassReceiver(), base::DoNothing());
-
+        base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock()}),
+        base::DoNothing());
     leveldb_database_->Put(StdStringToUint8Vector("map-0-key1"),
                            StdStringToUint8Vector("data1"), base::DoNothing());
 
-    std::vector<leveldb::mojom::BatchedOperationPtr> save_operations =
-        metadata_.SetupNewDatabase();
+    std::vector<storage::AsyncDomStorageDatabase::BatchDatabaseTask>
+        save_tasks = metadata_.SetupNewDatabase();
     auto map_id = metadata_.RegisterNewMap(
         metadata_.GetOrCreateNamespaceEntry(test_namespace_id1_), test_origin1_,
-        &save_operations);
+        &save_tasks);
     DCHECK(map_id->KeyPrefix() == StdStringToUint8Vector("map-0-"));
-    leveldb_database_->Write(std::move(save_operations), base::DoNothing());
+    leveldb_database_->RunBatchDatabaseTasks(std::move(save_tasks),
+                                             base::DoNothing());
   }
   ~SessionStorageAreaImplTest() override = default;
 
   scoped_refptr<SessionStorageMetadata::MapData> RegisterNewAreaMap(
       SessionStorageMetadata::NamespaceEntry namespace_entry,
       const url::Origin& origin) {
-    std::vector<leveldb::mojom::BatchedOperationPtr> save_operations;
+    std::vector<storage::AsyncDomStorageDatabase::BatchDatabaseTask> save_tasks;
     auto map_data =
-        metadata_.RegisterNewMap(namespace_entry, origin, &save_operations);
-    leveldb_database_->Write(std::move(save_operations), base::DoNothing());
+        metadata_.RegisterNewMap(namespace_entry, origin, &save_tasks);
+    leveldb_database_->RunBatchDatabaseTasks(std::move(save_tasks),
+                                             base::DoNothing());
     return map_data;
   }
 
@@ -110,13 +95,12 @@ class SessionStorageAreaImplTest : public testing::Test {
   }
 
  protected:
-  BrowserTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   const std::string test_namespace_id1_;
   const std::string test_namespace_id2_;
   const url::Origin test_origin1_;
   const url::Origin test_origin2_;
-  mojo::Remote<leveldb::mojom::LevelDBService> leveldb_service_;
-  mojo::AssociatedRemote<leveldb::mojom::LevelDBDatabase> leveldb_database_;
+  std::unique_ptr<storage::AsyncDomStorageDatabase> leveldb_database_;
   SessionStorageMetadata metadata_;
 
   testing::StrictMock<MockListener> listener_;
@@ -142,7 +126,7 @@ TEST_F(SessionStorageAreaImplTest, BasicUsage) {
       ss_leveldb.BindNewEndpointAndPassDedicatedReceiverForTesting());
 
   std::vector<blink::mojom::KeyValuePtr> data;
-  EXPECT_TRUE(test::GetAllSync(ss_leveldb.get(), &data));
+  EXPECT_TRUE(storage::test::GetAllSync(ss_leveldb.get(), &data));
   ASSERT_EQ(1ul, data.size());
   EXPECT_TRUE(base::Contains(
       data, blink::mojom::KeyValue::New(StdStringToUint8Vector("key1"),
@@ -171,7 +155,7 @@ TEST_F(SessionStorageAreaImplTest, ExplicitlyEmptyMap) {
       ss_leveldb.BindNewEndpointAndPassDedicatedReceiverForTesting());
 
   std::vector<blink::mojom::KeyValuePtr> data;
-  EXPECT_TRUE(test::GetAllSync(ss_leveldb.get(), &data));
+  EXPECT_TRUE(storage::test::GetAllSync(ss_leveldb.get(), &data));
   ASSERT_EQ(0ul, data.size());
 
   EXPECT_CALL(listener_, OnDataMapDestruction(StdStringToUint8Vector("0")))
@@ -202,7 +186,7 @@ TEST_F(SessionStorageAreaImplTest, DoubleBind) {
   ss_leveldb_impl->Bind(
       ss_leveldb2.BindNewEndpointAndPassDedicatedReceiverForTesting());
   std::vector<blink::mojom::KeyValuePtr> data;
-  EXPECT_TRUE(test::GetAllSync(ss_leveldb2.get(), &data));
+  EXPECT_TRUE(storage::test::GetAllSync(ss_leveldb2.get(), &data));
   ASSERT_EQ(1ul, data.size());
 
   // Make sure the first binding was closed.
@@ -227,12 +211,12 @@ TEST_F(SessionStorageAreaImplTest, Cloning) {
       GetRegisterNewAreaMapCallback());
 
   // Perform a shallow clone.
-  std::vector<leveldb::mojom::BatchedOperationPtr> save_operations;
+  std::vector<storage::AsyncDomStorageDatabase::BatchDatabaseTask> save_tasks;
   metadata_.RegisterShallowClonedNamespace(
       metadata_.GetOrCreateNamespaceEntry(test_namespace_id1_),
-      metadata_.GetOrCreateNamespaceEntry(test_namespace_id2_),
-      &save_operations);
-  leveldb_database_->Write(std::move(save_operations), base::DoNothing());
+      metadata_.GetOrCreateNamespaceEntry(test_namespace_id2_), &save_tasks);
+  leveldb_database_->RunBatchDatabaseTasks(std::move(save_tasks),
+                                           base::DoNothing());
   auto ss_leveldb_impl2 = ss_leveldb_impl1->Clone(
       metadata_.GetOrCreateNamespaceEntry(test_namespace_id2_));
 
@@ -250,18 +234,18 @@ TEST_F(SessionStorageAreaImplTest, Cloning) {
   EXPECT_CALL(listener_,
               OnDataMapCreation(StdStringToUint8Vector("1"), testing::_))
       .Times(1);
-  EXPECT_CALL(listener_, OnCommitResult(DatabaseError::OK))
+  EXPECT_CALL(listener_, OnCommitResult(OKStatus()))
       .Times(testing::AnyNumber());
-  EXPECT_TRUE(test::PutSync(ss_leveldb2.get(), StdStringToUint8Vector("key2"),
-                            StdStringToUint8Vector("data2"), base::nullopt,
-                            ""));
+  EXPECT_TRUE(storage::test::PutSync(
+      ss_leveldb2.get(), StdStringToUint8Vector("key2"),
+      StdStringToUint8Vector("data2"), base::nullopt, ""));
 
   // The maps were forked on the above put.
   EXPECT_NE(ss_leveldb_impl1->data_map(), ss_leveldb_impl2->data_map());
 
   // Check map 1 data.
   std::vector<blink::mojom::KeyValuePtr> data;
-  EXPECT_TRUE(test::GetAllSync(ss_leveldb1.get(), &data));
+  EXPECT_TRUE(storage::test::GetAllSync(ss_leveldb1.get(), &data));
   ASSERT_EQ(1ul, data.size());
   EXPECT_TRUE(base::Contains(
       data, blink::mojom::KeyValue::New(StdStringToUint8Vector("key1"),
@@ -269,7 +253,7 @@ TEST_F(SessionStorageAreaImplTest, Cloning) {
 
   // Check map 2 data.
   data.clear();
-  EXPECT_TRUE(test::GetAllSync(ss_leveldb2.get(), &data));
+  EXPECT_TRUE(storage::test::GetAllSync(ss_leveldb2.get(), &data));
   ASSERT_EQ(2ul, data.size());
   EXPECT_TRUE(base::Contains(
       data, blink::mojom::KeyValue::New(StdStringToUint8Vector("key1"),
@@ -305,7 +289,7 @@ TEST_F(SessionStorageAreaImplTest, NotifyAllDeleted) {
   ss_leveldb_impl1->Bind(
       ss_leveldb1.BindNewEndpointAndPassDedicatedReceiverForTesting());
 
-  testing::StrictMock<test::MockLevelDBObserver> mock_observer;
+  testing::StrictMock<storage::test::MockLevelDBObserver> mock_observer;
   mojo::AssociatedReceiver<blink::mojom::StorageAreaObserver> observer_receiver(
       &mock_observer);
   ss_leveldb1->AddObserver(observer_receiver.BindNewEndpointAndPassRemote());
@@ -336,12 +320,12 @@ TEST_F(SessionStorageAreaImplTest, DeleteAllOnShared) {
       GetRegisterNewAreaMapCallback());
 
   // Perform a shallow clone.
-  std::vector<leveldb::mojom::BatchedOperationPtr> save_operations;
+  std::vector<storage::AsyncDomStorageDatabase::BatchDatabaseTask> save_tasks;
   metadata_.RegisterShallowClonedNamespace(
       metadata_.GetOrCreateNamespaceEntry(test_namespace_id1_),
-      metadata_.GetOrCreateNamespaceEntry(test_namespace_id2_),
-      &save_operations);
-  leveldb_database_->Write(std::move(save_operations), base::DoNothing());
+      metadata_.GetOrCreateNamespaceEntry(test_namespace_id2_), &save_tasks);
+  leveldb_database_->RunBatchDatabaseTasks(std::move(save_tasks),
+                                           base::DoNothing());
   auto ss_leveldb_impl2 = ss_leveldb_impl1->Clone(
       metadata_.GetOrCreateNamespaceEntry(test_namespace_id2_));
 
@@ -358,7 +342,7 @@ TEST_F(SessionStorageAreaImplTest, DeleteAllOnShared) {
   // Create the observer, attach to the first namespace, and verify we don't see
   // any changes (see SessionStorageAreaImpl class comment about when observers
   // are called).
-  testing::StrictMock<test::MockLevelDBObserver> mock_observer;
+  testing::StrictMock<storage::test::MockLevelDBObserver> mock_observer;
   mojo::AssociatedReceiver<blink::mojom::StorageAreaObserver> observer_receiver(
       &mock_observer);
   ss_leveldb1->AddObserver(observer_receiver.BindNewEndpointAndPassRemote());
@@ -370,8 +354,8 @@ TEST_F(SessionStorageAreaImplTest, DeleteAllOnShared) {
       .Times(1);
   // There should be no commits, as we don't actually have to change any data.
   // |ss_leveldb_impl1| should just switch to a new, empty map.
-  EXPECT_CALL(listener_, OnCommitResult(DatabaseError::OK)).Times(0);
-  EXPECT_TRUE(test::DeleteAllSync(ss_leveldb1.get(), "source"));
+  EXPECT_CALL(listener_, OnCommitResult(OKStatus())).Times(0);
+  EXPECT_TRUE(storage::test::DeleteAllSync(ss_leveldb1.get(), "source"));
 
   // The maps were forked on the above call.
   EXPECT_NE(ss_leveldb_impl1->data_map(), ss_leveldb_impl2->data_map());
@@ -400,9 +384,9 @@ TEST_F(SessionStorageAreaImplTest, DeleteAllWithoutBinding) {
       GetRegisterNewAreaMapCallback());
 
   base::RunLoop loop;
-  EXPECT_CALL(listener_, OnCommitResult(DatabaseError::OK))
+  EXPECT_CALL(listener_, OnCommitResult(OKStatus()))
       .WillOnce(base::test::RunClosure(loop.QuitClosure()));
-  EXPECT_TRUE(test::DeleteAllSync(ss_leveldb_impl1.get(), "source"));
+  EXPECT_TRUE(storage::test::DeleteAllSync(ss_leveldb_impl1.get(), "source"));
   ss_leveldb_impl1->data_map()->storage_area()->ScheduleImmediateCommit();
   loop.Run();
 
@@ -427,12 +411,12 @@ TEST_F(SessionStorageAreaImplTest, DeleteAllWithoutBindingOnShared) {
       GetRegisterNewAreaMapCallback());
 
   // Perform a shallow clone.
-  std::vector<leveldb::mojom::BatchedOperationPtr> save_operations;
+  std::vector<storage::AsyncDomStorageDatabase::BatchDatabaseTask> save_tasks;
   metadata_.RegisterShallowClonedNamespace(
       metadata_.GetOrCreateNamespaceEntry(test_namespace_id1_),
-      metadata_.GetOrCreateNamespaceEntry(test_namespace_id2_),
-      &save_operations);
-  leveldb_database_->Write(std::move(save_operations), base::DoNothing());
+      metadata_.GetOrCreateNamespaceEntry(test_namespace_id2_), &save_tasks);
+  leveldb_database_->RunBatchDatabaseTasks(std::move(save_tasks),
+                                           base::DoNothing());
   auto ss_leveldb_impl2 = ss_leveldb_impl1->Clone(
       metadata_.GetOrCreateNamespaceEntry(test_namespace_id2_));
 
@@ -446,8 +430,8 @@ TEST_F(SessionStorageAreaImplTest, DeleteAllWithoutBindingOnShared) {
       .Times(1);
   // There should be no commits, as we don't actually have to change any data.
   // |ss_leveldb_impl1| should just switch to a new, empty map.
-  EXPECT_CALL(listener_, OnCommitResult(DatabaseError::OK)).Times(0);
-  EXPECT_TRUE(test::DeleteAllSync(ss_leveldb_impl1.get(), "source"));
+  EXPECT_CALL(listener_, OnCommitResult(OKStatus())).Times(0);
+  EXPECT_TRUE(storage::test::DeleteAllSync(ss_leveldb_impl1.get(), "source"));
 
   // The maps were forked on the above call.
   EXPECT_NE(ss_leveldb_impl1->data_map(), ss_leveldb_impl2->data_map());

@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/numerics/clamped_math.h"
+#include "third_party/blink/public/mojom/web_feature/web_feature.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_intersection_observer_callback.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_intersection_observer_delegate.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_token_range.h"
@@ -26,6 +27,7 @@
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/timer.h"
 
 namespace blink {
@@ -38,12 +40,16 @@ class IntersectionObserverDelegateImpl final
     : public IntersectionObserverDelegate {
 
  public:
-  IntersectionObserverDelegateImpl(ExecutionContext* context,
-                                   IntersectionObserver::EventCallback callback)
-      : context_(context), callback_(std::move(callback)) {}
+  IntersectionObserverDelegateImpl(
+      ExecutionContext* context,
+      IntersectionObserver::EventCallback callback,
+      IntersectionObserver::DeliveryBehavior delivery_behavior)
+      : context_(context),
+        callback_(std::move(callback)),
+        delivery_behavior_(delivery_behavior) {}
 
   IntersectionObserver::DeliveryBehavior GetDeliveryBehavior() const override {
-    return IntersectionObserver::kDeliverDuringPostLifecycleSteps;
+    return delivery_behavior_;
   }
 
   void Deliver(const HeapVector<Member<IntersectionObserverEntry>>& entries,
@@ -61,6 +67,7 @@ class IntersectionObserverDelegateImpl final
  private:
   WeakMember<ExecutionContext> context_;
   IntersectionObserver::EventCallback callback_;
+  IntersectionObserver::DeliveryBehavior delivery_behavior_;
   DISALLOW_COPY_AND_ASSIGN(IntersectionObserverDelegateImpl);
 };
 
@@ -195,6 +202,10 @@ IntersectionObserver* IntersectionObserver::Create(
   V8IntersectionObserverDelegate* delegate =
       MakeGarbageCollected<V8IntersectionObserverDelegate>(callback,
                                                            script_state);
+  if (observer_init && observer_init->trackVisibility()) {
+    UseCounter::Count(delegate->GetExecutionContext(),
+                      WebFeature::kIntersectionObserverV2);
+  }
   return Create(observer_init, *delegate, exception_state);
 }
 
@@ -203,6 +214,7 @@ IntersectionObserver* IntersectionObserver::Create(
     const Vector<float>& thresholds,
     Document* document,
     EventCallback callback,
+    DeliveryBehavior behavior,
     ThresholdInterpretation semantics,
     DOMHighResTimeStamp delay,
     bool track_visibility,
@@ -210,7 +222,7 @@ IntersectionObserver* IntersectionObserver::Create(
     ExceptionState& exception_state) {
   IntersectionObserverDelegateImpl* intersection_observer_delegate =
       MakeGarbageCollected<IntersectionObserverDelegateImpl>(
-          document, std::move(callback));
+          document, std::move(callback), behavior);
   return MakeGarbageCollected<IntersectionObserver>(
       *intersection_observer_delegate, nullptr, root_margin, thresholds,
       semantics, delay, track_visibility, always_report_root_bounds);
@@ -270,8 +282,8 @@ IntersectionObserver::IntersectionObserver(
   }
 }
 
-void IntersectionObserver::ClearWeakMembers(Visitor* visitor) {
-  if (RootIsImplicit() || (root() && ThreadHeap::IsHeapObjectAlive(root())))
+void IntersectionObserver::ProcessCustomWeakness(const WeakCallbackInfo& info) {
+  if (RootIsImplicit() || (root() && info.IsHeapObjectAlive(root())))
     return;
   DummyExceptionStateForTesting exception_state;
   disconnect(exception_state);
@@ -318,7 +330,8 @@ void IntersectionObserver::observe(Element* target,
     // be recorded after observe() is called, even if the target is detached.
     observation->ComputeIntersection(
         IntersectionObservation::kImplicitRootObserversNeedUpdate |
-        IntersectionObservation::kExplicitRootObserversNeedUpdate);
+        IntersectionObservation::kExplicitRootObserversNeedUpdate |
+        IntersectionObservation::kIgnoreDelay);
   }
 }
 
@@ -387,8 +400,9 @@ bool IntersectionObserver::ComputeIntersections(unsigned flags) {
   DCHECK(!RootIsImplicit());
   if (!RootIsValid() || !GetExecutionContext() || observations_.IsEmpty())
     return false;
-  IntersectionGeometry::RootGeometry root_geometry(root()->GetLayoutObject(),
-                                                   root_margin_);
+  IntersectionGeometry::RootGeometry root_geometry(
+      IntersectionGeometry::GetRootLayoutObjectForTarget(root(), nullptr),
+      root_margin_);
   HeapVector<Member<IntersectionObservation>> observations_to_process;
   // TODO(szager): Is this copy necessary?
   CopyToVector(observations_, observations_to_process);
@@ -428,8 +442,8 @@ bool IntersectionObserver::HasPendingActivity() const {
 }
 
 void IntersectionObserver::Trace(blink::Visitor* visitor) {
-  visitor->template RegisterWeakMembers<
-      IntersectionObserver, &IntersectionObserver::ClearWeakMembers>(this);
+  visitor->template RegisterWeakCallbackMethod<
+      IntersectionObserver, &IntersectionObserver::ProcessCustomWeakness>(this);
   visitor->Trace(delegate_);
   visitor->Trace(observations_);
   ScriptWrappable::Trace(visitor);

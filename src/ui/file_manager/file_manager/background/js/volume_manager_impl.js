@@ -32,12 +32,12 @@ class VolumeManagerImpl extends cr.EventTarget {
     // TODO(hidehiko): Remove them after the migration.
     /**
      * Connection state of the Drive.
-     * @type {VolumeManagerCommon.DriveConnectionState}
+     * @type {chrome.fileManagerPrivate.DriveConnectionState}
      * @private
      */
     this.driveConnectionState_ = {
-      type: VolumeManagerCommon.DriveConnectionType.OFFLINE,
-      reason: VolumeManagerCommon.DriveConnectionReason.NO_SERVICE,
+      type: chrome.fileManagerPrivate.DriveConnectionStateType.OFFLINE,
+      reason: chrome.fileManagerPrivate.DriveOfflineReason.NO_SERVICE,
       hasCellularNetworkAccess: false
     };
 
@@ -55,9 +55,7 @@ class VolumeManagerImpl extends cr.EventTarget {
    */
   onDriveConnectionStatusChanged_() {
     chrome.fileManagerPrivate.getDriveConnectionState(state => {
-      // TODO(crbug.com/931971): Convert private API to use enum.
-      this.driveConnectionState_ =
-          /** @type {VolumeManagerCommon.DriveConnectionState} */ (state);
+      this.driveConnectionState_ = state;
       cr.dispatchSimpleEvent(this, 'drive-connection-changed');
     });
   }
@@ -132,7 +130,7 @@ class VolumeManagerImpl extends cr.EventTarget {
       console.error('Cannot get volumes');
       return;
     }
-    console.warn(`There are ${volumeMetadataList.length} volumes`);
+    console.debug(`There are ${volumeMetadataList.length} volumes`);
 
     // We must subscribe to the mount completed event in the callback of
     // getVolumeMetadataList (crbug.com/330061). But volumes reported by
@@ -142,9 +140,15 @@ class VolumeManagerImpl extends cr.EventTarget {
     try {
       // Create VolumeInfo for each volume.
       await Promise.all(volumeMetadataList.map(async (volumeMetadata) => {
-        console.warn(`Initializing volume '${volumeMetadata.volumeId}'`);
-        const volumeInfo = await this.addVolumeMetadata_(volumeMetadata);
-        console.warn(`Initialized volume '${volumeInfo.volumeId}'`);
+        console.debug(`Initializing volume '${volumeMetadata.volumeId}'`);
+        try {
+          // Handle error here otherwise every promise in Promise.all() fails.
+          const volumeInfo = await this.addVolumeMetadata_(volumeMetadata);
+          console.debug(`Initialized volume '${volumeInfo.volumeId}'`);
+        } catch (error) {
+          console.warn(`Error initiliazing ${volumeMetadata.volumeId}`);
+          console.error(error);
+        }
       }));
 
       console.warn(`Initialized all ${volumeMetadataList.length} volumes`);
@@ -172,7 +176,7 @@ class VolumeManagerImpl extends cr.EventTarget {
             case 'success':
             case VolumeManagerCommon.VolumeError.UNKNOWN_FILESYSTEM:
             case VolumeManagerCommon.VolumeError.UNSUPPORTED_FILESYSTEM: {
-              console.warn(`Mounted '${sourcePath}' as '${volumeId}'`);
+              console.debug(`Mounted '${sourcePath}' as '${volumeId}'`);
               const volumeInfo = await this.addVolumeMetadata_(volumeMetadata);
               this.finishRequest_(requestKey, status, volumeInfo);
               return;
@@ -211,7 +215,7 @@ class VolumeManagerImpl extends cr.EventTarget {
                 this.dispatchEvent(new CustomEvent(
                     'externally-unmounted', {detail: volumeInfo}));
               } else {
-                console.warn(`Unmounted '${volumeId}'`);
+                console.debug(`Unmounted '${volumeId}'`);
               }
 
               this.volumeInfoList.remove(volumeId);
@@ -249,7 +253,7 @@ class VolumeManagerImpl extends cr.EventTarget {
     const path = await new Promise(resolve => {
       chrome.fileManagerPrivate.addMount(fileUrl, resolve);
     });
-    console.warn(`Mounting '${path}'`);
+    console.debug(`Mounting '${path}'`);
     const key = this.makeRequestKey_('mount', path);
     return this.startRequest_(key);
   }
@@ -289,7 +293,7 @@ class VolumeManagerImpl extends cr.EventTarget {
         return volumeInfo;
       }
       // Additionally, check fake entries.
-      for (let key in volumeInfo.fakeEntries) {
+      for (const key in volumeInfo.fakeEntries) {
         const fakeEntry = volumeInfo.fakeEntries[key];
         if (util.isSameEntry(fakeEntry, entry)) {
           return volumeInfo;

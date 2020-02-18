@@ -6,10 +6,11 @@
 
 #include <string>
 
+#include "base/containers/flat_set.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/strings/stringprintf.h"
-#include "components/optimization_guide/hint_update_data.h"
 #include "components/optimization_guide/optimization_guide_features.h"
+#include "components/optimization_guide/store_update_data.h"
 #include "components/optimization_guide/url_pattern_with_wildcards.h"
 #include "url/gurl.h"
 
@@ -85,12 +86,12 @@ std::string HashHostForDictionary(const std::string& host) {
 }
 
 bool ProcessHints(google::protobuf::RepeatedPtrField<proto::Hint>* hints,
-                  optimization_guide::HintUpdateData* hint_update_data) {
+                  optimization_guide::StoreUpdateData* update_data) {
   // If there's no update data, then there's nothing to do.
-  if (!hint_update_data)
+  if (!update_data)
     return false;
 
-  std::unordered_set<std::string> seen_host_suffixes;
+  base::flat_set<std::string> seen_host_suffixes;
 
   bool did_process_hints = false;
   // Process each hint in the the hint configuration. The hints are mutable
@@ -125,7 +126,7 @@ bool ProcessHints(google::protobuf::RepeatedPtrField<proto::Hint>* hints,
       // data.
       // WARNING: Do not use |hint| after this call. Its contents will no
       // longer be valid.
-      hint_update_data->MoveHintIntoUpdateData(std::move(hint));
+      update_data->MoveHintIntoUpdateData(std::move(hint));
       did_process_hints = true;
     }
   }

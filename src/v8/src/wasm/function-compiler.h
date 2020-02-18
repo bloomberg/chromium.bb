@@ -5,6 +5,8 @@
 #ifndef V8_WASM_FUNCTION_COMPILER_H_
 #define V8_WASM_FUNCTION_COMPILER_H_
 
+#include <memory>
+
 #include "src/codegen/code-desc.h"
 #include "src/trap-handler/trap-handler.h"
 #include "src/wasm/compilation-environment.h"
@@ -33,7 +35,9 @@ class WasmInstructionBuffer final {
   std::unique_ptr<AssemblerBuffer> CreateView();
   std::unique_ptr<uint8_t[]> ReleaseBuffer();
 
-  static std::unique_ptr<WasmInstructionBuffer> New();
+  // Allocate a new {WasmInstructionBuffer}. The size is the maximum of {size}
+  // and {AssemblerBase::kMinimalSize}.
+  static std::unique_ptr<WasmInstructionBuffer> New(size_t size = 0);
 
   // Override {operator delete} to avoid implicit instantiation of {operator
   // delete} with {size_t} argument. The {size_t} argument would be incorrect.

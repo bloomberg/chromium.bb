@@ -336,11 +336,11 @@ void EventHandlerRegistry::NotifyDidAddOrRemoveEventHandlerTarget(
 
 void EventHandlerRegistry::Trace(blink::Visitor* visitor) {
   visitor->Trace(frame_);
-  visitor->template RegisterWeakMembers<
-      EventHandlerRegistry, &EventHandlerRegistry::ClearWeakMembers>(this);
+  visitor->template RegisterWeakCallbackMethod<
+      EventHandlerRegistry, &EventHandlerRegistry::ProcessCustomWeakness>(this);
 }
 
-void EventHandlerRegistry::ClearWeakMembers(Visitor* visitor) {
+void EventHandlerRegistry::ProcessCustomWeakness(const WeakCallbackInfo& info) {
   Vector<UntracedMember<EventTarget>> dead_targets;
   for (int i = 0; i < kEventHandlerClassCount; ++i) {
     EventHandlerClass handler_class = static_cast<EventHandlerClass>(i);
@@ -348,9 +348,9 @@ void EventHandlerRegistry::ClearWeakMembers(Visitor* visitor) {
     for (const auto& event_target : *targets) {
       Node* node = event_target.key->ToNode();
       LocalDOMWindow* window = event_target.key->ToLocalDOMWindow();
-      if (node && !ThreadHeap::IsHeapObjectAlive(node)) {
+      if (node && !info.IsHeapObjectAlive(node)) {
         dead_targets.push_back(node);
-      } else if (window && !ThreadHeap::IsHeapObjectAlive(window)) {
+      } else if (window && !info.IsHeapObjectAlive(window)) {
         dead_targets.push_back(window);
       }
     }

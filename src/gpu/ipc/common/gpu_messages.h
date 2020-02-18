@@ -13,7 +13,7 @@
 #include <string>
 #include <vector>
 
-#include "base/memory/shared_memory.h"
+#include "base/optional.h"
 #include "base/unguessable_token.h"
 #include "build/build_config.h"
 #include "components/viz/common/resources/resource_format.h"
@@ -28,6 +28,7 @@
 #include "gpu/ipc/common/gpu_command_buffer_traits.h"
 #include "gpu/ipc/common/gpu_param_traits.h"
 #include "gpu/ipc/common/surface_handle.h"
+#include "gpu/ipc/common/vulkan_ycbcr_info.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_message_macros.h"
 #include "ui/gfx/color_space.h"
@@ -40,6 +41,7 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/presentation_feedback.h"
 #include "ui/gfx/swap_result.h"
+#include "ui/gl/gpu_preference.h"
 #include "url/ipc/url_param_traits.h"
 
 #if defined(OS_MACOSX)
@@ -228,6 +230,10 @@ IPC_MESSAGE_ROUTED1(GpuStreamTextureMsg_ForwardForSurfaceRequest,
 // notifications.
 IPC_MESSAGE_ROUTED0(GpuStreamTextureMsg_StartListening)
 
+// Inform the renderer that a new frame with VulkanYcbcrInfo is available.
+IPC_MESSAGE_ROUTED1(GpuStreamTextureMsg_FrameWithYcbcrInfoAvailable,
+                    base::Optional<gpu::VulkanYCbCrInfo>)
+
 // Inform the renderer that a new frame is available.
 IPC_MESSAGE_ROUTED0(GpuStreamTextureMsg_FrameAvailable)
 
@@ -288,6 +294,10 @@ IPC_MESSAGE_ROUTED3(GpuCommandBufferMsg_AsyncFlush,
 // Sent by the GPU process to display messages in the console.
 IPC_MESSAGE_ROUTED1(GpuCommandBufferMsg_ConsoleMsg,
                     GPUCommandBufferConsoleMessage /* msg */)
+
+// Sent by the GPU process to notify the renderer process of a GPU switch.
+IPC_MESSAGE_ROUTED1(GpuCommandBufferMsg_GpuSwitched,
+                    gl::GpuPreference /* active_gpu_heuristic */)
 
 // Register an existing shared memory transfer buffer. The id that can be
 // used to identify the transfer buffer from a command buffer.

@@ -19,13 +19,12 @@ class ManageMigrationUiController;
 class LocalCardMigrationIconView : public PageActionIconView {
  public:
   LocalCardMigrationIconView(CommandUpdater* command_updater,
-                             PageActionIconView::Delegate* delegate,
-                             const gfx::FontList& font_list);
+                             PageActionIconView::Delegate* delegate);
   ~LocalCardMigrationIconView() override;
 
   // PageActionIconView:
   views::BubbleDialogDelegateView* GetBubble() const override;
-  bool Update() override;
+  void UpdateImpl() override;
   base::string16 GetTextForTooltipAndAccessibleName() const override;
 
  protected:

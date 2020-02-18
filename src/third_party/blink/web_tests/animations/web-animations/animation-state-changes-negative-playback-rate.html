@@ -75,13 +75,16 @@ test(function() {
   var animation = pausedAnimation();
   assert_unresolved(animation.startTime);
   assert_equals(animation.currentTime, duration);
-  assert_true(animation.pending);
+  // Setting the current time of a pause-pending animation applies a synchronous update.
+  assert_false(animation.pending);
   assert_equals(animation.playState, 'paused');
 }, "Play state is paused after pausing and setting current time of a canceled reversed animation");
 
 test(function() {
   var animation = finishedAnimation();
-  assert_equals(animation.startTime, document.timeline.currentTime - (animation.playbackRate * animation.currentTime));
+  assert_times_equal(
+      animation.startTime,
+      document.timeline.currentTime - (animation.playbackRate * animation.currentTime));
   assert_equals(animation.currentTime, 0);
   assert_false(animation.pending);
   assert_equals(animation.playState, 'finished');
@@ -117,7 +120,9 @@ test(function() {
 test(function() {
   var animation = idleAnimation();
   animation.finish();
-  assert_equals(animation.startTime, document.timeline.currentTime - (animation.playbackRate * animation.currentTime));
+  assert_times_equal(
+      animation.startTime,
+      document.timeline.currentTime - (animation.playbackRate * animation.currentTime));
   assert_equals(animation.currentTime, 0);
   assert_false(animation.pending);
   assert_equals(animation.playState, 'finished');
@@ -220,17 +225,21 @@ test(function() {
   animation.play();
   assert_equals(animation.startTime, startTime);
   assert_equals(animation.currentTime, currentTime);
-  assert_true(animation.pending);
+  assert_false(animation.pending);
   assert_equals(animation.playState, 'running');
 }, "Calling play() on a running animation");
 
-test(function() {
+async_test(function(t) {
   var animation = runningAnimation();
   animation.pause();
-  assert_unresolved(animation.startTime);
-  assert_times_equal(animation.currentTime, duration / 2);
   assert_true(animation.pending);
+  assert_times_equal(animation.currentTime, duration / 2);
   assert_equals(animation.playState, 'paused');
+  animation.ready.then(t.step_func_done(() => {
+    assert_equals(animation.startTime, null);
+    assert_false(animation.pending);
+    assert_equals(animation.playState, 'paused');
+  }));
 }, "Calling pause() on a running animation");
 
 test(function() {
@@ -251,13 +260,22 @@ test(function() {
   assert_equals(animation.playState, 'finished');
 }, "Calling finish() on a running animation");
 
-test(function() {
+async_test(function(t) {
   var animation = runningAnimation();
+  assert_equals(animation.playbackRate, -1);
   animation.reverse();
-  assert_unresolved(animation.startTime);
-  assert_times_equal(animation.currentTime, duration / 2);
   assert_true(animation.pending);
+  assert_times_equal(animation.currentTime, duration / 2);
+  assert_equals(animation.playbackRate, -1);
   assert_equals(animation.playState, 'running');
+  animation.ready.then(t.step_func_done(() => {
+    assert_false(animation.pending);
+    // TODO(crbug.com/960944): Add check to ensure that current time remains
+    // unchanged once remaining timing glitches are resolved.
+    assert_not_equals(animation.startTime, null);
+    assert_equals(animation.playbackRate, 1);
+    assert_equals(animation.playState, 'running');
+  }));
 }, "Calling reverse() on a running animation");
 
 test(function() {
@@ -289,10 +307,12 @@ test(function() {
 
 test(function() {
   var animation = pausedAnimation();
+  // Calling pause on an animation that is already paused or pause-pending is
+  // a no-op.
   animation.pause();
   assert_unresolved(animation.startTime);
   assert_equals(animation.currentTime, duration);
-  assert_true(animation.pending);
+  assert_false(animation.pending);
   assert_equals(animation.playState, 'paused');
 }, "Calling pause() on a paused animation");
 
@@ -325,10 +345,12 @@ test(function() {
 
 test(function() {
   var animation = pausedAnimation();
+  // Setting the current time on a paused or pause-pending animation gets
+  // resolved synchronously.
   animation.currentTime = 1000;
   assert_unresolved(animation.startTime);
   assert_times_equal(animation.currentTime, 1000);
-  assert_true(animation.pending);
+  assert_false(animation.pending);
   assert_equals(animation.playState, 'paused');
 }, "Setting currentTime on a paused animation");
 
@@ -350,13 +372,18 @@ test(function() {
   assert_equals(animation.playState, 'running');
 }, "Calling play() on a finished animation");
 
-test(function() {
+async_test(function(t) {
   var animation = finishedAnimation();
   animation.pause();
-  assert_unresolved(animation.startTime);
   assert_equals(animation.currentTime, 0);
   assert_true(animation.pending);
   assert_equals(animation.playState, 'paused');
+  animation.ready.then(t.step_func_done(() => {
+    assert_equals(animation.startTime, null);
+    assert_equals(animation.currentTime, 0);
+    assert_false(animation.pending);
+    assert_equals(animation.playState, 'paused');
+  }));
 }, "Calling pause() on a finished animation");
 
 test(function() {
@@ -377,13 +404,22 @@ test(function() {
   assert_equals(animation.playState, 'finished');
 }, "Calling finish() on a finished animation");
 
-test(function() {
+async_test(function(t) {
   var animation = finishedAnimation();
   animation.reverse();
-  assert_unresolved(animation.startTime);
+  assert_equals(animation.startTime, null);
   assert_equals(animation.currentTime, 0);
+  assert_equals(animation.playbackRate, -1);
   assert_true(animation.pending);
   assert_equals(animation.playState, 'running');
+  animation.ready.then(t.step_func_done(() => {
+    assert_false(animation.pending);
+    assert_not_equals(animation.startTime, null);
+    assert_greater_than_equal(animation.currentTime, 0);
+    assert_equals(animation.playbackRate, 1);
+    assert_equals(animation.playState, 'running');
+  }));
+
 }, "Calling reverse() on a finished animation");
 
 test(function() {

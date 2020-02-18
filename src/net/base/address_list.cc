@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/containers/flat_map.h"
 #include "base/logging.h"
 #include "base/values.h"
 #include "net/base/sys_addrinfo.h"
@@ -18,6 +19,8 @@ namespace net {
 AddressList::AddressList() = default;
 
 AddressList::AddressList(const AddressList&) = default;
+
+AddressList& AddressList::operator=(const AddressList&) = default;
 
 AddressList::~AddressList() = default;
 
@@ -79,11 +82,31 @@ base::Value AddressList::NetLogParams() const {
   base::Value list(base::Value::Type::LIST);
 
   for (const auto& ip_endpoint : *this)
-    list.GetList().emplace_back(ip_endpoint.ToString());
+    list.Append(ip_endpoint.ToString());
 
   dict.SetKey("address_list", std::move(list));
   dict.SetStringKey("canonical_name", canonical_name());
   return dict;
+}
+
+void AddressList::Deduplicate() {
+  if (size() > 1) {
+    std::vector<std::pair<IPEndPoint, int>> make_me_into_a_map(size());
+    for (auto& addr : *this)
+      make_me_into_a_map.emplace_back(addr, 0);
+    base::flat_map<IPEndPoint, int> inserted(std::move(make_me_into_a_map));
+
+    std::vector<IPEndPoint> deduplicated_addresses;
+    deduplicated_addresses.reserve(inserted.size());
+    for (const auto& addr : *this) {
+      int& count = inserted[addr];
+      if (!count) {
+        deduplicated_addresses.push_back(addr);
+        ++count;
+      }
+    }
+    endpoints_.swap(deduplicated_addresses);
+  }
 }
 
 }  // namespace net

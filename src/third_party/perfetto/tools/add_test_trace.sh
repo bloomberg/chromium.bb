@@ -1,4 +1,18 @@
 #!/bin/bash
+# Copyright (C) 2019 The Android Open Source Project
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 set -e
 
 echo ""
@@ -57,12 +71,12 @@ echo ""
 echo "Updating tools/install-build-deps"
 echo ""
 
-OLD_SHA=$(cat tools/install-build-deps | grep '/test-data-.*.zip' -A1 | tail -n1 | cut -c5-44)
+OLD_SHA=$(cat tools/install-build-deps | grep '/test-data-.*.zip' -A1 | tail -n1 | cut -c10-49)
 
 # Cannot easily use sed -i, it has different syntax on Linux vs Mac.
 cat tools/install-build-deps \
-  | sed -e 's|/test-data-.*.zip|/'$NEW_TEST_DATA'|g' \
-  | sed -e 's|'$OLD_SHA'|'$NEW_SHA'|g' \
+  | sed -e "s|/test-data-.*.zip|/$NEW_TEST_DATA|g" \
+  | sed -e "s|$OLD_SHA|$NEW_SHA|g" \
   > tools/install-build-deps.tmp
 
 mv -f tools/install-build-deps.tmp tools/install-build-deps

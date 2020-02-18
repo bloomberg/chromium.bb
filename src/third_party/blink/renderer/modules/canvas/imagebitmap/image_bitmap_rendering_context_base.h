@@ -40,12 +40,13 @@ class MODULES_EXPORT ImageBitmapRenderingContextBase
   bool CanCreateCanvas2dResourceProvider() const;
   void getHTMLOrOffscreenCanvas(HTMLCanvasElementOrOffscreenCanvas&) const;
 
-  void SetIsHidden(bool) override {}
+  void SetIsInHiddenPage(bool) override {}
+  void SetIsBeingDisplayed(bool) override {}
   bool isContextLost() const override { return false; }
   void SetImage(ImageBitmap*);
-  // The acceleration hing here is ignored as GetImage(AccelerationHint) only
+  // The acceleration hint here is ignored as GetImage(AccelerationHint) only
   // calls to image_layer_bridge->GetImage(), without giving it a hint
-  scoped_refptr<StaticBitmapImage> GetImage(AccelerationHint) const final;
+  scoped_refptr<StaticBitmapImage> GetImage(AccelerationHint) final;
   // This function resets the internal image resource to a image of the same
   // size than the original, with the same properties, but completely black.
   // This is used to follow the standard regarding transferToBitmap
@@ -53,7 +54,7 @@ class MODULES_EXPORT ImageBitmapRenderingContextBase
   void SetUV(const FloatPoint& left_top, const FloatPoint& right_bottom);
   bool IsComposited() const final { return true; }
   bool IsAccelerated() const final;
-  void PushFrame() override;
+  bool PushFrame() override;
 
   bool IsOriginTopLeft() const override;
 

@@ -34,8 +34,6 @@
 #include "content/public/test/test_utils.h"
 #include "google_apis/gaia/gaia_switches.h"
 #include "net/dns/mock_host_resolver.h"
-#include "net/test/embedded_test_server/http_request.h"
-#include "net/test/embedded_test_server/http_response.h"
 
 namespace chromeos {
 
@@ -103,6 +101,7 @@ void OobeBaseTest::WaitForOobeUI() {
           run_loop.QuitClosure())) {
     run_loop.Run();
   }
+  MaybeWaitForLoginScreenLoad();
 }
 
 void OobeBaseTest::WaitForGaiaPageLoad() {
@@ -159,7 +158,7 @@ void OobeBaseTest::WaitForSigninScreen() {
 
   WizardController::SkipPostLoginScreensForTesting();
 
-  login_screen_load_observer_->Wait();
+  MaybeWaitForLoginScreenLoad();
 }
 
 test::JSChecker OobeBaseTest::SigninFrameJS() {
@@ -170,6 +169,13 @@ test::JSChecker OobeBaseTest::SigninFrameJS() {
   // Fake GAIA / fake SAML pages do not use polymer-based UI.
   result.set_polymer_ui(false);
   return result;
+}
+
+void OobeBaseTest::MaybeWaitForLoginScreenLoad() {
+  if (!login_screen_load_observer_)
+    return;
+  login_screen_load_observer_->Wait();
+  login_screen_load_observer_.reset();
 }
 
 }  // namespace chromeos

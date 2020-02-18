@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_MEDIA_GALLERIES_FILEAPI_AV_SCANNING_FILE_VALIDATOR_H_
 
 #include "base/macros.h"
-#include "storage/browser/fileapi/copy_or_move_file_validator.h"
+#include "storage/browser/file_system/copy_or_move_file_validator.h"
 
 namespace base {
 class FilePath;
@@ -20,7 +20,7 @@ class AVScanningFileValidator : public storage::CopyOrMoveFileValidator {
   // Runs AV checks on the resulting file (Windows-only).
   // Subclasses will not typically override this method.
   void StartPostWriteValidation(const base::FilePath& dest_platform_path,
-                                const ResultCallback& result_callback) override;
+                                ResultCallback result_callback) override;
 
  protected:
   AVScanningFileValidator();

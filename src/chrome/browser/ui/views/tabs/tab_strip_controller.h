@@ -78,6 +78,16 @@ class TabStripController {
   // Closes the tab at the specified index in the model.
   virtual void CloseTab(int index, CloseTabSource source) = 0;
 
+  // Ungroups the tabs at the specified index in the model.
+  virtual void UngroupAllTabsInGroup(TabGroupId group) = 0;
+
+  // Adds a new tab to end of the tab group.
+  virtual void AddNewTabInGroup(TabGroupId group) = 0;
+
+  // Moves the tab at |start_index| so that it is now at |final_index|, sliding
+  // any tabs in between left or right as appropriate.
+  virtual void MoveTab(int start_index, int final_index) = 0;
+
   // Shows a context menu for the tab at the specified point in screen coords.
   virtual void ShowContextMenuForTab(Tab* tab,
                                      const gfx::Point& p,
@@ -104,12 +114,16 @@ class TabStripController {
   virtual void StackedLayoutMaybeChanged() = 0;
 
   // Notifies controller that the user started dragging this tabstrip's tabs.
-  virtual void OnStartedDraggingTabs() = 0;
+  virtual void OnStartedDragging() = 0;
 
   // Notifies controller that the user stopped dragging this tabstrip's tabs.
   // This is also called when the tabs that the user is dragging were detached
   // from this tabstrip but the user is still dragging the tabs.
-  virtual void OnStoppedDraggingTabs() = 0;
+  virtual void OnStoppedDragging() = 0;
+
+  // Notifies controller that the index of the tab with keyboard focus changed
+  // to |index|.
+  virtual void OnKeyboardFocusedTabChanged(base::Optional<int> index) = 0;
 
   // Returns the TabGroupVisualData instance for the given |group|.
   virtual const TabGroupVisualData* GetVisualDataForGroup(
@@ -144,9 +158,7 @@ class TabStripController {
 
   // Returns the color of the browser frame for the given window activation
   // state.
-  virtual SkColor GetFrameColor(
-      BrowserNonClientFrameView::ActiveState active_state =
-          BrowserNonClientFrameView::kUseCurrent) const = 0;
+  virtual SkColor GetFrameColor(BrowserFrameActiveState active_state) const = 0;
 
   // Returns COLOR_TOOLBAR_TOP_SEPARATOR[,_INACTIVE] depending on the activation
   // state of the window.
@@ -155,13 +167,15 @@ class TabStripController {
   // For non-transparent windows, returns the background tab image resource ID
   // if the image has been customized, directly or indirectly, by the theme.
   virtual base::Optional<int> GetCustomBackgroundId(
-      BrowserNonClientFrameView::ActiveState active_state) const = 0;
+      BrowserFrameActiveState active_state) const = 0;
 
   // Returns the accessible tab name.
   virtual base::string16 GetAccessibleTabName(const Tab* tab) const = 0;
 
   // Returns the profile associated with the Tabstrip.
   virtual Profile* GetProfile() const = 0;
+
+  virtual const Browser* GetBrowser() const = 0;
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_TABS_TAB_STRIP_CONTROLLER_H_

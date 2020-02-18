@@ -14,7 +14,7 @@
 #include "components/signin/public/base/signin_metrics.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#include "ios/chrome/browser/infobars/infobar.h"
+#include "ios/chrome/browser/infobars/infobar_ios.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
 #include "ios/chrome/browser/signin/authentication_service.h"
 #include "ios/chrome/browser/signin/authentication_service_factory.h"
@@ -122,7 +122,6 @@ bool ReSignInInfoBarDelegate::Accept() {
   signin_metrics::RecordSigninUserActionForAccessPoint(
       signin_metrics::AccessPoint::ACCESS_POINT_RESIGNIN_INFOBAR,
       signin_metrics::PromoAction::PROMO_ACTION_NO_SIGNIN_PROMO);
-  DCHECK(static_cast<InfoBarIOS*>(infobar())->View());
   ShowSigninCommand* command = [[ShowSigninCommand alloc]
       initWithOperation:AUTHENTICATION_OPERATION_REAUTHENTICATE
             accessPoint:signin_metrics::AccessPoint::

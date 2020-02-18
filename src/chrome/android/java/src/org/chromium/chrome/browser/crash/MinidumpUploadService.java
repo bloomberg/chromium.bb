@@ -11,16 +11,17 @@ import android.content.ComponentName;
 import android.content.Intent;
 import android.os.Build;
 import android.os.PersistableBundle;
-import android.support.annotation.StringDef;
+
+import androidx.annotation.StringDef;
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.StreamUtil;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
-import org.chromium.chrome.browser.preferences.privacy.PrivacyPreferencesManager;
+import org.chromium.chrome.browser.settings.privacy.PrivacyPreferencesManager;
 import org.chromium.components.background_task_scheduler.TaskIds;
 import org.chromium.components.minidump_uploader.CrashFileManager;
 import org.chromium.components.minidump_uploader.MinidumpUploadCallable;

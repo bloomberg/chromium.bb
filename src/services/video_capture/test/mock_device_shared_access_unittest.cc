@@ -12,10 +12,13 @@
 #include "media/capture/video/mock_device_factory.h"
 #include "media/capture/video/video_capture_device.h"
 #include "media/capture/video/video_capture_system_impl.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/video_capture/device_factory_media_to_mojo_adapter.h"
 #include "services/video_capture/device_media_to_mojo_adapter.h"
-#include "services/video_capture/public/cpp/mock_receiver.h"
+#include "services/video_capture/public/cpp/mock_video_frame_handler.h"
 #include "services/video_capture/public/mojom/video_capture_service.mojom.h"
+#include "services/video_capture/public/mojom/video_frame_handler.mojom.h"
 #include "services/video_capture/public/mojom/video_source.mojom.h"
 #include "services/video_capture/video_source_provider_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -31,8 +34,10 @@ namespace video_capture {
 class MockDeviceSharedAccessTest : public ::testing::Test {
  public:
   MockDeviceSharedAccessTest()
-      : mock_receiver_1_(mojo::MakeRequest(&receiver_1_)),
-        mock_receiver_2_(mojo::MakeRequest(&receiver_2_)),
+      : mock_video_frame_handler_1_(
+            video_frame_handler_1_.InitWithNewPipeAndPassReceiver()),
+        mock_video_frame_handler_2_(
+            video_frame_handler_2_.InitWithNewPipeAndPassReceiver()),
         next_arbitrary_frame_feedback_id_(123) {}
   ~MockDeviceSharedAccessTest() override {}
 
@@ -67,7 +72,7 @@ class MockDeviceSharedAccessTest : public ::testing::Test {
     // CreateDevice.
     wait_loop.Run();
     source_provider_->GetVideoSource(mock_descriptor.device_id,
-                                     mojo::MakeRequest(&source_));
+                                     source_.BindNewPipeAndPassReceiver());
 
     requestable_settings_.requested_format.frame_size = gfx::Size(800, 600);
     requestable_settings_.requested_format.frame_rate = 15;
@@ -82,9 +87,9 @@ class MockDeviceSharedAccessTest : public ::testing::Test {
   void LetClient1ConnectWithRequestableSettingsAndExpectToGetThem() {
     base::RunLoop run_loop;
     source_->CreatePushSubscription(
-        std::move(receiver_1_), requestable_settings_,
+        std::move(video_frame_handler_1_), requestable_settings_,
         false /*force_reopen_with_new_settings*/,
-        mojo::MakeRequest(&subscription_1_),
+        subscription_1_.BindNewPipeAndPassReceiver(),
         base::BindOnce(
             [](base::RunLoop* run_loop,
                media::VideoCaptureParams* requested_settings,
@@ -112,8 +117,9 @@ class MockDeviceSharedAccessTest : public ::testing::Test {
       mojom::CreatePushSubscriptionResultCode expected_result_code) {
     base::RunLoop run_loop;
     source_->CreatePushSubscription(
-        std::move(receiver_2_), requestable_settings_,
-        force_reopen_with_new_settings, mojo::MakeRequest(&subscription_2_),
+        std::move(video_frame_handler_2_), requestable_settings_,
+        force_reopen_with_new_settings,
+        subscription_2_.BindNewPipeAndPassReceiver(),
         base::BindOnce(
             [](base::RunLoop* run_loop,
                media::VideoCaptureParams* requested_settings,
@@ -148,9 +154,9 @@ class MockDeviceSharedAccessTest : public ::testing::Test {
     base::RunLoop run_loop_1;
     base::RunLoop run_loop_2;
     source_->CreatePushSubscription(
-        std::move(receiver_1_), requestable_settings_,
+        std::move(video_frame_handler_1_), requestable_settings_,
         false /*force_reopen_with_new_settings*/,
-        mojo::MakeRequest(&subscription_1_),
+        subscription_1_.BindNewPipeAndPassReceiver(),
         base::BindOnce(
             [](base::RunLoop* run_loop_1,
                media::VideoCaptureParams* requested_settings,
@@ -171,9 +177,9 @@ class MockDeviceSharedAccessTest : public ::testing::Test {
     ASSERT_FALSE(requestable_settings_ == different_settings);
 
     source_->CreatePushSubscription(
-        std::move(receiver_2_), different_settings,
+        std::move(video_frame_handler_2_), different_settings,
         false /*force_reopen_with_new_settings*/,
-        mojo::MakeRequest(&subscription_2_),
+        subscription_2_.BindNewPipeAndPassReceiver(),
         base::BindOnce(
             [](base::RunLoop* run_loop_2,
                media::VideoCaptureParams* requested_settings,
@@ -197,19 +203,19 @@ class MockDeviceSharedAccessTest : public ::testing::Test {
         next_arbitrary_frame_feedback_id_++;
     const int32_t kArbitraryRotation = 0;
     base::RunLoop wait_loop_1;
-    EXPECT_CALL(mock_receiver_1_,
+    EXPECT_CALL(mock_video_frame_handler_1_,
                 DoOnFrameReadyInBuffer(_, kArbitraryFrameFeedbackId, _, _))
         .WillOnce(InvokeWithoutArgs([&wait_loop_1]() { wait_loop_1.Quit(); }));
     base::RunLoop wait_loop_2;
-    EXPECT_CALL(mock_receiver_2_,
+    EXPECT_CALL(mock_video_frame_handler_2_,
                 DoOnFrameReadyInBuffer(_, kArbitraryFrameFeedbackId, _, _))
         .WillOnce(InvokeWithoutArgs([&wait_loop_2]() { wait_loop_2.Quit(); }));
     mock_device_.SendStubFrame(requestable_settings_.requested_format,
                                kArbitraryRotation, kArbitraryFrameFeedbackId);
     wait_loop_1.Run();
     wait_loop_2.Run();
-    Mock::VerifyAndClearExpectations(&mock_receiver_1_);
-    Mock::VerifyAndClearExpectations(&mock_receiver_2_);
+    Mock::VerifyAndClearExpectations(&mock_video_frame_handler_1_);
+    Mock::VerifyAndClearExpectations(&mock_video_frame_handler_2_);
   }
 
   void SendFrameAndExpectToArriveOnlyAtSubscriber1() {
@@ -218,15 +224,16 @@ class MockDeviceSharedAccessTest : public ::testing::Test {
     const int32_t kArbitraryRotation = 0;
 
     base::RunLoop wait_loop;
-    EXPECT_CALL(mock_receiver_1_,
+    EXPECT_CALL(mock_video_frame_handler_1_,
                 DoOnFrameReadyInBuffer(_, kArbitraryFrameFeedbackId, _, _))
         .WillOnce(InvokeWithoutArgs([&wait_loop]() { wait_loop.Quit(); }));
-    EXPECT_CALL(mock_receiver_2_, DoOnFrameReadyInBuffer(_, _, _, _)).Times(0);
+    EXPECT_CALL(mock_video_frame_handler_2_, DoOnFrameReadyInBuffer(_, _, _, _))
+        .Times(0);
     mock_device_.SendStubFrame(requestable_settings_.requested_format,
                                kArbitraryRotation, kArbitraryFrameFeedbackId);
     wait_loop.Run();
-    Mock::VerifyAndClearExpectations(&mock_receiver_1_);
-    Mock::VerifyAndClearExpectations(&mock_receiver_2_);
+    Mock::VerifyAndClearExpectations(&mock_video_frame_handler_1_);
+    Mock::VerifyAndClearExpectations(&mock_video_frame_handler_2_);
   }
 
   void SendFrameAndExpectToArriveOnlyAtSubscriber2() {
@@ -235,15 +242,16 @@ class MockDeviceSharedAccessTest : public ::testing::Test {
     const int32_t kArbitraryRotation = 0;
 
     base::RunLoop wait_loop;
-    EXPECT_CALL(mock_receiver_1_, DoOnFrameReadyInBuffer(_, _, _, _)).Times(0);
-    EXPECT_CALL(mock_receiver_2_,
+    EXPECT_CALL(mock_video_frame_handler_1_, DoOnFrameReadyInBuffer(_, _, _, _))
+        .Times(0);
+    EXPECT_CALL(mock_video_frame_handler_2_,
                 DoOnFrameReadyInBuffer(_, kArbitraryFrameFeedbackId, _, _))
         .WillOnce(InvokeWithoutArgs([&wait_loop]() { wait_loop.Quit(); }));
     mock_device_.SendStubFrame(requestable_settings_.requested_format,
                                kArbitraryRotation, kArbitraryFrameFeedbackId);
     wait_loop.Run();
-    Mock::VerifyAndClearExpectations(&mock_receiver_1_);
-    Mock::VerifyAndClearExpectations(&mock_receiver_2_);
+    Mock::VerifyAndClearExpectations(&mock_video_frame_handler_1_);
+    Mock::VerifyAndClearExpectations(&mock_video_frame_handler_2_);
   }
 
  protected:
@@ -252,15 +260,15 @@ class MockDeviceSharedAccessTest : public ::testing::Test {
   media::MockDeviceFactory* mock_device_factory_;
   std::unique_ptr<DeviceFactoryMediaToMojoAdapter> service_device_factory_;
   std::unique_ptr<VideoSourceProviderImpl> source_provider_;
-  mojom::VideoSourcePtr source_;
+  mojo::Remote<mojom::VideoSource> source_;
   media::VideoCaptureParams requestable_settings_;
 
-  mojom::PushVideoStreamSubscriptionPtr subscription_1_;
-  mojom::ReceiverPtr receiver_1_;
-  MockReceiver mock_receiver_1_;
-  mojom::PushVideoStreamSubscriptionPtr subscription_2_;
-  mojom::ReceiverPtr receiver_2_;
-  MockReceiver mock_receiver_2_;
+  mojo::Remote<mojom::PushVideoStreamSubscription> subscription_1_;
+  mojo::PendingRemote<mojom::VideoFrameHandler> video_frame_handler_1_;
+  MockVideoFrameHandler mock_video_frame_handler_1_;
+  mojo::Remote<mojom::PushVideoStreamSubscription> subscription_2_;
+  mojo::PendingRemote<mojom::VideoFrameHandler> video_frame_handler_2_;
+  MockVideoFrameHandler mock_video_frame_handler_2_;
 
   int32_t next_arbitrary_frame_feedback_id_;
 
@@ -315,12 +323,12 @@ TEST_F(MockVideoCaptureDeviceSharedAccessTest,
 TEST_F(MockVideoCaptureDeviceSharedAccessTest,
        InternalDeviceRestartIsTransparentToExistingSubscribers) {
   LetClient1ConnectWithRequestableSettingsAndExpectToGetThem();
-  EXPECT_CALL(mock_receiver_1_, DoOnNewBuffer(_, _)).Times(1);
-  EXPECT_CALL(mock_receiver_1_, OnStarted()).Times(1);
+  EXPECT_CALL(mock_video_frame_handler_1_, DoOnNewBuffer(_, _)).Times(1);
+  EXPECT_CALL(mock_video_frame_handler_1_, OnStarted()).Times(1);
   subscription_1_->Activate();
   mock_device_.SendOnStarted();
   SendFrameAndExpectToArriveOnlyAtSubscriber1();
-  Mock::VerifyAndClearExpectations(&mock_receiver_1_);
+  Mock::VerifyAndClearExpectations(&mock_video_frame_handler_1_);
 
   auto previously_requested_settings = requestable_settings_;
   // Change something arbitrary
@@ -329,11 +337,11 @@ TEST_F(MockVideoCaptureDeviceSharedAccessTest,
 
   {
     testing::InSequence s;
-    EXPECT_CALL(mock_receiver_1_, DoOnBufferRetired(_)).Times(1);
-    EXPECT_CALL(mock_receiver_1_, DoOnNewBuffer(_, _)).Times(1);
+    EXPECT_CALL(mock_video_frame_handler_1_, DoOnBufferRetired(_)).Times(1);
+    EXPECT_CALL(mock_video_frame_handler_1_, DoOnNewBuffer(_, _)).Times(1);
   }
-  EXPECT_CALL(mock_receiver_1_, OnStopped()).Times(0);
-  EXPECT_CALL(mock_receiver_1_, OnStarted()).Times(0);
+  EXPECT_CALL(mock_video_frame_handler_1_, OnStopped()).Times(0);
+  EXPECT_CALL(mock_video_frame_handler_1_, OnStarted()).Times(0);
 
   LetClient2ConnectWithRequestableSettings(
       true /*force_reopen_with_new_settings*/,
@@ -342,7 +350,7 @@ TEST_F(MockVideoCaptureDeviceSharedAccessTest,
 
   mock_device_.SendOnStarted();
   SendFrameAndExpectToArriveAtBothSubscribers();
-  Mock::VerifyAndClearExpectations(&mock_receiver_1_);
+  Mock::VerifyAndClearExpectations(&mock_video_frame_handler_1_);
 }
 
 TEST_F(MockVideoCaptureDeviceSharedAccessTest,
@@ -380,9 +388,10 @@ TEST_F(MockVideoCaptureDeviceSharedAccessTest,
   subscription_2_.reset();
   wait_loop.Run();
 
-  // DeviceMediaToMojoAdapter::Stop() issues a DeleteSoon for its |receiver_|
-  // on the current sequence. Wait for this before exiting the test in order to
-  // avoid leaked object failing ASAN tests. See also  https://crbug.com/961066.
+  // DeviceMediaToMojoAdapter::Stop() issues a DeleteSoon for its
+  // |video_frame_handler_| on the current sequence. Wait for this before
+  // exiting the test in order to avoid leaked object failing ASAN tests. See
+  // also  https://crbug.com/961066.
   base::RunLoop().RunUntilIdle();
 }
 
@@ -398,9 +407,10 @@ TEST_F(MockVideoCaptureDeviceSharedAccessTest,
   source_.reset();
   wait_loop.Run();
 
-  // DeviceMediaToMojoAdapter::Stop() issues a DeleteSoon for its |receiver_|
-  // on the current sequence. Wait for this before exiting the test in order to
-  // avoid leaked object failing ASAN tests. See also  https://crbug.com/961066.
+  // DeviceMediaToMojoAdapter::Stop() issues a DeleteSoon for its
+  // |video_frame_handler_| on the current sequence. Wait for this before
+  // exiting the test in order to avoid leaked object failing ASAN tests. See
+  // also  https://crbug.com/961066.
   base::RunLoop().RunUntilIdle();
 }
 
@@ -451,7 +461,8 @@ TEST_F(MockVideoCaptureDeviceSharedAccessTest, SuspendAndResumeSingleClient) {
         [](base::RunLoop* wait_loop) { wait_loop->Quit(); }, &wait_loop));
     wait_loop.Run();
   }
-  EXPECT_CALL(mock_receiver_1_, DoOnFrameReadyInBuffer(_, _, _, _)).Times(0);
+  EXPECT_CALL(mock_video_frame_handler_1_, DoOnFrameReadyInBuffer(_, _, _, _))
+      .Times(0);
 
   // Send a couple of frames. We want to send at least as many frames as
   // the maximum buffer count in the video frame pool to make sure that
@@ -467,7 +478,7 @@ TEST_F(MockVideoCaptureDeviceSharedAccessTest, SuspendAndResumeSingleClient) {
     // We need to wait until the frame has arrived at BroadcastingReceiver
     base::RunLoop().RunUntilIdle();
   }
-  Mock::VerifyAndClearExpectations(&mock_receiver_1_);
+  Mock::VerifyAndClearExpectations(&mock_video_frame_handler_1_);
 
   subscription_1_->Resume();
   subscription_1_.FlushForTesting();

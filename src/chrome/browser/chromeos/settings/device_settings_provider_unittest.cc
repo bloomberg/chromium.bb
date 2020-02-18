@@ -311,6 +311,23 @@ class DeviceSettingsProviderTest : public DeviceSettingsTestBase {
     BuildAndInstallDevicePolicy();
   }
 
+  // Helper routine to set DeviceLoginScreenSystemInfoEnforced policy.
+  void SetSystemInfoEnforced(bool enabled) {
+    em::BooleanPolicyProto* proto =
+        device_policy_->payload()
+            .mutable_device_login_screen_system_info_enforced();
+    proto->set_value(enabled);
+    BuildAndInstallDevicePolicy();
+  }
+
+  void SetShowNumericKeyboardForPassword(bool show_numeric_keyboard) {
+    em::BooleanPolicyProto* proto =
+        device_policy_->payload()
+            .mutable_device_show_numeric_keyboard_for_password();
+    proto->set_value(show_numeric_keyboard);
+    BuildAndInstallDevicePolicy();
+  }
+
   ScopedTestingLocalState local_state_;
 
   std::unique_ptr<DeviceSettingsProvider> provider_;
@@ -715,7 +732,7 @@ TEST_F(DeviceSettingsProviderTest, DeviceAutoUpdateTimeRestrictionsExtra) {
   interval.SetPath({"end", "day_of_week"}, base::Value("Wednesday"));
   interval.SetPath({"end", "hours"}, base::Value(1));
   interval.SetPath({"end", "minutes"}, base::Value(20));
-  test_list.GetList().push_back(std::move(interval));
+  test_list.Append(std::move(interval));
   SetDeviceAutoUpdateTimeRestrictions(extra_field);
   VerifyPolicyValue(kDeviceAutoUpdateTimeRestrictions, &test_list);
 }
@@ -769,6 +786,12 @@ TEST_F(DeviceSettingsProviderTest, DeviceRebootAfterUserSignout) {
   {
     SetDeviceRebootOnUserSignout(PolicyProto::ALWAYS);
     base::Value expected_value(PolicyProto::ALWAYS);
+    VerifyPolicyValue(kDeviceRebootOnUserSignout, &expected_value);
+  }
+
+  {
+    SetDeviceRebootOnUserSignout(PolicyProto::VM_STARTED_OR_ARC_SESSION);
+    base::Value expected_value(PolicyProto::VM_STARTED_OR_ARC_SESSION);
     VerifyPolicyValue(kDeviceRebootOnUserSignout, &expected_value);
   }
 }
@@ -827,14 +850,41 @@ TEST_F(DeviceSettingsProviderTest,
 }
 
 TEST_F(DeviceSettingsProviderTest, DevicePowerwashAllowed) {
-  // Policy should not be set by default
-  VerifyPolicyValue(kDevicePowerwashAllowed, nullptr);
+  // Policy should be set to true by default
+  base::Value default_value(true);
+  VerifyPolicyValue(kDevicePowerwashAllowed, &default_value);
 
   SetDevicePowerwashAllowed(true);
   EXPECT_EQ(base::Value(true), *provider_->Get(kDevicePowerwashAllowed));
 
   SetDevicePowerwashAllowed(false);
   EXPECT_EQ(base::Value(false), *provider_->Get(kDevicePowerwashAllowed));
+}
+
+TEST_F(DeviceSettingsProviderTest, DeviceLoginScreenSystemInfoEnforced) {
+  // Policy should not be set by default
+  VerifyPolicyValue(kDeviceLoginScreenSystemInfoEnforced, nullptr);
+
+  SetSystemInfoEnforced(true);
+  EXPECT_EQ(base::Value(true),
+            *provider_->Get(kDeviceLoginScreenSystemInfoEnforced));
+
+  SetSystemInfoEnforced(false);
+  EXPECT_EQ(base::Value(false),
+            *provider_->Get(kDeviceLoginScreenSystemInfoEnforced));
+}
+
+TEST_F(DeviceSettingsProviderTest, DeviceShowNumericKeyboardForPassword) {
+  // Policy should not be set by default
+  VerifyPolicyValue(kDeviceShowNumericKeyboardForPassword, nullptr);
+
+  SetShowNumericKeyboardForPassword(true);
+  EXPECT_EQ(base::Value(true),
+            *provider_->Get(kDeviceShowNumericKeyboardForPassword));
+
+  SetShowNumericKeyboardForPassword(false);
+  EXPECT_EQ(base::Value(false),
+            *provider_->Get(kDeviceShowNumericKeyboardForPassword));
 }
 
 }  // namespace chromeos

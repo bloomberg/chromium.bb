@@ -21,7 +21,7 @@ namespace {
 constexpr int kNumberOfGamepads = Gamepads::kItemsLengthCap;
 }  // namespace
 
-class ConnectionListener : public device::GamepadConsumer {
+class ConnectionListener : public GamepadConsumer {
  public:
   ConnectionListener() = default;
 
@@ -214,10 +214,11 @@ TEST_F(GamepadServiceTest, ReloadTest) {
   EXPECT_EQ(0, consumer->disconnected_counter());
 }
 
-// Flaky, see https://crbug.com/795170
-TEST_F(GamepadServiceTest, DISABLED_SecondConsumerGestureTest) {
+TEST_F(GamepadServiceTest, SecondConsumerGestureTest) {
   auto* consumer1 = CreateConsumer();
   auto* consumer2 = CreateConsumer();
+  EXPECT_TRUE(service()->ConsumerBecameActive(consumer1));
+
   WaitForData();
   EXPECT_EQ(0, consumer1->connected_counter());
   EXPECT_EQ(0, consumer1->disconnected_counter());
@@ -477,8 +478,7 @@ TEST_F(GamepadServiceTest, DisconnectAndConnectWhileInactiveTest) {
   EXPECT_EQ(0, consumer2->disconnected_counter());
 }
 
-// Flaky, see https://crbug.com/795170
-TEST_F(GamepadServiceTest, DISABLED_ActiveConsumerBecameActive) {
+TEST_F(GamepadServiceTest, ActiveConsumerBecameActive) {
   // Mark |consumer| active.
   auto* consumer = CreateConsumer();
   EXPECT_TRUE(service()->ConsumerBecameActive(consumer));
@@ -487,8 +487,7 @@ TEST_F(GamepadServiceTest, DISABLED_ActiveConsumerBecameActive) {
   EXPECT_FALSE(service()->ConsumerBecameActive(consumer));
 }
 
-// Flaky, see https://crbug.com/795170
-TEST_F(GamepadServiceTest, DISABLED_InactiveConsumerBecameInactive) {
+TEST_F(GamepadServiceTest, InactiveConsumerBecameInactive) {
   // Mark |consumer| active.
   auto* consumer = CreateConsumer();
   EXPECT_TRUE(service()->ConsumerBecameActive(consumer));
@@ -500,8 +499,7 @@ TEST_F(GamepadServiceTest, DISABLED_InactiveConsumerBecameInactive) {
   EXPECT_FALSE(service()->ConsumerBecameInactive(consumer));
 }
 
-// Flaky, see https://crbug.com/795170
-TEST_F(GamepadServiceTest, DISABLED_UnregisteredConsumerBecameInactive) {
+TEST_F(GamepadServiceTest, UnregisteredConsumerBecameInactive) {
   auto* consumer = CreateConsumer();
 
   // |consumer| has not yet been added to the gamepad service through a call to
@@ -509,8 +507,7 @@ TEST_F(GamepadServiceTest, DISABLED_UnregisteredConsumerBecameInactive) {
   EXPECT_FALSE(service()->ConsumerBecameInactive(consumer));
 }
 
-// Flaky, see https://crbug.com/795170
-TEST_F(GamepadServiceTest, DISABLED_RemoveUnregisteredConsumer) {
+TEST_F(GamepadServiceTest, RemoveUnregisteredConsumer) {
   auto* consumer = CreateConsumer();
 
   // |consumer| has not yet been added to the gamepad service through a call to

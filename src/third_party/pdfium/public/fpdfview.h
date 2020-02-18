@@ -34,6 +34,16 @@
 #define FPDF_OBJECT_NULLOBJ 8
 #define FPDF_OBJECT_REFERENCE 9
 
+// PDF text rendering modes
+#define FPDF_TEXTRENDERMODE_FILL 0
+#define FPDF_TEXTRENDERMODE_STROKE 1
+#define FPDF_TEXTRENDERMODE_FILL_STROKE 2
+#define FPDF_TEXTRENDERMODE_INVISIBLE 3
+#define FPDF_TEXTRENDERMODE_FILL_CLIP 4
+#define FPDF_TEXTRENDERMODE_STROKE_CLIP 5
+#define FPDF_TEXTRENDERMODE_FILL_STROKE_CLIP 6
+#define FPDF_TEXTRENDERMODE_CLIP 7
+
 // PDF types - use incomplete types (never completed) just for API type safety.
 typedef struct fpdf_action_t__* FPDF_ACTION;
 typedef struct fpdf_annotation_t__* FPDF_ANNOTATION;
@@ -97,13 +107,12 @@ typedef const char* FPDF_BYTESTRING;
 typedef const unsigned short* FPDF_WIDESTRING;
 
 #ifdef PDF_ENABLE_XFA
-// Structure for a byte string.
-// Note, a byte string commonly means a UTF-16LE formated string.
+// Structure for persisting a string beyond the duration of a callback.
+// Note: although represented as a char*, string may be interpreted as
+// a UTF-16LE formated string.
 typedef struct _FPDF_BSTR {
-  // String buffer.
-  char* str;
-  // Length of the string, in bytes.
-  int len;
+  char* str;  // String buffer, manipulate only with FPDF_BStr_* methods.
+  int len;    // Length of the string, in bytes.
 } FPDF_BSTR;
 #endif  // PDF_ENABLE_XFA
 
@@ -154,6 +163,9 @@ typedef int FPDF_ANNOT_APPEARANCEMODE;
 
 // Dictionary value types.
 typedef int FPDF_OBJECT_TYPE;
+
+// Text object enums.
+typedef int FPDF_TEXT_RENDERMODE;
 
 #if defined(COMPONENT_BUILD)
 // FPDF_EXPORT should be consistent with |export| in the pdfium_fuzzer
@@ -638,9 +650,9 @@ FPDF_EXPORT int FPDF_CALLCONV FPDF_GetPageSizeByIndex(FPDF_DOCUMENT document,
 #define FPDF_NO_NATIVETEXT 0x04
 // Grayscale output.
 #define FPDF_GRAYSCALE 0x08
-// Set if you want to get some debug info.
+// Obsolete, has no effect, retained for compatibility.
 #define FPDF_DEBUG_INFO 0x80
-// Set if you don't want to catch exceptions.
+// Obsolete, has no effect, retained for compatibility.
 #define FPDF_NO_CATCH 0x100
 // Limit image cache size.
 #define FPDF_RENDER_LIMITEDIMAGECACHE 0x200
@@ -1180,18 +1192,18 @@ FPDF_EXPORT const char* FPDF_CALLCONV FPDF_GetRecommendedV8Flags();
 
 #ifdef PDF_ENABLE_XFA
 // Function: FPDF_BStr_Init
-//          Helper function to initialize a byte string.
-FPDF_EXPORT FPDF_RESULT FPDF_CALLCONV FPDF_BStr_Init(FPDF_BSTR* str);
+//          Helper function to initialize a FPDF_BSTR.
+FPDF_EXPORT FPDF_RESULT FPDF_CALLCONV FPDF_BStr_Init(FPDF_BSTR* bstr);
 
 // Function: FPDF_BStr_Set
-//          Helper function to set string data.
-FPDF_EXPORT FPDF_RESULT FPDF_CALLCONV FPDF_BStr_Set(FPDF_BSTR* str,
-                                                    FPDF_LPCSTR bstr,
+//          Helper function to copy string data into the FPDF_BSTR.
+FPDF_EXPORT FPDF_RESULT FPDF_CALLCONV FPDF_BStr_Set(FPDF_BSTR* bstr,
+                                                    FPDF_LPCSTR cstr,
                                                     int length);
 
 // Function: FPDF_BStr_Clear
-//          Helper function to clear a byte string.
-FPDF_EXPORT FPDF_RESULT FPDF_CALLCONV FPDF_BStr_Clear(FPDF_BSTR* str);
+//          Helper function to clear a FPDF_BSTR.
+FPDF_EXPORT FPDF_RESULT FPDF_CALLCONV FPDF_BStr_Clear(FPDF_BSTR* bstr);
 #endif  // PDF_ENABLE_XFA
 
 #ifdef __cplusplus

@@ -32,17 +32,20 @@ class VertexArrayVk : public VertexArrayImpl
                             gl::VertexArray::DirtyAttribBitsArray *attribBits,
                             gl::VertexArray::DirtyBindingBitsArray *bindingBits) override;
 
+    void updateActiveAttribInfo(ContextVk *contextVk);
+
     void updateDefaultAttrib(ContextVk *contextVk,
                              size_t attribIndex,
                              VkBuffer bufferHandle,
+                             vk::BufferHelper *buffer,
                              uint32_t offset);
 
-    angle::Result updateClientAttribs(const gl::Context *context,
-                                      GLint firstVertex,
-                                      GLsizei vertexOrIndexCount,
-                                      GLsizei instanceCount,
-                                      gl::DrawElementsType indexTypeOrInvalid,
-                                      const void *indices);
+    angle::Result updateStreamedAttribs(const gl::Context *context,
+                                        GLint firstVertex,
+                                        GLsizei vertexOrIndexCount,
+                                        GLsizei instanceCount,
+                                        gl::DrawElementsType indexTypeOrInvalid,
+                                        const void *indices);
 
     angle::Result handleLineLoop(ContextVk *contextVk,
                                  GLint firstVertex,
@@ -50,6 +53,19 @@ class VertexArrayVk : public VertexArrayImpl
                                  gl::DrawElementsType indexTypeOrInvalid,
                                  const void *indices,
                                  uint32_t *indexCountOut);
+
+    angle::Result handleLineLoopIndexIndirect(ContextVk *contextVk,
+                                              gl::DrawElementsType glIndexType,
+                                              vk::BufferHelper *srcIndirectBuf,
+                                              VkDeviceSize indirectBufferOffset,
+                                              vk::BufferHelper **indirectBufferOut,
+                                              VkDeviceSize *indirectBufferOffsetOut);
+
+    angle::Result handleLineLoopIndirectDraw(const gl::Context *context,
+                                             vk::BufferHelper *indirectBufferVk,
+                                             VkDeviceSize indirectBufferOffset,
+                                             vk::BufferHelper **indirectBufferOut,
+                                             VkDeviceSize *indirectBufferOffsetOut);
 
     const gl::AttribArray<VkBuffer> &getCurrentArrayBufferHandles() const
     {
@@ -82,10 +98,21 @@ class VertexArrayVk : public VertexArrayImpl
                                         BufferVk *bufferVk,
                                         const void *indices);
 
+    angle::Result convertIndexBufferIndirectGPU(ContextVk *contextVk,
+                                                vk::BufferHelper *srcIndirectBuf,
+                                                VkDeviceSize srcIndirectBufOffset,
+                                                vk::BufferHelper **indirectBufferVkOut,
+                                                VkDeviceSize *indirectBufferVkOffsetOut);
+
     angle::Result convertIndexBufferCPU(ContextVk *contextVk,
                                         gl::DrawElementsType indexType,
                                         size_t indexCount,
                                         const void *sourcePointer);
+
+    const gl::AttributesMask &getStreamingVertexAttribsMask() const
+    {
+        return mStreamingVertexAttribsMask;
+    }
 
   private:
     void setDefaultPackedInput(ContextVk *contextVk, size_t attribIndex);
@@ -114,12 +141,15 @@ class VertexArrayVk : public VertexArrayImpl
     gl::AttribArray<VkBuffer> mCurrentArrayBufferHandles;
     gl::AttribArray<VkDeviceSize> mCurrentArrayBufferOffsets;
     gl::AttribArray<vk::BufferHelper *> mCurrentArrayBuffers;
+    // Cache strides of attributes for a fast pipeline cache update when VAOs are changed
+    gl::AttribArray<GLuint> mCurrentArrayBufferStrides;
     VkDeviceSize mCurrentElementArrayBufferOffset;
     vk::BufferHelper *mCurrentElementArrayBuffer;
 
     vk::DynamicBuffer mDynamicVertexData;
     vk::DynamicBuffer mDynamicIndexData;
     vk::DynamicBuffer mTranslatedByteIndexData;
+    vk::DynamicBuffer mTranslatedByteIndirectData;
 
     vk::LineLoopHelper mLineLoopHelper;
     Optional<GLint> mLineLoopBufferFirstIndex;
@@ -128,6 +158,9 @@ class VertexArrayVk : public VertexArrayImpl
 
     // Vulkan does not allow binding a null vertex buffer. We use a dummy as a placeholder.
     vk::BufferHelper mTheNullBuffer;
+
+    // Track client and/or emulated attribs that we have to stream their buffer contents
+    gl::AttributesMask mStreamingVertexAttribsMask;
 };
 }  // namespace rx
 

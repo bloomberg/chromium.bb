@@ -12,7 +12,6 @@
 
 #include <memory>
 
-#include "absl/memory/memory.h"
 #include "api/video/encoded_image.h"
 #include "api/video/i420_buffer.h"
 #include "modules/video_coding/utility/quality_scaler.h"
@@ -77,7 +76,7 @@ class OveruseFrameDetectorTest : public ::testing::Test,
   void SetUp() override {
     observer_ = &mock_observer_;
     options_.min_process_count = 0;
-    overuse_detector_ = absl::make_unique<OveruseFrameDetectorUnderTest>(this);
+    overuse_detector_ = std::make_unique<OveruseFrameDetectorUnderTest>(this);
     // Unfortunately, we can't call SetOptions here, since that would break
     // single-threading requirements in the RunOnTqNormalUsage test.
   }
@@ -432,9 +431,11 @@ TEST_F(OveruseFrameDetectorTest, UpdatesExistingSamples) {
 TEST_F(OveruseFrameDetectorTest, RunOnTqNormalUsage) {
   TaskQueueForTest queue("OveruseFrameDetectorTestQueue");
 
-  queue.SendTask([&] {
-    overuse_detector_->StartCheckForOveruse(&queue, options_, observer_);
-  });
+  queue.SendTask(
+      [&] {
+        overuse_detector_->StartCheckForOveruse(&queue, options_, observer_);
+      },
+      RTC_FROM_HERE);
 
   rtc::Event event;
   // Expect NormalUsage(). When called, stop the |overuse_detector_| and then
@@ -911,9 +912,11 @@ TEST_F(OveruseFrameDetectorTest2, UpdatesExistingSamples) {
 TEST_F(OveruseFrameDetectorTest2, RunOnTqNormalUsage) {
   TaskQueueForTest queue("OveruseFrameDetectorTestQueue");
 
-  queue.SendTask([&] {
-    overuse_detector_->StartCheckForOveruse(&queue, options_, observer_);
-  });
+  queue.SendTask(
+      [&] {
+        overuse_detector_->StartCheckForOveruse(&queue, options_, observer_);
+      },
+      RTC_FROM_HERE);
 
   rtc::Event event;
   // Expect NormalUsage(). When called, stop the |overuse_detector_| and then

@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/containers/span.h"
+#include "base/optional.h"
 #include "build/build_config.h"
 
 #if defined(OS_WIN)
@@ -26,6 +27,13 @@ class Size;
 }
 
 namespace chrome_pdf {
+
+#if defined(OS_CHROMEOS)
+// Create a flattened PDF document from an existing PDF document.
+// |input_buffer| is the buffer that contains the entire PDF document to be
+// flattened.
+std::vector<uint8_t> CreateFlattenedPdf(base::span<const uint8_t> input_buffer);
+#endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_WIN)
 // Printing modes - type to convert PDF to for printing
@@ -91,6 +99,11 @@ void SetPDFUsePrintMode(int mode);
 bool GetPDFDocInfo(base::span<const uint8_t> pdf_buffer,
                    int* page_count,
                    double* max_page_width);
+
+// Whether the PDF is Tagged (see 10.7 "Tagged PDF" in PDF Reference 1.7).
+// Returns true if it's a tagged (accessible) PDF, false if it's a valid
+// PDF but untagged, and nullopt if the PDF can't be parsed.
+base::Optional<bool> IsPDFDocTagged(base::span<const uint8_t> pdf_buffer);
 
 // Gets the dimensions of a specific page in a document.
 // |pdf_buffer| is the buffer that contains the entire PDF document to be

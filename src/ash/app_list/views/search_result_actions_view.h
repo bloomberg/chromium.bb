@@ -13,7 +13,7 @@
 #include "ui/views/controls/button/button.h"
 #include "ui/views/view.h"
 
-namespace app_list {
+namespace ash {
 
 class SearchResultActionsViewDelegate;
 class SearchResultView;
@@ -60,6 +60,9 @@ class APP_LIST_EXPORT SearchResultActionsView : public views::View,
   // getting cleared).
   bool SelectNextAction(bool reverse_tab_order);
 
+  // Sends kSelection a11y notification for the selected action button.
+  void NotifyA11yResultSelected();
+
   // Clears selected action state.
   void ClearSelectedAction();
 
@@ -90,6 +93,6 @@ class APP_LIST_EXPORT SearchResultActionsView : public views::View,
   DISALLOW_COPY_AND_ASSIGN(SearchResultActionsView);
 };
 
-}  // namespace app_list
+}  // namespace ash
 
 #endif  // ASH_APP_LIST_VIEWS_SEARCH_RESULT_ACTIONS_VIEW_H_

@@ -17,30 +17,23 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "printing/backend/cups_ipp_constants.h"
 #include "printing/backend/cups_printer.h"
 #include "printing/backend/print_backend_consts.h"
 #include "printing/units.h"
 
+#if defined(OS_CHROMEOS)
+#include "base/callback.h"
+#include "base/metrics/histogram_functions.h"
+#include "base/no_destructor.h"
+#include "printing/backend/ipp_handler_map.h"
+#include "printing/printing_features_chromeos.h"
+#endif  // defined(OS_CHROMEOS)
+
 namespace printing {
-
-// property names
-constexpr char kIppCollate[] = "sheet-collate";  // RFC 3381
-constexpr char kIppCopies[] = CUPS_COPIES;
-constexpr char kIppColor[] = CUPS_PRINT_COLOR_MODE;
-constexpr char kIppMedia[] = CUPS_MEDIA;
-constexpr char kIppDuplex[] = CUPS_SIDES;
-constexpr char kIppResolution[] = "printer-resolution";            // RFC 2911
-constexpr char kIppRequestingUserName[] = "requesting-user-name";  // RFC 8011
-constexpr char kIppPin[] = "job-password";                       // PWG 5100.11
-constexpr char kIppPinEncryption[] = "job-password-encryption";  // PWG 5100.11
-
-// collation values
-constexpr char kCollated[] = "collated";
-constexpr char kUncollated[] = "uncollated";
 
 #if defined(OS_CHROMEOS)
 constexpr int kPinMinimumLength = 4;
-constexpr char kPinEncryptionNone[] = "none";
 #endif  // defined(OS_CHROMEOS)
 
 namespace {
@@ -49,6 +42,12 @@ constexpr int kMicronsPerMM = 1000;
 constexpr double kMMPerInch = 25.4;
 constexpr double kMicronsPerInch = kMMPerInch * kMicronsPerMM;
 constexpr double kCmPerInch = kMMPerInch * 0.1;
+
+// Defines two prefixes of a special breed of media sizes not meant for
+// users' eyes. CUPS incidentally returns these IPP values to us, but
+// we have no use for them.
+constexpr base::StringPiece kMediaCustomMinPrefix = "custom_min";
+constexpr base::StringPiece kMediaCustomMaxPrefix = "custom_max";
 
 enum Unit {
   INCHES,
@@ -148,8 +147,11 @@ PrinterSemanticCapsAndDefaults::Paper ParsePaper(base::StringPiece value) {
 
   std::vector<base::StringPiece> pieces = base::SplitStringPiece(
       value, "_", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-  // we expect at least a display string and a dimension string
-  if (pieces.size() < 2)
+  // We expect at least a display string and a dimension string.
+  // Additionally, we drop the "custom_min*" and "custom_max*" special
+  // "sizes" (not for users' eyes).
+  if (pieces.size() < 2 || value.starts_with(kMediaCustomMinPrefix) ||
+      value.starts_with(kMediaCustomMaxPrefix))
     return PrinterSemanticCapsAndDefaults::Paper();
 
   base::StringPiece dimensions = pieces.back();
@@ -298,8 +300,15 @@ PrinterSemanticCapsAndDefaults::Papers SupportedPapers(
       printer.GetSupportedOptionValueStrings(kIppMedia);
   PrinterSemanticCapsAndDefaults::Papers parsed_papers;
   parsed_papers.reserve(papers.size());
-  for (base::StringPiece paper : papers)
-    parsed_papers.push_back(ParsePaper(paper));
+  for (base::StringPiece paper : papers) {
+    PrinterSemanticCapsAndDefaults::Paper parsed = ParsePaper(paper);
+    // If a paper fails to parse reasonably, we should avoid propagating
+    // it - e.g. CUPS is known to give out empty vendor IDs at times:
+    // https://crbug.com/920295#c23
+    if (!parsed.display_name.empty()) {
+      parsed_papers.push_back(parsed);
+    }
+  }
 
   return parsed_papers;
 }
@@ -332,6 +341,48 @@ bool PinSupported(const CupsOptionProvider& printer) {
       printer.GetSupportedOptionValueStrings(kIppPinEncryption);
   return base::Contains(values, kPinEncryptionNone);
 }
+
+// Returns the number of IPP attributes added to |caps| (not necessarily in
+// 1-to-1 correspondence).
+size_t AddAttributes(const CupsOptionProvider& printer,
+                     const char* attr_group_name,
+                     AdvancedCapabilities* caps) {
+  ipp_attribute_t* attr = printer.GetSupportedOptionValues(attr_group_name);
+  if (!attr)
+    return 0;
+
+  int num_options = ippGetCount(attr);
+  static const base::NoDestructor<HandlerMap> handlers(GenerateHandlers());
+  std::vector<std::string> unknown_options;
+  size_t attr_count = 0;
+  for (int i = 0; i < num_options; i++) {
+    const char* option_name = ippGetString(attr, i, nullptr);
+    auto it = handlers->find(option_name);
+    if (it == handlers->end()) {
+      unknown_options.emplace_back(option_name);
+      continue;
+    }
+
+    size_t previous_size = caps->size();
+    // Run the handler that adds items to |caps| based on option type.
+    it->second.Run(printer, option_name, caps);
+    if (caps->size() > previous_size)
+      attr_count++;
+  }
+  if (!unknown_options.empty()) {
+    LOG(WARNING) << "Unknown IPP options: "
+                 << base::JoinString(unknown_options, ", ");
+  }
+  return attr_count;
+}
+
+void ExtractAdvancedCapabilities(const CupsOptionProvider& printer,
+                                 PrinterSemanticCapsAndDefaults* printer_info) {
+  AdvancedCapabilities* options = &printer_info->advanced_capabilities;
+  size_t attr_count = AddAttributes(printer, kIppJobAttributes, options);
+  attr_count += AddAttributes(printer, kIppDocumentAttributes, options);
+  base::UmaHistogramCounts1000("Printing.CUPS.IppAttributesCount", attr_count);
+}
 #endif  // defined(OS_CHROMEOS)
 
 }  // namespace
@@ -357,6 +408,8 @@ void CapsAndDefaultsFromPrinter(const CupsOptionProvider& printer,
 
 #if defined(OS_CHROMEOS)
   printer_info->pin_supported = PinSupported(printer);
+  if (base::FeatureList::IsEnabled(printing::kAdvancedPpdAttributes))
+    ExtractAdvancedCapabilities(printer, printer_info);
 #endif  // defined(OS_CHROMEOS)
 
   ExtractCopies(printer, printer_info);

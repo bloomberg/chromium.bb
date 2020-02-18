@@ -49,6 +49,7 @@
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_resource_container.h"
+#include "third_party/blink/renderer/core/layout/svg/transform_helper.h"
 #include "third_party/blink/renderer/core/svg/properties/svg_property.h"
 #include "third_party/blink/renderer/core/svg/svg_document_extensions.h"
 #include "third_party/blink/renderer/core/svg/svg_element_rare_data.h"
@@ -59,13 +60,9 @@
 #include "third_party/blink/renderer/core/svg_names.h"
 #include "third_party/blink/renderer/core/xml_names.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
-#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/wtf/threading.h"
 
 namespace blink {
-
-using namespace html_names;
-using namespace svg_names;
 
 SVGElement::SVGElement(const QualifiedName& tag_name,
                        Document& document,
@@ -98,12 +95,6 @@ TreeScope& SVGElement::TreeScopeForIdResolution() const {
   return tree_scope_element->GetTreeScope();
 }
 
-int SVGElement::tabIndex() const {
-  if (SupportsFocus())
-    return Element::tabIndex();
-  return -1;
-}
-
 void SVGElement::WillRecalcStyle(const StyleRecalcChange change) {
   if (!HasSVGRareData())
     return;
@@ -121,7 +112,7 @@ SVGElementRareData* SVGElement::EnsureSVGRareData() {
 }
 
 bool SVGElement::IsOutermostSVGSVGElement() const {
-  if (!IsSVGSVGElement(*this))
+  if (!IsA<SVGSVGElement>(*this))
     return false;
 
   // Element may not be in the document, pretend we're outermost for viewport(),
@@ -131,7 +122,7 @@ bool SVGElement::IsOutermostSVGSVGElement() const {
 
   // We act like an outermost SVG element, if we're a direct child of a
   // <foreignObject> element.
-  if (IsSVGForeignObjectElement(*parentNode()))
+  if (IsA<SVGForeignObjectElement>(*parentNode()))
     return true;
 
   // If we're living in a shadow tree, we're a <svg> element that got created as
@@ -164,7 +155,7 @@ String SVGElement::title() const {
   // According to spec, we should not return titles when hovering over root
   // <svg> elements imported as a standalone document(those <title> elements
   // are the title of the document, not a tooltip) so we instantly return.
-  if (IsSVGSVGElement(*this) && this == GetDocument().documentElement())
+  if (IsA<SVGSVGElement>(*this) && this == GetDocument().documentElement())
     return String();
 
   if (InUseShadowTree()) {
@@ -235,13 +226,7 @@ static void ForSelfAndInstances(SVGElement* element, T callback) {
 
 void SVGElement::SetWebAnimatedAttribute(const QualifiedName& attribute,
                                          SVGPropertyBase* value) {
-  ForSelfAndInstances(this, [&attribute, &value](SVGElement* element) {
-    if (SVGAnimatedPropertyBase* animated_property =
-            element->PropertyFromAttribute(attribute)) {
-      animated_property->SetAnimatedValue(value);
-      NotifyAnimValChanged(element, attribute);
-    }
-  });
+  SetAnimatedAttribute(attribute, value);
   EnsureSVGRareData()->WebAnimatedAttributes().insert(&attribute);
 }
 
@@ -250,37 +235,39 @@ void SVGElement::ClearWebAnimatedAttributes() {
     return;
   for (const QualifiedName* attribute :
        SvgRareData()->WebAnimatedAttributes()) {
-    ForSelfAndInstances(this, [&attribute](SVGElement* element) {
-      if (SVGAnimatedPropertyBase* animated_property =
-              element->PropertyFromAttribute(*attribute)) {
-        animated_property->AnimationEnded();
-        NotifyAnimValChanged(element, *attribute);
-      }
-    });
+    ClearAnimatedAttribute(*attribute);
   }
   SvgRareData()->WebAnimatedAttributes().clear();
+}
+
+ElementSMILAnimations* SVGElement::GetSMILAnimations() {
+  if (!HasSVGRareData())
+    return nullptr;
+  return SvgRareData()->GetSMILAnimations();
+}
+
+ElementSMILAnimations& SVGElement::EnsureSMILAnimations() {
+  return EnsureSVGRareData()->EnsureSMILAnimations();
 }
 
 void SVGElement::SetAnimatedAttribute(const QualifiedName& attribute,
                                       SVGPropertyBase* value) {
   ForSelfAndInstances(this, [&attribute, &value](SVGElement* element) {
     if (SVGAnimatedPropertyBase* animated_property =
-            element->PropertyFromAttribute(attribute))
+            element->PropertyFromAttribute(attribute)) {
       animated_property->SetAnimatedValue(value);
-  });
-}
-
-void SVGElement::InvalidateAnimatedAttribute(const QualifiedName& attribute) {
-  ForSelfAndInstances(this, [&attribute](SVGElement* element) {
-    NotifyAnimValChanged(element, attribute);
+      NotifyAnimValChanged(element, attribute);
+    }
   });
 }
 
 void SVGElement::ClearAnimatedAttribute(const QualifiedName& attribute) {
   ForSelfAndInstances(this, [&attribute](SVGElement* element) {
     if (SVGAnimatedPropertyBase* animated_property =
-            element->PropertyFromAttribute(attribute))
+            element->PropertyFromAttribute(attribute)) {
       animated_property->AnimationEnded();
+      NotifyAnimValChanged(element, attribute);
+    }
   });
 }
 
@@ -297,76 +284,13 @@ bool SVGElement::HasTransform(
           HasSVGRareData());
 }
 
-static inline bool TransformUsesBoxSize(const ComputedStyle& style) {
-  if ((style.TransformOriginX().IsPercent() ||
-       style.TransformOriginY().IsPercent()) &&
-      style.RequireTransformOrigin(ComputedStyle::kIncludeTransformOrigin,
-                                   ComputedStyle::kExcludeMotionPath))
-    return true;
-  if (style.Transform().DependsOnBoxSize())
-    return true;
-  if (style.Translate() && style.Translate()->DependsOnBoxSize())
-    return true;
-  if (style.HasOffset())
-    return true;
-  return false;
-}
-
-FloatRect ComputeSVGTransformReferenceBox(const LayoutObject& layout_object) {
-  const ComputedStyle& style = layout_object.StyleRef();
-  FloatRect reference_box;
-  if (style.TransformBox() == ETransformBox::kFillBox) {
-    reference_box = layout_object.ObjectBoundingBox();
-  } else {
-    DCHECK_EQ(style.TransformBox(), ETransformBox::kViewBox);
-    SVGLengthContext length_context(
-        DynamicTo<SVGElement>(layout_object.GetNode()));
-    FloatSize viewport_size;
-    length_context.DetermineViewport(viewport_size);
-    reference_box.SetSize(viewport_size);
-  }
-  const float zoom = style.EffectiveZoom();
-  if (zoom != 1)
-    reference_box.Scale(zoom);
-  return reference_box;
-}
-
 AffineTransform SVGElement::CalculateTransform(
     ApplyMotionTransform apply_motion_transform) const {
-  const ComputedStyle* style =
-      GetLayoutObject() ? GetLayoutObject()->Style() : nullptr;
+  const LayoutObject* layout_object = GetLayoutObject();
 
-  // If CSS property was set, use that, otherwise fallback to attribute (if
-  // set).
   AffineTransform matrix;
-  if (style && style->HasTransform()) {
-    if (TransformUsesBoxSize(*style))
-      UseCounter::Count(GetDocument(), WebFeature::kTransformUsesBoxSizeOnSVG);
-
-    // CSS transforms operate with pre-scaled lengths. To make this work with
-    // SVG (which applies the zoom factor globally, at the root level) we
-    //
-    //   * pre-scale the reference box (to bring it into the same space as the
-    //     other CSS values) (Handled by ComputeSVGTransformReferenceBox)
-    //   * invert the zoom factor (to effectively compute the CSS transform
-    //     under a 1.0 zoom)
-    //
-    // Note: objectBoundingBox is an emptyRect for elements like pattern or
-    // clipPath. See
-    // https://svgwg.org/svg2-draft/coords.html#ObjectBoundingBoxUnits
-    TransformationMatrix transform;
-    FloatRect reference_box =
-        ComputeSVGTransformReferenceBox(*GetLayoutObject());
-    style->ApplyTransform(
-        transform, reference_box, ComputedStyle::kIncludeTransformOrigin,
-        ComputedStyle::kIncludeMotionPath,
-        ComputedStyle::kIncludeIndependentTransformProperties);
-    const float zoom = style->EffectiveZoom();
-    if (zoom != 1)
-      transform.Zoom(1 / zoom);
-    // Flatten any 3D transform.
-    matrix = transform.ToAffineTransform();
-  }
+  if (layout_object && layout_object->StyleRef().HasTransform())
+    matrix = TransformHelper::ComputeTransform(*layout_object);
 
   // Apply any "motion transform" contribution if requested (and existing.)
   if (apply_motion_transform == kIncludeMotionTransform && HasSVGRareData())
@@ -380,12 +304,12 @@ Node::InsertionNotificationRequest SVGElement::InsertedInto(
   Element::InsertedInto(root_parent);
   UpdateRelativeLengthsInformation();
 
-  const AtomicString& nonce_value = FastGetAttribute(kNonceAttr);
+  const AtomicString& nonce_value = FastGetAttribute(html_names::kNonceAttr);
   if (!nonce_value.IsEmpty()) {
     setNonce(nonce_value);
     if (InActiveDocument() &&
         GetDocument().GetContentSecurityPolicy()->HasHeaderDeliveredPolicy()) {
-      setAttribute(kNonceAttr, g_empty_atom);
+      setAttribute(html_names::kNonceAttr, g_empty_atom);
     }
   }
   return kInsertionDone;
@@ -440,64 +364,64 @@ CSSPropertyID SVGElement::CssPropertyIdForSVGAttributeName(
     // This is a list of all base CSS and SVG CSS properties which are exposed
     // as SVG XML attributes
     const QualifiedName* const attr_names[] = {
-        &kAlignmentBaselineAttr,
-        &kBaselineShiftAttr,
-        &kBufferedRenderingAttr,
-        &kClipAttr,
-        &kClipPathAttr,
-        &kClipRuleAttr,
+        &svg_names::kAlignmentBaselineAttr,
+        &svg_names::kBaselineShiftAttr,
+        &svg_names::kBufferedRenderingAttr,
+        &svg_names::kClipAttr,
+        &svg_names::kClipPathAttr,
+        &svg_names::kClipRuleAttr,
         &svg_names::kColorAttr,
-        &kColorInterpolationAttr,
-        &kColorInterpolationFiltersAttr,
-        &kColorRenderingAttr,
-        &kCursorAttr,
+        &svg_names::kColorInterpolationAttr,
+        &svg_names::kColorInterpolationFiltersAttr,
+        &svg_names::kColorRenderingAttr,
+        &svg_names::kCursorAttr,
         &svg_names::kDirectionAttr,
-        &kDisplayAttr,
-        &kDominantBaselineAttr,
-        &kFillAttr,
-        &kFillOpacityAttr,
-        &kFillRuleAttr,
-        &kFilterAttr,
-        &kFloodColorAttr,
-        &kFloodOpacityAttr,
-        &kFontFamilyAttr,
-        &kFontSizeAttr,
-        &kFontStretchAttr,
-        &kFontStyleAttr,
-        &kFontVariantAttr,
-        &kFontWeightAttr,
-        &kImageRenderingAttr,
-        &kLetterSpacingAttr,
-        &kLightingColorAttr,
-        &kMarkerEndAttr,
-        &kMarkerMidAttr,
-        &kMarkerStartAttr,
-        &kMaskAttr,
-        &kMaskTypeAttr,
-        &kOpacityAttr,
-        &kOverflowAttr,
-        &kPaintOrderAttr,
-        &kPointerEventsAttr,
-        &kShapeRenderingAttr,
-        &kStopColorAttr,
-        &kStopOpacityAttr,
-        &kStrokeAttr,
-        &kStrokeDasharrayAttr,
-        &kStrokeDashoffsetAttr,
-        &kStrokeLinecapAttr,
-        &kStrokeLinejoinAttr,
-        &kStrokeMiterlimitAttr,
-        &kStrokeOpacityAttr,
-        &kStrokeWidthAttr,
-        &kTextAnchorAttr,
-        &kTextDecorationAttr,
-        &kTextRenderingAttr,
-        &kTransformOriginAttr,
-        &kUnicodeBidiAttr,
-        &kVectorEffectAttr,
-        &kVisibilityAttr,
-        &kWordSpacingAttr,
-        &kWritingModeAttr,
+        &svg_names::kDisplayAttr,
+        &svg_names::kDominantBaselineAttr,
+        &svg_names::kFillAttr,
+        &svg_names::kFillOpacityAttr,
+        &svg_names::kFillRuleAttr,
+        &svg_names::kFilterAttr,
+        &svg_names::kFloodColorAttr,
+        &svg_names::kFloodOpacityAttr,
+        &svg_names::kFontFamilyAttr,
+        &svg_names::kFontSizeAttr,
+        &svg_names::kFontStretchAttr,
+        &svg_names::kFontStyleAttr,
+        &svg_names::kFontVariantAttr,
+        &svg_names::kFontWeightAttr,
+        &svg_names::kImageRenderingAttr,
+        &svg_names::kLetterSpacingAttr,
+        &svg_names::kLightingColorAttr,
+        &svg_names::kMarkerEndAttr,
+        &svg_names::kMarkerMidAttr,
+        &svg_names::kMarkerStartAttr,
+        &svg_names::kMaskAttr,
+        &svg_names::kMaskTypeAttr,
+        &svg_names::kOpacityAttr,
+        &svg_names::kOverflowAttr,
+        &svg_names::kPaintOrderAttr,
+        &svg_names::kPointerEventsAttr,
+        &svg_names::kShapeRenderingAttr,
+        &svg_names::kStopColorAttr,
+        &svg_names::kStopOpacityAttr,
+        &svg_names::kStrokeAttr,
+        &svg_names::kStrokeDasharrayAttr,
+        &svg_names::kStrokeDashoffsetAttr,
+        &svg_names::kStrokeLinecapAttr,
+        &svg_names::kStrokeLinejoinAttr,
+        &svg_names::kStrokeMiterlimitAttr,
+        &svg_names::kStrokeOpacityAttr,
+        &svg_names::kStrokeWidthAttr,
+        &svg_names::kTextAnchorAttr,
+        &svg_names::kTextDecorationAttr,
+        &svg_names::kTextRenderingAttr,
+        &svg_names::kTransformOriginAttr,
+        &svg_names::kUnicodeBidiAttr,
+        &svg_names::kVectorEffectAttr,
+        &svg_names::kVisibilityAttr,
+        &svg_names::kWordSpacingAttr,
+        &svg_names::kWritingModeAttr,
     };
     for (size_t i = 0; i < base::size(attr_names); i++) {
       CSSPropertyID property_id = cssPropertyID(attr_names[i]->LocalName());
@@ -555,7 +479,7 @@ void SVGElement::UpdateRelativeLengthsInformation(
   }
 
   // Register root SVG elements for top level viewport change notifications.
-  if (auto* svg = ToSVGSVGElementOrNull(*client_element)) {
+  if (auto* svg = DynamicTo<SVGSVGElement>(*client_element)) {
     SVGDocumentExtensions& svg_extensions = GetDocument().AccessSVGExtensions();
     if (client_element->HasRelativeLengths())
       svg_extensions.AddSVGRootWithRelativeLengthDescendents(svg);
@@ -596,8 +520,8 @@ void SVGElement::InvalidateRelativeLengthClients(
 SVGSVGElement* SVGElement::ownerSVGElement() const {
   ContainerNode* n = ParentOrShadowHostNode();
   while (n) {
-    if (IsSVGSVGElement(*n))
-      return ToSVGSVGElement(n);
+    if (auto* svg_svg_element = DynamicTo<SVGSVGElement>(n))
+      return svg_svg_element;
 
     n = n->ParentOrShadowHostNode();
   }
@@ -611,7 +535,8 @@ SVGElement* SVGElement::viewportElement() const {
   // work otherwhise.
   ContainerNode* n = ParentOrShadowHostNode();
   while (n) {
-    if (IsSVGSVGElement(*n) || IsSVGImageElement(*n) || IsSVGSymbolElement(*n))
+    if (IsA<SVGSVGElement>(*n) || IsA<SVGImageElement>(*n) ||
+        IsA<SVGSymbolElement>(*n))
       return To<SVGElement>(n);
 
     n = n->ParentOrShadowHostNode();
@@ -666,8 +591,7 @@ SVGElement* SVGElement::CorrespondingElement() const {
 
 SVGUseElement* SVGElement::CorrespondingUseElement() const {
   if (ShadowRoot* root = ContainingShadowRoot()) {
-    if (IsSVGUseElement(root->host()))
-      return &ToSVGUseElement(root->host());
+    return DynamicTo<SVGUseElement>(root->host());
   }
   return nullptr;
 }
@@ -729,59 +653,59 @@ AnimatedPropertyType SVGElement::AnimatedPropertyTypeForCSSAttribute(
       const AnimatedPropertyType prop_type;
     };
     const AttrToTypeEntry attr_to_types[] = {
-        {kAlignmentBaselineAttr, kAnimatedString},
-        {kBaselineShiftAttr, kAnimatedString},
-        {kBufferedRenderingAttr, kAnimatedString},
-        {kClipPathAttr, kAnimatedString},
-        {kClipRuleAttr, kAnimatedString},
+        {svg_names::kAlignmentBaselineAttr, kAnimatedString},
+        {svg_names::kBaselineShiftAttr, kAnimatedString},
+        {svg_names::kBufferedRenderingAttr, kAnimatedString},
+        {svg_names::kClipPathAttr, kAnimatedString},
+        {svg_names::kClipRuleAttr, kAnimatedString},
         {svg_names::kColorAttr, kAnimatedColor},
-        {kColorInterpolationAttr, kAnimatedString},
-        {kColorInterpolationFiltersAttr, kAnimatedString},
-        {kColorRenderingAttr, kAnimatedString},
-        {kCursorAttr, kAnimatedString},
-        {kDisplayAttr, kAnimatedString},
-        {kDominantBaselineAttr, kAnimatedString},
-        {kFillAttr, kAnimatedColor},
-        {kFillOpacityAttr, kAnimatedNumber},
-        {kFillRuleAttr, kAnimatedString},
-        {kFilterAttr, kAnimatedString},
-        {kFloodColorAttr, kAnimatedColor},
-        {kFloodOpacityAttr, kAnimatedNumber},
-        {kFontFamilyAttr, kAnimatedString},
-        {kFontSizeAttr, kAnimatedLength},
-        {kFontStretchAttr, kAnimatedString},
-        {kFontStyleAttr, kAnimatedString},
-        {kFontVariantAttr, kAnimatedString},
-        {kFontWeightAttr, kAnimatedString},
-        {kImageRenderingAttr, kAnimatedString},
-        {kLetterSpacingAttr, kAnimatedLength},
-        {kLightingColorAttr, kAnimatedColor},
-        {kMarkerEndAttr, kAnimatedString},
-        {kMarkerMidAttr, kAnimatedString},
-        {kMarkerStartAttr, kAnimatedString},
-        {kMaskAttr, kAnimatedString},
-        {kMaskTypeAttr, kAnimatedString},
-        {kOpacityAttr, kAnimatedNumber},
-        {kOverflowAttr, kAnimatedString},
-        {kPaintOrderAttr, kAnimatedString},
-        {kPointerEventsAttr, kAnimatedString},
-        {kShapeRenderingAttr, kAnimatedString},
-        {kStopColorAttr, kAnimatedColor},
-        {kStopOpacityAttr, kAnimatedNumber},
-        {kStrokeAttr, kAnimatedColor},
-        {kStrokeDasharrayAttr, kAnimatedLengthList},
-        {kStrokeDashoffsetAttr, kAnimatedLength},
-        {kStrokeLinecapAttr, kAnimatedString},
-        {kStrokeLinejoinAttr, kAnimatedString},
-        {kStrokeMiterlimitAttr, kAnimatedNumber},
-        {kStrokeOpacityAttr, kAnimatedNumber},
-        {kStrokeWidthAttr, kAnimatedLength},
-        {kTextAnchorAttr, kAnimatedString},
-        {kTextDecorationAttr, kAnimatedString},
-        {kTextRenderingAttr, kAnimatedString},
-        {kVectorEffectAttr, kAnimatedString},
-        {kVisibilityAttr, kAnimatedString},
-        {kWordSpacingAttr, kAnimatedLength},
+        {svg_names::kColorInterpolationAttr, kAnimatedString},
+        {svg_names::kColorInterpolationFiltersAttr, kAnimatedString},
+        {svg_names::kColorRenderingAttr, kAnimatedString},
+        {svg_names::kCursorAttr, kAnimatedString},
+        {svg_names::kDisplayAttr, kAnimatedString},
+        {svg_names::kDominantBaselineAttr, kAnimatedString},
+        {svg_names::kFillAttr, kAnimatedColor},
+        {svg_names::kFillOpacityAttr, kAnimatedNumber},
+        {svg_names::kFillRuleAttr, kAnimatedString},
+        {svg_names::kFilterAttr, kAnimatedString},
+        {svg_names::kFloodColorAttr, kAnimatedColor},
+        {svg_names::kFloodOpacityAttr, kAnimatedNumber},
+        {svg_names::kFontFamilyAttr, kAnimatedString},
+        {svg_names::kFontSizeAttr, kAnimatedLength},
+        {svg_names::kFontStretchAttr, kAnimatedString},
+        {svg_names::kFontStyleAttr, kAnimatedString},
+        {svg_names::kFontVariantAttr, kAnimatedString},
+        {svg_names::kFontWeightAttr, kAnimatedString},
+        {svg_names::kImageRenderingAttr, kAnimatedString},
+        {svg_names::kLetterSpacingAttr, kAnimatedLength},
+        {svg_names::kLightingColorAttr, kAnimatedColor},
+        {svg_names::kMarkerEndAttr, kAnimatedString},
+        {svg_names::kMarkerMidAttr, kAnimatedString},
+        {svg_names::kMarkerStartAttr, kAnimatedString},
+        {svg_names::kMaskAttr, kAnimatedString},
+        {svg_names::kMaskTypeAttr, kAnimatedString},
+        {svg_names::kOpacityAttr, kAnimatedNumber},
+        {svg_names::kOverflowAttr, kAnimatedString},
+        {svg_names::kPaintOrderAttr, kAnimatedString},
+        {svg_names::kPointerEventsAttr, kAnimatedString},
+        {svg_names::kShapeRenderingAttr, kAnimatedString},
+        {svg_names::kStopColorAttr, kAnimatedColor},
+        {svg_names::kStopOpacityAttr, kAnimatedNumber},
+        {svg_names::kStrokeAttr, kAnimatedColor},
+        {svg_names::kStrokeDasharrayAttr, kAnimatedLengthList},
+        {svg_names::kStrokeDashoffsetAttr, kAnimatedLength},
+        {svg_names::kStrokeLinecapAttr, kAnimatedString},
+        {svg_names::kStrokeLinejoinAttr, kAnimatedString},
+        {svg_names::kStrokeMiterlimitAttr, kAnimatedNumber},
+        {svg_names::kStrokeOpacityAttr, kAnimatedNumber},
+        {svg_names::kStrokeWidthAttr, kAnimatedLength},
+        {svg_names::kTextAnchorAttr, kAnimatedString},
+        {svg_names::kTextDecorationAttr, kAnimatedString},
+        {svg_names::kTextRenderingAttr, kAnimatedString},
+        {svg_names::kVectorEffectAttr, kAnimatedString},
+        {svg_names::kVisibilityAttr, kAnimatedString},
+        {svg_names::kWordSpacingAttr, kAnimatedLength},
     };
     for (size_t i = 0; i < base::size(attr_to_types); i++)
       css_property_map.Set(attr_to_types[i].attr, attr_to_types[i].prop_type);
@@ -812,12 +736,6 @@ bool SVGElement::IsPresentationAttribute(const QualifiedName& name) const {
   if (const SVGAnimatedPropertyBase* property = PropertyFromAttribute(name))
     return property->HasPresentationAttributeMapping();
   return CssPropertyIdForSVGAttributeName(name) > CSSPropertyID::kInvalid;
-}
-
-bool SVGElement::IsPresentationAttributeWithSVGDOM(
-    const QualifiedName& name) const {
-  const SVGAnimatedPropertyBase* property = PropertyFromAttribute(name);
-  return property && property->HasPresentationAttributeMapping();
 }
 
 void SVGElement::CollectStyleForPresentationAttribute(
@@ -908,7 +826,7 @@ static bool HasLoadListener(Element* element) {
 bool SVGElement::SendSVGLoadEventIfPossible() {
   if (!HaveLoadedRequiredResources())
     return false;
-  if ((IsStructurallyExternal() || IsSVGSVGElement(*this)) &&
+  if ((IsStructurallyExternal() || IsA<SVGSVGElement>(*this)) &&
       HasLoadListener(this))
     DispatchEvent(*Event::Create(event_type_names::kLoad));
   return true;
@@ -1066,10 +984,8 @@ const ComputedStyle* SVGElement::EnsureComputedStyle(
     return Element::EnsureComputedStyle(pseudo_element_specifier);
 
   const ComputedStyle* parent_style = nullptr;
-  if (Element* parent = ParentOrShadowHostElement()) {
-    if (LayoutObject* layout_object = parent->GetLayoutObject())
-      parent_style = layout_object->Style();
-  }
+  if (ContainerNode* parent = LayoutTreeBuilderTraversal::Parent(*this))
+    parent_style = parent->EnsureComputedStyle();
 
   return SvgRareData()->OverrideComputedStyle(this, parent_style);
 }
@@ -1230,7 +1146,7 @@ bool SVGElement::IsAnimatableAttribute(const QualifiedName& name) const {
                                       svg_names::kZAttr,
                                   }));
 
-  if (name == kClassAttr)
+  if (name == html_names::kClassAttr)
     return true;
 
   return animatable_attributes.Contains(name);

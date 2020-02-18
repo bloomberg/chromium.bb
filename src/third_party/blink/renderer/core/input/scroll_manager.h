@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/callback_helpers.h"
 #include "base/macros.h"
 #include "cc/input/snap_fling_controller.h"
 #include "third_party/blink/public/platform/web_input_event_result.h"
@@ -37,9 +38,8 @@ class WebGestureEvent;
 // This class takes care of scrolling and resizing and the related states. The
 // user action that causes scrolling or resizing is determined in other *Manager
 // classes and they call into this class for doing the work.
-class CORE_EXPORT ScrollManager
-    : public GarbageCollectedFinalized<ScrollManager>,
-      public cc::SnapFlingClient {
+class CORE_EXPORT ScrollManager : public GarbageCollected<ScrollManager>,
+                                  public cc::SnapFlingClient {
  public:
   explicit ScrollManager(LocalFrame&);
   virtual ~ScrollManager() = default;
@@ -97,9 +97,10 @@ class CORE_EXPORT ScrollManager
   void SetResizeScrollableArea(PaintLayer*, IntPoint);
 
   // SnapFlingClient implementation.
-  bool GetSnapFlingInfo(const gfx::Vector2dF& natural_displacement,
-                        gfx::Vector2dF* out_initial_position,
-                        gfx::Vector2dF* out_target_position) const override;
+  bool GetSnapFlingInfoAndSetSnapTarget(
+      const gfx::Vector2dF& natural_displacement,
+      gfx::Vector2dF* out_initial_position,
+      gfx::Vector2dF* out_target_position) const override;
   gfx::Vector2dF ScrollByForSnapFling(const gfx::Vector2dF& delta) override;
   void ScrollEndForSnapFling() override;
   void RequestAnimationForSnapFling() override;
@@ -142,7 +143,8 @@ class CORE_EXPORT ScrollManager
   WebGestureEvent SynthesizeGestureScrollBegin(
       const WebGestureEvent& update_event);
 
-  bool SnapAtGestureScrollEnd(const WebGestureEvent& end_event);
+  bool SnapAtGestureScrollEnd(const WebGestureEvent& end_event,
+                              base::ScopedClosureRunner callback);
 
   void NotifyScrollPhaseBeginForCustomizedScroll(const ScrollState&);
   void NotifyScrollPhaseEndForCustomizedScroll();

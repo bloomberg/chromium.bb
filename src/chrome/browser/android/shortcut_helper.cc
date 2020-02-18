@@ -7,20 +7,22 @@
 #include <jni.h>
 #include <utility>
 
+#include "base/android/build_info.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/feature_list.h"
 #include "base/guid.h"
 #include "base/optional.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/android/chrome_jni_headers/ShortcutHelper_jni.h"
+#include "chrome/browser/android/chrome_feature_list.h"
 #include "chrome/browser/android/color_helpers.h"
 #include "chrome/browser/android/tab_android.h"
-#include "chrome/browser/android/webapk/chrome_webapk_host.h"
 #include "chrome/browser/android/webapk/webapk_install_service.h"
 #include "chrome/browser/android/webapk/webapk_metrics.h"
 #include "chrome/common/chrome_switches.h"
@@ -44,6 +46,7 @@ int g_minimum_homescreen_icon_size = -1;
 int g_ideal_splash_image_size = -1;
 int g_minimum_splash_image_size = -1;
 int g_ideal_badge_icon_size = -1;
+int g_ideal_adaptive_launcher_icon_size = -1;
 
 int g_default_rgb_icon_value = 145;
 
@@ -57,7 +60,7 @@ void GetHomescreenIconAndSplashImageSizes() {
   base::android::JavaIntArrayToIntVector(env, java_size_array, &sizes);
 
   // Check that the size returned is what is expected.
-  DCHECK(sizes.size() == 5);
+  DCHECK_EQ(6u, sizes.size());
 
   // This ordering must be kept up to date with the Java ShortcutHelper.
   g_ideal_homescreen_icon_size = sizes[0];
@@ -65,6 +68,7 @@ void GetHomescreenIconAndSplashImageSizes() {
   g_ideal_splash_image_size = sizes[2];
   g_minimum_splash_image_size = sizes[3];
   g_ideal_badge_icon_size = sizes[4];
+  g_ideal_adaptive_launcher_icon_size = sizes[5];
 
   // Try to ensure that the data returned is sane.
   DCHECK(g_minimum_homescreen_icon_size <= g_ideal_homescreen_icon_size);
@@ -112,10 +116,9 @@ void AddWebappWithSkBitmap(const ShortcutInfo& info,
   Java_ShortcutHelper_addWebapp(
       env, java_webapp_id, java_url, java_scope_url, java_user_title, java_name,
       java_short_name, java_best_primary_icon_url, java_bitmap,
-      is_icon_maskable, info.display, info.orientation, info.source,
-      OptionalSkColorToJavaColor(info.theme_color),
-      OptionalSkColorToJavaColor(info.background_color), callback_pointer,
-      false /* isShortcutAsWebapp */);
+      is_icon_maskable, static_cast<int>(info.display), info.orientation,
+      info.source, OptionalSkColorToJavaColor(info.theme_color),
+      OptionalSkColorToJavaColor(info.background_color), callback_pointer);
 }
 
 // Adds a shortcut which opens in a browser tab to the launcher.
@@ -179,9 +182,9 @@ void ShortcutHelper::AddToLauncherWithSkBitmap(
     const SkBitmap& icon_bitmap,
     bool is_icon_maskable) {
   std::string webapp_id = base::GenerateGUID();
-  if (info.display == blink::kWebDisplayModeStandalone ||
-      info.display == blink::kWebDisplayModeFullscreen ||
-      info.display == blink::kWebDisplayModeMinimalUi) {
+  if (info.display == blink::mojom::DisplayMode::kStandalone ||
+      info.display == blink::mojom::DisplayMode::kFullscreen ||
+      info.display == blink::mojom::DisplayMode::kMinimalUi) {
     AddWebappWithSkBitmap(
         info, webapp_id, icon_bitmap, is_icon_maskable,
         base::BindOnce(&ShortcutHelper::FetchSplashScreenImage, web_contents,
@@ -227,6 +230,12 @@ int ShortcutHelper::GetIdealBadgeIconSizeInPx() {
   if (g_ideal_badge_icon_size == -1)
     GetHomescreenIconAndSplashImageSizes();
   return g_ideal_badge_icon_size;
+}
+
+int ShortcutHelper::GetIdealAdaptiveLauncherIconSizeInPx() {
+  if (g_ideal_adaptive_launcher_icon_size == -1)
+    GetHomescreenIconAndSplashImageSizes();
+  return g_ideal_adaptive_launcher_icon_size;
 }
 
 // static
@@ -334,6 +343,13 @@ void ShortcutHelper::SetForceWebApkUpdate(const std::string& id) {
       env, base::android::ConvertUTF8ToJavaString(env, id));
 }
 
+// static
+bool ShortcutHelper::DoesAndroidSupportMaskableIcons() {
+  return base::FeatureList::IsEnabled(chrome::android::kWebApkAdaptiveIcon) &&
+         base::android::BuildInfo::GetInstance()->sdk_int() >=
+             base::android::SDK_VERSION_OREO;
+}
+
 // Callback used by Java when the shortcut has been created.
 // |splash_image_callback| is a pointer to a base::OnceClosure allocated in
 // AddShortcutWithSkBitmap, so reinterpret_cast it back and run it.
@@ -349,4 +365,3 @@ void JNI_ShortcutHelper_OnWebappDataStored(JNIEnv* env,
   std::move(*splash_image_callback).Run();
   delete splash_image_callback;
 }
-

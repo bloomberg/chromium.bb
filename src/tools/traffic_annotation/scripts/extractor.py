@@ -7,6 +7,8 @@
 Extracts network traffic annotation definitions from C++ source code.
 """
 
+from __future__ import print_function
+
 import argparse
 import os
 import re
@@ -54,13 +56,6 @@ class Annotation:
       file_path: Path to the file that contains this annotation.
     """
     self.file_path = file_path
-    # TODO(crbug/966883): Remove function_name from here and from the clang
-    # tool's output.
-    #
-    # |function_name| is not supported, but keep it in the output for
-    # compatibility with the clang tool. Use an obviously wrong function name
-    # in case this details ends up in auditor output.
-    self.function_name = "XXX_UNIMPLEMENTED_XXX"
     self.line_number = line_number
     self.type_name = type_name
     self.unique_id = unique_id
@@ -88,7 +83,6 @@ class Annotation:
     return "\n".join(map(str, [
         "==== NEW ANNOTATION ====",
         self.file_path,
-        self.function_name,
         self.line_number,
         self.type_name,
         self.unique_id,
@@ -247,6 +241,11 @@ def main():
   for annotation in annotation_definitions:
     print(annotation.clang_tool_output_string())
 
+  # If all files were successfully checked for annotations but none of them had
+  # any, print something so that the traffic_annotation_auditor knows there was
+  # no error so that the files get checked for deleted annotations.
+  if not annotation_definitions:
+    print('No annotations in these files.')
   return 0
 
 

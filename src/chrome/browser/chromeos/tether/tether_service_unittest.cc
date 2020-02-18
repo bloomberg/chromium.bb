@@ -223,7 +223,8 @@ class FakeRemoteDeviceProviderFactory
   // chromeos::device_sync::RemoteDeviceProviderImpl::Factory:
   std::unique_ptr<chromeos::device_sync::RemoteDeviceProvider> BuildInstance(
       chromeos::device_sync::CryptAuthDeviceManager* device_manager,
-      const std::string& user_id,
+      chromeos::device_sync::CryptAuthV2DeviceManager* v2_device_manager,
+      const CoreAccountId& user_account_id,
       const std::string& user_private_key) override {
     return std::make_unique<chromeos::device_sync::FakeRemoteDeviceProvider>();
   }
@@ -266,8 +267,8 @@ class FakeDeviceSyncClientImplFactory
   ~FakeDeviceSyncClientImplFactory() override = default;
 
   // chromeos::device_sync::DeviceSyncClientImpl::Factory:
-  std::unique_ptr<chromeos::device_sync::DeviceSyncClient> BuildInstance(
-      chromeos::device_sync::mojom::DeviceSyncService* service) override {
+  std::unique_ptr<chromeos::device_sync::DeviceSyncClient> BuildInstance()
+      override {
     auto fake_device_sync_client =
         std::make_unique<chromeos::device_sync::FakeDeviceSyncClient>();
     fake_device_sync_client->NotifyReady();
@@ -301,7 +302,9 @@ class FakeMultiDeviceSetupClientImplFactory
 
   // chromeos::multidevice_setup::MultiDeviceSetupClientImpl::Factory:
   std::unique_ptr<chromeos::multidevice_setup::MultiDeviceSetupClient>
-  BuildInstance(service_manager::Connector* connector) override {
+  BuildInstance(
+      mojo::PendingRemote<chromeos::multidevice_setup::mojom::MultiDeviceSetup>)
+      override {
     auto fake_multidevice_setup_client = std::make_unique<
         chromeos::multidevice_setup::FakeMultiDeviceSetupClient>();
     fake_multidevice_setup_client_ = fake_multidevice_setup_client.get();

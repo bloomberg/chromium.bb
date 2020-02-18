@@ -41,10 +41,10 @@
 #include "third_party/blink/public/platform/web_scroll_into_view_params.h"
 #include "third_party/blink/public/web/web_autofill_client.h"
 #include "third_party/blink/public/web/web_element.h"
+#include "third_party/blink/public/web/web_frame_widget.h"
 #include "third_party/blink/public/web/web_plugin.h"
 #include "third_party/blink/public/web/web_range.h"
 #include "third_party/blink/public/web/web_widget_client.h"
-#include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
 #include "third_party/blink/renderer/core/editing/editing_utilities.h"
 #include "third_party/blink/renderer/core/editing/editor.h"
 #include "third_party/blink/renderer/core/editing/ephemeral_range.h"
@@ -83,6 +83,7 @@
 #include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/keyboard_codes.h"
 
 namespace blink {
@@ -121,8 +122,8 @@ WebFrameWidget* WebFrameWidget::CreateForMainFrame(WebWidgetClient* client,
   // Note: this isn't a leak, as the object has a self-reference that the
   // caller needs to release by calling Close().
   // TODO(dcheng): Remove the special bridge class for main frame widgets.
-  WebFrameWidgetBase* widget =
-      MakeGarbageCollected<WebViewFrameWidget>(*client, web_view_impl);
+  auto* widget = MakeGarbageCollected<WebViewFrameWidget>(
+      util::PassKey<WebFrameWidget>(), *client, web_view_impl);
   widget->BindLocalRoot(*main_frame);
   return widget;
 }
@@ -139,12 +140,14 @@ WebFrameWidget* WebFrameWidget::CreateForChildLocalRoot(
 
   // Note: this isn't a leak, as the object has a self-reference that the
   // caller needs to release by calling Close().
-  auto* widget = MakeGarbageCollected<WebFrameWidgetImpl>(*client);
+  auto* widget = MakeGarbageCollected<WebFrameWidgetImpl>(
+      util::PassKey<WebFrameWidget>(), *client);
   widget->BindLocalRoot(*local_root);
   return widget;
 }
 
-WebFrameWidgetImpl::WebFrameWidgetImpl(WebWidgetClient& client)
+WebFrameWidgetImpl::WebFrameWidgetImpl(util::PassKey<WebFrameWidget>,
+                                       WebWidgetClient& client)
     : WebFrameWidgetBase(client),
       self_keep_alive_(PERSISTENT_FROM_HERE, this) {}
 
@@ -164,7 +167,6 @@ void WebFrameWidgetImpl::Close() {
 
   animation_host_ = nullptr;
   root_layer_ = nullptr;
-  root_graphics_layer_ = nullptr;
 
   self_keep_alive_.Clear();
 }
@@ -350,6 +352,18 @@ void WebFrameWidgetImpl::RecordEndOfFrameMetrics(
       .RecordEndOfFrameMetrics(frame_begin_time, base::TimeTicks::Now());
 }
 
+std::unique_ptr<cc::BeginMainFrameMetrics>
+WebFrameWidgetImpl::GetBeginMainFrameMetrics() {
+  if (!LocalRootImpl())
+    return nullptr;
+
+  return LocalRootImpl()
+      ->GetFrame()
+      ->View()
+      ->EnsureUkmAggregator()
+      .GetBeginMainFrameMetrics();
+}
+
 void WebFrameWidgetImpl::UpdateLifecycle(LifecycleUpdate requested_update,
                                          LifecycleUpdateReason reason) {
   TRACE_EVENT0("blink", "WebFrameWidgetImpl::updateAllLifecyclePhases");
@@ -444,8 +458,6 @@ WebInputEventResult WebFrameWidgetImpl::HandleInputEvent(
     if (input_event.GetType() == WebInputEvent::kMouseUp)
       MouseCaptureLost();
 
-    std::unique_ptr<UserGestureIndicator> gesture_indicator;
-
     AtomicString event_type;
     switch (input_event.GetType()) {
       case WebInputEvent::kMouseEnter:
@@ -459,14 +471,10 @@ WebInputEventResult WebFrameWidgetImpl::HandleInputEvent(
         break;
       case WebInputEvent::kMouseDown:
         event_type = event_type_names::kMousedown;
-        gesture_indicator = LocalFrame::NotifyUserActivation(
-            target->GetDocument().GetFrame(), UserGestureToken::kNewGesture);
-        mouse_capture_gesture_token_ = gesture_indicator->CurrentToken();
+        LocalFrame::NotifyUserActivation(target->GetDocument().GetFrame());
         break;
       case WebInputEvent::kMouseUp:
         event_type = event_type_names::kMouseup;
-        gesture_indicator = std::make_unique<UserGestureIndicator>(
-            std::move(mouse_capture_gesture_token_));
         break;
       default:
         NOTREACHED();
@@ -613,15 +621,14 @@ bool WebFrameWidgetImpl::IsAcceleratedCompositingActive() const {
 }
 
 void WebFrameWidgetImpl::SetRemoteViewportIntersection(
-    const WebRect& viewport_intersection,
-    FrameOcclusionState occlusion_state) {
+    const ViewportIntersectionState& intersection_state) {
   // Remote viewports are only applicable to local frames with remote ancestors.
   DCHECK(LocalRootImpl()->Parent() &&
          LocalRootImpl()->Parent()->IsWebRemoteFrame() &&
          LocalRootImpl()->GetFrame());
 
   LocalRootImpl()->GetFrame()->SetViewportIntersectionFromParent(
-      viewport_intersection, occlusion_state);
+      intersection_state);
 }
 
 void WebFrameWidgetImpl::SetIsInert(bool inert) {
@@ -695,11 +702,6 @@ void WebFrameWidgetImpl::HandleMouseDown(LocalFrame& main_frame,
 
   PageWidgetEventHandler::HandleMouseDown(main_frame, event);
 
-  if (event.button == WebMouseEvent::Button::kLeft && mouse_capture_element_) {
-    mouse_capture_gesture_token_ =
-        main_frame.GetEventHandler().TakeLastMouseDownGestureToken();
-  }
-
   if (view_impl->GetPagePopup() && page_popup &&
       view_impl->GetPagePopup()->HasSamePopupClient(page_popup.get())) {
     // That click triggered a page popup that is the same as the one we just
@@ -756,9 +758,11 @@ void WebFrameWidgetImpl::MouseContextMenu(const WebMouseEvent& event) {
   // implementation...
 }
 
-void WebFrameWidgetImpl::HandleMouseUp(LocalFrame& main_frame,
-                                       const WebMouseEvent& event) {
-  PageWidgetEventHandler::HandleMouseUp(main_frame, event);
+WebInputEventResult WebFrameWidgetImpl::HandleMouseUp(
+    LocalFrame& main_frame,
+    const WebMouseEvent& event) {
+  WebInputEventResult result =
+      PageWidgetEventHandler::HandleMouseUp(main_frame, event);
 
   if (GetPage()->GetSettings().GetShowContextMenuOnMouseUp()) {
     // Dispatch the contextmenu event regardless of if the click was swallowed.
@@ -766,6 +770,7 @@ void WebFrameWidgetImpl::HandleMouseUp(LocalFrame& main_frame,
     if (event.button == WebMouseEvent::Button::kRight)
       MouseContextMenu(event);
   }
+  return result;
 }
 
 WebInputEventResult WebFrameWidgetImpl::HandleMouseWheel(
@@ -983,11 +988,6 @@ PaintLayerCompositor* WebFrameWidgetImpl::Compositor() const {
   return frame->GetDocument()->GetLayoutView()->Compositor();
 }
 
-void WebFrameWidgetImpl::SetRootGraphicsLayer(GraphicsLayer* layer) {
-  root_graphics_layer_ = layer;
-  SetRootLayer(layer ? layer->CcLayer() : nullptr);
-}
-
 void WebFrameWidgetImpl::SetRootLayer(scoped_refptr<cc::Layer> layer) {
   root_layer_ = std::move(layer);
 
@@ -1005,14 +1005,6 @@ void WebFrameWidgetImpl::SetRootLayer(scoped_refptr<cc::Layer> layer) {
   Client()->SetPageScaleStateAndLimits(1.f, false /* is_pinch_gesture_active */,
                                        View()->MinimumPageScaleFactor(),
                                        View()->MaximumPageScaleFactor());
-
-  // TODO(kenrb): Currently GPU rasterization is always enabled for OOPIFs.
-  // This is okay because it is only necessarily to set the trigger to false
-  // for certain cases that affect the top-level frame, but it would be better
-  // to be consistent with the top-level frame. Ideally the logic should
-  // be moved from WebViewImpl into WebFrameWidget and used for all local
-  // frame roots. https://crbug.com/712794
-  Client()->SetAllowGpuRasterization(true);
 
   // TODO(danakj): SetIsAcceleratedCompositingActive() also sets the root layer
   // if it's not null..

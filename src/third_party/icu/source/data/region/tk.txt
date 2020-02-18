@@ -187,7 +187,7 @@ tk{
         ML{"Mali"}
         MM{"Mýanma (Burma)"}
         MN{"Mongoliýa"}
-        MO{"Makau"}
+        MO{"Makao"}
         MP{"Demirgazyk Mariana adalary"}
         MQ{"Martinika"}
         MR{"Mawritaniýa"}
@@ -253,7 +253,7 @@ tk{
         SV{"Salwador"}
         SX{"Sint-Marten"}
         SY{"Siriýa"}
-        SZ{"Swazilend"}
+        SZ{"Eswatini"}
         TA{"Tristan-da-Kunýa"}
         TC{"Terks we Kaýkos adalary"}
         TD{"Çad"}
@@ -306,7 +306,8 @@ tk{
         CG{"Kongo (Respublika)"}
         CI{"Şirmaýy kenar"}
         CZ{"Çeh Respublikasy"}
+        SZ{"Swazilend"}
         TL{"Gündogar Timor"}
     }
-    Version{"2.1.49.82"}
+    Version{"36"}
 }

@@ -51,7 +51,7 @@ ServiceWorkerNewScriptLoader::CreateAndStart(
     int32_t request_id,
     uint32_t options,
     const network::ResourceRequest& original_request,
-    network::mojom::URLLoaderClientPtr client,
+    mojo::PendingRemote<network::mojom::URLLoaderClient> client,
     scoped_refptr<ServiceWorkerVersion> version,
     scoped_refptr<network::SharedURLLoaderFactory> loader_factory,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
@@ -67,7 +67,7 @@ ServiceWorkerNewScriptLoader::ServiceWorkerNewScriptLoader(
     int32_t request_id,
     uint32_t options,
     const network::ResourceRequest& original_request,
-    network::mojom::URLLoaderClientPtr client,
+    mojo::PendingRemote<network::mojom::URLLoaderClient> client,
     scoped_refptr<ServiceWorkerVersion> version,
     scoped_refptr<network::SharedURLLoaderFactory> loader_factory,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation)
@@ -75,7 +75,6 @@ ServiceWorkerNewScriptLoader::ServiceWorkerNewScriptLoader(
       resource_type_(static_cast<ResourceType>(original_request.resource_type)),
       original_options_(options),
       version_(version),
-      network_client_binding_(this),
       network_watcher_(FROM_HERE,
                        mojo::SimpleWatcher::ArmingPolicy::MANUAL,
                        base::SequencedTaskRunnerHandle::Get()),
@@ -150,11 +149,10 @@ ServiceWorkerNewScriptLoader::ServiceWorkerNewScriptLoader(
   // JavaScript MIME type. Therefore, no sniffing is needed.
   options &= ~network::mojom::kURLLoadOptionSniffMimeType;
 
-  network::mojom::URLLoaderClientPtr network_client;
-  network_client_binding_.Bind(mojo::MakeRequest(&network_client));
   loader_factory_->CreateLoaderAndStart(
-      mojo::MakeRequest(&network_loader_), routing_id, request_id, options,
-      resource_request, std::move(network_client), traffic_annotation);
+      network_loader_.BindNewPipeAndPassReceiver(), routing_id, request_id,
+      options, resource_request,
+      network_client_receiver_.BindNewPipeAndPassRemote(), traffic_annotation);
   DCHECK_EQ(LoaderState::kNotStarted, network_loader_state_);
   network_loader_state_ = LoaderState::kLoadingHeader;
 }
@@ -203,7 +201,7 @@ void ServiceWorkerNewScriptLoader::OnReceiveResponse(
   std::string error_message;
   std::unique_ptr<net::HttpResponseInfo> response_info =
       service_worker_loader_helpers::CreateHttpResponseInfoAndCheckHeaders(
-          response_head, &service_worker_state, &completion_status,
+          *response_head, &service_worker_state, &completion_status,
           &error_message);
   if (!response_info) {
     DCHECK_NE(net::OK, completion_status.error_code);
@@ -559,7 +557,7 @@ void ServiceWorkerNewScriptLoader::CommitCompleted(
   client_producer_.reset();
 
   network_loader_.reset();
-  network_client_binding_.Close();
+  network_client_receiver_.reset();
   network_consumer_.reset();
   network_watcher_.Cancel();
   cache_writer_.reset();

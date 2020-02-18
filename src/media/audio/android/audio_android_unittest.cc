@@ -10,12 +10,12 @@
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/test/task_environment.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -213,7 +213,7 @@ class FileAudioSource : public AudioOutputStream::AudioSourceCallback {
     return frames;
   }
 
-  void OnError() override {}
+  void OnError(ErrorType type) override {}
 
   int file_size() { return file_->data_size(); }
 
@@ -319,6 +319,7 @@ class FullDuplexAudioSinkSource
   ~FullDuplexAudioSinkSource() override {}
 
   // AudioInputStream::AudioInputCallback implementation
+  void OnError() override {}
   void OnData(const AudioBus* src,
               base::TimeTicks capture_time,
               double volume) override {
@@ -358,9 +359,8 @@ class FullDuplexAudioSinkSource
     }
   }
 
-  void OnError() override {}
-
   // AudioOutputStream::AudioSourceCallback implementation
+  void OnError(ErrorType type) override {}
   int OnMoreData(base::TimeDelta /* delay */,
                  base::TimeTicks /* delay_timestamp */,
                  int /* prior_frames_skipped */,
@@ -416,7 +416,8 @@ class FullDuplexAudioSinkSource
 class AudioAndroidOutputTest : public testing::Test {
  public:
   AudioAndroidOutputTest()
-      : loop_(new base::MessageLoopForUI()),
+      : task_environment_(
+            base::test::SingleThreadTaskEnvironment::MainThreadType::UI),
         audio_manager_(AudioManager::CreateForTesting(
             std::make_unique<TestAudioThread>())),
         audio_manager_device_info_(audio_manager_.get()),
@@ -518,7 +519,7 @@ class AudioAndroidOutputTest : public testing::Test {
                                             base::ThreadTaskRunnerHandle::Get(),
                                             run_loop.QuitWhenIdleClosure()),
                   Invoke(RealOnMoreData)));
-    EXPECT_CALL(source, OnError()).Times(0);
+    EXPECT_CALL(source, OnError(_)).Times(0);
 
     OpenAndStartAudioOutputStreamOnAudioThread(&source);
 
@@ -574,7 +575,7 @@ class AudioAndroidOutputTest : public testing::Test {
     audio_output_stream_ = NULL;
   }
 
-  std::unique_ptr<base::MessageLoopForUI> loop_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   std::unique_ptr<AudioManager> audio_manager_;
   AudioDeviceInfoAccessorForTests audio_manager_device_info_;
   AudioParameters audio_output_parameters_;
@@ -884,7 +885,7 @@ TEST_P(AudioAndroidInputTest, DISABLED_RunDuplexInputStreamWithFileAsSink) {
 
   EXPECT_CALL(source, OnMoreData(_, _, 0, NotNull()))
       .WillRepeatedly(Invoke(RealOnMoreData));
-  EXPECT_CALL(source, OnError()).Times(0);
+  EXPECT_CALL(source, OnError(_)).Times(0);
 
   OpenAndStartAudioInputStreamOnAudioThread(&sink);
   OpenAndStartAudioOutputStreamOnAudioThread(&source);

@@ -13,12 +13,16 @@ const char kPermissionBrokerServiceName[] = "org.chromium.PermissionBroker";
 // Methods
 const char kCheckPathAccess[] = "CheckPathAccess";
 const char kOpenPath[] = "OpenPath";
+const char kRequestLoopbackTcpPortLockdown[] = "RequestLoopbackTcpPortLockdown";
 const char kRequestTcpPortAccess[] = "RequestTcpPortAccess";
+const char kRequestTcpPortForward[] = "RequestTcpPortForward";
 const char kRequestUdpPortAccess[] = "RequestUdpPortAccess";
+const char kRequestUdpPortForward[] = "RequestUdpPortForward";
+const char kReleaseLoopbackTcpPort[] = "ReleaseLoopbackTcpPort";
 const char kReleaseTcpPort[] = "ReleaseTcpPort";
+const char kReleaseTcpPortForward[] = "ReleaseTcpPortForward";
 const char kReleaseUdpPort[] = "ReleaseUdpPort";
-const char kRequestVpnSetup[] = "RequestVpnSetup";
-const char kRemoveVpnSetup[] = "RemoveVpnSetup";
+const char kReleaseUdpPortForward[] = "ReleaseUdpPortForward";
 const char kPowerCycleUsbPorts[] = "PowerCycleUsbPorts";
 }  // namespace permission_broker
 

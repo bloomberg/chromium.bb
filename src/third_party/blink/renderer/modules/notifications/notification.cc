@@ -35,7 +35,7 @@
 
 #include "base/unguessable_token.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
-#include "third_party/blink/public/platform/modules/notifications/web_notification_constants.h"
+#include "third_party/blink/public/common/notifications/notification_constants.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value_factory.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
@@ -43,7 +43,6 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/dom/scoped_window_focus_allowed_indicator.h"
-#include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -249,11 +248,8 @@ void Notification::OnShow() {
 void Notification::OnClick(OnClickCallback completed_closure) {
   ExecutionContext* context = GetExecutionContext();
   Document* document = DynamicTo<Document>(context);
-  std::unique_ptr<UserGestureIndicator> gesture_indicator;
-  if (document && document->GetFrame()) {
-    gesture_indicator = LocalFrame::NotifyUserActivation(
-        document->GetFrame(), UserGestureToken::kNewGesture);
-  }
+  if (document && document->GetFrame())
+    LocalFrame::NotifyUserActivation(document->GetFrame());
   ScopedWindowFocusAllowedIndicator window_focus_allowed(GetExecutionContext());
   DispatchEvent(*Event::Create(event_type_names::kClick));
 
@@ -353,7 +349,7 @@ ScriptValue Notification::data(ScriptState* script_state) {
   scoped_refptr<SerializedScriptValue> serialized_value =
       SerializedScriptValue::Create(data, length);
 
-  return ScriptValue(script_state,
+  return ScriptValue(script_state->GetIsolate(),
                      serialized_value->Deserialize(script_state->GetIsolate()));
 }
 
@@ -469,7 +465,7 @@ ScriptPromise Notification::requestPermission(
 }
 
 uint32_t Notification::maxActions() {
-  return kWebNotificationMaxActions;
+  return kNotificationMaxActions;
 }
 
 DispatchEventResult Notification::DispatchEventInternal(Event& event) {

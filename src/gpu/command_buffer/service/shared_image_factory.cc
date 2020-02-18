@@ -80,7 +80,8 @@ SharedImageFactory::SharedImageFactory(
       shared_image_manager_(shared_image_manager),
       memory_tracker_(std::make_unique<MemoryTypeTracker>(memory_tracker)),
       using_vulkan_(context_state && context_state->GrContextIsVulkan()),
-      using_metal_(context_state && context_state->GrContextIsMetal()) {
+      using_metal_(context_state && context_state->GrContextIsMetal()),
+      using_dawn_(context_state && context_state->GrContextIsDawn()) {
   bool use_gl = gl::GetGLImplementation() != gl::kGLImplementationNone;
   if (use_gl) {
     gl_backing_factory_ = std::make_unique<SharedImageBackingFactoryGLTexture>(
@@ -105,7 +106,10 @@ SharedImageFactory::SharedImageFactory(
           workarounds, gpu_feature_info, use_gl);
 #else
   // Others
-  DCHECK(!using_vulkan_);
+  if (using_vulkan_)
+    LOG(ERROR) << "ERROR: using_vulkan_ = true and interop_backing_factory_ is "
+                  "not set";
+
 #endif
   if (enable_wrapped_sk_image && context_state) {
     wrapped_sk_image_factory_ =
@@ -114,12 +118,10 @@ SharedImageFactory::SharedImageFactory(
 
 #if defined(OS_WIN)
   // For Windows
-  if (SharedImageBackingFactoryD3D::IsSwapChainSupported()) {
-    bool use_passthrough = gpu_preferences.use_passthrough_cmd_decoder &&
-                           gles2::PassthroughCommandDecoderSupported();
-    d3d_backing_factory_ =
-        std::make_unique<SharedImageBackingFactoryD3D>(use_passthrough);
-  }
+  bool use_passthrough = gpu_preferences.use_passthrough_cmd_decoder &&
+                         gles2::PassthroughCommandDecoderSupported();
+  interop_backing_factory_ =
+      std::make_unique<SharedImageBackingFactoryD3D>(use_passthrough);
 #endif  // OS_WIN
 
 #if defined(OS_FUCHSIA)
@@ -163,13 +165,14 @@ bool SharedImageFactory::CreateSharedImage(const Mailbox& mailbox,
   }
 
   // Currently we only perform data uploads via two paths,
-  // |gl_backing_factory_| for GL and |wrapped_sk_image_factory_| for Vulkan.
+  // |gl_backing_factory_| for GL and |wrapped_sk_image_factory_| for Vulkan and
+  // Dawn.
   // TODO(ericrk): Make this generic in the future.
   bool allow_legacy_mailbox = false;
   SharedImageBackingFactory* factory = nullptr;
   if (backing_factory_for_testing_) {
     factory = backing_factory_for_testing_;
-  } else if (!using_vulkan_) {
+  } else if (!using_vulkan_ && !using_dawn_) {
     allow_legacy_mailbox = true;
     factory = gl_backing_factory_.get();
   } else {
@@ -243,10 +246,14 @@ bool SharedImageFactory::CreateSwapChain(const Mailbox& front_buffer_mailbox,
                                          const gfx::Size& size,
                                          const gfx::ColorSpace& color_space,
                                          uint32_t usage) {
-  if (!d3d_backing_factory_)
+  if (!SharedImageBackingFactoryD3D::IsSwapChainSupported())
     return false;
+
+  SharedImageBackingFactoryD3D* d3d_backing_factory =
+      static_cast<SharedImageBackingFactoryD3D*>(
+          interop_backing_factory_.get());
   bool allow_legacy_mailbox = true;
-  auto backings = d3d_backing_factory_->CreateSwapChain(
+  auto backings = d3d_backing_factory->CreateSwapChain(
       front_buffer_mailbox, back_buffer_mailbox, format, size, color_space,
       usage);
   return RegisterBacking(std::move(backings.front_buffer),
@@ -255,7 +262,7 @@ bool SharedImageFactory::CreateSwapChain(const Mailbox& front_buffer_mailbox,
 }
 
 bool SharedImageFactory::PresentSwapChain(const Mailbox& mailbox) {
-  if (!d3d_backing_factory_)
+  if (!SharedImageBackingFactoryD3D::IsSwapChainSupported())
     return false;
   auto it = shared_images_.find(mailbox);
   if (it == shared_images_.end()) {
@@ -472,7 +479,7 @@ SharedImageRepresentationFactory::ProduceSkia(
 
 std::unique_ptr<SharedImageRepresentationDawn>
 SharedImageRepresentationFactory::ProduceDawn(const Mailbox& mailbox,
-                                              DawnDevice device) {
+                                              WGPUDevice device) {
   return manager_->ProduceDawn(mailbox, tracker_.get(), device);
 }
 

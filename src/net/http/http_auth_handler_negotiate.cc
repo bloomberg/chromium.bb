@@ -19,6 +19,7 @@
 #include "net/base/net_errors.h"
 #include "net/cert/x509_util.h"
 #include "net/dns/host_resolver.h"
+#include "net/http/http_auth.h"
 #include "net/http/http_auth_filter.h"
 #include "net/http/http_auth_preferences.h"
 #include "net/log/net_log_capture_mode.h"
@@ -47,25 +48,21 @@ base::Value NetLogParameterChannelBindings(
 
 // Uses |negotiate_auth_system_factory| to create the auth system, otherwise
 // creates the default auth system for each platform.
-std::unique_ptr<HttpNegotiateAuthSystem> CreateAuthSystem(
+std::unique_ptr<HttpAuthMechanism> CreateAuthSystem(
 #if !defined(OS_ANDROID)
     HttpAuthHandlerNegotiate::AuthLibrary* auth_library,
 #endif
-#if defined(OS_WIN)
-    ULONG max_token_length,
-#endif
     const HttpAuthPreferences* prefs,
-    HttpAuthHandlerFactory::NegotiateAuthSystemFactory
-        negotiate_auth_system_factory) {
+    HttpAuthMechanismFactory negotiate_auth_system_factory) {
   if (negotiate_auth_system_factory)
     return negotiate_auth_system_factory.Run(prefs);
 #if defined(OS_ANDROID)
   return std::make_unique<net::android::HttpAuthNegotiateAndroid>(prefs);
 #elif defined(OS_WIN)
-  return std::make_unique<HttpAuthSSPI>(auth_library, "Negotiate", NEGOSSP_NAME,
-                                        max_token_length);
+  return std::make_unique<HttpAuthSSPI>(auth_library,
+                                        HttpAuth::AUTH_SCHEME_NEGOTIATE);
 #elif defined(OS_POSIX)
-  return std::make_unique<HttpAuthGSSAPI>(auth_library, "Negotiate",
+  return std::make_unique<HttpAuthGSSAPI>(auth_library,
                                           CHROME_GSS_SPNEGO_MECH_OID_DESC);
 #endif
 }
@@ -73,7 +70,7 @@ std::unique_ptr<HttpNegotiateAuthSystem> CreateAuthSystem(
 }  // namespace
 
 HttpAuthHandlerNegotiate::Factory::Factory(
-    NegotiateAuthSystemFactory negotiate_auth_system_factory)
+    HttpAuthMechanismFactory negotiate_auth_system_factory)
     : negotiate_auth_system_factory_(negotiate_auth_system_factory) {}
 
 HttpAuthHandlerNegotiate::Factory::~Factory() = default;
@@ -98,19 +95,11 @@ int HttpAuthHandlerNegotiate::Factory::CreateAuthHandler(
 #if defined(OS_WIN)
   if (is_unsupported_ || reason == CREATE_PREEMPTIVE)
     return ERR_UNSUPPORTED_AUTH_SCHEME;
-  if (max_token_length_ == 0) {
-    int rv = DetermineMaxTokenLength(auth_library_.get(), NEGOSSP_NAME,
-                                     &max_token_length_);
-    if (rv == ERR_UNSUPPORTED_AUTH_SCHEME)
-      is_unsupported_ = true;
-    if (rv != OK)
-      return rv;
-  }
   // TODO(cbentzel): Move towards model of parsing in the factory
   //                 method and only constructing when valid.
   std::unique_ptr<HttpAuthHandler> tmp_handler(new HttpAuthHandlerNegotiate(
-      CreateAuthSystem(auth_library_.get(), max_token_length_,
-                       http_auth_preferences(), negotiate_auth_system_factory_),
+      CreateAuthSystem(auth_library_.get(), http_auth_preferences(),
+                       negotiate_auth_system_factory_),
       http_auth_preferences(), host_resolver));
 #elif defined(OS_ANDROID)
   if (is_unsupported_ || !http_auth_preferences() ||
@@ -150,7 +139,7 @@ int HttpAuthHandlerNegotiate::Factory::CreateAuthHandler(
 }
 
 HttpAuthHandlerNegotiate::HttpAuthHandlerNegotiate(
-    std::unique_ptr<HttpNegotiateAuthSystem> auth_system,
+    std::unique_ptr<HttpAuthMechanism> auth_system,
     const HttpAuthPreferences* prefs,
     HostResolver* resolver)
     : auth_system_(std::move(auth_system)),

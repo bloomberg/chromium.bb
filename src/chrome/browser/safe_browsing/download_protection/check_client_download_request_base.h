@@ -13,6 +13,7 @@
 
 #include "base/callback.h"
 #include "base/callback_list.h"
+#include "base/cancelable_callback.h"
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "build/build_config.h"
@@ -52,6 +53,9 @@ class CheckClientDownloadRequestBase {
       base::FilePath target_file_path,
       base::FilePath full_path,
       TabUrls tab_urls,
+      size_t file_size,
+      std::string mime_type,
+      std::string hash,
       content::BrowserContext* browser_context,
       CheckDownloadCallback callback,
       DownloadProtectionService* service,
@@ -126,8 +130,20 @@ class CheckClientDownloadRequestBase {
                                           const std::string& request_data,
                                           const std::string& response_body) = 0;
 
+  // Called when finishing the request, to determine whether asynchronous
+  // scanning is pending. Returns whether an asynchronous verdict was provided.
+  virtual bool MaybeReturnAsynchronousVerdict(
+      DownloadCheckResultReason reason) = 0;
+
   // Called after receiving, or failing to receive a response from the server.
-  virtual void MaybeUploadBinary(DownloadCheckResultReason reason) = 0;
+  // Returns whether or not the file should be uploaded to Safe Browsing for
+  // deep scanning.
+  virtual bool ShouldUploadBinary(DownloadCheckResultReason reason) = 0;
+
+  // If ShouldUploadBinary is true, actually performs the upload to Safe
+  // Browsing for deep scanning.
+  virtual void UploadBinary(DownloadCheckResult result,
+                            DownloadCheckResultReason reason) = 0;
 
   // Called whenever a request has completed.
   virtual void NotifyRequestFinished(DownloadCheckResult result,
@@ -144,7 +160,15 @@ class CheckClientDownloadRequestBase {
   // URL chain of redirects leading to (but not including) |tab_url|.
   std::vector<GURL> tab_redirects_;
 
+  // The size of the download.
+  const size_t file_size_;
+
   CheckDownloadCallback callback_;
+
+  // A cancelable closure used to track the timeout. If we decide to upload the
+  // file for deep scanning, we want to cancel the timeout so it doesn't trigger
+  // in the middle of scanning.
+  base::CancelableOnceClosure timeout_closure_;
 
   std::unique_ptr<network::SimpleURLLoader> loader_;
   std::string client_download_request_data_;
@@ -189,8 +213,16 @@ class CheckClientDownloadRequestBase {
   bool requests_ap_verdicts_ = false;
   bool password_protected_allowed_ = true;
 
+  bool is_password_protected_ = false;
+
   int file_count_;
   int directory_count_;
+
+  // The mime type of the download, if known.
+  std::string mime_type_;
+
+  // The hash of the download, if known.
+  std::string hash_;
 
   DISALLOW_COPY_AND_ASSIGN(CheckClientDownloadRequestBase);
 };  // namespace safe_browsing

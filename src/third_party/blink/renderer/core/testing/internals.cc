@@ -149,6 +149,7 @@
 #include "third_party/blink/renderer/core/testing/mock_hyphenation.h"
 #include "third_party/blink/renderer/core/testing/origin_trials_test.h"
 #include "third_party/blink/renderer/core/testing/record_test.h"
+#include "third_party/blink/renderer/core/testing/scoped_mock_overlay_scrollbars.h"
 #include "third_party/blink/renderer/core/testing/sequence_test.h"
 #include "third_party/blink/renderer/core/testing/static_selection.h"
 #include "third_party/blink/renderer/core/testing/type_conversions.h"
@@ -178,7 +179,7 @@
 #include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
 #include "third_party/blink/renderer/platform/text/layout_locale.h"
 #include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
-#include "third_party/blink/renderer/platform/wtf/dtoa/dtoa.h"
+#include "third_party/blink/renderer/platform/wtf/dtoa.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_buffer.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_encoding_registry.h"
 #include "v8/include/v8.h"
@@ -260,6 +261,7 @@ static ScrollableArea* ScrollableAreaForNode(Node* node) {
 }
 
 static RuntimeEnabledFeatures::Backup* g_s_features_backup = nullptr;
+static std::unique_ptr<ScopedMockOverlayScrollbars> g_s_mock_overlay_scrollbars;
 
 void Internals::ResetToConsistentState(Page* page) {
   DCHECK(page);
@@ -300,6 +302,7 @@ void Internals::ResetToConsistentState(Page* page) {
       OverrideCapsLockState::kDefault);
 
   IntersectionObserver::SetThrottleDelayEnabledForTesting(true);
+  g_s_mock_overlay_scrollbars.reset();
 }
 
 Internals::Internals(ExecutionContext* context)
@@ -607,9 +610,9 @@ void Internals::advanceImageAnimation(Element* image,
   DCHECK(image);
 
   ImageResourceContent* resource = nullptr;
-  if (auto* html_image = ToHTMLImageElementOrNull(*image)) {
+  if (auto* html_image = DynamicTo<HTMLImageElement>(*image)) {
     resource = html_image->CachedImage();
-  } else if (auto* svg_image = ToSVGImageElementOrNull(*image)) {
+  } else if (auto* svg_image = DynamicTo<SVGImageElement>(*image)) {
     resource = svg_image->CachedImage();
   } else {
     exception_state.ThrowDOMException(
@@ -760,8 +763,10 @@ void Internals::setBrowserControlsState(float top_height,
       top_height, bottom_height, shrinks_layout);
 }
 
-void Internals::setBrowserControlsShownRatio(float ratio) {
-  document_->GetPage()->GetChromeClient().SetBrowserControlsShownRatio(ratio);
+void Internals::setBrowserControlsShownRatio(float top_ratio,
+                                             float bottom_ratio) {
+  document_->GetPage()->GetChromeClient().SetBrowserControlsShownRatio(
+      top_ratio, bottom_ratio);
 }
 
 Node* Internals::effectiveRootScroller(Document* document) {
@@ -834,20 +839,20 @@ void Internals::selectColorInColorChooser(Element* element,
   Color color;
   if (!color.SetFromString(color_value))
     return;
-  if (auto* input = ToHTMLInputElementOrNull(*element))
+  if (auto* input = DynamicTo<HTMLInputElement>(*element))
     input->SelectColorInColorChooser(color);
 }
 
 void Internals::endColorChooser(Element* element) {
   DCHECK(element);
-  if (auto* input = ToHTMLInputElementOrNull(*element))
+  if (auto* input = DynamicTo<HTMLInputElement>(*element))
     input->EndColorChooser();
 }
 
 bool Internals::hasAutofocusRequest(Document* document) {
   if (!document)
     document = document_;
-  return document->AutofocusElement();
+  return document->HasAutofocusCandidates();
 }
 
 bool Internals::hasAutofocusRequest() {
@@ -1299,7 +1304,7 @@ String Internals::viewportAsText(Document* document,
 bool Internals::elementShouldAutoComplete(Element* element,
                                           ExceptionState& exception_state) {
   DCHECK(element);
-  if (auto* input = ToHTMLInputElementOrNull(*element))
+  if (auto* input = DynamicTo<HTMLInputElement>(*element))
     return input->ShouldAutocomplete();
 
   exception_state.ThrowDOMException(DOMExceptionCode::kInvalidNodeTypeError,
@@ -1318,13 +1323,13 @@ String Internals::suggestedValue(Element* element,
   }
 
   String suggested_value;
-  if (auto* input = ToHTMLInputElementOrNull(*element))
+  if (auto* input = DynamicTo<HTMLInputElement>(*element))
     return input->SuggestedValue();
 
-  if (auto* textarea = ToHTMLTextAreaElementOrNull(*element))
+  if (auto* textarea = DynamicTo<HTMLTextAreaElement>(*element))
     return textarea->SuggestedValue();
 
-  if (auto* select = ToHTMLSelectElementOrNull(*element))
+  if (auto* select = DynamicTo<HTMLSelectElement>(*element))
     return select->SuggestedValue();
 
   return suggested_value;
@@ -1341,13 +1346,13 @@ void Internals::setSuggestedValue(Element* element,
     return;
   }
 
-  if (auto* input = ToHTMLInputElementOrNull(*element))
+  if (auto* input = DynamicTo<HTMLInputElement>(*element))
     input->SetSuggestedValue(value);
 
-  if (auto* textarea = ToHTMLTextAreaElementOrNull(*element))
+  if (auto* textarea = DynamicTo<HTMLTextAreaElement>(*element))
     textarea->SetSuggestedValue(value);
 
-  if (auto* select = ToHTMLSelectElementOrNull(*element))
+  if (auto* select = DynamicTo<HTMLSelectElement>(*element))
     select->SetSuggestedValue(value);
 }
 
@@ -1362,14 +1367,14 @@ void Internals::setAutofilledValue(Element* element,
     return;
   }
 
-  if (auto* input = ToHTMLInputElementOrNull(*element)) {
+  if (auto* input = DynamicTo<HTMLInputElement>(*element)) {
     input->DispatchScopedEvent(
         *Event::CreateBubble(event_type_names::kKeydown));
     input->SetAutofillValue(value);
     input->DispatchScopedEvent(*Event::CreateBubble(event_type_names::kKeyup));
   }
 
-  if (auto* textarea = ToHTMLTextAreaElementOrNull(*element)) {
+  if (auto* textarea = DynamicTo<HTMLTextAreaElement>(*element)) {
     textarea->DispatchScopedEvent(
         *Event::CreateBubble(event_type_names::kKeydown));
     textarea->SetAutofillValue(value);
@@ -1377,7 +1382,7 @@ void Internals::setAutofilledValue(Element* element,
         *Event::CreateBubble(event_type_names::kKeyup));
   }
 
-  if (auto* select = ToHTMLSelectElementOrNull(*element))
+  if (auto* select = DynamicTo<HTMLSelectElement>(*element))
     select->setValue(value, true /* send_events */);
 
   To<HTMLFormControlElement>(element)->SetAutofillState(
@@ -1388,13 +1393,14 @@ void Internals::setEditingValue(Element* element,
                                 const String& value,
                                 ExceptionState& exception_state) {
   DCHECK(element);
-  if (!IsHTMLInputElement(*element)) {
+  auto* html_input_element = DynamicTo<HTMLInputElement>(element);
+  if (!html_input_element) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidNodeTypeError,
                                       "The element provided is not an INPUT.");
     return;
   }
 
-  ToHTMLInputElement(*element).SetEditingValue(value);
+  html_input_element->SetEditingValue(value);
 }
 
 void Internals::setAutofilled(Element* element,
@@ -1798,9 +1804,9 @@ static void AccumulateTouchActionRectList(
   const cc::TouchActionRegion& touch_action_region =
       graphics_layer->CcLayer()->touch_action_region();
   if (!touch_action_region.GetAllRegions().IsEmpty()) {
-    const auto& layer_position = graphics_layer->CcLayer()->position();
+    const auto& layer_position = graphics_layer->GetOffsetFromTransformNode();
     const auto& layer_bounds = graphics_layer->CcLayer()->bounds();
-    IntRect layer_rect(layer_position.x(), layer_position.y(),
+    IntRect layer_rect(layer_position.X(), layer_position.Y(),
                        layer_bounds.width(), layer_bounds.height());
 
     Vector<IntRect> layer_hit_test_rects;
@@ -1832,14 +1838,11 @@ HitTestLayerRectList* Internals::touchEventTargetLayerRects(
 
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
     auto* pac = document->View()->GetPaintArtifactCompositor();
-    pac->EnableExtraDataForTesting();
     document->View()->UpdateAllLifecyclePhases(
         DocumentLifecycle::LifecycleUpdateReason::kTest);
 
-    const auto& content_layers = pac->GetExtraDataForTesting()->content_layers;
-
     auto* hit_test_rects = MakeGarbageCollected<HitTestLayerRectList>();
-    for (const auto& layer : content_layers) {
+    for (const auto& layer : pac->RootLayer()->children()) {
       const cc::TouchActionRegion& touch_action_region =
           layer->touch_action_region();
       if (!touch_action_region.GetAllRegions().IsEmpty()) {
@@ -2060,15 +2063,24 @@ unsigned Internals::numberOfScrollableAreas(Document* document) {
 
   unsigned count = 0;
   LocalFrame* frame = document->GetFrame();
-  if (frame->View()->ScrollableAreas())
-    count += frame->View()->ScrollableAreas()->size();
+  if (frame->View()->ScrollableAreas()) {
+    for (const auto& scrollable_area : *frame->View()->ScrollableAreas()) {
+      if (scrollable_area->ScrollsOverflow())
+        count++;
+    }
+  }
 
   for (Frame* child = frame->Tree().FirstChild(); child;
        child = child->Tree().NextSibling()) {
     auto* child_local_frame = DynamicTo<LocalFrame>(child);
     if (child_local_frame && child_local_frame->View() &&
-        child_local_frame->View()->ScrollableAreas())
-      count += child_local_frame->View()->ScrollableAreas()->size();
+        child_local_frame->View()->ScrollableAreas()) {
+      for (const auto& scrollable_area :
+           *child_local_frame->View()->ScrollableAreas()) {
+        if (scrollable_area->ScrollsOverflow())
+          count++;
+      }
+    }
   }
 
   return count;
@@ -2082,17 +2094,6 @@ bool Internals::isPageBoxVisible(Document* document, int page_number) {
 String Internals::layerTreeAsText(Document* document,
                                   ExceptionState& exception_state) const {
   return layerTreeAsText(document, 0, exception_state);
-}
-
-String Internals::elementLayerTreeAsText(
-    Element* element,
-    ExceptionState& exception_state) const {
-  DCHECK(element);
-  LocalFrameView* frame_view = element->GetDocument().View();
-  frame_view->UpdateAllLifecyclePhases(
-      DocumentLifecycle::LifecycleUpdateReason::kTest);
-
-  return elementLayerTreeAsText(element, 0, exception_state);
 }
 
 bool Internals::scrollsWithRespectTo(Element* element1,
@@ -2151,33 +2152,6 @@ String Internals::layerTreeAsText(Document* document,
   return document->GetFrame()->GetLayerTreeAsTextForTesting(flags);
 }
 
-String Internals::elementLayerTreeAsText(
-    Element* element,
-    unsigned flags,
-    ExceptionState& exception_state) const {
-  DCHECK(element);
-  element->GetDocument().UpdateStyleAndLayout();
-
-  LayoutObject* layout_object = element->GetLayoutObject();
-  if (!layout_object || !layout_object->IsBox()) {
-    exception_state.ThrowDOMException(
-        DOMExceptionCode::kInvalidAccessError,
-        layout_object ? "The provided element's layoutObject is not a box."
-                      : "The provided element has no layoutObject.");
-    return String();
-  }
-
-  PaintLayer* layer = ToLayoutBox(layout_object)->Layer();
-  if (!layer || !layer->HasCompositedLayerMapping() ||
-      !layer->GetCompositedLayerMapping()->MainGraphicsLayer()) {
-    // Don't raise exception in these cases which may be normally used in tests.
-    return String();
-  }
-
-  return GraphicsLayerTreeAsTextForTesting(
-      layer->GetCompositedLayerMapping()->MainGraphicsLayer(), flags);
-}
-
 String Internals::scrollingStateTreeAsText(Document*) const {
   return String();
 }
@@ -2226,44 +2200,32 @@ DOMRectList* Internals::nonFastScrollableRects(
   frame->View()->UpdateAllLifecyclePhases(
       DocumentLifecycle::LifecycleUpdateReason::kTest);
 
-  if (RuntimeEnabledFeatures::PaintNonFastScrollableRegionsEnabled()) {
-    auto* pac = document->View()->GetPaintArtifactCompositor();
-    auto* layer_tree_host = pac->RootLayer()->layer_tree_host();
-    // Ensure |cc::TransformTree| has updated the correct ToScreen transforms.
-    layer_tree_host->UpdateLayers();
+  auto* pac = document->View()->GetPaintArtifactCompositor();
+  auto* layer_tree_host = pac->RootLayer()->layer_tree_host();
+  // Ensure |cc::TransformTree| has updated the correct ToScreen transforms.
+  layer_tree_host->UpdateLayers();
 
-    Vector<IntRect> layer_non_fast_scrollable_rects;
-    for (auto* layer : *layer_tree_host) {
-      const cc::Region& non_fast_region = layer->non_fast_scrollable_region();
-      for (const gfx::Rect& non_fast_rect : non_fast_region) {
-        gfx::RectF layer_rect(non_fast_rect);
+  Vector<IntRect> layer_non_fast_scrollable_rects;
+  for (auto* layer : *layer_tree_host) {
+    const cc::Region& non_fast_region = layer->non_fast_scrollable_region();
+    for (const gfx::Rect& non_fast_rect : non_fast_region) {
+      gfx::RectF layer_rect(non_fast_rect);
 
-        // Map |layer_rect| into screen space.
-        layer_rect.Offset(layer->offset_to_transform_parent());
-        auto& transform_tree =
-            layer->layer_tree_host()->property_trees()->transform_tree;
-        transform_tree.UpdateTransforms(layer->transform_tree_index());
-        const gfx::Transform& to_screen =
-            transform_tree.ToScreen(layer->transform_tree_index());
-        to_screen.TransformRect(&layer_rect);
+      // Map |layer_rect| into screen space.
+      layer_rect.Offset(layer->offset_to_transform_parent());
+      auto& transform_tree =
+          layer->layer_tree_host()->property_trees()->transform_tree;
+      transform_tree.UpdateTransforms(layer->transform_tree_index());
+      const gfx::Transform& to_screen =
+          transform_tree.ToScreen(layer->transform_tree_index());
+      to_screen.TransformRect(&layer_rect);
 
-        layer_non_fast_scrollable_rects.push_back(
-            IntRect(ToEnclosingRect(layer_rect)));
-      }
+      layer_non_fast_scrollable_rects.push_back(
+          IntRect(ToEnclosingRect(layer_rect)));
     }
-
-    return DOMRectList::Create(layer_non_fast_scrollable_rects);
   }
 
-  GraphicsLayer* layer = frame->View()->LayoutViewport()->LayerForScrolling();
-  if (!layer)
-    return DOMRectList::Create();
-  const cc::Region& region = layer->CcLayer()->non_fast_scrollable_region();
-  Vector<IntRect> rects;
-  rects.ReserveCapacity(region.GetRegionComplexity());
-  for (const gfx::Rect& rect : region)
-    rects.push_back(IntRect(rect));
-  return DOMRectList::Create(rects);
+  return DOMRectList::Create(layer_non_fast_scrollable_rects);
 }
 
 void Internals::evictAllResources() const {
@@ -2550,7 +2512,7 @@ void Internals::startTrackingRepaints(Document* document,
   LocalFrameView* frame_view = document->View();
   frame_view->UpdateAllLifecyclePhases(
       DocumentLifecycle::LifecycleUpdateReason::kTest);
-  frame_view->SetTracksPaintInvalidations(true);
+  frame_view->SetTracksRasterInvalidations(true);
 }
 
 void Internals::stopTrackingRepaints(Document* document,
@@ -2565,7 +2527,7 @@ void Internals::stopTrackingRepaints(Document* document,
   LocalFrameView* frame_view = document->View();
   frame_view->UpdateAllLifecyclePhases(
       DocumentLifecycle::LifecycleUpdateReason::kTest);
-  frame_view->SetTracksPaintInvalidations(false);
+  frame_view->SetTracksRasterInvalidations(false);
 }
 
 void Internals::updateLayoutAndRunPostLayoutTasks(
@@ -2802,7 +2764,7 @@ DOMArrayBuffer* Internals::serializeObject(
 scoped_refptr<SerializedScriptValue> Internals::deserializeBuffer(
     DOMArrayBuffer* buffer) const {
   return SerializedScriptValue::Create(static_cast<const char*>(buffer->Data()),
-                                       buffer->ByteLength());
+                                       buffer->ByteLengthAsSizeT());
 }
 
 DOMArrayBuffer* Internals::serializeWithInlineWasm(ScriptValue value) const {
@@ -2926,13 +2888,14 @@ String Internals::getImageSourceURL(Element* element) {
 
 void Internals::forceImageReload(Element* element,
                                  ExceptionState& exception_state) {
-  if (!element || !IsHTMLImageElement(*element)) {
+  auto* html_image_element = DynamicTo<HTMLImageElement>(element);
+  if (!html_image_element) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidAccessError,
         "The element should be HTMLImageElement.");
   }
 
-  ToHTMLImageElement(*element).ForceReload();
+  html_image_element->ForceReload();
 }
 
 String Internals::selectMenuListText(HTMLSelectElement* select) {
@@ -2947,34 +2910,34 @@ String Internals::selectMenuListText(HTMLSelectElement* select) {
 
 bool Internals::isSelectPopupVisible(Node* node) {
   DCHECK(node);
-  if (auto* select = ToHTMLSelectElementOrNull(*node))
+  if (auto* select = DynamicTo<HTMLSelectElement>(*node))
     return select->PopupIsVisible();
   return false;
 }
 
 bool Internals::selectPopupItemStyleIsRtl(Node* node, int item_index) {
-  if (!node || !IsHTMLSelectElement(*node))
+  auto* select = DynamicTo<HTMLSelectElement>(node);
+  if (!select)
     return false;
 
-  HTMLSelectElement& select = ToHTMLSelectElement(*node);
   if (item_index < 0 ||
-      static_cast<wtf_size_t>(item_index) >= select.GetListItems().size())
+      static_cast<wtf_size_t>(item_index) >= select->GetListItems().size())
     return false;
   const ComputedStyle* item_style =
-      select.ItemComputedStyle(*select.GetListItems()[item_index]);
+      select->ItemComputedStyle(*select->GetListItems()[item_index]);
   return item_style && item_style->Direction() == TextDirection::kRtl;
 }
 
 int Internals::selectPopupItemStyleFontHeight(Node* node, int item_index) {
-  if (!node || !IsHTMLSelectElement(*node))
+  auto* select = DynamicTo<HTMLSelectElement>(node);
+  if (!select)
     return false;
 
-  HTMLSelectElement& select = ToHTMLSelectElement(*node);
   if (item_index < 0 ||
-      static_cast<wtf_size_t>(item_index) >= select.GetListItems().size())
+      static_cast<wtf_size_t>(item_index) >= select->GetListItems().size())
     return false;
   const ComputedStyle* item_style =
-      select.ItemComputedStyle(*select.GetListItems()[item_index]);
+      select->ItemComputedStyle(*select->GetListItems()[item_index]);
 
   if (item_style) {
     const SimpleFontData* font_data = item_style->GetFont().PrimaryFont();
@@ -3017,24 +2980,18 @@ void Internals::forceCompositingUpdate(Document* document,
       DocumentLifecycle::LifecycleUpdateReason::kTest);
 }
 
-void Internals::setZoomFactor(float factor) {
-  if (!GetFrame())
-    return;
-
-  GetFrame()->SetPageZoomFactor(factor);
-}
-
 void Internals::setShouldRevealPassword(Element* element,
                                         bool reveal,
                                         ExceptionState& exception_state) {
   DCHECK(element);
-  if (!IsHTMLInputElement(element)) {
+  auto* html_input_element = DynamicTo<HTMLInputElement>(element);
+  if (!html_input_element) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidNodeTypeError,
                                       "The element provided is not an INPUT.");
     return;
   }
 
-  return ToHTMLInputElement(*element).SetShouldRevealPassword(reveal);
+  return html_input_element->SetShouldRevealPassword(reveal);
 }
 
 namespace {
@@ -3056,7 +3013,7 @@ class AddOneFunction : public ScriptFunction {
     int32_t int_value =
         static_cast<int32_t>(v8_value.As<v8::Integer>()->Value());
     return ScriptValue(
-        GetScriptState(),
+        GetScriptState()->GetIsolate(),
         v8::Integer::New(GetScriptState()->GetIsolate(), int_value + 1));
   }
 };
@@ -3411,21 +3368,6 @@ void Internals::simulateRasterUnderInvalidations(bool enable) {
   RasterInvalidationTracking::SimulateRasterUnderInvalidations(enable);
 }
 
-void Internals::BypassLongCompileThresholdOnce(
-    ExceptionState& exception_state) {
-  LocalFrame* frame = GetFrame();
-  DCHECK(frame);
-  PerformanceMonitor* performance_monitor = frame->GetPerformanceMonitor();
-  if (!performance_monitor) {
-    exception_state.ThrowDOMException(
-        DOMExceptionCode::kInvalidAccessError,
-        "PerformanceObserver should be observing 'longtask' while "
-        "calling BypassLongCompileThresholdOnce.");
-    return;
-  }
-  return performance_monitor->BypassLongCompileThresholdOnceForTesting();
-}
-
 unsigned Internals::LifecycleUpdateCount() const {
   return document_->View()->LifecycleUpdateCountForTesting();
 }
@@ -3529,6 +3471,14 @@ String Internals::getDocumentAgentId(Document* document) {
   // it works. Is there any utility to dump a number in a hexadecimal form?
   // I couldn't find one in WTF.
   return String::Number(process_id) + ":" + String::Number(agent_address);
+}
+
+void Internals::useMockOverlayScrollbars() {
+  g_s_mock_overlay_scrollbars.reset(new ScopedMockOverlayScrollbars(true));
+}
+
+bool Internals::overlayScrollbarsEnabled() const {
+  return ScrollbarThemeSettings::OverlayScrollbarsEnabled();
 }
 
 }  // namespace blink

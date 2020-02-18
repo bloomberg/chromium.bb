@@ -14,20 +14,21 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.support.v7.preference.PreferenceFragmentCompat;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
 import android.text.style.StyleSpan;
 
+import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.Promise;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
-import org.chromium.base.library_loader.ProcessInitException;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
@@ -37,11 +38,12 @@ import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.notifications.channels.ChannelDefinitions;
 import org.chromium.chrome.browser.notifications.channels.SiteChannelsManager;
 import org.chromium.chrome.browser.permissions.PermissionFieldTrial;
+import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
-import org.chromium.chrome.browser.preferences.PreferencesLauncher;
-import org.chromium.chrome.browser.preferences.website.SingleCategoryPreferences;
-import org.chromium.chrome.browser.preferences.website.SingleWebsitePreferences;
-import org.chromium.chrome.browser.preferences.website.SiteSettingsCategory;
+import org.chromium.chrome.browser.settings.PreferencesLauncher;
+import org.chromium.chrome.browser.settings.website.SingleCategoryPreferences;
+import org.chromium.chrome.browser.settings.website.SingleWebsitePreferences;
+import org.chromium.chrome.browser.settings.website.SiteSettingsCategory;
 import org.chromium.chrome.browser.usage_stats.NotificationSuspender;
 import org.chromium.chrome.browser.webapps.ChromeWebApkHost;
 import org.chromium.chrome.browser.webapps.WebApkServiceClient;
@@ -155,7 +157,7 @@ public class NotificationPlatformBridge {
      */
     static boolean dispatchNotificationEvent(Intent intent) {
         if (sInstance == null) {
-            nativeInitializeNotificationPlatformBridge();
+            NotificationPlatformBridgeJni.get().initializeNotificationPlatformBridge();
             if (sInstance == null) {
                 Log.e(TAG, "Unable to initialize the native NotificationPlatformBridge.");
                 return false;
@@ -248,15 +250,7 @@ public class NotificationPlatformBridge {
         // activity, and it loads the library, but there are some native calls even before that
         // activity is started: from RecordUserAction.record and (indirectly) from
         // UrlFormatter.formatUrlForSecurityDisplay.
-        try {
-            ChromeBrowserInitializer.getInstance().handleSynchronousStartup();
-        } catch (ProcessInitException e) {
-            Log.e(TAG, "Failed to start browser process.", e);
-            // The library failed to initialize and nothing in the application can work, so kill
-            // the whole application.
-            System.exit(-1);
-            return;
-        }
+        ChromeBrowserInitializer.getInstance().handleSynchronousStartup();
 
         // Use the application context because it lives longer. When using the given context, it
         // may be stopped before the preferences intent is handled.
@@ -392,8 +386,9 @@ public class NotificationPlatformBridge {
     public static String getOriginFromNotificationTag(@Nullable String tag) {
         if (tag == null
                 || !tag.startsWith(NotificationConstants.PERSISTENT_NOTIFICATION_TAG_PREFIX
-                           + NotificationConstants.NOTIFICATION_TAG_SEPARATOR))
+                        + NotificationConstants.NOTIFICATION_TAG_SEPARATOR)) {
             return null;
+        }
 
         // This code parses the notification id that was generated in notification_id_generator.cc
         // TODO(https://crbug.com/801164): Extract this to a separate class.
@@ -522,8 +517,9 @@ public class NotificationPlatformBridge {
             String profileId, boolean incognito, String title, String body, Bitmap image,
             Bitmap icon, Bitmap badge, int[] vibrationPattern, long timestamp, boolean renotify,
             boolean silent, ActionInfo[] actions, String webApkPackage) {
-        nativeStoreCachedWebApkPackageForNotificationId(
-                mNativeNotificationPlatformBridge, notificationId, webApkPackage);
+        NotificationPlatformBridgeJni.get().storeCachedWebApkPackageForNotificationId(
+                mNativeNotificationPlatformBridge, NotificationPlatformBridge.this, notificationId,
+                webApkPackage);
         // Record whether it's known whether notifications can be shown to the user at all.
         NotificationSystemStatusUtil.recordAppNotificationStatusHistogram();
 
@@ -596,6 +592,7 @@ public class NotificationPlatformBridge {
                         .setHideLargeIcon(notificationType == NotificationType.PERMISSION_REQUEST);
 
         if (notificationType == NotificationType.PERMISSION_REQUEST) {
+            assert false; // Notification permission requests are not used anymore.
             @PermissionFieldTrial.UIFlavor
             int ui_flavor = PermissionFieldTrial.uiFlavorToUse();
 
@@ -634,7 +631,8 @@ public class NotificationPlatformBridge {
         // The Android framework applies a fallback vibration pattern for the sound when the device
         // is in vibrate mode, there is no custom pattern, and the vibration default has been
         // disabled. To truly prevent vibration, provide a custom empty pattern.
-        boolean vibrateEnabled = PrefServiceBridge.getInstance().isNotificationsVibrateEnabled();
+        boolean vibrateEnabled =
+                PrefServiceBridge.getInstance().getBoolean(Pref.NOTIFICATIONS_VIBRATE_ENABLED);
         if (!vibrateEnabled) {
             vibrationPattern = EMPTY_VIBRATION_PATTERN;
         }
@@ -830,9 +828,9 @@ public class NotificationPlatformBridge {
             String scopeUrl, String profileId, boolean incognito, String webApkPackage,
             int actionIndex, @Nullable String reply) {
         mLastNotificationClickMs = System.currentTimeMillis();
-        nativeOnNotificationClicked(mNativeNotificationPlatformBridge, notificationId,
-                notificationType, origin, scopeUrl, profileId, incognito, webApkPackage,
-                actionIndex, reply);
+        NotificationPlatformBridgeJni.get().onNotificationClicked(mNativeNotificationPlatformBridge,
+                NotificationPlatformBridge.this, notificationId, notificationType, origin, scopeUrl,
+                profileId, incognito, webApkPackage, actionIndex, reply);
     }
 
     /**
@@ -847,8 +845,9 @@ public class NotificationPlatformBridge {
      */
     private void onNotificationClosed(String notificationId, int notificationType, String origin,
             String profileId, boolean incognito, boolean byUser) {
-        nativeOnNotificationClosed(mNativeNotificationPlatformBridge, notificationId,
-                notificationType, origin, profileId, incognito, byUser);
+        NotificationPlatformBridgeJni.get().onNotificationClosed(mNativeNotificationPlatformBridge,
+                NotificationPlatformBridge.this, notificationId, notificationType, origin,
+                profileId, incognito, byUser);
     }
 
     private TrustedWebActivityClient getTwaClient() {
@@ -858,16 +857,19 @@ public class NotificationPlatformBridge {
         return mTwaClient;
     }
 
-    private static native void nativeInitializeNotificationPlatformBridge();
-
-    private native void nativeOnNotificationClicked(long nativeNotificationPlatformBridgeAndroid,
-            String notificationId, @NotificationType int notificationType, String origin,
-            String scopeUrl, String profileId, boolean incognito, String webApkPackage,
-            int actionIndex, String reply);
-    private native void nativeOnNotificationClosed(long nativeNotificationPlatformBridgeAndroid,
-            String notificationId, @NotificationType int notificationType, String origin,
-            String profileId, boolean incognito, boolean byUser);
-    private native void nativeStoreCachedWebApkPackageForNotificationId(
-            long nativeNotificationPlatformBridgeAndroid, String notificationId,
-            String webApkPackage);
+    @NativeMethods
+    interface Natives {
+        void initializeNotificationPlatformBridge();
+        void onNotificationClicked(long nativeNotificationPlatformBridgeAndroid,
+                NotificationPlatformBridge caller, String notificationId,
+                @NotificationType int notificationType, String origin, String scopeUrl,
+                String profileId, boolean incognito, String webApkPackage, int actionIndex,
+                String reply);
+        void onNotificationClosed(long nativeNotificationPlatformBridgeAndroid,
+                NotificationPlatformBridge caller, String notificationId,
+                @NotificationType int notificationType, String origin, String profileId,
+                boolean incognito, boolean byUser);
+        void storeCachedWebApkPackageForNotificationId(long nativeNotificationPlatformBridgeAndroid,
+                NotificationPlatformBridge caller, String notificationId, String webApkPackage);
+    }
 }

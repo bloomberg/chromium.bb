@@ -38,6 +38,7 @@ TEST(CookieConstantsTest, TestCookiePriority) {
   }
 }
 
+// TODO(crbug.com/996811): Add tests for multiple possibly-invalid attributes.
 TEST(CookieConstantsTest, TestCookieSameSite) {
   // Test case insensitivity
   EXPECT_EQ(CookieSameSite::NO_RESTRICTION, StringToCookieSameSite("None"));
@@ -49,9 +50,9 @@ TEST(CookieConstantsTest, TestCookieSameSite) {
   EXPECT_EQ(CookieSameSite::STRICT_MODE, StringToCookieSameSite("Strict"));
   EXPECT_EQ(CookieSameSite::STRICT_MODE, StringToCookieSameSite("STRICT"));
   EXPECT_EQ(CookieSameSite::STRICT_MODE, StringToCookieSameSite("sTrIcT"));
-  EXPECT_EQ(CookieSameSite::EXTENDED_MODE, StringToCookieSameSite("extended"));
-  EXPECT_EQ(CookieSameSite::EXTENDED_MODE, StringToCookieSameSite("EXTENDED"));
-  EXPECT_EQ(CookieSameSite::EXTENDED_MODE, StringToCookieSameSite("ExtenDED"));
+  EXPECT_EQ(CookieSameSite::UNSPECIFIED, StringToCookieSameSite("extended"));
+  EXPECT_EQ(CookieSameSite::UNSPECIFIED, StringToCookieSameSite("EXTENDED"));
+  EXPECT_EQ(CookieSameSite::UNSPECIFIED, StringToCookieSameSite("ExtenDED"));
 
   // Unrecognized tokens are interpreted as UNSPECIFIED.
   const char* const bad_tokens[] = {"",          "foo",   "none ",

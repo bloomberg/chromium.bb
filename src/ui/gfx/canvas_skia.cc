@@ -43,8 +43,7 @@ void ElideTextAndAdjustRange(const FontList& font_list,
                              Range* range) {
   const base::char16 start_char =
       (range->IsValid() ? text->at(range->start()) : 0);
-  *text =
-      ElideText(*text, font_list, width, ELIDE_TAIL, gfx::Typesetter::HARFBUZZ);
+  *text = ElideText(*text, font_list, width, ELIDE_TAIL);
   if (!range->IsValid())
     return;
   if (range->start() >= text->length() ||
@@ -102,8 +101,7 @@ void Canvas::SizeStringFloat(const base::string16& text,
                              float* width,
                              float* height,
                              int line_height,
-                             int flags,
-                             Typesetter typesetter) {
+                             int flags) {
   DCHECK_GE(*width, 0);
   DCHECK_GE(*height, 0);
 
@@ -119,7 +117,7 @@ void Canvas::SizeStringFloat(const base::string16& text,
                        &strings);
     Rect rect(base::saturated_cast<int>(*width), INT_MAX);
 
-    auto render_text = RenderText::CreateFor(typesetter);
+    std::unique_ptr<RenderText> render_text = RenderText::CreateRenderText();
 
     UpdateRenderText(rect, base::string16(), font_list, flags, 0,
                      render_text.get());
@@ -138,7 +136,7 @@ void Canvas::SizeStringFloat(const base::string16& text,
     *width = w;
     *height = h;
   } else {
-    auto render_text = RenderText::CreateFor(typesetter);
+    std::unique_ptr<RenderText> render_text = RenderText::CreateRenderText();
 
     Rect rect(base::saturated_cast<int>(*width),
               base::saturated_cast<int>(*height));
@@ -165,8 +163,7 @@ void Canvas::DrawStringRectWithFlags(const base::string16& text,
 
   Rect rect(text_bounds);
 
-  // Since we're drawing into a canvas anyway, just use Harfbuzz on Mac.
-  auto render_text = gfx::RenderText::CreateHarfBuzzInstance();
+  std::unique_ptr<RenderText> render_text = RenderText::CreateRenderText();
 
   if (flags & MULTI_LINE) {
     WordWrapBehavior wrap_behavior = IGNORE_LONG_WORDS;
@@ -234,34 +231,6 @@ void Canvas::DrawStringRectWithFlags(const base::string16& text,
     render_text->Draw(this);
   }
 
-  canvas_->restore();
-}
-
-void Canvas::DrawFadedString(const base::string16& text,
-                             const FontList& font_list,
-                             SkColor color,
-                             const Rect& display_rect,
-                             int flags) {
-  // If the whole string fits in the destination then just draw it directly.
-  if (GetStringWidth(text, font_list) <= display_rect.width()) {
-    DrawStringRectWithFlags(text, font_list, color, display_rect, flags);
-    return;
-  }
-  // Align with content directionality instead of fading both ends.
-  flags &= ~TEXT_ALIGN_CENTER;
-  if (!(flags & (TEXT_ALIGN_LEFT | TEXT_ALIGN_RIGHT)))
-    flags |= TEXT_ALIGN_TO_HEAD;
-  flags |= NO_ELLIPSIS;
-
-  // TODO(tapted): Remove Canvas::DrawFadedString() - it's unused.
-  auto render_text = RenderText::CreateInstanceDeprecated();
-  Rect rect = display_rect;
-  UpdateRenderText(rect, text, font_list, flags, color, render_text.get());
-  render_text->SetElideBehavior(FADE_TAIL);
-
-  canvas_->save();
-  ClipRect(display_rect);
-  render_text->Draw(this);
   canvas_->restore();
 }
 

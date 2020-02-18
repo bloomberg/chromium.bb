@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_PAGE_INFO_PAGE_INFO_BUBBLE_VIEW_BASE_H_
 #define CHROME_BROWSER_UI_VIEWS_PAGE_INFO_PAGE_INFO_BUBBLE_VIEW_BASE_H_
 
+#include "chrome/browser/ui/page_info/page_info_ui.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
@@ -51,14 +52,20 @@ class PageInfoBubbleViewBase : public views::BubbleDialogDelegateView,
                          content::WebContents* web_contents);
 
   // views::BubbleDialogDelegateView:
-  int GetDialogButtons() const override;
   base::string16 GetWindowTitle() const override;
   bool ShouldShowCloseButton() const override;
   void OnWidgetDestroying(views::Widget* widget) override;
 
+  PageInfoUI::SecurityDescriptionType GetSecurityDescriptionType() const;
   void set_window_title(const base::string16& title) { window_title_ = title; }
+  void set_security_description_type(
+      const PageInfoUI::SecurityDescriptionType& type) {
+    security_description_type_ = type;
+  }
 
  private:
+  friend class SafetyTipPageInfoBubbleViewBrowserTest;
+
   // WebContentsObserver:
   void RenderFrameDeleted(content::RenderFrameHost* render_frame_host) override;
   void OnVisibilityChanged(content::Visibility visibility) override;
@@ -66,6 +73,8 @@ class PageInfoBubbleViewBase : public views::BubbleDialogDelegateView,
   void DidChangeVisibleSecurityState() override;
 
   base::string16 window_title_;
+  PageInfoUI::SecurityDescriptionType security_description_type_ =
+      PageInfoUI::SecurityDescriptionType::CONNECTION;
 
   DISALLOW_COPY_AND_ASSIGN(PageInfoBubbleViewBase);
 };

@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "services/tracing/perfetto/producer_host.h"
 #include "services/tracing/public/cpp/perfetto/perfetto_traced_process.h"
 #include "services/tracing/public/cpp/perfetto/producer_client.h"
@@ -85,17 +85,16 @@ class MockProducerClient : public ProducerClient {
 
   void SetAgentDisabledCallback(base::OnceClosure client_disabled_callback);
 
-  const std::string& all_client_commit_data_requests() const {
+  const std::vector<std::string>& all_client_commit_data_requests() const {
     return all_client_commit_data_requests_;
   }
-
 
  private:
   uint32_t num_data_sources_active_ = 0;
   uint32_t num_data_sources_expected_;
   base::OnceClosure client_enabled_callback_;
   base::OnceClosure client_disabled_callback_;
-  std::string all_client_commit_data_requests_;
+  std::vector<std::string> all_client_commit_data_requests_;
   std::unique_ptr<ProducerClient> old_producer_;
 };
 
@@ -140,8 +139,7 @@ class MockConsumer : public perfetto::Consumer {
  private:
   struct DataSourceStatus {
     std::string name;
-    perfetto::ObservableEvents::DataSourceInstanceStateChange::
-        DataSourceInstanceState state;
+    perfetto::ObservableEvents::DataSourceInstanceState state;
   };
 
   void CheckForAllDataSourcesStarted();
@@ -175,15 +173,15 @@ class MockProducerHost : public ProducerHost {
 
   void OnCommit(const perfetto::CommitDataRequest& commit_data_request);
 
-  const std::string& all_host_commit_data_requests() const {
+  const std::vector<std::string>& all_host_commit_data_requests() const {
     return all_host_commit_data_requests_;
   }
 
  protected:
   const std::string producer_name_;
   base::OnceClosure datasource_registered_callback_;
-  std::string all_host_commit_data_requests_;
-  mojo::Binding<mojom::ProducerHost> binding_{this};
+  std::vector<std::string> all_host_commit_data_requests_;
+  mojo::Receiver<mojom::ProducerHost> receiver_{this};
 };
 
 class MockProducer {

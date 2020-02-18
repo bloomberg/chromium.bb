@@ -7,9 +7,9 @@
 #include <memory>
 #include <utility>
 
+#include "base/macros.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/thumbnails/thumbnail_image.h"
 #include "chrome/browser/ui/thumbnails/thumbnail_tab_helper.h"
 #include "content/public/browser/web_contents_observer.h"
 
@@ -19,9 +19,7 @@ class ThumbnailTracker::ContentsData : public content::WebContentsObserver,
                                        public ThumbnailImage::Observer {
  public:
   ContentsData(ThumbnailTracker* parent, content::WebContents* contents)
-      : content::WebContentsObserver(contents),
-        parent_(parent),
-        observer_(this) {
+      : content::WebContentsObserver(contents), parent_(parent) {
     thumbnail_ = parent_->thumbnail_getter_.Run(contents);
     if (thumbnail_)
       observer_.Add(thumbnail_.get());
@@ -29,7 +27,7 @@ class ThumbnailTracker::ContentsData : public content::WebContentsObserver,
 
   void RequestThumbnail() {
     if (thumbnail_)
-      thumbnail_->RequestThumbnailImage();
+      thumbnail_->RequestCompressedThumbnailData();
   }
 
   // content::WebContents:
@@ -46,14 +44,17 @@ class ThumbnailTracker::ContentsData : public content::WebContentsObserver,
   }
 
   // ThumbnailImage::Observer:
-  void OnThumbnailImageAvailable(gfx::ImageSkia thumbnail_image) override {
+  void OnCompressedThumbnailDataAvailable(
+      CompressedThumbnailData thumbnail_image) override {
     parent_->ThumbnailUpdated(web_contents(), thumbnail_image);
   }
 
  private:
   ThumbnailTracker* parent_;
   scoped_refptr<ThumbnailImage> thumbnail_;
-  ScopedObserver<ThumbnailImage, ContentsData> observer_;
+  ScopedObserver<ThumbnailImage, ThumbnailImage::Observer> observer_{this};
+
+  DISALLOW_COPY_AND_ASSIGN(ContentsData);
 };
 
 ThumbnailTracker::ThumbnailTracker(ThumbnailUpdatedCallback callback)
@@ -67,7 +68,7 @@ ThumbnailTracker::ThumbnailTracker(ThumbnailUpdatedCallback callback,
 
 ThumbnailTracker::~ThumbnailTracker() = default;
 
-void ThumbnailTracker::WatchTab(content::WebContents* contents) {
+void ThumbnailTracker::AddTab(content::WebContents* contents) {
   auto data_it = contents_data_.find(contents);
   if (data_it == contents_data_.end()) {
     data_it = contents_data_.emplace_hint(
@@ -77,8 +78,12 @@ void ThumbnailTracker::WatchTab(content::WebContents* contents) {
   data_it->second->RequestThumbnail();
 }
 
+void ThumbnailTracker::RemoveTab(content::WebContents* contents) {
+  contents_data_.erase(contents);
+}
+
 void ThumbnailTracker::ThumbnailUpdated(content::WebContents* contents,
-                                        gfx::ImageSkia image) {
+                                        CompressedThumbnailData image) {
   callback_.Run(contents, image);
 }
 

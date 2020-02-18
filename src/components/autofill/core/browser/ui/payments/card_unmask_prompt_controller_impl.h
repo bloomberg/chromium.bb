@@ -25,8 +25,15 @@ class CardUnmaskPromptControllerImpl : public CardUnmaskPromptController {
                                  bool is_off_the_record);
   virtual ~CardUnmaskPromptControllerImpl();
 
+  // This should be OnceCallback<unique_ptr<CardUnmaskPromptView>> but there are
+  // tests which don't do the ownership correctly.
+  using CardUnmaskPromptViewFactory =
+      base::OnceCallback<CardUnmaskPromptView*()>;
+
   // Functions called by ChromeAutofillClient.
-  void ShowPrompt(CardUnmaskPromptView* view,
+  // It is guaranteed that |view_factory| is called before this function
+  // returns, i.e., the callback will not outlive the stack frame of ShowPrompt.
+  void ShowPrompt(CardUnmaskPromptViewFactory view_factory,
                   const CreditCard& card,
                   AutofillClient::UnmaskCardReason reason,
                   base::WeakPtr<CardUnmaskDelegate> delegate);
@@ -48,6 +55,7 @@ class CardUnmaskPromptControllerImpl : public CardUnmaskPromptController {
   bool ShouldRequestExpirationDate() const override;
   bool CanStoreLocally() const override;
   bool GetStoreLocallyStartState() const override;
+  bool GetWebauthnOfferStartState() const override;
   bool InputCvcIsValid(const base::string16& input_text) const override;
   bool InputExpirationIsValid(const base::string16& month,
                               const base::string16& year) const override;

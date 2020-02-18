@@ -44,11 +44,9 @@ class UI_BASE_EXPORT SimpleMenuModel : public MenuModel {
     // Delegate should return true if |command_id| should be visible.
     virtual bool IsCommandIdVisible(int command_id) const;
 
-    // Some command ids have labels, minor text and icons that change over
-    // time.
+    // Some command ids have labels and icons that change over time.
     virtual bool IsItemForCommandIdDynamic(int command_id) const;
     virtual base::string16 GetLabelForCommandId(int command_id) const;
-    virtual base::string16 GetMinorTextForCommandId(int command_id) const;
     // Gets the icon for the item with the specified id, returning true if there
     // is an icon, false otherwise.
     virtual bool GetIconForCommandId(int command_id,
@@ -107,6 +105,7 @@ class UI_BASE_EXPORT SimpleMenuModel : public MenuModel {
   void AddHighlightedItemWithIcon(int command_id,
                                   const base::string16& label,
                                   const gfx::ImageSkia& icon);
+  void AddTitle(const base::string16& label);
 
   // Adds a separator of the specified type to the model.
   // - Adding a separator after another separator is always invalid if they

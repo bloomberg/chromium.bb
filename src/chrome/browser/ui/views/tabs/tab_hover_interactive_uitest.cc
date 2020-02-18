@@ -70,15 +70,9 @@ class TabHoverTest : public UIPerformanceTest {
 
  private:
   std::vector<std::string> GetUMAHistogramNames() const override {
-    // Report each step in the Pipeline Reporter. Note that the UMA mean
-    // will only be printed if the following command line flag is provided:
-    // --perf-test-print-uma-means. Each measurement is in microseconds.
-    return {
-        "SingleThreadedCompositorLatency.BeginImplFrameToSendBeginMainFrame",
-        "SingleThreadedCompositorLatency.SendBeginMainFrameToCommit",
-        "SingleThreadedCompositorLatency.Commit",
-        "SingleThreadedCompositorLatency.EndCommitToActivation",
-        "SingleThreadedCompositorLatency.EndActivateToSubmitCompositorFrame"};
+    // This used to report the different stages from the pipline, but they have
+    // been removed for the UI compositor. Details in crbug.com/1005226
+    return {};
   }
 
   base::test::ScopedFeatureList scoped_feature_list_;
@@ -111,12 +105,12 @@ IN_PROC_BROWSER_TEST_F(TabHoverTest, HoverOverMultipleTabs) {
   // Slowly mouse from the start to end positions across the tab strip. Tick
   // this mousemove at a high frequency (120fps) to avoid having the timer fire
   // at the wrong time due to having frames without any input event.
-  ui_test_utils::DragEventGenerator generator(
+  auto generator = ui_test_utils::DragEventGenerator::CreateForMouse(
       std::make_unique<ui_test_utils::InterpolatedProducer>(
           start_position, end_position,
           base::TimeDelta::FromMilliseconds(5000)),
-      /*touch=*/false, /*hover=*/true, /*high frequency=*/true);
-  generator.Wait();
+      /*hover=*/true, /*use_120fpx=*/true);
+  generator->Wait();
 
 #if defined(USE_AURA)
   const gfx::Point& last_mouse_loc =

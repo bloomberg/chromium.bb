@@ -100,9 +100,9 @@ void ChromeImpl::UpdateWebViews(const WebViewsInfo& views_info,
         // OnConnected will fire when DevToolsClient connects later.
         CHECK(!page_load_strategy_.empty());
         web_views_.push_back(std::make_unique<WebViewImpl>(
-            view.id, w3c_compliant, devtools_http_client_->browser_info(),
-            std::move(client), devtools_http_client_->device_metrics(),
-            page_load_strategy_));
+            view.id, w3c_compliant, nullptr,
+            devtools_http_client_->browser_info(), std::move(client),
+            devtools_http_client_->device_metrics(), page_load_strategy_));
       }
     }
   }
@@ -186,7 +186,7 @@ Status ChromeImpl::SetWindowPosition(const std::string& target_id,
   auto bounds = std::make_unique<base::DictionaryValue>();
   bounds->SetInteger("left", x);
   bounds->SetInteger("top", y);
-  return SetWindowBounds(&window, std::move(bounds));
+  return SetWindowBounds(&window, target_id, std::move(bounds));
 }
 
 Status ChromeImpl::MaximizeWindow(const std::string& target_id) {
@@ -200,7 +200,7 @@ Status ChromeImpl::MaximizeWindow(const std::string& target_id) {
 
   auto bounds = std::make_unique<base::DictionaryValue>();
   bounds->SetString("windowState", "maximized");
-  return SetWindowBounds(&window, std::move(bounds));
+  return SetWindowBounds(&window, target_id, std::move(bounds));
 }
 
 Status ChromeImpl::MinimizeWindow(const std::string& target_id) {
@@ -214,7 +214,7 @@ Status ChromeImpl::MinimizeWindow(const std::string& target_id) {
 
   auto bounds = std::make_unique<base::DictionaryValue>();
   bounds->SetString("windowState", "minimized");
-  return SetWindowBounds(&window, std::move(bounds));
+  return SetWindowBounds(&window, target_id, std::move(bounds));
 }
 
 Status ChromeImpl::FullScreenWindow(const std::string& target_id) {
@@ -228,7 +228,7 @@ Status ChromeImpl::FullScreenWindow(const std::string& target_id) {
 
   auto bounds = std::make_unique<base::DictionaryValue>();
   bounds->SetString("windowState", "fullscreen");
-  return SetWindowBounds(&window, std::move(bounds));
+  return SetWindowBounds(&window, target_id, std::move(bounds));
 }
 
 Status ChromeImpl::SetWindowRect(const std::string& target_id,
@@ -256,7 +256,7 @@ Status ChromeImpl::SetWindowRect(const std::string& target_id,
     bounds->SetInteger("height", height);
   }
 
-  return SetWindowBounds(&window, std::move(bounds));
+  return SetWindowBounds(&window, target_id, std::move(bounds));
 }
 
 Status ChromeImpl::GetWindowSize(const std::string& target_id,
@@ -290,6 +290,7 @@ Status ChromeImpl::GetWindowBounds(int window_id, Window* window) {
 
 Status ChromeImpl::SetWindowBounds(
     Window* window,
+    const std::string& target_id,
     std::unique_ptr<base::DictionaryValue> bounds) {
   Status status = devtools_websocket_client_->ConnectIfNecessary();
   if (status.IsError())
@@ -317,6 +318,25 @@ Status ChromeImpl::SetWindowBounds(
   if (!bounds->GetString("windowState", &state))
     return Status(kOk);
 
+  if (state == "fullscreen") {
+    // Work around crbug.com/982071. This block of code is necessary to ensure
+    // that document.webkitIsFullScreen and document.fullscreenElement return
+    // the correct values.
+    WebView* web_view;
+    status = GetWebViewById(target_id, &web_view);
+    if (status.IsError())
+      return status;
+
+    base::DictionaryValue params;
+    params.SetString("expression",
+                     "document.documentElement.requestFullscreen()");
+    params.SetBoolean("userGesture", true);
+    params.SetBoolean("awaitPromise", true);
+    status = web_view->SendCommand("Runtime.evaluate", params);
+    if (status.IsError())
+      return status;
+  }
+
   status = GetWindowBounds(window->id, window);
   if (status.IsError())
     return status;
@@ -330,9 +350,10 @@ Status ChromeImpl::SetWindowBounds(
     // to equal to screen size. This is accordance with the W3C spec at
     // https://www.w3.org/TR/webdriver1/#dfn-maximize-the-window.
     // Get a WebView, then use it to send JavaScript to query screen size.
-    if (web_views_.size() == 0)
-      return Status(kUnknownError, "no WebView");
-    WebView* web_view = web_views_.begin()->get();
+    WebView* web_view;
+    status = GetWebViewById(target_id, &web_view);
+    if (status.IsError())
+      return status;
     std::unique_ptr<base::Value> result;
     status = web_view->EvaluateScript(
         std::string(),
@@ -371,7 +392,7 @@ Status ChromeImpl::SetWindowSize(const std::string& target_id,
   auto bounds = std::make_unique<base::DictionaryValue>();
   bounds->SetInteger("width", width);
   bounds->SetInteger("height", height);
-  return SetWindowBounds(&window, std::move(bounds));
+  return SetWindowBounds(&window, target_id, std::move(bounds));
 }
 
 Status ChromeImpl::ParseWindow(std::unique_ptr<base::DictionaryValue> params,
@@ -429,14 +450,8 @@ Status ChromeImpl::SetAcceptInsecureCerts() {
 
   base::DictionaryValue params;
   params.SetBoolean("ignore", true);
-  // We ignore the status returned by this command - If it is an error, the
-  // target likely doesn't yet support the command. In that case, we'll fall
-  // back to --ignore-certificate-errors.
-  // TODO(eseckler): Handle status once we remove support for
-  // --ignore-certificate-errors.
-  devtools_websocket_client_->SendCommand("Security.setIgnoreCertificateErrors",
-                                          params);
-  return Status(kOk);
+  return devtools_websocket_client_->SendCommand(
+      "Security.setIgnoreCertificateErrors", params);
 }
 
 Status ChromeImpl::SetPermission(

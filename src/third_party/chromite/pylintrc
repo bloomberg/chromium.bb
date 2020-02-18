@@ -18,12 +18,22 @@
 # path. You may set this option multiple times.
 #ignore=CVS
 
+# Add files or directories matching the regex patterns to the blacklist. The
+# regex matches against base names, not paths.
+ignore-patterns=
+    .*_pb2\.py$
+
 # Pickle collected data for later comparisons.
 #persistent=yes
 
 # List of plugins (as comma separated values of python modules names) to load,
 # usually to register additional checkers.
-load-plugins=chromite.cli.cros.lint
+load-plugins=
+    chromite.cli.cros.lint,
+    pylint.extensions.bad_builtin,
+    pylint.extensions.docstyle,
+    pylint.extensions.redefined_variable_type,
+    pylint.extensions.overlapping_exceptions,
 
 # Configure quote preferences.
 string-quote = single-avoid-escape
@@ -38,6 +48,10 @@ docstring-quote = double
 # multiple times.
 # cros-logging-import: logging is deprecated. Use "from chromite.lib import
 #   cros_logging as logging" to import chromite/lib/cros_logging.
+# eq-without-hash: We omit this as we don't require all objects be hashable.
+#   We'll wait for unittest coverage to detect missing __hash__ on objects.
+# no-absolute-import: We don't seem to rely on this behavior, so don't enforce
+#   using this future import everywhere.
 # round-builtin: We omit this as all our usage of round() is OK with either
 #   Python 2 or 3 behavior (and probably leans towards 3 anyways).
 enable=
@@ -75,6 +89,7 @@ enable=
     intern-builtin,
     invalid-str-codec,
     long-builtin,
+    long-suffix,
     map-builtin-not-iterating,
     metaclass-assignment,
     next-method-called,
@@ -82,6 +97,8 @@ enable=
     nonzero-method,
     oct-method,
     old-division,
+    old-ne-operator,
+    old-octal-literal,
     old-raise-syntax,
     parameter-unpacking,
     print-statement,
@@ -114,16 +131,23 @@ enable=
 # We leave many of the style warnings to judgement/peer review.
 # TODO: We need to re-enable broad-except, but requires cleaning up our code.
 # TODO: Re-enable redefined-variable-type.
+# TODO: Re-enable inconsistent-return-statements.
+# TODO: Re-enable keyword-arg-before-vararg once we're on Python 3-only.
+# TODO: Re-enable useless-object-inheritance once we're on Python 3-only and
+#       we update the style guide.
 disable=
     broad-except,
     consider-iterating-dictionary,
     fixme,
     file-ignored,
+    keyword-arg-before-vararg,
+    inconsistent-return-statements,
     invalid-name,
     locally-disabled,
     locally-enabled,
     missing-docstring,
     no-member,
+    no-else-return,
     no-self-use,
     redefined-variable-type,
     relative-import,
@@ -138,6 +162,7 @@ disable=
     too-many-public-methods,
     too-many-return-statements,
     too-many-statements,
+    useless-object-inheritance,
 
 
 [REPORTS]
@@ -154,6 +179,9 @@ disable=
 # Tells whether to display a full report or only the messages
 # CHANGE: No report.
 reports=no
+
+# Activate the evaluation score.
+score=no
 
 # Python expression which should return a note less than 10 (10 is the highest
 # note). You have access to the variables errors warning, statement which
@@ -355,31 +383,52 @@ max-parents=10
 # Deprecated modules which should not be used, separated by a comma.
 # __builtin__: Use the 'six.moves.builtins' module instead
 #   (or 'builtins' in Python 3).
+# apiclient: Use the 'googleapiclient' module instead.
 # Bastion: Dropped in Python 3.
 # ConfigParser: Use the 'six.moves.configparser' module instead
 #   (or 'configparser' in Python 3).
+# cookielib: Use the 'six.moves.http_cookiejar' module instead
+#   (or 'http.cookiejar' in Python 3).
 # cPickle: Use the 'pickle' module instead.
+# cStringIO: Use 'io.StringIO' or 'io.BytesIO' instead.
 # exceptions: Dropped in Python 3.
+# HTMLParser: Use the 'six.moves.html_parser' module instead
+#   (or 'html.parser' in Python 3).
+# httplib: Use the 'six.moves.http_client' module instead
+#   (or 'http.client' in Python 3).
 # md5: Use the 'hashlib' module instead.
 # mox: Use the 'mock' module instead.
 # optparse: Use the 'argparse' module instead.
 # Queue: Use the 'six.moves.queue' module instead (or 'queue' in Python 3).
 # regsub: Use the 're' module instead.
 # rexec: Dropped in Python 3.
+# StringIO: Use 'io.StringIO' or 'io.BytesIO' instead.
 # TERMIOS: Use the 'termios' module instead.
+# urllib2: Use the 'six.moves.urllib' module instead
+#   (or 'urllib.request' in Python 3).
+# urlparse: Use the 'six.moves.urllib' module instead
+#   (or 'urllib.parse' in Python 3).
 deprecated-modules=
     __builtin__,
+    apiclient,
     Bastion,
     ConfigParser,
+    cookielib,
     cPickle,
+    cStringIO,
     exceptions,
+    HTMLParser,
+    httplib,
     md5,
     mox,
     optparse,
     Queue,
     regsub,
     rexec,
+    StringIO,
     TERMIOS,
+    urllib2,
+    urlparse,
 
 # Create a graph of every (i.e. internal and external) dependencies in the
 # given file (report RP0402 must not be disabled)
@@ -392,6 +441,32 @@ deprecated-modules=
 # Create a graph of internal dependencies in the given file (report RP0402 must
 # not be disabled)
 #int-import-graph=
+
+# Force import order to recognize a module as part of the standard
+# compatibility libraries.
+known-standard-library=
+
+# Force import order to recognize a module as part of a third party library.
+known-third-party=
+    _emerge,
+    apiclient,
+    elftools,
+    gcloud,
+    google,
+    googleapiclient,
+    httplib2,
+    jinja2,
+    jsonschema,
+    lddtree,
+    magic,
+    mock,
+    oauth2client,
+    portage,
+    pylint,
+    requests,
+    six,
+    sqlalchemy,
+    yaml,
 
 
 [LOGGING]

@@ -258,14 +258,14 @@ void PerformanceEvaluator::WriteMetricsToFile() const {
   // Write frame delivery times to json.
   base::Value delivery_times(base::Value::Type::LIST);
   for (double frame_delivery_time : frame_delivery_times_) {
-    delivery_times.GetList().emplace_back(frame_delivery_time);
+    delivery_times.Append(frame_delivery_time);
   }
   metrics.SetKey("FrameDeliveryTimes", std::move(delivery_times));
 
   // Write frame decodes times to json.
   base::Value decode_times(base::Value::Type::LIST);
   for (double frame_decode_time : frame_decode_times_) {
-    decode_times.GetList().emplace_back(frame_decode_time);
+    decode_times.Append(frame_decode_time);
   }
   metrics.SetKey("FrameDecodeTimes", std::move(decode_times));
 
@@ -273,10 +273,10 @@ void PerformanceEvaluator::WriteMetricsToFile() const {
   std::string metrics_str;
   ASSERT_TRUE(base::JSONWriter::WriteWithOptions(
       metrics, base::JSONWriter::OPTIONS_PRETTY_PRINT, &metrics_str));
-
-  base::FilePath metrics_file_path =
-      output_folder_path.Append(base::FilePath(g_env->GetTestName())
-                                    .AddExtension(FILE_PATH_LITERAL(".json")));
+  base::FilePath metrics_file_path = output_folder_path.Append(
+      g_env->GetTestOutputFilePath().AddExtension(FILE_PATH_LITERAL(".json")));
+  // Make sure that the directory into which json is saved is created.
+  LOG_ASSERT(base::CreateDirectory(metrics_file_path.DirName()));
   base::File metrics_output_file(
       base::FilePath(metrics_file_path),
       base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
@@ -322,8 +322,9 @@ class VideoDecoderTest : public ::testing::Test {
     if (!g_env->ImportSupported())
       config.allocation_mode = AllocationMode::kAllocate;
 
-    auto video_player = VideoPlayer::Create(config, std::move(frame_renderer),
-                                            std::move(frame_processors));
+    auto video_player = VideoPlayer::Create(
+        config, g_env->GetGpuMemoryBufferFactory(), std::move(frame_renderer),
+        std::move(frame_processors));
     LOG_ASSERT(video_player);
     LOG_ASSERT(video_player->Initialize(video));
 
@@ -422,8 +423,8 @@ int main(int argc, char** argv) {
   // Set up our test environment.
   media::test::VideoPlayerTestEnvironment* test_environment =
       media::test::VideoPlayerTestEnvironment::Create(
-          video_path, video_metadata_path, false, false,
-          base::FilePath(output_folder), use_vd);
+          video_path, video_metadata_path, false, use_vd,
+          base::FilePath(output_folder));
   if (!test_environment)
     return EXIT_FAILURE;
 

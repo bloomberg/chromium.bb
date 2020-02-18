@@ -24,17 +24,26 @@ const char kAppListSuggestionChipOpenTypeHistogramInTablet[] =
     "Apps.AppListSuggestedChipOpenType.TabletMode";
 const char kAppListZeroStateSuggestionOpenTypeHistogram[] =
     "Apps.AppList.ZeroStateSuggestionOpenType";
+const char kAppListDefaultSearchResultOpenTypeHistogram[] =
+    "Apps.AppListDefaultSearchResultOpenType";
 // The UMA histogram that logs the length of user typed queries app list
 // launcher issues to the search providers.
 constexpr char kAppListLauncherIssuedSearchQueryLength[] =
     "Apps.AppListLauncherIssuedSearchQueryLength";
+// The UMA histogram that logs the length of the query that resulted in an app
+// launch from search box.
+constexpr char kSearchQueryLengthAppLaunch[] =
+    "Apps.AppList.SearchQueryLength.Apps";
+// The UMA histogram that logs the number of app launches from the search box
+// with non-empty queries.
+constexpr char kSearchSuccessAppLaunch[] = "Apps.AppList.SearchSuccess.Apps";
 
 // Maximum query length logged for user typed query in characters.
 constexpr int kMaxLoggedUserQueryLength = 20;
 
 }  // namespace
 
-namespace app_list {
+namespace ash {
 
 void RecordSearchResultOpenTypeHistogram(
     ash::AppListLaunchedFrom launch_location,
@@ -77,6 +86,15 @@ void RecordSearchResultOpenTypeHistogram(
   }
 }
 
+void RecordDefaultSearchResultOpenTypeHistogram(SearchResultType type) {
+  if (type == SEARCH_RESULT_TYPE_BOUNDARY) {
+    NOTREACHED();
+    return;
+  }
+  UMA_HISTOGRAM_ENUMERATION(kAppListDefaultSearchResultOpenTypeHistogram, type,
+                            SEARCH_RESULT_TYPE_BOUNDARY);
+}
+
 void RecordZeroStateSuggestionOpenTypeHistogram(SearchResultType type) {
   UMA_HISTOGRAM_ENUMERATION(kAppListZeroStateSuggestionOpenTypeHistogram, type,
                             SEARCH_RESULT_TYPE_BOUNDARY);
@@ -91,4 +109,13 @@ void RecordLauncherIssuedSearchQueryLength(int query_length) {
   }
 }
 
-}  // namespace app_list
+void RecordSuccessfulAppLaunchUsingSearch(
+    ash::AppListLaunchedFrom launched_from,
+    int query_length) {
+  if (query_length > 0) {
+    UMA_HISTOGRAM_ENUMERATION(kSearchSuccessAppLaunch, launched_from);
+    UMA_HISTOGRAM_COUNTS_100(kSearchQueryLengthAppLaunch, query_length);
+  }
+}
+
+}  // namespace ash

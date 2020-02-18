@@ -51,8 +51,6 @@
 
 namespace blink {
 
-using namespace html_names;
-
 class StyleSheetCSSRuleList final : public CSSRuleList {
  public:
   StyleSheetCSSRuleList(CSSStyleSheet* sheet) : style_sheet_(sheet) {}
@@ -78,8 +76,9 @@ static bool IsAcceptableCSSStyleSheetParent(const Node& parent_node) {
   // Only these nodes can be parents of StyleSheets, and they need to call
   // clearOwnerNode() when moved out of document. Note that destructor of
   // the nodes don't call clearOwnerNode() with Oilpan.
-  return parent_node.IsDocumentNode() || IsHTMLLinkElement(parent_node) ||
-         IsHTMLStyleElement(parent_node) || IsSVGStyleElement(parent_node) ||
+  return parent_node.IsDocumentNode() || IsA<HTMLLinkElement>(parent_node) ||
+         IsA<HTMLStyleElement>(parent_node) ||
+         IsA<SVGStyleElement>(parent_node) ||
          parent_node.getNodeType() == Node::kProcessingInstructionNode;
 }
 #endif
@@ -588,7 +587,8 @@ bool CSSStyleSheet::IsAlternate() const {
   if (owner_node_) {
     auto* owner_element = DynamicTo<Element>(owner_node_.Get());
     return owner_element &&
-           owner_element->getAttribute(kRelAttr).Contains("alternate");
+           owner_element->FastGetAttribute(html_names::kRelAttr)
+               .Contains("alternate");
   }
   return alternate_from_constructor_;
 }
@@ -599,17 +599,18 @@ bool CSSStyleSheet::CanBeActivated(
     return false;
 
   if (owner_node_ && owner_node_->IsInShadowTree()) {
-    if (IsHTMLStyleElement(owner_node_) || IsSVGStyleElement(owner_node_))
+    if (IsA<HTMLStyleElement>(owner_node_.Get()) ||
+        IsA<SVGStyleElement>(owner_node_.Get()))
       return true;
-    if (IsHTMLLinkElement(owner_node_) &&
-        ToHTMLLinkElement(owner_node_.Get())->IsImport())
+    auto* html_link_element = DynamicTo<HTMLLinkElement>(owner_node_.Get());
+    if (html_link_element && html_link_element->IsImport())
       return !IsAlternate();
   }
 
+  auto* html_link_element = DynamicTo<HTMLLinkElement>(owner_node_.Get());
   if (!owner_node_ ||
       owner_node_->getNodeType() == Node::kProcessingInstructionNode ||
-      !IsHTMLLinkElement(owner_node_) ||
-      !ToHTMLLinkElement(owner_node_.Get())->IsEnabledViaScript()) {
+      !html_link_element || !html_link_element->IsEnabledViaScript()) {
     if (!title_.IsEmpty() && title_ != current_preferrable_name)
       return false;
   }

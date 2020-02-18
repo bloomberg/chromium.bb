@@ -13,6 +13,7 @@
 #include "ui/accessibility/platform/ax_platform_node.h"
 #include "ui/base/buildflags.h"
 #include "ui/views/view.h"
+#include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget.h"
 
 namespace views {
@@ -119,6 +120,8 @@ const ui::AXUniqueId& ViewAccessibility::GetUniqueId() const {
 }
 
 void ViewAccessibility::GetAccessibleNodeData(ui::AXNodeData* data) const {
+  data->id = GetUniqueId().Get();
+
   // Views may misbehave if their widget is closed; return an unknown role
   // rather than possibly crashing.
   const views::Widget* widget = view_->GetWidget();
@@ -151,6 +154,9 @@ void ViewAccessibility::GetAccessibleNodeData(ui::AXNodeData* data) const {
     data->SetDescription(custom_data_.GetStringAttribute(
         ax::mojom::StringAttribute::kDescription));
   }
+
+  if (custom_data_.GetHasPopup() != ax::mojom::HasPopup::kFalse)
+    data->SetHasPopup(custom_data_.GetHasPopup());
 
   static const ax::mojom::IntAttribute kOverridableIntAttributes[]{
       ax::mojom::IntAttribute::kPosInSet,
@@ -257,6 +263,10 @@ void ViewAccessibility::OverrideDescribedBy(View* described_by_view) {
                                    {described_by_id});
 }
 
+void ViewAccessibility::OverrideHasPopup(const ax::mojom::HasPopup has_popup) {
+  custom_data_.SetHasPopup(has_popup);
+}
+
 void ViewAccessibility::OverridePosInSet(int pos_in_set, int set_size) {
   custom_data_.AddIntAttribute(ax::mojom::IntAttribute::kPosInSet, pos_in_set);
   custom_data_.AddIntAttribute(ax::mojom::IntAttribute::kSetSize, set_size);
@@ -280,6 +290,17 @@ Widget* ViewAccessibility::GetPreviousFocus() {
 
 gfx::NativeViewAccessible ViewAccessibility::GetNativeObject() {
   return nullptr;
+}
+
+void ViewAccessibility::AnnounceText(const base::string16& text) {
+  Widget* const widget = view_->GetWidget();
+  if (!widget)
+    return;
+  auto* const root_view =
+      static_cast<internal::RootView*>(widget->GetRootView());
+  if (!root_view)
+    return;
+  root_view->AnnounceText(text);
 }
 
 gfx::NativeViewAccessible ViewAccessibility::GetFocusedDescendant() {

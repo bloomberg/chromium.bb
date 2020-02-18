@@ -34,8 +34,10 @@
 #include "third_party/blink/renderer/core/html/forms/form_controller.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/bindings/to_v8.h"
 #include "third_party/blink/renderer/platform/blob/blob_data.h"
 #include "third_party/blink/renderer/platform/file_metadata.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/network/mime/mime_type_registry.h"
 #include "third_party/blink/renderer/platform/wtf/date_math.h"
@@ -94,11 +96,11 @@ static std::unique_ptr<BlobData> CreateBlobDataForFileWithMetadata(
   std::unique_ptr<BlobData> blob_data;
   if (metadata.length == BlobData::kToEndOfFile) {
     blob_data = BlobData::CreateForFileWithUnknownSize(
-        metadata.platform_path, metadata.modification_time / kMsPerSecond);
+        metadata.platform_path, metadata.modification_time);
   } else {
     blob_data = std::make_unique<BlobData>();
     blob_data->AppendFile(metadata.platform_path, 0, metadata.length,
-                          metadata.modification_time / kMsPerSecond);
+                          metadata.modification_time);
   }
   blob_data->SetContentType(GetContentTypeFromFileName(
       file_system_name, File::kWellKnownContentTypes));
@@ -111,11 +113,11 @@ static std::unique_ptr<BlobData> CreateBlobDataForFileSystemURL(
   std::unique_ptr<BlobData> blob_data;
   if (metadata.length == BlobData::kToEndOfFile) {
     blob_data = BlobData::CreateForFileSystemURLWithUnknownSize(
-        file_system_url, metadata.modification_time / kMsPerSecond);
+        file_system_url, metadata.modification_time);
   } else {
     blob_data = std::make_unique<BlobData>();
     blob_data->AppendFileSystemURL(file_system_url, 0, metadata.length,
-                                   metadata.modification_time / kMsPerSecond);
+                                   metadata.modification_time);
   }
   blob_data->SetContentType(GetContentTypeFromFileName(
       file_system_url.GetPath(), File::kWellKnownContentTypes));
@@ -130,11 +132,16 @@ File* File::Create(
     const FilePropertyBag* options) {
   DCHECK(options->hasType());
 
-  double last_modified;
-  if (options->hasLastModified())
-    last_modified = static_cast<double>(options->lastModified());
-  else
-    last_modified = base::Time::Now().ToDoubleT() * 1000.0;
+  base::Time last_modified;
+  if (options->hasLastModified()) {
+    // We don't use base::Time::FromJsTime(double) here because
+    // options->lastModified() is a 64-bit integer, and casting it to
+    // double is lossy.
+    last_modified = base::Time::UnixEpoch() +
+                    base::TimeDelta::FromMilliseconds(options->lastModified());
+  } else {
+    last_modified = base::Time::Now();
+  }
   DCHECK(options->hasEndings());
   bool normalize_line_endings_to_native = options->endings() == "native";
   if (normalize_line_endings_to_native)
@@ -146,8 +153,9 @@ File* File::Create(
                    normalize_line_endings_to_native);
 
   uint64_t file_size = blob_data->length();
-  return File::Create(file_name, last_modified,
-                      BlobDataHandle::Create(std::move(blob_data), file_size));
+  return MakeGarbageCollected<File>(
+      file_name, last_modified,
+      BlobDataHandle::Create(std::move(blob_data), file_size));
 }
 
 File* File::CreateFromControlState(const FormControlState& state,
@@ -191,8 +199,7 @@ File::File(const String& path,
       has_backing_file_(true),
       user_visibility_(user_visibility),
       path_(path),
-      name_(FilePathToWebString(WebStringToFilePath(path).BaseName())),
-      snapshot_modification_time_ms_(InvalidFileTime()) {}
+      name_(FilePathToWebString(WebStringToFilePath(path).BaseName())) {}
 
 File::File(const String& path,
            const String& name,
@@ -204,8 +211,7 @@ File::File(const String& path,
       has_backing_file_(true),
       user_visibility_(user_visibility),
       path_(path),
-      name_(name),
-      snapshot_modification_time_ms_(InvalidFileTime()) {}
+      name_(name) {}
 
 File::File(const String& path,
            const String& name,
@@ -213,29 +219,28 @@ File::File(const String& path,
            UserVisibility user_visibility,
            bool has_snapshot_data,
            uint64_t size,
-           double last_modified,
+           const base::Optional<base::Time>& last_modified,
            scoped_refptr<BlobDataHandle> blob_data_handle)
     : Blob(std::move(blob_data_handle)),
       has_backing_file_(!path.IsEmpty() || !relative_path.IsEmpty()),
       user_visibility_(user_visibility),
       path_(path),
       name_(name),
-      snapshot_modification_time_ms_(has_snapshot_data ? last_modified
-                                                       : InvalidFileTime()),
+      snapshot_modification_time_(last_modified),
       relative_path_(relative_path) {
   if (has_snapshot_data)
     snapshot_size_ = size;
 }
 
 File::File(const String& name,
-           double modification_time_ms,
+           const base::Optional<base::Time>& modification_time,
            scoped_refptr<BlobDataHandle> blob_data_handle)
     : Blob(std::move(blob_data_handle)),
       has_backing_file_(false),
       user_visibility_(File::kIsNotUserVisible),
       name_(name),
       snapshot_size_(Blob::size()),
-      snapshot_modification_time_ms_(modification_time_ms) {
+      snapshot_modification_time_(modification_time) {
   uint64_t size = Blob::size();
   if (size != std::numeric_limits<uint64_t>::max())
     snapshot_size_ = size;
@@ -251,7 +256,7 @@ File::File(const String& name,
       user_visibility_(user_visibility),
       path_(metadata.platform_path),
       name_(name),
-      snapshot_modification_time_ms_(metadata.modification_time) {
+      snapshot_modification_time_(metadata.modification_time) {
   if (metadata.length >= 0)
     snapshot_size_ = metadata.length;
 }
@@ -267,7 +272,7 @@ File::File(const KURL& file_system_url,
       name_(DecodeURLEscapeSequences(file_system_url.LastPathComponent(),
                                      DecodeURLMode::kUTF8OrIsomorphic)),
       file_system_url_(file_system_url),
-      snapshot_modification_time_ms_(metadata.modification_time) {
+      snapshot_modification_time_(metadata.modification_time) {
   if (metadata.length >= 0)
     snapshot_size_ = metadata.length;
 }
@@ -280,7 +285,7 @@ File::File(const File& other)
       name_(other.name_),
       file_system_url_(other.file_system_url_),
       snapshot_size_(other.snapshot_size_),
-      snapshot_modification_time_ms_(other.snapshot_modification_time_ms_),
+      snapshot_modification_time_(other.snapshot_modification_time_),
       relative_path_(other.relative_path_) {}
 
 File* File::Clone(const String& name) const {
@@ -290,44 +295,31 @@ File* File::Clone(const String& name) const {
   return file;
 }
 
-double File::LastModifiedMS() const {
-  if (HasValidSnapshotMetadata() &&
-      IsValidFileTime(snapshot_modification_time_ms_))
-    return snapshot_modification_time_ms_;
+base::Time File::LastModifiedTime() const {
+  if (HasValidSnapshotMetadata() && snapshot_modification_time_)
+    return *snapshot_modification_time_;
 
-  double modification_time_ms;
-  if (HasBackingFile() &&
-      GetFileModificationTime(path_, modification_time_ms) &&
-      IsValidFileTime(modification_time_ms))
-    return modification_time_ms;
+  base::Optional<base::Time> modification_time;
+  if (HasBackingFile() && GetFileModificationTime(path_, modification_time) &&
+      modification_time)
+    return *modification_time;
 
-  return base::Time::Now().ToDoubleT() * 1000.0;
+  // lastModified / lastModifiedDate getters should return the current time
+  // when the last modification time isn't known.
+  return base::Time::Now();
 }
 
 int64_t File::lastModified() const {
-  double modified_date = LastModifiedMS();
-
-  // The getter should return the current time when the last modification time
-  // isn't known.
-  if (!IsValidFileTime(modified_date))
-    modified_date = base::Time::Now().ToDoubleT() * 1000.0;
-
   // lastModified returns a number, not a Date instance,
   // http://dev.w3.org/2006/webapi/FileAPI/#file-attrs
-  return floor(modified_date);
+  return (LastModifiedTime() - base::Time::UnixEpoch()).InMilliseconds();
 }
 
-double File::lastModifiedDate() const {
-  double modified_date = LastModifiedMS();
-
-  // The getter should return the current time when the last modification time
-  // isn't known.
-  if (!IsValidFileTime(modified_date))
-    modified_date = base::Time::Now().ToDoubleT() * 1000.0;
-
+ScriptValue File::lastModifiedDate(ScriptState* script_state) const {
   // lastModifiedDate returns a Date instance,
   // http://www.w3.org/TR/FileAPI/#dfn-lastModifiedDate
-  return modified_date;
+  return ScriptValue(script_state->GetIsolate(),
+                     ToV8(LastModifiedTime(), script_state));
 }
 
 uint64_t File::size() const {
@@ -352,24 +344,25 @@ Blob* File::slice(int64_t start,
   // FIXME: This involves synchronous file operation. We need to figure out how
   // to make it asynchronous.
   uint64_t size;
-  double modification_time_ms;
-  CaptureSnapshot(size, modification_time_ms);
+  base::Optional<base::Time> modification_time;
+  CaptureSnapshot(size, modification_time);
   ClampSliceOffsets(size, start, end);
 
   uint64_t length = end - start;
   auto blob_data = std::make_unique<BlobData>();
   blob_data->SetContentType(NormalizeType(content_type));
   DCHECK(!path_.IsEmpty());
-  blob_data->AppendFile(path_, start, length,
-                        modification_time_ms / kMsPerSecond);
-  return Blob::Create(BlobDataHandle::Create(std::move(blob_data), length));
+  blob_data->AppendFile(path_, start, length, modification_time);
+  return MakeGarbageCollected<Blob>(
+      BlobDataHandle::Create(std::move(blob_data), length));
 }
 
-void File::CaptureSnapshot(uint64_t& snapshot_size,
-                           double& snapshot_modification_time_ms) const {
+void File::CaptureSnapshot(
+    uint64_t& snapshot_size,
+    base::Optional<base::Time>& snapshot_modification_time) const {
   if (HasValidSnapshotMetadata()) {
     snapshot_size = *snapshot_size_;
-    snapshot_modification_time_ms = snapshot_modification_time_ms_;
+    snapshot_modification_time = snapshot_modification_time_;
     return;
   }
 
@@ -380,12 +373,12 @@ void File::CaptureSnapshot(uint64_t& snapshot_size,
   FileMetadata metadata;
   if (!HasBackingFile() || !GetFileMetadata(path_, metadata)) {
     snapshot_size = 0;
-    snapshot_modification_time_ms = InvalidFileTime();
+    snapshot_modification_time = base::nullopt;
     return;
   }
 
   snapshot_size = static_cast<uint64_t>(metadata.length);
-  snapshot_modification_time_ms = metadata.modification_time;
+  snapshot_modification_time = metadata.modification_time;
 }
 
 void File::AppendTo(BlobData& blob_data) const {
@@ -397,10 +390,10 @@ void File::AppendTo(BlobData& blob_data) const {
   // FIXME: This involves synchronous file operation. We need to figure out how
   // to make it asynchronous.
   uint64_t size;
-  double modification_time_ms;
-  CaptureSnapshot(size, modification_time_ms);
+  base::Optional<base::Time> modification_time;
+  CaptureSnapshot(size, modification_time);
   DCHECK(!path_.IsEmpty());
-  blob_data.AppendFile(path_, 0, size, modification_time_ms / kMsPerSecond);
+  blob_data.AppendFile(path_, 0, size, modification_time);
 }
 
 bool File::HasSameSource(const File& other) const {

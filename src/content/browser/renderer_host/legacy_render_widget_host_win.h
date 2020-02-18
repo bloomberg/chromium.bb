@@ -29,7 +29,7 @@ class WindowEventTarget;
 
 namespace content {
 
-class DirectManipulationBrowserTest;
+class DirectManipulationBrowserTestBase;
 class DirectManipulationHelper;
 class RenderWidgetHostViewAura;
 
@@ -128,14 +128,15 @@ class CONTENT_EXPORT LegacyRenderWidgetHostHWND
   }
 
   // Return the root accessible object for either MSAA or UI Automation.
-  gfx::NativeViewAccessible GetOrCreateWindowRootAccessible();
+  gfx::NativeViewAccessible GetOrCreateWindowRootAccessible(
+      bool is_uia_request);
 
  protected:
   void OnFinalMessage(HWND hwnd) override;
 
  private:
   friend class AccessibilityObjectLifetimeWinBrowserTest;
-  friend class DirectManipulationBrowserTest;
+  friend class DirectManipulationBrowserTestBase;
 
   explicit LegacyRenderWidgetHostHWND(HWND parent);
   ~LegacyRenderWidgetHostHWND() override;

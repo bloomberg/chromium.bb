@@ -25,6 +25,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/paint_recorder.h"
@@ -413,13 +414,7 @@ void NotifierSettingsView::NotifierButton::GridChanged() {
 
 // NotifierSettingsView -------------------------------------------------------
 
-NotifierSettingsView::NotifierSettingsView()
-    : quiet_mode_icon_(nullptr),
-      quiet_mode_toggle_(nullptr),
-      header_view_(nullptr),
-      top_label_(nullptr),
-      scroller_(nullptr),
-      no_notifiers_view_(nullptr) {
+NotifierSettingsView::NotifierSettingsView() {
   SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
@@ -487,8 +482,8 @@ NotifierSettingsView::NotifierSettingsView()
 
   auto scroller = std::make_unique<views::ScrollView>();
   scroller->SetBackgroundColor(SK_ColorTRANSPARENT);
-  scroller->SetVerticalScrollBar(new views::OverlayScrollBar(false));
-  scroller->SetHorizontalScrollBar(new views::OverlayScrollBar(true));
+  scroll_bar_ = scroller->SetVerticalScrollBar(
+      std::make_unique<views::OverlayScrollBar>(/*horizontal=*/false));
   scroller->SetDrawOverflowIndicator(false);
   scroller_ = AddChildView(std::move(scroller));
 
@@ -576,6 +571,7 @@ void NotifierSettingsView::OnNotifierIconUpdated(const NotifierId& notifier_id,
 }
 
 void NotifierSettingsView::Layout() {
+  int original_scroll_position = scroller_->GetVisibleRect().y();
   int header_height = header_view_->GetHeightForWidth(width());
   header_view_->SetBounds(0, 0, width(), header_height);
 
@@ -590,6 +586,9 @@ void NotifierSettingsView::Layout() {
   scroller_->SetBounds(0, header_height, width(), height() - header_height);
   no_notifiers_view_->SetBounds(0, header_height, width(),
                                 height() - header_height);
+
+  // The scroll position may have changed after the layout.
+  scroller_->ScrollToPosition(scroll_bar_, original_scroll_position);
 }
 
 gfx::Size NotifierSettingsView::GetMinimumSize() const {

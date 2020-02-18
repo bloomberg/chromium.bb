@@ -12,6 +12,7 @@
 // write barrier here!
 #include "src/heap/heap-write-barrier.h"
 #include "src/heap/heap.h"
+#include "src/heap/third-party/heap-api.h"
 
 #include "src/base/atomic-utils.h"
 #include "src/base/platform/platform.h"
@@ -111,10 +112,6 @@ void Heap::SetRootStringTable(StringTable value) {
   roots_table()[RootIndex::kStringTable] = value.ptr();
 }
 
-void Heap::SetRootNoScriptSharedFunctionInfos(Object value) {
-  roots_table()[RootIndex::kNoScriptSharedFunctionInfos] = value.ptr();
-}
-
 void Heap::SetMessageListeners(TemplateList value) {
   roots_table()[RootIndex::kMessageListeners] = value.ptr();
 }
@@ -163,7 +160,7 @@ AllocationResult Heap::AllocateRaw(int size_in_bytes, AllocationType type,
                                    AllocationAlignment alignment) {
   DCHECK(AllowHandleAllocation::IsAllowed());
   DCHECK(AllowHeapAllocation::IsAllowed());
-  DCHECK(gc_state_ == NOT_IN_GC);
+  DCHECK_EQ(gc_state_, NOT_IN_GC);
 #ifdef V8_ENABLE_ALLOCATION_TIMEOUT
   if (FLAG_random_gc_interval > 0 || FLAG_gc_interval >= 0) {
     if (!always_allocate() && Heap::allocation_timeout_-- <= 0) {
@@ -180,8 +177,9 @@ AllocationResult Heap::AllocateRaw(int size_in_bytes, AllocationType type,
   HeapObject object;
   AllocationResult allocation;
 
-  if (FLAG_single_generation && type == AllocationType::kYoung)
+  if (FLAG_single_generation && type == AllocationType::kYoung) {
     type = AllocationType::kOld;
+  }
 
   if (AllocationType::kYoung == type) {
     if (large_object) {
@@ -197,35 +195,38 @@ AllocationResult Heap::AllocateRaw(int size_in_bytes, AllocationType type,
     } else {
       allocation = new_space_->AllocateRaw(size_in_bytes, alignment, origin);
     }
-  } else if (AllocationType::kOld == type) {
+  } else if (AllocationType::kOld == type && !V8_ENABLE_THIRD_PARTY_HEAP_BOOL) {
     if (large_object) {
       allocation = lo_space_->AllocateRaw(size_in_bytes);
     } else {
       allocation = old_space_->AllocateRaw(size_in_bytes, alignment, origin);
     }
   } else if (AllocationType::kCode == type) {
-    if (size_in_bytes <= code_space()->AreaSize() && !large_object) {
+    if (V8_ENABLE_THIRD_PARTY_HEAP_BOOL) {
+      allocation = tp_heap_->AllocateCode(size_in_bytes);
+    } else if (size_in_bytes <= code_space()->AreaSize() && !large_object) {
       allocation = code_space_->AllocateRawUnaligned(size_in_bytes);
     } else {
       allocation = code_lo_space_->AllocateRaw(size_in_bytes);
     }
-  } else if (AllocationType::kMap == type) {
+  } else if (AllocationType::kMap == type && !V8_ENABLE_THIRD_PARTY_HEAP_BOOL) {
     allocation = map_space_->AllocateRawUnaligned(size_in_bytes);
-  } else if (AllocationType::kReadOnly == type) {
-#ifdef V8_USE_SNAPSHOT
+  } else if (AllocationType::kReadOnly == type &&
+             !V8_ENABLE_THIRD_PARTY_HEAP_BOOL) {
     DCHECK(isolate_->serializer_enabled());
-#endif
     DCHECK(!large_object);
     DCHECK(CanAllocateInReadOnlySpace());
     DCHECK_EQ(AllocationOrigin::kRuntime, origin);
     allocation =
         read_only_space_->AllocateRaw(size_in_bytes, alignment, origin);
+  } else if (V8_ENABLE_THIRD_PARTY_HEAP_BOOL) {
+    allocation = tp_heap_->Allocate(size_in_bytes);
   } else {
     UNREACHABLE();
   }
 
   if (allocation.To(&object)) {
-    if (AllocationType::kCode == type) {
+    if (AllocationType::kCode == type && !V8_ENABLE_THIRD_PARTY_HEAP_BOOL) {
       // Unprotect the memory chunk of the object if it was not unprotected
       // already.
       UnprotectAndRegisterMemoryChunk(object);
@@ -240,6 +241,40 @@ AllocationResult Heap::AllocateRaw(int size_in_bytes, AllocationType type,
   }
 
   return allocation;
+}
+
+template <Heap::AllocationRetryMode mode>
+HeapObject Heap::AllocateRawWith(int size, AllocationType allocation,
+                                 AllocationOrigin origin,
+                                 AllocationAlignment alignment) {
+  DCHECK(AllowHandleAllocation::IsAllowed());
+  DCHECK(AllowHeapAllocation::IsAllowed());
+  DCHECK_EQ(gc_state_, NOT_IN_GC);
+  Heap* heap = isolate()->heap();
+  Address* top = heap->NewSpaceAllocationTopAddress();
+  Address* limit = heap->NewSpaceAllocationLimitAddress();
+  if (allocation == AllocationType::kYoung &&
+      alignment == AllocationAlignment::kWordAligned &&
+      size <= kMaxRegularHeapObjectSize &&
+      (*limit - *top >= static_cast<unsigned>(size)) &&
+      V8_LIKELY(!FLAG_single_generation && FLAG_inline_new &&
+                FLAG_gc_interval == 0)) {
+    DCHECK(IsAligned(size, kTaggedSize));
+    HeapObject obj = HeapObject::FromAddress(*top);
+    *top += size;
+    heap->CreateFillerObjectAt(obj.address(), size, ClearRecordedSlots::kNo);
+    MSAN_ALLOCATED_UNINITIALIZED_MEMORY(obj.address(), size);
+    return obj;
+  }
+  switch (mode) {
+    case kLightRetry:
+      return AllocateRawWithLightRetrySlowPath(size, allocation, origin,
+                                               alignment);
+    case kRetryOrFail:
+      return AllocateRawWithRetryOrFailSlowPath(size, allocation, origin,
+                                                alignment);
+  }
+  UNREACHABLE();
 }
 
 void Heap::OnAllocationEvent(HeapObject object, int size_in_bytes) {
@@ -327,6 +362,7 @@ bool Heap::InYoungGeneration(MaybeObject object) {
 
 // static
 bool Heap::InYoungGeneration(HeapObject heap_object) {
+  if (V8_ENABLE_THIRD_PARTY_HEAP_BOOL) return false;
   bool result = MemoryChunk::FromHeapObject(heap_object)->InYoungGeneration();
 #ifdef DEBUG
   // If in the young generation, then check we're either not in the middle of
@@ -379,6 +415,9 @@ bool Heap::InOldSpace(Object object) { return old_space_->Contains(object); }
 
 // static
 Heap* Heap::FromWritableHeapObject(HeapObject obj) {
+  if (V8_ENABLE_THIRD_PARTY_HEAP_BOOL) {
+    return Heap::GetIsolateFromWritableObject(obj)->heap();
+  }
   MemoryChunk* chunk = MemoryChunk::FromHeapObject(obj);
   // RO_SPACE can be shared between heaps, so we can't use RO_SPACE objects to
   // find a heap. The exception is when the ReadOnlySpace is writeable, during
@@ -610,6 +649,14 @@ CodePageCollectionMemoryModificationScope::
     heap_->DisableUnprotectedMemoryChunksRegistry();
   }
 }
+
+#ifdef V8_ENABLE_THIRD_PARTY_HEAP
+CodePageMemoryModificationScope::CodePageMemoryModificationScope(Code code)
+    : chunk_(nullptr), scope_active_(false) {}
+#else
+CodePageMemoryModificationScope::CodePageMemoryModificationScope(Code code)
+    : CodePageMemoryModificationScope(MemoryChunk::FromHeapObject(code)) {}
+#endif
 
 CodePageMemoryModificationScope::CodePageMemoryModificationScope(
     MemoryChunk* chunk)

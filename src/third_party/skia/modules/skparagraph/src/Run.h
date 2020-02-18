@@ -39,7 +39,7 @@ struct RunShifts {
     SkSTArray<128, SkScalar, true> fShifts;
 };
 
-class LineMetrics;
+class InternalLineMetrics;
 class Run {
 public:
     Run() = default;
@@ -55,6 +55,15 @@ public:
 
     SkShaper::RunHandler::Buffer newRunBuffer();
 
+    SkScalar posX(size_t index) const {
+        return fPositions[index].fX + fOffsets[index].fX;
+    }
+    void addX(size_t index, SkScalar shift) {
+        fPositions[index].fX += shift;
+    }
+    SkScalar posY(size_t index) const {
+        return fPositions[index].fY + fOffsets[index].fY;
+    }
     size_t size() const { return fGlyphs.size(); }
     void setWidth(SkScalar width) { fAdvance.fX = width; }
     void setHeight(SkScalar height) { fAdvance.fY = height; }
@@ -107,7 +116,7 @@ public:
 
     bool isEllipsis() const { return fEllipsis; }
 
-    void updateMetrics(LineMetrics* endlineMetrics);
+    void updateMetrics(InternalLineMetrics* endlineMetrics);
 
     void setClusterRange(size_t from, size_t to) { fClusterRange = ClusterRange(from, to); }
     SkRect clip() const {
@@ -136,23 +145,30 @@ public:
                                               SkScalar height)>;
     void iterateThroughClustersInTextOrder(const ClusterVisitor& visitor);
 
-    std::tuple<bool, ClusterIndex, ClusterIndex> findLimitingClusters(TextRange) const;
+    std::tuple<bool, ClusterIndex, ClusterIndex> findLimitingClusters(TextRange text, bool onlyInnerClusters) const;
     SkSpan<const SkGlyphID> glyphs() const {
         return SkSpan<const SkGlyphID>(fGlyphs.begin(), fGlyphs.size());
     }
     SkSpan<const SkPoint> positions() const {
         return SkSpan<const SkPoint>(fPositions.begin(), fPositions.size());
     }
+    SkSpan<const SkPoint> offsets() const {
+        return SkSpan<const SkPoint>(fOffsets.begin(), fOffsets.size());
+    }
     SkSpan<const uint32_t> clusterIndexes() const {
         return SkSpan<const uint32_t>(fClusterIndexes.begin(), fClusterIndexes.size());
     }
-    SkSpan<const SkScalar> offsets() const { return SkSpan<const SkScalar>(fOffsets.begin(), fOffsets.size()); }
+    SkSpan<const SkScalar> shifts() const { return SkSpan<const SkScalar>(fShifts.begin(), fShifts.size()); }
 
+    void commit();
+
+    SkRect getBounds(size_t pos) const { return fBounds[pos]; }
 private:
     friend class ParagraphImpl;
     friend class TextLine;
-    friend class LineMetrics;
+    friend class InternalLineMetrics;
     friend class ParagraphCache;
+    friend class OneLineShaper;
 
     ParagraphImpl* fMaster;
     TextRange fTextRange;
@@ -167,22 +183,26 @@ private:
     uint8_t fBidiLevel;
     SkVector fAdvance;
     SkVector fOffset;
-    size_t fFirstChar;
+    TextIndex fClusterStart;
     SkShaper::RunHandler::Range fUtf8Range;
-    SkSTArray<128, SkGlyphID, false> fGlyphs;
+    SkSTArray<128, SkGlyphID, true> fGlyphs;
     SkSTArray<128, SkPoint, true> fPositions;
+    SkSTArray<128, SkPoint, true> fOffsets;
     SkSTArray<128, uint32_t, true> fClusterIndexes;
-    SkSTArray<128, SkScalar, true> fOffsets;  // For formatting (letter/word spacing, justification)
+    SkSTArray<128, SkRect, true> fBounds;
+
+    SkSTArray<128, SkScalar, true> fShifts;  // For formatting (letter/word spacing, justification)
     bool fSpaced;
 };
 
 struct Codepoint {
 
-  Codepoint(GraphemeIndex graphemeIndex, TextIndex textIndex)
-    : fGrapeme(graphemeIndex), fTextIndex(textIndex) { }
+  Codepoint(GraphemeIndex graphemeIndex, TextIndex textIndex, size_t index)
+    : fGrapheme(graphemeIndex), fTextIndex(textIndex), fIndex(index) { }
 
-  GraphemeIndex fGrapeme;
+  GraphemeIndex fGrapheme;
   TextIndex fTextIndex;             // Used for getGlyphPositionAtCoordinate
+  size_t fIndex;
 };
 
 struct Grapheme {
@@ -214,6 +234,7 @@ public:
             , fWidth()
             , fSpacing(0)
             , fHeight()
+            , fHalfLetterSpacing(0.0)
             , fWhiteSpaces(false)
             , fBreakType(None) {}
 
@@ -253,6 +274,9 @@ public:
     SkScalar height() const { return fHeight; }
     size_t size() const { return fEnd - fStart; }
 
+    void setHalfLetterSpacing(SkScalar halfLetterSpacing) { fHalfLetterSpacing = halfLetterSpacing; }
+    SkScalar getHalfLetterSpacing() const { return fHalfLetterSpacing; }
+
     TextRange textRange() const { return fTextRange; }
 
     RunIndex runIndex() const { return fRunIndex; }
@@ -289,27 +313,32 @@ private:
     SkScalar fWidth;
     SkScalar fSpacing;
     SkScalar fHeight;
+    SkScalar fHalfLetterSpacing;
     bool fWhiteSpaces;
     BreakType fBreakType;
 };
 
-class LineMetrics {
+class InternalLineMetrics {
 public:
 
-    LineMetrics() { clean(); }
-    LineMetrics(bool forceStrut) {
+    InternalLineMetrics() {
+        clean();
+        fForceStrut = false;
+    }
+
+    InternalLineMetrics(bool forceStrut) {
         clean();
         fForceStrut = forceStrut;
     }
 
-    LineMetrics(SkScalar a, SkScalar d, SkScalar l) {
+    InternalLineMetrics(SkScalar a, SkScalar d, SkScalar l) {
         fAscent = a;
         fDescent = d;
         fLeading = l;
         fForceStrut = false;
     }
 
-    LineMetrics(const SkFont& font, bool forceStrut) {
+    InternalLineMetrics(const SkFont& font, bool forceStrut) {
         SkFontMetrics metrics;
         font.getMetrics(&metrics);
         fAscent = metrics.fAscent;
@@ -327,10 +356,9 @@ public:
         fAscent = SkTMin(fAscent, run->correctAscent());
         fDescent = SkTMax(fDescent, run->correctDescent());
         fLeading = SkTMax(fLeading, run->correctLeading());
-
     }
 
-    void add(LineMetrics other) {
+    void add(InternalLineMetrics other) {
         fAscent = SkTMin(fAscent, other.fAscent);
         fDescent = SkTMax(fDescent, other.fDescent);
         fLeading = SkTMax(fLeading, other.fLeading);
@@ -339,21 +367,30 @@ public:
         fAscent = 0;
         fDescent = 0;
         fLeading = 0;
-        fForceStrut = false;
     }
 
     SkScalar delta() const { return height() - ideographicBaseline(); }
 
-    void updateLineMetrics(LineMetrics& metrics) {
-        metrics.fAscent = SkTMin(metrics.fAscent, fAscent);
-        metrics.fDescent = SkTMax(metrics.fDescent, fDescent);
-        metrics.fLeading = SkTMax(metrics.fLeading, fLeading);
+    void updateLineMetrics(InternalLineMetrics& metrics) {
+        if (metrics.fForceStrut) {
+            metrics.fAscent = fAscent;
+            metrics.fDescent = fDescent;
+            metrics.fLeading = fLeading;
+        } else {
+            // This is another of those flutter changes. To be removed...
+            metrics.fAscent = SkTMin(metrics.fAscent, fAscent - fLeading / 2.0f);
+            metrics.fDescent = SkTMax(metrics.fDescent, fDescent + fLeading / 2.0f);
+        }
     }
 
     SkScalar runTop(const Run* run) const {
         return fLeading / 2 - fAscent + run->ascent() + delta();
     }
-    SkScalar height() const { return SkScalarRoundToInt(fDescent - fAscent + fLeading); }
+
+    SkScalar height() const {
+        return ::round((double)fDescent - fAscent + fLeading);
+    }
+
     SkScalar alphabeticBaseline() const { return fLeading / 2 - fAscent; }
     SkScalar ideographicBaseline() const { return fDescent - fAscent + fLeading; }
     SkScalar deltaBaselines() const { return fLeading / 2 + fDescent; }
@@ -361,6 +398,7 @@ public:
     SkScalar ascent() const { return fAscent; }
     SkScalar descent() const { return fDescent; }
     SkScalar leading() const { return fLeading; }
+    void setForceStrut(bool value) { fForceStrut = value; }
 
 private:
 

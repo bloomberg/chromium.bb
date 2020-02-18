@@ -18,6 +18,7 @@ class GaiaUrls {
 
   // The URLs for different calls in the Google Accounts programmatic login API.
   const GURL& google_url() const;
+  const GURL& secure_google_url() const;
   const GURL& gaia_url() const;
   const GURL& captcha_base_url() const;
   const GURL& client_login_url() const;
@@ -25,6 +26,7 @@ class GaiaUrls {
   const GURL& embedded_setup_chromeos_url(unsigned version) const;
   const GURL& embedded_setup_windows_url() const;
   const GURL& signin_chrome_sync_dice() const;
+  const GURL& signin_chrome_sync_keys_url() const;
   const GURL& service_login_auth_url() const;
   const GURL& service_logout_url() const;
   const GURL& get_user_info_url() const;
@@ -47,6 +49,7 @@ class GaiaUrls {
   const GURL& oauth2_issue_token_url() const;
   const GURL& oauth2_token_info_url() const;
   const GURL& oauth2_revoke_url() const;
+  const GURL& reauth_api_url() const;
 
   const GURL& gaia_login_form_realm() const;
 
@@ -61,15 +64,16 @@ class GaiaUrls {
   friend struct base::DefaultSingletonTraits<GaiaUrls>;
 
   GURL google_url_;
+  GURL secure_google_url_;
   GURL gaia_url_;
   GURL captcha_base_url_;
 
   GURL client_login_url_;
   GURL service_login_url_;
-  GURL embedded_setup_chromeos_url_v1_;
   GURL embedded_setup_chromeos_url_v2_;
   GURL embedded_setup_windows_url_;
   GURL signin_chrome_sync_dice_;
+  GURL signin_chrome_sync_keys_url_;
   GURL service_login_auth_url_;
   GURL service_logout_url_;
   GURL continue_url_for_logout_;
@@ -96,6 +100,8 @@ class GaiaUrls {
   GURL oauth2_issue_token_url_;
   GURL oauth2_token_info_url_;
   GURL oauth2_revoke_url_;
+
+  GURL reauth_api_url_;
 
   GURL gaia_login_form_realm_;
 

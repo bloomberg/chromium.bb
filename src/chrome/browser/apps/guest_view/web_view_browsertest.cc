@@ -22,6 +22,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -52,7 +53,7 @@
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
-#include "components/download/public/common/download_features.h"
+#include "components/download/public/common/download_task_runner.h"
 #include "components/guest_view/browser/guest_view_manager.h"
 #include "components/guest_view/browser/guest_view_manager_delegate.h"
 #include "components/guest_view/browser/guest_view_manager_factory.h"
@@ -73,7 +74,6 @@
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/mime_handler_view_mode.h"
 #include "content/public/common/result_codes.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
@@ -158,7 +158,7 @@ const char kRedirectResponseFullPath[] =
 class WebContentsHiddenObserver : public content::WebContentsObserver {
  public:
   WebContentsHiddenObserver(content::WebContents* web_contents,
-                            base::Closure hidden_callback)
+                            base::OnceClosure hidden_callback)
       : WebContentsObserver(web_contents),
         hidden_callback_(std::move(hidden_callback)),
         hidden_observed_(false) {}
@@ -167,14 +167,14 @@ class WebContentsHiddenObserver : public content::WebContentsObserver {
   void OnVisibilityChanged(content::Visibility visibility) override {
     if (visibility == content::Visibility::HIDDEN) {
       hidden_observed_ = true;
-      hidden_callback_.Run();
+      std::move(hidden_callback_).Run();
     }
   }
 
   bool hidden_observed() { return hidden_observed_; }
 
  private:
-  base::Closure hidden_callback_;
+  base::OnceClosure hidden_callback_;
   bool hidden_observed_;
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsHiddenObserver);
@@ -899,24 +899,6 @@ class WebViewWithZoomForDSFTest : public WebViewTest {
   }
 
   static float scale() { return 2.0f; }
-};
-
-// TODO(mcnee): These tests are BrowserPlugin specific. While WebView itself
-// is no longer based on BrowserPlugin, MimeHandlerViewGuest is. We'll keep
-// these tests (that would otherwise be removed) so that we keep test coverage
-// of functionality that could still be relevant to MimeHandlerViewGuest. Once
-// MimeHandlerViewGuest is no longer based on BrowserPlugin, remove these
-// tests. (See https://crbug.com/533069 and https://crbug.com/659750).
-class WebViewBrowserPluginSpecificTest : public WebViewTest {
- protected:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    WebViewTest::SetUpCommandLine(command_line);
-    scoped_feature_list_.InitAndDisableFeature(
-        features::kGuestViewCrossProcessFrames);
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 class WebContentsAudioMutedObserver : public content::WebContentsObserver {
@@ -2745,63 +2727,40 @@ std::unique_ptr<net::test_server::HttpResponse> HandleDownloadRequestWithCookie(
   return std::move(response);
 }
 
-class DownloadHistoryWaiter : public DownloadHistory::Observer {
+// Class for waiting for download manager to be initiailized.
+class DownloadManagerWaiter : public content::DownloadManager::Observer {
  public:
-  explicit DownloadHistoryWaiter(content::BrowserContext* browser_context) {
-    DownloadCoreService* service =
-        DownloadCoreServiceFactory::GetForBrowserContext(browser_context);
-    download_history_ = service->GetDownloadHistory();
-    download_history_->AddObserver(this);
+  explicit DownloadManagerWaiter(content::DownloadManager* download_manager)
+      : initialized_(false), download_manager_(download_manager) {
+    download_manager_->AddObserver(this);
   }
 
-  ~DownloadHistoryWaiter() override { download_history_->RemoveObserver(this); }
+  ~DownloadManagerWaiter() override { download_manager_->RemoveObserver(this); }
 
-  void WaitForStored(size_t download_count) {
-    if (stored_downloads_.size() >= download_count)
+  void WaitForInitialized() {
+    if (initialized_)
       return;
-    stored_download_target_ = download_count;
-    Wait();
-  }
-
-  void WaitForHistoryLoad() {
-    if (history_query_complete_)
-      return;
-    Wait();
-  }
-
- private:
-  void Wait() {
     base::RunLoop run_loop;
     quit_closure_ = run_loop.QuitClosure();
     run_loop.Run();
   }
 
-  void OnDownloadStored(download::DownloadItem* item,
-                        const history::DownloadRow& info) override {
-    stored_downloads_.insert(item);
-    if (!quit_closure_.is_null() &&
-        stored_downloads_.size() >= stored_download_target_) {
-      std::move(quit_closure_).Run();
-    }
-  }
-
-  void OnHistoryQueryComplete() override {
-    history_query_complete_ = true;
-    if (!quit_closure_.is_null())
+  void OnManagerInitialized() override {
+    initialized_ = true;
+    if (quit_closure_)
       std::move(quit_closure_).Run();
   }
 
-  std::unordered_set<download::DownloadItem*> stored_downloads_;
-  size_t stored_download_target_ = 0;
-  bool history_query_complete_ = false;
+ private:
   base::Closure quit_closure_;
-  DownloadHistory* download_history_ = nullptr;
+  bool initialized_;
+  content::DownloadManager* download_manager_;
 };
 
 }  // namespace
 
-// TODO(crbug.com/994789): Flaky on MSan.
-#if defined(MEMORY_SANITIZER)
+// TODO(crbug.com/994789): Flaky on MSan, Linux, and Chrome OS.
+#if defined(MEMORY_SANITIZER) || defined(OS_LINUX) || defined(OS_CHROMEOS)
 #define MAYBE_DownloadCookieIsolation DISABLED_DownloadCookieIsolation
 #else
 #define MAYBE_DownloadCookieIsolation DownloadCookieIsolation
@@ -2894,15 +2853,14 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, MAYBE_DownloadCookieIsolation) {
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, PRE_DownloadCookieIsolation_CrossSession) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndDisableFeature(
-      download::features::kDownloadDBForNewDownloads);
-
   embedded_test_server()->RegisterRequestHandler(
       base::BindRepeating(&HandleDownloadRequestWithCookie));
   ASSERT_TRUE(StartEmbeddedTestServer());  // For serving guest pages.
   LoadAndLaunchPlatformApp("web_view/download_cookie_isolation",
                            "created-webviews");
+  scoped_refptr<base::TestMockTimeTaskRunner> task_runner(
+      new base::TestMockTimeTaskRunner);
+  download::SetDownloadDBTaskRunnerForTesting(task_runner);
 
   content::WebContents* web_contents = GetFirstAppWindowWebContents();
   ASSERT_TRUE(web_contents);
@@ -2910,9 +2868,6 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, PRE_DownloadCookieIsolation_CrossSession) {
   content::DownloadManager* download_manager =
       content::BrowserContext::GetDownloadManager(
           web_contents->GetBrowserContext());
-
-  DownloadHistoryWaiter history_waiter(web_contents->GetBrowserContext());
-
   std::unique_ptr<content::DownloadTestObserver> interrupted_observer(
       new content::DownloadTestObserverInterrupted(
           download_manager, 2,
@@ -2945,13 +2900,13 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, PRE_DownloadCookieIsolation_CrossSession) {
   interrupted_observer->WaitForFinished();
 
   // Wait for both downloads to be stored.
-  history_waiter.WaitForStored(2);
+  task_runner->FastForwardUntilNoTasksRemain();
 
   content::EnsureCookiesFlushed(profile());
 }
 
-// TODO(crbug.com/994789): Flaky on ChromeOS. Fix and re-enable the test.
-#if defined(OS_CHROMEOS)
+// TODO(crbug.com/994789): Flaky on MSan, Linux, and ChromeOS.
+#if defined(MEMORY_SANITIZER) || defined(OS_LINUX) || defined(OS_CHROMEOS)
 #define MAYBE_DownloadCookieIsolation_CrossSession \
   DISABLED_DownloadCookieIsolation_CrossSession
 #else
@@ -2961,21 +2916,21 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, PRE_DownloadCookieIsolation_CrossSession) {
 
 IN_PROC_BROWSER_TEST_F(WebViewTest,
                        MAYBE_DownloadCookieIsolation_CrossSession) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndDisableFeature(
-      download::features::kDownloadDBForNewDownloads);
-
   embedded_test_server()->RegisterRequestHandler(
       base::BindRepeating(&HandleDownloadRequestWithCookie));
   ASSERT_TRUE(StartEmbeddedTestServer());  // For serving guest pages.
+
+  scoped_refptr<base::TestMockTimeTaskRunner> task_runner(
+      new base::TestMockTimeTaskRunner);
+  download::SetDownloadDBTaskRunnerForTesting(task_runner);
 
   content::BrowserContext* browser_context = profile();
   content::DownloadManager* download_manager =
       content::BrowserContext::GetDownloadManager(browser_context);
 
-  DownloadHistoryWaiter history_waiter(browser_context);
-  history_waiter.WaitForHistoryLoad();
-
+  task_runner->FastForwardUntilNoTasksRemain();
+  DownloadManagerWaiter waiter(download_manager);
+  waiter.WaitForInitialized();
   content::DownloadManager::DownloadVector saved_downloads;
   download_manager->GetAllDownloads(&saved_downloads);
   ASSERT_EQ(2u, saved_downloads.size());
@@ -3018,7 +2973,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest,
     ASSERT_TRUE(download->GetFullPath().empty());
     EXPECT_EQ(download::DOWNLOAD_INTERRUPT_REASON_SERVER_FAILED,
               download->GetLastReason());
-    download->Resume(false);
+    download->Resume(true);
   }
 
   completion_observer->WaitForFinished();
@@ -3181,7 +3136,16 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, Dialog_TestConfirmDialogDefaultCancel) {
              NO_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, Dialog_TestConfirmDialogDefaultGCCancel) {
+// Disable due to runloop time out. https://crbug.com/937461
+#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS)
+#define MAYBE_Dialog_TestConfirmDialogDefaultGCCancel \
+  DISABLED_Dialog_TestConfirmDialogDefaultGCCancel
+#else
+#define MAYBE_Dialog_TestConfirmDialogDefaultGCCancel \
+  Dialog_TestConfirmDialogDefaultGCCancel
+#endif
+IN_PROC_BROWSER_TEST_F(WebViewTest,
+                       MAYBE_Dialog_TestConfirmDialogDefaultGCCancel) {
   TestHelper("testConfirmDialogDefaultGCCancel",
              "web_view/dialog",
              NO_TEST_SERVER);
@@ -3395,7 +3359,7 @@ IN_PROC_BROWSER_TEST_P(WebViewChannelTest,
             registry->rules_cache_delegate_for_testing()->type());
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          WebViewChannelTest,
                          testing::Values(version_info::Channel::UNKNOWN,
                                          version_info::Channel::STABLE));
@@ -3415,8 +3379,8 @@ IN_PROC_BROWSER_TEST_F(WebViewCaptureTest, DISABLED_Shim_ScreenshotCapture) {
 // <webview> with content settings set to CONTENT_SETTING_BLOCK.
 IN_PROC_BROWSER_TEST_F(WebViewTest, TestPlugin) {
   HostContentSettingsMapFactory::GetForProfile(browser()->profile())
-    ->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS,
-                               CONTENT_SETTING_BLOCK);
+      ->SetDefaultContentSetting(ContentSettingsType::PLUGINS,
+                                 CONTENT_SETTING_BLOCK);
   TestHelper("testPlugin", "web_view/shim", NEEDS_TEST_SERVER);
 }
 
@@ -3555,6 +3519,12 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestBlobURL) {
 IN_PROC_BROWSER_TEST_F(WebViewTest, LoadWebviewAccessibleResource) {
   TestHelper("testLoadWebviewAccessibleResource",
              "web_view/load_webview_accessible_resource", NEEDS_TEST_SERVER);
+}
+
+// Tests that a WebView can be navigated to a WebView accessible resource.
+IN_PROC_BROWSER_TEST_F(WebViewTest, NavigateGuestToWebviewAccessibleResource) {
+  TestHelper("testNavigateGuestToWebviewAccessibleResource",
+             "web_view/load_webview_accessible_resource", NO_TEST_SERVER);
 }
 
 // Tests that a WebView can reload a WebView accessible resource. See
@@ -4084,71 +4054,6 @@ IN_PROC_BROWSER_TEST_P(WebViewGuestScrollTouchTest,
   }
 }
 
-class WebViewScrollGuestContentBrowserPluginSpecificTest
-    : public WebViewBrowserPluginSpecificTest {
- public:
-  ~WebViewScrollGuestContentBrowserPluginSpecificTest() override {}
-
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    WebViewBrowserPluginSpecificTest::SetUpCommandLine(command_line);
-
-    command_line->AppendSwitchASCII(
-        switches::kTouchEventFeatureDetection,
-        switches::kTouchEventFeatureDetectionEnabled);
-  }
-};
-
-#if defined(USE_AURA)
-// This verifies the fix for crbug.com/694393 .
-IN_PROC_BROWSER_TEST_F(WebViewScrollGuestContentBrowserPluginSpecificTest,
-                       OverscrollControllerSeesConsumedScrollsInGuest) {
-  // This test is only relevant for non-OOPIF WebView as OOPIF-based WebView
-  // uses different scroll bubbling logic.
-  DCHECK(
-      !base::FeatureList::IsEnabled(::features::kGuestViewCrossProcessFrames));
-
-  LoadAppWithGuest("web_view/scrollable_embedder_and_guest");
-
-  content::WebContents* embedder_contents = GetEmbedderWebContents();
-  content::RenderFrameSubmissionObserver embedder_frame_observer(
-      embedder_contents);
-
-  std::vector<content::WebContents*> guest_web_contents_list;
-  GetGuestViewManager()->WaitForNumGuestsCreated(1u);
-  GetGuestViewManager()->GetGuestWebContentsList(&guest_web_contents_list);
-  ASSERT_EQ(1u, guest_web_contents_list.size());
-
-  content::WebContents* guest_contents = guest_web_contents_list[0];
-  content::RenderFrameSubmissionObserver guest_frame_observer(guest_contents);
-
-  gfx::Rect embedder_rect = embedder_contents->GetContainerBounds();
-  gfx::Rect guest_rect = guest_contents->GetContainerBounds();
-  guest_rect.set_x(guest_rect.x() - embedder_rect.x());
-  guest_rect.set_y(guest_rect.y() - embedder_rect.y());
-
-  content::RenderWidgetHostView* embedder_host_view =
-      embedder_contents->GetRenderWidgetHostView();
-  gfx::Vector2dF default_offset;
-  guest_frame_observer.WaitForScrollOffset(default_offset);
-  embedder_frame_observer.WaitForScrollOffset(default_offset);
-
-  // If we scroll the guest, the OverscrollController for the
-  // RenderWidgetHostViewAura should see that the scroll was consumed.
-  // If it doesn't, this test will time out indicating failure.
-  content::MockOverscrollController* mock_overscroll_controller =
-      content::MockOverscrollController::Create(embedder_host_view);
-
-  gfx::Point guest_scroll_location(guest_rect.width() / 2, 0);
-  float gesture_distance = 15.f;
-  // It's sufficient to scroll vertically, since all we need to test is that
-  // the OverscrollController sees consumed scrolls.
-  content::SimulateGestureScrollSequence(guest_contents, guest_scroll_location,
-                                         gfx::Vector2dF(0, -gesture_distance));
-
-  mock_overscroll_controller->WaitForConsumedScroll();
-}
-#endif
-
 // This runs the chrome://chrome-signin page which includes an OOPIF-<webview>
 // of accounts.google.com.
 class ChromeSignInWebViewTest : public WebViewTest {
@@ -4276,12 +4181,11 @@ IN_PROC_BROWSER_TEST_F(IsolatedOriginWebViewTest, IsolatedOriginInWebview) {
     load_observer.Wait();
   }
 
-  // TODO(alexmos, creis): The isolated origin currently has to use the
-  // chrome-guest:// SiteInstance, rather than a SiteInstance with its own
+  // TODO(alexmos, creis): The isolated origin currently has to use a
+  // guest SiteInstance, rather than a SiteInstance with its own
   // meaningful site URL.  This should be fixed as part of
   // https://crbug.com/734722.
-  EXPECT_TRUE(guest->GetMainFrame()->GetSiteInstance()->GetSiteURL().SchemeIs(
-      content::kGuestScheme));
+  EXPECT_TRUE(guest->GetMainFrame()->GetSiteInstance()->IsGuest());
 
   // Now, navigate <webview> to a regular page with a subframe.
   GURL foo_url(embedded_test_server()->GetURL("foo.com", "/iframe.html"));
@@ -4402,8 +4306,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, AutoResizeMessages) {
 
   // Helper function as this test requires inspecting a number of content::
   // internal objects.
-  EXPECT_TRUE(content::TestChildOrGuestAutoresize(
-      false,
+  EXPECT_TRUE(content::TestGuestAutoresize(
       embedder->GetRenderWidgetHostView()->GetRenderWidgetHost()->GetProcess(),
       guest->GetRenderWidgetHostView()->GetRenderWidgetHost()));
 }
@@ -4434,4 +4337,25 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, OpenAndCloseDevTools) {
   DevToolsWindow* devtools = DevToolsWindowTesting::OpenDevToolsWindowSync(
       embedder, false /* is_docked */);
   DevToolsWindowTesting::CloseDevToolsWindowSync(devtools);
+}
+
+// Regression test for https://crbug.com/1014385
+// We load an extension whose background page attempts to declare variables with
+// names that are the same as guest view types. The declarations should not be
+// syntax errors.
+using GuestViewExtensionNameCollisionTest = extensions::ExtensionBrowserTest;
+IN_PROC_BROWSER_TEST_F(GuestViewExtensionNameCollisionTest,
+                       GuestViewNamesDoNotCollideWithExtensions) {
+  ExtensionTestMessageListener loaded_listener("LOADED", false);
+  const extensions::Extension* extension =
+      LoadExtension(test_data_dir_.AppendASCII(
+          "platform_apps/web_view/no_extension_name_collision"));
+  ASSERT_TRUE(loaded_listener.WaitUntilSatisfied());
+
+  const std::string script =
+      "window.domAutomationController.send("
+      "    window.testPassed ? 'PASSED' : 'FAILED');";
+  const std::string test_passed =
+      ExecuteScriptInBackgroundPage(extension->id(), script);
+  EXPECT_EQ("PASSED", test_passed);
 }

@@ -274,7 +274,6 @@ base::string16 FindChildTextInner(const WebNode& node,
 }
 
 // Same as FindChildText() below, but with a list of div nodes to skip.
-// TODO(thestig): See if other FindChildText() callers can benefit from this.
 base::string16 FindChildTextWithIgnoreList(
     const WebNode& node,
     const std::set<WebNode>& divs_to_skip) {
@@ -1486,57 +1485,22 @@ bool ExtractFormData(const WebFormElement& form_element, FormData* data) {
       data, nullptr);
 }
 
-bool IsFormVisible(blink::WebLocalFrame* frame,
-                   const blink::WebFormElement& form_element,
-                   const GURL& canonical_action,
-                   const GURL& canonical_origin,
-                   const FormData& form_data) {
-  const GURL frame_origin = GetCanonicalOriginForDocument(frame->GetDocument());
-  blink::WebVector<WebFormElement> forms;
-  frame->GetDocument().Forms(forms);
+bool IsFormVisible(blink::WebLocalFrame* frame, uint32_t form_renderer_id) {
+  WebDocument doc = frame->GetDocument();
+  if (doc.IsNull())
+    return false;
+  WebFormElement form = FindFormByUniqueRendererId(doc, form_renderer_id);
+  return form.IsNull() ? false : AreFormContentsVisible(form);
+}
 
-  // Omitting the action attribute would result in |canonical_origin| for
-  // hierarchical schemes like http:, and in an empty URL for non-hierarchical
-  // schemes like about: or data: etc.
-  const bool action_is_empty = canonical_action.is_empty()
-                               || canonical_action == canonical_origin;
-
-  // Since empty or unspecified action fields are automatically set to page URL,
-  // action field for forms cannot be used for comparing (all forms with
-  // empty/unspecified actions have the same value). If an action field is set
-  // to the page URL, this method checks ALL fields of the form instead (using
-  // FormData.SameFormAs). This is also true if the action was set to the page
-  // URL on purpose.
-  for (const WebFormElement& form : forms) {
-    if (!AreFormContentsVisible(form))
-      continue;
-
-    // Try to match the WebFormElement reference first.
-    if (!form_element.IsNull() && form == form_element) {
-      return true;  // Form still exists.
-    }
-
-    GURL iter_canonical_action = GetCanonicalActionForForm(form);
-    bool form_action_is_empty = iter_canonical_action.is_empty() ||
-                                iter_canonical_action == frame_origin;
-    if (action_is_empty != form_action_is_empty)
-      continue;
-
-    if (action_is_empty) {  // Both actions are empty, compare all fields.
-      FormData extracted_form_data;
-      WebFormElementToFormData(form, WebFormControlElement(), nullptr,
-                               EXTRACT_NONE, &extracted_form_data, nullptr);
-      if (form_data.SameFormAs(extracted_form_data)) {
-        return true;  // Form still exists.
-      }
-    } else {  // Both actions are non-empty, compare actions only.
-      if (canonical_action == iter_canonical_action) {
-        return true;  // Form still exists.
-      }
-    }
-  }
-
-  return false;
+bool IsFormControlVisible(blink::WebLocalFrame* frame,
+                          uint32_t field_renderer_id) {
+  WebDocument doc = frame->GetDocument();
+  if (doc.IsNull())
+    return false;
+  WebFormControlElement field =
+      FindFormControlElementByUniqueRendererId(doc, field_renderer_id);
+  return field.IsNull() ? false : IsWebElementVisible(field);
 }
 
 bool IsSomeControlElementVisible(
@@ -1803,6 +1767,8 @@ bool WebFormElementToFormData(
   form->unique_renderer_id = form_element.UniqueRendererFormId();
   form->url = GetCanonicalOriginForDocument(frame->GetDocument());
   form->action = GetCanonicalActionForForm(form_element);
+  form->is_action_empty =
+      form_element.Action().IsNull() || form_element.Action().IsEmpty();
   if (IsAutofillFieldMetadataEnabled()) {
     SCOPED_UMA_HISTOGRAM_TIMER(
         "PasswordManager.ButtonTitlePerformance.HasFormTag");
@@ -2015,23 +1981,6 @@ void FillForm(const FormData& form, const WebFormControlElement& element) {
                            &FillFormField);
 }
 
-void FillFormIncludingNonFocusableElements(const FormData& form_data,
-                                           const WebFormElement& form_element) {
-  if (form_element.IsNull()) {
-    NOTREACHED();
-    return;
-  }
-
-  FieldFilterMask filter_mask = static_cast<FieldFilterMask>(
-      FILTER_DISABLED_ELEMENTS | FILTER_READONLY_ELEMENTS);
-  ForEachMatchingFormField(form_element,
-                           WebInputElement(),
-                           form_data,
-                           filter_mask,
-                           true, /* force override */
-                           &FillFormField);
-}
-
 void PreviewForm(const FormData& form, const WebFormControlElement& element) {
   WebFormElement form_element = element.Form();
   if (form_element.IsNull()) {
@@ -2194,7 +2143,7 @@ WebFormElement FindFormByUniqueRendererId(WebDocument doc,
   return WebFormElement();
 }
 
-WebFormControlElement FindFormControlElementsByUniqueRendererId(
+WebFormControlElement FindFormControlElementByUniqueRendererId(
     WebDocument doc,
     uint32_t form_control_renderer_id) {
   WebElementCollection elements = doc.All();
@@ -2214,23 +2163,24 @@ WebFormControlElement FindFormControlElementsByUniqueRendererId(
 std::vector<WebFormControlElement> FindFormControlElementsByUniqueRendererId(
     WebDocument doc,
     const std::vector<uint32_t>& form_control_renderer_ids) {
-  DCHECK_LE(form_control_renderer_ids.size(), 10u)
-      << "More effective look-up should be implemented";
   WebElementCollection elements = doc.All();
   std::vector<WebFormControlElement> result(form_control_renderer_ids.size());
+
+  // Build a map from entries in |form_control_renderer_ids| to their indices,
+  // for more efficient lookup.
+  std::map<uint32_t, size_t> renderer_id_to_index;
+  for (size_t i = 0; i < form_control_renderer_ids.size(); i++)
+    renderer_id_to_index[form_control_renderer_ids[i]] = i;
 
   for (WebElement element = elements.FirstItem(); !element.IsNull();
        element = elements.NextItem()) {
     if (!element.IsFormControlElement())
       continue;
     WebFormControlElement control = element.To<WebFormControlElement>();
-    auto it = std::find(form_control_renderer_ids.begin(),
-                        form_control_renderer_ids.end(),
-                        control.UniqueRendererFormControlId());
-    if (it == form_control_renderer_ids.end())
+    auto it = renderer_id_to_index.find(control.UniqueRendererFormControlId());
+    if (it == renderer_id_to_index.end())
       continue;
-    size_t index = std::distance(form_control_renderer_ids.begin(), it);
-    result[index] = control;
+    result[it->second] = control;
   }
 
   return result;
@@ -2240,23 +2190,24 @@ std::vector<WebFormControlElement> FindFormControlElementsByUniqueRendererId(
     WebDocument doc,
     uint32_t form_renderer_id,
     const std::vector<uint32_t>& form_control_renderer_ids) {
-  DCHECK_LE(form_control_renderer_ids.size(), 10u)
-      << "More effective look-up should be implemented";
   std::vector<WebFormControlElement> result(form_control_renderer_ids.size());
   WebFormElement form = FindFormByUniqueRendererId(doc, form_renderer_id);
   if (form.IsNull())
     return result;
 
+  // Build a map from entries in |form_control_renderer_ids| to their indices,
+  // for more efficient lookup.
+  std::map<uint32_t, size_t> renderer_id_to_index;
+  for (size_t i = 0; i < form_control_renderer_ids.size(); i++)
+    renderer_id_to_index[form_control_renderer_ids[i]] = i;
+
   WebVector<WebFormControlElement> fields;
   form.GetFormControlElements(fields);
   for (const auto& field : fields) {
-    auto it = std::find(form_control_renderer_ids.begin(),
-                        form_control_renderer_ids.end(),
-                        field.UniqueRendererFormControlId());
-    if (it == form_control_renderer_ids.end())
+    auto it = renderer_id_to_index.find(field.UniqueRendererFormControlId());
+    if (it == renderer_id_to_index.end())
       continue;
-    size_t index = std::distance(form_control_renderer_ids.begin(), it);
-    result[index] = field;
+    result[it->second] = field;
   }
   return result;
 }

@@ -7,8 +7,8 @@
 
 #include <memory>
 #include "base/single_thread_task_runner.h"
-#include "third_party/blink/public/mojom/loader/request_context_frame_type.mojom-blink.h"
-#include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom-blink.h"
+#include "third_party/blink/public/mojom/loader/request_context_frame_type.mojom-blink-forward.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom-blink-forward.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/loader/base_fetch_context.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
@@ -82,6 +82,8 @@ class WorkerFetchContext final : public BaseFetchContext {
                                const ClientHintsPreferences&,
                                const FetchParameters::ResourceWidth&,
                                ResourceRequest&) override;
+  mojo::PendingReceiver<mojom::blink::WorkerTimingContainer>
+  TakePendingWorkerTimingReceiver(int request_id) override;
 
   WorkerSettings* GetWorkerSettings() const;
   WebWorkerFetchContext* GetWebWorkerFetchContext() const {
@@ -89,7 +91,6 @@ class WorkerFetchContext final : public BaseFetchContext {
   }
 
   bool AllowRunningInsecureContent(bool enabled_per_settings,
-                                   const SecurityOrigin* origin,
                                    const KURL& url) const;
 
   void Trace(blink::Visitor*) override;

@@ -31,13 +31,13 @@ import org.chromium.base.BaseSwitches;
 import org.chromium.base.Callback;
 import org.chromium.base.CommandLine;
 import org.chromium.base.SysUtils;
+import org.chromium.base.metrics.test.DisableHistogramsRule;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ShadowDeviceConditions;
 import org.chromium.chrome.browser.background_task_scheduler.NativeBackgroundTask;
-import org.chromium.chrome.test.support.DisableHistogramsRule;
 import org.chromium.components.background_task_scheduler.BackgroundTask;
 import org.chromium.components.background_task_scheduler.BackgroundTaskScheduler;
 import org.chromium.components.background_task_scheduler.BackgroundTaskSchedulerFactory;
@@ -78,7 +78,7 @@ public class BackgroundSyncBackgroundTaskTest {
     private ArgumentCaptor<TaskInfo> mTaskInfo;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         MockitoAnnotations.initMocks(this);
         BackgroundTaskSchedulerFactory.setSchedulerForTesting(mTaskScheduler);
 
@@ -100,7 +100,7 @@ public class BackgroundSyncBackgroundTaskTest {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         // Clean up static state for subsequent Robolectric tests.
         CommandLine.reset();
         SysUtils.resetForTesting();

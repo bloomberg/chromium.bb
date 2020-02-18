@@ -6,7 +6,10 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_XR_XR_H_
 
 #include "device/vr/public/mojom/vr_service.mojom-blink.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
@@ -14,6 +17,7 @@
 #include "third_party/blink/renderer/core/page/focus_changed_observer.h"
 #include "third_party/blink/renderer/modules/xr/xr_session.h"
 #include "third_party/blink/renderer/modules/xr/xr_session_init.h"
+#include "third_party/blink/renderer/platform/graphics/color.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_or_worker_scheduler.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
@@ -46,6 +50,9 @@ class XR final : public EventTargetWithInlineData,
   ScriptPromise supportsSession(ScriptState*,
                                 const String&,
                                 ExceptionState& exception_state);
+  ScriptPromise isSessionSupported(ScriptState*,
+                                   const String&,
+                                   ExceptionState& exception_state);
   ScriptPromise requestSession(ScriptState*,
                                const String&,
                                XRSessionInit*,
@@ -53,13 +60,9 @@ class XR final : public EventTargetWithInlineData,
 
   XRFrameProvider* frameProvider();
 
-  bool CanRequestNonImmersiveFrameData() const;
-  void GetNonImmersiveFrameData(
-      device::mojom::blink::XRFrameDataRequestOptionsPtr,
-      device::mojom::blink::XRFrameDataProvider::GetFrameDataCallback);
-
-  const device::mojom::blink::XREnvironmentIntegrationProviderAssociatedPtr&
-  xrEnvironmentProviderPtr();
+  const mojo::AssociatedRemote<
+      device::mojom::blink::XREnvironmentIntegrationProvider>&
+  xrEnvironmentProviderRemote();
 
   // VRServiceClient overrides.
   void OnDeviceChanged() override;
@@ -79,14 +82,26 @@ class XR final : public EventTargetWithInlineData,
   int64_t GetSourceId() const { return ukm_source_id_; }
 
   using EnvironmentProviderErrorCallback = base::OnceCallback<void()>;
+  // Registers a callback that'll be invoked when mojo invokes a disconnect
+  // handler on the underlying XREnvironmentIntegrationProvider remote.
   void AddEnvironmentProviderErrorHandler(
       EnvironmentProviderErrorCallback callback);
 
-  void ExitPresent();
+  void ExitPresent(base::OnceClosure on_exited);
+
+  void SetFramesThrottled(const XRSession* session, bool throttled);
 
   base::TimeTicks NavigationStart() const { return navigation_start_; }
 
+  bool IsContextDestroyed() const { return is_context_destroyed_; }
+
  private:
+  enum SensorRequirement {
+    kNone,
+    kOptional,
+    kRequired,
+  };
+
   // These values are persisted to logs. Entries should not be renumbered and
   // numeric values should never be reused.
   enum class SessionRequestStatus : int {
@@ -109,7 +124,7 @@ class XR final : public EventTargetWithInlineData,
   // ScriptPromiseResolver that allows us to add additional logic as certain
   // things related to promise's life cycle happen.
   class PendingRequestSessionQuery final
-      : public GarbageCollectedFinalized<PendingRequestSessionQuery> {
+      : public GarbageCollected<PendingRequestSessionQuery> {
    public:
     PendingRequestSessionQuery(int64_t ukm_source_id,
                                ScriptPromiseResolver* resolver,
@@ -119,7 +134,12 @@ class XR final : public EventTargetWithInlineData,
     virtual ~PendingRequestSessionQuery() = default;
 
     // Resolves underlying promise with passed in XR session.
-    void Resolve(XRSession* session);
+    // If metrics are to be recorded for this session, an
+    // |XRSessionMetricsRecorded| may be passed in as well.
+    void Resolve(
+        XRSession* session,
+        mojo::PendingRemote<device::mojom::blink::XRSessionMetricsRecorder>
+            metrics_recorder = mojo::NullRemote());
 
     // Rejects underlying promise with a DOMException.
     // Do not call this with |DOMExceptionCode::kSecurityError|, use
@@ -148,18 +168,31 @@ class XR final : public EventTargetWithInlineData,
     bool InvalidRequiredFeatures() const;
     bool InvalidOptionalFeatures() const;
 
+    SensorRequirement GetSensorRequirement() const {
+      return sensor_requirement_;
+    }
+
     // Returns underlying resolver's script state.
     ScriptState* GetScriptState() const;
 
     virtual void Trace(blink::Visitor*);
 
    private:
-    void ReportRequestSessionResult(SessionRequestStatus status);
+    void ParseSensorRequirement();
+    device::mojom::XRSessionFeatureRequestStatus GetFeatureRequestStatus(
+        device::mojom::XRSessionFeature feature,
+        const XRSession* session) const;
+    void ReportRequestSessionResult(
+        SessionRequestStatus status,
+        XRSession* session = nullptr,
+        mojo::PendingRemote<device::mojom::blink::XRSessionMetricsRecorder>
+            metrics_recorder = mojo::NullRemote());
 
     Member<ScriptPromiseResolver> resolver_;
     const XRSession::SessionMode mode_;
     RequestedXRSessionFeatureSet required_features_;
     RequestedXRSessionFeatureSet optional_features_;
+    SensorRequirement sensor_requirement_ = SensorRequirement::kNone;
 
     const int64_t ukm_source_id_;
 
@@ -175,11 +208,13 @@ class XR final : public EventTargetWithInlineData,
   class PendingSupportsSessionQuery final
       : public GarbageCollected<PendingSupportsSessionQuery> {
    public:
-    PendingSupportsSessionQuery(ScriptPromiseResolver*, XRSession::SessionMode);
+    PendingSupportsSessionQuery(ScriptPromiseResolver*,
+                                XRSession::SessionMode,
+                                bool throw_on_unsupported);
     virtual ~PendingSupportsSessionQuery() = default;
 
     // Resolves underlying promise.
-    void Resolve();
+    void Resolve(bool supported, ExceptionState* exception_state = nullptr);
 
     // Rejects underlying promise with a DOMException.
     // Do not call this with |DOMExceptionCode::kSecurityError|, use
@@ -202,6 +237,8 @@ class XR final : public EventTargetWithInlineData,
     void RejectWithTypeError(const String& message,
                              ExceptionState* exception_state);
 
+    bool ThrowOnUnsupported() const { return throw_on_unsupported_; }
+
     XRSession::SessionMode mode() const;
 
     virtual void Trace(blink::Visitor*);
@@ -210,13 +247,26 @@ class XR final : public EventTargetWithInlineData,
     Member<ScriptPromiseResolver> resolver_;
     const XRSession::SessionMode mode_;
 
+    // Only set when calling the deprecated supportsSession method.
+    const bool throw_on_unsupported_ = false;
+
     DISALLOW_COPY_AND_ASSIGN(PendingSupportsSessionQuery);
   };
 
+  ScriptPromise InternalIsSessionSupported(ScriptState*,
+                                           const String&,
+                                           ExceptionState& exception_state,
+                                           bool throw_on_unsupported);
+
   const char* CheckInlineSessionRequestAllowed(
       LocalFrame* frame,
-      Document* doc,
       const PendingRequestSessionQuery& query);
+
+  RequestedXRSessionFeatureSet ParseRequestedFeatures(
+      Document* doc,
+      const HeapVector<ScriptValue>& features,
+      const XRSession::SessionMode& session_mode,
+      mojom::ConsoleMessageLevel error_level);
 
   void RequestImmersiveSession(LocalFrame* frame,
                                Document* doc,
@@ -224,7 +274,6 @@ class XR final : public EventTargetWithInlineData,
                                ExceptionState* exception_state);
 
   void RequestInlineSession(LocalFrame* frame,
-                            Document* doc,
                             PendingRequestSessionQuery* query,
                             ExceptionState* exception_state);
 
@@ -243,20 +292,22 @@ class XR final : public EventTargetWithInlineData,
   XRSession* CreateSession(
       XRSession::SessionMode mode,
       XRSession::EnvironmentBlendMode blend_mode,
-      device::mojom::blink::XRSessionClientRequest client_request,
+      mojo::PendingReceiver<device::mojom::blink::XRSessionClient>
+          client_receiver,
       device::mojom::blink::VRDisplayInfoPtr display_info,
       bool uses_input_eventing,
       XRSessionFeatureSet enabled_features,
       bool sensorless_session = false);
 
-  bool CanCreateSensorlessInlineSession(
-      const PendingRequestSessionQuery* query) const;
   XRSession* CreateSensorlessInlineSession();
 
-  void Dispose();
+  enum class DisposeType {
+    kContextDestroyed = 0,
+    kDisconnected = 1,
+  };
+  void Dispose(DisposeType);
 
   void OnEnvironmentProviderDisconnect();
-  void OnMagicWindowProviderDisconnect();
 
   // Indicates whether use of requestDevice has already been logged.
   bool did_log_supports_immersive_ = false;
@@ -275,9 +326,8 @@ class XR final : public EventTargetWithInlineData,
 
   Member<XRFrameProvider> frame_provider_;
   HeapHashSet<WeakMember<XRSession>> sessions_;
-  device::mojom::blink::VRServicePtr service_;
-  device::mojom::blink::XRFrameDataProviderPtr magic_window_provider_;
-  device::mojom::blink::XREnvironmentIntegrationProviderAssociatedPtr
+  mojo::Remote<device::mojom::blink::VRService> service_;
+  mojo::AssociatedRemote<device::mojom::blink::XREnvironmentIntegrationProvider>
       environment_provider_;
   mojo::Receiver<device::mojom::blink::VRServiceClient> receiver_{this};
 
@@ -287,6 +337,11 @@ class XR final : public EventTargetWithInlineData,
 
   FrameOrWorkerScheduler::SchedulingAffectingFeatureHandle
       feature_handle_for_scheduler_;
+
+  // In DOM overlay mode, save and restore the FrameView background color.
+  Color original_base_background_color_;
+
+  bool is_context_destroyed_ = false;
 };
 
 }  // namespace blink

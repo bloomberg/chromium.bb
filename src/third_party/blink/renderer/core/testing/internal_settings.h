@@ -27,7 +27,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_TESTING_INTERNAL_SETTINGS_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_TESTING_INTERNAL_SETTINGS_H_
 
-#include "third_party/blink/public/common/manifest/web_display_mode.h"
+#include "third_party/blink/public/mojom/manifest/display_mode.mojom-shared.h"
 #include "third_party/blink/renderer/core/editing/editing_behavior_types.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/testing/internal_settings_generated.h"
@@ -44,15 +44,11 @@ class Page;
 class Settings;
 
 class InternalSettings final : public InternalSettingsGenerated,
-                               public Supplement<Page> {
+                               public InternalSettingsPageSupplementBase {
   USING_GARBAGE_COLLECTED_MIXIN(InternalSettings);
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static const char kSupplementName[];
-
-  static void PrepareForLeakDetection();
-
   class Backup {
     DISALLOW_NEW();
 
@@ -67,8 +63,7 @@ class InternalSettings final : public InternalSettingsGenerated,
     IntSize original_text_autosizing_window_size_override_;
     float original_accessibility_font_scale_factor_;
     String original_media_type_override_;
-    WebDisplayMode original_display_mode_override_;
-    bool original_mock_scrollbars_enabled_;
+    blink::mojom::DisplayMode original_display_mode_override_;
     bool original_mock_gesture_tap_highlights_enabled_;
     bool lang_attribute_aware_form_control_ui_enabled_;
     bool images_enabled_;
@@ -111,7 +106,6 @@ class InternalSettings final : public InternalSettingsGenerated,
   void setImagesEnabled(bool, ExceptionState&);
   void setMediaTypeOverride(const String& media_type, ExceptionState&);
   void setDisplayModeOverride(const String& display_mode, ExceptionState&);
-  void setMockScrollbarsEnabled(bool, ExceptionState&);
   void setHideScrollbars(bool, ExceptionState&);
   void setMockGestureTapHighlightsEnabled(bool, ExceptionState&);
   void setTextAutosizingEnabled(bool, ExceptionState&);

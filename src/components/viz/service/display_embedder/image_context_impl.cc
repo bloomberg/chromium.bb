@@ -17,11 +17,17 @@
 
 namespace viz {
 
-ImageContextImpl::ImageContextImpl(const gpu::MailboxHolder& mailbox_holder,
-                                   const gfx::Size& size,
-                                   ResourceFormat resource_format,
-                                   sk_sp<SkColorSpace> color_space)
-    : ImageContext(mailbox_holder, size, resource_format, color_space) {}
+ImageContextImpl::ImageContextImpl(
+    const gpu::MailboxHolder& mailbox_holder,
+    const gfx::Size& size,
+    ResourceFormat resource_format,
+    const base::Optional<gpu::VulkanYCbCrInfo>& ycbcr_info,
+    sk_sp<SkColorSpace> color_space)
+    : ImageContext(mailbox_holder,
+                   size,
+                   resource_format,
+                   ycbcr_info,
+                   color_space) {}
 
 ImageContextImpl::ImageContextImpl(RenderPassId render_pass_id,
                                    const gfx::Size& size,
@@ -31,9 +37,17 @@ ImageContextImpl::ImageContextImpl(RenderPassId render_pass_id,
     : ImageContext(gpu::MailboxHolder(),
                    size,
                    resource_format,
+                   /*ycbcr_info=*/base::nullopt,
                    std::move(color_space)),
       render_pass_id_(render_pass_id),
       mipmap_(mipmap ? GrMipMapped::kYes : GrMipMapped::kNo) {}
+
+void ImageContextImpl::OnContextLost() {
+  if (representation_) {
+    representation_->OnContextLost();
+    representation_ = nullptr;
+  }
+}
 
 ImageContextImpl::~ImageContextImpl() {
   DCHECK(!representation_scoped_read_access_);
@@ -44,6 +58,12 @@ ImageContextImpl::~ImageContextImpl() {
 
 void ImageContextImpl::CreateFallbackImage(
     gpu::SharedContextState* context_state) {
+  // We can't allocate a fallback texture as the original texture was externally
+  // allocated. Skia will skip drawing a null SkPromiseImageTexture, do nothing
+  // and leave it null.
+  if (backend_format().textureType() == GrTextureType::kExternal)
+    return;
+
   DCHECK(!fallback_context_state_);
   fallback_context_state_ = context_state;
 
@@ -71,60 +91,10 @@ void ImageContextImpl::BeginAccessIfNecessary(
     std::vector<GrBackendSemaphore>* begin_semaphores,
     std::vector<GrBackendSemaphore>* end_semaphores) {
   // Prepare for accessing shared image.
-  if (mailbox_holder().mailbox.IsSharedImage()) {
-    // Skip the context if it has been processed.
-    if (representation_scoped_read_access_) {
-      DCHECK(!owned_promise_image_texture_);
-      DCHECK(promise_image_texture_);
-      return;
-    }
-
-    // promise_image_texture_ is not null here, it means we are using a fallback
-    // image.
-    if (promise_image_texture_) {
-      DCHECK(owned_promise_image_texture_);
-      return;
-    }
-
-    if (!representation_) {
-      auto representation = representation_factory->ProduceSkia(
-          mailbox_holder().mailbox, context_state);
-      if (!representation) {
-        DLOG(ERROR) << "Failed to fulfill the promise texture - SharedImage "
-                       "mailbox not found in SharedImageManager.";
-        CreateFallbackImage(context_state);
-        return;
-      }
-
-      if (!(representation->usage() & gpu::SHARED_IMAGE_USAGE_DISPLAY)) {
-        DLOG(ERROR) << "Failed to fulfill the promise texture - SharedImage "
-                       "was not created with display usage.";
-        CreateFallbackImage(context_state);
-        return;
-      }
-
-      if (representation->size() != size()) {
-        DLOG(ERROR) << "Failed to fulfill the promise texture - SharedImage "
-                       "size does not match TransferableResource size.";
-        CreateFallbackImage(context_state);
-        return;
-      }
-
-      representation_ = std::move(representation);
-    }
-
-    representation_scoped_read_access_.emplace(
-        representation_.get(), begin_semaphores, end_semaphores);
-    if (!representation_scoped_read_access_->success()) {
-      representation_scoped_read_access_.reset();
-      representation_ = nullptr;
-      DLOG(ERROR) << "Failed to fulfill the promise texture - SharedImage "
-                     "begin read access failed..";
-      CreateFallbackImage(context_state);
-      return;
-    }
-    promise_image_texture_ =
-        representation_scoped_read_access_->promise_image_texture();
+  if (mailbox_holder().mailbox.IsSharedImage() &&
+      BeginAccessIfNecessaryForSharedImage(context_state,
+                                           representation_factory,
+                                           begin_semaphores, end_semaphores)) {
     return;
   }
 
@@ -169,6 +139,63 @@ void ImageContextImpl::BeginAccessIfNecessary(
     return;
   }
   set_promise_image_texture(SkPromiseImageTexture::Make(backend_texture));
+}
+
+bool ImageContextImpl::BeginAccessIfNecessaryForSharedImage(
+    gpu::SharedContextState* context_state,
+    gpu::SharedImageRepresentationFactory* representation_factory,
+    std::vector<GrBackendSemaphore>* begin_semaphores,
+    std::vector<GrBackendSemaphore>* end_semaphores) {
+  // Skip the context if it has been processed.
+  if (representation_scoped_read_access_) {
+    DCHECK(!owned_promise_image_texture_);
+    DCHECK(promise_image_texture_);
+    return true;
+  }
+
+  // promise_image_texture_ is not null here, it means we are using a fallback
+  // image.
+  if (promise_image_texture_) {
+    DCHECK(owned_promise_image_texture_);
+    return true;
+  }
+
+  if (!representation_) {
+    auto representation = representation_factory->ProduceSkia(
+        mailbox_holder().mailbox, context_state);
+    if (!representation) {
+      DLOG(ERROR) << "Failed to fulfill the promise texture - SharedImage "
+                     "mailbox not found in SharedImageManager.";
+      return false;
+    }
+
+    if (!(representation->usage() & gpu::SHARED_IMAGE_USAGE_DISPLAY)) {
+      DLOG(ERROR) << "Failed to fulfill the promise texture - SharedImage "
+                     "was not created with display usage.";
+      return false;
+    }
+
+    if (representation->size() != size()) {
+      DLOG(ERROR) << "Failed to fulfill the promise texture - SharedImage "
+                     "size does not match TransferableResource size.";
+      return false;
+    }
+
+    representation_ = std::move(representation);
+  }
+
+  representation_scoped_read_access_.emplace(representation_.get(),
+                                             begin_semaphores, end_semaphores);
+  if (!representation_scoped_read_access_->success()) {
+    representation_scoped_read_access_.reset();
+    representation_ = nullptr;
+    DLOG(ERROR) << "Failed to fulfill the promise texture - SharedImage "
+                   "begin read access failed..";
+    return false;
+  }
+  promise_image_texture_ =
+      representation_scoped_read_access_->promise_image_texture();
+  return true;
 }
 
 bool ImageContextImpl::BindOrCopyTextureIfNecessary(

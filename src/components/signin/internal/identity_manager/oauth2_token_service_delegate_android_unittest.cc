@@ -23,7 +23,7 @@ class OAuth2TokenServiceDelegateAndroidForTest
  public:
   OAuth2TokenServiceDelegateAndroidForTest(
       AccountTrackerService* account_tracker_service)
-      : OAuth2TokenServiceDelegateAndroid(account_tracker_service) {}
+      : OAuth2TokenServiceDelegateAndroid(account_tracker_service, nullptr) {}
   MOCK_METHOD1(SetAccounts, void(const std::vector<CoreAccountId>&));
 };
 
@@ -45,8 +45,6 @@ class OAuth2TokenServiceDelegateAndroidTest : public testing::Test {
     testing::Test::SetUp();
     AccountTrackerService::RegisterPrefs(pref_service_.registry());
     account_tracker_service_.Initialize(&pref_service_, base::FilePath());
-    OAuth2TokenServiceDelegateAndroid::
-        set_disable_interaction_with_system_accounts();
     delegate_ = std::make_unique<OAuth2TokenServiceDelegateAndroidForTest>(
         &account_tracker_service_);
     delegate_->AddObserver(&observer_);
@@ -100,7 +98,7 @@ TEST_F(OAuth2TokenServiceDelegateAndroidTest,
        UpdateAccountListWith0SystemAccount0AccountAndNotSignedIn) {
   EXPECT_CALL(*delegate_, SetAccounts(kEmptyVector)).WillOnce(Return());
   // No observer call expected
-  delegate_->UpdateAccountList(std::string(), {}, {});
+  delegate_->UpdateAccountList(CoreAccountId(), {}, {});
   EXPECT_TRUE(account_tracker_service_.GetAccounts().empty());
 }
 
@@ -108,7 +106,7 @@ TEST_F(OAuth2TokenServiceDelegateAndroidTest,
        UpdateAccountListWith1SystemAccount0AccountAndNotSignedIn) {
   EXPECT_CALL(*delegate_, SetAccounts(kEmptyVector)).WillOnce(Return());
   // No observer call expected
-  delegate_->UpdateAccountList(std::string(), {}, {account1_.account_id});
+  delegate_->UpdateAccountList(CoreAccountId(), {}, {account1_.account_id});
   EXPECT_EQ(std::vector<AccountInfo>{account1_},
             account_tracker_service_.GetAccounts());
 }
@@ -124,7 +122,7 @@ TEST_F(OAuth2TokenServiceDelegateAndroidTest,
       .InSequence(seq)
       .WillOnce(Return());
 
-  delegate_->UpdateAccountList(std::string(), {account1_.account_id},
+  delegate_->UpdateAccountList(CoreAccountId(), {account1_.account_id},
                                {account1_.account_id});
   EXPECT_EQ(std::vector<AccountInfo>{account1_},
             account_tracker_service_.GetAccounts());

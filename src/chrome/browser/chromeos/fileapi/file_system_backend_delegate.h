@@ -10,8 +10,8 @@
 #include <memory>
 
 #include "base/callback_forward.h"
-#include "storage/browser/fileapi/file_system_backend.h"
-#include "storage/common/fileapi/file_system_types.h"
+#include "storage/browser/file_system/file_system_backend.h"
+#include "storage/common/file_system/file_system_types.h"
 
 namespace base {
 class Time;
@@ -60,9 +60,8 @@ class FileSystemBackendDelegate {
   // Called from FileSystemBackend::GetRedirectURLForContents.  Please ensure
   // that the returned URL is secure to be opened in a browser tab, or referred
   // from <img>, <video>, XMLHttpRequest, etc...
-  virtual void GetRedirectURLForContents(
-      const storage::FileSystemURL& url,
-      const storage::URLCallback& callback) = 0;
+  virtual void GetRedirectURLForContents(const storage::FileSystemURL& url,
+                                         storage::URLCallback callback) = 0;
 };
 
 }  // namespace chromeos

@@ -29,6 +29,7 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_urls.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/geometry/insets.h"
@@ -224,6 +225,13 @@ void AddPermissions(ExtensionInstallPrompt::Prompt* prompt,
       {prompt->GetPermissionsHeading(), std::move(permissions_view)});
 }
 
+std::unique_ptr<views::Link> CreatePromptLink(views::LinkListener* listener) {
+  auto store_link = std::make_unique<views::Link>(
+      l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_STORE_LINK));
+  store_link->set_listener(listener);
+  return store_link;
+}
+
 }  // namespace
 
 ExtensionInstallDialogView::ExtensionInstallDialogView(
@@ -239,6 +247,16 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
       scroll_view_(nullptr),
       handled_result_(false),
       install_button_enabled_(false) {
+  DCHECK(prompt_->extension());
+
+  DialogDelegate::set_default_button(ui::DIALOG_BUTTON_CANCEL);
+  DialogDelegate::set_draggable(true);
+  if (prompt_->has_webstore_data())
+    DialogDelegate::SetExtraView(CreatePromptLink(this));
+  DialogDelegate::set_button_label(ui::DIALOG_BUTTON_OK,
+                                   prompt_->GetAcceptButtonLabel());
+  DialogDelegate::set_button_label(ui::DIALOG_BUTTON_CANCEL,
+                                   prompt_->GetAbortButtonLabel());
   set_close_on_deactivate(false);
   CreateContents();
 
@@ -365,16 +383,6 @@ void ExtensionInstallDialogView::AddedToWidget() {
   GetBubbleFrameView()->SetTitleView(std::move(title_container));
 }
 
-std::unique_ptr<views::View> ExtensionInstallDialogView::CreateExtraView() {
-  if (!prompt_->has_webstore_data())
-    return nullptr;
-
-  auto store_link = std::make_unique<views::Link>(
-      l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_STORE_LINK));
-  store_link->set_listener(this);
-  return store_link;
-}
-
 bool ExtensionInstallDialogView::Cancel() {
   if (handled_result_)
     return true;
@@ -394,36 +402,12 @@ bool ExtensionInstallDialogView::Accept() {
   return true;
 }
 
-// parent_window() may be null if an upgrade permissions prompt is triggered
-// when launching via a desktop shortcut. In that case, there is no browser
-// window to move (which would move the dialog), so allow dragging in this case.
-bool ExtensionInstallDialogView::IsDialogDraggable() const {
-  return !parent_window();
-}
-
 int ExtensionInstallDialogView::GetDialogButtons() const {
   int buttons = prompt_->GetDialogButtons();
   // Simply having just an OK button is *not* supported. See comment on function
   // GetDialogButtons in dialog_delegate.h for reasons.
   DCHECK_GT(buttons & ui::DIALOG_BUTTON_CANCEL, 0);
   return buttons;
-}
-
-int ExtensionInstallDialogView::GetDefaultDialogButton() const {
-  return ui::DIALOG_BUTTON_CANCEL;
-}
-
-base::string16 ExtensionInstallDialogView::GetDialogButtonLabel(
-    ui::DialogButton button) const {
-  switch (button) {
-    case ui::DIALOG_BUTTON_OK:
-      return prompt_->GetAcceptButtonLabel();
-    case ui::DIALOG_BUTTON_CANCEL:
-      return prompt_->GetAbortButtonLabel();
-    default:
-      NOTREACHED();
-      return base::string16();
-  }
 }
 
 bool ExtensionInstallDialogView::IsDialogButtonEnabled(

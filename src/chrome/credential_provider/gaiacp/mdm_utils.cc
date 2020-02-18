@@ -22,6 +22,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/win_util.h"
 #include "base/win/wmi.h"
+#include "build/branding_buildflags.h"
 #include "chrome/credential_provider/common/gcp_strings.h"
 #include "chrome/credential_provider/gaiacp/gcp_utils.h"
 #include "chrome/credential_provider/gaiacp/logging.h"
@@ -30,11 +31,13 @@
 namespace credential_provider {
 
 constexpr wchar_t kRegMdmUrl[] = L"mdm";
-constexpr wchar_t kRegMdmEscrowServiceServerUrl[] = L"mdm_ess_url";
+constexpr wchar_t kRegMdmEnableForcePasswordReset[] =
+    L"mdm_enable_force_password";
+constexpr wchar_t kRegEscrowServiceServerUrl[] = L"mdm_ess_url";
 constexpr wchar_t kRegMdmSupportsMultiUser[] = L"mdm_mu";
 constexpr wchar_t kRegMdmAllowConsumerAccounts[] = L"mdm_aca";
 constexpr wchar_t kUserPasswordLsaStoreKeyPrefix[] =
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
     L"Chrome-GCPW-";
 #else
     L"Chromium-GCPW-";
@@ -57,7 +60,11 @@ enum class EnrolledStatus {
 };
 EnrolledStatus g_enrolled_status = EnrolledStatus::kDontForce;
 
-#if !defined(GOOGLE_CHROME_BUILD)
+// Overriden in tests to fake serial number extraction.
+bool g_use_test_serial_number = false;
+base::string16 g_test_serial_number = L"";
+
+#if !BUILDFLAG(GOOGLE_CHROME_BRANDING)
 enum class EscrowServiceStatus {
   kDisabled,
   kEnabled,
@@ -88,6 +95,12 @@ T GetMdmFunctionPointer(const base::ScopedNativeLibrary& library,
 
 base::string16 GetMdmUrl() {
   return GetGlobalFlagOrDefault(kRegMdmUrl, kDefaultMdmUrl);
+}
+
+base::string16 GetSerialNumber() {
+  if (g_use_test_serial_number)
+    return g_test_serial_number;
+  return base::win::WmiComputerSystemInfo::Get().serial_number();
 }
 
 bool IsEnrolledWithGoogleMdm(const base::string16& mdm_url) {
@@ -142,13 +155,15 @@ HRESULT ExtractRegistrationData(const base::Value& registration_data,
                                 base::string16* out_access_token,
                                 base::string16* out_sid,
                                 base::string16* out_username,
-                                base::string16* out_domain) {
+                                base::string16* out_domain,
+                                base::string16* out_is_ad_user_joined) {
   DCHECK(out_email);
   DCHECK(out_id_token);
   DCHECK(out_access_token);
   DCHECK(out_sid);
   DCHECK(out_username);
   DCHECK(out_domain);
+  DCHECK(out_is_ad_user_joined);
   if (!registration_data.is_dict()) {
     LOGFN(ERROR) << "Registration data is not a dictionary";
     return E_INVALIDARG;
@@ -160,6 +175,7 @@ HRESULT ExtractRegistrationData(const base::Value& registration_data,
   *out_sid = GetDictString(registration_data, kKeySID);
   *out_username = GetDictString(registration_data, kKeyUsername);
   *out_domain = GetDictString(registration_data, kKeyDomain);
+  *out_is_ad_user_joined = GetDictString(registration_data, kKeyIsAdJoinedUser);
 
   if (out_email->empty()) {
     LOGFN(ERROR) << "Email is empty";
@@ -188,6 +204,11 @@ HRESULT ExtractRegistrationData(const base::Value& registration_data,
 
   if (out_domain->empty()) {
     LOGFN(ERROR) << "domain is empty";
+    return E_INVALIDARG;
+  }
+
+  if (out_is_ad_user_joined->empty()) {
+    LOGFN(ERROR) << "is_ad_user_joined is empty";
     return E_INVALIDARG;
   }
 
@@ -236,9 +257,11 @@ HRESULT RegisterWithGoogleDeviceManagement(const base::string16& mdm_url,
   base::string16 sid;
   base::string16 username;
   base::string16 domain;
+  base::string16 is_ad_joined_user;
 
-  HRESULT hr = ExtractRegistrationData(properties, &email, &id_token,
-                                       &access_token, &sid, &username, &domain);
+  HRESULT hr =
+      ExtractRegistrationData(properties, &email, &id_token, &access_token,
+                              &sid, &username, &domain, &is_ad_joined_user);
 
   if (FAILED(hr)) {
     LOGFN(ERROR) << "ExtractRegistrationData hr=" << putHR(hr);
@@ -248,22 +271,21 @@ HRESULT RegisterWithGoogleDeviceManagement(const base::string16& mdm_url,
   LOGFN(INFO) << "MDM_URL=" << mdm_url
               << " token=" << base::string16(id_token.c_str(), 10);
 
-  switch (g_enrollment_status) {
-    case EnrollmentStatus::kForceSuccess:
-      return S_OK;
-    case EnrollmentStatus::kForceFailure:
-      return E_FAIL;
-    case EnrollmentStatus::kDontForce:
-      break;
-  }
-
   // Add the serial number to the registration data dictionary.
-  base::string16 serial_number =
-      base::win::WmiComputerSystemInfo::Get().serial_number();
+  base::string16 serial_number = GetSerialNumber();
 
   if (serial_number.empty()) {
     LOGFN(ERROR) << "Failed to get serial number.";
     return E_FAIL;
+  }
+
+  // Add machine_guid to the registration data dictionary.
+  base::string16 machine_guid;
+  hr = GetMachineGuid(&machine_guid);
+
+  if (FAILED(hr) || machine_guid.empty()) {
+    LOGFN(ERROR) << "Failed to get machine guid.";
+    return FAILED(hr) ? hr : E_FAIL;
   }
 
   // Need localized local user group name for Administrators group
@@ -289,15 +311,26 @@ HRESULT RegisterWithGoogleDeviceManagement(const base::string16& mdm_url,
   registration_data.SetStringKey("username", username);
   registration_data.SetStringKey("domain", domain);
   registration_data.SetStringKey("serial_number", serial_number);
+  registration_data.SetStringKey("machine_guid", machine_guid);
   registration_data.SetStringKey("admin_local_user_group_name",
                                  local_administrators_group_name);
   registration_data.SetStringKey("builtin_administrator_name",
                                  builtin_administrator_name);
+  registration_data.SetStringKey(kKeyIsAdJoinedUser, is_ad_joined_user);
 
   std::string registration_data_str;
   if (!base::JSONWriter::Write(registration_data, &registration_data_str)) {
     LOGFN(ERROR) << "JSONWriter::Write(registration_data)";
     return E_FAIL;
+  }
+
+  switch (g_enrollment_status) {
+    case EnrollmentStatus::kForceSuccess:
+      return S_OK;
+    case EnrollmentStatus::kForceFailure:
+      return E_FAIL;
+    case EnrollmentStatus::kDontForce:
+      break;
   }
 
   base::ScopedNativeLibrary library(
@@ -330,9 +363,9 @@ bool MdmEnrollmentEnabled() {
   return !mdm_url.empty();
 }
 
-GURL MdmEscrowServiceUrl() {
+GURL EscrowServiceUrl() {
   base::string16 escrow_service_url = GetGlobalFlagOrDefault(
-      kRegMdmEscrowServiceServerUrl, kDefaultEscrowServiceServerUrl);
+      kRegEscrowServiceServerUrl, kDefaultEscrowServiceServerUrl);
 
   if (escrow_service_url.empty())
     return GURL();
@@ -340,17 +373,13 @@ GURL MdmEscrowServiceUrl() {
   return GURL(base::UTF16ToUTF8(escrow_service_url));
 }
 
-bool MdmPasswordRecoveryEnabled() {
-#if !defined(GOOGLE_CHROME_BUILD)
+bool PasswordRecoveryEnabled() {
+#if !BUILDFLAG(GOOGLE_CHROME_BRANDING)
   if (g_escrow_service_enabled == EscrowServiceStatus::kDisabled)
     return false;
 #endif
 
-  // Password recovery is enabled only if MDM is enabled.
-  if (!MdmEnrollmentEnabled())
-    return false;
-
-  if (MdmEscrowServiceUrl().is_empty())
+  if (EscrowServiceUrl().is_empty())
     return false;
 
   return true;
@@ -374,7 +403,6 @@ HRESULT EnrollToGoogleMdmIfNeeded(const base::Value& properties) {
   HRESULT hr = RegisterWithGoogleDeviceManagement(mdm_url, properties);
   if (FAILED(hr))
     LOGFN(ERROR) << "RegisterWithGoogleDeviceManagement hr=" << putHR(hr);
-
   return hr;
 }
 
@@ -410,17 +438,33 @@ GoogleMdmEnrolledStatusForTesting::~GoogleMdmEnrolledStatusForTesting() {
 
 // GoogleMdmEnrolledStatusForTesting //////////////////////////////////////////
 
-#if !defined(GOOGLE_CHROME_BUILD)
+// GoogleRegistrationDataForTesting //////////////////////////////////////////
+
+GoogleRegistrationDataForTesting::GoogleRegistrationDataForTesting(
+    base::string16 serial_number) {
+  g_use_test_serial_number = true;
+  g_test_serial_number = serial_number;
+}
+
+GoogleRegistrationDataForTesting::~GoogleRegistrationDataForTesting() {
+  g_use_test_serial_number = false;
+  g_test_serial_number = L"";
+}
+
+// GoogleSerialNumberForTesting //////////////////////////////////////////
+
 GoogleMdmEscrowServiceEnablerForTesting::
-    GoogleMdmEscrowServiceEnablerForTesting(bool enable) {
-  g_escrow_service_enabled =
-      enable ? EscrowServiceStatus::kEnabled : EscrowServiceStatus::kDisabled;
+    GoogleMdmEscrowServiceEnablerForTesting() {
+#if !BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  g_escrow_service_enabled = EscrowServiceStatus::kEnabled;
+#endif
 }
 
 GoogleMdmEscrowServiceEnablerForTesting::
     ~GoogleMdmEscrowServiceEnablerForTesting() {
+#if !BUILDFLAG(GOOGLE_CHROME_BRANDING)
   g_escrow_service_enabled = EscrowServiceStatus::kDisabled;
-}
 #endif
+}
 
 }  // namespace credential_provider

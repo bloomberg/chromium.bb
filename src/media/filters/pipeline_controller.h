@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "media/base/media_export.h"
@@ -41,7 +42,6 @@ class MEDIA_EXPORT PipelineController {
     RESUMING,
   };
 
-  using RendererFactoryCB = base::Callback<std::unique_ptr<Renderer>(void)>;
   using SeekedCB = base::Callback<void(bool time_updated)>;
   using SuspendedCB = base::Callback<void()>;
   using BeforeResumeCB = base::Callback<void()>;
@@ -49,16 +49,13 @@ class MEDIA_EXPORT PipelineController {
 
   // Construct a PipelineController wrapping |pipeline_|.
   // The callbacks are:
-  //   - |renderer_factory_cb| is called by PipelineController to create new
-  //     renderers when starting and resuming.
-  //   - |seeked_cb| is called upon reaching a stable state if a seek occured.
+  //   - |seeked_cb| is called upon reaching a stable state if a seek occurred.
   //   - |suspended_cb| is called immediately after suspending.
   //   - |before_resume_cb| is called immediately before resuming.
   //   - |resumed_cb| is called immediately after resuming.
   //   - |error_cb| is called if any operation on |pipeline_| does not result
   //     in PIPELINE_OK or its error callback is called.
   PipelineController(std::unique_ptr<Pipeline> pipeline,
-                     const RendererFactoryCB& renderer_factory_cb,
                      const SeekedCB& seeked_cb,
                      const SuspendedCB& suspended_cb,
                      const BeforeResumeCB& before_resume_cb,
@@ -132,12 +129,13 @@ class MEDIA_EXPORT PipelineController {
   void SetPlaybackRate(double playback_rate);
   float GetVolume() const;
   void SetVolume(float volume);
+  void SetLatencyHint(base::Optional<base::TimeDelta> latency_hint);
   base::TimeDelta GetMediaTime() const;
   Ranges<base::TimeDelta> GetBufferedTimeRanges() const;
   base::TimeDelta GetMediaDuration() const;
   bool DidLoadingProgress();
   PipelineStatistics GetStatistics() const;
-  void SetCdm(CdmContext* cdm_context, const CdmAttachedCB& cdm_attached_cb);
+  void SetCdm(CdmContext* cdm_context, CdmAttachedCB cdm_attached_cb);
   void OnEnabledAudioTracksChanged(
       const std::vector<MediaTrack::Id>& enabled_track_ids);
   void OnSelectedVideoTrackChanged(
@@ -158,9 +156,6 @@ class MEDIA_EXPORT PipelineController {
 
   // The Pipeline we are managing state for.
   std::unique_ptr<Pipeline> pipeline_;
-
-  // Factory for Renderers, used for Start() and Resume().
-  RendererFactoryCB renderer_factory_cb_;
 
   // Called after seeks (which includes Start()) upon reaching a stable state.
   // Multiple seeks result in only one callback if no stable state occurs

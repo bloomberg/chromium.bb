@@ -147,6 +147,14 @@ class FakeVolumeManager {
   getVolumeInfo(entry) {
     return {volumeId: entry.filesystem.name};
   }
+  /**
+   * Return fake location info.
+   * @param {!Entry} entry
+   * @return {?EntryLocation}
+   */
+  getLocationInfo(entry) {
+    return null;
+  }
 }
 
 /**
@@ -183,10 +191,11 @@ function createTestFileSystem(id, entries) {
   const fileSystem = new MockFileSystem(id, 'filesystem:' + id);
   for (const path in entries) {
     if (entries[path] === DIRECTORY_SIZE) {
-      fileSystem.entries[path] = new MockDirectoryEntry(fileSystem, path);
+      fileSystem.entries[path] = MockDirectoryEntry.create(fileSystem, path);
     } else {
       const metadata = /** @type {!Metadata} */ ({size: entries[path]});
-      fileSystem.entries[path] = new MockFileEntry(fileSystem, path, metadata);
+      fileSystem.entries[path] =
+          MockFileEntry.create(fileSystem, path, metadata);
     }
   }
   return fileSystem;
@@ -738,6 +747,9 @@ function testCopyFails(callback) {
     getVolumeInfo: function() {
       // Returns null to indicate that the volume is not available.
       return null;
+    },
+    getLocationInfo: function() {
+      return null;
     }
   };
   fileOperationManager = new FileOperationManagerImpl();
@@ -882,7 +894,7 @@ function testZip(callback) {
   mockChrome.fileManagerPrivate.zipSelection = function(
       sources, parent, newName, success, error) {
     const newPath = joinPath('/', newName);
-    const newEntry = new MockFileEntry(
+    const newEntry = MockFileEntry.create(
         fileSystem, newPath, /** @type {!Metadata} */ ({size: 10}));
     fileSystem.entries[newPath] = newEntry;
     success(newEntry);

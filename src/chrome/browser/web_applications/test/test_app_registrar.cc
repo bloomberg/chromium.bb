@@ -28,16 +28,6 @@ void TestAppRegistrar::RemoveExternalAppByInstallUrl(const GURL& install_url) {
   RemoveExternalApp(*LookupExternalAppId(install_url));
 }
 
-void TestAppRegistrar::SimulateExternalAppUninstalledByUser(
-    const AppId& app_id) {
-  DCHECK(!base::Contains(user_uninstalled_external_apps_, app_id));
-  user_uninstalled_external_apps_.insert(app_id);
-  if (base::Contains(installed_apps_, app_id))
-    RemoveExternalApp(app_id);
-}
-
-void TestAppRegistrar::Init(base::OnceClosure callback) {}
-
 bool TestAppRegistrar::IsInstalled(const AppId& app_id) const {
   return base::Contains(installed_apps_, app_id);
 }
@@ -45,11 +35,6 @@ bool TestAppRegistrar::IsInstalled(const AppId& app_id) const {
 bool TestAppRegistrar::IsLocallyInstalled(const AppId& app_id) const {
   NOTIMPLEMENTED();
   return false;
-}
-
-bool TestAppRegistrar::WasExternalAppUninstalledByUser(
-    const AppId& app_id) const {
-  return base::Contains(user_uninstalled_external_apps_, app_id);
 }
 
 bool TestAppRegistrar::WasInstalledByUser(const AppId& app_id) const {
@@ -86,12 +71,6 @@ bool TestAppRegistrar::HasExternalAppWithInstallSource(
                                   app_it.second.source == install_source;
                          });
   return it != installed_apps_.end();
-}
-
-base::Optional<AppId> TestAppRegistrar::FindAppWithUrlInScope(
-    const GURL& url) const {
-  NOTIMPLEMENTED();
-  return base::nullopt;
 }
 
 int TestAppRegistrar::CountUserInstalledApps() const {
@@ -131,15 +110,20 @@ base::Optional<GURL> TestAppRegistrar::GetAppScope(const AppId& app_id) const {
   return base::make_optional(result->second.install_url);
 }
 
-LaunchContainer TestAppRegistrar::GetAppLaunchContainer(
-    const AppId& app_id) const {
+DisplayMode TestAppRegistrar::GetAppDisplayMode(const AppId& app_id) const {
   NOTIMPLEMENTED();
-  return LaunchContainer::kTab;
+  return DisplayMode::kBrowser;
 }
 
-void TestAppRegistrar::SetAppLaunchContainer(const AppId& app_id,
-                                             LaunchContainer launch_container) {
+DisplayMode TestAppRegistrar::GetAppUserDisplayMode(const AppId& app_id) const {
   NOTIMPLEMENTED();
+  return DisplayMode::kBrowser;
+}
+
+std::vector<WebApplicationIconInfo> TestAppRegistrar::GetAppIconInfos(
+    const AppId& app_id) const {
+  NOTIMPLEMENTED();
+  return {};
 }
 
 std::vector<AppId> TestAppRegistrar::GetAppIds() const {

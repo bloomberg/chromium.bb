@@ -14,7 +14,8 @@ import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import org.chromium.base.VisibleForTesting;
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
@@ -22,7 +23,7 @@ import org.chromium.chrome.browser.native_page.ContextMenuManager;
 import org.chromium.chrome.browser.native_page.NativePageNavigationDelegate;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.suggestions.tile.TileGridLayout;
-import org.chromium.chrome.browser.widget.RoundedIconGenerator;
+import org.chromium.chrome.browser.ui.widget.RoundedIconGenerator;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.modelutil.PropertyKey;
@@ -178,7 +179,6 @@ public class ExploreSitesCategoryCardView extends LinearLayout {
                         createInteractionDelegate(model);
                 view.setOnClickListener(interactionDelegate);
                 view.setOnCreateContextMenuListener(interactionDelegate);
-                ContextMenuManager.registerViewForTouchlessContextMenu(view, interactionDelegate);
                 view.setOnFocusChangeListener(interactionDelegate);
             }
         }

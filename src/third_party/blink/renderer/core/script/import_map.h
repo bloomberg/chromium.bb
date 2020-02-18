@@ -23,29 +23,15 @@ class ScriptValue;
 // Import maps.
 // https://wicg.github.io/import-maps/
 // https://github.com/WICG/import-maps/blob/master/spec.md
-class CORE_EXPORT ImportMap final
-    : public GarbageCollectedFinalized<ImportMap> {
+class CORE_EXPORT ImportMap final : public GarbageCollected<ImportMap> {
  public:
   static ImportMap* Parse(const Modulator&,
                           const String& text,
                           const KURL& base_url,
+                          bool support_builtin_modules,
                           ConsoleLogger& logger,
                           ScriptValue* error_to_rethrow);
 
-  ImportMap(const Modulator&, const HashMap<String, Vector<KURL>>& imports);
-
-  // https://wicg.github.io/import-maps/#resolve-an-imports-match
-  // Returns nullopt when not mapped by |this| import map (i.e. the import map
-  // doesn't have corresponding keys).
-  // Returns a null URL when resolution fails.
-  base::Optional<KURL> ResolveImportsMatch(const ParsedSpecifier&,
-                                           String* debug_message) const;
-
-  String ToString() const;
-
-  void Trace(Visitor*);
-
- private:
   // <spec href="https://wicg.github.io/import-maps/#specifier-map">A specifier
   // map is an ordered map from strings to lists of URLs.</spec>
   //
@@ -53,11 +39,42 @@ class CORE_EXPORT ImportMap final
   // are implemented differently from the spec.
   using SpecifierMap = HashMap<String, Vector<KURL>>;
 
+  // <spec href="https://wicg.github.io/import-maps/#import-map-scopes">an
+  // ordered map of URLs to specifier maps.</spec>
+  using ScopeEntryType = std::pair<String, SpecifierMap>;
+  using ScopeType = Vector<ScopeEntryType>;
+
+  // Empty import map.
+  ImportMap();
+
+  ImportMap(const Modulator&,
+            bool support_builtin_modules,
+            SpecifierMap&& imports,
+            ScopeType&& scopes);
+
+  base::Optional<KURL> Resolve(const ParsedSpecifier&,
+                               const KURL& base_url,
+                               String* debug_message) const;
+
+  String ToString() const;
+
+  void Trace(Visitor*);
+
+ private:
   using MatchResult = SpecifierMap::const_iterator;
 
-  base::Optional<MatchResult> MatchPrefix(const ParsedSpecifier&) const;
+  // https://wicg.github.io/import-maps/#resolve-an-imports-match
+  // Returns nullopt when not mapped by |this| import map (i.e. the import map
+  // doesn't have corresponding keys).
+  // Returns a null URL when resolution fails.
+  base::Optional<KURL> ResolveImportsMatch(const ParsedSpecifier&,
+                                           const SpecifierMap&,
+                                           String* debug_message) const;
+  base::Optional<MatchResult> MatchPrefix(const ParsedSpecifier&,
+                                          const SpecifierMap&) const;
   static SpecifierMap SortAndNormalizeSpecifierMap(const JSONObject* imports,
                                                    const KURL& base_url,
+                                                   bool support_builtin_modules,
                                                    ConsoleLogger&);
 
   base::Optional<KURL> ResolveImportsMatchInternal(
@@ -68,8 +85,10 @@ class CORE_EXPORT ImportMap final
   // https://wicg.github.io/import-maps/#import-map-imports
   SpecifierMap imports_;
 
-  // TODO(crbug.com/927181): Implement
   // https://wicg.github.io/import-maps/#import-map-scopes.
+  ScopeType scopes_;
+
+  const bool support_builtin_modules_;
 
   Member<const Modulator> modulator_for_built_in_modules_;
 };

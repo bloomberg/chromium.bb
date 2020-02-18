@@ -38,7 +38,7 @@ def _CreateVenv():
   return subprocess.check_output([
       _CREATE_VENV_PATH,
       _REQUIREMENTS,
-  ]).rstrip()
+  ]).rstrip().decode('utf-8')
 
 
 def _ExecInVenv(venvdir, args):

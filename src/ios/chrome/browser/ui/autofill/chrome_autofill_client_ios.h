@@ -14,8 +14,11 @@
 #include "components/autofill/core/browser/autocomplete_history_manager.h"
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/payments/card_unmask_delegate.h"
+#include "components/autofill/core/browser/payments/legal_message_line.h"
 #include "components/autofill/core/browser/payments/strike_database.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
+#include "components/autofill/core/browser/ui/payments/card_expiration_date_fix_flow_controller_impl.h"
+#include "components/autofill/core/browser/ui/payments/card_name_fix_flow_controller_impl.h"
 #include "components/autofill/core/browser/ui/payments/card_unmask_prompt_controller_impl.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #import "components/autofill/ios/browser/autofill_client_ios_bridge.h"
@@ -70,7 +73,7 @@ class ChromeAutofillClientIOS : public AutofillClient {
   void ShowLocalCardMigrationDialog(
       base::OnceClosure show_migration_dialog_closure) override;
   void ConfirmMigrateLocalCardToCloud(
-      std::unique_ptr<base::DictionaryValue> legal_message,
+      const LegalMessageLines& legal_message_lines,
       const std::string& user_email,
       const std::vector<MigratableCreditCard>& migratable_credit_cards,
       LocalCardMigrationCallback start_migrating_cards_callback) override;
@@ -79,16 +82,21 @@ class ChromeAutofillClientIOS : public AutofillClient {
       const base::string16& tip_message,
       const std::vector<MigratableCreditCard>& migratable_credit_cards,
       MigrationDeleteCardCallback delete_local_card_callback) override;
-  void ShowWebauthnOfferDialog(WebauthnOfferDialogCallback callback) override;
   void ConfirmSaveAutofillProfile(const AutofillProfile& profile,
                                   base::OnceClosure callback) override;
   void ConfirmSaveCreditCardLocally(
       const CreditCard& card,
       SaveCreditCardOptions options,
       LocalSaveCardPromptCallback callback) override;
+  void ConfirmAccountNameFixFlow(
+      base::OnceCallback<void(const base::string16&)> callback) override;
+  void ConfirmExpirationDateFixFlow(
+      const CreditCard& card,
+      base::OnceCallback<void(const base::string16&, const base::string16&)>
+          callback) override;
   void ConfirmSaveCreditCardToCloud(
       const CreditCard& card,
-      std::unique_ptr<base::DictionaryValue> legal_message,
+      const LegalMessageLines& legal_message_lines,
       SaveCreditCardOptions options,
       UploadSaveCardPromptCallback callback) override;
   void CreditCardUploadCompleted(bool card_saved) override;
@@ -122,6 +130,8 @@ class ChromeAutofillClientIOS : public AutofillClient {
   void LoadRiskData(
       base::OnceCallback<void(const std::string&)> callback) override;
 
+  LogManager* GetLogManager() const override;
+
  private:
   PrefService* pref_service_;
   syncer::SyncService* sync_service_;
@@ -137,6 +147,10 @@ class ChromeAutofillClientIOS : public AutofillClient {
   infobars::InfoBarManager* infobar_manager_;
   password_manager::PasswordManager* password_manager_;
   CardUnmaskPromptControllerImpl unmask_controller_;
+  std::unique_ptr<LogManager> log_manager_;
+  CardNameFixFlowControllerImpl card_name_fix_flow_controller_;
+  CardExpirationDateFixFlowControllerImpl
+      card_expiration_date_fix_flow_controller_;
 
   // A weak reference to the view controller used to present UI.
   __weak UIViewController* base_view_controller_;

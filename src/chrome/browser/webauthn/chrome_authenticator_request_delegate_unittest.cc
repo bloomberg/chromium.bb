@@ -64,7 +64,7 @@ TEST_F(ChromeAuthenticatorRequestDelegateTest,
   ASSERT_TRUE(updated_address_list);
   ASSERT_EQ(1u, updated_address_list->GetSize());
 
-  const auto& address_value = updated_address_list->GetList().at(0);
+  const auto& address_value = updated_address_list->GetList()[0];
   ASSERT_TRUE(address_value.is_string());
   EXPECT_EQ(kTestPairedDeviceAddress, address_value.GetString());
 
@@ -81,7 +81,7 @@ TEST_F(ChromeAuthenticatorRequestDelegateTest,
 
   ASSERT_EQ(2u, address_list_with_two_addresses->GetSize());
   const auto& second_address_value =
-      address_list_with_two_addresses->GetList().at(1);
+      address_list_with_two_addresses->GetList()[1];
   ASSERT_TRUE(second_address_value.is_string());
   EXPECT_EQ(kTestPairedDeviceAddress2, second_address_value.GetString());
 }
@@ -152,8 +152,10 @@ TEST_F(ChromeAuthenticatorRequestDelegateTest, IsUVPAA) {
 
 #if defined(OS_WIN)
 TEST_F(ChromeAuthenticatorRequestDelegateTest, WinIsUVPAA) {
-  device::ScopedFakeWinWebAuthnApi win_webauthn_api =
-      device::ScopedFakeWinWebAuthnApi::MakeUnavailable();
+  auto delegate = std::make_unique<ChromeAuthenticatorRequestDelegate>(
+      main_rfh(), kRelyingPartyID);
+  device::FakeWinWebAuthnApi win_webauthn_api;
+  delegate->GetDiscoveryFactory()->set_win_webauthn_api(&win_webauthn_api);
 
   for (const bool enable_win_webauthn_api : {false, true}) {
     SCOPED_TRACE(enable_win_webauthn_api ? "enable_win_webauthn_api"
@@ -164,9 +166,6 @@ TEST_F(ChromeAuthenticatorRequestDelegateTest, WinIsUVPAA) {
       win_webauthn_api.set_available(enable_win_webauthn_api);
       win_webauthn_api.set_is_uvpaa(is_uvpaa);
 
-      std::unique_ptr<content::AuthenticatorRequestClientDelegate> delegate =
-          std::make_unique<ChromeAuthenticatorRequestDelegate>(main_rfh(),
-                                                               kRelyingPartyID);
       EXPECT_EQ(enable_win_webauthn_api && is_uvpaa,
                 delegate->IsUserVerifyingPlatformAuthenticatorAvailable());
     }
@@ -181,10 +180,10 @@ TEST_F(ChromeAuthenticatorRequestDelegateTest, WinIsUVPAA) {
 // WEBAUTHN_API_VERSION_1 Chrome's own attestation prompt is shown. However,
 // there seems to be no good way to test AuthenticatorRequestDialogModel UI.
 TEST_F(ChromeAuthenticatorRequestDelegateTest, ShouldPromptForAttestationWin) {
-  ::device::ScopedFakeWinWebAuthnApi win_webauthn_api;
+  ::device::FakeWinWebAuthnApi win_webauthn_api;
   win_webauthn_api.set_version(WEBAUTHN_API_VERSION_2);
   ::device::WinWebAuthnApiAuthenticator authenticator(
-      /*current_window=*/nullptr);
+      /*current_window=*/nullptr, &win_webauthn_api);
 
   ::device::test::ValueCallbackReceiver<bool> cb;
   ChromeAuthenticatorRequestDelegate delegate(main_rfh(), kRelyingPartyID);

@@ -21,9 +21,6 @@
 #include "google_apis/gaia/oauth2_access_token_manager.h"
 #include "google_apis/gaia/oauth2_access_token_manager_test_util.h"
 #include "net/http/http_status_code.h"
-#include "net/url_request/test_url_fetcher_factory.h"
-#include "net/url_request/url_fetcher_delegate.h"
-#include "net/url_request/url_request_test_util.h"
 #include "services/network/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -116,9 +113,10 @@ class ProfileOAuth2TokenServiceTest : public testing::Test {
   }
 
  protected:
-  base::test::TaskEnvironment task_environment_{
-      base::test::TaskEnvironment::MainThreadType::IO};  // net:: stuff needs IO
-                                                         // message loop.
+  base::test::SingleThreadTaskEnvironment task_environment_{
+      base::test::SingleThreadTaskEnvironment::MainThreadType::
+          IO};  // net:: stuff needs IO
+                // message loop.
   network::TestURLLoaderFactory* test_url_loader_factory_ = nullptr;
   FakeProfileOAuth2TokenServiceDelegate* delegate_ptr_ = nullptr;  // Not owned.
   std::unique_ptr<ProfileOAuth2TokenService> oauth2_service_;
@@ -422,11 +420,10 @@ TEST_F(ProfileOAuth2TokenServiceTest,
   base::RunLoop().RunUntilIdle();
 
   network::URLLoaderCompletionStatus ok_status(net::OK);
-  network::ResourceResponseHead response_head =
-      network::CreateResourceResponseHead(net::HTTP_OK);
+  auto response_head = network::CreateURLResponseHead(net::HTTP_OK);
   EXPECT_TRUE(test_url_loader_factory_->SimulateResponseForPendingRequest(
-      GaiaUrls::GetInstance()->oauth2_token_url(), ok_status, response_head,
-      GetValidTokenResponse("second token", 3600),
+      GaiaUrls::GetInstance()->oauth2_token_url(), ok_status,
+      std::move(response_head), GetValidTokenResponse("second token", 3600),
       network::TestURLLoaderFactory::kMostRecentMatch));
   EXPECT_EQ(1, consumer2.number_of_successful_tokens_);
   EXPECT_EQ(0, consumer2.number_of_errors_);
@@ -497,11 +494,10 @@ TEST_F(ProfileOAuth2TokenServiceTest, StartRequestForMultiloginMobile) {
 
   base::RunLoop().RunUntilIdle();
   network::URLLoaderCompletionStatus ok_status(net::OK);
-  network::ResourceResponseHead response_head =
-      network::CreateResourceResponseHead(net::HTTP_OK);
+  auto response_head = network::CreateURLResponseHead(net::HTTP_OK);
   EXPECT_TRUE(test_url_loader_factory_->SimulateResponseForPendingRequest(
-      GaiaUrls::GetInstance()->oauth2_token_url(), ok_status, response_head,
-      GetValidTokenResponse("second token", 3600),
+      GaiaUrls::GetInstance()->oauth2_token_url(), ok_status,
+      std::move(response_head), GetValidTokenResponse("second token", 3600),
       network::TestURLLoaderFactory::kMostRecentMatch));
   EXPECT_EQ(1, consumer_.number_of_successful_tokens_);
   EXPECT_EQ(0, consumer_.number_of_errors_);
@@ -686,14 +682,14 @@ TEST_F(ProfileOAuth2TokenServiceTest, RequestParametersOrderTest) {
   const CoreAccountId account_id0("0");
   const CoreAccountId account_id1("1");
   OAuth2AccessTokenManager::RequestParameters params[] = {
-      OAuth2AccessTokenManager::RequestParameters("0", "0", set_0),
-      OAuth2AccessTokenManager::RequestParameters("0", "0", set_1),
-      OAuth2AccessTokenManager::RequestParameters("0", "1", set_0),
-      OAuth2AccessTokenManager::RequestParameters("0", "1", set_1),
-      OAuth2AccessTokenManager::RequestParameters("1", "0", set_0),
-      OAuth2AccessTokenManager::RequestParameters("1", "0", set_1),
-      OAuth2AccessTokenManager::RequestParameters("1", "1", set_0),
-      OAuth2AccessTokenManager::RequestParameters("1", "1", set_1),
+      OAuth2AccessTokenManager::RequestParameters("0", account_id0, set_0),
+      OAuth2AccessTokenManager::RequestParameters("0", account_id0, set_1),
+      OAuth2AccessTokenManager::RequestParameters("0", account_id1, set_0),
+      OAuth2AccessTokenManager::RequestParameters("0", account_id1, set_1),
+      OAuth2AccessTokenManager::RequestParameters("1", account_id0, set_0),
+      OAuth2AccessTokenManager::RequestParameters("1", account_id0, set_1),
+      OAuth2AccessTokenManager::RequestParameters("1", account_id1, set_0),
+      OAuth2AccessTokenManager::RequestParameters("1", account_id1, set_1),
   };
 
   for (size_t i = 0; i < base::size(params); i++) {
@@ -733,7 +729,7 @@ TEST_F(ProfileOAuth2TokenServiceTest, FixRequestErrorIfPossible) {
        max_reties >= 0 && consumer_.number_of_successful_tokens_ != 1;
        --max_reties) {
     base::RunLoop().RunUntilIdle();
-    base::PlatformThread::Sleep(TimeDelta::FromSeconds(1));
+    base::PlatformThread::Sleep(base::TimeDelta::FromSeconds(1));
   }
 
   EXPECT_EQ(1, consumer_.number_of_successful_tokens_);

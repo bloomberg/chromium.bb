@@ -59,12 +59,13 @@ base::Optional<gfx::Size> GetValidSize(const base::Value* value) {
 
 }  // namespace
 
-CastMediaController::CastMediaController(ActivityRecord* activity,
-                                         mojom::MediaControllerRequest request,
-                                         mojom::MediaStatusObserverPtr observer)
+CastMediaController::CastMediaController(
+    ActivityRecord* activity,
+    mojo::PendingReceiver<mojom::MediaController> receiver,
+    mojo::PendingRemote<mojom::MediaStatusObserver> observer)
     : sender_id_("sender-" + base::NumberToString(base::RandUint64())),
       activity_(activity),
-      binding_(this, std::move(request)),
+      receiver_(this, std::move(receiver)),
       observer_(std::move(observer)) {}
 
 CastMediaController::~CastMediaController() {}
@@ -179,7 +180,7 @@ void CastMediaController::UpdateMediaStatus(const base::Value& message_value) {
   const base::Value* status_list_value = message_value.FindKey("status");
   if (!status_list_value || !status_list_value->is_list())
     return;
-  const base::Value::ListStorage& status_list = status_list_value->GetList();
+  base::Value::ConstListView status_list = status_list_value->GetList();
   if (status_list.empty())
     return;
   const base::Value& status_value = status_list[0];

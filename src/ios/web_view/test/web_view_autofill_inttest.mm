@@ -8,6 +8,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
+#import "ios/web_view/public/cwv_navigation_delegate.h"
 #import "ios/web_view/test/web_view_inttest_base.h"
 #import "ios/web_view/test/web_view_test_util.h"
 #import "net/base/mac/url_conversions.h"
@@ -22,6 +23,28 @@
 
 using base::test::ios::kWaitForActionTimeout;
 using base::test::ios::WaitUntilConditionOrTimeout;
+using base::test::ios::kWaitForPageLoadTimeout;
+
+// A stub object that observes the |webViewDidFinishNavigation| event of
+// CWVNavigationDelegate. CWVNavigationDelegate is also used as navigation
+// policy decider, so OCMProtocolMock doesn't work here because it implements
+// all protocol methods which will return NO and block the navigation.
+@interface CWVNavigationPageLoadObserver : NSObject <CWVNavigationDelegate>
+
+// Whether |webViewDidFinishNavigation| has been called. Initiated as NO.
+@property(nonatomic, assign, readonly) BOOL pageLoaded;
+
+- (void)webViewDidFinishNavigation:(CWVWebView*)webView;
+
+@end
+
+@implementation CWVNavigationPageLoadObserver
+
+- (void)webViewDidFinishNavigation:(CWVWebView*)webView {
+  _pageLoaded = YES;
+}
+
+@end
 
 namespace ios_web_view {
 
@@ -64,7 +87,20 @@ NSString* const kTestFormHtml =
 // Tests autofill features in CWVWebViews.
 class WebViewAutofillTest : public WebViewInttestBase {
  protected:
-  WebViewAutofillTest() : autofill_controller_(web_view_.autofillController) {}
+  WebViewAutofillTest() : autofill_controller_(web_view_.autofillController) {
+    // Ensure CWVAutofillProfiles are saved by default.
+    id delegate = OCMProtocolMock(@protocol(CWVAutofillControllerDelegate));
+    autofill_controller_.delegate = delegate;
+    [[delegate stub] autofillController:autofill_controller_
+        decideSavePolicyForAutofillProfile:[OCMArg any]
+                           decisionHandler:[OCMArg
+                                               checkWithBlock:^BOOL(id param) {
+                                                 void (^decisionHandler)(BOOL) =
+                                                     param;
+                                                 decisionHandler(YES);
+                                                 return YES;
+                                               }]];
+  }
 
   bool LoadTestPage() WARN_UNUSED_RESULT {
     std::string html = base::SysNSStringToUTF8(kTestFormHtml);
@@ -127,7 +163,19 @@ class WebViewAutofillTest : public WebViewInttestBase {
     return main_frame_id_;
   }
 
+  bool WaitUntilPageLoaded() {
+    CWVNavigationPageLoadObserver* observer =
+        [[CWVNavigationPageLoadObserver alloc] init];
+    web_view_.navigationDelegate = observer;
+    bool result = WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
+      return observer.pageLoaded;
+    });
+    web_view_.navigationDelegate = nil;
+    return result;
+  }
+
   CWVAutofillController* autofill_controller_;
+  id<CWVNavigationDelegate> navigation_delegate_ = nil;
   NSString* main_frame_id_ = nil;
   UIView* dummy_super_view_ = nil;
 };
@@ -146,7 +194,8 @@ TEST_F(WebViewAutofillTest, TestDelegateCallbacks) {
                               fieldType:kTestFieldType
                                formName:kTestFormName
                                 frameID:[OCMArg any]
-                                  value:kTestAddressFieldValue];
+                                  value:kTestAddressFieldValue
+                          userInitiated:YES];
   NSString* focus_script =
       [NSString stringWithFormat:@"document.getElementById('%@').focus();",
                                  kTestAddressFieldID];
@@ -160,7 +209,8 @@ TEST_F(WebViewAutofillTest, TestDelegateCallbacks) {
                               fieldType:kTestFieldType
                                formName:kTestFormName
                                 frameID:[OCMArg any]
-                                  value:kTestAddressFieldValue];
+                                  value:kTestAddressFieldValue
+                          userInitiated:NO];
   NSString* blur_script =
       [NSString stringWithFormat:
                     @"var event = new Event('blur', {bubbles:true});"
@@ -176,7 +226,8 @@ TEST_F(WebViewAutofillTest, TestDelegateCallbacks) {
                               fieldType:kTestFieldType
                                formName:kTestFormName
                                 frameID:[OCMArg any]
-                                  value:kTestAddressFieldValue];
+                                  value:kTestAddressFieldValue
+                          userInitiated:NO];
   // The 'input' event listener defined in form.js is only called during the
   // bubbling phase.
   NSString* input_script =
@@ -191,8 +242,8 @@ TEST_F(WebViewAutofillTest, TestDelegateCallbacks) {
 
   [[delegate expect] autofillController:autofill_controller_
                   didSubmitFormWithName:kTestFormName
-                          userInitiated:NO
-                            isMainFrame:YES];
+                                frameID:[OCMArg any]
+                          userInitiated:NO];
   // The 'submit' event listener defined in form.js is only called during the
   // bubbling phase.
   NSString* submit_script =
@@ -216,6 +267,8 @@ TEST_F(WebViewAutofillTest, TestSuggestionFetchFillClear) {
   ASSERT_TRUE(SetFormFieldValue(kTestCityFieldID, kTestCityFieldValue));
   ASSERT_TRUE(SetFormFieldValue(kTestZipFieldID, kTestZipFieldValue));
   ASSERT_TRUE(SubmitForm());
+  // Wait for about:blank to be loaded after <form> submitted.
+  ASSERT_TRUE(WaitUntilPageLoaded());
   ASSERT_TRUE(LoadTestPage());
 
   NSArray<CWVAutofillSuggestion*>* fetched_suggestions = FetchSuggestions();
@@ -279,6 +332,8 @@ TEST_F(WebViewAutofillTest, TestSuggestionFetchRemoveFetch) {
   ASSERT_TRUE(SetFormFieldValue(kTestCityFieldID, kTestCityFieldValue));
   ASSERT_TRUE(SetFormFieldValue(kTestZipFieldID, kTestZipFieldValue));
   ASSERT_TRUE(SubmitForm());
+  // Wait for about:blank to be loaded after <form> submitted.
+  ASSERT_TRUE(WaitUntilPageLoaded());
   ASSERT_TRUE(LoadTestPage());
 
   NSArray* fetched_suggestions_after_creating = FetchSuggestions();

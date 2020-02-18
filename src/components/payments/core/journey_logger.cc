@@ -7,8 +7,6 @@
 #include <algorithm>
 #include <vector>
 
-#include "base/debug/crash_logging.h"
-#include "base/debug/dump_without_crashing.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
@@ -268,12 +266,6 @@ void JourneyLogger::RecordJourneyStatsHistograms(
   if (has_recorded_) {
     UMA_HISTOGRAM_BOOLEAN(
         "PaymentRequest.JourneyLoggerHasRecordedMultipleTimes", true);
-    static base::debug::CrashKeyString* journey_logger_multiple_record =
-        base::debug::AllocateCrashKeyString("journey_logger_multiple_record",
-                                            base::debug::CrashKeySize::Size32);
-    base::debug::SetCrashKeyString(journey_logger_multiple_record,
-                                   base::StringPrintf("%d", events_));
-    base::debug::DumpWithoutCrashing();
   }
   has_recorded_ = true;
 
@@ -481,12 +473,6 @@ void JourneyLogger::ValidateEventBits() const {
   if (events_ & EVENT_SKIPPED_SHOW) {
     // Built in autofill payment handler for basic card should not skip UI show.
     DCHECK(!(events_ & EVENT_SELECTED_CREDIT_CARD));
-    // Payment sheet should not get skipped when any of the following info is
-    // required.
-    DCHECK(!(events_ & EVENT_REQUEST_SHIPPING));
-    DCHECK(!(events_ & EVENT_REQUEST_PAYER_NAME));
-    DCHECK(!(events_ & EVENT_REQUEST_PAYER_EMAIL));
-    DCHECK(!(events_ & EVENT_REQUEST_PAYER_PHONE));
   }
 
   // Check that the two bits are not set at the same time.

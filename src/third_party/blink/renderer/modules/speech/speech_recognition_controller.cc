@@ -27,7 +27,7 @@
 
 #include <memory>
 
-#include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/modules/speech/speech_grammar_list.h"
 #include "third_party/blink/renderer/modules/speech/speech_recognition.h"
@@ -50,8 +50,10 @@ SpeechRecognitionController* SpeechRecognitionController::Create(
 }
 
 void SpeechRecognitionController::Start(
-    mojom::blink::SpeechRecognitionSessionRequest session_request,
-    mojom::blink::SpeechRecognitionSessionClientPtrInfo session_client,
+    mojo::PendingReceiver<mojom::blink::SpeechRecognitionSession>
+        session_receiver,
+    mojo::PendingRemote<mojom::blink::SpeechRecognitionSessionClient>
+        session_client,
     const SpeechGrammarList& grammars,
     const String& lang,
     bool continuous,
@@ -68,9 +70,8 @@ void SpeechRecognitionController::Start(
   msg_params->max_hypotheses = max_alternatives;
   msg_params->continuous = continuous;
   msg_params->interim_results = interim_results;
-  msg_params->origin = GetSupplementable()->GetDocument()->GetSecurityOrigin();
   msg_params->client = std::move(session_client);
-  msg_params->session_request = std::move(session_request);
+  msg_params->session_receiver = std::move(session_receiver);
 
   GetSpeechRecognizer()->Start(std::move(msg_params));
 }
@@ -83,7 +84,7 @@ void ProvideSpeechRecognitionTo(LocalFrame& frame) {
 mojo::Remote<mojom::blink::SpeechRecognizer>&
 SpeechRecognitionController::GetSpeechRecognizer() {
   if (!speech_recognizer_) {
-    GetSupplementable()->GetInterfaceProvider().GetInterface(
+    GetSupplementable()->GetBrowserInterfaceBroker().GetInterface(
         speech_recognizer_.BindNewPipeAndPassReceiver());
   }
   return speech_recognizer_;

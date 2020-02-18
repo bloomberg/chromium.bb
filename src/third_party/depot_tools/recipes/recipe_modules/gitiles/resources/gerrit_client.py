@@ -167,12 +167,12 @@ def main(arguments):
         em = tf._extract_member
         def _extract_member(tarinfo, targetpath):
           if not os.path.abspath(targetpath).startswith(args.extract_to):
-            print 'Skipping %s' % (tarinfo.name,)
+            print('Skipping %s' % (tarinfo.name,))
             ret['skipped']['filecount'] += 1
             ret['skipped']['bytes'] += tarinfo.size
             ret['skipped']['names'].append(tarinfo.name)
             return
-          print 'Extracting %s' % (tarinfo.name,)
+          print('Extracting %s' % (tarinfo.name,))
           ret['extracted']['filecount'] += 1
           ret['extracted']['bytes'] += tarinfo.size
           return em(tarinfo, targetpath)

@@ -128,7 +128,15 @@ class CONTENT_EXPORT DWriteFontLookupTableBuilder {
     std::vector<std::string> extracted_names;
   };
 
-  using FamilyResult = std::vector<FontFileWithUniqueNames>;
+  struct FamilyResult {
+    FamilyResult();
+    FamilyResult(FamilyResult&& other);
+    ~FamilyResult();
+    std::vector<FontFileWithUniqueNames> font_files_with_names;
+    HRESULT exit_hresult{S_OK};
+
+    DISALLOW_COPY_AND_ASSIGN(FamilyResult);
+  };
 
   // Try to find a serialized lookup table from the cache directory specified at
   // construction and load it into memory.
@@ -201,6 +209,8 @@ class CONTENT_EXPORT DWriteFontLookupTableBuilder {
   Microsoft::WRL::ComPtr<IDWriteFactory3> factory3_;
   SlowDownMode slow_down_mode_for_testing_ = SlowDownMode::kNoSlowdown;
   uint32_t outstanding_family_results_ = 0;
+  uint32_t family_results_non_empty_ = 0;
+  uint32_t family_results_empty_ = 0;
   base::TimeTicks start_time_table_ready_;
   base::TimeTicks start_time_table_build_;
   base::FilePath cache_directory_;
@@ -221,6 +231,7 @@ class CONTENT_EXPORT DWriteFontLookupTableBuilder {
   };
 
   std::vector<CallbackOnTaskRunner> pending_callbacks_;
+  std::map<HRESULT, unsigned> scanning_error_reasons_;
 
   DISALLOW_COPY_AND_ASSIGN(DWriteFontLookupTableBuilder);
 };

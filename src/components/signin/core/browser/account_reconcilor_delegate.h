@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/time/time.h"
-#include "components/signin/core/browser/multilogin_parameters.h"
+#include "components/signin/public/base/multilogin_parameters.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/google_service_auth_error.h"
@@ -47,17 +47,15 @@ class AccountReconcilorDelegate {
   // false.
   virtual bool IsReconcileEnabled() const;
 
+  // Returns whether the OAuth multilogin endpoint can be used to build the Gaia
+  // cookies.
+  // Default implementation returns true.
+  virtual bool IsMultiloginEndpointEnabled() const;
+
   // Returns true if account consistency is enforced (Mirror or Dice).
   // If this is false, reconcile is done, but its results are discarded and no
   // changes to the accounts are made. Defaults to false.
   virtual bool IsAccountConsistencyEnforced() const;
-
-  // Computes inconsistency reason and uploads it to UMA.
-  virtual void MaybeLogInconsistencyReason(
-      const CoreAccountId& primary_account,
-      const std::vector<CoreAccountId>& chrome_accounts,
-      const std::vector<gaia::ListedAccount>& gaia_accounts,
-      bool first_execution) const;
 
   // Returns the value to set in the "source" parameter for Gaia API calls.
   virtual gaia::GaiaSource GetGaiaApiSource() const;
@@ -108,12 +106,14 @@ class AccountReconcilorDelegate {
   // invalidated unless it has to be kept for critical Sync operations.
   virtual bool ShouldRevokeTokensOnCookieDeleted();
 
+  // Returns whether tokens should be revoked when the primary account is empty
+  virtual bool ShouldRevokeTokensIfNoPrimaryAccount() const;
+
   // Called when reconcile is finished.
   // |OnReconcileFinished| is always called at the end of reconciliation,
   // even when there is an error (except in cases where reconciliation times
   // out before finishing, see |GetReconcileTimeout|).
-  virtual void OnReconcileFinished(const CoreAccountId& first_account,
-                                   bool reconcile_is_noop) {}
+  virtual void OnReconcileFinished(const CoreAccountId& first_account) {}
 
   // Returns the desired timeout for account reconciliation. If reconciliation
   // does not happen within this time, it is aborted and |this| delegate is

@@ -29,7 +29,7 @@ class ManagePasswordsIconViews : public ManagePasswordsIconView,
 
   // PageActionIconView:
   views::BubbleDialogDelegateView* GetBubble() const override;
-  bool Update() override;
+  void UpdateImpl() override;
   void OnExecuting(PageActionIconView::ExecuteSource source) override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
   const gfx::VectorIcon& GetVectorIcon() const override;
@@ -45,7 +45,7 @@ class ManagePasswordsIconViews : public ManagePasswordsIconView,
   // Updates the UI to match |state_|.
   void UpdateUiForState();
 
-  password_manager::ui::State state_;
+  password_manager::ui::State state_ = password_manager::ui::INACTIVE_STATE;
 
   DISALLOW_COPY_AND_ASSIGN(ManagePasswordsIconViews);
 };

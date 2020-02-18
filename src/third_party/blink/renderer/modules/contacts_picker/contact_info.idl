@@ -8,4 +8,6 @@ dictionary ContactInfo {
     sequence<USVString> name;
     sequence<USVString> email;
     sequence<USVString> tel;
+    sequence<ContactAddress> address;
+    sequence<Blob> icon;
 };

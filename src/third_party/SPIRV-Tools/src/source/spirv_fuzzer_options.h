@@ -29,8 +29,14 @@ struct spv_fuzzer_options_t {
   bool has_random_seed;
   uint32_t random_seed;
 
+  // See spvFuzzerOptionsEnableReplayValidation.
+  bool replay_validation_enabled;
+
   // See spvFuzzerOptionsSetShrinkerStepLimit.
   uint32_t shrinker_step_limit;
+
+  // See spvFuzzerOptionsValidateAfterEveryPass.
+  bool fuzzer_pass_validation_enabled;
 };
 
 #endif  // SOURCE_SPIRV_FUZZER_OPTIONS_H_

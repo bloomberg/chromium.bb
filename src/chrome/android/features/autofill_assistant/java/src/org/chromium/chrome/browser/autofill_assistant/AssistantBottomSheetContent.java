@@ -5,21 +5,22 @@
 package org.chromium.chrome.browser.autofill_assistant;
 
 import android.content.Context;
-import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ScrollView;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.chrome.autofill_assistant.R;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContent;
 
 /**
- * The {@link BottomSheet.BottomSheetContent} for the Autofill Assistant. It supports notifying the
+ * The {@link BottomSheetContent} for the Autofill Assistant. It supports notifying the
  * BottomSheet when its size changes and allows to dynamically set its scrollable content (in
  * practice, this allows to replace the onboarding by the actual Autofill Assistant content).
  */
-class AssistantBottomSheetContent implements BottomSheet.BottomSheetContent {
+class AssistantBottomSheetContent implements BottomSheetContent {
     private final View mToolbarView;
     private final SizeListenableLinearLayout mContentView;
     @Nullable
@@ -65,7 +66,7 @@ class AssistantBottomSheetContent implements BottomSheet.BottomSheetContent {
     }
 
     @Override
-    public boolean setContentSizeListener(@Nullable BottomSheet.ContentSizeListener listener) {
+    public boolean setContentSizeListener(@Nullable ContentSizeListener listener) {
         mContentView.setContentSizeListener(listener);
         return true;
     }
@@ -75,7 +76,7 @@ class AssistantBottomSheetContent implements BottomSheet.BottomSheetContent {
 
     @Override
     public int getPriority() {
-        return BottomSheet.ContentPriority.HIGH;
+        return BottomSheetContent.ContentPriority.HIGH;
     }
 
     @Override
@@ -84,13 +85,8 @@ class AssistantBottomSheetContent implements BottomSheet.BottomSheetContent {
     }
 
     @Override
-    public boolean isPeekStateEnabled() {
-        return true;
-    }
-
-    @Override
-    public boolean wrapContentEnabled() {
-        return true;
+    public float getFullHeightRatio() {
+        return BottomSheetContent.HeightMode.WRAP_CONTENT;
     }
 
     @Override

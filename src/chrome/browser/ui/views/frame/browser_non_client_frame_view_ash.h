@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "ash/public/cpp/split_view.h"
 #include "ash/public/cpp/tablet_mode_observer.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
@@ -19,10 +18,11 @@
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
 #include "chrome/browser/ui/views/tab_icon_view_model.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
 
 namespace {
-class HostedAppNonClientFrameViewAshTest;
+class WebAppNonClientFrameViewAshTest;
 }
 
 class ProfileIndicatorIcon;
@@ -43,7 +43,6 @@ class BrowserNonClientFrameViewAsh
       public ash::TabletModeObserver,
       public TabIconViewModel,
       public CommandObserver,
-      public ash::SplitViewObserver,
       public aura::WindowObserver,
       public ImmersiveModeController::Observer {
  public:
@@ -59,9 +58,8 @@ class BrowserNonClientFrameViewAsh
   int GetThemeBackgroundXInset() const override;
   void UpdateFrameColor() override;
   void UpdateThrobber(bool running) override;
-  void UpdateMinimumSize() override;
   bool CanUserExitFullscreen() const override;
-  SkColor GetCaptionColor(ActiveState active_state) const override;
+  SkColor GetCaptionColor(BrowserFrameActiveState active_state) const override;
 
   // views::NonClientFrameView:
   gfx::Rect GetBoundsForClientView() const override;
@@ -104,10 +102,6 @@ class BrowserNonClientFrameViewAsh
   // CommandObserver:
   void EnabledStateChangedForCommand(int id, bool enabled) override;
 
-  // ash::SplitViewObserver:
-  void OnSplitViewStateChanged(ash::SplitViewState previous_state,
-                               ash::SplitViewState new_state) override;
-
   // aura::WindowObserver:
   void OnWindowDestroying(aura::Window* window) override;
   void OnWindowPropertyChanged(aura::Window* window,
@@ -141,11 +135,11 @@ class BrowserNonClientFrameViewAsh
                            V1BackButton);
   FRIEND_TEST_ALL_PREFIXES(BrowserNonClientFrameViewAshTest,
                            ToggleTabletModeOnMinimizedWindow);
-  FRIEND_TEST_ALL_PREFIXES(HostedAppNonClientFrameViewAshTest,
+  FRIEND_TEST_ALL_PREFIXES(WebAppNonClientFrameViewAshTest,
                            ActiveStateOfButtonMatchesWidget);
   FRIEND_TEST_ALL_PREFIXES(BrowserNonClientFrameViewAshTest,
                            RestoreMinimizedBrowserUpdatesCaption);
-  FRIEND_TEST_ALL_PREFIXES(ImmersiveModeControllerAshHostedAppBrowserTest,
+  FRIEND_TEST_ALL_PREFIXES(ImmersiveModeControllerAshWebAppBrowserTest,
                            FrameLayoutToggleTabletMode);
   FRIEND_TEST_ALL_PREFIXES(HomeLauncherBrowserNonClientFrameViewAshTest,
                            TabletModeBrowserCaptionButtonVisibility);
@@ -157,11 +151,15 @@ class BrowserNonClientFrameViewAsh
   FRIEND_TEST_ALL_PREFIXES(NonHomeLauncherBrowserNonClientFrameViewAshTest,
                            HeaderHeightForSnappedBrowserInSplitView);
 
-  friend class HostedAppNonClientFrameViewAshTest;
+  friend class WebAppNonClientFrameViewAshTest;
 
   // Returns whether the caption buttons should be visible. They are hidden, for
   // example, in overview mode and tablet mode.
   bool ShouldShowCaptionButtons() const;
+
+  // Distance between the edge of the NonClientFrameView and the web app frame
+  // toolbar.
+  int GetToolbarLeftInset() const;
 
   // Distance between the edges of the NonClientFrameView and the tab strip.
   int GetTabStripLeftInset() const;
@@ -171,19 +169,19 @@ class BrowserNonClientFrameViewAsh
   // not need their frames painted.
   bool ShouldPaint() const;
 
-  // Helps to hide or show the header as needed when overview mode starts or
-  // ends or when split view state changes.
-  void OnOverviewOrSplitviewModeChanged();
+  // Helps to hide or show the header as needed when the window is added to or
+  // removed from overview.
+  void OnAddedToOrRemovedFromOverview();
 
   // Creates the frame header for the browser window.
   std::unique_ptr<ash::FrameHeader> CreateFrameHeader();
 
-  // Creates views and does other setup for a hosted app.
-  void SetUpForHostedApp();
+  // Creates views and does other setup for a web app.
+  void SetUpForWebApp();
 
-  // Triggers the hosted app origin and icon animations, assumes the hosted
-  // app UI elements exist.
-  void StartHostedAppAnimation();
+  // Triggers the web-app origin and icon animations, assumes the web-app UI
+  // elements exist.
+  void StartWebAppAnimation();
 
   // Updates the kTopViewInset window property after a layout.
   void UpdateTopViewInset();

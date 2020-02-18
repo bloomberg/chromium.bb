@@ -5,7 +5,6 @@
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_accessory_view_controller.h"
 
 #include "base/metrics/user_metrics.h"
-#include "components/autofill/core/common/autofill_features.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/common/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
@@ -45,6 +44,16 @@ constexpr CGFloat ManualFillIconsSpacing = 10;
 
 // iPad override for the icons' spacing.
 constexpr CGFloat ManualFillIconsIPadSpacing = 15;
+
+// Color to use for the buttons while enabled.
+UIColor* IconActiveTintColor() {
+  return [UIColor colorNamed:kToolbarButtonColor];
+}
+
+// Color to use for the buttons while highlighted.
+UIColor* IconHighlightTintColor() {
+  return [UIColor colorNamed:kBlueColor];
+}
 
 }  // namespace
 
@@ -87,13 +96,11 @@ static NSTimeInterval MFAnimationDuration = 0.2;
 - (void)resetAnimated:(BOOL)animated {
   [UIView animateWithDuration:animated ? MFAnimationDuration : 0
                    animations:^{
-                     [self resetTintColors];
-                     // Workaround the |hidden| property in stacked views.
-                     if (!self.keyboardButton.hidden) {
-                       self.keyboardButton.hidden = YES;
-                       self.keyboardButton.alpha = 0.0;
-                     }
+                     [self resetIcons];
                    }];
+  if (!self.keyboardButton.hidden) {
+    [self setKeyboardButtonHidden:YES animated:animated];
+  }
 }
 
 #pragma mark - Setters
@@ -133,7 +140,7 @@ static NSTimeInterval MFAnimationDuration = 0.2;
   UIButton* button = [UIButton buttonWithType:UIButtonTypeSystem];
   UIImage* image = [UIImage imageNamed:imageName];
   [button setImage:image forState:UIControlStateNormal];
-  button.tintColor = [self activeTintColor];
+  button.tintColor = IconActiveTintColor();
   button.translatesAutoresizingMaskIntoConstraints = NO;
   [button addTarget:self
                 action:selector
@@ -222,20 +229,19 @@ static NSTimeInterval MFAnimationDuration = 0.2;
   ]];
 }
 
-// Resets the colors of all the icons to the active color.
-- (void)resetTintColors {
-  UIColor* activeTintColor = [self activeTintColor];
-  [self.accountButton setTintColor:activeTintColor];
-  [self.passwordButton setTintColor:activeTintColor];
-  [self.cardsButton setTintColor:activeTintColor];
+// Resets the icon's color and userInteractionEnabled.
+- (void)resetIcons {
+  self.accountButton.userInteractionEnabled = YES;
+  self.cardsButton.userInteractionEnabled = YES;
+  self.passwordButton.userInteractionEnabled = YES;
+
+  [self.accountButton setTintColor:IconActiveTintColor()];
+  [self.passwordButton setTintColor:IconActiveTintColor()];
+  [self.cardsButton setTintColor:IconActiveTintColor()];
 }
 
-- (UIColor*)activeTintColor {
-  return [UIColor colorNamed:kToolbarButtonColor];
-}
-
-- (void)animateKeyboardButtonHidden:(BOOL)hidden {
-  [UIView animateWithDuration:MFAnimationDuration
+- (void)setKeyboardButtonHidden:(BOOL)hidden animated:(BOOL)animated {
+  [UIView animateWithDuration:animated ? MFAnimationDuration : 0
                    animations:^{
                      // Workaround setting more than once the |hidden| property
                      // in stacked views.
@@ -253,32 +259,34 @@ static NSTimeInterval MFAnimationDuration = 0.2;
 
 - (void)keyboardButtonPressed {
   base::RecordAction(base::UserMetricsAction("ManualFallback_Close"));
-  [self animateKeyboardButtonHidden:YES];
-  [self resetTintColors];
+  [self resetAnimated:YES];
   [self.delegate keyboardButtonPressed];
 }
 
 - (void)passwordButtonPressed:(UIButton*)sender {
   base::RecordAction(base::UserMetricsAction("ManualFallback_OpenPassword"));
-  [self animateKeyboardButtonHidden:NO];
-  [self resetTintColors];
-  [self.passwordButton setTintColor:[UIColor colorNamed:kBlueColor]];
+  [self setKeyboardButtonHidden:NO animated:YES];
+  [self resetIcons];
+  self.passwordButton.userInteractionEnabled = NO;
+  self.passwordButton.tintColor = IconHighlightTintColor();
   [self.delegate passwordButtonPressed:sender];
 }
 
 - (void)cardButtonPressed:(UIButton*)sender {
   base::RecordAction(base::UserMetricsAction("ManualFallback_OpenCreditCard"));
-  [self animateKeyboardButtonHidden:NO];
-  [self resetTintColors];
-  [self.cardsButton setTintColor:[UIColor colorNamed:kBlueColor]];
+  [self setKeyboardButtonHidden:NO animated:YES];
+  [self resetIcons];
+  self.cardsButton.userInteractionEnabled = NO;
+  self.cardsButton.tintColor = IconHighlightTintColor();
   [self.delegate cardButtonPressed:sender];
 }
 
 - (void)accountButtonPressed:(UIButton*)sender {
   base::RecordAction(base::UserMetricsAction("ManualFallback_OpenProfile"));
-  [self animateKeyboardButtonHidden:NO];
-  [self resetTintColors];
-  [self.accountButton setTintColor:[UIColor colorNamed:kBlueColor]];
+  [self setKeyboardButtonHidden:NO animated:YES];
+  [self resetIcons];
+  self.accountButton.userInteractionEnabled = NO;
+  self.accountButton.tintColor = IconHighlightTintColor();
   [self.delegate accountButtonPressed:sender];
 }
 

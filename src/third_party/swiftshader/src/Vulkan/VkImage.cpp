@@ -20,6 +20,10 @@
 #include "Device/ETC_Decoder.hpp"
 #include <cstring>
 
+#ifdef __ANDROID__
+#include "System/GrallocAndroid.hpp"
+#endif
+
 namespace
 {
 	ETC_Decoder::InputType GetInputType(const vk::Format& format)
@@ -71,6 +75,16 @@ Image::Image(const VkImageCreateInfo* pCreateInfo, void* mem, Device *device) :
 		compressedImageCreateInfo.format = format.getDecompressedFormat();
 		decompressedImage = new (mem) Image(&compressedImageCreateInfo, nullptr, device);
 	}
+
+	const auto* nextInfo = reinterpret_cast<const VkBaseInStructure*>(pCreateInfo->pNext);
+	for (; nextInfo != nullptr; nextInfo = nextInfo->pNext)
+	{
+		if (nextInfo->sType == VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_IMAGE_CREATE_INFO)
+		{
+			const auto* externalInfo = reinterpret_cast<const VkExternalMemoryImageCreateInfo*>(nextInfo);
+			supportedExternalMemoryHandleTypes = externalInfo->handleTypes;
+		}
+	}
 }
 
 void Image::destroy(const VkAllocationCallbacks* pAllocator)
@@ -96,6 +110,11 @@ const VkMemoryRequirements Image::getMemoryRequirements() const
 	return memoryRequirements;
 }
 
+bool Image::canBindToMemory(DeviceMemory* pDeviceMemory) const
+{
+	return pDeviceMemory->checkExternalMemoryHandleType(supportedExternalMemoryHandleTypes);
+}
+
 void Image::bind(DeviceMemory* pDeviceMemory, VkDeviceSize pMemoryOffset)
 {
 	deviceMemory = pDeviceMemory;
@@ -106,6 +125,47 @@ void Image::bind(DeviceMemory* pDeviceMemory, VkDeviceSize pMemoryOffset)
 		decompressedImage->memoryOffset = memoryOffset + getStorageSize(format.getAspects());
 	}
 }
+
+#ifdef __ANDROID__
+VkResult Image::prepareForExternalUseANDROID() const
+{
+	void* nativeBuffer = nullptr;
+	VkExtent3D extent = getMipLevelExtent(VK_IMAGE_ASPECT_COLOR_BIT, 0);
+
+	if(GrallocModule::getInstance()->lock(backingMemory.nativeHandle, GRALLOC_USAGE_SW_WRITE_OFTEN, 0, 0, extent.width, extent.height, &nativeBuffer) != 0)
+	{
+		return VK_ERROR_OUT_OF_DATE_KHR;
+	}
+
+	if(!nativeBuffer)
+	{
+		return VK_ERROR_OUT_OF_DATE_KHR;
+	}
+
+	int imageRowBytes = rowPitchBytes(VK_IMAGE_ASPECT_COLOR_BIT, 0);
+	int bufferRowBytes = backingMemory.stride * getFormat().bytes();
+	ASSERT(imageRowBytes <= bufferRowBytes);
+
+	uint8_t* srcBuffer = static_cast<uint8_t*>(deviceMemory->getOffsetPointer(0));
+	uint8_t* dstBuffer = static_cast<uint8_t*>(nativeBuffer);
+	for(uint32_t i = 0; i < extent.height; i++)
+	{
+		memcpy(dstBuffer + (i * bufferRowBytes), srcBuffer + (i * imageRowBytes), imageRowBytes);
+	}
+
+	if(GrallocModule::getInstance()->unlock(backingMemory.nativeHandle) != 0)
+	{
+		return VK_ERROR_OUT_OF_DATE_KHR;
+	}
+
+	return VK_SUCCESS;
+}
+
+VkDeviceMemory Image::getExternalMemory() const
+{
+	return backingMemory.externalMemory ? *deviceMemory : VkDeviceMemory{ VK_NULL_HANDLE };
+}
+#endif
 
 void Image::getSubresourceLayout(const VkImageSubresource* pSubresource, VkSubresourceLayout* pLayout) const
 {
@@ -159,10 +219,9 @@ void Image::copyTo(Image* dstImage, const VkImageCopy& pRegion) const
 	Format srcFormat = getFormat(srcAspect);
 	Format dstFormat = dstImage->getFormat(dstAspect);
 
-	if(((samples > VK_SAMPLE_COUNT_1_BIT) && (imageType == VK_IMAGE_TYPE_2D) && !format.isNonNormalizedInteger()) ||
-		srcFormat.hasQuadLayout() || dstFormat.hasQuadLayout())
+	if((samples > VK_SAMPLE_COUNT_1_BIT) && (imageType == VK_IMAGE_TYPE_2D) && !format.isNonNormalizedInteger())
 	{
-		// Requires multisampling resolve, or quadlayout awareness
+		// Requires multisampling resolve
 		VkImageBlit region;
 		region.srcSubresource = pRegion.srcSubresource;
 		region.srcOffsets[0] = pRegion.srcOffset;
@@ -254,13 +313,15 @@ void Image::copyTo(Image* dstImage, const VkImageCopy& pRegion) const
 	{
 		size_t copySize = copyExtent.width * srcBytesPerBlock;
 
-		for(uint32_t z = 0; z < copyExtent.depth; z++)
+		for(uint32_t z = 0; z < copyExtent.depth; z++, dstMem += dstSlicePitchBytes, srcMem += srcSlicePitchBytes)
 		{
-			for(uint32_t y = 0; y < copyExtent.height; y++, dstMem += dstRowPitchBytes, srcMem += srcRowPitchBytes)
+			const uint8_t* srcSlice = srcMem;
+			uint8_t* dstSlice = dstMem;
+			for(uint32_t y = 0; y < copyExtent.height; y++, dstSlice += dstRowPitchBytes, srcSlice += srcRowPitchBytes)
 			{
-				ASSERT((srcMem + copySize) < end());
-				ASSERT((dstMem + copySize) < dstImage->end());
-				memcpy(dstMem, srcMem, copySize);
+				ASSERT((srcSlice + copySize) < end());
+				ASSERT((dstSlice + copySize) < dstImage->end());
+				memcpy(dstSlice, srcSlice, copySize);
 			}
 		}
 	}
@@ -292,23 +353,6 @@ void Image::copy(Buffer* buffer, const VkBufferImageCopy& region, bool bufferIsS
 	int bufferSlicePitchBytes = bufferExtent.height * bufferRowPitchBytes;
 
 	uint8_t* bufferMemory = static_cast<uint8_t*>(buffer->getOffsetPointer(region.bufferOffset));
-
-	if (copyFormat.hasQuadLayout())
-	{
-		if (bufferIsSource)
-		{
-			return device->getBlitter()->blitFromBuffer(this, region.imageSubresource, region.imageOffset,
-														region.imageExtent, bufferMemory, bufferRowPitchBytes,
-														bufferSlicePitchBytes);
-		}
-		else
-		{
-			return device->getBlitter()->blitToBuffer(this, region.imageSubresource, region.imageOffset,
-													  region.imageExtent, bufferMemory, bufferRowPitchBytes,
-													  bufferSlicePitchBytes);
-		}
-	}
-
 	uint8_t* imageMemory = static_cast<uint8_t*>(getTexelPointer(region.imageOffset, region.imageSubresource));
 	uint8_t* srcMemory = bufferIsSource ? bufferMemory : imageMemory;
 	uint8_t* dstMemory = bufferIsSource ? imageMemory : bufferMemory;
@@ -731,6 +775,11 @@ const Image* Image::getSampledImage(const vk::Format& imageViewFormat) const
 void Image::blit(Image* dstImage, const VkImageBlit& region, VkFilter filter) const
 {
 	device->getBlitter()->blit(this, dstImage, region, filter);
+}
+
+void Image::blitToBuffer(VkImageSubresourceLayers subresource, VkOffset3D offset, VkExtent3D extent, uint8_t* dst, int bufferRowPitch, int bufferSlicePitch) const
+{
+	device->getBlitter()->blitToBuffer(this, subresource, offset, extent, dst, bufferRowPitch, bufferSlicePitch);
 }
 
 void Image::resolve(Image* dstImage, const VkImageResolve& region) const

@@ -553,13 +553,24 @@ bool ShouldUseViewsTaskManager() {
   if ([[tableColumn identifier] intValue] == IDS_TASK_MANAGER_TASK_COLUMN) {
     DCHECK([cell isKindOfClass:[NSButtonCell class]]);
     NSButtonCell* buttonCell = static_cast<NSButtonCell*>(cell);
+
     NSString* title = [self modelTextForRow:rowIndex
                                     column:[[tableColumn identifier] intValue]];
-    [buttonCell setTitle:title];
-    [buttonCell
-        setImage:taskManagerMac_->GetImageForRow(viewToModelMap_[rowIndex])];
-    [buttonCell setRefusesFirstResponder:YES];  // Don't push in like a button.
-    [buttonCell setHighlightsBy:NSNoCellMask];
+    NSColor* textColor = [tableView isRowSelected:rowIndex]
+                             ? [NSColor alternateSelectedControlTextColor]
+                             : [NSColor labelColor];
+    NSAttributedString* attributedTitle = [[[NSAttributedString alloc]
+        initWithString:title
+            attributes:@{
+              NSForegroundColorAttributeName : textColor,
+              NSFontAttributeName : cell.font
+            }] autorelease];
+    buttonCell.attributedTitle = attributedTitle;
+
+    buttonCell.image =
+        taskManagerMac_->GetImageForRow(viewToModelMap_[rowIndex]);
+    buttonCell.refusesFirstResponder = YES;  // Don't push in like a button.
+    buttonCell.highlightsBy = NSNoCellMask;
   }
 
   return cell;

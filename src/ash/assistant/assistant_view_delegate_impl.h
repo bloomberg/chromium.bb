@@ -19,9 +19,6 @@ class AssistantViewDelegateImpl : public AssistantViewDelegate {
   AssistantViewDelegateImpl(AssistantController* assistant_controller);
   ~AssistantViewDelegateImpl() override;
 
-  void NotifyDeepLinkReceived(assistant::util::DeepLinkType type,
-                              const std::map<std::string, std::string>& params);
-
   // AssistantViewDelegate:
   const AssistantInteractionModel* GetInteractionModel() const override;
   const AssistantNotificationModel* GetNotificationModel() const override;
@@ -51,6 +48,7 @@ class AssistantViewDelegateImpl : public AssistantViewDelegate {
   void GetNavigableContentsFactoryForView(
       mojo::PendingReceiver<content::mojom::NavigableContentsFactory> receiver)
       override;
+  aura::Window* GetRootWindowForDisplayId(int64_t display_id) override;
   aura::Window* GetRootWindowForNewWindows() override;
   bool IsTabletMode() const override;
   void OnDialogPlateButtonPressed(AssistantButtonId id) override;

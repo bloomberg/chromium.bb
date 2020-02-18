@@ -10,6 +10,7 @@
 #include "base/mac/bundle_locations.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/dom_distiller/core/url_constants.h"
+#include "components/google/core/common/google_util.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/version_info/version_info.h"
 #include "ios/chrome/browser/application_context.h"
@@ -24,10 +25,13 @@
 #include "ios/chrome/browser/ssl/ios_ssl_error_handler.h"
 #import "ios/chrome/browser/ui/elements/windowed_container_view.h"
 #import "ios/chrome/browser/web/error_page_util.h"
+#include "ios/chrome/browser/web/features.h"
 #include "ios/public/provider/chrome/browser/browser_url_rewriter_provider.h"
+#import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #include "ios/public/provider/chrome/browser/voice/audio_session_controller.h"
 #include "ios/public/provider/chrome/browser/voice/voice_search_provider.h"
+#include "ios/web/common/features.h"
 #include "ios/web/common/user_agent.h"
 #include "ios/web/public/navigation/browser_url_rewriter.h"
 #include "net/http/http_util.h"
@@ -59,12 +63,6 @@ NSString* GetPageScript(NSString* script_file_name) {
   return content;
 }
 }  // namespace
-
-const char kDesktopUserAgent[] =
-    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_5) "
-    "AppleWebKit/605.1.15 (KHTML, like Gecko) "
-    "Version/11.1.1 "
-    "Safari/605.1.15";
 
 ChromeWebClient::ChromeWebClient() {}
 
@@ -103,6 +101,20 @@ bool ChromeWebClient::IsAppSpecificURL(const GURL& url) const {
   return url.SchemeIs(kChromeUIScheme);
 }
 
+bool ChromeWebClient::ShouldBlockUrlDuringRestore(
+    const GURL& url,
+    web::WebState* web_state) const {
+  return ios::GetChromeBrowserProvider()->ShouldBlockUrlDuringRestore(
+      url, web_state);
+}
+
+void ChromeWebClient::AddSerializableData(
+    web::SerializableUserDataManager* user_data_manager,
+    web::WebState* web_state) {
+  return ios::GetChromeBrowserProvider()->AddSerializableData(user_data_manager,
+                                                              web_state);
+}
+
 base::string16 ChromeWebClient::GetPluginNotSupportedText() const {
   return l10n_util::GetStringUTF16(IDS_PLUGIN_NOT_SUPPORTED);
 }
@@ -113,11 +125,9 @@ std::string ChromeWebClient::GetUserAgent(web::UserAgentType type) const {
 
   // Using desktop user agent overrides a command-line user agent, so that
   // request desktop site can still work when using an overridden UA.
-  if (type == web::UserAgentType::DESKTOP)
-    return kDesktopUserAgent;
-
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kUserAgent)) {
+  if (type != web::UserAgentType::DESKTOP &&
+      command_line->HasSwitch(switches::kUserAgent)) {
     std::string user_agent =
         command_line->GetSwitchValueASCII(switches::kUserAgent);
     if (net::HttpUtil::IsValidHeaderValue(user_agent))
@@ -125,7 +135,7 @@ std::string ChromeWebClient::GetUserAgent(web::UserAgentType type) const {
     LOG(WARNING) << "Ignored invalid value for flag --" << switches::kUserAgent;
   }
 
-  return web::BuildUserAgentFromProduct(GetProduct());
+  return web::BuildUserAgentFromProduct(type, GetProduct());
 }
 
 base::string16 ChromeWebClient::GetLocalizedString(int message_id) const {
@@ -184,13 +194,16 @@ void ChromeWebClient::AllowCertificateError(
     const net::SSLInfo& info,
     const GURL& request_url,
     bool overridable,
+    int64_t navigation_id,
     const base::Callback<void(bool)>& callback) {
+  base::OnceCallback<void(NSString*)> null_callback;
   // TODO(crbug.com/760873): IOSSSLErrorHandler will present an interstitial
   // for the user to decide if it is safe to proceed.
   // Handle the case of web_state not presenting UI to users like prerender tabs
   // or web_state used to fetch offline content in Reading List.
   IOSSSLErrorHandler::HandleSSLError(web_state, cert_error, info, request_url,
-                                     overridable, callback);
+                                     overridable, navigation_id, callback,
+                                     std::move(null_callback));
 }
 
 void ChromeWebClient::PrepareErrorPage(
@@ -199,6 +212,8 @@ void ChromeWebClient::PrepareErrorPage(
     NSError* error,
     bool is_post,
     bool is_off_the_record,
+    const base::Optional<net::SSLInfo>& info,
+    int64_t navigation_id,
     base::OnceCallback<void(NSString*)> callback) {
   if (reading_list::IsOfflinePageWithoutNativeContentEnabled()) {
     OfflinePageTabHelper* offline_page_tab_helper =
@@ -220,7 +235,24 @@ void ChromeWebClient::PrepareErrorPage(
     }
   }
   DCHECK(error);
-  std::move(callback).Run(GetErrorPage(url, error, is_post, is_off_the_record));
+  __block NSString* error_html = nil;
+  __block base::OnceCallback<void(NSString*)> error_html_callback =
+      std::move(callback);
+  if (info.has_value()) {
+    base::OnceCallback<void(bool)> proceed_callback;
+    base::OnceCallback<void(NSString*)> blocking_page_callback =
+        base::BindOnce(^(NSString* blocking_page_html) {
+          error_html = blocking_page_html;
+          std::move(error_html_callback).Run(error_html);
+        });
+    IOSSSLErrorHandler::HandleSSLError(
+        web_state, net::MapCertStatusToNetError(info.value().cert_status),
+        info.value(), url, info.value().is_fatal_cert_error, navigation_id,
+        std::move(proceed_callback), std::move(blocking_page_callback));
+  } else {
+    std::move(error_html_callback)
+        .Run(GetErrorPage(url, error, is_post, is_off_the_record));
+  }
 }
 
 UIView* ChromeWebClient::GetWindowedContainer() {
@@ -234,4 +266,12 @@ std::string ChromeWebClient::GetProduct() const {
   std::string product("CriOS/");
   product += version_info::GetVersionNumber();
   return product;
+}
+
+bool ChromeWebClient::ForceMobileVersionByDefault(const GURL& url) {
+  DCHECK(base::FeatureList::IsEnabled(web::features::kDefaultToDesktopOnIPad));
+  if (base::FeatureList::IsEnabled(web::kMobileGoogleSRP)) {
+    return google_util::IsGoogleSearchUrl(url);
+  }
+  return false;
 }

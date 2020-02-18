@@ -33,6 +33,7 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/graphics/color_behavior.h"
 #include "third_party/blink/renderer/platform/graphics/image_orientation.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_image.h"
 #include "third_party/blink/renderer/platform/image-decoders/image_animation.h"
 #include "third_party/blink/renderer/platform/image-decoders/image_frame.h"
 #include "third_party/blink/renderer/platform/image-decoders/segment_reader.h"
@@ -141,6 +142,13 @@ class PLATFORM_EXPORT ImageDecoder {
     kMaxValue = kWebPAnimationFormat,
   };
 
+  // Enforces YUV decoding to be disallowed in the image decoder. The default
+  // value defers to the YUV decoding decision to the decoder.
+  enum class OverrideAllowDecodeToYuv {
+    kDefault,
+    kDeny,
+  };
+
   virtual ~ImageDecoder() = default;
 
   // Returns a caller-owned decoder of the appropriate type.  Returns nullptr if
@@ -153,6 +161,8 @@ class PLATFORM_EXPORT ImageDecoder {
       AlphaOption,
       HighBitDepthDecodingOption,
       const ColorBehavior&,
+      const OverrideAllowDecodeToYuv allow_decode_to_yuv =
+          OverrideAllowDecodeToYuv::kDefault,
       const SkISize& desired_size = SkISize::MakeEmpty());
   static std::unique_ptr<ImageDecoder> Create(
       scoped_refptr<SharedBuffer> data,
@@ -160,10 +170,12 @@ class PLATFORM_EXPORT ImageDecoder {
       AlphaOption alpha_option,
       HighBitDepthDecodingOption high_bit_depth_decoding_option,
       const ColorBehavior& color_behavior,
+      const OverrideAllowDecodeToYuv allow_decode_to_yuv =
+          OverrideAllowDecodeToYuv::kDefault,
       const SkISize& desired_size = SkISize::MakeEmpty()) {
     return Create(SegmentReader::CreateFromSharedBuffer(std::move(data)),
                   data_complete, alpha_option, high_bit_depth_decoding_option,
-                  color_behavior, desired_size);
+                  color_behavior, allow_decode_to_yuv, desired_size);
   }
 
   virtual String FilenameExtension() const = 0;
@@ -242,6 +254,12 @@ class PLATFORM_EXPORT ImageDecoder {
     NOTREACHED();
     return SkYUVColorSpace::kIdentity_SkYUVColorSpace;
   }
+
+  // Returns the information required to decide whether or not hardware
+  // acceleration can be used to decode this image. Callers of this function
+  // must ensure the header was successfully parsed prior to calling this
+  // method, i.e., IsDecodedSizeAvailable() must return true.
+  virtual cc::ImageHeaderMetadata MakeMetadataForDecodeAcceleration() const;
 
   // This will only differ from size() for ICO (where each frame is a
   // different icon) or other formats where different frames are different
@@ -357,21 +375,25 @@ class PLATFORM_EXPORT ImageDecoder {
     frame_buffer_cache_[0].SetMemoryAllocator(allocator);
   }
 
-  virtual bool CanDecodeToYUV() { return false; }
+  bool CanDecodeToYUV() { return allow_decode_to_yuv_; }
   // Should only be called if CanDecodeToYuv() returns true, in which case
   // the subclass of ImageDecoder must override this method.
   virtual void DecodeToYUV() { NOTREACHED(); }
-  virtual void SetImagePlanes(std::unique_ptr<ImagePlanes>) {}
+  void SetImagePlanes(std::unique_ptr<ImagePlanes> image_planes) {
+    image_planes_ = std::move(image_planes);
+  }
 
  protected:
   ImageDecoder(AlphaOption alpha_option,
                HighBitDepthDecodingOption high_bit_depth_decoding_option,
                const ColorBehavior& color_behavior,
-               size_t max_decoded_bytes)
+               size_t max_decoded_bytes,
+               const bool allow_decode_to_yuv = false)
       : premultiply_alpha_(alpha_option == kAlphaPremultiplied),
         high_bit_depth_decoding_option_(high_bit_depth_decoding_option),
         color_behavior_(color_behavior),
         max_decoded_bytes_(max_decoded_bytes),
+        allow_decode_to_yuv_(allow_decode_to_yuv),
         purge_aggressively_(false) {}
 
   // Calculates the most recent frame whose image data may be needed in
@@ -488,7 +510,19 @@ class PLATFORM_EXPORT ImageDecoder {
            frame_status == ImageFrame::kFrameComplete;
   }
 
+  // Note that |allow_decode_to_yuv_| being true merely means that the
+  // ImageDecoder supports decoding to YUV. Other layers higher in the
+  // stack (the PaintImageGenerator, ImageFrameGenerator, or cache) may
+  // decline to go down the YUV path.
+  bool allow_decode_to_yuv_;
+  std::unique_ptr<ImagePlanes> image_planes_;
+
  private:
+  // The YUV subsampling of the image.
+  virtual cc::YUVSubsampling GetYUVSubsampling() const {
+    return cc::YUVSubsampling::kUnknown;
+  }
+
   // Some code paths compute the size of the image as "width * height * 4 or 8"
   // and return it as a (signed) int.  Avoid overflow.
   inline bool SizeCalculationMayOverflow(unsigned width,

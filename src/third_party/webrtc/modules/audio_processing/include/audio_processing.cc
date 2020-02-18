@@ -11,6 +11,7 @@
 #include "modules/audio_processing/include/audio_processing.h"
 
 #include "rtc_base/strings/string_builder.h"
+#include "rtc_base/system/arch.h"
 
 namespace webrtc {
 namespace {
@@ -51,15 +52,32 @@ std::string GainController2LevelEstimatorToString(
   }
 }
 
+int GetDefaultMaxInternalRate() {
+#ifdef WEBRTC_ARCH_ARM_FAMILY
+  return 32000;
+#else
+  return 48000;
+#endif
+}
+
 }  // namespace
 
 void CustomProcessing::SetRuntimeSetting(
     AudioProcessing::RuntimeSetting setting) {}
 
+AudioProcessing::Config::Pipeline::Pipeline()
+    : maximum_internal_processing_rate(GetDefaultMaxInternalRate()) {}
+
 std::string AudioProcessing::Config::ToString() const {
   char buf[1024];
   rtc::SimpleStringBuilder builder(buf);
   builder << "AudioProcessing::Config{ "
+          << "pipeline: {"
+          << "maximum_internal_processing_rate: "
+          << pipeline.maximum_internal_processing_rate
+          << ", multi_channel_render: " << pipeline.multi_channel_render << ", "
+          << ", multi_channel_capture: " << pipeline.multi_channel_capture
+          << "}, "
           << "pre_amplifier: { enabled: " << pre_amplifier.enabled
           << ", fixed_gain_factor: " << pre_amplifier.fixed_gain_factor
           << " }, high_pass_filter: { enabled: " << high_pass_filter.enabled

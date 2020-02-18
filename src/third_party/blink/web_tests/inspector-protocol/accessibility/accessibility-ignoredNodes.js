@@ -8,9 +8,6 @@
             <circle xmlns:svg='http://www.w3.org/2000/svg' cx='150px' cy='100px' r='50px' fill='#ff0000' stroke='#000000' stroke-width='5px'/>
         </svg>
     </div>
-    <button>
-      <span data-dump>Buttons are leaf nodes</span>
-    </button>
     <div data-dump aria-hidden='true'>
         <div data-dump>Descendant of aria-hidden node</div>
     </div>
@@ -47,6 +44,10 @@
     <div data-dump style="display: contents">div with display contents - should be ignored, but text should be included</div>
 
     <summary data-dump>summary element without details parent is ignored</summary>
+
+    <div role='presentation'>
+      <button data-dump>Ignored parent shouldn't cause descendant to be missing from the tree</button>
+    </div>
   </html>
   `, 'Tests accessibility values of ignored nodes.');
 

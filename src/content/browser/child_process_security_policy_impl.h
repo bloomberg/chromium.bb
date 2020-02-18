@@ -20,11 +20,12 @@
 #include "base/memory/singleton.h"
 #include "base/synchronization/lock.h"
 #include "base/thread_annotations.h"
+#include "content/browser/can_commit_status.h"
 #include "content/browser/isolated_origin_util.h"
 #include "content/browser/isolation_context.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/common/resource_type.h"
-#include "storage/common/fileapi/file_system_types.h"
+#include "storage/common/file_system/file_system_types.h"
 #include "url/origin.h"
 
 class GURL;
@@ -52,6 +53,68 @@ class SiteInstance;
 class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
     : public ChildProcessSecurityPolicy {
  public:
+  // Handle used to access the security state for a specific process.
+  //
+  // Objects that require the security state to be preserved beyond the
+  // lifetime of the RenderProcessHostImpl should hold an instance of this
+  // object and use it to answer security policy questions. (e.g. Mojo services
+  // created by RPHI that can receive calls after RPHI destruction). This
+  // object should only be called on the UI and IO threads.
+  //
+  // Note: Some security methods, like CanAccessDataForOrigin(), require
+  // information from the BrowserContext to make its decisions. These methods
+  // will fall back to failsafe values if called after BrowserContext
+  // destruction. Callers should be prepared to gracefully handle this or
+  // ensure that they don't make any calls after BrowserContext destruction.
+  class CONTENT_EXPORT Handle {
+   public:
+    Handle();
+    Handle(Handle&&);
+    Handle(const Handle&) = delete;
+    ~Handle();
+
+    Handle& operator=(const Handle&) = delete;
+    Handle& operator=(Handle&&);
+
+    // Returns true if this object has a valid process ID.
+    // Returns false if this object was created with the default constructor,
+    // the contents of this object was transferred to another Handle via
+    // std::move(), or ChildProcessSecurityPolicyImpl::CreateHandle()
+    // created this object after the process has already been destructed.
+    bool is_valid() const;
+
+    // Whether the process is allowed to commit a document from the given URL.
+    bool CanCommitURL(const GURL& url);
+
+    // Before servicing a child process's request to upload a file to the web,
+    // the browser should call this method to determine whether the process has
+    // the capability to upload the requested file.
+    bool CanReadFile(const base::FilePath& file);
+
+    // Explicit read permissions check for FileSystemURL specified files.
+    bool CanReadFileSystemFile(const storage::FileSystemURL& url);
+
+    // Returns true if the process is permitted to read and modify the data for
+    // the origin of |url|. This is currently used to protect data such as
+    // cookies, passwords, and local storage. Does not affect cookies attached
+    // to or set by network requests.
+    //
+    // This can only return false for processes locked to a particular origin,
+    // which can happen for any origin when the --site-per-process flag is used,
+    // or for isolated origins that require a dedicated process (see
+    // AddIsolatedOrigins).
+    bool CanAccessDataForOrigin(const GURL& url);
+    bool CanAccessDataForOrigin(const url::Origin& origin);
+
+   private:
+    friend class ChildProcessSecurityPolicyImpl;
+    explicit Handle(int child_id);
+
+    // The ID of the child process that this handle is associated with or
+    // ChildProcessHost::kInvalidUniqueID if the handle is no longer valid.
+    int child_id_;
+  };
+
   // Object can only be created through GetInstance() so the constructor is
   // private.
   ~ChildProcessSecurityPolicyImpl() override;
@@ -114,6 +177,19 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
 
   // Identical to the above method, but takes url::Origin as input.
   bool CanAccessDataForOrigin(int child_id, const url::Origin& origin);
+
+  // Determines if the combination of |origin| & |url| is safe to commit to
+  // the process associated with |child_id|.
+  //
+  // Returns CAN_COMMIT_ORIGIN_AND_URL if it is safe to commit the |origin| and
+  // |url| combination to the process associated with |child_id|.
+  // Returns CANNOT_COMMIT_URL if |url| is not safe to commit.
+  // Returns CANNOT_COMMIT_ORIGIN if |origin| is not safe to commit.
+  CanCommitStatus CanCommitOriginAndUrl(
+      int child_id,
+      const IsolationContext& isolation_context,
+      const url::Origin& origin,
+      const GURL& url);
 
   // This function will check whether |origin| requires process isolation
   // within |isolation_context|, and if so, it will return true and put the
@@ -219,24 +295,6 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
   // Revoke read raw cookies permission.
   void RevokeReadRawCookies(int child_id);
 
-  // A version of the public ChildProcessSecurityPolicy::CanCommitURL() which
-  // takes an additional bool |check_origin_lock|, specifying whether to
-  // reject |url| if it does not match the origin lock on process |child_id|.
-  // Passing true for |check_origin_lock| provides stronger enforcement with
-  // strict site isolation; it is only set to false by features (e.g., Origin
-  // header validation) that aren't yet ready for this enforcement. This
-  // function should *not* be used by new features; use the public
-  // ChildProcessSecurityPolicy::CanCommitURL() instead, which internally calls
-  // this with |check_origin_lock| being true.
-  //
-  // TODO(alexmos): Remove |check_origin_lock| and check origin locks
-  // unconditionally once https://crbug.com/515309 is fixed.
-  bool CanCommitURL(int child_id, const GURL& url, bool check_origin_lock);
-
-  // Whether the given origin is valid for an origin header. Valid origin
-  // headers are commitable URLs.
-  bool CanSetAsOriginHeader(int child_id, const GURL& url);
-
   // Explicit permissions checks for FileSystemURL specified files.
   bool CanReadFileSystemFile(int child_id,
                              const storage::FileSystemURL& filesystem_url);
@@ -252,12 +310,14 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
   bool CanDeleteFileSystemFile(int child_id,
                                const storage::FileSystemURL& filesystem_url);
 
-  // True if cookie headers may be exposed to renderer |child_id| for |url| for
-  // display in DevTools. |url| should be a WebSocket URL.
-  bool CanAccessDataForWebSocket(int child_id, const GURL& url);
-
   // Returns true if the specified child_id has been granted ReadRawCookies.
   bool CanReadRawCookies(int child_id);
+
+  // Notifies security state of |child_id| about the IsolationContext it will
+  // host.  The main side effect is proper setting of the lowest
+  // BrowsingInstanceId associated with the security state.
+  void IncludeIsolationContext(int child_id,
+                               const IsolationContext& isolation_context);
 
   // Sets the process identified by |child_id| as only permitted to access data
   // for the origin specified by |lock_url|. Most callers should use
@@ -283,14 +343,14 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
   // Returns true if sending system exclusive messages is allowed.
   bool CanSendMidiSysExMessage(int child_id);
 
-  // Remove all isolated origins associated with |browser_context|.  This is
+  // Remove all isolated origins associated with |browser_context| and clear any
+  // pointers that may reference |browser_context|.  This is
   // typically used when |browser_context| is being destroyed and assumes that
   // no processes are running or will run for that profile; this makes the
   // isolated origin removal safe.  Note that |browser_context| cannot be null;
   // i.e., isolated origins that apply globally to all profiles cannot
   // currently be removed, since that is not safe to do at runtime.
-  void RemoveIsolatedOriginsForBrowserContext(
-      const BrowserContext& browser_context);
+  void RemoveStateForBrowserContext(const BrowserContext& browser_context);
 
   // Check whether |origin| requires origin-wide process isolation within
   // |isolation_context|.
@@ -330,9 +390,27 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
   // implemented for the one caller doing Blob URL revocation.
   bool HasSecurityState(int child_id);
 
+  // Sets "killed_process_origin_lock" crash key with lock info for the
+  // process associated with |child_id|.
+  void LogKilledProcessOriginLock(int child_id);
+
+  // Creates a Handle object for a specific child process ID.
+  //
+  // This handle can be used to extend the lifetime of policy state beyond
+  // the Remove() call for |child_id|. This should be used by objects that can
+  // outlive the RenderProcessHostImpl object associated with |child_id| and
+  // need to be able to make policy decisions after RPHI destruction. (e.g.
+  // Mojo services created by RPHI)
+  //
+  // Returns a valid Handle for any |child_id| that is present in
+  // |security_state_|. Otherwise it returns a Handle that returns false for
+  // all policy checks.
+  Handle CreateHandle(int child_id);
+
  private:
   friend class ChildProcessSecurityPolicyInProcessBrowserTest;
   friend class ChildProcessSecurityPolicyTest;
+  friend class ChildProcessSecurityPolicyImpl::Handle;
   FRIEND_TEST_ALL_PREFIXES(ChildProcessSecurityPolicyInProcessBrowserTest,
                            NoLeak);
   FRIEND_TEST_ALL_PREFIXES(ChildProcessSecurityPolicyTest, FilePermissions);
@@ -500,6 +578,17 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
                           IsolatedOriginSource source,
                           BrowserContext* browser_context = nullptr);
 
+  bool AddProcessReference(int child_id);
+  bool AddProcessReferenceLocked(int child_id) EXCLUSIVE_LOCKS_REQUIRED(lock_);
+  void RemoveProcessReference(int child_id);
+  void RemoveProcessReferenceLocked(int child_id)
+      EXCLUSIVE_LOCKS_REQUIRED(lock_);
+
+  // Creates the value to place in the "killed_process_origin_lock" crash key
+  // based on the contents of |security_state|.
+  static std::string GetKilledProcessOriginLock(
+      const SecurityState* security_state);
+
   // You must acquire this lock before reading or writing any members of this
   // class, except for isolated_origins_ which uses its own lock.  You must not
   // block while holding this lock.
@@ -531,6 +620,13 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
   SecurityStateMap pending_remove_state_ GUARDED_BY(lock_);
 
   FileSystemPermissionPolicyMap file_system_policy_map_ GUARDED_BY(lock_);
+
+  // Contains a mapping between child process ID and the number of outstanding
+  // references that want to keep the SecurityState for each process alive.
+  // This object and Handles created by this object increment/decrement
+  // the counts in this map and only destroy a SecurityState object for a
+  // process when its count goes to zero.
+  std::map<int, int> process_reference_counts_ GUARDED_BY(lock_);
 
   // You must acquire this lock before reading or writing isolated_origins_.
   // You must not block while holding this lock.

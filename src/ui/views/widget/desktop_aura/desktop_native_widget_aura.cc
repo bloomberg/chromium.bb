@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/cursor_client.h"
@@ -25,6 +26,7 @@
 #include "ui/base/class_property.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/ime/input_method.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/point_conversions.h"
@@ -98,6 +100,13 @@ class DesktopNativeWidgetTopLevelHandler : public aura::WindowObserver {
     init_params.type = full_screen ? Widget::InitParams::TYPE_WINDOW
                                    : is_menu ? Widget::InitParams::TYPE_MENU
                                              : Widget::InitParams::TYPE_POPUP;
+#if defined(OS_WIN)
+    // For menus, on Windows versions that support drop shadow remove
+    // the standard frame in order to keep just the shadow.
+    if (::features::IsFormControlsRefreshEnabled() &&
+        init_params.type == Widget::InitParams::TYPE_MENU)
+      init_params.remove_standard_frame = true;
+#endif
     init_params.bounds = bounds;
     init_params.ownership = Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET;
     init_params.layer_type = ui::LAYER_NOT_DRAWN;
@@ -429,6 +438,25 @@ gfx::NativeWindow DesktopNativeWidgetAura::GetNativeWindow() const {
   return content_window_;
 }
 
+void DesktopNativeWidgetAura::UpdateWindowTransparency() {
+  if (!desktop_window_tree_host_->ShouldUpdateWindowTransparency())
+    return;
+
+  const bool transparent =
+      desktop_window_tree_host_->ShouldWindowContentsBeTransparent();
+
+  auto* window_tree_host = desktop_window_tree_host_->AsWindowTreeHost();
+  window_tree_host->compositor()->SetBackgroundColor(
+      transparent ? SK_ColorTRANSPARENT : SK_ColorWHITE);
+  window_tree_host->window()->SetTransparent(transparent);
+
+  content_window_->SetTransparent(transparent);
+  // Regardless of transparency or not, this root content window will always
+  // fill its bounds completely, so set this flag to true to avoid an
+  // unecessary clear before update.
+  content_window_->SetFillsBoundsCompletely(true);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopNativeWidgetAura, internal::NativeWidgetPrivate implementation:
 
@@ -540,7 +568,7 @@ void DesktopNativeWidgetAura::InitNativeWidget(Widget::InitParams params) {
     host_->window()->AddPreTargetHandler(tooltip_controller_.get());
   }
 
-  if (params.opacity == Widget::InitParams::TRANSLUCENT_WINDOW &&
+  if (params.opacity == Widget::InitParams::WindowOpacity::kTranslucent &&
       desktop_window_tree_host_->ShouldCreateVisibilityController()) {
     visibility_controller_ = std::make_unique<wm::VisibilityController>();
     aura::client::SetVisibilityClient(host_->window(),
@@ -753,12 +781,8 @@ void DesktopNativeWidgetAura::SetShape(
 }
 
 void DesktopNativeWidgetAura::Close() {
-  if (!content_window_)
-    return;
-
-  content_window_->SuppressPaint();
-
-  desktop_window_tree_host_->Close();
+  if (content_window_)
+    desktop_window_tree_host_->Close();
 }
 
 void DesktopNativeWidgetAura::CloseNow() {
@@ -1242,18 +1266,6 @@ void DesktopNativeWidgetAura::OnHostMovedInPixels(
 
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopNativeWidgetAura, private:
-
-void DesktopNativeWidgetAura::UpdateWindowTransparency() {
-  if (!desktop_window_tree_host_->ShouldUpdateWindowTransparency())
-    return;
-
-  content_window_->SetTransparent(
-      desktop_window_tree_host_->ShouldWindowContentsBeTransparent());
-  // Regardless of transparency or not, this root content window will always
-  // fill its bounds completely, so set this flag to true to avoid an
-  // unecessary clear before update.
-  content_window_->SetFillsBoundsCompletely(true);
-}
 
 void DesktopNativeWidgetAura::RootWindowDestroyed() {
   cursor_reference_count_--;

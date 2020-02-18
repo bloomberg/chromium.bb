@@ -73,8 +73,30 @@
     color: ButtonText;
   }
 
+  input::-webkit-datetime-edit-ampm-field:focus,
+  input::-webkit-datetime-edit-day-field:focus,
+  input::-webkit-datetime-edit-hour-field:focus,
+  input::-webkit-datetime-edit-millisecond-field:focus,
+  input::-webkit-datetime-edit-minute-field:focus,
+  input::-webkit-datetime-edit-month-field:focus,
+  input::-webkit-datetime-edit-second-field:focus,
+  input::-webkit-datetime-edit-week-field:focus,
+  input::-webkit-datetime-edit-year-field:focus {
+      background-color: highlight;
+      color: highlighttext;
+      outline: none;
+  }
+
   input[type="color"]:disabled {
     border-color: GrayText;
+  }
+
+  input[type="color"] {
+    forced-color-adjust: none;
+  }
+
+  input[type="color"]::-webkit-color-swatch {
+    border-color: WindowText !important;
   }
 
   button,
@@ -106,6 +128,52 @@
     color: GrayText;
   }
 
+  /* same color as hyperlinks */
+  details summary {
+    color: LinkText;
+  }
+
+  select:-internal-list-box {
+    background-color: Window !important;
+    border-color: ButtonText;
+  }
+
+  /* option disabled */
+  select:-internal-list-box option:disabled,
+  select:-internal-list-box option:disabled:hover,
+  select:-internal-list-box:disabled option,
+  select:-internal-list-box:disabled option:hover {
+    background-color: Window !important;
+    color: GrayText !important;
+  }
+
+  /* option selected */
+  select:-internal-list-box:focus option:checked,
+  select:-internal-list-box:focus option:checked:hover,
+  select:-internal-list-box option:checked,
+  select:-internal-list-box option:checked:hover {
+    background-color: Highlight !important;
+    color: Window !important;
+    forced-color-adjust: none;
+  }
+
+  /* option both disabled and selected */
+  select:-internal-list-box:focus option:checked:disabled,
+  select:-internal-list-box:focus option:checked:disabled:hover,
+  select:-internal-list-box:disabled option:checked,
+  select:-internal-list-box:disabled option:checked:hover,
+  select:-internal-list-box option:checked:disabled,
+  select:-internal-list-box option:checked:disabled:hover {
+    background-color: GrayText !important;
+    color: Window !important;
+    forced-color-adjust: none;
+  }
+
+  select:-internal-list-box option:hover {
+    background-color: Window;
+    color: Highlight;
+  }
+
   select {
     background: Window;
     border-color: WindowText;
@@ -123,23 +191,17 @@
   select:disabled {
     border-color: GrayText;
     color: GrayText;
-  }
-
-  progress::-webkit-progress-bar {
-    background: ButtonFace;
-  }
-
-  progress::-webkit-progress-value {
-    background: Highlight;
+    opacity: 1;
   }
 
   meter::-webkit-meter-bar {
     background: ButtonFace;
+    border-color: WindowText;
   }
 
   meter::-webkit-meter-even-less-good-value,
   meter::-webkit-meter-optimum-value,
-  meter::-webkit-meter-suboptimal-value {
+  meter::-webkit-meter-suboptimum-value {
     background: Highlight;
   }
 }

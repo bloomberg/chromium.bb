@@ -28,6 +28,13 @@ const PaintImage::Id PaintImage::kInvalidId = -2;
 const PaintImage::ContentId PaintImage::kInvalidContentId = -1;
 const PaintImage::GeneratorClientId PaintImage::kDefaultGeneratorClientId = 0;
 
+ImageHeaderMetadata::ImageHeaderMetadata() = default;
+ImageHeaderMetadata::ImageHeaderMetadata(const ImageHeaderMetadata& other) =
+    default;
+ImageHeaderMetadata& ImageHeaderMetadata::operator=(
+    const ImageHeaderMetadata& other) = default;
+ImageHeaderMetadata::ImageHeaderMetadata::~ImageHeaderMetadata() = default;
+
 PaintImage::PaintImage() = default;
 PaintImage::PaintImage(const PaintImage& other) = default;
 PaintImage::PaintImage(PaintImage&& other) = default;
@@ -153,13 +160,6 @@ void PaintImage::CreateSkImage() {
   }
 }
 
-bool PaintImage::IsEligibleForAcceleratedDecoding() const {
-  if (!CanDecodeFromGenerator())
-    return false;
-  DCHECK(paint_image_generator_);
-  return paint_image_generator_->IsEligibleForAcceleratedDecoding();
-}
-
 SkISize PaintImage::GetSupportedDecodeSize(
     const SkISize& requested_size) const {
   // TODO(vmpstr): In some cases we do not support decoding to any other
@@ -193,19 +193,17 @@ bool PaintImage::Decode(void* memory,
                            client_id);
 }
 
-bool PaintImage::DecodeYuv(void* planes[SkYUVASizeInfo::kMaxCount],
-                           size_t frame_index,
-                           GeneratorClientId client_id,
-                           const SkYUVASizeInfo& yuva_size_info) const {
-  SkYUVAIndex indices[SkYUVAIndex::kIndexCount];
-  // Passing nullptr for the SkYUVASizeInfo forces IsYuv to create and fill out
-  // a temporary object instead because |yuva_size_info| is const.
-  bool is_yuv = IsYuv(nullptr, indices);
-  DCHECK(is_yuv);
+bool PaintImage::DecodeYuv(
+    void* planes[SkYUVASizeInfo::kMaxCount],
+    size_t frame_index,
+    GeneratorClientId client_id,
+    const SkYUVASizeInfo& yuva_size_info,
+    SkYUVAIndex plane_indices[SkYUVAIndex::kIndexCount]) const {
+  DCHECK(plane_indices != nullptr);
   DCHECK(CanDecodeFromGenerator());
   const uint32_t lazy_pixel_ref = unique_id();
-  return paint_image_generator_->GetYUVA8Planes(yuva_size_info, indices, planes,
-                                                frame_index, lazy_pixel_ref);
+  return paint_image_generator_->GetYUVA8Planes(
+      yuva_size_info, plane_indices, planes, frame_index, lazy_pixel_ref);
 }
 
 bool PaintImage::DecodeFromGenerator(void* memory,
@@ -292,10 +290,10 @@ int PaintImage::height() const {
              : GetSkImage()->height();
 }
 
-PaintImage::ImageType PaintImage::GetImageType() const {
+const ImageHeaderMetadata* PaintImage::GetImageHeaderMetadata() const {
   if (paint_image_generator_)
-    return paint_image_generator_->GetImageType();
-  return PaintImage::ImageType::kInvalid;
+    return paint_image_generator_->GetMetadataForDecodeAcceleration();
+  return nullptr;
 }
 
 bool PaintImage::IsYuv(SkYUVASizeInfo* yuva_size_info,

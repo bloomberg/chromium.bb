@@ -2,62 +2,61 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('pages_per_sheet_settings_test', function() {
-  suite('PagesPerSheetSettingsTest', function() {
-    let pagesPerSheetSection = null;
+import {MarginsType} from 'chrome://print/print_preview.js';
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {selectOption} from 'chrome://test/print_preview/print_preview_test_utils.js';
+import {eventToPromise, fakeDataBind} from 'chrome://test/test_util.m.js';
 
-    /** @override */
-    setup(function() {
-      PolymerTest.clearBody();
-      const model = document.createElement('print-preview-model');
-      document.body.appendChild(model);
+suite('PagesPerSheetSettingsTest', function() {
+  let pagesPerSheetSection = null;
 
-      pagesPerSheetSection =
-          document.createElement('print-preview-pages-per-sheet-settings');
-      pagesPerSheetSection.settings = model.settings;
-      pagesPerSheetSection.disabled = false;
-      test_util.fakeDataBind(model, pagesPerSheetSection, 'settings');
-      document.body.appendChild(pagesPerSheetSection);
-    });
+  /** @override */
+  setup(function() {
+    PolymerTest.clearBody();
+    const model = document.createElement('print-preview-model');
+    document.body.appendChild(model);
 
-    // Tests that setting the setting updates the UI.
-    test('set setting', async () => {
-      const select = pagesPerSheetSection.$$('select');
-      assertEquals('1', select.value);
+    pagesPerSheetSection =
+        document.createElement('print-preview-pages-per-sheet-settings');
+    pagesPerSheetSection.settings = model.settings;
+    pagesPerSheetSection.disabled = false;
+    fakeDataBind(model, pagesPerSheetSection, 'settings');
+    document.body.appendChild(pagesPerSheetSection);
+  });
 
-      pagesPerSheetSection.setSetting('pagesPerSheet', 4);
-      await test_util.eventToPromise(
-          'process-select-change', pagesPerSheetSection);
-      assertEquals('4', select.value);
-    });
+  // Tests that setting the setting updates the UI.
+  test('set setting', async () => {
+    const select = pagesPerSheetSection.$$('select');
+    assertEquals('1', select.value);
 
-    // Tests that setting the pages per sheet setting resets margins to DEFAULT.
-    test('resets margins setting', async () => {
-      pagesPerSheetSection.setSetting(
-          'margins', print_preview.ticket_items.MarginsTypeValue.NO_MARGINS);
-      assertEquals(1, pagesPerSheetSection.getSettingValue('pagesPerSheet'));
-      pagesPerSheetSection.setSetting('pagesPerSheet', 4);
-      await test_util.eventToPromise(
-          'process-select-change', pagesPerSheetSection);
-      assertEquals(4, pagesPerSheetSection.getSettingValue('pagesPerSheet'));
-      assertEquals(
-          print_preview.ticket_items.MarginsTypeValue.DEFAULT,
-          pagesPerSheetSection.getSettingValue('margins'));
-    });
+    pagesPerSheetSection.setSetting('pagesPerSheet', 4);
+    await eventToPromise('process-select-change', pagesPerSheetSection);
+    assertEquals('4', select.value);
+  });
 
-    // Tests that selecting a new option in the dropdown updates the setting.
-    test('select option', async () => {
-      // Verify that the selected option and names are as expected.
-      const select = pagesPerSheetSection.$$('select');
-      assertEquals('1', select.value);
-      assertEquals(1, pagesPerSheetSection.getSettingValue('pagesPerSheet'));
-      assertFalse(pagesPerSheetSection.getSetting('pagesPerSheet').setFromUi);
-      assertEquals(6, select.options.length);
+  // Tests that setting the pages per sheet setting resets margins to DEFAULT.
+  test('resets margins setting', async () => {
+    pagesPerSheetSection.setSetting('margins', MarginsType.NO_MARGINS);
+    assertEquals(1, pagesPerSheetSection.getSettingValue('pagesPerSheet'));
+    pagesPerSheetSection.setSetting('pagesPerSheet', 4);
+    await eventToPromise('process-select-change', pagesPerSheetSection);
+    assertEquals(4, pagesPerSheetSection.getSettingValue('pagesPerSheet'));
+    assertEquals(
+        MarginsType.DEFAULT, pagesPerSheetSection.getSettingValue('margins'));
+  });
 
-      // Verify that selecting an new option in the dropdown sets the setting.
-      await print_preview_test_utils.selectOption(pagesPerSheetSection, '2');
-      assertEquals(2, pagesPerSheetSection.getSettingValue('pagesPerSheet'));
-      assertTrue(pagesPerSheetSection.getSetting('pagesPerSheet').setFromUi);
-    });
+  // Tests that selecting a new option in the dropdown updates the setting.
+  test('select option', async () => {
+    // Verify that the selected option and names are as expected.
+    const select = pagesPerSheetSection.$$('select');
+    assertEquals('1', select.value);
+    assertEquals(1, pagesPerSheetSection.getSettingValue('pagesPerSheet'));
+    assertFalse(pagesPerSheetSection.getSetting('pagesPerSheet').setFromUi);
+    assertEquals(6, select.options.length);
+
+    // Verify that selecting an new option in the dropdown sets the setting.
+    await selectOption(pagesPerSheetSection, '2');
+    assertEquals(2, pagesPerSheetSection.getSettingValue('pagesPerSheet'));
+    assertTrue(pagesPerSheetSection.getSetting('pagesPerSheet').setFromUi);
   });
 });

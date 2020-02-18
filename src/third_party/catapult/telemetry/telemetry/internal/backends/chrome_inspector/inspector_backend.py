@@ -220,7 +220,7 @@ class InspectorBackend(object):
 
     Raises:
       py_utils.TimeoutException
-      exceptions.EvaluationException
+      exceptions.EvaluateException
       exceptions.WebSocketException
       exceptions.DevtoolsTargetCrashException
     """
@@ -254,7 +254,7 @@ class InspectorBackend(object):
 
     Raises:
       py_utils.TimeoutException
-      exceptions.EvaluationException
+      exceptions.EvaluateException
       exceptions.WebSocketException
       exceptions.DevtoolsTargetCrashException
     """
@@ -290,7 +290,7 @@ class InspectorBackend(object):
 
     Raises:
       py_utils.TimeoutException
-      exceptions.EvaluationException
+      exceptions.EvaluateException
       exceptions.WebSocketException
       exceptions.DevtoolsTargetCrashException
     """
@@ -300,7 +300,11 @@ class InspectorBackend(object):
     condition = js_template.Render(condition, **kwargs)
 
     def IsJavaScriptExpressionTrue():
-      return self._EvaluateJavaScript(condition, context_id, timeout)
+      try:
+        return self._EvaluateJavaScript(condition, context_id, timeout)
+      except exceptions.DevtoolsTargetClosedException:
+        # Ignore errors caused by navigation.
+        return False
 
     try:
       return py_utils.WaitFor(IsJavaScriptExpressionTrue, timeout)

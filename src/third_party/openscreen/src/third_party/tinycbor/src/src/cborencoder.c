@@ -65,7 +65,7 @@
  * \code
  *      uint8_t buf[16];
  *      CborEncoder encoder;
- *      cbor_encoder_init(&encoder, &buf, sizeof(buf), 0);
+ *      cbor_encoder_init(&encoder, buf, sizeof(buf), 0);
  *      cbor_encode_int(&encoder, some_value);
  * \endcode
  *
@@ -76,7 +76,7 @@
  * \code
  *      uint8_t buf[16];
  *      CborEncoder encoder, mapEncoder;
- *      cbor_encoder_init(&encoder, &buf, sizeof(buf), 0);
+ *      cbor_encoder_init(&encoder, buf, sizeof(buf), 0);
  *      cbor_encoder_create_map(&encoder, &mapEncoder, 1);
  *      cbor_encode_text_stringz(&mapEncoder, "foo");
  *      cbor_encode_boolean(&mapEncoder, some_value);
@@ -115,18 +115,18 @@
  *      uint8_t buf[16];
  *      CborError err;
  *      CborEncoder encoder, mapEncoder;
- *      cbor_encoder_init(&encoder, &buf, sizeof(buf), 0);
+ *      cbor_encoder_init(&encoder, buf, sizeof(buf), 0);
  *      err = cbor_encoder_create_map(&encoder, &mapEncoder, 1);
- *      if (!err)
+ *      if (err)
  *          return err;
  *      err = cbor_encode_text_stringz(&mapEncoder, "foo");
- *      if (!err)
+ *      if (err)
  *          return err;
  *      err = cbor_encode_boolean(&mapEncoder, some_value);
- *      if (!err)
+ *      if (err)
  *          return err;
  *      err = cbor_encoder_close_container_checked(&encoder, &mapEncoder);
- *      if (!err)
+ *      if (err)
  *          return err;
  *
  *      size_t len = cbor_encoder_get_buffer_size(&encoder, buf);
@@ -155,9 +155,9 @@
  *             goto error;
  *         buf = nbuf;
  *
- *         cbor_encoder_init(&encoder, &buf, size, 0);
+ *         cbor_encoder_init(&encoder, buf, size, 0);
  *         err = cbor_encoder_create_array(&encoder, &arrayEncoder, n);
- *         cbor_assert(err);         // can't fail, the buffer is always big enough
+ *         cbor_assert(!err);         // can't fail, the buffer is always big enough
  *
  *         for (i = 0; i < n; ++i) {
  *             err = cbor_encode_text_stringz(&arrayEncoder, strings[i]);
@@ -166,7 +166,7 @@
  *         }
  *
  *         err = cbor_encoder_close_container_checked(&encoder, &arrayEncoder);
- *         cbor_assert(err);         // shouldn't fail!
+ *         cbor_assert(!err);         // shouldn't fail!
  *
  *         more_bytes = cbor_encoder_get_extra_bytes_needed(encoder);
  *         if (more_size) {

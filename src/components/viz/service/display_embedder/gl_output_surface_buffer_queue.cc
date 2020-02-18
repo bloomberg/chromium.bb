@@ -26,6 +26,7 @@ GLOutputSurfaceBufferQueue::GLOutputSurfaceBufferQueue(
     : GLOutputSurface(context_provider, surface_handle),
       current_texture_(0u),
       fbo_(0u) {
+  capabilities_.only_invalidates_damage_rect = false;
   capabilities_.uses_default_gl_framebuffer = false;
   capabilities_.flipped_output_surface = true;
   // Set |max_frames_pending| to 2 for buffer_queue, which aligns scheduling
@@ -100,11 +101,6 @@ void GLOutputSurfaceBufferQueue::Reshape(const gfx::Size& size,
   }
 }
 
-void GLOutputSurfaceBufferQueue::SetDrawRectangle(const gfx::Rect& damage) {
-  GLOutputSurface::SetDrawRectangle(damage);
-  buffer_queue_->CopyDamageForCurrentSurface(damage);
-}
-
 void GLOutputSurfaceBufferQueue::SwapBuffers(OutputSurfaceFrame frame) {
   DCHECK(buffer_queue_);
 
@@ -118,6 +114,10 @@ void GLOutputSurfaceBufferQueue::SwapBuffers(OutputSurfaceFrame frame) {
   buffer_queue_->SwapBuffers(damage_rect);
 
   GLOutputSurface::SwapBuffers(std::move(frame));
+}
+
+gfx::Rect GLOutputSurfaceBufferQueue::GetCurrentFramebufferDamage() const {
+  return buffer_queue_->CurrentBufferDamage();
 }
 
 uint32_t GLOutputSurfaceBufferQueue::GetFramebufferCopyTextureFormat() {

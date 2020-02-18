@@ -13,19 +13,26 @@ from __future__ import print_function
 import os
 
 from chromite.api import controller
+from chromite.api import faux
 from chromite.api import validate
+from chromite.api.metrics import deserialize_metrics_log
 from chromite.api.controller import controller_util
 from chromite.api.gen.chromite.api import test_pb2
+from chromite.cbuildbot import goma_util
 from chromite.lib import build_target_util
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import image_lib
 from chromite.lib import osutils
+from chromite.lib import portage_util
 from chromite.lib import sysroot_lib
 from chromite.scripts import cros_set_lsb_release
 from chromite.service import test
+from chromite.utils import key_value_store
+from chromite.utils import metrics
 
 
+@faux.all_empty
 def DebugInfoTest(input_proto, _output_proto, config):
   """Run the debug info tests."""
   sysroot_path = input_proto.sysroot.path
@@ -52,9 +59,27 @@ def DebugInfoTest(input_proto, _output_proto, config):
     return controller.RETURN_CODE_COMPLETED_UNSUCCESSFULLY
 
 
+def _BuildTargetUnitTestResponse(input_proto, output_proto, _config):
+  """Add tarball path to a successful response."""
+  output_proto.tarball_path = os.path.join(input_proto.result_path,
+                                           'unit_tests.tar')
+
+
+def _BuildTargetUnitTestFailedResponse(_input_proto, output_proto, _config):
+  """Add failed packages to a failed response."""
+  packages = ['foo/bar', 'cat/pkg']
+  failed_cpvs = [portage_util.SplitCPV(p, strict=False) for p in packages]
+  for cpv in failed_cpvs:
+    package_info = output_proto.failed_packages.add()
+    controller_util.CPVToPackageInfo(cpv, package_info)
+
+
+@faux.success(_BuildTargetUnitTestResponse)
+@faux.error(_BuildTargetUnitTestFailedResponse)
 @validate.require('build_target.name', 'result_path')
 @validate.exists('result_path')
 @validate.validation_complete
+@metrics.collect_metrics
 def BuildTargetUnitTest(input_proto, output_proto, _config):
   """Run a build target's ebuild unit tests."""
   # Required args.
@@ -93,19 +118,43 @@ def BuildTargetUnitTest(input_proto, output_proto, _config):
   tarball = test.BuildTargetUnitTestTarball(chroot, sysroot, result_path)
   if tarball:
     output_proto.tarball_path = tarball
+  deserialize_metrics_log(output_proto.events, prefix=build_target.name)
 
 
+@faux.empty_success
+@faux.empty_completed_unsuccessfully_error
 @validate.validation_complete
 def ChromiteUnitTest(_input_proto, _output_proto, _config):
   """Run the chromite unit tests."""
   cmd = [os.path.join(constants.CHROMITE_DIR, 'scripts', 'run_tests')]
-  result = cros_build_lib.RunCommand(cmd, error_code_ok=True)
+  result = cros_build_lib.run(cmd, error_code_ok=True)
   if result.returncode == 0:
     return controller.RETURN_CODE_SUCCESS
   else:
     return controller.RETURN_CODE_COMPLETED_UNSUCCESSFULLY
 
 
+@faux.all_empty
+@validate.require('sysroot.path', 'sysroot.build_target.name', 'chrome_root')
+@validate.validation_complete
+def SimpleChromeWorkflowTest(input_proto, _output_proto, _config):
+  """Run SimpleChromeWorkflow tests."""
+  if input_proto.goma_config.goma_dir:
+    chromeos_goma_dir = input_proto.goma_config.chromeos_goma_dir or None
+    goma = goma_util.Goma(
+        input_proto.goma_config.goma_dir,
+        input_proto.goma_config.goma_client_json,
+        stage_name='BuildApiTestSimpleChrome',
+        chromeos_goma_dir=chromeos_goma_dir)
+  else:
+    goma = None
+  return test.SimpleChromeWorkflowTest(input_proto.sysroot.path,
+                                       input_proto.sysroot.build_target.name,
+                                       input_proto.chrome_root,
+                                       goma)
+
+
+@faux.all_empty
 @validate.require('build_target.name', 'vm_path.path', 'test_harness',
                   'vm_tests')
 @validate.validation_complete
@@ -136,9 +185,10 @@ def VmTest(input_proto, _output_proto, _config):
 
   with osutils.TempDir(prefix='vm-test-results.') as results_dir:
     cmd.extend(['--results-dir', results_dir])
-    cros_build_lib.RunCommand(cmd, kill_timeout=10 * 60)
+    cros_build_lib.run(cmd, kill_timeout=10 * 60)
 
 
+@faux.all_empty
 @validate.require('image_payload.path.path', 'cache_payloads')
 @validate.validation_complete
 def MoblabVmTest(input_proto, _output_proto, _config):
@@ -160,7 +210,7 @@ def MoblabVmTest(input_proto, _output_proto, _config):
       partition_path = partition_paths[0]
       lsb_release_file = os.path.join(partition_path,
                                       constants.LSB_RELEASE_PATH.strip('/'))
-      lsb_release_kvs = cros_build_lib.LoadKeyValueFile(lsb_release_file)
+      lsb_release_kvs = key_value_store.LoadFile(lsb_release_file)
       builder = lsb_release_kvs.get(cros_set_lsb_release.LSB_KEY_BUILDER_PATH)
 
   if not builder:
@@ -170,17 +220,20 @@ def MoblabVmTest(input_proto, _output_proto, _config):
 
   # Now we can run the tests.
   with chroot.tempdir() as workspace_dir, chroot.tempdir() as results_dir:
+    # Convert the results directory to an absolute chroot directory.
+    chroot_results_dir = '/%s' % os.path.relpath(results_dir, chroot.path)
     vms = test.CreateMoblabVm(workspace_dir, chroot.path, image_payload_dir)
     cache_dir = test.PrepareMoblabVmImageCache(vms, builder, cache_payload_dirs)
-    test.RunMoblabVmTest(chroot, vms, builder, cache_dir, results_dir)
+    test.RunMoblabVmTest(chroot, vms, builder, cache_dir, chroot_results_dir)
     test.ValidateMoblabVmTest(results_dir)
 
 
+@faux.all_empty
 @validate.validation_complete
 def CrosSigningTest(_input_proto, _output_proto, _config):
   """Run the cros-signing unit tests."""
   test_runner = os.path.join(constants.SOURCE_ROOT, 'cros-signing', 'signer',
                              'run_tests.py')
-  result = cros_build_lib.RunCommand([test_runner], error_code_ok=True)
+  result = cros_build_lib.run([test_runner], error_code_ok=True)
 
   return result.returncode

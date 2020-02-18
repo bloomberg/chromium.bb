@@ -18,7 +18,7 @@
 
 GeolocationPermissionContext::GeolocationPermissionContext(Profile* profile)
     : PermissionContextBase(profile,
-                            CONTENT_SETTINGS_TYPE_GEOLOCATION,
+                            ContentSettingsType::GEOLOCATION,
                             blink::mojom::FeaturePolicyFeature::kGeolocation),
       extensions_context_(profile) {}
 
@@ -86,9 +86,9 @@ GeolocationPermissionContext::GetGeolocationControl() {
   if (geolocation_control_)
     return geolocation_control_.get();
 
-  auto request = mojo::MakeRequest(&geolocation_control_);
+  auto receiver = geolocation_control_.BindNewPipeAndPassReceiver();
   service_manager::Connector* connector = content::GetSystemConnector();
   if (connector)
-    connector->BindInterface(device::mojom::kServiceName, std::move(request));
+    connector->Connect(device::mojom::kServiceName, std::move(receiver));
   return geolocation_control_.get();
 }

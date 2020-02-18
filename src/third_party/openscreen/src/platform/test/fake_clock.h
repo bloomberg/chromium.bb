@@ -33,7 +33,6 @@ class FakeClock {
  private:
   std::vector<FakeTaskRunner*> task_runners_;
 
-  static FakeClock* instance_;
   static std::atomic<Clock::time_point> now_;
 };
 

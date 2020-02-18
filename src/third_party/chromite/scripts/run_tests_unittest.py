@@ -114,6 +114,7 @@ class MainTest(cros_test_lib.MockOutputTestCase):
   def setUp(self):
     self.PatchObject(run_tests, '_ReExecuteIfNeeded')
     self.PatchObject(run_tests, 'ChrootAvailable', return_value=True)
+    self.PatchObject(run_tests, 'ClearPythonCacheFiles')
 
   def testList(self):
     """Verify --list works"""
@@ -129,23 +130,31 @@ class MainTest(cros_test_lib.MockOutputTestCase):
     run_tests.main(['--network'])
     m.assert_called_with(mock.ANY, jobs=mock.ANY, chroot_available=mock.ANY,
                          network=True, config_skew=False, dryrun=False,
-                         failfast=False)
+                         failfast=False, pyver=None)
     run_tests.main(['--config_skew'])
     m.assert_called_with(mock.ANY, jobs=mock.ANY, chroot_available=mock.ANY,
                          network=False, config_skew=True, dryrun=False,
-                         failfast=False)
+                         failfast=False, pyver=None)
     run_tests.main(['--dry-run'])
     m.assert_called_with(mock.ANY, jobs=mock.ANY, chroot_available=mock.ANY,
                          network=False, config_skew=False, dryrun=True,
-                         failfast=False)
+                         failfast=False, pyver=None)
     run_tests.main(['--jobs', '1000'])
     m.assert_called_with(mock.ANY, jobs=1000, chroot_available=mock.ANY,
                          network=False, config_skew=False, dryrun=False,
-                         failfast=False)
+                         failfast=False, pyver=None)
     run_tests.main(['--failfast'])
     m.assert_called_with(mock.ANY, jobs=mock.ANY, chroot_available=mock.ANY,
                          network=False, config_skew=False, dryrun=False,
-                         failfast=True)
+                         failfast=True, pyver=None)
+    run_tests.main(['--py2'])
+    m.assert_called_with(mock.ANY, jobs=mock.ANY, chroot_available=mock.ANY,
+                         network=False, config_skew=False, dryrun=False,
+                         failfast=False, pyver='py2')
+    run_tests.main(['--py3'])
+    m.assert_called_with(mock.ANY, jobs=mock.ANY, chroot_available=mock.ANY,
+                         network=False, config_skew=False, dryrun=False,
+                         failfast=False, pyver='py3')
 
   def testUnknownArg(self):
     """Verify we kick out unknown args"""
@@ -179,4 +188,4 @@ class MainTest(cros_test_lib.MockOutputTestCase):
     run_tests.main(tests)
     m.assert_called_with(tests, jobs=mock.ANY, chroot_available=mock.ANY,
                          network=mock.ANY, config_skew=mock.ANY,
-                         dryrun=mock.ANY, failfast=mock.ANY)
+                         dryrun=mock.ANY, failfast=mock.ANY, pyver=mock.ANY)

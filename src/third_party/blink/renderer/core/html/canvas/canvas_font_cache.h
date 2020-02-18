@@ -23,7 +23,7 @@ class FontCachePurgePreventer;
 class HTMLCanvasElement;
 
 class CORE_EXPORT CanvasFontCache final
-    : public GarbageCollectedFinalized<CanvasFontCache>,
+    : public GarbageCollected<CanvasFontCache>,
       public Thread::TaskObserver {
   USING_PRE_FINALIZER(CanvasFontCache, Dispose);
 
@@ -46,7 +46,7 @@ class CORE_EXPORT CanvasFontCache final
 
   // TaskObserver implementation
   void DidProcessTask(const base::PendingTask&) override;
-  void WillProcessTask(const base::PendingTask&) override {}
+  void WillProcessTask(const base::PendingTask&, bool) override {}
 
   // For testing
   bool IsInCache(const String&);

@@ -169,15 +169,15 @@ std::unique_ptr<JSONObject> ObjectForSkRRect(const SkRRect& rrect) {
   return rrect_item;
 }
 
-String FillTypeName(SkPath::FillType type) {
+String FillTypeName(SkPathFillType type) {
   switch (type) {
-    case SkPath::kWinding_FillType:
+    case SkPathFillType::kWinding:
       return "Winding";
-    case SkPath::kEvenOdd_FillType:
+    case SkPathFillType::kEvenOdd:
       return "EvenOdd";
-    case SkPath::kInverseWinding_FillType:
+    case SkPathFillType::kInverseWinding:
       return "InverseWinding";
-    case SkPath::kInverseEvenOdd_FillType:
+    case SkPathFillType::kInverseEvenOdd:
       return "InverseEvenOdd";
     default:
       NOTREACHED();
@@ -185,13 +185,13 @@ String FillTypeName(SkPath::FillType type) {
   };
 }
 
-String ConvexityName(SkPath::Convexity convexity) {
+String ConvexityName(SkPathConvexityType convexity) {
   switch (convexity) {
-    case SkPath::kUnknown_Convexity:
+    case SkPathConvexityType::kUnknown:
       return "Unknown";
-    case SkPath::kConvex_Convexity:
+    case SkPathConvexityType::kConvex:
       return "Convex";
-    case SkPath::kConcave_Convexity:
+    case SkPathConvexityType::kConcave:
       return "Concave";
     default:
       NOTREACHED();
@@ -224,13 +224,13 @@ VerbParams SegmentParams(SkPath::Verb verb) {
 std::unique_ptr<JSONObject> ObjectForSkPath(const SkPath& path) {
   auto path_item = std::make_unique<JSONObject>();
   path_item->SetString("fillType", FillTypeName(path.getFillType()));
-  path_item->SetString("convexity", ConvexityName(path.getConvexity()));
+  path_item->SetString("convexity", ConvexityName(path.getConvexityType()));
   path_item->SetBoolean("isRect", path.isRect(nullptr));
   SkPath::Iter iter(path, false);
   SkPoint points[4];
   auto path_points_array = std::make_unique<JSONArray>();
-  for (SkPath::Verb verb = iter.next(points, false); verb != SkPath::kDone_Verb;
-       verb = iter.next(points, false)) {
+  for (SkPath::Verb verb = iter.next(points); verb != SkPath::kDone_Verb;
+       verb = iter.next(points)) {
     VerbParams verb_params = SegmentParams(verb);
     auto path_point_item = std::make_unique<JSONObject>();
     path_point_item->SetString("verb", verb_params.name);

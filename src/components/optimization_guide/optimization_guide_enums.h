@@ -38,9 +38,15 @@ enum class OptimizationTypeDecision {
   kHadHintButNotLoadedInTime,
   // No hints were available in the cache that matched the page load.
   kNoHintAvailable,
+  // The OptimizationGuideDecider was not initialized yet.
+  kDeciderNotInitialized,
+  // A fetch to get the hint for the page load from the remote Optimization
+  // Guide Service was started, but was not available in time to make a
+  // decision.
+  kHintFetchStartedButNotAvailableInTime,
 
   // Add new values above this line.
-  kMaxValue = kNoHintAvailable,
+  kMaxValue = kHintFetchStartedButNotAvailableInTime,
 };
 
 // The types of decisions that can be made for an optimization target.
@@ -52,9 +58,39 @@ enum class OptimizationTargetDecision {
   kPageLoadDoesNotMatch,
   // The page load matches the optimization target.
   kPageLoadMatches,
+  // The model needed to make the target decision was not available on the
+  // client.
+  kModelNotAvailableOnClient,
+  // The page load is part of a model prediction holdback where all decisions
+  // will return |OptimizationGuideDecision::kFalse| in an attempt to not taint
+  // the data for understanding the production recall of the model.
+  kModelPredictionHoldback,
+  // The OptimizationGuideDecider was not initialized yet.
+  kDeciderNotInitialized,
 
   // Add new values above this line.
-  kMaxValue = kPageLoadMatches,
+  kMaxValue = kDeciderNotInitialized,
+};
+
+// The statuses for why the main frame of a navigation was covered by a hint or
+// fetch from the remote Optimization Guide Service.
+//
+// Keep in sync with OptimizationGuideNavigationHostCoveredStatus in enums.xml.
+enum class NavigationHostCoveredStatus {
+  kUnknown,
+  // The main frame host of the navigation was covered by a hint or was
+  // attempted to be fetched from the remote Optimization Guide Service in the
+  // last 7 days.
+  kCovered,
+  // A fetch for information from the remote Optimization Guide Service about
+  // the main frame host of the navigation was not attempted.
+  kFetchNotAttempted,
+  // A fetch for information from the remote Optimization Guide Service about
+  // the main frame host of the navigation was attempted but not successful.
+  kFetchNotSuccessful,
+
+  // Add new values above this line.
+  kMaxValue = kFetchNotSuccessful,
 };
 
 }  // namespace optimization_guide

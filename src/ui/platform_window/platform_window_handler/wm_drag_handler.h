@@ -10,8 +10,8 @@
 #include "ui/platform_window/platform_window_handler/wm_platform_export.h"
 
 namespace ui {
-class OSExchangeData;
 class PlatformWindow;
+class OSExchangeData;
 
 class WM_PLATFORM_EXPORT WmDragHandler {
  public:

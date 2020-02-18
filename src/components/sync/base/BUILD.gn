@@ -12,6 +12,8 @@ jumbo_static_library("base") {
     "cancelation_observer.h",
     "cancelation_signal.cc",
     "cancelation_signal.h",
+    "client_tag_hash.cc",
+    "client_tag_hash.h",
     "data_type_histogram.cc",
     "data_type_histogram.h",
     "encryptor.h",
@@ -43,12 +45,11 @@ jumbo_static_library("base") {
     "report_unrecoverable_error.cc",
     "report_unrecoverable_error.h",
     "stop_source.h",
-    "storage_option.h",
     "sync_base_switches.cc",
     "sync_base_switches.h",
+    "sync_mode.h",
     "sync_prefs.cc",
     "sync_prefs.h",
-    "sync_stop_metadata_fate.cc",
     "sync_stop_metadata_fate.h",
     "syncer_error.cc",
     "syncer_error.h",
@@ -82,12 +83,15 @@ jumbo_static_library("base") {
     "//components/os_crypt",
     "//components/pref_registry",
     "//components/prefs",
-    "//components/reading_list/features:reading_list_buildflags",
     "//components/version_info",
     "//crypto",
     "//net",
     "//third_party/zlib",
   ]
+
+  if (is_chromeos) {
+    deps += [ "//chromeos/constants" ]
+  }
 }
 
 static_library("test_support") {

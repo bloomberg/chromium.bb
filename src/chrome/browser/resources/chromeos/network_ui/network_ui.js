@@ -23,29 +23,6 @@ const NetworkUI = (function() {
 
   const mojom = chromeos.networkConfig.mojom;
 
-  CrOncStrings = {
-    OncTypeCellular: loadTimeData.getString('OncTypeCellular'),
-    OncTypeEthernet: loadTimeData.getString('OncTypeEthernet'),
-    OncTypeMobile: loadTimeData.getString('OncTypeMobile'),
-    OncTypeTether: loadTimeData.getString('OncTypeTether'),
-    OncTypeVPN: loadTimeData.getString('OncTypeVPN'),
-    OncTypeWiFi: loadTimeData.getString('OncTypeWiFi'),
-    networkListItemConnected:
-        loadTimeData.getString('networkListItemConnected'),
-    networkListItemConnecting:
-        loadTimeData.getString('networkListItemConnecting'),
-    networkListItemConnectingTo:
-        loadTimeData.getString('networkListItemConnectingTo'),
-    networkListItemInitializing:
-        loadTimeData.getString('networkListItemInitializing'),
-    networkListItemScanning: loadTimeData.getString('networkListItemScanning'),
-    networkListItemNotConnected:
-        loadTimeData.getString('networkListItemNotConnected'),
-    networkListItemNoNetwork:
-        loadTimeData.getString('networkListItemNoNetwork'),
-    vpnNameTemplate: loadTimeData.getString('vpnNameTemplate'),
-  };
-
   // Properties to display in the network state table. Each entry can be either
   // a single state field or an array of state fields. If more than one is
   // specified then the first non empty value is used.
@@ -87,6 +64,22 @@ const NetworkUI = (function() {
   };
 
   /**
+   * @param {string} key
+   * @param {number|string|undefined} value
+   * @return {string}
+   */
+  const getOncTypeString = function(key, value) {
+    if (value === undefined) {
+      return '';
+    }
+    if (key == 'type' && value == 'etherneteap') {
+      // Special case, not in production UI.
+      return 'EthernetEAP';
+    }
+    return /** @type {string}*/ (OncMojo.getTypeString(key, value));
+  };
+
+  /**
    * Returns the ONC data property for |state| associated with a key. Used
    * to access properties in the state by |key| which may may refer to a
    * nested property, e.g. 'WiFi.Security'. If any part of a nested key is
@@ -107,7 +100,7 @@ const NetworkUI = (function() {
         return undefined;
     }
     const k = keys.shift();
-    return OncMojo.getTypeString(k, dict[k]);
+    return getOncTypeString(k, dict[k]);
   };
 
   /**
@@ -140,8 +133,8 @@ const NetworkUI = (function() {
   const createStateTableIcon = function(state) {
     const cell = createTableCellElement();
     cell.className = 'state-table-icon-cell';
-    const icon = /** @type {!CrNetworkIconElement} */ (
-        document.createElement('cr-network-icon'));
+    const icon = /** @type {!NetworkIconElement} */ (
+        document.createElement('network-icon'));
     icon.isListItem = true;
     icon.networkState = OncMojo.getDefaultNetworkState(state.type);
     cell.appendChild(icon);
@@ -236,7 +229,7 @@ const NetworkUI = (function() {
    * @return {string} A valid HTMLElement id.
    */
   const idFromType = function(type) {
-    return idFromTypeString(OncMojo.getNetworkTypeString(type));
+    return idFromTypeString(getOncTypeString('type', type));
   };
 
   /**
@@ -264,6 +257,12 @@ const NetworkUI = (function() {
    */
   const onDeviceStatesReceived = function(states) {
     createStateTable('device-state-table', DEVICE_STATE_FIELDS, states);
+  };
+
+  /** @return {string} */
+  const getSelectedFormat = function() {
+    const formatSelect = $('get-property-format');
+    return formatSelect.options[formatSelect.selectedIndex].value;
   };
 
   /**
@@ -307,12 +306,10 @@ const NetworkUI = (function() {
     detailCell.className = 'state-table-expanded-cell';
     detailCell.colSpan = baseRow.childNodes.length - 1;
     expandedRow.appendChild(detailCell);
-    const selected = $('get-property-format').selectedIndex;
-    const selectedId = $('get-property-format').options[selected].value;
     if (guid)
-      handleNetworkDetail(guid, selectedId, detailCell);
+      handleNetworkDetail(guid, getSelectedFormat(), detailCell);
     else
-      handleDeviceDetail(state, selectedId, detailCell);
+      handleDeviceDetail(state, getSelectedFormat(), detailCell);
     return expandedRow;
   };
 
@@ -366,7 +363,9 @@ const NetworkUI = (function() {
    */
   const handleDeviceDetail = function(state, selectedId, detailCell) {
     if (selectedId == 'shill') {
-      chrome.send('getShillDeviceProperties', [state.type]);
+      chrome.send(
+          'getShillDeviceProperties',
+          [OncMojo.getNetworkTypeString(state.type)]);
     } else {
       showDetail(detailCell, state);
     }
@@ -448,6 +447,19 @@ const NetworkUI = (function() {
   };
 
   /**
+   * Callback invoked by Chrome after a getShillEthernetEAP call.
+   * @param {?Object} state The requested Shill properties. Will be null if no
+   *     EAP properties exist.
+   */
+  const getShillEthernetEAPResult = function(state) {
+    const states = [];
+    if (state) {
+      states.push(state);
+    }
+    createStateTable('ethernet-eap-state-table', FAVORITE_STATE_FIELDS, states);
+  };
+
+  /**
    * Callback invoked by Chrome after a openCellularActivationUi call.
    * @param {boolean} didOpenActivationUi Whether the activation UI was actually
    *     opened. If this value is false, it means that no cellular network was
@@ -479,7 +491,7 @@ const NetworkUI = (function() {
         .getNetworkStateList({
           filter: mojom.FilterType.kVisible,
           networkType: mojom.NetworkType.kAll,
-          limit: mojom.kNoLimit,
+          limit: mojom.NO_LIMIT,
         })
         .then((responseParams) => {
           onVisibleNetworksReceived(responseParams.result);
@@ -489,7 +501,7 @@ const NetworkUI = (function() {
         .getNetworkStateList({
           filter: mojom.FilterType.kConfigured,
           networkType: mojom.NetworkType.kAll,
-          limit: mojom.kNoLimit,
+          limit: mojom.NO_LIMIT,
         })
         .then((responseParams) => {
           onFavoriteNetworksReceived(responseParams.result);
@@ -498,15 +510,20 @@ const NetworkUI = (function() {
     networkConfig.getDeviceStateList().then((responseParams) => {
       onDeviceStatesReceived(responseParams.result);
     });
+
+    // Only request EthernetEAP properties when the 'shill' format is selected.
+    if (getSelectedFormat() == 'shill') {
+      chrome.send('getShillEthernetEAP');
+    }
   };
 
   /**
    * Requests the global policy dictionary and updates the page.
    */
   const requestGlobalPolicy = function() {
-    chrome.networkingPrivate.getGlobalPolicy(function(policy) {
+    networkConfig.getGlobalPolicy().then(result => {
       document.querySelector('#global-policy').textContent =
-          JSON.stringify(policy, null, '\t');
+          JSON.stringify(result.result, null, '\t');
     });
   };
 
@@ -523,7 +540,7 @@ const NetworkUI = (function() {
   };
 
   /**
-   * Handles clicks on network items in the <cr-network-select> element by
+   * Handles clicks on network items in the <network-select> element by
    * attempting a connection to the selected network or requesting a password
    * if the network requires a password.
    * @param {!Event<!OncMojo.NetworkStateProperties>} event
@@ -544,18 +561,13 @@ const NetworkUI = (function() {
     }
 
     // Otherwise, connect.
-    chrome.networkingPrivate.startConnect(networkState.guid, () => {
-      const lastError = chrome.runtime.lastError;
-      if (!lastError)
-        return;
-      const message = lastError.message;
-      if (message == 'connecting' || message == 'connect-canceled' ||
-          message == 'connected' || message == 'Error.InvalidNetworkGuid') {
+    networkConfig.startConnect(networkState.guid).then(response => {
+      if (response.result == mojom.StartConnectResult.kSuccess) {
         return;
       }
       console.error(
-          'networkingPrivate.startConnect error: ' + message +
-          ' For: ' + networkState.guid);
+          'startConnect error for: ' + networkState.guid + ' Result: ' +
+          response.result.toString() + ' Message: ' + response.message);
       chrome.send('showNetworkConfig', [networkState.guid]);
     });
   };
@@ -564,7 +576,7 @@ const NetworkUI = (function() {
    * Gets network information from WebUI and sets custom items.
    */
   document.addEventListener('DOMContentLoaded', function() {
-    const select = document.querySelector('cr-network-select');
+    const select = document.querySelector('network-select');
     select.customItems = [
       {customItemName: 'Add WiFi', polymerIcon: 'cr:add', customData: 'WiFi'},
       {customItemName: 'Add VPN', polymerIcon: 'cr:add', customData: 'VPN'}
@@ -573,6 +585,7 @@ const NetworkUI = (function() {
     $('cellular-activation-button').onclick = openCellularActivationUi;
     $('add-new-wifi-button').onclick = showAddNewWifi;
     $('refresh').onclick = requestNetworks;
+    $('get-property-format').onchange = requestNetworks;
     init();
     requestNetworks();
     requestGlobalPolicy();
@@ -585,6 +598,7 @@ const NetworkUI = (function() {
   return {
     getShillNetworkPropertiesResult: getShillNetworkPropertiesResult,
     getShillDevicePropertiesResult: getShillDevicePropertiesResult,
+    getShillEthernetEAPResult: getShillEthernetEAPResult,
     openCellularActivationUiResult: openCellularActivationUiResult
   };
 })();

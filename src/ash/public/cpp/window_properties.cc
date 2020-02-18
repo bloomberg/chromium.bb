@@ -19,10 +19,11 @@ DEFINE_EXPORTED_UI_CLASS_PROPERTY_TYPE(ASH_PUBLIC_EXPORT,
 
 namespace ash {
 
+DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(std::string, kAppIDKey, nullptr)
 DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(std::string, kArcPackageNameKey, nullptr)
 DEFINE_UI_CLASS_PROPERTY_KEY(BackdropWindowMode,
                              kBackdropWindowMode,
-                             BackdropWindowMode::kAuto)
+                             BackdropWindowMode::kAutoOpaque)
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kBlockedForAssistantSnapshotKey, false)
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kCanAttachToAnotherWindowKey, true)
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kCanConsumeSystemKeysKey, false)

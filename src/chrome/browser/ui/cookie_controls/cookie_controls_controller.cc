@@ -29,9 +29,12 @@ CookieControlsController::CookieControlsController(
   pref_change_registrar_.Init(profile->GetPrefs());
   pref_change_registrar_.Add(
       prefs::kCookieControlsMode,
-      base::BindRepeating(
-          &CookieControlsController::OnCookieControlsPrefChanged,
-          base::Unretained(this)));
+      base::BindRepeating(&CookieControlsController::OnPrefChanged,
+                          base::Unretained(this)));
+  pref_change_registrar_.Add(
+      prefs::kBlockThirdPartyCookies,
+      base::BindRepeating(&CookieControlsController::OnPrefChanged,
+                          base::Unretained(this)));
 }
 
 CookieControlsController::~CookieControlsController() {}
@@ -51,8 +54,7 @@ void CookieControlsController::Update(content::WebContents* web_contents) {
         this, TabSpecificContentSettings::FromWebContents(web_contents));
   }
   for (auto& observer : observers_)
-    observer.OnStatusChanged(GetStatus(web_contents));
-  PresentBlockedCookieCounter();
+    observer.OnStatusChanged(GetStatus(web_contents), GetBlockedCookieCount());
 }
 
 CookieControlsController::Status CookieControlsController::GetStatus(
@@ -84,28 +86,26 @@ void CookieControlsController::OnCookieBlockingEnabledForSite(
   Update(GetWebContents());
 }
 
-int CookieControlsController::GetBlockedDomainCount() {
+int CookieControlsController::GetBlockedCookieCount() {
   const LocalSharedObjectsContainer& blocked_objects =
       tab_observer_->tab_specific_content_settings()
           ->blocked_local_shared_objects();
-  return blocked_objects.GetDomainCount();
+  return blocked_objects.GetObjectCount();
 }
 
 void CookieControlsController::PresentBlockedCookieCounter() {
-  const LocalSharedObjectsContainer& blocked_objects =
-      tab_observer_->tab_specific_content_settings()
-          ->blocked_local_shared_objects();
+  int blocked_cookies = GetBlockedCookieCount();
   for (auto& observer : observers_)
-    observer.OnBlockedCookiesCountChanged(blocked_objects.GetObjectCount());
+    observer.OnBlockedCookiesCountChanged(blocked_cookies);
 }
 
-void CookieControlsController::OnCookieControlsPrefChanged() {
+void CookieControlsController::OnPrefChanged() {
   if (GetWebContents())
     Update(GetWebContents());
 }
 
 content::WebContents* CookieControlsController::GetWebContents() {
-  if (!tab_observer_)
+  if (!tab_observer_ || !tab_observer_->tab_specific_content_settings())
     return nullptr;
   return tab_observer_->tab_specific_content_settings()->web_contents();
 }
@@ -114,7 +114,7 @@ void CookieControlsController::AddObserver(CookieControlsView* obs) {
   observers_.AddObserver(obs);
 }
 
-void CookieControlsController::RemoveObserver(const CookieControlsView* obs) {
+void CookieControlsController::RemoveObserver(CookieControlsView* obs) {
   observers_.RemoveObserver(obs);
 }
 

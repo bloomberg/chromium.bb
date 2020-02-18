@@ -342,7 +342,7 @@ TimeDelta ThreadControllerWithMessagePumpImpl::DoWorkImpl(
   DCHECK(main_thread_only().task_source);
 
   for (int i = 0; i < main_thread_only().work_batch_size; i++) {
-    Optional<Task> task = main_thread_only().task_source->TakeTask();
+    Task* task = main_thread_only().task_source->SelectNextTask();
     if (!task)
       break;
 
@@ -362,7 +362,7 @@ TimeDelta ThreadControllerWithMessagePumpImpl::DoWorkImpl(
       // Trace events should finish before we call DidRunTask to ensure that
       // SequenceManager trace events do not interfere with them.
       TRACE_TASK_EXECUTION("ThreadControllerImpl::RunTask", *task);
-      task_annotator_.RunTask("SequenceManager RunTask", &*task);
+      task_annotator_.RunTask("SequenceManager RunTask", task);
     }
 
 #if DCHECK_IS_ON()
@@ -527,7 +527,11 @@ MessagePump* ThreadControllerWithMessagePumpImpl::GetBoundMessagePump() const {
 
 #if defined(OS_IOS)
 void ThreadControllerWithMessagePumpImpl::AttachToMessagePump() {
-  static_cast<MessagePumpUIApplication*>(pump_.get())->Attach(this);
+  static_cast<MessagePumpCFRunLoopBase*>(pump_.get())->Attach(this);
+}
+
+void ThreadControllerWithMessagePumpImpl::DetachFromMessagePump() {
+  static_cast<MessagePumpCFRunLoopBase*>(pump_.get())->Detach();
 }
 #elif defined(OS_ANDROID)
 void ThreadControllerWithMessagePumpImpl::AttachToMessagePump() {

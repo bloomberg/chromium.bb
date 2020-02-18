@@ -14,7 +14,6 @@ const VolumeManagerCommon = {};
  */
 const AllowedPaths = {
   NATIVE_PATH: 'nativePath',
-  NATIVE_OR_DRIVE_PATH: 'nativeOrDrivePath',
   ANY_PATH: 'anyPath',
   ANY_PATH_OR_URL: 'anyPathOrUrl',
 };
@@ -124,6 +123,9 @@ VolumeManagerCommon.RootType = {
 
   // Root directory of an external media folder under computers grand root.
   EXTERNAL_MEDIA: 'external_media',
+
+  // Root directory of an SMB file share.
+  SMB: 'smb',
 };
 Object.freeze(VolumeManagerCommon.RootType);
 
@@ -160,6 +162,7 @@ VolumeManagerCommon.RootTypesForUMA = [
   VolumeManagerCommon.RootType.COMPUTER,                          // 20
   VolumeManagerCommon.RootType.EXTERNAL_MEDIA,                    // 21
   VolumeManagerCommon.RootType.DOCUMENTS_PROVIDER,                // 22
+  VolumeManagerCommon.RootType.SMB,                               // 23
 ];
 console.assert(
     Object.keys(VolumeManagerCommon.RootType).length ===
@@ -196,38 +199,6 @@ VolumeManagerCommon.VolumeError = {
 Object.freeze(VolumeManagerCommon.VolumeError);
 
 /**
- * List of connection types of drive.
- *
- * Keep this in sync with the kDriveConnectionType* constants in
- * private_api_dirve.cc.
- *
- * @enum {string}
- * @const
- */
-VolumeManagerCommon.DriveConnectionType = {
-  OFFLINE: 'offline',  // Connection is offline or drive is unavailable.
-  METERED: 'metered',  // Connection is metered. Should limit traffic.
-  ONLINE: 'online'     // Connection is online.
-};
-Object.freeze(VolumeManagerCommon.DriveConnectionType);
-
-/**
- * List of reasons of DriveConnectionType.
- *
- * Keep this in sync with the kDriveConnectionReason constants in
- * private_api_drive.cc.
- *
- * @enum {string}
- * @const
- */
-VolumeManagerCommon.DriveConnectionReason = {
-  NOT_READY: 'not_ready',    // Drive is not ready or authentication is failed.
-  NO_NETWORK: 'no_network',  // Network connection is unavailable.
-  NO_SERVICE: 'no_service'   // Drive service is unavailable.
-};
-Object.freeze(VolumeManagerCommon.DriveConnectionReason);
-
-/**
  * The type of each volume.
  * @enum {string}
  * @const
@@ -244,6 +215,7 @@ VolumeManagerCommon.VolumeType = {
   CROSTINI: 'crostini',
   ANDROID_FILES: 'android_files',
   MY_FILES: 'my_files',
+  SMB: 'smb',
 };
 
 /**
@@ -266,10 +238,12 @@ VolumeManagerCommon.Source = {
  */
 VolumeManagerCommon.VolumeType.isNative = type => {
   return type === VolumeManagerCommon.VolumeType.DOWNLOADS ||
+      type === VolumeManagerCommon.VolumeType.DRIVE ||
       type === VolumeManagerCommon.VolumeType.ANDROID_FILES ||
       type === VolumeManagerCommon.VolumeType.CROSTINI ||
       type === VolumeManagerCommon.VolumeType.REMOVABLE ||
-      type === VolumeManagerCommon.VolumeType.ARCHIVE;
+      type === VolumeManagerCommon.VolumeType.ARCHIVE ||
+      type === VolumeManagerCommon.VolumeType.SMB;
 };
 
 Object.freeze(VolumeManagerCommon.VolumeType);
@@ -313,6 +287,8 @@ VolumeManagerCommon.getVolumeTypeFromRootType = rootType => {
       return VolumeManagerCommon.VolumeType.ANDROID_FILES;
     case VolumeManagerCommon.RootType.MY_FILES:
       return VolumeManagerCommon.VolumeType.MY_FILES;
+    case VolumeManagerCommon.RootType.SMB:
+      return VolumeManagerCommon.VolumeType.SMB;
   }
   assertNotReached('Unknown root type: ' + rootType);
 };
@@ -345,17 +321,11 @@ VolumeManagerCommon.getRootTypeFromVolumeType = volumeType => {
       return VolumeManagerCommon.RootType.PROVIDED;
     case VolumeManagerCommon.VolumeType.REMOVABLE:
       return VolumeManagerCommon.RootType.REMOVABLE;
+    case VolumeManagerCommon.VolumeType.SMB:
+      return VolumeManagerCommon.RootType.SMB;
   }
   assertNotReached('Unknown volume type: ' + volumeType);
 };
-
-/**
- * @typedef {{
- *   type: VolumeManagerCommon.DriveConnectionType,
- *   reason: (VolumeManagerCommon.DriveConnectionReason|undefined)
- * }}
- */
-VolumeManagerCommon.DriveConnectionState;
 
 /**
  * List of media view root types.

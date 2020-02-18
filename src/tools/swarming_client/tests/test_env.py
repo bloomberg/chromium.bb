@@ -16,6 +16,8 @@ CLIENT_DIR = os.path.dirname(TESTS_DIR)
 sys.path.insert(0, CLIENT_DIR)
 
 # Fix import path.
+sys.path.insert(0, os.path.join(
+    CLIENT_DIR, 'third_party', 'httplib2', 'python%d' % sys.version_info.major))
 sys.path.insert(0, os.path.join(CLIENT_DIR, 'third_party', 'pyasn1'))
 sys.path.insert(0, os.path.join(CLIENT_DIR, 'third_party', 'rsa'))
 sys.path.insert(0, os.path.join(CLIENT_DIR, 'third_party'))

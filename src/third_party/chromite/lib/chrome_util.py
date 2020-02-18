@@ -158,7 +158,7 @@ class Copier(object):
     if path.exe and self.strip_bin and path.strip and os.path.getsize(src) > 0:
       strip_flags = (['--strip-unneeded'] if self.strip_flags is None else
                      self.strip_flags)
-      cros_build_lib.DebugRunCommand(
+      cros_build_lib.dbg_run(
           [self.strip_bin] + strip_flags + ['-o', dest, src])
       shutil.copystat(src, dest)
     else:
@@ -376,7 +376,8 @@ _COPY_PATHS_CHROME = (
          blacklist=(r'libwidevinecdm.so',),
          exe=True,
          cond=C.GnSetTo(_IS_COMPONENT_BUILD, True)),
-    Path('locales/*.pak'),
+    Path('locales/*.pak', optional=True),
+    Path('locales/*.pak.gz', optional=True),
     Path('Packages/chrome_content_browser/manifest.json', optional=True),
     Path('Packages/chrome_content_gpu/manifest.json', optional=True),
     Path('Packages/chrome_content_plugin/manifest.json', optional=True),
@@ -385,7 +386,7 @@ _COPY_PATHS_CHROME = (
     Path('Packages/chrome_mash/manifest.json', optional=True),
     Path('Packages/chrome_mash_content_browser/manifest.json', optional=True),
     Path('Packages/content_browser/manifest.json', optional=True),
-    Path('resources/'),
+    Path('resources/chromeos/'),
     Path('resources.pak'),
     Path('xdg-settings'),
     Path('*.png'),
@@ -399,8 +400,8 @@ _COPY_PATHS_MAP = {
 
 def _FixPermissions(dest_base):
   """Last minute permission fixes."""
-  cros_build_lib.DebugRunCommand(['chmod', '-R', 'a+r', dest_base])
-  cros_build_lib.DebugRunCommand(
+  cros_build_lib.dbg_run(['chmod', '-R', 'a+r', dest_base])
+  cros_build_lib.dbg_run(
       ['find', dest_base, '-perm', '/110', '-exec', 'chmod', 'a+x', '{}', '+'])
 
 
@@ -483,9 +484,9 @@ def GetChromeRuntimeDeps(build_dir, build_target):
     runtime_deps = osutils.ReadFile(generated_runtime_deps_file).splitlines()
 
   if not runtime_deps:
-    result = cros_build_lib.RunCommand(['gn', 'desc', build_dir,
-                                        gn_label, 'runtime_deps'],
-                                       capture_output=True)
+    result = cros_build_lib.run(['gn', 'desc', build_dir, gn_label,
+                                 'runtime_deps'],
+                                capture_output=True, encoding='utf-8')
     if result.returncode != 0:
       raise GetRuntimeDepsError('Failed to get runtime deps for: %s' %
                                 build_target)
@@ -498,7 +499,9 @@ def GetChromeRuntimeDeps(build_dir, build_target):
   for f in runtime_deps:
     rebased = os.path.relpath(os.path.abspath(os.path.join(build_dir, f)),
                               src_dir)
-    if f.endswith('/') and not rebased.endswith('/'):
+    # Dirs from a "data" rule in gn file do not have trailing '/' in runtime
+    # deps. Ensures such dirs are ended with a trailing '/'.
+    if os.path.isdir(rebased) and not rebased.endswith('/'):
       rebased += '/'
 
     rebased_runtime_deps.append(rebased)

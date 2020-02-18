@@ -14,6 +14,7 @@
 #include <string>
 #include <vector>
 
+#include "api/test/frame_generator_interface.h"
 #include "api/video/video_frame.h"
 #include "api/video/video_source_interface.h"
 #include "rtc_base/critical_section.h"
@@ -45,26 +46,12 @@ class FrameForwarder : public rtc::VideoSourceInterface<VideoFrame> {
   rtc::VideoSinkWants sink_wants_ RTC_GUARDED_BY(crit_);
 };
 
-class FrameGenerator {
+class FrameGenerator : public FrameGeneratorInterface {
  public:
   virtual ~FrameGenerator() = default;
 
-  // Returns video frame that remains valid until next call.
-  // TODO(kron): Return rtc::scoped_refptr<VideoFrameBuffer> instead of
-  // VideoFrame* and populate the VideoFrame struct in FrameGeneratorCapturer
-  // using VideoFrame::Builder.
-  virtual VideoFrame* NextFrame() = 0;
-
   // Change the capture resolution.
-  virtual void ChangeResolution(size_t width, size_t height);
-
-  enum class OutputType {
-    kI420,
-    // TODO(srte): Remove alias when downstream is updated.
-    I420 = kI420,
-    kI420A,
-    kI010
-  };
+  void ChangeResolution(size_t width, size_t height) override;
 
   // Creates a frame generator that produces frames with small squares that
   // move randomly towards the lower right corner.

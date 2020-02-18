@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
@@ -66,7 +67,7 @@ class MediaEngagementChangeWaiter : public content_settings::Observer {
       const ContentSettingsPattern& secondary_pattern,
       ContentSettingsType content_type,
       const std::string& resource_identifier) override {
-    if (content_type == CONTENT_SETTINGS_TYPE_MEDIA_ENGAGEMENT)
+    if (content_type == ContentSettingsType::MEDIA_ENGAGEMENT)
       Proceed();
   }
 
@@ -121,6 +122,7 @@ class MediaEngagementServiceTest : public ChromeRenderViewHostTestHarness,
     if (GetParam()) {
       scoped_feature_list_.InitWithFeatures(
           {media::kRecordMediaEngagementScores,
+           history::HistoryService::kHistoryServiceUsesTaskScheduler,
            media::kMediaEngagementHTTPSOnly},
           {});
     } else {
@@ -154,13 +156,16 @@ class MediaEngagementServiceTest : public ChromeRenderViewHostTestHarness,
                                        std::move(backend_runner)));
   }
 
+  // Properly shuts down the HistoryService associated with |profile()| and then
+  // creates new one that will run using the |backend_runner|.
   void RestartHistoryService(
       scoped_refptr<base::SequencedTaskRunner> backend_runner) {
-    history::HistoryService* history_old = HistoryServiceFactory::GetForProfile(
-        profile(), ServiceAccessType::IMPLICIT_ACCESS);
-    history_old->Shutdown();
+    // Triggers destruction of the existing HistoryService and waits for all
+    // cleanup work to be done.
+    profile()->BlockUntilHistoryBackendDestroyed();
 
-    HistoryServiceFactory::ShutdownForProfile(profile());
+    // Force the creation of a new HistoryService that runs its backend on
+    // |backend_runner|.
     ConfigureHistoryService(std::move(backend_runner));
     history::HistoryService* history = HistoryServiceFactory::GetForProfile(
         profile(), ServiceAccessType::IMPLICIT_ACCESS);
@@ -175,8 +180,14 @@ class MediaEngagementServiceTest : public ChromeRenderViewHostTestHarness,
 
   void TearDown() override {
     service_->Shutdown();
-    ChromeRenderViewHostTestHarness::TearDown();
+
+    // Tests that run a history service that uses the mock task runner for
+    // backend processing will post tasks there during TearDown. Run them now to
+    // avoid leaks.
+    mock_time_task_runner_->RunUntilIdle();
     service_.reset();
+
+    ChromeRenderViewHostTestHarness::TearDown();
   }
 
   void AdvanceClock() {
@@ -278,11 +289,11 @@ class MediaEngagementServiceTest : public ChromeRenderViewHostTestHarness,
   scoped_refptr<base::TestMockTimeTaskRunner> mock_time_task_runner_;
 
  private:
+  base::ScopedTempDir temp_dir_;
+
   base::SimpleTestClock test_clock_;
 
   std::unique_ptr<MediaEngagementService> service_;
-
-  base::ScopedTempDir temp_dir_;
 
   base::test::ScopedFeatureList scoped_feature_list_;
 };
@@ -605,10 +616,13 @@ TEST_P(MediaEngagementServiceTest, CleanUpDatabaseWhenHistoryIsExpired) {
   // Expire history older than |threshold|.
   MediaEngagementChangeWaiter waiter(profile());
   RestartHistoryService(mock_time_task_runner_);
-  // First, run the task that schedules backend initialization.
-  mock_time_task_runner_->RunUntilIdle();
-  // Now, fast forward time to ensure that the expiration job is completed. 30
-  // seconds is the value of kExpirationDelaySec.
+
+  // From this point profile() is using a new HistoryService that runs on
+  // mock time.
+
+  // Now, fast forward time to ensure that the expiration job is completed. This
+  // will start by triggering the backend initialization. 30 seconds is the
+  // value of kExpirationDelaySec.
   mock_time_task_runner_->FastForwardBy(base::TimeDelta::FromSeconds(30));
   waiter.Wait();
 
@@ -846,7 +860,7 @@ TEST_P(MediaEngagementServiceTest, SchemaVersion_Same) {
   new_service->Shutdown();
 }
 
-INSTANTIATE_TEST_SUITE_P(, MediaEngagementServiceTest, ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All, MediaEngagementServiceTest, ::testing::Bool());
 
 class MediaEngagementServiceEnabledTest
     : public ChromeRenderViewHostTestHarness {};

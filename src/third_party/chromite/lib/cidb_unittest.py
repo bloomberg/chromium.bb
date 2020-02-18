@@ -8,15 +8,18 @@
 from __future__ import print_function
 
 import os
+import unittest
 
 import mock
-import sqlalchemy  # pylint: disable=import-error
 
 from chromite.lib import constants
 from chromite.lib import cidb
 from chromite.lib import cros_test_lib
 from chromite.lib import factory
 from chromite.lib import osutils
+
+if cidb.sqlalchemy_imported:
+  import sqlalchemy  # pylint: disable=import-error
 
 
 class RetryableOperationalError(EnvironmentError):
@@ -45,6 +48,7 @@ class HelperFunctionsTest(cros_test_lib.TestCase):
         statement=None, params=None, orig=error)
 
   # pylint: disable=protected-access
+  @unittest.skipIf(not cidb.sqlalchemy_imported, 'Missing sqlalchemy')
   def testIsRetryableExceptionMatch(self):
     self.assertTrue(cidb._IsRetryableException(RetryableOperationalError()))
     self.assertFalse(cidb._IsRetryableException(FatalOperationalError()))
@@ -167,6 +171,7 @@ class CIDBConnectionFactoryTest(cros_test_lib.MockTestCase):
 
 
 # pylint: disable=protected-access
+@unittest.skipIf(not cidb.sqlalchemy_imported, 'Missing sqlalchemy')
 class SchemaVersionedMySQLConnectionTest(cros_test_lib.MockTempDirTestCase):
   """Test for SchemaVersionedMySQLConnection."""
 

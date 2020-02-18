@@ -13,18 +13,26 @@
 // limitations under the License.
 
 import {Actions} from '../common/actions';
+import {HttpRpcState} from '../common/http_rpc_engine';
 import {
   FrontendLocalState as FrontendState,
   OmniboxState,
   Timestamped,
-  VisibleState
+  TimestampedAreaSelection,
+  VisibleState,
 } from '../common/state';
 import {TimeSpan} from '../common/time';
 
+import {Tab} from './details_panel';
 import {globals} from './globals';
 import {TimeScale} from './time_scale';
 
-function chooseLastest<T extends Timestamped<{}>>(current: T, next: T): T {
+interface Range {
+  start?: number;
+  end?: number;
+}
+
+function chooseLatest<T extends Timestamped<{}>>(current: T, next: T): T {
   if (next !== current && next.lastUpdate > current.lastUpdate) {
     return next;
   }
@@ -61,6 +69,20 @@ function debounce(f: Function, ms: number): Function {
   };
 }
 
+// Calculate the space a scrollbar takes up so that we can subtract it from
+// the canvas width.
+function calculateScrollbarWidth() {
+  const outer = document.createElement('div');
+  outer.style.overflowY = 'scroll';
+  const inner = document.createElement('div');
+  outer.appendChild(inner);
+  document.body.appendChild(outer);
+  const width =
+      outer.getBoundingClientRect().width - inner.getBoundingClientRect().width;
+  document.body.removeChild(outer);
+  return width;
+}
+
 /**
  * State that is shared between several frontend components, but not the
  * controller. This state is updated at 60fps.
@@ -77,13 +99,20 @@ export class FrontendLocalState {
   showNotePreview = false;
   localOnlyMode = false;
   sidebarVisible = true;
+  // This is used to calculate the tracks within a Y range for area selection.
+  areaY: Range = {};
   visibleTracks = new Set<string>();
   prevVisibleTracks = new Set<string>();
   searchIndex = -1;
+  currentTab?: Tab;
+  scrollToTrackId?: string|number;
+  httpRpcState: HttpRpcState = {connected: false};
+  private scrollBarWidth?: number;
 
   private _omniboxState: OmniboxState = {
     lastUpdate: 0,
     omnibox: '',
+    mode: 'SEARCH',
   };
 
   private _visibleState: VisibleState = {
@@ -93,9 +122,20 @@ export class FrontendLocalState {
     resolution: 1,
   };
 
+  private _selectedArea: TimestampedAreaSelection = {
+    lastUpdate: 0,
+  };
+
   // TODO: there is some redundancy in the fact that both |visibleWindowTime|
   // and a |timeScale| have a notion of time range. That should live in one
   // place only.
+
+  getScrollbarWidth() {
+    if (this.scrollBarWidth === undefined) {
+      this.scrollBarWidth = calculateScrollbarWidth();
+    }
+    return this.scrollBarWidth;
+  }
 
   togglePerfDebug() {
     this.perfDebug = !this.perfDebug;
@@ -137,10 +177,16 @@ export class FrontendLocalState {
 
   setSearchIndex(index: number) {
     this.searchIndex = index;
+    globals.rafScheduler.scheduleRedraw();
   }
 
   toggleSidebar() {
     this.sidebarVisible = !this.sidebarVisible;
+    globals.rafScheduler.scheduleFullRedraw();
+  }
+
+  setHttpRpcState(httpRpcState: HttpRpcState) {
+    this.httpRpcState = httpRpcState;
     globals.rafScheduler.scheduleFullRedraw();
   }
 
@@ -161,20 +207,52 @@ export class FrontendLocalState {
   }
 
   mergeState(state: FrontendState): void {
-    this._omniboxState = chooseLastest(this._omniboxState, state.omniboxState);
-    this._visibleState = chooseLastest(this._visibleState, state.visibleState);
-    this.updateLocalTime(
-        new TimeSpan(this._visibleState.startSec, this._visibleState.endSec));
+    this._omniboxState = chooseLatest(this._omniboxState, state.omniboxState);
+    this._visibleState = chooseLatest(this._visibleState, state.visibleState);
+    this._selectedArea = chooseLatest(this._selectedArea, state.selectedArea);
+    if (this._visibleState === state.visibleState) {
+      this.updateLocalTime(
+          new TimeSpan(this._visibleState.startSec, this._visibleState.endSec));
+    }
   }
 
-  private debouncedSetOmnibox = debounce(() => {
+  private selectAreaDebounced = debounce(() => {
+    globals.dispatch(Actions.selectArea(this._selectedArea));
+  }, 20);
+
+
+  selectArea(
+      startSec: number, endSec: number,
+      tracks = this._selectedArea.area ? this._selectedArea.area.tracks : []) {
+    this._selectedArea = {
+      area: {startSec, endSec, tracks},
+      lastUpdate: Date.now() / 1000
+    };
+    this.selectAreaDebounced();
+    globals.frontendLocalState.currentTab = 'time_range';
+    globals.rafScheduler.scheduleFullRedraw();
+  }
+
+  deselectArea() {
+    this._selectedArea = {lastUpdate: Date.now() / 1000};
+    this.selectAreaDebounced();
+    globals.frontendLocalState.currentTab = undefined;
+    globals.rafScheduler.scheduleFullRedraw();
+  }
+
+  get selectedArea(): TimestampedAreaSelection {
+    return this._selectedArea;
+  }
+
+  private setOmniboxDebounced = debounce(() => {
     globals.dispatch(Actions.setOmnibox(this._omniboxState));
   }, 20);
 
-  set omnibox(value: string) {
+  setOmnibox(value: string, mode: 'SEARCH'|'COMMAND') {
     this._omniboxState.omnibox = value;
+    this._omniboxState.mode = mode;
     this._omniboxState.lastUpdate = Date.now() / 1000;
-    this.debouncedSetOmnibox();
+    this.setOmniboxDebounced();
   }
 
   get omnibox(): string {
@@ -197,6 +275,12 @@ export class FrontendLocalState {
     this._visibleState.lastUpdate = Date.now() / 1000;
     this._visibleState.startSec = this.visibleWindowTime.start;
     this._visibleState.endSec = this.visibleWindowTime.end;
+    this._visibleState.resolution = globals.getCurResolution();
+    this.ratelimitedUpdateVisible();
+  }
+
+  updateResolution(pxStart: number, pxEnd: number) {
+    this.timeScale.setLimitsPx(pxStart, pxEnd);
     this._visibleState.resolution = globals.getCurResolution();
     this.ratelimitedUpdateVisible();
   }

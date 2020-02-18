@@ -15,10 +15,10 @@
 #include "osp/public/message_demuxer.h"
 #include "osp/public/network_service_manager.h"
 #include "osp/public/protocol_connection_client.h"
-#include "platform/api/logging.h"
+#include "util/logging.h"
 
 namespace openscreen {
-namespace presentation {
+namespace osp {
 
 #define DECLARE_MSG_REQUEST_RESPONSE(base_name)                        \
   using RequestMsgType = msgs::Presentation##base_name##Request;       \
@@ -428,9 +428,9 @@ Controller::Controller(platform::ClockNowFunctionPtr now_function) {
   const std::vector<ServiceInfo>& receivers =
       NetworkServiceManager::Get()->GetMdnsServiceListener()->GetReceivers();
   for (const auto& info : receivers) {
-    // TODO(issue/33): Replace service_id with endpoint_id when endpoint_id is
-    // more than just an IPEndpoint counter and actually relates to a device's
-    // identity.
+    // TODO(crbug.com/openscreen/33): Replace service_id with endpoint_id when
+    // endpoint_id is more than just an IPEndpoint counter and actually relates
+    // to a device's identity.
     receiver_endpoints_.emplace(info.service_id, info.v4_endpoint.port
                                                      ? info.v4_endpoint
                                                      : info.v6_endpoint);
@@ -783,5 +783,5 @@ void Controller::OnAllReceiversRemoved() {
   availability_requester_->RemoveAllReceivers();
 }
 
-}  // namespace presentation
+}  // namespace osp
 }  // namespace openscreen

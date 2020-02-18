@@ -18,7 +18,6 @@
 #include "absl/types/optional.h"
 #include "call/rtp_packet_sink_interface.h"
 #include "modules/include/module.h"
-#include "modules/include/module_common_types.h"
 #include "modules/rtp_rtcp/include/rtcp_statistics.h"
 #include "modules/rtp_rtcp/include/rtp_rtcp_defines.h"
 #include "modules/rtp_rtcp/source/rtcp_packet/report_block.h"
@@ -42,10 +41,6 @@ class StreamStatistician {
   virtual ~StreamStatistician();
 
   virtual RtpReceiveStats GetStats() const = 0;
-
-  // TODO(nisse): Delete, migrate users to the above the GetStats method.
-  RTC_DEPRECATED
-  virtual bool GetStatistics(RtcpStatistics* statistics, bool reset) = 0;
 
   // Returns average over the stream life time.
   virtual absl::optional<int> GetFractionLostInPercent() const = 0;

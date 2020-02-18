@@ -102,6 +102,7 @@ const Flag<bool> kBoolFlags[] = {
     {"-renegotiate-once", &TestConfig::renegotiate_once},
     {"-renegotiate-freely", &TestConfig::renegotiate_freely},
     {"-renegotiate-ignore", &TestConfig::renegotiate_ignore},
+    {"-renegotiate-explicit", &TestConfig::renegotiate_explicit},
     {"-forbid-renegotiation-after-handshake",
      &TestConfig::forbid_renegotiation_after_handshake},
     {"-enable-all-curves", &TestConfig::enable_all_curves},
@@ -150,8 +151,8 @@ const Flag<bool> kBoolFlags[] = {
     {"-key-update", &TestConfig::key_update},
     {"-expect-delegated-credential-used",
      &TestConfig::expect_delegated_credential_used},
-    {"-enable-pq-experiment-signal", &TestConfig::enable_pq_experiment_signal},
-    {"-expect-pq-experiment-signal", &TestConfig::expect_pq_experiment_signal},
+    {"-expect-hrr", &TestConfig::expect_hrr},
+    {"-expect-no-hrr", &TestConfig::expect_no_hrr},
 };
 
 const Flag<std::string> kStringFlags[] = {
@@ -1140,12 +1141,6 @@ bssl::UniquePtr<SSL_CTX> TestConfig::SetupCtx(SSL_CTX *old_ctx) const {
   CRYPTO_once(&once, init_once);
   SSL_CTX_set0_buffer_pool(ssl_ctx.get(), g_pool);
 
-  // Enable TLS 1.3 for tests.
-  if (!is_dtls &&
-      !SSL_CTX_set_max_proto_version(ssl_ctx.get(), TLS1_3_VERSION)) {
-    return nullptr;
-  }
-
   std::string cipher_list = "ALL";
   if (!cipher.empty()) {
     cipher_list = cipher;
@@ -1325,10 +1320,6 @@ bssl::UniquePtr<SSL_CTX> TestConfig::SetupCtx(SSL_CTX *old_ctx) const {
     SSL_CTX_set_options(ssl_ctx.get(), SSL_OP_CIPHER_SERVER_PREFERENCE);
   }
 
-  if (enable_pq_experiment_signal) {
-    SSL_CTX_enable_pq_experiment_signal(ssl_ctx.get());
-  }
-
   return ssl_ctx;
 }
 
@@ -1360,7 +1351,7 @@ static unsigned PskClientCallback(SSL *ssl, const char *hint,
     return 0;
   }
 
-  BUF_strlcpy(out_identity, config->psk_identity.c_str(), max_identity_len);
+  OPENSSL_strlcpy(out_identity, config->psk_identity.c_str(), max_identity_len);
   OPENSSL_memcpy(out_psk, config->psk.data(), config->psk.size());
   return config->psk.size();
 }
@@ -1577,6 +1568,9 @@ bssl::UniquePtr<SSL> TestConfig::NewSSL(
   if (renegotiate_ignore) {
     SSL_set_renegotiate_mode(ssl.get(), ssl_renegotiate_ignore);
   }
+  if (renegotiate_explicit) {
+    SSL_set_renegotiate_mode(ssl.get(), ssl_renegotiate_explicit);
+  }
   if (!check_close_notify) {
     SSL_set_quiet_shutdown(ssl.get(), 1);
   }
@@ -1607,9 +1601,6 @@ bssl::UniquePtr<SSL> TestConfig::NewSSL(
         case SSL_CURVE_CECPQ2:
           nids.push_back(NID_CECPQ2);
           break;
-        case SSL_CURVE_CECPQ2b:
-          nids.push_back(NID_CECPQ2b);
-          break;
       }
       if (!SSL_set1_curves(ssl.get(), &nids[0], nids.size())) {
         return nullptr;
@@ -1618,8 +1609,8 @@ bssl::UniquePtr<SSL> TestConfig::NewSSL(
   }
   if (enable_all_curves) {
     static const int kAllCurves[] = {
-        NID_secp224r1, NID_X9_62_prime256v1, NID_secp384r1, NID_secp521r1,
-        NID_X25519,    NID_CECPQ2,           NID_CECPQ2b,
+        NID_secp224r1, NID_X9_62_prime256v1, NID_secp384r1,
+        NID_secp521r1, NID_X25519,           NID_CECPQ2,
     };
     if (!SSL_set1_curves(ssl.get(), kAllCurves,
                          OPENSSL_ARRAY_SIZE(kAllCurves))) {

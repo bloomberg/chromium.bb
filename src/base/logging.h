@@ -168,7 +168,7 @@ namespace logging {
 
 // TODO(avi): do we want to do a unification of character types here?
 #if defined(OS_WIN)
-typedef base::char16 PathChar;
+typedef wchar_t PathChar;
 #elif defined(OS_POSIX) || defined(OS_FUCHSIA)
 typedef char PathChar;
 #endif
@@ -530,9 +530,9 @@ BASE_EXPORT extern std::ostream* g_swallow_stream;
 class CheckOpResult {
  public:
   // |message| must be non-null if and only if the check failed.
-  CheckOpResult(std::string* message) : message_(message) {}
+  constexpr CheckOpResult(std::string* message) : message_(message) {}
   // Returns true if the check succeeded.
-  operator bool() const { return !message_; }
+  constexpr operator bool() const { return !message_; }
   // Returns the message.
   std::string* message() { return message_; }
 
@@ -685,20 +685,21 @@ std::string* MakeCheckOpString<std::string, std::string>(
 // The checked condition is wrapped with ANALYZER_ASSUME_TRUE, which under
 // static analysis builds, blocks analysis of the current path if the
 // condition is false.
-#define DEFINE_CHECK_OP_IMPL(name, op)                                       \
-  template <class t1, class t2>                                              \
-  inline std::string* Check##name##Impl(const t1& v1, const t2& v2,          \
-                                        const char* names) {                 \
-    if (ANALYZER_ASSUME_TRUE(v1 op v2))                                      \
-      return NULL;                                                           \
-    else                                                                     \
-      return ::logging::MakeCheckOpString(v1, v2, names);                    \
-  }                                                                          \
-  inline std::string* Check##name##Impl(int v1, int v2, const char* names) { \
-    if (ANALYZER_ASSUME_TRUE(v1 op v2))                                      \
-      return NULL;                                                           \
-    else                                                                     \
-      return ::logging::MakeCheckOpString(v1, v2, names);                    \
+#define DEFINE_CHECK_OP_IMPL(name, op)                                 \
+  template <class t1, class t2>                                        \
+  constexpr std::string* Check##name##Impl(const t1& v1, const t2& v2, \
+                                           const char* names) {        \
+    if (ANALYZER_ASSUME_TRUE(v1 op v2))                                \
+      return nullptr;                                                  \
+    else                                                               \
+      return ::logging::MakeCheckOpString(v1, v2, names);              \
+  }                                                                    \
+  constexpr std::string* Check##name##Impl(int v1, int v2,             \
+                                           const char* names) {        \
+    if (ANALYZER_ASSUME_TRUE(v1 op v2))                                \
+      return nullptr;                                                  \
+    else                                                               \
+      return ::logging::MakeCheckOpString(v1, v2, names);              \
   }
 DEFINE_CHECK_OP_IMPL(EQ, ==)
 DEFINE_CHECK_OP_IMPL(NE, !=)
@@ -716,9 +717,9 @@ DEFINE_CHECK_OP_IMPL(GT, > )
 #define CHECK_GT(val1, val2) CHECK_OP(GT, > , val1, val2)
 
 #if defined(NDEBUG) && !defined(DCHECK_ALWAYS_ON)
-#define DCHECK_IS_ON() 0
+#define DCHECK_IS_ON() false
 #else
-#define DCHECK_IS_ON() 1
+#define DCHECK_IS_ON() true
 #endif
 
 // Definitions for DLOG et al.
@@ -920,6 +921,7 @@ class BASE_EXPORT LogMessage {
   // The file and line information passed in to the constructor.
   const char* file_;
   const int line_;
+  const char* file_basename_;
 
   // This is useful since the LogMessage class uses a lot of Win32 calls
   // that will lose the value of GLE and the code that called the log function
@@ -1025,7 +1027,7 @@ BASE_EXPORT void RawLog(int level, const char* message);
 BASE_EXPORT bool IsLoggingToFileEnabled();
 
 // Returns the default log file path.
-BASE_EXPORT base::string16 GetLogFileFullPath();
+BASE_EXPORT std::wstring GetLogFileFullPath();
 #endif
 
 }  // namespace logging

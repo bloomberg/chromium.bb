@@ -40,6 +40,24 @@ class Event;
 class MouseEvent;
 enum class DomCode;
 
+// Key used to store keyboard 'group' values in Event::Properties
+constexpr char kPropertyKeyboardGroup[] = "_keyevent_kbd_group_";
+
+// Key used to store 'hardware key code' values in Event::Properties
+constexpr char kPropertyKeyboardHwKeyCode[] = "_keyevent_kbd_hw_keycode_";
+
+// IBus specific Event::Properties constants. ibus-gtk in async mode uses
+// gtk-specific XKeyEvent::state bits 24 and 25 for its key events.
+// https://mail.gnome.org/archives/gtk-devel-list/2013-June/msg00003.html
+constexpr char kPropertyKeyboardIBusFlag[] = "_keyevent_kbd_ibus_ime_flags_";
+constexpr unsigned int kPropertyKeyboardIBusFlagOffset = 24;
+constexpr unsigned int kPropertyKeyboardIBusFlagMask = 0x03;
+
+// Key used to store mouse event flag telling ET_MOUSE_EXITED must actually be
+// interpreted as "crossing intermediate window" in blink context.
+constexpr char kPropertyMouseCrossedIntermediateWindow[] =
+    "_mouseevent_cros_window_";
+
 // Returns a ui::Event wrapping a native event. Ownership of the returned value
 // is transferred to the caller.
 EVENTS_EXPORT std::unique_ptr<Event> EventFromNative(
@@ -118,9 +136,6 @@ GetTouchPointerDetailsFromNative(const PlatformEvent& native_event);
 
 // Gets the touch id from a native event.
 EVENTS_EXPORT int GetTouchId(const PlatformEvent& native_event);
-
-// Clear the touch id from bookkeeping if it is a release/cancel event.
-EVENTS_EXPORT void ClearTouchIdIfReleased(const PlatformEvent& native_event);
 
 // Gets the fling velocity from a native event. is_cancel is set to true if
 // this was a tap down, intended to stop an ongoing fling.

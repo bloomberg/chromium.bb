@@ -19,40 +19,40 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.annotation.IntDef;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.util.Pair;
 import android.widget.RemoteViews;
 
+import androidx.annotation.IntDef;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 import androidx.browser.customtabs.CustomTabColorSchemeParams;
 import androidx.browser.customtabs.CustomTabsIntent;
 import androidx.browser.customtabs.CustomTabsSessionToken;
 import androidx.browser.customtabs.TrustedWebUtils;
+import androidx.browser.trusted.TrustedWebActivityDisplayMode;
 import androidx.browser.trusted.TrustedWebActivityIntentBuilder;
 import androidx.browser.trusted.sharing.ShareData;
 import androidx.browser.trusted.sharing.ShareTarget;
 
-import org.chromium.base.CommandLine;
 import org.chromium.base.Log;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.ChromeFeatureList;
-import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.customtabs.dynamicmodule.ModuleMetrics;
 import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
+import org.chromium.chrome.browser.ui.styles.ChromeColors;
+import org.chromium.chrome.browser.ui.widget.TintedDrawable;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.util.UrlConstants;
-import org.chromium.chrome.browser.widget.TintedDrawable;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -178,6 +178,13 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
     private static final String EXTRA_TRANSLATE_LANGUAGE =
             "androidx.browser.customtabs.extra.TRANSLATE_LANGUAGE";
 
+    /**
+     * Extra used to provide a PendingIntent that we can launch to focus the client.
+     * TODO(peconn): Move to AndroidX.
+     */
+    private static final String EXTRA_FOCUS_INTENT =
+            "androidx.browser.customtabs.extra.FOCUS_INTENT";
+
     private static final int MAX_CUSTOM_MENU_ITEMS = 5;
 
     private static final int MAX_CUSTOM_TOOLBAR_ITEMS = 2;
@@ -218,8 +225,11 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
     @Nullable
     private final List<String> mTrustedWebActivityAdditionalOrigins;
     @Nullable
+    private final TrustedWebActivityDisplayMode mTrustedWebActivityDisplayMode;
+    @Nullable
     private String mUrlToLoad;
 
+    private boolean mHasCustomToolbarColor;
     private int mToolbarColor;
     private int mBottomBarColor;
     private boolean mEnableUrlBarHiding;
@@ -234,6 +244,7 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
     private PendingIntent mRemoteViewsPendingIntent;
     // OnFinished listener for PendingIntents. Used for testing only.
     private PendingIntent.OnFinished mOnFinished;
+    private PendingIntent mFocusIntent;
 
     /** Whether this CustomTabActivity was explicitly started by another Chrome Activity. */
     private final boolean mIsOpenedByChrome;
@@ -289,7 +300,10 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
                 IntentUtils.safeGetIntExtra(intent, EXTRA_UI_TYPE, CustomTabsUiType.DEFAULT);
         mUiType = verifiedUiType(requestedUiType);
 
-        mIsIncognito = isIncognitoForPaymentsFlow(intent) || isValidExternalIncognitoIntent(intent);
+        // TODO(https://crbug.com/1023759): WARNING: Current implementation uses
+        // a common off-the-record profile with browser's incognito mode and is
+        // not privacy-safe.
+        mIsIncognito = isValidIncognitoIntent(intent);
 
         CustomTabColorSchemeParams params = getColorSchemeParams(intent, colorScheme);
         retrieveCustomButtons(intent, context);
@@ -335,6 +349,7 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
                 intent, TrustedWebUtils.EXTRA_LAUNCH_AS_TRUSTED_WEB_ACTIVITY, false);
         mTrustedWebActivityAdditionalOrigins = IntentUtils.safeGetStringArrayListExtra(intent,
                 TrustedWebActivityIntentBuilder.EXTRA_ADDITIONAL_TRUSTED_ORIGINS);
+        mTrustedWebActivityDisplayMode = resolveTwaDisplayMode();
         mTitleVisibilityState = IntentUtils.safeGetIntExtra(
                 intent, CustomTabsIntent.EXTRA_TITLE_VISIBILITY_STATE, CustomTabsIntent.NO_TITLE);
         mShowShareItem = IntentUtils.safeGetBooleanExtra(intent,
@@ -363,6 +378,7 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
                 IntentUtils.safeGetBooleanExtra(intent, EXTRA_IS_OPENED_BY_WEBAPK, false);
 
         mTranslateLanguage = IntentUtils.safeGetStringExtra(intent, EXTRA_TRANSLATE_LANGUAGE);
+        mFocusIntent = IntentUtils.safeGetParcelableExtra(intent, EXTRA_FOCUS_INTENT);
 
         String modulePackageName =
                 IntentUtils.safeGetStringExtra(intent, EXTRA_MODULE_PACKAGE_NAME);
@@ -419,61 +435,10 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
         }
     }
 
-    /**
-     * Sends the pending intent for the custom button on the toolbar with the given {@code params},
-     *         with the given {@code url} as data.
-     * @param context The context to use for sending the {@link PendingIntent}.
-     * @param params The parameters for the custom button.
-     * @param url The URL to attach as additional data to the {@link PendingIntent}.
-     * @param title The title to attach as additional data to the {@link PendingIntent}.
-     */
-    public void sendButtonPendingIntentWithUrlAndTitle(
-            Context context, CustomButtonParams params, String url, String title) {
-        Intent addedIntent = new Intent();
-        addedIntent.setData(Uri.parse(url));
-        addedIntent.putExtra(Intent.EXTRA_SUBJECT, title);
-        try {
-            params.getPendingIntent().send(context, 0, addedIntent, mOnFinished, null);
-        } catch (CanceledException e) {
-            Log.e(TAG, "CanceledException while sending pending intent in custom tab");
-        }
-    }
-
     private boolean checkCloseButtonSize(Context context, Bitmap bitmap) {
         int size = context.getResources().getDimensionPixelSize(R.dimen.toolbar_icon_height);
         if (bitmap.getHeight() == size && bitmap.getWidth() == size) return true;
         return false;
-    }
-
-    /**
-     * @return Whether the Custom Tab should attempt to load a dynamic module, i.e.
-     * if the feature is enabled, the package is provided and package is Google-signed.
-     *
-     * Will return false if native is not initialized.
-     */
-    public boolean isDynamicModuleEnabled() {
-        if (!ChromeFeatureList.isInitialized()) return false;
-
-        ComponentName componentName = getModuleComponentName();
-        // Return early if no component name was provided. It's important to do this before checking
-        // the feature experiment group, to avoid entering users into the experiment that do not
-        // even receive the extras for using the feature.
-        if (componentName == null) return false;
-
-        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.CCT_MODULE)) {
-            Log.w(TAG, "The %s feature is disabled.", ChromeFeatureList.CCT_MODULE);
-            ModuleMetrics.recordLoadResult(ModuleMetrics.LoadResult.FEATURE_DISABLED);
-            return false;
-        }
-
-        ExternalAuthUtils authUtils = ChromeApplication.getComponent().resolveExternalAuthUtils();
-        if (!authUtils.isGoogleSigned(componentName.getPackageName())) {
-            Log.w(TAG, "The %s package is not Google-signed.", componentName.getPackageName());
-            ModuleMetrics.recordLoadResult(ModuleMetrics.LoadResult.NOT_GOOGLE_SIGNED);
-            return false;
-        }
-
-        return true;
     }
 
     @NonNull
@@ -492,37 +457,26 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
         }
     }
 
-    private boolean isIncognitoForPaymentsFlow(Intent intent) {
-        return incognitoRequested(intent) && isTrustedIntent() && isOpenedByChrome()
+    // TODO(https://crbug.com/1023759): Remove this function and enable
+    // incognito CCT request for all apps.
+    private boolean isValidIncognitoIntent(Intent intent) {
+        if (!isIncognitoRequested(intent)) return false;
+        // Incognito requests for payments flow are supported without
+        // INCOGNITO_CCT flag as an exceptional case that can use Chrome
+        // incognito profile.
+        if (isForPaymentsFlow(intent)) return true;
+        assert ChromeFeatureList.isInitialized();
+        return ChromeFeatureList.isEnabled(ChromeFeatureList.CCT_INCOGNITO);
+    }
+
+    private boolean isForPaymentsFlow(Intent intent) {
+        return isIncognitoRequested(intent) && isTrustedIntent() && isOpenedByChrome()
                 && isForPaymentRequest();
     }
 
-    public static boolean isValidExternalIncognitoIntent(Intent intent) {
-        if (!CommandLine.getInstance().hasSwitch(ChromeSwitches.ENABLE_INCOGNITO_CUSTOM_TABS)) {
-            return false;
-        }
-
-        if (!incognitoRequested(intent)) {
-            return false;
-        }
-
-        return isVerifiedFirstPartyIntent(intent)
-                || CommandLine.getInstance().hasSwitch(
-                           ChromeSwitches.ALLOW_INCOGNITO_CUSTOM_TABS_FROM_THIRD_PARTY);
-    }
-
-    private static boolean incognitoRequested(Intent intent) {
+    private static boolean isIncognitoRequested(Intent intent) {
         return IntentUtils.safeGetBooleanExtra(
                 intent, IntentHandler.EXTRA_OPEN_NEW_INCOGNITO_TAB, false);
-    }
-
-    private static boolean isVerifiedFirstPartyIntent(Intent intent) {
-        CustomTabsSessionToken sessionToken =
-                CustomTabsSessionToken.getSessionTokenFromIntent(intent);
-        String packageNameFromSession =
-                CustomTabsConnection.getInstance().getClientPackageNameForSession(sessionToken);
-        return !TextUtils.isEmpty(packageNameFromSession)
-                && ExternalAuthUtils.getInstance().isGoogleSigned(packageNameFromSession);
     }
 
     /**
@@ -573,12 +527,13 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
      * Processes the color passed from the client app and updates {@link #mToolbarColor}.
      */
     private void retrieveToolbarColor(CustomTabColorSchemeParams schemeParams, Context context) {
-        int defaultColor = ColorUtils.getDefaultThemeColor(context.getResources(), isIncognito());
+        int defaultColor = ChromeColors.getDefaultThemeColor(context.getResources(), isIncognito());
         if (isIncognito()) {
             mToolbarColor = defaultColor;
             return; // Don't allow toolbar color customization for incognito tabs.
         }
-        int color = schemeParams.toolbarColor != null ? schemeParams.toolbarColor : defaultColor;
+        mHasCustomToolbarColor = (schemeParams.toolbarColor != null);
+        int color = mHasCustomToolbarColor ? schemeParams.toolbarColor : defaultColor;
         mToolbarColor = ColorUtils.getOpaqueColor(color);
     }
 
@@ -627,6 +582,20 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
         }
 
         return url;
+    }
+
+    @Nullable
+    private TrustedWebActivityDisplayMode resolveTwaDisplayMode() {
+        Bundle bundle = IntentUtils.safeGetBundleExtra(mIntent,
+                TrustedWebActivityIntentBuilder.EXTRA_DISPLAY_MODE);
+        if (bundle == null) {
+            return null;
+        }
+        try {
+            return TrustedWebActivityDisplayMode.fromBundle(bundle);
+        } catch (Throwable e) {
+            return null;
+        }
     }
 
     @Override
@@ -693,6 +662,11 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
     @Override
     public int getToolbarColor() {
         return mToolbarColor;
+    }
+
+    @Override
+    public boolean hasCustomToolbarColor() {
+        return mHasCustomToolbarColor;
     }
 
     @Override
@@ -834,6 +808,38 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
         return mIsTrustedWebActivity;
     }
 
+    @Nullable
+    @Override
+    public TrustedWebActivityDisplayMode getTwaDisplayMode() {
+        return mTrustedWebActivityDisplayMode;
+    }
+
+    @Override
+    public boolean isDynamicModuleEnabled() {
+        if (!ChromeFeatureList.isInitialized()) return false;
+
+        ComponentName componentName = getModuleComponentName();
+        // Return early if no component name was provided. It's important to do this before checking
+        // the feature experiment group, to avoid entering users into the experiment that do not
+        // even receive the extras for using the feature.
+        if (componentName == null) return false;
+
+        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.CCT_MODULE)) {
+            Log.w(TAG, "The %s feature is disabled.", ChromeFeatureList.CCT_MODULE);
+            ModuleMetrics.recordLoadResult(ModuleMetrics.LoadResult.FEATURE_DISABLED);
+            return false;
+        }
+
+        ExternalAuthUtils authUtils = ChromeApplication.getComponent().resolveExternalAuthUtils();
+        if (!authUtils.isGoogleSigned(componentName.getPackageName())) {
+            Log.w(TAG, "The %s package is not Google-signed.", componentName.getPackageName());
+            ModuleMetrics.recordLoadResult(ModuleMetrics.LoadResult.NOT_GOOGLE_SIGNED);
+            return false;
+        }
+
+        return true;
+    }
+
     @Override
     @Nullable
     public ComponentName getModuleComponentName() {
@@ -903,5 +909,11 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
             // Catch unparcelling errors.
             return null;
         }
+    }
+
+    @Override
+    @Nullable
+    public PendingIntent getFocusIntent() {
+        return mFocusIntent;
     }
 }

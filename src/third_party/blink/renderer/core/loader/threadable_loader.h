@@ -67,7 +67,7 @@ class ThreadableLoaderClient;
 // the constructor.
 // In either case, Start() must be called to actaully begin the request.
 class CORE_EXPORT ThreadableLoader final
-    : public GarbageCollectedFinalized<ThreadableLoader>,
+    : public GarbageCollected<ThreadableLoader>,
       private RawResourceClient {
   USING_GARBAGE_COLLECTED_MIXIN(ThreadableLoader);
 
@@ -161,7 +161,6 @@ class CORE_EXPORT ThreadableLoader final
                         const ResourceResponse&) override;
   void RedirectBlocked() override;
   void DataDownloaded(Resource*, uint64_t) override;
-  void DidReceiveResourceTiming(Resource*, const ResourceTimingInfo&) override;
   void DidDownloadToBlob(Resource*, scoped_refptr<BlobDataHandle>) override;
 
   // Notify Inspector and log to console about resource response. Use this

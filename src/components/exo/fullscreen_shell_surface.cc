@@ -8,8 +8,10 @@
 #include "components/exo/surface.h"
 #include "components/exo/wm_helper.h"
 #include "third_party/skia/include/core/SkPath.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
+#include "ui/aura/window_occlusion_tracker.h"
 #include "ui/aura/window_targeter.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/dip_util.h"
@@ -208,6 +210,17 @@ void FullscreenShellSurface::OnWindowDestroying(aura::Window* window) {
   window->RemoveObserver(this);
 }
 
+void FullscreenShellSurface::UpdateHostWindowBounds() {
+  // This method applies multiple changes to the window tree. Use ScopedPause
+  // to ensure that occlusion isn't recomputed before all changes have been
+  // applied.
+  aura::WindowOcclusionTracker::ScopedPause pause_occlusion;
+
+  host_window()->SetBounds(
+      gfx::Rect(root_surface()->window()->bounds().size()));
+  host_window()->SetTransparent(!root_surface()->FillsBoundsOpaquely());
+}
+
 void FullscreenShellSurface::CreateFullscreenShellSurfaceWidget(
     ui::WindowShowState show_state) {
   DCHECK(GetEnabled());
@@ -217,8 +230,8 @@ void FullscreenShellSurface::CreateFullscreenShellSurfaceWidget(
   params.type = views::Widget::InitParams::TYPE_WINDOW_FRAMELESS;
   params.ownership = views::Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET;
   params.delegate = this;
-  params.shadow_type = views::Widget::InitParams::SHADOW_TYPE_NONE;
-  params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
+  params.shadow_type = views::Widget::InitParams::ShadowType::kNone;
+  params.opacity = views::Widget::InitParams::WindowOpacity::kTranslucent;
   params.show_state = show_state;
   params.activatable = views::Widget::InitParams::ACTIVATABLE_YES;
   params.parent = WMHelper::GetInstance()->GetRootWindowForNewWindows();

@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
@@ -208,12 +207,11 @@ IN_PROC_BROWSER_TEST_F(ToolbarViewInteractiveUITest,
 
 class ToolbarViewTest : public InProcessBrowserTest {
  public:
-  ToolbarViewTest() {}
+  ToolbarViewTest() = default;
+  ToolbarViewTest(const ToolbarViewTest&) = delete;
+  ToolbarViewTest& operator=(const ToolbarViewTest&) = delete;
 
   void RunToolbarCycleFocusTest(Browser* browser);
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ToolbarViewTest);
 };
 
 void ToolbarViewTest::RunToolbarCycleFocusTest(Browser* browser) {
@@ -300,27 +298,31 @@ IN_PROC_BROWSER_TEST_F(ToolbarViewTest, ToolbarCycleFocusWithBookmarkBar) {
 }
 
 IN_PROC_BROWSER_TEST_F(ToolbarViewTest, BackButtonUpdate) {
-  ToolbarView* toolbar =
+  ToolbarButtonProvider* toolbar_button_provider =
       BrowserView::GetBrowserViewForBrowser(browser())->toolbar();
-  EXPECT_FALSE(toolbar->back_button()->GetEnabled());
+  EXPECT_FALSE(toolbar_button_provider->GetBackButton()->GetEnabled());
 
   // Navigate to title1.html. Back button should be enabled.
   GURL url = ui_test_utils::GetTestUrl(
       base::FilePath(), base::FilePath(FILE_PATH_LITERAL("title1.html")));
   ui_test_utils::NavigateToURL(browser(), url);
-  EXPECT_TRUE(toolbar->back_button()->GetEnabled());
+  EXPECT_TRUE(toolbar_button_provider->GetBackButton()->GetEnabled());
 
   // Delete old navigations. Back button will be disabled.
   auto& controller =
       browser()->tab_strip_model()->GetActiveWebContents()->GetController();
   controller.DeleteNavigationEntries(base::BindRepeating(
       [&](content::NavigationEntry* entry) { return true; }));
-  EXPECT_FALSE(toolbar->back_button()->GetEnabled());
+  EXPECT_FALSE(toolbar_button_provider->GetBackButton()->GetEnabled());
 }
 
 class ToolbarViewWithExtensionsToolbarMenuTest : public ToolbarViewTest {
  public:
-  ToolbarViewWithExtensionsToolbarMenuTest() {}
+  ToolbarViewWithExtensionsToolbarMenuTest() = default;
+  ToolbarViewWithExtensionsToolbarMenuTest(
+      const ToolbarViewWithExtensionsToolbarMenuTest&) = delete;
+  ToolbarViewWithExtensionsToolbarMenuTest& operator=(
+      const ToolbarViewWithExtensionsToolbarMenuTest&) = delete;
 
   void SetUp() override {
     scoped_feature_list_.InitAndEnableFeature(features::kExtensionsToolbarMenu);
@@ -329,8 +331,6 @@ class ToolbarViewWithExtensionsToolbarMenuTest : public ToolbarViewTest {
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(ToolbarViewWithExtensionsToolbarMenuTest);
 };
 
 IN_PROC_BROWSER_TEST_F(ToolbarViewWithExtensionsToolbarMenuTest,

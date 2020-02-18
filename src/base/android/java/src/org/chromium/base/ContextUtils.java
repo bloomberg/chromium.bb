@@ -4,6 +4,7 @@
 
 package org.chromium.base;
 
+import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
 import android.content.ContextWrapper;
@@ -11,6 +12,9 @@ import android.content.SharedPreferences;
 import android.content.res.AssetManager;
 import android.os.Process;
 import android.preference.PreferenceManager;
+
+import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.MainDex;
@@ -22,8 +26,6 @@ import org.chromium.base.annotations.MainDex;
 public class ContextUtils {
     private static final String TAG = "ContextUtils";
     private static Context sApplicationContext;
-    // TODO(agrieve): Remove sProcessName caching when we stop supporting JB.
-    private static String sProcessName;
 
     /**
      * Initialization-on-demand holder. This exists for thread-safe lazy initialization.
@@ -128,38 +130,32 @@ public class ContextUtils {
     /**
      * @return Whether the process is isolated.
      */
+    @SuppressWarnings("NewApi")
     public static boolean isIsolatedProcess() {
-        try {
-            return (Boolean) Process.class.getMethod("isIsolated").invoke(null);
-        } catch (Exception e) { // No multi-catch below API level 19 for reflection exceptions.
-            // If fallback logic is ever needed, refer to:
-            // https://chromium-review.googlesource.com/c/chromium/src/+/905563/1
-            throw new RuntimeException(e);
-        }
+        // Was not made visible until Android P, but the method has always been there.
+        return Process.isIsolated();
     }
 
     /** @return The name of the current process. E.g. "org.chromium.chrome:privileged_process0". */
     public static String getProcessName() {
-        // Once we drop support JB, this method can be simplified to not cache sProcessName and call
-        // ActivityThread.currentProcessName().
-        if (sProcessName != null) {
-            return sProcessName;
+        return ApiCompatibilityUtils.getProcessName();
+    }
+
+    /**
+     * Extract the {@link Activity} if the given {@link Context} either is or wraps one.
+     *
+     * @param context The context to check.
+     * @return Extracted activity if it exists, otherwise null.
+     */
+    public static @Nullable Activity activityFromContext(@Nullable Context context) {
+        // Only retrieves the base context if the supplied context is a ContextWrapper but not an
+        // Activity, because Activity is a subclass of ContextWrapper.
+        while (context instanceof ContextWrapper) {
+            if (context instanceof Activity) return (Activity) context;
+
+            context = ((ContextWrapper) context).getBaseContext();
         }
-        try {
-            // An even more convenient ActivityThread.currentProcessName() exists, but was not added
-            // until JB MR2.
-            Class<?> activityThreadClazz = Class.forName("android.app.ActivityThread");
-            Object activityThread =
-                    activityThreadClazz.getMethod("currentActivityThread").invoke(null);
-            // Before JB MR2, currentActivityThread() returns null when called on a non-UI thread.
-            // Cache the name to allow other threads to access it.
-            sProcessName =
-                    (String) activityThreadClazz.getMethod("getProcessName").invoke(activityThread);
-            return sProcessName;
-        } catch (Exception e) { // No multi-catch below API level 19 for reflection exceptions.
-            // If fallback logic is ever needed, refer to:
-            // https://chromium-review.googlesource.com/c/chromium/src/+/905563/1
-            throw new RuntimeException(e);
-        }
+
+        return null;
     }
 }

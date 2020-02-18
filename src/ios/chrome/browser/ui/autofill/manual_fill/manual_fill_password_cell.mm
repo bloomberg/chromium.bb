@@ -7,9 +7,9 @@
 #include "base/metrics/user_metrics.h"
 #include "base/strings/sys_string_conversions.h"
 #import "ios/chrome/browser/favicon/favicon_loader.h"
-#import "ios/chrome/browser/ui/autofill/manual_fill/credential.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_cell_utils.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_content_injector.h"
+#import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_credential.h"
 #import "ios/chrome/browser/ui/list_model/list_model.h"
 #import "ios/chrome/common/colors/semantic_color_names.h"
 #import "ios/chrome/common/favicon/favicon_view.h"
@@ -22,6 +22,8 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+NSString* const kMaskedPasswordTitle = @"••••••••";
 
 @interface ManualFillCredentialItem ()
 
@@ -210,7 +212,8 @@ static const CGFloat NoMultiplier = 1.0;
   [verticalLeadViews addObject:self.usernameButton];
 
   if (credential.password.length) {
-    [self.passwordButton setTitle:@"••••••••" forState:UIControlStateNormal];
+    [self.passwordButton setTitle:kMaskedPasswordTitle
+                         forState:UIControlStateNormal];
     self.passwordButton.accessibilityLabel =
         l10n_util::GetNSString(IDS_IOS_SETTINGS_PASSWORD_HIDDEN_LABEL);
     [verticalLeadViews addObject:self.passwordButton];

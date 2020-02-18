@@ -24,11 +24,11 @@
 
 #include "util/util.h"
 #include "util/logging.h"
-#include "util/sparse_array.h"
 #include "util/strutil.h"
 #include "util/utf.h"
 #include "re2/prog.h"
 #include "re2/regexp.h"
+#include "re2/sparse_array.h"
 
 namespace re2 {
 
@@ -377,8 +377,8 @@ bool RE2::Replace(std::string* str,
   if (!re.Rewrite(&s, rewrite, vec, nvec))
     return false;
 
-  assert(vec[0].begin() >= str->data());
-  assert(vec[0].end() <= str->data()+str->size());
+  assert(vec[0].data() >= str->data());
+  assert(vec[0].data() + vec[0].size() <= str->data() + str->size());
   str->replace(vec[0].data() - str->data(), vec[0].size(), s);
   return true;
 }
@@ -406,9 +406,9 @@ int RE2::GlobalReplace(std::string* str,
     if (!re.Match(*str, static_cast<size_t>(p - str->data()),
                   str->size(), UNANCHORED, vec, nvec))
       break;
-    if (p < vec[0].begin())
-      out.append(p, vec[0].begin() - p);
-    if (vec[0].begin() == lastend && vec[0].size() == 0) {
+    if (p < vec[0].data())
+      out.append(p, vec[0].data() - p);
+    if (vec[0].data() == lastend && vec[0].empty()) {
       // Disallow empty match at end of last match: skip ahead.
       //
       // fullrune() takes int, not ptrdiff_t. However, it just looks
@@ -439,7 +439,7 @@ int RE2::GlobalReplace(std::string* str,
       continue;
     }
     re.Rewrite(&out, rewrite, vec, nvec);
-    p = vec[0].end();
+    p = vec[0].data() + vec[0].size();
     lastend = p;
     count++;
   }
@@ -934,7 +934,7 @@ bool RE2::Rewrite(std::string* out,
         return false;
       }
       StringPiece snip = vec[n];
-      if (snip.size() > 0)
+      if (!snip.empty())
         out->append(snip.data(), snip.size());
     } else if (c == '\\') {
       out->push_back('\\');

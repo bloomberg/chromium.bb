@@ -1,8 +1,20 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.exportPath('print_preview.Header');
+import 'chrome://resources/cr_elements/shared_vars_css.m.js';
+import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
+import './icons.js';
+import './print_preview_vars_css.js';
+import '../strings.m.js';
+
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {Destination} from '../data/destination.js';
+import {Error, State} from '../data/state.js';
+
+import {SettingsBehavior} from './settings_behavior.js';
 
 /**
  * @typedef {{numPages: number,
@@ -10,51 +22,31 @@ cr.exportPath('print_preview.Header');
  *            pagesLabel: string,
  *            summaryLabel: string}}
  */
-print_preview.Header.LabelInfo;
+let LabelInfo;
 
 Polymer({
   is: 'print-preview-header',
+
+  _template: html`{__html_template__}`,
 
   behaviors: [SettingsBehavior],
 
   properties: {
     cloudPrintErrorMessage: String,
 
-    /** @type {!print_preview.Destination} */
+    /** @type {!Destination} */
     destination: Object,
 
-    /** @type {!print_preview.Error} */
+    /** @type {!Error} */
     error: Number,
 
-    firstLoad: Boolean,
-
-    /** @type {!print_preview.State} */
+    /** @type {!State} */
     state: Number,
-
-    /** @private */
-    printButtonEnabled_: {
-      type: Boolean,
-      value: false,
-    },
 
     managed: Boolean,
 
-    /** @private */
-    printButtonLabel_: {
-      type: String,
-      value: function() {
-        return loadTimeData.getString('printButton');
-      },
-    },
-
     /** @private {?string} */
     summary_: {
-      type: String,
-      value: null,
-    },
-
-    /** @private {?string} */
-    summaryLabel_: {
       type: String,
       value: null,
     },
@@ -63,18 +55,7 @@ Polymer({
   observers: [
     'update_(settings.copies.value, settings.duplex.value, ' +
         'settings.pages.value, state, destination.id)',
-    'updatePrintButtonLabel_(destination.id)'
   ],
-
-  /** @private */
-  onPrintClick_: function() {
-    this.fire('print-requested');
-  },
-
-  /** @private */
-  onCancelClick_: function() {
-    this.fire('cancel-requested');
-  },
 
   /**
    * @return {boolean}
@@ -82,20 +63,12 @@ Polymer({
    */
   isPdfOrDrive_: function() {
     return this.destination &&
-        (this.destination.id ==
-             print_preview.Destination.GooglePromotedId.SAVE_AS_PDF ||
-         this.destination.id ==
-             print_preview.Destination.GooglePromotedId.DOCS);
-  },
-
-  /** @private */
-  updatePrintButtonLabel_: function() {
-    this.printButtonLabel_ = loadTimeData.getString(
-        this.isPdfOrDrive_() ? 'saveButton' : 'printButton');
+        (this.destination.id == Destination.GooglePromotedId.SAVE_AS_PDF ||
+         this.destination.id == Destination.GooglePromotedId.DOCS);
   },
 
   /**
-   * @return {!print_preview.Header.LabelInfo}
+   * @return {!LabelInfo}
    * @private
    */
   computeLabelInfo_: function() {
@@ -132,31 +105,19 @@ Polymer({
   /** @private */
   update_: function() {
     switch (this.state) {
-      case (print_preview.State.PRINTING):
-        this.printButtonEnabled_ = false;
+      case (State.PRINTING):
         this.summary_ = loadTimeData.getString(
             this.isPdfOrDrive_() ? 'saving' : 'printing');
-        this.summaryLabel_ = this.summary_;
         break;
-      case (print_preview.State.READY):
-        this.printButtonEnabled_ = true;
+      case (State.READY):
         const labelInfo = this.computeLabelInfo_();
         this.summary_ = this.getSummary_(labelInfo);
-        this.summaryLabel_ = this.getSummaryLabel_(labelInfo);
-        if (this.firstLoad) {
-          this.$$('cr-button.action-button').focus();
-          this.fire('print-button-focused');
-        }
         break;
-      case (print_preview.State.FATAL_ERROR):
+      case (State.FATAL_ERROR):
         this.summary_ = this.getErrorMessage_();
-        this.summaryLabel_ = this.getErrorMessage_();
-        this.printButtonEnabled_ = false;
         break;
       default:
         this.summary_ = null;
-        this.summaryLabel_ = null;
-        this.printButtonEnabled_ = false;
         break;
     }
   },
@@ -167,9 +128,9 @@ Polymer({
    */
   getErrorMessage_: function() {
     switch (this.error) {
-      case print_preview.Error.PRINT_FAILED:
+      case Error.PRINT_FAILED:
         return loadTimeData.getString('couldNotPrint');
-      case print_preview.Error.CLOUD_PRINT_ERROR:
+      case Error.CLOUD_PRINT_ERROR:
         return this.cloudPrintErrorMessage;
       default:
         return '';
@@ -177,33 +138,15 @@ Polymer({
   },
 
   /**
-   * @param {!print_preview.Header.LabelInfo} labelInfo
+   * @param {!LabelInfo} labelInfo
    * @return {string}
    * @private
    */
   getSummary_: function(labelInfo) {
-    if (labelInfo.numSheets === 0) {
-      return '';
-    }
-
-    let html = loadTimeData.getStringF(
-        'printPreviewSummaryFormatShort',
-        '<b>' + labelInfo.numSheets.toLocaleString() + '</b>',
-        '<b>' + labelInfo.summaryLabel + '</b>');
-
-    // Removing extra spaces from within the string.
-    html = html.replace(/\s{2,}/g, ' ');
-    return html;
-  },
-
-  /**
-   * @param {!print_preview.Header.LabelInfo} labelInfo
-   * @return {string}
-   * @private
-   */
-  getSummaryLabel_: function(labelInfo) {
-    return loadTimeData.getStringF(
-        'printPreviewSummaryFormatShort', labelInfo.numSheets.toLocaleString(),
-        labelInfo.summaryLabel);
+    return labelInfo.numSheets === 0 ?
+        '' :
+        loadTimeData.getStringF(
+            'printPreviewNewSummaryFormatShort',
+            labelInfo.numSheets.toLocaleString(), labelInfo.summaryLabel);
   },
 });

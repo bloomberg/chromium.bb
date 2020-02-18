@@ -8,9 +8,10 @@ import "media/mojo/mojom/remoting_common.mojom";
 
 interface RemoterFactory {
   // Create a new Remoter associated with the given RemotingSource and bind it
-  // to the given interface request. The RemotingSource will be notified when
+  // to the given interface receiver. The RemotingSource will be notified when
   // the Remoter becomes available for use (or becomes unavailable).
-  Create(RemotingSource source, Remoter& remoter);
+  Create(pending_remote<RemotingSource> source,
+         pending_receiver<Remoter> remoter);
 };
 
 // Interface used by the source to control when media bitstream data is read
@@ -45,11 +46,11 @@ interface Remoter {
   // and then transported to the remote device. RemotingDataStreamSenders are
   // used by the source to control when data should be consumed from the data
   // pipes and sent. One or both pipes (and their corresponding
-  // RemotingDataStreamSender interface requests) must be provided.
+  // RemotingDataStreamSender interface receivers) must be provided.
   StartDataStreams(handle<data_pipe_consumer>? audio_pipe,
                    handle<data_pipe_consumer>? video_pipe,
-                   RemotingDataStreamSender&? audio_sender,
-                   RemotingDataStreamSender&? video_sender);
+                   pending_receiver<RemotingDataStreamSender>? audio_sender,
+                   pending_receiver<RemotingDataStreamSender>? video_sender);
 
   // Stops remoting media. Messages in both directions will be dropped after this
   // point as well as any pending or in-transit media bitstream data.

@@ -45,6 +45,13 @@
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/skia_util.h"
 
+#if BUILDFLAG(USE_COLOR_PIPELINE)
+#include "chrome/browser/ui/color/chrome_color_id.h"
+#include "third_party/skia/include/core/SkColor.h"
+#include "ui/color/color_mixer.h"
+#include "ui/color/color_provider.h"
+#endif
+
 using content::BrowserThread;
 using extensions::Extension;
 using TP = ThemeProperties;
@@ -62,7 +69,7 @@ constexpr int kTallestFrameHeight = kTallestTabHeight + 19;
 // change default theme assets, if you need themes to recreate their generated
 // images (which are cached), or if you changed how missing values are
 // generated.
-const int kThemePackVersion = 71;
+const int kThemePackVersion = 72;
 
 // IDs that are in the DataPack won't clash with the positive integer
 // uint16_t. kHeaderID should always have the maximum value because we want the
@@ -106,7 +113,7 @@ struct PersistingImagesTable {
   // someone adds a new resource.
   int idr_id;
 
-  // String to check for when parsing theme manifests or NULL if this isn't
+  // String to check for when parsing theme manifests or null if this isn't
   // supposed to be changeable by the user.
   const char* const key;
 };
@@ -255,6 +262,8 @@ constexpr StringToIntTable kOverwritableColorTable[] = {
     {"tab_text", TP::COLOR_TAB_TEXT},
     {"toolbar", TP::COLOR_TOOLBAR},
     {"toolbar_button_icon", TP::COLOR_TOOLBAR_BUTTON_ICON},
+    {"omnibox_text", TP::COLOR_OMNIBOX_TEXT},
+    {"omnibox_background", TP::COLOR_OMNIBOX_BACKGROUND},
     {"ntp_background", TP::COLOR_NTP_BACKGROUND},
     {"ntp_header", TP::COLOR_NTP_HEADER},
     {"ntp_link", TP::COLOR_NTP_LINK},
@@ -369,7 +378,7 @@ SkBitmap CreateLowQualityResizedBitmap(const SkBitmap& source_bitmap,
   SkRect scaled_bounds = RectToSkRect(gfx::Rect(scaled_size));
   // Note(oshima): The following scaling code doesn't work with
   // a mask image.
-  canvas.drawBitmapRect(source_bitmap, scaled_bounds, NULL);
+  canvas.drawBitmapRect(source_bitmap, scaled_bounds, nullptr);
   return scaled_bitmap;
 }
 
@@ -564,7 +573,40 @@ class ControlButtonBackgroundImageSource : public gfx::CanvasImageSource {
   DISALLOW_COPY_AND_ASSIGN(ControlButtonBackgroundImageSource);
 };
 
+// Returns whether the color is grayscale.
+bool IsColorGrayscale(SkColor color) {
+  constexpr int kChannelTolerance = 9;
+  auto channels = {SkColorGetR(color), SkColorGetG(color), SkColorGetB(color)};
+  const int range = std::max(channels) - std::min(channels);
+  return range < kChannelTolerance;
+}
+
 }  // namespace
+
+namespace internal {  // for testing
+
+// Calculate contrasting color for given |bg_color|. Returns lighter color if
+// the color is very dark and returns darker color otherwise.
+SkColor GetContrastingColorForBackground(SkColor bg_color,
+                                         float luminosity_change) {
+  color_utils::HSL hsl;
+  SkColorToHSL(bg_color, &hsl);
+
+  // If luminosity is 0, it means |bg_color| is black. Use white for black
+  // backgrounds.
+  if (hsl.l == 0)
+    return SK_ColorWHITE;
+
+  // Decrease luminosity, unless color is already dark.
+  if (hsl.l > 0.15)
+    luminosity_change *= -1;
+
+  hsl.l *= 1 + luminosity_change;
+  if (hsl.l >= 0.0f && hsl.l <= 1.0f)
+    return HSLToSkColor(hsl, 255);
+  return bg_color;
+}
+}  // namespace internal
 
 BrowserThemePack::~BrowserThemePack() {
   if (!data_pack_.get()) {
@@ -698,18 +740,18 @@ scoped_refptr<BrowserThemePack> BrowserThemePack::BuildFromDataPack(
 
   if (!pack->data_pack_->LoadFromPath(path)) {
     LOG(ERROR) << "Failed to load theme data pack.";
-    return NULL;
+    return nullptr;
   }
 
   base::StringPiece pointer;
   if (!pack->data_pack_->GetStringPiece(kHeaderID, &pointer))
-    return NULL;
+    return nullptr;
   pack->header_ = reinterpret_cast<BrowserThemePackHeader*>(const_cast<char*>(
       pointer.data()));
 
   if (pack->header_->version != kThemePackVersion) {
     DLOG(ERROR) << "BuildFromDataPack failure! Version mismatch!";
-    return NULL;
+    return nullptr;
   }
   // TODO(erg): Check endianess once DataPack works on the other endian.
   std::string theme_id(reinterpret_cast<char*>(pack->header_->theme_id),
@@ -717,36 +759,36 @@ scoped_refptr<BrowserThemePack> BrowserThemePack::BuildFromDataPack(
   std::string truncated_id = expected_id.substr(0, crx_file::id_util::kIdSize);
   if (theme_id != truncated_id) {
     DLOG(ERROR) << "Wrong id: " << theme_id << " vs " << expected_id;
-    return NULL;
+    return nullptr;
   }
 
   if (!pack->data_pack_->GetStringPiece(kTintsID, &pointer))
-    return NULL;
+    return nullptr;
   pack->tints_ = reinterpret_cast<TintEntry*>(const_cast<char*>(
       pointer.data()));
 
   if (!pack->data_pack_->GetStringPiece(kColorsID, &pointer))
-    return NULL;
+    return nullptr;
   pack->colors_ =
       reinterpret_cast<ColorPair*>(const_cast<char*>(pointer.data()));
 
   if (!pack->data_pack_->GetStringPiece(kDisplayPropertiesID, &pointer))
-    return NULL;
+    return nullptr;
   pack->display_properties_ = reinterpret_cast<DisplayPropertyPair*>(
       const_cast<char*>(pointer.data()));
 
   if (!pack->data_pack_->GetStringPiece(kSourceImagesID, &pointer))
-    return NULL;
+    return nullptr;
   pack->source_images_ = reinterpret_cast<int*>(
       const_cast<char*>(pointer.data()));
 
   if (!pack->data_pack_->GetStringPiece(kScaleFactorsID, &pointer))
-    return NULL;
+    return nullptr;
 
   if (!InputScalesValid(pointer, pack->scale_factors_)) {
     DLOG(ERROR) << "BuildFromDataPack failure! The pack scale factors differ "
                 << "from those supported by platform.";
-    return NULL;
+    return nullptr;
   }
   pack->is_valid_ = true;
   return pack;
@@ -944,7 +986,7 @@ gfx::Image BrowserThemePack::GetImageNamed(int idr_id) {
 base::RefCountedMemory* BrowserThemePack::GetRawData(
     int idr_id,
     ui::ScaleFactor scale_factor) const {
-  base::RefCountedMemory* memory = NULL;
+  base::RefCountedMemory* memory = nullptr;
   int prs_id = GetPersistentIDByIDR(idr_id);
   int raw_id = GetRawIDByPersistentID(prs_id, scale_factor);
 
@@ -976,13 +1018,38 @@ bool BrowserThemePack::HasCustomImage(int idr_id) const {
   return false;
 }
 
+#if BUILDFLAG(USE_COLOR_PIPELINE)
+void BrowserThemePack::AddCustomThemeColorMixers(
+    ui::ColorProvider* provider) const {
+  // A map from theme property IDs to color IDs for use in color mixers.
+  constexpr struct {
+    int property_id;
+    int color_id;
+  } kThemePropertiesMap[] = {
+      {TP::COLOR_TOOLBAR, kColorToolbar},
+      {TP::COLOR_OMNIBOX_TEXT, kColorOmniboxText},
+      {TP::COLOR_OMNIBOX_BACKGROUND, kColorOmniboxBackground},
+  };
+
+  ui::ColorSet::ColorMap theme_colors;
+  SkColor color;
+  for (const auto& entry : kThemePropertiesMap) {
+    if (GetColor(entry.property_id, &color))
+      theme_colors.insert({entry.color_id, color});
+  }
+  if (theme_colors.empty())
+    return;
+  provider->AddMixer().AddSet({kColorSetCustomTheme, std::move(theme_colors)});
+}
+#endif
+
 // private:
 
 void BrowserThemePack::AdjustThemePack() {
   CropImages(&images_);
 
   // Set toolbar related elements' colors (e.g. status bubble, info bar,
-  // download shelf, detached bookmark bar) to toolbar color.
+  // download shelf) to toolbar color.
   SetToolbarRelatedColors();
 
   // Create toolbar image, and generate toolbar color from image where relevant.
@@ -1269,7 +1336,7 @@ void BrowserThemePack::ParseImageNamesFromJSON(
   for (base::DictionaryValue::Iterator iter(*images_value); !iter.IsAtEnd();
        iter.Advance()) {
     if (iter.value().is_dict()) {
-      const base::DictionaryValue* inner_value = NULL;
+      const base::DictionaryValue* inner_value = nullptr;
       if (iter.value().GetAsDictionary(&inner_value)) {
         for (base::DictionaryValue::Iterator inner_iter(*inner_value);
              !inner_iter.IsAtEnd();
@@ -1677,18 +1744,53 @@ void BrowserThemePack::CreateTabBackgroundImagesAndColors(ImageCache* images) {
 }
 
 void BrowserThemePack::GenerateMissingNtpColors() {
-  // Calculate NTP text color based on NTP background.
-  SkColor ntp_background_color;
   gfx::Image image = GetImageNamed(IDR_THEME_NTP_BACKGROUND);
-  if (!image.IsEmpty()) {
-    ntp_background_color = ComputeImageColor(image, image.Height());
-    SetColorIfUnspecified(
-        TP::COLOR_NTP_TEXT,
-        color_utils::GetColorWithMaxContrast(ntp_background_color));
-  } else if (GetColor(TP::COLOR_NTP_BACKGROUND, &ntp_background_color)) {
-    SetColorIfUnspecified(
-        TP::COLOR_NTP_TEXT,
-        color_utils::GetColorWithMaxContrast(ntp_background_color));
+  bool has_background_image = !image.IsEmpty();
+
+  SkColor background_color;
+  bool has_background_color =
+      GetColor(TP::COLOR_NTP_BACKGROUND, &background_color);
+
+  // Calculate NTP text color based on NTP background.
+  SkColor text_color;
+  if (!GetColor(TP::COLOR_NTP_TEXT, &text_color)) {
+    if (has_background_image)
+      background_color = ComputeImageColor(image, image.Height());
+
+    if (has_background_image || has_background_color) {
+      SetColor(TP::COLOR_NTP_TEXT,
+               color_utils::GetColorWithMaxContrast(background_color));
+    }
+  }
+
+  // Calculate logo alternate, if not specified.
+  int logo_alternate = 0;
+  if (!GetDisplayProperty(TP::NTP_LOGO_ALTERNATE, &logo_alternate)) {
+    logo_alternate =
+        has_background_image ||
+        (has_background_color && !IsColorGrayscale(background_color));
+    SetDisplayProperty(TP::NTP_LOGO_ALTERNATE, logo_alternate);
+  }
+
+  // For themes that use alternate logo and no NTP background image is present,
+  // set logo color in the same hue as NTP background.
+  if (logo_alternate == 1 && !has_background_image && has_background_color) {
+    SkColor logo_color = color_utils::IsDark(background_color)
+                             ? SK_ColorWHITE
+                             : internal::GetContrastingColorForBackground(
+                                   background_color,
+                                   /*luminosity_change=*/0.3f);
+    SetColor(TP::COLOR_NTP_LOGO, logo_color);
+  }
+
+  // Calculate NTP shortcut color.
+  // Use light color for NTPs with images, and themed color for NTPs with solid
+  // color.
+  if (!has_background_image && has_background_color &&
+      background_color != SK_ColorWHITE) {
+    SetColor(TP::COLOR_NTP_SHORTCUT, internal::GetContrastingColorForBackground(
+                                         background_color,
+                                         /*luminosity_change=*/0.2f));
   }
 }
 

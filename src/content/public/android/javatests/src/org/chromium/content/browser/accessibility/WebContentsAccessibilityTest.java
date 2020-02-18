@@ -15,6 +15,8 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.test.filters.MediumTest;
 import android.text.InputType;
+import android.text.Spannable;
+import android.text.style.SuggestionSpan;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.accessibility.AccessibilityEvent;
@@ -88,7 +90,7 @@ public class WebContentsAccessibilityTest {
     @MediumTest
     @MinAndroidSdkLevel(Build.VERSION_CODES.O)
     @TargetApi(Build.VERSION_CODES.O)
-    public void testAddExtraDataToAccessibilityNodeInfo() throws Throwable {
+    public void testAddExtraDataToAccessibilityNodeInfo() {
         // Load a really simple webpage.
         final String data = "<h1>Simple test page</h1>"
                 + "<section><p>Text</p></section>";
@@ -370,7 +372,7 @@ public class WebContentsAccessibilityTest {
     @MediumTest
     @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-    public void testTextFieldExposesActionSetText() throws Throwable {
+    public void testTextFieldExposesActionSetText() {
         // Load a web page with a text field.
         final String data = "<h1>Simple test page</h1>"
                 + "<section><input type=text placeholder=Text></section>";
@@ -394,7 +396,7 @@ public class WebContentsAccessibilityTest {
     @MediumTest
     @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-    public void testContentEditableClassName() throws Throwable {
+    public void testContentEditableClassName() {
         final String data = "<div contenteditable>Edit This</div>";
 
         mActivityTestRule.launchContentShellWithUrl(UrlUtils.encodeHtmlDataUri(data));
@@ -416,7 +418,7 @@ public class WebContentsAccessibilityTest {
     @MediumTest
     @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-    public void testEditTextFieldAriaInvalidTrueErrorMessage() throws Throwable {
+    public void testEditTextFieldAriaInvalidTrueErrorMessage() {
         final String data = "<form>\n"
                 + "  First name:<br>\n"
                 + "  <input id='fn' type='text' aria-invalid='true'><br>\n"
@@ -441,7 +443,7 @@ public class WebContentsAccessibilityTest {
     @MediumTest
     @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-    public void testEditTextFieldAriaInvalidSpellingErrorMessage() throws Throwable {
+    public void testEditTextFieldAriaInvalidSpellingErrorMessage() {
         final String data = "<input type='text' aria-invalid='spelling'><br>\n";
 
         mActivityTestRule.launchContentShellWithUrl(UrlUtils.encodeHtmlDataUri(data));
@@ -463,7 +465,7 @@ public class WebContentsAccessibilityTest {
     @MediumTest
     @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-    public void testEditTextFieldAriaInvalidGrammarErrorMessage() throws Throwable {
+    public void testEditTextFieldAriaInvalidGrammarErrorMessage() {
         final String data = "<input type='text' aria-invalid='grammar'><br>\n";
 
         mActivityTestRule.launchContentShellWithUrl(UrlUtils.encodeHtmlDataUri(data));
@@ -484,8 +486,7 @@ public class WebContentsAccessibilityTest {
     @MediumTest
     @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-
-    public void testEditTextFieldValidNoErrorMessage() throws Throwable {
+    public void testEditTextFieldValidNoErrorMessage() {
         final String data = "<input type='text'><br>\n";
         mActivityTestRule.launchContentShellWithUrl(UrlUtils.encodeHtmlDataUri(data));
         mActivityTestRule.waitForActiveShellToBeDoneLoading();
@@ -497,5 +498,49 @@ public class WebContentsAccessibilityTest {
         Assert.assertNotEquals(textNode, null);
         Assert.assertEquals(textNode.isContentInvalid(), false);
         Assert.assertEquals(textNode.getError(), "");
+    }
+
+    /**
+     * Test spelling error is encoded as a Spannable.
+     **/
+    @Test
+    @MediumTest
+    @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    public void testSpellingError() {
+        // Load a web page containing a text field with one misspelling.
+        // Note that for content_shell, no spelling suggestions are enabled
+        // by default.
+        final String data = "<input type='text' value='one wordd has an error'>";
+        mActivityTestRule.launchContentShellWithUrl(UrlUtils.encodeHtmlDataUri(data));
+        mActivityTestRule.waitForActiveShellToBeDoneLoading();
+        AccessibilityNodeProvider provider = enableAccessibilityAndWaitForNodeProvider();
+        int textNodeVirtualViewId = waitForNodeWithClassName(provider, "android.widget.EditText");
+
+        // Call a test API to explicitly add a spelling error in the same format as
+        // would be generated if spelling correction was enabled.
+        final WebContentsAccessibilityImpl wcax = mActivityTestRule.getWebContentsAccessibility();
+        wcax.addSpellingErrorForTesting(textNodeVirtualViewId, 4, 9);
+
+        // Now get that AccessibilityNodeInfo and retrieve its text.
+        AccessibilityNodeInfo textNode =
+                provider.createAccessibilityNodeInfo(textNodeVirtualViewId);
+        Assert.assertNotEquals(textNode, null);
+        CharSequence text = textNode.getText();
+        Assert.assertEquals(text.toString(), "one wordd has an error");
+
+        // Assert that the text has a SuggestionSpan surrounding the proper word.
+        Assert.assertTrue(text instanceof Spannable);
+        Spannable spannable = (Spannable) text;
+        Object spans[] = spannable.getSpans(0, text.length(), Object.class);
+        boolean foundSuggestionSpan = false;
+        for (Object span : spans) {
+            if (span instanceof SuggestionSpan) {
+                Assert.assertEquals(4, spannable.getSpanStart(span));
+                Assert.assertEquals(9, spannable.getSpanEnd(span));
+                foundSuggestionSpan = true;
+            }
+        }
+        Assert.assertTrue(foundSuggestionSpan);
     }
 }

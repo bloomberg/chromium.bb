@@ -53,6 +53,10 @@ static inline double NullValue() {
   return std::numeric_limits<double>::quiet_NaN();
 }
 
+static inline base::Optional<double> ValueOrUnresolved(double a) {
+  return IsNull(a) ? base::nullopt : base::Optional<double>(a);
+}
+
 struct CORE_EXPORT Timing {
   USING_FAST_MALLOC(Timing);
 
@@ -135,22 +139,23 @@ struct CORE_EXPORT Timing {
   struct CalculatedTiming {
     DISALLOW_NEW();
     Phase phase = Phase::kPhaseNone;
-    double current_iteration = 0;
+    base::Optional<double> current_iteration = 0;
     base::Optional<double> progress = 0;
     bool is_current = false;
     bool is_in_effect = false;
     bool is_in_play = false;
-    double local_time = NullValue();
-    double time_to_forwards_effect_change =
-        std::numeric_limits<double>::infinity();
-    double time_to_reverse_effect_change =
-        std::numeric_limits<double>::infinity();
+    base::Optional<double> local_time;
+    AnimationTimeDelta time_to_forwards_effect_change =
+        AnimationTimeDelta::Max();
+    AnimationTimeDelta time_to_reverse_effect_change =
+        AnimationTimeDelta::Max();
     double time_to_next_iteration = std::numeric_limits<double>::infinity();
   };
 
-  CalculatedTiming CalculateTimings(double local_time,
+  CalculatedTiming CalculateTimings(base::Optional<double> local_time,
                                     AnimationDirection animation_direction,
-                                    bool is_keyframe_effect) const;
+                                    bool is_keyframe_effect,
+                                    base::Optional<double> playback_rate) const;
   ComputedEffectTiming* getComputedTiming(const CalculatedTiming& calculated,
                                           bool is_keyframe_effect) const;
 };

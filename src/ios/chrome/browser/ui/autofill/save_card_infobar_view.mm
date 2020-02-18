@@ -8,6 +8,7 @@
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/procedural_block_types.h"
 #import "ios/chrome/browser/ui/autofill/save_card_infobar_view_delegate.h"
+#import "ios/chrome/browser/ui/autofill/save_card_message_with_links.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/chrome/browser/ui/infobars/infobar_constants.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_constants.h"
@@ -88,9 +89,6 @@ NSString* const kTitleLabelAccessibilityIdentifier = @"titleLabel";
 NSString* const kTitleViewAccessibilityIdentifier = @"titleView";
 
 }  // namespace
-
-@implementation MessageWithLinks
-@end
 
 @interface SaveCardInfoBarView ()
 
@@ -502,7 +500,6 @@ NSString* const kTitleViewAccessibilityIdentifier = @"titleView";
 
   DCHECK(self.cardIssuerIcon);
   DCHECK_GT(self.cardLabel.length, 0UL);
-  DCHECK_GT(self.cardSublabel.length, 0UL);
 
   // The leading edge aligned card details container view. Contains the card
   // issuer network icon, the card label, and the card sublabel.
@@ -543,7 +540,8 @@ NSString* const kTitleViewAccessibilityIdentifier = @"titleView";
   [cardDetailsContainerView addArrangedSubview:dummyView];
 
   // Legal messages.
-  auto block = ^(MessageWithLinks* legalMessage, NSUInteger idx, BOOL* stop) {
+  auto block = ^(SaveCardMessageWithLinks* legalMessage, NSUInteger idx,
+                 BOOL* stop) {
     DCHECK_GT(legalMessage.messageText.length, 0UL);
     DCHECK_EQ(legalMessage.linkURLs.size(), legalMessage.linkRanges.count);
 

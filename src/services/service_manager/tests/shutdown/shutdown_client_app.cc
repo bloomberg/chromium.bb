@@ -6,7 +6,10 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/task/single_thread_task_executor.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/service.h"
@@ -23,7 +26,8 @@ class ShutdownClientApp : public Service,
   explicit ShutdownClientApp(mojom::ServiceRequest request)
       : service_binding_(this, std::move(request)) {
     registry_.AddInterface<mojom::ShutdownTestClientController>(
-        base::Bind(&ShutdownClientApp::Create, base::Unretained(this)));
+        base::BindRepeating(&ShutdownClientApp::Create,
+                            base::Unretained(this)));
   }
   ~ShutdownClientApp() override = default;
 
@@ -35,25 +39,23 @@ class ShutdownClientApp : public Service,
     registry_.BindInterface(interface_name, std::move(interface_pipe));
   }
 
-  void Create(mojom::ShutdownTestClientControllerRequest request) {
-    bindings_.AddBinding(this, std::move(request));
+  void Create(
+      mojo::PendingReceiver<mojom::ShutdownTestClientController> receiver) {
+    receivers_.Add(this, std::move(receiver));
   }
 
   // mojom::ShutdownTestClientController:
   void ConnectAndWait(ConnectAndWaitCallback callback) override {
-    mojom::ShutdownTestServicePtr service;
-    service_binding_.GetConnector()->BindInterface("shutdown_service",
-                                                   &service);
+    mojo::Remote<mojom::ShutdownTestService> service;
+    service_binding_.GetConnector()->BindInterface(
+        "shutdown_service", service.BindNewPipeAndPassReceiver());
 
-    mojo::Binding<mojom::ShutdownTestClient> client_binding(this);
+    mojo::Receiver<mojom::ShutdownTestClient> client_receiver(this);
 
-    mojom::ShutdownTestClientPtr client_ptr;
-    client_binding.Bind(mojo::MakeRequest(&client_ptr));
-
-    service->SetClient(std::move(client_ptr));
+    service->SetClient(client_receiver.BindNewPipeAndPassRemote());
 
     base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
-    client_binding.set_connection_error_handler(run_loop.QuitClosure());
+    client_receiver.set_disconnect_handler(run_loop.QuitClosure());
     run_loop.Run();
 
     std::move(callback).Run();
@@ -61,7 +63,7 @@ class ShutdownClientApp : public Service,
 
   ServiceBinding service_binding_;
   BinderRegistry registry_;
-  mojo::BindingSet<mojom::ShutdownTestClientController> bindings_;
+  mojo::ReceiverSet<mojom::ShutdownTestClientController> receivers_;
 
   DISALLOW_COPY_AND_ASSIGN(ShutdownClientApp);
 };

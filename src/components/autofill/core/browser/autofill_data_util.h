@@ -96,11 +96,6 @@ base::string16 JoinNameParts(base::StringPiece16 given,
                              base::StringPiece16 middle,
                              base::StringPiece16 family);
 
-// Returns true iff |full_name| is a concatenation of some combination of the
-// first/middle/last (incl. middle initial) in |profile|.
-bool ProfileMatchesFullName(base::StringPiece16 full_name,
-                            const autofill::AutofillProfile& profile);
-
 // Returns the Payment Request API basic card payment spec data for the provided
 // autofill credit card |network|.  Will set the network and the icon to
 // "generic" for any unrecognized type.
@@ -110,6 +105,11 @@ const PaymentRequestData& GetPaymentRequestData(
 // Returns the autofill credit card issuer network string for the provided
 // Payment Request API basic card payment spec |basic_card_card_issuer_network|.
 const char* GetIssuerNetworkForBasicCardIssuerNetwork(
+    const std::string& basic_card_issuer_network);
+
+// Returns whether the specified |basic_card_issuer_network| is a valid basic
+// card network or not. Note that 'generic' is not considered valid.
+bool IsValidBasicCardIssuerNetwork(
     const std::string& basic_card_issuer_network);
 
 // Returns whether the specified |country_code| is a valid country code.

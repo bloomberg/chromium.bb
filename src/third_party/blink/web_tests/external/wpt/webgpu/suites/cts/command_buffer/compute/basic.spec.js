@@ -48,7 +48,7 @@ g.test('memcpy', async t => {
     }],
     layout: bgl
   });
-  const module = t.device.createShaderModule({
+  const module = t.createShaderModule({
     code:
     /* GLSL(
      *       'compute',
@@ -78,13 +78,13 @@ g.test('memcpy', async t => {
     },
     layout: pl
   });
-  const encoder = t.device.createCommandEncoder({});
+  const encoder = t.device.createCommandEncoder();
   const pass = encoder.beginComputePass();
   pass.setPipeline(pipeline);
   pass.setBindGroup(0, bg);
   pass.dispatch(1, 1, 1);
   pass.endPass();
-  t.device.getQueue().submit([encoder.finish()]);
-  await t.expectContents(dst, data);
+  t.device.defaultQueue.submit([encoder.finish()]);
+  t.expectContents(dst, data);
 });
 //# sourceMappingURL=basic.spec.js.map

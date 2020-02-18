@@ -52,6 +52,19 @@ void URLDataSource::GetSourceForURL(
       std::move(callback));
 }
 
+// static
+std::string URLDataSource::URLToRequestPath(const GURL& url) {
+  const std::string& spec = url.possibly_invalid_spec();
+  const url::Parsed& parsed = url.parsed_for_possibly_invalid_spec();
+  // + 1 to skip the slash at the beginning of the path.
+  int offset = parsed.CountCharactersBefore(url::Parsed::PATH, false) + 1;
+
+  if (offset < static_cast<int>(spec.size()))
+    return spec.substr(offset);
+
+  return std::string();
+}
+
 scoped_refptr<base::SingleThreadTaskRunner>
 URLDataSource::TaskRunnerForRequestPath(const std::string& path) {
   return base::CreateSingleThreadTaskRunner({BrowserThread::UI});
@@ -112,10 +125,6 @@ bool URLDataSource::ShouldServeMimeTypeAsContentTypeHeader() {
 std::string URLDataSource::GetAccessControlAllowOriginForOrigin(
     const std::string& origin) {
   return std::string();
-}
-
-bool URLDataSource::IsGzipped(const std::string& path) {
-  return false;
 }
 
 void URLDataSource::DisablePolymer2ForHost(const std::string& host) {}

@@ -7,13 +7,15 @@
 
 from __future__ import print_function
 
+import errno
 import functools
 import json
 import multiprocessing
 import os
 import re
 import sys
-import urllib
+
+from six.moves import urllib
 
 from chromite.lib import constants
 from chromite.cli import command
@@ -25,7 +27,7 @@ from chromite.lib import parallel
 
 
 # Extract a script's shebang.
-SHEBANG_RE = re.compile(r'^#!\s*([^\s]+)(\s+([^\s]+))?')
+SHEBANG_RE = re.compile(br'^#!\s*([^\s]+)(\s+([^\s]+))?')
 
 
 def _GetProjectPath(path):
@@ -109,9 +111,9 @@ SHLINT_OUTPUT_FORMAT_MAP = {
 
 
 def _LinterRunCommand(cmd, debug, **kwargs):
-  """Run the linter with common RunCommand args set as higher levels expect."""
-  return cros_build_lib.RunCommand(cmd, error_code_ok=True, print_cmd=debug,
-                                   debug_level=logging.NOTICE, **kwargs)
+  """Run the linter with common run args set as higher levels expect."""
+  return cros_build_lib.run(cmd, error_code_ok=True, print_cmd=debug,
+                            debug_level=logging.NOTICE, **kwargs)
 
 
 def _WhiteSpaceLintData(path, data):
@@ -156,16 +158,67 @@ def _CpplintFile(path, output_format, debug):
   return _LinterRunCommand(cmd, debug)
 
 
-def _PylintFile(path, output_format, debug):
+def _PylintFile(path, output_format, debug, interp):
   """Returns result of running pylint on |path|."""
-  pylint = os.path.join(constants.DEPOT_TOOLS_DIR, 'pylint-1.6')
+  pylint = os.path.join(constants.DEPOT_TOOLS_DIR, 'pylint-1.9')
+  # vpython3 isn't actually Python 3.  But maybe it will be someday.
+  if interp != 'python3':
+    vpython = os.path.join(constants.DEPOT_TOOLS_DIR, 'vpython')
+  else:
+    vpython = interp
   pylintrc = _GetPylintrc(path)
-  cmd = [pylint, '--rcfile=%s' % pylintrc]
+  cmd = [vpython, pylint, '--rcfile=%s' % pylintrc]
   if output_format != 'default':
     cmd.append('--output-format=%s' % output_format)
   cmd.append(path)
-  extra_env = {'PYTHONPATH': ':'.join(_GetPythonPath([path]))}
-  return _LinterRunCommand(cmd, debug, extra_env=extra_env)
+  extra_env = {
+      # When inside the SDK, Gentoo's python wrappers (i.e. `python`, `python2`,
+      # and `python3`) will select a version based on $EPYTHON first.  Make sure
+      # we run through the right Python version when switching.
+      # We can drop this once we are Python 3-only.
+      'EPYTHON': interp,
+      'PYTHONPATH': ':'.join(_GetPythonPath([path])),
+  }
+  return _LinterRunCommand(cmd, debug, extra_env=extra_env,
+                           redirect_stderr=True)
+
+
+def _Pylint2File(path, output_format, debug):
+  """Returns result of running pylint via python2 on |path|."""
+  return _PylintFile(path, output_format, debug, 'python2')
+
+
+def _Pylint3File(path, output_format, debug):
+  """Returns result of running pylint via python3 on |path|."""
+  return _PylintFile(path, output_format, debug, 'python3')
+
+
+def _Pylint23File(path, output_format, debug):
+  """Returns result of running pylint via python2 & python3 on |path|."""
+  ret2 = _Pylint2File(path, output_format, debug)
+  ret3 = _Pylint3File(path, output_format, debug)
+  # Caller only checks returncode atm.
+  return ret2 if ret2.returncode else ret3
+
+
+def _PylintProbeFile(path, output_format, debug):
+  """Returns result of running pylint based on the interp."""
+  try:
+    with open(path, 'rb') as fp:
+      data = fp.read(128)
+      if data.startswith(b'#!'):
+        if b'python3' in data:
+          return _Pylint3File(path, output_format, debug)
+        elif b'python2' in data:
+          return _Pylint2File(path, output_format, debug)
+        elif b'python' in data:
+          return _Pylint23File(path, output_format, debug)
+  except IOError as e:
+    if e.errno != errno.ENOENT:
+      raise
+
+  # TODO(vapier): Change the unknown default to Python 2+3 compat.
+  return _Pylint2File(path, output_format, debug)
 
 
 def _GolintFile(path, _, debug):
@@ -188,8 +241,8 @@ def _JsonLintFile(path, _output_format, _debug):
   data = osutils.ReadFile(path)
 
   # Strip off leading UTF-8 BOM if it exists.
-  if data.startswith(b'\xef\xbb\xbf'):
-    data = data[3:]
+  if data.startswith(u'\ufeff'):
+    data = data[1:]
 
   # Strip out comments for JSON parsing.
   stripped_data = re.sub(r'^\s*#.*', '', data, flags=re.M)
@@ -223,22 +276,47 @@ def _MarkdownLintFile(path, _output_format, _debug):
 
 
 def _ShellLintFile(path, output_format, debug, gentoo_format=False):
-  """Returns result of running lint checks on |path|."""
+  """Returns result of running lint checks on |path|.
+
+  Args:
+    path: The path to the script on which to run the linter.
+    output_format: The format of the output that the linter should emit. See
+                   |SHLINT_OUTPUT_FORMAT_MAP|.
+    debug: Whether to print out the linter command.
+    gentoo_format: Whether to treat this file as an ebuild style script.
+
+  Returns:
+    A CommandResult object.
+  """
   # TODO: Try using `checkbashisms`.
   syntax_check = _LinterRunCommand(['bash', '-n', path], debug)
   if syntax_check.returncode != 0:
     return syntax_check
 
-  # Try using shellcheck if it exists.
-  shellcheck = osutils.Which('shellcheck')
+  # Try using shellcheck if it exists, with a preference towards finding it
+  # inside the chroot. This is OK as it is statically linked.
+  shellcheck = (
+      osutils.Which('shellcheck', path='/usr/bin',
+                    root=os.path.join(constants.SOURCE_ROOT, 'chroot'))
+      or osutils.Which('shellcheck'))
+
   if not shellcheck:
     logging.notice('Install shellcheck for additional shell linting.')
     return syntax_check
 
-  (dir_name, file_name) = os.path.split(path)
-  pwd = os.getcwd()
+  # Instruct shellcheck to run itself from the shell script's dir. Note that
+  # 'SCRIPTDIR' is a special string that shellcheck rewrites to the dirname of
+  # the given path.
+  extra_checks = [
+      'avoid-nullary-conditions',     # SC2244
+      'check-unassigned-uppercase',   # Include uppercase in SC2154
+      'require-variable-braces',      # SC2250
+  ]
+  if not gentoo_format:
+    extra_checks.append('quote-safe-variables')  # SC2248
 
-  cmd = [shellcheck]
+  cmd = [shellcheck, '--source-path=SCRIPTDIR',
+         '--enable=%s' % ','.join(extra_checks)]
   if output_format != 'default':
     cmd.extend(SHLINT_OUTPUT_FORMAT_MAP[output_format])
   cmd.append('-x')
@@ -247,19 +325,16 @@ def _ShellLintFile(path, output_format, debug, gentoo_format=False):
     cmd.append('--exclude=SC2148')
     # ebuilds always use bash.
     cmd.append('--shell=bash')
-  cmd.append(file_name)
+  cmd.append(path)
 
-  # TODO(crbug.com/969045): Remove chdir once -P is available in shellcheck.
-  os.chdir(dir_name)
   lint_result = _LinterRunCommand(cmd, debug)
-  os.chdir(pwd)
 
   # During testing, we don't want to fail the linter for shellcheck errors,
   # so override the return code.
   if lint_result.returncode != 0:
     bug_url = (
         'https://bugs.chromium.org/p/chromium/issues/entry?' +
-        urllib.urlencode({
+        urllib.parse.urlencode({
             'template':
                 'Defect report from Developer',
             'summary':
@@ -288,25 +363,33 @@ def _BreakoutDataByLinter(map_to_return, path):
   """Maps a linter method to the content of the |path|."""
   # Detect by content of the file itself.
   try:
-    with open(path) as fp:
+    with open(path, 'rb') as fp:
       # We read 128 bytes because that's the Linux kernel's current limit.
       # Look for BINPRM_BUF_SIZE in fs/binfmt_script.c.
       data = fp.read(128)
 
-      if not data.startswith('#!'):
+      if not data.startswith(b'#!'):
         # If the file doesn't have a shebang, nothing to do.
         return
 
       m = SHEBANG_RE.match(data)
       if m:
         prog = m.group(1)
-        if prog == '/usr/bin/env':
+        if prog == b'/usr/bin/env':
           prog = m.group(3)
         basename = os.path.basename(prog)
-        if basename.startswith('python'):
-          pylint_list = map_to_return.setdefault(_PylintFile, [])
+        if basename.startswith(b'python3'):
+          pylint_list = map_to_return.setdefault(_Pylint3File, [])
           pylint_list.append(path)
-        elif basename in ('sh', 'dash', 'bash'):
+        elif basename.startswith(b'python2'):
+          pylint_list = map_to_return.setdefault(_Pylint2File, [])
+          pylint_list.append(path)
+        elif basename.startswith(b'python'):
+          pylint_list = map_to_return.setdefault(_Pylint2File, [])
+          pylint_list.append(path)
+          pylint_list = map_to_return.setdefault(_Pylint3File, [])
+          pylint_list.append(path)
+        elif basename in (b'sh', b'dash', b'bash'):
           shlint_list = map_to_return.setdefault(_ShellLintFile, [])
           shlint_list.append(path)
   except IOError as e:
@@ -319,7 +402,7 @@ _EXT_TO_LINTER_MAP = {
     # could include additional ones, but cpplint.py would just filter them out.
     frozenset({'.cc', '.cpp', '.h'}): _CpplintFile,
     frozenset({'.json'}): _JsonLintFile,
-    frozenset({'.py'}): _PylintFile,
+    frozenset({'.py'}): _PylintProbeFile,
     frozenset({'.go'}): _GolintFile,
     frozenset({'.sh'}): _ShellLintFile,
     frozenset({'.ebuild', '.eclass', '.bashrc'}): _GentooShellLintFile,
@@ -342,26 +425,6 @@ def _BreakoutFilesByLinter(files):
         _BreakoutDataByLinter(map_to_return, f)
 
   return map_to_return
-
-
-def _FilterFiles(files):
-  """Filter out ignored files.
-
-  Note: This is currently just a special case for generated protobuf files. If
-  there are more use cases, then a better configuration scheme should at least
-  be incorporated. This can also be removed in favor of built in ignore
-  functionality as we update our pylint versions.
-
-  Pylint --ignore-patterns did not get introduced until pylint 1.6 and the
-  --ignore functionality wasn't correctly applied to directories through
-  asteroid 1.6, at least when given a file directly (as we do):
-  http://pylint.pycqa.org/en/latest/whatsnew/changelog.html#what-s-new-in-pylint-1-6-0
-  https://github.com/PyCQA/pylint/issues/1700
-
-  TODO(saklein) Check the builtin ignore functionality as we upgrade pylint and
-  remove this function if/when possible.
-  """
-  return [f for f in files if not f.endswith('_pb2.py')]
 
 
 def _Dispatcher(errors, output_format, debug, linter, path):
@@ -387,6 +450,15 @@ run other checks (e.g. pyflakes, etc.)
   @classmethod
   def AddParser(cls, parser):
     super(LintCommand, cls).AddParser(parser)
+    parser.add_argument('--py2', dest='pyver', action='store_const',
+                        const='py2',
+                        help='Assume Python files are Python 2')
+    parser.add_argument('--py3', dest='pyver', action='store_const',
+                        const='py3',
+                        help='Assume Python files are Python 3')
+    parser.add_argument('--py23', dest='pyver', action='store_const',
+                        const='py23',
+                        help='Assume Python files are Python 2 & 3 compatible')
     parser.add_argument('files', help='Files to lint', nargs='*')
     parser.add_argument('--output', default='default',
                         choices=LintCommand.OUTPUT_FORMATS,
@@ -403,14 +475,23 @@ run other checks (e.g. pyflakes, etc.)
       # they are aware that nothing was linted.
       logging.warning('No files provided to lint.  Doing nothing.')
 
+    if self.options.pyver == 'py2':
+      _EXT_TO_LINTER_MAP[frozenset({'.py'})] = _Pylint2File
+    elif self.options.pyver == 'py3':
+      _EXT_TO_LINTER_MAP[frozenset({'.py'})] = _Pylint3File
+    elif self.options.pyver == 'py23':
+      _EXT_TO_LINTER_MAP[frozenset({'.py'})] = _Pylint23File
+
     errors = multiprocessing.Value('i')
-    linter_map = _BreakoutFilesByLinter(_FilterFiles(files))
+    linter_map = _BreakoutFilesByLinter(files)
     dispatcher = functools.partial(_Dispatcher, errors,
                                    self.options.output, self.options.debug)
 
     # Special case one file as it's common -- faster to avoid parallel startup.
-    if sum([len(x) for _, x in linter_map.items()]) == 1:
-      linter, files = linter_map.items()[0]
+    if not linter_map:
+      return 0
+    elif sum(len(x) for x in linter_map.values()) == 1:
+      linter, files = next(iter(linter_map.items()))
       dispatcher(linter, files[0])
     else:
       # Run the linter in parallel on the files.

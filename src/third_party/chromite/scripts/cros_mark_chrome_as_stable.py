@@ -18,11 +18,12 @@ emerge-x86-generic =chrome-base/chromeos-chrome-8.0.552.0_alpha_r1
 from __future__ import print_function
 
 import base64
-import distutils.version
+import distutils.version  # pylint: disable=import-error,no-name-in-module
 import filecmp
 import os
 import re
-import urlparse
+
+from six.moves import urllib
 
 from chromite.lib import constants
 from chromite.lib import commandline
@@ -76,15 +77,14 @@ def _GetSpecificVersionUrl(git_url, revision, time_to_wait=600):
     time_to_wait: the minimum period before abandoning our wait for the
       desired revision to be present.
   """
-  parsed_url = urlparse.urlparse(git_url)
+  parsed_url = urllib.parse.urlparse(git_url)
   host = parsed_url[1]
   path = parsed_url[2].rstrip('/') + (
       '/+/%s/chrome/VERSION?format=text' % revision)
 
   # Allow for git repository replication lag with sleep/retry loop.
   def _fetch():
-    fh = gob_util.FetchUrl(host, path, ignore_404=True)
-    return fh.read() if fh else None
+    return gob_util.FetchUrl(host, path, ignore_404=True)
 
   def _wait_msg(_remaining):
     logging.info('Repository does not yet have revision %s.  Sleeping...',
@@ -96,7 +96,7 @@ def _GetSpecificVersionUrl(git_url, revision, time_to_wait=600):
       timeout=time_to_wait,
       period=30,
       side_effect_func=_wait_msg)
-  return _GetVersionContents(base64.b64decode(content))
+  return _GetVersionContents(base64.b64decode(content).decode('utf-8'))
 
 
 def _GetTipOfTrunkVersionFile(root):
@@ -106,10 +106,13 @@ def _GetTipOfTrunkVersionFile(root):
     root: path to the root of the chromium checkout.
   """
   version_file = os.path.join(root, 'src', 'chrome', 'VERSION')
-  chrome_version_info = cros_build_lib.RunCommand(
-      ['cat', version_file],
-      redirect_stdout=True,
-      error_message='Could not read version file at %s.' % version_file).output
+  try:
+    chrome_version_info = cros_build_lib.run(
+        ['cat', version_file],
+        redirect_stdout=True).stdout
+  except cros_build_lib.RunCommandError as e:
+    e.msg += '\nCould not read version file at %s.' % version_file
+    raise e
 
   return _GetVersionContents(chrome_version_info)
 
@@ -153,7 +156,7 @@ def GetLatestRelease(git_url, branch=None):
   # of writing, I can't find any callers that use this method to scan for
   # internal buildspecs.  But there may be something lurking...
 
-  parsed_url = urlparse.urlparse(git_url)
+  parsed_url = urllib.parse.urlparse(git_url)
   path = parsed_url[2].rstrip('/') + '/+refs/tags?format=JSON'
   j = gob_util.FetchUrlJson(parsed_url[1], path, ignore_404=False)
   if branch:
@@ -165,10 +168,9 @@ def GetLatestRelease(git_url, branch=None):
   for chrome_version in reversed(matching_versions):
     path = parsed_url[2].rstrip() + (
         '/+/refs/tags/%s/DEPS?format=text' % chrome_version)
-    fh = gob_util.FetchUrl(parsed_url[1], path, ignore_404=False)
-    content = fh.read() if fh else None
+    content = gob_util.FetchUrl(parsed_url[1], path, ignore_404=False)
     if content:
-      deps_content = base64.b64decode(content)
+      deps_content = base64.b64decode(content).decode('utf-8')
       if CheckIfChromeRightForOS(deps_content):
         return chrome_version
 

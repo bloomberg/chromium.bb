@@ -10,10 +10,11 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
 #include "media/capture/video_capture_types.h"
-#include "third_party/blink/public/mojom/mediastream/media_devices.mojom-blink.h"
-#include "third_party/blink/public/web/modules/mediastream/media_stream_constraints_util.h"
+#include "mojo/public/cpp/bindings/remote.h"
+#include "third_party/blink/public/mojom/mediastream/media_devices.mojom-blink-forward.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_source.h"
 #include "third_party/blink/renderer/modules/mediastream/apply_constraints_request.h"
+#include "third_party/blink/renderer/modules/mediastream/media_stream_constraints_util.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -26,11 +27,11 @@ class MediaStreamVideoTrack;
 // requests. Only one applyConstraints() request can be processed at a time.
 // ApplyConstraintsProcessor must be created, called and destroyed on the main
 // render thread. There should be only one ApplyConstraintsProcessor per frame.
-class MODULES_EXPORT ApplyConstraintsProcessor
-    : public GarbageCollectedFinalized<ApplyConstraintsProcessor> {
+class MODULES_EXPORT ApplyConstraintsProcessor final
+    : public GarbageCollected<ApplyConstraintsProcessor> {
  public:
   using MediaDevicesDispatcherCallback = base::RepeatingCallback<
-      const blink::mojom::blink::MediaDevicesDispatcherHostPtr&()>;
+      blink::mojom::blink::MediaDevicesDispatcherHost*()>;
   ApplyConstraintsProcessor(
       MediaDevicesDispatcherCallback media_devices_dispatcher_cb,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
@@ -75,8 +76,7 @@ class MODULES_EXPORT ApplyConstraintsProcessor
   void ApplyConstraintsFailed(const char* failed_constraint_name);
   void CannotApplyConstraints(const String& message);
   void CleanupRequest(base::OnceClosure web_request_callback);
-  const blink::mojom::blink::MediaDevicesDispatcherHostPtr&
-  GetMediaDevicesDispatcher();
+  blink::mojom::blink::MediaDevicesDispatcherHost* GetMediaDevicesDispatcher();
 
   // ApplyConstraints requests are processed sequentially. |current_request_|
   // contains the request currently being processed, if any.

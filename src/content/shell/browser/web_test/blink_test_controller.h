@@ -33,6 +33,7 @@
 #include "content/public/common/web_preferences.h"
 #include "content/shell/browser/web_test/leak_detector.h"
 #include "content/shell/common/web_test.mojom.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "ui/gfx/geometry/size.h"
 
 class SkBitmap;
@@ -221,7 +222,7 @@ class BlinkTestController : public WebContentsObserver,
   void OnSendBluetoothManualChooserEvent(const std::string& event,
                                          const std::string& argument);
   void OnBlockThirdPartyCookies(bool block);
-  mojom::WebTestControlAssociatedPtr& GetWebTestControlPtr(
+  mojo::AssociatedRemote<mojom::WebTestControl>& GetWebTestControlRemote(
       RenderFrameHost* frame);
   void HandleWebTestControlError(const GlobalFrameRoutingId& key);
 
@@ -272,9 +273,6 @@ class BlinkTestController : public WebContentsObserver,
   // What phase of running an individual test we are currently in.
   TestPhase test_phase_;
 
-  // True if the currently running test is a compositing test.
-  bool is_compositing_test_;
-
   // Per test config.
   std::string expected_pixel_hash_;
   gfx::Size initial_size_;
@@ -324,7 +322,7 @@ class BlinkTestController : public WebContentsObserver,
   std::queue<Node*> composite_all_frames_node_queue_;
 
   // Map from one frame to one mojo pipe.
-  std::map<GlobalFrameRoutingId, mojom::WebTestControlAssociatedPtr>
+  std::map<GlobalFrameRoutingId, mojo::AssociatedRemote<mojom::WebTestControl>>
       web_test_control_map_;
 
   SEQUENCE_CHECKER(sequence_checker_);

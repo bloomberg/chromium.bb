@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/core/html/media/media_element_parser_helpers.h"
+
+#include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -20,10 +22,11 @@ namespace blink {
 namespace media_element_parser_helpers {
 
 bool IsMediaElement(const Element* element) {
-  if ((IsHTMLImageElement(element) || IsSVGImageElement(element)) &&
+  if ((IsA<HTMLImageElement>(element) || IsA<SVGImageElement>(element)) &&
       !element->GetDocument().IsImageDocument())
     return true;
-  if (IsHTMLVideoElement(element) && !element->GetDocument().IsMediaDocument())
+  if (IsA<HTMLVideoElement>(element) &&
+      !element->GetDocument().IsMediaDocument())
     return true;
   return false;
 }

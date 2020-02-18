@@ -17,12 +17,12 @@ builder.addFunction('wasm_B', kSig_v_i)
     .addBody([
       // clang-format off
       kExprLoop, kWasmStmt,               // while
-        kExprGetLocal, 0,                 // -
+        kExprLocalGet, 0,                 // -
         kExprIf, kWasmStmt,               // if <param0> != 0
-          kExprGetLocal, 0,               // -
+          kExprLocalGet, 0,               // -
           kExprI32Const, 1,               // -
           kExprI32Sub,                    // -
-          kExprSetLocal, 0,               // decrease <param0>
+          kExprLocalSet, 0,               // decrease <param0>
           kExprCallFunction, func_a_idx,  // -
           kExprBr, 1,                     // continue
           kExprEnd,                       // -
@@ -75,8 +75,9 @@ Protocol.Debugger.onPaused(pause_msg => {
   evalWithUrl(instantiate_code, 'instantiate');
   InspectorTest.log(
       'Waiting for two wasm scripts (ignoring first non-wasm script).');
-  const [, {params: wasm_script_a}, {params: wasm_script_b}] =
-      await Protocol.Debugger.onceScriptParsed(3);
+  // Ignore javascript and full module wasm script, get scripts for functions.
+  const [, , {params: wasm_script_a}, {params: wasm_script_b}] =
+      await Protocol.Debugger.onceScriptParsed(4);
   for (script of [wasm_script_a, wasm_script_b]) {
     InspectorTest.log('Source of script ' + script.url + ':');
     let src_msg =

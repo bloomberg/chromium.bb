@@ -14,6 +14,7 @@
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/macros.h"
 #include "base/optional.h"
+#include "base/util/type_safety/strong_alias.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/cors/cors_error_status.h"
 #include "services/network/public/cpp/cors/preflight_cache.h"
@@ -21,11 +22,10 @@
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
+#include "services/network/public/mojom/url_response_head.mojom-forward.h"
 #include "url/gurl.h"
 
 namespace network {
-
-struct ResourceResponseHead;
 
 namespace cors {
 
@@ -35,6 +35,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) PreflightController final {
  public:
   using CompletionCallback =
       base::OnceCallback<void(int net_error, base::Optional<CorsErrorStatus>)>;
+  using WithTrustedHeaderClient =
+      util::StrongAlias<class WithTrustedHeaderClientTag, bool>;
   // Creates a CORS-preflight ResourceRequest for a specified |request| for a
   // URL that is originally requested.
   static std::unique_ptr<ResourceRequest> CreatePreflightRequestForTesting(
@@ -43,7 +45,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) PreflightController final {
   // Creates a PreflightResult for a specified response parameters for testing.
   static std::unique_ptr<PreflightResult> CreatePreflightResultForTesting(
       const GURL& final_url,
-      const ResourceResponseHead& head,
+      const mojom::URLResponseHead& head,
       const ResourceRequest& original_request,
       bool tainted,
       base::Optional<CorsErrorStatus>* detected_error_status);
@@ -58,6 +60,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) PreflightController final {
   void PerformPreflightCheck(
       CompletionCallback callback,
       const ResourceRequest& resource_request,
+      WithTrustedHeaderClient with_trusted_header_client,
       bool tainted,
       const net::NetworkTrafficAnnotationTag& traffic_annotation,
       mojom::URLLoaderFactory* loader_factory);

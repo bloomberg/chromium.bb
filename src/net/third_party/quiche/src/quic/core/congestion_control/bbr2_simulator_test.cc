@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
 #include <sstream>
+#include <utility>
 
 #include "net/third_party/quiche/src/quic/core/congestion_control/bbr2_misc.h"
 #include "net/third_party/quiche/src/quic/core/congestion_control/bbr2_sender.h"
@@ -11,7 +13,7 @@
 #include "net/third_party/quiche/src/quic/core/quic_bandwidth.h"
 #include "net/third_party/quiche/src/quic/core/quic_types.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_ptr_util.h"
+#include "net/third_party/quiche/src/quic/platform/api/quic_optional.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_test.h"
 #include "net/third_party/quiche/src/quic/test_tools/quic_connection_peer.h"
 #include "net/third_party/quiche/src/quic/test_tools/quic_sent_packet_manager_peer.h"
@@ -20,6 +22,11 @@
 #include "net/third_party/quiche/src/quic/test_tools/simulator/quic_endpoint.h"
 #include "net/third_party/quiche/src/quic/test_tools/simulator/simulator.h"
 #include "net/third_party/quiche/src/quic/test_tools/simulator/switch.h"
+#include "net/third_party/quiche/src/quic/test_tools/simulator/traffic_policer.h"
+
+using testing::AllOf;
+using testing::Ge;
+using testing::Le;
 
 namespace quic {
 
@@ -33,12 +40,18 @@ const uint32_t kDefaultInitialCwndBytes =
     kDefaultInitialCwndPackets * kDefaultTCPMSS;
 
 struct LinkParams {
- public:
   LinkParams(int64_t kilo_bits_per_sec, int64_t delay_us)
       : bandwidth(QuicBandwidth::FromKBitsPerSecond(kilo_bits_per_sec)),
         delay(QuicTime::Delta::FromMicroseconds(delay_us)) {}
   QuicBandwidth bandwidth;
   QuicTime::Delta delay;
+};
+
+struct TrafficPolicerParams {
+  std::string name = "policer";
+  QuicByteCount initial_burst_size;
+  QuicByteCount max_bucket_size;
+  QuicBandwidth target_bandwidth = QuicBandwidth::Zero();
 };
 
 // All Bbr2DefaultTopologyTests uses the default network topology:
@@ -63,6 +76,8 @@ class DefaultTopologyParams {
   const simulator::SwitchPortNumber switch_port_count = 2;
   // Network switch queue capacity, in number of BDPs.
   float switch_queue_capacity_in_bdp = 2;
+
+  QuicOptional<TrafficPolicerParams> sender_policer_params;
 
   QuicBandwidth BottleneckBandwidth() const {
     return std::min(local_link.bandwidth, test_link.bandwidth);
@@ -124,9 +139,13 @@ class Bbr2DefaultTopologyTest : public Bbr2SimulatorTest {
   ~Bbr2DefaultTopologyTest() {
     const auto* test_info =
         ::testing::UnitTest::GetInstance()->current_test_info();
+    const Bbr2Sender::DebugState& debug_state = sender_->ExportDebugState();
     QUIC_LOG(INFO) << "Bbr2DefaultTopologyTest." << test_info->name()
                    << " completed at simulated time: "
-                   << SimulatedNow().ToDebuggingValue() / 1e6 << " sec.";
+                   << SimulatedNow().ToDebuggingValue() / 1e6
+                   << " sec. packet loss:"
+                   << sender_loss_rate_in_packets() * 100
+                   << "%, bw_hi:" << debug_state.bandwidth_hi;
   }
 
   Bbr2Sender* SetupBbr2Sender(simulator::QuicEndpoint* endpoint) {
@@ -136,8 +155,9 @@ class Bbr2DefaultTopologyTest : public Bbr2SimulatorTest {
         endpoint->connection()->sent_packet_manager().GetRttStats(),
         QuicSentPacketManagerPeer::GetUnackedPacketMap(
             QuicConnectionPeer::GetSentPacketManager(endpoint->connection())),
-        kDefaultInitialCwndPackets, kDefaultMaxCongestionWindowPackets,
-        &random_, QuicConnectionPeer::GetStats(endpoint->connection()));
+        kDefaultInitialCwndPackets,
+        GetQuicFlag(FLAGS_quic_max_congestion_window), &random_,
+        QuicConnectionPeer::GetStats(endpoint->connection()));
     QuicConnectionPeer::SetSendAlgorithm(endpoint->connection(), sender);
     endpoint->RecordTrace();
     return sender;
@@ -145,22 +165,34 @@ class Bbr2DefaultTopologyTest : public Bbr2SimulatorTest {
 
   void CreateNetwork(const DefaultTopologyParams& params) {
     QUIC_LOG(INFO) << "CreateNetwork with parameters: " << params.ToString();
-    switch_ = QuicMakeUnique<simulator::Switch>(&simulator_, "Switch",
-                                                params.switch_port_count,
-                                                params.SwitchQueueCapacity());
+    switch_ = std::make_unique<simulator::Switch>(&simulator_, "Switch",
+                                                  params.switch_port_count,
+                                                  params.SwitchQueueCapacity());
 
     // WARNING: The order to add links to network_links_ matters, because some
     // tests adjusts the link bandwidth on the fly.
 
     // Local link connects sender and port 1.
-    network_links_.push_back(QuicMakeUnique<simulator::SymmetricLink>(
+    network_links_.push_back(std::make_unique<simulator::SymmetricLink>(
         &sender_endpoint_, switch_->port(1), params.local_link.bandwidth,
         params.local_link.delay));
 
     // Test link connects receiver and port 2.
-    network_links_.push_back(QuicMakeUnique<simulator::SymmetricLink>(
-        &receiver_endpoint_, switch_->port(2), params.test_link.bandwidth,
-        params.test_link.delay));
+    if (params.sender_policer_params.has_value()) {
+      const TrafficPolicerParams& policer_params =
+          params.sender_policer_params.value();
+      sender_policer_ = std::make_unique<simulator::TrafficPolicer>(
+          &simulator_, policer_params.name, policer_params.initial_burst_size,
+          policer_params.max_bucket_size, policer_params.target_bandwidth,
+          switch_->port(2));
+      network_links_.push_back(std::make_unique<simulator::SymmetricLink>(
+          &receiver_endpoint_, sender_policer_.get(),
+          params.test_link.bandwidth, params.test_link.delay));
+    } else {
+      network_links_.push_back(std::make_unique<simulator::SymmetricLink>(
+          &receiver_endpoint_, switch_->port(2), params.test_link.bandwidth,
+          params.test_link.delay));
+    }
   }
 
   simulator::SymmetricLink* TestLink() { return network_links_[1].get(); }
@@ -266,6 +298,7 @@ class Bbr2DefaultTopologyTest : public Bbr2SimulatorTest {
   SimpleRandom random_;
 
   std::unique_ptr<simulator::Switch> switch_;
+  std::unique_ptr<simulator::TrafficPolicer> sender_policer_;
   std::vector<std::unique_ptr<simulator::SymmetricLink>> network_links_;
 };
 
@@ -389,7 +422,7 @@ TEST_F(Bbr2DefaultTopologyTest, SimpleTransferAckDecimation) {
 }
 
 // Test Bbr2's reaction to a 100x bandwidth decrease during a transfer.
-TEST_F(Bbr2DefaultTopologyTest, BandwidthDecrease) {
+TEST_F(Bbr2DefaultTopologyTest, QUIC_SLOW_TEST(BandwidthDecrease)) {
   DefaultTopologyParams params;
   params.local_link.bandwidth = QuicBandwidth::FromKBitsPerSecond(15000);
   params.test_link.bandwidth = QuicBandwidth::FromKBitsPerSecond(10000);
@@ -418,7 +451,7 @@ TEST_F(Bbr2DefaultTopologyTest, BandwidthDecrease) {
 }
 
 // Test Bbr2's reaction to a 100x bandwidth increase during a transfer.
-TEST_F(Bbr2DefaultTopologyTest, BandwidthIncrease) {
+TEST_F(Bbr2DefaultTopologyTest, QUIC_SLOW_TEST(BandwidthIncrease)) {
   DefaultTopologyParams params;
   params.local_link.bandwidth = QuicBandwidth::FromKBitsPerSecond(15000);
   params.test_link.bandwidth = QuicBandwidth::FromKBitsPerSecond(100);
@@ -628,6 +661,44 @@ TEST_F(Bbr2DefaultTopologyTest, ExitStartupDueToLoss) {
   EXPECT_FALSE(sender_->ExportDebugState().last_sample_is_app_limited);
 }
 
+TEST_F(Bbr2DefaultTopologyTest, SenderPoliced) {
+  DefaultTopologyParams params;
+  params.sender_policer_params = TrafficPolicerParams();
+  params.sender_policer_params->initial_burst_size = 1000 * 10;
+  params.sender_policer_params->max_bucket_size = 1000 * 100;
+  params.sender_policer_params->target_bandwidth =
+      params.BottleneckBandwidth() * 0.25;
+
+  CreateNetwork(params);
+
+  ASSERT_GE(params.BDP(), kDefaultInitialCwndBytes + kDefaultTCPMSS);
+
+  DoSimpleTransfer(3 * 1024 * 1024, QuicTime::Delta::FromSeconds(30));
+  EXPECT_TRUE(Bbr2ModeIsOneOf({Bbr2Mode::PROBE_BW, Bbr2Mode::PROBE_RTT}));
+  // TODO(wub): Fix (long-term) bandwidth overestimation in policer mode, then
+  // reduce the loss rate upper bound.
+  EXPECT_LE(sender_loss_rate_in_packets(), 0.30);
+}
+
+// TODO(wub): Add other slowstart stats to BBRv2.
+TEST_F(Bbr2DefaultTopologyTest, StartupStats) {
+  DefaultTopologyParams params;
+  CreateNetwork(params);
+
+  DriveOutOfStartup(params);
+  ASSERT_FALSE(sender_->InSlowStart());
+
+  const QuicConnectionStats& stats = sender_connection_stats();
+  EXPECT_EQ(1u, stats.slowstart_count);
+  EXPECT_FALSE(stats.slowstart_duration.IsRunning());
+  EXPECT_THAT(stats.slowstart_duration.GetTotalElapsedTime(),
+              AllOf(Ge(QuicTime::Delta::FromMilliseconds(500)),
+                    Le(QuicTime::Delta::FromMilliseconds(1500))));
+  EXPECT_EQ(stats.slowstart_duration.GetTotalElapsedTime(),
+            QuicConnectionPeer::GetSentPacketManager(sender_connection())
+                ->GetSlowStartDuration());
+}
+
 // All Bbr2MultiSenderTests uses the following network topology:
 //
 //   Sender 0  (A Bbr2Sender)
@@ -698,20 +769,21 @@ class Bbr2MultiSenderTest : public Bbr2SimulatorTest {
  protected:
   Bbr2MultiSenderTest() {
     uint64_t first_connection_id = 42;
-    std::vector<simulator::QuicEndpoint*> receiver_endpoint_pointers;
+    std::vector<simulator::QuicEndpointBase*> receiver_endpoint_pointers;
     for (size_t i = 0; i < MultiSenderTopologyParams::kNumLocalLinks; ++i) {
       std::string sender_name = QuicStrCat("Sender", i + 1);
       std::string receiver_name = QuicStrCat("Receiver", i + 1);
-      sender_endpoints_.push_back(QuicMakeUnique<simulator::QuicEndpoint>(
+      sender_endpoints_.push_back(std::make_unique<simulator::QuicEndpoint>(
           &simulator_, sender_name, receiver_name, Perspective::IS_CLIENT,
           TestConnectionId(first_connection_id + i)));
-      receiver_endpoints_.push_back(QuicMakeUnique<simulator::QuicEndpoint>(
+      receiver_endpoints_.push_back(std::make_unique<simulator::QuicEndpoint>(
           &simulator_, receiver_name, sender_name, Perspective::IS_SERVER,
           TestConnectionId(first_connection_id + i)));
       receiver_endpoint_pointers.push_back(receiver_endpoints_.back().get());
     }
-    receiver_multiplexer_ = QuicMakeUnique<simulator::QuicEndpointMultiplexer>(
-        "Receiver multiplexer", receiver_endpoint_pointers);
+    receiver_multiplexer_ =
+        std::make_unique<simulator::QuicEndpointMultiplexer>(
+            "Receiver multiplexer", receiver_endpoint_pointers);
     sender_1_ = SetupBbr2Sender(sender_endpoints_[0].get());
 
     uint64_t seed = QuicRandom::GetInstance()->RandUint64();
@@ -726,7 +798,17 @@ class Bbr2MultiSenderTest : public Bbr2SimulatorTest {
         ::testing::UnitTest::GetInstance()->current_test_info();
     QUIC_LOG(INFO) << "Bbr2MultiSenderTest." << test_info->name()
                    << " completed at simulated time: "
-                   << SimulatedNow().ToDebuggingValue() / 1e6 << " sec.";
+                   << SimulatedNow().ToDebuggingValue() / 1e6
+                   << " sec. Per sender stats:";
+    for (size_t i = 0; i < sender_endpoints_.size(); ++i) {
+      QUIC_LOG(INFO) << "sender[" << i << "]: "
+                     << sender_connection(i)
+                            ->sent_packet_manager()
+                            .GetSendAlgorithm()
+                            ->GetCongestionControlType()
+                     << ", packet_loss:"
+                     << 100.0 * sender_loss_rate_in_packets(i) << "%";
+    }
   }
 
   Bbr2Sender* SetupBbr2Sender(simulator::QuicEndpoint* endpoint) {
@@ -736,8 +818,9 @@ class Bbr2MultiSenderTest : public Bbr2SimulatorTest {
         endpoint->connection()->sent_packet_manager().GetRttStats(),
         QuicSentPacketManagerPeer::GetUnackedPacketMap(
             QuicConnectionPeer::GetSentPacketManager(endpoint->connection())),
-        kDefaultInitialCwndPackets, kDefaultMaxCongestionWindowPackets,
-        &random_, QuicConnectionPeer::GetStats(endpoint->connection()));
+        kDefaultInitialCwndPackets,
+        GetQuicFlag(FLAGS_quic_max_congestion_window), &random_,
+        QuicConnectionPeer::GetStats(endpoint->connection()));
     QuicConnectionPeer::SetSendAlgorithm(endpoint->connection(), sender);
     endpoint->RecordTrace();
     return sender;
@@ -750,8 +833,9 @@ class Bbr2MultiSenderTest : public Bbr2SimulatorTest {
         endpoint->connection()->sent_packet_manager().GetRttStats(),
         QuicSentPacketManagerPeer::GetUnackedPacketMap(
             QuicConnectionPeer::GetSentPacketManager(endpoint->connection())),
-        kDefaultInitialCwndPackets, kDefaultMaxCongestionWindowPackets,
-        &random_, QuicConnectionPeer::GetStats(endpoint->connection()));
+        kDefaultInitialCwndPackets,
+        GetQuicFlag(FLAGS_quic_max_congestion_window), &random_,
+        QuicConnectionPeer::GetStats(endpoint->connection()));
     QuicConnectionPeer::SetSendAlgorithm(endpoint->connection(), sender);
     endpoint->RecordTrace();
     return sender;
@@ -764,7 +848,8 @@ class Bbr2MultiSenderTest : public Bbr2SimulatorTest {
     TcpCubicSenderBytes* sender = new TcpCubicSenderBytes(
         endpoint->connection()->clock(),
         endpoint->connection()->sent_packet_manager().GetRttStats(), reno,
-        kDefaultInitialCwndPackets, kDefaultMaxCongestionWindowPackets,
+        kDefaultInitialCwndPackets,
+        GetQuicFlag(FLAGS_quic_max_congestion_window),
         QuicConnectionPeer::GetStats(endpoint->connection()));
     QuicConnectionPeer::SetSendAlgorithm(endpoint->connection(), sender);
     endpoint->RecordTrace();
@@ -773,22 +858,35 @@ class Bbr2MultiSenderTest : public Bbr2SimulatorTest {
 
   void CreateNetwork(const MultiSenderTopologyParams& params) {
     QUIC_LOG(INFO) << "CreateNetwork with parameters: " << params.ToString();
-    switch_ = QuicMakeUnique<simulator::Switch>(&simulator_, "Switch",
-                                                params.switch_port_count,
-                                                params.SwitchQueueCapacity());
+    switch_ = std::make_unique<simulator::Switch>(&simulator_, "Switch",
+                                                  params.switch_port_count,
+                                                  params.SwitchQueueCapacity());
 
-    network_links_.push_back(QuicMakeUnique<simulator::SymmetricLink>(
+    network_links_.push_back(std::make_unique<simulator::SymmetricLink>(
         receiver_multiplexer_.get(), switch_->port(1),
         params.test_link.bandwidth, params.test_link.delay));
     for (size_t i = 0; i < MultiSenderTopologyParams::kNumLocalLinks; ++i) {
       simulator::SwitchPortNumber port_number = i + 2;
-      network_links_.push_back(QuicMakeUnique<simulator::SymmetricLink>(
+      network_links_.push_back(std::make_unique<simulator::SymmetricLink>(
           sender_endpoints_[i].get(), switch_->port(port_number),
           params.local_links[i].bandwidth, params.local_links[i].delay));
     }
   }
 
   QuicTime SimulatedNow() const { return simulator_.GetClock()->Now(); }
+
+  QuicConnection* sender_connection(size_t which) {
+    return sender_endpoints_[which]->connection();
+  }
+
+  const QuicConnectionStats& sender_connection_stats(size_t which) {
+    return sender_connection(which)->GetStats();
+  }
+
+  float sender_loss_rate_in_packets(size_t which) {
+    return static_cast<float>(sender_connection_stats(which).packets_lost) /
+           sender_connection_stats(which).packets_sent;
+  }
 
   simulator::Simulator simulator_;
   std::vector<std::unique_ptr<simulator::QuicEndpoint>> sender_endpoints_;
@@ -832,7 +930,7 @@ TEST_F(Bbr2MultiSenderTest, Bbr2VsBbr2) {
   ASSERT_TRUE(simulator_result);
 }
 
-TEST_F(Bbr2MultiSenderTest, MultipleBbr2s) {
+TEST_F(Bbr2MultiSenderTest, QUIC_SLOW_TEST(MultipleBbr2s)) {
   const int kTotalNumSenders = 6;
   for (int i = 1; i < kTotalNumSenders; ++i) {
     SetupBbr2Sender(sender_endpoints_[i].get());
@@ -948,7 +1046,7 @@ TEST_F(Bbr2MultiSenderTest, Bbr2VsBbr1) {
   ASSERT_TRUE(simulator_result);
 }
 
-TEST_F(Bbr2MultiSenderTest, Bbr2VsReno) {
+TEST_F(Bbr2MultiSenderTest, QUIC_SLOW_TEST(Bbr2VsReno)) {
   SetupTcpSender(sender_endpoints_[1].get(), /*reno=*/true);
 
   MultiSenderTopologyParams params;
@@ -979,7 +1077,7 @@ TEST_F(Bbr2MultiSenderTest, Bbr2VsReno) {
   ASSERT_TRUE(simulator_result);
 }
 
-TEST_F(Bbr2MultiSenderTest, Bbr2VsCubic) {
+TEST_F(Bbr2MultiSenderTest, QUIC_SLOW_TEST(Bbr2VsCubic)) {
   SetupTcpSender(sender_endpoints_[1].get(), /*reno=*/false);
 
   MultiSenderTopologyParams params;

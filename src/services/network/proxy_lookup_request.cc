@@ -20,9 +20,11 @@
 namespace network {
 
 ProxyLookupRequest::ProxyLookupRequest(
-    mojom::ProxyLookupClientPtr proxy_lookup_client,
-    NetworkContext* network_context)
+    mojo::PendingRemote<mojom::ProxyLookupClient> proxy_lookup_client,
+    NetworkContext* network_context,
+    const net::NetworkIsolationKey& network_isolation_key)
     : network_context_(network_context),
+      network_isolation_key_(network_isolation_key),
       proxy_lookup_client_(std::move(proxy_lookup_client)) {
   DCHECK(proxy_lookup_client_);
 }
@@ -36,16 +38,18 @@ ProxyLookupRequest::~ProxyLookupRequest() {
 }
 
 void ProxyLookupRequest::Start(const GURL& url) {
-  proxy_lookup_client_.set_connection_error_handler(
+  proxy_lookup_client_.set_disconnect_handler(
       base::BindOnce(&ProxyLookupRequest::DestroySelf, base::Unretained(this)));
   // TODO(mmenke): The NetLogWithSource() means nothing is logged. Fix that.
-  int result =
-      network_context_->url_request_context()
-          ->proxy_resolution_service()
-          ->ResolveProxy(url, std::string(), &proxy_info_,
-                         base::BindOnce(&ProxyLookupRequest::OnResolveComplete,
-                                        base::Unretained(this)),
-                         &request_, net::NetLogWithSource());
+  //
+  // TODO(https://crbug.com/1023435): Pass along a NetworkIsolationKey.
+  int result = network_context_->url_request_context()
+                   ->proxy_resolution_service()
+                   ->ResolveProxy(
+                       url, std::string(), network_isolation_key_, &proxy_info_,
+                       base::BindOnce(&ProxyLookupRequest::OnResolveComplete,
+                                      base::Unretained(this)),
+                       &request_, net::NetLogWithSource());
   if (result != net::ERR_IO_PENDING)
     OnResolveComplete(result);
 }

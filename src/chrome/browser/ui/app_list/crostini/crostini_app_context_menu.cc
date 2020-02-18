@@ -6,6 +6,8 @@
 
 #include "ash/public/cpp/app_menu_constants.h"
 #include "base/bind_helpers.h"
+#include "chrome/browser/apps/app_service/app_service_proxy.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/grit/generated_resources.h"
@@ -22,7 +24,7 @@ bool CrostiniAppContextMenu::IsCommandIdEnabled(int command_id) const {
   if (command_id == ash::UNINSTALL) {
     return IsUninstallable();
   } else if (command_id == ash::STOP_APP) {
-    if (app_id() == crostini::kCrostiniTerminalId) {
+    if (app_id() == crostini::GetTerminalId()) {
       return crostini::IsCrostiniRunning(profile());
     }
   }
@@ -31,17 +33,16 @@ bool CrostiniAppContextMenu::IsCommandIdEnabled(int command_id) const {
 
 void CrostiniAppContextMenu::ExecuteCommand(int command_id, int event_flags) {
   switch (command_id) {
-    case ash::UNINSTALL:
-      if (app_id() == crostini::kCrostiniTerminalId) {
-        crostini::ShowCrostiniUninstallerView(
-            profile(), crostini::CrostiniUISurface::kAppList);
-      } else {
-        crostini::ShowCrostiniAppUninstallerView(profile(), app_id());
-      }
+    case ash::UNINSTALL: {
+      DCHECK_NE(app_id(), crostini::GetTerminalId());
+      apps::AppServiceProxy* proxy =
+          apps::AppServiceProxyFactory::GetForProfile(profile());
+      DCHECK(proxy);
+      proxy->Uninstall(app_id(), nullptr /* parent_window */);
       return;
-
+    }
     case ash::STOP_APP:
-      if (app_id() == crostini::kCrostiniTerminalId) {
+      if (app_id() == crostini::GetTerminalId()) {
         crostini::CrostiniManager::GetForProfile(profile())->StopVm(
             crostini::kCrostiniDefaultVmName, base::DoNothing());
         return;
@@ -61,7 +62,7 @@ void CrostiniAppContextMenu::BuildMenu(ui::SimpleMenuModel* menu_model) {
                          IDS_APP_LIST_UNINSTALL_ITEM);
   }
 
-  if (app_id() == crostini::kCrostiniTerminalId) {
+  if (app_id() == crostini::GetTerminalId()) {
     AddContextMenuOption(menu_model, ash::STOP_APP,
                          IDS_CROSTINI_SHUT_DOWN_LINUX_MENU_ITEM);
   }

@@ -24,6 +24,7 @@
 #include "src/trace_processor/slice_tracker.h"
 #include "src/trace_processor/trace_processor_context.h"
 #include "src/trace_processor/trace_storage.h"
+#include "src/trace_processor/track_tracker.h"
 
 namespace perfetto {
 namespace trace_processor {
@@ -50,16 +51,17 @@ class SyscallTracker {
   void Enter(int64_t ts, UniqueTid utid, uint32_t syscall_num) {
     StringId name = SyscallNumberToStringId(syscall_num);
     if (!name.is_null()) {
-      context_->slice_tracker->Begin(ts, utid, RefType::kRefUtid, 0 /* cat */,
-                                     name);
+      TrackId track_id = context_->track_tracker->InternThreadTrack(utid);
+      context_->slice_tracker->Begin(ts, track_id, utid, RefType::kRefUtid,
+                                     0 /* cat */, name);
     }
   }
 
   void Exit(int64_t ts, UniqueTid utid, uint32_t syscall_num) {
     StringId name = SyscallNumberToStringId(syscall_num);
     if (!name.is_null()) {
-      context_->slice_tracker->End(ts, utid, RefType::kRefUtid, 0 /* cat */,
-                                   name);
+      TrackId track_id = context_->track_tracker->InternThreadTrack(utid);
+      context_->slice_tracker->End(ts, track_id, 0 /* cat */, name);
     }
   }
 
@@ -80,7 +82,7 @@ class SyscallTracker {
   }
 
   // This is table from platform specific syscall number directly to
-  // the relevent StringId (this avoids having to always do two conversions).
+  // the relevant StringId (this avoids having to always do two conversions).
   std::array<StringId, kMaxSyscalls> arch_syscall_to_string_id_{};
   StringId sys_write_string_id_ = std::numeric_limits<StringId>::max();
 };

@@ -11,6 +11,7 @@
 
 #include "net/third_party/quiche/src/quic/core/quic_packets.h"
 #include "net/third_party/quiche/src/quic/core/quic_stream_sequencer_buffer.h"
+#include "net/third_party/quiche/src/quic/core/quic_types.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_export.h"
 
 namespace quic {
@@ -24,7 +25,7 @@ class QuicStreamSequencerPeer;
 class QUIC_EXPORT_PRIVATE QuicStreamSequencer {
  public:
   // Interface that thie Sequencer uses to communicate with the Stream.
-  class StreamInterface {
+  class QUIC_EXPORT_PRIVATE StreamInterface {
    public:
     virtual ~StreamInterface() = default;
 
@@ -182,6 +183,9 @@ class QUIC_EXPORT_PRIVATE QuicStreamSequencer {
   // Stores received data in offset order.
   QuicStreamSequencerBuffer buffered_frames_;
 
+  // The highest offset that is received so far.
+  QuicStreamOffset highest_offset_;
+
   // The offset, if any, we got a stream termination for.  When this many bytes
   // have been processed, the sequencer will be closed.
   QuicStreamOffset close_offset_;
@@ -207,6 +211,11 @@ class QUIC_EXPORT_PRIVATE QuicStreamSequencer {
   // the sequencer will discard incoming data (but not FIN bits) after
   // StopReading is called, even in level_triggered_ mode.
   const bool stop_reading_when_level_triggered_;
+
+  // Latched value of quic_close_connection_and_discard_data_on_wrong_offset.
+  // When true, the sequencer will inform the stream to close connection when
+  // wrong offset is received. And the stream frame's data will be discarded.
+  const bool close_connection_and_discard_data_on_wrong_offset_;
 };
 
 }  // namespace quic

@@ -20,8 +20,9 @@
 #include "chrome/common/webui_url_constants.h"
 #include "extensions/browser/entry_info.h"
 #include "extensions/common/manifest_handlers/file_handler_info.h"
-#include "storage/browser/fileapi/file_system_url.h"
+#include "storage/browser/file_system/file_system_url.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 #include "ui/base/window_open_disposition.h"
 #include "url/gurl.h"
 
@@ -117,16 +118,16 @@ void ExecuteWebTask(Profile* profile,
       apps::mojom::LaunchContainer::kLaunchContainerWindow;
 
   // If the app isn't configured to open in a window, it should open as a tab.
-  if (registrar.GetAppLaunchContainer(task.app_id) !=
-      web_app::LaunchContainer::kWindow) {
-    DCHECK_EQ(registrar.GetAppLaunchContainer(task.app_id),
-              web_app::LaunchContainer::kTab);
+  if (registrar.GetAppUserDisplayMode(task.app_id) !=
+      blink::mojom::DisplayMode::kStandalone) {
+    DCHECK_EQ(registrar.GetAppUserDisplayMode(task.app_id),
+              blink::mojom::DisplayMode::kBrowser);
     launch_container = apps::mojom::LaunchContainer::kLaunchContainerTab;
   }
 
-  AppLaunchParams params(profile, task.app_id, launch_container,
-                         WindowOpenDisposition::NEW_FOREGROUND_TAB,
-                         apps::mojom::AppLaunchSource::kSourceFileHandler);
+  apps::AppLaunchParams params(
+      task.app_id, launch_container, WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      apps::mojom::AppLaunchSource::kSourceFileHandler);
   for (const auto& file_system_url : file_system_urls)
     params.launch_files.push_back(file_system_url.path());
   apps::LaunchService::Get(profile)->OpenApplication(params);

@@ -15,7 +15,6 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/trace_event/memory_usage_estimator.h"
 #include "components/sync/base/data_type_histogram.h"
-#include "components/sync/base/hash_util.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/time.h"
 #include "components/sync/engine/commit_queue.h"
@@ -30,7 +29,7 @@ namespace syncer {
 namespace {
 
 int CountNonTombstoneEntries(
-    const std::map<std::string, std::unique_ptr<ProcessorEntity>>& entities) {
+    const std::map<ClientTagHash, std::unique_ptr<ProcessorEntity>>& entities) {
   int count = 0;
   for (const auto& kv : entities) {
     if (!kv.second->metadata().is_deleted()) {
@@ -130,9 +129,10 @@ void ClientTagBasedModelTypeProcessor::ModelReadyToSync(
       // to avoid copying.
       std::unique_ptr<ProcessorEntity> entity =
           ProcessorEntity::CreateFromMetadata(it->first, std::move(*metadata));
-      storage_key_to_tag_hash_[entity->storage_key()] =
-          entity->metadata().client_tag_hash();
-      entities_[entity->metadata().client_tag_hash()] = std::move(entity);
+      ClientTagHash client_tag_hash =
+          ClientTagHash::FromHashed(entity->metadata().client_tag_hash());
+      storage_key_to_tag_hash_[entity->storage_key()] = client_tag_hash;
+      entities_[client_tag_hash] = std::move(entity);
     }
     model_type_state_ = batch->GetModelTypeState();
   } else {
@@ -184,12 +184,8 @@ void ClientTagBasedModelTypeProcessor::ConnectIfReady() {
     // belong to the current syncing client.
     if (model_type_state_.progress_marker().data_type_id() !=
         GetSpecificsFieldNumberFromModelType(type_)) {
-      // This is not strongly typed because historically,
-      // ModelTypeToHistogramInt() defines quite a different order from the
-      // type_ enum.
       UMA_HISTOGRAM_ENUMERATION("Sync.PersistedModelTypeIdMismatch",
-                                ModelTypeToHistogramInt(type_),
-                                static_cast<int>(ModelType::NUM_ENTRIES));
+                                ModelTypeHistogramValue(type_));
     }
     ClearMetadataAndResetState();
 
@@ -201,9 +197,8 @@ void ClientTagBasedModelTypeProcessor::ConnectIfReady() {
   }
 
   // Cache GUID verification earlier above guarantees the user is the same.
-  // TODO(https://crbug.com/959157): Use CoreAccountId instead of std::string.
   model_type_state_.set_authenticated_account_id(
-      activation_request_.authenticated_account_id.id);
+      activation_request_.authenticated_account_id.ToString());
 
   // For commit-only types, no updates are expected and hence we can consider
   // initial_sync_done(), reflecting that sync is enabled.
@@ -391,14 +386,15 @@ void ClientTagBasedModelTypeProcessor::Put(
   if (entity == nullptr) {
     // The bridge is creating a new entity. The bridge may or may not populate
     // |data->client_tag_hash|, so let's ask for the client tag if needed.
-    if (data->client_tag_hash.empty()) {
+    if (data->client_tag_hash.value().empty()) {
       data->client_tag_hash = GetClientTagHash(storage_key, *data);
     } else if (bridge_->SupportsGetClientTag()) {
       // If the Put() call already included the client tag, let's verify that
       // it's consistent with the bridge's regular GetClientTag() function (if
       // supported by the bridge).
-      DCHECK_EQ(data->client_tag_hash,
-                GenerateSyncableHash(type_, bridge_->GetClientTag(*data)));
+      DCHECK_EQ(
+          data->client_tag_hash,
+          ClientTagHash::FromUnhashed(type_, bridge_->GetClientTag(*data)));
     }
     // If another entity exists for the same client_tag_hash, it could be the
     // case that the bridge has deleted this entity but the tombstone hasn't
@@ -427,8 +423,7 @@ void ClientTagBasedModelTypeProcessor::Put(
   } else if (entity->MatchesData(*data)) {
     // Ignore changes that don't actually change anything.
     UMA_HISTOGRAM_ENUMERATION("Sync.ModelTypeRedundantPut",
-                              ModelTypeToHistogramInt(type_),
-                              static_cast<int>(ModelType::NUM_ENTRIES));
+                              ModelTypeHistogramValue(type_));
     return;
   }
 
@@ -467,8 +462,8 @@ void ClientTagBasedModelTypeProcessor::UpdateStorageKey(
     const EntityData& entity_data,
     const std::string& storage_key,
     MetadataChangeList* metadata_change_list) {
-  const std::string& client_tag_hash = entity_data.client_tag_hash;
-  DCHECK(!client_tag_hash.empty());
+  const ClientTagHash& client_tag_hash = entity_data.client_tag_hash;
+  DCHECK(!client_tag_hash.value().empty());
   DCHECK(!storage_key.empty());
   DCHECK(!bridge_->SupportsGetStorageKey());
   DCHECK(model_type_state_.initial_sync_done());
@@ -501,9 +496,9 @@ void ClientTagBasedModelTypeProcessor::UntrackEntityForStorageKey(
 }
 
 void ClientTagBasedModelTypeProcessor::UntrackEntityForClientTagHash(
-    const std::string& client_tag_hash) {
+    const ClientTagHash& client_tag_hash) {
   DCHECK(model_type_state_.initial_sync_done());
-  DCHECK(!client_tag_hash.empty());
+  DCHECK(!client_tag_hash.value().empty());
   // Is a no-op if no entity for |client_tag_hash| is tracked.
   DCHECK(GetEntityForTagHash(client_tag_hash) == nullptr ||
          GetEntityForTagHash(client_tag_hash)->storage_key().empty());
@@ -675,8 +670,8 @@ void PopulateClientTagsForWalletData(const ModelType& type,
       // wallet_data entity has a client tag.
       continue;
     }
-    update->entity->client_tag_hash =
-        GenerateSyncableHash(type, bridge->GetClientTag(*update->entity));
+    update->entity->client_tag_hash = ClientTagHash::FromUnhashed(
+        type, bridge->GetClientTag(*update->entity));
   }
 }
 
@@ -724,7 +719,6 @@ void ClientTagBasedModelTypeProcessor::OnUpdateReceived(
     error = OnFullUpdateReceived(model_type_state, std::move(updates));
   } else {
     error = OnIncrementalUpdateReceived(model_type_state, std::move(updates));
-    ExpireEntriesIfNeeded(model_type_state.progress_marker());
   }
 
   if (error) {
@@ -738,7 +732,7 @@ void ClientTagBasedModelTypeProcessor::OnUpdateReceived(
     base::UmaHistogramCustomTimes(
         base::StringPrintf(
             "Sync.ModelTypeConfigurationTime.%s.%s",
-            (activation_request_.storage_option == STORAGE_IN_MEMORY)
+            (activation_request_.sync_mode == SyncMode::kTransportOnly)
                 ? "Ephemeral"
                 : "Persistent",
             ModelTypeToHistogramSuffix(type_)),
@@ -760,18 +754,18 @@ ProcessorEntity* ClientTagBasedModelTypeProcessor::ProcessUpdate(
     EntityChangeList* entity_changes,
     std::string* storage_key_to_clear) {
   const EntityData& data = *update->entity;
-  const std::string& client_tag_hash = data.client_tag_hash;
+  const ClientTagHash& client_tag_hash = data.client_tag_hash;
 
   // Filter out updates without a client tag hash (including permanent nodes,
   // which have server tags instead).
-  if (client_tag_hash.empty()) {
+  if (client_tag_hash.value().empty()) {
     return nullptr;
   }
 
   // Filter out unexpected client tag hashes.
   if (!data.is_deleted() && bridge_->SupportsGetClientTag() &&
       client_tag_hash !=
-          GenerateSyncableHash(type_, bridge_->GetClientTag(data))) {
+          ClientTagHash::FromUnhashed(type_, bridge_->GetClientTag(data))) {
     DLOG(WARNING) << "Received unexpected client tag hash: " << client_tag_hash
                   << " for " << ModelTypeToString(type_);
     return nullptr;
@@ -1023,8 +1017,8 @@ ClientTagBasedModelTypeProcessor::OnFullUpdateReceived(
 
   for (const std::unique_ptr<syncer::UpdateResponseData>& update : updates) {
     DCHECK(update);
-    const std::string& client_tag_hash = update->entity->client_tag_hash;
-    if (client_tag_hash.empty()) {
+    const ClientTagHash& client_tag_hash = update->entity->client_tag_hash;
+    if (client_tag_hash.value().empty()) {
       // Ignore updates missing a client tag hash (e.g. permanent nodes).
       continue;
     }
@@ -1035,7 +1029,7 @@ ClientTagBasedModelTypeProcessor::OnFullUpdateReceived(
       continue;
     }
     if (bridge_->SupportsGetClientTag() &&
-        client_tag_hash != GenerateSyncableHash(
+        client_tag_hash != ClientTagHash::FromUnhashed(
                                type_, bridge_->GetClientTag(*update->entity))) {
       DLOG(WARNING) << "Received unexpected client tag hash: "
                     << client_tag_hash << " for " << ModelTypeToString(type_);
@@ -1127,7 +1121,8 @@ ClientTagBasedModelTypeProcessor::OnIncrementalUpdateReceived(
     if (entity->CanClearMetadata()) {
       metadata_changes->ClearMetadata(entity->storage_key());
       storage_key_to_tag_hash_.erase(entity->storage_key());
-      entities_.erase(entity->metadata().client_tag_hash());
+      entities_.erase(
+          ClientTagHash::FromHashed(entity->metadata().client_tag_hash()));
     } else {
       metadata_changes->UpdateMetadata(entity->storage_key(),
                                        entity->metadata());
@@ -1199,8 +1194,7 @@ void ClientTagBasedModelTypeProcessor::ConsumeDataBatch(
     // had been called.
     storage_keys_to_untrack.push_back(storage_key);
     UMA_HISTOGRAM_ENUMERATION("Sync.ModelTypeOrphanMetadata",
-                              ModelTypeToHistogramInt(type_),
-                              static_cast<int>(ModelType::NUM_ENTRIES));
+                              ModelTypeHistogramValue(type_));
   }
 
   if (storage_keys_to_untrack.empty()) {
@@ -1241,13 +1235,13 @@ void ClientTagBasedModelTypeProcessor::CommitLocalChanges(
   std::move(callback).Run(std::move(commit_requests));
 }
 
-std::string ClientTagBasedModelTypeProcessor::GetClientTagHash(
+ClientTagHash ClientTagBasedModelTypeProcessor::GetClientTagHash(
     const std::string& storage_key,
     const EntityData& data) const {
   auto iter = storage_key_to_tag_hash_.find(storage_key);
   DCHECK(bridge_->SupportsGetClientTag());
   return iter == storage_key_to_tag_hash_.end()
-             ? GenerateSyncableHash(type_, bridge_->GetClientTag(data))
+             ? ClientTagHash::FromUnhashed(type_, bridge_->GetClientTag(data))
              : iter->second;
 }
 
@@ -1268,13 +1262,13 @@ const ProcessorEntity* ClientTagBasedModelTypeProcessor::GetEntityForStorageKey(
 }
 
 ProcessorEntity* ClientTagBasedModelTypeProcessor::GetEntityForTagHash(
-    const std::string& tag_hash) {
+    const ClientTagHash& tag_hash) {
   auto it = entities_.find(tag_hash);
   return it != entities_.end() ? it->second.get() : nullptr;
 }
 
 const ProcessorEntity* ClientTagBasedModelTypeProcessor::GetEntityForTagHash(
-    const std::string& tag_hash) const {
+    const ClientTagHash& tag_hash) const {
   auto it = entities_.find(tag_hash);
   return it != entities_.end() ? it->second.get() : nullptr;
 }
@@ -1282,7 +1276,7 @@ const ProcessorEntity* ClientTagBasedModelTypeProcessor::GetEntityForTagHash(
 ProcessorEntity* ClientTagBasedModelTypeProcessor::CreateEntity(
     const std::string& storage_key,
     const EntityData& data) {
-  DCHECK(!data.client_tag_hash.empty());
+  DCHECK(!data.client_tag_hash.value().empty());
   DCHECK(entities_.find(data.client_tag_hash) == entities_.end());
   DCHECK(!bridge_->SupportsGetStorageKey() || !storage_key.empty());
   DCHECK(storage_key.empty() || storage_key_to_tag_hash_.find(storage_key) ==
@@ -1300,7 +1294,7 @@ ProcessorEntity* ClientTagBasedModelTypeProcessor::CreateEntity(
     const EntityData& data) {
   if (bridge_->SupportsGetClientTag()) {
     DCHECK_EQ(data.client_tag_hash,
-              GenerateSyncableHash(type_, bridge_->GetClientTag(data)));
+              ClientTagHash::FromUnhashed(type_, bridge_->GetClientTag(data)));
   }
   std::string storage_key;
   if (bridge_->SupportsGetStorageKey())
@@ -1342,49 +1336,6 @@ bool ClientTagBasedModelTypeProcessor::IsModelReadyToSyncForTest() const {
   return model_ready_to_sync_;
 }
 
-void ClientTagBasedModelTypeProcessor::ExpireEntriesIfNeeded(
-    const sync_pb::DataTypeProgressMarker& progress_marker) {
-  if (!progress_marker.has_gc_directive())
-    return;
-
-  const sync_pb::GarbageCollectionDirective& new_gc_directive =
-      progress_marker.gc_directive();
-  std::unique_ptr<MetadataChangeList> metadata_changes =
-      bridge_->CreateMetadataChangeList();
-  bool has_expired_changes = false;
-
-  if (new_gc_directive.has_age_watermark_in_days()) {
-    DCHECK(new_gc_directive.age_watermark_in_days());
-    // For saving resource purpose(ex. cpu, battery), We round up garbage
-    // collection age to day, so we only run GC once a day if server did not
-    // change the |age_watermark_in_days|.
-    base::Time to_be_expired =
-        base::Time::Now().LocalMidnight() -
-        base::TimeDelta::FromDays(new_gc_directive.age_watermark_in_days());
-    if (cached_gc_directive_aged_out_day_ != to_be_expired) {
-      ExpireEntriesByAge(new_gc_directive.age_watermark_in_days(),
-                         metadata_changes.get());
-      cached_gc_directive_aged_out_day_ = to_be_expired;
-      has_expired_changes = true;
-    }
-  }
-
-  if (has_expired_changes)
-    bridge_->ApplySyncChanges(std::move(metadata_changes), EntityChangeList());
-}
-
-void ClientTagBasedModelTypeProcessor::ClearMetadataForEntries(
-    const std::vector<std::string>& storage_key_to_be_deleted,
-    MetadataChangeList* metadata_changes) {
-  for (const std::string& key : storage_key_to_be_deleted) {
-    metadata_changes->ClearMetadata(key);
-    auto iter = storage_key_to_tag_hash_.find(key);
-    DCHECK(iter != storage_key_to_tag_hash_.end());
-    entities_.erase(iter->second);
-    storage_key_to_tag_hash_.erase(key);
-  }
-}
-
 void ClientTagBasedModelTypeProcessor::ExpireAllEntries(
     MetadataChangeList* metadata_changes) {
   DCHECK(metadata_changes);
@@ -1397,27 +1348,14 @@ void ClientTagBasedModelTypeProcessor::ExpireAllEntries(
     }
   }
 
-  ClearMetadataForEntries(storage_key_to_be_deleted, metadata_changes);
-}
-
-void ClientTagBasedModelTypeProcessor::ExpireEntriesByAge(
-    int32_t age_watermark_in_days,
-    MetadataChangeList* metadata_changes) {
-  DCHECK(metadata_changes);
-
-  base::Time to_be_expired =
-      base::Time::Now() - base::TimeDelta::FromDays(age_watermark_in_days);
-  std::vector<std::string> storage_key_to_be_deleted;
-  for (const auto& kv : entities_) {
-    ProcessorEntity* entity = kv.second.get();
-    if (!entity->IsUnsynced() &&
-        ProtoTimeToTime(entity->metadata().modification_time()) <=
-            to_be_expired) {
-      storage_key_to_be_deleted.push_back(entity->storage_key());
-    }
+  // Delete selected keys while not iterating over |entities_|.
+  for (const std::string& key : storage_key_to_be_deleted) {
+    metadata_changes->ClearMetadata(key);
+    auto iter = storage_key_to_tag_hash_.find(key);
+    DCHECK(iter != storage_key_to_tag_hash_.end());
+    entities_.erase(iter->second);
+    storage_key_to_tag_hash_.erase(iter);
   }
-
-  ClearMetadataForEntries(storage_key_to_be_deleted, metadata_changes);
 }
 
 void ClientTagBasedModelTypeProcessor::RemoveEntity(
@@ -1425,14 +1363,14 @@ void ClientTagBasedModelTypeProcessor::RemoveEntity(
     MetadataChangeList* metadata_change_list) {
   metadata_change_list->ClearMetadata(entity->storage_key());
   storage_key_to_tag_hash_.erase(entity->storage_key());
-  entities_.erase(entity->metadata().client_tag_hash());
+  entities_.erase(
+      ClientTagHash::FromHashed(entity->metadata().client_tag_hash()));
 }
 
 void ClientTagBasedModelTypeProcessor::ResetState(
     SyncStopMetadataFate metadata_fate) {
   // This should reset all mutable fields (except for |bridge_|).
   worker_.reset();
-  cached_gc_directive_aged_out_day_ = base::Time::FromDoubleT(0);
 
   switch (metadata_fate) {
     case KEEP_METADATA:
@@ -1482,7 +1420,8 @@ void ClientTagBasedModelTypeProcessor::MergeDataWithMetadataForDebugging(
       data->id = "s" + metadata.server_id();
       data->creation_time = ProtoTimeToTime(metadata.creation_time());
       data->modification_time = ProtoTimeToTime(metadata.modification_time());
-      data->client_tag_hash = metadata.client_tag_hash();
+      data->client_tag_hash =
+          ClientTagHash::FromHashed(metadata.client_tag_hash());
     }
 
     std::unique_ptr<base::DictionaryValue> node = data->ToDictionaryValue();

@@ -29,7 +29,7 @@ class ProcessDiceHeaderDelegateImpl : public ProcessDiceHeaderDelegate,
   // Callback starting Sync.
   using EnableSyncCallback =
       base::OnceCallback<void(content::WebContents*,
-                              const std::string& /* account_id */)>;
+                              const CoreAccountId& /* account_id */)>;
 
   // Callback showing a signin error UI.
   using ShowSigninErrorCallback =
@@ -41,7 +41,6 @@ class ProcessDiceHeaderDelegateImpl : public ProcessDiceHeaderDelegate,
   // tab.
   ProcessDiceHeaderDelegateImpl(
       content::WebContents* web_contents,
-      signin::AccountConsistencyMethod account_consistency,
       signin::IdentityManager* identity_manager,
       bool is_sync_signin_tab,
       EnableSyncCallback enable_sync_callback,
@@ -50,7 +49,7 @@ class ProcessDiceHeaderDelegateImpl : public ProcessDiceHeaderDelegate,
   ~ProcessDiceHeaderDelegateImpl() override;
 
   // ProcessDiceHeaderDelegate:
-  void EnableSync(const std::string& account_id) override;
+  void EnableSync(const CoreAccountId& account_id) override;
   void HandleTokenExchangeFailure(const std::string& email,
                                   const GoogleServiceAuthError& error) override;
 
@@ -58,7 +57,6 @@ class ProcessDiceHeaderDelegateImpl : public ProcessDiceHeaderDelegate,
   // Returns true if sync should be enabled after the user signs in.
   bool ShouldEnableSync();
 
-  signin::AccountConsistencyMethod account_consistency_;
   signin::IdentityManager* identity_manager_;
   EnableSyncCallback enable_sync_callback_;
   ShowSigninErrorCallback show_signin_error_callback_;

@@ -26,6 +26,7 @@
 #include "net/http/http_network_transaction.h"
 #include "net/http/http_proxy_connect_job.h"
 #include "net/log/net_log_with_source.h"
+#include "net/quic/quic_context.h"
 #include "net/socket/client_socket_handle.h"
 #include "net/socket/next_proto.h"
 #include "net/socket/socket_tag.h"
@@ -331,6 +332,7 @@ SpdySessionDependencies::SpdySessionDependencies(
       socket_factory(std::make_unique<MockClientSocketFactory>()),
       http_auth_handler_factory(HttpAuthHandlerFactory::CreateDefault()),
       http_server_properties(std::make_unique<HttpServerProperties>()),
+      quic_context(std::make_unique<QuicContext>()),
       enable_ip_pooling(true),
       enable_ping(false),
       enable_user_alternate_protocol_ports(false),
@@ -342,11 +344,9 @@ SpdySessionDependencies::SpdySessionDependencies(
       enable_http2_alternative_service(false),
       enable_websocket_over_http2(false),
       net_log(nullptr),
-      http_09_on_non_default_ports_enabled(false),
       disable_idle_sockets_close_on_memory_pressure(false),
       enable_early_data(false),
-      allow_default_credentials(
-          HttpAuthPreferences::ALLOW_DEFAULT_CREDENTIALS) {
+      key_auth_cache_server_entries_by_network_isolation_key(false) {
   http2_settings[spdy::SETTINGS_INITIAL_WINDOW_SIZE] =
       kDefaultInitialWindowSize;
 }
@@ -397,12 +397,11 @@ HttpNetworkSession::Params SpdySessionDependencies::CreateSessionParams(
   params.enable_websocket_over_http2 =
       session_deps->enable_websocket_over_http2;
   params.greased_http2_frame = session_deps->greased_http2_frame;
-  params.http_09_on_non_default_ports_enabled =
-      session_deps->http_09_on_non_default_ports_enabled;
   params.disable_idle_sockets_close_on_memory_pressure =
       session_deps->disable_idle_sockets_close_on_memory_pressure;
   params.enable_early_data = session_deps->enable_early_data;
-  params.allow_default_credentials = session_deps->allow_default_credentials;
+  params.key_auth_cache_server_entries_by_network_isolation_key =
+      session_deps->key_auth_cache_server_entries_by_network_isolation_key;
   return params;
 }
 
@@ -425,6 +424,7 @@ HttpNetworkSession::Context SpdySessionDependencies::CreateSessionContext(
   context.http_auth_handler_factory =
       session_deps->http_auth_handler_factory.get();
   context.http_server_properties = session_deps->http_server_properties.get();
+  context.quic_context = session_deps->quic_context.get();
   context.net_log = session_deps->net_log;
 #if BUILDFLAG(ENABLE_REPORTING)
   context.reporting_service = session_deps->reporting_service.get();
@@ -447,6 +447,7 @@ SpdyURLRequestContext::SpdyURLRequestContext() : storage_(this) {
   storage_.set_http_auth_handler_factory(
       HttpAuthHandlerFactory::CreateDefault());
   storage_.set_http_server_properties(std::make_unique<HttpServerProperties>());
+  storage_.set_quic_context(std::make_unique<QuicContext>());
   storage_.set_job_factory(std::make_unique<URLRequestJobFactoryImpl>());
   HttpNetworkSession::Params session_params;
   session_params.enable_spdy_ping_based_connection_checking = false;
@@ -462,6 +463,7 @@ SpdyURLRequestContext::SpdyURLRequestContext() : storage_(this) {
   session_context.ssl_config_service = ssl_config_service();
   session_context.http_auth_handler_factory = http_auth_handler_factory();
   session_context.http_server_properties = http_server_properties();
+  session_context.quic_context = quic_context();
   storage_.set_http_network_session(
       std::make_unique<HttpNetworkSession>(session_params, session_context));
   SpdySessionPoolPeer pool_peer(
@@ -504,7 +506,8 @@ base::WeakPtr<SpdySession> CreateSpdySessionHelper(
   int rv = connection->Init(
       ClientSocketPool::GroupId(key.host_port_pair(),
                                 ClientSocketPool::SocketType::kSsl,
-                                key.privacy_mode()),
+                                key.privacy_mode(), NetworkIsolationKey(),
+                                false /* disable_secure_dns */),
       socket_params, base::nullopt /* proxy_annotation_tag */, MEDIUM,
       key.socket_tag(), ClientSocketPool::RespectLimits::ENABLED,
       callback.callback(), ClientSocketPool::ProxyAuthCallback(),
@@ -969,7 +972,7 @@ spdy::SpdySerializedFrame SpdyTestUtil::ConstructSpdyReplyError(
 }
 
 spdy::SpdySerializedFrame SpdyTestUtil::ConstructSpdyReplyError(int stream_id) {
-  return ConstructSpdyReplyError("500", nullptr, 0, 1);
+  return ConstructSpdyReplyError("500", nullptr, 0, stream_id);
 }
 
 spdy::SpdySerializedFrame SpdyTestUtil::ConstructSpdyGetReply(

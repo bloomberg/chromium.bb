@@ -27,14 +27,15 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabTestUtils;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
+import org.chromium.ui.test.util.UiRestriction;
 import org.chromium.webapk.lib.common.splash.R;
 
 /**
@@ -68,7 +69,7 @@ public class WebappSplashScreenTest {
     @Test
     @SmallTest
     @Feature({"Webapps"})
-    public void testDefaultBackgroundColor() throws Exception {
+    public void testDefaultBackgroundColor() {
         ViewGroup splashScreen = mActivityTestRule.startWebappActivityAndWaitForSplashScreen();
         ColorDrawable background = (ColorDrawable) splashScreen.getBackground();
 
@@ -79,22 +80,27 @@ public class WebappSplashScreenTest {
     }
 
     @Test
-    @DisabledTest
     @SmallTest
     @Feature({"Webapps"})
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-    public void testThemeColorWhenNotSpecified() throws Exception {
+    @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
+    public void testThemeColorWhenNotSpecified() {
         mActivityTestRule.startWebappActivityAndWaitForSplashScreen();
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) return;
 
+        // Status bar color should be white on M+ to match CCTs and WebAPK shell.
+        int expectedColor = Color.WHITE;
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+            expectedColor = Color.BLACK;
+        }
         Assert.assertEquals(
-                Color.BLACK, mActivityTestRule.getActivity().getWindow().getStatusBarColor());
+                expectedColor, mActivityTestRule.getActivity().getWindow().getStatusBarColor());
     }
 
     @Test
     @SmallTest
     @Feature({"Webapps"})
-    public void testHidesAfterFirstPaint() throws Exception {
+    public void testHidesAfterFirstPaint() {
         mActivityTestRule.startWebappActivityAndWaitForSplashScreen();
         Assert.assertTrue(mActivityTestRule.isSplashScreenVisible());
 
@@ -108,7 +114,7 @@ public class WebappSplashScreenTest {
     @Test
     @SmallTest
     @Feature({"Webapps"})
-    public void testHidesAfterCrash() throws Throwable {
+    public void testHidesAfterCrash() {
         mActivityTestRule.startWebappActivityAndWaitForSplashScreen();
         Assert.assertTrue(mActivityTestRule.isSplashScreenVisible());
 
@@ -122,7 +128,7 @@ public class WebappSplashScreenTest {
     @Test
     @SmallTest
     @Feature({"Webapps"})
-    public void testHidesAfterLoadCompletes() throws Exception {
+    public void testHidesAfterLoadCompletes() {
         mActivityTestRule.startWebappActivityAndWaitForSplashScreen();
         Assert.assertTrue(mActivityTestRule.isSplashScreenVisible());
 
@@ -136,7 +142,7 @@ public class WebappSplashScreenTest {
     @Test
     @SmallTest
     @Feature({"Webapps"})
-    public void testHidesAfterLoadFails() throws Exception {
+    public void testHidesAfterLoadFails() {
         mActivityTestRule.startWebappActivityAndWaitForSplashScreen();
         Assert.assertTrue(mActivityTestRule.isSplashScreenVisible());
 
@@ -150,7 +156,7 @@ public class WebappSplashScreenTest {
     @Test
     @SmallTest
     @Feature({"Webapps"})
-    public void testHidesAfterMultipleEvents() throws Exception {
+    public void testHidesAfterMultipleEvents() {
         mActivityTestRule.startWebappActivityAndWaitForSplashScreen();
         Assert.assertTrue(mActivityTestRule.isSplashScreenVisible());
 
@@ -168,7 +174,7 @@ public class WebappSplashScreenTest {
     @Test
     @SmallTest
     @Feature({"Webapps"})
-    public void testUmaOnNativeLoad() throws Exception {
+    public void testUmaOnNativeLoad() {
         mActivityTestRule.startWebappActivityAndWaitForSplashScreen();
 
         // Tests UMA values.
@@ -180,7 +186,7 @@ public class WebappSplashScreenTest {
     @Test
     @SmallTest
     @Feature({"Webapps"})
-    public void testUmaWhenSplashHides() throws Exception {
+    public void testUmaWhenSplashHides() {
         mActivityTestRule.startWebappActivityAndWaitForSplashScreen();
         PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT,
                 () -> TabTestUtils.simulateFirstVisuallyNonEmptyPaint(
@@ -265,7 +271,7 @@ public class WebappSplashScreenTest {
     @Test
     @SmallTest
     @Feature({"Webapps"})
-    public void testSplashScreenAppearsWithoutRegisteredSplashImage() throws Exception {
+    public void testSplashScreenAppearsWithoutRegisteredSplashImage() {
         // Don't register anything for the web app, which represents apps that were added to the
         // home screen before splash screen images were downloaded.
         ViewGroup splashScreen = mActivityTestRule.startWebappActivityAndWaitForSplashScreen();
@@ -291,7 +297,7 @@ public class WebappSplashScreenTest {
     @Test
     @SmallTest
     @Feature({"Webapps"})
-    public void testSplashScreenWithSynchronousLayoutInflation() throws Exception {
+    public void testSplashScreenWithSynchronousLayoutInflation() {
         WebappActivity.setOverrideCoreCount(2);
 
         mActivityTestRule.startWebappActivityAndWaitForSplashScreen();

@@ -11,18 +11,19 @@
 #include "base/android/application_status_listener.h"
 #include "base/android/path_utils.h"
 #include "base/big_endian.h"
-#include "base/command_line.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "chrome/browser/android/chrome_feature_list.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "gpu/command_buffer/service/gpu_switches.h"
+#include "gpu/config/gpu_finch_features.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/android_opengl/etc1/etc1.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -198,13 +199,6 @@ void ThumbnailCache::Put(TabId tab_id,
   MakeSpaceForNewItemIfNecessary(tab_id);
   cache_.Put(tab_id, std::move(thumbnail));
 
-  // Vulkan does not yet support compressed texture uploads. Disable compression
-  // and approximation when in experimental Vulkan mode.
-  // TODO(ericrk): Remove this restriction. https://crbug.com/906794
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kUseVulkan)) {
-    return;
-  }
-
   if (use_approximation_thumbnail_) {
     std::pair<SkBitmap, float> approximation =
         CreateApproximation(bitmap, thumbnail_scale);
@@ -274,6 +268,10 @@ base::FilePath ThumbnailCache::GetFilePath(TabId tab_id) {
 
 base::FilePath ThumbnailCache::GetJpegFilePath(TabId tab_id) {
   return GetFilePath(tab_id).AddExtension(".jpeg");
+}
+
+double ThumbnailCache::clampAspectRatio(double value, double min, double max) {
+  return std::max(std::min(value, max), min);
 }
 
 bool ThumbnailCache::CheckAndUpdateThumbnailMetaData(TabId tab_id,
@@ -727,8 +725,13 @@ void ThumbnailCache::JpegProcessingTask(
   // It's fine to horizontally center-align thumbnail saved in landscape
   // mode.
   int scale = 2;
-  SkIRect dest_subset = {0, 0, bitmap.width() / scale,
-                         std::min(bitmap.width(), bitmap.height()) / scale};
+  double aspect_ratio = base::GetFieldTrialParamByFeatureAsDouble(
+      chrome::android::kTabGridLayoutAndroid, "thumbnail_aspect_ratio", 1.0);
+  aspect_ratio = clampAspectRatio(aspect_ratio, 0.5, 2.0);
+  SkIRect dest_subset = {
+      0, 0, bitmap.width() / scale,
+      std::min(bitmap.height() / scale,
+               (int)(bitmap.width() / scale / aspect_ratio))};
   SkBitmap result_bitmap = skia::ImageOperations::Resize(
       bitmap, skia::ImageOperations::RESIZE_BETTER, bitmap.width() / scale,
       bitmap.height() / scale, dest_subset);

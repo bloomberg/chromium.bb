@@ -17,11 +17,6 @@ namespace ash {
 
 namespace {
 
-bool CanHandleVirtualDesksGestures() {
-  return features::IsVirtualDesksEnabled() &&
-         features::IsVirtualDesksGesturesEnabled();
-}
-
 // Handles vertical 3-finger scroll gesture by entering overview on scrolling
 // up, and exiting it on scrolling down.
 // Returns true if the gesture was handled.
@@ -47,10 +42,10 @@ bool Handle3FingerVerticalScroll(float scroll_y) {
   return true;
 }
 
-// Handles horizontal 3-finger scroll by switching desks if possible.
+// Handles horizontal 4-finger scroll by switching desks if possible.
 // Returns true if the gesture was handled.
 bool HandleDesksSwitchHorizontalScroll(float scroll_x) {
-  DCHECK(CanHandleVirtualDesksGestures());
+  DCHECK(features::IsVirtualDesksEnabled());
 
   if (std::fabs(scroll_x) < WmGestureHandler::kHorizontalThresholdDp)
     return false;
@@ -66,7 +61,7 @@ bool HandleDesksSwitchHorizontalScroll(float scroll_x) {
 }  // namespace
 
 WmGestureHandler::WmGestureHandler()
-    : can_handle_desks_gestures_(CanHandleVirtualDesksGestures()) {}
+    : can_handle_desks_gestures_(features::IsVirtualDesksEnabled()) {}
 
 WmGestureHandler::~WmGestureHandler() = default;
 
@@ -126,18 +121,17 @@ bool WmGestureHandler::EndScroll() {
     if (std::fabs(scroll_x) < std::fabs(scroll_y))
       return Handle3FingerVerticalScroll(scroll_y);
 
-    if (can_handle_desks_gestures_)
-      return HandleDesksSwitchHorizontalScroll(scroll_x);
+    return MoveOverviewSelection(finger_count, scroll_x, scroll_y);
   }
 
-  return MoveOverviewSelection(finger_count, scroll_x, scroll_y);
+  return finger_count == 4 && can_handle_desks_gestures_ &&
+         HandleDesksSwitchHorizontalScroll(scroll_x);
 }
 
 bool WmGestureHandler::MoveOverviewSelection(int finger_count,
                                              float scroll_x,
                                              float scroll_y) {
-  const int required_finger_count = can_handle_desks_gestures_ ? 4 : 3;
-  if (finger_count != required_finger_count)
+  if (finger_count != 3)
     return false;
 
   auto* overview_controller = Shell::Get()->overview_controller();

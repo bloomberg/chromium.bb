@@ -6,8 +6,8 @@
 #define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_REMOTE_FRAME_CLIENT_H_
 
 #include "cc/paint/paint_canvas.h"
-#include "third_party/blink/public/common/frame/occlusion_state.h"
 #include "third_party/blink/public/mojom/frame/lifecycle.mojom-shared.h"
+#include "third_party/blink/public/platform/viewport_intersection_state.h"
 #include "third_party/blink/public/platform/web_focus_type.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
 #include "third_party/blink/public/platform/web_touch_action.h"
@@ -38,29 +38,22 @@ class WebRemoteFrameClient {
                                   WebDOMMessageEvent) {}
 
   // A remote frame was asked to start a navigation.
-  virtual void Navigate(
-      const WebURLRequest& request,
-      bool should_replace_current_entry,
-      bool is_opener_navigation,
-      bool has_download_sandbox_flag,
-      bool blocking_downloads_in_sandbox_without_user_activation_enabled,
-      bool initiator_frame_is_ad,
-      mojo::ScopedMessagePipeHandle blob_url_token) {}
+  virtual void Navigate(const WebURLRequest& request,
+                        bool should_replace_current_entry,
+                        bool is_opener_navigation,
+                        bool has_download_sandbox_flag,
+                        bool blocking_downloads_in_sandbox_enabled,
+                        bool initiator_frame_is_ad,
+                        mojo::ScopedMessagePipeHandle blob_url_token) {}
 
   virtual void FrameRectsChanged(const WebRect& local_frame_rect,
                                  const WebRect& screen_space_rect) {}
 
   virtual void UpdateRemoteViewportIntersection(
-      const WebRect& viewport_intersection,
-      FrameOcclusionState occlusion_state) {}
-
-  virtual void VisibilityChanged(blink::mojom::FrameVisibility visibility) {}
+      const ViewportIntersectionState& intersection_state) {}
 
   // Set or clear the inert property on the remote frame.
   virtual void SetIsInert(bool) {}
-
-  // Set inherited effective touch action on the remote frame.
-  virtual void SetInheritedEffectiveTouchAction(blink::WebTouchAction) {}
 
   // Toggles render throttling for the remote frame.
   virtual void UpdateRenderThrottlingStatus(bool is_throttled,
@@ -73,9 +66,6 @@ class WebRemoteFrameClient {
   // the |source| frame is searching for the next focusable element (e.g., in
   // response to <tab>) and encounters a remote frame.
   virtual void AdvanceFocus(WebFocusType type, WebLocalFrame* source) {}
-
-  // This frame was focused by another frame.
-  virtual void FrameFocused() {}
 
   // Returns token to be used as a frame id in the devtools protocol.
   // It is derived from the content's devtools_frame_token, is

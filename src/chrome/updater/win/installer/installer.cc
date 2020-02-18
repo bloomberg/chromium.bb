@@ -208,7 +208,8 @@ ProcessExitResult RunSetup(const Configuration& configuration,
     return ProcessExitResult(COMMAND_STRING_OVERFLOW);
   }
 
-  if (!cmd_line.append(L" --install --enable-logging --v=1"))
+  if (!cmd_line.append(
+          L" --install --enable-logging --vmodule=*/chrome/updater/*=2"))
     return ProcessExitResult(COMMAND_STRING_OVERFLOW);
 
   return RunProcessAndWait(setup_exe.get(), cmd_line.get());
@@ -423,20 +424,18 @@ ProcessExitResult WMain(HMODULE module) {
     return ProcessExitResult(static_cast<DWORD>(installer::TEMP_DIR_FAILED));
 
   // Unpack the compressed archive to extract the uncompressed archive file.
-  UnPackStatus unpack_status = UNPACK_NO_ERROR;
-  int32_t ntstatus = 0;
-  auto lzma_result =
+  UnPackStatus unpack_status =
       UnPackArchive(base::FilePath(compressed_archive.get()), unpack_path,
-                    nullptr, &unpack_status, &ntstatus);
-  if (lzma_result)
+                    nullptr, nullptr, nullptr);
+  if (unpack_status != UNPACK_NO_ERROR)
     return ProcessExitResult(static_cast<DWORD>(installer::UNPACKING_FAILED));
 
   // Unpack the uncompressed archive to extract the updater files.
   base::FilePath uncompressed_archive =
       unpack_path.Append(FILE_PATH_LITERAL("updater.7z"));
-  lzma_result = UnPackArchive(uncompressed_archive, unpack_path, nullptr,
-                              &unpack_status, &ntstatus);
-  if (lzma_result)
+  unpack_status = UnPackArchive(uncompressed_archive, unpack_path, nullptr,
+                                nullptr, nullptr);
+  if (unpack_status != UNPACK_NO_ERROR)
     return ProcessExitResult(static_cast<DWORD>(installer::UNPACKING_FAILED));
 
   // While unpacking the binaries, we paged in a whole bunch of memory that

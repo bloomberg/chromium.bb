@@ -75,7 +75,7 @@
       <cr-icon-button class="icon-arrow-back" id="closeButton"
           on-click="onTapBack_" aria-label="$i18n{back}"></cr-icon-button>
       <template is="dom-if" if="[[titleIcon]]">
-        <img id="title-icon" src="[[titleIcon]]">
+        <img id="title-icon" src="[[titleIcon]]" aria-hidden="true">
       </template>
       <h1 class="cr-title-text">[[pageTitle]]</h1>
       <slot name="subpage-title-extra"></slot>
@@ -88,7 +88,8 @@
       </template>
       <template is="dom-if" if="[[searchLabel]]">
         <cr-search-field label="[[searchLabel]]"
-            on-search-changed="onSearchChanged_">
+            on-search-changed="onSearchChanged_"
+            clear-label="$i18n{clearSearch}">
         </cr-search-field>
       </template>
       <template is="dom-if" if="[[showSpinner]]">

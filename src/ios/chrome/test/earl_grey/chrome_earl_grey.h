@@ -5,7 +5,7 @@
 #ifndef IOS_CHROME_TEST_EARL_GREY_CHROME_EARL_GREY_H_
 #define IOS_CHROME_TEST_EARL_GREY_CHROME_EARL_GREY_H_
 
-#import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
 
 #include <string>
 
@@ -40,6 +40,16 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 
 #pragma mark - Device Utilities
 
+// Simulate the user action to rotate the device to a certain orientation.
+// TODO(crbug.com/1017265): Remove along EG1 support.
+- (void)rotateDeviceToOrientation:(UIDeviceOrientation)deviceOrientation
+                            error:(NSError**)error;
+
+// Returns |YES| if the keyboard is on screen. |error| is only supported if the
+// test is running in EG2.
+// TODO(crbug.com/1017281): Remove along EG1 support.
+- (BOOL)isKeyboardShownWithError:(NSError**)error;
+
 // Returns YES if running on an iPad.
 - (BOOL)isIPadIdiom;
 
@@ -47,10 +57,27 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // horizontal size class.
 - (BOOL)isCompactWidth;
 
+// Returns YES if the main application window's rootViewController has a compact
+// vertical size class.
+- (BOOL)isCompactHeight;
+
+// Returns whether the toolbar is split between top and bottom toolbar or if it
+// is displayed as only one toolbar.
+- (BOOL)isSplitToolbarMode;
+
+// Whether the the main application window's rootViewController has a regular
+// vertical and regular horizontal size class.
+- (BOOL)isRegularXRegularSizeClass;
+
 #pragma mark - History Utilities (EG2)
+
 // Clears browsing history. Raises an EarlGrey exception if history is not
 // cleared within a timeout.
 - (void)clearBrowsingHistory;
+
+// Clears browsing cache. Raises an EarlGrey exception if history is not
+// cleared within a timeout.
+- (void)removeBrowsingCache;
 
 #pragma mark - Navigation Utilities (EG2)
 
@@ -74,6 +101,10 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // Reloads the page and waits for the loading to complete within a timeout, or a
 // GREYAssert is induced.
 - (void)reload;
+
+// Reloads the page. If |wait| is YES, waits for the loading to complete within
+// a timeout, or a GREYAssert is induced.
+- (void)reloadAndWaitForCompletion:(BOOL)wait;
 
 // Navigates back to the previous page and waits for the loading to complete
 // within a timeout, or a GREYAssert is induced.
@@ -196,6 +227,10 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // normal after closing all tabs.
 - (void)closeAllTabsInCurrentMode;
 
+// Closes all normal (non-incognito) tabs and waits for the UI to complete
+// within a timeout, or a GREYAssert is induced.
+- (void)closeAllNormalTabs;
+
 // Closes all incognito tabs and waits for the UI to complete within a
 // timeout, or a GREYAssert is induced.
 - (void)closeAllIncognitoTabs;
@@ -226,6 +261,9 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // succeeded.
 - (void)simulateTabsBackgrounding;
 
+// Persists the current list of tabs to disk immediately.
+- (void)saveSessionImmediately;
+
 // Returns the number of main (non-incognito) tabs currently evicted.
 - (NSUInteger)evictedMainTabCount WARN_UNUSED_RESULT;
 
@@ -239,6 +277,22 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // Resets the tab usage recorder on current mode and raises an EarlGrey
 // exception if operation not succeeded.
 - (void)resetTabUsageRecorder;
+
+// Returns the tab title of the current tab.
+- (NSString*)currentTabTitle;
+
+// Returns the tab title of the next tab. Assumes that next tab exists.
+- (NSString*)nextTabTitle;
+
+// Returns a unique identifier for the current Tab.
+- (NSString*)currentTabID;
+
+// Returns a unique identifier for the next Tab.
+- (NSString*)nextTabID;
+
+// Shows the tab switcher by tapping the switcher button.  Works on both phone
+// and tablet.
+- (void)showTabSwitcher;
 
 #pragma mark - SignIn Utilities (EG2)
 
@@ -282,6 +336,11 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // not met within a timeout a GREYAssert is induced.
 - (void)waitForWebStateContainingText:(const std::string&)UTF8Text;
 
+// Waits for the current web state to contain |UTF8Text|. If the condition is
+// not met within the given |timeout| a GREYAssert is induced.
+- (void)waitForWebStateContainingText:(const std::string&)UTF8Text
+                              timeout:(NSTimeInterval)timeout;
+
 // Waits for there to be no web state containing |UTF8Text|.
 // If the condition is not met within a timeout a GREYAssert is induced.
 - (void)waitForWebStateNotContainingText:(const std::string&)UTF8Text;
@@ -301,6 +360,26 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // Returns the current web state's VisibleURL.
 - (GURL)webStateVisibleURL;
 
+// Returns the current web state's last committed URL.
+- (GURL)webStateLastCommittedURL;
+
+// Purges cached web view pages, so the next time back navigation will not use
+// a cached page. Browsers don't have to use a fresh version for back/forward
+// navigation for HTTP pages and may serve a version from the cache even if the
+// Cache-Control response header says otherwise.
+- (void)purgeCachedWebViewPages;
+
+// Simulators background, killing, and restoring the app within the limitations
+// of EG1, by simply doing a tab grid close all / undo / done.
+- (void)triggerRestoreViaTabGridRemoveAllUndo;
+
+// Returns YES if the current WebState's web view uses the content inset to
+// correctly align the top of the content with the bottom of the top bar.
+- (BOOL)webStateWebViewUsesContentInset;
+
+// Returns the size of the current WebState's web view.
+- (CGSize)webStateWebViewSize;
+
 #pragma mark - Bookmarks Utilities (EG2)
 
 // Waits for the bookmark internal state to be done loading.
@@ -310,6 +389,12 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // Clears bookmarks if any bookmark still presents. A GREYAssert is induced if
 // bookmarks can not be cleared.
 - (void)clearBookmarks;
+
+#pragma mark - URL Utilities (EG2)
+
+// Returns the title string to be used for a page with |URL| if that page
+// doesn't specify a title.
+- (NSString*)displayTitleForURL:(const GURL&)URL;
 
 #pragma mark - JavaScript Utilities (EG2)
 
@@ -352,6 +437,20 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // Returns YES if WebPaymentsModifiers feature is enabled.
 - (BOOL)isWebPaymentsModifiersEnabled WARN_UNUSED_RESULT;
 
+// Returns YES if SettingsAddPaymentMethod feature is enabled.
+- (BOOL)isSettingsAddPaymentMethodEnabled WARN_UNUSED_RESULT;
+
+// Returns YES if CreditCardScanner feature is enabled.
+- (BOOL)isCreditCardScannerEnabled WARN_UNUSED_RESULT;
+
+// Returns YES if AutofillEnableCompanyName feature is enabled.
+- (BOOL)isAutofillCompanyNameEnabled WARN_UNUSED_RESULT;
+
+// Returns YES if custom WebKit frameworks were properly loaded, rather than
+// system frameworks. Always returns YES if the app was not requested to run
+// with custom WebKit frameworks.
+- (BOOL)isCustomWebKitLoadedIfRequested WARN_UNUSED_RESULT;
+
 #pragma mark - Popup Blocking
 
 // Gets the current value of the popup content setting preference for the
@@ -361,6 +460,9 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // Sets the popup content setting preference to the given value for the original
 // browser state.
 - (void)setPopupPrefValue:(ContentSetting)value;
+
+// The count of key commands registered with the currently active BVC.
+- (NSInteger)registeredKeyCommandCount;
 
 @end
 

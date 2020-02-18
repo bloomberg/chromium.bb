@@ -1758,8 +1758,8 @@ TEST_F(DataPipeTest, Multiprocess) {
     // Send some data before serialising and sending the data pipe over.
     // This is the first write so we don't need to use WriteAllData.
     uint32_t num_bytes = kTestDataSize;
-    ASSERT_EQ(MOJO_RESULT_OK, WriteData(kMultiprocessTestData, &num_bytes,
-                                        MOJO_WRITE_DATA_FLAG_ALL_OR_NONE));
+    ASSERT_EQ(MOJO_RESULT_OK,
+              WriteData(kMultiprocessTestData, &num_bytes, true));
     ASSERT_EQ(kTestDataSize, num_bytes);
 
     // Send child process the data pipe.
@@ -1992,7 +1992,7 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(DataPipeStatusChangeInTransitClient,
   {
     base::RunLoop run_loop;
     int count = 0;
-    auto callback = base::Bind(
+    auto callback = base::BindRepeating(
         [](base::RunLoop* loop, int* count, MojoResult result) {
           EXPECT_EQ(MOJO_RESULT_OK, result);
           if (++*count == 2)

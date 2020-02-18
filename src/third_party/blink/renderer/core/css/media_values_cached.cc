@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/css/media_values_cached.h"
 
 #include "third_party/blink/public/common/css/forced_colors.h"
+#include "third_party/blink/public/common/css/navigation_controls.h"
 #include "third_party/blink/public/common/css/preferred_color_scheme.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -30,12 +31,13 @@ MediaValuesCached::MediaValuesCachedData::MediaValuesCachedData()
       three_d_enabled(false),
       immersive_mode(false),
       strict_mode(true),
-      display_mode(kWebDisplayModeBrowser),
+      display_mode(blink::mojom::DisplayMode::kBrowser),
       display_shape(kDisplayShapeRect),
       color_gamut(ColorSpaceGamut::kUnknown),
       preferred_color_scheme(PreferredColorScheme::kNoPreference),
       prefers_reduced_motion(false),
-      forced_colors(ForcedColors::kNone) {}
+      forced_colors(ForcedColors::kNone),
+      navigation_controls(NavigationControls::kNone) {}
 
 MediaValuesCached::MediaValuesCachedData::MediaValuesCachedData(
     Document& document)
@@ -76,7 +78,8 @@ MediaValuesCached::MediaValuesCachedData::MediaValuesCachedData(
     color_gamut = MediaValues::CalculateColorGamut(frame);
     preferred_color_scheme = MediaValues::CalculatePreferredColorScheme(frame);
     prefers_reduced_motion = MediaValues::CalculatePrefersReducedMotion(frame);
-    forced_colors = MediaValues::CalculateForcedColors(frame);
+    forced_colors = MediaValues::CalculateForcedColors();
+    navigation_controls = MediaValues::CalculateNavigationControls(frame);
   }
 }
 
@@ -165,7 +168,7 @@ const String MediaValuesCached::MediaType() const {
   return data_.media_type;
 }
 
-WebDisplayMode MediaValuesCached::DisplayMode() const {
+blink::mojom::DisplayMode MediaValuesCached::DisplayMode() const {
   return data_.display_mode;
 }
 
@@ -201,6 +204,10 @@ bool MediaValuesCached::PrefersReducedMotion() const {
 
 ForcedColors MediaValuesCached::GetForcedColors() const {
   return data_.forced_colors;
+}
+
+NavigationControls MediaValuesCached::GetNavigationControls() const {
+  return data_.navigation_controls;
 }
 
 }  // namespace blink

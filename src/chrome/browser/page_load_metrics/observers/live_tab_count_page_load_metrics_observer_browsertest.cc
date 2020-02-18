@@ -11,11 +11,11 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/metrics/tab_count_metrics.h"
 #include "chrome/browser/page_load_metrics/observers/histogram_suffixes.h"
-#include "chrome/browser/page_load_metrics/page_load_metrics_test_waiter.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/page_load_metrics/browser/page_load_metrics_test_waiter.h"
 #include "components/tab_count_metrics/tab_count_metrics.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -60,8 +60,14 @@ class LiveTabCountPageLoadMetricsBrowserTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(LiveTabCountPageLoadMetricsBrowserTest);
 };
 
+// TODO(1020182): Flaky for MSAN and dbg.
+#if defined(MEMORY_SANITIZER) || !defined(NDEBUG)
+#define MAYBE_LoadSingleTabInForeground DISABLED_LoadSingleTabInForeground
+#else
+#define MAYBE_LoadSingleTabInForeground LoadSingleTabInForeground
+#endif
 IN_PROC_BROWSER_TEST_F(LiveTabCountPageLoadMetricsBrowserTest,
-                       LoadSingleTabInForeground) {
+                       MAYBE_LoadSingleTabInForeground) {
   BucketCountArray counts = {0};
 
   auto waiter = CreatePageLoadMetricsTestWaiterForForegroundTab();
@@ -78,8 +84,14 @@ IN_PROC_BROWSER_TEST_F(LiveTabCountPageLoadMetricsBrowserTest,
   ValidateHistograms(internal::kHistogramFirstMeaningfulPaintSuffix, counts);
 }
 
+// TODO(1020182): Flaky for MSAN.
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_LoadSingleTabInBackground DISABLED_LoadSingleTabInBackground
+#else
+#define MAYBE_LoadSingleTabInBackground LoadSingleTabInBackground
+#endif
 IN_PROC_BROWSER_TEST_F(LiveTabCountPageLoadMetricsBrowserTest,
-                       LoadSingleTabInBackground) {
+                       MAYBE_LoadSingleTabInBackground) {
   // Open a tab in the background, but don't wait for it to load; we need its
   // WebContents to create a PageLoadMetricsTestWaiter.
   ui_test_utils::NavigateToURLWithDisposition(
@@ -103,8 +115,14 @@ IN_PROC_BROWSER_TEST_F(LiveTabCountPageLoadMetricsBrowserTest,
   ValidateHistograms(internal::kHistogramFirstMeaningfulPaintSuffix, counts);
 }
 
+// TODO(1020182): Flaky for MSAN and dbg.
+#if defined(MEMORY_SANITIZER) || !defined(NDEBUG)
+#define MAYBE_LoadMultipleTabsInForeground DISABLED_LoadMultipleTabsInForeground
+#else
+#define MAYBE_LoadMultipleTabsInForeground LoadMultipleTabsInForeground
+#endif
 IN_PROC_BROWSER_TEST_F(LiveTabCountPageLoadMetricsBrowserTest,
-                       LoadMultipleTabsInForeground) {
+                       MAYBE_LoadMultipleTabsInForeground) {
   // Test opening 5 tabs, which spans the first few buckets.
   constexpr size_t num_test_tabs = 5;
 

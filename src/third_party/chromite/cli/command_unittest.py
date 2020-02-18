@@ -8,10 +8,8 @@
 from __future__ import print_function
 
 import argparse
-import glob
 import os
 
-from chromite.lib import constants
 from chromite.cli import command
 from chromite.lib import commandline
 from chromite.lib import cros_import
@@ -53,7 +51,6 @@ class TestCommandTest(cros_test_lib.MockTestCase):
       @command.CommandDecorator('bad')
       class BadTestCommand(object):
         """A command that wasn't implemented correctly."""
-        pass
 
     except command.InvalidCommandError:
       pass
@@ -97,30 +94,27 @@ class MockCommand(partial_mock.PartialMock):
 class CommandTest(cros_test_lib.MockTestCase):
   """This test class tests that we can load modules correctly."""
 
-  # pylint: disable=protected-access
-
   def testFindModules(self):
     """Tests that we can return modules correctly when mocking out glob."""
     fake_command_file = 'cros_command_test.py'
     filtered_file = 'cros_command_unittest.py'
-    mydir = 'mydir'
 
-    self.PatchObject(glob, 'glob',
+    self.PatchObject(os, 'listdir',
                      return_value=[fake_command_file, filtered_file])
 
-    self.assertEqual(command._FindModules(mydir), [fake_command_file])
+    self.assertEqual(command.ListCommands(), {'command-test'})
 
   def testLoadCommands(self):
     """Tests import commands correctly."""
     fake_module = 'cros_command_test'
-    fake_command_file = os.path.join(constants.CHROMITE_DIR, 'foo', fake_module)
-    module_path = ['chromite', 'foo', fake_module]
+    module_path = ['chromite', 'cli', 'cros', fake_module]
 
-    self.PatchObject(command, '_FindModules', return_value=[fake_command_file])
     # The code doesn't use the return value, so stub it out lazy-like.
     load_mock = self.PatchObject(cros_import, 'ImportModule', return_value=None)
 
-    command._ImportCommands()
+    command._commands['command-test'] = 123
+    self.assertEqual(command.ImportCommand('command-test'), 123)
+    command._commands.pop('command-test')
 
     load_mock.assert_called_with(module_path)
 

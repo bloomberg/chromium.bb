@@ -20,7 +20,6 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/prefs/pref_service.h"
 #include "components/version_info/version_info.h"
-#include "content/public/common/content_switches.h"
 #include "content/public/common/user_agent.h"
 #include "services/network/public/cpp/network_service_buildflags.h"
 #include "services/network/public/mojom/network_context.mojom.h"
@@ -28,6 +27,13 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
+
+#if BUILDFLAG(BUILTIN_CERT_VERIFIER_FEATURE_SUPPORTED)
+#include "chrome/browser/policy/policy_test_utils.h"
+#include "components/policy/core/common/policy_map.h"
+#include "components/policy/policy_constants.h"
+#include "net/base/features.h"
+#endif
 
 #if defined(OS_WIN)
 #include "base/win/win_util.h"
@@ -63,7 +69,11 @@ void RunStubResolverConfigTests(bool async_dns_feature_enabled) {
   GetStubResolverConfig(&insecure_stub_resolver_enabled, &secure_dns_mode,
                         &dns_over_https_servers);
   EXPECT_EQ(async_dns_feature_enabled, insecure_stub_resolver_enabled);
-  EXPECT_EQ(net::DnsConfig::SecureDnsMode::OFF, secure_dns_mode);
+  if (base::FeatureList::IsEnabled(features::kDnsOverHttps)) {
+    EXPECT_EQ(net::DnsConfig::SecureDnsMode::AUTOMATIC, secure_dns_mode);
+  } else {
+    EXPECT_EQ(net::DnsConfig::SecureDnsMode::OFF, secure_dns_mode);
+  }
   EXPECT_FALSE(dns_over_https_servers.has_value());
 
   std::string good_post_template = "https://foo.test/";
@@ -291,8 +301,38 @@ IN_PROC_BROWSER_TEST_P(SystemNetworkContextManagerStubResolverBrowsertest,
   RunStubResolverConfigTests(GetParam());
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          SystemNetworkContextManagerStubResolverBrowsertest,
+                         ::testing::Bool());
+
+class SystemNetworkContextManagerReferrersFeatureBrowsertest
+    : public SystemNetworkContextManagerBrowsertest,
+      public testing::WithParamInterface<bool> {
+ public:
+  SystemNetworkContextManagerReferrersFeatureBrowsertest() {
+    scoped_feature_list_.InitWithFeatureState(features::kNoReferrers,
+                                              GetParam());
+  }
+  ~SystemNetworkContextManagerReferrersFeatureBrowsertest() override {}
+
+  void SetUpOnMainThread() override {}
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+// Tests that toggling the kNoReferrers feature correctly changes the default
+// value of the kEnableReferrers pref.
+IN_PROC_BROWSER_TEST_P(SystemNetworkContextManagerReferrersFeatureBrowsertest,
+                       TestDefaultReferrerReflectsFeatureValue) {
+  ASSERT_TRUE(!!g_browser_process);
+  PrefService* local_state = g_browser_process->local_state();
+  ASSERT_TRUE(!!local_state);
+  EXPECT_NE(local_state->GetBoolean(prefs::kEnableReferrers), GetParam());
+}
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         SystemNetworkContextManagerReferrersFeatureBrowsertest,
                          ::testing::Bool());
 
 class SystemNetworkContextManagerFreezeQUICUaBrowsertest
@@ -333,7 +373,7 @@ IN_PROC_BROWSER_TEST_P(SystemNetworkContextManagerFreezeQUICUaBrowsertest,
   }
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          SystemNetworkContextManagerFreezeQUICUaBrowsertest,
                          ::testing::Bool());
 
@@ -356,7 +396,7 @@ IN_PROC_BROWSER_TEST_P(SystemNetworkContextManagerWPADQuickCheckBrowsertest,
   EXPECT_EQ(GetParam(), network_context_params->pac_quick_check_enabled);
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          SystemNetworkContextManagerWPADQuickCheckBrowsertest,
                          ::testing::Bool());
 
@@ -408,6 +448,56 @@ IN_PROC_BROWSER_TEST_P(
 #endif
 
 INSTANTIATE_TEST_SUITE_P(
-    ,
+    All,
     SystemNetworkContextManagerCertificateTransparencyBrowsertest,
     ::testing::Values(base::nullopt, true, false));
+
+#if BUILDFLAG(BUILTIN_CERT_VERIFIER_FEATURE_SUPPORTED)
+class SystemNetworkContextServiceCertVerifierBuiltinFeaturePolicyTest
+    : public policy::PolicyTest,
+      public testing::WithParamInterface<bool> {
+ public:
+  void SetUpInProcessBrowserTestFixture() override {
+    scoped_feature_list_.InitWithFeatureState(
+        net::features::kCertVerifierBuiltinFeature,
+        /*enabled=*/GetParam());
+    policy::PolicyTest::SetUpInProcessBrowserTestFixture();
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_P(
+    SystemNetworkContextServiceCertVerifierBuiltinFeaturePolicyTest,
+    Test) {
+  // If no BuiltinCertificateVerifierEnabled policy is set, the
+  // use_builtin_cert_verifier param should be set from the feature flag.
+  EXPECT_EQ(GetParam(), g_browser_process->system_network_context_manager()
+                            ->CreateDefaultNetworkContextParams()
+                            ->use_builtin_cert_verifier);
+#if BUILDFLAG(BUILTIN_CERT_VERIFIER_POLICY_SUPPORTED)
+  // If the BuiltinCertificateVerifierEnabled policy is set it should override
+  // the feature flag.
+  policy::PolicyMap policies;
+  SetPolicy(&policies, policy::key::kBuiltinCertificateVerifierEnabled,
+            std::make_unique<base::Value>(true));
+  UpdateProviderPolicy(policies);
+  EXPECT_TRUE(g_browser_process->system_network_context_manager()
+                  ->CreateDefaultNetworkContextParams()
+                  ->use_builtin_cert_verifier);
+
+  SetPolicy(&policies, policy::key::kBuiltinCertificateVerifierEnabled,
+            std::make_unique<base::Value>(false));
+  UpdateProviderPolicy(policies);
+  EXPECT_FALSE(g_browser_process->system_network_context_manager()
+                   ->CreateDefaultNetworkContextParams()
+                   ->use_builtin_cert_verifier);
+#endif  // BUILDFLAG(BUILTIN_CERT_VERIFIER_POLICY_SUPPORTED)
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    SystemNetworkContextServiceCertVerifierBuiltinFeaturePolicyTest,
+    ::testing::Bool());
+#endif  // BUILDFLAG(BUILTIN_CERT_VERIFIER_FEATURE_SUPPORTED)

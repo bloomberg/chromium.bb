@@ -14,6 +14,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -323,6 +324,54 @@ TEST_F(LabelTest, AlignmentProperty) {
   }
 
   EXPECT_EQ(was_rtl, base::i18n::IsRTL());
+}
+
+TEST_F(LabelTest, MinimumSizeRespectsLineHeight) {
+  base::string16 text(ASCIIToUTF16("This is example text."));
+  label()->SetText(text);
+
+  const gfx::Size minimum_size = label()->GetMinimumSize();
+  const int expected_height = minimum_size.height() + 10;
+  label()->SetLineHeight(expected_height);
+  EXPECT_EQ(expected_height, label()->GetMinimumSize().height());
+}
+
+TEST_F(LabelTest, MinimumSizeRespectsLineHeightMultiline) {
+  base::string16 text(ASCIIToUTF16("This is example text."));
+  label()->SetText(text);
+  label()->SetMultiLine(true);
+
+  const gfx::Size minimum_size = label()->GetMinimumSize();
+  const int expected_height = minimum_size.height() + 10;
+  label()->SetLineHeight(expected_height);
+  EXPECT_EQ(expected_height, label()->GetMinimumSize().height());
+}
+
+TEST_F(LabelTest, MinimumSizeRespectsLineHeightWithInsets) {
+  base::string16 text(ASCIIToUTF16("This is example text."));
+  label()->SetText(text);
+
+  const gfx::Size minimum_size = label()->GetMinimumSize();
+  int expected_height = minimum_size.height() + 10;
+  label()->SetLineHeight(expected_height);
+  constexpr gfx::Insets kInsets{2, 3, 4, 5};
+  expected_height += kInsets.height();
+  label()->SetBorder(CreateEmptyBorder(kInsets));
+  EXPECT_EQ(expected_height, label()->GetMinimumSize().height());
+}
+
+TEST_F(LabelTest, MinimumSizeRespectsLineHeightMultilineWithInsets) {
+  base::string16 text(ASCIIToUTF16("This is example text."));
+  label()->SetText(text);
+  label()->SetMultiLine(true);
+
+  const gfx::Size minimum_size = label()->GetMinimumSize();
+  int expected_height = minimum_size.height() + 10;
+  label()->SetLineHeight(expected_height);
+  constexpr gfx::Insets kInsets{2, 3, 4, 5};
+  expected_height += kInsets.height();
+  label()->SetBorder(CreateEmptyBorder(kInsets));
+  EXPECT_EQ(expected_height, label()->GetMinimumSize().height());
 }
 
 TEST_F(LabelTest, ElideBehavior) {
@@ -969,6 +1018,15 @@ TEST_F(LabelTest, IsDisplayTextTruncated) {
   EXPECT_FALSE(label()->IsDisplayTextTruncated());
   label()->SetBoundsRect(gfx::Rect(zero_size));
   EXPECT_FALSE(label()->IsDisplayTextTruncated());
+}
+
+TEST_F(LabelTest, TextChangedCallback) {
+  bool text_changed = false;
+  auto subscription = label()->AddTextChangedCallback(base::BindRepeating(
+      [](bool* text_changed) { *text_changed = true; }, &text_changed));
+
+  label()->SetText(ASCIIToUTF16("abc"));
+  EXPECT_TRUE(text_changed);
 }
 
 TEST_F(LabelSelectionTest, Selectable) {

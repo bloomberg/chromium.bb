@@ -5,17 +5,20 @@
 package org.chromium.chrome.browser.contextmenu;
 
 import android.content.Context;
-import android.support.annotation.IntDef;
-import android.support.annotation.StringRes;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.RelativeSizeSpan;
 import android.text.style.SuperscriptSpan;
 
+import androidx.annotation.IntDef;
+import androidx.annotation.StringRes;
+
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.DefaultBrowserInfo;
+import org.chromium.chrome.browser.flags.FeatureUtilities;
+import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
+import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.ui.text.SpanApplier;
 import org.chromium.ui.text.SpanApplier.SpanInfo;
 
@@ -73,7 +76,7 @@ public class ChromeContextMenuItem implements ContextMenuItem {
     /**
      * Mapping from {@link Item} to the ID found in the ids.xml.
      */
-    private final static int[] MENU_IDS = {
+    private static final int[] MENU_IDS = {
             R.id.contextmenu_open_in_new_chrome_tab, // Item.OPEN_IN_NEW_CHROME_TAB
             R.id.contextmenu_open_in_chrome_incognito_tab, // Item.OPEN_IN_CHROME_INCOGNITO_TAB
             R.id.contextmenu_open_in_browser_id, // Item.OPEN_IN_BROWSER_ID
@@ -102,7 +105,7 @@ public class ChromeContextMenuItem implements ContextMenuItem {
     /**
      * Mapping from {@link Item} to the ID of the string that describes the action of the item.
      */
-    private final static int[] STRING_IDS = {
+    private static final int[] STRING_IDS = {
             R.string.contextmenu_open_in_new_chrome_tab, // Item.OPEN_IN_NEW_CHROME_TAB:
             R.string.contextmenu_open_in_chrome_incognito_tab, // Item.OPEN_IN_CHROME_INCOGNITO_TAB:
             0, // Item.OPEN_IN_BROWSER_ID is not handled by this mapping.
@@ -172,15 +175,34 @@ public class ChromeContextMenuItem implements ContextMenuItem {
                                 .getDefaultSearchEngineTemplateUrl()
                                 .getShortName());
             case Item.OPEN_IN_EPHEMERAL_TAB:
+                return addOrRemoveNewLabel(
+                        context, ChromePreferenceKeys.CONTEXT_MENU_OPEN_IN_EPHEMERAL_TAB_CLICKED);
             case Item.OPEN_IMAGE_IN_EPHEMERAL_TAB:
+                return addOrRemoveNewLabel(context,
+                        ChromePreferenceKeys.CONTEXT_MENU_OPEN_IMAGE_IN_EPHEMERAL_TAB_CLICKED);
             case Item.SEARCH_WITH_GOOGLE_LENS:
-                return SpanApplier.applySpans(context.getString(getStringId(mItem)),
-                        new SpanInfo("<new>", "</new>", new SuperscriptSpan(),
-                                new RelativeSizeSpan(0.75f),
-                                new ForegroundColorSpan(ApiCompatibilityUtils.getColor(
-                                        context.getResources(), R.color.default_text_color_blue))));
+                return addOrRemoveNewLabel(
+                        context, ChromePreferenceKeys.CONTEXT_MENU_SEARCH_WITH_GOOGLE_LENS_CLICKED);
             default:
                 return context.getString(getStringId(mItem));
         }
+    }
+
+    /**
+     * Modify the menu title by applying span attributes or removing the 'New' label if the menu
+     * has already been selected before.
+     */
+    private CharSequence addOrRemoveNewLabel(Context context, String prefKey) {
+        String menuTitle = context.getString(getStringId(mItem));
+
+        // TODO(jinsukkim): Consider removing the preference keys and hooking this up to
+        //     the feature engagement system.
+        if (SharedPreferencesManager.getInstance().readBoolean(prefKey, false)) {
+            return SpanApplier.removeSpanText(menuTitle, new SpanInfo("<new>", "</new>"));
+        }
+        return SpanApplier.applySpans(menuTitle,
+                new SpanInfo("<new>", "</new>", new SuperscriptSpan(), new RelativeSizeSpan(0.75f),
+                        new ForegroundColorSpan(ApiCompatibilityUtils.getColor(
+                                context.getResources(), R.color.default_text_color_blue))));
     }
 }

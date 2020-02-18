@@ -30,7 +30,6 @@ from chromite.lib import failure_message_lib_unittest
 from chromite.lib import gs_unittest
 from chromite.lib import metrics
 from chromite.lib import osutils
-from chromite.lib import patch_unittest
 from chromite.lib import results_lib
 from chromite.lib import retry_stats
 from chromite.lib import toolchain
@@ -100,7 +99,8 @@ class SlaveFailureSummaryStageTest(
     cidb.CIDBConnectionFactory.SetupMockCidb(self.db)
     self._Prepare(build_id=1)
 
-  def _Prepare(self, **kwargs):
+  # Our API here is not great when it comes to kwargs passing.
+  def _Prepare(self, **kwargs):  # pylint: disable=arguments-differ
     """Prepare stage with config['master']=True."""
     super(SlaveFailureSummaryStageTest, self)._Prepare(**kwargs)
     self._run.config['master'] = True
@@ -157,7 +157,7 @@ class BuildStartStageTest(generic_stages_unittest.AbstractStageTestCase):
   def testSuiteSchedulingEqualsFalse(self):
     """Test that a run of the stage makes suite_scheduling False."""
     # Test suite_scheduling for **-paladin
-    self._Prepare(bot_id='amd64-generic-paladin')
+    self._Prepare(bot_id='amd64-generic-full')
     self.RunStage()
     self.assertFalse(self._run.attrs.metadata.GetValue('suite_scheduling'))
 
@@ -243,6 +243,9 @@ class ReportStageTest(AbstractReportStageTestCase):
 
   RELEASE_TAG = ''
 
+  def setUp(self):
+    self.mock_cidb.GetSlaveStatuses = mock.Mock(return_value=None)
+
   def testCheckResults(self):
     """Basic sanity check for results stage functionality"""
     self.CreateMockOverlay('amd64-generic')
@@ -312,13 +315,13 @@ class ReportStageTest(AbstractReportStageTestCase):
                         acl=mock.ANY) for filename in filenames]
 
     # Verify build stages timeline contains the stages that were mocked.
-    self.assertEquals(calls, commands.UploadArchivedFile.call_args_list)
+    self.assertEqual(calls, commands.UploadArchivedFile.call_args_list)
     timeline_content = osutils.WriteFile.call_args_list[2][0][1]
     for s in stages:
       self.assertIn('["%s", new Date' % s['name'], timeline_content)
 
     # Verify slaves timeline contains the slaves that were mocked.
-    self.assertEquals(calls, commands.UploadArchivedFile.call_args_list)
+    self.assertEqual(calls, commands.UploadArchivedFile.call_args_list)
     timeline_content = osutils.WriteFile.call_args_list[3][0][1]
     for s in statuses:
       self.assertIn('["%s - %s", new Date' %
@@ -337,7 +340,7 @@ class ReportStageTest(AbstractReportStageTestCase):
                        update_list=True, acl=mock.ANY)]
     calls += [mock.call(mock.ANY, mock.ANY, 'timeline-stages.html',
                         debug=False, update_list=True, acl=mock.ANY)]
-    self.assertEquals(calls, commands.UploadArchivedFile.call_args_list)
+    self.assertEqual(calls, commands.UploadArchivedFile.call_args_list)
 
   def testAlertEmail(self):
     """Send out alerts when streak counter reaches the threshold."""
@@ -373,8 +376,8 @@ class ReportStageTest(AbstractReportStageTestCase):
     metadata_dict = self._run.attrs.metadata.GetDict()
     self.assertEqual(metadata_dict['build-number'],
                      generic_stages_unittest.DEFAULT_BUILD_NUMBER)
-    self.assertTrue(metadata_dict.has_key('builder-name'))
-    self.assertTrue(metadata_dict.has_key('bot-hostname'))
+    self.assertIn('builder-name', metadata_dict)
+    self.assertIn('bot-hostname', metadata_dict)
 
   def testWriteTagMetadata(self):
     """Test that WriteTagMetadata writes expected keys correctly."""
@@ -384,8 +387,8 @@ class ReportStageTest(AbstractReportStageTestCase):
     tags_dict = self._run.attrs.metadata.GetValue(constants.METADATA_TAGS)
     self.assertEqual(tags_dict['build_number'],
                      generic_stages_unittest.DEFAULT_BUILD_NUMBER)
-    self.assertTrue(tags_dict.has_key('builder_name'))
-    self.assertTrue(tags_dict.has_key('bot_hostname'))
+    self.assertIn('builder_name', tags_dict)
+    self.assertIn('bot_hostname', tags_dict)
     self.RunStage()
     tags_content = osutils.WriteFile.call_args_list[1][0][1]
     tags_content_dict = json.loads(tags_content)
@@ -415,21 +418,6 @@ class ReportStageTest(AbstractReportStageTestCase):
     self.assertEqual(mock_sd.call_count, 1)
 
 
-class ReportStageForMasterCQTest(AbstractReportStageTestCase):
-  """Test the Report stage for master-paladin."""
-
-  RELEASE_TAG = ''
-  BOT_ID = 'master-paladin'
-
-  def testPerformStage(self):
-    """Test PerformStage."""
-    mock_sd = self.PatchObject(metrics, 'CumulativeSecondsDistribution')
-    self.PatchObject(report_stages.ReportStage, 'ArchiveResults')
-    stage = self.ConstructStage()
-    stage.PerformStage()
-    self.assertEqual(mock_sd.call_count, 2)
-
-
 class ReportStageNoSyncTest(AbstractReportStageTestCase):
   """Test the Report stage if SyncStage didn't complete.
 
@@ -442,53 +430,3 @@ class ReportStageNoSyncTest(AbstractReportStageTestCase):
     """Check that we can run with a RELEASE_TAG of None."""
     self._SetupUpdateStreakCounter()
     self.RunStage()
-
-
-class DetectRelevantChangesStageTest(
-    generic_stages_unittest.AbstractStageTestCase):
-  """Test the DetectRelevantChangesStage."""
-
-  def setUp(self):
-    self._patch_factory = patch_unittest.MockPatchFactory()
-    self.changes = self._patch_factory.GetPatches(how_many=2)
-
-    self._Prepare()
-
-    self.fake_db = fake_cidb.FakeCIDBConnection()
-    self.buildstore = FakeBuildStore(self.fake_db)
-    cidb.CIDBConnectionFactory.SetupMockCidb(self.fake_db)
-    build_id = self.fake_db.InsertBuild(
-        'test-paladin', 1, 'test-paladin', 'bot_hostname')
-    self._run.attrs.metadata.UpdateWithDict({'build_id': build_id})
-
-  def ConstructStage(self):
-    return report_stages.DetectRelevantChangesStage(
-        self._run, self.buildstore, self._current_board, self.changes)
-
-  def testRecordActionForChangesWithIrrelevantAction(self):
-    """Test _RecordActionForChanges with irrelevant action.."""
-    stage = self.ConstructStage()
-    stage._RecordActionForChanges(
-        self.changes, constants.CL_ACTION_IRRELEVANT_TO_SLAVE)
-    action_history = self.fake_db.GetActionHistory()
-    self.assertEqual(len(action_history), 2)
-    for action in action_history:
-      self.assertEqual(action.action, constants.CL_ACTION_IRRELEVANT_TO_SLAVE)
-
-  def testRecordActionForChangesWithEmptySet(self):
-    """Test _RecordActionForChanges with an empty changes set."""
-    stage = self.ConstructStage()
-    stage._RecordActionForChanges(
-        set(), constants.CL_ACTION_IRRELEVANT_TO_SLAVE)
-    action_history = self.fake_db.GetActionHistory()
-    self.assertEqual(len(action_history), 0)
-
-  def testRecordActionForChangesWithRelevantAction(self):
-    """Test _RecordActionForChanges with relevant action."""
-    stage = self.ConstructStage()
-    stage._RecordActionForChanges(
-        self.changes, constants.CL_ACTION_RELEVANT_TO_SLAVE)
-    action_history = self.fake_db.GetActionHistory()
-    self.assertEqual(len(action_history), 2)
-    for action in action_history:
-      self.assertEqual(action.action, constants.CL_ACTION_RELEVANT_TO_SLAVE)

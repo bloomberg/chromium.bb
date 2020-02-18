@@ -65,7 +65,7 @@ TEST(NetLogUtil, CreateNetLogEntriesForActiveObjectsOneContext) {
   // Using same context for each iteration makes sure deleted requests don't
   // appear in the list, or result in crashes.
   TestURLRequestContext context(true);
-  NetLog net_log;
+  TestNetLog net_log;
   context.set_net_log(&net_log);
   context.Init();
   TestDelegate delegate;
@@ -78,7 +78,7 @@ TEST(NetLogUtil, CreateNetLogEntriesForActiveObjectsOneContext) {
     }
     std::set<URLRequestContext*> contexts;
     contexts.insert(&context);
-    TestNetLog test_net_log;
+    RecordingTestNetLog test_net_log;
     CreateNetLogEntriesForActiveObjects(contexts, test_net_log.GetObserver());
     auto entry_list = test_net_log.GetEntries();
     ASSERT_EQ(num_requests, entry_list.size());
@@ -96,7 +96,7 @@ TEST(NetLogUtil, CreateNetLogEntriesForActiveObjectsMultipleContexts) {
 
   TestDelegate delegate;
   for (size_t num_requests = 0; num_requests < 5; ++num_requests) {
-    NetLog net_log;
+    TestNetLog net_log;
     std::vector<std::unique_ptr<TestURLRequestContext>> contexts;
     std::vector<std::unique_ptr<URLRequest>> requests;
     std::set<URLRequestContext*> context_set;
@@ -109,7 +109,7 @@ TEST(NetLogUtil, CreateNetLogEntriesForActiveObjectsMultipleContexts) {
           contexts[i]->CreateRequest(GURL("about:hats"), DEFAULT_PRIORITY,
                                      &delegate, TRAFFIC_ANNOTATION_FOR_TESTS));
     }
-    TestNetLog test_net_log;
+    RecordingTestNetLog test_net_log;
     CreateNetLogEntriesForActiveObjects(context_set,
                                         test_net_log.GetObserver());
     auto entry_list = test_net_log.GetEntries();

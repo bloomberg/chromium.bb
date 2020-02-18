@@ -13,7 +13,6 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import org.junit.Assert;
 
 import org.chromium.base.Log;
-import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.components.gcm_driver.GCMDriver;
@@ -36,7 +35,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.concurrent.TimeoutException;
 
 /**
  * A fake OfflinePageService.
@@ -251,7 +249,7 @@ public class TestOfflinePageService {
      * This method is typically not called on the server thread, so access to members should be
      * synchronized.
      */
-    public String sendPushMessage() throws InterruptedException, TimeoutException {
+    public String sendPushMessage() {
         CriteriaHelper.pollInstrumentationThread(() -> {
             Boolean result;
             synchronized (mIncompleteOperations) {
@@ -286,12 +284,8 @@ public class TestOfflinePageService {
             extras.putString("subtype", prefetchSubtype); // is this necessary?
 
             GCMMessage message = new GCMMessage(senderId, extras);
-            try {
-                ChromeBrowserInitializer.getInstance(context).handleSynchronousStartup();
-                GCMDriver.dispatchMessage(message);
-            } catch (ProcessInitException e) {
-                Assert.fail(e.getMessage());
-            }
+            ChromeBrowserInitializer.getInstance(context).handleSynchronousStartup();
+            GCMDriver.dispatchMessage(message);
         });
         return operationName;
     }

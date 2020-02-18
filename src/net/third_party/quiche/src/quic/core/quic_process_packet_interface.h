@@ -11,7 +11,7 @@
 namespace quic {
 
 // A class to process each incoming packet.
-class ProcessPacketInterface {
+class QUIC_NO_EXPORT ProcessPacketInterface {
  public:
   virtual ~ProcessPacketInterface() {}
   virtual void ProcessPacket(const QuicSocketAddress& self_address,

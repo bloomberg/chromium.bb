@@ -4,15 +4,26 @@
 
 package org.chromium.chrome.browser.tasks.tab_management;
 
+import static org.chromium.chrome.browser.tasks.tab_management.TabListModel.CardProperties.CARD_TYPE;
+import static org.chromium.chrome.browser.tasks.tab_management.TabListModel.CardProperties.ModelType.MESSAGE;
+import static org.chromium.chrome.browser.tasks.tab_management.TabListModel.CardProperties.ModelType.NEW_TAB_TILE;
+import static org.chromium.chrome.browser.tasks.tab_management.TabListModel.CardProperties.ModelType.OTHERS;
+import static org.chromium.chrome.browser.tasks.tab_management.TabListModel.CardProperties.ModelType.TAB;
 import static org.chromium.chrome.browser.tasks.tab_management.TabProperties.TAB_ID;
 
 import android.util.Pair;
 
+import androidx.annotation.IntDef;
+
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel;
+import org.chromium.ui.modelutil.MVCListAdapter;
 import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
 import org.chromium.ui.modelutil.PropertyListModel;
+import org.chromium.ui.modelutil.PropertyModel;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.List;
 
 /**
@@ -21,15 +32,66 @@ import java.util.List;
  */
 class TabListModel extends ModelList {
     /**
+     * Required properties for each {@link PropertyModel} managed by this {@link ModelList}.
+     */
+    static class CardProperties {
+        /** Supported Model type within this ModelList. */
+        @IntDef({TAB, MESSAGE, NEW_TAB_TILE, OTHERS})
+        @Retention(RetentionPolicy.SOURCE)
+        public @interface ModelType {
+            int TAB = 0;
+            int MESSAGE = 1;
+            int NEW_TAB_TILE = 2;
+            int OTHERS = 3;
+        }
+
+        public static final PropertyModel.ReadableIntPropertyKey CARD_TYPE =
+                new PropertyModel.ReadableIntPropertyKey();
+
+        public static final PropertyModel.WritableFloatPropertyKey CARD_ALPHA =
+                new PropertyModel.WritableFloatPropertyKey();
+    }
+
+    /**
      * Convert the given tab ID to an index to match during partial updates.
      * @param tabId The tab ID to search for.
      * @return The index within the model {@link org.chromium.ui.modelutil.SimpleList}.
      */
     public int indexFromId(int tabId) {
         for (int i = 0; i < size(); i++) {
-            if (get(i).model.get(TAB_ID) == tabId) return i;
+            PropertyModel model = get(i).model;
+            if (model.get(CARD_TYPE) == TAB && model.get(TAB_ID) == tabId) return i;
         }
         return TabModel.INVALID_TAB_INDEX;
+    }
+
+    /**
+     * Get the index that matches the new tab tile in TabListModel.
+     * @return The index within the model.
+     */
+    public int getIndexForNewTabTile() {
+        for (int i = size() - 1; i >= 0; i--) {
+            PropertyModel model = get(i).model;
+            if (model.get(CARD_TYPE) == NEW_TAB_TILE) {
+                return i;
+            }
+        }
+        return TabModel.INVALID_TAB_INDEX;
+    }
+
+    @Override
+    public void add(int position, MVCListAdapter.ListItem item) {
+        assert validateListItem(item);
+        super.add(position, item);
+    }
+
+    private boolean validateListItem(MVCListAdapter.ListItem item) {
+        try {
+            item.model.get(CARD_TYPE);
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
+        return true;
     }
 
     /**
@@ -80,8 +142,9 @@ class TabListModel extends ModelList {
         int status = isSelected ? ClosableTabGridView.AnimationStatus.SELECTED_CARD_ZOOM_IN
                                 : ClosableTabGridView.AnimationStatus.SELECTED_CARD_ZOOM_OUT;
         if (index < 0 || index >= size()
-                || get(index).model.get(TabProperties.CARD_ANIMATION_STATUS) == status)
+                || get(index).model.get(TabProperties.CARD_ANIMATION_STATUS) == status) {
             return;
+        }
 
         get(index).model.set(TabProperties.CARD_ANIMATION_STATUS, status);
         get(index).model.set(TabProperties.ALPHA, isSelected ? 0.8f : 1f);
@@ -99,8 +162,9 @@ class TabListModel extends ModelList {
         int status = isHovered ? ClosableTabGridView.AnimationStatus.HOVERED_CARD_ZOOM_IN
                                : ClosableTabGridView.AnimationStatus.HOVERED_CARD_ZOOM_OUT;
         if (index < 0 || index >= size()
-                || get(index).model.get(TabProperties.CARD_ANIMATION_STATUS) == status)
+                || get(index).model.get(TabProperties.CARD_ANIMATION_STATUS) == status) {
             return;
+        }
         get(index).model.set(TabProperties.CARD_ANIMATION_STATUS, status);
     }
 }

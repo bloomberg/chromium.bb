@@ -50,10 +50,11 @@
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "media/capture/video/chromeos/camera_buffer_factory.h"
 #include "media/capture/video/chromeos/camera_hal_dispatcher_impl.h"
-#include "media/capture/video/chromeos/local_gpu_memory_buffer_manager.h"
 #include "media/capture/video/chromeos/public/cros_features.h"
 #include "media/capture/video/chromeos/video_capture_device_chromeos_halv3.h"
 #include "media/capture/video/chromeos/video_capture_device_factory_chromeos.h"
+#include "media/gpu/test/local_gpu_memory_buffer_manager.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #endif
 
 #if defined(OS_MACOSX)
@@ -250,7 +251,8 @@ class VideoCaptureDeviceTest
 #if defined(OS_MACOSX)
         // Video capture code on MacOSX must run on a CFRunLoop enabled thread
         // for interaction with AVFoundation.
-        task_environment_(base::test::TaskEnvironment::MainThreadType::UI),
+        task_environment_(
+            base::test::SingleThreadTaskEnvironment::MainThreadType::UI),
 #endif
         device_descriptors_(new VideoCaptureDeviceDescriptors()),
         main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
@@ -264,10 +266,10 @@ class VideoCaptureDeviceTest
     if (media::ShouldUseCrosCameraService() &&
         !CameraHalDispatcherImpl::GetInstance()->IsStarted()) {
       CameraHalDispatcherImpl::GetInstance()->Start(
-          base::DoNothing::Repeatedly<
-              chromeos_camera::mojom::MjpegDecodeAcceleratorRequest>(),
-          base::DoNothing::Repeatedly<
-              chromeos_camera::mojom::JpegEncodeAcceleratorRequest>());
+          base::DoNothing::Repeatedly<mojo::PendingReceiver<
+              chromeos_camera::mojom::MjpegDecodeAccelerator>>(),
+          base::DoNothing::Repeatedly<mojo::PendingReceiver<
+              chromeos_camera::mojom::JpegEncodeAccelerator>>());
     }
 #endif
     video_capture_device_factory_ =
@@ -461,7 +463,7 @@ class VideoCaptureDeviceTest
 #if defined(OS_WIN)
   base::win::ScopedCOMInitializer initialize_com_;
 #endif
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   std::unique_ptr<VideoCaptureDeviceDescriptors> device_descriptors_;
   std::unique_ptr<base::RunLoop> run_loop_;
   scoped_refptr<base::TaskRunner> main_thread_task_runner_;

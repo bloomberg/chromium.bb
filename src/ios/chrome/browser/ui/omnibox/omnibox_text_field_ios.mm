@@ -32,7 +32,6 @@
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
 #include "skia/ext/skia_utils_ios.h"
-#include "third_party/google_toolbox_for_mac/src/iPhone/GTMFadeTruncatingLabel.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/image/image.h"
@@ -153,6 +152,9 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
 - (void)setText:(NSAttributedString*)text
     userTextLength:(size_t)userTextLength {
   DCHECK_LE(userTextLength, [text length]);
+  if (userTextLength > 0) {
+    [self exitPreEditState];
+  }
 
   NSUInteger autocompleteLength = [text length] - userTextLength;
   [self setTextInternal:text autocompleteLength:autocompleteLength];
@@ -616,15 +618,22 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
 }
 
 - (BOOL)canPerformAction:(SEL)action withSender:(id)sender {
-  // If there is selected text, show copy and cut.
+  // If the text is not empty and there is selected text, show copy and cut.
   if ([self textInRange:self.selectedTextRange].length > 0 &&
       (action == @selector(cut:) || action == @selector(copy:))) {
     return YES;
   }
 
-  // If there is no selected text, show select and selectAll.
-  if ([self textInRange:self.selectedTextRange].length == 0 &&
-      (action == @selector(select:) || action == @selector(selectAll:))) {
+  // If the text is not empty and there is no selected text, show select
+  if (self.text.length > 0 &&
+      [self textInRange:self.selectedTextRange].length == 0 &&
+      action == @selector(select:)) {
+    return YES;
+  }
+
+  // If selected text is les than the text length, show selectAll.
+  if ([self textInRange:self.selectedTextRange].length != self.text.length &&
+      action == @selector(selectAll:)) {
     return YES;
   }
 
@@ -661,16 +670,13 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
 // preprending http:// to the copied URL if needed.
 - (void)copy:(id)sender {
   id<OmniboxTextFieldDelegate> delegate = [self delegate];
-  BOOL handled = NO;
 
   // Must test for the onCopy method, since it's optional.
-  if ([delegate respondsToSelector:@selector(onCopy)])
-    handled = [delegate onCopy];
-
-  // iOS 4 doesn't expose an API that allows the delegate to handle the copy
-  // operation, so let the superclass perform the copy if the delegate couldn't.
-  if (!handled)
+  if ([delegate respondsToSelector:@selector(onCopy)]) {
+    [delegate onCopy];
+  } else {
     [super copy:sender];
+  }
 }
 
 - (void)cut:(id)sender {

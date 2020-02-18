@@ -71,7 +71,8 @@ namespace torque {
 
 #define AST_DECLARATION_NODE_KIND_LIST(V) \
   AST_TYPE_DECLARATION_NODE_KIND_LIST(V)  \
-  V(GenericDeclaration)                   \
+  V(GenericCallableDeclaration)           \
+  V(GenericTypeDeclaration)               \
   V(SpecializationDeclaration)            \
   V(ExternConstDeclaration)               \
   V(NamespaceDeclaration)                 \
@@ -90,7 +91,8 @@ namespace torque {
   AST_STATEMENT_NODE_KIND_LIST(V)       \
   AST_DECLARATION_NODE_KIND_LIST(V)     \
   V(Identifier)                         \
-  V(LabelBlock)
+  V(LabelBlock)                         \
+  V(ClassBody)
 
 struct AstNode {
  public:
@@ -792,6 +794,12 @@ struct TypeDeclaration : Declaration {
   Identifier* name;
 };
 
+struct InstanceTypeConstraints {
+  InstanceTypeConstraints() : value(-1), num_flags_bits(-1) {}
+  int value;
+  int num_flags_bits;
+};
+
 struct AbstractTypeDeclaration : TypeDeclaration {
   DEFINE_AST_NODE_LEAF_BOILERPLATE(AbstractTypeDeclaration)
   AbstractTypeDeclaration(SourcePosition pos, Identifier* name, bool transient,
@@ -1010,16 +1018,43 @@ struct ConstDeclaration : Declaration {
   Expression* expression;
 };
 
-struct GenericDeclaration : Declaration {
-  DEFINE_AST_NODE_LEAF_BOILERPLATE(GenericDeclaration)
-  GenericDeclaration(SourcePosition pos,
-                     std::vector<Identifier*> generic_parameters,
-                     CallableDeclaration* declaration)
+struct GenericParameter {
+  Identifier* name;
+  base::Optional<TypeExpression*> constraint;
+};
+
+using GenericParameters = std::vector<GenericParameter>;
+
+// The AST re-shuffles generics from the concrete syntax:
+// Instead of the generic parameters being part of a normal declaration,
+// a declaration with generic parameters gets wrapped in a generic declaration,
+// which holds the generic parameters. This corresponds to how you write
+// templates in C++, with the template parameters coming before the declaration.
+
+struct GenericCallableDeclaration : Declaration {
+  DEFINE_AST_NODE_LEAF_BOILERPLATE(GenericCallableDeclaration)
+  GenericCallableDeclaration(SourcePosition pos,
+                             GenericParameters generic_parameters,
+                             CallableDeclaration* declaration)
       : Declaration(kKind, pos),
         generic_parameters(std::move(generic_parameters)),
         declaration(declaration) {}
-  std::vector<Identifier*> generic_parameters;
+
+  GenericParameters generic_parameters;
   CallableDeclaration* declaration;
+};
+
+struct GenericTypeDeclaration : Declaration {
+  DEFINE_AST_NODE_LEAF_BOILERPLATE(GenericTypeDeclaration)
+  GenericTypeDeclaration(SourcePosition pos,
+                         GenericParameters generic_parameters,
+                         TypeDeclaration* declaration)
+      : Declaration(kKind, pos),
+        generic_parameters(std::move(generic_parameters)),
+        declaration(declaration) {}
+
+  GenericParameters generic_parameters;
+  TypeDeclaration* declaration;
 };
 
 struct SpecializationDeclaration : CallableDeclaration {
@@ -1054,19 +1089,27 @@ struct ExternConstDeclaration : Declaration {
 
 struct StructDeclaration : TypeDeclaration {
   DEFINE_AST_NODE_LEAF_BOILERPLATE(StructDeclaration)
-  StructDeclaration(SourcePosition pos, Identifier* name,
+  StructDeclaration(SourcePosition pos, StructFlags flags, Identifier* name,
                     std::vector<Declaration*> methods,
-                    std::vector<StructFieldExpression> fields,
-                    std::vector<Identifier*> generic_parameters)
+                    std::vector<StructFieldExpression> fields)
       : TypeDeclaration(kKind, pos, name),
+        flags(flags),
         methods(std::move(methods)),
-        fields(std::move(fields)),
-        generic_parameters(std::move(generic_parameters)) {}
+        fields(std::move(fields)) {}
+  StructFlags flags;
   std::vector<Declaration*> methods;
   std::vector<StructFieldExpression> fields;
-  std::vector<Identifier*> generic_parameters;
+};
 
-  bool IsGeneric() const { return !generic_parameters.empty(); }
+struct ClassBody : AstNode {
+  DEFINE_AST_NODE_LEAF_BOILERPLATE(ClassBody)
+  ClassBody(SourcePosition pos, std::vector<Declaration*> methods,
+            std::vector<ClassFieldExpression> fields)
+      : AstNode(kKind, pos),
+        methods(std::move(methods)),
+        fields(std::move(fields)) {}
+  std::vector<Declaration*> methods;
+  std::vector<ClassFieldExpression> fields;
 };
 
 struct ClassDeclaration : TypeDeclaration {
@@ -1075,18 +1118,21 @@ struct ClassDeclaration : TypeDeclaration {
                    base::Optional<TypeExpression*> super,
                    base::Optional<std::string> generates,
                    std::vector<Declaration*> methods,
-                   std::vector<ClassFieldExpression> fields)
+                   std::vector<ClassFieldExpression> fields,
+                   InstanceTypeConstraints instance_type_constraints)
       : TypeDeclaration(kKind, pos, name),
         flags(flags),
         super(super),
         generates(std::move(generates)),
         methods(std::move(methods)),
-        fields(std::move(fields)) {}
+        fields(std::move(fields)),
+        instance_type_constraints(std::move(instance_type_constraints)) {}
   ClassFlags flags;
   base::Optional<TypeExpression*> super;
   base::Optional<std::string> generates;
   std::vector<Declaration*> methods;
   std::vector<ClassFieldExpression> fields;
+  InstanceTypeConstraints instance_type_constraints;
 };
 
 struct CppIncludeDeclaration : Declaration {
@@ -1124,8 +1170,8 @@ DECLARE_CONTEXTUAL_VARIABLE(CurrentAst, Ast);
 
 template <class T, class... Args>
 T* MakeNode(Args... args) {
-  return CurrentAst::Get().AddNode(std::unique_ptr<T>(
-      new T(CurrentSourcePosition::Get(), std::move(args)...)));
+  return CurrentAst::Get().AddNode(
+      std::make_unique<T>(CurrentSourcePosition::Get(), std::move(args)...));
 }
 
 }  // namespace torque

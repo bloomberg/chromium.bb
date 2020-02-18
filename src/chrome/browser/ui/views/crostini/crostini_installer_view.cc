@@ -10,12 +10,17 @@
 #include "ash/public/cpp/ash_typography.h"
 #include "base/bind.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/system/sys_info.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/crostini/crostini_features.h"
 #include "chrome/browser/chromeos/crostini/crostini_installer.h"
+#include "chrome/browser/chromeos/crostini/crostini_installer_types.mojom.h"
 #include "chrome/browser/chromeos/crostini/crostini_installer_ui_delegate.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
+#include "chrome/browser/ui/webui/chromeos/crostini_installer/crostini_installer_dialog.h"
+#include "chrome/browser/ui/webui/chromeos/crostini_installer/crostini_installer_ui.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chrome_unscaled_resources.h"
 #include "chrome/grit/generated_resources.h"
@@ -34,13 +39,12 @@
 #include "ui/views/controls/progress_bar.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/layout_provider.h"
-#include "ui/views/window/dialog_client_view.h"
 
 using crostini::CrostiniResult;
+using crostini::mojom::InstallerError;
+using crostini::mojom::InstallerState;
 
 namespace {
-
-using Error = crostini::CrostiniInstallerUIDelegate::Error;
 
 CrostiniInstallerView* g_crostini_installer_view = nullptr;
 
@@ -63,36 +67,39 @@ base::string16 GetHelpUrlWithBoard(const std::string& original_url) {
                             "&b=" + base::SysInfo::GetLsbReleaseBoard());
 }
 
-base::string16 GetErrorMessage(Error error) {
+base::string16 GetErrorMessage(InstallerError error) {
   switch (error) {
-    case Error::ERROR_LOADING_TERMINA:
+    case InstallerError::kErrorLoadingTermina:
       return l10n_util::GetStringUTF16(
           IDS_CROSTINI_INSTALLER_LOAD_TERMINA_ERROR);
-    case Error::ERROR_STARTING_CONCIERGE:
+    case InstallerError::kErrorStartingConcierge:
       return l10n_util::GetStringUTF16(
           IDS_CROSTINI_INSTALLER_START_CONCIERGE_ERROR);
-    case Error::ERROR_CREATING_DISK_IMAGE:
+    case InstallerError::kErrorCreatingDiskImage:
       return l10n_util::GetStringUTF16(
           IDS_CROSTINI_INSTALLER_CREATE_DISK_IMAGE_ERROR);
-    case Error::ERROR_STARTING_TERMINA:
+    case InstallerError::kErrorStartingTermina:
       return l10n_util::GetStringUTF16(
           IDS_CROSTINI_INSTALLER_START_TERMINA_VM_ERROR);
-    case Error::ERROR_STARTING_CONTAINER:
+    case InstallerError::kErrorStartingContainer:
       return l10n_util::GetStringUTF16(
           IDS_CROSTINI_INSTALLER_START_CONTAINER_ERROR);
-    case Error::ERROR_OFFLINE:
+    case InstallerError::kErrorConfiguringContainer:
+      return l10n_util::GetStringUTF16(
+          IDS_CROSTINI_INSTALLER_CONFIGURE_CONTAINER_ERROR);
+    case InstallerError::kErrorOffline:
       return l10n_util::GetStringFUTF16(IDS_CROSTINI_INSTALLER_OFFLINE_ERROR,
                                         ui::GetChromeOSDeviceName());
-    case Error::ERROR_FETCHING_SSH_KEYS:
+    case InstallerError::kErrorFetchingSshKeys:
       return l10n_util::GetStringUTF16(
           IDS_CROSTINI_INSTALLER_FETCH_SSH_KEYS_ERROR);
-    case Error::ERROR_MOUNTING_CONTAINER:
+    case InstallerError::kErrorMountingContainer:
       return l10n_util::GetStringUTF16(
           IDS_CROSTINI_INSTALLER_MOUNT_CONTAINER_ERROR);
-    case Error::ERROR_SETTING_UP_CONTAINER:
+    case InstallerError::kErrorSettingUpContainer:
       return l10n_util::GetStringUTF16(
           IDS_CROSTINI_INSTALLER_SETUP_CONTAINER_ERROR);
-    case Error::ERROR_INSUFFICIENT_DISK_SPACE:
+    case InstallerError::kErrorInsufficientDiskSpace:
       return l10n_util::GetStringFUTF16(
           IDS_CROSTINI_INSTALLER_INSUFFICIENT_DISK,
           ui::FormatBytesWithUnits(
@@ -106,32 +113,42 @@ base::string16 GetErrorMessage(Error error) {
 
 }  // namespace
 
+// TODO(lxj): |CrostiniInstallerView| will be removed at some point. We will
+// wait until then to find a better place for this function.
 void crostini::ShowCrostiniInstallerView(
     Profile* profile,
     crostini::CrostiniUISurface ui_surface) {
   // Defensive check to prevent showing the installer when crostini is not
   // allowed.
-  if (!IsCrostiniUIAllowedForProfile(profile)) {
+  if (!CrostiniFeatures::Get()->IsUIAllowed(profile)) {
     return;
   }
   base::UmaHistogramEnumeration(kCrostiniSetupSourceHistogram, ui_surface,
                                 crostini::CrostiniUISurface::kCount);
-  return CrostiniInstallerView::Show(
-      profile, crostini::CrostiniInstaller::GetForProfile(profile));
+
+  if (chromeos::CrostiniInstallerUI::IsEnabled()) {
+    return chromeos::CrostiniInstallerDialog::Show(profile);
+  } else {
+    return CrostiniInstallerView::Show(
+        profile, crostini::CrostiniInstaller::GetForProfile(profile));
+  }
 }
 
 // static
 void CrostiniInstallerView::Show(
     Profile* profile,
     crostini::CrostiniInstallerUIDelegate* delegate) {
-  DCHECK(crostini::IsCrostiniUIAllowedForProfile(profile));
+  DCHECK(crostini::CrostiniFeatures::Get()->IsUIAllowed(profile));
   if (!g_crostini_installer_view) {
+    DCHECK(!crostini::CrostiniManager::GetForProfile(profile)
+                ->GetInstallerViewStatus());
     g_crostini_installer_view = new CrostiniInstallerView(profile, delegate);
     views::DialogDelegate::CreateDialogWidget(g_crostini_installer_view,
                                               nullptr, nullptr);
 
-    g_crostini_installer_view->GetDialogClientView()->SetButtonRowInsets(
-        kOOBEButtonRowInsets);
+    // TODO(ellyjones): Why is this necessary? Why can't we use the default
+    // button row insets?
+    g_crostini_installer_view->SetButtonRowInsets(kOOBEButtonRowInsets);
     // We do our layout when the big message is at its biggest. Then we can
     // set it to the desired value.
     g_crostini_installer_view->big_message_label_->SetText(
@@ -141,7 +158,6 @@ void CrostiniInstallerView::Show(
     g_crostini_installer_view->big_message_label_->SetText(
         l10n_util::GetStringFUTF16(IDS_CROSTINI_INSTALLER_TITLE, device_type));
 
-    // TODO(lxj): Move installer status tracking into the CrostiniInstaller.
     crostini::CrostiniManager::GetForProfile(profile)->SetInstallerViewStatus(
         true);
   }
@@ -202,7 +218,7 @@ bool CrostiniInstallerView::Accept() {
   learn_more_link_ = nullptr;
 
   state_ = State::INSTALLING;
-  installing_state_ = InstallationState::START;
+  installing_state_ = InstallerState::kStart;
   progress_bar_->SetValue(0);
   progress_bar_->SetVisible(true);
   SetMessageLabel();
@@ -213,6 +229,7 @@ bool CrostiniInstallerView::Accept() {
 
   VLOG(1) << "delegate_->Install()";
   delegate_->Install(
+      crostini::CrostiniManager::RestartOptions{},
       base::BindRepeating(&CrostiniInstallerView::OnProgressUpdate,
                           weak_ptr_factory_.GetWeakPtr()),
       base::BindOnce(&CrostiniInstallerView::OnInstallFinished,
@@ -357,7 +374,7 @@ CrostiniInstallerView::~CrostiniInstallerView() {
   g_crostini_installer_view = nullptr;
 }
 
-void CrostiniInstallerView::OnProgressUpdate(InstallationState installing_state,
+void CrostiniInstallerView::OnProgressUpdate(InstallerState installing_state,
                                              double progress_fraction) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK_EQ(state_, State::INSTALLING);
@@ -372,10 +389,10 @@ void CrostiniInstallerView::OnProgressUpdate(InstallationState installing_state,
   GetWidget()->GetRootView()->Layout();
 }
 
-void CrostiniInstallerView::OnInstallFinished(Error error) {
+void CrostiniInstallerView::OnInstallFinished(InstallerError error) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  if (error == Error::NONE) {
+  if (error == InstallerError::kNone) {
     state_ = State::SUCCESS;
     GetWidget()->Close();
     return;
@@ -390,8 +407,10 @@ void CrostiniInstallerView::OnInstallFinished(Error error) {
   // Remove the buttons so they get recreated with correct color and
   // highlighting. Without this it is possible for both buttons to be styled
   // as default buttons.
-  delete GetDialogClientView()->ok_button();
-  delete GetDialogClientView()->cancel_button();
+  // TODO(ellyjones): This shouldn't be necessary - DialogModelChanged() should
+  // handle this case. Investigate.
+  delete GetOkButton();
+  delete GetCancelButton();
 
   DialogModelChanged();
   GetWidget()->GetRootView()->Layout();
@@ -407,34 +426,37 @@ void CrostiniInstallerView::SetMessageLabel() {
   int message_id = 0;
 
   switch (installing_state_) {
-    case InstallationState::INSTALL_IMAGE_LOADER:
+    case InstallerState::kInstallImageLoader:
       message_id = IDS_CROSTINI_INSTALLER_LOAD_TERMINA_MESSAGE;
       break;
-    case InstallationState::START_CONCIERGE:
+    case InstallerState::kStartConcierge:
       message_id = IDS_CROSTINI_INSTALLER_START_CONCIERGE_MESSAGE;
       break;
-    case InstallationState::CREATE_DISK_IMAGE:
+    case InstallerState::kCreateDiskImage:
       message_id = IDS_CROSTINI_INSTALLER_CREATE_DISK_IMAGE_MESSAGE;
       break;
-    case InstallationState::START_TERMINA_VM:
+    case InstallerState::kStartTerminaVm:
       message_id = IDS_CROSTINI_INSTALLER_START_TERMINA_VM_MESSAGE;
       break;
-    case InstallationState::CREATE_CONTAINER:
+    case InstallerState::kCreateContainer:
       // TODO(lxj): we are using the same message as for |START_CONTAINER|,
       // which is weird because user is going to see message "start container"
       // then "setup container" and then "start container" again.
       message_id = IDS_CROSTINI_INSTALLER_START_CONTAINER_MESSAGE;
       break;
-    case InstallationState::SETUP_CONTAINER:
+    case InstallerState::kSetupContainer:
       message_id = IDS_CROSTINI_INSTALLER_SETUP_CONTAINER_MESSAGE;
       break;
-    case InstallationState::START_CONTAINER:
+    case InstallerState::kStartContainer:
       message_id = IDS_CROSTINI_INSTALLER_START_CONTAINER_MESSAGE;
       break;
-    case InstallationState::FETCH_SSH_KEYS:
+    case InstallerState::kConfigureContainer:
+      message_id = IDS_CROSTINI_INSTALLER_CONFIGURE_CONTAINER_MESSAGE;
+      break;
+    case InstallerState::kFetchSshKeys:
       message_id = IDS_CROSTINI_INSTALLER_FETCH_SSH_KEYS_MESSAGE;
       break;
-    case InstallationState::MOUNT_CONTAINER:
+    case InstallerState::kMountContainer:
       message_id = IDS_CROSTINI_INSTALLER_MOUNT_CONTAINER_MESSAGE;
       break;
     default:

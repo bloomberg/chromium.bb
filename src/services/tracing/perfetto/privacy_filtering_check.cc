@@ -45,7 +45,7 @@ void VerifyProtoRecursive(const MessageInfo* root,
         error << " : " << a;
       }
       error << " : " << f.id();
-      LOG(DFATAL) << error.rdbuf();
+      DCHECK(false) << error.rdbuf();
       continue;
     }
     if (root->sub_messages && root->sub_messages[index] != nullptr) {
@@ -76,7 +76,7 @@ void PrivacyFilteringCheck::CheckProtoForUnexpectedFields(
       serialized_trace_proto.size());
 
   for (auto it = trace.packet(); !!it; ++it) {
-    TracePacket::Decoder packet(it->data(), it->size());
+    TracePacket::Decoder packet(*it);
     const MessageInfo* root = &kTracePacket;
     VerifyProto(root, &packet);
 

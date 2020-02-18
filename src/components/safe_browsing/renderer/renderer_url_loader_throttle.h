@@ -9,7 +9,10 @@
 
 #include "base/memory/weak_ptr.h"
 #include "components/safe_browsing/common/safe_browsing.mojom.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
 #include "url/gurl.h"
 
@@ -35,20 +38,21 @@ class RendererURLLoaderThrottle : public blink::URLLoaderThrottle,
   void WillStartRequest(network::ResourceRequest* request,
                         bool* defer) override;
   void WillRedirectRequest(net::RedirectInfo* redirect_info,
-                           const network::ResourceResponseHead& response_head,
+                           const network::mojom::URLResponseHead& response_head,
                            bool* defer,
                            std::vector<std::string>* to_be_removed_headers,
                            net::HttpRequestHeaders* modified_headers) override;
   void WillProcessResponse(const GURL& response_url,
-                           network::ResourceResponseHead* response_head,
+                           network::mojom::URLResponseHead* response_head,
                            bool* defer) override;
 
   // mojom::UrlCheckNotifier implementation.
   void OnCompleteCheck(bool proceed, bool showed_interstitial) override;
 
-  void OnCheckUrlResult(mojom::UrlCheckNotifierRequest slow_check_notifier,
-                        bool proceed,
-                        bool showed_interstitial);
+  void OnCheckUrlResult(
+      mojo::PendingReceiver<mojom::UrlCheckNotifier> slow_check_notifier,
+      bool proceed,
+      bool showed_interstitial);
 
   // Called by the two methods above.
   // |slow_check| indicates whether it reports the result of a slow check.
@@ -57,17 +61,17 @@ class RendererURLLoaderThrottle : public blink::URLLoaderThrottle,
                                bool proceed,
                                bool showed_interstitial);
 
-  void OnConnectionError();
+  void OnMojoDisconnect();
 
   mojom::SafeBrowsing* safe_browsing_;
   const int render_frame_id_;
 
   // These fields hold the connection to this instance's private connection to
   // the Safe Browsing service if DetachFromCurrentThread has been called.
-  mojom::SafeBrowsingPtrInfo safe_browsing_ptr_info_;
-  mojom::SafeBrowsingPtr safe_browsing_ptr_;
+  mojo::PendingRemote<mojom::SafeBrowsing> safe_browsing_pending_remote_;
+  mojo::Remote<mojom::SafeBrowsing> safe_browsing_remote_;
 
-  mojom::SafeBrowsingUrlCheckerPtr url_checker_;
+  mojo::Remote<mojom::SafeBrowsingUrlChecker> url_checker_;
 
   size_t pending_checks_ = 0;
   size_t pending_slow_checks_ = 0;
@@ -83,7 +87,8 @@ class RendererURLLoaderThrottle : public blink::URLLoaderThrottle,
   // been involved.
   bool user_action_involved_ = false;
 
-  std::unique_ptr<mojo::BindingSet<mojom::UrlCheckNotifier>> notifier_bindings_;
+  std::unique_ptr<mojo::ReceiverSet<mojom::UrlCheckNotifier>>
+      notifier_receivers_;
 
   GURL original_url_;
 

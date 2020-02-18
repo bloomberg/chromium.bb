@@ -41,14 +41,14 @@ void RunFilterUpdateTest(int num_blocks_to_process,
   ApmDataDumper data_dumper(42);
   EchoCanceller3Config config;
   config.filter.main.length_blocks = filter_length_blocks;
-  AdaptiveFirFilter main_filter(config.filter.main.length_blocks,
-                                config.filter.main.length_blocks,
-                                config.filter.config_change_duration_blocks, 1,
-                                1, DetectOptimization(), &data_dumper);
-  AdaptiveFirFilter shadow_filter(config.filter.shadow.length_blocks,
-                                  config.filter.shadow.length_blocks,
-                                  config.filter.config_change_duration_blocks,
-                                  1, 1, DetectOptimization(), &data_dumper);
+  AdaptiveFirFilter main_filter(
+      config.filter.main.length_blocks, config.filter.main.length_blocks,
+      config.filter.config_change_duration_blocks, num_render_channels,
+      DetectOptimization(), &data_dumper);
+  AdaptiveFirFilter shadow_filter(
+      config.filter.shadow.length_blocks, config.filter.shadow.length_blocks,
+      config.filter.config_change_duration_blocks, num_render_channels,
+      DetectOptimization(), &data_dumper);
   Aec3Fft fft;
 
   constexpr int kSampleRateHz = 48000;
@@ -64,7 +64,6 @@ void RunFilterUpdateTest(int num_blocks_to_process,
       std::vector<std::vector<float>>(num_render_channels,
                                       std::vector<float>(kBlockSize, 0.f)));
   std::array<float, kBlockSize> y;
-  AecState aec_state(config);
   RenderSignalAnalyzer render_signal_analyzer(config);
   std::array<float, kFftLength> s;
   FftData S;
@@ -141,7 +140,7 @@ std::string ProduceDebugText(size_t delay, int filter_length_blocks) {
 // Verifies that the check for non-null output gain parameter works.
 TEST(ShadowFilterUpdateGain, NullDataOutputGain) {
   ApmDataDumper data_dumper(42);
-  FftBuffer fft_buffer(1);
+  FftBuffer fft_buffer(1, 1);
   RenderSignalAnalyzer analyzer(EchoCanceller3Config{});
   FftData E;
   const EchoCanceller3Config::Filter::ShadowConfiguration& config = {
@@ -168,7 +167,7 @@ TEST(ShadowFilterUpdateGain, GainCausesFilterToConverge) {
         std::array<float, kBlockSize> y;
         FftData G;
 
-        RunFilterUpdateTest(1000, delay_samples, num_render_channels,
+        RunFilterUpdateTest(5000, delay_samples, num_render_channels,
                             filter_length_blocks, blocks_with_saturation, &e,
                             &y, &G);
 
@@ -190,7 +189,7 @@ TEST(ShadowFilterUpdateGain, GainCausesFilterToConverge) {
 // Verifies that the magnitude of the gain on average decreases for a
 // persistently exciting signal.
 TEST(ShadowFilterUpdateGain, DecreasingGain) {
-  for (size_t num_render_channels : {1, 2, 8}) {
+  for (size_t num_render_channels : {1, 2, 4}) {
     for (size_t filter_length_blocks : {12, 20, 30}) {
       SCOPED_TRACE(ProduceDebugText(filter_length_blocks));
       std::vector<int> blocks_with_echo_path_changes;

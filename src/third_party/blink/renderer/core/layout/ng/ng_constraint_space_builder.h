@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NGConstraintSpaceBuilder_h
-#define NGConstraintSpaceBuilder_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_NG_CONSTRAINT_SPACE_BUILDER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_NG_CONSTRAINT_SPACE_BUILDER_H_
 
 #include "base/optional.h"
 #include "third_party/blink/renderer/core/layout/geometry/logical_size.h"
@@ -29,9 +29,6 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
       : NGConstraintSpaceBuilder(parent_space.GetWritingMode(),
                                  out_writing_mode,
                                  is_new_fc) {
-    // Propagate the intermediate layout bit to the child constraint space.
-    space_.bitfields_.is_intermediate_layout =
-        parent_space.IsIntermediateLayout();
     if (parent_space.IsInsideBalancedColumns())
       space_.EnsureRareData()->is_inside_balanced_columns = true;
   }
@@ -114,13 +111,13 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
       space_.EnsureRareData()->fragmentainer_block_size = size;
   }
 
-  void SetFragmentainerSpaceAtBfcStart(LayoutUnit space) {
+  void SetFragmentainerOffsetAtBfc(LayoutUnit offset) {
 #if DCHECK_IS_ON()
-    DCHECK(!is_fragmentainer_space_at_bfc_start_set_);
-    is_fragmentainer_space_at_bfc_start_set_ = true;
+    DCHECK(!is_fragmentainer_offset_at_bfc_set_);
+    is_fragmentainer_offset_at_bfc_set_ = true;
 #endif
-    if (space != kIndefiniteSize)
-      space_.EnsureRareData()->fragmentainer_space_at_bfc_start = space;
+    if (offset != LayoutUnit())
+      space_.EnsureRareData()->fragmentainer_offset_at_bfc = offset;
   }
 
   void SetTextDirection(TextDirection direction) {
@@ -148,10 +145,6 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
 
   void SetIsShrinkToFit(bool b) { space_.bitfields_.is_shrink_to_fit = b; }
 
-  void SetIsIntermediateLayout(bool b) {
-    space_.bitfields_.is_intermediate_layout = b;
-  }
-
   void SetFragmentationType(NGFragmentationType fragmentation_type) {
 #if DCHECK_IS_ON()
     DCHECK(!is_block_direction_fragmentation_type_set_);
@@ -169,11 +162,23 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
 
   void SetIsInColumnBfc() { space_.EnsureRareData()->is_in_column_bfc = true; }
 
+  void SetEarlyBreakAppeal(NGBreakAppeal appeal) {
+    if (appeal == kBreakAppealLastResort && !space_.rare_data_)
+      return;
+    space_.EnsureRareData()->early_break_appeal = appeal;
+  }
+
   void SetIsTableCell(bool b) { space_.bitfields_.is_table_cell = b; }
 
   void SetIsRestrictedBlockSizeTableCell(bool b) {
     DCHECK(space_.bitfields_.is_table_cell);
     space_.bitfields_.is_restricted_block_size_table_cell = b;
+  }
+
+  void SetHideTableCellIfEmpty(bool b) {
+    DCHECK(space_.bitfields_.is_table_cell);
+    if (b)
+      space_.EnsureRareData()->hide_table_cell_if_empty = b;
   }
 
   void SetIsAnonymous(bool b) { space_.bitfields_.is_anonymous = b; }
@@ -239,8 +244,8 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
     DCHECK(!is_forced_bfc_block_offset_set_);
     is_forced_bfc_block_offset_set_ = true;
 #endif
-    if (LIKELY(!is_new_fc_))
-      space_.EnsureRareData()->SetForcedBfcBlockOffset(forced_bfc_block_offset);
+    DCHECK(!is_new_fc_);
+    space_.EnsureRareData()->SetForcedBfcBlockOffset(forced_bfc_block_offset);
   }
 
   void SetClearanceOffset(LayoutUnit clearance_offset) {
@@ -341,7 +346,7 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
   bool is_available_size_set_ = false;
   bool is_percentage_resolution_size_set_ = false;
   bool is_fragmentainer_block_size_set_ = false;
-  bool is_fragmentainer_space_at_bfc_start_set_ = false;
+  bool is_fragmentainer_offset_at_bfc_set_ = false;
   bool is_block_direction_fragmentation_type_set_ = false;
   bool is_margin_strut_set_ = false;
   bool is_optimistic_bfc_block_offset_set_ = false;
@@ -359,4 +364,4 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
 
 }  // namespace blink
 
-#endif  // NGConstraintSpaceBuilder
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_NG_CONSTRAINT_SPACE_BUILDER_H_

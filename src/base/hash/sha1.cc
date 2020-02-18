@@ -29,10 +29,6 @@ namespace base {
 //
 // to reuse the instance of sha, call sha.Init();
 
-// TODO(jhawkins): Replace this implementation with a per-platform
-// implementation using each platform's crypto library.  See
-// http://crbug.com/47218
-
 class SecureHashAlgorithm {
  public:
   SecureHashAlgorithm() { Init(); }
@@ -189,6 +185,12 @@ void SecureHashAlgorithm::Process() {
   H[4] += E;
 
   cursor = 0;
+}
+
+std::array<uint8_t, kSHA1Length> SHA1HashSpan(span<const uint8_t> data) {
+  std::array<uint8_t, kSHA1Length> hash;
+  SHA1HashBytes(data.data(), data.size(), hash.data());
+  return hash;
 }
 
 std::string SHA1HashString(const std::string& str) {

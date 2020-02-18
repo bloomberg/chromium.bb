@@ -17,7 +17,6 @@ from multiprocessing.managers import SyncManager
 import os
 import signal
 import sys
-import tempfile
 import time
 import traceback
 
@@ -85,8 +84,10 @@ def Manager():
   # Use a short directory in /tmp. Do not use /tmp directly to keep these
   # temperary files together and because certain environments do not like too
   # many top-level paths in /tmp (see crbug.com/945523).
-  tmp_dir = '/tmp/chromite.parallel'
-  osutils.SafeMakedirs(tmp_dir)
+  # Make it mode 1777 to mirror /tmp, so that we don't have failures when root
+  # calls parallel first, and some other user calls it later.
+  tmp_dir = '/tmp/chromite.parallel.%d' % os.geteuid()
+  osutils.SafeMakedirs(tmp_dir, mode=0o1777)
   old_tempdir_value, old_tempdir_env = osutils.SetGlobalTempDir(tmp_dir)
   try:
     m = HackTimeoutSyncManager()
@@ -191,7 +192,7 @@ class _BackgroundTask(multiprocessing.Process):
 
   @classmethod
   def _DebugRunCommand(cls, cmd, **kwargs):
-    """Swallow any exception RunCommand raises.
+    """Swallow any exception run raises.
 
     Since these commands are for purely informational purposes, we don't
     random issues causing the bot to die.
@@ -202,7 +203,7 @@ class _BackgroundTask(multiprocessing.Process):
     log_level = kwargs['debug_level']
     try:
       with timeout_util.Timeout(cls.DEBUG_CMD_TIMEOUT):
-        return cros_build_lib.RunCommand(cmd, **kwargs).output
+        return cros_build_lib.run(cmd, **kwargs).output
     except (cros_build_lib.RunCommandError, timeout_util.TimeoutError) as e:
       logging.log(log_level, 'Running %s failed: %s', cmd[0], str(e))
       return ''
@@ -334,7 +335,7 @@ class _BackgroundTask(multiprocessing.Process):
           output.seek(pos)
           buf = output.read(_BUFSIZE)
 
-          if len(buf) > 0:
+          if buf:
             silent_death_time = time.time() + self.SILENT_TIMEOUT
           elif running and time.time() > silent_death_time:
             msg = ('No output from %r for %r seconds' %
@@ -349,7 +350,7 @@ class _BackgroundTask(multiprocessing.Process):
             running = False
 
           # Print output so far.
-          while len(buf) > 0:
+          while buf:
             sys.stdout.write(buf)
             pos += len(buf)
             if len(buf) < _BUFSIZE:
@@ -383,11 +384,10 @@ class _BackgroundTask(multiprocessing.Process):
 
     sys.stdout.flush()
     sys.stderr.flush()
-    tmp_dir = '/tmp/chromite.parallel'
-    osutils.SafeMakedirs(tmp_dir)
-    self._output = tempfile.NamedTemporaryFile(delete=False, bufsize=0,
-                                               dir=tmp_dir,
-                                               prefix='chromite-parallel-')
+    tmp_dir = '/tmp/chromite.parallel.%d' % os.geteuid()
+    osutils.SafeMakedirs(tmp_dir, mode=0o1777)
+    self._output = cros_build_lib.UnbufferedNamedTemporaryFile(
+        delete=False, dir=tmp_dir, prefix='chromite-parallel-')
     self._parent_pid = os.getpid()
     return multiprocessing.Process.start(self)
 
@@ -420,7 +420,7 @@ class _BackgroundTask(multiprocessing.Process):
     sys.stderr.flush()
     errors = []
     # Send all output to a named temporary file.
-    with open(self._output.name, 'w', 0) as output:
+    with open(self._output.name, 'wb', 0) as output:
       # Back up sys.std{err,out}. These aren't used, but we keep a copy so
       # that they aren't garbage collected. We intentionally don't restore
       # the old stdout and stderr at the end, because we want shutdown errors
@@ -430,8 +430,13 @@ class _BackgroundTask(multiprocessing.Process):
       # Replace std{out,err} with unbuffered file objects.
       os.dup2(output.fileno(), sys.__stdout__.fileno())
       os.dup2(output.fileno(), sys.__stderr__.fileno())
-      sys.stdout = os.fdopen(sys.__stdout__.fileno(), 'w', 0)
-      sys.stderr = os.fdopen(sys.__stderr__.fileno(), 'w', 0)
+      # The API of these funcs changed between versions.
+      if sys.version_info.major < 3:
+        sys.stdout = os.fdopen(sys.__stdout__.fileno(), 'w', 0)
+        sys.stderr = os.fdopen(sys.__stderr__.fileno(), 'w', 0)
+      else:
+        sys.stdout = os.fdopen(sys.__stdout__.fileno(), 'w', closefd=False)
+        sys.stderr = os.fdopen(sys.__stderr__.fileno(), 'w', closefd=False)
 
       try:
         self._started.set()

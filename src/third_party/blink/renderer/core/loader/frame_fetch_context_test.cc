@@ -341,7 +341,7 @@ class FrameFetchContextModifyRequestTest : public FrameFetchContextTest {
     const KURL input_url(input);
     const KURL main_frame_url(main_frame);
     ResourceRequest resource_request(input_url);
-    resource_request.SetRequestContext(mojom::RequestContextType::SCRIPT);
+    resource_request.SetRequestContext(mojom::RequestContextType::IMAGE);
 
     RecreateFetchContext(main_frame_url);
     document->SetInsecureRequestPolicy(policy);
@@ -1218,7 +1218,8 @@ TEST_F(FrameFetchContextMockedLocalFrameClientTest,
 
 TEST_F(FrameFetchContextTest, AddResourceTimingWhenDetached) {
   scoped_refptr<ResourceTimingInfo> info = ResourceTimingInfo::Create(
-      "type", base::TimeTicks() + base::TimeDelta::FromSecondsD(0.3));
+      "type", base::TimeTicks() + base::TimeDelta::FromSecondsD(0.3),
+      mojom::RequestContextType::UNSPECIFIED);
 
   dummy_page_holder = nullptr;
 
@@ -1279,8 +1280,8 @@ TEST_F(FrameFetchContextTest, SetFirstPartyCookieWhenDetached) {
 
   SetFirstPartyCookie(request);
 
-  EXPECT_EQ(document_url, request.SiteForCookies());
-  EXPECT_EQ(document_url.GetString(), request.SiteForCookies().GetString());
+  EXPECT_TRUE(
+      SecurityOrigin::AreSameOrigin(document_url, request.SiteForCookies()));
 }
 
 TEST_F(FrameFetchContextTest, TopFrameOrigin) {

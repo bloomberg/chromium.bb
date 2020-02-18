@@ -21,24 +21,24 @@ class UpgradeTableTest(cros_test_lib.TestCase):
 
   def testGetArch(self):
     t1 = self._CreateTable(True, arch='arch1')
-    self.assertEquals(t1.GetArch(), 'arch1')
+    self.assertEqual(t1.GetArch(), 'arch1')
     t2 = self._CreateTable(False, arch='arch2')
-    self.assertEquals(t2.GetArch(), 'arch2')
+    self.assertEqual(t2.GetArch(), 'arch2')
 
   def _AssertEqualsAfterArchSub(self, arch, table_col_name,
                                 static_table_col_name):
-    self.assertEquals(table_col_name,
-                      static_table_col_name.replace('ARCH', arch))
+    self.assertEqual(table_col_name,
+                     static_table_col_name.replace('ARCH', arch))
 
   def testColumnNameArchSubstitute(self):
     arch = 'foobar'
     t1 = self._CreateTable(True, arch=arch)
 
     # Some column names are independent of ARCH.
-    self.assertEquals(t1.COL_PACKAGE, utable.UpgradeTable.COL_PACKAGE)
-    self.assertEquals(t1.COL_SLOT, utable.UpgradeTable.COL_SLOT)
-    self.assertEquals(t1.COL_OVERLAY, utable.UpgradeTable.COL_OVERLAY)
-    self.assertEquals(t1.COL_TARGET, utable.UpgradeTable.COL_TARGET)
+    self.assertEqual(t1.COL_PACKAGE, utable.UpgradeTable.COL_PACKAGE)
+    self.assertEqual(t1.COL_SLOT, utable.UpgradeTable.COL_SLOT)
+    self.assertEqual(t1.COL_OVERLAY, utable.UpgradeTable.COL_OVERLAY)
+    self.assertEqual(t1.COL_TARGET, utable.UpgradeTable.COL_TARGET)
 
     # Other column names require ARCH substitution.
     self._AssertEqualsAfterArchSub(arch, t1.COL_CURRENT_VER,

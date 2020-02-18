@@ -1,9 +1,6 @@
 // Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-//
-// Simple system resources class that uses the current thread for scheduling.
-// Assumes the current thread is already running tasks.
 
 #ifndef COMPONENTS_INVALIDATION_IMPL_FCM_SYNC_NETWORK_CHANNEL_H_
 #define COMPONENTS_INVALIDATION_IMPL_FCM_SYNC_NETWORK_CHANNEL_H_
@@ -42,9 +39,13 @@ class FCMSyncNetworkChannel : public NetworkChannel {
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
-  // Get the count of how many valid received messages were received.
-  int GetReceivedMessagesCount() const;
+  // Subclass should implement RequestDetailedStatus to provide debugging
+  // information.
+  virtual void RequestDetailedStatus(
+      const base::RepeatingCallback<void(const base::DictionaryValue&)>&
+          callback) = 0;
 
+ protected:
   // Subclass should call NotifyNetworkStatusChange to notify about network
   // changes. This triggers cacheinvalidation to try resending failed message
   // ahead of schedule when client comes online or IP address changes.
@@ -61,16 +62,11 @@ class FCMSyncNetworkChannel : public NetworkChannel {
   bool DeliverIncomingMessage(const std::string& payload,
                               const std::string& private_topic,
                               const std::string& public_topic,
-                              const std::string& version);
+                              int64_t version);
 
   // Subclass should call DeliverToken for token to reach registration
   // manager.
   bool DeliverToken(const std::string& token);
-
-  // Subclass should implement RequestDetailedStatus to provide debugging
-  // information.
-  virtual void RequestDetailedStatus(
-      base::Callback<void(const base::DictionaryValue&)> callback);
 
  private:
   // Callbacks into invalidation library

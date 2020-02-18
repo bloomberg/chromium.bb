@@ -26,6 +26,7 @@ class GerritApi(recipe_api.RecipeApi):
                            self.repo_resource('gerrit_client.py'),
                            cmd,
                            infra_step=infra_step,
+                           venv=True,
                            **kwargs)
 
   def create_gerrit_branch(self, host, project, branch, commit, **kwargs):
@@ -105,7 +106,7 @@ class GerritApi(recipe_api.RecipeApi):
         o_params=['ALL_REVISIONS', 'ALL_COMMITS'],
         limit=1)
     cl = cls[0] if len(cls) == 1 else {'revisions': {}}
-    for ri in cl['revisions'].itervalues():
+    for ri in cl['revisions'].values():
       # TODO(tandrii): add support for patchset=='current'.
       if str(ri['_number']) == str(patchset):
         return ri

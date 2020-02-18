@@ -15,6 +15,9 @@ import android.net.Uri;
 import android.os.SystemClock;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.transition.ChangeBounds;
+import android.transition.Transition;
+import android.transition.TransitionManager;
 import android.util.DisplayMetrics;
 import android.util.LruCache;
 import android.view.LayoutInflater;
@@ -22,16 +25,19 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.MediaController;
 import android.widget.RelativeLayout;
 import android.widget.VideoView;
 
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.DiscardableReferencePool.DiscardableReference;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.util.ConversionUtils;
 import org.chromium.chrome.browser.widget.selection.SelectableListLayout;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
@@ -41,6 +47,7 @@ import org.chromium.ui.UiUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 
 /**
@@ -49,7 +56,8 @@ import java.util.List;
  */
 public class PickerCategoryView extends RelativeLayout
         implements FileEnumWorkerTask.FilesEnumeratedCallback, RecyclerView.RecyclerListener,
-                   DecoderServiceHost.ServiceReadyCallback, View.OnClickListener {
+                   DecoderServiceHost.ServiceReadyCallback, View.OnClickListener,
+                   SelectionDelegate.SelectionObserver<PickerBitmap> {
     // These values are written to logs.  New enum values can be added, but existing
     // enums must never be renumbered or deleted and reused.
     private static final int ACTION_CANCEL = 0;
@@ -62,13 +70,21 @@ public class PickerCategoryView extends RelativeLayout
      * A container class for keeping track of the data we need to show a photo/video tile in the
      * photo picker (the data we store in the cache).
      */
-    static public class Thumbnail {
+    public static class Thumbnail {
         public List<Bitmap> bitmaps;
+        public Boolean fullWidth;
         public String videoDuration;
 
-        Thumbnail(List<Bitmap> bitmaps, String videoDuration) {
+        // The calculated ratio of the originals for the bitmaps above, were they to be shown
+        // un-cropped. NOTE: The |bitmaps| above may already have been cropped and as such might
+        // have a different ratio.
+        public float ratio;
+
+        Thumbnail(List<Bitmap> bitmaps, String videoDuration, Boolean fullWidth, float ratio) {
             this.bitmaps = bitmaps;
             this.videoDuration = videoDuration;
+            this.fullWidth = fullWidth;
+            this.ratio = ratio;
         }
     }
 
@@ -116,11 +132,23 @@ public class PickerCategoryView extends RelativeLayout
     // A high-resolution cache for thumbnails, lazily created.
     private DiscardableReference<LruCache<String, Thumbnail>> mHighResThumbnails;
 
+    // A cache for full-screen versions of images, lazily created.
+    private DiscardableReference<LruCache<String, Thumbnail>> mFullScreenBitmaps;
+
     // The size of the low-res cache.
     private int mCacheSizeLarge;
 
     // The size of the high-res cache.
     private int mCacheSizeSmall;
+
+    // The size of the full-screen cache.
+    private int mCacheSizeFullScreen;
+
+    // Whether we are in magnifying mode (one image per column).
+    private boolean mMagnifyingMode;
+
+    // Whether we are in the middle of animating between magnifying modes.
+    private boolean mZoomSwitchingInEffect;
 
     /**
      * The number of columns to show. Note: mColumns and mPadding (see below) should both be even
@@ -132,8 +160,14 @@ public class PickerCategoryView extends RelativeLayout
     // The padding between columns. See also comment for mColumns.
     private int mPadding;
 
-    // The size of the bitmaps (equal length for width and height).
-    private int mImageSize;
+    // The width of the bitmaps.
+    private int mImageWidth;
+
+    // The height of the bitmaps.
+    private int mImageHeight;
+
+    // The height of the special tiles.
+    private int mSpecialTileHeight;
 
     // A worker task for asynchronously enumerating files off the main thread.
     private FileEnumWorkerTask mWorkerTask;
@@ -156,12 +190,16 @@ public class PickerCategoryView extends RelativeLayout
     // The media controls to show with the video (play/pause, etc).
     private MediaController mMediaController;
 
+    // The Zoom (floating action) button.
+    private ImageView mZoom;
+
     /**
      * @param context The context to use.
      * @param multiSelectionAllowed Whether to allow the user to select more than one image.
      */
     @SuppressWarnings("unchecked") // mSelectableListLayout
-    public PickerCategoryView(Context context, boolean multiSelectionAllowed) {
+    public PickerCategoryView(Context context, boolean multiSelectionAllowed,
+            PhotoPickerToolbar.PhotoPickerToolbarDelegate delegate) {
         super(context);
         mActivity = (ChromeActivity) context;
         mMultiSelectionAllowed = multiSelectionAllowed;
@@ -170,6 +208,9 @@ public class PickerCategoryView extends RelativeLayout
         mDecoderServiceHost.bind(context);
 
         mSelectionDelegate = new SelectionDelegate<PickerBitmap>();
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.PHOTO_PICKER_ZOOM)) {
+            mSelectionDelegate.addObserver(this);
+        }
         if (!multiSelectionAllowed) mSelectionDelegate.setSingleSelectionMode();
 
         View root = LayoutInflater.from(context).inflate(R.layout.photo_picker_dialog, this);
@@ -184,9 +225,11 @@ public class PickerCategoryView extends RelativeLayout
                 R.layout.photo_picker_toolbar, mSelectionDelegate, titleId, 0, 0, null, false,
                 false);
         toolbar.setNavigationOnClickListener(this);
+        toolbar.setDelegate(delegate);
         Button doneButton = (Button) toolbar.findViewById(R.id.done);
         doneButton.setOnClickListener(this);
         mVideoView = findViewById(R.id.video_player);
+        mZoom = findViewById(R.id.zoom);
 
         calculateGridMetrics();
 
@@ -198,7 +241,13 @@ public class PickerCategoryView extends RelativeLayout
         mRecyclerView.setRecyclerListener(this);
 
         final long maxMemory = ConversionUtils.bytesToKilobytes(Runtime.getRuntime().maxMemory());
-        mCacheSizeLarge = (int) (maxMemory / 2); // 1/2 of the available memory.
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.PHOTO_PICKER_ZOOM)) {
+            mCacheSizeFullScreen = (int) (maxMemory / 4); // 1/4 of the available memory.
+            mCacheSizeLarge = (int) (maxMemory / 4); // 1/4 of the available memory.
+        } else {
+            mCacheSizeFullScreen = 0;
+            mCacheSizeLarge = (int) (maxMemory / 2); // 1/2 of the available memory.
+        }
         mCacheSizeSmall = (int) (maxMemory / 8); // 1/8th of the available memory.
     }
 
@@ -216,7 +265,10 @@ public class PickerCategoryView extends RelativeLayout
         // enumerated (when mPickerBitmaps is null, causing: https://crbug.com/947657). There's no
         // need to call notifyDataSetChanged in that case because it will be called once the photo
         // list becomes ready.
-        if (mPickerBitmaps != null) mPickerAdapter.notifyDataSetChanged();
+        if (mPickerBitmaps != null) {
+            mPickerAdapter.notifyDataSetChanged();
+            mRecyclerView.requestLayout();
+        }
     }
 
     /**
@@ -337,6 +389,20 @@ public class PickerCategoryView extends RelativeLayout
         }
     }
 
+    // SelectionDelegate.SelectionObserver:
+
+    @Override
+    public void onSelectionStateChange(List<PickerBitmap> selectedItems) {
+        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.PHOTO_PICKER_ZOOM)) {
+            return;
+        }
+
+        if (mZoom.getVisibility() != View.VISIBLE) {
+            mZoom.setVisibility(View.VISIBLE);
+            mZoom.setOnClickListener(this);
+        }
+    }
+
     // OnClickListener:
 
     @Override
@@ -344,6 +410,10 @@ public class PickerCategoryView extends RelativeLayout
         int id = view.getId();
         if (id == R.id.done) {
             notifyPhotosSelected();
+        } else if (id == R.id.zoom) {
+            if (!mZoomSwitchingInEffect) {
+                flipZoomMode();
+            }
         } else if (id == R.id.close) {
             stopVideo();
         } else {
@@ -361,10 +431,81 @@ public class PickerCategoryView extends RelativeLayout
         }
     }
 
+    private void flipZoomMode() {
+        // Bitmap scaling is cumulative, so if an image is selected when we switch modes, it will
+        // become skewed when switching between full size and square modes because dimensions of the
+        // picture also change (from square to full width). We therefore un-select all items before
+        // starting the animation and then reselect them once animation has ended.
+        final HashSet<PickerBitmap> selectedItems =
+                new HashSet<>(mSelectionDelegate.getSelectedItems());
+        mSelectionDelegate.clearSelection();
+
+        mMagnifyingMode = !mMagnifyingMode;
+
+        if (mMagnifyingMode) {
+            mZoom.setImageResource(R.drawable.zoom_out);
+        } else {
+            mZoom.setImageResource(R.drawable.zoom_in);
+        }
+
+        calculateGridMetrics();
+
+        if (!mMagnifyingMode) {
+            getFullScreenBitmaps().evictAll();
+        }
+
+        mZoomSwitchingInEffect = true;
+
+        ChangeBounds transition = new ChangeBounds();
+        transition.addListener(new Transition.TransitionListener() {
+            @Override
+            public void onTransitionStart(Transition transition) {}
+
+            @Override
+            public void onTransitionEnd(Transition transition) {
+                mZoomSwitchingInEffect = false;
+
+                // Redo selection when switching between modes to make it obvious what got selected.
+                mSelectionDelegate.setSelectedItems(selectedItems);
+            }
+
+            @Override
+            public void onTransitionCancel(Transition transition) {}
+
+            @Override
+            public void onTransitionPause(Transition transition) {}
+
+            @Override
+            public void onTransitionResume(Transition transition) {}
+        });
+
+        TransitionManager.beginDelayedTransition(mRecyclerView, transition);
+
+        mLayoutManager.setSpanCount(mColumns);
+        mPickerAdapter.notifyDataSetChanged();
+        mRecyclerView.requestLayout();
+    }
+
     // Simple accessors:
 
-    public int getImageSize() {
-        return mImageSize;
+    public int getImageWidth() {
+        return mImageWidth;
+    }
+
+    public int getImageHeight() {
+        return mImageHeight;
+    }
+
+    public int getSpecialTileHeight() {
+        return mSpecialTileHeight;
+    }
+
+    public boolean isInMagnifyingMode() {
+        return mMagnifyingMode;
+    }
+
+    public boolean isZoomSwitchingInEffect() {
+        return mZoomSwitchingInEffect;
     }
 
     public SelectionDelegate<PickerBitmap> getSelectionDelegate() {
@@ -395,6 +536,14 @@ public class PickerCategoryView extends RelativeLayout
         return mHighResThumbnails.get();
     }
 
+    public LruCache<String, Thumbnail> getFullScreenBitmaps() {
+        if (mFullScreenBitmaps == null || mFullScreenBitmaps.get() == null) {
+            mFullScreenBitmaps = mActivity.getReferencePool().put(
+                    new LruCache<String, Thumbnail>(mCacheSizeFullScreen));
+        }
+        return mFullScreenBitmaps.get();
+    }
+
     public boolean isMultiSelectAllowed() {
         return mMultiSelectionAllowed;
     }
@@ -423,12 +572,18 @@ public class PickerCategoryView extends RelativeLayout
         int width = displayMetrics.widthPixels;
         int minSize =
                 mActivity.getResources().getDimensionPixelSize(R.dimen.photo_picker_tile_min_size);
-        mPadding = mActivity.getResources().getDimensionPixelSize(R.dimen.photo_picker_tile_gap);
-        mColumns = Math.max(1, (width - mPadding) / (minSize + mPadding));
-        mImageSize = (width - mPadding * (mColumns + 1)) / (mColumns);
+        mPadding = mMagnifyingMode
+                ? 0
+                : mActivity.getResources().getDimensionPixelSize(R.dimen.photo_picker_tile_gap);
+        mColumns = mMagnifyingMode ? 1 : Math.max(1, (width - mPadding) / (minSize + mPadding));
+        mImageWidth = (width - mPadding * (mColumns + 1)) / (mColumns);
+        mImageHeight = mMagnifyingMode
+                ? displayMetrics.heightPixels - findViewById(R.id.action_bar_bg).getHeight()
+                : mImageWidth;
+        if (!mMagnifyingMode) mSpecialTileHeight = mImageWidth;
 
         // Make sure columns and padding are either both even or both odd.
-        if (((mColumns % 2) == 0) != ((mPadding % 2) == 0)) {
+        if (!mMagnifyingMode && ((mColumns % 2) == 0) != ((mPadding % 2) == 0)) {
             mPadding++;
         }
     }
@@ -492,7 +647,15 @@ public class PickerCategoryView extends RelativeLayout
         @Override
         public void getItemOffsets(
                 Rect outRect, View view, RecyclerView parent, RecyclerView.State state) {
-            int left = 0, right = 0, top = 0, bottom = 0;
+            if (mMagnifyingMode) {
+                outRect.set(0, 0, 0, mSpacing);
+                return;
+            }
+
+            int left = 0;
+            int right = 0;
+            int top = 0;
+            int bottom = 0;
             int position = parent.getChildAdapterPosition(view);
 
             if (position >= 0) {

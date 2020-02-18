@@ -14,7 +14,6 @@
 #include "chrome/browser/signin/account_id_from_account_info.h"
 #include "chrome/browser/signin/chrome_device_id_helper.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "components/signin/public/base/signin_metrics.h"
 #include "components/signin/public/identity_manager/accounts_mutator.h"
@@ -149,8 +148,8 @@ signin::IdentityManager* OAuth2LoginManager::GetIdentityManager() {
   return IdentityManagerFactory::GetForProfile(user_profile_);
 }
 
-std::string OAuth2LoginManager::GetPrimaryAccountId() {
-  const std::string primary_account_id =
+CoreAccountId OAuth2LoginManager::GetPrimaryAccountId() {
+  const CoreAccountId primary_account_id =
       GetIdentityManager()->GetPrimaryAccountId();
   LOG_IF(ERROR, primary_account_id.empty()) << "Primary account id is empty.";
   return primary_account_id;
@@ -165,23 +164,13 @@ void OAuth2LoginManager::StoreOAuth2Token() {
   const CoreAccountInfo primary_account_info =
       identity_manager->GetPrimaryAccountInfo();
 
-  if (features::IsAccountManagerEnabled()) {
-    // If Account Manager is enabled, we already have the refresh token at this
-    // point, and will not get any additional callbacks from Account Manager or
-    // Identity Manager about refresh tokens. Manually call
-    // |OnRefreshTokenUpdatedForAccount| to continue the flow.
-    // TODO(https://crbug.com/977137): Clean this up after cleaning
-    // OAuth2LoginVerifier.
-    OnRefreshTokenUpdatedForAccount(primary_account_info);
-  } else {
-    // TODO(https://crbug.com/987955): Remove this when Account Manager is
-    // enabled by default.
-
-    identity_manager->GetAccountsMutator()->AddOrUpdateAccount(
-        primary_account_info.gaia, primary_account_info.email, refresh_token_,
-        primary_account_info.is_under_advanced_protection,
-        signin_metrics::SourceForRefreshTokenOperation::kUnknown);
-  }
+  // We already have the refresh token at this
+  // point, and will not get any additional callbacks from Account Manager or
+  // Identity Manager about refresh tokens. Manually call
+  // |OnRefreshTokenUpdatedForAccount| to continue the flow.
+  // TODO(https://crbug.com/977137): Clean this up after cleaning
+  // OAuth2LoginVerifier.
+  OnRefreshTokenUpdatedForAccount(primary_account_info);
 }
 
 void OAuth2LoginManager::VerifySessionCookies() {
@@ -226,14 +215,14 @@ void OAuth2LoginManager::OnListAccountsSuccess(
     const std::vector<gaia::ListedAccount>& accounts) {
   MergeVerificationOutcome outcome = POST_MERGE_SUCCESS;
   // Let's analyze which accounts we see logged in here:
-  std::string user_email = gaia::CanonicalizeEmail(GetPrimaryAccountId());
+  CoreAccountId user_account_id = GetPrimaryAccountId();
   if (!accounts.empty()) {
     bool found = false;
     bool first = true;
     for (std::vector<gaia::ListedAccount>::const_iterator iter =
              accounts.begin();
          iter != accounts.end(); ++iter) {
-      if (iter->email == user_email) {
+      if (iter->id == user_account_id) {
         found = iter->valid;
         break;
       }

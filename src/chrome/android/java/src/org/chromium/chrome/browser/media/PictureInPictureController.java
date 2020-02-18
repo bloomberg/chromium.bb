@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.media;
 
-import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.PictureInPictureParams;
 import android.content.pm.ActivityInfo;
@@ -12,18 +12,21 @@ import android.content.pm.PackageManager;
 import android.graphics.Rect;
 import android.os.Build;
 import android.os.SystemClock;
-import android.support.annotation.Nullable;
 import android.text.format.DateUtils;
 import android.util.Rational;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.base.Callback;
 import org.chromium.base.Log;
+import org.chromium.base.annotations.VerifiesOnO;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager.FullscreenListener;
+import org.chromium.chrome.browser.fullscreen.FullscreenOptions;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
-import org.chromium.chrome.browser.rappor.RapporServiceBridge;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
@@ -40,13 +43,15 @@ import java.util.List;
 
 /**
  * A controller for entering Android O Picture in Picture mode with fullscreen videos.
+ *
+ * Do not inline to prevent class verification errors on pre-O runtimes.
  */
-@SuppressLint({"NewApi"})
+@VerifiesOnO
+@TargetApi(Build.VERSION_CODES.O)
 public class PictureInPictureController {
     private static final String TAG = "VideoPersist";
 
     // Metrics
-    private static final String METRICS_URL = "Media.VideoPersistence.TopFrame";
     private static final String METRICS_DURATION = "Media.VideoPersistence.Duration";
 
     private static final String METRICS_ATTEMPT_RESULT = "Media.VideoPersistence.AttemptResult";
@@ -206,15 +211,20 @@ public class PictureInPictureController {
         // Setup observers to dismiss the Activity on events that should end PiP.
         final Tab activityTab = activity.getActivityTab();
 
-        RapporServiceBridge.sampleDomainAndRegistryFromURL(METRICS_URL, activityTab.getUrl());
-
         final TabObserver tabObserver = new DismissActivityOnTabEventObserver(activity);
         final TabModelSelectorObserver tabModelSelectorObserver =
                 new DismissActivityOnTabModelSelectorEventObserver(activity);
         final WebContentsObserver webContentsObserver =
                 new DismissActivityOnWebContentsObserver(activity);
         final TabModelSelector tabModelSelector = TabModelSelector.from(activityTab);
+        final FullscreenListener fullscreenListener = new FullscreenListener() {
+            @Override
+            public void onEnterFullscreen(Tab tab, FullscreenOptions options) {
+                dismissActivity(activity, METRICS_END_REASON_LEFT_FULLSCREEN);
+            }
+        };
 
+        activity.getFullscreenManager().addListener(fullscreenListener);
         activityTab.addObserver(tabObserver);
         tabModelSelector.addObserver(tabModelSelectorObserver);
         webContents.addObserver(webContentsObserver);
@@ -225,6 +235,7 @@ public class PictureInPictureController {
                 activityTab.removeObserver(tabObserver);
                 tabModelSelector.removeObserver(tabModelSelectorObserver);
                 webContents.removeObserver(webContentsObserver);
+                activity.getFullscreenManager().removeListener(fullscreenListener);
             }
         });
 
@@ -256,7 +267,8 @@ public class PictureInPictureController {
         // The currently playing video size is the video frame size, not the on-screen size.
         // We know the video will be touching either the sides or the top and bottom of the screen
         // so we can work out the screen bounds of the video from this.
-        int width, height;
+        int width;
+        int height;
         if (videoAspectRatio > phoneAspectRatio) {
             // The video takes up the full width of the phone and there are black bars at the top
             // and bottom.
@@ -334,11 +346,6 @@ public class PictureInPictureController {
         @Override
         public void onCrash(Tab tab) {
             dismissActivity(mActivity, METRICS_END_REASON_CRASH);
-        }
-
-        @Override
-        public void onExitFullscreenMode(Tab tab) {
-            dismissActivity(mActivity, METRICS_END_REASON_LEFT_FULLSCREEN);
         }
     }
 

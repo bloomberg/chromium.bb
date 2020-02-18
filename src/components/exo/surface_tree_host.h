@@ -82,6 +82,7 @@ class SurfaceTreeHost : public SurfaceDelegate,
   void OnSetParent(Surface* parent, const gfx::Point& position) override {}
   void OnSetStartupId(const char* startup_id) override {}
   void OnSetApplicationId(const char* application_id) override {}
+  void OnActivationRequested() override {}
 
   // Overridden from ui::ContextFactoryObserver:
   void OnLostSharedContext() override;
@@ -95,8 +96,9 @@ class SurfaceTreeHost : public SurfaceDelegate,
   // need to be released back to the client.
   void SubmitEmptyCompositorFrame();
 
-  // Update the host window's size to cover entire surfaces.
-  void UpdateHostWindowBounds();
+  // Update the host window's size to cover sufaces that must be visible and
+  // not clipped.
+  virtual void UpdateHostWindowBounds();
 
  private:
   viz::CompositorFrame PrepareToSubmitCompositorFrame();

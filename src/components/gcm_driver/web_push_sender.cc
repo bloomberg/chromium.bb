@@ -30,6 +30,9 @@ const char kClaimsKeyAudience[] = "aud";
 const char kFCMServerAudience[] = "https://fcm.googleapis.com";
 
 const char kClaimsKeyExpirationTime[] = "exp";
+// It's 12 hours rather than 24 hours to avoid any issues with clock differences
+// between the sending application and the push service.
+constexpr base::TimeDelta kClaimsValidPeriod = base::TimeDelta::FromHours(12);
 
 const char kAuthorizationRequestHeaderFormat[] = "vapid t=%s, k=%s";
 
@@ -46,13 +49,13 @@ const char kContentCodingAes128Gcm[] = "aes128gcm";
 // Other constants.
 const char kContentEncodingOctetStream[] = "application/octet-stream";
 
-base::Optional<std::string> GetAuthHeader(crypto::ECPrivateKey* vapid_key,
-                                          int time_to_live) {
+base::Optional<std::string> GetAuthHeader(crypto::ECPrivateKey* vapid_key) {
   base::Value claims(base::Value::Type::DICTIONARY);
   claims.SetKey(kClaimsKeyAudience, base::Value(kFCMServerAudience));
 
   int64_t exp =
-      (base::Time::Now() - base::Time::UnixEpoch()).InSeconds() + time_to_live;
+      (base::Time::Now() + kClaimsValidPeriod - base::Time::UnixEpoch())
+          .InSeconds();
   // TODO: Year 2038 problem, base::Value does not support int64_t.
   if (exp > INT_MAX)
     return base::nullopt;
@@ -153,8 +156,7 @@ void WebPushSender::SendMessage(const std::string& fcm_token,
   DCHECK(vapid_key);
   DCHECK_LE(message.time_to_live, message.kMaximumTTL);
 
-  base::Optional<std::string> auth_header =
-      GetAuthHeader(vapid_key, message.time_to_live);
+  base::Optional<std::string> auth_header = GetAuthHeader(vapid_key);
   if (!auth_header) {
     DLOG(ERROR) << "Failed to create JWT";
     InvokeWebPushCallback(std::move(callback),
@@ -179,30 +181,32 @@ void WebPushSender::OnMessageSent(
     WebPushCallback callback,
     std::unique_ptr<std::string> response_body) {
   int net_error = url_loader->NetError();
-  if (net_error == net::ERR_INSUFFICIENT_RESOURCES) {
-    DLOG(ERROR) << "VAPID key invalid";
-    InvokeWebPushCallback(std::move(callback),
-                          SendWebPushMessageResult::kVapidKeyInvalid);
-    return;
-  }
-
   if (net_error != net::OK) {
-    DLOG(ERROR) << "Network Error: " << net_error;
-    InvokeWebPushCallback(std::move(callback),
-                          SendWebPushMessageResult::kNetworkError);
+    LogSendWebPushMessageStatusCode(net_error);
+    if (net_error == net::ERR_INSUFFICIENT_RESOURCES) {
+      DLOG(ERROR) << "VAPID key invalid";
+      InvokeWebPushCallback(std::move(callback),
+                            SendWebPushMessageResult::kVapidKeyInvalid);
+    } else {
+      DLOG(ERROR) << "Network Error: " << net_error;
+      InvokeWebPushCallback(std::move(callback),
+                            SendWebPushMessageResult::kNetworkError);
+    }
     return;
   }
 
-  scoped_refptr<net::HttpResponseHeaders> response_headers =
-      url_loader->ResponseInfo()->headers;
-  if (!url_loader->ResponseInfo() || !response_headers) {
+  if (!url_loader->ResponseInfo() || !url_loader->ResponseInfo()->headers) {
+    LogSendWebPushMessageStatusCode(net::OK);
     DLOG(ERROR) << "Response info not found";
     InvokeWebPushCallback(std::move(callback),
                           SendWebPushMessageResult::kServerError);
     return;
   }
 
+  scoped_refptr<net::HttpResponseHeaders> response_headers =
+      url_loader->ResponseInfo()->headers;
   int response_code = response_headers->response_code();
+  LogSendWebPushMessageStatusCode(response_code);
   if (response_code == net::HTTP_NOT_FOUND || response_code == net::HTTP_GONE) {
     DLOG(ERROR) << "Device no longer registered";
     InvokeWebPushCallback(std::move(callback),
@@ -221,6 +225,8 @@ void WebPushSender::OnMessageSent(
 
   if (!network::cors::IsOkStatus(response_code)) {
     DLOG(ERROR) << "HTTP Error: " << response_code;
+    if (response_code == net::HTTP_FORBIDDEN)
+      LogSendWebPushMessageForbiddenBody(response_body.get());
     InvokeWebPushCallback(std::move(callback),
                           SendWebPushMessageResult::kServerError);
     return;
@@ -244,7 +250,7 @@ void WebPushSender::OnMessageSent(
 
   InvokeWebPushCallback(std::move(callback),
                         SendWebPushMessageResult::kSuccessful,
-                        location.substr(slash_pos + 1));
+                        /*message_id=*/location.substr(slash_pos + 1));
 }
 
 }  // namespace gcm

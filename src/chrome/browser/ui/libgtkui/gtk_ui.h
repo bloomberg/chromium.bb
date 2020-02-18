@@ -10,10 +10,10 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "build/buildflag.h"
-#include "chrome/browser/ui/libgtkui/libgtkui_export.h"
 #include "ui/base/glib/glib_signal.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/views/linux_ui/linux_ui.h"
@@ -79,15 +79,8 @@ class GtkUi : public views::LinuxUI {
   SkColor GetInactiveSelectionFgColor() const override;
   base::TimeDelta GetCursorBlinkInterval() const override;
   ui::NativeTheme* GetNativeTheme(aura::Window* window) const override;
-  void SetNativeThemeOverride(NativeThemeGetter callback) override;
+  void SetUseSystemThemeCallback(UseSystemThemeCallback callback) override;
   bool GetDefaultUsesSystemTheme() const override;
-  void SetDownloadCount(int count) const override;
-  void SetProgressFraction(float percentage) const override;
-  bool IsStatusIconSupported() const override;
-  std::unique_ptr<views::StatusIconLinux> CreateLinuxStatusIcon(
-      const gfx::ImageSkia& image,
-      const base::string16& tool_tip,
-      const char* id_prefix) const override;
   gfx::Image GetIconForContentType(const std::string& content_type,
                                    int size) const override;
   std::unique_ptr<views::Border> CreateNativeBorder(
@@ -111,6 +104,8 @@ class GtkUi : public views::LinuxUI {
   std::unique_ptr<views::NavButtonProvider> CreateNavButtonProvider() override;
 #endif
   base::flat_map<std::string, std::string> GetKeyboardLayoutMap() override;
+  std::string GetCursorThemeName() override;
+  int GetCursorThemeSize() override;
 
   // ui::TextEditKeybindingDelegate:
   bool MatchEvent(const ui::Event& event,
@@ -123,6 +118,18 @@ class GtkUi : public views::LinuxUI {
 
   CHROMEG_CALLBACK_1(GtkUi,
                      void,
+                     OnCursorThemeNameChanged,
+                     GtkSettings*,
+                     GtkParamSpec*);
+
+  CHROMEG_CALLBACK_1(GtkUi,
+                     void,
+                     OnCursorThemeSizeChanged,
+                     GtkSettings*,
+                     GtkParamSpec*);
+
+  CHROMEG_CALLBACK_1(GtkUi,
+                     void,
                      OnDeviceScaleFactorMaybeChanged,
                      void*,
                      GParamSpec*);
@@ -131,11 +138,8 @@ class GtkUi : public views::LinuxUI {
   void LoadGtkValues();
 
   // Extracts colors and tints from the GTK theme, both for the
-  // ThemeService interface and the colors we send to webkit.
+  // ThemeService interface and the colors we send to Blink.
   void UpdateColors();
-
-  // Sets the Xcursor theme and size with the GTK theme and size.
-  void UpdateCursorTheme();
 
   // Updates |default_font_*|.
   void UpdateDefaultFont();
@@ -159,7 +163,7 @@ class GtkUi : public views::LinuxUI {
   // system-rendered borders and titlebar.
   ColorMap native_frame_colors_;
 
-  // Colors that we pass to WebKit. These are generated each time the theme
+  // Colors that we pass to Blink. These are generated each time the theme
   // changes.
   SkColor focus_ring_color_;
   SkColor active_selection_bg_color_;
@@ -197,10 +201,10 @@ class GtkUi : public views::LinuxUI {
   base::flat_map<WindowFrameActionSource, WindowFrameAction>
       window_frame_actions_;
 
-  // Used to override the native theme for a window. If no override is provided
-  // or the callback returns nullptr, GtkUi will default to a NativeThemeGtk
-  // instance.
-  NativeThemeGetter native_theme_overrider_;
+  // Used to determine whether the system theme should be used for a window.  If
+  // no override is provided or the callback returns true, GtkUi will default
+  // to a NativeThemeGtk instance.
+  UseSystemThemeCallback use_system_theme_callback_;
 
   float device_scale_factor_ = 1.0f;
 
@@ -210,6 +214,6 @@ class GtkUi : public views::LinuxUI {
 }  // namespace libgtkui
 
 // Access point to the GTK desktop system.
-LIBGTKUI_EXPORT views::LinuxUI* BuildGtkUi();
+COMPONENT_EXPORT(LIBGTKUI) views::LinuxUI* BuildGtkUi();
 
 #endif  // CHROME_BROWSER_UI_LIBGTKUI_GTK_UI_H_

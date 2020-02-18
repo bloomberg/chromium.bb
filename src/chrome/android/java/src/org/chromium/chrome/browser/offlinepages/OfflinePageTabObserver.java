@@ -6,11 +6,12 @@ package org.chromium.chrome.browser.offlinepages;
 
 import android.app.Activity;
 
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ApplicationStatus.ActivityStateListener;
 import org.chromium.base.Log;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
@@ -18,6 +19,7 @@ import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarController;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.Tab.TabHidingType;
+import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabModelObserver;
@@ -110,7 +112,7 @@ public class OfflinePageTabObserver
      * @param tab The tab we are adding an observer for.
      */
     public static void addObserverForTab(Tab tab) {
-        OfflinePageTabObserver observer = getObserverForActivity(tab.getActivity());
+        OfflinePageTabObserver observer = getObserverForActivity(((TabImpl) tab).getActivity());
         observer.startObservingTab(tab);
         observer.maybeShowReloadSnackbar(tab, false);
     }
@@ -279,7 +281,8 @@ public class OfflinePageTabObserver
 
     void maybeShowReloadSnackbar(Tab tab, boolean isNetworkEvent) {
         // Exclude Offline Previews, as there is a seperate UI for previews.
-        if (tab == null || tab.isFrozen() || tab.isHidden() || !OfflinePageUtils.isOfflinePage(tab)
+        if (tab == null || tab.isFrozen() || ((TabImpl) tab).isHidden()
+                || !OfflinePageUtils.isOfflinePage(tab)
                 || OfflinePageUtils.isShowingOfflinePreview(tab) || !OfflinePageUtils.isConnected()
                 || !isLoadedTab(tab) || (wasSnackbarSeen(tab) && !isNetworkEvent)) {
             // Conditions to show a snackbar are not met.
@@ -293,7 +296,7 @@ public class OfflinePageTabObserver
     @VisibleForTesting
     void showReloadSnackbar(Tab tab) {
         OfflinePageUtils.showReloadSnackbar(
-                tab.getActivity(), mSnackbarManager, mSnackbarController, tab.getId());
+                ((TabImpl) tab).getActivity(), mSnackbarManager, mSnackbarController, tab.getId());
     }
 
     @VisibleForTesting

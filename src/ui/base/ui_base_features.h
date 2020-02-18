@@ -16,12 +16,16 @@ namespace features {
 
 COMPONENT_EXPORT(UI_BASE_FEATURES)
 extern const base::Feature kCompositorThreadedScrollbarScrolling;
+COMPONENT_EXPORT(UI_BASE_FEATURES)
+extern const base::Feature kExperimentalFlingAnimation;
 #if defined(OS_CHROMEOS)
 COMPONENT_EXPORT(UI_BASE_FEATURES)
 extern const base::Feature kSettingsShowsPerKeyboardSettings;
 #endif  // defined(OS_CHROMEOS)
 COMPONENT_EXPORT(UI_BASE_FEATURES)
 extern const base::Feature kInputMethodSettingsUiUpdate;
+COMPONENT_EXPORT(UI_BASE_FEATURES)
+extern const base::Feature kPercentBasedScrolling;
 COMPONENT_EXPORT(UI_BASE_FEATURES)
 extern const base::Feature kPointerLockOptions;
 COMPONENT_EXPORT(UI_BASE_FEATURES)
@@ -87,6 +91,9 @@ COMPONENT_EXPORT(UI_BASE_FEATURES) bool IsOzoneDrmMojo();
 COMPONENT_EXPORT(UI_BASE_FEATURES)
 extern const base::Feature kHandwritingGesture;
 #endif
+
+COMPONENT_EXPORT(UI_BASE_FEATURES)
+extern const base::Feature kWebUIA11yEnhancements;
 }  // namespace features
 
 #endif  // UI_BASE_UI_BASE_FEATURES_H_

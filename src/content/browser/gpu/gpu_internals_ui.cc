@@ -10,6 +10,7 @@
 #include <string>
 #include <utility>
 
+#include "base/base64.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
@@ -41,6 +42,7 @@
 #include "gpu/config/gpu_feature_type.h"
 #include "gpu/config/gpu_info.h"
 #include "gpu/config/gpu_lists_version.h"
+#include "gpu/config/gpu_util.h"
 #include "gpu/ipc/common/gpu_memory_buffer_support.h"
 #include "gpu/ipc/host/gpu_memory_buffer_support.h"
 #include "skia/ext/skia_commit_hash.h"
@@ -72,6 +74,8 @@ WebUIDataSource* CreateGpuHTMLSource() {
 
   source->UseStringsJs();
   source->AddResourcePath("gpu_internals.js", IDR_GPU_INTERNALS_JS);
+  source->AddResourcePath("vulkan_info.mojom.js", IDR_VULKAN_INFO_MOJO_JS);
+  source->AddResourcePath("vulkan_types.mojom.js", IDR_VULKAN_TYPES_MOJO_JS);
   source->SetDefaultResource(IDR_GPU_INTERNALS_HTML);
   return source;
 }
@@ -114,28 +118,7 @@ std::unique_ptr<base::ListValue> DxDiagNodeToList(const gpu::DxDiagNode& node) {
   }
   return list;
 }
-
-std::string D3dFeaturelevelToString(uint32_t d3d_feature_level) {
-  if (d3d_feature_level == 0) {
-    return "Not supported";
-  } else {
-    return base::StringPrintf("D3D %d.%d", (d3d_feature_level >> 12) & 0xF,
-                              (d3d_feature_level >> 8) & 0xF);
-  }
-}
-
-std::string VulkanVersionToString(uint32_t vulkan_version) {
-  if (vulkan_version == 0) {
-    return "Not supported";
-  } else {
-    // Vulkan version number VK_MAKE_VERSION(major, minor, patch)
-    // (((major) << 22) | ((minor) << 12) | (patch))
-    return base::StringPrintf(
-        "Vulkan API %d.%d.%d", (vulkan_version >> 22) & 0x3FF,
-        (vulkan_version >> 12) & 0x3FF, vulkan_version & 0xFFF);
-  }
-}
-#endif
+#endif  // OS_WIN
 
 std::string GPUDeviceToString(const gpu::GPUInfo::GPUDevice& gpu) {
   std::string vendor = base::StringPrintf("0x%04x", gpu.vendor_id);
@@ -144,8 +127,17 @@ std::string GPUDeviceToString(const gpu::GPUInfo::GPUDevice& gpu) {
   std::string device = base::StringPrintf("0x%04x", gpu.device_id);
   if (!gpu.device_string.empty())
     device += " [" + gpu.device_string + "]";
-  return base::StringPrintf("VENDOR = %s, DEVICE= %s%s",
-      vendor.c_str(), device.c_str(), gpu.active ? " *ACTIVE*" : "");
+  std::string rt = base::StringPrintf("VENDOR= %s, DEVICE=%s", vendor.c_str(),
+                                      device.c_str());
+#if defined(OS_WIN)
+  if (gpu.sub_sys_id || gpu.revision) {
+    rt += base::StringPrintf(", SUBSYS=0x%08x, REV=%u", gpu.sub_sys_id,
+                             gpu.revision);
+  }
+#endif
+  if (gpu.active)
+    rt += " *ACTIVE*";
+  return rt;
 }
 
 std::unique_ptr<base::ListValue> BasicGpuInfoAsListValue(
@@ -212,12 +204,13 @@ std::unique_ptr<base::ListValue> BasicGpuInfoAsListValue(
 
   basic_info->Append(NewDescriptionValuePair(
       "Driver D3D12 feature level",
-      D3dFeaturelevelToString(
+      gpu::D3DFeatureLevelToString(
           gpu_info.dx12_vulkan_version_info.d3d12_feature_level)));
 
   basic_info->Append(NewDescriptionValuePair(
       "Driver Vulkan API version",
-      VulkanVersionToString(gpu_info.dx12_vulkan_version_info.vulkan_version)));
+      gpu::VulkanVersionToString(
+          gpu_info.dx12_vulkan_version_info.vulkan_version)));
 #endif
 
   basic_info->Append(
@@ -335,6 +328,13 @@ std::unique_ptr<base::DictionaryValue> GpuInfoAsDictionaryValue() {
   if (gpu_info.dx_diagnostics.children.size())
     dx_info = DxDiagNodeToList(gpu_info.dx_diagnostics);
   info->Set("diagnostics", std::move(dx_info));
+#endif
+
+#if BUILDFLAG(ENABLE_VULKAN)
+  if (gpu_info.vulkan_info) {
+    auto blob = gpu_info.vulkan_info->Serialize();
+    info->SetString("vulkanInfo", base::Base64Encode(blob));
+  }
 #endif
 
   return info;
@@ -485,8 +485,9 @@ std::unique_ptr<base::ListValue> GetVideoAcceleratorsInfo() {
     std::string codec_string =
         base::StringPrintf("Decode %s", GetProfileName(profile.profile));
     std::string resolution_string = base::StringPrintf(
-        "up to %s pixels %s", profile.max_resolution.ToString().c_str(),
-        profile.encrypted_only ? "(encrypted)" : "");
+        "%s to %s pixels%s", profile.min_resolution.ToString().c_str(),
+        profile.max_resolution.ToString().c_str(),
+        profile.encrypted_only ? " (encrypted)" : "");
     info->Append(NewDescriptionValuePair(codec_string, resolution_string));
   }
 
@@ -495,7 +496,8 @@ std::unique_ptr<base::ListValue> GetVideoAcceleratorsInfo() {
     std::string codec_string =
         base::StringPrintf("Encode %s", GetProfileName(profile.profile));
     std::string resolution_string = base::StringPrintf(
-        "up to %s pixels and/or %.3f fps",
+        "%s to %s pixels, and/or %.3f fps",
+        profile.min_resolution.ToString().c_str(),
         profile.max_resolution.ToString().c_str(),
         static_cast<double>(profile.max_framerate_numerator) /
             profile.max_framerate_denominator);
@@ -515,6 +517,7 @@ std::unique_ptr<base::ListValue> GetANGLEFeatures() {
     angle_feature->SetString("description", feature.description);
     angle_feature->SetString("bug", feature.bug);
     angle_feature->SetString("status", feature.status);
+    angle_feature->SetString("condition", feature.condition);
     angle_features_list->Append(std::move(angle_feature));
   }
 
@@ -540,7 +543,7 @@ class GpuMessageHandler
   void OnGpuInfoUpdate() override;
 
   // ui::GpuSwitchingObserver implementation.
-  void OnGpuSwitched() override;
+  void OnGpuSwitched(gl::GpuPreference) override;
 
   // Messages
   void OnBrowserBridgeInitialized(const base::ListValue* list);
@@ -643,7 +646,8 @@ void GpuMessageHandler::OnBrowserBridgeInitialized(
 
   // Tell GpuDataManager it should have full GpuInfo. If the
   // Gpu process has not run yet, this will trigger its launch.
-  GpuDataManagerImpl::GetInstance()->RequestCompleteGpuInfoIfNeeded();
+  GpuDataManagerImpl::GetInstance()->RequestDxdiagDx12VulkanGpuInfoIfNeeded(
+      kGpuInfoRequestAll, /*delayed*/ false);
 
   // Run callback immediately in case the info is ready and no update in the
   // future.
@@ -726,8 +730,9 @@ void GpuMessageHandler::OnGpuInfoUpdate() {
                                          *(gpu_info_val.get()));
 }
 
-void GpuMessageHandler::OnGpuSwitched() {
-  GpuDataManagerImpl::GetInstance()->RequestCompleteGpuInfoIfNeeded();
+void GpuMessageHandler::OnGpuSwitched(gl::GpuPreference active_gpu_heuristic_) {
+  // Currently, about:gpu page does not update GPU info after the GPU switch.
+  // If there is something to be updated, the code should be added here.
 }
 
 }  // namespace

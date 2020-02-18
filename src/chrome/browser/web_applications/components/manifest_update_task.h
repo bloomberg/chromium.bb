@@ -12,6 +12,7 @@
 #include "third_party/blink/public/common/manifest/manifest.h"
 
 struct InstallableData;
+struct WebApplicationInfo;
 
 namespace web_app {
 
@@ -20,14 +21,18 @@ class WebAppUiManager;
 class InstallManager;
 enum class InstallResultCode;
 
+// This enum is recorded by UMA, the numeric values must not change.
 enum ManifestUpdateResult {
-  kNoAppInScope,
-  kThrottled,
-  kWebContentsDestroyed,
-  kAppUninstalled,
-  kAppUpToDate,
-  kAppUpdateFailed,
-  kAppUpdated,
+  kNoAppInScope = 0,
+  kThrottled = 1,
+  kWebContentsDestroyed = 2,
+  kAppUninstalled = 3,
+  kAppIsPlaceholder = 4,
+  kAppUpToDate = 5,
+  kAppNotEligible = 6,
+  kAppUpdateFailed = 7,
+  kAppUpdated = 8,
+  kMaxValue = kAppUpdated,
 };
 
 // Used by UpdateManager on a per web app basis for checking and performing
@@ -67,9 +72,13 @@ class ManifestUpdateTask final
   };
 
   void OnDidGetInstallableData(const InstallableData& data);
-  bool IsUpdateNeededForInstallableData(const InstallableData& data);
-  void OnAllAppWindowsClosed(blink::Manifest manifest);
-  void OnInstallationComplete(const AppId& app_id, InstallResultCode code);
+  bool IsUpdateNeeded(const WebApplicationInfo& web_application_info) const;
+  void OnAllAppWindowsClosed(
+      std::unique_ptr<WebApplicationInfo> web_application_info);
+  void OnInstallationComplete(
+      std::unique_ptr<WebApplicationInfo> opt_web_application_info,
+      const AppId& app_id,
+      InstallResultCode code);
   void DestroySelf(ManifestUpdateResult result);
 
   const AppRegistrar& registrar_;

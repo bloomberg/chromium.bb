@@ -5,6 +5,8 @@
 #include "components/gcm_driver/web_push_sender.h"
 
 #include "base/base64.h"
+#include "base/base64url.h"
+#include "base/json/json_reader.h"
 #include "components/gcm_driver/common/gcm_message.h"
 #include "content/public/test/browser_task_environment.h"
 #include "crypto/ec_private_key.h"
@@ -54,7 +56,8 @@ class WebPushSenderTest : public testing::Test {
   }
 
  private:
-  content::BrowserTaskEnvironment task_environment_;
+  content::BrowserTaskEnvironment task_environment_{
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
   network::TestURLLoaderFactory test_url_loader_factory_;
   std::unique_ptr<WebPushSender> sender_;
 };
@@ -87,44 +90,71 @@ TEST_F(WebPushSenderTest, SendMessageTest) {
 
   network::TestURLLoaderFactory::PendingRequest* pendingRequest =
       loader().GetPendingRequest(0);
-  ASSERT_EQ("https://fcm.googleapis.com/fcm/send/fcm_token",
+  EXPECT_EQ("https://fcm.googleapis.com/fcm/send/fcm_token",
             pendingRequest->request.url);
-  ASSERT_EQ("POST", pendingRequest->request.method);
+  EXPECT_EQ("POST", pendingRequest->request.method);
 
   net::HttpRequestHeaders headers = pendingRequest->request.headers;
   std::string auth_header, time_to_live, encoding;
 
   ASSERT_TRUE(
       headers.GetHeader(net::HttpRequestHeaders::kAuthorization, &auth_header));
-  const std::string expected_header =
-      "vapid "
-      "t=([a-zA-Z0-9_-])+\\.([a-zA-Z0-9_-])+\\.([a-zA-Z0-9_-])+, "
-      "k=([a-zA-Z0-9_-])+";
-  ASSERT_TRUE(re2::RE2::FullMatch(auth_header, expected_header));
+  const std::string expected_header = "vapid t=(.*), k=(.*)";
+  std::string jwt, base64_public_key;
+  ASSERT_TRUE(re2::RE2::FullMatch(auth_header, expected_header, &jwt,
+                                  &base64_public_key));
+
+  // Make sure JWT dat can be decomposed
+  std::string::size_type dot_position = jwt.rfind(".");
+  ASSERT_NE(std::string::npos, dot_position);
+
+  std::string data = jwt.substr(0, dot_position);
+  std::string::size_type data_dot_position = data.find(".");
+  ASSERT_NE(std::string::npos, data_dot_position);
+
+  std::string payload_decoded;
+  ASSERT_TRUE(base::Base64UrlDecode(data.substr(data_dot_position + 1),
+                                    base::Base64UrlDecodePolicy::IGNORE_PADDING,
+                                    &payload_decoded));
+  base::Optional<base::Value> payload_value =
+      base::JSONReader::Read(payload_decoded);
+  ASSERT_TRUE(payload_value);
+  ASSERT_TRUE(payload_value->is_dict());
+  EXPECT_EQ(base::Value("https://fcm.googleapis.com"),
+            payload_value->ExtractKey("aud"));
+  int secondsSinceEpoch =
+      (base::Time::Now() - base::Time::UnixEpoch()).InSeconds();
+  EXPECT_EQ(base::Value(secondsSinceEpoch + 12 * 60 * 60),
+            payload_value->ExtractKey("exp"));
+
+  // Make sure public key can be base64 url decoded
+  std::string public_key;
+  EXPECT_TRUE(base::Base64UrlDecode(base64_public_key,
+                                    base::Base64UrlDecodePolicy::IGNORE_PADDING,
+                                    &public_key));
 
   ASSERT_TRUE(headers.GetHeader("TTL", &time_to_live));
-  ASSERT_EQ("3600", time_to_live);
+  EXPECT_EQ("3600", time_to_live);
 
   ASSERT_TRUE(headers.GetHeader("content-encoding", &encoding));
-  ASSERT_EQ("aes128gcm", encoding);
+  EXPECT_EQ("aes128gcm", encoding);
 
   const std::vector<network::DataElement>* body_elements =
       pendingRequest->request.request_body->elements();
   ASSERT_EQ(1UL, body_elements->size());
   const network::DataElement& body = body_elements->back();
-  ASSERT_EQ("payload", std::string(body.bytes(), body.length()));
+  EXPECT_EQ("payload", std::string(body.bytes(), body.length()));
 
-  network::ResourceResponseHead response_head =
-      network::CreateResourceResponseHead(net::HTTP_OK);
-  response_head.headers->AddHeader(
+  auto response_head = network::CreateURLResponseHead(net::HTTP_OK);
+  response_head->headers->AddHeader(
       "location:https://fcm.googleapis.com/message_id");
 
   loader().SimulateResponseForPendingRequest(
       pendingRequest->request.url, network::URLLoaderCompletionStatus(net::OK),
-      response_head, "");
+      std::move(response_head), "");
 
-  ASSERT_EQ(SendWebPushMessageResult::kSuccessful, result);
-  ASSERT_EQ("message_id", message_id);
+  EXPECT_EQ(SendWebPushMessageResult::kSuccessful, result);
+  EXPECT_EQ("message_id", message_id);
 }
 
 struct WebPushUrgencyTestData {
@@ -211,7 +241,7 @@ TEST_P(WebPushHttpStatusTest, HttpStatusTest) {
   loader().SimulateResponseForPendingRequest(
       loader().GetPendingRequest(0)->request.url,
       network::URLLoaderCompletionStatus(GetParam().error_code),
-      network::CreateResourceResponseHead(GetParam().http_status), "");
+      network::CreateURLResponseHead(GetParam().http_status), "");
 
   ASSERT_EQ(GetParam().expected_result, result);
   ASSERT_FALSE(message_id);

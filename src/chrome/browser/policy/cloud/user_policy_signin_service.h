@@ -46,8 +46,8 @@ class UserPolicySigninService : public UserPolicySigninServiceBase {
   // Virtual for testing.
   virtual void RegisterForPolicyWithAccountId(
       const std::string& username,
-      const std::string& account_id,
-      const PolicyRegistrationCallback& callback);
+      const CoreAccountId& account_id,
+      PolicyRegistrationCallback callback);
 
   // signin::IdentityManager::Observer implementation:
   // UserPolicySigninServiceBase is already an observer of IdentityManager.

@@ -136,6 +136,14 @@ Polymer({
     },
 
     /** @private */
+    ambientColorAvailable_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('deviceSupportsAmbientColor');
+      }
+    },
+
+    /** @private */
     listAllDisplayModes_: {
       type: Boolean,
       value: function() {
@@ -194,7 +202,8 @@ Polymer({
     'updateNightLightScheduleSettings_(prefs.ash.night_light.schedule_type.*,' +
         ' prefs.ash.night_light.enabled.*)',
     'onSelectedModeChange_(selectedModePref_.value)',
-    'onSelectedZoomChange_(selectedZoomPref_.value)'
+    'onSelectedZoomChange_(selectedZoomPref_.value)',
+    'onDisplaysChanged_(displays.*)',
   ],
 
   /** @private {number} Selected mode index received from chrome. */
@@ -513,12 +522,22 @@ Polymer({
   },
 
   /**
-   * @param {!Array<!chrome.system.display.DisplayUnitInfo>} displays
+   * Returns true if the ambient color setting should be shown for |display|.
+   * @param {boolean} ambientColorAvailable
+   * @param {chrome.system.display.DisplayUnitInfo} display
    * @return {boolean}
    * @private
    */
-  hasMultipleDisplays_: function(displays) {
-    return displays.length > 1;
+  showAmbientColorSetting_: function(ambientColorAvailable, display) {
+    return ambientColorAvailable && display && display.isInternal;
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  hasMultipleDisplays_: function() {
+    return this.displays.length > 1;
   },
 
   /**
@@ -700,8 +719,7 @@ Polymer({
       this.logicalResolutionText_ = '';
       return;
     }
-    const mode = this.selectedDisplay.modes[
-        /** @type {number} */ (this.selectedModePref_.value)];
+    const mode = this.selectedDisplay.modes[this.currentSelectedModeIndex_];
     const deviceScaleFactor = mode.deviceScaleFactor;
     const inverseZoomFactor = 1.0 / zoomFactor;
     let logicalResolutionStrId = 'displayZoomLogicalResolutionText';
@@ -710,15 +728,36 @@ Polymer({
     } else if (Math.abs(inverseZoomFactor - 1.0) < 0.001) {
       logicalResolutionStrId = 'displayZoomLogicalResolutionDefaultText';
     }
-    const widthStr =
+    let widthStr =
         Math.round(mode.widthInNativePixels / (deviceScaleFactor * zoomFactor))
             .toString();
-    const heightStr =
+    let heightStr =
         Math.round(mode.heightInNativePixels / (deviceScaleFactor * zoomFactor))
             .toString();
+    if (this.shouldSwapLogicalResolutionText_()) {
+      const temp = widthStr;
+      widthStr = heightStr;
+      heightStr = temp;
+    }
     this.logicalResolutionText_ =
         this.i18n(logicalResolutionStrId, widthStr, heightStr);
   },
+
+  /**
+   * Determines whether width and height should be swapped in the
+   * Logical Resolution Text. Returns true if the aspect ratio of the display's
+   * native pixels is not equal to the aspect ratio of the displays current
+   * bounds.
+   * @private
+   */
+  shouldSwapLogicalResolutionText_: function() {
+    const mode = this.selectedDisplay.modes[this.currentSelectedModeIndex_];
+    const bounds = this.selectedDisplay.bounds;
+
+    return (bounds.width / bounds.height).toPrecision(4) !=
+        (mode.widthInNativePixels / mode.heightInNativePixels).toPrecision(4);
+  },
+
 
   /**
    * Handles the event where the display size slider is being dragged, i.e. the
@@ -854,13 +893,28 @@ Polymer({
   },
 
   /**
+   * Returns whether the option "Auto-rotate" is one of the shown options in the
+   * rotation drop-down menu.
+   * @param {!chrome.system.display.DisplayUnitInfo} selectedDisplay
+   * @return {boolean|undefined}
+   * @private
+   */
+  showAutoRotateOption_: function(selectedDisplay) {
+    return selectedDisplay.isInTabletPhysicalState;
+  },
+
+  /**
    * @param {!Event} event
    * @private
    */
   onOrientationChange_: function(event) {
     const target = /** @type {!HTMLSelectElement} */ (event.target);
+    const value = /** @type {number} */ (parseInt(target.value, 10));
+
+    assert(value != -1 || this.selectedDisplay.isInTabletPhysicalState);
+
     /** @type {!chrome.system.display.DisplayProperties} */ const properties = {
-      rotation: parseInt(target.value, 10)
+      rotation: value
     };
     settings.display.systemDisplayApi.setDisplayProperties(
         this.selectedDisplay.id, properties,
@@ -937,9 +991,6 @@ Polymer({
     this.setSelectedDisplay_(selectedDisplay);
 
     this.unifiedDesktopMode_ = !!primaryDisplay && primaryDisplay.isUnified;
-
-    this.$.displayLayout.updateDisplays(
-        this.displays, this.layouts, this.mirroringDestinationIds);
   },
 
   /** @private */
@@ -968,6 +1019,24 @@ Polymer({
           this.i18n('displayNightLightOnAtSunset');
     } else {
       this.nightLightScheduleSubLabel_ = '';
+    }
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  shouldShowArrangementSection_: function() {
+    return this.hasMultipleDisplays_() || this.isMirrored_(this.displays);
+  },
+
+  /** @private */
+  onDisplaysChanged_: function() {
+    Polymer.dom.flush();
+    const displayLayout = this.$$('#displayLayout');
+    if (displayLayout) {
+      displayLayout.updateDisplays(
+          this.displays, this.layouts, this.mirroringDestinationIds);
     }
   },
 });

@@ -8,6 +8,7 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/controls/image_view.h"
@@ -57,6 +58,10 @@ void LoginErrorBubble::SetContent(views::View* content) {
   AddChildView(content_);
 }
 
+void LoginErrorBubble::SetAccessibleName(const base::string16& name) {
+  accessible_name_ = name;
+}
+
 bool LoginErrorBubble::IsPersistent() const {
   return is_persistent_;
 }
@@ -80,7 +85,8 @@ const char* LoginErrorBubble::GetClassName() const {
 }
 
 void LoginErrorBubble::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  node_data->role = ax::mojom::Role::kTooltip;
+  node_data->role = ax::mojom::Role::kAlertDialog;
+  node_data->SetName(accessible_name_);
 }
 
 }  // namespace ash

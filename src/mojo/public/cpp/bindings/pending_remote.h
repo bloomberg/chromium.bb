@@ -71,7 +71,7 @@ class PendingRemote {
 
   // Temporary helper for transitioning away from old bindings types. This is
   // intentionally an implicit conversion.
-  operator InterfacePtrInfo<Interface>() {
+  operator InterfacePtrInfo<Interface>() && {
     return InterfacePtrInfo<Interface>(PassPipe(), version());
   }
 
@@ -87,6 +87,7 @@ class PendingRemote {
     state_.version = 0;
     return std::move(state_.pipe);
   }
+  const ScopedMessagePipeHandle& Pipe() const { return state_.pipe; }
 
   // The version of the interface this Remote is assuming when making method
   // calls. For the most common case of unversioned mojom interfaces, this is

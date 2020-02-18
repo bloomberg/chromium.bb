@@ -32,7 +32,6 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.shadows.multidex.ShadowMultiDex;
 
 import org.chromium.base.Callback;
-import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.metrics.test.ShadowRecordHistogram;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.DeviceConditions;
@@ -139,16 +138,12 @@ public class ExploreSitesBackgroundTaskUnitTest {
         ShadowRecordHistogram.reset();
         MockitoAnnotations.initMocks(this);
         doNothing().when(mChromeBrowserInitializer).handlePreNativeStartup(any(BrowserParts.class));
-        try {
-            doAnswer((InvocationOnMock invocation) -> {
-                mBrowserParts.getValue().finishNativeInitialization();
-                return null;
-            })
-                    .when(mChromeBrowserInitializer)
-                    .handlePostNativeStartup(eq(true), mBrowserParts.capture());
-        } catch (ProcessInitException ex) {
-            fail("Unexpected exception while initializing mock of ChromeBrowserInitializer.");
-        }
+        doAnswer((InvocationOnMock invocation) -> {
+            mBrowserParts.getValue().finishNativeInitialization();
+            return null;
+        })
+                .when(mChromeBrowserInitializer)
+                .handlePostNativeStartup(eq(true), mBrowserParts.capture());
 
         ChromeBrowserInitializer.setForTesting(mChromeBrowserInitializer);
 
@@ -189,7 +184,7 @@ public class ExploreSitesBackgroundTaskUnitTest {
     }
 
     @Test
-    public void testNoNetwork() throws Exception {
+    public void testNoNetwork() {
         initDeviceConditions(ConnectionType.CONNECTION_NONE);
         TaskParameters params = TaskParameters.create(TaskIds.EXPLORE_SITES_REFRESH_JOB_ID).build();
 
@@ -201,7 +196,7 @@ public class ExploreSitesBackgroundTaskUnitTest {
     }
 
     @Test
-    public void testRemovesDeprecatedJobId() throws Exception {
+    public void testRemovesDeprecatedJobId() {
         TaskInfo.Builder deprecatedTaskInfoBuilder =
                 TaskInfo.createPeriodicTask(TaskIds.DEPRECATED_EXPLORE_SITES_REFRESH_JOB_ID,
                                 ExploreSitesBackgroundTask.class, TimeUnit.HOURS.toMillis(4),
@@ -226,7 +221,7 @@ public class ExploreSitesBackgroundTaskUnitTest {
     }
 
     @Test
-    public void testRemovesTaskIfFeatureIsDisabled() throws Exception {
+    public void testRemovesTaskIfFeatureIsDisabled() {
         disableExploreSites();
 
         TaskInfo.Builder taskInfoBuilder =
@@ -252,7 +247,7 @@ public class ExploreSitesBackgroundTaskUnitTest {
     }
 
     @Test
-    public void testDoesNotRemoveTaskIfFeatureIsEnabled() throws Exception {
+    public void testDoesNotRemoveTaskIfFeatureIsEnabled() {
         TaskInfo.Builder taskInfoBuilder =
                 TaskInfo.createPeriodicTask(TaskIds.EXPLORE_SITES_REFRESH_JOB_ID,
                                 ExploreSitesBackgroundTask.class, TimeUnit.HOURS.toMillis(4),

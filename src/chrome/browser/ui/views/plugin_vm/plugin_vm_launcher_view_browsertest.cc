@@ -13,6 +13,7 @@
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_metrics_util.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_pref_names.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_test_helper.h"
+#include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/scoped_testing_cros_settings.h"
@@ -23,8 +24,8 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/debug_daemon/fake_debug_daemon_client.h"
 #include "chromeos/dbus/fake_concierge_client.h"
-#include "chromeos/dbus/fake_debug_daemon_client.h"
 #include "chromeos/tpm/stub_install_attributes.h"
 #include "components/account_id/account_id.h"
 #include "components/download/public/background_service/download_metadata.h"
@@ -34,7 +35,6 @@
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/views/window/dialog_client_view.h"
 
 namespace {
 
@@ -49,52 +49,8 @@ const char kJpgFileHash[] =
 
 }  // namespace
 
-class PluginVmLauncherViewForTesting : public PluginVmLauncherView {
- public:
-  explicit PluginVmLauncherViewForTesting(Profile* profile)
-      : PluginVmLauncherView(profile) {}
-
-  void AddSetupIsFinishedCallbackForTesting(base::RepeatingClosure callback) {
-    setup_is_finished_callback_for_testing_ = callback;
-  }
-
- private:
-  base::RepeatingClosure setup_is_finished_callback_for_testing_;
-
-  void OnStateUpdated() override {
-    PluginVmLauncherView::OnStateUpdated();
-
-    if (state_ == State::FINISHED || state_ == State::ERROR ||
-        state_ == State::NOT_ALLOWED) {
-      if (setup_is_finished_callback_for_testing_)
-        setup_is_finished_callback_for_testing_.Run();
-    }
-  }
-};
-
 class PluginVmLauncherViewBrowserTest : public DialogBrowserTest {
  public:
-  class SetupObserver {
-   public:
-    void OnSetupFinished() {
-      if (closure_) {
-        base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                      std::move(closure_));
-      }
-    }
-
-    void WaitForSetupToFinish() {
-      base::RunLoop run_loop;
-      closure_ = run_loop.QuitClosure();
-      run_loop.Run();
-
-      content::RunAllTasksUntilIdle();
-    }
-
-   private:
-    base::OnceClosure closure_;
-  };
-
   PluginVmLauncherViewBrowserTest() = default;
 
   void SetUpOnMainThread() override {
@@ -110,24 +66,16 @@ class PluginVmLauncherViewBrowserTest : public DialogBrowserTest {
 
   // DialogBrowserTest:
   void ShowUi(const std::string& name) override {
-    view_ = new PluginVmLauncherViewForTesting(browser()->profile());
-    setup_observer_ = new SetupObserver();
-    view_->AddSetupIsFinishedCallbackForTesting(base::BindRepeating(
-        &SetupObserver::OnSetupFinished, base::Unretained(setup_observer_)));
-    views::DialogDelegate::CreateDialogWidget(view_, nullptr, nullptr);
+    plugin_vm::ShowPluginVmLauncherView(browser()->profile());
+    view_ = PluginVmLauncherView::GetActiveViewForTesting();
   }
 
  protected:
-  bool HasAcceptButton() {
-    return view_->GetDialogClientView()->ok_button() != nullptr;
-  }
+  bool HasAcceptButton() { return view_->GetOkButton() != nullptr; }
 
-  bool HasCancelButton() {
-    return view_->GetDialogClientView()->cancel_button() != nullptr;
-  }
+  bool HasCancelButton() { return view_->GetCancelButton() != nullptr; }
 
   void AllowPluginVm() {
-    EnablePluginVmFeature();
     EnterpriseEnrollDevice();
     SetUserWithAffiliation();
     SetPluginVmDevicePolicies();
@@ -155,6 +103,16 @@ class PluginVmLauncherViewBrowserTest : public DialogBrowserTest {
         l10n_util::GetStringUTF16(IDS_PLUGIN_VM_LAUNCHER_NOT_ALLOWED_MESSAGE));
   }
 
+  void WaitForSetupToFinish() {
+    base::RunLoop run_loop;
+    view_->SetFinishedCallbackForTesting(
+        base::BindOnce(&PluginVmLauncherViewBrowserTest::OnSetupFinished,
+                       run_loop.QuitClosure()));
+
+    run_loop.Run();
+    content::RunAllTasksUntilIdle();
+  }
+
   void CheckSetupFailed() {
     EXPECT_TRUE(HasAcceptButton());
     EXPECT_TRUE(HasCancelButton());
@@ -175,19 +133,13 @@ class PluginVmLauncherViewBrowserTest : public DialogBrowserTest {
 
   chromeos::ScopedTestingCrosSettings scoped_testing_cros_settings_;
   chromeos::ScopedStubInstallAttributes scoped_stub_install_attributes_;
-  base::test::ScopedFeatureList scoped_feature_list_;
 
   std::unique_ptr<user_manager::ScopedUserManager> scoped_user_manager_;
-  PluginVmLauncherViewForTesting* view_;
-  SetupObserver* setup_observer_;
+  PluginVmLauncherView* view_;
   std::unique_ptr<base::HistogramTester> histogram_tester_;
   chromeos::FakeConciergeClient* fake_concierge_client_;
 
  private:
-  void EnablePluginVmFeature() {
-    scoped_feature_list_.InitAndEnableFeature(features::kPluginVm);
-  }
-
   void EnterpriseEnrollDevice() {
     scoped_stub_install_attributes_.Get()->SetCloudManaged("example.com",
                                                            "device_id");
@@ -212,7 +164,23 @@ class PluginVmLauncherViewBrowserTest : public DialogBrowserTest {
         std::move(user_manager));
   }
 
+  static void OnSetupFinished(base::OnceClosure quit_closure, bool success) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                  std::move(quit_closure));
+  }
+
   DISALLOW_COPY_AND_ASSIGN(PluginVmLauncherViewBrowserTest);
+};
+
+class PluginVmLauncherViewBrowserTestWithFeatureEnabled
+    : public PluginVmLauncherViewBrowserTest {
+ public:
+  PluginVmLauncherViewBrowserTestWithFeatureEnabled() {
+    feature_list_.InitAndEnableFeature(features::kPluginVm);
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
 };
 
 // Test the dialog is actually can be launched.
@@ -220,7 +188,7 @@ IN_PROC_BROWSER_TEST_F(PluginVmLauncherViewBrowserTest, InvokeUi_default) {
   ShowAndVerifyUi();
 }
 
-IN_PROC_BROWSER_TEST_F(PluginVmLauncherViewBrowserTest,
+IN_PROC_BROWSER_TEST_F(PluginVmLauncherViewBrowserTestWithFeatureEnabled,
                        SetupShouldFinishSuccessfully) {
   AllowPluginVm();
   plugin_vm::SetupConciergeForSuccessfulDiskImageImport(fake_concierge_client_);
@@ -228,7 +196,7 @@ IN_PROC_BROWSER_TEST_F(PluginVmLauncherViewBrowserTest,
   ShowUi("default");
   EXPECT_NE(nullptr, view_);
 
-  setup_observer_->WaitForSetupToFinish();
+  WaitForSetupToFinish();
 
   CheckSetupIsFinishedSuccessfully();
 
@@ -237,7 +205,7 @@ IN_PROC_BROWSER_TEST_F(PluginVmLauncherViewBrowserTest,
       plugin_vm::PluginVmSetupResult::kSuccess, 1);
 }
 
-IN_PROC_BROWSER_TEST_F(PluginVmLauncherViewBrowserTest,
+IN_PROC_BROWSER_TEST_F(PluginVmLauncherViewBrowserTestWithFeatureEnabled,
                        SetupShouldFailAsHashesDoNotMatch) {
   AllowPluginVm();
   // Reset PluginVmImage hash to non-matching.
@@ -247,7 +215,7 @@ IN_PROC_BROWSER_TEST_F(PluginVmLauncherViewBrowserTest,
   ShowUi("default");
   EXPECT_NE(nullptr, view_);
 
-  setup_observer_->WaitForSetupToFinish();
+  WaitForSetupToFinish();
 
   CheckSetupFailed();
 
@@ -256,7 +224,7 @@ IN_PROC_BROWSER_TEST_F(PluginVmLauncherViewBrowserTest,
       plugin_vm::PluginVmSetupResult::kErrorDownloadingPluginVmImage, 1);
 }
 
-IN_PROC_BROWSER_TEST_F(PluginVmLauncherViewBrowserTest,
+IN_PROC_BROWSER_TEST_F(PluginVmLauncherViewBrowserTestWithFeatureEnabled,
                        SetupShouldFailAsImportingFails) {
   AllowPluginVm();
   SetPluginVmImagePref(embedded_test_server()->GetURL(kJpgFile).spec(),
@@ -265,7 +233,7 @@ IN_PROC_BROWSER_TEST_F(PluginVmLauncherViewBrowserTest,
   ShowUi("default");
   EXPECT_NE(nullptr, view_);
 
-  setup_observer_->WaitForSetupToFinish();
+  WaitForSetupToFinish();
 
   CheckSetupFailed();
 
@@ -274,7 +242,7 @@ IN_PROC_BROWSER_TEST_F(PluginVmLauncherViewBrowserTest,
       plugin_vm::PluginVmSetupResult::kErrorImportingPluginVmImage, 1);
 }
 
-IN_PROC_BROWSER_TEST_F(PluginVmLauncherViewBrowserTest,
+IN_PROC_BROWSER_TEST_F(PluginVmLauncherViewBrowserTestWithFeatureEnabled,
                        CouldRetryAfterFailedSetup) {
   AllowPluginVm();
   // Reset PluginVmImage hash to non-matching.
@@ -284,7 +252,7 @@ IN_PROC_BROWSER_TEST_F(PluginVmLauncherViewBrowserTest,
   ShowUi("default");
   EXPECT_NE(nullptr, view_);
 
-  setup_observer_->WaitForSetupToFinish();
+  WaitForSetupToFinish();
 
   CheckSetupFailed();
 
@@ -293,9 +261,9 @@ IN_PROC_BROWSER_TEST_F(PluginVmLauncherViewBrowserTest,
                        kZipFileHash);
 
   // Retry button clicked to retry the download.
-  view_->GetDialogClientView()->AcceptWindow();
+  view_->AcceptDialog();
 
-  setup_observer_->WaitForSetupToFinish();
+  WaitForSetupToFinish();
 
   CheckSetupIsFinishedSuccessfully();
 

@@ -119,6 +119,9 @@ class ASH_EXPORT TabletModeController
   // TabletMode:
   void AddObserver(TabletModeObserver* observer) override;
   void RemoveObserver(TabletModeObserver* observer) override;
+  // We are considered in tablet mode when |tablet_mode_window_manager_| is
+  // about to be initialized. When it is about to be shutdown, we are considered
+  // out of tablet mode.
   bool InTabletMode() const override;
   void SetEnabledForTest(bool enabled) override;
 
@@ -162,6 +165,10 @@ class ASH_EXPORT TabletModeController
     ++tab_drag_in_splitview_count_;
   }
 
+  bool is_in_tablet_physical_state() const {
+    return is_in_tablet_physical_state_;
+  }
+
   // Enable/disable the tablet mode for development. Please see cc file
   // for more details.
   void SetEnabledForDev(bool enabled);
@@ -178,6 +185,7 @@ class ASH_EXPORT TabletModeController
     bool observe_external_pointer_device_events = true;
     bool block_internal_input_device = false;
     bool always_show_overview_button = false;
+    bool force_physical_tablet_state = false;
   };
 
  private:
@@ -201,10 +209,6 @@ class ASH_EXPORT TabletModeController
     kExitingTabletMode,
   };
 
-  // TODO(jonross): Merge this with AttemptEnterTabletMode. Currently these are
-  // separate for several reasons: there is no internal display when running
-  // unittests; the event blocker prevents keyboard input when running ChromeOS
-  // on linux. http://crbug.com/362881
   // Turn the always tablet mode window manager on or off.
   void SetTabletModeEnabledInternal(bool should_enable);
 
@@ -226,14 +230,6 @@ class ASH_EXPORT TabletModeController
   // configuration. If this returns false, it should never be the case that
   // tablet mode becomes enabled.
   bool CanEnterTabletMode();
-
-  // Attempts to enter tablet mode and updates the internal keyboard and
-  // touchpad.
-  void AttemptEnterTabletMode();
-
-  // Attempts to exit tablet mode and updates the internal keyboard and
-  // touchpad.
-  void AttemptLeaveTabletMode();
 
   // Record UMA stats tracking TabletMode usage. If |type| is
   // TABLET_MODE_INTERVAL_INACTIVE, then record that TabletMode has been
@@ -266,11 +262,6 @@ class ASH_EXPORT TabletModeController
   // because of an external attached mouse).
   void UpdateInternalInputDevicesEventBlocker();
 
-  // Returns true if the current lid angle can be detected and is in tablet mode
-  // angle range. If EC can handle lid angle calc, lid angle is unavailable to
-  // browser.
-  bool LidAngleInTabletModeRange();
-
   // Suspends |occlusion_tracker_pauser_| for the duration of
   // kOcclusionTrackTimeout.
   void SuspendOcclusionTracker();
@@ -296,7 +287,25 @@ class ASH_EXPORT TabletModeController
   void OnScreenshotTaken(base::OnceClosure on_screenshot_taken,
                          std::unique_ptr<viz::CopyOutputResult> copy_result);
 
-  // The maximized window manager (if enabled).
+  // Calculates whether the device is currently in a physical tablet state,
+  // using the most recent seen device events such as lid angle changes.
+  bool CalculateIsInTabletPhysicalState() const;
+
+  // Returns whether the UI should be in tablet mode based on the current
+  // physical tablet state, the availability of external input devices, and
+  // whether the UI is forced in a particular mode via command-line flags.
+  bool ShouldUiBeInTabletMode() const;
+
+  // Sets |is_in_tablet_physical_state_| to |new_state| and potentially updating
+  // the UI tablet mode state if needed.
+  void SetIsInTabletPhysicalState(bool new_state);
+
+  // Updates the UI by either entering or exiting UI tablet mode if necessary
+  // based on the current state. Returns true if there's a change in the UI
+  // tablet mode state, false otherwise.
+  bool UpdateUiTabletState();
+
+  // The tablet window manager (if enabled).
   std::unique_ptr<TabletModeWindowManager> tablet_mode_window_manager_;
 
   // A helper class which when instantiated will block native events from the
@@ -332,11 +341,24 @@ class ASH_EXPORT TabletModeController
   // Source for the current time in base::TimeTicks.
   const base::TickClock* tick_clock_;
 
+  // The state in which the UI mode is forced in via command-line flags, such as
+  // `--force-tablet-mode=touch_view` or `--force-tablet-mode=clamshell`.
+  UiMode forced_ui_mode_ = UiMode::kNone;
+
+  // True if the device is physically in a tablet state regardless of the UI
+  // tablet mode state. The physical tablet state only changes based on device
+  // events such as lid angle changes, or device getting detached from its base.
+  bool is_in_tablet_physical_state_ = false;
+
   // Set when tablet mode switch is on. This is used to force tablet mode.
   bool tablet_mode_switch_is_on_ = false;
 
   // Tracks when the lid is closed. Used to prevent entering tablet mode.
   bool lid_is_closed_ = false;
+
+  // True if |lid_angle_| is in the stable range of angle values.
+  // (See kMinStableAngle and kMaxStableAngle).
+  bool lid_angle_is_stable_ = false;
 
   // Last computed lid angle.
   double lid_angle_ = 0.0f;
@@ -344,6 +366,11 @@ class ASH_EXPORT TabletModeController
   // Tracks if the device has an external pointing device. The device will
   // not enter tablet mode if this is true.
   bool has_external_pointing_device_ = false;
+
+  // Set to true temporarily when the tablet mode is enabled/disabled via the
+  // developer's keyboard shortcut in order to update the visibility of the
+  // overview tray button, even though internal events are not blocked.
+  bool force_notify_events_blocking_changed_ = false;
 
   // Counts the app window drag from top in tablet mode.
   int app_window_drag_count_ = 0;

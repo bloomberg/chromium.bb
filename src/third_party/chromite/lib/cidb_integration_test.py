@@ -18,15 +18,15 @@ from chromite.lib import build_requests
 from chromite.lib import constants
 from chromite.lib import metadata_lib
 from chromite.lib import cidb
-from chromite.lib import clactions
 from chromite.lib import cros_build_lib
-from chromite.lib import cros_logging as logging
 from chromite.lib import cros_test_lib
 from chromite.lib import hwtest_results
 from chromite.lib import osutils
-from chromite.lib import parallel
-from chromite.lib import patch_unittest
 
+
+# Hopefully cidb will be deleted soon (before Python 3 finalizes), so we don't
+# have to fully port this module.
+# pylint: disable=long-suffix
 
 # pylint: disable=protected-access
 
@@ -141,7 +141,7 @@ class SchemaDumpTest(CIDBIntegrationTest):
         # '--skip-comments',  # Required to avoid dumping a timestamp.
         'cidb',
     ]
-    result = cros_build_lib.RunCommand(cmd, capture_output=True, quiet=True)
+    result = cros_build_lib.run(cmd, capture_output=True, quiet=True)
 
     # Strip out comment lines, to avoid dumping a problematic timestamp.
     lines = [l for l in result.output.splitlines() if not l.startswith('--')]
@@ -182,51 +182,6 @@ class CIDBMigrationsTest(CIDBIntegrationTest):
     for i in range(1, max_version + 1):
       db.ApplySchemaMigrations(i)
 
-  def testActions(self):
-    """Test that InsertCLActions accepts 0-, 1-, and multi-item lists."""
-    db = self._PrepareDatabase()
-    build_id = db.InsertBuild('my builder', _random(),
-                              'my config', 'my bot hostname')
-
-    a1 = clactions.CLAction.FromGerritPatchAndAction(
-        metadata_lib.GerritPatchTuple(1, 1, True),
-        constants.CL_ACTION_PICKED_UP)
-    a2 = clactions.CLAction.FromGerritPatchAndAction(
-        metadata_lib.GerritPatchTuple(1, 1, True),
-        constants.CL_ACTION_PICKED_UP)
-    a3 = clactions.CLAction.FromGerritPatchAndAction(
-        metadata_lib.GerritPatchTuple(1, 1, True),
-        constants.CL_ACTION_PICKED_UP)
-
-    db.InsertCLActions(build_id, [])
-    db.InsertCLActions(build_id, [a1])
-    db.InsertCLActions(build_id, [a2, a3])
-
-    action_count = db._GetEngine().execute(
-        'select count(*) from clActionTable').fetchall()[0][0]
-    self.assertEqual(action_count, 3)
-
-    # Test that all known CL action types can be inserted
-    fakepatch = metadata_lib.GerritPatchTuple(1, 1, True)
-    all_actions_list = [
-        clactions.CLAction.FromGerritPatchAndAction(fakepatch, action)
-        for action in constants.CL_ACTIONS]
-    db.InsertCLActions(build_id, all_actions_list)
-
-  def testActionsWithNoBuildId(self):
-    """Test that we can insert a CLAction with no build id."""
-    db = self._PrepareDatabase()
-
-    a1 = clactions.CLAction.FromGerritPatchAndAction(
-        metadata_lib.GerritPatchTuple(1, 1, True),
-        constants.CL_ACTION_PICKED_UP)
-
-    db.InsertCLActions(None, [a1])
-
-    action_count = db._GetEngine().execute(
-        'select count(*) from clActionTable').fetchall()[0][0]
-    self.assertEqual(action_count, 1)
-
   def testWaterfallMigration(self):
     """Test that migrating waterfall from enum to varchar preserves value."""
     self.skipTest('Skipped obsolete waterfall migration test.')
@@ -243,17 +198,6 @@ class CIDBMigrationsTest(CIDBIntegrationTest):
 
 class CIDBAPITest(CIDBIntegrationTest):
   """Tests of the CIDB API."""
-
-  def testSchemaVersionTooLow(self):
-    """Tests that the minimum_schema decorator works as expected."""
-    db = self._PrepareFreshDatabase(2)
-    with self.assertRaises(cidb.UnsupportedMethodException):
-      db.InsertCLActions(0, [])
-
-  def testSchemaVersionOK(self):
-    """Tests that the minimum_schema decorator works as expected."""
-    db = self._PrepareFreshDatabase(4)
-    db.InsertCLActions(0, [])
 
   def testGetTime(self):
     db = self._PrepareFreshDatabase(1)
@@ -363,12 +307,6 @@ class DataSeries0Test(CIDBIntegrationTest):
     self.assertEqual(len(metadatas), 630, 'Did not load expected amount of '
                                           'test data')
 
-    bot_db = self.LocalCIDBConnection(self.CIDB_USER_BOT)
-
-    # Simulate the test builds, using a database connection as the
-    # bot user.
-    self.simulate_builds(bot_db, metadatas)
-
     # Perform some sanity check queries against the database, connected
     # as the readonly user. Apply schema migrations first to ensure that we can
     # use the latest version or the readonly password.
@@ -380,8 +318,6 @@ class DataSeries0Test(CIDBIntegrationTest):
     build_types = readonly_db._GetEngine().execute(
         'select build_type from buildTable').fetchall()
     self.assertTrue(all(x == ('paladin',) for x in build_types))
-
-    self._cl_action_checks(readonly_db)
 
     build_config_count = readonly_db._GetEngine().execute(
         'select COUNT(distinct build_config) from buildTable').fetchall()[0][0]
@@ -405,17 +341,16 @@ class DataSeries0Test(CIDBIntegrationTest):
     self.assertEqual([x.get('id') for x in build_dicts], [1, 2])
 
     self._start_and_finish_time_checks(readonly_db)
-    self._cl_action_checks(readonly_db)
     self._last_updated_time_checks(readonly_db)
 
-    #| Test get build_status from -- here's the relevant data from
+    # | Test get build_status from -- here's the relevant data from
     # master-paladin
-    #|          id | status |
-    #|         601 | pass   |
-    #|         571 | pass   |
-    #|         541 | fail   |
-    #|         511 | pass   |
-    #|         481 | pass   |
+    # |          id | status |
+    # |         601 | pass   |
+    # |         571 | pass   |
+    # |         541 | fail   |
+    # |         511 | pass   |
+    # |         481 | pass   |
     # From 1929 because we always go back one build first.
     last_status = readonly_db.GetBuildHistory('master-paladin', 1)
     self.assertEqual(len(last_status), 1)
@@ -474,40 +409,6 @@ class DataSeries0Test(CIDBIntegrationTest):
     self.assertGreater(ids_by_last_updated.index(1),
                        ids_by_last_updated.index(2))
 
-  def _cl_action_checks(self, db):
-    """Sanity checks that correct cl actions were recorded."""
-    submitted_cl_count = db._GetEngine().execute(
-        'select count(*) from clActionTable where action="submitted"'
-        ).fetchall()[0][0]
-    rejected_cl_count = db._GetEngine().execute(
-        'select count(*) from clActionTable where action="kicked_out"'
-        ).fetchall()[0][0]
-    total_actions = db._GetEngine().execute(
-        'select count(*) from clActionTable').fetchall()[0][0]
-    self.assertEqual(submitted_cl_count, 56)
-    self.assertEqual(rejected_cl_count, 8)
-    self.assertEqual(total_actions, 1877)
-
-    actions_for_change = db.GetActionsForChanges(
-        [metadata_lib.GerritChangeTuple(205535, False)])
-
-    actions_for_build = db.GetActionsForBuild(511)
-    self.assertEqual(len(actions_for_build), 22)
-
-    self.assertEqual(len(actions_for_change), 60)
-    last_action_dict = dict(actions_for_change[-1]._asdict())
-    last_action_dict.pop('timestamp')
-    last_action_dict.pop('id')
-    self.assertEqual(last_action_dict, {'action': 'submitted',
-                                        'build_config': 'master-paladin',
-                                        'build_id': 511L,
-                                        'change_number': 205535L,
-                                        'change_source': 'external',
-                                        'patch_number': 1L,
-                                        'reason': '',
-                                        'buildbucket_id': None,
-                                        'status': 'pass'})
-
   def _start_and_finish_time_checks(self, db):
     """Sanity checks that correct data was recorded, and can be retrieved."""
     max_start_time = db._GetEngine().execute(
@@ -526,60 +427,6 @@ class DataSeries0Test(CIDBIntegrationTest):
         'select count(*) from buildTable where finish_time != last_updated'
         ).fetchall()[0][0]
     self.assertEqual(mismatching_times, 0)
-
-  def simulate_builds(self, db, metadatas):
-    """Simulate a series of Commit Queue master and slave builds.
-
-    This method use the metadata objects in |metadatas| to simulate those
-    builds insertions and updates to the cidb. All metadatas encountered
-    after a particular master build will be assumed to be slaves of that build,
-    until a new master build is encountered. Slave builds for a particular
-    master will be simulated in parallel.
-
-    The first element in |metadatas| must be a CQ master build.
-
-    Args:
-      db: A CIDBConnection instance.
-      metadatas: A list of CBuildbotMetadata instances, sorted by start time.
-    """
-    m_iter = iter(metadatas)
-
-    def is_master(m):
-      return m.GetDict()['bot-config'] == 'master-paladin'
-
-    next_master = next(m_iter)
-
-    while next_master:
-      master = next_master
-      next_master = None
-      assert is_master(master)
-      master_build_id = _SimulateBuildStart(db, master)
-
-      def simulate_slave(slave_metadata):
-        build_id = _SimulateBuildStart(db, slave_metadata,
-                                       master_build_id,
-                                       important=True)
-        _SimulateCQBuildFinish(db, slave_metadata, build_id)
-        logging.debug('Simulated slave build %s on pid %s', build_id,
-                      os.getpid())
-        return build_id
-
-      slave_metadatas = []
-      for slave in m_iter:
-        if is_master(slave):
-          next_master = slave
-          break
-        slave_metadatas.append(slave)
-
-      with parallel.BackgroundTaskRunner(simulate_slave, processes=15) as queue:
-        for slave in slave_metadatas:
-          queue.put([slave])
-
-      # Yes, this introduces delay in the test. But this lets us do some basic
-      # sanity tests on the |last_update| column later.
-      time.sleep(1)
-      _SimulateCQBuildFinish(db, master, master_build_id)
-      logging.debug('Simulated master build %s', master_build_id)
 
 
 class BuildStagesAndFailureTest(CIDBIntegrationTest):
@@ -869,18 +716,18 @@ class HWTestResultTableTest(CIDBIntegrationTest):
         HWTestResult(1, b_id_1, 'test_a', 'pass'),
         HWTestResult(2, b_id_1, 'test_b', 'fail'),
         HWTestResult(3, b_id_1, 'test_c', 'abort')]
-    self.assertItemsEqual(bot_db.GetHWTestResultsForBuilds([b_id_1]),
+    self.assertCountEqual(bot_db.GetHWTestResultsForBuilds([b_id_1]),
                           expected_result_1)
 
     expected_result_2 = [HWTestResult(4, b_id_2, 'test_d', 'other')]
-    self.assertItemsEqual(bot_db.GetHWTestResultsForBuilds([b_id_2]),
+    self.assertCountEqual(bot_db.GetHWTestResultsForBuilds([b_id_2]),
                           expected_result_2)
 
     expected_result_3 = expected_result_1 + expected_result_2
-    self.assertItemsEqual(bot_db.GetHWTestResultsForBuilds([b_id_1, b_id_2]),
+    self.assertCountEqual(bot_db.GetHWTestResultsForBuilds([b_id_1, b_id_2]),
                           expected_result_3)
 
-    self.assertItemsEqual(bot_db.GetHWTestResultsForBuilds([3]), [])
+    self.assertCountEqual(bot_db.GetHWTestResultsForBuilds([3]), [])
 
     with self.assertRaises(AssertionError):
       bot_db.GetHWTestResultsForBuilds([])
@@ -1025,18 +872,18 @@ class BuildRequestTableTest(CIDBIntegrationTest):
 
     requests = bot_db.GetBuildRequestsForBuildConfigs(
         ['test_pre_cq_1', 'test_pre_cq_2'], num_results=10)
-    self.assertItemsEqual([r.request_buildbucket_id for r in requests],
+    self.assertCountEqual([r.request_buildbucket_id for r in requests],
                           ['test_bb_id_1', 'test_bb_id_2', 'test_bb_id_3'])
 
     requests = bot_db.GetBuildRequestsForBuildConfigs(
         ['test_pre_cq_1', 'test_pre_cq_2'], start_time=start_timestamp,
         num_results=10)
-    self.assertItemsEqual([r.request_buildbucket_id for r in requests],
+    self.assertCountEqual([r.request_buildbucket_id for r in requests],
                           ['test_bb_id_2', 'test_bb_id_3'])
 
     requests = bot_db.GetBuildRequestsForBuildConfigs(
         ['test1-paladin', 'test2-paladin', 'test3-paladin'])
-    self.assertItemsEqual([r.request_buildbucket_id for r in requests],
+    self.assertCountEqual([r.request_buildbucket_id for r in requests],
                           ['test_bb_id_1', 'test_bb_id_2', 'test_bb_id_3'])
 
   def testGetBuildRequestsForRequesterBuild(self):
@@ -1072,130 +919,18 @@ class BuildRequestTableTest(CIDBIntegrationTest):
     bot_db.InsertBuildRequests([build_req_1, build_req_2, build_req_3])
 
     requests = bot_db.GetBuildRequestsForRequesterBuild(b_id_1)
-    self.assertItemsEqual([r.request_build_config for r in requests],
+    self.assertCountEqual([r.request_build_config for r in requests],
                           ['test1-paladin', 'test2-paladin', 'test3-paladin'])
 
     requests = bot_db.GetBuildRequestsForRequesterBuild(
         b_id_1, request_reason=build_requests.REASON_IMPORTANT_CQ_SLAVE)
-    self.assertItemsEqual([r.request_build_config for r in requests],
+    self.assertCountEqual([r.request_build_config for r in requests],
                           ['test1-paladin', 'test2-paladin'])
 
     requests = bot_db.GetBuildRequestsForRequesterBuild(
         b_id_1, request_reason=build_requests.REASON_EXPERIMENTAL_CQ_SLAVE)
-    self.assertItemsEqual([r.request_build_config for r in requests],
+    self.assertCountEqual([r.request_build_config for r in requests],
                           ['test3-paladin'])
-
-
-class CLActionTableTest(CIDBIntegrationTest):
-  """Tests for CLActionTable."""
-
-  def setUp(self):
-    self._patch_factory = patch_unittest.MockPatchFactory()
-    self.changes = self._patch_factory.GetPatches(how_many=3)
-    self.actions = [
-        clactions.CLAction.FromGerritPatchAndAction(
-            self.changes[0], constants.CL_ACTION_PICKED_UP),
-        clactions.CLAction.FromGerritPatchAndAction(
-            self.changes[1], constants.CL_ACTION_RELEVANT_TO_SLAVE),
-        clactions.CLAction.FromGerritPatchAndAction(
-            self.changes[2], constants.CL_ACTION_IRRELEVANT_TO_SLAVE)]
-
-    self.build_config_1 = 'build_config_1'
-    self.build_config_2 = 'build_config_2'
-
-  def _AssertAction(self, cl_action, build_config, change,
-                    status=None, action=None, start_time=None):
-    self.assertEqual(cl_action.build_config, build_config)
-    self.assertEqual(cl_action.change_number, int(change.gerrit_number))
-    self.assertEqual(cl_action.patch_number, int(change.patch_number))
-    if status is not None:
-      self.assertEqual(cl_action.status, status)
-    if action is not None:
-      self.assertEqual(cl_action.action, action)
-    if start_time is not None:
-      self.assertTrue(cl_action.timestamp >= start_time)
-
-  def testGetActionsForChanges(self):
-    """Test GetActionsForChanges."""
-    self._PrepareDatabase()
-    bot_db = self.LocalCIDBConnection(self.CIDB_USER_BOT)
-
-    # b_id_1 in flight status
-    b_id_1 = bot_db.InsertBuild(
-        self.build_config_1, _random(),
-        self.build_config_1, 'bot_hostname', buildbucket_id='bb_id_1')
-
-    # b_id_2 in pass status
-    b_id_2 = bot_db.InsertBuild(
-        self.build_config_2, _random(),
-        self.build_config_2, 'bot_hostname', buildbucket_id='bb_id_2')
-    bot_db.FinishBuild(b_id_2, status=constants.BUILDER_STATUS_PASSED)
-
-
-    ts_1 = datetime.datetime.now() - datetime.timedelta(days=3)
-    format_ts_1 = ts_1.strftime('%Y-%m-%d %H:%M:%S')
-    ts_2 = datetime.datetime.now()
-    format_ts_2 = ts_2.strftime('%Y-%m-%d %H:%M:%S')
-    bot_db.InsertCLActions(b_id_1, self.actions[0:2], format_ts_1)
-    bot_db.InsertCLActions(b_id_1, self.actions[2:3], format_ts_2)
-    bot_db.InsertCLActions(b_id_2, self.actions[0:2], format_ts_1)
-    bot_db.InsertCLActions(b_id_2, self.actions[2:3], format_ts_2)
-
-    # Test GetActionsForChanges on a single change
-    result = bot_db.GetActionsForChanges(self.changes[0:1])
-    self.assertEqual(len(result), 2)
-    self._AssertAction(result[0], self.build_config_1, self.changes[0])
-    self._AssertAction(result[1], self.build_config_2, self.changes[0])
-
-    # Test GetActionsForChanges on multi changes
-    result = bot_db.GetActionsForChanges(self.changes[0:2])
-    self.assertEqual(len(result), 4)
-    self._AssertAction(result[0], self.build_config_1, self.changes[0])
-    self._AssertAction(result[1], self.build_config_1, self.changes[1])
-    self._AssertAction(result[2], self.build_config_2, self.changes[0])
-    self._AssertAction(result[3], self.build_config_2, self.changes[1])
-
-    # Test GetActionsForChanges with ignore_patch_number
-    change_1 = self._patch_factory.MockPatch(
-        change_id=int(self.changes[0].gerrit_number),
-        patch_number=10)
-    result = bot_db.GetActionsForChanges([change_1])
-    self.assertEqual(len(result), 2)
-    result = bot_db.GetActionsForChanges([change_1], ignore_patch_number=False)
-    self.assertEqual(len(result), 0)
-
-    # Test GetActionsForChanges with status
-    result = bot_db.GetActionsForChanges(
-        self.changes[0:1], status=constants.BUILDER_STATUS_PASSED)
-    self.assertEqual(len(result), 1)
-    self._AssertAction(result[0], self.build_config_2, self.changes[0],
-                       status=constants.BUILDER_STATUS_PASSED)
-
-    # Test GetActionsForChanges with action
-    result = bot_db.GetActionsForChanges(
-        self.changes[0:2], action=constants.CL_ACTION_RELEVANT_TO_SLAVE)
-    self.assertEqual(len(result), 2)
-    self._AssertAction(result[0], self.build_config_1, self.changes[1],
-                       action=constants.CL_ACTION_RELEVANT_TO_SLAVE)
-    self._AssertAction(result[1], self.build_config_2, self.changes[1],
-                       action=constants.CL_ACTION_RELEVANT_TO_SLAVE)
-
-    # Test GetActionsForChanges with start_time
-    now = datetime.datetime.now()
-    result = bot_db.GetActionsForChanges(self.changes, start_time=now)
-    self.assertEqual(len(result), 0)
-
-    two_days_ago = now - datetime.timedelta(hours=48)
-    result = bot_db.GetActionsForChanges(self.changes, start_time=two_days_ago)
-    self.assertEqual(len(result), 2)
-    self._AssertAction(result[0], self.build_config_1, self.changes[2],
-                       start_time=two_days_ago)
-    self._AssertAction(result[1], self.build_config_2, self.changes[2],
-                       start_time=two_days_ago)
-
-    four_days_ago = now - datetime.timedelta(hours=96)
-    result = bot_db.GetActionsForChanges(self.changes, start_time=four_days_ago)
-    self.assertEqual(len(result), 6)
 
 
 class DataSeries1Test(CIDBIntegrationTest):
@@ -1295,26 +1030,6 @@ def _SimulateBuildStart(db, metadata, master_build_id=None, important=None):
                             important=important)
 
   return build_id
-
-
-def _SimulateCQBuildFinish(db, metadata, build_id):
-
-  metadata_dict = metadata.GetDict()
-
-  db.InsertCLActions(
-      build_id,
-      [clactions.CLAction.FromMetadataEntry(e)
-       for e in metadata_dict['cl_actions']])
-
-  db.UpdateMetadata(build_id, metadata)
-
-  status = metadata_dict['status']['status']
-  # The build summary reported by a real CQ run is more complicated -- it is
-  # computed from slave summaries by a master. For sanity checking, we just
-  # insert the current builer's summary.
-  summary = metadata_dict['status'].get('reason', None)
-
-  db.FinishBuild(build_id, status, summary)
 
 
 def main(_argv):

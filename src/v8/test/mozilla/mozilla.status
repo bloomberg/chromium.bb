@@ -1013,6 +1013,11 @@
   'js1_5/extensions/regress-355497': [SKIP],
 }],  # 'arch == arm and simulator_run'
 
+['arch == arm64', {
+  # BUG(v8:9863)
+  'js1_5/Regress/regress-80981': [SKIP],
+}], # 'arch == arm64'
+
 ['arch == arm64 and simulator_run', {
 
   'js1_5/GC/regress-203278-2': [SKIP],
@@ -1058,10 +1063,5 @@
 ['variant == no_wasm_traps', {
   '*': [SKIP],
 }],  # variant == no_wasm_traps
-
-##############################################################################
-['variant == jitless and not embedded_builtins', {
-  '*': [SKIP],
-}], # variant == jitless and not embedded_builtins
 
 ]

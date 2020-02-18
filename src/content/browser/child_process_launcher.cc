@@ -36,6 +36,7 @@ ChildProcessLauncher::ChildProcessLauncher(
     Client* client,
     mojo::OutgoingInvitation mojo_invitation,
     const mojo::ProcessErrorCallback& process_error_callback,
+    std::map<std::string, base::FilePath> files_to_preload,
     bool terminate_on_shutdown)
     : client_(client),
       starting_(true),
@@ -56,7 +57,8 @@ ChildProcessLauncher::ChildProcessLauncher(
 #if defined(OS_ANDROID)
       client_->CanUseWarmUpConnection(),
 #endif
-      std::move(mojo_invitation), process_error_callback);
+      std::move(mojo_invitation), process_error_callback,
+      std::move(files_to_preload));
   helper_->StartLaunchOnClientThread();
 }
 
@@ -156,19 +158,6 @@ bool ChildProcessLauncher::TerminateProcess(const base::Process& process,
   return ChildProcessLauncherHelper::TerminateProcess(process, exit_code);
 }
 
-// static
-void ChildProcessLauncher::SetRegisteredFilesForService(
-    const std::string& service_name,
-    std::map<std::string, base::FilePath> required_files) {
-  ChildProcessLauncherHelper::SetRegisteredFilesForService(
-      service_name, std::move(required_files));
-}
-
-// static
-void ChildProcessLauncher::ResetRegisteredFilesForTesting() {
-  ChildProcessLauncherHelper::ResetRegisteredFilesForTesting();
-}
-
 #if defined(OS_ANDROID)
 void ChildProcessLauncher::DumpProcessStack() {
   base::Process to_pass = process_.process.Duplicate();
@@ -186,8 +175,11 @@ ChildProcessLauncher::Client* ChildProcessLauncher::ReplaceClientForTest(
 }
 
 bool ChildProcessLauncherPriority::is_background() const {
-  return !visible && !has_media_stream && !boost_for_pending_views &&
-         !has_foreground_service_worker;
+  if (boost_for_pending_views || has_foreground_service_worker ||
+      has_media_stream) {
+    return false;
+  }
+  return has_only_low_priority_frames || !visible;
 }
 
 bool ChildProcessLauncherPriority::operator==(
@@ -195,6 +187,7 @@ bool ChildProcessLauncherPriority::operator==(
   return visible == other.visible &&
          has_media_stream == other.has_media_stream &&
          has_foreground_service_worker == other.has_foreground_service_worker &&
+         has_only_low_priority_frames == other.has_only_low_priority_frames &&
          frame_depth == other.frame_depth &&
          intersects_viewport == other.intersects_viewport &&
          boost_for_pending_views == other.boost_for_pending_views

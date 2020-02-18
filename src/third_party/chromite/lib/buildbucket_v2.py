@@ -12,11 +12,12 @@ client out of lib/luci/prpc and third_party/infra_libs/buildbucket.
 
 from __future__ import print_function
 
-from ssl import SSLError
 import ast
 import socket
+from ssl import SSLError
 
 from google.protobuf import field_mask_pb2
+from six.moves import http_client as httplib
 
 from chromite.lib import constants
 from chromite.lib import cros_logging as logging
@@ -24,7 +25,7 @@ from chromite.lib import retry_util
 from chromite.lib.luci import utils
 from chromite.lib.luci.prpc.client import Client, ProtocolError
 
-from infra_libs.buildbucket.proto import rpc_pb2, build_pb2, common_pb2
+from infra_libs.buildbucket.proto import build_pb2, common_pb2, rpc_pb2
 from infra_libs.buildbucket.proto.rpc_prpc_pb2 import BuildsServiceDescription
 
 BBV2_URL_ENDPOINT_PROD = (
@@ -209,8 +210,11 @@ class BuildbucketV2(object):
     else:
       self.client = Client(BBV2_URL_ENDPOINT_PROD, BuildsServiceDescription)
 
-  @retry_util.WithRetry(max_retry=3, sleep=0.2, exception=SSLError)
-  @retry_util.WithRetry(max_retry=3, sleep=0.2, exception=socket.error)
+  # TODO(crbug/1006818): Need to handle ResponseNotReady given by luci prpc.
+  @retry_util.WithRetry(max_retry=5, sleep=20.0, exception=SSLError)
+  @retry_util.WithRetry(max_retry=5, sleep=20.0, exception=socket.error)
+  @retry_util.WithRetry(max_retry=5, sleep=20.0,
+                        exception=httplib.ResponseNotReady)
   def GetBuild(self, buildbucket_id, properties=None):
     """GetBuild call of a specific build with buildbucket_id.
 
@@ -251,7 +255,7 @@ class BuildbucketV2(object):
     if build_with_properties.output.HasField('properties'):
       build_properties = build_with_properties.output.properties
       if ('killed_child_builds' in build_properties and
-          build_properties['killed_child_builds'] is not 'None'):
+          build_properties['killed_child_builds'] is not None):
         return ast.literal_eval(build_properties['killed_child_builds'])
 
   def GetBuildStages(self, buildbucket_id):
@@ -332,7 +336,7 @@ class BuildbucketV2(object):
       build_properties = build_with_properties.output.properties
       for property_name, status_name in CIDB_TO_BB_PROPERTIES_MAP.items():
         if (property_name in build_properties and
-            build_properties[property_name] is not 'None'):
+            build_properties[property_name] is not None):
           build_status[status_name] = str(build_properties[property_name])
         else:
           build_status[status_name] = None

@@ -20,17 +20,18 @@
 #include <memory>
 #include <vector>
 
+#include "perfetto/base/build_config.h"
 #include "perfetto/base/export.h"
 #include "perfetto/trace_processor/basic_types.h"
 #include "perfetto/trace_processor/status.h"
+#include "perfetto/trace_processor/trace_processor_storage.h"
 
 namespace perfetto {
-
 namespace trace_processor {
 
-// Coordinates the loading of traces from an arbitrary source and allows
-// execution of SQL queries on the events in these traces.
-class PERFETTO_EXPORT TraceProcessor {
+// Extends TraceProcessorStorage to support execution of SQL queries on loaded
+// traces. See TraceProcessorStorage for parsing of trace files.
+class PERFETTO_EXPORT TraceProcessor : public TraceProcessorStorage {
  public:
   class IteratorImpl;
 
@@ -48,12 +49,12 @@ class PERFETTO_EXPORT TraceProcessor {
 
     // Forwards the iterator to the next result row and returns a boolean of
     // whether there is a next row. If this method returns false,
-    // |GetLastError()| should be called to check if there was an error. If
+    // |Status()| should be called to check if there was an error. If
     // there was no error, this means the EOF was reached.
     bool Next();
 
     // Returns the value associated with the column |col|. Any call to
-    // |Get()| must be preceeded by a call to |Next()| returning
+    // |Get()| must be preceded by a call to |Next()| returning
     // kHasNext. |col| must be less than the number returned by |ColumnCount()|.
     SqlValue Get(uint32_t col);
 
@@ -75,28 +76,14 @@ class PERFETTO_EXPORT TraceProcessor {
   // Creates a new instance of TraceProcessor.
   static std::unique_ptr<TraceProcessor> CreateInstance(const Config&);
 
-  virtual ~TraceProcessor();
-
-  // The entry point to push trace data into the processor. The trace format
-  // will be automatically discovered on the first push call. It is possible
-  // to make queries between two pushes.
-  // Returns the Ok status if parsing has been succeeding so far, and Error
-  // status if some unrecoverable error happened. If this happens, the
-  // TraceProcessor will ignore the following Parse() requests, drop data on the
-  // floor and return errors forever.
-  virtual util::Status Parse(std::unique_ptr<uint8_t[]>, size_t) = 0;
-
-  // When parsing a bounded file (as opposite to streaming from a device) this
-  // function should be called when the last chunk of the file has been passed
-  // into Parse(). This allows to flush the events queued in the ordering stage,
-  // without having to wait for their time window to expire.
-  virtual void NotifyEndOfFile() = 0;
+  ~TraceProcessor() override;
 
   // Executes a SQLite query on the loaded portion of the trace. The returned
   // iterator can be used to load rows from the result.
   virtual Iterator ExecuteQuery(const std::string& sql,
                                 int64_t time_queued = 0) = 0;
 
+#if PERFETTO_BUILDFLAG(PERFETTO_TP_METRICS)
   // Registers a metric at the given path which will run the specified SQL.
   virtual util::Status RegisterMetric(const std::string& path,
                                       const std::string& sql) = 0;
@@ -113,9 +100,23 @@ class PERFETTO_EXPORT TraceProcessor {
   virtual util::Status ComputeMetric(
       const std::vector<std::string>& metric_names,
       std::vector<uint8_t>* metrics_proto) = 0;
+#endif  // PERFETTO_BUILDFLAG(PERFETTO_TP_METRICS)
 
   // Interrupts the current query. Typically used by Ctrl-C handler.
   virtual void InterruptQuery() = 0;
+
+  // Deletes all tables and views that have been created (by the UI or user)
+  // after the trace was loaded. It preserves the built-in tables/view created
+  // by the ingestion process. Returns the number of table/views deleted.
+  virtual size_t RestoreInitialTables() = 0;
+
+  // Sets/returns the name of the currently loaded trace or an empty string if
+  // no trace is fully loaded yet. This has no effect on the Trace Processor
+  // functionality and is used for UI purposes only.
+  // The returned name is NOT a path and will contain extra text w.r.t. the
+  // argument originally passed to SetCurrentTraceName(), e.g., "file (42 MB)".
+  virtual std::string GetCurrentTraceName() = 0;
+  virtual void SetCurrentTraceName(const std::string&) = 0;
 };
 
 // When set, logs SQLite actions on the console.

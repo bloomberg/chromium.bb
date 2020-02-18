@@ -418,16 +418,22 @@ body:not([surprise-me-disabled]) [visibleif~='surprise-me-disabled'] {
   background-color: #fff;
   border-radius: 0 0 24px 24px;
   box-shadow: 0 24px 48px rgba(0, 0, 0, 0.24), 0 0 24px rgba(0, 0, 0, 0.12);
-  display: flex;
+  display: inline-block;
   height: 48px;
-  position: absolute;
+  margin: 0 auto;
+  max-width: 100%;
   top: 0;
-  visibility: hidden;  /* Need this for correct positioning. */
-  width: 698px;
 }
 
-.preview-mode:not(.wallpaper-set-successfully) #top-header {
-  visibility: visible;
+#top-header-container {
+  display: none;
+  position: absolute;
+  text-align: center;
+  width: 100%;
+}
+
+.preview-mode:not(.wallpaper-set-successfully) #top-header-container {
+  display: inline-block;
 }
 
 .top-header-contents {
@@ -461,7 +467,7 @@ body:not([surprise-me-disabled]) [visibleif~='surprise-me-disabled'] {
 
 .top-header-contents #image-title {
   color: rgb(32, 33, 36);
-  max-width: 148px;
+  max-width: 786px;
   overflow: hidden;
   padding-inline-end: 8px;
   text-overflow: ellipsis;
@@ -477,8 +483,11 @@ body:not([surprise-me-disabled]) [visibleif~='surprise-me-disabled'] {
 .top-header-contents #wallpaper-description {
   color: rgb(128, 134, 139);
   max-width: 312px;
+  min-width: 132px;
   overflow: hidden;
+  padding-inline-end: 16px;
   padding-inline-start: 8px;
+  text-align: initial;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -497,8 +506,7 @@ body:not([surprise-me-disabled]) [visibleif~='surprise-me-disabled'] {
 
 .top-header-contents .more-options {
   display: flex;
-  position: absolute;
-  right: 8px;
+  margin-inline-end: 8px;
 }
 
 html[dir='rtl'] .top-header-contents .more-options {
@@ -523,7 +531,7 @@ html[dir='rtl'] .top-header-contents .more-options {
   background-color: #fff;
   color: rgb(26, 115, 232);
   display: none;
-  margin-top: -8px;
+  margin: -8px 0 8px 0;
   padding: 8px 24px;
 }
 
@@ -533,60 +541,65 @@ html[dir='rtl'] .top-header-contents .more-options {
   width: 16px;
 }
 
-.top-header-contents .more-options .center-button,
-.top-header-contents .more-options .center-cropped-button {
+#centering-options {
+  padding: 0;
+}
+
+.top-header-contents .more-options #center-button,
+.top-header-contents .more-options #center-cropped-button {
   background-color: #fff;
+  border: none;
+  border-radius: 16px;
   color: rgb(128, 134, 139);
-  padding-inline-start: 28px;
+  overflow: hidden;
+  padding: 8px 28px;
+  position: relative;
   z-index: 0;
 }
 
-.top-header-contents .more-options .center-button.disabled,
-.top-header-contents .more-options .center-cropped-button.disabled {
+.top-header-contents .more-options #center-button.disabled,
+.top-header-contents .more-options #center-cropped-button.disabled {
   background-color: rgb(232, 240, 254);
   color: rgb(26, 115, 232);
   pointer-events: none;
   z-index: 1;
 }
 
-.top-header-contents .more-options .center-button {
+.top-header-contents .more-options #center-button {
   padding-inline-end: 36px;
 }
 
-.top-header-contents .more-options .center-cropped-button {
+.top-header-contents .more-options #center-cropped-button {
   margin-inline-start: -24px;
 }
 
-.top-header-contents .center-button .icon,
+.top-header-contents #center-button .icon,
 #current-wallpaper-more-options #center .icon {
   background-image: url(../images/ui/center_layout.svg);
 }
 
-.top-header-contents .center-button.disabled .icon,
+.top-header-contents #center-button.disabled .icon,
 #current-wallpaper-more-options #center.disabled .icon {
   background-image: url(../images/ui/center_layout_disabled.svg);
 }
 
-.top-header-contents .center-cropped-button .icon,
+.top-header-contents #center-cropped-button .icon,
 #current-wallpaper-more-options #center-cropped .icon {
   background-image: url(../images/ui/center_cropped_layout.svg);
 }
 
-.top-header-contents .center-cropped-button.disabled .icon,
+.top-header-contents #center-cropped-button.disabled .icon,
 #current-wallpaper-more-options #center-cropped.disabled .icon {
   background-image: url(../images/ui/center_cropped_layout_disabled.svg);
 }
 
-.top-header-contents #confirm-preview-wallpaper {
-  margin-inline-start: 96px;
+.top-header-contents #confirm-preview-wallpaper,
+.top-header-contents #refresh-wallpaper {
+  margin-inline-start: 16px;
 }
 
 .daily-wallpaper .top-header-contents #confirm-preview-wallpaper {
   margin-inline-start: 8px;
-}
-
-.top-header-contents #refresh-wallpaper {
-  margin-inline-start: 16px;
 }
 
 .preview-mode.custom-wallpaper .more-options .custom-option,
@@ -643,8 +656,10 @@ html[dir='rtl'] .top-header-contents .more-options {
 }
 
 .daily-refresh-banner {
+  align-items: center;
   background-color: rgba(228, 228, 228, 0.9);
   bottom: 0;
+  display: flex;
   height: 40px;
   position: absolute;
   width: 100%;
@@ -732,9 +747,17 @@ html[dir='rtl'] .top-header-contents .more-options {
   font-family: 'Roboto';
   font-size: 13px;
   font-weight: 500;
-  left: 18px;
+  line-height: 13px;
+  max-height: 26px;
+  overflow: hidden;
+  padding-inline-end: 8px;
+  padding-inline-start: 13px;
   position: absolute;
-  top: 13px;
+  width: 98px;
+}
+
+html[dir='rtl'] .daily-refresh-label {
+  padding-inline-start: 52px;
 }
 
 #current-wallpaper-info-bar {
@@ -748,6 +771,10 @@ html[dir='rtl'] .top-header-contents .more-options {
   padding-bottom: 16px;
   position: absolute;
   visibility: hidden;  /* Need this for correct positioning. */
+}
+
+#current-wallpaper-info-bar .spacer {
+  flex: 1;
 }
 
 :not(.preview-mode) #current-wallpaper-info-bar.show-info-bar {
@@ -800,12 +827,6 @@ html[dir='rtl'] .top-header-contents .more-options {
   display: flex;
   flex-direction: column;
   font-size: 12px;
-  position: absolute;
-  right: 0;
-}
-
-html[dir='rtl'] #current-wallpaper-more-options {
-  right: 420px;
 }
 
 #current-wallpaper-more-options > div {
@@ -825,7 +846,12 @@ html[dir='rtl'] #current-wallpaper-more-options {
 }
 
 #current-wallpaper-more-options .text {
-  padding-top: 1px;
+  height: 16px;
+  line-height: 16px;
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 #current-wallpaper-more-options .icon {
@@ -844,15 +870,23 @@ html[dir='rtl'] #current-wallpaper-more-options {
 }
 
 #message-container {
+  bottom: 12px;
+  display: none;
+  position: absolute;
+  text-align: center;
+  width: 100%;
+  z-index: 4;
+}
+
+#message-content {
   background-color: rgba(0, 0, 0, 0.7);
   border-radius: 16px;
-  bottom: 12px;
   color: #fff;
-  display: block;
+  display: inline-block;
+  margin: 0 auto;
+  max-width: 90%;
   padding: 8px 28px;
-  position: absolute;
-  visibility: hidden;  /* Need this for correct positioning. */
-  z-index: 4;
+  text-align: center;
 }
 
 #preview-spinner,
@@ -868,7 +902,7 @@ html[dir='rtl'] #current-wallpaper-more-options {
 
 #current-wallpaper-spinner {
   height: 24px;
-  left: 38px;
+  margin-inline-start: 38px;
   top: 38px;
   width: 24px;
 }

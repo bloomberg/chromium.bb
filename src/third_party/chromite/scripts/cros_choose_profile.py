@@ -301,7 +301,7 @@ def main(argv):
   try:
     profile = _GetProfile(opts, board)
   except ProfileDirectoryNotFoundError as e:
-    cros_build_lib.Die(e.message)
+    cros_build_lib.Die(e)
 
   # Change the profile to the selected.
   logging.info('Selecting profile: %s for %s', profile.directory, board.root)
@@ -309,4 +309,4 @@ def main(argv):
   try:
     ChooseProfile(board, profile)
   except MakeProfileIsNotLinkError as e:
-    cros_build_lib.Die(e.message)
+    cros_build_lib.Die(e)

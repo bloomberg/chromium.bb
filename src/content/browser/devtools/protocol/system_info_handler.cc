@@ -47,9 +47,11 @@ std::unique_ptr<SystemInfo::Size> GfxSizeToSystemInfoSize(
 }
 // Give the GPU process a few seconds to provide GPU info.
 // Linux Debug builds need more time -- see Issue 796437.
-// Windows builds need more time -- see Issue 873112.
-#if (defined(OS_LINUX) && !defined(NDEBUG)) || defined(OS_WIN)
+// Windows builds need more time -- see Issue 873112 and 1004472.
+#if (defined(OS_LINUX) && !defined(NDEBUG))
 const int kGPUInfoWatchdogTimeoutMs = 20000;
+#elif defined(OS_WIN)
+const int kGPUInfoWatchdogTimeoutMs = 30000;
 #else
 const int kGPUInfoWatchdogTimeoutMs = 5000;
 #endif
@@ -84,6 +86,11 @@ class AuxGPUInfoEnumerator : public gpu::GPUInfo::Enumerator {
                               const base::TimeDelta& value) override {
     if (in_aux_attributes_)
       dictionary_->setDouble(name, value.InSecondsF());
+  }
+
+  void AddBinary(const char* name,
+                 const base::span<const uint8_t>& value) override {
+    // TODO(penghuang): send vulkan info to devtool
   }
 
   void BeginGPUDevice() override {}
@@ -121,13 +128,18 @@ class AuxGPUInfoEnumerator : public gpu::GPUInfo::Enumerator {
 
 std::unique_ptr<GPUDevice> GPUDeviceToProtocol(
     const gpu::GPUInfo::GPUDevice& device) {
-  return GPUDevice::Create().SetVendorId(device.vendor_id)
-                            .SetDeviceId(device.device_id)
-                            .SetVendorString(device.vendor_string)
-                            .SetDeviceString(device.device_string)
-                            .SetDriverVendor(device.driver_vendor)
-                            .SetDriverVersion(device.driver_version)
-                            .Build();
+  return GPUDevice::Create()
+      .SetVendorId(device.vendor_id)
+      .SetDeviceId(device.device_id)
+#if defined(OS_WIN)
+      .SetSubSysId(device.sub_sys_id)
+      .SetRevision(device.revision)
+#endif
+      .SetVendorString(device.vendor_string)
+      .SetDeviceString(device.device_string)
+      .SetDriverVendor(device.driver_vendor)
+      .SetDriverVersion(device.driver_version)
+      .Build();
 }
 
 std::unique_ptr<SystemInfo::VideoDecodeAcceleratorCapability>
@@ -288,10 +300,16 @@ class SystemInfoHandlerGpuObserver : public content::GpuDataManagerObserver {
   }
 
   void OnGpuInfoUpdate() override {
-    if (GpuDataManagerImpl::GetInstance()->IsGpuFeatureInfoAvailable() &&
-        GpuDataManagerImpl::GetInstance()->IsDx12VulkanVersionAvailable()) {
-      UnregisterAndSendResponse();
-    }
+    if (!GpuDataManagerImpl::GetInstance()->IsGpuFeatureInfoAvailable())
+      return;
+    base::CommandLine* command = base::CommandLine::ForCurrentProcess();
+    // Only wait for DX12/Vulkan info if requested at Chrome start up.
+    if (!command->HasSwitch(
+            switches::kDisableGpuProcessForDX12VulkanInfoCollection) &&
+        command->HasSwitch(switches::kNoDelayForDX12VulkanInfoCollection) &&
+        !GpuDataManagerImpl::GetInstance()->IsDx12VulkanVersionAvailable())
+      return;
+    UnregisterAndSendResponse();
   }
 
   void OnGpuProcessCrashed(base::TerminationStatus exit_code) override {

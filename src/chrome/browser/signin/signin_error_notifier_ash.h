@@ -12,7 +12,9 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
+#include "chrome/browser/chromeos/login/signin/token_handle_util.h"
 #include "chromeos/components/account_manager/account_manager.h"
+#include "components/account_id/account_id.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/signin/core/browser/signin_error_controller.h"
 
@@ -44,11 +46,14 @@ class SigninErrorNotifier : public SigninErrorController::Observer,
   // Displays a notification that allows users to open crOS Account Manager UI.
   // |account_id| is the account identifier (used by the Token Service chain)
   // for the Secondary Account which received an error.
-  void HandleSecondaryAccountError(const std::string& account_id);
+  void HandleSecondaryAccountError(const CoreAccountId& account_id);
 
   // |chromeos::AccountManager::GetAccounts| callback handler.
   void OnGetAccounts(
       const std::vector<chromeos::AccountManager::Account>& accounts);
+
+  void OnTokenHandleCheck(const AccountId& account_id,
+                          TokenHandleUtil::TokenHandleStatus status);
 
   // Handles clicks on the Secondary Account reauth notification. See
   // |message_center::HandleNotificationClickDelegate|.
@@ -59,6 +64,8 @@ class SigninErrorNotifier : public SigninErrorController::Observer,
 
   // The error controller to query for error details.
   SigninErrorController* error_controller_;
+
+  std::unique_ptr<TokenHandleUtil> token_handle_util_;
 
   // The Profile this service belongs to.
   Profile* const profile_;

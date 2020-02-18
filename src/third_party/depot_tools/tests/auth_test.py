@@ -1,108 +1,187 @@
-#!/usr/bin/env python
+#!/usr/bin/env vpython3
 # Copyright (c) 2017 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
 """Unit Tests for auth.py"""
 
-import __builtin__
+import calendar
 import datetime
 import json
-import logging
 import os
 import unittest
 import sys
-import time
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-
-from testing_support import auto_stub
-from third_party import httplib2
 from third_party import mock
 
 import auth
+import subprocess2
+
+if sys.version_info.major == 2:
+  BUILTIN_OPEN = '__builtin__.open'
+else:
+  BUILTIN_OPEN = 'builtins.open'
 
 
-class TestLuciContext(auto_stub.TestCase):
+NOW = datetime.datetime(2019, 10, 17, 12, 30, 59, 0)
+VALID_EXPIRY = NOW + datetime.timedelta(seconds=31)
+
+
+class AuthenticatorTest(unittest.TestCase):
   def setUp(self):
-    auth._get_luci_context_local_auth_params.clear_cache()
+    mock.patch('subprocess2.check_call').start()
+    mock.patch('subprocess2.check_call_out').start()
+    mock.patch('auth.datetime_now', return_value=NOW).start()
+    self.addCleanup(mock.patch.stopall)
 
-  def _mock_local_auth(self, account_id, secret, rpc_port):
-    self.mock(os, 'environ', {'LUCI_CONTEXT': 'default/test/path'})
-    self.mock(auth, '_load_luci_context', mock.Mock())
-    auth._load_luci_context.return_value = {
-      'local_auth': {
-        'default_account_id': account_id,
-        'secret': secret,
-        'rpc_port': rpc_port,
-      }
-    }
+  def testHasCachedCredentials_NotLoggedIn(self):
+    subprocess2.check_call_out.side_effect = [
+        subprocess2.CalledProcessError(1, ['cmd'], 'cwd', 'stdout', 'stderr')]
+    self.assertFalse(auth.Authenticator().has_cached_credentials())
 
-  def _mock_loc_server_resp(self, status, content):
-    mock_resp = mock.Mock()
-    mock_resp.status = status
-    self.mock(httplib2.Http, 'request', mock.Mock())
-    httplib2.Http.request.return_value = (mock_resp, content)
+  def testHasCachedCredentials_LoggedIn(self):
+    subprocess2.check_call_out.return_value = (
+        json.dumps({'token': 'token', 'expiry': 12345678}), '')
+    self.assertTrue(auth.Authenticator().has_cached_credentials())
 
-  def test_all_good(self):
-    self._mock_local_auth('account', 'secret', 8080)
+  def testGetAccessToken_NotLoggedIn(self):
+    subprocess2.check_call_out.side_effect = [
+        subprocess2.CalledProcessError(1, ['cmd'], 'cwd', 'stdout', 'stderr')]
+    self.assertRaises(
+        auth.LoginRequiredError, auth.Authenticator().get_access_token)
+
+  def testGetAccessToken_CachedToken(self):
+    authenticator = auth.Authenticator()
+    authenticator._access_token = auth.AccessToken('token', None)
+    self.assertEqual(
+        auth.AccessToken('token', None), authenticator.get_access_token())
+    self.assertEqual(0, len(subprocess2.check_call_out.mock_calls))
+
+  def testGetAccesstoken_LoggedIn(self):
+    expiry = calendar.timegm(VALID_EXPIRY.timetuple())
+    subprocess2.check_call_out.return_value = (
+        json.dumps({'token': 'token', 'expiry': expiry}), '')
+    self.assertEqual(
+        auth.AccessToken('token', VALID_EXPIRY),
+        auth.Authenticator().get_access_token())
+    subprocess2.check_call_out.assert_called_with(
+        ['luci-auth',
+         'token',
+         '-scopes', auth.OAUTH_SCOPE_EMAIL,
+         '-json-output', '-'],
+        stdout=subprocess2.PIPE, stderr=subprocess2.PIPE)
+
+  def testGetAccessToken_DifferentScope(self):
+    expiry = calendar.timegm(VALID_EXPIRY.timetuple())
+    subprocess2.check_call_out.return_value = (
+        json.dumps({'token': 'token', 'expiry': expiry}), '')
+    self.assertEqual(
+        auth.AccessToken('token', VALID_EXPIRY),
+        auth.Authenticator('custom scopes').get_access_token())
+    subprocess2.check_call_out.assert_called_with(
+        ['luci-auth', 'token', '-scopes', 'custom scopes', '-json-output', '-'],
+        stdout=subprocess2.PIPE, stderr=subprocess2.PIPE)
+
+  def testAuthorize(self):
+    http = mock.Mock()
+    http_request = http.request
+    http_request.__name__ = '__name__'
+
+    authenticator = auth.Authenticator()
+    authenticator._access_token = auth.AccessToken('token', None)
+
+    authorized = authenticator.authorize(http)
+    authorized.request(
+        'https://example.com', method='POST', body='body',
+        headers={'header': 'value'})
+    http_request.assert_called_once_with(
+        'https://example.com', 'POST', 'body',
+        {'header': 'value', 'Authorization': 'Bearer token'}, mock.ANY,
+        mock.ANY)
+
+
+class AccessTokenTest(unittest.TestCase):
+  def setUp(self):
+    mock.patch('auth.datetime_now', return_value=NOW).start()
+    self.addCleanup(mock.patch.stopall)
+
+  def testNeedsRefresh_NoExpiry(self):
+    self.assertFalse(auth.AccessToken('token', None).needs_refresh())
+
+  def testNeedsRefresh_Expired(self):
+    expired = NOW + datetime.timedelta(seconds=30)
+    self.assertTrue(auth.AccessToken('token', expired).needs_refresh())
+
+  def testNeedsRefresh_Valid(self):
+    self.assertFalse(auth.AccessToken('token', VALID_EXPIRY).needs_refresh())
+
+
+class HasLuciContextLocalAuthTest(unittest.TestCase):
+  def setUp(self):
+    mock.patch('os.environ').start()
+    mock.patch(BUILTIN_OPEN, mock.mock_open()).start()
+    self.addCleanup(mock.patch.stopall)
+
+  def testNoLuciContextEnvVar(self):
+    os.environ = {}
+    self.assertFalse(auth.has_luci_context_local_auth())
+
+  def testUnexistentPath(self):
+    os.environ = {'LUCI_CONTEXT': 'path'}
+    open.side_effect = OSError
+    self.assertFalse(auth.has_luci_context_local_auth())
+    open.assert_called_with('path')
+
+  def testInvalidJsonFile(self):
+    os.environ = {'LUCI_CONTEXT': 'path'}
+    open().read.return_value = 'not-a-json-file'
+    self.assertFalse(auth.has_luci_context_local_auth())
+    open.assert_called_with('path')
+
+  def testNoLocalAuth(self):
+    os.environ = {'LUCI_CONTEXT': 'path'}
+    open().read.return_value = '{}'
+    self.assertFalse(auth.has_luci_context_local_auth())
+    open.assert_called_with('path')
+
+  def testNoDefaultAccountId(self):
+    os.environ = {'LUCI_CONTEXT': 'path'}
+    open().read.return_value = json.dumps({
+        'local_auth': {
+            'secret': 'secret',
+            'accounts': [{
+                'email': 'bots@account.iam.gserviceaccount.com',
+                'id': 'system',
+            }],
+            'rpc_port': 1234,
+        }
+    })
+    self.assertFalse(auth.has_luci_context_local_auth())
+    open.assert_called_with('path')
+
+  def testHasLocalAuth(self):
+    os.environ = {'LUCI_CONTEXT': 'path'}
+    open().read.return_value = json.dumps({
+        'local_auth': {
+            'secret': 'secret',
+            'accounts': [
+                {
+                    'email': 'bots@account.iam.gserviceaccount.com',
+                    'id': 'system',
+                },
+                {
+                    'email': 'builder@account.iam.gserviceaccount.com',
+                    'id': 'task',
+                },
+            ],
+            'rpc_port': 1234,
+            'default_account_id': 'task',
+        },
+    })
     self.assertTrue(auth.has_luci_context_local_auth())
-
-    expiry_time = datetime.datetime.min + datetime.timedelta(hours=1)
-    resp_content = {
-      'error_code': None,
-      'error_message': None,
-      'access_token': 'token',
-      'expiry': (expiry_time
-                 - datetime.datetime.utcfromtimestamp(0)).total_seconds(),
-    }
-    self._mock_loc_server_resp(200, json.dumps(resp_content))
-    params = auth._get_luci_context_local_auth_params()
-    token = auth._get_luci_context_access_token(params, datetime.datetime.min)
-    self.assertEquals(token.token, 'token')
-
-  def test_no_account_id(self):
-    self._mock_local_auth(None, 'secret', 8080)
-    self.assertFalse(auth.has_luci_context_local_auth())
-    self.assertIsNone(auth.get_luci_context_access_token())
-
-  def test_incorrect_port_format(self):
-    self._mock_local_auth('account', 'secret', 'port')
-    self.assertFalse(auth.has_luci_context_local_auth())
-    with self.assertRaises(auth.LuciContextAuthError):
-      auth.get_luci_context_access_token()
-
-  def test_expired_token(self):
-    params = auth._LuciContextLocalAuthParams('account', 'secret', 8080)
-    resp_content = {
-      'error_code': None,
-      'error_message': None,
-      'access_token': 'token',
-      'expiry': 1,
-    }
-    self._mock_loc_server_resp(200, json.dumps(resp_content))
-    with self.assertRaises(auth.LuciContextAuthError):
-      auth._get_luci_context_access_token(
-          params, datetime.datetime.utcfromtimestamp(1))
-
-  def test_incorrect_expiry_format(self):
-    params = auth._LuciContextLocalAuthParams('account', 'secret', 8080)
-    resp_content = {
-      'error_code': None,
-      'error_message': None,
-      'access_token': 'token',
-      'expiry': 'dead',
-    }
-    self._mock_loc_server_resp(200, json.dumps(resp_content))
-    with self.assertRaises(auth.LuciContextAuthError):
-      auth._get_luci_context_access_token(params, datetime.datetime.min)
-
-  def test_incorrect_response_content_format(self):
-    params = auth._LuciContextLocalAuthParams('account', 'secret', 8080)
-    self._mock_loc_server_resp(200, '5')
-    with self.assertRaises(auth.LuciContextAuthError):
-      auth._get_luci_context_access_token(params, datetime.datetime.min)
+    open.assert_called_with('path')
 
 
 if __name__ == '__main__':

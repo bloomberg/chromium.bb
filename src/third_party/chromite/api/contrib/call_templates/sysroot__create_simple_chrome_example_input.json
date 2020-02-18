@@ -1,0 +1,8 @@
+{
+  "build_target": {
+    "name": "%(build_target)s"
+  },
+  "use_flags": [
+    "chrome_internal"
+  ]
+}

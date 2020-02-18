@@ -20,6 +20,8 @@
 namespace {
 
 static constexpr char kBase64UrlError[] = " must be a base64url encoded string";
+static constexpr char kDevToolsDidNotReturnExpectedValue[] =
+    "DevTools did not return the expected value";
 
 // Creates a base::DictionaryValue by cloning the parameters specified by
 // |mapping| from |params|.
@@ -102,18 +104,36 @@ Status ExecuteWebAuthnCommand(const WebAuthnCommand& command,
 Status ExecuteAddVirtualAuthenticator(WebView* web_view,
                                       const base::Value& params,
                                       std::unique_ptr<base::Value>* value) {
-  return web_view->SendCommandAndGetResult(
-      "WebAuthn.addVirtualAuthenticator",
-      MapParams(
-          {
-              {"options.protocol", "protocol"},
-              {"options.transport", "transport"},
-              {"options.hasResidentKey", "hasResidentKey"},
-              {"options.hasUserVerification", "hasUserVerification"},
-              {"options.automaticPresenceSimulation", "isUserVerified"},
-          },
-          params),
-      value);
+  base::DictionaryValue mapped_params = MapParams(
+      {
+          {"options.protocol", "protocol"},
+          {"options.transport", "transport"},
+          {"options.hasResidentKey", "hasResidentKey"},
+          {"options.hasUserVerification", "hasUserVerification"},
+          {"options.automaticPresenceSimulation", "isUserConsenting"},
+          {"options.isUserVerified", "isUserVerified"},
+      },
+      params);
+
+  // The spec calls u2f "ctap1/u2f", convert the value here since devtools does
+  // not support slashes on enums.
+  std::string* protocol = mapped_params.FindStringPath("options.protocol");
+  if (protocol && *protocol == "ctap1/u2f")
+    *protocol = "u2f";
+
+  std::unique_ptr<base::Value> result;
+  Status status = web_view->SendCommandAndGetResult(
+      "WebAuthn.addVirtualAuthenticator", std::move(mapped_params), &result);
+  if (status.IsError())
+    return status;
+
+  base::Optional<base::Value> authenticator_id =
+      result->ExtractKey("authenticatorId");
+  if (!authenticator_id)
+    return Status(kUnknownError, kDevToolsDidNotReturnExpectedValue);
+
+  *value = std::make_unique<base::Value>(std::move(*authenticator_id));
+  return status;
 }
 
 Status ExecuteRemoveVirtualAuthenticator(WebView* web_view,
@@ -151,17 +171,22 @@ Status ExecuteAddCredential(WebView* web_view,
 Status ExecuteGetCredentials(WebView* web_view,
                              const base::Value& params,
                              std::unique_ptr<base::Value>* value) {
+  std::unique_ptr<base::Value> result;
   Status status = web_view->SendCommandAndGetResult(
       "WebAuthn.getCredentials",
-      MapParams({{"authenticatorId", "authenticatorId"}}, params), value);
+      MapParams({{"authenticatorId", "authenticatorId"}}, params), &result);
   if (status.IsError())
     return status;
 
-  for (base::Value& credential : (*value)->FindKey("credentials")->GetList()) {
+  base::Optional<base::Value> credentials = result->ExtractKey("credentials");
+  if (!credentials)
+    return Status(kUnknownError, kDevToolsDidNotReturnExpectedValue);
+
+  for (base::Value& credential : credentials->GetList()) {
     ConvertBase64ToBase64Url(&credential,
                              {"credentialId", "privateKey", "userHandle"});
   }
-
+  *value = std::make_unique<base::Value>(std::move(*credentials));
   return status;
 }
 

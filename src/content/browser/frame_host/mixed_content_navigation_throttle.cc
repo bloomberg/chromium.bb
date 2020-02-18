@@ -5,10 +5,11 @@
 #include "content/browser/frame_host/mixed_content_navigation_throttle.h"
 
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/frame_tree_node.h"
-#include "content/browser/frame_host/navigation_handle_impl.h"
+#include "content/browser/frame_host/navigation_request.h"
 #include "content/browser/frame_host/render_frame_host_delegate.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/common/frame_messages.h"
@@ -67,7 +68,7 @@ bool DoesOriginSchemeRestrictMixedContent(const url::Origin& origin) {
   return origin.scheme() == url::kHttpsScheme;
 }
 
-void UpdateRendererOnMixedContentFound(NavigationHandleImpl* navigation_handle,
+void UpdateRendererOnMixedContentFound(NavigationRequest* navigation_request,
                                        const GURL& mixed_content_url,
                                        bool was_allowed,
                                        bool for_redirect) {
@@ -75,17 +76,19 @@ void UpdateRendererOnMixedContentFound(NavigationHandleImpl* navigation_handle,
   // mixed content for now. Once/if the browser should also check form submits
   // for mixed content than this will be allowed to happen and this DCHECK
   // should be updated.
-  DCHECK(navigation_handle->frame_tree_node()->parent());
+  DCHECK(navigation_request->frame_tree_node()->parent());
   RenderFrameHost* rfh =
-      navigation_handle->frame_tree_node()->current_frame_host();
+      navigation_request->frame_tree_node()->current_frame_host();
   FrameMsg_MixedContentFound_Params params;
   params.main_resource_url = mixed_content_url;
-  params.mixed_content_url = navigation_handle->GetURL();
-  params.request_context_type = navigation_handle->request_context_type();
+  params.mixed_content_url = navigation_request->GetURL();
+  params.request_context_type = navigation_request->request_context_type();
   params.was_allowed = was_allowed;
   params.had_redirect = for_redirect;
-  if (navigation_handle->source_location())
-    params.source_location = navigation_handle->source_location().value();
+  if (navigation_request->common_params().source_location) {
+    params.source_location =
+        navigation_request->common_params().source_location.value();
+  }
 
   rfh->Send(new FrameMsg_MixedContentFound(rfh->GetRoutingID(), params));
 }
@@ -101,8 +104,7 @@ MixedContentNavigationThrottle::CreateThrottleForNavigation(
 
 MixedContentNavigationThrottle::MixedContentNavigationThrottle(
     NavigationHandle* navigation_handle)
-    : NavigationThrottle(navigation_handle) {
-}
+    : NavigationThrottle(navigation_handle) {}
 
 MixedContentNavigationThrottle::~MixedContentNavigationThrottle() {}
 
@@ -135,13 +137,12 @@ const char* MixedContentNavigationThrottle::GetNameForLogging() {
 
 // Based off of MixedContentChecker::shouldBlockFetch.
 bool MixedContentNavigationThrottle::ShouldBlockNavigation(bool for_redirect) {
-  NavigationHandleImpl* handle_impl =
-      static_cast<NavigationHandleImpl*>(navigation_handle());
-  FrameTreeNode* node = handle_impl->frame_tree_node();
+  NavigationRequest* request = NavigationRequest::From(navigation_handle());
+  FrameTreeNode* node = request->frame_tree_node();
 
   // Find the parent node where mixed content is characterized, if any.
   FrameTreeNode* mixed_content_node =
-      InWhichFrameIsContentMixed(node, handle_impl->GetURL());
+      InWhichFrameIsContentMixed(node, request->GetURL());
   if (!mixed_content_node) {
     MaybeSendBlinkFeatureUsageReport();
     return false;
@@ -150,8 +151,8 @@ bool MixedContentNavigationThrottle::ShouldBlockNavigation(bool for_redirect) {
   // From this point on we know this is not a main frame navigation and that
   // there is mixed content. Now let's decide if it's OK to proceed with it.
 
-  ReportBasicMixedContentFeatures(handle_impl->request_context_type(),
-                                  handle_impl->mixed_content_context_type());
+  ReportBasicMixedContentFeatures(request->request_context_type(),
+                                  request->mixed_content_context_type());
 
   // If we're in strict mode, we'll automagically fail everything, and
   // intentionally skip the client/embedder checks in order to prevent degrading
@@ -166,11 +167,28 @@ bool MixedContentNavigationThrottle::ShouldBlockNavigation(bool for_redirect) {
       prefs.strict_mixed_content_checking || block_all_mixed_content;
 
   blink::WebMixedContentContextType mixed_context_type =
-      handle_impl->mixed_content_context_type();
+      request->mixed_content_context_type();
 
-  if (!ShouldTreatURLSchemeAsCorsEnabled(handle_impl->GetURL()))
-    mixed_context_type =
-        blink::WebMixedContentContextType::kOptionallyBlockable;
+  // Do not treat non-webby schemes as mixed content when loaded in subframes.
+  // Navigations to non-webby schemes cannot return data to the browser, so
+  // insecure content will not be run or displayed to the user as a result of
+  // loading a non-webby scheme. It is potentially dangerous to navigate to a
+  // non-webby scheme (e.g., the page could deliver a malicious payload to a
+  // vulnerable native application), but loading a non-webby scheme is no more
+  // dangerous in this respect than navigating the main frame to the non-webby
+  // scheme directly. See https://crbug.com/621131.
+  //
+  // TODO(https://crbug.com/1030307): decide whether CORS-enabled is really the
+  // right way to draw this distinction.
+  if (!ShouldTreatURLSchemeAsCorsEnabled(request->GetURL())) {
+    // Record non-webby mixed content to see if it is rare enough that it can be
+    // gated behind an enterprise policy. This excludes URLs that are considered
+    // potentially-secure such as blob: and filesystem:, which are special-cased
+    // in IsUrlPotentiallySecure() and cause an early-return because of the
+    // InWhichFrameIsContentMixed() check above.
+    UMA_HISTOGRAM_BOOLEAN("SSL.NonWebbyMixedContentLoaded", true);
+    return false;
+  }
 
   bool allowed = false;
   RenderFrameHostDelegate* frame_host_delegate =
@@ -179,7 +197,7 @@ bool MixedContentNavigationThrottle::ShouldBlockNavigation(bool for_redirect) {
     case blink::WebMixedContentContextType::kOptionallyBlockable:
       allowed = !strict_mode;
       if (allowed) {
-        frame_host_delegate->PassiveInsecureContentFound(handle_impl->GetURL());
+        frame_host_delegate->PassiveInsecureContentFound(request->GetURL());
         frame_host_delegate->DidDisplayInsecureContent();
       }
       break;
@@ -193,16 +211,15 @@ bool MixedContentNavigationThrottle::ShouldBlockNavigation(bool for_redirect) {
       bool should_ask_delegate =
           !strict_mode && (!prefs.strictly_block_blockable_mixed_content ||
                            prefs.allow_running_insecure_content);
-      allowed =
-          should_ask_delegate &&
-          frame_host_delegate->ShouldAllowRunningInsecureContent(
-              handle_impl->GetWebContents(),
-              prefs.allow_running_insecure_content,
-              mixed_content_node->current_origin(), handle_impl->GetURL());
+      allowed = should_ask_delegate &&
+                frame_host_delegate->ShouldAllowRunningInsecureContent(
+                    navigation_handle()->GetWebContents(),
+                    prefs.allow_running_insecure_content,
+                    mixed_content_node->current_origin(), request->GetURL());
       if (allowed) {
         const GURL& origin_url = mixed_content_node->current_origin().GetURL();
         frame_host_delegate->DidRunInsecureContent(origin_url,
-                                                   handle_impl->GetURL());
+                                                   request->GetURL());
         GetContentClient()->browser()->RecordURLMetric(
             "ContentSettings.MixedScript.RanMixedScript", origin_url);
         mixed_content_features_.insert(
@@ -222,8 +239,8 @@ bool MixedContentNavigationThrottle::ShouldBlockNavigation(bool for_redirect) {
       break;
   };
 
-  UpdateRendererOnMixedContentFound(
-      handle_impl, mixed_content_node->current_url(), allowed, for_redirect);
+  UpdateRendererOnMixedContentFound(request, mixed_content_node->current_url(),
+                                    allowed, for_redirect);
   MaybeSendBlinkFeatureUsageReport();
 
   return !allowed;
@@ -287,9 +304,8 @@ FrameTreeNode* MixedContentNavigationThrottle::InWhichFrameIsContentMixed(
 
 void MixedContentNavigationThrottle::MaybeSendBlinkFeatureUsageReport() {
   if (!mixed_content_features_.empty()) {
-    NavigationHandleImpl* handle_impl =
-        static_cast<NavigationHandleImpl*>(navigation_handle());
-    RenderFrameHost* rfh = handle_impl->frame_tree_node()->current_frame_host();
+    NavigationRequest* request = NavigationRequest::From(navigation_handle());
+    RenderFrameHost* rfh = request->frame_tree_node()->current_frame_host();
     rfh->Send(new FrameMsg_BlinkFeatureUsageReport(rfh->GetRoutingID(),
                                                    mixed_content_features_));
     mixed_content_features_.clear();

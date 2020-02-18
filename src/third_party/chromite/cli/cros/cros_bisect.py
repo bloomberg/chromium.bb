@@ -88,7 +88,7 @@ that is close to the failure point, in particular from the corresponding branch.
              'Later it will support catapult git repository and even ChromeOS '
              'repositories.')
     parser.add_argument(
-        '--evaluator', default='autotest', choices=cls.EVALUATOR.keys(),
+        '--evaluator', default='autotest', choices=sorted(cls.EVALUATOR),
         help='Evaluator used to determine if a commit is good or bad. Now it '
              'supports autotest. Later it will support telemetry.')
     parser.add_argument(

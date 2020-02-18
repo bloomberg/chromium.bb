@@ -10,10 +10,10 @@
 #include "base/sequenced_task_runner.h"
 #include "base/stl_util.h"
 #include "base/task_runner_util.h"
-#include "chrome/browser/performance_manager/performance_manager.h"
 #include "chrome/browser/performance_manager/persistence/site_data/non_recording_site_data_cache.h"
 #include "chrome/browser/performance_manager/persistence/site_data/site_data_cache_impl.h"
 #include "chrome/browser/performance_manager/persistence/site_data/site_data_cache_inspector.h"
+#include "components/performance_manager/performance_manager_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -55,7 +55,7 @@ void SiteDataCacheFactory::OnBrowserContextCreatedOnUIThread(
     DCHECK(browser_context->IsOffTheRecord());
     parent_context_id = parent_context->UniqueId();
   }
-  PerformanceManager::GetInstance()->CallOnGraph(
+  PerformanceManagerImpl::GetInstance()->CallOnGraphImpl(
       FROM_HERE, base::BindOnce(
                      [](SiteDataCacheFactory* factory,
                         const std::string& browser_context_id,
@@ -75,7 +75,7 @@ void SiteDataCacheFactory::OnBrowserContextDestroyedOnUIThread(
     content::BrowserContext* browser_context) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(factory);
-  PerformanceManager::GetInstance()->CallOnGraph(
+  PerformanceManagerImpl::GetInstance()->CallOnGraphImpl(
       FROM_HERE, base::BindOnce(
                      [](SiteDataCacheFactory* factory,
                         const std::string& browser_context_id,
@@ -121,7 +121,7 @@ void SiteDataCacheFactory::IsDataCacheRecordingForTesting(
     const std::string& browser_context_id,
     base::OnceCallback<void(bool)> cb) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  PerformanceManager::GetInstance()->CallOnGraph(
+  PerformanceManagerImpl::GetInstance()->CallOnGraphImpl(
       FROM_HERE,
       base::BindOnce(
           [](SiteDataCacheFactory* factory,
@@ -132,6 +132,21 @@ void SiteDataCacheFactory::IsDataCacheRecordingForTesting(
             std::move(cb).Run(it->second->IsRecordingForTesting());
           },
           this, browser_context_id, std::move(cb)));
+}
+
+void SiteDataCacheFactory::ReplaceCacheForTesting(
+    const std::string& browser_context_id,
+    std::unique_ptr<SiteDataCacheImpl> cache) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  auto* cache_raw = cache.get();
+
+  DCHECK(base::Contains(data_cache_map_, browser_context_id));
+  data_cache_map_.erase(browser_context_id);
+  data_cache_map_.emplace(std::make_pair(browser_context_id, std::move(cache)));
+
+  DCHECK(!base::Contains(data_cache_inspector_map_, browser_context_id));
+  data_cache_inspector_map_.emplace(std::make_pair(
+      browser_context_id, static_cast<SiteDataCacheInspector*>(cache_raw)));
 }
 
 void SiteDataCacheFactory::OnBrowserContextCreated(

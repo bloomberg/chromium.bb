@@ -6,6 +6,7 @@
 
 #include "base/time/time.h"
 #include "content/browser/web_package/prefetched_signed_exchange_cache.h"
+#include "content/browser/web_package/web_bundle_handle_tracker.h"
 
 namespace content {
 
@@ -19,7 +20,7 @@ NavigationController* Navigator::GetController() {
 
 bool Navigator::StartHistoryNavigationInNewSubframe(
     RenderFrameHostImpl* render_frame_host,
-    mojom::NavigationClientAssociatedPtrInfo* navigation_client) {
+    mojo::PendingAssociatedRemote<mojom::NavigationClient>* navigation_client) {
   return false;
 }
 
@@ -32,9 +33,10 @@ void Navigator::OnBeginNavigation(
     mojom::CommonNavigationParamsPtr common_params,
     mojom::BeginNavigationParamsPtr begin_params,
     scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory,
-    mojom::NavigationClientAssociatedPtrInfo navigation_client,
+    mojo::PendingAssociatedRemote<mojom::NavigationClient> navigation_client,
     mojo::PendingRemote<blink::mojom::NavigationInitiator> navigation_initiator,
     scoped_refptr<PrefetchedSignedExchangeCache>
-        prefetched_signed_exchange_cache) {}
+        prefetched_signed_exchange_cache,
+    std::unique_ptr<WebBundleHandleTracker> web_bundle_handle_tracker) {}
 
 }  // namespace content

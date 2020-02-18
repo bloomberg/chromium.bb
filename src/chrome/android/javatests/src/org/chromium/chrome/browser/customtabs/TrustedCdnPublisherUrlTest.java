@@ -11,12 +11,15 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
-import android.support.annotation.Nullable;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
 import android.util.Pair;
 import android.view.View;
 import android.widget.ImageView;
+
+import androidx.annotation.Nullable;
+import androidx.browser.customtabs.CustomTabsIntent;
+import androidx.browser.customtabs.CustomTabsSessionToken;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -66,9 +69,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.TimeoutException;
-
-import androidx.browser.customtabs.CustomTabsIntent;
-import androidx.browser.customtabs.CustomTabsSessionToken;
 
 /**
  * Instrumentation tests for showing the publisher URL for a trusted CDN.
@@ -122,7 +122,7 @@ public class TrustedCdnPublisherUrlTest {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         TestThreadUtils.runOnUiThreadBlocking(() -> FirstRunStatus.setFirstRunFlowComplete(false));
 
         mWebServer.shutdown();
@@ -315,7 +315,7 @@ public class TrustedCdnPublisherUrlTest {
     @Features.EnableFeatures(ChromeFeatureList.SHOW_TRUSTED_PUBLISHER_URL)
     @OverrideTrustedCdn
     @DisabledTest // Disabled for flakiness! See http://crbug.com/847341
-    public void testOfflinePage() throws TimeoutException, InterruptedException {
+    public void testOfflinePage() throws TimeoutException {
         String publisherUrl = "https://example.com/test";
         runTrustedCdnPublisherUrlTest(
                 publisherUrl, "com.example.test", "example.com", R.drawable.omnibox_https_valid);
@@ -371,8 +371,7 @@ public class TrustedCdnPublisherUrlTest {
     }
 
     private void runTrustedCdnPublisherUrlTest(@Nullable String publisherUrl, String clientPackage,
-            @Nullable String expectedPublisher, int expectedSecurityIcon)
-            throws InterruptedException, TimeoutException {
+            @Nullable String expectedPublisher, int expectedSecurityIcon) throws TimeoutException {
         final List<Pair<String, String>> headers;
         if (publisherUrl != null) {
             headers = Collections.singletonList(Pair.create("X-AMP-Cache", publisherUrl));

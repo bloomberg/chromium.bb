@@ -31,8 +31,6 @@
 #include "include/gpu/GrTypes.h"
 #include "include/private/GrTypesPriv.h"
 #include "include/private/SkTo.h"
-#include "src/gpu/GrContextPriv.h"
-#include "src/gpu/GrGpu.h"
 
 class GrRenderTargetContext;
 
@@ -60,7 +58,9 @@ protected:
     }
 
     SkISize onISize() override {
-        return SkISize::Make(kBmpSize + 2 * kPad, 390);
+        // Original image, plus each color space drawn twice
+        int numBitmaps = 2 * (kLastEnum_SkYUVColorSpace + 1) + 1;
+        return SkISize::Make(kBmpSize + 2 * kPad, numBitmaps * (kBmpSize + kPad) + kPad);
     }
 
     void onOnceBeforeDraw() override {
@@ -128,9 +128,8 @@ protected:
     void createYUVTextures(GrContext* context, GrBackendTexture yuvTextures[3]) {
         for (int i = 0; i < 3; ++i) {
             SkASSERT(fYUVBmps[i].width() == SkToInt(fYUVBmps[i].rowBytes()));
-            yuvTextures[i] = context->priv().createBackendTexture(&fYUVBmps[i].pixmap(), 1,
-                                                                  GrRenderable::kNo,
-                                                                  GrProtected::kNo);
+            yuvTextures[i] = context->createBackendTexture(&fYUVBmps[i].pixmap(), 1,
+                                                           GrRenderable::kNo, GrProtected::kNo);
         }
     }
 

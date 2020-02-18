@@ -23,16 +23,17 @@ class WinSSHFlavor(ssh.SSHFlavor):
     super(WinSSHFlavor, self).__init__(m)
     self.remote_homedir = 'C:\\Users\\chrome-bot\\botdata\\'
     self.device_dirs = default.DeviceDirs(
-      bin_dir       = self.device_path_join(self.remote_homedir, 'bin'),
-      dm_dir        = self.device_path_join(self.remote_homedir, 'dm_out'),
-      perf_data_dir = self.device_path_join(self.remote_homedir, 'perf'),
-      resource_dir  = self.device_path_join(self.remote_homedir, 'resources'),
-      images_dir    = self.device_path_join(self.remote_homedir, 'images'),
-      lotties_dir   = self.device_path_join(self.remote_homedir, 'lotties'),
-      skp_dir       = self.device_path_join(self.remote_homedir, 'skps'),
-      svg_dir       = self.device_path_join(self.remote_homedir, 'svgs'),
-      mskp_dir      = self.device_path_join(self.remote_homedir, 'mskp'),
-      tmp_dir       = self.remote_homedir)
+      bin_dir        = self.device_path_join(self.remote_homedir, 'bin'),
+      dm_dir         = self.device_path_join(self.remote_homedir, 'dm_out'),
+      perf_data_dir  = self.device_path_join(self.remote_homedir, 'perf'),
+      resource_dir   = self.device_path_join(self.remote_homedir, 'resources'),
+      images_dir     = self.device_path_join(self.remote_homedir, 'images'),
+      lotties_dir    = self.device_path_join(self.remote_homedir, 'lotties'),
+      skp_dir        = self.device_path_join(self.remote_homedir, 'skps'),
+      svg_dir        = self.device_path_join(self.remote_homedir, 'svgs'),
+      mskp_dir       = self.device_path_join(self.remote_homedir, 'mskp'),
+      tmp_dir        = self.remote_homedir,
+      texttraces_dir = '')
     self._empty_dir = self.device_path_join(self.remote_homedir, 'empty')
 
 
@@ -69,16 +70,16 @@ class WinSSHFlavor(ssh.SSHFlavor):
 
   def read_file_on_device(self, path, **kwargs):
     with self.m.step.nest('read %s' % path):
-      with self.m.tempfile.temp_dir('read_file_on_device') as tmp:
-        host_path = tmp.join(ntpath.basename(path))
-        device_path = self.scp_device_path(path)
-        ok = self._run('scp %s %s' % (device_path, host_path),
-                       cmd=['scp', device_path, host_path],
-                       infra_step=True, **kwargs)
-        # TODO(dogben): Should readfile respect fail_build_on_failure and
-        # abort_on_failure?
-        if ok:
-          return self.m.run.readfile(host_path)
+      tmp = self.m.path.mkdtemp('read_file_on_device')
+      host_path = tmp.join(ntpath.basename(path))
+      device_path = self.scp_device_path(path)
+      ok = self._run('scp %s %s' % (device_path, host_path),
+                     cmd=['scp', device_path, host_path],
+                     infra_step=True, **kwargs)
+      # TODO(dogben): Should readfile respect fail_build_on_failure and
+      # abort_on_failure?
+      if ok:
+        return self.m.run.readfile(host_path)
 
   def remove_file_on_device(self, path):
     self._cmd('rm %s' % path, 'if exist "%s" del "%s"' % (path, path))

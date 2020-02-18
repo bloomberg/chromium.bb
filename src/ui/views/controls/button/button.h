@@ -62,10 +62,10 @@ class VIEWS_EXPORT Button : public InkDropHostView,
 
   // An enum describing the events on which a button should be clicked for a
   // given key event.
-  enum KeyClickAction {
-    CLICK_ON_KEY_PRESS,
-    CLICK_ON_KEY_RELEASE,
-    CLICK_NONE,
+  enum class KeyClickAction {
+    kOnKeyPress,
+    kOnKeyRelease,
+    kNone,
   };
 
   // TODO(cyan): Consider having Button implement ButtonControllerDelegate.
@@ -125,7 +125,7 @@ class VIEWS_EXPORT Button : public InkDropHostView,
   void StopThrobbing();
 
   // Set how long the hover animation will last for.
-  void SetAnimationDuration(int duration);
+  void SetAnimationDuration(base::TimeDelta duration);
 
   void set_triggerable_event_flags(int triggerable_event_flags) {
     triggerable_event_flags_ = triggerable_event_flags;
@@ -149,10 +149,17 @@ class VIEWS_EXPORT Button : public InkDropHostView,
     animate_on_state_change_ = value;
   }
 
+  bool hide_ink_drop_when_showing_context_menu() const {
+    return hide_ink_drop_when_showing_context_menu_;
+  }
   void set_hide_ink_drop_when_showing_context_menu(
       bool hide_ink_drop_when_showing_context_menu) {
     hide_ink_drop_when_showing_context_menu_ =
         hide_ink_drop_when_showing_context_menu;
+  }
+
+  void set_show_ink_drop_when_hot_tracked(bool show_ink_drop_when_hot_tracked) {
+    show_ink_drop_when_hot_tracked_ = show_ink_drop_when_hot_tracked;
   }
 
   void set_ink_drop_base_color(SkColor color) { ink_drop_base_color_ = color; }
@@ -219,6 +226,8 @@ class VIEWS_EXPORT Button : public InkDropHostView,
   }
 
   void SetButtonController(std::unique_ptr<ButtonController> button_controller);
+
+  gfx::Point GetMenuPosition() const;
 
  protected:
   // Construct the Button with a Listener. The listener can be null. This can be
@@ -345,6 +354,10 @@ class VIEWS_EXPORT Button : public InkDropHostView,
   // When true, the ink drop ripple and hover will be hidden prior to showing
   // the context menu.
   bool hide_ink_drop_when_showing_context_menu_ = true;
+
+  // When true, the ink drop ripple will be shown when setting state to hot
+  // tracked with SetHotTracked().
+  bool show_ink_drop_when_hot_tracked_ = false;
 
   // The color of the ripple and hover.
   SkColor ink_drop_base_color_;

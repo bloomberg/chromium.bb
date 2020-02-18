@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include <stddef.h>
+#include <memory>
+#include <utility>
 
 #include "base/callback.h"
 #include "base/strings/string16.h"
@@ -97,7 +99,8 @@ RenderFrameHostDelegate::GetGeolocationContext() {
 }
 
 #if defined(OS_ANDROID)
-void RenderFrameHostDelegate::GetNFC(device::mojom::NFCRequest request) {}
+void RenderFrameHostDelegate::GetNFC(
+    mojo::PendingReceiver<device::mojom::NFC> receiver) {}
 #endif
 
 bool RenderFrameHostDelegate::ShouldRouteMessageEvent(
@@ -111,8 +114,21 @@ RenderFrameHostDelegate::GetFocusedFrameIncludingInnerWebContents() {
   return nullptr;
 }
 
+RenderFrameHostImpl* RenderFrameHostDelegate::GetMainFrame() {
+  return nullptr;
+}
+
 std::unique_ptr<WebUIImpl>
 RenderFrameHostDelegate::CreateWebUIForRenderFrameHost(const GURL& url) {
+  return nullptr;
+}
+
+RenderFrameHostDelegate* RenderFrameHostDelegate::CreateNewWindow(
+    RenderFrameHost* opener,
+    const mojom::CreateNewWindowParams& params,
+    bool is_new_browsing_instance,
+    bool has_user_gesture,
+    SessionStorageNamespace* session_storage_namespace) {
   return nullptr;
 }
 
@@ -144,9 +160,24 @@ ukm::SourceId RenderFrameHostDelegate::GetUkmSourceIdForLastCommittedSource()
   return ukm::kInvalidSourceId;
 }
 
+ukm::SourceId RenderFrameHostDelegate::
+    GetUkmSourceIdForLastCommittedSourceIncludingSameDocument() const {
+  return ukm::kInvalidSourceId;
+}
+
 RenderFrameHostImpl* RenderFrameHostDelegate::GetMainFrameForInnerDelegate(
     FrameTreeNode* frame_tree_node) {
   return nullptr;
+}
+
+media::MediaMetricsProvider::RecordAggregateWatchTimeCallback
+RenderFrameHostDelegate::GetRecordAggregateWatchTimeCallback() {
+  return base::NullCallback();
+}
+
+bool RenderFrameHostDelegate::IsFrameLowPriority(
+    const RenderFrameHost* render_frame_host) {
+  return false;
 }
 
 }  // namespace content

@@ -18,19 +18,23 @@
 
 #include "perfetto/base/logging.h"
 #include "perfetto/ext/base/string_utils.h"
-#include "src/trace_processor/fuchsia_trace_parser.h"
-#include "src/trace_processor/fuchsia_trace_tokenizer.h"
 #include "src/trace_processor/gzip_trace_parser.h"
-#include "src/trace_processor/proto_trace_parser.h"
-#include "src/trace_processor/proto_trace_tokenizer.h"
-#include "src/trace_processor/systrace_trace_parser.h"
+#include "src/trace_processor/importers/proto/proto_trace_parser.h"
+#include "src/trace_processor/importers/proto/proto_trace_tokenizer.h"
+#include "src/trace_processor/importers/systrace/systrace_trace_parser.h"
+#include "src/trace_processor/trace_sorter.h"
+
+#if PERFETTO_BUILDFLAG(PERFETTO_TP_FUCHSIA)
+#include "src/trace_processor/importers/fuchsia/fuchsia_trace_parser.h"
+#include "src/trace_processor/importers/fuchsia/fuchsia_trace_tokenizer.h"
+#endif  // PERFETTO_BUILDFLAG(PERFETTO_TP_FUCHSIA)
 
 // JSON parsing and exporting is only supported in the standalone and
 // Chromium builds.
-#if PERFETTO_BUILDFLAG(PERFETTO_TP_JSON)
-#include "src/trace_processor/json_trace_parser.h"
-#include "src/trace_processor/json_trace_tokenizer.h"
-#endif
+#if PERFETTO_BUILDFLAG(PERFETTO_TP_JSON_IMPORT)
+#include "src/trace_processor/importers/json/json_trace_parser.h"
+#include "src/trace_processor/importers/json/json_trace_tokenizer.h"
+#endif  // PERFETTO_BUILDFLAG(PERFETTO_TP_JSON_IMPORT)
 
 namespace perfetto {
 namespace trace_processor {
@@ -68,15 +72,15 @@ util::Status ForwardingTraceParser::Parse(std::unique_ptr<uint8_t[]> data,
     switch (trace_type) {
       case kJsonTraceType: {
         PERFETTO_DLOG("JSON trace detected");
-#if PERFETTO_BUILDFLAG(PERFETTO_TP_JSON)
+#if PERFETTO_BUILDFLAG(PERFETTO_TP_JSON_IMPORT)
         reader_.reset(new JsonTraceTokenizer(context_));
         // JSON traces have no guarantees about the order of events in them.
         int64_t window_size_ns = std::numeric_limits<int64_t>::max();
         context_->sorter.reset(new TraceSorter(context_, window_size_ns));
         context_->parser.reset(new JsonTraceParser(context_));
-#else
+#else   // PERFETTO_BUILDFLAG(PERFETTO_TP_JSON_IMPORT)
         PERFETTO_FATAL("JSON traces not supported.");
-#endif
+#endif  // PERFETTO_BUILDFLAG(PERFETTO_TP_JSON_IMPORT)
         break;
       }
       case kProtoTraceType: {
@@ -90,18 +94,26 @@ util::Status ForwardingTraceParser::Parse(std::unique_ptr<uint8_t[]> data,
         break;
       }
       case kFuchsiaTraceType: {
+#if PERFETTO_BUILDFLAG(PERFETTO_TP_FUCHSIA)
         PERFETTO_DLOG("Fuchsia trace detected");
         // Fuschia traces can have massively out of order events.
         int64_t window_size_ns = std::numeric_limits<int64_t>::max();
         reader_.reset(new FuchsiaTraceTokenizer(context_));
         context_->sorter.reset(new TraceSorter(context_, window_size_ns));
         context_->parser.reset(new FuchsiaTraceParser(context_));
+#else   // PERFETTO_BUILDFLAG(PERFETTO_TP_FUCHSIA)
+        PERFETTO_FATAL("Fuchsia traces not supported.");
+#endif  // PERFETTO_BUILDFLAG(PERFETTO_TP_FUCHSIA)
         break;
       }
       case kSystraceTraceType:
         PERFETTO_DLOG("Systrace trace detected");
+#if PERFETTO_BUILDFLAG(PERFETTO_TP_FTRACE)
         reader_.reset(new SystraceTraceParser(context_));
         break;
+#else   // PERFETTO_BUILDFLAG(PERFETTO_TP_FTRACE)
+        return util::ErrStatus("Systrace support is disabled");
+#endif  // PERFETTO_BUILDFLAG(PERFETTO_TP_FTRACE)
       case kGzipTraceType:
         PERFETTO_DLOG("gzip trace detected");
         reader_.reset(new GzipTraceParser(context_));
@@ -143,13 +155,13 @@ TraceType GuessTraceType(const uint8_t* data, size_t size) {
       base::StartsWith(start, "<html>"))
     return kSystraceTraceType;
 
+  // Ctrace is deflate'ed systrace.
+  if (start.find("TRACE:") != std::string::npos)
+    return kCtraceTraceType;
+
   // Systrace with no header or leading HTML.
   if (base::StartsWith(start, " "))
     return kSystraceTraceType;
-
-  // Ctrace is deflate'ed systrace.
-  if (base::StartsWith(start, "TRACE:"))
-    return kCtraceTraceType;
 
   // gzip'ed trace containing one of the other formats.
   if (base::StartsWith(start, "\x1f\x8b"))

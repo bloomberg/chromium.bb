@@ -9,6 +9,7 @@
 #include "base/unguessable_token.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "v8/include/v8-inspector.h"
 
 namespace blink {
@@ -21,10 +22,11 @@ struct CORE_EXPORT BlinkCloneableMessage {
   BlinkCloneableMessage();
   ~BlinkCloneableMessage();
 
-  BlinkCloneableMessage(BlinkCloneableMessage&&) noexcept;
-  BlinkCloneableMessage& operator=(BlinkCloneableMessage&&) noexcept;
+  BlinkCloneableMessage(BlinkCloneableMessage&&);
+  BlinkCloneableMessage& operator=(BlinkCloneableMessage&&);
 
   scoped_refptr<blink::SerializedScriptValue> message;
+  scoped_refptr<const blink::SecurityOrigin> sender_origin;
   v8_inspector::V8StackTraceId sender_stack_trace_id;
   base::Optional<base::UnguessableToken> locked_agent_cluster_id;
 

@@ -33,7 +33,6 @@ class CollectUserDataAction : public Action,
   void OnPersonalDataChanged() override;
 
   static bool IsUserDataComplete(
-      autofill::PersonalDataManager* personal_data_manager,
       const UserData& user_data,
       const CollectUserDataOptions& collect_user_data_options);
 
@@ -55,30 +54,37 @@ class CollectUserDataAction : public Action,
   void EndAction(const ClientStatus& status);
 
   void OnGetUserData(const CollectUserDataProto& collect_user_data,
-                     std::unique_ptr<UserData> user_data);
+                     UserData* user_data);
   void OnAdditionalActionTriggered(int index);
   void OnTermsAndConditionsLinkClicked(int link);
 
   void OnGetLogins(
       const LoginDetailsProto::LoginOptionProto& login_option,
-      std::unique_ptr<CollectUserDataOptions> collect_user_data_options,
       std::vector<WebsiteLoginFetcher::Login> logins);
-  void ShowToUser(
-      std::unique_ptr<CollectUserDataOptions> collect_user_data_options);
+  void ShowToUser();
+  void OnShowToUser(UserData* user_data, UserData::FieldChange* field_change);
 
   // Creates a new instance of |CollectUserDataOptions| from |proto_|.
-  std::unique_ptr<CollectUserDataOptions> CreateOptionsFromProto();
+  bool CreateOptionsFromProto();
 
   // Will update |initial_card_has_billing_postal_code_|.
   bool CheckInitialAutofillDataComplete(
-      autofill::PersonalDataManager* personal_data_manager,
-      const CollectUserDataOptions& collect_user_data_options);
+      autofill::PersonalDataManager* personal_data_manager);
+
+  // Update user data with the new state from personal data manager.
+  void UpdatePersonalDataManagerProfiles(
+      UserData* user_data,
+      UserData::FieldChange* field_change = nullptr);
+  void UpdatePersonalDataManagerCards(
+      UserData* user_data,
+      UserData::FieldChange* field_change = nullptr);
 
   bool shown_to_user_ = false;
   bool initially_prefilled = false;
   bool personal_data_changed_ = false;
   bool action_successful_ = false;
   bool initial_card_has_billing_postal_code_ = false;
+  std::unique_ptr<CollectUserDataOptions> collect_user_data_options_;
   ProcessActionCallback callback_;
 
   // Maps login choice identifiers to the corresponding login details.

@@ -11,8 +11,8 @@
 #include "modules/congestion_controller/goog_cc/probe_bitrate_estimator.h"
 
 #include <algorithm>
+#include <memory>
 
-#include "absl/memory/memory.h"
 #include "api/rtc_event_log/rtc_event_log.h"
 #include "logging/rtc_event_log/events/rtc_event_probe_result_failure.h"
 #include "logging/rtc_event_log/events/rtc_event_probe_result_success.h"
@@ -112,7 +112,7 @@ absl::optional<DataRate> ProbeBitrateEstimator::HandleProbeAndEstimateBitrate(
                      << " [receive interval: " << ToString(receive_interval)
                      << "]";
     if (event_log_) {
-      event_log_->Log(absl::make_unique<RtcEventProbeResultFailure>(
+      event_log_->Log(std::make_unique<RtcEventProbeResultFailure>(
           cluster_id, ProbeFailureReason::kInvalidSendReceiveInterval));
     }
     return absl::nullopt;
@@ -145,7 +145,7 @@ absl::optional<DataRate> ProbeBitrateEstimator::HandleProbeAndEstimateBitrate(
                      << ToString(send_rate) << " = " << ratio
                      << " > kMaxValidRatio (" << kMaxValidRatio << ")]";
     if (event_log_) {
-      event_log_->Log(absl::make_unique<RtcEventProbeResultFailure>(
+      event_log_->Log(std::make_unique<RtcEventProbeResultFailure>(
           cluster_id, ProbeFailureReason::kInvalidSendReceiveRatio));
     }
     return absl::nullopt;
@@ -169,11 +169,10 @@ absl::optional<DataRate> ProbeBitrateEstimator::HandleProbeAndEstimateBitrate(
   }
   if (event_log_) {
     event_log_->Log(
-        absl::make_unique<RtcEventProbeResultSuccess>(cluster_id, res.bps()));
+        std::make_unique<RtcEventProbeResultSuccess>(cluster_id, res.bps()));
   }
-  last_estimate_ = res;
   estimated_data_rate_ = res;
-  return res;
+  return *estimated_data_rate_;
 }
 
 absl::optional<DataRate>
@@ -181,10 +180,6 @@ ProbeBitrateEstimator::FetchAndResetLastEstimatedBitrate() {
   absl::optional<DataRate> estimated_data_rate = estimated_data_rate_;
   estimated_data_rate_.reset();
   return estimated_data_rate;
-}
-
-absl::optional<DataRate> ProbeBitrateEstimator::last_estimate() const {
-  return last_estimate_;
 }
 
 void ProbeBitrateEstimator::EraseOldClusters(Timestamp timestamp) {

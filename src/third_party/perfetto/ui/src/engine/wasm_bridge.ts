@@ -16,21 +16,27 @@ import {defer} from '../base/deferred';
 import {assertExists, assertTrue} from '../base/logging';
 import * as init_trace_processor from '../gen/trace_processor';
 
+// The Initialize() call will allocate a buffer of REQ_BUF_SIZE bytes which
+// will be used to copy the input request data. This is to avoid passing the
+// input data on the stack, which has a limited (~1MB) size.
+// The buffer will be allocated by the C++ side and reachable at
+// HEAPU8[reqBufferAddr, +REQ_BUFFER_SIZE].
+const REQ_BUF_SIZE = 32 * 1024 * 1024;
+
 function writeToUIConsole(line: string) {
   console.log(line);
 }
 
 export interface WasmBridgeRequest {
   id: number;
-  serviceName: string;
   methodName: string;
   data: Uint8Array;
 }
 
 export interface WasmBridgeResponse {
   id: number;
-  success: boolean;
-  data?: Uint8Array;
+  aborted: boolean;  // If true the WASM module crashed.
+  data: Uint8Array;
 }
 
 export class WasmBridge {
@@ -40,6 +46,7 @@ export class WasmBridge {
   private aborted: boolean;
   private currentRequestResult: WasmBridgeResponse|null;
   private connection: init_trace_processor.Module;
+  private reqBufferAddr = 0;
 
   constructor(init: init_trace_processor.InitWasm) {
     this.aborted = false;
@@ -54,8 +61,12 @@ export class WasmBridge {
       onAbort: () => this.aborted = true,
     });
     this.whenInitialized = deferredRuntimeInitialized.then(() => {
-      const fn = this.connection.addFunction(this.onReply.bind(this), 'viiii');
-      this.connection.ccall('Initialize', 'void', ['number'], [fn]);
+      const fn = this.connection.addFunction(this.onReply.bind(this), 'iii');
+      this.reqBufferAddr = this.connection.ccall(
+          'Initialize',
+          /*return=*/ 'number',
+          /*args=*/['number', 'number'],
+          [fn, REQ_BUF_SIZE]);
     });
   }
 
@@ -63,33 +74,32 @@ export class WasmBridge {
     if (this.aborted) {
       return {
         id: req.id,
-        success: false,
-        data: undefined,
+        aborted: true,
+        data: new Uint8Array(),
       };
     }
-    // TODO(b/124805622): protoio can generate CamelCase names - normalize.
-    const methodName = req.methodName;
-    const name = methodName.charAt(0).toLowerCase() + methodName.slice(1);
+    assertTrue(req.data.length <= REQ_BUF_SIZE);
+    const endAddr = this.reqBufferAddr + req.data.length;
+    this.connection.HEAPU8.subarray(this.reqBufferAddr, endAddr).set(req.data);
     this.connection.ccall(
-        `${req.serviceName}_${name}`,        // C method name.
-        'void',                              // Return type.
-        ['number', 'array', 'number'],       // Input args.
-        [req.id, req.data, req.data.length]  // Args.
-        );
+        req.methodName,    // C method name.
+        'void',            // Return type.
+        ['number'],        // Arg types.
+        [req.data.length]  // Args.
+    );
 
     const result = assertExists(this.currentRequestResult);
-    assertTrue(req.id === result.id);
     this.currentRequestResult = null;
+    result.id = req.id;
     return result;
   }
 
   // This is invoked from ccall in the same call stack as callWasm.
-  private onReply(
-      reqId: number, success: boolean, heapPtr: number, size: number) {
+  private onReply(heapPtr: number, size: number) {
     const data = this.connection.HEAPU8.slice(heapPtr, heapPtr + size);
     this.currentRequestResult = {
-      id: reqId,
-      success,
+      id: 0,  // Will be set by callWasm()'s epilogue.
+      aborted: false,
       data,
     };
   }

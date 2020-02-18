@@ -7,7 +7,6 @@
 #include <memory>
 #include <utility>
 
-#include "base/message_loop/message_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/notifications/notification_display_service_tester.h"
 #include "chrome/browser/notifications/notification_test_util.h"
@@ -104,7 +103,7 @@ class PrivetNotificationsListenerTest : public testing::Test {
   bool SuccessfulResponseToInfo(const std::string& response) {
     return test_url_loader_factory_.SimulateResponseForPendingRequest(
         GURL(kDeviceInfoURL), network::URLLoaderCompletionStatus(net::OK),
-        network::CreateResourceResponseHead(net::HTTP_OK), response);
+        network::CreateURLResponseHead(net::HTTP_OK), response);
   }
 
  protected:
@@ -168,7 +167,7 @@ TEST_F(PrivetNotificationsListenerTest, HTTPErrorTest) {
   notification_listener_->DeviceChanged(kExampleDeviceName, description_);
   EXPECT_TRUE(test_url_loader_factory_.SimulateResponseForPendingRequest(
       GURL(kDeviceInfoURL), network::URLLoaderCompletionStatus(net::OK),
-      network::CreateResourceResponseHead(net::HTTP_NOT_FOUND),
+      network::CreateURLResponseHead(net::HTTP_NOT_FOUND),
       /*content=*/""));
 }
 

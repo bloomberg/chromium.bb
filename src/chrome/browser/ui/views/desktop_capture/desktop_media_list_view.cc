@@ -17,6 +17,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/grit/theme_resources.h"
 #include "extensions/grit/extensions_browser_resources.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -69,8 +70,6 @@ DesktopMediaListView::DesktopMediaListView(
       active_style_(&single_style_),
       accessible_name_(accessible_name) {
   SetStyle(&single_style_);
-
-  SetFocusBehavior(FocusBehavior::ALWAYS);
 }
 
 DesktopMediaListView::~DesktopMediaListView() {}
@@ -233,9 +232,7 @@ void DesktopMediaListView::OnSourceThumbnailChanged(size_t index) {
 
 void DesktopMediaListView::SetStyle(DesktopMediaSourceViewStyle* style) {
   active_style_ = style;
-  controller_->SetThumbnailSize(gfx::Size(
-      style->image_rect.width() - 2 * style->selection_border_thickness,
-      style->image_rect.height() - 2 * style->selection_border_thickness));
+  controller_->SetThumbnailSize(style->image_rect.size());
 
   for (auto* child : children())
     AsDesktopMediaSourceView(child)->SetStyle(*active_style_);

@@ -2,7 +2,7 @@ Name: GN helpers
 Short Name: gn_helpers
 URL: https://chromium.googlesource.com/chromium/src/+/master/build/gn_helpers.py
 Version: 0
-Revision: 9b24d85070cdbd78146e3724bf22cf368ab1df38
+Revision: 4197d3af6e42aa72076d6051153a644f3df62dd5
 License: BSD
 Security Critical: no
 

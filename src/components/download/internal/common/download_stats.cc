@@ -471,6 +471,14 @@ constexpr const base::FilePath::CharType* kDangerousFileTypes[] = {
     FILE_PATH_LITERAL(".weba"),             // 385
     FILE_PATH_LITERAL(".webm"),             // 386
     FILE_PATH_LITERAL(".xbm"),              // 387
+    FILE_PATH_LITERAL(".accdb"),            // 388
+    FILE_PATH_LITERAL(".accde"),            // 389
+    FILE_PATH_LITERAL(".accdr"),            // 390
+    FILE_PATH_LITERAL(".accda"),            // 391
+    FILE_PATH_LITERAL(".cer"),              // 392
+    FILE_PATH_LITERAL(".der"),              // 393
+    FILE_PATH_LITERAL(".fileloc"),          // 394
+    FILE_PATH_LITERAL(".webloc"),           // 395
     // NOTE! When you add a type here, please add the UMA value as a comment.
     // These must all match DownloadItem.DangerousFileType in
     // enums.xml. From 263 onward, they should also match
@@ -1061,6 +1069,11 @@ void RecordParallelDownloadAddStreamSuccess(bool success,
   }
 }
 
+void RecordParallelRequestCreationFailure(DownloadInterruptReason reason) {
+  base::UmaHistogramSparse("Download.ParallelDownload.CreationFailureReason",
+                           reason);
+}
+
 void RecordParallelizableContentLength(int64_t content_length) {
   UMA_HISTOGRAM_CUSTOM_COUNTS("Download.ContentLength.Parallelizable",
                               content_length / 1024, 1, kMaxFileSizeKb, 50);
@@ -1276,6 +1289,17 @@ void RecordDownloadConnectionInfo(
   base::UmaHistogramEnumeration(
       "Download.ConnectionInfo", connection_info,
       net::HttpResponseInfo::ConnectionInfo::NUM_OF_CONNECTION_INFOS);
+}
+
+void RecordDownloadManagerCreationTimeSinceStartup(
+    base::TimeDelta elapsed_time) {
+  base::UmaHistogramLongTimes("Download.DownloadManager.CreationDelay",
+                              elapsed_time);
+}
+
+void RecordDownloadManagerMemoryUsage(size_t bytes_used) {
+  base::UmaHistogramMemoryKB("Download.DownloadManager.MemoryUsage",
+                             bytes_used / 1000);
 }
 
 #if defined(OS_ANDROID)

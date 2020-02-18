@@ -7,6 +7,7 @@
 #include <cstdint>
 #include <memory>
 #include <string>
+#include <utility>
 
 #include "net/third_party/quiche/src/quic/core/crypto/quic_crypto_server_config.h"
 #include "net/third_party/quiche/src/quic/core/crypto/quic_random.h"
@@ -142,18 +143,22 @@ class QuicServerSessionBaseTest : public QuicTestWithParam<ParsedQuicVersion> {
     connection_ = new StrictMock<MockQuicConnection>(
         &helper_, &alarm_factory_, Perspective::IS_SERVER, supported_versions);
     connection_->AdvanceTime(QuicTime::Delta::FromSeconds(1));
-    session_ = QuicMakeUnique<TestServerSession>(
+    session_ = std::make_unique<TestServerSession>(
         config_, connection_, &owner_, &stream_helper_, &crypto_config_,
         &compressed_certs_cache_, &memory_cache_backend_);
     MockClock clock;
     handshake_message_ = crypto_config_.AddDefaultConfig(
         QuicRandom::GetInstance(), &clock,
         QuicCryptoServerConfig::ConfigOptions());
-    SetQuicFlag(FLAGS_quic_supports_tls_handshake, true);
+    SetQuicReloadableFlag(quic_supports_tls_handshake, true);
     session_->Initialize();
-    QuicSessionPeer::GetMutableCryptoStream(session_.get())
-        ->OnSuccessfulVersionNegotiation(supported_versions.front());
-    visitor_ = QuicConnectionPeer::GetVisitor(connection_);
+    if (!GetQuicReloadableFlag(quic_version_negotiated_by_default_at_server)) {
+      QuicSessionPeer::GetMutableCryptoStream(session_.get())
+          ->OnSuccessfulVersionNegotiation(supported_versions.front());
+    }
+    QuicConfigPeer::SetReceivedInitialSessionFlowControlWindow(
+        session_->config(), kMinimumFlowControlSendWindow);
+    session_->OnConfigNegotiated();
   }
 
   QuicStreamId GetNthClientInitiatedBidirectionalId(int n) {
@@ -204,7 +209,6 @@ class QuicServerSessionBaseTest : public QuicTestWithParam<ParsedQuicVersion> {
   QuicMemoryCacheBackend memory_cache_backend_;
   std::unique_ptr<TestServerSession> session_;
   std::unique_ptr<CryptoHandshakeMessage> handshake_message_;
-  QuicConnectionVisitorInterface* visitor_;
 };
 
 // Compares CachedNetworkParameters.
@@ -225,7 +229,9 @@ MATCHER_P(EqualsProto, network_params, "") {
 
 INSTANTIATE_TEST_SUITE_P(Tests,
                          QuicServerSessionBaseTest,
-                         ::testing::ValuesIn(AllSupportedVersions()));
+                         ::testing::ValuesIn(AllSupportedVersions()),
+                         ::testing::PrintToStringParamName());
+
 TEST_P(QuicServerSessionBaseTest, CloseStreamDueToReset) {
   // Open a stream, then reset it.
   // Send two bytes of payload to open it.
@@ -247,7 +253,7 @@ TEST_P(QuicServerSessionBaseTest, CloseStreamDueToReset) {
                 OnStreamReset(GetNthClientInitiatedBidirectionalId(0),
                               QUIC_RST_ACKNOWLEDGEMENT));
   }
-  visitor_->OnRstStream(rst1);
+  session_->OnRstStream(rst1);
 
   // For version-99 will create and receive a stop-sending, completing
   // the full-close expected by this test.
@@ -257,7 +263,7 @@ TEST_P(QuicServerSessionBaseTest, CloseStreamDueToReset) {
   EXPECT_EQ(0u, session_->GetNumOpenIncomingStreams());
 
   // Send the same two bytes of payload in a new packet.
-  visitor_->OnStreamFrame(data1);
+  session_->OnStreamFrame(data1);
 
   // The stream should not be re-opened.
   EXPECT_EQ(0u, session_->GetNumOpenIncomingStreams());
@@ -278,7 +284,7 @@ TEST_P(QuicServerSessionBaseTest, NeverOpenStreamDueToReset) {
                 OnStreamReset(GetNthClientInitiatedBidirectionalId(0),
                               QUIC_RST_ACKNOWLEDGEMENT));
   }
-  visitor_->OnRstStream(rst1);
+  session_->OnRstStream(rst1);
 
   // For version-99 will create and receive a stop-sending, completing
   // the full-close expected by this test.
@@ -290,7 +296,7 @@ TEST_P(QuicServerSessionBaseTest, NeverOpenStreamDueToReset) {
   // Send two bytes of payload.
   QuicStreamFrame data1(GetNthClientInitiatedBidirectionalId(0), false, 0,
                         QuicStringPiece("HT"));
-  visitor_->OnStreamFrame(data1);
+  session_->OnStreamFrame(data1);
 
   // The stream should never be opened, now that the reset is received.
   EXPECT_EQ(0u, session_->GetNumOpenIncomingStreams());
@@ -303,8 +309,8 @@ TEST_P(QuicServerSessionBaseTest, AcceptClosedStream) {
                          QuicStringPiece("\1\0\0\0\0\0\0\0HT"));
   QuicStreamFrame frame2(GetNthClientInitiatedBidirectionalId(1), false, 0,
                          QuicStringPiece("\2\0\0\0\0\0\0\0HT"));
-  visitor_->OnStreamFrame(frame1);
-  visitor_->OnStreamFrame(frame2);
+  session_->OnStreamFrame(frame1);
+  session_->OnStreamFrame(frame2);
   EXPECT_EQ(2u, session_->GetNumOpenIncomingStreams());
 
   // Send a reset (and expect the peer to send a RST in response).
@@ -320,7 +326,7 @@ TEST_P(QuicServerSessionBaseTest, AcceptClosedStream) {
                 OnStreamReset(GetNthClientInitiatedBidirectionalId(0),
                               QUIC_RST_ACKNOWLEDGEMENT));
   }
-  visitor_->OnRstStream(rst);
+  session_->OnRstStream(rst);
 
   // For version-99 will create and receive a stop-sending, completing
   // the full-close expected by this test.
@@ -334,8 +340,8 @@ TEST_P(QuicServerSessionBaseTest, AcceptClosedStream) {
                          QuicStringPiece("TP"));
   QuicStreamFrame frame4(GetNthClientInitiatedBidirectionalId(1), false, 2,
                          QuicStringPiece("TP"));
-  visitor_->OnStreamFrame(frame3);
-  visitor_->OnStreamFrame(frame4);
+  session_->OnStreamFrame(frame3);
+  session_->OnStreamFrame(frame4);
   // The stream should never be opened, now that the reset is received.
   EXPECT_EQ(1u, session_->GetNumOpenIncomingStreams());
   EXPECT_TRUE(connection_->connected());
@@ -474,11 +480,6 @@ class MockQuicCryptoServerStream : public QuicCryptoServerStream {
 };
 
 TEST_P(QuicServerSessionBaseTest, BandwidthEstimates) {
-  if (GetParam().handshake_protocol == PROTOCOL_TLS1_3) {
-    // TODO(nharper, b/112643533): Figure out why this test fails when TLS is
-    // enabled and fix it.
-    return;
-  }
   // Test that bandwidth estimate updates are sent to the client, only when
   // bandwidth resumption is enabled, the bandwidth estimate has changed
   // sufficiently, enough time has passed,
@@ -498,7 +499,7 @@ TEST_P(QuicServerSessionBaseTest, BandwidthEstimates) {
   const std::string serving_region = "not a real region";
   session_->set_serving_region(serving_region);
 
-  if (!VersionUsesQpack(transport_version())) {
+  if (!VersionUsesHttp3(transport_version())) {
     session_->UnregisterStreamPriority(
         QuicUtils::GetHeadersStreamId(connection_->transport_version()),
         /*is_static=*/true);
@@ -508,7 +509,7 @@ TEST_P(QuicServerSessionBaseTest, BandwidthEstimates) {
       new MockQuicCryptoServerStream(&crypto_config_, &compressed_certs_cache_,
                                      session_.get(), &stream_helper_);
   QuicServerSessionBasePeer::SetCryptoStream(session_.get(), crypto_stream);
-  if (!VersionUsesQpack(transport_version())) {
+  if (!VersionUsesHttp3(transport_version())) {
     session_->RegisterStreamPriority(
         QuicUtils::GetHeadersStreamId(connection_->transport_version()),
         /*is_static=*/true,
@@ -531,7 +532,7 @@ TEST_P(QuicServerSessionBaseTest, BandwidthEstimates) {
       &bandwidth_recorder, max_bandwidth_estimate_kbytes_per_second,
       max_bandwidth_estimate_timestamp);
   // Queue up some pending data.
-  if (!VersionUsesQpack(transport_version())) {
+  if (!VersionUsesHttp3(transport_version())) {
     session_->MarkConnectionLevelWriteBlocked(
         QuicUtils::GetHeadersStreamId(connection_->transport_version()));
   } else {
@@ -569,8 +570,7 @@ TEST_P(QuicServerSessionBaseTest, BandwidthEstimates) {
   SerializedPacket packet(
       QuicPacketNumber(1) + kMinPacketsBetweenServerConfigUpdates,
       PACKET_4BYTE_PACKET_NUMBER, nullptr, 1000, false, false);
-  sent_packet_manager->OnPacketSent(&packet, QuicPacketNumber(), now,
-                                    NOT_RETRANSMISSION,
+  sent_packet_manager->OnPacketSent(&packet, now, NOT_RETRANSMISSION,
                                     HAS_RETRANSMITTABLE_DATA);
 
   // Verify that the proto has exactly the values we expect.
@@ -695,7 +695,8 @@ class StreamMemberLifetimeTest : public QuicServerSessionBaseTest {
 
 INSTANTIATE_TEST_SUITE_P(StreamMemberLifetimeTests,
                          StreamMemberLifetimeTest,
-                         ::testing::ValuesIn(AllSupportedVersions()));
+                         ::testing::ValuesIn(AllSupportedVersions()),
+                         ::testing::PrintToStringParamName());
 
 // Trigger an operation which causes an async invocation of
 // ProofSource::GetProof.  Delay the completion of the operation until after the

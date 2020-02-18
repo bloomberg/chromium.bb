@@ -7,10 +7,10 @@
 
 #include <memory>
 
-#include "base/message_loop/message_loop.h"
 #include "base/test/task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/buildflags.h"
+#include "ui/events/ozone/layout/keyboard_layout_engine.h"
 #include "ui/ozone/platform/wayland/gpu/wayland_buffer_manager_gpu.h"
 #include "ui/ozone/platform/wayland/gpu/wayland_surface_factory.h"
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
@@ -28,10 +28,11 @@ class MockSurface;
 
 namespace ui {
 
+class ScopedKeyboardLayoutEngine;
 class WaylandScreen;
 
-const uint32_t kXdgShellV5 = 5;
 const uint32_t kXdgShellV6 = 6;
+const uint32_t kXdgShellStable = 7;
 
 // WaylandTest is a base class that sets up a display, window, and test server,
 // and allows easy synchronization between them.
@@ -52,6 +53,7 @@ class WaylandTest : public ::testing::TestWithParam<uint32_t> {
   wl::MockSurface* surface_;
 
   MockPlatformWindowDelegate delegate_;
+  std::unique_ptr<ScopedKeyboardLayoutEngine> scoped_keyboard_layout_engine_;
   std::unique_ptr<WaylandSurfaceFactory> surface_factory_;
   std::unique_ptr<WaylandBufferManagerGpu> buffer_manager_gpu_;
   std::unique_ptr<WaylandConnection> connection_;
@@ -65,6 +67,8 @@ class WaylandTest : public ::testing::TestWithParam<uint32_t> {
 #if BUILDFLAG(USE_XKBCOMMON)
   XkbEvdevCodes xkb_evdev_code_converter_;
 #endif
+
+  std::unique_ptr<KeyboardLayoutEngine> keyboard_layout_engine_;
 
   DISALLOW_COPY_AND_ASSIGN(WaylandTest);
 };

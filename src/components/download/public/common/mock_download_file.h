@@ -35,10 +35,9 @@ class MockDownloadFile : public DownloadFile {
                     const DownloadItem::ReceivedSlices& received_slices,
                     bool is_parallelizable));
   void AddInputStream(std::unique_ptr<InputStream> input_stream,
-                      int64_t offset,
-                      int64_t length) override;
-  MOCK_METHOD3(DoAddInputStream,
-               void(InputStream* input_stream, int64_t offset, int64_t length));
+                      int64_t offset) override;
+  MOCK_METHOD2(DoAddInputStream,
+               void(InputStream* input_stream, int64_t offset));
   MOCK_METHOD2(OnResponseCompleted,
                void(int64_t offset, DownloadInterruptReason status));
   MOCK_METHOD2(AppendDataToFile,
@@ -47,7 +46,7 @@ class MockDownloadFile : public DownloadFile {
                DownloadInterruptReason(const base::FilePath& full_path));
   MOCK_METHOD2(RenameAndUniquify,
                void(const base::FilePath& full_path,
-                    const RenameCompletionCallback& callback));
+                    RenameCompletionCallback callback));
   MOCK_METHOD6(
       RenameAndAnnotate,
       void(const base::FilePath& full_path,
@@ -55,7 +54,7 @@ class MockDownloadFile : public DownloadFile {
            const GURL& source_url,
            const GURL& referrer_url,
            mojo::PendingRemote<quarantine::mojom::Quarantine> remote_quarantine,
-           const RenameCompletionCallback& callback));
+           RenameCompletionCallback callback));
   MOCK_METHOD0(Detach, void());
   MOCK_METHOD0(Cancel, void());
   MOCK_METHOD1(SetPotentialFileLength, void(int64_t length));
@@ -77,8 +76,8 @@ class MockDownloadFile : public DownloadFile {
                     const base::FilePath& file_name,
                     const std::string& mime_type,
                     const base::FilePath& current_path,
-                    const RenameCompletionCallback& callback));
-  MOCK_METHOD1(PublishDownload, void(const RenameCompletionCallback& callback));
+                    RenameCompletionCallback callback));
+  MOCK_METHOD1(PublishDownload, void(RenameCompletionCallback callback));
   MOCK_METHOD0(GetDisplayName, base::FilePath());
 #endif  // defined(OS_ANDROID)
 };

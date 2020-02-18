@@ -303,7 +303,7 @@ class SigningStage(generic_stages.BoardSpecificBuilderStage):
     self._WaitForSigningResults(self.instruction_urls_per_channel)
 
     # Notify stages blocked on us that images are for the given channel list.
-    channels = self.instruction_urls_per_channel.keys()
+    channels = list(self.instruction_urls_per_channel)
     self.board_runattrs.SetParallel('signed_images_ready', channels)
 
 

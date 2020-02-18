@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "cc/metrics/compositor_frame_reporting_controller.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -22,7 +23,8 @@ class FrameSequenceTrackerTest : public testing::Test {
   FrameSequenceTrackerTest()
       : compositor_frame_reporting_controller_(
             std::make_unique<CompositorFrameReportingController>()),
-        collection_(compositor_frame_reporting_controller_.get()) {
+        collection_(/* is_single_threaded=*/false,
+                    compositor_frame_reporting_controller_.get()) {
     collection_.StartSequence(FrameSequenceTrackerType::kTouchScroll);
     tracker_ = collection_.GetTrackerForTesting(
         FrameSequenceTrackerType::kTouchScroll);
@@ -35,9 +37,10 @@ class FrameSequenceTrackerTest : public testing::Test {
         FrameSequenceTrackerType::kTouchScroll);
   }
 
-  viz::BeginFrameArgs CreateBeginFrameArgs(uint64_t source_id,
-                                           uint64_t sequence_number) {
-    auto now = base::TimeTicks::Now();
+  viz::BeginFrameArgs CreateBeginFrameArgs(
+      uint64_t source_id,
+      uint64_t sequence_number,
+      base::TimeTicks now = base::TimeTicks::Now()) {
     auto interval = base::TimeDelta::FromMilliseconds(16);
     auto deadline = now + interval;
     return viz::BeginFrameArgs::Create(BEGINFRAME_FROM_HERE, source_id,
@@ -76,13 +79,23 @@ class FrameSequenceTrackerTest : public testing::Test {
     return ++frame_token;
   }
 
+  // Check whether a type of tracker exists in |frame_trackers_| or not.
+  bool TrackerExists(FrameSequenceTrackerType type) const {
+    return collection_.frame_trackers_.contains(type);
+  }
+
   void TestNotifyFramePresented() {
     collection_.StartSequence(FrameSequenceTrackerType::kCompositorAnimation);
     collection_.StartSequence(FrameSequenceTrackerType::kMainThreadAnimation);
+    // The kTouchScroll tracker is created in the test constructor, and the
+    // kUniversal tracker is created in the FrameSequenceTrackerCollection
+    // constructor.
     EXPECT_EQ(collection_.frame_trackers_.size(), 3u);
+    collection_.StartSequence(FrameSequenceTrackerType::kUniversal);
+    EXPECT_EQ(collection_.frame_trackers_.size(), 4u);
 
     collection_.StopSequence(kCompositorAnimation);
-    EXPECT_EQ(collection_.frame_trackers_.size(), 2u);
+    EXPECT_EQ(collection_.frame_trackers_.size(), 3u);
     EXPECT_TRUE(collection_.frame_trackers_.contains(
         FrameSequenceTrackerType::kMainThreadAnimation));
     EXPECT_TRUE(collection_.frame_trackers_.contains(
@@ -100,9 +113,92 @@ class FrameSequenceTrackerTest : public testing::Test {
     EXPECT_TRUE(collection_.removal_trackers_.empty());
   }
 
+  void ReportMetrics() {
+    base::HistogramTester histogram_tester;
+
+    // Test that there is no main thread frames expected.
+    tracker_->impl_throughput().frames_expected = 100u;
+    tracker_->impl_throughput().frames_produced = 85u;
+    tracker_->ReportMetrics();
+    histogram_tester.ExpectTotalCount(
+        "Graphics.Smoothness.Throughput.CompositorThread.TouchScroll", 1u);
+    histogram_tester.ExpectTotalCount(
+        "Graphics.Smoothness.Throughput.MainThread.TouchScroll", 0u);
+    histogram_tester.ExpectTotalCount(
+        "Graphics.Smoothness.Throughput.SlowerThread.TouchScroll", 1u);
+
+    // Test that both are reported.
+    tracker_->impl_throughput().frames_expected = 100u;
+    tracker_->impl_throughput().frames_produced = 85u;
+    tracker_->main_throughput().frames_expected = 150u;
+    tracker_->main_throughput().frames_produced = 25u;
+    tracker_->ReportMetrics();
+    histogram_tester.ExpectTotalCount(
+        "Graphics.Smoothness.Throughput.CompositorThread.TouchScroll", 2u);
+    histogram_tester.ExpectTotalCount(
+        "Graphics.Smoothness.Throughput.MainThread.TouchScroll", 1u);
+    histogram_tester.ExpectTotalCount(
+        "Graphics.Smoothness.Throughput.SlowerThread.TouchScroll", 2u);
+
+    // Test that none is reported.
+    tracker_->main_throughput().frames_expected = 2u;
+    tracker_->main_throughput().frames_produced = 1u;
+    tracker_->impl_throughput().frames_expected = 2u;
+    tracker_->impl_throughput().frames_produced = 1u;
+    tracker_->ReportMetrics();
+    histogram_tester.ExpectTotalCount(
+        "Graphics.Smoothness.Throughput.CompositorThread.TouchScroll", 2u);
+    histogram_tester.ExpectTotalCount(
+        "Graphics.Smoothness.Throughput.MainThread.TouchScroll", 1u);
+    histogram_tester.ExpectTotalCount(
+        "Graphics.Smoothness.Throughput.SlowerThread.TouchScroll", 2u);
+
+    // Test the case where compositor and main thread have the same throughput.
+    tracker_->impl_throughput().frames_expected = 120u;
+    tracker_->impl_throughput().frames_produced = 118u;
+    tracker_->main_throughput().frames_expected = 120u;
+    tracker_->main_throughput().frames_produced = 118u;
+    tracker_->ReportMetrics();
+    histogram_tester.ExpectTotalCount(
+        "Graphics.Smoothness.Throughput.CompositorThread.TouchScroll", 3u);
+    histogram_tester.ExpectTotalCount(
+        "Graphics.Smoothness.Throughput.MainThread.TouchScroll", 2u);
+    histogram_tester.ExpectTotalCount(
+        "Graphics.Smoothness.Throughput.SlowerThread.TouchScroll", 3u);
+  }
+
+  base::TimeDelta TimeDeltaToReort() const {
+    return tracker_->time_delta_to_report_;
+  }
+
+  unsigned NumberOfTrackers() const {
+    return collection_.frame_trackers_.size();
+  }
+  unsigned NumberOfRemovalTrackers() const {
+    return collection_.removal_trackers_.size();
+  }
+
+  uint64_t BeginImplFrameDataPreviousSequence() const {
+    return tracker_->begin_impl_frame_data_.previous_sequence;
+  }
+  uint64_t BeginMainFrameDataPreviousSequence() const {
+    return tracker_->begin_main_frame_data_.previous_sequence;
+  }
+
+  base::flat_set<uint32_t> IgnoredFrameTokens() const {
+    return tracker_->ignored_frame_tokens_;
+  }
+
+  FrameSequenceMetrics::ThroughputData& ImplThroughput() const {
+    return tracker_->impl_throughput();
+  }
+  FrameSequenceMetrics::ThroughputData& MainThroughput() const {
+    return tracker_->main_throughput();
+  }
+
  protected:
   uint32_t number_of_frames_checkerboarded() const {
-    return tracker_->checkerboarding_.frames_checkerboarded;
+    return tracker_->metrics_->frames_checkerboarded();
   }
 
   std::unique_ptr<CompositorFrameReportingController>
@@ -140,6 +236,23 @@ TEST_F(FrameSequenceTrackerTest, SourceIdChangeDuringSequence) {
   // (from source_1);
   collection_.NotifySubmitFrame(NextFrameToken(), /*has_missing_content=*/false,
                                 viz::BeginFrameAck(args_2, true), args_1);
+}
+
+TEST_F(FrameSequenceTrackerTest, UniversalTrackerCreation) {
+  // The universal tracker should be explicitly created by the object that
+  // manages the |collection_|
+  EXPECT_FALSE(TrackerExists(FrameSequenceTrackerType::kUniversal));
+}
+
+TEST_F(FrameSequenceTrackerTest, UniversalTrackerRestartableAfterClearAll) {
+  collection_.StartSequence(FrameSequenceTrackerType::kUniversal);
+  EXPECT_TRUE(TrackerExists(FrameSequenceTrackerType::kUniversal));
+
+  collection_.ClearAll();
+  EXPECT_FALSE(TrackerExists(FrameSequenceTrackerType::kUniversal));
+
+  collection_.StartSequence(FrameSequenceTrackerType::kUniversal);
+  EXPECT_TRUE(TrackerExists(FrameSequenceTrackerType::kUniversal));
 }
 
 TEST_F(FrameSequenceTrackerTest, TestNotifyFramePresented) {
@@ -244,6 +357,57 @@ TEST_F(FrameSequenceTrackerTest, MultipleCheckerboardingFrames) {
   collection_.NotifyFramePresented(frame_token, feedback);
 
   EXPECT_EQ(kFrames, number_of_frames_checkerboarded());
+}
+
+TEST_F(FrameSequenceTrackerTest, ReportMetrics) {
+  ReportMetrics();
+}
+
+TEST_F(FrameSequenceTrackerTest, ReportMetricsAtFixedInterval) {
+  const uint64_t source = 1;
+  uint64_t sequence = 0;
+  base::TimeDelta first_time_delta = base::TimeDelta::FromSeconds(1);
+  auto args = CreateBeginFrameArgs(source, ++sequence,
+                                   base::TimeTicks::Now() + first_time_delta);
+
+  // args.frame_time is less than 5s of the tracker creation time, so won't
+  // schedule this tracker to report its throughput.
+  collection_.NotifyBeginImplFrame(args);
+  EXPECT_EQ(NumberOfTrackers(), 1u);
+  EXPECT_EQ(NumberOfRemovalTrackers(), 0u);
+
+  ImplThroughput().frames_expected += 100;
+  // Now args.frame_time is 5s since the tracker creation time, so this tracker
+  // should be scheduled to report its throughput.
+  args = CreateBeginFrameArgs(source, ++sequence,
+                              args.frame_time + TimeDeltaToReort());
+  collection_.NotifyBeginImplFrame(args);
+  EXPECT_EQ(NumberOfTrackers(), 1u);
+  EXPECT_EQ(NumberOfRemovalTrackers(), 1u);
+}
+
+TEST_F(FrameSequenceTrackerTest, ReportWithoutBeginImplFrame) {
+  const uint64_t source = 1;
+  uint64_t sequence = 0;
+
+  auto args = CreateBeginFrameArgs(source, ++sequence);
+  collection_.NotifyBeginMainFrame(args);
+
+  EXPECT_EQ(BeginImplFrameDataPreviousSequence(), 0u);
+  // Call to ReportBeginMainFrame should early exit.
+  EXPECT_EQ(BeginMainFrameDataPreviousSequence(), 0u);
+
+  uint32_t frame_token = NextFrameToken();
+  collection_.NotifySubmitFrame(frame_token, false,
+                                viz::BeginFrameAck(args, true), args);
+
+  // Call to ReportSubmitFrame should early exit.
+  EXPECT_TRUE(IgnoredFrameTokens().contains(frame_token));
+
+  gfx::PresentationFeedback feedback;
+  collection_.NotifyFramePresented(frame_token, feedback);
+  EXPECT_EQ(ImplThroughput().frames_produced, 0u);
+  EXPECT_EQ(MainThroughput().frames_produced, 0u);
 }
 
 }  // namespace cc

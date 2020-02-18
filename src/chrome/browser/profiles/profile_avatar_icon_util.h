@@ -13,6 +13,7 @@
 
 #include "build/build_config.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/gfx/image/image_skia.h"
 
 namespace base {
 class FilePath;
@@ -55,6 +56,9 @@ enum AvatarShape {
   SHAPE_SQUARE,
 };
 
+// Returns the default guest avatar.
+gfx::ImageSkia GetGuestAvatar(int size = 256);
+
 // Returns a version of |image| of a specific size. Note that no checks are
 // done on the width/height so make sure they're reasonable values; in the
 // range of 16-256 is probably best.
@@ -79,6 +83,12 @@ gfx::Image GetAvatarIconForTitleBar(const gfx::Image& image,
                                     bool is_rectangle,
                                     int dst_width,
                                     int dst_height);
+
+#if defined(OS_MACOSX)
+// Returns the image for the profile at |profile_path| that is suitable for use
+// in the macOS menu bar.
+gfx::Image GetAvatarIconForNSMenu(const base::FilePath& profile_path);
+#endif
 
 // Returns a bitmap with a couple of columns shaved off so it is more square,
 // so that when resized to a square aspect ratio it looks pretty.

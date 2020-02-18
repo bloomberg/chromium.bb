@@ -6,6 +6,7 @@
 
 #include <ostream>
 
+#include "src/base/bits.h"
 #include "src/codegen/code-factory.h"
 #include "src/codegen/interface-descriptors.h"
 #include "src/codegen/machine-type.h"
@@ -29,6 +30,7 @@ namespace internal {
 
 constexpr MachineType MachineTypeOf<Smi>::value;
 constexpr MachineType MachineTypeOf<Object>::value;
+constexpr MachineType MachineTypeOf<MaybeObject>::value;
 
 namespace compiler {
 
@@ -379,38 +381,72 @@ TNode<Context> CodeAssembler::GetJSContextParameter() {
       static_cast<int>(call_descriptor->JSParameterCount()))));
 }
 
-void CodeAssembler::Return(SloppyTNode<Object> value) {
-  // TODO(leszeks): This could also return a non-object, depending on the call
-  // descriptor. We should probably have multiple return overloads with
-  // different TNode types which DCHECK the call descriptor.
+void CodeAssembler::Return(TNode<Object> value) {
+  DCHECK_EQ(1, raw_assembler()->call_descriptor()->ReturnCount());
+  DCHECK(raw_assembler()->call_descriptor()->GetReturnType(0).IsTagged());
   return raw_assembler()->Return(value);
 }
 
-void CodeAssembler::Return(SloppyTNode<Object> value1,
-                           SloppyTNode<Object> value2) {
+void CodeAssembler::Return(TNode<Object> value1, TNode<Object> value2) {
+  DCHECK_EQ(2, raw_assembler()->call_descriptor()->ReturnCount());
+  DCHECK(raw_assembler()->call_descriptor()->GetReturnType(0).IsTagged());
+  DCHECK(raw_assembler()->call_descriptor()->GetReturnType(1).IsTagged());
   return raw_assembler()->Return(value1, value2);
 }
 
-void CodeAssembler::Return(SloppyTNode<Object> value1,
-                           SloppyTNode<Object> value2,
-                           SloppyTNode<Object> value3) {
+void CodeAssembler::Return(TNode<Object> value1, TNode<Object> value2,
+                           TNode<Object> value3) {
+  DCHECK_EQ(3, raw_assembler()->call_descriptor()->ReturnCount());
+  DCHECK(raw_assembler()->call_descriptor()->GetReturnType(0).IsTagged());
+  DCHECK(raw_assembler()->call_descriptor()->GetReturnType(1).IsTagged());
+  DCHECK(raw_assembler()->call_descriptor()->GetReturnType(2).IsTagged());
   return raw_assembler()->Return(value1, value2, value3);
 }
 
+void CodeAssembler::Return(TNode<Int32T> value) {
+  DCHECK_EQ(1, raw_assembler()->call_descriptor()->ReturnCount());
+  DCHECK_EQ(MachineType::Int32(),
+            raw_assembler()->call_descriptor()->GetReturnType(0));
+  return raw_assembler()->Return(value);
+}
+
+void CodeAssembler::Return(TNode<Uint32T> value) {
+  DCHECK_EQ(1, raw_assembler()->call_descriptor()->ReturnCount());
+  DCHECK_EQ(MachineType::Uint32(),
+            raw_assembler()->call_descriptor()->GetReturnType(0));
+  return raw_assembler()->Return(value);
+}
+
+void CodeAssembler::Return(TNode<WordT> value) {
+  DCHECK_EQ(1, raw_assembler()->call_descriptor()->ReturnCount());
+  DCHECK_EQ(
+      MachineType::PointerRepresentation(),
+      raw_assembler()->call_descriptor()->GetReturnType(0).representation());
+  return raw_assembler()->Return(value);
+}
+
+void CodeAssembler::Return(TNode<WordT> value1, TNode<WordT> value2) {
+  DCHECK_EQ(2, raw_assembler()->call_descriptor()->ReturnCount());
+  DCHECK_EQ(
+      MachineType::PointerRepresentation(),
+      raw_assembler()->call_descriptor()->GetReturnType(0).representation());
+  DCHECK_EQ(
+      MachineType::PointerRepresentation(),
+      raw_assembler()->call_descriptor()->GetReturnType(1).representation());
+  return raw_assembler()->Return(value1, value2);
+}
+
 void CodeAssembler::PopAndReturn(Node* pop, Node* value) {
+  DCHECK_EQ(1, raw_assembler()->call_descriptor()->ReturnCount());
   return raw_assembler()->PopAndReturn(pop, value);
 }
 
-void CodeAssembler::ReturnIf(Node* condition, Node* value) {
+void CodeAssembler::ReturnIf(Node* condition, TNode<Object> value) {
   Label if_return(this), if_continue(this);
   Branch(condition, &if_return, &if_continue);
   Bind(&if_return);
   Return(value);
   Bind(&if_continue);
-}
-
-void CodeAssembler::ReturnRaw(Node* value) {
-  return raw_assembler()->Return(value);
 }
 
 void CodeAssembler::AbortCSAAssert(Node* message) {
@@ -503,7 +539,7 @@ TNode<IntPtrT> CodeAssembler::IntPtrDiv(TNode<IntPtrT> left,
       return IntPtrConstant(left_constant / right_constant);
     }
     if (base::bits::IsPowerOfTwo(right_constant)) {
-      return WordSar(left, WhichPowerOf2(right_constant));
+      return WordSar(left, base::bits::WhichPowerOfTwo(right_constant));
     }
   }
   return UncheckedCast<IntPtrT>(raw_assembler()->IntPtrDiv(left, right));
@@ -538,11 +574,11 @@ TNode<WordT> CodeAssembler::IntPtrMul(SloppyTNode<WordT> left,
       return IntPtrConstant(left_constant * right_constant);
     }
     if (base::bits::IsPowerOfTwo(left_constant)) {
-      return WordShl(right, WhichPowerOf2(left_constant));
+      return WordShl(right, base::bits::WhichPowerOfTwo(left_constant));
     }
   } else if (is_right_constant) {
     if (base::bits::IsPowerOfTwo(right_constant)) {
-      return WordShl(left, WhichPowerOf2(right_constant));
+      return WordShl(left, base::bits::WhichPowerOfTwo(right_constant));
     }
   }
   return UncheckedCast<IntPtrT>(raw_assembler()->IntPtrMul(left, right));
@@ -913,6 +949,14 @@ TNode<IntPtrT> CodeAssembler::ChangeInt32ToIntPtr(SloppyTNode<Word32T> value) {
   return ReinterpretCast<IntPtrT>(value);
 }
 
+TNode<IntPtrT> CodeAssembler::ChangeFloat64ToIntPtr(TNode<Float64T> value) {
+  if (raw_assembler()->machine()->Is64()) {
+    return ReinterpretCast<IntPtrT>(
+        raw_assembler()->ChangeFloat64ToInt64(value));
+  }
+  return ReinterpretCast<IntPtrT>(raw_assembler()->ChangeFloat64ToInt32(value));
+}
+
 TNode<UintPtrT> CodeAssembler::ChangeFloat64ToUintPtr(
     SloppyTNode<Float64T> value) {
   if (raw_assembler()->machine()->Is64()) {
@@ -1233,12 +1277,6 @@ TNode<Object> CodeAssembler::CallRuntimeImpl(
   int result_size = Runtime::FunctionForId(function)->result_size;
   TNode<Code> centry =
       HeapConstant(CodeFactory::RuntimeCEntry(isolate(), result_size));
-  return CallRuntimeWithCEntryImpl(function, centry, context, args);
-}
-
-TNode<Object> CodeAssembler::CallRuntimeWithCEntryImpl(
-    Runtime::FunctionId function, TNode<Code> centry, TNode<Object> context,
-    std::initializer_list<TNode<Object>> args) {
   constexpr size_t kMaxNumArgs = 6;
   DCHECK_GE(kMaxNumArgs, args.size());
   int argc = static_cast<int>(args.size());
@@ -1272,12 +1310,6 @@ void CodeAssembler::TailCallRuntimeImpl(
   int result_size = Runtime::FunctionForId(function)->result_size;
   TNode<Code> centry =
       HeapConstant(CodeFactory::RuntimeCEntry(isolate(), result_size));
-  return TailCallRuntimeWithCEntryImpl(function, arity, centry, context, args);
-}
-
-void CodeAssembler::TailCallRuntimeWithCEntryImpl(
-    Runtime::FunctionId function, TNode<Int32T> arity, TNode<Code> centry,
-    TNode<Object> context, std::initializer_list<TNode<Object>> args) {
   constexpr size_t kMaxNumArgs = 6;
   DCHECK_GE(kMaxNumArgs, args.size());
   int argc = static_cast<int>(args.size());
@@ -1309,7 +1341,13 @@ Node* CodeAssembler::CallStubN(StubCallMode call_mode,
   int implicit_nodes = descriptor.HasContextParameter() ? 2 : 1;
   DCHECK_LE(implicit_nodes, input_count);
   int argc = input_count - implicit_nodes;
-  DCHECK_LE(descriptor.GetParameterCount(), argc);
+#ifdef DEBUG
+  if (descriptor.AllowVarArgs()) {
+    DCHECK_LE(descriptor.GetParameterCount(), argc);
+  } else {
+    DCHECK_EQ(descriptor.GetParameterCount(), argc);
+  }
+#endif
   // Extra arguments not mentioned in the descriptor are passed on the stack.
   int stack_parameter_count = argc - descriptor.GetRegisterParameterCount();
   DCHECK_LE(descriptor.GetStackParameterCount(), stack_parameter_count);
@@ -1349,8 +1387,8 @@ void CodeAssembler::TailCallStubImpl(const CallInterfaceDescriptor& descriptor,
 
 Node* CodeAssembler::CallStubRImpl(StubCallMode call_mode,
                                    const CallInterfaceDescriptor& descriptor,
-                                   size_t result_size, Node* target,
-                                   SloppyTNode<Object> context,
+                                   size_t result_size, TNode<Object> target,
+                                   TNode<Object> context,
                                    std::initializer_list<Node*> args) {
   DCHECK(call_mode == StubCallMode::kCallCodeObject ||
          call_mode == StubCallMode::kCallBuiltinPointer);
@@ -1369,7 +1407,7 @@ Node* CodeAssembler::CallStubRImpl(StubCallMode call_mode,
                    inputs.data());
 }
 
-Node* CodeAssembler::TailCallStubThenBytecodeDispatchImpl(
+void CodeAssembler::TailCallStubThenBytecodeDispatchImpl(
     const CallInterfaceDescriptor& descriptor, Node* target, Node* context,
     std::initializer_list<Node*> args) {
   constexpr size_t kMaxNumArgs = 6;
@@ -1389,33 +1427,33 @@ Node* CodeAssembler::TailCallStubThenBytecodeDispatchImpl(
   for (auto arg : args) inputs.Add(arg);
   inputs.Add(context);
 
-  return raw_assembler()->TailCallN(call_descriptor, inputs.size(),
-                                    inputs.data());
+  raw_assembler()->TailCallN(call_descriptor, inputs.size(), inputs.data());
 }
 
 template <class... TArgs>
-Node* CodeAssembler::TailCallBytecodeDispatch(
-    const CallInterfaceDescriptor& descriptor, Node* target, TArgs... args) {
+void CodeAssembler::TailCallBytecodeDispatch(
+    const CallInterfaceDescriptor& descriptor, TNode<RawPtrT> target,
+    TArgs... args) {
   DCHECK_EQ(descriptor.GetParameterCount(), sizeof...(args));
   auto call_descriptor = Linkage::GetBytecodeDispatchCallDescriptor(
       zone(), descriptor, descriptor.GetStackParameterCount());
 
   Node* nodes[] = {target, args...};
   CHECK_EQ(descriptor.GetParameterCount() + 1, arraysize(nodes));
-  return raw_assembler()->TailCallN(call_descriptor, arraysize(nodes), nodes);
+  raw_assembler()->TailCallN(call_descriptor, arraysize(nodes), nodes);
 }
 
 // Instantiate TailCallBytecodeDispatch() for argument counts used by
 // CSA-generated code
-template V8_EXPORT_PRIVATE Node* CodeAssembler::TailCallBytecodeDispatch(
-    const CallInterfaceDescriptor& descriptor, Node* target, Node*, Node*,
-    Node*, Node*);
+template V8_EXPORT_PRIVATE void CodeAssembler::TailCallBytecodeDispatch(
+    const CallInterfaceDescriptor& descriptor, TNode<RawPtrT> target,
+    TNode<Object>, TNode<IntPtrT>, TNode<BytecodeArray>,
+    TNode<ExternalReference>);
 
-TNode<Object> CodeAssembler::TailCallJSCode(TNode<Code> code,
-                                            TNode<Context> context,
-                                            TNode<JSFunction> function,
-                                            TNode<Object> new_target,
-                                            TNode<Int32T> arg_count) {
+void CodeAssembler::TailCallJSCode(TNode<Code> code, TNode<Context> context,
+                                   TNode<JSFunction> function,
+                                   TNode<Object> new_target,
+                                   TNode<Int32T> arg_count) {
   JSTrampolineDescriptor descriptor;
   auto call_descriptor = Linkage::GetStubCallDescriptor(
       zone(), descriptor, descriptor.GetStackParameterCount(),
@@ -1423,8 +1461,7 @@ TNode<Object> CodeAssembler::TailCallJSCode(TNode<Code> code,
 
   Node* nodes[] = {code, function, new_target, arg_count, context};
   CHECK_EQ(descriptor.GetParameterCount() + 2, arraysize(nodes));
-  return UncheckedCast<Object>(
-      raw_assembler()->TailCallN(call_descriptor, arraysize(nodes), nodes));
+  raw_assembler()->TailCallN(call_descriptor, arraysize(nodes), nodes);
 }
 
 Node* CodeAssembler::CallCFunctionN(Signature<MachineType>* signature,
@@ -1437,6 +1474,13 @@ Node* CodeAssembler::CallCFunction(
     Node* function, MachineType return_type,
     std::initializer_list<CodeAssembler::CFunctionArg> args) {
   return raw_assembler()->CallCFunction(function, return_type, args);
+}
+
+Node* CodeAssembler::CallCFunctionWithoutFunctionDescriptor(
+    Node* function, MachineType return_type,
+    std::initializer_list<CodeAssembler::CFunctionArg> args) {
+  return raw_assembler()->CallCFunctionWithoutFunctionDescriptor(
+      function, return_type, args);
 }
 
 Node* CodeAssembler::CallCFunctionWithCallerSavedRegisters(
@@ -1914,7 +1958,7 @@ CodeAssemblerScopedExceptionHandler::CodeAssemblerScopedExceptionHandler(
       compatibility_label_(label),
       exception_(exception) {
   if (has_handler_) {
-    label_ = base::make_unique<CodeAssemblerExceptionHandlerLabel>(
+    label_ = std::make_unique<CodeAssemblerExceptionHandlerLabel>(
         assembler, CodeAssemblerLabel::kDeferred);
     assembler_->state()->PushExceptionHandler(label_.get());
   }

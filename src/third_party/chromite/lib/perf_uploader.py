@@ -20,14 +20,14 @@ from __future__ import division
 from __future__ import print_function
 
 import collections
-import httplib
 import json
 import math
 import os
 import re
 import string
-import urllib
-import urllib2
+
+from six.moves import http_client as httplib
+from six.moves import urllib
 
 from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
@@ -108,14 +108,15 @@ def OutputPerfValue(filename, description, value, units,
   """
   def ValidateString(param_name, value, max_len):
     if len(value) > max_len:
-      raise ValueError('%s must be at most %d characters.', param_name, max_len)
+      raise ValueError('%s must be at most %d characters.' %
+                       (param_name, max_len))
 
     allowed_chars = string.ascii_letters + string.digits + '-._'
     if not set(value).issubset(set(allowed_chars)):
       raise ValueError(
           '%s may only contain letters, digits, hyphens, periods, and '
-          'underscores. Its current value is %s.',
-          param_name, value
+          'underscores. Its current value is %s.' %
+          (param_name, value)
       )
 
   ValidateString('description', description, _MAX_DESCRIPTION_LENGTH)
@@ -334,14 +335,14 @@ def _SendToDashboard(data_obj, dashboard=DASHBOARD_URL):
     PerfUploadingError if an exception was raised when uploading.
   """
   upload_url = os.path.join(dashboard, 'add_point')
-  encoded = urllib.urlencode(data_obj)
-  req = urllib2.Request(upload_url, encoded)
+  encoded = urllib.parse.urlencode(data_obj)
+  req = urllib.request.Request(upload_url, encoded)
   try:
-    urllib2.urlopen(req)
-  except urllib2.HTTPError as e:
+    urllib.request.urlopen(req)
+  except urllib.error.HTTPError as e:
     raise PerfUploadingError('HTTPError: %d %s for JSON %s\n' %
                              (e.code, e.msg, data_obj['data']), e)
-  except urllib2.URLError as e:
+  except urllib.parse.URLError as e:
     raise PerfUploadingError('URLError: %s for JSON %s\n' %
                              (str(e.reason), data_obj['data']), e)
   except httplib.HTTPException as e:
@@ -422,7 +423,7 @@ def _RetryIfServerError(perf_exc):
   Returns:
     True if the cause of |perf_exc| is HTTP 5xx error.
   """
-  return (isinstance(perf_exc.orig_exc, urllib2.HTTPError) and
+  return (isinstance(perf_exc.orig_exc, urllib.error.HTTPError) and
           perf_exc.orig_exc.code >= 500)
 
 

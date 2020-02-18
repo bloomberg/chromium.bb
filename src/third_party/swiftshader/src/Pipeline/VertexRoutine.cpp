@@ -60,16 +60,22 @@ namespace sw
 			If(tagCache[cacheIndex] != index)
 			{
 				readInput(batch);
-				program(batch);
+				program(batch, vertexCount);
 				computeClipFlags();
+				computeCullMask();
 
 				writeCache(vertexCache, tagCache, batch);
 			}
 
 			Pointer<Byte> cacheEntry = vertexCache + cacheIndex * UInt((int)sizeof(Vertex));
-			writeVertex(vertex, cacheEntry);
 
-			vertex += sizeof(Vertex);
+			// For points, vertexCount is 1 per primitive, so duplicate vertex for all 3 vertices of the primitive
+			for(int i = 0; i < (state.isPoint ? 3 : 1); i++)
+			{
+				writeVertex(vertex, cacheEntry);
+				vertex += sizeof(Vertex);
+			}
+
 			batch = Pointer<UInt>(Pointer<Byte>(batch) + sizeof(uint32_t));
 			vertexCount--;
 		}
@@ -89,8 +95,14 @@ namespace sw
 			{
 				Pointer<Byte> input = *Pointer<Pointer<Byte>>(data + OFFSET(DrawData, input) + sizeof(void*) * (i / 4));
 				UInt stride = *Pointer<UInt>(data + OFFSET(DrawData, stride) + sizeof(uint32_t) * (i / 4));
+				Int baseVertex = *Pointer<Int>(data + OFFSET(DrawData, baseVertex));
+				UInt robustnessSize(0);
+				if(state.robustBufferAccess)
+				{
+					robustnessSize = *Pointer<UInt>(data + OFFSET(DrawData, robustnessSize) + sizeof(uint32_t) * (i / 4));
+				}
 
-				auto value = readStream(input, stride, state.input[i / 4], batch);
+				auto value = readStream(input, stride, state.input[i / 4], batch, state.robustBufferAccess, robustnessSize, baseVertex);
 				routine.inputs[i + 0] = value.x;
 				routine.inputs[i + 1] = value.y;
 				routine.inputs[i + 2] = value.z;
@@ -132,14 +144,50 @@ namespace sw
 		clipFlags |= Pointer<Int>(constants + OFFSET(Constants,fini))[SignMask(finiteXYZ)];
 	}
 
-	Vector4f VertexRoutine::readStream(Pointer<Byte> &buffer, UInt &stride, const Stream &stream, Pointer<UInt> &batch)
+	void VertexRoutine::computeCullMask()
+	{
+		cullMask = Int(15);
+
+		auto it = spirvShader->outputBuiltins.find(spv::BuiltInCullDistance);
+		if (it != spirvShader->outputBuiltins.end())
+		{
+			auto count = spirvShader->getNumOutputCullDistances();
+			for (uint32_t i = 0; i < count; i++)
+			{
+				auto const &distance = routine.getVariable(it->second.Id)[it->second.FirstComponent + i];
+				auto mask = SignMask(CmpGE(distance, SIMD::Float(0)));
+				cullMask &= mask;
+			}
+		}
+	}
+
+	Vector4f VertexRoutine::readStream(Pointer<Byte> &buffer, UInt &stride, const Stream &stream, Pointer<UInt> &batch,
+	                                   bool robustBufferAccess, UInt & robustnessSize, Int baseVertex)
 	{
 		Vector4f v;
+		// Because of the following rule in the Vulkan spec, we do not care if a very large negative
+		// baseVertex would overflow all the way back into a valid region of the index buffer:
+		// "Out-of-bounds buffer loads will return any of the following values :
+		//  - Values from anywhere within the memory range(s) bound to the buffer (possibly including
+		//    bytes of memory past the end of the buffer, up to the end of the bound range)."
+		UInt4 offsets = (*Pointer<UInt4>(As<Pointer<UInt4>>(batch)) + As<UInt4>(Int4(baseVertex))) * UInt4(stride);
 
-		Pointer<Byte> source0 = buffer + batch[0] * stride;
-		Pointer<Byte> source1 = buffer + batch[1] * stride;
-		Pointer<Byte> source2 = buffer + batch[2] * stride;
-		Pointer<Byte> source3 = buffer + batch[3] * stride;
+		Pointer<Byte> source0 = buffer + offsets.x;
+		Pointer<Byte> source1 = buffer + offsets.y;
+		Pointer<Byte> source2 = buffer + offsets.z;
+		Pointer<Byte> source3 = buffer + offsets.w;
+
+		UInt4 zero(0);
+		if (robustBufferAccess)
+		{
+			// TODO(b/141124876): Optimize for wide-vector gather operations.
+			UInt4 limits = offsets + UInt4(stream.bytesPerAttrib());
+			Pointer<Byte> zeroSource = As<Pointer<Byte>>(&zero);
+			source0 = IfThenElse(limits.x <= robustnessSize, source0, zeroSource);
+			source1 = IfThenElse(limits.y <= robustnessSize, source1, zeroSource);
+			source2 = IfThenElse(limits.z <= robustnessSize, source2, zeroSource);
+			source3 = IfThenElse(limits.w <= robustnessSize, source3, zeroSource);
+		}
 
 		bool isNativeFloatAttrib = (stream.attribType == SpirvShader::ATTRIBTYPE_FLOAT) || stream.normalized;
 
@@ -519,8 +567,8 @@ namespace sw
 		Float4 rhw = Float4(1.0f) / w;
 
 		Vector4f proj;
-		proj.x = As<Float4>(RoundInt(*Pointer<Float4>(data + OFFSET(DrawData,X0x16)) + pos.x * rhw * *Pointer<Float4>(data + OFFSET(DrawData,Wx16))));
-		proj.y = As<Float4>(RoundInt(*Pointer<Float4>(data + OFFSET(DrawData,Y0x16)) + pos.y * rhw * *Pointer<Float4>(data + OFFSET(DrawData,Hx16))));
+		proj.x = As<Float4>(RoundInt(*Pointer<Float4>(data + OFFSET(DrawData,X0xF)) + pos.x * rhw * *Pointer<Float4>(data + OFFSET(DrawData,WxF))));
+		proj.y = As<Float4>(RoundInt(*Pointer<Float4>(data + OFFSET(DrawData,Y0xF)) + pos.y * rhw * *Pointer<Float4>(data + OFFSET(DrawData,HxF))));
 		proj.z = pos.z * rhw;
 		proj.w = rhw;
 
@@ -534,7 +582,7 @@ namespace sw
 		it = spirvShader->outputBuiltins.find(spv::BuiltInPointSize);
 		if(it != spirvShader->outputBuiltins.end())
 		{
-			assert(it->second.SizeInComponents == 1);
+			ASSERT(it->second.SizeInComponents == 1);
 			auto psize = routine.getVariable(it->second.Id)[it->second.FirstComponent];
 
 			*Pointer<Float>(vertexCache + sizeof(Vertex) * cacheIndex3 + OFFSET(Vertex,pointSize)) = Extract(psize, 3);
@@ -543,10 +591,43 @@ namespace sw
 			*Pointer<Float>(vertexCache + sizeof(Vertex) * cacheIndex0 + OFFSET(Vertex,pointSize)) = Extract(psize, 0);
 		}
 
+		it = spirvShader->outputBuiltins.find(spv::BuiltInClipDistance);
+		if(it != spirvShader->outputBuiltins.end())
+		{
+			auto count = spirvShader->getNumOutputClipDistances();
+			for(unsigned int i = 0; i < count; i++)
+			{
+				auto dist = routine.getVariable(it->second.Id)[it->second.FirstComponent + i];
+				*Pointer<Float>(vertexCache + sizeof(Vertex) * cacheIndex3 + OFFSET(Vertex,clipDistance[i])) = Extract(dist, 3);
+				*Pointer<Float>(vertexCache + sizeof(Vertex) * cacheIndex2 + OFFSET(Vertex,clipDistance[i])) = Extract(dist, 2);
+				*Pointer<Float>(vertexCache + sizeof(Vertex) * cacheIndex1 + OFFSET(Vertex,clipDistance[i])) = Extract(dist, 1);
+				*Pointer<Float>(vertexCache + sizeof(Vertex) * cacheIndex0 + OFFSET(Vertex,clipDistance[i])) = Extract(dist, 0);
+			}
+		}
+
+		it = spirvShader->outputBuiltins.find(spv::BuiltInCullDistance);
+		if(it != spirvShader->outputBuiltins.end())
+		{
+			auto count = spirvShader->getNumOutputCullDistances();
+			for(unsigned int i = 0; i < count; i++)
+			{
+				auto dist = routine.getVariable(it->second.Id)[it->second.FirstComponent + i];
+				*Pointer<Float>(vertexCache + sizeof(Vertex) * cacheIndex3 + OFFSET(Vertex,cullDistance[i])) = Extract(dist, 3);
+				*Pointer<Float>(vertexCache + sizeof(Vertex) * cacheIndex2 + OFFSET(Vertex,cullDistance[i])) = Extract(dist, 2);
+				*Pointer<Float>(vertexCache + sizeof(Vertex) * cacheIndex1 + OFFSET(Vertex,cullDistance[i])) = Extract(dist, 1);
+				*Pointer<Float>(vertexCache + sizeof(Vertex) * cacheIndex0 + OFFSET(Vertex,cullDistance[i])) = Extract(dist, 0);
+			}
+		}
+
 		*Pointer<Int>(vertexCache + sizeof(Vertex) * cacheIndex3 + OFFSET(Vertex,clipFlags)) = (clipFlags >> 24) & 0x0000000FF;
 		*Pointer<Int>(vertexCache + sizeof(Vertex) * cacheIndex2 + OFFSET(Vertex,clipFlags)) = (clipFlags >> 16) & 0x0000000FF;
 		*Pointer<Int>(vertexCache + sizeof(Vertex) * cacheIndex1 + OFFSET(Vertex,clipFlags)) = (clipFlags >> 8)  & 0x0000000FF;
 		*Pointer<Int>(vertexCache + sizeof(Vertex) * cacheIndex0 + OFFSET(Vertex,clipFlags)) = (clipFlags >> 0)  & 0x0000000FF;
+
+		*Pointer<Int>(vertexCache + sizeof(Vertex) * cacheIndex3 + OFFSET(Vertex,cullMask)) = -((cullMask >> 3) & 1);
+		*Pointer<Int>(vertexCache + sizeof(Vertex) * cacheIndex2 + OFFSET(Vertex,cullMask)) = -((cullMask >> 2) & 1);
+		*Pointer<Int>(vertexCache + sizeof(Vertex) * cacheIndex1 + OFFSET(Vertex,cullMask)) = -((cullMask >> 1) & 1);
+		*Pointer<Int>(vertexCache + sizeof(Vertex) * cacheIndex0 + OFFSET(Vertex,cullMask)) = -((cullMask >> 0) & 1);
 
 		transpose4x4(proj.x, proj.y, proj.z, proj.w);
 
@@ -584,6 +665,7 @@ namespace sw
 		*Pointer<Int>(vertex + OFFSET(Vertex,pointSize)) = *Pointer<Int>(cacheEntry + OFFSET(Vertex,pointSize));
 
 		*Pointer<Int>(vertex + OFFSET(Vertex,clipFlags)) = *Pointer<Int>(cacheEntry + OFFSET(Vertex,clipFlags));
+		*Pointer<Int>(vertex + OFFSET(Vertex,cullMask)) = *Pointer<Int>(cacheEntry + OFFSET(Vertex,cullMask));
 		*Pointer<Int4>(vertex + OFFSET(Vertex,projected)) = *Pointer<Int4>(cacheEntry + OFFSET(Vertex,projected));
 
 		for(int i = 0; i < MAX_INTERFACE_COMPONENTS; i++)
@@ -592,6 +674,14 @@ namespace sw
 			{
 				*Pointer<Int>(vertex + OFFSET(Vertex, v[i]), 4) = *Pointer<Int>(cacheEntry + OFFSET(Vertex, v[i]), 4);
 			}
+		}
+		for(unsigned int i = 0; i < spirvShader->getNumOutputClipDistances(); i++)
+		{
+			*Pointer<Float>(vertex + OFFSET(Vertex, clipDistance[i]), 4) = *Pointer<Float>(cacheEntry + OFFSET(Vertex, clipDistance[i]), 4);
+		}
+		for(unsigned int i = 0; i < spirvShader->getNumOutputCullDistances(); i++)
+		{
+			*Pointer<Float>(vertex + OFFSET(Vertex, cullDistance[i]), 4) = *Pointer<Float>(cacheEntry + OFFSET(Vertex, cullDistance[i]), 4);
 		}
 	}
 }

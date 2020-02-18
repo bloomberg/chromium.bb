@@ -51,6 +51,8 @@ const double kLoadingProgressDone = 1.0;
 
 }  // namespace
 
+const int FrameTreeNode::kFrameTreeNodeInvalidId = -1;
+
 // This observer watches the opener of its owner FrameTreeNode and clears the
 // owner's opener if the opener is destroyed.
 class FrameTreeNode::OpenerDestroyedObserver : public FrameTreeNode::Observer {
@@ -430,11 +432,11 @@ void FrameTreeNode::CreatedNavigationRequest(
   // RenderFrameHostManager will take care of updates to the speculative
   // RenderFrameHost in DidCreateNavigationRequest below.
   if (was_previously_loading) {
-    if (navigation_request_ && navigation_request_->navigation_handle()) {
+    if (navigation_request_ && navigation_request_->IsNavigationStarted()) {
       // Mark the old request as aborted.
       navigation_request_->set_net_error(net::ERR_ABORTED);
     }
-    ResetNavigationRequest(true, true);
+    ResetNavigationRequest(true);
   }
 
   navigation_request_ = std::move(navigation_request);
@@ -450,21 +452,11 @@ void FrameTreeNode::CreatedNavigationRequest(
   DidStartLoading(to_different_document, was_previously_loading);
 }
 
-void FrameTreeNode::ResetNavigationRequest(bool keep_state,
-                                           bool inform_renderer) {
+void FrameTreeNode::ResetNavigationRequest(bool keep_state) {
   if (!navigation_request_)
     return;
 
   devtools_instrumentation::OnResetNavigationRequest(navigation_request_.get());
-
-  // The renderer should be informed if the caller allows to do so and the
-  // navigation came from a BeginNavigation IPC.
-  bool need_to_inform_renderer =
-      !IsPerNavigationMojoInterfaceEnabled() & inform_renderer &&
-      navigation_request_->from_begin_navigation();
-
-  NavigationRequest::AssociatedSiteInstanceType site_instance_type =
-      navigation_request_->associated_site_instance_type();
   navigation_request_.reset();
 
   if (keep_state)
@@ -474,23 +466,6 @@ void FrameTreeNode::ResetNavigationRequest(bool keep_state,
   // it created for the navigation. Also register that the load stopped.
   DidStopLoading();
   render_manager_.CleanUpNavigation();
-
-  // When reusing the same SiteInstance, a pending WebUI may have been created
-  // on behalf of the navigation in the current RenderFrameHost. Clear it.
-  if (site_instance_type ==
-      NavigationRequest::AssociatedSiteInstanceType::CURRENT) {
-    current_frame_host()->ClearPendingWebUI();
-  }
-
-  // If the navigation is renderer-initiated, the renderer should also be
-  // informed that the navigation stopped if needed. In the case the renderer
-  // process asked for the navigation to be aborted, e.g. following a
-  // document.open, do not send an IPC to the renderer process as it already
-  // expects the navigation to stop.
-  if (need_to_inform_renderer) {
-    current_frame_host()->Send(
-        new FrameMsg_DroppedNavigation(current_frame_host()->GetRoutingID()));
-  }
 }
 
 void FrameTreeNode::DidStartLoading(bool to_different_document,
@@ -529,15 +504,6 @@ void FrameTreeNode::DidStopLoading() {
   // Notify the WebContents.
   if (!frame_tree_->IsLoading())
     navigator()->GetDelegate()->DidStopLoading();
-
-  // Notify accessibility that the user is no longer trying to load or
-  // reload a page.
-  // TODO(domfarolino): Remove this in favor of notifying via the delegate's
-  // DidStopLoading() above.
-  BrowserAccessibilityManager* manager =
-      current_frame_host()->browser_accessibility_manager();
-  if (manager)
-    manager->DidStopLoading();
 }
 
 void FrameTreeNode::DidChangeLoadProgress(double load_progress) {
@@ -548,16 +514,9 @@ void FrameTreeNode::DidChangeLoadProgress(double load_progress) {
 }
 
 bool FrameTreeNode::StopLoading() {
-  if (navigation_request_) {
-    int expected_pending_nav_entry_id = navigation_request_->nav_entry_id();
-    if (navigation_request_->navigation_handle()) {
-      navigation_request_->set_net_error(net::ERR_ABORTED);
-      expected_pending_nav_entry_id =
-          navigation_request_->navigation_handle()->pending_nav_entry_id();
-    }
-    navigator_->DiscardPendingEntryIfNeeded(expected_pending_nav_entry_id);
-  }
-  ResetNavigationRequest(false, true);
+  if (navigation_request_ && navigation_request_->IsNavigationStarted())
+    navigation_request_->set_net_error(net::ERR_ABORTED);
+  ResetNavigationRequest(false);
 
   // TODO(nasko): see if child frames should send IPCs in site-per-process
   // mode.
@@ -592,7 +551,7 @@ void FrameTreeNode::BeforeUnloadCanceled() {
   // as it has not been created yet. It is only created when the
   // BeforeUnloadACK is received.
   if (navigation_request_)
-    ResetNavigationRequest(false, true);
+    ResetNavigationRequest(false);
 }
 
 bool FrameTreeNode::NotifyUserActivation() {
@@ -606,8 +565,7 @@ bool FrameTreeNode::NotifyUserActivation() {
 
   // See the "Same-origin Visibility" section in |UserActivationState| class
   // doc.
-  if (base::FeatureList::IsEnabled(features::kUserActivationV2) &&
-      base::FeatureList::IsEnabled(
+  if (base::FeatureList::IsEnabled(
           features::kUserActivationSameOriginVisibility)) {
     const url::Origin& current_origin =
         this->current_frame_host()->GetLastCommittedOrigin();
@@ -645,7 +603,7 @@ bool FrameTreeNode::VerifyUserActivation() {
     return true;
   return render_manager_.current_frame_host()
       ->GetRenderWidgetHost()
-      ->ConsumePendingUserActivationIfAllowed();
+      ->RemovePendingUserActivationIfAvailable();
 }
 
 bool FrameTreeNode::UpdateUserActivationState(

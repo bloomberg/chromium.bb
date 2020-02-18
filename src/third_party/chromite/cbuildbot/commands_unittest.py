@@ -14,7 +14,6 @@ import json
 import hashlib
 import os
 import struct
-from StringIO import StringIO
 
 import mock
 
@@ -122,7 +121,7 @@ class RunBuildScriptTest(cros_test_lib.RunCommandTempDirTestCase):
 
 
 class ChromeSDKTest(cros_test_lib.RunCommandTempDirTestCase):
-  """Basic tests for ChromeSDK commands with RunCommand mocked out."""
+  """Basic tests for ChromeSDK commands with run mocked out."""
   BOARD = 'daisy_foo'
   EXTRA_ARGS = ('--monkey', 'banana')
   EXTRA_ARGS2 = ('--donkey', 'kong')
@@ -139,7 +138,7 @@ class ChromeSDKTest(cros_test_lib.RunCommandTempDirTestCase):
     self.assertCommandContains([self.BOARD] + self.CMD, cwd=self.CWD)
 
   def testRunCommandWithRunArgs(self):
-    """Test run_args optional argument for RunCommand kwargs."""
+    """Test run_args optional argument for run kwargs."""
     self.inst.Run(self.CMD, run_args={'log_output': True})
     self.assertCommandContains([self.BOARD] + self.CMD, cwd=self.CWD,
                                log_output=True)
@@ -153,15 +152,14 @@ class ChromeSDKTest(cros_test_lib.RunCommandTempDirTestCase):
     self.assertCommandContains(['debug', self.BOARD] + list(self.EXTRA_ARGS) +
                                list(self.EXTRA_ARGS2) + self.CMD, cwd=self.CWD)
 
-  def MockGetDefaultTarget(self, with_nacl=False):
-    nacl_str = ' ninja nacl gold' if with_nacl else ''
+  def MockGetDefaultTarget(self):
     self.rc.AddCmdResult(partial_mock.In('qlist-%s' % self.BOARD),
-                         output='%s%s' % (constants.CHROME_CP, nacl_str))
+                         output='%s' % constants.CHROME_CP)
 
   def testNinjaWithRunArgs(self):
     """Test that running ninja with run_args.
 
-    run_args is an optional argument for RunCommand kwargs.
+    run_args is an optional argument for run kwargs.
     """
     self.MockGetDefaultTarget()
     self.inst.Ninja(run_args={'log_output': True})
@@ -173,8 +171,10 @@ class ChromeSDKTest(cros_test_lib.RunCommandTempDirTestCase):
   def testNinjaOptions(self):
     """Test that running ninja with non-default options."""
     self.MockGetDefaultTarget()
-    self.inst.Ninja(debug=True)
-    self.assertCommandContains(['autoninja', '-C', 'out_%s/Debug' % self.BOARD,
+    custom_inst = commands.ChromeSDK(self.CWD, self.BOARD, goma=True)
+    custom_inst.Ninja(debug=True)
+    self.assertCommandContains(['autoninja', '-j', '80', '-C',
+                                'out_%s/Debug' % self.BOARD,
                                 'chromiumos_preflight'])
 
 
@@ -292,7 +292,8 @@ class SkylabHWLabCommandsTest(cros_test_lib.RunCommandTestCase):
         wait_cmd, output=self._fakeWaitJson('COMPLETED', False))
 
     result = commands.RunSkylabHWTestSuite(
-        build, suite, board, pool=pool, wait_for_results=True)
+        build, suite, board, pool=pool, timeout_mins=None,
+        wait_for_results=True)
     self.assertEqual(result.to_raise, None)
     self.assertEqual(result.json_dump_result, None)
 
@@ -328,10 +329,11 @@ class SkylabHWLabCommandsTest(cros_test_lib.RunCommandTestCase):
     self.rc.AddCmdResult(wait_cmd, output=self._fakeWaitJson('COMPLETED', True))
 
     result = commands.RunSkylabHWTestSuite(
-        build, suite, board, pool=pool, wait_for_results=True)
+        build, suite, board, pool=pool, timeout_mins=None,
+        wait_for_results=True)
     error = result.to_raise
     self.assertTrue(isinstance(error, failures_lib.TestFailure))
-    self.assertTrue('Suite failed' in error.message)
+    self.assertIn('Suite failed', str(error))
 
   def testCreateTest(self):
     """Test that function call args are mapped correctly to commandline args."""
@@ -488,11 +490,11 @@ The suite job has another 2:39:39.789250 till timeout.
                 '--io-timeout', swarming_io_timeout_secs,
                 '--hard-timeout', swarming_hard_timeout_secs,
                 '--expiration', swarming_expiration_secs,
+                '--tags=board:test-board',
+                '--tags=build:test-build',
                 '--tags=priority:%s' % priority,
                 '--tags=suite:test-suite',
-                '--tags=build:test-build',
                 '--tags=task_name:test-build-test-suite',
-                '--tags=board:test-board',
                 '--auth-service-account-json',
                 constants.CHROMEOS_SERVICE_ACCOUNT,
                 '--', commands.RUN_SUITE_PATH,
@@ -504,9 +506,9 @@ The suite job has another 2:39:39.789250 till timeout.
     self.wait_cmd = base_cmd + ['-m', '26960110']
     self.json_dump_cmd = base_cmd + ['--json_dump', '-m', '26960110']
     create_results = iter([
-        self.rc.CmdResult(returncode=create_return_code,
-                          output=self.JOB_ID_OUTPUT,
-                          error=''),
+        cros_build_lib.CommandResult(returncode=create_return_code,
+                                     output=self.JOB_ID_OUTPUT,
+                                     error=''),
     ])
     self.rc.AddCmdResult(
         self.create_cmd,
@@ -514,14 +516,14 @@ The suite job has another 2:39:39.789250 till timeout.
     )
     wait_results_list = []
     if wait_retry:
-      r = self.rc.CmdResult(
+      r = cros_build_lib.CommandResult(
           returncode=self.internal_failure_exit_code,
           output=self.WAIT_RETRY_OUTPUT,
           error='')
       wait_results_list.append(r)
 
     wait_results_list.append(
-        self.rc.CmdResult(
+        cros_build_lib.CommandResult(
             returncode=wait_return_code, output=self.WAIT_OUTPUT,
             error='')
     )
@@ -535,9 +537,9 @@ The suite job has another 2:39:39.789250 till timeout.
     # Json dump will only run when wait_cmd fails
     if wait_return_code != 0:
       dump_json_results = iter([
-          self.rc.CmdResult(returncode=dump_json_return_code,
-                            output=self.JSON_OUTPUT,
-                            error=''),
+          cros_build_lib.CommandResult(returncode=dump_json_return_code,
+                                       output=self.JSON_OUTPUT,
+                                       error=''),
       ])
       self.rc.AddCmdResult(
           self.json_dump_cmd,
@@ -591,7 +593,8 @@ The suite job has another 2:39:39.789250 till timeout.
       cmd_result = self.RunHWTestSuite()
     self.assertEqual(cmd_result, (None, None))
     self.assertCommandCalled(self.create_cmd, capture_output=True,
-                             combine_stdout_stderr=True, env=mock.ANY)
+                             encoding='utf-8', combine_stdout_stderr=True,
+                             env=mock.ANY)
     self.assertIn(self.JOB_ID_OUTPUT, '\n'.join(output.GetStdoutLines()))
 
   def testRunHWTestSuiteMaximal(self):
@@ -626,9 +629,11 @@ The suite job has another 2:39:39.789250 till timeout.
                                        suite_min_duts=self._suite_min_duts)
     self.assertEqual(cmd_result, (None, None))
     self.assertCommandCalled(self.create_cmd, capture_output=True,
-                             combine_stdout_stderr=True, env=mock.ANY)
+                             combine_stdout_stderr=True, env=mock.ANY,
+                             encoding='utf-8')
     self.assertCommandCalled(self.wait_cmd, capture_output=True,
-                             combine_stdout_stderr=True, env=mock.ANY)
+                             combine_stdout_stderr=True, env=mock.ANY,
+                             encoding='utf-8')
     self.assertIn(self.WAIT_OUTPUT, '\n'.join(output.GetStdoutLines()))
     self.assertIn(self.JOB_ID_OUTPUT, '\n'.join(output.GetStdoutLines()))
 
@@ -679,7 +684,8 @@ The suite job has another 2:39:39.789250 till timeout.
       cmd_result = self.RunHWTestSuite(wait_for_results=True)
       self.assertIsInstance(cmd_result.to_raise, failures_lib.TestLabFailure)
       self.assertCommandCalled(self.json_dump_cmd, capture_output=True,
-                               combine_stdout_stderr=True, env=mock.ANY)
+                               combine_stdout_stderr=True, env=mock.ANY,
+                               encoding='utf-8')
 
   def testRunHWTestBoardNotAvailable(self):
     """Test RunHWTestSuite when BOARD_NOT_AVAILABLE is returned."""
@@ -733,9 +739,11 @@ The suite job has another 2:39:39.789250 till timeout.
     with self.OutputCapturer() as output:
       self.RunHWTestSuite(wait_for_results=self._wait_for_results)
       self.assertCommandCalled(self.create_cmd, capture_output=True,
-                               combine_stdout_stderr=True, env=mock.ANY)
+                               combine_stdout_stderr=True, env=mock.ANY,
+                               encoding='utf-8')
       self.assertCommandCalled(self.wait_cmd, capture_output=True,
-                               combine_stdout_stderr=True, env=mock.ANY)
+                               combine_stdout_stderr=True, env=mock.ANY,
+                               encoding='utf-8')
       self.assertIn(self.WAIT_RETRY_OUTPUT.strip(),
                     '\n'.join(output.GetStdoutLines()))
       self.assertIn(self.WAIT_OUTPUT, '\n'.join(output.GetStdoutLines()))
@@ -752,9 +760,11 @@ The suite job has another 2:39:39.789250 till timeout.
       with self.OutputCapturer() as output:
         self.RunHWTestSuite(wait_for_results=self._wait_for_results)
         self.assertCommandCalled(self.create_cmd, capture_output=True,
-                                 combine_stdout_stderr=True, env=mock.ANY)
+                                 combine_stdout_stderr=True, env=mock.ANY,
+                                 encoding='utf-8')
         self.assertCommandCalled(self.json_dump_cmd, capture_output=True,
-                                 combine_stdout_stderr=True, env=mock.ANY)
+                                 combine_stdout_stderr=True, env=mock.ANY,
+                                 encoding='utf-8')
         self.assertIn(self.JOB_ID_OUTPUT, '\n'.join(output.GetStdoutLines()))
         self.assertIn(self.JSON_OUTPUT, '\n'.join(output.GetStdoutLines()))
 
@@ -905,7 +915,7 @@ c98ca54db130886142ad582a58e90ddc *./common.sh
     result = commands.GetFirmwareVersions(self._buildroot, self._board)
     versions = commands.FirmwareVersions(
         None, 'Google_Kevin.8785.178.0', None, 'kevin_v1.10.184-459421c', None)
-    self.assertEquals(result, versions)
+    self.assertEqual(result, versions)
 
   def testGetFirmwareVersionsMixedImage(self):
     """Verify that can extract the right version from a mixed RO+RW bundle."""
@@ -957,7 +967,7 @@ ae8cf9fca3165a1c1f12decfd910c4fe *./vpd
         'Google_Caroline.7820.286.0',
         'caroline_v1.9.357-ac5c7b4',
         'caroline_v1.9.370-e8b9bd2')
-    self.assertEquals(result, versions)
+    self.assertEqual(result, versions)
 
   def testGetAllFirmwareVersions(self):
     """Verify that all model firmware versions can be extracted"""
@@ -1036,8 +1046,8 @@ fe5d699f2e9e4a7de031497953313dbd *./models/snappy/setvars.sh
     osutils.Touch(os.path.join(build_sbin, 'chromeos-firmwareupdate'),
                   makedirs=True)
     result = commands.GetAllFirmwareVersions(self._buildroot, self._board)
-    self.assertEquals(len(result), 5)
-    self.assertEquals(
+    self.assertEqual(len(result), 5)
+    self.assertEqual(
         result['reef'],
         commands.FirmwareVersions(
             'reef',
@@ -1045,7 +1055,7 @@ fe5d699f2e9e4a7de031497953313dbd *./models/snappy/setvars.sh
             'Google_Reef.9042.110.0',
             'reef_v1.1.5900-ab1ee51',
             'reef_v1.1.5909-bd1f0c9'))
-    self.assertEquals(
+    self.assertEqual(
         result['pyro'],
         commands.FirmwareVersions(
             'pyro',
@@ -1053,7 +1063,7 @@ fe5d699f2e9e4a7de031497953313dbd *./models/snappy/setvars.sh
             'Google_Pyro.9042.110.0',
             'pyro_v1.1.5900-ab1ee51',
             'pyro_v1.1.5909-bd1f0c9'))
-    self.assertEquals(
+    self.assertEqual(
         result['snappy'],
         commands.FirmwareVersions(
             'snappy',
@@ -1061,7 +1071,7 @@ fe5d699f2e9e4a7de031497953313dbd *./models/snappy/setvars.sh
             None,
             'snappy_v1.1.5909-bd1f0c9',
             None))
-    self.assertEquals(
+    self.assertEqual(
         result['sand'],
         commands.FirmwareVersions(
             'sand',
@@ -1069,7 +1079,7 @@ fe5d699f2e9e4a7de031497953313dbd *./models/snappy/setvars.sh
             None,
             'sand_v1.1.5909-bd1f0c9',
             None))
-    self.assertEquals(
+    self.assertEqual(
         result['electro'],
         commands.FirmwareVersions(
             'electro',
@@ -1084,7 +1094,7 @@ fe5d699f2e9e4a7de031497953313dbd *./models/snappy/setvars.sh
                              'usr', 'bin')
     osutils.Touch(os.path.join(build_bin, 'cros_config_host'), makedirs=True)
     result = commands.GetModels(self._buildroot, self._board)
-    self.assertEquals(result, ['pyro', 'reef', 'snappy'])
+    self.assertEqual(result, ['pyro', 'reef', 'snappy'])
 
   def testBuildMaximum(self):
     """Base case where Build is called with all options (except extra_env)."""
@@ -1182,7 +1192,7 @@ fe5d699f2e9e4a7de031497953313dbd *./models/snappy/setvars.sh
 
   def _TestChromeLKGM(self, chrome_revision):
     """Helper method for testing the GetChromeLKGM method."""
-    chrome_lkgm = '3322.0.0'
+    chrome_lkgm = b'3322.0.0'
     url = '%s/+/%s/%s?format=text' % (
         constants.CHROMIUM_SRC_PROJECT,
         chrome_revision or 'refs/heads/master',
@@ -1190,7 +1200,7 @@ fe5d699f2e9e4a7de031497953313dbd *./models/snappy/setvars.sh
     site_params = config_lib.GetSiteParams()
     with mock.patch.object(
         gob_util, 'FetchUrl',
-        return_value=StringIO(base64.b64encode(chrome_lkgm))) as patcher:
+        return_value=base64.b64encode(chrome_lkgm)) as patcher:
       self.assertEqual(chrome_lkgm, commands.GetChromeLKGM(chrome_revision))
       patcher.assert_called_with(site_params.EXTERNAL_GOB_HOST, url)
 
@@ -1381,7 +1391,7 @@ class BuildTarballTests(cros_test_lib.RunCommandTempDirTestCase):
     tarball = commands.BuildTastBundleTarball(self._buildroot,
                                               self._sysroot_build,
                                               self._tarball_dir)
-    self.assertEquals(expected_tarball, tarball)
+    self.assertEqual(expected_tarball, tarball)
     patch.assert_called_once_with(chroot, sysroot, self._tarball_dir)
 
   def testBuildTastTarballNoBundle(self):
@@ -1397,7 +1407,7 @@ class BuildTarballTests(cros_test_lib.RunCommandTempDirTestCase):
     expected_tarball = os.path.join(self._tarball_dir, 'guest_images.tar')
 
     pin_dir = os.path.join(self._buildroot, 'chroot', 'build', self._board,
-                           'opt/google/containers/pins')
+                           constants.GUEST_IMAGES_PINS_PATH)
     os.makedirs(pin_dir)
     for filename in ('file1', 'file2'):
       pin_file = os.path.join(pin_dir, filename + '.json')
@@ -1414,7 +1424,7 @@ class BuildTarballTests(cros_test_lib.RunCommandTempDirTestCase):
       tarball = commands.BuildPinnedGuestImagesTarball(self._buildroot,
                                                        self._board,
                                                        self._tarball_dir)
-      self.assertEquals(expected_tarball, tarball)
+      self.assertEqual(expected_tarball, tarball)
       gs_mock.assert_called_with('gs://file2', os.path.join(self._tarball_dir,
                                                             'file2.tar.gz'))
       m.assert_called_once_with(self._buildroot,
@@ -1426,7 +1436,7 @@ class BuildTarballTests(cros_test_lib.RunCommandTempDirTestCase):
   def testBuildPinnedGuestImagesTarballBadPin(self):
     """Tests that generating a guest images tarball with a bad pin file."""
     pin_dir = os.path.join(self._buildroot, 'chroot', 'build', self._board,
-                           'opt/google/containers/pins')
+                           constants.GUEST_IMAGES_PINS_PATH)
     os.makedirs(pin_dir)
     pin_file = os.path.join(pin_dir, 'file1.json')
     with open(pin_file, 'w') as f:
@@ -1482,7 +1492,7 @@ class BuildTarballTests(cros_test_lib.RunCommandTempDirTestCase):
         os.path.join(pkg_dir, 'sys-kernel', 'kernel-2-r0.tbz2')]]
 
     tar_mock = self.PatchObject(commands, 'BuildTarball')
-    self.PatchObject(cros_build_lib, 'RunCommand')
+    self.PatchObject(cros_build_lib, 'run')
     commands.BuildStrippedPackagesTarball(self._buildroot,
                                           'test-board',
                                           package_globs,
@@ -1523,7 +1533,7 @@ class UnmockedTests(cros_test_lib.TempDirTestCase):
                                                           fw_test_root)
     # Verify we get a valid tarball returned whose name uses the default name.
     self.assertTrue(returned_archive_name is not None)
-    self.assertEquals(returned_archive_name, constants.FIRMWARE_ARCHIVE_NAME)
+    self.assertEqual(returned_archive_name, constants.FIRMWARE_ARCHIVE_NAME)
 
     # Create an archive and specify that archive filename.
     archive_name = 'alternative_archive.tar.bz2'
@@ -1531,7 +1541,7 @@ class UnmockedTests(cros_test_lib.TempDirTestCase):
                                                           fw_test_root,
                                                           archive_name)
     # Verify that we get back an archive file using the specified name.
-    self.assertEquals(archive_name, returned_archive_name)
+    self.assertEqual(archive_name, returned_archive_name)
 
 
   def findFilesWithPatternExpectedResults(self, root, files):
@@ -1553,18 +1563,18 @@ class UnmockedTests(cros_test_lib.TempDirTestCase):
     find_all = commands.FindFilesWithPattern('*', target=search_files_root)
     expected_find_all = self.findFilesWithPatternExpectedResults(
         search_files_root, search_files)
-    self.assertEquals(set(find_all), set(expected_find_all))
+    self.assertEqual(set(find_all), set(expected_find_all))
     find_test_files = commands.FindFilesWithPattern('test*',
                                                     target=search_files_root)
     find_test_expected = self.findFilesWithPatternExpectedResults(
         search_files_root, ['test1', 'dir1/test1'])
-    self.assertEquals(set(find_test_files), set(find_test_expected))
+    self.assertEqual(set(find_test_files), set(find_test_expected))
     find_exclude = commands.FindFilesWithPattern(
         '*', target=search_files_root,
         exclude_dirs=(os.path.join(search_files_root, 'dir1'),))
     find_exclude_expected = self.findFilesWithPatternExpectedResults(
         search_files_root, ['file1', 'test1', 'file2', 'dir2/file2'])
-    self.assertEquals(set(find_exclude), set(find_exclude_expected))
+    self.assertEqual(set(find_exclude), set(find_exclude_expected))
 
   def testGenerateUploadJSON(self):
     """Verifies GenerateUploadJSON"""
@@ -1597,22 +1607,23 @@ class UnmockedTests(cros_test_lib.TempDirTestCase):
     parsed = json.loads(osutils.ReadFile(upload_file))
 
     # Directory should be ignored.
-    test_content = {'file1.txt': text_str,
-                    'file2.json': json_str,
+    test_content = {'file1.txt': text_str.encode('utf-8'),
+                    'file2.json': json_str.encode('utf-8'),
                     'file3.bin': bin_blob}
 
-    self.assertEquals(set(parsed.keys()), set(test_content.keys()))
+    self.assertEqual(set(parsed.keys()), set(test_content.keys()))
 
     # Verify the math.
     for filename, content in test_content.items():
       entry = parsed[filename]
       size = len(content)
-      sha1 = base64.b64encode(hashlib.sha1(content).digest())
-      sha256 = base64.b64encode(hashlib.sha256(content).digest())
+      sha1 = base64.b64encode(hashlib.sha1(content).digest()).decode('utf-8')
+      sha256 = base64.b64encode(
+          hashlib.sha256(content).digest()).decode('utf-8')
 
-      self.assertEquals(entry['size'], size)
-      self.assertEquals(entry['sha1'], sha1)
-      self.assertEquals(entry['sha256'], sha256)
+      self.assertEqual(entry['size'], size)
+      self.assertEqual(entry['sha1'], sha1)
+      self.assertEqual(entry['sha256'], sha256)
 
   def testGenerateHtmlIndexTuple(self):
     """Verifies GenerateHtmlIndex gives us something sane (input: tuple)"""
@@ -1696,7 +1707,7 @@ class UnmockedTests(cros_test_lib.TempDirTestCase):
     artifact = {'paths': ['a.bin'], 'output': 'a.tar.gz', 'archive': 'tar',
                 'compress': 'gz'}
     path = commands.BuildStandaloneArchive(archive_dir, image_dir, artifact)
-    self.assertEquals(path, ['a.tar.gz'])
+    self.assertEqual(path, ['a.tar.gz'])
     cros_test_lib.VerifyTarball(os.path.join(archive_dir, path[0]),
                                 ['a.bin'])
 
@@ -1704,20 +1715,20 @@ class UnmockedTests(cros_test_lib.TempDirTestCase):
     artifact = {'paths': ['a.bin', 'aa'], 'output': 'aa.tar.gz',
                 'archive': 'tar', 'compress': 'gz'}
     path = commands.BuildStandaloneArchive(archive_dir, image_dir, artifact)
-    self.assertEquals(path, ['aa.tar.gz'])
+    self.assertEqual(path, ['aa.tar.gz'])
     cros_test_lib.VerifyTarball(os.path.join(archive_dir, path[0]),
                                 ['a.bin', 'aa'])
 
     # Check zip functionality.
     artifact = {'paths': ['a.bin'], 'archive': 'zip'}
     path = commands.BuildStandaloneArchive(archive_dir, image_dir, artifact)
-    self.assertEquals(path, ['a.zip'])
+    self.assertEqual(path, ['a.zip'])
     self.assertExists(os.path.join(archive_dir, path[0]))
 
     # Check directory copy functionality.
     artifact = {'paths': ['dlc'], 'output': 'dlc'}
     path = commands.BuildStandaloneArchive(archive_dir, image_dir, artifact)
-    self.assertEquals(path, ['dlc'])
+    self.assertEqual(path, ['dlc'])
     self.assertExists(os.path.join(archive_dir, path[0]))
 
   def testGceTarballGeneration(self):
@@ -1732,7 +1743,7 @@ class UnmockedTests(cros_test_lib.TempDirTestCase):
     osutils.Touch(os.path.join(image_dir, image))
 
     output_tar = commands.BuildGceTarball(archive_dir, image_dir, image)
-    self.assertEquals(output, output_tar)
+    self.assertEqual(output, output_tar)
 
     output_path = os.path.join(archive_dir, output_tar)
     self.assertExists(output_path)
@@ -1798,10 +1809,10 @@ class UnmockedTests(cros_test_lib.TempDirTestCase):
     tarball_rel_path = commands.BuildEbuildLogsTarball(self.tempdir,
                                                        wrong_board,
                                                        self.tempdir)
-    self.assertEquals(tarball_rel_path, None)
+    self.assertEqual(tarball_rel_path, None)
     tarball_rel_path = commands.BuildEbuildLogsTarball(self.tempdir,
                                                        board, self.tempdir)
-    self.assertEquals(tarball_rel_path, None)
+    self.assertEqual(tarball_rel_path, None)
 
 
 class ImageTestCommandsTest(cros_test_lib.RunCommandTestCase):
@@ -1842,6 +1853,7 @@ class GenerateAFDOArtifactsTests(
     osutils.SafeMakedirs(chroot_tmp)
     self.board = 'board'
     self.target = 'any_target'
+    self.chrome_root = '/path/to/chrome_root'
     self.output_path = os.path.join(self.tempdir, 'output_dir')
     osutils.SafeMakedirs(self.output_path)
     self.mock_command = self.PatchObject(commands,
@@ -1865,7 +1877,8 @@ class GenerateAFDOArtifactsTests(
       json.dump(output_proto, f)
 
     ret = commands.GenerateAFDOArtifacts(
-        self.buildroot, self.board, self.output_path, self.target)
+        self.buildroot, self.chrome_root, self.board,
+        self.output_path, self.target)
 
     cmd = [
         'build_api',
@@ -1882,6 +1895,8 @@ class GenerateAFDOArtifactsTests(
     input_proto = json.loads(osutils.ReadFile(input_proto_file))
     self.assertEqual(input_proto['chroot']['path'],
                      os.path.join(self.buildroot, 'chroot'))
+    self.assertEqual(input_proto['chroot']['chrome_dir'],
+                     self.chrome_root)
     self.assertEqual(input_proto['build_target']['name'],
                      self.board)
     self.assertEqual(input_proto['output_dir'],

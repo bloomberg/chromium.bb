@@ -27,6 +27,8 @@
 #include "media/mojo/mojom/video_encode_accelerator.mojom.h"
 #include "media/video/gpu_video_accelerator_factories.h"
 #include "media/video/supported_video_decoder_config.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace gpu {
@@ -65,8 +67,10 @@ class CONTENT_EXPORT GpuVideoAcceleratorFactoriesImpl
       bool enable_video_gpu_memory_buffers,
       bool enable_media_stream_gpu_memory_buffers,
       bool enable_video_accelerator,
-      media::mojom::InterfaceFactoryPtrInfo interface_factory_info,
-      media::mojom::VideoEncodeAcceleratorProviderPtrInfo vea_provider_info);
+      mojo::PendingRemote<media::mojom::InterfaceFactory>
+          interface_factory_remote,
+      mojo::PendingRemote<media::mojom::VideoEncodeAcceleratorProvider>
+          vea_provider_remote);
 
   // media::GpuVideoAcceleratorFactories implementation.
   bool IsGpuVideoAcceleratorEnabled() override;
@@ -76,7 +80,7 @@ class CONTENT_EXPORT GpuVideoAcceleratorFactoriesImpl
       media::MediaLog* media_log,
       media::VideoDecoderImplementation implementation,
       const media::RequestOverlayInfoCB& request_overlay_info_cb) override;
-  bool IsDecoderConfigSupported(
+  Supported IsDecoderConfigSupported(
       media::VideoDecoderImplementation implementation,
       const media::VideoDecoderConfig& config) override;
   std::unique_ptr<media::VideoEncodeAccelerator> CreateVideoEncodeAccelerator()
@@ -106,7 +110,6 @@ class CONTENT_EXPORT GpuVideoAcceleratorFactoriesImpl
   // and this class will no longer be used, as it assumes a ContextProvider is
   // present otherwise.
   void DestroyContext();
-  std::unique_ptr<base::SharedMemory> CreateSharedMemory(size_t size) override;
   base::UnsafeSharedMemoryRegion CreateSharedMemoryRegion(size_t size) override;
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() override;
 
@@ -134,12 +137,16 @@ class CONTENT_EXPORT GpuVideoAcceleratorFactoriesImpl
       bool enable_gpu_memory_buffer_video_frames_for_video,
       bool enable_gpu_memory_buffer_video_frames_for_media_stream,
       bool enable_video_accelerator,
-      media::mojom::InterfaceFactoryPtrInfo interface_factory_info,
-      media::mojom::VideoEncodeAcceleratorProviderPtrInfo vea_provider_info);
+      mojo::PendingRemote<media::mojom::InterfaceFactory>
+          interface_factory_remote,
+      mojo::PendingRemote<media::mojom::VideoEncodeAcceleratorProvider>
+          vea_provider_remote);
 
   void BindOnTaskRunner(
-      media::mojom::InterfaceFactoryPtrInfo interface_factory_info,
-      media::mojom::VideoEncodeAcceleratorProviderPtrInfo vea_provider_info);
+      mojo::PendingRemote<media::mojom::InterfaceFactory>
+          interface_factory_remote,
+      mojo::PendingRemote<media::mojom::VideoEncodeAcceleratorProvider>
+          vea_provider_remote);
 
   // viz::ContextLostObserver implementation.
   void OnContextLost() override;
@@ -174,11 +181,11 @@ class CONTENT_EXPORT GpuVideoAcceleratorFactoriesImpl
 
   gpu::GpuMemoryBufferManager* const gpu_memory_buffer_manager_;
 
-  media::mojom::InterfaceFactoryPtr interface_factory_;
-  media::mojom::VideoEncodeAcceleratorProviderPtr vea_provider_;
+  mojo::Remote<media::mojom::InterfaceFactory> interface_factory_;
+  mojo::Remote<media::mojom::VideoEncodeAcceleratorProvider> vea_provider_;
 
   // SupportedDecoderConfigs state.
-  mojo::InterfacePtr<media::mojom::VideoDecoder> video_decoder_;
+  mojo::Remote<media::mojom::VideoDecoder> video_decoder_;
   base::Lock supported_decoder_configs_lock_;
   // If the Optional is empty, then we have not yet gotten the configs.  If the
   // Optional contains an empty vector, then we have gotten the result and there

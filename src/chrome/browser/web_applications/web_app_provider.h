@@ -29,7 +29,9 @@ class PrefRegistrySyncable;
 namespace web_app {
 
 // Forward declarations of generalized interfaces.
+class AppRegistryController;
 class AppIconManager;
+class AppShortcutManager;
 class ExternalWebAppManager;
 class FileHandlerManager;
 class InstallFinalizer;
@@ -42,8 +44,6 @@ class WebAppUiManager;
 
 // Forward declarations for new extension-independent subsystems.
 class WebAppDatabaseFactory;
-class WebAppDatabase;
-class WebAppSyncManager;
 
 // Connects Web App features, such as the installation of default and
 // policy-managed web apps, with Profiles (as WebAppProvider is a
@@ -68,6 +68,7 @@ class WebAppProvider : public WebAppProviderBase {
 
   // WebAppProviderBase:
   AppRegistrar& registrar() override;
+  AppRegistryController& registry_controller() override;
   InstallManager& install_manager() override;
   InstallFinalizer& install_finalizer() override;
   ManifestUpdateManager& manifest_update_manager() override;
@@ -77,9 +78,8 @@ class WebAppProvider : public WebAppProviderBase {
   WebAppAudioFocusIdMap& audio_focus_id_map() override;
   FileHandlerManager& file_handler_manager() override;
   AppIconManager& icon_manager() override;
+  AppShortcutManager& shortcut_manager() override;
 
-  WebAppDatabaseFactory& database_factory() { return *database_factory_; }
-  WebAppSyncManager& sync_manager() { return *sync_manager_; }
   SystemWebAppManager& system_web_app_manager();
 
   // KeyedService:
@@ -105,25 +105,25 @@ class WebAppProvider : public WebAppProviderBase {
   // Wire together subsystems but do not start them (yet).
   void ConnectSubsystems();
 
-  // Start registry. All other subsystems depend on it.
-  void StartRegistry();
-  void OnRegistryReady();
+  // Start registry controller. All other subsystems depend on it.
+  void StartRegistryController();
+  void OnRegistryControllerReady();
 
   void CheckIsConnected() const;
 
   // New extension-independent subsystems:
   std::unique_ptr<WebAppDatabaseFactory> database_factory_;
-  std::unique_ptr<WebAppDatabase> database_;
-  std::unique_ptr<WebAppSyncManager> sync_manager_;
 
   // Generalized subsystems:
   std::unique_ptr<AppRegistrar> registrar_;
+  std::unique_ptr<AppRegistryController> registry_controller_;
   std::unique_ptr<ExternalWebAppManager> external_web_app_manager_;
   std::unique_ptr<FileHandlerManager> file_handler_manager_;
   std::unique_ptr<AppIconManager> icon_manager_;
   std::unique_ptr<InstallFinalizer> install_finalizer_;
   std::unique_ptr<ManifestUpdateManager> manifest_update_manager_;
   std::unique_ptr<PendingAppManager> pending_app_manager_;
+  std::unique_ptr<AppShortcutManager> shortcut_manager_;
   std::unique_ptr<SystemWebAppManager> system_web_app_manager_;
   std::unique_ptr<WebAppAudioFocusIdMap> audio_focus_id_map_;
   std::unique_ptr<WebAppInstallManager> install_manager_;
@@ -132,7 +132,7 @@ class WebAppProvider : public WebAppProviderBase {
 
   base::OneShotEvent on_registry_ready_;
 
-  Profile* profile_;
+  Profile* const profile_;
 
   // Ensures that ConnectSubsystems() is not called after Start().
   bool started_ = false;

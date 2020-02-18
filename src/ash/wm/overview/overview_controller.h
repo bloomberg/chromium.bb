@@ -21,6 +21,8 @@
 
 namespace ash {
 
+class OverviewWallpaperController;
+
 // Manages a overview session which displays an overview of all windows and
 // allows selecting a window to activate it.
 class ASH_EXPORT OverviewController : public OverviewDelegate,
@@ -29,9 +31,9 @@ class ASH_EXPORT OverviewController : public OverviewDelegate,
   OverviewController();
   ~OverviewController() override;
 
-  // Starts/Ends overview with |type|. Returns true if successful (showing
-  // overview would be unsuccessful if there are no windows to show). Depending
-  // on |type| the enter/exit animation will look different.
+  // Starts/Ends overview with |type|. Returns true if enter or exit overview
+  // successful. Depending on |type| the enter/exit animation will look
+  // different.
   bool StartOverview(OverviewSession::EnterExitOverviewType type =
                          OverviewSession::EnterExitOverviewType::kNormal);
   bool EndOverview(OverviewSession::EnterExitOverviewType type =
@@ -58,12 +60,12 @@ class ASH_EXPORT OverviewController : public OverviewDelegate,
 
   // Returns true if overview has been shutdown, but is still animating to the
   // end state ui.
-  bool IsCompletingShutdownAnimations();
+  bool IsCompletingShutdownAnimations() const;
 
   // Pause or unpause the occlusion tracker. Resets the unpause delay if we were
   // already in the process of unpausing.
   void PauseOcclusionTracker();
-  void UnpauseOcclusionTracker(int delay);
+  void UnpauseOcclusionTracker(base::TimeDelta delay);
 
   void AddObserver(OverviewObserver* observer);
   void RemoveObserver(OverviewObserver* observer);
@@ -93,8 +95,12 @@ class ASH_EXPORT OverviewController : public OverviewDelegate,
 
   OverviewSession* overview_session() { return overview_session_.get(); }
 
-  void set_occlusion_pause_duration_for_end_ms_for_test(int duration) {
-    occlusion_pause_duration_for_end_ms_ = duration;
+  OverviewWallpaperController* overview_wallpaper_controller() {
+    return overview_wallpaper_controller_.get();
+  }
+
+  void set_occlusion_pause_duration_for_end_for_test(base::TimeDelta duration) {
+    occlusion_pause_duration_for_end_ = duration;
   }
   void set_delayed_animation_task_delay_for_test(base::TimeDelta delta) {
     delayed_animation_task_delay_ = delta;
@@ -110,23 +116,20 @@ class ASH_EXPORT OverviewController : public OverviewDelegate,
   std::vector<aura::Window*> GetItemWindowListInOverviewGridsForTest();
 
  private:
-  class OverviewWallpaperController;
   friend class OverviewSessionTest;
   FRIEND_TEST_ALL_PREFIXES(TabletModeControllerTest,
                            DisplayDisconnectionDuringOverview);
 
-  // Attempts to toggle overview mode and returns true if successful (showing
-  // overview would be unsuccessful if there are no windows to show). Depending
-  // on |type| the enter/exit animation will look different.
-  bool ToggleOverview(OverviewSession::EnterExitOverviewType type =
+  // Toggle overview mode. Depending on |type| the enter/exit animation will
+  // look different.
+  void ToggleOverview(OverviewSession::EnterExitOverviewType type =
                           OverviewSession::EnterExitOverviewType::kNormal);
 
-  // There is no need to blur or dim the wallpaper for tests.
-  static void SetDoNotChangeWallpaperForTests();
-
-  // Returns true if selecting windows in an overview is enabled. This is false
-  // at certain times, such as when the lock screen is visible.
+  // Returns true if it's possible to enter or exit overview mode in the current
+  // configuration. This can be false at certain times, such as when the lock
+  // screen is visible we can't overview mode.
   bool CanEnterOverview();
+  bool CanEndOverview(OverviewSession::EnterExitOverviewType type);
 
   void OnStartingAnimationComplete(bool canceled);
   void OnEndingAnimationComplete(bool canceled);
@@ -153,7 +156,7 @@ class ASH_EXPORT OverviewController : public OverviewDelegate,
   std::unique_ptr<OverviewSession> overview_session_;
   base::Time last_overview_session_time_;
 
-  int occlusion_pause_duration_for_end_ms_;
+  base::TimeDelta occlusion_pause_duration_for_end_;
 
   // Handles blurring and dimming of the wallpaper when entering or exiting
   // overview mode. Animates the blurring and dimming if necessary.

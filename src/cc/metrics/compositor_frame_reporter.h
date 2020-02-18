@@ -11,7 +11,13 @@
 #include "base/time/time.h"
 #include "cc/base/base_export.h"
 #include "cc/cc_export.h"
+#include "cc/metrics/begin_main_frame_metrics.h"
 #include "cc/metrics/frame_sequence_tracker.h"
+#include "components/viz/common/frame_timing_details.h"
+
+namespace viz {
+struct FrameTimingDetails;
+}
 
 namespace cc {
 class RollingTimeDeltaHistory;
@@ -55,23 +61,49 @@ class CC_EXPORT CompositorFrameReporter {
     kUnknown
   };
 
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
   enum class MissedFrameReportTypes {
-    kNonMissedFrame,
-    kMissedFrame,
-    kMissedFrameLatencyIncrease,
+    kNonMissedFrame = 0,
+    kMissedFrame = 1,
+    kDeprecatedMissedFrameLatencyIncrease = 2,
     kMissedFrameReportTypeCount
   };
 
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
   enum class StageType {
-    kBeginImplFrameToSendBeginMainFrame,
-    kSendBeginMainFrameToCommit,
-    kCommit,
-    kEndCommitToActivation,
-    kActivation,
-    kEndActivateToSubmitCompositorFrame,
-    kSubmitCompositorFrameToPresentationCompositorFrame,
-    kTotalLatency,
+    kBeginImplFrameToSendBeginMainFrame = 0,
+    kSendBeginMainFrameToCommit = 1,
+    kCommit = 2,
+    kEndCommitToActivation = 3,
+    kActivation = 4,
+    kEndActivateToSubmitCompositorFrame = 5,
+    kSubmitCompositorFrameToPresentationCompositorFrame = 6,
+    kTotalLatency = 7,
     kStageTypeCount
+  };
+
+  enum class VizBreakdown {
+    kSubmitToReceiveCompositorFrame = 0,
+    kReceivedCompositorFrameToStartDraw = 1,
+    kStartDrawToSwapEnd = 2,
+    kSwapEndToPresentationCompositorFrame = 3,
+    kBreakdownCount
+  };
+
+  enum class BlinkBreakdown {
+    kHandleInputEvents = 0,
+    kAnimate = 1,
+    kStyleUpdate = 2,
+    kLayoutUpdate = 3,
+    kPrepaint = 4,
+    kComposite = 5,
+    kPaint = 6,
+    kScrollingCoordinator = 7,
+    kCompositeCommit = 8,
+    kUpdateLayers = 9,
+    kBreakdownCount
   };
 
   CompositorFrameReporter(
@@ -87,38 +119,64 @@ class CC_EXPORT CompositorFrameReporter {
 
   // Note that the started stage may be reported to UMA. If the histogram is
   // intended to be reported then the histograms.xml file must be updated too.
-  void StartStage(StageType stage_type,
-                  base::TimeTicks start_time,
-                  RollingTimeDeltaHistory* stage_time_delta_history);
+  void StartStage(StageType stage_type, base::TimeTicks start_time);
   void TerminateFrame(FrameTerminationStatus termination_status,
                       base::TimeTicks termination_time);
+  void SetBlinkBreakdown(
+      std::unique_ptr<BeginMainFrameMetrics> blink_breakdown);
+  void SetVizBreakdown(const viz::FrameTimingDetails& viz_breakdown);
 
   int StageHistorySizeForTesting() { return stage_history_.size(); }
 
- protected:
+  void OnFinishImplFrame(base::TimeTicks timestamp);
+  void OnAbortBeginMainFrame();
+  bool did_finish_impl_frame() const { return did_finish_impl_frame_; }
+  bool did_abort_main_frame() const { return did_abort_main_frame_; }
+  base::TimeTicks impl_frame_finish_time() const {
+    return impl_frame_finish_time_;
+  }
+
+ private:
   struct StageData {
     StageType stage_type;
     base::TimeTicks start_time;
     base::TimeTicks end_time;
-    RollingTimeDeltaHistory* time_delta_history;
+    StageData();
+    StageData(StageType stage_type,
+              base::TimeTicks start_time,
+              base::TimeTicks end_time);
+    StageData(const StageData&);
+    ~StageData();
   };
 
+  void TerminateReporter();
+  void EndCurrentStage(base::TimeTicks end_time);
+  void ReportStageHistograms(bool missed_frame) const;
+  void ReportStageHistogramWithBreakdown(
+      MissedFrameReportTypes report_type,
+      const StageData& stage,
+      FrameSequenceTrackerType frame_sequence_tracker_type =
+          FrameSequenceTrackerType::kMaxType) const;
+  void ReportBlinkBreakdowns(
+      MissedFrameReportTypes report_type,
+      FrameSequenceTrackerType frame_sequence_tracker_type) const;
+  void ReportVizBreakdowns(
+      MissedFrameReportTypes report_type,
+      const base::TimeTicks start_time,
+      FrameSequenceTrackerType frame_sequence_tracker_type) const;
+  void ReportHistogram(MissedFrameReportTypes report_type,
+                       FrameSequenceTrackerType intraction_type,
+                       const int stage_type_index,
+                       base::TimeDelta time_delta) const;
+
   StageData current_stage_;
+  BeginMainFrameMetrics blink_breakdown_;
+  viz::FrameTimingDetails viz_breakdown_;
 
   // Stage data is recorded here. On destruction these stages will be reported
   // to UMA if the termination status is |kPresentedFrame|. Reported data will
   // be divided based on the frame submission status.
   std::vector<StageData> stage_history_;
-
- private:
-  void TerminateReporter();
-  void EndCurrentStage(base::TimeTicks end_time);
-  void ReportStageHistograms(bool missed_frame) const;
-  void ReportHistogram(
-      CompositorFrameReporter::MissedFrameReportTypes report_type,
-      FrameSequenceTrackerType intraction_type,
-      StageType stage_type,
-      base::TimeDelta time_delta) const;
 
   // Returns true if the stage duration is greater than |kAbnormalityPercentile|
   // of its RollingTimeDeltaHistory.
@@ -131,6 +189,14 @@ class CC_EXPORT CompositorFrameReporter {
       FrameTerminationStatus::kUnknown;
 
   const base::flat_set<FrameSequenceTrackerType>* active_trackers_;
+
+  // Indicates if work on Impl frame is finished.
+  bool did_finish_impl_frame_ = false;
+  // Indicates if main frame is aborted after begin.
+  bool did_abort_main_frame_ = false;
+  // The time that work on Impl frame is finished. It's only valid if the
+  // reporter is in a stage other than begin impl frame.
+  base::TimeTicks impl_frame_finish_time_;
 };
 }  // namespace cc
 

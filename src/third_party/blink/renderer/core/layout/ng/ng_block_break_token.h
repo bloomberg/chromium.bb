@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NGBlockBreakToken_h
-#define NGBlockBreakToken_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_NG_BLOCK_BREAK_TOKEN_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_NG_BLOCK_BREAK_TOKEN_H_
 
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -28,7 +28,7 @@ class CORE_EXPORT NGBlockBreakToken final : public NGBreakToken {
       NGLayoutInputNode node,
       LayoutUnit consumed_block_size,
       const NGBreakTokenVector& child_break_tokens,
-      bool has_last_resort_break,
+      NGBreakAppeal break_appeal,
       bool has_seen_all_children) {
     // We store the children list inline in the break token as a flexible
     // array. Therefore, we need to make sure to allocate enough space for
@@ -38,7 +38,7 @@ class CORE_EXPORT NGBlockBreakToken final : public NGBreakToken {
             child_break_tokens.size() * sizeof(NGBreakToken*),
         ::WTF::GetStringWithTypeName<NGBlockBreakToken>());
     new (data) NGBlockBreakToken(node, consumed_block_size, child_break_tokens,
-                                 has_last_resort_break, has_seen_all_children);
+                                 break_appeal, has_seen_all_children);
     return base::AdoptRef(static_cast<NGBlockBreakToken*>(data));
   }
 
@@ -76,8 +76,6 @@ class CORE_EXPORT NGBlockBreakToken final : public NGBreakToken {
 
   bool IsForcedBreak() const { return is_forced_break_; }
 
-  bool HasLastResortBreak() const { return has_last_resort_break_; }
-
   // Return true if all children have been "seen". When we have reached this
   // point, and resume layout in a fragmentainer, we should only process child
   // break tokens, if any, and not attempt to start laying out nodes that don't
@@ -110,7 +108,7 @@ class CORE_EXPORT NGBlockBreakToken final : public NGBreakToken {
   NGBlockBreakToken(NGLayoutInputNode node,
                     LayoutUnit consumed_block_size,
                     const NGBreakTokenVector& child_break_tokens,
-                    bool has_last_resort_break,
+                    NGBreakAppeal break_appeal,
                     bool has_seen_all_children);
 
   explicit NGBlockBreakToken(NGLayoutInputNode node);
@@ -131,4 +129,4 @@ struct DowncastTraits<NGBlockBreakToken> {
 
 }  // namespace blink
 
-#endif  // NGBlockBreakToken_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_NG_BLOCK_BREAK_TOKEN_H_

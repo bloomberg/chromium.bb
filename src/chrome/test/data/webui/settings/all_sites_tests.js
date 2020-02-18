@@ -83,7 +83,6 @@ suite('AllSites', function() {
             }),
           ])
     ]);
-
     browserProxy = new TestSiteSettingsPrefsBrowserProxy();
     localDataBrowserProxy = new TestLocalDataBrowserProxy();
     settings.SiteSettingsPrefsBrowserProxyImpl.instance_ = browserProxy;
@@ -98,19 +97,29 @@ suite('AllSites', function() {
     // The code being tested changes the Route. Reset so that state is not
     // leaked across tests.
     settings.resetRouteForTesting();
+    loadTimeData.overrideValues({enableStoragePressureUI: false});
   });
 
   /**
    * Configures the test element.
    * @param {Array<dictionary>} prefs The prefs to use.
+   * @param {string=} sortOrder the URL param used to establish default sort
+   * order.
    */
-  function setUpCategory(prefs) {
+  function setUpAllSites(prefs, sortOrder) {
     browserProxy.setPrefs(prefs);
-    settings.navigateTo(settings.routes.SITE_SETTINGS_ALL);
+    if (sortOrder) {
+      loadTimeData.overrideValues({enableStoragePressureUI: true});
+      settings.navigateTo(
+          settings.routes.SITE_SETTINGS_ALL,
+          new URLSearchParams(`sort=${sortOrder}`));
+    } else {
+      settings.navigateTo(settings.routes.SITE_SETTINGS_ALL);
+    }
   }
 
   test('All sites list populated', function() {
-    setUpCategory(prefsVarious);
+    setUpAllSites(prefsVarious);
     testElement.populateList_();
     return browserProxy.whenCalled('getAllSites').then(() => {
       // Use resolver to ensure that the list container is populated.
@@ -134,7 +143,7 @@ suite('AllSites', function() {
 
   test('search query filters list', function() {
     const SEARCH_QUERY = 'foo';
-    setUpCategory(prefsVarious);
+    setUpAllSites(prefsVarious);
     testElement.populateList_();
     return browserProxy.whenCalled('getAllSites')
         .then(() => {
@@ -166,7 +175,7 @@ suite('AllSites', function() {
   });
 
   test('can be sorted by most visited', function() {
-    setUpCategory(prefsVarious);
+    setUpAllSites(prefsVarious);
     testElement.populateList_();
 
     return browserProxy.whenCalled('getAllSites').then(() => {
@@ -210,7 +219,7 @@ suite('AllSites', function() {
 
   test('can be sorted by storage', function() {
     localDataBrowserProxy.setCookieDetails(TEST_COOKIE_LIST);
-    setUpCategory(prefsVarious);
+    setUpAllSites(prefsVarious);
     testElement.populateList_();
     return browserProxy.whenCalled('getAllSites')
         .then(() => {
@@ -266,8 +275,40 @@ suite('AllSites', function() {
         });
   });
 
+  test('can be sorted by storage by passing URL param', function() {
+    // The default sorting (most visited) will have the ascending storage
+    // values. With the URL param, we expect the sites to be sorted by usage in
+    // descending order.
+    document.body.innerHTML = '';
+    setUpAllSites(prefsVarious, 'data-stored');
+    testElement = document.createElement('all-sites');
+    document.body.appendChild(testElement);
+    testElement.currentRouteChanged(settings.routes.SITE_SETTINGS_ALL);
+    return browserProxy.whenCalled('getAllSites').then(() => {
+      Polymer.dom.flush();
+      const siteEntries =
+          testElement.$.listContainer.querySelectorAll('site-entry');
+
+      assertEquals(
+          'google.com',
+          siteEntries[0]
+              .root.querySelector('#displayName .url-directionality')
+              .innerText.trim());
+      assertEquals(
+          'bar.com',
+          siteEntries[1]
+              .root.querySelector('#displayName .url-directionality')
+              .innerText.trim());
+      assertEquals(
+          'foo.com',
+          siteEntries[2]
+              .root.querySelector('#displayName .url-directionality')
+              .innerText.trim());
+    });
+  });
+
   test('can be sorted by name', function() {
-    setUpCategory(prefsVarious);
+    setUpAllSites(prefsVarious);
     testElement.populateList_();
     return browserProxy.whenCalled('getAllSites').then(() => {
       Polymer.dom.flush();
@@ -291,8 +332,25 @@ suite('AllSites', function() {
     });
   });
 
+  test('can sort by name by passing URL param', function() {
+    document.body.innerHTML = '';
+    setUpAllSites(prefsVarious, 'name');
+    testElement = document.createElement('all-sites');
+    document.body.appendChild(testElement);
+    testElement.currentRouteChanged(settings.routes.SITE_SETTINGS_ALL);
+    return browserProxy.whenCalled('getAllSites').then(() => {
+      Polymer.dom.flush();
+      const siteEntries =
+          testElement.$.listContainer.querySelectorAll('site-entry');
+
+      assertEquals('bar.com', siteEntries[0].$.displayName.innerText.trim());
+      assertEquals('foo.com', siteEntries[1].$.displayName.innerText.trim());
+      assertEquals('google.com', siteEntries[2].$.displayName.innerText.trim());
+    });
+  });
+
   test('merging additional SiteGroup lists works', function() {
-    setUpCategory(prefsVarious);
+    setUpAllSites(prefsVarious);
     testElement.populateList_();
     return browserProxy.whenCalled('getAllSites').then(() => {
       Polymer.dom.flush();
@@ -401,7 +459,7 @@ suite('AllSites', function() {
       function() {
         // Test when one origin has data and cookies.
         // Clone this object to avoid propagating changes made in this test.
-        let siteGroup = JSON.parse(JSON.stringify(TEST_MULTIPLE_SITE_GROUP));
+        const siteGroup = JSON.parse(JSON.stringify(TEST_MULTIPLE_SITE_GROUP));
         siteGroup.origins[0].hasPermissionSettings = true;
         siteGroup.origins[0].usage = 100;
         siteGroup.origins[0].numCookies = 2;
@@ -422,7 +480,7 @@ suite('AllSites', function() {
     // cookies. In this case, a placeholder origin will be created with the
     // Etld+1 cookies number. Clone this object to avoid propagating changes
     // made in this test.
-    let siteGroup = JSON.parse(JSON.stringify(TEST_MULTIPLE_SITE_GROUP));
+    const siteGroup = JSON.parse(JSON.stringify(TEST_MULTIPLE_SITE_GROUP));
     siteGroup.numCookies = 5;
     testElement.siteGroupMap.set(
         siteGroup.etldPlus1, JSON.parse(JSON.stringify(siteGroup)));
@@ -493,7 +551,7 @@ suite('AllSites', function() {
   test('clear data via overflow menu (one origin has permission)', function() {
     // Test when there is one origin has permissions settings.
     // Clone this object to avoid propagating changes made in this test.
-    let siteGroup = JSON.parse(JSON.stringify(TEST_MULTIPLE_SITE_GROUP));
+    const siteGroup = JSON.parse(JSON.stringify(TEST_MULTIPLE_SITE_GROUP));
     siteGroup.origins[0].hasPermissionSettings = true;
     testElement.siteGroupMap.set(
         siteGroup.etldPlus1, JSON.parse(JSON.stringify(siteGroup)));

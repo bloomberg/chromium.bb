@@ -11,7 +11,7 @@ import("//testing/test.gni")
 jumbo_component("services") {
   output_name = "media_mojo_services"
   sources = [
-    "deferred_destroy_strong_binding_set.h",
+    "deferred_destroy_unique_receiver_set.h",
     "gpu_mojo_media_client.cc",
     "gpu_mojo_media_client.h",
     "interface_factory_impl.cc",
@@ -124,16 +124,24 @@ jumbo_component("services") {
       "mojo_cdm_file_io.h",
       "mojo_cdm_helper.cc",
       "mojo_cdm_helper.h",
-      "mojo_cdm_proxy.cc",
-      "mojo_cdm_proxy.h",
-      "mojo_cdm_proxy_service.cc",
-      "mojo_cdm_proxy_service.h",
     ]
     deps += [
       "//media/cdm:cdm_api",
       "//media/cdm:cdm_paths",
-      "//media/cdm/library_cdm/clear_key_cdm:clear_key_cdm_proxy",
     ]
+
+    if (enable_cdm_proxy) {
+      sources += [
+        "mojo_cdm_proxy.cc",
+        "mojo_cdm_proxy.h",
+        "mojo_cdm_proxy_service.cc",
+        "mojo_cdm_proxy_service.h",
+      ]
+      deps += [
+        # Needed by test_mojo_media_client.cc to create ClearKeyCdmProxy.
+        "//media/cdm/library_cdm/clear_key_cdm:clear_key_cdm_proxy",
+      ]
+    }
 
     # TODO(xhwang): Ideally media should not worry about sandbox. Find a way to
     # remove this dependency.
@@ -180,7 +188,7 @@ source_set("unit_tests") {
   testonly = true
 
   sources = [
-    "deferred_destroy_strong_binding_set_unittest.cc",
+    "deferred_destroy_unique_receiver_set_unittest.cc",
     "media_metrics_provider_unittest.cc",
     "mojo_audio_input_stream_unittest.cc",
     "mojo_audio_output_stream_provider_unittest.cc",
@@ -212,8 +220,11 @@ source_set("unit_tests") {
       "mojo_cdm_allocator_unittest.cc",
       "mojo_cdm_file_io_unittest.cc",
       "mojo_cdm_helper_unittest.cc",
-      "mojo_cdm_proxy_unittest.cc",
     ]
+
+    if (enable_cdm_proxy) {
+      sources += [ "mojo_cdm_proxy_unittest.cc" ]
+    }
 
     deps += [ "//media/cdm:cdm_api" ]
   }
@@ -277,20 +288,6 @@ test("media_service_unittests") {
     "//services/service_manager/public/cpp/test:test_support",
     "//testing/gmock",
     "//testing/gtest",
-  ]
-
-  data_deps = [
-    ":media",
-  ]
-}
-
-# media_pipeline_integration_unittests is out of date and disabled by default.
-test("media_pipeline_integration_unittests") {
-  testonly = true
-
-  deps = [
-    "//media/test:mojo_pipeline_integration_tests",
-    "//mojo/core/test:run_all_unittests",
   ]
 
   data_deps = [

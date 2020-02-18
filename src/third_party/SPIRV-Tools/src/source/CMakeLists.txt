@@ -283,7 +283,6 @@ set(SPIRV_SOURCES
   ${CMAKE_CURRENT_SOURCE_DIR}/val/validate_composites.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/val/validate_constants.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/val/validate_conversion.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/val/validate_datarules.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/val/validate_debug.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/val/validate_decorations.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/val/validate_derivatives.cpp
@@ -341,7 +340,7 @@ spvtools_default_compile_options(${SPIRV_TOOLS})
 target_include_directories(${SPIRV_TOOLS}
   PUBLIC
     $<BUILD_INTERFACE:${spirv-tools_SOURCE_DIR}/include>
-    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/include>
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
   PRIVATE ${spirv-tools_BINARY_DIR}
   PRIVATE ${SPIRV_HEADER_INCLUDE_DIR}
   )
@@ -354,7 +353,7 @@ spvtools_default_compile_options(${SPIRV_TOOLS}-shared)
 target_include_directories(${SPIRV_TOOLS}-shared
   PUBLIC
     $<BUILD_INTERFACE:${spirv-tools_SOURCE_DIR}/include>
-    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/include>
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
   PRIVATE ${spirv-tools_BINARY_DIR}
   PRIVATE ${SPIRV_HEADER_INCLUDE_DIR}
   )
@@ -380,7 +379,17 @@ if(ENABLE_SPIRV_TOOLS_INSTALL)
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
-  install(EXPORT ${SPIRV_TOOLS}Targets DESTINATION lib/cmake)
+  export(EXPORT ${SPIRV_TOOLS}Targets FILE ${SPIRV_TOOLS}Target.cmake)
+
+  spvtools_config_package_dir(${SPIRV_TOOLS} PACKAGE_DIR)
+  install(EXPORT ${SPIRV_TOOLS}Targets FILE ${SPIRV_TOOLS}Target.cmake DESTINATION ${PACKAGE_DIR})
+
+  # Special config file for root library compared to other libs.
+  file(WRITE ${CMAKE_BINARY_DIR}/${SPIRV_TOOLS}Config.cmake
+    "include(\${CMAKE_CURRENT_LIST_DIR}/${SPIRV_TOOLS}Target.cmake)\n"
+    "set(${SPIRV_TOOLS}_LIBRARIES ${SPIRV_TOOLS})\n"
+    "get_target_property(${SPIRV_TOOLS}_INCLUDE_DIRS ${SPIRV_TOOLS} INTERFACE_INCLUDE_DIRECTORIES)\n")
+  install(FILES ${CMAKE_BINARY_DIR}/${SPIRV_TOOLS}Config.cmake DESTINATION ${PACKAGE_DIR})
 endif(ENABLE_SPIRV_TOOLS_INSTALL)
 
 if(MSVC)

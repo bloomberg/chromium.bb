@@ -31,6 +31,7 @@ jumbo_source_set("internal") {
     "async_policy_provider.h",
     "chrome_schema.cc",
     "chrome_schema.h",
+    "cloud/chrome_browser_cloud_management_metrics.h",
     "cloud/cloud_external_data_manager.cc",
     "cloud/cloud_external_data_manager.h",
     "cloud/cloud_policy_client.cc",
@@ -61,6 +62,8 @@ jumbo_source_set("internal") {
     "cloud/device_management_service.h",
     "cloud/dm_auth.cc",
     "cloud/dm_auth.h",
+    "cloud/dm_token.cc",
+    "cloud/dm_token.h",
     "cloud/dmserver_job_configurations.cc",
     "cloud/dmserver_job_configurations.h",
     "cloud/enterprise_metrics.cc",
@@ -71,7 +74,6 @@ jumbo_source_set("internal") {
     "cloud/external_policy_data_updater.h",
     "cloud/machine_level_user_cloud_policy_manager.cc",
     "cloud/machine_level_user_cloud_policy_manager.h",
-    "cloud/machine_level_user_cloud_policy_metrics.h",
     "cloud/machine_level_user_cloud_policy_store.cc",
     "cloud/machine_level_user_cloud_policy_store.h",
     "cloud/policy_value_validator.h",
@@ -156,6 +158,7 @@ jumbo_source_set("internal") {
     "//components/policy:generated",
     "//components/policy/proto",
   ]
+
   deps = [
     "//base:i18n",
     "//base/third_party/dynamic_annotations",
@@ -163,13 +166,14 @@ jumbo_source_set("internal") {
     "//components/prefs",
     "//components/signin/public/identity_manager",
     "//components/strings",
+    "//components/user_manager",
     "//components/version_info",
     "//extensions/buildflags",
     "//google_apis",
     "//net",
     "//services/identity/public/cpp:cpp_types",
     "//services/network/public/cpp",
-    "//third_party/libxml",
+    "//third_party/libxml:xml_writer",
     "//third_party/re2",
     "//url",
   ]
@@ -199,7 +203,7 @@ jumbo_source_set("internal") {
       "registry_dict.h",
     ]
   }
-  if (is_android) {
+  if (is_android || is_ios) {
     sources += [ "cloud/component_cloud_policy_service_stub.cc" ]
     sources -= [
       "cloud/component_cloud_policy_service.cc",
@@ -227,11 +231,11 @@ jumbo_source_set("internal") {
       "proxy_policy_provider.h",
     ]
     sources -= [
+      "cloud/chrome_browser_cloud_management_metrics.h",
       "cloud/cloud_policy_client_registration_helper.cc",
       "cloud/cloud_policy_client_registration_helper.h",
       "cloud/machine_level_user_cloud_policy_manager.cc",
       "cloud/machine_level_user_cloud_policy_manager.h",
-      "cloud/machine_level_user_cloud_policy_metrics.h",
       "cloud/machine_level_user_cloud_policy_store.cc",
       "cloud/machine_level_user_cloud_policy_store.h",
       "cloud/user_cloud_policy_manager.cc",
@@ -240,17 +244,16 @@ jumbo_source_set("internal") {
       "cloud/user_cloud_policy_store.h",
     ]
   }
-  if (is_mac) {
-    libs = [
-      "CoreFoundation.framework",
-      "SystemConfiguration.framework",
-    ]
-  }
   if (is_ios || is_mac) {
     sources += [
       "mac_util.cc",
       "mac_util.h",
     ]
+    libs = [ "CoreFoundation.framework" ]
+
+    if (is_mac) {
+      libs += [ "SystemConfiguration.framework" ]
+    }
   }
 }
 
@@ -419,7 +422,7 @@ source_set("unit_tests") {
     "//services/network:test_support",
     "//testing/gmock",
     "//testing/gtest",
-    "//third_party/libxml",
+    "//third_party/libxml:xml_reader",
   ]
 }
 

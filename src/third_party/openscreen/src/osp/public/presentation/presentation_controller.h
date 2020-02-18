@@ -18,7 +18,7 @@
 #include "platform/base/error.h"
 
 namespace openscreen {
-namespace presentation {
+namespace osp {
 
 class UrlAvailabilityRequester;
 
@@ -58,7 +58,7 @@ class Controller final : public ServiceListener::Observer,
     ReceiverWatch(Controller* controller,
                   const std::vector<std::string>& urls,
                   ReceiverObserver* observer);
-    ReceiverWatch(ReceiverWatch&&);
+    ReceiverWatch(ReceiverWatch&&) noexcept;
     ~ReceiverWatch();
 
     ReceiverWatch& operator=(ReceiverWatch);
@@ -80,7 +80,7 @@ class Controller final : public ServiceListener::Observer,
                    const std::string& service_id,
                    bool is_reconnect,
                    absl::optional<uint64_t> request_id);
-    ConnectRequest(ConnectRequest&&);
+    ConnectRequest(ConnectRequest&&) noexcept;
     ~ConnectRequest();
 
     ConnectRequest& operator=(ConnectRequest);
@@ -217,7 +217,7 @@ class Controller final : public ServiceListener::Observer,
       termination_listener_by_id_;
 };
 
-}  // namespace presentation
+}  // namespace osp
 }  // namespace openscreen
 
 #endif  // OSP_PUBLIC_PRESENTATION_PRESENTATION_CONTROLLER_H_

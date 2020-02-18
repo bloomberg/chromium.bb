@@ -15,10 +15,11 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/common_name_mismatch_handler.h"
-#include "chrome/browser/ssl/ssl_cert_reporter.h"
 #include "chrome/browser/ssl/ssl_error_assistant.pb.h"
 #include "components/security_interstitials/content/security_interstitial_page.h"
+#include "components/security_interstitials/content/ssl_cert_reporter.h"
 #include "components/ssl_errors/error_classification.h"
+#include "content/public/browser/certificate_request_result_type.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/restore_type.h"
@@ -95,6 +96,7 @@ class SSLErrorHandler : public content::WebContentsUserData<SSLErrorHandler>,
     WWW_MISMATCH_FOUND_IN_SAN = 10,
     SHOW_MITM_SOFTWARE_INTERSTITIAL = 11,
     OS_REPORTS_CAPTIVE_PORTAL = 12,
+    SHOW_BLOCKED_INTERCEPTION_INTERSTITIAL = 13,
     SSL_ERROR_HANDLER_EVENT_COUNT
   };
 
@@ -120,7 +122,9 @@ class SSLErrorHandler : public content::WebContentsUserData<SSLErrorHandler>,
     virtual void ShowBadClockInterstitial(
         const base::Time& now,
         ssl_errors::ClockState clock_state) = 0;
+    virtual void ShowBlockedInterceptionInterstitial() = 0;
     virtual void ReportNetworkConnectivity(base::OnceClosure callback) = 0;
+    virtual bool HasBlockedInterception() const = 0;
   };
 
   // Entry point for the class. All parameters except
@@ -167,15 +171,12 @@ class SSLErrorHandler : public content::WebContentsUserData<SSLErrorHandler>,
   bool IsTimerRunningForTesting() const;
 
  protected:
-  SSLErrorHandler(
-      std::unique_ptr<Delegate> delegate,
-      content::WebContents* web_contents,
-      Profile* profile,
-      int cert_error,
-      const net::SSLInfo& ssl_info,
-      const GURL& request_url,
-      const base::Callback<void(content::CertificateRequestResultType)>&
-          callback);
+  SSLErrorHandler(std::unique_ptr<Delegate> delegate,
+                  content::WebContents* web_contents,
+                  Profile* profile,
+                  int cert_error,
+                  const net::SSLInfo& ssl_info,
+                  const GURL& request_url);
 
   // Called when an SSL cert error is encountered. Triggers a captive portal
   // check and fires a one shot timer to wait for a "captive portal detected"
@@ -193,6 +194,7 @@ class SSLErrorHandler : public content::WebContentsUserData<SSLErrorHandler>,
   void ShowBadClockInterstitial(const base::Time& now,
                                 ssl_errors::ClockState clock_state);
   void ShowDynamicInterstitial(const DynamicInterstitialInfo interstitial);
+  void ShowBlockedInterceptionInterstitial();
 
   // Gets the result of whether the suggested URL is valid. Displays
   // common name mismatch interstitial or ssl interstitial accordingly.
@@ -222,19 +224,12 @@ class SSLErrorHandler : public content::WebContentsUserData<SSLErrorHandler>,
 
   bool IsOnlyCertError(net::CertStatus only_cert_error_expected) const;
 
-  // Calculates a mask encoded using flags in SSLErrorUI::SSLErrorOptionsMask.
-  static int CalculateOptionsMask(int cert_error,
-                                  bool hard_override_disabled,
-                                  bool should_ssl_errors_be_fatal);
-
   std::unique_ptr<Delegate> delegate_;
   content::WebContents* const web_contents_;
   Profile* const profile_;
   const int cert_error_;
   const net::SSLInfo ssl_info_;
   const GURL request_url_;
-  base::Callback<void(content::CertificateRequestResultType)>
-      decision_callback_;
 
   content::NotificationRegistrar registrar_;
   base::OneShotTimer timer_;

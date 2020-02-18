@@ -6,15 +6,16 @@ package org.chromium.chrome.browser.keyboard_accessory.sheet_tabs;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
-import android.support.annotation.CallSuper;
-import android.support.annotation.DrawableRes;
-import android.support.annotation.LayoutRes;
-import android.support.annotation.Nullable;
 import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.RecyclerView;
 import android.view.ViewGroup;
 
-import org.chromium.base.VisibleForTesting;
+import androidx.annotation.CallSuper;
+import androidx.annotation.DrawableRes;
+import androidx.annotation.LayoutRes;
+import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.chrome.browser.keyboard_accessory.AccessoryTabType;
 import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData;
 import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData.AccessorySheetData;
@@ -32,7 +33,7 @@ public abstract class AccessorySheetTabCoordinator implements KeyboardAccessoryD
      * Provides the icon used for a sheet. Simplifies mocking in controller tests.
      */
     @VisibleForTesting
-    static public class IconProvider {
+    public static class IconProvider {
         private static Drawable sTestIcon;
 
         /**

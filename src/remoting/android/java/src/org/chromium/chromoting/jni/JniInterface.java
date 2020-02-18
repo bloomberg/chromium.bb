@@ -4,11 +4,9 @@
 
 package org.chromium.chromoting.jni;
 
-import android.content.Context;
-
-import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.NativeMethods;
 
 /**
  * Initializes the Chromium remoting library, and provides JNI calls into it.
@@ -22,20 +20,20 @@ public class JniInterface {
     /**
      * To be called once from the Application context singleton. Loads and initializes the native
      * code. Called on the UI thread.
-     * @param context The Application context.
      */
-    @SuppressWarnings("NoContextGetApplicationContext")
-    public static void loadLibrary(Context context) {
-        ContextUtils.initApplicationContext(context.getApplicationContext());
+    public static void loadLibrary() {
         try {
             System.loadLibrary(LIBRARY_NAME);
         } catch (UnsatisfiedLinkError e) {
             Log.w(TAG, "Couldn't load " + LIBRARY_NAME + ", trying " + LIBRARY_NAME + ".cr");
             System.loadLibrary(LIBRARY_NAME + ".cr");
         }
-        nativeLoadNative();
+        JniInterfaceJni.get().loadNative();
     }
 
-    /** Performs the native portion of the initialization. */
-    private static native void nativeLoadNative();
+    @NativeMethods
+    interface Natives {
+        /** Performs the native portion of the initialization. */
+        void loadNative();
+    }
 }

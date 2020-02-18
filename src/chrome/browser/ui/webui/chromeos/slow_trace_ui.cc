@@ -33,22 +33,23 @@ std::string SlowTraceSource::GetSource() {
 }
 
 void SlowTraceSource::StartDataRequest(
-    const std::string& path,
+    const GURL& url,
     const content::WebContents::Getter& wc_getter,
-    const content::URLDataSource::GotDataCallback& callback) {
+    content::URLDataSource::GotDataCallback callback) {
   int trace_id = 0;
+  // TODO(crbug/1009127): Simplify usages of |path| since |url| is available.
+  const std::string path = content::URLDataSource::URLToRequestPath(url);
   size_t pos = path.find('#');
   TracingManager* manager = TracingManager::Get();
   if (!manager ||
       pos == std::string::npos ||
       !base::StringToInt(path.substr(pos + 1), &trace_id)) {
-    callback.Run(NULL);
+    std::move(callback).Run(nullptr);
     return;
   }
-  manager->GetTraceData(trace_id,
-                        base::Bind(&SlowTraceSource::OnGetTraceData,
-                                   base::Unretained(this),
-                                   callback));
+  manager->GetTraceData(
+      trace_id, base::BindOnce(&SlowTraceSource::OnGetTraceData,
+                               base::Unretained(this), std::move(callback)));
 }
 
 std::string SlowTraceSource::GetMimeType(const std::string& path) {
@@ -58,9 +59,9 @@ std::string SlowTraceSource::GetMimeType(const std::string& path) {
 SlowTraceSource::~SlowTraceSource() {}
 
 void SlowTraceSource::OnGetTraceData(
-    const content::URLDataSource::GotDataCallback& callback,
+    content::URLDataSource::GotDataCallback callback,
     scoped_refptr<base::RefCountedString> trace_data) {
-  callback.Run(trace_data.get());
+  std::move(callback).Run(trace_data.get());
 }
 
 bool SlowTraceSource::AllowCaching() {

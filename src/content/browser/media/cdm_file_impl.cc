@@ -19,13 +19,13 @@
 #include "media/base/bind_to_current_loop.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
-#include "storage/browser/fileapi/file_stream_reader.h"
-#include "storage/browser/fileapi/file_stream_writer.h"
-#include "storage/browser/fileapi/file_system_context.h"
-#include "storage/browser/fileapi/file_system_operation_context.h"
-#include "storage/browser/fileapi/file_system_url.h"
+#include "storage/browser/file_system/file_stream_reader.h"
+#include "storage/browser/file_system/file_stream_writer.h"
+#include "storage/browser/file_system/file_system_context.h"
+#include "storage/browser/file_system/file_system_operation_context.h"
+#include "storage/browser/file_system/file_system_url.h"
 #include "storage/browser/quota/quota_manager.h"
-#include "storage/common/fileapi/file_system_types.h"
+#include "storage/common/file_system/file_system_types.h"
 
 namespace content {
 
@@ -434,7 +434,6 @@ void CdmFileImpl::Read(ReadCallback callback) {
   DVLOG(3) << __func__ << " file: " << file_name_;
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(file_locked_);
-  DCHECK(!file_reader_);
 
   // Only 1 Read() or Write() is allowed at any time.
   if (read_callback_ || write_callback_) {
@@ -488,7 +487,6 @@ void CdmFileImpl::Write(const std::vector<uint8_t>& data,
   DVLOG(3) << __func__ << " file: " << file_name_ << ", size: " << data.size();
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(file_locked_);
-  DCHECK(!file_writer_);
 
   // Only 1 Read() or Write() is allowed at any time.
   if (read_callback_ || write_callback_) {

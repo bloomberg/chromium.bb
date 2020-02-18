@@ -78,6 +78,8 @@ struct VulkanFunctionPointers {
   PFN_vkEnumeratePhysicalDevices vkEnumeratePhysicalDevicesFn = nullptr;
   PFN_vkGetDeviceProcAddr vkGetDeviceProcAddrFn = nullptr;
   PFN_vkGetPhysicalDeviceFeatures vkGetPhysicalDeviceFeaturesFn = nullptr;
+  PFN_vkGetPhysicalDeviceFormatProperties
+      vkGetPhysicalDeviceFormatPropertiesFn = nullptr;
   PFN_vkGetPhysicalDeviceMemoryProperties
       vkGetPhysicalDeviceMemoryPropertiesFn = nullptr;
   PFN_vkGetPhysicalDeviceProperties vkGetPhysicalDevicePropertiesFn = nullptr;
@@ -106,6 +108,9 @@ struct VulkanFunctionPointers {
   PFN_vkCreateImagePipeSurfaceFUCHSIA vkCreateImagePipeSurfaceFUCHSIAFn =
       nullptr;
 #endif  // defined(OS_FUCHSIA)
+
+  PFN_vkGetPhysicalDeviceImageFormatProperties2
+      vkGetPhysicalDeviceImageFormatProperties2Fn = nullptr;
 
   PFN_vkGetPhysicalDeviceFeatures2 vkGetPhysicalDeviceFeatures2Fn = nullptr;
 
@@ -165,6 +170,9 @@ struct VulkanFunctionPointers {
   PFN_vkUpdateDescriptorSets vkUpdateDescriptorSetsFn = nullptr;
   PFN_vkWaitForFences vkWaitForFencesFn = nullptr;
 
+  PFN_vkGetDeviceQueue2 vkGetDeviceQueue2Fn = nullptr;
+  PFN_vkGetImageMemoryRequirements2 vkGetImageMemoryRequirements2Fn = nullptr;
+
 #if defined(OS_ANDROID)
   PFN_vkGetAndroidHardwareBufferPropertiesANDROID
       vkGetAndroidHardwareBufferPropertiesANDROIDFn = nullptr;
@@ -177,6 +185,7 @@ struct VulkanFunctionPointers {
 
 #if defined(OS_LINUX)
   PFN_vkGetMemoryFdKHR vkGetMemoryFdKHRFn = nullptr;
+  PFN_vkGetMemoryFdPropertiesKHR vkGetMemoryFdPropertiesKHRFn = nullptr;
 #endif  // defined(OS_LINUX)
 
 #if defined(OS_FUCHSIA)
@@ -227,6 +236,8 @@ struct VulkanFunctionPointers {
   gpu::GetVulkanFunctionPointers()->vkGetDeviceProcAddrFn
 #define vkGetPhysicalDeviceFeatures \
   gpu::GetVulkanFunctionPointers()->vkGetPhysicalDeviceFeaturesFn
+#define vkGetPhysicalDeviceFormatProperties \
+  gpu::GetVulkanFunctionPointers()->vkGetPhysicalDeviceFormatPropertiesFn
 #define vkGetPhysicalDeviceMemoryProperties \
   gpu::GetVulkanFunctionPointers()->vkGetPhysicalDeviceMemoryPropertiesFn
 #define vkGetPhysicalDeviceProperties \
@@ -260,6 +271,9 @@ struct VulkanFunctionPointers {
 #define vkCreateImagePipeSurfaceFUCHSIA \
   gpu::GetVulkanFunctionPointers()->vkCreateImagePipeSurfaceFUCHSIAFn
 #endif  // defined(OS_FUCHSIA)
+
+#define vkGetPhysicalDeviceImageFormatProperties2 \
+  gpu::GetVulkanFunctionPointers()->vkGetPhysicalDeviceImageFormatProperties2Fn
 
 #define vkGetPhysicalDeviceFeatures2 \
   gpu::GetVulkanFunctionPointers()->vkGetPhysicalDeviceFeatures2Fn
@@ -350,6 +364,10 @@ struct VulkanFunctionPointers {
   gpu::GetVulkanFunctionPointers()->vkUpdateDescriptorSetsFn
 #define vkWaitForFences gpu::GetVulkanFunctionPointers()->vkWaitForFencesFn
 
+#define vkGetDeviceQueue2 gpu::GetVulkanFunctionPointers()->vkGetDeviceQueue2Fn
+#define vkGetImageMemoryRequirements2 \
+  gpu::GetVulkanFunctionPointers()->vkGetImageMemoryRequirements2Fn
+
 #if defined(OS_ANDROID)
 #define vkGetAndroidHardwareBufferPropertiesANDROID \
   gpu::GetVulkanFunctionPointers()                  \
@@ -365,6 +383,8 @@ struct VulkanFunctionPointers {
 
 #if defined(OS_LINUX)
 #define vkGetMemoryFdKHR gpu::GetVulkanFunctionPointers()->vkGetMemoryFdKHRFn
+#define vkGetMemoryFdPropertiesKHR \
+  gpu::GetVulkanFunctionPointers()->vkGetMemoryFdPropertiesKHRFn
 #endif  // defined(OS_LINUX)
 
 #if defined(OS_FUCHSIA)

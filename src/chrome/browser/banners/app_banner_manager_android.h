@@ -12,15 +12,16 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
+#include "chrome/browser/android/webapps/add_to_homescreen_installer.h"
 #include "chrome/browser/banners/app_banner_manager.h"
 #include "chrome/browser/installable/installable_ambient_badge_infobar_delegate.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "url/gurl.h"
 
-namespace banners {
+struct AddToHomescreenParams;
 
-class AppBannerUiDelegateAndroid;
+namespace banners {
 
 // Extends the AppBannerManager to support native Android apps. This class owns
 // a Java-side AppBannerManager which interfaces with the Java runtime to fetch
@@ -54,12 +55,6 @@ class AppBannerManagerAndroid
   // Returns a reference to the Java-side AppBannerManager owned by this object.
   const base::android::ScopedJavaLocalRef<jobject> GetJavaBannerManager() const;
 
-  // Returns a reference to the Java-side AddToHomescreenDialog owned by
-  // |ui_delegate_|, or null if it does not exist.
-  base::android::ScopedJavaLocalRef<jobject> GetAddToHomescreenDialogForTesting(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& jobj);
-
   // Returns true if the banner pipeline is currently running.
   bool IsRunningForTesting(JNIEnv* env,
                            const base::android::JavaParamRef<jobject>& jobj);
@@ -85,10 +80,7 @@ class AppBannerManagerAndroid
   // AppBannerManager overrides.
   std::string GetAppIdentifier() override;
   std::string GetBannerType() override;
-  bool IsWebAppConsideredInstalled(content::WebContents* web_contents,
-                                   const GURL& validated_url,
-                                   const GURL& start_url,
-                                   const GURL& manifest_url) override;
+  bool IsWebAppConsideredInstalled() override;
   void PerformInstallableChecks() override;
   InstallableParams ParamsToPerformInstallableWebAppCheck() override;
   void PerformInstallableWebAppCheck() override;
@@ -137,7 +129,9 @@ class AppBannerManagerAndroid
   // Hides the ambient badge if it is showing.
   void HideAmbientBadge();
 
-  std::unique_ptr<AppBannerUiDelegateAndroid> ui_delegate_;
+  // Called for recording metrics.
+  void RecordEventForAppBanner(AddToHomescreenInstaller::Event event,
+                               const AddToHomescreenParams& a2hs_params);
 
   // The URL of the badge icon.
   GURL badge_icon_url_;
@@ -156,9 +150,6 @@ class AppBannerManagerAndroid
 
   // Title to display in the banner for native app.
   base::string16 native_app_title_;
-
-  // Whether WebAPKs can be installed.
-  bool can_install_webapk_;
 
   base::WeakPtrFactory<AppBannerManagerAndroid> weak_factory_{this};
 

@@ -7,6 +7,7 @@
 
 #include "ash/ambient/model/photo_model.h"
 #include "ash/ash_export.h"
+#include "ash/public/cpp/ambient/ambient_mode_state.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
@@ -19,21 +20,25 @@ class ImageSkia;
 namespace ash {
 
 class AmbientContainerView;
+class AssistantController;
 class PhotoModelObserver;
 
 // Class to handle all ambient mode functionalities.
-class ASH_EXPORT AmbientController : views::WidgetObserver {
+class ASH_EXPORT AmbientController : public views::WidgetObserver,
+                                     public AmbientModeStateObserver {
  public:
-  AmbientController();
+  explicit AmbientController(AssistantController* assistant_controller);
   ~AmbientController() override;
 
   // views::WidgetObserver:
   void OnWidgetDestroying(views::Widget* widget) override;
 
+  // AmbientModeStateObserver:
+  void OnAmbientModeEnabled(bool enabled) override;
+
   void Toggle();
 
   void AddPhotoModelObserver(PhotoModelObserver* observer);
-
   void RemovePhotoModelObserver(PhotoModelObserver* observer);
 
   const PhotoModel& model() const { return model_; }
@@ -46,6 +51,10 @@ class ASH_EXPORT AmbientController : views::WidgetObserver {
     return refresh_timer_;
   }
 
+  AssistantController* assistant_controller() { return assistant_controller_; }
+
+  bool is_showing() const { return !!container_view_; }
+
  private:
   void Start();
   void Stop();
@@ -56,8 +65,10 @@ class ASH_EXPORT AmbientController : views::WidgetObserver {
   void GetNextImage();
   void OnPhotoDownloaded(const gfx::ImageSkia& image);
 
-  AmbientContainerView* container_view_ = nullptr;
+  AssistantController* const assistant_controller_;  // Owned by Shell.
+  AmbientContainerView* container_view_ = nullptr;   // Owned by view hierarchy.
   PhotoModel model_;
+  AmbientModeState ambient_state_;
   base::OneShotTimer refresh_timer_;
   base::WeakPtrFactory<AmbientController> weak_factory_{this};
 

@@ -27,7 +27,7 @@ bool DownloadManagerDelegate::ShouldOpenFileBasedOnExtension(
 
 bool DownloadManagerDelegate::ShouldCompleteDownload(
     download::DownloadItem* item,
-    const base::Closure& callback) {
+    base::OnceClosure callback) {
   return true;
 }
 
@@ -47,11 +47,6 @@ bool DownloadManagerDelegate::InterceptDownloadIfApplicable(
     bool is_transient,
     WebContents* web_contents) {
   return false;
-}
-
-bool DownloadManagerDelegate::IsMostRecentDownloadItemAtFilePath(
-    download::DownloadItem* download) {
-  return true;
 }
 
 std::string DownloadManagerDelegate::ApplicationClientIdForFileScanning() {

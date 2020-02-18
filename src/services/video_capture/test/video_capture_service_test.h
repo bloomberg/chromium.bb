@@ -8,6 +8,8 @@
 #include "base/macros.h"
 #include "base/test/mock_callback.h"
 #include "base/test/task_environment.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/video_capture/public/mojom/device_factory.mojom.h"
 #include "services/video_capture/public/mojom/video_capture_service.mojom.h"
@@ -29,24 +31,25 @@ class VideoCaptureServiceTest : public testing::Test {
 
  protected:
   struct SharedMemoryVirtualDeviceContext {
-    SharedMemoryVirtualDeviceContext(mojom::ProducerRequest producer_request);
+    SharedMemoryVirtualDeviceContext(
+        mojo::PendingReceiver<mojom::Producer> producer_receiver);
     ~SharedMemoryVirtualDeviceContext();
 
     std::unique_ptr<MockProducer> mock_producer;
-    mojom::SharedMemoryVirtualDevicePtr device;
+    mojo::Remote<mojom::SharedMemoryVirtualDevice> device;
   };
 
   std::unique_ptr<SharedMemoryVirtualDeviceContext>
   AddSharedMemoryVirtualDevice(const std::string& device_id);
 
-  mojom::TextureVirtualDevicePtr AddTextureVirtualDevice(
+  mojo::PendingRemote<mojom::TextureVirtualDevice> AddTextureVirtualDevice(
       const std::string& device_id);
 
   base::test::TaskEnvironment task_environment_;
 
   std::unique_ptr<VideoCaptureServiceImpl> service_impl_;
   mojo::Remote<mojom::VideoCaptureService> service_remote_;
-  mojom::DeviceFactoryPtr factory_;
+  mojo::Remote<mojom::DeviceFactory> factory_;
   base::MockCallback<mojom::DeviceFactory::GetDeviceInfosCallback>
       device_info_receiver_;
 

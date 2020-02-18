@@ -90,6 +90,11 @@ void RemoteSafeBrowsingDatabaseManager::ClientRequest::OnRequestDone(
   db_manager_->CancelCheck(client_);
 }
 
+RealTimeUrlLookupService*
+RemoteSafeBrowsingDatabaseManager::GetRealTimeUrlLookupService() {
+  return rt_url_lookup_service_.get();
+}
+
 //
 // RemoteSafeBrowsingDatabaseManager methods
 //
@@ -234,8 +239,14 @@ RemoteSafeBrowsingDatabaseManager::CheckUrlForHighConfidenceAllowlist(
     const GURL& url,
     Client* client) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  NOTREACHED();
-  return AsyncMatch::NO_MATCH;
+
+  if (!enabled_ || !CanCheckUrl(url))
+    return AsyncMatch::NO_MATCH;
+
+  // TODO(crbug.com/1014202): Make this call async.
+  SafeBrowsingApiHandler* api_handler = SafeBrowsingApiHandler::GetInstance();
+  bool is_match = api_handler->StartHighConfidenceAllowlistCheck(url);
+  return is_match ? AsyncMatch::MATCH : AsyncMatch::NO_MATCH;
 }
 
 bool RemoteSafeBrowsingDatabaseManager::CheckUrlForSubresourceFilter(
@@ -271,8 +282,17 @@ bool RemoteSafeBrowsingDatabaseManager::CheckUrlForSubresourceFilter(
 AsyncMatch RemoteSafeBrowsingDatabaseManager::CheckCsdWhitelistUrl(
     const GURL& url,
     Client* client) {
-  // TODO(crbug.com/995926): Enable CSD allowlist on Android
-  return AsyncMatch::NO_MATCH;
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  // If this URL's scheme isn't supported, call is safe.
+  if (!CanCheckUrl(url)) {
+    return AsyncMatch::MATCH;
+  }
+
+  // TODO(crbug.com/995926): Make this call async
+  SafeBrowsingApiHandler* api_handler = SafeBrowsingApiHandler::GetInstance();
+  bool is_match = api_handler->StartCSDAllowlistCheck(url);
+  return is_match ? AsyncMatch::MATCH : AsyncMatch::NO_MATCH;
 }
 
 bool RemoteSafeBrowsingDatabaseManager::MatchDownloadWhitelistString(
@@ -322,6 +342,10 @@ void RemoteSafeBrowsingDatabaseManager::StartOnIOThread(
     const V4ProtocolConfig& config) {
   VLOG(1) << "RemoteSafeBrowsingDatabaseManager starting";
   SafeBrowsingDatabaseManager::StartOnIOThread(url_loader_factory, config);
+
+  rt_url_lookup_service_ =
+      std::make_unique<RealTimeUrlLookupService>(url_loader_factory);
+
   enabled_ = true;
 }
 
@@ -338,6 +362,8 @@ void RemoteSafeBrowsingDatabaseManager::StopOnIOThread(bool shutdown) {
     req->OnRequestDone(SB_THREAT_TYPE_SAFE, ThreatMetadata());
   }
   enabled_ = false;
+
+  rt_url_lookup_service_.reset();
 
   SafeBrowsingDatabaseManager::StopOnIOThread(shutdown);
 }

@@ -32,6 +32,7 @@
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
 #include "chrome/browser/defaults.h"
+#include "chrome/browser/extensions/extension_checkup.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/obsolete_system/obsolete_system.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
@@ -55,12 +56,11 @@
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/browser/ui/startup/startup_tab_provider.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/webui/welcome/helpers.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "components/prefs/pref_service.h"
-#include "components/rappor/public/rappor_utils.h"
-#include "components/rappor/rappor_service_impl.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/dom_storage_context.h"
 #include "content/public/browser/storage_partition.h"
@@ -68,10 +68,6 @@
 #include "google_apis/google_api_keys.h"
 #include "rlz/buildflags/buildflags.h"
 #include "ui/base/buildflags.h"
-
-#if !defined(OS_CHROMEOS)
-#include "chrome/browser/ui/webui/welcome/helpers.h"
-#endif  // !defined(OS_CHROMEOS)
 
 #if defined(OS_MACOSX)
 #include "base/mac/mac_util.h"
@@ -335,7 +331,6 @@ bool StartupBrowserCreatorImpl::Launch(Profile* profile,
   UMA_HISTOGRAM_COUNTS_100(
       "Startup.BrowserLaunchURLCount",
       static_cast<base::HistogramBase::Sample>(urls_to_open.size()));
-  RecordRapporOnStartupURLs(urls_to_open);
 
   DCHECK(profile);
   profile_ = profile;
@@ -593,14 +588,15 @@ void StartupBrowserCreatorImpl::DetermineURLsAndLaunch(
   const bool is_incognito_or_guest = profile_->IsOffTheRecord();
   bool is_post_crash_launch = HasPendingUncleanExit(profile_);
   bool has_incompatible_applications = false;
-#if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+#if defined(OS_WIN)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   if (is_post_crash_launch) {
     // Check if there are any incompatible applications cached from the last
     // Chrome run.
     has_incompatible_applications =
         IncompatibleApplicationsUpdater::HasCachedApplications();
   }
-
+#endif
   welcome::JoinOnboardingGroup(profile_);
 #endif
 
@@ -630,10 +626,14 @@ void StartupBrowserCreatorImpl::DetermineURLsAndLaunch(
       welcome::IsEnabled(profile_) && welcome::HasModulesToShow(profile_);
 #endif  // !defined(OS_CHROMEOS)
 
+  bool serve_extensions_page =
+      extensions::ShouldShowExtensionsCheckupOnStartup(profile_);
+
   StartupTabs tabs = DetermineStartupTabs(
       StartupTabProviderImpl(), cmd_line_tabs, process_startup,
       is_incognito_or_guest, is_post_crash_launch,
-      has_incompatible_applications, promotional_tabs_enabled, welcome_enabled);
+      has_incompatible_applications, promotional_tabs_enabled, welcome_enabled,
+      serve_extensions_page);
 
   // Return immediately if we start an async restore, since the remainder of
   // that process is self-contained.
@@ -685,7 +685,8 @@ StartupTabs StartupBrowserCreatorImpl::DetermineStartupTabs(
     bool is_post_crash_launch,
     bool has_incompatible_applications,
     bool promotional_tabs_enabled,
-    bool welcome_enabled) {
+    bool welcome_enabled,
+    bool serve_extensions_page) {
   // Only the New Tab Page or command line URLs may be shown in incognito mode.
   // A similar policy exists for crash recovery launches, to prevent getting the
   // user stuck in a crash loop.
@@ -746,10 +747,18 @@ StartupTabs StartupBrowserCreatorImpl::DetermineStartupTabs(
     AppendTabs(prefs_tabs, &tabs);
 
     // Potentially add the New Tab Page. Onboarding content is designed to
-    // replace (and eventually funnel the user to) the NTP. Likewise, URLs
-    // from preferences are explicitly meant to override showing the NTP.
-    if (onboarding_tabs.empty() && prefs_tabs.empty())
-      AppendTabs(provider.GetNewTabPageTabs(command_line_, profile_), &tabs);
+    // replace (and eventually funnel the user to) the NTP.
+    if (onboarding_tabs.empty()) {
+      // Potentially show the extensions page in addition to the NTP if the user
+      // is part of the extensions checkup experiment and they have not been
+      // redirected to the extensions page upon startup before.
+      AppendTabs(provider.GetExtensionCheckupTabs(serve_extensions_page),
+                 &tabs);
+      // URLs from preferences are explicitly meant to override showing the NTP.
+      if (prefs_tabs.empty()) {
+        AppendTabs(provider.GetNewTabPageTabs(command_line_, profile_), &tabs);
+      }
+    }
   }
 
   // Maybe add any tabs which the user has previously pinned.
@@ -818,9 +827,8 @@ void StartupBrowserCreatorImpl::AddInfoBarsIfNecessary(
   if (!browser || !profile_ || browser->tab_strip_model()->count() == 0)
     return;
 
-  if (HasPendingUncleanExit(browser->profile())) {
-    SessionCrashedBubble::Show(browser);
-  }
+  if (HasPendingUncleanExit(browser->profile()))
+    SessionCrashedBubble::ShowIfNotOffTheRecordProfile(browser);
 
   bool show_bad_flags_security_warnings = ShouldShowBadFlagsSecurityWarnings();
   if (command_line_.HasSwitch(switches::kEnableAutomation) &&
@@ -873,14 +881,6 @@ void StartupBrowserCreatorImpl::AddInfoBarsIfNecessary(
       FlashDeprecationInfoBarDelegate::Create(infobar_service, profile_);
     }
 #endif
-  }
-}
-
-void StartupBrowserCreatorImpl::RecordRapporOnStartupURLs(
-    const std::vector<GURL>& urls_to_open) {
-  for (const GURL& url : urls_to_open) {
-    rappor::SampleDomainAndRegistryFromGURL(g_browser_process->rappor_service(),
-                                            "Startup.BrowserLaunchURL", url);
   }
 }
 

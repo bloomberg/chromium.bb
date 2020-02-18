@@ -38,7 +38,7 @@ const char kPerResourceIdentifierPrefName[] = "per_resource";
 // dictionary under which per-resource content settings are stored.
 // Otherwise, returns false.
 bool SupportsResourceIdentifiers(ContentSettingsType content_type) {
-  return content_type == CONTENT_SETTINGS_TYPE_PLUGINS;
+  return content_type == ContentSettingsType::PLUGINS;
 }
 
 bool IsValueAllowedForType(const base::Value* value, ContentSettingsType type) {
@@ -92,9 +92,9 @@ ContentSettingsPref::ContentSettingsPref(
 
   ReadContentSettingsFromPref();
 
-  registrar_->Add(
-      pref_name_,
-      base::Bind(&ContentSettingsPref::OnPrefChanged, base::Unretained(this)));
+  registrar_->Add(pref_name_,
+                  base::BindRepeating(&ContentSettingsPref::OnPrefChanged,
+                                      base::Unretained(this)));
 }
 
 ContentSettingsPref::~ContentSettingsPref() {

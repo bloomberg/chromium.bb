@@ -10,11 +10,16 @@ namespace features {
 // https://crbug.com/967317
 const base::Feature kAnimatedAvatarButton{"AnimatedAvatarButton",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Enables tabs to change pinned state when dragging in the tabstrip.
-// https://crbug.com/965681
-const base::Feature kDragToPinTabs{"DragToPinTabs",
-                                   base::FEATURE_DISABLED_BY_DEFAULT};
+// Enables an animated avatar button on the sign-in trigger. This feature is
+// guarded by kAnimatedAvatarButton and serves as a kill-switch. See
+// https://crbug.com/967317
+const base::Feature kAnimatedAvatarButtonOnSignIn{
+    "AnimatedAvatarButtonOnSignIn", base::FEATURE_ENABLED_BY_DEFAULT};
+// Enables an animated avatar button on the open-window/startup trigger. This
+// feature is guarded by kAnimatedAvatarButton and serves as a kill-switch. See
+// https://crbug.com/967317
+const base::Feature kAnimatedAvatarButtonOnOpeningWindow{
+    "AnimatedAvatarButtonOnOpeningProfile", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables showing the EV certificate details in the Page Info bubble.
 const base::Feature kEvDetailsInPageInfo{"EvDetailsInPageInfo",
@@ -23,6 +28,12 @@ const base::Feature kEvDetailsInPageInfo{"EvDetailsInPageInfo",
 // Enables an extension menu in the toolbar. See https://crbug.com/943702
 const base::Feature kExtensionsToolbarMenu{"ExtensionsToolbarMenu",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables tabs from different browser types (NORMAL vs APP) and different apps
+// to mix via dragging.
+// https://crbug.com/1012169
+const base::Feature kMixBrowserTypeTabs{"MixBrowserTypeTabs",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables updated tabstrip animations, required for a scrollable tabstrip.
 // https://crbug.com/958173
@@ -33,6 +44,11 @@ const base::Feature kNewTabstripAnimation{"NewTabstripAnimation",
 // https://crbug.com/966388
 const base::Feature kProfileMenuRevamp{"ProfileMenuRevamp",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables a more prominent active tab title in dark mode to aid with
+// accessibility.
+const base::Feature kProminentDarkModeActiveTabTitle{
+    "ProminentDarkModeActiveTabTitle", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables tabs to scroll in the tabstrip. https://crbug.com/951078
 const base::Feature kScrollableTabStrip{"ScrollableTabStrip",
@@ -71,20 +87,22 @@ const base::Feature kTabHoverCardImages{"TabHoverCardImages",
 const base::Feature kTabOutlinesInLowContrastThemes{
     "TabOutlinesInLowContrastThemes", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables showing text next to the 3-dot menu when an update is available.
+// See https://crbug.com/1001731
+const base::Feature kUseTextForUpdateButton{"UseTextForUpdateButton",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables a web-based separator that's only used for performance testing. See
 // https://crbug.com/993502.
 const base::Feature kWebFooterExperiment{"WebFooterExperiment",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables a web-based toolbar. See https://crbug.com/989131. Note this feature
-// only works when the ENABLE_WEBUI_TAB_STRIP buildflag is enabled.
-const base::Feature kWebUITabStrip{"WebUITabStrip",
-                                   base::FEATURE_DISABLED_BY_DEFAULT};
-
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-constexpr base::Feature kEnableDbusAndX11StatusIcons{
-    "EnableDbusAndX11StatusIcons", base::FEATURE_ENABLED_BY_DEFAULT};
-#endif
+#if BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
+// Enables the demo options for the WebUI Tab Strip. This flag will only work
+// if kWebUITabStrip is enabled.
+const base::Feature kWebUITabStripDemoOptions{
+    "WebUITabStripDemoOptions", base::FEATURE_DISABLED_BY_DEFAULT};
+#endif  // BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
 
 #if defined(OS_CHROMEOS)
 // Enables a warning about connecting to hidden WiFi networks.

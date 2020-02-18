@@ -12,6 +12,7 @@
 #include "chrome/test/data/grit/webui_test_resources.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/resources/grit/webui_resources.h"
@@ -101,8 +102,10 @@ class WebUIResourceBrowserTestV0 : public WebUIResourceBrowserTest {
     // components migration from the old web APIs.
     // After completion of the migration, we should remove this.
     // See crbug.com/911943 for detail.
-    command_line->AppendSwitchASCII("enable-blink-features", "HTMLImports");
-    command_line->AppendSwitchASCII("enable-blink-features", "ShadowDOMV0");
+    command_line->AppendSwitchASCII(switches::kEnableBlinkFeatures,
+                                    "HTMLImports");
+    command_line->AppendSwitchASCII(switches::kEnableBlinkFeatures,
+                                    "ShadowDOMV0");
   }
 };
 
@@ -185,6 +188,7 @@ IN_PROC_BROWSER_TEST_F(WebUIResourceBrowserTest, CommandTest) {
   AddLibrary(IDR_WEBUI_JS_ASSERT);
   AddLibrary(IDR_WEBUI_JS_CR);
   AddLibrary(IDR_WEBUI_JS_CR_UI);
+  AddLibrary(IDR_WEBUI_JS_CR_UI_KEYBOARD_SHORTCUT_LIST);
   AddLibrary(IDR_WEBUI_JS_CR_UI_COMMAND);
   LoadFile(base::FilePath(FILE_PATH_LITERAL("command_test.html")));
 }

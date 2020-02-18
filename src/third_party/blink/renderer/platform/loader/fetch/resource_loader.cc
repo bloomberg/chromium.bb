@@ -57,6 +57,7 @@
 #include "third_party/blink/renderer/platform/instrumentation/tracing/traced_value.h"
 #include "third_party/blink/renderer/platform/loader/cors/cors.h"
 #include "third_party/blink/renderer/platform/loader/cors/cors_error_string.h"
+#include "third_party/blink/renderer/platform/loader/fetch/cached_metadata_handler.h"
 #include "third_party/blink/renderer/platform/loader/fetch/console_logger.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_context.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource.h"
@@ -474,12 +475,13 @@ void ResourceLoader::Start() {
     const auto origin = resource_->GetOrigin();
     response_tainting_ = cors::CalculateResponseTainting(
         request.Url(), request.GetMode(), origin.get(),
+        request.IsolatedWorldOrigin().get(),
         GetCorsFlag() ? CorsFlag::Set : CorsFlag::Unset);
   }
 
   if (request.IsAutomaticUpgrade()) {
     mojo::PendingRemote<ukm::mojom::UkmRecorderInterface> pending_recorder;
-    Platform::Current()->GetBrowserInterfaceBrokerProxy()->GetInterface(
+    Platform::Current()->GetBrowserInterfaceBroker()->GetInterface(
         pending_recorder.InitWithNewPipeAndPassReceiver());
     auto recorder =
         std::make_unique<ukm::MojoUkmRecorder>(std::move(pending_recorder));
@@ -684,7 +686,6 @@ static bool IsManualRedirectFetchRequest(const ResourceRequest& request) {
 bool ResourceLoader::WillFollowRedirect(
     const WebURL& new_url,
     const WebURL& new_site_for_cookies,
-    const base::Optional<WebSecurityOrigin>& new_top_frame_origin,
     const WebString& new_referrer,
     network::mojom::ReferrerPolicy new_referrer_policy,
     const WebString& new_method,
@@ -699,14 +700,10 @@ bool ResourceLoader::WillFollowRedirect(
     return false;
   }
 
-  scoped_refptr<const SecurityOrigin> top_frame_origin =
-      new_top_frame_origin
-          ? base::WrapRefCounted(new_top_frame_origin.value().Get())
-          : scoped_refptr<SecurityOrigin>();
   std::unique_ptr<ResourceRequest> new_request =
       resource_->LastResourceRequest().CreateRedirectRequest(
-          new_url, new_method, new_site_for_cookies, top_frame_origin,
-          new_referrer, new_referrer_policy,
+          new_url, new_method, new_site_for_cookies, new_referrer,
+          new_referrer_policy,
 
           !passed_redirect_response.WasFetchedViaServiceWorker());
 
@@ -773,7 +770,7 @@ bool ResourceLoader::WillFollowRedirect(
       // origin with |request|’s current url’s origin, then set |request|’s
       // tainted origin flag.
       if (origin &&
-          !SecurityOrigin::AreSameSchemeHostPort(
+          !SecurityOrigin::AreSameOrigin(
               new_url, redirect_response.CurrentRequestUrl()) &&
           !origin->CanRequest(redirect_response.CurrentRequestUrl())) {
         origin = SecurityOrigin::CreateUniqueOpaque();
@@ -855,8 +852,9 @@ bool ResourceLoader::WillFollowRedirect(
   if (ShouldCheckCorsInResourceLoader()) {
     bool new_cors_flag =
         GetCorsFlag() ||
-        cors::CalculateCorsFlag(new_request->Url(),
-                                resource_->GetOrigin().get(), request_mode);
+        cors::CalculateCorsFlag(
+            new_request->Url(), resource_->GetOrigin().get(),
+            new_request->IsolatedWorldOrigin().get(), request_mode);
     resource_->MutableOptions().cors_flag = new_cors_flag;
     // Cross-origin requests are only allowed certain registered schemes.
     if (GetCorsFlag() && !SchemeRegistry::ShouldTreatURLSchemeAsCorsEnabled(
@@ -869,6 +867,7 @@ bool ResourceLoader::WillFollowRedirect(
     }
     response_tainting_ = cors::CalculateResponseTainting(
         new_request->Url(), request_mode, resource_->GetOrigin().get(),
+        new_request->IsolatedWorldOrigin().get(),
         GetCorsFlag() ? CorsFlag::Set : CorsFlag::Unset);
   }
 
@@ -914,7 +913,7 @@ void ResourceLoader::DidReceiveResponseInternal(
 
   if (request.IsAutomaticUpgrade()) {
     mojo::PendingRemote<ukm::mojom::UkmRecorderInterface> pending_recorder;
-    Platform::Current()->GetBrowserInterfaceBrokerProxy()->GetInterface(
+    Platform::Current()->GetBrowserInterfaceBroker()->GetInterface(
         pending_recorder.InitWithNewPipeAndPassReceiver());
     auto recorder =
         std::make_unique<ukm::MojoUkmRecorder>(std::move(pending_recorder));
@@ -1187,7 +1186,7 @@ void ResourceLoader::DidFail(const WebURLError& error,
 
   if (request.IsAutomaticUpgrade()) {
     mojo::PendingRemote<ukm::mojom::UkmRecorderInterface> pending_recorder;
-    Platform::Current()->GetBrowserInterfaceBrokerProxy()->GetInterface(
+    Platform::Current()->GetBrowserInterfaceBroker()->GetInterface(
         pending_recorder.InitWithNewPipeAndPassReceiver());
     auto recorder =
         std::make_unique<ukm::MojoUkmRecorder>(std::move(pending_recorder));

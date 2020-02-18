@@ -12,7 +12,6 @@
 #include "ash/public/cpp/app_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_animation_types.h"
-#include "ash/public/cpp/window_properties.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/wallpaper/wallpaper_controller_impl.h"
@@ -32,7 +31,20 @@
 #include "ui/wm/core/window_util.h"
 
 namespace ash {
+
 namespace {
+
+constexpr SkColor kSemiOpaqueBackdropColor =
+    SkColorSetARGB(0x99, 0x20, 0x21, 0x24);
+
+SkColor GetBackdropColorByMode(BackdropWindowMode mode) {
+  if (mode == BackdropWindowMode::kAutoSemiOpaque)
+    return kSemiOpaqueBackdropColor;
+
+  DCHECK(mode == BackdropWindowMode::kAutoOpaque ||
+         mode == BackdropWindowMode::kEnabled);
+  return SK_ColorBLACK;
+}
 
 class BackdropEventHandler : public ui::EventHandler {
  public:
@@ -82,7 +94,7 @@ aura::Window* GetBottomMostSnappedWindowForDeskContainer(
   // For the active desk, only use the windows snapped in SplitViewController if
   // SplitView mode is active.
   SplitViewController* split_view_controller =
-      Shell::Get()->split_view_controller();
+      SplitViewController::Get(desk_container);
   if (desks_util::IsActiveDeskContainer(desk_container) &&
       split_view_controller->InSplitViewMode()) {
     aura::Window* left_window = split_view_controller->left_window();
@@ -110,10 +122,10 @@ aura::Window* GetBottomMostSnappedWindowForDeskContainer(
 }  // namespace
 
 BackdropController::BackdropController(aura::Window* container)
-    : container_(container) {
+    : root_window_(container->GetRootWindow()), container_(container) {
   DCHECK(container_);
   auto* shell = Shell::Get();
-  shell->AddShellObserver(this);
+  SplitViewController::Get(root_window_)->AddObserver(this);
   shell->overview_controller()->AddObserver(this);
   shell->accessibility_controller()->AddObserver(this);
   shell->wallpaper_controller()->AddObserver(this);
@@ -129,7 +141,7 @@ BackdropController::~BackdropController() {
   shell->wallpaper_controller()->RemoveObserver(this);
   if (shell->overview_controller())
     shell->overview_controller()->RemoveObserver(this);
-  shell->RemoveShellObserver(this);
+  SplitViewController::Get(root_window_)->RemoveObserver(this);
   // TODO(oshima): animations won't work right with mus:
   // http://crbug.com/548396.
   Hide(/*destroy=*/true);
@@ -210,12 +222,12 @@ aura::Window* BackdropController::GetTopmostWindowWithBackdrop() {
   return nullptr;
 }
 
-void BackdropController::OnSplitViewModeStarting() {
-  Shell::Get()->split_view_controller()->AddObserver(this);
-}
+base::ScopedClosureRunner BackdropController::PauseUpdates() {
+  DCHECK(!pause_update_);
 
-void BackdropController::OnSplitViewModeEnded() {
-  Shell::Get()->split_view_controller()->RemoveObserver(this);
+  pause_update_ = true;
+  return base::ScopedClosureRunner(base::BindOnce(
+      &BackdropController::RestoreUpdates, weak_ptr_factory_.GetWeakPtr()));
 }
 
 void BackdropController::OnOverviewModeStarting() {
@@ -239,8 +251,9 @@ void BackdropController::OnAccessibilityStatusChanged() {
   UpdateBackdrop();
 }
 
-void BackdropController::OnSplitViewStateChanged(SplitViewState previous_state,
-                                                 SplitViewState state) {
+void BackdropController::OnSplitViewStateChanged(
+    SplitViewController::State previous_state,
+    SplitViewController::State state) {
   // Force the update of the backdrop, even if overview is active, so that the
   // backdrop shows up properly in the mini_views.
   UpdateBackdropInternal();
@@ -267,6 +280,11 @@ void BackdropController::OnTabletModeEnded() {
   UpdateBackdrop();
 }
 
+void BackdropController::RestoreUpdates() {
+  pause_update_ = false;
+  UpdateBackdrop();
+}
+
 void BackdropController::UpdateBackdropInternal() {
   // Skip the recursive updates.
   if (pause_update_)
@@ -282,7 +300,7 @@ void BackdropController::UpdateBackdropInternal() {
     return;
   }
 
-  EnsureBackdropWidget();
+  EnsureBackdropWidget(window->GetProperty(kBackdropWindowMode));
   UpdateAccessibilityMode();
 
   if (window == backdrop_window_ && backdrop_->IsVisible()) {
@@ -306,9 +324,13 @@ void BackdropController::UpdateBackdropInternal() {
   container_->StackChildBelow(backdrop_window_, window);
 }
 
-void BackdropController::EnsureBackdropWidget() {
-  if (backdrop_)
+void BackdropController::EnsureBackdropWidget(BackdropWindowMode mode) {
+  if (backdrop_) {
+    SkColor backdrop_color = GetBackdropColorByMode(mode);
+    if (backdrop_window_->layer()->GetTargetColor() != backdrop_color)
+      backdrop_window_->layer()->SetColor(backdrop_color);
     return;
+  }
 
   backdrop_ = std::make_unique<views::Widget>();
   views::Widget::InitParams params(
@@ -328,7 +350,7 @@ void BackdropController::EnsureBackdropWidget() {
   // The backdrop window in always on top container can be reparented without
   // this when the window is set to fullscreen.
   AlwaysOnTopController::SetDisallowReparent(backdrop_window_);
-  backdrop_window_->layer()->SetColor(SK_ColorBLACK);
+  backdrop_window_->layer()->SetColor(GetBackdropColorByMode(mode));
 
   WindowState::Get(backdrop_window_)->set_allow_set_bounds_direct(true);
 }
@@ -436,11 +458,11 @@ bool BackdropController::BackdropShouldFullscreen() {
   // CL.
   aura::Window* window = GetTopmostWindowWithBackdrop();
   SplitViewController* split_view_controller =
-      Shell::Get()->split_view_controller();
-  SplitViewState state = split_view_controller->state();
-  if ((state == SplitViewState::kLeftSnapped &&
+      SplitViewController::Get(root_window_);
+  SplitViewController::State state = split_view_controller->state();
+  if ((state == SplitViewController::State::kLeftSnapped &&
        window == split_view_controller->left_window()) ||
-      (state == SplitViewState::kRightSnapped &&
+      (state == SplitViewController::State::kRightSnapped &&
        window == split_view_controller->right_window())) {
     return false;
   }
@@ -452,17 +474,16 @@ gfx::Rect BackdropController::GetBackdropBounds() {
   DCHECK(!BackdropShouldFullscreen());
 
   SplitViewController* split_view_controller =
-      Shell::Get()->split_view_controller();
-  SplitViewState state = split_view_controller->state();
-  DCHECK(state == SplitViewState::kLeftSnapped ||
-         state == SplitViewState::kRightSnapped);
-  aura::Window* snapped_window =
-      split_view_controller->GetDefaultSnappedWindow();
+      SplitViewController::Get(root_window_);
+  SplitViewController::State state = split_view_controller->state();
+  DCHECK(state == SplitViewController::State::kLeftSnapped ||
+         state == SplitViewController::State::kRightSnapped);
   SplitViewController::SnapPosition snap_position =
-      (state == SplitViewState::kLeftSnapped) ? SplitViewController::LEFT
-                                              : SplitViewController::RIGHT;
-  return split_view_controller->GetSnappedWindowBoundsInScreenUnadjusted(
-      snapped_window, snap_position);
+      (state == SplitViewController::State::kLeftSnapped)
+          ? SplitViewController::LEFT
+          : SplitViewController::RIGHT;
+  return split_view_controller->GetSnappedWindowBoundsInScreen(
+      snap_position, /*window_for_minimum_size=*/nullptr);
 }
 
 void BackdropController::Layout() {

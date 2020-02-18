@@ -29,12 +29,11 @@
 #include "chrome/android/chrome_jni_headers/WebApkInstaller_jni.h"
 #include "chrome/browser/android/color_helpers.h"
 #include "chrome/browser/android/shortcut_helper.h"
-#include "chrome/browser/android/webapk/chrome_webapk_host.h"
 #include "chrome/browser/android/webapk/webapk.pb.h"
 #include "chrome/browser/android/webapk/webapk_icon_hasher.h"
 #include "chrome/browser/android/webapk/webapk_install_service.h"
 #include "chrome/browser/android/webapk/webapk_metrics.h"
-#include "chrome/browser/android/webapps/webapk_ukm_recorder.h"
+#include "chrome/browser/android/webapk/webapk_ukm_recorder.h"
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
@@ -173,7 +172,7 @@ std::string getCurrentAbi() {
 void SetImageData(webapk::Image* image, const SkBitmap& icon) {
   std::vector<unsigned char> png_bytes;
   gfx::PNGCodec::EncodeBGRASkBitmap(icon, false, &png_bytes);
-  image->set_image_data(&png_bytes.front(), png_bytes.size());
+  image->set_image_data(png_bytes.data(), png_bytes.size());
 }
 
 // Populates webapk::WebApk and returns it.
@@ -206,7 +205,7 @@ std::unique_ptr<std::string> BuildProtoInBackground(
   web_app_manifest->set_orientation(
       blink::WebScreenOrientationLockTypeToString(shortcut_info.orientation));
   web_app_manifest->set_display_mode(
-      blink::WebDisplayModeToString(shortcut_info.display));
+      blink::DisplayModeToString(shortcut_info.display));
   web_app_manifest->set_background_color(
       OptionalSkColorToString(shortcut_info.background_color));
   web_app_manifest->set_theme_color(
@@ -236,8 +235,6 @@ std::unique_ptr<std::string> BuildProtoInBackground(
         base::UTF16ToUTF8(shortcut_info.share_target->params.title));
     share_target_params->set_text(
         base::UTF16ToUTF8(shortcut_info.share_target->params.text));
-    share_target_params->set_url(
-        base::UTF16ToUTF8(shortcut_info.share_target->params.url));
 
     for (const ShareTargetParamsFile& share_target_params_file :
          shortcut_info.share_target->params.files) {

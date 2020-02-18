@@ -6,12 +6,11 @@
 #define CHROME_BROWSER_UI_VIEWS_TOOLBAR_TOOLBAR_ACTION_VIEW_H_
 
 #include "base/callback.h"
-#include "base/macros.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_action_view_delegate_views.h"
 #include "ui/views/context_menu_controller.h"
+#include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/button/menu_button_controller.h"
-#include "ui/views/controls/button/menu_button_listener.h"
 #include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/drag_controller.h"
 #include "ui/views/view.h"
@@ -24,7 +23,7 @@ class ExtensionContextMenuController;
 // action in the BrowserActionsContainer.
 class ToolbarActionView : public views::MenuButton,
                           public ToolbarActionViewDelegateViews,
-                          public views::MenuButtonListener {
+                          public views::ButtonListener {
  public:
   // Need DragController here because ToolbarActionView could be
   // dragged/dropped.
@@ -58,10 +57,11 @@ class ToolbarActionView : public views::MenuButton,
 
   ToolbarActionView(ToolbarActionViewController* view_controller,
                     Delegate* delegate);
+  ToolbarActionView(const ToolbarActionView&) = delete;
+  ToolbarActionView& operator=(const ToolbarActionView&) = delete;
   ~ToolbarActionView() override;
 
   // views::MenuButton:
-  void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
   gfx::Rect GetAnchorBoundsInScreen() const override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   std::unique_ptr<views::LabelButtonBorder> CreateDefaultBorder()
@@ -76,10 +76,8 @@ class ToolbarActionView : public views::MenuButton,
   content::WebContents* GetCurrentWebContents() const override;
   void UpdateState() override;
 
-  // views::MenuButtonListener:
-  void OnMenuButtonClicked(views::Button* source,
-                           const gfx::Point& point,
-                           const ui::Event* event) override;
+  // views::ButtonListener:
+  void ButtonPressed(views::Button* source, const ui::Event& event) override;
 
   ToolbarActionViewController* view_controller() {
     return view_controller_;
@@ -108,7 +106,6 @@ class ToolbarActionView : public views::MenuButton,
   void OnDragDone() override;
   void ViewHierarchyChanged(
       const views::ViewHierarchyChangedDetails& details) override;
-  void StateChanged(views::Button::ButtonState old_state) override;
 
   // ToolbarActionViewDelegateViews:
   views::View* GetAsView() override;
@@ -145,8 +142,6 @@ class ToolbarActionView : public views::MenuButton,
   std::unique_ptr<ExtensionContextMenuController> context_menu_controller_;
 
   base::WeakPtrFactory<ToolbarActionView> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(ToolbarActionView);
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_TOOLBAR_TOOLBAR_ACTION_VIEW_H_

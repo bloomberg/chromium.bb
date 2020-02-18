@@ -25,8 +25,8 @@
 #include "chrome/browser/chromeos/smb_client/smb_task_queue.h"
 #include "chrome/browser/chromeos/smb_client/temp_file_manager.h"
 #include "chromeos/dbus/smb_provider_client.h"
-#include "storage/browser/fileapi/async_file_util.h"
-#include "storage/browser/fileapi/watcher_manager.h"
+#include "storage/browser/file_system/async_file_util.h"
+#include "storage/browser/file_system/watcher_manager.h"
 #include "url/gurl.h"
 
 namespace net {
@@ -148,8 +148,8 @@ class SmbFileSystem : public file_system_provider::ProvidedFileSystemInterface,
       bool recursive,
       bool persistent,
       storage::AsyncFileUtil::StatusCallback callback,
-      const storage::WatcherManager::NotificationCallback&
-          notification_callback) override;
+      storage::WatcherManager::NotificationCallback notification_callback)
+      override;
 
   void RemoveWatcher(const GURL& origin,
                      const base::FilePath& entry_path,

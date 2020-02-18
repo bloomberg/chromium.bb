@@ -45,7 +45,7 @@ const getRoutingPrefixAsNetmask = function(prefixLength) {
 /**
  * Returns the routing prefix length as a number from the netmask string.
  * @param {string} netmask The netmask string, e.g. 255.255.255.0.
- * @return {number} The corresponding netmask or kNoRoutingPrefix if invalid.
+ * @return {number} The corresponding netmask or NO_ROUTING_PREFIX if invalid.
  */
 const getRoutingPrefixAsLength = function(netmask) {
   'use strict';
@@ -60,7 +60,7 @@ const getRoutingPrefixAsLength = function(netmask) {
     // '0' then the netmask is invalid. For example, 255.224.255.0
     if (prefixLength / 8 != i) {
       if (token != '0') {
-        return chromeos.networkConfig.mojom.kNoRoutingPrefix;
+        return chromeos.networkConfig.mojom.NO_ROUTING_PREFIX;
       }
     } else if (token == '255') {
       prefixLength += 8;
@@ -82,7 +82,7 @@ const getRoutingPrefixAsLength = function(netmask) {
       prefixLength += 0;
     } else {
       // mask is not a valid number.
-      return chromeos.networkConfig.mojom.kNoRoutingPrefix;
+      return chromeos.networkConfig.mojom.NO_ROUTING_PREFIX;
     }
   }
   return prefixLength;
@@ -166,8 +166,10 @@ Polymer({
           OncMojo.getIPConfigForType(properties, 'IPv4'));
       let ipv6 = this.getIPConfigUIProperties_(
           OncMojo.getIPConfigForType(properties, 'IPv6'));
+      // If connected and the IP address is automatic and set, show 'Loading' if
+      // the ipv6 address is not set.
       if (OncMojo.connectionStateIsConnected(properties.connectionState) &&
-          ipv4 && ipv4.ipAddress) {
+          this.automatic_ && ipv4 && ipv4.ipAddress) {
         ipv6 = ipv6 || {};
         ipv6.ipAddress = ipv6.ipAddress || this.i18n('loading');
       }
@@ -259,7 +261,7 @@ Polymer({
       const value = ipconfig[key];
       if (key == 'routingPrefix') {
         const routingPrefix = getRoutingPrefixAsLength(value);
-        if (routingPrefix != chromeos.networkConfig.mojom.kNoRoutingPrefix) {
+        if (routingPrefix != chromeos.networkConfig.mojom.NO_ROUTING_PREFIX) {
           result.routingPrefix = routingPrefix;
         }
       } else {

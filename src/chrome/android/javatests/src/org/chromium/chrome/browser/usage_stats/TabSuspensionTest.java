@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.usage_stats;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.anyObject;
 import static org.mockito.Mockito.doReturn;
 
 import android.content.Context;
@@ -23,6 +24,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.JniMocker;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -75,7 +77,11 @@ public class TabSuspensionTest {
     public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
     @Rule
     public CustomTabActivityTestRule mCustomTabActivityTestRule = new CustomTabActivityTestRule();
+    @Rule
+    public JniMocker jniMocker = new JniMocker();
 
+    @Mock
+    private UsageStatsBridge.Natives mUsageStatsNativeMock;
     @Mock
     private UsageStatsBridge mUsageStatsBridge;
     @Mock
@@ -94,6 +100,8 @@ public class TabSuspensionTest {
     @Before
     public void setUp() throws InterruptedException {
         MockitoAnnotations.initMocks(this);
+        jniMocker.mock(UsageStatsBridgeJni.TEST_HOOKS, mUsageStatsNativeMock);
+        doReturn(123456L).when(mUsageStatsNativeMock).init(anyObject(), anyObject());
         // TokenTracker and EventTracker hold a promise, and Promises can only be used on a single
         // thread, so we have to initialize them on the thread where they will be used.
         TestThreadUtils.runOnUiThreadBlocking(() -> {
@@ -107,18 +115,20 @@ public class TabSuspensionTest {
         mActivityTestRule.startMainActivityOnBlankPage();
         mActivity = mActivityTestRule.getActivity();
         mTab = mActivity.getActivityTab();
-        mPageViewObserver = new PageViewObserver(mActivity, mActivity.getTabModelSelector(),
-                mEventTracker, mTokenTracker, mSuspensionTracker);
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mPageViewObserver = new PageViewObserver(mActivity, mActivity.getTabModelSelector(),
+                    mEventTracker, mTokenTracker, mSuspensionTracker);
+        });
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         mTestServer.stopAndDestroyServer();
     }
 
     @Test
     @MediumTest
-    public void testNavigateToSuspended() throws InterruptedException {
+    public void testNavigateToSuspended() {
         doReturn(true).when(mSuspensionTracker).isWebsiteSuspended(STARTING_FQDN);
         startLoadingUrl(mTab, mStartingUrl);
         waitForSuspendedTabToShow(mTab, STARTING_FQDN);
@@ -130,7 +140,7 @@ public class TabSuspensionTest {
 
     @Test
     @MediumTest
-    public void testNavigateToSuspendedDomain_differentPage() throws InterruptedException {
+    public void testNavigateToSuspendedDomain_differentPage() {
         doReturn(true).when(mSuspensionTracker).isWebsiteSuspended(STARTING_FQDN);
         startLoadingUrl(mTab, mStartingUrl);
         waitForSuspendedTabToShow(mTab, STARTING_FQDN);
@@ -141,7 +151,7 @@ public class TabSuspensionTest {
 
     @Test
     @MediumTest
-    public void testNewTabSuspended() throws InterruptedException {
+    public void testNewTabSuspended() {
         mActivityTestRule.loadUrl(mStartingUrl);
 
         doReturn(true).when(mSuspensionTracker).isWebsiteSuspended(DIFFERENT_FQDN);
@@ -157,7 +167,7 @@ public class TabSuspensionTest {
 
     @Test
     @MediumTest
-    public void testTabSwitchBackToSuspended() throws InterruptedException {
+    public void testTabSwitchBackToSuspended() {
         mActivityTestRule.loadUrl(mStartingUrl);
         final int originalTabIndex =
                 mActivity.getTabModelSelector().getCurrentModel().indexOf(mTab);
@@ -173,7 +183,7 @@ public class TabSuspensionTest {
 
     @Test
     @MediumTest
-    public void testEagerSuspension() throws InterruptedException {
+    public void testEagerSuspension() {
         mActivityTestRule.loadUrl(mStartingUrl);
         suspendDomain(STARTING_FQDN);
         waitForSuspendedTabToShow(mTab, STARTING_FQDN);
@@ -189,7 +199,7 @@ public class TabSuspensionTest {
 
     @Test
     @MediumTest
-    public void testMediaSuspension() throws InterruptedException, TimeoutException {
+    public void testMediaSuspension() throws TimeoutException {
         mActivityTestRule.loadUrl(
                 mTestServer.getURLWithHostName(STARTING_FQDN, MEDIA_FILE_TEST_PATH));
         assertTrue(DOMUtils.isMediaPaused(mTab.getWebContents(), VIDEO_ID));
@@ -217,7 +227,7 @@ public class TabSuspensionTest {
 
     @Test
     @MediumTest
-    public void testMultiWindow() throws InterruptedException {
+    public void testMultiWindow() {
         mActivityTestRule.loadUrl(mStartingUrl);
         Tab tab2 = mActivityTestRule.loadUrlInNewTab(mDifferentUrl);
         suspendDomain(DIFFERENT_FQDN);
@@ -250,7 +260,7 @@ public class TabSuspensionTest {
 
     @Test
     @MediumTest
-    public void testTabAddedFromCustomTab() throws InterruptedException {
+    public void testTabAddedFromCustomTab() {
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(
                 CustomTabsTestUtils.createMinimalCustomTabIntent(
                         InstrumentationRegistry.getTargetContext(), mStartingUrl));
@@ -264,7 +274,7 @@ public class TabSuspensionTest {
 
     @Test
     @MediumTest
-    public void testTabAddedInBackground() throws InterruptedException, ExecutionException {
+    public void testTabAddedInBackground() throws ExecutionException {
         Tab bgTab = TestThreadUtils.runOnUiThreadBlocking(() -> {
             return mActivity.getCurrentTabCreator().createNewTab(
                     new LoadUrlParams(mStartingUrl), TabLaunchType.FROM_LONGPRESS_BACKGROUND, mTab);
@@ -277,7 +287,7 @@ public class TabSuspensionTest {
 
     @Test
     @MediumTest
-    public void testTabUnsuspendedInBackground() throws InterruptedException {
+    public void testTabUnsuspendedInBackground() {
         doReturn(true).when(mSuspensionTracker).isWebsiteSuspended(STARTING_FQDN);
         mActivityTestRule.loadUrl(mStartingUrl);
         waitForSuspendedTabToShow(mTab, STARTING_FQDN);
@@ -297,7 +307,7 @@ public class TabSuspensionTest {
 
     @Test
     @MediumTest
-    public void testNavigationFromSuspendedTabToInterstitial() throws InterruptedException {
+    public void testNavigationFromSuspendedTabToInterstitial() {
         doReturn(true).when(mSuspensionTracker).isWebsiteSuspended(STARTING_FQDN);
         mActivityTestRule.loadUrl(mStartingUrl);
         waitForSuspendedTabToShow(mTab, STARTING_FQDN);
@@ -313,7 +323,7 @@ public class TabSuspensionTest {
 
     @Test
     @MediumTest
-    public void testRendererCrashOnSuspendedTab() throws InterruptedException {
+    public void testRendererCrashOnSuspendedTab() {
         doReturn(true).when(mSuspensionTracker).isWebsiteSuspended(STARTING_FQDN);
         mActivityTestRule.loadUrl(mStartingUrl);
         waitForSuspendedTabToShow(mTab, STARTING_FQDN);
@@ -356,7 +366,7 @@ public class TabSuspensionTest {
                 () -> { mPageViewObserver.notifySiteSuspensionChanged(domain, false); });
     }
 
-    private void waitForSuspendedTabToShow(Tab tab, String fqdn) throws InterruptedException {
+    private void waitForSuspendedTabToShow(Tab tab, String fqdn) {
         CriteriaHelper.pollUiThread(() -> {
             return SuspendedTab.from(tab).isShowing();
         }, "Suspended tab should be showing", 10000, 50);

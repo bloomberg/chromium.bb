@@ -131,7 +131,7 @@ class StreamTester {
     v8::Local<v8::Context> context = isolate->GetCurrentContext();
 
     stream_ = i_isolate->wasm_engine()->StartStreamingCompilation(
-        i_isolate, kAllWasmFeatures, v8::Utils::OpenHandle(*context),
+        i_isolate, WasmFeatures::All(), v8::Utils::OpenHandle(*context),
         "WebAssembly.compileStreaming()",
         std::make_shared<TestResolver>(&state_, &error_message_,
                                        &native_module_));
@@ -194,17 +194,17 @@ ZoneBuffer GetValidModuleBytes(Zone* zone) {
   WasmModuleBuilder builder(zone);
   {
     WasmFunctionBuilder* f = builder.AddFunction(sigs.i_iii());
-    uint8_t code[] = {kExprGetLocal, 0, kExprEnd};
+    uint8_t code[] = {kExprLocalGet, 0, kExprEnd};
     f->EmitCode(code, arraysize(code));
   }
   {
     WasmFunctionBuilder* f = builder.AddFunction(sigs.i_iii());
-    uint8_t code[] = {kExprGetLocal, 1, kExprEnd};
+    uint8_t code[] = {kExprLocalGet, 1, kExprEnd};
     f->EmitCode(code, arraysize(code));
   }
   {
     WasmFunctionBuilder* f = builder.AddFunction(sigs.i_iii());
-    uint8_t code[] = {kExprGetLocal, 2, kExprEnd};
+    uint8_t code[] = {kExprLocalGet, 2, kExprEnd};
     f->EmitCode(code, arraysize(code));
   }
   builder.WriteTo(&buffer);
@@ -263,9 +263,10 @@ STREAM_TEST(TestAllBytesArriveAOTCompilerFinishesFirst) {
 
 size_t GetFunctionOffset(i::Isolate* isolate, const uint8_t* buffer,
                          size_t size, size_t index) {
-  ModuleResult result = DecodeWasmModule(
-      kAllWasmFeatures, buffer, buffer + size, false, ModuleOrigin::kWasmOrigin,
-      isolate->counters(), isolate->wasm_engine()->allocator());
+  ModuleResult result =
+      DecodeWasmModule(WasmFeatures::All(), buffer, buffer + size, false,
+                       ModuleOrigin::kWasmOrigin, isolate->counters(),
+                       isolate->wasm_engine()->allocator());
   CHECK(result.ok());
   const WasmFunction* func = &result.value()->functions[index];
   return func->code.offset();
@@ -317,17 +318,17 @@ ZoneBuffer GetModuleWithInvalidSection(Zone* zone) {
                     WasmInitExpr(WasmInitExpr::kGlobalIndex, 12));
   {
     WasmFunctionBuilder* f = builder.AddFunction(sigs.i_iii());
-    uint8_t code[] = {kExprGetLocal, 0, kExprEnd};
+    uint8_t code[] = {kExprLocalGet, 0, kExprEnd};
     f->EmitCode(code, arraysize(code));
   }
   {
     WasmFunctionBuilder* f = builder.AddFunction(sigs.i_iii());
-    uint8_t code[] = {kExprGetLocal, 1, kExprEnd};
+    uint8_t code[] = {kExprLocalGet, 1, kExprEnd};
     f->EmitCode(code, arraysize(code));
   }
   {
     WasmFunctionBuilder* f = builder.AddFunction(sigs.i_iii());
-    uint8_t code[] = {kExprGetLocal, 2, kExprEnd};
+    uint8_t code[] = {kExprLocalGet, 2, kExprEnd};
     f->EmitCode(code, arraysize(code));
   }
   builder.WriteTo(&buffer);
@@ -442,7 +443,7 @@ STREAM_TEST(TestErrorInCodeSectionDetectedByModuleDecoder) {
   uint8_t code[] = {
       U32V_1(4),                  // body size
       U32V_1(0),                  // locals count
-      kExprGetLocal, 0, kExprEnd  // body
+      kExprLocalGet, 0, kExprEnd  // body
   };
 
   const uint8_t bytes[] = {
@@ -481,7 +482,7 @@ STREAM_TEST(TestErrorInCodeSectionDetectedByStreamingDecoder) {
   uint8_t code[] = {
       U32V_1(26),                 // !!! invalid body size !!!
       U32V_1(0),                  // locals count
-      kExprGetLocal, 0, kExprEnd  // body
+      kExprLocalGet, 0, kExprEnd  // body
   };
 
   const uint8_t bytes[] = {
@@ -520,7 +521,7 @@ STREAM_TEST(TestErrorInCodeSectionDetectedByCompiler) {
   uint8_t code[] = {
       U32V_1(4),                  // !!! invalid body size !!!
       U32V_1(0),                  // locals count
-      kExprGetLocal, 0, kExprEnd  // body
+      kExprLocalGet, 0, kExprEnd  // body
   };
 
   uint8_t invalid_code[] = {
@@ -679,7 +680,7 @@ STREAM_TEST(TestAbortAfterFunctionGotCompiled1) {
   uint8_t code[] = {
       U32V_1(4),                  // !!! invalid body size !!!
       U32V_1(0),                  // locals count
-      kExprGetLocal, 0, kExprEnd  // body
+      kExprLocalGet, 0, kExprEnd  // body
   };
 
   const uint8_t bytes[] = {
@@ -713,7 +714,7 @@ STREAM_TEST(TestAbortAfterFunctionGotCompiled2) {
   uint8_t code[] = {
       U32V_1(4),                  // !!! invalid body size !!!
       U32V_1(0),                  // locals count
-      kExprGetLocal, 0, kExprEnd  // body
+      kExprLocalGet, 0, kExprEnd  // body
   };
 
   const uint8_t bytes[] = {
@@ -745,7 +746,7 @@ STREAM_TEST(TestAbortAfterCodeSection1) {
   uint8_t code[] = {
       U32V_1(4),                  // body size
       U32V_1(0),                  // locals count
-      kExprGetLocal, 0, kExprEnd  // body
+      kExprLocalGet, 0, kExprEnd  // body
   };
 
   const uint8_t bytes[] = {
@@ -781,7 +782,7 @@ STREAM_TEST(TestAbortAfterCodeSection2) {
   uint8_t code[] = {
       U32V_1(4),                  // body size
       U32V_1(0),                  // locals count
-      kExprGetLocal, 0, kExprEnd  // body
+      kExprLocalGet, 0, kExprEnd  // body
   };
 
   const uint8_t bytes[] = {
@@ -815,7 +816,7 @@ STREAM_TEST(TestAbortAfterCompilationError1) {
   uint8_t code[] = {
       U32V_1(4),                  // !!! invalid body size !!!
       U32V_1(0),                  // locals count
-      kExprGetLocal, 0, kExprEnd  // body
+      kExprLocalGet, 0, kExprEnd  // body
   };
 
   uint8_t invalid_code[] = {
@@ -857,7 +858,7 @@ STREAM_TEST(TestAbortAfterCompilationError2) {
   uint8_t code[] = {
       U32V_1(4),                  // !!! invalid body size !!!
       U32V_1(0),                  // locals count
-      kExprGetLocal, 0, kExprEnd  // body
+      kExprLocalGet, 0, kExprEnd  // body
   };
 
   uint8_t invalid_code[] = {
@@ -934,7 +935,7 @@ STREAM_TEST(TestModuleWithMultipleFunctions) {
   uint8_t code[] = {
       U32V_1(4),                  // body size
       U32V_1(0),                  // locals count
-      kExprGetLocal, 0, kExprEnd  // body
+      kExprLocalGet, 0, kExprEnd  // body
   };
 
   const uint8_t bytes[] = {
@@ -970,7 +971,7 @@ STREAM_TEST(TestModuleWithDataSection) {
   uint8_t code[] = {
       U32V_1(4),                  // body size
       U32V_1(0),                  // locals count
-      kExprGetLocal, 0, kExprEnd  // body
+      kExprLocalGet, 0, kExprEnd  // body
   };
 
   const uint8_t bytes[] = {
@@ -1016,7 +1017,7 @@ STREAM_TEST(TestModuleWithImportedFunction) {
   builder.AddImport(ArrayVector("Test"), sigs.i_iii());
   {
     WasmFunctionBuilder* f = builder.AddFunction(sigs.i_iii());
-    uint8_t code[] = {kExprGetLocal, 0, kExprEnd};
+    uint8_t code[] = {kExprLocalGet, 0, kExprEnd};
     f->EmitCode(code, arraysize(code));
   }
   builder.WriteTo(&buffer);
@@ -1047,7 +1048,7 @@ STREAM_TEST(TestModuleWithErrorAfterDataSection) {
       U32V_1(1),                            // functions count
       U32V_1(4),                            // body size
       U32V_1(0),                            // locals count
-      kExprGetLocal,                        // some code
+      kExprLocalGet,                        // some code
       0,                                    // some code
       kExprEnd,                             // some code
       kDataSectionCode,                     // section code
@@ -1133,7 +1134,7 @@ STREAM_TEST(TestSetModuleCompiledCallback) {
   uint8_t code[] = {
       U32V_1(4),                  // body size
       U32V_1(0),                  // locals count
-      kExprGetLocal, 0, kExprEnd  // body
+      kExprLocalGet, 0, kExprEnd  // body
   };
 
   const uint8_t bytes[] = {

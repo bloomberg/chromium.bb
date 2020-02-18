@@ -13,6 +13,7 @@
 #include "ash/app_list/views/app_list_drag_and_drop_host.h"
 #include "ash/ash_export.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
+#include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/shelf_item_delegate.h"
 #include "ash/public/cpp/shelf_model_observer.h"
 #include "ash/public/cpp/tablet_mode_observer.h"
@@ -21,9 +22,8 @@
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_button_delegate.h"
 #include "ash/shelf/shelf_button_pressed_metric_tracker.h"
-#include "ash/shelf/shelf_tooltip_manager.h"
+#include "ash/shelf/shelf_tooltip_delegate.h"
 #include "ash/shell_observer.h"
-#include "ash/system/model/virtual_keyboard_model.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
@@ -111,11 +111,15 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
                              public ShellObserver,
                              public views::ContextMenuController,
                              public views::BoundsAnimatorObserver,
-                             public app_list::ApplicationDragAndDropHost,
+                             public ApplicationDragAndDropHost,
+                             public ShelfTooltipDelegate,
                              public ash::TabletModeObserver,
-                             public VirtualKeyboardModel::Observer {
+                             public ShelfConfig::Observer {
  public:
-  ShelfView(ShelfModel* model, Shelf* shelf);
+  ShelfView(ShelfModel* model,
+            Shelf* shelf,
+            ApplicationDragAndDropHost* drag_and_drop_host,
+            ShelfButtonDelegate* delegate);
   ~ShelfView() override;
 
   Shelf* shelf() const { return shelf_; }
@@ -158,17 +162,13 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
   // for showing tooltips without stuttering over gaps.
   void UpdateVisibleShelfItemBoundsUnion();
 
-  // Returns true if the mouse cursor exits the area for launcher tooltip.
-  // There are thin gaps between launcher buttons but the tooltip shouldn't hide
-  // in the gaps, but the tooltip should hide if the mouse moved totally outside
-  // of the buttons area.
-  bool ShouldHideTooltip(const gfx::Point& cursor_location) const;
-
-  // Returns true if a tooltip should be shown for the shelf item |view|.
-  bool ShouldShowTooltipForView(const views::View* view) const;
-
-  // Returns the title of the shelf item |view|.
-  base::string16 GetTitleForView(const views::View* view) const;
+  // ShelfTooltipDelegate:
+  bool ShouldShowTooltipForView(const views::View* view) const override;
+  bool ShouldHideTooltip(const gfx::Point& cursor_location) const override;
+  const std::vector<aura::Window*> GetOpenWindowsForView(
+      views::View* view) override;
+  base::string16 GetTitleForView(const views::View* view) const override;
+  views::View* GetViewForEvent(const ui::Event& event) override;
 
   // Toggles the overflow menu.
   void ToggleOverflowBubble();
@@ -201,19 +201,24 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
   // AccessiblePaneView:
   views::View* GetDefaultFocusableChild() override;
 
-  // app_list::ApplicationDragAndDropHost:
+  // ApplicationDragAndDropHost:
   void CreateDragIconProxy(const gfx::Point& location_in_screen_coordinates,
                            const gfx::ImageSkia& icon,
                            views::View* replaced_view,
                            const gfx::Vector2d& cursor_offset_from_center,
                            float scale_factor) override;
 
+  // Overridden from views::ContextMenuController:
+  void ShowContextMenuForViewImpl(views::View* source,
+                                  const gfx::Point& point,
+                                  ui::MenuSourceType source_type) override;
+
   // ash::TabletModeObserver:
   void OnTabletModeStarted() override;
   void OnTabletModeEnded() override;
 
-  // VirtualKeyboardModel::Observer:
-  void OnVirtualKeyboardVisibilityChanged() override;
+  // ShelfConfig::Observer:
+  void OnShelfConfigUpdated() override;
 
   // Returns true if |event| on the shelf item is going to activate the
   // ShelfItem associated with |view|. Used to determine whether a pending ink
@@ -266,11 +271,6 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
   // True if the current |drag_view_| is the given |drag_view|.
   bool IsDraggedView(const views::View* drag_view) const;
 
-  // Returns the list of open windows that correspond to the app represented by
-  // this shelf view.
-  const std::vector<aura::Window*> GetOpenWindowsForShelfView(
-      views::View* view);
-
   // The three methods below return the first or last focusable child of the
   // set including both the main shelf and the overflow shelf it it's showing.
   // - The first focusable child is either the home button, or the back
@@ -283,8 +283,22 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
   views::View* FindFirstFocusableChild();
   views::View* FindLastFocusableChild();
 
-  // Handles the gesture event.
-  void HandleGestureEvent(ui::GestureEvent* event);
+  // Handles the gesture event. Returns true if |event| has been consumed.
+  bool HandleGestureEvent(const ui::GestureEvent* event);
+
+  // Different from ShouldShowTooltipForView, |view| here must be a child view.
+  bool ShouldShowTooltipForChildView(const views::View* child_view) const;
+
+  // Returns the ShelfAppButton associated with |id|.
+  ShelfAppButton* GetShelfAppButton(const ShelfID& id);
+
+  // Updates |first_visible_index_| and |last_visible_index_| when the
+  // scrollable shelf is enabled. Returns whether those two indices are changed.
+  bool UpdateVisibleIndices();
+
+  // If there is animation associated with |view| in |bounds_animator_|,
+  // stops the animation.
+  void StopAnimatingViewIfAny(views::View* view);
 
   // Return the view model for test purposes.
   const views::ViewModel* view_model_for_test() const {
@@ -298,6 +312,11 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
   // Returns the overflow shelf. This can be called on either the main shelf
   // or the overflow shelf. Returns nullptr if the overflow shelf isn't visible.
   ShelfView* overflow_shelf() {
+    return const_cast<ShelfView*>(
+        const_cast<const ShelfView*>(this)->overflow_shelf());
+  }
+
+  const ShelfView* overflow_shelf() const {
     if (is_overflow_mode())
       return this;
     return IsShowingOverflowBubble()
@@ -307,6 +326,10 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
 
   void set_default_last_focusable_child(bool default_last_focusable_child) {
     default_last_focusable_child_ = default_last_focusable_child;
+  }
+
+  void set_app_icons_layout_offset(int app_icons_layout_offset) {
+    app_icons_layout_offset_ = app_icons_layout_offset;
   }
 
   const ShelfAppButton* drag_view() const { return drag_view_; }
@@ -471,6 +494,7 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
 
   void AnnounceShelfAlignment();
   void AnnounceShelfAutohideBehavior();
+  void AnnouncePinUnpinEvent(const ShelfItem& item, bool pinned);
 
   // Overridden from ui::EventHandler:
   void OnGestureEvent(ui::GestureEvent* event) override;
@@ -504,11 +528,6 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
                          views::InkDrop* ink_drop,
                          ShelfAction action,
                          ShelfItemDelegate::AppMenuItems menu_items);
-
-  // Overridden from views::ContextMenuController:
-  void ShowContextMenuForViewImpl(views::View* source,
-                                  const gfx::Point& point,
-                                  ui::MenuSourceType source_type) override;
 
   // Show either a context or normal click menu of given |menu_model|.
   // If |context_menu| is set, the displayed menu is a context menu and not
@@ -549,6 +568,9 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
 
   bool ShouldHandleGestures(const ui::GestureEvent& event) const;
 
+  // Different from GetTitleForView, |view| here must be a child view.
+  base::string16 GetTitleForChildView(const views::View* view) const;
+
   // The model; owned by Launcher.
   ShelfModel* model_;
 
@@ -578,8 +600,6 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
   std::unique_ptr<OverflowBubble> overflow_bubble_;
 
   OverflowBubble* owner_overflow_bubble_ = nullptr;
-
-  ShelfTooltipManager tooltip_;
 
   // Pointer device that initiated the current drag operation. If there is no
   // current dragging operation, this is NONE.
@@ -696,14 +716,27 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
   // before AppListViewState changes.
   ash::AppListViewState recorded_app_list_view_state_;
 
-  // Whether home launcher was shown before a button press, used to record app
-  // launching metrics. This is recorded in case home_launcher_shown_ is changed
+  // Whether the applist was shown before a button press, used to record app
+  // launching metrics. This is recorded because AppList visibility can change
   // before the metric is recorded.
-  bool recorded_home_launcher_shown_ = false;
+  bool app_list_visibility_before_app_launch_ = false;
 
   // Whether this view should focus its last focusable child (instead of its
   // first) when focused.
   bool default_last_focusable_child_ = false;
+
+  // Indicates the starting position of shelf items on the main axis. (Main
+  // axis is x-axis when the shelf is horizontally aligned; otherwise, it
+  // becomes y-axis)
+  int app_icons_layout_offset_ = 0;
+
+  // When the scrollable shelf is enabled, |drag_and_drop_host_| should be
+  // ScrollableShelfView.
+  ApplicationDragAndDropHost* drag_and_drop_host_ = nullptr;
+
+  // When the scrollable shelf is enabled, |shelf_button_delegate_| should
+  // be ScrollableShelfView.
+  ShelfButtonDelegate* shelf_button_delegate_ = nullptr;
 
   base::WeakPtrFactory<ShelfView> weak_factory_{this};
 

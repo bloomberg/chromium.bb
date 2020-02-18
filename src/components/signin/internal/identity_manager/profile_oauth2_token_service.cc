@@ -28,8 +28,8 @@ std::string SourceToString(SourceForRefreshTokenOperation source) {
       return "Unknown";
     case SourceForRefreshTokenOperation::kTokenService_LoadCredentials:
       return "TokenService::LoadCredentials";
-    case SourceForRefreshTokenOperation::kSupervisedUser_InitSync:
-      return "SupervisedUser::InitSync";
+    case SourceForRefreshTokenOperation::kDeprecatedSupervisedUser_InitSync:
+      return "DeprecatedSupervisedUser::InitSync";
     case SourceForRefreshTokenOperation::kInlineLoginHandler_Signin:
       return "InlineLoginHandler::Signin";
     case SourceForRefreshTokenOperation::kPrimaryAccountManager_ClearAccount:
@@ -353,6 +353,11 @@ void ProfileOAuth2TokenService::
 void ProfileOAuth2TokenService::OverrideAccessTokenManagerForTesting(
     std::unique_ptr<OAuth2AccessTokenManager> token_manager) {
   token_manager_ = std::move(token_manager);
+}
+
+bool ProfileOAuth2TokenService::IsFakeProfileOAuth2TokenServiceForTesting()
+    const {
+  return false;
 }
 
 OAuth2AccessTokenManager* ProfileOAuth2TokenService::GetAccessTokenManager() {

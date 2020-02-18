@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""A database of OWNERS files.
+r"""A database of OWNERS files.
 
 OWNERS files indicate who is allowed to approve changes in a specific directory
 (or who is allowed to make changes without needing approval of another OWNER).
@@ -62,6 +62,12 @@ import fnmatch
 import random
 import re
 
+try:
+  # This fallback applies for all versions of Python before 3.3
+  import collections.abc as collections_abc
+except ImportError:
+  import collections as collections_abc
+
 
 # If this is present by itself on a line, this means that everyone can review.
 EVERYONE = '*'
@@ -77,12 +83,12 @@ GLOBAL_STATUS = '*'
 
 
 def _assert_is_collection(obj):
-  assert not isinstance(obj, basestring)
+  assert not isinstance(obj, str)
   # Module 'collections' has no 'Iterable' member
   # pylint: disable=no-member
-  if hasattr(collections, 'Iterable') and hasattr(collections, 'Sized'):
-    assert (isinstance(obj, collections.Iterable) and
-            isinstance(obj, collections.Sized))
+  if hasattr(collections_abc, 'Iterable') and hasattr(collections_abc, 'Sized'):
+    assert (isinstance(obj, collections_abc.Iterable) and
+            isinstance(obj, collections_abc.Sized))
 
 
 class SyntaxErrorInOwnersFile(Exception):
@@ -271,7 +277,7 @@ class Database(object):
     while True:
       dir_owner_rules = self._paths_to_owners.get(dirname)
       if dir_owner_rules:
-        for owned_path, path_owners in dir_owner_rules.iteritems():
+        for owned_path, path_owners in dir_owner_rules.items():
           if self._fnmatch(objname, owned_path):
             obj_owners |= path_owners
       up_dirname = self.os_path.dirname(dirname)
@@ -441,7 +447,7 @@ class Database(object):
     else:
       assert start.startswith(self.root)
       start = self.os_path.dirname(self.os_path.relpath(start, self.root))
-      include_path = self.os_path.join(start, path)
+      include_path = self.os_path.normpath(self.os_path.join(start, path))
 
     if include_path in self.override_files:
       return include_path
@@ -508,7 +514,7 @@ class Database(object):
       # Now that we've used `owner` and covered all their dirs, remove them
       # from consideration.
       del all_possible_owners[owner]
-      for o, dirs in all_possible_owners.items():
+      for o, dirs in list(all_possible_owners.items()):
         new_dirs = [(d, dist) for (d, dist) in dirs if d not in dirs_to_remove]
         if not new_dirs:
           del all_possible_owners[o]
@@ -539,7 +545,7 @@ class Database(object):
         # Merge the parent information with our information, adjusting
         # distances as necessary, and replacing the parent directory
         # names with our names.
-        for owner, par_dir_and_distances in parent_res.iteritems():
+        for owner, par_dir_and_distances in parent_res.items():
           if owner in res:
             # If the same person is in multiple OWNERS files above a given
             # directory, only count the closest one.
@@ -564,7 +570,7 @@ class Database(object):
       dir_owners = self._all_possible_owners_for_dir_or_file(
         current_dir, author,
         all_possible_owners_for_dir_or_file_cache)
-      for owner, dir_and_distance in dir_owners.iteritems():
+      for owner, dir_and_distance in dir_owners.items():
           if owner in all_possible_owners:
             all_possible_owners[owner].append(dir_and_distance)
           else:
@@ -605,10 +611,10 @@ class Database(object):
     total_costs_by_owner = Database.total_costs_by_owner(all_possible_owners,
                                                          dirs)
     # Return the lowest cost owner. In the case of a tie, pick one randomly.
-    lowest_cost = min(total_costs_by_owner.itervalues())
-    lowest_cost_owners = filter(
-        lambda owner: total_costs_by_owner[owner] == lowest_cost,
-        total_costs_by_owner)
+    lowest_cost = min(total_costs_by_owner.values())
+    lowest_cost_owners = [
+        owner for owner, cost in total_costs_by_owner.items()
+        if cost == lowest_cost]
     return random.Random().choice(lowest_cost_owners)
 
   def owners_rooted_at_file(self, filename):

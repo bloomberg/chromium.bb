@@ -27,6 +27,8 @@
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "components/payments/content/payment_request.h"
+#include "components/payments/core/features.h"
+#include "components/payments/core/payments_experimental_features.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
@@ -60,6 +62,8 @@ PaymentRequestDialogView::PaymentRequestDialogView(
     PaymentRequestDialogView::ObserverForTest* observer)
     : request_(request), observer_for_testing_(observer) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  DialogDelegate::set_buttons(ui::DIALOG_BUTTON_NONE);
 
   request->spec()->AddObserver(this);
   SetLayoutManager(std::make_unique<views::FillLayout>());
@@ -135,13 +139,6 @@ bool PaymentRequestDialogView::ShouldShowCloseButton() const {
   // Moreover, the title (and back arrow) should animate with the view they're
   // attached to.
   return false;
-}
-
-int PaymentRequestDialogView::GetDialogButtons() const {
-  // The buttons should animate along with the different dialog sheets since
-  // each sheet presents a different set of buttons. Because of this, hide the
-  // usual dialog buttons.
-  return ui::DIALOG_BUTTON_NONE;
 }
 
 void PaymentRequestDialogView::ShowDialog() {
@@ -246,10 +243,8 @@ void PaymentRequestDialogView::OnInitialized(
 
   HideProcessingSpinner();
 
-  if (request_->state()->are_requested_methods_supported() &&
-      observer_for_testing_) {
-    observer_for_testing_->OnDialogOpened();
-  }
+  if (request_->state()->are_requested_methods_supported())
+    OnDialogOpened();
 }
 
 void PaymentRequestDialogView::Pay() {
@@ -417,6 +412,23 @@ Profile* PaymentRequestDialogView::GetProfile() {
       request_->web_contents()->GetBrowserContext());
 }
 
+void PaymentRequestDialogView::OnDialogOpened() {
+  if (request_->spec()->request_shipping() &&
+      !request_->state()->selected_shipping_profile() &&
+      PaymentsExperimentalFeatures::IsEnabled(
+          features::kStrictHasEnrolledAutofillInstrument)) {
+    view_stack_->Push(
+        CreateViewAndInstallController(
+            ProfileListViewController::GetShippingProfileViewController(
+                request_->spec(), request_->state(), this),
+            &controller_map_),
+        /* animate = */ false);
+  }
+
+  if (observer_for_testing_)
+    observer_for_testing_->OnDialogOpened();
+}
+
 void PaymentRequestDialogView::ShowInitialPaymentSheet() {
   view_stack_->Push(CreateViewAndInstallController(
                         std::make_unique<PaymentSheetViewController>(
@@ -427,10 +439,8 @@ void PaymentRequestDialogView::ShowInitialPaymentSheet() {
   if (number_of_initialization_tasks_ > 0)
     return;
 
-  if (request_->state()->are_requested_methods_supported() &&
-      observer_for_testing_) {
-    observer_for_testing_->OnDialogOpened();
-  }
+  if (request_->state()->are_requested_methods_supported())
+    OnDialogOpened();
 }
 
 void PaymentRequestDialogView::SetupSpinnerOverlay() {

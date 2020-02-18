@@ -15,32 +15,35 @@ class ExecutionContext;
 class ExceptionState;
 class Node;
 class StringOrTrustedHTML;
-class StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURLOrTrustedURL;
+class StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURL;
 class StringOrTrustedScript;
 class StringOrTrustedScriptURL;
-class USVStringOrTrustedURL;
 
 enum class SpecificTrustedType {
   kNone,
   kTrustedHTML,
   kTrustedScript,
   kTrustedScriptURL,
-  kTrustedURL,
 };
 
 String CORE_EXPORT GetStringFromTrustedType(
-    const StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURLOrTrustedURL&,
+    const StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURL&,
     const ExecutionContext*,
     ExceptionState&);
 
 String CORE_EXPORT GetStringFromTrustedTypeWithoutCheck(
-    const StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURLOrTrustedURL&);
+    const StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURL&);
 
 String CORE_EXPORT GetStringFromSpecificTrustedType(
-    const StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURLOrTrustedURL&,
+    const StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURL&,
     SpecificTrustedType,
     const ExecutionContext*,
     ExceptionState&);
+
+String CORE_EXPORT GetStringFromSpecificTrustedType(const String&,
+                                                    SpecificTrustedType,
+                                                    const ExecutionContext*,
+                                                    ExceptionState&);
 
 String CORE_EXPORT GetStringFromTrustedHTML(StringOrTrustedHTML,
                                             const ExecutionContext*,
@@ -62,10 +65,6 @@ String CORE_EXPORT GetStringFromTrustedScriptURL(StringOrTrustedScriptURL,
                                                  const ExecutionContext*,
                                                  ExceptionState&);
 
-String CORE_EXPORT GetStringFromTrustedURL(USVStringOrTrustedURL,
-                                           const ExecutionContext*,
-                                           ExceptionState&);
-
 // For <script> elements, we need to treat insertion of DOM text nodes
 // as equivalent to string assignment. This checks the child-node to be
 // inserted and runs all of the Trusted Types checks if it's a text node.
@@ -75,6 +74,8 @@ String CORE_EXPORT GetStringFromTrustedURL(USVStringOrTrustedURL,
 Node* TrustedTypesCheckForHTMLScriptElement(Node* child,
                                             Document*,
                                             ExceptionState&);
+
+String TrustedTypesCheckForJavascriptURLinNavigation(const String&, Document*);
 
 // Determine whether a Trusted Types check is needed in this execution context.
 //

@@ -9,7 +9,7 @@
 
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/ui/webui/localized_string.h"
+#include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/extensions/api/resources_private.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/strings/grit/components_strings.h"
@@ -24,10 +24,6 @@
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #endif  // defined(OS_CHROMEOS)
 #endif  // BUILDFLAG(ENABLE_PDF)
-
-#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
-#include "chrome/common/chrome_features.h"
-#endif
 
 // To add a new component to this API, simply:
 // 1. Add your component to the Component enum in
@@ -45,7 +41,7 @@ void AddStringsForIdentity(base::DictionaryValue* dict) {
 }
 
 void AddStringsForPdf(base::DictionaryValue* dict) {
-  static constexpr LocalizedString kPdfResources[] = {
+  static constexpr webui::LocalizedString kPdfResources[] = {
     {"passwordDialogTitle", IDS_PDF_PASSWORD_DIALOG_TITLE},
     {"passwordPrompt", IDS_PDF_NEED_PASSWORD},
     {"passwordSubmit", IDS_PDF_PASSWORD_SUBMIT},
@@ -136,11 +132,6 @@ void AddAdditionalDataForPdf(base::DictionaryValue* dict) {
 #endif  // defined(OS_CHROMEOS)
   dict->SetKey("printingEnabled", base::Value(enable_printing));
 #endif  // BUILDFLAG(ENABLE_PDF)
-#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
-  dict->SetKey("newPrintPreviewLayoutEnabled",
-               base::Value(base::FeatureList::IsEnabled(
-                   features::kNewPrintPreviewLayout)));
-#endif
 }
 
 }  // namespace

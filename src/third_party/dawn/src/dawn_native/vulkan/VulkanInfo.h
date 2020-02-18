@@ -28,6 +28,7 @@ namespace dawn_native { namespace vulkan {
     extern const char kLayerNameLunargStandardValidation[];
     extern const char kLayerNameLunargVKTrace[];
     extern const char kLayerNameRenderDocCapture[];
+    extern const char kLayerNameFuchsiaImagePipeSwapchain[];
 
     extern const char kExtensionNameExtDebugMarker[];
     extern const char kExtensionNameExtDebugReport[];
@@ -35,9 +36,13 @@ namespace dawn_native { namespace vulkan {
     extern const char kExtensionNameKhrExternalMemory[];
     extern const char kExtensionNameKhrExternalMemoryCapabilities[];
     extern const char kExtensionNameKhrExternalMemoryFD[];
+    extern const char kExtensionNameExtExternalMemoryDmaBuf[];
+    extern const char kExtensionNameExtImageDrmFormatModifier[];
+    extern const char kExtensionNameFuchsiaExternalMemory[];
     extern const char kExtensionNameKhrExternalSemaphore[];
     extern const char kExtensionNameKhrExternalSemaphoreCapabilities[];
     extern const char kExtensionNameKhrExternalSemaphoreFD[];
+    extern const char kExtensionNameFuchsiaExternalSemaphore[];
     extern const char kExtensionNameKhrGetPhysicalDeviceProperties2[];
     extern const char kExtensionNameKhrSurface[];
     extern const char kExtensionNameKhrSwapchain[];
@@ -45,6 +50,8 @@ namespace dawn_native { namespace vulkan {
     extern const char kExtensionNameKhrWin32Surface[];
     extern const char kExtensionNameKhrXcbSurface[];
     extern const char kExtensionNameKhrXlibSurface[];
+    extern const char kExtensionNameFuchsiaImagePipeSurface[];
+    extern const char kExtensionNameKhrMaintenance1[];
 
     // Global information - gathered before the instance is created
     struct VulkanGlobalKnobs {
@@ -52,6 +59,7 @@ namespace dawn_native { namespace vulkan {
         bool standardValidation = false;
         bool vktrace = false;
         bool renderDocCapture = false;
+        bool fuchsiaImagePipeSwapchain = false;
 
         // Extensions
         bool debugReport = false;
@@ -64,6 +72,7 @@ namespace dawn_native { namespace vulkan {
         bool win32Surface = false;
         bool xcbSurface = false;
         bool xlibSurface = false;
+        bool fuchsiaImagePipeSurface = false;
     };
 
     struct VulkanGlobalInfo : VulkanGlobalKnobs {
@@ -81,9 +90,14 @@ namespace dawn_native { namespace vulkan {
         bool debugMarker = false;
         bool externalMemory = false;
         bool externalMemoryFD = false;
+        bool externalMemoryDmaBuf = false;
+        bool imageDrmFormatModifier = false;
+        bool externalMemoryZirconHandle = false;
         bool externalSemaphore = false;
         bool externalSemaphoreFD = false;
+        bool externalSemaphoreZirconHandle = false;
         bool swapchain = false;
+        bool maintenance1 = false;
     };
 
     struct VulkanDeviceInfo : VulkanDeviceKnobs {

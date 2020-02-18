@@ -122,7 +122,8 @@ class WebController {
   // Normally done through BatchElementChecker.
   virtual void GetFieldValue(
       const Selector& selector,
-      base::OnceCallback<void(bool, const std::string&)> callback);
+      base::OnceCallback<void(const ClientStatus&, const std::string&)>
+          callback);
 
   // Set the |value| of field |selector| and return the result through
   // |callback|. If |simulate_key_presses| is true, the value will be set by
@@ -180,9 +181,10 @@ class WebController {
   // pass. Otherwise, there must be at least one.
   //
   // To check multiple elements, use a BatchElementChecker.
-  virtual void ElementCheck(const Selector& selector,
-                            bool strict,
-                            base::OnceCallback<void(bool)> callback);
+  virtual void ElementCheck(
+      const Selector& selector,
+      bool strict,
+      base::OnceCallback<void(const ClientStatus&)> callback);
 
   // Calls the callback once the main document window has been resized.
   virtual void WaitForWindowHeightChange(
@@ -247,12 +249,14 @@ class WebController {
   void TapOrClickOnCoordinates(
       ElementPositionGetter* getter_to_release,
       base::OnceCallback<void(const ClientStatus&)> callback,
+      const std::string& node_frame_id,
       ClickAction::ClickType click_type,
       bool has_coordinates,
       int x,
       int y);
   void OnDispatchPressMouseEvent(
       base::OnceCallback<void(const ClientStatus&)> callback,
+      const std::string& node_frame_id,
       int x,
       int y,
       const DevtoolsClient::ReplyStatus& reply_status,
@@ -263,15 +267,17 @@ class WebController {
       std::unique_ptr<input::DispatchMouseEventResult> result);
   void OnDispatchTouchEventStart(
       base::OnceCallback<void(const ClientStatus&)> callback,
+      const std::string& node_frame_id,
       const DevtoolsClient::ReplyStatus& reply_status,
       std::unique_ptr<input::DispatchTouchEventResult> result);
   void OnDispatchTouchEventEnd(
       base::OnceCallback<void(const ClientStatus&)> callback,
       const DevtoolsClient::ReplyStatus& reply_status,
       std::unique_ptr<input::DispatchTouchEventResult> result);
-  void OnFindElementForCheck(base::OnceCallback<void(bool)> callback,
-                             const ClientStatus& status,
-                             std::unique_ptr<ElementFinder::Result> result);
+  void OnFindElementForCheck(
+      base::OnceCallback<void(const ClientStatus&)> callback,
+      const ClientStatus& status,
+      std::unique_ptr<ElementFinder::Result> result);
   void OnWaitForWindowHeightChange(
       base::OnceCallback<void(const ClientStatus&)> callback,
       const DevtoolsClient::ReplyStatus& reply_status,
@@ -329,11 +335,13 @@ class WebController {
       const DevtoolsClient::ReplyStatus& reply_status,
       std::unique_ptr<runtime::CallFunctionOnResult> result);
   void OnFindElementForGetFieldValue(
-      base::OnceCallback<void(bool, const std::string&)> callback,
+      base::OnceCallback<void(const ClientStatus&, const std::string&)>
+          callback,
       const ClientStatus& status,
       std::unique_ptr<ElementFinder::Result> element_result);
   void OnGetValueAttribute(
-      base::OnceCallback<void(bool, const std::string&)> callback,
+      base::OnceCallback<void(const ClientStatus&, const std::string&)>
+          callback,
       const DevtoolsClient::ReplyStatus& reply_status,
       std::unique_ptr<runtime::CallFunctionOnResult> result);
   void InternalSetFieldValue(
@@ -347,17 +355,20 @@ class WebController {
       base::OnceCallback<void(const ClientStatus&)> callback,
       const ClientStatus& status);
   void OnClickElementForSendKeyboardInput(
+      const std::string& node_frame_id,
       const std::vector<UChar32>& codepoints,
       int delay_in_milli,
       base::OnceCallback<void(const ClientStatus&)> callback,
       const ClientStatus& click_status);
   void DispatchKeyboardTextDownEvent(
+      const std::string& node_frame_id,
       const std::vector<UChar32>& codepoints,
       size_t index,
       bool delay,
       int delay_in_milli,
       base::OnceCallback<void(const ClientStatus&)> callback);
   void DispatchKeyboardTextUpEvent(
+      const std::string& node_frame_id,
       const std::vector<UChar32>& codepoints,
       size_t index,
       int delay_in_milli,
@@ -420,11 +431,13 @@ class WebController {
   // Waits for the document.readyState to be 'interactive' or 'complete'.
   void WaitForDocumentToBecomeInteractive(
       int remaining_rounds,
-      std::string object_id,
+      const std::string& object_id,
+      const std::string& node_frame_id,
       base::OnceCallback<void(bool)> callback);
   void OnWaitForDocumentToBecomeInteractive(
       int remaining_rounds,
-      std::string object_id,
+      const std::string& object_id,
+      const std::string& node_frame_id,
       base::OnceCallback<void(bool)> callback,
       const DevtoolsClient::ReplyStatus& reply_status,
       std::unique_ptr<runtime::CallFunctionOnResult> result);

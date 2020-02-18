@@ -136,8 +136,8 @@ class AccountDatabaseTest(cros_test_lib.MockTestCase):
   def testParsesMinimalDb(self):
     """Test that we can parse a basic database."""
     db = self._ParseSpec(MINIMAL_ACCOUNTS_DB)
-    self.assertEqual(1, len(db.users.keys()))
-    self.assertEqual(1, len(db.groups.keys()))
+    self.assertEqual(1, len(list(db.users)))
+    self.assertEqual(1, len(list(db.groups)))
     self.assertIn(MINIMAL_DB_USER.name, db.users)
     self.assertIn(MINIMAL_DB_GROUP.name, db.groups)
     self.assertEqual(db.users[MINIMAL_DB_USER.name], MINIMAL_DB_USER)

@@ -11,9 +11,6 @@
 #include "ash/public/mojom/ime_controller.mojom.h"
 #include "ash/public/mojom/tray_action.mojom.h"
 #include "base/no_destructor.h"
-#include "chromeos/services/multidevice_setup/public/mojom/constants.mojom.h"
-#include "services/content/public/mojom/constants.mojom.h"
-#include "services/data_decoder/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/preferences/public/mojom/preferences.mojom.h"
 #include "services/service_manager/public/cpp/manifest_builder.h"
@@ -42,13 +39,9 @@ const service_manager::Manifest& GetManifest() {
                                 mojom::ImeController, mojom::TrayAction>())
           .RequireCapability("*", "accessibility")
           .RequireCapability("*", "app")
-          .RequireCapability(content::mojom::kServiceName, "navigation")
-          .RequireCapability(data_decoder::mojom::kServiceName, "image_decoder")
           .RequireCapability(device::mojom::kServiceName,
                              "device:bluetooth_system")
           .RequireCapability(device::mojom::kServiceName, "device:fingerprint")
-          .RequireCapability(chromeos::multidevice_setup::mojom::kServiceName,
-                             "multidevice_setup")
           .Build()
           .Amend(GetAmendmentForTesting())};
   return *manifest;

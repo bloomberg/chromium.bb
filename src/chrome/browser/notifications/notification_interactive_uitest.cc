@@ -265,9 +265,8 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestPermissionAPI) {
   EXPECT_EQ("denied", QueryPermissionStatus(browser()));
 }
 
-IN_PROC_BROWSER_TEST_F(NotificationsTest, TestPermissionEmbargo) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  EnablePermissionsEmbargo(&scoped_feature_list);
+IN_PROC_BROWSER_TEST_F(NotificationsTestWithPermissionsEmbargo,
+                       TestPermissionEmbargo) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   ui_test_utils::NavigateToURL(browser(), GetTestPageURL());
@@ -399,8 +398,7 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, InlinePermissionRevokeUkm) {
   EXPECT_EQ(*ukm_recorder.GetEntryMetric(entry, "Source"),
             static_cast<int64_t>(PermissionSourceUI::INLINE_SETTINGS));
   EXPECT_EQ(*ukm_recorder.GetEntryMetric(entry, "PermissionType"),
-            static_cast<int64_t>(
-                ContentSettingsType::CONTENT_SETTINGS_TYPE_NOTIFICATIONS));
+            static_cast<int64_t>(ContentSettingsType::NOTIFICATIONS));
   EXPECT_EQ(*ukm_recorder.GetEntryMetric(entry, "Action"),
             static_cast<int64_t>(PermissionAction::REVOKED));
 }

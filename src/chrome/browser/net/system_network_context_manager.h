@@ -15,6 +15,8 @@
 #include "chrome/browser/net/proxy_config_monitor.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_member.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/mojom/host_resolver.mojom-forward.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/network_service.mojom-forward.h"
@@ -99,11 +101,12 @@ class SystemNetworkContextManager {
   // NetworkService, and for those using the network service (if enabled).
   void DisableQuic();
 
-  // Returns an SSLConfigClientRequest that can be passed as a
+  // Returns an mojo::PendingReceiver<SSLConfigClient> that can be passed as a
   // NetorkContextParam.
-  network::mojom::SSLConfigClientRequest GetSSLConfigClientRequest();
+  mojo::PendingReceiver<network::mojom::SSLConfigClient>
+  GetSSLConfigClientReceiver();
 
-  // Populates |initial_ssl_config| and |ssl_config_client_request| members of
+  // Populates |initial_ssl_config| and |ssl_config_client_receiver| members of
   // |network_context_params|. As long as the SystemNetworkContextManager
   // exists, any NetworkContext created with the params will continue to get
   // SSL configuration updates.
@@ -169,13 +172,13 @@ class SystemNetworkContextManager {
   ProxyConfigMonitor proxy_config_monitor_;
 
   // NetworkContext using the network service, if the network service is
-  // enabled. nullptr, otherwise.
-  network::mojom::NetworkContextPtr network_service_network_context_;
+  // enabled. mojo::NullRemote(), otherwise.
+  mojo::Remote<network::mojom::NetworkContext> network_service_network_context_;
 
   // URLLoaderFactory backed by the NetworkContext returned by GetContext(), so
   // consumers don't all need to create their own factory.
   scoped_refptr<URLLoaderFactoryForSystem> shared_url_loader_factory_;
-  network::mojom::URLLoaderFactoryPtr url_loader_factory_;
+  mojo::Remote<network::mojom::URLLoaderFactory> url_loader_factory_;
 
   bool is_quic_allowed_ = true;
 

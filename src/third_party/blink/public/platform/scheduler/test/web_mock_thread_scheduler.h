@@ -45,6 +45,8 @@ class WebMockThreadScheduler : public WebThreadScheduler {
   MOCK_METHOD2(DidHandleInputEventOnMainThread,
                void(const WebInputEvent&, WebInputEventResult));
   MOCK_METHOD0(DidAnimateForInputOnCompositorThread, void());
+  MOCK_METHOD0(DidScheduleBeginMainFrame, void());
+  MOCK_METHOD0(DidRunBeginMainFrame, void());
   MOCK_METHOD1(SetRendererHidden, void(bool));
   MOCK_METHOD1(SetRendererBackgrounded, void(bool));
   MOCK_METHOD1(SetSchedulerKeepActive, void(bool));
@@ -62,10 +64,6 @@ class WebMockThreadScheduler : public WebThreadScheduler {
   MOCK_METHOD0(VirtualTimeResumed, void());
   MOCK_METHOD1(SetTopLevelBlameContext, void(base::trace_event::BlameContext*));
   MOCK_METHOD1(SetRendererProcessType, void(WebRendererProcessType));
-  MOCK_METHOD2(CreateWebScopedVirtualTimePauser,
-               WebScopedVirtualTimePauser(
-                   const char* name,
-                   WebScopedVirtualTimePauser::VirtualTaskDuration));
   MOCK_METHOD0(OnMainFrameRequestedForInput, void());
 
  private:

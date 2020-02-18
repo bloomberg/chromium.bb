@@ -6,6 +6,7 @@
 
 #include "ash/metrics/user_metrics_action.h"
 #include "ash/metrics/user_metrics_recorder.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/pagination/pagination_controller.h"
 #include "ash/public/cpp/system_tray_client.h"
 #include "ash/session/session_controller_impl.h"
@@ -36,6 +37,7 @@
 #include "ash/system/unified/detailed_view_controller.h"
 #include "ash/system/unified/feature_pod_button.h"
 #include "ash/system/unified/feature_pod_controller_base.h"
+#include "ash/system/unified/feature_pods_container_view.h"
 #include "ash/system/unified/quiet_mode_feature_pod_controller.h"
 #include "ash/system/unified/unified_notifier_settings_controller.h"
 #include "ash/system/unified/unified_system_tray_bubble.h"
@@ -55,8 +57,6 @@ namespace ash {
 
 namespace {
 
-// Animation duration to collapse / expand the view in milliseconds.
-const int kExpandAnimationDurationMs = 500;
 // Threshold in pixel that fully collapses / expands the view through gesture.
 const int kDragThreshold = 200;
 
@@ -68,17 +68,19 @@ void RecordPageSwitcherSourceByEventType(ui::EventType type,
 
 UnifiedSystemTrayController::UnifiedSystemTrayController(
     UnifiedSystemTrayModel* model,
-    UnifiedSystemTrayBubble* bubble)
-    : model_(model),
+    UnifiedSystemTrayBubble* bubble,
+    views::View* owner_view)
+    : views::AnimationDelegateViews(owner_view),
+      model_(model),
       bubble_(bubble),
       animation_(std::make_unique<gfx::SlideAnimation>(this)) {
-  animation_->Reset(model->IsExpandedOnOpen() ? 1.0 : 0.0);
-  animation_->SetSlideDuration(kExpandAnimationDurationMs);
+  animation_->Reset(model_->IsExpandedOnOpen() ? 1.0 : 0.0);
+  animation_->SetSlideDuration(base::TimeDelta::FromMilliseconds(500));
   animation_->SetTweenType(gfx::Tween::EASE_IN_OUT);
 
   model_->pagination_model()->SetTransitionDurations(
-      kUnifiedSystemTrayPageTransitionDurationMs,
-      kUnifiedSystemTrayOverScrollPageTransitionDurationMs);
+      base::TimeDelta::FromMilliseconds(250),
+      base::TimeDelta::FromMilliseconds(50));
 
   pagination_controller_ = std::make_unique<PaginationController>(
       model_->pagination_model(), PaginationController::SCROLL_AXIS_HORIZONTAL,
@@ -160,10 +162,19 @@ void UnifiedSystemTrayController::ToggleExpanded() {
   UMA_HISTOGRAM_ENUMERATION("ChromeOS.SystemTray.ToggleExpanded",
                             TOGGLE_EXPANDED_TYPE_BY_BUTTON,
                             TOGGLE_EXPANDED_TYPE_COUNT);
-  if (IsExpanded())
+  if (IsExpanded()) {
     animation_->Hide();
-  else
+    // Expand message center when quick settings is collapsed.
+    if (bubble_)
+      bubble_->ExpandMessageCenter();
+  } else {
+    // Collapse the message center if screen height is limited after expanding
+    // the quick settings to its full height.
+    if (IsMessageCenterCollapseRequired()) {
+      bubble_->CollapseMessageCenter();
+    }
     animation_->Show();
+  }
 }
 
 void UnifiedSystemTrayController::OnMessageCenterVisibilityUpdated() {
@@ -183,8 +194,17 @@ void UnifiedSystemTrayController::UpdateDrag(const gfx::Point& location) {
   // Ignore swipe collapsing when a detailed view is shown as it's confusing.
   if (detailed_view_controller_)
     return;
-  animation_->Reset(GetDragExpandedAmount(location));
+  double drag_expanded_amount = GetDragExpandedAmount(location);
+  animation_->Reset(drag_expanded_amount);
   UpdateExpandedAmount();
+
+  if (was_expanded_ &&
+      drag_expanded_amount < kNotificationCenterDragExpandThreshold) {
+    bubble_->ExpandMessageCenter();
+  } else if (drag_expanded_amount >= kNotificationCenterDragExpandThreshold &&
+             IsMessageCenterCollapseRequired()) {
+    bubble_->CollapseMessageCenter();
+  }
 }
 
 void UnifiedSystemTrayController::StartAnimation(bool expand) {
@@ -213,6 +233,11 @@ void UnifiedSystemTrayController::EndDrag(const gfx::Point& location) {
                               TOGGLE_EXPANDED_TYPE_COUNT);
   }
 
+  if (expanded && IsMessageCenterCollapseRequired())
+    bubble_->CollapseMessageCenter();
+  else
+    bubble_->ExpandMessageCenter();
+
   // If dragging is finished, animate to closer state.
   StartAnimation(expanded);
 }
@@ -222,7 +247,14 @@ void UnifiedSystemTrayController::Fling(int velocity) {
   if (detailed_view_controller_)
     return;
   // Expand when flinging up. Collapse otherwise.
-  StartAnimation(velocity < 0);
+  bool expand = (velocity < 0);
+
+  if (expand && IsMessageCenterCollapseRequired())
+    bubble_->CollapseMessageCenter();
+  else
+    bubble_->ExpandMessageCenter();
+
+  StartAnimation(expand);
 }
 
 void UnifiedSystemTrayController::ShowUserChooserView() {
@@ -302,6 +334,16 @@ void UnifiedSystemTrayController::CloseBubble() {
     unified_view_->GetWidget()->CloseNow();
 }
 
+bool UnifiedSystemTrayController::FocusOut(bool reverse) {
+  return bubble_->FocusOut(reverse);
+}
+
+void UnifiedSystemTrayController::EnsureCollapsed() {
+  if (IsExpanded()) {
+    animation_->Hide();
+  }
+}
+
 void UnifiedSystemTrayController::EnsureExpanded() {
   if (detailed_view_controller_) {
     detailed_view_controller_.reset();
@@ -333,11 +375,11 @@ void UnifiedSystemTrayController::OnAudioSettingsButtonClicked() {
 void UnifiedSystemTrayController::InitFeaturePods() {
   AddFeaturePodItem(std::make_unique<NetworkFeaturePodController>(this));
   AddFeaturePodItem(std::make_unique<BluetoothFeaturePodController>(this));
+  AddFeaturePodItem(std::make_unique<AccessibilityFeaturePodController>(this));
   AddFeaturePodItem(std::make_unique<QuietModeFeaturePodController>(this));
   AddFeaturePodItem(std::make_unique<RotationLockFeaturePodController>());
   AddFeaturePodItem(std::make_unique<NightLightFeaturePodController>(this));
   AddFeaturePodItem(std::make_unique<CastFeaturePodController>(this));
-  AddFeaturePodItem(std::make_unique<AccessibilityFeaturePodController>(this));
   AddFeaturePodItem(std::make_unique<VPNFeaturePodController>(this));
   AddFeaturePodItem(std::make_unique<IMEFeaturePodController>(this));
   AddFeaturePodItem(std::make_unique<LocaleFeaturePodController>(this));
@@ -400,6 +442,16 @@ void UnifiedSystemTrayController::UpdateExpandedAmount() {
     model_->set_expanded_on_open(expanded_amount == 1.0);
 }
 
+void UnifiedSystemTrayController::ResetToCollapsedIfRequired() {
+  if (features::IsUnifiedMessageCenterRefactorEnabled()) {
+    if (unified_view_->feature_pods_container()->row_count() ==
+        kUnifiedFeaturePodMinRows) {
+      unified_view_->SetExpandedAmount(0.0);
+      animation_->Reset(0);
+    }
+  }
+}
+
 double UnifiedSystemTrayController::GetDragExpandedAmount(
     const gfx::Point& location) const {
   double y_diff = (location - drag_init_point_).y();
@@ -417,6 +469,15 @@ double UnifiedSystemTrayController::GetDragExpandedAmount(
 
 bool UnifiedSystemTrayController::IsExpanded() const {
   return animation_->IsShowing();
+}
+
+bool UnifiedSystemTrayController::IsMessageCenterCollapseRequired() const {
+  // Note: This calculaton should be the same as
+  // UnifiedMessageCenterBubble::CalculateAvailableHeight().
+  return (bubble_ && bubble_->CalculateMaxHeight() -
+                             unified_view_->GetExpandedSystemTrayHeight() -
+                             kUnifiedMessageCenterBubbleSpacing <
+                         kMessageCenterCollapseThreshold);
 }
 
 }  // namespace ash

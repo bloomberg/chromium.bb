@@ -10,21 +10,50 @@
 
 #ifndef EGL_ANGLE_image_d3d11_texture
 #define EGL_D3D11_TEXTURE_ANGLE 0x3484
+#define EGL_TEXTURE_INTERNAL_FORMAT_ANGLE 0x345D
 #endif /* EGL_ANGLE_image_d3d11_texture */
 
 namespace gl {
 
+namespace {
+
+bool ValidGLInternalFormat(unsigned internal_format) {
+  switch (internal_format) {
+    case GL_RGB:
+    case GL_RGBA:
+    case GL_BGRA_EXT:
+      return true;
+    default:
+      return false;
+  }
+}
+
+bool ValidGLDataType(unsigned data_type) {
+  switch (data_type) {
+    case GL_UNSIGNED_BYTE:
+    case GL_HALF_FLOAT_OES:
+      return true;
+    default:
+      return false;
+  }
+}
+
+}  // namespace
+
 GLImageD3D::GLImageD3D(const gfx::Size& size,
-                       gfx::BufferFormat buffer_format,
+                       unsigned internal_format,
+                       unsigned data_type,
                        Microsoft::WRL::ComPtr<ID3D11Texture2D> texture,
                        Microsoft::WRL::ComPtr<IDXGISwapChain1> swap_chain)
     : GLImage(),
       size_(size),
-      buffer_format_(buffer_format),
+      internal_format_(internal_format),
+      data_type_(data_type),
       texture_(std::move(texture)),
       swap_chain_(std::move(swap_chain)) {
   DCHECK(texture_);
-  DCHECK(swap_chain_);
+  DCHECK(ValidGLInternalFormat(internal_format_));
+  DCHECK(ValidGLDataType(data_type_));
 }
 
 GLImageD3D::~GLImageD3D() {
@@ -39,7 +68,8 @@ GLImageD3D::~GLImageD3D() {
 
 bool GLImageD3D::Initialize() {
   DCHECK_EQ(egl_image_, EGL_NO_IMAGE_KHR);
-  const EGLint attribs[] = {EGL_NONE};
+  const EGLint attribs[] = {EGL_TEXTURE_INTERNAL_FORMAT_ANGLE,
+                            GetInternalFormat(), EGL_NONE};
   egl_image_ =
       eglCreateImageKHR(GLSurfaceEGL::GetHardwareDisplay(), EGL_NO_CONTEXT,
                         EGL_D3D11_TEXTURE_ANGLE,
@@ -71,8 +101,11 @@ gfx::Size GLImageD3D::GetSize() {
 }
 
 unsigned GLImageD3D::GetInternalFormat() {
-  return buffer_format_ == gfx::BufferFormat::RGBA_F16 ? GL_RGBA16F_EXT
-                                                       : GL_BGRA8_EXT;
+  return internal_format_;
+}
+
+unsigned GLImageD3D::GetDataType() {
+  return data_type_;
 }
 
 bool GLImageD3D::BindTexImage(unsigned target) {
@@ -82,14 +115,12 @@ bool GLImageD3D::BindTexImage(unsigned target) {
 }
 
 bool GLImageD3D::CopyTexImage(unsigned target) {
-  NOTREACHED();
   return false;
 }
 
 bool GLImageD3D::CopyTexSubImage(unsigned target,
                                  const gfx::Point& offset,
                                  const gfx::Rect& rect) {
-  NOTREACHED();
   return false;
 }
 

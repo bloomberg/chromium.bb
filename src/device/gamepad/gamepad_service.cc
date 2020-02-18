@@ -22,36 +22,33 @@
 namespace device {
 
 namespace {
-GamepadService* g_gamepad_service = 0;
-}
+GamepadService* g_gamepad_service = nullptr;
+}  // namespace
 
 GamepadService::GamepadService()
-    : main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      num_active_consumers_(0),
-      gesture_callback_pending_(false) {
+    : main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()) {
   SetInstance(this);
 }
 
-GamepadService::GamepadService(
-    std::unique_ptr<device::GamepadDataFetcher> fetcher)
-    : provider_(new device::GamepadProvider(this,
-                                            std::move(fetcher),
-                                            std::unique_ptr<base::Thread>())),
-      main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      num_active_consumers_(0),
-      gesture_callback_pending_(false) {
+GamepadService::GamepadService(std::unique_ptr<GamepadDataFetcher> fetcher)
+    : provider_(std::make_unique<GamepadProvider>(
+          /*connection_change_client=*/this,
+          /*service_manager_connector=*/nullptr,
+          std::move(fetcher),
+          /*polling_thread=*/nullptr)),
+      main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()) {
   SetInstance(this);
 }
 
-GamepadService::~GamepadService() {
-  SetInstance(NULL);
-}
+GamepadService::~GamepadService() = default;
 
 void GamepadService::SetInstance(GamepadService* instance) {
   // Unit tests can create multiple instances but only one should exist at any
-  // given time so g_gamepad_service should only go from NULL to non-NULL and
-  // vica versa.
+  // given time so |g_gamepad_service| should only go from nullptr to
+  // non-nullptr and vice versa.
   CHECK(!!instance != !!g_gamepad_service);
+  if (g_gamepad_service)
+    delete g_gamepad_service;
   g_gamepad_service = instance;
 }
 
@@ -72,15 +69,13 @@ void GamepadService::StartUp(
   GamepadDataFetcherManager::GetInstance();
 }
 
-service_manager::Connector* GamepadService::GetConnector() {
-  return service_manager_connector_.get();
-}
-
 bool GamepadService::ConsumerBecameActive(GamepadConsumer* consumer) {
   DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
 
-  if (!provider_)
-    provider_.reset(new device::GamepadProvider(this));
+  if (!provider_) {
+    provider_ = std::make_unique<GamepadProvider>(
+        /*connection_change_client=*/this, service_manager_connector_->Clone());
+  }
 
   std::pair<ConsumerSet::iterator, bool> insert_result =
       consumers_.insert(consumer);
@@ -107,7 +102,7 @@ bool GamepadService::ConsumerBecameActive(GamepadConsumer* consumer) {
   } else if (!gesture_callback_pending_) {
     gesture_callback_pending_ = true;
     provider_->RegisterForUserGesture(
-        base::Bind(&GamepadService::OnUserGesture, base::Unretained(this)));
+        base::BindOnce(&GamepadService::OnUserGesture, base::Unretained(this)));
   }
 
   if (num_active_consumers_++ == 0)
@@ -147,18 +142,18 @@ bool GamepadService::RemoveConsumer(GamepadConsumer* consumer) {
   auto it = consumers_.find(consumer);
   if (it == consumers_.end())
     return false;
-  DCHECK_GT(num_active_consumers_, 0);
   if (it->is_active && --num_active_consumers_ == 0)
     provider_->Pause();
+  DCHECK_GE(num_active_consumers_, 0);
   consumers_.erase(it);
   inactive_consumer_state_.erase(consumer);
   return true;
 }
 
-void GamepadService::RegisterForUserGesture(const base::Closure& closure) {
+void GamepadService::RegisterForUserGesture(base::OnceClosure closure) {
   DCHECK(consumers_.size() > 0);
   DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
-  provider_->RegisterForUserGesture(closure);
+  provider_->RegisterForUserGesture(std::move(closure));
 }
 
 void GamepadService::Terminate() {

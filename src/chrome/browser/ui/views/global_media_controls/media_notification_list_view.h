@@ -10,7 +10,8 @@
 
 #include "ui/views/controls/scroll_view.h"
 
-class MediaNotificationContainerImpl;
+class MediaNotificationContainerImplView;
+class OverlayMediaNotification;
 
 // MediaNotificationListView is a container that holds a list of active media
 // sessions.
@@ -19,14 +20,32 @@ class MediaNotificationListView : public views::ScrollView {
   MediaNotificationListView();
   ~MediaNotificationListView() override;
 
+  // Adds the given notification into the list.
   void ShowNotification(
       const std::string& id,
-      std::unique_ptr<MediaNotificationContainerImpl> notification);
+      std::unique_ptr<MediaNotificationContainerImplView> notification);
+
+  // Removes the given notification from the list.
   void HideNotification(const std::string& id);
+
+  // Removes the given notification from the list and returns an
+  // OverlayMediaNotificationView that contains it.
+  std::unique_ptr<OverlayMediaNotification> PopOut(const std::string& id,
+                                                   gfx::Rect bounds);
+
   bool empty() { return notifications_.empty(); }
 
+  const std::map<const std::string, MediaNotificationContainerImplView*>&
+  notifications_for_testing() const {
+    return notifications_;
+  }
+
  private:
-  std::map<const std::string, MediaNotificationContainerImpl*> notifications_;
+  std::unique_ptr<MediaNotificationContainerImplView> RemoveNotification(
+      const std::string& id);
+
+  std::map<const std::string, MediaNotificationContainerImplView*>
+      notifications_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaNotificationListView);
 };

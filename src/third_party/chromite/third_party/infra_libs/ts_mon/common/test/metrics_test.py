@@ -202,8 +202,9 @@ class FieldValidationTest(TestBase):
     f.validate_value('', u'string')
     with self.assertRaises(errors.MonitoringInvalidFieldTypeError):
       f.validate_value('', 123)
-    with self.assertRaises(errors.MonitoringInvalidFieldTypeError):
-      f.validate_value('', long(123))
+    if sys.version_info.major < 3:
+      with self.assertRaises(errors.MonitoringInvalidFieldTypeError):
+        f.validate_value('', long(123))
     with self.assertRaises(errors.MonitoringInvalidFieldTypeError):
       f.validate_value('', True)
     with self.assertRaises(errors.MonitoringInvalidFieldTypeError):
@@ -218,7 +219,8 @@ class FieldValidationTest(TestBase):
     with self.assertRaises(errors.MonitoringInvalidFieldTypeError):
       f.validate_value('', u'string')
     f.validate_value('', 123)
-    f.validate_value('', long(123))
+    if sys.version_info.major < 3:
+      f.validate_value('', long(123))
     f.validate_value('', True)  # Python allows this *shrug*
     with self.assertRaises(errors.MonitoringInvalidFieldTypeError):
       f.validate_value('', None)
@@ -233,8 +235,9 @@ class FieldValidationTest(TestBase):
       f.validate_value('', u'string')
     with self.assertRaises(errors.MonitoringInvalidFieldTypeError):
       f.validate_value('', 123)
-    with self.assertRaises(errors.MonitoringInvalidFieldTypeError):
-      f.validate_value('', long(123))
+    if sys.version_info.major < 3:
+      with self.assertRaises(errors.MonitoringInvalidFieldTypeError):
+        f.validate_value('', long(123))
     f.validate_value('', True)
     with self.assertRaises(errors.MonitoringInvalidFieldTypeError):
       f.validate_value('', None)

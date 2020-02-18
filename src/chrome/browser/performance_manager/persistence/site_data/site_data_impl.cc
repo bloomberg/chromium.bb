@@ -11,7 +11,6 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
-#include "chrome/browser/performance_manager/performance_manager_clock.h"
 
 namespace performance_manager {
 namespace internal {
@@ -27,7 +26,7 @@ namespace {
 constexpr float kSampleWeightFactor = 0.5;
 
 base::TimeDelta GetTickDeltaSinceEpoch() {
-  return PerformanceManagerClock::NowTicks() - base::TimeTicks::UnixEpoch();
+  return base::TimeTicks::Now() - base::TimeTicks::UnixEpoch();
 }
 
 // Returns all the SiteDataFeatureProto elements contained in a
@@ -37,8 +36,7 @@ std::vector<SiteDataFeatureProto*> GetAllFeaturesFromProto(
   std::vector<SiteDataFeatureProto*> ret(
       {proto->mutable_updates_favicon_in_background(),
        proto->mutable_updates_title_in_background(),
-       proto->mutable_uses_audio_in_background(),
-       proto->mutable_uses_notifications_in_background()});
+       proto->mutable_uses_audio_in_background()});
 
   return ret;
 }
@@ -85,7 +83,7 @@ void SiteDataImpl::NotifySiteUnloaded(TabVisibility tab_visibility) {
 
 void SiteDataImpl::NotifyLoadedSiteBackgrounded() {
   if (loaded_tabs_in_background_count_ == 0)
-    background_session_begin_ = PerformanceManagerClock::NowTicks();
+    background_session_begin_ = base::TimeTicks::Now();
 
   loaded_tabs_in_background_count_++;
 
@@ -106,11 +104,6 @@ SiteFeatureUsage SiteDataImpl::UpdatesTitleInBackground() const {
 
 SiteFeatureUsage SiteDataImpl::UsesAudioInBackground() const {
   return GetFeatureUsage(site_characteristics_.uses_audio_in_background());
-}
-
-SiteFeatureUsage SiteDataImpl::UsesNotificationsInBackground() const {
-  return GetFeatureUsage(
-      site_characteristics_.uses_notifications_in_background());
 }
 
 bool SiteDataImpl::DataLoaded() const {
@@ -140,12 +133,6 @@ void SiteDataImpl::NotifyUpdatesTitleInBackground() {
 void SiteDataImpl::NotifyUsesAudioInBackground() {
   NotifyFeatureUsage(site_characteristics_.mutable_uses_audio_in_background(),
                      "AudioUsageInBackground");
-}
-
-void SiteDataImpl::NotifyUsesNotificationsInBackground() {
-  NotifyFeatureUsage(
-      site_characteristics_.mutable_uses_notifications_in_background(),
-      "NotificationsUsageInBackground");
 }
 
 void SiteDataImpl::NotifyLoadTimePerformanceMeasurement(
@@ -225,7 +212,7 @@ base::TimeDelta SiteDataImpl::FeatureObservationDuration(
       InternalRepresentationToTimeDelta(feature_proto.use_timestamp())
           .is_zero()) {
     base::TimeDelta observation_time_since_backgrounded =
-        PerformanceManagerClock::NowTicks() - background_session_begin_;
+        base::TimeTicks::Now() - background_session_begin_;
     observation_time_for_feature += observation_time_since_backgrounded;
   }
 
@@ -408,7 +395,7 @@ void SiteDataImpl::FlushFeaturesObservationDurationToProto() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!background_session_begin_.is_null());
 
-  base::TimeTicks now = PerformanceManagerClock::NowTicks();
+  base::TimeTicks now = base::TimeTicks::Now();
 
   base::TimeDelta extra_observation_duration = now - background_session_begin_;
   background_session_begin_ = now;

@@ -8,6 +8,8 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "third_party/blink/public/mojom/cache_storage/cache_storage.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/core/fetch/global_fetch.h"
@@ -38,6 +40,7 @@ struct TypeConverter<CacheQueryOptionsPtr, const blink::CacheQueryOptions*> {
 
 namespace blink {
 
+class CacheStorageBlobClientList;
 class ExceptionState;
 class Response;
 class Request;
@@ -50,7 +53,7 @@ class MODULES_EXPORT Cache final : public ScriptWrappable {
 
  public:
   Cache(GlobalFetch::ScopedFetcher*,
-        mojom::blink::CacheStorageCacheAssociatedPtrInfo,
+        mojo::PendingAssociatedRemote<mojom::blink::CacheStorageCache>,
         scoped_refptr<base::SingleThreadTaskRunner>);
 
   // From Cache.idl:
@@ -114,8 +117,9 @@ class MODULES_EXPORT Cache final : public ScriptWrappable {
                          const CacheQueryOptions*);
 
   Member<GlobalFetch::ScopedFetcher> scoped_fetcher_;
+  Member<CacheStorageBlobClientList> blob_client_list_;
 
-  mojom::blink::CacheStorageCacheAssociatedPtr cache_ptr_;
+  mojo::AssociatedRemote<mojom::blink::CacheStorageCache> cache_remote_;
 
   DISALLOW_COPY_AND_ASSIGN(Cache);
 };

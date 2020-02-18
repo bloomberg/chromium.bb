@@ -12,12 +12,12 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "build/build_config.h"
+#include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/web_package/mock_signed_exchange_handler.h"
 #include "content/browser/web_package/signed_exchange_devtools_proxy.h"
 #include "content/browser/web_package/signed_exchange_prefetch_metric_recorder.h"
 #include "content/browser/web_package/signed_exchange_reporter.h"
 #include "content/public/common/content_features.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/data_pipe_producer.h"
 #include "mojo/public/cpp/system/string_data_source.h"
 #include "net/http/http_status_code.h"
@@ -25,6 +25,7 @@
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
@@ -52,8 +53,9 @@ class SignedExchangeLoaderTest : public testing::TestWithParam<bool> {
  protected:
   class MockURLLoaderClient final : public network::mojom::URLLoaderClient {
    public:
-    explicit MockURLLoaderClient(network::mojom::URLLoaderClientRequest request)
-        : loader_client_binding_(this, std::move(request)) {}
+    explicit MockURLLoaderClient(
+        mojo::PendingReceiver<network::mojom::URLLoaderClient> receiver)
+        : loader_client_receiver_(this, std::move(receiver)) {}
     ~MockURLLoaderClient() override {}
 
     // network::mojom::URLLoaderClient overrides:
@@ -71,14 +73,15 @@ class SignedExchangeLoaderTest : public testing::TestWithParam<bool> {
     MOCK_METHOD1(OnComplete, void(const network::URLLoaderCompletionStatus&));
 
    private:
-    mojo::Binding<network::mojom::URLLoaderClient> loader_client_binding_;
+    mojo::Receiver<network::mojom::URLLoaderClient> loader_client_receiver_;
     DISALLOW_COPY_AND_ASSIGN(MockURLLoaderClient);
   };
 
   class MockURLLoader final : public network::mojom::URLLoader {
    public:
-    explicit MockURLLoader(network::mojom::URLLoaderRequest url_loader_request)
-        : binding_(this, std::move(url_loader_request)) {}
+    explicit MockURLLoader(
+        mojo::PendingReceiver<network::mojom::URLLoader> url_loader_receiver)
+        : receiver_(this, std::move(url_loader_receiver)) {}
     ~MockURLLoader() override = default;
 
     // network::mojom::URLLoader overrides:
@@ -93,7 +96,7 @@ class SignedExchangeLoaderTest : public testing::TestWithParam<bool> {
     MOCK_METHOD0(ResumeReadingBodyFromNet, void());
 
    private:
-    mojo::Binding<network::mojom::URLLoader> binding_;
+    mojo::Receiver<network::mojom::URLLoader> receiver_;
 
     DISALLOW_COPY_AND_ASSIGN(MockURLLoader);
   };
@@ -105,22 +108,24 @@ class SignedExchangeLoaderTest : public testing::TestWithParam<bool> {
     MockValidityPingURLLoaderFactory() = default;
     ~MockValidityPingURLLoaderFactory() override = default;
 
-    void CreateLoaderAndStart(network::mojom::URLLoaderRequest request,
-                              int32_t routing_id,
-                              int32_t request_id,
-                              uint32_t options,
-                              const network::ResourceRequest& url_request,
-                              network::mojom::URLLoaderClientPtr client,
-                              const net::MutableNetworkTrafficAnnotationTag&
-                                  traffic_annotation) override {
+    void CreateLoaderAndStart(
+        mojo::PendingReceiver<network::mojom::URLLoader> receiver,
+        int32_t routing_id,
+        int32_t request_id,
+        uint32_t options,
+        const network::ResourceRequest& url_request,
+        mojo::PendingRemote<network::mojom::URLLoaderClient> client,
+        const net::MutableNetworkTrafficAnnotationTag& traffic_annotation)
+        override {
       ASSERT_FALSE(bool{ping_loader_});
-      ping_loader_ = std::make_unique<MockURLLoader>(std::move(request));
-      ping_loader_client_ = std::move(client);
+      ping_loader_ = std::make_unique<MockURLLoader>(std::move(receiver));
+      ping_loader_client_.Bind(std::move(client));
     }
-    void Clone(network::mojom::URLLoaderFactoryRequest request) override {}
+    void Clone(mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver)
+        override {}
 
     std::unique_ptr<MockURLLoader> ping_loader_;
-    network::mojom::URLLoaderClientPtr ping_loader_client_;
+    mojo::Remote<network::mojom::URLLoaderClient> ping_loader_client_;
   };
 
   network::mojom::URLLoaderClient* ping_loader_client() {
@@ -147,22 +152,22 @@ class SignedExchangeLoaderTest : public testing::TestWithParam<bool> {
 };
 
 TEST_P(SignedExchangeLoaderTest, Simple) {
-  network::mojom::URLLoaderPtr loader;
-  network::mojom::URLLoaderClientPtr loader_client;
-  MockURLLoader mock_loader(mojo::MakeRequest(&loader));
+  mojo::PendingRemote<network::mojom::URLLoader> loader;
+  mojo::Remote<network::mojom::URLLoaderClient> loader_client;
+  MockURLLoader mock_loader(loader.InitWithNewPipeAndPassReceiver());
   network::mojom::URLLoaderClientEndpointsPtr endpoints =
       network::mojom::URLLoaderClientEndpoints::New(
-          std::move(loader).PassInterface(), mojo::MakeRequest(&loader_client));
+          std::move(loader), loader_client.BindNewPipeAndPassReceiver());
 
-  network::mojom::URLLoaderClientPtr client;
-  MockURLLoaderClient mock_client(mojo::MakeRequest(&client));
+  mojo::PendingRemote<network::mojom::URLLoaderClient> client;
+  MockURLLoaderClient mock_client(client.InitWithNewPipeAndPassReceiver());
 
   network::ResourceRequest resource_request;
   resource_request.url = GURL("https://example.com/test.sxg");
 
-  network::ResourceResponseHead response;
+  auto response = network::mojom::URLResponseHead::New();
   std::string headers("HTTP/1.1 200 OK\nnContent-type: foo/bar\n\n");
-  response.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+  response->headers = base::MakeRefCounted<net::HttpResponseHeaders>(
       net::HttpUtil::AssembleRawHeaders(headers));
 
   MockSignedExchangeHandlerFactory factory({MockSignedExchangeHandlerParams(
@@ -171,15 +176,21 @@ TEST_P(SignedExchangeLoaderTest, Simple) {
       net::SHA256HashValue({{0x00}}))});
 
   SignedExchangeLoader::SetSignedExchangeHandlerFactoryForTest(&factory);
+
+  mojo::ScopedDataPipeProducerHandle producer_handle;
+  mojo::ScopedDataPipeConsumerHandle consumer_handle;
+  MojoResult rv =
+      mojo::CreateDataPipe(nullptr, &producer_handle, &consumer_handle);
+  ASSERT_EQ(MOJO_RESULT_OK, rv);
   std::unique_ptr<SignedExchangeLoader> signed_exchange_loader =
       std::make_unique<SignedExchangeLoader>(
-          resource_request, response, mojo::ScopedDataPipeConsumerHandle(),
+          resource_request, std::move(response), std::move(consumer_handle),
           std::move(client), std::move(endpoints),
           network::mojom::kURLLoadOptionNone,
           false /* should_redirect_to_fallback */, nullptr /* devtools_proxy */,
           nullptr /* reporter */, CreateMockPingLoaderFactory(),
           base::BindRepeating(&SignedExchangeLoaderTest::ThrottlesGetter),
-          base::RepeatingCallback<int(void)>(), nullptr /* metric_recorder */,
+          FrameTreeNode::kFrameTreeNodeInvalidId, nullptr /* metric_recorder */,
           std::string() /* accept_langs */);
 
   EXPECT_CALL(mock_loader, PauseReadingBodyFromNet());
@@ -197,32 +208,26 @@ TEST_P(SignedExchangeLoaderTest, Simple) {
   EXPECT_CALL(mock_client, OnReceiveRedirect(_, _));
   base::RunLoop().RunUntilIdle();
 
-  const std::string kTestString = "Hello, world!";
-  mojo::DataPipe data_pipe(static_cast<uint32_t>(kTestString.size()));
   std::unique_ptr<mojo::DataPipeProducer> producer =
-      std::make_unique<mojo::DataPipeProducer>(
-          std::move(data_pipe.producer_handle));
-
+      std::make_unique<mojo::DataPipeProducer>(std::move(producer_handle));
   mojo::DataPipeProducer* raw_producer = producer.get();
   base::RunLoop run_loop;
   raw_producer->Write(
       std::make_unique<mojo::StringDataSource>(
-          kTestString, mojo::StringDataSource::AsyncWritingMode::
-                           STRING_MAY_BE_INVALIDATED_BEFORE_COMPLETION),
+          "Hello, world!", mojo::StringDataSource::AsyncWritingMode::
+                               STRING_MAY_BE_INVALIDATED_BEFORE_COMPLETION),
       base::BindOnce([](std::unique_ptr<mojo::DataPipeProducer> producer,
                         base::OnceClosure quit_closure,
                         MojoResult result) { std::move(quit_closure).Run(); },
                      std::move(producer), run_loop.QuitClosure()));
 
-  loader_client->OnStartLoadingResponseBody(
-      std::move(data_pipe.consumer_handle));
   network::URLLoaderCompletionStatus status;
   loader_client->OnComplete(network::URLLoaderCompletionStatus(net::OK));
   base::RunLoop().RunUntilIdle();
 
-  network::mojom::URLLoaderClientPtr client_after_redirect;
+  mojo::PendingRemote<network::mojom::URLLoaderClient> client_after_redirect;
   MockURLLoaderClient mock_client_after_redirect(
-      mojo::MakeRequest(&client_after_redirect));
+      client_after_redirect.InitWithNewPipeAndPassReceiver());
   EXPECT_CALL(mock_client_after_redirect, OnReceiveResponse(_));
 
   if (!base::FeatureList::IsEnabled(
@@ -242,7 +247,8 @@ TEST_P(SignedExchangeLoaderTest, Simple) {
     ASSERT_TRUE(ping_loader_client());
     EXPECT_CALL(mock_client_after_redirect, OnStartLoadingResponseBody(_));
     EXPECT_CALL(mock_client_after_redirect, OnComplete(_));
-    ping_loader_client()->OnReceiveResponse(network::ResourceResponseHead());
+    ping_loader_client()->OnReceiveResponse(
+        network::mojom::URLResponseHead::New());
     ping_loader_client()->OnComplete(
         network::URLLoaderCompletionStatus(net::OK));
     run_loop.Run();
@@ -250,7 +256,7 @@ TEST_P(SignedExchangeLoaderTest, Simple) {
   }
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          SignedExchangeLoaderTest,
                          ::testing::Values(false, true));
 

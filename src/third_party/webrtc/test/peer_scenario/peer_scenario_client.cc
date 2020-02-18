@@ -10,9 +10,9 @@
 #include "test/peer_scenario/peer_scenario_client.h"
 
 #include <limits>
+#include <memory>
 #include <utility>
 
-#include "absl/memory/memory.h"
 #include "api/audio_codecs/builtin_audio_decoder_factory.h"
 #include "api/audio_codecs/builtin_audio_encoder_factory.h"
 #include "api/rtc_event_log/rtc_event_log_factory.h"
@@ -79,12 +79,13 @@ class LambdaPeerConnectionObserver final : public PeerConnectionObserver {
     for (const auto& handler : handlers_->on_ice_candidate)
       handler(candidate);
   }
-  void OnIceCandidateError(const std::string& host_candidate,
+  void OnIceCandidateError(const std::string& address,
+                           int port,
                            const std::string& url,
                            int error_code,
                            const std::string& error_text) override {
     for (const auto& handler : handlers_->on_ice_candidate_error)
-      handler(host_candidate, url, error_code, error_text);
+      handler(address, port, url, error_code, error_text);
   }
   void OnIceCandidatesRemoved(
       const std::vector<cricket::Candidate>& candidates) override {
@@ -113,11 +114,14 @@ class LambdaPeerConnectionObserver final : public PeerConnectionObserver {
 };
 }  // namespace
 
-PeerScenarioClient::PeerScenarioClient(NetworkEmulationManager* net,
-                                       rtc::Thread* signaling_thread,
-                                       PeerScenarioClient::Config config)
+PeerScenarioClient::PeerScenarioClient(
+    NetworkEmulationManager* net,
+    rtc::Thread* signaling_thread,
+    std::unique_ptr<LogWriterFactoryInterface> log_writer_factory,
+    PeerScenarioClient::Config config)
     : endpoints_(CreateEndpoints(net, config.endpoints)),
       signaling_thread_(signaling_thread),
+      log_writer_factory_(std::move(log_writer_factory)),
       worker_thread_(rtc::Thread::Create()),
       handlers_(config.handlers),
       observer_(new LambdaPeerConnectionObserver(&handlers_)) {
@@ -137,9 +141,9 @@ PeerScenarioClient::PeerScenarioClient(NetworkEmulationManager* net,
       });
   handlers_.on_signaling_change.push_back(
       [this](PeerConnectionInterface::SignalingState state) {
+        RTC_DCHECK_RUN_ON(signaling_thread_);
         if (state == PeerConnectionInterface::SignalingState::kStable &&
             peer_connection_->current_remote_description()) {
-          RTC_DCHECK_RUN_ON(signaling_thread_);
           for (const auto& candidate : pending_ice_candidates_) {
             RTC_CHECK(peer_connection_->AddIceCandidate(candidate.get()));
           }
@@ -160,7 +164,7 @@ PeerScenarioClient::PeerScenarioClient(NetworkEmulationManager* net,
   pcf_deps.task_queue_factory = CreateDefaultTaskQueueFactory();
   task_queue_factory_ = pcf_deps.task_queue_factory.get();
   pcf_deps.event_log_factory =
-      absl::make_unique<RtcEventLogFactory>(task_queue_factory_);
+      std::make_unique<RtcEventLogFactory>(task_queue_factory_);
 
   cricket::MediaEngineDependencies media_deps;
   media_deps.task_queue_factory = task_queue_factory_;
@@ -182,17 +186,20 @@ PeerScenarioClient::PeerScenarioClient(NetworkEmulationManager* net,
   pcf_deps.fec_controller_factory = nullptr;
   pcf_deps.network_controller_factory = nullptr;
   pcf_deps.network_state_predictor_factory = nullptr;
-  pcf_deps.media_transport_factory = nullptr;
 
   pc_factory_ = CreateModularPeerConnectionFactory(std::move(pcf_deps));
 
   PeerConnectionDependencies pc_deps(observer_.get());
-  pc_deps.allocator = absl::make_unique<cricket::BasicPortAllocator>(
-      manager->network_manager());
+  pc_deps.allocator =
+      std::make_unique<cricket::BasicPortAllocator>(manager->network_manager());
   pc_deps.allocator->set_flags(pc_deps.allocator->flags() |
                                cricket::PORTALLOCATOR_DISABLE_TCP);
   peer_connection_ =
       pc_factory_->CreatePeerConnection(config.rtc_config, std::move(pc_deps));
+  if (log_writer_factory_) {
+    peer_connection_->StartRtcEventLog(log_writer_factory_->Create(".rtc.dat"),
+                                       /*output_period_ms=*/1000);
+  }
 }
 
 EmulatedEndpoint* PeerScenarioClient::endpoint(int index) {
@@ -203,6 +210,7 @@ EmulatedEndpoint* PeerScenarioClient::endpoint(int index) {
 PeerScenarioClient::AudioSendTrack PeerScenarioClient::CreateAudio(
     std::string track_id,
     cricket::AudioOptions options) {
+  RTC_DCHECK_RUN_ON(signaling_thread_);
   AudioSendTrack res;
   auto source = pc_factory_->CreateAudioSource(options);
   auto track = pc_factory_->CreateAudioTrack(track_id, source);
@@ -214,6 +222,7 @@ PeerScenarioClient::AudioSendTrack PeerScenarioClient::CreateAudio(
 PeerScenarioClient::VideoSendTrack PeerScenarioClient::CreateVideo(
     std::string track_id,
     VideoSendTrackConfig config) {
+  RTC_DCHECK_RUN_ON(signaling_thread_);
   VideoSendTrack res;
   auto capturer = FrameGeneratorCapturer::Create(clock(), *task_queue_factory_,
                                                  config.generator);
@@ -237,15 +246,16 @@ void PeerScenarioClient::AddVideoReceiveSink(
 
 void PeerScenarioClient::CreateAndSetSdp(
     std::function<void(std::string)> offer_handler) {
+  RTC_DCHECK_RUN_ON(signaling_thread_);
   peer_connection_->CreateOffer(
       SdpCreateObserver([=](SessionDescriptionInterface* offer) {
+        RTC_DCHECK_RUN_ON(signaling_thread_);
         std::string sdp_offer;
         offer->ToString(&sdp_offer);
         RTC_LOG(LS_INFO) << sdp_offer;
         peer_connection_->SetLocalDescription(
-            SdpSetObserver([sdp_offer, offer_handler]() {
-              offer_handler(std::move(sdp_offer));
-            }),
+            SdpSetObserver(
+                [sdp_offer, offer_handler]() { offer_handler(sdp_offer); }),
             offer);
       }),
       PeerConnectionInterface::RTCOfferAnswerOptions());
@@ -254,11 +264,20 @@ void PeerScenarioClient::CreateAndSetSdp(
 void PeerScenarioClient::SetSdpOfferAndGetAnswer(
     std::string remote_offer,
     std::function<void(std::string)> answer_handler) {
+  if (!signaling_thread_->IsCurrent()) {
+    signaling_thread_->PostTask(RTC_FROM_HERE, [=] {
+      SetSdpOfferAndGetAnswer(remote_offer, answer_handler);
+    });
+    return;
+  }
+  RTC_DCHECK_RUN_ON(signaling_thread_);
   peer_connection_->SetRemoteDescription(
       CreateSessionDescription(SdpType::kOffer, remote_offer),
       SdpSetObserver([=]() {
+        RTC_DCHECK_RUN_ON(signaling_thread_);
         peer_connection_->CreateAnswer(
             SdpCreateObserver([=](SessionDescriptionInterface* answer) {
+              RTC_DCHECK_RUN_ON(signaling_thread_);
               std::string sdp_answer;
               answer->ToString(&sdp_answer);
               RTC_LOG(LS_INFO) << sdp_answer;
@@ -275,6 +294,12 @@ void PeerScenarioClient::SetSdpOfferAndGetAnswer(
 void PeerScenarioClient::SetSdpAnswer(
     std::string remote_answer,
     std::function<void(const SessionDescriptionInterface&)> done_handler) {
+  if (!signaling_thread_->IsCurrent()) {
+    signaling_thread_->PostTask(
+        RTC_FROM_HERE, [=] { SetSdpAnswer(remote_answer, done_handler); });
+    return;
+  }
+  RTC_DCHECK_RUN_ON(signaling_thread_);
   peer_connection_->SetRemoteDescription(
       CreateSessionDescription(SdpType::kAnswer, remote_answer),
       SdpSetObserver([remote_answer, done_handler] {
@@ -285,12 +310,12 @@ void PeerScenarioClient::SetSdpAnswer(
 
 void PeerScenarioClient::AddIceCandidate(
     std::unique_ptr<IceCandidateInterface> candidate) {
+  RTC_DCHECK_RUN_ON(signaling_thread_);
   if (peer_connection_->signaling_state() ==
           PeerConnectionInterface::SignalingState::kStable &&
       peer_connection_->current_remote_description()) {
     RTC_CHECK(peer_connection_->AddIceCandidate(candidate.get()));
   } else {
-    RTC_DCHECK_RUN_ON(signaling_thread_);
     pending_ice_candidates_.push_back(std::move(candidate));
   }
 }

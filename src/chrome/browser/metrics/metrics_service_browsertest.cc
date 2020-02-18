@@ -38,6 +38,8 @@
 #include "content/public/test/browser_test_utils.h"
 #include "net/base/filename_util.h"
 #include "services/service_manager/embedder/switches.h"
+#include "testing/gmock/include/gmock/gmock-matchers.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "ui/base/window_open_disposition.h"
 #include "url/gurl.h"
 
@@ -186,6 +188,8 @@ IN_PROC_BROWSER_TEST_F(MetricsServiceBrowserTest, MAYBE_CrashRenderers) {
   EXPECT_EQ(1, prefs->GetInteger(metrics::prefs::kStabilityRendererCrashCount));
 
 #if defined(OS_WIN)
+  // Consult Stability Team before changing this test as it's recorded to
+  // histograms and used for stability measurement.
   histogram_tester.ExpectUniqueSample(
       "CrashExitCodes.Renderer",
       std::abs(static_cast<int32_t>(STATUS_ACCESS_VIOLATION)), 1);
@@ -230,6 +234,8 @@ IN_PROC_BROWSER_TEST_F(MetricsServiceBrowserTest, MAYBE_CheckCrashRenderers) {
   EXPECT_EQ(1, prefs->GetInteger(metrics::prefs::kStabilityRendererCrashCount));
 
 #if defined(OS_WIN)
+  // Consult Stability Team before changing this test as it's recorded to
+  // histograms and used for stability measurement.
   histogram_tester.ExpectUniqueSample(
       "CrashExitCodes.Renderer",
       std::abs(static_cast<int32_t>(STATUS_BREAKPOINT)), 1);
@@ -259,17 +265,25 @@ IN_PROC_BROWSER_TEST_F(MetricsServiceBrowserTest, OOMRenderers) {
   EXPECT_EQ(4, prefs->GetInteger(metrics::prefs::kStabilityPageLoadCount));
   EXPECT_EQ(1, prefs->GetInteger(metrics::prefs::kStabilityRendererCrashCount));
 
-// On 64-bit, the Job object should terminate the renderer on an OOM.
+// On 64-bit, the Job object should terminate the renderer on an OOM. However,
+// if the system is low on memory already, then the allocator might just return
+// a normal OOM before hitting the Job limit.
+// Note: Exit codes are recorded after being passed through std::abs see
+// MapCrashExitCodeForHistogram.
 #if defined(ARCH_CPU_64_BITS)
-  const int expected_exit_code = sandbox::SBOX_FATAL_MEMORY_EXCEEDED;
+  const base::Bucket expected_possible_exit_codes[] = {
+      base::Bucket(
+          std::abs(static_cast<int32_t>(sandbox::SBOX_FATAL_MEMORY_EXCEEDED)),
+          1),
+      base::Bucket(std::abs(static_cast<int32_t>(base::win::kOomExceptionCode)),
+                   1)};
 #else
-  const int expected_exit_code = base::win::kOomExceptionCode;
+  const base::Bucket expected_possible_exit_codes[] = {base::Bucket(
+      std::abs(static_cast<int32_t>(base::win::kOomExceptionCode)), 1)};
 #endif
 
-  // Exit codes are recorded after being passed through std::abs see
-  // MapCrashExitCodeForHistogram.
-  histogram_tester.ExpectUniqueSample("CrashExitCodes.Renderer",
-                                      std::abs(expected_exit_code), 1);
+  EXPECT_THAT(histogram_tester.GetAllSamples("CrashExitCodes.Renderer"),
+              ::testing::IsSubsetOf(expected_possible_exit_codes));
 
   histogram_tester.ExpectUniqueSample("Tabs.SadTab.OomCreated", 1, 1);
 }

@@ -1,7 +1,7 @@
 libdir=@abs_builddir@/.libs
 includedir=@abs_srcdir@
 protocoldir=@abs_top_builddir@/protocol
- 
+
 Name: Wayland Server
 Description: Server side implementation of the Wayland protocol (not installed)
 Version: @PACKAGE_VERSION@

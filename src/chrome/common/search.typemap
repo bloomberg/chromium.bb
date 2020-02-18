@@ -15,11 +15,13 @@ deps = [
   "//ipc",
 ]
 type_mappings = [
+  # TODO(dbeam): NTP -> Ntp.
   "chrome.mojom.NTPLoggingEventType=::NTPLoggingEventType",
   "chrome.mojom.NTPSuggestionsLoggingEventType=::NTPSuggestionsLoggingEventType",
   "chrome.mojom.NTPTileImpression=::ntp_tiles::NTPTileImpression",
   "chrome.mojom.OmniboxFocusState=::OmniboxFocusState",
   "chrome.mojom.OmniboxFocusChangeReason=::OmniboxFocusChangeReason",
   "chrome.mojom.InstantMostVisitedInfo=::InstantMostVisitedInfo",
-  "chrome.mojom.ThemeBackgroundInfo=::ThemeBackgroundInfo",
+  "chrome.mojom.NtpTheme=::NtpTheme",
+  "chrome.mojom.SearchBoxTheme=::SearchBoxTheme",
 ]

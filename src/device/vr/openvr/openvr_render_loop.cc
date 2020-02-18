@@ -4,6 +4,7 @@
 
 #include "device/vr/openvr/openvr_render_loop.h"
 
+#include "base/trace_event/trace_event.h"
 #include "device/vr/openvr/openvr_api_wrapper.h"
 #include "device/vr/openvr/openvr_gamepad_helper.h"
 #include "device/vr/openvr/openvr_type_converters.h"
@@ -172,37 +173,24 @@ void OpenVRRenderLoop::OnSessionStart() {
   LogViewerType(type);
 }
 
-mojom::XRGamepadDataPtr OpenVRRenderLoop::GetNextGamepadData() {
-  if (!openvr_) {
-    return nullptr;
-  }
-  return OpenVRGamepadHelper::GetGamepadData(openvr_->GetSystem());
-}
-
-mojom::VRPosePtr OpenVRRenderLoop::GetPose() {
-  vr::TrackedDevicePose_t rendering_poses[vr::k_unMaxTrackedDeviceCount];
-
-  TRACE_EVENT0("gpu", "WaitGetPoses");
-  openvr_->GetCompositor()->WaitGetPoses(
-      rendering_poses, vr::k_unMaxTrackedDeviceCount, nullptr, 0);
-
-  mojom::VRPosePtr pose = mojo::ConvertTo<mojom::VRPosePtr>(
-      rendering_poses[vr::k_unTrackedDeviceIndex_Hmd]);
-
-  // Update WebXR input sources.
-  DCHECK(pose);
-  pose->input_state =
-      GetInputState(rendering_poses, vr::k_unMaxTrackedDeviceCount);
-
-  return pose;
-}
-
 mojom::XRFrameDataPtr OpenVRRenderLoop::GetNextFrameData() {
   mojom::XRFrameDataPtr frame_data = mojom::XRFrameData::New();
   frame_data->frame_id = next_frame_id_;
 
   if (openvr_) {
-    frame_data->pose = GetPose();
+    vr::TrackedDevicePose_t rendering_poses[vr::k_unMaxTrackedDeviceCount];
+
+    TRACE_EVENT0("gpu", "WaitGetPoses");
+    openvr_->GetCompositor()->WaitGetPoses(
+        rendering_poses, vr::k_unMaxTrackedDeviceCount, nullptr, 0);
+
+    frame_data->pose = mojo::ConvertTo<mojom::VRPosePtr>(
+        rendering_poses[vr::k_unTrackedDeviceIndex_Hmd]);
+
+    // Update WebXR input sources.
+    frame_data->input_state =
+        GetInputState(rendering_poses, vr::k_unMaxTrackedDeviceCount);
+
     vr::Compositor_FrameTiming timing;
     timing.m_nSize = sizeof(vr::Compositor_FrameTiming);
     bool valid_time = openvr_->GetCompositor()->GetFrameTiming(&timing);
@@ -272,10 +260,11 @@ std::vector<mojom::XRInputSourceStatePtr> OpenVRRenderLoop::GetInputState(
     input_active_state.primary_input_pressed = pressed;
 
     if (pose.bPoseIsValid) {
-      state->grip = HmdMatrix34ToTransform(pose.mDeviceToAbsoluteTracking);
+      state->mojo_from_input =
+          HmdMatrix34ToTransform(pose.mDeviceToAbsoluteTracking);
       // Scoot the grip matrix back a bit so that it actually lines up with the
       // user's palm.
-      state->grip->Translate3d(0, 0, kGripOffsetZMeters);
+      state->mojo_from_input->Translate3d(0, 0, kGripOffsetZMeters);
     }
 
     // Poll controller roll per-frame, since OpenVR controllers can swap hands.
@@ -289,6 +278,9 @@ std::vector<mojom::XRInputSourceStatePtr> OpenVRRenderLoop::GetInputState(
         OpenVRGamepadHelper::GetXRInputSourceData(openvr_->GetSystem(), i,
                                                   controller_state, handedness);
     state->gamepad = input_source_data.gamepad;
+
+    // OpenVR controller are fully 6DoF.
+    state->emulated_position = false;
 
     // Re-send the controller's description if it's newly active or if the
     // handedness or profile strings have changed.
@@ -304,13 +296,10 @@ std::vector<mojom::XRInputSourceStatePtr> OpenVRRenderLoop::GetInputState(
       desc->handedness = handedness;
       input_active_state.controller_role = controller_role;
 
-      // OpenVR controller are fully 6DoF.
-      desc->emulated_position = false;
-
       // Tweak the pointer transform so that it's angled down from the
       // grip. This should be a bit more ergonomic.
-      desc->pointer_offset = gfx::Transform();
-      desc->pointer_offset->RotateAboutXAxis(kPointerErgoAngleDegrees);
+      desc->input_from_pointer = gfx::Transform();
+      desc->input_from_pointer->RotateAboutXAxis(kPointerErgoAngleDegrees);
 
       desc->profiles = input_source_data.profiles;
 

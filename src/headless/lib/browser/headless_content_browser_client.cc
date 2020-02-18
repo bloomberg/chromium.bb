@@ -11,8 +11,10 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/i18n/rtl.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
 #include "build/build_config.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -153,7 +155,7 @@ void HeadlessContentBrowserClient::GetQuotaSettings(
     ::storage::OptionalQuotaSettingsCallback callback) {
   ::storage::GetNominalDynamicSettings(
       partition->GetPath(), context->IsOffTheRecord(),
-      ::storage::GetDefaultDiskInfoHelper(), std::move(callback));
+      ::storage::GetDefaultDeviceInfoHelper(), std::move(callback));
 }
 
 content::GeneratedCodeCacheSettings
@@ -245,6 +247,10 @@ void HeadlessContentBrowserClient::AppendExtraCommandLineSwitches(
 #endif
 }
 
+std::string HeadlessContentBrowserClient::GetApplicationLocale() {
+  return base::i18n::GetConfiguredLocale();
+}
+
 std::string HeadlessContentBrowserClient::GetAcceptLangs(
     content::BrowserContext* context) {
   return browser_->options()->accept_language;
@@ -257,19 +263,19 @@ void HeadlessContentBrowserClient::AllowCertificateError(
     const GURL& request_url,
     bool is_main_frame_request,
     bool strict_enforcement,
-    const base::Callback<void(content::CertificateRequestResultType)>&
-        callback) {
+    base::OnceCallback<void(content::CertificateRequestResultType)> callback) {
   if (!callback.is_null()) {
     // If --allow-insecure-localhost is specified, and the request
     // was for localhost, then the error was not fatal.
     bool allow_localhost = base::CommandLine::ForCurrentProcess()->HasSwitch(
         ::switches::kAllowInsecureLocalhost);
     if (allow_localhost && net::IsLocalhost(request_url)) {
-      callback.Run(content::CERTIFICATE_REQUEST_RESULT_TYPE_CONTINUE);
+      std::move(callback).Run(
+          content::CERTIFICATE_REQUEST_RESULT_TYPE_CONTINUE);
       return;
     }
 
-    callback.Run(content::CERTIFICATE_REQUEST_RESULT_TYPE_DENY);
+    std::move(callback).Run(content::CERTIFICATE_REQUEST_RESULT_TYPE_DENY);
   }
 }
 
@@ -291,7 +297,7 @@ bool HeadlessContentBrowserClient::ShouldEnableStrictSiteIsolation() {
   return browser_->options()->site_per_process;
 }
 
-::network::mojom::NetworkContextPtr
+mojo::Remote<::network::mojom::NetworkContext>
 HeadlessContentBrowserClient::CreateNetworkContext(
     content::BrowserContext* context,
     bool in_memory,

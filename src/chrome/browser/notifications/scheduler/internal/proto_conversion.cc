@@ -52,6 +52,8 @@ proto::SchedulerClientType ToSchedulerClientType(SchedulerClientType type) {
       return proto::SchedulerClientType::UNKNOWN;
     case SchedulerClientType::kWebUI:
       return proto::SchedulerClientType::WEBUI;
+    case SchedulerClientType::kChromeUpdate:
+      return proto::SchedulerClientType::CHROME_UPDATE;
   }
   NOTREACHED();
 }
@@ -70,6 +72,8 @@ SchedulerClientType FromSchedulerClientType(
       return SchedulerClientType::kUnknown;
     case proto::SchedulerClientType::WEBUI:
       return SchedulerClientType::kWebUI;
+    case proto::SchedulerClientType::CHROME_UPDATE:
+      return SchedulerClientType::kChromeUpdate;
   }
   NOTREACHED();
 }
@@ -139,34 +143,6 @@ ImpressionResult FromImpressionResult(
       return ImpressionResult::kNegative;
     case proto::Impression_ImpressionResult_NEUTRAL:
       return ImpressionResult::kNeutral;
-  }
-  NOTREACHED();
-}
-
-// Converts ImpressionResult to its associated enum in proto buffer.
-proto::Impression_SchedulerTaskTime ToSchedulerTaskTime(
-    SchedulerTaskTime time) {
-  switch (time) {
-    case SchedulerTaskTime::kUnknown:
-      return proto::Impression_SchedulerTaskTime_UNKNOWN_TASK_TIME;
-    case SchedulerTaskTime::kMorning:
-      return proto::Impression_SchedulerTaskTime_MORNING;
-    case SchedulerTaskTime::kEvening:
-      return proto::Impression_SchedulerTaskTime_EVENING;
-  }
-  NOTREACHED();
-}
-
-// Converts ImpressionResult from its associated enum in proto buffer.
-SchedulerTaskTime FromSchedulerTaskTime(
-    proto::Impression_SchedulerTaskTime time) {
-  switch (time) {
-    case proto::Impression_SchedulerTaskTime_UNKNOWN_TASK_TIME:
-      return SchedulerTaskTime::kUnknown;
-    case proto::Impression_SchedulerTaskTime_MORNING:
-      return SchedulerTaskTime::kMorning;
-    case proto::Impression_SchedulerTaskTime_EVENING:
-      return SchedulerTaskTime::kEvening;
   }
   NOTREACHED();
 }
@@ -302,6 +278,11 @@ void ScheduleParamsToProto(ScheduleParams* params,
     proto->set_deliver_time_end(
         TimeToMilliseconds(params->deliver_time_end.value()));
   }
+
+  if (params->custom_suppression_duration.has_value()) {
+    proto->set_custom_suppression_duration_ms(
+        TimeDeltaToMilliseconds(params->custom_suppression_duration.value()));
+  }
 }
 
 // Converts ScheduleParams from proto buffer type.
@@ -323,6 +304,10 @@ void ScheduleParamsFromProto(proto::ScheduleParams* proto,
   }
   if (proto->has_deliver_time_end()) {
     params->deliver_time_end = MillisecondsToTime(proto->deliver_time_end());
+  }
+  if (proto->has_custom_suppression_duration_ms()) {
+    params->custom_suppression_duration =
+        MillisecondsToTimeDelta(proto->custom_suppression_duration_ms());
   }
 }
 
@@ -348,8 +333,6 @@ void ClientStateToProto(ClientState* client_state,
     impression_ptr->set_feedback(ToUserFeedback(impression.feedback));
     impression_ptr->set_impression(ToImpressionResult(impression.impression));
     impression_ptr->set_integrated(impression.integrated);
-    impression_ptr->set_task_start_time(
-        ToSchedulerTaskTime(impression.task_start_time));
     impression_ptr->set_guid(impression.guid);
 
     for (const auto& mapping : impression.impression_mapping) {
@@ -364,6 +347,12 @@ void ClientStateToProto(ClientState* client_state,
       auto* data = impression_ptr->add_custom_data();
       data->set_key(pair.first);
       data->set_value(pair.second);
+    }
+
+    if (impression.custom_suppression_duration.has_value()) {
+      impression_ptr->set_custom_suppression_duration_ms(
+          TimeDeltaToMilliseconds(
+              impression.custom_suppression_duration.value()));
     }
   }
 
@@ -392,8 +381,6 @@ void ClientStateFromProto(proto::ClientState* proto,
     impression.feedback = FromUserFeedback(proto_impression.feedback());
     impression.impression = FromImpressionResult(proto_impression.impression());
     impression.integrated = proto_impression.integrated();
-    impression.task_start_time =
-        FromSchedulerTaskTime(proto_impression.task_start_time());
     impression.guid = proto_impression.guid();
     impression.type = client_state->type;
 
@@ -410,6 +397,11 @@ void ClientStateFromProto(proto::ClientState* proto,
     for (int i = 0; i < proto_impression.custom_data_size(); ++i) {
       const auto& pair = proto_impression.custom_data(i);
       impression.custom_data.emplace(pair.key(), pair.value());
+    }
+
+    if (proto_impression.has_custom_suppression_duration_ms()) {
+      impression.custom_suppression_duration = MillisecondsToTimeDelta(
+          proto_impression.custom_suppression_duration_ms());
     }
 
     client_state->impressions.emplace_back(std::move(impression));

@@ -12,11 +12,14 @@
 #include "base/component_export.h"
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
+#include "mojo/public/cpp/bindings/struct_ptr.h"
 #include "services/network/public/cpp/cors/origin_access_entry.h"
 #include "services/network/public/mojom/cors_origin_pattern.mojom-shared.h"
 #include "url/origin.h"
 
 namespace network {
+
+struct ResourceRequest;
 
 namespace mojom {
 class CorsOriginPattern;
@@ -87,6 +90,14 @@ class COMPONENT_EXPORT(NETWORK_CPP) OriginAccessList {
   // Returns |destination|'s AccessState in the list for |source_origin|.
   AccessState CheckAccessState(const url::Origin& source_origin,
                                const GURL& destination) const;
+
+  // Returns |request.url|'s AccessState in |this| list for the origin
+  // calculated based on |request.request_initiator| and
+  // |request.isolated_world_origin|.
+  //
+  // Note: This helper might not do the right thing when processing redirects
+  // (because |request.url| might not be updated yet).
+  AccessState CheckAccessState(const ResourceRequest& request) const;
 
   // Creates mojom::CorsPriginAccessPatterns instance vector that represents
   // |this| OriginAccessList instance.

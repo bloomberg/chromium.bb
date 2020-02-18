@@ -39,7 +39,6 @@
 #include "content/renderer/pepper/pepper_file_ref_renderer_host.h"
 #include "content/renderer/pepper/pepper_graphics_2d_host.h"
 #include "content/renderer/pepper/pepper_in_process_router.h"
-#include "content/renderer/pepper/pepper_plugin_instance_metrics.h"
 #include "content/renderer/pepper/pepper_try_catch.h"
 #include "content/renderer/pepper/pepper_url_loader_host.h"
 #include "content/renderer/pepper/plugin_instance_throttler_impl.h"
@@ -110,6 +109,7 @@
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_document_loader.h"
+#include "third_party/blink/public/web/web_frame_widget.h"
 #include "third_party/blink/public/web/web_ime_text_span.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_plugin_container.h"
@@ -293,6 +293,8 @@ STATIC_ASSERT_ENUM(blink::kWebPrintScalingOptionFitToPrintableArea,
                    PP_PRINTSCALINGOPTION_FIT_TO_PRINTABLE_AREA);
 STATIC_ASSERT_ENUM(blink::kWebPrintScalingOptionSourceSize,
                    PP_PRINTSCALINGOPTION_SOURCE_SIZE);
+STATIC_ASSERT_ENUM(blink::kWebPrintScalingOptionFitToPaper,
+                   PP_PRINTSCALINGOPTION_FIT_TO_PAPER);
 
 #undef STATIC_ASSERT_ENUM
 
@@ -1131,10 +1133,6 @@ bool PepperPluginInstanceImpl::HandleInputEvent(
       event.GetType() == blink::WebInputEvent::kMouseDown &&
       (event.GetModifiers() & blink::WebInputEvent::kLeftButtonDown)) {
     has_been_clicked_ = true;
-    blink::WebRect bounds = container()->GetElement().BoundsInViewport();
-    render_frame()->GetLocalRootRenderWidget()->ConvertViewportToWindow(
-        &bounds);
-    RecordFlashClickSizeMetric(bounds.width, bounds.height);
   }
 
   if (throttler_ && throttler_->ConsumeInputEvent(event))
@@ -1168,9 +1166,10 @@ bool PepperPluginInstanceImpl::HandleInputEvent(
       std::unique_ptr<const WebInputEvent> event_in_dip(
           ui::ScaleWebInputEvent(event, viewport_to_dip_scale_));
       if (event_in_dip)
-        CreateInputEventData(*event_in_dip.get(), &events);
+        CreateInputEventData(*event_in_dip.get(), &last_mouse_position_,
+                             &events);
       else
-        CreateInputEventData(event, &events);
+        CreateInputEventData(event, &last_mouse_position_, &events);
 
       // Each input event may generate more than one PP_InputEvent.
       for (size_t i = 0; i < events.size(); i++) {
@@ -1842,16 +1841,9 @@ void PepperPluginInstanceImpl::SendDidChangeView() {
       viewport_to_dip_scale_);
 
   // During the first view update, initialize the throttler.
-  if (!sent_initial_did_change_view_) {
-    if (is_flash_plugin_ && RenderThread::Get()) {
-      RecordFlashSizeMetric(unobscured_rect_.width(),
-                            unobscured_rect_.height());
-    }
-
-    if (throttler_) {
-      throttler_->Initialize(render_frame_, url::Origin::Create(plugin_url_),
-                             module()->name(), unobscured_rect_.size());
-    }
+  if (!sent_initial_did_change_view_ && throttler_) {
+    throttler_->Initialize(render_frame_, url::Origin::Create(plugin_url_),
+                           module()->name(), unobscured_rect_.size());
   }
 
   ppapi::ViewData view_data = view_data_;
@@ -1959,6 +1951,11 @@ int PepperPluginInstanceImpl::PrintBegin(const WebPrintParams& print_params) {
     num_pages = plugin_pdf_interface_->PrintBegin(
         pp_instance(), &print_settings, &pdf_print_settings);
   } else {
+    // If the content is not from the PDF plugin, "fit to paper" should have
+    // never been a scaling option for the user to begin with.
+    DCHECK_NE(print_settings.print_scaling_option,
+              PP_PRINTSCALINGOPTION_FIT_TO_PAPER);
+
     num_pages = plugin_print_interface_->Begin(pp_instance(), &print_settings);
   }
   if (!num_pages)
@@ -2056,6 +2053,10 @@ bool PepperPluginInstanceImpl::GetPrintPresetOptionsFromDocument(
       options.uniform_page_size.width, options.uniform_page_size.height);
 
   return true;
+}
+
+bool PepperPluginInstanceImpl::IsPdfPlugin() {
+  return LoadPdfInterface();
 }
 
 bool PepperPluginInstanceImpl::CanRotateView() {
@@ -2636,9 +2637,10 @@ PP_Bool PepperPluginInstanceImpl::GetScreenSize(PP_Instance instance,
     *size = view_data_.rect.size;
   } else {
     // All other cases: Report the screen size.
-    if (!render_frame_ || !render_frame_->GetLocalRootRenderWidget())
+    if (!render_frame_)
       return PP_FALSE;
-    blink::WebScreenInfo info = render_frame_->render_view()->GetScreenInfo();
+    blink::WebScreenInfo info =
+        render_frame_->GetLocalRootRenderWidget()->GetScreenInfo();
     *size = PP_MakeSize(info.rect.width, info.rect.height);
   }
   return PP_TRUE;
@@ -3221,7 +3223,8 @@ void PepperPluginInstanceImpl::SetSizeAttributesForFullscreen() {
   // behavior, the width and height should probably be set to 100%, rather than
   // a fixed screen size.
 
-  blink::WebScreenInfo info = render_frame_->render_view()->GetScreenInfo();
+  blink::WebScreenInfo info =
+      render_frame_->GetLocalRootRenderWidget()->GetScreenInfo();
   screen_size_for_fullscreen_ = gfx::Size(info.rect.width, info.rect.height);
   std::string width = base::NumberToString(screen_size_for_fullscreen_.width());
   std::string height =

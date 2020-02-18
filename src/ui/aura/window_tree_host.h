@@ -28,6 +28,7 @@
 #include "ui/events/event_source.h"
 #include "ui/events/platform_event.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/gfx/overlay_transform.h"
 
 namespace gfx {
 class Point;
@@ -100,6 +101,8 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
   virtual void SetRootTransform(const gfx::Transform& transform);
   virtual gfx::Transform GetInverseRootTransform() const;
 
+  void SetDisplayTransformHint(gfx::OverlayTransform transform);
+
   // These functions are used in event translation for translating the local
   // coordinates of LocatedEvents. Default implementation calls to non-local
   // ones (e.g. GetRootTransform()).
@@ -113,6 +116,10 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
   // between this call, GetBounds, and OnHostResizedInPixels is ambiguous and
   // allows for inconsistencies.
   void UpdateRootWindowSizeInPixels();
+
+  // Updates the compositor's size and scale from |new_size_in_pixels|,
+  // |device_scale_factor_| and the compositor's transform hint.
+  void UpdateCompositorScaleAndSize(const gfx::Size& new_size_in_pixels);
 
   // Converts |point| from the root window's coordinate system to native
   // screen's.
@@ -265,14 +272,12 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
   void DestroyDispatcher();
 
   // If frame_sink_id is not passed in, one will be grabbed from
-  // ContextFactoryPrivate. |are_events_in_pixels| indicates if events are
-  // received in pixels. If |are_events_in_pixels| is false, events are
-  // received in DIPs. See Compositor() for details on |trace_environment_name|.
+  // ContextFactoryPrivate. See Compositor() for details on
+  // |trace_environment_name|.
   void CreateCompositor(
       const viz::FrameSinkId& frame_sink_id = viz::FrameSinkId(),
       bool force_software_compositor = false,
-      ui::ExternalBeginFrameClient* external_begin_frame_client = nullptr,
-      bool are_events_in_pixels = true,
+      bool use_external_begin_frame_control = false,
       const char* trace_environment_name = nullptr);
 
   void InitCompositor();

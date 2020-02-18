@@ -16,6 +16,8 @@
 
 #include "common/vulkan_platform.h"
 
+#include "dawn_native/vulkan/BufferVk.h"
+
 #include <vector>
 
 namespace dawn_native { namespace vulkan {
@@ -31,6 +33,10 @@ namespace dawn_native { namespace vulkan {
         // The internal buffers used in the workaround of texture-to-texture copies with compressed
         // formats.
         std::vector<Ref<Buffer>> tempBuffers;
+
+        // For Device state tracking only.
+        VkCommandPool commandPool = VK_NULL_HANDLE;
+        bool used = false;
     };
 
 }}  // namespace dawn_native::vulkan

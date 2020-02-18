@@ -8,6 +8,7 @@
 
 #include <memory>
 #include <set>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/run_loop.h"
@@ -25,50 +26,11 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_renderer_host.h"
-#include "net/base/request_priority.h"
-#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
-#include "net/url_request/url_request.h"
-#include "net/url_request/url_request_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::BrowserThread;
 
 namespace {
-
-// FakeURLRequestJobFactory returns NULL for all job creation requests and false
-// for all IsHandledProtocol() requests. FakeURLRequestJobFactory can be chained
-// to ProtocolHandlerRegistry::JobInterceptorFactory so the result of
-// MaybeCreateJobWithProtocolHandler() indicates whether the
-// ProtocolHandlerRegistry properly handled a job creation request.
-class FakeURLRequestJobFactory : public net::URLRequestJobFactory {
-  // net::URLRequestJobFactory implementation:
-  net::URLRequestJob* MaybeCreateJobWithProtocolHandler(
-      const std::string& scheme,
-      net::URLRequest* request,
-      net::NetworkDelegate* network_delegate) const override {
-    return NULL;
-  }
-
-  net::URLRequestJob* MaybeInterceptRedirect(
-      net::URLRequest* request,
-      net::NetworkDelegate* network_delegate,
-      const GURL& location) const override {
-    return nullptr;
-  }
-
-  net::URLRequestJob* MaybeInterceptResponse(
-      net::URLRequest* request,
-      net::NetworkDelegate* network_delegate) const override {
-    return nullptr;
-  }
-
-  bool IsHandledProtocol(const std::string& scheme) const override {
-    return false;
-  }
-  bool IsSafeRedirectTarget(const GURL& location) const override {
-    return true;
-  }
-};
 
 std::unique_ptr<base::DictionaryValue> GetProtocolHandlerValue(
     const std::string& protocol,
@@ -105,14 +67,14 @@ class FakeDelegate : public ProtocolHandlerRegistry::Delegate {
 
   void RegisterWithOSAsDefaultClient(
       const std::string& protocol,
-      ProtocolHandlerRegistry* registry) override {
+      shell_integration::DefaultWebClientWorkerCallback callback) override {
     // Do as-if the registration has to run on another sequence and post back
     // the result with a task to the current thread.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::BindOnce(registry->GetDefaultWebClientCallback(protocol),
-                       force_os_failure_ ? shell_integration::NOT_DEFAULT
-                                         : shell_integration::IS_DEFAULT));
+        base::BindOnce(callback, force_os_failure_
+                                     ? shell_integration::NOT_DEFAULT
+                                     : shell_integration::IS_DEFAULT));
 
     if (!force_os_failure_)
       os_registered_protocols_.insert(protocol);
@@ -252,8 +214,10 @@ class ProtocolHandlerRegistryTest : public testing::Test {
   // Returns a new registry, initializing it if |initialize| is true.
   // Caller assumes ownership for the object
   void SetUpRegistry(bool initialize) {
-    delegate_ = new FakeDelegate();
-    registry_.reset(new ProtocolHandlerRegistry(profile(), delegate()));
+    auto delegate = std::make_unique<FakeDelegate>();
+    delegate_ = delegate.get();
+    registry_.reset(
+        new ProtocolHandlerRegistry(profile(), std::move(delegate)));
     if (initialize) registry_->InitProtocolSettings();
   }
 

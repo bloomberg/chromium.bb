@@ -9,7 +9,6 @@
 
 namespace switches {
 
-GPU_EXPORT extern const char kDisableGpuDriverBugWorkarounds[];
 GPU_EXPORT extern const char kDisableGpuRasterization[];
 GPU_EXPORT extern const char kEnableGpuRasterization[];
 GPU_EXPORT extern const char kGpuBlacklistTestGroup[];
@@ -21,6 +20,7 @@ GPU_EXPORT extern const char kDisableGpuProcessForDX12VulkanInfoCollection[];
 GPU_EXPORT extern const char kEnableUnsafeWebGPU[];
 GPU_EXPORT extern const char kUseHighGPUThreadPriorityForPerfTests[];
 GPU_EXPORT extern const char kNoDelayForDX12VulkanInfoCollection[];
+GPU_EXPORT extern const char kEnableGpuBlockedTime[];
 
 }  // namespace switches
 

@@ -20,7 +20,6 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
-import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -53,7 +52,7 @@ public class TrustedWebActivityPermissionsTest {
     private TrustedWebActivityPermissionManager mPermissionManager;
 
     @Before
-    public void setUp() throws InterruptedException, ProcessInitException, TimeoutException {
+    public void setUp() throws TimeoutException {
         // Native needs to be initialized to start the test server.
         LibraryLoader.getInstance().ensureInitialized(LibraryProcessType.PROCESS_BROWSER);
 
@@ -62,7 +61,7 @@ public class TrustedWebActivityPermissionsTest {
                 InstrumentationRegistry.getInstrumentation().getContext(),
                 ServerCertificate.CERT_OK);
         mTestPage = mTestServer.getURL(TEST_PAGE);
-        mOrigin = new Origin(mTestPage);
+        mOrigin = Origin.create(mTestPage);
         mPackage = InstrumentationRegistry.getTargetContext().getPackageName();
 
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(
@@ -75,32 +74,32 @@ public class TrustedWebActivityPermissionsTest {
     }
 
     @After
-    public void tearDown() throws TimeoutException {
+    public void tearDown() {
         mPermissionManager.clearForTesting();
         mTestServer.stopAndDestroyServer();
     }
 
     @Test
     @MediumTest
-    public void allowNotifications() throws TimeoutException, InterruptedException {
+    public void allowNotifications() throws TimeoutException {
         TestThreadUtils.runOnUiThreadBlocking(() ->
-                mPermissionManager.register(mOrigin, mPackage, true));
+                mPermissionManager.updatePermission(mOrigin, mPackage, true));
         assertEquals("\"granted\"", getNotificationPermission());
     }
 
     @Test
     @MediumTest
-    public void blockNotifications() throws TimeoutException, InterruptedException {
+    public void blockNotifications() throws TimeoutException {
         TestThreadUtils.runOnUiThreadBlocking(() ->
-                mPermissionManager.register(mOrigin, mPackage, false));
+                mPermissionManager.updatePermission(mOrigin, mPackage, false));
         assertEquals("\"denied\"", getNotificationPermission());
     }
 
     @Test
     @MediumTest
-    public void unregisterTwa() throws TimeoutException, InterruptedException {
+    public void unregisterTwa() throws TimeoutException {
         TestThreadUtils.runOnUiThreadBlocking(() ->
-                mPermissionManager.register(mOrigin, mPackage, true));
+                mPermissionManager.updatePermission(mOrigin, mPackage, true));
         assertEquals("\"granted\"", getNotificationPermission());
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
@@ -111,16 +110,16 @@ public class TrustedWebActivityPermissionsTest {
 
     @Test
     @SmallTest
-    public void detectTwa() throws TimeoutException, InterruptedException {
+    public void detectTwa() {
         TestThreadUtils.runOnUiThreadBlocking(
-                () -> mPermissionManager.register(mOrigin, mPackage, true));
+                () -> mPermissionManager.updatePermission(mOrigin, mPackage, true));
         assertTrue(BackgroundSyncPwaDetector.isTwaInstalled(mOrigin.toString()));
 
         TestThreadUtils.runOnUiThreadBlocking(() -> { mPermissionManager.unregister(mOrigin); });
         assertFalse(BackgroundSyncPwaDetector.isTwaInstalled(mOrigin.toString()));
     }
 
-    private String getNotificationPermission() throws TimeoutException, InterruptedException {
+    private String getNotificationPermission() throws TimeoutException {
         return mCustomTabActivityTestRule.runJavaScriptCodeInCurrentTab("Notification.permission");
     }
 }

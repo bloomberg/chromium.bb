@@ -32,9 +32,9 @@ class UserImageSource : public content::URLDataSource {
   // content::URLDataSource implementation.
   std::string GetSource() override;
   void StartDataRequest(
-      const std::string& path,
+      const GURL& url,
       const content::WebContents::Getter& wc_getter,
-      const content::URLDataSource::GotDataCallback& callback) override;
+      content::URLDataSource::GotDataCallback callback) override;
   std::string GetMimeType(const std::string& path) override;
 
   // Returns PNG encoded image for user with specified |account_id|. If there's

@@ -10,10 +10,12 @@
 #include "base/command_line.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
+#include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "components/services/font/fontconfig_matching.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "ppapi/buildflags/buildflags.h"
+#include "skia/ext/skia_utils_base.h"
 #include "ui/gfx/font_fallback_linux.h"
 #include "ui/gfx/font_render_params.h"
 
@@ -115,12 +117,13 @@ void FontServiceApp::MatchFamilyName(const std::string& family_name,
 
   // Stash away the returned path, so we can give it an ID (index)
   // which will later be given to us in a request to open the file.
-  int index = FindOrAddPath(result_identity.fString);
+  base::FilePath path(result_identity.fString.c_str());
+  size_t index = FindOrAddPath(path);
 
   mojom::FontIdentityPtr identity(mojom::FontIdentity::New());
   identity->id = static_cast<uint32_t>(index);
   identity->ttc_index = result_identity.fTTCIndex;
-  identity->str_representation = result_identity.fString.c_str();
+  identity->filepath = path;
 
   mojom::TypefaceStylePtr style(mojom::TypefaceStyle::New());
   style->weight = result_style.weight();
@@ -137,9 +140,8 @@ void FontServiceApp::OpenStream(uint32_t id_number,
 
   DCHECK_LT(id_number, static_cast<uint32_t>(paths_.size()));
   base::File file;
-  if (id_number < static_cast<uint32_t>(paths_.size())) {
-    file = GetFileForPath(base::FilePath(paths_[id_number].c_str()));
-  }
+  if (id_number < static_cast<uint32_t>(paths_.size()))
+    file = GetFileForPath(paths_[id_number]);
 
   std::move(callback).Run(std::move(file));
 }
@@ -150,16 +152,20 @@ void FontServiceApp::FallbackFontForCharacter(
     FallbackFontForCharacterCallback callback) {
   TRACE_EVENT0("fonts", "FontServiceApp::FallbackFontForCharacter");
 
-  auto fallback_font = gfx::GetFallbackFontForChar(character, locale);
-  int index = FindOrAddPath(SkString(fallback_font.filename.data()));
+  gfx::FallbackFontData fallback_font;
+  if (gfx::GetFallbackFontForChar(character, locale, &fallback_font)) {
+    size_t index = FindOrAddPath(fallback_font.filepath);
 
-  mojom::FontIdentityPtr identity(mojom::FontIdentity::New());
-  identity->id = static_cast<uint32_t>(index);
-  identity->ttc_index = fallback_font.ttc_index;
-  identity->str_representation = fallback_font.filename;
+    mojom::FontIdentityPtr identity(mojom::FontIdentity::New());
+    identity->id = static_cast<uint32_t>(index);
+    identity->ttc_index = fallback_font.ttc_index;
+    identity->filepath = fallback_font.filepath;
 
-  std::move(callback).Run(std::move(identity), fallback_font.name,
-                          fallback_font.is_bold, fallback_font.is_italic);
+    std::move(callback).Run(std::move(identity), fallback_font.name,
+                            fallback_font.is_bold, fallback_font.is_italic);
+  } else {
+    std::move(callback).Run(nullptr, "", false, false);
+  }
 }
 
 void FontServiceApp::FontRenderStyleForStrike(
@@ -206,12 +212,10 @@ void FontServiceApp::MatchFontByPostscriptNameOrFullFontName(
   base::Optional<FontConfigLocalMatching::FontConfigMatchResult> match_result =
       FontConfigLocalMatching::FindFontByPostscriptNameOrFullFontName(family);
   if (match_result) {
-    uint32_t fontconfig_interface_id =
-        FindOrAddPath(SkString(match_result->file_path.value().c_str()));
-    mojom::FontIdentityPtr font_identity =
-        mojom::FontIdentityPtr(mojom::FontIdentity::New(
-            fontconfig_interface_id, match_result->ttc_index,
-            match_result->file_path.value()));
+    uint32_t fontconfig_interface_id = FindOrAddPath(match_result->file_path);
+    mojom::FontIdentityPtr font_identity(mojom::FontIdentity::New(
+        fontconfig_interface_id, match_result->ttc_index,
+        match_result->file_path));
     std::move(callback).Run(std::move(font_identity));
     return;
   }
@@ -240,11 +244,11 @@ void FontServiceApp::MatchFontWithFallback(
 #endif
 }
 
-int FontServiceApp::FindOrAddPath(const SkString& path) {
+size_t FontServiceApp::FindOrAddPath(const base::FilePath& path) {
   TRACE_EVENT1("fonts", "FontServiceApp::FindOrAddPath", "path",
-               TRACE_STR_COPY(path.c_str()));
-  int count = paths_.size();
-  for (int i = 0; i < count; ++i) {
+               path.AsUTF8Unsafe());
+  size_t count = paths_.size();
+  for (size_t i = 0; i < count; ++i) {
     if (path == paths_[i])
       return i;
   }

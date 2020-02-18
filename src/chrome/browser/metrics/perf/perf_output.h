@@ -12,9 +12,14 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
-#include "base/threading/thread_checker.h"
+#include "base/sequence_checker.h"
 #include "base/time/time.h"
+#include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/dbus/pipe_reader.h"
+
+namespace chromeos {
+class DebugDaemonClient;
+}  // namespace chromeos
 
 namespace metrics {
 
@@ -26,12 +31,12 @@ class PerfOutputCall {
   // The callback may delete this object.
   // The argument is one of:
   // - Output from "perf record", in PerfDataProto format, OR
-  // - Output from "perf stat", in PerfStatProto format, OR
   // - The empty string if there was an error.
   // The output is transferred to |perf_stdout|.
   using DoneCallback = base::OnceCallback<void(std::string perf_stdout)>;
 
-  PerfOutputCall(base::TimeDelta duration,
+  PerfOutputCall(chromeos::DebugDaemonClient* debug_daemon_client,
+                 base::TimeDelta duration,
                  const std::vector<std::string>& perf_args,
                  DoneCallback callback);
   virtual ~PerfOutputCall();
@@ -50,6 +55,9 @@ class PerfOutputCall {
 
   void StopImpl();
 
+  // A non-retaining pointer to the DebugDaemonClient instance.
+  chromeos::DebugDaemonClient* debug_daemon_client_;
+
   // Used to capture perf data written to a pipe.
   std::unique_ptr<chromeos::PipeReader> perf_data_pipe_reader_;
 
@@ -65,7 +73,7 @@ class PerfOutputCall {
   bool pending_stop_;
   base::Optional<uint64_t> perf_session_id_;
 
-  THREAD_CHECKER(thread_checker_);
+  SEQUENCE_CHECKER(sequence_checker_);
 
   // To pass around the "this" pointer across threads safely.
   base::WeakPtrFactory<PerfOutputCall> weak_factory_{this};

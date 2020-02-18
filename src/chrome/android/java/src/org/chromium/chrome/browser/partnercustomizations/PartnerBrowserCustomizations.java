@@ -9,13 +9,14 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.ProviderInfo;
 import android.database.Cursor;
 import android.net.Uri;
-import android.support.annotation.Nullable;
 import android.text.TextUtils;
+
+import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.base.task.PostTask;

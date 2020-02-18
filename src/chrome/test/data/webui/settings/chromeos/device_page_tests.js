@@ -8,6 +8,7 @@ cr.define('device_page_tests', function() {
     DevicePage: 'device page',
     Display: 'display',
     Keyboard: 'keyboard',
+    NightLight: 'night light',
     Pointers: 'pointers',
     Power: 'power',
     Stylus: 'stylus',
@@ -209,6 +210,13 @@ cr.define('device_page_tests', function() {
   function getFakePrefs() {
     return {
       ash: {
+        ambient_color: {
+          enabled: {
+            key: 'ash.ambient_color.enabled',
+            type: chrome.settingsPrivate.PrefType.BOOLEAN,
+            value: false,
+          },
+        },
         night_light: {
           enabled: {
             key: 'ash.night_light.enabled',
@@ -411,6 +419,33 @@ cr.define('device_page_tests', function() {
       return Promise.resolve(page);
     }
 
+    /** @param {number} n The number of the display to add. */
+    function addDisplay(n) {
+      const display = {
+        id: 'fakeDisplayId' + n,
+        name: 'fakeDisplayName' + n,
+        mirroring: '',
+        isPrimary: n == 1,
+        isInternal: n == 1,
+        rotation: 0,
+        modes: [{
+          deviceScaleFactor: 1.0,
+          widthInNativePixels: 1920,
+          heightInNativePixels: 1080,
+          width: 1920,
+          height: 1080,
+        }],
+        bounds: {
+          left: 0,
+          top: 0,
+          width: 1920,
+          height: 1080,
+        },
+        availableDisplayZoomFactors: [1, 1.25, 1.5, 2],
+      };
+      fakeSystemDisplay.addDisplayForTest(display);
+    }
+
     /**
      * @param {settings.IdleBehavior} idleBehavior
      * @param {boolean} idleControlled
@@ -602,15 +637,14 @@ cr.define('device_page_tests', function() {
       const name = k => `prefs.settings.language.${k}.value`;
       const get = k => devicePage.get(name(k));
       const set = (k, v) => devicePage.set(name(k), v);
-      let collapse;
       // Open the keyboard subpage.
-      let keyboardPage =
+      const keyboardPage =
           await showAndGetDeviceSubpage('keyboard', settings.routes.KEYBOARD);
       // Initially, the optional keys are hidden.
       expectFalse(!!keyboardPage.$$('#capsLockKey'));
 
       // Pretend no internal keyboard is available.
-      let keyboardParams = {
+      const keyboardParams = {
         'showCapsLock': false,
         'showExternalMetaKey': false,
         'showAppleCommandKey': false,
@@ -675,7 +709,7 @@ cr.define('device_page_tests', function() {
       expectTrue(!!keyboardPage.$$('#externalCommandKey'));
       expectTrue(!!keyboardPage.$$('#assistantKey'));
 
-      collapse = keyboardPage.$$('iron-collapse');
+      const collapse = keyboardPage.$$('iron-collapse');
       assertTrue(!!collapse);
       expectTrue(collapse.opened);
 
@@ -720,25 +754,6 @@ cr.define('device_page_tests', function() {
     });
 
     test(assert(TestNames.Display), function() {
-      const addDisplay = function(n) {
-        const display = {
-          id: 'fakeDisplayId' + n,
-          name: 'fakeDisplayName' + n,
-          mirroring: '',
-          isPrimary: n == 1,
-          rotation: 0,
-          modes: [],
-          bounds: {
-            left: 0,
-            top: 0,
-            width: 1920,
-            height: 1080,
-          },
-          availableDisplayZoomFactors: [1, 1.25, 1.5, 2],
-        };
-        fakeSystemDisplay.addDisplayForTest(display);
-      };
-
       let displayPage;
       return Promise
           .all([
@@ -789,6 +804,18 @@ cr.define('device_page_tests', function() {
             expectFalse(displayPage.showUnifiedDesktop_(
                 false, false, displayPage.displays));
 
+            // Sanity check the first display is internal.
+            expectTrue(displayPage.displays[0].isInternal);
+
+            // Ambient EQ only shown when enabled.
+            expectTrue(displayPage.showAmbientColorSetting_(
+                true, displayPage.displays[0]));
+            expectFalse(displayPage.showAmbientColorSetting_(
+                false, displayPage.displays[0]));
+
+            // Verify that the arrangement section is not shown.
+            expectEquals(null, displayPage.$$('#arrangement-section'));
+
             // Add a second display.
             addDisplay(2);
             fakeSystemDisplay.onDisplayChanged.callListeners();
@@ -817,6 +844,19 @@ cr.define('device_page_tests', function() {
                 true, true, displayPage.displays));
             expectFalse(displayPage.showUnifiedDesktop_(
                 false, false, displayPage.displays));
+
+            // Sanity check the second display is not internal.
+            expectFalse(displayPage.displays[1].isInternal);
+
+            // Ambient EQ never shown on non-internal display regardless of
+            // whether it is enabled.
+            expectFalse(displayPage.showAmbientColorSetting_(
+                true, displayPage.displays[1]));
+            expectFalse(displayPage.showAmbientColorSetting_(
+                false, displayPage.displays[1]));
+
+            // Verify that the arrangement section is shown.
+            expectTrue(!!displayPage.$$('#arrangement-section'));
 
             // Select the second display and make it primary. Also change the
             // orientation of the second display.
@@ -873,6 +913,9 @@ cr.define('device_page_tests', function() {
             expectTrue(displayPage.showMirror_(false, displayPage.displays));
             expectTrue(displayPage.isMirrored_(displayPage.displays));
 
+            // Verify that the arrangement section is shown while mirroring.
+            expectTrue(!!displayPage.$$('#arrangement-section'));
+
             // Ensure that the zoom value remains unchanged while draggging.
             function pointerEvent(eventType, ratio) {
               const crSlider = displayPage.$.displaySizeSlider.$.slider;
@@ -892,6 +935,36 @@ cr.define('device_page_tests', function() {
             pointerEvent('pointerup', 0);
             expectEquals(1.25, displayPage.selectedZoomPref_.value);
           });
+    });
+
+    test(assert(TestNames.NightLight), async function() {
+      // Set up a single display.
+      const displayPage =
+          await showAndGetDeviceSubpage('display', settings.routes.DISPLAY);
+      await fakeSystemDisplay.getInfoCalled.promise;
+      addDisplay(1);
+      fakeSystemDisplay.onDisplayChanged.callListeners();
+      await fakeSystemDisplay.getInfoCalled.promise;
+      await fakeSystemDisplay.getLayoutCalled.promise;
+      expectEquals(1, displayPage.displays.length);
+
+      const temperature = displayPage.$$('#nightLightTemperatureDiv');
+      const schedule = displayPage.$$('#nightLightScheduleTypeDropDown');
+
+      // Night Light is off, so temperature is hidden. Schedule is always shown.
+      expectTrue(temperature.hidden);
+      expectFalse(schedule.hidden);
+
+      // Enable Night Light. Use an atomic update of |displayPage.prefs| so
+      // Polymer notices the change.
+      const newPrefs = getFakePrefs();
+      newPrefs.ash.night_light.enabled.value = true;
+      displayPage.prefs = newPrefs;
+      Polymer.dom.flush();
+
+      // Night Light is on, so temperature is visible.
+      expectFalse(temperature.hidden);
+      expectFalse(schedule.hidden);
     });
 
     suite(assert(TestNames.Power), function() {

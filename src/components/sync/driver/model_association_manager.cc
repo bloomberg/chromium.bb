@@ -36,18 +36,18 @@ static const ModelType kStartOrder[] = {
     // in parallel with the UI types.
     PASSWORDS, AUTOFILL, AUTOFILL_PROFILE, AUTOFILL_WALLET_DATA,
     AUTOFILL_WALLET_METADATA, EXTENSION_SETTINGS, APP_SETTINGS, TYPED_URLS,
-    HISTORY_DELETE_DIRECTIVES, DEPRECATED_SYNCED_NOTIFICATIONS,
-    DEPRECATED_SYNCED_NOTIFICATION_APP_INFO,
+    HISTORY_DELETE_DIRECTIVES,
+
+    // Chrome OS settings affect the initial desktop appearance before the
+    // browser window opens, so start them before browser data types.
+    OS_PRIORITY_PREFERENCES, OS_PREFERENCES,
 
     // UI thread data types.
     BOOKMARKS, PREFERENCES, PRIORITY_PREFERENCES, EXTENSIONS, APPS, APP_LIST,
-    ARC_PACKAGE, READING_LIST, THEMES, SEARCH_ENGINES, SESSIONS,
-    DEPRECATED_APP_NOTIFICATIONS, DICTIONARY, FAVICON_IMAGES, FAVICON_TRACKING,
-    PRINTERS, USER_CONSENTS, USER_EVENTS, SUPERVISED_USER_SETTINGS,
-    SUPERVISED_USER_WHITELISTS, DEPRECATED_WIFI_CREDENTIALS,
-    DEPRECATED_SUPERVISED_USERS, MOUNTAIN_SHARES,
-    DEPRECATED_SUPERVISED_USER_SHARED_SETTINGS, DEPRECATED_ARTICLES,
-    SEND_TAB_TO_SELF, SECURITY_EVENTS, WEB_APPS, WIFI_CONFIGURATIONS};
+    ARC_PACKAGE, READING_LIST, THEMES, SEARCH_ENGINES, SESSIONS, DICTIONARY,
+    FAVICON_IMAGES, FAVICON_TRACKING, PRINTERS, USER_CONSENTS, USER_EVENTS,
+    SUPERVISED_USER_SETTINGS, SUPERVISED_USER_WHITELISTS, SEND_TAB_TO_SELF,
+    SECURITY_EVENTS, WEB_APPS, WIFI_CONFIGURATIONS};
 
 static_assert(base::size(kStartOrder) ==
                   ModelType::NUM_ENTRIES - FIRST_REAL_MODEL_TYPE,
@@ -114,8 +114,7 @@ void ModelAssociationManager::Initialize(ModelTypeSet desired_types,
   // |desired_types| must be a subset of |preferred_types|.
   DCHECK(preferred_types.HasAll(desired_types));
 
-  bool storage_option_changed =
-      configure_context_.storage_option != context.storage_option;
+  bool sync_mode_changed = configure_context_.sync_mode != context.sync_mode;
 
   configure_context_ = context;
 
@@ -145,8 +144,7 @@ void ModelAssociationManager::Initialize(ModelTypeSet desired_types,
     // We generally stop all data types which are not desired. When the storage
     // option changes, we need to restart all data types so that they can
     // re-wire to the correct storage.
-    bool should_stop =
-        !desired_types_.Has(dtc->type()) || storage_option_changed;
+    bool should_stop = !desired_types_.Has(dtc->type()) || sync_mode_changed;
     // If the datatype is already STOPPING, we also wait for it to stop, to make
     // sure it's ready to start again (if appropriate).
     if ((should_stop && dtc->state() != DataTypeController::NOT_RUNNING) ||
@@ -155,12 +153,12 @@ void ModelAssociationManager::Initialize(ModelTypeSet desired_types,
       // means we'll clear it.
       ShutdownReason reason =
           preferred_types.Has(dtc->type()) ? STOP_SYNC : DISABLE_SYNC;
-      // If we're switchingt o in-memory storage, don't clear any old data. The
-      // reason is that if a user temporarily disables Sync, we don't want to
-      // wipe (and later redownload) all their data, just because Sync restarted
-      // in transport-only mode.
-      if (storage_option_changed &&
-          configure_context_.storage_option == STORAGE_IN_MEMORY) {
+      // If we're switching to transport-only mode, don't clear any old data.
+      // The reason is that if a user temporarily disables Sync, we don't want
+      // to wipe (and later redownload) all their data, just because Sync
+      // restarted in transport-only mode.
+      if (sync_mode_changed &&
+          configure_context_.sync_mode == SyncMode::kTransportOnly) {
         reason = STOP_SYNC;
       }
       types_to_stop[dtc] = reason;
@@ -453,8 +451,7 @@ void ModelAssociationManager::ModelAssociationDone(State new_state) {
         dtc->state() != DataTypeController::STOPPING) {
       // TODO(wychen): enum uma should be strongly typed. crbug.com/661401
       UMA_HISTOGRAM_ENUMERATION("Sync.ConfigureFailed",
-                                ModelTypeToHistogramInt(dtc->type()),
-                                static_cast<int>(ModelType::NUM_ENTRIES));
+                                ModelTypeHistogramValue(dtc->type()));
       StopDatatypeImpl(SyncError(FROM_HERE, SyncError::DATATYPE_ERROR,
                                  "Association timed out.", dtc->type()),
                        STOP_SYNC, dtc, base::DoNothing());

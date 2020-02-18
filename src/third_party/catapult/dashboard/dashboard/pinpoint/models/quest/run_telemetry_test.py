@@ -7,7 +7,6 @@ from __future__ import print_function
 from __future__ import division
 from __future__ import absolute_import
 
-import copy
 import re
 
 from dashboard.pinpoint.models.quest import run_performance_test
@@ -20,25 +19,42 @@ _STORY_REGEX = re.compile(r'[^a-zA-Z0-9]')
 
 
 def _StoryToRegex(story_name):
-  # During import, some chars in story names got replaced by "_" so they
-  # could be safely included in the test_path. At this point we don't know
-  # what the original characters were. Additionally, some special characters
-  # and argument quoting are not interpreted correctly, e.g. by bisect
-  # scripts (crbug.com/662472). We thus keep only a small set of "safe chars"
+  # Telemetry's --story-filter argument takes in a regex, not a
+  # plain string. Stories can have all sorts of special characters
+  # in their names (see crbug.com/983993) which would confuse a
+  # regex. We thus keep only a small set of "safe chars"
   # and replace all others with match-any-character regex dots.
   return '^%s$' % _STORY_REGEX.sub('.', story_name)
+
+
+def ChangeDependentArgs(args, change):
+  # For results2 to differentiate between runs, we need to add the
+  # Telemetry parameter `--results-label <change>` to the runs.
+  extra_args = list(args)
+  extra_args += ('--results-label', str(change))
+  if '--story-filter' in extra_args:
+    # TODO(crbug.com/982027): The --run-full-story-set flag was added to
+    # Chromium at revision http://crrev.com/675459, on Jul 9th, 2019. If we
+    # use this flag for changes before then, then Telemetry will fail. We can
+    # move the following code to run without checking commit_position as part
+    # of the _ExtraTestArgs method once we no longer need to be able to run
+    # Pinpoint against changes that old.
+    commit_position = change.base_commit.AsDict()['commit_position']
+    if commit_position and commit_position >= 675459:
+      # Since benchmarks are run in abridged form by default, we need to
+      # add the argument --run-full-story-set to make sure that if someone
+      # chooses to run a specific story we will run it even if it is not
+      # in the abridged version of the story set.
+      extra_args.append('--run-full-story-set')
+  return extra_args
 
 
 class RunTelemetryTest(run_performance_test.RunPerformanceTest):
 
   def Start(self, change, isolate_server, isolate_hash):
-    # For results2 to differentiate between runs, we need to add the
-    # Telemetry parameter `--results-label <change>` to the runs.
-    extra_args = copy.copy(self._extra_args)
-    extra_args += ('--results-label', str(change))
     extra_swarming_tags = {'change': str(change)}
-
-    return self._Start(change, isolate_server, isolate_hash, extra_args,
+    return self._Start(change, isolate_server, isolate_hash,
+                       ChangeDependentArgs(self._extra_args, change),
                        extra_swarming_tags)
 
   @classmethod
@@ -52,6 +68,16 @@ class RunTelemetryTest(run_performance_test.RunPerformanceTest):
 
     story = arguments.get('story')
     if story:
+      # TODO(crbug.com/982027): Note that usage of "--run-full-story-set"
+      # and "--story-filter"
+      # may be replaced with --story=<story> (no regex needed). Support
+      # for --story flag landed in
+      # https://chromium-review.googlesource.com/c/catapult/+/1869800
+      # (Oct 22, 2019)
+      # so we cannot turn this on by default until we no longer need to
+      # be able to run revisions older than that. In the meantime, the
+      # following argument plus the --run-full-story-set argument added in
+      # Start() accomplish the same thing.
       extra_test_args += ('--story-filter', _StoryToRegex(story))
 
     story_tags = arguments.get('story_tags')
@@ -71,9 +97,15 @@ class RunTelemetryTest(run_performance_test.RunPerformanceTest):
     extra_test_args += ('--browser', browser)
 
     if browser.startswith('android-webview'):
-      # TODO: Share code with the perf waterfall configs. crbug.com/771680
+      # TODO(crbug.com/771680): Share code with the perf waterfall configs.
       extra_test_args += ('--webview-embedder-apk',
                           '../../out/Release/apks/SystemWebViewShell.apk')
+    if browser.startswith('android-weblayer'):
+      # TODO(crbug.com/771680): Share code with the perf waterfall configs.
+      extra_test_args += ('--webview-embedder-apk',
+                          '../../out/Release/apks/WebLayerShell.apk')
+      extra_test_args += ('--webview-embedder-apk',
+                          '../../out/Release/apks/WebLayerSupport.apk')
 
     extra_test_args += _DEFAULT_EXTRA_ARGS
     extra_test_args += super(RunTelemetryTest, cls)._ExtraTestArgs(arguments)

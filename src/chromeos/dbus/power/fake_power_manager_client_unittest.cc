@@ -102,8 +102,8 @@ TEST(FakePowerManagerClientTest, NotifyObserversTest) {
   // RequestStatusUpdate posts to the current message loop. This is
   // necessary because we want to make sure that NotifyObservers() is
   // called as a result of RequestStatusUpdate().
-  base::test::TaskEnvironment task_environment(
-      base::test::TaskEnvironment::MainThreadType::UI);
+  base::test::SingleThreadTaskEnvironment task_environment(
+      base::test::SingleThreadTaskEnvironment::MainThreadType::UI);
   test_observer.ClearProps();
   client.RequestStatusUpdate();
   base::RunLoop().RunUntilIdle();
@@ -132,6 +132,15 @@ TEST(FakePowerManagerClientTest, NotifyObserversTest) {
   // Test removing observer.
   client.RemoveObserver(&test_observer);
   EXPECT_FALSE(client.HasObserver(&test_observer));
+}
+
+TEST(FakePowerManagerClientTest, AmbientColorSupport) {
+  FakePowerManagerClient client;
+  EXPECT_FALSE(client.SupportsAmbientColor());
+  client.set_supports_ambient_color(true);
+  EXPECT_TRUE(client.SupportsAmbientColor());
+  client.set_supports_ambient_color(false);
+  EXPECT_FALSE(client.SupportsAmbientColor());
 }
 
 }  // namespace chromeos

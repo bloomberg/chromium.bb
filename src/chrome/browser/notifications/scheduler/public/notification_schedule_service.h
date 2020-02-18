@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "chrome/browser/notifications/scheduler/public/client_overview.h"
 #include "chrome/browser/notifications/scheduler/public/impression_detail.h"
 #include "chrome/browser/notifications/scheduler/public/notification_background_task_scheduler.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -30,10 +31,11 @@ class NotificationScheduleService : public KeyedService {
   // Deletes notifications of a given |SchedulerClientType|.
   virtual void DeleteNotifications(SchedulerClientType type) = 0;
 
-  // Queries impression details for a given |SchedulerClientType|.
-  virtual void GetImpressionDetail(
+  // Queries an overview of notifications for a given
+  // |SchedulerClientType| including impression details.
+  virtual void GetClientOverview(
       SchedulerClientType type,
-      ImpressionDetail::ImpressionDetailCallback callback) = 0;
+      ClientOverview::ClientOverviewCallback callback) = 0;
 
   // Returns NotificationBackgroundTaskScheduler Handler.
   virtual NotificationBackgroundTaskScheduler::Handler*
@@ -42,9 +44,10 @@ class NotificationScheduleService : public KeyedService {
   // Returns the user action handler to process notification events.
   virtual UserActionHandler* GetUserActionHandler() = 0;
 
+  ~NotificationScheduleService() override = default;
+
  protected:
   NotificationScheduleService() = default;
-  ~NotificationScheduleService() override = default;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NotificationScheduleService);

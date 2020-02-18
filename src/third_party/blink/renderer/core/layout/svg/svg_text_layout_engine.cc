@@ -273,7 +273,7 @@ void SVGTextLayoutEngine::LayoutCharactersInTextBoxes(InlineFlowBox* start) {
         continue;
 
       SVGInlineFlowBox* flow_box = ToSVGInlineFlowBox(child);
-      bool is_text_path = IsSVGTextPathElement(*node);
+      bool is_text_path = IsA<SVGTextPathElement>(*node);
       if (is_text_path)
         BeginTextPathLayout(flow_box);
 
@@ -369,7 +369,8 @@ void SVGTextLayoutEngine::LayoutTextOnLineOrPath(
   const Font& font = style.GetFont();
 
   SVGTextLayoutEngineSpacing spacing_layout(font, style.EffectiveZoom());
-  SVGTextLayoutEngineBaseline baseline_layout(font, style.EffectiveZoom());
+  SVGTextLayoutEngineBaseline baseline_layout(text_line_layout.ScaledFont(),
+                                              text_line_layout.ScalingFactor());
 
   bool did_start_text_fragment = false;
   bool apply_spacing_to_next_character = false;

@@ -60,15 +60,12 @@ struct GetKeyFromValuePairFirst {
 //
 // Constructors (inputs need not be sorted):
 //   flat_map(InputIterator first, InputIterator last,
-//            FlatContainerDupes = KEEP_FIRST_OF_DUPES,
 //            const Compare& compare = Compare());
 //   flat_map(const flat_map&);
 //   flat_map(flat_map&&);
 //   flat_map(std::vector<value_type>,
-//            FlatContainerDupes = KEEP_FIRST_OF_DUPES,
 //            const Compare& compare = Compare()); // Re-use storage.
 //   flat_map(std::initializer_list<value_type> ilist,
-//            FlatContainerDupes = KEEP_FIRST_OF_DUPES,
 //            const Compare& comp = Compare());
 //
 // Assignment functions:
@@ -104,12 +101,13 @@ struct GetKeyFromValuePairFirst {
 // Insert and accessor functions:
 //   mapped_type&         operator[](const key_type&);
 //   mapped_type&         operator[](key_type&&);
+//   mapped_type&         at(const K&);
+//   const mapped_type&   at(const K&) const;
 //   pair<iterator, bool> insert(const value_type&);
 //   pair<iterator, bool> insert(value_type&&);
 //   iterator             insert(const_iterator hint, const value_type&);
 //   iterator             insert(const_iterator hint, value_type&&);
-//   void                 insert(InputIterator first, InputIterator last,
-//                               FlatContainerDupes = KEEP_FIRST_OF_DUPES);
+//   void                 insert(InputIterator first, InputIterator last);
 //   pair<iterator, bool> insert_or_assign(K&&, M&&);
 //   iterator             insert_or_assign(const_iterator hint, K&&, M&&);
 //   pair<iterator, bool> emplace(Args&&...);
@@ -183,18 +181,15 @@ class flat_map : public ::base::internal::flat_tree<
   template <class InputIterator>
   flat_map(InputIterator first,
            InputIterator last,
-           FlatContainerDupes dupe_handling = KEEP_FIRST_OF_DUPES,
            const Compare& comp = Compare());
 
   flat_map(const flat_map&) = default;
   flat_map(flat_map&&) noexcept = default;
 
   flat_map(std::vector<value_type> items,
-           FlatContainerDupes dupe_handling = KEEP_FIRST_OF_DUPES,
            const Compare& comp = Compare());
 
   flat_map(std::initializer_list<value_type> ilist,
-           FlatContainerDupes dupe_handling = KEEP_FIRST_OF_DUPES,
            const Compare& comp = Compare());
 
   ~flat_map() = default;
@@ -203,6 +198,12 @@ class flat_map : public ::base::internal::flat_tree<
   flat_map& operator=(flat_map&&) = default;
   // Takes the first if there are duplicates in the initializer list.
   flat_map& operator=(std::initializer_list<value_type> ilist);
+
+  // Out-of-bound calls to at() will CHECK.
+  template <class K>
+  mapped_type& at(const K& key);
+  template <class K>
+  const mapped_type& at(const K& key) const;
 
   // --------------------------------------------------------------------------
   // Map-specific insert operations.
@@ -249,22 +250,19 @@ template <class Key, class Mapped, class Compare>
 template <class InputIterator>
 flat_map<Key, Mapped, Compare>::flat_map(InputIterator first,
                                          InputIterator last,
-                                         FlatContainerDupes dupe_handling,
                                          const Compare& comp)
-    : tree(first, last, dupe_handling, comp) {}
+    : tree(first, last, comp) {}
 
 template <class Key, class Mapped, class Compare>
 flat_map<Key, Mapped, Compare>::flat_map(std::vector<value_type> items,
-                                         FlatContainerDupes dupe_handling,
                                          const Compare& comp)
-    : tree(std::move(items), dupe_handling, comp) {}
+    : tree(std::move(items), comp) {}
 
 template <class Key, class Mapped, class Compare>
 flat_map<Key, Mapped, Compare>::flat_map(
     std::initializer_list<value_type> ilist,
-    FlatContainerDupes dupe_handling,
     const Compare& comp)
-    : flat_map(std::begin(ilist), std::end(ilist), dupe_handling, comp) {}
+    : flat_map(std::begin(ilist), std::end(ilist), comp) {}
 
 // ----------------------------------------------------------------------------
 // Assignments.
@@ -280,6 +278,26 @@ auto flat_map<Key, Mapped, Compare>::operator=(
   // likely would be optimized away but still affects our debug builds.
   tree::operator=(ilist);
   return *this;
+}
+
+// ----------------------------------------------------------------------------
+// Lookups.
+
+template <class Key, class Mapped, class Compare>
+template <class K>
+auto flat_map<Key, Mapped, Compare>::at(const K& key) -> mapped_type& {
+  iterator found = tree::find(key);
+  CHECK(found != tree::end());
+  return found->second;
+}
+
+template <class Key, class Mapped, class Compare>
+template <class K>
+auto flat_map<Key, Mapped, Compare>::at(const K& key) const
+    -> const mapped_type& {
+  const_iterator found = tree::find(key);
+  CHECK(found != tree::cend());
+  return found->second;
 }
 
 // ----------------------------------------------------------------------------

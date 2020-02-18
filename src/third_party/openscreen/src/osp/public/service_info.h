@@ -13,6 +13,7 @@
 #include "platform/base/macros.h"
 
 namespace openscreen {
+namespace osp {
 
 // This contains canonical information about a specific Open Screen service
 // found on the network via our discovery mechanism (mDNS).
@@ -48,6 +49,7 @@ struct ServiceInfo {
   IPEndpoint v6_endpoint;
 };
 
+}  // namespace osp
 }  // namespace openscreen
 
 #endif  // OSP_PUBLIC_SERVICE_INFO_H_

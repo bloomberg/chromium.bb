@@ -24,8 +24,7 @@ class SysrootLibTest(cros_test_lib.MockTempDirTestCase):
 
   def setUp(self):
     """Setup the test environment."""
-    # Fake being root to avoid running all filesystem commands with
-    # SudoRunCommand.
+    # Fake being root to avoid running all filesystem commands with sudo_run.
     self.PatchObject(os, 'getuid', return_value=0)
     self.PatchObject(os, 'geteuid', return_value=0)
     sysroot_path = os.path.join(self.tempdir, 'sysroot')
@@ -112,8 +111,7 @@ class SysrootLibInstallConfigTest(cros_test_lib.MockTempDirTestCase):
 
   def setUp(self):
     """Setup the test environment."""
-    # Fake being root to avoid running all filesystem commands with
-    # SudoRunCommand.
+    # Fake being root to avoid running all filesystem commands with sudo_run.
     self.PatchObject(os, 'getuid', return_value=0)
     self.PatchObject(os, 'geteuid', return_value=0)
     self.sysroot = sysroot_lib.Sysroot(self.tempdir)
@@ -180,7 +178,7 @@ class SysrootLibToolchainUpdateTest(cros_test_lib.RunCommandTempDirTestCase):
 
   def setUp(self):
     """Setup the test environment."""
-    # Fake being root to avoid running commands with SudoRunCommand.
+    # Fake being root to avoid running commands with sudo_run.
     self.PatchObject(os, 'getuid', return_value=0)
     self.PatchObject(os, 'geteuid', return_value=0)
 

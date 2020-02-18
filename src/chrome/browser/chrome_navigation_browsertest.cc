@@ -201,8 +201,9 @@ class CtrlClickProcessTest : public ChromeNavigationBrowserTest {
     // Verify that the new tab has the right contents and is in the tab strip.
     EXPECT_TRUE(WaitForLoadStop(new_contents));
     EXPECT_LT(1, browser()->tab_strip_model()->count());  // More than 1 tab?
-    CHECK_NE(TabStripModel::kNoTab,
-             browser()->tab_strip_model()->GetIndexOfWebContents(new_contents));
+    EXPECT_NE(
+        TabStripModel::kNoTab,
+        browser()->tab_strip_model()->GetIndexOfWebContents(new_contents));
     GURL expected_url(embedded_test_server()->GetURL("/title1.html"));
     EXPECT_EQ(expected_url, new_contents->GetLastCommittedURL());
 
@@ -381,7 +382,7 @@ IN_PROC_BROWSER_TEST_F(ChromeNavigationPortMappedBrowserTest,
   // This corresponds to "Open link in new tab".
   content::ContextMenuParams params;
   params.is_editable = false;
-  params.media_type = blink::WebContextMenuData::kMediaTypeNone;
+  params.media_type = blink::ContextMenuDataMediaType::kNone;
   params.page_url = initial_url;
   params.link_url = new_tab_url;
 

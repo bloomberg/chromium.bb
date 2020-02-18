@@ -5,10 +5,12 @@
 #include "media/audio/win/audio_low_latency_output_win.h"
 
 #include <Functiondiscoverykeys_devpkey.h>
+#include <audiopolicy.h>
 #include <objbase.h>
 
 #include <climits>
 
+#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
@@ -20,9 +22,11 @@
 #include "base/win/scoped_propvariant.h"
 #include "media/audio/audio_device_description.h"
 #include "media/audio/win/audio_manager_win.h"
+#include "media/audio/win/audio_session_event_listener_win.h"
 #include "media/audio/win/avrt_wrapper_win.h"
 #include "media/audio/win/core_audio_util_win.h"
 #include "media/base/audio_sample_types.h"
+#include "media/base/bind_to_current_loop.h"
 #include "media/base/limits.h"
 #include "media/base/media_switches.h"
 
@@ -32,7 +36,8 @@ using base::win::ScopedCoMem;
 namespace media {
 
 // static
-AUDCLNT_SHAREMODE WASAPIAudioOutputStream::GetShareMode() {
+AUDCLNT_SHAREMODE
+WASAPIAudioOutputStream::GetShareMode() {
   const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
   if (cmd_line->HasSwitch(switches::kEnableExclusiveAudio))
     return AUDCLNT_SHAREMODE_EXCLUSIVE;
@@ -245,6 +250,11 @@ bool WASAPIAudioOutputStream::Open() {
     return false;
   }
 
+  session_listener_ = std::make_unique<AudioSessionEventListener>(
+      audio_client_.Get(), BindToCurrentLoop(base::BindOnce(
+                               &WASAPIAudioOutputStream::OnDeviceChanged,
+                               weak_factory_.GetWeakPtr())));
+
   opened_ = true;
   return true;
 }
@@ -257,6 +267,14 @@ void WASAPIAudioOutputStream::Start(AudioSourceCallback* callback) {
 
   if (render_thread_) {
     CHECK_EQ(callback, source_);
+    return;
+  }
+
+  // Since a device change may occur between Open() and Start() we need to
+  // signal the change once we have a |callback|. It's okay if this ends up
+  // being delivered multiple times.
+  if (device_changed_) {
+    callback->OnError(AudioSourceCallback::ErrorType::kDeviceChange);
     return;
   }
 
@@ -281,7 +299,7 @@ void WASAPIAudioOutputStream::Start(AudioSourceCallback* callback) {
       if (!Open() || !CoreAudioUtil::FillRenderEndpointBufferWithSilence(
                          audio_client_.Get(), audio_render_client_.Get())) {
         DLOG(ERROR) << "Failed recovery of audio clients; Start() failed.";
-        callback->OnError();
+        callback->OnError(AudioSourceCallback::ErrorType::kUnknown);
         return;
       }
     }
@@ -301,7 +319,7 @@ void WASAPIAudioOutputStream::Start(AudioSourceCallback* callback) {
   if (!render_thread_->HasBeenStarted()) {
     LOG(ERROR) << "Failed to start WASAPI render thread.";
     StopThread();
-    callback->OnError();
+    callback->OnError(AudioSourceCallback::ErrorType::kUnknown);
     return;
   }
 
@@ -310,7 +328,7 @@ void WASAPIAudioOutputStream::Start(AudioSourceCallback* callback) {
   if (FAILED(hr)) {
     PLOG(ERROR) << "Failed to start output streaming: " << std::hex << hr;
     StopThread();
-    callback->OnError();
+    callback->OnError(AudioSourceCallback::ErrorType::kUnknown);
   }
 }
 
@@ -324,7 +342,7 @@ void WASAPIAudioOutputStream::Stop() {
   HRESULT hr = audio_client_->Stop();
   if (FAILED(hr)) {
     PLOG(ERROR) << "Failed to stop output streaming: " << std::hex << hr;
-    source_->OnError();
+    source_->OnError(AudioSourceCallback::ErrorType::kUnknown);
   }
 
   // Make a local copy of |source_| since StopThread() will clear it.
@@ -335,7 +353,7 @@ void WASAPIAudioOutputStream::Stop() {
   hr = audio_client_->Reset();
   if (FAILED(hr)) {
     PLOG(ERROR) << "Failed to reset streaming: " << std::hex << hr;
-    callback->OnError();
+    callback->OnError(AudioSourceCallback::ErrorType::kUnknown);
   }
 
   ReportAndResetStats();
@@ -354,6 +372,8 @@ void WASAPIAudioOutputStream::Stop() {
 void WASAPIAudioOutputStream::Close() {
   DVLOG(1) << "WASAPIAudioOutputStream::Close()";
   DCHECK_EQ(GetCurrentThreadId(), creating_thread_id_);
+
+  session_listener_.reset();
 
   // It is valid to call Close() before calling open or Start().
   // It is also valid to call Close() after Start() has been called.
@@ -446,7 +466,7 @@ void WASAPIAudioOutputStream::Run() {
 
     // Notify clients that something has gone wrong and that this stream should
     // be destroyed instead of reused in the future.
-    source_->OnError();
+    source_->OnError(AudioSourceCallback::ErrorType::kUnknown);
   }
 
   // Disable MMCSS.
@@ -732,6 +752,12 @@ void WASAPIAudioOutputStream::ReportAndResetStats() {
   num_glitches_detected_ = 0;
   cumulative_audio_lost_ = base::TimeDelta();
   largest_glitch_ = base::TimeDelta();
+}
+
+void WASAPIAudioOutputStream::OnDeviceChanged() {
+  device_changed_ = true;
+  if (source_)
+    source_->OnError(AudioSourceCallback::ErrorType::kDeviceChange);
 }
 
 }  // namespace media

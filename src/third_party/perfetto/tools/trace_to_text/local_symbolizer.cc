@@ -15,9 +15,15 @@
  * limitations under the License.
  */
 
+#include "perfetto/base/build_config.h"
+
+// This translation unit is built only on Linux. See //gn/BUILD.gn.
+#if PERFETTO_BUILDFLAG(PERFETTO_LOCAL_SYMBOLIZER)
+
 #include "tools/trace_to_text/local_symbolizer.h"
 
 #include "perfetto/ext/base/string_splitter.h"
+#include "perfetto/ext/base/string_utils.h"
 #include "perfetto/ext/base/utils.h"
 
 #include <elf.h>
@@ -52,7 +58,8 @@ std::vector<std::string> GetLines(FILE* f) {
     n = 0;
   } while (rd > 1);
   return lines;
-};
+}
+
 
 struct Elf32 {
   using Ehdr = Elf32_Ehdr;
@@ -165,6 +172,16 @@ bool ParseLine(std::string line, std::string* file_name, uint32_t* line_no) {
   return *endptr == '\0' && parsed_line_no >= 0;
 }
 
+std::string SplitBuildID(const std::string& hex_build_id) {
+  if (hex_build_id.size() < 3) {
+    PERFETTO_DFATAL_OR_ELOG("Invalid build-id (< 3 char) %s",
+                            hex_build_id.c_str());
+    return {};
+  }
+
+  return hex_build_id.substr(0, 2) + "/" + hex_build_id.substr(2);
+}
+
 }  // namespace
 
 base::Optional<std::string> LocalBinaryFinder::FindBinary(
@@ -181,7 +198,8 @@ base::Optional<std::string> LocalBinaryFinder::FindBinary(
     if (cache_entry)
       return cache_entry;
   }
-  PERFETTO_ELOG("Could not find %s.", abspath.c_str());
+  PERFETTO_ELOG("Could not find %s (Build ID: %s).", abspath.c_str(),
+                base::ToHex(build_id).c_str());
   return cache_entry;
 }
 
@@ -232,7 +250,9 @@ base::Optional<std::string> LocalBinaryFinder::FindBinaryInRoot(
   std::string dirname;
 
   for (base::StringSplitter sp(abspath, '/'); sp.Next();) {
-    dirname += "/" + filename;
+    if (!dirname.empty())
+      dirname += "/";
+    dirname += filename;
     filename = sp.cur_token();
   }
 
@@ -243,12 +263,18 @@ base::Optional<std::string> LocalBinaryFinder::FindBinaryInRoot(
   // * only filename of library file relative to root.
   // * only filename of library file relative to root, but with base.apk!
   //   removed from filename.
+  // * in the subdirectory .build-id: the first two hex digits of the build-id
+  //   as subdirectory, then the rest of the hex digits, with ".debug"appended.
+  //   See
+  //   https://fedoraproject.org/wiki/RolandMcGrath/BuildID#Find_files_by_build_ID
   //
-  // For example, "/system/lib/base.apk!foo.so" is looked for at
+  // For example, "/system/lib/base.apk!foo.so" with build id abcd1234,
+  // is looked for at
   // * $ROOT/system/lib/base.apk!foo.so
   // * $ROOT/system/lib/foo.so
   // * $ROOT/base.apk!foo.so
   // * $ROOT/foo.so
+  // * $ROOT/.build-id/ab/cd1234.debug
 
   std::string symbol_file = root_str + "/" + dirname + "/" + filename;
   if (access(symbol_file.c_str(), F_OK) == 0 &&
@@ -270,6 +296,16 @@ base::Optional<std::string> LocalBinaryFinder::FindBinaryInRoot(
 
   if (filename.find(kApkPrefix) == 0) {
     symbol_file = root_str + "/" + filename.substr(sizeof(kApkPrefix));
+    if (access(symbol_file.c_str(), F_OK) == 0 &&
+        IsCorrectFile(symbol_file, build_id))
+      return {symbol_file};
+  }
+
+  std::string hex_build_id = base::ToHex(build_id.c_str(), build_id.size());
+  std::string split_hex_build_id = SplitBuildID(hex_build_id);
+  if (!split_hex_build_id.empty()) {
+    symbol_file =
+        root_str + "/" + ".build-id" + "/" + split_hex_build_id + ".debug";
     if (access(symbol_file.c_str(), F_OK) == 0 &&
         IsCorrectFile(symbol_file, build_id))
       return {symbol_file};
@@ -315,7 +351,7 @@ std::vector<SymbolizedFrame> LLVMSymbolizerProcess::Symbolize(
     uint64_t address) {
   std::vector<SymbolizedFrame> result;
 
-  if (PERFETTO_EINTR(dprintf(subprocess_.write_fd(), "%s 0x%lx\n",
+  if (PERFETTO_EINTR(dprintf(subprocess_.write_fd(), "%s 0x%" PRIx64 "\n",
                              binary.c_str(), address)) < 0) {
     PERFETTO_ELOG("Failed to write to llvm-symbolizer.");
     return result;
@@ -368,3 +404,5 @@ LocalSymbolizer::~LocalSymbolizer() = default;
 
 }  // namespace trace_to_text
 }  // namespace perfetto
+
+#endif  // PERFETTO_BUILDFLAG(PERFETTO_LOCAL_SYMBOLIZER)

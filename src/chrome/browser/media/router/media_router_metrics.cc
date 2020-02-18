@@ -77,12 +77,16 @@ const char MediaRouterMetrics::kHistogramStopRoute[] =
     "MediaRouter.Ui.Action.StopRoute";
 const char MediaRouterMetrics::kHistogramUiDeviceCount[] =
     "MediaRouter.Ui.Device.Count";
-const char MediaRouterMetrics::kHistogramUiDialogPaint[] =
-    "MediaRouter.Ui.Dialog.Paint";
+const char MediaRouterMetrics::kHistogramUiDialogIconStateAtOpen[] =
+    "MediaRouter.Ui.Dialog.IconStateAtOpen";
 const char MediaRouterMetrics::kHistogramUiDialogLoadedWithData[] =
     "MediaRouter.Ui.Dialog.LoadedWithData";
+const char MediaRouterMetrics::kHistogramUiDialogPaint[] =
+    "MediaRouter.Ui.Dialog.Paint";
 const char MediaRouterMetrics::kHistogramUiFirstAction[] =
     "MediaRouter.Ui.FirstAction";
+const char MediaRouterMetrics::kHistogramUiIconStateAtInit[] =
+    "MediaRouter.Ui.IconStateAtInit";
 
 // static
 void MediaRouterMetrics::RecordMediaRouterDialogOrigin(
@@ -215,6 +219,18 @@ void MediaRouterMetrics::RecordStopRemoteRoute() {
 // static
 void MediaRouterMetrics::RecordSearchSinkOutcome(bool success) {
   UMA_HISTOGRAM_BOOLEAN(kHistogramRecordSearchSinkOutcome, success);
+}
+
+// static
+void MediaRouterMetrics::RecordIconStateAtDialogOpen(bool is_pinned) {
+  UMA_HISTOGRAM_BOOLEAN(kHistogramUiDialogIconStateAtOpen, is_pinned);
+}
+
+// static
+void MediaRouterMetrics::RecordIconStateAtInit(bool is_pinned) {
+  // Since this gets called only rarely, use base::UmaHistogramBoolean() to
+  // avoid instantiating the caching code.
+  base::UmaHistogramBoolean(kHistogramUiIconStateAtInit, is_pinned);
 }
 
 }  // namespace media_router

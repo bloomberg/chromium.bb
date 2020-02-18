@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/core/fileapi/blob.h"
 #include "third_party/blink/renderer/core/html/forms/form_data.h"
 #include "third_party/blink/renderer/platform/loader/fetch/data_pipe_bytes_consumer.h"
+#include "third_party/blink/renderer/platform/loader/fetch/text_resource_decoder_options.h"
 #include "third_party/blink/renderer/platform/loader/testing/bytes_consumer_test_reader.h"
 #include "third_party/blink/renderer/platform/loader/testing/replaying_bytes_consumer.h"
 #include "third_party/blink/renderer/platform/scheduler/test/fake_task_runner.h"
@@ -65,7 +66,7 @@ constexpr size_t kQuickBrownFoxFormDataLength =
 
 class FetchDataLoaderTest : public testing::Test {
  protected:
-  struct PipingClient : public GarbageCollectedFinalized<PipingClient>,
+  struct PipingClient : public GarbageCollected<PipingClient>,
                         public FetchDataLoader::Client {
     USING_GARBAGE_COLLECTED_MIXIN(PipingClient);
 
@@ -355,7 +356,7 @@ TEST_F(FetchDataLoaderTest, LoadAsArrayBuffer) {
 
   ASSERT_TRUE(array_buffer);
   ASSERT_EQ(kQuickBrownFoxLengthWithTerminatingNull,
-            array_buffer->ByteLength());
+            array_buffer->ByteLengthAsSizeT());
   EXPECT_STREQ(kQuickBrownFox, static_cast<const char*>(array_buffer->Data()));
 }
 
@@ -604,7 +605,8 @@ TEST_F(FetchDataLoaderTest, LoadAsString) {
   BytesConsumer::Client* client = nullptr;
   auto* consumer = MakeGarbageCollected<MockBytesConsumer>();
 
-  FetchDataLoader* fetch_data_loader = FetchDataLoader::CreateLoaderAsString();
+  FetchDataLoader* fetch_data_loader = FetchDataLoader::CreateLoaderAsString(
+      TextResourceDecoderOptions::CreateUTF8Decode());
   auto* fetch_data_loader_client =
       MakeGarbageCollected<MockFetchDataLoaderClient>();
 
@@ -643,7 +645,8 @@ TEST_F(FetchDataLoaderTest, LoadAsStringWithNullBytes) {
   BytesConsumer::Client* client = nullptr;
   auto* consumer = MakeGarbageCollected<MockBytesConsumer>();
 
-  FetchDataLoader* fetch_data_loader = FetchDataLoader::CreateLoaderAsString();
+  FetchDataLoader* fetch_data_loader = FetchDataLoader::CreateLoaderAsString(
+      TextResourceDecoderOptions::CreateUTF8Decode());
   auto* fetch_data_loader_client =
       MakeGarbageCollected<MockFetchDataLoaderClient>();
 
@@ -683,7 +686,8 @@ TEST_F(FetchDataLoaderTest, LoadAsStringError) {
   BytesConsumer::Client* client = nullptr;
   auto* consumer = MakeGarbageCollected<MockBytesConsumer>();
 
-  FetchDataLoader* fetch_data_loader = FetchDataLoader::CreateLoaderAsString();
+  FetchDataLoader* fetch_data_loader = FetchDataLoader::CreateLoaderAsString(
+      TextResourceDecoderOptions::CreateUTF8Decode());
   auto* fetch_data_loader_client =
       MakeGarbageCollected<MockFetchDataLoaderClient>();
 
@@ -721,7 +725,8 @@ TEST_F(FetchDataLoaderTest, LoadAsStringCancel) {
   BytesConsumer::Client* client = nullptr;
   auto* consumer = MakeGarbageCollected<MockBytesConsumer>();
 
-  FetchDataLoader* fetch_data_loader = FetchDataLoader::CreateLoaderAsString();
+  FetchDataLoader* fetch_data_loader = FetchDataLoader::CreateLoaderAsString(
+      TextResourceDecoderOptions::CreateUTF8Decode());
   auto* fetch_data_loader_client =
       MakeGarbageCollected<MockFetchDataLoaderClient>();
 

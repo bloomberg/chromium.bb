@@ -107,8 +107,14 @@ base::flat_set<std::string> GetStringListPolicyItems(
 
 }  // namespace
 
-PolicyServiceImpl::PolicyServiceImpl(Providers providers) {
-  providers_ = std::move(providers);
+PolicyServiceImpl::PolicyServiceImpl(Providers providers)
+    : PolicyServiceImpl(std::move(providers),
+                        /*initialization_throttled=*/false) {}
+
+PolicyServiceImpl::PolicyServiceImpl(Providers providers,
+                                     bool initialization_throttled)
+    : providers_(std::move(providers)),
+      initialization_throttled_(initialization_throttled) {
   for (int domain = 0; domain < POLICY_DOMAIN_SIZE; ++domain)
     initialization_complete_[domain] = true;
   for (auto* provider : providers_) {
@@ -121,6 +127,13 @@ PolicyServiceImpl::PolicyServiceImpl(Providers providers) {
   // There are no observers yet, but calls to GetPolicies() should already get
   // the processed policy values.
   MergeAndTriggerUpdates();
+}
+
+// static
+std::unique_ptr<PolicyServiceImpl>
+PolicyServiceImpl::CreateWithThrottledInitialization(Providers providers) {
+  return base::WrapUnique(new PolicyServiceImpl(
+      std::move(providers), /*initialization_throttled=*/true));
 }
 
 PolicyServiceImpl::~PolicyServiceImpl() {
@@ -150,6 +163,24 @@ void PolicyServiceImpl::RemoveObserver(PolicyDomain domain,
   }
 }
 
+void PolicyServiceImpl::AddProviderUpdateObserver(
+    ProviderUpdateObserver* observer) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  provider_update_observers_.AddObserver(observer);
+}
+
+void PolicyServiceImpl::RemoveProviderUpdateObserver(
+    ProviderUpdateObserver* observer) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  provider_update_observers_.RemoveObserver(observer);
+}
+
+bool PolicyServiceImpl::HasProvider(
+    ConfigurationPolicyProvider* provider) const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  return base::Contains(providers_, provider);
+}
+
 const PolicyMap& PolicyServiceImpl::GetPolicies(
     const PolicyNamespace& ns) const {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -159,6 +190,8 @@ const PolicyMap& PolicyServiceImpl::GetPolicies(
 bool PolicyServiceImpl::IsInitializationComplete(PolicyDomain domain) const {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(domain >= 0 && domain < POLICY_DOMAIN_SIZE);
+  if (initialization_throttled_)
+    return false;
   return initialization_complete_[domain];
 }
 
@@ -185,9 +218,20 @@ void PolicyServiceImpl::RefreshPolicies(const base::Closure& callback) {
   }
 }
 
+void PolicyServiceImpl::UnthrottleInitialization() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (!initialization_throttled_)
+    return;
+
+  initialization_throttled_ = false;
+  for (int domain = 0; domain < POLICY_DOMAIN_SIZE; ++domain)
+    MaybeNotifyInitializationComplete(static_cast<PolicyDomain>(domain));
+}
+
 void PolicyServiceImpl::OnUpdatePolicy(ConfigurationPolicyProvider* provider) {
   DCHECK_EQ(1, std::count(providers_.begin(), providers_.end(), provider));
   refresh_pending_.erase(provider);
+  provider_update_pending_.insert(provider);
 
   // Note: a policy change may trigger further policy changes in some providers.
   // For example, disabling SigninAllowed would cause the CloudPolicyManager to
@@ -213,6 +257,18 @@ void PolicyServiceImpl::NotifyNamespaceUpdated(
     for (auto& observer : *iterator->second)
       observer.OnPolicyUpdated(ns, previous, current);
   }
+}
+
+void PolicyServiceImpl::NotifyProviderUpdatesPropagated() {
+  if (provider_update_pending_.empty())
+    return;
+
+  for (auto& provider_update_observer : provider_update_observers_) {
+    for (ConfigurationPolicyProvider* provider : provider_update_pending_) {
+      provider_update_observer.OnProviderUpdatePropagated(provider);
+    }
+  }
+  provider_update_pending_.clear();
 }
 
 void PolicyServiceImpl::MergeAndTriggerUpdates() {
@@ -265,7 +321,7 @@ void PolicyServiceImpl::MergeAndTriggerUpdates() {
                                      &policy_dictionary_merger};
 
   PolicyGroupMerger policy_group_merger;
-  if (atomic_policy_group_enabled && atomic_policy_group_enabled_policy_value)
+  if (atomic_policy_group_enabled)
     mergers.push_back(&policy_group_merger);
 
   for (auto it = bundle.begin(); it != bundle.end(); ++it)
@@ -310,6 +366,7 @@ void PolicyServiceImpl::MergeAndTriggerUpdates() {
 
   CheckInitializationComplete();
   CheckRefreshComplete();
+  NotifyProviderUpdatesPropagated();
 }
 
 void PolicyServiceImpl::CheckInitializationComplete() {
@@ -332,12 +389,21 @@ void PolicyServiceImpl::CheckInitializationComplete() {
     }
     if (all_complete) {
       initialization_complete_[domain] = true;
-      auto iter = observers_.find(policy_domain);
-      if (iter != observers_.end()) {
-        for (auto& observer : *iter->second)
-          observer.OnPolicyServiceInitialized(policy_domain);
-      }
+      MaybeNotifyInitializationComplete(policy_domain);
     }
+  }
+}
+
+void PolicyServiceImpl::MaybeNotifyInitializationComplete(
+    PolicyDomain policy_domain) {
+  if (initialization_throttled_)
+    return;
+  if (!initialization_complete_[policy_domain])
+    return;
+  auto iter = observers_.find(policy_domain);
+  if (iter != observers_.end()) {
+    for (auto& observer : *iter->second)
+      observer.OnPolicyServiceInitialized(policy_domain);
   }
 }
 

@@ -27,89 +27,122 @@ sys.path.insert(
 import colorama
 
 
+# Full list of checks: https://errorprone.info/bugpatterns
 ERRORPRONE_WARNINGS_TO_TURN_OFF = [
-  # TODO(crbug.com/834807): Follow steps in bug
-  'DoubleBraceInitialization',
-  # TODO(crbug.com/834790): Follow steps in bug.
-  'CatchAndPrintStackTrace',
-  # TODO(crbug.com/801210): Follow steps in bug.
-  'SynchronizeOnNonFinalField',
-  # TODO(crbug.com/802073): Follow steps in bug.
-  'TypeParameterUnusedInFormals',
-  # TODO(crbug.com/803484): Follow steps in bug.
-  'CatchFail',
-  # TODO(crbug.com/803485): Follow steps in bug.
-  'JUnitAmbiguousTestClass',
-  # Android platform default is always UTF-8.
-  # https://developer.android.com/reference/java/nio/charset/Charset.html#defaultCharset()
-  'DefaultCharset',
-  # Low priority since the alternatives still work.
-  'JdkObsolete',
-  # We don't use that many lambdas.
-  'FunctionalInterfaceClash',
-  # There are lots of times when we just want to post a task.
-  'FutureReturnValueIgnored',
-  # Nice to be explicit about operators, but not necessary.
-  'OperatorPrecedence',
-  # Just false positives in our code.
-  'ThreadJoinLoop',
-  # Low priority corner cases with String.split.
-  # Linking Guava and using Splitter was rejected
-  # in the https://chromium-review.googlesource.com/c/chromium/src/+/871630.
-  'StringSplitter',
-  # Preferred to use another method since it propagates exceptions better.
-  'ClassNewInstance',
-  # Nice to have static inner classes but not necessary.
-  'ClassCanBeStatic',
-  # Explicit is better than implicit.
-  'FloatCast',
-  # Results in false positives.
-  'ThreadLocalUsage',
-  # Also just false positives.
-  'Finally',
-  # False positives for Chromium.
-  'FragmentNotInstantiable',
-  # Low priority to fix.
-  'HidingField',
-  # Low priority.
-  'IntLongMath',
-  # Low priority.
-  'BadComparable',
-  # Low priority.
-  'EqualsHashCode',
-  # Nice to fix but low priority.
-  'TypeParameterShadowing',
-  # Good to have immutable enums, also low priority.
-  'ImmutableEnumChecker',
-  # False positives for testing.
-  'InputStreamSlowMultibyteRead',
-  # Nice to have better primitives.
-  'BoxedPrimitiveConstructor',
-  # Not necessary for tests.
-  'OverrideThrowableToString',
-  # Nice to have better type safety.
-  'CollectionToArraySafeParameter',
-  # Makes logcat debugging more difficult, and does not provide obvious
-  # benefits in the Chromium codebase.
-  'ObjectToString',
+    # This one should really be turned on.
+    'ParameterNotNullable',
+    # TODO(crbug.com/834807): Follow steps in bug
+    'DoubleBraceInitialization',
+    # TODO(crbug.com/834790): Follow steps in bug.
+    'CatchAndPrintStackTrace',
+    # TODO(crbug.com/801210): Follow steps in bug.
+    'SynchronizeOnNonFinalField',
+    # TODO(crbug.com/802073): Follow steps in bug.
+    'TypeParameterUnusedInFormals',
+    # TODO(crbug.com/803484): Follow steps in bug.
+    'CatchFail',
+    # TODO(crbug.com/803485): Follow steps in bug.
+    'JUnitAmbiguousTestClass',
+    # TODO(crbug.com/1027683): Follow steps in bug.
+    'UnnecessaryParentheses',
+    # Android platform default is always UTF-8.
+    # https://developer.android.com/reference/java/nio/charset/Charset.html#defaultCharset()
+    'DefaultCharset',
+    # Low priority since the alternatives still work.
+    'JdkObsolete',
+    # We don't use that many lambdas.
+    'FunctionalInterfaceClash',
+    # There are lots of times when we just want to post a task.
+    'FutureReturnValueIgnored',
+    # Nice to be explicit about operators, but not necessary.
+    'OperatorPrecedence',
+    # Just false positives in our code.
+    'ThreadJoinLoop',
+    # Low priority corner cases with String.split.
+    # Linking Guava and using Splitter was rejected
+    # in the https://chromium-review.googlesource.com/c/chromium/src/+/871630.
+    'StringSplitter',
+    # Preferred to use another method since it propagates exceptions better.
+    'ClassNewInstance',
+    # Nice to have static inner classes but not necessary.
+    'ClassCanBeStatic',
+    # Explicit is better than implicit.
+    'FloatCast',
+    # Results in false positives.
+    'ThreadLocalUsage',
+    # Also just false positives.
+    'Finally',
+    # False positives for Chromium.
+    'FragmentNotInstantiable',
+    # Low priority to fix.
+    'HidingField',
+    # Low priority.
+    'IntLongMath',
+    # Low priority.
+    'BadComparable',
+    # Low priority.
+    'EqualsHashCode',
+    # Nice to fix but low priority.
+    'TypeParameterShadowing',
+    # Good to have immutable enums, also low priority.
+    'ImmutableEnumChecker',
+    # False positives for testing.
+    'InputStreamSlowMultibyteRead',
+    # Nice to have better primitives.
+    'BoxedPrimitiveConstructor',
+    # Not necessary for tests.
+    'OverrideThrowableToString',
+    # Nice to have better type safety.
+    'CollectionToArraySafeParameter',
+    # Makes logcat debugging more difficult, and does not provide obvious
+    # benefits in the Chromium codebase.
+    'ObjectToString',
+    # Triggers on private methods that are @CalledByNative.
+    'UnusedMethod',
+    # Triggers on generated R.java files.
+    'UnusedVariable',
+    # Not that useful.
+    'UnsafeReflectiveConstructionCast',
+    # Not that useful.
+    'MixedMutabilityReturnType',
+    # Nice to have.
+    'EqualsGetClass',
+    # A lot of false-positives from CharSequence.equals().
+    'UndefinedEquals',
+    # Nice to have.
+    'ExtendingJUnitAssert',
+    # Nice to have.
+    'SystemExitOutsideMain',
+    # Nice to have.
+    'TypeParameterNaming',
+    # Nice to have.
+    'UnusedException',
+    # Nice to have.
+    'UngroupedOverloads',
+    # Nice to have.
+    'FunctionalInterfaceClash',
+    # Nice to have.
+    'InconsistentOverloads',
 ]
 
+# Full list of checks: https://errorprone.info/bugpatterns
+# Only those marked as "experimental" need to be listed here in order to be
+# enabled. We build with -Werror, so all default checks cause builds to fail.
 ERRORPRONE_WARNINGS_TO_ERROR = [
-  # Add warnings to this after fixing/suppressing all instances in our codebase.
-  'ArgumentSelectionDefectChecker',
-  'AssertionFailureIgnored',
-  'FloatingPointLiteralPrecision',
-  'JavaLangClash',
-  'MissingFail',
-  'MissingOverride',
-  'NarrowingCompoundAssignment',
-  'OrphanedFormatString',
-  'ParameterName',
-  'ParcelableCreator',
-  'ReferenceEquality',
-  'StaticGuardedByInstance',
-  'StaticQualifiedUsingExpression',
-  'UseCorrectAssertInTests',
+    'BinderIdentityRestoredDangerously',
+    'EmptyIf',
+    'EqualsBrokenForNull',
+    'InvalidThrows',
+    'LongLiteralLowerCaseSuffix',
+    'MultiVariableDeclaration',
+    'RedundantOverride',
+    'RemoveUnusedImports',
+    'StaticQualifiedUsingExpression',
+    'StringEquality',
+    'TimeUnitMismatch',
+    'UnnecessaryStaticImport',
+    'UseBinds',
+    'WildcardImport',
 ]
 
 
@@ -402,14 +435,7 @@ def _ParseOptions(argv):
   parser.add_option(
       '--java-version',
       help='Java language version to use in -source and -target args to javac.')
-  parser.add_option(
-      '--full-classpath',
-      action='append',
-      help='Classpath to use when annotation processors are present.')
-  parser.add_option(
-      '--interface-classpath',
-      action='append',
-      help='Classpath to use when no annotation processors are present.')
+  parser.add_option('--classpath', action='append', help='Classpath to use.')
   parser.add_option(
       '--processors',
       action='append',
@@ -451,6 +477,10 @@ def _ParseOptions(argv):
       '--enable-errorprone',
       action='store_true',
       help='Enable errorprone checks')
+  parser.add_option(
+      '--warnings-as-errors',
+      action='store_true',
+      help='Treat all warnings as errors.')
   parser.add_option('--jar-path', help='Jar output path.')
   parser.add_option(
       '--javac-arg',
@@ -462,25 +492,12 @@ def _ParseOptions(argv):
   build_utils.CheckOptions(options, parser, required=('jar_path',))
 
   options.bootclasspath = build_utils.ParseGnList(options.bootclasspath)
-  options.full_classpath = build_utils.ParseGnList(options.full_classpath)
-  options.interface_classpath = build_utils.ParseGnList(
-      options.interface_classpath)
+  options.classpath = build_utils.ParseGnList(options.classpath)
   options.processorpath = build_utils.ParseGnList(options.processorpath)
   options.processors = build_utils.ParseGnList(options.processors)
   options.java_srcjars = build_utils.ParseGnList(options.java_srcjars)
   options.jar_info_exclude_globs = build_utils.ParseGnList(
       options.jar_info_exclude_globs)
-
-  if options.java_version == '1.8' and options.bootclasspath:
-    # Android's boot jar doesn't contain all java 8 classes.
-    # See: https://github.com/evant/gradle-retrolambda/issues/23.
-    # Get the path of the jdk folder by searching for the 'jar' executable. We
-    # cannot search for the 'javac' executable because goma provides a custom
-    # version of 'javac'.
-    jar_path = os.path.realpath(distutils.spawn.find_executable('jar'))
-    jdk_dir = os.path.dirname(os.path.dirname(jar_path))
-    rt_jar = os.path.join(jdk_dir, 'jre', 'lib', 'rt.jar')
-    options.bootclasspath.append(rt_jar)
 
   additional_jar_files = []
   for arg in options.additional_jar_files or []:
@@ -501,7 +518,7 @@ def _ParseOptions(argv):
 
 def main(argv):
   logging.basicConfig(
-      level=logging.INFO if os.environ.get('_JAVAC_DEBUG') else logging.WARNING,
+      level=logging.INFO if os.environ.get('JAVAC_DEBUG') else logging.WARNING,
       format='%(levelname).1s %(relativeCreated)6d %(message)s')
   colorama.init()
 
@@ -515,10 +532,7 @@ def main(argv):
   # * With javac: 17 seconds
   # * With errorprone (checks disabled): 20 seconds
   # * With errorprone (checks enabled): 30 seconds
-  if options.errorprone_path:
-    javac_path = options.errorprone_path
-  else:
-    javac_path = distutils.spawn.find_executable('javac')
+  javac_path = build_utils.JAVA_PATH + 'c'
 
   javac_cmd = [
       javac_path,
@@ -534,20 +548,26 @@ def main(argv):
   ]
 
   if options.enable_errorprone:
+    # All errorprone args are passed space-separated in a single arg.
+    errorprone_flags = ['-Xplugin:ErrorProne']
     for warning in ERRORPRONE_WARNINGS_TO_TURN_OFF:
-      javac_cmd.append('-Xep:{}:OFF'.format(warning))
+      errorprone_flags.append('-Xep:{}:OFF'.format(warning))
     for warning in ERRORPRONE_WARNINGS_TO_ERROR:
-      javac_cmd.append('-Xep:{}:ERROR'.format(warning))
-  elif options.errorprone_path:
-    javac_cmd.append('-XepDisableAllChecks')
+      errorprone_flags.append('-Xep:{}:ERROR'.format(warning))
+    if not options.warnings_as_errors:
+      errorprone_flags.append('-XepAllErrorsAsWarnings')
+    javac_cmd += ['-XDcompilePolicy=simple', ' '.join(errorprone_flags)]
 
   if options.java_version:
     javac_cmd.extend([
       '-source', options.java_version,
       '-target', options.java_version,
     ])
+  if options.java_version == '1.8':
+    # Android's boot jar doesn't contain all java 8 classes.
+    options.bootclasspath.append(build_utils.RT_JAR_PATH)
 
-  if options.chromium_code:
+  if options.warnings_as_errors:
     javac_cmd.extend(['-Werror'])
   else:
     # XDignore.symbol.file makes javac compile against rt.jar instead of
@@ -561,14 +581,6 @@ def main(argv):
   if options.bootclasspath:
     javac_cmd.extend(['-bootclasspath', ':'.join(options.bootclasspath)])
 
-  # Annotation processors crash when given interface jars.
-  active_classpath = (
-      options.full_classpath
-      if options.processors else options.interface_classpath)
-  classpath = []
-  if active_classpath:
-    classpath.extend(active_classpath)
-
   if options.processorpath:
     javac_cmd.extend(['-processorpath', ':'.join(options.processorpath)])
   if options.processor_args:
@@ -577,8 +589,8 @@ def main(argv):
 
   javac_cmd.extend(options.javac_arg)
 
-  classpath_inputs = (options.bootclasspath + options.interface_classpath +
-                      options.processorpath)
+  classpath_inputs = (
+      options.bootclasspath + options.classpath + options.processorpath)
 
   # GN already knows of java_files, so listing them just make things worse when
   # they change.
@@ -591,17 +603,16 @@ def main(argv):
       options.jar_path + '.info',
   ]
 
-  input_strings = javac_cmd + classpath
+  input_strings = javac_cmd + options.classpath + java_files
   if options.jar_info_exclude_globs:
     input_strings.append(options.jar_info_exclude_globs)
   build_utils.CallAndWriteDepfileIfStale(
-      lambda: _OnStaleMd5(options, javac_cmd, java_files, classpath),
+      lambda: _OnStaleMd5(options, javac_cmd, java_files, options.classpath),
       options,
       depfile_deps=depfile_deps,
       input_paths=input_paths,
       input_strings=input_strings,
-      output_paths=output_paths,
-      add_pydeps=False)
+      output_paths=output_paths)
   logging.info('Script complete: %s', __file__)
 
 

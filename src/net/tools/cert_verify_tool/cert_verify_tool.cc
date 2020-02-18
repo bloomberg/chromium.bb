@@ -20,7 +20,8 @@
 #include "net/cert/cert_verify_proc.h"
 #include "net/cert/cert_verify_proc_builtin.h"
 #include "net/cert/crl_set.h"
-#include "net/cert_net/cert_net_fetcher_impl.h"
+#include "net/cert/internal/system_trust_store.h"
+#include "net/cert_net/cert_net_fetcher_url_request.h"
 #include "net/tools/cert_verify_tool/cert_verify_tool_util.h"
 #include "net/tools/cert_verify_tool/verify_using_cert_verify_proc.h"
 #include "net/tools/cert_verify_tool/verify_using_path_builder.h"
@@ -45,7 +46,7 @@ std::string GetUserAgent() {
 
 void SetUpOnNetworkThread(
     std::unique_ptr<net::URLRequestContext>* context,
-    scoped_refptr<net::CertNetFetcherImpl>* cert_net_fetcher,
+    scoped_refptr<net::CertNetFetcherURLRequest>* cert_net_fetcher,
     base::WaitableEvent* initialization_complete_event) {
   net::URLRequestContextBuilder url_request_context_builder;
   url_request_context_builder.set_user_agent(GetUserAgent());
@@ -65,14 +66,14 @@ void SetUpOnNetworkThread(
 #endif
   // TODO(mattm): add command line flag to configure using
   // CertNetFetcher
-  *cert_net_fetcher = base::MakeRefCounted<net::CertNetFetcherImpl>();
+  *cert_net_fetcher = base::MakeRefCounted<net::CertNetFetcherURLRequest>();
   (*cert_net_fetcher)->SetURLRequestContext(context->get());
   initialization_complete_event->Signal();
 }
 
 void ShutdownOnNetworkThread(
     std::unique_ptr<net::URLRequestContext>* context,
-    scoped_refptr<net::CertNetFetcherImpl>* cert_net_fetcher) {
+    scoped_refptr<net::CertNetFetcherURLRequest>* cert_net_fetcher) {
   (*cert_net_fetcher)->Shutdown();
   cert_net_fetcher->reset();
   context->reset();
@@ -146,8 +147,11 @@ class CertVerifyImplUsingProc : public CertVerifyImpl {
 class CertVerifyImplUsingPathBuilder : public CertVerifyImpl {
  public:
   explicit CertVerifyImplUsingPathBuilder(
-      scoped_refptr<net::CertNetFetcher> cert_net_fetcher)
-      : cert_net_fetcher_(std::move(cert_net_fetcher)) {}
+      scoped_refptr<net::CertNetFetcher> cert_net_fetcher,
+      std::unique_ptr<net::SystemTrustStoreProvider>
+          system_trust_store_provider)
+      : cert_net_fetcher_(std::move(cert_net_fetcher)),
+        system_trust_store_provider_(std::move(system_trust_store_provider)) {}
 
   std::string GetName() const override { return "CertPathBuilder"; }
 
@@ -166,36 +170,62 @@ class CertVerifyImplUsingPathBuilder : public CertVerifyImpl {
       verify_time = base::Time::Now();
     }
 
-    return VerifyUsingPathBuilder(target_der_cert, intermediate_der_certs,
-                                  root_der_certs, verify_time, dump_prefix_path,
-                                  cert_net_fetcher_);
+    return VerifyUsingPathBuilder(
+        target_der_cert, intermediate_der_certs, root_der_certs, verify_time,
+        dump_prefix_path, cert_net_fetcher_,
+        system_trust_store_provider_->CreateSystemTrustStore());
   }
 
  private:
   scoped_refptr<net::CertNetFetcher> cert_net_fetcher_;
+  std::unique_ptr<net::SystemTrustStoreProvider> system_trust_store_provider_;
 };
+
+class DummySystemTrustStoreProvider : public net::SystemTrustStoreProvider {
+ public:
+  std::unique_ptr<net::SystemTrustStore> CreateSystemTrustStore() override {
+    return net::CreateEmptySystemTrustStore();
+  }
+};
+
+std::unique_ptr<net::SystemTrustStoreProvider> CreateSystemTrustStoreProvider(
+    bool use_system_roots) {
+  return use_system_roots ? net::SystemTrustStoreProvider::CreateDefaultForSSL()
+                          : std::make_unique<DummySystemTrustStoreProvider>();
+}
 
 // Creates an subclass of CertVerifyImpl based on its name, or returns nullptr.
 std::unique_ptr<CertVerifyImpl> CreateCertVerifyImplFromName(
     base::StringPiece impl_name,
-    scoped_refptr<net::CertNetFetcher> cert_net_fetcher) {
+    scoped_refptr<net::CertNetFetcher> cert_net_fetcher,
+    bool use_system_roots) {
+#if !defined(OS_FUCHSIA)
   if (impl_name == "platform") {
+    if (!use_system_roots) {
+      std::cerr << "WARNING: platform verifier not supported with "
+                   "--no-system-roots, skipping.\n";
+      return nullptr;
+    }
+
     return std::make_unique<CertVerifyImplUsingProc>(
-        "CertVerifyProc (default)",
-        net::CertVerifyProc::CreateDefault(std::move(cert_net_fetcher)));
+        "CertVerifyProc (system)", net::CertVerifyProc::CreateSystemVerifyProc(
+                                       std::move(cert_net_fetcher)));
   }
+#endif
 
   if (impl_name == "builtin") {
     return std::make_unique<CertVerifyImplUsingProc>(
         "CertVerifyProcBuiltin",
         net::CreateCertVerifyProcBuiltin(
             std::move(cert_net_fetcher),
-            nullptr /* system_trust_store_provider */));
+            CreateSystemTrustStoreProvider(use_system_roots)));
   }
 
-  if (impl_name == "pathbuilder")
+  if (impl_name == "pathbuilder") {
     return std::make_unique<CertVerifyImplUsingPathBuilder>(
-        std::move(cert_net_fetcher));
+        std::move(cert_net_fetcher),
+        CreateSystemTrustStoreProvider(use_system_roots));
+  }
 
   std::cerr << "WARNING: Unrecognized impl: " << impl_name << "\n";
   return nullptr;
@@ -218,6 +248,11 @@ const char kUsage[] =
     " --roots=<certs path>\n"
     "      <certs path> is a file containing certificates [1] to interpret as\n"
     "      trust anchors (without any anchor constraints).\n"
+    "\n"
+    " --no-system-roots\n"
+    "      Do not use system provided trust roots, only trust roots specified\n"
+    "      by --roots or --trust-last-cert will be used. Only supported by\n"
+    "      the builtin and pathbuilter impls.\n"
     "\n"
     " --intermediates=<certs path>\n"
     "      <certs path> is a file containing certificates [1] for use when\n"
@@ -265,6 +300,7 @@ void PrintUsage(const char* argv0) {
   // TODO(mattm): allow target to specify an HTTPS URL to check the cert of?
   // TODO(mattm): allow target to be a verify_certificate_chain_unittest .test
   // file?
+  // TODO(mattm): allow specifying ocsp_response and sct_list inputs as well.
 }
 
 }  // namespace
@@ -300,6 +336,8 @@ int main(int argc, char** argv) {
       return 1;
     }
   }
+
+  bool use_system_roots = !command_line.HasSwitch("no-system-roots");
 
   base::FilePath roots_path = command_line.GetSwitchValuePath("roots");
   base::FilePath intermediates_path =
@@ -360,7 +398,7 @@ int main(int argc, char** argv) {
   // Owned by this thread, but initialized, used, and shutdown on the network
   // thread.
   std::unique_ptr<net::URLRequestContext> context;
-  scoped_refptr<net::CertNetFetcherImpl> cert_net_fetcher;
+  scoped_refptr<net::CertNetFetcherURLRequest> cert_net_fetcher;
   base::WaitableEvent initialization_complete_event(
       base::WaitableEvent::ResetPolicy::MANUAL,
       base::WaitableEvent::InitialState::NOT_SIGNALED);
@@ -375,15 +413,20 @@ int main(int argc, char** argv) {
   // Parse the ordered list of CertVerifyImpl passed via command line flags into
   // |impls|.
   std::string impls_str = command_line.GetSwitchValueASCII("impls");
-  if (impls_str.empty())
-    impls_str = "platform,builtin,pathbuilder";  // Default value.
+  if (impls_str.empty()) {
+    // Default value.
+#if !defined(OS_FUCHSIA)
+    impls_str = "platform,";
+#endif
+    impls_str += "builtin,pathbuilder";
+  }
 
   std::vector<std::string> impl_names = base::SplitString(
       impls_str, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
 
   for (const std::string& impl_name : impl_names) {
-    auto verify_impl =
-        CreateCertVerifyImplFromName(impl_name, cert_net_fetcher);
+    auto verify_impl = CreateCertVerifyImplFromName(impl_name, cert_net_fetcher,
+                                                    use_system_roots);
     if (verify_impl)
       impls.push_back(std::move(verify_impl));
   }

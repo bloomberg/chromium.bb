@@ -27,7 +27,9 @@
 #include "third_party/blink/renderer/core/execution_context/security_context.h"
 
 #include "base/metrics/histogram_macros.h"
+#include "services/network/public/mojom/ip_address_space.mojom-blink.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
+#include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -68,12 +70,12 @@ inline const char* GetImagePolicyHistogramName(
 }  // namespace
 
 // static
-WebVector<unsigned> SecurityContext::SerializeInsecureNavigationSet(
+WTF::Vector<unsigned> SecurityContext::SerializeInsecureNavigationSet(
     const InsecureNavigationsSet& set) {
   // The set is serialized as a sorted array. Sorting it makes it easy to know
   // if two serialized sets are equal.
-  WebVector<unsigned> serialized;
-  serialized.reserve(set.size());
+  WTF::Vector<unsigned> serialized;
+  serialized.ReserveCapacity(set.size());
   for (unsigned host : set)
     serialized.emplace_back(host);
   std::sort(serialized.begin(), serialized.end());
@@ -167,6 +169,11 @@ void SecurityContext::AddReportOnlyFeaturePolicy(
   report_only_feature_policy_->SetHeaderPolicy(parsed_report_only_header);
 }
 
+void SecurityContext::SetDocumentPolicyForTesting(
+    std::unique_ptr<DocumentPolicy> document_policy) {
+  document_policy_ = std::move(document_policy);
+}
+
 bool SecurityContext::IsFeatureEnabled(mojom::FeaturePolicyFeature feature,
                                        ReportOptions report_on_failure,
                                        const String& message,
@@ -190,9 +197,14 @@ bool SecurityContext::IsFeatureEnabled(mojom::FeaturePolicyFeature feature,
     CountPotentialFeaturePolicyViolation(feature);
   }
 
+  bool document_policy_result =
+      !(RuntimeEnabledFeatures::DocumentPolicyEnabled() && document_policy_) ||
+      (document_policy_->IsFeatureSupported(feature) &&
+       document_policy_->IsFeatureEnabled(feature, threshold_value));
+
   FeatureEnabledState state = GetFeatureEnabledState(feature, threshold_value);
   if (state == FeatureEnabledState::kEnabled)
-    return true;
+    return document_policy_result;
   if (report_on_failure == ReportOptions::kReportOnFailure) {
     ReportFeaturePolicyViolation(
         feature,
@@ -201,7 +213,7 @@ bool SecurityContext::IsFeatureEnabled(mojom::FeaturePolicyFeature feature,
              : mojom::FeaturePolicyDisposition::kEnforce),
         message, source_file);
   }
-  return (state != FeatureEnabledState::kDisabled);
+  return (state != FeatureEnabledState::kDisabled) && document_policy_result;
 }
 
 FeatureEnabledState SecurityContext::GetFeatureEnabledState(

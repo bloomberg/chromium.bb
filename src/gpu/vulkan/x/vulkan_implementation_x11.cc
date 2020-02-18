@@ -33,6 +33,15 @@ class ScopedUnsetDisplay {
   DISALLOW_COPY_AND_ASSIGN(ScopedUnsetDisplay);
 };
 
+bool InitializeVulkanFunctionPointers(
+    const base::FilePath& path,
+    VulkanFunctionPointers* vulkan_function_pointers) {
+  base::NativeLibraryLoadError native_library_load_error;
+  vulkan_function_pointers->vulkan_loader_library_ =
+      base::LoadNativeLibrary(path, &native_library_load_error);
+  return vulkan_function_pointers->vulkan_loader_library_;
+}
+
 }  // namespace
 
 VulkanImplementationX11::VulkanImplementationX11(bool use_swiftshader)
@@ -65,15 +74,13 @@ bool VulkanImplementationX11::InitializeVulkanInstance(bool using_surface) {
   if (use_swiftshader()) {
     if (!base::PathService::Get(base::DIR_MODULE, &path))
       return false;
-    path = path.Append("swiftshader/libvk_swiftshader.so");
+
+    path = path.Append("libvk_swiftshader.so");
   } else {
     path = base::FilePath("libvulkan.so.1");
   }
 
-  base::NativeLibraryLoadError native_library_load_error;
-  vulkan_function_pointers->vulkan_loader_library_ =
-      base::LoadNativeLibrary(path, &native_library_load_error);
-  if (!vulkan_function_pointers->vulkan_loader_library_)
+  if (!InitializeVulkanFunctionPointers(path, vulkan_function_pointers))
     return false;
 
   if (!vulkan_instance_.Initialize(required_extensions, {}))

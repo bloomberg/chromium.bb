@@ -4,15 +4,20 @@
 
 package org.chromium.chrome.browser.tasks.tab_management;
 
+import static org.chromium.chrome.browser.tasks.tab_management.TabListModel.CardProperties.CARD_TYPE;
+import static org.chromium.chrome.browser.tasks.tab_management.TabListModel.CardProperties.ModelType.TAB;
+
 import android.graphics.Canvas;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
 import android.view.HapticFeedbackConstants;
 import android.view.View;
 
-import org.chromium.base.VisibleForTesting;
+import androidx.annotation.NonNull;
+import androidx.annotation.VisibleForTesting;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
+import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelFilter;
@@ -21,7 +26,6 @@ import org.chromium.chrome.browser.tabmodel.TabModelFilter;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupUtils;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.components.feature_engagement.EventConstants;
 import org.chromium.components.feature_engagement.Tracker;
 import org.chromium.ui.modelutil.SimpleRecyclerViewAdapter;
@@ -83,9 +87,14 @@ public class TabGridItemTouchHelperCallback extends ItemTouchHelper.SimpleCallba
         boolean isTabGroupEnabled = FeatureUtilities.isTabGroupsAndroidEnabled();
         boolean isTabGroupUiImprovementEnabled =
                 FeatureUtilities.isTabGroupsAndroidUiImprovementsEnabled();
+        boolean isMRUEnabledInTabSwitcher =
+                TabSwitcherMediator.isShowingTabsInMRUOrder() && mActionsOnAllRelatedTabs;
         // Only enable drag for users with group disabled, or with group and group ui improvement
-        // enabled at the same time.
-        boolean isDragEnabled = !isTabGroupEnabled || isTabGroupUiImprovementEnabled;
+        // enabled at the same time. Also, disable drag for MRU-order tab switcher in start surface.
+        // TODO(crbug.com/1005931): Figure out how drag-to-reorder lives in StartSurface MRU
+        // ordering scenario.
+        boolean isDragEnabled = !isMRUEnabledInTabSwitcher
+                && (!isTabGroupEnabled || isTabGroupUiImprovementEnabled);
         mDragFlags = isDragEnabled ? ItemTouchHelper.START | ItemTouchHelper.END
                         | ItemTouchHelper.UP | ItemTouchHelper.DOWN
                                    : 0;
@@ -93,15 +102,32 @@ public class TabGridItemTouchHelperCallback extends ItemTouchHelper.SimpleCallba
 
     @Override
     public int getMovementFlags(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder) {
-        final int dragFlags = mDragFlags;
-        final int swipeFlags = ItemTouchHelper.START | ItemTouchHelper.END;
+        final int dragFlags = viewHolder.getItemViewType() == TabProperties.UiType.MESSAGE
+                        || viewHolder.getItemViewType() == TabProperties.UiType.NEW_TAB_TILE
+                ? 0
+                : mDragFlags;
+        final int swipeFlags = viewHolder.getItemViewType() == TabProperties.UiType.NEW_TAB_TILE
+                ? 0
+                : ItemTouchHelper.START | ItemTouchHelper.END;
         mRecyclerView = recyclerView;
         return makeMovementFlags(dragFlags, swipeFlags);
     }
 
     @Override
+    public boolean canDropOver(@NonNull RecyclerView recyclerView,
+               @NonNull RecyclerView.ViewHolder current, @NonNull RecyclerView.ViewHolder target) {
+        if (target.getItemViewType() == TabProperties.UiType.MESSAGE
+                || target.getItemViewType() == TabProperties.UiType.NEW_TAB_TILE) {
+            return false;
+        }
+        return super.canDropOver(recyclerView, current, target);
+    }
+
+    @Override
     public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder fromViewHolder,
             RecyclerView.ViewHolder toViewHolder) {
+        assert !(fromViewHolder instanceof SimpleRecyclerViewAdapter.ViewHolder)
+                || hasTabPropertiesModel(fromViewHolder);
         mSelectedTabIndex = toViewHolder.getAdapterPosition();
         if (mHoveredTabIndex != TabModel.INVALID_TAB_INDEX) {
             mModel.updateHoveredTabForMergeToGroup(mHoveredTabIndex, false);
@@ -151,17 +177,27 @@ public class TabGridItemTouchHelperCallback extends ItemTouchHelper.SimpleCallba
             if (!FeatureUtilities.isTabGroupsAndroidUiImprovementsEnabled()) {
                 mHoveredTabIndex = TabModel.INVALID_TAB_INDEX;
             }
+
+            RecyclerView.ViewHolder hoveredViewHolder =
+                    mRecyclerView.findViewHolderForAdapterPosition(mHoveredTabIndex);
+            boolean shouldUpdate =
+                    !(hoveredViewHolder instanceof SimpleRecyclerViewAdapter.ViewHolder)
+                    || hasTabPropertiesModel(hoveredViewHolder);
+
             if (mHoveredTabIndex != TabModel.INVALID_TAB_INDEX && mActionsOnAllRelatedTabs) {
                 RecyclerView.ViewHolder selectedViewHolder =
                         mRecyclerView.findViewHolderForAdapterPosition(mSelectedTabIndex);
-                if (selectedViewHolder != null && !mRecyclerView.isComputingLayout()) {
+                if (selectedViewHolder != null && !mRecyclerView.isComputingLayout()
+                        && shouldUpdate) {
                     View selectedItemView = selectedViewHolder.itemView;
                     onTabMergeToGroup(mSelectedTabIndex, mHoveredTabIndex);
                     mRecyclerView.getLayoutManager().removeView(selectedItemView);
                 }
+            } else {
+                mModel.updateSelectedTabForMergeToGroup(mSelectedTabIndex, false);
             }
-            mModel.updateSelectedTabForMergeToGroup(mSelectedTabIndex, false);
-            if (mHoveredTabIndex != TabModel.INVALID_TAB_INDEX) {
+
+            if (mHoveredTabIndex != TabModel.INVALID_TAB_INDEX && shouldUpdate) {
                 mModel.updateHoveredTabForMergeToGroup(mSelectedTabIndex > mHoveredTabIndex
                                 ? mHoveredTabIndex
                                 : mHoveredTabIndex - 1,
@@ -177,7 +213,11 @@ public class TabGridItemTouchHelperCallback extends ItemTouchHelper.SimpleCallba
                     View ungroupItemView = ungroupViewHolder.itemView;
                     filter.moveTabOutOfGroup(
                             mModel.get(mUnGroupTabIndex).model.get(TabProperties.TAB_ID));
-                    mRecyclerView.getLayoutManager().removeView(ungroupItemView);
+                    // Handle the case where the recyclerView is cleared out after ungrouping the
+                    // last tab in group.
+                    if (mRecyclerView.getAdapter().getItemCount() != 0) {
+                        mRecyclerView.getLayoutManager().removeView(ungroupItemView);
+                    }
                     RecordUserAction.record("TabGrid.Drag.RemoveFromGroup." + mComponentName);
                 }
             }
@@ -189,6 +229,11 @@ public class TabGridItemTouchHelperCallback extends ItemTouchHelper.SimpleCallba
                         TabGridDialogParent.UngroupBarStatus.HIDE);
             }
         }
+    }
+
+    private boolean hasTabPropertiesModel(RecyclerView.ViewHolder viewHolder) {
+        return viewHolder instanceof SimpleRecyclerViewAdapter.ViewHolder
+                && ((SimpleRecyclerViewAdapter.ViewHolder) viewHolder).model.get(CARD_TYPE) == TAB;
     }
 
     @Override
@@ -229,14 +274,21 @@ public class TabGridItemTouchHelperCallback extends ItemTouchHelper.SimpleCallba
             int prev_hovered = mHoveredTabIndex;
             mHoveredTabIndex = TabListRecyclerView.getHoveredTabIndex(
                     recyclerView, viewHolder.itemView, dX, dY, mMergeThreshold);
-            mModel.updateHoveredTabForMergeToGroup(mHoveredTabIndex, true);
-            if (prev_hovered != mHoveredTabIndex) {
-                mModel.updateHoveredTabForMergeToGroup(prev_hovered, false);
+
+            RecyclerView.ViewHolder hoveredViewHolder =
+                    mRecyclerView.findViewHolderForAdapterPosition(mHoveredTabIndex);
+
+            if (hoveredViewHolder instanceof SimpleRecyclerViewAdapter.ViewHolder
+                    && !hasTabPropertiesModel(hoveredViewHolder)) {
+                mHoveredTabIndex = TabModel.INVALID_TAB_INDEX;
+            } else {
+                mModel.updateHoveredTabForMergeToGroup(mHoveredTabIndex, true);
+                if (prev_hovered != mHoveredTabIndex) {
+                    mModel.updateHoveredTabForMergeToGroup(prev_hovered, false);
+                }
             }
         } else if (actionState == ItemTouchHelper.ACTION_STATE_DRAG
                 && mTabGridDialogHandler != null) {
-            // Not allow ungrouping the last tab in group.
-            if (recyclerView.getAdapter().getItemCount() == 1) return;
             boolean isHoveredOnUngroupBar = viewHolder.itemView.getBottom() + dY
                     > recyclerView.getBottom() - mUngroupThreshold;
             if (mSelectedTabIndex == TabModel.INVALID_TAB_INDEX) return;
@@ -297,5 +349,16 @@ public class TabGridItemTouchHelperCallback extends ItemTouchHelper.SimpleCallba
     @VisibleForTesting
     void setCurrentActionStateForTesting(int actionState) {
         mCurrentActionState = actionState;
+    }
+
+    @VisibleForTesting
+    boolean hasDragFlagForTesting(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder) {
+        int flags = getMovementFlags(recyclerView, viewHolder);
+        return (flags >> 16) != 0;
+    }
+    @VisibleForTesting
+    boolean hasSwipeFlag(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder) {
+        int flags = getMovementFlags(recyclerView, viewHolder);
+        return ((flags >> 8) & 0xFF) != 0;
     }
 }

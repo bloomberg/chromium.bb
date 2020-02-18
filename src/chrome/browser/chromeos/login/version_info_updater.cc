@@ -8,16 +8,19 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/feature_list.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/dbus/util/version_loader.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
@@ -32,11 +35,9 @@ namespace chromeos {
 namespace {
 
 const char* const kReportingFlags[] = {
-  chromeos::kReportDeviceVersionInfo,
-  chromeos::kReportDeviceActivityTimes,
-  chromeos::kReportDeviceBootMode,
-  chromeos::kReportDeviceLocation,
-};
+    chromeos::kReportDeviceVersionInfo, chromeos::kReportDeviceActivityTimes,
+    chromeos::kReportDeviceBootMode, chromeos::kReportDeviceLocation,
+    chromeos::kDeviceLoginScreenSystemInfoEnforced};
 
 // Strings used to generate the serial number part of the version string.
 const char kSerialNumberPrefix[] = "SN:";
@@ -65,7 +66,8 @@ void VersionInfoUpdater::StartUpdate(bool is_official_build) {
   if (base::SysInfo::IsRunningOnChromeOS()) {
     base::PostTaskAndReplyWithResult(
         FROM_HERE,
-        {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+        {base::ThreadPool(), base::MayBlock(),
+         base::TaskPriority::USER_VISIBLE},
         base::Bind(&version_loader::GetVersion,
                    is_official_build ? version_loader::VERSION_SHORT_WITH_DATE
                                      : version_loader::VERSION_FULL),
@@ -98,6 +100,25 @@ void VersionInfoUpdater::StartUpdate(bool is_official_build) {
   // Update device bluetooth info.
   device::BluetoothAdapterFactory::GetAdapter(base::BindOnce(
       &VersionInfoUpdater::OnGetAdapter, weak_pointer_factory_.GetWeakPtr()));
+
+  // Get ADB sideloading status if supported on device. Otherwise, default is to
+  // not show.
+  if (base::FeatureList::IsEnabled(
+      chromeos::features::kArcAdbSideloadingFeature)) {
+    chromeos::SessionManagerClient* client =
+        chromeos::SessionManagerClient::Get();
+    client->QueryAdbSideload(base::Bind(&VersionInfoUpdater::OnQueryAdbSideload,
+                                        weak_pointer_factory_.GetWeakPtr()));
+  }
+}
+
+base::Optional<bool> VersionInfoUpdater::IsSystemInfoEnforced() const {
+  bool is_system_info_enforced = false;
+  if (cros_settings_->GetBoolean(chromeos::kDeviceLoginScreenSystemInfoEnforced,
+                                 &is_system_info_enforced)) {
+    return is_system_info_enforced;
+  }
+  return base::nullopt;
 }
 
 void VersionInfoUpdater::UpdateVersionLabel() {
@@ -164,6 +185,33 @@ void VersionInfoUpdater::OnStoreLoaded(policy::CloudPolicyStore* store) {
 
 void VersionInfoUpdater::OnStoreError(policy::CloudPolicyStore* store) {
   UpdateEnterpriseInfo();
+}
+
+void VersionInfoUpdater::OnQueryAdbSideload(
+    SessionManagerClient::AdbSideloadResponseCode response_code,
+    bool enabled) {
+  switch (response_code) {
+    case SessionManagerClient::AdbSideloadResponseCode::SUCCESS:
+      break;
+    case SessionManagerClient::AdbSideloadResponseCode::FAILED:
+      // Pretend to be enabled to show warning at login screen conservatively.
+      LOG(WARNING) << "Failed to query adb sideload status";
+      enabled = true;
+      break;
+    case SessionManagerClient::AdbSideloadResponseCode::NEED_POWERWASH:
+      // This can only happen on device initialized before M74, i.e. not
+      // powerwashed since then. Treat it as powerwash disabled to not show the
+      // message.
+      enabled = false;
+      break;
+  }
+
+  // M80: Never show login screen warning. The entry to turn on the feature is
+  // disabled, but there are some expected errors that triggers the warning
+  // message (since we conservatively show the security warning if something goes
+  // wrong).
+  //if (delegate_)
+  //  delegate_->OnAdbSideloadStatusUpdated(enabled);
 }
 
 }  // namespace chromeos

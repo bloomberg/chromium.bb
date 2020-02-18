@@ -9,6 +9,7 @@
 
 #include "ash/assistant/model/assistant_query.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
+#include "ash/assistant/ui/assistant_view_ids.h"
 #include "base/strings/utf_string_conversions.h"
 #include "net/base/escape.h"
 #include "ui/accessibility/ax_enums.mojom.h"
@@ -39,6 +40,7 @@ views::StyledLabel::RangeStyleInfo CreateStyleInfo(SkColor color) {
 // AssistantQueryView ----------------------------------------------------------
 
 AssistantQueryView::AssistantQueryView() {
+  SetID(AssistantViewID::kQueryView);
   InitLayout();
   GetViewAccessibility().OverrideRole(ax::mojom::Role::kHeading);
 }
@@ -74,7 +76,7 @@ void AssistantQueryView::InitLayout() {
       views::BoxLayout::MainAxisAlignment::kCenter);
 
   layout_manager->set_cross_axis_alignment(
-      views::BoxLayout::CrossAxisAlignment::kCenter);
+      views::BoxLayout::CrossAxisAlignment::kStretch);
 
   // Label.
   label_ = new views::StyledLabel(base::string16(), /*listener=*/nullptr);
@@ -135,8 +137,6 @@ void AssistantQueryView::SetText(const std::string& high_confidence_text,
                             CreateStyleInfo(kTextColorSecondary));
     }
   }
-  label_->SizeToFit(width());
-  PreferredSizeChanged();
 }
 
 }  // namespace ash

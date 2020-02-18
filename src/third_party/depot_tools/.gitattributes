@@ -10,6 +10,7 @@
 /*.sh  recipes
 
 # vpython specs
+/.vpython*      recipes
 /gsutil.vpython recipes
 
 # Extensionless tools we want and support scripts.

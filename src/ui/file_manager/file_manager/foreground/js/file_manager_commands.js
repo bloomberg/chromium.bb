@@ -164,7 +164,7 @@ CommandUtil.canExecuteVisibleOnDriveInNormalAppModeOnly =
 CommandUtil.forceDefaultHandler = (node, commandId) => {
   const doc = node.ownerDocument;
   const command = /** @type {!cr.ui.Command} */ (
-      doc.querySelector('command[id="' + commandId + '"]'));
+      doc.body.querySelector('command[id="' + commandId + '"]'));
   node.addEventListener('keydown', e => {
     if (command.matchesEvent(e)) {
       // Prevent cr.ui.CommandManager of handling it and leave it
@@ -180,7 +180,7 @@ CommandUtil.forceDefaultHandler = (node, commandId) => {
     event.cancelBubble = true;
   });
   node.addEventListener('canExecute', event => {
-    if (event.command.id !== commandId) {
+    if (event.command.id !== commandId || event.target !== node) {
       return;
     }
     event.canExecute = document.queryCommandEnabled(event.command.id);
@@ -634,12 +634,14 @@ CommandHandler.COMMANDS_['unmount'] = new class extends Command {
     event.canExecute =
         (volumeType === VolumeManagerCommon.VolumeType.ARCHIVE ||
          volumeType === VolumeManagerCommon.VolumeType.REMOVABLE ||
-         volumeType === VolumeManagerCommon.VolumeType.PROVIDED);
+         volumeType === VolumeManagerCommon.VolumeType.PROVIDED ||
+         volumeType === VolumeManagerCommon.VolumeType.SMB);
     event.command.setHidden(!event.canExecute);
 
     switch (volumeType) {
       case VolumeManagerCommon.VolumeType.ARCHIVE:
       case VolumeManagerCommon.VolumeType.PROVIDED:
+      case VolumeManagerCommon.VolumeType.SMB:
         event.command.label = str('CLOSE_VOLUME_BUTTON_LABEL');
         break;
       case VolumeManagerCommon.VolumeType.REMOVABLE:
@@ -673,17 +675,7 @@ CommandHandler.COMMANDS_['format'] = new class extends Command {
 
     const volumeInfo = fileManager.volumeManager.getVolumeInfo(assert(root));
     if (volumeInfo) {
-      if (loadTimeData.getBoolean('FORMAT_DIALOG_ENABLED')) {
-        fileManager.ui.formatDialog.showModal(volumeInfo);
-      } else {
-        fileManager.ui.confirmDialog.show(
-            loadTimeData.getString('FORMATTING_WARNING'),
-            chrome.fileManagerPrivate.formatVolume.bind(
-                null, volumeInfo.volumeId,
-                chrome.fileManagerPrivate.FormatFileSystemType.VFAT,
-                'UNTITLED'),
-            null, null);
-      }
+      fileManager.ui.formatDialog.showModal(volumeInfo);
     }
   }
 
@@ -883,12 +875,15 @@ CommandHandler.COMMANDS_['select-all'] = new class extends Command {
 
   /** @override */
   canExecute(event, fileManager) {
+    // Check we can select multiple items.
+    const multipleSelect =
+        fileManager.directoryModel.getFileListSelection().multiple;
     // Check we are not inside an input element (e.g. the search box).
     const inputElementActive =
         document.activeElement instanceof HTMLInputElement ||
         document.activeElement instanceof HTMLTextAreaElement ||
         document.activeElement.tagName.toLowerCase() === 'cr-input';
-    event.canExecute = !inputElementActive &&
+    event.canExecute = multipleSelect && !inputElementActive &&
         fileManager.directoryModel.getFileList().length > 0;
   }
 };
@@ -1348,7 +1343,7 @@ CommandHandler.COMMANDS_['volume-help'] = new class extends Command {
  */
 CommandHandler.COMMANDS_['send-feedback'] = new class extends Command {
   execute(event, fileManager) {
-    let message = {
+    const message = {
       categoryTag: 'chromeos-files-app',
       requestFeedback: true,
       feedbackInfo: {
@@ -1522,7 +1517,7 @@ CommandHandler.COMMANDS_['search'] = new class extends Command {
 
     // Focus and unhide the search box.
     const element = fileManager.document.querySelector('#search-box cr-input');
-    element.hidden = false;
+    element.disabled = false;
     (/** @type {!CrInputElement} */ (element)).select();
   }
 
@@ -2448,6 +2443,27 @@ CommandHandler.COMMANDS_['set-wallpaper'] = new class extends Command {
 CommandHandler.COMMANDS_['volume-storage'] = new class extends Command {
   execute(event, fileManager) {
     chrome.fileManagerPrivate.openSettingsSubpage('storage');
+  }
+
+  /** @override */
+  canExecute(event, fileManager) {
+    event.canExecute = false;
+    const currentVolumeInfo = fileManager.directoryModel.getCurrentVolumeInfo();
+    if (!currentVolumeInfo) {
+      return;
+    }
+
+    // Can execute only for local file systems.
+    if (currentVolumeInfo.volumeType ==
+            VolumeManagerCommon.VolumeType.MY_FILES ||
+        currentVolumeInfo.volumeType ==
+            VolumeManagerCommon.VolumeType.DOWNLOADS ||
+        currentVolumeInfo.volumeType ==
+            VolumeManagerCommon.VolumeType.CROSTINI ||
+        currentVolumeInfo.volumeType ==
+            VolumeManagerCommon.VolumeType.ANDROID_FILES) {
+      event.canExecute = true;
+    }
   }
 };
 

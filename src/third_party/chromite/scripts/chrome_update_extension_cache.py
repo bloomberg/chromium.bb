@@ -24,8 +24,9 @@ from __future__ import print_function
 
 import json
 import os
-import urllib
 import xml.dom.minidom
+
+from six.moves import urllib
 
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
@@ -43,7 +44,7 @@ def DownloadCrx(ext, extension, crxdir):
 
   update_url = ('%s?x=prodversion%%3D35.1.1.1%%26id%%3D%s%%26uc' %
                 (extension['external_update_url'], ext))
-  response = urllib.urlopen(update_url)
+  response = urllib.request.urlopen(update_url)
   if response.getcode() != 200:
     logging.error('Cannot get update response, URL: %s, error: %d', update_url,
                   response.getcode())
@@ -59,7 +60,7 @@ def DownloadCrx(ext, extension, crxdir):
   url = node.getAttribute('codebase')
   version = node.getAttribute('version')
   filename = '%s-%s.crx' % (ext, version)
-  response = urllib.urlopen(url)
+  response = urllib.request.urlopen(url)
   if response.getcode() != 200:
     logging.error('Cannot download extension, URL: %s, error: %d', url,
                   response.getcode())
@@ -91,9 +92,9 @@ def CreateValidationFiles(validationdir, crxdir, identifier):
   validation_file = os.path.join(validationdir, '%s.validation' % identifier)
 
   osutils.SafeMakedirs(validationdir)
-  cros_build_lib.RunCommand(['sha256sum'] + verified_files,
-                            log_stdout_to_file=validation_file,
-                            cwd=crxdir, print_cmd=False)
+  cros_build_lib.run(['sha256sum'] + verified_files,
+                     log_stdout_to_file=validation_file,
+                     cwd=crxdir, print_cmd=False)
   logging.info('Hashes created.')
 
 

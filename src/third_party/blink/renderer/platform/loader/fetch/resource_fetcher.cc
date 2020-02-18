@@ -32,6 +32,7 @@
 #include <utility>
 
 #include "base/auto_reset.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/feature_list.h"
 #include "base/time/time.h"
 #include "services/network/public/cpp/request_mode.h"
@@ -63,6 +64,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/raw_resource.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher_properties.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_load_observer.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_load_timing.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loading_log.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_timing_info.h"
@@ -233,8 +235,7 @@ ResourceLoadPriority AdjustPriorityWithPriorityHint(
       //     out-of-viewport images already have priority set to kLow
       // - Link preloads
       //     For this initial implementation we do a blanket demotion regardless
-      //     of `as` value/type. TODO(domfarolino): maybe discuss a more
-      //     granular approach with loading team
+      //     of `as` value/type.
       if (type == ResourceType::kImage ||
           resource_request.GetRequestContext() ==
               mojom::RequestContextType::FETCH ||
@@ -351,7 +352,9 @@ void SetSecFetchHeaders(
       destination_value = "empty";
 
     // We'll handle adding these headers to navigations outside of Blink.
-    if (strncmp(destination_value, "document", 8) != 0 &&
+    if ((strncmp(destination_value, "document", 8) != 0 ||
+         strncmp(destination_value, "iframe", 6) != 0 ||
+         strncmp(destination_value, "frame", 5) != 0) &&
         request.GetRequestContext() != mojom::RequestContextType::INTERNAL) {
       if (blink::RuntimeEnabledFeatures::FetchMetadataDestinationEnabled()) {
         request.SetHttpHeaderField("Sec-Fetch-Dest", destination_value);
@@ -505,7 +508,11 @@ ResourceLoadPriority ResourceFetcher::ComputeLoadPriority(
                  mojom::RequestContextType::PING ||
              resource_request.GetRequestContext() ==
                  mojom::RequestContextType::CSP_REPORT) {
-    priority = ResourceLoadPriority::kVeryLow;
+    if (base::FeatureList::IsEnabled(features::kSetLowPriorityForBeacon)) {
+      priority = ResourceLoadPriority::kLow;
+    } else {
+      priority = ResourceLoadPriority::kVeryLow;
+    }
   }
 
   priority = AdjustPriorityWithPriorityHint(priority, type, resource_request,
@@ -572,8 +579,6 @@ ResourceFetcher::ResourceFetcher(const ResourceFetcherInit& init)
       allow_stale_resources_(false),
       image_fetched_(false),
       should_log_request_as_invalid_in_imported_document_(false) {
-  stale_while_revalidate_enabled_ =
-      RuntimeEnabledFeatures::StaleWhileRevalidateEnabledByRuntimeFlag();
   InstanceCounters::IncrementCounter(InstanceCounters::kResourceFetcherCounter);
   if (IsMainThread())
     MainThreadFetchersSet().insert(this);
@@ -647,7 +652,8 @@ void ResourceFetcher::DidLoadResourceFromMemoryCache(
     // Resources loaded from memory cache should be reported the first time
     // they're used.
     scoped_refptr<ResourceTimingInfo> info = ResourceTimingInfo::Create(
-        resource->Options().initiator_info.name, base::TimeTicks::Now());
+        resource->Options().initiator_info.name, base::TimeTicks::Now(),
+        request.GetRequestContext());
     // TODO(yoav): GetInitialUrlForResourceTiming() is only needed until
     // Out-of-Blink CORS lands: https://crbug.com/736308
     info->SetInitialURL(
@@ -870,8 +876,7 @@ base::Optional<ResourceRequestBlockedReason> ResourceFetcher::PrepareRequest(
   // stale resource is returned a StaleRevalidation request will be scheduled.
   // Explicitly disallow stale responses for fetchers that don't have SWR
   // enabled (via origin trial), and non-GET requests.
-  resource_request.SetAllowStaleResponse(stale_while_revalidate_enabled_ &&
-                                         resource_request.HttpMethod() ==
+  resource_request.SetAllowStaleResponse(resource_request.HttpMethod() ==
                                              http_names::kGET &&
                                          !params.IsStaleRevalidation());
 
@@ -916,14 +921,17 @@ base::Optional<ResourceRequestBlockedReason> ResourceFetcher::PrepareRequest(
     const scoped_refptr<const SecurityOrigin> origin =
         resource_request.RequestorOrigin();
     DCHECK(!options.cors_flag);
-    params.MutableOptions().cors_flag = cors::CalculateCorsFlag(
-        params.Url(), origin.get(), resource_request.GetMode());
+    params.MutableOptions().cors_flag =
+        cors::CalculateCorsFlag(params.Url(), origin.get(),
+                                resource_request.IsolatedWorldOrigin().get(),
+                                resource_request.GetMode());
     // TODO(yhirano): Reject requests for non CORS-enabled schemes.
     // See https://crrev.com/c/1298828.
     resource_request.SetAllowStoredCredentials(cors::CalculateCredentialsFlag(
         resource_request.GetCredentialsMode(),
         cors::CalculateResponseTainting(
             params.Url(), resource_request.GetMode(), origin.get(),
+            resource_request.IsolatedWorldOrigin().get(),
             params.Options().cors_flag ? CorsFlag::Set : CorsFlag::Unset)));
   }
 
@@ -947,6 +955,8 @@ Resource* ResourceFetcher::RequestResource(FetchParameters& params,
     // We don't expect the fetcher to be used, so count such unexpected use.
     UMA_HISTOGRAM_ENUMERATION("HTMLImport.UnexpectedRequest",
                               factory.GetType());
+
+    base::debug::DumpWithoutCrashing();
   }
 
   // If detached, we do very early return here to skip all processing below.
@@ -976,20 +986,6 @@ Resource* ResourceFetcher::RequestResource(FetchParameters& params,
       "Blink.Fetch.RequestResourceTime");
   TRACE_EVENT1("blink", "ResourceFetcher::requestResource", "url",
                params.Url().GetString().Utf8());
-
-  // We need to attach an origin header when the request's method is neither
-  // GET nor HEAD. For requests made by an extension content scripts, we want to
-  // attach page's origin, whereas the request's origin is the content script's
-  // origin. See https://crbug.com/944704 for details.
-  // TODO(crbug.com/940068) Remove this.
-  if (resource_request.HttpMethod() != http_names::kGET &&
-      resource_request.HttpMethod() != http_names::kHEAD &&
-      resource_request.RequestorOrigin() &&
-      !resource_request.RequestorOrigin()->IsSameSchemeHostPort(
-          properties_->GetFetchClientSettingsObject().GetSecurityOrigin())) {
-    resource_request.SetHttpOriginIfNeeded(
-        properties_->GetFetchClientSettingsObject().GetSecurityOrigin());
-  }
 
   // |resource_request|'s origin can be null here, corresponding to the "client"
   // value in the spec. In that case client's origin is used.
@@ -1242,8 +1238,9 @@ void ResourceFetcher::StorePerformanceTimingInitiatorInformation(
   if (fetch_initiator == fetch_initiator_type_names::kInternal)
     return;
 
-  scoped_refptr<ResourceTimingInfo> info =
-      ResourceTimingInfo::Create(fetch_initiator, base::TimeTicks::Now());
+  scoped_refptr<ResourceTimingInfo> info = ResourceTimingInfo::Create(
+      fetch_initiator, base::TimeTicks::Now(),
+      resource->GetResourceRequest().GetRequestContext());
 
   resource_timing_info_map_.insert(resource, std::move(info));
 }
@@ -1805,9 +1802,11 @@ void ResourceFetcher::HandleLoaderFinish(Resource* resource,
       info->AddFinalTransferSize(
           encoded_data_length == -1 ? 0 : encoded_data_length);
 
+      auto receiver = Context().TakePendingWorkerTimingReceiver(
+          resource->GetResponse().RequestId());
+      info->SetWorkerTimingReceiver(std::move(receiver));
       if (resource->Options().request_initiator_context == kDocumentContext)
         Context().AddResourceTiming(*info);
-      resource->ReportResourceTimingToClients(*info);
     }
   }
 
@@ -1881,7 +1880,6 @@ bool ResourceFetcher::StartLoad(Resource* resource) {
   DCHECK(resource);
   DCHECK(resource->StillNeedsLoad());
 
-  ResourceRequest request(resource->GetResourceRequest());
   ResourceLoader* loader = nullptr;
 
   {
@@ -1896,19 +1894,15 @@ bool ResourceFetcher::StartLoad(Resource* resource) {
       return false;
     }
 
+    const auto& request = resource->GetResourceRequest();
     ResourceResponse response;
 
-    resource->VirtualTimePauser().PauseVirtualTime();
     if (resource_load_observer_) {
       DCHECK(!IsDetached());
       resource_load_observer_->WillSendRequest(
           resource->InspectorId(), request, response, resource->GetType(),
           resource->Options().initiator_info);
     }
-    // TODO(shaochuan): Saving modified ResourceRequest back to |resource|,
-    // remove once dispatchWillSendRequest() takes const ResourceRequest.
-    // crbug.com/632580
-    resource->SetResourceRequest(request);
 
     using QuotaType = decltype(inflight_keepalive_bytes_);
     QuotaType size = 0;
@@ -1937,6 +1931,7 @@ bool ResourceFetcher::StartLoad(Resource* resource) {
     } else {
       non_blocking_loaders_.insert(loader);
     }
+    resource->VirtualTimePauser().PauseVirtualTime();
 
     StorePerformanceTimingInitiatorInformation(resource);
   }
@@ -2023,24 +2018,18 @@ void ResourceFetcher::UpdateAllImageResourcePriorities() {
   }
 
   not_loaded_image_resources_.RemoveAll(to_be_removed);
-}
-
-void ResourceFetcher::ReloadLoFiImages() {
-  for (Resource* resource : image_resources_) {
-    resource->ReloadIfLoFiOrPlaceholderImage(this, Resource::kReloadAlways);
-  }
-
-  // |Resource::ReloadIfLoFiOrPlaceholderImage| can make images pending again,
-  // so we set |not_loaded_image_resources_| to be all the images
-  // conservatively. This isn't expected to cause performance problems as
-  // |ReloadLoFiImages| is relatively rare.
-  not_loaded_image_resources_ = image_resources_;
+  // Explicitly free the backing store to not regress memory.
+  // TODO(bikineev): Revisit when young generation is done.
+  to_be_removed.clear();
 }
 
 String ResourceFetcher::GetCacheIdentifier() const {
   if (properties_->GetControllerServiceWorkerMode() !=
-      mojom::ControllerServiceWorkerMode::kNoController)
+      mojom::ControllerServiceWorkerMode::kNoController) {
     return String::Number(properties_->ServiceWorkerId());
+  }
+  if (properties_->WebBundlePhysicalUrl().IsValid())
+    return properties_->WebBundlePhysicalUrl().GetString();
   return MemoryCache::DefaultCacheIdentifier();
 }
 
@@ -2078,10 +2067,6 @@ void ResourceFetcher::PrepareForLeakDetection() {
   // Stop loaders including keepalive ones that may persist after page
   // navigation and thus affect instance counters of leak detection.
   StopFetchingIncludingKeepaliveLoaders();
-}
-
-void ResourceFetcher::SetStaleWhileRevalidateEnabled(bool enabled) {
-  stale_while_revalidate_enabled_ = enabled;
 }
 
 void ResourceFetcher::StopFetchingInternal(StopFetchingTarget target) {

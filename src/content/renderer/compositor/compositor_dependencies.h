@@ -12,6 +12,8 @@
 #include "components/viz/common/display/renderer_settings.h"
 #include "content/common/content_export.h"
 #include "content/common/render_frame_metadata.mojom.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 
 class GURL;
 
@@ -33,6 +35,7 @@ class WebThreadScheduler;
 
 namespace content {
 class FrameSwapMessageQueue;
+class RenderWidget;
 
 class CONTENT_EXPORT CompositorDependencies {
  public:
@@ -50,6 +53,8 @@ class CONTENT_EXPORT CompositorDependencies {
   // compositor thread).
   virtual scoped_refptr<base::SingleThreadTaskRunner>
   GetCompositorImplThreadTaskRunner() = 0;
+  virtual scoped_refptr<base::SingleThreadTaskRunner>
+  GetCleanupTaskRunner() = 0;
   virtual blink::scheduler::WebThreadScheduler* GetWebMainThreadScheduler() = 0;
   virtual cc::TaskGraphRunner* GetTaskGraphRunner() = 0;
   virtual bool IsScrollAnimatorEnabled() = 0;
@@ -59,13 +64,14 @@ class CONTENT_EXPORT CompositorDependencies {
   using LayerTreeFrameSinkCallback =
       base::OnceCallback<void(std::unique_ptr<cc::LayerTreeFrameSink>)>;
   virtual void RequestNewLayerTreeFrameSink(
-      int widget_routing_id,
+      RenderWidget* render_widget,
       scoped_refptr<FrameSwapMessageQueue> frame_swap_message_queue,
       const GURL& url,
       LayerTreeFrameSinkCallback callback,
-      mojom::RenderFrameMetadataObserverClientRequest
-          render_frame_metadata_observer_client_request,
-      mojom::RenderFrameMetadataObserverPtr render_frame_metadata_observer_ptr,
+      mojo::PendingReceiver<mojom::RenderFrameMetadataObserverClient>
+          render_frame_metadata_observer_client_receiver,
+      mojo::PendingRemote<mojom::RenderFrameMetadataObserver>
+          render_frame_metadata_observer_remote,
       const char* client_name) = 0;
 
 #ifdef OS_ANDROID

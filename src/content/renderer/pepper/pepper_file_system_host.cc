@@ -19,7 +19,7 @@
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/shared_impl/file_system_util.h"
 #include "ppapi/shared_impl/file_type_conversion.h"
-#include "storage/common/fileapi/file_system_util.h"
+#include "storage/common/file_system/file_system_util.h"
 #include "third_party/blink/public/mojom/filesystem/file_system.mojom.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_local_frame.h"
@@ -163,7 +163,7 @@ int32_t PepperFileSystemHost::OnHostMsgInitIsolatedFileSystem(
 blink::mojom::FileSystemManager& PepperFileSystemHost::GetFileSystemManager() {
   if (!file_system_manager_) {
     ChildThreadImpl::current()->BindHostReceiver(
-        mojo::MakeRequest(&file_system_manager_));
+        file_system_manager_.BindNewPipeAndPassReceiver());
   }
   return *file_system_manager_;
 }

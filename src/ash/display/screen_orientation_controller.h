@@ -13,9 +13,11 @@
 #include "ash/display/display_configuration_controller.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/public/cpp/tablet_mode_observer.h"
-#include "ash/shell_observer.h"
+#include "ash/wm/splitview/split_view_controller.h"
+#include "ash/wm/splitview/split_view_observer.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
+#include "base/optional.h"
 #include "ui/aura/window_observer.h"
 #include "ui/display/display.h"
 #include "ui/wm/public/activation_change_observer.h"
@@ -57,7 +59,7 @@ class ASH_EXPORT ScreenOrientationController
       public AccelerometerReader::Observer,
       public WindowTreeHostManager::Observer,
       public TabletModeObserver,
-      public ShellObserver {
+      public SplitViewObserver {
  public:
   // Observer that reports changes to the state of ScreenOrientationProvider's
   // rotation lock.
@@ -101,12 +103,16 @@ class ASH_EXPORT ScreenOrientationController
   // Unlock all and set the rotation back to the user specified rotation.
   void UnlockAll();
 
-  bool ScreenOrientationProviderSupported() const;
-
   // Returns true if the user has locked the orientation to portrait, false if
   // the user has locked the orientation to landscape or not locked the
   // orientation.
   bool IsUserLockedOrientationPortrait();
+
+  // Returns the OrientationLockType that is applied on based on whether a
+  // rotation lock was requested for an app window, and whether the current
+  // system state allows it to lock the rotation (e.g. being in tablet mode, on
+  // the internal display, and splitview is inactive).
+  OrientationLockType GetCurrentAppRequestedOrientationLock() const;
 
   bool ignore_display_configuration_updates() const {
     return ignore_display_configuration_updates_;
@@ -151,12 +157,12 @@ class ASH_EXPORT ScreenOrientationController
 
   // TabletModeObserver:
   void OnTabletModeStarted() override;
-  void OnTabletModeEnding() override;
   void OnTabletModeEnded() override;
+  void OnTabletPhysicalStateChanged() override;
 
-  // ShellObserver:
-  void OnSplitViewModeStarted() override;
-  void OnSplitViewModeEnded() override;
+  // SplitViewObserver:
+  void OnSplitViewStateChanged(SplitViewController::State previous_state,
+                               SplitViewController::State state) override;
 
  private:
   friend class ScreenOrientationControllerTestApi;
@@ -248,6 +254,10 @@ class ASH_EXPORT ScreenOrientationController
 
   // The orientation of the device locked by the user.
   OrientationLockType user_locked_orientation_ = OrientationLockType::kAny;
+
+  // The currently applied orientation lock that was requested by an app if any.
+  base::Optional<OrientationLockType> current_app_requested_orientation_lock_ =
+      base::nullopt;
 
   // The current rotation set by ScreenOrientationController for the internal
   // display.

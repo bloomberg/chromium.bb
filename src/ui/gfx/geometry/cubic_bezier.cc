@@ -8,6 +8,7 @@
 #include <cmath>
 
 #include "base/logging.h"
+#include "base/numerics/ranges.h"
 
 namespace gfx {
 
@@ -150,8 +151,8 @@ void CubicBezier::InitRange(double p1y, double p2y) {
   if (0 < t2 && t2 < 1)
     sol2 = SampleCurveY(t2);
 
-  range_min_ = std::min(std::min(range_min_, sol1), sol2);
-  range_max_ = std::max(std::max(range_max_, sol1), sol2);
+  range_min_ = std::min({range_min_, sol1, sol2});
+  range_max_ = std::max({range_max_, sol1, sol2});
 }
 
 void CubicBezier::InitSpline() {
@@ -228,7 +229,7 @@ double CubicBezier::Solve(double x) const {
 }
 
 double CubicBezier::SlopeWithEpsilon(double x, double epsilon) const {
-  x = std::min(std::max(x, 0.0), 1.0);
+  x = base::ClampToRange(x, 0.0, 1.0);
   double t = SolveCurveX(x, epsilon);
   double dx = SampleCurveDerivativeX(t);
   double dy = SampleCurveDerivativeY(t);

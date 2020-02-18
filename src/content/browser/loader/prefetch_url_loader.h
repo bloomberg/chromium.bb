@@ -15,7 +15,9 @@
 #include "base/unguessable_token.h"
 #include "content/browser/web_package/prefetched_signed_exchange_cache.h"
 #include "content/common/content_export.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe_drainer.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
@@ -48,19 +50,20 @@ class CONTENT_EXPORT PrefetchURLLoader : public network::mojom::URLLoader,
  public:
   using URLLoaderThrottlesGetter = base::RepeatingCallback<
       std::vector<std::unique_ptr<blink::URLLoaderThrottle>>()>;
+  using RecursivePrefetchTokenGenerator =
+      base::OnceCallback<base::UnguessableToken(
+          const network::ResourceRequest&)>;
 
   // |url_loader_throttles_getter| may be used when a prefetch handler needs to
   // additionally create a request (e.g. for fetching certificate if the
-  // prefetch was for a signed exchange).  |frame_tree_node_id_getter| is called
-  // only on UI thread when NetworkService is not enabled, but can be also
-  // called on IO thread otherwise.
+  // prefetch was for a signed exchange).
   PrefetchURLLoader(
       int32_t routing_id,
       int32_t request_id,
       uint32_t options,
-      base::RepeatingCallback<int(void)> frame_tree_node_id_getter,
+      int frame_tree_node_id,
       const network::ResourceRequest& resource_request,
-      network::mojom::URLLoaderClientPtr client,
+      mojo::PendingRemote<network::mojom::URLLoaderClient> client,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
       scoped_refptr<network::SharedURLLoaderFactory> network_loader_factory,
       URLLoaderThrottlesGetter url_loader_throttles_getter,
@@ -70,7 +73,8 @@ class CONTENT_EXPORT PrefetchURLLoader : public network::mojom::URLLoader,
       scoped_refptr<PrefetchedSignedExchangeCache>
           prefetched_signed_exchange_cache,
       base::WeakPtr<storage::BlobStorageContext> blob_storage_context,
-      const std::string& accept_langs);
+      const std::string& accept_langs,
+      RecursivePrefetchTokenGenerator recursive_prefetch_token_generator);
   ~PrefetchURLLoader() override;
 
   // Sends an empty response's body to |forwarding_client_|. If failed to create
@@ -121,9 +125,7 @@ class CONTENT_EXPORT PrefetchURLLoader : public network::mojom::URLLoader,
 
   void OnNetworkConnectionError();
 
-  bool IsSignedExchangeHandlingEnabled();
-
-  const base::RepeatingCallback<int(void)> frame_tree_node_id_getter_;
+  const int frame_tree_node_id_;
 
   // Set in the constructor and updated when redirected.
   network::ResourceRequest resource_request_;
@@ -131,14 +133,13 @@ class CONTENT_EXPORT PrefetchURLLoader : public network::mojom::URLLoader,
   scoped_refptr<network::SharedURLLoaderFactory> network_loader_factory_;
 
   // For the actual request.
-  network::mojom::URLLoaderPtr loader_;
-  mojo::Binding<network::mojom::URLLoaderClient> client_binding_;
+  mojo::Remote<network::mojom::URLLoader> loader_;
+  mojo::Receiver<network::mojom::URLLoaderClient> client_receiver_{this};
 
   // To be a URLLoader for the client.
-  network::mojom::URLLoaderClientPtr forwarding_client_;
+  mojo::Remote<network::mojom::URLLoaderClient> forwarding_client_;
 
   URLLoaderThrottlesGetter url_loader_throttles_getter_;
-  BrowserContext* browser_context_;
 
   std::unique_ptr<mojo::DataPipeDrainer> pipe_drainer_;
 
@@ -154,6 +155,12 @@ class CONTENT_EXPORT PrefetchURLLoader : public network::mojom::URLLoader,
       prefetched_signed_exchange_cache_adapter_;
 
   const std::string accept_langs_;
+
+  RecursivePrefetchTokenGenerator recursive_prefetch_token_generator_;
+
+  // TODO(kinuko): This value can become stale if the preference is updated.
+  // Make this listen to the changes if it becomes a real concern.
+  bool is_signed_exchange_handling_enabled_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(PrefetchURLLoader);
 };

@@ -78,11 +78,12 @@ void BufferVk::destroy(const gl::Context *context)
 
 void BufferVk::release(ContextVk *contextVk)
 {
-    mBuffer.release(contextVk);
+    RendererVk *renderer = contextVk->getRenderer();
+    mBuffer.release(renderer);
 
     for (ConversionBuffer &buffer : mVertexConversionBuffers)
     {
-        buffer.data.release(contextVk);
+        buffer.data.release(renderer);
     }
 }
 
@@ -161,8 +162,9 @@ angle::Result BufferVk::copySubData(const gl::Context *context,
     // Handle self-dependency especially.
     if (sourceBuffer->mBuffer.getBuffer().getHandle() == mBuffer.getBuffer().getHandle())
     {
-        mBuffer.onSelfReadWrite(contextVk, VK_ACCESS_TRANSFER_READ_BIT,
-                                VK_ACCESS_TRANSFER_WRITE_BIT);
+        // We set the TRANSFER_READ_BIT to be conservative.
+        mBuffer.onSelfReadWrite(contextVk,
+                                VK_ACCESS_TRANSFER_READ_BIT | VK_ACCESS_TRANSFER_WRITE_BIT);
 
         ANGLE_TRY(mBuffer.recordCommands(contextVk, &commandBuffer));
     }
@@ -181,6 +183,9 @@ angle::Result BufferVk::copySubData(const gl::Context *context,
 
     commandBuffer->copyBuffer(sourceBuffer->getBuffer().getBuffer(), mBuffer.getBuffer(), 1,
                               &copyRegion);
+
+    // The new destination buffer data may require a conversion for the next draw, so mark it dirty.
+    onDataChanged();
 
     return angle::Result::Continue;
 }
@@ -220,9 +225,12 @@ angle::Result BufferVk::mapRangeImpl(ContextVk *contextVk,
         if (mBuffer.isResourceInUse(contextVk))
         {
             ANGLE_TRY(contextVk->flushImpl(nullptr));
+
+            // Make sure the GPU is done with the buffer.
+            ANGLE_TRY(contextVk->finishToSerial(mBuffer.getLatestSerial()));
         }
-        // Make sure the GPU is done with the buffer.
-        ANGLE_TRY(contextVk->finishToSerial(mBuffer.getStoredQueueSerial()));
+
+        ASSERT(!mBuffer.isResourceInUse(contextVk));
     }
 
     ANGLE_VK_TRY(contextVk, mBuffer.getDeviceMemory().map(contextVk->getDevice(), offset, length, 0,
@@ -317,7 +325,7 @@ angle::Result BufferVk::setDataImpl(ContextVk *contextVk,
                                          VK_ACCESS_HOST_WRITE_BIT, copyRegion));
 
         // Immediately release staging buffer. We should probably be using a DynamicBuffer here.
-        contextVk->releaseObject(contextVk->getCurrentQueueSerial(), &stagingBuffer);
+        stagingBuffer.release(contextVk);
     }
     else
     {

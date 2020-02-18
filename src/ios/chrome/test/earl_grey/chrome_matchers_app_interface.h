@@ -45,6 +45,13 @@
 // and accessibility trait UIAccessibilityTraitHeader.
 + (id<GREYMatcher>)headerWithAccessibilityLabelID:(int)messageID;
 
+// Matcher for text field of a cell with |messageID|.
++ (id<GREYMatcher>)textFieldForCellWithLabelID:(int)messageID;
+
+// Matcher for icon view of a cell with |messageID|.
++ (id<GREYMatcher>)iconViewForCellWithLabelID:(int)messageID
+                                     iconType:(NSString*)iconType;
+
 // Matcher for element with accessibility label corresponding to |label| and
 // accessibility trait UIAccessibilityTraitHeader.
 + (id<GREYMatcher>)headerWithAccessibilityLabel:(NSString*)label;
@@ -54,6 +61,9 @@
 
 // Returns matcher for a cancel button.
 + (id<GREYMatcher>)cancelButton;
+
+// Returns the matcher for an enabled cancel button in a navigation bar.
++ (id<GREYMatcher>)navigationBarCancelButton;
 
 // Returns matcher for a close button.
 + (id<GREYMatcher>)closeButton;
@@ -128,9 +138,6 @@
 // Matcher for the done button on the Bookmarks navigation bar.
 + (id<GREYMatcher>)bookmarksNavigationBarDoneButton;
 
-// Returns matcher for the account consistency setup signin button.
-+ (id<GREYMatcher>)accountConsistencySetupSigninButton;
-
 // Returns matcher for the account consistency confirmation button.
 + (id<GREYMatcher>)accountConsistencyConfirmationOKButton;
 
@@ -165,6 +172,31 @@
 // Returns matcher for the "Confirm" button in the Sync and Google services
 // settings' navigation bar.
 + (id<GREYMatcher>)syncSettingsConfirmButton;
+
+// Returns matcher for the Autofill Credit Card "Payment Methods" view in the
+// settings menu.
++ (id<GREYMatcher>)autofillCreditCardTableView;
+
+// Returns matcher for the "Payment Methods" button in the settings menu.
++ (id<GREYMatcher>)paymentMethodsButton;
+
+// Returns matcher for the "Add Credit Card" view in the Settings menu.
++ (id<GREYMatcher>)addCreditCardView;
+
+// Returns matcher for the "Add Payment Method" button in the Settings Payment
+// Methods view.
++ (id<GREYMatcher>)addPaymentMethodButton;
+
+// Returns matcher for the "Add" credit card button in the Payment
+// Methods add credit card view.
++ (id<GREYMatcher>)addCreditCardButton;
+
+// Returns matcher for the "Cancel" button in the Payment Methods add credit
+// card view.
++ (id<GREYMatcher>)addCreditCardCancelButton;
+
+// Returns matcher for the "Credit Card Scanner" view.
++ (id<GREYMatcher>)creditCardScannerView;
 
 // Returns matcher for the tools menu table view.
 + (id<GREYMatcher>)toolsMenuView;
@@ -201,9 +233,6 @@
 // Returns matcher for the privacy table view.
 + (id<GREYMatcher>)settingsPrivacyTableView;
 
-// Returns matcher for the Manage Synced Data button in sync setting view.
-+ (id<GREYMatcher>)settingsSyncManageSyncedDataButton;
-
 // Returns matcher for the menu button to sync accounts.
 + (id<GREYMatcher>)accountsSyncButton;
 
@@ -213,6 +242,9 @@
 // Returns matcher for the Google Services Settings button on the main Settings
 // screen.
 + (id<GREYMatcher>)googleServicesSettingsButton;
+
+// Returns matcher for the Google Services Settings view.
++ (id<GREYMatcher>)googleServicesSettingsView;
 
 // Returns matcher for the back button on a settings menu.
 + (id<GREYMatcher>)settingsMenuBackButton;
@@ -263,6 +295,9 @@
 
 // Returns matcher for the payment request search bar.
 + (id<GREYMatcher>)paymentRequestPickerSearchBar;
+
+// Returns matcher for the reading list button on the Tools menu.
++ (id<GREYMatcher>)readingListMenuButton;
 
 // Returns matcher for the bookmarks button on the Tools menu.
 + (id<GREYMatcher>)bookmarksMenuButton;
@@ -343,6 +378,97 @@
 // Returns the GREYMatcher for the button to close the cell at |index| in the
 // tab grid.
 + (id<GREYMatcher>)tabGridCloseButtonForCellAtIndex:(unsigned int)index;
+
+// Returns a matcher for the password settings collection view.
++ (id<GREYMatcher>)settingsPasswordMatcher;
+
+// Returns a matcher for the search bar in password settings.
++ (id<GREYMatcher>)settingsPasswordSearchMatcher;
+
+// Returns a matcher for the profiles settings collection view.
++ (id<GREYMatcher>)settingsProfileMatcher;
+
+// Returns a matcher for the credit card settings collection view.
++ (id<GREYMatcher>)settingsCreditCardMatcher;
+
+// Returns a matcher for the delete button at the bottom of settings collection
+// views.
++ (id<GREYMatcher>)settingsBottomToolbarDeleteButton;
+
+// Returns a matcher for an autofill suggestion view.
++ (id<GREYMatcher>)autofillSuggestionViewMatcher;
+
+// Returns a matcher to test whether the element is a scroll view with a content
+// smaller than the scroll view bounds.
++ (id<GREYMatcher>)contentViewSmallerThanScrollView;
+
+// Returns a matcher for the infobar asking to save a credit card locally.
++ (id<GREYMatcher>)autofillSaveCardLocallyInfobar;
+
+// Returns a matcher for the infobar asking to upload a credit card.
++ (id<GREYMatcher>)autofillUploadCardInfobar;
+
+#pragma mark - Manual Fallback
+
+// Returns a matcher for the scroll view in keyboard accessory bar.
++ (id<GREYMatcher>)manualFallbackFormSuggestionViewMatcher;
+
+// Returns a matcher for the keyboard icon in the keyboard accessory bar.
++ (id<GREYMatcher>)manualFallbackKeyboardIconMatcher;
+
+// Returns a matcher for the password icon in the keyboard accessory bar.
++ (id<GREYMatcher>)manualFallbackPasswordIconMatcher;
+
+// Returns a matcher for the password table view in manual fallback.
++ (id<GREYMatcher>)manualFallbackPasswordTableViewMatcher;
+
+// Returns a matcher for the password search bar in manual fallback.
++ (id<GREYMatcher>)manualFallbackPasswordSearchBarMatcher;
+
+// Returns a matcher for the button to open password settings in manual
+// fallback.
++ (id<GREYMatcher>)manualFallbackManagePasswordsMatcher;
+
+// Returns a matcher for the button to open all passwords in manual fallback.
++ (id<GREYMatcher>)manualFallbackOtherPasswordsMatcher;
+
+// Returns a matcher for the button to dismiss all passwords in manual fallback.
++ (id<GREYMatcher>)manualFallbackOtherPasswordsDismissMatcher;
+
+// Returns a matcher for the a password in the manual fallback list.
++ (id<GREYMatcher>)manualFallbackPasswordButtonMatcher;
+
+// Returns a matcher for the PasswordTableView window.
++ (id<GREYMatcher>)manualFallbackPasswordTableViewWindowMatcher;
+
+// Returns a matcher for the profiles icon in the keyboard accessory bar.
++ (id<GREYMatcher>)manualFallbackProfilesIconMatcher;
+
+// Returns a matcher for the profiles table view in manual fallback.
++ (id<GREYMatcher>)manualFallbackProfilesTableViewMatcher;
+// Returns a matcher for the button to open profile settings in manual
+// fallback.
++ (id<GREYMatcher>)manualFallbackManageProfilesMatcher;
+
+// Returns a matcher for the ProfileTableView window.
++ (id<GREYMatcher>)manualFallbackProfileTableViewWindowMatcher;
+
+// Returns a matcher for the credit card icon in the keyboard accessory bar.
++ (id<GREYMatcher>)manualFallbackCreditCardIconMatcher;
+
+// Returns a matcher for the credit card table view in manual fallback.
++ (id<GREYMatcher>)manualFallbackCreditCardTableViewMatcher;
+
+// Returns a matcher for the button to open password settings in manual
+// fallback.
++ (id<GREYMatcher>)manualFallbackManageCreditCardsMatcher;
+
+// Returns a matcher for the button to add credit cards settings in manual
+// fallback.
++ (id<GREYMatcher>)manualFallbackAddCreditCardsMatcher;
+
+// Returns a matcher for the CreditCardTableView window.
++ (id<GREYMatcher>)manualFallbackCreditCardTableViewWindowMatcher;
 
 @end
 

@@ -17,6 +17,7 @@
 #include "common/Assert.h"
 #include "common/BitSetIterator.h"
 #include "dawn_native/d3d12/BindGroupLayoutD3D12.h"
+#include "dawn_native/d3d12/D3D12Error.h"
 #include "dawn_native/d3d12/DeviceD3D12.h"
 #include "dawn_native/d3d12/PlatformFunctions.h"
 
@@ -24,14 +25,14 @@ using Microsoft::WRL::ComPtr;
 
 namespace dawn_native { namespace d3d12 {
     namespace {
-        D3D12_SHADER_VISIBILITY ShaderVisibilityType(dawn::ShaderStage visibility) {
-            ASSERT(visibility != dawn::ShaderStage::None);
+        D3D12_SHADER_VISIBILITY ShaderVisibilityType(wgpu::ShaderStage visibility) {
+            ASSERT(visibility != wgpu::ShaderStage::None);
 
-            if (visibility == dawn::ShaderStage::Vertex) {
+            if (visibility == wgpu::ShaderStage::Vertex) {
                 return D3D12_SHADER_VISIBILITY_VERTEX;
             }
 
-            if (visibility == dawn::ShaderStage::Fragment) {
+            if (visibility == wgpu::ShaderStage::Fragment) {
                 return D3D12_SHADER_VISIBILITY_PIXEL;
             }
 
@@ -39,23 +40,32 @@ namespace dawn_native { namespace d3d12 {
             return D3D12_SHADER_VISIBILITY_ALL;
         }
 
-        D3D12_ROOT_PARAMETER_TYPE RootParameterType(dawn::BindingType type) {
+        D3D12_ROOT_PARAMETER_TYPE RootParameterType(wgpu::BindingType type) {
             switch (type) {
-                case dawn::BindingType::UniformBuffer:
+                case wgpu::BindingType::UniformBuffer:
                     return D3D12_ROOT_PARAMETER_TYPE_CBV;
-                case dawn::BindingType::StorageBuffer:
+                case wgpu::BindingType::StorageBuffer:
                     return D3D12_ROOT_PARAMETER_TYPE_UAV;
-                case dawn::BindingType::SampledTexture:
-                case dawn::BindingType::Sampler:
-                case dawn::BindingType::StorageTexture:
-                case dawn::BindingType::ReadonlyStorageBuffer:
+                case wgpu::BindingType::SampledTexture:
+                case wgpu::BindingType::Sampler:
+                case wgpu::BindingType::StorageTexture:
+                case wgpu::BindingType::ReadonlyStorageBuffer:
                     UNREACHABLE();
             }
         }
     }  // anonymous namespace
 
-    PipelineLayout::PipelineLayout(Device* device, const PipelineLayoutDescriptor* descriptor)
-        : PipelineLayoutBase(device, descriptor) {
+    ResultOrError<PipelineLayout*> PipelineLayout::Create(
+        Device* device,
+        const PipelineLayoutDescriptor* descriptor) {
+        std::unique_ptr<PipelineLayout> layout =
+            std::make_unique<PipelineLayout>(device, descriptor);
+        DAWN_TRY(layout->Initialize());
+        return layout.release();
+    }
+
+    MaybeError PipelineLayout::Initialize() {
+        Device* device = ToBackend(GetDevice());
         D3D12_ROOT_PARAMETER rootParameters[kMaxBindGroups * 2 + kMaxDynamicBufferCount];
 
         // A root parameter is one of these types
@@ -117,7 +127,7 @@ namespace dawn_native { namespace d3d12 {
             const auto& shaderRegisters = bindGroupLayout->GetBindingOffsets();
 
             // Init root descriptors in root signatures.
-            for (uint32_t dynamicBinding : IterateBitSet(groupInfo.dynamic)) {
+            for (uint32_t dynamicBinding : IterateBitSet(groupInfo.hasDynamicOffset)) {
                 D3D12_ROOT_PARAMETER* rootParameter = &rootParameters[parameterIndex];
 
                 // Setup root descriptor.
@@ -148,11 +158,15 @@ namespace dawn_native { namespace d3d12 {
 
         ComPtr<ID3DBlob> signature;
         ComPtr<ID3DBlob> error;
-        ASSERT_SUCCESS(device->GetFunctions()->d3d12SerializeRootSignature(
-            &rootSignatureDescriptor, D3D_ROOT_SIGNATURE_VERSION_1, &signature, &error));
-        ASSERT_SUCCESS(device->GetD3D12Device()->CreateRootSignature(
-            0, signature->GetBufferPointer(), signature->GetBufferSize(),
-            IID_PPV_ARGS(&mRootSignature)));
+        DAWN_TRY(CheckHRESULT(
+            device->GetFunctions()->d3d12SerializeRootSignature(
+                &rootSignatureDescriptor, D3D_ROOT_SIGNATURE_VERSION_1, &signature, &error),
+            "D3D12 serialize root signature"));
+        DAWN_TRY(CheckHRESULT(device->GetD3D12Device()->CreateRootSignature(
+                                  0, signature->GetBufferPointer(), signature->GetBufferSize(),
+                                  IID_PPV_ARGS(&mRootSignature)),
+                              "D3D12 create root signature"));
+        return {};
     }
 
     uint32_t PipelineLayout::GetCbvUavSrvRootParameterIndex(uint32_t group) const {
@@ -172,7 +186,7 @@ namespace dawn_native { namespace d3d12 {
     uint32_t PipelineLayout::GetDynamicRootParameterIndex(uint32_t group, uint32_t binding) const {
         ASSERT(group < kMaxBindGroups);
         ASSERT(binding < kMaxBindingsPerGroup);
-        ASSERT(GetBindGroupLayout(group)->GetBindingInfo().dynamic[binding]);
+        ASSERT(GetBindGroupLayout(group)->GetBindingInfo().hasDynamicOffset[binding]);
         return mDynamicRootParameterIndices[group][binding];
     }
 }}  // namespace dawn_native::d3d12

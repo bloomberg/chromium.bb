@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2015-2016 The Khronos Group Inc.
- * Copyright (c) 2015-2016 Valve Corporation
- * Copyright (c) 2015-2016 LunarG, Inc.
+ * Copyright (c) 2015-2019 The Khronos Group Inc.
+ * Copyright (c) 2015-2019 Valve Corporation
+ * Copyright (c) 2015-2019 LunarG, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,8 @@
 #include <X11/Xutil.h>
 #elif defined(VK_USE_PLATFORM_WAYLAND_KHR)
 #include <linux/input.h>
+#include "xdg-shell-client-header.h"
+#include "xdg-decoration-client-header.h"
 #endif
 
 #include <cassert>
@@ -30,10 +32,13 @@
 #include <cstdlib>
 #include <cstring>
 #include <csignal>
+#include <iostream>
+#include <sstream>
 #include <memory>
 
 #define VULKAN_HPP_NO_SMART_HANDLE
 #define VULKAN_HPP_NO_EXCEPTIONS
+#define VULKAN_HPP_TYPESAFE_CONVERSION
 #include <vulkan/vulkan.hpp>
 #include <vulkan/vk_sdk_platform.h>
 
@@ -239,6 +244,7 @@ struct Demo {
     void prepare_textures();
 
     void resize();
+    void create_surface();
     void set_image_layout(vk::Image, vk::ImageAspectFlags, vk::ImageLayout, vk::ImageLayout, vk::AccessFlags,
                           vk::PipelineStageFlags, vk::PipelineStageFlags);
     void update_data_buffer();
@@ -259,7 +265,7 @@ struct Demo {
 #elif defined(VK_USE_PLATFORM_WAYLAND_KHR)
     void run();
     void create_window();
-#elif defined(VK_USE_PLATFORM_MACOS_MVK)
+#elif defined(VK_USE_PLATFORM_METAL_EXT)
     void run();
 #elif defined(VK_USE_PLATFORM_DISPLAY_KHR)
     vk::Result create_display_surface();
@@ -285,13 +291,17 @@ struct Demo {
     wl_registry *registry;
     wl_compositor *compositor;
     wl_surface *window;
-    wl_shell *shell;
-    wl_shell_surface *shell_surface;
+    xdg_wm_base *wm_base;
+    zxdg_decoration_manager_v1 *xdg_decoration_mgr;
+    zxdg_toplevel_decoration_v1 *toplevel_decoration;
+    xdg_surface *window_surface;
+    bool xdg_surface_has_been_configured;
+    xdg_toplevel *window_toplevel;
     wl_seat *seat;
     wl_pointer *pointer;
     wl_keyboard *keyboard;
-#elif (defined(VK_USE_PLATFORM_IOS_MVK) || defined(VK_USE_PLATFORM_MACOS_MVK))
-    void *window;
+#elif defined(VK_USE_PLATFORM_METAL_EXT)
+    void *caMetalLayer;
 #endif
 
     vk::SurfaceKHR surface;
@@ -414,7 +424,7 @@ static void pointer_handle_button(void *data, struct wl_pointer *wl_pointer, uin
                                   uint32_t state) {
     Demo *demo = (Demo *)data;
     if (button == BTN_LEFT && state == WL_POINTER_BUTTON_STATE_PRESSED) {
-        wl_shell_surface_move(demo->shell_surface, demo->seat, serial);
+        xdg_toplevel_move(demo->window_toplevel, demo->seat, serial);
     }
 }
 
@@ -482,16 +492,24 @@ static const wl_seat_listener seat_listener = {
     seat_handle_capabilities,
 };
 
+static void wm_base_ping(void *data, xdg_wm_base *xdg_wm_base, uint32_t serial) { xdg_wm_base_pong(xdg_wm_base, serial); }
+
+static const struct xdg_wm_base_listener wm_base_listener = {wm_base_ping};
+
 static void registry_handle_global(void *data, wl_registry *registry, uint32_t id, const char *interface, uint32_t version) {
     Demo *demo = (Demo *)data;
     // pickup wayland objects when they appear
-    if (strcmp(interface, "wl_compositor") == 0) {
+    if (strcmp(interface, wl_compositor_interface.name) == 0) {
         demo->compositor = (wl_compositor *)wl_registry_bind(registry, id, &wl_compositor_interface, 1);
-    } else if (strcmp(interface, "wl_shell") == 0) {
-        demo->shell = (wl_shell *)wl_registry_bind(registry, id, &wl_shell_interface, 1);
-    } else if (strcmp(interface, "wl_seat") == 0) {
+    } else if (strcmp(interface, xdg_wm_base_interface.name) == 0) {
+        demo->wm_base = (xdg_wm_base *)wl_registry_bind(registry, id, &xdg_wm_base_interface, 1);
+        xdg_wm_base_add_listener(demo->wm_base, &wm_base_listener, nullptr);
+    } else if (strcmp(interface, wl_seat_interface.name) == 0) {
         demo->seat = (wl_seat *)wl_registry_bind(registry, id, &wl_seat_interface, 1);
         wl_seat_add_listener(demo->seat, &seat_listener, demo);
+    } else if (strcmp(interface, zxdg_decoration_manager_v1_interface.name) == 0) {
+        demo->xdg_decoration_mgr =
+            (zxdg_decoration_manager_v1 *)wl_registry_bind(registry, id, &zxdg_decoration_manager_v1_interface, 1);
     }
 }
 
@@ -521,8 +539,12 @@ Demo::Demo()
       registry{nullptr},
       compositor{nullptr},
       window{nullptr},
-      shell{nullptr},
-      shell_surface{nullptr},
+      wm_base{nullptr},
+      xdg_decoration_mgr{nullptr},
+      toplevel_decoration{nullptr},
+      window_surface{nullptr},
+      xdg_surface_has_been_configured{false},
+      window_toplevel{nullptr},
       seat{nullptr},
       pointer{nullptr},
       keyboard{nullptr},
@@ -537,6 +559,7 @@ Demo::Demo()
       width{0},
       height{0},
       swapchainImageCount{0},
+      presentMode{vk::PresentModeKHR::eFifo},
       frame_index{0},
       spin_angle{0.0f},
       spin_increment{0.0f},
@@ -664,9 +687,14 @@ void Demo::cleanup() {
     wl_keyboard_destroy(keyboard);
     wl_pointer_destroy(pointer);
     wl_seat_destroy(seat);
-    wl_shell_surface_destroy(shell_surface);
+    xdg_toplevel_destroy(window_toplevel);
+    xdg_surface_destroy(window_surface);
     wl_surface_destroy(window);
-    wl_shell_destroy(shell);
+    xdg_wm_base_destroy(wm_base);
+    if (xdg_decoration_mgr) {
+        zxdg_toplevel_decoration_v1_destroy(toplevel_decoration);
+        zxdg_decoration_manager_v1_destroy(xdg_decoration_mgr);
+    }
     wl_compositor_destroy(compositor);
     wl_registry_destroy(registry);
     wl_display_disconnect(display);
@@ -727,6 +755,10 @@ void Demo::draw() {
             // swapchain is not as optimal as it could be, but the platform's
             // presentation engine will still present the image correctly.
             break;
+        } else if (result == vk::Result::eErrorSurfaceLostKHR) {
+            inst.destroySurfaceKHR(surface, nullptr);
+            create_surface();
+            resize();
         } else {
             VERIFY(result == vk::Result::eSuccess);
         }
@@ -789,6 +821,10 @@ void Demo::draw() {
     } else if (result == vk::Result::eSuboptimalKHR) {
         // swapchain is not as optimal as it could be, but the platform's
         // presentation engine will still present the image correctly.
+    } else if (result == vk::Result::eErrorSurfaceLostKHR) {
+        inst.destroySurfaceKHR(surface, nullptr);
+        create_surface();
+        resize();
     } else {
         VERIFY(result == vk::Result::eSuccess);
     }
@@ -814,9 +850,23 @@ void Demo::draw_build_cmd(vk::CommandBuffer commandBuffer) {
     commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, pipeline);
     commandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, pipeline_layout, 0, 1,
                                      &swapchain_image_resources[current_buffer].descriptor_set, 0, nullptr);
-
-    auto const viewport =
-        vk::Viewport().setWidth((float)width).setHeight((float)height).setMinDepth((float)0.0f).setMaxDepth((float)1.0f);
+    float viewport_dimension;
+    float viewport_x = 0.0f;
+    float viewport_y = 0.0f;
+    if (width < height) {
+        viewport_dimension = (float)width;
+        viewport_y = (height - width) / 2.0f;
+    } else {
+        viewport_dimension = (float)height;
+        viewport_x = (width - height) / 2.0f;
+    }
+    auto const viewport = vk::Viewport()
+                              .setX(viewport_x)
+                              .setY(viewport_y)
+                              .setWidth((float)viewport_dimension)
+                              .setHeight((float)viewport_dimension)
+                              .setMinDepth((float)0.0f)
+                              .setMaxDepth((float)1.0f);
     commandBuffer.setViewport(0, 1, &viewport);
 
     vk::Rect2D const scissor(vk::Offset2D(0, 0), vk::Extent2D(width, height));
@@ -928,18 +978,22 @@ void Demo::init(int argc, char **argv) {
             continue;
         }
 
-        fprintf(stderr,
-                "Usage:\n  %s [--use_staging] [--validate] [--break] [--c <framecount>] \n"
-                "       [--suppress_popups] [--present_mode {0,1,2,3}]\n"
-                "\n"
-                "Options for --present_mode:\n"
-                "  %d: VK_PRESENT_MODE_IMMEDIATE_KHR\n"
-                "  %d: VK_PRESENT_MODE_MAILBOX_KHR\n"
-                "  %d: VK_PRESENT_MODE_FIFO_KHR (default)\n"
-                "  %d: VK_PRESENT_MODE_FIFO_RELAXED_KHR\n",
-                APP_SHORT_NAME, VK_PRESENT_MODE_IMMEDIATE_KHR, VK_PRESENT_MODE_MAILBOX_KHR, VK_PRESENT_MODE_FIFO_KHR,
-                VK_PRESENT_MODE_FIFO_RELAXED_KHR);
-        fflush(stderr);
+        std::stringstream usage;
+        usage << "Usage:\n  " << APP_SHORT_NAME << "\t[--use_staging] [--validate]\n"
+              << "\t[--break] [--c <framecount>] [--suppress_popups]\n"
+              << "\t[--present_mode <present mode enum>]\n"
+              << "\t<present_mode_enum>\n"
+              << "\t\tVK_PRESENT_MODE_IMMEDIATE_KHR = " << VK_PRESENT_MODE_IMMEDIATE_KHR << "\n"
+              << "\t\tVK_PRESENT_MODE_MAILBOX_KHR = " << VK_PRESENT_MODE_MAILBOX_KHR << "\n"
+              << "\t\tVK_PRESENT_MODE_FIFO_KHR = " << VK_PRESENT_MODE_FIFO_KHR << "\n"
+              << "\t\tVK_PRESENT_MODE_FIFO_RELAXED_KHR = " << VK_PRESENT_MODE_FIFO_RELAXED_KHR;
+
+#if defined(_WIN32)
+        if (!suppress_popups) MessageBox(NULL, usage.str().c_str(), "Usage Error", MB_OK);
+#else
+        std::cerr << usage.str();
+        std::cerr.flush();
+#endif
         exit(1);
     }
 
@@ -1008,16 +1062,9 @@ void Demo::init_connection() {
 void Demo::init_vk() {
     uint32_t instance_extension_count = 0;
     uint32_t instance_layer_count = 0;
-    uint32_t validation_layer_count = 0;
-    char const *const *instance_validation_layers = nullptr;
+    char const *const instance_validation_layers[] = {"VK_LAYER_KHRONOS_validation"};
     enabled_extension_count = 0;
     enabled_layer_count = 0;
-
-    char const *const instance_validation_layers_alt1[] = {"VK_LAYER_LUNARG_standard_validation"};
-
-    char const *const instance_validation_layers_alt2[] = {"VK_LAYER_GOOGLE_threading", "VK_LAYER_LUNARG_parameter_validation",
-                                                           "VK_LAYER_LUNARG_object_tracker", "VK_LAYER_LUNARG_core_validation",
-                                                           "VK_LAYER_GOOGLE_unique_objects"};
 
     // Look for validation layers
     vk::Bool32 validation_found = VK_FALSE;
@@ -1025,28 +1072,16 @@ void Demo::init_vk() {
         auto result = vk::enumerateInstanceLayerProperties(&instance_layer_count, static_cast<vk::LayerProperties *>(nullptr));
         VERIFY(result == vk::Result::eSuccess);
 
-        instance_validation_layers = instance_validation_layers_alt1;
         if (instance_layer_count > 0) {
             std::unique_ptr<vk::LayerProperties[]> instance_layers(new vk::LayerProperties[instance_layer_count]);
             result = vk::enumerateInstanceLayerProperties(&instance_layer_count, instance_layers.get());
             VERIFY(result == vk::Result::eSuccess);
 
-            validation_found = check_layers(ARRAY_SIZE(instance_validation_layers_alt1), instance_validation_layers,
+            validation_found = check_layers(ARRAY_SIZE(instance_validation_layers), instance_validation_layers,
                                             instance_layer_count, instance_layers.get());
             if (validation_found) {
-                enabled_layer_count = ARRAY_SIZE(instance_validation_layers_alt1);
-                enabled_layers[0] = "VK_LAYER_LUNARG_standard_validation";
-                validation_layer_count = 1;
-            } else {
-                // use alternative set of validation layers
-                instance_validation_layers = instance_validation_layers_alt2;
-                enabled_layer_count = ARRAY_SIZE(instance_validation_layers_alt2);
-                validation_found = check_layers(ARRAY_SIZE(instance_validation_layers_alt2), instance_validation_layers,
-                                                instance_layer_count, instance_layers.get());
-                validation_layer_count = ARRAY_SIZE(instance_validation_layers_alt2);
-                for (uint32_t i = 0; i < validation_layer_count; i++) {
-                    enabled_layers[i] = instance_validation_layers[i];
-                }
+                enabled_layer_count = ARRAY_SIZE(instance_validation_layers);
+                enabled_layers[0] = "VK_LAYER_KHRONOS_validation";
             }
         }
 
@@ -1102,15 +1137,10 @@ void Demo::init_vk() {
                 platformSurfaceExtFound = 1;
                 extension_names[enabled_extension_count++] = VK_KHR_DISPLAY_EXTENSION_NAME;
             }
-#elif defined(VK_USE_PLATFORM_IOS_MVK)
-            if (!strcmp(VK_MVK_IOS_SURFACE_EXTENSION_NAME, instance_extensions[i].extensionName)) {
+#elif defined(VK_USE_PLATFORM_METAL_EXT)
+            if (!strcmp(VK_EXT_METAL_SURFACE_EXTENSION_NAME, instance_extensions[i].extensionName)) {
                 platformSurfaceExtFound = 1;
-                extension_names[enabled_extension_count++] = VK_MVK_IOS_SURFACE_EXTENSION_NAME;
-            }
-#elif defined(VK_USE_PLATFORM_MACOS_MVK)
-            if (!strcmp(VK_MVK_MACOS_SURFACE_EXTENSION_NAME, instance_extensions[i].extensionName)) {
-                platformSurfaceExtFound = 1;
-                extension_names[enabled_extension_count++] = VK_MVK_MACOS_SURFACE_EXTENSION_NAME;
+                extension_names[enabled_extension_count++] = VK_EXT_METAL_SURFACE_EXTENSION_NAME;
             }
 
 #endif
@@ -1157,15 +1187,8 @@ void Demo::init_vk() {
                  "Do you have a compatible Vulkan installable client driver (ICD) installed?\n"
                  "Please look at the Getting Started guide for additional information.\n",
                  "vkCreateInstance Failure");
-#elif defined(VK_USE_PLATFORM_IOS_MVK)
-        ERR_EXIT("vkEnumerateInstanceExtensionProperties failed to find the " VK_MVK_IOS_SURFACE_EXTENSION_NAME
-                 " extension.\n\nDo you have a compatible "
-                 "Vulkan installable client driver (ICD) installed?\nPlease "
-                 "look at the Getting Started guide for additional "
-                 "information.\n",
-                 "vkCreateInstance Failure");
-#elif defined(VK_USE_PLATFORM_MACOS_MVK)
-        ERR_EXIT("vkEnumerateInstanceExtensionProperties failed to find the " VK_MVK_MACOS_SURFACE_EXTENSION_NAME
+#elif defined(VK_USE_PLATFORM_METAL_EXT)
+        ERR_EXIT("vkEnumerateInstanceExtensionProperties failed to find the " VK_EXT_METAL_SURFACE_EXTENSION_NAME
                  " extension.\n\nDo you have a compatible "
                  "Vulkan installable client driver (ICD) installed?\nPlease "
                  "look at the Getting Started guide for additional "
@@ -1272,7 +1295,7 @@ void Demo::init_vk() {
     gpu.getFeatures(&physDevFeatures);
 }
 
-void Demo::init_vk_swapchain() {
+void Demo::create_surface() {
 // Create a WSI surface for the window:
 #if defined(VK_USE_PLATFORM_WIN32_KHR)
     {
@@ -1302,18 +1325,11 @@ void Demo::init_vk_swapchain() {
         auto result = inst.createXcbSurfaceKHR(&createInfo, nullptr, &surface);
         VERIFY(result == vk::Result::eSuccess);
     }
-#elif defined(VK_USE_PLATFORM_IOS_MVK)
+#elif defined(VK_USE_PLATFORM_METAL_EXT)
     {
-        auto const createInfo = vk::IOSSurfaceCreateInfoMVK().setPView(nullptr);
+        auto const createInfo = vk::MetalSurfaceCreateInfoEXT().setPLayer(static_cast<CAMetalLayer *>(caMetalLayer));
 
-        auto result = inst.createIOSSurfaceMVK(&createInfo, nullptr, &surface);
-        VERIFY(result == vk::Result::eSuccess);
-    }
-#elif defined(VK_USE_PLATFORM_MACOS_MVK)
-    {
-        auto const createInfo = vk::MacOSSurfaceCreateInfoMVK().setPView(window);
-
-        auto result = inst.createMacOSSurfaceMVK(&createInfo, nullptr, &surface);
+        auto result = inst.createMetalSurfaceEXT(&createInfo, nullptr, &surface);
         VERIFY(result == vk::Result::eSuccess);
     }
 #elif defined(VK_USE_PLATFORM_DISPLAY_KHR)
@@ -1322,6 +1338,10 @@ void Demo::init_vk_swapchain() {
         VERIFY(result == vk::Result::eSuccess);
     }
 #endif
+}
+
+void Demo::init_vk_swapchain() {
+    create_surface();
     // Iterate over each queue to learn whether it supports presenting:
     std::unique_ptr<vk::Bool32[]> supportsPresent(new vk::Bool32[queue_family_count]);
     for (uint32_t i = 0; i < queue_family_count; i++) {
@@ -1986,13 +2006,33 @@ void Demo::prepare_render_pass() {
                              .setPreserveAttachmentCount(0)
                              .setPPreserveAttachments(nullptr);
 
+    vk::PipelineStageFlags stages = vk::PipelineStageFlagBits::eEarlyFragmentTests | vk::PipelineStageFlagBits::eLateFragmentTests;
+    vk::SubpassDependency const dependencies[2] = {
+        vk::SubpassDependency()  // Depth buffer is shared between swapchain images
+            .setSrcSubpass(VK_SUBPASS_EXTERNAL)
+            .setDstSubpass(0)
+            .setSrcStageMask(stages)
+            .setDstStageMask(stages)
+            .setSrcAccessMask(vk::AccessFlagBits::eDepthStencilAttachmentWrite)
+            .setDstAccessMask(vk::AccessFlagBits::eDepthStencilAttachmentRead | vk::AccessFlagBits::eDepthStencilAttachmentWrite)
+            .setDependencyFlags(vk::DependencyFlags()),
+        vk::SubpassDependency()  // Image layout transition
+            .setSrcSubpass(VK_SUBPASS_EXTERNAL)
+            .setDstSubpass(0)
+            .setSrcStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput)
+            .setDstStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput)
+            .setSrcAccessMask(vk::AccessFlagBits())
+            .setDstAccessMask(vk::AccessFlagBits::eColorAttachmentWrite | vk::AccessFlagBits::eColorAttachmentRead)
+            .setDependencyFlags(vk::DependencyFlags()),
+    };
+
     auto const rp_info = vk::RenderPassCreateInfo()
                              .setAttachmentCount(2)
                              .setPAttachments(attachments)
                              .setSubpassCount(1)
                              .setPSubpasses(&subpass)
-                             .setDependencyCount(0)
-                             .setPDependencies(nullptr);
+                             .setDependencyCount(2)
+                             .setPDependencies(dependencies);
 
     auto result = device.createRenderPass(&rp_info, nullptr, &render_pass);
     VERIFY(result == vk::Result::eSuccess);
@@ -2668,7 +2708,39 @@ void Demo::run() {
     }
 }
 
+static void handle_surface_configure(void *data, xdg_surface *xdg_surface, uint32_t serial) {
+    Demo *demo = (Demo *)data;
+    xdg_surface_ack_configure(xdg_surface, serial);
+    if (demo->xdg_surface_has_been_configured) {
+        demo->resize();
+    }
+    demo->xdg_surface_has_been_configured = true;
+}
+
+static const xdg_surface_listener surface_listener = {handle_surface_configure};
+
+static void handle_toplevel_configure(void *data, xdg_toplevel *xdg_toplevel, int32_t width, int32_t height,
+                                      struct wl_array *states) {
+    Demo *demo = (Demo *)data;
+    demo->width = width;
+    demo->height = height;
+    // This will be followed by a surface configure
+}
+
+static void handle_toplevel_close(void *data, xdg_toplevel *xdg_toplevel) {
+    Demo *demo = (Demo *)data;
+    demo->quit = true;
+}
+
+static const xdg_toplevel_listener toplevel_listener = {handle_toplevel_configure, handle_toplevel_close};
+
 void Demo::create_window() {
+    if (!wm_base) {
+        printf("Compositor did not provide the standard protocol xdg-wm-base\n");
+        fflush(stdout);
+        exit(1);
+    }
+
     window = wl_compositor_create_surface(compositor);
     if (!window) {
         printf("Can not create wayland_surface from compositor!\n");
@@ -2676,18 +2748,30 @@ void Demo::create_window() {
         exit(1);
     }
 
-    shell_surface = wl_shell_get_shell_surface(shell, window);
-    if (!shell_surface) {
-        printf("Can not get shell_surface from wayland_surface!\n");
+    window_surface = xdg_wm_base_get_xdg_surface(wm_base, window);
+    if (!window_surface) {
+        printf("Can not get xdg_surface from wayland_surface!\n");
         fflush(stdout);
         exit(1);
     }
+    window_toplevel = xdg_surface_get_toplevel(window_surface);
+    if (!window_toplevel) {
+        printf("Can not allocate xdg_toplevel for xdg_surface!\n");
+        fflush(stdout);
+        exit(1);
+    }
+    xdg_surface_add_listener(window_surface, &surface_listener, this);
+    xdg_toplevel_add_listener(window_toplevel, &toplevel_listener, this);
+    xdg_toplevel_set_title(window_toplevel, APP_SHORT_NAME);
+    if (xdg_decoration_mgr) {
+        // if supported, let the compositor render titlebars for us
+        toplevel_decoration = zxdg_decoration_manager_v1_get_toplevel_decoration(xdg_decoration_mgr, window_toplevel);
+        zxdg_toplevel_decoration_v1_set_mode(toplevel_decoration, ZXDG_TOPLEVEL_DECORATION_V1_MODE_SERVER_SIDE);
+    }
 
-    wl_shell_surface_add_listener(shell_surface, &shell_surface_listener, this);
-    wl_shell_surface_set_toplevel(shell_surface);
-    wl_shell_surface_set_title(shell_surface, APP_SHORT_NAME);
+    wl_surface_commit(window);
 }
-#elif defined(VK_USE_PLATFORM_MACOS_MVK)
+#elif defined(VK_USE_PLATFORM_METAL_EXT)
 void Demo::run() {
     draw();
     curFrame++;
@@ -3021,13 +3105,12 @@ int main(int argc, char **argv) {
     return validation_error;
 }
 
-#elif defined(VK_USE_PLATFORM_IOS_MVK) || defined(VK_USE_PLATFORM_MACOS_MVK)
+#elif defined(VK_USE_PLATFORM_METAL_EXT)
 
 // Global function invoked from NS or UI views and controllers to create demo
-static void demo_main(struct Demo &demo, void *view, int argc, const char *argv[]) {
-
+static void demo_main(struct Demo &demo, void *caMetalLayer, int argc, const char *argv[]) {
     demo.init(argc, (char **)argv);
-    demo.window = view;
+    demo.caMetalLayer = caMetalLayer;
     demo.init_vk_swapchain();
     demo.prepare();
     demo.spin_angle = 0.4f;

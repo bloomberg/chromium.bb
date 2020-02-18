@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/ax_action_data.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/menu_model.h"
@@ -40,6 +41,7 @@
 #include "ui/views/controls/menu/menu_separator.h"
 #include "ui/views/controls/menu/submenu_view.h"
 #include "ui/views/controls/separator.h"
+#include "ui/views/style/typography.h"
 #include "ui/views/vector_icons.h"
 #include "ui/views/view_class_properties.h"
 #include "ui/views/widget/widget.h"
@@ -178,10 +180,10 @@ void MenuItemView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
     // The first child is taking over, just use its accessible name instead of
     // |title_|.
     View* child = children().front();
-    ui::AXNodeData node_data;
-    child->GetAccessibleNodeData(&node_data);
+    ui::AXNodeData child_node_data;
+    child->GetAccessibleNodeData(&child_node_data);
     item_text =
-        node_data.GetString16Attribute(ax::mojom::StringAttribute::kName);
+        child_node_data.GetString16Attribute(ax::mojom::StringAttribute::kName);
   } else {
     item_text = title_;
   }
@@ -198,6 +200,7 @@ void MenuItemView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
       node_data->SetCheckedState(is_checked ? ax::mojom::CheckedState::kTrue
                                             : ax::mojom::CheckedState::kFalse);
     } break;
+    case TITLE:
     case NORMAL:
     case SEPARATOR:
     case EMPTY:
@@ -335,37 +338,18 @@ void MenuItemView::RemoveAllMenuItems() {
 
 MenuItemView* MenuItemView::AppendMenuItem(int item_id,
                                            const base::string16& label,
-                                           Type type) {
-  return AppendMenuItemImpl(item_id, label, base::string16(), nullptr,
-                            gfx::ImageSkia(), type, ui::NORMAL_SEPARATOR);
+                                           const gfx::ImageSkia& icon) {
+  return AppendMenuItemImpl(item_id, label, icon, NORMAL);
 }
 
 MenuItemView* MenuItemView::AppendSubMenu(int item_id,
-                                          const base::string16& label) {
-  return AppendMenuItemImpl(item_id, label, base::string16(), nullptr,
-                            gfx::ImageSkia(), SUBMENU, ui::NORMAL_SEPARATOR);
-}
-
-MenuItemView* MenuItemView::AppendSubMenuWithIcon(int item_id,
-                                                  const base::string16& label,
-                                                  const gfx::ImageSkia& icon) {
-  return AppendMenuItemImpl(item_id, label, base::string16(), nullptr, icon,
-                            SUBMENU, ui::NORMAL_SEPARATOR);
-}
-
-MenuItemView* MenuItemView::AppendMenuItemWithLabel(
-    int item_id,
-    const base::string16& label) {
-  return AppendMenuItem(item_id, label, NORMAL);
-}
-
-MenuItemView* MenuItemView::AppendDelegateMenuItem(int item_id) {
-  return AppendMenuItem(item_id, base::string16(), NORMAL);
+                                          const base::string16& label,
+                                          const gfx::ImageSkia& icon) {
+  return AppendMenuItemImpl(item_id, label, icon, SUBMENU);
 }
 
 void MenuItemView::AppendSeparator() {
-  AppendMenuItemImpl(0, base::string16(), base::string16(), nullptr,
-                     gfx::ImageSkia(), SEPARATOR, ui::NORMAL_SEPARATOR);
+  AppendMenuItemImpl(0, base::string16(), gfx::ImageSkia(), SEPARATOR);
 }
 
 void MenuItemView::AddSeparatorAt(int index) {
@@ -376,24 +360,13 @@ void MenuItemView::AddSeparatorAt(int index) {
                 /*separator_style=*/ui::NORMAL_SEPARATOR);
 }
 
-MenuItemView* MenuItemView::AppendMenuItemWithIcon(int item_id,
-                                                   const base::string16& label,
-                                                   const gfx::ImageSkia& icon) {
-  return AppendMenuItemImpl(item_id, label, base::string16(), nullptr, icon,
-                            NORMAL, ui::NORMAL_SEPARATOR);
-}
-
-MenuItemView* MenuItemView::AppendMenuItemImpl(
-    int item_id,
-    const base::string16& label,
-    const base::string16& minor_text,
-    const gfx::VectorIcon* minor_icon,
-    const gfx::ImageSkia& icon,
-    Type type,
-    ui::MenuSeparatorType separator_style) {
+MenuItemView* MenuItemView::AppendMenuItemImpl(int item_id,
+                                               const base::string16& label,
+                                               const gfx::ImageSkia& icon,
+                                               Type type) {
   const int index = submenu_ ? int{submenu_->children().size()} : 0;
-  return AddMenuItemAt(index, item_id, label, minor_text, minor_icon, icon,
-                       nullptr, type, separator_style);
+  return AddMenuItemAt(index, item_id, label, base::string16(), nullptr, icon,
+                       nullptr, type, ui::NORMAL_SEPARATOR);
 }
 
 SubmenuView* MenuItemView::CreateSubmenu() {
@@ -513,7 +486,7 @@ void MenuItemView::SetIconView(ImageView* icon_view) {
 }
 
 void MenuItemView::OnPaint(gfx::Canvas* canvas) {
-  PaintButton(canvas, PB_NORMAL);
+  PaintButton(canvas, PaintButtonMode::kNormal);
 }
 
 gfx::Size MenuItemView::CalculatePreferredSize() const {
@@ -665,7 +638,7 @@ void MenuItemView::Layout() {
   } else {
     // Child views are laid out right aligned and given the full height. To
     // right align start with the last view and progress to the first.
-    int x = width() - (use_right_margin_ ? item_right_margin_ : 0);
+    int child_x = width() - (use_right_margin_ ? item_right_margin_ : 0);
     for (View* child : base::Reversed(children())) {
       if (icon_view_ == child)
         continue;
@@ -676,8 +649,8 @@ void MenuItemView::Layout() {
       if (vertical_separator_ == child)
         continue;
       int width = child->GetPreferredSize().width();
-      child->SetBounds(x - width, 0, width, height());
-      x -= width + kChildXPadding;
+      child->SetBounds(child_x - width, 0, width, height());
+      child_x -= width + kChildXPadding;
     }
     // Position |icon_view|.
     const MenuConfig& config = MenuConfig::instance();
@@ -859,7 +832,7 @@ void MenuItemView::Init(MenuItemView* parent,
     vertical_separator_->SetFocusBehavior(FocusBehavior::NEVER);
     const MenuConfig& config = MenuConfig::instance();
     vertical_separator_->SetColor(GetNativeTheme()->GetSystemColor(
-        ui::NativeTheme::kColorId_ActionableSubmenuVerticalSeparatorColor));
+        ui::NativeTheme::kColorId_MenuSeparatorColor));
     vertical_separator_->SetPreferredSize(
         gfx::Size(config.actionable_submenu_vertical_separator_width,
                   config.actionable_submenu_vertical_separator_height));
@@ -969,7 +942,7 @@ void MenuItemView::AdjustBoundsForRTLUI(gfx::Rect* rect) const {
 void MenuItemView::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
   const MenuConfig& config = MenuConfig::instance();
   bool render_selection =
-      (mode == PB_NORMAL && IsSelected() &&
+      (mode == PaintButtonMode::kNormal && IsSelected() &&
        parent_menu_item_->GetSubmenu()->GetShowSelection(this) &&
        (NonIconChildViewsCount() == 0));
   if (forced_visual_selection_.has_value())
@@ -1000,8 +973,8 @@ void MenuItemView::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
     const gfx::VectorIcon& radio_icon =
         toggled ? kMenuRadioSelectedIcon : kMenuRadioEmptyIcon;
     const SkColor radio_icon_color = GetNativeTheme()->GetSystemColor(
-        toggled ? ui::NativeTheme::kColorId_ProminentButtonColor
-                : ui::NativeTheme::kColorId_ButtonEnabledColor);
+        toggled ? ui::NativeTheme::kColorId_ButtonEnabledColor
+                : ui::NativeTheme::kColorId_ButtonUncheckedColor);
     radio_check_image_view_->SetImage(
         gfx::CreateVectorIcon(radio_icon, kMenuCheckSize, radio_icon_color));
   }
@@ -1017,7 +990,7 @@ void MenuItemView::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
   gfx::Rect text_bounds(label_start, top_margin, width, available_height);
   text_bounds.set_x(GetMirroredXForRect(text_bounds));
   int flags = GetDrawStringFlags();
-  if (mode == PB_FOR_DRAG)
+  if (mode == PaintButtonMode::kForDrag)
     flags |= gfx::Canvas::NO_SUBPIXEL_RENDERING;
   canvas->DrawStringRectWithFlags(title(), style.font_list, style.foreground,
                                   text_bounds, flags);
@@ -1041,14 +1014,10 @@ void MenuItemView::PaintBackground(gfx::Canvas* canvas,
               : ui::NativeTheme::kColorId_HighlightedMenuItemBackgroundColor;
       color = GetNativeTheme()->GetSystemColor(color_id);
     } else {
-      const SkColor color_max = GetNativeTheme()->GetSystemColor(
-          ui::NativeTheme::kColorId_MenuItemAlertBackgroundColorMax);
-      const SkColor color_min = GetNativeTheme()->GetSystemColor(
-          ui::NativeTheme::kColorId_MenuItemAlertBackgroundColorMin);
-      color = color_utils::AlphaBlend(
-          color_max, color_min,
-          static_cast<float>(
-              GetMenuController()->GetAlertAnimation()->GetCurrentValue()));
+      color = GetNativeTheme()->GetSystemColor(
+          ui::NativeTheme::kColorId_MenuItemAlertBackgroundColor);
+      const auto* animation = GetMenuController()->GetAlertAnimation();
+      color = SkColorSetA(color, animation->CurrentValueBetween(0x4D, 0x1A));
     }
 
     DCHECK_NE(color, gfx::kPlaceholderColor);
@@ -1104,7 +1073,8 @@ void MenuItemView::PaintMinorIconAndText(
       max_minor_text_width, available_height);
   minor_text_bounds.set_x(GetMirroredXForRect(minor_text_bounds));
 
-  auto render_text = gfx::RenderText::CreateHarfBuzzInstance();
+  std::unique_ptr<gfx::RenderText> render_text =
+      gfx::RenderText::CreateRenderText();
   if (!minor_text.empty()) {
     render_text->SetText(minor_text);
     render_text->SetFontList(style.font_list);
@@ -1131,23 +1101,24 @@ void MenuItemView::PaintMinorIconAndText(
 }
 
 SkColor MenuItemView::GetTextColor(bool minor, bool render_selection) const {
-  ui::NativeTheme::ColorId color_id =
-      minor ? ui::NativeTheme::kColorId_MenuItemMinorTextColor
-            : ui::NativeTheme::kColorId_EnabledMenuItemForegroundColor;
-  if (GetEnabled()) {
-    if (render_selection)
-      color_id = ui::NativeTheme::kColorId_SelectedMenuItemForegroundColor;
-  } else {
-    color_id = ui::NativeTheme::kColorId_DisabledMenuItemForegroundColor;
-  }
+  style::TextContext context =
+      GetMenuController() && GetMenuController()->use_touchable_layout()
+          ? style::CONTEXT_TOUCH_MENU
+          : style::CONTEXT_MENU;
 
-  if (GetMenuController() && GetMenuController()->use_touchable_layout())
-    color_id = ui::NativeTheme::kColorId_TouchableMenuItemLabelColor;
+  style::TextStyle text_style = style::STYLE_PRIMARY;
+  if (type_ == Type::TITLE)
+    text_style = style::STYLE_PRIMARY;
+  else if (type_ == HIGHLIGHTED)
+    text_style = style::STYLE_HIGHLIGHTED;
+  else if (!GetEnabled())
+    text_style = style::STYLE_DISABLED;
+  else if (render_selection)
+    text_style = style::STYLE_SELECTED;
+  else if (minor)
+    text_style = style::STYLE_SECONDARY;
 
-  if (type_ == HIGHLIGHTED)
-    color_id = ui::NativeTheme::kColorId_HighlightedMenuItemForegroundColor;
-
-  return GetNativeTheme()->GetSystemColor(color_id);
+  return style::GetColor(*this, context, text_style);
 }
 
 void MenuItemView::DestroyAllMenuHosts() {

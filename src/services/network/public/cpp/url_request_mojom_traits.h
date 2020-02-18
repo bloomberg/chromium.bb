@@ -9,13 +9,16 @@
 #include <utility>
 
 #include "base/component_export.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/memory/scoped_refptr.h"
 #include "mojo/public/cpp/base/file_mojom_traits.h"
 #include "mojo/public/cpp/base/file_path_mojom_traits.h"
 #include "mojo/public/cpp/base/time_mojom_traits.h"
 #include "mojo/public/cpp/bindings/enum_traits.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/struct_traits.h"
 #include "net/base/request_priority.h"
+#include "net/url_request/url_request_job.h"
 #include "services/network/public/cpp/data_element.h"
 #include "services/network/public/cpp/network_isolation_key_mojom_traits.h"
 #include "services/network/public/cpp/resource_request.h"
@@ -57,6 +60,14 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
       const network::ResourceRequest::TrustedParams& trusted_params) {
     return trusted_params.update_network_isolation_key_on_redirect;
   }
+  static bool disable_secure_dns(
+      const network::ResourceRequest::TrustedParams& trusted_params) {
+    return trusted_params.disable_secure_dns;
+  }
+  static bool has_user_activation(
+      const network::ResourceRequest::TrustedParams& trusted_params) {
+    return trusted_params.has_user_activation;
+  }
 
   static bool Read(network::mojom::TrustedUrlRequestParamsDataView data,
                    network::ResourceRequest::TrustedParams* out);
@@ -74,10 +85,6 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
   static const GURL& site_for_cookies(const network::ResourceRequest& request) {
     return request.site_for_cookies;
   }
-  static const base::Optional<url::Origin>& top_frame_origin(
-      const network::ResourceRequest& request) {
-    return request.top_frame_origin;
-  }
   static bool attach_same_site_cookies(
       const network::ResourceRequest& request) {
     return request.attach_same_site_cookies;
@@ -90,9 +97,11 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
       const network::ResourceRequest& request) {
     return request.request_initiator;
   }
-  static const GURL& referrer(const network::ResourceRequest& request) {
-    return request.referrer;
+  static const base::Optional<url::Origin>& isolated_world_origin(
+      const network::ResourceRequest& request) {
+    return request.isolated_world_origin;
   }
+  static const GURL& referrer(const network::ResourceRequest& request);
   static net::URLRequest::ReferrerPolicy referrer_policy(
       const network::ResourceRequest& request) {
     return request.referrer_policy;
@@ -198,10 +207,6 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
   static bool is_revalidating(const network::ResourceRequest& request) {
     return request.is_revalidating;
   }
-  static bool should_also_use_factory_bound_origin_for_cors(
-      const network::ResourceRequest& request) {
-    return request.should_also_use_factory_bound_origin_for_cors;
-  }
   static const base::Optional<base::UnguessableToken>& throttling_profile_id(
       const network::ResourceRequest& request) {
     return request.throttling_profile_id;
@@ -236,6 +241,10 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
   static const base::Optional<network::ResourceRequest::TrustedParams>&
   trusted_params(const network::ResourceRequest& request) {
     return request.trusted_params;
+  }
+  static const base::Optional<base::UnguessableToken>& recursive_prefetch_token(
+      const network::ResourceRequest& request) {
+    return request.recursive_prefetch_token;
   }
 
   static bool Read(network::mojom::URLRequestDataView data,
@@ -296,16 +305,16 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
   static const std::string& blob_uuid(const network::DataElement& element) {
     return element.blob_uuid_;
   }
-  static network::mojom::DataPipeGetterPtrInfo data_pipe_getter(
+  static mojo::PendingRemote<network::mojom::DataPipeGetter> data_pipe_getter(
       const network::DataElement& element) {
     if (element.type_ != network::mojom::DataElementType::kDataPipe)
-      return nullptr;
-    return element.CloneDataPipeGetter().PassInterface();
+      return mojo::NullRemote();
+    return element.CloneDataPipeGetter();
   }
-  static network::mojom::ChunkedDataPipeGetterPtrInfo chunked_data_pipe_getter(
-      const network::DataElement& element) {
+  static mojo::PendingRemote<network::mojom::ChunkedDataPipeGetter>
+  chunked_data_pipe_getter(const network::DataElement& element) {
     if (element.type_ != network::mojom::DataElementType::kChunkedDataPipe)
-      return nullptr;
+      return mojo::NullRemote();
     return const_cast<network::DataElement&>(element)
         .ReleaseChunkedDataPipeGetter();
   }

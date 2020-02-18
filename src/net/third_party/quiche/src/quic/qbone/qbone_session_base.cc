@@ -4,10 +4,15 @@
 
 #include "net/third_party/quiche/src/quic/qbone/qbone_session_base.h"
 
+#include <netinet/icmp6.h>
+#include <netinet/ip6.h>
+
+#include <utility>
+
 #include "net/third_party/quiche/src/quic/core/quic_data_reader.h"
 #include "net/third_party/quiche/src/quic/core/quic_types.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_exported_stats.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_ptr_util.h"
+#include "net/third_party/quiche/src/quic/qbone/platform/icmp_packet.h"
 #include "net/third_party/quiche/src/quic/qbone/qbone_constants.h"
 
 namespace quic {
@@ -81,6 +86,11 @@ void QboneSessionBase::OnStreamFrame(const QuicStreamFrame& frame) {
   QuicSession::OnStreamFrame(frame);
 }
 
+void QboneSessionBase::OnMessageReceived(QuicStringPiece message) {
+  ++num_message_packets_;
+  ProcessPacketFromPeer(message);
+}
+
 QuicStream* QboneSessionBase::CreateIncomingStream(QuicStreamId id) {
   return ActivateDataStream(CreateDataStream(id));
 }
@@ -104,10 +114,10 @@ std::unique_ptr<QuicStream> QboneSessionBase::CreateDataStream(
 
   if (IsIncomingStream(id)) {
     ++num_streamed_packets_;
-    return QuicMakeUnique<QboneReadOnlyStream>(id, this);
+    return std::make_unique<QboneReadOnlyStream>(id, this);
   }
 
-  return QuicMakeUnique<QboneWriteOnlyStream>(id, this);
+  return std::make_unique<QboneWriteOnlyStream>(id, this);
 }
 
 QuicStream* QboneSessionBase::ActivateDataStream(
@@ -122,6 +132,52 @@ QuicStream* QboneSessionBase::ActivateDataStream(
 }
 
 void QboneSessionBase::SendPacketToPeer(QuicStringPiece packet) {
+  if (crypto_stream_ == nullptr) {
+    QUIC_BUG << "Attempting to send packet before encryption established";
+    return;
+  }
+
+  if (send_packets_as_messages_) {
+    QuicMemSlice slice(connection()->helper()->GetStreamSendBufferAllocator(),
+                       packet.size());
+    memcpy(const_cast<char*>(slice.data()), packet.data(), packet.size());
+    switch (SendMessage(QuicMemSliceSpan(&slice), /*flush=*/true).status) {
+      case MESSAGE_STATUS_SUCCESS:
+        break;
+      case MESSAGE_STATUS_TOO_LARGE: {
+        if (packet.size() < sizeof(ip6_hdr)) {
+          QUIC_BUG << "Dropped malformed packet: IPv6 header too short";
+          break;
+        }
+        auto* header = reinterpret_cast<const ip6_hdr*>(packet.begin());
+        icmp6_hdr icmp_header{};
+        icmp_header.icmp6_type = ICMP6_PACKET_TOO_BIG;
+        icmp_header.icmp6_mtu =
+            connection()->GetGuaranteedLargestMessagePayload();
+
+        CreateIcmpPacket(header->ip6_dst, header->ip6_src, icmp_header, packet,
+                         [this](QuicStringPiece icmp_packet) {
+                           writer_->WritePacketToNetwork(icmp_packet.data(),
+                                                         icmp_packet.size());
+                         });
+        break;
+      }
+      case MESSAGE_STATUS_ENCRYPTION_NOT_ESTABLISHED:
+        QUIC_BUG << "MESSAGE_STATUS_ENCRYPTION_NOT_ESTABLISHED";
+        break;
+      case MESSAGE_STATUS_UNSUPPORTED:
+        QUIC_BUG << "MESSAGE_STATUS_UNSUPPORTED";
+        break;
+      case MESSAGE_STATUS_BLOCKED:
+        QUIC_BUG << "MESSAGE_STATUS_BLOCKED";
+        break;
+      case MESSAGE_STATUS_INTERNAL_ERROR:
+        QUIC_BUG << "MESSAGE_STATUS_INTERNAL_ERROR";
+        break;
+    }
+    return;
+  }
+
   // Qbone streams are ephemeral.
   QuicStream* stream = CreateOutgoingStream();
   if (!stream) {
@@ -140,6 +196,14 @@ uint64_t QboneSessionBase::GetNumEphemeralPackets() const {
 
 uint64_t QboneSessionBase::GetNumStreamedPackets() const {
   return num_streamed_packets_;
+}
+
+uint64_t QboneSessionBase::GetNumMessagePackets() const {
+  return num_message_packets_;
+}
+
+uint64_t QboneSessionBase::GetNumFallbackToStream() const {
+  return num_fallback_to_stream_;
 }
 
 void QboneSessionBase::set_writer(QbonePacketWriter* writer) {

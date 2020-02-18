@@ -18,8 +18,8 @@
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "services/network/public/cpp/resource_request.h"
-#include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "services/network/test/test_network_connection_tracker.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "services/network/test/test_utils.h"
@@ -38,7 +38,7 @@ class TestDelegate : public AvailabilityProber::Delegate {
   bool ShouldSendNextProbe() override { return should_send_next_probe_; }
 
   bool IsResponseSuccess(net::Error net_error,
-                         const network::ResourceResponseHead* head,
+                         const network::mojom::URLResponseHead* head,
                          std::unique_ptr<std::string> body) override {
     return net_error == net::OK && head &&
            head->headers->response_code() == net::HTTP_OK;
@@ -150,11 +150,10 @@ class AvailabilityProberTest : public testing::Test {
     ASSERT_EQ(request->request.url.host(), kTestUrl.host());
     ASSERT_EQ(request->request.url.scheme(), kTestUrl.scheme());
 
-    network::ResourceResponseHead head =
-        network::CreateResourceResponseHead(http_status);
+    auto head = network::CreateURLResponseHead(http_status);
     network::URLLoaderCompletionStatus status(net_error);
-    test_url_loader_factory_.AddResponse(request->request.url, head, "content",
-                                         status);
+    test_url_loader_factory_.AddResponse(request->request.url, std::move(head),
+                                         "content", status);
     RunUntilIdle();
     // Clear responses in the network service so we can inspect the next request
     // that comes in before it is responded to.
@@ -511,9 +510,9 @@ TEST_F(AvailabilityProberTest, TimeUntilSuccess) {
   EXPECT_FALSE(prober->is_active());
 
   histogram_tester.ExpectTotalCount(
-      "Availability.Prober.TimeUntilFailure.Litepages", 0);
+      "Availability.Prober.TimeUntilFailure2.Litepages", 0);
   histogram_tester.ExpectUniqueSample(
-      "Availability.Prober.TimeUntilSuccess.Litepages", 11000, 1);
+      "Availability.Prober.TimeUntilSuccess2.Litepages", 11000, 1);
 }
 
 TEST_F(AvailabilityProberTest, TimeUntilFailure) {
@@ -536,9 +535,9 @@ TEST_F(AvailabilityProberTest, TimeUntilFailure) {
   EXPECT_FALSE(prober->is_active());
 
   histogram_tester.ExpectTotalCount(
-      "Availability.Prober.TimeUntilSuccess.Litepages", 0);
+      "Availability.Prober.TimeUntilSuccess2.Litepages", 0);
   histogram_tester.ExpectUniqueSample(
-      "Availability.Prober.TimeUntilFailure.Litepages", 11000, 1);
+      "Availability.Prober.TimeUntilFailure2.Litepages", 11000, 1);
 }
 
 TEST_F(AvailabilityProberTest, RandomGUID) {
@@ -908,4 +907,55 @@ TEST_F(AvailabilityProberTest, Repeating) {
   MakeResponseAndWait(net::HTTP_OK, net::OK);
   EXPECT_TRUE(prober->LastProbeWasSuccessful().value());
   EXPECT_FALSE(prober->is_active());
+}
+
+TEST_F(AvailabilityProberTest, ReportExternalFailure_WhileIdle) {
+  base::HistogramTester histogram_tester;
+  std::unique_ptr<AvailabilityProber> prober = NewProber();
+  EXPECT_EQ(prober->LastProbeWasSuccessful(), base::nullopt);
+  EXPECT_FALSE(prober->is_active());
+
+  prober->ReportExternalFailureAndRetry();
+  EXPECT_FALSE(prober->LastProbeWasSuccessful().value());
+  EXPECT_TRUE(prober->is_active());
+
+  VerifyRequest();
+  MakeResponseAndWait(net::HTTP_OK, net::OK);
+  EXPECT_TRUE(prober->LastProbeWasSuccessful().value());
+  EXPECT_FALSE(prober->is_active());
+
+  histogram_tester.ExpectBucketCount("Availability.Prober.DidSucceed.Litepages",
+                                     true, 1);
+  histogram_tester.ExpectBucketCount("Availability.Prober.DidSucceed.Litepages",
+                                     false, 1);
+  histogram_tester.ExpectUniqueSample(
+      "Availability.Prober.DidSucceed.AfterReportedFailure.Litepages", true, 1);
+}
+
+TEST_F(AvailabilityProberTest, ReportExternalFailure_WhileActive) {
+  base::HistogramTester histogram_tester;
+  std::unique_ptr<AvailabilityProber> prober = NewProber();
+  EXPECT_EQ(prober->LastProbeWasSuccessful(), base::nullopt);
+  EXPECT_FALSE(prober->is_active());
+
+  prober->SendNowIfInactive(false);
+  EXPECT_EQ(prober->LastProbeWasSuccessful(), base::nullopt);
+  EXPECT_TRUE(prober->is_active());
+  VerifyRequest();
+
+  prober->ReportExternalFailureAndRetry();
+  EXPECT_FALSE(prober->LastProbeWasSuccessful().value());
+  EXPECT_TRUE(prober->is_active());
+  VerifyRequest();
+
+  MakeResponseAndWait(net::HTTP_OK, net::OK);
+  EXPECT_TRUE(prober->LastProbeWasSuccessful().value());
+  EXPECT_FALSE(prober->is_active());
+
+  histogram_tester.ExpectBucketCount("Availability.Prober.DidSucceed.Litepages",
+                                     true, 1);
+  histogram_tester.ExpectBucketCount("Availability.Prober.DidSucceed.Litepages",
+                                     false, 1);
+  histogram_tester.ExpectUniqueSample(
+      "Availability.Prober.DidSucceed.AfterReportedFailure.Litepages", true, 1);
 }

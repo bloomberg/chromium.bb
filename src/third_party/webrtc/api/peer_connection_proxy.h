@@ -72,6 +72,7 @@ PROXY_METHOD2(void,
               GetStats,
               rtc::scoped_refptr<RtpReceiverInterface>,
               rtc::scoped_refptr<RTCStatsCollectorCallback>)
+PROXY_METHOD0(void, ClearStatsCache)
 PROXY_METHOD2(rtc::scoped_refptr<DataChannelInterface>,
               CreateDataChannel,
               const std::string&,
@@ -99,6 +100,7 @@ PROXY_METHOD2(void,
               SetLocalDescription,
               SetSessionDescriptionObserver*,
               SessionDescriptionInterface*)
+PROXY_METHOD1(void, SetLocalDescription, SetSessionDescriptionObserver*)
 PROXY_METHOD2(void,
               SetRemoteDescription,
               SetSessionDescriptionObserver*,
@@ -112,6 +114,10 @@ PROXY_METHOD1(RTCError,
               SetConfiguration,
               const PeerConnectionInterface::RTCConfiguration&)
 PROXY_METHOD1(bool, AddIceCandidate, const IceCandidateInterface*)
+PROXY_METHOD2(void,
+              AddIceCandidate,
+              std::unique_ptr<IceCandidateInterface>,
+              std::function<void(RTCError)>)
 PROXY_METHOD1(bool, RemoveIceCandidates, const std::vector<cricket::Candidate>&)
 PROXY_METHOD1(RTCError, SetBitrate, const BitrateSettings&)
 PROXY_METHOD1(void, SetAudioPlayout, bool)

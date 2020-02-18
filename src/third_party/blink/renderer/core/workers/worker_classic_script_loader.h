@@ -30,8 +30,8 @@
 
 #include <memory>
 #include "base/memory/scoped_refptr.h"
-#include "services/network/public/mojom/fetch_api.mojom-blink.h"
-#include "services/network/public/mojom/ip_address_space.mojom-blink.h"
+#include "services/network/public/mojom/fetch_api.mojom-blink-forward.h"
+#include "services/network/public/mojom/ip_address_space.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/loader/threadable_loader.h"
@@ -53,7 +53,7 @@ class ExecutionContext;
 class TextResourceDecoder;
 
 class CORE_EXPORT WorkerClassicScriptLoader final
-    : public GarbageCollectedFinalized<WorkerClassicScriptLoader>,
+    : public GarbageCollected<WorkerClassicScriptLoader>,
       public ThreadableLoaderClient {
   USING_GARBAGE_COLLECTED_MIXIN(WorkerClassicScriptLoader);
 

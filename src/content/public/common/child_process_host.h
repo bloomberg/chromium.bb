@@ -11,9 +11,9 @@
 #include <string>
 
 #include "base/files/scoped_file.h"
+#include "base/optional.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
-#include "content/public/common/bind_interface_helpers.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "mojo/public/cpp/bindings/generic_pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -25,6 +25,10 @@ class FilePath;
 
 namespace IPC {
 class MessageFilter;
+}
+
+namespace mojo {
+class OutgoingInvitation;
 }
 
 namespace content {
@@ -42,9 +46,33 @@ class CONTENT_EXPORT ChildProcessHost : public IPC::Sender {
   // any kind, including the values returned by RenderProcessHost::GetID().
   enum : int { kInvalidUniqueID = -1 };
 
+  // Every ChildProcessHost provides a single primordial Mojo message pipe to
+  // the launched child process, with the other end held by the
+  // ChildProcessHost.
+  //
+  // This enum (given to |Create()|) determines how the ChildProcessHost uses
+  // the pipe.
+  enum class IpcMode {
+    // In this mode, the primordial pipe is a content.mojom.ChildProcess pipe.
+    // The ChildProcessHost is fully functional in this mode, and all new
+    // process hosts should prefer to use this mode.
+    kNormal,
+
+    // In this mode, the primordial pipe is a legacy IPC Channel bootstrapping
+    // pipe (IPC.mojom.ChannelBootstrap). This should be used when the child
+    // process only uses legacy Chrome IPC (e.g. Chrome's NaCl processes.)
+    //
+    // In this mode, ChildProcessHost methods like |BindReceiver()| are not
+    // functional.
+    //
+    // DEPRECATED: Do not introduce new uses of this mode.
+    kLegacy,
+  };
+
   // Used to create a child process host. The delegate must outlive this object.
   static std::unique_ptr<ChildProcessHost> Create(
-      ChildProcessHostDelegate* delegate);
+      ChildProcessHostDelegate* delegate,
+      IpcMode ipc_mode);
 
   // These flags may be passed to GetChildPath in order to alter its behavior,
   // causing it to return a child path more suited to a specific task.
@@ -104,6 +132,15 @@ class CONTENT_EXPORT ChildProcessHost : public IPC::Sender {
   // Send the shutdown message to the child process.
   virtual void ForceShutdown() = 0;
 
+  // Exposes the outgoing Mojo invitation for this ChildProcessHost. The
+  // invitation can be given to ChildProcessLauncher to ensure that this
+  // ChildProcessHost's primordial Mojo IPC calls can properly communicate with
+  // the launched process.
+  //
+  // Always valid immediately after ChildProcessHost construction, but may be
+  // null if someone else has taken ownership.
+  virtual base::Optional<mojo::OutgoingInvitation>& GetMojoInvitation() = 0;
+
   // Creates the IPC channel over a Mojo message pipe. The pipe connection is
   // brokered through the Service Manager like any other service connection.
   virtual void CreateChannelMojo() = 0;
@@ -113,14 +150,6 @@ class CONTENT_EXPORT ChildProcessHost : public IPC::Sender {
 
   // Adds an IPC message filter.  A reference will be kept to the filter.
   virtual void AddFilter(IPC::MessageFilter* filter) = 0;
-
-  // Bind an interface exposed by the child process. Requests sent to the child
-  // process via this call are routed through the a ConnectionFilter on the
-  // corresponding ChildThreadImpl.
-  //
-  // DEPRECATED: Use |BindReceiver()| instead.
-  virtual void BindInterface(const std::string& interface_name,
-                             mojo::ScopedMessagePipeHandle interface_pipe) = 0;
 
   // Bind an interface exposed by the child process. Whether or not the
   // interface in |receiver| can be bound depends on the process type and

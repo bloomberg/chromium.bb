@@ -7,13 +7,14 @@
 #include <utility>
 
 #include "mojo/public/cpp/bindings/remote.h"
-#include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/native_file_system/native_file_system_manager.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/fileapi/file_error.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/modules/native_file_system/choose_file_system_entries_options.h"
 #include "third_party/blink/renderer/modules/native_file_system/choose_file_system_entries_options_accepts.h"
 #include "third_party/blink/renderer/modules/native_file_system/native_file_system_directory_handle.h"
@@ -75,7 +76,24 @@ ScriptPromise WindowNativeFileSystem::chooseFileSystemEntries(
         MakeGarbageCollected<DOMException>(DOMExceptionCode::kAbortError));
   }
 
-  if (!window.GetFrame() || window.GetFrame()->IsCrossOriginSubframe()) {
+  if (!document->GetSecurityOrigin()->CanAccessNativeFileSystem()) {
+    if (document->IsSandboxed(WebSandboxFlags::kOrigin)) {
+      return ScriptPromise::RejectWithDOMException(
+          script_state,
+          MakeGarbageCollected<DOMException>(
+              DOMExceptionCode::kSecurityError,
+              "Sandboxed documents aren't allowed to show a file picker."));
+    } else {
+      return ScriptPromise::RejectWithDOMException(
+          script_state,
+          MakeGarbageCollected<DOMException>(
+              DOMExceptionCode::kSecurityError,
+              "This document isn't allowed to show a file picker."));
+    }
+  }
+
+  LocalFrame* local_frame = window.GetFrame();
+  if (!local_frame || local_frame->IsCrossOriginSubframe()) {
     return ScriptPromise::RejectWithDOMException(
         script_state,
         MakeGarbageCollected<DOMException>(
@@ -83,7 +101,7 @@ ScriptPromise WindowNativeFileSystem::chooseFileSystemEntries(
             "Cross origin sub frames aren't allowed to show a file picker."));
   }
 
-  if (!LocalFrame::HasTransientUserActivation(window.GetFrame())) {
+  if (!LocalFrame::HasTransientUserActivation(local_frame)) {
     return ScriptPromise::RejectWithDOMException(
         script_state,
         MakeGarbageCollected<DOMException>(
@@ -103,14 +121,9 @@ ScriptPromise WindowNativeFileSystem::chooseFileSystemEntries(
   // for each operation, and can avoid code duplication between here and other
   // uses.
   mojo::Remote<mojom::blink::NativeFileSystemManager> manager;
-  auto* provider = document->GetInterfaceProvider();
-  if (!provider) {
-    resolver->Reject(file_error::CreateDOMException(
-        base::File::FILE_ERROR_INVALID_OPERATION));
-    return resolver_result;
-  }
+  document->GetBrowserInterfaceBroker().GetInterface(
+      manager.BindNewPipeAndPassReceiver());
 
-  provider->GetInterface(manager.BindNewPipeAndPassReceiver());
   auto* raw_manager = manager.get();
   raw_manager->ChooseEntries(
       ConvertChooserType(options->type(), options->multiple()),
@@ -119,6 +132,7 @@ ScriptPromise WindowNativeFileSystem::chooseFileSystemEntries(
           [](ScriptPromiseResolver* resolver,
              mojo::Remote<mojom::blink::NativeFileSystemManager>,
              const ChooseFileSystemEntriesOptions* options,
+             LocalFrame* local_frame,
              mojom::blink::NativeFileSystemErrorPtr file_operation_result,
              Vector<mojom::blink::NativeFileSystemEntryPtr> entries) {
             ExecutionContext* context = resolver->GetExecutionContext();
@@ -130,6 +144,16 @@ ScriptPromise WindowNativeFileSystem::chooseFileSystemEntries(
                                                *file_operation_result);
               return;
             }
+
+            // While it would be better to not trust the renderer process,
+            // we're doing this here to avoid potential mojo message pipe
+            // ordering problems, where the frame activation state
+            // reconciliation messages would compete with concurrent Native File
+            // System messages to the browser.
+            // TODO(https://crbug.com/1017270): Remove this after spec change,
+            // or when activation moves to browser.
+            LocalFrame::NotifyUserActivation(local_frame);
+
             if (options->multiple()) {
               HeapVector<Member<NativeFileSystemHandle>> results;
               results.ReserveInitialCapacity(entries.size());
@@ -144,8 +168,8 @@ ScriptPromise WindowNativeFileSystem::chooseFileSystemEntries(
                   std::move(entries[0]), context));
             }
           },
-          WrapPersistent(resolver), std::move(manager),
-          WrapPersistent(options)));
+          WrapPersistent(resolver), std::move(manager), WrapPersistent(options),
+          WrapPersistent(local_frame)));
   return resolver_result;
 }
 

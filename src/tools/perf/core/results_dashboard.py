@@ -10,6 +10,8 @@
 # That file is now deprecated and this one is
 # the new source of truth.
 
+from __future__ import print_function
+
 import calendar
 import datetime
 import httplib
@@ -92,8 +94,8 @@ def SendResults(data, data_label, url, send_as_histograms=False,
 
   for i in xrange(1, num_retries + 1):
     try:
-      print 'Sending %s result of %s to dashboard (attempt %i out of %i).' % (
-          data_type, data_label, i, num_retries)
+      print('Sending %s result of %s to dashboard (attempt %i out of %i).' %
+            (data_type, data_label, i, num_retries))
       if send_as_histograms:
         _SendHistogramJson(url, dashboard_data_str, token_generator_callback)
       else:
@@ -117,9 +119,9 @@ def SendResults(data, data_label, url, send_as_histograms=False,
       break
 
   for err in errors:
-    print err
+    print(err)
 
-  print 'Time spent sending results to %s: %s' % (url, time.time() - start)
+  print('Time spent sending results to %s: %s' % (url, time.time() - start))
 
   return all_data_uploaded
 
@@ -267,8 +269,8 @@ def MakeDashboardJsonV1(chart_json, revision_dict, test_name, bot, buildername,
     A dictionary in the format accepted by the perf dashboard.
   """
   if not chart_json:
-    print 'Error: No json output from telemetry.'
-    print '@@@STEP_FAILURE@@@'
+    print('Error: No json output from telemetry.')
+    print('@@@STEP_FAILURE@@@')
 
   point_id, versions = _RevisionNumberColumns(revision_dict, prefix='')
 
@@ -356,8 +358,8 @@ def _RevisionNumberColumns(data, prefix):
   Args:
     data: A dict of information from one line of the log file.
     master: The name of the buildbot master.
-    prefix: Prefix for revision type keys. 'r_' for non-telemetry json, '' for
-        telemetry json.
+    prefix: Prefix for revision type keys. 'r_' for non-telemetry JSON, '' for
+    telemetry JSON.
 
   Returns:
     A tuple with the point id (which must be an int), and a dict of
@@ -370,9 +372,9 @@ def _RevisionNumberColumns(data, prefix):
   # that it's a git commit hash and use timestamp as the x-value.
   try:
     revision = int(data['rev'])
-    if revision and revision > 300000 and revision < 1000000:
-      # Revision is the commit pos.
-      # TODO(sullivan,qyearsley): use got_revision_cp when available.
+    if revision and 300000 < revision < 1000000:
+      # Assume that revision is the commit position number for the master
+      # branch in the chromium/src repo.
       revision_supplemental_columns[prefix + 'commit_pos'] = revision
   except ValueError:
     # The dashboard requires ordered integer revision numbers. If the revision

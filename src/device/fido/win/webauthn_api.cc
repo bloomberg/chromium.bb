@@ -162,28 +162,10 @@ class WinWebAuthnApiImpl : public WinWebAuthnApi {
   decltype(&WebAuthNGetApiVersionNumber) get_api_version_number_ = nullptr;
 };
 
-static WinWebAuthnApi* kDefaultForTesting = nullptr;
-
 // static
 WinWebAuthnApi* WinWebAuthnApi::GetDefault() {
-  if (kDefaultForTesting) {
-    return kDefaultForTesting;
-  }
-
   static base::NoDestructor<WinWebAuthnApiImpl> api;
   return api.get();
-}
-
-// static
-void WinWebAuthnApi::SetDefaultForTesting(WinWebAuthnApi* api) {
-  DCHECK(!kDefaultForTesting);
-  kDefaultForTesting = api;
-}
-
-// static
-void WinWebAuthnApi::ClearDefaultForTesting() {
-  DCHECK(kDefaultForTesting);
-  kDefaultForTesting = nullptr;
 }
 
 WinWebAuthnApi::WinWebAuthnApi() = default;
@@ -285,7 +267,7 @@ AuthenticatorMakeCredentialBlocking(WinWebAuthnApi* webauthn_api,
   // Note that entries in |exclude_list_credentials| hold pointers
   // into request.exclude_list.
   std::vector<WEBAUTHN_CREDENTIAL_EX> exclude_list_credentials =
-      ToWinCredentialExVector(&request.exclude_list.value());
+      ToWinCredentialExVector(&request.exclude_list);
   std::vector<WEBAUTHN_CREDENTIAL_EX*> exclude_list_ptrs;
   std::transform(
       exclude_list_credentials.begin(), exclude_list_credentials.end(),

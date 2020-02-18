@@ -3,13 +3,11 @@
 <translationbundle lang="kn">
 <translation id="1276998909102132017">ಗ್ಯಾಲರಿ ಚಿತ್ರಗಳು</translation>
 <translation id="1430915738399379752">ಮುದ್ರಿಸು</translation>
-<translation id="1462966117743110941">ನಿಮ್ಮ ಕ್ಯಾಮರಾ ಇದೀಗ ಹೊಸ ಮೋಡ್‌ಗಳನ್ನು ಬೆಂಬಲಿಸುತ್ತದೆ ಮತ್ತು ನಿಮ್ಮ ಫೋಟೋಗಳು ಹಾಗೂ ವೀಡಿಯೊಗಳು ಇದೀಗ ನಿಮ್ಮ "ಡೌನ್‌ಲೋಡ್‌ಗಳು" ಫೋಲ್ಡರ್‌ಗಳ ಅಡಿಯಲ್ಲಿ ಲಭ್ಯವಿರುತ್ತವೆ.</translation>
 <translation id="1620510694547887537">ಕ್ಯಾಮರಾ</translation>
 <translation id="1627744224761163218">4 x 4</translation>
 <translation id="1664224225747386870">ಏನನ್ನೂ ರೆಕಾರ್ಡ್ ಮಾಡಲಾಗಿಲ್ಲ</translation>
 <translation id="1862930711583847113"><ph name="FILE" /> ರಫ್ತು ಮಾಡಲು ಸಾಧ್ಯವಾಗುತ್ತಿಲ್ಲ</translation>
 <translation id="1899697626337024495">ಫೋಟೋ ರೆಸಲ್ಯೂಷನ್</translation>
-<translation id="2008689030244369546">ಸಂಪೂರ್ಣ ಹೊಸ ನೋಟ</translation>
 <translation id="2036868001356139588">ಟೈಮರ್ ಅವಧಿ</translation>
 <translation id="2050339315714019657">ಪೋರ್ಟ್ರೇಟ್</translation>
 <translation id="2064538373111010176"><ph name="CAMERA" /> ಸಕ್ರಿಯ</translation>
@@ -24,6 +22,7 @@
 
         ಸಂಗ್ರಹಣೆ ಅನುಮತಿಗಳನ್ನು ಹೊಂದಿರುವ ಆ್ಯಪ್‌ಗಳು ನಿಮ್ಮ ಫೋಟೋಗಳು ಮತ್ತು ವೀಡಿಯೊಗಳಿಗೆ ಪ್ರವೇಶವನ್ನು ಹೊಂದಿರುತ್ತವೆ.</translation>
 <translation id="3081586908890909590">ವೀಡಿಯೊ ರೆಕಾರ್ಡ್ ಮೋಡ್‌ಗೆ ಬದಲಿಸಿ</translation>
+<translation id="313467653172006084">30 FPS</translation>
 <translation id="3183731565330012717">ಗ್ರಿಡ್ ಪ್ರಕಾರ</translation>
 <translation id="3227137524299004712">ಮೈಕ್ರೋಫೋನ್</translation>
 <translation id="3259149966178251584">ಕ್ಯಾಮರಾ ರೆಸಲ್ಯೂಷನ್</translation>
@@ -44,9 +43,7 @@
 <translation id="5671277269877808209">ಚೌಕ</translation>
 <translation id="5775960006311140197">ತಜ್ಞ ಮೋಡ್</translation>
 <translation id="5869546221129391014">ಗ್ರಿಡ್</translation>
-<translation id="6040143037577758943">ಮುಚ್ಚಿರಿ</translation>
 <translation id="6073451960410192870">ರೆಕಾರ್ಡಿಂಗ್ ನಿಲ್ಲಿಸಿ</translation>
-<translation id="6165508094623778733">ಇನ್ನಷ್ಟು ತಿಳಿಯಿರಿ</translation>
 <translation id="6197807149213783179">ಮೆಟಾಡೇಟಾ ಉಳಿಸಿ</translation>
 <translation id="6233780560267770709">3 x 3</translation>
 <translation id="6243827288366940320">ಗೋಲ್ಡನ್ ಅನುಪಾತ</translation>
@@ -65,6 +62,8 @@
 <translation id="7658239707568436148">ರದ್ದುಮಾಡಿ</translation>
 <translation id="7670511624014457267">60 FPS</translation>
 <translation id="8049189770492311300">ಟೈಮರ್</translation>
+<translation id="8067883171444229417">ವೀಡಿಯೊ ಪ್ಲೇ ಮಾಡಿ</translation>
+<translation id="8131740175452115882">ದೃಢೀಕರಿಸು</translation>
 <translation id="8145038249676204903">ಫೋಟೋ ತೆಗೆದುಕೊಳ್ಳಿ ಮೋಡ್‌ಗೆ ಬದಲಿಸಿ</translation>
 <translation id="8261506727792406068">ಅಳಿಸಿ</translation>
 <translation id="8428213095426709021">ಸೆಟ್ಟಿಂಗ್‌ಗಳು</translation>

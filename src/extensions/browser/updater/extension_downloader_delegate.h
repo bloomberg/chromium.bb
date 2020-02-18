@@ -12,6 +12,7 @@
 #include "base/time/time.h"
 #include "extensions/browser/crx_file_info.h"
 #include "extensions/browser/updater/manifest_fetch_data.h"
+#include "extensions/common/extension_id.h"
 
 class GURL;
 
@@ -23,7 +24,7 @@ class ExtensionDownloaderDelegate {
 
   // Passed as an argument to ExtensionDownloader::OnExtensionDownloadFailed()
   // to detail the reason for the failure.
-  enum Error {
+  enum class Error {
     // Background networking is disabled.
     DISABLED,
 
@@ -42,7 +43,7 @@ class ExtensionDownloaderDelegate {
     CRX_FETCH_FAILED,
   };
 
-  // Passed as an argument OnExtensionDownloadStageChanged() to detail how
+  // Passed as an argument to OnExtensionDownloadStageChanged() to detail how
   // downloading is going on. Typical sequence is: PENDING ->
   // QUEUED_FOR_MANIFEST -> DOWNLOADING_MANIFEST -> PARSING_MANIFEST ->
   // MANIFEST_LOADED -> QUEUED_FOR_CRX -> DOWNLOADING_CRX -> FINISHED. Stages
@@ -56,7 +57,7 @@ class ExtensionDownloaderDelegate {
   // Note: enum used for UMA. Do NOT reorder or remove entries. Don't forget to
   // update enums.xml (name: ExtensionInstallationDownloadingStage) when adding
   // new entries.
-  enum Stage {
+  enum class Stage {
     // Downloader just received extension download request.
     PENDING = 0,
 
@@ -94,6 +95,33 @@ class ExtensionDownloaderDelegate {
     kMaxValue = FINISHED,
   };
 
+  // Passes as an argument to OnExtensionDownloadCacheStatusRetrieved to inform
+  // delegate about cache status.
+  // Note: enum used for UMA. Do NOT reorder or remove entries. Don't forget to
+  // update enums.xml (name: ExtensionInstallationCacheStatus) when adding new
+  // entries.
+  enum class CacheStatus {
+    // No information about cache status. This is never reported by
+    // ExtensionDownloader, but may be used later in statistics.
+    CACHE_UNKNOWN = 0,
+
+    // There is no cache at all.
+    CACHE_DISABLED = 1,
+
+    // Extension was not found in cache.
+    CACHE_MISS = 2,
+
+    // There is an extension in cache, but its version is not as expected.
+    CACHE_OUTDATED = 3,
+
+    // Cache entry is good and will be used.
+    CACHE_HIT = 4,
+
+    // Magic constant used by the histogram macros.
+    // Always update it to the max value.
+    kMaxValue = CACHE_HIT,
+  };
+
   // Passed as an argument to the completion callbacks to signal whether
   // the extension update sent a ping.
   struct PingResult {
@@ -127,12 +155,19 @@ class ExtensionDownloaderDelegate {
 
   // Invoked several times during downloading, |stage| contains current stage
   // of downloading.
-  virtual void OnExtensionDownloadStageChanged(const std::string& id,
+  virtual void OnExtensionDownloadStageChanged(const ExtensionId& id,
                                                Stage stage);
+
+  // Invoked once during downloading, after fetching and parsing update
+  // manifest, |cache_status| contains information about what have we found in
+  // local cache about the extension.
+  virtual void OnExtensionDownloadCacheStatusRetrieved(
+      const ExtensionId& id,
+      CacheStatus cache_status);
 
   // Invoked if the extension couldn't be downloaded. |error| contains the
   // failure reason.
-  virtual void OnExtensionDownloadFailed(const std::string& id,
+  virtual void OnExtensionDownloadFailed(const ExtensionId& id,
                                          Error error,
                                          const PingResult& ping_result,
                                          const std::set<int>& request_ids);
@@ -170,20 +205,20 @@ class ExtensionDownloaderDelegate {
   // Invoked to fill the PingData for the given extension id. Returns false
   // if PingData should not be included for this extension's update check
   // (this is the default).
-  virtual bool GetPingDataForExtension(const std::string& id,
+  virtual bool GetPingDataForExtension(const ExtensionId& id,
                                        ManifestFetchData::PingData* ping);
 
   // Invoked to get the update url data for this extension's update url, if
   // there is any. The default implementation returns an empty string.
-  virtual std::string GetUpdateUrlData(const std::string& id);
+  virtual std::string GetUpdateUrlData(const ExtensionId& id);
 
   // Invoked to determine whether extension |id| is currently
   // pending installation.
-  virtual bool IsExtensionPending(const std::string& id) = 0;
+  virtual bool IsExtensionPending(const ExtensionId& id) = 0;
 
   // Invoked to get the current version of extension |id|. Returns false if
   // that extension is not installed.
-  virtual bool GetExtensionExistingVersion(const std::string& id,
+  virtual bool GetExtensionExistingVersion(const ExtensionId& id,
                                            std::string* version) = 0;
 };
 

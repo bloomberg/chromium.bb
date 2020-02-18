@@ -24,14 +24,14 @@ class DynamicLib;
 namespace dawn_native { namespace vulkan {
 
     struct VulkanGlobalInfo;
-    struct VulkanDeviceKnobs;
+    struct VulkanDeviceInfo;
 
     // Stores the Vulkan entry points. Also loads them from the dynamic library
     // and the vkGet*ProcAddress entry points.
     struct VulkanFunctions {
         MaybeError LoadGlobalProcs(const DynamicLib& vulkanLib);
         MaybeError LoadInstanceProcs(VkInstance instance, const VulkanGlobalInfo& globalInfo);
-        MaybeError LoadDeviceProcs(VkDevice device, const VulkanDeviceKnobs& usedKnobs);
+        MaybeError LoadDeviceProcs(VkDevice device, const VulkanDeviceInfo& deviceInfo);
 
         // ---------- Global procs
 
@@ -105,6 +105,11 @@ namespace dawn_native { namespace vulkan {
         PFN_vkGetPhysicalDeviceMemoryProperties2KHR GetPhysicalDeviceMemoryProperties2KHR = nullptr;
         PFN_vkGetPhysicalDeviceSparseImageFormatProperties2KHR
             GetPhysicalDeviceSparseImageFormatProperties2KHR = nullptr;
+
+#ifdef VK_USE_PLATFORM_FUCHSIA
+        // FUCHSIA_image_pipe_surface
+        PFN_vkCreateImagePipeSurfaceFUCHSIA CreateImagePipeSurfaceFUCHSIA = nullptr;
+#endif
 
         // ---------- Device procs
 
@@ -248,6 +253,17 @@ namespace dawn_native { namespace vulkan {
         // VK_KHR_external_semaphore_fd
         PFN_vkImportSemaphoreFdKHR ImportSemaphoreFdKHR = nullptr;
         PFN_vkGetSemaphoreFdKHR GetSemaphoreFdKHR = nullptr;
+
+#if VK_USE_PLATFORM_FUCHSIA
+        // VK_FUCHSIA_external_memory
+        PFN_vkGetMemoryZirconHandleFUCHSIA GetMemoryZirconHandleFUCHSIA = nullptr;
+        PFN_vkGetMemoryZirconHandlePropertiesFUCHSIA GetMemoryZirconHandlePropertiesFUCHSIA =
+            nullptr;
+
+        // VK_FUCHSIA_external_semaphore
+        PFN_vkImportSemaphoreZirconHandleFUCHSIA ImportSemaphoreZirconHandleFUCHSIA = nullptr;
+        PFN_vkGetSemaphoreZirconHandleFUCHSIA GetSemaphoreZirconHandleFUCHSIA = nullptr;
+#endif
     };
 
 }}  // namespace dawn_native::vulkan

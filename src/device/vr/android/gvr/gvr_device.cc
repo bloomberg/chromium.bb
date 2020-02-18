@@ -20,6 +20,7 @@
 #include "device/vr/android/gvr/gvr_device_provider.h"
 #include "device/vr/android/gvr/gvr_utils.h"
 #include "device/vr/jni_headers/NonPresentingGvrContext_jni.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/transform.h"
@@ -31,12 +32,11 @@ namespace device {
 
 namespace {
 
-// Default downscale factor for computing the recommended WebVR/WebXR
+// Default downscale factor for computing the recommended WebXR
 // render_width/render_height from the 1:1 pixel mapped size. Using a rather
 // aggressive downscale due to the high overhead of copying pixels
 // twice before handing off to GVR. For comparison, the polyfill
 // uses approximately 0.55 on a Pixel XL.
-static constexpr float kWebVrRecommendedResolutionScale = 0.5;
 static constexpr float kWebXrRecommendedResolutionScale = 0.7;
 
 // The scale factor for WebXR on devices that don't have shared buffer
@@ -106,15 +106,6 @@ mojom::VRDisplayInfoPtr CreateVRDisplayInfo(gvr::GvrApi* gvr_api,
 
   device->id = device_id;
 
-  device->capabilities = mojom::VRDisplayCapabilities::New();
-  device->capabilities->has_position = false;
-  device->capabilities->has_external_display = false;
-  device->capabilities->can_present = true;
-
-  std::string vendor = gvr_api->GetViewerVendor();
-  std::string model = gvr_api->GetViewerModel();
-  device->display_name = vendor + " " + model;
-
   gvr::BufferViewportList gvr_buffer_viewports =
       gvr_api->CreateEmptyBufferViewportList();
   gvr_buffer_viewports.SetToRecommendedBufferViewports();
@@ -134,16 +125,13 @@ mojom::VRDisplayInfoPtr CreateVRDisplayInfo(gvr::GvrApi* gvr_api,
     device->webxr_default_framebuffer_scale =
         kWebXrNoSharedBufferResolutionScale;
   }
-  device->webvr_default_framebuffer_scale = kWebVrRecommendedResolutionScale;
 
   return device;
 }
 
 }  // namespace
 
-GvrDevice::GvrDevice()
-    : VRDeviceBase(mojom::XRDeviceId::GVR_DEVICE_ID),
-      exclusive_controller_binding_(this) {
+GvrDevice::GvrDevice() : VRDeviceBase(mojom::XRDeviceId::GVR_DEVICE_ID) {
   GvrDelegateProviderFactory::SetDevice(this);
 }
 
@@ -156,7 +144,8 @@ GvrDevice::~GvrDevice() {
   }
 
   if (pending_request_session_callback_) {
-    std::move(pending_request_session_callback_).Run(nullptr, nullptr);
+    std::move(pending_request_session_callback_)
+        .Run(nullptr, mojo::NullRemote());
   }
 
   GvrDelegateProviderFactory::SetDevice(nullptr);
@@ -171,7 +160,7 @@ void GvrDevice::RequestSession(
     mojom::XRRuntime::RequestSessionCallback callback) {
   // We can only process one request at a time.
   if (pending_request_session_callback_) {
-    std::move(callback).Run(nullptr, nullptr);
+    std::move(callback).Run(nullptr, mojo::NullRemote());
     return;
   }
   pending_request_session_callback_ = std::move(callback);
@@ -189,25 +178,26 @@ void GvrDevice::OnStartPresentResult(
   DCHECK(pending_request_session_callback_);
 
   if (!session) {
-    std::move(pending_request_session_callback_).Run(nullptr, nullptr);
+    std::move(pending_request_session_callback_)
+        .Run(nullptr, mojo::NullRemote());
     return;
   }
 
   OnStartPresenting();
 
-  mojom::XRSessionControllerPtr session_controller;
   // Close the binding to ensure any previous sessions were closed.
   // TODO(billorr): Only do this in OnPresentingControllerMojoConnectionError.
-  exclusive_controller_binding_.Close();
-  exclusive_controller_binding_.Bind(mojo::MakeRequest(&session_controller));
+  exclusive_controller_receiver_.reset();
+
+  std::move(pending_request_session_callback_)
+      .Run(std::move(session),
+           exclusive_controller_receiver_.BindNewPipeAndPassRemote());
 
   // Unretained is safe because the error handler won't be called after the
   // binding has been destroyed.
-  exclusive_controller_binding_.set_connection_error_handler(
+  exclusive_controller_receiver_.set_disconnect_handler(
       base::BindOnce(&GvrDevice::OnPresentingControllerMojoConnectionError,
                      base::Unretained(this)));
-  std::move(pending_request_session_callback_)
-      .Run(std::move(session), std::move(session_controller));
 }
 
 // XRSessionController
@@ -220,19 +210,37 @@ void GvrDevice::OnPresentingControllerMojoConnectionError() {
   StopPresenting();
 }
 
+void GvrDevice::ShutdownSession(
+    mojom::XRRuntime::ShutdownSessionCallback on_completed) {
+  DVLOG(2) << __func__;
+  StopPresenting();
+
+  // At this point, the main thread session shutdown is complete, but the GL
+  // thread may still be in the process of finishing shutdown or transitioning
+  // to VR Browser mode. Java VrShell::setWebVrModeEnable calls native
+  // VrShell::setWebVrMode which calls BrowserRenderer::SetWebXrMode on the GL
+  // thread, and that triggers the VRB transition via ui_->SetWebVrMode.
+  //
+  // Since tasks posted to the GL thread are handled in sequence, any calls
+  // related to a new session will be processed after the GL thread transition
+  // is complete.
+  //
+  // TODO(https://crbug.com/998307): It would be cleaner to delay the shutdown
+  // until the GL thread transition is complete, but this would need a fair
+  // amount of additional plumbing to ensure that the callback is consistently
+  // called. See also WebXrTestFramework.enterSessionWithUserGesture(), but
+  // it's unclear if changing this would be sufficient to avoid the need for
+  // workarounds there.
+  std::move(on_completed).Run();
+}
+
 void GvrDevice::StopPresenting() {
+  DVLOG(2) << __func__;
   GvrDelegateProvider* delegate_provider = GetGvrDelegateProvider();
   if (delegate_provider)
     delegate_provider->ExitWebVRPresent();
   OnExitPresent();
-  exclusive_controller_binding_.Close();
-}
-
-void GvrDevice::OnListeningForActivate(bool listening) {
-  GvrDelegateProvider* delegate_provider = GetGvrDelegateProvider();
-  if (!delegate_provider)
-    return;
-  delegate_provider->OnListeningForActivateChanged(listening);
+  exclusive_controller_receiver_.reset();
 }
 
 void GvrDevice::PauseTracking() {
@@ -253,12 +261,6 @@ void GvrDevice::ResumeTracking() {
   }
 }
 
-void GvrDevice::EnsureInitialized(EnsureInitializedCallback callback) {
-  Init(base::BindOnce([](EnsureInitializedCallback callback,
-                         bool) { std::move(callback).Run(); },
-                      std::move(callback)));
-}
-
 GvrDelegateProvider* GvrDevice::GetGvrDelegateProvider() {
   // GvrDelegateProviderFactory::Create() may return a different
   // pointer each time. Do not cache it.
@@ -269,11 +271,6 @@ void GvrDevice::OnDisplayConfigurationChanged(JNIEnv* env,
                                               const JavaRef<jobject>& obj) {
   DCHECK(gvr_api_);
   SetVRDisplayInfo(CreateVRDisplayInfo(gvr_api_.get(), GetId()));
-}
-
-void GvrDevice::Activate(mojom::VRDisplayEventReason reason,
-                         base::Callback<void(bool)> on_handled) {
-  OnActivate(reason, std::move(on_handled));
 }
 
 void GvrDevice::Init(base::OnceCallback<void(bool)> on_finished) {
@@ -312,13 +309,15 @@ void GvrDevice::OnInitRequestSessionFinished(
   DCHECK(pending_request_session_callback_);
 
   if (!success) {
-    std::move(pending_request_session_callback_).Run(nullptr, nullptr);
+    std::move(pending_request_session_callback_)
+        .Run(nullptr, mojo::NullRemote());
     return;
   }
 
   GvrDelegateProvider* delegate_provider = GetGvrDelegateProvider();
   if (!delegate_provider) {
-    std::move(pending_request_session_callback_).Run(nullptr, nullptr);
+    std::move(pending_request_session_callback_)
+        .Run(nullptr, mojo::NullRemote());
     return;
   }
 

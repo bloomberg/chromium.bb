@@ -9,11 +9,10 @@
 #include "components/url_formatter/elide_url.h"
 #import "ios/chrome/browser/overlays/public/overlay_request.h"
 #import "ios/chrome/browser/overlays/public/web_content_area/java_script_alert_overlay.h"
-#import "ios/chrome/browser/ui/alert_view_controller/alert_action.h"
-#import "ios/chrome/browser/ui/alert_view_controller/test/fake_alert_consumer.h"
+#import "ios/chrome/browser/ui/alert_view/alert_action.h"
+#import "ios/chrome/browser/ui/alert_view/test/fake_alert_consumer.h"
 #import "ios/chrome/browser/ui/dialogs/java_script_dialog_blocking_state.h"
-#import "ios/chrome/browser/ui/overlays/web_content_area/java_script_dialogs/java_script_dialog_overlay_mediator.h"
-#import "ios/chrome/browser/ui/overlays/web_content_area/java_script_dialogs/test/java_script_dialog_overlay_mediator_test.h"
+#import "ios/chrome/browser/ui/overlays/common/alerts/test/alert_overlay_mediator_test.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
 #include "testing/gtest_mac.h"
@@ -23,16 +22,37 @@
 #error "This file requires ARC support."
 #endif
 
-using JavaScriptAlertOverlayMediatorTest = JavaScriptDialogOverlayMediatorTest;
+using JavaScriptAlertOverlayMediatorTest = AlertOverlayMediatorTest;
 
-// Tests that the consumer values are set correctly for alerts.
-TEST_F(JavaScriptAlertOverlayMediatorTest, AlertSetup) {
+// Tests that the consumer values are set correctly for alerts from the main
+// frame.
+TEST_F(JavaScriptAlertOverlayMediatorTest, AlertSetupMainFrame) {
   web::TestWebState web_state;
   const GURL kUrl("https://chromium.test");
   const std::string kMessage("Message");
   std::unique_ptr<OverlayRequest> request =
       OverlayRequest::CreateWithConfig<JavaScriptAlertOverlayRequestConfig>(
           JavaScriptDialogSource(&web_state, kUrl, /*is_main_frame=*/true),
+          kMessage);
+  SetMediator(
+      [[JavaScriptAlertOverlayMediator alloc] initWithRequest:request.get()]);
+
+  // Verify the consumer values.
+  EXPECT_NSEQ(base::SysUTF8ToNSString(kMessage), consumer().title);
+  EXPECT_EQ(0U, consumer().textFieldConfigurations.count);
+  ASSERT_EQ(1U, consumer().actions.count);
+  EXPECT_EQ(UIAlertActionStyleDefault, consumer().actions[0].style);
+  EXPECT_NSEQ(l10n_util::GetNSString(IDS_OK), consumer().actions[0].title);
+}
+
+// Tests that the consumer values are set correctly for alerts from an iframe.
+TEST_F(JavaScriptAlertOverlayMediatorTest, AlertSetupIFrame) {
+  web::TestWebState web_state;
+  const GURL kUrl("https://chromium.test");
+  const std::string kMessage("Message");
+  std::unique_ptr<OverlayRequest> request =
+      OverlayRequest::CreateWithConfig<JavaScriptAlertOverlayRequestConfig>(
+          JavaScriptDialogSource(&web_state, kUrl, /*is_main_frame=*/false),
           kMessage);
   SetMediator(
       [[JavaScriptAlertOverlayMediator alloc] initWithRequest:request.get()]);
@@ -63,7 +83,7 @@ TEST_F(JavaScriptAlertOverlayMediatorTest, AlertSetupWithBlockingOption) {
       [[JavaScriptAlertOverlayMediator alloc] initWithRequest:request.get()]);
 
   // Verify the consumer values.
-  EXPECT_NSEQ(base::SysUTF8ToNSString(kMessage), consumer().message);
+  EXPECT_NSEQ(base::SysUTF8ToNSString(kMessage), consumer().title);
   EXPECT_EQ(0U, consumer().textFieldConfigurations.count);
   ASSERT_EQ(2U, consumer().actions.count);
   EXPECT_EQ(UIAlertActionStyleDefault, consumer().actions[0].style);

@@ -13,6 +13,7 @@
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/profiler/sampling_profiler_thread_token.h"
 #include "base/profiler/stack_sampling_profiler.h"
 #include "base/sequence_checker.h"
 #include "base/threading/platform_thread.h"
@@ -78,14 +79,18 @@ class COMPONENT_EXPORT(TRACING_CPP) TracingSamplerProfiler {
     const base::PlatformThreadId sampled_thread_id_;
     base::Lock trace_writer_lock_;
     std::unique_ptr<perfetto::TraceWriter> trace_writer_;
-    InterningIndex<size_t> interned_callstacks_{1000};
-    InterningIndex<std::pair<std::string, std::string>,
-                   std::pair<uintptr_t, std::string>>
-        interned_frames_{1000, 1000};
-    InterningIndex<std::string> interned_frame_names_{1000};
-    InterningIndex<std::string> interned_module_names_{1000};
-    InterningIndex<std::string> interned_module_ids_{1000};
-    InterningIndex<uintptr_t> interned_modules_{1000};
+    InterningIndex<TypeList<size_t>, SizeList<1024>> interned_callstacks_{};
+    InterningIndex<TypeList<std::pair<std::string, std::string>,
+                            std::pair<uintptr_t, std::string>>,
+                   SizeList<1024, 1024>>
+        interned_frames_{};
+    InterningIndex<TypeList<std::string>, SizeList<1024>>
+        interned_frame_names_{};
+    InterningIndex<TypeList<std::string>, SizeList<1024>>
+        interned_module_names_{};
+    InterningIndex<TypeList<std::string>, SizeList<1024>>
+        interned_module_ids_{};
+    InterningIndex<TypeList<uintptr_t>, SizeList<1024>> interned_modules_{};
     bool reset_incremental_state_ = true;
     uint32_t last_incremental_state_reset_id_ = 0;
     int32_t last_emitted_process_priority_ = -1;
@@ -112,7 +117,8 @@ class COMPONENT_EXPORT(TRACING_CPP) TracingSamplerProfiler {
   static void StartTracingForTesting(tracing::PerfettoProducer* producer);
   static void StopTracingForTesting();
 
-  explicit TracingSamplerProfiler(base::PlatformThreadId sampled_thread_id);
+  explicit TracingSamplerProfiler(
+      base::SamplingProfilerThreadToken sampled_thread_token);
   virtual ~TracingSamplerProfiler();
 
   void StartTracing(std::unique_ptr<perfetto::TraceWriter> trace_writer,
@@ -120,7 +126,7 @@ class COMPONENT_EXPORT(TRACING_CPP) TracingSamplerProfiler {
   void StopTracing();
 
  private:
-  const base::PlatformThreadId sampled_thread_id_;
+  const base::SamplingProfilerThreadToken sampled_thread_token_;
 
   base::Lock lock_;
   std::unique_ptr<base::StackSamplingProfiler> profiler_;  // under |lock_|

@@ -30,9 +30,10 @@ class FIFOClient {
  public:
   FIFOClient(PushPullFIFO* fifo, size_t bus_length, size_t jitter_range_ms)
       : fifo_(fifo),
-        bus_(AudioBus::Create(fifo->NumberOfChannels(), bus_length)),
+        bus_(AudioBus::Create(fifo->GetStateForTest().number_of_channels,
+                              bus_length)),
         client_thread_(Platform::Current()->CreateThread(
-            ThreadCreationParams(WebThreadType::kTestThread)
+            ThreadCreationParams(ThreadType::kTestThread)
                 .SetThreadNameForTest("FIFOClientThread"))),
         done_event_(std::make_unique<base::WaitableEvent>(
             base::WaitableEvent::ResetPolicy::AUTOMATIC,

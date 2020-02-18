@@ -46,7 +46,6 @@
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/disks/disk.h"
 #include "chromeos/disks/disk_mount_manager.h"
-#include "components/drive/chromeos/file_system_interface.h"
 #include "components/prefs/pref_service.h"
 #include "components/storage_monitor/storage_monitor.h"
 #include "content/public/browser/browser_context.h"
@@ -54,7 +53,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "services/device/public/mojom/mtp_manager.mojom.h"
 #include "services/device/public/mojom/mtp_storage_info.mojom.h"
-#include "storage/browser/fileapi/external_mount_points.h"
+#include "storage/browser/file_system/external_mount_points.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/chromeos/strings/grit/ui_chromeos_strings.h"
 
@@ -162,6 +161,8 @@ std::string VolumeTypeToString(VolumeType type) {
       return "testing";
     case VOLUME_TYPE_CROSTINI:
       return "crostini";
+    case VOLUME_TYPE_SMB:
+      return "smb";
     case NUM_VOLUME_TYPE:
       break;
   }
@@ -558,12 +559,12 @@ void VolumeManager::Initialize() {
   pref_change_registrar_.Init(profile_->GetPrefs());
   pref_change_registrar_.Add(
       prefs::kExternalStorageDisabled,
-      base::Bind(&VolumeManager::OnExternalStorageDisabledChanged,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindRepeating(&VolumeManager::OnExternalStorageDisabledChanged,
+                          weak_ptr_factory_.GetWeakPtr()));
   pref_change_registrar_.Add(
       prefs::kExternalStorageReadOnly,
-      base::Bind(&VolumeManager::OnExternalStorageReadOnlyChanged,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindRepeating(&VolumeManager::OnExternalStorageReadOnlyChanged,
+                          weak_ptr_factory_.GetWeakPtr()));
 
   // Subscribe to storage monitor for MTP notifications.
   if (storage_monitor::StorageMonitor::GetInstance()) {
@@ -674,7 +675,7 @@ void VolumeManager::RemoveSshfsCrostiniVolume(
     RemoveSshfsCrostiniVolumeCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   disk_mount_manager_->UnmountPath(
-      sshfs_mount_path.value(), chromeos::UNMOUNT_OPTIONS_NONE,
+      sshfs_mount_path.value(),
       base::BindOnce(&VolumeManager::OnSshfsCrostiniUnmountCallback,
                      base::Unretained(this), sshfs_mount_path,
                      std::move(callback)));
@@ -849,7 +850,7 @@ void VolumeManager::OnAutoMountableDiskEvent(
       // If the disk is already mounted, unmount it.
       if (!disk.mount_path().empty()) {
         disk_mount_manager_->UnmountPath(
-            disk.mount_path(), chromeos::UNMOUNT_OPTIONS_LAZY,
+            disk.mount_path(),
             chromeos::disks::DiskMountManager::UnmountPathCallback());
       }
 
@@ -890,24 +891,7 @@ void VolumeManager::OnMountEvent(
     const chromeos::disks::DiskMountManager::MountPointInfo& mount_info) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   switch (mount_info.mount_type) {
-    case chromeos::MOUNT_TYPE_ARCHIVE: {
-      // If the file is not mounted now, tell it to drive file system so that
-      // it can handle file caching correctly.
-      // Note that drive file system knows if the file is managed by drive file
-      // system or not, so here we report all paths.
-      if ((event == chromeos::disks::DiskMountManager::MOUNTING &&
-           error_code != chromeos::MOUNT_ERROR_NONE) ||
-          (event == chromeos::disks::DiskMountManager::UNMOUNTING &&
-           error_code == chromeos::MOUNT_ERROR_NONE)) {
-        drive::FileSystemInterface* const file_system =
-            drive::util::GetFileSystemByProfile(profile_);
-        if (file_system) {
-          file_system->MarkCacheFileAsUnmounted(
-              base::FilePath(mount_info.source_path), base::DoNothing());
-        }
-      }
-      FALLTHROUGH;
-    }
+    case chromeos::MOUNT_TYPE_ARCHIVE:
     case chromeos::MOUNT_TYPE_DEVICE: {
       // Notify a mounting/unmounting event to observers.
       const chromeos::disks::Disk* const disk =
@@ -1083,7 +1067,7 @@ void VolumeManager::OnExternalStorageDisabledChangedUnmountCallback(
     }
 
     disk_mount_manager_->UnmountPath(
-        mount_path, chromeos::UNMOUNT_OPTIONS_NONE,
+        mount_path,
         base::BindOnce(
             &VolumeManager::OnExternalStorageDisabledChangedUnmountCallback,
             weak_ptr_factory_.GetWeakPtr(), std::move(remaining_mount_paths)));
@@ -1151,7 +1135,7 @@ void VolumeManager::OnExternalStorageDisabledChanged() {
     std::string mount_path = remaining_mount_paths.back();
     remaining_mount_paths.pop_back();
     disk_mount_manager_->UnmountPath(
-        mount_path, chromeos::UNMOUNT_OPTIONS_NONE,
+        mount_path,
         base::BindOnce(
             &VolumeManager::OnExternalStorageDisabledChangedUnmountCallback,
             weak_ptr_factory_.GetWeakPtr(), std::move(remaining_mount_paths)));

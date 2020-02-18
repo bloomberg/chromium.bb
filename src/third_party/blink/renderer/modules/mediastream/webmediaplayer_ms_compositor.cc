@@ -55,7 +55,6 @@ scoped_refptr<media::VideoFrame> CopyFrame(
     DCHECK(frame->format() == media::PIXEL_FORMAT_ARGB ||
            frame->format() == media::PIXEL_FORMAT_XRGB ||
            frame->format() == media::PIXEL_FORMAT_I420 ||
-           frame->format() == media::PIXEL_FORMAT_UYVY ||
            frame->format() == media::PIXEL_FORMAT_NV12);
     new_frame = media::VideoFrame::CreateFrame(
         media::PIXEL_FORMAT_I420, frame->coded_size(), frame->visible_rect(),
@@ -161,11 +160,11 @@ WebMediaPlayerMSCompositor::WebMediaPlayerMSCompositor(
         *video_frame_compositor_task_runner_, FROM_HERE,
         CrossThreadBindOnce(&WebMediaPlayerMSCompositor::InitializeSubmitter,
                             weak_ptr_factory_.GetWeakPtr()));
-    update_submission_state_callback_ =
-        media::BindToLoop(video_frame_compositor_task_runner_,
-                          ConvertToBaseCallback(CrossThreadBindRepeating(
-                              &WebMediaPlayerMSCompositor::SetIsSurfaceVisible,
-                              weak_ptr_factory_.GetWeakPtr())));
+    update_submission_state_callback_ = media::BindToLoop(
+        video_frame_compositor_task_runner_,
+        ConvertToBaseRepeatingCallback(CrossThreadBindRepeating(
+            &WebMediaPlayerMSCompositor::SetIsSurfaceVisible,
+            weak_ptr_factory_.GetWeakPtr())));
   }
 
   WebVector<WebMediaStreamTrack> video_tracks;
@@ -178,7 +177,7 @@ WebMediaPlayerMSCompositor::WebMediaPlayerMSCompositor(
   if (remote_video && Platform::Current()->RTCSmoothnessAlgorithmEnabled()) {
     base::AutoLock auto_lock(current_frame_lock_);
     rendering_frame_buffer_.reset(new media::VideoRendererAlgorithm(
-        ConvertToBaseCallback(CrossThreadBindRepeating(
+        ConvertToBaseRepeatingCallback(CrossThreadBindRepeating(
             &WebMediaPlayerMSCompositor::MapTimestampsToRenderTimeTicks,
             CrossThreadUnretained(this))),
         &media_log_));
@@ -564,8 +563,11 @@ void WebMediaPlayerMSCompositor::SetCurrentFrame(
     is_first_frame = false;
 
     if (!current_frame_->metadata()->GetRotation(
-            media::VideoFrameMetadata::ROTATION, &current_video_rotation) ||
-        current_video_rotation == *new_rotation) {
+            media::VideoFrameMetadata::ROTATION, &current_video_rotation)) {
+      // Assume VIDEO_ROTATION_0 for current frame without video rotation.
+      current_video_rotation = media::VIDEO_ROTATION_0;
+    }
+    if (current_video_rotation == *new_rotation) {
       new_rotation.reset();
     }
 

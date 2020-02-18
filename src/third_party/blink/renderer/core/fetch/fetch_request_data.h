@@ -8,10 +8,12 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/unguessable_token.h"
-#include "services/network/public/mojom/fetch_api.mojom-blink.h"
-#include "services/network/public/mojom/referrer_policy.mojom-blink.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
+#include "services/network/public/mojom/fetch_api.mojom-blink-forward.h"
+#include "services/network/public/mojom/referrer_policy.mojom-blink-forward.h"
 #include "services/network/public/mojom/url_loader_factory.mojom-blink.h"
-#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
+#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/core/fetch/body_stream_buffer.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -30,12 +32,11 @@ class SecurityOrigin;
 class ScriptState;
 
 class CORE_EXPORT FetchRequestData final
-    : public GarbageCollectedFinalized<FetchRequestData> {
+    : public GarbageCollected<FetchRequestData> {
  public:
   enum Tainting { kBasicTainting, kCorsTainting, kOpaqueTainting };
   enum class ForServiceWorkerFetchEvent { kFalse, kTrue };
 
-  static FetchRequestData* Create();
   static FetchRequestData* Create(ScriptState*,
                                   const mojom::blink::FetchAPIRequest&,
                                   ForServiceWorkerFetchEvent);
@@ -51,13 +52,16 @@ class CORE_EXPORT FetchRequestData final
   const KURL& Url() const { return url_; }
   mojom::RequestContextType Context() const { return context_; }
   void SetContext(mojom::RequestContextType context) { context_ = context; }
-  scoped_refptr<const SecurityOrigin> Origin() { return origin_; }
+  scoped_refptr<const SecurityOrigin> Origin() const { return origin_; }
   void SetOrigin(scoped_refptr<const SecurityOrigin> origin) {
     origin_ = std::move(origin);
   }
-  bool SameOriginDataURLFlag() { return same_origin_data_url_flag_; }
-  void SetSameOriginDataURLFlag(bool flag) {
-    same_origin_data_url_flag_ = flag;
+  scoped_refptr<const SecurityOrigin> IsolatedWorldOrigin() const {
+    return isolated_world_origin_;
+  }
+  void SetIsolatedWorldOrigin(
+      scoped_refptr<const SecurityOrigin> isolated_world_origin) {
+    isolated_world_origin_ = std::move(isolated_world_origin);
   }
   const AtomicString& ReferrerString() const { return referrer_string_; }
   void SetReferrerString(const AtomicString& s) { referrer_string_ = s; }
@@ -105,19 +109,14 @@ class CORE_EXPORT FetchRequestData final
   void SetIsHistoryNavigation(bool b) { is_history_navigation_ = b; }
 
   network::mojom::blink::URLLoaderFactory* URLLoaderFactory() const {
-    return url_loader_factory_.get();
+    return url_loader_factory_.is_bound() ? url_loader_factory_.get() : nullptr;
   }
-  void SetURLLoaderFactory(network::mojom::blink::URLLoaderFactoryPtr factory) {
-    url_loader_factory_ = std::move(factory);
+  void SetURLLoaderFactory(
+      mojo::PendingRemote<network::mojom::blink::URLLoaderFactory> factory) {
+    url_loader_factory_.Bind(std::move(factory));
   }
   const base::UnguessableToken& WindowId() const { return window_id_; }
   void SetWindowId(const base::UnguessableToken& id) { window_id_ = id; }
-  bool ShouldAlsoUseFactoryBoundOriginForCors() const {
-    return should_also_use_factory_bound_origin_for_cors_;
-  }
-  void SetShouldAlsoUseFactoryBoundOriginForCors(bool value) {
-    should_also_use_factory_bound_origin_for_cors_ = value;
-  }
 
   void Trace(blink::Visitor*);
 
@@ -130,8 +129,8 @@ class CORE_EXPORT FetchRequestData final
   // FIXME: Support m_skipServiceWorkerFlag;
   mojom::RequestContextType context_;
   scoped_refptr<const SecurityOrigin> origin_;
+  scoped_refptr<const SecurityOrigin> isolated_world_origin_;
   // FIXME: Support m_forceOriginHeaderFlag;
-  bool same_origin_data_url_flag_;
   AtomicString referrer_string_;
   network::mojom::ReferrerPolicy referrer_policy_;
   // FIXME: Support m_authenticationFlag;
@@ -157,9 +156,8 @@ class CORE_EXPORT FetchRequestData final
   // the system would otherwise decide to use to load this request.
   // Currently used for blob: URLs, to ensure they can still be loaded even if
   // the URL got revoked after creating the request.
-  network::mojom::blink::URLLoaderFactoryPtr url_loader_factory_;
+  mojo::Remote<network::mojom::blink::URLLoaderFactory> url_loader_factory_;
   base::UnguessableToken window_id_;
-  bool should_also_use_factory_bound_origin_for_cors_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(FetchRequestData);
 };

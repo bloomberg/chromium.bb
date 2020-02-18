@@ -19,6 +19,7 @@
 #include "chromeos/network/onc/onc_utils.h"
 #include "chromeos/network/shill_property_util.h"
 #include "chromeos/network/tether_constants.h"
+#include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
 #include "components/device_event_log/device_event_log.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -411,6 +412,7 @@ std::string NetworkState::connection_state() const {
          connection_state_ == shill::kStateOffline ||
          connection_state_ == shill::kStateOnline ||
          connection_state_ == shill::kStateFailure ||
+         connection_state_ == shill::kStateDisconnect ||
          // TODO(https://crbug.com/552190): Remove kStateActivationFailure from
          // this list when occurrences in chromium code have been eliminated.
          connection_state_ == shill::kStateActivationFailure ||

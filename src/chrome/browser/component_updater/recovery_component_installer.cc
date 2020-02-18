@@ -305,6 +305,7 @@ void RecoveryRegisterHelper(ComponentUpdateService* cus, PrefService* prefs) {
   recovery.version = version;
   recovery.pk_hash.assign(kRecoverySha2Hash,
                           &kRecoverySha2Hash[sizeof(kRecoverySha2Hash)]);
+  recovery.app_id = update_client::GetCrxIdFromPublicKeyHash(recovery.pk_hash);
   recovery.supports_group_policy_enable_component_updates = true;
   recovery.requires_network_encryption = false;
   recovery.crx_format_requirement =
@@ -438,7 +439,7 @@ bool RecoveryComponentInstaller::DoInstall(
   if (!base::PathExists(path) && !base::CreateDirectory(path))
     return false;
   path = path.AppendASCII(version.GetString());
-  if (base::PathExists(path) && !base::DeleteFile(path, true))
+  if (base::PathExists(path) && !base::DeleteFileRecursively(path))
     return false;
   if (!base::Move(unpack_path, path)) {
     DVLOG(1) << "Recovery component move failed.";

@@ -21,7 +21,7 @@ that allow individual frames to be frozen.
 Once a page is frozen, it cannot run any tasks. In particular, callbacks
 associated with DOM timers, XHR requests or the push API will not run until the
 page is resumed. To verify the behavior of your site when it is frozen, go to
-chrome://discards and click [Freeze] next to a background tab which contains
+`chrome://discards` and click [Freeze] next to a background tab which contains
 your site. See [Will my site be frozen?](#Will-my-site-be-frozen_) for how
 Chrome tries to avoid frezing sites when this is likely to break functionality.
 
@@ -49,6 +49,7 @@ On desktop, a page will not be frozen if:
 * The page is currently visible.
 * The page is currently being inspected by DevTools.
 * The page is currently capturing a window or screen.
+* The page is currently holding a Web Lock or an IndexedDB transaction.
 * The page is sharing its BrowsingInstance with another page.
 
 Pages which meet one of the above criteria are the ones that are the most likely

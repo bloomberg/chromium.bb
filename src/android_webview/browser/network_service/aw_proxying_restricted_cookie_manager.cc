@@ -4,6 +4,11 @@
 
 #include "android_webview/browser/network_service/aw_proxying_restricted_cookie_manager.h"
 
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
+
 #include "android_webview/browser/aw_cookie_access_policy.h"
 #include "base/memory/ptr_util.h"
 #include "base/task/post_task.h"
@@ -12,6 +17,7 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
+#include "url/gurl.h"
 
 namespace android_webview {
 
@@ -29,11 +35,10 @@ class AwProxyingRestrictedCookieManagerListener
         aw_restricted_cookie_manager_(aw_restricted_cookie_manager),
         client_listener_(std::move(client_listener)) {}
 
-  void OnCookieChange(const net::CanonicalCookie& cookie,
-                      network::mojom::CookieChangeCause cause) override {
+  void OnCookieChange(const net::CookieChangeInfo& change) override {
     if (aw_restricted_cookie_manager_ &&
         aw_restricted_cookie_manager_->AllowCookies(url_, site_for_cookies_))
-      client_listener_->OnCookieChange(cookie, cause);
+      client_listener_->OnCookieChange(change);
   }
 
  private:

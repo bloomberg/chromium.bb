@@ -53,14 +53,6 @@ const base::Feature kSyncAllowWalletDataInTransportModeWithCustomPassphrase{
 const base::Feature kStopSyncInPausedState{"StopSyncInPausedState",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Controls whether a user can receive tabs from their synced devices
-const base::Feature kSyncSendTabToSelf{"SyncSendTabToSelf",
-                                       base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Enable USS implementation of Bookmarks datatype.
-const base::Feature kSyncUSSBookmarks{"SyncUSSBookmarks",
-                                      base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enable USS implementation of Passwords datatype.
 const base::Feature kSyncUSSPasswords{"SyncUSSPasswords",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
@@ -72,5 +64,20 @@ const base::Feature kSyncUSSNigori{"SyncUSSNigori",
 // Controls whether to enable syncing of Wi-Fi configurations.
 const base::Feature kSyncWifiConfigurations{"SyncWifiConfigurations",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables updating a BookmarkNode's GUID by replacing the node itself.
+const base::Feature kUpdateBookmarkGUIDWithNodeReplacement{
+    "UpdateGUIDWithNodeReplacement", base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Enables the GUID-aware merge algorithm.
+const base::Feature kMergeBookmarksUsingGUIDs{
+    "MergeBookmarksUsingGUIDs", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kSyncDeviceInfoInTransportMode{
+    "SyncDeviceInfoInTransportMode", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables the running of backend ProfileSyncService tasks on the ThreadPool.
+const base::Feature kProfileSyncServiceUsesThreadPool{
+    "ProfileSyncServiceUsesThreadPool", base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace switches

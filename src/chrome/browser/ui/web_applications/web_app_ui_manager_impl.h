@@ -57,11 +57,16 @@ class WebAppUiManagerImpl : public BrowserListObserver, public WebAppUiManager {
   void OnBrowserRemoved(Browser* browser) override;
 
  private:
-  base::Optional<AppId> GetAppIdForBrowser(Browser* browser);
+  // Returns true if Browser is for an installed App.
+  bool IsBrowserForInstalledApp(Browser* browser);
+
+  // Returns AppId of the Browser's installed App, |IsBrowserForInstalledApp|
+  // must be true.
+  const AppId GetAppIdForBrowser(Browser* browser);
 
   std::unique_ptr<WebAppDialogManager> dialog_manager_;
 
-  Profile* profile_;
+  Profile* const profile_;
 
   std::map<AppId, std::vector<base::OnceClosure>> windows_closed_requests_map_;
   std::map<AppId, size_t> num_windows_for_apps_map_;

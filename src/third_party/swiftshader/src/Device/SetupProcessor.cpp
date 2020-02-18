@@ -81,6 +81,9 @@ namespace sw
 		state.multiSample = context->sampleCount;
 		state.rasterizerDiscard = context->rasterizerDiscard;
 
+		state.numClipDistances = context->vertexShader->getNumOutputClipDistances();
+		state.numCullDistances = context->vertexShader->getNumOutputCullDistances();
+
 		if (context->pixelShader)
 		{
 			for (int interpolant = 0; interpolant < MAX_INTERFACE_COMPONENTS; interpolant++)
@@ -94,7 +97,7 @@ namespace sw
 		return state;
 	}
 
-	std::shared_ptr<Routine> SetupProcessor::routine(const State &state)
+	SetupProcessor::RoutineType SetupProcessor::routine(const State &state)
 	{
 		auto routine = routineCache->query(state);
 
@@ -114,6 +117,6 @@ namespace sw
 	void SetupProcessor::setRoutineCacheSize(int cacheSize)
 	{
 		delete routineCache;
-		routineCache = new RoutineCache<State>(clamp(cacheSize, 1, 65536));
+		routineCache = new RoutineCacheType(clamp(cacheSize, 1, 65536));
 	}
 }

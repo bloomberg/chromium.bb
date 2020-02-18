@@ -14,7 +14,7 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "base/task/single_thread_task_executor.h"
+#include "base/test/task_environment.h"
 #include "build/build_config.h"
 #include "gpu/ipc/common/gpu_memory_buffer_support.h"
 #include "mojo/public/cpp/base/shared_memory_mojom_traits.h"
@@ -23,7 +23,7 @@
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/mojom/buffer_types_mojom_traits.h"
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(USE_OZONE)
 #include "ui/gl/init/gl_factory.h"
 #include "ui/gl/test/gl_surface_test_support.h"
 #endif
@@ -50,11 +50,15 @@ class GpuMemoryBufferImplTest : public testing::Test {
     return &gpu_memory_buffer_support_;
   }
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(USE_OZONE)
   // Overridden from testing::Test:
   void SetUp() override { gl::GLSurfaceTestSupport::InitializeOneOff(); }
   void TearDown() override { gl::init::ShutdownGL(false); }
 #endif
+
+ protected:
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::MainThreadType::UI};
 
  private:
   GpuMemoryBufferSupport gpu_memory_buffer_support_;
@@ -87,13 +91,16 @@ TYPED_TEST_P(GpuMemoryBufferImplTest, CreateFromHandle) {
   const gfx::Size kBufferSize(8, 8);
 
   for (auto format : gfx::GetBufferFormatsForTesting()) {
-    gfx::BufferUsage usages[] = {gfx::BufferUsage::GPU_READ,
-                                 gfx::BufferUsage::SCANOUT,
-                                 gfx::BufferUsage::SCANOUT_CAMERA_READ_WRITE,
-                                 gfx::BufferUsage::CAMERA_AND_CPU_READ_WRITE,
-                                 gfx::BufferUsage::SCANOUT_CPU_READ_WRITE,
-                                 gfx::BufferUsage::SCANOUT_VDA_WRITE,
-                                 gfx::BufferUsage::GPU_READ_CPU_READ_WRITE};
+    gfx::BufferUsage usages[] = {
+        gfx::BufferUsage::GPU_READ,
+        gfx::BufferUsage::SCANOUT,
+        gfx::BufferUsage::SCANOUT_CAMERA_READ_WRITE,
+        gfx::BufferUsage::CAMERA_AND_CPU_READ_WRITE,
+        gfx::BufferUsage::SCANOUT_CPU_READ_WRITE,
+        gfx::BufferUsage::SCANOUT_VDA_WRITE,
+        gfx::BufferUsage::GPU_READ_CPU_READ_WRITE,
+        gfx::BufferUsage::SCANOUT_VEA_READ_CAMERA_AND_CPU_READ_WRITE,
+    };
     for (auto usage : usages) {
       if (!TestFixture::gpu_memory_buffer_support()->IsConfigurationSupported(
               TypeParam::kBufferType, format, usage)) {
@@ -124,13 +131,16 @@ TYPED_TEST_P(GpuMemoryBufferImplTest, CreateFromHandleSmallBuffer) {
   const gfx::Size kBufferSize(8, 8);
 
   for (auto format : gfx::GetBufferFormatsForTesting()) {
-    gfx::BufferUsage usages[] = {gfx::BufferUsage::GPU_READ,
-                                 gfx::BufferUsage::SCANOUT,
-                                 gfx::BufferUsage::SCANOUT_CAMERA_READ_WRITE,
-                                 gfx::BufferUsage::CAMERA_AND_CPU_READ_WRITE,
-                                 gfx::BufferUsage::SCANOUT_CPU_READ_WRITE,
-                                 gfx::BufferUsage::SCANOUT_VDA_WRITE,
-                                 gfx::BufferUsage::GPU_READ_CPU_READ_WRITE};
+    gfx::BufferUsage usages[] = {
+        gfx::BufferUsage::GPU_READ,
+        gfx::BufferUsage::SCANOUT,
+        gfx::BufferUsage::SCANOUT_CAMERA_READ_WRITE,
+        gfx::BufferUsage::CAMERA_AND_CPU_READ_WRITE,
+        gfx::BufferUsage::SCANOUT_CPU_READ_WRITE,
+        gfx::BufferUsage::SCANOUT_VDA_WRITE,
+        gfx::BufferUsage::GPU_READ_CPU_READ_WRITE,
+        gfx::BufferUsage::SCANOUT_VEA_READ_CAMERA_AND_CPU_READ_WRITE,
+    };
     for (auto usage : usages) {
       if (!TestFixture::gpu_memory_buffer_support()->IsConfigurationSupported(
               TypeParam::kBufferType, format, usage)) {
@@ -291,18 +301,20 @@ TYPED_TEST_P(GpuMemoryBufferImplTest, PersistentMap) {
 }
 
 TYPED_TEST_P(GpuMemoryBufferImplTest, SerializeAndDeserialize) {
-  base::SingleThreadTaskExecutor main_task_executor;
   const gfx::Size kBufferSize(8, 8);
   const gfx::GpuMemoryBufferType kBufferType = TypeParam::kBufferType;
 
   for (auto format : gfx::GetBufferFormatsForTesting()) {
-    gfx::BufferUsage usages[] = {gfx::BufferUsage::GPU_READ,
-                                 gfx::BufferUsage::SCANOUT,
-                                 gfx::BufferUsage::SCANOUT_CAMERA_READ_WRITE,
-                                 gfx::BufferUsage::CAMERA_AND_CPU_READ_WRITE,
-                                 gfx::BufferUsage::SCANOUT_CPU_READ_WRITE,
-                                 gfx::BufferUsage::SCANOUT_VDA_WRITE,
-                                 gfx::BufferUsage::GPU_READ_CPU_READ_WRITE};
+    gfx::BufferUsage usages[] = {
+        gfx::BufferUsage::GPU_READ,
+        gfx::BufferUsage::SCANOUT,
+        gfx::BufferUsage::SCANOUT_CAMERA_READ_WRITE,
+        gfx::BufferUsage::CAMERA_AND_CPU_READ_WRITE,
+        gfx::BufferUsage::SCANOUT_CPU_READ_WRITE,
+        gfx::BufferUsage::SCANOUT_VDA_WRITE,
+        gfx::BufferUsage::GPU_READ_CPU_READ_WRITE,
+        gfx::BufferUsage::SCANOUT_VEA_READ_CAMERA_AND_CPU_READ_WRITE,
+    };
     for (auto usage : usages) {
       if (!TestFixture::gpu_memory_buffer_support()->IsConfigurationSupported(
               TypeParam::kBufferType, format, usage))

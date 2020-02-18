@@ -281,7 +281,6 @@ TEST_F(MenuControllerTest, BasicCreation) {
   NSString* title = [itemTwo title];
   EXPECT_EQ(ASCIIToUTF16("three"), base::SysNSStringToUTF16(title));
   EXPECT_EQ(2, [itemTwo tag]);
-  EXPECT_EQ([[itemTwo representedObject] pointerValue], &model);
 
   EXPECT_TRUE([[[menu menu] itemAtIndex:3] isSeparatorItem]);
 }
@@ -315,7 +314,6 @@ TEST_F(MenuControllerTest, Submenus) {
   NSString* title = [submenuItem title];
   EXPECT_EQ(ASCIIToUTF16("sub-two"), base::SysNSStringToUTF16(title));
   EXPECT_EQ(1, [submenuItem tag]);
-  EXPECT_EQ([[submenuItem representedObject] pointerValue], &submodel);
 
   // Make sure the item after the submenu is correct and its represented
   // object is back to the top model.
@@ -323,7 +321,6 @@ TEST_F(MenuControllerTest, Submenus) {
   title = [item title];
   EXPECT_EQ(ASCIIToUTF16("three"), base::SysNSStringToUTF16(title));
   EXPECT_EQ(2, [item tag]);
-  EXPECT_EQ([[item representedObject] pointerValue], &model);
 }
 
 TEST_F(MenuControllerTest, EmptySubmenu) {
@@ -822,7 +819,15 @@ TEST_F(MenuControllerTest, OwningDelegate) {
   }
   EXPECT_FALSE(did_dealloc);
   EXPECT_FALSE(did_delete);
-  [[item target] performSelector:[item action] withObject:item];
+
+  // On 10.15+, [NSMenuItem target] indirectly causes an extra
+  // retain+autorelease of the target. That avoids bugs caused by the
+  // NSMenuItem's action causing destruction of the target, but also causes the
+  // NSMenuItem to get cleaned up later than this test expects. Deal with that
+  // by creating an explicit autorelease pool here.
+  @autoreleasepool {
+    [[item target] performSelector:[item action] withObject:item];
+  }
   EXPECT_TRUE(did_dealloc);
   EXPECT_TRUE(did_delete);
 }

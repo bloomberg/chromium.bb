@@ -15,6 +15,7 @@
 #include "platform/base/macros.h"
 
 namespace openscreen {
+namespace osp {
 
 // Used to report an error from a ServiceListener implementation.
 struct ServiceListenerError {
@@ -156,6 +157,7 @@ class ServiceListener {
   OSP_DISALLOW_COPY_AND_ASSIGN(ServiceListener);
 };
 
+}  // namespace osp
 }  // namespace openscreen
 
 #endif  // OSP_PUBLIC_SERVICE_LISTENER_H_

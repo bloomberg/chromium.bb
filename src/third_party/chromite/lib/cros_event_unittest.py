@@ -7,10 +7,11 @@
 
 from __future__ import print_function
 
-from StringIO import StringIO
 import json
 
-from chromite.lib import cros_event as ce
+from six.moves import StringIO
+
+from chromite.lib import cros_event
 from chromite.lib import cros_test_lib
 
 
@@ -18,22 +19,22 @@ class EventIdGeneratorTest(cros_test_lib.TestCase):
   """Test EventIdGenerator fuction"""
   def testEventIdGenerator(self):
     expected_ids = {1, 2, 3, 4, 5}
-    id_gen = ce.EventIdGenerator()
+    id_gen = cros_event.EventIdGenerator()
     for expected_id in expected_ids:
-      self.assertEquals(expected_id, next(id_gen))
+      self.assertEqual(expected_id, next(id_gen))
 
 
 class FailTest(cros_test_lib.TestCase):
   """Test Failure class"""
   def testInit(self):
-    f1 = ce.Failure()
+    f1 = cros_event.Failure()
     self.assertTrue(isinstance(f1, Exception))
-    self.assertEqual(f1.status, ce.EVENT_STATUS_FAIL)
+    self.assertEqual(f1.status, cros_event.EVENT_STATUS_FAIL)
 
     f2_msg = 'This is the message for the failure'
-    f2 = ce.Failure(f2_msg)
-    self.assertEqual(f2.status, ce.EVENT_STATUS_FAIL)
-    self.assertEqual(f2.message, f2_msg)
+    f2 = cros_event.Failure(f2_msg)
+    self.assertEqual(f2.status, cros_event.EVENT_STATUS_FAIL)
+    self.assertEqual(f2.msg, f2_msg)
 
 
 class EventTest(cros_test_lib.TestCase):
@@ -44,9 +45,9 @@ class EventTest(cros_test_lib.TestCase):
 
     self.id1 = 1
     self.data1 = {1: 'a', 2: 'b', 3: 'c'}
-    self.event1 = ce.Event(eid=self.id1,
-                           data=self.data1,
-                           emit_func=self.emitHook)
+    self.event1 = cros_event.Event(eid=self.id1,
+                                   data=self.data1,
+                                   emit_func=self.emitHook)
 
   def emitHook(self, event):
     self.emitCalled = True
@@ -57,7 +58,7 @@ class EventTest(cros_test_lib.TestCase):
     self.emitEvent = None
 
   def testInit(self):
-    self.assertEquals(self.event1[ce.EVENT_ID], self.id1)
+    self.assertEqual(self.event1[cros_event.EVENT_ID], self.id1)
     self.assertDictContainsSubset(self.data1, self.event1)
 
     self.assertTrue(isinstance(self.event1, dict))
@@ -66,10 +67,12 @@ class EventTest(cros_test_lib.TestCase):
     """test success case"""
     with self.event1 as e:
       self.assertEqual(self.event1, e)
-      self.assertEqual(e[ce.EVENT_STATUS], ce.EVENT_STATUS_RUNNING)
+      self.assertEqual(e[cros_event.EVENT_STATUS],
+                       cros_event.EVENT_STATUS_RUNNING)
 
     self.assertTrue(self.emitCalled)
-    self.assertEqual(self.emitEvent[ce.EVENT_STATUS], ce.EVENT_STATUS_PASS)
+    self.assertEqual(self.emitEvent[cros_event.EVENT_STATUS],
+                     cros_event.EVENT_STATUS_PASS)
 
   def testWithFailureCall(self):
     """test with fail() call"""
@@ -78,8 +81,9 @@ class EventTest(cros_test_lib.TestCase):
     with self.event1 as e:
       e.fail(message=failMsg)
 
-    self.assertEqual(self.emitEvent[ce.EVENT_STATUS], ce.EVENT_STATUS_FAIL)
-    self.assertEqual(self.emitEvent[ce.EVENT_FAIL_MSG], failMsg)
+    self.assertEqual(self.emitEvent[cros_event.EVENT_STATUS],
+                     cros_event.EVENT_STATUS_FAIL)
+    self.assertEqual(self.emitEvent[cros_event.EVENT_FAIL_MSG], failMsg)
 
   def testWithFailureCallWithStatus(self):
     """test with fail() and custom status call"""
@@ -89,18 +93,19 @@ class EventTest(cros_test_lib.TestCase):
     with self.event1 as e:
       e.fail(message=failMsg, status=customStatus)
 
-    self.assertEqual(self.emitEvent[ce.EVENT_STATUS], customStatus)
-    self.assertEqual(self.emitEvent[ce.EVENT_FAIL_MSG], failMsg)
+    self.assertEqual(self.emitEvent[cros_event.EVENT_STATUS], customStatus)
+    self.assertEqual(self.emitEvent[cros_event.EVENT_FAIL_MSG], failMsg)
 
   def testWithFailure(self):
     """test with raising failure exception"""
     failMsg = 'failed, as it should correctly'
 
     with self.event1:
-      raise ce.Failure(failMsg)
+      raise cros_event.Failure(failMsg)
 
-    self.assertEqual(self.emitEvent[ce.EVENT_STATUS], ce.EVENT_STATUS_FAIL)
-    self.assertEqual(self.emitEvent[ce.EVENT_FAIL_MSG], failMsg)
+    self.assertEqual(self.emitEvent[cros_event.EVENT_STATUS],
+                     cros_event.EVENT_STATUS_FAIL)
+    self.assertEqual(self.emitEvent[cros_event.EVENT_FAIL_MSG], failMsg)
 
   def testWithExceptionFail(self):
     """test with raised non-Failure exception"""
@@ -108,7 +113,8 @@ class EventTest(cros_test_lib.TestCase):
       with self.event1:
         raise NameError
     except NameError:
-      self.assertEqual(self.emitEvent[ce.EVENT_STATUS], ce.EVENT_STATUS_FAIL)
+      self.assertEqual(self.emitEvent[cros_event.EVENT_STATUS],
+                       cros_event.EVENT_STATUS_FAIL)
 
 
 class EventLoggerTest(cros_test_lib.TestCase):
@@ -129,7 +135,7 @@ class EventLoggerTest(cros_test_lib.TestCase):
     self.data1 = {1:2, 3:4}
 
     self.events = []
-    self.log1 = ce.EventLogger(self.emitHook, data=self.data1)
+    self.log1 = cros_event.EventLogger(self.emitHook, data=self.data1)
 
   def testEvent(self):
     e_data = {'one': 'two', 'three':'four'}
@@ -162,11 +168,11 @@ class EventFileLoggerTest(cros_test_lib.TestCase):
     self.data1 = {'one':2, 'two':4}
     self.emitEvent = None
     self.file_out = StringIO()
-    self.log = ce.EventFileLogger(self.file_out, data=self.data1,
-                                  encoder_func=self.encode_func)
+    self.log = cros_event.EventFileLogger(self.file_out, data=self.data1,
+                                          encoder_func=self.encode_func)
 
   def testInit(self):
-    self.assertTrue(isinstance(self.log, ce.EventLogger))
+    self.assertTrue(isinstance(self.log, cros_event.EventLogger))
 
   def testEvents(self):
     with self.log.Event():
@@ -176,7 +182,7 @@ class EventFileLoggerTest(cros_test_lib.TestCase):
 
   def testEventFail(self):
     with self.log.Event():
-      raise ce.Failure('always fail')
+      raise cros_event.Failure('always fail')
 
     self.assertDictEqual(self.emitEvent, self.get_event_from_file())
 
@@ -188,35 +194,35 @@ class EventDummyLogger(cros_test_lib.TestCase):
   """Test EventDummyLogger class"""
 
   def setUp(self):
-    self.log = ce.EventDummyLogger()
+    self.log = cros_event.EventDummyLogger()
 
   def testInit(self):
-    self.assertTrue(isinstance(self.log, ce.EventLogger))
+    self.assertTrue(isinstance(self.log, cros_event.EventLogger))
 
 
 class FunctionTest(cros_test_lib.TestCase):
   """Test Module Tests"""
 
   def setUp(self):
-    self._last_root = ce.root
+    self._last_root = cros_event.root
 
   def tearDown(self):
     if hasattr(self, '_last_root') and self._last_root:
-      ce.setEventLogger(self._last_root)
+      cros_event.setEventLogger(self._last_root)
 
   def SetEventLoggerTest(self):
-    new_log = ce.EventDummyLogger()
-    ce.setEventLogger(new_log)
-    self.assertEqual(new_log, ce.root)
+    new_log = cros_event.EventDummyLogger()
+    cros_event.setEventLogger(new_log)
+    self.assertEqual(new_log, cros_event.root)
 
   def newEventTest(self):
-    e1 = ce.newEvent()
-    self.assertTrue(isinstance(e1, ce.Event))
+    e1 = cros_event.newEvent()
+    self.assertTrue(isinstance(e1, cros_event.Event))
 
-    e2 = ce.newEvent(foo='bar')
-    self.assertTrue(isinstance(e2, ce.Event))
+    e2 = cros_event.newEvent(foo='bar')
+    self.assertTrue(isinstance(e2, cros_event.Event))
     self.assertEqual('bar', e2['foo'])
 
     test_kind = 'testKind'
-    e3 = ce.NewEvent(kind=test_kind)
+    e3 = cros_event.NewEvent(kind=test_kind)
     self.assertEqual(e3['id'][0], test_kind)

@@ -17,11 +17,11 @@
 #include "content/common/frame_messages.h"
 #include "content/common/input_messages.h"
 #include "content/common/renderer.mojom.h"
+#include "content/common/view_messages.h"
 #include "content/common/visual_properties.h"
 #include "content/common/widget_messages.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/native_web_keyboard_event.h"
-#include "content/public/common/bind_interface_helpers.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/previews_state.h"
@@ -359,7 +359,7 @@ void RenderViewTest::SetUp() {
   // Blink needs to be initialized before calling CreateContentRendererClient()
   // because it uses blink internally.
   blink_platform_impl_.Initialize();
-  blink::Initialize(blink_platform_impl_.Get(), &binder_registry_,
+  blink::Initialize(blink_platform_impl_.Get(), &binders_,
                     blink_platform_impl_.GetMainThreadScheduler());
 
   content_client_.reset(CreateContentClient());
@@ -422,19 +422,11 @@ void RenderViewTest::SetUp() {
   view_params->main_frame_routing_id = render_thread_->GetNextRoutingID();
   view_params->main_frame_interface_bundle =
       mojom::DocumentScopedInterfaceBundle::New();
-  render_thread_->PassInitialInterfaceProviderRequestForFrame(
+  render_thread_->PassInitialInterfaceProviderReceiverForFrame(
       view_params->main_frame_routing_id,
-      mojo::MakeRequest(
-          &view_params->main_frame_interface_bundle->interface_provider));
+      view_params->main_frame_interface_bundle->interface_provider
+          .InitWithNewPipeAndPassReceiver());
 
-  mojo::PendingRemote<blink::mojom::DocumentInterfaceBroker>
-      document_interface_broker;
-  ignore_result(document_interface_broker.InitWithNewPipeAndPassReceiver());
-  view_params->main_frame_interface_bundle->document_interface_broker_content =
-      std::move(document_interface_broker);
-  ignore_result(document_interface_broker.InitWithNewPipeAndPassReceiver());
-  view_params->main_frame_interface_bundle->document_interface_broker_blink =
-      std::move(document_interface_broker);
   mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
       browser_interface_broker;
   // Ignoring the returned PendingReceiver because it is not bound to anything
@@ -447,7 +439,7 @@ void RenderViewTest::SetUp() {
   view_params->proxy_routing_id = MSG_ROUTING_NONE;
   view_params->hidden = false;
   view_params->never_visible = false;
-  view_params->visual_properties = *InitialVisualProperties();
+  view_params->visual_properties = InitialVisualProperties();
 
   RenderViewImpl* view_impl = RenderViewImpl::Create(
       compositor_deps_.get(), std::move(view_params),
@@ -467,7 +459,9 @@ void RenderViewTest::TearDown() {
   base::RunLoop().RunUntilIdle();
 
   mojo::Remote<blink::mojom::LeakDetector> leak_detector;
-  BindInterface(&binder_registry_, leak_detector.BindNewPipeAndPassReceiver());
+  mojo::GenericPendingReceiver receiver(
+      leak_detector.BindNewPipeAndPassReceiver());
+  ignore_result(binders_.Bind(&receiver));
 
   // Close the main |view_| as well as any other windows that might have been
   // opened by the test.
@@ -507,7 +501,6 @@ void RenderViewTest::TearDown() {
           EXPECT_EQ(0u, result->number_of_live_resources);
           EXPECT_EQ(0u,
                     result->number_of_live_context_lifecycle_state_observers);
-          EXPECT_EQ(0u, result->number_of_live_script_promises);
           EXPECT_EQ(0u, result->number_of_live_frames);
           EXPECT_EQ(0u, result->number_of_live_v8_per_context_data);
           EXPECT_EQ(0u, result->number_of_worker_global_scopes);
@@ -675,7 +668,8 @@ void RenderViewTest::Reload(const GURL& url) {
       base::TimeTicks::Now(), "GET", nullptr, base::Optional<SourceLocation>(),
       false /* started_from_context_menu */, false /* has_user_gesture */,
       InitiatorCSPInfo(), std::vector<int>(), std::string(),
-      false /* is_history_navigation_in_new_child_frame */, base::TimeTicks());
+      false /* is_history_navigation_in_new_child_frame */, base::TimeTicks(),
+      base::nullopt /* frame_policy */);
   RenderViewImpl* impl = static_cast<RenderViewImpl*>(view_);
   TestRenderFrame* frame =
       static_cast<TestRenderFrame*>(impl->GetMainRenderFrame());
@@ -688,19 +682,19 @@ void RenderViewTest::Reload(const GURL& url) {
 
 void RenderViewTest::Resize(gfx::Size new_size,
                             bool is_fullscreen_granted) {
+  RenderViewImpl* view = static_cast<RenderViewImpl*>(view_);
+  RenderWidget* render_widget = view->GetWidget();
+
   VisualProperties visual_properties;
   visual_properties.screen_info = ScreenInfo();
   visual_properties.new_size = new_size;
   visual_properties.compositor_viewport_pixel_rect = gfx::Rect(new_size);
-  visual_properties.top_controls_height = 0.f;
-  visual_properties.browser_controls_shrink_blink_size = false;
   visual_properties.is_fullscreen_granted = is_fullscreen_granted;
-  visual_properties.display_mode = blink::kWebDisplayModeBrowser;
-  std::unique_ptr<IPC::Message> resize_message(
-      new WidgetMsg_SynchronizeVisualProperties(0, visual_properties));
-  RenderWidget* render_widget =
-      static_cast<RenderViewImpl*>(view_)->GetWidget();
-  render_widget->OnMessageReceived(*resize_message);
+  visual_properties.display_mode = blink::mojom::DisplayMode::kBrowser;
+
+  WidgetMsg_UpdateVisualProperties resize_msg(render_widget->routing_id(),
+                                              visual_properties);
+  render_widget->OnMessageReceived(resize_msg);
 }
 
 void RenderViewTest::SimulateUserTypingASCIICharacter(char ascii_character,
@@ -772,6 +766,10 @@ void RenderViewTest::OnSameDocumentNavigation(blink::WebLocalFrame* frame,
       false /* content_initiated */);
 }
 
+void RenderViewTest::SetUseZoomForDSFEnabled(bool enabled) {
+  render_thread_->SetUseZoomForDSFEnabled(enabled);
+}
+
 blink::WebWidget* RenderViewTest::GetWebWidget() {
   RenderViewImpl* impl = static_cast<RenderViewImpl*>(view_);
   return impl->GetWidget()->GetWebWidget();
@@ -789,11 +787,11 @@ ContentRendererClient* RenderViewTest::CreateContentRendererClient() {
   return new ContentRendererClient;
 }
 
-std::unique_ptr<VisualProperties> RenderViewTest::InitialVisualProperties() {
-  auto initial_visual_properties = std::make_unique<VisualProperties>();
+VisualProperties RenderViewTest::InitialVisualProperties() {
+  VisualProperties initial_visual_properties;
   // Ensure the view has some size so tests involving scrolling bounds work.
-  initial_visual_properties->new_size = gfx::Size(400, 300);
-  initial_visual_properties->visible_viewport_size = gfx::Size(400, 300);
+  initial_visual_properties.new_size = gfx::Size(400, 300);
+  initial_visual_properties.visible_viewport_size = gfx::Size(400, 300);
   return initial_visual_properties;
 }
 
@@ -819,7 +817,8 @@ void RenderViewTest::GoToOffset(int offset,
       base::TimeTicks::Now(), "GET", nullptr, base::Optional<SourceLocation>(),
       false /* started_from_context_menu */, false /* has_user_gesture */,
       InitiatorCSPInfo(), std::vector<int>(), std::string(),
-      false /* is_history_navigation_in_new_child_frame */, base::TimeTicks());
+      false /* is_history_navigation_in_new_child_frame */, base::TimeTicks(),
+      base::nullopt /* frame policy */);
   auto commit_params = CreateCommitNavigationParams();
   commit_params->page_state = state;
   commit_params->nav_entry_id = pending_offset + 1;

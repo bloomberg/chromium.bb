@@ -24,6 +24,7 @@
 #include "base/token.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/platform/platform_channel.h"
 #include "mojo/public/cpp/platform/platform_handle.h"
@@ -45,28 +46,28 @@ namespace {
 
 void OnServiceStartedCallback(int* start_count,
                               std::string* service_name,
-                              const base::Closure& continuation,
+                              base::OnceClosure continuation,
                               const service_manager::Identity& identity) {
   (*start_count)++;
   *service_name = identity.name();
-  continuation.Run();
+  std::move(continuation).Run();
 }
 
 void OnServiceFailedToStartCallback(bool* run,
-                                    const base::Closure& continuation,
+                                    base::OnceClosure continuation,
                                     const service_manager::Identity& identity) {
   *run = true;
-  continuation.Run();
+  std::move(continuation).Run();
 }
 
 void OnServicePIDReceivedCallback(std::string* service_name,
-                                  uint32_t* serivce_pid,
-                                  const base::Closure& continuation,
+                                  uint32_t* service_pid,
+                                  base::OnceClosure continuation,
                                   const service_manager::Identity& identity,
                                   uint32_t pid) {
   *service_name = identity.name();
-  *serivce_pid = pid;
-  continuation.Run();
+  *service_pid = pid;
+  std::move(continuation).Run();
 }
 
 class TestService : public Service, public test::mojom::CreateInstanceTest {
@@ -169,12 +170,12 @@ class ServiceManagerTest : public testing::Test,
   Connector* connector() { return test_service_.connector(); }
 
   void AddListenerAndWaitForApplications() {
-    mojom::ServiceManagerPtr service_manager;
-    connector()->BindInterface(service_manager::mojom::kServiceName,
-                               &service_manager);
+    mojo::Remote<mojom::ServiceManager> service_manager;
+    connector()->Connect(service_manager::mojom::kServiceName,
+                         service_manager.BindNewPipeAndPassReceiver());
 
-    mojom::ServiceManagerListenerPtr listener;
-    binding_.Bind(mojo::MakeRequest(&listener));
+    mojo::PendingRemote<mojom::ServiceManagerListener> listener;
+    receiver_.Bind(listener.InitWithNewPipeAndPassReceiver());
     service_manager->AddListener(std::move(listener));
 
     wait_for_instances_loop_ = std::make_unique<base::RunLoop>();
@@ -210,14 +211,15 @@ class ServiceManagerTest : public testing::Test,
   }
 
   using ServiceFailedToStartCallback =
-      base::Callback<void(const service_manager::Identity&)>;
+      base::RepeatingCallback<void(const service_manager::Identity&)>;
   void set_service_failed_to_start_callback(
       const ServiceFailedToStartCallback& callback) {
     service_failed_to_start_callback_ = callback;
   }
 
   using ServicePIDReceivedCallback =
-      base::Callback<void(const service_manager::Identity&, uint32_t pid)>;
+      base::RepeatingCallback<void(const service_manager::Identity&,
+                                   uint32_t pid)>;
   void set_service_pid_received_callback(
       const ServicePIDReceivedCallback& callback) {
     service_pid_received_callback_ = callback;
@@ -384,7 +386,7 @@ class ServiceManagerTest : public testing::Test,
   TestServiceManager test_service_manager_;
   TestService test_service_;
 
-  mojo::Binding<mojom::ServiceManagerListener> binding_{this};
+  mojo::Receiver<mojom::ServiceManagerListener> receiver_{this};
   std::vector<InstanceInfo> instances_;
   std::vector<InstanceInfo> initial_instances_;
   std::unique_ptr<base::RunLoop> wait_for_instances_loop_;
@@ -563,7 +565,7 @@ TEST_F(ServiceManagerTest, ClientProcessCapabilityEnforced) {
 }
 
 TEST_F(ServiceManagerTest, ClonesDisconnectedConnectors) {
-  Connector connector((mojom::ConnectorPtrInfo()));
+  Connector connector((mojo::PendingRemote<mojom::Connector>()));
   EXPECT_TRUE(connector.Clone());
 }
 

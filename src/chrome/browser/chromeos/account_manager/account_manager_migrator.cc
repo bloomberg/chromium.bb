@@ -20,10 +20,11 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/account_manager/account_manager_util.h"
-#include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/arc/auth/arc_auth_service.h"
+#include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/account_reconcilor_factory.h"
@@ -229,7 +230,7 @@ class DeviceAccountMigration : public AccountMigrationBaseStep,
     bool is_success = false;
     for (auto it = token_map.begin(); it != token_map.end(); ++it) {
       const std::string account_id = RemoveAccountIdPrefix(it->first);
-      if (identity_manager()->GetPrimaryAccountId() != account_id) {
+      if (identity_manager()->GetPrimaryAccountId().ToString() != account_id) {
         continue;
       }
 

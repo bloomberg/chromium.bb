@@ -17,7 +17,6 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "components/dom_distiller/content/browser/distiller_javascript_utils.h"
-#include "components/dom_distiller/content/browser/web_contents_main_frame_observer.h"
 #include "components/dom_distiller/core/distiller_page.h"
 #include "components/dom_distiller/core/proto/distilled_article.pb.h"
 #include "components/dom_distiller/core/proto/distilled_page.pb.h"
@@ -46,7 +45,7 @@ namespace {
 
 // Helper class to know how far in the loading process the current WebContents
 // has come. It will call the callback either after
-// DidCommitProvisionalLoadForFrame or DocumentLoadedInFrame is called for the
+// DidCommitProvisionalLoadForFrame or DOMContentLoaded is called for the
 // main frame, based on the value of |wait_for_document_loaded|.
 class WebContentsMainFrameHelper : public content::WebContentsObserver {
  public:
@@ -65,8 +64,7 @@ class WebContentsMainFrameHelper : public content::WebContentsObserver {
       callback_.Run();
   }
 
-  void DocumentLoadedInFrame(
-      content::RenderFrameHost* render_frame_host) override {
+  void DOMContentLoaded(content::RenderFrameHost* render_frame_host) override {
     if (wait_for_document_loaded_) {
       if (!render_frame_host->GetParent())
         callback_.Run();
@@ -147,7 +145,6 @@ class DistillerPageWebContentsTest : public ContentBrowserTest {
  protected:
   void RunUseCurrentWebContentsTest(const std::string& url,
                                     bool expect_new_web_contents,
-                                    bool setup_main_frame_observer,
                                     bool wait_for_document_loaded);
 
   DistillerPageWebContents* distiller_page_;
@@ -329,28 +326,8 @@ IN_PROC_BROWSER_TEST_F(DistillerPageWebContentsTest,
                        MAYBE_UsingCurrentWebContentsWrongUrl) {
   std::string url("/bogus");
   bool expect_new_web_contents = true;
-  bool setup_main_frame_observer = true;
   bool wait_for_document_loaded = true;
   RunUseCurrentWebContentsTest(url, expect_new_web_contents,
-                               setup_main_frame_observer,
-                               wait_for_document_loaded);
-}
-
-#if defined(OS_WIN)
-#define MAYBE_UsingCurrentWebContentsNoMainFrameObserver \
-  DISABLED_UsingCurrentWebContentsNoMainFrameObserver
-#else
-#define MAYBE_UsingCurrentWebContentsNoMainFrameObserver \
-  UsingCurrentWebContentsNoMainFrameObserver
-#endif
-IN_PROC_BROWSER_TEST_F(DistillerPageWebContentsTest,
-                       MAYBE_UsingCurrentWebContentsNoMainFrameObserver) {
-  std::string url(kSimpleArticlePath);
-  bool expect_new_web_contents = true;
-  bool setup_main_frame_observer = false;
-  bool wait_for_document_loaded = true;
-  RunUseCurrentWebContentsTest(url, expect_new_web_contents,
-                               setup_main_frame_observer,
                                wait_for_document_loaded);
 }
 
@@ -365,10 +342,8 @@ IN_PROC_BROWSER_TEST_F(DistillerPageWebContentsTest,
                        MAYBE_UsingCurrentWebContentsNotFinishedLoadingYet) {
   std::string url(kSimpleArticlePath);
   bool expect_new_web_contents = false;
-  bool setup_main_frame_observer = true;
   bool wait_for_document_loaded = false;
   RunUseCurrentWebContentsTest(url, expect_new_web_contents,
-                               setup_main_frame_observer,
                                wait_for_document_loaded);
 }
 
@@ -383,23 +358,16 @@ IN_PROC_BROWSER_TEST_F(DistillerPageWebContentsTest,
                        MAYBE_UsingCurrentWebContentsReadyForDistillation) {
   std::string url(kSimpleArticlePath);
   bool expect_new_web_contents = false;
-  bool setup_main_frame_observer = true;
   bool wait_for_document_loaded = true;
   RunUseCurrentWebContentsTest(url, expect_new_web_contents,
-                               setup_main_frame_observer,
                                wait_for_document_loaded);
 }
 
 void DistillerPageWebContentsTest::RunUseCurrentWebContentsTest(
     const std::string& url,
     bool expect_new_web_contents,
-    bool setup_main_frame_observer,
     bool wait_for_document_loaded) {
   content::WebContents* current_web_contents = shell()->web_contents();
-  if (setup_main_frame_observer) {
-    dom_distiller::WebContentsMainFrameObserver::CreateForWebContents(
-        current_web_contents);
-  }
   base::RunLoop url_loaded_runner;
   WebContentsMainFrameHelper main_frame_loaded(current_web_contents,
                                                url_loaded_runner.QuitClosure(),
@@ -437,9 +405,6 @@ void DistillerPageWebContentsTest::RunUseCurrentWebContentsTest(
 IN_PROC_BROWSER_TEST_F(DistillerPageWebContentsTest,
                        MAYBE_PageDestroyedBeforeFinishDistillation) {
   content::WebContents* current_web_contents = shell()->web_contents();
-
-  dom_distiller::WebContentsMainFrameObserver::CreateForWebContents(
-      current_web_contents);
 
   base::RunLoop url_loaded_runner;
   WebContentsMainFrameHelper main_frame_loaded(
@@ -556,8 +521,6 @@ IN_PROC_BROWSER_TEST_F(DistillerPageWebContentsTest,
 IN_PROC_BROWSER_TEST_F(DistillerPageWebContentsTest, MAYBE_TestPinch) {
   // Load the test file in content shell and wait until it has fully loaded.
   content::WebContents* web_contents = shell()->web_contents();
-  dom_distiller::WebContentsMainFrameObserver::CreateForWebContents(
-      web_contents);
   base::RunLoop url_loaded_runner;
   WebContentsMainFrameHelper main_frame_loaded(
       web_contents, url_loaded_runner.QuitClosure(), true);

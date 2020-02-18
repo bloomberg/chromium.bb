@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
 
@@ -33,10 +34,9 @@ void MeasureFetchProperties(ExecutionContext* execution_context,
 }
 
 template <typename T>
-class GlobalFetchImpl final
-    : public GarbageCollectedFinalized<GlobalFetchImpl<T>>,
-      public GlobalFetch::ScopedFetcher,
-      public Supplement<T> {
+class GlobalFetchImpl final : public GarbageCollected<GlobalFetchImpl<T>>,
+                              public GlobalFetch::ScopedFetcher,
+                              public Supplement<T> {
   USING_GARBAGE_COLLECTED_MIXIN(GlobalFetchImpl);
 
  public:
@@ -54,7 +54,7 @@ class GlobalFetchImpl final
   }
 
   explicit GlobalFetchImpl(ExecutionContext* execution_context)
-      : fetch_manager_(FetchManager::Create(execution_context)) {}
+      : fetch_manager_(MakeGarbageCollected<FetchManager>(execution_context)) {}
 
   ScriptPromise Fetch(ScriptState* script_state,
                       const RequestInfo& input,

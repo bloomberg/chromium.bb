@@ -4,8 +4,6 @@
 
 #include "chrome/browser/component_updater/chrome_component_updater_configurator.h"
 
-#include <stdint.h>
-
 #include <memory>
 #include <string>
 #include <vector>
@@ -18,7 +16,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/component_updater/component_updater_utils.h"
-#include "chrome/browser/component_updater/recovery_improved_component_installer.h"
 #include "chrome/browser/google/google_brand.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/update_client/chrome_update_query_params_delegate.h"
@@ -42,7 +39,6 @@
 
 #if defined(OS_WIN)
 #include "base/enterprise_util.h"
-#include "chrome/install_static/install_util.h"
 #include "chrome/installer/util/google_update_settings.h"
 #endif
 
@@ -81,11 +77,8 @@ class ChromeConfigurator : public update_client::Configurator {
   PrefService* GetPrefService() const override;
   update_client::ActivityDataService* GetActivityDataService() const override;
   bool IsPerUserInstall() const override;
-  std::vector<uint8_t> GetRunActionKeyHash() const override;
-  std::string GetAppGuid() const override;
   std::unique_ptr<update_client::ProtocolHandlerFactory>
   GetProtocolHandlerFactory() const override;
-  update_client::RecoveryCRXElevator GetRecoveryCRXElevator() const override;
 
  private:
   friend class base::RefCountedThreadSafe<ChromeConfigurator>;
@@ -184,7 +177,9 @@ ChromeConfigurator::GetNetworkFetcherFactory() {
     network_fetcher_factory_ =
         base::MakeRefCounted<update_client::NetworkFetcherChromiumFactory>(
             g_browser_process->system_network_context_manager()
-                ->GetSharedURLLoaderFactory());
+                ->GetSharedURLLoaderFactory(),
+            // Never send cookies for component update downloads.
+            base::BindRepeating([](const GURL& url) { return false; }));
   }
   return network_fetcher_factory_;
 }
@@ -238,30 +233,9 @@ bool ChromeConfigurator::IsPerUserInstall() const {
   return component_updater::IsPerUserInstall();
 }
 
-std::vector<uint8_t> ChromeConfigurator::GetRunActionKeyHash() const {
-  return configurator_impl_.GetRunActionKeyHash();
-}
-
-std::string ChromeConfigurator::GetAppGuid() const {
-#if defined(OS_WIN)
-  return install_static::UTF16ToUTF8(install_static::GetAppGuid());
-#else
-  return configurator_impl_.GetAppGuid();
-#endif
-}
-
 std::unique_ptr<update_client::ProtocolHandlerFactory>
 ChromeConfigurator::GetProtocolHandlerFactory() const {
   return configurator_impl_.GetProtocolHandlerFactory();
-}
-
-update_client::RecoveryCRXElevator ChromeConfigurator::GetRecoveryCRXElevator()
-    const {
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING) && defined(OS_WIN)
-  return base::BindOnce(&RunRecoveryCRXElevated);
-#else
-  return {};
-#endif
 }
 
 }  // namespace

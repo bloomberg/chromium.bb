@@ -28,7 +28,6 @@
 #include "net/third_party/quiche/src/quic/platform/api/quic_arraysize.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_bug_tracker.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_client_stats.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_endian.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_hostname_utils.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_map_util.h"
@@ -61,7 +60,13 @@ void RecordDiskCacheServerConfigState(
 
 QuicCryptoClientConfig::QuicCryptoClientConfig(
     std::unique_ptr<ProofVerifier> proof_verifier)
+    : QuicCryptoClientConfig(std::move(proof_verifier), nullptr) {}
+
+QuicCryptoClientConfig::QuicCryptoClientConfig(
+    std::unique_ptr<ProofVerifier> proof_verifier,
+    std::unique_ptr<SessionCache> session_cache)
     : proof_verifier_(std::move(proof_verifier)),
+      session_cache_(std::move(session_cache)),
       ssl_ctx_(TlsClientConnection::CreateSslCtx()) {
   DCHECK(proof_verifier_.get());
   SetDefaults();
@@ -120,7 +125,7 @@ QuicCryptoClientConfig::CachedState::GetServerConfig() const {
     return nullptr;
   }
 
-  if (!scfg_.get()) {
+  if (!scfg_) {
     scfg_ = CryptoFramer::ParseMessage(server_config_);
     DCHECK(scfg_.get());
   }
@@ -514,6 +519,7 @@ QuicErrorCode QuicCryptoClientConfig::FillClientHello(
     const QuicServerId& server_id,
     QuicConnectionId connection_id,
     const ParsedQuicVersion preferred_version,
+    const ParsedQuicVersion actual_version,
     const CachedState* cached,
     QuicWallTime now,
     QuicRandom* rand,
@@ -649,12 +655,12 @@ QuicErrorCode QuicCryptoClientConfig::FillClientHello(
 
   std::string* subkey_secret = &out_params->initial_subkey_secret;
 
-  if (!CryptoUtils::DeriveKeys(out_params->initial_premaster_secret,
-                               out_params->aead, out_params->client_nonce,
-                               out_params->server_nonce, pre_shared_key_,
-                               hkdf_input, Perspective::IS_CLIENT,
-                               CryptoUtils::Diversification::Pending(),
-                               &out_params->initial_crypters, subkey_secret)) {
+  if (!CryptoUtils::DeriveKeys(
+          actual_version, out_params->initial_premaster_secret,
+          out_params->aead, out_params->client_nonce, out_params->server_nonce,
+          pre_shared_key_, hkdf_input, Perspective::IS_CLIENT,
+          CryptoUtils::Diversification::Pending(),
+          &out_params->initial_crypters, subkey_secret)) {
     *error_details = "Symmetric key setup failed";
     return QUIC_CRYPTO_SYMMETRIC_KEY_SETUP_FAILED;
   }
@@ -767,7 +773,7 @@ QuicErrorCode QuicCryptoClientConfig::ProcessRejection(
 QuicErrorCode QuicCryptoClientConfig::ProcessServerHello(
     const CryptoHandshakeMessage& server_hello,
     QuicConnectionId /*connection_id*/,
-    ParsedQuicVersion /*version*/,
+    ParsedQuicVersion version,
     const ParsedQuicVersionVector& negotiated_versions,
     CachedState* cached,
     QuicReferenceCountedPointer<QuicCryptoNegotiatedParameters> out_params,
@@ -814,8 +820,8 @@ QuicErrorCode QuicCryptoClientConfig::ProcessServerHello(
   hkdf_input.append(out_params->hkdf_input_suffix);
 
   if (!CryptoUtils::DeriveKeys(
-          out_params->forward_secure_premaster_secret, out_params->aead,
-          out_params->client_nonce,
+          version, out_params->forward_secure_premaster_secret,
+          out_params->aead, out_params->client_nonce,
           shlo_nonce.empty() ? out_params->server_nonce : shlo_nonce,
           pre_shared_key_, hkdf_input, Perspective::IS_CLIENT,
           CryptoUtils::Diversification::Never(),
@@ -847,6 +853,10 @@ QuicErrorCode QuicCryptoClientConfig::ProcessServerConfigUpdate(
 
 ProofVerifier* QuicCryptoClientConfig::proof_verifier() const {
   return proof_verifier_.get();
+}
+
+SessionCache* QuicCryptoClientConfig::session_cache() const {
+  return session_cache_.get();
 }
 
 SSL_CTX* QuicCryptoClientConfig::ssl_ctx() const {

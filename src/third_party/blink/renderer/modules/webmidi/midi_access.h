@@ -32,7 +32,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBMIDI_MIDI_ACCESS_H_
 
 #include <memory>
-#include "media/midi/midi_service.mojom-blink.h"
+#include "media/midi/midi_service.mojom-blink-forward.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
@@ -59,15 +59,6 @@ class MIDIAccess final : public EventTargetWithInlineData,
   USING_PRE_FINALIZER(MIDIAccess, Dispose);
 
  public:
-  static MIDIAccess* Create(
-      std::unique_ptr<MIDIDispatcher> dispatcher,
-      bool sysex_enabled,
-      const Vector<MIDIAccessInitializer::PortDescriptor>& ports,
-      ExecutionContext* execution_context) {
-    return MakeGarbageCollected<MIDIAccess>(
-        std::move(dispatcher), sysex_enabled, ports, execution_context);
-  }
-
   MIDIAccess(std::unique_ptr<MIDIDispatcher>,
              bool sysex_enabled,
              const Vector<MIDIAccessInitializer::PortDescriptor>&,

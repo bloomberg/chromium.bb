@@ -36,13 +36,13 @@
 #include "base/optional.h"
 #include "base/unguessable_token.h"
 #include "services/network/public/mojom/referrer_policy.mojom-blink-forward.h"
-#include "third_party/blink/public/mojom/frame/document_interface_broker.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/frame/lifecycle.mojom-blink-forward.h"
 #include "third_party/blink/renderer/bindings/core/v8/sanitize_script_errors.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/execution_context/context_lifecycle_notifier.h"
 #include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/feature_policy/feature_policy_parser_delegate.h"
+#include "third_party/blink/renderer/core/frame/dom_timer_coordinator.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/loader/fetch/console_logger.h"
@@ -71,7 +71,6 @@ class DOMTimerCoordinator;
 class ErrorEvent;
 class EventTarget;
 class FrameOrWorkerScheduler;
-class InterfaceInvalidator;
 class KURL;
 class LocalDOMWindow;
 class OriginTrialContext;
@@ -178,7 +177,10 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
   // list" of tasks created by setTimeout and setInterval. The
   // DOMTimerCoordinator is owned by the ExecutionContext and should
   // not be used after the ExecutionContext is destroyed.
-  virtual DOMTimerCoordinator* Timers() = 0;
+  DOMTimerCoordinator* Timers() {
+    DCHECK(!IsWorkletGlobalScope());
+    return &timers_;
+  }
 
   virtual ResourceFetcher* Fetcher() const = 0;
 
@@ -277,17 +279,11 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
     return nullptr;
   }
 
-  virtual mojom::blink::DocumentInterfaceBroker* GetDocumentInterfaceBroker() {
-    return nullptr;
-  }
-
   virtual BrowserInterfaceBrokerProxy& GetBrowserInterfaceBroker() = 0;
 
   virtual FrameOrWorkerScheduler* GetScheduler() = 0;
   virtual scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(
       TaskType) = 0;
-
-  InterfaceInvalidator* GetInterfaceInvalidator() { return invalidator_.get(); }
 
   v8::Isolate* GetIsolate() const { return isolate_; }
   Agent* GetAgent() const { return agent_; }
@@ -299,6 +295,7 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
   }
 
   virtual TrustedTypePolicyFactory* GetTrustedTypes() const { return nullptr; }
+  virtual bool RequireTrustedTypes() const;
 
   // FeaturePolicyParserDelegate override
   bool FeatureEnabled(OriginTrialFeature) const override;
@@ -306,7 +303,6 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
   bool FeaturePolicyFeatureObserved(
       mojom::FeaturePolicyFeature feature) override;
 
-  bool RequireTrustedTypes() const;
 
  protected:
   ExecutionContext(v8::Isolate* isolate,
@@ -344,6 +340,8 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
 
   Member<OriginTrialContext> origin_trial_context_;
 
+  DOMTimerCoordinator timers_;
+
   // Counter that keeps track of how many window interaction calls are allowed
   // for this ExecutionContext. Callers are expected to call
   // |allowWindowInteraction()| and |consumeWindowInteraction()| in order to
@@ -351,8 +349,6 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
   int window_interaction_tokens_;
 
   network::mojom::ReferrerPolicy referrer_policy_;
-
-  std::unique_ptr<InterfaceInvalidator> invalidator_;
 
   // Tracks which feature policies have already been parsed, so as not to count
   // them multiple times.

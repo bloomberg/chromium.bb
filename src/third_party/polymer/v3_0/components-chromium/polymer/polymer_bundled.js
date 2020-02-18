@@ -5185,9 +5185,7 @@ const TemplateStamp = dedupingMixin(
       if (!template._templateInfo) {
         let templateInfo = template._templateInfo = {};
         templateInfo.nodeInfoList = [];
-        templateInfo.stripWhiteSpace =
-          (outerTemplateInfo && outerTemplateInfo.stripWhiteSpace) ||
-          template.hasAttribute('strip-whitespace');
+        templateInfo.stripWhiteSpace = true;
         this._parseTemplateContent(template, templateInfo, {parent: null});
       }
       return template._templateInfo;
@@ -15022,4 +15020,4 @@ Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 */
 
-export { Base, Debouncer, OptionalMutableDataBehavior, Polymer, PolymerElement, TemplateInstanceBase, Templatizer, afterNextRender, animationFrame, beforeNextRender, dashToCamelCase, dom, enqueueDebouncer, flush, gestures$1 as gestures, html, idlePeriod, matches, microTask, translate, useShadow };
+export { Base, Debouncer, OptionalMutableDataBehavior, Polymer, PolymerElement, TemplateInstanceBase, Templatizer, afterNextRender, animationFrame, beforeNextRender, calculateSplices, dashToCamelCase, dom, enqueueDebouncer, flush, gestures$1 as gestures, html, idlePeriod, matches, microTask, templatize, translate, useShadow };

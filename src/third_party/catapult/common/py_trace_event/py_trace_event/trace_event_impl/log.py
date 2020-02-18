@@ -103,7 +103,7 @@ def _write_header():
         category="process_argv",
         name="process_argv",
         ts=trace_time.Now(),
-        args=sys.argv,
+        args={"argv": sys.argv},
         tid=tid,
     )
   else:
@@ -183,6 +183,9 @@ def trace_disable():
     return
   _enabled = False
   _flush(close=True)
+  # Clear the collected interned data so that the next trace session
+  # could start from a clean state.
+  perfetto_trace_writer.reset_global_state()
   multiprocessing.Process = _original_multiprocessing_process
 
 def _write_cur_events():
@@ -289,7 +292,6 @@ def trace_add_benchmark_metadata(
     story_tags,
     story_run_index,
     label=None,
-    had_failures=None,
 ):
   """ Add benchmark metadata to be written to trace file.
 
@@ -317,7 +319,10 @@ def trace_add_benchmark_metadata(
         story_tags=story_tags,
         story_run_index=story_run_index,
         label=label,
-        had_failures=had_failures,
+    )
+    perfetto_trace_writer.write_chrome_metadata(
+        output=_log_file,
+        clock_domain="TELEMETRY",
     )
   elif _format == JSON_WITH_METADATA:
     # Store metadata to write it in the footer.
@@ -332,8 +337,6 @@ def trace_add_benchmark_metadata(
     }
     if label:
       telemetry_metadata_for_json["labels"] = [label]
-    if had_failures:
-      telemetry_metadata_for_json["hadFailures"] = [had_failures]
 
     _benchmark_metadata = {
         # TODO(crbug.com/948633): For right now, we use "TELEMETRY" as the

@@ -40,6 +40,7 @@
 
 #include "src/base/bits.h"
 #include "src/base/cpu.h"
+#include "src/base/overflowing-math.h"
 #include "src/codegen/arm/assembler-arm-inl.h"
 #include "src/codegen/assembler-inl.h"
 #include "src/codegen/macro-assembler.h"
@@ -452,8 +453,8 @@ void Assembler::AllocateAndInstallRequestedHeapObjects(Isolate* isolate) {
     Handle<HeapObject> object;
     switch (request.kind()) {
       case HeapObjectRequest::kHeapNumber:
-        object = isolate->factory()->NewHeapNumber(request.heap_number(),
-                                                   AllocationType::kOld);
+        object = isolate->factory()->NewHeapNumber<AllocationType::kOld>(
+            request.heap_number());
         break;
       case HeapObjectRequest::kStringConstant: {
         const StringConstantBase* str = request.string();
@@ -2620,6 +2621,38 @@ static void DoubleAsTwoUInt32(Double d, uint32_t* lo, uint32_t* hi) {
   *hi = i >> 32;
 }
 
+// This checks if imm can be encoded into an immediate for vmov.
+// See Table A7-15 in ARM DDI 0406C.d.
+// Currently only supports the first row of the table.
+static bool FitsVmovImm64(uint64_t imm, uint32_t* encoding) {
+  uint32_t lo = imm & 0xFFFFFFFF;
+  uint32_t hi = imm >> 32;
+  if (lo == hi && ((lo & 0xffffff00) == 0)) {
+    *encoding = ((lo & 0x80) << (24 - 7));   // a
+    *encoding |= ((lo & 0x70) << (16 - 4));  // bcd
+    *encoding |= (lo & 0x0f);                //  efgh
+    return true;
+  }
+
+  return false;
+}
+
+void Assembler::vmov(const QwNeonRegister dst, uint64_t imm) {
+  uint32_t enc;
+  if (CpuFeatures::IsSupported(VFPv3) && FitsVmovImm64(imm, &enc)) {
+    CpuFeatureScope scope(this, VFPv3);
+    // Instruction details available in ARM DDI 0406C.b, A8-937.
+    // 001i1(27-23) | D(22) | 000(21-19) | imm3(18-16) | Vd(15-12) | cmode(11-8)
+    // | 0(7) | Q(6) | op(5) | 4(1) | imm4(3-0)
+    int vd, d;
+    dst.split_code(&vd, &d);
+    emit(kSpecialCondition | 0x05 * B23 | d * B22 | vd * B12 | 0x1 * B6 |
+         0x1 * B4 | enc);
+  } else {
+    UNIMPLEMENTED();
+  }
+}
+
 // Only works for little endian floating point formats.
 // We don't support VFP on the mixed endian floating point platform.
 static bool FitsVmovFPImmediate(Double d, uint32_t* encoding) {
@@ -3630,6 +3663,17 @@ void Assembler::vld1(NeonSize size, const NeonListOperand& dst,
        src.rm().code());
 }
 
+// vld1r(eplicate)
+void Assembler::vld1r(NeonSize size, const NeonListOperand& dst,
+                      const NeonMemOperand& src) {
+  DCHECK(IsEnabled(NEON));
+  int vd, d;
+  dst.base().split_code(&vd, &d);
+  emit(0xFU * B28 | 4 * B24 | 1 * B23 | d * B22 | 2 * B20 |
+       src.rn().code() * B16 | vd * B12 | 0xC * B8 | size * B6 |
+       dst.length() * B5 | src.rm().code());
+}
+
 void Assembler::vst1(NeonSize size, const NeonListOperand& src,
                      const NeonMemOperand& dst) {
   // Instruction details available in ARM DDI 0406C.b, A8.8.404.
@@ -3657,17 +3701,19 @@ void Assembler::vmovl(NeonDataType dt, QwNeonRegister dst, DwVfpRegister src) {
        0xA * B8 | m * B5 | B4 | vm);
 }
 
-void Assembler::vqmovn(NeonDataType dt, DwVfpRegister dst, QwNeonRegister src) {
+void Assembler::vqmovn(NeonDataType dst_dt, NeonDataType src_dt,
+                       DwVfpRegister dst, QwNeonRegister src) {
   // Instruction details available in ARM DDI 0406C.b, A8.8.1004.
   // vqmovn.<type><size> Dd, Qm. ARM vector narrowing move with saturation.
+  // vqmovun.<type><size> Dd, Qm. Same as above, but produces unsigned results.
   DCHECK(IsEnabled(NEON));
+  DCHECK_IMPLIES(NeonU(src_dt), NeonU(dst_dt));
   int vd, d;
   dst.split_code(&vd, &d);
   int vm, m;
   src.split_code(&vm, &m);
-  int size = NeonSz(dt);
-  int u = NeonU(dt);
-  int op = u != 0 ? 3 : 2;
+  int size = NeonSz(dst_dt);
+  int op = NeonU(src_dt) ? 0b11 : NeonU(dst_dt) ? 0b01 : 0b10;
   emit(0x1E7U * B23 | d * B22 | 0x3 * B20 | size * B18 | 0x2 * B16 | vd * B12 |
        0x2 * B8 | op * B6 | m * B5 | vm);
 }
@@ -4802,15 +4848,17 @@ void Assembler::GrowBuffer() {
   int rc_delta = (new_start + new_size) - (buffer_start_ + old_size);
   size_t reloc_size = (buffer_start_ + old_size) - reloc_info_writer.pos();
   MemMove(new_start, buffer_start_, pc_offset());
-  MemMove(reloc_info_writer.pos() + rc_delta, reloc_info_writer.pos(),
-          reloc_size);
+  byte* new_reloc_start = reinterpret_cast<byte*>(
+      reinterpret_cast<Address>(reloc_info_writer.pos()) + rc_delta);
+  MemMove(new_reloc_start, reloc_info_writer.pos(), reloc_size);
 
   // Switch buffers.
   buffer_ = std::move(new_buffer);
   buffer_start_ = new_start;
-  pc_ += pc_delta;
-  reloc_info_writer.Reposition(reloc_info_writer.pos() + rc_delta,
-                               reloc_info_writer.last_pc() + pc_delta);
+  pc_ = reinterpret_cast<byte*>(reinterpret_cast<Address>(pc_) + pc_delta);
+  byte* new_last_pc = reinterpret_cast<byte*>(
+      reinterpret_cast<Address>(reloc_info_writer.last_pc()) + pc_delta);
+  reloc_info_writer.Reposition(new_reloc_start, new_last_pc);
 
   // None of our relocation types are pc relative pointing outside the code
   // buffer nor pc absolute pointing inside the code buffer, so there is no need
@@ -4831,7 +4879,7 @@ void Assembler::dd(uint32_t data) {
   // blocked before using dd.
   DCHECK(is_const_pool_blocked() || pending_32_bit_constants_.empty());
   CheckBuffer();
-  *reinterpret_cast<uint32_t*>(pc_) = data;
+  base::WriteUnalignedValue(reinterpret_cast<Address>(pc_), data);
   pc_ += sizeof(uint32_t);
 }
 
@@ -4840,7 +4888,7 @@ void Assembler::dq(uint64_t value) {
   // blocked before using dq.
   DCHECK(is_const_pool_blocked() || pending_32_bit_constants_.empty());
   CheckBuffer();
-  *reinterpret_cast<uint64_t*>(pc_) = value;
+  base::WriteUnalignedValue(reinterpret_cast<Address>(pc_), value);
   pc_ += sizeof(uint64_t);
 }
 

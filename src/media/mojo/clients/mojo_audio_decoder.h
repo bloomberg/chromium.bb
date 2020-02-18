@@ -12,8 +12,9 @@
 #include "media/base/audio_decoder.h"
 #include "media/mojo/mojom/audio_decoder.mojom.h"
 #include "media/mojo/mojom/media_types.mojom.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -27,7 +28,7 @@ class MojoDecoderBufferWriter;
 class MojoAudioDecoder : public AudioDecoder, public mojom::AudioDecoderClient {
  public:
   MojoAudioDecoder(scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-                   mojom::AudioDecoderPtr remote_decoder);
+                   mojo::PendingRemote<mojom::AudioDecoder> remote_decoder);
   ~MojoAudioDecoder() final;
 
   // AudioDecoder implementation.
@@ -69,19 +70,19 @@ class MojoAudioDecoder : public AudioDecoder, public mojom::AudioDecoderClient {
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   // This class is constructed on one thread and used exclusively on another
-  // thread. This member is used to safely pass the AudioDecoderPtr from one
-  // thread to another. It is set in the constructor and is consumed in
-  // Initialize().
-  mojom::AudioDecoderPtrInfo remote_decoder_info_;
+  // thread. This member is used to safely pass the
+  // mojo::PendingRemote<AudioDecoder> from one thread to another. It is set in
+  // the constructor and is consumed in Initialize().
+  mojo::PendingRemote<mojom::AudioDecoder> pending_remote_decoder_;
 
-  mojom::AudioDecoderPtr remote_decoder_;
+  mojo::Remote<mojom::AudioDecoder> remote_decoder_;
 
   std::unique_ptr<MojoDecoderBufferWriter> mojo_decoder_buffer_writer_;
 
   uint32_t writer_capacity_ = 0;
 
-  // Binding for AudioDecoderClient, bound to the |task_runner_|.
-  mojo::AssociatedBinding<AudioDecoderClient> client_binding_;
+  // Receiver for AudioDecoderClient, bound to the |task_runner_|.
+  mojo::AssociatedReceiver<AudioDecoderClient> client_receiver_{this};
 
   InitCB init_cb_;
   OutputCB output_cb_;

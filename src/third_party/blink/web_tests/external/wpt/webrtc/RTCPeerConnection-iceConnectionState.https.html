@@ -360,8 +360,41 @@ promise_test(async t => {
   delete pc1.candidateBuffer;
   await listenToIceConnected(pc1);
   await listenToIceConnected(pc2);
-  assert_array_equals(pc1.iceStates, ['new', 'checking', 'connected']);
+  // While we're waiting for pc2, pc1 may or may not have transitioned
+  // to "completed" state, so allow for both cases.
+  if (pc1.iceStates.length == 3) {
+    assert_array_equals(pc1.iceStates, ['new', 'checking', 'connected']);
+  } else {
+    assert_array_equals(pc1.iceStates, ['new', 'checking', 'connected',
+                                        'completed']);
+  }
   assert_array_equals(pc2.iceStates, ['new', 'checking', 'connected']);
 }, 'Responder ICE connection state behaves as expected');
+
+/*
+  Test case for step 11 of PeerConnection.close().
+  ...
+  11. Set connection's ICE connection state to "closed". This does not invoke
+      the "update the ICE connection state" procedure, and does not fire any
+      event.
+  ...
+*/
+promise_test(async t => {
+  const pc1 = new RTCPeerConnection();
+  t.add_cleanup(() => pc1.close());
+  const pc2 = new RTCPeerConnection();
+  const stream = await getNoiseStream({ audio: true });
+  t.add_cleanup(() => stream.getTracks().forEach(track => track.stop()));
+
+  stream.getTracks().forEach(track => pc1.addTrack(track, stream));
+  exchangeIceCandidates(pc1, pc2);
+  doSignalingHandshake(pc1, pc2);
+  await listenToIceConnected(pc2);
+
+  pc2.oniceconnectionstatechange = t.unreached_func();
+  pc2.close();
+  assert_true(pc2.iceConnectionState === 'closed');
+  await new Promise(r => t.step_timeout(r, 100));
+}, 'Closing a PeerConnection should not fire iceconnectionstatechange event');
 
 </script>

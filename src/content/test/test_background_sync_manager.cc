@@ -17,7 +17,7 @@ namespace content {
 TestBackgroundSyncManager::TestBackgroundSyncManager(
     scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
     scoped_refptr<DevToolsBackgroundServicesContextImpl> devtools_context)
-    : BackgroundSyncManager(std::move(service_worker_context),
+    : BackgroundSyncManager(service_worker_context,
                             std::move(devtools_context)) {}
 
 TestBackgroundSyncManager::~TestBackgroundSyncManager() {}
@@ -94,19 +94,24 @@ void TestBackgroundSyncManager::DispatchPeriodicSyncEvent(
   dispatch_periodic_sync_callback_.Run(active_version, std::move(callback));
 }
 
-void TestBackgroundSyncManager::ScheduleDelayedTask(
-    blink::mojom::BackgroundSyncType sync_type,
-    base::TimeDelta delay) {
-  if (sync_type == blink::mojom::BackgroundSyncType::ONE_SHOT)
-    delayed_one_shot_sync_task_delta_ = delay;
-  else
-    delayed_periodic_sync_task_delta_ = delay;
-}
-
-void TestBackgroundSyncManager::HasMainFrameProviderHost(
+void TestBackgroundSyncManager::HasMainFrameWindowClient(
     const url::Origin& origin,
     BoolCallback callback) {
-  std::move(callback).Run(has_main_frame_provider_host_);
+  std::move(callback).Run(has_main_frame_window_client_);
+}
+
+void TestBackgroundSyncManager::FireReadyEvents(
+    blink::mojom::BackgroundSyncType sync_type,
+    bool reschedule,
+    base::OnceClosure callback,
+    std::unique_ptr<BackgroundSyncEventKeepAlive> keepalive) {
+  if (dont_fire_sync_events_) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                  std::move(callback));
+  } else {
+    BackgroundSyncManager::FireReadyEvents(
+        sync_type, reschedule, std::move(callback), std::move(keepalive));
+  }
 }
 
 void TestBackgroundSyncManager::StoreDataInBackendContinue(

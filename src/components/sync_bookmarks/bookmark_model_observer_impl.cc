@@ -12,6 +12,7 @@
 #include "components/bookmarks/browser/bookmark_node.h"
 #include "components/sync/base/hash_util.h"
 #include "components/sync/base/unique_position.h"
+#include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/engine/non_blocking_sync_common.h"
 #include "components/sync_bookmarks/bookmark_specifics_conversions.h"
 #include "components/sync_bookmarks/synced_bookmark_tracker.h"
@@ -94,7 +95,11 @@ void BookmarkModelObserverImpl::BookmarkNodeAdded(
   // https://cs.chromium.org/chromium/src/components/sync/syncable/mutable_entry.cc?l=237&gsn=CreateEntryKernel
   // Assign a temp server id for the entity. Will be overriden by the actual
   // server id upon receiving commit response.
-  const std::string sync_id = base::GenerateGUID();
+  DCHECK(base::IsValidGUID(node->guid()));
+  const std::string sync_id =
+      base::FeatureList::IsEnabled(switches::kMergeBookmarksUsingGUIDs)
+          ? node->guid()
+          : base::GenerateGUID();
   const int64_t server_version = syncer::kUncommittedVersion;
   const base::Time creation_time = base::Time::Now();
   const sync_pb::UniquePosition unique_position =

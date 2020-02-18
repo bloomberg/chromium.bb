@@ -15,7 +15,6 @@
 #include <bitset>
 #include <list>
 #include <map>
-#include <memory>
 #include <utility>
 #include <vector>
 
@@ -287,8 +286,21 @@ bool QueryRenderSupport(Display* dpy) {
   // We don't care about the version of Xrender since all the features which
   // we use are included in every version.
   static bool render_supported = XRenderQueryExtension(dpy, &dummy, &dummy);
-
   return render_supported;
+}
+
+bool QueryShmSupport() {
+  int major;
+  int minor;
+  x11::Bool pixmaps;
+  static bool supported =
+      XShmQueryVersion(gfx::GetXDisplay(), &major, &minor, &pixmaps);
+  return supported;
+}
+
+int ShmEventBase() {
+  static int event_base = XShmGetEventBase(gfx::GetXDisplay());
+  return event_base;
 }
 
 ::Cursor CreateReffedCustomXCursor(XcursorImage* image) {
@@ -1276,6 +1288,34 @@ bool IsSyncExtensionAvailable() {
   return result;
 }
 
+SkColorType ColorTypeForVisual(void* visual) {
+  struct {
+    SkColorType color_type;
+    unsigned long red_mask;
+    unsigned long green_mask;
+    unsigned long blue_mask;
+  } color_infos[] = {
+      {kRGB_565_SkColorType, 0xf800, 0x7e0, 0x1f},
+      {kARGB_4444_SkColorType, 0xf000, 0xf00, 0xf0},
+      {kRGBA_8888_SkColorType, 0xff, 0xff00, 0xff0000},
+      {kBGRA_8888_SkColorType, 0xff0000, 0xff00, 0xff},
+      {kRGBA_1010102_SkColorType, 0x3ff, 0xffc00, 0x3ff00000},
+  };
+  Visual* vis = reinterpret_cast<Visual*>(visual);
+  for (const auto& color_info : color_infos) {
+    if (vis->red_mask == color_info.red_mask &&
+        vis->green_mask == color_info.green_mask &&
+        vis->blue_mask == color_info.blue_mask) {
+      return color_info.color_type;
+    }
+  }
+  LOG(FATAL) << "Unsupported visual with rgb mask 0x" << std::hex
+             << vis->red_mask << ", 0x" << vis->green_mask << ", 0x"
+             << vis->blue_mask
+             << ".  Please report this to https://crbug.com/1025266";
+  return kUnknown_SkColorType;
+}
+
 XRefcountedMemory::XRefcountedMemory(unsigned char* x11_data, size_t length)
     : x11_data_(length ? x11_data : nullptr), length_(length) {
 }
@@ -1308,6 +1348,10 @@ void XScopedCursor::reset(::Cursor cursor) {
   if (cursor_)
     XFreeCursor(display_, cursor_);
   cursor_ = cursor;
+}
+
+void XImageDeleter::operator()(XImage* image) const {
+  XDestroyImage(image);
 }
 
 namespace test {

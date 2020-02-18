@@ -20,6 +20,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/safe_browsing/buildflags.h"
+#include "components/security_interstitials/core/common_string_util.h"
 #include "components/strings/grit/components_chromium_strings.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/vector_icons/vector_icons.h"
@@ -35,7 +36,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
-#include "components/vector_icons/vector_icons.h"
 #include "media/base/media_switches.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
@@ -149,37 +149,41 @@ struct PermissionsUIInfo {
 base::span<const PermissionsUIInfo> GetContentSettingsUIInfo() {
   DCHECK(base::FeatureList::GetInstance() != nullptr);
   static const PermissionsUIInfo kPermissionsUIInfo[] = {
-    {CONTENT_SETTINGS_TYPE_COOKIES, 0},
-    {CONTENT_SETTINGS_TYPE_IMAGES, IDS_PAGE_INFO_TYPE_IMAGES},
-    {CONTENT_SETTINGS_TYPE_JAVASCRIPT, IDS_PAGE_INFO_TYPE_JAVASCRIPT},
-    {CONTENT_SETTINGS_TYPE_POPUPS, IDS_PAGE_INFO_TYPE_POPUPS_REDIRECTS},
+    {ContentSettingsType::COOKIES, 0},
+    {ContentSettingsType::IMAGES, IDS_PAGE_INFO_TYPE_IMAGES},
+    {ContentSettingsType::JAVASCRIPT, IDS_PAGE_INFO_TYPE_JAVASCRIPT},
+    {ContentSettingsType::POPUPS, IDS_PAGE_INFO_TYPE_POPUPS_REDIRECTS},
 #if BUILDFLAG(ENABLE_PLUGINS)
-    {CONTENT_SETTINGS_TYPE_PLUGINS, IDS_PAGE_INFO_TYPE_FLASH},
+    {ContentSettingsType::PLUGINS, IDS_PAGE_INFO_TYPE_FLASH},
 #endif
-    {CONTENT_SETTINGS_TYPE_GEOLOCATION, IDS_PAGE_INFO_TYPE_LOCATION},
-    {CONTENT_SETTINGS_TYPE_NOTIFICATIONS, IDS_PAGE_INFO_TYPE_NOTIFICATIONS},
-    {CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC, IDS_PAGE_INFO_TYPE_MIC},
-    {CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA, IDS_PAGE_INFO_TYPE_CAMERA},
-    {CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS,
+    {ContentSettingsType::GEOLOCATION, IDS_PAGE_INFO_TYPE_LOCATION},
+    {ContentSettingsType::NOTIFICATIONS, IDS_PAGE_INFO_TYPE_NOTIFICATIONS},
+    {ContentSettingsType::MEDIASTREAM_MIC, IDS_PAGE_INFO_TYPE_MIC},
+    {ContentSettingsType::MEDIASTREAM_CAMERA, IDS_PAGE_INFO_TYPE_CAMERA},
+    {ContentSettingsType::AUTOMATIC_DOWNLOADS,
      IDS_AUTOMATIC_DOWNLOADS_TAB_LABEL},
-    {CONTENT_SETTINGS_TYPE_MIDI_SYSEX, IDS_PAGE_INFO_TYPE_MIDI_SYSEX},
-    {CONTENT_SETTINGS_TYPE_BACKGROUND_SYNC, IDS_PAGE_INFO_TYPE_BACKGROUND_SYNC},
-    {CONTENT_SETTINGS_TYPE_AUTOPLAY, IDS_PAGE_INFO_TYPE_AUTOPLAY},
-    {CONTENT_SETTINGS_TYPE_ADS, IDS_PAGE_INFO_TYPE_ADS},
-    {CONTENT_SETTINGS_TYPE_SOUND, IDS_PAGE_INFO_TYPE_SOUND},
-    {CONTENT_SETTINGS_TYPE_CLIPBOARD_READ, IDS_PAGE_INFO_TYPE_CLIPBOARD},
-    {CONTENT_SETTINGS_TYPE_SENSORS,
+    {ContentSettingsType::MIDI_SYSEX, IDS_PAGE_INFO_TYPE_MIDI_SYSEX},
+    {ContentSettingsType::BACKGROUND_SYNC, IDS_PAGE_INFO_TYPE_BACKGROUND_SYNC},
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
+    {ContentSettingsType::PROTECTED_MEDIA_IDENTIFIER,
+     IDS_PAGE_INFO_TYPE_PROTECTED_MEDIA_IDENTIFIER},
+#endif
+    {ContentSettingsType::ADS, IDS_PAGE_INFO_TYPE_ADS},
+    {ContentSettingsType::SOUND, IDS_PAGE_INFO_TYPE_SOUND},
+    {ContentSettingsType::CLIPBOARD_READ, IDS_PAGE_INFO_TYPE_CLIPBOARD},
+    {ContentSettingsType::SENSORS,
      base::FeatureList::IsEnabled(features::kGenericSensorExtraClasses)
          ? IDS_PAGE_INFO_TYPE_SENSORS
          : IDS_PAGE_INFO_TYPE_MOTION_SENSORS},
-    {CONTENT_SETTINGS_TYPE_USB_GUARD, IDS_PAGE_INFO_TYPE_USB},
+    {ContentSettingsType::USB_GUARD, IDS_PAGE_INFO_TYPE_USB},
 #if !defined(OS_ANDROID)
-    {CONTENT_SETTINGS_TYPE_SERIAL_GUARD, IDS_PAGE_INFO_TYPE_SERIAL},
+    {ContentSettingsType::SERIAL_GUARD, IDS_PAGE_INFO_TYPE_SERIAL},
 #endif
-    {CONTENT_SETTINGS_TYPE_NATIVE_FILE_SYSTEM_WRITE_GUARD,
+    {ContentSettingsType::NATIVE_FILE_SYSTEM_WRITE_GUARD,
      IDS_PAGE_INFO_TYPE_NATIVE_FILE_SYSTEM_WRITE},
-    {CONTENT_SETTINGS_TYPE_BLUETOOTH_SCANNING,
+    {ContentSettingsType::BLUETOOTH_SCANNING,
      IDS_PAGE_INFO_TYPE_BLUETOOTH_SCANNING},
+    {ContentSettingsType::NFC, IDS_PAGE_INFO_TYPE_NFC},
   };
   return kPermissionsUIInfo;
 }
@@ -187,12 +191,31 @@ base::span<const PermissionsUIInfo> GetContentSettingsUIInfo() {
 std::unique_ptr<PageInfoUI::SecurityDescription> CreateSecurityDescription(
     PageInfoUI::SecuritySummaryColor style,
     int summary_id,
-    int details_id) {
+    int details_id,
+    PageInfoUI::SecurityDescriptionType type) {
   std::unique_ptr<PageInfoUI::SecurityDescription> security_description(
       new PageInfoUI::SecurityDescription());
   security_description->summary_style = style;
   security_description->summary = l10n_util::GetStringUTF16(summary_id);
   security_description->details = l10n_util::GetStringUTF16(details_id);
+  security_description->type = type;
+  return security_description;
+}
+
+std::unique_ptr<PageInfoUI::SecurityDescription>
+CreateSecurityDescriptionForLookalikeSafetyTip(const GURL& safe_url) {
+  std::unique_ptr<PageInfoUI::SecurityDescription> security_description(
+      new PageInfoUI::SecurityDescription());
+  security_description->summary_style = PageInfoUI::SecuritySummaryColor::RED;
+
+  const base::string16 safe_host =
+      security_interstitials::common_string_util::GetFormattedHostName(
+          safe_url);
+  security_description->summary = l10n_util::GetStringFUTF16(
+      IDS_PAGE_INFO_SAFETY_TIP_LOOKALIKE_TITLE, safe_host);
+  security_description->details = l10n_util::GetStringFUTF16(
+      IDS_PAGE_INFO_SAFETY_TIP_LOOKALIKE_DESCRIPTION, safe_host);
+  security_description->type = PageInfoUI::SecurityDescriptionType::SAFETY_TIP;
   return security_description;
 }
 
@@ -219,7 +242,7 @@ ContentSetting GetEffectiveSetting(Profile* profile,
 PageInfoUI::CookieInfo::CookieInfo() : allowed(-1), blocked(-1) {}
 
 PageInfoUI::PermissionInfo::PermissionInfo()
-    : type(CONTENT_SETTINGS_TYPE_DEFAULT),
+    : type(ContentSettingsType::DEFAULT),
       setting(CONTENT_SETTING_DEFAULT),
       default_setting(CONTENT_SETTING_DEFAULT),
       source(content_settings::SETTING_SOURCE_NONE),
@@ -235,7 +258,7 @@ PageInfoUI::ChosenObjectInfo::~ChosenObjectInfo() {}
 PageInfoUI::IdentityInfo::IdentityInfo()
     : identity_status(PageInfo::SITE_IDENTITY_STATUS_UNKNOWN),
       safe_browsing_status(PageInfo::SAFE_BROWSING_STATUS_NONE),
-      safety_tip_status(security_state::SafetyTipStatus::kUnknown),
+      safety_tip_info({security_state::SafetyTipStatus::kUnknown, GURL()}),
       connection_status(PageInfo::SITE_CONNECTION_STATUS_UNKNOWN),
       show_ssl_decision_revoke_button(false),
       show_change_password_buttons(false) {}
@@ -256,15 +279,19 @@ PageInfoUI::GetSecurityDescription(const IdentityInfo& identity_info) const {
     case PageInfo::SAFE_BROWSING_STATUS_MALWARE:
       return CreateSecurityDescription(SecuritySummaryColor::RED,
                                        IDS_PAGE_INFO_MALWARE_SUMMARY,
-                                       IDS_PAGE_INFO_MALWARE_DETAILS);
+                                       IDS_PAGE_INFO_MALWARE_DETAILS,
+                                       SecurityDescriptionType::SAFE_BROWSING);
     case PageInfo::SAFE_BROWSING_STATUS_SOCIAL_ENGINEERING:
-      return CreateSecurityDescription(
-          SecuritySummaryColor::RED, IDS_PAGE_INFO_SOCIAL_ENGINEERING_SUMMARY,
-          IDS_PAGE_INFO_SOCIAL_ENGINEERING_DETAILS);
+      return CreateSecurityDescription(SecuritySummaryColor::RED,
+                                       IDS_PAGE_INFO_SOCIAL_ENGINEERING_SUMMARY,
+                                       IDS_PAGE_INFO_SOCIAL_ENGINEERING_DETAILS,
+                                       SecurityDescriptionType::SAFE_BROWSING);
     case PageInfo::SAFE_BROWSING_STATUS_UNWANTED_SOFTWARE:
       return CreateSecurityDescription(SecuritySummaryColor::RED,
                                        IDS_PAGE_INFO_UNWANTED_SOFTWARE_SUMMARY,
-                                       IDS_PAGE_INFO_UNWANTED_SOFTWARE_DETAILS);
+                                       IDS_PAGE_INFO_UNWANTED_SOFTWARE_DETAILS,
+                                       SecurityDescriptionType::SAFE_BROWSING);
+    case PageInfo::SAFE_BROWSING_STATUS_SAVED_PASSWORD_REUSE:
     case PageInfo::SAFE_BROWSING_STATUS_SIGNED_IN_SYNC_PASSWORD_REUSE:
     case PageInfo::SAFE_BROWSING_STATUS_SIGNED_IN_NON_SYNC_PASSWORD_REUSE:
     case PageInfo::SAFE_BROWSING_STATUS_ENTERPRISE_PASSWORD_REUSE:
@@ -276,20 +303,14 @@ PageInfoUI::GetSecurityDescription(const IdentityInfo& identity_info) const {
     case PageInfo::SAFE_BROWSING_STATUS_BILLING:
       return CreateSecurityDescription(SecuritySummaryColor::RED,
                                        IDS_PAGE_INFO_BILLING_SUMMARY,
-                                       IDS_PAGE_INFO_BILLING_DETAILS);
+                                       IDS_PAGE_INFO_BILLING_DETAILS,
+                                       SecurityDescriptionType::SAFE_BROWSING);
   }
 
-  switch (identity_info.safety_tip_status) {
-    case security_state::SafetyTipStatus::kBadReputation:
-    case security_state::SafetyTipStatus::kLookalike:
-      // TODO(jdeblasio): The BAD_REPUTATION string is generic enough to use for
-      // lookalikes too, but it probably deserves its own string.
-      return CreateSecurityDescription(
-          SecuritySummaryColor::RED, IDS_PAGE_INFO_SAFETY_TIP_SUMMARY,
-          IDS_PAGE_INFO_SAFETY_TIP_BAD_REPUTATION_DESCRIPTION);
-    case security_state::SafetyTipStatus::kNone:
-    case security_state::SafetyTipStatus::kUnknown:
-      break;
+  std::unique_ptr<SecurityDescription> safety_tip_security_desc =
+      CreateSafetyTipSecurityDescription(identity_info.safety_tip_info);
+  if (safety_tip_security_desc) {
+    return safety_tip_security_desc;
   }
 
   switch (identity_info.identity_status) {
@@ -297,9 +318,9 @@ PageInfoUI::GetSecurityDescription(const IdentityInfo& identity_info) const {
 #if defined(OS_ANDROID)
       // We provide identical summary and detail strings for Android, which
       // deduplicates them in the UI code.
-      return CreateSecurityDescription(SecuritySummaryColor::GREEN,
-                                       IDS_PAGE_INFO_INTERNAL_PAGE,
-                                       IDS_PAGE_INFO_INTERNAL_PAGE);
+      return CreateSecurityDescription(
+          SecuritySummaryColor::GREEN, IDS_PAGE_INFO_INTERNAL_PAGE,
+          IDS_PAGE_INFO_INTERNAL_PAGE, SecurityDescriptionType::INTERNAL);
 #else
       // Internal pages on desktop have their own UI implementations which
       // should never call this function.
@@ -315,19 +336,28 @@ PageInfoUI::GetSecurityDescription(const IdentityInfo& identity_info) const {
         case PageInfo::SITE_CONNECTION_STATUS_INSECURE_ACTIVE_SUBRESOURCE:
           return CreateSecurityDescription(SecuritySummaryColor::RED,
                                            IDS_PAGE_INFO_NOT_SECURE_SUMMARY,
-                                           IDS_PAGE_INFO_NOT_SECURE_DETAILS);
+                                           IDS_PAGE_INFO_NOT_SECURE_DETAILS,
+                                           SecurityDescriptionType::CONNECTION);
         case PageInfo::SITE_CONNECTION_STATUS_INSECURE_FORM_ACTION:
           return CreateSecurityDescription(SecuritySummaryColor::RED,
                                            IDS_PAGE_INFO_MIXED_CONTENT_SUMMARY,
-                                           IDS_PAGE_INFO_NOT_SECURE_DETAILS);
+                                           IDS_PAGE_INFO_NOT_SECURE_DETAILS,
+                                           SecurityDescriptionType::CONNECTION);
         case PageInfo::SITE_CONNECTION_STATUS_INSECURE_PASSIVE_SUBRESOURCE:
           return CreateSecurityDescription(SecuritySummaryColor::RED,
                                            IDS_PAGE_INFO_MIXED_CONTENT_SUMMARY,
-                                           IDS_PAGE_INFO_MIXED_CONTENT_DETAILS);
+                                           IDS_PAGE_INFO_MIXED_CONTENT_DETAILS,
+                                           SecurityDescriptionType::CONNECTION);
+        case PageInfo::SITE_CONNECTION_STATUS_LEGACY_TLS:
+          return CreateSecurityDescription(SecuritySummaryColor::RED,
+                                           IDS_PAGE_INFO_MIXED_CONTENT_SUMMARY,
+                                           IDS_PAGE_INFO_LEGACY_TLS_DETAILS,
+                                           SecurityDescriptionType::CONNECTION);
         default:
           return CreateSecurityDescription(SecuritySummaryColor::GREEN,
                                            IDS_PAGE_INFO_SECURE_SUMMARY,
-                                           IDS_PAGE_INFO_SECURE_DETAILS);
+                                           IDS_PAGE_INFO_SECURE_DETAILS,
+                                           SecurityDescriptionType::CONNECTION);
       }
     case PageInfo::SITE_IDENTITY_STATUS_DEPRECATED_SIGNATURE_ALGORITHM:
     case PageInfo::SITE_IDENTITY_STATUS_UNKNOWN:
@@ -335,7 +365,8 @@ PageInfoUI::GetSecurityDescription(const IdentityInfo& identity_info) const {
     default:
       return CreateSecurityDescription(SecuritySummaryColor::RED,
                                        IDS_PAGE_INFO_NOT_SECURE_SUMMARY,
-                                       IDS_PAGE_INFO_NOT_SECURE_DETAILS);
+                                       IDS_PAGE_INFO_NOT_SECURE_DETAILS,
+                                       SecurityDescriptionType::CONNECTION);
   }
 }
 
@@ -365,7 +396,7 @@ base::string16 PageInfoUI::PermissionActionToUIString(
     case content_settings::SETTING_SOURCE_USER:
       if (setting == CONTENT_SETTING_DEFAULT) {
 #if !defined(OS_ANDROID)
-        if (type == CONTENT_SETTINGS_TYPE_SOUND &&
+        if (type == ContentSettingsType::SOUND &&
             base::FeatureList::IsEnabled(media::kAutoplayWhitelistSettings)) {
           // If the block autoplay enabled preference is enabled and the
           // sound default setting is ALLOW, we will return a custom string
@@ -389,7 +420,7 @@ base::string16 PageInfoUI::PermissionActionToUIString(
     case content_settings::SETTING_SOURCE_POLICY:
     case content_settings::SETTING_SOURCE_EXTENSION:
 #if !defined(OS_ANDROID)
-      if (type == CONTENT_SETTINGS_TYPE_SOUND &&
+      if (type == ContentSettingsType::SOUND &&
           base::FeatureList::IsEnabled(media::kAutoplayWhitelistSettings)) {
         button_text_ids = kSoundPermissionButtonTextIDUserManaged;
         break;
@@ -437,12 +468,15 @@ base::string16 PageInfoUI::PermissionDecisionReasonToUIString(
       case PermissionStatusSource::MULTIPLE_DISMISSALS:
         message_id = IDS_PAGE_INFO_PERMISSION_AUTOMATICALLY_BLOCKED;
         break;
+      case PermissionStatusSource::MULTIPLE_IGNORES:
+        message_id = IDS_PAGE_INFO_PERMISSION_AUTOMATICALLY_BLOCKED;
+        break;
       default:
         break;
     }
   }
 
-  if (permission.type == CONTENT_SETTINGS_TYPE_ADS)
+  if (permission.type == ContentSettingsType::ADS)
     message_id = IDS_PAGE_INFO_PERMISSION_ADS_SUBTITLE;
 
   if (message_id == kInvalidResourceID)
@@ -505,6 +539,7 @@ int PageInfoUI::GetConnectionIconID(PageInfo::SiteConnectionStatus status) {
       break;
     case PageInfo::SITE_CONNECTION_STATUS_INSECURE_PASSIVE_SUBRESOURCE:
     case PageInfo::SITE_CONNECTION_STATUS_INSECURE_FORM_ACTION:
+    case PageInfo::SITE_CONNECTION_STATUS_LEGACY_TLS:
       resource_id = IDR_PAGEINFO_WARNING_MINOR;
       break;
     case PageInfo::SITE_CONNECTION_STATUS_UNENCRYPTED:
@@ -523,68 +558,71 @@ const gfx::ImageSkia PageInfoUI::GetPermissionIcon(const PermissionInfo& info,
                                                    SkColor related_text_color) {
   const gfx::VectorIcon* icon = &gfx::kNoneIcon;
   switch (info.type) {
-    case CONTENT_SETTINGS_TYPE_COOKIES:
+    case ContentSettingsType::COOKIES:
       icon = &kCookieIcon;
       break;
-    case CONTENT_SETTINGS_TYPE_IMAGES:
+    case ContentSettingsType::IMAGES:
       icon = &kPhotoIcon;
       break;
-    case CONTENT_SETTINGS_TYPE_JAVASCRIPT:
+    case ContentSettingsType::JAVASCRIPT:
       icon = &kCodeIcon;
       break;
-    case CONTENT_SETTINGS_TYPE_POPUPS:
+    case ContentSettingsType::POPUPS:
       icon = &kLaunchIcon;
       break;
 #if BUILDFLAG(ENABLE_PLUGINS)
-    case CONTENT_SETTINGS_TYPE_PLUGINS:
+    case ContentSettingsType::PLUGINS:
       icon = &kExtensionIcon;
       break;
 #endif
-    case CONTENT_SETTINGS_TYPE_GEOLOCATION:
+    case ContentSettingsType::GEOLOCATION:
       icon = &vector_icons::kLocationOnIcon;
       break;
-    case CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
+    case ContentSettingsType::NOTIFICATIONS:
       icon = &vector_icons::kNotificationsIcon;
       break;
-    case CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC:
+    case ContentSettingsType::MEDIASTREAM_MIC:
       icon = &vector_icons::kMicIcon;
       break;
-    case CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA:
+    case ContentSettingsType::MEDIASTREAM_CAMERA:
       icon = &vector_icons::kVideocamIcon;
       break;
-    case CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS:
+    case ContentSettingsType::AUTOMATIC_DOWNLOADS:
       icon = &kFileDownloadIcon;
       break;
-    case CONTENT_SETTINGS_TYPE_MIDI_SYSEX:
-      icon = &vector_icons::kMidiIcon;
-      break;
-    case CONTENT_SETTINGS_TYPE_BACKGROUND_SYNC:
-      icon = &kSyncIcon;
-      break;
-    case CONTENT_SETTINGS_TYPE_ADS:
-      icon = &kAdsIcon;
-      break;
-    case CONTENT_SETTINGS_TYPE_SOUND:
-      icon = &kVolumeUpIcon;
-      break;
-    case CONTENT_SETTINGS_TYPE_CLIPBOARD_READ:
-      icon = &kPageInfoContentPasteIcon;
-      break;
-    case CONTENT_SETTINGS_TYPE_SENSORS:
-      icon = &kSensorsIcon;
-      break;
-    case CONTENT_SETTINGS_TYPE_USB_GUARD:
-      icon = &vector_icons::kUsbIcon;
-      break;
-#if !defined(OS_ANDROID)
-    case CONTENT_SETTINGS_TYPE_SERIAL_GUARD:
-      icon = &vector_icons::kSerialPortIcon;
+#if defined(OS_CHROMEOS)
+    case ContentSettingsType::PROTECTED_MEDIA_IDENTIFIER:
+      icon = &kProtectedContentIcon;
       break;
 #endif
-    case CONTENT_SETTINGS_TYPE_BLUETOOTH_SCANNING:
+    case ContentSettingsType::MIDI_SYSEX:
+      icon = &vector_icons::kMidiIcon;
+      break;
+    case ContentSettingsType::BACKGROUND_SYNC:
+      icon = &kSyncIcon;
+      break;
+    case ContentSettingsType::ADS:
+      icon = &kAdsIcon;
+      break;
+    case ContentSettingsType::SOUND:
+      icon = &kVolumeUpIcon;
+      break;
+    case ContentSettingsType::CLIPBOARD_READ:
+      icon = &kPageInfoContentPasteIcon;
+      break;
+    case ContentSettingsType::SENSORS:
+      icon = &kSensorsIcon;
+      break;
+    case ContentSettingsType::USB_GUARD:
+      icon = &vector_icons::kUsbIcon;
+      break;
+    case ContentSettingsType::SERIAL_GUARD:
+      icon = &vector_icons::kSerialPortIcon;
+      break;
+    case ContentSettingsType::BLUETOOTH_SCANNING:
       icon = &vector_icons::kBluetoothScanningIcon;
       break;
-    case CONTENT_SETTINGS_TYPE_NATIVE_FILE_SYSTEM_WRITE_GUARD:
+    case ContentSettingsType::NATIVE_FILE_SYSTEM_WRITE_GUARD:
       icon = &kSaveOriginalFileIcon;
       break;
     default:
@@ -615,10 +653,10 @@ const gfx::ImageSkia PageInfoUI::GetChosenObjectIcon(
     SkColor related_text_color) {
   const gfx::VectorIcon* icon = &gfx::kNoneIcon;
   switch (object.ui_info.content_settings_type) {
-    case CONTENT_SETTINGS_TYPE_USB_CHOOSER_DATA:
+    case ContentSettingsType::USB_CHOOSER_DATA:
       icon = &vector_icons::kUsbIcon;
       break;
-    case CONTENT_SETTINGS_TYPE_SERIAL_CHOOSER_DATA:
+    case ContentSettingsType::SERIAL_CHOOSER_DATA:
       icon = &vector_icons::kSerialPortIcon;
       break;
     default:
@@ -670,4 +708,33 @@ bool PageInfoUI::ContentSettingsTypeInPageInfo(ContentSettingsType type) {
       return true;
   }
   return false;
+}
+
+// static
+std::unique_ptr<PageInfoUI::SecurityDescription>
+PageInfoUI::CreateSafetyTipSecurityDescription(
+    const security_state::SafetyTipInfo& info) {
+  switch (info.status) {
+    case security_state::SafetyTipStatus::kBadReputation:
+    case security_state::SafetyTipStatus::kBadReputationIgnored:
+      return CreateSecurityDescription(
+          SecuritySummaryColor::RED,
+          IDS_PAGE_INFO_SAFETY_TIP_BAD_REPUTATION_TITLE,
+          IDS_PAGE_INFO_SAFETY_TIP_BAD_REPUTATION_DESCRIPTION,
+          PageInfoUI::SecurityDescriptionType::SAFETY_TIP);
+    case security_state::SafetyTipStatus::kLookalike:
+    case security_state::SafetyTipStatus::kLookalikeIgnored:
+      return CreateSecurityDescriptionForLookalikeSafetyTip(info.safe_url);
+
+    case security_state::SafetyTipStatus::kBadKeyword:
+      // Keyword safety tips are only used to collect metrics for now and are
+      // not visible to the user, so don't affect Page Info.
+      NOTREACHED();
+      break;
+
+    case security_state::SafetyTipStatus::kNone:
+    case security_state::SafetyTipStatus::kUnknown:
+      break;
+  }
+  return nullptr;
 }

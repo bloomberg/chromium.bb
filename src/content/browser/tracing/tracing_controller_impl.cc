@@ -4,6 +4,7 @@
 
 #include "content/browser/tracing/tracing_controller_impl.h"
 
+#include <inttypes.h>
 #include <memory>
 #include <utility>
 #include <vector>
@@ -14,6 +15,7 @@
 #include "base/cpu.h"
 #include "base/files/file_tracing.h"
 #include "base/logging.h"
+#include "base/run_loop.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
@@ -30,14 +32,14 @@
 #include "content/browser/tracing/tracing_ui.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
-#include "content/public/browser/system_connector.h"
 #include "content/public/browser/tracing_controller.h"
 #include "content/public/browser/tracing_delegate.h"
+#include "content/public/browser/tracing_service.h"
 #include "content/public/common/content_client.h"
 #include "gpu/config/gpu_info.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "net/base/network_change_notifier.h"
-#include "services/service_manager/public/cpp/connector.h"
+#include "services/tracing/public/cpp/perfetto/perfetto_config.h"
 #include "services/tracing/public/cpp/trace_event_agent.h"
 #include "services/tracing/public/cpp/traced_process_impl.h"
 #include "services/tracing/public/cpp/tracing_features.h"
@@ -46,7 +48,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/debug_daemon_client.h"
+#include "chromeos/dbus/debug_daemon/debug_daemon_client.h"
 #include "chromeos/system/statistics_provider.h"
 #include "content/browser/tracing/cros_tracing_agent.h"
 #endif
@@ -65,6 +67,7 @@
 #include <sys/time.h>
 #include "base/debug/elf_reader.h"
 #include "content/browser/android/tracing_controller_android.h"
+#include "services/tracing/public/cpp/perfetto/java_heap_profiler/java_heap_profiler_android.h"
 
 // Symbol with virtual address of the start of ELF header of the current binary.
 extern char __ehdr_start;
@@ -209,22 +212,18 @@ void TracingControllerImpl::AddAgents() {
         base::BindRepeating(&TracingDelegate::GenerateMetadataDict,
                             base::Unretained(delegate_.get())));
   }
+#if defined(OS_ANDROID)
+  tracing::PerfettoTracedProcess::Get()->AddDataSource(
+      tracing::JavaHeapProfiler::GetInstance());
+#endif
 }
 
 void TracingControllerImpl::ConnectToServiceIfNeeded() {
-  if (!coordinator_) {
-    GetSystemConnector()->BindInterface(tracing::mojom::kServiceName,
-                                        &coordinator_);
-    coordinator_.set_connection_error_handler(base::BindOnce(
-        [](TracingControllerImpl* controller) {
-          controller->coordinator_.reset();
-        },
-        base::Unretained(this)));
+  if (!consumer_host_) {
+    GetTracingService().BindConsumerHost(
+        consumer_host_.BindNewPipeAndPassReceiver());
+    consumer_host_.reset_on_disconnect();
   }
-}
-
-void TracingControllerImpl::DisconnectFromService() {
-  coordinator_ = nullptr;
 }
 
 // Can be called on any thread.
@@ -232,16 +231,6 @@ std::unique_ptr<base::DictionaryValue>
 TracingControllerImpl::GenerateMetadataDict() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   auto metadata_dict = std::make_unique<base::DictionaryValue>();
-
-  // trace_config_ can be null if the tracing controller finishes flushing
-  // traces before the Chrome tracing agent finishes flushing traces. Normally,
-  // this does not happen; however, if the service manager is teared down during
-  // tracing, e.g. at Chrome shutdown, tracing controller may finish flushing
-  // traces without waiting for tracing agents.
-  if (trace_config_ && !tracing::TracingUsesPerfettoBackend()) {
-    DCHECK(IsTracing());
-    metadata_dict->SetString("trace-config", trace_config_->ToString());
-  }
 
   metadata_dict->SetString("network-type", GetNetworkTypeString());
   metadata_dict->SetString("product-version",
@@ -399,15 +388,23 @@ bool TracingControllerImpl::StartTracing(
   trace_config_ =
       std::make_unique<base::trace_event::TraceConfig>(trace_config);
 
+  DCHECK(!tracing_session_host_);
   ConnectToServiceIfNeeded();
-  coordinator_->StartTracing(
-      trace_config.ToString(),
-      base::BindOnce(
-          [](StartTracingDoneCallback callback, bool success) {
-            if (!callback.is_null())
-              std::move(callback).Run();
-          },
-          std::move(callback)));
+
+  perfetto::TraceConfig perfetto_config = tracing::GetDefaultPerfettoConfig(
+      trace_config, /*requires_anonymized_data=*/false);
+
+  consumer_host_->EnableTracing(
+      tracing_session_host_.BindNewPipeAndPassReceiver(),
+      receiver_.BindNewPipeAndPassRemote(), std::move(perfetto_config),
+      tracing::mojom::TracingClientPriority::kUserInitiated);
+  receiver_.set_disconnect_handler(base::BindOnce(
+      &TracingControllerImpl::OnTracingFailed, base::Unretained(this)));
+  tracing_session_host_.set_disconnect_handler(base::BindOnce(
+      &TracingControllerImpl::OnTracingFailed, base::Unretained(this)));
+
+  start_tracing_callback_ = std::move(callback);
+
   // TODO(chiniforooshan): The actual success value should be sent by the
   // callback asynchronously.
   return true;
@@ -517,8 +514,9 @@ bool TracingControllerImpl::StopTracing(
 
 bool TracingControllerImpl::StopTracing(
     const scoped_refptr<TraceDataEndpoint>& trace_data_endpoint,
-    const std::string& agent_label) {
-  if (!IsTracing() || drainer_ || !coordinator_)
+    const std::string& agent_label,
+    bool privacy_filtering_enabled) {
+  if (!IsTracing() || drainer_ || !tracing_session_host_)
     return false;
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -526,26 +524,36 @@ bool TracingControllerImpl::StopTracing(
   base::trace_event::TraceLog::GetInstance()->AddClockSyncMetadataEvent();
 #endif
 
+  // Setting the argument filter is no longer supported just in the TraceConfig;
+  // clients of the TracingController that need filtering need to pass that
+  // option to StopTracing directly as an argument. This is due to Perfetto-
+  // based tracing requiring this filtering to be done during serialization
+  // time and not during tracing time.
+  // TODO(oysteine): Remove the config option once the legacy IPC layer is
+  // removed.
+  CHECK(privacy_filtering_enabled || !trace_config_->IsArgumentFilterEnabled());
+
   tracing::TraceStartupConfig::GetInstance()->SetDisabled();
   trace_data_endpoint_ = std::move(trace_data_endpoint);
   is_data_complete_ = false;
-  is_metadata_available_ = false;
-  mojo::DataPipe data_pipe;
-  drainer_.reset(
-      new mojo::DataPipeDrainer(this, std::move(data_pipe.consumer_handle)));
-  if (agent_label.empty()) {
-    // Stop and flush all agents.
-    coordinator_->StopAndFlush(
-        std::move(data_pipe.producer_handle),
-        base::BindRepeating(&TracingControllerImpl::OnMetadataAvailable,
-                            base::Unretained(this)));
-  } else {
-    // Stop all and flush a particular agent.
-    coordinator_->StopAndFlushAgent(
-        std::move(data_pipe.producer_handle), agent_label,
-        base::BindRepeating(&TracingControllerImpl::OnMetadataAvailable,
-                            base::Unretained(this)));
+  read_buffers_complete_ = false;
+
+  mojo::ScopedDataPipeProducerHandle producer_handle;
+  mojo::ScopedDataPipeConsumerHandle consumer_handle;
+  MojoResult result =
+      mojo::CreateDataPipe(nullptr, &producer_handle, &consumer_handle);
+  if (result != MOJO_RESULT_OK) {
+    CompleteFlush();
+    return true;
   }
+
+  drainer_.reset(new mojo::DataPipeDrainer(this, std::move(consumer_handle)));
+
+  tracing_session_host_->DisableTracingAndEmitJson(
+      agent_label, std::move(producer_handle), privacy_filtering_enabled,
+      base::BindOnce(&TracingControllerImpl::OnReadBuffersComplete,
+                     base::Unretained(this)));
+
   // TODO(chiniforooshan): Is the return value used anywhere?
   return true;
 }
@@ -554,12 +562,14 @@ bool TracingControllerImpl::GetTraceBufferUsage(
     GetTraceBufferUsageCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  ConnectToServiceIfNeeded();
-  coordinator_->RequestBufferUsage(base::BindOnce(
+  if (!tracing_session_host_) {
+    std::move(callback).Run(0.0, 0);
+    return true;
+  }
+
+  tracing_session_host_->RequestBufferUsage(base::BindOnce(
       [](GetTraceBufferUsageCallback callback, bool success, float percent_full,
-         uint32_t approximate_count) {
-        std::move(callback).Run(percent_full, approximate_count);
-      },
+         bool data_loss) { std::move(callback).Run(percent_full, 0); },
       std::move(callback)));
   // TODO(chiniforooshan): The actual success value should be sent by the
   // callback asynchronously.
@@ -570,15 +580,15 @@ bool TracingControllerImpl::IsTracing() {
   return trace_config_ != nullptr;
 }
 
-void TracingControllerImpl::RegisterTracingUI(TracingUI* tracing_ui) {
-  DCHECK(tracing_uis_.find(tracing_ui) == tracing_uis_.end());
-  tracing_uis_.insert(tracing_ui);
+void TracingControllerImpl::OnTracingEnabled() {
+  if (start_tracing_callback_)
+    std::move(start_tracing_callback_).Run();
 }
 
-void TracingControllerImpl::UnregisterTracingUI(TracingUI* tracing_ui) {
-  auto it = tracing_uis_.find(tracing_ui);
-  DCHECK(it != tracing_uis_.end());
-  tracing_uis_.erase(it);
+void TracingControllerImpl::OnTracingDisabled() {}
+
+void TracingControllerImpl::OnTracingFailed() {
+  CompleteFlush();
 }
 
 void TracingControllerImpl::OnDataAvailable(const void* data,
@@ -591,43 +601,24 @@ void TracingControllerImpl::OnDataAvailable(const void* data,
 }
 
 void TracingControllerImpl::CompleteFlush() {
-  if (trace_data_endpoint_) {
-    trace_data_endpoint_->ReceiveTraceFinalContents(
-        std::move(filtered_metadata_));
-  }
-  filtered_metadata_.reset(nullptr);
+  if (trace_data_endpoint_)
+    trace_data_endpoint_->ReceivedTraceFinalContents();
+
   trace_data_endpoint_ = nullptr;
   trace_config_ = nullptr;
   drainer_ = nullptr;
+  tracing_session_host_.reset();
+  receiver_.reset();
 }
 
 void TracingControllerImpl::OnDataComplete() {
   is_data_complete_ = true;
-  if (is_metadata_available_)
+  if (read_buffers_complete_)
     CompleteFlush();
 }
 
-void TracingControllerImpl::OnMetadataAvailable(base::Value metadata) {
-  DCHECK(!filtered_metadata_);
-  is_metadata_available_ = true;
-  base::trace_event::MetadataFilterPredicate metadata_filter;
-  if (trace_config_->IsArgumentFilterEnabled()) {
-    metadata_filter = base::trace_event::TraceLog::GetInstance()
-                          ->GetMetadataFilterPredicate();
-  }
-  if (metadata_filter.is_null()) {
-    filtered_metadata_ = base::DictionaryValue::From(
-        base::Value::ToUniquePtrValue(std::move(metadata)));
-  } else {
-    filtered_metadata_ = std::make_unique<base::DictionaryValue>();
-    for (auto it : metadata.DictItems()) {
-      if (metadata_filter.Run(it.first)) {
-        filtered_metadata_->SetKey(it.first, std::move(it.second));
-      } else {
-        filtered_metadata_->SetKey(it.first, base::Value("__stripped__"));
-      }
-    }
-  }
+void TracingControllerImpl::OnReadBuffersComplete() {
+  read_buffers_complete_ = true;
   if (is_data_complete_)
     CompleteFlush();
 }

@@ -9,12 +9,10 @@
 
 #include "base/debug/dump_without_crashing.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/numerics/checked_math.h"
 #include "base/optional.h"
 #include "base/timer/elapsed_timer.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
-#include "cc/base/math_util.h"
 #include "cc/base/simple_enclosed_region.h"
 #include "cc/benchmarks/benchmark_instrumentation.h"
 #include "components/viz/common/display/renderer_settings.h"
@@ -59,10 +57,10 @@ int64_t GetStartingTraceId() {
 
 gfx::PresentationFeedback SanitizePresentationFeedback(
     const gfx::PresentationFeedback& feedback,
-    base::TimeTicks swap_time) {
+    base::TimeTicks draw_time) {
   // Temporary to investigate large presentation times.
   // https://crbug.com/894440
-  DCHECK(!swap_time.is_null());
+  DCHECK(!draw_time.is_null());
   if (feedback.timestamp.is_null())
     return feedback;
 
@@ -78,20 +76,24 @@ gfx::PresentationFeedback SanitizePresentationFeedback(
     return gfx::PresentationFeedback::Failure();
   }
 
-  if (feedback.timestamp < swap_time) {
-    const auto diff = swap_time - feedback.timestamp;
+  if (feedback.timestamp < draw_time) {
+    const auto diff = draw_time - feedback.timestamp;
     UMA_HISTOGRAM_MEDIUM_TIMES(
         "Graphics.PresentationTimestamp.InvalidBeforeSwap", diff);
     return gfx::PresentationFeedback::Failure();
   }
 
-  const auto difference = feedback.timestamp - swap_time;
+  const auto difference = feedback.timestamp - draw_time;
   if (difference.InMinutes() > 3) {
     UMA_HISTOGRAM_CUSTOM_TIMES(
         "Graphics.PresentationTimestamp.LargePresentationDelta", difference,
         base::TimeDelta::FromMinutes(3), base::TimeDelta::FromHours(1), 50);
-    // In debug builds, just crash immediately.
-    DCHECK(false);
+
+    // Ignore long presentation times for the tests that override time
+    if (!base::subtle::ScopedTimeClockOverrides::overrides_active()) {
+      // In debug builds, just crash immediately.
+      DCHECK(false);
+    }
   }
   return feedback;
 }
@@ -127,6 +129,35 @@ gfx::RectF GetOccludingRectForRRectF(const gfx::RRectF& bounds) {
 constexpr base::TimeDelta Display::kDrawToSwapMin;
 constexpr base::TimeDelta Display::kDrawToSwapMax;
 
+Display::PresentationGroupTiming::PresentationGroupTiming() = default;
+
+Display::PresentationGroupTiming::PresentationGroupTiming(
+    Display::PresentationGroupTiming&& other) = default;
+
+Display::PresentationGroupTiming::~PresentationGroupTiming() = default;
+
+void Display::PresentationGroupTiming::AddPresentationHelper(
+    std::unique_ptr<Surface::PresentationHelper> helper) {
+  presentation_helpers_.push_back(std::move(helper));
+}
+
+void Display::PresentationGroupTiming::OnDraw(
+    base::TimeTicks draw_start_timestamp) {
+  draw_start_timestamp_ = draw_start_timestamp;
+}
+
+void Display::PresentationGroupTiming::OnSwap(gfx::SwapTimings timings) {
+  swap_timings_ = timings;
+}
+
+void Display::PresentationGroupTiming::OnPresent(
+    const gfx::PresentationFeedback& feedback) {
+  for (auto& presentation_helper : presentation_helpers_) {
+    presentation_helper->DidPresent(draw_start_timestamp_, swap_timings_,
+                                    feedback);
+  }
+}
+
 Display::Display(
     SharedBitmapManager* bitmap_manager,
     const RendererSettings& settings,
@@ -142,6 +173,7 @@ Display::Display(
       scheduler_(std::move(scheduler)),
       current_task_runner_(std::move(current_task_runner)),
       swapped_trace_id_(GetStartingTraceId()),
+      last_swap_ack_trace_id_(swapped_trace_id_),
       last_presented_trace_id_(swapped_trace_id_) {
   DCHECK(output_surface_);
   DCHECK(frame_sink_id_.is_valid());
@@ -173,7 +205,7 @@ Display::~Display() {
 
   // Send gfx::PresentationFeedback::Failure() to any surfaces expecting
   // feedback.
-  pending_surfaces_with_presentation_helpers_.clear();
+  pending_presentation_group_timings_.clear();
 
   // Only do this if Initialize() happened.
   if (client_) {
@@ -184,6 +216,11 @@ Display::~Display() {
     if (scheduler_)
       surface_manager_->RemoveObserver(scheduler_.get());
   }
+
+  // Un-register as DisplaySchedulerClient to prevent us from being called in a
+  // partially destructed state.
+  if (scheduler_)
+    scheduler_->SetClient(nullptr);
 
   RunDrawCallbacks();
 }
@@ -373,10 +410,12 @@ void Display::InitializeRenderer(bool enable_shared_images) {
   renderer_->Initialize();
   renderer_->SetVisible(visible_);
 
-  // TODO(jbauman): Outputting an incomplete quad list doesn't work when using
-  // overlays.
+  // Outputting a partial list of quads might not work in cases where contents
+  // outside the damage rect might be needed by the renderer.
   bool output_partial_list =
+      output_surface_->capabilities().only_invalidates_damage_rect &&
       renderer_->use_partial_swap() && !renderer_->has_overlay_validator();
+
   bool needs_surface_occluding_damage_rect =
       renderer_->OverlayNeedsSurfaceOccludingDamageRect();
   aggregator_ = std::make_unique<SurfaceAggregator>(
@@ -396,11 +435,14 @@ void Display::InitializeRenderer(bool enable_shared_images) {
           : 0);
 }
 
-void Display::UpdateRootFrameMissing() {
+bool Display::IsRootFrameMissing() const {
   Surface* surface = surface_manager_->GetSurfaceForId(current_surface_id_);
-  bool root_frame_missing = !surface || !surface->HasActiveFrame();
+  return !surface || !surface->HasActiveFrame();
+}
+
+void Display::UpdateRootFrameMissing() {
   if (scheduler_)
-    scheduler_->SetRootFrameMissing(root_frame_missing);
+    scheduler_->SetRootFrameMissing(IsRootFrameMissing());
 }
 
 void Display::OnContextLost() {
@@ -430,6 +472,20 @@ bool Display::DrawAndSwap() {
     return true;
   }
 
+  gfx::OverlayTransform current_display_transform = gfx::OVERLAY_TRANSFORM_NONE;
+  Surface* surface = surface_manager_->GetSurfaceForId(current_surface_id_);
+  if (surface->HasActiveFrame()) {
+    current_display_transform =
+        surface->GetActiveFrame().metadata.display_transform_hint;
+    if (current_display_transform != output_surface_->GetDisplayTransform()) {
+      output_surface_->SetDisplayTransformHint(current_display_transform);
+
+      // Gets the transform from |output_surface_| back so that if it ignores
+      // the hint, the rest of the code ignores the hint too.
+      current_display_transform = output_surface_->GetDisplayTransform();
+    }
+  }
+
   // During aggregation, SurfaceAggregator marks all resources used for a draw
   // in the resource provider.  This has the side effect of deleting unused
   // resources and their textures, generating sync tokens, and returning the
@@ -451,7 +507,7 @@ bool Display::DrawAndSwap() {
     frame = aggregator_->Aggregate(
         current_surface_id_,
         scheduler_ ? scheduler_->current_frame_display_time() : now_time,
-        output_surface_->GetDisplayTransform(), ++swapped_trace_id_);
+        current_display_transform, ++swapped_trace_id_);
   }
 
   UMA_HISTOGRAM_COUNTS_1M("Compositing.SurfaceAggregator.AggregateUs",
@@ -485,7 +541,7 @@ bool Display::DrawAndSwap() {
   // transform while |current_surface_size_| is the pre-transform size received
   // from the client.
   const gfx::Transform display_transform = gfx::OverlayTransformToTransform(
-      output_surface_->GetDisplayTransform(), current_surface_size_);
+      current_display_transform, gfx::SizeF(current_surface_size_));
   const gfx::Size current_surface_size =
       cc::MathUtil::MapEnclosedRectWith2dAxisAlignedTransform(
           display_transform, gfx::Rect(current_surface_size_))
@@ -534,29 +590,37 @@ bool Display::DrawAndSwap() {
     renderer_->DecideRenderPassAllocationsForFrame(frame.render_pass_list);
     renderer_->DrawFrame(&frame.render_pass_list, device_scale_factor_,
                          current_surface_size, sdr_white_level_);
-    if (software_renderer_) {
-      UMA_HISTOGRAM_COUNTS_1M("Compositing.DirectRenderer.Software.DrawFrameUs",
-                              draw_timer->Elapsed().InMicroseconds());
-    } else {
-      UMA_HISTOGRAM_COUNTS_1M("Compositing.DirectRenderer.GL.DrawFrameUs",
-                              draw_timer->Elapsed().InMicroseconds());
+    switch (output_surface_->type()) {
+      case OutputSurface::Type::kSoftware:
+        UMA_HISTOGRAM_COUNTS_1M(
+            "Compositing.DirectRenderer.Software.DrawFrameUs",
+            draw_timer->Elapsed().InMicroseconds());
+        break;
+      case OutputSurface::Type::kOpenGL:
+        UMA_HISTOGRAM_COUNTS_1M("Compositing.DirectRenderer.GL.DrawFrameUs",
+                                draw_timer->Elapsed().InMicroseconds());
+        break;
+      case OutputSurface::Type::kVulkan:
+        UMA_HISTOGRAM_COUNTS_1M("Compositing.DirectRenderer.VK.DrawFrameUs",
+                                draw_timer->Elapsed().InMicroseconds());
+        break;
     }
 
-    std::vector<std::unique_ptr<Surface::PresentationHelper>>
-        presentation_helper_list;
+    PresentationGroupTiming presentation_group_timing;
+    presentation_group_timing.OnDraw(draw_timer->Begin());
+
     for (const auto& id_entry : aggregator_->previous_contained_surfaces()) {
       Surface* surface = surface_manager_->GetSurfaceForId(id_entry.first);
       if (surface) {
         std::unique_ptr<Surface::PresentationHelper> helper =
             surface->TakePresentationHelperForPresentNotification();
         if (helper) {
-          surface->OnWasDrawn(helper->frame_token(), draw_timer->Begin());
-          presentation_helper_list.push_back(std::move(helper));
+          presentation_group_timing.AddPresentationHelper(std::move(helper));
         }
       }
     }
-    pending_surfaces_with_presentation_helpers_.emplace_back(
-        std::make_pair(now_time, std::move(presentation_helper_list)));
+    pending_presentation_group_timings_.emplace_back(
+        std::move(presentation_group_timing));
   } else {
     TRACE_EVENT_INSTANT0("viz", "Draw skipped.", TRACE_EVENT_SCOPE_THREAD);
   }
@@ -565,27 +629,25 @@ bool Display::DrawAndSwap() {
   if (should_swap) {
     TRACE_EVENT_ASYNC_STEP_INTO0("viz,benchmark",
                                  "Graphics.Pipeline.DrawAndSwap",
-                                 swapped_trace_id_, "Swap");
-    draw_start_times_pending_swap_ack_.emplace_back(draw_timer->Begin());
+                                 swapped_trace_id_, "WaitForSwap");
     swapped_since_resize_ = true;
-
-    if (scheduler_) {
-      frame.metadata.latency_info.emplace_back(ui::SourceEventType::FRAME);
-      frame.metadata.latency_info.back().AddLatencyNumberWithTimestamp(
-          ui::LATENCY_BEGIN_FRAME_DISPLAY_COMPOSITOR_COMPONENT,
-          scheduler_->current_frame_time());
-    }
 
     ui::LatencyInfo::TraceIntermediateFlowEvents(frame.metadata.latency_info,
                                                  "Display::DrawAndSwap");
 
     cc::benchmark_instrumentation::IssueDisplayRenderingStatsEvent();
-    renderer_->SwapBuffers(std::move(frame.metadata.latency_info));
+    DirectRenderer::SwapFrameData swap_frame_data;
+    swap_frame_data.latency_info = std::move(frame.metadata.latency_info);
+    if (frame.metadata.top_controls_visible_height.has_value()) {
+      swap_frame_data.top_controls_visible_height_changed =
+          last_top_controls_visible_height_ !=
+          *frame.metadata.top_controls_visible_height;
+      last_top_controls_visible_height_ =
+          *frame.metadata.top_controls_visible_height;
+    }
+    renderer_->SwapBuffers(std::move(swap_frame_data));
     if (scheduler_)
       scheduler_->DidSwapBuffers();
-    TRACE_EVENT_ASYNC_STEP_INTO0("viz,benchmark",
-                                 "Graphics.Pipeline.DrawAndSwap",
-                                 swapped_trace_id_, "WaitForPresentation");
   } else {
     TRACE_EVENT_INSTANT0("viz", "Swap skipped.", TRACE_EVENT_SCOPE_THREAD);
 
@@ -607,6 +669,8 @@ bool Display::DrawAndSwap() {
       }
     }
 
+    renderer_->SwapBuffersSkipped();
+
     TRACE_EVENT_ASYNC_END1("viz,benchmark", "Graphics.Pipeline.DrawAndSwap",
                            swapped_trace_id_, "status", "canceled");
     --swapped_trace_id_;
@@ -627,7 +691,18 @@ bool Display::DrawAndSwap() {
 }
 
 void Display::DidReceiveSwapBuffersAck(const gfx::SwapTimings& timings) {
-  DCHECK(!draw_start_times_pending_swap_ack_.empty());
+  // Adding to |pending_presentation_group_timings_| must
+  // have been done in DrawAndSwap(), and should not be popped until
+  // DidReceiveSwapBuffersAck.
+  DCHECK(!pending_presentation_group_timings_.empty());
+
+  ++last_swap_ack_trace_id_;
+  TRACE_EVENT_ASYNC_STEP_INTO_WITH_TIMESTAMP0(
+      "viz,benchmark", "Graphics.Pipeline.DrawAndSwap", last_swap_ack_trace_id_,
+      "Swap", timings.swap_start);
+  TRACE_EVENT_ASYNC_STEP_INTO_WITH_TIMESTAMP0(
+      "viz,benchmark", "Graphics.Pipeline.DrawAndSwap", last_swap_ack_trace_id_,
+      "WaitForPresentation", timings.swap_end);
 
   if (scheduler_) {
     scheduler_->DidReceiveSwapBuffersAck();
@@ -638,26 +713,31 @@ void Display::DidReceiveSwapBuffersAck(const gfx::SwapTimings& timings) {
   if (renderer_)
     renderer_->SwapBuffersComplete();
 
-  // Adding to pending_presented_callbacks_ must have been done in DrawAndSwap,
-  // and should not be popped until DidReceivePresentationFeedback. Therefore
-  // we must not have an empty list when getting the SwapBuffers ACK (this is
-  // required to happen between those two events).
-  DCHECK(!pending_surfaces_with_presentation_helpers_.empty());
+  // It's possible to receive multiple calls to DidReceiveSwapBuffersAck()
+  // before DidReceivePresentationFeedback(). Ensure that we're not setting
+  // |swap_timings_| for the same PresentationGroupTiming multiple times.
+  base::TimeTicks draw_start_timestamp;
+  for (auto& group_timing : pending_presentation_group_timings_) {
+    if (!group_timing.HasSwapped()) {
+      group_timing.OnSwap(timings);
+      draw_start_timestamp = group_timing.draw_start_timestamp();
+      break;
+    }
+  }
+
+  // We should have at least one group that hasn't received a SwapBuffersAck
+  DCHECK(!draw_start_timestamp.is_null());
 
   // Check that the swap timings correspond with the timestamp from when
   // the swap was triggered. Note that not all output surfaces provide timing
   // information, hence the check for a valid swap_start.
-  const auto swap_time =
-      pending_surfaces_with_presentation_helpers_.front().first;
   if (!timings.swap_start.is_null()) {
-    DCHECK_LE(swap_time, timings.swap_start);
-    base::TimeDelta delta =
-        timings.swap_start - draw_start_times_pending_swap_ack_.front();
+    DCHECK_LE(draw_start_timestamp, timings.swap_start);
+    base::TimeDelta delta = timings.swap_start - draw_start_timestamp;
     UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
         "Compositing.Display.DrawToSwapUs", delta, kDrawToSwapMin,
         kDrawToSwapMax, kDrawToSwapUsBuckets);
   }
-  draw_start_times_pending_swap_ack_.pop_front();
 }
 
 void Display::DidReceiveTextureInUseResponses(
@@ -679,7 +759,7 @@ void Display::DidSwapWithSize(const gfx::Size& pixel_size) {
 
 void Display::DidReceivePresentationFeedback(
     const gfx::PresentationFeedback& feedback) {
-  if (pending_surfaces_with_presentation_helpers_.empty()) {
+  if (pending_presentation_group_timings_.empty()) {
     DLOG(ERROR) << "Received unexpected PresentationFeedback";
     return;
   }
@@ -687,22 +767,14 @@ void Display::DidReceivePresentationFeedback(
   TRACE_EVENT_ASYNC_END_WITH_TIMESTAMP0(
       "viz,benchmark", "Graphics.Pipeline.DrawAndSwap",
       last_presented_trace_id_, feedback.timestamp);
-  auto& presentation_helper_list =
-      pending_surfaces_with_presentation_helpers_.front().second;
-  const auto swap_time =
-      pending_surfaces_with_presentation_helpers_.front().first;
-  auto copy_feedback = SanitizePresentationFeedback(feedback, swap_time);
+  auto& presentation_group_timing = pending_presentation_group_timings_.front();
+  auto copy_feedback = SanitizePresentationFeedback(
+      feedback, presentation_group_timing.draw_start_timestamp());
   TRACE_EVENT_INSTANT_WITH_TIMESTAMP0(
       "benchmark,viz", "Display::FrameDisplayed", TRACE_EVENT_SCOPE_THREAD,
       copy_feedback.timestamp);
-  for (auto& presentation_helper : presentation_helper_list) {
-    presentation_helper->DidPresent(copy_feedback);
-  }
-  pending_surfaces_with_presentation_helpers_.pop_front();
-}
-
-void Display::DidFinishLatencyInfo(
-    const std::vector<ui::LatencyInfo>& latency_info) {
+  presentation_group_timing.OnPresent(copy_feedback);
+  pending_presentation_group_timings_.pop_front();
 }
 
 void Display::SetNeedsRedrawRect(const gfx::Rect& damage_rect) {
@@ -756,11 +828,9 @@ void Display::DidFinishFrame(const BeginFrameAck& ack) {
   // Only used with experimental de-jelly effect. Forces us to produce a new
   // un-skewed frame if the last one had a de-jelly skew applied. This prevents
   // de-jelly skew from staying on screen for more than one frame.
-  if (aggregator_ && aggregator_->last_frame_had_jelly()) {
-    if (scheduler_) {
-      scheduler_->SetNeedsOneBeginFrame();
-      scheduler_->set_needs_draw();
-    }
+  if (aggregator_->last_frame_had_jelly()) {
+    scheduler_->SetNeedsOneBeginFrame();
+    scheduler_->set_needs_draw();
   }
 }
 
@@ -806,39 +876,22 @@ void Display::RemoveOverdrawQuads(CompositorFrame* frame) {
   int minimum_draw_occlusion_width =
       settings_.kMinimumDrawOcclusionSize.width() * device_scale_factor_;
 
-  // Total quad area to be drawn on screen before applying draw occlusion.
-  base::CheckedNumeric<uint64_t> total_quad_area_shown_wo_occlusion_px = 0;
-
-  // Total area not draw skipped by draw occlusion.
-  base::CheckedNumeric<uint64_t> total_area_saved_in_px = 0;
-
   for (const auto& pass : frame->render_pass_list) {
     // TODO(yiyix): Add filter effects to draw occlusion calculation and perform
     // draw occlusion on render pass.
     if (!pass->filters.IsEmpty() || !pass->backdrop_filters.IsEmpty()) {
-      for (auto* const quad : pass->quad_list) {
-        total_quad_area_shown_wo_occlusion_px +=
-            quad->visible_rect.size().GetCheckedArea();
-      }
       continue;
     }
 
     // TODO(yiyix): Perform draw occlusion inside the render pass with
     // transparent background.
     if (pass != frame->render_pass_list.back()) {
-      for (auto* const quad : pass->quad_list) {
-        total_quad_area_shown_wo_occlusion_px +=
-            quad->visible_rect.size().GetCheckedArea();
-      }
       continue;
     }
 
     auto quad_list_end = pass->quad_list.end();
     gfx::Rect occlusion_in_quad_content_space;
     for (auto quad = pass->quad_list.begin(); quad != quad_list_end;) {
-      total_quad_area_shown_wo_occlusion_px +=
-          quad->visible_rect.size().GetCheckedArea();
-
       // Skip quad if it is a RenderPassDrawQuad because RenderPassDrawQuad is a
       // special type of DrawQuad where the visible_rect of shared quad state is
       // not entirely covered by draw quads in it; or the DrawQuad size is
@@ -926,7 +979,6 @@ void Display::RemoveOverdrawQuads(CompositorFrame* frame) {
         // Case 1: for simple transforms (scale or translation), define the
         // occlusion region in the quad content space. If the |quad| is not
         // shown on the screen, then remove |quad| from the compositor frame.
-        total_area_saved_in_px += quad->visible_rect.size().GetCheckedArea();
         quad = pass->quad_list.EraseAndInvalidateAllPointers(quad);
 
       } else if (occlusion_in_quad_content_space.Intersects(
@@ -938,7 +990,6 @@ void Display::RemoveOverdrawQuads(CompositorFrame* frame) {
         quad->visible_rect.Subtract(occlusion_in_quad_content_space);
         if (origin_rect != quad->visible_rect) {
           origin_rect.Subtract(quad->visible_rect);
-          total_area_saved_in_px += origin_rect.size().GetCheckedArea();
         }
         ++quad;
       } else if (occlusion_in_quad_content_space.IsEmpty() &&
@@ -948,26 +999,12 @@ void Display::RemoveOverdrawQuads(CompositorFrame* frame) {
         // Case 3: for non simple transforms, define the occlusion region in
         // target space. If the |quad| is not shown on the screen, then remove
         // |quad| from the compositor frame.
-        total_area_saved_in_px += quad->visible_rect.size().GetCheckedArea();
         quad = pass->quad_list.EraseAndInvalidateAllPointers(quad);
       } else {
         ++quad;
       }
     }
   }
-
-  UMA_HISTOGRAM_PERCENTAGE(
-      "Compositing.Display.Draw.Occlusion.Percentage.Saved",
-      total_quad_area_shown_wo_occlusion_px.ValueOrDefault(0) == 0
-          ? 0
-          : static_cast<uint64_t>(total_area_saved_in_px.ValueOrDie()) * 100 /
-                static_cast<uint64_t>(
-                    total_quad_area_shown_wo_occlusion_px.ValueOrDie()));
-
-  UMA_HISTOGRAM_COUNTS_1M(
-      "Compositing.Display.Draw.Occlusion.Drawing.Area.Saved2",
-      static_cast<uint64_t>(total_area_saved_in_px.ValueOrDefault(
-          std::numeric_limits<uint64_t>::max())));
 }
 
 void Display::RunDrawCallbacks() {
@@ -1000,10 +1037,6 @@ base::TimeDelta Display::GetPreferredFrameIntervalForFrameSinkId(
 void Display::SetSupportedFrameIntervals(
     std::vector<base::TimeDelta> intervals) {
   frame_rate_decider_->SetSupportedFrameIntervals(std::move(intervals));
-}
-
-void Display::SetDisplayTransformHint(gfx::OverlayTransform transform) {
-  output_surface_->SetDisplayTransformHint(transform);
 }
 
 base::ScopedClosureRunner Display::GetCacheBackBufferCb() {

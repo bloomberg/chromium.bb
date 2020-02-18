@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/platform/graphics/gpu/shared_gpu_context.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
+#include "third_party/blink/renderer/platform/graphics/unaccelerated_static_bitmap_image.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkSurface.h"
 
@@ -51,7 +52,7 @@ void ImageBitmapRenderingContextBase::SetImage(ImageBitmap* image_bitmap) {
 }
 
 scoped_refptr<StaticBitmapImage> ImageBitmapRenderingContextBase::GetImage(
-    AccelerationHint) const {
+    AccelerationHint) {
   return image_layer_bridge_->GetImage();
 }
 
@@ -63,9 +64,9 @@ ImageBitmapRenderingContextBase::GetImageAndResetInternal() {
 
   SkBitmap black_bitmap;
   black_bitmap.allocN32Pixels(copy_image->width(), copy_image->height());
-  black_bitmap.eraseColor(SkColorSetRGB(0, 0, 0));
-  image_layer_bridge_->SetImage(
-      StaticBitmapImage::Create(SkImage::MakeFromBitmap(black_bitmap)));
+  black_bitmap.eraseARGB(0, 0, 0, 0);
+  image_layer_bridge_->SetImage(UnacceleratedStaticBitmapImage::Create(
+      SkImage::MakeFromBitmap(black_bitmap)));
 
   return copy_image;
 }
@@ -99,11 +100,11 @@ bool ImageBitmapRenderingContextBase::CanCreateCanvas2dResourceProvider()
   return !!static_cast<OffscreenCanvas*>(Host())->GetOrCreateResourceProvider();
 }
 
-void ImageBitmapRenderingContextBase::PushFrame() {
+bool ImageBitmapRenderingContextBase::PushFrame() {
   DCHECK(Host());
   DCHECK(Host()->IsOffscreenCanvas());
   if (!CanCreateCanvas2dResourceProvider())
-    return;
+    return false;
 
   scoped_refptr<StaticBitmapImage> image = image_layer_bridge_->GetImage();
   cc::PaintFlags paint_flags;
@@ -116,6 +117,7 @@ void ImageBitmapRenderingContextBase::PushFrame() {
       std::move(resource),
       SkIRect::MakeWH(image_layer_bridge_->GetImage()->Size().Width(),
                       image_layer_bridge_->GetImage()->Size().Height()));
+  return true;
 }
 
 bool ImageBitmapRenderingContextBase::IsOriginTopLeft() const {

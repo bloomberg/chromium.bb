@@ -43,7 +43,7 @@ void IsDistillablePageForDetector(content::WebContents* web_contents,
     return;
   }
   std::string extract_features_js =
-      ui::ResourceBundle::GetSharedInstance().DecompressDataResource(
+      ui::ResourceBundle::GetSharedInstance().LoadDataResourceString(
           IDR_EXTRACT_PAGE_FEATURES_JS);
   RunIsolatedJavaScript(
       main_frame, extract_features_js,
@@ -59,13 +59,45 @@ std::ostream& operator<<(std::ostream& os, const DistillabilityResult& result) {
 
 void AddObserver(content::WebContents* web_contents,
                  DistillabilityObserver* observer) {
+  DCHECK(observer);
   CHECK(web_contents);
   DistillabilityDriver::CreateForWebContents(web_contents);
 
   DistillabilityDriver* driver =
       DistillabilityDriver::FromWebContents(web_contents);
   CHECK(driver);
-  driver->AddObserver(observer);
+  base::ObserverList<DistillabilityObserver>* observer_list =
+      driver->GetObserverList();
+  if (!observer_list->HasObserver(observer)) {
+    observer_list->AddObserver(observer);
+  }
+}
+
+void RemoveObserver(content::WebContents* web_contents,
+                    DistillabilityObserver* observer) {
+  DCHECK(observer);
+  CHECK(web_contents);
+  DistillabilityDriver::CreateForWebContents(web_contents);
+
+  DistillabilityDriver* driver =
+      DistillabilityDriver::FromWebContents(web_contents);
+  CHECK(driver);
+  base::ObserverList<DistillabilityObserver>* observer_list =
+      driver->GetObserverList();
+  if (observer_list->HasObserver(observer)) {
+    observer_list->RemoveObserver(observer);
+  }
+}
+
+base::Optional<DistillabilityResult> GetLatestResult(
+    content::WebContents* web_contents) {
+  CHECK(web_contents);
+  DistillabilityDriver::CreateForWebContents(web_contents);
+
+  DistillabilityDriver* driver =
+      DistillabilityDriver::FromWebContents(web_contents);
+  CHECK(driver);
+  return driver->GetLatestResult();
 }
 
 }  // namespace dom_distiller

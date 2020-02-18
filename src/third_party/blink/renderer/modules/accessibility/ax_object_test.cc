@@ -78,7 +78,6 @@ TEST_F(AccessibilityTest, SimpleTreeNavigation) {
 
   EXPECT_EQ(input, body->FirstChild());
   EXPECT_EQ(button, body->LastChild());
-  EXPECT_EQ(button, body->DeepestLastChild());
 
   ASSERT_NE(nullptr, paragraph->FirstChild());
   EXPECT_EQ(ax::mojom::Role::kStaticText, paragraph->FirstChild()->RoleValue());
@@ -97,6 +96,14 @@ TEST_F(AccessibilityTest, SimpleTreeNavigation) {
   EXPECT_EQ(ax::mojom::Role::kStaticText, br->NextSibling()->RoleValue());
   ASSERT_NE(nullptr, br->PreviousSibling());
   EXPECT_EQ(ax::mojom::Role::kStaticText, br->PreviousSibling()->RoleValue());
+
+  ASSERT_NE(nullptr, button->FirstChild());
+  EXPECT_EQ(ax::mojom::Role::kStaticText, button->FirstChild()->RoleValue());
+  ASSERT_NE(nullptr, button->LastChild());
+  EXPECT_EQ(ax::mojom::Role::kStaticText, button->LastChild()->RoleValue());
+  ASSERT_NE(nullptr, button->DeepestFirstChild());
+  EXPECT_EQ(ax::mojom::Role::kStaticText,
+            paragraph->DeepestFirstChild()->RoleValue());
 }
 
 TEST_F(AccessibilityTest, TreeNavigationWithIgnoredContainer) {
@@ -233,23 +240,23 @@ TEST_F(AccessibilityTest, AXObjectAncestorsIterator) {
 }
 
 TEST_F(AccessibilityTest, AXObjectInOrderTraversalIterator) {
-  SetBodyInnerHTML(R"HTML(<button id="button">Button</button>)HTML");
+  SetBodyInnerHTML(R"HTML(<input type="checkbox" id="checkbox">)HTML");
 
   AXObject* root = GetAXRootObject();
   ASSERT_NE(nullptr, root);
-  AXObject* button = GetAXObjectByElementId("button");
-  ASSERT_NE(nullptr, button);
+  AXObject* checkbox = GetAXObjectByElementId("checkbox");
+  ASSERT_NE(nullptr, checkbox);
 
   AXObject::InOrderTraversalIterator iter = root->GetInOrderTraversalIterator();
   EXPECT_EQ(*root, *iter);
   ++iter;  // Skip the generic container which is an ignored object.
   EXPECT_NE(GetAXObjectCache().InOrderTraversalEnd(), iter);
-  EXPECT_EQ(*button, *++iter);
-  EXPECT_EQ(ax::mojom::Role::kButton, iter->RoleValue());
-  EXPECT_EQ(*button, *iter++);
+  EXPECT_EQ(*checkbox, *++iter);
+  EXPECT_EQ(ax::mojom::Role::kCheckBox, iter->RoleValue());
+  EXPECT_EQ(*checkbox, *iter++);
   EXPECT_EQ(GetAXObjectCache().InOrderTraversalEnd(), iter);
-  EXPECT_EQ(*button, *--iter);
-  EXPECT_EQ(*button, *iter--);
+  EXPECT_EQ(*checkbox, *--iter);
+  EXPECT_EQ(*checkbox, *iter--);
   --iter;  // Skip the generic container which is an ignored object.
   EXPECT_EQ(ax::mojom::Role::kRootWebArea, iter->RoleValue());
   EXPECT_EQ(GetAXObjectCache().InOrderTraversalBegin(), iter);
@@ -394,6 +401,56 @@ TEST_F(AccessibilityTest, CheckNoDuplicateChildren) {
   ax_select->UpdateChildrenIfNecessary();
 
   ASSERT_EQ(ax_select->FirstChild()->ChildCount(), 1);
+}
+
+TEST_F(AccessibilityTest, InitRelationCache) {
+  // All of the other tests already have accessibility initialized
+  // first, but we don't want to in this test.
+  //
+  // Get rid of the AXContext so the AXObjectCache is destroyed.
+  ax_context_.reset(nullptr);
+
+  SetBodyInnerHTML(R"HTML(
+      <ul id="ul" aria-owns="li"></ul>
+      <label for="a"></label>
+      <input id="a">
+      <input id="b">
+      <div role="section" id="div">
+        <li id="li"></li>
+      </div>
+    )HTML");
+
+  // Now recreate an AXContext, simulating what happens if accessibility
+  // is enabled after the document is loaded.
+  ax_context_.reset(new AXContext(GetDocument()));
+
+  const AXObject* root = GetAXRootObject();
+  ASSERT_NE(nullptr, root);
+  const AXObject* input_a = GetAXObjectByElementId("a");
+  ASSERT_NE(nullptr, input_a);
+  const AXObject* input_b = GetAXObjectByElementId("b");
+  ASSERT_NE(nullptr, input_b);
+
+  EXPECT_TRUE(
+      GetAXObjectCache().MayHaveHTMLLabel(ToHTMLElement(*input_a->GetNode())));
+  EXPECT_FALSE(
+      GetAXObjectCache().MayHaveHTMLLabel(ToHTMLElement(*input_b->GetNode())));
+
+  // Note: retrieve the LI first and check that its parent is not
+  // the paragraph element. If we were to retrieve the UL element,
+  // that would trigger the aria-owns check and wouln't allow us to
+  // test whether the relation cache was initialized.
+  const AXObject* li = GetAXObjectByElementId("li");
+  ASSERT_NE(nullptr, li);
+
+  const AXObject* div = GetAXObjectByElementId("div");
+  ASSERT_NE(nullptr, div);
+  EXPECT_NE(li->ParentObjectUnignored(), div);
+
+  const AXObject* ul = GetAXObjectByElementId("ul");
+  ASSERT_NE(nullptr, ul);
+
+  EXPECT_EQ(li->ParentObjectUnignored(), ul);
 }
 
 }  // namespace test

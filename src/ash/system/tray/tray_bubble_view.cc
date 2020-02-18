@@ -7,7 +7,9 @@
 #include <algorithm>
 #include <numeric>
 
+#include "ash/public/cpp/ash_features.h"
 #include "base/macros.h"
+#include "base/numerics/ranges.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkPath.h"
@@ -46,13 +48,13 @@ BubbleBorder::Arrow GetArrowAlignment(ash::ShelfAlignment alignment) {
   // The tray bubble is in a corner. In this case, we want the arrow to be
   // flush with one side instead of centered on the bubble.
   switch (alignment) {
-    case ash::SHELF_ALIGNMENT_BOTTOM:
-    case ash::SHELF_ALIGNMENT_BOTTOM_LOCKED:
+    case ash::ShelfAlignment::kBottom:
+    case ash::ShelfAlignment::kBottomLocked:
       return base::i18n::IsRTL() ? BubbleBorder::BOTTOM_LEFT
                                  : BubbleBorder::BOTTOM_RIGHT;
-    case ash::SHELF_ALIGNMENT_LEFT:
+    case ash::ShelfAlignment::kLeft:
       return BubbleBorder::LEFT_BOTTOM;
-    case ash::SHELF_ALIGNMENT_RIGHT:
+    case ash::ShelfAlignment::kRight:
       return BubbleBorder::RIGHT_BOTTOM;
   }
 }
@@ -210,8 +212,13 @@ TrayBubbleView::TrayBubbleView(const InitParams& init_params)
       preferred_width_(init_params.min_width),
       bubble_border_(new BubbleBorder(
           arrow(),
-          init_params.has_shadow ? BubbleBorder::NO_ASSETS
-                                 : BubbleBorder::BIG_SHADOW,
+          // Note: for legacy reasons, a shadow is rendered even if |has_shadow|
+          // is false. This is fixed with the
+          // IsUnifiedMessageCenterRefactorEnabled feature flag.
+          init_params.has_shadow ||
+                  features::IsUnifiedMessageCenterRefactorEnabled()
+              ? BubbleBorder::NO_ASSETS
+              : BubbleBorder::BIG_SHADOW,
           init_params.bg_color.value_or(gfx::kPlaceholderColor))),
       owned_bubble_border_(bubble_border_),
       is_gesture_dragging_(false),
@@ -299,7 +306,7 @@ void TrayBubbleView::SetBottomPadding(int padding) {
 }
 
 void TrayBubbleView::SetWidth(int width) {
-  width = std::max(std::min(width, params_.max_width), params_.min_width);
+  width = base::ClampToRange(width, params_.min_width, params_.max_width);
   if (preferred_width_ == width)
     return;
   preferred_width_ = width;
@@ -339,6 +346,10 @@ int TrayBubbleView::GetDialogButtons() const {
   return ui::DIALOG_BUTTON_NONE;
 }
 
+void TrayBubbleView::StopReroutingEvents() {
+  reroute_event_handler_.reset();
+}
+
 ax::mojom::Role TrayBubbleView::GetAccessibleWindowRole() {
   // We override the role because the base class sets it to alert dialog.
   // This would make screen readers announce the whole of the system tray
@@ -348,9 +359,9 @@ ax::mojom::Role TrayBubbleView::GetAccessibleWindowRole() {
 
 void TrayBubbleView::OnBeforeBubbleWidgetInit(Widget::InitParams* params,
                                               Widget* bubble_widget) const {
-  if (bubble_border_->shadow() == BubbleBorder::NO_ASSETS) {
+  if (params_.has_shadow) {
     // Apply a WM-provided shadow (see ui/wm/core/).
-    params->shadow_type = Widget::InitParams::SHADOW_TYPE_DROP;
+    params->shadow_type = Widget::InitParams::ShadowType::kDrop;
     params->shadow_elevation = wm::kShadowElevationActiveWindow;
   }
 }

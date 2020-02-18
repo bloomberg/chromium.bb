@@ -20,6 +20,7 @@
 
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
 
+#include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
@@ -131,8 +132,7 @@ bool ShouldLazilyLoadFrame(const Document& document,
   // holdback into consideration.
   if (RuntimeEnabledFeatures::
           RestrictAutomaticLazyFrameLoadingToDataSaverEnabled() &&
-      (document.GetSettings()->GetDataSaverHoldbackWebApi() ||
-       !GetNetworkStateNotifier().SaveDataEnabled())) {
+      !GetNetworkStateNotifier().SaveDataEnabled()) {
     return false;
   }
 
@@ -172,8 +172,8 @@ HTMLFrameOwnerElement::HTMLFrameOwnerElement(const QualifiedName& tag_name,
     : HTMLElement(tag_name, document),
       content_frame_(nullptr),
       embedded_content_view_(nullptr),
-      should_lazy_load_children_(DoesParentAllowLazyLoadingChildren(document)) {
-}
+      should_lazy_load_children_(DoesParentAllowLazyLoadingChildren(document)),
+      is_swapping_frames_(false) {}
 
 LayoutEmbeddedContent* HTMLFrameOwnerElement::GetLayoutEmbeddedContent() const {
   // HTMLObjectElement and HTMLEmbedElement may return arbitrary layoutObjects
@@ -307,15 +307,12 @@ void HTMLFrameOwnerElement::UpdateContainerPolicy(Vector<String>* messages) {
   }
 }
 
-void HTMLFrameOwnerElement::PointerEventsChanged() {
-  if (auto* remote_frame = DynamicTo<RemoteFrame>(ContentFrame()))
-    remote_frame->PointerEventsChanged();
-}
-
 void HTMLFrameOwnerElement::FrameOwnerPropertiesChanged() {
   // Don't notify about updates if ContentFrame() is null, for example when
-  // the subframe hasn't been created yet.
-  if (ContentFrame()) {
+  // the subframe hasn't been created yet; or if we are in the middle of
+  // swapping one frame for another, in which case the final state of
+  // properties will be propagated at the end of the swapping operation.
+  if (!is_swapping_frames_ && ContentFrame()) {
     GetDocument().GetFrame()->Client()->DidChangeFrameOwnerProperties(this);
   }
 }
@@ -356,17 +353,18 @@ void HTMLFrameOwnerElement::SetEmbeddedContentView(
     }
   }
 
-  if (embedded_content_view_) {
-    if (embedded_content_view_->IsAttached()) {
-      embedded_content_view_->DetachFromLayout();
-      if (embedded_content_view_->IsPluginView())
-        DisposePluginSoon(ToWebPluginContainerImpl(embedded_content_view_));
+  EmbeddedContentView* old_view = embedded_content_view_.Get();
+  embedded_content_view_ = embedded_content_view;
+  if (old_view) {
+    if (old_view->IsAttached()) {
+      old_view->DetachFromLayout();
+      if (old_view->IsPluginView())
+        DisposePluginSoon(ToWebPluginContainerImpl(old_view));
       else
-        embedded_content_view_->Dispose();
+        old_view->Dispose();
     }
   }
 
-  embedded_content_view_ = embedded_content_view;
   FrameOwnerPropertiesChanged();
 
   GetDocument().GetRootScrollerController().DidUpdateIFrameFrameView(*this);

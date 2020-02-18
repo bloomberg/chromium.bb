@@ -57,6 +57,14 @@ FT_BEGIN_HEADER
   /*************************************************************************/
 
 
+  /* The calculation `NULL + n' is undefined in C.  Even if the resulting */
+  /* pointer doesn't get dereferenced, this causes warnings with          */
+  /* sanitizers.                                                          */
+  /*                                                                      */
+  /* We thus provide a macro that should be used if `base' can be NULL.   */
+#define FT_OFFSET( base, count )  ( (base) ? (base) + (count) : NULL )
+
+
   /*
    * C++ refuses to handle statements like p = (void*)anything, with `p' a
    * typed pointer.  Since we don't have a `typeof' operator in standard C++,
@@ -153,10 +161,10 @@ extern "C++"
                                                (FT_Long)(size), \
                                                &error ) )
 
-#define FT_MEM_FREE( ptr )                \
-          FT_BEGIN_STMNT                  \
-            ft_mem_free( memory, (ptr) ); \
-            (ptr) = NULL;                 \
+#define FT_MEM_FREE( ptr )                                  \
+          FT_BEGIN_STMNT                                    \
+            FT_DEBUG_INNER( ft_mem_free( memory, (ptr) ) ); \
+            (ptr) = NULL;                                   \
           FT_END_STMNT
 
 #define FT_MEM_NEW( ptr )                        \

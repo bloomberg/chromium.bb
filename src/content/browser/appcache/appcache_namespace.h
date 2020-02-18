@@ -29,6 +29,9 @@ struct CONTENT_EXPORT AppCacheNamespace {
   AppCacheNamespaceType type;
   GURL namespace_url;
   GURL target_url;
+
+  // TODO(jsbell): Remove pattern support, since it has been removed from the
+  // parser already.
   bool is_pattern;
 };
 

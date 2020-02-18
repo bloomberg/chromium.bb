@@ -66,6 +66,12 @@ class GridTrack {
   }
   void SetGrowthLimitCap(base::Optional<LayoutUnit>);
 
+  const GridTrackSize& CachedTrackSize() const {
+    DCHECK(cached_track_size_.has_value());
+    return cached_track_size_.value();
+  }
+  void SetCachedTrackSize(const GridTrackSize&);
+
  private:
   bool IsGrowthLimitBiggerThanBaseSize() const;
   void EnsureGrowthLimitIsBiggerThanBaseSize();
@@ -76,6 +82,7 @@ class GridTrack {
   LayoutUnit size_during_distribution_;
   base::Optional<LayoutUnit> growth_limit_cap_;
   bool infinitely_growable_;
+  base::Optional<GridTrackSize> cached_track_size_;
 };
 
 class GridTrackSizingAlgorithm final {
@@ -136,10 +143,10 @@ class GridTrackSizingAlgorithm final {
                                   GridTrackSizingDirection) const;
   bool IsRelativeSizedTrackAsAuto(const GridTrackSize&,
                                   GridTrackSizingDirection) const;
-  GridTrackSize GetGridTrackSize(GridTrackSizingDirection,
-                                 size_t translated_index) const;
-  GridTrackSize RawGridTrackSize(GridTrackSizingDirection,
-                                 size_t translated_index) const;
+  GridTrackSize CalculateGridTrackSize(GridTrackSizingDirection,
+                                       size_t translated_index) const;
+  const GridTrackSize& RawGridTrackSize(GridTrackSizingDirection,
+                                        size_t translated_index) const;
 
   // Helper methods for step 1. initializeTrackSizes().
   LayoutUnit InitialBaseSize(const GridTrackSize&) const;
@@ -293,9 +300,9 @@ class GridTrackSizingAlgorithmStrategy {
   GridTrackSizingAlgorithmStrategy(GridTrackSizingAlgorithm& algorithm)
       : algorithm_(algorithm) {}
 
-  virtual LayoutUnit MinLogicalWidthForChild(LayoutBox&,
-                                             const Length& child_min_size,
-                                             LayoutUnit available_size) const;
+  virtual LayoutUnit MinLogicalSizeForChild(LayoutBox&,
+                                            const Length& child_min_size,
+                                            LayoutUnit available_size) const;
   virtual void LayoutGridItemForMinSizeComputation(
       LayoutBox&,
       bool override_size_has_changed) const = 0;
@@ -316,11 +323,6 @@ class GridTrackSizingAlgorithmStrategy {
   const LayoutGrid* GetLayoutGrid() const { return algorithm_.layout_grid_; }
   base::Optional<LayoutUnit> AvailableSpace() const {
     return algorithm_.AvailableSpace();
-  }
-
-  GridTrackSize GetGridTrackSize(GridTrackSizingDirection direction,
-                                 size_t translated_index) const {
-    return algorithm_.GetGridTrackSize(direction, translated_index);
   }
 
   // Helper functions

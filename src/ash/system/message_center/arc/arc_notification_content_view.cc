@@ -13,6 +13,7 @@
 #include "components/arc/metrics/arc_metrics_constants.h"
 #include "components/exo/notification_surface.h"
 #include "components/exo/surface.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/layer_animation_observer.h"
@@ -372,7 +373,7 @@ void ArcNotificationContentView::MaybeCreateFloatingControlButtons() {
   DCHECK(!floating_control_buttons_widget_);
 
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_CONTROL);
-  params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
+  params.opacity = views::Widget::InitParams::WindowOpacity::kTranslucent;
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.parent = surface_->GetWindow();
 
@@ -650,7 +651,7 @@ void ArcNotificationContentView::OnPaint(gfx::Canvas* canvas) {
 
   SkPath path;
   path.addRoundRect(gfx::RectToSkRect(GetLocalBounds()), radii,
-                    SkPath::kCCW_Direction);
+                    SkPathDirection::kCCW);
   canvas->ClipPath(path, false);
 
   if (!surface_ && item_ && !item_->GetSnapshot().isNull()) {
@@ -794,6 +795,13 @@ void ArcNotificationContentView::OnWidgetClosing(views::Widget* widget) {
     attached_widget_->RemoveObserver(this);
     attached_widget_ = nullptr;
   }
+}
+
+void ArcNotificationContentView::OnWidgetActivationChanged(
+    views::Widget* widget,
+    bool active) {
+  if (item_)
+    item_->OnWindowActivated(active);
 }
 
 void ArcNotificationContentView::OnItemDestroying() {

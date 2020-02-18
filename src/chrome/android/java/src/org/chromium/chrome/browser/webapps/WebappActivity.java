@@ -4,62 +4,74 @@
 
 package org.chromium.chrome.browser.webapps;
 
+import static android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_DEFAULT;
+
 import android.app.Activity;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.Color;
 import android.graphics.PixelFormat;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.StrictMode;
-import android.support.annotation.Nullable;
 import android.text.TextUtils;
-import android.view.View;
-import android.view.View.OnSystemUiVisibilityChangeListener;
+import android.util.Pair;
 import android.view.ViewGroup;
+
+import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.Log;
-import org.chromium.base.VisibleForTesting;
+import org.chromium.base.StrictModeContext;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.task.PostTask;
-import org.chromium.blink_public.platform.WebDisplayMode;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.AppHooks;
-import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.IntentHandler;
-import org.chromium.chrome.browser.SingleTabActivity;
 import org.chromium.chrome.browser.WarmupManager;
-import org.chromium.chrome.browser.appmenu.AppMenuPropertiesDelegate;
+import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider.CustomTabsUiType;
-import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
+import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.TrustedWebActivityBrowserControlsVisibilityManager;
+import org.chromium.chrome.browser.customtabs.BaseCustomTabActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabAppMenuPropertiesDelegate;
+import org.chromium.chrome.browser.customtabs.content.TabObserverRegistrar;
+import org.chromium.chrome.browser.customtabs.features.ImmersiveModeController;
+import org.chromium.chrome.browser.dependency_injection.ChromeActivityCommonsModule;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
-import org.chromium.chrome.browser.document.DocumentUtils;
+import org.chromium.chrome.browser.flags.ActivityType;
+import org.chromium.chrome.browser.metrics.WebApkUma;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabBrowserControlsState;
+import org.chromium.chrome.browser.tab.TabBrowserControlsConstraintsHelper;
+import org.chromium.chrome.browser.tab.TabBuilder;
 import org.chromium.chrome.browser.tab.TabDelegateFactory;
+import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TabObserver;
-import org.chromium.chrome.browser.tab.TabObserverRegistrar;
 import org.chromium.chrome.browser.tab.TabState;
-import org.chromium.chrome.browser.toolbar.top.ToolbarControlContainer;
+import org.chromium.chrome.browser.tab.TabThemeColorHelper;
+import org.chromium.chrome.browser.tabmodel.SingleTabModelSelector;
+import org.chromium.chrome.browser.tabmodel.TabLaunchType;
+import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.tabmodel.TabSelectionType;
+import org.chromium.chrome.browser.ui.appmenu.AppMenuPropertiesDelegate;
+import org.chromium.chrome.browser.ui.system.StatusBarColorController;
 import org.chromium.chrome.browser.usage_stats.UsageStatsService;
-import org.chromium.chrome.browser.util.ColorUtils;
-import org.chromium.chrome.browser.widget.TintedDrawable;
+import org.chromium.chrome.browser.util.AndroidTaskUtils;
+import org.chromium.chrome.browser.webapps.dependency_injection.WebappActivityComponent;
+import org.chromium.chrome.browser.webapps.dependency_injection.WebappActivityModule;
+import org.chromium.components.embedder_support.delegate.WebContentsDelegateAndroid;
 import org.chromium.content_public.browser.LoadUrlParams;
-import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.ScreenOrientationProvider;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.net.NetworkChangeNotifier;
 import org.chromium.ui.base.PageTransition;
 
+import java.io.File;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -67,37 +79,30 @@ import java.util.HashMap;
 /**
  * Displays a webapp in a nearly UI-less Chrome (InfoBars still appear).
  */
-public class WebappActivity extends SingleTabActivity {
+public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponent> {
     public static final String WEBAPP_SCHEME = "webapp";
 
     private static final String TAG = "WebappActivity";
     private static final String HISTOGRAM_NAVIGATION_STATUS = "Webapp.NavigationStatus";
     private static final long MS_BEFORE_NAVIGATING_BACK_FROM_INTERSTITIAL = 1000;
 
-    private static final int ENTER_IMMERSIVE_MODE_DELAY_MILLIS = 300;
-    private static final int RESTORE_IMMERSIVE_MODE_DELAY_MILLIS = 3000;
-    static final int IMMERSIVE_MODE_UI_FLAGS = View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-            | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-            | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-            | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION // hide nav bar
-            | View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
-            | View.SYSTEM_UI_FLAG_LOW_PROFILE
-            | View.SYSTEM_UI_FLAG_IMMERSIVE;
+    protected static final String BUNDLE_TAB_ID = "tabId";
+
+    private final WebappDirectoryManager mDirectoryManager;
 
     private WebappInfo mWebappInfo;
 
-    private TabObserverRegistrar mTabObserverRegistrar;
-
+    private BrowserServicesIntentDataProvider mIntentDataProvider;
+    private TrustedWebActivityBrowserControlsVisibilityManager mBrowserControlsVisibilityManager;
+    private WebappActivityTabController mTabController;
     private SplashController mSplashController;
+    private TabObserverRegistrar mTabObserverRegistrar;
+    private WebappDelegateFactory mDelegateFactory;
 
     private WebappDisclosureSnackbarController mDisclosureSnackbarController;
 
     private boolean mIsInitialized;
     private Integer mBrandColor;
-
-    private Bitmap mLargestFavicon;
-
-    private Runnable mSetImmersiveRunnable;
 
     private static Integer sOverrideCoreCountForTesting;
 
@@ -147,21 +152,22 @@ public class WebappActivity extends SingleTabActivity {
      */
     public WebappActivity() {
         mWebappInfo = createWebappInfo(null);
-        mTabObserverRegistrar = new TabObserverRegistrar(getLifecycleDispatcher());
-        mSplashController =
-                new SplashController(this, getLifecycleDispatcher(), mTabObserverRegistrar);
+        mDirectoryManager = new WebappDirectoryManager();
         mDisclosureSnackbarController = new WebappDisclosureSnackbarController();
+    }
+
+    @Override
+    public BrowserServicesIntentDataProvider getIntentDataProvider() {
+        return mIntentDataProvider;
     }
 
     @Override
     protected void onNewIntent(Intent intent) {
         if (intent == null) return;
 
-        if (AppHooks.get().interceptWebAppIntent(intent, this)) return;
-
         super.onNewIntent(intent);
 
-        WebappInfo newWebappInfo = popWebappInfo(WebappIntentDataProvider.idFromIntent(intent));
+        WebappInfo newWebappInfo = popWebappInfo(WebappIntentUtils.idFromIntent(intent));
         if (newWebappInfo == null) newWebappInfo = createWebappInfo(intent);
 
         if (newWebappInfo == null) {
@@ -173,8 +179,9 @@ public class WebappActivity extends SingleTabActivity {
     }
 
     @Override
-    public @ChromeActivity.ActivityType int getActivityType() {
-        return ChromeActivity.ActivityType.WEBAPP;
+    @ActivityType
+    public int getActivityType() {
+        return ActivityType.WEBAPP;
     }
 
     protected boolean loadUrlIfPostShareTarget(WebappInfo webappInfo) {
@@ -202,7 +209,9 @@ public class WebappActivity extends SingleTabActivity {
     @Override
     public void initializeState() {
         super.initializeState();
-        mTabObserverRegistrar.addObserversForTab(getActivityTab());
+
+        createAndShowTab();
+        mTabController.setInitialTab(getActivityTab());
         initializeUI(getSavedInstanceState());
     }
 
@@ -283,7 +292,7 @@ public class WebappActivity extends SingleTabActivity {
     @Override
     public void performPreInflationStartup() {
         Intent intent = getIntent();
-        String id = WebappIntentDataProvider.idFromIntent(intent);
+        String id = WebappIntentUtils.idFromIntent(intent);
         WebappInfo info = popWebappInfo(id);
         // When WebappActivity is killed by the Android OS, and an entry stays in "Android Recents"
         // (The user does not swipe it away), when WebappActivity is relaunched it is relaunched
@@ -333,24 +342,39 @@ public class WebappActivity extends SingleTabActivity {
         applyScreenOrientation();
 
         if (mWebappInfo.displayMode() == WebDisplayMode.FULLSCREEN) {
-            enterImmersiveMode();
+            new ImmersiveModeController(getLifecycleDispatcher(), this).enterImmersiveMode(
+                    LAYOUT_IN_DISPLAY_CUTOUT_MODE_DEFAULT, false /*sticky*/);
         }
 
         initSplash();
     }
 
     @Override
-    public void finishNativeInitialization() {
-        LayoutManager layoutDriver = new LayoutManager(getCompositorViewHolder());
-        initializeCompositorContent(layoutDriver, findViewById(R.id.url_bar),
-                (ViewGroup) findViewById(android.R.id.content),
-                (ToolbarControlContainer) findViewById(R.id.control_container));
-        getToolbarManager().initializeWithNative(getTabModelSelector(),
-                getFullscreenManager().getBrowserVisibilityDelegate(), null, layoutDriver, null,
-                null, null, view -> onToolbarCloseButtonClicked());
-        getToolbarManager().setShowTitle(true);
-        getToolbarManager().setCloseButtonDrawable(null); // Hides close button.
+    protected WebappActivityComponent createComponent(ChromeActivityCommonsModule commonsModule) {
+        mIntentDataProvider = mWebappInfo.getProvider();
+        WebappActivityModule webappModule = new WebappActivityModule(mIntentDataProvider);
+        WebappActivityComponent component =
+                ChromeApplication.getComponent().createWebappActivityComponent(
+                        commonsModule, webappModule);
+        onComponentCreated(component);
 
+        mTabController = component.resolveTabController();
+        mBrowserControlsVisibilityManager = component.resolveBrowserControlsVisibilityManager();
+        mSplashController = component.resolveSplashController();
+        mTabObserverRegistrar = component.resolveTabObserverRegistrar();
+        mDelegateFactory = component.resolveWebappDelegateFactory();
+
+        mStatusBarColorProvider.setUseTabThemeColor(true /* useTabThemeColor */);
+
+        mNavigationController.setFinishHandler((reason) -> { handleFinishAndClose(); });
+        mNavigationController.setLandingPageOnCloseCriterion(
+                url -> WebappScopePolicy.isUrlInScope(scopePolicy(), getWebappInfo(), url));
+
+        return component;
+    }
+
+    @Override
+    public void finishNativeInitialization() {
         if (UsageStatsService.isEnabled() && !mWebappInfo.isSplashProvidedByWebApk()) {
             UsageStatsService.getInstance().createPageViewObserver(getTabModelSelector(), this);
         }
@@ -363,13 +387,14 @@ public class WebappActivity extends SingleTabActivity {
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        saveTabState(outState);
+        mDirectoryManager.cancelCleanup();
+        saveState(outState);
     }
 
     @Override
     public void onStartWithNative() {
         super.onStartWithNative();
-        WebappDirectoryManager.cleanUpDirectories();
+        mDirectoryManager.cleanUpDirectories(this, getActivityId());
     }
 
     @Override
@@ -381,75 +406,25 @@ public class WebappActivity extends SingleTabActivity {
     /**
      * Saves the tab data out to a file.
      */
-    private void saveTabState(Bundle outState) {
-        Tab tab = getActivityTab();
-        if (tab == null || tab.getUrl() == null || tab.getUrl().isEmpty()) return;
-        if (TabState.saveState(outState, TabState.from(tab))) {
-            outState.putInt(BUNDLE_TAB_ID, tab.getId());
+    private void saveState(Bundle outState) {
+        if (getActivityTab() == null || getActivityTab().getUrl() == null
+                || getActivityTab().getUrl().isEmpty()) {
+            return;
+        }
+
+        outState.putInt(BUNDLE_TAB_ID, getActivityTab().getId());
+
+        String tabFileName = TabState.getTabStateFilename(getActivityTab().getId(), false);
+        File tabFile = new File(getActivityDirectory(), tabFileName);
+
+        // TODO(crbug.com/525785): Temporarily allowing disk access until more permanent fix is in.
+        try (StrictModeContext ignored = StrictModeContext.allowDiskWrites()) {
+            TabState.saveState(tabFile, TabState.from(getActivityTab()), false);
         }
     }
 
-    @Override
-    protected TabState restoreTabState(Bundle savedInstanceState, int tabId) {
-        return TabState.restoreTabState(savedInstanceState);
-    }
-
-    @Override
-    public void onWindowFocusChanged(boolean hasFocus) {
-        super.onWindowFocusChanged(hasFocus);
-
-        // Re-enter immersive mode after users switch back to this Activity.
-        if (hasFocus) {
-            asyncSetImmersive(ENTER_IMMERSIVE_MODE_DELAY_MILLIS);
-        }
-    }
-
-    /**
-     * Sets activity's decor view into an immersive mode.
-     * If immersive mode is not supported, this method no-ops.
-     */
-    private void enterImmersiveMode() {
-        // Immersive mode is only supported in API 19+.
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) return;
-
-        if (mSetImmersiveRunnable == null) {
-            final View decor = getWindow().getDecorView();
-
-            mSetImmersiveRunnable = new Runnable() {
-                @Override
-                public void run() {
-                    int currentFlags = decor.getSystemUiVisibility();
-                    int desiredFlags = currentFlags | IMMERSIVE_MODE_UI_FLAGS;
-                    if (currentFlags != desiredFlags) {
-                        decor.setSystemUiVisibility(desiredFlags);
-                    }
-                }
-            };
-
-            // When we enter immersive mode for the first time, register a
-            // SystemUiVisibilityChangeListener that restores immersive mode. This is necessary
-            // because user actions like focusing a keyboard will break out of immersive mode.
-            decor.setOnSystemUiVisibilityChangeListener(new OnSystemUiVisibilityChangeListener() {
-                @Override
-                public void onSystemUiVisibilityChange(int newFlags) {
-                    if ((newFlags & View.SYSTEM_UI_FLAG_FULLSCREEN) == 0) {
-                        asyncSetImmersive(RESTORE_IMMERSIVE_MODE_DELAY_MILLIS);
-                    }
-                }
-            });
-        }
-
-        asyncSetImmersive(0);
-    }
-
-    /**
-     * This method no-ops before {@link #enterImmersiveMode()} is called explicitly.
-     */
-    private void asyncSetImmersive(int delayInMills) {
-        if (mSetImmersiveRunnable == null) return;
-
-        mHandler.removeCallbacks(mSetImmersiveRunnable);
-        mHandler.postDelayed(mSetImmersiveRunnable, delayInMills);
+    private TabState restoreTabState(Bundle savedInstanceState, int tabId) {
+        return TabState.restoreTabState(getActivityDirectory(), tabId);
     }
 
     @Override
@@ -457,9 +432,9 @@ public class WebappActivity extends SingleTabActivity {
         if (!isFinishing()) {
             if (getIntent() != null) {
                 // Avoid situations where Android starts two Activities with the same data.
-                DocumentUtils.finishOtherTasksWithData(getIntent().getData(), getTaskId());
+                AndroidTaskUtils.finishOtherTasksWithData(getIntent().getData(), getTaskId());
             }
-            updateTaskDescription();
+            updateToolbarColor();
         }
         super.onResume();
     }
@@ -511,23 +486,14 @@ public class WebappActivity extends SingleTabActivity {
     }
 
     @Override
-    protected int getControlContainerLayoutId() {
-        return R.layout.custom_tabs_control_container;
-    }
-
-    @Override
-    protected int getToolbarLayoutId() {
-        return R.layout.custom_tabs_toolbar;
-    }
-
-    @Override
     public AppMenuPropertiesDelegate createAppMenuPropertiesDelegate() {
         return new CustomTabAppMenuPropertiesDelegate(this, getActivityTabProvider(),
                 getMultiWindowModeStateDispatcher(), getTabModelSelector(), getToolbarManager(),
-                getWindow().getDecorView(), CustomTabsUiType.MINIMAL_UI_WEBAPP,
-                new ArrayList<String>(), true /* is opened by Chrome */,
-                true /* should show share */, false /* should show star (bookmarking) */,
-                false /* should show download */, false /* is incognito */);
+                getWindow().getDecorView(), getToolbarManager().getBookmarkBridgeSupplier(),
+                CustomTabsUiType.MINIMAL_UI_WEBAPP, new ArrayList<String>(),
+                true /* is opened by Chrome */, true /* should show share */,
+                false /* should show star (bookmarking) */, false /* should show download */,
+                false /* is incognito */);
     }
 
     /**
@@ -545,6 +511,11 @@ public class WebappActivity extends SingleTabActivity {
         return mWebappInfo.scopeUrl();
     }
 
+    WebContentsDelegateAndroid getWebContentsDelegate() {
+        assert mDelegateFactory != null;
+        return mDelegateFactory.getWebContentsDelegate();
+    }
+
     public static void addWebappInfo(String id, WebappInfo info) {
         Holder.sWebappInfoMap.put(id, info);
     }
@@ -556,8 +527,8 @@ public class WebappActivity extends SingleTabActivity {
     protected void updateStorage(WebappDataStorage storage) {
         // The information in the WebappDataStorage may have been purged by the
         // user clearing their history or not launching the web app recently.
-        // Restore the data if necessary from the intent.
-        storage.updateFromShortcutIntent(getIntent());
+        // Restore the data if necessary.
+        storage.updateFromWebappInfo(mWebappInfo);
 
         // A recent last used time is the indicator that the web app is still
         // present on the home screen, and enables sources such as notifications to
@@ -592,44 +563,28 @@ public class WebappActivity extends SingleTabActivity {
                 if (navigation.hasCommitted() && navigation.isInMainFrame()) {
                     // Notify the renderer to permanently hide the top controls since they do
                     // not apply to fullscreen content views.
-                    TabBrowserControlsState.update(
-                            tab, TabBrowserControlsState.getConstraints(tab), true);
+                    TabBrowserControlsConstraintsHelper.update(
+                            tab, TabBrowserControlsConstraintsHelper.getConstraints(tab), true);
 
                     RecordHistogram.recordBooleanHistogram(
                             HISTOGRAM_NAVIGATION_STATUS, !navigation.isErrorPage());
 
-                    updateToolbarCloseButtonVisibility();
-
-                    if (!WebappScopePolicy.isUrlInScope(
-                                scopePolicy(), mWebappInfo, navigation.getUrl())) {
+                    boolean isNavigationInScope = WebappScopePolicy.isUrlInScope(
+                            scopePolicy(), mWebappInfo, navigation.getUrl());
+                    mBrowserControlsVisibilityManager.updateIsInTwaMode(isNavigationInScope);
+                    if (!isNavigationInScope) {
                         // Briefly show the toolbar for off-scope navigations.
-                        getFullscreenManager()
-                                .getBrowserVisibilityDelegate()
-                                .showControlsTransient();
+                        mToolbarCoordinator.showToolbarTemporarily();
+                    }
+                    if (mWebappInfo.isForWebApk()) {
+                        WebApkUma.recordNavigation(isNavigationInScope);
                     }
                 }
             }
 
             @Override
             public void onDidChangeThemeColor(Tab tab, int color) {
-                mBrandColor = color;
-                updateTaskDescription();
-            }
-
-            @Override
-            public void onTitleUpdated(Tab tab) {
-                updateTaskDescription();
-            }
-
-            @Override
-            public void onFaviconUpdated(Tab tab, Bitmap icon) {
-                // No need to cache the favicon if there is an icon declared in app manifest.
-                if (mWebappInfo.icon() != null || icon == null) return;
-                if (mLargestFavicon == null || icon.getWidth() > mLargestFavicon.getWidth()
-                        || icon.getHeight() > mLargestFavicon.getHeight()) {
-                    mLargestFavicon = icon;
-                    updateTaskDescription();
-                }
+                updateToolbarColor();
             }
 
             @Override
@@ -684,90 +639,29 @@ public class WebappActivity extends SingleTabActivity {
         return null;
     }
 
-    private void updateToolbarCloseButtonVisibility() {
-        if (WebappBrowserControlsDelegate.shouldShowToolbarCloseButton(this)) {
-            getToolbarManager().setCloseButtonDrawable(
-                    TintedDrawable.constructTintedDrawable(this, R.drawable.btn_close));
-            // Applies light or dark tint to icons depending on the theme color.
-            getToolbarManager().updateLocationBarVisualsForState();
-        } else {
-            getToolbarManager().setCloseButtonDrawable(null);
-        }
-    }
+    private void updateToolbarColor() {
+        if (getToolbarManager() == null) return;
 
-    /**
-     * Moves the user back in history to most recent on-origin location.
-     */
-    private void onToolbarCloseButtonClicked() {
-        NavigationController nc = getActivityTab().getWebContents().getNavigationController();
+        Tab tab = getActivityTab();
+        int toolbarColor = getBaseStatusBarColor((tab != null) /* activityHasTab */);
 
-        final int lastIndex = nc.getLastCommittedEntryIndex();
-        int index = lastIndex;
-        while (index > 0
-                && !WebappScopePolicy.isUrlInScope(
-                           scopePolicy(), getWebappInfo(), nc.getEntryAtIndex(index).getUrl())) {
-            index--;
+        if (toolbarColor == StatusBarColorController.DEFAULT_STATUS_BAR_COLOR) return;
+
+        // If the color is undefined, we use the color from the tab (if available).
+        if (toolbarColor == StatusBarColorController.UNDEFINED_STATUS_BAR_COLOR) {
+            toolbarColor = (tab != null) ? TabThemeColorHelper.getColor(tab)
+                                         : mIntentDataProvider.getToolbarColor();
         }
 
-        if (index != lastIndex) {
-            nc.goToNavigationIndex(index);
-        }
-    }
-
-    private void updateTaskDescription() {
-        String title = null;
-        if (!TextUtils.isEmpty(mWebappInfo.shortName())) {
-            title = mWebappInfo.shortName();
-        } else if (getActivityTab() != null) {
-            title = getActivityTab().getTitle();
-        }
-
-        Bitmap icon = null;
-        if (mWebappInfo.icon() != null) {
-            icon = mWebappInfo.icon().bitmap();
-        } else if (getActivityTab() != null) {
-            icon = mLargestFavicon;
-        }
-
-        if (mBrandColor == null && mWebappInfo.hasValidThemeColor()) {
-            mBrandColor = (int) mWebappInfo.themeColor();
-        }
-
-        int taskDescriptionColor =
-                ApiCompatibilityUtils.getColor(getResources(), R.color.default_primary_color);
-
-        // Don't use the brand color for the status bars if we're in display: fullscreen. This works
-        // around an issue where the status bars go transparent and can't be seen on top of the page
-        // content when users swipe them in or they appear because the on-screen keyboard was
-        // triggered.
-        if (mBrandColor != null && mWebappInfo.displayMode() != WebDisplayMode.FULLSCREEN) {
-            taskDescriptionColor = mBrandColor;
-            if (getToolbarManager() != null) {
-                getToolbarManager().onThemeColorChanged(mBrandColor, false);
-            }
-        }
-
-        ApiCompatibilityUtils.setTaskDescription(this, title, icon,
-                ColorUtils.getOpaqueColor(taskDescriptionColor));
-        getStatusBarColorController().updateStatusBarColor(isStatusBarDefaultThemeColor());
-    }
-
-    @Override
-    public int getBaseStatusBarColor() {
-        return isStatusBarDefaultThemeColor() ? Color.BLACK : mBrandColor;
-    }
-
-    @Override
-    public boolean isStatusBarDefaultThemeColor() {
-        // Don't use the brand color for the status bars if we're in display: fullscreen. This works
-        // around an issue where the status bars go transparent and can't be seen on top of the page
-        // content when users swipe them in or they appear because the on-screen keyboard was
-        // triggered.
-        return mBrandColor == null || mWebappInfo.displayMode() == WebDisplayMode.FULLSCREEN;
+        getToolbarManager().onThemeColorChanged(toolbarColor, false);
     }
 
     @Override
     public boolean onMenuOrKeyboardAction(int id, boolean fromMenu) {
+        // Disable creating bookmark.
+        if (id == R.id.bookmark_this_page_id) {
+            return true;
+        }
         if (id == R.id.open_in_browser_id) {
             openCurrentUrlInChrome();
             if (fromMenu) {
@@ -787,7 +681,7 @@ public class WebappActivity extends SingleTabActivity {
         Tab tab = getActivityTab();
         if (tab == null) return false;
 
-        String url = tab.getOriginalUrl();
+        String url = ((TabImpl) tab).getOriginalUrl();
         if (TextUtils.isEmpty(url)) {
             url = IntentHandler.getUrlFromIntent(getIntent());
         }
@@ -811,14 +705,18 @@ public class WebappActivity extends SingleTabActivity {
         return mWebappInfo.id();
     }
 
+    /**
+     * Get the active directory by this web app.
+     *
+     * @return The directory used for the current web app.
+     */
+    private File getActivityDirectory() {
+        return mDirectoryManager.getWebappDirectory(this, getActivityId());
+    }
+
     @VisibleForTesting
     SplashController getSplashControllerForTests() {
         return mSplashController;
-    }
-
-    @Override
-    public int getControlContainerHeightResource() {
-        return R.dimen.custom_tabs_control_container_height;
     }
 
     @Override
@@ -826,13 +724,14 @@ public class WebappActivity extends SingleTabActivity {
         return null;
     }
 
-    @Override
-    protected TabDelegateFactory createTabDelegateFactory() {
-        return new WebappDelegateFactory(this);
+    /**
+     * @return {@link TabDelegateFactory} to be used while creating the associated {@link Tab}.
+     */
+    private TabDelegateFactory createTabDelegateFactory() {
+        return mDelegateFactory;
     }
 
-    @Override
-    protected TabCreator createNormalTabCreator() {
+    private TabCreator createNormalTabCreator() {
         return new WebappTabDelegate(false /* incognito */, mWebappInfo);
     }
 
@@ -879,6 +778,14 @@ public class WebappActivity extends SingleTabActivity {
                 getWindowAndroid(), (byte) mWebappInfo.orientation());
     }
 
+    /**
+     * Handles finishing activity on behalf of {@link CustomTabNavigationController}.
+     * Overridden by {@link WebApkActivity}.
+     */
+    protected void handleFinishAndClose() {
+        finish();
+    }
+
     protected boolean isSplashShowing() {
         return mSplashController.isSplashShowing();
     }
@@ -896,4 +803,66 @@ public class WebappActivity extends SingleTabActivity {
     protected void removeSplashscreenObserver(SplashscreenObserver observer) {
         mSplashController.removeObserver(observer);
     }
+
+    @Override
+    protected TabModelSelector createTabModelSelector() {
+        return new SingleTabModelSelector(this, this, false);
+    }
+
+    @Override
+    protected Pair<? extends TabCreator, ? extends TabCreator> createTabCreators() {
+        return Pair.create(createNormalTabCreator(), null);
+    }
+
+    protected void createAndShowTab() {
+        TabImpl tab = (TabImpl) createTab();
+        getTabModelSelector().setTab(tab);
+        ((TabImpl) tab).show(TabSelectionType.FROM_NEW);
+    }
+
+    @Override
+    public SingleTabModelSelector getTabModelSelector() {
+        return (SingleTabModelSelector) super.getTabModelSelector();
+    }
+
+    /**
+     * Creates the {@link Tab} used by the {@link SingleTabActivity}.
+     * If the {@code savedInstanceState} exists, then the user did not intentionally close the app
+     * by swiping it away in the recent tasks list.  In that case, we try to restore the tab from
+     * disk.
+     */
+    protected Tab createTab() {
+        Tab tab = null;
+        TabState tabState = null;
+        int tabId = Tab.INVALID_TAB_ID;
+        Bundle savedInstanceState = getSavedInstanceState();
+        if (savedInstanceState != null) {
+            tabId = savedInstanceState.getInt(BUNDLE_TAB_ID, Tab.INVALID_TAB_ID);
+            if (tabId != Tab.INVALID_TAB_ID) {
+                tabState = restoreTabState(savedInstanceState, tabId);
+            }
+        }
+        boolean unfreeze = tabId != Tab.INVALID_TAB_ID && tabState != null;
+        if (unfreeze) {
+            tab = TabBuilder.createFromFrozenState()
+                          .setId(tabId)
+                          .setWindow(getWindowAndroid())
+                          .setDelegateFactory(createTabDelegateFactory())
+                          .setTabState(tabState)
+                          .setUnfreeze(unfreeze)
+                          .build();
+        } else {
+            tab = new TabBuilder()
+                          .setWindow(getWindowAndroid())
+                          .setLaunchType(TabLaunchType.FROM_CHROME_UI)
+                          .setDelegateFactory(createTabDelegateFactory())
+                          .setTabState(tabState)
+                          .setUnfreeze(unfreeze)
+                          .build();
+        }
+        return tab;
+    }
+
+    @Override
+    public void onUpdateStateChanged() {}
 }

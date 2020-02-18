@@ -24,6 +24,7 @@
 #include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/bookmarks/managed/managed_bookmark_service.h"
 #include "components/prefs/pref_service.h"
+#include "components/url_formatter/url_formatter.h"
 #include "content/public/browser/page_navigator.h"
 #include "ui/base/accelerators/menu_label_accelerator_util.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
@@ -31,6 +32,7 @@
 #include "ui/base/theme_provider.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/resources/grit/ui_resources.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/submenu_view.h"
@@ -518,8 +520,8 @@ void BookmarkMenuDelegate::BuildMenuForPermanentNode(const BookmarkNode* node,
     menu->AppendSeparator();
   }
 
-  AddMenuToMaps(menu->AppendSubMenuWithIcon(
-                    next_menu_id_++, MaybeEscapeLabel(node->GetTitle()), icon),
+  AddMenuToMaps(menu->AppendSubMenu(next_menu_id_++,
+                                    MaybeEscapeLabel(node->GetTitle()), icon),
                 node);
 }
 
@@ -549,12 +551,17 @@ void BookmarkMenuDelegate::BuildMenu(const BookmarkNode* parent,
       const gfx::Image& image = GetBookmarkModel()->GetFavicon(node);
       const gfx::ImageSkia* icon = image.IsEmpty() ?
           rb->GetImageSkiaNamed(IDR_DEFAULT_FAVICON) : image.ToImageSkia();
-      child_menu_item = menu->AppendMenuItemWithIcon(
-          id, MaybeEscapeLabel(node->GetTitle()), *icon);
+      child_menu_item =
+          menu->AppendMenuItem(id, MaybeEscapeLabel(node->GetTitle()), *icon);
+      child_menu_item->GetViewAccessibility().OverrideDescription(
+          url_formatter::FormatUrl(
+              node->url(), url_formatter::kFormatUrlOmitDefaults,
+              net::UnescapeRule::SPACES, nullptr, nullptr, nullptr));
     } else {
       DCHECK(node->is_folder());
-      child_menu_item = menu->AppendSubMenuWithIcon(
+      child_menu_item = menu->AppendSubMenu(
           id, MaybeEscapeLabel(node->GetTitle()), folder_icon);
+      child_menu_item->GetViewAccessibility().OverrideDescription("");
     }
     AddMenuToMaps(child_menu_item, node);
   }

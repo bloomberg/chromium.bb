@@ -23,7 +23,7 @@
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_utils.h"
 #include "storage/browser/blob/blob_storage_context.h"
-#include "storage/browser/fileapi/file_system_context.h"
+#include "storage/browser/file_system/file_system_context.h"
 #include "storage/browser/quota/quota_manager.h"
 #include "storage/browser/test/mock_blob_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -70,6 +70,7 @@ class LocalFileChangeTrackerTest : public testing::Test {
     // (CannedSyncableFileSystem::TearDown does not do this as there may be
     // multiple syncable file systems registered for the name)
     RevokeSyncableFileSystem();
+    content::RunAllTasksUntilIdle();
   }
 
  protected:
@@ -113,8 +114,8 @@ class LocalFileChangeTrackerTest : public testing::Test {
     change_tracker()->GetAllChangedURLs(urls);
   }
 
-  content::BrowserTaskEnvironment task_environment_;
   base::ScopedTempDir base_dir_;
+  content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<leveldb::Env> in_memory_env_;
   CannedSyncableFileSystem file_system_;
 

@@ -112,11 +112,11 @@ of the following tryservers' jobs:
 
 *   [linux-rel], formerly on the `tryserver.chromium.linux` waterfall
 *   [mac-rel], formerly on the `tryserver.chromium.mac` waterfall
-*   [win7-rel], formerly on the `tryserver.chromium.win` waterfall
+*   [win10_chromium_x64_rel_ng], formerly on the `tryserver.chromium.win` waterfall
 
-[linux-rel]:    https://ci.chromium.org/p/chromium/builders/luci.chromium.try/linux-rel?limit=100
-[mac-rel]:      https://ci.chromium.org/p/chromium/builders/luci.chromium.try/mac-rel?limit=100
-[win7-rel]:     https://ci.chromium.org/p/chromium/builders/luci.chromium.try/win7-rel?limit=100
+[linux-rel]:                 https://ci.chromium.org/p/chromium/builders/luci.chromium.try/linux-rel?limit=100
+[mac-rel]:                   https://ci.chromium.org/p/chromium/builders/luci.chromium.try/mac-rel?limit=100
+[win10_chromium_x64_rel_ng]: https://ci.chromium.org/p/chromium/builders/luci.chromium.try/win10_chromium_x64_rel_ng?limit=100
 
 Scan down through the steps looking for the text "GPU"; that identifies those
 tests run on the GPU bots. For each test the "trigger" step can be ignored; the
@@ -272,10 +272,17 @@ adds noise to the list of approved images.
 Additionally, the tests normally rely on the Gold server for viewing images
 produced by a test run. This does not work if the data is not actually uploaded.
 
-In order to get around both of these issues, simply pass the `--local-run` flag
-to the tests. This will disable uploading, but otherwise go through the same
-steps as a test normally would. Each test will also print out a `file://` URL to
-the image it produces and a link to all approved images for that test in Gold.
+The pixel tests contain logic to automatically determine whether they are
+running on a workstation or not, as well as to determine what git revision is
+being tested. This *should* mean that the pixel tests will automatically work
+when run locally. However, if the local run detection code fails for some
+reason, you can manually pass some flags to force the same behavior:
+
+In order to get around the local run issues, simply pass the `--local-run=1`
+flag to the tests. This will disable uploading, but otherwise go through the
+same steps as a test normally would. Each test will also print out `file://`
+URLs to the produced image, the closest image for the test known to Gold, and
+the diff between the two.
 
 Because the image produced by the test locally is likely slightly different from
 any of the approved images in Gold, local test runs are likely to fail during
@@ -285,12 +292,14 @@ comparison. When using `--no-skia-gold-failure`, you'll also need to pass the
 `--passthrough` flag in order to actually see the link output.
 
 Example usage:
-`run_gpu_integration_test.py pixel --no-skia-gold-failure --local-run
---passthrough --build-revision aabbccdd`
+`run_gpu_integration_test.py pixel --no-skia-gold-failure --local-run=1
+--passthrough`
 
-Note that `aabbccdd` must be replaced with an actual Chromium src revision
-(typically whatever revision origin/master is currently synced to) in order for
-the tests to work. This can be done automatically using:
+If, for some reason, the local run code is unable to determine what the git
+revision is, simply pass '--build-revision aabbccdd'. Note that `aabbccdd` must
+be replaced with an actual Chromium src revision (typically whatever revision
+origin/master is currently synced to) in order for the tests to work. This can
+be done automatically using:
 ``run_gpu_integration_test.py pixel --no-skia-gold-failure --local-run
 --passthrough --build-revision `git rev-parse origin/master` ``
 
@@ -368,9 +377,9 @@ Email kbr@ if you try this and find it doesn't work.
 
 See the [Swarming documentation] for instructions on how to upload your binaries to the isolate server and trigger execution on Swarming.
 
-Be sure to use the correct swarming dimensions for your desired GPU e.g. "1002:6613" instead of "AMD Radeon R7 240 (1002:6613)" which is how it appears on swarming task page.  You can query bots in the Chrome-GPU pool to find the correct dimensions:
+Be sure to use the correct swarming dimensions for your desired GPU e.g. "1002:6613" instead of "AMD Radeon R7 240 (1002:6613)" which is how it appears on swarming task page.  You can query bots in the chromium.tests.gpu pool to find the correct dimensions:
 
-*   `python tools\swarming_client\swarming.py bots -S chromium-swarm.appspot.com -d pool Chrome-GPU`
+*   `python tools\swarming_client\swarming.py bots -S chromium-swarm.appspot.com -d pool chromium.tests.gpu`
 
 [Swarming documentation]: https://www.chromium.org/developers/testing/isolated-testing/for-swes#TOC-Run-a-test-built-locally-on-Swarming
 
@@ -450,7 +459,7 @@ invoke it via:
 
 [new-isolates]: gpu_testing_bot_details.md#Adding-a-new-isolated-test-to-the-bots
 
-o## Adding new steps to the GPU Bots
+### Adding new steps to the GPU Bots
 
 The tests that are run by the GPU bots are described by a couple of JSON files
 in the Chromium workspace:
@@ -522,9 +531,36 @@ pixel test failures are actual failures or need to be rebaselined." step.
 
 [pixel wrangling triage]: pixel_wrangling.md#How-to-Keep-the-Bots-Green
 
+If you are adding a new pixel test, it is beneficial to set the
+`grace_period_end` argument in the test's definition. This will allow the test
+to run for a period without actually failing on the waterfall bots, giving you
+some time to triage any additional images that show up on them. This helps
+prevent new tests from making the bots red because they're producing slightly
+different but valid images from the ones triaged while the CL was in review.
+Example:
+
+```
+from datetime import date
+
+...
+
+PixelTestPage(
+  'foo_pixel_test.html',
+  ...
+  grace_period_end=date(2020, 1, 1)
+)
+```
+
+You should typically set the grace period to end 1-2 days after the the CL will
+land.
+
 Once your CL passes the CQ, you should be mostly good to go, although you should
 keep an eye on the waterfall bots for a short period after your CL lands in case
 any configurations not covered by the CQ need to have images approved, as well.
+All untriaged images for your test can be found by substituting your test name
+into:
+
+`https://chrome-gpu-gold.skia.org/search?query=name%3D<test name>`
 
 ## Stamping out Flakiness
 

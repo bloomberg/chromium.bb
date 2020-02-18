@@ -5,10 +5,10 @@
 module blink.mojom;
 
 import "services/network/public/mojom/fetch_api.mojom";
-import "services/service_manager/public/mojom/interface_provider.mojom";
 import "third_party/blink/public/mojom/blob/blob_url_store.mojom";
 import "third_party/blink/public/mojom/browser_interface_broker.mojom";
 import "third_party/blink/public/mojom/loader/fetch_client_settings_object.mojom";
+import "third_party/blink/public/mojom/worker/subresource_loader_updater.mojom";
 import "third_party/blink/public/mojom/loader/url_loader_factory_bundle.mojom";
 import "third_party/blink/public/mojom/worker/dedicated_worker_host.mojom";
 import "third_party/blink/public/mojom/worker/worker_main_script_load_params.mojom";
@@ -29,12 +29,8 @@ interface DedicatedWorkerHostFactoryClient {
   // Called when the worker host is created.
   OnWorkerHostCreated(
       // Used for accessing services from the worker.
-      // TODO(crbug.com/990845): remove when no longer used.
-      service_manager.mojom.InterfaceProvider interface_provider,
-      // Used for accessing services from the worker.
-      // should replace the |interface_provider| above
       pending_remote<blink.mojom.BrowserInterfaceBroker>
-       browser_interface_broker);
+          browser_interface_broker);
 
   // Called when the worker host started loading the main worker script. This
   // is called after OnWorkerHostCreated(). This is never called when
@@ -56,6 +52,9 @@ interface DedicatedWorkerHostFactoryClient {
       // chrome-extension:// URLs.
       URLLoaderFactoryBundle subresource_loader_factories,
 
+      // Used for updating subresource loaders after NetworkService crash.
+      pending_receiver<SubresourceLoaderUpdater> subresource_loader_updater,
+
       // Used to make fetches from the worker go through the controller service
       // worker. This is null when there're no controller service worker.
       ControllerServiceWorkerInfo? controller_info);
@@ -73,19 +72,15 @@ interface DedicatedWorkerHostFactory {
   // The factory client should call this instead of
   // CreateWorkerHostAndStartScriptLoad() when PlzDedicatedWorker is disabled.
   //
-  // Creates a new DedicatedWorkerHost, and requests |worker_interface_provider|
-  // and |browser_interface_broker| (which is expected to replace
-  // |worker_interface_provider|) to provide the worker access to
-  // mojo interfaces.
+  // Creates a new DedicatedWorkerHost, and requests |browser_interface_broker|
+  // to provide the worker access to mojo interfaces.
   // |origin| must either be
   // unique or match the origin of the creating context (Document or
   // DedicatedWorkerGlobalScope).
   CreateWorkerHost(
       url.mojom.Origin origin,
-      // TODO(crbug.com/990845): remove when no longer used.
-      service_manager.mojom.InterfaceProvider& worker_interface_provider,
       pending_receiver<blink.mojom.BrowserInterfaceBroker>
-        browser_interface_broker,
+          browser_interface_broker,
       pending_receiver<DedicatedWorkerHost> host);
 
   // PlzDedicatedWorker:

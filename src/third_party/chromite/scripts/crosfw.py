@@ -195,7 +195,7 @@ def Dumper(flag, infile, outfile):
     infile: Input file to process.
     outfile: Output file to write to.
   """
-  result = cros_build_lib.RunCommand(
+  result = cros_build_lib.run(
       [CompilerTool('objdump'), flag, infile],
       log_stdout_to_file=outfile, **kwargs)
   if result.returncode:
@@ -458,10 +458,10 @@ def SetupBuild(options):
   #    Whenever you're wrong, admit it;
   #    Whenever you're right, shut up.
   cmd = [CompilerTool('gcc'), '-ffreestanding', '-x', 'c', '-c', '-']
-  result = cros_build_lib.RunCommand(cmd,
-                                     input='#include <stdint.h>',
-                                     capture_output=True,
-                                     **kwargs)
+  result = cros_build_lib.run(cmd,
+                              input='#include <stdint.h>',
+                              capture_output=True,
+                              **kwargs)
   if result.returncode == 0:
     base.append('USE_STDINT=1')
 
@@ -504,22 +504,22 @@ def RunBuild(options, base, target, queue):
   # Reconfigure U-Boot.
   if not options.incremental:
     # Ignore any error from this, some older U-Boots fail on this.
-    cros_build_lib.RunCommand(base + ['distclean'], **kwargs)
+    cros_build_lib.run(base + ['distclean'], **kwargs)
     if os.path.exists('tools/genboardscfg.py'):
       mtarget = 'defconfig'
     else:
       mtarget = 'config'
     cmd = base + ['%s_%s' % (uboard, mtarget)]
-    result = cros_build_lib.RunCommand(cmd, capture_output=True,
-                                       combine_stdout_stderr=True, **kwargs)
+    result = cros_build_lib.run(cmd, capture_output=True,
+                                combine_stdout_stderr=True, **kwargs)
     if result.returncode:
       print("cmd: '%s', output: '%s'" % (result.cmdstr, result.output))
       sys.exit(result.returncode)
 
   # Do the actual build.
   if options.build:
-    result = cros_build_lib.RunCommand(base + [target], capture_output=True,
-                                       combine_stdout_stderr=True, **kwargs)
+    result = cros_build_lib.run(base + [target], capture_output=True,
+                                combine_stdout_stderr=True, **kwargs)
     if result.returncode:
       # The build failed, so output the results to stderr.
       print("cmd: '%s', output: '%s'" % (result.cmdstr, result.output),
@@ -531,8 +531,7 @@ def RunBuild(options, base, target, queue):
   if spl:
     files += spl
   if options.size:
-    result = cros_build_lib.RunCommand([CompilerTool('size')] + files,
-                                       **kwargs)
+    result = cros_build_lib.run([CompilerTool('size')] + files, **kwargs)
     if result.returncode:
       sys.exit()
 
@@ -689,7 +688,7 @@ def WriteFirmware(options):
   os.environ['PYTHONPATH'] = ('%s/platform/dev/host/lib:%s/..' %
                               (src_root, src_root))
   Log(' '.join(cbf))
-  result = cros_build_lib.RunCommand(cbf, **kwargs)
+  result = cros_build_lib.run(cbf, **kwargs)
   if result.returncode:
     cros_build_lib.Die('cros_bundle_firmware failed')
 

@@ -32,7 +32,7 @@
 #import "ios/chrome/browser/web_state_list/fake_web_state_list_delegate.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_opener.h"
-#import "ios/chrome/test/base/scoped_block_swizzler.h"
+#import "ios/testing/scoped_block_swizzler.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
 #import "net/base/mac/url_conversions.h"
 #include "net/test/gtest_util.h"
@@ -587,8 +587,8 @@ TEST_F(UserActivityHandlerTest, PerformActionForShortcutItemWithRealShortcut) {
   [fakeStartupInformation setIsPresentingFirstRunUI:NO];
 
   NSArray* parametersToTest = @[
-    @[ @"OpenNewTab", @NO, @(NO_ACTION) ],
-    @[ @"OpenIncognitoTab", @YES, @(NO_ACTION) ],
+    @[ @"OpenNewSearch", @NO, @(FOCUS_OMNIBOX) ],
+    @[ @"OpenIncognitoSearch", @YES, @(FOCUS_OMNIBOX) ],
     @[ @"OpenVoiceSearch", @NO, @(START_VOICE_SEARCH) ],
     @[ @"OpenQRScanner", @NO, @(START_QR_CODE_SCANNER) ]
   ];
@@ -636,7 +636,7 @@ TEST_F(UserActivityHandlerTest, PerformActionForShortcutItemWithFirstRunUI) {
   [[[startupInformationMock stub] andReturnValue:@YES] isPresentingFirstRunUI];
 
   UIApplicationShortcutItem* shortcut =
-      [[UIApplicationShortcutItem alloc] initWithType:@"OpenNewTab"
+      [[UIApplicationShortcutItem alloc] initWithType:@"OpenNewSearch"
                                        localizedTitle:@""];
 
   swizzleHandleStartupParameters();

@@ -13,6 +13,7 @@
 #include "base/memory/aligned_memory.h"
 #include "base/memory/read_only_shared_memory_region.h"
 #include "base/memory/shared_memory_mapping.h"
+#include "base/numerics/ranges.h"
 #include "build/build_config.h"
 #include "cc/base/math_util.h"
 #include "cc/paint/paint_flags.h"
@@ -181,7 +182,6 @@ void CreateTestRenderPassDrawQuad(const SharedQuadState* shared_state,
                0,                 // mask_resource_id
                gfx::RectF(),      // mask_uv_rect
                gfx::Size(),       // mask_texture_size
-               false,             // mask_applies_to_backdrop
                gfx::Vector2dF(),  // filters scale
                gfx::PointF(),     // filter origin
                gfx::RectF(rect),  // tex_coord_rect
@@ -1693,9 +1693,7 @@ class VideoRendererPixelTest : public cc::RendererPixelTest<RendererType> {
   std::unique_ptr<media::VideoResourceUpdater> video_resource_updater_;
 };
 
-// TODO(samans): Make these tests pass with Vulkan. https://crbug.com/960795
-using NonVulkanGPURendererTypes = ::testing::Types<GLRenderer, SkiaRenderer>;
-TYPED_TEST_SUITE(VideoRendererPixelTest, NonVulkanGPURendererTypes);
+TYPED_TEST_SUITE(VideoRendererPixelTest, GPURendererTypes);
 
 template <typename RendererType>
 class VideoRendererPixelHiLoTest : public VideoRendererPixelTest<RendererType>,
@@ -1835,8 +1833,8 @@ TYPED_TEST(VideoRendererPixelTest, SimpleYUVRectBlack) {
 }
 
 // First argument (test case prefix) is intentionally left empty.
-INSTANTIATE_TEST_SUITE_P(, VideoGLRendererPixelHiLoTest, testing::Bool());
-INSTANTIATE_TEST_SUITE_P(, VideoSkiaRendererPixelHiLoTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All, VideoGLRendererPixelHiLoTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All, VideoSkiaRendererPixelHiLoTest, testing::Bool());
 
 TYPED_TEST(VideoRendererPixelTest, SimpleYUVJRect) {
   gfx::Rect rect(this->device_viewport_size_);
@@ -2085,7 +2083,7 @@ TYPED_TEST(RendererPixelTest, FastPassColorFilterAlpha) {
   auto* render_pass_quad =
       root_pass->CreateAndAppendDrawQuad<RenderPassDrawQuad>();
   render_pass_quad->SetNew(pass_shared_state, pass_rect, pass_rect,
-                           child_pass_id, 0, gfx::RectF(), gfx::Size(), false,
+                           child_pass_id, 0, gfx::RectF(), gfx::Size(),
                            gfx::Vector2dF(), gfx::PointF(),
                            gfx::RectF(pass_rect), false, 1.0f);
 
@@ -2145,7 +2143,7 @@ TYPED_TEST(RendererPixelTest, FastPassSaturateFilter) {
   auto* render_pass_quad =
       root_pass->CreateAndAppendDrawQuad<RenderPassDrawQuad>();
   render_pass_quad->SetNew(pass_shared_state, pass_rect, pass_rect,
-                           child_pass_id, 0, gfx::RectF(), gfx::Size(), false,
+                           child_pass_id, 0, gfx::RectF(), gfx::Size(),
                            gfx::Vector2dF(), gfx::PointF(),
                            gfx::RectF(pass_rect), false, 1.0f);
 
@@ -2206,7 +2204,7 @@ TYPED_TEST(RendererPixelTest, FastPassFilterChain) {
   auto* render_pass_quad =
       root_pass->CreateAndAppendDrawQuad<RenderPassDrawQuad>();
   render_pass_quad->SetNew(pass_shared_state, pass_rect, pass_rect,
-                           child_pass_id, 0, gfx::RectF(), gfx::Size(), false,
+                           child_pass_id, 0, gfx::RectF(), gfx::Size(),
                            gfx::Vector2dF(), gfx::PointF(),
                            gfx::RectF(pass_rect), false, 1.0f);
 
@@ -2288,7 +2286,7 @@ TYPED_TEST(RendererPixelTest, FastPassColorFilterAlphaTranslation) {
   auto* render_pass_quad =
       root_pass->CreateAndAppendDrawQuad<RenderPassDrawQuad>();
   render_pass_quad->SetNew(pass_shared_state, pass_rect, pass_rect,
-                           child_pass_id, 0, gfx::RectF(), gfx::Size(), false,
+                           child_pass_id, 0, gfx::RectF(), gfx::Size(),
                            gfx::Vector2dF(), gfx::PointF(),
                            gfx::RectF(pass_rect), false, 1.0f);
 
@@ -2480,7 +2478,6 @@ TYPED_TEST(RendererPixelTest, RenderPassAndMaskWithPartialQuad) {
       gfx::ScaleRect(gfx::RectF(sub_rect), 2.f / mask_rect.width(),
                      2.f / mask_rect.height()),  // mask_uv_rect
       gfx::Size(mask_rect.size()),               // mask_texture_size
-      false,                                     // mask_applies_to_backdrop
       gfx::Vector2dF(),                          // filters scale
       gfx::PointF(),                             // filter origin
       gfx::RectF(sub_rect),                      // tex_coord_rect
@@ -2578,7 +2575,6 @@ TYPED_TEST(RendererPixelTest, RenderPassAndMaskWithPartialQuad2) {
       gfx::ScaleRect(gfx::RectF(sub_rect), 2.f / mask_rect.width(),
                      2.f / mask_rect.height()),  // mask_uv_rect
       gfx::Size(mask_rect.size()),               // mask_texture_size
-      false,                                     // mask_applies_to_backdrop
       gfx::Vector2dF(),                          // filters scale
       gfx::PointF(),                             // filter origin
       gfx::RectF(sub_rect),                      // tex_coord_rect
@@ -2664,7 +2660,6 @@ TYPED_TEST(RendererPixelTest, RenderPassAndMaskForRoundedCorner) {
       gfx::ScaleRect(gfx::RectF(viewport_rect), 1.f / mask_rect.width(),
                      1.f / mask_rect.height()),  // mask_uv_rect
       gfx::Size(mask_rect.size()),               // mask_texture_size
-      false,                                     // mask_applies_to_backdrop
       gfx::Vector2dF(),                          // filters scale
       gfx::PointF(),                             // filter origin
       gfx::RectF(viewport_rect),                 // tex_coord_rect
@@ -2769,7 +2764,6 @@ TYPED_TEST(RendererPixelTest, RenderPassAndMaskForRoundedCornerMultiRadii) {
       gfx::ScaleRect(gfx::RectF(viewport_rect), 1.f / mask_rect.width(),
                      1.f / mask_rect.height()),  // mask_uv_rect
       gfx::Size(mask_rect.size()),               // mask_texture_size
-      false,                                     // mask_applies_to_backdrop
       gfx::Vector2dF(),                          // filters scale
       gfx::PointF(),                             // filter origin
       gfx::RectF(viewport_rect),                 // tex_coord_rect
@@ -2887,7 +2881,6 @@ class RendererPixelTestWithBackdropFilter
                                filter_pass_layer_rect_, filter_pass_id,
                                mapped_mask_resource_id, mask_uv_rect,
                                mask_texture_size,
-                               true,  // mask_applies_to_backdrop
                                gfx::Vector2dF(1.0f, 1.0f),  // filters_scale
                                gfx::PointF(),               // filters_origin
                                gfx::RectF(),                // tex_coord_rect
@@ -3303,7 +3296,7 @@ TYPED_TEST(GPURendererPixelTest, RenderPassDrawQuadForceAntiAliasingOff) {
   RenderPassDrawQuad* pass_quad =
       root_pass->CreateAndAppendDrawQuad<RenderPassDrawQuad>();
   pass_quad->SetAll(pass_shared_state, rect, rect, needs_blending,
-                    child_pass_id, 0, gfx::RectF(), gfx::Size(), false,
+                    child_pass_id, 0, gfx::RectF(), gfx::Size(),
                     gfx::Vector2dF(), gfx::PointF(), gfx::RectF(rect),
                     force_anti_aliasing_off, backdrop_filter_quality);
 
@@ -3467,7 +3460,7 @@ TYPED_TEST(GPURendererPixelTest, TrilinearFiltering) {
       root_pass->CreateAndAppendDrawQuad<RenderPassDrawQuad>();
   child_pass_quad->SetNew(child_pass_shared_state, child_pass_rect,
                           child_pass_rect, child_pass_id, 0, gfx::RectF(),
-                          gfx::Size(), false, gfx::Vector2dF(), gfx::PointF(),
+                          gfx::Size(), gfx::Vector2dF(), gfx::PointF(),
                           gfx::RectF(child_pass_rect), false, 1.0f);
 
   RenderPassList pass_list;
@@ -4852,9 +4845,9 @@ class ColorTransformPixelTest
       }
       transform->Transform(&color, 1);
       color.Scale(alpha);
-      color.set_x(std::min(std::max(0.f, color.x()), 1.f));
-      color.set_y(std::min(std::max(0.f, color.y()), 1.f));
-      color.set_z(std::min(std::max(0.f, color.z()), 1.f));
+      color.set_x(base::ClampToRange(color.x(), 0.0f, 1.0f));
+      color.set_y(base::ClampToRange(color.y(), 0.0f, 1.0f));
+      color.set_z(base::ClampToRange(color.z(), 0.0f, 1.0f));
       expected_output_colors[i] =
           SkColorSetARGB(255, static_cast<size_t>(255.f * color.x() + 0.5f),
                          static_cast<size_t>(255.f * color.y() + 0.5f),

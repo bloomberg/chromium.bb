@@ -23,13 +23,16 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/persistent_histogram_storage.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/optional.h"
 #include "base/path_service.h"
 #include "base/process/launch.h"
 #include "base/process/memory.h"
 #include "base/process/process.h"
+#include "base/process/process_metrics.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
@@ -1098,13 +1101,13 @@ InstallStatus InstallProductsHelper(const InstallationState& original_state,
   // --- Background ---
   //   ~14s (50%ile) / >3m (99%ile)
   installer_state.SetStage(UNPACKING);
-  UnPackStatus unpack_status = UNPACK_NO_ERROR;
-  int32_t ntstatus = 0;
-  DWORD lzma_result = UnPackArchive(uncompressed_archive, unpack_path, NULL,
-                                    &unpack_status, &ntstatus);
-  RecordUnPackMetrics(unpack_status, ntstatus, lzma_result,
+  base::Optional<DWORD> error_code;
+  base::Optional<int32_t> ntstatus;
+  UnPackStatus unpack_status = UnPackArchive(uncompressed_archive, unpack_path,
+                                             nullptr, &error_code, &ntstatus);
+  RecordUnPackMetrics(unpack_status, ntstatus, error_code,
                       UnPackConsumer::UNCOMPRESSED_CHROME_ARCHIVE);
-  if (lzma_result) {
+  if (unpack_status != UNPACK_NO_ERROR) {
     installer_state.WriteInstallerResult(
         UNPACKING_FAILED,
         IDS_INSTALL_UNCOMPRESSION_FAILED_BASE,
@@ -1450,6 +1453,12 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE prev_instance,
                             base::saturated_cast<base::HistogramBase::Sample>(
                                 pmc.PeakWorkingSetSize / 1024));
   }
+  auto process_metrics = base::ProcessMetrics::CreateCurrentProcessMetrics();
+  auto disk_usage = process_metrics->GetCumulativeDiskUsageInBytes();
+  base::UmaHistogramMemoryMB(
+      "Setup.Install.CumulativeDiskUsage",
+      base::saturated_cast<int>(base::ClampAdd(disk_usage, 1024 * 1024 / 2) /
+                                1024 * 1024));
 
   int return_code = 0;
   // MSI demands that custom actions always return 0 (ERROR_SUCCESS) or it will

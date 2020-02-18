@@ -25,6 +25,7 @@
 #include "chrome/browser/browsing_data/browsing_data_local_storage_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_service_worker_helper.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
+#include "chrome/browser/chromeos/crostini/crostini_features.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
@@ -42,7 +43,6 @@
 #include "components/arc/arc_util.h"
 #include "components/arc/session/arc_bridge_service.h"
 #include "components/browsing_data/content/conditional_cache_counting_helper.h"
-#include "components/drive/chromeos/file_system_interface.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
@@ -85,7 +85,6 @@ StorageHandler::StorageHandler(Profile* profile,
       browser_site_data_size_(-1),
       has_browser_site_data_size_(false),
       updating_downloads_size_(false),
-      updating_drive_cache_size_(false),
       updating_browsing_data_size_(false),
       updating_android_size_(false),
       updating_crostini_size_(false),
@@ -126,10 +125,6 @@ void StorageHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "openArcStorage",
       base::BindRepeating(&StorageHandler::HandleOpenArcStorage,
-                          base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
-      "clearDriveCache",
-      base::BindRepeating(&StorageHandler::HandleClearDriveCache,
                           base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "updateExternalStorages",
@@ -183,7 +178,6 @@ void StorageHandler::HandleUpdateStorageInfo(const base::ListValue* args) {
 
   UpdateSizeStat();
   UpdateDownloadsSize();
-  UpdateDriveCacheSize();
   UpdateBrowsingDataSize();
   UpdateAndroidRunning();
   UpdateAndroidSize();
@@ -207,23 +201,9 @@ void StorageHandler::HandleOpenArcStorage(
     arc_storage_manager->OpenPrivateVolumeSettings();
 }
 
-void StorageHandler::HandleClearDriveCache(
-    const base::ListValue* unused_args) {
-  drive::FileSystemInterface* const file_system =
-      drive::util::GetFileSystemByProfile(profile_);
-  file_system->FreeDiskSpaceIfNeededFor(
-      std::numeric_limits<int64_t>::max(),  // Removes as much as possible.
-      base::Bind(&StorageHandler::OnClearDriveCacheDone,
-                 weak_ptr_factory_.GetWeakPtr()));
-}
-
 void StorageHandler::HandleUpdateExternalStorages(
     const base::ListValue* unused_args) {
   UpdateExternalStorages();
-}
-
-void StorageHandler::OnClearDriveCacheDone(bool /*success*/) {
-  UpdateDriveCacheSize();
 }
 
 void StorageHandler::UpdateSizeStat() {
@@ -280,28 +260,6 @@ void StorageHandler::OnGetDownloadsSize(int64_t size) {
   updating_downloads_size_ = false;
   FireWebUIListener("storage-downloads-size-changed",
                     base::Value(ui::FormatBytes(size)));
-}
-
-void StorageHandler::UpdateDriveCacheSize() {
-  drive::FileSystemInterface* const file_system =
-      drive::util::GetFileSystemByProfile(profile_);
-  if (!file_system)
-    return;
-
-  if (updating_drive_cache_size_)
-    return;
-  updating_drive_cache_size_ = true;
-
-  // Shows the item "Offline cache" and starts calculating size.
-  FireWebUIListener("storage-drive-enabled-changed", base::Value(true));
-  file_system->CalculateCacheSize(base::Bind(
-      &StorageHandler::OnGetDriveCacheSize, weak_ptr_factory_.GetWeakPtr()));
-}
-
-void StorageHandler::OnGetDriveCacheSize(int64_t size) {
-  updating_drive_cache_size_ = false;
-  FireWebUIListener("storage-drive-cache-size-changed",
-                    base::Value(ui::FormatBytes(size)), base::Value(size > 0));
 }
 
 void StorageHandler::UpdateBrowsingDataSize() {
@@ -410,7 +368,7 @@ void StorageHandler::OnGetAndroidSize(bool succeeded,
 }
 
 void StorageHandler::UpdateCrostiniSize() {
-  if (!crostini::IsCrostiniEnabled(profile_)) {
+  if (!crostini::CrostiniFeatures::Get()->IsEnabled(profile_)) {
     return;
   }
 
@@ -500,7 +458,7 @@ void StorageHandler::UpdateExternalStorages() {
     base::Value device(base::Value::Type::DICTIONARY);
     device.SetKey("uuid", base::Value(disk->fs_uuid()));
     device.SetKey("label", base::Value(label));
-    devices.GetList().push_back(std::move(device));
+    devices.Append(std::move(device));
   }
   FireWebUIListener("onExternalStoragesUpdated", devices);
 }

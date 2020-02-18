@@ -254,32 +254,29 @@ class TestTraceReceiverHelper {
 
   void WaitForTraceReceived() { wait_for_trace_received_.Run(); }
   bool trace_received() const { return trace_received_; }
-
-  const base::Value& get_metadata() const { return *metadata_; }
+  const std::string& file_contents() const { return file_contents_; }
 
   bool TraceHasMatchingString(const char* text) const {
     return file_contents_.find(text) != std::string::npos;
   }
 
   void Upload(
-      const scoped_refptr<base::RefCountedString>& file_contents,
-      std::unique_ptr<const base::DictionaryValue> metadata,
+      std::unique_ptr<std::string> file_contents,
       BackgroundTracingManager::FinishedProcessingCallback done_callback) {
-    metadata_ = std::move(metadata);
-
     EXPECT_TRUE(file_contents);
     EXPECT_FALSE(trace_received_);
     trace_received_ = true;
 
     // Uncompress the trace content.
-    size_t compressed_length = file_contents->data().length();
+    size_t compressed_length = file_contents->length();
     const size_t kOutputBufferLength = 10 * 1024 * 1024;
     std::vector<char> output_str(kOutputBufferLength);
 
     z_stream stream = {nullptr};
     stream.avail_in = compressed_length;
     stream.avail_out = kOutputBufferLength;
-    stream.next_in = reinterpret_cast<Bytef*>(&file_contents->data()[0]);
+    stream.next_in =
+        reinterpret_cast<Bytef*>(const_cast<char*>(file_contents->data()));
     stream.next_out = reinterpret_cast<Bytef*>(output_str.data());
 
     // 16 + MAX_WBITS means only decoding gzip encoded streams, and using
@@ -303,7 +300,6 @@ class TestTraceReceiverHelper {
   }
 
  private:
-  std::unique_ptr<const base::DictionaryValue> metadata_;
   base::RunLoop wait_for_trace_received_;
   bool trace_received_ = false;
   std::string file_contents_;
@@ -326,11 +322,10 @@ class TestMultipleTraceReceiverHelper {
   }
 
   void Upload(
-      const scoped_refptr<base::RefCountedString>& file_contents,
-      std::unique_ptr<const base::DictionaryValue> metadata,
+      std::unique_ptr<std::string> file_contents,
       BackgroundTracingManager::FinishedProcessingCallback done_callback) {
-    trace_receivers_[current_receiver_offset_].Upload(
-        file_contents, std::move(metadata), std::move(done_callback));
+    trace_receivers_[current_receiver_offset_].Upload(std::move(file_contents),
+                                                      std::move(done_callback));
     current_receiver_offset_++;
   }
 
@@ -671,7 +666,7 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
 
   background_tracing_helper.WaitForScenarioActivated();
 
-  NavigateToURL(shell(), GetTestUrl("", "about:blank"));
+  EXPECT_TRUE(NavigateToURL(shell(), GetTestUrl("", "about:blank")));
 
   TestTriggerHelper trigger_helper;
   BackgroundTracingManager::GetInstance()->TriggerNamedEvent(
@@ -1014,8 +1009,15 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
 
   EXPECT_TRUE(trace_receiver_helper.trace_received());
 
+  base::Optional<base::Value> trace_json =
+      base::JSONReader::Read(trace_receiver_helper.file_contents());
+  ASSERT_TRUE(trace_json);
+  auto* metadata_json = static_cast<base::DictionaryValue*>(
+      trace_json->FindKeyOfType("metadata", base::Value::Type::DICTIONARY));
+  ASSERT_TRUE(metadata_json);
+
   const std::string* trace_config =
-      trace_receiver_helper.get_metadata().FindStringKey("trace-config");
+      metadata_json->FindStringKey("trace-config");
   ASSERT_TRUE(trace_config);
   EXPECT_NE(trace_config->find("record-continuously"), trace_config->npos)
       << *trace_config;
@@ -1071,8 +1073,15 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest, CustomConfig) {
 
   EXPECT_TRUE(trace_receiver_helper.trace_received());
 
+  base::Optional<base::Value> trace_json =
+      base::JSONReader::Read(trace_receiver_helper.file_contents());
+  ASSERT_TRUE(trace_json);
+  auto* metadata_json = static_cast<base::DictionaryValue*>(
+      trace_json->FindKeyOfType("metadata", base::Value::Type::DICTIONARY));
+  ASSERT_TRUE(metadata_json);
+
   const std::string* trace_config =
-      trace_receiver_helper.get_metadata().FindStringKey("trace-config");
+      metadata_json->FindStringKey("trace-config");
   ASSERT_TRUE(trace_config);
   EXPECT_NE(trace_config->find("record-until-full"), trace_config->npos)
       << *trace_config;
@@ -1580,7 +1589,7 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest, RunStartupTracing) {
 
   EXPECT_TRUE(BackgroundTracingManager::GetInstance()->SetActiveScenario(
       std::move(config), trace_receiver_helper.get_receive_callback(),
-      BackgroundTracingManager::NO_DATA_FILTERING));
+      BackgroundTracingManager::ANONYMIZE_DATA));
 
   tracelog_helper.WaitForStartTracing();
   background_tracing_helper.WaitForTracingEnabled();
@@ -1589,9 +1598,6 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest, RunStartupTracing) {
                   ->GetActiveScenarioForTesting()
                   ->GetConfig()
                   ->requires_anonymized_data());
-  EXPECT_TRUE(base::trace_event::TraceLog::GetInstance()
-                  ->GetCurrentTraceConfig()
-                  .IsArgumentFilterEnabled());
 
   // Since we specified a delay in the scenario, we should still be tracing
   // at this point.
@@ -1616,8 +1622,7 @@ class ProtoBackgroundTracingTest : public DevToolsProtocolTest {
  public:
   ProtoBackgroundTracingTest() {
     scoped_feature_list_.InitWithFeatures(
-        /*enabled_features=*/{features::kTracingPerfettoBackend,
-                              features::kBackgroundTracingProtoOutput},
+        /*enabled_features=*/{features::kBackgroundTracingProtoOutput},
         /*disabled_features=*/{});
   }
 
@@ -1661,9 +1666,11 @@ IN_PROC_BROWSER_TEST_F(ProtoBackgroundTracingTest, ProtoTraceReceived) {
 
   EXPECT_TRUE(BackgroundTracingManager::GetInstance()->SetActiveScenario(
       std::move(config), base::DoNothing(),
-      BackgroundTracingManager::NO_DATA_FILTERING));
+      BackgroundTracingManager::ANONYMIZE_DATA));
 
   background_tracing_helper.WaitForTracingEnabled();
+
+  NavigateToURLBlockUntilNavigationsComplete(shell(), GURL("about:blank"), 1);
 
   TestTriggerHelper trigger_helper;
   BackgroundTracingManager::GetInstance()->TriggerNamedEvent(
@@ -1684,7 +1691,7 @@ IN_PROC_BROWSER_TEST_F(ProtoBackgroundTracingTest, ProtoTraceReceived) {
   tracing::PrivacyFilteringCheck checker;
   checker.CheckProtoForUnexpectedFields(trace_data);
   EXPECT_GT(checker.stats().track_event, 0u);
-  EXPECT_EQ(checker.stats().process_desc, 0u);
+  EXPECT_GT(checker.stats().process_desc, 0u);
   EXPECT_GT(checker.stats().thread_desc, 0u);
   EXPECT_TRUE(checker.stats().has_interned_names);
   EXPECT_TRUE(checker.stats().has_interned_categories);

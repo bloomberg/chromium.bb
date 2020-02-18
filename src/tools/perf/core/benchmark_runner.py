@@ -15,11 +15,13 @@ from telemetry import command_line
 
 
 def main(config, args=None):
-  results_arg_parser = results_processor.ArgumentParser(
-      legacy_formats=command_line.LEGACY_OUTPUT_FORMATS)
+  results_arg_parser = results_processor.ArgumentParser()
   options = command_line.ParseArgs(
       environment=config, args=args, results_arg_parser=results_arg_parser)
   results_processor.ProcessOptions(options)
   run_return_code = command_line.RunCommand(options)
   process_return_code = results_processor.ProcessResults(options)
-  return max(run_return_code, process_return_code)
+  if process_return_code != 0:
+    return process_return_code
+  else:
+    return run_return_code

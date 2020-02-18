@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "components/optimization_guide/proto/hints.pb.h"
+#include "components/optimization_guide/proto/models.pb.h"
 
 namespace content {
 class NavigationHandle;
@@ -30,13 +31,6 @@ enum class OptimizationGuideDecision {
   kMaxValue = kFalse,
 };
 
-// The types of pages the optimization guide understands how to classify.
-enum class OptimizationTarget {
-  kUnknown,
-  // Should only be applied when the page load is predicted to be painful.
-  kPainfulPageLoad,
-};
-
 // Contains metadata for the optimization.
 struct OptimizationMetadata {
   // Only applicable for NOSCRIPT and RESOURCE_LOADING optimization types.
@@ -45,17 +39,22 @@ struct OptimizationMetadata {
 
 class OptimizationGuideDecider {
  public:
-  // Registers the optimization types that intend to be queried during the
-  // session.
-  virtual void RegisterOptimizationTypes(
-      std::vector<proto::OptimizationType> optimization_types) = 0;
+  // Registers the optimization types and targets that intend to be queried
+  // during the session. It is expected for this to be called after the browser
+  // has been initialized.
+  virtual void RegisterOptimizationTypesAndTargets(
+      const std::vector<proto::OptimizationType>& optimization_types,
+      const std::vector<proto::OptimizationTarget>& optimization_targets) = 0;
 
-  // Returns whether the current conditions match |optimization_target| and
-  // |optimization_type| can be applied for the URL associated with
-  // |navigation_handle|.
+  // Returns whether the current conditions match |optimization_target|.
+  virtual OptimizationGuideDecision ShouldTargetNavigation(
+      content::NavigationHandle* navigation_handle,
+      proto::OptimizationTarget optimization_target) = 0;
+
+  // Returns whether |optimization_type| can be applied for the URL associated
+  // with |navigation_handle|.
   virtual OptimizationGuideDecision CanApplyOptimization(
       content::NavigationHandle* navigation_handle,
-      OptimizationTarget optimization_target,
       proto::OptimizationType optimization_type,
       OptimizationMetadata* optimization_metadata) = 0;
 

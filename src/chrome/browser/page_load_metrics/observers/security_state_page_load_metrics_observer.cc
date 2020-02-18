@@ -123,6 +123,11 @@ SecurityStatePageLoadMetricsObserver::OnCommit(
   base::UmaHistogramEnumeration(kSecurityLevelOnCommit, initial_security_level_,
                                 security_state::SECURITY_LEVEL_COUNT);
 
+  base::UmaHistogramBoolean(
+      "Security.LegacyTLS.OnCommit",
+      security_state::GetLegacyTLSWarningStatus(
+          *security_state_tab_helper_->GetVisibleSecurityState()));
+
   source_id_ = source_id;
   return CONTINUE_OBSERVING;
 }
@@ -133,7 +138,8 @@ void SecurityStatePageLoadMetricsObserver::OnComplete(
     return;
 
   security_state::SafetyTipStatus safety_tip_status =
-      security_state_tab_helper_->GetVisibleSecurityState()->safety_tip_status;
+      security_state_tab_helper_->GetVisibleSecurityState()
+          ->safety_tip_info.status;
 
   if (engagement_service_) {
     double final_engagement_score =
@@ -197,6 +203,20 @@ void SecurityStatePageLoadMetricsObserver::OnComplete(
   base::UmaHistogramCustomTimes(
       security_state::GetSafetyTipHistogramName(kTimeOnPagePrefix,
                                                 safety_tip_status),
+      GetDelegate().GetVisibilityTracker().GetForegroundDuration(),
+      base::TimeDelta::FromMilliseconds(1), base::TimeDelta::FromHours(1), 100);
+
+  // Record Legacy TLS UMA histograms.
+  base::UmaHistogramEnumeration(
+      security_state::GetLegacyTLSHistogramName(
+          kPageEndReasonPrefix,
+          *security_state_tab_helper_->GetVisibleSecurityState()),
+      GetDelegate().GetPageEndReason(),
+      page_load_metrics::PAGE_END_REASON_COUNT);
+  base::UmaHistogramCustomTimes(
+      security_state::GetLegacyTLSHistogramName(
+          kTimeOnPagePrefix,
+          *security_state_tab_helper_->GetVisibleSecurityState()),
       GetDelegate().GetVisibilityTracker().GetForegroundDuration(),
       base::TimeDelta::FromMilliseconds(1), base::TimeDelta::FromHours(1), 100);
 }

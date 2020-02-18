@@ -13,16 +13,14 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "chrome/browser/captive_portal/captive_portal_tab_helper.h"
 #include "chrome/browser/interstitials/chrome_metrics_helper.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ssl/cert_report_helper.h"
-#include "chrome/browser/ssl/certificate_error_reporter.h"
-#include "chrome/browser/ssl/ssl_cert_reporter.h"
+#include "chrome/browser/ssl/chrome_security_blocking_page_factory.h"
 #include "chrome/browser/ssl/ssl_error_controller_client.h"
 #include "components/captive_portal/captive_portal_detector.h"
 #include "components/captive_portal/captive_portal_metrics.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
+#include "components/security_interstitials/content/cert_report_helper.h"
+#include "components/security_interstitials/content/ssl_cert_reporter.h"
 #include "components/security_interstitials/core/controller_client.h"
 #include "components/security_interstitials/core/metrics_helper.h"
 #include "components/strings/grit/components_strings.h"
@@ -42,6 +40,8 @@
 #include "content/public/common/referrer.h"
 #include "net/android/network_library.h"
 #include "ui/base/window_open_disposition.h"
+#else
+#include "chrome/browser/captive_portal/captive_portal_tab_helper.h"
 #endif
 
 namespace {
@@ -72,11 +72,9 @@ CaptivePortalBlockingPage::CaptivePortalBlockingPage(
     const GURL& login_url,
     std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
     const net::SSLInfo& ssl_info,
-    int cert_error,
-    const base::Callback<void(content::CertificateRequestResultType)>& callback)
+    int cert_error)
     : SSLBlockingPageBase(
           web_contents,
-          cert_error,
           CertificateErrorReport::INTERSTITIAL_CAPTIVE_PORTAL,
           ssl_info,
           request_url,
@@ -90,20 +88,30 @@ CaptivePortalBlockingPage::CaptivePortalBlockingPage(
               request_url,
               CreateCaptivePortalMetricsHelper(web_contents, request_url))),
       login_url_(login_url),
-      ssl_info_(ssl_info),
-      callback_(callback) {
+      ssl_info_(ssl_info) {
   captive_portal::CaptivePortalMetrics::LogCaptivePortalBlockingPageEvent(
       captive_portal::CaptivePortalMetrics::SHOW_ALL);
+  ChromeSecurityBlockingPageFactory::DoChromeSpecificSetup(this);
 }
 
-CaptivePortalBlockingPage::~CaptivePortalBlockingPage() {
-}
+CaptivePortalBlockingPage::~CaptivePortalBlockingPage() = default;
 
 const void* CaptivePortalBlockingPage::GetTypeForTesting() {
   return CaptivePortalBlockingPage::kTypeForTesting;
 }
 
+void CaptivePortalBlockingPage::OverrideWifiInfoForTesting(
+    bool is_wifi_connection,
+    const std::string& wifi_ssid) {
+  is_wifi_info_overridden_for_testing_ = true;
+  is_wifi_connection_for_testing_ = is_wifi_connection;
+  wifi_ssid_for_testing_ = wifi_ssid;
+}
+
 bool CaptivePortalBlockingPage::IsWifiConnection() const {
+  if (is_wifi_info_overridden_for_testing_)
+    return is_wifi_connection_for_testing_;
+
   // |net::NetworkChangeNotifier::GetConnectionType| isn't accurate on Linux
   // and Windows. See https://crbug.com/160537 for details.
   // TODO(meacer): Add heuristics to get a more accurate connection type on
@@ -113,6 +121,9 @@ bool CaptivePortalBlockingPage::IsWifiConnection() const {
 }
 
 std::string CaptivePortalBlockingPage::GetWiFiSSID() const {
+  if (is_wifi_info_overridden_for_testing_)
+    return wifi_ssid_for_testing_;
+
   // On Windows and Mac, |WiFiService| provides an easy to use API to get the
   // currently associated WiFi access point. |WiFiService| isn't available on
   // Linux so |net::GetWifiSSID| is used instead.
@@ -270,20 +281,4 @@ void CaptivePortalBlockingPage::CommandReceived(const std::string& command) {
 
 void CaptivePortalBlockingPage::OverrideEntry(content::NavigationEntry* entry) {
   entry->GetSSL() = content::SSLStatus(ssl_info_);
-}
-
-void CaptivePortalBlockingPage::OnProceed() {
-  NOTREACHED()
-      << "Cannot proceed through the error on a captive portal interstitial.";
-}
-
-void CaptivePortalBlockingPage::OnDontProceed() {
-  OnInterstitialClosing();
-
-  // Need to explicity deny the certificate via the callback, otherwise memory
-  // is leaked.
-  if (!callback_.is_null()) {
-    callback_.Run(content::CERTIFICATE_REQUEST_RESULT_TYPE_CANCEL);
-    callback_.Reset();
-  }
 }

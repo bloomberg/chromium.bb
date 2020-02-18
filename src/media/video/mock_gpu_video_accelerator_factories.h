@@ -19,10 +19,6 @@
 #include "services/viz/public/cpp/gpu/context_provider_command_buffer.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-namespace base {
-class SharedMemory;
-}
-
 namespace media {
 
 class MockGpuVideoAcceleratorFactories : public GpuVideoAcceleratorFactories {
@@ -36,7 +32,8 @@ class MockGpuVideoAcceleratorFactories : public GpuVideoAcceleratorFactories {
   MOCK_METHOD0(GetCommandBufferRouteId, int32_t());
 
   MOCK_METHOD2(IsDecoderConfigSupported,
-               bool(VideoDecoderImplementation, const VideoDecoderConfig&));
+               Supported(VideoDecoderImplementation,
+                         const VideoDecoderConfig&));
   MOCK_METHOD3(
       CreateVideoDecoder,
       std::unique_ptr<media::VideoDecoder>(MediaLog*,
@@ -79,8 +76,6 @@ class MockGpuVideoAcceleratorFactories : public GpuVideoAcceleratorFactories {
   }
 
   void SetGpuMemoryBuffersInUseByMacOSWindowServer(bool in_use);
-
-  std::unique_ptr<base::SharedMemory> CreateSharedMemory(size_t size) override;
 
   // Allocate & return a read-only shared memory region
   base::UnsafeSharedMemoryRegion CreateSharedMemoryRegion(size_t size) override;

@@ -112,7 +112,7 @@ class ArcImeService : public KeyedService,
 
   // Overridden from ui::TextInputClient:
   void SetCompositionText(const ui::CompositionText& composition) override;
-  void ConfirmCompositionText() override;
+  void ConfirmCompositionText(bool keep_selection) override;
   void ClearCompositionText() override;
   void InsertText(const base::string16& text) override;
   void InsertChar(const ui::KeyEvent& event) override;
@@ -122,6 +122,7 @@ class ArcImeService : public KeyedService,
   bool GetEditableSelectionRange(gfx::Range* range) const override;
   bool GetTextFromRange(const gfx::Range& range,
                         base::string16* text) const override;
+  void EnsureCaretNotInRect(const gfx::Rect& rect) override;
 
   // Overridden from ui::TextInputClient (with default implementation):
   // TODO(kinaba): Support each of these methods to the extent possible in
@@ -141,7 +142,6 @@ class ArcImeService : public KeyedService,
   bool ChangeTextDirectionAndLayoutAlignment(
       base::i18n::TextDirection direction) override;
   void ExtendSelectionAndDelete(size_t before, size_t after) override;
-  void EnsureCaretNotInRect(const gfx::Rect& rect) override {}
   bool IsTextEditCommandEnabled(ui::TextEditCommand command) const override;
   void SetTextEditCommandForNextKeyEvent(ui::TextEditCommand command) override {
   }

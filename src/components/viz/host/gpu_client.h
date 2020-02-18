@@ -11,6 +11,8 @@
 #include "components/viz/host/gpu_host_impl.h"
 #include "components/viz/host/viz_host_export.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "services/viz/public/mojom/gpu.mojom.h"
 
 namespace viz {
@@ -30,7 +32,7 @@ class VIZ_HOST_EXPORT GpuClient : public mojom::GpuMemoryBufferFactory,
   ~GpuClient() override;
 
   // This needs to be run on the thread associated with |task_runner_|.
-  void Add(mojom::GpuRequest request);
+  void Add(mojo::PendingReceiver<mojom::Gpu> receiver);
 
   void PreEstablishGpuChannel();
 
@@ -52,17 +54,17 @@ class VIZ_HOST_EXPORT GpuClient : public mojom::GpuMemoryBufferFactory,
 
   // mojom::Gpu overrides:
   void CreateGpuMemoryBufferFactory(
-      mojom::GpuMemoryBufferFactoryRequest request) override;
+      mojo::PendingReceiver<mojom::GpuMemoryBufferFactory> receiver) override;
   void EstablishGpuChannel(EstablishGpuChannelCallback callback) override;
 
 #if defined(OS_CHROMEOS)
   void CreateJpegDecodeAccelerator(
-      chromeos_camera::mojom::MjpegDecodeAcceleratorRequest jda_request)
-      override;
+      mojo::PendingReceiver<chromeos_camera::mojom::MjpegDecodeAccelerator>
+          jda_receiver) override;
 #endif  // defined(OS_CHROMEOS)
   void CreateVideoEncodeAcceleratorProvider(
-      media::mojom::VideoEncodeAcceleratorProviderRequest vea_provider_request)
-      override;
+      mojo::PendingReceiver<media::mojom::VideoEncodeAcceleratorProvider>
+          vea_provider_receiver) override;
 
  private:
   enum class ErrorReason {
@@ -83,9 +85,9 @@ class VIZ_HOST_EXPORT GpuClient : public mojom::GpuMemoryBufferFactory,
   std::unique_ptr<GpuClientDelegate> delegate_;
   const int client_id_;
   const uint64_t client_tracing_id_;
-  mojo::BindingSet<mojom::GpuMemoryBufferFactory>
-      gpu_memory_buffer_factory_bindings_;
-  mojo::BindingSet<mojom::Gpu> gpu_bindings_;
+  mojo::ReceiverSet<mojom::GpuMemoryBufferFactory>
+      gpu_memory_buffer_factory_receivers_;
+  mojo::ReceiverSet<mojom::Gpu> gpu_receivers_;
   bool gpu_channel_requested_ = false;
   EstablishGpuChannelCallback callback_;
   mojo::ScopedMessagePipeHandle channel_handle_;

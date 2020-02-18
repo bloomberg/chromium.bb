@@ -33,8 +33,6 @@
 #include "perfetto/ext/tracing/ipc/consumer_ipc_client.h"
 #include "src/perfetto_cmd/rate_limiter.h"
 
-#include "src/perfetto_cmd/perfetto_cmd_state.pb.h"
-
 namespace perfetto {
 
 class PacketWriter;
@@ -104,6 +102,7 @@ class PerfettoCmd : public Consumer {
   bool redetach_once_attached_ = false;
   bool query_service_ = false;
   bool query_service_output_raw_ = false;
+  std::string uuid_;
 
   // How long we expect to trace for or 0 if the trace is indefinite.
   uint32_t expected_duration_ms_ = 0;

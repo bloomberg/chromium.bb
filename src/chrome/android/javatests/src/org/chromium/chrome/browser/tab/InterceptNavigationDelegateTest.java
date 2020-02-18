@@ -18,7 +18,6 @@ import org.junit.runner.RunWith;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationParams;
@@ -114,13 +113,13 @@ public class InterceptNavigationDelegateTest {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         mTestServer.stopAndDestroyServer();
     }
 
     @Test
     @SmallTest
-    public void testNavigationFromTimer() throws InterruptedException {
+    public void testNavigationFromTimer() {
         mActivityTestRule.loadUrl(mTestServer.getURL(NAVIGATION_FROM_TIMEOUT_PAGE));
         Assert.assertEquals(1, mNavParamHistory.size());
 
@@ -131,7 +130,7 @@ public class InterceptNavigationDelegateTest {
 
     @Test
     @SmallTest
-    public void testNavigationFromUserGesture() throws InterruptedException, TimeoutException {
+    public void testNavigationFromUserGesture() throws TimeoutException {
         mActivityTestRule.loadUrl(mTestServer.getURL(NAVIGATION_FROM_USER_GESTURE_PAGE));
         Assert.assertEquals(1, mNavParamHistory.size());
 
@@ -144,27 +143,20 @@ public class InterceptNavigationDelegateTest {
 
     @Test
     @SmallTest
-    public void testNavigationFromXHRCallback() throws InterruptedException, TimeoutException {
+    public void testNavigationFromXHRCallback() throws TimeoutException {
         mActivityTestRule.loadUrl(mTestServer.getURL(NAVIGATION_FROM_XHR_CALLBACK_PAGE));
         Assert.assertEquals(1, mNavParamHistory.size());
 
         DOMUtils.clickNode(mActivity.getActivityTab().getWebContents(), "first");
         waitTillExpectedCallsComplete(2, DEFAULT_MAX_TIME_TO_WAIT_IN_MS);
 
-        // TODO(mustaq): Cleanup after UAv2 ships, crbug.com/908531.
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.USER_ACTIVATION_V2)) {
-            Assert.assertTrue(mNavParamHistory.get(1).hasUserGesture);
-            Assert.assertFalse(mNavParamHistory.get(1).hasUserGestureCarryover);
-        } else {
-            Assert.assertFalse(mNavParamHistory.get(1).hasUserGesture);
-            Assert.assertTrue(mNavParamHistory.get(1).hasUserGestureCarryover);
-        }
+        Assert.assertTrue(mNavParamHistory.get(1).hasUserGesture);
+        Assert.assertFalse(mNavParamHistory.get(1).hasUserGestureCarryover);
     }
 
     @Test
     @SmallTest
-    public void testNavigationFromXHRCallbackAndShortTimeout()
-            throws InterruptedException, TimeoutException {
+    public void testNavigationFromXHRCallbackAndShortTimeout() throws TimeoutException {
         mActivityTestRule.loadUrl(
                 mTestServer.getURL(NAVIGATION_FROM_XHR_CALLBACK_AND_SHORT_TIMEOUT_PAGE));
         Assert.assertEquals(1, mNavParamHistory.size());
@@ -172,20 +164,13 @@ public class InterceptNavigationDelegateTest {
         DOMUtils.clickNode(mActivity.getActivityTab().getWebContents(), "first");
         waitTillExpectedCallsComplete(2, DEFAULT_MAX_TIME_TO_WAIT_IN_MS);
 
-        // TODO(mustaq): Cleanup after UAv2 ships, crbug.com/908531.
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.USER_ACTIVATION_V2)) {
-            Assert.assertTrue(mNavParamHistory.get(1).hasUserGesture);
-            Assert.assertFalse(mNavParamHistory.get(1).hasUserGestureCarryover);
-        } else {
-            Assert.assertFalse(mNavParamHistory.get(1).hasUserGesture);
-            Assert.assertTrue(mNavParamHistory.get(1).hasUserGestureCarryover);
-        }
+        Assert.assertTrue(mNavParamHistory.get(1).hasUserGesture);
+        Assert.assertFalse(mNavParamHistory.get(1).hasUserGestureCarryover);
     }
 
     @Test
     @SmallTest
-    public void testNavigationFromXHRCallbackAndLongTimeout()
-            throws InterruptedException, TimeoutException {
+    public void testNavigationFromXHRCallbackAndLongTimeout() throws TimeoutException {
         mActivityTestRule.loadUrl(
                 mTestServer.getURL(NAVIGATION_FROM_XHR_CALLBACK_AND_LONG_TIMEOUT_PAGE));
         Assert.assertEquals(1, mNavParamHistory.size());
@@ -198,26 +183,20 @@ public class InterceptNavigationDelegateTest {
 
     @Test
     @SmallTest
-    public void testNavigationFromImageOnLoad() throws InterruptedException, TimeoutException {
+    public void testNavigationFromImageOnLoad() throws TimeoutException {
         mActivityTestRule.loadUrl(mTestServer.getURL(NAVIGATION_FROM_IMAGE_ONLOAD_PAGE));
         Assert.assertEquals(1, mNavParamHistory.size());
 
         DOMUtils.clickNode(mActivity.getActivityTab().getWebContents(), "first");
         waitTillExpectedCallsComplete(2, DEFAULT_MAX_TIME_TO_WAIT_IN_MS);
 
-        // TODO(mustaq): Cleanup after UAv2 ships, crbug.com/908531.
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.USER_ACTIVATION_V2)) {
-            Assert.assertTrue(mNavParamHistory.get(1).hasUserGesture);
-            Assert.assertFalse(mNavParamHistory.get(1).hasUserGestureCarryover);
-        } else {
-            Assert.assertFalse(mNavParamHistory.get(1).hasUserGesture);
-            Assert.assertTrue(mNavParamHistory.get(1).hasUserGestureCarryover);
-        }
+        Assert.assertTrue(mNavParamHistory.get(1).hasUserGesture);
+        Assert.assertFalse(mNavParamHistory.get(1).hasUserGestureCarryover);
     }
 
     @Test
     @MediumTest
-    public void testExternalAppIframeNavigation() throws InterruptedException, TimeoutException {
+    public void testExternalAppIframeNavigation() throws TimeoutException {
         mActivityTestRule.loadUrl(mTestServer.getURL(NAVIGATION_FROM_USER_GESTURE_IFRAME_PAGE));
         Assert.assertEquals(1, mNavParamHistory.size());
 
@@ -230,5 +209,4 @@ public class InterceptNavigationDelegateTest {
         Assert.assertTrue(
                 mExternalNavParamHistory.get(2).getRedirectHandler().shouldStayInChrome(true));
     }
-
 }

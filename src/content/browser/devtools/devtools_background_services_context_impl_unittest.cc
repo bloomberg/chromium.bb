@@ -13,6 +13,7 @@
 #include "content/browser/devtools/devtools_background_services.pb.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/common/content_client.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_browser_context.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -207,7 +208,7 @@ class DevToolsBackgroundServicesContextTest
       options.scope = origin_.GetURL();
       base::RunLoop run_loop;
       embedded_worker_test_helper_.context()->RegisterServiceWorker(
-          script_url, options,
+          script_url, options, blink::mojom::FetchClientSettingsObject::New(),
           base::BindOnce(&DidRegisterServiceWorker,
                          &service_worker_registration_id,
                          run_loop.QuitClosure()));

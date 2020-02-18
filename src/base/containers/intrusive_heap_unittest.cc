@@ -585,6 +585,17 @@ TEST(IntrusiveHeapTest, Assignment) {
   ExpectCanonical(heap2);
 }
 
+TEST(IntrusiveHeapTest, Swap) {
+  IntrusiveHeapInt heap{CANONICAL_ELEMENTS};
+  IntrusiveHeapInt heap2;
+  swap(heap, heap2);
+  EXPECT_TRUE(heap.empty());
+  ExpectCanonical(heap2);
+  heap.swap(heap2);
+  EXPECT_TRUE(heap2.empty());
+  ExpectCanonical(heap);
+}
+
 TEST(IntrusiveHeapTest, ElementAccess) {
   IntrusiveHeapInt heap{CANONICAL_ELEMENTS};
   EXPECT_EQ(heap.front(), heap[0]);
@@ -641,8 +652,9 @@ TEST(IntrusiveHeapTest, MoveOnlyNoDefaultConstructorTest) {
 TEST(IntrusiveHeapTest, CopyOnlyNoDefaultConstructorTest) {
   using ValueType = Value_dmC;
   ValidateValueType<ValueType, false, false, true>();
-  CopyStressTest<ValueType>();
-  GeneralStressTest<ValueType>();
+  // We cannot perform CopyStressTest nor GeneralStressTest here, because
+  // Value_dmC has deleted move constructor and assignment operator. See
+  // crbug.com/1022576.
 }
 
 TEST(IntrusiveHeapTest, CopyAndMoveNoDefaultConstructorTest) {
@@ -663,8 +675,9 @@ TEST(IntrusiveHeapTest, MoveOnlyWithDefaultConstructorTest) {
 TEST(IntrusiveHeapTest, CopyOnlyWithDefaultConstructorTest) {
   using ValueType = Value_DmC;
   ValidateValueType<ValueType, true, false, true>();
-  CopyStressTest<ValueType>();
-  GeneralStressTest<ValueType>();
+  // We cannot perform CopyStressTest nor GeneralStressTest here, because
+  // Value_DmC has deleted move constructor and assignment operator. See
+  // crbug.com/1022576.
 }
 
 TEST(IntrusiveHeapTest, CopyAndMoveWithDefaultConstructorTest) {

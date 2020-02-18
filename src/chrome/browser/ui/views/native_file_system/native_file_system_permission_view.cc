@@ -18,7 +18,6 @@
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
-#include "ui/views/window/dialog_client_view.h"
 
 NativeFileSystemPermissionView::NativeFileSystemPermissionView(
     const url::Origin& origin,
@@ -26,6 +25,11 @@ NativeFileSystemPermissionView::NativeFileSystemPermissionView(
     bool is_directory,
     base::OnceCallback<void(PermissionAction result)> callback)
     : path_(path), callback_(std::move(callback)) {
+  DialogDelegate::set_button_label(
+      ui::DIALOG_BUTTON_OK,
+      l10n_util::GetStringUTF16(
+          IDS_NATIVE_FILE_SYSTEM_WRITE_PERMISSION_ALLOW_TEXT));
+
   const views::LayoutProvider* provider = ChromeLayoutProvider::Get();
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical,
@@ -62,18 +66,6 @@ base::string16 NativeFileSystemPermissionView::GetWindowTitle() const {
       path_.BaseName().LossyDisplayName());
 }
 
-int NativeFileSystemPermissionView::GetDefaultDialogButton() const {
-  return ui::DIALOG_BUTTON_OK;
-}
-
-base::string16 NativeFileSystemPermissionView::GetDialogButtonLabel(
-    ui::DialogButton button) const {
-  if (button == ui::DIALOG_BUTTON_OK)
-    return l10n_util::GetStringUTF16(
-        IDS_NATIVE_FILE_SYSTEM_WRITE_PERMISSION_ALLOW_TEXT);
-  return l10n_util::GetStringUTF16(IDS_APP_CANCEL);
-}
-
 bool NativeFileSystemPermissionView::ShouldShowCloseButton() const {
   return false;
 }
@@ -100,8 +92,7 @@ ui::ModalType NativeFileSystemPermissionView::GetModalType() const {
 }
 
 views::View* NativeFileSystemPermissionView::GetInitiallyFocusedView() {
-  const views::DialogClientView* dcv = GetDialogClientView();
-  return dcv ? dcv->cancel_button() : nullptr;
+  return GetCancelButton();
 }
 
 void ShowNativeFileSystemPermissionDialog(

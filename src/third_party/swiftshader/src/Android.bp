@@ -44,7 +44,7 @@ cc_defaults {
 
     target: {
         android: {
-            relative_install_path: "hw",
+            relative_install_path: "egl",
             header_libs: [
                 "swiftshader_platform_headers",
 		"libnativebase_headers",
@@ -55,7 +55,9 @@ cc_defaults {
                 "libcutils",
                 "libsync",
                 "liblog",
-		"libui",
+            ],
+            static_libs: [
+                "libarect",
             ],
         },
 
@@ -228,6 +230,10 @@ cc_defaults {
     srcs: [ "OpenGL/common/debug.cpp" ],
 
     defaults: [ "libswiftshader_debug", "libswiftshader_common_defaults" ],
+
+    shared_libs: [
+        "libutils",
+    ],
 }
 
 cc_library_static {
@@ -492,33 +498,15 @@ cc_library_shared {
     static_libs: [ "libswiftshader_compiler_debug" ],
 }
 
-// Yarn, fibers + scheduler library
-
-cc_library_static {
-    name: "libyarn",
-    vendor: true,
-
-    srcs: [
-        "Yarn/Debug.cpp",
-        "Yarn/Scheduler.cpp",
-        "Yarn/Thread.cpp",
-        "Yarn/Trace.cpp",
-    ],
-
-    arch: {
-        arm: { srcs: ["Yarn/OSFiber_arm.c", "Yarn/OSFiber_asm_arm.S"], },
-        arm64: { srcs: ["Yarn/OSFiber_aarch64.c", "Yarn/OSFiber_asm_aarch64.S"], },
-        x86: { srcs: ["Yarn/OSFiber_x86.c", "Yarn/OSFiber_asm_x86.S"], },
-        x86_64: { srcs: ["Yarn/OSFiber_x64.c", "Yarn/OSFiber_asm_x64.S"], },
-    },
-
-    cflags: [
-        "-Wno-unused-parameter",
-    ],
-}
-
 
 // Vulkan
+
+genrule {
+    name: "commit_header",
+    out: ["commit.h"],
+    tool_files: ["commit_id.py"],
+    cmd: "$(location commit_id.py) gen $(genDir)/commit.h",
+}
 
 cc_defaults {
     name: "libvk_swiftshader_defaults",
@@ -539,6 +527,8 @@ cc_defaults {
         "-Wno-unused-parameter",
         "-Wno-unused-local-typedef",
         "-Wno-missing-field-initializers",
+        // Enable to output commit hash when SwiftShader is initialized
+        //"-DENABLE_BUILD_VERSION_OUTPUT",
     ],
 
     cppflags: [
@@ -549,6 +539,8 @@ cc_defaults {
     local_include_dirs: [ "Vulkan" ],
 
     version_script: "Vulkan/vk_swiftshader.lds",
+
+    generated_headers: [ "commit_header" ],
 
     target: {
         android: {
@@ -580,6 +572,7 @@ cc_defaults {
         "System/CPUID.cpp",
         "System/Configurator.cpp",
         "System/Half.cpp",
+        "System/Linux/MemFd.cpp",
         "System/Math.cpp",
         "System/Memory.cpp",
         "System/Socket.cpp",
@@ -592,6 +585,7 @@ cc_defaults {
     ],
 
     static_libs: [
+        "swiftshader_marl",
         "swiftshader_spirv-tools",
     ],
 
@@ -607,7 +601,6 @@ cc_library_shared {
     static_libs: [
         "libswiftshadervk_llvm_debug",
         "libLLVM7_swiftshader",
-        "libyarn",
     ],
 
     defaults: [
@@ -622,7 +615,6 @@ cc_library_shared {
     static_libs: [
         "libswiftshadervk_llvm_debug",
         "libLLVM7_swiftshader",
-        "libyarn",
     ],
 
     cflags: [

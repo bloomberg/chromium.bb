@@ -46,7 +46,8 @@ AXPlatformNodeTextProviderWin* AXPlatformNodeTextProviderWin::Create(
 // static
 void AXPlatformNodeTextProviderWin::CreateIUnknown(AXPlatformNodeWin* owner,
                                                    IUnknown** unknown) {
-  CComPtr<AXPlatformNodeTextProviderWin> text_provider(Create(owner));
+  Microsoft::WRL::ComPtr<AXPlatformNodeTextProviderWin> text_provider(
+      Create(owner));
   if (text_provider)
     *unknown = text_provider.Detach();
 }
@@ -63,7 +64,6 @@ STDMETHODIMP AXPlatformNodeTextProviderWin::GetSelection(
   *selection = nullptr;
 
   AXPlatformNodeDelegate* delegate = owner()->GetDelegate();
-
   ui::AXTree::Selection unignored_selection = delegate->GetUnignoredSelection();
 
   AXPlatformNode* anchor_object =
@@ -71,40 +71,39 @@ STDMETHODIMP AXPlatformNodeTextProviderWin::GetSelection(
   AXPlatformNode* focus_object =
       delegate->GetFromNodeID(unignored_selection.focus_object_id);
 
-  // If there's no selected object (or the selected object is not in the
-  // subtree), return success and don't fill the SAFEARRAY
-  //
-  // Note that if a selection spans multiple elements, this will report
-  // that no selection took place. This is expected for this API, rather
-  // than returning the subset of the selection within this node, because
-  // subsequently expanding the ITextRange wouldn't  expand to the full
-  // selection.
-  if (!anchor_object || !focus_object || (anchor_object != focus_object) ||
-      (!anchor_object->IsDescendantOf(owner())))
-    return S_OK;
-
   // anchor_offset corresponds to the selection start index
   // and focus_offset is where the selection ends.
-  // If they are equal, that indicates a caret on editable text,
-  // which should return a degenerate (empty) text range.
   auto start_offset = unignored_selection.anchor_offset;
   auto end_offset = unignored_selection.focus_offset;
 
-  // Reverse start and end if the selection goes backwards
-  if (start_offset > end_offset)
-    std::swap(start_offset, end_offset);
+  // If there's no selected object, or if the selected object is on a single
+  // node that's not editable, return success and don't fill the SAFEARRAY.
+  //
+  // According to UIA's documentation, we should only fill the SAFEARRAY with a
+  // degenerate range if the degenerate range is on an editable node. Otherwise,
+  // the expectations are that the SAFEARRAY is set to nullptr. Here, we are
+  // explicitly not allocating an empty SAFEARRAY.
+  if (!anchor_object || !focus_object ||
+      (anchor_object == focus_object && start_offset == end_offset &&
+       !anchor_object->GetDelegate()->HasVisibleCaretOrSelection())) {
+    return S_OK;
+  }
 
   AXNodePosition::AXPositionInstance start =
       anchor_object->GetDelegate()->CreateTextPositionAt(start_offset);
   AXNodePosition::AXPositionInstance end =
-      anchor_object->GetDelegate()->CreateTextPositionAt(end_offset);
+      focus_object->GetDelegate()->CreateTextPositionAt(end_offset);
 
   DCHECK(!start->IsNullPosition());
   DCHECK(!end->IsNullPosition());
 
-  CComPtr<ITextRangeProvider> text_range_provider =
+  // Reverse start and end if the selection goes backwards
+  if (*start > *end)
+    std::swap(start, end);
+
+  Microsoft::WRL::ComPtr<ITextRangeProvider> text_range_provider =
       AXPlatformNodeTextRangeProviderWin::CreateTextRangeProvider(
-          owner_, std::move(start), std::move(end));
+          owner_.Get(), std::move(start), std::move(end));
   if (&text_range_provider == nullptr)
     return E_OUTOFMEMORY;
 
@@ -119,7 +118,7 @@ STDMETHODIMP AXPlatformNodeTextProviderWin::GetSelection(
 
   LONG index = 0;
   HRESULT hr = SafeArrayPutElement(selections_to_return.Get(), &index,
-                                   text_range_provider);
+                                   text_range_provider.Get());
   DCHECK(SUCCEEDED(hr));
 
   // Since DCHECK only happens in debug builds, return immediately to ensure
@@ -151,7 +150,7 @@ STDMETHODIMP AXPlatformNodeTextProviderWin::GetVisibleRanges(
 
   // SAFEARRAYs are not dynamic, so fill the visible ranges in a vector
   // and then transfer to an appropriately-sized SAFEARRAY
-  std::vector<CComPtr<ITextRangeProvider>> ranges;
+  std::vector<Microsoft::WRL::ComPtr<ITextRangeProvider>> ranges;
 
   auto current_line_start = start->Clone();
   while (!current_line_start->IsNullPosition() && *current_line_start < *end) {
@@ -165,9 +164,10 @@ STDMETHODIMP AXPlatformNodeTextProviderWin::GetVisibleRanges(
         AXCoordinateSystem::kFrame, AXClippingBehavior::kUnclipped);
 
     if (frame_rect.Contains(current_rect)) {
-      CComPtr<ITextRangeProvider> text_range_provider =
+      Microsoft::WRL::ComPtr<ITextRangeProvider> text_range_provider =
           AXPlatformNodeTextRangeProviderWin::CreateTextRangeProvider(
-              owner_, current_line_start->Clone(), current_line_end->Clone());
+              owner_.Get(), current_line_start->Clone(),
+              current_line_end->Clone());
 
       ranges.emplace_back(text_range_provider);
     }
@@ -184,9 +184,9 @@ STDMETHODIMP AXPlatformNodeTextProviderWin::GetVisibleRanges(
     return E_OUTOFMEMORY;
 
   LONG index = 0;
-  for (CComPtr<ITextRangeProvider>& current_provider : ranges) {
+  for (Microsoft::WRL::ComPtr<ITextRangeProvider>& current_provider : ranges) {
     HRESULT hr = SafeArrayPutElement(scoped_visible_ranges.Get(), &index,
-                                     current_provider);
+                                     current_provider.Get());
     DCHECK(SUCCEEDED(hr));
 
     // Since DCHECK only happens in debug builds, return immediately to ensure
@@ -292,7 +292,7 @@ STDMETHODIMP AXPlatformNodeTextProviderWin::get_DocumentRange(
   }
 
   *range = AXPlatformNodeTextRangeProviderWin::CreateTextRangeProvider(
-      owner_, std::move(start), std::move(end));
+      owner_.Get(), std::move(start), std::move(end));
 
   return S_OK;
 }
@@ -352,7 +352,7 @@ ITextRangeProvider* AXPlatformNodeTextProviderWin::GetRangeFromChild(
 }
 
 ui::AXPlatformNodeWin* AXPlatformNodeTextProviderWin::owner() const {
-  return owner_;
+  return owner_.Get();
 }
 
 HRESULT
@@ -378,7 +378,7 @@ AXPlatformNodeTextProviderWin::GetTextRangeProviderFromActiveComposition(
             /*offset*/ active_composition_offset.end());
 
     *range = AXPlatformNodeTextRangeProviderWin::CreateTextRangeProvider(
-        owner_, std::move(start), std::move(end));
+        owner_.Get(), std::move(start), std::move(end));
   }
 
   return S_OK;

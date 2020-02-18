@@ -21,6 +21,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_entropy_provider.h"
 #include "base/test/scoped_feature_list.h"
@@ -68,12 +69,12 @@
 #include "content/public/test/content_mock_cert_verifier.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/test_utils.h"
+#include "content/public/test/url_loader_interceptor.h"
 #include "net/base/net_errors.h"
 #include "net/cert/mock_cert_verifier.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/controllable_http_response.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
-#include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_status.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -83,6 +84,7 @@
 #include "ui/events/keycodes/keyboard_codes.h"
 
 using base::ASCIIToUTF16;
+using content::URLLoaderInterceptor;
 
 namespace autofill {
 
@@ -684,8 +686,6 @@ class AutofillInteractiveTestBase : public AutofillUiTest {
   // used by the NetworkService.
   content::ContentMockCertVerifier cert_verifier_;
 
-  net::TestURLFetcherFactory url_fetcher_factory_;
-
   // KeyPressEventCallback that serves as a sink to ensure that every key press
   // event the tests create and have the WebContents forward is handled by some
   // key press event callback. It is necessary to have this sinkbecause if no
@@ -724,8 +724,43 @@ class AutofillInteractiveTest : public AutofillInteractiveTestBase {
   }
 };
 
+class AutofillInteractiveTestWithHistogramTester
+    : public AutofillInteractiveTest {
+ public:
+  void SetUp() override {
+    // Only allow requests to be loaded that are necessary for the test. This
+    // allows a histogram to test properties of some specific requests.
+    std::vector<std::string> allowlist = {
+        "/internal/test_url_path", "https://clients1.google.com/tbproxy"};
+    url_loader_interceptor_ =
+        std::make_unique<URLLoaderInterceptor>(base::BindLambdaForTesting(
+            [&](URLLoaderInterceptor::RequestParams* params) {
+              for (const auto& s : allowlist) {
+                const bool is_match =
+                    params->url_request.url.spec().find(s) != std::string::npos;
+                if (is_match)
+                  return false;  // Do not intercept.
+              }
+              return true;  // Intercept
+            }));
+    AutofillInteractiveTest::SetUp();
+  }
+
+  void TearDownOnMainThread() override {
+    url_loader_interceptor_.reset();
+    AutofillInteractiveTest::TearDownOnMainThread();
+  }
+
+  base::HistogramTester& histogram_tester() { return histogram_tester_; }
+
+ private:
+  base::HistogramTester histogram_tester_;
+  std::unique_ptr<URLLoaderInterceptor> url_loader_interceptor_;
+};
+
 // Test that basic form fill is working.
-IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, BasicFormFill) {
+IN_PROC_BROWSER_TEST_F(AutofillInteractiveTestWithHistogramTester,
+                       BasicFormFill) {
   LOG(ERROR) << "crbug/967588: In case of flakes, report log statements to "
                 "crbug.com/967588";
   CreateTestProfile();
@@ -740,6 +775,13 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, BasicFormFill) {
   // Invoke Autofill.
   TryBasicFormFill();
   LOG(ERROR) << "crbug/967588: Basic form filling completed";
+
+  SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+  // Assert that the network isolation key is populated for 2 requests:
+  // - Navigation: /internal/test_url_path
+  // - Autofill query: https://clients1.google.com/tbproxy/af/query?...
+  histogram_tester().ExpectBucketCount("HttpCache.NetworkIsolationKeyPresent2",
+                                       2 /*kPresent*/, 2 /*count*/);
 }
 
 IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, BasicClear) {

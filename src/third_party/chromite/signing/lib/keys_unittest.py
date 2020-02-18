@@ -303,7 +303,7 @@ class TestKeyPair(cros_test_lib.RunCommandTempDirTestCase):
     k1sum = k1.GetSHA1sum()
     self.assertEqual(k1sum, MOCK_SHA1SUM)
     self.assertCommandCalled(['vbutil_key', '--unpack', k1.public],
-                             error_code_ok=True)
+                             check=False, encoding='utf-8')
 
 
 class TestKeyVersions(cros_test_lib.TempDirTestCase):
@@ -329,7 +329,7 @@ class TestKeyVersions(cros_test_lib.TempDirTestCase):
   def testInitReturnsDefaultButDoesNotCreateFile(self):
     kv_path = os.path.join(self.tempdir, 'key.versions')
     kv = keys.KeyVersions(kv_path)
-    self.assertFalse(os.path.exists(kv_path))
+    self.assertNotExists(kv_path)
     expected = {
         'name': 'unknown',
         'firmware_key_version': 1,

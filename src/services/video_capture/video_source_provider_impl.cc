@@ -17,16 +17,16 @@ VideoSourceProviderImpl::VideoSourceProviderImpl(
     : device_factory_(device_factory),
       on_last_client_disconnected_cb_(
           std::move(on_last_client_disconnected_cb)) {
-  // Unretained |this| is safe because |bindings_| is owned by |this|.
-  bindings_.set_connection_error_handler(base::BindRepeating(
+  // Unretained |this| is safe because |receivers_| is owned by |this|.
+  receivers_.set_disconnect_handler(base::BindRepeating(
       &VideoSourceProviderImpl::OnClientDisconnected, base::Unretained(this)));
 }
 
 VideoSourceProviderImpl::~VideoSourceProviderImpl() = default;
 
 void VideoSourceProviderImpl::AddClient(
-    mojom::VideoSourceProviderRequest request) {
-  bindings_.AddBinding(this, std::move(request));
+    mojo::PendingReceiver<mojom::VideoSourceProvider> receiver) {
+  receivers_.Add(this, std::move(receiver));
   client_count_++;
 }
 
@@ -36,7 +36,7 @@ void VideoSourceProviderImpl::GetSourceInfos(GetSourceInfosCallback callback) {
 
 void VideoSourceProviderImpl::GetVideoSource(
     const std::string& device_id,
-    mojom::VideoSourceRequest source_request) {
+    mojo::PendingReceiver<mojom::VideoSource> source_receiver) {
   auto source_iter = sources_.find(device_id);
   if (source_iter == sources_.end()) {
     auto video_source = std::make_unique<VideoSourceImpl>(
@@ -48,29 +48,31 @@ void VideoSourceProviderImpl::GetVideoSource(
         sources_.insert(std::make_pair(device_id, std::move(video_source)))
             .first;
   }
-  source_iter->second->AddToBindingSet(std::move(source_request));
+  source_iter->second->AddToReceiverSet(std::move(source_receiver));
 }
 
 void VideoSourceProviderImpl::AddSharedMemoryVirtualDevice(
     const media::VideoCaptureDeviceInfo& device_info,
-    mojom::ProducerPtr producer,
+    mojo::PendingRemote<mojom::Producer> producer,
     bool send_buffer_handles_to_producer_as_raw_file_descriptors,
-    mojom::SharedMemoryVirtualDeviceRequest virtual_device) {
+    mojo::PendingReceiver<mojom::SharedMemoryVirtualDevice>
+        virtual_device_receiver) {
   device_factory_->AddSharedMemoryVirtualDevice(
       device_info, std::move(producer),
       send_buffer_handles_to_producer_as_raw_file_descriptors,
-      std::move(virtual_device));
+      std::move(virtual_device_receiver));
 }
 
 void VideoSourceProviderImpl::AddTextureVirtualDevice(
     const media::VideoCaptureDeviceInfo& device_info,
-    mojom::TextureVirtualDeviceRequest virtual_device) {
+    mojo::PendingReceiver<mojom::TextureVirtualDevice>
+        virtual_device_receiver) {
   device_factory_->AddTextureVirtualDevice(device_info,
-                                           std::move(virtual_device));
+                                           std::move(virtual_device_receiver));
 }
 
 void VideoSourceProviderImpl::RegisterVirtualDevicesChangedObserver(
-    mojom::DevicesChangedObserverPtr observer,
+    mojo::PendingRemote<mojom::DevicesChangedObserver> observer,
     bool raise_event_if_virtual_devices_already_present) {
   device_factory_->RegisterVirtualDevicesChangedObserver(
       std::move(observer), raise_event_if_virtual_devices_already_present);

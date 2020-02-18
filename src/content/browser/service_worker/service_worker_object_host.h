@@ -21,17 +21,18 @@
 
 namespace content {
 
+class ServiceWorkerContainerHost;
 class ServiceWorkerContextCore;
-class ServiceWorkerProviderHost;
 
 namespace service_worker_object_host_unittest {
 class ServiceWorkerObjectHostTest;
 }  // namespace service_worker_object_host_unittest
 
-// Roughly corresponds to one WebServiceWorker object in the renderer process.
+// Roughly corresponds to one blink::ServiceWorker object in the renderer
+// process.
 //
-// The WebServiceWorker object in the renderer process maintains a reference to
-// |this| by owning an associated interface pointer to
+// The blink::ServiceWorker object in the renderer process maintains a
+// reference to |this| by owning a Mojo remote to
 // blink::mojom::ServiceWorkerObjectHost. When all Mojo connections bound with
 // |receivers_| are disconnected, |this| will be deleted. See also comments on
 // |receivers_|.
@@ -43,7 +44,7 @@ class CONTENT_EXPORT ServiceWorkerObjectHost
       public ServiceWorkerVersion::Observer {
  public:
   ServiceWorkerObjectHost(base::WeakPtr<ServiceWorkerContextCore> context,
-                          ServiceWorkerProviderHost* provider_host,
+                          ServiceWorkerContainerHost* container_host,
                           scoped_refptr<ServiceWorkerVersion> version);
   ~ServiceWorkerObjectHost() override;
 
@@ -101,22 +102,22 @@ class CONTENT_EXPORT ServiceWorkerObjectHost
   void OnConnectionError();
 
   base::WeakPtr<ServiceWorkerContextCore> context_;
-  // |provider_host_| is valid throughout lifetime of |this| because it owns
+  // |container_host_| is valid throughout lifetime of |this| because it owns
   // |this|.
-  ServiceWorkerProviderHost* const provider_host_;
-  // The origin of the |provider_host_|. Note that this is const because once a
+  ServiceWorkerContainerHost* const container_host_;
+  // The origin of the |container_host_|. Note that this is const because once a
   // JavaScript ServiceWorker object is created for an execution context, we
   // don't expect that context to change origins and still hold on to the
   // object.
-  const url::Origin provider_origin_;
+  const url::Origin container_origin_;
   scoped_refptr<ServiceWorkerVersion> version_;
   // Typically both |receivers_| and |remote_objects_| contain only one Mojo
-  // connection, corresponding to the content::WebServiceWorkerImpl in the
-  // renderer which corresponds to the ServiceWorker JavaScript object. However,
-  // multiple Mojo connections may exist while propagating multiple service
-  // worker object infos to the renderer process, but only the first one that
-  // arrived there will be used to create the new content::WebServiceWorkerImpl
-  // instance and be bound to it.
+  // connection, corresponding to the blink::ServiceWorker in the renderer which
+  // corresponds to the ServiceWorker JavaScript object. However, multiple Mojo
+  // connections may exist while propagating multiple service worker object
+  // infos to the renderer process, but only the first one that arrived there
+  // will be used to create the new blink::ServiceWorker instance and be bound
+  // to it.
   mojo::AssociatedReceiverSet<blink::mojom::ServiceWorkerObjectHost> receivers_;
   mojo::AssociatedRemoteSet<blink::mojom::ServiceWorkerObject> remote_objects_;
 

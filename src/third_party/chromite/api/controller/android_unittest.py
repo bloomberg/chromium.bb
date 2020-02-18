@@ -44,6 +44,18 @@ class MarkStableTest(cros_test_lib.MockTestCase, api_config.ApiConfigMixin):
                        self.validate_only_config)
     self.uprev.assert_not_called()
 
+  def testMockCall(self):
+    """Test that a mock call does not execute logic, returns mocked value."""
+    android.MarkStable(self.input_proto, self.response,
+                       self.mock_call_config)
+    self.uprev.assert_not_called()
+    self.assertEqual(self.response.status,
+                     android_pb2.MARK_STABLE_STATUS_SUCCESS)
+    self.assertEqual(self.response.android_atom.category, 'category')
+    self.assertEqual(self.response.android_atom.package_name,
+                     'android-package-name')
+    self.assertEqual(self.response.android_atom.version, '1.2')
+
   def testFailsIfTrackingBranchMissing(self):
     """Fails if tracking_branch is missing."""
     self.input_proto.tracking_branch = ''
@@ -146,3 +158,11 @@ class UnpinVersionTest(cros_test_lib.MockTestCase, api_config.ApiConfigMixin):
 
     android.UnpinVersion(None, None, self.validate_only_config)
     safeunlink.assert_not_called()
+
+  def testMockCall(self):
+    """Test that a mock call does not execute logic."""
+    safeunlink = self.PatchObject(osutils, 'SafeUnlink')
+
+    android.UnpinVersion(None, None, self.mock_call_config)
+    safeunlink.assert_not_called()
+    # android.UnpinVersion does not modify the response.

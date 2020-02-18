@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NGPhysicalLineBoxFragment_h
-#define NGPhysicalLineBoxFragment_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_INLINE_NG_PHYSICAL_LINE_BOX_FRAGMENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_INLINE_NG_PHYSICAL_LINE_BOX_FRAGMENT_H_
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_line_height_metrics.h"
@@ -64,21 +64,12 @@ class CORE_EXPORT NGPhysicalLineBoxFragment final
                                   const ComputedStyle* container_style,
                                   PhysicalSize container_physical_size) const;
 
-  // Returns the first/last leaf fragment in the line in logical order. Returns
-  // nullptr if the line box is empty.
-  const NGPhysicalFragment* FirstLogicalLeaf() const;
-  const NGPhysicalFragment* LastLogicalLeaf() const;
-
-  const LayoutObject* ClosestLeafChildForPoint(const PhysicalOffset&,
-                                               bool only_editable_leaves) const;
-
-  // Returns a point at the visual start/end of the line.
-  // Encapsulates the handling of text direction and writing mode.
-  PhysicalOffset LineStartPoint() const;
-  PhysicalOffset LineEndPoint() const;
-
   // Whether the content soft-wraps to the next line.
   bool HasSoftWrapToNextLine() const;
+
+  // Returns the |LayoutObject| of the container. |GetLayoutObject()| returns
+  // |nullptr| because line boxes do not have corresponding |LayoutObject|.
+  const LayoutObject* ContainerLayoutObject() const { return layout_object_; }
 
  private:
   NGPhysicalLineBoxFragment(NGLineBoxFragmentBuilder* builder);
@@ -96,4 +87,4 @@ struct DowncastTraits<NGPhysicalLineBoxFragment> {
 
 }  // namespace blink
 
-#endif  // NGPhysicalBoxFragment_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_INLINE_NG_PHYSICAL_LINE_BOX_FRAGMENT_H_

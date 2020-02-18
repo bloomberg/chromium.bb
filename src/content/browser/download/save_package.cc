@@ -255,7 +255,7 @@ void SavePackage::InternalInit() {
 }
 
 bool SavePackage::Init(
-    const SavePackageDownloadCreatedCallback& download_created_callback) {
+    SavePackageDownloadCreatedCallback download_created_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(page_url_.is_valid());
   // Set proper running state.
@@ -278,20 +278,20 @@ bool SavePackage::Init(
                                                : "text/html"),
       frame_host->GetProcess()->GetID(), frame_host->GetRoutingID(),
       base::BindOnce(&CancelSavePackage, AsWeakPtr()),
-      base::Bind(&SavePackage::InitWithDownloadItem, AsWeakPtr(),
-                 download_created_callback));
+      base::BindOnce(&SavePackage::InitWithDownloadItem, AsWeakPtr(),
+                     std::move(download_created_callback)));
   return true;
 }
 
 void SavePackage::InitWithDownloadItem(
-    const SavePackageDownloadCreatedCallback& download_created_callback,
+    SavePackageDownloadCreatedCallback download_created_callback,
     download::DownloadItemImpl* item) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(item);
   download_ = item;
   // Confirm above didn't delete the tab out from under us.
   if (!download_created_callback.is_null())
-    download_created_callback.Run(download_);
+    std::move(download_created_callback).Run(download_);
 
   // Check save type and process the save page job.
   if (save_type_ == SAVE_PAGE_TYPE_AS_COMPLETE_HTML) {
@@ -334,7 +334,7 @@ void SavePackage::OnMHTMLGenerated(int64_t size) {
 
   auto* delegate = download_manager_->GetDelegate();
   if (!delegate || delegate->ShouldCompleteDownload(
-                       download_, base::Bind(&SavePackage::Finish, this))) {
+                       download_, base::BindOnce(&SavePackage::Finish, this))) {
     Finish();
   }
 }
@@ -1240,12 +1240,10 @@ void SavePackage::GetSaveInfo() {
   // need before calling to it.
   base::FilePath website_save_dir;
   base::FilePath download_save_dir;
-  bool skip_dir_check = false;
   auto* delegate = download_manager_->GetDelegate();
   if (delegate) {
-    delegate->GetSaveDir(
-        web_contents()->GetBrowserContext(), &website_save_dir,
-        &download_save_dir, &skip_dir_check);
+    delegate->GetSaveDir(web_contents()->GetBrowserContext(), &website_save_dir,
+                         &download_save_dir);
   }
   std::string mime_type = web_contents()->GetContentsMimeType();
   bool can_save_as_complete = CanSaveAsComplete(mime_type);
@@ -1253,7 +1251,7 @@ void SavePackage::GetSaveInfo() {
       download::GetDownloadTaskRunner().get(), FROM_HERE,
       base::Bind(&SavePackage::CreateDirectoryOnFileThread, title_, page_url_,
                  can_save_as_complete, mime_type, website_save_dir,
-                 download_save_dir, skip_dir_check),
+                 download_save_dir),
       base::Bind(&SavePackage::ContinueGetSaveInfo, this,
                  can_save_as_complete));
 }
@@ -1265,8 +1263,7 @@ base::FilePath SavePackage::CreateDirectoryOnFileThread(
     bool can_save_as_complete,
     const std::string& mime_type,
     const base::FilePath& website_save_dir,
-    const base::FilePath& download_save_dir,
-    bool skip_dir_check) {
+    const base::FilePath& download_save_dir) {
   DCHECK(download::GetDownloadTaskRunner()->RunsTasksInCurrentSequence());
 
   base::FilePath suggested_filename = filename_generation::GenerateFilename(
@@ -1274,8 +1271,7 @@ base::FilePath SavePackage::CreateDirectoryOnFileThread(
 
   base::FilePath save_dir;
   // If the default html/websites save folder doesn't exist...
-  // We skip the directory check for gdata directories on ChromeOS.
-  if (!skip_dir_check && !base::DirectoryExists(website_save_dir)) {
+  if (!base::DirectoryExists(website_save_dir)) {
     // If the default download dir doesn't exist, create it.
     if (!base::DirectoryExists(download_save_dir)) {
       bool res = base::CreateDirectory(download_save_dir);
@@ -1320,17 +1316,14 @@ void SavePackage::ContinueGetSaveInfo(bool can_save_as_complete,
     default_extension = kDefaultHtmlExtension;
 
   download_manager_->GetDelegate()->ChooseSavePath(
-      web_contents(),
-      suggested_path,
-      default_extension,
-      can_save_as_complete,
-      base::Bind(&SavePackage::OnPathPicked, AsWeakPtr()));
+      web_contents(), suggested_path, default_extension, can_save_as_complete,
+      base::BindOnce(&SavePackage::OnPathPicked, AsWeakPtr()));
 }
 
 void SavePackage::OnPathPicked(
     const base::FilePath& final_name,
     SavePageType type,
-    const SavePackageDownloadCreatedCallback& download_created_callback) {
+    SavePackageDownloadCreatedCallback download_created_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK((type == SAVE_PAGE_TYPE_AS_ONLY_HTML) ||
          (type == SAVE_PAGE_TYPE_AS_MHTML) ||
@@ -1351,7 +1344,7 @@ void SavePackage::OnPathPicked(
         FILE_PATH_LITERAL("_files"));
   }
 
-  Init(download_created_callback);
+  Init(std::move(download_created_callback));
 }
 
 void SavePackage::FinalizeDownloadEntry() {

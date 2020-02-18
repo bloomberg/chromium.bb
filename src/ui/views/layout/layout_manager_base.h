@@ -17,6 +17,7 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/views/layout/layout_manager.h"
 #include "ui/views/layout/layout_types.h"
+#include "ui/views/layout/proposed_layout.h"
 #include "ui/views/views_export.h"
 
 namespace views {
@@ -28,43 +29,6 @@ class View;
 // CalculateProposedLayout(). Used in interpolating and animating layouts.
 class VIEWS_EXPORT LayoutManagerBase : public LayoutManager {
  public:
-  // Represents layout information for a child view within a host being laid
-  // out.
-  struct VIEWS_EXPORT ChildLayout {
-    bool operator==(const ChildLayout& other) const;
-    bool operator!=(const ChildLayout& other) const {
-      return !(*this == other);
-    }
-
-    View* child_view = nullptr;
-    bool visible = false;
-    gfx::Rect bounds;
-  };
-
-  // Contains a full layout specification for the children of the host view.
-  struct VIEWS_EXPORT ProposedLayout {
-    ProposedLayout();
-    ~ProposedLayout();
-    ProposedLayout(const ProposedLayout& other);
-    ProposedLayout(ProposedLayout&& other);
-    ProposedLayout(const gfx::Size& size,
-                   const std::initializer_list<ChildLayout>& children);
-    ProposedLayout& operator=(const ProposedLayout& other);
-    ProposedLayout& operator=(ProposedLayout&& other);
-
-    bool operator==(const ProposedLayout& other) const;
-    bool operator!=(const ProposedLayout& other) const {
-      return !(*this == other);
-    }
-
-    // The size of the host view given the size bounds for this layout. If both
-    // dimensions of the size bounds are specified, this will be the same size.
-    gfx::Size host_size;
-
-    // Contains an entry for each child view included in the layout.
-    std::vector<ChildLayout> child_layouts;
-  };
-
   ~LayoutManagerBase() override;
 
   View* host_view() { return host_view_; }
@@ -85,10 +49,13 @@ class VIEWS_EXPORT LayoutManagerBase : public LayoutManager {
   gfx::Size GetPreferredSize(const View* host) const override;
   gfx::Size GetMinimumSize(const View* host) const override;
   int GetPreferredHeightForWidth(const View* host, int width) const override;
-  void Layout(View* host) override;
+  void Layout(View* host) final;
 
  protected:
   LayoutManagerBase();
+
+  // LayoutManager:
+  std::vector<View*> GetChildViewsInPaintOrder(const View* host) const override;
 
   // Direct cache control for subclasses that want to override default caching
   // behavior. Use at your own risk.
@@ -135,6 +102,11 @@ class VIEWS_EXPORT LayoutManagerBase : public LayoutManager {
   // visibility for all children currently included in the layout.
   virtual ProposedLayout CalculateProposedLayout(
       const SizeBounds& size_bounds) const = 0;
+
+  // Does the actual work of laying out the host view and its children.
+  // Default implementation is just getting the proposed layout for the host
+  // size and then applying it.
+  virtual void LayoutImpl();
 
   // Applies |layout| to the children of the host view.
   void ApplyLayout(const ProposedLayout& layout);
@@ -197,7 +169,10 @@ class VIEWS_EXPORT LayoutManagerBase : public LayoutManager {
   void Installed(View* host) final;
   void ViewAdded(View* host, View* view) final;
   void ViewRemoved(View* host, View* view) final;
-  void ViewVisibilitySet(View* host, View* view, bool visible) final;
+  void ViewVisibilitySet(View* host,
+                         View* view,
+                         bool old_visibility,
+                         bool new_visibility) final;
 
   void AddOwnedLayoutInternal(std::unique_ptr<LayoutManagerBase> owned_layout);
 

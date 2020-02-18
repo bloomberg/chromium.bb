@@ -6,9 +6,9 @@
 #define CHROME_SERVICES_CUPS_PROXY_CUPS_PROXY_SERVICE_H_
 
 #include <memory>
-#include <string>
 
 #include "base/memory/weak_ptr.h"
+#include "base/no_destructor.h"
 #include "base/observer_list.h"
 #include "base/observer_list_types.h"
 #include "chrome/services/cups_proxy/public/mojom/proxy.mojom.h"
@@ -16,6 +16,7 @@
 namespace cups_proxy {
 
 class CupsProxyServiceDelegate;
+class ProxyManager;
 
 // This service lives in the browser process and is managed by the
 // CupsProxyServiceManager. It bootstraps/maintains a mojom connection with the
@@ -41,6 +42,9 @@ class CupsProxyService {
   void BindToCupsProxyDaemon(
       std::unique_ptr<CupsProxyServiceDelegate> delegate);
   void OnBindToCupsProxyDaemon(bool success);
+
+  // Handler that implements the top-level mojom interface (mojom::CupsProxier)
+  std::unique_ptr<ProxyManager> proxy_manager_;
 
   base::WeakPtrFactory<CupsProxyService> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(CupsProxyService);

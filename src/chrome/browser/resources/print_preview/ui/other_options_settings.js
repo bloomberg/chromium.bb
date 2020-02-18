@@ -2,8 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'chrome://resources/cr_elements/hidden_style_css.m.js';
+import 'chrome://resources/cr_elements/cr_checkbox/cr_checkbox.m.js';
+import './print_preview_shared_css.js';
+import './settings_section.js';
+import '../strings.m.js';
+
+import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {SettingsBehavior} from './settings_behavior.js';
+
 Polymer({
   is: 'print-preview-other-options-settings',
+
+  _template: html`{__html_template__}`,
 
   behaviors: [SettingsBehavior, I18nBehavior],
 

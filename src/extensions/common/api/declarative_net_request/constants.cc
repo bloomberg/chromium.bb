@@ -15,6 +15,7 @@ const char kPriorityKey[] = "priority";
 const char kRuleConditionKey[] = "condition";
 const char kRuleActionKey[] = "action";
 const char kUrlFilterKey[] = "urlFilter";
+const char kRegexFilterKey[] = "regexFilter";
 const char kIsUrlFilterCaseSensitiveKey[] = "isUrlFilterCaseSensitive";
 const char kDomainsKey[] = "domains";
 const char kExcludedDomainsKey[] = "excludedDomains";
@@ -49,6 +50,8 @@ const char kQueryTransformRemoveParamsKey[] = "removeParams";
 const char kQueryTransformAddReplaceParamsKey[] = "addOrReplaceParams";
 const char kQueryKeyKey[] = "key";
 const char kQueryValueKey[] = "value";
+const char kRegexSubstitutionKey[] = "regexSubstitution";
+const char kRegexSubstitutionPath[] = "action.redirect.regexSubstitution";
 
 }  // namespace declarative_net_request
 }  // namespace extensions

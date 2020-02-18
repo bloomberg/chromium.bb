@@ -11,13 +11,14 @@
 #include "platform/base/error.h"
 
 namespace openscreen {
+namespace osp {
 
 class ReceiverList {
  public:
   ReceiverList();
   ~ReceiverList();
-  ReceiverList(ReceiverList&&) = delete;
-  ReceiverList& operator=(ReceiverList&&) = delete;
+  ReceiverList(ReceiverList&&) noexcept = delete;
+  ReceiverList& operator=(ReceiverList&&) noexcept = delete;
 
   void OnReceiverAdded(const ServiceInfo& info);
 
@@ -31,6 +32,7 @@ class ReceiverList {
   std::vector<ServiceInfo> receivers_;
 };
 
+}  // namespace osp
 }  // namespace openscreen
 
 #endif  // OSP_IMPL_RECEIVER_LIST_H_

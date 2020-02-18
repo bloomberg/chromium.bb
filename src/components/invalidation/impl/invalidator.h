@@ -15,10 +15,13 @@
 #include "components/invalidation/public/invalidation_export.h"
 #include "components/invalidation/public/invalidation_util.h"
 #include "components/invalidation/public/invalidator_state.h"
+#include "google_apis/gaia/core_account_id.h"
 
 namespace syncer {
 class InvalidationHandler;
 
+// TODO(crbug.com/1029481): Part of the legacy implementation of invalidations,
+// scheduled for deletion.
 class INVALIDATION_EXPORT Invalidator {
  public:
   Invalidator();
@@ -83,8 +86,8 @@ class INVALIDATION_EXPORT Invalidator {
   // The observers won't be notified of any notifications until
   // UpdateCredentials is called at least once. It can be called more than
   // once.
-  virtual void UpdateCredentials(
-      const std::string& email, const std::string& token) = 0;
+  virtual void UpdateCredentials(const CoreAccountId& account_id,
+                                 const std::string& token) = 0;
 
   // Requests internal detailed status to be posted back to the callback.
   virtual void RequestDetailedStatus(

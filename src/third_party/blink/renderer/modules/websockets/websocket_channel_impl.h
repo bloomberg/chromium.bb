@@ -42,7 +42,7 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
 #include "services/network/public/mojom/websocket.mojom-blink.h"
-#include "third_party/blink/public/mojom/websockets/websocket_connector.mojom-blink.h"
+#include "third_party/blink/public/mojom/websockets/websocket_connector.mojom-blink-forward.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
 #include "third_party/blink/renderer/core/fileapi/blob.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
@@ -96,8 +96,8 @@ class MODULES_EXPORT WebSocketChannelImpl final
   SendResult Send(const std::string& message,
                   base::OnceClosure completion_callback) override;
   SendResult Send(const DOMArrayBuffer&,
-                  unsigned byte_offset,
-                  unsigned byte_length,
+                  size_t byte_offset,
+                  size_t byte_length,
                   base::OnceClosure completion_callback) override;
   void Send(scoped_refptr<BlobDataHandle>) override;
   // Start closing handshake. Use the CloseEventCodeNotSpecified for the code
@@ -107,20 +107,18 @@ class MODULES_EXPORT WebSocketChannelImpl final
             mojom::ConsoleMessageLevel,
             std::unique_ptr<SourceLocation>) override;
   void Disconnect() override;
+  void CancelHandshake() override;
   void ApplyBackpressure() override;
   void RemoveBackpressure() override;
 
   // network::mojom::blink::WebSocketHandshakeClient methods:
   void OnOpeningHandshakeStarted(
       network::mojom::blink::WebSocketHandshakeRequestPtr) override;
-  void OnResponseReceived(
-      network::mojom::blink::WebSocketHandshakeResponsePtr) override;
   void OnConnectionEstablished(
       mojo::PendingRemote<network::mojom::blink::WebSocket> websocket,
       mojo::PendingReceiver<network::mojom::blink::WebSocketClient>
           client_receiver,
-      const String& selected_protocol,
-      const String& extensions,
+      network::mojom::blink::WebSocketHandshakeResponsePtr,
       mojo::ScopedDataPipeConsumerHandle readable) override;
 
   // network::mojom::blink::WebSocketClient methods:
@@ -228,6 +226,8 @@ class MODULES_EXPORT WebSocketChannelImpl final
                         network::mojom::blink::WebSocketMessageType type,
                         const char* data,
                         size_t data_size);
+  String GetTextMessage(const Vector<base::span<const char>>& chunks,
+                        wtf_size_t size);
   void OnConnectionError(const base::Location& set_from,
                          uint32_t custom_reason,
                          const std::string& description);
@@ -243,6 +243,7 @@ class MODULES_EXPORT WebSocketChannelImpl final
 
   bool backpressure_ = false;
   bool receiving_message_type_is_text_ = false;
+  bool received_text_is_all_ascii_ = true;
   bool throttle_passed_ = false;
   bool has_initiated_opening_handshake_ = false;
   uint64_t sending_quota_ = 0;

@@ -10,6 +10,7 @@ import io
 import logging
 import os
 import random
+import stat
 import string
 import sys
 import time
@@ -19,7 +20,11 @@ from utils import fs
 from utils import lru
 from utils import threading_utils
 from utils import tools
+tools.force_local_third_party()
 
+# third_party/
+from scandir import scandir
+import six
 
 # The file size to be used when we don't know the correct file size,
 # generally used for .isolated files.
@@ -89,7 +94,7 @@ def trim_caches(caches, path, min_free_space, max_age_secs):
       oldest = [(c, c.get_oldest()) for c in caches if len(c) > 0]
       if not oldest:
         break
-      oldest.sort(key=lambda (_, ts): ts)
+      oldest.sort(key=lambda k: k[1])
       c, ts = oldest[0]
       if ts >= min_ts and free_disk >= min_free_space:
         break
@@ -101,6 +106,10 @@ def trim_caches(caches, path, min_free_space, max_age_secs):
     total.extend(c.trim())
   return total
 
+def _use_scandir():
+  # Use scandir in windows for faster execution.
+  # Do not use in other OS due to crbug.com/989409
+  return sys.platform == 'win32'
 
 def _get_recursive_size(path):
   """Returns the total data size for the specified path.
@@ -109,9 +118,37 @@ def _get_recursive_size(path):
   """
   try:
     total = 0
+    if _use_scandir():
+
+      if sys.platform == 'win32':
+        def direntIsJunction(entry):
+          # both st_file_attributes and FILE_ATTRIBUTE_REPARSE_POINT are
+          # windows-only symbols.
+          return bool(entry.stat().st_file_attributes &
+                      scandir.FILE_ATTRIBUTE_REPARSE_POINT)
+      else:
+        def direntIsJunction(_entry):
+          return False
+
+      stack = [path]
+      while stack:
+        for entry in scandir.scandir(stack.pop()):
+          if entry.is_symlink() or direntIsJunction(entry):
+            continue
+          if entry.is_file():
+            total += entry.stat().st_size
+          elif entry.is_dir():
+            stack.append(entry.path)
+          else:
+            logging.warning('non directory/file entry: %s', entry)
+      return total
+
     for root, _, files in fs.walk(path):
       for f in files:
-        total += fs.lstat(os.path.join(root, f)).st_size
+        st = fs.lstat(os.path.join(root, f))
+        if stat.S_ISLNK(st.st_mode):
+          continue
+        total += st.st_size
     return total
   except (IOError, OSError, UnicodeEncodeError) as exc:
     logging.warning('Exception while getting the size of %s:\n%s', path, exc)
@@ -302,7 +339,7 @@ class ContentAddressedCache(Cache):
 class MemoryContentAddressedCache(ContentAddressedCache):
   """ContentAddressedCache implementation that stores everything in memory."""
 
-  def __init__(self, file_mode_mask=0500):
+  def __init__(self, file_mode_mask=0o500):
     """Args:
       file_mode_mask: bit mask to AND file mode with. Default value will make
           all mapped files to be read only.
@@ -476,16 +513,16 @@ class DiskContentAddressedCache(ContentAddressedCache):
     policies.
     """
     with self._lock:
-      fs.chmod(self.cache_dir, 0700)
+      fs.chmod(self.cache_dir, 0o700)
       # Ensure that all files listed in the state still exist and add new ones.
       previous = set(self._lru)
       # It'd be faster if there were a readdir() function.
       for filename in fs.listdir(self.cache_dir):
         if filename == self.STATE_FILE:
-          fs.chmod(os.path.join(self.cache_dir, filename), 0600)
+          fs.chmod(os.path.join(self.cache_dir, filename), 0o600)
           continue
         if filename in previous:
-          fs.chmod(os.path.join(self.cache_dir, filename), 0400)
+          fs.chmod(os.path.join(self.cache_dir, filename), 0o400)
           previous.remove(filename)
           continue
 
@@ -852,7 +889,7 @@ class NamedCache(Cache):
         # Raise using the original traceback.
         exc = NamedCacheError(
             'cannot install cache named %r at %r: %s' % (name, dst, ex))
-        raise exc, None, sys.exc_info()[2]
+        six.reraise(exc, None, sys.exc_info()[2])
       finally:
         self._save()
 
@@ -925,7 +962,7 @@ class NamedCache(Cache):
         # Raise using the original traceback.
         exc = NamedCacheError(
             'cannot uninstall cache named %r at %r: %s' % (name, src, ex))
-        raise exc, None, sys.exc_info()[2]
+        six.reraise(exc, None, sys.exc_info()[2])
       finally:
         # Call save() at every uninstall. The assumptions are:
         # - The total the number of named caches is low, so the state.json file

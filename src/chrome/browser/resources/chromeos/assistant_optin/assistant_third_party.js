@@ -77,26 +77,32 @@ Polymer({
       return;
     }
     e.preventDefault();
-    this.showThirdPartyOverlay(e.target.href);
+    this.lastFocusedElement = e.target;
+    this.showThirdPartyOverlay(e.target.href, e.target.innerText);
   },
 
   /**
    * Shows third party information links in overlay dialog.
    * @param {string} url URL to show.
+   * @param {string} title Title of the dialog.
    */
-  showThirdPartyOverlay: function(url) {
+  showThirdPartyOverlay: function(url, title) {
     this.$['webview-container'].classList.add('overlay-loading');
     this.$['overlay-webview'].src = url;
-
-    var overlay = this.$['third-party-overlay'];
-    overlay.hidden = false;
+    this.$['third-party-overlay'].setTitleAriaLabel(title);
+    this.$['third-party-overlay'].showModal();
+    this.$['overlay-close-button'].focus();
   },
 
   /**
    * Hides overlay dialog.
    */
   hideOverlay: function() {
-    this.$['third-party-overlay'].hidden = true;
+    this.$['third-party-overlay'].close();
+    if (this.lastFocusedElement) {
+      this.lastFocusedElement.focus();
+      this.lastFocusedElement = null;
+    }
   },
 
   /**
@@ -143,7 +149,8 @@ Polymer({
       zippy.setAttribute(
           'icon-src',
           'data:text/html;charset=utf-8,' +
-              encodeURIComponent(zippy.getWrappedIcon(data['iconUri'])));
+              encodeURIComponent(
+                  zippy.getWrappedIcon(data['iconUri'], data['title'])));
       zippy.setAttribute('expand-style', true);
 
       var title = document.createElement('div');

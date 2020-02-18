@@ -1981,14 +1981,13 @@ void BigInt::SerializeDigits(uint8_t* storage) {
 // The serialization format MUST NOT CHANGE without updating the format
 // version in value-serializer.cc!
 MaybeHandle<BigInt> BigInt::FromSerializedDigits(
-    Isolate* isolate, uint32_t bitfield, Vector<const uint8_t> digits_storage,
-    AllocationType allocation) {
+    Isolate* isolate, uint32_t bitfield, Vector<const uint8_t> digits_storage) {
   int bytelength = LengthBits::decode(bitfield);
   DCHECK(digits_storage.length() == bytelength);
   bool sign = SignBits::decode(bitfield);
   int length = (bytelength + kDigitSize - 1) / kDigitSize;  // Round up.
   Handle<MutableBigInt> result =
-      MutableBigInt::Cast(isolate->factory()->NewBigInt(length, allocation));
+      MutableBigInt::Cast(isolate->factory()->NewBigInt(length));
   result->initialize_bitfield(sign, length);
   void* digits =
       reinterpret_cast<void*>(result->ptr() + kDigitsOffset - kHeapObjectTag);
@@ -2696,7 +2695,7 @@ void MutableBigInt::set_64_bits(uint64_t bits) {
 }
 
 #ifdef OBJECT_PRINT
-void BigInt::BigIntPrint(std::ostream& os) {
+void BigIntBase::BigIntBasePrint(std::ostream& os) {
   DisallowHeapAllocation no_gc;
   PrintHeader(os, "BigInt");
   int len = length();

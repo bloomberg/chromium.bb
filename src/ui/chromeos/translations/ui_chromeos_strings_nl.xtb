@@ -75,11 +75,9 @@
 <translation id="1829129547161959350">Pinguïn</translation>
 <translation id="183183971458492120">Informatie laden…</translation>
 <translation id="1838709767668011582">Google-site</translation>
-<translation id="1839704667838141620">Wijzig de manier waarop dit bestand wordt gedeeld</translation>
 <translation id="1844692022597038441">Dit bestand is offline niet beschikbaar.</translation>
 <translation id="184633654410729720">Thais toetsenbord (Kedmanee)</translation>
 <translation id="1847880352285315359">Opgeslagen</translation>
-<translation id="1864676585353837027">Wijzig de manier waarop deze bestanden worden gedeeld</translation>
 <translation id="1864756863218646478">Het bestand kan niet worden gevonden.</translation>
 <translation id="1921986354447415460">Turks-F-toetsenbord</translation>
 <translation id="1931134289871235022">Slowaaks</translation>
@@ -89,7 +87,6 @@
 <translation id="1943097386230153518">Nieuwe service installeren</translation>
 <translation id="1947424002851288782">Duits toetsenbord</translation>
 <translation id="1972984168337863910">Feedbackvensters voor bestanden uitvouwen</translation>
-<translation id="197560921582345123">Kan bewerken</translation>
 <translation id="1984603991036629094">Armeens fonetisch toetsenbord</translation>
 <translation id="2001796770603320721">Beheren in Drive</translation>
 <translation id="2009067268969781306">Tijdens het formatteren van een schijf worden alle opgeslagen gegevens verwijderd. Deze actie kan niet ongedaan worden gemaakt.</translation>
@@ -226,6 +223,7 @@
 <translation id="3645531960514756307">Map losmaken</translation>
 <translation id="3678559383040232393">Maltees toetsenbord</translation>
 <translation id="3685122418104378273">De synchronisatie van Google Drive is bij het gebruik van mobiele data standaard uitgeschakeld.</translation>
+<translation id="3689865792480713551"><ph name="ACTIVITY_DESCRIPTION" /> annuleren.</translation>
 <translation id="3726463242007121105">Dit apparaat kan niet worden geopend omdat het bijbehorende bestandssysteem niet wordt ondersteund.</translation>
 <translation id="3741243925913727067">Maak een back-up van de foto's en video's op je media-apparaat in Google Drive.</translation>
 <translation id="3749289110408117711">Bestandsnaam</translation>
@@ -286,7 +284,6 @@
 <translation id="4522570452068850558">Details</translation>
 <translation id="4552678318981539154">Meer opslagruimte kopen</translation>
 <translation id="4559767610552730302">Bokeh</translation>
-<translation id="4568854179928172494">Laatst gewijzigd op</translation>
 <translation id="4572815280350369984"><ph name="FILE_TYPE" />-bestand</translation>
 <translation id="457386861538956877">Meer...</translation>
 <translation id="4579744207439506346"><ph name="ENTRY_NAME" /> aan selectie toegevoegd.</translation>
@@ -468,6 +465,7 @@
 <translation id="6339145975392024142">Amerikaans internationaal (pc)</translation>
 <translation id="6346310558342052870">Beperkte toegang</translation>
 <translation id="6353618411602605519">Kroatisch toetsenbord</translation>
+<translation id="6356685157277930264">Feedbackvenster voor bestanden</translation>
 <translation id="6358884629796491903">Draak</translation>
 <translation id="637062427944097960">Dit bestand is op een ander bureaublad geopend. Verplaats het naar <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />) om het weer te geven.</translation>
 <translation id="6395575651121294044"><ph name="NUMBER_OF_FILES" /> items</translation>
@@ -557,7 +555,7 @@
 <translation id="7474889694310679759">Canadees-Engels toetsenbord</translation>
 <translation id="7489215562877293245"><ph name="FILE_COUNT" /> gevonden
     <ph name="LINE_BREAK1" />
-    Klaar om back-up te maken op <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /></translation>
+    Klaar om back-up te maken in <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /></translation>
 <translation id="7505167922889582512">Verborgen bestanden weergeven</translation>
 <translation id="7508545000531937079">Diavoorstelling</translation>
 <translation id="751507702149411736">Wit-Russisch</translation>
@@ -567,6 +565,7 @@
 <translation id="7589661784326793847">Een ogenblik geduld</translation>
 <translation id="7603724359189955920">Rasters</translation>
 <translation id="7627790789328695202"><ph name="FILE_NAME" /> bestaat al. Geef een nieuwe naam op en probeer het opnieuw.</translation>
+<translation id="7628656427739290098"><ph name="PERCENT" />% voltooid.</translation>
 <translation id="7649070708921625228">Hulp</translation>
 <translation id="7654209398114106148"><ph name="NUMBER_OF_ITEMS" /> items verplaatsen...</translation>
 <translation id="7658239707568436148">Annuleren</translation>
@@ -593,7 +592,6 @@
 <translation id="7827012282502221009"><ph name="NUMBER_OF_TB" /> TB</translation>
 <translation id="7839804798877833423">Voor het ophalen van deze bestanden wordt ongeveer <ph name="FILE_SIZE" /> aan mobiele data gebruikt.</translation>
 <translation id="7846076177841592234">Selectie opheffen</translation>
-<translation id="7850851215703745691">Deze Drive-bestanden zijn nog niet gedeeld</translation>
 <translation id="7853966320808728790">Franse BÉPO</translation>
 <translation id="7864662577698025113">Nieuwe service toevoegen</translation>
 <translation id="7873831373602885875">Kan niet opslaan in <ph name="FOLDER_NAME" />. Alle bewerkingen worden opgeslagen in <ph name="DOWNLOADS_FOLDER" /> in de map Downloads.</translation>
@@ -609,7 +607,6 @@
 <translation id="7969525169268594403">Sloveens</translation>
 <translation id="7982283708762922719">Hoogte</translation>
 <translation id="7987485481246785146">Op Arabisch gebaseerd toetsenbord voor Soranî</translation>
-<translation id="799923393800005025">Kan weergeven</translation>
 <translation id="8008366997883261463">Jack Russell-terriër</translation>
 <translation id="8028993641010258682">Grootte</translation>
 <translation id="8031722894461705849">Slowaaks toetsenbord</translation>
@@ -671,8 +668,6 @@
 <translation id="8600173386174225982">Bestandslijst is gewijzigd naar miniatuurweergave.</translation>
 <translation id="8601932370724196034">Crostini-afbeeldingsbestand</translation>
 <translation id="8669949407341943408">Verplaatsen…</translation>
-<translation id="8671210955687109937">Mag reageren</translation>
-<translation id="8686213429977032554">Dit Drive-bestand is nog niet gedeeld</translation>
 <translation id="8698464937041809063">Google-tekening</translation>
 <translation id="8714406895390098252">Fiets</translation>
 <translation id="8719721339511222681"><ph name="ENTRY_NAME" /> is geselecteerd.</translation>
@@ -716,7 +711,7 @@
 <translation id="939736085109172342">Nieuwe map</translation>
 <translation id="942954117721265519">Geen afbeeldingen in deze directory.</translation>
 <translation id="943972244133411984">Aangepast door</translation>
-<translation id="945522503751344254">Feedback verzenden</translation>
+<translation id="945522503751344254">Feedback sturen</translation>
 <translation id="947144732524271678">Een bereik van <ph name="ENTRY_COUNT" /> items van <ph name="FROM_ENTRY_NAME" /> tot <ph name="TO_ENTRY_NAME" /> is geselecteerd.</translation>
 <translation id="981121421437150478">Offline</translation>
 <translation id="988685240266037636">Er bestaat al een bestand met de naam '<ph name="FILE_NAME" />'. Wil je dit bestand vervangen?</translation>

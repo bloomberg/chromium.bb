@@ -7,13 +7,16 @@
 #include <string>
 #include <utility>
 
+#include "build/buildflag.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/internal/identity_manager/profile_oauth2_token_service.h"
 #include "components/signin/public/base/account_consistency_method.h"
 #include "components/signin/public/base/device_id_helper.h"
+#include "components/signin/public/base/signin_buildflags.h"
 #include "components/signin/public/base/signin_client.h"
 
 #if defined(OS_ANDROID)
+#include "components/signin/internal/base/account_manager_facade_android.h"
 #include "components/signin/internal/identity_manager/oauth2_token_service_delegate_android.h"
 #else
 #include "components/signin/internal/identity_manager/mutable_profile_oauth2_token_service_delegate.h"
@@ -22,7 +25,6 @@
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/components/account_manager/account_manager.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "components/signin/internal/identity_manager/profile_oauth2_token_service_delegate_chromeos.h"
 #include "components/user_manager/user_manager.h"
 #endif  // defined(OS_CHROMEOS)
@@ -35,10 +37,17 @@
 namespace {
 
 #if defined(OS_ANDROID)
+// TODO(crbug.com/986435) Provide AccountManagerFacade as a parameter once
+// IdentityServicesProvider owns its instance management.
 std::unique_ptr<OAuth2TokenServiceDelegateAndroid> CreateAndroidOAuthDelegate(
     AccountTrackerService* account_tracker_service) {
+  auto account_manager_facade =
+      OAuth2TokenServiceDelegateAndroid::
+              get_disable_interaction_with_system_accounts()
+          ? nullptr
+          : AccountManagerFacadeAndroid::GetJavaObject();
   return std::make_unique<OAuth2TokenServiceDelegateAndroid>(
-      account_tracker_service);
+      account_tracker_service, account_manager_facade);
 }
 #elif defined(OS_IOS)
 std::unique_ptr<ProfileOAuth2TokenServiceIOSDelegate> CreateIOSOAuthDelegate(
@@ -49,8 +58,7 @@ std::unique_ptr<ProfileOAuth2TokenServiceIOSDelegate> CreateIOSOAuthDelegate(
       signin_client, std::move(device_accounts_provider),
       account_tracker_service);
 }
-#else  // !defined(OS_ANDROID) && !defined(OS_IOS)
-#if defined(OS_CHROMEOS)
+#elif defined(OS_CHROMEOS)
 std::unique_ptr<signin::ProfileOAuth2TokenServiceDelegateChromeOS>
 CreateCrOsOAuthDelegate(
     AccountTrackerService* account_tracker_service,
@@ -62,25 +70,7 @@ CreateCrOsOAuthDelegate(
       account_tracker_service, network_connection_tracker, account_manager,
       is_regular_profile);
 }
-#endif  // defined(OS_CHROMEOS)
-
-// Supervised users cannot revoke credentials.
-bool CanRevokeCredentials() {
-#if defined(OS_CHROMEOS)
-  // UserManager may not exist in unit_tests.
-  if (user_manager::UserManager::IsInitialized() &&
-      user_manager::UserManager::Get()->IsLoggedInAsSupervisedUser()) {
-    // Don't allow revoking credentials for Chrome OS supervised users.
-    // See http://crbug.com/332032
-    LOG(ERROR) << "Attempt to revoke supervised user refresh "
-               << "token detected, ignoring.";
-    return false;
-  }
-#endif
-
-  return true;
-}
-
+#elif BUILDFLAG(ENABLE_DICE_SUPPORT)
 std::unique_ptr<MutableProfileOAuth2TokenServiceDelegate>
 CreateMutableProfileOAuthDelegate(
     AccountTrackerService* account_tracker_service,
@@ -102,7 +92,6 @@ CreateMutableProfileOAuthDelegate(
   return std::make_unique<MutableProfileOAuth2TokenServiceDelegate>(
       signin_client, account_tracker_service, network_connection_tracker,
       token_web_data, account_consistency, revoke_all_tokens_on_load,
-      CanRevokeCredentials(),
 #if defined(OS_WIN)
       reauth_callback
 #else
@@ -139,26 +128,23 @@ CreateOAuth2TokenServiceDelegate(
   return CreateIOSOAuthDelegate(signin_client,
                                 std::move(device_accounts_provider),
                                 account_tracker_service);
-#else  // !defined(OS_ANDROID) && !defined(OS_IOS)
-#if defined(OS_CHROMEOS)
-  if (chromeos::features::IsAccountManagerEnabled()) {
-    return CreateCrOsOAuthDelegate(account_tracker_service,
-                                   network_connection_tracker, account_manager,
-                                   is_regular_profile);
-  }
-#endif  // defined(OS_CHROMEOS)
-  // Fall back to |MutableProfileOAuth2TokenServiceDelegate|:
-  // 1. On all platforms other than Android and Chrome OS.
-  // 2. On Chrome OS, if Account Manager has not been switched on yet
-  // (chromeos::features::IsAccountManagerEnabled).
+#elif defined(OS_CHROMEOS)
+  return CreateCrOsOAuthDelegate(account_tracker_service,
+                                 network_connection_tracker, account_manager,
+                                 is_regular_profile);
+#elif BUILDFLAG(ENABLE_DICE_SUPPORT)
+  // Fall back to |MutableProfileOAuth2TokenServiceDelegate| on all platforms
+  // other than Android, iOS, and Chrome OS.
   return CreateMutableProfileOAuthDelegate(
       account_tracker_service, account_consistency,
       delete_signin_cookies_on_exit, token_web_data, signin_client,
 #if defined(OS_WIN)
       reauth_callback,
-#endif
+#endif  // defined(OS_WIN)
       network_connection_tracker);
-
+#else
+  NOTREACHED();
+  return nullptr;
 #endif  // defined(OS_ANDROID)
 }
 

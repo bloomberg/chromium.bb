@@ -35,6 +35,7 @@
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "chrome/browser/battery/battery_metrics.h"
+#include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chrome_browser_main.h"
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -131,11 +132,11 @@
 #include "extensions/buildflags/buildflags.h"
 #include "extensions/common/constants.h"
 #include "media/media_buildflags.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "printing/buildflags/buildflags.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/network_switches.h"
-#include "services/preferences/public/cpp/in_process_service_factory.h"
 #include "ui/base/idle/idle.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/ui_base_features.h"
@@ -528,17 +529,19 @@ void RundownTaskCounter::TimedWait(base::TimeDelta timeout) {
 
 #if !defined(OS_ANDROID)
 void RequestProxyResolvingSocketFactoryOnUIThread(
-    network::mojom::ProxyResolvingSocketFactoryRequest request) {
+    mojo::PendingReceiver<network::mojom::ProxyResolvingSocketFactory>
+        receiver) {
   network::mojom::NetworkContext* network_context =
       g_browser_process->system_network_context_manager()->GetContext();
-  network_context->CreateProxyResolvingSocketFactory(std::move(request));
+  network_context->CreateProxyResolvingSocketFactory(std::move(receiver));
 }
 
 void RequestProxyResolvingSocketFactory(
-    network::mojom::ProxyResolvingSocketFactoryRequest request) {
+    mojo::PendingReceiver<network::mojom::ProxyResolvingSocketFactory>
+        receiver) {
   base::PostTask(FROM_HERE, {BrowserThread::UI},
                  base::BindOnce(&RequestProxyResolvingSocketFactoryOnUIThread,
-                                std::move(request)));
+                                std::move(receiver)));
 }
 #endif
 
@@ -881,11 +884,6 @@ BrowserProcessImpl::resource_coordinator_parts() {
   return resource_coordinator_parts_.get();
 }
 
-shell_integration::DefaultWebClientState
-BrowserProcessImpl::CachedDefaultWebClientState() {
-  return cached_default_web_client_state_;
-}
-
 // static
 void BrowserProcessImpl::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(prefs::kDefaultBrowserSettingEnabled,
@@ -1150,8 +1148,6 @@ void BrowserProcessImpl::PreMainMessageLoopRun() {
           ->Clone());
 #endif
 
-  CacheDefaultWebClientState();
-
   platform_part_->PreMainMessageLoopRun();
 
   if (base::FeatureList::IsEnabled(network_time::kNetworkTimeServiceQuerying)) {
@@ -1338,14 +1334,6 @@ void BrowserProcessImpl::ApplyDefaultBrowserPolicy() {
     set_browser_worker->set_interactive_permitted(false);
     set_browser_worker->StartSetAsDefault();
   }
-}
-
-void BrowserProcessImpl::CacheDefaultWebClientState() {
-#if defined(OS_CHROMEOS)
-  cached_default_web_client_state_ = shell_integration::IS_DEFAULT;
-#elif !defined(OS_ANDROID)
-  cached_default_web_client_state_ = shell_integration::GetDefaultBrowser();
-#endif
 }
 
 void BrowserProcessImpl::Pin() {

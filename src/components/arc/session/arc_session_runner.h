@@ -20,6 +20,7 @@
 #include "components/arc/session/arc_instance_mode.h"
 #include "components/arc/session/arc_session.h"
 #include "components/arc/session/arc_stop_reason.h"
+#include "components/arc/session/arc_upgrade_params.h"
 
 namespace arc {
 
@@ -82,7 +83,7 @@ class ArcSessionRunner : public ArcSession::Observer {
 
   // Starts the full ARC instance, then it will connect the Mojo channel. When
   // the bridge becomes ready, registered Observer's OnSessionReady() is called.
-  void RequestUpgrade(ArcSession::UpgradeParams params);
+  void RequestUpgrade(UpgradeParams params);
 
   // Stops the ARC service.
   void RequestStop();
@@ -92,8 +93,9 @@ class ArcSessionRunner : public ArcSession::Observer {
   // when this function is called, MessageLoop is no longer exists.
   void OnShutdown();
 
-  // Sets a hash string of the profile user ID.
-  void SetUserIdHashForProfile(const std::string& hash);
+  // Sets a hash string of the profile user ID and an ARC serial number for the
+  // user.
+  void SetUserInfo(const std::string& hash, const std::string& serial_number);
 
   // Returns the current ArcSession instance for testing purpose.
   ArcSession* GetArcSessionForTesting() { return arc_session_.get(); }
@@ -141,10 +143,12 @@ class ArcSessionRunner : public ArcSession::Observer {
   std::unique_ptr<ArcSession> arc_session_;
 
   // Parameters to upgrade request.
-  ArcSession::UpgradeParams upgrade_params_;
+  UpgradeParams upgrade_params_;
 
   // A hash string of the profile user ID.
   std::string user_id_hash_;
+  // A serial number for the current profile.
+  std::string serial_number_;
 
   // WeakPtrFactory to use callbacks.
   base::WeakPtrFactory<ArcSessionRunner> weak_ptr_factory_{this};

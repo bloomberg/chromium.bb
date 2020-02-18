@@ -340,6 +340,10 @@ int32_t EventDeviceInfo::GetAbsMaximum(unsigned int code) const {
   return abs_info_[code].maximum;
 }
 
+int32_t EventDeviceInfo::GetAbsResolution(unsigned int code) const {
+  return abs_info_[code].resolution;
+}
+
 int32_t EventDeviceInfo::GetAbsValue(unsigned int code) const {
   return abs_info_[code].value;
 }
@@ -483,8 +487,10 @@ ui::InputDeviceType EventDeviceInfo::GetInputDeviceTypeFromId(input_id id) {
     uint16_t vid;
     uint16_t pid;
   } kUSBInternalDevices[] = {
-      {0x18d1, 0x5030},  // Google, Hammer PID (nocturne)
       {0x18d1, 0x502b},  // Google, Hammer PID (soraka)
+      {0x18d1, 0x5030},  // Google, Whiskers PID (nocturne)
+      {0x18d1, 0x503c},  // Google, Masterball PID (krane)
+      {0x18d1, 0x503d},  // Google, Magnemite PID (kodama)
       {0x1fd2, 0x8103},  // LG, Internal TouchScreen PID
   };
 

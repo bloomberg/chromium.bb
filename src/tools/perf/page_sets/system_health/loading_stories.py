@@ -9,6 +9,8 @@ from page_sets.system_health import system_health_story
 from page_sets.login_helpers import dropbox_login
 from page_sets.login_helpers import google_login
 
+from telemetry.util import js_template
+
 
 class _LoadingStory(system_health_story.SystemHealthStory):
   """Abstract base class for single-page System Health user stories."""
@@ -101,6 +103,14 @@ class LoadTwitterStory(_LoadingStory):
   # 'browse:social:twitter_infinite_scroll'
   SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
 
+class LoadTwitterMoibleStory2019(_LoadingStory):
+  NAME = 'load:social:twitter:2019'
+  URL = 'https://www.twitter.com/nasa'
+  TAGS = [story_tags.YEAR_2019]
+
+  # Desktop version is already covered by
+  # 'browse:social:twitter_infinite_scroll'
+  SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
 
 class LoadVkStory(_LoadingStory):
   NAME = 'load:social:vk'
@@ -126,6 +136,11 @@ class LoadInstagramDesktopStory2018(_LoadingStory):
   TAGS = [story_tags.YEAR_2018]
   SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
 
+class LoadInstagramMobileStory2019(_LoadingStory):
+  NAME = 'load:social:instagram:2019'
+  URL = 'https://www.instagram.com/selenagomez/'
+  TAGS = [story_tags.YEAR_2019]
+  SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
 
 class LoadPinterestStory(_LoadingStory):
   NAME = 'load:social:pinterest'
@@ -181,6 +196,11 @@ class LoadNytimesMobileStory(_LoadingStory):
   SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
   TAGS = [story_tags.HEALTH_CHECK, story_tags.YEAR_2016]
 
+class LoadNytimesMobileStory2019(_LoadingStory):
+  NAME = 'load:news:nytimes:2019'
+  URL = 'http://mobile.nytimes.com'
+  SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
+  TAGS = [story_tags.HEALTH_CHECK, story_tags.YEAR_2019]
 
 class LoadQqMobileStory(_LoadingStory):
   NAME = 'load:news:qq'
@@ -188,6 +208,11 @@ class LoadQqMobileStory(_LoadingStory):
   URL = 'http://news.qq.com'
   TAGS = [story_tags.INTERNATIONAL, story_tags.YEAR_2016]
 
+class LoadQqMobileStory2019(_LoadingStory):
+  NAME = 'load:news:qq:2019'
+  URL = 'https://xw.qq.com/?f=c_news'
+  TAGS = [story_tags.INTERNATIONAL, story_tags.YEAR_2019]
+  SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
 
 class LoadQqDesktopStory2018(_LoadingStory):
   NAME = 'load:news:qq:2018'
@@ -209,6 +234,11 @@ class LoadRedditMobileStory(_LoadingStory):
   SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
   TAGS = [story_tags.HEALTH_CHECK, story_tags.YEAR_2016]
 
+class LoadRedditMobileStory2019(_LoadingStory):
+  NAME = 'load:news:reddit:2019'
+  URL = 'https://www.reddit.com/r/news/top/?sort=top&t=week'
+  SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
+  TAGS = [story_tags.HEALTH_CHECK, story_tags.YEAR_2019]
 
 class LoadWashingtonPostMobileStory(_LoadingStory):
   NAME = 'load:news:washingtonpost'
@@ -227,6 +257,33 @@ class LoadWashingtonPostMobileStory(_LoadingStory):
         selector=self._CLOSE_BUTTON_SELECTOR)
     if has_button:
       action_runner.ClickElement(selector=self._CLOSE_BUTTON_SELECTOR)
+
+class LoadWashingtonPostMobileStory2019(_LoadingStory):
+  NAME = 'load:news:washingtonpost:2019'
+  URL = 'https://www.washingtonpost.com/pwa'
+  SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
+  TAGS = [story_tags.HEALTH_CHECK, story_tags.YEAR_2019]
+  _CONTINUE_FREE_BUTTON_SELECTOR = '.continue-btn.button.free'
+  _ACCEPT_GDPR_SELECTOR = '.agree-ckb'
+  _CONTINUE_TO_SITE_SELECTOR = '.continue-btn.button.accept-consent'
+
+  def _DidLoadDocument(self, action_runner):
+    # Close the popup window. On Nexus 9 (and probably other tables) the popup
+    # window does not have a "Close" button, instead it has only a "Send link
+    # to phone" button. So on tablets we run with the popup window open. The
+    # popup is transparent, so this is mostly an aesthetical issue.
+    has_button = action_runner.EvaluateJavaScript(
+        '!!document.querySelector({{ selector }})',
+        selector=self._CONTINUE_FREE_BUTTON_SELECTOR)
+    if has_button:
+      action_runner.ClickElement(selector=self._CONTINUE_FREE_BUTTON_SELECTOR)
+      action_runner.ScrollPageToElement(selector=self._ACCEPT_GDPR_SELECTOR)
+      action_runner.ClickElement(selector=self._ACCEPT_GDPR_SELECTOR)
+      element_function = js_template.Render(
+        'document.querySelectorAll({{ selector }})[{{ index }}]',
+        selector=self._CONTINUE_TO_SITE_SELECTOR, index=0)
+      action_runner.ClickElement(element_function=element_function)
+
 
 
 class LoadWikipediaStory2018(_LoadingStory):
@@ -304,6 +361,14 @@ class LoadFacebookPhotosMobileStory(_LoadingStory):
       'https://m.facebook.com/rihanna/photos/a.207477806675.138795.10092511675/10153911739606676/?type=3&source=54&ref=page_internal')
   SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
   TAGS = [story_tags.EMERGING_MARKET, story_tags.YEAR_2016]
+
+class LoadFacebookPhotosMobileStory2019(_LoadingStory):
+  """Load a page of rihanna's facebook with a photo."""
+  NAME = 'load:media:facebook_photos:2019'
+  URL = (
+      'https://m.facebook.com/rihanna/photos/a.207477806675/10156574885461676/?type=3&source=54&ref=page_internal')
+  SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
+  TAGS = [story_tags.EMERGING_MARKET, story_tags.YEAR_2019]
 
 
 class LoadFacebookPhotosDesktopStory2018(_LoadingStory):
@@ -419,6 +484,12 @@ class LoadBubblesStory(_LoadingStory):
     action_runner.WaitForJavaScriptCondition(
         'document.getElementById("logo") === null')
 
+class LoadBubblesStory2019(_LoadingStory):
+  """Load "smarty bubbles" game on famobi.com"""
+  NAME = 'load:games:bubbles:2019'
+  URL = (
+      'https://games.cdn.famobi.com/html5games/s/smarty-bubbles/v010/?fg_domain=play.famobi.com&fg_uid=d8f24956-dc91-4902-9096-a46cb1353b6f&fg_pid=4638e320-4444-4514-81c4-d80a8c662371&fg_beat=620')
+  TAGS = [story_tags.HEALTH_CHECK, story_tags.YEAR_2019]
 
 class LoadLazorsStory(_LoadingStory):
   NAME = 'load:games:lazors'

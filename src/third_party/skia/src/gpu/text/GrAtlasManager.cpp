@@ -8,6 +8,7 @@
 #include "src/gpu/text/GrAtlasManager.h"
 
 #include "src/gpu/GrGlyph.h"
+#include "src/gpu/GrImageInfo.h"
 #include "src/gpu/text/GrStrikeCache.h"
 
 GrAtlasManager::GrAtlasManager(GrProxyProvider* proxyProvider, GrStrikeCache* glyphCache,
@@ -88,8 +89,8 @@ static bool save_pixels(GrContext* context, GrSurfaceProxy* sProxy, GrColorType 
         return false;
     }
 
-    SkImageInfo ii = SkImageInfo::Make(sProxy->width(), sProxy->height(),
-                                       kRGBA_8888_SkColorType, kPremul_SkAlphaType);
+    SkImageInfo ii =
+            SkImageInfo::Make(sProxy->dimensions(), kRGBA_8888_SkColorType, kPremul_SkAlphaType);
     SkBitmap bm;
     if (!bm.tryAllocPixels(ii)) {
         return false;
@@ -148,7 +149,7 @@ void GrAtlasManager::dump(GrContext* context) const {
 }
 #endif
 
-void GrAtlasManager::setAtlasSizesToMinimum_ForTesting() {
+void GrAtlasManager::setAtlasDimensionsToMinimum_ForTesting() {
     // Delete any old atlases.
     // This should be safe to do as long as we are not in the middle of a flush.
     for (int i = 0; i < kMaskFormatCount; i++) {

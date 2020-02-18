@@ -40,7 +40,6 @@
 #include "third_party/blink/renderer/core/css/active_style_sheets.h"
 #include "third_party/blink/renderer/core/css/css_global_rule_set.h"
 #include "third_party/blink/renderer/core/css/document_style_sheet_collection.h"
-#include "third_party/blink/renderer/core/css/font_display.h"
 #include "third_party/blink/renderer/core/css/invalidation/pending_invalidations.h"
 #include "third_party/blink/renderer/core/css/invalidation/style_invalidator.h"
 #include "third_party/blink/renderer/core/css/layout_tree_rebuild_root.h"
@@ -51,6 +50,7 @@
 #include "third_party/blink/renderer/core/css/style_recalc_root.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/tree_ordered_list.h"
+#include "third_party/blink/renderer/core/html/track/text_track.h"
 #include "third_party/blink/renderer/platform/bindings/name_client.h"
 #include "third_party/blink/renderer/platform/fonts/font_selector_client.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -81,10 +81,9 @@ using StyleSheetKey = AtomicString;
 // The StyleEngine class manages style-related state for the document. There is
 // a 1-1 relationship of Document to StyleEngine. The document calls the
 // StyleEngine when the the document is updated in a way that impacts styles.
-class CORE_EXPORT StyleEngine final
-    : public GarbageCollectedFinalized<StyleEngine>,
-      public FontSelectorClient,
-      public NameClient {
+class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
+                                      public FontSelectorClient,
+                                      public NameClient {
   USING_GARBAGE_COLLECTED_MIXIN(StyleEngine);
 
  public:
@@ -112,6 +111,9 @@ class CORE_EXPORT StyleEngine final
   }
 
   CSSStyleSheet* InspectorStyleSheet() const { return inspector_style_sheet_; }
+
+  void AddTextTrack(TextTrack*);
+  void RemoveTextTrack(TextTrack*);
 
   const ActiveStyleSheetVector ActiveStyleSheetsForInspector();
 
@@ -302,6 +304,9 @@ class CORE_EXPORT StyleEngine final
 
   void NodeWillBeRemoved(Node&);
   void ChildrenRemoved(ContainerNode& parent);
+  void RemovedFromFlatTree(Node& node) {
+    style_recalc_root_.RemovedFromFlatTree(node);
+  }
   void PseudoElementRemoved(Element& originating_element) {
     layout_tree_rebuild_root_.ChildrenRemoved(originating_element);
   }
@@ -343,13 +348,22 @@ class CORE_EXPORT StyleEngine final
       const AtomicString& animation_name);
 
   DocumentStyleEnvironmentVariables& EnsureEnvironmentVariables();
-  void AddDefaultFontDisplay(const StyleRuleFontFeatureValues*);
-  FontDisplay GetDefaultFontDisplay(const AtomicString& family) const;
 
   scoped_refptr<StyleInitialData> MaybeCreateAndGetInitialData();
 
+  bool NeedsStyleInvalidation() const {
+    return style_invalidation_root_.GetRootNode();
+  }
+  bool NeedsStyleRecalc() const { return style_recalc_root_.GetRootNode(); }
+  bool NeedsLayoutTreeRebuild() const {
+    return layout_tree_rebuild_root_.GetRootNode();
+  }
+  bool NeedsFullStyleUpdate() const;
+
   void UpdateViewportStyle();
+  void UpdateStyleAndLayoutTree();
   void RecalcStyle();
+  void ClearEnsuredDescendantStyles(Element& element);
   void RebuildLayoutTree();
   bool InRebuildLayoutTree() const { return in_layout_tree_rebuild_; }
 
@@ -391,6 +405,7 @@ class CORE_EXPORT StyleEngine final
   typedef HeapHashSet<Member<TreeScope>> UnorderedTreeScopeSet;
 
   void MediaQueryAffectingValueChanged(UnorderedTreeScopeSet&);
+  void MediaQueryAffectingValueChanged(HeapHashSet<Member<TextTrack>>&);
   const RuleFeatureSet& GetRuleFeatureSet() const {
     DCHECK(IsMaster());
     DCHECK(global_rule_set_);
@@ -457,6 +472,9 @@ class CORE_EXPORT StyleEngine final
 
   void UpdateColorScheme();
   bool SupportsDarkColorScheme();
+
+  void ViewportDefiningElementDidChange();
+  void PropagateWritingModeAndDirectionToHTMLRoot();
 
   Member<Document> document_;
   bool is_master_;
@@ -554,27 +572,25 @@ class CORE_EXPORT StyleEngine final
 
   scoped_refptr<StyleInitialData> initial_data_;
 
-  // Default font-display collected from @font-feature-values rules. The key is
-  // font-family.
-  HashMap<AtomicString, FontDisplay> default_font_display_map_;
-
   // Color schemes explicitly supported by the author through the viewport meta
   // tag. E.g. <meta name="color-scheme" content="light dark">. A dark color-
   // scheme is used to opt-out of forced darkening.
   Member<const CSSValue> meta_color_scheme_;
 
-  // The preferred color scheme is set in settings, but may be overridden by the
-  // ForceDarkMode setting where the preferred_color_scheme_ will be set to
-  // kNoPreference to avoid dark styling to be applied before auto darkening.
+  // The preferred color scheme is set in WebThemeEngine, but may be overridden
+  // by the ForceDarkMode setting where the preferred_color_scheme_ will be set
+  // to kNoPreference to avoid dark styling to be applied before auto darkening.
   PreferredColorScheme preferred_color_scheme_ =
       PreferredColorScheme::kNoPreference;
 
-  // Forced colors is set in settings.
+  // Forced colors is set in WebThemeEngine.
   ForcedColors forced_colors_ = ForcedColors::kNone;
 
   friend class NodeTest;
   friend class StyleEngineTest;
   friend class WhitespaceAttacherTest;
+
+  HeapHashSet<Member<TextTrack>> text_tracks_;
 };
 
 }  // namespace blink

@@ -22,7 +22,6 @@
 #include "ui/views/views_features.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
-#include "ui/views/window/dialog_client_view.h"
 
 #if defined(OS_WIN)
 #include "ui/base/win/shell.h"
@@ -88,17 +87,17 @@ Widget* CreateBubbleWidget(BubbleDialogDelegateView* bubble) {
   Widget::InitParams bubble_params(Widget::InitParams::TYPE_BUBBLE);
   bubble_params.delegate = bubble;
   bubble_params.opacity = CustomShadowsSupported()
-                              ? Widget::InitParams::TRANSLUCENT_WINDOW
-                              : Widget::InitParams::OPAQUE_WINDOW;
+                              ? Widget::InitParams::WindowOpacity::kTranslucent
+                              : Widget::InitParams::WindowOpacity::kOpaque;
   bubble_params.accept_events = bubble->accept_events();
   bubble_params.remove_standard_frame = true;
   // Use a window default shadow if the bubble doesn't provides its own.
   if (bubble->GetShadow() == BubbleBorder::NO_ASSETS)
-    bubble_params.shadow_type = Widget::InitParams::SHADOW_TYPE_DEFAULT;
+    bubble_params.shadow_type = Widget::InitParams::ShadowType::kDefault;
   else if (CustomShadowsSupported())
-    bubble_params.shadow_type = Widget::InitParams::SHADOW_TYPE_NONE;
+    bubble_params.shadow_type = Widget::InitParams::ShadowType::kNone;
   else
-    bubble_params.shadow_type = Widget::InitParams::SHADOW_TYPE_DROP;
+    bubble_params.shadow_type = Widget::InitParams::ShadowType::kDrop;
   if (bubble->parent_window())
     bubble_params.parent = bubble->parent_window();
   else if (bubble->anchor_widget())
@@ -154,11 +153,6 @@ bool BubbleDialogDelegateView::ShouldShowCloseButton() const {
   return false;
 }
 
-ClientView* BubbleDialogDelegateView::CreateClientView(Widget* widget) {
-  DialogClientView* client = new DialogClientView(widget, GetContentsView());
-  return client;
-}
-
 NonClientFrameView* BubbleDialogDelegateView::CreateNonClientFrameView(
     Widget* widget) {
   BubbleFrameView* frame = new BubbleDialogFrameView(title_margins_);
@@ -166,11 +160,11 @@ NonClientFrameView* BubbleDialogDelegateView::CreateNonClientFrameView(
 
   frame->set_footnote_margins(
       provider->GetInsetsMetric(INSETS_DIALOG_SUBSECTION));
-  frame->SetFootnoteView(CreateFootnoteView());
+  frame->SetFootnoteView(DisownFootnoteView());
 
   std::unique_ptr<BubbleBorder> border =
       std::make_unique<BubbleBorder>(arrow(), GetShadow(), color());
-  if (CustomShadowsSupported() && ShouldHaveRoundCorners()) {
+  if (CustomShadowsSupported() && GetParams().round_corners) {
     border->SetCornerRadius(
         base::FeatureList::IsEnabled(features::kEnableMDRoundedCornersOnDialogs)
             ? provider->GetCornerRadiusMetric(views::EMPHASIS_HIGH)
@@ -307,8 +301,7 @@ void BubbleDialogDelegateView::OnBeforeBubbleWidgetInit(
     Widget* widget) const {}
 
 void BubbleDialogDelegateView::UseCompactMargins() {
-  const int kCompactMargin = 6;
-  set_margins(gfx::Insets(kCompactMargin));
+  set_margins(gfx::Insets(6));
 }
 
 void BubbleDialogDelegateView::OnAnchorBoundsChanged() {
@@ -464,12 +457,6 @@ void BubbleDialogDelegateView::SizeToContents() {
 #endif
 
   GetWidget()->SetBounds(bubble_bounds);
-}
-
-BubbleFrameView* BubbleDialogDelegateView::GetBubbleFrameView() const {
-  const NonClientView* view =
-      GetWidget() ? GetWidget()->non_client_view() : nullptr;
-  return view ? static_cast<BubbleFrameView*>(view->frame_view()) : nullptr;
 }
 
 void BubbleDialogDelegateView::UpdateColorsFromTheme() {

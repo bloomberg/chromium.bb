@@ -12,6 +12,7 @@
 #include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/arc/arc_support_host.h"
 #include "chrome/browser/chromeos/arc/auth/arc_active_directory_enrollment_token_fetcher.h"
 #include "chrome/browser/chromeos/arc/extensions/fake_arc_support.h"
@@ -432,15 +433,15 @@ IN_PROC_BROWSER_TEST_F(ArcActiveDirectoryEnrollmentTokenFetcherBrowserTest,
 
   test_url_loader_factory_.SetInterceptor(
       base::BindLambdaForTesting([&](const network::ResourceRequest& request) {
-        network::ResourceResponseHead head;
+        auto head = network::mojom::URLResponseHead::New();
         std::string status_line("HTTP/1.1 904 ARC Disabled");
         std::string headers = status_line + "\nContent-type: text/html\n\n";
-        head.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+        head->headers = base::MakeRefCounted<net::HttpResponseHeaders>(
             net::HttpUtil::AssembleRawHeaders(headers));
         network::URLLoaderCompletionStatus status;
 
-        test_url_loader_factory_.AddResponse(request.url, head, std::string(),
-                                             status);
+        test_url_loader_factory_.AddResponse(request.url, std::move(head),
+                                             std::string(), status);
       }));
   base::RunLoop run_loop;
   ExpectEnrollmentTokenFetchFails(&run_loop, Status::ARC_DISABLED);

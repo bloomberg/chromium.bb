@@ -3,13 +3,11 @@
 <translationbundle lang="el">
 <translation id="1276998909102132017">Εικόνες gallery</translation>
 <translation id="1430915738399379752">Εκτύπωση</translation>
-<translation id="1462966117743110941">Τώρα η κάμερά σας υποστηρίζει νέες λειτουργίες. Επίσης, οι φωτογραφίες και τα βίντεό σας θα διατίθενται στους φακέλους "Λήψεις".</translation>
 <translation id="1620510694547887537">Κάμερα</translation>
 <translation id="1627744224761163218">4 x 4</translation>
 <translation id="1664224225747386870">Καμία εγγραφή</translation>
 <translation id="1862930711583847113">Δεν είναι δυνατή η εξαγωγή του αρχείου <ph name="FILE" /></translation>
 <translation id="1899697626337024495">Ανάλυση φωτογραφίας</translation>
-<translation id="2008689030244369546">Μια ολοκαίνουργια εμφάνιση</translation>
 <translation id="2036868001356139588">Διάρκεια χρονομέτρου</translation>
 <translation id="2050339315714019657">Κάθετα</translation>
 <translation id="2064538373111010176"><ph name="CAMERA" /> ενεργή</translation>
@@ -24,6 +22,7 @@
 
         Οι εφαρμογές με άδειες αποθηκευτικού χώρου θα έχουν πρόσβαση στις φωτογραφίες και τα βίντεό σας.</translation>
 <translation id="3081586908890909590">Μετάβαση στη λειτουργία εγγραφής βίντεο</translation>
+<translation id="313467653172006084">30 καρέ ανά δευτερόλεπτο</translation>
 <translation id="3183731565330012717">Τύπος πλέγματος</translation>
 <translation id="3227137524299004712">Μικρόφωνο</translation>
 <translation id="3259149966178251584">Ανάλυση κάμερας</translation>
@@ -44,9 +43,7 @@
 <translation id="5671277269877808209">Τετράγωνο</translation>
 <translation id="5775960006311140197">Λειτουργία Expert</translation>
 <translation id="5869546221129391014">Πλέγμα</translation>
-<translation id="6040143037577758943">Κλείσιμο</translation>
 <translation id="6073451960410192870">Διακοπή εγγραφής</translation>
-<translation id="6165508094623778733">Μάθετε περισσότερα</translation>
 <translation id="6197807149213783179">Αποθήκευση μεταδεδομένων</translation>
 <translation id="6233780560267770709">3 επί 3</translation>
 <translation id="6243827288366940320">Ιδανικός λόγος διαστάσεων</translation>
@@ -65,6 +62,8 @@
 <translation id="7658239707568436148">Ακύρωση</translation>
 <translation id="7670511624014457267">60 καρέ ανά δευτερόλεπτο</translation>
 <translation id="8049189770492311300">Χρονόμετρο</translation>
+<translation id="8067883171444229417">Αναπαραγωγή βίντεο</translation>
+<translation id="8131740175452115882">Επιβεβαίωση</translation>
 <translation id="8145038249676204903">Μετάβαση στη λειτουργία λήψης φωτογραφίας</translation>
 <translation id="8261506727792406068">Διαγραφή</translation>
 <translation id="8428213095426709021">Ρυθμίσεις</translation>

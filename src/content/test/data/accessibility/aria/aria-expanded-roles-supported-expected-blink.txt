@@ -8,9 +8,7 @@ rootWebArea
 ++++blockquote
 ++++button expanded
 ++++caption
-++++cell expanded
 ++++checkBox expanded
-++++columnHeader expanded
 ++++comboBoxGrouping expanded
 ++++complementary
 ++++contentInfo
@@ -19,12 +17,16 @@ rootWebArea
 ++++dialog
 ++++list
 ++++document
-++++genericContainer
+++++emphasis
 ++++feed
 ++++figure
 ++++form
 ++++grid
-++++cell expanded
+++++++columnHeader expanded
+++++++cell expanded
+++++++row expanded
+++++++rowGroup
+++++++rowHeader expanded
 ++++group
 ++++heading
 ++++image
@@ -55,8 +57,6 @@ rootWebArea
 ++++radioButton
 ++++radioGroup
 ++++region
-++++row expanded
-++++rowHeader expanded
 ++++scrollBar
 ++++search
 ++++searchBox
@@ -65,17 +65,18 @@ rootWebArea
 ++++slider
 ++++spinButton
 ++++status
-++++genericContainer
+++++strong
 ++++genericContainer
 ++++genericContainer
 ++++switch expanded
 ++++tab expanded
 ++++table
+++++++cell expanded
 ++++tabList
 ++++tabPanel
 ++++term
 ++++textField
-++++genericContainer
+++++time
 ++++timer
 ++++toolbar
 ++++tooltip

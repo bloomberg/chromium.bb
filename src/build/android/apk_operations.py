@@ -19,9 +19,11 @@ import random
 import re
 import shlex
 import shutil
+import subprocess
 import sys
 import tempfile
 import textwrap
+import zipfile
 
 import adb_command_line
 import devil_chromium
@@ -35,8 +37,11 @@ from devil.android.sdk import intent
 from devil.android.sdk import version_codes
 from devil.utils import run_tests_helper
 
-with devil_env.SysPath(os.path.join(os.path.dirname(__file__), '..', '..',
-                                    'third_party', 'colorama', 'src')):
+_DIR_SOURCE_ROOT = os.path.normpath(
+    os.path.join(os.path.dirname(__file__), '..', '..'))
+
+with devil_env.SysPath(
+    os.path.join(_DIR_SOURCE_ROOT, 'third_party', 'colorama', 'src')):
   import colorama
 
 from incremental_install import installer
@@ -45,8 +50,8 @@ from pylib.symbols import deobfuscator
 from pylib.utils import simpleperf
 from pylib.utils import app_bundle_utils
 
-with devil_env.SysPath(os.path.join(os.path.dirname(__file__), '..', '..',
-                                    'build', 'android', 'gyp')):
+with devil_env.SysPath(
+    os.path.join(_DIR_SOURCE_ROOT, 'build', 'android', 'gyp')):
   import bundletool
 
 # Matches messages only on pre-L (Dalvik) that are spammy and unimportant.
@@ -101,7 +106,7 @@ BundleGenerationInfo = collections.namedtuple(
 
 
 def _GenerateBundleApks(info,
-                        output_path,
+                        output_path=None,
                         minimal=False,
                         minimal_sdk_version=None,
                         mode=None):
@@ -116,7 +121,8 @@ def _GenerateBundleApks(info,
   """
   app_bundle_utils.GenerateBundleApks(
       info.bundle_path,
-      output_path,
+      # Store .apks file beside the .aab file by default so that it gets cached.
+      output_path or info.bundle_apks_path,
       info.aapt2_path,
       info.keystore_path,
       info.keystore_password,
@@ -127,10 +133,8 @@ def _GenerateBundleApks(info,
       minimal_sdk_version=minimal_sdk_version)
 
 
-def _InstallBundle(devices, bundle_apks, package_name, command_line_flags_file,
-                   modules, fake_modules):
-  # Path to push fake modules for Chrome to pick up.
-  MODULES_SRC_DIRECTORY_PATH = '/data/local/tmp/modules'
+def _InstallBundle(devices, apk_helper_instance, package_name,
+                   command_line_flags_file, modules, fake_modules):
   # Path Chrome creates after validating fake modules. This needs to be cleared
   # for pushed fake modules to be picked up.
   SPLITCOMPAT_PATH = '/data/data/' + package_name + '/files/splitcompat'
@@ -151,98 +155,24 @@ def _InstallBundle(devices, bundle_apks, package_name, command_line_flags_file,
     else:
       logging.info('Skipped removing nonexistent %s', SPLITCOMPAT_PATH)
 
-  def InstallFakeModules(device):
-    try:
-      temp_path = tempfile.mkdtemp()
-
-      if not fake_modules:
-        # Push empty temp_path to clear folder on device and update the cache.
-        device.PushChangedFiles([(temp_path, MODULES_SRC_DIRECTORY_PATH)],
-                                delete_device_stale=True)
-        return
-
-      # Device-spec JSON is needed, so create that first.
-      device_spec_filename = os.path.join(temp_path, 'device_spec.json')
-      get_device_spec_cmd_args = [
-          'get-device-spec', '--adb=' + adb_wrapper.AdbWrapper.GetAdbPath(),
-          '--device-id=' + device.serial, '--output=' + device_spec_filename
-      ]
-      bundletool.RunBundleTool(get_device_spec_cmd_args)
-
-      # Extract fake modules to temp directory. For now, installation
-      # requires running 'bundletool extract-apks'. Unfortunately, this leads
-      # to unneeded compression of module files.
-      extract_apks_cmd_args = [
-          'extract-apks', '--apks=' + bundle_apks,
-          '--device-spec=' + device_spec_filename,
-          '--modules=' + ','.join(fake_modules), '--output-dir=' + temp_path
-      ]
-      bundletool.RunBundleTool(extract_apks_cmd_args)
-
-      # Push fake modules, with renames.
-      fake_module_apks = set()
-      for fake_module in fake_modules:
-        found_master = False
-
-        for filename in os.listdir(temp_path):
-          # If file matches expected format, rename it to follow conventions
-          # required by splitcompatting.
-          match = re.match(r'%s-([a-z_0-9]+)\.apk' % fake_module, filename)
-          local_path = os.path.join(temp_path, filename)
-
-          if not match:
-            continue
-
-          module_suffix = match.group(1)
-          remote = os.path.join(
-              temp_path, '%s.config.%s.apk' % (fake_module, module_suffix))
-          # Check if filename matches a master apk.
-          if 'master' in module_suffix:
-            if found_master:
-              raise Exception('Expect 1 master apk file for %s' % fake_module)
-            found_master = True
-            remote = os.path.join(temp_path, '%s.apk' % fake_module)
-
-          os.rename(local_path, remote)
-          fake_module_apks.add(os.path.basename(remote))
-
-      # Files that weren't renamed should not be pushed, remove from temp_path.
-      for filename in os.listdir(temp_path):
-        if filename not in fake_module_apks:
-          os.remove(os.path.join(temp_path, filename))
-
-      device.PushChangedFiles([(temp_path, MODULES_SRC_DIRECTORY_PATH)],
-                              delete_device_stale=True)
-
-    finally:
-      shutil.rmtree(temp_path, ignore_errors=True)
-
   def Install(device):
     ClearFakeModules(device)
-    if fake_modules:
+    if fake_modules and ShouldWarnFakeFeatureModuleInstallFlag(device):
       # Print warning if command line is not set up for fake modules.
-      if ShouldWarnFakeFeatureModuleInstallFlag(device):
-        msg = ('Command line has no %s: Fake modules will be ignored.' %
-               FAKE_FEATURE_MODULE_INSTALL)
-        print(_Colorize(msg, colorama.Fore.YELLOW + colorama.Style.BRIGHT))
+      msg = ('Command line has no %s: Fake modules will be ignored.' %
+             FAKE_FEATURE_MODULE_INSTALL)
+      print(_Colorize(msg, colorama.Fore.YELLOW + colorama.Style.BRIGHT))
 
-    InstallFakeModules(device)
-
-    # NOTE: For now, installation requires running 'bundletool install-apks'.
-    # TODO(digit): Add proper support for bundles to devil instead, then use it.
-    install_cmd_args = [
-        'install-apks', '--apks=' + bundle_apks, '--allow-downgrade',
-        '--adb=' + adb_wrapper.AdbWrapper.GetAdbPath(),
-        '--device-id=' + device.serial
-    ]
-    if modules:
-      install_cmd_args += ['--modules=' + ','.join(modules)]
-    bundletool.RunBundleTool(install_cmd_args)
+    device.Install(
+        apk_helper_instance,
+        modules=modules,
+        fake_modules=fake_modules,
+        allow_downgrade=True)
 
   # Basic checks for |modules| and |fake_modules|.
   # * |fake_modules| cannot include 'base'.
   # * If |fake_modules| is given, ensure |modules| includes 'base'.
-  # * They must be disjoint.
+  # * They must be disjoint (checked by device.Install).
   modules_set = set(modules) if modules else set()
   fake_modules_set = set(fake_modules) if fake_modules else set()
   if BASE_MODULE in fake_modules_set:
@@ -250,8 +180,6 @@ def _InstallBundle(devices, bundle_apks, package_name, command_line_flags_file,
   if fake_modules_set and BASE_MODULE not in modules_set:
     raise Exception(
         '\'-f FAKE\' must be accompanied by \'-m {}\''.format(BASE_MODULE))
-  if fake_modules_set.intersection(modules_set):
-    raise Exception('\'-m\' and \'-f\' entries must be disjoint.')
 
   logging.info('Installing bundle.')
   device_utils.DeviceUtils.parallel(devices).pMap(Install)
@@ -781,7 +709,11 @@ def _RunLogcat(device, package_name, mapping_path, verbose):
       try:
         logcat_processor.ProcessLine(line, fast)
       except:
-        sys.stderr.write('Failed to process line: ' + line)
+        sys.stderr.write('Failed to process line: ' + line + '\n')
+        # Skip stack trace for the common case of the adb server being
+        # restarted.
+        if 'unexpected EOF' in line:
+          sys.exit(1)
         raise
       if fast and nonce in line:
         fast = False
@@ -940,7 +872,7 @@ class _Command(object):
   long_description = None
   needs_package_name = False
   needs_output_directory = False
-  needs_apk_path = False
+  needs_apk_helper = False
   supports_incremental = False
   accepts_command_line_flags = False
   accepts_args = False
@@ -1015,13 +947,12 @@ class _Command(object):
             help=argparse.SUPPRESS if self._from_wrapper_script else (
                 "App's package name."))
 
-    if self.needs_apk_path or self.needs_package_name:
+    if self.needs_apk_helper or self.needs_package_name:
       # Adding this argument to the subparser would override the set_defaults()
       # value set by on the parent parser (even if None).
       if not self._from_wrapper_script and not self.is_bundle:
-        group.add_argument('--apk-path',
-                           required=self.needs_apk_path,
-                           help='Path to .apk')
+        group.add_argument(
+            '--apk-path', required=self.needs_apk_helper, help='Path to .apk')
 
     if self.supports_incremental:
       group.add_argument('--incremental',
@@ -1051,6 +982,20 @@ class _Command(object):
 
     self._RegisterExtraArgs(group)
 
+  def _CreateApkHelper(self, args, incremental_apk_path, install_dict):
+    """Returns true iff self.apk_helper was created and assigned."""
+    if self.apk_helper is None:
+      if args.apk_path:
+        self.apk_helper = apk_helper.ToHelper(args.apk_path)
+      elif incremental_apk_path:
+        self.install_dict = install_dict
+        self.apk_helper = apk_helper.ToHelper(incremental_apk_path)
+      elif self.is_bundle:
+        _GenerateBundleApks(self.bundle_generation_info)
+        self.apk_helper = apk_helper.ToHelper(
+            self.bundle_generation_info.bundle_apks_path)
+    return self.apk_helper is not None
+
   def ProcessArgs(self, args):
     self.args = args
     # Ensure these keys always exist. They are set by wrapper scripts, but not
@@ -1059,6 +1004,7 @@ class _Command(object):
     args.__dict__.setdefault('incremental_json', None)
 
     incremental_apk_path = None
+    install_dict = None
     if args.incremental_json and not (self.supports_incremental and
                                       args.non_incremental):
       with open(args.incremental_json) as f:
@@ -1084,29 +1030,26 @@ class _Command(object):
         self._parser.error('Both incremental and non-incremental apks exist. '
                            'Select using --incremental or --non-incremental')
 
-    if ((self.needs_apk_path and not self.is_bundle) or args.apk_path or
-        incremental_apk_path):
-      if args.apk_path:
-        self.apk_helper = apk_helper.ToHelper(args.apk_path)
-      elif incremental_apk_path:
-        self.install_dict = install_dict
-        self.apk_helper = apk_helper.ToHelper(incremental_apk_path)
-      else:
-        self._parser.error('Apk is not built.')
+
+    # Gate apk_helper creation with _CreateApkHelper since for bundles it takes
+    # a while to unpack the apks file from the aab file, so avoid this slowdown
+    # for simple commands that don't need apk_helper.
+    if self.needs_apk_helper:
+      if not self._CreateApkHelper(args, incremental_apk_path, install_dict):
+        self._parser.error('App is not built.')
 
     if self.needs_package_name and not args.package_name:
-      if self.apk_helper:
+      if self._CreateApkHelper(args, incremental_apk_path, install_dict):
         args.package_name = self.apk_helper.GetPackageName()
       elif self._from_wrapper_script:
-        self._parser.error('Apk is not built.')
+        self._parser.error('App is not built.')
       else:
         self._parser.error('One of --package-name or --apk-path is required.')
 
     self.devices = []
     if self.need_device_args:
-      # See https://crbug.com/887964 regarding bundle support in apk_helper.
       abis = None
-      if not self.is_bundle and self.apk_helper is not None:
+      if self._CreateApkHelper(args, incremental_apk_path, install_dict):
         abis = self.apk_helper.GetAbis()
       self.devices = device_utils.DeviceUtils.HealthyDevices(
           device_arg=args.devices,
@@ -1114,7 +1057,7 @@ class _Command(object):
           default_retries=0,
           abis=abis)
       # TODO(agrieve): Device cache should not depend on output directory.
-      #     Maybe put int /tmp?
+      #     Maybe put into /tmp?
       _LoadDeviceCaches(self.devices, args.output_directory)
 
       try:
@@ -1142,12 +1085,10 @@ class _DevicesCommand(_Command):
 
 class _PackageInfoCommand(_Command):
   name = 'package-info'
-  # TODO(ntfschr): Support this by figuring out how to construct
-  # self.apk_helper for bundles (http://crbug.com/952443).
-  description = 'Show various attributes of this APK.'
+  description = 'Show various attributes of this app.'
   need_device_args = False
   needs_package_name = True
-  needs_apk_path = True
+  needs_apk_helper = True
 
   def Run(self):
     # Format all (even ints) as strings, to handle cases where APIs return None
@@ -1162,7 +1103,7 @@ class _PackageInfoCommand(_Command):
 class _InstallCommand(_Command):
   name = 'install'
   description = 'Installs the APK or bundle to one or more devices.'
-  needs_apk_path = True
+  needs_apk_helper = True
   supports_incremental = True
 
   def _RegisterExtraArgs(self, group):
@@ -1183,10 +1124,7 @@ class _InstallCommand(_Command):
 
   def Run(self):
     if self.is_bundle:
-      # Store .apks file beside the .aab file so that it gets cached.
-      output_path = self.bundle_generation_info.bundle_apks_path
-      _GenerateBundleApks(self.bundle_generation_info, output_path)
-      _InstallBundle(self.devices, output_path, self.args.package_name,
+      _InstallBundle(self.devices, self.apk_helper, self.args.package_name,
                      self.args.command_line_flags_file, self.args.module,
                      self.args.fake)
     else:
@@ -1207,13 +1145,9 @@ class _SetWebViewProviderCommand(_Command):
   description = ("Sets the device's WebView provider to this APK's "
                  "package name.")
   needs_package_name = True
+  needs_apk_helper = True
 
   def Run(self):
-    if self.is_bundle:
-      # TODO(ntfschr): Support this by figuring out how to construct
-      # self.apk_helper for bundles (http://crbug.com/952443).
-      raise Exception(
-          'Switching WebView providers not supported for bundles yet!')
     if not _IsWebViewProvider(self.apk_helper):
       raise Exception('This package does not have a WebViewLibrary meta-data '
                       'tag. Are you sure it contains a WebView implementation?')
@@ -1538,7 +1472,7 @@ class _BuildBundleApks(_Command):
   def Run(self):
     _GenerateBundleApks(
         self.bundle_generation_info,
-        self.args.output_apks,
+        output_path=self.args.output_apks,
         minimal=self.args.minimal,
         minimal_sdk_version=self.args.sdk_version,
         mode=self.args.build_mode)
@@ -1553,6 +1487,55 @@ class _ManifestCommand(_Command):
     bundletool.RunBundleTool([
         'dump', 'manifest', '--bundle', self.bundle_generation_info.bundle_path
     ])
+
+
+class _StackCommand(_Command):
+  name = 'stack'
+  description = 'Decodes an Android stack.'
+  need_device_args = False
+
+  def _RegisterExtraArgs(self, group):
+    group.add_argument(
+        'file',
+        nargs='?',
+        help='File to decode. If not specified, stdin is processed.')
+
+  def Run(self):
+    try:
+      # In many cases, stack decoding requires APKs to map trace lines to native
+      # libraries. Create a temporary directory, and either unpack a bundle's
+      # APKS into it, or simply symlink the standalone APK into it. This
+      # provides an unambiguous set of APK files for the stack decoding process
+      # to inspect.
+      apks_directory = tempfile.mkdtemp()
+
+      if self.is_bundle:
+        # TODO(wnwen): Use apk_helper instead.
+        _GenerateBundleApks(self.bundle_generation_info)
+        with zipfile.ZipFile(self.bundle_generation_info.bundle_apks_path,
+                             'r') as archive:
+          files_to_extract = [
+              f for f in archive.namelist() if f.endswith('-master.apk')
+          ]
+          archive.extractall(apks_directory, files_to_extract)
+      else:
+        output = os.path.join(apks_directory,
+                              os.path.basename(self.args.apk_path))
+        os.symlink(self.args.apk_path, output)
+
+      stack_script = os.path.join(
+          constants.host_paths.ANDROID_PLATFORM_DEVELOPMENT_SCRIPTS_PATH,
+          'stack.py')
+      stack_command = [
+          stack_script, '--output-directory', self.args.output_directory,
+          '--apks-directory', apks_directory
+      ]
+      if self.args.file:
+        stack_command.append(self.args.file)
+      subprocess.call(stack_command)
+
+    finally:
+      shutil.rmtree(apks_directory)
 
 
 # Shared commands for regular APKs and app bundles.
@@ -1575,6 +1558,7 @@ _COMMANDS = [
     _CompileDexCommand,
     _ProfileCommand,
     _RunCommand,
+    _StackCommand,
 ]
 
 # Commands specific to app bundles.
@@ -1607,9 +1591,9 @@ def _RunInternal(parser, output_directory=None, bundle_generation_info=None):
   from_wrapper_script = bool(output_directory)
   args = _ParseArgs(parser, from_wrapper_script, bool(bundle_generation_info))
   run_tests_helper.SetLogLevel(args.verbose_count)
-  args.command.ProcessArgs(args)
   if bundle_generation_info:
     args.command.RegisterBundleGenerationInfo(bundle_generation_info)
+  args.command.ProcessArgs(args)
   args.command.Run()
   # Incremental install depends on the cache being cleared when uninstalling.
   if args.command.name != 'uninstall':

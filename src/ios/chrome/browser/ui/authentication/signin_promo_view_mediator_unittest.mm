@@ -11,6 +11,7 @@
 #include "ios/chrome/browser/signin/chrome_identity_service_observer_bridge.h"
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view.h"
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_configurator.h"
+#import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_constants.h"
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_consumer.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -47,7 +48,7 @@ class SigninPromoViewMediatorTest : public PlatformTest {
     // in the test.
     EXPECT_FALSE(ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()
                      ->HasPendingCallback());
-    [mediator_ signinPromoViewRemoved];
+    [mediator_ signinPromoViewIsRemoved];
     EXPECT_EQ(ios::SigninPromoViewState::Invalid,
               mediator_.signinPromoViewState);
     mediator_ = nil;
@@ -267,13 +268,13 @@ TEST_F(SigninPromoViewMediatorTest, ConfigureSigninPromoViewWithWarmAndCold) {
 }
 
 // Tests the view state before and after calling -[SigninPromoViewMediator
-// signinPromoViewVisible].
+// signinPromoViewIsVisible].
 TEST_F(SigninPromoViewMediatorTest, SigninPromoViewStateVisible) {
   CreateMediator(signin_metrics::AccessPoint::ACCESS_POINT_RECENT_TABS);
   // Test initial state.
   EXPECT_EQ(ios::SigninPromoViewState::NeverVisible,
             mediator_.signinPromoViewState);
-  [mediator_ signinPromoViewVisible];
+  [mediator_ signinPromoViewIsVisible];
   // Test state once the sign-in promo view is visible.
   EXPECT_EQ(ios::SigninPromoViewState::Unused, mediator_.signinPromoViewState);
 }
@@ -281,7 +282,7 @@ TEST_F(SigninPromoViewMediatorTest, SigninPromoViewStateVisible) {
 // Tests the view state while signing in.
 TEST_F(SigninPromoViewMediatorTest, SigninPromoViewStateSignedin) {
   CreateMediator(signin_metrics::AccessPoint::ACCESS_POINT_RECENT_TABS);
-  [mediator_ signinPromoViewVisible];
+  [mediator_ signinPromoViewIsVisible];
   __block ShowSigninCommandCompletionCallback completion;
   ShowSigninCommandCompletionCallback completion_arg =
       [OCMArg checkWithBlock:^BOOL(ShowSigninCommandCompletionCallback value) {
@@ -297,14 +298,14 @@ TEST_F(SigninPromoViewMediatorTest, SigninPromoViewStateSignedin) {
                                PROMO_ACTION_NEW_ACCOUNT_NO_EXISTING_ACCOUNT
                         completion:completion_arg]);
   [mediator_ signinPromoViewDidTapSigninWithNewAccount:signin_promo_view_];
-  EXPECT_TRUE(mediator_.isSigninInProgress);
+  EXPECT_TRUE(mediator_.signinInProgress);
   EXPECT_EQ(ios::SigninPromoViewState::UsedAtLeastOnce,
             mediator_.signinPromoViewState);
   EXPECT_NE(nil, (id)completion);
   // Stop sign-in.
   OCMExpect([consumer_ signinDidFinish]);
   completion(YES);
-  EXPECT_FALSE(mediator_.isSigninInProgress);
+  EXPECT_FALSE(mediator_.signinInProgress);
   EXPECT_EQ(ios::SigninPromoViewState::UsedAtLeastOnce,
             mediator_.signinPromoViewState);
 }
@@ -314,7 +315,7 @@ TEST_F(SigninPromoViewMediatorTest, SigninPromoViewStateSignedin) {
 TEST_F(SigninPromoViewMediatorTest,
        SigninPromoViewNoUpdateNotificationWhileSignin) {
   CreateMediator(signin_metrics::AccessPoint::ACCESS_POINT_RECENT_TABS);
-  [mediator_ signinPromoViewVisible];
+  [mediator_ signinPromoViewIsVisible];
   __block ShowSigninCommandCompletionCallback completion;
   ShowSigninCommandCompletionCallback completion_arg =
       [OCMArg checkWithBlock:^BOOL(ShowSigninCommandCompletionCallback value) {
@@ -345,7 +346,7 @@ TEST_F(SigninPromoViewMediatorTest,
        SigninPromoViewNoUpdateNotificationWhileSignin2) {
   AddDefaultIdentity();
   CreateMediator(signin_metrics::AccessPoint::ACCESS_POINT_RECENT_TABS);
-  [mediator_ signinPromoViewVisible];
+  [mediator_ signinPromoViewIsVisible];
   __block ShowSigninCommandCompletionCallback completion;
   ShowSigninCommandCompletionCallback completion_arg =
       [OCMArg checkWithBlock:^BOOL(ShowSigninCommandCompletionCallback value) {

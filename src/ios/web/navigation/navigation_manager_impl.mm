@@ -94,10 +94,12 @@ void NavigationManagerImpl::UpdatePendingItemUserAgentType(
 
   switch (user_agent_override_option) {
     case UserAgentOverrideOption::DESKTOP:
-      pending_item->SetUserAgentType(UserAgentType::DESKTOP);
+      pending_item->SetUserAgentType(UserAgentType::DESKTOP,
+                                     /*update_inherited_user_agent =*/true);
       break;
     case UserAgentOverrideOption::MOBILE:
-      pending_item->SetUserAgentType(UserAgentType::MOBILE);
+      pending_item->SetUserAgentType(UserAgentType::MOBILE,
+                                     /*update_inherited_user_agent =*/true);
       break;
     case UserAgentOverrideOption::INHERIT: {
       // Propagate the last committed non-native item's UserAgentType if there
@@ -105,7 +107,9 @@ void NavigationManagerImpl::UpdatePendingItemUserAgentType(
       DCHECK(!inherit_from_item ||
              inherit_from_item->GetUserAgentType() != UserAgentType::NONE);
       if (inherit_from_item) {
-        pending_item->SetUserAgentType(inherit_from_item->GetUserAgentType());
+        pending_item->SetUserAgentType(
+            inherit_from_item->GetUserAgentForInheritance(),
+            /*update_inherited_user_agent =*/true);
       }
       break;
     }
@@ -444,6 +448,7 @@ void NavigationManagerImpl::ReloadWithUserAgentType(
     case UserAgentType::MOBILE:
       params.user_agent_override_option = UserAgentOverrideOption::MOBILE;
       break;
+    case UserAgentType::AUTOMATIC:
     case UserAgentType::NONE:
       NOTREACHED();
   }
@@ -506,10 +511,11 @@ NavigationManagerImpl::CreateNavigationItemWithRewriters(
   }
 
   // The URL should not be changed to app-specific URL if the load is
-  // renderer-initiated requested by non-app-specific URL. Pages with
-  // app-specific urls have elevated previledges and should not be allowed to
-  // open app-specific URLs.
-  if (initiation_type == web::NavigationInitiationType::RENDERER_INITIATED &&
+  // renderer-initiated or a reload requested by non-app-specific URL. Pages
+  // with app-specific urls have elevated previledges and should not be allowed
+  // to open app-specific URLs.
+  if ((initiation_type == web::NavigationInitiationType::RENDERER_INITIATED ||
+       PageTransitionCoreTypeIs(transition, ui::PAGE_TRANSITION_RELOAD)) &&
       loaded_url != url && web::GetWebClient()->IsAppSpecificURL(loaded_url) &&
       !web::GetWebClient()->IsAppSpecificURL(previous_url)) {
     loaded_url = url;

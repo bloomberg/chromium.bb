@@ -36,24 +36,27 @@ class ProcessTable : public SqliteTable {
     kPid = 2,
     kStartTs = 3,
     kEndTs = 4,
-    kParentUpid = 5
+    kParentUpid = 5,
+    kUid = 6
   };
   class Cursor : public SqliteTable::Cursor {
    public:
     Cursor(ProcessTable*);
 
     // Implementation of Table::Cursor.
-    int Filter(const QueryConstraints&, sqlite3_value**) override;
+    int Filter(const QueryConstraints&,
+               sqlite3_value**,
+               FilterHistory) override;
     int Next() override;
     int Eof() override;
     int Column(sqlite3_context*, int N) override;
 
    private:
     const TraceStorage* const storage_;
-    UniquePid min;
-    UniquePid max;
-    UniquePid current;
-    bool desc;
+    UniquePid min_ = 0;
+    UniquePid max_ = 0;
+    uint32_t index_ = 0;
+    bool desc_ = false;
   };
 
   static void RegisterTable(sqlite3* db, const TraceStorage* storage);

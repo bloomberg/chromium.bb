@@ -23,8 +23,8 @@
 #import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
 #import "ios/chrome/browser/overlays/public/overlay_presenter.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
-#import "ios/chrome/browser/ui/badges/badge_button_action_handler.h"
 #import "ios/chrome/browser/ui/badges/badge_button_factory.h"
+#import "ios/chrome/browser/ui/badges/badge_delegate.h"
 #import "ios/chrome/browser/ui/badges/badge_mediator.h"
 #import "ios/chrome/browser/ui/badges/badge_view_controller.h"
 #include "ios/chrome/browser/ui/commands/browser_commands.h"
@@ -72,10 +72,10 @@ const char* const kOmniboxQueryLocationAuthorizationStatusHistogram =
 const int kLocationAuthorizationStatusCount = 5;
 }  // namespace
 
-@interface LocationBarCoordinator ()<LoadQueryCommands,
-                                     LocationBarDelegate,
-                                     LocationBarViewControllerDelegate,
-                                     LocationBarConsumer> {
+@interface LocationBarCoordinator () <LoadQueryCommands,
+                                      LocationBarDelegate,
+                                      LocationBarViewControllerDelegate,
+                                      LocationBarConsumer> {
   // API endpoint for omnibox.
   std::unique_ptr<WebOmniboxEditControllerImpl> _editController;
   // Observer that updates |viewController| for fullscreen events.
@@ -173,21 +173,23 @@ const int kLocationAuthorizationStatusCount = 5;
   self.omniboxPopupCoordinator.webStateList = self.webStateList;
   [self.omniboxPopupCoordinator start];
 
-  // Create BadgeMediator and set the viewController as its consumer.
-  BadgeButtonActionHandler* actionHandler =
-      [[BadgeButtonActionHandler alloc] init];
-  actionHandler.dispatcher = static_cast<id<InfobarCommands>>(self.dispatcher);
-  BadgeButtonFactory* buttonFactory =
-      [[BadgeButtonFactory alloc] initWithActionHandler:actionHandler];
+  // Create button factory that wil be used by the ViewController to get
+  // BadgeButtons for a BadgeType.
+  BadgeButtonFactory* buttonFactory = [[BadgeButtonFactory alloc] init];
   buttonFactory.incognito = isIncognito;
   self.badgeViewController =
       [[BadgeViewController alloc] initWithButtonFactory:buttonFactory];
   [self.viewController addChildViewController:self.badgeViewController];
   [self.viewController setBadgeView:self.badgeViewController.view];
   [self.badgeViewController didMoveToParentViewController:self.viewController];
+  // Create BadgeMediator and set the viewController as its consumer.
   self.badgeMediator =
       [[BadgeMediator alloc] initWithConsumer:self.badgeViewController
                                  webStateList:self.webStateList];
+  self.badgeMediator.dispatcher =
+      static_cast<id<InfobarCommands, BrowserCoordinatorCommands>>(
+          self.dispatcher);
+  buttonFactory.delegate = self.badgeMediator;
   FullscreenController* fullscreenController =
       FullscreenControllerFactory::GetForBrowserState(self.browserState);
   _badgeFullscreenUIUpdater = std::make_unique<FullscreenUIUpdater>(
@@ -224,7 +226,6 @@ const int kLocationAuthorizationStatusCount = 5;
 
   _badgeFullscreenUIUpdater = nullptr;
   _omniboxFullscreenUIUpdater = nullptr;
-
   self.started = NO;
 }
 

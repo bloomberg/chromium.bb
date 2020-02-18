@@ -9,6 +9,14 @@
 
 namespace ash {
 
+namespace {
+
+SplitViewController* split_view_controller() {
+  return SplitViewController::Get(Shell::GetPrimaryRootWindow());
+}
+
+}  // namespace
+
 SplitViewTestApi::SplitViewTestApi() = default;
 
 SplitViewTestApi::~SplitViewTestApi() = default;
@@ -28,11 +36,11 @@ void SplitViewTestApi::SnapWindow(
       position = SplitViewController::RIGHT;
       break;
   }
-  Shell::Get()->split_view_controller()->SnapWindow(window, position);
+  split_view_controller()->SnapWindow(window, position);
 }
 
 void SplitViewTestApi::SwapWindows() {
-  Shell::Get()->split_view_controller()->SwapWindows();
+  split_view_controller()->SwapWindows();
 }
 
 }  // namespace ash

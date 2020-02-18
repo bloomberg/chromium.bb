@@ -24,8 +24,7 @@
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "content/shell/browser/shell_javascript_dialog_manager.h"
-#include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/system/buffer.h"
 #include "net/dns/mock_host_resolver.h"
 #include "services/device/public/cpp/generic_sensor/platform_sensor_configuration.h"
@@ -104,8 +103,9 @@ class DeviceSensorBrowserTest : public ContentBrowserTest {
   std::unique_ptr<net::EmbeddedTestServer> https_embedded_test_server_;
 
  private:
-  void BindSensorProvider(device::mojom::SensorProviderRequest request) {
-    sensor_provider_->Bind(std::move(request));
+  void BindSensorProvider(
+      mojo::PendingReceiver<device::mojom::SensorProvider> receiver) {
+    sensor_provider_->Bind(std::move(receiver));
   }
 };
 

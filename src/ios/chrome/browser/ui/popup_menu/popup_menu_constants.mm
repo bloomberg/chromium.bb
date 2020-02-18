@@ -13,6 +13,7 @@ NSString* const kPopupMenuToolsMenuTableViewId =
 NSString* const kPopupMenuNavigationTableViewId =
     @"kPopupMenuNavigationTableViewId";
 
+NSString* const kToolsMenuDownloadsId = @"kToolsMenuDownloadsId";
 NSString* const kToolsMenuReload = @"kToolsMenuReload";
 NSString* const kToolsMenuStop = @"kToolsMenuStop";
 NSString* const kToolsMenuNewTabId = @"kToolsMenuNewTabId";
@@ -42,3 +43,4 @@ NSString* const kToolsMenuSearch = @"kToolsMenuSearch";
 NSString* const kToolsMenuIncognitoSearch = @"kToolsMenuIncognitoSearch";
 NSString* const kToolsMenuQRCodeSearch = @"kToolsMenuQRCodeSearch";
 NSString* const kToolsMenuCopiedImageSearch = @"kToolsMenuCopiedImageSearch";
+NSString* const kToolsMenuTextZoom = @"kToolsMenuTextZoom";

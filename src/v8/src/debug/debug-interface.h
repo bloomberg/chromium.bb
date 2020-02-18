@@ -5,6 +5,8 @@
 #ifndef V8_DEBUG_DEBUG_INTERFACE_H_
 #define V8_DEBUG_DEBUG_INTERFACE_H_
 
+#include <memory>
+
 #include "include/v8-inspector.h"
 #include "include/v8-util.h"
 #include "include/v8.h"
@@ -157,8 +159,10 @@ class WasmScript : public Script {
 
   int NumFunctions() const;
   int NumImportedFunctions() const;
+  MemorySpan<const uint8_t> Bytecode() const;
 
   std::pair<int, int> GetFunctionRange(int function_index) const;
+  int GetContainingFunction(int byte_offset) const;
 
   debug::WasmDisassembly DisassembleFunction(int function_index) const;
   uint32_t GetFunctionHash(int function_index);
@@ -468,9 +472,15 @@ enum class NativeAccessorType {
 
 int64_t GetNextRandomInt64(v8::Isolate* isolate);
 
+enum class EvaluateGlobalMode {
+  kDefault,
+  kDisableBreaks,
+  kDisableBreaksAndThrowOnSideEffect
+};
+
 V8_EXPORT_PRIVATE v8::MaybeLocal<v8::Value> EvaluateGlobal(
-    v8::Isolate* isolate, v8::Local<v8::String> source,
-    bool throw_on_side_effect);
+    v8::Isolate* isolate, v8::Local<v8::String> source, EvaluateGlobalMode mode,
+    bool repl_mode = false);
 
 int GetDebuggingId(v8::Local<v8::Function> function);
 

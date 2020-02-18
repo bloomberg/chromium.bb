@@ -17,10 +17,12 @@
 #include "chrome/browser/chromeos/printing/automatic_usb_printer_configurer.h"
 #include "chrome/browser/chromeos/printing/ppd_provider_factory.h"
 #include "chrome/browser/chromeos/printing/ppd_resolution_tracker.h"
+#include "chrome/browser/chromeos/printing/print_servers_provider.h"
 #include "chrome/browser/chromeos/printing/printer_configurer.h"
 #include "chrome/browser/chromeos/printing/printer_event_tracker.h"
 #include "chrome/browser/chromeos/printing/printer_event_tracker_factory.h"
 #include "chrome/browser/chromeos/printing/printers_map.h"
+#include "chrome/browser/chromeos/printing/server_printers_provider.h"
 #include "chrome/browser/chromeos/printing/synced_printers_manager.h"
 #include "chrome/browser/chromeos/printing/synced_printers_manager_factory.h"
 #include "chrome/browser/chromeos/printing/usb_printer_detector.h"
@@ -29,10 +31,12 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
+#include "components/device_event_log/device_event_log.h"
 #include "components/policy/policy_constants.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_member.h"
 #include "components/prefs/pref_service.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
 namespace chromeos {
@@ -45,20 +49,19 @@ class CupsPrintersManagerImpl
  public:
   // Identifiers for each of the underlying PrinterDetectors this
   // class observes.
-  enum DetectorIds {
-    kUsbDetector,
-    kZeroconfDetector,
-  };
+  enum DetectorIds { kUsbDetector, kZeroconfDetector, kPrintServerDetector };
 
-  CupsPrintersManagerImpl(SyncedPrintersManager* synced_printers_manager,
-                          std::unique_ptr<PrinterDetector> usb_detector,
-                          std::unique_ptr<PrinterDetector> zeroconf_detector,
-                          scoped_refptr<PpdProvider> ppd_provider,
-                          std::unique_ptr<PrinterConfigurer> printer_configurer,
-                          std::unique_ptr<UsbPrinterNotificationController>
-                              usb_notification_controller,
-                          PrinterEventTracker* event_tracker,
-                          PrefService* pref_service)
+  CupsPrintersManagerImpl(
+      SyncedPrintersManager* synced_printers_manager,
+      std::unique_ptr<PrinterDetector> usb_detector,
+      std::unique_ptr<PrinterDetector> zeroconf_detector,
+      scoped_refptr<PpdProvider> ppd_provider,
+      std::unique_ptr<PrinterConfigurer> printer_configurer,
+      std::unique_ptr<UsbPrinterNotificationController>
+          usb_notification_controller,
+      std::unique_ptr<ServerPrintersProvider> server_printers_provider,
+      PrinterEventTracker* event_tracker,
+      PrefService* pref_service)
       : synced_printers_manager_(synced_printers_manager),
         synced_printers_manager_observer_(this),
         usb_detector_(std::move(usb_detector)),
@@ -68,6 +71,7 @@ class CupsPrintersManagerImpl
         auto_usb_printer_configurer_(std::move(printer_configurer),
                                      this,
                                      usb_notification_controller_.get()),
+        server_printers_provider_(std::move(server_printers_provider)),
         event_tracker_(event_tracker) {
     // Add the |auto_usb_printer_configurer_| as an observer.
     AddObserver(&auto_usb_printer_configurer_);
@@ -75,10 +79,8 @@ class CupsPrintersManagerImpl
     ash::GetNetworkConfigService(
         remote_cros_network_config_.BindNewPipeAndPassReceiver());
 
-    chromeos::network_config::mojom::CrosNetworkConfigObserverPtr observer_ptr;
-    cros_network_config_observer_receiver_.Bind(
-        mojo::MakeRequest(&observer_ptr));
-    remote_cros_network_config_->AddObserver(std::move(observer_ptr));
+    remote_cros_network_config_->AddObserver(
+        cros_network_config_observer_receiver_.BindNewPipeAndPassRemote());
 
     // Prime the printer cache with the saved and enterprise printers.
     printers_.ReplacePrintersInClass(
@@ -102,6 +104,10 @@ class CupsPrintersManagerImpl
         base::BindRepeating(&CupsPrintersManagerImpl::OnPrintersFound,
                             weak_ptr_factory_.GetWeakPtr(), kZeroconfDetector));
     OnPrintersFound(kZeroconfDetector, zeroconf_detector_->GetPrinters());
+
+    server_printers_provider_->RegisterPrintersFoundCallback(
+        base::BindRepeating(&CupsPrintersManagerImpl::OnPrintersUpdated,
+                            weak_ptr_factory_.GetWeakPtr()));
 
     native_printers_allowed_.Init(prefs::kUserNativePrintersAllowed,
                                   pref_service);
@@ -248,20 +254,13 @@ class CupsPrintersManagerImpl
     // detected printers.
     ClearNetworkDetectedPrinters();
   }
-
-  // mojom::CrosNetworkConfigObserver implementation.
   void OnNetworkStateChanged(
       chromeos::network_config::mojom::NetworkStatePropertiesPtr /* network */)
       override {}
-
-  // mojom::CrosNetworkConfigObserver implementation.
   void OnNetworkStateListChanged() override {}
-
-  // mojom::CrosNetworkConfigObserver implementation.
   void OnDeviceStateListChanged() override {}
-
-  // mojom::CrosNetworkConfigObserver implementation.
   void OnVpnProvidersChanged() override {}
+  void OnNetworkCertificatesChanged() override {}
 
   // Callback for PrinterDetectors.
   void OnPrintersFound(
@@ -275,8 +274,22 @@ class CupsPrintersManagerImpl
       case kZeroconfDetector:
         zeroconf_detections_ = printers;
         break;
+      case kPrintServerDetector:
+        servers_detections_ = printers;
+        break;
     }
     RebuildDetectedLists();
+  }
+
+  // Callback for ServerPrintersProvider.
+  void OnPrintersUpdated(bool complete) {
+    const std::vector<PrinterDetector::DetectedPrinter> printers =
+        server_printers_provider_->GetPrinters();
+    if (complete) {
+      PRINTER_LOG(EVENT) << "The list of server printers has been completed. "
+                         << "Number of server printers: " << printers.size();
+    }
+    OnPrintersFound(kPrintServerDetector, printers);
   }
 
  private:
@@ -452,6 +465,7 @@ class CupsPrintersManagerImpl
     ResetNearbyPrintersLists();
     AddDetectedList(usb_detections_);
     AddDetectedList(zeroconf_detections_);
+    AddDetectedList(servers_detections_);
     NotifyObservers({PrinterClass::kAutomatic, PrinterClass::kDiscovered});
   }
 
@@ -491,6 +505,7 @@ class CupsPrintersManagerImpl
   // Source lists for detected printers.
   std::vector<PrinterDetector::DetectedPrinter> usb_detections_;
   std::vector<PrinterDetector::DetectedPrinter> zeroconf_detections_;
+  std::vector<PrinterDetector::DetectedPrinter> servers_detections_;
 
   // Not owned.
   SyncedPrintersManager* const synced_printers_manager_;
@@ -511,6 +526,8 @@ class CupsPrintersManagerImpl
       usb_notification_controller_;
 
   AutomaticUsbPrinterConfigurer auto_usb_printer_configurer_;
+
+  std::unique_ptr<ServerPrintersProvider> server_printers_provider_;
 
   // Not owned
   PrinterEventTracker* const event_tracker_;
@@ -553,6 +570,7 @@ std::unique_ptr<CupsPrintersManager> CupsPrintersManager::Create(
       UsbPrinterDetector::Create(), ZeroconfPrinterDetector::Create(),
       CreatePpdProvider(profile), PrinterConfigurer::Create(profile),
       UsbPrinterNotificationController::Create(profile),
+      ServerPrintersProvider::Create(profile),
       PrinterEventTrackerFactory::GetInstance()->GetForBrowserContext(profile),
       profile->GetPrefs());
 }
@@ -566,13 +584,14 @@ std::unique_ptr<CupsPrintersManager> CupsPrintersManager::CreateForTesting(
     std::unique_ptr<PrinterConfigurer> printer_configurer,
     std::unique_ptr<UsbPrinterNotificationController>
         usb_notification_controller,
+    std::unique_ptr<ServerPrintersProvider> server_printers_provider,
     PrinterEventTracker* event_tracker,
     PrefService* pref_service) {
   return std::make_unique<CupsPrintersManagerImpl>(
       synced_printers_manager, std::move(usb_detector),
       std::move(zeroconf_detector), std::move(ppd_provider),
       std::move(printer_configurer), std::move(usb_notification_controller),
-      event_tracker, pref_service);
+      std::move(server_printers_provider), event_tracker, pref_service);
 }
 
 // static
@@ -580,9 +599,10 @@ void CupsPrintersManager::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(
       prefs::kUserNativePrintersAllowed, true,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+      user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
   registry->RegisterBooleanPref(prefs::kPrintingSendUsernameAndFilenameEnabled,
                                 false);
+  PrintServersProvider::RegisterProfilePrefs(registry);
 }
 
 }  // namespace chromeos

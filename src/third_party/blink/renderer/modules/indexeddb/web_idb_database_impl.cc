@@ -6,7 +6,7 @@
 
 #include "base/format_macros.h"
 #include "mojo/public/cpp/bindings/self_owned_associated_receiver.h"
-#include "third_party/blink/public/platform/modules/indexeddb/web_idb_database_exception.h"
+#include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-blink.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_database_error.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_key_range.h"
 #include "third_party/blink/renderer/modules/indexeddb/indexed_db_blink_mojom_traits.h"
@@ -37,9 +37,9 @@ void WebIDBDatabaseImpl::CreateTransaction(
     int64_t transaction_id,
     const Vector<int64_t>& object_store_ids,
     mojom::IDBTransactionMode mode,
-    bool relaxed_durability) {
+    mojom::IDBTransactionDurability durability) {
   database_->CreateTransaction(std::move(transaction_receiver), transaction_id,
-                               object_store_ids, mode, relaxed_durability);
+                               object_store_ids, mode, durability);
 }
 
 void WebIDBDatabaseImpl::Close() {

@@ -133,7 +133,7 @@ class GclientApi(recipe_api.RecipeApi):
     rev_map = cfg.got_revision_mapping.as_jsonish()
     reverse_rev_map = cfg.got_revision_reverse_mapping.as_jsonish()
     combined_length = len(rev_map) + len(reverse_rev_map)
-    reverse_rev_map.update({v: k for k, v in rev_map.iteritems()})
+    reverse_rev_map.update({v: k for k, v in rev_map.items()})
 
     # Make sure we never have duplicate values in the old map.
     assert combined_length == len(reverse_rev_map)
@@ -192,13 +192,14 @@ class GclientApi(recipe_api.RecipeApi):
                  **kwargs)
     finally:
       result = self.m.step.active_result
-      solutions = result.json.output['solutions']
-      for propname, path in sorted(
-          self.got_revision_reverse_mapping(cfg).iteritems()):
-        # gclient json paths always end with a slash
-        info = solutions.get(path + '/') or solutions.get(path)
-        if info:
-          result.presentation.properties[propname] = info['revision']
+      if result.json.output is not None:
+        solutions = result.json.output['solutions']
+        for propname, path in sorted(
+            self.got_revision_reverse_mapping(cfg).items()):
+          # gclient json paths always end with a slash
+          info = solutions.get(path + '/') or solutions.get(path)
+          if info:
+            result.presentation.properties[propname] = info['revision']
 
     return result
 
@@ -213,7 +214,7 @@ class GclientApi(recipe_api.RecipeApi):
     """
     cfg = gclient_config or self.c
 
-    for prop, custom_var in cfg.parent_got_revision_mapping.iteritems():
+    for prop, custom_var in cfg.parent_got_revision_mapping.items():
       val = str(self.m.properties.get(prop, ''))
       # TODO(infra): Fix coverage.
       if val:  # pragma: no cover
@@ -282,7 +283,7 @@ class GclientApi(recipe_api.RecipeApi):
             for cur_file in files:
               if cur_file.endswith('index.lock'):
                 path_to_file = os.path.join(path, cur_file)
-                print 'deleting %s' % path_to_file
+                print('deleting %s' % path_to_file)
                 os.remove(path_to_file)
       """,
       args=[self.m.path['start_dir']],
@@ -336,7 +337,7 @@ class GclientApi(recipe_api.RecipeApi):
       return rel_path
 
     # repo_path_map keys may be non-canonical.
-    for key, (rel_path, _) in cfg.repo_path_map.iteritems():
+    for key, (rel_path, _) in cfg.repo_path_map.items():
       if self._canonicalize_repo_url(key) == repo_url:
         return rel_path
 
@@ -347,7 +348,7 @@ class GclientApi(recipe_api.RecipeApi):
     return None
 
   def set_patch_repo_revision(self, gclient_config=None):
-    """Updates config revision corresponding to patch_project.
+    """Updates config revision corresponding to patched project.
 
     Useful for bot_update only, as this is the only consumer of gclient's config
     revision map. This doesn't overwrite the revision if it was already set.

@@ -12,10 +12,13 @@ import android.os.Handler;
 import android.os.Message;
 import android.os.Process;
 import android.provider.Settings;
-import android.support.annotation.IntDef;
 import android.util.Log;
 import android.webkit.WebSettings;
 
+import androidx.annotation.IntDef;
+
+import org.chromium.android_webview.safe_browsing.AwSafeBrowsingConfigHelper;
+import org.chromium.android_webview.settings.ForceDarkBehavior;
 import org.chromium.android_webview.settings.ForceDarkMode;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
@@ -61,6 +64,15 @@ public class AwSettings {
 
     @ForceDarkMode
     private int mForceDarkMode = ForceDarkMode.FORCE_DARK_AUTO;
+
+    public static final int FORCE_DARK_ONLY = ForceDarkBehavior.FORCE_DARK_ONLY;
+    public static final int MEDIA_QUERY_ONLY = ForceDarkBehavior.MEDIA_QUERY_ONLY;
+    // This option requires RuntimeEnabledFeatures::MetaColorSchemeEnabled()
+    public static final int PREFER_MEDIA_QUERY_OVER_FORCE_DARK =
+            ForceDarkBehavior.PREFER_MEDIA_QUERY_OVER_FORCE_DARK;
+
+    @ForceDarkBehavior
+    private int mForceDarkBehavior = ForceDarkBehavior.PREFER_MEDIA_QUERY_OVER_FORCE_DARK;
 
     // This class must be created on the UI thread. Afterwards, it can be
     // used from any thread. Internally, the class uses a message queue
@@ -229,6 +241,10 @@ public class AwSettings {
 
         void updateCookiePolicyLocked() {
             runOnUiThreadBlockingAndLocked(() -> updateCookiePolicyOnUiThreadLocked());
+        }
+
+        void updateAllowFileAccessLocked() {
+            runOnUiThreadBlockingAndLocked(() -> updateAllowFileAccessOnUiThreadLocked());
         }
     }
 
@@ -413,6 +429,7 @@ public class AwSettings {
         if (TRACE) Log.i(LOGTAG, "setAllowFileAccess=" + allow);
         synchronized (mAwSettingsLock) {
             mAllowFileUrlAccess = allow;
+            mEventHandler.updateAllowFileAccessLocked();
         }
     }
 
@@ -1712,6 +1729,29 @@ public class AwSettings {
         }
     }
 
+    @ForceDarkBehavior
+    public int getForceDarkBehavior() {
+        synchronized (mAwSettingsLock) {
+            return getForceDarkBehaviorLocked();
+        }
+    }
+
+    @CalledByNative
+    @ForceDarkBehavior
+    public int getForceDarkBehaviorLocked() {
+        assert Thread.holdsLock(mAwSettingsLock);
+        return mForceDarkBehavior;
+    }
+
+    public void setForceDarkBehavior(@ForceDarkBehavior int forceDarkBehavior) {
+        synchronized (mAwSettingsLock) {
+            if (mForceDarkBehavior != forceDarkBehavior) {
+                mForceDarkBehavior = forceDarkBehavior;
+                mEventHandler.updateWebkitPreferencesLocked();
+            }
+        }
+    }
+
     @CalledByNative
     private boolean getAllowRunningInsecureContentLocked() {
         assert Thread.holdsLock(mAwSettingsLock);
@@ -1722,6 +1762,18 @@ public class AwSettings {
     private boolean getUseStricMixedContentCheckingLocked() {
         assert Thread.holdsLock(mAwSettingsLock);
         return mMixedContentMode == WebSettings.MIXED_CONTENT_NEVER_ALLOW;
+    }
+
+    @CalledByNative
+    private boolean getAllowMixedContentAutoupgradesLocked() {
+        assert Thread.holdsLock(mAwSettingsLock);
+        // We only allow mixed content autoupgrades (upgrading HTTP subresources to HTTPS in HTTPS
+        // sites) when the mixed content mode is set to MIXED_CONTENT_COMPATIBILITY, which keeps it
+        // in line with the behavior in Chrome. With MIXED_CONTENT_ALWAYS_ALLOW, we disable
+        // autoupgrades since the developer is explicitly allowing mixed content, whereas with
+        // MIXED_CONTENT_NEVER_ALLOW, there is no need to autoupgrade since the content will be
+        // blocked.
+        return mMixedContentMode == WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE;
     }
 
     public boolean getOffscreenPreRaster() {
@@ -1854,6 +1906,14 @@ public class AwSettings {
         }
     }
 
+    private void updateAllowFileAccessOnUiThreadLocked() {
+        assert mEventHandler.mHandler != null;
+        ThreadUtils.assertOnUiThread();
+        if (mNativeAwSettings != 0) {
+            AwSettingsJni.get().updateAllowFileAccessLocked(mNativeAwSettings, AwSettings.this);
+        }
+    }
+
     @NativeMethods
     interface Natives {
         long init(AwSettings caller, WebContents webContents);
@@ -1871,5 +1931,6 @@ public class AwSettings {
         void updateOffscreenPreRasterLocked(long nativeAwSettings, AwSettings caller);
         void updateWillSuppressErrorStateLocked(long nativeAwSettings, AwSettings caller);
         void updateCookiePolicyLocked(long nativeAwSettings, AwSettings caller);
+        void updateAllowFileAccessLocked(long nativeAwSettings, AwSettings caller);
     }
 }

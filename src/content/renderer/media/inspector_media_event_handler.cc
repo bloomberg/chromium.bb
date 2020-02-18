@@ -34,6 +34,10 @@ InspectorMediaEventHandler::InspectorMediaEventHandler(
 // this method is no longer needed. Refactor MediaLogEvent at some point.
 void InspectorMediaEventHandler::SendQueuedMediaEvents(
     std::vector<media::MediaLogEvent> events_to_send) {
+  // If the video player is gone, the whole frame
+  if (video_player_destroyed_)
+    return;
+
   blink::InspectorPlayerEvents events;
   blink::InspectorPlayerProperties properties;
 
@@ -54,6 +58,14 @@ void InspectorMediaEventHandler::SendQueuedMediaEvents(
           event.type == media::MediaLogEvent::MEDIA_DEBUG_LOG_ENTRY) {
         event_type = blink::InspectorPlayerEvent::MESSAGE_EVENT;
       }
+      if (event.params.size() == 0) {
+        blink::InspectorPlayerEvent ev = {
+            blink::InspectorPlayerEvent::PLAYBACK_EVENT, event.time,
+            blink::WebString::FromUTF8("Event"),
+            blink::WebString::FromUTF8(
+                media::MediaLog::EventTypeToString(event.type))};
+        events.emplace_back(ev);
+      }
       for (auto&& itr : event.params.DictItems()) {
         blink::InspectorPlayerEvent ev = {event_type, event.time,
                                           blink::WebString::FromUTF8(itr.first),
@@ -67,6 +79,10 @@ void InspectorMediaEventHandler::SendQueuedMediaEvents(
 
   if (!properties.empty())
     inspector_context_->SetPlayerProperties(player_id_, properties);
+}
+
+void InspectorMediaEventHandler::OnWebMediaPlayerDestroyed() {
+  video_player_destroyed_ = true;
 }
 
 }  // namespace content

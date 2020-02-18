@@ -37,7 +37,6 @@
 
 namespace blink {
 
-class CullRect;
 class Element;
 class GraphicsContext;
 class IntRect;
@@ -47,7 +46,7 @@ class ScrollbarTheme;
 class WebGestureEvent;
 class WebMouseEvent;
 
-class CORE_EXPORT Scrollbar : public GarbageCollectedFinalized<Scrollbar>,
+class CORE_EXPORT Scrollbar : public GarbageCollected<Scrollbar>,
                               public DisplayItemClient {
  public:
   // Theme object ownership remains with the caller and it must outlive the
@@ -79,7 +78,8 @@ class CORE_EXPORT Scrollbar : public GarbageCollectedFinalized<Scrollbar>,
   const IntRect& FrameRect() const { return frame_rect_; }
 
   ScrollbarOverlayColorTheme GetScrollbarOverlayColorTheme() const;
-  void GetTickmarks(Vector<IntRect>&) const;
+  bool HasTickmarks() const;
+  Vector<IntRect> GetTickmarks() const;
   bool IsScrollableAreaActive() const;
 
   IntPoint ConvertFromRootFrame(const IntPoint&) const;
@@ -124,8 +124,9 @@ class CORE_EXPORT Scrollbar : public GarbageCollectedFinalized<Scrollbar>,
   void SetProportion(int visible_size, int total_size);
   void SetPressedPos(int p) { pressed_pos_ = p; }
 
-  void Paint(GraphicsContext&, const CullRect&) const;
+  void Paint(GraphicsContext&) const;
 
+  virtual bool IsSolidColor() const;
   virtual bool IsOverlayScrollbar() const;
   bool ShouldParticipateInHitTesting();
 
@@ -161,8 +162,9 @@ class CORE_EXPORT Scrollbar : public GarbageCollectedFinalized<Scrollbar>,
     elastic_overscroll_ = elastic_overscroll;
   }
 
-  // Use setNeedsPaintInvalidation to cause the scrollbar (or parts thereof)
-  // to repaint.
+  // Use SetNeedsPaintInvalidation to cause the scrollbar (or parts thereof)
+  // to repaint. Here "track" includes track, buttons and tickmarks, i.e. all
+  // things except the thumb.
   bool TrackNeedsRepaint() const { return track_needs_repaint_; }
   void ClearTrackNeedsRepaint() { track_needs_repaint_ = false; }
   bool ThumbNeedsRepaint() const { return thumb_needs_repaint_; }
@@ -210,7 +212,6 @@ class CORE_EXPORT Scrollbar : public GarbageCollectedFinalized<Scrollbar>,
   void StopTimerIfNeeded();
   void AutoscrollPressedPart(base::TimeDelta delay);
   bool HandleTapGesture();
-  bool IsScrollGestureInjectionEnabled() const;
   void InjectScrollGestureForPressedPart(WebInputEvent::Type gesture_type);
   void InjectGestureScrollUpdateForThumbMove(float single_axis_target_offset);
   void InjectScrollGesture(WebInputEvent::Type type,

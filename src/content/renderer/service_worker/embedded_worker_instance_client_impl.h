@@ -11,7 +11,6 @@
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
-#include "third_party/blink/public/common/privacy_preferences.h"
 #include "third_party/blink/public/mojom/service_worker/embedded_worker.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_installed_scripts_manager.mojom.h"
 #include "third_party/blink/public/mojom/worker/worker_content_settings_proxy.mojom.h"
@@ -46,9 +45,17 @@ class CONTENT_EXPORT EmbeddedWorkerInstanceClientImpl
   // TODO(shimazu): Create a service worker's execution context by this method
   // instead of just creating an instance of EmbeddedWorkerInstanceClient.
   static void Create(
+      scoped_refptr<base::SingleThreadTaskRunner> initiator_task_runner,
       mojo::PendingReceiver<blink::mojom::EmbeddedWorkerInstanceClient>
-          receiver,
-      scoped_refptr<base::SingleThreadTaskRunner> initiator_task_runner);
+          receiver);
+
+  // TODO(https://crbug.com/955171): Remove this method and use Create once
+  // RenderFrameHostImpl uses service_manager::BinderMap instead of
+  // service_manager::BinderRegistry.
+  static void CreateForRequest(
+      scoped_refptr<base::SingleThreadTaskRunner> initiator_task_runner,
+      mojo::PendingReceiver<blink::mojom::EmbeddedWorkerInstanceClient>
+          receiver);
 
   ~EmbeddedWorkerInstanceClientImpl() override;
 
@@ -74,7 +81,7 @@ class CONTENT_EXPORT EmbeddedWorkerInstanceClientImpl
   // Handler of connection error bound to |receiver_|.
   void OnError();
 
-  blink::WebEmbeddedWorkerStartData BuildStartData(
+  std::unique_ptr<blink::WebEmbeddedWorkerStartData> BuildStartData(
       const blink::mojom::EmbeddedWorkerStartParams& params);
 
   mojo::Receiver<blink::mojom::EmbeddedWorkerInstanceClient> receiver_;

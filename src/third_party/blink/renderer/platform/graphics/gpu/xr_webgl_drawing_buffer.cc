@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/platform/graphics/accelerated_static_bitmap_image.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/drawing_buffer.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/extensions_3d_util.h"
+#include "third_party/blink/renderer/platform/graphics/unaccelerated_static_bitmap_image.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/skia/include/core/SkSurface.h"
@@ -213,12 +214,6 @@ bool XRWebGLDrawingBuffer::Initialize(const IntSize& size,
     if (extensions_util->SupportsExtension(
             "GL_EXT_multisampled_render_to_texture")) {
       anti_aliasing_mode_ = kMSAAImplicitResolve;
-    } else if (extensions_util->SupportsExtension(
-                   "GL_CHROMIUM_screen_space_antialiasing") &&
-               drawing_buffer_->ContextProvider()
-                   ->GetGpuFeatureInfo()
-                   .IsWorkaroundEnabled(gpu::USE_FRAMEBUFFER_CMAA)) {
-      anti_aliasing_mode_ = kScreenSpaceAntialiasing;
     }
   }
   DVLOG(2) << __FUNCTION__
@@ -254,7 +249,8 @@ void XRWebGLDrawingBuffer::SetMirrorClient(scoped_refptr<MirrorClient> client) {
     // it has content to show.
     sk_sp<SkSurface> surface = SkSurface::MakeRasterN32Premul(1, 1);
     mirror_client_->OnMirrorImageAvailable(
-        StaticBitmapImage::Create(surface->makeImageSnapshot()), nullptr);
+        UnacceleratedStaticBitmapImage::Create(surface->makeImageSnapshot()),
+        nullptr);
   }
 }
 
@@ -575,12 +571,7 @@ void XRWebGLDrawingBuffer::BindAndResolveDestinationFramebuffer() {
     client->DrawingBufferClientRestoreScissorTest();
   } else {
     gl->BindFramebuffer(GL_FRAMEBUFFER, framebuffer_);
-    if (anti_aliasing_mode_ == kScreenSpaceAntialiasing) {
-      DVLOG(3) << __FUNCTION__ << ": screen space antialiasing";
-      gl->ApplyScreenSpaceAntialiasingCHROMIUM();
-    } else {
-      DVLOG(3) << __FUNCTION__ << ": nothing to do";
-    }
+    DVLOG(3) << __FUNCTION__ << ": nothing to do";
   }
 
   // On exit, leaves the destination framebuffer active. Caller is responsible
@@ -664,7 +655,7 @@ XRWebGLDrawingBuffer::TransferToStaticBitmapImage(
     // context gets lost.
     sk_sp<SkSurface> surface =
         SkSurface::MakeRasterN32Premul(size_.Width(), size_.Height());
-    return StaticBitmapImage::Create(surface->makeImageSnapshot());
+    return UnacceleratedStaticBitmapImage::Create(surface->makeImageSnapshot());
   }
 
   // This holds a ref on the XRWebGLDrawingBuffer that will keep it alive

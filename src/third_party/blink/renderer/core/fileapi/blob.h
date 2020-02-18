@@ -67,10 +67,6 @@ class CORE_EXPORT Blob : public ScriptWrappable,
       const HeapVector<ArrayBufferOrArrayBufferViewOrBlobOrUSVString>&,
       const BlobPropertyBag*);
 
-  static Blob* Create(scoped_refptr<BlobDataHandle> blob_data_handle) {
-    return MakeGarbageCollected<Blob>(std::move(blob_data_handle));
-  }
-
   static Blob* Create(const unsigned char* data,
                       size_t size,
                       const String& content_type);
@@ -118,7 +114,9 @@ class CORE_EXPORT Blob : public ScriptWrappable,
 
   // URLRegistrable to support PublicURLs.
   URLRegistry& Registry() const final;
-  mojo::PendingRemote<mojom::blink::Blob> AsMojoBlob() final;
+  bool IsMojoBlob() final;
+  void CloneMojoBlob(mojo::PendingReceiver<mojom::blink::Blob>) final;
+  mojo::PendingRemote<mojom::blink::Blob> AsMojoBlob();
 
   // ImageBitmapSource implementation
   bool IsBlob() const override { return true; }

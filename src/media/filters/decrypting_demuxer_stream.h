@@ -40,7 +40,7 @@ class MEDIA_EXPORT DecryptingDemuxerStream : public DemuxerStream {
   // Cancels all pending operations immediately and fires all pending callbacks.
   ~DecryptingDemuxerStream() override;
 
-  // |steram| must be encrypted and |cdm_context| must be non-null.
+  // |stream| must be encrypted and |cdm_context| must be non-null.
   void Initialize(DemuxerStream* stream,
                   CdmContext* cdm_context,
                   const PipelineStatusCB& status_cb);
@@ -55,7 +55,7 @@ class MEDIA_EXPORT DecryptingDemuxerStream : public DemuxerStream {
   std::string GetDisplayName() const;
 
   // DemuxerStream implementation.
-  void Read(const ReadCB& read_cb) override;
+  void Read(ReadCB read_cb) override;
   bool IsReadPending() const override;
   AudioDecoderConfig audio_decoder_config() override;
   VideoDecoderConfig video_decoder_config() override;

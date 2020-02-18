@@ -31,7 +31,8 @@ EphemeralTabSceneLayer::EphemeralTabSceneLayer(JNIEnv* env,
                                                const JavaRef<jobject>& jobj)
     : SceneLayer(env, jobj),
       base_page_brightness_(1.0f),
-      content_container_(cc::Layer::Create()) {
+      content_container_(cc::Layer::Create()),
+      is_new_layout_(false) {
   // Responsible for moving the base page without modifying the layer itself.
   content_container_->SetIsDrawable(true);
   content_container_->SetPosition(gfx::PointF(0.0f, 0.0f));
@@ -66,6 +67,7 @@ void EphemeralTabSceneLayer::SetResourceIds(JNIEnv* env,
                                             jint drag_handlebar_resource_id,
                                             jint open_tab_icon_resource_id,
                                             jint close_icon_resource_id) {
+  is_new_layout_ = rounded_bar_top_resource_id > 0;
   ephemeral_tab_layer_->SetResourceIds(
       text_resource_id, panel_shadow_resource_id, rounded_bar_top_resource_id,
       bar_shadow_resource_id, panel_icon_resource_id,
@@ -77,6 +79,8 @@ void EphemeralTabSceneLayer::Update(JNIEnv* env,
                                     const JavaParamRef<jobject>& object,
                                     jint title_view_resource_id,
                                     jint caption_view_resource_id,
+                                    jint caption_icon_resource_id,
+                                    jfloat caption_icon_opacity,
                                     jfloat caption_animation_percentage,
                                     jfloat text_layer_min_height,
                                     jfloat title_caption_spacing,
@@ -97,14 +101,13 @@ void EphemeralTabSceneLayer::Update(JNIEnv* env,
                                     jfloat bar_height,
                                     jboolean bar_border_visible,
                                     jfloat bar_border_height,
-                                    jboolean bar_shadow_visible,
                                     jint icon_color,
                                     jint drag_handlebar_color,
                                     jfloat favicon_opacity,
                                     jboolean progress_bar_visible,
                                     jfloat progress_bar_height,
                                     jfloat progress_bar_opacity,
-                                    jint progress_bar_completion,
+                                    jfloat progress_bar_completion,
                                     jint separator_line_color) {
   // NOTE(mdjones): It is possible to render the panel before content has been
   // created. If this is the case, do not attempt to access the WebContents
@@ -127,15 +130,16 @@ void EphemeralTabSceneLayer::Update(JNIEnv* env,
   content_container_->SetPosition(gfx::PointF(0.0f, base_page_offset));
   ephemeral_tab_layer_->SetProperties(
       web_contents, title_view_resource_id, caption_view_resource_id,
+      caption_icon_resource_id, caption_icon_opacity,
       caption_animation_percentage, text_layer_min_height,
       title_caption_spacing, caption_visible,
       progress_bar_background_resource_id, progress_bar_resource_id, dp_to_px,
       content_layer, panel_x, panel_y, panel_width, panel_height,
       bar_background_color, bar_margin_side, bar_margin_top, bar_height,
-      bar_border_visible, bar_border_height, bar_shadow_visible, icon_color,
-      drag_handlebar_color, favicon_opacity, progress_bar_visible,
-      progress_bar_height, progress_bar_opacity, progress_bar_completion,
-      separator_line_color);
+      bar_border_visible, bar_border_height, icon_color, drag_handlebar_color,
+      favicon_opacity, progress_bar_visible, progress_bar_height,
+      progress_bar_opacity, progress_bar_completion, separator_line_color,
+      is_new_layout_);
   // Make the layer visible if it is not already.
   ephemeral_tab_layer_->layer()->SetHideLayerAndSubtree(false);
 }

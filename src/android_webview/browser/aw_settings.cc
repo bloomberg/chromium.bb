@@ -10,13 +10,13 @@
 #include "android_webview/browser/aw_content_browser_client.h"
 #include "android_webview/browser/aw_contents.h"
 #include "android_webview/browser/renderer_host/aw_render_view_host_ext.h"
+#include "android_webview/browser_jni_headers/AwSettings_jni.h"
 #include "android_webview/common/aw_content_client.h"
-#include "android_webview/native_jni/AwSettings_jni.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/macros.h"
-#include "base/no_destructor.h"
 #include "base/supports_user_data.h"
+#include "components/viz/common/features.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_view_host.h"
@@ -26,6 +26,7 @@
 #include "content/public/common/web_preferences.h"
 #include "net/http/http_util.h"
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
+#include "ui/native_theme/native_theme.h"
 
 using base::android::ConvertJavaStringToUTF16;
 using base::android::ConvertUTF8ToJavaString;
@@ -42,8 +43,10 @@ void PopulateFixedWebPreferences(WebPreferences* web_prefs) {
   web_prefs->should_clear_document_background = false;
   web_prefs->viewport_meta_enabled = true;
   web_prefs->picture_in_picture_enabled = false;
-  web_prefs->disable_features_depending_on_viz = true;
+  web_prefs->disable_features_depending_on_viz =
+      !::features::IsUsingVizForWebView();
   web_prefs->disable_accelerated_small_canvases = true;
+  web_prefs->reenable_web_components_v0 = true;
 }
 
 const void* const kAwSettingsUserDataKey = &kAwSettingsUserDataKey;
@@ -73,6 +76,7 @@ AwSettings::AwSettings(JNIEnv* env,
       renderer_prefs_initialized_(false),
       javascript_can_open_windows_automatically_(false),
       allow_third_party_cookies_(false),
+      allow_file_access_(false),
       aw_settings_(env, obj) {
   web_contents->SetUserData(kAwSettingsUserDataKey,
                             std::make_unique<AwSettingsUserData>(this));
@@ -150,6 +154,7 @@ void AwSettings::UpdateEverythingLocked(JNIEnv* env,
   UpdateOffscreenPreRasterLocked(env, obj);
   UpdateWillSuppressErrorStateLocked(env, obj);
   UpdateCookiePolicyLocked(env, obj);
+  UpdateAllowFileAccessLocked(env, obj);
 }
 
 void AwSettings::UpdateUserAgentLocked(JNIEnv* env,
@@ -250,9 +255,8 @@ void AwSettings::UpdateRendererPreferencesLocked(
     update_prefs = true;
   }
 
-  content::RenderViewHost* host = web_contents()->GetRenderViewHost();
-  if (update_prefs && host)
-    host->SyncRendererPrefs();
+  if (update_prefs)
+    web_contents()->SyncRendererPrefs();
 
   if (update_prefs) {
     // make sure to update accept languages when the network service is enabled
@@ -285,6 +289,14 @@ void AwSettings::UpdateOffscreenPreRasterLocked(
     contents->SetOffscreenPreRaster(
         Java_AwSettings_getOffscreenPreRasterLocked(env, obj));
   }
+}
+
+void AwSettings::UpdateAllowFileAccessLocked(JNIEnv* env,
+                                             const JavaParamRef<jobject>& obj) {
+  if (!web_contents())
+    return;
+
+  allow_file_access_ = Java_AwSettings_getAllowFileAccess(env, obj);
 }
 
 void AwSettings::RenderViewHostChanged(content::RenderViewHost* old_host,
@@ -497,40 +509,63 @@ void AwSettings::PopulateWebPreferencesLocked(JNIEnv* env,
   web_prefs->scroll_top_left_interop_enabled =
       Java_AwSettings_getScrollTopLeftInteropEnabledLocked(env, obj);
 
+  web_prefs->allow_mixed_content_upgrades =
+      Java_AwSettings_getAllowMixedContentAutoupgradesLocked(env, obj);
+
+  bool is_dark_mode;
   switch (Java_AwSettings_getForceDarkModeLocked(env, obj)) {
     case ForceDarkMode::FORCE_DARK_OFF:
-      web_prefs->force_dark_mode_enabled = false;
+      is_dark_mode = false;
       break;
     case ForceDarkMode::FORCE_DARK_ON:
-      web_prefs->force_dark_mode_enabled = true;
+      is_dark_mode = true;
       break;
     case ForceDarkMode::FORCE_DARK_AUTO: {
       AwContents* contents = AwContents::FromWebContents(web_contents());
-      web_prefs->force_dark_mode_enabled =
-          contents && contents->GetViewTreeForceDarkState();
+      is_dark_mode = contents && contents->GetViewTreeForceDarkState();
       break;
     }
   }
-
-  // Blink's behavior is that if the preferred color scheme matches the
-  // supported color scheme, then force dark will be disabled, otherwise
-  // the preferred color scheme will be reset to no preference. Therefore
-  // when enabling force dark, we also set the preferred color scheme to
-  // dark so that dark themed content will be preferred over force darkening.
-  web_prefs->preferred_color_scheme =
-      web_prefs->force_dark_mode_enabled
-          ? blink::PreferredColorScheme::kDark
-          : blink::PreferredColorScheme::kNoPreference;
+  ui::NativeTheme::PreferredColorScheme preferred_color_scheme =
+      is_dark_mode ? ui::NativeTheme::PreferredColorScheme::kDark
+                   : ui::NativeTheme::PreferredColorScheme::kNoPreference;
+  if (is_dark_mode) {
+    switch (Java_AwSettings_getForceDarkBehaviorLocked(env, obj)) {
+      case ForceDarkBehavior::FORCE_DARK_ONLY: {
+        preferred_color_scheme =
+            ui::NativeTheme::PreferredColorScheme::kNoPreference;
+        web_prefs->force_dark_mode_enabled = true;
+        break;
+      }
+      case ForceDarkBehavior::MEDIA_QUERY_ONLY: {
+        preferred_color_scheme = ui::NativeTheme::PreferredColorScheme::kDark;
+        web_prefs->force_dark_mode_enabled = false;
+        break;
+      }
+      // Blink's behavior is that if the preferred color scheme matches the
+      // supported color scheme, then force dark will be disabled, otherwise
+      // the preferred color scheme will be reset to no preference. Therefore
+      // when enabling force dark, we also set the preferred color scheme to
+      // dark so that dark themed content will be preferred over force
+      // darkening.
+      case ForceDarkBehavior::PREFER_MEDIA_QUERY_OVER_FORCE_DARK: {
+        preferred_color_scheme = ui::NativeTheme::PreferredColorScheme::kDark;
+        web_prefs->force_dark_mode_enabled = true;
+        break;
+      }
+    }
+  } else {
+    preferred_color_scheme =
+        ui::NativeTheme::PreferredColorScheme::kNoPreference;
+    web_prefs->force_dark_mode_enabled = false;
+  }
+  // Notify NativeTheme of changes to dark mode.
+  ui::NativeTheme::GetInstanceForWeb()->set_preferred_color_scheme(
+      preferred_color_scheme);
 }
 
 bool AwSettings::GetAllowFileAccess() {
-  // TODO(timvolodine): cache this lazily on update, crbug.com/949590
-  JNIEnv* env = base::android::AttachCurrentThread();
-  CHECK(env);
-  ScopedJavaLocalRef<jobject> scoped_obj = aw_settings_.get(env);
-  if (scoped_obj.is_null())
-    return true;
-  return Java_AwSettings_getAllowFileAccess(env, scoped_obj);
+  return allow_file_access_;
 }
 
 static jlong JNI_AwSettings_Init(JNIEnv* env,

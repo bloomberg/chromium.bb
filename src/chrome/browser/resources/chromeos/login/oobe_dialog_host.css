@@ -12,10 +12,10 @@
   border-radius: unset;
   box-shadow: unset;
   flex-direction: column;
-  height: 640px;
+  height: 100%;
   min-height: 0;
   position: relative;
-  width: 768px;
+  width: 100%;
 }
 
 :host(:not([full-screen-dialog])) {
@@ -23,7 +23,20 @@
   box-shadow: 0 24px 24px rgba(0, 0, 0, .24), 0 0 24px rgba(0, 0, 0, .12);
 }
 
-:host([android]) {
-  min-height: 480px;
-  min-width: 576px;
+.oobe-illustration {
+  max-height: 100%;
+  max-width: 100%;
+  object-fit: contain;
+}
+
+.oobe-tos-webview {
+  border: 0.5px solid rgb(218, 220, 224); /* #DADCE0 */
+  border-radius: 4px;
+  box-shadow: inset 0 0 4px 4px rgba(241, 243, 244, 0.5); /* #F1F3F4 */
+}
+
+.oobe-local-link {
+  color: rgb(17, 85, 204); /* #1155CC */
+  cursor: pointer;
+  text-decoration: none;
 }

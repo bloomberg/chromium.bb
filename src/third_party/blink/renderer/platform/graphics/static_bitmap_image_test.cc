@@ -5,7 +5,7 @@
 #include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/renderer/platform/wtf/typed_arrays/array_buffer_contents.h"
+#include "third_party/blink/renderer/platform/graphics/unaccelerated_static_bitmap_image.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "v8/include/v8.h"
 
@@ -23,13 +23,13 @@ TEST_F(StaticBitmapImageTest,
   EXPECT_TRUE(!!surface);
 
   scoped_refptr<StaticBitmapImage> image =
-      StaticBitmapImage::Create(surface->makeImageSnapshot());
+      UnacceleratedStaticBitmapImage::Create(surface->makeImageSnapshot());
 
   IntRect too_big_rect(IntPoint(0, 0),
                        IntSize(1, (v8::TypedArray::kMaxLength / 4) + 1));
-  WTF::ArrayBufferContents contents;
-  EXPECT_FALSE(StaticBitmapImage::ConvertToArrayBufferContents(
-      image, contents, too_big_rect, CanvasColorParams()));
+  EXPECT_GT(StaticBitmapImage::GetSizeInBytes(too_big_rect, CanvasColorParams())
+                .ValueOrDie(),
+            v8::TypedArray::kMaxLength);
 }
 
 }  // namespace blink

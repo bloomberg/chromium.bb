@@ -17,6 +17,8 @@
 #include <memory>
 #include <cassert>
 
+#include "test_macros.h"
+
 int main(int, char**)
 {
     using std::optional;
@@ -38,7 +40,7 @@ int main(int, char**)
         assert(s == nullptr);
     }
     {
-        auto opt = make_optional<std::string>(4, 'X');
+        auto opt = make_optional<std::string>(4u, 'X');
         assert(*opt == "XXXX");
     }
 

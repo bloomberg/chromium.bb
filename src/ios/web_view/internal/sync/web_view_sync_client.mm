@@ -46,12 +46,12 @@ namespace ios_web_view {
 
 namespace {
 syncer::ModelTypeSet GetDisabledTypes() {
-  // Only want credit card autofill for now.
-  // TODO(crbug.com/906910): Remove syncer::AUTOFILL_PROFILE and
-  // syncer::PASSWORDS as well once they are ready.
   syncer::ModelTypeSet disabled_types = syncer::UserTypes();
+  disabled_types.Remove(syncer::AUTOFILL);
   disabled_types.Remove(syncer::AUTOFILL_WALLET_DATA);
   disabled_types.Remove(syncer::AUTOFILL_WALLET_METADATA);
+  disabled_types.Remove(syncer::AUTOFILL_PROFILE);
+  disabled_types.Remove(syncer::PASSWORDS);
   return disabled_types;
 }
 }  // namespace
@@ -136,7 +136,7 @@ base::RepeatingClosure WebViewSyncClient::GetPasswordStateChangedCallback() {
 syncer::DataTypeController::TypeVector
 WebViewSyncClient::CreateDataTypeControllers(
     syncer::SyncService* sync_service) {
-  // iOS WebView uses butter sync and so has no need to record user consents.
+  // //ios/web_view clients are supposed to record their own consents.
   syncer::DataTypeController::TypeVector type_vector =
       component_factory_->CreateCommonDataTypeControllers(GetDisabledTypes(),
                                                           sync_service);
@@ -159,6 +159,10 @@ invalidation::InvalidationService* WebViewSyncClient::GetInvalidationService() {
   if (provider) {
     return provider->GetInvalidationService();
   }
+  return nullptr;
+}
+
+syncer::TrustedVaultClient* WebViewSyncClient::GetTrustedVaultClient() {
   return nullptr;
 }
 

@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/modules/hid/hid.h"
 
-#include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
@@ -15,6 +15,7 @@
 #include "third_party/blink/renderer/modules/event_target_modules.h"
 #include "third_party/blink/renderer/modules/hid/hid_connection_event.h"
 #include "third_party/blink/renderer/modules/hid/hid_device.h"
+#include "third_party/blink/renderer/modules/hid/hid_device_filter.h"
 #include "third_party/blink/renderer/modules/hid/hid_device_request_options.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 
@@ -22,6 +23,7 @@ namespace blink {
 
 namespace {
 
+const char kContextGone[] = "Script context has shut down.";
 const char kFeaturePolicyBlocked[] =
     "Access to the feature \"hid\" is disallowed by feature policy.";
 const char kNoDeviceSelected[] = "No device selected.";
@@ -101,20 +103,19 @@ void HID::AddedEventListener(const AtomicString& event_type,
   // and disconnect events.
 }
 
-ScriptPromise HID::getDevices(ScriptState* script_state) {
+ScriptPromise HID::getDevices(ScriptState* script_state,
+                              ExceptionState& exception_state) {
   auto* context = GetExecutionContext();
   if (!context) {
-    return ScriptPromise::RejectWithDOMException(
-        script_state, MakeGarbageCollected<DOMException>(
-                          DOMExceptionCode::kNotSupportedError));
+    exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
+                                      kContextGone);
+    return ScriptPromise();
   }
 
   if (!context->GetSecurityContext().IsFeatureEnabled(
           mojom::FeaturePolicyFeature::kHid, ReportOptions::kReportOnFailure)) {
-    return ScriptPromise::RejectWithDOMException(
-        script_state,
-        MakeGarbageCollected<DOMException>(DOMExceptionCode::kSecurityError,
-                                           kFeaturePolicyBlocked));
+    exception_state.ThrowSecurityError(kFeaturePolicyBlocked);
+    return ScriptPromise();
   }
 
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
@@ -127,28 +128,25 @@ ScriptPromise HID::getDevices(ScriptState* script_state) {
 }
 
 ScriptPromise HID::requestDevice(ScriptState* script_state,
-                                 const HIDDeviceRequestOptions* options) {
+                                 const HIDDeviceRequestOptions* options,
+                                 ExceptionState& exception_state) {
   auto* frame = GetFrame();
   if (!frame || !frame->GetDocument()) {
-    return ScriptPromise::RejectWithDOMException(
-        script_state, MakeGarbageCollected<DOMException>(
-                          DOMExceptionCode::kNotSupportedError));
+    exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
+                                      kContextGone);
+    return ScriptPromise();
   }
 
   if (!frame->GetDocument()->IsFeatureEnabled(
           mojom::FeaturePolicyFeature::kHid, ReportOptions::kReportOnFailure)) {
-    return ScriptPromise::RejectWithDOMException(
-        script_state,
-        MakeGarbageCollected<DOMException>(DOMExceptionCode::kSecurityError,
-                                           kFeaturePolicyBlocked));
+    exception_state.ThrowSecurityError(kFeaturePolicyBlocked);
+    return ScriptPromise();
   }
 
   if (!LocalFrame::HasTransientUserActivation(frame)) {
-    return ScriptPromise::RejectWithDOMException(
-        script_state,
-        MakeGarbageCollected<DOMException>(
-            DOMExceptionCode::kSecurityError,
-            "Must be handling a user gesture to show a permission request."));
+    exception_state.ThrowSecurityError(
+        "Must be handling a user gesture to show a permission request.");
+    return ScriptPromise();
   }
 
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
@@ -230,7 +228,7 @@ void HID::EnsureServiceConnection() {
 
   auto task_runner =
       GetExecutionContext()->GetTaskRunner(TaskType::kMiscPlatformAPI);
-  GetExecutionContext()->GetInterfaceProvider()->GetInterface(
+  GetExecutionContext()->GetBrowserInterfaceBroker().GetInterface(
       service_.BindNewPipeAndPassReceiver(task_runner));
   service_.set_disconnect_handler(
       WTF::Bind(&HID::OnServiceConnectionError, WrapWeakPersistent(this)));

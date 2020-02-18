@@ -91,18 +91,19 @@ class AcceptHeaderTest : public ContentBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(AcceptHeaderTest, Check) {
-  NavigateToURL(shell(), embedded_test_server()->GetURL("/accept-header.html"));
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("/accept-header.html")));
 
   // ResourceType::kMainFrame
   EXPECT_EQ(
       "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,"
-      "image/apng,*/*;q=0.8,application/signed-exchange;v=b3",
+      "image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
       GetFor("/accept-header.html"));
 
   // ResourceType::kSubFrame
   EXPECT_EQ(
       "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,"
-      "image/apng,*/*;q=0.8,application/signed-exchange;v=b3",
+      "image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
       GetFor("/iframe.html"));
 
   // ResourceType::kStylesheet

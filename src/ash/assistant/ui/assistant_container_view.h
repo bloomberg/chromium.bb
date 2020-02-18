@@ -18,11 +18,12 @@
 namespace ash {
 
 class AssistantContainerViewAnimator;
-class AssistantMainView;
+class AssistantMainViewDeprecated;
 class AssistantMiniView;
 class AssistantViewDelegate;
 class AssistantWebView;
 
+// TODO(dmblack): Remove after deprecating Assistant standalone UI.
 class COMPONENT_EXPORT(ASSISTANT_UI) AssistantContainerView
     : public views::BubbleDialogDelegateView,
       public AssistantUiModelObserver {
@@ -65,13 +66,18 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantContainerView
   // Returns the layer for the non-client view.
   ui::Layer* GetNonClientViewLayer();
 
+  // Invoke to open the specified |url| in Assistant UI.
+  // Note that this API should only be used when Assistant is in kWebUi mode.
+  void OpenUrl(const GURL& url);
+
  private:
   // Update anchor rect with respect to the current usable work area.
   void UpdateAnchor();
 
   AssistantViewDelegate* const delegate_;
 
-  AssistantMainView* assistant_main_view_;  // Owned by view hierarchy.
+  AssistantMainViewDeprecated*
+      assistant_main_view_;                 // Owned by view hierarchy.
   AssistantMiniView* assistant_mini_view_;  // Owned by view hierarchy.
   AssistantWebView* assistant_web_view_;    // Owned by view hierarchy.
 

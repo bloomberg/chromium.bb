@@ -142,7 +142,7 @@ void ArcSessionRunner::RequestStartMiniInstance() {
   RequestStart(ArcInstanceMode::MINI_INSTANCE);
 }
 
-void ArcSessionRunner::RequestUpgrade(ArcSession::UpgradeParams params) {
+void ArcSessionRunner::RequestUpgrade(UpgradeParams params) {
   upgrade_params_ = std::move(params);
   RequestStart(ArcInstanceMode::FULL_INSTANCE);
 }
@@ -219,10 +219,17 @@ void ArcSessionRunner::OnShutdown() {
   DCHECK(!arc_session_);
 }
 
-void ArcSessionRunner::SetUserIdHashForProfile(const std::string& hash) {
+void ArcSessionRunner::SetUserInfo(const std::string& hash,
+                                   const std::string& serial_number) {
+  // |hash| can be empty in unit tests. This function can also be called
+  // multiple times in tests.
+  // TODO(yusukes): Fix tests and add DCHECKs to make sure |hash| is not
+  // empty and the function is called only once.
+  DCHECK(!serial_number.empty());
   user_id_hash_ = hash;
+  serial_number_ = serial_number;
   if (arc_session_)
-    arc_session_->SetUserIdHashForProfile(user_id_hash_);
+    arc_session_->SetUserInfo(user_id_hash_, serial_number_);
 }
 
 void ArcSessionRunner::SetRestartDelayForTesting(
@@ -240,8 +247,8 @@ void ArcSessionRunner::StartArcSession() {
   VLOG(1) << "Starting ARC instance";
   if (!arc_session_) {
     arc_session_ = factory_.Run();
-    if (!user_id_hash_.empty())
-      arc_session_->SetUserIdHashForProfile(user_id_hash_);
+    if (!user_id_hash_.empty() && !serial_number_.empty())
+      arc_session_->SetUserInfo(user_id_hash_, serial_number_);
     arc_session_->AddObserver(this);
     arc_session_->StartMiniInstance();
     // Record the UMA only when |restart_after_crash_count_| is zero to avoid
@@ -251,7 +258,9 @@ void ArcSessionRunner::StartArcSession() {
       RecordInstanceCrashUma(ArcContainerLifetimeEvent::CONTAINER_STARTING);
   }
   if (target_mode_ == ArcInstanceMode::FULL_INSTANCE) {
-    arc_session_->RequestUpgrade(std::move(upgrade_params_));
+    // Do not std::move the params intentionally. RestartArcSession() can
+    // reuse the params without preceded by resetting them.
+    arc_session_->RequestUpgrade(upgrade_params_);
   }
 }
 

@@ -26,7 +26,6 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/browser/system_connector.h"
 #include "content/public/browser/tracing_controller.h"
 
 namespace heap_profiling {
@@ -254,7 +253,7 @@ bool ValidateDump(base::Value* heaps_v2,
     return false;
   }
 
-  const base::Value::ListStorage& sizes_list = sizes->GetList();
+  base::Value::ConstListView sizes_list = sizes->GetList();
   if (sizes_list.empty()) {
     LOG(ERROR) << "'allocators." << allocator_name
                << ".sizes' is an empty list";
@@ -269,7 +268,7 @@ bool ValidateDump(base::Value* heaps_v2,
     return false;
   }
 
-  const base::Value::ListStorage& counts_list = counts->GetList();
+  base::Value::ConstListView counts_list = counts->GetList();
   if (sizes_list.size() != counts_list.size()) {
     LOG(ERROR)
         << "'allocators." << allocator_name
@@ -285,7 +284,7 @@ bool ValidateDump(base::Value* heaps_v2,
     return false;
   }
 
-  const base::Value::ListStorage& types_list = types->GetList();
+  base::Value::ConstListView types_list = types->GetList();
   if (types_list.empty()) {
     LOG(ERROR) << "'allocators." << allocator_name
                << ".types' is an empty list";
@@ -307,7 +306,7 @@ bool ValidateDump(base::Value* heaps_v2,
     return false;
   }
 
-  const base::Value::ListStorage& nodes_list = nodes->GetList();
+  base::Value::ConstListView nodes_list = nodes->GetList();
   if (sizes_list.size() != nodes_list.size()) {
     LOG(ERROR)
         << "'allocators." << allocator_name
@@ -420,7 +419,7 @@ bool GetAllocatorSubarray(base::Value* heaps_v2,
                           const char* allocator_name,
                           const char* subarray_name,
                           size_t expected_size,
-                          const base::Value::ListStorage** output) {
+                          base::Value::ConstListView* output) {
   base::Value* subarray =
       heaps_v2->FindPath({"allocators", allocator_name, subarray_name});
   if (!subarray) {
@@ -429,13 +428,13 @@ bool GetAllocatorSubarray(base::Value* heaps_v2,
     return false;
   }
 
-  const base::Value::ListStorage& subarray_list = subarray->GetList();
+  base::Value::ConstListView subarray_list = subarray->GetList();
   if (expected_size && subarray_list.size() != expected_size) {
     LOG(ERROR) << subarray_name << " has wrong size";
     return false;
   }
 
-  *output = &subarray_list;
+  *output = subarray_list;
   return true;
 }
 
@@ -464,7 +463,7 @@ bool ValidateSamplingAllocations(base::Value* heaps_v2,
   }
 
   // Find the type with the appropriate id.
-  const base::Value::ListStorage* types_list;
+  base::Value::ConstListView types_list;
   if (!GetAllocatorSubarray(heaps_v2, allocator_name, "types", 0,
                             &types_list)) {
     return false;
@@ -472,8 +471,8 @@ bool ValidateSamplingAllocations(base::Value* heaps_v2,
 
   found = false;
   size_t index = 0;
-  for (size_t i = 0; i < types_list->size(); ++i) {
-    if ((*types_list)[i].GetInt() == id_of_type) {
+  for (size_t i = 0; i < types_list.size(); ++i) {
+    if (types_list[i].GetInt() == id_of_type) {
       index = i;
       found = true;
       break;
@@ -486,30 +485,30 @@ bool ValidateSamplingAllocations(base::Value* heaps_v2,
   }
 
   // Look up the size.
-  const base::Value::ListStorage* sizes;
+  base::Value::ConstListView sizes;
   if (!GetAllocatorSubarray(heaps_v2, allocator_name, "sizes",
-                            types_list->size(), &sizes)) {
+                            types_list.size(), &sizes)) {
     return false;
   }
 
-  if ((*sizes)[index].GetInt() < approximate_size / 2 ||
-      (*sizes)[index].GetInt() > approximate_size * 2) {
-    LOG(ERROR) << "sampling size " << (*sizes)[index].GetInt()
+  if (sizes[index].GetInt() < approximate_size / 2 ||
+      sizes[index].GetInt() > approximate_size * 2) {
+    LOG(ERROR) << "sampling size " << sizes[index].GetInt()
                << " was not within a factor of 2 of expected size "
                << approximate_size;
     return false;
   }
 
   // Look up the count.
-  const base::Value::ListStorage* counts;
+  base::Value::ConstListView counts;
   if (!GetAllocatorSubarray(heaps_v2, allocator_name, "counts",
-                            types_list->size(), &counts)) {
+                            types_list.size(), &counts)) {
     return false;
   }
 
-  if ((*counts)[index].GetInt() < approximate_count / 2 ||
-      (*counts)[index].GetInt() > approximate_count * 2) {
-    LOG(ERROR) << "sampling size " << (*counts)[index].GetInt()
+  if (counts[index].GetInt() < approximate_count / 2 ||
+      counts[index].GetInt() > approximate_count * 2) {
+    LOG(ERROR) << "sampling size " << counts[index].GetInt()
                << " was not within a factor of 2 of expected count "
                << approximate_count;
     return false;
@@ -683,12 +682,6 @@ bool TestDriver::CheckOrStartProfilingOnUIThreadWithAsyncSignalling() {
     return true;
   }
 
-  service_manager::Connector* connector = content::GetSystemConnector();
-  if (!connector) {
-    LOG(ERROR) << "A system Connector is not available in this environment.";
-    return false;
-  }
-
   wait_for_profiling_to_start_ = true;
   base::OnceClosure start_callback;
 
@@ -707,9 +700,8 @@ bool TestDriver::CheckOrStartProfilingOnUIThreadWithAsyncSignalling() {
   uint32_t sampling_rate = options_.should_sample
                                ? (options_.sample_everything ? 2 : kSampleRate)
                                : 1;
-  Supervisor::GetInstance()->Start(connector, options_.mode,
-                                   options_.stack_mode, sampling_rate,
-                                   std::move(start_callback));
+  Supervisor::GetInstance()->Start(options_.mode, options_.stack_mode,
+                                   sampling_rate, std::move(start_callback));
 
   return true;
 }
@@ -735,12 +727,6 @@ bool TestDriver::CheckOrStartProfilingOnUIThreadWithNestedRunLoops() {
     return true;
   }
 
-  service_manager::Connector* connector = content::GetSystemConnector();
-  if (!connector) {
-    LOG(ERROR) << "A system Connector is not available in this environment.";
-    return false;
-  }
-
   // When this is not-null, initialization should wait for the QuitClosure to be
   // called.
   std::unique_ptr<base::RunLoop> run_loop(new base::RunLoop);
@@ -758,9 +744,8 @@ bool TestDriver::CheckOrStartProfilingOnUIThreadWithNestedRunLoops() {
   uint32_t sampling_rate = options_.should_sample
                                ? (options_.sample_everything ? 2 : kSampleRate)
                                : 1;
-  Supervisor::GetInstance()->Start(connector, options_.mode,
-                                   options_.stack_mode, sampling_rate,
-                                   std::move(start_callback));
+  Supervisor::GetInstance()->Start(options_.mode, options_.stack_mode,
+                                   sampling_rate, std::move(start_callback));
 
   run_loop->Run();
 
@@ -771,10 +756,6 @@ void TestDriver::MakeTestAllocations() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   base::PlatformThread::SetName(kThreadName);
-
-  // Warm up the sampler. Once enabled it may need to see up to 1MB of
-  // allocations to start sampling.
-  leaks_.push_back(new char[base::PoissonAllocationSampler::kWarmupInterval]);
 
   // In sampling mode, only sampling allocations are relevant.
   if (!IsRecordingAllAllocations()) {

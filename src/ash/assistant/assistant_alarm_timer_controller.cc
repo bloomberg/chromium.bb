@@ -11,11 +11,18 @@
 #include "ash/assistant/assistant_controller.h"
 #include "ash/assistant/assistant_notification_controller.h"
 #include "ash/assistant/util/deep_link_util.h"
+#include "ash/public/mojom/assistant_controller.mojom.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "base/i18n/message_formatter.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chromeos/services/assistant/public/features.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "third_party/icu/source/common/unicode/utypes.h"
+#include "third_party/icu/source/i18n/unicode/measfmt.h"
+#include "third_party/icu/source/i18n/unicode/measunit.h"
+#include "third_party/icu/source/i18n/unicode/measure.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace ash {
@@ -40,15 +47,62 @@ std::string CreateTimerNotificationId(const std::string& alarm_timer_id) {
   return std::string(kTimerNotificationIdPrefix) + alarm_timer_id;
 }
 
+// Creates a notification message for the given |alarm_timer| which has the
+// specified amount of |time_remaining|. Note that if the alarm/timer is expired
+// the amount of time remaining will be negated.
 std::string CreateTimerNotificationMessage(const AlarmTimer& alarm_timer,
                                            base::TimeDelta time_remaining) {
-  const int minutes_remaining = time_remaining.InMinutes();
-  const int seconds_remaining =
-      (time_remaining - base::TimeDelta::FromMinutes(minutes_remaining))
-          .InSeconds();
-  return base::UTF16ToUTF8(base::i18n::MessageFormatter::FormatWithNumberedArgs(
-      l10n_util::GetStringUTF16(IDS_ASSISTANT_TIMER_NOTIFICATION_MESSAGE),
-      alarm_timer.expired() ? "-" : "", minutes_remaining, seconds_remaining));
+  // Method aliases to prevent line-wrapping below.
+  const auto createHour = icu::MeasureUnit::createHour;
+  const auto createMinute = icu::MeasureUnit::createMinute;
+  const auto createSecond = icu::MeasureUnit::createSecond;
+
+  // Calculate hours/minutes/seconds remaining.
+  const int64_t total_seconds = time_remaining.InSeconds();
+  const int32_t hours = total_seconds / 3600;
+  const int32_t minutes = (total_seconds - hours * 3600) / 60;
+  const int32_t seconds = total_seconds % 60;
+
+  // Success of the ICU APIs is tracked by |status|.
+  UErrorCode status = U_ZERO_ERROR;
+
+  // Create our distinct |measures| to be formatted. We only show |hours| if
+  // necessary, otherwise they are omitted.
+  std::vector<icu::Measure> measures;
+  if (hours)
+    measures.push_back(icu::Measure(hours, createHour(status), status));
+  measures.push_back(icu::Measure(minutes, createMinute(status), status));
+  measures.push_back(icu::Measure(seconds, createSecond(status), status));
+
+  // Format our |measures| into a |unicode_message|.
+  icu::UnicodeString unicode_message;
+  icu::FieldPosition field_position = icu::FieldPosition::DONT_CARE;
+  UMeasureFormatWidth width = UMEASFMT_WIDTH_NUMERIC;
+  icu::MeasureFormat measure_format(icu::Locale::getDefault(), width, status);
+  measure_format.formatMeasures(measures.data(), measures.size(),
+                                unicode_message, field_position, status);
+
+  std::string message;
+  if (U_SUCCESS(status)) {
+    // If formatting was successful, convert our |unicode_message| into UTF-8.
+    unicode_message.toUTF8String(message);
+  } else {
+    // If something went wrong, we'll fall back to using "hh:mm:ss" instead.
+    LOG(ERROR) << "Error formatting timer notification message: " << status;
+    message = base::StringPrintf("%02d:%02d:%02d", hours, minutes, seconds);
+  }
+
+  // If time has elapsed since the |alarm_timer| has expired, we'll need to
+  // negate the amount of time remaining.
+  if (total_seconds && alarm_timer.expired()) {
+    const auto format = l10n_util::GetStringUTF16(
+        IDS_ASSISTANT_TIMER_NOTIFICATION_MESSAGE_EXPIRED);
+    return base::UTF16ToUTF8(
+        base::i18n::MessageFormatter::FormatWithNumberedArgs(format, message));
+  }
+
+  // Otherwise, all necessary formatting has been performed.
+  return message;
 }
 
 // TODO(llin): Migrate to use the AlarmManager API to better support multiple
@@ -65,26 +119,17 @@ chromeos::assistant::mojom::AssistantNotificationPtr CreateTimerNotification(
       l10n_util::GetStringUTF8(IDS_ASSISTANT_TIMER_NOTIFICATION_TITLE);
   const std::string message =
       CreateTimerNotificationMessage(alarm_timer, time_remaining);
-  const GURL action_url = assistant::util::CreateAssistantQueryDeepLink(
-      l10n_util::GetStringUTF8(IDS_ASSISTANT_TIMER_NOTIFICATION_STOP_QUERY));
 
-  base::Optional<GURL> stop_alarm_timer_action_url;
-  base::Optional<GURL> add_time_to_timer_action_url;
-  if (chromeos::assistant::features::IsAlarmTimerManagerEnabled()) {
-    stop_alarm_timer_action_url = assistant::util::CreateAlarmTimerDeepLink(
-        assistant::util::AlarmTimerAction::kStopRinging,
-        /*alarm_timer_id=*/base::nullopt,
-        /*duration=*/base::nullopt);
-    add_time_to_timer_action_url = assistant::util::CreateAlarmTimerDeepLink(
-        assistant::util::AlarmTimerAction::kAddTimeToTimer, alarm_timer.id,
-        kOneMin);
-  } else {
-    stop_alarm_timer_action_url = assistant::util::CreateAssistantQueryDeepLink(
-        l10n_util::GetStringUTF8(IDS_ASSISTANT_TIMER_NOTIFICATION_STOP_QUERY));
-    add_time_to_timer_action_url =
-        assistant::util::CreateAssistantQueryDeepLink(l10n_util::GetStringUTF8(
-            IDS_ASSISTANT_TIMER_NOTIFICATION_ADD_1_MIN_QUERY));
-  }
+  base::Optional<GURL> stop_alarm_timer_action_url =
+      assistant::util::CreateAlarmTimerDeepLink(
+          assistant::util::AlarmTimerAction::kStopRinging,
+          /*alarm_timer_id=*/base::nullopt,
+          /*duration=*/base::nullopt);
+
+  base::Optional<GURL> add_time_to_timer_action_url =
+      assistant::util::CreateAlarmTimerDeepLink(
+          assistant::util::AlarmTimerAction::kAddTimeToTimer, alarm_timer.id,
+          kOneMin);
 
   AssistantNotificationPtr notification = AssistantNotification::New();
 
@@ -137,7 +182,7 @@ chromeos::assistant::mojom::AssistantNotificationPtr CreateTimerNotification(
 
 AssistantAlarmTimerController::AssistantAlarmTimerController(
     AssistantController* assistant_controller)
-    : assistant_controller_(assistant_controller), binding_(this) {
+    : assistant_controller_(assistant_controller) {
   AddModelObserver(this);
   assistant_controller_->AddObserver(this);
 }
@@ -147,10 +192,9 @@ AssistantAlarmTimerController::~AssistantAlarmTimerController() {
   RemoveModelObserver(this);
 }
 
-void AssistantAlarmTimerController::BindRequest(
-    mojom::AssistantAlarmTimerControllerRequest request) {
-  DCHECK(chromeos::assistant::features::IsTimerNotificationEnabled());
-  binding_.Bind(std::move(request));
+void AssistantAlarmTimerController::BindReceiver(
+    mojo::PendingReceiver<mojom::AssistantAlarmTimerController> receiver) {
+  receiver_.Bind(std::move(receiver));
 }
 
 void AssistantAlarmTimerController::AddModelObserver(
@@ -161,20 +205,6 @@ void AssistantAlarmTimerController::AddModelObserver(
 void AssistantAlarmTimerController::RemoveModelObserver(
     AssistantAlarmTimerModelObserver* observer) {
   model_.RemoveObserver(observer);
-}
-
-// TODO(dmblack): Remove method when the LibAssistant Alarm/Timer API is ready.
-void AssistantAlarmTimerController::OnTimerSoundingStarted() {
-  AlarmTimer timer;
-  timer.id = std::to_string(next_timer_id_++);
-  timer.type = AlarmTimerType::kTimer;
-  timer.end_time = base::TimeTicks::Now();
-  model_.AddAlarmTimer(timer);
-}
-
-// TODO(dmblack): Remove method when the LibAssistant Alarm/Timer API is ready.
-void AssistantAlarmTimerController::OnTimerSoundingFinished() {
-  model_.RemoveAllAlarmsTimers();
 }
 
 void AssistantAlarmTimerController::OnAlarmTimerStateChanged(
@@ -209,26 +239,18 @@ void AssistantAlarmTimerController::OnAlarmTimerAdded(
     const AlarmTimer& alarm_timer,
     const base::TimeDelta& time_remaining) {
   // Schedule a repeating timer to tick the tracked alarms/timers.
-  if (chromeos::assistant::features::IsTimerTicksEnabled() &&
-      !timer_.IsRunning()) {
+  if (!timer_.IsRunning()) {
     timer_.Start(FROM_HERE, kTickInterval, &model_,
                  &AssistantAlarmTimerModel::Tick);
   }
 
   // Create a notification for the added alarm/timer.
-  DCHECK(chromeos::assistant::features::IsTimerNotificationEnabled());
-  if (chromeos::assistant::features::IsTimerNotificationEnabled()) {
-    assistant_controller_->notification_controller()->AddOrUpdateNotification(
-        CreateTimerNotification(alarm_timer, time_remaining));
-  }
+  assistant_controller_->notification_controller()->AddOrUpdateNotification(
+      CreateTimerNotification(alarm_timer, time_remaining));
 }
 
 void AssistantAlarmTimerController::OnAlarmsTimersTicked(
     const std::map<std::string, base::TimeDelta>& times_remaining) {
-  // This code should only be called when timer notifications/ticks are enabled.
-  DCHECK(chromeos::assistant::features::IsTimerNotificationEnabled());
-  DCHECK(chromeos::assistant::features::IsTimerTicksEnabled());
-
   // Update any existing notifications associated w/ our alarms/timers.
   for (auto& pair : times_remaining) {
     auto* notification_controller =
@@ -242,16 +264,13 @@ void AssistantAlarmTimerController::OnAlarmsTimersTicked(
 }
 
 void AssistantAlarmTimerController::OnAllAlarmsTimersRemoved() {
-  if (chromeos::assistant::features::IsTimerTicksEnabled())
-    timer_.Stop();
+  // We can stop our timer from ticking when all alarms/timers are removed.
+  timer_.Stop();
 
   // Remove any notifications associated w/ alarms/timers.
-  DCHECK(chromeos::assistant::features::IsTimerNotificationEnabled());
-  if (chromeos::assistant::features::IsTimerNotificationEnabled()) {
-    assistant_controller_->notification_controller()
-        ->RemoveNotificationByGroupingKey(kTimerNotificationGroupingKey,
-                                          /*from_server=*/false);
-  }
+  assistant_controller_->notification_controller()
+      ->RemoveNotificationByGroupingKey(kTimerNotificationGroupingKey,
+                                        /*from_server=*/false);
 }
 
 void AssistantAlarmTimerController::SetAssistant(
@@ -301,18 +320,6 @@ void AssistantAlarmTimerController::OnUiVisibilityChanged(
   // When the Assistant UI transitions from a visible state, we'll dismiss any
   // ringing alarms or timers (assuming certain conditions have been met).
   if (old_visibility != AssistantVisibility::kVisible)
-    return;
-
-  // We only do this if the AlarmTimerManager is enabled, as otherwise we would
-  // have to issue an Assistant query to stop ringing alarms/timers which would
-  // cause Assistant UI to once again show. This would be a bad user experience.
-  if (!chromeos::assistant::features::IsAlarmTimerManagerEnabled())
-    return;
-
-  // We only do this if timer notifications are enabled, as otherwise the
-  // ringing alarm/timer isn't bound to any particular UI affordance so it can
-  // maintain its own lifecycle.
-  if (!chromeos::assistant::features::IsTimerNotificationEnabled())
     return;
 
   // We only do this if in-Assistant notifications are enabled, as in-Assistant

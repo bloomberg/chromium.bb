@@ -13,7 +13,7 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_server.h"
 #include "components/data_reduction_proxy/core/common/uma_util.h"
 #include "net/base/load_flags.h"
-#include "services/network/public/cpp/resource_response.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 
 namespace net {
 class HttpRequestHeaders;
@@ -37,8 +37,7 @@ DataReductionProxyURLLoaderThrottle::DataReductionProxyURLLoaderThrottle(
     DataReductionProxyThrottleManager* manager)
     : post_cache_headers_(post_cache_headers),
       manager_(manager),
-      data_reduction_proxy_(manager_->data_reduction_proxy()),
-      private_config_observer_binding_(this) {
+      data_reduction_proxy_(manager_->data_reduction_proxy()) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(manager_);
 
@@ -62,7 +61,7 @@ void DataReductionProxyURLLoaderThrottle::DetachFromCurrentSequence() {
   }
 
   data_reduction_proxy_->Clone(
-      mojo::MakeRequest(&private_data_reduction_proxy_info_));
+      private_data_reduction_proxy_remote_.InitWithNewPipeAndPassReceiver());
   data_reduction_proxy_ = nullptr;
 }
 
@@ -73,12 +72,11 @@ void DataReductionProxyURLLoaderThrottle::SetUpPrivateMojoPipes() {
   // Bind the pipe created in DetachFromCurrentSequence() to the current
   // sequence.
   private_data_reduction_proxy_.Bind(
-      std::move(private_data_reduction_proxy_info_));
+      std::move(private_data_reduction_proxy_remote_));
   data_reduction_proxy_ = private_data_reduction_proxy_.get();
 
-  mojom::DataReductionProxyThrottleConfigObserverPtr observer_ptr;
-  private_config_observer_binding_.Bind(mojo::MakeRequest(&observer_ptr));
-  data_reduction_proxy_->AddThrottleConfigObserver(std::move(observer_ptr));
+  data_reduction_proxy_->AddThrottleConfigObserver(
+      private_config_observer_receiver_.BindNewPipeAndPassRemote());
 }
 
 void DataReductionProxyURLLoaderThrottle::WillStartRequest(
@@ -86,7 +84,7 @@ void DataReductionProxyURLLoaderThrottle::WillStartRequest(
     bool* defer) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (private_data_reduction_proxy_info_)
+  if (private_data_reduction_proxy_remote_)
     SetUpPrivateMojoPipes();
 
   url_chain_.clear();
@@ -107,7 +105,7 @@ void DataReductionProxyURLLoaderThrottle::WillStartRequest(
 
 void DataReductionProxyURLLoaderThrottle::WillRedirectRequest(
     net::RedirectInfo* redirect_info,
-    const network::ResourceResponseHead& response_head,
+    const network::mojom::URLResponseHead& response_head,
     bool* defer,
     std::vector<std::string>* to_be_removed_request_headers,
     net::HttpRequestHeaders* modified_request_headers) {
@@ -119,7 +117,7 @@ void DataReductionProxyURLLoaderThrottle::WillRedirectRequest(
 
 void DataReductionProxyURLLoaderThrottle::BeforeWillProcessResponse(
     const GURL& response_url,
-    const network::ResourceResponseHead& response_head,
+    const network::mojom::URLResponseHead& response_head,
     bool* defer) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -187,7 +185,7 @@ void DataReductionProxyURLLoaderThrottle::MaybeRetry(
 
 void DataReductionProxyURLLoaderThrottle::WillProcessResponse(
     const GURL& response_url,
-    network::ResourceResponseHead* response_head,
+    network::mojom::URLResponseHead* response_head,
     bool* defer) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 

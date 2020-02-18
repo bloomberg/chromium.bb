@@ -671,7 +671,7 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
       };
 
   // For testing purposes, assume we get en-US localized strings.
-  TestLocalizedLandmarkType(0, ax::mojom::Role::kBanner, "header",
+  TestLocalizedLandmarkType(0, ax::mojom::Role::kHeader, "header",
                             base::ASCIIToUTF16("banner"));
   TestLocalizedLandmarkType(1, ax::mojom::Role::kComplementary, "aside",
                             base::ASCIIToUTF16("complementary"));
@@ -680,8 +680,8 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
   TestLocalizedLandmarkType(3, ax::mojom::Role::kForm, "form");
   TestLocalizedLandmarkType(4, ax::mojom::Role::kMain, "main");
   TestLocalizedLandmarkType(5, ax::mojom::Role::kNavigation, "nav");
-  TestLocalizedLandmarkType(6, ax::mojom::Role::kRegion, "");
-  TestLocalizedLandmarkType(7, ax::mojom::Role::kRegion, "section",
+  TestLocalizedLandmarkType(6, ax::mojom::Role::kSection, "");
+  TestLocalizedLandmarkType(7, ax::mojom::Role::kSection, "section",
                             base::ASCIIToUTF16("region"));
 
   TestLocalizedLandmarkType(8, ax::mojom::Role::kBanner, "banner",
@@ -699,8 +699,14 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
   TestLocalizedLandmarkType(16, ax::mojom::Role::kSearch, "search");
 }
 
+// TODO(https://crbug.com/1020456) re-enable when crashing on linux is resolved.
+#if defined(OS_LINUX)
+#define MAYBE_LocalizedRoleDescription DISABLED_LocalizedRoleDescription
+#else
+#define MAYBE_LocalizedRoleDescription LocalizedRoleDescription
+#endif
 IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
-                       LocalizedRoleDescription) {
+                       MAYBE_LocalizedRoleDescription) {
   AccessibilityNotificationWaiter waiter(shell()->web_contents(),
                                          ui::kAXModeComplete,
                                          ax::mojom::Event::kLoadComplete);
@@ -710,6 +716,8 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
       "<audio controls></audio>"
       "<details></details>"
       "<figure></figure>"
+      "<footer></footer>"
+      "<header></header>"
       "<input>"
       "<input type='color'>"
       "<input type='date'>"
@@ -718,17 +726,20 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
       "<input type='tel'>"
       "<input type='url'>"
       "<input type='week'>"
+      "<mark></mark>"
       "<meter></meter>"
       "<output></output>"
+      "<section></section>"
+      "<section aria-label='section'></section>"
       "<time></time>"
       "<div role='contentinfo' aria-label='contentinfo'></div>");
 
-  NavigateToURL(shell(), url);
+  EXPECT_TRUE(NavigateToURL(shell(), url));
   waiter.WaitForNotification();
 
   BrowserAccessibility* root = GetManager()->GetRoot();
   ASSERT_NE(nullptr, root);
-  ASSERT_EQ(16u, root->PlatformChildCount());
+  ASSERT_EQ(21u, root->PlatformChildCount());
 
   auto TestLocalizedRoleDescription =
       [root](int child_index,
@@ -745,19 +756,24 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
   TestLocalizedRoleDescription(1, base::ASCIIToUTF16("audio"));
   TestLocalizedRoleDescription(2, base::ASCIIToUTF16("details"));
   TestLocalizedRoleDescription(3, base::ASCIIToUTF16("figure"));
-  TestLocalizedRoleDescription(4, base::ASCIIToUTF16(""));
-  TestLocalizedRoleDescription(5, base::ASCIIToUTF16("color picker"));
-  TestLocalizedRoleDescription(6, base::ASCIIToUTF16("date picker"));
+  TestLocalizedRoleDescription(4, base::ASCIIToUTF16("footer"));
+  TestLocalizedRoleDescription(5, base::ASCIIToUTF16("header"));
+  TestLocalizedRoleDescription(6, base::ASCIIToUTF16(""));
+  TestLocalizedRoleDescription(7, base::ASCIIToUTF16("color picker"));
+  TestLocalizedRoleDescription(8, base::ASCIIToUTF16("date picker"));
   TestLocalizedRoleDescription(
-      7, base::ASCIIToUTF16("local date and time picker"));
-  TestLocalizedRoleDescription(8, base::ASCIIToUTF16("email"));
-  TestLocalizedRoleDescription(9, base::ASCIIToUTF16("telephone"));
-  TestLocalizedRoleDescription(10, base::ASCIIToUTF16("url"));
-  TestLocalizedRoleDescription(11, base::ASCIIToUTF16("week picker"));
-  TestLocalizedRoleDescription(12, base::ASCIIToUTF16("meter"));
-  TestLocalizedRoleDescription(13, base::ASCIIToUTF16("output"));
-  TestLocalizedRoleDescription(14, base::ASCIIToUTF16("time"));
-  TestLocalizedRoleDescription(15, base::ASCIIToUTF16("content information"));
+      9, base::ASCIIToUTF16("local date and time picker"));
+  TestLocalizedRoleDescription(10, base::ASCIIToUTF16("email"));
+  TestLocalizedRoleDescription(11, base::ASCIIToUTF16("telephone"));
+  TestLocalizedRoleDescription(12, base::ASCIIToUTF16("url"));
+  TestLocalizedRoleDescription(13, base::ASCIIToUTF16("week picker"));
+  TestLocalizedRoleDescription(14, base::ASCIIToUTF16("highlight"));
+  TestLocalizedRoleDescription(15, base::ASCIIToUTF16("meter"));
+  TestLocalizedRoleDescription(16, base::ASCIIToUTF16("output"));
+  TestLocalizedRoleDescription(17, base::ASCIIToUTF16(""));
+  TestLocalizedRoleDescription(18, base::ASCIIToUTF16("section"));
+  TestLocalizedRoleDescription(19, base::ASCIIToUTF16("time"));
+  TestLocalizedRoleDescription(20, base::ASCIIToUTF16("content information"));
 }
 
 IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
@@ -799,17 +815,16 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
                                              ax::mojom::Role::kStaticText);
 
   BrowserAccessibility* mark_node = para_node->PlatformGetChild(1);
-  TestGetStyleNameAttributeAsLocalizedString(
-      mark_node, ax::mojom::Role::kMark,
-      base::ASCIIToUTF16("highlighted content"));
+  TestGetStyleNameAttributeAsLocalizedString(mark_node, ax::mojom::Role::kMark,
+                                             base::ASCIIToUTF16("highlight"));
 
   // Android doesn't always have a child in this case.
   if (mark_node->PlatformChildCount() > 0u) {
     BrowserAccessibility* mark_text_node = mark_node->PlatformGetChild(0);
     ASSERT_EQ(0u, mark_text_node->PlatformChildCount());
-    TestGetStyleNameAttributeAsLocalizedString(
-        mark_text_node, ax::mojom::Role::kStaticText,
-        base::ASCIIToUTF16("highlighted content"));
+    TestGetStyleNameAttributeAsLocalizedString(mark_text_node,
+                                               ax::mojom::Role::kStaticText,
+                                               base::ASCIIToUTF16("highlight"));
   }
 }
 

@@ -13,13 +13,13 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "components/gcm_driver/instance_id/instance_id.h"
+#include "components/sync/protocol/device_info_specifics.pb.h"
+#include "components/sync_device_info/device_info.h"
+
+class PrefService;
 
 namespace instance_id {
 class InstanceIDDriver;
-}
-
-namespace syncer {
-class LocalDeviceInfoProvider;
 }
 
 class SharingSyncPreference;
@@ -32,12 +32,14 @@ class SharingDeviceRegistration {
  public:
   using RegistrationCallback =
       base::OnceCallback<void(SharingDeviceRegistrationResult)>;
+  using TargetInfoCallback = base::OnceCallback<void(
+      SharingDeviceRegistrationResult,
+      base::Optional<syncer::DeviceInfo::SharingTargetInfo>)>;
 
-  SharingDeviceRegistration(
-      SharingSyncPreference* prefs,
-      instance_id::InstanceIDDriver* instance_id_driver,
-      VapidKeyManager* vapid_key_manager,
-      syncer::LocalDeviceInfoProvider* device_info_tracker);
+  SharingDeviceRegistration(PrefService* pref_service,
+                            SharingSyncPreference* prefs,
+                            instance_id::InstanceIDDriver* instance_id_driver,
+                            VapidKeyManager* vapid_key_manager);
   virtual ~SharingDeviceRegistration();
 
   // Registers device with sharing sync preferences. Takes a |callback| function
@@ -47,58 +49,79 @@ class SharingDeviceRegistration {
   // Un-registers device with sharing sync preferences.
   virtual void UnregisterDevice(RegistrationCallback callback);
 
+  // Returns if device can handle receiving phone numbers for calling.
+  bool IsClickToCallSupported() const;
+
+  // Returns if device can handle receiving of shared clipboard contents.
+  virtual bool IsSharedClipboardSupported() const;
+
+  // Returns if device can handle receiving of sms fetcher requests.
+  virtual bool IsSmsFetcherSupported() const;
+
+  // Returns if device can handle receiving of remote copy contents.
+  virtual bool IsRemoteCopySupported() const;
+
+  // Returns if device can handle an incoming webrtc peer connection request.
+  bool IsPeerConnectionSupported() const;
+
   // For testing
-  void SetDeviceCapabilityForTesting(int device_capabilities);
+  void SetEnabledFeaturesForTesting(
+      std::set<sync_pb::SharingSpecificFields_EnabledFeatures>
+          enabled_features);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(SharingDeviceRegistrationTest,
                            RegisterDeviceTest_Success);
 
-  // Callback function responsible for validating FCM registration token and
-  // retrieving public encryption key and authentication secret associated with
-  // FCM App ID of Sharing. Also responsible for calling |callback| with
-  // |result| of GetToken.
-  void OnFCMTokenReceived(RegistrationCallback callback,
+  void RetrieveTargetInfo(const std::string& authorized_entity,
+                          TargetInfoCallback callback);
+
+  void OnFCMTokenReceived(TargetInfoCallback callback,
                           const std::string& authorized_entity,
-                          const std::string& fcm_registration_token,
+                          const std::string& fcm_token,
                           instance_id::InstanceID::Result result);
 
-  // Callback function responsible for deleting FCM registration token
-  // associated with FCM App ID of Sharing. Also responsible for calling
-  // |callback| with |result| of DeleteToken.
-  void OnFCMTokenDeleted(RegistrationCallback callback,
-                         instance_id::InstanceID::Result result);
-
-  // Retrieve encryption info from InstanceID.
-  void RetrieveEncryptionInfo(RegistrationCallback callback,
-                              const std::string& authorized_entity,
-                              const std::string& fcm_registration_token);
-
-  // Callback function responsible for saving device registration information in
-  // SharingSyncPreference.
-  void OnEncryptionInfoReceived(RegistrationCallback callback,
-                                const std::string& authorized_entity,
-                                const std::string& fcm_registration_token,
+  void OnEncryptionInfoReceived(TargetInfoCallback callback,
+                                const std::string& fcm_token,
                                 std::string p256dh,
                                 std::string auth_secret);
+
+  void OnVapidTargetInfoRetrieved(
+      RegistrationCallback callback,
+      const std::string& authorized_entity,
+      SharingDeviceRegistrationResult result,
+      base::Optional<syncer::DeviceInfo::SharingTargetInfo> vapid_target_info);
+
+  void OnSharingTargetInfoRetrieved(
+      RegistrationCallback callback,
+      const std::string& authorized_entity,
+      syncer::DeviceInfo::SharingTargetInfo vapid_target_info,
+      SharingDeviceRegistrationResult result,
+      base::Optional<syncer::DeviceInfo::SharingTargetInfo>
+          sharing_target_info);
+
+  void OnVapidFCMTokenDeleted(RegistrationCallback callback,
+                              SharingDeviceRegistrationResult result);
+
+  void DeleteFCMToken(const std::string& authorized_entity,
+                      RegistrationCallback callback);
+
+  void OnFCMTokenDeleted(RegistrationCallback callback,
+                         instance_id::InstanceID::Result result);
 
   // Returns the authorization entity for FCM registration.
   base::Optional<std::string> GetAuthorizationEntity() const;
 
-  // Computes and returns a bitmask of all capabilities supported by the device.
-  int GetDeviceCapabilities() const;
+  // Computes and returns a set of all enabled features on the device.
+  std::set<sync_pb::SharingSpecificFields_EnabledFeatures> GetEnabledFeatures()
+      const;
 
-  // Returns if device can handle receiving phone numbers for calling.
-  bool IsClickToCallSupported() const;
-
-  // Returns if device can handle receiving of shared clipboard contents.
-  bool IsSharedClipboardSupported() const;
-
+  PrefService* pref_service_;
   SharingSyncPreference* sharing_sync_preference_;
   instance_id::InstanceIDDriver* instance_id_driver_;
   VapidKeyManager* vapid_key_manager_;
-  syncer::LocalDeviceInfoProvider* local_device_info_provider_;
-  base::Optional<int> device_capabilities_testing_value_;
+  base::Optional<std::set<sync_pb::SharingSpecificFields_EnabledFeatures>>
+      enabled_features_testing_value_;
 
   base::WeakPtrFactory<SharingDeviceRegistration> weak_ptr_factory_{this};
 

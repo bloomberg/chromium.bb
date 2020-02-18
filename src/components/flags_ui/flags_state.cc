@@ -102,13 +102,10 @@ const struct {
   unsigned bit;
   const char* const name;
 } kBitsToOs[] = {
-    {kOsMac, "Mac"},
-    {kOsWin, "Windows"},
-    {kOsLinux, "Linux"},
-    {kOsCrOS, "Chrome OS"},
-    {kOsAndroid, "Android"},
-    {kOsCrOSOwnerOnly, "Chrome OS (owner only)"},
-    {kOsIos, "iOS"},
+    {kOsMac, "Mac"},         {kOsWin, "Windows"},
+    {kOsLinux, "Linux"},     {kOsCrOS, "Chrome OS"},
+    {kOsAndroid, "Android"}, {kOsCrOSOwnerOnly, "Chrome OS (owner only)"},
+    {kOsIos, "iOS"},         {kOsFuchsia, "Fuchsia"},
 };
 
 // Adds a |StringValue| to |list| for each platform where |bitmask| indicates
@@ -122,7 +119,7 @@ void AddOsStrings(unsigned bitmask, base::ListValue* list) {
 
 // Confirms that an entry is valid, used in a DCHECK in
 // SanitizeList below.
-bool ValidateFeatureEntry(const FeatureEntry& e) {
+bool IsValidFeatureEntry(const FeatureEntry& e) {
   switch (e.type) {
     case FeatureEntry::SINGLE_VALUE:
     case FeatureEntry::SINGLE_DISABLE_VALUE:
@@ -351,11 +348,18 @@ struct FlagsState::SwitchEntry {
   SwitchEntry() : feature_state(false) {}
 };
 
-FlagsState::FlagsState(const FeatureEntry* feature_entries,
-                       size_t num_feature_entries)
+bool FlagsState::Delegate::ShouldExcludeFlag(const FeatureEntry& entry) {
+  return false;
+}
+
+FlagsState::Delegate::Delegate() = default;
+FlagsState::Delegate::~Delegate() = default;
+
+FlagsState::FlagsState(base::span<const FeatureEntry> feature_entries,
+                       FlagsState::Delegate* delegate)
     : feature_entries_(feature_entries),
-      num_feature_entries_(num_feature_entries),
-      needs_restart_(false) {}
+      needs_restart_(false),
+      delegate_(delegate) {}
 
 FlagsState::~FlagsState() {}
 
@@ -558,18 +562,18 @@ std::vector<std::string> FlagsState::RegisterAllFeatureVariationParameters(
       params_by_trial_name;
 
   // First collect all the data for each trial.
-  for (size_t i = 0; i < num_feature_entries_; ++i) {
-    const FeatureEntry& e = feature_entries_[i];
-    if (e.type == FeatureEntry::FEATURE_WITH_PARAMS_VALUE) {
-      for (int j = 0; j < e.num_options; ++j) {
-        if (e.StateForOption(j) == FeatureEntry::FeatureState::ENABLED &&
-            enabled_entries.count(e.NameForOption(j))) {
-          std::string trial_name = e.feature_trial_name;
+  for (const FeatureEntry& entry : feature_entries_) {
+    if (entry.type == FeatureEntry::FEATURE_WITH_PARAMS_VALUE) {
+      for (int j = 0; j < entry.num_options; ++j) {
+        if (entry.StateForOption(j) == FeatureEntry::FeatureState::ENABLED &&
+            enabled_entries.count(entry.NameForOption(j))) {
+          std::string trial_name = entry.feature_trial_name;
           // The user has chosen to enable the feature by this option.
-          enabled_features_by_trial_name[trial_name].insert(e.feature->name);
+          enabled_features_by_trial_name[trial_name].insert(
+              entry.feature->name);
 
           const FeatureEntry::FeatureVariation* variation =
-              e.VariationForOption(j);
+              entry.VariationForOption(j);
           if (!variation)
             continue;
 
@@ -623,8 +627,7 @@ void FlagsState::GetFlagFeatureEntries(
 
   int current_platform = GetCurrentPlatform();
 
-  for (size_t i = 0; i < num_feature_entries_; ++i) {
-    const FeatureEntry& entry = feature_entries_[i];
+  for (const FeatureEntry& entry : feature_entries_) {
     if (skip_feature_entry.Run(entry))
       continue;
 
@@ -694,6 +697,8 @@ int FlagsState::GetCurrentPlatform() {
   return kOsLinux;
 #elif defined(OS_ANDROID)
   return kOsAndroid;
+#elif defined(OS_FUCHSIA)
+  return kOsFuchsia;
 #else
 #error Unknown platform
 #endif
@@ -837,17 +842,9 @@ std::set<std::string> FlagsState::SanitizeList(
   // an O(n^2) search, this is more efficient than creating a set from
   // |feature_entries_| first because |feature_entries_| is large and
   // |enabled_entries| should generally be small/empty.
-  const FeatureEntry* features_end = feature_entries_ + num_feature_entries_;
   for (const std::string& entry_name : enabled_entries) {
-    if (features_end !=
-        std::find_if(feature_entries_, features_end,
-                     [entry_name, platform_mask](const FeatureEntry& e) {
-                       DCHECK(ValidateFeatureEntry(e));
-                       return (e.supported_platforms & platform_mask) &&
-                              e.InternalNameMatches(entry_name);
-                     })) {
+    if (IsSupportedFeature(entry_name, platform_mask))
       new_enabled_entries.insert(entry_name);
-    }
   }
 
   return new_enabled_entries;
@@ -883,13 +880,12 @@ void FlagsState::GenerateFlagsToSwitchesMapping(
     std::map<std::string, SwitchEntry>* name_to_switch_map) const {
   GetSanitizedEnabledFlagsForCurrentPlatform(flags_storage, enabled_entries);
 
-  for (size_t i = 0; i < num_feature_entries_; ++i) {
-    const FeatureEntry& e = feature_entries_[i];
-    switch (e.type) {
+  for (const FeatureEntry& entry : feature_entries_) {
+    switch (entry.type) {
       case FeatureEntry::SINGLE_VALUE:
       case FeatureEntry::SINGLE_DISABLE_VALUE:
-        AddSwitchMapping(e.internal_name, e.command_line_switch,
-                         e.command_line_value, name_to_switch_map);
+        AddSwitchMapping(entry.internal_name, entry.command_line_switch,
+                         entry.command_line_value, name_to_switch_map);
         break;
 
       case FeatureEntry::ORIGIN_LIST_VALUE: {
@@ -898,38 +894,40 @@ void FlagsState::GenerateFlagsToSwitchesMapping(
         // the browser is restarted. Otherwise, the user provided list would
         // overwrite the list provided from the command line.
         const std::string origin_list_value = GetCombinedOriginListValue(
-            *flags_storage, e.internal_name, e.command_line_switch);
-        AddSwitchMapping(e.internal_name, e.command_line_switch,
+            *flags_storage, entry.internal_name, entry.command_line_switch);
+        AddSwitchMapping(entry.internal_name, entry.command_line_switch,
                          origin_list_value, name_to_switch_map);
         break;
       }
 
       case FeatureEntry::MULTI_VALUE:
-        for (int j = 0; j < e.num_options; ++j) {
-          AddSwitchMapping(
-              e.NameForOption(j), e.ChoiceForOption(j).command_line_switch,
-              e.ChoiceForOption(j).command_line_value, name_to_switch_map);
+        for (int j = 0; j < entry.num_options; ++j) {
+          AddSwitchMapping(entry.NameForOption(j),
+                           entry.ChoiceForOption(j).command_line_switch,
+                           entry.ChoiceForOption(j).command_line_value,
+                           name_to_switch_map);
         }
         break;
 
       case FeatureEntry::ENABLE_DISABLE_VALUE:
-        AddSwitchMapping(e.NameForOption(0), std::string(), std::string(),
+        AddSwitchMapping(entry.NameForOption(0), std::string(), std::string(),
                          name_to_switch_map);
-        AddSwitchMapping(e.NameForOption(1), e.command_line_switch,
-                         e.command_line_value, name_to_switch_map);
-        AddSwitchMapping(e.NameForOption(2), e.disable_command_line_switch,
-                         e.disable_command_line_value, name_to_switch_map);
+        AddSwitchMapping(entry.NameForOption(1), entry.command_line_switch,
+                         entry.command_line_value, name_to_switch_map);
+        AddSwitchMapping(entry.NameForOption(2),
+                         entry.disable_command_line_switch,
+                         entry.disable_command_line_value, name_to_switch_map);
         break;
 
       case FeatureEntry::FEATURE_VALUE:
       case FeatureEntry::FEATURE_WITH_PARAMS_VALUE:
-        for (int j = 0; j < e.num_options; ++j) {
-          FeatureEntry::FeatureState state = e.StateForOption(j);
+        for (int j = 0; j < entry.num_options; ++j) {
+          FeatureEntry::FeatureState state = entry.StateForOption(j);
           if (state == FeatureEntry::FeatureState::DEFAULT) {
-            AddFeatureMapping(e.NameForOption(j), std::string(), false,
+            AddFeatureMapping(entry.NameForOption(j), std::string(), false,
                               name_to_switch_map);
           } else {
-            AddFeatureMapping(e.NameForOption(j), e.feature->name,
+            AddFeatureMapping(entry.NameForOption(j), entry.feature->name,
                               state == FeatureEntry::FeatureState::ENABLED,
                               name_to_switch_map);
           }
@@ -941,12 +939,26 @@ void FlagsState::GenerateFlagsToSwitchesMapping(
 
 const FeatureEntry* FlagsState::FindFeatureEntryByName(
     const std::string& internal_name) const {
-  for (size_t i = 0; i < num_feature_entries_; ++i) {
-    if (feature_entries_[i].internal_name == internal_name) {
-      return feature_entries_ + i;
-    }
+  for (const FeatureEntry& entry : feature_entries_) {
+    if (entry.internal_name == internal_name)
+      return &entry;
   }
   return nullptr;
+}
+
+bool FlagsState::IsSupportedFeature(const std::string& name,
+                                    int platform_mask) const {
+  for (const auto& entry : feature_entries_) {
+    DCHECK(IsValidFeatureEntry(entry));
+    if (!(entry.supported_platforms & platform_mask))
+      continue;
+    if (!entry.InternalNameMatches(name))
+      continue;
+    if (delegate_ && delegate_->ShouldExcludeFlag(entry))
+      continue;
+    return true;
+  }
+  return false;
 }
 
 }  // namespace flags_ui

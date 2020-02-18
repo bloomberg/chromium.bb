@@ -16,7 +16,7 @@ Polymer({
   is: 'settings-internet-detail-page',
 
   behaviors: [
-    CrNetworkListenerBehavior,
+    NetworkListenerBehavior,
     CrPolicyNetworkBehaviorMojo,
     settings.RouteObserverBehavior,
     I18nBehavior,
@@ -102,12 +102,6 @@ Polymer({
       type: Boolean,
       value: false,
     },
-
-    /**
-     * Interface for networkingPrivate calls, passed from internet_page.
-     * @type {NetworkingPrivate}
-     */
-    networkingPrivate: Object,
 
     /**
      * The network AutoConnect state as a fake preference object.
@@ -205,12 +199,7 @@ Polymer({
   /** @private  {settings.InternetPageBrowserProxy} */
   browserProxy_: null,
 
-  /**
-   * This UI will use both the networkingPrivate extension API and the
-   * networkConfig mojo API until we provide all of the required functionality
-   * in networkConfig. TODO(stevenjb): Remove use of networkingPrivate api.
-   * @private {?chromeos.networkConfig.mojom.CrosNetworkConfigRemote}
-   */
+  /** @private {?chromeos.networkConfig.mojom.CrosNetworkConfigRemote} */
   networkConfig_: null,
 
   /** @override */
@@ -355,10 +344,9 @@ Polymer({
     if (!this.didSetFocus_) {
       // Focus a button once the initial state is set.
       this.didSetFocus_ = true;
-      const button = this.$$('#titleDiv .action-button:not([hidden])') ||
-          this.$$('#titleDiv cr-button:not([hidden])');
+      const button = this.$$('#titleDiv .action-button:not([hidden])');
       if (button) {
-        setTimeout(() => button.focus());
+        Polymer.RenderStatus.afterNextRender(this, () => button.focus());
       }
     }
 
@@ -389,7 +377,7 @@ Polymer({
     if (!this.propertiesReceived_) {
       return;
     }
-    const config = {};
+    const config = this.getDefaultConfigProperties_();
     config.autoConnect = {value: !!this.autoConnectPref_.value};
     this.setMojoNetworkProperties_(config);
   },
@@ -441,7 +429,7 @@ Polymer({
     if (!this.propertiesReceived_) {
       return;
     }
-    const config = {};
+    const config = this.getDefaultConfigProperties_();
     config.priority = {value: this.preferNetwork_ ? 1 : 0};
     this.setMojoNetworkProperties_(config);
   },
@@ -451,7 +439,7 @@ Polymer({
     const filter = {
       filter: mojom.FilterType.kVisible,
       networkType: mojom.NetworkType.kAll,
-      limit: mojom.kNoLimit,
+      limit: mojom.NO_LIMIT,
     };
     this.networkConfig_.getNetworkState(this.guid).then(response => {
       if (response.result) {
@@ -522,10 +510,25 @@ Polymer({
       this.close();
       return;
     }
+
     const managedProperties = OncMojo.getDefaultManagedProperties(
         networkState.type, networkState.guid, networkState.name);
     managedProperties.connectable = networkState.connectable;
     managedProperties.connectionState = networkState.connectionState;
+    switch (networkState.type) {
+      case mojom.NetworkType.kCellular:
+        managedProperties.typeProperties.cellular.signalStrength =
+            networkState.typeState.cellular.signalStrength;
+        break;
+      case mojom.NetworkType.kTether:
+        managedProperties.typeProperties.tether.signalStrength =
+            networkState.typeState.tether.signalStrength;
+        break;
+      case mojom.NetworkType.kWiFi:
+        managedProperties.typeProperties.wifi.signalStrength =
+            networkState.typeState.wifi.signalStrength;
+        break;
+    }
     this.managedProperties_ = managedProperties;
 
     this.propertiesReceived_ = true;
@@ -541,6 +544,14 @@ Polymer({
       return undefined;
     }
     return OncMojo.managedPropertiesToNetworkState(properties);
+  },
+
+  /**
+   * @return {!mojom.ConfigProperties}
+   * @private
+   */
+  getDefaultConfigProperties_: function() {
+    return OncMojo.getDefaultConfigProperties(this.managedProperties_.type);
   },
 
   /**
@@ -565,15 +576,17 @@ Polymer({
    * @param {!mojom.ManagedProperties} managedProperties
    * @param {boolean} propertiesReceived
    * @param {boolean} outOfRange
+   * @param {?OncMojo.DeviceStateProperties} deviceState
    * @return {string} The text to display for the network connection state.
    * @private
    */
-  getStateText_: function(managedProperties, propertiesReceived, outOfRange) {
+  getStateText_: function(
+      managedProperties, propertiesReceived, outOfRange, deviceState) {
     if (!managedProperties || !propertiesReceived) {
       return '';
     }
 
-    if (outOfRange) {
+    if (this.isOutOfRangeOrNotEnabled_(outOfRange, deviceState)) {
       return managedProperties.type == mojom.NetworkType.kTether ?
           this.i18n('tetherPhoneOutOfRange') :
           this.i18n('networkOutOfRange');
@@ -581,11 +594,11 @@ Polymer({
 
     if (managedProperties.type == mojom.NetworkType.kCellular &&
         !managedProperties.connectable) {
-      if (managedProperties.cellular.homeProvider &&
-          managedProperties.cellular.homeProvider.name) {
+      if (managedProperties.typeProperties.cellular.homeProvider &&
+          managedProperties.typeProperties.cellular.homeProvider.name) {
         return this.i18n(
             'cellularContactSpecificCarrier',
-            managedProperties.cellular.homeProvider.name);
+            managedProperties.typeProperties.cellular.homeProvider.name);
       }
       return this.i18n('cellularContactDefaultCarrier');
     }
@@ -614,11 +627,11 @@ Polymer({
     if (!this.isCellular_(managedProperties)) {
       return '';
     }
-    if (!managedProperties.cellular.allowRoaming) {
+    if (!managedProperties.typeProperties.cellular.allowRoaming) {
       return this.i18n('networkAllowDataRoamingDisabled');
     }
 
-    return managedProperties.cellular.roamingState == 'Roaming' ?
+    return managedProperties.typeProperties.cellular.roamingState == 'Roaming' ?
         this.i18n('networkAllowDataRoamingEnabledRoaming') :
         this.i18n('networkAllowDataRoamingEnabledHome');
   },
@@ -636,11 +649,13 @@ Polymer({
   /**
    * @param {!mojom.ManagedProperties|undefined} managedProperties
    * @param {boolean} outOfRange
+   * @param {?OncMojo.DeviceStateProperties} deviceState
    * @return {boolean} True if the network shown cannot initiate a connection.
    * @private
    */
-  isConnectionErrorState_: function(managedProperties, outOfRange) {
-    if (outOfRange) {
+  isConnectionErrorState_: function(
+      managedProperties, outOfRange, deviceState) {
+    if (this.isOutOfRangeOrNotEnabled_(outOfRange, deviceState)) {
       return true;
     }
 
@@ -710,7 +725,8 @@ Polymer({
         this.isPolicySource(managedProperties.source)) {
       return false;
     }
-    const hexSsid = OncMojo.getActiveString(managedProperties.wifi.hexSsid);
+    const hexSsid =
+        OncMojo.getActiveString(managedProperties.typeProperties.wifi.hexSsid);
     return !!globalPolicy.allowOnlyPolicyNetworksToConnect ||
         (!!globalPolicy.allowOnlyPolicyNetworksToConnectIfAvailable &&
          !!managedNetworkAvailable) ||
@@ -719,14 +735,15 @@ Polymer({
   },
 
   /**
-   * @param {!mojom.ManagedProperties} managedProperties
-   * @param {!mojom.GlobalPolicy} globalPolicy
+   * @param {!mojom.ManagedProperties|undefined} managedProperties
+   * @param {!mojom.GlobalPolicy|undefined} globalPolicy
    * @param {boolean} managedNetworkAvailable
+   * @param {?OncMojo.DeviceStateProperties} deviceState
    * @return {boolean}
    * @private
    */
   showConnect_: function(
-      managedProperties, globalPolicy, managedNetworkAvailable) {
+      managedProperties, globalPolicy, managedNetworkAvailable, deviceState) {
     if (!managedProperties) {
       return false;
     }
@@ -741,22 +758,31 @@ Polymer({
     if (this.isArcVpn_(managedProperties)) {
       return false;
     }
+
     if (managedProperties.connectionState !=
         mojom.ConnectionStateType.kNotConnected) {
       return false;
     }
+
+    if (deviceState &&
+        deviceState.deviceState !=
+            chromeos.networkConfig.mojom.DeviceStateType.kEnabled) {
+      return false;
+    }
+
     // Cellular is not configurable, so we always show the connect button, and
     // disable it if 'connectable' is false.
     if (managedProperties.type == mojom.NetworkType.kCellular) {
       return true;
     }
+
     // If 'connectable' is false we show the configure button.
     return managedProperties.connectable &&
         managedProperties.type != mojom.NetworkType.kEthernet;
   },
 
   /**
-   * @param {!mojom.ManagedProperties} managedProperties
+   * @param {!mojom.ManagedProperties|undefined} managedProperties
    * @return {boolean}
    * @private
    */
@@ -801,7 +827,8 @@ Polymer({
     if (!this.isCellular_(managedProperties)) {
       return false;
     }
-    const activation = managedProperties.cellular.activationState;
+    const activation =
+        managedProperties.typeProperties.cellular.activationState;
     return activation == mojom.ActivationStateType.kNotActivated ||
         activation == mojom.ActivationStateType.kPartiallyActivated;
   },
@@ -828,7 +855,8 @@ Polymer({
       return false;
     }
     if (type == mojom.NetworkType.kWiFi &&
-        managedProperties.wifi.security == mojom.SecurityType.kNone) {
+        managedProperties.typeProperties.wifi.security ==
+            mojom.SecurityType.kNone) {
       return false;
     }
     if (type == mojom.NetworkType.kWiFi &&
@@ -916,18 +944,20 @@ Polymer({
       return false;
     }
 
-    const paymentPortal = managedProperties.cellular.paymentPortal;
+    const paymentPortal =
+        managedProperties.typeProperties.cellular.paymentPortal;
     if (!paymentPortal || !paymentPortal.url) {
       return false;
     }
 
     // Only show for connected networks or LTE networks with a valid MDN.
     if (!this.isConnectedState_(managedProperties)) {
-      const technology = managedProperties.cellular.networkTechnology;
+      const technology =
+          managedProperties.typeProperties.cellular.networkTechnology;
       if (technology != 'LTE' && technology != 'LTEAdvanced') {
         return false;
       }
-      if (!managedProperties.cellular.mdn) {
+      if (!managedProperties.typeProperties.cellular.mdn) {
         return false;
       }
     }
@@ -936,20 +966,22 @@ Polymer({
   },
 
   /**
-   * @param {!mojom.ManagedProperties} managedProperties
+   * @param {!mojom.ManagedProperties|undefined} managedProperties
    * @param {?OncMojo.NetworkStateProperties} defaultNetwork
    * @param {boolean} propertiesReceived
    * @param {boolean} outOfRange
-   * @param {!mojom.GlobalPolicy} globalPolicy
+   * @param {!mojom.GlobalPolicy|undefined} globalPolicy
    * @param {boolean} managedNetworkAvailable
+   * @param {?OncMojo.DeviceStateProperties} deviceState
    * @return {boolean} Whether or not to enable the network connect button.
    * @private
    */
   enableConnect_: function(
       managedProperties, defaultNetwork, propertiesReceived, outOfRange,
-      globalPolicy, managedNetworkAvailable) {
+      globalPolicy, managedNetworkAvailable, deviceState) {
     if (!this.showConnect_(
-            managedProperties, globalPolicy, managedNetworkAvailable)) {
+            managedProperties, globalPolicy, managedNetworkAvailable,
+            deviceState)) {
       return false;
     }
     if (!propertiesReceived || outOfRange) {
@@ -1015,9 +1047,9 @@ Polymer({
   },
 
   /** @private */
-  onConnectTap_: function() {
+  handleConnectTap_: function() {
     if (this.managedProperties_.type == mojom.NetworkType.kTether &&
-        (!this.managedProperties_.tether.hasConnectedToHost)) {
+        (!this.managedProperties_.typeProperties.tether.hasConnectedToHost)) {
       this.showTetherDialog_();
       return;
     }
@@ -1044,7 +1076,7 @@ Polymer({
   },
 
   /** @private */
-  onDisconnectTap_: function() {
+  handleDisconnectTap_: function() {
     this.networkConfig_.startDisconnect(this.guid).then(response => {
       if (!response.success) {
         console.error('Disconnect failed for: ' + this.guid);
@@ -1053,10 +1085,71 @@ Polymer({
   },
 
   /** @private */
+  onConnectDisconnectTap_: function() {
+    if (this.enableConnect_(
+            this.managedProperties_, this.defaultNetwork,
+            this.propertiesReceived_, this.outOfRange_, this.globalPolicy,
+            this.managedNetworkAvailable, this.deviceState_)) {
+      this.handleConnectTap_();
+      return;
+    }
+
+    if (this.showDisconnect_(this.managedProperties_)) {
+      this.handleDisconnectTap_();
+      return;
+    }
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  shouldConnectDisconnectButtonBeHidden_: function() {
+    return !this.showConnect_(
+               this.managedProperties_, this.globalPolicy,
+               this.managedNetworkAvailable, this.deviceState_) &&
+        !this.showDisconnect_(this.managedProperties_);
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  shouldConnectDisconnectButtonBeDisabled_: function() {
+    return !this.enableConnect_(
+               this.managedProperties_, this.defaultNetwork,
+               this.propertiesReceived_, this.outOfRange_, this.globalPolicy,
+               this.managedNetworkAvailable, this.deviceState_) &&
+        !this.showDisconnect_(this.managedProperties_);
+  },
+
+  /**
+   * @return {string}
+   * @private
+   */
+  getConnectDisconnectButtonLabel_: function() {
+    if (this.showConnect_(
+            this.managedProperties_, this.globalPolicy,
+            this.managedNetworkAvailable, this.deviceState_)) {
+      return this.i18n('networkButtonConnect');
+    }
+
+    if (this.showDisconnect_(this.managedProperties_)) {
+      return this.i18n('networkButtonDisconnect');
+    }
+
+    return '';
+  },
+
+  /** @private */
   onForgetTap_: function() {
-    this.networkingPrivate.forgetNetwork(this.guid);
-    // A forgotten network no longer has a valid GUID, close the subpage.
-    this.close();
+    this.networkConfig_.forgetNetwork(this.guid).then(response => {
+      if (!response.success) {
+        console.error('Froget network failed for: ' + this.guid);
+      }
+      // A forgotten network no longer has a valid GUID, close the subpage.
+      this.close();
+    });
   },
 
   /** @private */
@@ -1102,8 +1195,9 @@ Polymer({
     return loadTimeData.getBoolean('showHiddenNetworkWarning') &&
         !!this.autoConnectPref_ && !!this.autoConnectPref_.value &&
         !!this.managedProperties_ &&
-        !!this.managedProperties_.type == mojom.NetworkType.kWiFi &&
-        !!OncMojo.getActiveValue(this.managedProperties_.wifi.hiddenSsid);
+        this.managedProperties_.type == mojom.NetworkType.kWiFi &&
+        !!OncMojo.getActiveValue(
+            this.managedProperties_.typeProperties.wifi.hiddenSsid);
   },
 
   /**
@@ -1120,7 +1214,7 @@ Polymer({
     }
     const field = e.detail.field;
     const value = e.detail.value;
-    const config = {};
+    const config = this.getDefaultConfigProperties_();
     const valueType = typeof value;
     if (valueType != 'string' && valueType != 'number' &&
         valueType != 'boolean' && !Array.isArray(value)) {
@@ -1130,10 +1224,17 @@ Polymer({
       return;
     }
     OncMojo.setConfigProperty(config, field, value);
-    // Ensure any required configuration properties are also set.
-    if (this.managedProperties_.vpn && config.vpn &&
-        config.vpn.type === undefined) {
-      config.vpn.type = this.managedProperties_.vpn.type;
+    // Ensure that any required configuration properties for partial
+    // configurations are set.
+    const vpnConfig = config.typeConfig.vpn;
+    if (vpnConfig) {
+      vpnConfig.type = this.managedProperties_.typeProperties.vpn.type;
+      if (vpnConfig.openVpn && vpnConfig.openVpn.saveCredentials == undefined) {
+        vpnConfig.openVpn.saveCredentials = false;
+      }
+      if (vpnConfig.l2tp && vpnConfig.l2tp.saveCredentials == undefined) {
+        vpnConfig.l2tp.saveCredentials = false;
+      }
     }
     this.setMojoNetworkProperties_(config);
   },
@@ -1146,8 +1247,9 @@ Polymer({
     if (!this.propertiesReceived_) {
       return;
     }
+    const config = this.getDefaultConfigProperties_();
     const apn = event.detail;
-    const config = {cellular: {apn: apn}};
+    config.typeConfig.cellular = {apn: apn};
     this.setMojoNetworkProperties_(config);
   },
 
@@ -1180,7 +1282,9 @@ Polymer({
     if (!this.propertiesReceived_) {
       return;
     }
-    this.setMojoNetworkProperties_({proxySettings: event.detail});
+    const config = this.getDefaultConfigProperties_();
+    config.proxySettings = event.detail;
+    this.setMojoNetworkProperties_(config);
   },
 
   /**
@@ -1226,7 +1330,7 @@ Polymer({
     return this.isArcVpn_(managedProperties) && this.prefs.arc &&
         this.prefs.arc.vpn && this.prefs.arc.vpn.always_on &&
         this.prefs.arc.vpn.always_on.vpn_package &&
-        OncMojo.getActiveValue(managedProperties.vpn.host) ===
+        OncMojo.getActiveValue(managedProperties.typeProperties.vpn.host) ===
         this.prefs.arc.vpn.always_on.vpn_package.value;
   },
 
@@ -1289,7 +1393,8 @@ Polymer({
    */
   hasVisibleFields_: function(fields) {
     for (let i = 0; i < fields.length; ++i) {
-      const value = this.get(fields[i], this.managedProperties_);
+      const key = OncMojo.getManagedPropertyKey(fields[i]);
+      const value = this.get(key, this.managedProperties_);
       if (value !== undefined && value !== '') {
         return true;
       }
@@ -1316,39 +1421,44 @@ Polymer({
     }
 
     /** @type {!Array<string>} */ const fields = [];
-    const type = this.managedProperties_.type;
-    if (type == mojom.NetworkType.kCellular) {
-      fields.push('cellular.activationState', 'cellular.servingOperator.name');
-      if (this.managedProperties_.restrictedConnectivity) {
-        fields.push('restrictedConnectivity');
-      }
-    } else if (type == mojom.NetworkType.kTether) {
-      fields.push(
-          'tether.batteryPercentage', 'tether.signalStrength',
-          'tether.carrier');
-    } else if (type == mojom.NetworkType.kVPN) {
-      const vpnType = this.managedProperties_.vpn.type;
-      switch (vpnType) {
-        case mojom.VpnType.kExtension:
-          fields.push('vpn.providerName');
-          break;
-        case mojom.VpnType.kArc:
-          fields.push('vpn.type');
-          fields.push('vpn.providerName');
-          break;
-        case mojom.VpnType.kOpenVPN:
-          fields.push(
-              'vpn.type', 'vpn.host', 'vpn.openVpn.username',
-              'vpn.openVpn.extraHosts');
-          break;
-        case mojom.VpnType.kL2TPIPsec:
-          fields.push('vpn.type', 'vpn.host', 'vpn.l2tp.username');
-          break;
-      }
-    } else if (type == mojom.NetworkType.kWiFi) {
-      if (this.managedProperties_.restrictedConnectivity) {
-        fields.push('restrictedConnectivity');
-      }
+    switch (this.managedProperties_.type) {
+      case mojom.NetworkType.kCellular:
+        fields.push(
+            'cellular.activationState', 'cellular.servingOperator.name');
+        if (this.managedProperties_.restrictedConnectivity) {
+          fields.push('restrictedConnectivity');
+        }
+        break;
+      case mojom.NetworkType.kTether:
+        fields.push(
+            'tether.batteryPercentage', 'tether.signalStrength',
+            'tether.carrier');
+        break;
+      case mojom.NetworkType.kVPN:
+        const vpnType = this.managedProperties_.typeProperties.vpn.type;
+        switch (vpnType) {
+          case mojom.VpnType.kExtension:
+            fields.push('vpn.providerName');
+            break;
+          case mojom.VpnType.kArc:
+            fields.push('vpn.type');
+            fields.push('vpn.providerName');
+            break;
+          case mojom.VpnType.kOpenVPN:
+            fields.push(
+                'vpn.type', 'vpn.host', 'vpn.openVpn.username',
+                'vpn.openVpn.extraHosts');
+            break;
+          case mojom.VpnType.kL2TPIPsec:
+            fields.push('vpn.type', 'vpn.host', 'vpn.l2tp.username');
+            break;
+        }
+        break;
+      case mojom.NetworkType.kWiFi:
+        if (this.managedProperties_.restrictedConnectivity) {
+          fields.push('restrictedConnectivity');
+        }
+        break;
     }
     return fields;
   },
@@ -1368,7 +1478,7 @@ Polymer({
     /** @dict */ const editFields = {};
     const type = this.managedProperties_.type;
     if (type == mojom.NetworkType.kVPN) {
-      const vpnType = this.managedProperties_.vpn.type;
+      const vpnType = this.managedProperties_.typeProperties.vpn.type;
       if (vpnType != mojom.VpnType.kExtension) {
         editFields['vpn.host'] = 'String';
       }
@@ -1391,15 +1501,19 @@ Polymer({
 
     /** @type {!Array<string>} */ const fields = [];
     const type = this.managedProperties_.type;
-    if (type == mojom.NetworkType.kCellular) {
-      fields.push(
-          'cellular.family', 'cellular.networkTechnology',
-          'cellular.servingOperator.code');
-    } else if (type == mojom.NetworkType.kWiFi) {
-      fields.push(
-          'wifi.ssid', 'wifi.bssid', 'wifi.signalStrength', 'wifi.security',
-          'wifi.eap.outer', 'wifi.eap.inner', 'wifi.eap.subjectMatch',
-          'wifi.eap.identity', 'wifi.eap.anonymousIdentity', 'wifi.frequency');
+    switch (type) {
+      case mojom.NetworkType.kCellular:
+        fields.push(
+            'cellular.family', 'cellular.networkTechnology',
+            'cellular.servingOperator.code');
+        break;
+      case mojom.NetworkType.kWiFi:
+        fields.push(
+            'wifi.ssid', 'wifi.bssid', 'wifi.signalStrength', 'wifi.security',
+            'wifi.eap.outer', 'wifi.eap.inner', 'wifi.eap.subjectMatch',
+            'wifi.eap.identity', 'wifi.eap.anonymousIdentity',
+            'wifi.frequency');
+        break;
     }
     return fields;
   },
@@ -1520,7 +1634,7 @@ Polymer({
   showCellularChooseNetwork_: function(managedProperties) {
     return !!managedProperties &&
         managedProperties.type == mojom.NetworkType.kCellular &&
-        managedProperties.cellular.supportNetworkScan;
+        managedProperties.typeProperties.cellular.supportNetworkScan;
   },
 
   /**
@@ -1543,7 +1657,7 @@ Polymer({
   showCellularSim_: function(managedProperties) {
     return !!managedProperties &&
         managedProperties.type == mojom.NetworkType.kCellular &&
-        managedProperties.cellular.family != 'CDMA';
+        managedProperties.typeProperties.cellular.family != 'CDMA';
   },
 
   /**
@@ -1554,7 +1668,7 @@ Polymer({
   isArcVpn_: function(managedProperties) {
     return !!managedProperties &&
         managedProperties.type == mojom.NetworkType.kVPN &&
-        managedProperties.vpn.type == mojom.VpnType.kArc;
+        managedProperties.typeProperties.vpn.type == mojom.VpnType.kArc;
   },
 
   /**
@@ -1565,7 +1679,7 @@ Polymer({
   isThirdPartyVpn_: function(managedProperties) {
     return !!managedProperties &&
         managedProperties.type == mojom.NetworkType.kVPN &&
-        managedProperties.vpn.type == mojom.VpnType.kExtension;
+        managedProperties.typeProperties.vpn.type == mojom.VpnType.kExtension;
   },
 
   /**
@@ -1607,6 +1721,19 @@ Polymer({
       }
     }
     return true;
+  },
+
+  /**
+   * @param {boolean} outOfRange
+   * @param {?OncMojo.DeviceStateProperties} deviceState
+   * @return {boolean}
+   * @private
+   */
+  isOutOfRangeOrNotEnabled_: function(outOfRange, deviceState) {
+    return outOfRange ||
+        (!!deviceState &&
+         deviceState.deviceState !=
+             chromeos.networkConfig.mojom.DeviceStateType.kEnabled);
   },
 });
 })();

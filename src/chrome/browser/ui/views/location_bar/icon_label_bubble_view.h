@@ -12,6 +12,7 @@
 #include "base/optional.h"
 #include "base/scoped_observer.h"
 #include "base/strings/string16.h"
+#include "third_party/skia/include/core/SkPath.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/material_design/material_design_controller_observer.h"
 #include "ui/gfx/geometry/insets.h"
@@ -32,6 +33,7 @@ struct AXNodeData;
 }
 
 namespace views {
+class AXVirtualView;
 class ImageView;
 }
 
@@ -102,6 +104,10 @@ class IconLabelBubbleView : public views::InkDropObserver,
     grow_animation_starting_width_ = width;
   }
 
+  // Reduces the slide duration to 1ms such that animation still follows
+  // through in the code but is short enough that it is essentially skipped.
+  void ReduceAnimationTimeForTesting();
+
  protected:
   static constexpr int kOpenTimeMS = 150;
 
@@ -111,12 +117,12 @@ class IconLabelBubbleView : public views::InkDropObserver,
   // Returns true when the separator should be visible.
   virtual bool ShouldShowSeparator() const;
 
-  // Returns a multiplier used to calculate the actual width of the view based
-  // on its desired width.  This ranges from 0 for a zero-width view to 1 for a
-  // full-width view and can be used to animate the width of the view.
-  virtual double WidthMultiplier() const;
+  // Gets the current width based on |slide_animation_| and given bounds.
+  // Virtual for testing.
+  virtual int GetWidthBetween(int min, int max) const;
 
   // Returns true when animation is in progress and is shrinking.
+  // Virtual for testing.
   virtual bool IsShrinking() const;
 
   // Returns true if a bubble was shown.
@@ -150,7 +156,12 @@ class IconLabelBubbleView : public views::InkDropObserver,
 
   gfx::Size GetSizeForLabelWidth(int label_width) const;
 
-  // Set up for icons that animate their labels in and then out.
+  // Set up for icons that animate their labels in. Animating out is initiated
+  // manually.
+  void SetUpForAnimation();
+
+  // Set up for icons that animate their labels in and then automatically out
+  // after a period of time.
   void SetUpForInOutAnimation();
 
   // Animates the view in and disables highlighting for hover and focus. If a
@@ -177,11 +188,12 @@ class IconLabelBubbleView : public views::InkDropObserver,
   // currently paused.
   bool is_animation_paused() const { return is_animation_paused_; }
 
-  // Reduces the slide duration to 1ms such that animation still follows
-  // through in the code but is short enough that it is essentially skipped.
-  void ReduceAnimationTimeForTesting();
+  // Slide animation for label.
+  gfx::SlideAnimation slide_animation_{this};
 
  private:
+  class HighlightPathGenerator;
+
   // Spacing between the image and the label.
   int GetInternalSpacing() const;
 
@@ -189,10 +201,6 @@ class IconLabelBubbleView : public views::InkDropObserver,
   // override this method. This may be used when we want to align the label text
   // to the suggestion text, like in the SelectedKeywordView.
   virtual int GetExtraInternalSpacing() const;
-
-  // Subclasses that want a different duration for the slide animation can
-  // override this method.
-  virtual int GetSlideDurationTime() const;
 
   // Returns the width after the icon and before the separator. If the
   // separator is not shown, and ShouldShowExtraEndSpace() is false, this
@@ -214,9 +222,9 @@ class IconLabelBubbleView : public views::InkDropObserver,
   // called directly, use AnimateOut() instead, which handles label visibility.
   void HideAnimation();
 
-  // Updates the highlight path for ink drops and focus rings using the current
-  // bounds and the separator visibility.
-  void UpdateHighlightPath();
+  // Gets the highlight path for ink drops and focus rings using the current
+  // bounds and separator visibility.
+  SkPath GetHighlightPath() const;
 
   // Sets the border padding around this view.
   void UpdateBorder();
@@ -235,9 +243,6 @@ class IconLabelBubbleView : public views::InkDropObserver,
   // bubble gets dismissed before the button handles the mouse release event.
   bool suppress_button_release_ = false;
 
-  // Slide animation for label.
-  gfx::SlideAnimation slide_animation_{this};
-
   // Parameters for the slide animation.
   bool is_animation_paused_ = false;
   double pause_animation_state_ = 0.0;
@@ -245,6 +250,10 @@ class IconLabelBubbleView : public views::InkDropObserver,
   // This is used to offset the label animation by the current width (e.g. the
   // icon). Set before animation begins in AnimateIn().
   int grow_animation_starting_width_ = 0;
+
+  // Virtual view, used for announcing changes to the state of this view. A
+  // virtual child of this view.
+  views::AXVirtualView* alert_virtual_view_;
 
   ScopedObserver<ui::MaterialDesignController,
                  ui::MaterialDesignControllerObserver>

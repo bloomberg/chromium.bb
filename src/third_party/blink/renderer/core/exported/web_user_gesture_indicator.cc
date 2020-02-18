@@ -30,7 +30,6 @@
 
 #include "third_party/blink/public/web/web_user_gesture_indicator.h"
 
-#include "third_party/blink/public/web/web_user_gesture_token.h"
 #include "third_party/blink/renderer/core/frame/frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
@@ -42,20 +41,11 @@ bool WebUserGestureIndicator::IsProcessingUserGesture(WebLocalFrame* frame) {
       frame ? To<WebLocalFrameImpl>(frame)->GetFrame() : nullptr);
 }
 
-bool WebUserGestureIndicator::IsProcessingUserGestureThreadSafe(
-    WebLocalFrame* frame) {
-  return LocalFrame::HasTransientUserActivation(
-      frame ? To<WebLocalFrameImpl>(frame)->GetFrame() : nullptr, true);
-}
-
-// TODO(csharrison): consumeUserGesture() and currentUserGestureToken() use
-// the thread-safe API, which many callers probably do not need. Consider
-// updating them if they are in any sort of critical path or called often.
 bool WebUserGestureIndicator::ConsumeUserGesture(
     WebLocalFrame* frame,
     UserActivationUpdateSource update_source) {
   return LocalFrame::ConsumeTransientUserActivation(
-      frame ? To<WebLocalFrameImpl>(frame)->GetFrame() : nullptr, true,
+      frame ? To<WebLocalFrameImpl>(frame)->GetFrame() : nullptr,
       update_source);
 
   ;
@@ -65,10 +55,6 @@ bool WebUserGestureIndicator::ProcessedUserGestureSinceLoad(
     WebLocalFrame* frame) {
   DCHECK(frame);
   return To<WebLocalFrameImpl>(frame)->GetFrame()->HasBeenActivated();
-}
-
-WebUserGestureToken WebUserGestureIndicator::CurrentUserGestureToken() {
-  return WebUserGestureToken(UserGestureIndicator::CurrentTokenThreadSafe());
 }
 
 }  // namespace blink

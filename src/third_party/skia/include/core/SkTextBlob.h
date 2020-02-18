@@ -26,6 +26,9 @@ struct SkDeserialProcs;
     fonts and text rendering are used by run.
 */
 class SK_API SkTextBlob final : public SkNVRefCnt<SkTextBlob> {
+private:
+    class RunRecord;
+
 public:
 
     /** Returns conservative bounding box. Uses SkPaint associated with each glyph to
@@ -153,6 +156,8 @@ public:
         @param memory      storage for data
         @param memory_size size of storage
         @return            bytes written, or zero if required storage is larger than memory_size
+
+        example: https://fiddle.skia.org/c/@TextBlob_serialize
     */
     size_t serialize(const SkSerialProcs& procs, void* memory, size_t memory_size) const;
 
@@ -166,6 +171,8 @@ public:
 
         @param procs  custom serial data encoders; may be nullptr
         @return       storage containing serialized SkTextBlob
+
+        example: https://fiddle.skia.org/c/@TextBlob_serialize_2
     */
     sk_sp<SkData> serialize(const SkSerialProcs& procs) const;
 
@@ -186,9 +193,28 @@ public:
     static sk_sp<SkTextBlob> Deserialize(const void* data, size_t size,
                                          const SkDeserialProcs& procs);
 
+    class SK_API Iter {
+    public:
+        struct Run {
+            SkTypeface*     fTypeface;
+            int             fGlyphCount;
+            const uint16_t* fGlyphIndices;
+        };
+
+        Iter(const SkTextBlob&);
+
+        /**
+         * Returns true for each "run" inside the textblob, setting the Run fields (if not null).
+         * If this returns false, there are no more runs, and the Run parameter will be ignored.
+         */
+        bool next(Run*);
+
+    private:
+        const RunRecord* fRunRecord;
+    };
+
 private:
     friend class SkNVRefCnt<SkTextBlob>;
-    class RunRecord;
 
     enum GlyphPositioning : uint8_t;
 
@@ -237,6 +263,8 @@ public:
     /** Constructs empty SkTextBlobBuilder. By default, SkTextBlobBuilder has no runs.
 
         @return  empty SkTextBlobBuilder
+
+        example: https://fiddle.skia.org/c/@TextBlobBuilder_empty_constructor
     */
     SkTextBlobBuilder();
 
@@ -252,6 +280,8 @@ public:
         reused to build a new set of runs.
 
         @return  SkTextBlob or nullptr
+
+        example: https://fiddle.skia.org/c/@TextBlobBuilder_make
     */
     sk_sp<SkTextBlob> make();
 

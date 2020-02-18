@@ -151,6 +151,7 @@ class COLOR_SPACE_EXPORT ColorSpace {
              const skcms_TransferFunction& fn,
              MatrixID matrix,
              RangeID full_range);
+
   explicit ColorSpace(const SkColorSpace& sk_color_space);
 
   // Returns true if this is not the default-constructor object.
@@ -167,6 +168,8 @@ class COLOR_SPACE_EXPORT ColorSpace {
   }
   static ColorSpace CreateCustom(const skcms_Matrix3x3& to_XYZD50,
                                  const skcms_TransferFunction& fn);
+  static ColorSpace CreateCustom(const skcms_Matrix3x3& to_XYZD50,
+                                 TransferID transfer);
   static constexpr ColorSpace CreateXYZD50() {
     return ColorSpace(PrimaryID::XYZ_D50, TransferID::LINEAR, MatrixID::RGB,
                       RangeID::FULL);
@@ -220,7 +223,7 @@ class COLOR_SPACE_EXPORT ColorSpace {
   size_t GetHash() const;
   std::string ToString() const;
 
-  // Returns true if the decoded values can be outside of the 0.0-1.0 range.
+  // Returns true if the transfer function is an HDR one (SMPTE 2084, HLG, etc).
   bool IsHDR() const;
 
   // Returns true if the encoded values can be outside of the 0.0-1.0 range.
@@ -266,6 +269,21 @@ class COLOR_SPACE_EXPORT ColorSpace {
   // For most formats, this is the RGB to YUV matrix.
   void GetTransferMatrix(SkMatrix44* matrix) const;
   void GetRangeAdjustMatrix(SkMatrix44* matrix) const;
+
+  // Returns the current primary ID.
+  // Note: if SetCustomPrimaries() has been used, the primary ID returned
+  // may have been set to PrimaryID::CUSTOM, or been coerced to another
+  // PrimaryID if it was very close.
+  PrimaryID GetPrimaryID() const;
+
+  // Returns the current transfer ID.
+  TransferID GetTransferID() const;
+
+  // Returns the current matrix ID.
+  MatrixID GetMatrixID() const;
+
+  // Returns the current range ID.
+  RangeID GetRangeID() const;
 
  private:
   static void GetPrimaryMatrix(PrimaryID, skcms_Matrix3x3* to_XYZD50);

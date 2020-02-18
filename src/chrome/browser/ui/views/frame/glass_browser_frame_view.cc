@@ -14,11 +14,11 @@
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
-#include "chrome/browser/ui/views/frame/hosted_app_button_container.h"
 #include "chrome/browser/ui/views/tabs/new_tab_button.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
+#include "chrome/browser/ui/views/web_apps/web_app_frame_toolbar_view.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/win/titlebar_config.h"
 #include "content/public/browser/web_contents.h"
@@ -69,8 +69,12 @@ SkColor GlassBrowserFrameView::GetReadableFeatureColor(
   // color_utils::GetColorWithMaxContrast()/IsDark() aren't used here because
   // they switch based on the Chrome light/dark endpoints, while we want to use
   // the system native behavior below.
-  return color_utils::GetLuma(background_color) < 128 ? SK_ColorWHITE
-                                                      : SK_ColorBLACK;
+  const auto windows_luma = [](SkColor c) {
+    return 0.25f * SkColorGetR(c) + 0.625f * SkColorGetG(c) +
+           0.125f * SkColorGetB(c);
+  };
+  return windows_luma(background_color) <= 128.0f ? SK_ColorWHITE
+                                                  : SK_ColorBLACK;
 }
 
 GlassBrowserFrameView::GlassBrowserFrameView(BrowserFrame* frame,
@@ -103,24 +107,28 @@ GlassBrowserFrameView::GlassBrowserFrameView(BrowserFrame* frame,
     AddChildView(window_icon_);
   }
 
+  web_app::AppBrowserController* controller =
+      browser_view->browser()->app_controller();
+  if (controller && controller->HasTitlebarToolbar()) {
+    // TODO(alancutter): Avoid snapshotting GetCaptionColor() values here and
+    // call it on demand in WebAppFrameToolbarView::UpdateIconsColor() via a
+    // delegate interface.
+    set_web_app_frame_toolbar(
+        AddChildView(std::make_unique<WebAppFrameToolbarView>(
+            frame, browser_view,
+            GetCaptionColor(BrowserFrameActiveState::kActive),
+            GetCaptionColor(BrowserFrameActiveState::kInactive))));
+  }
+
+  // The window title appears above the web app frame toolbar (if present),
+  // which surrounds the title with minimal-ui buttons on the left,
+  // and other controls (such as the app menu button) on the right.
   if (browser_view->ShouldShowWindowTitle()) {
     window_title_ = new views::Label(browser_view->GetWindowTitle());
     window_title_->SetSubpixelRenderingEnabled(false);
     window_title_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     window_title_->SetID(VIEW_ID_WINDOW_TITLE);
     AddChildView(window_title_);
-  }
-
-  web_app::AppBrowserController* controller =
-      browser_view->browser()->app_controller();
-  if (controller && controller->HasTitlebarToolbar()) {
-    // TODO(alancutter): Avoid snapshotting GetCaptionColor() values here and
-    // call it on demand in HostedAppButtonContainer::UpdateIconsColor() via a
-    // delegate interface.
-    set_hosted_app_button_container(new HostedAppButtonContainer(
-        frame, browser_view, GetCaptionColor(kActive),
-        GetCaptionColor(kInactive)));
-    AddChildView(hosted_app_button_container());
   }
 
   minimize_button_ =
@@ -176,7 +184,7 @@ int GlassBrowserFrameView::GetThemeBackgroundXInset() const {
 }
 
 bool GlassBrowserFrameView::HasVisibleBackgroundTabShapes(
-    ActiveState active_state) const {
+    BrowserFrameActiveState active_state) const {
   // Pre-Win 8, tabs never match the glass frame appearance.
   if (base::win::GetVersion() < base::win::Version::WIN8)
     return true;
@@ -202,7 +210,8 @@ bool GlassBrowserFrameView::CanDrawStrokes() const {
   return BrowserNonClientFrameView::CanDrawStrokes();
 }
 
-SkColor GlassBrowserFrameView::GetCaptionColor(ActiveState active_state) const {
+SkColor GlassBrowserFrameView::GetCaptionColor(
+    BrowserFrameActiveState active_state) const {
   const SkAlpha title_alpha = ShouldPaintAsActive(active_state)
                                   ? SK_AlphaOPAQUE
                                   : kInactiveTitlebarFeatureAlpha;
@@ -324,8 +333,8 @@ int GlassBrowserFrameView::NonClientHitTest(const gfx::Point& point) {
                                         DWMWA_CAPTION_BUTTON_BOUNDS,
                                         &button_bounds,
                                         sizeof(button_bounds)))) {
-      gfx::Rect buttons = gfx::ConvertRectToDIP(display::win::GetDPIScale(),
-                                                gfx::Rect(button_bounds));
+      gfx::Rect buttons = GetMirroredRect(gfx::ConvertRectToDIP(
+          display::win::GetDPIScale(), gfx::Rect(button_bounds)));
 
       // There is a small one-pixel strip right above the caption buttons in
       // which the resize border "peeks" through.
@@ -439,7 +448,8 @@ int GlassBrowserFrameView::FrameTopBorderThickness(bool restored) const {
   // Restored windows have a smaller top resize handle than the system default.
   // When maximized, the OS sizes the window such that the border extends beyond
   // the screen edges. In that case, we must return the default value.
-  if ((!frame()->IsFullscreen() && !IsMaximized()) || restored) {
+  if (browser_view()->IsTabStripVisible() &&
+      ((!frame()->IsFullscreen() && !IsMaximized()) || restored)) {
     return drag_handle_padding_;
   }
 
@@ -492,14 +502,13 @@ int GlassBrowserFrameView::TopAreaHeight(bool restored) const {
 int GlassBrowserFrameView::TitlebarMaximizedVisualHeight() const {
   int maximized_height =
       display::win::ScreenWin::GetSystemMetricsInDIP(SM_CYCAPTION);
-  if (hosted_app_button_container()) {
+  if (web_app_frame_toolbar()) {
     // Adding 2px of vertical padding puts at least 1 px of space on the top and
     // bottom of the element.
     constexpr int kVerticalPadding = 2;
-    maximized_height =
-        std::max(maximized_height,
-                 hosted_app_button_container()->GetPreferredSize().height() +
-                     kVerticalPadding);
+    maximized_height = std::max(
+        maximized_height, web_app_frame_toolbar()->GetPreferredSize().height() +
+                              kVerticalPadding);
   }
   return maximized_height;
 }
@@ -540,8 +549,8 @@ bool GlassBrowserFrameView::IsToolbarVisible() const {
 }
 
 bool GlassBrowserFrameView::ShowCustomIcon() const {
-  // Hosted app windows don't include the window icon as per UI mocks.
-  return !hosted_app_button_container() && ShouldCustomDrawSystemTitlebar() &&
+  // Web-app windows don't include the window icon as per UI mocks.
+  return !web_app_frame_toolbar() && ShouldCustomDrawSystemTitlebar() &&
          browser_view()->ShouldShowWindowIcon();
 }
 
@@ -636,7 +645,8 @@ void GlassBrowserFrameView::PaintTitlebar(gfx::Canvas* canvas) const {
   }
 
   if (ShowCustomTitle())
-    window_title_->SetEnabledColor(GetCaptionColor(kUseCurrent));
+    window_title_->SetEnabledColor(
+        GetCaptionColor(BrowserFrameActiveState::kUseCurrent));
 }
 
 void GlassBrowserFrameView::LayoutTitleBar() {
@@ -668,18 +678,21 @@ void GlassBrowserFrameView::LayoutTitleBar() {
     next_leading_x = window_icon_bounds.right() + kIconTitleSpacing;
   }
 
-  if (hosted_app_button_container()) {
-    next_trailing_x = hosted_app_button_container()->LayoutInContainer(
-        next_leading_x, next_trailing_x, window_top, titlebar_visual_height);
+  if (web_app_frame_toolbar()) {
+    std::pair<int, int> remaining_bounds =
+        web_app_frame_toolbar()->LayoutInContainer(next_leading_x,
+                                                   next_trailing_x, window_top,
+                                                   titlebar_visual_height);
+    next_leading_x = remaining_bounds.first;
+    next_trailing_x = remaining_bounds.second;
   }
 
   if (ShowCustomTitle()) {
-    if (!ShowCustomIcon()) {
-      // This matches native Windows 10 UWP apps that don't have window icons.
-      constexpr int kMinimumTitleLeftBorderMargin = 11;
-      DCHECK_LE(next_leading_x, kMinimumTitleLeftBorderMargin);
-      next_leading_x = kMinimumTitleLeftBorderMargin;
-    }
+    // If nothing has been added to the left, match native Windows 10 UWP apps
+    // that don't have window icons.
+    constexpr int kMinimumTitleLeftBorderMargin = 11;
+    next_leading_x = std::max(next_leading_x, kMinimumTitleLeftBorderMargin);
+
     window_title_->SetText(browser_view()->GetWindowTitle());
     const int max_text_width = std::max(0, next_trailing_x - next_leading_x);
     window_title_->SetBounds(next_leading_x, window_icon_bounds.y(),

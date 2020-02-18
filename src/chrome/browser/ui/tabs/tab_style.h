@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/size.h"
@@ -100,6 +101,9 @@ class TabStyle {
   // Derives and returns colors for the tab. See TabColors, above.
   virtual TabColors CalculateColors() const = 0;
 
+  // Returns the appropriate fonts for the current theme and active state.
+  virtual const gfx::FontList& GetFontList() const = 0;
+
   // Paints the tab.
   virtual void PaintTab(gfx::Canvas* canvas) const = 0;
 
@@ -111,6 +115,9 @@ class TabStyle {
 
   // Hides the hover animation.
   virtual void HideHover(HideHoverStyle style) = 0;
+
+  // Opacity of the active tab background painted over inactive selected tabs.
+  static constexpr float kSelectedTabOpacity = 0.75f;
 
   // Returns the preferred width of a single Tab, assuming space is
   // available.
@@ -139,12 +146,12 @@ class TabStyle {
   // or og:image images, etc.
   static gfx::Size GetPreviewImageSize();
 
+  // Returns the radius of the outer corners of the tab shape.
+  static int GetCornerRadius();
+
  protected:
   // Avoid implicitly-deleted constructor.
   TabStyle() = default;
-
-  // Returns the radius of the outer corners of the tab shape.
-  static int GetCornerRadius();
 
   // Returns how far from the leading and trailing edges of a tab the contents
   // should actually be laid out.

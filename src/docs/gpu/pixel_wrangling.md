@@ -52,8 +52,7 @@ so on. The waterfalls we’re interested in are:
 [Chromium GPU]: https://ci.chromium.org/p/chromium/g/chromium.gpu/console?reload=120
 [Chromium GPU FYI]: https://ci.chromium.org/p/chromium/g/chromium.gpu.fyi/console?reload=120
 [ANGLE tryservers]: https://build.chromium.org/p/tryserver.chromium.angle/waterfall
-<!-- TODO(kainino): update link when the page is migrated -->
-[ANGLE Wrangler]: https://sites.google.com/a/chromium.org/dev/developers/how-tos/angle-wrangling
+[ANGLE Wrangler]: https://chromium.googlesource.com/angle/angle/+/master/infra/ANGLEWrangling.md
 
 ## Test Suites
 
@@ -80,6 +79,8 @@ test the code that is actually shipped. As of this writing, the tests included:
     `src/gpu/gles2_conform_support/BUILD.gn`
 *   `gl_tests`: see `src/gpu/BUILD.gn`
 *   `gl_unittests`: see `src/ui/gl/BUILD.gn`
+*   `rendering_representative_perf_tests` (on the chromium.gpu.fyi waterfall):
+    see `src/chrome/test/BUILD.gn`
 
 And more. See
 [`src/testing/buildbot/README.md`](../../testing/buildbot/README.md)
@@ -202,12 +203,18 @@ shift, and a calendar appointment.
     rebaselined.
     1. For a given build failing the pixel tests, look for either:
         1. One or more links named `gold_triage_link for <test name>`. This will
-           be the case if there are fewer than 10 links.
+           be the case if there are fewer than 10 links. If the test was run on
+           a trybot, the link will instead be named
+           `triage_link_for_entire_cl for <test name>` (the weird naming comes
+           with how the recipe processes and displays links).
         1. A single link named
            `Too many artifacts produced to link individually, click for links`.
            This will be the case if there are 10 or more links.
     1. In either case, follow the link(s) to the triage page for the image the
        failing test produced.
+        1. If the test was run on a trybot, all the links will point to the same
+           page, which will be the triage page for every untriaged image
+           produced by the CL being tested.
     1. Ensure you are signed in to the Gold server the links take you to (both
        @google.com and @chromium.org accounts work).
     1. Triage images on those pages (typically by approving them, but you can
@@ -231,8 +238,9 @@ shift, and a calendar appointment.
         by Telemetry, rather than a Gtest harness. The tests and their
         expectations are contained in [src/content/test/gpu/gpu_tests/test_expectations] . See
         for example <code>[webgl_conformance_expectations.txt]</code>,
-        <code>[gpu_process_expectations.txt]</code> and
-        <code>[pixel_expectations.txt]</code>.
+        <code>[gpu_process_expectations.txt]</code>,
+        <code>[pixel_expectations.txt]</code> and
+        [rendering_representative_perf_tests].
     1.  See the header of the file a list of modifiers to specify a bot
         configuration. It is possible to specify OS (down to a specific
         version, say, Windows 7 or Mountain Lion), GPU vendor
@@ -271,6 +279,7 @@ https://ci.chromium.org/p/chromium/builders/luci.chromium.try/win7-rel
 [pixel_expectations.txt]: https://chromium.googlesource.com/chromium/src/+/master/content/test/gpu/gpu_tests/test_expectations/pixel_expectations.txt
 [stamping out flakiness]: gpu_testing.md#Stamping-out-Flakiness
 [gtest-DISABLED]: https://github.com/google/googletest/blob/master/googletest/docs/AdvancedGuide.md#temporarily-disabling-tests
+[rendering_representative_perf_tests]: ../testing/rendering_representative_perf_tests.md#Updating-Expectations
 
 ### When Bots Misbehave (SSHing into a bot)
 

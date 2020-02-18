@@ -17,12 +17,12 @@
 #import "ios/chrome/browser/ui/toolbar/public/features.h"
 #import "ios/chrome/browser/ui/toolbar/public/omnibox_focuser.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_constants.h"
+#import "ios/chrome/browser/ui/ui_feature_flags.h"
 #include "ios/chrome/browser/ui/util/animation_util.h"
 #import "ios/chrome/browser/ui/util/force_touch_long_press_gesture_recognizer.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/material_timing.h"
 #import "ios/third_party/material_components_ios/src/components/ProgressView/src/MaterialProgressView.h"
-#import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -55,6 +55,12 @@ const CGFloat kTabGridAnimationsTotalDuration = 0.5;
 @synthesize isNTP = _isNTP;
 
 #pragma mark - Public
+
+- (BOOL)areAnimationsEnabled {
+  return base::FeatureList::IsEnabled(kDisableAnimationOnLowBattery)
+             ? [UIView areAnimationsEnabled]
+             : YES;
+}
 
 - (void)updateForSideSwipeSnapshotOnNTP:(BOOL)onNTP {
   self.view.progressBar.hidden = YES;
@@ -153,14 +159,16 @@ const CGFloat kTabGridAnimationsTotalDuration = 0.5;
              !IsRegularXRegularSizeClass(self) && !self.isNTP) {
     [self.view.progressBar setProgress:0];
     [self updateProgressBarVisibility];
-    // Layout if needed the progress bar to avoid having the progress bar going
-    // backward when opening a page from the NTP.
+    // Layout if needed the progress bar to avoid having the progress bar
+    // going backward when opening a page from the NTP.
     [self.view.progressBar layoutIfNeeded];
   }
 }
 
 - (void)setLoadingProgressFraction:(double)progress {
-  [self.view.progressBar setProgress:progress animated:YES completion:nil];
+  [self.view.progressBar setProgress:progress
+                            animated:[self areAnimationsEnabled]
+                          completion:nil];
 }
 
 - (void)setTabCount:(int)tabCount addedInBackground:(BOOL)inBackground {
@@ -233,7 +241,7 @@ const CGFloat kTabGridAnimationsTotalDuration = 0.5;
 - (void)stopProgressBar {
   __weak AdaptiveToolbarViewController* weakSelf = self;
   [self.view.progressBar setProgress:1
-                            animated:YES
+                            animated:[self areAnimationsEnabled]
                           completion:^(BOOL finished) {
                             [weakSelf updateProgressBarVisibility];
                           }];
@@ -321,13 +329,13 @@ const CGFloat kTabGridAnimationsTotalDuration = 0.5;
   __weak __typeof(self) weakSelf = self;
   if (self.loading && self.view.progressBar.hidden) {
     [self.view.progressBar setHidden:NO
-                            animated:YES
+                            animated:[self areAnimationsEnabled]
                           completion:^(BOOL finished) {
                             [weakSelf updateProgressBarVisibility];
                           }];
   } else if (!self.loading && !self.view.progressBar.hidden) {
     [self.view.progressBar setHidden:YES
-                            animated:YES
+                            animated:[self areAnimationsEnabled]
                           completion:^(BOOL finished) {
                             [weakSelf updateProgressBarVisibility];
                           }];
@@ -379,7 +387,13 @@ const CGFloat kTabGridAnimationsTotalDuration = 0.5;
   } else if (sender == self.view.shareButton) {
     base::RecordAction(base::UserMetricsAction("MobileToolbarShareMenu"));
   } else if (sender == self.view.searchButton) {
-    base::RecordAction(base::UserMetricsAction("MobileToolbarOmniboxShortcut"));
+    if (base::FeatureList::IsEnabled(kToolbarNewTabButton)) {
+      base::RecordAction(
+          base::UserMetricsAction("MobileToolbarNewTabShortcut"));
+    } else {
+      base::RecordAction(
+          base::UserMetricsAction("MobileToolbarOmniboxShortcut"));
+    }
   } else {
     NOTREACHED();
   }

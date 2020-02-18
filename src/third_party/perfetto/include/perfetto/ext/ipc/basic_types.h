@@ -21,16 +21,12 @@
 #include <stdint.h>
 #include <sys/types.h>
 
-namespace google {
-namespace protobuf {
-class MessageLite;
-}  // namespace protobuf
-}  // namespace google
+#include "perfetto/protozero/cpp_message_obj.h"
 
 namespace perfetto {
 namespace ipc {
 
-using ProtoMessage = ::google::protobuf::MessageLite;
+using ProtoMessage = ::protozero::CppMessageObj;
 using ServiceID = uint32_t;
 using MethodID = uint32_t;
 using ClientID = uint64_t;

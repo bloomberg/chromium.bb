@@ -5,15 +5,18 @@
 package org.chromium.chrome.browser.feed;
 
 import android.app.Activity;
-import android.support.annotation.Nullable;
 
-import com.google.android.libraries.feed.api.client.stream.Stream;
+import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 
-import org.chromium.base.VisibleForTesting;
+import org.chromium.chrome.browser.feed.library.api.client.stream.Stream;
 import org.chromium.chrome.browser.ntp.NewTabPage;
+import org.chromium.chrome.browser.preferences.Pref;
+import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.Tab.TabHidingType;
+import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tabmodel.TabSelectionType;
 import org.chromium.content_public.browser.NavigationController;
@@ -80,13 +83,19 @@ final class NtpStreamLifecycleManager extends StreamLifecycleManager {
     /** @return Whether the {@link Stream} can be shown. */
     @Override
     protected boolean canShow() {
-        return super.canShow() && !mTab.isHidden();
+        // We don't call Stream#onShow to prevent feed services from being warmed up if the user
+        // has opted out from article suggestions during the previous session.
+        return super.canShow()
+                && PrefServiceBridge.getInstance().getBoolean(Pref.NTP_ARTICLES_LIST_VISIBLE)
+                && !((TabImpl) mTab).isHidden();
     }
 
     /** @return Whether the {@link Stream} can be activated. */
     @Override
     protected boolean canActivate() {
-        return super.canActivate() && mTab.isUserInteractable();
+        return super.canActivate()
+                && PrefServiceBridge.getInstance().getBoolean(Pref.NTP_ARTICLES_LIST_VISIBLE)
+                && mTab.isUserInteractable();
     }
 
     /**

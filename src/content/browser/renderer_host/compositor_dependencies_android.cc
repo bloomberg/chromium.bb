@@ -4,6 +4,8 @@
 
 #include "content/browser/renderer_host/compositor_dependencies_android.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
@@ -20,6 +22,7 @@
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 
 namespace content {
 
@@ -95,16 +98,19 @@ CompositorDependenciesAndroid::CompositorDependenciesAndroid()
 CompositorDependenciesAndroid::~CompositorDependenciesAndroid() = default;
 
 void CompositorDependenciesAndroid::CreateVizFrameSinkManager() {
-  viz::mojom::FrameSinkManagerPtr frame_sink_manager;
-  viz::mojom::FrameSinkManagerRequest frame_sink_manager_request =
-      mojo::MakeRequest(&frame_sink_manager);
-  viz::mojom::FrameSinkManagerClientPtr frame_sink_manager_client;
-  viz::mojom::FrameSinkManagerClientRequest frame_sink_manager_client_request =
-      mojo::MakeRequest(&frame_sink_manager_client);
+  mojo::PendingRemote<viz::mojom::FrameSinkManager> frame_sink_manager;
+  mojo::PendingReceiver<viz::mojom::FrameSinkManager>
+      frame_sink_manager_receiver =
+          frame_sink_manager.InitWithNewPipeAndPassReceiver();
+  mojo::PendingRemote<viz::mojom::FrameSinkManagerClient>
+      frame_sink_manager_client;
+  mojo::PendingReceiver<viz::mojom::FrameSinkManagerClient>
+      frame_sink_manager_client_receiver =
+          frame_sink_manager_client.InitWithNewPipeAndPassReceiver();
 
   // Setup HostFrameSinkManager with interface endpoints.
   host_frame_sink_manager_.BindAndSetManager(
-      std::move(frame_sink_manager_client_request),
+      std::move(frame_sink_manager_client_receiver),
       base::ThreadTaskRunnerHandle::Get(), std::move(frame_sink_manager));
 
   // Set up a callback to automatically re-connect if we lose our
@@ -117,8 +123,8 @@ void CompositorDependenciesAndroid::CreateVizFrameSinkManager() {
   // connected to the GPU process.
   pending_connect_viz_on_io_thread_ = base::BindOnce(
       &CompositorDependenciesAndroid::ConnectVizFrameSinkManagerOnIOThread,
-      std::move(frame_sink_manager_request),
-      frame_sink_manager_client.PassInterface());
+      std::move(frame_sink_manager_receiver),
+      std::move(frame_sink_manager_client));
 }
 
 cc::TaskGraphRunner* CompositorDependenciesAndroid::GetTaskGraphRunner() {
@@ -144,12 +150,12 @@ void CompositorDependenciesAndroid::TryEstablishVizConnectionIfNeeded() {
 // re-run when the request is deleted (goes out of scope).
 // static
 void CompositorDependenciesAndroid::ConnectVizFrameSinkManagerOnIOThread(
-    viz::mojom::FrameSinkManagerRequest request,
-    viz::mojom::FrameSinkManagerClientPtrInfo client) {
+    mojo::PendingReceiver<viz::mojom::FrameSinkManager> receiver,
+    mojo::PendingRemote<viz::mojom::FrameSinkManagerClient> client) {
   auto* gpu_process_host = GpuProcessHost::Get();
   if (!gpu_process_host)
     return;
-  gpu_process_host->gpu_host()->ConnectFrameSinkManager(std::move(request),
+  gpu_process_host->gpu_host()->ConnectFrameSinkManager(std::move(receiver),
                                                         std::move(client));
 }
 

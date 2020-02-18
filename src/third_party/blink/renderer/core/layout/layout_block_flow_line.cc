@@ -36,6 +36,8 @@
 #include "third_party/blink/renderer/core/layout/line/line_layout_state.h"
 #include "third_party/blink/renderer/core/layout/line/line_width.h"
 #include "third_party/blink/renderer/core/layout/line/word_measurement.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_fragment_item.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_cursor.h"
 #include "third_party/blink/renderer/core/layout/svg/line/svg_root_inline_box.h"
 #include "third_party/blink/renderer/core/layout/vertical_position_cache.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
@@ -2033,8 +2035,12 @@ void LayoutBlockFlow::LayoutInlineChildren(bool relayout_children,
       // |LayoutIfNeeded| should not mark itself and its ancestors to
       // |NeedsLayout|.
       for (const LayoutObject* parent = atomic_inline_child;
-           parent && parent != this; parent = parent->Parent())
-        DCHECK(!parent->NeedsLayout());
+           parent && parent != this; parent = parent->Parent()) {
+        DCHECK(!parent->SelfNeedsLayout());
+        DCHECK(!parent->NeedsLayout() ||
+               parent->LayoutBlockedByDisplayLock(
+                   DisplayLockLifecycleTarget::kChildren));
+      }
 #endif
     }
 
@@ -2124,7 +2130,6 @@ RootInlineBox* LayoutBlockFlow::DetermineStartPosition(
     if (layout_state.HasInlineChild() && !SelfNeedsLayout()) {
       SetNeedsLayoutAndFullPaintInvalidation(
           layout_invalidation_reason::kFloatDescendantChanged, kMarkOnlyThis);
-      SetShouldDoFullPaintInvalidation();
     }
 
     DeleteLineBoxTree();
@@ -2381,6 +2386,18 @@ void LayoutBlockFlow::AddVisualOverflowFromInlineChildren() {
 
   if (const NGPaintFragment* paint_fragment = PaintFragment()) {
     for (const NGPaintFragment* child : paint_fragment->Children()) {
+      if (child->HasSelfPaintingLayer())
+        continue;
+      PhysicalRect child_rect = child->InkOverflow();
+      if (!child_rect.IsEmpty()) {
+        child_rect.offset += child->Offset();
+        AddContentsVisualOverflow(child_rect);
+      }
+    }
+  } else if (const NGFragmentItems* items = FragmentItems()) {
+    for (NGInlineCursor cursor(*items); cursor; cursor.MoveToNextSibling()) {
+      const NGFragmentItem* child = cursor.CurrentItem();
+      DCHECK(child);
       if (child->HasSelfPaintingLayer())
         continue;
       PhysicalRect child_rect = child->InkOverflow();

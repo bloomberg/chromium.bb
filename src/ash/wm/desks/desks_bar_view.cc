@@ -16,6 +16,7 @@
 #include "ash/wm/desks/desk_mini_view_animations.h"
 #include "ash/wm/desks/new_desk_button.h"
 #include "ash/wm/overview/overview_controller.h"
+#include "ash/wm/overview/overview_grid.h"
 #include "ash/wm/overview/overview_highlight_controller.h"
 #include "ash/wm/overview/overview_session.h"
 #include "base/stl_util.h"
@@ -34,6 +35,16 @@ namespace ash {
 namespace {
 
 constexpr int kBarHeight = 104;
+constexpr int kBarHeightInCompactLayout = 64;
+constexpr int kUseCompactLayoutWidthThreshold = 600;
+
+// New desk button layout constants.
+constexpr int kButtonRightMargin = 36;
+constexpr int kIconAndTextHorizontalPadding = 16;
+constexpr int kIconAndTextVerticalPadding = 8;
+
+// Spacing between mini views.
+constexpr int kMiniViewsSpacing = 12;
 
 base::string16 GetMiniViewTitle(int mini_view_index) {
   DCHECK_GE(mini_view_index, 0);
@@ -117,9 +128,10 @@ class DeskBarHoverObserver : public ui::EventObserver {
 // -----------------------------------------------------------------------------
 // DesksBarView:
 
-DesksBarView::DesksBarView()
+DesksBarView::DesksBarView(OverviewGrid* overview_grid)
     : background_view_(new views::View),
-      new_desk_button_(new NewDeskButton(this)) {
+      new_desk_button_(new NewDeskButton(this)),
+      overview_grid_(overview_grid) {
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
 
@@ -127,7 +139,7 @@ DesksBarView::DesksBarView()
   background_view_->layer()->SetFillsBoundsOpaquely(false);
   background_view_->layer()->SetColor(
       AshColorProvider::Get()->GetBaseLayerColor(
-          AshColorProvider::BaseLayerType::kTransparentWithBlur,
+          AshColorProvider::BaseLayerType::kTransparent74,
           AshColorProvider::AshColorMode::kDark));
 
   AddChildView(background_view_);
@@ -141,7 +153,13 @@ DesksBarView::~DesksBarView() {
 }
 
 // static
-int DesksBarView::GetBarHeight() {
+int DesksBarView::GetBarHeightForWidth(const DesksBarView* desks_bar_view,
+                                       int width) {
+  if (width <= kUseCompactLayoutWidthThreshold ||
+      (desks_bar_view && width <= desks_bar_view->min_width_to_fit_contents_)) {
+    return kBarHeightInCompactLayout;
+  }
+
   return kBarHeight;
 }
 
@@ -158,7 +176,7 @@ std::unique_ptr<views::Widget> DesksBarView::CreateDesksWidget(
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.activatable = views::Widget::InitParams::ACTIVATABLE_NO;
   params.accept_events = true;
-  params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
+  params.opacity = views::Widget::InitParams::WindowOpacity::kTranslucent;
   // Use the wallpaper container similar to all background widgets created in
   // overview mode.
   params.parent = root->GetChildById(kShellWindowId_WallpaperContainer);
@@ -208,13 +226,16 @@ const char* DesksBarView::GetClassName() const {
 void DesksBarView::Layout() {
   background_view_->SetBoundsRect(bounds());
 
-  constexpr int kButtonRightMargin = 36;
-  constexpr int kIconAndTextHorizontalPadding = 16;
-  constexpr int kIconAndTextVerticalPadding = 8;
-
+  const bool compact = UsesCompactLayout();
+  new_desk_button_->SetLabelVisible(!compact);
   gfx::Size new_desk_button_size = new_desk_button_->GetPreferredSize();
-  new_desk_button_size.Enlarge(2 * kIconAndTextHorizontalPadding,
-                               2 * kIconAndTextVerticalPadding);
+  if (compact) {
+    new_desk_button_size.Enlarge(2 * kIconAndTextVerticalPadding,
+                                 2 * kIconAndTextVerticalPadding);
+  } else {
+    new_desk_button_size.Enlarge(2 * kIconAndTextHorizontalPadding,
+                                 2 * kIconAndTextVerticalPadding);
+  }
 
   const gfx::Rect button_bounds{
       bounds().right() - new_desk_button_size.width() - kButtonRightMargin,
@@ -225,7 +246,6 @@ void DesksBarView::Layout() {
   if (mini_views_.empty())
     return;
 
-  constexpr int kMiniViewsSpacing = 12;
   const gfx::Size mini_view_size = mini_views_[0]->GetPreferredSize();
   const int total_width =
       mini_views_.size() * (mini_view_size.width() + kMiniViewsSpacing) -
@@ -240,6 +260,11 @@ void DesksBarView::Layout() {
     mini_view->SetBoundsRect(gfx::Rect(gfx::Point(x, y), mini_view_size));
     x += (mini_view_size.width() + kMiniViewsSpacing);
   }
+}
+
+bool DesksBarView::UsesCompactLayout() const {
+  return width() <= kUseCompactLayoutWidthThreshold ||
+         width() <= min_width_to_fit_contents_;
 }
 
 void DesksBarView::ButtonPressed(views::Button* sender,
@@ -281,7 +306,9 @@ void DesksBarView::OnDeskRemoved(const Desk* desk) {
   std::unique_ptr<DeskMiniView> removed_mini_view = std::move(*iter);
   auto partition_iter = mini_views_.erase(iter);
 
-  Layout();
+  UpdateMinimumWidthToFitContents();
+  overview_grid_->OnDesksChanged();
+
   UpdateMiniViewsLabels();
   new_desk_button_->UpdateButtonState();
 
@@ -311,6 +338,8 @@ void DesksBarView::OnDeskActivationChanged(const Desk* activated,
   }
 }
 
+void DesksBarView::OnDeskSwitchAnimationLaunching() {}
+
 void DesksBarView::OnDeskSwitchAnimationFinished() {}
 
 void DesksBarView::UpdateNewMiniViews(bool animate) {
@@ -321,7 +350,7 @@ void DesksBarView::UpdateNewMiniViews(bool animate) {
 
     // The bar background is initially translated off the screen.
     gfx::Transform translate;
-    translate.Translate(0, -kBarHeight);
+    translate.Translate(0, -height());
     background_view_->layer()->SetTransform(translate);
     background_view_->layer()->SetOpacity(0);
 
@@ -348,7 +377,8 @@ void DesksBarView::UpdateNewMiniViews(bool animate) {
     }
   }
 
-  Layout();
+  UpdateMinimumWidthToFitContents();
+  overview_grid_->OnDesksChanged();
 
   if (!animate)
     return;
@@ -377,6 +407,24 @@ void DesksBarView::UpdateMiniViewsLabels() {
 int DesksBarView::GetFirstMiniViewXOffset() const {
   return mini_views_.empty() ? bounds().CenterPoint().x()
                              : mini_views_[0]->bounds().x();
+}
+
+void DesksBarView::UpdateMinimumWidthToFitContents() {
+  int button_width = new_desk_button_->GetMinSize(/*compact=*/false).width();
+  button_width += 2 * kIconAndTextHorizontalPadding;
+  button_width += kButtonRightMargin;
+
+  if (mini_views_.empty()) {
+    min_width_to_fit_contents_ = button_width;
+    return;
+  }
+
+  const int mini_view_width = mini_views_[0]->GetMinWidthForDefaultLayout();
+  const int total_mini_views_width =
+      mini_views_.size() * (mini_view_width + kMiniViewsSpacing) -
+      kMiniViewsSpacing;
+
+  min_width_to_fit_contents_ = total_mini_views_width + button_width * 2;
 }
 
 }  // namespace ash

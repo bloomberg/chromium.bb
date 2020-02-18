@@ -60,7 +60,9 @@ void ObjectDeserializer::FlushICache() {
   DCHECK(deserializing_user_code());
   for (Code code : new_code_objects()) {
     // Record all references to embedded objects in the new code object.
+#ifndef V8_DISABLE_WRITE_BARRIERS
     WriteBarrierForCode(code);
+#endif
     FlushInstructionCache(code.raw_instruction_start(),
                           code.raw_instruction_size());
   }
@@ -100,7 +102,7 @@ void ObjectDeserializer::LinkAllocationSites() {
     // TODO(mvstanton): consider treating the heap()->allocation_sites_list()
     // as a (weak) root. If this root is relocated correctly, this becomes
     // unnecessary.
-    if (heap->allocation_sites_list() == Smi::kZero) {
+    if (heap->allocation_sites_list() == Smi::zero()) {
       site.set_weak_next(ReadOnlyRoots(heap).undefined_value());
     } else {
       site.set_weak_next(heap->allocation_sites_list());

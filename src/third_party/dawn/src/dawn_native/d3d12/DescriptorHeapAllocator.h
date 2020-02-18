@@ -21,6 +21,9 @@
 #include <vector>
 #include "common/SerialQueue.h"
 
+#include "dawn_native/Error.h"
+#include "dawn_native/RingBufferAllocator.h"
+
 namespace dawn_native { namespace d3d12 {
 
     class Device;
@@ -30,7 +33,7 @@ namespace dawn_native { namespace d3d12 {
         DescriptorHeapHandle();
         DescriptorHeapHandle(ComPtr<ID3D12DescriptorHeap> descriptorHeap,
                              uint32_t sizeIncrement,
-                             uint32_t offset);
+                             uint64_t offset);
 
         ID3D12DescriptorHeap* Get() const;
         D3D12_CPU_DESCRIPTOR_HANDLE GetCPUHandle(uint32_t index) const;
@@ -39,43 +42,38 @@ namespace dawn_native { namespace d3d12 {
       private:
         ComPtr<ID3D12DescriptorHeap> mDescriptorHeap;
         uint32_t mSizeIncrement;
-        uint32_t mOffset;
+        uint64_t mOffset;
     };
 
     class DescriptorHeapAllocator {
       public:
         DescriptorHeapAllocator(Device* device);
 
-        DescriptorHeapHandle AllocateGPUHeap(D3D12_DESCRIPTOR_HEAP_TYPE type, uint32_t count);
-        DescriptorHeapHandle AllocateCPUHeap(D3D12_DESCRIPTOR_HEAP_TYPE type, uint32_t count);
-        void Tick(uint64_t lastCompletedSerial);
+        ResultOrError<DescriptorHeapHandle> AllocateGPUHeap(D3D12_DESCRIPTOR_HEAP_TYPE type,
+                                                            uint32_t count);
+        ResultOrError<DescriptorHeapHandle> AllocateCPUHeap(D3D12_DESCRIPTOR_HEAP_TYPE type,
+                                                            uint32_t count);
+        void Deallocate(uint64_t lastCompletedSerial);
 
       private:
-        static constexpr unsigned int kMaxCbvUavSrvHeapSize = 1000000;
-        static constexpr unsigned int kMaxSamplerHeapSize = 2048;
-        static constexpr unsigned int kDescriptorHeapTypes =
-            D3D12_DESCRIPTOR_HEAP_TYPE::D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES;
-
-        struct AllocationInfo {
-            uint32_t size = 0;
-            uint32_t remaining = 0;
+        struct DescriptorHeapInfo {
+            ComPtr<ID3D12DescriptorHeap> heap;
+            RingBufferAllocator allocator;
         };
 
-        using DescriptorHeapInfo = std::pair<ComPtr<ID3D12DescriptorHeap>, AllocationInfo>;
-
-        DescriptorHeapHandle Allocate(D3D12_DESCRIPTOR_HEAP_TYPE type,
-                                      uint32_t count,
-                                      uint32_t allocationSize,
-                                      DescriptorHeapInfo* heapInfo,
-                                      D3D12_DESCRIPTOR_HEAP_FLAGS flags);
-        void Release(DescriptorHeapHandle handle);
+        ResultOrError<DescriptorHeapHandle> Allocate(D3D12_DESCRIPTOR_HEAP_TYPE type,
+                                                     uint32_t count,
+                                                     uint32_t allocationSize,
+                                                     DescriptorHeapInfo* heapInfo,
+                                                     D3D12_DESCRIPTOR_HEAP_FLAGS flags);
 
         Device* mDevice;
 
-        std::array<uint32_t, kDescriptorHeapTypes> mSizeIncrements;
-        std::array<DescriptorHeapInfo, kDescriptorHeapTypes> mCpuDescriptorHeapInfos;
-        std::array<DescriptorHeapInfo, kDescriptorHeapTypes> mGpuDescriptorHeapInfos;
-        SerialQueue<DescriptorHeapHandle> mReleasedHandles;
+        std::array<uint32_t, D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES> mSizeIncrements;
+        std::array<DescriptorHeapInfo, D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES>
+            mCpuDescriptorHeapInfos;
+        std::array<DescriptorHeapInfo, D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES>
+            mGpuDescriptorHeapInfos;
     };
 
 }}  // namespace dawn_native::d3d12

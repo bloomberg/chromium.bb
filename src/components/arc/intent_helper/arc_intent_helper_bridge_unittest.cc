@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
+#include "base/optional.h"
 #include "components/arc/intent_helper/open_url_delegate.h"
 #include "components/arc/mojom/intent_helper.mojom.h"
 #include "components/arc/session/arc_bridge_service.h"
@@ -24,7 +25,8 @@ IntentFilter GetIntentFilter(const std::string& host,
   std::vector<IntentFilter::AuthorityEntry> authorities;
   authorities.emplace_back(host, /*port=*/-1);
   return IntentFilter(pkg_name, std::move(authorities),
-                      std::vector<IntentFilter::PatternMatcher>());
+                      std::vector<IntentFilter::PatternMatcher>(),
+                      std::vector<std::string>());
 }
 
 }  // namespace
@@ -178,7 +180,10 @@ TEST_F(ArcIntentHelperTest, TestObserver) {
   class FakeObserver : public ArcIntentHelperObserver {
    public:
     FakeObserver() = default;
-    void OnIntentFiltersUpdated() override { updated_ = true; }
+    void OnIntentFiltersUpdated(
+        const base::Optional<std::string>& package_name) override {
+      updated_ = true;
+    }
     bool IsUpdated() { return updated_; }
     void Reset() { updated_ = false; }
 
@@ -296,7 +301,11 @@ TEST_F(ArcIntentHelperTest, TestIntentHelperAppIsNotAValidCandidate) {
       "www.google.com", ArcIntentHelperBridge::kArcIntentHelperPackageName));
   array.emplace_back(GetIntentFilter(
       "www.android.com", ArcIntentHelperBridge::kArcIntentHelperPackageName));
-  array.emplace_back(GetIntentFilter("dev.chromium.org", kPackageName));
+  // Let the package name start with "z" to ensure the intent helper package
+  // is not always the last package checked in the ShouldChromeHandleUrl
+  // filter matching logic. This is to ensure this unit test tests the package
+  // name checking logic properly.
+  array.emplace_back(GetIntentFilter("dev.chromium.org", "z.package.name"));
   instance_->OnIntentFiltersUpdated(std::move(array));
 
   EXPECT_TRUE(instance_->ShouldChromeHandleUrl(GURL("http://www.google.com")));

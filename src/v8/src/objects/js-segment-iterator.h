@@ -9,6 +9,7 @@
 #ifndef V8_OBJECTS_JS_SEGMENT_ITERATOR_H_
 #define V8_OBJECTS_JS_SEGMENT_ITERATOR_H_
 
+#include "src/base/bit-field.h"
 #include "src/execution/isolate.h"
 #include "src/heap/factory.h"
 #include "src/objects/js-segmenter.h"
@@ -91,7 +92,7 @@ class JSSegmentIterator : public JSObject {
 
 // Layout description.
   DEFINE_FIELD_OFFSET_CONSTANTS(JSObject::kHeaderSize,
-                                TORQUE_GENERATED_JSSEGMENT_ITERATOR_FIELDS)
+                                TORQUE_GENERATED_JS_SEGMENT_ITERATOR_FIELDS)
 
   OBJECT_CONSTRUCTORS(JSSegmentIterator, JSObject);
 };

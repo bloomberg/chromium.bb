@@ -67,10 +67,7 @@ void BlinkLeakDetector::PerformLeakDetection(
   for (auto resource_fetcher : ResourceFetcher::MainThreadFetchers())
     resource_fetcher->PrepareForLeakDetection();
 
-  // Internal settings are ScriptWrappable and thus may retain documents
-  // depending on whether the garbage collector(s) are able to find the settings
-  // object through the Page supplement.
-  InternalSettings::PrepareForLeakDetection();
+  Page::PrepareForLeakDetection();
 
   // Task queue may contain delayed object destruction tasks.
   // This method is called from navigation hook inside FrameLoader,
@@ -127,8 +124,6 @@ void BlinkLeakDetector::ReportResult() {
   result->number_of_live_context_lifecycle_state_observers =
       InstanceCounters::CounterValue(
           InstanceCounters::kContextLifecycleStateObserverCounter);
-  result->number_of_live_script_promises =
-      InstanceCounters::CounterValue(InstanceCounters::kScriptPromiseCounter);
   result->number_of_live_frames =
       InstanceCounters::CounterValue(InstanceCounters::kFrameCounter);
   result->number_of_live_v8_per_context_data = InstanceCounters::CounterValue(

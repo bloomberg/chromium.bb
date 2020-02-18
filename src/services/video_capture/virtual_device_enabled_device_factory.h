@@ -8,7 +8,9 @@
 #include <map>
 #include <utility>
 
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/video_capture/device_factory.h"
 #include "services/video_capture/public/mojom/device.mojom.h"
 #include "services/video_capture/public/mojom/devices_changed_observer.mojom.h"
@@ -26,19 +28,22 @@ class VirtualDeviceEnabledDeviceFactory : public DeviceFactory {
   // DeviceFactory implementation.
   void GetDeviceInfos(GetDeviceInfosCallback callback) override;
   void CreateDevice(const std::string& device_id,
-                    mojom::DeviceRequest device_request,
+                    mojo::PendingReceiver<mojom::Device> device_receiver,
                     CreateDeviceCallback callback) override;
   void AddSharedMemoryVirtualDevice(
       const media::VideoCaptureDeviceInfo& device_info,
-      mojom::ProducerPtr producer,
+      mojo::PendingRemote<mojom::Producer> producer,
       bool send_buffer_handles_to_producer_as_raw_file_descriptors,
-      mojom::SharedMemoryVirtualDeviceRequest virtual_device) override;
+      mojo::PendingReceiver<mojom::SharedMemoryVirtualDevice>
+          virtual_device_receiver) override;
   void AddTextureVirtualDevice(
       const media::VideoCaptureDeviceInfo& device_info,
-      mojom::TextureVirtualDeviceRequest virtual_device) override;
+      mojo::PendingReceiver<mojom::TextureVirtualDevice>
+          virtual_device_receiver) override;
   void RegisterVirtualDevicesChangedObserver(
-      mojom::DevicesChangedObserverPtr observer,
+      mojo::PendingRemote<mojom::DevicesChangedObserver> observer,
       bool raise_event_if_virtual_devices_already_present) override;
+
  private:
   class VirtualDeviceEntry;
 
@@ -52,11 +57,12 @@ class VirtualDeviceEnabledDeviceFactory : public DeviceFactory {
       const std::string& device_id);
   void EmitDevicesChangedEvent();
   void OnDevicesChangedObserverDisconnected(
-      mojom::DevicesChangedObserverPtr::Proxy* observer);
+      mojom::DevicesChangedObserver* observer);
 
   std::map<std::string, VirtualDeviceEntry> virtual_devices_by_id_;
   const std::unique_ptr<DeviceFactory> device_factory_;
-  std::vector<mojom::DevicesChangedObserverPtr> devices_changed_observers_;
+  std::vector<mojo::Remote<mojom::DevicesChangedObserver>>
+      devices_changed_observers_;
 
   base::WeakPtrFactory<VirtualDeviceEnabledDeviceFactory> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(VirtualDeviceEnabledDeviceFactory);

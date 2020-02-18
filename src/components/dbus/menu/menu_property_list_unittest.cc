@@ -7,7 +7,7 @@
 #include <memory>
 
 #include "base/strings/utf_string_conversions.h"
-#include "components/dbus/menu/types.h"
+#include "components/dbus/properties/types.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/models/menu_model.h"
@@ -148,6 +148,9 @@ class TestMenuModelBuilder {
     switch (type_) {
       case ui::MenuModel::TYPE_COMMAND:
         menu->AddItem(0, label_);
+        break;
+      case ui::MenuModel::TYPE_TITLE:
+        menu->AddTitle(label_);
         break;
       case ui::MenuModel::TYPE_CHECK:
         menu->AddCheckItem(0, label_);

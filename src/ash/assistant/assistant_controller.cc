@@ -8,10 +8,12 @@
 #include <utility>
 
 #include "ash/accessibility/accessibility_controller_impl.h"
+#include "ash/assistant/assistant_web_ui_controller.h"
 #include "ash/assistant/util/deep_link_util.h"
 #include "ash/public/cpp/android_intent_helper.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/new_window_delegate.h"
+#include "ash/public/mojom/assistant_volume_control.mojom.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
@@ -19,31 +21,19 @@
 #include "base/bind.h"
 #include "base/memory/scoped_refptr.h"
 #include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
+#include "chromeos/services/assistant/public/features.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "components/prefs/pref_registry_simple.h"
-#include "services/content/public/mojom/constants.mojom.h"
 #include "services/content/public/mojom/navigable_contents_factory.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 namespace ash {
 
-namespace {
+AssistantController::AssistantController() {
+  if (chromeos::assistant::features::IsAssistantWebContainerEnabled()) {
+    assistant_web_ui_controller_ =
+        std::make_unique<AssistantWebUiController>(this);
+  }
 
-// Scheme of the Android intent url.
-constexpr char kAndroidIntentScheme[] = "intent";
-
-}  // namespace
-
-AssistantController::AssistantController()
-    : assistant_volume_control_binding_(this),
-      assistant_alarm_timer_controller_(this),
-      assistant_interaction_controller_(this),
-      assistant_notification_controller_(this),
-      assistant_screen_context_controller_(this),
-      assistant_setup_controller_(this),
-      assistant_suggestions_controller_(this),
-      assistant_ui_controller_(this),
-      view_delegate_(this) {
   assistant_state_controller_.AddObserver(this);
   chromeos::CrasAudioHandler::Get()->AddAudioObserver(this);
   AddObserver(this);
@@ -65,14 +55,15 @@ void AssistantController::RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterIntegerPref(prefs::kAssistantNumWarmerWelcomeTriggered, 0);
 }
 
-void AssistantController::BindRequest(
-    chromeos::assistant::mojom::AssistantControllerRequest request) {
-  assistant_controller_bindings_.AddBinding(this, std::move(request));
+void AssistantController::BindReceiver(
+    mojo::PendingReceiver<chromeos::assistant::mojom::AssistantController>
+        receiver) {
+  assistant_controller_receivers_.Add(this, std::move(receiver));
 }
 
-void AssistantController::BindRequest(
-    mojom::AssistantVolumeControlRequest request) {
-  assistant_volume_control_binding_.Bind(std::move(request));
+void AssistantController::BindReceiver(
+    mojo::PendingReceiver<mojom::AssistantVolumeControl> receiver) {
+  assistant_volume_control_receiver_.Bind(std::move(receiver));
 }
 
 void AssistantController::AddObserver(AssistantControllerObserver* observer) {
@@ -181,6 +172,7 @@ void AssistantController::OnDeepLinkReceived(
     case DeepLinkType::kLists:
     case DeepLinkType::kNotes:
     case DeepLinkType::kOnboarding:
+    case DeepLinkType::kProactiveSuggestions:
     case DeepLinkType::kQuery:
     case DeepLinkType::kReminders:
     case DeepLinkType::kSettings:
@@ -200,8 +192,9 @@ void AssistantController::SetMuted(bool muted) {
   chromeos::CrasAudioHandler::Get()->SetOutputMute(muted);
 }
 
-void AssistantController::AddVolumeObserver(mojom::VolumeObserverPtr observer) {
-  volume_observer_.AddPtr(std::move(observer));
+void AssistantController::AddVolumeObserver(
+    mojo::PendingRemote<mojom::VolumeObserver> observer) {
+  volume_observers_.Add(std::move(observer));
 
   int output_volume =
       chromeos::CrasAudioHandler::Get()->GetOutputVolumePercent();
@@ -211,16 +204,14 @@ void AssistantController::AddVolumeObserver(mojom::VolumeObserverPtr observer) {
 }
 
 void AssistantController::OnOutputMuteChanged(bool mute_on) {
-  volume_observer_.ForAllPtrs([mute_on](mojom::VolumeObserver* observer) {
+  for (auto& observer : volume_observers_)
     observer->OnMuteStateChanged(mute_on);
-  });
 }
 
 void AssistantController::OnOutputNodeVolumeChanged(uint64_t node, int volume) {
   // |node| refers to the active volume device, which we don't care here.
-  volume_observer_.ForAllPtrs([volume](mojom::VolumeObserver* observer) {
+  for (auto& observer : volume_observers_)
     observer->OnVolumeChanged(volume);
-  });
 }
 
 void AssistantController::OnAccessibilityStatusChanged() {
@@ -233,14 +224,14 @@ void AssistantController::OnAccessibilityStatusChanged() {
 void AssistantController::OpenUrl(const GURL& url,
                                   bool in_background,
                                   bool from_server) {
-  auto* android_helper = AndroidIntentHelper::GetInstance();
-  if (url.SchemeIs(kAndroidIntentScheme) && android_helper) {
-    android_helper->LaunchAndroidIntent(url.spec());
+  if (assistant::util::IsDeepLinkUrl(url)) {
+    NotifyDeepLinkReceived(url);
     return;
   }
 
-  if (assistant::util::IsDeepLinkUrl(url)) {
-    NotifyDeepLinkReceived(url);
+  auto* android_helper = AndroidIntentHelper::GetInstance();
+  if (IsAndroidIntent(url) && !android_helper) {
+    NOTREACHED();
     return;
   }
 
@@ -248,37 +239,24 @@ void AssistantController::OpenUrl(const GURL& url,
   // open the specified |url| in a new browser tab.
   NotifyOpeningUrl(url, in_background, from_server);
 
-  // The new tab should be opened with a user activation since the user
-  // interacted with the Assistant to open the url. |in_background| describes
-  // the relationship between |url| and Assistant UI, not the browser. As such,
-  // the browser will always be instructed to open |url| in a new browser tab
-  // and Assistant UI state will be updated downstream to respect
-  // |in_background|.
-  NewWindowDelegate::GetInstance()->NewTabWithUrl(
-      url, /*from_user_interaction=*/true);
+  if (IsAndroidIntent(url)) {
+    android_helper->LaunchAndroidIntent(url.spec());
+  } else {
+    // The new tab should be opened with a user activation since the user
+    // interacted with the Assistant to open the url. |in_background| describes
+    // the relationship between |url| and Assistant UI, not the browser. As
+    // such, the browser will always be instructed to open |url| in a new
+    // browser tab and Assistant UI state will be updated downstream to respect
+    // |in_background|.
+    NewWindowDelegate::GetInstance()->NewTabWithUrl(
+        url, /*from_user_interaction=*/true);
+  }
   NotifyUrlOpened(url, from_server);
 }
 
 void AssistantController::GetNavigableContentsFactory(
     mojo::PendingReceiver<content::mojom::NavigableContentsFactory> receiver) {
-  const UserSession* user_session =
-      Shell::Get()->session_controller()->GetUserSession(0);
-
-  if (!user_session) {
-    LOG(WARNING) << "Unable to retrieve active user session.";
-    return;
-  }
-
-  const base::Optional<base::Token>& service_instance_group =
-      user_session->user_info.service_instance_group;
-  if (!service_instance_group) {
-    LOG(ERROR) << "Unable to retrieve service instance group.";
-    return;
-  }
-
-  Shell::Get()->connector()->Connect(
-      service_manager::ServiceFilter::ByNameInGroup(
-          content::mojom::kServiceName, *service_instance_group),
+  Shell::Get()->shell_delegate()->BindNavigableContentsFactory(
       std::move(receiver));
 }
 
@@ -304,11 +282,8 @@ void AssistantController::NotifyDeepLinkReceived(const GURL& deep_link) {
   const std::map<std::string, std::string> params =
       assistant::util::GetDeepLinkParams(deep_link);
 
-  // TODO(wutao): Remove AssistantControllerObserver::OnDeepLinkReceived.
   for (AssistantControllerObserver& observer : observers_)
     observer.OnDeepLinkReceived(type, params);
-
-  view_delegate_.NotifyDeepLinkReceived(type, params);
 }
 
 void AssistantController::NotifyOpeningUrl(const GURL& url,
@@ -324,8 +299,8 @@ void AssistantController::NotifyUrlOpened(const GURL& url, bool from_server) {
 }
 
 void AssistantController::OnAssistantStatusChanged(
-    mojom::VoiceInteractionState state) {
-  if (state == mojom::VoiceInteractionState::NOT_READY)
+    mojom::AssistantState state) {
+  if (state == mojom::AssistantState::NOT_READY)
     assistant_ui_controller_.CloseUi(AssistantExitPoint::kUnspecified);
 }
 
@@ -337,18 +312,18 @@ void AssistantController::OnLockedFullScreenStateChanged(bool enabled) {
 void AssistantController::BindController(
     mojo::PendingReceiver<chromeos::assistant::mojom::AssistantController>
         receiver) {
-  BindRequest(std::move(receiver));
+  BindReceiver(std::move(receiver));
 }
 
 void AssistantController::BindAlarmTimerController(
     mojo::PendingReceiver<mojom::AssistantAlarmTimerController> receiver) {
-  Shell::Get()->assistant_controller()->alarm_timer_controller()->BindRequest(
+  Shell::Get()->assistant_controller()->alarm_timer_controller()->BindReceiver(
       std::move(receiver));
 }
 
 void AssistantController::BindNotificationController(
     mojo::PendingReceiver<mojom::AssistantNotificationController> receiver) {
-  Shell::Get()->assistant_controller()->notification_controller()->BindRequest(
+  Shell::Get()->assistant_controller()->notification_controller()->BindReceiver(
       std::move(receiver));
 }
 
@@ -357,17 +332,17 @@ void AssistantController::BindScreenContextController(
   Shell::Get()
       ->assistant_controller()
       ->screen_context_controller()
-      ->BindRequest(std::move(receiver));
+      ->BindReceiver(std::move(receiver));
 }
 
 void AssistantController::BindStateController(
     mojo::PendingReceiver<mojom::AssistantStateController> receiver) {
-  assistant_state_controller_.BindRequest(std::move(receiver));
+  assistant_state_controller_.BindReceiver(std::move(receiver));
 }
 
 void AssistantController::BindVolumeControl(
     mojo::PendingReceiver<mojom::AssistantVolumeControl> receiver) {
-  Shell::Get()->assistant_controller()->BindRequest(std::move(receiver));
+  Shell::Get()->assistant_controller()->BindReceiver(std::move(receiver));
 }
 
 base::WeakPtr<AssistantController> AssistantController::GetWeakPtr() {

@@ -13,7 +13,7 @@ namespace chromecast {
 // Resizes the provided window to be the parent window's size.
 class WebviewLayoutManager : public aura::LayoutManager {
  public:
-  explicit WebviewLayoutManager(aura::Window* web_contents_window);
+  WebviewLayoutManager(aura::Window* root);
   ~WebviewLayoutManager() override;
 
   void OnWindowResized() override;
@@ -26,7 +26,7 @@ class WebviewLayoutManager : public aura::LayoutManager {
                       const gfx::Rect& requested_bounds) override;
 
  private:
-  aura::Window* web_contents_window_;
+  aura::Window* root_;
 
   DISALLOW_COPY_AND_ASSIGN(WebviewLayoutManager);
 };

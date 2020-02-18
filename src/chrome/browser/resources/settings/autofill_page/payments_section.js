@@ -13,16 +13,18 @@
  */
 class PaymentsManager {
   /**
-   * Add an observer to the list of credit cards.
-   * @param {function(!Array<!PaymentsManager.CreditCardEntry>):void} listener
+   * Add an observer to the list of personal data.
+   * @param {function(!Array<!AutofillManager.AddressEntry>,
+   *   !Array<!PaymentsManager.CreditCardEntry>):void} listener
    */
-  addCreditCardListChangedListener(listener) {}
+  setPersonalDataManagerListener(listener) {}
 
   /**
-   * Remove an observer from the list of credit cards.
-   * @param {function(!Array<!PaymentsManager.CreditCardEntry>):void} listener
+   * Remove an observer from the list of personal data.
+   * @param {function(!Array<!AutofillManager.AddressEntry>,
+   *     !Array<!PaymentsManager.CreditCardEntry>):void} listener
    */
-  removeCreditCardListChangedListener(listener) {}
+  removePersonalDataManagerListener(listener) {}
 
   /**
    * Request the list of credit cards.
@@ -51,6 +53,11 @@ class PaymentsManager {
    * Logs that the server cards edit link was clicked.
    */
   logServerCardLinkClicked() {}
+
+  /**
+   * Enables FIDO authentication for card unmasking.
+   */
+  setCreditCardFIDOAuthEnabledState(enabled) {}
 }
 
 /** @typedef {chrome.autofillPrivate.CreditCardEntry} */
@@ -62,13 +69,13 @@ PaymentsManager.CreditCardEntry;
  */
 class PaymentsManagerImpl {
   /** @override */
-  addCreditCardListChangedListener(listener) {
-    chrome.autofillPrivate.onCreditCardListChanged.addListener(listener);
+  setPersonalDataManagerListener(listener) {
+    chrome.autofillPrivate.onPersonalDataChanged.addListener(listener);
   }
 
   /** @override */
-  removeCreditCardListChangedListener(listener) {
-    chrome.autofillPrivate.onCreditCardListChanged.removeListener(listener);
+  removePersonalDataManagerListener(listener) {
+    chrome.autofillPrivate.onPersonalDataChanged.removeListener(listener);
   }
 
   /** @override */
@@ -100,6 +107,11 @@ class PaymentsManagerImpl {
   logServerCardLinkClicked() {
     chrome.autofillPrivate.logServerCardLinkClicked();
   }
+
+  /** @override */
+  setCreditCardFIDOAuthEnabledState(enabled) {
+    chrome.autofillPrivate.setCreditCardFIDOAuthEnabledState(enabled);
+  }
 }
 
 cr.addSingletonGetter(PaymentsManagerImpl);
@@ -123,6 +135,18 @@ Polymer({
     creditCards: {
       type: Array,
       value: () => [],
+    },
+
+    /**
+     * Set to true if user can be verified through FIDO authentication.
+     * @private
+     */
+    userIsFidoVerifiable_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean(
+            'fidoAuthenticationAvailableForAutofill');
+      },
     },
 
     /**
@@ -170,21 +194,39 @@ Polymer({
   PaymentsManager_: null,
 
   /**
-   * @type {?function(!Array<!PaymentsManager.CreditCardEntry>)}
+   * @type {?function(!Array<!AutofillManager.AddressEntry>,
+   *     !Array<!PaymentsManager.CreditCardEntry>)}
    * @private
    */
-  setCreditCardsListener_: null,
+  setPersonalDataListener_: null,
 
   /** @override */
   attached: function() {
     // Create listener function.
     /** @type {function(!Array<!PaymentsManager.CreditCardEntry>)} */
-    const setCreditCardsListener = list => {
-      this.creditCards = list;
+    const setCreditCardsListener = cardList => {
+      this.creditCards = cardList;
+    };
+
+    // Update |userIsFidoVerifiable_| based on the availability of a platform
+    // authenticator.
+    if (window.PublicKeyCredential) {
+      window.PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable()
+          .then(r => {
+            this.userIsFidoVerifiable_ = this.userIsFidoVerifiable_ && r;
+          });
+    }
+
+    /**
+     * @type {function(!Array<!AutofillManager.AddressEntry>,
+     *     !Array<!PaymentsManager.CreditCardEntry>)}
+     */
+    const setPersonalDataListener = (addressList, cardList) => {
+      this.creditCards = cardList;
     };
 
     // Remember the bound reference in order to detach.
-    this.setCreditCardsListener_ = setCreditCardsListener;
+    this.setPersonalDataListener_ = setPersonalDataListener;
 
     // Set the managers. These can be overridden by tests.
     this.paymentsManager_ = PaymentsManagerImpl.getInstance();
@@ -193,8 +235,8 @@ Polymer({
     this.paymentsManager_.getCreditCardList(setCreditCardsListener);
 
     // Listen for changes.
-    this.paymentsManager_.addCreditCardListChangedListener(
-        setCreditCardsListener);
+    this.paymentsManager_.setPersonalDataManagerListener(
+        setPersonalDataListener);
 
     // Record that the user opened the payments settings.
     chrome.metricsPrivate.recordUserAction('AutofillCreditCardsViewed');
@@ -202,9 +244,12 @@ Polymer({
 
   /** @override */
   detached: function() {
-    this.paymentsManager_.removeCreditCardListChangedListener(
-        /** @type {function(!Array<!PaymentsManager.CreditCardEntry>)} */ (
-            this.setCreditCardsListener_));
+    this.paymentsManager_.removePersonalDataManagerListener(
+        /**
+           @type {function(!Array<!AutofillManager.AddressEntry>,
+               !Array<!PaymentsManager.CreditCardEntry>)}
+         */
+        (this.setPersonalDataListener_));
   },
 
   /**
@@ -308,6 +353,25 @@ Polymer({
    */
   saveCreditCard_: function(event) {
     this.paymentsManager_.saveCreditCard(event.detail);
+  },
+
+  /**
+   * @param {boolean} creditCardEnabled
+   * @return {boolean} Whether or not the user is verifiable through FIDO
+   *     authentication.
+   * @private
+   */
+  shouldShowFidoToggle_: function(creditCardEnabled, userIsFidoVerifiable) {
+    return creditCardEnabled && userIsFidoVerifiable;
+  },
+
+  /**
+   * Listens for the enable-authentication event, and calls the private API.
+   * @private
+   */
+  setFIDOAuthenticationEnabledState_: function() {
+    this.paymentsManager_.setCreditCardFIDOAuthEnabledState(
+        this.$$('#autofillCreditCardFIDOAuthToggle').checked);
   },
 
   /**

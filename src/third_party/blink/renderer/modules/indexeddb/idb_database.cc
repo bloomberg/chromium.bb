@@ -31,12 +31,13 @@
 #include "base/atomic_sequence_num.h"
 #include "base/optional.h"
 #include "third_party/blink/public/common/indexeddb/web_idb_types.h"
-#include "third_party/blink/public/platform/modules/indexeddb/web_idb_database_exception.h"
+#include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_binding_for_modules.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_idb_observer_callback.h"
 #include "third_party/blink/renderer/core/dom/events/event_queue.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/modules/indexed_db_names.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_any.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_event_dispatcher.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_index.h"
@@ -49,6 +50,7 @@
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_database_callbacks_impl.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_transaction_impl.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 
@@ -353,6 +355,14 @@ void IDBDatabase::deleteObjectStore(const String& name,
 IDBTransaction* IDBDatabase::transaction(
     ScriptState* script_state,
     const StringOrStringSequence& store_names,
+    const String& mode,
+    ExceptionState& exception_state) {
+  return transaction(script_state, store_names, mode, nullptr, exception_state);
+}
+
+IDBTransaction* IDBDatabase::transaction(
+    ScriptState* script_state,
+    const StringOrStringSequence& store_names,
     const String& mode_string,
     const IDBTransactionOptions* options,
     ExceptionState& exception_state) {
@@ -421,17 +431,24 @@ IDBTransaction* IDBDatabase::transaction(
           ->GetTaskRunner(TaskType::kDatabaseAccess),
       transaction_id);
 
-  bool relaxed_durability = false;
-  if (RuntimeEnabledFeatures::IDBRelaxedDurabilityEnabled() && options)
-    relaxed_durability = options->relaxedDurability();
+  mojom::IDBTransactionDurability durability =
+      mojom::IDBTransactionDurability::Default;
+  if (options) {
+    DCHECK(RuntimeEnabledFeatures::IDBRelaxedDurabilityEnabled());
+    if (options->durability() == indexed_db_names::kRelaxed) {
+      durability = mojom::IDBTransactionDurability::Relaxed;
+    } else if (options->durability() == indexed_db_names::kStrict) {
+      durability = mojom::IDBTransactionDurability::Strict;
+    }
+  }
 
   backend_->CreateTransaction(transaction_backend->CreateReceiver(),
                               transaction_id, object_store_ids, mode,
-                              relaxed_durability);
+                              durability);
 
   return IDBTransaction::CreateNonVersionChange(
       script_state, std::move(transaction_backend), transaction_id, scope, mode,
-      this);
+      durability, this);
 }
 
 void IDBDatabase::ForceClose() {
@@ -492,7 +509,7 @@ void IDBDatabase::OnVersionChange(int64_t old_version, int64_t new_version) {
   if (new_version != IDBDatabaseMetadata::kNoVersion) {
     new_version_nullable = new_version;
   }
-  EnqueueEvent(IDBVersionChangeEvent::Create(
+  EnqueueEvent(MakeGarbageCollected<IDBVersionChangeEvent>(
       event_type_names::kVersionchange, old_version, new_version_nullable));
 }
 
@@ -597,19 +614,21 @@ ExecutionContext* IDBDatabase::GetExecutionContext() const {
   return ContextLifecycleObserver::GetExecutionContext();
 }
 
-STATIC_ASSERT_ENUM(kWebIDBDatabaseExceptionUnknownError,
+STATIC_ASSERT_ENUM(mojom::blink::IDBException::kNoError,
+                   DOMExceptionCode::kNoError);
+STATIC_ASSERT_ENUM(mojom::blink::IDBException::kUnknownError,
                    DOMExceptionCode::kUnknownError);
-STATIC_ASSERT_ENUM(kWebIDBDatabaseExceptionConstraintError,
+STATIC_ASSERT_ENUM(mojom::blink::IDBException::kConstraintError,
                    DOMExceptionCode::kConstraintError);
-STATIC_ASSERT_ENUM(kWebIDBDatabaseExceptionDataError,
+STATIC_ASSERT_ENUM(mojom::blink::IDBException::kDataError,
                    DOMExceptionCode::kDataError);
-STATIC_ASSERT_ENUM(kWebIDBDatabaseExceptionVersionError,
+STATIC_ASSERT_ENUM(mojom::blink::IDBException::kVersionError,
                    DOMExceptionCode::kVersionError);
-STATIC_ASSERT_ENUM(kWebIDBDatabaseExceptionAbortError,
+STATIC_ASSERT_ENUM(mojom::blink::IDBException::kAbortError,
                    DOMExceptionCode::kAbortError);
-STATIC_ASSERT_ENUM(kWebIDBDatabaseExceptionQuotaError,
+STATIC_ASSERT_ENUM(mojom::blink::IDBException::kQuotaError,
                    DOMExceptionCode::kQuotaExceededError);
-STATIC_ASSERT_ENUM(kWebIDBDatabaseExceptionTimeoutError,
+STATIC_ASSERT_ENUM(mojom::blink::IDBException::kTimeoutError,
                    DOMExceptionCode::kTimeoutError);
 
 }  // namespace blink

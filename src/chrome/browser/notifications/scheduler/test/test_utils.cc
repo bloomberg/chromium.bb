@@ -67,14 +67,12 @@ Impression CreateImpression(const base::Time& create_time,
                             UserFeedback feedback,
                             ImpressionResult impression_result,
                             bool integrated,
-                            SchedulerTaskTime task_start_time,
                             const std::string& guid,
                             SchedulerClientType type) {
   Impression impression(type, guid, create_time);
   impression.feedback = feedback;
   impression.impression = impression_result;
   impression.integrated = integrated;
-  impression.task_start_time = task_start_time;
   return impression;
 }
 
@@ -111,6 +109,10 @@ std::string DebugString(const NotificationEntry* entry) {
   if (base::Contains(entry->icons_uuid, IconType::kLargeIcon))
     stream << " \n large_icons_id:"
            << entry->icons_uuid.at(IconType::kLargeIcon);
+
+  if (entry->schedule_params.custom_suppression_duration.has_value())
+    stream << " \n custom_suppression_duration:"
+           << entry->schedule_params.custom_suppression_duration.value();
   return stream.str();
 }
 
@@ -134,8 +136,6 @@ std::string DebugString(const ClientState* client_state) {
            << "impression result: " << static_cast<int>(impression.impression)
            << " \n"
            << "integrated: " << impression.integrated << "\n"
-           << "task start time: "
-           << static_cast<int>(impression.task_start_time) << "\n"
            << "guid: " << impression.guid << "\n"
            << "type: " << static_cast<int>(impression.type);
 
@@ -149,12 +149,16 @@ std::string DebugString(const ClientState* client_state) {
              << " value: " << pair.second;
     }
 
+    if (impression.custom_suppression_duration.has_value()) {
+      stream << " \n custom suppression duration  "
+             << impression.custom_suppression_duration.value();
+    }
     log += stream.str();
   }
 
   if (client_state->suppression_info.has_value()) {
     std::ostringstream stream;
-    stream << "Suppression info, last_trigger_time:"
+    stream << "\n Suppression info, last_trigger_time: "
            << client_state->suppression_info->last_trigger_time << "\n"
            << "duration:" << client_state->suppression_info->duration << "\n"
            << "recover_goal:" << client_state->suppression_info->recover_goal;

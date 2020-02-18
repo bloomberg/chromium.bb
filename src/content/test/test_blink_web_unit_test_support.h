@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/compiler_specific.h"
-#include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
@@ -62,9 +61,6 @@ class TestBlinkWebUnitTestSupport : public BlinkPlatformImpl {
 
   bool IsThreadedAnimationEnabled() override;
 
-  std::unique_ptr<blink::WebRTCCertificateGenerator>
-  CreateRTCCertificateGenerator() override;
-
   // May be called when |this| is registered as the active blink Platform
   // implementation. Overrides the result of IsThreadedAnimationEnabled() to
   // the provided value, and returns the value it was set to before the call.
@@ -76,7 +72,6 @@ class TestBlinkWebUnitTestSupport : public BlinkPlatformImpl {
   void BindClipboardHost(mojo::ScopedMessagePipeHandle handle);
 
   std::unique_ptr<MockClipboardHost> mock_clipboard_host_;
-  base::ScopedTempDir file_system_root_;
   std::unique_ptr<blink::WebURLLoaderMockFactory> url_loader_factory_;
   std::unique_ptr<blink::scheduler::WebThreadScheduler> main_thread_scheduler_;
   bool threaded_animation_ = true;

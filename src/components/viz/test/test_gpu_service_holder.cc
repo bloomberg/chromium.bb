@@ -15,6 +15,7 @@
 #include "base/no_destructor.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/viz/service/gl/gpu_service_impl.h"
 #include "gpu/command_buffer/service/service_utils.h"
@@ -43,19 +44,48 @@ base::Lock& GetLock() {
   return *lock;
 }
 
-// We expect |GetLock()| to be acquired before accessing this variable.
+// We expect GetLock() to be acquired before accessing these variables.
 TestGpuServiceHolder* g_holder = nullptr;
+bool g_should_register_listener = true;
+bool g_registered_listener = false;
 
-class InstanceResetter : public testing::EmptyTestEventListener {
+class InstanceResetter
+    : public testing::EmptyTestEventListener,
+      public base::test::TaskEnvironment::DestructionObserver {
  public:
-  InstanceResetter() = default;
-  ~InstanceResetter() override = default;
+  InstanceResetter() {
+    base::test::TaskEnvironment::AddDestructionObserver(this);
+  }
 
+  ~InstanceResetter() override {
+    base::test::TaskEnvironment::RemoveDestructionObserver(this);
+  }
+
+  // testing::EmptyTestEventListener:
   void OnTestEnd(const testing::TestInfo& test_info) override {
+    {
+      base::AutoLock locked(GetLock());
+      // Make sure the TestGpuServiceHolder instance is not re-created after
+      // WillDestroyCurrentTaskEnvironment().
+      // Otherwise we'll end up with GPU tasks weirdly running in a different
+      // context after the test.
+      DCHECK(!(reset_by_task_env && g_holder))
+          << "TestGpuServiceHolder was re-created after "
+             "base::test::TaskEnvironment was destroyed.";
+    }
+    reset_by_task_env = false;
+    TestGpuServiceHolder::ResetInstance();
+  }
+
+  // base::test::TaskEnvironment::DestructionObserver:
+  void WillDestroyCurrentTaskEnvironment() override {
+    reset_by_task_env = true;
     TestGpuServiceHolder::ResetInstance();
   }
 
  private:
+  bool reset_by_task_env = false;
+
   DISALLOW_COPY_AND_ASSIGN(InstanceResetter);
 };
 
@@ -65,14 +95,23 @@ class InstanceResetter : public testing::EmptyTestEventListener {
 TestGpuServiceHolder* TestGpuServiceHolder::GetInstance() {
   base::AutoLock locked(GetLock());
 
-  // Make sure all TestGpuServiceHolders are deleted at process exit.
+  // Make sure the global TestGpuServiceHolder is delete after each test. The
+  // listener will always be registered with gtest even if gtest isn't
+  // otherwised used. This should do nothing in the non-gtest case.
+  if (!g_registered_listener && g_should_register_listener) {
+    g_registered_listener = true;
+    testing::TestEventListeners& listeners =
+        testing::UnitTest::GetInstance()->listeners();
+    // |listeners| assumes ownership of InstanceResetter.
+    listeners.Append(new InstanceResetter);
+  }
+
+  // Make sure the global TestGpuServiceHolder is deleted at process exit.
   static bool registered_cleanup = false;
   if (!registered_cleanup) {
     registered_cleanup = true;
-    base::AtExitManager::RegisterTask(base::BindOnce([]() {
-      if (g_holder)
-        delete g_holder;
-    }));
+    base::AtExitManager::RegisterTask(
+        base::BindOnce(&TestGpuServiceHolder::ResetInstance));
   }
 
   if (!g_holder) {
@@ -92,14 +131,12 @@ void TestGpuServiceHolder::ResetInstance() {
 }
 
 // static
-void TestGpuServiceHolder::DestroyInstanceAfterEachTest() {
-  static bool registered_listener = false;
-  if (!registered_listener) {
-    registered_listener = true;
-    testing::TestEventListeners& listeners =
-        testing::UnitTest::GetInstance()->listeners();
-    listeners.Append(new InstanceResetter);
-  }
+void TestGpuServiceHolder::DoNotResetOnTestExit() {
+  base::AutoLock locked(GetLock());
+
+  // This must be called before GetInstance() is ever called.
+  DCHECK(!g_registered_listener);
+  g_should_register_listener = false;
 }
 
 TestGpuServiceHolder::TestGpuServiceHolder(
@@ -198,7 +235,7 @@ void TestGpuServiceHolder::InitializeOnGpuThread(
       /*shutdown_event=*/nullptr);
 
   task_executor_ = std::make_unique<gpu::GpuInProcessThreadService>(
-      gpu_thread_.task_runner(), gpu_service_->scheduler(),
+      gpu_thread_.task_runner(), gpu_service_->GetGpuScheduler(),
       gpu_service_->sync_point_manager(), gpu_service_->mailbox_manager(),
       gpu_service_->share_group(),
       gpu_service_->gpu_channel_manager()

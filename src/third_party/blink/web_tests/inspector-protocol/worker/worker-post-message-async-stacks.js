@@ -9,10 +9,11 @@
   testRunner.log('Setup page session');
   const pageDebuggerId = (await dp.Debugger.enable()).result.debuggerId;
   debuggers.set(pageDebuggerId, dp.Debugger);
-  dp.Debugger.setAsyncCallStackDepth({maxDepth: 32});
+  await dp.Debugger.setAsyncCallStackDepth({maxDepth: 32});
   testRunner.log('Set breakpoint before postMessage');
-  dp.Debugger.setBreakpointByUrl(
+  await dp.Debugger.setBreakpointByUrl(
       {url: 'test.js', lineNumber: 3, columnNumber: 7});
+  const attachedPromise = dp.Target.onceAttachedToTarget();
   session.evaluate(`
 var blob = new Blob(['onmessage = (e) => console.log(e.data);//# sourceURL=worker.js'], {type: 'application/javascript'});
 var worker = new Worker(URL.createObjectURL(blob));
@@ -21,22 +22,18 @@ worker.postMessage(42);
 
   testRunner.log('Run stepInto with breakOnAsyncCall flag');
   await dp.Debugger.oncePaused();
-  dp.Debugger.stepInto({breakOnAsyncCall: true});
-  testRunner.log('Get scheduledAsyncStackId');
-  let {params: {asyncCallStackTraceId}} = await dp.Debugger.oncePaused();
-  dp.Debugger.resume();
+  await dp.Debugger.stepInto({breakOnAsyncCall: true});
 
   testRunner.log('Setup worker session');
   const childSession = session.createChild(
-      (await dp.Target.onceAttachedToTarget()).params.sessionId);
+      (await attachedPromise).params.sessionId);
 
   const workerDebuggerId =
         (await childSession.protocol.Debugger.enable()).result.debuggerId;
   debuggers.set(workerDebuggerId, childSession.protocol.Debugger);
-  childSession.protocol.Debugger.setAsyncCallStackDepth({maxDepth: 32});
-  testRunner.log('Request pause on async task and run worker');
-  childSession.protocol.Debugger.pauseOnAsyncCall({parentStackTraceId: asyncCallStackTraceId});
-  childSession.protocol.Runtime.runIfWaitingForDebugger();
+  await childSession.protocol.Debugger.setAsyncCallStackDepth({maxDepth: 32});
+  testRunner.log('Run worker');
+  await childSession.protocol.Runtime.runIfWaitingForDebugger();
   const {callFrames, asyncStackTrace, asyncStackTraceId} =
       (await childSession.protocol.Debugger.oncePaused()).params;
   await testRunner.logStackTrace(

@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "ash/ash_export.h"
+#include "ash/public/cpp/shelf_config.h"
 #include "ash/system/tray/tray_background_view.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -44,7 +45,8 @@ class UnifiedMessageCenterBubble;
 // UnifiedSystemTrayBubble is the actual menu bubble shown above the system tray
 // after the user clicks on it. The UnifiedSystemTrayBubble is created and owned
 // by this class.
-class ASH_EXPORT UnifiedSystemTray : public TrayBackgroundView {
+class ASH_EXPORT UnifiedSystemTray : public TrayBackgroundView,
+                                     public ShelfConfig::Observer {
  public:
   explicit UnifiedSystemTray(Shelf* shelf);
   ~UnifiedSystemTray() override;
@@ -57,11 +59,23 @@ class ASH_EXPORT UnifiedSystemTray : public TrayBackgroundView {
   // accelerator is shown.
   bool IsSliderBubbleShown() const;
 
+  // True if the bubble containing notifications is visible..
+  bool IsMessageCenterBubbleShown() const;
+
   // True if the bubble is active.
   bool IsBubbleActive() const;
 
   // Activates the system tray bubble.
   void ActivateBubble();
+
+  // Collapse the message center bubble.
+  void CollapseMessageCenter();
+
+  // Expand the message center bubble.
+  void ExpandMessageCenter();
+
+  // Ensure the quick settings bubble is collapsed.
+  void EnsureQuickSettingsCollapsed();
 
   // Ensure the system tray bubble is expanded.
   void EnsureBubbleExpanded();
@@ -73,11 +87,11 @@ class ASH_EXPORT UnifiedSystemTray : public TrayBackgroundView {
   // Shows main bubble with audio settings detailed view.
   void ShowAudioDetailedViewBubble();
 
+  // Shows main bubble with network settings detailed view.
+  void ShowNetworkDetailedViewBubble(bool show_by_click);
+
   // Return the bounds of the bubble in the screen.
   gfx::Rect GetBubbleBoundsInScreen() const;
-
-  // Updates when the login status of the system changes.
-  void UpdateAfterLoginStatusChange();
 
   // Enable / disable UnifiedSystemTray button in status area. If the bubble is
   // open when disabling, also close it.
@@ -92,6 +106,13 @@ class ASH_EXPORT UnifiedSystemTray : public TrayBackgroundView {
   // bubble is shown.
   void SetTrayBubbleHeight(int height);
 
+  // Focus the first notification in the message center.
+  void FocusFirstNotification();
+
+  bool FocusMessageCenter(bool reverse);
+
+  bool FocusQuickSettings(bool reverse);
+
   // TrayBackgroundView:
   bool PerformAction(const ui::Event& event) override;
   void ShowBubble(bool show_by_click) override;
@@ -101,17 +122,21 @@ class ASH_EXPORT UnifiedSystemTray : public TrayBackgroundView {
   void HideBubble(const TrayBubbleView* bubble_view) override;
   void HideBubbleWithView(const TrayBubbleView* bubble_view) override;
   void ClickedOutsideBubble() override;
-  void UpdateAfterShelfAlignmentChange() override;
+  void UpdateAfterShelfChange() override;
+  void UpdateAfterLoginStatusChange(LoginStatus status) override;
   bool ShouldEnableExtraKeyboardAccessibility() override;
   void AddInkDropLayer(ui::Layer* ink_drop_layer) override;
   void RemoveInkDropLayer(ui::Layer* ink_drop_layer) override;
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
   const char* GetClassName() const override;
 
+  // ShelfConfig::Observer:
+  void OnShelfConfigUpdated() override;
+
   UnifiedSystemTrayModel* model() { return model_.get(); }
   UnifiedSystemTrayBubble* bubble() { return bubble_.get(); }
 
-  UnifiedMessageCenterBubble* message_center_bubble_for_test() {
+  UnifiedMessageCenterBubble* message_center_bubble() {
     return message_center_bubble_.get();
   }
 

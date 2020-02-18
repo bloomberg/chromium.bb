@@ -6,6 +6,7 @@ package org.chromium.content_public.browser;
 
 import org.chromium.base.Callback;
 import org.chromium.services.service_manager.InterfaceProvider;
+import org.chromium.url.Origin;
 
 /**
  * The RenderFrameHost Java wrapper to allow communicating with the native RenderFrameHost object.
@@ -19,11 +20,30 @@ public interface RenderFrameHost {
     String getLastCommittedURL();
 
     /**
+     * Get the last committed Origin of the frame. This is not always the same as scheme/host/port
+     * of getLastCommittedURL(), since it can be an "opaque" origin in such cases as, for example,
+     * sandboxed frame.
+     *
+     * @return The last committed Origin of the frame.
+     */
+    Origin getLastCommittedOrigin();
+
+    /**
      * Fetch the canonical URL associated with the fame.
      *
      * @param callback The callback to be notified once the canonical URL has been fetched.
      */
     void getCanonicalUrlForSharing(Callback<String> callback);
+
+    /**
+     * Returns whether the feature policy allows the "payment" feature in this frame.
+     *
+     * TODO(rouslan): Expose the full set of feature policy enum values to Java. See:
+     * https://crbug.com/1027176
+     *
+     * @return Whether the feature policy allows the "payment" feature in this frame.
+     */
+    boolean isPaymentFeaturePolicyEnabled();
 
     /**
      * Returns an InterfaceProvider that provides access to interface implementations provided by
@@ -52,4 +72,9 @@ public interface RenderFrameHost {
      * @return {@code true} if render frame is created.
      */
     boolean isRenderFrameCreated();
+
+    /**
+     * @return Whether input events from the renderer are ignored on the browser side.
+     */
+    boolean areInputEventsIgnored();
 }

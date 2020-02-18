@@ -33,16 +33,11 @@
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/search_engines/template_url_service_client.h"
-#include "net/url_request/url_request.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/metrics_proto/omnibox_event.pb.h"
 #include "ui/gfx/image/image_unittest_util.h"
 #include "ui/gfx/image/image_util.h"
-
-static std::ostream& operator<<(std::ostream& os,
-                                const AutocompleteResult::const_iterator& it) {
-  return os << static_cast<const AutocompleteMatch*>(&(*it));
-}
+#include "url/url_constants.h"
 
 namespace {
 
@@ -55,7 +50,8 @@ class TestingSchemeClassifier : public AutocompleteSchemeClassifier {
 
   metrics::OmniboxInputType GetInputTypeForScheme(
       const std::string& scheme) const override {
-    return net::URLRequest::IsHandledProtocol(scheme)
+    DCHECK_EQ(scheme, base::ToLowerASCII(scheme));
+    return (scheme == url::kHttpScheme || scheme == url::kHttpsScheme)
                ? metrics::OmniboxInputType::URL
                : metrics::OmniboxInputType::EMPTY;
   }
@@ -95,7 +91,7 @@ class TestProvider : public AutocompleteProvider {
  public:
   TestProvider(int relevance,
                const base::string16& prefix,
-               const base::string16 match_keyword,
+               const base::string16& match_keyword,
                AutocompleteProviderClient* client)
       : AutocompleteProvider(AutocompleteProvider::TYPE_SEARCH),
         listener_(nullptr),
@@ -249,7 +245,7 @@ class AutocompleteProviderTest : public testing::Test {
   };
 
   // Registers a test TemplateURL under the given keyword.
-  void RegisterTemplateURL(const base::string16 keyword,
+  void RegisterTemplateURL(const base::string16& keyword,
                            const std::string& template_url,
                            const std::string& image_url,
                            const std::string& image_url_post_params);
@@ -335,7 +331,7 @@ AutocompleteProviderTest::~AutocompleteProviderTest() {
 }
 
 void AutocompleteProviderTest::RegisterTemplateURL(
-    const base::string16 keyword,
+    const base::string16& keyword,
     const std::string& template_url,
     const std::string& image_url = "",
     const std::string& image_url_post_params = "") {
@@ -587,7 +583,7 @@ TEST_F(AutocompleteProviderTest, Query) {
   EXPECT_EQ(
       std::min(AutocompleteResult::GetMaxMatches(), kResultsPerProvider * 2),
       result_.size());
-  ASSERT_NE(result_.end(), result_.default_match());
+  ASSERT_TRUE(result_.default_match());
   EXPECT_EQ(provider2, result_.default_match()->provider);
 }
 

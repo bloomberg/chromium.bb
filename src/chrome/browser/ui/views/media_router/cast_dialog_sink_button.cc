@@ -79,8 +79,7 @@ std::unique_ptr<views::ImageView> CreatePrimaryIconView(
     const gfx::ImageSkia& image) {
   auto icon_view = std::make_unique<views::ImageView>();
   icon_view->SetImage(image);
-  icon_view->SetBorder(
-      views::CreateEmptyBorder(gfx::Insets(kPrimaryIconBorderWidth)));
+  icon_view->SetBorder(views::CreateEmptyBorder(kPrimaryIconBorder));
   return icon_view;
 }
 
@@ -184,7 +183,7 @@ void CastDialogSinkButton::OnEnabledChanged() {
     return;
 
   SkColor background_color = GetNativeTheme()->GetSystemColor(
-      ui::NativeTheme::kColorId_ProminentButtonColor);
+      ui::NativeTheme::kColorId_DialogBackground);
   if (GetEnabled()) {
     SetTitleTextStyle(views::style::STYLE_PRIMARY, background_color);
     if (saved_status_text_)

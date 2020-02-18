@@ -24,6 +24,7 @@
 #include "ui/aura/client/visibility_client.h"
 #include "ui/aura/client/window_parenting_client.h"
 #include "ui/aura/layout_manager.h"
+#include "ui/aura/scoped_window_event_targeting_blocker.h"
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/test/aura_test_utils.h"
 #include "ui/aura/test/test_window_delegate.h"
@@ -52,6 +53,7 @@
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/vector2d.h"
+#include "ui/gfx/overlay_transform_utils.h"
 #include "ui/gfx/skia_util.h"
 
 DEFINE_UI_CLASS_PROPERTY_TYPE(const char*)
@@ -440,7 +442,8 @@ TEST_F(WindowTest, WindowEmbeddingClientHasValidLocalSurfaceId) {
 TEST_F(WindowTest, MoveCursorToWithTransformRootWindow) {
   gfx::Transform transform;
   transform.Translate(100.0, 100.0);
-  transform.Rotate(90.0);
+  transform = transform * OverlayTransformToTransform(
+                              gfx::OVERLAY_TRANSFORM_ROTATE_90, gfx::SizeF());
   transform.Scale(2.0, 5.0);
   host()->SetRootTransform(transform);
   host()->MoveCursorToLocationInDIP(gfx::Point(10, 10));
@@ -472,7 +475,8 @@ TEST_F(WindowTest, MoveCursorToWithTransformWindow) {
             display::Screen::GetScreen()->GetCursorScreenPoint().ToString());
 
   gfx::Transform transform3;
-  transform3.Rotate(90.0);
+  transform3 = transform3 * OverlayTransformToTransform(
+                                gfx::OVERLAY_TRANSFORM_ROTATE_90, gfx::SizeF());
   w1->SetTransform(transform3);
   w1->MoveCursorTo(gfx::Point(5, 5));
   EXPECT_EQ("5,15",
@@ -480,7 +484,8 @@ TEST_F(WindowTest, MoveCursorToWithTransformWindow) {
 
   gfx::Transform transform4;
   transform4.Translate(100.0, 100.0);
-  transform4.Rotate(90.0);
+  transform4 = transform4 * OverlayTransformToTransform(
+                                gfx::OVERLAY_TRANSFORM_ROTATE_90, gfx::SizeF());
   transform4.Scale(2.0, 5.0);
   w1->SetTransform(transform4);
   w1->MoveCursorTo(gfx::Point(10, 10));
@@ -504,7 +509,9 @@ TEST_F(WindowTest, MoveCursorToWithComplexTransform) {
   // The root window expects transforms that produce integer rects.
   gfx::Transform root_transform;
   root_transform.Translate(60.0, 70.0);
-  root_transform.Rotate(-90.0);
+  root_transform =
+      root_transform * OverlayTransformToTransform(
+                           gfx::OVERLAY_TRANSFORM_ROTATE_270, gfx::SizeF());
   root_transform.Translate(-50.0, -50.0);
   root_transform.Scale(2.0, 3.0);
 
@@ -1612,6 +1619,39 @@ TEST_F(WindowTest, EventTargetingPolicy) {
   EXPECT_TRUE(w111.get()->layer()->accept_events());
 }
 
+TEST_F(WindowTest, ScopedEventTargetingBlockerTest) {
+  // Test only when all event targeting blockers are removed from the window,
+  // its event targeting policy will restore back to its original value.
+  std::unique_ptr<Window> window(CreateTestWindowWithDelegate(
+      nullptr, 1, gfx::Rect(0, 0, 500, 500), root_window()));
+  EXPECT_EQ(window->event_targeting_policy(),
+            EventTargetingPolicy::kTargetAndDescendants);
+  auto event_targeting_blocker1 =
+      std::make_unique<ScopedWindowEventTargetingBlocker>(window.get());
+  EXPECT_EQ(window->event_targeting_policy(), EventTargetingPolicy::kNone);
+  auto event_targeting_blocker2 =
+      std::make_unique<ScopedWindowEventTargetingBlocker>(window.get());
+  EXPECT_EQ(window->event_targeting_policy(), EventTargetingPolicy::kNone);
+  event_targeting_blocker2.reset();
+  EXPECT_EQ(window->event_targeting_policy(), EventTargetingPolicy::kNone);
+  event_targeting_blocker1.reset();
+  EXPECT_EQ(window->event_targeting_policy(),
+            EventTargetingPolicy::kTargetAndDescendants);
+
+  // It's possible that the event target policy changes when there is an event
+  // targeting blocker in place. In this case when the event targeting blocker
+  // is removed from the window, the window should restore to the changed event
+  // targeting policy.
+  auto event_targeting_blocker3 =
+      std::make_unique<ScopedWindowEventTargetingBlocker>(window.get());
+  EXPECT_EQ(window->event_targeting_policy(), EventTargetingPolicy::kNone);
+  window->SetEventTargetingPolicy(EventTargetingPolicy::kTargetOnly);
+  EXPECT_EQ(window->event_targeting_policy(), EventTargetingPolicy::kNone);
+  event_targeting_blocker3.reset();
+  EXPECT_EQ(window->event_targeting_policy(),
+            EventTargetingPolicy::kTargetOnly);
+}
+
 // Tests transformation on the root window.
 TEST_F(WindowTest, Transform) {
   gfx::Size size = host()->GetBoundsInPixels().size();
@@ -1620,10 +1660,8 @@ TEST_F(WindowTest, Transform) {
                                  .bounds());
 
   // Rotate it clock-wise 90 degrees.
-  gfx::Transform transform;
-  transform.Translate(size.height(), 0);
-  transform.Rotate(90.0);
-  host()->SetRootTransform(transform);
+  host()->SetRootTransform(OverlayTransformToTransform(
+      gfx::OVERLAY_TRANSFORM_ROTATE_90, gfx::SizeF(size)));
 
   // The size should be the transformed size.
   gfx::Size transformed_size(size.height(), size.width());
@@ -1648,10 +1686,8 @@ TEST_F(WindowTest, TransformGesture) {
       delegate.get(), -1234, gfx::Rect(0, 0, 20, 20), root_window()));
 
   // Rotate the root-window clock-wise 90 degrees.
-  gfx::Transform transform;
-  transform.Translate(size.height(), 0.0);
-  transform.Rotate(90.0);
-  host()->SetRootTransform(transform);
+  host()->SetRootTransform(OverlayTransformToTransform(
+      gfx::OVERLAY_TRANSFORM_ROTATE_90, gfx::SizeF(size)));
 
   ui::TouchEvent press(
       ui::ET_TOUCH_PRESSED, gfx::Point(size.height() - 10, 10), getTime(),
@@ -2876,9 +2912,9 @@ TEST_F(WindowTest, DelegateNotifiedAsBoundsChangeInHiddenLayer) {
 
   delegate.clear_bounds_changed();
 
-  // Suppress paint on the window since it is hidden (should reset the layer's
+  // Suppress paint on the layer since it is hidden (should reset the layer's
   // delegate to NULL)
-  window->SuppressPaint();
+  window->layer()->SuppressPaint();
   EXPECT_EQ(NULL, window->layer()->delegate());
 
   // Animate to a different position.

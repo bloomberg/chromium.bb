@@ -28,13 +28,11 @@ class AutofillProfileDisabledChecker : public SingleClientStatusChangeChecker {
   ~AutofillProfileDisabledChecker() override = default;
 
   // SingleClientStatusChangeChecker implementation.
-  bool IsExitConditionSatisfied() override {
+  bool IsExitConditionSatisfied(std::ostream* os) override {
+    *os << "Waiting for AUTOFILL_PROFILE to get disabled";
     return service()->GetTransportState() ==
                syncer::SyncService::TransportState::ACTIVE &&
            !service()->GetActiveDataTypes().Has(syncer::AUTOFILL_PROFILE);
-  }
-  std::string GetDebugMessage() const override {
-    return "Waiting for AUTOFILL_PROFILE to get disabled";
   }
 };
 
@@ -61,7 +59,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientAutofillProfileSyncTest,
   ASSERT_EQ(1uL, pdm->GetProfiles().size());
 
   // Disable autofill (e.g. via chrome://settings).
-  autofill::prefs::SetProfileAutofillEnabled(GetProfile(0)->GetPrefs(), false);
+  autofill::prefs::SetAutofillProfileEnabled(GetProfile(0)->GetPrefs(), false);
 
   // Wait for Sync to get reconfigured.
   AutofillProfileDisabledChecker(GetClient(0)->service()).Wait();

@@ -78,21 +78,6 @@ UIImage* GetOmniboxSuggestionIconForAutocompleteMatchType(
 
 #pragma mark - Security icons.
 
-NSString* GetLocationBarSecurityIconTypeAssetName(
-    LocationBarSecurityIconType iconType) {
-  switch (iconType) {
-    case INSECURE:
-      return @"location_bar_insecure";
-    case SECURE:
-      return @"location_bar_secure";
-    case DANGEROUS:
-      return @"location_bar_dangerous";
-    case LOCATION_BAR_SECURITY_ICON_TYPE_COUNT:
-      NOTREACHED();
-      return @"location_bar_insecure";
-  }
-}
-
 // Returns the asset with "always template" rendering mode.
 UIImage* GetLocationBarSecurityIcon(LocationBarSecurityIconType iconType) {
   NSString* imageName = GetLocationBarSecurityIconTypeAssetName(iconType);
@@ -105,14 +90,17 @@ LocationBarSecurityIconType GetLocationBarSecurityIconTypeForSecurityState(
     security_state::SecurityLevel security_level) {
   switch (security_level) {
     case security_state::NONE:
-    case security_state::HTTP_SHOW_WARNING:
-      return INSECURE;
+      return INFO;
+    case security_state::WARNING:
+      if (security_state::ShouldShowDangerTriangleForWarningLevel())
+        return NOT_SECURE_WARNING;
+      return INFO;
     case security_state::EV_SECURE:
     case security_state::SECURE:
     case security_state::SECURE_WITH_POLICY_INSTALLED_CERT:
       return SECURE;
     case security_state::DANGEROUS:
-      return DANGEROUS;
+      return NOT_SECURE_WARNING;
     case security_state::SECURITY_LEVEL_COUNT:
       NOTREACHED();
       return LOCATION_BAR_SECURITY_ICON_TYPE_COUNT;
@@ -187,7 +175,7 @@ int GetIconForAutocompleteMatchType(AutocompleteMatchType::Type type,
 int GetIconForSecurityState(security_state::SecurityLevel security_level) {
   switch (security_level) {
     case security_state::NONE:
-    case security_state::HTTP_SHOW_WARNING:
+    case security_state::WARNING:
       return IDR_IOS_OMNIBOX_HTTP;
     case security_state::EV_SECURE:
     case security_state::SECURE:

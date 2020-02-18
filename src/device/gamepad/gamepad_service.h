@@ -8,28 +8,25 @@
 #include <memory>
 #include <set>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/callback_forward.h"
 #include "base/macros.h"
-#include "base/memory/shared_memory.h"
+#include "base/memory/read_only_shared_memory_region.h"
 #include "base/memory/singleton.h"
 #include "device/gamepad/gamepad_export.h"
 #include "device/gamepad/gamepad_provider.h"
 #include "device/gamepad/public/mojom/gamepad.mojom.h"
 
-namespace {
+namespace base {
 class SingleThreadTaskRunner;
-}
-
-namespace content {
-class GamepadServiceTestConstructor;
-}
+}  // namespace base
 
 namespace service_manager {
 class Connector;
-}
+}  // namespace service_manager
 
 namespace device {
 class GamepadConsumer;
@@ -48,10 +45,11 @@ class DEVICE_GAMEPAD_EXPORT GamepadService
   // Sets the GamepadService instance. Exposed for tests.
   static void SetInstance(GamepadService*);
 
+  // Initializes the GamepadService. |service_manager_connector| will be
+  // passed to the GamepadProvider once it is created, to allow data fetchers
+  // to access the device service from the polling thread.
   void StartUp(
       std::unique_ptr<service_manager::Connector> service_manager_connector);
-
-  service_manager::Connector* GetConnector();
 
   // Increments the number of users of the provider. The Provider is running
   // when there's > 0 users, and is paused when the count drops to 0.
@@ -90,7 +88,7 @@ class DEVICE_GAMEPAD_EXPORT GamepadService
   // Registers the given closure for calling when the user has interacted with
   // the device. This callback will only be issued once. Should only be called
   // while a consumer is active.
-  void RegisterForUserGesture(const base::Closure& closure);
+  void RegisterForUserGesture(base::OnceClosure closure);
 
   // Returns a duplicate of the shared memory region of the gamepad data.
   base::ReadOnlySharedMemoryRegion DuplicateSharedMemoryRegion();
@@ -120,18 +118,17 @@ class DEVICE_GAMEPAD_EXPORT GamepadService
       uint32_t pad_index,
       mojom::GamepadHapticsManager::ResetVibrationActuatorCallback);
 
+  // Constructor for testing. This specifies the data fetcher to use for a
+  // provider, bypassing the default platform one.
+  GamepadService(std::unique_ptr<GamepadDataFetcher> fetcher);
+
+  virtual ~GamepadService();
+
  private:
   friend struct base::DefaultSingletonTraits<GamepadService>;
-  friend class GamepadServiceTestConstructor;
   friend class GamepadServiceTest;
 
   GamepadService();
-
-  // Constructor for testing. This specifies the data fetcher to use for a
-  // provider, bypassing the default platform one.
-  GamepadService(std::unique_ptr<device::GamepadDataFetcher> fetcher);
-
-  virtual ~GamepadService();
 
   void OnUserGesture();
 
@@ -153,7 +150,7 @@ class DEVICE_GAMEPAD_EXPORT GamepadService
     mutable bool did_observe_user_gesture = false;
   };
 
-  std::unique_ptr<device::GamepadProvider> provider_;
+  std::unique_ptr<GamepadProvider> provider_;
 
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
 
@@ -165,10 +162,12 @@ class DEVICE_GAMEPAD_EXPORT GamepadService
 
   ConsumerConnectedStateMap inactive_consumer_state_;
 
-  int num_active_consumers_;
+  // The number of active consumers in |consumers_|.
+  int num_active_consumers_ = 0;
 
-  bool gesture_callback_pending_;
+  bool gesture_callback_pending_ = false;
 
+  // Service manager connector. Must be used only on the main thread.
   std::unique_ptr<service_manager::Connector> service_manager_connector_;
 
   DISALLOW_COPY_AND_ASSIGN(GamepadService);

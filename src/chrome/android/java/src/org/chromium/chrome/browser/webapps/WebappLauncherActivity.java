@@ -13,16 +13,17 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.SystemClock;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.util.Base64;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.ShortcutHelper;
@@ -86,7 +87,7 @@ public class WebappLauncherActivity extends Activity {
         WeakReference<WebappActivity> webappActivity =
                 WebappActivity.findWebappActivityWithTabId(tabId);
         if (webappActivity == null || webappActivity.get() == null) return false;
-        webappActivity.get().getActivityTab().getTabWebContentsDelegateAndroid().activateContents();
+        webappActivity.get().getWebContentsDelegate().activateContents();
         return true;
     }
 
@@ -321,8 +322,8 @@ public class WebappLauncherActivity extends Activity {
 
         IntentHandler.addTimestampToIntent(launchIntent, createTimestamp);
         // Pass through WebAPK shell launch timestamp to the new intent.
-        long shellLaunchTimestamp = IntentHandler.getWebApkShellLaunchTimestampFromIntent(intent);
-        IntentHandler.addShellLaunchTimestampToIntent(launchIntent, shellLaunchTimestamp);
+        WebappIntentUtils.copyWebApkShellLaunchTime(intent, launchIntent);
+        WebappIntentUtils.copyNewStyleWebApkSplashShownTime(intent, launchIntent);
 
         // Setting FLAG_ACTIVITY_CLEAR_TOP handles 2 edge cases:
         // - If a legacy PWA is launching from a notification, we want to ensure that the URL being

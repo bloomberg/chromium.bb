@@ -137,45 +137,6 @@ class RegisterInfraGoPackagesStage(generic_stages.BuilderStage,
     return self._run.attrs.version_info.VersionString()
 
 
-class TestPuppetSpecsStage(generic_stages.BuilderStage):
-  """Run Puppet RSpec tests."""
-
-  category = constants.CI_INFRA_STAGE
-
-  def PerformStage(self):
-    """Build infra Go packages."""
-    commands.RunBuildScript(
-        self._build_root,
-        ['bash', '-c',
-         'cd ../../chromeos-admin/puppet'
-         ' && make -j -O check GEM=gem19'],
-        enter_chroot=True)
-
-
-class TestVenvPackagesStage(generic_stages.BuilderStage):
-  """Run unittests for infra venv projects."""
-
-  category = constants.CI_INFRA_STAGE
-
-  def PerformStage(self):
-    """Run untitests for infra venv projects."""
-    commands.RunBuildScript(
-        self._build_root,
-        ['./bin/test_venv_packages'],
-        cwd=os.path.join(constants.SOURCE_ROOT, 'chromeos-admin'),
-    )
-    commands.RunBuildScript(
-        self._build_root,
-        ['./bin/test_venv_packages'],
-        cwd=os.path.join(constants.SOURCE_ROOT, 'infra', 'skylab_inventory'),
-    )
-    commands.RunBuildScript(
-        self._build_root,
-        ['./bin/run_tests'],
-        cwd=os.path.join(constants.SOURCE_ROOT, 'infra', 'ci_results_archiver'),
-    )
-
-
 def _StageChrootFilesIntoDir(target_path, paths):
   """Install chroot files into a staging directory.
 

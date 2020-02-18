@@ -25,7 +25,7 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_status.h"
 #include "services/network/public/cpp/constants.h"
-#include "services/network/public/cpp/resource_response.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "storage/browser/blob/blob_data_handle.h"
 #include "storage/browser/blob/mojo_blob_reader.h"
 
@@ -83,22 +83,22 @@ scoped_refptr<net::HttpResponseHeaders> GenerateHeaders(
 
 // static
 void BlobURLLoader::CreateAndStart(
-    network::mojom::URLLoaderRequest url_loader_request,
+    mojo::PendingReceiver<network::mojom::URLLoader> url_loader_receiver,
     const network::ResourceRequest& request,
-    network::mojom::URLLoaderClientPtr client,
+    mojo::PendingRemote<network::mojom::URLLoaderClient> client,
     std::unique_ptr<BlobDataHandle> blob_handle) {
-  new BlobURLLoader(std::move(url_loader_request), request, std::move(client),
+  new BlobURLLoader(std::move(url_loader_receiver), request, std::move(client),
                     std::move(blob_handle));
 }
 
 BlobURLLoader::~BlobURLLoader() = default;
 
 BlobURLLoader::BlobURLLoader(
-    network::mojom::URLLoaderRequest url_loader_request,
+    mojo::PendingReceiver<network::mojom::URLLoader> url_loader_receiver,
     const network::ResourceRequest& request,
-    network::mojom::URLLoaderClientPtr client,
+    mojo::PendingRemote<network::mojom::URLLoaderClient> client,
     std::unique_ptr<BlobDataHandle> blob_handle)
-    : binding_(this, std::move(url_loader_request)),
+    : receiver_(this, std::move(url_loader_receiver)),
       client_(std::move(client)),
       blob_handle_(std::move(blob_handle)) {
   // PostTask since it might destruct.
@@ -183,12 +183,12 @@ MojoBlobReader::Delegate::RequestSideData BlobURLLoader::DidCalculateSize(
     return REQUEST_SIDE_DATA;
   }
 
-  HeadersCompleted(status_code, content_size, nullptr);
+  HeadersCompleted(status_code, content_size, base::nullopt);
   return DONT_REQUEST_SIDE_DATA;
 }
 
-void BlobURLLoader::DidReadSideData(net::IOBufferWithSize* data) {
-  HeadersCompleted(net::HTTP_OK, total_size_, data);
+void BlobURLLoader::DidReadSideData(base::Optional<mojo_base::BigBuffer> data) {
+  HeadersCompleted(net::HTTP_OK, total_size_, std::move(data));
 }
 
 void BlobURLLoader::OnComplete(net::Error error_code,
@@ -201,33 +201,31 @@ void BlobURLLoader::OnComplete(net::Error error_code,
   status.decoded_body_length = total_written_bytes;
   client_->OnComplete(status);
 }
-void BlobURLLoader::HeadersCompleted(net::HttpStatusCode status_code,
-                                     uint64_t content_size,
-                                     net::IOBufferWithSize* metadata) {
-  network::ResourceResponseHead response;
-  response.content_length = 0;
+void BlobURLLoader::HeadersCompleted(
+    net::HttpStatusCode status_code,
+    uint64_t content_size,
+    base::Optional<mojo_base::BigBuffer> metadata) {
+  auto response = network::mojom::URLResponseHead::New();
+  response->content_length = 0;
   if (status_code == net::HTTP_OK || status_code == net::HTTP_PARTIAL_CONTENT)
-    response.content_length = content_size;
-  response.headers = GenerateHeaders(status_code, blob_handle_.get(),
-                                     &byte_range_, total_size_, content_size);
+    response->content_length = content_size;
+  response->headers = GenerateHeaders(status_code, blob_handle_.get(),
+                                      &byte_range_, total_size_, content_size);
 
   std::string mime_type;
-  response.headers->GetMimeType(&mime_type);
+  response->headers->GetMimeType(&mime_type);
   // Match logic in StreamURLRequestJob::HeadersCompleted.
   if (mime_type.empty())
     mime_type = "text/plain";
-  response.mime_type = mime_type;
+  response->mime_type = mime_type;
 
   // TODO(jam): some of this code can be shared with
   // services/network/url_loader.h
-  client_->OnReceiveResponse(response);
+  client_->OnReceiveResponse(std::move(response));
   sent_headers_ = true;
 
-  if (metadata) {
-    const uint8_t* data = reinterpret_cast<const uint8_t*>(metadata->data());
-    client_->OnReceiveCachedMetadata(
-        std::vector<uint8_t>(data, data + metadata->size()));
-  }
+  if (metadata.has_value())
+    client_->OnReceiveCachedMetadata(std::move(metadata.value()));
 
   client_->OnStartLoadingResponseBody(
       std::move(response_body_consumer_handle_));

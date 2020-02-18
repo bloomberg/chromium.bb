@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "chrome/browser/android/vr/arcore_device/ar_image_transport.h"
 #include "chrome/browser/android/vr/arcore_device/arcore_gl.h"
@@ -18,6 +17,9 @@
 #include "device/vr/public/mojom/vr_service.mojom.h"
 #include "device/vr/test/fake_vr_device.h"
 #include "device/vr/test/fake_vr_service_client.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -29,9 +31,10 @@ class StubArImageTransport : public ArImageTransport {
       std::unique_ptr<vr::MailboxToSurfaceBridge> mailbox_bridge)
       : ArImageTransport(std::move(mailbox_bridge)) {}
 
-  // TODO(lincolnfrog): verify this gets called on GL thread.
-  // TODO(lincolnfrog): test what happens if this returns false.
-  bool Initialize(vr::WebXrPresentationState*) override { return true; }
+  void Initialize(vr::WebXrPresentationState*,
+                  base::OnceClosure callback) override {
+    std::move(callback).Run();
+  }
 
   // TODO(lincolnfrog): test verify this somehow.
   GLuint GetCameraTextureId() override { return CAMERA_TEXTURE_ID; }
@@ -40,6 +43,7 @@ class StubArImageTransport : public ArImageTransport {
   // by GetCameraTextureId() is at the time it is called and returns
   // a gpu::MailboxHolder with that texture copied to a shared buffer.
   gpu::MailboxHolder TransferFrame(
+      vr::WebXrPresentationState*,
       const gfx::Size& frame_size,
       const gfx::Transform& uv_transform) override {
     return gpu::MailboxHolder();
@@ -63,13 +67,9 @@ class StubMailboxToSurfaceBridge : public vr::MailboxToSurfaceBridge {
  public:
   StubMailboxToSurfaceBridge() = default;
 
-  MOCK_METHOD1(DoCreateUnboundContextProvider,
-               void(base::OnceClosure callback));
-  void CreateUnboundContextProvider(base::OnceClosure callback) override {
+  void CreateAndBindContextProvider(base::OnceClosure callback) override {
     callback_ = std::move(callback);
   }
-
-  void BindContextProviderToCurrentThread() override {}
 
   bool IsConnected() override { return true; }
 
@@ -88,6 +88,7 @@ class StubArCoreSessionUtils : public vr::ArCoreSessionUtils {
   void RequestArSession(
       int render_process_id,
       int render_frame_id,
+      bool use_overlay,
       vr::SurfaceReadyCallback ready_callback,
       vr::SurfaceTouchCallback touch_callback,
       vr::SurfaceDestroyedCallback destroyed_callback) override {
@@ -121,11 +122,12 @@ class ArCoreDeviceTest : public testing::Test {
   ArCoreDeviceTest() {}
   ~ArCoreDeviceTest() override {}
 
-  void OnSessionCreated(mojom::XRSessionPtr session,
-                        mojom::XRSessionControllerPtr controller) {
+  void OnSessionCreated(
+      mojom::XRSessionPtr session,
+      mojo::PendingRemote<mojom::XRSessionController> controller) {
     DVLOG(1) << __func__;
     session_ = std::move(session);
-    controller_ = std::move(controller);
+    controller_.Bind(std::move(controller));
     // TODO(crbug.com/837834): verify that things fail if restricted.
     // We should think through the right result here for javascript.
     // If an AR page tries to hittest while not focused, should it
@@ -134,14 +136,15 @@ class ArCoreDeviceTest : public testing::Test {
 
     frame_provider.Bind(std::move(session_->data_provider));
     frame_provider->GetEnvironmentIntegrationProvider(
-        mojo::MakeRequest(&environment_provider));
+        environment_provider.BindNewEndpointAndPassReceiver());
     std::move(quit_closure).Run();
   }
 
   StubMailboxToSurfaceBridge* bridge;
   StubArCoreSessionUtils* session_utils;
-  mojom::XRFrameDataProviderPtr frame_provider;
-  mojom::XREnvironmentIntegrationProviderAssociatedPtr environment_provider;
+  mojo::Remote<mojom::XRFrameDataProvider> frame_provider;
+  mojo::AssociatedRemote<mojom::XREnvironmentIntegrationProvider>
+      environment_provider;
   std::unique_ptr<base::RunLoop> run_loop;
   base::OnceClosure quit_closure;
 
@@ -174,7 +177,6 @@ class ArCoreDeviceTest : public testing::Test {
 
     run_loop = std::make_unique<base::RunLoop>();
     quit_closure = run_loop->QuitClosure();
-    bridge->CallCallback();
     run_loop->Run();
 
     EXPECT_TRUE(environment_provider);
@@ -209,7 +211,7 @@ class ArCoreDeviceTest : public testing::Test {
  private:
   std::unique_ptr<ArCoreDevice> device_;
   mojom::XRSessionPtr session_;
-  mojom::XRSessionControllerPtr controller_;
+  mojo::Remote<mojom::XRSessionController> controller_;
 };
 
 TEST_F(ArCoreDeviceTest, RequestSession) {

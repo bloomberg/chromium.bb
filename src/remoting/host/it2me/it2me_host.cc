@@ -37,8 +37,8 @@
 #include "remoting/protocol/network_settings.h"
 #include "remoting/protocol/transport_context.h"
 #include "remoting/protocol/validating_authenticator.h"
-#include "remoting/signaling/jid_util.h"
 #include "remoting/signaling/log_to_server.h"
+#include "remoting/signaling/signaling_id_util.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace remoting {
@@ -91,7 +91,6 @@ void It2MeHost::Connect(
     base::WeakPtr<It2MeHost::Observer> observer,
     std::unique_ptr<SignalStrategy> signal_strategy,
     const std::string& username,
-    const std::string& directory_bot_jid,
     const protocol::IceConfig& ice_config) {
   DCHECK(host_context->ui_task_runner()->BelongsToCurrentThread());
 
@@ -110,9 +109,9 @@ void It2MeHost::Connect(
 
   // Switch to the network thread to start the actual connection.
   host_context_->network_task_runner()->PostTask(
-      FROM_HERE, base::BindOnce(&It2MeHost::ConnectOnNetworkThread, this,
-                                username, directory_bot_jid, ice_config,
-                                std::move(register_request)));
+      FROM_HERE,
+      base::BindOnce(&It2MeHost::ConnectOnNetworkThread, this, username,
+                     ice_config, std::move(register_request)));
 }
 
 void It2MeHost::Disconnect() {
@@ -123,7 +122,6 @@ void It2MeHost::Disconnect() {
 
 void It2MeHost::ConnectOnNetworkThread(
     const std::string& username,
-    const std::string& directory_bot_jid,
     const protocol::IceConfig& ice_config,
     std::unique_ptr<RegisterSupportHostRequest> register_request) {
   DCHECK(host_context_->network_task_runner()->BelongsToCurrentThread());
@@ -226,7 +224,7 @@ void It2MeHost::OnAccessDenied(const std::string& jid) {
   ++failed_login_attempts_;
   if (failed_login_attempts_ == kMaxLoginAttempts) {
     DisconnectOnNetworkThread();
-  } else if (connecting_jid_ == NormalizeJid(jid)) {
+  } else if (connecting_jid_ == NormalizeSignalingId(jid)) {
     DCHECK_EQ(state_, kConnecting);
     connecting_jid_.clear();
     confirmation_dialog_proxy_.reset();
@@ -242,7 +240,7 @@ void It2MeHost::OnClientConnected(const std::string& jid) {
   CHECK_NE(state_, kConnected);
 
   std::string client_username;
-  if (!SplitJidResource(jid, &client_username, /*resource=*/nullptr)) {
+  if (!SplitSignalingIdResource(jid, &client_username, /*resource=*/nullptr)) {
     LOG(WARNING) << "Incorrectly formatted JID received: " << jid;
     client_username = jid;
   }
@@ -503,8 +501,8 @@ void It2MeHost::ValidateConnectionDetails(
 
   // First ensure the JID we received is valid.
   std::string client_username;
-  if (!SplitJidResource(original_remote_jid, &client_username,
-                        /*resource=*/nullptr)) {
+  if (!SplitSignalingIdResource(original_remote_jid, &client_username,
+                                /*resource=*/nullptr)) {
     LOG(ERROR) << "Rejecting incoming connection from " << original_remote_jid
                << ": Invalid JID.";
     result_callback.Run(
@@ -512,7 +510,7 @@ void It2MeHost::ValidateConnectionDetails(
     DisconnectOnNetworkThread();
     return;
   }
-  std::string remote_jid = NormalizeJid(original_remote_jid);
+  std::string remote_jid = NormalizeSignalingId(original_remote_jid);
 
   if (client_username.empty()) {
     LOG(ERROR) << "Invalid user name passed in: " << remote_jid;

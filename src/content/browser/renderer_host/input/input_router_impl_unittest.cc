@@ -114,6 +114,10 @@ class MockInputRouterImplClient : public InputRouterImplClient {
 
   void FallbackCursorModeSetCursorVisibility(bool visible) override {}
 
+  gfx::Size GetRootWidgetViewportSize() override {
+    return gfx::Size(1920, 1080);
+  }
+
   MockWidgetInputHandler::MessageVector GetAndResetDispatchedMessages() {
     return widget_input_handler_.GetAndResetDispatchedMessages();
   }
@@ -262,7 +266,9 @@ class InputRouterImplTestBase : public testing::Test {
                           bool precise,
                           WebMouseWheelEvent::Phase phase) {
     WebMouseWheelEvent wheel_event = SyntheticWebMouseWheelEventBuilder::Build(
-        x, y, dX, dY, modifiers, precise);
+        x, y, dX, dY, modifiers,
+        precise ? ui::input_types::ScrollGranularity::kScrollByPrecisePixel
+                : ui::input_types::ScrollGranularity::kScrollByPixel);
     wheel_event.phase = phase;
     input_router_->SendWheelEvent(MouseWheelEventWithLatencyInfo(wheel_event));
   }
@@ -531,7 +537,7 @@ class InputRouterImplTest : public InputRouterImplTestBase,
   base::test::ScopedFeatureList touch_action_feature_list_;
 };
 
-INSTANTIATE_TEST_SUITE_P(, InputRouterImplTest, ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All, InputRouterImplTest, ::testing::Bool());
 
 TEST_P(InputRouterImplTest, HandledInputEvent) {
   client_->set_filter_state(INPUT_EVENT_ACK_STATE_CONSUMED);
@@ -1764,7 +1770,9 @@ class TouchpadPinchInputRouterImplTest
   DISALLOW_COPY_AND_ASSIGN(TouchpadPinchInputRouterImplTest);
 };
 
-INSTANTIATE_TEST_SUITE_P(, TouchpadPinchInputRouterImplTest, ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All,
+                         TouchpadPinchInputRouterImplTest,
+                         ::testing::Bool());
 
 // Test that GesturePinchUpdate is handled specially for trackpad
 TEST_P(TouchpadPinchInputRouterImplTest, TouchpadPinchUpdate) {

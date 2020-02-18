@@ -55,6 +55,9 @@ def GetParser():
       '--manifest-file', type='path',
       help='Sync to an existing local manifest file.')
 
+  manifest_group.add_argument(
+      '--groups', help='manifest groups to sync.')
+
   manifest_url_ex = manifest_group.add_mutually_exclusive_group()
   manifest_url_ex.add_argument(
       '--external', action='store_true', default=False,
@@ -197,7 +200,8 @@ def main(argv):
       directory=options.repo_root,
       branch=options.branch,
       git_cache_dir=options.git_cache_dir,
-      repo_url=options.repo_url)
+      repo_url=options.repo_url,
+      groups=options.groups)
 
   if options.copy_repo:
     repo.PreLoad(options.copy_repo)

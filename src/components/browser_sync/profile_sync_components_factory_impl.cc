@@ -38,9 +38,6 @@
 #include "components/sync/model/model_type_store_service.h"
 #include "components/sync/model_impl/forwarding_model_type_controller_delegate.h"
 #include "components/sync/model_impl/proxy_model_type_controller_delegate.h"
-#include "components/sync_bookmarks/bookmark_change_processor.h"
-#include "components/sync_bookmarks/bookmark_data_type_controller.h"
-#include "components/sync_bookmarks/bookmark_model_associator.h"
 #include "components/sync_bookmarks/bookmark_sync_service.h"
 #include "components/sync_device_info/device_info_sync_service.h"
 #include "components/sync_sessions/proxy_tabs_data_type_controller.h"
@@ -48,11 +45,10 @@
 #include "components/sync_sessions/session_sync_service.h"
 #include "components/sync_user_events/user_event_model_type_controller.h"
 
-using base::FeatureList;
-using bookmarks::BookmarkModel;
-using sync_bookmarks::BookmarkChangeProcessor;
-using sync_bookmarks::BookmarkDataTypeController;
-using sync_bookmarks::BookmarkModelAssociator;
+#if defined(OS_CHROMEOS)
+#include "chromeos/constants/chromeos_features.h"
+#endif
+
 using syncer::DataTypeController;
 using syncer::DataTypeManager;
 using syncer::DataTypeManagerImpl;
@@ -146,8 +142,16 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
   syncer::RepeatingModelTypeStoreFactory model_type_store_factory =
       model_type_store_service->GetStoreFactory();
 
+  // TODO(crbug.com/1005651): Consider using a separate delegate for
+  // transport-only.
   controllers.push_back(std::make_unique<ModelTypeController>(
       syncer::DEVICE_INFO,
+      /*delegate_for_full_sync_mode=*/
+      std::make_unique<syncer::ForwardingModelTypeControllerDelegate>(
+          sync_client_->GetDeviceInfoSyncService()
+              ->GetControllerDelegate()
+              .get()),
+      /*delegate_for_transport_mode=*/
       std::make_unique<syncer::ForwardingModelTypeControllerDelegate>(
           sync_client_->GetDeviceInfoSyncService()
               ->GetControllerDelegate()
@@ -202,7 +206,6 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
   // Bookmark sync is enabled by default.  Register unless explicitly
   // disabled.
   if (!disabled_types.Has(syncer::BOOKMARKS)) {
-    if (FeatureList::IsEnabled(switches::kSyncUSSBookmarks)) {
       controllers.push_back(std::make_unique<ModelTypeController>(
           syncer::BOOKMARKS,
           std::make_unique<syncer::ProxyModelTypeControllerDelegate>(
@@ -211,11 +214,6 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
                                       GetBookmarkSyncControllerDelegate,
                                   base::Unretained(bookmark_sync_service_),
                                   sync_client_->GetFaviconService()))));
-    } else {
-      controllers.push_back(std::make_unique<BookmarkDataTypeController>(
-          dump_stack, sync_service, sync_client_->GetBookmarkModel(),
-          sync_client_->GetHistoryService(), this));
-    }
   }
 
   // These features are enabled only if history is not disabled.
@@ -291,7 +289,8 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
                 account_password_store_
                     ? account_password_store_->CreateSyncControllerDelegate()
                     : nullptr,
-                sync_service, sync_client_->GetPasswordStateChangedCallback()));
+                sync_client_->GetPrefService(), sync_service,
+                sync_client_->GetPasswordStateChangedCallback()));
       }
     } else {
       controllers.push_back(std::make_unique<PasswordDataTypeController>(
@@ -321,30 +320,14 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
   }
 
 #if defined(OS_CHROMEOS)
-  if (!disabled_types.Has(syncer::PRINTERS)) {
-    // TODO(crbug.com/867801) This still uses a proxy delegate even though the
-    // model lives on the UI thread. Switching to forwarding delegate causes
-    // cryptic test failures on chromeos. Fix that and switch to the forwarding
-    // delegate.
-    controllers.push_back(std::make_unique<ModelTypeController>(
-        syncer::PRINTERS,
-        std::make_unique<syncer::ProxyModelTypeControllerDelegate>(
-            ui_thread_,
-            base::BindRepeating(&browser_sync::BrowserSyncClient::
-                                    GetControllerDelegateForModelType,
-                                base::Unretained(sync_client_),
-                                syncer::PRINTERS))));
+  // When SplitSettingsSync is enabled the controller is created in
+  // ChromeSyncClient.
+  if (!disabled_types.Has(syncer::PRINTERS) &&
+      !chromeos::features::IsSplitSettingsSyncEnabled()) {
+    controllers.push_back(
+        CreateModelTypeControllerForModelRunningOnUIThread(syncer::PRINTERS));
   }
-  if (!disabled_types.Has(syncer::WIFI_CONFIGURATIONS) &&
-      base::FeatureList::IsEnabled(switches::kSyncWifiConfigurations)) {
-    controllers.push_back(std::make_unique<ModelTypeController>(
-        syncer::WIFI_CONFIGURATIONS,
-        std::make_unique<syncer::ForwardingModelTypeControllerDelegate>(
-            sync_client_
-                ->GetControllerDelegateForModelType(syncer::WIFI_CONFIGURATIONS)
-                .get())));
-  }
-#endif
+#endif  // defined(OS_CHROMEOS)
 
   // Reading list sync is enabled by default only on iOS. Register unless
   // Reading List or Reading List Sync is explicitly disabled.
@@ -361,8 +344,7 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
             CreateForwardingControllerDelegate(syncer::USER_EVENTS)));
   }
 
-  if (!disabled_types.Has(syncer::SEND_TAB_TO_SELF) &&
-      base::FeatureList::IsEnabled(switches::kSyncSendTabToSelf)) {
+  if (!disabled_types.Has(syncer::SEND_TAB_TO_SELF)) {
     controllers.push_back(
         std::make_unique<send_tab_to_self::SendTabToSelfModelTypeController>(
             sync_service,
@@ -372,14 +354,14 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
                     .get())));
   }
 
-  // Forward both on-disk and in-memory storage modes to the same delegate,
+  // Forward both full-sync and transport-only modes to the same delegate,
   // since behavior for USER_CONSENTS does not differ (they are always
   // persisted).
   controllers.push_back(std::make_unique<ModelTypeController>(
       syncer::USER_CONSENTS,
-      /*delegate_on_disk=*/
+      /*delegate_for_full_sync_mode=*/
       CreateForwardingControllerDelegate(syncer::USER_CONSENTS),
-      /*delegate_in_memory=*/
+      /*delegate_for_transport_mode=*/
       CreateForwardingControllerDelegate(syncer::USER_CONSENTS)));
 
   return controllers;
@@ -407,30 +389,6 @@ ProfileSyncComponentsFactoryImpl::CreateSyncEngine(
   return std::make_unique<syncer::SyncEngineImpl>(
       name, invalidator, sync_prefs,
       sync_client_->GetModelTypeStoreService()->GetSyncDataPath());
-}
-
-syncer::SyncApiComponentFactory::SyncComponents
-ProfileSyncComponentsFactoryImpl::CreateBookmarkSyncComponents(
-    std::unique_ptr<syncer::DataTypeErrorHandler> error_handler,
-    syncer::UserShare* user_share) {
-  BookmarkModel* bookmark_model = sync_client_->GetBookmarkModel();
-// TODO(akalin): We may want to propagate this switch up eventually.
-#if defined(OS_ANDROID) || defined(OS_IOS)
-  const bool kExpectMobileBookmarksFolder = true;
-#else
-  const bool kExpectMobileBookmarksFolder = false;
-#endif
-
-  auto model_associator = std::make_unique<BookmarkModelAssociator>(
-      bookmark_model, sync_client_->GetBookmarkUndoService(),
-      sync_client_->GetFaviconService(), user_share, error_handler->Copy(),
-      kExpectMobileBookmarksFolder);
-
-  SyncComponents components;
-  components.change_processor = std::make_unique<BookmarkChangeProcessor>(
-      model_associator.get(), std::move(error_handler));
-  components.model_associator = std::move(model_associator);
-  return components;
 }
 
 std::unique_ptr<syncer::ModelTypeControllerDelegate>
@@ -470,12 +428,12 @@ std::unique_ptr<ModelTypeController> ProfileSyncComponentsFactoryImpl::
                 autofill::AutofillWebDataService*)>& delegate_from_web_data,
         syncer::SyncService* sync_service) {
   return std::make_unique<AutofillWalletModelTypeController>(
-      type, /*delegate_on_disk=*/
+      type, /*delegate_for_full_sync_mode=*/
       std::make_unique<syncer::ProxyModelTypeControllerDelegate>(
           db_thread_,
           base::BindRepeating(delegate_from_web_data,
                               base::RetainedRef(web_data_service_on_disk_))),
-      /*delegate_in_memory=*/
+      /*delegate_for_transport_mode=*/
       std::make_unique<syncer::ProxyModelTypeControllerDelegate>(
           db_thread_,
           base::BindRepeating(delegate_from_web_data,

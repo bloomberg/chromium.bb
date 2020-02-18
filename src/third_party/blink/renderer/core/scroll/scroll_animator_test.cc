@@ -53,8 +53,10 @@ double NowTicksInSeconds(const base::TestMockTimeTaskRunner* task_runner) {
   return task_runner->NowTicks().since_origin().InSecondsF();
 }
 
+}  // namespace
+
 class MockScrollableAreaForAnimatorTest
-    : public GarbageCollectedFinalized<MockScrollableAreaForAnimatorTest>,
+    : public GarbageCollected<MockScrollableAreaForAnimatorTest>,
       public ScrollableArea {
   USING_GARBAGE_COLLECTED_MIXIN(MockScrollableAreaForAnimatorTest);
 
@@ -78,7 +80,6 @@ class MockScrollableAreaForAnimatorTest
   MOCK_CONST_METHOD1(VisibleContentRect, IntRect(IncludeScrollbarsInRect));
   MOCK_CONST_METHOD0(ContentsSize, IntSize());
   MOCK_CONST_METHOD0(ScrollbarsCanBeActive, bool());
-  MOCK_CONST_METHOD0(ScrollableAreaBoundingBox, IntRect());
   MOCK_METHOD0(RegisterForAnimation, void());
   MOCK_METHOD0(ScheduleAnimation, bool());
   MOCK_CONST_METHOD0(UsedColorScheme, WebColorScheme());
@@ -88,7 +89,7 @@ class MockScrollableAreaForAnimatorTest
   IntSize ScrollOffsetInt() const override { return IntSize(); }
   int VisibleHeight() const override { return 768; }
   int VisibleWidth() const override { return 1024; }
-  CompositorElementId GetCompositorElementId() const override {
+  CompositorElementId GetScrollElementId() const override {
     return CompositorElementId();
   }
   bool ScrollAnimatorEnabled() const override {
@@ -131,7 +132,7 @@ class MockScrollableAreaForAnimatorTest
   }
 
   ScrollbarTheme& GetPageScrollbarTheme() const override {
-    return ScrollbarTheme::DeprecatedStaticGetTheme();
+    return ScrollbarTheme::GetTheme();
   }
 
   void Trace(blink::Visitor* visitor) override {
@@ -176,8 +177,6 @@ class TestScrollAnimator : public ScrollAnimator {
  private:
   bool should_send_to_compositor_ = false;
 };
-
-}  // namespace
 
 static void Reset(ScrollAnimator& scroll_animator) {
   scroll_animator.ScrollToOffsetWithoutAnimation(ScrollOffset());

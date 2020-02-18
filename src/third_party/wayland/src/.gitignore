@@ -43,5 +43,6 @@ Makefile
 Makefile.in
 exec-fd-leak-checker
 fixed-benchmark
+/wayland-egl-abi-check
 /wayland-scanner
 protocol/*.[ch]

@@ -17,7 +17,6 @@
 #include <utility>
 #include <vector>
 
-#include "absl/memory/memory.h"
 #include "api/rtc_event_log/rtc_event_log.h"
 #include "api/rtc_event_log/rtc_event_log_factory.h"
 #include "api/rtc_event_log_output_file.h"
@@ -178,6 +177,7 @@ class RtcEventLogSession
   std::vector<std::unique_ptr<RtcEventProbeResultFailure>> probe_failure_list_;
   std::vector<std::unique_ptr<RtcEventProbeResultSuccess>> probe_success_list_;
   std::vector<std::unique_ptr<RtcEventRouteChange>> route_change_list_;
+  std::vector<std::unique_ptr<RtcEventRemoteEstimate>> remote_estimate_list_;
   std::vector<std::unique_ptr<RtcEventRtcpPacketIncoming>> incoming_rtcp_list_;
   std::vector<std::unique_ptr<RtcEventRtcpPacketOutgoing>> outgoing_rtcp_list_;
   std::map<uint32_t, std::vector<std::unique_ptr<RtcEventRtpPacketIncoming>>>
@@ -258,7 +258,7 @@ void RtcEventLogSession::WriteVideoRecvConfigs(size_t video_recv_streams,
 
   clock_.AdvanceTime(TimeDelta::ms(prng_.Rand(20)));
   uint32_t ssrc = prng_.Rand<uint32_t>();
-  incoming_extensions_.emplace_back(prng_.Rand<uint32_t>(), all_extensions);
+  incoming_extensions_.emplace_back(ssrc, all_extensions);
   auto event = gen_.NewVideoReceiveStreamConfig(ssrc, all_extensions);
   event_log->Log(event->Copy());
   video_recv_config_list_.push_back(std::move(event));
@@ -287,7 +287,7 @@ void RtcEventLogSession::WriteVideoSendConfigs(size_t video_send_streams,
 
   clock_.AdvanceTime(TimeDelta::ms(prng_.Rand(20)));
   uint32_t ssrc = prng_.Rand<uint32_t>();
-  outgoing_extensions_.emplace_back(prng_.Rand<uint32_t>(), all_extensions);
+  outgoing_extensions_.emplace_back(ssrc, all_extensions);
   auto event = gen_.NewVideoSendStreamConfig(ssrc, all_extensions);
   event_log->Log(event->Copy());
   video_send_config_list_.push_back(std::move(event));
@@ -331,7 +331,7 @@ void RtcEventLogSession::WriteLog(EventCounts count,
     if (remaining_events == remaining_events_at_start) {
       clock_.AdvanceTime(TimeDelta::ms(prng_.Rand(20)));
       event_log->StartLogging(
-          absl::make_unique<RtcEventLogOutputFile>(temp_filename_, 10000000),
+          std::make_unique<RtcEventLogOutputFile>(temp_filename_, 10000000),
           output_period_ms_);
       start_time_us_ = rtc::TimeMicros();
       utc_start_time_us_ = rtc::TimeUTCMicros();
@@ -545,7 +545,7 @@ void RtcEventLogSession::WriteLog(EventCounts count,
 void RtcEventLogSession::ReadAndVerifyLog() {
   // Read the generated file from disk.
   ParsedRtcEventLog parsed_log;
-  ASSERT_TRUE(parsed_log.ParseFile(temp_filename_));
+  ASSERT_TRUE(parsed_log.ParseFile(temp_filename_).ok());
 
   // Start and stop events.
   auto& parsed_start_log_events = parsed_log.start_log_events();
@@ -843,7 +843,7 @@ TEST_P(RtcEventLogCircularBufferTest, KeepsMostRecentEvents) {
   const std::string temp_filename = test::OutputPath() + test_name;
 
   std::unique_ptr<rtc::ScopedFakeClock> fake_clock =
-      absl::make_unique<rtc::ScopedFakeClock>();
+      std::make_unique<rtc::ScopedFakeClock>();
   fake_clock->SetTime(Timestamp::seconds(kStartTimeSeconds));
 
   auto task_queue_factory = CreateDefaultTaskQueueFactory();
@@ -860,14 +860,14 @@ TEST_P(RtcEventLogCircularBufferTest, KeepsMostRecentEvents) {
     // simplicity.
     // We base the various values on the index. We use this for some basic
     // consistency checks when we read back.
-    log_dumper->Log(absl::make_unique<RtcEventProbeResultSuccess>(
+    log_dumper->Log(std::make_unique<RtcEventProbeResultSuccess>(
         i, kStartBitrate + i * 1000));
     fake_clock->AdvanceTime(TimeDelta::ms(10));
   }
   int64_t start_time_us = rtc::TimeMicros();
   int64_t utc_start_time_us = rtc::TimeUTCMicros();
   log_dumper->StartLogging(
-      absl::make_unique<RtcEventLogOutputFile>(temp_filename, 10000000),
+      std::make_unique<RtcEventLogOutputFile>(temp_filename, 10000000),
       RtcEventLog::kImmediateOutput);
   fake_clock->AdvanceTime(TimeDelta::ms(10));
   int64_t stop_time_us = rtc::TimeMicros();
@@ -875,7 +875,7 @@ TEST_P(RtcEventLogCircularBufferTest, KeepsMostRecentEvents) {
 
   // Read the generated file from disk.
   ParsedRtcEventLog parsed_log;
-  ASSERT_TRUE(parsed_log.ParseFile(temp_filename));
+  ASSERT_TRUE(parsed_log.ParseFile(temp_filename).ok());
 
   const auto& start_log_events = parsed_log.start_log_events();
   ASSERT_EQ(start_log_events.size(), 1u);
@@ -901,7 +901,7 @@ TEST_P(RtcEventLogCircularBufferTest, KeepsMostRecentEvents) {
   // recreate the clock. However we must ensure that the old fake_clock is
   // destroyed before the new one is created, so we have to reset() first.
   fake_clock.reset();
-  fake_clock = absl::make_unique<rtc::ScopedFakeClock>();
+  fake_clock = std::make_unique<rtc::ScopedFakeClock>();
   fake_clock->SetTime(Timestamp::us(first_timestamp_us));
   for (size_t i = 1; i < probe_success_events.size(); i++) {
     fake_clock->AdvanceTime(TimeDelta::ms(10));

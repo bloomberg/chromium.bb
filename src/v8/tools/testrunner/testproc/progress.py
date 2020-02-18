@@ -93,7 +93,7 @@ class SimpleProgressIndicator(ProgressIndicator):
         print(result.output.stdout.strip())
       print("Command: %s" % result.cmd.to_string())
       if result.output.HasCrashed():
-        print("exit code: %d" % result.output.exit_code)
+        print("exit code: %s" % result.output.exit_code_string)
         print("--- CRASHED ---")
         crashed += 1
       if result.output.HasTimedOut():
@@ -247,7 +247,7 @@ class CompactProgressIndicator(ProgressIndicator):
         print(self._templates['stderr'] % stderr)
       print("Command: %s" % result.cmd.to_string(relative=True))
       if output.HasCrashed():
-        print("exit code: %d" % output.exit_code)
+        print("exit code: %s" % output.exit_code_string)
         print("--- CRASHED ---")
       if output.HasTimedOut():
         print("--- TIMEOUT ---")
@@ -268,7 +268,7 @@ class CompactProgressIndicator(ProgressIndicator):
       'progress': progress,
       'failed': self._failed,
       'test': name,
-      'mins': int(elapsed) / 60,
+      'mins': int(elapsed) // 60,
       'secs': int(elapsed) % 60
     }
     status = self._truncate(status, 78)
@@ -374,7 +374,7 @@ class JsonTestProgressIndicator(ProgressIndicator):
     complete_results = []
     if os.path.exists(self.json_test_results):
       with open(self.json_test_results, "r") as f:
-        # Buildbot might start out with an empty file.
+        # On bots we might start out with an empty file.
         complete_results = json.loads(f.read() or "[]")
 
     duration_mean = None

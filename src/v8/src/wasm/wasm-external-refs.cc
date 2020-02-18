@@ -247,6 +247,10 @@ int32_t int64_mod_wrapper(Address data) {
   if (divisor == 0) {
     return 0;
   }
+  if (divisor == -1 && dividend == std::numeric_limits<int64_t>::min()) {
+    WriteUnalignedValue<int64_t>(data, 0);
+    return 1;
+  }
   WriteUnalignedValue<int64_t>(data, dividend % divisor);
   return 1;
 }
@@ -297,6 +301,20 @@ uint32_t word32_ror_wrapper(Address data) {
   uint32_t input = ReadUnalignedValue<uint32_t>(data);
   uint32_t shift = ReadUnalignedValue<uint32_t>(data + sizeof(input)) & 31;
   return (input >> shift) | (input << ((32 - shift) & 31));
+}
+
+void word64_rol_wrapper(Address data) {
+  uint64_t input = ReadUnalignedValue<uint64_t>(data);
+  uint64_t shift = ReadUnalignedValue<uint64_t>(data + sizeof(input)) & 63;
+  uint64_t result = (input << shift) | (input >> ((64 - shift) & 63));
+  WriteUnalignedValue<uint64_t>(data, result);
+}
+
+void word64_ror_wrapper(Address data) {
+  uint64_t input = ReadUnalignedValue<uint64_t>(data);
+  uint64_t shift = ReadUnalignedValue<uint64_t>(data + sizeof(input)) & 63;
+  uint64_t result = (input >> shift) | (input << ((64 - shift) & 63));
+  WriteUnalignedValue<uint64_t>(data, result);
 }
 
 void float64_pow_wrapper(Address data) {

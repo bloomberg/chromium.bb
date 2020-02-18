@@ -1,4 +1,4 @@
-﻿cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.6.3)
 
 project(SwiftShader C CXX ASM)
 
@@ -105,6 +105,9 @@ option(DCHECK_ALWAYS_ON "Check validation macros even in release builds" 0)
 option(REACTOR_EMIT_DEBUG_INFO "Emit debug info for JIT functions" 0)
 option(REACTOR_EMIT_PRINT_LOCATION "Emit printing of location info for JIT functions" 0)
 option(REACTOR_VERIFY_LLVM_IR "Check reactor-generated LLVM IR is valid even in release builds" 0)
+option(LESS_DEBUG_INFO "Generate less debug info to reduce file size" 0)
+
+set(BUILD_MARL ${BUILD_VULKAN})
 
 set(DEFAULT_REACTOR_BACKEND "LLVM")
 
@@ -265,7 +268,6 @@ endif()
 ###########################################################
 
 set(SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
-set(YARN_DIR ${SOURCE_DIR}/Yarn)
 set(OPENGL_DIR ${SOURCE_DIR}/OpenGL)
 set(OPENGL_COMPILER_DIR ${OPENGL_DIR}/compiler)
 set(VULKAN_DIR ${SOURCE_DIR}/Vulkan)
@@ -274,6 +276,7 @@ set(LLVM_CONFIG_DIR ${CMAKE_CURRENT_SOURCE_DIR}/third_party/llvm-7.0/configs)
 set(LIBBACKTRACE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/third_party/libbacktrace/src)
 set(LIBBACKTRACE_CONFIG_DIR ${CMAKE_CURRENT_SOURCE_DIR}/third_party/libbacktrace/config)
 set(LIBBACKTRACE_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/third_party/libbacktrace/src)
+set(MARL_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/third_party/marl/include)
 set(SUBZERO_DIR ${CMAKE_CURRENT_SOURCE_DIR}/third_party/subzero)
 set(SUBZERO_LLVM_DIR ${CMAKE_CURRENT_SOURCE_DIR}/third_party/llvm-subzero)
 set(TESTS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/tests)
@@ -321,7 +324,6 @@ if(MSVC)
         "/wd4018" # 'expression' : signed/unsigned mismatch
         "/wd4065" # switch statement contains 'default' but no 'case' labels
         "/wd4141" # 'modifier' : used more than once
-        "/wd4146" # unary minus operator applied to unsigned type, result still unsigned
         "/wd4244" # 'conversion' conversion from 'type1' to 'type2', possible loss of data
         "/wd4267" # 'var' : conversion from 'size_t' to 'type', possible loss of data
         "/wd4291" # 'void X new(size_t,unsigned int,unsigned int)': no matching operator delete found; memory will not be freed if initialization throws an exception
@@ -399,9 +401,16 @@ else()
         set_cpp_flag("-fPIC")
     endif()
 
-    # Use -g3 to have even more debug info
-    set_cpp_flag("-g -g3" DEBUG)
-    set_cpp_flag("-g -g3" RELWITHDEBINFO)
+    if(LESS_DEBUG_INFO)
+        # Use -g1 to be able to get stack traces
+        set_cpp_flag("-g -g1" DEBUG)
+        set_cpp_flag("-g -g1" RELWITHDEBINFO)
+    else()
+        # Use -g3 to have even more debug info
+        set_cpp_flag("-g -g3" DEBUG)
+        set_cpp_flag("-g -g3" RELWITHDEBINFO)
+    endif()
+
     if(NOT CMAKE_CXX_COMPILER_ID MATCHES "Clang")
         # Treated as an unused argument with clang
         set_cpp_flag("-s" RELEASE)
@@ -1529,16 +1538,18 @@ if(${REACTOR_BACKEND} STREQUAL "Subzero")
     )
 
     set(SUBZERO_REACTOR_LIST
-        ${SOURCE_DIR}/Reactor/Reactor.cpp
-        ${SOURCE_DIR}/Reactor/Reactor.hpp
-        ${SOURCE_DIR}/Reactor/SubzeroReactor.cpp
-        ${SOURCE_DIR}/Reactor/Optimizer.cpp
-        ${SOURCE_DIR}/Reactor/Nucleus.hpp
-        ${SOURCE_DIR}/Reactor/Routine.hpp
         ${SOURCE_DIR}/Reactor/Debug.cpp
         ${SOURCE_DIR}/Reactor/Debug.hpp
+        ${SOURCE_DIR}/Reactor/EmulatedReactor.cpp
         ${SOURCE_DIR}/Reactor/ExecutableMemory.cpp
         ${SOURCE_DIR}/Reactor/ExecutableMemory.hpp
+        ${SOURCE_DIR}/Reactor/Nucleus.hpp
+        ${SOURCE_DIR}/Reactor/Optimizer.cpp
+        ${SOURCE_DIR}/Reactor/Print.hpp
+        ${SOURCE_DIR}/Reactor/Reactor.cpp
+        ${SOURCE_DIR}/Reactor/Reactor.hpp
+        ${SOURCE_DIR}/Reactor/Routine.hpp
+        ${SOURCE_DIR}/Reactor/SubzeroReactor.cpp
     )
 
     set(SUBZERO_INCLUDE_DIR
@@ -1557,6 +1568,7 @@ if(${REACTOR_BACKEND} STREQUAL "Subzero")
 
     if(WIN32)
         list(APPEND SUBZERO_COMPILE_OPTIONS
+            "/wd4146" # unary minus operator applied to unsigned type, result still unsigned
             "/wd4334" # ''operator' : result of 32-bit shift implicitly converted to 64 bits (was 64-bit shift intended?)
             "/wd4996" # The POSIX name for this item is deprecated. Instead, use the ISO C and C++ conformant name: new_name.
         )
@@ -1597,6 +1609,7 @@ set(OPENGL_INCLUDE_DIR
 
 set(VULKAN_INCLUDE_DIR
     ${COMMON_INCLUDE_DIR}
+    ${MARL_INCLUDE_DIR}
 )
 
 ###########################################################
@@ -1659,20 +1672,22 @@ if(REACTOR_EMIT_DEBUG_INFO)
 endif(REACTOR_EMIT_DEBUG_INFO)
 
 set(REACTOR_LLVM_LIST
-    ${SOURCE_DIR}/Reactor/Reactor.cpp
-    ${SOURCE_DIR}/Reactor/Reactor.hpp
+    ${SOURCE_DIR}/Reactor/CPUID.cpp
+    ${SOURCE_DIR}/Reactor/CPUID.hpp
+    ${SOURCE_DIR}/Reactor/Debug.cpp
+    ${SOURCE_DIR}/Reactor/Debug.hpp
+    ${SOURCE_DIR}/Reactor/EmulatedReactor.cpp
+    ${SOURCE_DIR}/Reactor/ExecutableMemory.cpp
+    ${SOURCE_DIR}/Reactor/ExecutableMemory.hpp
     ${SOURCE_DIR}/Reactor/LLVMReactor.cpp
     ${SOURCE_DIR}/Reactor/LLVMReactor.hpp
     ${SOURCE_DIR}/Reactor/LLVMReactorDebugInfo.cpp
     ${SOURCE_DIR}/Reactor/LLVMReactorDebugInfo.hpp
     ${SOURCE_DIR}/Reactor/Nucleus.hpp
+    ${SOURCE_DIR}/Reactor/Print.hpp
+    ${SOURCE_DIR}/Reactor/Reactor.cpp
+    ${SOURCE_DIR}/Reactor/Reactor.hpp
     ${SOURCE_DIR}/Reactor/Routine.hpp
-    ${SOURCE_DIR}/Reactor/CPUID.cpp
-    ${SOURCE_DIR}/Reactor/CPUID.hpp
-    ${SOURCE_DIR}/Reactor/Debug.cpp
-    ${SOURCE_DIR}/Reactor/Debug.hpp
-    ${SOURCE_DIR}/Reactor/ExecutableMemory.cpp
-    ${SOURCE_DIR}/Reactor/ExecutableMemory.hpp
 )
 
 file(GLOB_RECURSE EGL_LIST
@@ -1760,21 +1775,11 @@ file(GLOB_RECURSE VULKAN_LIST
     ${CMAKE_CURRENT_SOURCE_DIR}/include/vulkan/*.h}
 )
 
-file(GLOB YARN_FULL_LIST
-    ${YARN_DIR}/*.cpp
-    ${YARN_DIR}/*.hpp
-    ${YARN_DIR}/*.c
-)
-
-if (NOT MSVC)
-    file(GLOB YARN_ASSEMBLY_LIST ${YARN_DIR}/*.S)
-    list(APPEND YARN_FULL_LIST ${YARN_ASSEMBLY_LIST})
-endif(NOT MSVC)
-
-set(YARN_LIST ${YARN_FULL_LIST})
-set(YARN_TEST_LIST ${YARN_FULL_LIST})
-list(FILTER YARN_LIST EXCLUDE REGEX ".*_test\\..*")
-list(FILTER YARN_TEST_LIST INCLUDE REGEX ".*_test\\..*")
+if (LINUX OR ANDROID)
+    list(APPEND VULKAN_LIST
+        ${SOURCE_DIR}/System/Linux/MemFd.cpp
+	${SOURCE_DIR}/System/Linux/MemFd.hpp)
+endif(LINUX OR ANDROID)
 
 ###########################################################
 # Append OS specific files to lists
@@ -1845,8 +1850,8 @@ elseif(APPLE)
     )
 
     list(APPEND VULKAN_LIST
-        ${SOURCE_DIR}/WSI/MacOSSurfaceMVK.mm
-        ${SOURCE_DIR}/WSI/MacOSSurfaceMVK.h
+        ${SOURCE_DIR}/WSI/MetalSurface.mm
+        ${SOURCE_DIR}/WSI/MetalSurface.h
     )
 elseif(ANDROID)
     list(APPEND SWIFTSHADER_LIST
@@ -1873,15 +1878,6 @@ endif()
 ###########################################################
 # SwiftShader Targets
 ###########################################################
-
-add_library(Yarn STATIC ${YARN_LIST})
-set_target_properties(Yarn PROPERTIES
-    POSITION_INDEPENDENT_CODE 1
-    FOLDER "Core"
-    COMPILE_OPTIONS "${SWIFTSHADER_COMPILE_OPTIONS}"
-    COMPILE_DEFINITIONS "NO_SANITIZE_FUNCTION=;"
-)
-target_link_libraries(Yarn ${OS_LIBS})
 
 add_library(SwiftShader STATIC ${SWIFTSHADER_LIST})
 set_target_properties(SwiftShader PROPERTIES
@@ -2030,6 +2026,10 @@ if(BUILD_GLES_CM)
     )
 endif()
 
+if(BUILD_MARL)
+    add_subdirectory(third_party/marl)
+endif(BUILD_MARL)
+
 if(BUILD_VULKAN)
     if (NOT TARGET SPIRV-Tools)
         # This variable is also used by SPIRV-Tools to locate SPIRV-Headers
@@ -2066,7 +2066,7 @@ if(BUILD_VULKAN)
     endif()
 
     set_shared_library_export_map(vk_swiftshader ${SOURCE_DIR}/Vulkan)
-    target_link_libraries(vk_swiftshader ${Reactor} Yarn ${OS_LIBS} SPIRV-Tools SPIRV-Tools-opt)
+    target_link_libraries(vk_swiftshader ${Reactor} marl ${OS_LIBS} SPIRV-Tools SPIRV-Tools-opt)
     add_custom_command(
         TARGET vk_swiftshader
         POST_BUILD
@@ -2187,29 +2187,6 @@ if(BUILD_TESTS)
 endif(BUILD_TESTS)
 
 if(BUILD_TESTS)
-    # Yarn unit tests
-    file(GLOB YARN_TEST_LIST
-        ${YARN_DIR}/*_test.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/third_party/googletest/googletest/src/gtest-all.cc
-    )
-
-    set(YARN_TEST_INCLUDE_DIR
-        ${CMAKE_CURRENT_SOURCE_DIR}/third_party/googletest/googletest/include/
-        ${CMAKE_CURRENT_SOURCE_DIR}/third_party/googletest/googlemock/include/
-        ${CMAKE_CURRENT_SOURCE_DIR}/third_party/googletest/googletest/
-        ${CMAKE_CURRENT_SOURCE_DIR}/src
-    )
-
-    add_executable(yarn-unittests ${YARN_TEST_LIST})
-    set_target_properties(yarn-unittests PROPERTIES
-        INCLUDE_DIRECTORIES "${YARN_TEST_INCLUDE_DIR}"
-        FOLDER "Tests"
-        COMPILE_OPTIONS "${SWIFTSHADER_COMPILE_OPTIONS}"
-        COMPILE_DEFINITIONS "STANDALONE"
-    )
-
-    target_link_libraries(yarn-unittests Yarn ${OS_LIBS})
-
     # Math unit tests
     set(MATH_UNITTESTS_LIST
         ${CMAKE_CURRENT_SOURCE_DIR}/tests/MathUnitTests/main.cpp

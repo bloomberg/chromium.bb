@@ -7,28 +7,28 @@
 #include <utility>
 
 #include "media/capture/video_capturer_source.h"
-#include "services/service_manager/public/cpp/interface_provider.h"
-#include "third_party/blink/public/web/modules/mediastream/media_stream_constraints_util.h"
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/modules/mediastream/media_stream_constraints_util.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
 
 MediaStreamVideoCapturerSource::MediaStreamVideoCapturerSource(
     LocalFrame* frame,
-    const SourceStoppedCallback& stop_callback,
+    SourceStoppedCallback stop_callback,
     std::unique_ptr<media::VideoCapturerSource> source)
     : frame_(frame), source_(std::move(source)) {
   media::VideoCaptureFormats preferred_formats = source_->GetPreferredFormats();
   if (!preferred_formats.empty())
     capture_params_.requested_format = preferred_formats.front();
-  SetStopCallback(stop_callback);
+  SetStopCallback(std::move(stop_callback));
 }
 
 MediaStreamVideoCapturerSource::MediaStreamVideoCapturerSource(
     LocalFrame* frame,
-    const SourceStoppedCallback& stop_callback,
+    SourceStoppedCallback stop_callback,
     const MediaStreamDevice& device,
     const media::VideoCaptureParams& capture_params,
     DeviceCapturerFactoryCallback device_capturer_factory_callback)
@@ -38,7 +38,7 @@ MediaStreamVideoCapturerSource::MediaStreamVideoCapturerSource(
       device_capturer_factory_callback_(
           std::move(device_capturer_factory_callback)) {
   DCHECK(!device.session_id().is_empty());
-  SetStopCallback(stop_callback);
+  SetStopCallback(std::move(stop_callback));
   SetDevice(device);
   SetDeviceRotationDetection(true /* enabled */);
 }
@@ -86,10 +86,11 @@ void MediaStreamVideoCapturerSource::OnCapturingLinkSecured(bool is_secure) {
 }
 
 void MediaStreamVideoCapturerSource::StartSourceImpl(
-    const VideoCaptureDeliverFrameCB& frame_callback) {
+    VideoCaptureDeliverFrameCB frame_callback,
+    EncodedVideoFrameCB encoded_frame_callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   state_ = STARTING;
-  frame_callback_ = frame_callback;
+  frame_callback_ = std::move(frame_callback);
   source_->StartCapture(
       capture_params_, frame_callback_,
       WTF::BindRepeating(&MediaStreamVideoCapturerSource::OnRunStateChanged,
@@ -210,7 +211,7 @@ mojom::blink::MediaStreamDispatcherHost*
 MediaStreamVideoCapturerSource::GetMediaStreamDispatcherHost() {
   DCHECK(frame_);
   if (!host_) {
-    frame_->GetInterfaceProvider().GetInterface(
+    frame_->GetBrowserInterfaceBroker().GetInterface(
         host_.BindNewPipeAndPassReceiver());
   }
   return host_.get();

@@ -295,27 +295,8 @@ testcase.checkInstallWithLinuxDisabledForDebianFile = async () => {
   const appId = await setupAndWaitUntilReady(
       RootPath.DOWNLOADS, [ENTRIES.debPackage], []);
 
-  // Check: the default Crostini root access allowed value should be true.
-  const caller = getCaller();
-  await repeatUntil(async () => {
-    const allowed = await remoteCall.callRemoteTestUtil(
-        'getCrostiniRootAccessAllowed', appId, ['termina']);
-    if (!allowed) {
-      return pending(caller, 'Waiting for Crostini root-access-allowed true');
-    }
-  });
-
   // Disallow root access.
   await sendTestMessage({name: 'setCrostiniRootAccessAllowed', enabled: false});
-
-  // Wait for the preference to propagate to the FilesApp background page.
-  await repeatUntil(async () => {
-    const allowed = await remoteCall.callRemoteTestUtil(
-        'getCrostiniRootAccessAllowed', appId, ['termina']);
-    if (allowed) {
-      return pending(caller, 'Waiting for Crostini root-access-allowed false');
-    }
-  });
 
   // Select and right click the deb file to show its context menu.
   await selectFile(appId, 'package.deb');
@@ -336,16 +317,6 @@ testcase.checkInstallWithLinuxEnabledForDebianFile = async () => {
   // Open FilesApp on Downloads with deb file.
   const appId = await setupAndWaitUntilReady(
       RootPath.DOWNLOADS, [ENTRIES.debPackage], []);
-
-  // Check: the default Crostini root access allowed value should be true.
-  const caller = getCaller();
-  await repeatUntil(async () => {
-    const allowed = await remoteCall.callRemoteTestUtil(
-        'getCrostiniRootAccessAllowed', appId, ['termina']);
-    if (!allowed) {
-      return pending(caller, 'Waiting for Crostini root-access-allowed true');
-    }
-  });
 
   // Select and right click the deb file to show its context menu.
   await selectFile(appId, 'package.deb');

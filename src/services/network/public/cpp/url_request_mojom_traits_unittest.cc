@@ -48,11 +48,11 @@ TEST(URLRequestMojomTraitsTest, Roundtrips_ResourceRequest) {
   original.method = "POST";
   original.url = GURL("https://example.com/resources/dummy.xml");
   original.site_for_cookies = GURL("https://example.com/index.html");
-  url::Origin origin = url::Origin::Create(original.url);
-  original.top_frame_origin = origin;
   original.attach_same_site_cookies = true;
   original.update_first_party_url_on_redirect = false;
   original.request_initiator = url::Origin::Create(original.url);
+  original.isolated_world_origin =
+      url::Origin::Create(GURL("chrome-extension://blah"));
   original.referrer = GURL("https://referrer.com/");
   original.referrer_policy =
       net::URLRequest::ORIGIN_ONLY_ON_TRANSITION_CROSS_ORIGIN;
@@ -90,10 +90,12 @@ TEST(URLRequestMojomTraitsTest, Roundtrips_ResourceRequest) {
   original.fetch_window_id = base::UnguessableToken::Create();
 
   original.trusted_params = ResourceRequest::TrustedParams();
+  url::Origin origin = url::Origin::Create(original.url);
   original.trusted_params->network_isolation_key =
       net::NetworkIsolationKey(origin, origin);
   original.trusted_params->update_network_isolation_key_on_redirect = network::
       mojom::UpdateNetworkIsolationKeyOnRedirect::kUpdateTopFrameAndFrameOrigin;
+  original.trusted_params->disable_secure_dns = true;
 
   network::ResourceRequest copied;
   EXPECT_TRUE(mojo::test::SerializeAndDeserialize<mojom::URLRequest>(&original,

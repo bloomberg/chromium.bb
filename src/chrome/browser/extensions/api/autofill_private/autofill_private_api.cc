@@ -71,6 +71,19 @@ void RemoveDuplicatePhoneNumberAtIndex(
     list->Remove(index, nullptr);
 }
 
+autofill::AutofillManager* GetAutofillManager(
+    content::WebContents* web_contents) {
+  if (!web_contents) {
+    return nullptr;
+  }
+  autofill::ContentAutofillDriver* autofill_driver =
+      autofill::ContentAutofillDriverFactory::FromWebContents(web_contents)
+          ->DriverForFrame(web_contents->GetMainFrame());
+  if (!autofill_driver)
+    return nullptr;
+  return autofill_driver->autofill_manager();
+}
+
 }  // namespace
 
 namespace extensions {
@@ -110,10 +123,6 @@ ExtensionFunction::ResponseAction AutofillPrivateSaveAddressFunction::Run() {
       existing_profile
           ? *existing_profile
           : autofill::AutofillProfile(base::GenerateGUID(), kSettingsOrigin);
-
-  // Strings from JavaScript use UTF-8 encoding. This container is used as an
-  // intermediate container for functions which require UTF-16 strings.
-  std::vector<base::string16> string16Container;
 
   if (address->full_names) {
     std::string full_name;
@@ -255,7 +264,7 @@ ExtensionFunction::ResponseAction
   for (auto& component : components->GetList()) {
     base::Value row(base::Value::Type::DICTIONARY);
     row.SetKey("row", std::move(component));
-    rows.GetList().emplace_back(std::move(row));
+    rows.Append(std::move(row));
   }
 
   address_components.SetKey("components", std::move(rows));
@@ -471,17 +480,13 @@ AutofillPrivateMigrateCreditCardsFunction::Run() {
   autofill::PersonalDataManager* personal_data =
       autofill::PersonalDataManagerFactory::GetForProfile(
           chrome_details_.GetProfile());
-  // Get the web contents to get autofill manager.
-  content::WebContents* web_contents = GetSenderWebContents();
-  if (!personal_data || !personal_data->IsDataLoaded() || !web_contents)
+  if (!personal_data || !personal_data->IsDataLoaded())
     return RespondNow(Error(kErrorDataUnavailable));
 
   // Get the AutofillManager from the web contents. AutofillManager has a
   // pointer to its AutofillClient which owns FormDataImporter.
   autofill::AutofillManager* autofill_manager =
-      autofill::ContentAutofillDriverFactory::FromWebContents(web_contents)
-          ->DriverForFrame(web_contents->GetMainFrame())
-          ->autofill_manager();
+      GetAutofillManager(GetSenderWebContents());
   if (!autofill_manager || !autofill_manager->client())
     return RespondNow(Error(kErrorDataUnavailable));
 
@@ -529,4 +534,36 @@ AutofillPrivateLogServerCardLinkClickedFunction::Run() {
   return RespondNow(NoArguments());
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// AutofillPrivateSetCreditCardFIDOAuthEnabledStateFunction
+
+AutofillPrivateSetCreditCardFIDOAuthEnabledStateFunction::
+    AutofillPrivateSetCreditCardFIDOAuthEnabledStateFunction()
+    : chrome_details_(this) {}
+
+AutofillPrivateSetCreditCardFIDOAuthEnabledStateFunction::
+    ~AutofillPrivateSetCreditCardFIDOAuthEnabledStateFunction() {}
+
+ExtensionFunction::ResponseAction
+AutofillPrivateSetCreditCardFIDOAuthEnabledStateFunction::Run() {
+  // Getting CreditCardAccessManager from WebContents.
+  autofill::AutofillManager* autofill_manager =
+      GetAutofillManager(GetSenderWebContents());
+  if (!autofill_manager)
+    return RespondNow(Error(kErrorDataUnavailable));
+  autofill::CreditCardAccessManager* credit_card_access_manager =
+      autofill_manager->credit_card_access_manager();
+  if (!credit_card_access_manager)
+    return RespondNow(Error(kErrorDataUnavailable));
+
+  std::unique_ptr<
+      api::autofill_private::SetCreditCardFIDOAuthEnabledState::Params>
+      parameters = api::autofill_private::SetCreditCardFIDOAuthEnabledState::
+          Params::Create(*args_);
+  EXTENSION_FUNCTION_VALIDATE(parameters.get());
+
+  credit_card_access_manager->OnSettingsPageFIDOAuthToggled(
+      parameters->enabled);
+  return RespondNow(NoArguments());
+}
 }  // namespace extensions

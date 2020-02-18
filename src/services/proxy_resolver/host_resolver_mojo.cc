@@ -17,6 +17,9 @@
 #include "net/base/completion_once_callback.h"
 #include "net/base/ip_address.h"
 #include "net/base/net_errors.h"
+#include "net/base/network_isolation_key.h"
+#include "net/dns/host_resolver_source.h"
+#include "net/dns/public/dns_query_type.h"
 
 namespace proxy_resolver {
 namespace {
@@ -29,15 +32,17 @@ constexpr auto kNegativeCacheEntryTTL = base::TimeDelta();
 
 net::HostCache::Key CacheKeyForRequest(
     const std::string& hostname,
+    const net::NetworkIsolationKey& network_isolation_key,
     net::ProxyResolveDnsOperation operation) {
-  net::AddressFamily address_family = net::ADDRESS_FAMILY_UNSPECIFIED;
+  net::DnsQueryType dns_query_type = net::DnsQueryType::UNSPECIFIED;
   if (operation == net::ProxyResolveDnsOperation::MY_IP_ADDRESS ||
       operation == net::ProxyResolveDnsOperation::DNS_RESOLVE) {
-    address_family = net::ADDRESS_FAMILY_IPV4;
+    dns_query_type = net::DnsQueryType::A;
   }
 
-  return net::HostCache::Key(hostname, address_family,
-                             0 /* host_resolver_flags */);
+  return net::HostCache::Key(
+      hostname, dns_query_type, 0 /* host_resolver_flags */,
+      net::HostResolverSource::ANY, network_isolation_key);
 }
 
 }  // namespace
@@ -47,10 +52,12 @@ class HostResolverMojo::RequestImpl : public ProxyHostResolver::Request,
  public:
   RequestImpl(const std::string& hostname,
               net::ProxyResolveDnsOperation operation,
+              const net::NetworkIsolationKey& network_isolation_key,
               base::WeakPtr<net::HostCache> host_cache,
               Impl* impl)
       : hostname_(hostname),
         operation_(operation),
+        network_isolation_key_(network_isolation_key),
         host_cache_(std::move(host_cache)),
         impl_(impl) {}
 
@@ -68,7 +75,7 @@ class HostResolverMojo::RequestImpl : public ProxyHostResolver::Request,
     }
 
     callback_ = std::move(callback);
-    impl_->ResolveDns(hostname_, operation_,
+    impl_->ResolveDns(hostname_, operation_, network_isolation_key_,
                       receiver_.BindNewPipeAndPassRemote());
     receiver_.set_disconnect_handler(
         base::BindOnce(&RequestImpl::OnDisconnect, base::Unretained(this)));
@@ -92,8 +99,9 @@ class HostResolverMojo::RequestImpl : public ProxyHostResolver::Request,
       net::HostCache::Entry entry(
           error, net::AddressList::CreateFromIPAddressList(result, ""),
           net::HostCache::Entry::SOURCE_UNKNOWN, ttl);
-      host_cache_->Set(CacheKeyForRequest(hostname_, operation_), entry,
-                       base::TimeTicks::Now(), ttl);
+      host_cache_->Set(
+          CacheKeyForRequest(hostname_, network_isolation_key_, operation_),
+          entry, base::TimeTicks::Now(), ttl);
     }
     receiver_.reset();
     std::move(callback_).Run(error);
@@ -103,7 +111,8 @@ class HostResolverMojo::RequestImpl : public ProxyHostResolver::Request,
   int ResolveFromCacheInternal() {
     DCHECK(host_cache_);
 
-    net::HostCache::Key key = CacheKeyForRequest(hostname_, operation_);
+    net::HostCache::Key key =
+        CacheKeyForRequest(hostname_, network_isolation_key_, operation_);
     const std::pair<const net::HostCache::Key, net::HostCache::Entry>*
         cache_result = host_cache_->Lookup(key, base::TimeTicks::Now());
     if (!cache_result)
@@ -126,6 +135,7 @@ class HostResolverMojo::RequestImpl : public ProxyHostResolver::Request,
 
   const std::string hostname_;
   const net::ProxyResolveDnsOperation operation_;
+  const net::NetworkIsolationKey network_isolation_key_;
 
   mojo::Receiver<mojom::HostResolverRequestClient> receiver_{this};
   net::CompletionOnceCallback callback_;
@@ -144,12 +154,14 @@ HostResolverMojo::HostResolverMojo(Impl* impl)
 
 HostResolverMojo::~HostResolverMojo() = default;
 
-std::unique_ptr<net::ProxyHostResolver::Request>
-HostResolverMojo::CreateRequest(const std::string& hostname,
-                                net::ProxyResolveDnsOperation operation) {
+std::unique_ptr<ProxyHostResolver::Request> HostResolverMojo::CreateRequest(
+    const std::string& hostname,
+    net::ProxyResolveDnsOperation operation,
+    const net::NetworkIsolationKey& network_isolation_key) {
   DCHECK(thread_checker_.CalledOnValidThread());
   return std::make_unique<RequestImpl>(
-      hostname, operation, host_cache_weak_factory_.GetWeakPtr(), impl_);
+      hostname, operation, network_isolation_key,
+      host_cache_weak_factory_.GetWeakPtr(), impl_);
 }
 
 }  // namespace proxy_resolver

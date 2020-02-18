@@ -54,7 +54,6 @@ function getEmptyPrinter_() {
       effectiveMakeAndModel: '',
       autoconf: false,
     },
-    printerPpdReferenceResolved: false,
     printerProtocol: 'ipp',
     printerQueue: 'ipp/print',
     printerStatus: '',
@@ -272,14 +271,13 @@ Polymer({
     newPrinter.printerPpdReference.effectiveMakeAndModel =
         info.ppdRefEffectiveMakeAndModel;
     newPrinter.printerPpdReference.autoconf = info.autoconf;
-    newPrinter.printerPpdReferenceResolved = info.ppdReferenceResolved;
 
     this.newPrinter = newPrinter;
 
 
     // Add the printer if it's configurable. Otherwise, forward to the
     // manufacturer dialog.
-    if (this.newPrinter.printerPpdReferenceResolved) {
+    if (info.ppdReferenceResolved) {
       settings.CupsPrintersBrowserProxyImpl.getInstance()
           .addCupsPrinter(this.newPrinter)
           .then(
@@ -343,6 +341,23 @@ Polymer({
   printerInfoChanged_: function() {
     this.$.printerAddressInput.invalid = false;
     this.errorText_ = '';
+  },
+
+  /**
+   * Keypress event handler. If enter is pressed, printer is added if
+   * |canAddPrinter_| is true.
+   * @param {!Event} event
+   * @private
+   */
+  onKeypress_: function(event) {
+    if (event.key != 'Enter') {
+      return;
+    }
+    event.stopPropagation();
+
+    if (this.canAddPrinter_()) {
+      this.addPressed_();
+    }
   },
 
 });

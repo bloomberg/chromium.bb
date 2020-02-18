@@ -21,7 +21,9 @@
 #include "chrome/browser/chromeos/printing/printer_configurer.h"
 #include "chrome/browser/chromeos/printing/printer_event_tracker.h"
 #include "chrome/browser/chromeos/printing/printers_map.h"
+#include "chrome/browser/chromeos/printing/server_printers_provider.h"
 #include "chrome/browser/chromeos/printing/synced_printers_manager.h"
+#include "chrome/browser/chromeos/printing/test_printer_configurer.h"
 #include "chrome/browser/chromeos/printing/usb_printer_detector.h"
 #include "chrome/browser/chromeos/printing/usb_printer_notification_controller.h"
 #include "chrome/common/chrome_features.h"
@@ -245,12 +247,14 @@ class FakePpdProvider : public PpdProvider {
     usb_manufacturer_ = manufacturer;
   }
 
-  // These three functions are not used by CupsPrintersManager.
+  // These methods are not used by CupsPrintersManager.
   void ResolvePpd(const Printer::PpdReference& reference,
                   ResolvePpdCallback cb) override {}
   void ResolveManufacturers(ResolveManufacturersCallback cb) override {}
   void ResolvePrinters(const std::string& manufacturer,
                        ResolvePrintersCallback cb) override {}
+  void ResolvePpdLicense(base::StringPiece effective_make_and_model,
+                         ResolvePpdLicenseCallback cb) override {}
   void ReverseLookup(const std::string& effective_make_and_model,
                      ReverseLookupCallback cb) override {}
 
@@ -272,30 +276,6 @@ void ExpectPrinterIdsAre(const std::vector<Printer>& printers,
   std::sort(sorted_ids.begin(), sorted_ids.end());
   EXPECT_EQ(sorted_ids, found_ids);
 }
-
-class FakePrinterConfigurer : public PrinterConfigurer {
- public:
-  FakePrinterConfigurer() = default;
-
-  // PrinterConfigurer overrides
-  void SetUpPrinter(const Printer& printer,
-                    PrinterSetupCallback callback) override {
-    MarkConfigured(printer.id());
-    std::move(callback).Run(PrinterSetupResult::kSuccess);
-  }
-
-  // Manipulation functions
-  bool IsConfigured(const std::string& printer_id) const {
-    return configured_.contains(printer_id);
-  }
-
-  void MarkConfigured(const std::string& printer_id) {
-    configured_.insert(printer_id);
-  }
-
- private:
-  base::flat_set<std::string> configured_;
-};
 
 class FakeUsbPrinterNotificationController
     : public UsbPrinterNotificationController {
@@ -334,6 +314,19 @@ class FakeUsbPrinterNotificationController
   base::flat_set<std::string> configuration_notifications_;
 };
 
+class FakeServerPrintersProvider : public ServerPrintersProvider {
+ public:
+  FakeServerPrintersProvider() = default;
+  ~FakeServerPrintersProvider() override = default;
+
+  void RegisterPrintersFoundCallback(OnPrintersUpdateCallback cb) override {}
+
+  std::vector<PrinterDetector::DetectedPrinter> GetPrinters() override {
+    std::vector<PrinterDetector::DetectedPrinter> printers;
+    return printers;
+  }
+};
+
 class CupsPrintersManagerTest : public testing::Test,
                                 public CupsPrintersManager::Observer {
  public:
@@ -346,11 +339,14 @@ class CupsPrintersManagerTest : public testing::Test,
     zeroconf_detector_ = zeroconf_detector.get();
     auto usb_detector = std::make_unique<FakePrinterDetector>();
     usb_detector_ = usb_detector.get();
-    auto printer_configurer = std::make_unique<FakePrinterConfigurer>();
+    auto printer_configurer = std::make_unique<TestPrinterConfigurer>();
     printer_configurer_ = printer_configurer.get();
     auto usb_notif_controller =
         std::make_unique<FakeUsbPrinterNotificationController>();
     usb_notif_controller_ = usb_notif_controller.get();
+    auto server_printers_provider =
+        std::make_unique<FakeServerPrintersProvider>();
+    server_printers_provider_ = server_printers_provider.get();
 
     // Register the pref |UserNativePrintersAllowed|
     CupsPrintersManager::RegisterProfilePrefs(pref_service_.registry());
@@ -359,7 +355,7 @@ class CupsPrintersManagerTest : public testing::Test,
         &synced_printers_manager_, std::move(usb_detector),
         std::move(zeroconf_detector), ppd_provider_,
         std::move(printer_configurer), std::move(usb_notif_controller),
-        &event_tracker_, &pref_service_);
+        std::move(server_printers_provider), &event_tracker_, &pref_service_);
     manager_->AddObserver(this);
   }
 
@@ -397,8 +393,9 @@ class CupsPrintersManagerTest : public testing::Test,
   FakeSyncedPrintersManager synced_printers_manager_;
   FakePrinterDetector* usb_detector_;          // Not owned.
   FakePrinterDetector* zeroconf_detector_;     // Not owned.
-  FakePrinterConfigurer* printer_configurer_;  // Not owned.
+  TestPrinterConfigurer* printer_configurer_;  // Not owned.
   FakeUsbPrinterNotificationController* usb_notif_controller_;  // Not owned.
+  FakeServerPrintersProvider* server_printers_provider_;        // Not owned.
   scoped_refptr<FakePpdProvider> ppd_provider_;
 
   // This is unused, it's just here for memory ownership.

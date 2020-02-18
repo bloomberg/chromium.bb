@@ -6,6 +6,7 @@
 
 #include "cc/paint/paint_flags.h"
 #include "third_party/skia/include/core/SkDrawLooper.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
@@ -25,8 +26,7 @@ namespace views {
 namespace {
 
 // Constants are measured in dip.
-constexpr int kTrackHeight = 12;
-constexpr int kTrackWidth = 28;
+constexpr gfx::Size kTrackSize = gfx::Size(28, 12);
 // Margins from edge of track to edge of view.
 constexpr int kTrackVerticalMargin = 5;
 constexpr int kTrackHorizontalMargin = 6;
@@ -109,11 +109,16 @@ class ToggleButton::ThumbView : public InkDropHostView {
 };
 
 ToggleButton::ToggleButton(ButtonListener* listener) : Button(listener) {
-  slide_animation_.SetSlideDuration(80 /* ms */);
+  slide_animation_.SetSlideDuration(base::TimeDelta::FromMilliseconds(80));
   slide_animation_.SetTweenType(gfx::Tween::LINEAR);
   thumb_view_ = AddChildView(std::make_unique<ThumbView>());
   SetInkDropMode(InkDropMode::ON);
   SetFocusForPlatform();
+  // TODO(pbos): Update the highlight-path shape so that a FocusRing can be used
+  // on top of it to increase contrast. Disabling it for now addresses a
+  // regression in crbug.com/1031983, but a matching FocusRing would probably be
+  // desirable.
+  SetInstallFocusRingOnFocus(false);
   set_has_ink_drop_action_on_click(true);
 }
 
@@ -156,7 +161,7 @@ bool ToggleButton::GetAcceptsEvents() const {
 }
 
 gfx::Size ToggleButton::CalculatePreferredSize() const {
-  gfx::Rect rect(kTrackWidth, kTrackHeight);
+  gfx::Rect rect(kTrackSize);
   rect.Inset(gfx::Insets(-kTrackVerticalMargin, -kTrackHorizontalMargin));
   if (border())
     rect.Inset(-border()->GetInsets());
@@ -165,7 +170,7 @@ gfx::Size ToggleButton::CalculatePreferredSize() const {
 
 gfx::Rect ToggleButton::GetTrackBounds() const {
   gfx::Rect track_bounds(GetContentsBounds());
-  track_bounds.ClampToCenteredSize(gfx::Size(kTrackWidth, kTrackHeight));
+  track_bounds.ClampToCenteredSize(kTrackSize);
   return track_bounds;
 }
 

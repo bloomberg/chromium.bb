@@ -46,7 +46,8 @@ V0InsertionPoint::V0InsertionPoint(const QualifiedName& tag_name,
                                    Document& document)
     : HTMLElement(tag_name, document, kCreateV0InsertionPoint),
       registered_with_shadow_root_(false) {
-  SetHasCustomStyleCallbacks();
+  if (!RuntimeEnabledFeatures::FlatTreeStyleRecalcEnabled())
+    SetHasCustomStyleCallbacks();
 }
 
 V0InsertionPoint::~V0InsertionPoint() = default;
@@ -143,12 +144,30 @@ void V0InsertionPoint::RebuildDistributedChildrenLayoutTrees(
 }
 
 void V0InsertionPoint::DidRecalcStyle(const StyleRecalcChange change) {
+  DCHECK(!RuntimeEnabledFeatures::FlatTreeStyleRecalcEnabled());
   if (DistributedNodesAreFallback()) {
     // Fallback children have already been recalculated in
     // ContainerNode::RecalcDescendantStyles().
     return;
   }
 
+  for (wtf_size_t i = 0; i < distributed_nodes_.size(); ++i) {
+    Node* node = distributed_nodes_.at(i);
+    if (!change.TraverseChild(*node))
+      continue;
+    if (auto* this_element = DynamicTo<Element>(node))
+      this_element->RecalcStyle(change);
+    else if (auto* text_node = DynamicTo<Text>(node))
+      text_node->RecalcTextStyle(change);
+  }
+}
+
+void V0InsertionPoint::RecalcStyleForInsertionPointChildren(
+    const StyleRecalcChange change) {
+  if (!RuntimeEnabledFeatures::FlatTreeStyleRecalcEnabled()) {
+    RecalcDescendantStyles(change);
+    return;
+  }
   for (wtf_size_t i = 0; i < distributed_nodes_.size(); ++i) {
     Node* node = distributed_nodes_.at(i);
     if (!change.TraverseChild(*node))
@@ -174,14 +193,14 @@ bool V0InsertionPoint::IsActive() const {
     return false;
   ShadowRoot* shadow_root = ContainingShadowRoot();
   DCHECK(shadow_root);
-  if (!IsHTMLShadowElement(*this) ||
+  if (!IsA<HTMLShadowElement>(*this) ||
       shadow_root->V0().DescendantShadowElementCount() <= 1)
     return true;
 
   // Slow path only when there are more than one shadow elements in a shadow
   // tree. That should be a rare case.
   for (const auto& point : shadow_root->V0().DescendantInsertionPoints()) {
-    if (IsHTMLShadowElement(*point))
+    if (IsA<HTMLShadowElement>(*point))
       return point == this;
   }
   return true;

@@ -7,6 +7,8 @@
 <translation id="1156623771253174079">{SECONDS,plural, =1{Prieš 1 minutę}one{Prieš # minutę}few{Prieš # minutes}many{Prieš # minutės}other{Prieš # minučių}}</translation>
 <translation id="1169783199079129864">{MINUTES,plural, =1{1 min.}one{# min.}few{# min.}many{# min.}other{# min.}}</translation>
 <translation id="1181037720776840403">Pašalinti</translation>
+<translation id="1201402288615127009">Kitas</translation>
+<translation id="1218444235442067213">„<ph name="APP_NAME" />“, „Play“ parduotuvės programa</translation>
 <translation id="1243314992276662751">Įkelti</translation>
 <translation id="1266864766717917324">Nepavyko bendrinti turinio: <ph name="CONTENT_TYPE" /></translation>
 <translation id="1269641567813814718">Win</translation>
@@ -17,7 +19,7 @@
 <translation id="1368832886055348810">Iš kairės į dešinę</translation>
 <translation id="1383876407941801731">Ieškoti</translation>
 <translation id="1398853756734560583">Išskleisti</translation>
-<translation id="1409544243779336081">Programos rekomendacija</translation>
+<translation id="1414271762428216854">„<ph name="APP_NAME" />“, programa įdiegta</translation>
 <translation id="1450753235335490080">Nepavyko bendrinti turinio: <ph name="CONTENT_TYPE" /></translation>
 <translation id="1498028757988366001">Jau anksčiau to ieškojote. Ištrynę „<ph name="QUERY" />“ iš istorijos, visam laikui ją pašalinsite iš savo paskyros visuose įrenginiuose.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 minutė ir }one{# minutė ir }few{# minutės ir }many{# minutės ir }other{# minučių ir }}</translation>
@@ -29,8 +31,8 @@
 <translation id="1801827354178857021">Laikotarpis</translation>
 <translation id="1803208670097017349">{MONTHS,plural, =1{1 mėnuo}one{# mėnuo}few{# mėnesiai}many{# mėnesio}other{# mėnesių}}</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY" /> MB/s</translation>
-<translation id="1812519734428420144">Įvertinimas žvaigždutėmis <ph name="RATING_SCORE" /></translation>
 <translation id="1830179671306812954">{HOURS,plural, =1{1 valanda ir }one{# valanda ir }few{# valandos ir }many{# valandos ir }other{# valandų ir }}</translation>
+<translation id="1830308660060964064">Atsegta: <ph name="ITEM_TITLE" /></translation>
 <translation id="1842960171412779397">pasirinkti</translation>
 <translation id="1859234291848436338">Rašymo nurodymas</translation>
 <translation id="1860796786778352021">Uždaryti pranešimus</translation>
@@ -40,6 +42,7 @@
 <translation id="1938451708255335766">Kad būtų pritaikytas lango rodymo tankio koregavimas, iš naujo paleiskite programą.</translation>
 <translation id="2006524834898217237">Įsitikinkite, kad šis įrenginys prijungtas prie interneto.</translation>
 <translation id="208586643495776849">Bandykite dar kartą</translation>
+<translation id="2090963878406559571">Jei norite iš <ph name="ORIGIN" /> į „Android“ telefoną išsiųsti numerį, <ph name="TROUBLESHOOT_LINK" /> nustatymuose abiejuose įrenginiuose.</translation>
 <translation id="2141853158323869627">{DAYS,plural, =1{1 d.}one{# d.}few{# d.}many{# d.}other{# d.}}</translation>
 <translation id="2148716181193084225">Šiandien</translation>
 <translation id="2161656808144014275">Tekstas</translation>
@@ -51,6 +54,7 @@
 <translation id="2289052229480071835">Palieskite jutiklines sritis ekrane.</translation>
 <translation id="2295140143284145483">Apklausa</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
+<translation id="2353636109065292463">Tikrinamas interneto ryšys</translation>
 <translation id="2388990488038464401">Skambinti šiuo numeriu iš jūsų telefono?</translation>
 <translation id="24452542372838207">Išskleisti pranešimą</translation>
 <translation id="2445449901874883781">Naudoti didelį tankį</translation>
@@ -65,10 +69,12 @@
 <translation id="2666092431469916601">Į viršų</translation>
 <translation id="2701330563083355633">Bendrinta iš „<ph name="DEVICE_NAME" />“</translation>
 <translation id="2743387203779672305">Kopijuoti į iškarpinę</translation>
+<translation id="2749082172777216925"><ph name="APP_NAME_INFO" />, <ph name="PRICE" /></translation>
 <translation id="2803313416453193357">Atidaryti aplanką</translation>
 <translation id="2824719307700604149">{YEARS,plural, =1{Prieš 1 metus}one{Prieš # metus}few{Prieš # metus}many{Prieš # metų}other{Prieš # metų}}</translation>
 <translation id="2907671656515444832">{DAYS,plural, =1{po 1 d.}one{po # d.}few{po # d.}many{po # d.}other{po # d.}}</translation>
 <translation id="2931838996092594335">spustelėti</translation>
+<translation id="2981684127883932071">Pateikiami pasiūlymai</translation>
 <translation id="3036649622769666520">Atidaryti failus</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY" /> MB</translation>
 <translation id="3068711042108640621">Lentyna kairėje</translation>
@@ -81,9 +87,9 @@
 <translation id="3295886253693811851">Skambinkite naudodami</translation>
 <translation id="335581015389089642">Kalba</translation>
 <translation id="3389286852084373014">Teksto pranešimas per didelis</translation>
-<translation id="3443810440409579745">Skirtukas gautas.</translation>
 <translation id="3479552764303398839">Ne dabar</translation>
 <translation id="348799646910989694">Lentyna automatiškai slepiama</translation>
+<translation id="3554637740840164787">Prisegta: <ph name="ITEM_TITLE" /></translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{Liko 1 diena}one{Liko # diena}few{Liko # dienos}many{Liko # dienos}other{Liko # dienų}}</translation>
 <translation id="3600969208114796418">Failas „<ph name="SAVEAS_EXTENSION_TYPE" />“</translation>
 <translation id="3608915363409716668"><ph name="MAXIMUM_VALUE" /> ir daugiau</translation>
@@ -105,20 +111,21 @@
 <translation id="4250229828105606438">Ekrano kopija</translation>
 <translation id="4266252015790371705">{MONTHS,plural, =1{Prieš 1 mėnesį}one{Prieš # mėnesį}few{Prieš # mėnesius}many{Prieš # mėnesio}other{Prieš # mėnesių}}</translation>
 <translation id="4289300219472526559">Pradėti kalbėti</translation>
+<translation id="430191667033048642">„<ph name="MOVED_APP_NAME" />“ perkelta į aplanką „<ph name="FOLDER_NAME" />“.</translation>
 <translation id="4316910396681052118">VISOS PROGRAMOS</translation>
 <translation id="4588090240171750605">Slinkti į dešinę</translation>
+<translation id="4631891353005174729"><ph name="APP_NAME_TYPE" />, įvertinimas žvaigždutėmis <ph name="RATING_SCORE" /></translation>
+<translation id="4648249871170053485">„<ph name="APP_NAME" />“, programos rekomendacija</translation>
 <translation id="4690510401873698237">Lentyna apačioje</translation>
 <translation id="4724120544754982507">Pranešimų centras, neskaitytų pranešimų: <ph name="UNREAD_NOTIFICATION_COUNT" /></translation>
 <translation id="4730374152663651037">DAŽNAI NAUDOJAMOS PROGRAMOS</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{Liko 1 mėnuo}one{Liko # mėnuo}few{Liko # mėnesiai}many{Liko # mėnesio}other{Liko # mėnesių}}</translation>
-<translation id="4841881773802181781">Įterpimas</translation>
-<translation id="4881695831933465202">Atidaryti</translation>
 <translation id="4888938634149558681">Skambinti</translation>
 <translation id="4968171027979920686">{SECONDS,plural, =1{1 sekundė}one{# sekundė}few{# sekundės}many{# sekundės}other{# sekundžių}}</translation>
 <translation id="4971687151119236543">Ankstesnis medijos takelis</translation>
 <translation id="5046499563572181734">Palieskite čia</translation>
 <translation id="5076340679995252485">&amp;Įklijuoti</translation>
-<translation id="5137751499640340777">Įjungti „Google“ padėjėją</translation>
+<translation id="5198715732953550718">„<ph name="MOVED_APP_NAME" />“ derinama su „<ph name="IN_PLACE_APP" />“ kuriant naują aplanką.</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5266161281976477809">Paskelbimo trikampis</translation>
 <translation id="5278860589123563674">Nepavyko išsiųsti</translation>
@@ -132,6 +139,7 @@
 <translation id="5574202486608032840">„<ph name="IDS_SHORT_PRODUCT_OS_NAME" />“ sistema</translation>
 <translation id="5583640892426849032">Grįžties klavišas</translation>
 <translation id="5613020302032141669">Rodyklė į kairę</translation>
+<translation id="5675363643668471212">Lentynos elementas</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 min.}one{# min.}few{# min.}many{# min.}other{# min.}}</translation>
 <translation id="5763338081255973061">{DAYS,plural, =0{Aktyvus šiandien}=1{Aktyvus prieš 1 d.}one{Aktyvus prieš # d.}few{Aktyvus prieš # d.}many{Aktyvus prieš # d.}other{Aktyvus prieš # d.}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 diena ir }one{# diena ir }few{# dienos ir }many{# dienos ir }other{# dienų ir }}</translation>
@@ -155,6 +163,7 @@
 <translation id="6394627529324717982">Kablelis</translation>
 <translation id="6397363302884558537">Baigti kalbėti</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{Prieš 1 sek.}one{Prieš # sek.}few{Prieš # sek.}many{Prieš # sek.}other{Prieš # sek.}}</translation>
+<translation id="6417265370957905582">„Google“ padėjėjas</translation>
 <translation id="6430678249303439055">Blokuoti visus šios programos pranešimus</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{Prieš 1 sekundę}one{Prieš # sekundę}few{Prieš # sekundes}many{Prieš # sekundės}other{Prieš # sekundžių}}</translation>
 <translation id="6539092367496845964">Įvyko klaida. Vėliau bandykite dar kartą.</translation>
@@ -165,7 +174,7 @@
 <translation id="6620110761915583480">Išsaugoti failą</translation>
 <translation id="6656912866303152668">Įsitikinkite, kad įrenginio „<ph name="TARGET_DEVICE_NAME" />“ naršyklėje „Chrome“ įjungtas sinchronizavimas, tada bandykite siųsti dar kartą.</translation>
 <translation id="6699343763173986273">Kitas medijos takelis</translation>
-<translation id="673773751041746814">Trynimas</translation>
+<translation id="6710213216561001401">Ankstesnis</translation>
 <translation id="6779314412797872738">Jei norite iš čia į „Android“ telefoną išsiųsti numerį, nustatymuose<ph name="TROUBLESHOOT_LINK" /> abiejuose įrenginiuose.</translation>
 <translation id="6786750046913594791">Uždaryti aplanką</translation>
 <translation id="6808150112686056157">Sustabdyti mediją</translation>
@@ -183,6 +192,7 @@
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{Liko 1 min.}one{Liko # min.}few{Liko # min.}many{Liko # min.}other{Liko # min.}}</translation>
 <translation id="7319740667687257810">Paleidimo priemonė, dalinis rodinys</translation>
+<translation id="7352651011704765696">Kažkas negerai</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{Prieš 1 min.}one{Prieš # min.}few{Prieš # min.}many{Prieš # min.}other{Prieš # min.}}</translation>
 <translation id="7389409599945284130">– <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{Liko 1 minutė}one{Liko # minutė}few{Liko # minutės}many{Liko # minutės}other{Liko # minučių}}</translation>
@@ -192,21 +202,24 @@
 <translation id="7658239707568436148">Atšaukti</translation>
 <translation id="7781829728241885113">Vakar</translation>
 <translation id="7814458197256864873">&amp;Kopijuoti</translation>
+<translation id="7848989271541991537">Perkelta į <ph name="PAGE_NUMBER" /> puslapį, <ph name="ROW_NUMBER" /> eilutę, <ph name="COLUMN_NUMBER" /> stulpelį.</translation>
 <translation id="7879499977785298635">Neblokuoti</translation>
 <translation id="7907591526440419938">Atidaryti failą</translation>
 <translation id="7969046989155602842">Komanda</translation>
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{Daugiau nei 1 neskaitytas pranešimas}one{Daugiau nei # neskaitytas pranešimas}few{Daugiau nei # neskaityti pranešimai}many{Daugiau nei # neskaityto pranešimo}other{Daugiau nei # neskaitytų pranešimų}}</translation>
 <translation id="8086866675552927481">{MINUTES,plural, =1{po 1 min.}one{po # min.}few{po # min.}many{po # min.}other{po # min.}}</translation>
 <translation id="8087772101393322318"><ph name="KEY_MODIFIER_NAME" /> + „<ph name="KEY_COMBO_NAME" />“</translation>
-<translation id="8098075892845277643">Pradėti „Google Assistant“ užklausą balsu</translation>
+<translation id="8090736967111090568">Numeris iš <ph name="ORIGIN" /></translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{Prieš 1 valandą}one{Prieš # valandą}few{Prieš # valandas}many{Prieš # valandos}other{Prieš # valandų}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{Liko 1 sek.}one{Liko # sek.}few{Liko # sek.}many{Liko # sek.}other{Liko # sek.}}</translation>
+<translation id="8134065097954893699">Šis puslapis įkeliamas iš naujo</translation>
 <translation id="8144660977431427332">Jūsų paieškos veikia su „Google Assistant“. <ph name="LEARN_MORE" /></translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, automatinis užbaigimas</translation>
 <translation id="815598010540052116">Slinkti žemyn</translation>
 <translation id="8179976553408161302">Įvesti</translation>
 <translation id="8210608804940886430">Puslapį žemyn</translation>
 <translation id="8245914219290430011">Skirtukas</translation>
+<translation id="8247998213073982446">„<ph name="APP_NAME" />“, programa</translation>
 <translation id="8259556432390118667">Šešioliktainės spalvos vertė</translation>
 <translation id="8328145009876646418">Kairysis kraštas</translation>
 <translation id="8331626408530291785">Slinkti į viršų</translation>
@@ -231,12 +244,13 @@
 <translation id="8926951137623668982">Lentyna visada slepiama</translation>
 <translation id="8996630695507351249">Įsitikinkite, kad „<ph name="TARGET_DEVICE_NAME" />“ prijungtas prie interneto.</translation>
 <translation id="9002566407876343676">atidaryti</translation>
-<translation id="9039076430527029379">Perkelti į <ph name="PAGE_NUMBER" /> puslapį, <ph name="ROW_NUMBER" /> eilutę, <ph name="COLUMN_NUMBER" /> stulpelį.</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 sek.}one{# sek.}few{# sek.}many{# sek.}other{# sek.}}</translation>
 <translation id="9059834730836941392">Sutraukti pranešimą</translation>
 <translation id="9150735707954472829">Skirtukas</translation>
 <translation id="9161053988251441839">SIŪLOMOS PROGRAMOS</translation>
 <translation id="9170848237812810038">&amp;Atšaukti</translation>
+<translation id="9178475906033259337">Pagal užklausą „<ph name="QUERY" />“ pateikiama rezultatų: 1</translation>
 <translation id="932327136139879170">Kontaktinė namų informacija</translation>
 <translation id="944069440740578670">Neskaityti pranešimai</translation>
+<translation id="974545358917229949">Pagal užklausą „<ph name="QUERY" />“ pateikiama rezultatų: <ph name="RESULT_COUNT" /></translation>
 </translationbundle>

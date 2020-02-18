@@ -27,8 +27,8 @@ import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.BottomSheetContent;
+import org.chromium.chrome.browser.tab.TabImpl;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContent;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.NavigationEntry;
@@ -44,7 +44,7 @@ public class SendTabToSelfShareActivityTest {
     @Mock
     SendTabToSelfAndroidBridge.Natives mNativeMock;
     @Mock
-    private Tab mTab;
+    private TabImpl mTab;
     @Mock
     private ChromeActivity mChromeActivity;
     @Mock
@@ -62,16 +62,8 @@ public class SendTabToSelfShareActivityTest {
 
     private Profile mProfile;
 
-    private class SendTabToSelfShareActivityForTest extends SendTabToSelfShareActivity {
-        @Override
-        BottomSheetContent createBottomSheetContent(
-                ChromeActivity activity, NavigationEntry entry) {
-            return mBottomSheetContent;
-        }
-    }
-
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         MockitoAnnotations.initMocks(this);
         mocker.mock(SendTabToSelfAndroidBridgeJni.TEST_HOOKS, mNativeMock);
         RecordHistogram.setDisabledForTests(true);
@@ -99,7 +91,7 @@ public class SendTabToSelfShareActivityTest {
         // Setup the mocked object chain to get to the profile.
         when(mChromeActivity.getActivityTabProvider()).thenReturn(mActivityTabProvider);
         when(mActivityTabProvider.get()).thenReturn(mTab);
-        when(mTab.getProfile()).thenReturn(mProfile);
+        when((mTab).getProfile()).thenReturn(mProfile);
 
         // Setup the mocked object chain to get to the url, title and timestamp.
         when(mTab.getWebContents()).thenReturn(mWebContents);
@@ -109,7 +101,8 @@ public class SendTabToSelfShareActivityTest {
         // Setup the mocked object chain to get the bottom controller.
         when(mChromeActivity.getBottomSheetController()).thenReturn(mBottomSheetController);
 
-        SendTabToSelfShareActivityForTest shareActivity = new SendTabToSelfShareActivityForTest();
+        SendTabToSelfShareActivity shareActivity = new SendTabToSelfShareActivity();
+        SendTabToSelfShareActivity.setBottomSheetContentForTesting(mBottomSheetContent);
         shareActivity.handleShareAction(mChromeActivity);
         verify(mBottomSheetController).requestShowContent(any(BottomSheetContent.class), eq(true));
     }

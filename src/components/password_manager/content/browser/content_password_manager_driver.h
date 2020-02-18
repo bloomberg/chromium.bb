@@ -13,7 +13,6 @@
 #include "base/macros.h"
 #include "components/autofill/content/common/mojom/autofill_agent.mojom.h"
 #include "components/autofill/content/common/mojom/autofill_driver.mojom.h"
-#include "components/autofill/core/common/password_form_field_prediction_map.h"
 #include "components/autofill/core/common/password_form_generation_data.h"
 #include "components/password_manager/core/browser/password_autofill_manager.h"
 #include "components/password_manager/core/browser/password_generation_frame_helper.h"
@@ -28,7 +27,6 @@ struct PasswordForm;
 }
 
 namespace content {
-class NavigationHandle;
 class RenderFrameHost;
 }
 
@@ -55,24 +53,23 @@ class ContentPasswordManagerDriver
           pending_receiver);
 
   // PasswordManagerDriver implementation.
+  int GetId() const override;
   void FillPasswordForm(
       const autofill::PasswordFormFillData& form_data) override;
+  void InformNoSavedCredentials() override;
   void FormEligibleForGenerationFound(
       const autofill::PasswordFormGenerationData& form) override;
-  void AutofillDataReceived(
-      const autofill::FormsPredictionsMap& predictions) override;
   void GeneratedPasswordAccepted(const base::string16& password) override;
   void GeneratedPasswordAccepted(const autofill::FormData& form_data,
                                  uint32_t generation_element_id,
                                  const base::string16& password) override;
+  void TouchToFillClosed(ShowVirtualKeyboard show_virtual_keyboard) override;
   void FillSuggestion(const base::string16& username,
                       const base::string16& password) override;
   void FillIntoFocusedField(bool is_password,
                             const base::string16& credential) override;
   void PreviewSuggestion(const base::string16& username,
                          const base::string16& password) override;
-  void ShowInitialPasswordAccountSuggestions(
-      const autofill::PasswordFormFillData& form_data) override;
   void ClearPreviewedForm() override;
   PasswordGenerationFrameHelper* GetPasswordGenerationHelper() override;
   PasswordManager* GetPasswordManager() override;
@@ -80,9 +77,11 @@ class ContentPasswordManagerDriver
   void SendLoggingAvailability() override;
   autofill::AutofillDriver* GetAutofillDriver() override;
   bool IsMainFrame() const override;
+  bool CanShowAutofillUi() const override;
   const GURL& GetLastCommittedURL() const override;
+  void AnnotateFieldsWithParsingResult(
+      const autofill::ParsingResult& parsing_result) override;
 
-  void DidNavigateFrame(content::NavigationHandle* navigation_handle);
   // Notify the renderer that the user wants to generate password manually.
   void GeneratePassword(autofill::mojom::PasswordGenerationAgent::
                             UserTriggeredGeneratePasswordCallback callback);
@@ -105,8 +104,8 @@ class ContentPasswordManagerDriver
       const autofill::PasswordForm& password_form) override;
   void ShowManualFallbackForSaving(const autofill::PasswordForm& form) override;
   void HideManualFallbackForSaving() override;
-  void SameDocumentNavigation(
-      const autofill::PasswordForm& password_form) override;
+  void SameDocumentNavigation(autofill::mojom::SubmissionIndicatorEvent
+                                  submission_indication_event) override;
   void RecordSavePasswordProgress(const std::string& log) override;
   void UserModifiedPasswordField() override;
   void UserModifiedNonPasswordField(uint32_t renderer_id,
@@ -142,6 +141,8 @@ class ContentPasswordManagerDriver
   // detached and it would be impossible to check whether the frame is a main
   // frame.
   const bool is_main_frame_;
+
+  int id_;
 
   mojo::AssociatedRemote<autofill::mojom::PasswordAutofillAgent>
       password_autofill_agent_;

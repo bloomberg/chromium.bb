@@ -73,6 +73,9 @@ class PLATFORM_EXPORT FetchParameters {
 
   explicit FetchParameters(const ResourceRequest&);
   FetchParameters(const ResourceRequest&, const ResourceLoaderOptions&);
+  FetchParameters(const FetchParameters&) = delete;
+  FetchParameters& operator=(const FetchParameters&) = delete;
+  FetchParameters(FetchParameters&&);
   ~FetchParameters();
 
   ResourceRequest& MutableResourceRequest() { return resource_request_; }
@@ -175,10 +178,6 @@ class PLATFORM_EXPORT FetchParameters {
   ImageRequestOptimization GetImageRequestOptimization() const {
     return image_request_optimization_;
   }
-
-  // Configures the request to load an image as a placeholder and sets the
-  // Client LoFi preview bit.
-  void SetClientLoFiPlaceholder();
 
   // Configures the request to load an image as a placeholder or defers the
   // image and sets the lazy image load bit.

@@ -8,16 +8,21 @@
 #ifndef SKSL_COMPILER
 #define SKSL_COMPILER
 
+#include <map>
 #include <set>
 #include <unordered_set>
 #include <vector>
-#include "src/sksl/SkSLByteCode.h"
+#include "src/sksl/SkSLASTFile.h"
 #include "src/sksl/SkSLCFGGenerator.h"
 #include "src/sksl/SkSLContext.h"
 #include "src/sksl/SkSLErrorReporter.h"
 #include "src/sksl/SkSLLexer.h"
 #include "src/sksl/ir/SkSLProgram.h"
 #include "src/sksl/ir/SkSLSymbolTable.h"
+
+#if !defined(SKSL_STANDALONE) && SK_SUPPORT_GPU
+#include "src/gpu/GrShaderVar.h"
+#endif
 
 #define SK_FRAGCOLOR_BUILTIN           10001
 #define SK_IN_BUILTIN                  10002
@@ -33,6 +38,7 @@
 #define SK_HEIGHT_BUILTIN              10012
 #define SK_FRAGCOORD_BUILTIN              15
 #define SK_CLOCKWISE_BUILTIN              17
+#define SK_SAMPLEMASK_BUILTIN             20
 #define SK_VERTEXID_BUILTIN               42
 #define SK_INSTANCEID_BUILTIN             43
 #define SK_CLIPDISTANCE_BUILTIN            3
@@ -41,6 +47,8 @@
 
 namespace SkSL {
 
+class ByteCode;
+class ExternalValue;
 class IRGenerator;
 
 /**
@@ -71,7 +79,8 @@ public:
             kCoordX,
             kCoordY,
             kUniform,
-            kChildProcessor
+            kChildProcessor,
+            kFunctionName
         };
 
         FormatArg(Kind kind)
@@ -85,6 +94,19 @@ public:
 
         int fIndex;
     };
+
+#if !defined(SKSL_STANDALONE) && SK_SUPPORT_GPU
+    /**
+     * Represents the arguments to GrGLSLShaderBuilder::emitFunction.
+     */
+    struct GLSLFunction {
+        GrSLType fReturnType;
+        SkString fName;
+        std::vector<GrShaderVar> fParameters;
+        SkString fBody;
+        std::vector<Compiler::FormatArg> fFormatArgs;
+    };
+#endif
 
     Compiler(Flags flags = kNone_Flags);
 
@@ -124,8 +146,11 @@ public:
 
     std::unique_ptr<ByteCode> toByteCode(Program& program);
 
+#if !defined(SKSL_STANDALONE) && SK_SUPPORT_GPU
     bool toPipelineStage(const Program& program, String* out,
-                         std::vector<FormatArg>* outFormatArgs);
+                         std::vector<FormatArg>* outFormatArgs,
+                         std::vector<GLSLFunction>* outFunctions);
+#endif
 
     /**
      * Takes ownership of the given symbol. It will be destroyed when the compiler is destroyed.
@@ -191,6 +216,9 @@ private:
 
     Position position(int offset);
 
+    std::map<StringFragment, std::pair<std::unique_ptr<ProgramElement>, bool>> fGPUIntrinsics;
+    std::map<StringFragment, std::pair<std::unique_ptr<ProgramElement>, bool>> fInterpreterIntrinsics;
+    std::unique_ptr<ASTFile> fGpuIncludeSource;
     std::shared_ptr<SymbolTable> fGpuSymbolTable;
     std::vector<std::unique_ptr<ProgramElement>> fVertexInclude;
     std::shared_ptr<SymbolTable> fVertexSymbolTable;

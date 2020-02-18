@@ -26,13 +26,6 @@
 namespace cc {
 namespace {
 
-auto CombineWithLayerMaskTypes(
-    const std::vector<PixelResourceTestCase>& test_cases) {
-  return ::testing::Combine(
-      ::testing::ValuesIn(test_cases),
-      ::testing::Values(Layer::LayerMaskType::SINGLE_TEXTURE_MASK));
-}
-
 // TODO(penghuang): Fix vulkan with one copy or zero copy
 // https://crbug.com/979703
 std::vector<PixelResourceTestCase> const kTestCases = {
@@ -52,7 +45,7 @@ using LayerTreeHostMasksPixelTest = ParameterizedPixelResourceTest;
 
 INSTANTIATE_TEST_SUITE_P(PixelResourceTest,
                          LayerTreeHostMasksPixelTest,
-                         CombineWithLayerMaskTypes(kTestCases));
+                         ::testing::ValuesIn(kTestCases));
 
 class MaskContentLayerClient : public ContentLayerClient {
  public:
@@ -111,7 +104,6 @@ TEST_P(LayerTreeHostMasksPixelTest, MaskOfLayer) {
   scoped_refptr<PictureLayer> mask = PictureLayer::Create(&client);
   mask->SetBounds(mask_bounds);
   mask->SetIsDrawable(true);
-  mask->SetLayerMaskType(mask_type_);
   green->SetMaskLayer(mask);
 
   pixel_comparator_ = std::make_unique<FuzzyPixelOffByOneComparator>(true);
@@ -164,7 +156,7 @@ class LayerTreeHostMaskPixelTestWithLayerList
 
 INSTANTIATE_TEST_SUITE_P(PixelResourceTest,
                          LayerTreeHostMaskPixelTestWithLayerList,
-                         CombineWithLayerMaskTypes(kTestCases));
+                         ::testing::ValuesIn(kTestCases));
 
 TEST_P(LayerTreeHostMaskPixelTestWithLayerList, MaskWithEffect) {
   MaskContentLayerClient client(mask_bounds_);
@@ -237,7 +229,7 @@ class LayerTreeHostMaskPixelTest_SolidColorEmptyMaskWithEffectAndRenderSurface
 INSTANTIATE_TEST_SUITE_P(
     PixelResourceTest,
     LayerTreeHostMaskPixelTest_SolidColorEmptyMaskWithEffectAndRenderSurface,
-    CombineWithLayerMaskTypes(kTestCases));
+    ::testing::ValuesIn(kTestCases));
 
 TEST_P(LayerTreeHostMaskPixelTest_SolidColorEmptyMaskWithEffectAndRenderSurface,
        Test) {
@@ -272,7 +264,7 @@ class LayerTreeHostMaskPixelTest_MaskWithEffectNoContentToMask
 INSTANTIATE_TEST_SUITE_P(
     PixelResourceTest,
     LayerTreeHostMaskPixelTest_MaskWithEffectNoContentToMask,
-    CombineWithLayerMaskTypes(kTestCases));
+    ::testing::ValuesIn(kTestCases));
 
 TEST_P(LayerTreeHostMaskPixelTest_MaskWithEffectNoContentToMask, Test) {
   MaskContentLayerClient client(mask_bounds_);
@@ -297,7 +289,7 @@ class LayerTreeHostMaskPixelTest_ScaledMaskWithEffect
 
 INSTANTIATE_TEST_SUITE_P(PixelResourceTest,
                          LayerTreeHostMaskPixelTest_ScaledMaskWithEffect,
-                         CombineWithLayerMaskTypes(kTestCases));
+                         ::testing::ValuesIn(kTestCases));
 
 TEST_P(LayerTreeHostMaskPixelTest_ScaledMaskWithEffect, Test) {
   MaskContentLayerClient client(mask_bounds_);
@@ -361,7 +353,6 @@ TEST_P(LayerTreeHostMasksPixelTest, ImageMaskOfLayer) {
 
   scoped_refptr<PictureImageLayer> mask = PictureImageLayer::Create();
   mask->SetIsDrawable(true);
-  mask->SetLayerMaskType(mask_type_);
   mask->SetBounds(mask_bounds);
 
   sk_sp<SkSurface> surface = SkSurface::MakeRasterN32Premul(200, 200);
@@ -411,7 +402,6 @@ TEST_P(LayerTreeHostMasksPixelTest, MaskOfClippedLayer) {
   scoped_refptr<PictureLayer> mask = PictureLayer::Create(&client);
   mask->SetBounds(mask_bounds);
   mask->SetIsDrawable(true);
-  mask->SetLayerMaskType(mask_type_);
   green->SetMaskLayer(mask);
 
   pixel_comparator_ =
@@ -435,7 +425,6 @@ TEST_P(LayerTreeHostMasksPixelTest, MaskOfLayerNonExactTextureSize) {
   scoped_refptr<FakePictureLayer> mask = FakePictureLayer::Create(&client);
   mask->SetBounds(mask_bounds);
   mask->SetIsDrawable(true);
-  mask->SetLayerMaskType(mask_type_);
   mask->set_fixed_tile_size(gfx::Size(173, 135));
   green->SetMaskLayer(mask);
 
@@ -537,43 +526,59 @@ class CircleContentLayerClient : public ContentLayerClient {
   gfx::Size bounds_;
 };
 
-using LayerTreeHostMasksForBackdropFiltersPixelTest =
-    ParameterizedPixelResourceTest;
+class LayerTreeHostMasksForBackdropFiltersPixelTest
+    : public ParameterizedPixelResourceTest {
+ protected:
+  LayerTreeHostMasksForBackdropFiltersPixelTest()
+      : bounds_(100, 100),
+        picture_client_(bounds_, SK_ColorGREEN, true),
+        mask_client_(bounds_) {
+    SetUseLayerLists();
+  }
+
+  // Setup three layers for testing masks: a white background, a green layer,
+  // and a mask layer with kDstIn blend mode.
+  void SetupTree() override {
+    SetInitialRootBounds(bounds_);
+    ParameterizedPixelResourceTest::SetupTree();
+
+    Layer* root = layer_tree_host()->root_layer();
+
+    scoped_refptr<SolidColorLayer> background =
+        CreateSolidColorLayer(gfx::Rect(bounds_), SK_ColorWHITE);
+    CopyProperties(root, background.get());
+    root->AddChild(background);
+
+    scoped_refptr<PictureLayer> picture =
+        PictureLayer::Create(&picture_client_);
+    picture->SetBounds(bounds_);
+    picture->SetIsDrawable(true);
+    CopyProperties(background.get(), picture.get());
+    root->AddChild(picture);
+
+    scoped_refptr<SolidColorLayer> blur =
+        CreateSolidColorLayer(gfx::Rect(bounds_), SK_ColorTRANSPARENT);
+    CopyProperties(background.get(), blur.get());
+    CreateEffectNode(blur.get())
+        .backdrop_filters.Append(FilterOperation::CreateGrayscaleFilter(1.0));
+    root->AddChild(blur);
+
+    scoped_refptr<PictureLayer> mask = PictureLayer::Create(&mask_client_);
+    SetupMaskProperties(blur.get(), mask.get());
+
+    root->AddChild(mask);
+  }
+
+  const gfx::Size bounds_;
+  CheckerContentLayerClient picture_client_;
+  CircleContentLayerClient mask_client_;
+};
 
 INSTANTIATE_TEST_SUITE_P(PixelResourceTest,
                          LayerTreeHostMasksForBackdropFiltersPixelTest,
-                         CombineWithLayerMaskTypes(kTestCases));
+                         ::testing::ValuesIn(kTestCases));
 
-TEST_P(LayerTreeHostMasksForBackdropFiltersPixelTest,
-       MaskOfLayerWithBackdropFilter) {
-  scoped_refptr<SolidColorLayer> background = CreateSolidColorLayer(
-      gfx::Rect(100, 100), SK_ColorWHITE);
-
-  gfx::Size picture_bounds(100, 100);
-  CheckerContentLayerClient picture_client(picture_bounds, SK_ColorGREEN, true);
-  scoped_refptr<PictureLayer> picture = PictureLayer::Create(&picture_client);
-  picture->SetBounds(picture_bounds);
-  picture->SetIsDrawable(true);
-
-  scoped_refptr<SolidColorLayer> blur = CreateSolidColorLayer(
-      gfx::Rect(100, 100), SK_ColorTRANSPARENT);
-  background->AddChild(picture);
-  background->AddChild(blur);
-
-  FilterOperations filters;
-  filters.Append(FilterOperation::CreateGrayscaleFilter(1.0));
-  blur->SetBackdropFilters(filters);
-  blur->ClearBackdropFilterBounds();
-
-  gfx::Size mask_bounds(100, 100);
-  CircleContentLayerClient mask_client(mask_bounds);
-  scoped_refptr<PictureLayer> mask = PictureLayer::Create(&mask_client);
-  mask->SetBounds(mask_bounds);
-  mask->SetIsDrawable(true);
-  mask->SetLayerMaskType(mask_type_);
-  blur->SetMaskLayer(mask);
-  CHECK_EQ(Layer::LayerMaskType::SINGLE_TEXTURE_MASK, mask->mask_type());
-
+TEST_P(LayerTreeHostMasksForBackdropFiltersPixelTest, Test) {
   base::FilePath image_name =
       (raster_type() == GPU)
           ? base::FilePath(FILE_PATH_LITERAL("mask_of_backdrop_filter_gpu.png"))
@@ -593,10 +598,10 @@ TEST_P(LayerTreeHostMasksForBackdropFiltersPixelTest,
         large_error_allowed, small_error_allowed);
   }
 
-  RunPixelResourceTest(background, image_name);
+  RunPixelResourceTestWithLayerList(image_name);
 }
 
-TEST_P(LayerTreeHostMasksForBackdropFiltersPixelTest, MaskOfLayerWithBlend) {
+TEST_P(LayerTreeHostMasksPixelTest, MaskOfLayerWithBlend) {
   scoped_refptr<SolidColorLayer> background = CreateSolidColorLayer(
       gfx::Rect(128, 128), SK_ColorWHITE);
 
@@ -625,7 +630,6 @@ TEST_P(LayerTreeHostMasksForBackdropFiltersPixelTest, MaskOfLayerWithBlend) {
   scoped_refptr<PictureLayer> mask = PictureLayer::Create(&mask_client);
   mask->SetBounds(mask_bounds);
   mask->SetIsDrawable(true);
-  mask->SetLayerMaskType(mask_type_);
   picture_horizontal->SetMaskLayer(mask);
 
   float percentage_pixels_large_error = 0.04f;  // 0.04%, ~6px / (128*128)
@@ -684,9 +688,7 @@ class LayerTreeHostMaskAsBlendingPixelTest
       public ::testing::WithParamInterface<MaskTestConfig> {
  public:
   LayerTreeHostMaskAsBlendingPixelTest()
-      : LayerTreeHostPixelResourceTest(
-            GetParam().test_case,
-            Layer::LayerMaskType::SINGLE_TEXTURE_MASK),
+      : LayerTreeHostPixelResourceTest(GetParam().test_case),
         use_antialiasing_(GetParam().flags & kUseAntialiasing),
         force_shaders_(GetParam().flags & kForceShaders) {
     float percentage_pixels_error = 0.f;
@@ -831,7 +833,6 @@ TEST_P(LayerTreeHostMaskAsBlendingPixelTest, PixelAlignedNoop) {
   mask_isolation->SetPosition(gfx::PointF(20, 20));
   mask_isolation->SetBounds(gfx::Size(350, 250));
   mask_isolation->SetMasksToBounds(true);
-  mask_isolation->SetIsRootForIsolatedGroup(true);
   root->AddChild(mask_isolation);
 
   scoped_refptr<Layer> content =
@@ -856,7 +857,7 @@ TEST_P(LayerTreeHostMaskAsBlendingPixelTest, PixelAlignedClippedCircle) {
   mask_isolation->SetPosition(gfx::PointF(20, 20));
   mask_isolation->SetBounds(gfx::Size(350, 250));
   mask_isolation->SetMasksToBounds(true);
-  mask_isolation->SetIsRootForIsolatedGroup(true);
+  mask_isolation->SetForceRenderSurfaceForTesting(true);
   root->AddChild(mask_isolation);
 
   scoped_refptr<Layer> content =
@@ -893,7 +894,7 @@ TEST_P(LayerTreeHostMaskAsBlendingPixelTest,
   mask_isolation->SetPosition(gfx::PointF(20, 20));
   mask_isolation->SetBounds(gfx::Size(350, 250));
   mask_isolation->SetMasksToBounds(true);
-  mask_isolation->SetIsRootForIsolatedGroup(true);
+  mask_isolation->SetForceRenderSurfaceForTesting(true);
   root->AddChild(mask_isolation);
 
   scoped_refptr<Layer> content =
@@ -934,7 +935,6 @@ TEST_P(LayerTreeHostMaskAsBlendingPixelTest, RotatedClippedCircle) {
   }
   mask_isolation->SetBounds(gfx::Size(350, 250));
   mask_isolation->SetMasksToBounds(true);
-  mask_isolation->SetIsRootForIsolatedGroup(true);
   root->AddChild(mask_isolation);
 
   scoped_refptr<Layer> content =
@@ -981,7 +981,6 @@ TEST_P(LayerTreeHostMaskAsBlendingPixelTest, RotatedClippedCircleUnderflow) {
   }
   mask_isolation->SetBounds(gfx::Size(350, 250));
   mask_isolation->SetMasksToBounds(true);
-  mask_isolation->SetIsRootForIsolatedGroup(true);
   root->AddChild(mask_isolation);
 
   scoped_refptr<Layer> content =
@@ -1013,44 +1012,64 @@ TEST_P(LayerTreeHostMaskAsBlendingPixelTest, RotatedClippedCircleUnderflow) {
   RunPixelResourceTest(root, image_name);
 }
 
-TEST_P(LayerTreeHostMasksForBackdropFiltersPixelTest,
-       MaskOfLayerWithBackdropFilterAndBlend) {
-  scoped_refptr<SolidColorLayer> background =
-      CreateSolidColorLayer(gfx::Rect(128, 128), SK_ColorWHITE);
+class LayerTreeHostMasksForBackdropFiltersAndBlendPixelTest
+    : public ParameterizedPixelResourceTest {
+ protected:
+  LayerTreeHostMasksForBackdropFiltersAndBlendPixelTest()
+      : bounds_(128, 128),
+        picture_client_vertical_(bounds_, SK_ColorGREEN, true),
+        picture_client_horizontal_(bounds_, SK_ColorMAGENTA, false),
+        mask_client_(bounds_) {
+    SetUseLayerLists();
+  }
 
-  gfx::Size picture_bounds(128, 128);
-  CheckerContentLayerClient picture_client_vertical(picture_bounds,
-                                                    SK_ColorGREEN, true);
-  scoped_refptr<PictureLayer> picture_vertical =
-      PictureLayer::Create(&picture_client_vertical);
-  picture_vertical->SetBounds(picture_bounds);
-  picture_vertical->SetIsDrawable(true);
+  void SetupTree() override {
+    SetInitialRootBounds(bounds_);
+    ParameterizedPixelResourceTest::SetupTree();
 
-  CheckerContentLayerClient picture_client_horizontal(picture_bounds,
-                                                      SK_ColorMAGENTA, false);
-  scoped_refptr<PictureLayer> picture_horizontal =
-      PictureLayer::Create(&picture_client_horizontal);
-  picture_horizontal->SetBounds(picture_bounds);
-  picture_horizontal->SetIsDrawable(true);
-  picture_horizontal->SetContentsOpaque(false);
-  picture_horizontal->SetBlendMode(SkBlendMode::kMultiply);
+    Layer* root = layer_tree_host()->root_layer();
 
-  FilterOperations filters;
-  filters.Append(FilterOperation::CreateGrayscaleFilter(1.0));
-  picture_horizontal->SetBackdropFilters(filters);
-  picture_horizontal->ClearBackdropFilterBounds();
+    scoped_refptr<SolidColorLayer> background =
+        CreateSolidColorLayer(gfx::Rect(bounds_), SK_ColorWHITE);
+    CopyProperties(root, background.get());
+    root->AddChild(background);
 
-  background->AddChild(picture_vertical);
-  background->AddChild(picture_horizontal);
+    scoped_refptr<PictureLayer> picture_vertical =
+        PictureLayer::Create(&picture_client_vertical_);
+    picture_vertical->SetBounds(bounds_);
+    picture_vertical->SetIsDrawable(true);
+    CopyProperties(background.get(), picture_vertical.get());
+    root->AddChild(picture_vertical);
 
-  gfx::Size mask_bounds(128, 128);
-  CircleContentLayerClient mask_client(mask_bounds);
-  scoped_refptr<PictureLayer> mask = PictureLayer::Create(&mask_client);
-  mask->SetBounds(mask_bounds);
-  mask->SetIsDrawable(true);
-  mask->SetLayerMaskType(mask_type_);
-  picture_horizontal->SetMaskLayer(mask);
+    scoped_refptr<PictureLayer> picture_horizontal =
+        PictureLayer::Create(&picture_client_horizontal_);
+    picture_horizontal->SetBounds(bounds_);
+    picture_horizontal->SetIsDrawable(true);
+    picture_horizontal->SetContentsOpaque(false);
+    CopyProperties(background.get(), picture_horizontal.get());
+    auto& effect_node = CreateEffectNode(picture_horizontal.get());
+    effect_node.backdrop_filters.Append(
+        FilterOperation::CreateGrayscaleFilter(1.0));
+    effect_node.blend_mode = SkBlendMode::kMultiply;
+    root->AddChild(picture_horizontal);
 
+    scoped_refptr<PictureLayer> mask = PictureLayer::Create(&mask_client_);
+    mask->SetBounds(bounds_);
+    SetupMaskProperties(picture_horizontal.get(), mask.get());
+    root->AddChild(mask);
+  }
+
+  const gfx::Size bounds_;
+  CheckerContentLayerClient picture_client_vertical_;
+  CheckerContentLayerClient picture_client_horizontal_;
+  CircleContentLayerClient mask_client_;
+};
+
+INSTANTIATE_TEST_SUITE_P(PixelResourceTest,
+                         LayerTreeHostMasksForBackdropFiltersAndBlendPixelTest,
+                         ::testing::ValuesIn(kTestCases));
+
+TEST_P(LayerTreeHostMasksForBackdropFiltersAndBlendPixelTest, Test) {
   base::FilePath result_path(
       FILE_PATH_LITERAL("mask_of_backdrop_filter_and_blend_.png"));
   if (raster_type() != GPU) {
@@ -1058,7 +1077,7 @@ TEST_P(LayerTreeHostMasksForBackdropFiltersPixelTest,
   } else {
     result_path = result_path.InsertBeforeExtensionASCII(GetRendererSuffix());
   }
-  RunPixelResourceTest(background, result_path);
+  RunPixelResourceTestWithLayerList(result_path);
 }
 
 }  // namespace

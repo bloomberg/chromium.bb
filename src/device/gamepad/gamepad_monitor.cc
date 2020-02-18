@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
-#include "base/memory/shared_memory.h"
 #include "device/gamepad/gamepad_service.h"
 #include "device/gamepad/gamepad_shared_buffer.h"
 #include "mojo/public/cpp/bindings/message.h"
@@ -15,17 +14,18 @@
 
 namespace device {
 
-GamepadMonitor::GamepadMonitor() : is_started_(false) {}
+GamepadMonitor::GamepadMonitor() = default;
 
 GamepadMonitor::~GamepadMonitor() {
-  if (is_started_)
+  if (is_registered_consumer_)
     GamepadService::GetInstance()->RemoveConsumer(this);
 }
 
 // static
-void GamepadMonitor::Create(mojom::GamepadMonitorRequest request) {
-  mojo::MakeStrongBinding(std::make_unique<GamepadMonitor>(),
-                          std::move(request));
+void GamepadMonitor::Create(
+    mojo::PendingReceiver<mojom::GamepadMonitor> receiver) {
+  mojo::MakeSelfOwnedReceiver(std::make_unique<GamepadMonitor>(),
+                              std::move(receiver));
 }
 
 void GamepadMonitor::OnGamepadConnected(uint32_t index,
@@ -49,6 +49,7 @@ void GamepadMonitor::OnGamepadButtonOrAxisChanged(uint32_t index,
 void GamepadMonitor::GamepadStartPolling(GamepadStartPollingCallback callback) {
   DCHECK(!is_started_);
   is_started_ = true;
+  is_registered_consumer_ = true;
 
   GamepadService* service = GamepadService::GetInstance();
   if (!service->ConsumerBecameActive(this)) {

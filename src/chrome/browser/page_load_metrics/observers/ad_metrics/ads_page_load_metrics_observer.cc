@@ -11,29 +11,37 @@
 
 #include "base/feature_list.h"
 #include "base/logging.h"
+#include "base/rand_util.h"
+#include "base/strings/strcat.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/time/default_tick_clock.h"
 #include "chrome/browser/heavy_ad_intervention/heavy_ad_blocklist.h"
+#include "chrome/browser/heavy_ad_intervention/heavy_ad_features.h"
 #include "chrome/browser/heavy_ad_intervention/heavy_ad_helper.h"
 #include "chrome/browser/heavy_ad_intervention/heavy_ad_service.h"
 #include "chrome/browser/heavy_ad_intervention/heavy_ad_service_factory.h"
-#include "chrome/browser/page_load_metrics/metrics_web_contents_observer.h"
-#include "chrome/browser/page_load_metrics/page_load_metrics_util.h"
-#include "chrome/browser/page_load_metrics/resource_tracker.h"
 #include "chrome/browser/subresource_filter/chrome_subresource_filter_client.h"
 #include "chrome/common/chrome_features.h"
+#include "components/page_load_metrics/browser/metrics_web_contents_observer.h"
+#include "components/page_load_metrics/browser/page_load_metrics_util.h"
+#include "components/page_load_metrics/browser/resource_tracker.h"
+#include "components/page_load_metrics/common/page_end_reason.h"
 #include "components/subresource_filter/content/browser/content_subresource_filter_throttle_manager.h"
 #include "components/subresource_filter/core/common/common_features.h"
 #include "components/ukm/content/source_url_recorder.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/reload_type.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
 #include "net/base/net_errors.h"
+#include "services/metrics/public/cpp/metrics_utils.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
+#include "third_party/blink/public/mojom/web_feature/web_feature.mojom.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/gfx/geometry/size.h"
 #include "url/gurl.h"
@@ -64,8 +72,51 @@ content::RenderFrameHost* FindFrameMaybeUnsafe(
                    handle->GetFrameTreeNodeId());
 }
 
-using ResourceMimeType = AdsPageLoadMetricsObserver::ResourceMimeType;
+void RecordFeatureUsage(content::RenderFrameHost* rfh,
+                        blink::mojom::WebFeature web_feature) {
+  page_load_metrics::mojom::PageLoadFeatures page_load_features(
+      {web_feature}, {} /* css_properties */, {} /* animated_css_properties */);
+  page_load_metrics::MetricsWebContentsObserver::RecordFeatureUsage(
+      rfh, page_load_features);
+}
 
+std::string GetHeavyAdReportMessage(const FrameData& frame_data,
+                                    bool reporting_only) {
+  const char kChromeStatusMessage[] =
+      "See https://www.chromestatus.com/feature/4800491902992384";
+  const char kReportingOnlyMessage[] =
+      "A future version of Chrome will remove this ad";
+  const char kInterventionMessage[] = "Ad was removed";
+
+  base::StringPiece intervention_mode =
+      reporting_only ? kReportingOnlyMessage : kInterventionMessage;
+
+  switch (frame_data.heavy_ad_status()) {
+    case FrameData::HeavyAdStatus::kNetwork:
+      return base::StrCat({intervention_mode,
+                           " because its network usage exceeded the limit. ",
+                           kChromeStatusMessage});
+    case FrameData::HeavyAdStatus::kTotalCpu:
+    case FrameData::HeavyAdStatus::kPeakCpu:
+      return base::StrCat({intervention_mode,
+                           " because its CPU usage exceeded the limit. ",
+                           kChromeStatusMessage});
+    case FrameData::HeavyAdStatus::kNone:
+      NOTREACHED();
+      return "";
+  }
+}
+
+const char kDisallowedByBlocklistHistogramName[] =
+    "PageLoad.Clients.Ads.HeavyAds.DisallowedByBlocklist";
+
+void RecordHeavyAdInterventionDisallowedByBlocklist(bool disallowed) {
+  UMA_HISTOGRAM_BOOLEAN(kDisallowedByBlocklistHistogramName, disallowed);
+}
+
+using ResourceMimeType = AdsPageLoadMetricsObserver::ResourceMimeType;
+const char kIgnoredByReloadHistogramName[] =
+    "PageLoad.Clients.Ads.HeavyAds.IgnoredByReload";
 }  // namespace
 
 // static
@@ -94,14 +145,26 @@ bool AdsPageLoadMetricsObserver::IsSubframeSameOriginToMainFrame(
 AdsPageLoadMetricsObserver::AggregateFrameInfo::AggregateFrameInfo()
     : bytes(0), network_bytes(0), num_frames(0) {}
 
+AdsPageLoadMetricsObserver::HeavyAdThresholdNoiseProvider::
+    HeavyAdThresholdNoiseProvider(bool use_noise)
+    : use_noise_(use_noise) {}
+
+int AdsPageLoadMetricsObserver::HeavyAdThresholdNoiseProvider::
+    GetNetworkThresholdNoiseForFrame() const {
+  return use_noise_ ? base::RandInt(0, kMaxNetworkThresholdNoiseBytes) : 0;
+}
+
 AdsPageLoadMetricsObserver::AdsPageLoadMetricsObserver(
     base::TickClock* clock,
     HeavyAdBlocklist* blocklist)
     : subresource_observer_(this),
       clock_(clock ? clock : base::DefaultTickClock::GetInstance()),
       heavy_ad_blocklist_(blocklist),
-      heavy_ad_blocklist_enabled_(
-          base::FeatureList::IsEnabled(features::kHeavyAdBlocklist)) {}
+      heavy_ad_privacy_mitigations_enabled_(
+          base::FeatureList::IsEnabled(features::kHeavyAdPrivacyMitigations)),
+      heavy_ad_threshold_noise_provider_(
+          std::make_unique<HeavyAdThresholdNoiseProvider>(
+              heavy_ad_privacy_mitigations_enabled_ /* use_noise */)) {}
 
 AdsPageLoadMetricsObserver::~AdsPageLoadMetricsObserver() = default;
 
@@ -110,6 +173,7 @@ AdsPageLoadMetricsObserver::OnStart(
     content::NavigationHandle* navigation_handle,
     const GURL& currently_committed_url,
     bool started_in_foreground) {
+  navigation_id_ = navigation_handle->GetNavigationId();
   auto* observer_manager =
       subresource_filter::SubresourceFilterObserverManager::FromWebContents(
           navigation_handle->GetWebContents());
@@ -118,9 +182,11 @@ AdsPageLoadMetricsObserver::OnStart(
   if (observer_manager)
     subresource_observer_.Add(observer_manager);
   main_frame_data_ =
-      std::make_unique<FrameData>(navigation_handle->GetFrameTreeNodeId());
+      std::make_unique<FrameData>(navigation_handle->GetFrameTreeNodeId(),
+                                  0 /* heavy_ad_network_threshold_noise */);
   aggregate_frame_data_ =
-      std::make_unique<FrameData>(navigation_handle->GetFrameTreeNodeId());
+      std::make_unique<FrameData>(navigation_handle->GetFrameTreeNodeId(),
+                                  0 /* heavy_ad_network_threshold_noise */);
   return CONTINUE_OBSERVING;
 }
 
@@ -131,16 +197,21 @@ AdsPageLoadMetricsObserver::OnCommit(
   DCHECK(ad_frames_data_.empty());
 
   committed_ = true;
+  page_load_is_reload_ =
+      navigation_handle->GetReloadType() != content::ReloadType::NONE;
+
   aggregate_frame_data_->UpdateForNavigation(
       navigation_handle->GetRenderFrameHost(), true /* frame_navigated */);
   main_frame_data_->UpdateForNavigation(navigation_handle->GetRenderFrameHost(),
                                         true /* frame_navigated */);
-
   // The main frame is never considered an ad.
   ad_frames_data_[navigation_handle->GetFrameTreeNodeId()] =
       ad_frames_data_storage_.end();
   ProcessOngoingNavigationResource(navigation_handle->GetRenderFrameHost());
-  return CONTINUE_OBSERVING;
+
+  // If the frame is blocked by the subresource filter, we don't want to record
+  // any AdsPageLoad metrics.
+  return subresource_filter_is_enabled_ ? STOP_OBSERVING : CONTINUE_OBSERVING;
 }
 
 void AdsPageLoadMetricsObserver::OnTimingUpdate(
@@ -152,53 +223,9 @@ void AdsPageLoadMetricsObserver::OnTimingUpdate(
   FrameData* ancestor_data = FindFrameData(subframe_rfh->GetFrameTreeNodeId());
 
   // Only update the frame with the root frames timing updates.
-  if (ancestor_data &&
-      ancestor_data->frame_tree_node_id() == subframe_rfh->GetFrameTreeNodeId())
+  if (ancestor_data && ancestor_data->root_frame_tree_node_id() ==
+                           subframe_rfh->GetFrameTreeNodeId())
     ancestor_data->set_timing(timing.Clone());
-}
-
-void AdsPageLoadMetricsObserver::MaybeTriggerHeavyAdIntervention(
-    content::RenderFrameHost* render_frame_host,
-    FrameData* frame_data) {
-  DCHECK(render_frame_host);
-  if (!frame_data->MaybeTriggerHeavyAdIntervention())
-    return;
-
-  // Check to see if we are allowed to activate on this host.
-  if (IsBlocklisted())
-    return;
-
-  // Find the RenderFrameHost associated with this frame data. It is possible
-  // that this frame no longer exists. We do not care if the frame has
-  // moved to a new process because once the frame has been tagged as an ad, it
-  // is always considered an ad.
-  while (render_frame_host && render_frame_host->GetFrameTreeNodeId() !=
-                                  frame_data->frame_tree_node_id()) {
-    render_frame_host = render_frame_host->GetParent();
-  }
-  if (!render_frame_host)
-    return;
-
-  // Ensure that this RenderFrameHost is a subframe.
-  DCHECK(render_frame_host->GetParent());
-
-  GetDelegate().GetWebContents()->GetController().LoadErrorPage(
-      render_frame_host, render_frame_host->GetLastCommittedURL(),
-      heavy_ads::PrepareHeavyAdPage(), net::ERR_BLOCKED_BY_CLIENT);
-
-  ADS_HISTOGRAM("HeavyAds.InterventionType2", UMA_HISTOGRAM_ENUMERATION,
-                FrameData::FrameVisibility::kAnyVisibility,
-                frame_data->heavy_ad_status());
-  ADS_HISTOGRAM("HeavyAds.InterventionType2", UMA_HISTOGRAM_ENUMERATION,
-                frame_data->visibility(), frame_data->heavy_ad_status());
-
-  // Report intervention to the blocklist.
-  if (auto* blocklist = GetHeavyAdBlocklist()) {
-    blocklist->AddEntry(
-        GetDelegate().GetWebContents()->GetLastCommittedURL().host(),
-        true /* opt_out */,
-        static_cast<int>(HeavyAdBlocklistType::kHeavyAdOnlyType));
-  }
 }
 
 void AdsPageLoadMetricsObserver::OnCpuTimingUpdate(
@@ -273,7 +300,9 @@ void AdsPageLoadMetricsObserver::RecordAdFrameData(
       previous_data->UpdateForNavigation(ad_host, frame_navigated);
       return;
     }
-    ad_frames_data_storage_.emplace_back(ad_id);
+    ad_frames_data_storage_.emplace_back(
+        ad_id,
+        heavy_ad_threshold_noise_provider_->GetNetworkThresholdNoiseForFrame());
     ad_data_iterator = --ad_frames_data_storage_.end();
     ad_data = &*ad_data_iterator;
     ad_data->UpdateForNavigation(ad_host, frame_navigated);
@@ -391,7 +420,7 @@ void AdsPageLoadMetricsObserver::FrameDisplayStateChanged(
   // chain, then update it. The display property is propagated to all child
   // frames.
   if (ancestor_data && render_frame_host->GetFrameTreeNodeId() ==
-                           ancestor_data->frame_tree_node_id()) {
+                           ancestor_data->root_frame_tree_node_id()) {
     ancestor_data->SetDisplayState(is_display_none);
   }
 }
@@ -404,7 +433,7 @@ void AdsPageLoadMetricsObserver::FrameSizeChanged(
   // If the frame whose size has changed is the root of the ad ancestry chain,
   // then update it
   if (ancestor_data && render_frame_host->GetFrameTreeNodeId() ==
-                           ancestor_data->frame_tree_node_id()) {
+                           ancestor_data->root_frame_tree_node_id()) {
     ancestor_data->SetFrameSize(frame_size);
   }
 }
@@ -441,10 +470,9 @@ void AdsPageLoadMetricsObserver::OnFrameDeleted(
 
   // If the root ad frame has been deleted, flush histograms for the frame and
   // remove it from storage. All child frames should be deleted by this point.
-  if (ancestor_data && ancestor_data->frame_tree_node_id() ==
+  if (ancestor_data && ancestor_data->root_frame_tree_node_id() ==
                            render_frame_host->GetFrameTreeNodeId()) {
-    RecordPerFrameHistogramsForAdTagging(*ancestor_data);
-    RecordPerFrameHistogramsForCpuUsage(*ancestor_data);
+    RecordPerFrameHistograms(*ancestor_data);
     ancestor_data->RecordAdFrameLoadUkmEvent(GetDelegate().GetSourceId());
     DCHECK(id_and_data->second != ad_frames_data_storage_.end());
     ad_frames_data_storage_.erase(id_and_data->second);
@@ -464,6 +492,23 @@ void AdsPageLoadMetricsObserver::OnAdSubframeDetected(
 
 void AdsPageLoadMetricsObserver::OnSubresourceFilterGoingAway() {
   subresource_observer_.RemoveAll();
+}
+
+void AdsPageLoadMetricsObserver::OnPageActivationComputed(
+    content::NavigationHandle* navigation_handle,
+    const subresource_filter::mojom::ActivationState& activation_state) {
+  DCHECK(navigation_handle);
+  DCHECK_GE(navigation_id_, 0);
+
+  // The subresource filter's activation level and navigation id is the same for
+  // all frames on a page, so we only record this for the main frame.
+  if (navigation_handle->IsInMainFrame() &&
+      navigation_handle->GetNavigationId() == navigation_id_ &&
+      activation_state.activation_level ==
+          subresource_filter::mojom::ActivationLevel::kEnabled) {
+    DCHECK(!subresource_filter_is_enabled_);
+    subresource_filter_is_enabled_ = true;
+  }
 }
 
 int AdsPageLoadMetricsObserver::GetUnaccountedAdBytes(
@@ -570,7 +615,9 @@ void AdsPageLoadMetricsObserver::RecordPageResourceTotalHistograms(
                             10)
       .SetAdVideoBytes(aggregate_frame_data_->GetAdNetworkBytesForMime(
                            FrameData::ResourceMimeType::kVideo) >>
-                       10);
+                       10)
+      .SetMainframeAdBytes(ukm::GetExponentialBucketMinForBytes(
+          main_frame_data_->ad_network_bytes()));
 
   // Record cpu metrics for the page.
   builder.SetAdCpuTime(
@@ -606,8 +653,7 @@ void AdsPageLoadMetricsObserver::RecordPageResourceTotalHistograms(
 void AdsPageLoadMetricsObserver::RecordHistograms(ukm::SourceId source_id) {
   // Record per-frame metrics for any existing frames.
   for (const auto& frame_data : ad_frames_data_storage_) {
-    RecordPerFrameHistogramsForAdTagging(frame_data);
-    RecordPerFrameHistogramsForCpuUsage(frame_data);
+    RecordPerFrameHistograms(frame_data);
     frame_data.RecordAdFrameLoadUkmEvent(source_id);
   }
 
@@ -621,7 +667,154 @@ void AdsPageLoadMetricsObserver::RecordHistograms(ukm::SourceId source_id) {
   RecordAggregateHistogramsForAdTagging(
       FrameData::FrameVisibility::kAnyVisibility);
   RecordAggregateHistogramsForCpuUsage();
+  RecordAggregateHistogramsForHeavyAds();
   RecordPageResourceTotalHistograms(source_id);
+}
+
+void AdsPageLoadMetricsObserver::RecordAggregateHistogramsForCpuUsage() {
+  // If the page has an ad with the relevant visibility and non-zero bytes.
+  if (aggregate_ad_info_by_visibility_
+          [static_cast<int>(FrameData::FrameVisibility::kAnyVisibility)]
+              .num_frames == 0)
+    return;
+
+  // Get the relevant durations, set pre-interactive if the page never hit it.
+  base::TimeDelta total_duration =
+      GetDelegate().GetVisibilityTracker().GetForegroundDuration();
+  if (time_interactive_.is_null())
+    pre_interactive_duration_ = total_duration;
+
+  base::TimeDelta post_interactive_duration =
+      total_duration - pre_interactive_duration_;
+  DCHECK(total_duration >= base::TimeDelta());
+  DCHECK(pre_interactive_duration_ >= base::TimeDelta());
+  DCHECK(post_interactive_duration >= base::TimeDelta());
+
+  // Only record cpu usage aggregate data for the AnyVisibility suffix as these
+  // numbers do not change for different visibility types.
+  FrameData::FrameVisibility visibility =
+      FrameData::FrameVisibility::kAnyVisibility;
+
+  // Record the aggregate data, which is never considered activated.
+  base::TimeDelta task_duration_pre =
+      aggregate_frame_data_->GetInteractiveCpuUsage(
+          FrameData::InteractiveStatus::kPreInteractive);
+  base::TimeDelta task_duration_post =
+      aggregate_frame_data_->GetInteractiveCpuUsage(
+          FrameData::InteractiveStatus::kPostInteractive);
+  base::TimeDelta task_duration_total = task_duration_pre + task_duration_post;
+  if (total_duration.InMilliseconds() > 0) {
+    ADS_HISTOGRAM("Cpu.AdFrames.Aggregate.TotalUsage", PAGE_LOAD_HISTOGRAM,
+                  visibility,
+                  aggregate_ad_info_by_visibility_[static_cast<int>(visibility)]
+                      .cpu_time);
+    ADS_HISTOGRAM("Cpu.FullPage.TotalUsage", PAGE_LOAD_HISTOGRAM, visibility,
+                  task_duration_total);
+    ADS_HISTOGRAM("Cpu.FullPage.PeakWindowedPercent", UMA_HISTOGRAM_PERCENTAGE,
+                  visibility,
+                  aggregate_frame_data_->peak_windowed_cpu_percent());
+    if (aggregate_frame_data_->peak_window_start_time()) {
+      ADS_HISTOGRAM("Cpu.FullPage.PeakWindowStartTime", PAGE_LOAD_HISTOGRAM,
+                    visibility,
+                    aggregate_frame_data_->peak_window_start_time().value() -
+                        GetDelegate().GetNavigationStart());
+    }
+  }
+  if (pre_interactive_duration_.InMilliseconds() > 0) {
+    ADS_HISTOGRAM("Cpu.FullPage.TotalUsage.PreInteractive", PAGE_LOAD_HISTOGRAM,
+                  visibility, task_duration_pre);
+  }
+  if (post_interactive_duration.InMilliseconds() > 0) {
+    ADS_HISTOGRAM("Cpu.FullPage.TotalUsage.PostInteractive",
+                  PAGE_LOAD_HISTOGRAM, visibility, task_duration_post);
+  }
+}
+
+void AdsPageLoadMetricsObserver::RecordAggregateHistogramsForAdTagging(
+    FrameData::FrameVisibility visibility) {
+  if (aggregate_frame_data_->bytes() == 0)
+    return;
+
+  const auto& aggregate_ad_info =
+      aggregate_ad_info_by_visibility_[static_cast<int>(visibility)];
+
+  ADS_HISTOGRAM("FrameCounts.AdFrames.Total", UMA_HISTOGRAM_COUNTS_1000,
+                visibility, aggregate_ad_info.num_frames);
+
+  // Don't post UMA for pages that don't have ads.
+  if (aggregate_ad_info.num_frames == 0)
+    return;
+
+  ADS_HISTOGRAM("Bytes.NonAdFrames.Aggregate.Total2", PAGE_BYTES_HISTOGRAM,
+                visibility,
+                aggregate_frame_data_->bytes() - aggregate_ad_info.bytes);
+
+  ADS_HISTOGRAM("Bytes.FullPage.Total2", PAGE_BYTES_HISTOGRAM, visibility,
+                aggregate_frame_data_->bytes());
+  ADS_HISTOGRAM("Bytes.FullPage.Network", PAGE_BYTES_HISTOGRAM, visibility,
+                aggregate_frame_data_->network_bytes());
+
+  if (aggregate_frame_data_->bytes()) {
+    ADS_HISTOGRAM(
+        "Bytes.FullPage.Total.PercentAds2", UMA_HISTOGRAM_PERCENTAGE,
+        visibility,
+        aggregate_ad_info.bytes * 100 / aggregate_frame_data_->bytes());
+  }
+  if (aggregate_frame_data_->network_bytes()) {
+    ADS_HISTOGRAM("Bytes.FullPage.Network.PercentAds", UMA_HISTOGRAM_PERCENTAGE,
+                  visibility,
+                  aggregate_ad_info.network_bytes * 100 /
+                      aggregate_frame_data_->network_bytes());
+  }
+
+  ADS_HISTOGRAM("Bytes.AdFrames.Aggregate.Total2", PAGE_BYTES_HISTOGRAM,
+                visibility, aggregate_ad_info.bytes);
+  ADS_HISTOGRAM("Bytes.AdFrames.Aggregate.Network", PAGE_BYTES_HISTOGRAM,
+                visibility, aggregate_ad_info.network_bytes);
+
+  if (aggregate_ad_info.bytes) {
+    ADS_HISTOGRAM(
+        "Bytes.AdFrames.Aggregate.PercentNetwork2", UMA_HISTOGRAM_PERCENTAGE,
+        visibility,
+        aggregate_ad_info.network_bytes * 100 / aggregate_ad_info.bytes);
+  }
+
+  // Only record same origin and main frame totals for the AnyVisibility suffix
+  // as these numbers do not change for different visibility types.
+  if (visibility != FrameData::FrameVisibility::kAnyVisibility)
+    return;
+  ADS_HISTOGRAM("Bytes.FullPage.SameOrigin2", PAGE_BYTES_HISTOGRAM, visibility,
+                aggregate_frame_data_->same_origin_bytes());
+  if (aggregate_frame_data_->bytes()) {
+    ADS_HISTOGRAM("Bytes.FullPage.PercentSameOrigin2", UMA_HISTOGRAM_PERCENTAGE,
+                  visibility,
+                  aggregate_frame_data_->same_origin_bytes() * 100 /
+                      aggregate_frame_data_->bytes());
+  }
+  ADS_HISTOGRAM("Bytes.MainFrame.Network", PAGE_BYTES_HISTOGRAM, visibility,
+                main_frame_data_->network_bytes());
+  ADS_HISTOGRAM("Bytes.MainFrame.Total2", PAGE_BYTES_HISTOGRAM, visibility,
+                main_frame_data_->bytes());
+  ADS_HISTOGRAM("Bytes.MainFrame.Ads.Network", PAGE_BYTES_HISTOGRAM, visibility,
+                main_frame_data_->ad_network_bytes());
+  ADS_HISTOGRAM("Bytes.MainFrame.Ads.Total2", PAGE_BYTES_HISTOGRAM, visibility,
+                main_frame_data_->ad_bytes());
+}
+
+void AdsPageLoadMetricsObserver::RecordAggregateHistogramsForHeavyAds() {
+  if (!heavy_ad_on_page_)
+    return;
+
+  UMA_HISTOGRAM_BOOLEAN(
+      "PageLoad.Clients.Ads.HeavyAds.UserDidReload",
+      GetDelegate().GetPageEndReason() == page_load_metrics::END_RELOAD);
+}
+
+void AdsPageLoadMetricsObserver::RecordPerFrameHistograms(
+    const FrameData& ad_frame_data) {
+  RecordPerFrameHistogramsForCpuUsage(ad_frame_data);
+  RecordPerFrameHistogramsForAdTagging(ad_frame_data);
+  RecordPerFrameHistogramsForHeavyAds(ad_frame_data);
 }
 
 void AdsPageLoadMetricsObserver::RecordPerFrameHistogramsForCpuUsage(
@@ -642,7 +835,7 @@ void AdsPageLoadMetricsObserver::RecordPerFrameHistogramsForCpuUsage(
       [static_cast<int>(FrameData::FrameVisibility::kAnyVisibility)]
           .cpu_time += ad_frame_data.GetTotalCpuUsage();
 
-  if (ad_frame_data.bytes() == 0)
+  if (!ad_frame_data.ShouldRecordFrameForMetrics())
     return;
 
   // Record per frame histograms to the appropriate visibility prefixes.
@@ -720,64 +913,9 @@ void AdsPageLoadMetricsObserver::RecordPerFrameHistogramsForCpuUsage(
   }
 }
 
-void AdsPageLoadMetricsObserver::RecordAggregateHistogramsForCpuUsage() {
-  // If the page has an ad with the relevant visibility and non-zero bytes.
-  if (aggregate_ad_info_by_visibility_
-          [static_cast<int>(FrameData::FrameVisibility::kAnyVisibility)]
-              .num_frames == 0)
-    return;
-
-  // Get the relevant durations, set pre-interactive if the page never hit it.
-  base::TimeDelta total_duration =
-      GetDelegate().GetVisibilityTracker().GetForegroundDuration();
-  if (time_interactive_.is_null())
-    pre_interactive_duration_ = total_duration;
-
-  base::TimeDelta post_interactive_duration =
-      total_duration - pre_interactive_duration_;
-  DCHECK(total_duration >= base::TimeDelta());
-  DCHECK(pre_interactive_duration_ >= base::TimeDelta());
-  DCHECK(post_interactive_duration >= base::TimeDelta());
-
-  // Only record cpu usage aggregate data for the AnyVisibility suffix as these
-  // numbers do not change for different visibility types.
-  FrameData::FrameVisibility visibility =
-      FrameData::FrameVisibility::kAnyVisibility;
-
-  // Record the aggregate data, which is never considered activated.
-  base::TimeDelta task_duration_pre =
-      aggregate_frame_data_->GetInteractiveCpuUsage(
-          FrameData::InteractiveStatus::kPreInteractive);
-  base::TimeDelta task_duration_post =
-      aggregate_frame_data_->GetInteractiveCpuUsage(
-          FrameData::InteractiveStatus::kPostInteractive);
-  base::TimeDelta task_duration_total = task_duration_pre + task_duration_post;
-  if (total_duration.InMilliseconds() > 0) {
-    ADS_HISTOGRAM("Cpu.FullPage.TotalUsage", PAGE_LOAD_HISTOGRAM, visibility,
-                  task_duration_total);
-    ADS_HISTOGRAM("Cpu.FullPage.PeakWindowedPercent", UMA_HISTOGRAM_PERCENTAGE,
-                  visibility,
-                  aggregate_frame_data_->peak_windowed_cpu_percent());
-    if (aggregate_frame_data_->peak_window_start_time()) {
-      ADS_HISTOGRAM("Cpu.FullPage.PeakWindowStartTime", PAGE_LOAD_HISTOGRAM,
-                    visibility,
-                    aggregate_frame_data_->peak_window_start_time().value() -
-                        GetDelegate().GetNavigationStart());
-    }
-  }
-  if (pre_interactive_duration_.InMilliseconds() > 0) {
-    ADS_HISTOGRAM("Cpu.FullPage.TotalUsage.PreInteractive", PAGE_LOAD_HISTOGRAM,
-                  visibility, task_duration_pre);
-  }
-  if (post_interactive_duration.InMilliseconds() > 0) {
-    ADS_HISTOGRAM("Cpu.FullPage.TotalUsage.PostInteractive",
-                  PAGE_LOAD_HISTOGRAM, visibility, task_duration_post);
-  }
-}
-
 void AdsPageLoadMetricsObserver::RecordPerFrameHistogramsForAdTagging(
     const FrameData& ad_frame_data) {
-  if (ad_frame_data.bytes() == 0)
+  if (!ad_frame_data.ShouldRecordFrameForMetrics())
     return;
 
   // Record per frame histograms to the appropriate visibility prefixes.
@@ -801,101 +939,57 @@ void AdsPageLoadMetricsObserver::RecordPerFrameHistogramsForAdTagging(
                   std::min(ad_frame_data.frame_size().width(),
                            ad_frame_data.frame_size().height()));
 
-    ADS_HISTOGRAM("Bytes.AdFrames.PerFrame.Total", PAGE_BYTES_HISTOGRAM,
+    ADS_HISTOGRAM("Bytes.AdFrames.PerFrame.Total2", PAGE_BYTES_HISTOGRAM,
                   visibility, ad_frame_data.bytes());
     ADS_HISTOGRAM("Bytes.AdFrames.PerFrame.Network", PAGE_BYTES_HISTOGRAM,
                   visibility, ad_frame_data.network_bytes());
-    ADS_HISTOGRAM("Bytes.AdFrames.PerFrame.SameOrigin", PAGE_BYTES_HISTOGRAM,
+    ADS_HISTOGRAM("Bytes.AdFrames.PerFrame.SameOrigin2", PAGE_BYTES_HISTOGRAM,
                   visibility, ad_frame_data.same_origin_bytes());
-    ADS_HISTOGRAM("Bytes.AdFrames.PerFrame.PercentNetwork",
-                  UMA_HISTOGRAM_PERCENTAGE, visibility,
-                  ad_frame_data.network_bytes() * 100 / ad_frame_data.bytes());
-    ADS_HISTOGRAM(
-        "Bytes.AdFrames.PerFrame.PercentSameOrigin", UMA_HISTOGRAM_PERCENTAGE,
-        visibility,
-        ad_frame_data.same_origin_bytes() * 100 / ad_frame_data.bytes());
+    if (ad_frame_data.bytes() > 0) {
+      ADS_HISTOGRAM(
+          "Bytes.AdFrames.PerFrame.PercentNetwork2", UMA_HISTOGRAM_PERCENTAGE,
+          visibility,
+          ad_frame_data.network_bytes() * 100 / ad_frame_data.bytes());
+      ADS_HISTOGRAM(
+          "Bytes.AdFrames.PerFrame.PercentSameOrigin2",
+          UMA_HISTOGRAM_PERCENTAGE, visibility,
+          ad_frame_data.same_origin_bytes() * 100 / ad_frame_data.bytes());
+    }
     ADS_HISTOGRAM("FrameCounts.AdFrames.PerFrame.OriginStatus",
                   UMA_HISTOGRAM_ENUMERATION, visibility,
                   ad_frame_data.origin_status());
     ADS_HISTOGRAM("FrameCounts.AdFrames.PerFrame.UserActivation",
                   UMA_HISTOGRAM_ENUMERATION, visibility,
                   ad_frame_data.user_activation_status());
-    ADS_HISTOGRAM("HeavyAds.ComputedType2", UMA_HISTOGRAM_ENUMERATION,
-                  visibility, ad_frame_data.heavy_ad_status());
   }
 }
 
-void AdsPageLoadMetricsObserver::RecordAggregateHistogramsForAdTagging(
-    FrameData::FrameVisibility visibility) {
-  if (aggregate_frame_data_->bytes() == 0)
+void AdsPageLoadMetricsObserver::RecordPerFrameHistogramsForHeavyAds(
+    const FrameData& ad_frame_data) {
+  if (!ad_frame_data.ShouldRecordFrameForMetrics())
     return;
 
-  const auto& aggregate_ad_info =
-      aggregate_ad_info_by_visibility_[static_cast<int>(visibility)];
+  // Record per frame histograms to the appropriate visibility prefixes.
+  for (const auto visibility : {FrameData::FrameVisibility::kAnyVisibility,
+                                ad_frame_data.visibility()}) {
+    ADS_HISTOGRAM("HeavyAds.ComputedType2", UMA_HISTOGRAM_ENUMERATION,
+                  visibility, ad_frame_data.heavy_ad_status());
+    ADS_HISTOGRAM("HeavyAds.ComputedTypeWithThresholdNoise",
+                  UMA_HISTOGRAM_ENUMERATION, visibility,
+                  ad_frame_data.heavy_ad_status_with_noise());
+  }
 
-  // TODO(ericrobinson): Consider renaming this to match
-  //   'FrameCounts.AdFrames.PerFrame.OriginStatus'.
-  ADS_HISTOGRAM("FrameCounts.AnyParentFrame.AdFrames",
-                UMA_HISTOGRAM_COUNTS_1000, visibility,
-                aggregate_ad_info.num_frames);
-
-  // Don't post UMA for pages that don't have ads.
-  if (aggregate_ad_info.num_frames == 0)
+  // Only record the following histograms if the frame was a heavy ad.
+  if (ad_frame_data.heavy_ad_status_with_noise() ==
+      FrameData::HeavyAdStatus::kNone)
     return;
 
-  ADS_HISTOGRAM("Bytes.NonAdFrames.Aggregate.Total", PAGE_BYTES_HISTOGRAM,
-                visibility,
-                aggregate_frame_data_->bytes() - aggregate_ad_info.bytes);
+  heavy_ad_on_page_ = true;
 
-  ADS_HISTOGRAM("Bytes.FullPage.Total", PAGE_BYTES_HISTOGRAM, visibility,
-                aggregate_frame_data_->bytes());
-  ADS_HISTOGRAM("Bytes.FullPage.Network", PAGE_BYTES_HISTOGRAM, visibility,
-                aggregate_frame_data_->network_bytes());
-
-  if (aggregate_frame_data_->bytes()) {
-    ADS_HISTOGRAM(
-        "Bytes.FullPage.Total.PercentAds", UMA_HISTOGRAM_PERCENTAGE, visibility,
-        aggregate_ad_info.bytes * 100 / aggregate_frame_data_->bytes());
-  }
-  if (aggregate_frame_data_->network_bytes()) {
-    ADS_HISTOGRAM("Bytes.FullPage.Network.PercentAds", UMA_HISTOGRAM_PERCENTAGE,
-                  visibility,
-                  aggregate_ad_info.network_bytes * 100 /
-                      aggregate_frame_data_->network_bytes());
-  }
-
-  ADS_HISTOGRAM("Bytes.AdFrames.Aggregate.Total", PAGE_BYTES_HISTOGRAM,
-                visibility, aggregate_ad_info.bytes);
-  ADS_HISTOGRAM("Bytes.AdFrames.Aggregate.Network", PAGE_BYTES_HISTOGRAM,
-                visibility, aggregate_ad_info.network_bytes);
-
-  if (aggregate_ad_info.bytes) {
-    ADS_HISTOGRAM(
-        "Bytes.AdFrames.Aggregate.PercentNetwork", UMA_HISTOGRAM_PERCENTAGE,
-        visibility,
-        aggregate_ad_info.network_bytes * 100 / aggregate_ad_info.bytes);
-  }
-
-  // Only record same origin and main frame totals for the AnyVisibility suffix
-  // as these numbers do not change for different visibility types.
-  if (visibility != FrameData::FrameVisibility::kAnyVisibility)
-    return;
-  ADS_HISTOGRAM("Bytes.FullPage.SameOrigin", PAGE_BYTES_HISTOGRAM, visibility,
-                aggregate_frame_data_->same_origin_bytes());
-  if (aggregate_frame_data_->bytes()) {
-    ADS_HISTOGRAM("Bytes.FullPage.PercentSameOrigin", UMA_HISTOGRAM_PERCENTAGE,
-                  visibility,
-                  aggregate_frame_data_->same_origin_bytes() * 100 /
-                      aggregate_frame_data_->bytes());
-  }
-  ADS_HISTOGRAM("Bytes.MainFrame.Network", PAGE_BYTES_HISTOGRAM, visibility,
-                main_frame_data_->network_bytes());
-  ADS_HISTOGRAM("Bytes.MainFrame.Total", PAGE_BYTES_HISTOGRAM, visibility,
-                main_frame_data_->bytes());
-  ADS_HISTOGRAM("Bytes.MainFrame.Ads.Network", PAGE_BYTES_HISTOGRAM, visibility,
-                main_frame_data_->ad_network_bytes());
-  ADS_HISTOGRAM("Bytes.MainFrame.Ads.Total", PAGE_BYTES_HISTOGRAM, visibility,
-                main_frame_data_->ad_bytes());
+  // Record whether the frame was removed prior to the page being unloaded.
+  UMA_HISTOGRAM_BOOLEAN(
+      "PageLoad.Clients.Ads.HeavyAds.FrameRemovedPriorToPageEnd",
+      GetDelegate().GetPageEndReason() == page_load_metrics::END_NONE);
 }
 
 void AdsPageLoadMetricsObserver::ProcessOngoingNavigationResource(
@@ -923,19 +1017,116 @@ FrameData* AdsPageLoadMetricsObserver::FindFrameData(FrameTreeNodeId id) {
   return &*id_and_data->second;
 }
 
-bool AdsPageLoadMetricsObserver::IsBlocklisted() {
-  if (!heavy_ad_blocklist_enabled_)
-    return false;
+void AdsPageLoadMetricsObserver::MaybeTriggerHeavyAdIntervention(
+    content::RenderFrameHost* render_frame_host,
+    FrameData* frame_data) {
+  DCHECK(render_frame_host);
+  if (!frame_data->MaybeTriggerHeavyAdIntervention())
+    return;
 
-  if (heavy_ads_blocklist_blocklisted_)
-    return true;
+  // Don't trigger the heavy ad intervention on reloads.
+  UMA_HISTOGRAM_BOOLEAN(kIgnoredByReloadHistogramName, page_load_is_reload_);
+  if (page_load_is_reload_)
+    return;
+
+  // Check to see if we are allowed to activate on this host.
+  if (IsBlocklisted())
+    return;
+
+  // We should always unload the root of the ad subtree. Find the
+  // RenderFrameHost of the root ad frame associated with |frame_data|.
+  // |render_frame_host| may be the frame host for a subframe of the ad which we
+  // received a resource update for. Traversing the tree here guarantees
+  // that the frame we unload is an ancestor of |render_frame_host|. We cannot
+  // check if render frame hosts are ads so we rely on matching the
+  // root_frame_tree_node_id of |frame_data|. It is possible that this frame no
+  // longer exists. We do not care if the frame has moved to a new process
+  // because once the frame has been tagged as an ad, it is always considered an
+  // ad by our heuristics.
+  while (render_frame_host && render_frame_host->GetFrameTreeNodeId() !=
+                                  frame_data->root_frame_tree_node_id()) {
+    render_frame_host = render_frame_host->GetParent();
+  }
+  if (!render_frame_host)
+    return;
+
+  // Ensure that this RenderFrameHost is a subframe.
+  DCHECK(render_frame_host->GetParent());
+
+  // We already have a heavy ad at this point so we can query the field trial
+  // params safely.
+  if (!heavy_ad_reporting_enabled_) {
+    heavy_ad_reporting_enabled_ = base::GetFieldTrialParamByFeatureAsBool(
+        features::kHeavyAdIntervention, kHeavyAdReportingEnabledParamName,
+        true);
+  }
+
+  if (!heavy_ad_send_reports_only_) {
+    heavy_ad_send_reports_only_ = base::GetFieldTrialParamByFeatureAsBool(
+        features::kHeavyAdIntervention, kHeavyAdReportingOnlyParamName, false);
+  }
+
+  if (*heavy_ad_reporting_enabled_) {
+    const char kReportId[] = "HeavyAdIntervention";
+    std::string report_message =
+        GetHeavyAdReportMessage(*frame_data, *heavy_ad_send_reports_only_);
+
+    // Report to all child frames that will be unloaded. Once all reports are
+    // queued, the frame will be unloaded. Because the IPC messages are ordered
+    // wrt to each frames unload, we do not need to wait before loading the
+    // error page. Reports will be added to ReportingObserver queues
+    // synchronously when the IPC message is handled, which guarantees they will
+    // be available in the the unload handler.
+    for (content::RenderFrameHost* reporting_frame :
+         render_frame_host->GetFramesInSubtree()) {
+      reporting_frame->SendInterventionReport(kReportId, report_message);
+    }
+  }
+
+  // Report intervention to the blocklist.
+  if (auto* blocklist = GetHeavyAdBlocklist()) {
+    blocklist->AddEntry(
+        GetDelegate().GetWebContents()->GetLastCommittedURL().host(),
+        true /* opt_out */,
+        static_cast<int>(HeavyAdBlocklistType::kHeavyAdOnlyType));
+  }
+
+  // Record this UMA regardless of if we actually unload or not, as sending
+  // reports is subject to the same noise and throttling as the intervention.
+  RecordFeatureUsage(render_frame_host,
+                     blink::mojom::WebFeature::kHeavyAdIntervention);
+
+  ADS_HISTOGRAM("HeavyAds.InterventionType2", UMA_HISTOGRAM_ENUMERATION,
+                FrameData::FrameVisibility::kAnyVisibility,
+                frame_data->heavy_ad_status_with_noise());
+  ADS_HISTOGRAM("HeavyAds.InterventionType2", UMA_HISTOGRAM_ENUMERATION,
+                frame_data->visibility(),
+                frame_data->heavy_ad_status_with_noise());
+
+  if (*heavy_ad_send_reports_only_)
+    return;
+
+  GetDelegate().GetWebContents()->GetController().LoadPostCommitErrorPage(
+      render_frame_host, render_frame_host->GetLastCommittedURL(),
+      heavy_ads::PrepareHeavyAdPage(), net::ERR_BLOCKED_BY_CLIENT);
+}
+
+bool AdsPageLoadMetricsObserver::IsBlocklisted() {
+  if (!heavy_ad_privacy_mitigations_enabled_)
+    return false;
 
   auto* blocklist = GetHeavyAdBlocklist();
 
-  // Treat instances where the blocklist is unavailable as blocklisted. This
-  // includes incognito profiles, which do not create a blocklist service.
+  // Treat instances where the blocklist is unavailable as blocklisted.
   if (!blocklist) {
     heavy_ads_blocklist_blocklisted_ = true;
+    return true;
+  }
+
+  if (heavy_ads_blocklist_blocklisted_) {
+    // Only record that we have disallowed an intervention when we have a
+    // blocklist.
+    RecordHeavyAdInterventionDisallowedByBlocklist(true /* disallowed */);
     return true;
   }
 
@@ -947,7 +1138,9 @@ bool AdsPageLoadMetricsObserver::IsBlocklisted() {
   heavy_ads_blocklist_blocklisted_ =
       (blocklist_reason != blacklist::BlacklistReason::kAllowed);
 
-  // TODO(https://crbug.com/959849): Add UMA for blocklist reasons.
+  // Record whether this intervention hit the blocklist.
+  RecordHeavyAdInterventionDisallowedByBlocklist(
+      heavy_ads_blocklist_blocklisted_);
 
   return heavy_ads_blocklist_blocklisted_;
 }

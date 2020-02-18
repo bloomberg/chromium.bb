@@ -25,91 +25,348 @@ namespace perfetto {
 namespace trace_processor {
 namespace {
 
-std::shared_ptr<RowMap> BitVectorRowMap() {
-  BitVector bv;
-  bv.Append(true);
-  bv.Append(false);
-  bv.Append(true);
-  bv.Append(true);
-  bv.Append(false);
-  bv.Append(true);
-  return std::shared_ptr<RowMap>(new RowMap(std::move(bv)));
+TEST(RowMapUnittest, SmokeRange) {
+  RowMap rm(30, 47);
+
+  ASSERT_EQ(rm.size(), 17u);
+
+  ASSERT_EQ(rm.Get(0), 30u);
+  ASSERT_EQ(rm.Get(1), 31u);
+  ASSERT_EQ(rm.Get(16), 46u);
+
+  ASSERT_EQ(rm.IndexOf(29), base::nullopt);
+  ASSERT_EQ(rm.IndexOf(30), 0u);
+  ASSERT_EQ(rm.IndexOf(37), 7u);
+  ASSERT_EQ(rm.IndexOf(46), 16u);
+  ASSERT_EQ(rm.IndexOf(47), base::nullopt);
 }
 
-std::shared_ptr<RowMap> RowVectorRowMap() {
-  return std::shared_ptr<RowMap>(
-      new RowMap(std::vector<uint32_t>{0u, 2u, 3u, 5u}));
+TEST(RowMapUnittest, SmokeBitVector) {
+  RowMap rm(BitVector{true, false, false, false, true, true});
+
+  ASSERT_EQ(rm.size(), 3u);
+
+  ASSERT_EQ(rm.Get(0u), 0u);
+  ASSERT_EQ(rm.Get(1u), 4u);
+  ASSERT_EQ(rm.Get(2u), 5u);
+
+  ASSERT_EQ(rm.IndexOf(0u), 0u);
+  ASSERT_EQ(rm.IndexOf(4u), 1u);
+  ASSERT_EQ(rm.IndexOf(5u), 2u);
+
+  ASSERT_EQ(rm.IndexOf(1u), base::nullopt);
+  ASSERT_EQ(rm.IndexOf(100u), base::nullopt);
 }
 
-// We use a shared_ptr here because value-parameterized gtests need to be
-// copyable but RowMap has a deleted copy constructor. Wrapping with a
-// shared_ptr works around this restriction.
-class RowMapUnittest
-    : public ::testing::TestWithParam<std::shared_ptr<RowMap>> {};
+TEST(RowMapUnittest, SmokeIndexVector) {
+  RowMap rm(std::vector<uint32_t>{32u, 56u, 24u, 0u, 100u, 1u});
 
-TEST_P(RowMapUnittest, Add) {
-  RowMap row_map = GetParam()->Copy();
-  ASSERT_EQ(row_map.size(), 4u);
+  ASSERT_EQ(rm.size(), 6u);
 
-  row_map.Add(10u);
+  ASSERT_EQ(rm.Get(0u), 32u);
+  ASSERT_EQ(rm.Get(1u), 56u);
+  ASSERT_EQ(rm.Get(2u), 24u);
+  ASSERT_EQ(rm.Get(3u), 0u);
+  ASSERT_EQ(rm.Get(4u), 100u);
+  ASSERT_EQ(rm.Get(5u), 1u);
 
-  ASSERT_EQ(row_map.size(), 5u);
-  ASSERT_EQ(row_map.Get(0u), 0u);
-  ASSERT_EQ(row_map.Get(1u), 2u);
-  ASSERT_EQ(row_map.Get(2u), 3u);
-  ASSERT_EQ(row_map.Get(3u), 5u);
-  ASSERT_EQ(row_map.Get(4u), 10u);
-  ASSERT_EQ(row_map.IndexOf(0u), 0u);
-  ASSERT_EQ(row_map.IndexOf(2u), 1u);
-  ASSERT_EQ(row_map.IndexOf(3u), 2u);
-  ASSERT_EQ(row_map.IndexOf(5u), 3u);
-  ASSERT_EQ(row_map.IndexOf(10u), 4u);
+  ASSERT_EQ(rm.IndexOf(32u), 0u);
+  ASSERT_EQ(rm.IndexOf(56u), 1u);
+  ASSERT_EQ(rm.IndexOf(24u), 2u);
+  ASSERT_EQ(rm.IndexOf(0u), 3u);
+  ASSERT_EQ(rm.IndexOf(100u), 4u);
+  ASSERT_EQ(rm.IndexOf(1u), 5u);
 }
 
-TEST_P(RowMapUnittest, SelectRowsBitVector) {
-  RowMap row_map = GetParam()->Copy();
+TEST(RowMapUnittest, InsertToRangeAfter) {
+  RowMap rm(3u, 7u);
+  rm.Insert(10u);
 
-  BitVector picker_bv;
-  picker_bv.Append(true);
-  picker_bv.Append(false);
-  picker_bv.Append(false);
-  picker_bv.Append(true);
-  RowMap picker(std::move(picker_bv));
-
-  row_map.SelectRows(picker);
-
-  ASSERT_EQ(row_map.size(), 2u);
-  ASSERT_EQ(row_map.Get(0u), 0u);
-  ASSERT_EQ(row_map.Get(1u), 5u);
+  ASSERT_EQ(rm.size(), 5u);
+  ASSERT_EQ(rm.Get(4u), 10u);
+  ASSERT_EQ(rm.IndexOf(10u), 4u);
 }
 
-TEST_P(RowMapUnittest, SelectRowsRowVector) {
-  RowMap row_map = GetParam()->Copy();
-  RowMap picker(std::vector<uint32_t>{1u, 0u, 3u, 0u, 0u});
+TEST(RowMapUnittest, InsertToBitVectorAfter) {
+  RowMap rm(BitVector{true, false, true, true, false, true});
+  rm.Insert(10u);
 
-  row_map.SelectRows(picker);
-
-  ASSERT_EQ(row_map.size(), 5u);
-  ASSERT_EQ(row_map.Get(0u), 2u);
-  ASSERT_EQ(row_map.Get(1u), 0u);
-  ASSERT_EQ(row_map.Get(2u), 5u);
-  ASSERT_EQ(row_map.Get(3u), 0u);
-  ASSERT_EQ(row_map.Get(4u), 0u);
+  ASSERT_EQ(rm.size(), 5u);
+  ASSERT_EQ(rm.Get(4u), 10u);
+  ASSERT_EQ(rm.IndexOf(10u), 4u);
 }
 
-TEST_P(RowMapUnittest, RemoveIf) {
-  RowMap row_map = GetParam()->Copy();
+TEST(RowMapUnittest, InsertToIndexVectorAfter) {
+  RowMap rm(std::vector<uint32_t>{0u, 2u, 3u, 5u});
+  rm.Insert(10u);
 
-  row_map.RemoveIf([](uint32_t row) { return row == 2u || row == 5u; });
-
-  ASSERT_EQ(row_map.size(), 2u);
-  ASSERT_EQ(row_map.Get(0), 0u);
-  ASSERT_EQ(row_map.Get(1), 3u);
+  ASSERT_EQ(rm.size(), 5u);
+  ASSERT_EQ(rm.Get(4u), 10u);
+  ASSERT_EQ(rm.IndexOf(10u), 4u);
 }
 
-INSTANTIATE_TEST_SUITE_P(RowMapUnittestInstatition,
-                         RowMapUnittest,
-                         testing::Values(BitVectorRowMap(), RowVectorRowMap()));
+TEST(RowMapUnittest, ContainsRange) {
+  RowMap rm(93, 157);
+
+  ASSERT_TRUE(rm.Contains(93));
+  ASSERT_TRUE(rm.Contains(105));
+  ASSERT_TRUE(rm.Contains(156));
+
+  ASSERT_FALSE(rm.Contains(0));
+  ASSERT_FALSE(rm.Contains(92));
+  ASSERT_FALSE(rm.Contains(157));
+}
+
+TEST(RowMapUnittest, ContainsBitVector) {
+  RowMap rm(BitVector{true, false, true, true, false, true});
+
+  ASSERT_TRUE(rm.Contains(0));
+  ASSERT_TRUE(rm.Contains(2));
+  ASSERT_TRUE(rm.Contains(3));
+
+  ASSERT_FALSE(rm.Contains(1));
+  ASSERT_FALSE(rm.Contains(4));
+  ASSERT_FALSE(rm.Contains(6));
+}
+
+TEST(RowMapUnittest, ContainsIndexVector) {
+  RowMap rm(std::vector<uint32_t>{0u, 2u, 3u, 5u});
+
+  ASSERT_TRUE(rm.Contains(0));
+  ASSERT_TRUE(rm.Contains(2));
+  ASSERT_TRUE(rm.Contains(3));
+
+  ASSERT_FALSE(rm.Contains(1));
+  ASSERT_FALSE(rm.Contains(4));
+  ASSERT_FALSE(rm.Contains(6));
+}
+
+TEST(RowMapUnittest, SelectRangeWithRange) {
+  RowMap rm(93, 157);
+  RowMap picker(4, 7);
+  auto res = rm.SelectRows(picker);
+
+  ASSERT_EQ(res.size(), 3u);
+  ASSERT_EQ(res.Get(0u), 97u);
+  ASSERT_EQ(res.Get(1u), 98u);
+  ASSERT_EQ(res.Get(2u), 99u);
+}
+
+TEST(RowMapUnittest, SelectBitVectorWithRange) {
+  RowMap rm(BitVector{true, false, false, true, false, true, false});
+  RowMap picker(1u, 3u);
+  auto res = rm.SelectRows(picker);
+
+  ASSERT_EQ(res.size(), 2u);
+  ASSERT_EQ(res.Get(0u), 3u);
+  ASSERT_EQ(res.Get(1u), 5u);
+}
+
+TEST(RowMapUnittest, SelectIndexVectorWithRange) {
+  RowMap rm(std::vector<uint32_t>{33, 2u, 45u, 7u, 8u, 9u});
+  RowMap picker(2, 5);
+  auto res = rm.SelectRows(picker);
+
+  ASSERT_EQ(res.size(), 3u);
+  ASSERT_EQ(res.Get(0u), 45u);
+  ASSERT_EQ(res.Get(1u), 7u);
+  ASSERT_EQ(res.Get(2u), 8u);
+}
+
+TEST(RowMapUnittest, SelectRangeWithBitVector) {
+  RowMap rm(27, 31);
+  RowMap picker(BitVector{true, false, false, true});
+  auto res = rm.SelectRows(picker);
+
+  ASSERT_EQ(res.size(), 2u);
+  ASSERT_EQ(res.Get(0u), 27u);
+  ASSERT_EQ(res.Get(1u), 30u);
+}
+
+TEST(RowMapUnittest, SelectBitVectorWithBitVector) {
+  RowMap rm(BitVector{true, false, true, true, false, true});
+  RowMap picker(BitVector{true, false, false, true});
+  auto res = rm.SelectRows(picker);
+
+  ASSERT_EQ(res.size(), 2u);
+  ASSERT_EQ(res.Get(0u), 0u);
+  ASSERT_EQ(res.Get(1u), 5u);
+}
+
+TEST(RowMapUnittest, SelectIndexVectorWithBitVector) {
+  RowMap rm(std::vector<uint32_t>{0u, 2u, 3u, 5u});
+  RowMap picker(BitVector{true, false, false, true});
+  auto res = rm.SelectRows(picker);
+
+  ASSERT_EQ(res.size(), 2u);
+  ASSERT_EQ(res.Get(0u), 0u);
+  ASSERT_EQ(res.Get(1u), 5u);
+}
+
+TEST(RowMapUnittest, SelectRangeWithIndexVector) {
+  RowMap rm(27, 31);
+  RowMap picker(std::vector<uint32_t>{3u, 2u, 0u, 1u, 1u, 3u});
+  auto res = rm.SelectRows(picker);
+
+  ASSERT_EQ(res.size(), 6u);
+  ASSERT_EQ(res.Get(0u), 30u);
+  ASSERT_EQ(res.Get(1u), 29u);
+  ASSERT_EQ(res.Get(2u), 27u);
+  ASSERT_EQ(res.Get(3u), 28u);
+  ASSERT_EQ(res.Get(4u), 28u);
+  ASSERT_EQ(res.Get(5u), 30u);
+}
+
+TEST(RowMapUnittest, SelectBitVectorWithIndexVector) {
+  RowMap rm(BitVector{true, false, true, true, false, true});
+  RowMap picker(std::vector<uint32_t>{3u, 2u, 0u, 1u, 1u, 3u});
+  auto res = rm.SelectRows(picker);
+
+  ASSERT_EQ(res.size(), 6u);
+  ASSERT_EQ(res.Get(0u), 5u);
+  ASSERT_EQ(res.Get(1u), 3u);
+  ASSERT_EQ(res.Get(2u), 0u);
+  ASSERT_EQ(res.Get(3u), 2u);
+  ASSERT_EQ(res.Get(4u), 2u);
+  ASSERT_EQ(res.Get(5u), 5u);
+}
+
+TEST(RowMapUnittest, SelectIndexVectorWithIndexVector) {
+  RowMap rm(std::vector<uint32_t>{33u, 2u, 45u, 7u, 8u, 9u});
+  RowMap picker(std::vector<uint32_t>{3u, 2u, 0u, 1u, 1u, 3u});
+  auto res = rm.SelectRows(picker);
+
+  ASSERT_EQ(res.size(), 6u);
+  ASSERT_EQ(res.Get(0u), 7u);
+  ASSERT_EQ(res.Get(1u), 45u);
+  ASSERT_EQ(res.Get(2u), 33u);
+  ASSERT_EQ(res.Get(3u), 2u);
+  ASSERT_EQ(res.Get(4u), 2u);
+  ASSERT_EQ(res.Get(5u), 7u);
+}
+
+TEST(RowMapUnittest, IntersectNone) {
+  RowMap rm(BitVector{true, false, true, true, false, true});
+  rm.Intersect(RowMap());
+
+  ASSERT_EQ(rm.size(), 0u);
+}
+
+TEST(RowMapUnittest, IntersectSinglePresent) {
+  RowMap rm(BitVector{true, false, true, true, false, true});
+  rm.Intersect(RowMap::SingleRow(2u));
+
+  ASSERT_EQ(rm.size(), 1u);
+  ASSERT_EQ(rm.Get(0u), 2u);
+}
+
+TEST(RowMapUnittest, IntersectSingleAbsent) {
+  RowMap rm(BitVector{true, false, true, true, false, true});
+  rm.Intersect(RowMap::SingleRow(1u));
+
+  ASSERT_EQ(rm.size(), 0u);
+}
+
+TEST(RowMapUnittest, IntersectMany) {
+  RowMap rm(std::vector<uint32_t>{3u, 2u, 0u, 1u, 1u, 3u});
+  rm.Intersect(RowMap(BitVector{false, false, true, true}));
+
+  ASSERT_EQ(rm.size(), 3u);
+  ASSERT_EQ(rm.Get(0u), 3u);
+  ASSERT_EQ(rm.Get(1u), 2u);
+  ASSERT_EQ(rm.Get(2u), 3u);
+}
+
+TEST(RowMapUnittest, FilterIntoRangeWithRange) {
+  RowMap rm(93, 157);
+  RowMap filter(4, 7);
+  rm.FilterInto(&filter, [](uint32_t row) { return row == 97u || row == 98u; });
+
+  ASSERT_EQ(filter.size(), 2u);
+  ASSERT_EQ(filter.Get(0u), 4u);
+  ASSERT_EQ(filter.Get(1u), 5u);
+}
+
+TEST(RowMapUnittest, FilterIntoBitVectorWithRange) {
+  RowMap rm(
+      BitVector{true, false, false, true, false, true, false, true, true});
+  RowMap filter(1u, 5u);
+  rm.FilterInto(&filter, [](uint32_t row) { return row == 3u || row == 7u; });
+
+  ASSERT_EQ(filter.size(), 2u);
+  ASSERT_EQ(filter.Get(0u), 1u);
+  ASSERT_EQ(filter.Get(1u), 3u);
+}
+
+TEST(RowMapUnittest, FilterIntoIndexVectorWithRange) {
+  RowMap rm(std::vector<uint32_t>{33, 2u, 45u, 7u, 8u, 9u});
+  RowMap filter(2, 5);
+  rm.FilterInto(&filter, [](uint32_t row) { return row == 45u || row == 8u; });
+
+  ASSERT_EQ(filter.size(), 2u);
+  ASSERT_EQ(filter.Get(0u), 2u);
+  ASSERT_EQ(filter.Get(1u), 4u);
+}
+
+TEST(RowMapUnittest, FilterIntoRangeWithBitVector) {
+  RowMap rm(27, 31);
+  RowMap filter(BitVector{true, false, true, true});
+  rm.FilterInto(&filter, [](uint32_t row) { return row == 29u || row == 30u; });
+
+  ASSERT_EQ(filter.size(), 2u);
+  ASSERT_EQ(filter.Get(0u), 2u);
+  ASSERT_EQ(filter.Get(1u), 3u);
+}
+
+TEST(RowMapUnittest, FilterIntoBitVectorWithBitVector) {
+  RowMap rm(BitVector{true, false, true, true, false, true});
+  RowMap filter(BitVector{true, true, false, true});
+  rm.FilterInto(&filter, [](uint32_t row) { return row == 2u || row == 5u; });
+
+  ASSERT_EQ(filter.size(), 2u);
+  ASSERT_EQ(filter.Get(0u), 1u);
+  ASSERT_EQ(filter.Get(1u), 3u);
+}
+
+TEST(RowMapUnittest, FilterIntoIndexVectorWithBitVector) {
+  RowMap rm(std::vector<uint32_t>{0u, 2u, 3u, 5u});
+  RowMap filter(BitVector{true, true, false, true});
+  rm.FilterInto(&filter, [](uint32_t row) { return row == 2u || row == 5u; });
+
+  ASSERT_EQ(filter.size(), 2u);
+  ASSERT_EQ(filter.Get(0u), 1u);
+  ASSERT_EQ(filter.Get(1u), 3u);
+}
+
+TEST(RowMapUnittest, FilterIntoRangeWithIndexVector) {
+  RowMap rm(27, 41);
+  RowMap filter(std::vector<uint32_t>{3u, 5u, 9u, 10u, 12u});
+  rm.FilterInto(&filter, [](uint32_t row) { return row == 32u || row == 39u; });
+
+  ASSERT_EQ(filter.size(), 2u);
+  ASSERT_EQ(filter.Get(0u), 5u);
+  ASSERT_EQ(filter.Get(1u), 12u);
+}
+
+TEST(RowMapUnittest, FilterIntoBitVectorWithIndexVector) {
+  RowMap rm(BitVector{false, true, false, true, true, false, true});
+  RowMap filter(std::vector<uint32_t>{1u, 2u, 3u});
+  rm.FilterInto(&filter, [](uint32_t row) { return row == 3u || row == 4u; });
+
+  ASSERT_EQ(filter.size(), 2u);
+  ASSERT_EQ(filter.Get(0u), 1u);
+  ASSERT_EQ(filter.Get(1u), 2u);
+}
+
+TEST(RowMapUnittest, FilterIntoIndexVectorWithIndexVector) {
+  RowMap rm(std::vector<uint32_t>{33u, 2u, 45u, 7u, 8u, 9u});
+  RowMap filter(std::vector<uint32_t>{1u, 2u, 3u});
+  rm.FilterInto(&filter, [](uint32_t row) { return row == 2u || row == 7u; });
+
+  ASSERT_EQ(filter.size(), 2u);
+  ASSERT_EQ(filter.Get(0u), 1u);
+  ASSERT_EQ(filter.Get(1u), 3u);
+}
 
 }  // namespace
 }  // namespace trace_processor

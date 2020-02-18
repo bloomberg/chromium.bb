@@ -30,12 +30,13 @@ const char kStartLxdContainerMethod[] = "StartLxdContainer";
 const char kSetTimezoneMethod[] = "SetTimezone";
 const char kGetLxdContainerUsernameMethod[] = "GetLxdContainerUsername";
 const char kSetUpLxdContainerUserMethod[] = "SetUpLxdContainerUser";
-const char kAppSearchMethod[] = "AppSearch";
 const char kExportLxdContainerMethod[] = "ExportLxdContainer";
 const char kImportLxdContainerMethod[] = "ImportLxdContainer";
 const char kCancelExportLxdContainerMethod[] = "CancelExportLxdContainer";
 const char kCancelImportLxdContainerMethod[] = "CancelImportLxdContainer";
 const char kApplyAnsiblePlaybookMethod[] = "ApplyAnsiblePlaybook";
+const char kUpgradeContainerMethod[] = "UpgradeContainer";
+const char kCancelUpgradeContainerMethod[] = "CancelUpgradeContainer";
 
 // Methods to be called from chunneld.
 const char kConnectChunnelMethod[] = "ConnectChunnel";
@@ -59,6 +60,7 @@ const char kImportLxdContainerProgressSignal[] = "ImportLxdContainerProgress";
 const char kPendingAppListUpdatesSignal[] = "PendingAppListUpdates";
 const char kApplyAnsiblePlaybookProgressSignal[] =
     "ApplyAnsiblePlaybookProgress";
+const char kUpgradeContainerProgressSignal[] = "UpgradeContainerProgress";
 
 }  // namespace cicerone
 }  // namespace vm_tools

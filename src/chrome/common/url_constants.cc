@@ -156,17 +156,6 @@ const char kGoogleAccountChooserURL[] =
 
 const char kGooglePasswordManagerURL[] = "https://passwords.google.com";
 
-const char kPasswordCheckupURL[] =
-#if defined(OS_ANDROID)
-    "https://passwords.google.com/checkup/"
-    "start?utm_source=chrome&utm_medium=android&utm_campaign=leak_dialog&crch="
-    "true";
-#else
-    "https://passwords.google.com/checkup/"
-    "start?utm_source=chrome&utm_medium=desktop&utm_campaign=leak_dialog&crch="
-    "true";
-#endif
-
 const char kLearnMoreReportingURL[] =
     "https://support.google.com/chrome/?p=ui_usagestat";
 
@@ -233,12 +222,18 @@ const char kRemoveNonCWSExtensionURL[] =
 const char kResetProfileSettingsLearnMoreURL[] =
     "https://support.google.com/chrome/?p=ui_reset_settings";
 
+const char kSafetyTipHelpCenterURL[] =
+    "https://support.google.com/chrome/?p=safety_tip";
+
 const char kSettingsSearchHelpURL[] =
 #if defined(OS_CHROMEOS)
     "https://support.google.com/chromebook/?p=settings_search_help";
 #else
     "https://support.google.com/chrome/?p=settings_search_help";
 #endif
+
+const char kSymantecSupportUrl[] =
+    "https://support.google.com/chrome?p=symantec#-202";
 
 const char kSyncAndGoogleServicesLearnMoreURL[] =
     "https://support.google.com/chrome?p=syncgoogleservices";
@@ -283,6 +278,13 @@ const char kAccountManagerLearnMoreURL[] =
 
 const char kAndroidAppsLearnMoreURL[] =
     "https://support.google.com/chromebook/?p=playapps";
+
+const char kArcExternalStorageLearnMoreURL[] =
+    "https://support.google.com/chromebook?p=open_files";
+
+const char kArcPrivacyPolicyURLPath[] = "arc/privacy_policy";
+
+const char kArcTermsURLPath[] = "arc/terms";
 
 const char kChromeAccessibilityHelpURL[] =
     "https://support.google.com/chromebook/topic/6323347";
@@ -349,10 +351,6 @@ const char kNaturalScrollHelpURL[] =
     "https://support.google.com/chromebook/?p=simple_scrolling";
 
 const char kOemEulaURLPath[] = "oem";
-
-const char kArcTermsURLPath[] = "arc/terms";
-
-const char kArcPrivacyPolicyURLPath[] = "arc/privacy_policy";
 
 const char kOnlineEulaURLPath[] =
     "https://www.google.com/intl/%s/chrome/eula_text.html";

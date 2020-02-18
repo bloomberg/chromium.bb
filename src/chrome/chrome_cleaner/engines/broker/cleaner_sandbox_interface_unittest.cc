@@ -4,8 +4,6 @@
 
 #include "chrome/chrome_cleaner/engines/broker/cleaner_sandbox_interface.h"
 
-#include <aclapi.h>
-
 #include <limits>
 #include <memory>
 #include <utility>
@@ -20,6 +18,7 @@
 #include "base/path_service.h"
 #include "base/process/kill.h"
 #include "base/process/process.h"
+#include "base/process/launch.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string16.h"
 #include "base/test/task_environment.h"
@@ -44,7 +43,6 @@
 #include "chrome/chrome_cleaner/test/test_task_scheduler.h"
 #include "chrome/chrome_cleaner/test/test_util.h"
 #include "components/chrome_cleaner/public/constants/constants.h"
-#include "sandbox/win/src/nt_internals.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using chrome_cleaner::CreateEmptyFile;
@@ -60,73 +58,6 @@ namespace {
 constexpr wchar_t kDirectNonRegistryPath[] = L"\\DosDevice\\C:";
 constexpr wchar_t kTrickyNonRegistryPath[] =
     L"\\Registry\\Machine\\..\\..\\DosDevice\\C:";
-
-// Similar in intent to the ScopedProcessProtector, this does not take ownership
-// of a handle but twiddles the ACL on it on initialization and restores the
-// ACL on de-initialization. Useful for tests that require denying access to
-// something. |handle| should probably be opened with ALL_ACCESS or equivalent
-// and it would be a Bad Idea to CloseHandle or similar on the handle before
-// this goes out of scope.
-class ScopedHandleProtector {
- public:
-  explicit ScopedHandleProtector(HANDLE handle) : handle_(handle) { Protect(); }
-  ~ScopedHandleProtector() { Release(); }
-
- private:
-  void Protect() {
-    // Store its existing DACL for cleanup purposes. This API function is weird:
-    // the pointer placed into |original_dacl_| is actually a pointer into a
-    // the structure pointed to by |original_descriptor_|. To use this, one
-    // stores both, but frees ONLY the structure stuffed into
-    // |original_descriptor_|.
-    if (GetSecurityInfo(handle_, SE_KERNEL_OBJECT, DACL_SECURITY_INFORMATION,
-                        /*ppsidOwner=*/NULL, /*ppsidOwner=*/NULL,
-                        &original_dacl_, /*ppsidOwner=*/NULL,
-                        &original_descriptor_) != ERROR_SUCCESS) {
-      PLOG(ERROR) << "Failed to retreieve original DACL.";
-      return;
-    }
-
-    // Set a new empty DACL, effectively denying all things on the process
-    // object.
-    ACL dacl;
-    if (!InitializeAcl(&dacl, sizeof(dacl), ACL_REVISION)) {
-      PLOG(ERROR) << "Failed to initialize DACL";
-      return;
-    }
-    if (SetSecurityInfo(handle_, SE_KERNEL_OBJECT, DACL_SECURITY_INFORMATION,
-                        /*psidOwner=*/NULL, /*psidGroup=*/NULL, &dacl,
-                        /*pSacl=*/NULL) != ERROR_SUCCESS) {
-      PLOG(ERROR) << "Failed to set new DACL.";
-      return;
-    }
-
-    initialized_ = true;
-  }
-
-  void Release() {
-    if (initialized_) {
-      if (SetSecurityInfo(handle_, SE_KERNEL_OBJECT, DACL_SECURITY_INFORMATION,
-                          /*psidOwner=*/NULL, /*psidGroup=*/NULL,
-                          original_dacl_, /*pSacl=*/NULL) != ERROR_SUCCESS) {
-        PLOG(ERROR) << "Failed to restore original DACL.";
-      }
-    }
-
-    if (original_descriptor_) {
-      ::LocalFree(original_descriptor_);
-      original_dacl_ = nullptr;
-      original_descriptor_ = nullptr;
-    }
-
-    initialized_ = false;
-  }
-
-  bool initialized_ = false;
-  HANDLE handle_;
-  PACL original_dacl_ = nullptr;
-  PSECURITY_DESCRIPTOR original_descriptor_ = nullptr;
-};
 
 String16EmbeddedNulls FullyQualifiedKeyPathWithTrailingNull(
     const ScopedTempRegistryKey& temp_key,
@@ -397,6 +328,49 @@ TEST_F(CleanerSandboxInterfaceDeleteFileTest, AllowTrailingWhitespace) {
   EXPECT_FALSE(base::PathExists(file_path));
 }
 
+TEST_F(CleanerSandboxInterfaceDeleteFileTest, QuotedPath) {
+  base::ScopedTempDir temp;
+  ASSERT_TRUE(temp.CreateUniqueTempDir());
+  base::FilePath file_path = temp.GetPath().Append(L"temp_file.exe");
+
+  ASSERT_TRUE(chrome_cleaner::CreateFileInFolder(
+      file_path.DirName(), file_path.BaseName().value().c_str()));
+
+  const base::FilePath quoted_path(L"\"" + file_path.value() + L"\"");
+
+  // RemoveNow should reject the file name because it starts with an invalid
+  // character. This needs to match the behaviour of SandboxOpenFileReadOnly,
+  // which is tested in ScannerSandboxInterface_OpenReadOnlyFile.BasicFile,
+  // since the same path could be passed to both.
+  chrome_cleaner::VerifyRemoveNowFailure(quoted_path, file_remover_.get());
+  EXPECT_TRUE(base::PathExists(file_path));
+}
+
+TEST_F(CleanerSandboxInterfaceDeleteFileTest, QuotedFilename) {
+  base::ScopedTempDir temp;
+  ASSERT_TRUE(temp.CreateUniqueTempDir());
+  base::FilePath file_path = temp.GetPath().Append(L"temp_file.exe");
+
+  ASSERT_TRUE(chrome_cleaner::CreateFileInFolder(
+      file_path.DirName(), file_path.BaseName().value().c_str()));
+
+  const base::FilePath quoted_path =
+      temp.GetPath().Append(L"\"temp_file.exe\"");
+
+  // RemoveNow should return true because the file name is valid, but refers to
+  // a file that already doesn't exist. The important thing is that the quotes
+  // aren't interpreted, which would cause '"temp_file.exe"' and
+  // 'temp_file.exe' to refer to the same thing.
+  //
+  // This needs to match the behaviour of SandboxOpenFileReadOnly, which is
+  // tested in ScannerSandboxInterface_OpenReadOnlyFile.BasicFile, since the
+  // same path could be passed to both. It would also be ok if both RemoveNow
+  // and OpenFileReadOnly interpreted the quotes, as long as their behaviour
+  // matches.
+  chrome_cleaner::VerifyRemoveNowSuccess(quoted_path, file_remover_.get());
+  EXPECT_TRUE(base::PathExists(file_path));
+}
+
 TEST_F(CleanerSandboxInterfaceDeleteFileTest, DeleteAlternativeStream) {
   base::ScopedTempDir temp;
   ASSERT_TRUE(temp.CreateUniqueTempDir());
@@ -556,22 +530,6 @@ TEST_F(CleanerInterfaceRegistryTest, NtDeleteRegistryKey_KeyMissingTerminator) {
   String16EmbeddedNulls no_terminating_null_key(
       full_key_path_.CastAsWCharArray(), full_key_path_.size() - 1);
   EXPECT_FALSE(SandboxNtDeleteRegistryKey(no_terminating_null_key));
-}
-
-// TODO(veranika): This test is failing on win10 bots. Fix and re-enable it.
-TEST_F(CleanerInterfaceRegistryTest,
-       DISABLED_NtDeleteRegistryKey_AccessDenied) {
-  {
-    // Protect the key, expect deletion to fail.
-    ScopedHandleProtector protector(subkey_handle_);
-    EXPECT_FALSE(SandboxNtDeleteRegistryKey(full_key_path_));
-  }
-
-  // Key should now be unprotected and deletion should succeed.
-  EXPECT_TRUE(SandboxNtDeleteRegistryKey(full_key_path_));
-
-  // Shouldn't be able to do that twice.
-  EXPECT_FALSE(SandboxNtDeleteRegistryKey(full_key_path_));
 }
 
 TEST_F(CleanerInterfaceRegistryTest, NtDeleteRegistryKey_NonRegistryPath) {
@@ -775,22 +733,6 @@ TEST_F(CleanerInterfaceRegistryTest, NtChangeRegistryValue_NullName) {
   EXPECT_EQ(valid_changed_value_, actual_value);
 }
 
-// TODO(veranika): This test is failing on win10 bots. Fix and re-enable it.
-TEST_F(CleanerInterfaceRegistryTest,
-       DISABLED_NtChangeRegistryValue_AccessDenied) {
-  {
-    // Protect the key, expect modification to fail.
-    ScopedHandleProtector protector(subkey_handle_);
-    EXPECT_FALSE(SandboxNtChangeRegistryValue(
-        full_key_path_, value_, valid_changed_value_,
-        default_value_should_be_normalized_));
-  }
-
-  EXPECT_TRUE(
-      SandboxNtChangeRegistryValue(full_key_path_, value_, valid_changed_value_,
-                                   default_value_should_be_normalized_));
-}
-
 TEST_F(CleanerInterfaceRegistryTest, NtChangeRegistryValue_NonRegistryPath) {
   EXPECT_FALSE(SandboxNtChangeRegistryValue(
       StringWithTrailingNull(kDirectNonRegistryPath), value_name_,
@@ -829,6 +771,35 @@ TEST_F(CleanerInterfaceRegistryTest, NtChangeRegistryValue_AllowNormalization) {
                                            normalize_all_values));
 }
 
+// On Windows, sometimes the copied files don't have correct ACLs.
+// So we reset ACL before running the test.
+// See crbug.com/956016.
+void ResetACLs() {
+  base::FilePath exe_path;
+  ASSERT_TRUE(base::PathService::Get(base::BasePathKey::DIR_EXE, &exe_path));
+  base::FilePath abs_path = base::MakeAbsoluteFilePath(exe_path);
+#ifdef NDEBUG
+  base::FilePath ucrt_path = abs_path.Append(L"ucrtbase.dll");
+#else
+  base::FilePath ucrt_path = abs_path.Append(L"ucrtbased.dll");
+#endif
+  base::CommandLine cmd({L"icacls"});
+  cmd.AppendArgPath(ucrt_path);
+  cmd.AppendArg("/reset");
+  cmd.AppendArg("/t");
+  base::Process process = base::LaunchProcess(cmd, base::LaunchOptionsForTest());
+  int exit_code = 0;
+  ASSERT_TRUE(process.WaitForExitWithTimeout(TestTimeouts::action_timeout(), &exit_code));
+  ASSERT_EQ(exit_code, 0);
+}
+
+class CleanerSandboxInterfaceTest : public ::testing::Test {
+ public:
+  static void SetUpTestCase() {
+    ResetACLs();
+  }
+};
+
 TEST(CleanerSandboxInterface, DeleteService_NotExisting) {
   EXPECT_TRUE(SandboxDeleteService(
       chrome_cleaner::RandomUnusedServiceNameForTesting().c_str()));
@@ -846,7 +817,7 @@ TEST(CleanerSandboxInterface, DeleteService_Success) {
   EXPECT_FALSE(chrome_cleaner::DoesServiceExist(service_handle.service_name()));
 }
 
-TEST(CleanerSandboxInterface, DeleteService_Running) {
+TEST_F(CleanerSandboxInterfaceTest, DeleteService_Running) {
   ASSERT_TRUE(chrome_cleaner::EnsureNoTestServicesRunning());
 
   chrome_cleaner::TestScopedServiceHandle service_handle;
@@ -859,7 +830,7 @@ TEST(CleanerSandboxInterface, DeleteService_Running) {
   EXPECT_FALSE(chrome_cleaner::DoesServiceExist(service_handle.service_name()));
 }
 
-TEST(CleanerSandboxInterface, DeleteService_HandleHeld) {
+TEST_F(CleanerSandboxInterfaceTest, DeleteService_HandleHeld) {
   ASSERT_TRUE(chrome_cleaner::EnsureNoTestServicesRunning());
 
   chrome_cleaner::TestScopedServiceHandle service_handle;

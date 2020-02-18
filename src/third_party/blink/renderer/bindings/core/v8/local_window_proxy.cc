@@ -30,7 +30,7 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/local_window_proxy.h"
 
-#include "third_party/blink/renderer/bindings/core/v8/initialize_v8_extras_binding.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/renderer/bindings/core/v8/isolated_world_csp.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/to_v8_for_core.h"
@@ -79,8 +79,29 @@ void LocalWindowProxy::Trace(blink::Visitor* visitor) {
   WindowProxy::Trace(visitor);
 }
 
-void LocalWindowProxy::DisposeContext(Lifecycle next_status,
-                                      FrameReuseStatus frame_reuse_status) {
+bool LocalWindowProxy::IsSetDetachedWindowReasonEnabled(
+    v8::Context::DetachedWindowReason reason) {
+  switch (reason) {
+    case v8::Context::DetachedWindowReason::kWindowNotDetached:
+      // This shouldn't happen, but if it does, it's always safe to clear the
+      // reason.
+      return true;
+    case v8::Context::DetachedWindowReason::kDetachedWindowByNavigation:
+      return base::FeatureList::IsEnabled(
+          features::kSetDetachedWindowReasonByNavigation);
+    case v8::Context::DetachedWindowReason::kDetachedWindowByClosing:
+      return base::FeatureList::IsEnabled(
+          features::kSetDetachedWindowReasonByClosing);
+    case v8::Context::DetachedWindowReason::kDetachedWindowByOtherReason:
+      return base::FeatureList::IsEnabled(
+          features::kSetDetachedWindowReasonByOtherReason);
+  }
+}
+
+void LocalWindowProxy::DisposeContext(
+    Lifecycle next_status,
+    FrameReuseStatus frame_reuse_status,
+    v8::Context::DetachedWindowReason reason) {
   DCHECK(next_status == Lifecycle::kV8MemoryIsForciblyPurged ||
          next_status == Lifecycle::kGlobalObjectIsDetached ||
          next_status == Lifecycle::kFrameIsDetached ||
@@ -127,6 +148,10 @@ void LocalWindowProxy::DisposeContext(Lifecycle next_status,
 #endif
   }
 
+  if (IsSetDetachedWindowReasonEnabled(reason)) {
+    context->SetDetachedWindowReason(reason);
+  }
+
   script_state_->DisposePerContextData();
   // It's likely that disposing the context has created a lot of
   // garbage. Notify V8 about this so it'll have a chance of cleaning
@@ -150,12 +175,6 @@ void LocalWindowProxy::Initialize() {
   CHECK(!GetFrame()->IsProvisional());
 
   ScriptForbiddenScope::AllowUserAgentScript allow_script;
-  // Inspector may request V8 interruption to process DevTools protocol
-  // commands, processing can force JavaScript execution. Since JavaScript
-  // evaluation is forbiden during creating of snapshot, we should ignore any
-  // inspector interruption to avoid JavaScript execution.
-  InspectorTaskRunner::IgnoreInterruptsScope inspector_ignore_interrupts(
-      GetFrame()->GetInspectorTaskRunner());
   v8::HandleScope handle_scope(GetIsolate());
 
   CreateContext();
@@ -180,11 +199,14 @@ void LocalWindowProxy::Initialize() {
       (world_->IsIsolatedWorld() &&
        IsolatedWorldCSP::Get().HasContentSecurityPolicy(world_->GetWorldId()));
   if (evaluate_csp_for_eval) {
+    // Using 'false' here means V8 will always call back blink for every 'eval'
+    // call being made. Blink executes CSP checks and returns whether or not
+    // V8 can proceed. The callback is
+    // V8Initializer::CodeGenerationCheckCallbackInMainThread().
+    context->AllowCodeGenerationFromStrings(false);
+
     ContentSecurityPolicy* csp =
         GetFrame()->GetDocument()->GetContentSecurityPolicyForWorld();
-    context->AllowCodeGenerationFromStrings(csp->AllowEval(
-        nullptr, SecurityViolationReportingPolicy::kSuppressReporting,
-        ContentSecurityPolicy::kWillNotThrowException, g_empty_string));
     context->SetErrorMessageForCodeGenerationFromStrings(
         V8String(GetIsolate(), csp->EvalDisabledErrorMessage()));
   }
@@ -209,9 +231,6 @@ void LocalWindowProxy::Initialize() {
   }
 
   InstallConditionalFeatures();
-
-  // This needs to go after everything else since it accesses the window object.
-  InitializeV8ExtrasBinding(script_state_);
 
   if (World().IsMainWorld()) {
     GetFrame()->Loader().DispatchDidClearWindowObjectInMainWorld();

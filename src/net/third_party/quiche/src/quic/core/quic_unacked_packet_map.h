@@ -34,12 +34,9 @@ class QUIC_EXPORT_PRIVATE QuicUnackedPacketMap {
   // Marks the packet as in flight if |set_in_flight| is true.
   // Packets marked as in flight are expected to be marked as missing when they
   // don't arrive, indicating the need for retransmission.
-  // |old_packet_number| is the packet number of the previous transmission,
-  // or 0 if there was none.
   // Any AckNotifierWrappers in |serialized_packet| are swapped from the
   // serialized packet into the QuicTransmissionInfo.
   void AddSentPacket(SerializedPacket* serialized_packet,
-                     QuicPacketNumber old_packet_number,
                      TransmissionType transmission_type,
                      QuicTime sent_time,
                      bool set_in_flight);
@@ -67,9 +64,6 @@ class QUIC_EXPORT_PRIVATE QuicUnackedPacketMap {
 
   // Marks |packet_number| as no longer in flight.
   void RemoveFromInFlight(QuicPacketNumber packet_number);
-
-  // No longer retransmit data for |stream_id|.
-  void CancelRetransmissionsForStream(QuicStreamId stream_id);
 
   // Returns true if |packet_number| has retransmittable frames. This will
   // return false if all frames of this packet are either non-retransmittable or
@@ -100,6 +94,7 @@ class QUIC_EXPORT_PRIVATE QuicUnackedPacketMap {
 
   // Returns the sum of bytes from all packets in flight.
   QuicByteCount bytes_in_flight() const { return bytes_in_flight_; }
+  QuicPacketCount packets_in_flight() const { return packets_in_flight_; }
 
   // Returns the smallest packet number of a serialized packet which has not
   // been acked by the peer.  If there are no unacked packets, returns 0.
@@ -131,7 +126,7 @@ class QUIC_EXPORT_PRIVATE QuicUnackedPacketMap {
       QuicPacketNumber packet_number);
 
   // Returns the time that the last unacked packet was sent.
-  QuicTime GetLastPacketSentTime() const;
+  QuicTime GetLastInFlightPacketSentTime() const;
 
   // Returns the time that the last unacked crypto packet was sent.
   QuicTime GetLastCryptoPacketSentTime() const;
@@ -140,16 +135,14 @@ class QUIC_EXPORT_PRIVATE QuicUnackedPacketMap {
   size_t GetNumUnackedPacketsDebugOnly() const;
 
   // Returns true if there are multiple packets in flight.
+  // TODO(fayang): Remove this method and use packets_in_flight_ instead.
   bool HasMultipleInFlightPackets() const;
 
   // Returns true if there are any pending crypto packets.
-  // TODO(fayang): Remove this method and call session_notifier_'s
-  // HasUnackedCryptoData() when session_decides_what_to_write_ is default true.
   bool HasPendingCryptoPackets() const;
 
   // Returns true if there is any unacked non-crypto stream data.
   bool HasUnackedStreamData() const {
-    DCHECK(session_decides_what_to_write());
     return session_notifier_->HasUnackedStreamData();
   }
 
@@ -210,16 +203,9 @@ class QUIC_EXPORT_PRIVATE QuicUnackedPacketMap {
   QuicPacketNumber GetLargestSentPacketOfPacketNumberSpace(
       EncryptionLevel encryption_level) const;
 
-  // Called to start/stop letting session decide what to write.
-  void SetSessionDecideWhatToWrite(bool session_decides_what_to_write);
-
   void SetSessionNotifier(SessionNotifierInterface* session_notifier);
 
   void EnableMultiplePacketNumberSpacesSupport();
-
-  bool session_decides_what_to_write() const {
-    return session_decides_what_to_write_;
-  }
 
   Perspective perspective() const { return perspective_; }
 
@@ -229,15 +215,6 @@ class QUIC_EXPORT_PRIVATE QuicUnackedPacketMap {
 
  private:
   friend class test::QuicUnackedPacketMapPeer;
-
-  // Called when a packet is retransmitted with a new packet number.
-  // |old_packet_number| will remain unacked, but will have no
-  // retransmittable data associated with it. Retransmittable frames will be
-  // transferred to |info| and all_transmissions will be populated.
-  void TransferRetransmissionInfo(QuicPacketNumber old_packet_number,
-                                  QuicPacketNumber new_packet_number,
-                                  TransmissionType transmission_type,
-                                  QuicTransmissionInfo* info);
 
   // Returns true if packet may be useful for an RTT measurement.
   bool IsPacketUsefulForMeasuringRtt(QuicPacketNumber packet_number,
@@ -285,8 +262,10 @@ class QUIC_EXPORT_PRIVATE QuicUnackedPacketMap {
   QuicPacketNumber least_unacked_;
 
   QuicByteCount bytes_in_flight_;
-  // Number of retransmittable crypto handshake packets.
-  size_t pending_crypto_packet_count_;
+  QuicPacketCount packets_in_flight_;
+
+  // Time that the last inflight packet was sent.
+  QuicTime last_inflight_packet_sent_time_;
 
   // Time that the last unacked crypto packet was sent.
   QuicTime last_crypto_packet_sent_time_;
@@ -298,11 +277,11 @@ class QUIC_EXPORT_PRIVATE QuicUnackedPacketMap {
   // Receives notifications of frames being retransmitted or acknowledged.
   SessionNotifierInterface* session_notifier_;
 
-  // If true, let session decides what to write.
-  bool session_decides_what_to_write_;
-
   // If true, supports multiple packet number spaces.
   bool supports_multiple_packet_number_spaces_;
+
+  // Latched value of the quic_simple_inflight_time flag.
+  bool simple_inflight_time_;
 };
 
 }  // namespace quic

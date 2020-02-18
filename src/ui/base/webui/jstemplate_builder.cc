@@ -38,9 +38,9 @@ void AppendJsonHtml(const base::DictionaryValue* json, std::string* output) {
 // Appends the source for load_time_data.js in a script tag.
 void AppendLoadTimeData(std::string* output) {
   // fetch and cache the pointer of the jstemplate resource source text.
-  base::StringPiece load_time_data_src(
-      ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
-          IDR_WEBUI_JS_LOAD_TIME_DATA));
+  std::string load_time_data_src =
+      ui::ResourceBundle::GetSharedInstance().LoadDataResourceString(
+          IDR_WEBUI_JS_LOAD_TIME_DATA);
 
   if (load_time_data_src.empty()) {
     NOTREACHED() << "Unable to get loadTimeData src";
@@ -48,16 +48,16 @@ void AppendLoadTimeData(std::string* output) {
   }
 
   output->append("<script>");
-  load_time_data_src.AppendToString(output);
+  output->append(load_time_data_src);
   output->append("</script>");
 }
 
 // Appends the source for JsTemplates in a script tag.
 void AppendJsTemplateSourceHtml(std::string* output) {
   // fetch and cache the pointer of the jstemplate resource source text.
-  base::StringPiece jstemplate_src(
-      ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
-          IDR_WEBUI_JSTEMPLATE_JS));
+  std::string jstemplate_src =
+      ui::ResourceBundle::GetSharedInstance().LoadDataResourceString(
+          IDR_WEBUI_JSTEMPLATE_JS);
 
   if (jstemplate_src.empty()) {
     NOTREACHED() << "Unable to get jstemplate src";
@@ -65,7 +65,7 @@ void AppendJsTemplateSourceHtml(std::string* output) {
   }
 
   output->append("<script>");
-  jstemplate_src.AppendToString(output);
+  output->append(jstemplate_src);
   output->append("</script>");
 }
 

@@ -16,7 +16,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/dbus/menu/menu_property_list.h"
-#include "components/dbus/menu/types.h"
+#include "components/dbus/properties/types.h"
 #include "dbus/bus.h"
 #include "dbus/exported_object.h"
 #include "dbus/message.h"
@@ -25,7 +25,7 @@ namespace ui {
 class MenuModel;
 }
 
-class DbusPropertiesInterface;
+class DbusProperties;
 
 // Implements the com.canonical.dbusmenu interface.
 class COMPONENT_EXPORT(DBUS) DbusMenu {
@@ -79,7 +79,7 @@ class COMPONENT_EXPORT(DBUS) DbusMenu {
   class ScopedMethodResponse {
    public:
     ScopedMethodResponse(dbus::MethodCall* method_call,
-                         dbus::ExportedObject::ResponseSender* response_sender);
+                         dbus::ExportedObject::ResponseSender response_sender);
 
     ~ScopedMethodResponse();
 
@@ -91,7 +91,7 @@ class COMPONENT_EXPORT(DBUS) DbusMenu {
 
    private:
     dbus::MethodCall* method_call_;
-    dbus::ExportedObject::ResponseSender* response_sender_;
+    dbus::ExportedObject::ResponseSender response_sender_;
 
     // |reader_| is always needed for all methods on this interface, so it's not
     // created lazily.
@@ -152,7 +152,7 @@ class COMPONENT_EXPORT(DBUS) DbusMenu {
 
   base::RepeatingCallback<void(bool)> barrier_;
 
-  std::unique_ptr<DbusPropertiesInterface> properties_;
+  std::unique_ptr<DbusProperties> properties_;
 
   uint32_t revision_ = 0;
   int32_t last_item_id_ = 0;

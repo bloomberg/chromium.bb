@@ -34,7 +34,8 @@ def RunSteps(api):
     assert (api.tryserver.gerrit_change_repo_url ==
             'https://chromium.googlesource.com/chromium/src')
     assert api.tryserver.gerrit_change_fetch_ref == 'refs/changes/27/91827/1'
-    expected_target_ref = api.properties.get('target_ref', 'refs/heads/master')
+    expected_target_ref = api.properties.get(
+        'expected_target_ref', 'refs/heads/master')
     assert api.tryserver.gerrit_change_target_ref == expected_target_ref
 
   if api.tryserver.is_gerrit_issue:
@@ -65,23 +66,6 @@ def GenTests(api):
   # The 'test_patch_root' property used below is just so that these
   # tests can avoid using the gclient module to calculate the
   # patch root. Normal users would use gclient.get_gerrit_patch_root().
-  yield (api.test('with_git_patch') +
-         api.properties(
-             path_config='buildbot',
-             patch_storage='git',
-             patch_project='v8',
-             patch_repo_url='http://patch.url/',
-             patch_ref='johndoe#123.diff',
-             test_patch_root='v8'))
-
-  yield (api.test('with_git_patch_luci') +
-         api.properties(
-             patch_storage='git',
-             patch_project='v8',
-             patch_repo_url='http://patch.url/',
-             patch_ref='johndoe#123.diff',
-             test_patch_root='v8'))
-
   yield (api.test('with_wrong_patch') +
          api.platform('win', 32) +
          api.properties(test_patch_root=''))
@@ -101,7 +85,7 @@ def GenTests(api):
             git_repo='https://chromium.googlesource.com/chromium/src',
             change_number=91827,
             patch_set=1) +
-         api.properties(target_ref='refs/heads/experiment') +
+         api.properties(expected_target_ref='refs/heads/experiment') +
          api.tryserver.gerrit_change_target_ref('refs/heads/experiment'))
 
   yield (api.test('with_wrong_patch_new') + api.platform('win', 32) +

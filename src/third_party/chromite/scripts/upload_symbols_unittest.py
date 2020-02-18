@@ -7,18 +7,18 @@
 
 from __future__ import print_function
 
-import BaseHTTPServer
 import errno
 import itertools
 import os
 import signal
 import socket
-import SocketServer
 import sys
 import time
-import urllib2
 
 import mock
+from six.moves import BaseHTTPServer
+from six.moves import socketserver
+from six.moves import urllib
 
 # We specifically set up a local server to connect to, so make sure we
 # delete any proxy settings that might screw that up.  We also need to
@@ -69,7 +69,7 @@ STACK CFI 1234
 
   def setUp(self):
     # Make certain we don't use the network.
-    self.urlopen_mock = self.PatchObject(urllib2, 'urlopen')
+    self.urlopen_mock = self.PatchObject(urllib.request, 'urlopen')
     self.request_mock = self.PatchObject(upload_symbols, 'ExecRequest',
                                          return_value={'uploadUrl':
                                                        'testurl',
@@ -101,7 +101,7 @@ STACK CFI 1234
     with open(fullname, 'w+b') as f:
       f.truncate(size)
       f.seek(0)
-      f.write(content)
+      f.write(content.encode('utf-8'))
 
     result = upload_symbols.SymbolFile(display_path=filename,
                                        file_name=fullname)
@@ -132,12 +132,12 @@ class SymbolServerRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     self.send_response(self.RESP_CODE, self.RESP_MSG)
     self.end_headers()
 
+  # pylint: disable=arguments-differ
   def log_message(self, *args, **kwargs):
     """Stub the logger as it writes to stderr"""
-    pass
 
 
-class SymbolServer(SocketServer.ThreadingTCPServer, BaseHTTPServer.HTTPServer):
+class SymbolServer(socketserver.ThreadingTCPServer, BaseHTTPServer.HTTPServer):
   """Simple HTTP server that forks each request"""
 
 
@@ -164,6 +164,8 @@ PUBLIC 1471 0 main"""
     if self.httpd_pid == 0:
       self.httpd.serve_forever(poll_interval=0.1)
       sys.exit(0)
+    # The child runs the server, so close the socket in the parent.
+    self.httpd.server_close()
 
   def setUp(self):
     self.httpd_pid = None
@@ -465,7 +467,7 @@ class PerformSymbolFilesUploadTest(SymbolsTestBase):
 
   def testPerformSymbolsFileUploadFailure(self):
     """All network requests fail."""
-    self.request_mock.side_effect = urllib2.URLError('network failure')
+    self.request_mock.side_effect = IOError('network failure')
     symbols = [self.sym_initial]
 
     result = upload_symbols.PerformSymbolsFileUpload(
@@ -477,7 +479,7 @@ class PerformSymbolFilesUploadTest(SymbolsTestBase):
 
   def testPerformSymbolsFileUploadTransisentFailure(self):
     """We fail once, then succeed."""
-    self.urlopen_mock.side_effect = (urllib2.URLError('network failure'), None)
+    self.urlopen_mock.side_effect = (IOError('network failure'), None)
     symbols = [self.sym_initial]
 
     result = upload_symbols.PerformSymbolsFileUpload(
@@ -531,7 +533,7 @@ class PerformSymbolFilesUploadTest(SymbolsTestBase):
     # Mock out UploadSymbolFile and fail for fail.sym files.
     def failSome(_url, symbol, _api_key):
       if symbol.file_name == fail_file:
-        raise urllib2.URLError('network failure')
+        raise IOError('network failure')
 
     upload_mock = self.PatchObject(upload_symbols, 'UploadSymbolFile',
                                    side_effect=failSome)
@@ -569,7 +571,7 @@ class UploadSymbolsTest(SymbolsTestBase):
     """Upload dir is empty."""
     result = upload_symbols.UploadSymbols([self.data], 'fake_url')
 
-    self.assertEquals(result, 0)
+    self.assertEqual(result, 0)
     self.assertEqual(self.urlopen_mock.call_count, 0)
 
   def testUploadSymbols(self):
@@ -583,9 +585,9 @@ class UploadSymbolsTest(SymbolsTestBase):
         failed_list=self.failure_file, strip_cfi=len(self.SLIM_CONTENT)+1,
         api_key='testkey')
 
-    self.assertEquals(result, 0)
+    self.assertEqual(result, 0)
     self.assertEqual(self.request_mock.call_count, 10)
-    self.assertEquals(osutils.ReadFile(self.failure_file), '')
+    self.assertEqual(osutils.ReadFile(self.failure_file), '')
 
   def testUploadSymbolsLimited(self):
     """Upload a few files."""
@@ -597,7 +599,7 @@ class UploadSymbolsTest(SymbolsTestBase):
         [self.data], 'fake_url', upload_limit=2,
         api_key='testkey')
 
-    self.assertEquals(result, 0)
+    self.assertEqual(result, 0)
     self.assertEqual(self.request_mock.call_count, 7)
     self.assertNotExists(self.failure_file)
 
@@ -608,7 +610,7 @@ class UploadSymbolsTest(SymbolsTestBase):
 
     def failSome(_url, symbol, _api_key):
       if symbol.file_name == fail.file_name:
-        raise urllib2.URLError('network failure')
+        raise IOError('network failure')
 
     # Mock out UploadSymbolFile so it's easy to see which file to fail for.
     upload_mock = self.PatchObject(upload_symbols, 'UploadSymbolFile',
@@ -620,9 +622,9 @@ class UploadSymbolsTest(SymbolsTestBase):
         [self.data], 'fake_url',
         failed_list=self.failure_file, api_key='testkey')
 
-    self.assertEquals(result, 1)
+    self.assertEqual(result, 1)
     self.assertEqual(upload_mock.call_count, 8)
-    self.assertEquals(osutils.ReadFile(self.failure_file), 'fail.sym\n')
+    self.assertEqual(osutils.ReadFile(self.failure_file), 'fail.sym\n')
 
 # TODO: We removed --network integration tests.
 

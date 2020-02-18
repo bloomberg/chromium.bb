@@ -13,19 +13,8 @@ cr.define('app_management.util', function() {
   function createEmptyState() {
     return {
       apps: {},
-      currentPage: {
-        pageType: PageType.MAIN,
-        selectedAppId: null,
-      },
       arcSupported: false,
-      search: {
-        term: null,
-        results: null,
-      },
-      notifications: {
-        allowedIds: new Set(),
-        blockedIds: new Set(),
-      },
+      selectedAppId: null,
     };
   }
 
@@ -42,18 +31,6 @@ cr.define('app_management.util', function() {
 
     for (const app of apps) {
       initialState.apps[app.id] = app;
-
-      const allowed = notificationsAllowed(app);
-
-      if (allowed === OptionalBool.kUnknown) {
-        continue;
-      }
-
-      if (allowed === OptionalBool.kTrue) {
-        initialState.notifications.allowedIds.add(app.id);
-      } else {
-        initialState.notifications.blockedIds.add(app.id);
-      }
     }
 
     return initialState;
@@ -116,53 +93,6 @@ cr.define('app_management.util', function() {
   }
 
   /**
-   * This function determines whether the given app should be treated by the
-   * notifications view as having notifications allowed or blocked, or not
-   * having a notifications permission at all.
-   *
-   * There are three possible cases:
-   *  - kUnknown is returned if the given app does not have a notifications
-   *    permission, due to how permissions work for its AppType.
-   *  - kTrue is returned if the notifications permission of the app is allowed.
-   *  - kFalse is returned if the notifications permission of the app is
-   *  - blocked, or set to ask in the case of a tristate permission.
-   *
-   * @param {App} app
-   * @return {OptionalBool}
-   */
-  function notificationsAllowed(app) {
-    const permissionType = notificationsPermissionType(app);
-
-    if (!permissionType) {
-      return OptionalBool.kUnknown;
-    }
-
-    if (getPermissionValueBool(app, permissionType)) {
-      return OptionalBool.kTrue;
-    } else {
-      return OptionalBool.kFalse;
-    }
-  }
-
-  /**
-   * Returns a string corresponding to the notifications value of the
-   * appropriate permission type enum, based on the type of the app.
-   * Returns null if the app type doesn't have a notifications permission.
-   * @param {App} app
-   * @return {?string}
-   */
-  function notificationsPermissionType(app) {
-    switch (app.type) {
-      case AppType.kWeb:
-        return 'CONTENT_SETTINGS_TYPE_NOTIFICATIONS';
-      // TODO(rekanorman): Add another case once notifications permissions
-      // are implemented for ARC.
-      default:
-        return null;
-    }
-  }
-
-  /**
    * @param {App} app
    * @param {string} permissionType
    * @return {boolean}
@@ -182,9 +112,11 @@ cr.define('app_management.util', function() {
   }
 
   /**
+   * Undefined is returned when the app does not request a permission.
+   *
    * @param {App} app
    * @param {string} permissionType
-   * @return {Permission}
+   * @return {Permission|undefined}
    */
   function getPermission(app, permissionType) {
     return app.permissions[permissionTypeHandle(app, permissionType)];
@@ -211,7 +143,7 @@ cr.define('app_management.util', function() {
    * @return {?App}
    */
   function getSelectedApp(state) {
-    const selectedAppId = state.currentPage.selectedAppId;
+    const selectedAppId = state.selectedAppId;
     return selectedAppId ? state.apps[selectedAppId] : null;
   }
 
@@ -257,6 +189,53 @@ cr.define('app_management.util', function() {
     }
   }
 
+  /**
+   * Navigates to the App Detail page.
+   *
+   * @param {string} appId
+   */
+  function openAppDetailPage(appId) {
+    const params = new URLSearchParams;
+    params.append('id', appId);
+    settings.navigateTo(settings.routes.APP_MANAGEMENT_DETAIL, params);
+  }
+
+  /**
+   * Navigates to the main App Management list page.
+   */
+  function openMainPage() {
+    settings.navigateTo(settings.routes.APP_MANAGEMENT);
+  }
+
+  /**
+   * @param {AppType} appType
+   * @return {string}
+   * @private
+   */
+  function getUserActionHistogramNameForAppType_(appType) {
+    switch (appType) {
+      case AppType.kArc:
+        return 'AppManagement.AppDetailViews.ArcApp';
+      case AppType.kExtension:
+        return 'AppManagement.AppDetailViews.ChromeApp';
+      case AppType.kWeb:
+        return 'AppManagement.AppDetailViews.WebApp';
+      default:
+        assertNotReached();
+    }
+  }
+
+  /**
+   * @param {AppType} appType
+   * @param {AppManagementUserAction} userAction
+   */
+  function recordAppManagementUserAction(appType, userAction) {
+    const histogram = getUserActionHistogramNameForAppType_(appType);
+    const enumLength = Object.keys(AppManagementUserAction).length;
+    chrome.metricsPrivate.recordEnumerationValue(
+        histogram, userAction, enumLength);
+  }
+
   return {
     addIfNeeded: addIfNeeded,
     alphabeticalSort: alphabeticalSort,
@@ -268,9 +247,10 @@ cr.define('app_management.util', function() {
     getPermission: getPermission,
     getPermissionValueBool: getPermissionValueBool,
     getSelectedApp: getSelectedApp,
-    notificationsAllowed: notificationsAllowed,
-    notificationsPermissionType: notificationsPermissionType,
+    openAppDetailPage: openAppDetailPage,
+    openMainPage: openMainPage,
     permissionTypeHandle: permissionTypeHandle,
+    recordAppManagementUserAction: recordAppManagementUserAction,
     removeIfNeeded: removeIfNeeded,
     toggleOptionalBool: toggleOptionalBool,
   };

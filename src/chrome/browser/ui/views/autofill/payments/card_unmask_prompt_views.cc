@@ -64,6 +64,19 @@ static views::GridLayout* ResetOverlayLayout(views::View* overlay) {
   return overlay_layout;
 }
 
+std::unique_ptr<views::Checkbox> CreateSaveCheckbox(bool start_state) {
+  auto storage_checkbox =
+      std::make_unique<views::Checkbox>(l10n_util::GetStringUTF16(
+          IDS_AUTOFILL_CARD_UNMASK_PROMPT_STORAGE_CHECKBOX));
+  storage_checkbox->SetBorder(views::CreateEmptyBorder(gfx::Insets()));
+  storage_checkbox->SetChecked(start_state);
+  storage_checkbox->SetEnabledTextColors(views::style::GetColor(
+      *storage_checkbox.get(), ChromeTextContext::CONTEXT_BODY_TEXT_SMALL,
+      views::style::STYLE_SECONDARY));
+
+  return storage_checkbox;
+}
+
 }  // namespace
 
 CardUnmaskPromptViews::CardUnmaskPromptViews(
@@ -71,6 +84,12 @@ CardUnmaskPromptViews::CardUnmaskPromptViews(
     content::WebContents* web_contents)
     : controller_(controller), web_contents_(web_contents) {
   chrome::RecordDialogCreation(chrome::DialogIdentifier::CARD_UNMASK);
+  if (controller_->CanStoreLocally()) {
+    storage_checkbox_ = DialogDelegate::SetFootnoteView(
+        CreateSaveCheckbox(controller_->GetStoreLocallyStartState()));
+  }
+
+  UpdateButtonLabels();
 }
 
 CardUnmaskPromptViews::~CardUnmaskPromptViews() {
@@ -92,6 +111,7 @@ void CardUnmaskPromptViews::DisableAndWaitForVerification() {
   controls_container_->SetVisible(false);
   overlay_->SetVisible(true);
   progress_throbber_->Start();
+  UpdateButtonLabels();
   DialogModelChanged();
   Layout();
 }
@@ -153,6 +173,7 @@ void CardUnmaskPromptViews::GotVerificationResult(
       layout->AddView(std::move(error_icon));
       layout->AddView(std::move(error_label));
     }
+    UpdateButtonLabels();
     DialogModelChanged();
   }
 
@@ -172,6 +193,7 @@ void CardUnmaskPromptViews::LinkClicked(views::Link* source, int event_flags) {
   input_row_->InvalidateLayout();
   cvc_input_->SetInvalid(false);
   cvc_input_->SetText(base::string16());
+  UpdateButtonLabels();
   DialogModelChanged();
   GetWidget()->UpdateWindowTitle();
   instructions_->SetText(controller_->GetInstructionsMessage());
@@ -218,23 +240,6 @@ void CardUnmaskPromptViews::ShowNewCardLink() {
 views::View* CardUnmaskPromptViews::GetContentsView() {
   InitIfNecessary();
   return this;
-}
-
-std::unique_ptr<views::View> CardUnmaskPromptViews::CreateFootnoteView() {
-  if (!controller_->CanStoreLocally())
-    return nullptr;
-
-  auto storage_checkbox =
-      std::make_unique<views::Checkbox>(l10n_util::GetStringUTF16(
-          IDS_AUTOFILL_CARD_UNMASK_PROMPT_STORAGE_CHECKBOX));
-  storage_checkbox->SetBorder(views::CreateEmptyBorder(gfx::Insets()));
-  storage_checkbox->SetChecked(controller_->GetStoreLocallyStartState());
-  storage_checkbox->SetEnabledTextColors(views::style::GetColor(
-      *storage_checkbox.get(), ChromeTextContext::CONTEXT_BODY_TEXT_SMALL,
-      views::style::STYLE_SECONDARY));
-  storage_checkbox_ = storage_checkbox.get();
-
-  return storage_checkbox;
 }
 
 gfx::Size CardUnmaskPromptViews::CalculatePreferredSize() const {
@@ -284,14 +289,6 @@ int CardUnmaskPromptViews::GetDialogButtons() const {
   return ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL;
 }
 
-base::string16 CardUnmaskPromptViews::GetDialogButtonLabel(
-    ui::DialogButton button) const {
-  if (button == ui::DIALOG_BUTTON_OK)
-    return controller_->GetOkButtonLabel();
-
-  return DialogDelegateView::GetDialogButtonLabel(button);
-}
-
 bool CardUnmaskPromptViews::IsDialogButtonEnabled(
     ui::DialogButton button) const {
   if (button == ui::DIALOG_BUTTON_CANCEL)
@@ -339,6 +336,7 @@ void CardUnmaskPromptViews::ContentsChanged(
   if (controller_->InputCvcIsValid(new_contents))
     cvc_input_->SetInvalid(false);
 
+  UpdateButtonLabels();
   DialogModelChanged();
 }
 
@@ -359,6 +357,7 @@ void CardUnmaskPromptViews::OnPerformAction(views::Combobox* combobox) {
         IDS_AUTOFILL_CARD_UNMASK_INVALID_EXPIRATION_DATE));
   }
 
+  UpdateButtonLabels();
   DialogModelChanged();
 }
 
@@ -489,6 +488,11 @@ bool CardUnmaskPromptViews::ExpirationDateIsValid() const {
 
 void CardUnmaskPromptViews::ClosePrompt() {
   GetWidget()->Close();
+}
+
+void CardUnmaskPromptViews::UpdateButtonLabels() {
+  DialogDelegate::set_button_label(ui::DIALOG_BUTTON_OK,
+                                   controller_->GetOkButtonLabel());
 }
 
 CardUnmaskPromptView* CreateCardUnmaskPromptView(

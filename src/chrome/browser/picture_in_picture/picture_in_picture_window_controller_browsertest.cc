@@ -34,6 +34,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/web_preferences.h"
 #include "content/public/test/browser_test_utils.h"
@@ -507,8 +508,14 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
 
 // Tests that when closing a Picture-in-Picture window, the video element is
 // reflected as no longer in Picture-in-Picture.
+// TODO(crbug.com/1001421): Flaky on ASan.
+#if defined(ADDRESS_SANITIZER)
+#define MAYBE_CloseWindowWhilePlaying DISABLED_CloseWindowWhilePlaying
+#else
+#define MAYBE_CloseWindowWhilePlaying CloseWindowWhilePlaying
+#endif
 IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
-                       CloseWindowWhilePlaying) {
+                       MAYBE_CloseWindowWhilePlaying) {
   GURL test_page_url = ui_test_utils::GetTestUrl(
       base::FilePath(base::FilePath::kCurrentDirectory),
       base::FilePath(kPictureInPictureWindowSizePage));
@@ -619,8 +626,9 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
 
 // Tests that when closing a Picture-in-Picture window from the Web API, the
 // video element is not paused.
+// Flaky on Linux and Windows: http://crbug.com/1001538
 IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
-                       CloseWindowFromWebAPIWhilePlaying) {
+                       DISABLED_CloseWindowFromWebAPIWhilePlaying) {
   GURL test_page_url = ui_test_utils::GetTestUrl(
       base::FilePath(base::FilePath::kCurrentDirectory),
       base::FilePath(kPictureInPictureWindowSizePage));
@@ -657,8 +665,16 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
 
 // Tests that when starting a new Picture-in-Picture session from the same
 // video, the video stays in Picture-in-Picture mode.
+// TODO(crbug.com/1001446): Flaky on ASan.
+#if defined(ADDRESS_SANITIZER)
+#define MAYBE_RequestPictureInPictureTwiceFromSameVideo \
+  DISABLED_RequestPictureInPictureTwiceFromSameVideo
+#else
+#define MAYBE_RequestPictureInPictureTwiceFromSameVideo \
+  RequestPictureInPictureTwiceFromSameVideo
+#endif
 IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
-                       RequestPictureInPictureTwiceFromSameVideo) {
+                       MAYBE_RequestPictureInPictureTwiceFromSameVideo) {
   GURL test_page_url = ui_test_utils::GetTestUrl(
       base::FilePath(base::FilePath::kCurrentDirectory),
       base::FilePath(kPictureInPictureWindowSizePage));
@@ -714,8 +730,16 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
 
 // Tests that when starting a new Picture-in-Picture session from the same tab,
 // the previous video is no longer in Picture-in-Picture mode.
+// TODO(crbug.com/1001421): Flaky on ASan.
+#if defined(ADDRESS_SANITIZER)
+#define MAYBE_OpenSecondPictureInPictureStopsFirst \
+  DISABLED_OpenSecondPictureInPictureStopsFirst
+#else
+#define MAYBE_OpenSecondPictureInPictureStopsFirst \
+  OpenSecondPictureInPictureStopsFirst
+#endif
 IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
-                       OpenSecondPictureInPictureStopsFirst) {
+                       MAYBE_OpenSecondPictureInPictureStopsFirst) {
   GURL test_page_url = ui_test_utils::GetTestUrl(
       base::FilePath(base::FilePath::kCurrentDirectory),
       base::FilePath(kPictureInPictureWindowSizePage));
@@ -1412,8 +1436,14 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
 
 // Tests that the play/pause icon state is properly updated when a
 // Picture-in-Picture is created after a reload.
+// TODO(crbug.com/1001421): Flaky on ASan.
+#if defined(ADDRESS_SANITIZER)
+#define MAYBE_PlayPauseStateAtCreation DISABLED_PlayPauseStateAtCreation
+#else
+#define MAYBE_PlayPauseStateAtCreation PlayPauseStateAtCreation
+#endif
 IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
-                       PlayPauseStateAtCreation) {
+                       MAYBE_PlayPauseStateAtCreation) {
   LoadTabAndEnterPictureInPicture(
       browser(), base::FilePath(kPictureInPictureWindowSizePage));
 
@@ -1525,8 +1555,14 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
 // changing source willproperly update the associated media player id. This is
 // checked by closing the window because the test it at a too high level to be
 // able to check the actual media player id being used.
+// TODO(crbug.com/1001421): Flaky on ASan.
+#if defined(ADDRESS_SANITIZER)
+#define MAYBE_PreloadNoneSrcChangeThenLoad DISABLED_PreloadNoneSrcChangeThenLoad
+#else
+#define MAYBE_PreloadNoneSrcChangeThenLoad PreloadNoneSrcChangeThenLoad
+#endif
 IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
-                       PreloadNoneSrcChangeThenLoad) {
+                       MAYBE_PreloadNoneSrcChangeThenLoad) {
   GURL test_page_url = ui_test_utils::GetTestUrl(
       base::FilePath(base::FilePath::kCurrentDirectory),
       base::FilePath(FILE_PATH_LITERAL(
@@ -2715,10 +2751,11 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_TRUE(in_picture_in_picture);
 }
 
+// TODO(http://crbug/1001249): flaky.
 // Check that Auto Picture-in-Picture applies only to the video element whose
 // autoPictureInPicture attribute was set most recently
 IN_PROC_BROWSER_TEST_F(WebAppPictureInPictureWindowControllerBrowserTest,
-                       AutoPictureInPictureAttributeApplies) {
+                       DISABLED_AutoPictureInPictureAttributeApplies) {
   InstallAndLaunchPWA();
   bool result = false;
   ASSERT_TRUE(content::ExecuteScriptAndExtractBool(web_contents(),
@@ -2960,8 +2997,14 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   ExpectLeavePictureInPicture(active_web_contents);
 }
 
+// TODO(crbug.com/1002489): Test is flaky on Linux.
+#if defined(OS_LINUX)
+#define MAYBE_UpdateMaxSize DISABLED_UpdateMaxSize
+#else
+#define MAYBE_UpdateMaxSize UpdateMaxSize
+#endif
 IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
-                       UpdateMaxSize) {
+                       MAYBE_UpdateMaxSize) {
   LoadTabAndEnterPictureInPicture(
       browser(), base::FilePath(kPictureInPictureWindowSizePage));
 

@@ -8,10 +8,9 @@
 
 #include "base/optional.h"
 #include "base/run_loop.h"
-#include "chrome/browser/performance_manager/graph/graph_test_harness.h"
-#include "chrome/browser/performance_manager/graph/mock_graphs.h"
-#include "chrome/browser/performance_manager/graph/process_node_impl.h"
-#include "chrome/browser/performance_manager/performance_manager_clock.h"
+#include "components/performance_manager/graph/process_node_impl.h"
+#include "components/performance_manager/test_support/graph_test_harness.h"
+#include "components/performance_manager/test_support/mock_graphs.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/global_memory_dump.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -107,8 +106,6 @@ class ProcessMetricsDecoratorTest : public GraphTestHarness {
   ~ProcessMetricsDecoratorTest() override = default;
 
   void SetUp() override {
-    PerformanceManagerClock::SetClockForTesting(task_env().GetMockTickClock());
-
     std::unique_ptr<TestProcessMetricsDecorator> decorator =
         std::make_unique<TestProcessMetricsDecorator>();
     decorator_raw_ = decorator.get();
@@ -118,8 +115,6 @@ class ProcessMetricsDecoratorTest : public GraphTestHarness {
     graph()->PassToGraph(std::move(decorator));
     EXPECT_TRUE(decorator_raw_->IsTimerRunningForTesting());
   }
-
-  void TearDown() override { PerformanceManagerClock::ResetClockForTesting(); }
 
   TestProcessMetricsDecorator* decorator() const { return decorator_raw_; }
 
@@ -139,11 +134,11 @@ TEST_F(ProcessMetricsDecoratorTest, RefreshTimer) {
   MockSystemNodeObserver sys_node_observer;
 
   graph()->AddSystemNodeObserver(&sys_node_observer);
-  auto memory_dump = base::make_optional(std::move(
+  auto memory_dump = base::make_optional(
       GenerateMemoryDump({{mock_graph()->process->process_id(),
                            kFakeResidentSetKb, kFakePrivateFootprintKb},
                           {mock_graph()->other_process->process_id(),
-                           kFakeResidentSetKb, kFakePrivateFootprintKb}})));
+                           kFakeResidentSetKb, kFakePrivateFootprintKb}}));
 
   EXPECT_CALL(*decorator(), GetMemoryDump())
       .WillOnce(testing::Return(testing::ByMove(std::move(memory_dump))));
@@ -170,9 +165,9 @@ TEST_F(ProcessMetricsDecoratorTest, RefreshTimer) {
 
 TEST_F(ProcessMetricsDecoratorTest, PartialRefresh) {
   // Only contains the data for one of the two processes.
-  auto partial_memory_dump = base::make_optional(std::move(
+  auto partial_memory_dump = base::make_optional(
       GenerateMemoryDump({{mock_graph()->process->process_id(),
-                           kFakeResidentSetKb, kFakePrivateFootprintKb}})));
+                           kFakeResidentSetKb, kFakePrivateFootprintKb}}));
 
   EXPECT_CALL(*decorator(), GetMemoryDump())
       .WillOnce(
@@ -186,9 +181,9 @@ TEST_F(ProcessMetricsDecoratorTest, PartialRefresh) {
 
   // Do another partial refresh but this time for the other process. The data
   // attached to |mock_graph()->process| shouldn't change.
-  auto partial_memory_dump2 = base::make_optional(std::move(GenerateMemoryDump(
+  auto partial_memory_dump2 = base::make_optional(GenerateMemoryDump(
       {{mock_graph()->other_process->process_id(), kFakeResidentSetKb * 2,
-        kFakePrivateFootprintKb * 2}})));
+        kFakePrivateFootprintKb * 2}}));
   EXPECT_CALL(*decorator(), GetMemoryDump())
       .WillOnce(
           testing::Return(testing::ByMove(std::move(partial_memory_dump2))));

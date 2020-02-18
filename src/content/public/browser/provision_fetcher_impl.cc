@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "content/public/browser/provision_fetcher_factory.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace content {
@@ -14,12 +14,12 @@ namespace content {
 // static
 void ProvisionFetcherImpl::Create(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-    media::mojom::ProvisionFetcherRequest request) {
+    mojo::PendingReceiver<media::mojom::ProvisionFetcher> receiver) {
   DCHECK(url_loader_factory);
-  mojo::MakeStrongBinding(
+  mojo::MakeSelfOwnedReceiver(
       std::make_unique<ProvisionFetcherImpl>(
           CreateProvisionFetcher(std::move(url_loader_factory))),
-      std::move(request));
+      std::move(receiver));
 }
 
 ProvisionFetcherImpl::ProvisionFetcherImpl(
@@ -36,8 +36,8 @@ void ProvisionFetcherImpl::Retrieve(const std::string& default_url,
   DVLOG(1) << __FUNCTION__ << ": " << default_url;
   provision_fetcher_->Retrieve(
       default_url, request_data,
-      base::Bind(&ProvisionFetcherImpl::OnResponse, weak_factory_.GetWeakPtr(),
-                 base::Passed(&callback)));
+      base::BindOnce(&ProvisionFetcherImpl::OnResponse,
+                     weak_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void ProvisionFetcherImpl::OnResponse(RetrieveCallback callback,

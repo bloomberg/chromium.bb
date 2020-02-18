@@ -57,8 +57,9 @@ PY_TEMPLATE = textwrap.dedent(
     def ExpandWrappedPath(arg):
       m = _WRAPPED_PATH_RE.match(arg)
       if m:
-        return os.path.join(
+        relpath = os.path.join(
             os.path.relpath(_SCRIPT_DIR), _PATH_TO_OUTPUT_DIR, m.group(1))
+        return os.path.normpath(relpath)
       return arg
 
 
@@ -101,7 +102,7 @@ def Wrap(args):
     template = SCRIPT_TEMPLATES[args.script_language]
     wrapper_script.write(template.format(
         script=py_contents))
-  os.chmod(args.wrapper_script, 0750)
+  os.chmod(args.wrapper_script, 0o750)
 
   return 0
 

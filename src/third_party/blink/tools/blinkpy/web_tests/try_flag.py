@@ -117,13 +117,13 @@ class TryFlag(object):
     def update(self):
         self._host.print_('Fetching results...')
         # TODO: Get jobs from the _tryflag branch. Current branch for now.
-        jobs = self._git_cl.latest_try_jobs(BUILDER_CONFIGS.keys())
-        buildbot = self._host.buildbot
+        jobs = self._git_cl.latest_try_jobs(builder_names=BUILDER_CONFIGS.keys())
+        results_fetcher = self._host.results_fetcher
         for build in sorted(jobs):
             self._host.print_('-- %s: %s/results.html' % (
                 BUILDER_CONFIGS[build.builder_name].version,
-                buildbot.results_url(build.builder_name, build.build_number)))
-            results = buildbot.fetch_results(build, True)
+                results_fetcher.results_url(build.builder_name, build.build_number)))
+            results = results_fetcher.fetch_results(build, True)
             results.for_each_test(
                 lambda result, b=build: self._process_result(b, result))
 

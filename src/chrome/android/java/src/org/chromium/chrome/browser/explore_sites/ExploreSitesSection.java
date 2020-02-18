@@ -13,7 +13,8 @@ import android.support.graphics.drawable.VectorDrawableCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 
-import org.chromium.base.VisibleForTesting;
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
@@ -175,7 +176,7 @@ public class ExploreSitesSection {
                         mProfile, category.getId(), iconSizePx, (Bitmap image) -> {
                             if (image != null) {
                                 category.setDrawable(ViewUtils.createRoundedBitmapDrawable(
-                                        image, iconSizePx / 2));
+                                        v.getContext().getResources(), image, iconSizePx / 2));
                                 v.renderIcon(category);
                             }
                         });

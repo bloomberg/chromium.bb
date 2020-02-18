@@ -77,7 +77,7 @@ class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
   bool IsAXLayoutObject() const override { return true; }
 
   // Check object role or purpose.
-  bool IsAutofillAvailable() override { return is_autofill_available_; }
+  bool IsAutofillAvailable() const override;
   bool IsDefault() const override;
   bool IsEditable() const override;
   bool IsRichlyEditable() const override;
@@ -103,7 +103,7 @@ class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
   const AtomicString& AccessKey() const override;
   RGBA32 ComputeBackgroundColor() const final;
   RGBA32 GetColor() const final;
-  AtomicString FontFamily() const final;
+  String FontFamily() const final;
   // Font size is in pixels.
   float FontSize() const final;
   float FontWeight() const final;
@@ -186,8 +186,8 @@ class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
   // Notifications that this object may have changed.
   void HandleActiveDescendantChanged() override;
   void HandleAriaExpandedChanged() override;
-  // Called when autofill becomes available/unavailable on a form control.
-  void HandleAutofillStateChanged(bool) override;
+  // Called when autofill/autocomplete state changes on a form control.
+  void HandleAutofillStateChanged(WebAXAutofillState state) override;
   void TextChanged() override;
 
   // For a table.
@@ -224,8 +224,6 @@ class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
   void AddRemoteSVGChildren();
   void AddTableChildren();
   void AddValidationMessageChild();
-  ax::mojom::Role DetermineTableCellRole() const;
-  ax::mojom::Role DetermineTableRowRole() const;
   bool FindAllTableCellsWithRole(ax::mojom::Role, AXObjectVector&) const;
 
   LayoutRect ComputeElementRect() const;
@@ -238,8 +236,6 @@ class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
   static ax::mojom::TextDecorationStyle
   TextDecorationStyleToAXTextDecorationStyle(
       const ETextDecorationStyle text_decoration_style);
-
-  bool is_autofill_available_;
 
   DISALLOW_COPY_AND_ASSIGN(AXLayoutObject);
 };

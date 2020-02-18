@@ -195,7 +195,7 @@ void MediaControlsOrientationLockDelegate::MaybeListenToDeviceOrientation() {
 // Check whether the user locked screen orientation at the OS level.
 #if defined(OS_ANDROID)
   DCHECK(!monitor_.is_bound());
-  Platform::Current()->GetBrowserInterfaceBrokerProxy()->GetInterface(
+  Platform::Current()->GetBrowserInterfaceBroker()->GetInterface(
       monitor_.BindNewPipeAndPassReceiver());
   monitor_->IsAutoRotateEnabledByUser(WTF::Bind(
       &MediaControlsOrientationLockDelegate::GotIsAutoRotateEnabledByUser,
@@ -293,11 +293,12 @@ MediaControlsOrientationLockDelegate::ComputeOrientationLock() const {
   // consistency. Use WebScreenOrientationLockLandscape as a fallback value.
   // TODO(mlamouri): we could improve this by having direct access to
   // `window.screen.orientation.type`.
-  Frame* frame = GetDocument().GetFrame();
+  LocalFrame* frame = GetDocument().GetFrame();
   if (!frame)
     return kWebScreenOrientationLockLandscape;
 
-  switch (frame->GetChromeClient().GetScreenInfo().orientation_type) {
+  ChromeClient& chrome_client = frame->GetChromeClient();
+  switch (chrome_client.GetScreenInfo(*frame).orientation_type) {
     case kWebScreenOrientationPortraitPrimary:
     case kWebScreenOrientationPortraitSecondary:
       return kWebScreenOrientationLockPortrait;

@@ -38,6 +38,7 @@ namespace blink {
 class DateTimeFieldsState;
 class Locale;
 class StepRange;
+enum class DateTimeField;
 
 // DateTimeEditElement class contains numberic field and symbolc field for
 // representing date and time, such as
@@ -105,10 +106,13 @@ class DateTimeEditElement final : public HTMLDivElement,
   void SetValueAsDate(const LayoutParameters&, const DateComponents&);
   void SetValueAsDateTimeFieldsState(const DateTimeFieldsState&);
   void SetOnlyYearMonthDay(const DateComponents&);
+  void SetOnlyTime(const DateComponents&);
   void StepDown();
   void StepUp();
   String Value() const;
   DateTimeFieldsState ValueAsDateTimeFieldsState() const;
+  bool HasField(DateTimeField) const;
+  bool IsFirstFieldAMPM() const;
 
  private:
   static const wtf_size_t kInvalidFieldIndex = UINT_MAX;

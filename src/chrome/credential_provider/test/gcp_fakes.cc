@@ -21,6 +21,7 @@
 #include "base/win/scoped_handle.h"
 #include "base/win/scoped_process_information.h"
 #include "chrome/credential_provider/common/gcp_strings.h"
+#include "chrome/credential_provider/gaiacp/gcp_utils.h"
 #include "chrome/credential_provider/gaiacp/logging.h"
 #include "chrome/credential_provider/gaiacp/mdm_utils.h"
 #include "chrome/credential_provider/gaiacp/reg_utils.h"
@@ -53,7 +54,7 @@ void InitializeRegistryOverrideForTesting(
   ASSERT_EQ(ERROR_SUCCESS, key.WriteValue(kRegMdmUrl, L""));
   ASSERT_EQ(ERROR_SUCCESS,
             SetMachineGuidForTesting(L"f418a124-4d92-469b-afa5-0f8af537b965"));
-  ASSERT_EQ(ERROR_SUCCESS, key.WriteValue(kRegMdmEscrowServiceServerUrl, L""));
+  ASSERT_EQ(ERROR_SUCCESS, key.WriteValue(kRegEscrowServiceServerUrl, L""));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -223,6 +224,21 @@ HRESULT FakeOSUserManager::SetUserPassword(const wchar_t* domain,
 
   if (username_to_info_.count(username) > 0) {
     username_to_info_[username].password = new_password;
+    return S_OK;
+  }
+
+  return HRESULT_FROM_WIN32(NERR_UserNotFound);
+}
+
+HRESULT FakeOSUserManager::SetUserFullname(const wchar_t* domain,
+                                           const wchar_t* username,
+                                           const wchar_t* full_name) {
+  DCHECK(domain);
+  DCHECK(username);
+  DCHECK(full_name);
+
+  if (username_to_info_.count(username) > 0) {
+    username_to_info_[username].fullname = full_name;
     return S_OK;
   }
 
@@ -542,13 +558,16 @@ HRESULT FakeScopedUserProfile::SaveAccountInfo(const base::Value& properties) {
   base::string16 id;
   base::string16 email;
   base::string16 token_handle;
+  base::string16 last_successful_online_login_millis;
 
-  HRESULT hr = ExtractAssociationInformation(properties, &sid, &id, &email,
-                                             &token_handle);
+  HRESULT hr = ExtractAssociationInformation(
+      properties, &sid, &id, &email, &token_handle,
+      &last_successful_online_login_millis);
   if (FAILED(hr))
     return hr;
 
-  hr = RegisterAssociation(sid, id, email, token_handle);
+  hr = RegisterAssociation(sid, id, email, token_handle,
+                           last_successful_online_login_millis);
 
   if (FAILED(hr))
     return hr;

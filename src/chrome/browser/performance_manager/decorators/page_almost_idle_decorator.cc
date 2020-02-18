@@ -6,12 +6,11 @@
 
 #include <algorithm>
 
-#include "chrome/browser/performance_manager/graph/frame_node_impl.h"
-#include "chrome/browser/performance_manager/graph/graph_impl.h"
-#include "chrome/browser/performance_manager/graph/node_attached_data_impl.h"
-#include "chrome/browser/performance_manager/graph/page_node_impl.h"
-#include "chrome/browser/performance_manager/graph/process_node_impl.h"
-#include "chrome/browser/performance_manager/performance_manager_clock.h"
+#include "components/performance_manager/graph/frame_node_impl.h"
+#include "components/performance_manager/graph/graph_impl.h"
+#include "components/performance_manager/graph/node_attached_data_impl.h"
+#include "components/performance_manager/graph/page_node_impl.h"
+#include "components/performance_manager/graph/process_node_impl.h"
 
 namespace performance_manager {
 
@@ -82,12 +81,9 @@ void PageAlmostIdleDecorator::OnIsLoadingChanged(const PageNode* page_node) {
   UpdateLoadIdleStatePage(PageNodeImpl::FromNode(page_node));
 }
 
-void PageAlmostIdleDecorator::OnMainFrameNavigationCommitted(
+void PageAlmostIdleDecorator::OnMainFrameDocumentChanged(
     const PageNode* page_node) {
-  // Filter out the initial visible URL notification.
-  if (page_node->GetNavigationID() == 0)
-    return;
-
+  DCHECK_NE(0, page_node->GetNavigationID());
   // Reset the load-idle state associated with this page as a new navigation has
   // started.
   auto* page_impl = PageNodeImpl::FromNode(page_node);
@@ -143,7 +139,7 @@ void PageAlmostIdleDecorator::UpdateLoadIdleStatePage(PageNodeImpl* page_node) {
 
   // Cancel any ongoing timers. A new timer will be set if necessary.
   data->idling_timer_.Stop();
-  const base::TimeTicks now = PerformanceManagerClock::NowTicks();
+  const base::TimeTicks now = base::TimeTicks::Now();
 
   // Determine if the overall timeout has fired.
   if ((data->load_idle_state_ == LoadIdleState::kLoadedNotIdling ||

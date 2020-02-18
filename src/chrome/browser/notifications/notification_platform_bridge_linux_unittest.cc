@@ -33,6 +33,7 @@
 
 using message_center::ButtonInfo;
 using message_center::Notification;
+using message_center::SettingsButtonHandler;
 using testing::_;
 using testing::ByMove;
 using testing::Return;
@@ -55,7 +56,9 @@ class NotificationBuilder {
                       GURL(),
                       message_center::NotifierId(GURL()),
                       message_center::RichNotificationData(),
-                      new message_center::NotificationDelegate()) {}
+                      new message_center::NotificationDelegate()) {
+    notification_.set_settings_button_handler(SettingsButtonHandler::DELEGATE);
+  }
 
   Notification GetResult() { return notification_; }
 
@@ -87,6 +90,11 @@ class NotificationBuilder {
 
   NotificationBuilder& SetProgress(int progress) {
     notification_.set_progress(progress);
+    return *this;
+  }
+
+  NotificationBuilder& SetSettingsButtonHandler(SettingsButtonHandler handler) {
+    notification_.set_settings_button_handler(handler);
     return *this;
   }
 
@@ -124,6 +132,7 @@ struct NotificationRequest {
 
   std::string summary;
   std::string body;
+  std::string kde_origin_name;
   std::vector<Action> actions;
   int32_t expire_timeout = 0;
   bool silent = false;
@@ -234,6 +243,10 @@ NotificationRequest ParseRequest(dbus::MethodCall* method_call) {
         bool suppress_sound;
         EXPECT_TRUE(dict_entry_reader.PopVariantOfBool(&suppress_sound));
         request.silent = suppress_sound;
+      } else if (str == "x-kde-origin-name") {
+        std::string x_kde_origin_name;
+        EXPECT_TRUE(dict_entry_reader.PopVariantOfString(&x_kde_origin_name));
+        request.kde_origin_name = x_kde_origin_name;
       } else {
         EXPECT_TRUE(dict_entry_reader.PopVariant(&variant_reader));
       }
@@ -591,10 +604,32 @@ TEST_F(NotificationPlatformBridgeLinuxTest, NotificationAttribution) {
                 "<a href=\"https://google.com/"
                 "search?q=test&amp;ie=UTF8\">google.com</a>\n\nBody text",
                 request.body);
+            EXPECT_TRUE(request.kde_origin_name.empty());
           },
           1));
 
   CreateNotificationBridgeLinux(TestParams());
+  notification_bridge_linux_->Display(
+      NotificationHandler::Type::WEB_PERSISTENT, profile(),
+      NotificationBuilder("")
+          .SetMessage(base::ASCIIToUTF16("Body text"))
+          .SetOriginUrl(GURL("https://google.com/search?q=test&ie=UTF8"))
+          .GetResult(),
+      nullptr);
+}
+
+TEST_F(NotificationPlatformBridgeLinuxTest, NotificationAttributionKde) {
+  EXPECT_CALL(*mock_notification_proxy_.get(),
+              CallMethodAndBlock(Calls("Notify"), _))
+      .WillOnce(OnNotify(
+          [](const NotificationRequest& request) {
+            EXPECT_EQ("Body text", request.body);
+            EXPECT_EQ("google.com", request.kde_origin_name);
+          },
+          1));
+
+  CreateNotificationBridgeLinux(TestParams().SetCapabilities(
+      std::vector<std::string>{"actions", "body", "x-kde-origin-name"}));
   notification_bridge_linux_->Display(
       NotificationHandler::Type::WEB_PERSISTENT, profile(),
       NotificationBuilder("")
@@ -769,6 +804,27 @@ TEST_F(NotificationPlatformBridgeLinuxTest,
   notification_bridge_linux_->Display(
       NotificationHandler::Type::WEB_PERSISTENT, profile(),
       NotificationBuilder("").GetResult(), nullptr);
+}
+
+TEST_F(NotificationPlatformBridgeLinuxTest, NoSettingsButton) {
+  EXPECT_CALL(*mock_notification_proxy_.get(),
+              CallMethodAndBlock(Calls("Notify"), _))
+      .WillOnce(OnNotify(
+          [](const NotificationRequest& request) {
+            ASSERT_EQ(1UL, request.actions.size());
+            EXPECT_EQ("default", request.actions[0].id);
+            EXPECT_EQ("Activate", request.actions[0].label);
+          },
+          1));
+
+  CreateNotificationBridgeLinux(
+      TestParams().SetServerName("cinnamon").SetServerVersion("3.8.0"));
+  notification_bridge_linux_->Display(
+      NotificationHandler::Type::WEB_PERSISTENT, profile(),
+      NotificationBuilder("")
+          .SetSettingsButtonHandler(SettingsButtonHandler::NONE)
+          .GetResult(),
+      nullptr);
 }
 
 TEST_F(NotificationPlatformBridgeLinuxTest, DefaultButtonForwards) {

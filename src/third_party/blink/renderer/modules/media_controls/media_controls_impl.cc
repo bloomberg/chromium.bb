@@ -105,7 +105,7 @@ constexpr int kMinWidthForOverlayPlayButton = 72;
 
 constexpr int kMinScrubbingMessageWidth = 300;
 
-const char* kStateCSSClasses[8] = {
+const char* const kStateCSSClasses[8] = {
     "state-no-source",                 // kNoSource
     "state-no-metadata",               // kNotLoaded
     "state-loading-metadata-paused",   // kLoadingMetadataPaused
@@ -386,27 +386,27 @@ MediaControlsImpl* MediaControlsImpl::Create(HTMLMediaElement& media_element,
   controls->Reset();
 
   if (RuntimeEnabledFeatures::VideoFullscreenOrientationLockEnabled() &&
-      media_element.IsHTMLVideoElement()) {
+      IsA<HTMLVideoElement>(media_element)) {
     // Initialize the orientation lock when going fullscreen feature.
     controls->orientation_lock_delegate_ =
         MakeGarbageCollected<MediaControlsOrientationLockDelegate>(
-            ToHTMLVideoElement(media_element));
+            To<HTMLVideoElement>(media_element));
   }
 
   if (MediaControlsDisplayCutoutDelegate::IsEnabled() &&
-      media_element.IsHTMLVideoElement()) {
+      IsA<HTMLVideoElement>(media_element)) {
     // Initialize the pinch gesture to expand into the display cutout feature.
     controls->display_cutout_delegate_ =
         MakeGarbageCollected<MediaControlsDisplayCutoutDelegate>(
-            ToHTMLVideoElement(media_element));
+            To<HTMLVideoElement>(media_element));
   }
 
   if (RuntimeEnabledFeatures::VideoRotateToFullscreenEnabled() &&
-      media_element.IsHTMLVideoElement()) {
+      IsA<HTMLVideoElement>(media_element)) {
     // Initialize the rotate-to-fullscreen feature.
     controls->rotate_to_fullscreen_delegate_ =
         MakeGarbageCollected<MediaControlsRotateToFullscreenDelegate>(
-            ToHTMLVideoElement(media_element));
+            To<HTMLVideoElement>(media_element));
   }
 
   MediaControlsResourceLoader::InjectMediaControlsUAStyleSheet();
@@ -531,7 +531,7 @@ void MediaControlsImpl::InitializeControls() {
   if (RuntimeEnabledFeatures::PictureInPictureEnabled() &&
       GetDocument().GetSettings() &&
       GetDocument().GetSettings()->GetPictureInPictureEnabled() &&
-      MediaElement().IsHTMLVideoElement()) {
+      IsA<HTMLVideoElement>(MediaElement())) {
     picture_in_picture_button_ =
         MakeGarbageCollected<MediaControlPictureInPictureButtonElement>(*this);
     picture_in_picture_button_->SetIsWanted(
@@ -539,7 +539,7 @@ void MediaControlsImpl::InitializeControls() {
   }
 
   if (RuntimeEnabledFeatures::DisplayCutoutAPIEnabled() &&
-      MediaElement().IsHTMLVideoElement()) {
+      IsA<HTMLVideoElement>(MediaElement())) {
     display_cutout_fullscreen_button_ =
         MakeGarbageCollected<MediaControlDisplayCutoutFullscreenButtonElement>(
             *this);
@@ -736,35 +736,35 @@ void MediaControlsImpl::UpdateCSSClassFromState() {
     if (state == kNoSource) {
       // Check if the play button or overflow menu has the "disabled" attribute
       // set so we avoid unnecessarily resetting it.
-      if (!play_button_->hasAttribute(html_names::kDisabledAttr)) {
+      if (!play_button_->FastHasAttribute(html_names::kDisabledAttr)) {
         play_button_->setAttribute(html_names::kDisabledAttr, "");
         updated = true;
       }
 
       if (ShouldShowVideoControls() &&
-          !overflow_menu_->hasAttribute(html_names::kDisabledAttr)) {
+          !overflow_menu_->FastHasAttribute(html_names::kDisabledAttr)) {
         overflow_menu_->setAttribute(html_names::kDisabledAttr, "");
         updated = true;
       }
     } else {
-      if (play_button_->hasAttribute(html_names::kDisabledAttr)) {
+      if (play_button_->FastHasAttribute(html_names::kDisabledAttr)) {
         play_button_->removeAttribute(html_names::kDisabledAttr);
         updated = true;
       }
 
-      if (overflow_menu_->hasAttribute(html_names::kDisabledAttr)) {
+      if (overflow_menu_->FastHasAttribute(html_names::kDisabledAttr)) {
         overflow_menu_->removeAttribute(html_names::kDisabledAttr);
         updated = true;
       }
     }
 
     if (state == kNoSource || state == kNotLoaded) {
-      if (!timeline_->hasAttribute(html_names::kDisabledAttr)) {
+      if (!timeline_->FastHasAttribute(html_names::kDisabledAttr)) {
         timeline_->setAttribute(html_names::kDisabledAttr, "");
         updated = true;
       }
     } else {
-      if (timeline_->hasAttribute(html_names::kDisabledAttr)) {
+      if (timeline_->FastHasAttribute(html_names::kDisabledAttr)) {
         timeline_->removeAttribute(html_names::kDisabledAttr);
         updated = true;
       }
@@ -1008,8 +1008,9 @@ void MediaControlsImpl::MakeTransparent() {
 
 bool MediaControlsImpl::ShouldHideMediaControls(unsigned behavior_flags) const {
   // Never hide for a media element without visual representation.
-  if (!MediaElement().IsHTMLVideoElement() || !MediaElement().HasVideo() ||
-      ToHTMLVideoElement(MediaElement()).IsRemotingInterstitialVisible()) {
+  auto* video_element = DynamicTo<HTMLVideoElement>(MediaElement());
+  if (!video_element || !MediaElement().HasVideo() ||
+      video_element->IsRemotingInterstitialVisible()) {
     return false;
   }
 
@@ -1059,7 +1060,7 @@ bool MediaControlsImpl::ShouldHideMediaControls(unsigned behavior_flags) const {
 }
 
 bool MediaControlsImpl::AreVideoControlsHovered() const {
-  DCHECK(MediaElement().IsHTMLVideoElement());
+  DCHECK(IsA<HTMLVideoElement>(MediaElement()));
 
   return media_button_panel_->IsHovered() || timeline_->IsHovered();
 }
@@ -1195,7 +1196,7 @@ void MediaControlsImpl::ExitFullscreen() {
 
 bool MediaControlsImpl::IsFullscreenEnabled() const {
   return fullscreen_button_->IsWanted() &&
-         !fullscreen_button_->hasAttribute(html_names::kDisabledAttr);
+         !fullscreen_button_->FastHasAttribute(html_names::kDisabledAttr);
 }
 
 void MediaControlsImpl::RemotePlaybackStateChanged() {
@@ -1314,7 +1315,7 @@ void MediaControlsImpl::UpdateOverflowMenuWanted() const {
 
   // The overflow menu is always wanted if it has the "disabled" attr set.
   overflow_wanted = overflow_wanted ||
-                    overflow_menu_->hasAttribute(html_names::kDisabledAttr);
+                    overflow_menu_->FastHasAttribute(html_names::kDisabledAttr);
   overflow_menu_->SetDoesFit(overflow_wanted);
   overflow_menu_->SetIsWanted(overflow_wanted);
 
@@ -1464,7 +1465,7 @@ void MediaControlsImpl::DefaultEventHandler(Event& event) {
     ResetHideMediaControlsTimer();
   }
 
-  if (event.IsKeyboardEvent() &&
+  if (event.IsKeyboardEvent() && !event.defaultPrevented() &&
       !IsSpatialNavigationEnabled(GetDocument().GetFrame())) {
     const String& key = ToKeyboardEvent(event).key();
     if (key == "Enter" || ToKeyboardEvent(event).keyCode() == ' ') {
@@ -1905,6 +1906,9 @@ void MediaControlsImpl::NotifyElementSizeChanged(DOMRectReadOnly* new_size) {
 }
 
 void MediaControlsImpl::ElementSizeChangedTimerFired(TimerBase*) {
+  if (!MediaElement().isConnected())
+    return;
+
   ComputeWhichControlsFit();
 
   // Rerender timeline bar segments when size changed.
@@ -1973,7 +1977,7 @@ bool MediaControlsImpl::ShouldActAsAudioControls() const {
   // A video element should act like an audio element when it has an audio track
   // but no video track.
   return MediaElement().ShouldShowControls() &&
-         MediaElement().IsHTMLVideoElement() && MediaElement().HasAudio() &&
+         IsA<HTMLVideoElement>(MediaElement()) && MediaElement().HasAudio() &&
          !MediaElement().HasVideo();
 }
 
@@ -2011,7 +2015,7 @@ bool MediaControlsImpl::ShouldShowAudioControls() const {
 }
 
 bool MediaControlsImpl::ShouldShowVideoControls() const {
-  return MediaElement().IsHTMLVideoElement() && !ShouldShowAudioControls();
+  return IsA<HTMLVideoElement>(MediaElement()) && !ShouldShowAudioControls();
 }
 
 void MediaControlsImpl::NetworkStateChanged() {
@@ -2116,8 +2120,7 @@ void MediaControlsImpl::OnLoadedData() {
 }
 
 HTMLVideoElement& MediaControlsImpl::VideoElement() {
-  DCHECK(MediaElement().IsHTMLVideoElement());
-  return *ToHTMLVideoElement(&MediaElement());
+  return *To<HTMLVideoElement>(&MediaElement());
 }
 
 void MediaControlsImpl::Trace(blink::Visitor* visitor) {

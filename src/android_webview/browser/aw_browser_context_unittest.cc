@@ -5,6 +5,8 @@
 #include "android_webview/browser/aw_browser_context.h"
 #include "android_webview/browser/aw_browser_process.h"
 #include "android_webview/browser/aw_feature_list_creator.h"
+#include "android_webview/browser/network_service/aw_network_change_notifier_factory.h"
+#include "base/run_loop.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_content_client_initializer.h"
@@ -15,6 +17,12 @@ namespace android_webview {
 
 class AwBrowserContextTest : public testing::Test {
  protected:
+  // Runs before the first test
+  static void SetUpTestSuite() {
+    net::NetworkChangeNotifier::SetFactory(
+        new AwNetworkChangeNotifierFactory());
+  }
+
   void SetUp() override {
     mojo::core::Init();
     test_content_client_initializer_ =
@@ -25,7 +33,15 @@ class AwBrowserContextTest : public testing::Test {
     browser_process_ = new AwBrowserProcess(aw_feature_list_creator);
   }
 
-  void TearDown() override { delete test_content_client_initializer_; }
+  void TearDown() override {
+    // Drain the message queue before destroying
+    // |test_content_client_initializer_|, otherwise a posted task may call
+    // content::GetNetworkConnectionTracker() after
+    // TestContentClientInitializer's destructor sets it to null.
+    base::RunLoop().RunUntilIdle();
+    delete test_content_client_initializer_;
+    delete browser_process_;
+  }
 
   // Create the TestBrowserThreads.
   content::BrowserTaskEnvironment task_environment_;

@@ -17,16 +17,17 @@
 #include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/common/gpu/gpu_vsync_callback.h"
 #include "components/viz/common/resources/returned_resource.h"
-#include "components/viz/service/display/overlay_candidate_validator.h"
 #include "components/viz/service/display/software_output_device.h"
 #include "components/viz/service/viz_service_export.h"
 #include "gpu/command_buffer/common/texture_in_use_response.h"
 #include "gpu/ipc/common/surface_handle.h"
 #include "ui/gfx/color_space.h"
+#include "ui/gfx/overlay_transform.h"
 #include "ui/latency/latency_info.h"
 
 namespace gfx {
 class ColorSpace;
+class Rect;
 class Size;
 struct SwapResponse;
 }  // namespace gfx
@@ -41,8 +42,14 @@ class SkiaOutputSurface;
 // can provide platform-specific behaviour.
 class VIZ_SERVICE_EXPORT OutputSurface {
  public:
+  enum Type {
+    kSoftware = 0,
+    kOpenGL = 1,
+    kVulkan = 2,
+  };
   struct Capabilities {
-    Capabilities() = default;
+    Capabilities();
+    Capabilities(const Capabilities& capabilities);
 
     int max_frames_pending = 1;
     // Whether this output surface renders to the default OpenGL zero
@@ -64,14 +71,28 @@ class VIZ_SERVICE_EXPORT OutputSurface {
     // on the current system transform. So the OS presentation engine can
     // present buffers onto the screen directly.
     bool supports_pre_transform = false;
+    // Whether this OutputSurface supports direct composition layers.
+    bool supports_dc_layers = false;
+    // Whether this OutputSurface supports direct composition video overlays.
+    bool supports_dc_video_overlays = false;
     // Whether this OutputSurface should skip DrawAndSwap(). This is true for
     // the unified display on Chrome OS. All drawing is handled by the physical
     // displays so the unified display should skip that work.
     bool skips_draw = false;
+    // Indicates whether this surface will invalidate only the damage rect.
+    // When this is false contents outside the damaged area might need to be
+    // recomposited to the surface.
+    bool only_invalidates_damage_rect = true;
+    // Whether the gpu supports surfaceless surface (equivalent of using buffer
+    // queue).
+    bool supports_surfaceless = false;
+    // This is copied over from gpu feature info since there is no easy way to
+    // share that out of skia output surface.
+    bool android_surface_control_feature_enabled = false;
   };
 
   // Constructor for skia-based compositing.
-  OutputSurface();
+  explicit OutputSurface(Type type);
   // Constructor for GL-based compositing.
   explicit OutputSurface(scoped_refptr<ContextProvider> context_provider);
   // Constructor for software compositing.
@@ -80,6 +101,7 @@ class VIZ_SERVICE_EXPORT OutputSurface {
   virtual ~OutputSurface();
 
   const Capabilities& capabilities() const { return capabilities_; }
+  Type type() const { return type_; }
 
   // Obtain the 3d context or the software device associated with this output
   // surface. Either of these may return a null pointer, but not both.
@@ -140,6 +162,16 @@ class VIZ_SERVICE_EXPORT OutputSurface {
   // implementation must call OutputSurfaceClient::DidReceiveSwapBuffersAck()
   // after returning from this method in order to unblock the next frame.
   virtual void SwapBuffers(OutputSurfaceFrame frame) = 0;
+
+  // Returns a rectangle whose contents may have changed since the current
+  // buffer was last submitted and needs to be redrawn. For partial swap,
+  // the contents outside this rectangle can be considered valid and do not need
+  // to be redrawn.
+  // In cases where partial swap is disabled, this method will still be called.
+  // The direct renderer will union the returned rect with the rectangle of the
+  // surface itself.
+  // TODO(dcastagna): Consider making the following pure virtual.
+  virtual gfx::Rect GetCurrentFramebufferDamage() const;
 
   // Updates the GpuFence associated with this surface. The id of a newly
   // created GpuFence is returned, or if an error occurs, or fences are not
@@ -203,6 +235,7 @@ class VIZ_SERVICE_EXPORT OutputSurface {
   std::unique_ptr<SoftwareOutputDevice> software_device_;
 
  private:
+  const Type type_;
   SkMatrix44 color_matrix_;
 
   DISALLOW_COPY_AND_ASSIGN(OutputSurface);

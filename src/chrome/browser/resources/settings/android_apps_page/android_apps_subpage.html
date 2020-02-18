@@ -16,15 +16,21 @@
     <style include="settings-shared"></style>
 
     <template is="dom-if" if="[[androidAppsInfo.settingsAppAvailable]]" restamp>
-      <cr-link-row id="manageApps" icon-class="icon-external"
-          label="$i18n{androidAppsManageApps}"
-          on-click="onManageAndroidAppsTap_">
-      </cr-link-row>
+      <cr-link-row id="manageApps" label="$i18n{androidAppsManageApps}"
+          on-click="onManageAndroidAppsTap_" external></cr-link-row>
     </template>
 
-    <template is="dom-if" if="[[allowRemove_(prefs.arc.enabled.*)]]">
-      <cr-link-row id="remove" class="hr" on-click="onRemoveTap_"
-          label="$i18n{androidAppsRemove}"></cr-link-row>
+    <!-- Use 'restamp' so tests can check if the row exists. -->
+    <template is="dom-if" if="[[allowRemove_(prefs.arc.enabled.*)]]" restamp>
+      <div id="remove" class="settings-box">
+        <div id="androidRemoveLabel" class="start">
+            $i18n{androidAppsRemove}
+        </div>
+        <cr-button on-click="onRemoveTap_"
+          aria-labelledby="androidRemoveLabel">
+           $i18n{androidAppsRemoveButton}
+        </cr-button>
+      </div>
     </template>
 
     <!-- Confirm disable android apps dialog -->

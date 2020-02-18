@@ -52,7 +52,7 @@ class _NodeDict(collections.MutableMapping):
   def MoveTokens(self, origin, delta):
     if self.tokens:
       new_tokens = {}
-      for pos, token in six.iteritems(self.tokens):
+      for pos, token in self.tokens.items():
         if pos[0] >= origin:
           pos = (pos[0] + delta, pos[1])
           token = token[:2] + (pos,) + token[3:]
@@ -509,14 +509,14 @@ def Parse(content, validate_syntax, filename, vars_override=None,
 
   if 'deps_os' in result:
     deps = result.setdefault('deps', {})
-    for os_name, os_deps in six.iteritems(result['deps_os']):
+    for os_name, os_deps in result['deps_os'].items():
       os_deps = _StandardizeDeps(os_deps, vars_dict)
       _MergeDepsOs(deps, os_deps, os_name)
     del result['deps_os']
 
   if 'hooks_os' in result:
     hooks = result.setdefault('hooks', [])
-    for os_name, os_hooks in six.iteritems(result['hooks_os']):
+    for os_name, os_hooks in result['hooks_os'].items():
       for hook in os_hooks:
         UpdateCondition(hook, 'and', 'checkout_' + os_name)
       hooks.extend(os_hooks)
@@ -568,33 +568,23 @@ def EvaluateCondition(condition, variables, referenced_variables=None):
         node, ast.NameConstant):  # Since Python 3.4
       return node.value
     elif isinstance(node, ast.BoolOp) and isinstance(node.op, ast.Or):
-      if len(node.values) != 2:
-        raise ValueError(
-            'invalid "or": exactly 2 operands required (inside %r)' % (
-                condition))
-      left = _convert(node.values[0])
-      right = _convert(node.values[1])
-      if not isinstance(left, bool):
-        raise ValueError(
-            'invalid "or" operand %r (inside %r)' % (left, condition))
-      if not isinstance(right, bool):
-        raise ValueError(
-            'invalid "or" operand %r (inside %r)' % (right, condition))
-      return left or right
+      bool_values = []
+      for value in node.values:
+        bool_values.append(_convert(value))
+        if not isinstance(bool_values[-1], bool):
+          raise ValueError(
+              'invalid "or" operand %r (inside %r)' % (
+                  bool_values[-1], condition))
+      return any(bool_values)
     elif isinstance(node, ast.BoolOp) and isinstance(node.op, ast.And):
-      if len(node.values) != 2:
-        raise ValueError(
-            'invalid "and": exactly 2 operands required (inside %r)' % (
-                condition))
-      left = _convert(node.values[0])
-      right = _convert(node.values[1])
-      if not isinstance(left, bool):
-        raise ValueError(
-            'invalid "and" operand %r (inside %r)' % (left, condition))
-      if not isinstance(right, bool):
-        raise ValueError(
-            'invalid "and" operand %r (inside %r)' % (right, condition))
-      return left and right
+      bool_values = []
+      for value in node.values:
+        bool_values.append(_convert(value))
+        if not isinstance(bool_values[-1], bool):
+          raise ValueError(
+              'invalid "and" operand %r (inside %r)' % (
+                  bool_values[-1], condition))
+      return all(bool_values)
     elif isinstance(node, ast.UnaryOp) and isinstance(node.op, ast.Not):
       value = _convert(node.operand)
       if not isinstance(value, bool):

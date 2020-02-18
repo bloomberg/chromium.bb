@@ -10,10 +10,10 @@
 #include "test/scenario/scenario.h"
 
 #include <algorithm>
+#include <memory>
 
 #include "absl/flags/flag.h"
 #include "absl/flags/parse.h"
-#include "absl/memory/memory.h"
 #include "api/audio_codecs/builtin_audio_decoder_factory.h"
 #include "api/audio_codecs/builtin_audio_encoder_factory.h"
 #include "rtc_base/socket_address.h"
@@ -43,16 +43,15 @@ std::unique_ptr<FileLogWriterFactory> GetScenarioLogManager(
 
     auto base_filename = output_root + file_name + ".";
     RTC_LOG(LS_INFO) << "Saving scenario logs to: " << base_filename;
-    return absl::make_unique<FileLogWriterFactory>(base_filename);
+    return std::make_unique<FileLogWriterFactory>(base_filename);
   }
   return nullptr;
 }
 std::unique_ptr<TimeController> CreateTimeController(bool real_time) {
   if (real_time) {
-    return absl::make_unique<RealTimeController>();
+    return std::make_unique<RealTimeController>();
   } else {
-    return absl::make_unique<GlobalSimulatedTimeController>(
-        kSimulatedStartTime);
+    return std::make_unique<GlobalSimulatedTimeController>(kSimulatedStartTime);
   }
 }
 }  // namespace
@@ -273,7 +272,7 @@ void Scenario::At(TimeDelta offset, std::function<void()> function) {
 void Scenario::RunFor(TimeDelta duration) {
   if (start_time_.IsInfinite())
     Start();
-  time_controller_->Sleep(duration);
+  time_controller_->AdvanceTime(duration);
 }
 
 void Scenario::RunUntil(TimeDelta target_time_since_start) {
@@ -286,11 +285,11 @@ void Scenario::RunUntil(TimeDelta target_time_since_start,
   if (start_time_.IsInfinite())
     Start();
   while (check_interval >= TimeUntilTarget(target_time_since_start)) {
-    time_controller_->Sleep(check_interval);
+    time_controller_->AdvanceTime(check_interval);
     if (exit_function())
       return;
   }
-  time_controller_->Sleep(TimeUntilTarget(target_time_since_start));
+  time_controller_->AdvanceTime(TimeUntilTarget(target_time_since_start));
 }
 
 void Scenario::Start() {

@@ -22,7 +22,7 @@ import re
 import shutil
 import subprocess
 import sys
-import tempfile
+import textwrap
 import zipfile
 from xml.etree import ElementTree
 
@@ -50,13 +50,6 @@ _PNG_WEBP_BLACKLIST_PATTERN = re.compile('|'.join([
     r'.*daydream_icon_.*\.png']))
 
 
-def _ListToDictionary(lst, separator):
-  """Splits each element of the passed-in |lst| using |separator| and creates
-  dictionary treating first element of the split as the key and second as the
-  value."""
-  return dict(item.split(separator, 1) for item in lst)
-
-
 def _ParseArgs(args):
   """Parses command line options.
 
@@ -75,11 +68,9 @@ def _ParseArgs(args):
   input_opts.add_argument(
       '--android-manifest-normalized', help='Normalized manifest.')
   input_opts.add_argument(
-      '--fail-if-unexpected-android-manifest',
-      action='store_true',
-      help=
-      'Fail if expected manifest contents do not match final manifest contents.'
-  )
+      '--android-manifest-expectations-failure-file',
+      help='Write to this file if expected manifest contents do not match '
+      'final manifest contents.')
   input_opts.add_argument(
       '--r-java-root-package-name',
       default='base',
@@ -100,17 +91,13 @@ def _ParseArgs(args):
 
   input_opts.add_argument(
       '--package-id',
-      help='Custom package ID for resources (instead of 0x7f). Cannot be used '
-      'with --shared-resources.')
-
-  input_opts.add_argument(
-      '--package-name-to-id-mapping',
-      help='List containing mapping from package name to package IDs that will '
-      'be assigned.')
+      type=int,
+      help='Decimal integer representing custom package ID for resources '
+      '(instead of 127==0x7f). Cannot be used with --shared-resources.')
 
   input_opts.add_argument(
       '--package-name',
-      help='Package name that will be used to determine package ID.')
+      help='Package name that will be used to create R class.')
 
   input_opts.add_argument(
       '--rename-manifest-package', help='Package name to force AAPT to use.')
@@ -266,11 +253,8 @@ def _ParseArgs(args):
     parser.error(
         '--resources-path-map-out-path requires --short-resource-paths')
 
-  if options.package_name_to_id_mapping:
-    package_names_list = build_utils.ParseGnList(
-        options.package_name_to_id_mapping)
-    options.package_name_to_id_mapping = _ListToDictionary(
-        package_names_list, '=')
+  if options.package_id and options.shared_resources:
+    parser.error('--package-id and --shared-resources are mutually exclusive')
 
   return options
 
@@ -412,7 +396,7 @@ def _MoveImagesToNonMdpiFolders(res_root):
     dst_dir = os.path.join(res_root, dst_dir_name)
     build_utils.MakeDirectory(dst_dir)
     for src_file_name in os.listdir(src_dir):
-      if not os.path.splitext(src_file_name)[1] in ('.png', '.webp'):
+      if not os.path.splitext(src_file_name)[1] in ('.png', '.webp', ''):
         continue
       src_file = os.path.join(src_dir, src_file_name)
       dst_file = os.path.join(dst_dir, src_file_name)
@@ -421,19 +405,6 @@ def _MoveImagesToNonMdpiFolders(res_root):
       renamed_paths[os.path.relpath(dst_file, res_root)] = os.path.relpath(
           src_file, res_root)
   return renamed_paths
-
-
-def _PackageIdFromOptions(options):
-  package_id = None
-  if options.package_id:
-    package_id = options.package_id
-  if options.package_name:
-    package_id = options.package_name_to_id_mapping.get(options.package_name)
-    if package_id is None:
-      raise Exception(
-          'Package name %s is not present in package_name_to_id_mapping.' %
-          options.package_name)
-  return package_id
 
 
 def _FixManifest(options, temp_dir):
@@ -502,18 +473,24 @@ def _FixManifest(options, temp_dir):
 
 
 def _VerifyManifest(actual_manifest, expected_manifest, normalized_manifest,
-                    fail_if_unexpected_manifest):
+                    unexpected_manifest_failure_file):
   with build_utils.AtomicOutput(normalized_manifest) as normalized_output:
     normalized_output.write(manifest_utils.NormalizeManifest(actual_manifest))
   msg = diff_utils.DiffFileContents(expected_manifest, normalized_manifest)
-  if msg:
-    sys.stderr.write("""\
+  if not msg:
+    return
+
+  msg_header = """\
 AndroidManifest.xml expectations file needs updating. For details see:
 https://chromium.googlesource.com/chromium/src/+/HEAD/chrome/android/java/README.md
-""")
-    sys.stderr.write(msg)
-    if fail_if_unexpected_manifest:
-      sys.exit(1)
+"""
+  sys.stderr.write(msg_header)
+  sys.stderr.write(msg)
+  if unexpected_manifest_failure_file:
+    build_utils.MakeDirectory(os.path.dirname(unexpected_manifest_failure_file))
+    with open(unexpected_manifest_failure_file, 'w') as f:
+      f.write(msg_header)
+      f.write(msg)
 
 
 def _CreateKeepPredicate(resource_blacklist_regex,
@@ -547,8 +524,8 @@ def _ConvertToWebP(webp_binary, png_files):
   pool = multiprocessing.pool.ThreadPool(10)
   def convert_image(png_path_tuple):
     png_path, original_dir = png_path_tuple
-    root = os.path.splitext(png_path)[0]
-    webp_path = root + '.webp'
+    # No need to add an extension, android can load images fine without them.
+    webp_path = os.path.splitext(png_path)[0]
     args = [webp_binary, png_path, '-mt', '-quiet', '-m', '6', '-q', '100',
         '-lossless', '-o', webp_path]
     subprocess.check_call(args)
@@ -563,6 +540,26 @@ def _ConvertToWebP(webp_binary, png_files):
   return renamed_paths
 
 
+def _RemoveImageExtensions(directory):
+  """Remove extensions from image files in the passed directory.
+
+  This reduces binary size but does not affect android's ability to load the
+  images.
+
+  Returns: dict[destination] -> source
+  """
+  renamed_paths = {}
+  for f in _IterFiles(directory):
+    if (f.endswith('.png') or f.endswith('.webp')) and not f.endswith('.9.png'):
+      path_with_extension = f
+      path_no_extension = os.path.splitext(path_with_extension)[0]
+      if path_no_extension != path_with_extension:
+        shutil.move(path_with_extension, path_no_extension)
+        renamed_paths[os.path.relpath(path_no_extension, directory)] = (
+            os.path.relpath(path_with_extension, directory))
+  return renamed_paths
+
+
 def _CompileDeps(aapt2_path, dep_subdirs, temp_dir):
   partials_dir = os.path.join(temp_dir, 'partials')
   build_utils.MakeDirectory(partials_dir)
@@ -573,11 +570,15 @@ def _CompileDeps(aapt2_path, dep_subdirs, temp_dir):
       # '--no-crunch',
   ]
   pool = multiprocessing.pool.ThreadPool(10)
-  def compile_partial(directory):
-    dirname = os.path.basename(directory)
-    partial_path = os.path.join(partials_dir, dirname + '.zip')
-    compile_command = (partial_compile_command +
-                       ['--dir', directory, '-o', partial_path])
+
+  def compile_partial(params):
+    index, dep_path = params
+    basename = os.path.basename(dep_path)
+    unique_name = '{}_{}'.format(index, basename)
+    partial_path = os.path.join(partials_dir, '{}.zip'.format(unique_name))
+    compile_command = (
+        partial_compile_command + ['--dir', dep_path, '-o', partial_path])
+
     # There are resources targeting API-versions lower than our minapi. For
     # various reasons it's easier to let aapt2 ignore these than for us to
     # remove them from our build (e.g. it's from a 3rd party library).
@@ -589,12 +590,13 @@ def _CompileDeps(aapt2_path, dep_subdirs, temp_dir):
 
     # Sorting the files in the partial ensures deterministic output from the
     # aapt2 link step which uses order of files in the partial.
-    sorted_partial_path = os.path.join(partials_dir, dirname + '.sorted.zip')
+    sorted_partial_path = os.path.join(partials_dir,
+                                       unique_name + '.sorted.zip')
     _SortZip(partial_path, sorted_partial_path)
 
     return sorted_partial_path
 
-  partials = pool.map(compile_partial, dep_subdirs)
+  partials = pool.map(compile_partial, enumerate(dep_subdirs))
   pool.close()
   pool.join()
   return partials
@@ -684,6 +686,8 @@ def _PackageApk(options, build):
   Args:
     options: The command-line options.
     build: BuildContext object.
+  Returns:
+    The manifest package name for the APK.
   """
   dep_subdirs = resource_utils.ExtractDeps(options.dependencies_res_zips,
                                            build.deps_dir)
@@ -709,6 +713,7 @@ def _PackageApk(options, build):
     renamed_paths.update(_ConvertToWebP(options.webp_binary, png_paths))
   for directory in dep_subdirs:
     renamed_paths.update(_MoveImagesToNonMdpiFolders(directory))
+    renamed_paths.update(_RemoveImageExtensions(directory))
 
   _CreateResourceInfoFile(renamed_paths, build.info_path,
                           options.dependencies_res_zips)
@@ -751,9 +756,12 @@ def _PackageApk(options, build):
   if options.no_xml_namespaces:
     link_command.append('--no-xml-namespaces')
 
-  package_id = _PackageIdFromOptions(options)
-  if package_id is not None:
-    link_command += ['--package-id', package_id, '--allow-reserved-package-id']
+  if options.package_id:
+    link_command += [
+        '--package-id',
+        hex(options.package_id),
+        '--allow-reserved-package-id',
+    ]
 
   fixed_manifest, desired_manifest_package_name = _FixManifest(
       options, build.temp_dir)
@@ -762,7 +770,7 @@ def _PackageApk(options, build):
   if options.android_manifest_expected:
     _VerifyManifest(fixed_manifest, options.android_manifest_expected,
                     options.android_manifest_normalized,
-                    options.fail_if_unexpected_android_manifest)
+                    options.android_manifest_expectations_failure_file)
 
   link_command += [
       '--manifest', fixed_manifest, '--rename-manifest-package',
@@ -787,6 +795,19 @@ def _PackageApk(options, build):
 
   build_utils.CheckOutput(link_command, print_stdout=False, print_stderr=False)
 
+  if options.proguard_file and (options.shared_resources
+                                or options.app_as_shared_lib):
+    # Make sure the R class associated with the manifest package does not have
+    # its onResourcesLoaded method obfuscated or removed, so that the framework
+    # can call it in the case where the APK is being loaded as a library.
+    with open(build.proguard_path, 'a') as proguard_file:
+      keep_rule = '''
+                  -keep class {package}.R {{
+                    public static void onResourcesLoaded(int);
+                  }}
+                  '''.format(package=desired_manifest_package_name)
+      proguard_file.write(textwrap.dedent(keep_rule))
+
   if options.proto_path and options.arsc_path:
     build_utils.CheckOutput([
         options.aapt2_path, 'convert', '-o', build.arsc_path, build.proto_path
@@ -798,6 +819,8 @@ def _PackageApk(options, build):
   elif options.optimized_arsc_path:
     _OptimizeApk(build.optimized_arsc_path, options, build.temp_dir,
                  build.arsc_path, build.r_txt_path)
+
+  return desired_manifest_package_name
 
 
 def _OptimizeApk(output, options, temp_dir, unoptimized_path, r_txt_path):
@@ -913,15 +936,20 @@ def main(args):
   args = build_utils.ExpandFileArgs(args)
   options = _ParseArgs(args)
 
+  path = options.arsc_path or options.proto_path
   debug_temp_resources_dir = os.environ.get(_ENV_DEBUG_VARIABLE)
   if debug_temp_resources_dir:
-    debug_temp_resources_dir = os.path.join(debug_temp_resources_dir,
-                                            os.path.basename(options.arsc_path))
-    build_utils.DeleteDirectory(debug_temp_resources_dir)
-    build_utils.MakeDirectory(debug_temp_resources_dir)
+    path = os.path.join(debug_temp_resources_dir, os.path.basename(path))
+  else:
+    # Use a deterministic temp directory since .pb files embed the absolute
+    # path of resources: crbug.com/939984
+    path = path + '.tmpdir'
+  build_utils.DeleteDirectory(path)
+  build_utils.MakeDirectory(path)
 
-  with resource_utils.BuildContext(debug_temp_resources_dir) as build:
-    _PackageApk(options, build)
+  with resource_utils.BuildContext(
+      temp_dir=path, keep_files=bool(debug_temp_resources_dir)) as build:
+    manifest_package_name = _PackageApk(options, build)
 
     # If --shared-resources-whitelist is used, the all resources listed in
     # the corresponding R.txt file will be non-final, and an onResourcesLoaded()
@@ -953,19 +981,26 @@ def main(args):
       custom_root_package_name = options.package_name
       grandparent_custom_package_name = options.r_java_root_package_name
 
+    if options.shared_resources or options.app_as_shared_lib:
+      package_for_library = manifest_package_name
+    else:
+      package_for_library = None
+
     resource_utils.CreateRJavaFiles(
-        build.srcjar_dir, None, build.r_txt_path, options.extra_res_packages,
-        options.extra_r_text_files, rjava_build_options, options.srcjar_out,
-        custom_root_package_name, grandparent_custom_package_name,
-        options.extra_main_r_text_files)
+        build.srcjar_dir, package_for_library, build.r_txt_path,
+        options.extra_res_packages, options.extra_r_text_files,
+        rjava_build_options, options.srcjar_out, custom_root_package_name,
+        grandparent_custom_package_name, options.extra_main_r_text_files)
 
     build_utils.ZipDir(build.srcjar_path, build.srcjar_dir)
 
     # Sanity check that the created resources have the expected package ID.
-    expected_id = _PackageIdFromOptions(options)
-    if expected_id is None:
-      expected_id = '0x00' if options.shared_resources else '0x7f'
-    expected_id = int(expected_id, 16)
+    if options.package_id:
+      expected_id = options.package_id
+    elif options.shared_resources:
+      expected_id = 0
+    else:
+      expected_id = 127  # == '0x7f'.
     _, package_id = resource_utils.ExtractArscPackage(
         options.aapt2_path,
         build.arsc_path if options.arsc_path else build.proto_path)

@@ -15,16 +15,17 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/dom_distiller/content/browser/distiller_javascript_utils.h"
-#include "components/dom_distiller/content/browser/web_contents_main_frame_observer.h"
 #include "components/dom_distiller/core/dom_distiller_service.h"
 #include "components/dom_distiller/core/dom_distiller_switches.h"
 #include "components/dom_distiller/core/task_tracker.h"
 #include "components/dom_distiller/core/url_constants.h"
 #include "components/dom_distiller/core/url_utils.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/isolated_world_ids.h"
+#include "content/public/test/back_forward_cache_util.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -86,8 +87,10 @@ class DistilledPageObserver : public NavigationObserver {
   void DidFinishLoad(content::RenderFrameHost* render_frame_host,
                      const GURL& validated_url) override {
     if (!render_frame_host->GetParent() &&
-        validated_url.scheme() == kDomDistillerScheme)
+        validated_url.scheme() == kDomDistillerScheme) {
       loaded_distiller_page_ = true;
+      MaybeNotifyLoaded();
+    }
   }
 
   void TitleWasSet(content::NavigationEntry* entry) override {
@@ -95,14 +98,19 @@ class DistilledPageObserver : public NavigationObserver {
     // and once when the distillation has finished. Watch for the second time
     // as a signal that the JavaScript that sets the content has run.
     title_set_count_++;
-    if (title_set_count_ >= 2 && loaded_distiller_page_) {
-      new_url_loaded_runner_.QuitClosure().Run();
-    }
+    MaybeNotifyLoaded();
   }
 
  private:
   int title_set_count_;
   bool loaded_distiller_page_;
+
+  // DidFinishLoad() can come after the two title settings.
+  void MaybeNotifyLoaded() {
+    if (title_set_count_ >= 2 && loaded_distiller_page_) {
+      new_url_loaded_runner_.QuitClosure().Run();
+    }
+  }
 };
 
 class DomDistillerTabUtilsBrowserTest : public InProcessBrowserTest {
@@ -213,6 +221,32 @@ IN_PROC_BROWSER_TEST_F(DomDistillerTabUtilsBrowserTest, ToggleOriginalPage) {
       .WaitUntilFinishedLoading();
   EXPECT_EQ(source_web_contents->GetLastCommittedURL(),
             destination_web_contents->GetLastCommittedURL());
+}
+
+IN_PROC_BROWSER_TEST_F(DomDistillerTabUtilsBrowserTest,
+                       DomDistillDisableForBackForwardCache) {
+  content::BackForwardCacheDisabledTester tester;
+
+  GURL url1(article_url());
+  content::WebContents* initial_web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  content::RenderFrameHost* main_frame =
+      browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame();
+  int process_id = main_frame->GetProcess()->GetID();
+  int frame_routing_id = main_frame->GetRoutingID();
+  GURL url2(embedded_test_server()->GetURL("/title1.html"));
+
+  // Navigate to the page
+  ui_test_utils::NavigateToURL(browser(), url1);
+
+  DistillCurrentPageAndView(initial_web_contents);
+
+  // Navigate away while starting distillation. This should block bfcache.
+  ui_test_utils::NavigateToURL(browser(), url2);
+
+  EXPECT_TRUE(tester.IsDisabledForFrameWithReason(
+      process_id, frame_routing_id,
+      "browser::DomDistiller_SelfDeletingRequestDelegate"));
 }
 
 }  // namespace

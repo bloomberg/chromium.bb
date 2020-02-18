@@ -8,6 +8,8 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 
+#include <utility>
+
 #include "net/third_party/quiche/src/quic/core/quic_server_id.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_socket_address.h"
 #include "net/third_party/quiche/src/quic/tools/quic_client.h"
@@ -27,8 +29,8 @@ std::unique_ptr<QuicSpdyClientBase> QuicEpollClientFactory::CreateClient(
     return nullptr;
   }
   QuicServerId server_id(host_for_handshake, port, false);
-  return QuicMakeUnique<QuicClient>(addr, server_id, versions, &epoll_server_,
-                                    std::move(verifier));
+  return std::make_unique<QuicClient>(addr, server_id, versions, &epoll_server_,
+                                      std::move(verifier));
 }
 
 }  // namespace quic

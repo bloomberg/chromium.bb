@@ -12,7 +12,6 @@ import android.support.v4.app.NotificationCompat;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.RecordUserAction;
-import org.chromium.blink_public.platform.WebDisplayMode;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.notifications.ChromeNotification;
@@ -25,7 +24,7 @@ import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
 import org.chromium.chrome.browser.notifications.PendingIntentProvider;
 import org.chromium.chrome.browser.notifications.channels.ChannelDefinitions;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.util.FeatureUtilities;
+import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.ui.base.Clipboard;
 
@@ -46,13 +45,8 @@ class WebappActionsNotificationManager {
     private static final String ACTION_FOCUS =
             "org.chromium.chrome.browser.webapps.NOTIFICATION_ACTION_FOCUS";
 
-    static boolean isEnabled() {
-        // This UI doesn't work with no-touch.
-        return !FeatureUtilities.isNoTouchModeEnabled();
-    }
-
     public static void maybeShowNotification(Tab tab, WebappInfo webappInfo) {
-        if (!isEnabled() || tab == null) return;
+        if (tab == null) return;
 
         // All features provided by the notification are also available in the minimal-ui toolbar.
         if (webappInfo.displayMode() == WebDisplayMode.MINIMAL_UI) {
@@ -118,7 +112,6 @@ class WebappActionsNotificationManager {
     }
 
     public static void cancelNotification() {
-        if (!isEnabled()) return;
         NotificationManager nm =
                 (NotificationManager) ContextUtils.getApplicationContext().getSystemService(
                         Context.NOTIFICATION_SERVICE);
@@ -139,8 +132,9 @@ class WebappActionsNotificationManager {
 
         if (ACTION_SHARE.equals(intent.getAction())) {
             // Not routing through onMenuOrKeyboardAction to control UMA String.
-            webappActivity.onShareMenuItemSelected(
-                    false /* share directly */, webappActivity.getCurrentTabModel().isIncognito());
+            Tab tab = webappActivity.getActivityTab();
+            boolean isIncognito = tab.isIncognito();
+            webappActivity.getShareDelegateSupplier().get().share(tab, false);
             RecordUserAction.record("Webapp.NotificationShare");
             return true;
         } else if (ACTION_OPEN_IN_CHROME.equals(intent.getAction())) {
@@ -148,7 +142,9 @@ class WebappActionsNotificationManager {
             return true;
         } else if (ACTION_FOCUS.equals(intent.getAction())) {
             Tab tab = webappActivity.getActivityTab();
-            if (tab != null) Clipboard.getInstance().copyUrlToClipboard(tab.getOriginalUrl());
+            if (tab != null) {
+                Clipboard.getInstance().copyUrlToClipboard(((TabImpl) tab).getOriginalUrl());
+            }
             RecordUserAction.record("Webapp.NotificationFocused");
             return true;
         }

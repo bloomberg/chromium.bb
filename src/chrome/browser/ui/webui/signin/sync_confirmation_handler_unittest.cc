@@ -30,7 +30,6 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/consent_auditor/fake_consent_auditor.h"
 #include "components/signin/public/base/avatar_icon_util.h"
-#include "components/unified_consent/scoped_unified_consent.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_web_ui.h"
 
@@ -71,7 +70,7 @@ class SyncConfirmationHandlerTest : public BrowserWithTestWindowTest,
   static const char kConsentText5[];
 
   SyncConfirmationHandlerTest()
-      : did_user_explicitly_interact(false),
+      : did_user_explicitly_interact_(false),
         on_sync_confirmation_ui_closed_called_(false),
         sync_confirmation_ui_closed_result_(LoginUIService::ABORT_SIGNIN),
         web_ui_(new content::TestWebUI),
@@ -104,7 +103,7 @@ class SyncConfirmationHandlerTest : public BrowserWithTestWindowTest,
     identity_test_env_adaptor_.reset();
     BrowserWithTestWindowTest::TearDown();
 
-    EXPECT_EQ(did_user_explicitly_interact ? 0 : 1,
+    EXPECT_EQ(did_user_explicitly_interact_ ? 0 : 1,
               user_action_tester()->GetActionCount("Signin_Abort_Signin"));
   }
 
@@ -186,7 +185,7 @@ class SyncConfirmationHandlerTest : public BrowserWithTestWindowTest,
   }
 
  protected:
-  bool did_user_explicitly_interact;
+  bool did_user_explicitly_interact_;
   bool on_sync_confirmation_ui_closed_called_;
   LoginUIService::SyncConfirmationUIClosedResult
       sync_confirmation_ui_closed_result_;
@@ -225,8 +224,9 @@ TEST_F(SyncConfirmationHandlerTest, TestSetImageIfPrimaryAccountReady) {
   handler()->HandleInitializedWithSize(&args);
 
   ExpectAccountImageChanged(*web_ui()->call_data()[0]);
-  EXPECT_EQ("sync.confirmation.clearFocus",
+  EXPECT_EQ("cr.webUIListenerCallback",
             web_ui()->call_data()[1]->function_name());
+  EXPECT_EQ("clear-focus", web_ui()->call_data()[1]->arg1()->GetString());
 }
 
 TEST_F(SyncConfirmationHandlerTest, TestSetImageIfPrimaryAccountReadyLater) {
@@ -236,8 +236,9 @@ TEST_F(SyncConfirmationHandlerTest, TestSetImageIfPrimaryAccountReadyLater) {
 
   EXPECT_EQ(2U, web_ui()->call_data().size());
   ExpectAccountImageChanged(*web_ui()->call_data()[0]);
-  EXPECT_EQ("sync.confirmation.clearFocus",
+  EXPECT_EQ("cr.webUIListenerCallback",
             web_ui()->call_data()[1]->function_name());
+  EXPECT_EQ("clear-focus", web_ui()->call_data()[1]->arg1()->GetString());
 
   identity_test_env()->SimulateSuccessfulFetchOfAccountInfo(
       account_info_.account_id, account_info_.email, account_info_.gaia, "",
@@ -279,7 +280,7 @@ TEST_F(SyncConfirmationHandlerTest,
 
 TEST_F(SyncConfirmationHandlerTest, TestHandleUndo) {
   handler()->HandleUndo(nullptr);
-  did_user_explicitly_interact = true;
+  did_user_explicitly_interact_ = true;
 
   EXPECT_TRUE(on_sync_confirmation_ui_closed_called_);
   EXPECT_EQ(LoginUIService::ABORT_SIGNIN, sync_confirmation_ui_closed_result_);
@@ -293,11 +294,11 @@ TEST_F(SyncConfirmationHandlerTest, TestHandleUndo) {
 TEST_F(SyncConfirmationHandlerTest, TestHandleConfirm) {
   // The consent description consists of strings 1, 2, and 4.
   base::ListValue consent_description;
-  consent_description.GetList().push_back(
+  consent_description.Append(
       base::Value(SyncConfirmationHandlerTest::kConsentText1));
-  consent_description.GetList().push_back(
+  consent_description.Append(
       base::Value(SyncConfirmationHandlerTest::kConsentText2));
-  consent_description.GetList().push_back(
+  consent_description.Append(
       base::Value(SyncConfirmationHandlerTest::kConsentText4));
 
   // The consent confirmation contains string 5.
@@ -305,11 +306,11 @@ TEST_F(SyncConfirmationHandlerTest, TestHandleConfirm) {
 
   // These are passed as parameters to HandleConfirm().
   base::ListValue args;
-  args.GetList().push_back(std::move(consent_description));
-  args.GetList().push_back(std::move(consent_confirmation));
+  args.Append(std::move(consent_description));
+  args.Append(std::move(consent_confirmation));
 
   handler()->HandleConfirm(&args);
-  did_user_explicitly_interact = true;
+  did_user_explicitly_interact_ = true;
 
   EXPECT_TRUE(on_sync_confirmation_ui_closed_called_);
   EXPECT_EQ(LoginUIService::SYNC_WITH_DEFAULT_SETTINGS,
@@ -334,11 +335,11 @@ TEST_F(SyncConfirmationHandlerTest, TestHandleConfirm) {
 TEST_F(SyncConfirmationHandlerTest, TestHandleConfirmWithAdvancedSyncSettings) {
   // The consent description consists of strings 2, 3, and 5.
   base::ListValue consent_description;
-  consent_description.GetList().push_back(
+  consent_description.Append(
       base::Value(SyncConfirmationHandlerTest::kConsentText2));
-  consent_description.GetList().push_back(
+  consent_description.Append(
       base::Value(SyncConfirmationHandlerTest::kConsentText3));
-  consent_description.GetList().push_back(
+  consent_description.Append(
       base::Value(SyncConfirmationHandlerTest::kConsentText5));
 
   // The consent confirmation contains string 2.
@@ -346,11 +347,11 @@ TEST_F(SyncConfirmationHandlerTest, TestHandleConfirmWithAdvancedSyncSettings) {
 
   // These are passed as parameters to HandleGoToSettings().
   base::ListValue args;
-  args.GetList().push_back(std::move(consent_description));
-  args.GetList().push_back(std::move(consent_confirmation));
+  args.Append(std::move(consent_description));
+  args.Append(std::move(consent_confirmation));
 
   handler()->HandleGoToSettings(&args);
-  did_user_explicitly_interact = true;
+  did_user_explicitly_interact_ = true;
 
   EXPECT_TRUE(on_sync_confirmation_ui_closed_called_);
   EXPECT_EQ(LoginUIService::CONFIGURE_SYNC_FIRST,

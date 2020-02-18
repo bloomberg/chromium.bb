@@ -202,7 +202,8 @@ class AutofillCapturedSitesInteractiveTest
     SetServerUrlLoader(std::make_unique<test::ServerUrlLoader>(
         std::make_unique<test::ServerCacheReplayer>(
             GetParam().capture_file_path,
-            test::ServerCacheReplayer::kOptionFailOnInvalidJsonRecord)));
+            test::ServerCacheReplayer::kOptionFailOnInvalidJsonRecord |
+                test::ServerCacheReplayer::kOptionSplitRequestsByForm)));
   }
 
   void TearDownOnMainThread() override {
@@ -326,7 +327,7 @@ IN_PROC_BROWSER_TEST_P(AutofillCapturedSitesInteractiveTest, Recipe) {
   }
 }
 INSTANTIATE_TEST_SUITE_P(
-    ,
+    All,
     AutofillCapturedSitesInteractiveTest,
     testing::ValuesIn(GetCapturedSites(GetReplayFilesRootDirectory())),
     captured_sites_test_utils::GetParamAsString());

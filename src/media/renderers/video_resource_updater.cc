@@ -67,8 +67,8 @@ VideoFrameResourceType ExternalResourceTypeForHardwarePlanes(
   switch (format) {
     case PIXEL_FORMAT_ARGB:
     case PIXEL_FORMAT_XRGB:
-    case PIXEL_FORMAT_UYVY:
     case PIXEL_FORMAT_ABGR:
+    case PIXEL_FORMAT_BGRA:
       DCHECK_EQ(num_textures, 1);
       // This maps VideoPixelFormat back to GMB BufferFormat
       // NOTE: ABGR == RGBA and ARGB == BGRA, they differ only byte order
@@ -92,6 +92,12 @@ VideoFrameResourceType ExternalResourceTypeForHardwarePlanes(
           break;
       }
       break;
+    case PIXEL_FORMAT_XR30:
+    case PIXEL_FORMAT_XB30:
+      buffer_formats[0] = (format == PIXEL_FORMAT_XR30)
+                              ? gfx::BufferFormat::BGRX_1010102
+                              : gfx::BufferFormat::RGBX_1010102;
+      return VideoFrameResourceType::RGB;
     case PIXEL_FORMAT_I420:
       DCHECK_EQ(num_textures, 3);
       buffer_formats[0] = gfx::BufferFormat::R_8;
@@ -634,7 +640,7 @@ void VideoResourceUpdater::AppendQuads(viz::RenderPass* render_pass,
       stream_video_quad->SetNew(shared_quad_state, quad_rect, visible_quad_rect,
                                 needs_blending, frame_resources_[0].id,
                                 frame_resources_[0].size_in_pixels, uv_top_left,
-                                uv_bottom_right, frame->ycbcr_info());
+                                uv_bottom_right);
       for (viz::ResourceId resource_id : stream_video_quad->resources) {
         resource_provider_->ValidateResource(resource_id);
       }
@@ -847,6 +853,7 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForHardwarePlanes(
           video_frame->metadata()->IsTrue(
               VideoFrameMetadata::READ_LOCK_FENCES_ENABLED);
       transfer_resource.format = viz::GetResourceFormat(buffer_formats[i]);
+      transfer_resource.ycbcr_info = video_frame->ycbcr_info();
 
 #if defined(OS_ANDROID)
       transfer_resource.is_backed_by_surface_texture =

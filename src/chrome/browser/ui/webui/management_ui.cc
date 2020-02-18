@@ -6,12 +6,11 @@
 
 #include <memory>
 
-#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/webui/localized_string.h"
 #include "chrome/browser/ui/webui/management_ui_handler.h"
+#include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/browser_resources.h"
@@ -25,6 +24,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/grit/chromium_strings.h"
 #include "ui/chromeos/devicetype_utils.h"
@@ -42,7 +42,7 @@ content::WebUIDataSource* CreateManagementUIHtmlSource(Profile* profile) {
   source->AddString("pageSubtitle",
                     ManagementUI::GetManagementPageSubtitle(profile));
 
-  static constexpr LocalizedString kLocalizedStrings[] = {
+  static constexpr webui::LocalizedString kLocalizedStrings[] = {
 #if defined(OS_CHROMEOS)
     {"learnMore", IDS_LEARN_MORE},
     {"localTrustRoots", IDS_MANAGEMENT_LOCAL_TRUST_ROOTS},
@@ -100,8 +100,7 @@ content::WebUIDataSource* CreateManagementUIHtmlSource(Profile* profile) {
      IDS_MANAGEMENT_ENTERPRISE_REPORTING_PERMISSIONS},
   };
 
-  AddLocalizedStringsBulk(source, kLocalizedStrings,
-                          base::size(kLocalizedStrings));
+  AddLocalizedStringsBulk(source, kLocalizedStrings);
 
   source->AddString(kManagementExtensionReportSafeBrowsingWarnings,
                     l10n_util::GetStringFUTF16(
@@ -115,14 +114,12 @@ content::WebUIDataSource* CreateManagementUIHtmlSource(Profile* profile) {
 #endif  // defined(OS_CHROMEOS)
 
   source->UseStringsJs();
+  source->EnableReplaceI18nInJS();
   // Add required resources.
-  source->AddResourcePath("management_browser_proxy.html",
-                          IDR_MANAGEMENT_BROWSER_PROXY_HTML);
   source->AddResourcePath("management_browser_proxy.js",
                           IDR_MANAGEMENT_BROWSER_PROXY_JS);
-  source->AddResourcePath("management_ui.html", IDR_MANAGEMENT_UI_HTML);
   source->AddResourcePath("management_ui.js", IDR_MANAGEMENT_UI_JS);
-  source->AddResourcePath("icons.html", IDR_MANAGEMENT_ICONS_HTML);
+  source->AddResourcePath("icons.js", IDR_MANAGEMENT_ICONS_JS);
   source->SetDefaultResource(IDR_MANAGEMENT_HTML);
   return source;
 }

@@ -13,6 +13,7 @@
 #include "base/optional.h"
 #include "base/threading/thread_checker.h"
 #include "base/util/type_safety/pass_key.h"
+#include "build/build_config.h"
 #include "components/viz/common/display/renderer_settings.h"
 #include "components/viz/common/resources/resource_id.h"
 #include "components/viz/service/display/skia_output_surface.h"
@@ -57,6 +58,7 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
   ~SkiaOutputSurfaceImpl() override;
 
   // OutputSurface implementation:
+  gpu::SurfaceHandle GetSurfaceHandle() const override;
   void BindToClient(OutputSurfaceClient* client) override;
   void BindFramebuffer() override;
   void SetDrawRectangle(const gfx::Rect& draw_rectangle) override;
@@ -69,6 +71,8 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
                bool use_stencil) override;
   void SetUpdateVSyncParametersCallback(
       UpdateVSyncParametersCallback callback) override;
+  void SetGpuVSyncEnabled(bool enabled) override;
+  void SetGpuVSyncCallback(GpuVSyncCallback callback) override;
   void SetDisplayTransformHint(gfx::OverlayTransform transform) override;
   gfx::OverlayTransform GetDisplayTransform() override;
   void SwapBuffers(OutputSurfaceFrame frame) override;
@@ -81,6 +85,7 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
   unsigned UpdateGpuFence() override;
   void SetNeedsSwapSizeNotifications(
       bool needs_swap_size_notifications) override;
+  base::ScopedClosureRunner GetCacheBackBufferCb() override;
 
   // SkiaOutputSurface implementation:
   SkCanvas* BeginPaintCurrentFrame() override;
@@ -109,6 +114,12 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
       sk_sp<SkColorSpace> color_space) override;
 
   void RemoveRenderPassResource(std::vector<RenderPassId> ids) override;
+  void ScheduleOverlays(OverlayList overlays,
+                        std::vector<gpu::SyncToken> sync_tokens) override;
+
+#if defined(OS_WIN)
+  void SetEnableDCLayers(bool enable) override;
+#endif
   void CopyOutput(RenderPassId id,
                   const copy_output::RenderPassGeometry& geometry,
                   const gfx::ColorSpace& color_space,
@@ -123,6 +134,7 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
       const gpu::MailboxHolder& holder,
       const gfx::Size& size,
       ResourceFormat format,
+      const base::Optional<gpu::VulkanYCbCrInfo>& ycbcr_info,
       sk_sp<SkColorSpace> color_space) override;
 
   // Set the fields of |capabilities_| and propagates to |impl_on_gpu_|. Should
@@ -134,9 +146,19 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
       base::OnceClosure callback,
       std::vector<gpu::SyncToken> sync_tokens) override;
 
+  // Wait on the resource sync tokens, and send the promotion hints to
+  // the |SharedImage| instances based on the |Mailbox| instances. This should
+  // exclude the actual overlay candidate.
+  void SendOverlayPromotionNotification(
+      std::vector<gpu::SyncToken> sync_tokens,
+      base::flat_set<gpu::Mailbox> promotion_denied,
+      base::flat_map<gpu::Mailbox, gfx::Rect> possible_promotions) override;
+
  private:
   bool Initialize();
-  void InitializeOnGpuThread(base::WaitableEvent* event, bool* result);
+  void InitializeOnGpuThread(GpuVSyncCallback vsync_callback_runner,
+                             base::WaitableEvent* event,
+                             bool* result);
   SkSurfaceCharacterization CreateSkSurfaceCharacterization(
       const gfx::Size& surface_size,
       ResourceFormat format,
@@ -145,16 +167,22 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
   void DidSwapBuffersComplete(gpu::SwapBuffersCompleteParams params,
                               const gfx::Size& pixel_size);
   void BufferPresented(const gfx::PresentationFeedback& feedback);
+
+  // Provided as a callback for the GPU thread.
+  void OnGpuVSync(base::TimeTicks timebase, base::TimeDelta interval);
+
   void ScheduleGpuTask(base::OnceClosure callback,
                        std::vector<gpu::SyncToken> sync_tokens);
   GrBackendFormat GetGrBackendFormatForTexture(
       ResourceFormat resource_format,
       uint32_t gl_texture_target,
-      base::Optional<gpu::VulkanYCbCrInfo> ycbcr_info = base::nullopt);
+      const base::Optional<gpu::VulkanYCbCrInfo>& ycbcr_info);
   void PrepareYUVATextureIndices(const std::vector<ImageContext*>& contexts,
                                  bool has_alpha,
                                  SkYUVAIndex indices[4]);
   void ContextLost();
+
+  void RecreateRootRecorder();
 
   OutputSurfaceClient* client_ = nullptr;
   bool needs_swap_size_notifications_ = false;
@@ -169,16 +197,35 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
 
   uint64_t sync_fence_release_ = 0;
   std::unique_ptr<SkiaOutputSurfaceDependency> dependency_;
-  const bool is_using_vulkan_;
   UpdateVSyncParametersCallback update_vsync_parameters_callback_;
+  GpuVSyncCallback gpu_vsync_callback_;
   bool is_displayed_as_overlay_ = false;
 
   std::unique_ptr<base::WaitableEvent> initialize_waitable_event_;
   SkSurfaceCharacterization characterization_;
-  base::Optional<SkDeferredDisplayListRecorder> recorder_;
+  base::Optional<SkDeferredDisplayListRecorder> root_recorder_;
 
-  // The current render pass id set by BeginPaintRenderPass.
-  RenderPassId current_render_pass_id_ = 0;
+  class ScopedPaint {
+   public:
+    explicit ScopedPaint(SkDeferredDisplayListRecorder* root_recorder);
+    ScopedPaint(SkSurfaceCharacterization characterization,
+                RenderPassId render_pass_id);
+    ~ScopedPaint();
+
+    SkDeferredDisplayListRecorder* recorder() { return recorder_; }
+    RenderPassId render_pass_id() { return render_pass_id_; }
+
+   private:
+    // This is recorder being used for current paint
+    SkDeferredDisplayListRecorder* recorder_;
+    // If we need new recorder for this Paint (i.e it's not root render pass),
+    // it's stored here
+    base::Optional<SkDeferredDisplayListRecorder> recorder_storage_;
+    const RenderPassId render_pass_id_;
+  };
+
+  // This holds current paint info
+  base::Optional<ScopedPaint> current_paint_;
 
   // The SkDDL recorder is used for overdraw feedback. It is created by
   // BeginPaintOverdraw, and FinishPaintCurrentFrame will turn it into a SkDDL
@@ -215,6 +262,10 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
   std::unique_ptr<SkiaOutputSurfaceImplOnGpu> impl_on_gpu_;
 
   base::Optional<gfx::Rect> draw_rectangle_;
+
+  // We defer the draw to the framebuffer until SwapBuffers or CopyOutput
+  // to avoid the expense of posting a task and calling MakeCurrent.
+  base::OnceCallback<bool()> deferred_framebuffer_draw_closure_;
 
   base::WeakPtr<SkiaOutputSurfaceImpl> weak_ptr_;
   base::WeakPtrFactory<SkiaOutputSurfaceImpl> weak_ptr_factory_{this};

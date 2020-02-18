@@ -56,12 +56,15 @@ class SafeBrowsingBlockingPage : public BaseBlockingPage {
   ~SafeBrowsingBlockingPage() override;
 
   // Creates a blocking page. Use ShowBlockingPage if you don't need to access
-  // the blocking page directly.
+  // the blocking page directly. |should_trigger_reporting| controls whether a
+  // safe browsing extended reporting report will be created for this blocking
+  // page.
   static SafeBrowsingBlockingPage* CreateBlockingPage(
       BaseUIManager* ui_manager,
       content::WebContents* web_contents,
       const GURL& main_frame_url,
-      const UnsafeResource& unsafe_resource);
+      const UnsafeResource& unsafe_resource,
+      bool should_trigger_reporting);
 
   // Shows a blocking page warning the user about phishing/malware for a
   // specific resource.
@@ -70,10 +73,6 @@ class SafeBrowsingBlockingPage : public BaseBlockingPage {
   // to proceed on the currently showing interstitial.
   static void ShowBlockingPage(BaseUIManager* ui_manager,
                                const UnsafeResource& resource);
-
-  // Called when there is user interaction with the interstitial (e.g. user
-  // clicks 'Back to Safety' or 'Proceed anyways').
-  void CommandReceived(const std::string& page_cmd) override;
 
   // Makes the passed |factory| the factory used to instantiate
   // SafeBrowsingBlockingPage objects. Useful for tests.
@@ -116,6 +115,7 @@ class SafeBrowsingBlockingPage : public BaseBlockingPage {
       const GURL& main_frame_url,
       const UnsafeResourceList& unsafe_resources,
       const BaseSafeBrowsingErrorUI::SBErrorDisplayOptions& display_options,
+      bool should_trigger_reporting,
       network::SharedURLLoaderFactory* url_loader_for_testing = nullptr);
 
   // Called after the user clicks OnProceed(). If the page has malicious
@@ -161,7 +161,8 @@ class SafeBrowsingBlockingPageFactory {
       BaseUIManager* ui_manager,
       content::WebContents* web_contents,
       const GURL& main_frame_url,
-      const SafeBrowsingBlockingPage::UnsafeResourceList& unsafe_resources) = 0;
+      const SafeBrowsingBlockingPage::UnsafeResourceList& unsafe_resources,
+      bool should_trigger_reporting) = 0;
 };
 
 }  // namespace safe_browsing

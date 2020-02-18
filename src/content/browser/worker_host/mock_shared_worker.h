@@ -14,11 +14,11 @@
 
 #include "base/macros.h"
 #include "content/browser/worker_host/shared_worker_host.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "services/network/public/mojom/content_security_policy.mojom-forward.h"
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/controller_service_worker.mojom.h"
@@ -29,7 +29,7 @@
 class GURL;
 
 namespace blink {
-class URLLoaderFactoryBundleInfo;
+class PendingURLLoaderFactoryBundle;
 }  // namespace blink
 
 namespace content {
@@ -67,7 +67,7 @@ class MockSharedWorkerFactory : public blink::mojom::SharedWorkerFactory {
   bool CheckReceivedCreateSharedWorker(
       const GURL& expected_url,
       const std::string& expected_name,
-      blink::mojom::ContentSecurityPolicyType
+      network::mojom::ContentSecurityPolicyType
           expected_content_security_policy_type,
       mojo::Remote<blink::mojom::SharedWorkerHost>* host,
       mojo::PendingReceiver<blink::mojom::SharedWorker>* receiver);
@@ -88,12 +88,11 @@ class MockSharedWorkerFactory : public blink::mojom::SharedWorkerFactory {
           service_worker_provider_info,
       const base::Optional<base::UnguessableToken>& appcache_host_id,
       blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params,
-      std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
+      std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
           subresource_loader_factories,
       blink::mojom::ControllerServiceWorkerInfoPtr controller_info,
       mojo::PendingRemote<blink::mojom::SharedWorkerHost> host,
       mojo::PendingReceiver<blink::mojom::SharedWorker> receiver,
-      service_manager::mojom::InterfaceProviderPtr interface_provider,
       mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
           browser_interface_broker) override;
 
@@ -106,7 +105,6 @@ class MockSharedWorkerFactory : public blink::mojom::SharedWorkerFactory {
         content_settings;
     mojo::PendingRemote<blink::mojom::SharedWorkerHost> host;
     mojo::PendingReceiver<blink::mojom::SharedWorker> receiver;
-    service_manager::mojom::InterfaceProviderPtr interface_provider;
   };
 
   mojo::Receiver<blink::mojom::SharedWorkerFactory> receiver_;

@@ -52,12 +52,14 @@ IDBTransaction* IDBTransaction::CreateNonVersionChange(
     int64_t id,
     const HashSet<String>& scope,
     mojom::IDBTransactionMode mode,
+    mojom::IDBTransactionDurability durability,
     IDBDatabase* db) {
   DCHECK_NE(mode, mojom::IDBTransactionMode::VersionChange);
   DCHECK(!scope.IsEmpty()) << "Non-version transactions should operate on a "
                               "well-defined set of stores";
-  return MakeGarbageCollected<IDBTransaction>(
-      script_state, std::move(transaction_backend), id, scope, mode, db);
+  return MakeGarbageCollected<IDBTransaction>(script_state,
+                                              std::move(transaction_backend),
+                                              id, scope, mode, durability, db);
 }
 
 IDBTransaction* IDBTransaction::CreateVersionChange(
@@ -78,12 +80,14 @@ IDBTransaction::IDBTransaction(
     int64_t id,
     const HashSet<String>& scope,
     mojom::IDBTransactionMode mode,
+    mojom::IDBTransactionDurability durability,
     IDBDatabase* db)
     : ContextLifecycleObserver(ExecutionContext::From(script_state)),
       transaction_backend_(std::move(transaction_backend)),
       id_(id),
       database_(db),
       mode_(mode),
+      durability_(durability),
       scope_(scope),
       event_queue_(
           MakeGarbageCollected<EventQueue>(ExecutionContext::From(script_state),
@@ -122,6 +126,7 @@ IDBTransaction::IDBTransaction(
       database_(db),
       open_db_request_(open_db_request),
       mode_(mojom::IDBTransactionMode::VersionChange),
+      durability_(mojom::IDBTransactionDurability::Default),
       state_(kInactive),
       old_database_metadata_(old_metadata),
       event_queue_(
@@ -315,16 +320,28 @@ void IDBTransaction::IndexDeleted(IDBIndex* index) {
   deleted_indexes_.push_back(index);
 }
 
-void IDBTransaction::SetActive(bool active) {
-  DCHECK_NE(state_, kFinished) << "A finished transaction tried to SetActive("
-                               << (active ? "true" : "false") << ")";
+void IDBTransaction::SetActive(bool new_is_active) {
+  DCHECK_NE(state_, kFinished)
+      << "A finished transaction tried to SetActive(" << new_is_active << ")";
   if (state_ == kFinishing)
     return;
-  DCHECK_NE(active, (state_ == kActive));
-  state_ = active ? kActive : kInactive;
+  DCHECK_NE(new_is_active, (state_ == kActive));
+  state_ = new_is_active ? kActive : kInactive;
 
-  if (!active && request_list_.IsEmpty() && transaction_backend())
+  if (!new_is_active && request_list_.IsEmpty() && transaction_backend())
     transaction_backend()->Commit(num_errors_handled_);
+}
+
+void IDBTransaction::SetActiveDuringSerialization(bool new_is_active) {
+  if (new_is_active) {
+    DCHECK_EQ(state_, kInactive)
+        << "Incorrect state restore during Structured Serialization";
+    state_ = kActive;
+  } else {
+    DCHECK_EQ(state_, kActive)
+        << "Structured serialization attempted while transaction is inactive";
+    state_ = kInactive;
+  }
 }
 
 void IDBTransaction::abort(ExceptionState& exception_state) {
@@ -493,6 +510,21 @@ const String& IDBTransaction::mode() const {
 
   NOTREACHED();
   return indexed_db_names::kReadonly;
+}
+
+const String& IDBTransaction::durability() const {
+  switch (durability_) {
+    case mojom::IDBTransactionDurability::Default:
+      return indexed_db_names::kDefault;
+
+    case mojom::IDBTransactionDurability::Strict:
+      return indexed_db_names::kStrict;
+
+    case mojom::IDBTransactionDurability::Relaxed:
+      return indexed_db_names::kRelaxed;
+  }
+
+  NOTREACHED();
 }
 
 DOMStringList* IDBTransaction::objectStoreNames() const {

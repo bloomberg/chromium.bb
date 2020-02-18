@@ -5,8 +5,7 @@
 #ifndef PLATFORM_IMPL_TEXT_TRACE_LOGGING_PLATFORM_H_
 #define PLATFORM_IMPL_TEXT_TRACE_LOGGING_PLATFORM_H_
 
-#include "platform/api/trace_logging.h"
-#include "platform/api/trace_logging_types.h"
+#include "platform/api/trace_logging_platform.h"
 
 namespace openscreen {
 namespace platform {
@@ -14,7 +13,9 @@ namespace platform {
 class TextTraceLoggingPlatform : public TraceLoggingPlatform {
  public:
   TextTraceLoggingPlatform();
-  ~TextTraceLoggingPlatform();
+  ~TextTraceLoggingPlatform() override;
+
+  bool IsTraceLoggingEnabled(TraceCategory::Value category) override;
 
   void LogTrace(const char* name,
                 const uint32_t line,

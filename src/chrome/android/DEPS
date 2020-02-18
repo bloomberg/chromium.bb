@@ -1,5 +1,5 @@
 include_rules = [
-  "+chrome/lib/util/public",
+  "+chrome/browser/notifications",
   "+components/content_capture",
   "+components/download",
   "+components/favicon_base",

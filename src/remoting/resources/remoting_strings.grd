@@ -81,80 +81,80 @@
     <output filename="remoting/resources/zh-CN.pak" lang="zh-CN" type="data_package"/>
     <output filename="remoting/resources/zh-TW.pak" lang="zh-TW" type="data_package"/>
 
-    <output filename="remoting/webapp/_locales/am/messages.json" lang="am" type="chrome_messages_json"/>
-    <output filename="remoting/webapp/_locales/ar/messages.json" lang="ar" type="chrome_messages_json"/>
-    <output filename="remoting/webapp/_locales/bg/messages.json" lang="bg" type="chrome_messages_json"/>
-    <output filename="remoting/webapp/_locales/bn/messages.json" lang="bn" type="chrome_messages_json"/>
-    <output filename="remoting/webapp/_locales/ca/messages.json" lang="ca" type="chrome_messages_json"/>
-    <output filename="remoting/webapp/_locales/cs/messages.json" lang="cs" type="chrome_messages_json"/>
-    <output filename="remoting/webapp/_locales/da/messages.json" lang="da" type="chrome_messages_json"/>
-    <output filename="remoting/webapp/_locales/de/messages.json" lang="de" type="chrome_messages_json"/>
-    <output filename="remoting/webapp/_locales/fa/messages.json" lang="fa" type="chrome_messages_json"/>
+    <output filename="remoting/resources/_locales/am/messages.json" lang="am" type="chrome_messages_json"/>
+    <output filename="remoting/resources/_locales/ar/messages.json" lang="ar" type="chrome_messages_json"/>
+    <output filename="remoting/resources/_locales/bg/messages.json" lang="bg" type="chrome_messages_json"/>
+    <output filename="remoting/resources/_locales/bn/messages.json" lang="bn" type="chrome_messages_json"/>
+    <output filename="remoting/resources/_locales/ca/messages.json" lang="ca" type="chrome_messages_json"/>
+    <output filename="remoting/resources/_locales/cs/messages.json" lang="cs" type="chrome_messages_json"/>
+    <output filename="remoting/resources/_locales/da/messages.json" lang="da" type="chrome_messages_json"/>
+    <output filename="remoting/resources/_locales/de/messages.json" lang="de" type="chrome_messages_json"/>
+    <output filename="remoting/resources/_locales/fa/messages.json" lang="fa" type="chrome_messages_json"/>
     <if expr="not is_ios or not _official_build">
       <!-- The fake-bidi locale isn't accepted by the app store. -->
-      <output filename="remoting/webapp/_locales/fake_bidi/messages.json" lang="fake-bidi" type="chrome_messages_json"/>
+      <output filename="remoting/resources/_locales/fake_bidi/messages.json" lang="fake-bidi" type="chrome_messages_json"/>
     </if>
-    <output filename="remoting/webapp/_locales/el/messages.json" lang="el" type="chrome_messages_json"/>
-    <output filename="remoting/webapp/_locales/en/messages.json" lang="en" type="chrome_messages_json"/>
+    <output filename="remoting/resources/_locales/el/messages.json" lang="el" type="chrome_messages_json"/>
+    <output filename="remoting/resources/_locales/en/messages.json" lang="en" type="chrome_messages_json"/>
     <if expr="chromeos">
       <!-- lang="en-US" will create an empty json file. -->
-      <output filename="remoting/webapp/_locales/en_US/messages.json" lang="en" type="chrome_messages_json"/>
+      <output filename="remoting/resources/_locales/en_US/messages.json" lang="en" type="chrome_messages_json"/>
     </if>
-    <output filename="remoting/webapp/_locales/en_GB/messages.json" lang="en-GB" type="chrome_messages_json"/>
-    <output filename="remoting/webapp/_locales/es/messages.json" lang="es" type="chrome_messages_json"/>
+    <output filename="remoting/resources/_locales/en_GB/messages.json" lang="en-GB" type="chrome_messages_json"/>
+    <output filename="remoting/resources/_locales/es/messages.json" lang="es" type="chrome_messages_json"/>
     <if expr="is_ios">
       <!-- iOS uses es-MX for es-419 -->
-      <output filename="remoting/webapp/_locales/es_MX/messages.json" lang="es-419" type="chrome_messages_json"/>
+      <output filename="remoting/resources/_locales/es_MX/messages.json" lang="es-419" type="chrome_messages_json"/>
     </if>
     <if expr="not is_ios">
-      <output filename="remoting/webapp/_locales/es_419/messages.json" lang="es-419" type="chrome_messages_json"/>
+      <output filename="remoting/resources/_locales/es_419/messages.json" lang="es-419" type="chrome_messages_json"/>
     </if>
-    <output filename="remoting/webapp/_locales/et/messages.json" lang="et" type="chrome_messages_json"/>
-    <output filename="remoting/webapp/_locales/fi/messages.json" lang="fi" type="chrome_messages_json"/>
-    <output filename="remoting/webapp/_locales/fil/messages.json" lang="fil" type="chrome_messages_json"/>
-    <output filename="remoting/webapp/_locales/fr/messages.json" lang="fr" type="chrome_messages_json"/>
-    <output filename="remoting/webapp/_locales/gu/messages.json" lang="gu" type="chrome_messages_json"/>
-    <output filename="remoting/webapp/_locales/he/messages.json" lang="he" type="chrome_messages_json"/>
-    <output filename="remoting/webapp/_locales/hi/messages.json" lang="hi" type="chrome_messages_json"/>
-    <output filename="remoting/webapp/_locales/hr/messages.json" lang="hr" type="chrome_messages_json"/>
-    <output filename="remoting/webapp/_locales/hu/messages.json" lang="hu" type="chrome_messages_json"/>
-    <output filename="remoting/webapp/_locales/id/messages.json" lang="id" type="chrome_messages_json"/>
-    <output filename="remoting/webapp/_locales/it/messages.json" lang="it" type="chrome_messages_json"/>
-    <output filename="remoting/webapp/_locales/ja/messages.json" lang="ja" type="chrome_messages_json"/>
-    <output filename="remoting/webapp/_locales/kn/messages.json" lang="kn" type="chrome_messages_json"/>
-    <output filename="remoting/webapp/_locales/ko/messages.json" lang="ko" type="chrome_messages_json"/>
-    <output filename="remoting/webapp/_locales/lt/messages.json" lang="lt" type="chrome_messages_json"/>
-    <output filename="remoting/webapp/_locales/lv/messages.json" lang="lv" type="chrome_messages_json"/>
+    <output filename="remoting/resources/_locales/et/messages.json" lang="et" type="chrome_messages_json"/>
+    <output filename="remoting/resources/_locales/fi/messages.json" lang="fi" type="chrome_messages_json"/>
+    <output filename="remoting/resources/_locales/fil/messages.json" lang="fil" type="chrome_messages_json"/>
+    <output filename="remoting/resources/_locales/fr/messages.json" lang="fr" type="chrome_messages_json"/>
+    <output filename="remoting/resources/_locales/gu/messages.json" lang="gu" type="chrome_messages_json"/>
+    <output filename="remoting/resources/_locales/he/messages.json" lang="he" type="chrome_messages_json"/>
+    <output filename="remoting/resources/_locales/hi/messages.json" lang="hi" type="chrome_messages_json"/>
+    <output filename="remoting/resources/_locales/hr/messages.json" lang="hr" type="chrome_messages_json"/>
+    <output filename="remoting/resources/_locales/hu/messages.json" lang="hu" type="chrome_messages_json"/>
+    <output filename="remoting/resources/_locales/id/messages.json" lang="id" type="chrome_messages_json"/>
+    <output filename="remoting/resources/_locales/it/messages.json" lang="it" type="chrome_messages_json"/>
+    <output filename="remoting/resources/_locales/ja/messages.json" lang="ja" type="chrome_messages_json"/>
+    <output filename="remoting/resources/_locales/kn/messages.json" lang="kn" type="chrome_messages_json"/>
+    <output filename="remoting/resources/_locales/ko/messages.json" lang="ko" type="chrome_messages_json"/>
+    <output filename="remoting/resources/_locales/lt/messages.json" lang="lt" type="chrome_messages_json"/>
+    <output filename="remoting/resources/_locales/lv/messages.json" lang="lv" type="chrome_messages_json"/>
     <!-- The translation console uses 'no' for Norwegian (Bokmål), but Chrome uses 'nb'. -->
-    <output filename="remoting/webapp/_locales/ml/messages.json" lang="ml" type="chrome_messages_json"/>
-    <output filename="remoting/webapp/_locales/mr/messages.json" lang="mr" type="chrome_messages_json"/>
-    <output filename="remoting/webapp/_locales/ms/messages.json" lang="ms" type="chrome_messages_json"/>
-    <output filename="remoting/webapp/_locales/nb/messages.json" lang="no" type="chrome_messages_json"/>
-    <output filename="remoting/webapp/_locales/nl/messages.json" lang="nl" type="chrome_messages_json"/>
-    <output filename="remoting/webapp/_locales/pl/messages.json" lang="pl" type="chrome_messages_json"/>
+    <output filename="remoting/resources/_locales/ml/messages.json" lang="ml" type="chrome_messages_json"/>
+    <output filename="remoting/resources/_locales/mr/messages.json" lang="mr" type="chrome_messages_json"/>
+    <output filename="remoting/resources/_locales/ms/messages.json" lang="ms" type="chrome_messages_json"/>
+    <output filename="remoting/resources/_locales/nb/messages.json" lang="no" type="chrome_messages_json"/>
+    <output filename="remoting/resources/_locales/nl/messages.json" lang="nl" type="chrome_messages_json"/>
+    <output filename="remoting/resources/_locales/pl/messages.json" lang="pl" type="chrome_messages_json"/>
     <if expr="is_ios">
       <!-- iOS uses pt for pt-BR -->
-      <output filename="remoting/webapp/_locales/pt/messages.json" lang="pt-BR" type="chrome_messages_json"/>
+      <output filename="remoting/resources/_locales/pt/messages.json" lang="pt-BR" type="chrome_messages_json"/>
     </if>
     <if expr="not is_ios">
-      <output filename="remoting/webapp/_locales/pt_BR/messages.json" lang="pt-BR" type="chrome_messages_json"/>
+      <output filename="remoting/resources/_locales/pt_BR/messages.json" lang="pt-BR" type="chrome_messages_json"/>
     </if>
-    <output filename="remoting/webapp/_locales/pt_PT/messages.json" lang="pt-PT" type="chrome_messages_json"/>
-    <output filename="remoting/webapp/_locales/ro/messages.json" lang="ro" type="chrome_messages_json"/>
-    <output filename="remoting/webapp/_locales/ru/messages.json" lang="ru" type="chrome_messages_json"/>
-    <output filename="remoting/webapp/_locales/sk/messages.json" lang="sk" type="chrome_messages_json"/>
-    <output filename="remoting/webapp/_locales/sl/messages.json" lang="sl" type="chrome_messages_json"/>
-    <output filename="remoting/webapp/_locales/sr/messages.json" lang="sr" type="chrome_messages_json"/>
-    <output filename="remoting/webapp/_locales/sv/messages.json" lang="sv" type="chrome_messages_json"/>
-    <output filename="remoting/webapp/_locales/sw/messages.json" lang="sw" type="chrome_messages_json"/>
-    <output filename="remoting/webapp/_locales/ta/messages.json" lang="ta" type="chrome_messages_json"/>
-    <output filename="remoting/webapp/_locales/te/messages.json" lang="te" type="chrome_messages_json"/>
-    <output filename="remoting/webapp/_locales/th/messages.json" lang="th" type="chrome_messages_json"/>
-    <output filename="remoting/webapp/_locales/tr/messages.json" lang="tr" type="chrome_messages_json"/>
-    <output filename="remoting/webapp/_locales/uk/messages.json" lang="uk" type="chrome_messages_json"/>
-    <output filename="remoting/webapp/_locales/vi/messages.json" lang="vi" type="chrome_messages_json"/>
-    <output filename="remoting/webapp/_locales/zh_CN/messages.json" lang="zh-CN" type="chrome_messages_json"/>
-    <output filename="remoting/webapp/_locales/zh_TW/messages.json" lang="zh-TW" type="chrome_messages_json"/>
+    <output filename="remoting/resources/_locales/pt_PT/messages.json" lang="pt-PT" type="chrome_messages_json"/>
+    <output filename="remoting/resources/_locales/ro/messages.json" lang="ro" type="chrome_messages_json"/>
+    <output filename="remoting/resources/_locales/ru/messages.json" lang="ru" type="chrome_messages_json"/>
+    <output filename="remoting/resources/_locales/sk/messages.json" lang="sk" type="chrome_messages_json"/>
+    <output filename="remoting/resources/_locales/sl/messages.json" lang="sl" type="chrome_messages_json"/>
+    <output filename="remoting/resources/_locales/sr/messages.json" lang="sr" type="chrome_messages_json"/>
+    <output filename="remoting/resources/_locales/sv/messages.json" lang="sv" type="chrome_messages_json"/>
+    <output filename="remoting/resources/_locales/sw/messages.json" lang="sw" type="chrome_messages_json"/>
+    <output filename="remoting/resources/_locales/ta/messages.json" lang="ta" type="chrome_messages_json"/>
+    <output filename="remoting/resources/_locales/te/messages.json" lang="te" type="chrome_messages_json"/>
+    <output filename="remoting/resources/_locales/th/messages.json" lang="th" type="chrome_messages_json"/>
+    <output filename="remoting/resources/_locales/tr/messages.json" lang="tr" type="chrome_messages_json"/>
+    <output filename="remoting/resources/_locales/uk/messages.json" lang="uk" type="chrome_messages_json"/>
+    <output filename="remoting/resources/_locales/vi/messages.json" lang="vi" type="chrome_messages_json"/>
+    <output filename="remoting/resources/_locales/zh_CN/messages.json" lang="zh-CN" type="chrome_messages_json"/>
+    <output filename="remoting/resources/_locales/zh_TW/messages.json" lang="zh-TW" type="chrome_messages_json"/>
 
     <if expr="is_android">
       <output filename="remoting/android/res/values-am/remoting_strings.xml" lang="am" type="android" context="android_java"/>
@@ -206,10 +206,15 @@
 
   </outputs>
   <translations>
+    <file lang="af" path="remoting_strings_af.xtb"/>
     <file lang="am" path="remoting_strings_am.xtb"/>
     <file lang="ar" path="remoting_strings_ar.xtb"/>
+    <file lang="as" path="remoting_strings_as.xtb"/>
+    <file lang="az" path="remoting_strings_az.xtb"/>
+    <file lang="be" path="remoting_strings_be.xtb"/>
     <file lang="bg" path="remoting_strings_bg.xtb"/>
     <file lang="bn" path="remoting_strings_bn.xtb"/>
+    <file lang="bs" path="remoting_strings_bs.xtb"/>
     <file lang="ca" path="remoting_strings_ca.xtb"/>
     <file lang="cs" path="remoting_strings_cs.xtb"/>
     <file lang="da" path="remoting_strings_da.xtb"/>
@@ -219,35 +224,53 @@
     <file lang="es" path="remoting_strings_es.xtb"/>
     <file lang="es-419" path="remoting_strings_es-419.xtb"/>
     <file lang="et" path="remoting_strings_et.xtb"/>
+    <file lang="eu" path="remoting_strings_eu.xtb"/>
     <file lang="fa" path="remoting_strings_fa.xtb"/>
     <file lang="fi" path="remoting_strings_fi.xtb"/>
     <file lang="fil" path="remoting_strings_fil.xtb"/>
     <file lang="fr" path="remoting_strings_fr.xtb"/>
+    <file lang="fr-CA" path="remoting_strings_fr-CA.xtb"/>
+    <file lang="gl" path="remoting_strings_gl.xtb"/>
     <file lang="gu" path="remoting_strings_gu.xtb"/>
     <!-- The translation console uses 'iw' for Hebrew, but we use 'he'. -->
     <file lang="he" path="remoting_strings_iw.xtb"/>
     <file lang="hi" path="remoting_strings_hi.xtb"/>
     <file lang="hr" path="remoting_strings_hr.xtb"/>
     <file lang="hu" path="remoting_strings_hu.xtb"/>
+    <file lang="hy" path="remoting_strings_hy.xtb"/>
     <file lang="id" path="remoting_strings_id.xtb"/>
+    <file lang="is" path="remoting_strings_is.xtb"/>
     <file lang="it" path="remoting_strings_it.xtb"/>
     <file lang="ja" path="remoting_strings_ja.xtb"/>
+    <file lang="ka" path="remoting_strings_ka.xtb"/>
+    <file lang="kk" path="remoting_strings_kk.xtb"/>
+    <file lang="km" path="remoting_strings_km.xtb"/>
     <file lang="kn" path="remoting_strings_kn.xtb"/>
     <file lang="ko" path="remoting_strings_ko.xtb"/>
+    <file lang="ky" path="remoting_strings_ky.xtb"/>
+    <file lang="lo" path="remoting_strings_lo.xtb"/>
     <file lang="lt" path="remoting_strings_lt.xtb"/>
     <file lang="lv" path="remoting_strings_lv.xtb"/>
+    <file lang="mk" path="remoting_strings_mk.xtb"/>
     <file lang="ml" path="remoting_strings_ml.xtb"/>
+    <file lang="mn" path="remoting_strings_mn.xtb"/>
     <file lang="mr" path="remoting_strings_mr.xtb"/>
     <file lang="ms" path="remoting_strings_ms.xtb"/>
-    <file lang="no" path="remoting_strings_no.xtb"/>
+    <file lang="my" path="remoting_strings_my.xtb"/>
+    <file lang="ne" path="remoting_strings_ne.xtb"/>
     <file lang="nl" path="remoting_strings_nl.xtb"/>
+    <file lang="no" path="remoting_strings_no.xtb"/>
+    <file lang="or" path="remoting_strings_or.xtb"/>
+    <file lang="pa" path="remoting_strings_pa.xtb"/>
     <file lang="pl" path="remoting_strings_pl.xtb"/>
     <file lang="pt-BR" path="remoting_strings_pt-BR.xtb"/>
     <file lang="pt-PT" path="remoting_strings_pt-PT.xtb"/>
     <file lang="ro" path="remoting_strings_ro.xtb"/>
     <file lang="ru" path="remoting_strings_ru.xtb"/>
+    <file lang="si" path="remoting_strings_si.xtb"/>
     <file lang="sk" path="remoting_strings_sk.xtb"/>
     <file lang="sl" path="remoting_strings_sl.xtb"/>
+    <file lang="sq" path="remoting_strings_sq.xtb"/>
     <file lang="sr" path="remoting_strings_sr.xtb"/>
     <file lang="sv" path="remoting_strings_sv.xtb"/>
     <file lang="sw" path="remoting_strings_sw.xtb"/>
@@ -256,9 +279,13 @@
     <file lang="th" path="remoting_strings_th.xtb"/>
     <file lang="tr" path="remoting_strings_tr.xtb"/>
     <file lang="uk" path="remoting_strings_uk.xtb"/>
+    <file lang="ur" path="remoting_strings_ur.xtb"/>
+    <file lang="uz" path="remoting_strings_uz.xtb"/>
     <file lang="vi" path="remoting_strings_vi.xtb"/>
     <file lang="zh-CN" path="remoting_strings_zh-CN.xtb"/>
+    <file lang="zh-HK" path="remoting_strings_zh-HK.xtb"/>
     <file lang="zh-TW" path="remoting_strings_zh-TW.xtb"/>
+    <file lang="zu" path="remoting_strings_zu.xtb"/>
   </translations>
   <release allow_pseudo="false" seq="1">
     <messages fallback_to_english="true">
@@ -658,6 +685,12 @@
         </message>
         <message name="IDS_PRIVACY_POLICY" desc="The label to access the privacy policy, displayed in navigation menu." formatter_data="android_java">
           Privacy Policy
+        </message>
+        <message name="IDS_DISMISS" desc="Label for button to dismiss a dialog" formatter_data="android_java">
+          Dismiss
+        </message>
+        <message name="IDS_DONT_SHOW_AGAIN" desc="Label for checkbox to make a dialog not showing again." formatter_data="android_java">
+          Don't show again
         </message>
       </if>  <!-- is_android or is_ios -->
 
@@ -1315,21 +1348,49 @@
         <message name="IDS_HOST_AUTHENTICATION_PROMPT" desc="The prompt to be displayed in the authentication dialog when making changes to the system.  The system will add a sentence asking for an administrator's name and password.  Mac-only.">
           <ph name="PRODUCT_NAME">$1<ex>Chrome Remote Desktop</ex></ph> wants to make changes.
         </message>
-        <message name="IDS_ACCESSIBILITY_PERMISSION_DIALOG_TITLE" desc="The title of the prompt that asks the user to turn on the Chrome Remote Desktop service. This setting lives in the 'Accessibility' section of the 'Privacy and Security' preferences pane. Mac-only.">
-          Allow remote users to control this Mac
+        <message name="IDS_MAC_PERMISSION_WIZARD_TITLE" desc="The title of the dialog/wizard that asks the user to grant various OS permissions to the Chrome Remote Desktop service. Mac-only.">
+          Grant permission to <ph name="PRODUCT_NAME">$1<ex>Chrome Remote Desktop</ex></ph>
+        </message>
+        <message name="IDS_MAC_PERMISSION_WIZARD_NEXT_BUTTON" desc="The text on the button in the Mac permission wizard that takes the user to the next stage of the wizard. Mac-only.">
+          Next
+        </message>
+        <message name="IDS_MAC_PERMISSION_WIZARD_OK_BUTTON" desc="The text on the button on the final part of the Mac permission wizard that exits the wizard. Mac-only.">
+          OK
+        </message>
+        <message name="IDS_MAC_PERMISSION_WIZARD_CANCEL_BUTTON" desc="The text on the button in the Mac permission wizard that allows the user to cancel the permission setup and exits the wizard. Mac-only.">
+          Cancel
+        </message>
+        <message name="IDS_MAC_PERMISSION_WIZARD_FINAL_TEXT" desc="The text shown on the final screen of the permission wizard that lets the user know they have successfully granted the permissions necessary for Chrome Remote Desktop to work properly. Mac-only.">
+          You're all set!
+        </message>
+        <message name="IDS_ACCESSIBILITY_PERMISSION_DIALOG_TITLE" desc="The title of the prompt that asks the user to grant 'Accessibility' permission to the Chrome Remote Desktop service. This permission is part of the 'Privacy and Security' preferences pane. Mac-only.">
+          Grant 'Accessibility' permission to <ph name="PRODUCT_NAME">$1<ex>Chrome Remote Desktop</ex></ph>
         </message>
         <message name="IDS_ACCESSIBILITY_PERMISSION_DIALOG_BODY_TEXT" desc="The body text of the prompt that asks the user to turn on the Chrome Remote Desktop service. This setting lives in the 'Accessibility' section of the 'Privacy and Security' preferences pane. Mac-only.">
-To use <ph name="PRODUCT_NAME">$1<ex>Chrome Remote Desktop</ex></ph> on this Mac, follow these steps:
+To use <ph name="PRODUCT_NAME">$1<ex>Chrome Remote Desktop</ex></ph>, you need to grant the 'Accessibility' permission so that input from the remote machine can be injected on this Mac.
 
-Select '<ph name="BUTTON_NAME">$2<ex>Open Preferences</ex></ph>' below. In your Security and Privacy preferences, check the box next to '<ph name="SERVICE_SCRIPT_NAME">$3<ex>org.chromium.chromoting.me2me.sh</ex></ph>'.
+To grant this permission, click '<ph name="BUTTON_NAME">$2<ex>Open Accessibility Preferences</ex></ph>' below to open the 'Accessibility' preferences pane and then check the box next to '<ph name="SERVICE_SCRIPT_NAME">$3<ex>org.chromium.chromoting.me2me.sh</ex></ph>'.
 
 If '<ph name="SERVICE_SCRIPT_NAME">$3<ex>org.chromium.chromoting.me2me.sh</ex></ph>' is already checked, uncheck it and then check it again.
         </message>
         <message name="IDS_ACCESSIBILITY_PERMISSION_DIALOG_OPEN_BUTTON" desc="The button text of the prompt that asks the user to turn on the Chrome Remote Desktop service. This setting lives in the 'Accessibility' section of the 'Privacy and Security' preferences pane. Selecting this button will open the 'Privacy and Security' preferences pane. Mac-only.">
-          Open Preferences
+          Open Accessibility Preferences
         </message>
-        <message name="IDS_ACCESSIBILITY_PERMISSION_DIALOG_NOT_NOW_BUTTON" desc="The button text of the prompt that asks the user to turn on the Chrome Remote Desktop service. This setting lives in the 'Accessibility' section of the 'Privacy and Security' preferences pane. When the user selects this button, they decline to turn on Chrome Remote Desktop and this dialog will close. Mac-only.">
+        <message name="IDS_ACCESSIBILITY_PERMISSION_DIALOG_NOT_NOW_BUTTON" desc="The text on the button in the permissions dialog that allows the user to skip granting permission at this time. When the user selects this button, they decline to turn on Chrome Remote Desktop and this dialog will close. Mac-only.">
           Not Now
+        </message>
+        <message name="IDS_SCREEN_RECORDING_PERMISSION_DIALOG_TITLE" desc="The title of the prompt that asks the user to grant 'Screen Recording' permission to the Chrome Remote Desktop service. This permission is part of the 'Privacy and Security' preferences pane. Mac-only.">
+          Grant 'Screen Recording' permission to <ph name="PRODUCT_NAME">$1<ex>Chrome Remote Desktop</ex></ph>
+        </message>
+        <message name="IDS_SCREEN_RECORDING_PERMISSION_DIALOG_BODY_TEXT" desc="The body text that asks the user to grant the 'Screen Recording' permission to the Chrome Remote Desktop service. Mac-only, OS 10.15 and later.">
+To use <ph name="PRODUCT_NAME">$1<ex>Chrome Remote Desktop</ex></ph>, you need to grant the 'Screen Recording' permission so that the screen contents on this Mac can be sent to the remote machine.
+
+To grant this permission, click '<ph name="BUTTON_NAME">$2<ex>Open Screen Recording Preferences</ex></ph>' below to open the 'Screen Recording' preferences pane and then check the box next to '<ph name="SERVICE_SCRIPT_NAME">$3<ex>org.chromium.chromoting.me2me.sh</ex></ph>'.
+
+If '<ph name="SERVICE_SCRIPT_NAME">$3<ex>org.chromium.chromoting.me2me.sh</ex></ph>' is already checked, uncheck it and then check it again.
+        </message>
+        <message name="IDS_SCREEN_RECORDING_PERMISSION_DIALOG_OPEN_BUTTON" desc="The text on the button in the permissions dialog that takes the user to the 'Screen Recording' preferences panel. Mac-only, OS 10.15 and later.">
+          Open Screen Recording Preferences
         </message>
       </if>
       <if expr="is_linux">

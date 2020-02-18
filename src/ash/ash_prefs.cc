@@ -32,12 +32,12 @@ namespace {
 
 // Registers prefs whose default values are same in user and signin prefs.
 void RegisterProfilePrefs(PrefRegistrySimple* registry, bool for_test) {
-  AccessibilityControllerImpl::RegisterProfilePrefs(registry, for_test);
+  AccessibilityControllerImpl::RegisterProfilePrefs(registry);
   AppListControllerImpl::RegisterProfilePrefs(registry);
   AssistantController::RegisterProfilePrefs(registry);
   BluetoothPowerController::RegisterProfilePrefs(registry);
   CapsLockNotificationController::RegisterProfilePrefs(registry, for_test);
-  DockedMagnifierControllerImpl::RegisterProfilePrefs(registry, for_test);
+  DockedMagnifierControllerImpl::RegisterProfilePrefs(registry);
   LoginScreenController::RegisterProfilePrefs(registry, for_test);
   LogoutButtonTray::RegisterProfilePrefs(registry);
   MediaControllerImpl::RegisterProfilePrefs(registry);
@@ -48,7 +48,10 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry, bool for_test) {
   ShelfController::RegisterProfilePrefs(registry);
   TouchDevicesController::RegisterProfilePrefs(registry);
   tray::VPNListView::RegisterProfilePrefs(registry);
-  chromeos::assistant::prefs::RegisterProfilePrefsForeign(registry, for_test);
+
+  // ash_unittests relies on assistant prefs.
+  if (for_test)
+    chromeos::assistant::prefs::RegisterProfilePrefs(registry);
 }
 
 }  // namespace
@@ -64,12 +67,12 @@ void RegisterLocalStatePrefs(PrefRegistrySimple* registry, bool for_test) {
 
 void RegisterSigninProfilePrefs(PrefRegistrySimple* registry, bool for_test) {
   RegisterProfilePrefs(registry, for_test);
-  PowerPrefs::RegisterSigninProfilePrefs(registry, for_test);
+  PowerPrefs::RegisterSigninProfilePrefs(registry);
 }
 
 void RegisterUserProfilePrefs(PrefRegistrySimple* registry, bool for_test) {
   RegisterProfilePrefs(registry, for_test);
-  PowerPrefs::RegisterUserProfilePrefs(registry, for_test);
+  PowerPrefs::RegisterUserProfilePrefs(registry);
 }
 
 }  // namespace ash

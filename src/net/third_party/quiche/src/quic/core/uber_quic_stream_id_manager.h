@@ -21,7 +21,10 @@ class QuicSession;
 class QUIC_EXPORT_PRIVATE UberQuicStreamIdManager {
  public:
   UberQuicStreamIdManager(
-      QuicSession* session,
+      Perspective perspective,
+      ParsedQuicVersion version,
+      QuicStreamIdManager::DelegateInterface* delegate,
+      QuicStreamCount num_expected_unidirectional_static_streams,
       QuicStreamCount max_open_outgoing_bidirectional_streams,
       QuicStreamCount max_open_outgoing_unidirectional_streams,
       QuicStreamCount max_open_incoming_bidirectional_streams,
@@ -70,18 +73,24 @@ class QUIC_EXPORT_PRIVATE UberQuicStreamIdManager {
   void SetLargestPeerCreatedStreamId(
       QuicStreamId largest_peer_created_stream_id);
 
+  QuicStreamId GetLargestPeerCreatedStreamId(bool unidirectional) const;
+
   QuicStreamId next_outgoing_bidirectional_stream_id() const;
   QuicStreamId next_outgoing_unidirectional_stream_id() const;
 
-  size_t max_allowed_outgoing_bidirectional_streams() const;
-  size_t max_allowed_outgoing_unidirectional_streams() const;
+  size_t max_outgoing_bidirectional_streams() const;
+  size_t max_outgoing_unidirectional_streams() const;
 
-  QuicStreamCount actual_max_allowed_incoming_bidirectional_streams() const;
-  QuicStreamCount actual_max_allowed_incoming_unidirectional_streams() const;
+  QuicStreamCount max_incoming_bidirectional_streams() const;
+  QuicStreamCount max_incoming_unidirectional_streams() const;
 
-  QuicStreamCount advertised_max_allowed_incoming_bidirectional_streams() const;
-  QuicStreamCount advertised_max_allowed_incoming_unidirectional_streams()
-      const;
+  QuicStreamCount advertised_max_incoming_bidirectional_streams() const;
+  QuicStreamCount advertised_max_incoming_unidirectional_streams() const;
+
+  void OnConfigNegotiated() {
+    bidirectional_stream_id_manager_.OnConfigNegotiated();
+    unidirectional_stream_id_manager_.OnConfigNegotiated();
+  }
 
  private:
   friend class test::QuicSessionPeer;

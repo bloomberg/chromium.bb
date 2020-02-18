@@ -14,6 +14,55 @@
 #include "ui/gfx/animation/tween.h"
 #include "ui/gfx/geometry/rect.h"
 
+namespace {
+
+// Solve layout constraints to determine how much space is available for tabs
+// to use relative to how much they want to use.
+TabSizer CalculateSpaceFractionAvailable(
+    const TabLayoutConstants& layout_constants,
+    const std::vector<TabWidthConstraints>& tabs,
+    base::Optional<int> width) {
+  if (!width.has_value())
+    return TabSizer(LayoutDomain::kInactiveWidthEqualsActiveWidth, 1);
+
+  float minimum_width = 0;
+  float crossover_width = 0;
+  float preferred_width = 0;
+  for (const TabWidthConstraints& tab : tabs) {
+    // Add the tab's width, less the width of its trailing foot (which would
+    // be double counting).
+    minimum_width += tab.GetMinimumWidth() - layout_constants.tab_overlap;
+    crossover_width +=
+        tab.GetLayoutCrossoverWidth() - layout_constants.tab_overlap;
+    preferred_width += tab.GetPreferredWidth() - layout_constants.tab_overlap;
+  }
+
+  // Add back the width of the trailing foot of the last tab.
+  minimum_width += layout_constants.tab_overlap;
+  crossover_width += layout_constants.tab_overlap;
+  preferred_width += layout_constants.tab_overlap;
+
+  LayoutDomain domain;
+  float space_fraction_available;
+  if (width < crossover_width) {
+    domain = LayoutDomain::kInactiveWidthBelowActiveWidth;
+    space_fraction_available =
+        (width.value() - minimum_width) / (crossover_width - minimum_width);
+  } else {
+    domain = LayoutDomain::kInactiveWidthEqualsActiveWidth;
+    space_fraction_available = preferred_width == crossover_width
+                                   ? 1
+                                   : (width.value() - crossover_width) /
+                                         (preferred_width - crossover_width);
+  }
+
+  space_fraction_available =
+      base::ClampToRange(space_fraction_available, 0.0f, 1.0f);
+  return TabSizer(domain, space_fraction_available);
+}
+
+}  // namespace
+
 TabSizer::TabSizer(LayoutDomain domain, float space_fraction_available)
     : domain_(domain), space_fraction_available_(space_fraction_available) {}
 
@@ -51,13 +100,12 @@ bool TabSizer::IsAlreadyPreferredWidth() const {
 // use up that width.
 void AllocateExtraSpace(std::vector<gfx::Rect>* bounds,
                         const std::vector<TabWidthConstraints>& tabs,
-                        int width,
+                        base::Optional<int> extra_space,
                         TabSizer tab_sizer) {
   // Don't expand tabs if they are already at their preferred width.
-  if (tab_sizer.IsAlreadyPreferredWidth())
+  if (tab_sizer.IsAlreadyPreferredWidth() || !extra_space.has_value())
     return;
 
-  const int extra_space = width - bounds->back().right();
   int allocated_extra_space = 0;
   for (size_t i = 0; i < tabs.size(); i++) {
     const TabWidthConstraints& tab = tabs[i];
@@ -70,56 +118,37 @@ void AllocateExtraSpace(std::vector<gfx::Rect>* bounds,
   }
 }
 
-TabSizer CalculateSpaceFractionAvailable(
+TabWidthOverride CalculateTabWidthOverride(
     const TabLayoutConstants& layout_constants,
     const std::vector<TabWidthConstraints>& tabs,
     int width) {
-  float minimum_width = 0;
-  float crossover_width = 0;
-  float preferred_width = 0;
+  TabSizer tab_sizer =
+      CalculateSpaceFractionAvailable(layout_constants, tabs, width);
+
+  int next_leading_x = 0;
+  std::vector<gfx::Rect> bounds;
   for (const TabWidthConstraints& tab : tabs) {
-    // Add the tab's width, less the width of its trailing foot (which would
-    // be double counting).
-    minimum_width += tab.GetMinimumWidth() - layout_constants.tab_overlap;
-    crossover_width +=
-        tab.GetLayoutCrossoverWidth() - layout_constants.tab_overlap;
-    preferred_width += tab.GetPreferredWidth() - layout_constants.tab_overlap;
+    const int tab_width = tab_sizer.CalculateTabWidth(tab);
+    next_leading_x += tab_width - layout_constants.tab_overlap;
   }
 
-  // Add back the width of the trailing foot of the last tab.
-  minimum_width += layout_constants.tab_overlap;
-  crossover_width += layout_constants.tab_overlap;
-  preferred_width += layout_constants.tab_overlap;
+  const int trailing_x = next_leading_x + layout_constants.tab_overlap;
 
-  LayoutDomain domain;
-  float space_fraction_available;
-  if (width < crossover_width) {
-    domain = LayoutDomain::kInactiveWidthBelowActiveWidth;
-    space_fraction_available =
-        (width - minimum_width) / (crossover_width - minimum_width);
-  } else {
-    domain = LayoutDomain::kInactiveWidthEqualsActiveWidth;
-    space_fraction_available =
-        preferred_width == crossover_width
-            ? 1
-            : (width - crossover_width) / (preferred_width - crossover_width);
-  }
-
-  space_fraction_available =
-      base::ClampToRange(space_fraction_available, 0.0f, 1.0f);
-  return TabSizer(domain, space_fraction_available);
+  return TabWidthOverride{tab_sizer, width - trailing_x};
 }
 
 std::vector<gfx::Rect> CalculateTabBounds(
     const TabLayoutConstants& layout_constants,
     const std::vector<TabWidthConstraints>& tabs,
-    int width,
-    base::Optional<TabSizer> override_tab_sizer) {
+    base::Optional<int> width,
+    base::Optional<TabWidthOverride> tab_width_override) {
   if (tabs.empty())
     return std::vector<gfx::Rect>();
 
-  TabSizer tab_sizer = override_tab_sizer.value_or(
-      CalculateSpaceFractionAvailable(layout_constants, tabs, width));
+  TabSizer tab_sizer =
+      tab_width_override.has_value()
+          ? tab_width_override->sizer
+          : CalculateSpaceFractionAvailable(layout_constants, tabs, width);
 
   int next_x = 0;
   std::vector<gfx::Rect> bounds;
@@ -130,7 +159,14 @@ std::vector<gfx::Rect> CalculateTabBounds(
     next_x += tab_width - layout_constants.tab_overlap;
   }
 
-  AllocateExtraSpace(&bounds, tabs, width, tab_sizer);
+  const base::Optional<int> calculated_extra_space =
+      width.has_value()
+          ? base::make_optional(width.value() - bounds.back().right())
+          : base::nullopt;
+  const base::Optional<int> extra_space = tab_width_override.has_value()
+                                              ? tab_width_override->extra_space
+                                              : calculated_extra_space;
+  AllocateExtraSpace(&bounds, tabs, extra_space, tab_sizer);
 
   return bounds;
 }

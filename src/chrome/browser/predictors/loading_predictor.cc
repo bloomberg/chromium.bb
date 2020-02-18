@@ -28,7 +28,7 @@ const base::TimeDelta kMinDelayBetweenPreconnectRequests =
 // Returns true iff |prediction| is not empty.
 bool AddInitialUrlToPreconnectPrediction(const GURL& initial_url,
                                          PreconnectPrediction* prediction) {
-  GURL initial_origin = initial_url.GetOrigin();
+  url::Origin initial_origin = url::Origin::Create(initial_url);
   // Open minimum 2 sockets to the main frame host to speed up the loading if a
   // main page has a redirect to the same host. This is because there can be a
   // race between reading the server redirect response and sending a new request
@@ -39,12 +39,12 @@ bool AddInitialUrlToPreconnectPrediction(const GURL& initial_url,
       prediction->requests.front().origin == initial_origin) {
     prediction->requests.front().num_sockets =
         std::max(prediction->requests.front().num_sockets, kMinSockets);
-  } else if (initial_origin.is_valid() &&
-             initial_origin.SchemeIsHTTPOrHTTPS()) {
-    url::Origin origin = url::Origin::Create(initial_origin);
-    prediction->requests.emplace(prediction->requests.begin(), initial_origin,
-                                 kMinSockets,
-                                 net::NetworkIsolationKey(origin, origin));
+  } else if (!initial_origin.opaque() &&
+             (initial_origin.scheme() == url::kHttpScheme ||
+              initial_origin.scheme() == url::kHttpsScheme)) {
+    prediction->requests.emplace(
+        prediction->requests.begin(), initial_origin, kMinSockets,
+        net::NetworkIsolationKey(initial_origin, initial_origin));
   }
 
   return !prediction->requests.empty();
@@ -227,18 +227,17 @@ void LoadingPredictor::HandleOmniboxHint(const GURL& url, bool preconnectable) {
   if (!url.is_valid() || !url.has_host() || !IsPreconnectAllowed(profile_))
     return;
 
-  GURL origin = url.GetOrigin();
+  url::Origin origin = url::Origin::Create(url);
   bool is_new_origin = origin != last_omnibox_origin_;
   last_omnibox_origin_ = origin;
+  net::NetworkIsolationKey network_isolation_key(origin, origin);
   base::TimeTicks now = base::TimeTicks::Now();
   if (preconnectable) {
     if (is_new_origin || now - last_omnibox_preconnect_time_ >=
                              kMinDelayBetweenPreconnectRequests) {
       last_omnibox_preconnect_time_ = now;
-      // Not to be confused with |origin|.
-      url::Origin url_origin = url::Origin::Create(url);
-      preconnect_manager()->StartPreconnectUrl(
-          url, true, net::NetworkIsolationKey(url_origin, url_origin));
+      preconnect_manager()->StartPreconnectUrl(url, true,
+                                               network_isolation_key);
     }
     return;
   }
@@ -246,7 +245,7 @@ void LoadingPredictor::HandleOmniboxHint(const GURL& url, bool preconnectable) {
   if (is_new_origin || now - last_omnibox_preresolve_time_ >=
                            kMinDelayBetweenPreresolveRequests) {
     last_omnibox_preresolve_time_ = now;
-    preconnect_manager()->StartPreresolveHost(url);
+    preconnect_manager()->StartPreresolveHost(url, network_isolation_key);
   }
 }
 

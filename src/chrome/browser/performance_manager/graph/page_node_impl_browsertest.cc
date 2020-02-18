@@ -9,12 +9,11 @@
 #include "base/strings/string_util.h"
 #include "base/test/bind_test_util.h"
 #include "base/threading/thread_restrictions.h"
-#include "chrome/browser/performance_manager/decorators/freeze_origin_trial_policy_aggregator.h"
-#include "chrome/browser/performance_manager/graph/page_node_impl.h"
-#include "chrome/browser/performance_manager/performance_manager.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/performance_manager/graph/page_node_impl.h"
+#include "components/performance_manager/performance_manager_impl.h"
 #include "content/public/test/url_loader_interceptor.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -27,36 +26,36 @@ constexpr char kOriginTrialTestPublicKey[] =
 
 const char kTestHeaders[] = "HTTP/1.1 200 OK\nContent-type: text/html\n\n";
 
-constexpr char kOriginTrialTestHostname[] = "https://lifecycle_ot_test.com";
+constexpr char kOriginTrialTestHostname[] = "https://freeze_policy_ot_test.com";
 
-// Origin Trial Token for PageLifecycleTransitionsOptOut generated with:
+// Origin Trial Token for PageFreezeOptOut generated with:
 // $ tools/origin_trials/generate_token.py  \
-//     https://lifecycle_ot_test.com/  \
-//     "PageLifecycleTransitionsOptOut"  \
+//     https://freeze_policy_ot_test.com/  \
+//     "PageFreezeOptOut"  \
 //     --expire-timestamp=2000000000
 // (Token will expire ca. ~2033. See content/test/data/origin_trials/basic.html)
-constexpr char kOriginTrialPageLifecycleOptOutToken[] =
-    "ArFuhJf1Qa7r7LIOWprpcssb/Vz76rIe0QyGJw2NP+S/Zy7Q7AVg2UfUqgARHPNk6KQ60/"
-    "ii4ef4ZwJmNi+"
-    "VbwoAAAByeyJvcmlnaW4iOiAiaHR0cHM6Ly9saWZlY3ljbGVfb3RfdGVzdC5jb206NDQzIiwgI"
-    "mZlYXR1cmUiOiAiUGFnZUxpZmVjeWNsZVRyYW5zaXRpb25zT3B0T3V0IiwgImV4cGlyeSI6IDI"
-    "wMDAwMDAwMDB9";
+constexpr char kOriginTrialPageFreezeOptOutToken[] =
+    "ArK3cLVL1udOq9pE7armSlaBttK6PtImGGPbowl8jGzDaePbN9kIXgjd9s2UGW8J3UAYZp2/"
+    "b0+"
+    "dVRi2QeZAowQAAABoeyJvcmlnaW4iOiAiaHR0cHM6Ly9mcmVlemVfcG9saWN5X290X3Rlc3QuY"
+    "29tOjQ0MyIsICJmZWF0dXJlIjogIlBhZ2VGcmVlemVPcHRPdXQiLCAiZXhwaXJ5IjogMjAwMDA"
+    "wMDAwMH0=";
 
-// Origin Trial Token for PageLifecycleTransitionsOptIn generated with:
+// Origin Trial Token for PageFreezeOptIn generated with:
 // $ tools/origin_trials/generate_token.py  \
-//     https://lifecycle_ot_test.com/  \
-//     "PageLifecycleTransitionsOptIn"  \
+//     https://freeze_policy_ot_test.com/  \
+//     "PageFreezeOptIn"  \
 //     --expire-timestamp=2000000000
 // (Token will expire ca. ~2033. See content/test/data/origin_trials/basic.html)
-constexpr char kOriginTrialPageLifecycleOptInToken[] =
-    "AgI1yybGRSVe5oDQ1EAK9/"
-    "bp3vmEbysprYviipejGsRR5aqAj37I6SHEnZGvmg4iEzxDRWfwvctZH+"
-    "rSdZ58kA0AAABxeyJvcmlnaW4iOiAiaHR0cHM6Ly9saWZlY3ljbGVfb3RfdGVzdC5jb206NDQz"
-    "IiwgImZlYXR1cmUiOiAiUGFnZUxpZmVjeWNsZVRyYW5zaXRpb25zT3B0SW4iLCAiZXhwaXJ5Ij"
-    "ogMjAwMDAwMDAwMH0=";
+constexpr char kOriginTrialPageFreezeOptInToken[] =
+    "AriV/"
+    "ePX2G29BTjDZRzOvRCdkAeu34iLPHuelZxsgQiyJgJ3VADHBW2k1uFsgApSOEy4cEGdZ4hieud"
+    "XKFYo7AsAAABneyJvcmlnaW4iOiAiaHR0cHM6Ly9mcmVlemVfcG9saWN5X290X3Rlc3QuY29tO"
+    "jQ0MyIsICJmZWF0dXJlIjogIlBhZ2VGcmVlemVPcHRJbiIsICJleHBpcnkiOiAyMDAwMDAwMDA"
+    "wfQ==";
 
-// The path used in the URL of the Page Lifecycle Origin Trial tests.
-constexpr char kOriginTrialTestLifecyclePath[] = "lifecycle_origin_trial";
+// The path used in the URL of the Origin Trial Freeze Policy tests.
+constexpr char kOriginTrialFreezePolicyTestPath[] = "ot_freeze_policy";
 
 // The path used in the URL of the tests that uses 2 iFrames.
 constexpr char k2iFramesPath[] = "two_iframe_tests";
@@ -78,7 +77,7 @@ constexpr char kOriginTrialDefaultDefault[] = "default_default.html";
 constexpr char kOriginTrialTestResponseTemplate[] = R"(
 <html>
 <head>
-  <title>Page Lifecycle test</title>
+  <title>Freeze Policy test</title>
   META_TAG
 </head>
 </html>
@@ -86,7 +85,7 @@ constexpr char kOriginTrialTestResponseTemplate[] = R"(
 
 constexpr char kTwoiFrameTestBody[] = R"(
 <html>
-<base href="https://lifecycle_ot_test.com/">
+<base href="https://freeze_policy_ot_test.com/">
 <head>
   <title>iFrame Test</title>
 </head>
@@ -95,17 +94,17 @@ constexpr char kTwoiFrameTestBody[] = R"(
 </html>
 )";
 
-// Generate a test response for the PageLifecycle Origin Trial tests, based on
+// Generate a test response for the PageFreeze Origin Trial tests, based on
 // kOriginTrialTestResponseTemplate.
-std::string GetPageLifecycleOriginTrialPageContent(const std::string& page) {
+std::string GetPageFreezeOriginTrialPageContent(const std::string& page) {
   std::string token;
   std::string contents = kOriginTrialTestResponseTemplate;
 
   // Get the appropriate Origin Trial token if needed.
   if (page.compare(kOriginTrialOptInPage) == 0) {
-    token = kOriginTrialPageLifecycleOptInToken;
+    token = kOriginTrialPageFreezeOptInToken;
   } else if (page.compare(kOriginTrialOptOutPage) == 0) {
-    token = kOriginTrialPageLifecycleOptOutToken;
+    token = kOriginTrialPageFreezeOptOutToken;
   }
 
   std::string meta_tag;
@@ -117,11 +116,10 @@ std::string GetPageLifecycleOriginTrialPageContent(const std::string& page) {
   return contents;
 }
 
-std::string GetPageLifecycleOriginTrialiFramePageContent(
-    const std::string& page) {
+std::string GetPageFreezeOriginTrialiFramePageContent(const std::string& page) {
   std::string contents = kTwoiFrameTestBody;
-  std::string url1 = base::StrCat({kOriginTrialTestLifecyclePath, "/"});
-  std::string url2 = base::StrCat({kOriginTrialTestLifecyclePath, "/"});
+  std::string url1 = base::StrCat({kOriginTrialFreezePolicyTestPath, "/"});
+  std::string url2 = base::StrCat({kOriginTrialFreezePolicyTestPath, "/"});
 
   std::string page_base_path = base::SplitString(
       page, ".", base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY)[0];
@@ -149,24 +147,23 @@ std::string GetContentForURL(const std::string& url) {
   EXPECT_EQ(2U, url_parts.size());
 
   std::string response;
-  if (url_parts[0].compare(kOriginTrialTestLifecyclePath) == 0) {
-    response = GetPageLifecycleOriginTrialPageContent(url_parts[1]);
+  if (url_parts[0].compare(kOriginTrialFreezePolicyTestPath) == 0) {
+    response = GetPageFreezeOriginTrialPageContent(url_parts[1]);
   } else if (url_parts[0].compare(k2iFramesPath) == 0) {
-    response = GetPageLifecycleOriginTrialiFramePageContent(url_parts[1]);
+    response = GetPageFreezeOriginTrialiFramePageContent(url_parts[1]);
   }
   return response;
 }
 
 void RunOriginTrialTestOnPMSequence(
-    const resource_coordinator::mojom::InterventionPolicy expected_policy) {
-  auto* perf_manager = PerformanceManager::GetInstance();
+    const mojom::InterventionPolicy expected_policy) {
+  auto* perf_manager = PerformanceManagerImpl::GetInstance();
   ASSERT_TRUE(perf_manager);
   base::RunLoop run_loop;
-  perf_manager->CallOnGraph(
+  perf_manager->CallOnGraphImpl(
       FROM_HERE, base::BindOnce(
                      [](base::OnceClosure quit_closure,
-                        const resource_coordinator::mojom::InterventionPolicy
-                            expected_policy,
+                        const mojom::InterventionPolicy expected_policy,
                         performance_manager::GraphImpl* graph) {
                        auto page_nodes = graph->GetAllPageNodeImpls();
                        EXPECT_EQ(1U, page_nodes.size());
@@ -221,106 +218,95 @@ class PageNodeImplBrowserTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(PageNodeImplBrowserTest);
 };
 
-IN_PROC_BROWSER_TEST_F(PageNodeImplBrowserTest, PageLifecycleOriginTrialOptIn) {
+IN_PROC_BROWSER_TEST_F(PageNodeImplBrowserTest, PageFreezeOriginTrialOptIn) {
   ui_test_utils::NavigateToURL(
       browser(), GURL(base::JoinString(
-                     {kOriginTrialTestHostname, kOriginTrialTestLifecyclePath,
-                      kOriginTrialOptInPage},
+                     {kOriginTrialTestHostname,
+                      kOriginTrialFreezePolicyTestPath, kOriginTrialOptInPage},
                      "/")));
-  RunOriginTrialTestOnPMSequence(
-      resource_coordinator::mojom::InterventionPolicy::kOptIn);
+  RunOriginTrialTestOnPMSequence(mojom::InterventionPolicy::kOptIn);
+}
+
+IN_PROC_BROWSER_TEST_F(PageNodeImplBrowserTest, PageFreezeOriginTrialOptOut) {
+  ui_test_utils::NavigateToURL(
+      browser(), GURL(base::JoinString(
+                     {kOriginTrialTestHostname,
+                      kOriginTrialFreezePolicyTestPath, kOriginTrialOptOutPage},
+                     "/")));
+  RunOriginTrialTestOnPMSequence(mojom::InterventionPolicy::kOptOut);
+}
+
+IN_PROC_BROWSER_TEST_F(PageNodeImplBrowserTest, PageFreezeOriginTrialDefault) {
+  ui_test_utils::NavigateToURL(
+      browser(), GURL(base::JoinString({kOriginTrialTestHostname,
+                                        kOriginTrialFreezePolicyTestPath,
+                                        kOriginTrialDefaultPage},
+                                       "/")));
+  RunOriginTrialTestOnPMSequence(mojom::InterventionPolicy::kDefault);
 }
 
 IN_PROC_BROWSER_TEST_F(PageNodeImplBrowserTest,
-                       PageLifecycleOriginTrialOptOut) {
-  ui_test_utils::NavigateToURL(
-      browser(), GURL(base::JoinString(
-                     {kOriginTrialTestHostname, kOriginTrialTestLifecyclePath,
-                      kOriginTrialOptOutPage},
-                     "/")));
-  RunOriginTrialTestOnPMSequence(
-      resource_coordinator::mojom::InterventionPolicy::kOptOut);
-}
-
-IN_PROC_BROWSER_TEST_F(PageNodeImplBrowserTest,
-                       PageLifecycleOriginTrialDefault) {
-  ui_test_utils::NavigateToURL(
-      browser(), GURL(base::JoinString(
-                     {kOriginTrialTestHostname, kOriginTrialTestLifecyclePath,
-                      kOriginTrialDefaultPage},
-                     "/")));
-  RunOriginTrialTestOnPMSequence(
-      resource_coordinator::mojom::InterventionPolicy::kDefault);
-}
-
-IN_PROC_BROWSER_TEST_F(PageNodeImplBrowserTest,
-                       PageLifecycleOriginTrialOptInOptOut) {
+                       PageFreezeOriginTrialOptInOptOut) {
   ui_test_utils::NavigateToURL(
       browser(), GURL(base::JoinString({kOriginTrialTestHostname, k2iFramesPath,
                                         kOriginTrialOptInOptOut},
                                        "/")));
-  RunOriginTrialTestOnPMSequence(
-      resource_coordinator::mojom::InterventionPolicy::kOptOut);
+  RunOriginTrialTestOnPMSequence(mojom::InterventionPolicy::kOptOut);
 }
 
+// Flaky. https://crbug.com/1014282
 IN_PROC_BROWSER_TEST_F(PageNodeImplBrowserTest,
-                       PageLifecycleOriginTrialOptOutOptIn) {
+                       DISABLED_PageFreezeOriginTrialOptOutOptIn) {
   ui_test_utils::NavigateToURL(
       browser(), GURL(base::JoinString({kOriginTrialTestHostname, k2iFramesPath,
                                         kOriginTrialOptOutOptIn},
                                        "/")));
-  RunOriginTrialTestOnPMSequence(
-      resource_coordinator::mojom::InterventionPolicy::kOptOut);
+  RunOriginTrialTestOnPMSequence(mojom::InterventionPolicy::kOptOut);
 }
 
 IN_PROC_BROWSER_TEST_F(PageNodeImplBrowserTest,
-                       PageLifecycleOriginTrialDefaultOptIn) {
+                       PageFreezeOriginTrialDefaultOptIn) {
   ui_test_utils::NavigateToURL(
       browser(), GURL(base::JoinString({kOriginTrialTestHostname, k2iFramesPath,
                                         kOriginTrialDefaultOptIn},
                                        "/")));
-  RunOriginTrialTestOnPMSequence(
-      resource_coordinator::mojom::InterventionPolicy::kOptIn);
+  RunOriginTrialTestOnPMSequence(mojom::InterventionPolicy::kOptIn);
 }
 
 IN_PROC_BROWSER_TEST_F(PageNodeImplBrowserTest,
-                       PageLifecycleOriginTrialDefaultOptOut) {
+                       PageFreezeOriginTrialDefaultOptOut) {
   ui_test_utils::NavigateToURL(
       browser(), GURL(base::JoinString({kOriginTrialTestHostname, k2iFramesPath,
                                         kOriginTrialDefaultOptOut},
                                        "/")));
-  RunOriginTrialTestOnPMSequence(
-      resource_coordinator::mojom::InterventionPolicy::kOptOut);
+  RunOriginTrialTestOnPMSequence(mojom::InterventionPolicy::kOptOut);
 }
 
 IN_PROC_BROWSER_TEST_F(PageNodeImplBrowserTest,
-                       PageLifecycleOriginTrialOptInOptIn) {
+                       PageFreezeOriginTrialOptInOptIn) {
   ui_test_utils::NavigateToURL(
       browser(), GURL(base::JoinString({kOriginTrialTestHostname, k2iFramesPath,
                                         kOriginTrialOptInOptIn},
                                        "/")));
-  RunOriginTrialTestOnPMSequence(
-      resource_coordinator::mojom::InterventionPolicy::kOptIn);
+  RunOriginTrialTestOnPMSequence(mojom::InterventionPolicy::kOptIn);
 }
 
 IN_PROC_BROWSER_TEST_F(PageNodeImplBrowserTest,
-                       PageLifecycleOriginTrialOptOutOptOut) {
+                       PageFreezeOriginTrialOptOutOptOut) {
   ui_test_utils::NavigateToURL(
       browser(), GURL(base::JoinString({kOriginTrialTestHostname, k2iFramesPath,
                                         kOriginTrialOptOutOptOut},
                                        "/")));
-  RunOriginTrialTestOnPMSequence(
-      resource_coordinator::mojom::InterventionPolicy::kOptOut);
+  RunOriginTrialTestOnPMSequence(mojom::InterventionPolicy::kOptOut);
 }
 
 IN_PROC_BROWSER_TEST_F(PageNodeImplBrowserTest,
-                       PageLifecycleOriginTrialDefaultDefault) {
+                       PageFreezeOriginTrialDefaultDefault) {
   ui_test_utils::NavigateToURL(
       browser(), GURL(base::JoinString({kOriginTrialTestHostname, k2iFramesPath,
                                         kOriginTrialDefaultDefault},
                                        "/")));
-  RunOriginTrialTestOnPMSequence(
-      resource_coordinator::mojom::InterventionPolicy::kDefault);
+  RunOriginTrialTestOnPMSequence(mojom::InterventionPolicy::kDefault);
 }
 
 // TODO(sebmarchand): Add more tests, e.g. a test where the main frame and a

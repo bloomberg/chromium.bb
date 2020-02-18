@@ -27,7 +27,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_SCRIPT_PENDING_SCRIPT_H_
 
 #include "base/macros.h"
-#include "third_party/blink/public/mojom/script/script_type.mojom-blink.h"
+#include "third_party/blink/public/mojom/script/script_type.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/scheduler/web_scoped_virtual_time_pauser.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/script/script.h"
@@ -61,9 +61,8 @@ class CORE_EXPORT PendingScriptClient : public GarbageCollectedMixin {
 // When "script is ready"
 // https://html.spec.whatwg.org/C/#the-script-is-ready,
 // PendingScriptClient is notified.
-class CORE_EXPORT PendingScript
-    : public GarbageCollectedFinalized<PendingScript>,
-      public NameClient {
+class CORE_EXPORT PendingScript : public GarbageCollected<PendingScript>,
+                                  public NameClient {
  public:
   virtual ~PendingScript();
 
@@ -168,9 +167,10 @@ class CORE_EXPORT PendingScript
   WebScopedVirtualTimePauser virtual_time_pauser_;
   Member<PendingScriptClient> client_;
 
-  // The context document at the time when PrepareScript() is executed.
-  // This is only used to check whether the script element is moved between
-  // documents and thus doesn't retain a strong reference.
+  // The context/element document at the time when PrepareScript() is executed.
+  // These are only used to check whether the script element is moved between
+  // documents and thus don't retain a strong references.
+  WeakMember<Document> original_element_document_;
   WeakMember<Document> original_context_document_;
 
   const bool created_during_document_write_;

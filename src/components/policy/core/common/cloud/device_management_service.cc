@@ -185,6 +185,10 @@ std::string DeviceManagementService::JobConfiguration::GetJobTypeAsString(
     case DeviceManagementService::JobConfiguration::
         TYPE_UPLOAD_REAL_TIME_REPORT:
       return "UploadrealtimeReport";
+    case DeviceManagementService::JobConfiguration::TYPE_REQUEST_SAML_URL:
+      return "PublicSamlUserRequest";
+    case DeviceManagementService::JobConfiguration::TYPE_CHROME_OS_USER_REPORT:
+      return "ChromeOsUserReport";
   }
   NOTREACHED() << "Invalid job type " << type;
   return "";

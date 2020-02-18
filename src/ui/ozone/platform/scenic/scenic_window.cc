@@ -36,6 +36,7 @@ ScenicWindow::ScenicWindow(ScenicWindowManager* window_manager,
             std::move(view_ref_pair.view_ref),
             "chromium window"),
       node_(&scenic_session_),
+      input_node_(&scenic_session_),
       render_node_(&scenic_session_) {
   scenic_session_.set_error_handler(
       fit::bind_member(this, &ScenicWindow::OnScenicError));
@@ -47,9 +48,10 @@ ScenicWindow::ScenicWindow(ScenicWindowManager* window_manager,
   // get the device pixel ratio for the screen.
   node_.SetEventMask(fuchsia::ui::gfx::kMetricsEventMask);
 
-  // Add rendering subtree. Hit testing is disabled to prevent GPU process from
-  // receiving input.
-  render_node_.SetHitTestBehavior(fuchsia::ui::gfx::HitTestBehavior::kSuppress);
+  // Add input shape.
+  node_.AddChild(input_node_);
+
+  // Add rendering subtree.
   node_.AddChild(render_node_);
 
   delegate_->OnAcceleratedWidgetAvailable(window_id_);
@@ -59,16 +61,27 @@ ScenicWindow::~ScenicWindow() {
   manager_->RemoveWindow(window_id_, this);
 }
 
-void ScenicWindow::AttachSurface(
-    fuchsia::ui::gfx::ExportToken surface_export_token) {
-  scenic::EntityNode export_node(&scenic_session_);
+void ScenicWindow::AttachSurfaceView(
+    fuchsia::ui::views::ViewHolderToken token) {
+  surface_view_holder_ = std::make_unique<scenic::ViewHolder>(
+      &scenic_session_, std::move(token), "chromium window surface");
+
+  // Configure the ViewHolder not to be focusable, or hit-testable, to ensure
+  // that it cannot receive input.
+  fuchsia::ui::gfx::ViewProperties view_properties;
+  view_properties.bounding_box = {{-0.5f, -0.5f, -0.5f}, {0.5f, 0.5f, 0.5f}};
+  view_properties.focus_change = false;
+  surface_view_holder_->SetViewProperties(std::move(view_properties));
+  surface_view_holder_->SetHitTestBehavior(
+      fuchsia::ui::gfx::HitTestBehavior::kSuppress);
 
   render_node_.DetachChildren();
-  render_node_.AddChild(export_node);
+  render_node_.AddChild(*surface_view_holder_);
 
-  export_node.Export(std::move(surface_export_token.value));
-  scenic_session_.Present(
-      /*presentation_time=*/0, [](fuchsia::images::PresentationInfo info) {});
+  scenic_session_.Present2(
+      /*requested_presentation_time=*/0,
+      /*requested_prediction_span=*/0,
+      [](fuchsia::scenic::scheduling::FuturePresentationTimes info) {});
 }
 
 gfx::Rect ScenicWindow::GetBounds() {
@@ -84,13 +97,15 @@ void ScenicWindow::SetTitle(const base::string16& title) {
   NOTIMPLEMENTED();
 }
 
-void ScenicWindow::Show() {
+void ScenicWindow::Show(bool inactive) {
   view_.AddChild(node_);
 
-  // Call Present() to ensure that the scenic session commands are processed,
+  // Call Present2() to ensure that the scenic session commands are processed,
   // which is necessary to receive metrics event from Scenic.
-  scenic_session_.Present(
-      /*presentation_time=*/0, [](fuchsia::images::PresentationInfo info) {});
+  scenic_session_.Present2(
+      /*requested_presentation_time=*/0,
+      /*requested_prediction_span=*/0,
+      [](fuchsia::scenic::scheduling::FuturePresentationTimes info) {});
 }
 
 void ScenicWindow::Hide() {
@@ -100,6 +115,11 @@ void ScenicWindow::Hide() {
 void ScenicWindow::Close() {
   Hide();
   delegate_->OnClosed();
+}
+
+bool ScenicWindow::IsVisible() const {
+  NOTIMPLEMENTED_LOG_ONCE();
+  return true;
 }
 
 void ScenicWindow::PrepareForShutdown() {
@@ -149,6 +169,11 @@ void ScenicWindow::Deactivate() {
 
 void ScenicWindow::SetUseNativeFrame(bool use_native_frame) {}
 
+bool ScenicWindow::ShouldUseNativeFrame() const {
+  NOTIMPLEMENTED_LOG_ONCE();
+  return false;
+}
+
 void ScenicWindow::SetCursor(PlatformCursor cursor) {
   NOTIMPLEMENTED_LOG_ONCE();
 }
@@ -170,6 +195,15 @@ gfx::Rect ScenicWindow::GetRestoredBoundsInPixels() const {
   return gfx::Rect();
 }
 
+void ScenicWindow::SetWindowIcons(const gfx::ImageSkia& window_icon,
+                                  const gfx::ImageSkia& app_icon) {
+  NOTIMPLEMENTED();
+}
+
+void ScenicWindow::SizeConstraintsChanged() {
+  NOTIMPLEMENTED();
+}
+
 void ScenicWindow::UpdateSize() {
   gfx::SizeF scaled = ScaleSize(size_dips_, device_pixel_ratio_);
   size_pixels_ = gfx::Size(ceilf(scaled.width()), ceilf(scaled.height()));
@@ -188,14 +222,19 @@ void ScenicWindow::UpdateSize() {
   // Scale the render node so that surface rect can always be 1x1.
   render_node_.SetScale(size_dips_.width(), size_dips_.height(), 1.f);
 
+  // Resize input node to cover the whole surface.
+  input_node_.SetShape(scenic::Rectangle(&scenic_session_, size_dips_.width(),
+                                         size_dips_.height()));
+
   // This is necessary when using vulkan because ImagePipes are presented
   // separately and we need to make sure our sizes change is committed.
-  scenic_session_.Present(
-      /*presentation_time=*/0, [](fuchsia::images::PresentationInfo info) {});
+  scenic_session_.Present2(
+      /*requested_presentation_time=*/0,
+      /*requested_prediction_span=*/0,
+      [](fuchsia::scenic::scheduling::FuturePresentationTimes info) {});
 
   delegate_->OnBoundsChanged(size_rect);
 }
-
 
 void ScenicWindow::OnScenicError(zx_status_t status) {
   LOG(ERROR) << "scenic::Session failed with code " << status << ".";

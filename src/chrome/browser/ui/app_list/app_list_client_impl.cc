@@ -36,7 +36,6 @@
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "extensions/common/extension.h"
-#include "services/content/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -54,7 +53,7 @@ bool IsTabletMode() {
 }  // namespace
 
 AppListClientImpl::AppListClientImpl()
-    : app_list_controller_(app_list::AppListController::Get()) {
+    : app_list_controller_(ash::AppListController::Get()) {
   app_list_controller_->SetClient(this);
   user_manager::UserManager::Get()->AddSessionStateObserver(this);
 
@@ -98,7 +97,8 @@ void AppListClientImpl::OpenSearchResult(const std::string& result_id,
                                          int event_flags,
                                          ash::AppListLaunchedFrom launched_from,
                                          ash::AppListLaunchType launch_type,
-                                         int suggestion_index) {
+                                         int suggestion_index,
+                                         bool launch_as_default) {
   if (!search_controller_)
     return;
 
@@ -112,11 +112,23 @@ void AppListClientImpl::OpenSearchResult(const std::string& result_id,
       app_list::RankingItemTypeFromSearchResult(*result);
   app_launch_data.launch_type = launch_type;
   app_launch_data.launched_from = launched_from;
+
+  if (launch_type == ash::AppListLaunchType::kAppSearchResult &&
+      launched_from == ash::AppListLaunchedFrom::kLaunchedFromSearchBox &&
+      app_launch_data.ranking_item_type == app_list::RankingItemType::kApp &&
+      search_controller_->GetLastQueryLength() != 0) {
+    ash::RecordSuccessfulAppLaunchUsingSearch(
+        launched_from, search_controller_->GetLastQueryLength());
+  }
+
   // Send training signal to search controller.
   search_controller_->Train(std::move(app_launch_data));
 
   RecordSearchResultOpenTypeHistogram(
       launched_from, result->GetSearchResultType(), IsTabletMode());
+
+  if (launch_as_default)
+    RecordDefaultSearchResultOpenTypeHistogram(result->GetSearchResultType());
 
   if (!search_controller_->GetLastQueryLength() &&
       launched_from == ash::AppListLaunchedFrom::kLaunchedFromSearchBox)
@@ -218,7 +230,7 @@ void AppListClientImpl::GetContextMenuModel(
               std::move(callback)));
 }
 
-void AppListClientImpl::OnAppListTargetVisibilityChanged(bool visible) {
+void AppListClientImpl::OnAppListVisibilityWillChange(bool visible) {
   app_list_target_visibility_ = visible;
 }
 
@@ -277,10 +289,8 @@ void AppListClientImpl::OnPageBreakItemDeleted(int profile_id,
 
 void AppListClientImpl::GetNavigableContentsFactory(
     mojo::PendingReceiver<content::mojom::NavigableContentsFactory> receiver) {
-  if (profile_) {
-    content::BrowserContext::GetConnectorFor(profile_)->Connect(
-        content::mojom::kServiceName, std::move(receiver));
-  }
+  if (profile_)
+    profile_->BindNavigableContentsFactory(std::move(receiver));
 }
 
 void AppListClientImpl::OnSearchResultVisibilityChanged(const std::string& id,
@@ -371,9 +381,6 @@ void AppListClientImpl::SetUpSearchUI() {
 
   search_controller_ =
       app_list::CreateSearchController(profile_, current_model_updater_, this);
-  search_ranking_event_logger_ =
-      std::make_unique<app_list::SearchRankingEventLogger>(
-          profile_, search_controller_.get());
 
   // Refresh the results used for the suggestion chips with empty query.
   // This fixes crbug.com/999287.
@@ -403,12 +410,6 @@ void AppListClientImpl::OnTemplateURLServiceChanged() {
   current_model_updater_->SetSearchEngineIsGoogle(is_google);
 }
 
-void AppListClientImpl::ShowAndSwitchToState(ash::AppListState state) {
-  if (!app_list_controller_)
-    return;
-  app_list_controller_->ShowAppListAndSwitchToState(state);
-}
-
 void AppListClientImpl::ShowAppList() {
   // This may not work correctly if the profile passed in is different from the
   // one the ash Shell is currently using.
@@ -421,7 +422,7 @@ Profile* AppListClientImpl::GetCurrentAppListProfile() const {
   return ChromeLauncherController::instance()->profile();
 }
 
-app_list::AppListController* AppListClientImpl::GetAppListController() const {
+ash::AppListController* AppListClientImpl::GetAppListController() const {
   return app_list_controller_;
 }
 
@@ -523,8 +524,6 @@ void AppListClientImpl::NotifySearchResultsForLogging(
     const base::string16& trimmed_query,
     const ash::SearchResultIdWithPositionIndices& results,
     int position_index) {
-  if (search_ranking_event_logger_)
-    search_ranking_event_logger_->Log(trimmed_query, results, position_index);
   if (search_controller_) {
     search_controller_->OnSearchResultsDisplayed(trimmed_query, results,
                                                  position_index);

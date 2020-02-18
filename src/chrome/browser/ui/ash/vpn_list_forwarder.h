@@ -9,9 +9,8 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/app_list/arc/arc_vpn_provider_manager.h"
-#include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
+#include "chromeos/services/network_config/public/mojom/cros_network_config.mojom-forward.h"
+#include "components/user_manager/user_manager.h"
 #include "extensions/browser/extension_registry_observer.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
@@ -22,9 +21,10 @@ class ExtensionRegistry;
 // Forwards a list of third party (Extension and Arc) VPN providers in the
 // primary user's profile to the chromeos.network_config.mojom service for
 // use in the Settings and Ash UI code.
-class VpnListForwarder : public app_list::ArcVpnProviderManager::Observer,
-                         public extensions::ExtensionRegistryObserver,
-                         public content::NotificationObserver {
+class VpnListForwarder
+    : public app_list::ArcVpnProviderManager::Observer,
+      public extensions::ExtensionRegistryObserver,
+      public user_manager::UserManager::UserSessionStateObserver {
  public:
   VpnListForwarder();
   ~VpnListForwarder() override;
@@ -46,10 +46,8 @@ class VpnListForwarder : public app_list::ArcVpnProviderManager::Observer,
                            extensions::UnloadedExtensionReason reason) override;
   void OnShutdown(extensions::ExtensionRegistry* registry) override;
 
-  // content::NotificationObserver:
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
+  // user_manager::UserManager::UserSessionStateObserver:
+  void ActiveUserChanged(user_manager::User* active_user) override;
 
  private:
   // Calls cros_network_config_->SetVpnProviders with the current provider list.
@@ -64,7 +62,7 @@ class VpnListForwarder : public app_list::ArcVpnProviderManager::Observer,
   // initial list. Must only be called when a user is logged in.
   void AttachToPrimaryUserExtensionRegistry();
 
-  // Starts observing the primary user's app_list::ArcVpnProviderManger to
+  // Starts observing the primary user's app_list::ArcVpnProviderManager to
   // detect changes to the list of Arc VPN providers installed in the user's
   // profile. Must only be called when a user is logged in.
   void AttachToPrimaryUserArcVpnProviderManager();
@@ -72,17 +70,16 @@ class VpnListForwarder : public app_list::ArcVpnProviderManager::Observer,
   // The primary user's extension registry, if a user is logged in.
   extensions::ExtensionRegistry* extension_registry_ = nullptr;
 
-  // The primary user's app_list::ArcVpnProviderManger, if a user is logged in.
+  // The primary user's app_list::ArcVpnProviderManager, if a user is logged in.
   app_list::ArcVpnProviderManager* arc_vpn_provider_manager_ = nullptr;
 
-  mojo::Remote<chromeos::network_config::mojom::CrosNetworkConfig>
+  std::unique_ptr<
+      mojo::Remote<chromeos::network_config::mojom::CrosNetworkConfig>>
       cros_network_config_;
 
   // Map of unique provider id to VpnProvider dictionary.
   base::flat_map<std::string, chromeos::network_config::mojom::VpnProviderPtr>
       vpn_providers_;
-
-  content::NotificationRegistrar registrar_;
 
   base::WeakPtrFactory<VpnListForwarder> weak_factory_{this};
 

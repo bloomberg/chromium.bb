@@ -19,6 +19,25 @@ from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
 
 
+def _PredicateSplit(func, iterable):
+  """Splits an iterable into two groups based on a predicate return value.
+
+  Args:
+    func: A functor that takes an item as its argument and returns a boolean
+      value indicating which group the item belongs.
+    iterable: The collection to split.
+
+  Returns:
+    A tuple containing two lists, the first containing items that func()
+    returned True for, and the second containing items that func() returned
+    False for.
+  """
+  trues, falses = [], []
+  for x in iterable:
+    (trues if func(x) else falses).append(x)
+  return trues, falses
+
+
 class Comparator(object):
   """Base class for all comparators."""
 
@@ -71,19 +90,19 @@ class InOrder(Comparator):
     super(InOrder, self).__init__()
     self.items = items
 
-  def Match(self, args):
+  def Match(self, arg):
     """Checks if args' item matches all expected items in sequence.
 
     Args:
-      args: parameter list.
+      arg: parameter list.
 
     Returns:
       True if all expected items are matched.
     """
     items = list(self.items)
     to_match = items.pop(0)
-    for arg in args:
-      if to_match == arg:
+    for a in arg:
+      if to_match == a:
         if len(items) < 1:
           return True
         to_match = items.pop(0)
@@ -160,7 +179,7 @@ class HasString(str):
 
   It is used for mock.assert_called_with(). Note that it is not a Comparator.
 
-  Usage:
+  Examples:
     some_mock.assert_called_with(
         partial_mock.HasString('need_this_keyword'))
   """
@@ -184,7 +203,7 @@ def _RecursiveCompare(lhs, rhs):
             len(lhs) == len(rhs) and
             all(_RecursiveCompare(i, j) for i, j in zip(lhs, rhs)))
   elif isinstance(lhs, dict):
-    return _RecursiveCompare(sorted(lhs.items()), sorted(rhs.iteritems()))
+    return _RecursiveCompare(sorted(lhs.items()), sorted(rhs.items()))
   else:
     return lhs == rhs
 
@@ -291,7 +310,7 @@ class MockedCallResults(object):
       kwargs = {}
 
     params = self.Params(args=args, kwargs=kwargs)
-    dup, filtered = cros_build_lib.PredicateSplit(
+    dup, filtered = _PredicateSplit(
         lambda mc: mc.params == params, self.mocked_calls)
 
     new = self.MockedCall(params=params, strict=strict, result=result,
@@ -346,7 +365,7 @@ class MockedCallResults(object):
       kwargs = {}
 
     params = self.Params(args, kwargs)
-    matched, _ = cros_build_lib.PredicateSplit(filter_fn, self.mocked_calls)
+    matched, _ = _PredicateSplit(filter_fn, self.mocked_calls)
     if len(matched) > 1:
       raise AssertionError(
           '%s: args %r matches more than one mock:\n%s'
@@ -450,10 +469,13 @@ class PartialMock(object):
     if not all([self.TARGET, self.ATTRS]):
       return
 
-    chunks = self.TARGET.rsplit('.', 1)
-    module = cros_build_lib.load_module(chunks[0])
+    name, member = self.TARGET.rsplit('.', 1)
+    module = __import__(name)
+    # __import__('foo.bar') returns foo, so...
+    for bit in name.split('.')[1:]:
+      module = getattr(module, bit)
 
-    cls = getattr(module, chunks[1])
+    cls = getattr(module, member)
     for attr in self.ATTRS:  # pylint: disable=not-an-iterable
       self.backup[attr] = getattr(cls, attr)
       src_attr = '_target%s' % attr if attr.startswith('__') else attr
@@ -535,9 +557,6 @@ class PartialCmdMock(PartialMock):
   'returncode', 'output', 'error'.
   """
 
-  CmdResult = collections.namedtuple(
-      'MockResult', ['returncode', 'output', 'error'])
-
   DEFAULT_ATTR = None
 
   @CheckAttr
@@ -552,25 +571,43 @@ class PartialCmdMock(PartialMock):
       side_effect: See MockedCallResults.AddResultForParams
       mock_attr: Which attributes's mock is being referenced.
     """
-    result = self.CmdResult(returncode, output, error)
+    result = cros_build_lib.CommandResult(
+        returncode=returncode, output=output, error=error)
     self._results[mock_attr].SetDefaultResult(result, side_effect)
 
+  # TODO(crbug.com/1006587): Drop redundant arguments & backwards compat APIs.
   @CheckAttr
-  def AddCmdResult(self, cmd, returncode=0, output='', error='',
-                   kwargs=None, strict=False, side_effect=None, mock_attr=None):
+  def AddCmdResult(self, cmd, returncode=0, output=None, error=None,
+                   stdout=None, stderr=None, kwargs=None, strict=False,
+                   side_effect=None, mock_attr=None):
     """Specify the result to simulate for a given command.
 
     Args:
       cmd: The command string or list to record a result for.
       returncode: The returncode of the command (on the command line).
-      output: The stdout output of the command.
-      error: The stderr output of the command.
+      output: (Deprecated) Alias to stdout.
+      error: (Deprecated) Alias to stderr.
+      stdout: The stdout output of the command.
+      stderr: The stderr output of the command.
       kwargs: Keyword arguments that the function needs to be invoked with.
       strict: Defaults to False.  See MockedCallResults.AddResultForParams.
       side_effect: See MockedCallResults.AddResultForParams
       mock_attr: Which attributes's mock is being referenced.
     """
-    result = self.CmdResult(returncode, output, error)
+    if stdout is None:
+      stdout = output
+    elif output is not None:
+      raise TypeError('Only specify |stdout|, not |output|')
+    if stdout is None:
+      stdout = ''
+    if stderr is None:
+      stderr = error
+    elif error is not None:
+      raise TypeError('Only specify |stderr|, not |error|')
+    if stderr is None:
+      stderr = ''
+    result = cros_build_lib.CommandResult(
+        returncode=returncode, stdout=stdout, stderr=stderr)
     self._results[mock_attr].AddResultForParams(
         (cmd,), result, kwargs=kwargs, side_effect=side_effect, strict=strict)
 
@@ -595,14 +632,14 @@ class PartialCmdMock(PartialMock):
   @CheckAttr
   def assertCommandContains(self, args=(), expected=True, mock_attr=None,
                             **kwargs):
-    """Assert that RunCommand was called with the specified args.
+    """Assert that run was called with the specified args.
 
-    This verifies that at least one of the RunCommand calls contains the
+    This verifies that at least one of the run calls contains the
     specified arguments on the command line.
 
     Args:
       args: Set of expected command-line arguments.
-      expected: If False, instead verify that none of the RunCommand calls
+      expected: If False, instead verify that none of the run calls
           contained the specified arguments.
       **kwargs: Set of expected keyword arguments.
       mock_attr: Which attributes's mock is being referenced.
@@ -618,9 +655,9 @@ class PartialCmdMock(PartialMock):
 
   @CheckAttr
   def assertCommandCalled(self, args=(), mock_attr=None, **kwargs):
-    """Assert that RunCommand was called with the specified args.
+    """Assert that run was called with the specified args.
 
-    This verifies that at least one of the RunCommand calls exactly
+    This verifies that at least one of the run calls exactly
     matches the specified command line and misc-arguments.
 
     Args:

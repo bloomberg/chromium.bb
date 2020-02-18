@@ -17,7 +17,9 @@ import org.chromium.chrome.browser.infobar.InfoBarIdentifier;
 import org.chromium.chrome.browser.infobar.SimpleConfirmInfoBarBuilder;
 import org.chromium.chrome.browser.modules.ModuleInstallUi;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.components.module_installer.ModuleInstaller;
+import org.chromium.chrome.browser.tab.TabImpl;
+import org.chromium.components.module_installer.engine.EngineFactory;
+import org.chromium.components.module_installer.engine.InstallEngine;
 
 /**
  * Installs AR DFM and ArCore runtimes.
@@ -64,8 +66,6 @@ public class ArCoreInstallUtils implements ModuleInstallUi.FailureUiListener {
 
     private ArCoreInstallUtils(long nativeArCoreInstallUtils) {
         mNativeArCoreInstallUtils = nativeArCoreInstallUtils;
-        // Need to be called before trying to access the AR module.
-        ModuleInstaller.getInstance().init();
     }
 
     @Override
@@ -99,9 +99,13 @@ public class ArCoreInstallUtils implements ModuleInstallUi.FailureUiListener {
     @CalledByNative
     private void requestInstallArModule(Tab tab) {
         mTab = tab;
+
         ModuleInstallUi ui = new ModuleInstallUi(mTab, R.string.ar_module_title, this);
+        InstallEngine installEngine = new EngineFactory().getEngine();
+
         ui.showInstallStartUi();
-        ModuleInstaller.getInstance().install("ar", success -> {
+
+        installEngine.install("ar", success -> {
             assert shouldRequestInstallArModule() != success;
 
             if (success) {
@@ -148,7 +152,7 @@ public class ArCoreInstallUtils implements ModuleInstallUi.FailureUiListener {
 
         @ArCoreShim.Availability
         int arCoreAvailability = getArCoreInstallStatus();
-        final Activity activity = tab.getActivity();
+        final Activity activity = ((TabImpl) tab).getActivity();
         String infobarText = null;
         String buttonText = null;
         switch (arCoreAvailability) {

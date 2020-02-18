@@ -39,6 +39,9 @@ class GPU_IPC_SERVICE_EXPORT GLES2CommandBufferStub
       base::UnsafeSharedMemoryRegion shared_state_shm) override;
   MemoryTracker* GetMemoryTracker() const override;
 
+  // DecoderClient implementation.
+  void OnGpuSwitched(gl::GpuPreference active_gpu_heuristic) override;
+
 // ImageTransportSurfaceDelegate implementation:
 #if defined(OS_WIN)
   void DidCreateAcceleratedSurfaceChildWindow(
@@ -50,6 +53,7 @@ class GPU_IPC_SERVICE_EXPORT GLES2CommandBufferStub
   const GpuPreferences& GetGpuPreferences() const override;
   void BufferPresented(const gfx::PresentationFeedback& feedback) override;
   viz::GpuVSyncCallback GetGpuVSyncCallback() override;
+  base::TimeDelta GetGpuBlockedTimeSinceLastSwap() override;
 
  private:
   bool HandleMessage(const IPC::Message& message) override;

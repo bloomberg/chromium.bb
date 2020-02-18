@@ -19,7 +19,6 @@
 #include <utility>
 #include <vector>
 
-#include "absl/memory/memory.h"
 #include "absl/strings/str_replace.h"
 #include "absl/types/optional.h"
 #include "api/audio/audio_mixer.h"
@@ -656,7 +655,7 @@ class PeerConnectionFactoryForTest : public webrtc::PeerConnectionFactory {
     dependencies.media_engine =
         cricket::CreateMediaEngine(std::move(media_deps));
     dependencies.call_factory = webrtc::CreateCallFactory();
-    dependencies.event_log_factory = absl::make_unique<RtcEventLogFactory>(
+    dependencies.event_log_factory = std::make_unique<RtcEventLogFactory>(
         dependencies.task_queue_factory.get());
 
     return new rtc::RefCountedObject<PeerConnectionFactoryForTest>(
@@ -1396,7 +1395,8 @@ TEST_P(PeerConnectionInterfaceTest,
   EXPECT_TRUE(raw_port_allocator->flags() & cricket::PORTALLOCATOR_DISABLE_TCP);
   EXPECT_TRUE(raw_port_allocator->flags() &
               cricket::PORTALLOCATOR_DISABLE_COSTLY_NETWORKS);
-  EXPECT_TRUE(raw_port_allocator->prune_turn_ports());
+  EXPECT_EQ(webrtc::PRUNE_BASED_ON_PRIORITY,
+            raw_port_allocator->turn_port_prune_policy());
 }
 
 // Check that GetConfiguration returns the configuration the PeerConnection was
@@ -1421,15 +1421,15 @@ TEST_P(PeerConnectionInterfaceTest, GetConfigurationAfterSetConfiguration) {
 
   PeerConnectionInterface::RTCConfiguration config = pc_->GetConfiguration();
   config.type = PeerConnectionInterface::kRelay;
-  config.use_media_transport = true;
-  config.use_media_transport_for_data_channels = true;
+  config.use_datagram_transport = true;
+  config.use_datagram_transport_for_data_channels = true;
   EXPECT_TRUE(pc_->SetConfiguration(config).ok());
 
   PeerConnectionInterface::RTCConfiguration returned_config =
       pc_->GetConfiguration();
   EXPECT_EQ(PeerConnectionInterface::kRelay, returned_config.type);
-  EXPECT_TRUE(returned_config.use_media_transport);
-  EXPECT_TRUE(returned_config.use_media_transport_for_data_channels);
+  EXPECT_TRUE(returned_config.use_datagram_transport);
+  EXPECT_TRUE(returned_config.use_datagram_transport_for_data_channels);
 }
 
 TEST_P(PeerConnectionInterfaceTest, SetConfigurationFailsAfterClose) {
@@ -2449,11 +2449,12 @@ TEST_P(PeerConnectionInterfaceTest, SetConfigurationChangesPruneTurnPortsFlag) {
   config.prune_turn_ports = false;
   CreatePeerConnection(config);
   config = pc_->GetConfiguration();
-  EXPECT_FALSE(port_allocator_->prune_turn_ports());
+  EXPECT_EQ(webrtc::NO_PRUNE, port_allocator_->turn_port_prune_policy());
 
   config.prune_turn_ports = true;
   EXPECT_TRUE(pc_->SetConfiguration(config).ok());
-  EXPECT_TRUE(port_allocator_->prune_turn_ports());
+  EXPECT_EQ(webrtc::PRUNE_BASED_ON_PRIORITY,
+            port_allocator_->turn_port_prune_policy());
 }
 
 // Test that the ice check interval can be changed. This does not verify that
@@ -3463,7 +3464,7 @@ TEST_P(PeerConnectionInterfaceTest,
   pc_->Close();
 
   EXPECT_FALSE(
-      pc_->StartRtcEventLog(absl::make_unique<webrtc::RtcEventLogOutputNull>(),
+      pc_->StartRtcEventLog(std::make_unique<webrtc::RtcEventLogOutputNull>(),
                             webrtc::RtcEventLog::kImmediateOutput));
   pc_->StopRtcEventLog();
 }

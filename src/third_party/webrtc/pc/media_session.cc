@@ -19,7 +19,6 @@
 #include <utility>
 
 #include "absl/algorithm/container.h"
-#include "absl/memory/memory.h"
 #include "absl/strings/match.h"
 #include "absl/types/optional.h"
 #include "api/crypto_params.h"
@@ -662,6 +661,8 @@ static bool CreateContentOffer(
     }
   }
 
+  offer->set_alt_protocol(media_description_options.alt_protocol);
+
   if (secure_policy == SEC_REQUIRED && offer->cryptos().empty()) {
     return false;
   }
@@ -1180,6 +1181,10 @@ static bool CreateMediaContentAnswer(
 
   answer->set_direction(NegotiateRtpTransceiverDirection(
       offer->direction(), media_description_options.direction));
+
+  if (offer->alt_protocol() == media_description_options.alt_protocol) {
+    answer->set_alt_protocol(media_description_options.alt_protocol);
+  }
   return true;
 }
 
@@ -1352,30 +1357,25 @@ void MediaSessionDescriptionFactory::set_audio_codecs(
   ComputeAudioCodecsIntersectionAndUnion();
 }
 
-static void AddUnifiedPlanExtensions(RtpHeaderExtensions* extensions) {
+static void RemoveUnifiedPlanExtensions(RtpHeaderExtensions* extensions) {
   RTC_DCHECK(extensions);
 
-  rtc::UniqueNumberGenerator<int> unique_id_generator;
-  unique_id_generator.AddKnownId(0);  // The first valid RTP extension ID is 1.
-  for (const webrtc::RtpExtension& extension : *extensions) {
-    const bool collision_free = unique_id_generator.AddKnownId(extension.id);
-    RTC_DCHECK(collision_free);
-  }
-
-  // Unified Plan also offers the MID and RID header extensions.
-  extensions->push_back(webrtc::RtpExtension(webrtc::RtpExtension::kMidUri,
-                                             unique_id_generator()));
-  extensions->push_back(webrtc::RtpExtension(webrtc::RtpExtension::kRidUri,
-                                             unique_id_generator()));
-  extensions->push_back(webrtc::RtpExtension(
-      webrtc::RtpExtension::kRepairedRidUri, unique_id_generator()));
+  extensions->erase(
+      std::remove_if(extensions->begin(), extensions->end(),
+                     [](auto extension) {
+                       return extension.uri == webrtc::RtpExtension::kMidUri ||
+                              extension.uri == webrtc::RtpExtension::kRidUri ||
+                              extension.uri ==
+                                  webrtc::RtpExtension::kRepairedRidUri;
+                     }),
+      extensions->end());
 }
 
 RtpHeaderExtensions
 MediaSessionDescriptionFactory::audio_rtp_header_extensions() const {
   RtpHeaderExtensions extensions = audio_rtp_extensions_;
-  if (is_unified_plan_) {
-    AddUnifiedPlanExtensions(&extensions);
+  if (!is_unified_plan_) {
+    RemoveUnifiedPlanExtensions(&extensions);
   }
 
   return extensions;
@@ -1384,8 +1384,8 @@ MediaSessionDescriptionFactory::audio_rtp_header_extensions() const {
 RtpHeaderExtensions
 MediaSessionDescriptionFactory::video_rtp_header_extensions() const {
   RtpHeaderExtensions extensions = video_rtp_extensions_;
-  if (is_unified_plan_) {
-    AddUnifiedPlanExtensions(&extensions);
+  if (!is_unified_plan_) {
+    RemoveUnifiedPlanExtensions(&extensions);
   }
 
   return extensions;
@@ -1431,7 +1431,7 @@ std::unique_ptr<SessionDescription> MediaSessionDescriptionFactory::CreateOffer(
                        session_options.offer_extmap_allow_mixed,
                        &audio_rtp_extensions, &video_rtp_extensions);
 
-  auto offer = absl::make_unique<SessionDescription>();
+  auto offer = std::make_unique<SessionDescription>();
 
   // Iterate through the media description options, matching with existing media
   // descriptions in |current_description|.
@@ -1523,12 +1523,6 @@ std::unique_ptr<SessionDescription> MediaSessionDescriptionFactory::CreateOffer(
 
   offer->set_extmap_allow_mixed(session_options.offer_extmap_allow_mixed);
 
-  if (session_options.media_transport_settings.has_value()) {
-    offer->AddMediaTransportSetting(
-        session_options.media_transport_settings->transport_name,
-        session_options.media_transport_settings->transport_setting);
-  }
-
   return offer;
 }
 
@@ -1576,7 +1570,7 @@ MediaSessionDescriptionFactory::CreateAnswer(
   FilterDataCodecs(&answer_rtp_data_codecs,
                    session_options.data_channel_type == DCT_SCTP);
 
-  auto answer = absl::make_unique<SessionDescription>();
+  auto answer = std::make_unique<SessionDescription>();
 
   // If the offer supports BUNDLE, and we want to use it too, create a BUNDLE
   // group in the answer with the appropriate content names.
@@ -2536,7 +2530,7 @@ bool MediaSessionDescriptionFactory::AddDataContentForAnswer(
   std::unique_ptr<MediaContentDescription> data_answer;
   if (offer_content->media_description()->as_sctp()) {
     // SCTP data content
-    data_answer = absl::make_unique<SctpDataContentDescription>();
+    data_answer = std::make_unique<SctpDataContentDescription>();
     const SctpDataContentDescription* offer_data_description =
         offer_content->media_description()->as_sctp();
     // Respond with the offerer's proto, whatever it is.
@@ -2564,7 +2558,7 @@ bool MediaSessionDescriptionFactory::AddDataContentForAnswer(
     data_answer->as_sctp()->set_use_sctpmap(offer_uses_sctpmap);
   } else {
     // RTP offer
-    data_answer = absl::make_unique<RtpDataContentDescription>();
+    data_answer = std::make_unique<RtpDataContentDescription>();
 
     const RtpDataContentDescription* offer_data_description =
         offer_content->media_description()->as_rtp_data();

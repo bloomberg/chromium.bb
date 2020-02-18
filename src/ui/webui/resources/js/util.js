@@ -155,55 +155,6 @@
       element, HTMLElement, 'Missing required element: ' + selectors);
 }
 
-// Handle click on a link. If the link points to a chrome: or file: url, then
-// call into the browser to do the navigation.
-['click', 'auxclick'].forEach(function(eventName) {
-  document.addEventListener(eventName, function(e) {
-    if (e.button > 1) {
-      return;
-    }  // Ignore buttons other than left and middle.
-    if (e.defaultPrevented) {
-      return;
-    }
-
-    const eventPath = e.path;
-    let anchor = null;
-    if (eventPath) {
-      for (let i = 0; i < eventPath.length; i++) {
-        const element = eventPath[i];
-        if (element.tagName === 'A' && element.href) {
-          anchor = element;
-          break;
-        }
-      }
-    }
-
-    // Fallback if Event.path is not available.
-    let el = e.target;
-    if (!anchor && el.nodeType == Node.ELEMENT_NODE &&
-        el.webkitMatchesSelector('A, A *')) {
-      while (el.tagName != 'A') {
-        el = el.parentElement;
-      }
-      anchor = el;
-    }
-
-    if (!anchor) {
-      return;
-    }
-
-    anchor = /** @type {!HTMLAnchorElement} */ (anchor);
-    if ((anchor.protocol == 'file:' || anchor.protocol == 'about:') &&
-        (e.button == 0 || e.button == 1)) {
-      chrome.send('navigateToUrl', [
-        anchor.href, anchor.target, e.button, e.altKey, e.ctrlKey, e.metaKey,
-        e.shiftKey
-      ]);
-      e.preventDefault();
-    }
-  });
-});
-
 /**
  * Creates a new URL which is the old URL with a GET param of key=value.
  * @param {string} url The base URL. There is not sanity checking on the URL so
@@ -483,6 +434,6 @@ if (!('key' in KeyboardEvent.prototype)) {
  * @param {!Element} el
  * @return {boolean} Whether the element is interactive via text input.
  */
-function isTextInputElement(el) {
+/* #export */ function isTextInputElement(el) {
   return el.tagName == 'INPUT' || el.tagName == 'TEXTAREA';
 }

@@ -11,6 +11,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "third_party/skia/include/core/SkRegion.h"
 #include "ui/base/hit_test_x11.h"
 #include "ui/base/x/x11_pointer_grab.h"
 #include "ui/base/x/x11_util.h"
@@ -25,7 +26,9 @@
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_rep.h"
+#include "ui/gfx/skia_util.h"
 #include "ui/gfx/x/x11_atom_cache.h"
+#include "ui/gfx/x/x11_path.h"
 #include "ui/platform_window/common/platform_window_defaults.h"
 
 namespace ui {
@@ -86,6 +89,25 @@ bool SyncSetCounter(XDisplay* display, XID counter, int64_t value) {
   XSyncValue sync_value;
   XSyncIntsToValue(&sync_value, value & 0xFFFFFFFF, value >> 32);
   return XSyncSetCounter(display, counter, sync_value) == x11::True;
+}
+
+// Returns the whole path from |window| to the root.
+std::vector<::Window> GetParentsList(XDisplay* xdisplay, ::Window window) {
+  ::Window parent_win, root_win;
+  Window* child_windows;
+  unsigned int num_child_windows;
+  std::vector<::Window> result;
+
+  while (window) {
+    result.push_back(window);
+    if (!XQueryTree(xdisplay, window, &root_win, &parent_win, &child_windows,
+                    &num_child_windows))
+      break;
+    if (child_windows)
+      XFree(child_windows);
+    window = parent_win;
+  }
+  return result;
 }
 
 }  // namespace
@@ -357,7 +379,7 @@ void XWindow::Init(const Configuration& config) {
   ui::SetIntProperty(xwindow_, "_NET_WM_BYPASS_COMPOSITOR", "CARDINAL", 2);
 
   if (config.icon)
-    SetWindowIcons(gfx::ImageSkia(), *config.icon);
+    SetXWindowIcons(gfx::ImageSkia(), *config.icon);
 }
 
 void XWindow::Map(bool inactive) {
@@ -459,7 +481,7 @@ void XWindow::SetFullscreen(bool fullscreen) {
 }
 
 void XWindow::Activate() {
-  if (!IsVisible() || !activatable_)
+  if (!IsXWindowVisible() || !activatable_)
     return;
 
   BeforeActivationStateChanged();
@@ -590,9 +612,10 @@ void XWindow::SetBounds(const gfx::Rect& requested_bounds_in_pixels) {
   // (possibly synthetic) ConfigureNotify about the actual size and correct
   // |bounds_in_pixels_| later.
   bounds_in_pixels_ = bounds_in_pixels;
+  ResetWindowRegion();
 }
 
-bool XWindow::IsVisible() const {
+bool XWindow::IsXWindowVisible() const {
   // On Windows, IsVisible() returns true for minimized windows.  On X11, a
   // minimized window is not mapped, so an explicit IsMinimized() check is
   // necessary.
@@ -633,7 +656,37 @@ void XWindow::ReleasePointerGrab() {
   has_pointer_grab_ = false;
 }
 
-void XWindow::StackAtTop() {
+void XWindow::StackXWindowAbove(::Window window) {
+  DCHECK(window != x11::None);
+
+  // Find all parent windows up to the root.
+  std::vector<::Window> window_below_parents =
+      GetParentsList(xdisplay_, window);
+  std::vector<::Window> window_above_parents =
+      GetParentsList(xdisplay_, xwindow_);
+
+  // Find their common ancestor.
+  auto it_below_window = window_below_parents.rbegin();
+  auto it_above_window = window_above_parents.rbegin();
+  for (; it_below_window != window_below_parents.rend() &&
+         it_above_window != window_above_parents.rend() &&
+         *it_below_window == *it_above_window;
+       ++it_below_window, ++it_above_window) {
+  }
+
+  if (it_below_window != window_below_parents.rend() &&
+      it_above_window != window_above_parents.rend()) {
+    // First stack |xwindow| below so Z-order of |window| stays the same.
+    ::Window windows[] = {*it_below_window, *it_above_window};
+    if (XRestackWindows(xdisplay_, windows, 2) == 0) {
+      // Now stack them properly.
+      std::swap(windows[0], windows[1]);
+      XRestackWindows(xdisplay_, windows, 2);
+    }
+  }
+}
+
+void XWindow::StackXWindowAtTop() {
   XRaiseWindow(xdisplay_, xwindow_);
 }
 
@@ -661,7 +714,7 @@ bool XWindow::SetTitle(base::string16 title) {
   return true;
 }
 
-void XWindow::SetOpacity(float opacity) {
+void XWindow::SetXWindowOpacity(float opacity) {
   // X server opacity is in terms of 32 bit unsigned int space, and counts from
   // the opposite direction.
   // XChangeProperty() expects "cardinality" to be long.
@@ -683,20 +736,23 @@ void XWindow::SetOpacity(float opacity) {
   }
 }
 
-void XWindow::SetAspectRatio(const gfx::SizeF& aspect_ratio) {
+void XWindow::SetXWindowAspectRatio(const gfx::SizeF& aspect_ratio) {
   XSizeHints size_hints;
   size_hints.flags = 0;
   long supplied_return;
 
   XGetWMNormalHints(xdisplay_, xwindow_, &size_hints, &supplied_return);
-  size_hints.flags |= PAspect;
-  size_hints.min_aspect.x = size_hints.max_aspect.x = aspect_ratio.width();
-  size_hints.min_aspect.y = size_hints.max_aspect.y = aspect_ratio.height();
+  // Unforce aspect ratio is parameter length is 0, otherwise set normally.
+  if (!aspect_ratio.IsEmpty()) {
+    size_hints.flags |= PAspect;
+    size_hints.min_aspect.x = size_hints.max_aspect.x = aspect_ratio.width();
+    size_hints.min_aspect.y = size_hints.max_aspect.y = aspect_ratio.height();
+  }
   XSetWMNormalHints(xdisplay_, xwindow_, &size_hints);
 }
 
-void XWindow::SetWindowIcons(const gfx::ImageSkia& window_icon,
-                             const gfx::ImageSkia& app_icon) {
+void XWindow::SetXWindowIcons(const gfx::ImageSkia& window_icon,
+                              const gfx::ImageSkia& app_icon) {
   // TODO(erg): The way we handle icons across different versions of chrome
   // could be substantially improved. The Windows version does its own thing
   // and only sometimes comes down this code path. The icon stuff in
@@ -717,7 +773,7 @@ void XWindow::SetWindowIcons(const gfx::ImageSkia& window_icon,
     ui::SetAtomArrayProperty(xwindow_, "_NET_WM_ICON", "CARDINAL", data);
 }
 
-void XWindow::SetVisibleOnAllWorkspaces(bool visible) {
+void XWindow::SetXWindowVisibleOnAllWorkspaces(bool visible) {
   SetWMSpecState(visible, gfx::GetAtom("_NET_WM_STATE_STICKY"), x11::None);
 
   int new_desktop = 0;
@@ -744,7 +800,7 @@ void XWindow::SetVisibleOnAllWorkspaces(bool visible) {
              SubstructureRedirectMask | SubstructureNotifyMask, &xevent);
 }
 
-bool XWindow::IsVisibleOnAllWorkspaces() const {
+bool XWindow::IsXWindowVisibleOnAllWorkspaces() const {
   // We don't need a check for _NET_WM_STATE_STICKY because that would specify
   // that the window remain in a fixed position even if the viewport scrolls.
   // This is different from the type of workspace that's associated with
@@ -756,6 +812,19 @@ void XWindow::MoveCursorTo(const gfx::Point& location_in_pixels) {
   XWarpPointer(xdisplay_, x11::None, x_root_window_, 0, 0, 0, 0,
                bounds_in_pixels_.x() + location_in_pixels.x(),
                bounds_in_pixels_.y() + location_in_pixels.y());
+}
+
+void XWindow::ResetWindowRegion() {
+  XRegion* xregion = nullptr;
+  if (!use_custom_shape() && !IsMaximized() && !IsFullscreen()) {
+    SkPath window_mask;
+    GetWindowMaskForXWindow(bounds().size(), &window_mask);
+    // Some frame views define a custom (non-rectangular) window mask. If
+    // so, use it to define the window shape. If not, fall through.
+    if (window_mask.countPoints() > 0)
+      xregion = gfx::CreateRegionFromSkPath(window_mask);
+  }
+  UpdateWindowRegion(xregion);
 }
 
 void XWindow::OnWorkspaceUpdated() {
@@ -775,7 +844,7 @@ void XWindow::SetAlwaysOnTop(bool always_on_top) {
   SetWMSpecState(always_on_top, gfx::GetAtom("_NET_WM_STATE_ABOVE"), x11::None);
 }
 
-void XWindow::FlashFrame(bool flash_frame) {
+void XWindow::SetFlashFrameHint(bool flash_frame) {
   if (urgency_hint_set_ == flash_frame)
     return;
 
@@ -848,7 +917,7 @@ void XWindow::AfterActivationStateChanged() {
 
   bool is_active = IsActive();
   if (!was_active_ && is_active)
-    FlashFrame(false);
+    SetFlashFrameHint(false);
 
   if (was_active_ != is_active)
     OnXWindowIsActiveChanged(is_active);
@@ -857,49 +926,7 @@ void XWindow::AfterActivationStateChanged() {
 void XWindow::SetUseNativeFrame(bool use_native_frame) {
   use_native_frame_ = use_native_frame;
   ui::SetUseOSWindowFrame(xwindow_, use_native_frame);
-}
-
-void XWindow::SetShape(_XRegion* xregion) {
-  custom_window_shape_ = !!xregion;
-  window_shape_.reset(xregion);
-}
-
-void XWindow::UpdateWindowRegion(_XRegion* xregion) {
-  // If a custom window shape was supplied then apply it.
-  if (use_custom_shape()) {
-    XShapeCombineRegion(xdisplay_, xwindow_, ShapeBounding, 0, 0,
-                        window_shape_.get(), false);
-    return;
-  }
-
-  window_shape_.reset(xregion);
-  if (window_shape_) {
-    XShapeCombineRegion(xdisplay_, xwindow_, ShapeBounding, 0, 0,
-                        window_shape_.get(), false);
-    return;
-  }
-
-  // If we didn't set the shape for any reason, reset the shaping information.
-  // How this is done depends on the border style, due to quirks and bugs in
-  // various window managers.
-  if (use_native_frame()) {
-    // If the window has system borders, the mask must be set to null (not a
-    // rectangle), because several window managers (eg, KDE, XFCE, XMonad) will
-    // not put borders on a window with a custom shape.
-    XShapeCombineMask(xdisplay_, xwindow_, ShapeBounding, 0, 0, x11::None,
-                      ShapeSet);
-  } else {
-    // Conversely, if the window does not have system borders, the mask must be
-    // manually set to a rectangle that covers the whole window (not null). This
-    // is due to a bug in KWin <= 4.11.5 (KDE bug #330573) where setting a null
-    // shape causes the hint to disable system borders to be ignored (resulting
-    // in a double border).
-    XRectangle r = {0, 0,
-                    static_cast<unsigned short>(bounds_in_pixels_.width()),
-                    static_cast<unsigned short>(bounds_in_pixels_.height())};
-    XShapeCombineRectangles(xdisplay_, xwindow_, ShapeBounding, 0, 0, &r, 1,
-                            ShapeSet, YXBanded);
-  }
+  ResetWindowRegion();
 }
 
 void XWindow::OnCrossingEvent(bool enter,
@@ -1051,7 +1078,7 @@ void XWindow::ProcessEvent(XEvent* xev) {
     gfx::Point window_origin = gfx::Point() + (root_point - window_point);
     if (bounds_in_pixels_.origin() != window_origin) {
       bounds_in_pixels_.set_origin(window_origin);
-      OnXWindowBoundsChanged(bounds_in_pixels_);
+      NotifyBoundsChanged(bounds_in_pixels_);
     }
   }
 
@@ -1084,9 +1111,11 @@ void XWindow::ProcessEvent(XEvent* xev) {
     }
 #if !defined(USE_OZONE)
     case KeyPress:
-    case KeyRelease:
-      OnXWindowRawKeyEvent(xev);
+    case KeyRelease: {
+      ui::KeyEvent key_event(xev);
+      OnXWindowEvent(&key_event);
       break;
+    }
     case ButtonPress:
     case ButtonRelease: {
       ui::EventType event_type = ui::EventTypeFromNative(xev);
@@ -1376,7 +1405,7 @@ void XWindow::OnConfigureEvent(XEvent* xev) {
   if (size_changed)
     DispatchResize();
   else if (origin_changed)
-    OnXWindowBoundsChanged(bounds_in_pixels_);
+    NotifyBoundsChanged(bounds_in_pixels_);
 }
 
 void XWindow::SetWMSpecState(bool enabled, XAtom state1, XAtom state2) {
@@ -1423,6 +1452,7 @@ void XWindow::UpdateWindowProperties(
   is_always_on_top_ = ui::HasWMSpecProperty(
       window_properties_, gfx::GetAtom("_NET_WM_STATE_ABOVE"));
   OnXWindowStateChanged();
+  ResetWindowRegion();
 }
 
 void XWindow::OnFrameExtentsUpdated() {
@@ -1496,7 +1526,7 @@ void XWindow::DelayedResize(const gfx::Rect& bounds_in_pixels) {
     SyncSetCounter(xdisplay_, extended_update_counter_,
                    ++current_counter_value_);
   }
-  OnXWindowBoundsChanged(bounds_in_pixels);
+  NotifyBoundsChanged(bounds_in_pixels);
   CancelResize();
 }
 
@@ -1532,6 +1562,43 @@ void XWindow::ConfineCursorTo(const gfx::Rect& bounds) {
   has_pointer_barriers_ = true;
 }
 
+void XWindow::LowerWindow() {
+  XLowerWindow(xdisplay_, xwindow_);
+}
+
+bool XWindow::ContainsPointInRegion(const gfx::Point& point) const {
+  if (!shape())
+    return true;
+
+  return XPointInRegion(shape(), point.x(), point.y()) == x11::True;
+}
+
+void XWindow::SetXWindowShape(std::unique_ptr<NativeShapeRects> native_shape,
+                              const gfx::Transform& transform) {
+  XRegion* xregion = nullptr;
+  if (native_shape) {
+    SkRegion native_region;
+    for (const gfx::Rect& rect : *native_shape)
+      native_region.op(gfx::RectToSkIRect(rect), SkRegion::kUnion_Op);
+    if (!transform.IsIdentity() && !native_region.isEmpty()) {
+      SkPath path_in_dip;
+      if (native_region.getBoundaryPath(&path_in_dip)) {
+        SkPath path_in_pixels;
+        path_in_dip.transform(transform.matrix(), &path_in_pixels);
+        xregion = gfx::CreateRegionFromSkPath(path_in_pixels);
+      } else {
+        xregion = XCreateRegion();
+      }
+    } else {
+      xregion = gfx::CreateRegionFromSkRegion(native_region);
+    }
+  }
+
+  custom_window_shape_ = !!xregion;
+  window_shape_.reset(xregion);
+  ResetWindowRegion();
+}
+
 void XWindow::UnconfineCursor() {
   if (!has_pointer_barriers_)
     return;
@@ -1549,6 +1616,49 @@ void XWindow::SetVisualId(base::Optional<int> visual_id) {
 
   DCHECK_GE(visual_id.value(), 0);
   visual_id_ = visual_id.value();
+}
+
+void XWindow::UpdateWindowRegion(XRegion* xregion) {
+  // If a custom window shape was supplied then apply it.
+  if (use_custom_shape()) {
+    XShapeCombineRegion(xdisplay_, xwindow_, ShapeBounding, 0, 0,
+                        window_shape_.get(), false);
+    return;
+  }
+
+  window_shape_.reset(xregion);
+  if (window_shape_) {
+    XShapeCombineRegion(xdisplay_, xwindow_, ShapeBounding, 0, 0,
+                        window_shape_.get(), false);
+    return;
+  }
+
+  // If we didn't set the shape for any reason, reset the shaping information.
+  // How this is done depends on the border style, due to quirks and bugs in
+  // various window managers.
+  if (use_native_frame()) {
+    // If the window has system borders, the mask must be set to null (not a
+    // rectangle), because several window managers (eg, KDE, XFCE, XMonad) will
+    // not put borders on a window with a custom shape.
+    XShapeCombineMask(xdisplay_, xwindow_, ShapeBounding, 0, 0, x11::None,
+                      ShapeSet);
+  } else {
+    // Conversely, if the window does not have system borders, the mask must be
+    // manually set to a rectangle that covers the whole window (not null). This
+    // is due to a bug in KWin <= 4.11.5 (KDE bug #330573) where setting a null
+    // shape causes the hint to disable system borders to be ignored (resulting
+    // in a double border).
+    XRectangle r = {0, 0,
+                    static_cast<unsigned short>(bounds_in_pixels_.width()),
+                    static_cast<unsigned short>(bounds_in_pixels_.height())};
+    XShapeCombineRectangles(xdisplay_, xwindow_, ShapeBounding, 0, 0, &r, 1,
+                            ShapeSet, YXBanded);
+  }
+}
+
+void XWindow::NotifyBoundsChanged(const gfx::Rect& new_bounds_in_px) {
+  ResetWindowRegion();
+  OnXWindowBoundsChanged(new_bounds_in_px);
 }
 
 }  // namespace ui

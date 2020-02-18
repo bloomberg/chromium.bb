@@ -41,6 +41,7 @@
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/platform/web_url_load_timing.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_load_info.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_load_timing.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
@@ -243,7 +244,7 @@ void WebURLResponse::SetIsLegacyTLSVersion(bool value) {
   resource_response_->SetIsLegacyTLSVersion(value);
 }
 
-void WebURLResponse::SetSecurityStyle(WebSecurityStyle security_style) {
+void WebURLResponse::SetSecurityStyle(SecurityStyle security_style) {
   resource_response_->SetSecurityStyle(security_style);
 }
 
@@ -300,6 +301,10 @@ const ResourceResponse& WebURLResponse::ToResourceResponse() const {
 
 void WebURLResponse::SetWasCached(bool value) {
   resource_response_->SetWasCached(value);
+}
+
+bool WebURLResponse::WasFetchedViaSPDY() const {
+  return resource_response_->WasFetchedViaSPDY();
 }
 
 void WebURLResponse::SetWasFetchedViaSPDY(bool value) {
@@ -399,6 +404,19 @@ void WebURLResponse::SetWasInPrefetchCache(bool was_in_prefetch_cache) {
   resource_response_->SetWasInPrefetchCache(was_in_prefetch_cache);
 }
 
+void WebURLResponse::SetRecursivePrefetchToken(
+    const base::Optional<base::UnguessableToken>& token) {
+  resource_response_->SetRecursivePrefetchToken(token);
+}
+
+bool WebURLResponse::WasAlpnNegotiated() const {
+  return resource_response_->WasAlpnNegotiated();
+}
+
+void WebURLResponse::SetWasAlpnNegotiated(bool was_alpn_negotiated) {
+  resource_response_->SetWasAlpnNegotiated(was_alpn_negotiated);
+}
+
 WebString WebURLResponse::AlpnNegotiatedProtocol() const {
   return resource_response_->AlpnNegotiatedProtocol();
 }
@@ -406,6 +424,16 @@ WebString WebURLResponse::AlpnNegotiatedProtocol() const {
 void WebURLResponse::SetAlpnNegotiatedProtocol(
     const WebString& alpn_negotiated_protocol) {
   resource_response_->SetAlpnNegotiatedProtocol(alpn_negotiated_protocol);
+}
+
+bool WebURLResponse::WasAlternateProtocolAvailable() const {
+  return resource_response_->WasAlternateProtocolAvailable();
+}
+
+void WebURLResponse::SetWasAlternateProtocolAvailable(
+    bool was_alternate_protocol_available) {
+  resource_response_->SetWasAlternateProtocolAvailable(
+      was_alternate_protocol_available);
 }
 
 net::HttpResponseInfo::ConnectionInfo WebURLResponse::ConnectionInfo() const {

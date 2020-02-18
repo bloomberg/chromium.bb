@@ -245,7 +245,8 @@ jboolean TemplateUrlServiceAndroid::SetPlayAPISearchEngine(
     const base::android::JavaParamRef<jstring>& jkeyword,
     const base::android::JavaParamRef<jstring>& jsearch_url,
     const base::android::JavaParamRef<jstring>& jsuggest_url,
-    const base::android::JavaParamRef<jstring>& jfavicon_url) {
+    const base::android::JavaParamRef<jstring>& jfavicon_url,
+    jboolean set_as_default) {
   // Check if there is already a search engine created from Play API.
   TemplateURLService::TemplateURLVector template_urls =
       template_url_service_->GetTemplateURLs();
@@ -272,7 +273,7 @@ jboolean TemplateUrlServiceAndroid::SetPlayAPISearchEngine(
       template_url_service_->CreateOrUpdateTemplateURLFromPlayAPIData(
           name, keyword, search_url, suggest_url, favicon_url);
 
-  if (template_url_service_->CanMakeDefault(t_url))
+  if (set_as_default && template_url_service_->CanMakeDefault(t_url))
     template_url_service_->SetUserSelectedDefaultSearchProvider(t_url);
   return true;
 }
@@ -302,18 +303,6 @@ TemplateUrlServiceAndroid::AddSearchEngineForTesting(
   TemplateURL* t_url =
       template_url_service_->Add(std::make_unique<TemplateURL>(data));
   CHECK(t_url) << "Failed adding template url for: " << keyword;
-  return base::android::ConvertUTF16ToJavaString(env, t_url->data().keyword());
-}
-
-base::android::ScopedJavaLocalRef<jstring>
-TemplateUrlServiceAndroid::UpdateLastVisitedForTesting(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& obj,
-    const base::android::JavaParamRef<jstring>& jkeyword) {
-  base::string16 keyword =
-      base::android::ConvertJavaStringToUTF16(env, jkeyword);
-  TemplateURL* t_url = template_url_service_->GetTemplateURLForKeyword(keyword);
-  template_url_service_->UpdateTemplateURLVisitTime(t_url);
   return base::android::ConvertUTF16ToJavaString(env, t_url->data().keyword());
 }
 

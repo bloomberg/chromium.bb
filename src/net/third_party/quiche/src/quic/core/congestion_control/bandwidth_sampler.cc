@@ -21,6 +21,7 @@ QuicByteCount MaxAckHeightTracker::Update(QuicBandwidth bandwidth_estimate,
   if (aggregation_epoch_start_time_ == QuicTime::Zero()) {
     aggregation_epoch_bytes_ = bytes_acked;
     aggregation_epoch_start_time_ = ack_time;
+    ++num_ack_aggregation_epochs_;
     return 0;
   }
 
@@ -30,10 +31,13 @@ QuicByteCount MaxAckHeightTracker::Update(QuicBandwidth bandwidth_estimate,
       bandwidth_estimate * (ack_time - aggregation_epoch_start_time_);
   // Reset the current aggregation epoch as soon as the ack arrival rate is less
   // than or equal to the max bandwidth.
-  if (aggregation_epoch_bytes_ <= expected_bytes_acked) {
+  if (aggregation_epoch_bytes_ <=
+      GetQuicFlag(FLAGS_quic_ack_aggregation_bandwidth_threshold) *
+          expected_bytes_acked) {
     // Reset to start measuring a new aggregation epoch.
     aggregation_epoch_bytes_ = bytes_acked;
     aggregation_epoch_start_time_ = ack_time;
+    ++num_ack_aggregation_epochs_;
     return 0;
   }
 
@@ -60,13 +64,7 @@ BandwidthSampler::BandwidthSampler(
       max_tracked_packets_(GetQuicFlag(FLAGS_quic_max_tracked_packet_count)),
       unacked_packet_map_(unacked_packet_map),
       max_ack_height_tracker_(max_height_tracker_window_length),
-      total_bytes_acked_after_last_ack_event_(0),
-      quic_track_ack_height_in_bandwidth_sampler_(
-          GetQuicReloadableFlag(quic_track_ack_height_in_bandwidth_sampler2)) {
-  if (quic_track_ack_height_in_bandwidth_sampler_) {
-    QUIC_RELOADABLE_FLAG_COUNT(quic_track_ack_height_in_bandwidth_sampler2);
-  }
-}
+      total_bytes_acked_after_last_ack_event_(0) {}
 
 BandwidthSampler::~BandwidthSampler() {}
 
@@ -104,11 +102,12 @@ void BandwidthSampler::OnPacketSent(
           connection_state_map_.last_packet() + max_tracked_packets_) {
     if (unacked_packet_map_ != nullptr) {
       QUIC_BUG << "BandwidthSampler in-flight packet map has exceeded maximum "
-                  "number of tracked packets.  First tracked: "
-               << connection_state_map_.first_packet()
+                  "number of tracked packets("
+               << max_tracked_packets_
+               << ").  First tracked: " << connection_state_map_.first_packet()
                << "; last tracked: " << connection_state_map_.last_packet()
                << "; least unacked: " << unacked_packet_map_->GetLeastUnacked()
-               << "; largest observed: "
+               << "; packet number: " << packet_number << "; largest observed: "
                << unacked_packet_map_->largest_acked();
     } else {
       QUIC_BUG << "BandwidthSampler in-flight packet map has exceeded maximum "
@@ -200,10 +199,11 @@ BandwidthSample BandwidthSampler::OnPacketAcknowledgedInner(
     } else {
       QUIC_CODE_COUNT_N(quic_prev_ack_time_larger_than_current_ack_time, 2, 2);
     }
-    QUIC_LOG(ERROR) << "Time of the previously acked packet:"
-                    << sent_packet.last_acked_packet_ack_time.ToDebuggingValue()
-                    << " is larger than the ack time of the current packet:"
-                    << ack_time.ToDebuggingValue();
+    QUIC_LOG_EVERY_N_SEC(ERROR, 60)
+        << "Time of the previously acked packet:"
+        << sent_packet.last_acked_packet_ack_time.ToDebuggingValue()
+        << " is larger than the ack time of the current packet:"
+        << ack_time.ToDebuggingValue();
     return BandwidthSample();
   }
   QuicBandwidth ack_rate = QuicBandwidth::FromBytesAndTimeDelta(

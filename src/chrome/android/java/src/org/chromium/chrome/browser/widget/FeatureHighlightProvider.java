@@ -4,12 +4,13 @@
 
 package org.chromium.chrome.browser.widget;
 
-import android.support.annotation.ColorInt;
-import android.support.annotation.IntDef;
-import android.support.annotation.StringRes;
-import android.support.annotation.StyleRes;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
+
+import androidx.annotation.ColorInt;
+import androidx.annotation.IntDef;
+import androidx.annotation.StringRes;
+import androidx.annotation.StyleRes;
 
 import org.chromium.chrome.browser.AppHooks;
 
@@ -47,13 +48,25 @@ public class FeatureHighlightProvider {
      * @param view The view to focus.
      * @param headTextId The text shown in the header section of the bubble.
      * @param headAlignment Alignment of the head text.
+     * @param headStyle Style of the head text size and color.
      * @param bodyTextId The text shown in the body section of the bubble.
      * @param bodyAlignment Alignment of the body text.
-     * @param color The color of the bubble.
+     * @param bodyStyle Style of the body text size and color.
+     * @param pulseColor The inner color of the bubble.
+     * @param outerColor The outer color of the bubble.
+     * @param scrimColor The color of the out side of feature highlight.
      * @param timeoutMs The amount of time in ms before the bubble disappears.
+     * @param completeRunnable The Runnable to be called if the user tab on the view.
      */
     public void buildForView(AppCompatActivity activity, View view, @StringRes int headTextId,
             @TextAlignment int headAlignment, @StyleRes int headStyle, @StringRes int bodyTextId,
-            @TextAlignment int bodyAlignment, @StyleRes int bodyStyle, @ColorInt int color,
-            long timeoutMs) {}
+            @TextAlignment int bodyAlignment, @StyleRes int bodyStyle, @ColorInt int pulseColor,
+            @ColorInt int outerColor, @ColorInt int scrimColor, long timeoutMs,
+            Runnable completeRunnable) {}
+
+    /**
+     * Dismiss the feature highlight bubble for a particular view.
+     * @param activity An activity to attach the IPH to.
+     */
+    public void dismiss(AppCompatActivity activity) {}
 }

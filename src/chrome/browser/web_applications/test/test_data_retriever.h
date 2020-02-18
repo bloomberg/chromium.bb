@@ -35,12 +35,13 @@ class TestDataRetriever : public WebAppDataRetriever {
   void GetIcons(content::WebContents* web_contents,
                 const std::vector<GURL>& icon_urls,
                 bool skip_page_favicons,
-                WebappInstallSource install_source,
+                WebAppIconDownloader::Histogram histogram,
                 GetIconsCallback callback) override;
 
   // Set info to respond on |GetWebApplicationInfo|.
   void SetRendererWebApplicationInfo(
       std::unique_ptr<WebApplicationInfo> web_app_info);
+  void SetEmptyRendererWebApplicationInfo();
   // Set arguments to respond on |CheckInstallabilityAndRetrieveManifest|.
   void SetManifest(std::unique_ptr<blink::Manifest> manifest,
                    bool is_installable);

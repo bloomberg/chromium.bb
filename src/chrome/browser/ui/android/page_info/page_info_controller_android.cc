@@ -23,6 +23,7 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "url/origin.h"
 
@@ -61,6 +62,9 @@ PageInfoControllerAndroid::PageInfoControllerAndroid(
       SecurityStateTabHelper::FromWebContents(web_contents);
   DCHECK(helper);
 
+  // When |web_contents| is not from a Tab, |web_contents| does not have a
+  // |TabSpecificContentSettings| and need to create one; otherwise, noop.
+  TabSpecificContentSettings::CreateForWebContents(web_contents);
   presenter_ = std::make_unique<PageInfo>(
       this, Profile::FromBrowserContext(web_contents->GetBrowserContext()),
       TabSpecificContentSettings::FromWebContents(web_contents), web_contents,
@@ -114,19 +118,22 @@ void PageInfoControllerAndroid::SetPermissionInfo(
   // particular order, but only if their value is different from the default.
   // This order comes from https://crbug.com/610358.
   std::vector<ContentSettingsType> permissions_to_display;
-  permissions_to_display.push_back(CONTENT_SETTINGS_TYPE_GEOLOCATION);
-  permissions_to_display.push_back(CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA);
-  permissions_to_display.push_back(CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC);
-  permissions_to_display.push_back(CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
-  permissions_to_display.push_back(CONTENT_SETTINGS_TYPE_IMAGES);
-  permissions_to_display.push_back(CONTENT_SETTINGS_TYPE_JAVASCRIPT);
-  permissions_to_display.push_back(CONTENT_SETTINGS_TYPE_POPUPS);
-  permissions_to_display.push_back(CONTENT_SETTINGS_TYPE_ADS);
-  permissions_to_display.push_back(CONTENT_SETTINGS_TYPE_AUTOPLAY);
-  permissions_to_display.push_back(CONTENT_SETTINGS_TYPE_SOUND);
+  permissions_to_display.push_back(ContentSettingsType::GEOLOCATION);
+  permissions_to_display.push_back(ContentSettingsType::MEDIASTREAM_CAMERA);
+  permissions_to_display.push_back(ContentSettingsType::MEDIASTREAM_MIC);
+  permissions_to_display.push_back(ContentSettingsType::NOTIFICATIONS);
+  permissions_to_display.push_back(ContentSettingsType::IMAGES);
+  permissions_to_display.push_back(ContentSettingsType::JAVASCRIPT);
+  permissions_to_display.push_back(ContentSettingsType::POPUPS);
+  permissions_to_display.push_back(ContentSettingsType::ADS);
+  permissions_to_display.push_back(
+      ContentSettingsType::PROTECTED_MEDIA_IDENTIFIER);
+  permissions_to_display.push_back(ContentSettingsType::SOUND);
+  if (base::FeatureList::IsEnabled(features::kWebNfc))
+    permissions_to_display.push_back(ContentSettingsType::NFC);
   base::CommandLine* cmd = base::CommandLine::ForCurrentProcess();
-  if (cmd->HasSwitch(switches::kEnableWebBluetoothScanning))
-    permissions_to_display.push_back(CONTENT_SETTINGS_TYPE_BLUETOOTH_SCANNING);
+  if (cmd->HasSwitch(switches::kEnableExperimentalWebPlatformFeatures))
+    permissions_to_display.push_back(ContentSettingsType::BLUETOOTH_SCANNING);
 
   std::map<ContentSettingsType, ContentSetting>
       user_specified_settings_to_display;
@@ -176,13 +183,13 @@ base::Optional<ContentSetting> PageInfoControllerAndroid::GetSettingToDisplay(
 
   // Handle exceptions for permissions which need to be displayed even if they
   // are set to the default.
-  if (permission.type == CONTENT_SETTINGS_TYPE_ADS) {
+  if (permission.type == ContentSettingsType::ADS) {
     // The subresource filter permission should always display the default
     // setting if it is showing up in Page Info. Logic for whether the
     // setting should show up in Page Info is in ShouldShowPermission in
     // page_info.cc.
     return permission.default_setting;
-  } else if (permission.type == CONTENT_SETTINGS_TYPE_SOUND) {
+  } else if (permission.type == ContentSettingsType::SOUND) {
     // The sound content setting should always show up when the tab has played
     // audio since last navigation.
     if (web_contents_->WasEverAudible())

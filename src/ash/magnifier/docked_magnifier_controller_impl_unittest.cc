@@ -14,9 +14,9 @@
 #include "ash/magnifier/magnifier_test_utils.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/ash_switches.h"
+#include "ash/public/cpp/shelf_config.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/session/test_session_controller_client.h"
-#include "ash/shelf/shelf_constants.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/ash_test_helper.h"
@@ -25,6 +25,7 @@
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_grid.h"
 #include "ash/wm/overview/overview_item.h"
+#include "ash/wm/overview/overview_item_view.h"
 #include "ash/wm/overview/overview_test_util.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
@@ -70,6 +71,10 @@ class DockedMagnifierTest : public NoSessionAshTestBase,
 
   DockedMagnifierControllerImpl* controller() const {
     return Shell::Get()->docked_magnifier_controller();
+  }
+
+  SplitViewController* split_view_controller() {
+    return SplitViewController::Get(Shell::GetPrimaryRootWindow());
   }
 
   PrefService* user1_pref_service() {
@@ -157,7 +162,7 @@ class DockedMagnifierTest : public NoSessionAshTestBase,
   DISALLOW_COPY_AND_ASSIGN(DockedMagnifierTest);
 };
 
-INSTANTIATE_TEST_SUITE_P(, DockedMagnifierTest, ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All, DockedMagnifierTest, ::testing::Bool());
 
 // Tests that the Fullscreen and Docked Magnifiers are mutually exclusive.
 // TODO(afakhry): Update this test to use ash::MagnificationController once
@@ -246,7 +251,7 @@ TEST_P(DockedMagnifierTest, DisplaysWorkAreas) {
   const gfx::Rect disp_1_bounds(0, 0, 800, 600);
   EXPECT_EQ(disp_1_bounds, display_1.bounds());
   gfx::Rect disp_1_workarea_no_magnifier = disp_1_bounds;
-  disp_1_workarea_no_magnifier.Inset(0, 0, 0, ShelfConstants::shelf_size());
+  disp_1_workarea_no_magnifier.Inset(0, 0, 0, ShelfConfig::Get()->shelf_size());
   EXPECT_EQ(disp_1_workarea_no_magnifier, display_1.work_area());
   // At this point, normal mouse cursor confinement should be used.
   AshWindowTreeHost* host1 =
@@ -260,7 +265,7 @@ TEST_P(DockedMagnifierTest, DisplaysWorkAreas) {
   const gfx::Rect disp_2_bounds(800, 0, 400, 300);
   EXPECT_EQ(disp_2_bounds, display_2.bounds());
   gfx::Rect disp_2_workarea_no_magnifier = disp_2_bounds;
-  disp_2_workarea_no_magnifier.Inset(0, 0, 0, ShelfConstants::shelf_size());
+  disp_2_workarea_no_magnifier.Inset(0, 0, 0, ShelfConfig::Get()->shelf_size());
   EXPECT_EQ(disp_2_workarea_no_magnifier, display_2.work_area());
   AshWindowTreeHost* host2 =
       Shell::Get()
@@ -361,7 +366,7 @@ TEST_P(DockedMagnifierTest, DisplaysWorkAreasOverviewMode) {
   const display::Display& display = display_manager()->GetDisplayAt(0);
   gfx::Rect workarea = display.bounds();
   const int magnifier_height = GetMagnifierHeight(display.bounds().height());
-  workarea.Inset(0, magnifier_height, 0, ShelfConstants::shelf_size());
+  workarea.Inset(0, magnifier_height, 0, ShelfConfig::Get()->shelf_size());
   EXPECT_EQ(workarea, display.work_area());
   EXPECT_EQ(workarea, window->bounds());
   EXPECT_TRUE(WindowState::Get(window.get())->IsMaximized());
@@ -393,7 +398,7 @@ TEST_P(DockedMagnifierTest, OverviewTabbing) {
   OverviewItem* item = GetOverviewItemForWindow(window.get());
   ASSERT_TRUE(item);
   const auto label_bounds_in_screen =
-      item->caption_container_view()->title_label()->GetBoundsInScreen();
+      item->overview_item_view()->title_label()->GetBoundsInScreen();
   const gfx::Point expected_point_of_interest(
       label_bounds_in_screen.x(), label_bounds_in_screen.CenterPoint().y());
   TestMagnifierLayerTransform(expected_point_of_interest, root_window);
@@ -410,18 +415,19 @@ TEST_P(DockedMagnifierTest, DisplaysWorkAreasSingleSplitView) {
       CreateTestWindowInShell(SK_ColorWHITE, 100, gfx::Rect(0, 0, 200, 200)));
   WindowState::Get(window.get())->Maximize();
 
-  auto* split_view_controller = Shell::Get()->split_view_controller();
-  EXPECT_EQ(split_view_controller->state(), SplitViewState::kNoSnap);
-  EXPECT_EQ(split_view_controller->InSplitViewMode(), false);
+  EXPECT_EQ(split_view_controller()->state(),
+            SplitViewController::State::kNoSnap);
+  EXPECT_EQ(split_view_controller()->InSplitViewMode(), false);
 
   // Simulate going into split view, by enabling overview mode, and snapping
   // a window to the left.
   auto* overview_controller = Shell::Get()->overview_controller();
   overview_controller->StartOverview();
   EXPECT_TRUE(overview_controller->InOverviewSession());
-  split_view_controller->SnapWindow(window.get(), SplitViewController::LEFT);
-  EXPECT_EQ(split_view_controller->state(), SplitViewState::kLeftSnapped);
-  EXPECT_EQ(split_view_controller->left_window(), window.get());
+  split_view_controller()->SnapWindow(window.get(), SplitViewController::LEFT);
+  EXPECT_EQ(split_view_controller()->state(),
+            SplitViewController::State::kLeftSnapped);
+  EXPECT_EQ(split_view_controller()->left_window(), window.get());
   EXPECT_TRUE(overview_controller->InOverviewSession());
 
   // Enable the docked magnifier and expect that both overview and split view
@@ -430,12 +436,13 @@ TEST_P(DockedMagnifierTest, DisplaysWorkAreasSingleSplitView) {
   controller()->SetEnabled(true);
   EXPECT_TRUE(controller()->GetEnabled());
   EXPECT_FALSE(overview_controller->InOverviewSession());
-  EXPECT_EQ(split_view_controller->state(), SplitViewState::kNoSnap);
-  EXPECT_EQ(split_view_controller->InSplitViewMode(), false);
+  EXPECT_EQ(split_view_controller()->state(),
+            SplitViewController::State::kNoSnap);
+  EXPECT_EQ(split_view_controller()->InSplitViewMode(), false);
   const display::Display& display = display_manager()->GetDisplayAt(0);
   const int magnifier_height = GetMagnifierHeight(display.bounds().height());
   gfx::Rect work_area = display.bounds();
-  work_area.Inset(0, magnifier_height, 0, ShelfConstants::shelf_size());
+  work_area.Inset(0, magnifier_height, 0, ShelfConfig::Get()->shelf_size());
   EXPECT_EQ(work_area, display.work_area());
   EXPECT_EQ(work_area, window->bounds());
   EXPECT_TRUE(WindowState::Get(window.get())->IsMaximized());
@@ -457,12 +464,13 @@ TEST_P(DockedMagnifierTest, DisplaysWorkAreasDoubleSplitView) {
   overview_controller->StartOverview();
   EXPECT_TRUE(overview_controller->InOverviewSession());
 
-  auto* split_view_controller = Shell::Get()->split_view_controller();
-  EXPECT_EQ(split_view_controller->InSplitViewMode(), false);
-  split_view_controller->SnapWindow(window1.get(), SplitViewController::LEFT);
-  split_view_controller->SnapWindow(window2.get(), SplitViewController::RIGHT);
-  EXPECT_EQ(split_view_controller->InSplitViewMode(), true);
-  EXPECT_EQ(split_view_controller->state(), SplitViewState::kBothSnapped);
+  EXPECT_EQ(split_view_controller()->InSplitViewMode(), false);
+  split_view_controller()->SnapWindow(window1.get(), SplitViewController::LEFT);
+  split_view_controller()->SnapWindow(window2.get(),
+                                      SplitViewController::RIGHT);
+  EXPECT_EQ(split_view_controller()->InSplitViewMode(), true);
+  EXPECT_EQ(split_view_controller()->state(),
+            SplitViewController::State::kBothSnapped);
 
   // Snapping both windows should exit overview mode.
   EXPECT_FALSE(overview_controller->InOverviewSession());
@@ -472,12 +480,13 @@ TEST_P(DockedMagnifierTest, DisplaysWorkAreasDoubleSplitView) {
   // updated display's work area.
   controller()->SetEnabled(true);
   EXPECT_TRUE(controller()->GetEnabled());
-  EXPECT_EQ(split_view_controller->InSplitViewMode(), true);
-  EXPECT_EQ(split_view_controller->state(), SplitViewState::kBothSnapped);
+  EXPECT_EQ(split_view_controller()->InSplitViewMode(), true);
+  EXPECT_EQ(split_view_controller()->state(),
+            SplitViewController::State::kBothSnapped);
   const display::Display& display = display_manager()->GetDisplayAt(0);
   const int magnifier_height = GetMagnifierHeight(display.bounds().height());
   gfx::Rect work_area = display.bounds();
-  work_area.Inset(0, magnifier_height, 0, ShelfConstants::shelf_size());
+  work_area.Inset(0, magnifier_height, 0, ShelfConfig::Get()->shelf_size());
   EXPECT_EQ(work_area, display.work_area());
   EXPECT_EQ(work_area.height(), window1->bounds().height());
   EXPECT_EQ(work_area.height(), window2->bounds().height());

@@ -60,10 +60,16 @@ TEST(ValueSplittingHeaderListTest, Comparison) {
         EXPECT_FALSE(it1 == it2);
         EXPECT_TRUE(it1 != it2);
       }
-      ++it2;
+      if (j < kEnd - 1) {
+        ASSERT_NE(it2, headers.end());
+        ++it2;
+      }
     }
 
-    ++it1;
+    if (i < kEnd - 1) {
+      ASSERT_NE(it1, headers.end());
+      ++it1;
+    }
   }
 }
 
@@ -75,37 +81,37 @@ TEST(ValueSplittingHeaderListTest, Empty) {
   EXPECT_EQ(headers.begin(), headers.end());
 }
 
-struct {
-  const char* name;
-  QuicStringPiece value;
-  std::vector<const char*> expected_values;
-} kTestData[]{
-    // Empty value.
-    {"foo", "", {""}},
-    // Trivial case.
-    {"foo", "bar", {"bar"}},
-    // Simple split.
-    {"foo", {"bar\0baz", 7}, {"bar", "baz"}},
-    {"cookie", "foo;bar", {"foo", "bar"}},
-    {"cookie", "foo; bar", {"foo", "bar"}},
-    // Empty fragments with \0 separator.
-    {"foo", {"\0", 1}, {"", ""}},
-    {"bar", {"foo\0", 4}, {"foo", ""}},
-    {"baz", {"\0bar", 4}, {"", "bar"}},
-    {"qux", {"\0foobar\0", 8}, {"", "foobar", ""}},
-    // Empty fragments with ";" separator.
-    {"cookie", ";", {"", ""}},
-    {"cookie", "foo;", {"foo", ""}},
-    {"cookie", ";bar", {"", "bar"}},
-    {"cookie", ";foobar;", {"", "foobar", ""}},
-    // Empty fragments with "; " separator.
-    {"cookie", "; ", {"", ""}},
-    {"cookie", "foo; ", {"foo", ""}},
-    {"cookie", "; bar", {"", "bar"}},
-    {"cookie", "; foobar; ", {"", "foobar", ""}},
-};
-
 TEST(ValueSplittingHeaderListTest, Split) {
+  struct {
+    const char* name;
+    QuicStringPiece value;
+    std::vector<const char*> expected_values;
+  } kTestData[]{
+      // Empty value.
+      {"foo", "", {""}},
+      // Trivial case.
+      {"foo", "bar", {"bar"}},
+      // Simple split.
+      {"foo", {"bar\0baz", 7}, {"bar", "baz"}},
+      {"cookie", "foo;bar", {"foo", "bar"}},
+      {"cookie", "foo; bar", {"foo", "bar"}},
+      // Empty fragments with \0 separator.
+      {"foo", {"\0", 1}, {"", ""}},
+      {"bar", {"foo\0", 4}, {"foo", ""}},
+      {"baz", {"\0bar", 4}, {"", "bar"}},
+      {"qux", {"\0foobar\0", 8}, {"", "foobar", ""}},
+      // Empty fragments with ";" separator.
+      {"cookie", ";", {"", ""}},
+      {"cookie", "foo;", {"foo", ""}},
+      {"cookie", ";bar", {"", "bar"}},
+      {"cookie", ";foobar;", {"", "foobar", ""}},
+      // Empty fragments with "; " separator.
+      {"cookie", "; ", {"", ""}},
+      {"cookie", "foo; ", {"foo", ""}},
+      {"cookie", "; bar", {"", "bar"}},
+      {"cookie", "; foobar; ", {"", "foobar", ""}},
+  };
+
   for (size_t i = 0; i < QUIC_ARRAYSIZE(kTestData); ++i) {
     spdy::SpdyHeaderBlock block;
     block[kTestData[i].name] = kTestData[i].value;

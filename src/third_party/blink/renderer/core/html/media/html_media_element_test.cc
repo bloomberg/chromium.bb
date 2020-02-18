@@ -25,9 +25,10 @@
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
-using ::testing::AnyNumber;
-using ::testing::Return;
 using ::testing::_;
+using ::testing::AnyNumber;
+using ::testing::NanSensitiveDoubleEq;
+using ::testing::Return;
 
 namespace blink {
 
@@ -37,6 +38,7 @@ class MockWebMediaPlayer : public EmptyWebMediaPlayer {
   MOCK_CONST_METHOD0(HasVideo, bool());
   MOCK_CONST_METHOD0(Duration, double());
   MOCK_CONST_METHOD0(CurrentTime, double());
+  MOCK_METHOD1(SetLatencyHint, void(double));
   MOCK_METHOD1(EnabledAudioTracksChanged, void(const WebVector<TrackId>&));
   MOCK_METHOD1(SelectedVideoTrackChanged, void(TrackId*));
   MOCK_METHOD3(
@@ -45,6 +47,8 @@ class MockWebMediaPlayer : public EmptyWebMediaPlayer {
                                  const blink::WebMediaPlayerSource& source,
                                  CorsMode cors_mode));
   MOCK_CONST_METHOD0(DidLazyLoad, bool());
+
+  MOCK_METHOD0(GetSrcAfterRedirects, GURL());
 };
 
 class WebMediaStubLocalFrameClient : public EmptyLocalFrameClient {
@@ -295,6 +299,28 @@ TEST_P(HTMLMediaElementTest, CouldPlayIfEnoughDataRespondsToError) {
   EXPECT_FALSE(CouldPlayIfEnoughData());
 }
 
+TEST_P(HTMLMediaElementTest, SetLatencyHint) {
+  const double kNan = std::numeric_limits<double>::quiet_NaN();
+
+  // Initial value.
+  Media()->SetSrc(SrcSchemeToURL(TestURLScheme::kHttp));
+  EXPECT_CALL(*MockMediaPlayer(), SetLatencyHint(NanSensitiveDoubleEq(kNan)));
+
+  test::RunPendingTasks();
+  testing::Mock::VerifyAndClearExpectations(MockMediaPlayer());
+
+  // Valid value.
+  EXPECT_CALL(*MockMediaPlayer(), SetLatencyHint(NanSensitiveDoubleEq(1.0)));
+  Media()->setLatencyHint(1.0);
+
+  test::RunPendingTasks();
+  testing::Mock::VerifyAndClearExpectations(MockMediaPlayer());
+
+  // Invalid value.
+  EXPECT_CALL(*MockMediaPlayer(), SetLatencyHint(NanSensitiveDoubleEq(kNan)));
+  Media()->setLatencyHint(-1.0);
+}
+
 TEST_P(HTMLMediaElementTest, CouldPlayIfEnoughDataInfiniteStreamNeverEnds) {
   Media()->SetSrc(SrcSchemeToURL(TestURLScheme::kHttp));
   Media()->Play();
@@ -517,6 +543,34 @@ TEST_P(HTMLMediaElementTest, GcMarkingNoAllocHasActivity) {
   ThreadState::NoAllocationScope no_allocation_scope(thread_state);
   EXPECT_FALSE(thread_state->IsAllocationAllowed());
   Media()->HasPendingActivity();
+}
+
+TEST_P(HTMLMediaElementTest, CapturesRedirectedSrc) {
+  // Verify that the element captures the redirected URL.
+  Media()->SetSrc(SrcSchemeToURL(TestURLScheme::kHttp));
+  Media()->Play();
+  test::RunPendingTasks();
+
+  // Should start at the original.
+  EXPECT_EQ(Media()->downloadURL(), Media()->currentSrc());
+
+  GURL redirected_url("https://redirected.com");
+  EXPECT_CALL(*MockMediaPlayer(), GetSrcAfterRedirects())
+      .WillRepeatedly(Return(redirected_url));
+  SetReadyState(HTMLMediaElement::kHaveFutureData);
+
+  EXPECT_EQ(Media()->downloadURL(), redirected_url);
+}
+
+TEST_P(HTMLMediaElementTest, EmptyRedirectedSrcUsesOriginal) {
+  // If the player returns an empty URL for the redirected src, then the element
+  // should continue using currentSrc().
+  Media()->SetSrc(SrcSchemeToURL(TestURLScheme::kHttp));
+  Media()->Play();
+  test::RunPendingTasks();
+  EXPECT_EQ(Media()->downloadURL(), Media()->currentSrc());
+  SetReadyState(HTMLMediaElement::kHaveFutureData);
+  EXPECT_EQ(Media()->downloadURL(), Media()->currentSrc());
 }
 
 }  // namespace blink

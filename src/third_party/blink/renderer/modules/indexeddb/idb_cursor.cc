@@ -40,6 +40,7 @@
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_private_property.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -78,8 +79,9 @@ v8::Local<v8::Object> IDBCursor::AssociateWithWrapper(
   wrapper =
       ScriptWrappable::AssociateWithWrapper(isolate, wrapper_type, wrapper);
   if (!wrapper.IsEmpty()) {
-    V8PrivateProperty::GetIDBCursorRequest(isolate).Set(
-        wrapper, ToV8(request_.Get(), wrapper, isolate));
+    static const V8PrivateProperty::SymbolKey kPrivatePropertyRequest;
+    V8PrivateProperty::GetSymbol(isolate, kPrivatePropertyRequest)
+        .Set(wrapper, ToV8(request_.Get(), wrapper, isolate));
   }
   return wrapper;
 }
@@ -450,7 +452,7 @@ void IDBCursor::SetValueReady(std::unique_ptr<IDBKey> key,
 #endif  // DCHECK_IS_ON()
   }
 
-  value_ = IDBAny::Create(std::move(value));
+  value_ = MakeGarbageCollected<IDBAny>(std::move(value));
 }
 
 const IDBKey* IDBCursor::IdbPrimaryKey() const {

@@ -137,7 +137,7 @@ void HeapprofdProducer::AdoptTargetProcessSocket() {
   PERFETTO_DCHECK(mode_ == HeapprofdMode::kChild);
   auto socket = base::UnixSocket::AdoptConnected(
       std::move(inherited_fd_), &socket_delegate_, task_runner_,
-      base::SockType::kStream);
+      base::SockFamily::kUnix, base::SockType::kStream);
 
   HandleClientConnection(std::move(socket), target_process_);
 }
@@ -296,7 +296,7 @@ void HeapprofdProducer::SetupDataSource(DataSourceInstanceID id,
   }
 
   HeapprofdConfig heapprofd_config;
-  heapprofd_config.ParseRawProto(ds_config.heapprofd_config_raw());
+  heapprofd_config.ParseFromString(ds_config.heapprofd_config_raw());
 
   if (heapprofd_config.all() && !heapprofd_config.pid().empty())
     PERFETTO_ELOG("No point setting all and pid");
@@ -308,8 +308,7 @@ void HeapprofdProducer::SetupDataSource(DataSourceInstanceID id,
     return;
   }
 
-  auto it = data_sources_.find(id);
-  if (it != data_sources_.end()) {
+  if (data_sources_.find(id) != data_sources_.end()) {
     PERFETTO_DFATAL_OR_ELOG(
         "Received duplicated data source instance id: %" PRIu64, id);
     return;
@@ -352,6 +351,8 @@ void HeapprofdProducer::SetupDataSource(DataSourceInstanceID id,
   auto& cli_config = data_source.client_configuration;
   cli_config.interval = heapprofd_config.sampling_interval_bytes();
   cli_config.block_client = heapprofd_config.block_client();
+  cli_config.block_client_timeout_us =
+      heapprofd_config.block_client_timeout_us();
   data_source.config = heapprofd_config;
   data_source.normalized_cmdlines = std::move(normalized_cmdlines);
   data_source.stop_timeout_ms = ds_config.stop_timeout_ms();
@@ -577,18 +578,19 @@ void HeapprofdProducer::DumpProcessState(DataSource* data_source,
 
   if (process_state->page_idle_checker) {
     PageIdleChecker& page_idle_checker = *process_state->page_idle_checker;
-    heap_tracker.GetAllocations(
-        [&dump_state, &page_idle_checker](uint64_t addr, uint64_t,
-                                          uint64_t alloc_size,
-                                          uintptr_t callstack_id) {
-          int64_t idle = page_idle_checker.OnIdlePage(addr, alloc_size);
-          if (idle < 0) {
-            PERFETTO_PLOG("OnIdlePage.");
-            return;
-          }
-          if (idle > 0)
-            dump_state.AddIdleBytes(callstack_id, static_cast<uint64_t>(idle));
-        });
+    heap_tracker.GetAllocations([&dump_state, &page_idle_checker](
+                                    uint64_t addr, uint64_t,
+                                    uint64_t alloc_size,
+                                    uint64_t callstack_id) {
+      int64_t idle =
+          page_idle_checker.OnIdlePage(addr, static_cast<size_t>(alloc_size));
+      if (idle < 0) {
+        PERFETTO_PLOG("OnIdlePage.");
+        return;
+      }
+      if (idle > 0)
+        dump_state.AddIdleBytes(callstack_id, static_cast<uint64_t>(idle));
+    });
   }
 
   heap_tracker.GetCallstackAllocations(
@@ -609,7 +611,6 @@ bool HeapprofdProducer::DumpProcessesInDataSource(DataSourceInstanceID id) {
     return false;
   }
   DataSource& data_source = it->second;
-
 
   for (std::pair<const pid_t, ProcessState>& pid_and_process_state :
        data_source.process_states) {
@@ -749,9 +750,14 @@ void HeapprofdProducer::SocketDelegate::OnDataAvailable(
     PERFETTO_DLOG("%d: Received FDs.", self->peer_pid());
     int raw_fd = pending_process.shmem.fd();
     // TODO(fmayer): Full buffer could deadlock us here.
-    self->Send(&data_source.client_configuration,
-               sizeof(data_source.client_configuration), &raw_fd, 1,
-               base::UnixSocket::BlockingMode::kBlocking);
+    if (!self->Send(&data_source.client_configuration,
+                    sizeof(data_source.client_configuration), &raw_fd, 1,
+                    base::UnixSocket::BlockingMode::kBlocking)) {
+      // If Send fails, the socket will have been Shutdown, and the raw socket
+      // closed.
+      producer_->pending_processes_.erase(it);
+      return;
+    }
 
     UnwindingWorker::HandoffData handoff_data;
     handoff_data.data_source_instance_id =
@@ -810,7 +816,7 @@ void HeapprofdProducer::HandleClientConnection(
   if (shmem_size > kMaxShmemSize)
     shmem_size = kMaxShmemSize;
 
-  auto shmem = SharedRingBuffer::Create(shmem_size);
+  auto shmem = SharedRingBuffer::Create(static_cast<size_t>(shmem_size));
   if (!shmem || !shmem->is_valid()) {
     PERFETTO_LOG("Failed to create shared memory.");
     return;

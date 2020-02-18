@@ -8,9 +8,10 @@
 from __future__ import print_function
 
 import os
-import osutils
+
 from chromite.lib import cts_helper
 from chromite.lib import cros_test_lib
+from chromite.lib import osutils
 
 
 class CtsHelperTestCase(cros_test_lib.MockTestCase):
@@ -19,6 +20,7 @@ class CtsHelperTestCase(cros_test_lib.MockTestCase):
   def testIsCtsTest(self):
     self.assertTrue(cts_helper.isCtsTest('cheets_CTS_N.arm.all'))
     self.assertTrue(cts_helper.isCtsTest('cheets_CTS_N.x86.all'))
+    self.assertTrue(cts_helper.isCtsTest('cheets_GTS_N.all'))
     self.assertTrue(cts_helper.isCtsTest('cheets_GTS.all'))
     self.assertFalse(cts_helper.isCtsTest('cheets_GTS'))
     self.assertFalse(cts_helper.isCtsTest('cheets_CTS'))

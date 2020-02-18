@@ -46,9 +46,6 @@ const IDS = {
  */
 const CLASSES = {
   FAILED_FAVICON: 'failed-favicon',  // Applied when the favicon fails to load.
-  GRID_LAYOUT: 'grid-layout',
-  // Applied to the grid tile being moved while reordering.
-  GRID_REORDER: 'grid-reorder',
   GRID_TILE: 'grid-tile',
   GRID_TILE_CONTAINER: 'grid-tile-container',
   REORDER: 'reorder',  // Applied to the tile being moved while reordering.
@@ -56,7 +53,6 @@ const CLASSES = {
   REORDERING: 'reordering',
   MAC_CHROMEOS: 'mac-chromeos',  // Reduces font weight for MacOS and ChromeOS.
   // Material Design classes.
-  MD_EMPTY_TILE: 'md-empty-tile',
   MD_FALLBACK_LETTER: 'md-fallback-letter',
   MD_ICON: 'md-icon',
   MD_ADD_ICON: 'md-add-icon',
@@ -65,7 +61,6 @@ const CLASSES = {
   MD_TILE: 'md-tile',
   MD_TILE_INNER: 'md-tile-inner',
   MD_TITLE: 'md-title',
-  NO_INITIAL_FADE: 'no-initial-fade',
 };
 
 /**
@@ -96,8 +91,6 @@ const TileVisualType = {
   ICON_REAL: 1,
   ICON_COLOR: 2,
   ICON_DEFAULT: 3,
-  THUMBNAIL: 7,
-  THUMBNAIL_FAILED: 8,
 };
 
 /**
@@ -112,6 +105,12 @@ const RESIZE_TIMEOUT_DELAY = 66;
  * @const {number}
  */
 const MD_MAX_NUM_CUSTOM_LINK_TILES = 10;
+
+/**
+ * Maximum number of tiles if Most Visited is enabled.
+ * @const {number}
+ */
+const MD_MAX_NUM_MOST_VISITED_TILES = 8;
 
 /**
  * Maximum number of tiles per row for Material Design.
@@ -142,8 +141,8 @@ const MD_TILE_WIDTH = 112;
 const MD_NUM_TILES_ALWAYS_VISIBLE = 6;
 
 /**
- * The origin of this request, i.e. 'https://www.google.TLD' for the remote NTP,
- * or 'chrome-search://local-ntp' for the local NTP.
+ * The origin of this request, i.e. 'chrome-search://local-ntp' for the local
+ * NTP.
  * @const {string}
  */
 const DOMAIN_ORIGIN = '{{ORIGIN}}';
@@ -163,32 +162,10 @@ let loadedCounter = 1;
 let tiles = null;
 
 /**
- * Maximum number of MostVisited tiles to show at any time. If the host page
- * doesn't send enough tiles and custom links is not enabled, we fill them blank
- * tiles. This can be changed depending on what feature is enabled. Set by the
- * host page, while 8 is default.
- * @type {number}
- */
-let maxNumTiles = 8;
-
-/**
  * List of parameters passed by query args.
  * @type {Object}
  */
 let queryArgs = {};
-
-/**
- * True if we are currently reordering the tiles.
- * @type {boolean}
- */
-let reordering = false;
-
-/**
- * The tile that is being moved during the reorder flow. Null if we are
- * currently not reordering.
- * @type {?Element}
- */
-let elementToReorder = null;
 
 /**
  * True if the custom links feature is enabled, i.e. when this is a Google NTP.
@@ -198,24 +175,10 @@ let elementToReorder = null;
 let customLinksFeatureEnabled = false;
 
 /**
- * True if the grid layout is enabled.
- * @type {boolean}
- */
-let isGridEnabled = false;
-
-/**
  * The current grid of tiles.
  * @type {?Grid}
  */
 let currGrid = null;
-
-/**
- * Called by tests to enable the grid layout.
- */
-function enableGridLayoutForTesting() {
-  isGridEnabled = true;
-  document.body.classList.add(CLASSES.GRID_LAYOUT);
-}
 
 /**
  * Additional API for Array. Moves the item at index |from| to index |to|.
@@ -296,17 +259,13 @@ class Grid {
     this.tilesAlwaysVisible_ =
         params.tilesAlwaysVisible || MD_NUM_TILES_ALWAYS_VISIBLE;
     this.maxTilesPerRow_ = params.maxTilesPerRow || MD_MAX_TILES_PER_ROW;
-    this.maxTiles_ = params.maxTiles || maxNumTiles;
+    this.maxTiles_ = params.maxTiles || getMaxNumTiles();
 
     this.maxTilesPerRowWindow_ = this.getMaxTilesPerRow_();
 
     this.tiles_ =
         this.container_.getElementsByClassName(CLASSES.GRID_TILE_CONTAINER);
-    if (this.tiles_.length > this.maxTiles_) {
-      throw new Error(
-          'The number of tiles (' + this.tiles_.length +
-          ') exceeds the maximum (' + this.maxTiles_ + ').');
-    }
+    // Ignore any tiles past the maximum allowed.
     this.position_ = new Array(this.maxTiles_);
     this.order_ = new Array(this.maxTiles_);
     for (let i = 0; i < this.maxTiles_; i++) {
@@ -557,7 +516,7 @@ class Grid {
     this.newIndexOfItemToReorder_ = index;
 
     // Apply reorder styling.
-    tile.classList.add(CLASSES.GRID_REORDER);
+    tile.classList.add(CLASSES.REORDER);
     // Disable other hover/active styling for all tiles.
     document.body.classList.add(CLASSES.REORDERING);
 
@@ -609,7 +568,7 @@ class Grid {
     const index = Number(tile.getAttribute('index'));
 
     // Remove reorder styling.
-    tile.classList.remove(CLASSES.GRID_REORDER);
+    tile.classList.remove(CLASSES.REORDER);
     document.body.classList.remove(CLASSES.REORDERING);
 
     // Move the tile to its new position and notify EmbeddedSearchAPI that the
@@ -634,7 +593,7 @@ class Grid {
   reorderToIndexAtPoint_(x, y) {
     const elements = document.elementsFromPoint(x, y);
     for (let i = 0; i < elements.length; i++) {
-      if (elements[i].classList.contains('grid-tile-container') &&
+      if (elements[i].classList.contains(CLASSES.GRID_TILE_CONTAINER) &&
           elements[i].getAttribute('index') !== null) {
         this.reorderToIndex_(Number(elements[i].getAttribute('index')));
         return;
@@ -737,7 +696,7 @@ function logEvent(eventType) {
 
 /**
  * Log impression of an NTP tile.
- * @param {number} tileIndex Position of the tile, >= 0 and < |maxNumTiles|.
+ * @param {number} tileIndex Position of the tile, >= 0 and < getMaxNumTiles().
  * @param {number} tileTitleSource The source of the tile's title as received
  *     from getMostVisitedItemData.
  * @param {number} tileSource The tile's source as received from
@@ -754,7 +713,7 @@ function logMostVisitedImpression(
 
 /**
  * Log click on an NTP tile.
- * @param {number} tileIndex Position of the tile, >= 0 and < |maxNumTiles|.
+ * @param {number} tileIndex Position of the tile, >= 0 and < getMaxNumTiles().
  * @param {number} tileTitleSource The source of the tile's title as received
  *     from getMostVisitedItemData.
  * @param {number} tileSource The tile's source as received from
@@ -771,10 +730,21 @@ function logMostVisitedNavigation(
 
 /**
  * Returns true if custom links are enabled.
+ * @return {boolean}
  */
 function isCustomLinksEnabled() {
   return customLinksFeatureEnabled &&
       !chrome.embeddedSearch.newTabPage.isUsingMostVisited;
+}
+
+/**
+ * Returns the maximum number of tiles to show at any time. This can be changed
+ * depending on what feature is enabled.
+ * @return {number}
+ */
+function getMaxNumTiles() {
+  return isCustomLinksEnabled() ? MD_MAX_NUM_CUSTOM_LINK_TILES :
+                                  MD_MAX_NUM_MOST_VISITED_TILES;
 }
 
 /**
@@ -895,9 +865,8 @@ function removeAllOldTiles() {
 }
 
 /**
- * Called when all tiles have finished loading (successfully or not), including
- * their thumbnail images, and we are ready to show the new tiles and drop the
- * old ones.
+ * Called when all tiles have finished loading (successfully or not), and we are
+ * ready to show the new tiles and drop the old ones.
  */
 function swapInNewTiles() {
   // Store the tiles on the current closure.
@@ -905,7 +874,7 @@ function swapInNewTiles() {
 
   // Add an "add new custom link" button if we haven't reached the maximum
   // number of tiles.
-  if (isCustomLinksEnabled() && cur.childNodes.length < maxNumTiles) {
+  if (isCustomLinksEnabled() && cur.childNodes.length < getMaxNumTiles()) {
     const data = {
       'rid': -1,
       'title': queryArgs['addLink'],
@@ -915,7 +884,7 @@ function swapInNewTiles() {
       'tileSource': -1,
       'tileTitleSource': -1
     };
-    tiles.appendChild(renderMaterialDesignTile(data));
+    tiles.appendChild(renderTile(data));
   }
 
   const parent = document.querySelector('#' + IDS.MOST_VISITED);
@@ -937,18 +906,9 @@ function swapInNewTiles() {
   cur.id = IDS.MV_TILES;
   parent.appendChild(cur);
 
-  if (isGridEnabled) {
-    // Initialize the new tileset before modifying opacity. This will prevent
-    // the transform transition from applying after the tiles fade in.
-    currGrid.init(cur);
-  } else {
-    // Re-balance the tiles if there are more than |MD_MAX_TILES_PER_ROW| in
-    // order to make even rows.
-    if (cur.childNodes.length > MD_MAX_TILES_PER_ROW) {
-      cur.style.maxWidth = 'calc(var(--md-tile-size) * ' +
-          Math.ceil(cur.childNodes.length / 2) + ')';
-    }
-  }
+  // Initialize the new tileset before modifying opacity. This will prevent the
+  // transform transition from applying after the tiles fade in.
+  currGrid.init(cur);
 
   const flushOpacity = () => window.getComputedStyle(cur).opacity;
 
@@ -956,11 +916,6 @@ function swapInNewTiles() {
   // that when we then set it to 1, that triggers the CSS transition.
   flushOpacity();
   cur.style.opacity = 1.0;
-
-  if (document.documentElement.classList.contains(CLASSES.NO_INITIAL_FADE)) {
-    flushOpacity();
-    document.documentElement.classList.remove(CLASSES.NO_INITIAL_FADE);
-  }
 
   // Make sure the tiles variable contain the next tileset we'll use if the host
   // page sends us an updated set of tiles.
@@ -989,27 +944,25 @@ function updateTileVisibility() {
 /**
  * Handler for the 'show' message from the host page, called when it wants to
  * add a suggestion tile.
- * It's also used to fill up our tiles to |maxNumTiles| if necessary.
- * @param {?MostVisitedData} args Data for the tile to be rendered.
+ * @param {!MostVisitedData} args Data for the tile to be rendered.
  */
 function addTile(args) {
-  if (isFinite(args.rid)) {
-    // An actual suggestion. Grab the data from the embeddedSearch API.
-    const data =
-        chrome.embeddedSearch.newTabPage.getMostVisitedItemData(args.rid);
-    if (!data) {
-      return;
-    }
-
-    if (!data.faviconUrl) {
-      data.faviconUrl = 'chrome-search://favicon/size/16@' +
-          window.devicePixelRatio + 'x/' + data.renderViewId + '/' + data.rid;
-    }
-    tiles.appendChild(renderTile(data));
-  } else {
-    // An empty tile
-    tiles.appendChild(renderTile(null));
+  if (!isFinite(args.rid)) {
+    return;
   }
+
+  // Grab the tile's data from the embeddedSearch API.
+  const data =
+      chrome.embeddedSearch.newTabPage.getMostVisitedItemData(args.rid);
+  if (!data) {
+    return;
+  }
+
+  if (!data.faviconUrl) {
+    data.faviconUrl = 'chrome-search://favicon/size/16@' +
+        window.devicePixelRatio + 'x/' + data.renderViewId + '/' + data.rid;
+  }
+  tiles.appendChild(renderTile(data));
 }
 
 /**
@@ -1045,105 +998,15 @@ function editCustomLink(rid) {
 }
 
 /**
- * Starts the reorder flow. Updates the visual style of the held tile to
- * indicate that it is being moved.
- * @param {!Element} tile Tile that is being moved.
- */
-function startReorder(tile) {
-  reordering = true;
-  elementToReorder = tile;
-
-  tile.classList.add(CLASSES.REORDER);
-  // Disable other hover/active styling for all tiles.
-  document.body.classList.add(CLASSES.REORDERING);
-
-  document.addEventListener('dragend', () => {
-    stopReorder(tile);
-  }, {once: true});
-}
-
-/**
- * Stops the reorder flow. Resets the held tile's visual style and tells the
- * EmbeddedSearchAPI that a tile has been moved.
- * @param {!Element} tile Tile that has been moved.
- */
-function stopReorder(tile) {
-  reordering = false;
-  elementToReorder = null;
-
-  tile.classList.remove(CLASSES.REORDER);
-  document.body.classList.remove(CLASSES.REORDERING);
-
-  // Update |data-pos| for all tiles and notify EmbeddedSearchAPI that the tile
-  // has been moved.
-  const allTiles = document.querySelectorAll('#mv-tiles .' + CLASSES.MD_TILE);
-  for (let i = 0; i < allTiles.length; i++) {
-    allTiles[i].setAttribute('data-pos', i);
-  }
-  chrome.embeddedSearch.newTabPage.reorderCustomLink(
-      Number(tile.getAttribute('data-rid')),
-      Number(tile.getAttribute('data-pos')));
-}
-
-/**
- * Sets up event listeners necessary for tile reordering.
- * @param {!Element} tile Tile on which to set the event listeners.
- */
-function setupReorder(tile) {
-  // Starts the reorder flow.
-  tile.addEventListener('dragstart', (event) => {
-    if (!reordering) {
-      startReorder(tile);
-    }
-  });
-
-  tile.addEventListener('dragover', (event) => {
-    // Only executed when the reorder flow is ongoing. Inserts the tile that is
-    // being moved before/after this |tile| according to order in the list.
-    if (reordering && elementToReorder && elementToReorder != tile) {
-      // Determine which side to insert the element on:
-      // - If the held tile comes after the current tile, insert behind the
-      //   current tile.
-      // - If the held tile comes before the current tile, insert in front of
-      //   the current tile.
-      let insertBefore;  // Element to insert the held tile behind.
-      if (tile.compareDocumentPosition(elementToReorder) &
-          Node.DOCUMENT_POSITION_FOLLOWING) {
-        insertBefore = tile;
-      } else {
-        insertBefore = tile.nextSibling;
-      }
-      $('mv-tiles').insertBefore(elementToReorder, insertBefore);
-    }
-  });
-}
-
-/**
- * Renders a MostVisited tile to the DOM.
- * @param {?MostVisitedData} data Object containing rid, url, title, favicon,
- *     thumbnail, and optionally isAddButton. isAddButton is true if you want to
- *     construct an add custom link button. data is null if you want to
- *     construct an empty tile. isAddButton can only be set if custom links is
+ * Renders a MostVisited tile (i.e. shortcut) to the DOM.
+ * @param {!MostVisitedData} data Object containing rid, url, title, favicon,
+ *     and optionally isAddButton. isAddButton is true if you want to construct
+ *     an add custom link button, and can only be set if custom links is
  *     enabled.
- */
-function renderTile(data) {
-  return renderMaterialDesignTile(data);
-}
-
-/**
- * Renders a MostVisited tile with Material Design styles.
- * @param {?MostVisitedData} data Object containing rid, url, title, favicon,
- *     and optionally isAddButton. isAddButton is if you want to construct an
- *     add custom link button. data is null if you want to construct an empty
- *     tile.
  * @return {Element}
  */
-function renderMaterialDesignTile(data) {
+function renderTile(data) {
   const mdTile = document.createElement('a');
-  if (data == null) {
-    mdTile.className = CLASSES.MD_EMPTY_TILE;
-    return mdTile;
-  }
   mdTile.className = CLASSES.MD_TILE;
 
   // The tile will be appended to |tiles|.
@@ -1297,16 +1160,7 @@ function renderMaterialDesignTile(data) {
     mdTile.appendChild(mdMenu);
   }
 
-  if (isGridEnabled) {
-    return currGrid.createGridTile(mdTile, data.rid, !!data.isAddButton);
-  } else {
-    // Enable reordering.
-    if (isCustomLinksEnabled() && !data.isAddButton) {
-      mdTile.draggable = 'true';
-      setupReorder(mdTile);
-    }
-    return mdTile;
-  }
+  return currGrid.createGridTile(mdTile, data.rid, !!data.isAddButton);
 }
 
 /**
@@ -1316,7 +1170,7 @@ function init() {
   // Create a new DOM element to hold the tiles. The tiles will be added
   // one-by-one via addTile, and the whole thing will be inserted into the page
   // in swapInNewTiles, after the parent has sent us the 'show' message, and all
-  // thumbnails and favicons have loaded.
+  // favicons have loaded.
   tiles = document.createElement('div');
 
   // Parse query arguments.
@@ -1342,17 +1196,6 @@ function init() {
     customLinksFeatureEnabled = true;
   }
 
-  // Enable grid layout.
-  if (queryArgs['enableGrid'] == '1') {
-    isGridEnabled = true;
-    document.body.classList.add(CLASSES.GRID_LAYOUT);
-  }
-
-  // Set the maximum number of tiles to show.
-  if (isCustomLinksEnabled()) {
-    maxNumTiles = MD_MAX_NUM_CUSTOM_LINK_TILES;
-  }
-
   currGrid = new Grid();
   // Set up layout updates on window resize. Throttled according to
   // |RESIZE_TIMEOUT_DELAY|.
@@ -1363,11 +1206,7 @@ function init() {
     }
     resizeTimeout = window.setTimeout(() => {
       resizeTimeout = null;
-      if (isGridEnabled) {
-        currGrid.onResize();
-      } else {
-        updateTileVisibility();
-      }
+      currGrid.onResize();
     }, RESIZE_TIMEOUT_DELAY);
   };
 
@@ -1384,7 +1223,6 @@ function listen() {
 return {
   Grid: Grid,  // Exposed for testing.
   init: init,  // Exposed for testing.
-  enableGridLayoutForTesting: enableGridLayoutForTesting,
   listen: listen,
 };
 }

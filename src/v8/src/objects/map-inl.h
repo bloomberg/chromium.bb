@@ -112,7 +112,7 @@ bool Map::IsMostGeneralFieldType(Representation representation,
 bool Map::CanHaveFastTransitionableElementsKind(InstanceType instance_type) {
   return instance_type == JS_ARRAY_TYPE ||
          instance_type == JS_PRIMITIVE_WRAPPER_TYPE ||
-         instance_type == JS_ARGUMENTS_TYPE;
+         instance_type == JS_ARGUMENTS_OBJECT_TYPE;
 }
 
 bool Map::CanHaveFastTransitionableElementsKind() const {
@@ -145,11 +145,11 @@ bool Map::EquivalentToForNormalization(const Map other,
 }
 
 bool Map::IsUnboxedDoubleField(FieldIndex index) const {
-  Isolate* isolate = GetIsolateForPtrCompr(*this);
+  const Isolate* isolate = GetIsolateForPtrCompr(*this);
   return IsUnboxedDoubleField(isolate, index);
 }
 
-bool Map::IsUnboxedDoubleField(Isolate* isolate, FieldIndex index) const {
+bool Map::IsUnboxedDoubleField(const Isolate* isolate, FieldIndex index) const {
   if (!FLAG_unbox_double_fields) return false;
   if (!index.is_inobject()) return false;
   return !layout_descriptor(isolate).IsTagged(index.property_index());
@@ -177,10 +177,10 @@ PropertyDetails Map::GetLastDescriptorDetails(Isolate* isolate) const {
   return instance_descriptors(isolate).GetDetails(LastAdded());
 }
 
-int Map::LastAdded() const {
+InternalIndex Map::LastAdded() const {
   int number_of_own_descriptors = NumberOfOwnDescriptors();
   DCHECK_GT(number_of_own_descriptors, 0);
-  return number_of_own_descriptors - 1;
+  return InternalIndex(number_of_own_descriptors - 1);
 }
 
 int Map::NumberOfOwnDescriptors() const {
@@ -192,6 +192,10 @@ void Map::SetNumberOfOwnDescriptors(int number) {
   CHECK_LE(static_cast<unsigned>(number),
            static_cast<unsigned>(kMaxNumberOfDescriptors));
   set_bit_field3(NumberOfOwnDescriptorsBits::update(bit_field3(), number));
+}
+
+InternalIndex::Range Map::IterateOwnDescriptors() const {
+  return InternalIndex::Range(NumberOfOwnDescriptors());
 }
 
 int Map::EnumLength() const { return EnumLengthBits::decode(bit_field3()); }
@@ -207,7 +211,8 @@ void Map::SetEnumLength(int length) {
 
 FixedArrayBase Map::GetInitialElements() const {
   FixedArrayBase result;
-  if (has_fast_elements() || has_fast_string_wrapper_elements()) {
+  if (has_fast_elements() || has_fast_string_wrapper_elements() ||
+      has_any_nonextensible_elements()) {
     result = GetReadOnlyRoots().empty_fixed_array();
   } else if (has_fast_sloppy_arguments_elements()) {
     result = GetReadOnlyRoots().empty_sloppy_arguments_elements();
@@ -540,12 +545,12 @@ void Map::mark_unstable() {
 bool Map::is_stable() const { return !IsUnstableBit::decode(bit_field3()); }
 
 bool Map::CanBeDeprecated() const {
-  int descriptor = LastAdded();
-  for (int i = 0; i <= descriptor; i++) {
+  for (InternalIndex i : IterateOwnDescriptors()) {
     PropertyDetails details = instance_descriptors().GetDetails(i);
     if (details.representation().IsNone()) return true;
     if (details.representation().IsSmi()) return true;
-    if (details.representation().IsDouble()) return true;
+    if (details.representation().IsDouble() && FLAG_unbox_double_fields)
+      return true;
     if (details.representation().IsHeapObject()) return true;
     if (details.kind() == kData && details.location() == kDescriptor) {
       return true;
@@ -584,7 +589,7 @@ bool Map::IsNullOrUndefinedMap() const {
 }
 
 bool Map::IsPrimitiveMap() const {
-  return instance_type() <= LAST_PRIMITIVE_TYPE;
+  return instance_type() <= LAST_PRIMITIVE_HEAP_OBJECT_TYPE;
 }
 
 LayoutDescriptor Map::layout_descriptor_gc_safe() const {
@@ -621,7 +626,7 @@ void Map::UpdateDescriptors(Isolate* isolate, DescriptorArray descriptors,
       CHECK_EQ(Map::GetVisitorId(*this), visitor_id());
     }
 #else
-    SLOW_DCHECK(layout_descriptor()->IsConsistentWithMap(*this));
+    SLOW_DCHECK(layout_descriptor().IsConsistentWithMap(*this));
     DCHECK(visitor_id() == Map::GetVisitorId(*this));
 #endif
   }
@@ -640,7 +645,7 @@ void Map::InitializeDescriptors(Isolate* isolate, DescriptorArray descriptors,
       CHECK(layout_descriptor().IsConsistentWithMap(*this));
     }
 #else
-    SLOW_DCHECK(layout_descriptor()->IsConsistentWithMap(*this));
+    SLOW_DCHECK(layout_descriptor().IsConsistentWithMap(*this));
 #endif
     set_visitor_id(Map::GetVisitorId(*this));
   }
@@ -675,8 +680,10 @@ void Map::AppendDescriptor(Isolate* isolate, Descriptor* desc) {
     // barrier.
     descriptors.Append(desc);
     SetNumberOfOwnDescriptors(number_of_own_descriptors + 1);
+#ifndef V8_DISABLE_WRITE_BARRIERS
     MarkingBarrierForDescriptorArray(isolate->heap(), *this, descriptors,
                                      number_of_own_descriptors + 1);
+#endif
   }
   // Properly mark the map if the {desc} is an "interesting symbol".
   if (desc->GetKey()->IsInterestingSymbol()) {
@@ -723,8 +730,12 @@ Map Map::ElementsTransitionMap(Isolate* isolate) {
 
 ACCESSORS(Map, dependent_code, DependentCode, kDependentCodeOffset)
 ACCESSORS(Map, prototype_validity_cell, Object, kPrototypeValidityCellOffset)
-ACCESSORS(Map, constructor_or_backpointer, Object,
-          kConstructorOrBackPointerOffset)
+ACCESSORS_CHECKED2(Map, constructor_or_backpointer, Object,
+                   kConstructorOrBackPointerOrNativeContextOffset,
+                   !IsContextMap(), value.IsNull() || !IsContextMap())
+ACCESSORS_CHECKED(Map, native_context, NativeContext,
+                  kConstructorOrBackPointerOrNativeContextOffset,
+                  IsContextMap())
 
 bool Map::IsPrototypeValidityCellValid() const {
   Object validity_cell = prototype_validity_cell();

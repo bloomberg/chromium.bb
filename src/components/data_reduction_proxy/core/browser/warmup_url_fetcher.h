@@ -13,8 +13,10 @@
 #include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "base/timer/timer.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/proxy_server.h"
 #include "services/network/public/mojom/network_context.mojom.h"
+#include "services/network/public/mojom/url_response_head.mojom-forward.h"
 
 class GURL;
 
@@ -23,7 +25,6 @@ struct RedirectInfo;
 }  // namespace net
 
 namespace network {
-struct ResourceResponseHead;
 class SimpleURLLoader;
 }  // namespace network
 
@@ -85,11 +86,11 @@ class WarmupURLFetcher {
   // URL loader callback when response starts.
   void OnURLLoadResponseStarted(
       const GURL& final_url,
-      const network::ResourceResponseHead& response_head);
+      const network::mojom::URLResponseHead& response_head);
 
   // URL loader callback for redirections.
   void OnURLLoaderRedirect(const net::RedirectInfo& redirect_info,
-                           const network::ResourceResponseHead& response_head,
+                           const network::mojom::URLResponseHead& response_head,
                            std::vector<std::string>* to_be_removed_headers);
 
   // URL loader completion callback.
@@ -129,8 +130,8 @@ class WarmupURLFetcher {
   size_t previous_attempt_counts_;
 
   CreateCustomProxyConfigCallback create_custom_proxy_config_callback_;
-  network::mojom::URLLoaderFactoryPtr url_loader_factory_;
-  network::mojom::NetworkContextPtr context_;
+  mojo::Remote<network::mojom::URLLoaderFactory> url_loader_factory_;
+  mojo::Remote<network::mojom::NetworkContext> context_;
 
   // Callback that should be executed when the fetching of the warmup URL is
   // completed.

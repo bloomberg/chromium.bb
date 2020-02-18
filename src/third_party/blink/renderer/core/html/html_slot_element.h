@@ -83,7 +83,6 @@ class CORE_EXPORT HTMLSlotElement final : public HTMLElement {
 
   void AttributeChanged(const AttributeModificationParams&) final;
 
-  int tabIndex() const override;
   AtomicString GetName() const;
 
   // This method can be slow because this has to traverse the children of a
@@ -103,6 +102,8 @@ class CORE_EXPORT HTMLSlotElement final : public HTMLElement {
   void ClearSlotChangeEventEnqueued() { slotchange_event_enqueued_ = false; }
 
   static AtomicString NormalizeSlotName(const AtomicString&);
+
+  void RecalcStyleForSlotChildren(const StyleRecalcChange);
 
   // For User-Agent Shadow DOM
   static const AtomicString& UserAgentCustomAssignSlotName();
@@ -200,7 +201,7 @@ class CORE_EXPORT HTMLSlotElement final : public HTMLElement {
 
 inline const HTMLSlotElement* ToHTMLSlotElementIfSupportsAssignmentOrNull(
     const Node& node) {
-  if (auto* slot = ToHTMLSlotElementOrNull(node)) {
+  if (auto* slot = DynamicTo<HTMLSlotElement>(node)) {
     if (slot->SupportsAssignment())
       return slot;
   }

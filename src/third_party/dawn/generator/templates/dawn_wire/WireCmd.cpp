@@ -15,7 +15,9 @@
 #include "dawn_wire/WireCmd_autogen.h"
 
 #include "common/Assert.h"
+#include "dawn_wire/Wire.h"
 
+#include <algorithm>
 #include <cstring>
 #include <limits>
 
@@ -36,6 +38,8 @@
         ObjectId
     {%- elif member.type.category == "structure" -%}
         {{as_cType(member.type.name)}}Transfer
+    {%- elif member.type.category == "bitmask" -%}
+        {{as_cType(member.type.name)}}Flags
     {%- else -%}
         {{as_cType(member.type.name)}}
     {%- endif -%}
@@ -106,7 +110,7 @@
             size_t {{as_varName(member.name)}}Strlen;
         {% endfor %}
 
-        {% for member in members if member.annotation != "value" and member.type.category != "object" %}
+        {% for member in members if member.optional and member.annotation != "value" and member.type.category != "object" %}
             bool has_{{as_varName(member.name)}};
         {% endfor %}
     };
@@ -119,7 +123,15 @@
 
         //* Special handling of const char* that have their length embedded directly in the command
         {% for member in members if member.length == "strlen" %}
-            result += std::strlen(record.{{as_varName(member.name)}});
+            {% set memberName = as_varName(member.name) %}
+
+            {% if member.optional %}
+                bool has_{{memberName}} = record.{{memberName}} != nullptr;
+                if (has_{{memberName}})
+            {% endif %}
+            {
+            result += std::strlen(record.{{memberName}});
+            }
         {% endfor %}
 
         //* Gather how much space will be needed for pointer members.
@@ -178,10 +190,18 @@
         //* Special handling of const char* that have their length embedded directly in the command
         {% for member in members if member.length == "strlen" %}
             {% set memberName = as_varName(member.name) %}
+
+            {% if member.optional %}
+                bool has_{{memberName}} = record.{{memberName}} != nullptr;
+                transfer->has_{{memberName}} = has_{{memberName}};
+                if (has_{{memberName}})
+            {% endif %}
+            {
             transfer->{{memberName}}Strlen = std::strlen(record.{{memberName}});
 
             memcpy(*buffer, record.{{memberName}}, transfer->{{memberName}}Strlen);
             *buffer += transfer->{{memberName}}Strlen;
+            }
         {% endfor %}
 
         //* Allocate space and write the non-value arguments in it.
@@ -209,8 +229,8 @@
     //* Deserializes `transfer` into `record` getting more serialized data from `buffer` and `size`
     //* if needed, using `allocator` to store pointed-to values and `resolver` to translate object
     //* Ids to actual objects.
-    DAWN_DECLARE_UNUSED DeserializeResult {{Return}}{{name}}Deserialize({{Return}}{{name}}{{Cmd}}* record, const {{Return}}{{name}}Transfer* transfer,
-                                          const char** buffer, size_t* size, DeserializeAllocator* allocator
+    DAWN_DECLARE_UNUSED DeserializeResult {{Return}}{{name}}Deserialize({{Return}}{{name}}{{Cmd}}* record, const volatile {{Return}}{{name}}Transfer* transfer,
+                                          const volatile char** buffer, size_t* size, DeserializeAllocator* allocator
         {%- if record.has_dawn_object -%}
             , const ObjectIdResolver& resolver
         {%- endif -%}
@@ -240,14 +260,20 @@
         //* Special handling of const char* that have their length embedded directly in the command
         {% for member in members if member.length == "strlen" %}
             {% set memberName = as_varName(member.name) %}
+
+            {% if member.optional %}
+                bool has_{{memberName}} = transfer->has_{{memberName}};
+                record->{{memberName}} = nullptr;
+                if (has_{{memberName}})
+            {% endif %}
             {
                 size_t stringLength = transfer->{{memberName}}Strlen;
-                const char* stringInBuffer = nullptr;
+                const volatile char* stringInBuffer = nullptr;
                 DESERIALIZE_TRY(GetPtrFromBuffer(buffer, size, stringLength, &stringInBuffer));
 
                 char* copiedString = nullptr;
                 DESERIALIZE_TRY(GetSpace(allocator, stringLength + 1, &copiedString));
-                memcpy(copiedString, stringInBuffer, stringLength);
+                std::copy(stringInBuffer, stringInBuffer + stringLength, copiedString);
                 copiedString[stringLength] = '\0';
                 record->{{memberName}} = copiedString;
             }
@@ -264,7 +290,7 @@
             {% endif %}
             {
                 size_t memberLength = {{member_length(member, "record->")}};
-                auto memberBuffer = reinterpret_cast<const {{member_transfer_type(member)}}*>(buffer);
+                auto memberBuffer = reinterpret_cast<const volatile {{member_transfer_type(member)}}*>(buffer);
                 DESERIALIZE_TRY(GetPtrFromBuffer(buffer, size, memberLength, &memberBuffer));
 
                 {{as_cType(member.type.name)}}* copiedMembers = nullptr;
@@ -316,12 +342,12 @@
         );
     }
 
-    DeserializeResult {{Cmd}}::Deserialize(const char** buffer, size_t* size, DeserializeAllocator* allocator
+    DeserializeResult {{Cmd}}::Deserialize(const volatile char** buffer, size_t* size, DeserializeAllocator* allocator
         {%- if command.has_dawn_object -%}
             , const ObjectIdResolver& resolver
         {%- endif -%}
     ) {
-        const {{Name}}Transfer* transfer = nullptr;
+        const volatile {{Name}}Transfer* transfer = nullptr;
         DESERIALIZE_TRY(GetPtrFromBuffer(buffer, size, 1, &transfer));
 
         return {{Name}}Deserialize(this, transfer, buffer, size, allocator
@@ -343,12 +369,26 @@ namespace dawn_wire {
         } \
     }
 
+    ObjectHandle::ObjectHandle() = default;
+    ObjectHandle::ObjectHandle(ObjectId id, ObjectSerial serial) : id(id), serial(serial) {}
+    ObjectHandle::ObjectHandle(const volatile ObjectHandle& rhs) : id(rhs.id), serial(rhs.serial) {}
+    ObjectHandle& ObjectHandle::AssignFrom(const ObjectHandle& rhs) {
+        id = rhs.id;
+        serial = rhs.serial;
+        return *this;
+    }
+    ObjectHandle& ObjectHandle::AssignFrom(const volatile ObjectHandle& rhs) {
+        id = rhs.id;
+        serial = rhs.serial;
+        return *this;
+    }
+
     namespace {
 
         // Consumes from (buffer, size) enough memory to contain T[count] and return it in data.
         // Returns FatalError if not enough memory was available
         template <typename T>
-        DeserializeResult GetPtrFromBuffer(const char** buffer, size_t* size, size_t count, const T** data) {
+        DeserializeResult GetPtrFromBuffer(const volatile char** buffer, size_t* size, size_t count, const volatile T** data) {
             constexpr size_t kMaxCountWithoutOverflows = std::numeric_limits<size_t>::max() / sizeof(T);
             if (count > kMaxCountWithoutOverflows) {
                 return DeserializeResult::FatalError;
@@ -359,7 +399,7 @@ namespace dawn_wire {
                 return DeserializeResult::FatalError;
             }
 
-            *data = reinterpret_cast<const T*>(*buffer);
+            *data = reinterpret_cast<const volatile T*>(*buffer);
             *buffer += totalSize;
             *size -= totalSize;
 
@@ -415,5 +455,35 @@ namespace dawn_wire {
     {% for command in cmd_records["return command"] %}
         {{ write_command_serialization_methods(command, True) }}
     {% endfor %}
+
+        // Implementations of serialization/deserialization of WPGUDeviceProperties.
+        size_t SerializedWGPUDevicePropertiesSize(const WGPUDeviceProperties* deviceProperties) {
+            return sizeof(WGPUDeviceProperties) +
+                   WGPUDevicePropertiesGetExtraRequiredSize(*deviceProperties);
+        }
+
+        void SerializeWGPUDeviceProperties(const WGPUDeviceProperties* deviceProperties,
+                                           char* serializeBuffer) {
+            size_t devicePropertiesSize = SerializedWGPUDevicePropertiesSize(deviceProperties);
+            WGPUDevicePropertiesTransfer* transfer =
+                reinterpret_cast<WGPUDevicePropertiesTransfer*>(serializeBuffer);
+            serializeBuffer += devicePropertiesSize;
+
+            WGPUDevicePropertiesSerialize(*deviceProperties, transfer, &serializeBuffer);
+        }
+
+        bool DeserializeWGPUDeviceProperties(WGPUDeviceProperties* deviceProperties,
+                                             const volatile char* deserializeBuffer) {
+            size_t devicePropertiesSize = SerializedWGPUDevicePropertiesSize(deviceProperties);
+            const volatile WGPUDevicePropertiesTransfer* transfer = nullptr;
+            if (GetPtrFromBuffer(&deserializeBuffer, &devicePropertiesSize, 1, &transfer) !=
+                DeserializeResult::Success) {
+                return false;
+            }
+
+            return WGPUDevicePropertiesDeserialize(deviceProperties, transfer, &deserializeBuffer,
+                                                   &devicePropertiesSize,
+                                                   nullptr) == DeserializeResult::Success;
+        }
 
 }  // namespace dawn_wire

@@ -29,8 +29,7 @@ TEST_F(HTMLObjectElementTest, FallbackRecalcForReattach) {
     <object id='obj' data='dummy'></object>
   )HTML");
 
-  HTMLObjectElement* object =
-      ToHTMLObjectElement(GetDocument().getElementById("obj"));
+  auto* object = To<HTMLObjectElement>(GetDocument().getElementById("obj"));
   ASSERT_TRUE(object);
 
   Node* slot = object->GetShadowRoot()->firstChild();
@@ -42,7 +41,7 @@ TEST_F(HTMLObjectElementTest, FallbackRecalcForReattach) {
   object->RenderFallbackContent(nullptr);
   GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);
   GetDocument().GetStyleEngine().RecalcStyle();
-  EXPECT_TRUE(IsHTMLSlotElement(slot));
+  EXPECT_TRUE(IsA<HTMLSlotElement>(slot));
   EXPECT_TRUE(object->UseFallbackContent());
   EXPECT_TRUE(object->GetComputedStyle());
   EXPECT_TRUE(slot->GetComputedStyle());

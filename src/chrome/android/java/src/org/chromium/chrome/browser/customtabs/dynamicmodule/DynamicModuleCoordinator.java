@@ -9,27 +9,31 @@ import static org.chromium.chrome.browser.customtabs.dynamicmodule.DynamicModule
 import android.content.ComponentName;
 import android.content.Context;
 import android.net.Uri;
-import android.support.annotation.IntDef;
-import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
 
+import androidx.annotation.IntDef;
+import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
+import androidx.browser.customtabs.CustomTabsService;
+import androidx.browser.customtabs.PostMessageBackend;
+
 import org.chromium.base.Callback;
 import org.chromium.base.TraceEvent;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.browserservices.PostMessageHandler;
 import org.chromium.chrome.browser.customtabs.CloseButtonNavigator;
 import org.chromium.chrome.browser.customtabs.CloseButtonNavigator.PageCriteria;
 import org.chromium.chrome.browser.customtabs.CustomTabBottomBarDelegate;
-import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
 import org.chromium.chrome.browser.customtabs.CustomTabTopBarDelegate;
 import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityNavigationController;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabProvider;
+import org.chromium.chrome.browser.customtabs.content.TabObserverRegistrar;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
@@ -39,9 +43,9 @@ import org.chromium.chrome.browser.metrics.PageLoadMetrics;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
-import org.chromium.chrome.browser.tab.TabObserverRegistrar;
 import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.chrome.browser.util.UrlUtilities;
+import org.chromium.chrome.browser.util.UrlUtilitiesJni;
 import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.WebContents;
@@ -53,8 +57,6 @@ import java.util.regex.Pattern;
 
 import javax.inject.Inject;
 
-import androidx.browser.customtabs.CustomTabsService;
-import androidx.browser.customtabs.PostMessageBackend;
 import dagger.Lazy;
 
 /**
@@ -62,7 +64,7 @@ import dagger.Lazy;
  */
 @ActivityScope
 public class DynamicModuleCoordinator implements NativeInitObserver, Destroyable {
-    private final CustomTabIntentDataProvider mIntentDataProvider;
+    private final BrowserServicesIntentDataProvider mIntentDataProvider;
     private final TabObserverRegistrar mTabObserverRegistrar;
     private final CustomTabsConnection mConnection;
     private final CustomTabActivityTabProvider mTabProvider;
@@ -160,7 +162,7 @@ public class DynamicModuleCoordinator implements NativeInitObserver, Destroyable
     private final PageCriteria mPageCriteria;
 
     @Inject
-    public DynamicModuleCoordinator(CustomTabIntentDataProvider intentDataProvider,
+    public DynamicModuleCoordinator(BrowserServicesIntentDataProvider intentDataProvider,
                                     CloseButtonNavigator closeButtonNavigator,
                                     TabObserverRegistrar tabObserverRegistrar,
                                     ActivityLifecycleDispatcher activityLifecycleDispatcher,
@@ -421,7 +423,7 @@ public class DynamicModuleCoordinator implements NativeInitObserver, Destroyable
         if (!UrlConstants.HTTPS_SCHEME.equals(scheme)) {
             return false;
         }
-        if (!UrlUtilities.nativeIsGoogleDomainUrl(url, sAllowNonStandardPortNumber)) {
+        if (!UrlUtilitiesJni.get().isGoogleDomainUrl(url, sAllowNonStandardPortNumber)) {
             return false;
         }
         return true;
@@ -490,7 +492,8 @@ public class DynamicModuleCoordinator implements NativeInitObserver, Destroyable
             mActivity.getToolbarManager().setToolbarShadowVisibility(
                     showTopBar ? View.GONE : mDefaultToolbarShadowVisibility);
             mFullscreenManager.get().setTopControlsHeight(
-                    showTopBar ? getTopBarHeight() : mDefaultTopControlContainerHeight);
+                    showTopBar ? getTopBarHeight() : mDefaultTopControlContainerHeight,
+                    mFullscreenManager.get().getTopControlsMinHeight());
             mActivity.getToolbarManager().setProgressBarAnchorView(
                     getProgressBarAnchorView(showTopBar));
         }

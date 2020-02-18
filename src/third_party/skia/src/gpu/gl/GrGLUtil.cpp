@@ -121,7 +121,7 @@ void GrGLGetDriverInfo(GrGLStandard standard,
     }
 
     static const char kChromium[] = "Chromium";
-    char suffix[SK_ARRAY_COUNT(kChromium)];
+    char suffix[SK_ARRAY_COUNT(kChromium)] = {0};
     if (0 == strcmp(rendererString, kChromium) ||
         (3 == sscanf(versionString, "OpenGL ES %d.%d %8s", &major, &minor, suffix) &&
          0 == strcmp(kChromium, suffix))) {
@@ -380,6 +380,12 @@ GrGLRenderer GrGLGetRendererFromStrings(const char* rendererString,
                 if (adrenoNumber < 600) {
                     return kAdreno5xx_GrGLRenderer;
                 }
+                if (adrenoNumber == 615) {
+                    return kAdreno615_GrGLRenderer;
+                }
+                if (adrenoNumber == 630) {
+                    return kAdreno630_GrGLRenderer;
+                }
             }
         }
         if (0 == strcmp("Google SwiftShader", rendererString)) {
@@ -455,26 +461,38 @@ GrGLRenderer GrGLGetRendererFromStrings(const char* rendererString,
         }
 
         // The AMD string can have a somewhat arbitrary preamble (see skbug.com/7195)
-        if (const char* amdString = strstr(rendererString, "Radeon")) {
+        static constexpr char kRadeonStr[] = "Radeon ";
+        if (const char* amdString = strstr(rendererString, kRadeonStr)) {
+            amdString += strlen(kRadeonStr);
             char amdGeneration, amdTier, amdRevision;
-            n = sscanf(amdString, "Radeon (TM) R9 M%c%c%c",
-                                       &amdGeneration, &amdTier, &amdRevision);
+            // Sometimes there is a (TM) and sometimes not.
+            static constexpr char kTMStr[] = "(TM) ";
+            if (!strncmp(amdString, kTMStr, strlen(kTMStr))) {
+                amdString += strlen(kTMStr);
+            }
+            n = sscanf(amdString, "R9 M%c%c%c", &amdGeneration, &amdTier, &amdRevision);
             if (3 == n) {
-                if ('4' == amdGeneration) {
+                if ('3' == amdGeneration) {
+                    return kAMDRadeonR9M3xx_GrGLRenderer;
+                } else if ('4' == amdGeneration) {
                     return kAMDRadeonR9M4xx_GrGLRenderer;
                 }
             }
 
             char amd0, amd1, amd2;
-            n = sscanf(amdString, "Radeon HD 7%c%c%c Series", &amd0, &amd1, &amd2);
+            n = sscanf(amdString, "HD 7%c%c%c Series", &amd0, &amd1, &amd2);
             if (3 == n) {
                 return kAMDRadeonHD7xxx_GrGLRenderer;
             }
+
+            int amdVegaModel=0;
+            n = sscanf(amdString, "Pro Vega %i", &amdVegaModel);
+            if (1 == n) {
+                return kAMDRadeonProVegaxx_GrGLRenderer;
+            }
+
         }
 
-        if (0 == strcmp("Mesa Offscreen", rendererString)) {
-            return kOSMesa_GrGLRenderer;
-        }
         if (strstr(rendererString, "llvmpipe")) {
             return kGalliumLLVM_GrGLRenderer;
         }
@@ -617,7 +635,6 @@ bool GrGLFormatIsCompressed(GrGLFormat format) {
         case GrGLFormat::kRG8:
         case GrGLFormat::kRGB10_A2:
         case GrGLFormat::kRGBA4:
-        case GrGLFormat::kRGBA32F:
         case GrGLFormat::kSRGB8_ALPHA8:
         case GrGLFormat::kR16:
         case GrGLFormat::kRG16:
@@ -649,7 +666,6 @@ bool GrGLFormatToCompressionType(GrGLFormat format, SkImage::CompressionType* co
         case GrGLFormat::kRG8:
         case GrGLFormat::kRGB10_A2:
         case GrGLFormat::kRGBA4:
-        case GrGLFormat::kRGBA32F:
         case GrGLFormat::kSRGB8_ALPHA8:
         case GrGLFormat::kR16:
         case GrGLFormat::kRG16:
@@ -661,43 +677,3 @@ bool GrGLFormatToCompressionType(GrGLFormat format, SkImage::CompressionType* co
     SkUNREACHABLE;
 }
 
-size_t GrGLBytesPerFormat(GrGLFormat glFormat) {
-    switch (glFormat) {
-        case GrGLFormat::kLUMINANCE8:
-        case GrGLFormat::kALPHA8:
-        case GrGLFormat::kR8:
-            return 1;
-
-        case GrGLFormat::kRGB565:
-        case GrGLFormat::kRGBA4:
-        case GrGLFormat::kRG8:
-        case GrGLFormat::kR16F:
-        case GrGLFormat::kLUMINANCE16F:
-        case GrGLFormat::kR16:
-            return 2;
-
-        case GrGLFormat::kRGB8:
-            return 3;
-
-        case GrGLFormat::kRGBA8:
-        case GrGLFormat::kSRGB8_ALPHA8:
-        case GrGLFormat::kBGRA8:
-        case GrGLFormat::kRGB10_A2:
-        case GrGLFormat::kRG16:
-        case GrGLFormat::kRG16F:
-            return 4;
-
-        case GrGLFormat::kRGBA16F:
-        case GrGLFormat::kRGBA16:
-            return 8;
-
-        case GrGLFormat::kRGBA32F:
-            return 16;
-
-        case GrGLFormat::kCOMPRESSED_RGB8_ETC2:
-        case GrGLFormat::kCOMPRESSED_ETC1_RGB8:
-        case GrGLFormat::kUnknown:
-            return 0;
-    }
-    SkUNREACHABLE;
-}

@@ -64,7 +64,6 @@ public class UndoIntegrationTest {
 
     /**
      * Test that a tab that is closing can't open other windows.
-     * @throws InterruptedException
      * @throws TimeoutException
      */
     @Test
@@ -72,7 +71,7 @@ public class UndoIntegrationTest {
     @LargeTest
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     @RetryOnFailure
-    public void testAddNewContentsFromClosingTab() throws InterruptedException, TimeoutException {
+    public void testAddNewContentsFromClosingTab() throws TimeoutException {
         mActivityTestRule.loadUrl(WINDOW_OPEN_BUTTON_URL);
 
         final TabModel model =
@@ -85,7 +84,7 @@ public class UndoIntegrationTest {
         // Attempt to close the tab, which will delay closing until the undo timeout goes away.
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             TabModelUtils.closeTabById(model, tab.getId(), true);
-            Assert.assertTrue("Tab was not marked as closing", tab.isClosing());
+            Assert.assertTrue("Tab was not marked as closing", ((TabImpl) tab).isClosing());
             Assert.assertTrue("Tab is not actually closing", model.isClosurePending(tab.getId()));
         });
 

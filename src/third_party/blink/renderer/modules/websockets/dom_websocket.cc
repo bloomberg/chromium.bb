@@ -58,10 +58,10 @@
 #include "third_party/blink/renderer/modules/websockets/close_event.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/blob/blob_data.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
-#include "third_party/blink/renderer/platform/loader/mixed_content_autoupgrade_status.h"
 #include "third_party/blink/renderer/platform/network/network_log.h"
 #include "third_party/blink/renderer/platform/weborigin/known_ports.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
@@ -354,15 +354,15 @@ void DOMWebSocket::send(DOMArrayBuffer* binary_data,
     return;
   }
   if (common_.GetState() == kClosing || common_.GetState() == kClosed) {
-    UpdateBufferedAmountAfterClose(binary_data->ByteLength());
+    UpdateBufferedAmountAfterClose(binary_data->ByteLengthAsSizeT());
     return;
   }
   RecordSendTypeHistogram(kWebSocketSendTypeArrayBuffer);
   RecordSendMessageSizeHistogram(kWebSocketSendTypeArrayBuffer,
-                                 binary_data->ByteLength());
+                                 binary_data->ByteLengthAsSizeT());
   DCHECK(channel_);
-  buffered_amount_ += binary_data->ByteLength();
-  channel_->Send(*binary_data, 0, binary_data->ByteLength(),
+  buffered_amount_ += binary_data->ByteLengthAsSizeT();
+  channel_->Send(*binary_data, 0, binary_data->ByteLengthAsSizeT(),
                  base::OnceClosure());
 }
 
@@ -376,17 +376,21 @@ void DOMWebSocket::send(NotShared<DOMArrayBufferView> array_buffer_view,
     return;
   }
   if (common_.GetState() == kClosing || common_.GetState() == kClosed) {
-    UpdateBufferedAmountAfterClose(array_buffer_view.View()->byteLength());
+    UpdateBufferedAmountAfterClose(
+        array_buffer_view.View()->deprecatedByteLengthAsUnsigned());
     return;
   }
   RecordSendTypeHistogram(kWebSocketSendTypeArrayBufferView);
-  RecordSendMessageSizeHistogram(kWebSocketSendTypeArrayBufferView,
-                                 array_buffer_view.View()->byteLength());
+  RecordSendMessageSizeHistogram(
+      kWebSocketSendTypeArrayBufferView,
+      array_buffer_view.View()->deprecatedByteLengthAsUnsigned());
   DCHECK(channel_);
-  buffered_amount_ += array_buffer_view.View()->byteLength();
+  buffered_amount_ +=
+      array_buffer_view.View()->deprecatedByteLengthAsUnsigned();
   channel_->Send(*array_buffer_view.View()->buffer(),
-                 array_buffer_view.View()->byteOffset(),
-                 array_buffer_view.View()->byteLength(), base::OnceClosure());
+                 array_buffer_view.View()->byteOffsetAsSizeT(),
+                 array_buffer_view.View()->byteLengthAsSizeT(),
+                 base::OnceClosure());
 }
 
 void DOMWebSocket::send(Blob* binary_data, ExceptionState& exception_state) {
@@ -528,8 +532,6 @@ void DOMWebSocket::ContextLifecycleStateChanged(
 void DOMWebSocket::DidConnect(const String& subprotocol,
                               const String& extensions) {
   NETWORK_DVLOG(1) << "WebSocket " << this << " DidConnect()";
-  common_.LogMixedAutoupgradeStatus(
-      MixedContentAutoupgradeStatus::kResponseReceived);
   if (common_.GetState() != kConnecting)
     return;
   common_.SetState(kOpen);
@@ -572,8 +574,8 @@ void DOMWebSocket::DidReceiveBinaryMessage(
       for (const auto& span : data) {
         blob_data->AppendBytes(span.data(), span.size());
       }
-      Blob* blob =
-          Blob::Create(BlobDataHandle::Create(std::move(blob_data), size));
+      auto* blob = MakeGarbageCollected<Blob>(
+          BlobDataHandle::Create(std::move(blob_data), size));
       RecordReceiveTypeHistogram(kWebSocketReceiveTypeBlob);
       RecordReceiveMessageSizeHistogram(kWebSocketReceiveTypeBlob, size);
       event_queue_->Dispatch(MessageEvent::Create(blob, origin_string_));
@@ -592,8 +594,6 @@ void DOMWebSocket::DidReceiveBinaryMessage(
 
 void DOMWebSocket::DidError() {
   NETWORK_DVLOG(1) << "WebSocket " << this << " DidError()";
-  if (common_.GetState() == kConnecting)
-    common_.LogMixedAutoupgradeStatus(MixedContentAutoupgradeStatus::kFailed);
   ReflectBufferedAmountConsumption();
   common_.SetState(kClosed);
   event_queue_->Dispatch(Event::Create(event_type_names::kError));
@@ -633,7 +633,8 @@ void DOMWebSocket::DidClose(
 
   ReleaseChannel();
 
-  event_queue_->Dispatch(CloseEvent::Create(was_clean, code, reason));
+  event_queue_->Dispatch(
+      MakeGarbageCollected<CloseEvent>(was_clean, code, reason));
 }
 
 void DOMWebSocket::RecordSendTypeHistogram(WebSocketSendType type) {

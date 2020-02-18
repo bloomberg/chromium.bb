@@ -13,7 +13,7 @@
 #include "base/macros.h"
 #include "components/sessions/core/session_id.h"
 #include "components/sync_sessions/synced_tab_delegate.h"
-#import "ios/web/public/web_state/web_state_user_data.h"
+#import "ios/web/public/web_state_user_data.h"
 
 class IOSTaskTabHelper;
 
@@ -27,7 +27,6 @@ class IOSChromeSyncedTabDelegate
   SessionID GetWindowId() const override;
   SessionID GetSessionId() const override;
   bool IsBeingDestroyed() const override;
-  SessionID GetSourceTabID() const override;
   std::string GetExtensionAppId() const override;
   bool IsInitialBlankNavigation() const override;
   int GetCurrentEntryIndex() const override;

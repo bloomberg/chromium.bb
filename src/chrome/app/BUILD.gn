@@ -2,12 +2,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/locales.gni")
 import("//build/config/ui.gni")
 import("//chrome/common/features.gni")
 import("//components/gwp_asan/buildflags/buildflags.gni")
 import("//components/nacl/features.gni")
 import("//ppapi/buildflags/buildflags.gni")
-import("//printing/buildflags/buildflags.gni")
 import("//tools/grit/grit_rule.gni")
 import("//tools/ipc_fuzzer/ipc_fuzzer.gni")
 
@@ -49,74 +49,25 @@ source_set("chrome_dll_resources") {
   ]
 
   if (is_win) {
-    sources += [ "chrome_dll.rc" ]
-    if (enable_basic_printing) {
-      # The resource compiler can only handle macro functions up to 31 chars
-      # which the buildflag system produces for this. Make a define so we can
-      # toggle off of the enable-basic-printing flag in the .rc file.
-      defines = [ "ENABLE_PRINTING_FOR_RC" ]
-    }
-    deps += [ "//printing/buildflags" ]
+    sources += [
+      "chrome_dll.rc",
+      "etw_events/chrome_events_win.rc",
+    ]
+
+    deps += [
+      "//build:branding_buildflags",
+      "//printing/buildflags",
+    ]
   }
 }
 
 if (is_android) {
   import("//build/config/android/rules.gni")
-  android_generated_java_resources = [
-    "java/res/values-am/generated_resources.xml",
-    "java/res/values-ar/generated_resources.xml",
-    "java/res/values-bg/generated_resources.xml",
-    "java/res/values-bn/generated_resources.xml",
-    "java/res/values-ca/generated_resources.xml",
-    "java/res/values-cs/generated_resources.xml",
-    "java/res/values-da/generated_resources.xml",
-    "java/res/values-de/generated_resources.xml",
-    "java/res/values-el/generated_resources.xml",
-    "java/res/values-en-rGB/generated_resources.xml",
-    "java/res/values-es/generated_resources.xml",
-    "java/res/values-es-rUS/generated_resources.xml",
-    "java/res/values-et/generated_resources.xml",
-    "java/res/values-fa/generated_resources.xml",
-    "java/res/values-fi/generated_resources.xml",
-    "java/res/values-fr/generated_resources.xml",
-    "java/res/values-gu/generated_resources.xml",
-    "java/res/values-hi/generated_resources.xml",
-    "java/res/values-hr/generated_resources.xml",
-    "java/res/values-hu/generated_resources.xml",
-    "java/res/values-in/generated_resources.xml",
-    "java/res/values-it/generated_resources.xml",
-    "java/res/values-iw/generated_resources.xml",
-    "java/res/values-ja/generated_resources.xml",
-    "java/res/values-kn/generated_resources.xml",
-    "java/res/values-ko/generated_resources.xml",
-    "java/res/values-lt/generated_resources.xml",
-    "java/res/values-lv/generated_resources.xml",
-    "java/res/values-ml/generated_resources.xml",
-    "java/res/values-mr/generated_resources.xml",
-    "java/res/values-ms/generated_resources.xml",
-    "java/res/values-nb/generated_resources.xml",
-    "java/res/values-nl/generated_resources.xml",
-    "java/res/values-pl/generated_resources.xml",
-    "java/res/values-pt-rBR/generated_resources.xml",
-    "java/res/values-pt-rPT/generated_resources.xml",
-    "java/res/values-ro/generated_resources.xml",
-    "java/res/values-ru/generated_resources.xml",
-    "java/res/values-sk/generated_resources.xml",
-    "java/res/values-sl/generated_resources.xml",
-    "java/res/values-sr/generated_resources.xml",
-    "java/res/values-sv/generated_resources.xml",
-    "java/res/values-sw/generated_resources.xml",
-    "java/res/values-ta/generated_resources.xml",
-    "java/res/values-te/generated_resources.xml",
-    "java/res/values-th/generated_resources.xml",
-    "java/res/values-tl/generated_resources.xml",
-    "java/res/values-tr/generated_resources.xml",
-    "java/res/values-uk/generated_resources.xml",
-    "java/res/values-vi/generated_resources.xml",
-    "java/res/values-zh-rCN/generated_resources.xml",
-    "java/res/values-zh-rTW/generated_resources.xml",
-    "java/res/values/generated_resources.xml",
-  ]
+  android_generated_java_resources =
+      [ "java/res/values/generated_resources.xml" ] +
+      process_file_template(
+          android_bundle_locales_as_resources,
+          [ "java/res/values-{{source_name_part}}/generated_resources.xml" ])
 }
 
 grit("generated_resources") {
@@ -413,6 +364,7 @@ source_set("chrome_content_browser_overlay_manifest") {
     "//chrome/browser/ui/webui/downloads:mojo_bindings",
     "//chrome/browser/ui/webui/feed_internals:mojo_bindings",
     "//chrome/browser/ui/webui/interventions_internals:mojo_bindings",
+    "//chrome/browser/ui/webui/new_tab_page:mojo_bindings",
     "//chrome/browser/ui/webui/omnibox:mojo_bindings",
     "//chrome/browser/ui/webui/reset_password:mojo_bindings",
     "//chrome/browser/ui/webui/snippets_internals:mojo_bindings",
@@ -425,7 +377,6 @@ source_set("chrome_content_browser_overlay_manifest") {
     "//components/autofill/content/common/mojom",
     "//components/contextual_search/content/common/mojom",
     "//components/data_reduction_proxy/core/common:interfaces",
-    "//components/dom_distiller/content/common/mojom",
     "//components/metrics/public/mojom:call_stack_mojo_bindings",
     "//components/page_load_metrics/common:page_load_metrics_mojom",
     "//components/rappor/public/mojom",
@@ -433,8 +384,6 @@ source_set("chrome_content_browser_overlay_manifest") {
     "//components/services/heap_profiling/public/mojom",
     "//components/translate/content/common",
     "//extensions/buildflags",
-    "//services/image_annotation/public/cpp:manifest",
-    "//services/preferences/public/cpp:manifest",
     "//services/service_manager/public/cpp",
     "//third_party/blink/public/common",
   ]
@@ -449,13 +398,15 @@ source_set("chrome_content_browser_overlay_manifest") {
   if (is_chromeos) {
     deps += [
       "//chrome/browser/ui/webui/chromeos/add_supervision:mojo_bindings",
+      "//chrome/browser/ui/webui/chromeos/crostini_installer:mojo_bindings",
+      "//chrome/browser/ui/webui/chromeos/crostini_upgrader:mojo_bindings",
       "//chrome/browser/ui/webui/chromeos/machine_learning:mojo_bindings",
       "//chromeos/services/cellular_setup/public/mojom",
       "//chromeos/services/ime/public/mojom",
       "//chromeos/services/media_perception/public/mojom",
-      "//chromeos/services/multidevice_setup/public/cpp:manifest",
       "//chromeos/services/multidevice_setup/public/mojom",
       "//chromeos/services/network_config/public/mojom",
+      "//components/chromeos_camera/common:camera_app_helper",
       "//media/capture/video/chromeos/mojom:cros_camera",
     ]
   }
@@ -464,10 +415,7 @@ source_set("chrome_content_browser_overlay_manifest") {
     deps +=
         [ "//chrome/browser/ui/webui/explore_sites_internals:mojo_bindings" ]
   } else {
-    deps += [
-      "//chrome/browser/ui/webui/app_management:mojo_bindings",
-      "//chrome/services/app_service/public/cpp:manifest",
-    ]
+    deps += [ "//chrome/browser/ui/webui/app_management:mojo_bindings" ]
   }
 
   if (is_win || is_mac || is_desktop_linux || is_chromeos) {
@@ -479,64 +427,6 @@ source_set("chrome_content_browser_overlay_manifest") {
 
   if (is_android && notouch_build) {
     configs += [ "//chrome/browser:notouch_config" ]
-  }
-}
-
-source_set("chrome_content_gpu_overlay_manifest") {
-  sources = [
-    "chrome_content_gpu_overlay_manifest.cc",
-    "chrome_content_gpu_overlay_manifest.h",
-  ]
-
-  deps = [
-    "//base",
-    "//components/services/heap_profiling/public/mojom",
-    "//services/service_manager/public/cpp",
-  ]
-
-  if (is_chromeos) {
-    deps += [ "//components/arc/mojom:media" ]
-  }
-}
-
-source_set("chrome_content_renderer_overlay_manifest") {
-  sources = [
-    "chrome_content_renderer_overlay_manifest.cc",
-    "chrome_content_renderer_overlay_manifest.h",
-  ]
-
-  deps = [
-    "//base",
-    "//base/allocator:buildflags",
-    "//chrome/common:mojo_bindings",
-    "//chrome/common:search_mojom",
-    "//components/autofill/content/common/mojom",
-    "//components/dom_distiller/content/common/mojom",
-    "//components/metrics/public/mojom:call_stack_mojo_bindings",
-    "//components/rappor/public/mojom",
-    "//components/safe_browsing:buildflags",
-    "//components/safe_browsing/common:interfaces",
-    "//components/services/heap_profiling/public/mojom",
-    "//components/subresource_filter/content/mojom",
-    "//extensions/buildflags",
-    "//services/service_manager/public/cpp",
-    "//third_party/blink/public/common",
-  ]
-
-  if (is_linux) {
-    deps += [ "//chrome/common/performance_manager/mojom" ]
-  }
-
-  if (is_chromeos) {
-    deps += [ "//chromeos/services/network_config/public/mojom" ]
-  }
-
-  if (is_mac) {
-    deps += [ "//components/spellcheck/common:interfaces" ]
-  }
-
-  if (enable_extensions) {
-    deps += [ "//extensions/common:mojom" ]
   }
 }
 
@@ -566,7 +456,5 @@ source_set("chrome_service_manifests") {
   public_deps = [
     ":builtin_service_manifests",
     ":chrome_content_browser_overlay_manifest",
-    ":chrome_content_gpu_overlay_manifest",
-    ":chrome_content_renderer_overlay_manifest",
   ]
 }

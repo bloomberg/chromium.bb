@@ -147,6 +147,9 @@ class TextureState final : private angle::NonCopyable
     void setGenerateMipmapHint(GLenum hint);
     GLenum getGenerateMipmapHint() const;
 
+    // Return the enabled mipmap level count.
+    GLuint getEnabledLevelCount() const;
+
   private:
     // Texture needs access to the ImageDesc functions.
     friend class Texture;
@@ -187,6 +190,7 @@ class TextureState final : private angle::NonCopyable
 
     GLenum mDepthStencilTextureMode;
 
+    bool mBoundAsImageTexture;
     bool mImmutableFormat;
     GLuint mImmutableLevels;
 
@@ -212,7 +216,9 @@ class TextureState final : private angle::NonCopyable
 bool operator==(const TextureState &a, const TextureState &b);
 bool operator!=(const TextureState &a, const TextureState &b);
 
-class Texture final : public RefCountObject, public egl::ImageSibling, public LabeledObject
+class Texture final : public RefCountObject<TextureID>,
+                      public egl::ImageSibling,
+                      public LabeledObject
 {
   public:
     Texture(rx::GLImplFactory *factory, TextureID id, TextureType type);
@@ -407,6 +413,7 @@ class Texture final : public RefCountObject, public egl::ImageSibling, public La
     angle::Result setEGLImageTarget(Context *context, TextureType type, egl::Image *imageTarget);
 
     angle::Result generateMipmap(Context *context);
+    void onBindImageTexture();
 
     egl::Surface *getBoundSurface() const;
     egl::Stream *getBoundStream() const;
@@ -417,6 +424,19 @@ class Texture final : public RefCountObject, public egl::ImageSibling, public La
     void signalDirtyStorage(InitState initState);
 
     bool isSamplerComplete(const Context *context, const Sampler *optionalSampler);
+
+    GLenum getImplementationColorReadFormat(const Context *context) const;
+    GLenum getImplementationColorReadType(const Context *context) const;
+
+    // We pass the pack buffer and state explicitly so they can be overridden during capture.
+    angle::Result getTexImage(const Context *context,
+                              const PixelPackState &packState,
+                              Buffer *packBuffer,
+                              TextureTarget target,
+                              GLint level,
+                              GLenum format,
+                              GLenum type,
+                              void *pixels) const;
 
     rx::TextureImpl *getImplementation() const { return mTexture; }
 
@@ -438,7 +458,10 @@ class Texture final : public RefCountObject, public egl::ImageSibling, public La
 
     void onAttach(const Context *context) override;
     void onDetach(const Context *context) override;
+
+    // Used specifically for FramebufferAttachmentObject.
     GLuint getId() const override;
+
     GLuint getNativeID() const;
 
     // Needed for robust resource init.
@@ -471,6 +494,9 @@ class Texture final : public RefCountObject, public egl::ImageSibling, public La
         DIRTY_BIT_BASE_LEVEL,
         DIRTY_BIT_MAX_LEVEL,
         DIRTY_BIT_DEPTH_STENCIL_TEXTURE_MODE,
+
+        // Image state
+        DIRTY_BIT_BOUND_AS_IMAGE,
 
         // Misc
         DIRTY_BIT_LABEL,

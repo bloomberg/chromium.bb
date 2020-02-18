@@ -14,13 +14,16 @@
 #include "base/unguessable_token.h"
 #include "content/browser/web_package/signed_exchange_error.h"
 #include "content/common/content_export.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
 #include "net/ssl/ssl_info.h"
 #include "net/url_request/redirect_info.h"
 #include "services/network/public/cpp/net_adapters.h"
-#include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "url/origin.h"
 
 namespace blink {
@@ -34,6 +37,7 @@ class SourceStream;
 
 namespace network {
 class SharedURLLoaderFactory;
+class SourceStreamToDataPipe;
 }  // namespace network
 
 namespace content {
@@ -44,7 +48,6 @@ class SignedExchangeHandlerFactory;
 class SignedExchangePrefetchMetricRecorder;
 class SignedExchangeReporter;
 class SignedExchangeValidityPinger;
-class SourceStreamToDataPipe;
 
 // SignedExchangeLoader handles an origin-signed HTTP exchange response. It is
 // created when a SignedExchangeRequestHandler recieves an origin-signed HTTP
@@ -62,9 +65,9 @@ class CONTENT_EXPORT SignedExchangeLoader final
   // redirect to the fallback URL.
   SignedExchangeLoader(
       const network::ResourceRequest& outer_request,
-      const network::ResourceResponseHead& outer_response_head,
+      network::mojom::URLResponseHeadPtr outer_response_head,
       mojo::ScopedDataPipeConsumerHandle outer_response_body,
-      network::mojom::URLLoaderClientPtr forwarding_client,
+      mojo::PendingRemote<network::mojom::URLLoaderClient> forwarding_client,
       network::mojom::URLLoaderClientEndpointsPtr endpoints,
       uint32_t url_loader_options,
       bool should_redirect_on_failure,
@@ -72,7 +75,7 @@ class CONTENT_EXPORT SignedExchangeLoader final
       std::unique_ptr<SignedExchangeReporter> reporter,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       URLLoaderThrottlesGetter url_loader_throttles_getter,
-      base::RepeatingCallback<int(void)> frame_tree_node_id_getter,
+      int frame_tree_node_id,
       scoped_refptr<SignedExchangePrefetchMetricRecorder> metric_recorder,
       const std::string& accept_langs);
   ~SignedExchangeLoader() override;
@@ -103,7 +106,8 @@ class CONTENT_EXPORT SignedExchangeLoader final
   void PauseReadingBodyFromNet() override;
   void ResumeReadingBodyFromNet() override;
 
-  void ConnectToClient(network::mojom::URLLoaderClientPtr client);
+  void ConnectToClient(
+      mojo::PendingRemote<network::mojom::URLLoaderClient> client);
 
   const base::Optional<GURL>& fallback_url() const { return fallback_url_; }
 
@@ -128,12 +132,11 @@ class CONTENT_EXPORT SignedExchangeLoader final
  private:
   // Called from |signed_exchange_handler_| when it finds an origin-signed HTTP
   // exchange.
-  void OnHTTPExchangeFound(
-      SignedExchangeLoadResult result,
-      net::Error error,
-      const GURL& request_url,
-      const network::ResourceResponseHead& resource_response,
-      std::unique_ptr<net::SourceStream> payload_stream);
+  void OnHTTPExchangeFound(SignedExchangeLoadResult result,
+                           net::Error error,
+                           const GURL& request_url,
+                           network::mojom::URLResponseHeadPtr resource_response,
+                           std::unique_ptr<net::SourceStream> payload_stream);
 
   void StartReadingBody();
   void FinishReadingBody(int result);
@@ -143,25 +146,26 @@ class CONTENT_EXPORT SignedExchangeLoader final
   const network::ResourceRequest outer_request_;
 
   // The outer response of signed HTTP exchange which was received from network.
-  const network::ResourceResponseHead outer_response_head_;
+  network::mojom::URLResponseHeadPtr outer_response_head_;
 
   // This client is alive until OnHTTPExchangeFound() is called.
-  network::mojom::URLLoaderClientPtr forwarding_client_;
+  mojo::Remote<network::mojom::URLLoaderClient> forwarding_client_;
 
-  // This |url_loader_| is the pointer of the network URL loader.
-  network::mojom::URLLoaderPtr url_loader_;
-  // This binding connects |this| with the network URL loader.
-  mojo::Binding<network::mojom::URLLoaderClient> url_loader_client_binding_;
+  // This |url_loader_| is the remote of the network URL loader.
+  mojo::Remote<network::mojom::URLLoader> url_loader_;
+  // This receiver connects |this| with the network URL loader.
+  mojo::Receiver<network::mojom::URLLoaderClient> url_loader_client_receiver_{
+      this};
 
   // This is pending until connected by ConnectToClient().
-  network::mojom::URLLoaderClientPtr client_;
+  mojo::Remote<network::mojom::URLLoaderClient> client_;
 
-  // This URLLoaderClientRequest is used by ConnectToClient() to connect
-  // |client_|.
-  network::mojom::URLLoaderClientRequest pending_client_request_;
+  // This pending receiver is used by ConnectToClient() to connect |client_|.
+  mojo::PendingReceiver<network::mojom::URLLoaderClient>
+      pending_client_receiver_;
 
   std::unique_ptr<SignedExchangeHandler> signed_exchange_handler_;
-  std::unique_ptr<SourceStreamToDataPipe> body_data_pipe_adapter_;
+  std::unique_ptr<network::SourceStreamToDataPipe> body_data_pipe_adapter_;
 
   // Kept around until ProceedWithResponse is called.
   mojo::ScopedDataPipeConsumerHandle pending_body_consumer_;
@@ -172,7 +176,7 @@ class CONTENT_EXPORT SignedExchangeLoader final
   std::unique_ptr<SignedExchangeReporter> reporter_;
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   URLLoaderThrottlesGetter url_loader_throttles_getter_;
-  base::RepeatingCallback<int(void)> frame_tree_node_id_getter_;
+  const int frame_tree_node_id_;
   scoped_refptr<SignedExchangePrefetchMetricRecorder> metric_recorder_;
 
   base::Optional<net::SSLInfo> ssl_info_;

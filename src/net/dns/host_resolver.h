@@ -24,6 +24,7 @@
 #include "net/dns/host_cache.h"
 #include "net/dns/host_resolver_source.h"
 #include "net/dns/public/dns_query_type.h"
+#include "net/dns/public/resolve_error_info.h"
 
 namespace base {
 class Value;
@@ -100,6 +101,20 @@ class NET_EXPORT HostResolver {
     virtual const base::Optional<std::vector<HostPortPair>>&
     GetHostnameResults() const = 0;
 
+    // TLS 1.3 Encrypted Server Name Indication, draft 4 (ESNI,
+    // https://tools.ietf.org/html/draft-ietf-tls-esni-04)
+    // results of the request. Should only be called after
+    // Start() signals completion, either by invoking the callback or by
+    // returning a result other than |ERR_IO_PENDING|.
+    virtual const base::Optional<EsniContent>& GetEsniResults() const = 0;
+
+    // Error info for the request.
+    //
+    // Should only be called after Start() signals completion, either by
+    // invoking the callback or by returning a result other than
+    // |ERR_IO_PENDING|.
+    virtual ResolveErrorInfo GetResolveErrorInfo() const = 0;
+
     // Information about the result's staleness in the host cache. Only
     // available if results were received from the host cache.
     //
@@ -113,6 +128,19 @@ class NET_EXPORT HostResolver {
     // the request is running (after Start() returns |ERR_IO_PENDING| and before
     // the callback is invoked).
     virtual void ChangeRequestPriority(RequestPriority priority) {}
+  };
+
+  // Handler for an activation of probes controlled by a HostResolver. Created
+  // by HostResolver::CreateDohProbeRequest().
+  class ProbeRequest {
+   public:
+    // Destruction cancels the request and all probes.
+    virtual ~ProbeRequest() {}
+
+    // Activates async running of probes. Always returns ERR_IO_PENDING or an
+    // error from activating probes. No callback as probes will never "complete"
+    // until cancellation.
+    virtual int Start() = 0;
   };
 
   // Parameter-grouping struct for additional optional parameters for creation
@@ -270,6 +298,12 @@ class NET_EXPORT HostResolver {
   // be called.
   virtual ~HostResolver();
 
+  // Cancels any pending requests without calling callbacks, same as
+  // destruction, except also leaves the resolver in a mostly-noop state. Any
+  // future request Start() calls (for requests created before or after
+  // OnShutdown()) will immediately fail with ERR_CONTEXT_SHUT_DOWN.
+  virtual void OnShutdown() = 0;
+
   // Creates a request to resolve the given hostname (or IP address literal).
   // Profiling information for the request is saved to |net_log| if non-NULL.
   //
@@ -277,8 +311,22 @@ class NET_EXPORT HostResolver {
   // defaults will be used if passed |base::nullopt|.
   virtual std::unique_ptr<ResolveHostRequest> CreateRequest(
       const HostPortPair& host,
+      const NetworkIsolationKey& network_isolation_key,
       const NetLogWithSource& net_log,
       const base::Optional<ResolveHostParameters>& optional_parameters) = 0;
+
+  // Deprecated version of above method that uses an empty NetworkIsolationKey.
+  //
+  // TODO(mmenke): Once all consumers have been updated to use the other
+  // overload instead, remove this method and make above method pure virtual.
+  virtual std::unique_ptr<ResolveHostRequest> CreateRequest(
+      const HostPortPair& host,
+      const NetLogWithSource& net_log,
+      const base::Optional<ResolveHostParameters>& optional_parameters);
+
+  // Creates a request to probe configured DoH servers to find which can be used
+  // successfully.
+  virtual std::unique_ptr<ProbeRequest> CreateDohProbeRequest();
 
   // Create a listener to watch for updates to an MDNS result.
   virtual std::unique_ptr<MdnsListener> CreateMdnsListener(
@@ -333,8 +381,16 @@ class NET_EXPORT HostResolver {
   static HostResolverFlags ParametersToHostResolverFlags(
       const ResolveHostParameters& parameters);
 
+  // Helper for squashing error code to a small set of DNS error codes.
+  static int SquashErrorCode(int error);
+
  protected:
   HostResolver();
+
+  // Utility to create a request implementation that always fails with |error|
+  // immediately on start.
+  static std::unique_ptr<ResolveHostRequest> CreateFailingRequest(int error);
+  static std::unique_ptr<ProbeRequest> CreateFailingProbeRequest(int error);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(HostResolver);

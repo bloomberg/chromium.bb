@@ -26,7 +26,10 @@
 #include "chrome/common/importer/firefox_importer_utils.h"
 #include "chrome/utility/importer/firefox_importer_unittest_utils_mac.mojom.h"
 #include "content/public/common/content_descriptors.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/platform/platform_channel.h"
 #include "mojo/public/cpp/platform/platform_channel_endpoint.h"
 #include "mojo/public/cpp/platform/platform_handle.h"
@@ -68,12 +71,13 @@ class FFDecryptorClientListener
     : public firefox_importer_unittest_utils_mac::mojom::FirefoxDecryptor {
  public:
   explicit FFDecryptorClientListener(
-      firefox_importer_unittest_utils_mac::mojom::FirefoxDecryptorRequest
-          request)
-      : binding_(this, std::move(request)) {}
+      mojo::PendingReceiver<
+          firefox_importer_unittest_utils_mac::mojom::FirefoxDecryptor>
+          receiver)
+      : receiver_(this, std::move(receiver)) {}
 
-  void SetQuitClosure(base::Closure quit_closure) {
-    binding_.set_connection_error_handler(std::move(quit_closure));
+  void SetQuitClosure(base::OnceClosure quit_closure) {
+    receiver_.set_disconnect_handler(std::move(quit_closure));
   }
 
   void Init(const base::FilePath& dll_path,
@@ -96,7 +100,7 @@ class FFDecryptorClientListener
 
  private:
   NSSDecryptor decryptor_;
-  mojo::Binding<FirefoxDecryptor> binding_;
+  mojo::Receiver<FirefoxDecryptor> receiver_;
 
   DISALLOW_COPY_AND_ASSIGN(FFDecryptorClientListener);
 };
@@ -112,8 +116,11 @@ class FFDecryptorClientListener
 class FFDecryptorServerChannelListener {
  public:
   explicit FFDecryptorServerChannelListener(
-      firefox_importer_unittest_utils_mac::mojom::FirefoxDecryptorPtr decryptor)
-      : decryptor_(std::move(decryptor)) {}
+      mojo::PendingRemote<
+          firefox_importer_unittest_utils_mac::mojom::FirefoxDecryptor>
+          decryptor) {
+    decryptor_.Bind(std::move(decryptor));
+  }
 
   void InitDecryptor(const base::FilePath& dll_path,
                      const base::FilePath& db_path) {
@@ -153,26 +160,28 @@ class FFDecryptorServerChannelListener {
   bool got_result_;
 
  private:
-  void InitDecryptorReply(base::Closure quit_closure, bool result) {
+  void InitDecryptorReply(base::OnceClosure quit_closure, bool result) {
     result_bool_ = result;
     got_result_ = true;
-    quit_closure.Run();
+    std::move(quit_closure).Run();
   }
 
-  void DecryptReply(base::Closure quit_closure, const base::string16& text) {
+  void DecryptReply(base::OnceClosure quit_closure,
+                    const base::string16& text) {
     result_string_ = text;
     got_result_ = true;
-    quit_closure.Run();
+    std::move(quit_closure).Run();
   }
 
-  void ParseSignonsReply(base::Closure quit_closure,
+  void ParseSignonsReply(base::OnceClosure quit_closure,
                          const std::vector<autofill::PasswordForm>& forms) {
     result_vector_ = forms;
     got_result_ = true;
-    quit_closure.Run();
+    std::move(quit_closure).Run();
   }
 
-  firefox_importer_unittest_utils_mac::mojom::FirefoxDecryptorPtr decryptor_;
+  mojo::Remote<firefox_importer_unittest_utils_mac::mojom::FirefoxDecryptor>
+      decryptor_;
 
   DISALLOW_COPY_AND_ASSIGN(FFDecryptorServerChannelListener);
 };
@@ -189,9 +198,9 @@ bool FFUnitTestDecryptorProxy::Setup(const base::FilePath& nss_path) {
   std::string token = base::NumberToString(base::RandUint64());
   mojo::ScopedMessagePipeHandle parent_pipe =
       invitation.AttachMessagePipe(token);
-  firefox_importer_unittest_utils_mac::mojom::FirefoxDecryptorPtr decryptor(
-      firefox_importer_unittest_utils_mac::mojom::FirefoxDecryptorPtrInfo(
-          std::move(parent_pipe), 0));
+  mojo::PendingRemote<
+      firefox_importer_unittest_utils_mac::mojom::FirefoxDecryptor>
+      decryptor(std::move(parent_pipe), 0);
   listener_ =
       std::make_unique<FFDecryptorServerChannelListener>(std::move(decryptor));
 
@@ -251,9 +260,10 @@ MULTIPROCESS_TEST_MAIN(NSSDecrypterChildProcess) {
   mojo::ScopedMessagePipeHandle request_pipe = invitation.ExtractMessagePipe(
       command_line->GetSwitchValueASCII(kMojoChannelToken));
 
-  firefox_importer_unittest_utils_mac::mojom::FirefoxDecryptorRequest request(
-      std::move(request_pipe));
-  FFDecryptorClientListener listener(std::move(request));
+  mojo::PendingReceiver<
+      firefox_importer_unittest_utils_mac::mojom::FirefoxDecryptor>
+      receiver(std::move(request_pipe));
+  FFDecryptorClientListener listener(std::move(receiver));
   base::RunLoop run_loop;
   listener.SetQuitClosure(run_loop.QuitClosure());
   run_loop.Run();

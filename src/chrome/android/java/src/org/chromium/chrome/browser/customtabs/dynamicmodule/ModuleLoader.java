@@ -12,8 +12,10 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.support.annotation.Nullable;
 import android.text.TextUtils;
+
+import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 
 import dalvik.system.DexClassLoader;
 
@@ -22,9 +24,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.FileUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.base.task.AsyncTask;
-import org.chromium.base.task.PostTask;
 import org.chromium.base.task.TaskTraits;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.ChromeFeatureList;
@@ -305,7 +305,6 @@ public class ModuleLoader {
     public void destroyModule(@DestructionReason int reason) {
         if (mModuleEntryPoint == null) return;
 
-        ModuleMetrics.recordCodeMemoryFootprint(mComponentName.getPackageName(), "OnModuleDestroy");
         ModuleMetrics.recordDestruction(reason);
         mModuleEntryPoint.onDestroy();
         CrashKeys.getInstance().set(CrashKeyIndex.ACTIVE_DYNAMIC_MODULE, null);
@@ -527,12 +526,6 @@ public class ModuleLoader {
                 runAndClearCallbacks();
                 sendAllBundles();
 
-                // Recording the metric may take some time, and this runs on the UI thread, don't
-                // block the UI thread on it.
-                PostTask.postTask(TaskTraits.BEST_EFFORT_MAY_BLOCK, () -> {
-                    ModuleMetrics.recordCodeMemoryFootprint(
-                            mComponentName.getPackageName(), "OnModuleLoad");
-                });
                 return;
             } catch (Exception e) {
                 // No multi-catch below API level 19 for reflection exceptions.

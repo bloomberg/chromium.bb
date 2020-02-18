@@ -19,6 +19,15 @@ WelcomeA11y = class extends PolymerTest {
   get featureList() {
     return {enabled: ['welcome::kForceEnabled']};
   }
+
+  /** @override */
+  get extraLibraries() {
+    return [
+      '//third_party/mocha/mocha.js',
+      '//chrome/test/data/webui/mocha_adapter.js',
+      '//ui/webui/resources/js/util.js',
+    ];
+  }
 };
 
 AccessibilityTest.define('WelcomeA11y', {
@@ -26,7 +35,12 @@ AccessibilityTest.define('WelcomeA11y', {
   name: 'WelcomeFlow',
 
   // Optional. Configuration for axe-core. Can be used to disable a test.
-  axeOptions: {},
+  axeOptions: {
+    'rules': {
+      // TODO(crbug.com/761461): enable after addressing flaky tests.
+      'color-contrast': {enabled: false},
+    }
+  },
 
   // Optional. Filter on failures. Use this for individual false positives.
   violationFilter: {},

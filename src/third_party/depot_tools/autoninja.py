@@ -82,14 +82,15 @@ elif os.path.exists(os.path.join(output_dir, 'rules.ninja')):
         use_goma = True
         break
 
-# If GOMA_DISABLED is set (to anything) then gomacc will use the local
-# compiler instead of doing a goma compile. This is convenient if you want
-# to briefly disable goma. It avoids having to rebuild the world when
-# transitioning between goma/non-goma builds. However, it is not as fast as
-# doing a "normal" non-goma build because an extra process is created for each
-# compile step. Checking this environment variable ensures that autoninja uses
-# an appropriate -j value in this situation.
-if 'GOMA_DISABLED' in os.environ:
+# If GOMA_DISABLED is set to "true", "t", "yes", "y", or "1" (case-insensitive)
+# then gomacc will use the local compiler instead of doing a goma compile. This
+# is convenient if you want to briefly disable goma. It avoids having to rebuild
+# the world when transitioning between goma/non-goma builds. However, it is not
+# as fast as doing a "normal" non-goma build because an extra process is created
+# for each compile step. Checking this environment variable ensures that
+# autoninja uses an appropriate -j value in this situation.
+goma_disabled_env = os.environ.get('GOMA_DISABLED', '0').lower()
+if goma_disabled_env in ['true', 't', 'yes', 'y', '1']:
   use_goma = False
 
 # Specify ninja.exe on Windows so that ninja.bat can call autoninja and not
@@ -140,5 +141,8 @@ if not j_specified and not t_specified:
 for i in range(len(args)):
   if (i == 0 and sys.platform.startswith('win')) or ' ' in args[i]:
     args[i] = '"%s"' % args[i].replace('"', '\\"')
+
+if os.environ.get('NINJA_SUMMARIZE_BUILD', '0') == '1':
+  args += ['-d', 'stats']
 
 print(' '.join(args))

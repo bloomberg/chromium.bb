@@ -17,11 +17,13 @@
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "pdf/document_layout.h"
 #include "ppapi/c/dev/pp_cursor_type_dev.h"
 #include "ppapi/c/dev/ppp_printing_dev.h"
 #include "ppapi/c/ppb_input_event.h"
 #include "ppapi/cpp/completion_callback.h"
 #include "ppapi/cpp/image_data.h"
+#include "ppapi/cpp/private/pdf.h"
 #include "ppapi/cpp/rect.h"
 #include "ppapi/cpp/size.h"
 #include "ppapi/cpp/url_loader.h"
@@ -41,7 +43,6 @@ typedef void (*PDFEnsureTypefaceCharactersAccessible)(const LOGFONT* font,
 
 struct PP_PdfAccessibilityActionData;
 struct PP_PdfPrintSettings_Dev;
-struct PP_PrivateAccessibilityTextRunInfo;
 
 namespace gfx {
 class Rect;
@@ -58,7 +59,7 @@ namespace chrome_pdf {
 // Do one time initialization of the SDK.
 // If |enable_v8| is false, then the PDFEngine will not be able to run
 // JavaScript.
-bool InitializeSDK(bool enable_v8);
+void InitializeSDK(bool enable_v8);
 // Tells the SDK that we're shutting down.
 void ShutdownSDK();
 
@@ -136,8 +137,10 @@ class PDFEngine {
    public:
     virtual ~Client() {}
 
-    // Informs the client about the document's size in pixels.
-    virtual void DocumentSizeUpdated(const pp::Size& size) {}
+    // Proposes a document layout to the client. For the proposed layout to
+    // become effective, the client must call PDFEngine::ApplyDocumentLayout()
+    // with the new layout options (although this call can be asynchronous).
+    virtual void ProposeDocumentLayout(const DocumentLayout& layout) = 0;
 
     // Informs the client that the given rect needs to be repainted.
     virtual void Invalidate(const pp::Rect& rect) {}
@@ -163,6 +166,13 @@ class PDFEngine {
     // Navigate to the given url.
     virtual void NavigateTo(const std::string& url,
                             WindowOpenDisposition disposition) {}
+
+    // Navigate to the given destination. Zero-based |page| index. |x|, |y| and
+    // |zoom| are optional and can be nullptr.
+    virtual void NavigateToDestination(int page,
+                                       const float* x,
+                                       const float* y,
+                                       const float* zoom) {}
 
     // Updates the cursor.
     virtual void UpdateCursor(PP_CursorType_Dev cursor) {}
@@ -274,6 +284,24 @@ class PDFEngine {
     virtual float GetToolbarHeightInScreenCoords() = 0;
   };
 
+  struct AccessibilityLinkInfo {
+    std::string url;
+    int start_char_index;
+    int char_count;
+    pp::FloatRect bounds;
+  };
+
+  struct AccessibilityImageInfo {
+    std::string alt_text;
+    pp::FloatRect bounds;
+  };
+
+  struct AccessibilityHighlightInfo {
+    int start_char_index = -1;
+    int char_count;
+    pp::FloatRect bounds;
+  };
+
   // Factory method to create an instance of the PDF Engine.
   static std::unique_ptr<PDFEngine> Create(Client* client,
                                            bool enable_javascript);
@@ -311,6 +339,13 @@ class PDFEngine {
   virtual void ZoomUpdated(double new_zoom_level) = 0;
   virtual void RotateClockwise() = 0;
   virtual void RotateCounterclockwise() = 0;
+
+  // Applies the document layout options proposed by a call to
+  // PDFEngine::Client::ProposeDocumentLayout(), returning the overall size of
+  // the new effective layout.
+  virtual pp::Size ApplyDocumentLayout(
+      const DocumentLayout::Options& options) = 0;
+
   virtual std::string GetSelectedText() = 0;
   // Returns true if focus is within an editable form text area.
   virtual bool CanEditText() = 0;
@@ -340,8 +375,6 @@ class PDFEngine {
       const std::string& destination) = 0;
   // Gets the index of the most visible page, or -1 if none are visible.
   virtual int GetMostVisiblePage() = 0;
-  // Gets the rectangle of the page including shadow.
-  virtual pp::Rect GetPageRect(int index) = 0;
   // Gets the rectangle of the page not including the shadow.
   virtual pp::Rect GetPageBoundsRect(int index) = 0;
   // Gets the rectangle of the page excluding any additional areas.
@@ -361,12 +394,22 @@ class PDFEngine {
   // Get a given unicode character on a given page.
   virtual uint32_t GetCharUnicode(int page_index, int char_index) = 0;
   // Given a start char index, find the longest continuous run of text that's
-  // in a single direction and with the same style and font size. Return a
-  // filled out PP_PrivateAccessibilityTextRunInfo on success or base::nullopt
-  // on failure. e.g. When |start_char_index| is out of bounds.
-  virtual base::Optional<PP_PrivateAccessibilityTextRunInfo> GetTextRunInfo(
-      int page_index,
-      int start_char_index) = 0;
+  // in a single direction and with the same text style. Return a filled out
+  // pp::PDF::PrivateAccessibilityTextRunInfo on success or base::nullopt on
+  // failure. e.g. When |start_char_index| is out of bounds.
+  virtual base::Optional<pp::PDF::PrivateAccessibilityTextRunInfo>
+  GetTextRunInfo(int page_index, int start_char_index) = 0;
+  // For all the links on page |page_index|, get their urls, underlying text
+  // ranges and bounding boxes.
+  virtual std::vector<AccessibilityLinkInfo> GetLinkInfo(int page_index) = 0;
+  // For all the images in page |page_index|, get their alt texts and bounding
+  // boxes.
+  virtual std::vector<AccessibilityImageInfo> GetImageInfo(int page_index) = 0;
+  // For all the highlights in page |page_index|, get their underlying text
+  // ranges and bounding boxes.
+  virtual std::vector<AccessibilityHighlightInfo> GetHighlightInfo(
+      int page_index) = 0;
+
   // Gets the PDF document's print scaling preference. True if the document can
   // be scaled to fit.
   virtual bool GetPrintScaling() = 0;
@@ -442,6 +485,12 @@ class PDFEngineExports {
 
   static PDFEngineExports* Get();
 
+#if defined(OS_CHROMEOS)
+  // See the definition of CreateFlattenedPdf in pdf.cc for details.
+  virtual std::vector<uint8_t> CreateFlattenedPdf(
+      base::span<const uint8_t> input_buffer) = 0;
+#endif  // defined(OS_CHROMEOS)
+
 #if defined(OS_WIN)
   // See the definition of RenderPDFPageToDC in pdf.cc for details.
   virtual bool RenderPDFPageToDC(base::span<const uint8_t> pdf_buffer,
@@ -479,6 +528,12 @@ class PDFEngineExports {
   virtual bool GetPDFDocInfo(base::span<const uint8_t> pdf_buffer,
                              int* page_count,
                              double* max_page_width) = 0;
+
+  // Whether the PDF is Tagged (see 10.7 "Tagged PDF" in PDF Reference 1.7).
+  // Returns true if it's a tagged (accessible) PDF, false if it's a valid
+  // PDF but untagged, and nullopt if the PDF can't be parsed.
+  virtual base::Optional<bool> IsPDFDocTagged(
+      base::span<const uint8_t> pdf_buffer) = 0;
 
   // See the definition of GetPDFPageSizeByIndex in pdf.cc for details.
   virtual bool GetPDFPageSizeByIndex(base::span<const uint8_t> pdf_buffer,

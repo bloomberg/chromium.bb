@@ -12,7 +12,6 @@
 #include <vector>
 
 #include "base/callback_forward.h"
-#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "ui/accessibility/ax_enums.mojom-forward.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -58,6 +57,8 @@ class VIEWS_EXPORT AXVirtualView : public ui::AXPlatformNodeDelegateBase {
   static AXVirtualView* GetFromId(int32_t id);
 
   AXVirtualView();
+  AXVirtualView(const AXVirtualView&) = delete;
+  AXVirtualView& operator=(const AXVirtualView&) = delete;
   ~AXVirtualView() override;
 
   //
@@ -122,11 +123,13 @@ class VIEWS_EXPORT AXVirtualView : public ui::AXPlatformNodeDelegateBase {
       base::RepeatingCallback<void(const View&, ui::AXNodeData*)> callback);
   void UnsetPopulateDataCallback();
 
-  // ui::AXPlatformNodeDelegate
+  // ui::AXPlatformNodeDelegate. Note that some of these functions have
+  // Mac-specific implementations in ax_virtual_view_mac.mm.
   const ui::AXNodeData& GetData() const override;
   int GetChildCount() override;
   gfx::NativeViewAccessible ChildAtIndex(int index) override;
   gfx::NativeViewAccessible GetNSWindow() override;
+  gfx::NativeViewAccessible GetNativeViewAccessible() override;
   gfx::NativeViewAccessible GetParent() override;
   gfx::Rect GetBoundsRect(
       const ui::AXCoordinateSystem coordinate_system,
@@ -189,7 +192,6 @@ class VIEWS_EXPORT AXVirtualView : public ui::AXPlatformNodeDelegateBase {
   std::unique_ptr<AXVirtualViewWrapper> wrapper_;
 
   friend class ViewAccessibility;
-  DISALLOW_COPY_AND_ASSIGN(AXVirtualView);
 };
 
 }  // namespace views

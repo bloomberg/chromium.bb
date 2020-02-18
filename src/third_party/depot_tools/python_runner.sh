@@ -44,12 +44,16 @@ fi
 
 SCRIPT="${SCRIPT-${BASENAME//-/_}.py}"
 
+# Ensure that "depot_tools" is somewhere in PATH so this tool can be used
+# standalone, but allow other PATH manipulations to take priority.
+PATH=$PATH:$DEPOT_TOOLS
+
 if [[ $PYTHON_DIRECT = 1 ]]; then
   python.exe "$DEPOT_TOOLS\\$SCRIPT" "$@"
 else
   if [[ -e "$DEPOT_TOOLS/python.bat" && $OSTYPE = msys ]]; then
-    cmd.exe //c "$DEPOT_TOOLS\\python.bat" "$DEPOT_TOOLS\\$SCRIPT" "$@"
+    cmd.exe //c "$DEPOT_TOOLS\\vpython.bat" "$DEPOT_TOOLS\\$SCRIPT" "$@"
   else
-    exec "$DEPOT_TOOLS/$SCRIPT" "$@"
+    vpython "$DEPOT_TOOLS/$SCRIPT" "$@"
   fi
 fi

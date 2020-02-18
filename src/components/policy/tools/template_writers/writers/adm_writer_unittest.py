@@ -193,7 +193,8 @@ googlechrome="Google Chrome"
 googlechrome_recommended="Google Chrome - Recommended"
 MainPolicy_Policy="Caption of main."
 MainPolicy_Explain="Description of main.\\n\\n\
-Reference: https://www.chromium.org/administrators/policy-list-3#MainPolicy"''')
+Reference: \
+https://cloud.google.com/docs/chrome-enterprise/policies/?policy=MainPolicy"''')
     self.CompareOutputs(output, expected_output)
 
   def testMainPolicyRecommendedOnly(self):
@@ -252,7 +253,8 @@ googlechrome="Google Chrome"
 googlechrome_recommended="Google Chrome - Recommended"
 MainPolicy_Policy="Caption of main."
 MainPolicy_Explain="Description of main.\\n\\n\
-Reference: https://www.chromium.org/administrators/policy-list-3#MainPolicy"''')
+Reference: \
+https://cloud.google.com/docs/chrome-enterprise/policies/?policy=MainPolicy"''')
     self.CompareOutputs(output, expected_output)
 
   def testStringPolicy(self):
@@ -318,7 +320,8 @@ chromium="Chromium"
 chromium_recommended="Chromium - Recommended"
 StringPolicy_Policy="Caption of policy."
 StringPolicy_Explain="Description of group.\\nWith a newline.\\n\\n\
-Reference: https://www.chromium.org/administrators/policy-list-3#StringPolicy"
+Reference: \
+https://cloud.google.com/docs/chrome-enterprise/policies/?policy=StringPolicy"
 StringPolicy_Part="Caption of policy."
 ''')
     self.CompareOutputs(output, expected_output)
@@ -385,7 +388,8 @@ chromium="Chromium"
 chromium_recommended="Chromium - Recommended"
 IntPolicy_Policy="Caption of policy."
 IntPolicy_Explain="Description of policy.\\n\\n\
-Reference: https://www.chromium.org/administrators/policy-list-3#IntPolicy"
+Reference: \
+https://cloud.google.com/docs/chrome-enterprise/policies/?policy=IntPolicy"
 IntPolicy_Part="Caption of policy."
 ''')
     self.CompareOutputs(output, expected_output)
@@ -453,7 +457,8 @@ chromium="Chromium"
 chromium_recommended="Chromium - Recommended"
 IntPolicy_Policy="Caption of policy."
 IntPolicy_Explain="Description of policy.\\n\\n\
-Reference: https://www.chromium.org/administrators/policy-list-3#IntPolicy"
+Reference: \
+https://cloud.google.com/docs/chrome-enterprise/policies/?policy=IntPolicy"
 IntPolicy_Part="Caption of policy."
 ''')
     self.CompareOutputs(output, expected_output)
@@ -503,8 +508,8 @@ IntPolicy_Part="Caption of policy."
         PART !!EnumPolicy_Part  DROPDOWNLIST
           VALUENAME "EnumPolicy"
           ITEMLIST
-            NAME !!ProxyServerDisabled_DropDown VALUE NUMERIC 0
-            NAME !!ProxyServerAutoDetect_DropDown VALUE NUMERIC 1
+            NAME !!EnumPolicy_ProxyServerDisabled_DropDown VALUE NUMERIC 0
+            NAME !!EnumPolicy_ProxyServerAutoDetect_DropDown VALUE NUMERIC 1
           END ITEMLIST
         END PART
       END POLICY
@@ -525,8 +530,8 @@ IntPolicy_Part="Caption of policy."
         PART !!EnumPolicy_Part  DROPDOWNLIST
           VALUENAME "EnumPolicy"
           ITEMLIST
-            NAME !!ProxyServerDisabled_DropDown VALUE NUMERIC 0
-            NAME !!ProxyServerAutoDetect_DropDown VALUE NUMERIC 1
+            NAME !!EnumPolicy_ProxyServerDisabled_DropDown VALUE NUMERIC 0
+            NAME !!EnumPolicy_ProxyServerAutoDetect_DropDown VALUE NUMERIC 1
           END ITEMLIST
         END PART
       END POLICY
@@ -543,10 +548,11 @@ googlechrome="Google Chrome"
 googlechrome_recommended="Google Chrome - Recommended"
 EnumPolicy_Policy="Caption of policy."
 EnumPolicy_Explain="Description of policy.\\n\\n\
-Reference: https://www.chromium.org/administrators/policy-list-3#EnumPolicy"
+Reference: \
+https://cloud.google.com/docs/chrome-enterprise/policies/?policy=EnumPolicy"
 EnumPolicy_Part="Caption of policy."
-ProxyServerDisabled_DropDown="Option1"
-ProxyServerAutoDetect_DropDown="Option2"
+EnumPolicy_ProxyServerDisabled_DropDown="Option1"
+EnumPolicy_ProxyServerAutoDetect_DropDown="Option2"
 ''')
     self.CompareOutputs(output, expected_output)
 
@@ -589,8 +595,8 @@ ProxyServerAutoDetect_DropDown="Option2"
         PART !!EnumPolicy_Part  DROPDOWNLIST
           VALUENAME "EnumPolicy"
           ITEMLIST
-            NAME !!ProxyServerDisabled_DropDown VALUE "one"
-            NAME !!ProxyServerAutoDetect_DropDown VALUE "two"
+            NAME !!EnumPolicy_ProxyServerDisabled_DropDown VALUE "one"
+            NAME !!EnumPolicy_ProxyServerAutoDetect_DropDown VALUE "two"
           END ITEMLIST
         END PART
       END POLICY
@@ -611,8 +617,8 @@ ProxyServerAutoDetect_DropDown="Option2"
         PART !!EnumPolicy_Part  DROPDOWNLIST
           VALUENAME "EnumPolicy"
           ITEMLIST
-            NAME !!ProxyServerDisabled_DropDown VALUE "one"
-            NAME !!ProxyServerAutoDetect_DropDown VALUE "two"
+            NAME !!EnumPolicy_ProxyServerDisabled_DropDown VALUE "one"
+            NAME !!EnumPolicy_ProxyServerAutoDetect_DropDown VALUE "two"
           END ITEMLIST
         END PART
       END POLICY
@@ -629,10 +635,11 @@ googlechrome="Google Chrome"
 googlechrome_recommended="Google Chrome - Recommended"
 EnumPolicy_Policy="Caption of policy."
 EnumPolicy_Explain="Description of policy.\\n\\n\
-Reference: https://www.chromium.org/administrators/policy-list-3#EnumPolicy"
+Reference: \
+https://cloud.google.com/docs/chrome-enterprise/policies/?policy=EnumPolicy"
 EnumPolicy_Part="Caption of policy."
-ProxyServerDisabled_DropDown="Option1"
-ProxyServerAutoDetect_DropDown="Option2"
+EnumPolicy_ProxyServerDisabled_DropDown="Option1"
+EnumPolicy_ProxyServerAutoDetect_DropDown="Option2"
 ''')
     self.CompareOutputs(output, expected_output)
 
@@ -700,7 +707,8 @@ chromium="Chromium"
 chromium_recommended="Chromium - Recommended"
 ListPolicy_Policy="Caption of list policy."
 ListPolicy_Explain="Description of list policy.\\nWith a newline.\\n\\n\
-Reference: https://www.chromium.org/administrators/policy-list-3#ListPolicy"
+Reference: \
+https://cloud.google.com/docs/chrome-enterprise/policies/?policy=ListPolicy"
 ListPolicy_Part="Label of list policy."
 ''')
     self.CompareOutputs(output, expected_output)
@@ -775,7 +783,8 @@ chromium="Chromium"
 chromium_recommended="Chromium - Recommended"
 ListPolicy_Policy="Caption of list policy."
 ListPolicy_Explain="Description of list policy.\\nWith a newline.\\n\\n\
-Reference: https://www.chromium.org/administrators/policy-list-3#ListPolicy"
+Reference: \
+https://cloud.google.com/docs/chrome-enterprise/policies/?policy=ListPolicy"
 ListPolicy_Part="Label of list policy."
 ''')
     self.CompareOutputs(output, expected_output)
@@ -842,8 +851,8 @@ chromium="Chromium"
 chromium_recommended="Chromium - Recommended"
 DictionaryPolicy_Policy="Caption of policy."
 DictionaryPolicy_Explain="Description of group.\\n\\n\
-Reference: https://www.chromium.org/administrators/\
-policy-list-3#DictionaryPolicy"
+Reference: \
+https://cloud.google.com/docs/chrome-enterprise/policies/?policy=DictionaryPolicy"
 DictionaryPolicy_Part="Caption of policy."
 ''')
     self.CompareOutputs(output, expected_output)
@@ -910,7 +919,8 @@ chromium="Chromium"
 chromium_recommended="Chromium - Recommended"
 ExternalPolicy_Policy="Caption of policy."
 ExternalPolicy_Explain="Description of group.\\n\\n\
-Reference: https://www.chromium.org/administrators/policy-list-3#ExternalPolicy"
+Reference: \
+https://cloud.google.com/docs/chrome-enterprise/policies/?policy=ExternalPolicy"
 ExternalPolicy_Part="Caption of policy."
 ''')
     self.CompareOutputs(output, expected_output)
@@ -1013,7 +1023,8 @@ googlechrome="Google Chrome"
 googlechrome_recommended="Google Chrome - Recommended"
 MainPolicy_Policy="Caption of main."
 MainPolicy_Explain="Description of main.\\n\\n\
-Reference: https://www.chromium.org/administrators/policy-list-3#MainPolicy"''')
+Reference: \
+https://cloud.google.com/docs/chrome-enterprise/policies/?policy=MainPolicy"''')
     self.CompareOutputs(output, expected_output)
 
   def testPolicyGroup(self):
@@ -1113,18 +1124,20 @@ chromium_recommended="Chromium - Recommended"
 Group1_Category="Caption of group."
 Policy1_Policy="Caption of policy1."
 Policy1_Explain="Description of policy1.\\nWith a newline.\\n\\n\
-Reference: https://www.chromium.org/administrators/policy-list-3#Policy1"
+Reference: \
+https://cloud.google.com/docs/chrome-enterprise/policies/?policy=Policy1"
 Policy1_Part="Caption of policy1."
 Policy2_Policy="Caption of policy2."
 Policy2_Explain="Description of policy2.\\nWith a newline.\\n\\n\
-Reference: https://www.chromium.org/administrators/policy-list-3#Policy2"
+Reference: \
+https://cloud.google.com/docs/chrome-enterprise/policies/?policy=Policy2"
 Policy2_Part="Caption of policy2."
 ''')
     self.CompareOutputs(output, expected_output)
 
   def testDuplicatedStringEnumPolicy(self):
-    # Verifies that duplicated enum constants get merged, and that
-    # string constants get escaped.
+    # Verifies that duplicated enum constants with different descriptions are
+    # allowed.
     policy_json = '''
       {
         'policy_definitions': [
@@ -1168,7 +1181,7 @@ Policy2_Part="Caption of policy2."
         PART !!EnumPolicy_A_Part  DROPDOWNLIST
           VALUENAME "EnumPolicy.A"
           ITEMLIST
-            NAME !!tls1_2_DropDown VALUE "tls1.2"
+            NAME !!EnumPolicy_A_tls1_2_DropDown VALUE "tls1.2"
           END ITEMLIST
         END PART
       END POLICY
@@ -1182,7 +1195,7 @@ Policy2_Part="Caption of policy2."
         PART !!EnumPolicy_B_Part  DROPDOWNLIST
           VALUENAME "EnumPolicy.B"
           ITEMLIST
-            NAME !!tls1_2_DropDown VALUE "tls1.2"
+            NAME !!EnumPolicy_B_tls1_2_DropDown VALUE "tls1.2"
           END ITEMLIST
         END PART
       END POLICY
@@ -1206,13 +1219,16 @@ googlechrome="Google Chrome"
 googlechrome_recommended="Google Chrome - Recommended"
 EnumPolicy_A_Policy="Caption of policy A."
 EnumPolicy_A_Explain="Description of policy A.\\n\\n\
-Reference: https://www.chromium.org/administrators/policy-list-3#EnumPolicy.A"
+Reference: \
+https://cloud.google.com/docs/chrome-enterprise/policies/?policy=EnumPolicy.A"
 EnumPolicy_A_Part="Caption of policy A."
-tls1_2_DropDown="tls1.2"
+EnumPolicy_A_tls1_2_DropDown="tls1.2"
 EnumPolicy_B_Policy="Caption of policy B."
 EnumPolicy_B_Explain="Description of policy B.\\n\\n\
-Reference: https://www.chromium.org/administrators/policy-list-3#EnumPolicy.B"
+Reference: \
+https://cloud.google.com/docs/chrome-enterprise/policies/?policy=EnumPolicy.B"
 EnumPolicy_B_Part="Caption of policy B."
+EnumPolicy_B_tls1_2_DropDown="tls1.2"
 ''')
     self.CompareOutputs(output, expected_output)
 

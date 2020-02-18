@@ -19,6 +19,7 @@ import android.util.SparseIntArray;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.document.ChromeIntentUtil;
 import org.chromium.chrome.browser.notifications.ChromeNotification;
 import org.chromium.chrome.browser.notifications.ChromeNotificationBuilder;
 import org.chromium.chrome.browser.notifications.NotificationBuilderFactory;
@@ -30,7 +31,6 @@ import org.chromium.chrome.browser.notifications.PendingIntentProvider;
 import org.chromium.chrome.browser.notifications.channels.ChannelDefinitions;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabWindowManager;
-import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.content_public.browser.WebContents;
 
 import java.net.MalformedURLException;
@@ -201,7 +201,7 @@ public class MediaCaptureNotificationService extends Service {
                         .setSmallIcon(getNotificationIconId(mediaType))
                         .setLocalOnly(true);
 
-        Intent tabIntent = IntentUtils.createBringTabToFrontIntent(notificationId);
+        Intent tabIntent = ChromeIntentUtil.createBringTabToFrontIntent(notificationId);
         if (tabIntent != null) {
             PendingIntentProvider contentIntent = PendingIntentProvider.getActivity(
                     ContextUtils.getApplicationContext(), notificationId, tabIntent, 0);
@@ -243,8 +243,12 @@ public class MediaCaptureNotificationService extends Service {
                                 R.string.media_notification_link_text, url));
             }
 
-            builder.setContentTitle(
-                    ContextUtils.getApplicationContext().getString(R.string.app_name));
+            // From Android N, notification by default has the app name and title should not be the
+            // same as app name.
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
+                builder.setContentTitle(
+                        ContextUtils.getApplicationContext().getString(R.string.app_name));
+            }
             contentText = descriptionText.toString();
         }
         builder.setContentText(contentText);

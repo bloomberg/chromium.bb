@@ -12,19 +12,35 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import("../../../gn/ipc_library.gni")
 import("../../../gn/perfetto.gni")
+import("../../../gn/proto_library.gni")
 
 # IPC service definitions.
-ipc_library("ipc") {
-  deps = [
-    "../common:lite",
-    "../config:lite",
+# Generates {producer,consumer}_port.ipc.{cc,h}
+perfetto_proto_library("@TYPE@") {
+  proto_generators = [
+    "ipc",
+    "cpp",
   ]
-  proto_in_dir = perfetto_root_path
-  proto_out_dir = perfetto_root_path
   sources = [
     "consumer_port.proto",
     "producer_port.proto",
+  ]
+  deps = [
+    # Deliberately :cpp and not :@TYPE@. In both cases (:gen and :cpp taraget)
+    # we want to depend on the "cpp" variants. This is because the generated
+    # .ipc.h depends on the .gen.h coming from the various common/xxx.proto.
+    "../common:cpp",
+    "../config:cpp",
+  ]
+}
+
+perfetto_proto_library("wire_protocol_@TYPE@") {
+  proto_generators = [
+    "zero",
+    "cpp",
+  ]
+  sources = [
+    "wire_protocol.proto",
   ]
 }

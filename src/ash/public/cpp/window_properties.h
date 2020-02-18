@@ -28,14 +28,20 @@ enum class WindowPinType;
 enum class WindowStateType;
 
 enum class BackdropWindowMode {
-  kEnabled,   // The window needs a backdrop shown behind it.
-  kDisabled,  // The window should never have a backdrop.
-  kAuto,  // The window manager decides if the window should have a backdrop.
+  kEnabled,     // The window needs a backdrop shown behind it.
+  kDisabled,    // The window should never have a backdrop.
+  kAutoOpaque,  // The window manager decides if the window should have a fully
+                // opaque backdrop.
+  kAutoSemiOpaque,  // The window needs a semi-opaque backdrop shown behind it.
 };
 
 // Shell-specific window property keys for use by ash and its clients.
 
 // Alphabetical sort.
+
+// A property key to store the app ID for the window's associated app.
+ASH_PUBLIC_EXPORT extern const aura::WindowProperty<std::string*>* const
+    kAppIDKey;
 
 // A property key to store the ARC package name for a window's associated
 // ARC app.

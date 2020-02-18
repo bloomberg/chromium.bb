@@ -266,18 +266,17 @@ class Browser(app.App):
   def supports_memory_metrics(self):
     return self._browser_backend.supports_memory_metrics
 
-  def LogSymbolizedUnsymbolizedMinidumps(self, log_level):
-    paths = self.GetAllUnsymbolizedMinidumpPaths()
-    if not paths:
-      logging.log(log_level, 'No unsymbolized minidump paths')
-      return
-    logging.log(log_level, 'Unsymbolized minidump paths: ' + str(paths))
-    for unsymbolized_path in paths:
-      sym = self.SymbolizeMinidump(unsymbolized_path)
-      if sym[0]:
-        logging.log(log_level, 'Symbolized minidump:\n%s', sym[1])
-      else:
-        logging.log(log_level, 'Minidump symbolization failed:%s\n', sym[1])
+  def CollectDebugData(self, log_level):
+    """Attempts to symbolize all currently unsymbolized minidumps and log them.
+
+    Platforms may override this to provide other crash information in addition
+    to the symbolized minidumps.
+
+    Args:
+      log_level: The logging level to use from the logging module, e.g.
+          logging.ERROR.
+    """
+    self._browser_backend.CollectDebugData(log_level)
 
   @exc_util.BestEffort
   def DumpStateUponFailure(self):
@@ -298,7 +297,7 @@ class Browser(app.App):
     logging.info(
         '********************* SYMBOLIZED MINIDUMP *********************')
     try:
-      self.LogSymbolizedUnsymbolizedMinidumps(logging.INFO)
+      self.CollectDebugData(logging.INFO)
     except Exception: # pylint: disable=broad-except
       logging.exception('Failed to get symbolized minidump:')
     logging.info(

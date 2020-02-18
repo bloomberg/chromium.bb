@@ -18,7 +18,7 @@ import {applyPatches, Patch} from 'immer';
 import * as MicroModal from 'micromodal';
 import * as m from 'mithril';
 
-import {assertExists} from '../base/logging';
+import {assertExists, reportError, setErrorHandler} from '../base/logging';
 import {forwardRemoteCalls} from '../base/remote';
 import {Actions} from '../common/actions';
 import {
@@ -29,13 +29,21 @@ import {
 } from '../common/logs';
 import {CurrentSearchResults, SearchSummary} from '../common/search_data';
 
-import {globals, QuantizedLoad, SliceDetails, ThreadDesc} from './globals';
+import {maybeShowErrorDialog} from './error_dialog';
+import {
+  CounterDetails,
+  globals,
+  HeapProfileDetails,
+  QuantizedLoad,
+  SliceDetails,
+  ThreadDesc
+} from './globals';
 import {HomePage} from './home_page';
 import {openBufferWithLegacyTraceViewer} from './legacy_trace_viewer';
 import {postMessageHandler} from './post_message_handler';
-import {RecordPage} from './record_page';
-import {updateAvailableAdbDevices} from './record_page';
+import {RecordPage, updateAvailableAdbDevices} from './record_page';
 import {Router} from './router';
+import {CheckHttpRpcConnection} from './rpc_http_dialog';
 import {ViewerPage} from './viewer_page';
 
 const EXTENSION_ID = 'lfmkphfpdbjijhpomgecfikhfohaoine';
@@ -111,9 +119,32 @@ class FrontendApi {
     this.redraw();
   }
 
-  publishLoading(loading: boolean) {
-    globals.loading = loading;
-    globals.rafScheduler.scheduleRedraw();
+  publishCounterDetails(click: CounterDetails) {
+    globals.counterDetails = click;
+    this.redraw();
+  }
+
+  publishHeapProfileDetails(click: HeapProfileDetails) {
+    globals.heapProfileDetails = click;
+    this.redraw();
+  }
+
+  publishFileDownload(args: {file: File, name?: string}) {
+    const url = URL.createObjectURL(args.file);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = args.name !== undefined ? args.name : args.file.name;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  publishLoading(numQueuedQueries: number) {
+    globals.numQueuedQueries = numQueuedQueries;
+    // TODO(hjd): Clean up loadingAnimation given that this now causes a full
+    // redraw anyways. Also this should probably just go via the global state.
+    globals.rafScheduler.scheduleFullRedraw();
   }
 
   // For opening JSON/HTML traces with the legacy catapult viewer.
@@ -174,25 +205,32 @@ function onExtensionMessage(message: object) {
 }
 
 function main() {
+  // Add Error handlers for JS error and for uncaught exceptions in promises.
+  setErrorHandler((err: string) => maybeShowErrorDialog(err));
+  window.addEventListener('error', e => reportError(e));
+  window.addEventListener('unhandledrejection', e => reportError(e));
+
   const controller = new Worker('controller_bundle.js');
-  controller.onerror = e => {
-    console.error(e);
-  };
   const frontendChannel = new MessageChannel();
   const controllerChannel = new MessageChannel();
   const extensionLocalChannel = new MessageChannel();
+  const errorReportingChannel = new MessageChannel();
 
+  errorReportingChannel.port2.onmessage = (e) =>
+      maybeShowErrorDialog(`${e.data}`);
 
   controller.postMessage(
       {
         frontendPort: frontendChannel.port1,
         controllerPort: controllerChannel.port1,
-        extensionPort: extensionLocalChannel.port1
+        extensionPort: extensionLocalChannel.port1,
+        errorReportingPort: errorReportingChannel.port1,
       },
       [
         frontendChannel.port1,
         controllerChannel.port1,
-        extensionLocalChannel.port1
+        extensionLocalChannel.port1,
+        errorReportingChannel.port1,
       ]);
 
   const dispatch =
@@ -210,8 +248,9 @@ function main() {
 
   // We proxy messages between the extension and the controller because the
   // controller's worker can't access chrome.runtime.
-  const extensionPort =
-      chrome.runtime ? chrome.runtime.connect(EXTENSION_ID) : undefined;
+  const extensionPort = window.chrome && chrome.runtime ?
+      chrome.runtime.connect(EXTENSION_ID) :
+      undefined;
 
   setExtensionAvailability(extensionPort !== undefined);
 
@@ -231,7 +270,12 @@ function main() {
   }
 
   updateAvailableAdbDevices();
-
+  try {
+    navigator.usb.addEventListener('connect', updateAvailableAdbDevices);
+    navigator.usb.addEventListener('disconnect', updateAvailableAdbDevices);
+  } catch (e) {
+    console.error('WebUSB API not supported');
+  }
   // This forwards the messages from the controller to the extension
   extensionLocalChannel.port2.onmessage = ({data}) => {
     if (extensionPort) extensionPort.postMessage(data);
@@ -251,9 +295,14 @@ function main() {
 
   // /?s=xxxx for permalinks.
   const stateHash = Router.param('s');
+  const urlHash = Router.param('url');
   if (stateHash) {
     globals.dispatch(Actions.loadPermalink({
       hash: stateHash,
+    }));
+  } else if (urlHash) {
+    globals.dispatch(Actions.openTraceFromUrl({
+      url: urlHash,
     }));
   }
 
@@ -265,6 +314,11 @@ function main() {
   router.navigateToCurrentHash();
 
   MicroModal.init();
+
+  // Will update the chip on the sidebar footer that notifies that the RPC is
+  // connected. Has no effect on the controller (which will repeat this check
+  // before creating a new engine).
+  CheckHttpRpcConnection();
 }
 
 main();

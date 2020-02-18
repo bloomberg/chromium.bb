@@ -9,7 +9,7 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "third_party/blink/public/mojom/devtools/console_message.mojom-blink.h"
+#include "third_party/blink/public/mojom/devtools/console_message.mojom-blink-forward.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
 #include "third_party/blink/renderer/modules/websockets/websocket_channel.h"
 #include "third_party/blink/renderer/platform/blob/blob_data.h"
@@ -22,8 +22,6 @@ class SourceLocation;
 
 class MockWebSocketChannel : public WebSocketChannel {
  public:
-  static MockWebSocketChannel* Create();
-
   MockWebSocketChannel();
   ~MockWebSocketChannel() override;
 
@@ -33,8 +31,8 @@ class MockWebSocketChannel : public WebSocketChannel {
                                             base::OnceClosure));
   MOCK_METHOD4(Send,
                WebSocketChannel::SendResult(const DOMArrayBuffer&,
-                                            unsigned,
-                                            unsigned,
+                                            size_t,
+                                            size_t,
                                             base::OnceClosure));
   MOCK_METHOD1(SendMock, void(BlobDataHandle*));
   void Send(scoped_refptr<BlobDataHandle> handle) override {
@@ -52,6 +50,7 @@ class MockWebSocketChannel : public WebSocketChannel {
     FailMock(reason, level, location.get());
   }
   MOCK_METHOD0(Disconnect, void());
+  MOCK_METHOD0(CancelHandshake, void());
   MOCK_METHOD0(ApplyBackpressure, void());
   MOCK_METHOD0(RemoveBackpressure, void());
 };

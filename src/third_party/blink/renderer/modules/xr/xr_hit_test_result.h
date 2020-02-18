@@ -9,15 +9,20 @@
 
 namespace blink {
 
-class XRHitTestOptions;
-class XRRigidTransform;
+class TransformationMatrix;
+class XRPose;
+class XRSpace;
 
 class XRHitTestResult : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  XRHitTestOptions* hitTestOptions() const;
-  XRRigidTransform* transform() const;
+  explicit XRHitTestResult(const TransformationMatrix& pose);
+
+  XRPose* getPose(XRSpace* relative_to);
+
+ private:
+  std::unique_ptr<TransformationMatrix> pose_;
 };
 
 }  // namespace blink

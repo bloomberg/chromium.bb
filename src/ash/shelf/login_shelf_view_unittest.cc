@@ -58,9 +58,9 @@ class LoginShelfViewTest : public LoginTestBase {
   ~LoginShelfViewTest() override = default;
 
   void SetUp() override {
-    action_background_controller_factory_ =
-        base::Bind(&LoginShelfViewTest::CreateActionBackgroundController,
-                   base::Unretained(this));
+    action_background_controller_factory_ = base::BindRepeating(
+        &LoginShelfViewTest::CreateActionBackgroundController,
+        base::Unretained(this));
     LockScreenActionBackgroundController::SetFactoryCallbackForTesting(
         &action_background_controller_factory_);
 
@@ -69,7 +69,7 @@ class LoginShelfViewTest : public LoginTestBase {
     LoginTestBase::SetUp();
     login_shelf_view_ = GetPrimaryShelf()->shelf_widget()->login_shelf_view();
     Shell::Get()->tray_action()->SetClient(
-        tray_action_client_.CreateInterfacePtrAndBind(),
+        tray_action_client_.CreateRemoteAndBind(),
         mojom::TrayActionState::kNotAvailable);
     // Set initial states.
     NotifySessionStateChanged(SessionState::OOBE);

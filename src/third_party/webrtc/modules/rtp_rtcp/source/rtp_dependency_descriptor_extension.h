@@ -15,8 +15,6 @@
 #include "api/array_view.h"
 #include "common_video/generic_frame_descriptor/generic_frame_info.h"
 #include "modules/rtp_rtcp/include/rtp_rtcp_defines.h"
-#include "modules/rtp_rtcp/source/rtp_dependency_descriptor_reader.h"
-#include "modules/rtp_rtcp/source/rtp_dependency_descriptor_writer.h"
 
 namespace webrtc {
 // Trait to read/write the dependency descriptor extension as described in
@@ -32,20 +30,14 @@ class RtpDependencyDescriptorExtension {
       "generic-frame-descriptor-02";
 
   static bool Parse(rtc::ArrayView<const uint8_t> data,
-                    RtpDependencyDescriptorReader* reader,
-                    DependencyDescriptor* descriptor) {
-    return reader->Parse(data, descriptor);
-  }
+                    const FrameDependencyStructure* structure,
+                    DependencyDescriptor* descriptor);
 
-  static size_t ValueSize(RtpDependencyDescriptorWriter* writer,
-                          const DependencyDescriptor& descriptor) {
-    return writer->ValueSizeBytes(descriptor);
-  }
+  static size_t ValueSize(const FrameDependencyStructure& structure,
+                          const DependencyDescriptor& descriptor);
   static bool Write(rtc::ArrayView<uint8_t> data,
-                    RtpDependencyDescriptorWriter* writer,
-                    const DependencyDescriptor& descriptor) {
-    return writer->Write(descriptor, data);
-  }
+                    const FrameDependencyStructure& structure,
+                    const DependencyDescriptor& descriptor);
 };
 
 }  // namespace webrtc

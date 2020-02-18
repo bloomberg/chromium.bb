@@ -5,14 +5,15 @@
 #include "components/mirroring/service/fake_network_service.h"
 
 #include "media/cast/test/utility/net_utility.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "services/network/test/test_url_loader_factory.h"
 
 namespace mirroring {
 
-MockUdpSocket::MockUdpSocket(network::mojom::UDPSocketRequest request,
-                             network::mojom::UDPSocketListenerPtr listener)
-    : binding_(this, std::move(request)), listener_(std::move(listener)) {}
+MockUdpSocket::MockUdpSocket(
+    mojo::PendingReceiver<network::mojom::UDPSocket> receiver,
+    mojo::PendingRemote<network::mojom::UDPSocketListener> listener)
+    : receiver_(this, std::move(receiver)), listener_(std::move(listener)) {}
 
 MockUdpSocket::~MockUdpSocket() {}
 
@@ -58,19 +59,19 @@ MockNetworkContext::MockNetworkContext(
 MockNetworkContext::~MockNetworkContext() {}
 
 void MockNetworkContext::CreateUDPSocket(
-    network::mojom::UDPSocketRequest request,
-    network::mojom::UDPSocketListenerPtr listener) {
+    mojo::PendingReceiver<network::mojom::UDPSocket> receiver,
+    mojo::PendingRemote<network::mojom::UDPSocketListener> listener) {
   udp_socket_ =
-      std::make_unique<MockUdpSocket>(std::move(request), std::move(listener));
+      std::make_unique<MockUdpSocket>(std::move(receiver), std::move(listener));
   OnUDPSocketCreated();
 }
 
 void MockNetworkContext::CreateURLLoaderFactory(
-    network::mojom::URLLoaderFactoryRequest request,
+    mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver,
     network::mojom::URLLoaderFactoryParamsPtr params) {
   ASSERT_TRUE(params);
-  mojo::MakeStrongBinding(std::make_unique<network::TestURLLoaderFactory>(),
-                          std::move(request));
+  mojo::MakeSelfOwnedReceiver(std::make_unique<network::TestURLLoaderFactory>(),
+                              std::move(receiver));
 }
 
 }  // namespace mirroring

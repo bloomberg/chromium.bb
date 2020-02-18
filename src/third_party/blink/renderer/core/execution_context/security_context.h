@@ -32,8 +32,10 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "services/network/public/mojom/ip_address_space.mojom-blink-forward.h"
+#include "third_party/blink/public/common/feature_policy/document_policy.h"
 #include "third_party/blink/public/common/frame/sandbox_flags.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink-forward.h"
+#include "third_party/blink/public/mojom/feature_policy/feature_policy_feature.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/web_insecure_request_policy.h"
 #include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -70,7 +72,7 @@ class CORE_EXPORT SecurityContext : public GarbageCollectedMixin {
   void Trace(blink::Visitor*) override;
 
   using InsecureNavigationsSet = HashSet<unsigned, WTF::AlreadyHashed>;
-  static WebVector<unsigned> SerializeInsecureNavigationSet(
+  static WTF::Vector<unsigned> SerializeInsecureNavigationSet(
       const InsecureNavigationsSet&);
 
   const SecurityOrigin* GetSecurityOrigin() const {
@@ -124,11 +126,6 @@ class CORE_EXPORT SecurityContext : public GarbageCollectedMixin {
     return insecure_request_policy_;
   }
 
-  void SetMixedAutoupgradeOptOut(bool opt_out) {
-    mixed_autoupgrade_opt_out_ = opt_out;
-  }
-  bool GetMixedAutoUpgradeOptOut() const { return mixed_autoupgrade_opt_out_; }
-
   const FeaturePolicy* GetFeaturePolicy() const {
     return feature_policy_.get();
   }
@@ -137,6 +134,12 @@ class CORE_EXPORT SecurityContext : public GarbageCollectedMixin {
       const ParsedFeaturePolicy& parsed_report_only_header,
       const ParsedFeaturePolicy& container_policy,
       const FeaturePolicy* parent_feature_policy);
+
+  const DocumentPolicy* GetDocumentPolicy() const {
+    return document_policy_.get();
+  }
+  void SetDocumentPolicyForTesting(
+      std::unique_ptr<DocumentPolicy> document_policy);
 
   // Tests whether the policy-controlled feature is enabled in this frame.
   // Optionally sends a report to any registered reporting observers or
@@ -178,13 +181,13 @@ class CORE_EXPORT SecurityContext : public GarbageCollectedMixin {
   scoped_refptr<SecurityOrigin> security_origin_;
   std::unique_ptr<FeaturePolicy> feature_policy_;
   std::unique_ptr<FeaturePolicy> report_only_feature_policy_;
+  std::unique_ptr<DocumentPolicy> document_policy_;
 
  private:
   Member<ContentSecurityPolicy> content_security_policy_;
 
   network::mojom::IPAddressSpace address_space_;
   WebInsecureRequestPolicy insecure_request_policy_;
-  bool mixed_autoupgrade_opt_out_;
   InsecureNavigationsSet insecure_navigations_to_upgrade_;
   bool require_safe_types_;
   DISALLOW_COPY_AND_ASSIGN(SecurityContext);

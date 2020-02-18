@@ -23,6 +23,7 @@
 #include "third_party/blink/renderer/core/html/forms/file_input_type.h"
 
 #include "third_party/blink/public/platform/file_path_conversion.h"
+#include "third_party/blink/public/strings/grit/blink_strings.h"
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
@@ -39,6 +40,7 @@
 #include "third_party/blink/renderer/core/layout/layout_file_upload_control.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/drag_data.h"
+#include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/file_metadata.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
@@ -50,9 +52,7 @@
 
 namespace blink {
 
-using blink::WebLocalizedString;
 using mojom::blink::FileChooserParams;
-using namespace html_names;
 
 namespace {
 
@@ -132,7 +132,8 @@ void FileInputType::AppendToFormData(FormData& form_data) const {
   FileList* file_list = GetElement().files();
   unsigned num_files = file_list->length();
   if (num_files == 0) {
-    form_data.AppendFromElement(GetElement().GetName(), File::Create(""));
+    form_data.AppendFromElement(GetElement().GetName(),
+                                MakeGarbageCollected<File>(""));
     return;
   }
 
@@ -147,9 +148,8 @@ bool FileInputType::ValueMissing(const String& value) const {
 
 String FileInputType::ValueMissingText() const {
   return GetLocale().QueryString(
-      GetElement().Multiple()
-          ? WebLocalizedString::kValidationValueMissingForMultipleFile
-          : WebLocalizedString::kValidationValueMissingForFile);
+      GetElement().Multiple() ? IDS_FORM_VALIDATION_VALUE_MISSING_MULTIPLE_FILE
+                              : IDS_FORM_VALIDATION_VALUE_MISSING_FILE);
 }
 
 void FileInputType::HandleDOMActivateEvent(Event& event) {
@@ -168,12 +168,20 @@ void FileInputType::HandleDOMActivateEvent(Event& event) {
     return;
   }
 
+  bool intercepted = false;
+  probe::FileChooserOpened(document.GetFrame(), &input, &intercepted);
+  if (intercepted) {
+    event.SetDefaultHandled();
+    return;
+  }
+
   if (ChromeClient* chrome_client = GetChromeClient()) {
     FileChooserParams params;
-    bool is_directory = input.FastHasAttribute(kWebkitdirectoryAttr);
+    bool is_directory =
+        input.FastHasAttribute(html_names::kWebkitdirectoryAttr);
     if (is_directory)
       params.mode = FileChooserParams::Mode::kUploadFolder;
-    else if (input.FastHasAttribute(kMultipleAttr))
+    else if (input.FastHasAttribute(html_names::kMultipleAttr))
       params.mode = FileChooserParams::Mode::kOpenMultiple;
     else
       params.mode = FileChooserParams::Mode::kOpen;
@@ -182,14 +190,13 @@ void FileInputType::HandleDOMActivateEvent(Event& event) {
     params.accept_types = CollectAcceptTypes(input);
     params.selected_files = file_list_->PathsForUserVisibleFiles();
     params.use_media_capture = RuntimeEnabledFeatures::MediaCaptureEnabled() &&
-                               input.FastHasAttribute(kCaptureAttr);
+                               input.FastHasAttribute(html_names::kCaptureAttr);
     params.requestor = document.Url();
 
     UseCounter::Count(
         document, document.IsSecureContext()
                       ? WebFeature::kInputTypeFileSecureOriginOpenChooser
                       : WebFeature::kInputTypeFileInsecureOriginOpenChooser);
-
     chrome_client->OpenFileChooser(document.GetFrame(), NewFileChooser(params));
   }
   event.SetDefaultHandled();
@@ -289,7 +296,8 @@ FileList* FileInputType::CreateFileList(const FileChooserFileInfoList& files,
     } else {
       const auto& fs_info = file->get_file_system();
       FileMetadata metadata;
-      metadata.modification_time = fs_info->modification_time.ToJsTime();
+      metadata.modification_time =
+          NullableTimeToOptionalTime(fs_info->modification_time);
       metadata.length = fs_info->length;
       metadata.type = FileMetadata::kTypeFile;
       file_list->Append(File::CreateForFileSystemFile(fs_info->url, metadata,
@@ -313,11 +321,10 @@ void FileInputType::CreateShadowSubtree() {
       GetElement().GetDocument(), CreateElementFlags());
   button->setType(input_type_names::kButton);
   button->setAttribute(
-      kValueAttr,
+      html_names::kValueAttr,
       AtomicString(GetLocale().QueryString(
-          GetElement().Multiple()
-              ? WebLocalizedString::kFileButtonChooseMultipleFilesLabel
-              : WebLocalizedString::kFileButtonChooseFileLabel)));
+          GetElement().Multiple() ? IDS_FORM_MULTIPLE_FILES_BUTTON_LABEL
+                                  : IDS_FORM_FILE_BUTTON_LABEL)));
   button->SetShadowPseudoId(AtomicString("-webkit-file-upload-button"));
   GetElement().UserAgentShadowRoot()->AppendChild(button);
 }
@@ -328,7 +335,7 @@ void FileInputType::DisabledAttributeChanged() {
         IsA<Element>(GetElement().UserAgentShadowRoot()->firstChild()));
   if (Element* button =
           To<Element>(GetElement().UserAgentShadowRoot()->firstChild()))
-    button->SetBooleanAttribute(kDisabledAttr,
+    button->SetBooleanAttribute(html_names::kDisabledAttr,
                                 GetElement().IsDisabledFormControl());
 }
 
@@ -337,13 +344,13 @@ void FileInputType::MultipleAttributeChanged() {
   CHECK(!GetElement().UserAgentShadowRoot()->firstChild() ||
         IsA<Element>(GetElement().UserAgentShadowRoot()->firstChild()));
   if (Element* button =
-          To<Element>(GetElement().UserAgentShadowRoot()->firstChild()))
+          To<Element>(GetElement().UserAgentShadowRoot()->firstChild())) {
     button->setAttribute(
-        kValueAttr,
+        html_names::kValueAttr,
         AtomicString(GetLocale().QueryString(
-            GetElement().Multiple()
-                ? WebLocalizedString::kFileButtonChooseMultipleFilesLabel
-                : WebLocalizedString::kFileButtonChooseFileLabel)));
+            GetElement().Multiple() ? IDS_FORM_MULTIPLE_FILES_BUTTON_LABEL
+                                    : IDS_FORM_FILE_BUTTON_LABEL)));
+  }
 }
 
 bool FileInputType::SetFiles(FileList* files) {
@@ -379,6 +386,9 @@ void FileInputType::SetFilesAndDispatchEvents(FileList* files) {
     // input instance is safe since it is ref-counted.
     GetElement().DispatchInputEvent();
     GetElement().DispatchChangeEvent();
+    if (AXObjectCache* cache =
+            GetElement().GetDocument().ExistingAXObjectCache())
+      cache->HandleValueChanged(&GetElement());
   }
 }
 
@@ -419,7 +429,7 @@ void FileInputType::SetFilesFromPaths(const Vector<String>& paths) {
     return;
 
   HTMLInputElement& input = GetElement();
-  if (input.FastHasAttribute(kWebkitdirectoryAttr)) {
+  if (input.FastHasAttribute(html_names::kWebkitdirectoryAttr)) {
     SetFilesFromDirectory(paths[0]);
     return;
   }
@@ -428,7 +438,7 @@ void FileInputType::SetFilesFromPaths(const Vector<String>& paths) {
   for (const auto& path : paths)
     files.push_back(CreateFileChooserFileInfoNative(path));
 
-  if (input.FastHasAttribute(kMultipleAttr)) {
+  if (input.FastHasAttribute(html_names::kMultipleAttr)) {
     FilesChosen(std::move(files), base::FilePath());
   } else {
     FileChooserFileInfoList first_file_only;
@@ -443,7 +453,7 @@ bool FileInputType::ReceiveDroppedFiles(const DragData* drag_data) {
   if (paths.IsEmpty())
     return false;
 
-  if (!GetElement().FastHasAttribute(kWebkitdirectoryAttr)) {
+  if (!GetElement().FastHasAttribute(html_names::kWebkitdirectoryAttr)) {
     dropped_file_system_id_ = drag_data->DroppedFileSystemId();
   }
   SetFilesFromPaths(paths);
@@ -458,8 +468,7 @@ String FileInputType::DefaultToolTip(const InputTypeView&) const {
   FileList* file_list = file_list_.Get();
   unsigned list_size = file_list->length();
   if (!list_size) {
-    return GetLocale().QueryString(
-        WebLocalizedString::kFileButtonNoFileSelectedLabel);
+    return GetLocale().QueryString(IDS_FORM_FILE_NO_FILE_LABEL);
   }
 
   StringBuilder names;
@@ -479,7 +488,7 @@ void FileInputType::CopyNonAttributeProperties(const HTMLInputElement& source) {
 }
 
 void FileInputType::HandleKeypressEvent(KeyboardEvent& event) {
-  if (GetElement().FastHasAttribute(kWebkitdirectoryAttr)) {
+  if (GetElement().FastHasAttribute(html_names::kWebkitdirectoryAttr)) {
     // Override to invoke the action on Enter key up (not press) to avoid
     // repeats committing the file chooser.
     if (event.key() == "Enter") {
@@ -491,7 +500,7 @@ void FileInputType::HandleKeypressEvent(KeyboardEvent& event) {
 }
 
 void FileInputType::HandleKeyupEvent(KeyboardEvent& event) {
-  if (GetElement().FastHasAttribute(kWebkitdirectoryAttr)) {
+  if (GetElement().FastHasAttribute(html_names::kWebkitdirectoryAttr)) {
     // Override to invoke the action on Enter key up (not press) to avoid
     // repeats committing the file chooser.
     if (event.key() == "Enter") {

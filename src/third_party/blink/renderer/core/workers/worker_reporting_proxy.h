@@ -32,7 +32,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_WORKER_REPORTING_PROXY_H_
 
 #include <memory>
-#include "third_party/blink/public/mojom/devtools/console_message.mojom-blink.h"
+#include "third_party/blink/public/mojom/devtools/console_message.mojom-blink-forward.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/frame/web_feature_forward.h"
@@ -74,17 +74,13 @@ class CORE_EXPORT WorkerReportingProxy {
   // via ResourceLoader. Called before WillEvaluateClassicScript().
   virtual void DidLoadClassicScript() {}
 
-  // Invoked when it's failed to load the worker's main script on the worker
-  // thread.
-  virtual void DidFailToLoadClassicScript() {}
-
   // Invoked on success to fetch the worker's main classic/module script from
   // network. This is not called when the script is loaded from
   // InstalledScriptsManager.
   virtual void DidFetchScript() {}
 
-  // Invoked on failure to fetch the worker's classic script from network. This
-  // is not called when the script is loaded from InstalledScriptsManager.
+  // Invoked on failure to fetch the worker's classic script (either from
+  // network or InstalledScriptsManager).
   virtual void DidFailToFetchClassicScript() {}
 
   // Invoked on failure to fetch the worker's module script (either from network

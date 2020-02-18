@@ -10,6 +10,7 @@ import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.PackageUtils;
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.metrics.WebApkUma;
@@ -83,6 +84,12 @@ public class WebApkInstaller {
                         new WebappRegistry.FetchWebappDataStorageCallback() {
                             @Override
                             public void onWebappDataStorageRetrieved(WebappDataStorage storage) {
+                                WebApkInfo webApkInfo = WebApkInfo.create(packageName, null, source,
+                                        false /* forceNavigation */,
+                                        false /* canUseSplashFromContentProvider */,
+                                        null /* shareData */,
+                                        null /* shareDataActivityClassName */);
+                                storage.updateFromWebappInfo(webApkInfo);
                                 storage.updateSource(source);
                                 storage.updateTimeOfLastCheckForUpdatedWebManifest();
                             }
@@ -94,7 +101,8 @@ public class WebApkInstaller {
 
     private void notify(@WebApkInstallResult int result) {
         if (mNativePointer != 0) {
-            nativeOnInstallFinished(mNativePointer, result);
+            WebApkInstallerJni.get().onInstallFinished(
+                    mNativePointer, WebApkInstaller.this, result);
         }
     }
 
@@ -140,7 +148,8 @@ public class WebApkInstaller {
 
             @Override
             protected void onPostExecute(Integer result) {
-                nativeOnGotSpaceStatus(mNativePointer, result);
+                WebApkInstallerJni.get().onGotSpaceStatus(
+                        mNativePointer, WebApkInstaller.this, result);
             }
         }
                 .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
@@ -150,7 +159,10 @@ public class WebApkInstaller {
         return PackageUtils.isPackageInstalled(ContextUtils.getApplicationContext(), packageName);
     }
 
-    private native void nativeOnInstallFinished(
-            long nativeWebApkInstaller, @WebApkInstallResult int result);
-    private native void nativeOnGotSpaceStatus(long nativeWebApkInstaller, int status);
+    @NativeMethods
+    interface Natives {
+        void onInstallFinished(long nativeWebApkInstaller, WebApkInstaller caller,
+                @WebApkInstallResult int result);
+        void onGotSpaceStatus(long nativeWebApkInstaller, WebApkInstaller caller, int status);
+    }
 }

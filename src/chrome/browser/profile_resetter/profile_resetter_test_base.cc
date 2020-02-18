@@ -26,7 +26,7 @@ void ProfileResetterMockObject::RunLoop() {
   EXPECT_CALL(*this, Callback());
   runner_ = new content::MessageLoopRunner;
   runner_->Run();
-  runner_ = NULL;
+  runner_.reset();
 }
 
 void ProfileResetterMockObject::StopLoop() {
@@ -67,5 +67,5 @@ std::unique_ptr<KeyedService> CreateTemplateURLServiceForTesting(
       profile->GetPrefs(), std::make_unique<UIThreadSearchTermsData>(),
       WebDataServiceFactory::GetKeywordWebDataForProfile(
           profile, ServiceAccessType::EXPLICIT_ACCESS),
-      nullptr, nullptr, base::Closure());
+      nullptr /* TemplateURLServiceClient */, base::Closure());
 }

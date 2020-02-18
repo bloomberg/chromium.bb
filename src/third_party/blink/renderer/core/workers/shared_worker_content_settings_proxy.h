@@ -7,7 +7,7 @@
 
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "third_party/blink/public/mojom/worker/worker_content_settings_proxy.mojom-blink.h"
+#include "third_party/blink/public/mojom/worker/worker_content_settings_proxy.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/web_content_settings_client.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
@@ -24,8 +24,9 @@ class SharedWorkerContentSettingsProxy : public WebContentSettingsClient {
   ~SharedWorkerContentSettingsProxy() override;
 
   // WebContentSettingsClient overrides.
-  bool AllowIndexedDB(const WebSecurityOrigin&) override;
-  bool AllowCacheStorage(const WebSecurityOrigin&) override;
+  bool AllowIndexedDB() override;
+  bool AllowCacheStorage() override;
+  bool AllowWebLocks() override;
   bool RequestFileSystemAccessSync() override;
 
  private:

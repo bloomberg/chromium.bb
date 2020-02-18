@@ -11,6 +11,16 @@
 namespace ash {
 namespace features {
 
+// Enables the UI to support Ambient EQ if the device supports it.
+// See https://crbug.com/1021193 for more details.
+ASH_PUBLIC_EXPORT extern const base::Feature kAllowAmbientEQ;
+
+// Enables the Auto Night Light feature which sets the default schedule type to
+// sunset-to-sunrise until the user changes it to something else. This feature
+// is not exposed to the end user, and is enabled only via cros_config for
+// certain devices.
+ASH_PUBLIC_EXPORT extern const base::Feature kAutoNightLight;
+
 // Enables the docked (a.k.a. picture-in-picture) magnifier.
 // TODO(afakhry): Remove this after the feature is fully launched.
 // https://crbug.com/709824.
@@ -72,8 +82,15 @@ ASH_PUBLIC_EXPORT extern const base::Feature kNotificationExpansionAnimation;
 // Enables notification scroll bar in UnifiedSystemTray.
 ASH_PUBLIC_EXPORT extern const base::Feature kNotificationScrollBar;
 
+// Enables using a cross fade animation for the wallpaper blur for overview
+// mode.
+ASH_PUBLIC_EXPORT extern const base::Feature kOverviewCrossFadeWallpaperBlur;
+
 // Enables rounded corners for the Picture-in-picture window.
 ASH_PUBLIC_EXPORT extern const base::Feature kPipRoundedCorners;
+
+// Enables suppression of Displays notifications other than resolution change.
+ASH_PUBLIC_EXPORT extern const base::Feature kReduceDisplayNotifications;
 
 // Enables displaying separate network icons for different networks types.
 // https://crbug.com/902409
@@ -91,20 +108,11 @@ ASH_PUBLIC_EXPORT extern const base::Feature kViewsLogin;
 // Enables the Virtual Desks feature.
 ASH_PUBLIC_EXPORT extern const base::Feature kVirtualDesks;
 
-// Enables the touchpad 3-finger gestures to switch desks. It also changes tab
-// scrubbing as well as overview highlight to use 4-finger gestures.
-// This flag is only effective if the Virtual Desks feature is enabled (see
-// `kVirtualDesks`).
-ASH_PUBLIC_EXPORT extern const base::Feature kVirtualDesksGestures;
-
 // Enables using the BluetoothSystem Mojo interface for Bluetooth operations.
 ASH_PUBLIC_EXPORT extern const base::Feature kUseBluetoothSystemInAsh;
 
 // Enables the Supervised User Deprecation notices.
 ASH_PUBLIC_EXPORT extern const base::Feature kSupervisedUserDeprecationNotice;
-
-// Enables pagination for feature pod buttons in the system tray
-ASH_PUBLIC_EXPORT extern const base::Feature kSystemTrayFeaturePodsPagination;
 
 // Enables side volume button control based on screen orientation feature.
 // TODO(https://crbug.com/937907): Remove this after the feature is fully
@@ -112,9 +120,28 @@ ASH_PUBLIC_EXPORT extern const base::Feature kSystemTrayFeaturePodsPagination;
 ASH_PUBLIC_EXPORT extern const base::Feature
     kSwapSideVolumeButtonsForOrientation;
 
+// Enables background blur for the app list, shelf, unified system tray,
+// autoclick menu, etc. Also enables the AppsGridView mask layer, slower devices
+// may have choppier app list animations while in this mode. crbug.com/765292.
+ASH_PUBLIC_EXPORT extern const base::Feature kEnableBackgroundBlur;
+
 // Enables refactored UnifiedMessageCenter which is completely separated from
 // the UnifiedSystemTrayView.
 ASH_PUBLIC_EXPORT extern const base::Feature kUnifiedMessageCenterRefactor;
+
+// Enables going back to previous page while swiping from the left edge of the
+// display. Only for tablet mode.
+ASH_PUBLIC_EXPORT extern const base::Feature kSwipingFromLeftEdgeToGoBack;
+
+// Enables dragging from shelf to enter home screen or overview feature.
+// Only for tablet mode.
+// TODO(https://crbug.com/992642): Remove this after this feature is fully
+// launched.
+ASH_PUBLIC_EXPORT extern const base::Feature kDragFromShelfToHomeOrOverview;
+
+ASH_PUBLIC_EXPORT bool IsAllowAmbientEQEnabled();
+
+ASH_PUBLIC_EXPORT bool IsAutoNightLightEnabled();
 
 ASH_PUBLIC_EXPORT bool IsHideArcMediaNotificationsEnabled();
 
@@ -142,15 +169,19 @@ ASH_PUBLIC_EXPORT bool IsViewsLoginEnabled();
 
 ASH_PUBLIC_EXPORT bool IsVirtualDesksEnabled();
 
-ASH_PUBLIC_EXPORT bool IsVirtualDesksGesturesEnabled();
-
 ASH_PUBLIC_EXPORT bool IsSupervisedUserDeprecationNoticeEnabled();
-
-ASH_PUBLIC_EXPORT bool IsSystemTrayFeaturePodsPaginationEnabled();
 
 ASH_PUBLIC_EXPORT bool IsSwapSideVolumeButtonsForOrientationEnabled();
 
 ASH_PUBLIC_EXPORT bool IsUnifiedMessageCenterRefactorEnabled();
+
+ASH_PUBLIC_EXPORT bool IsBackgroundBlurEnabled();
+
+ASH_PUBLIC_EXPORT bool IsSwipingFromLeftEdgeToGoBackEnabled();
+
+ASH_PUBLIC_EXPORT bool IsDragFromShelfToHomeOrOverviewEnabled();
+
+ASH_PUBLIC_EXPORT bool IsReduceDisplayNotificationsEnabled();
 
 }  // namespace features
 }  // namespace ash

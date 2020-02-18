@@ -29,7 +29,10 @@
 #include "components/viz/service/viz_service_export.h"
 #include "media/base/video_frame.h"
 #include "media/capture/content/video_capture_oracle.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/viz/privileged/mojom/compositing/frame_sink_video_capture.mojom.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/vector2d_f.h"
@@ -71,11 +74,12 @@ class VIZ_SERVICE_EXPORT FrameSinkVideoCapturerImpl final
       public mojom::FrameSinkVideoCapturer {
  public:
   // |frame_sink_manager| must outlive this instance. Binds this instance to the
-  // Mojo message pipe endpoint in |request|, but |request| may be empty for
+  // Mojo message pipe endpoint in |receiver|, but |receiver| may be empty for
   // unit testing.
-  FrameSinkVideoCapturerImpl(FrameSinkVideoCapturerManager* frame_sink_manager,
-                             mojom::FrameSinkVideoCapturerRequest request,
-                             std::unique_ptr<media::VideoCaptureOracle> oracle);
+  FrameSinkVideoCapturerImpl(
+      FrameSinkVideoCapturerManager* frame_sink_manager,
+      mojo::PendingReceiver<mojom::FrameSinkVideoCapturer> receiver,
+      std::unique_ptr<media::VideoCaptureOracle> oracle);
 
   ~FrameSinkVideoCapturerImpl() final;
 
@@ -106,11 +110,12 @@ class VIZ_SERVICE_EXPORT FrameSinkVideoCapturerImpl final
                                 bool use_fixed_aspect_ratio) final;
   void SetAutoThrottlingEnabled(bool enabled) final;
   void ChangeTarget(const base::Optional<FrameSinkId>& frame_sink_id) final;
-  void Start(mojom::FrameSinkVideoConsumerPtr consumer) final;
+  void Start(mojo::PendingRemote<mojom::FrameSinkVideoConsumer> consumer) final;
   void Stop() final;
   void RequestRefreshFrame() final;
   void CreateOverlay(int32_t stacking_index,
-                     mojom::FrameSinkVideoCaptureOverlayRequest request) final;
+                     mojo::PendingReceiver<mojom::FrameSinkVideoCaptureOverlay>
+                         receiver) final;
 
   // Default configuration.
   static constexpr media::VideoPixelFormat kDefaultPixelFormat =
@@ -225,8 +230,8 @@ class VIZ_SERVICE_EXPORT FrameSinkVideoCapturerImpl final
   // Owner/Manager of this instance.
   FrameSinkVideoCapturerManager* const frame_sink_manager_;
 
-  // Mojo binding for this instance.
-  mojo::Binding<mojom::FrameSinkVideoCapturer> binding_;
+  // Mojo receiver for this instance.
+  mojo::Receiver<mojom::FrameSinkVideoCapturer> receiver_{this};
 
   // Represents this instance as an issuer of CopyOutputRequests. The Surface
   // uses this to auto-cancel stale requests (i.e., prior requests that did not
@@ -256,7 +261,7 @@ class VIZ_SERVICE_EXPORT FrameSinkVideoCapturerImpl final
 
   // The current video frame consumer. This is set when Start() is called and
   // cleared when Stop() is called.
-  mojom::FrameSinkVideoConsumerPtr consumer_;
+  mojo::Remote<mojom::FrameSinkVideoConsumer> consumer_;
 
   // The portion of the source content that has changed, but has not yet been
   // captured.
@@ -317,6 +322,10 @@ class VIZ_SERVICE_EXPORT FrameSinkVideoCapturerImpl final
   // is rendered. This is important because alpha blending between overlays can
   // make a difference in the overall results.
   base::flat_map<int32_t, std::unique_ptr<VideoCaptureOverlay>> overlays_;
+
+  // The visible height of the top-controls in the last CompositorFrameMetadata
+  // received.
+  double last_top_controls_visible_height_ = 0.f;
 
   // This class assumes its control operations and async callbacks won't execute
   // simultaneously.

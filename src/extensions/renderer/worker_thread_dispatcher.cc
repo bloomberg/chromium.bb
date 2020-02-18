@@ -35,6 +35,12 @@ base::LazyInstance<WorkerThreadDispatcher>::DestructorAtExit
 base::LazyInstance<base::ThreadLocalPointer<extensions::ServiceWorkerData>>::
     DestructorAtExit g_data_tls = LAZY_INSTANCE_INITIALIZER;
 
+ServiceWorkerData* GetServiceWorkerDataChecked() {
+  ServiceWorkerData* data = WorkerThreadDispatcher::GetServiceWorkerData();
+  DCHECK(data);
+  return data;
+}
+
 }  // namespace
 
 WorkerThreadDispatcher::WorkerThreadDispatcher() {}
@@ -54,24 +60,22 @@ void WorkerThreadDispatcher::Init(content::RenderThread* render_thread) {
 
 // static
 NativeExtensionBindingsSystem* WorkerThreadDispatcher::GetBindingsSystem() {
-  return GetServiceWorkerData()->bindings_system();
+  return GetServiceWorkerDataChecked()->bindings_system();
 }
 
 // static
 V8SchemaRegistry* WorkerThreadDispatcher::GetV8SchemaRegistry() {
-  return GetServiceWorkerData()->v8_schema_registry();
+  return GetServiceWorkerDataChecked()->v8_schema_registry();
 }
 
 // static
 ScriptContext* WorkerThreadDispatcher::GetScriptContext() {
-  return GetServiceWorkerData()->context();
+  return GetServiceWorkerDataChecked()->context();
 }
 
 // static
 ServiceWorkerData* WorkerThreadDispatcher::GetServiceWorkerData() {
-  ServiceWorkerData* data = g_data_tls.Pointer()->Get();
-  DCHECK(data);
-  return data;
+  return g_data_tls.Pointer()->Get();
 }
 
 // static
@@ -112,16 +116,9 @@ bool WorkerThreadDispatcher::OnControlMessageReceived(
     CHECK(found);
     if (worker_thread_id == kMainThreadId)
       return false;
-    base::TaskRunner* runner = GetTaskRunnerFor(worker_thread_id);
-    // The TaskRunner may have been destroyed, for example, if the extension
-    // was unloaded, so check before trying to post a task.
-    if (runner == nullptr)
-      return false;
-    bool task_posted = runner->PostTask(
-        FROM_HERE, base::BindOnce(&WorkerThreadDispatcher::ForwardIPC,
-                                  worker_thread_id, message));
-    DCHECK(task_posted) << "Could not PostTask IPC to worker thread.";
-    return true;
+    return PostTaskToWorkerThread(
+        worker_thread_id, base::BindOnce(&WorkerThreadDispatcher::ForwardIPC,
+                                         worker_thread_id, message));
   }
   return false;
 }
@@ -146,6 +143,13 @@ void WorkerThreadDispatcher::OnMessageReceivedOnWorkerThread(
     int worker_thread_id,
     const IPC::Message& message) {
   CHECK_EQ(content::WorkerThread::GetCurrentId(), worker_thread_id);
+
+  // If the worker state was already destroyed via
+  // Dispatcher::WillDestroyServiceWorkerContextOnWorkerThread, then
+  // drop this IPC. See https://crbug.com/1008143 for details.
+  if (!GetServiceWorkerData())
+    return;
+
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(WorkerThreadDispatcher, message)
     IPC_MESSAGE_HANDLER(ExtensionMsg_ResponseWorker, OnResponseWorker)
@@ -160,11 +164,16 @@ void WorkerThreadDispatcher::OnMessageReceivedOnWorkerThread(
   CHECK(handled);
 }
 
-base::TaskRunner* WorkerThreadDispatcher::GetTaskRunnerFor(
-    int worker_thread_id) {
+bool WorkerThreadDispatcher::PostTaskToWorkerThread(int worker_thread_id,
+                                                    base::OnceClosure task) {
   base::AutoLock lock(task_runner_map_lock_);
   auto it = task_runner_map_.find(worker_thread_id);
-  return it == task_runner_map_.end() ? nullptr : it->second;
+  if (it == task_runner_map_.end())
+    return false;
+
+  bool task_posted = it->second->PostTask(FROM_HERE, std::move(task));
+  DCHECK(task_posted) << "Could not PostTask IPC to worker thread.";
+  return task_posted;
 }
 
 bool WorkerThreadDispatcher::Send(IPC::Message* message) {
@@ -199,8 +208,10 @@ void WorkerThreadDispatcher::OnDispatchEvent(
   }
   data->bindings_system()->DispatchEventInContext(
       params.event_name, &event_args, &params.filtering_info, data->context());
-  Send(new ExtensionHostMsg_EventAckWorker(data->service_worker_version_id(),
-                                           params.event_id));
+  const int worker_thread_id = content::WorkerThread::GetCurrentId();
+  Send(new ExtensionHostMsg_EventAckWorker(data->context()->GetExtensionID(),
+                                           data->service_worker_version_id(),
+                                           worker_thread_id, params.event_id));
 }
 
 void WorkerThreadDispatcher::OnDispatchOnConnect(

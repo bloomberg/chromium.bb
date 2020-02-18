@@ -189,9 +189,8 @@ export class VisibilityManager {
         // This should include all of the elements to be revealed and
         // also 1 element above and below those (if such elements
         // exist).
-        const newObserved = new Set();
+        const newObserved = new Set(newRevealed);
         if (newRevealed.size !== 0) {
-          newObserved.add(...newRevealed);
           const p = newBounds.low.previousElementSibling;
           if (p) {
             newObserved.add(p);
@@ -321,12 +320,8 @@ export class VisibilityManager {
    */
   #unlock =
       element => {
-        element.displayLock.commit().catch(reason => {
-          // Only warn if the unlocked failed and we should be revealed.
-          if (this.#revealed.has(element)) {
-            this.#logLockingError('Commit', reason, element);
-          }
-        });
+        element.removeAttribute('rendersubtree');
+        element.style.intrinsicSize = '';
       }
 
   /**
@@ -337,19 +332,9 @@ export class VisibilityManager {
   #hide =
       element => {
         this.#revealed.delete(element);
-        element.displayLock
-            .acquire({
-              timeout: Infinity,
-              activatable: true,
-              size:
-                  [LOCKED_WIDTH_PX, this.#sizeManager.getHopefulSize(element)],
-            })
-            .catch(reason => {
-              // Only warn if the lock failed and we should be locked.
-              if (!this.#revealed.has(element)) {
-                this.#logLockingError('Acquire', reason, element);
-              }
-            });
+        const size = this.#sizeManager.getHopefulSize(element);
+        element.setAttribute('rendersubtree', 'invisible activatable');
+        element.style.intrinsicSize = `${LOCKED_WIDTH_PX}px ${size}px`;
       }
 
   /**

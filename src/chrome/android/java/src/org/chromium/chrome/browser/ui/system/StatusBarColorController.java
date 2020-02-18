@@ -7,10 +7,11 @@ package org.chromium.chrome.browser.ui.system;
 import android.content.res.Resources;
 import android.graphics.Color;
 import android.os.Build;
-import android.support.annotation.ColorInt;
-import android.support.annotation.Nullable;
 import android.view.View;
 import android.view.Window;
+
+import androidx.annotation.ColorInt;
+import androidx.annotation.Nullable;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
@@ -20,6 +21,7 @@ import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.compositor.layouts.EmptyOverviewModeObserver;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.device.DeviceClassManager;
+import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.tab.Tab;
@@ -30,8 +32,8 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabSelectionType;
 import org.chromium.chrome.browser.toolbar.top.TopToolbarCoordinator;
+import org.chromium.chrome.browser.ui.styles.ChromeColors;
 import org.chromium.chrome.browser.util.ColorUtils;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.ui.UiUtils;
 
@@ -41,6 +43,7 @@ import org.chromium.ui.UiUtils;
 public class StatusBarColorController
         implements Destroyable, TopToolbarCoordinator.UrlExpansionObserver {
     public static @ColorInt int UNDEFINED_STATUS_BAR_COLOR = Color.TRANSPARENT;
+    public static @ColorInt int DEFAULT_STATUS_BAR_COLOR = Color.argb(0x01, 0, 0, 0);
 
     /**
      * Provides the base status bar color.
@@ -48,22 +51,17 @@ public class StatusBarColorController
     public interface StatusBarColorProvider {
         /**
          * @return The base status bar color to override default colors used in the
-         *         {@link StatusBarColorController}. If this returns a color other than
-         *         {@link #UNDEFINED_STATUS_BAR_COLOR}, the {@link StatusBarColorController} will
-         *         always use the color provided by this method to adjust the status bar color. This
-         *         color may be used as-is or adjusted due to a scrim overlay or Android version.
+         *         {@link StatusBarColorController}. If this returns
+         *         {@link #DEFAULT_STATUS_BAR_COLOR}, {@link StatusBarColorController} will use the
+         *         default status bar color.
+         *         If this returns a color other than {@link #UNDEFINED_STATUS_BAR_COLOR} and
+         *         {@link #DEFAULT_STATUS_BAR_COLOR}, the {@link StatusBarColorController} will
+         *         always use the color provided by this method to adjust the status bar color.
+         *         This color may be used as-is or adjusted due to a scrim overlay or Android
+         *         version.
          */
         @ColorInt
-        int getBaseStatusBarColor();
-
-        /**
-         * @return Whether the color provided at {@link #getBaseStatusBarColor()} is considered a
-         *         default theme color. If false, we use a darkened status bar color based on the
-         *         base status bar color on pre-M instead of the default status bar color. This
-         *         value will be ignored if {@link #getBaseStatusBarColor()} returns
-         *         {@link #UNDEFINED_STATUS_BAR_COLOR}.
-         */
-        boolean isStatusBarDefaultThemeColor();
+        int getBaseStatusBarColor(boolean activityHasTab);
     }
 
     private final Window mWindow;
@@ -101,25 +99,25 @@ public class StatusBarColorController
         mStatusBarColorProvider = chromeActivity;
         mStatusBarScrimDelegate = (fraction) -> {
             mStatusBarScrimFraction = fraction;
-            updateStatusBarColor(mCurrentTab);
+            updateStatusBarColor();
         };
 
         Resources resources = chromeActivity.getResources();
-        mStandardPrimaryBgColor = ColorUtils.getPrimaryBackgroundColor(resources, false);
-        mIncognitoPrimaryBgColor = ColorUtils.getPrimaryBackgroundColor(resources, true);
-        mStandardDefaultThemeColor = ColorUtils.getDefaultThemeColor(resources, false);
-        mIncognitoDefaultThemeColor = ColorUtils.getDefaultThemeColor(resources, true);
+        mStandardPrimaryBgColor = ChromeColors.getPrimaryBackgroundColor(resources, false);
+        mIncognitoPrimaryBgColor = ChromeColors.getPrimaryBackgroundColor(resources, true);
+        mStandardDefaultThemeColor = ChromeColors.getDefaultThemeColor(resources, false);
+        mIncognitoDefaultThemeColor = ChromeColors.getDefaultThemeColor(resources, true);
 
         mStatusBarColorTabObserver = new ActivityTabProvider.ActivityTabTabObserver(
                 chromeActivity.getActivityTabProvider()) {
             @Override
             public void onShown(Tab tab, @TabSelectionType int type) {
-                updateStatusBarColor(tab);
+                updateStatusBarColor();
             }
 
             @Override
             public void onDidChangeThemeColor(Tab tab, int color) {
-                updateStatusBarColor(tab);
+                updateStatusBarColor();
             }
 
             @Override
@@ -130,7 +128,7 @@ public class StatusBarColorController
                 // case, the theme color might not change, and thus #onDidChangeThemeColor might
                 // not get called.
                 if (mShouldUpdateStatusBarColorForNTP || newShouldUpdateStatusBarColorForNTP) {
-                    updateStatusBarColor(tab);
+                    updateStatusBarColor();
                 }
                 mShouldUpdateStatusBarColorForNTP = newShouldUpdateStatusBarColorForNTP;
             }
@@ -151,7 +149,7 @@ public class StatusBarColorController
                 // |tab == null| means we're switching tabs - by the tab switcher or by swiping
                 // on the omnibox. These cases are dealt with differently, elsewhere.
                 if (tab == null) return;
-                updateStatusBarColor(tab);
+                updateStatusBarColor();
             }
         };
 
@@ -164,7 +162,7 @@ public class StatusBarColorController
                 // status bar color is updated. However, this update is triggered after the
                 // animation, so we update here for the duration of the new Tab animation.
                 // See https://crbug.com/917689.
-                updateStatusBarColor(false);
+                updateStatusBarColor();
             }
         };
 
@@ -173,13 +171,13 @@ public class StatusBarColorController
                 @Override
                 public void onOverviewModeStartedShowing(boolean showToolbar) {
                     mIsInOverviewMode = true;
-                    updateStatusBarColor(false);
+                    updateStatusBarColor();
                 }
 
                 @Override
                 public void onOverviewModeFinishedHiding() {
                     mIsInOverviewMode = false;
-                    updateStatusBarColor(mCurrentTab);
+                    updateStatusBarColor();
                 }
             };
             mOverviewModeBehavior.addOverviewModeObserver(mOverviewModeObserver);
@@ -204,7 +202,7 @@ public class StatusBarColorController
     @Override
     public void onUrlExpansionPercentageChanged(float percentage) {
         mToolbarUrlExpansionPercentage = percentage;
-        if (mShouldUpdateStatusBarColorForNTP) updateStatusBarColor(mCurrentTab);
+        if (mShouldUpdateStatusBarColorForNTP) updateStatusBarColor();
     }
 
     /**
@@ -225,25 +223,24 @@ public class StatusBarColorController
         return mStatusBarScrimDelegate;
     }
 
-    /**
-     * @param isDefaultThemeColor Whether default theme color is used for the status bar color.
-     */
-    public void updateStatusBarColor(boolean isDefaultThemeColor) {
-        setStatusBarColor(calculateBaseStatusBarColor(), isDefaultThemeColor);
-    }
-
-    /**
-     * @param tab The tab that is currently showing, used to determine whether {@code color} is the
-     *            default theme color.
-     */
-    private void updateStatusBarColor(@Nullable Tab tab) {
-        setStatusBarColor(calculateBaseStatusBarColor(), isDefaultThemeColor(tab));
+    public void updateStatusBarColor() {
+        @ColorInt
+        int statusBarColor = calculateBaseStatusBarColor();
+        boolean isDefaultThemeColor = (statusBarColor == DEFAULT_STATUS_BAR_COLOR);
+        if (isDefaultThemeColor) {
+            statusBarColor =
+                    mIsIncognito ? mIncognitoDefaultThemeColor : mStandardDefaultThemeColor;
+        }
+        setStatusBarColor(statusBarColor, isDefaultThemeColor);
     }
 
     private @ColorInt int calculateBaseStatusBarColor() {
         // Return overridden status bar color from StatusBarColorProvider if specified.
-        final int baseStatusBarColor = mStatusBarColorProvider.getBaseStatusBarColor();
-        if (baseStatusBarColor != UNDEFINED_STATUS_BAR_COLOR) return baseStatusBarColor;
+        final int baseStatusBarColor = mStatusBarColorProvider.getBaseStatusBarColor(
+                mCurrentTab != null /* activityHasTab */);
+        if (baseStatusBarColor != UNDEFINED_STATUS_BAR_COLOR) {
+            return baseStatusBarColor;
+        }
 
         // We don't adjust status bar color for tablet when status bar color is not overridden by
         // StatusBarColorProvider.
@@ -274,18 +271,11 @@ public class StatusBarColorController
         }
 
         // Return status bar color to match the toolbar.
-        if (mCurrentTab != null) return TabThemeColorHelper.getColor(mCurrentTab);
-
-        // This could happen when tab is not initialized (e.g. on startup).
-        return mIsIncognito ? mIncognitoDefaultThemeColor : mStandardDefaultThemeColor;
-    }
-
-    private boolean isDefaultThemeColor(Tab tab) {
-        if (mStatusBarColorProvider.getBaseStatusBarColor() != UNDEFINED_STATUS_BAR_COLOR) {
-            return mStatusBarColorProvider.isStatusBarDefaultThemeColor();
+        if (mCurrentTab != null && !TabThemeColorHelper.isDefaultColorUsed(mCurrentTab)) {
+            return TabThemeColorHelper.getColor(mCurrentTab);
         }
 
-        return tab != null && TabThemeColorHelper.isDefaultColorUsed(tab);
+        return DEFAULT_STATUS_BAR_COLOR;
     }
 
     /**

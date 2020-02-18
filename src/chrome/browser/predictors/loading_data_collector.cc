@@ -17,6 +17,7 @@
 #include "components/history/core/browser/history_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/resource_type.h"
+#include "net/base/mime_util.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
 #include "third_party/blink/public/common/mime_util/mime_util.h"
@@ -101,16 +102,18 @@ PageRequestSummary::PageRequestSummary(const PageRequestSummary& other) =
 
 void PageRequestSummary::UpdateOrAddToOrigins(
     const content::mojom::ResourceLoadInfo& resource_load_info) {
-  for (const auto& redirect_info : resource_load_info.redirect_info_chain)
-    UpdateOrAddToOrigins(redirect_info->url, redirect_info->network_info);
-  UpdateOrAddToOrigins(resource_load_info.url, resource_load_info.network_info);
+  for (const auto& redirect_info : resource_load_info.redirect_info_chain) {
+    UpdateOrAddToOrigins(url::Origin::Create(redirect_info->url),
+                         redirect_info->network_info);
+  }
+  UpdateOrAddToOrigins(url::Origin::Create(resource_load_info.url),
+                       resource_load_info.network_info);
 }
 
 void PageRequestSummary::UpdateOrAddToOrigins(
-    const GURL& url,
+    const url::Origin& origin,
     const content::mojom::CommonNetworkInfoPtr& network_info) {
-  GURL origin = url.GetOrigin();
-  if (!origin.is_valid())
+  if (origin.opaque())
     return;
 
   auto it = origins.find(origin);

@@ -20,10 +20,10 @@
 #include "chrome/browser/chromeos/power/auto_screen_brightness/als_reader.h"
 #include "chrome/browser/chromeos/power/auto_screen_brightness/als_samples.h"
 #include "chrome/browser/chromeos/power/auto_screen_brightness/brightness_monitor.h"
+#include "chrome/browser/chromeos/power/auto_screen_brightness/gaussian_trainer.h"
 #include "chrome/browser/chromeos/power/auto_screen_brightness/model_config.h"
 #include "chrome/browser/chromeos/power/auto_screen_brightness/model_config_loader.h"
 #include "chrome/browser/chromeos/power/auto_screen_brightness/modeller.h"
-#include "chrome/browser/chromeos/power/auto_screen_brightness/trainer.h"
 #include "chrome/browser/chromeos/power/auto_screen_brightness/utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "ui/base/user_activity/user_activity_detector.h"
@@ -127,7 +127,8 @@ class ModellerImpl : public Modeller,
   // Returns ModelSavingSpec used to store models. It also creates intermediate
   // directories if they do not exist. The returned paths will be empty on
   // failures.
-  static ModelSavingSpec GetModelSavingSpecFromProfile(const Profile* profile);
+  static ModelSavingSpec GetModelSavingSpecFromProfilePath(
+      const base::FilePath& profile_path);
 
  private:
   // ModellerImpl has weak dependencies on all parameters except |trainer|.
@@ -140,6 +141,10 @@ class ModellerImpl : public Modeller,
                scoped_refptr<base::SequencedTaskRunner> task_runner,
                const base::TickClock* tick_clock,
                bool is_testing = false);
+
+  // Called after we've attempted to read model saving spec from the user
+  // profile.
+  void OnModelSavingSpecReadFromProfile(const ModelSavingSpec& spec);
 
   // Called to handle a status change in one of the dependencies (ALS,
   // brightness monitor, model config loader) of the modeller. If all
@@ -186,8 +191,11 @@ class ModellerImpl : public Modeller,
   // |data_cache_|.
   void StartTraining();
 
-  // Called after training is complete with a new curve.
-  void OnTrainingFinished(const MonotoneCubicSpline& curve);
+  // Called after training is complete.
+  void OnTrainingFinished(const TrainingResult& result);
+
+  // Erase all info related to the personal curve.
+  void ErasePersonalCurve();
 
   // If |is_testing_| is false, we check curve saving/loading and training jobs
   // are running on non-UI thread.
@@ -203,6 +211,10 @@ class ModellerImpl : public Modeller,
   // If this value is 0, we will not need to wait for user to remain inactive.
   // This can be overridden by experiment flag "training_delay_in_seconds".
   base::TimeDelta training_delay_ = base::TimeDelta::FromSeconds(0);
+
+  // If personal curve error is above this threshold, the curve will not be
+  // exported. The error is expressed in terms of percentages.
+  double curve_error_tolerance_ = 5.0;
 
   ScopedObserver<AlsReader, AlsReader::Observer> als_reader_observer_;
 
@@ -240,7 +252,7 @@ class ModellerImpl : public Modeller,
   // |OnModelLoadedFromDisk|.
   base::Optional<bool> is_modeller_enabled_;
 
-  ModelSavingSpec model_saving_spec_;
+  base::Optional<ModelSavingSpec> model_saving_spec_;
 
   // Whether the initial global curve is reset to the one constructed from
   // model config. It is true if there is no saved model loaded from the disk

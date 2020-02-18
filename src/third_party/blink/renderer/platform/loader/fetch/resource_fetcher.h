@@ -33,7 +33,7 @@
 #include "base/single_thread_task_runner.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/blob/blob_registry.mojom-blink.h"
-#include "third_party/blink/public/mojom/service_worker/controller_service_worker_mode.mojom-blink.h"
+#include "third_party/blink/public/mojom/service_worker/controller_service_worker_mode.mojom-blink-forward.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_parameters.h"
 #include "third_party/blink/renderer/platform/loader/fetch/preload_key.h"
@@ -77,12 +77,12 @@ struct ResourceLoaderOptions;
 // keep a ResourceFetcher alive past detach if scripts still reference the
 // Document.
 class PLATFORM_EXPORT ResourceFetcher
-    : public GarbageCollectedFinalized<ResourceFetcher> {
+    : public GarbageCollected<ResourceFetcher> {
   USING_PRE_FINALIZER(ResourceFetcher, ClearPreloads);
 
  public:
   // An abstract interface for creating loaders.
-  class LoaderFactory : public GarbageCollectedFinalized<LoaderFactory> {
+  class LoaderFactory : public GarbageCollected<LoaderFactory> {
    public:
     virtual ~LoaderFactory() = default;
 
@@ -225,8 +225,6 @@ class PLATFORM_EXPORT ResourceFetcher
 
   void UpdateAllImageResourcePriorities();
 
-  void ReloadLoFiImages();
-
   // Returns whether the given resource is contained as a preloaded resource.
   bool ContainsAsPreload(Resource*) const;
 
@@ -245,8 +243,6 @@ class PLATFORM_EXPORT ResourceFetcher
   // leak detector) to clean up loaders after page navigation before instance
   // counting.
   void PrepareForLeakDetection();
-
-  void SetStaleWhileRevalidateEnabled(bool enabled);
 
   using ResourceFetcherSet = HeapHashSet<WeakMember<ResourceFetcher>>;
   static const ResourceFetcherSet& MainThreadFetchers();

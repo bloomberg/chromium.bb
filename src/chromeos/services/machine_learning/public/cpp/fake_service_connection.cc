@@ -14,18 +14,26 @@ FakeServiceConnectionImpl::FakeServiceConnectionImpl()
 
 FakeServiceConnectionImpl::~FakeServiceConnectionImpl() {}
 
-void FakeServiceConnectionImpl::LoadModel(
-    mojom::ModelSpecPtr spec,
-    mojom::ModelRequest request,
-    mojom::MachineLearningService::LoadModelCallback callback) {
-  model_bindings_.AddBinding(this, std::move(request));
+void FakeServiceConnectionImpl::LoadBuiltinModel(
+    mojom::BuiltinModelSpecPtr spec,
+    mojo::PendingReceiver<mojom::Model> receiver,
+    mojom::MachineLearningService::LoadBuiltinModelCallback callback) {
+  model_receivers_.Add(this, std::move(receiver));
+  std::move(callback).Run(mojom::LoadModelResult::OK);
+}
+
+void FakeServiceConnectionImpl::LoadFlatBufferModel(
+    mojom::FlatBufferModelSpecPtr spec,
+    mojo::PendingReceiver<mojom::Model> receiver,
+    mojom::MachineLearningService::LoadFlatBufferModelCallback callback) {
+  model_receivers_.Add(this, std::move(receiver));
   std::move(callback).Run(mojom::LoadModelResult::OK);
 }
 
 void FakeServiceConnectionImpl::CreateGraphExecutor(
-    mojom::GraphExecutorRequest request,
+    mojo::PendingReceiver<mojom::GraphExecutor> receiver,
     mojom::Model::CreateGraphExecutorCallback callback) {
-  graph_bindings_.AddBinding(this, std::move(request));
+  graph_receivers_.Add(this, std::move(receiver));
   std::move(callback).Run(mojom::CreateGraphExecutorResult::OK);
 }
 

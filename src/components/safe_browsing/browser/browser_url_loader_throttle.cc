@@ -11,11 +11,13 @@
 #include "components/safe_browsing/browser/url_checker_delegate.h"
 #include "components/safe_browsing/common/safebrowsing_constants.h"
 #include "components/safe_browsing/common/utils.h"
+#include "components/safe_browsing/realtime/policy_engine.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/web_contents.h"
 #include "net/log/net_log_event_type.h"
 #include "net/url_request/redirect_info.h"
 #include "services/network/public/cpp/resource_request.h"
-#include "services/network/public/cpp/resource_response.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 
 namespace safe_browsing {
 
@@ -29,12 +31,14 @@ class BrowserURLLoaderThrottle::CheckerOnIO
       content::ResourceContext* resource_context,
       int frame_tree_node_id,
       base::RepeatingCallback<content::WebContents*()> web_contents_getter,
-      base::WeakPtr<BrowserURLLoaderThrottle> throttle)
+      base::WeakPtr<BrowserURLLoaderThrottle> throttle,
+      bool real_time_lookup_enabled)
       : delegate_getter_(std::move(delegate_getter)),
         resource_context_(resource_context),
         frame_tree_node_id_(frame_tree_node_id),
         web_contents_getter_(web_contents_getter),
-        throttle_(std::move(throttle)) {}
+        throttle_(std::move(throttle)),
+        real_time_lookup_enabled_(real_time_lookup_enabled) {}
 
   // Starts the initial safe browsing check. This check and future checks may be
   // skipped after checking with the UrlCheckerDelegate.
@@ -63,7 +67,7 @@ class BrowserURLLoaderThrottle::CheckerOnIO
 
     url_checker_ = std::make_unique<SafeBrowsingUrlCheckerImpl>(
         headers, load_flags, resource_type, has_user_gesture,
-        url_checker_delegate, web_contents_getter_);
+        url_checker_delegate, web_contents_getter_, real_time_lookup_enabled_);
 
     CheckUrl(url, method);
   }
@@ -130,6 +134,7 @@ class BrowserURLLoaderThrottle::CheckerOnIO
   base::RepeatingCallback<content::WebContents*()> web_contents_getter_;
   bool skip_checks_ = false;
   base::WeakPtr<BrowserURLLoaderThrottle> throttle_;
+  bool real_time_lookup_enabled_ = false;
 };
 
 // static
@@ -150,18 +155,24 @@ BrowserURLLoaderThrottle::BrowserURLLoaderThrottle(
     int frame_tree_node_id,
     content::ResourceContext* resource_context) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  // Decide whether to do real time URL lookups or not.
+  content::WebContents* web_contents = web_contents_getter.Run();
+  bool real_time_lookup_enabled =
+      web_contents ? RealTimePolicyEngine::CanPerformFullURLLookup(
+                         web_contents->GetBrowserContext())
+                   : false;
+
   io_checker_ = std::make_unique<CheckerOnIO>(
       std::move(delegate_getter), resource_context, frame_tree_node_id,
-      web_contents_getter, weak_factory_.GetWeakPtr());
+      web_contents_getter, weak_factory_.GetWeakPtr(),
+      real_time_lookup_enabled);
 }
 
 BrowserURLLoaderThrottle::~BrowserURLLoaderThrottle() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (deferred_)
     TRACE_EVENT_ASYNC_END0("safe_browsing", "Deferred", this);
-
-  if (!user_action_involved_)
-    LogNoUserActionResourceLoadingDelay(total_delay_);
 
   DeleteCheckerOnIO();
 }
@@ -187,7 +198,7 @@ void BrowserURLLoaderThrottle::WillStartRequest(
 
 void BrowserURLLoaderThrottle::WillRedirectRequest(
     net::RedirectInfo* redirect_info,
-    const network::ResourceResponseHead& /* response_head */,
+    const network::mojom::URLResponseHead& /* response_head */,
     bool* defer,
     std::vector<std::string>* /* to_be_removed_headers */,
     net::HttpRequestHeaders* /* modified_headers */) {
@@ -213,7 +224,7 @@ void BrowserURLLoaderThrottle::WillRedirectRequest(
 
 void BrowserURLLoaderThrottle::WillProcessResponse(
     const GURL& response_url,
-    network::ResourceResponseHead* response_head,
+    network::mojom::URLResponseHead* response_head,
     bool* defer) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (blocked_) {
@@ -299,8 +310,8 @@ void BrowserURLLoaderThrottle::NotifySlowCheck() {
 }
 
 void BrowserURLLoaderThrottle::DeleteCheckerOnIO() {
-  content::BrowserThread::DeleteSoon(content::BrowserThread::IO, FROM_HERE,
-                                     std::move(io_checker_));
+  base::DeleteSoon(FROM_HERE, {content::BrowserThread::IO},
+                   std::move(io_checker_));
 }
 
 }  // namespace safe_browsing

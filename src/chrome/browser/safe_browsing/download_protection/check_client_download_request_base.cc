@@ -5,17 +5,22 @@
 #include "chrome/browser/safe_browsing/download_protection/check_client_download_request_base.h"
 
 #include "base/bind.h"
+#include "base/cancelable_callback.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router.h"
+#include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/advanced_protection_status_manager.h"
 #include "chrome/browser/safe_browsing/advanced_protection_status_manager_factory.h"
+#include "chrome/browser/safe_browsing/cloud_content_scanning/binary_upload_service.h"
 #include "chrome/browser/safe_browsing/download_protection/download_protection_service.h"
+#include "chrome/browser/safe_browsing/download_protection/download_protection_util.h"
 #include "chrome/browser/safe_browsing/download_protection/ppapi_download_request.h"
 #include "chrome/common/safe_browsing/file_type_policies.h"
 #include "components/prefs/pref_service.h"
@@ -24,6 +29,7 @@
 #include "components/safe_browsing/web_ui/safe_browsing_ui.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
 #include "services/network/public/cpp/simple_url_loader.h"
@@ -124,6 +130,9 @@ CheckClientDownloadRequestBase::CheckClientDownloadRequestBase(
     base::FilePath target_file_path,
     base::FilePath full_path,
     TabUrls tab_urls,
+    size_t file_size,
+    std::string mime_type,
+    std::string hash,
     content::BrowserContext* browser_context,
     CheckDownloadCallback callback,
     DownloadProtectionService* service,
@@ -134,11 +143,14 @@ CheckClientDownloadRequestBase::CheckClientDownloadRequestBase(
       full_path_(std::move(full_path)),
       tab_url_(std::move(tab_urls.url)),
       tab_referrer_url_(std::move(tab_urls.referrer)),
+      file_size_(file_size),
       callback_(std::move(callback)),
       service_(service),
       binary_feature_extractor_(std::move(binary_feature_extractor)),
       database_manager_(std::move(database_manager)),
-      pingback_enabled_(service_->enabled()) {
+      pingback_enabled_(service_->enabled()),
+      mime_type_(mime_type),
+      hash_(hash) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (browser_context) {
@@ -199,17 +211,41 @@ void CheckClientDownloadRequestBase::FinishRequest(
                               reason, REASON_MAX);
   }
 
+  if (ShouldUploadBinary(reason)) {
+    if (password_protected_allowed_ && is_password_protected_) {
+      Profile* profile = Profile::FromBrowserContext(GetBrowserContext());
+      extensions::SafeBrowsingPrivateEventRouterFactory::GetForProfile(profile)
+          ->OnUnscannedFileEvent(
+              source_url_, target_file_path_.AsUTF8Unsafe(),
+              base::HexEncode(hash_.data(), hash_.size()), mime_type_,
+              extensions::SafeBrowsingPrivateEventRouter::kTriggerFileDownload,
+              "filePasswordProtected", file_size_);
+    }
+
+    if (is_password_protected_ && !password_protected_allowed_) {
+      result = DownloadCheckResult::BLOCKED_PASSWORD_PROTECTED;
+      reason = DownloadCheckResultReason::REASON_BLOCKED_PASSWORD_PROTECTED;
+    } else if (BinaryUploadService::ShouldBlockFileSize(file_size_)) {
+      result = DownloadCheckResult::BLOCKED_TOO_LARGE;
+      reason = DownloadCheckResultReason::REASON_BLOCKED_TOO_LARGE;
+    } else {
+      UploadBinary(result, reason);
+    }
+  }
+
   DVLOG(2) << "SafeBrowsing download verdict for: " << source_url_
            << " verdict:" << reason << " result:" << static_cast<int>(result);
   UMA_HISTOGRAM_ENUMERATION("SBClientDownload.CheckDownloadStats", reason,
                             REASON_MAX);
 
-  MaybeUploadBinary(reason);
-
-  std::move(callback_).Run(result);
-  NotifyRequestFinished(result, reason);
-  service()->RequestFinished(this);
-  // DownloadProtectionService::RequestFinished may delete us.
+  if (MaybeReturnAsynchronousVerdict(reason)) {
+    timeout_closure_.Cancel();
+  } else {
+    std::move(callback_).Run(result);
+    NotifyRequestFinished(result, reason);
+    service()->RequestFinished(this);
+    // DownloadProtectionService::RequestFinished may delete us.
+  }
 }
 
 bool CheckClientDownloadRequestBase::ShouldSampleWhitelistedDownload() {
@@ -323,16 +359,11 @@ void CheckClientDownloadRequestBase::OnFileFeatureExtractionDone(
     return;
   }
 
-  if (!password_protected_allowed_ &&
-      std::any_of(results.archived_binaries.begin(),
-                  results.archived_binaries.end(),
-                  [](const ClientDownloadRequest::ArchivedBinary& binary) {
-                    return binary.is_encrypted();
-                  })) {
-    FinishRequest(DownloadCheckResult::BLOCKED_PASSWORD_PROTECTED,
-                  REASON_BLOCKED_PASSWORD_PROTECTED);
-    return;
-  }
+  is_password_protected_ = std::any_of(
+      results.archived_binaries.begin(), results.archived_binaries.end(),
+      [](const ClientDownloadRequest::ArchivedBinary& binary) {
+        return binary.is_encrypted();
+      });
 
   // The content checks cannot determine that we decided to sample this file, so
   // special case that DownloadType.
@@ -377,13 +408,13 @@ void CheckClientDownloadRequestBase::OnFileFeatureExtractionDone(
 void CheckClientDownloadRequestBase::StartTimeout() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   timeout_start_time_ = base::TimeTicks::Now();
-  base::PostDelayedTask(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(&CheckClientDownloadRequestBase::FinishRequest,
-                     GetWeakPtr(), DownloadCheckResult::UNKNOWN,
-                     REASON_REQUEST_CANCELED),
-      base::TimeDelta::FromMilliseconds(
-          service_->download_request_timeout_ms()));
+  timeout_closure_.Reset(base::BindOnce(
+      &CheckClientDownloadRequestBase::FinishRequest, GetWeakPtr(),
+      DownloadCheckResult::UNKNOWN, REASON_REQUEST_CANCELED));
+  base::PostDelayedTask(FROM_HERE, {BrowserThread::UI},
+                        timeout_closure_.callback(),
+                        base::TimeDelta::FromMilliseconds(
+                            service_->download_request_timeout_ms()));
 }
 
 void CheckClientDownloadRequestBase::OnCertificateWhitelistCheckDone(
@@ -506,8 +537,6 @@ void CheckClientDownloadRequestBase::SendRequest() {
       "SBClientDownload."
       "DownloadFileHasDmgSignature",
       disk_image_signature_ != nullptr);
-  UMA_HISTOGRAM_BOOLEAN("SBClientDownload.DownloadFileHasDetachedSignatures",
-                        !detached_code_signatures_.empty());
 
   if (disk_image_signature_) {
     request->set_udif_code_signature(disk_image_signature_->data(),

@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 
 #include "net/third_party/quiche/src/quic/core/crypto/crypto_protocol.h"
 #include "net/third_party/quiche/src/quic/core/crypto/crypto_utils.h"
@@ -20,7 +21,6 @@
 #include "net/third_party/quiche/src/quic/platform/api/quic_flag_utils.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_ptr_util.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_string_piece.h"
 
 namespace quic {
@@ -111,6 +111,10 @@ CryptoMessageParser* QuicCryptoServerStream::crypto_message_parser() {
   return handshaker()->crypto_message_parser();
 }
 
+void QuicCryptoServerStream::OnPacketDecrypted(EncryptionLevel level) {
+  handshaker()->OnPacketDecrypted(level);
+}
+
 size_t QuicCryptoServerStream::BufferSizeLimitForLevel(
     EncryptionLevel level) const {
   return handshaker()->BufferSizeLimitForLevel(level);
@@ -122,11 +126,11 @@ void QuicCryptoServerStream::OnSuccessfulVersionNegotiation(
   CHECK(!handshaker_);
   switch (session()->connection()->version().handshake_protocol) {
     case PROTOCOL_QUIC_CRYPTO:
-      handshaker_ = QuicMakeUnique<QuicCryptoServerHandshaker>(
+      handshaker_ = std::make_unique<QuicCryptoServerHandshaker>(
           crypto_config_, this, compressed_certs_cache_, session(), helper_);
       break;
     case PROTOCOL_TLS1_3:
-      handshaker_ = QuicMakeUnique<TlsServerHandshaker>(
+      handshaker_ = std::make_unique<TlsServerHandshaker>(
           this, session(), crypto_config_->ssl_ctx(),
           crypto_config_->proof_source());
       break;

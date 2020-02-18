@@ -121,7 +121,7 @@ static void SetItemMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
 
   value = V8TestInterfaceEmpty::ToImplWithTypeCheck(info.GetIsolate(), info[1]);
   if (!value) {
-    exception_state.ThrowTypeError("parameter 2 is not of type 'TestInterfaceEmpty'.");
+    exception_state.ThrowTypeError(ExceptionMessages::ArgumentNotOfType(1, "TestInterfaceEmpty"));
     return;
   }
 
@@ -194,7 +194,7 @@ static void SetNamedItemMethod(const v8::FunctionCallbackInfo<v8::Value>& info) 
 
   value = V8TestInterfaceEmpty::ToImplWithTypeCheck(info.GetIsolate(), info[1]);
   if (!value && !IsUndefinedOrNull(info[1])) {
-    exception_state.ThrowTypeError("parameter 2 is not of type 'TestInterfaceEmpty'.");
+    exception_state.ThrowTypeError(ExceptionMessages::ArgumentNotOfType(1, "TestInterfaceEmpty"));
     return;
   }
 
@@ -282,9 +282,9 @@ static void ForEachMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
     return;
   }
 
-  this_arg = ScriptValue(ScriptState::Current(info.GetIsolate()), info[1]);
+  this_arg = ScriptValue(info.GetIsolate(), info[1]);
 
-  impl->forEachForBinding(script_state, ScriptValue(script_state, info.Holder()), callback, this_arg, exception_state);
+  impl->forEachForBinding(script_state, ScriptValue(info.GetIsolate(), info.Holder()), callback, this_arg, exception_state);
   if (exception_state.HadException()) {
     return;
   }
@@ -305,7 +305,7 @@ static void HasMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceEmpty* value;
   value = V8TestInterfaceEmpty::ToImplWithTypeCheck(info.GetIsolate(), info[0]);
   if (!value) {
-    exception_state.ThrowTypeError("parameter 1 is not of type 'TestInterfaceEmpty'.");
+    exception_state.ThrowTypeError(ExceptionMessages::ArgumentNotOfType(0, "TestInterfaceEmpty"));
     return;
   }
 

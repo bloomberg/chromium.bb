@@ -7,6 +7,9 @@
 #ifndef COMPONENTS_SAFE_BROWSING_COMMON_SAFE_BROWSING_PREFS_H_
 #define COMPONENTS_SAFE_BROWSING_COMMON_SAFE_BROWSING_PREFS_H_
 
+#include <string>
+#include <vector>
+
 #include "base/feature_list.h"
 #include "base/values.h"
 #include "components/prefs/pref_member.h"
@@ -107,11 +110,16 @@ extern const char kAllowPasswordProtectedFiles[];
 // Integer that indidicates if Chrome checks data for content compliance.
 extern const char kCheckContentCompliance[];
 
-// List of domains where Chrome should check compliance of downloaded files.
-extern const char kDomainsToCheckComplianceOfDownloadedContent[];
+// List of url patterns where Chrome should check compliance of downloaded
+// files.
+extern const char kURLsToCheckComplianceOfDownloadedContent[];
 
-// List of domains where Chrome should check for malware of uploaded files.
-extern const char kDomainsToCheckForMalwareOfUploadedContent[];
+// List of url patterns where Chrome should check for malware of uploaded files.
+extern const char kURLsToCheckForMalwareOfUploadedContent[];
+
+// List of url patterns where Chrome should not check compliance of uploaded
+// files.
+extern const char kURLsToNotCheckComplianceOfUploadedContent[];
 
 }  // namespace prefs
 
@@ -161,10 +169,9 @@ enum PasswordProtectionTrigger {
 };
 
 // Enum representing possible values of the SendFilesForMalwareCheck policy.
-// This must be kept in sync with policy_templates.json
+// This must be kept in sync with policy_templates.json.
 enum SendFilesForMalwareCheckValues {
   DO_NOT_SCAN = 0,
-  SEND_FILES_DISABLED = 1,
   SEND_DOWNLOADS = 2,
   SEND_UPLOADS = 3,
   SEND_UPLOADS_AND_DOWNLOADS = 4,
@@ -173,7 +180,7 @@ enum SendFilesForMalwareCheckValues {
 };
 
 // Enum representing possible values of the CheckContentCompliance policy. This
-// must be kept in sync with policy_templates.json
+// must be kept in sync with policy_templates.json.
 enum CheckContentComplianceValues {
   CHECK_NONE = 0,
   CHECK_DOWNLOADS = 1,
@@ -184,7 +191,7 @@ enum CheckContentComplianceValues {
 };
 
 // Enum representing possible values of the AllowPasswordProtectedFiles policy.
-// This must be kept in sync with policy_templates.json
+// This must be kept in sync with policy_templates.json.
 enum AllowPasswordProtectedFilesValues {
   ALLOW_NONE = 0,
   ALLOW_DOWNLOADS = 1,
@@ -193,12 +200,21 @@ enum AllowPasswordProtectedFilesValues {
 };
 
 // Enum representing possible values of the BlockLargeFileTransfer policy. This
-// must be kept in sync with policy_templates.json
+// must be kept in sync with policy_templates.json.
 enum BlockLargeFileTransferValues {
   BLOCK_NONE = 0,
   BLOCK_LARGE_DOWNLOADS = 1,
   BLOCK_LARGE_UPLOADS = 2,
   BLOCK_LARGE_UPLOADS_AND_DOWNLOADS = 3,
+};
+
+// Enum representing possible values of the DelayDeliveryUntilVerdict policy.
+// This must be kept in sync with policy_templates.json.
+enum DelayDeliveryUntilVerdictValues {
+  DELAY_NONE = 0,
+  DELAY_DOWNLOADS = 1,
+  DELAY_UPLOADS = 2,
+  DELAY_UPLOADS_AND_DOWNLOADS = 3,
 };
 
 // Returns whether the currently active Safe Browsing Extended Reporting

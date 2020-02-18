@@ -22,7 +22,9 @@ class PLATFORM_EXPORT DarkModeImageClassifier {
   DarkModeImageClassifier();
   ~DarkModeImageClassifier() = default;
 
-  DarkModeClassification Classify(Image* image, const FloatRect& src_rect);
+  DarkModeClassification Classify(Image* image,
+                                  const FloatRect& src_rect,
+                                  const FloatRect& dest_rect);
 
   struct Features {
     // True if the image is in color, false if it is grayscale.
@@ -53,6 +55,24 @@ class PLATFORM_EXPORT DarkModeImageClassifier {
   enum class ImageType { kBitmap = 0, kSvg = 1 };
 
   void SetImageType(ImageType image_type) { image_type_ = image_type; }
+
+  // Functions for testing.
+
+  void SetHorizontalBlocksCount(int horizontal_blocks) {
+    blocks_count_horizontal_ = horizontal_blocks;
+  }
+
+  void SetVerticalBlocksCount(int vertical_blocks) {
+    blocks_count_vertical_ = vertical_blocks;
+  }
+
+  int HorizontalBlocksCount() { return blocks_count_horizontal_; }
+
+  int VerticalBlocksCount() { return blocks_count_vertical_; }
+
+  void ResetDataMembersToDefaults();
+
+  // End of Functions for testing.
 
  private:
   enum class ColorMode { kColor = 0, kGrayscale = 1 };
@@ -86,6 +106,12 @@ class PLATFORM_EXPORT DarkModeImageClassifier {
                                  const ColorMode color_mode);
 
   int pixels_to_sample_;
+  // Holds the number of blocks in the horizontal direction when the image is
+  // divided into a grid of blocks.
+  int blocks_count_horizontal_;
+  // Holds the number of blocks in the vertical direction when the image is
+  // divided into a grid of blocks.
+  int blocks_count_vertical_;
 
   ImageType image_type_;
 };

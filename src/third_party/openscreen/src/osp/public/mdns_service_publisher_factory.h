@@ -8,21 +8,24 @@
 #include <memory>
 
 #include "osp/public/service_publisher.h"
-#include "platform/api/network_runner.h"
 
 namespace openscreen {
+
 namespace platform {
-class NetworkRunner;
+class TaskRunner;
 }  // namespace platform
+
+namespace osp {
 
 class MdnsServicePublisherFactory {
  public:
   static std::unique_ptr<ServicePublisher> Create(
       const ServicePublisher::Config& config,
       ServicePublisher::Observer* observer,
-      platform::NetworkRunner* network_runner);
+      platform::TaskRunner* task_runner);
 };
 
+}  // namespace osp
 }  // namespace openscreen
 
 #endif  // OSP_PUBLIC_MDNS_SERVICE_PUBLISHER_FACTORY_H_

@@ -349,6 +349,9 @@ bool NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::AppendTextReusing(
           NOTREACHED();
           break;
       }
+    } else if (last_item->EndCollapseType() == NGInlineItem::kCollapsed) {
+      RestoreTrailingCollapsibleSpace(last_item);
+      return false;
     }
 
     // On nowrap -> wrap boundary, a break opporunity may be inserted.
@@ -1200,7 +1203,7 @@ void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::ExitInline(
         if (i == open_item_index) {
           DCHECK_EQ(i, current_box->item_index);
           // TODO(kojii): <area> element fails to hit-test when we don't cull.
-          if (!IsHTMLAreaElement(item.GetLayoutObject()->GetNode()))
+          if (!IsA<HTMLAreaElement>(item.GetLayoutObject()->GetNode()))
             item.SetShouldCreateBoxFragment();
           break;
         }

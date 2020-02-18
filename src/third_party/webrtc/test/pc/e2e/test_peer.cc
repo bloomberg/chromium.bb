@@ -61,7 +61,7 @@ void SetMandatoryEntities(InjectableComponents* components) {
   }
   if (components->pcf_dependencies->event_log_factory == nullptr) {
     components->pcf_dependencies->event_log_factory =
-        absl::make_unique<RtcEventLogFactory>(
+        std::make_unique<RtcEventLogFactory>(
             components->pcf_dependencies->task_queue_factory.get());
   }
 }
@@ -191,16 +191,16 @@ class TestPeerComponents {
 
     // Setup echo emulation if required.
     if (echo_emulation_config_) {
-      capturer = absl::make_unique<EchoEmulatingCapturer>(
+      capturer = std::make_unique<EchoEmulatingCapturer>(
           std::move(capturer), *echo_emulation_config_);
-      renderer = absl::make_unique<EchoEmulatingRenderer>(
+      renderer = std::make_unique<EchoEmulatingRenderer>(
           std::move(renderer),
           static_cast<EchoEmulatingCapturer*>(capturer.get()));
     }
 
     // Setup input stream dumping if required.
     if (audio_config_opt_ && audio_config_opt_->input_dump_file_name) {
-      capturer = absl::make_unique<test::CopyToFileAudioCapturer>(
+      capturer = std::make_unique<test::CopyToFileAudioCapturer>(
           std::move(capturer), audio_config_opt_->input_dump_file_name.value());
     }
 
@@ -279,7 +279,7 @@ class TestPeerComponents {
       std::unique_ptr<PeerConnectionComponents> pc_dependencies) {
     PeerConnectionDependencies pc_deps(observer_);
 
-    auto port_allocator = absl::make_unique<cricket::BasicPortAllocator>(
+    auto port_allocator = std::make_unique<cricket::BasicPortAllocator>(
         pc_dependencies->network_manager);
 
     // This test does not support TCP
@@ -328,6 +328,8 @@ absl::optional<RemotePeerAudioConfig> TestPeer::CreateRemoteAudioConfig(
 std::unique_ptr<TestPeer> TestPeer::CreateTestPeer(
     std::unique_ptr<InjectableComponents> components,
     std::unique_ptr<Params> params,
+    std::vector<std::unique_ptr<test::FrameGeneratorInterface>>
+        video_generators,
     std::unique_ptr<MockPeerConnectionObserver> observer,
     VideoQualityAnalyzerInjectionHelper* video_analyzer_helper,
     rtc::Thread* signaling_thread,
@@ -337,6 +339,7 @@ std::unique_ptr<TestPeer> TestPeer::CreateTestPeer(
     rtc::TaskQueue* task_queue) {
   RTC_DCHECK(components);
   RTC_DCHECK(params);
+  RTC_DCHECK_EQ(params->video_configs.size(), video_generators.size());
   SetMandatoryEntities(components.get());
   params->rtc_configuration.sdp_semantics = SdpSemantics::kUnifiedPlan;
 
@@ -347,7 +350,7 @@ std::unique_ptr<TestPeer> TestPeer::CreateTestPeer(
 
   return absl::WrapUnique(new TestPeer(
       tpc.peer_connection_factory(), tpc.peer_connection(), std::move(observer),
-      std::move(params), tpc.audio_processing()));
+      std::move(params), std::move(video_generators), tpc.audio_processing()));
 }
 
 bool TestPeer::AddIceCandidates(
@@ -373,11 +376,14 @@ TestPeer::TestPeer(
     rtc::scoped_refptr<PeerConnectionInterface> pc,
     std::unique_ptr<MockPeerConnectionObserver> observer,
     std::unique_ptr<Params> params,
+    std::vector<std::unique_ptr<test::FrameGeneratorInterface>>
+        video_generators,
     rtc::scoped_refptr<AudioProcessing> audio_processing)
     : PeerConnectionWrapper::PeerConnectionWrapper(std::move(pc_factory),
                                                    std::move(pc),
                                                    std::move(observer)),
       params_(std::move(params)),
+      video_generators_(std::move(video_generators)),
       audio_processing_(audio_processing) {}
 
 }  // namespace webrtc_pc_e2e

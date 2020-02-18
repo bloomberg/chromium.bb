@@ -105,11 +105,11 @@ class TCompiler : public TShHandleBase
     // Clears the results from the previous compilation.
     void clearResults();
 
-    const std::vector<sh::Attribute> &getAttributes() const { return mAttributes; }
-    const std::vector<sh::OutputVariable> &getOutputVariables() const { return mOutputVariables; }
-    const std::vector<sh::Uniform> &getUniforms() const { return mUniforms; }
-    const std::vector<sh::Varying> &getInputVaryings() const { return mInputVaryings; }
-    const std::vector<sh::Varying> &getOutputVaryings() const { return mOutputVaryings; }
+    const std::vector<sh::ShaderVariable> &getAttributes() const { return mAttributes; }
+    const std::vector<sh::ShaderVariable> &getOutputVariables() const { return mOutputVariables; }
+    const std::vector<sh::ShaderVariable> &getUniforms() const { return mUniforms; }
+    const std::vector<sh::ShaderVariable> &getInputVaryings() const { return mInputVaryings; }
+    const std::vector<sh::ShaderVariable> &getOutputVaryings() const { return mOutputVaryings; }
     const std::vector<sh::InterfaceBlock> &getInterfaceBlocks() const { return mInterfaceBlocks; }
     const std::vector<sh::InterfaceBlock> &getUniformBlocks() const { return mUniformBlocks; }
     const std::vector<sh::InterfaceBlock> &getShaderStorageBlocks() const
@@ -141,6 +141,9 @@ class TCompiler : public TShHandleBase
         return mGeometryShaderOutputPrimitiveType;
     }
 
+    unsigned int getStructSize(const ShaderVariable &var) const;
+    unsigned int getSharedMemorySize() const;
+
     sh::GLenum getShaderType() const { return mShaderType; }
 
     bool validateAST(TIntermNode *root);
@@ -170,11 +173,12 @@ class TCompiler : public TShHandleBase
     virtual bool shouldCollectVariables(ShCompileOptions compileOptions);
 
     bool wereVariablesCollected() const;
-    std::vector<sh::Attribute> mAttributes;
-    std::vector<sh::OutputVariable> mOutputVariables;
-    std::vector<sh::Uniform> mUniforms;
-    std::vector<sh::Varying> mInputVaryings;
-    std::vector<sh::Varying> mOutputVaryings;
+    std::vector<sh::ShaderVariable> mAttributes;
+    std::vector<sh::ShaderVariable> mOutputVariables;
+    std::vector<sh::ShaderVariable> mUniforms;
+    std::vector<sh::ShaderVariable> mInputVaryings;
+    std::vector<sh::ShaderVariable> mOutputVaryings;
+    std::vector<sh::ShaderVariable> mSharedVariables;
     std::vector<sh::InterfaceBlock> mInterfaceBlocks;
     std::vector<sh::InterfaceBlock> mUniformBlocks;
     std::vector<sh::InterfaceBlock> mShaderStorageBlocks;

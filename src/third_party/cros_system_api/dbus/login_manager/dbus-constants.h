@@ -23,6 +23,7 @@ const char kSessionManagerLoginScreenStorageDelete[] =
     "LoginScreenStorageDelete";
 const char kSessionManagerStartSession[] = "StartSession";
 const char kSessionManagerStopSession[] = "StopSession";
+const char kSessionManagerStopSessionWithReason[] = "StopSessionWithReason";
 const char kSessionManagerRestartJob[] = "RestartJob";
 const char kSessionManagerStorePolicyEx[] = "StorePolicyEx";
 const char kSessionManagerStoreUnsignedPolicyEx[] = "StoreUnsignedPolicyEx";
@@ -59,6 +60,8 @@ const char kSessionManagerEmitArcBooted[] = "EmitArcBooted";
 const char kSessionManagerGetArcStartTimeTicks[] = "GetArcStartTimeTicks";
 const char kSessionManagerStartContainer[] = "StartContainer";
 const char kSessionManagerStopContainer[] = "StopContainer";
+const char kSessionManagerEnableAdbSideload[] = "EnableAdbSideload";
+const char kSessionManagerQueryAdbSideload[] = "QueryAdbSideload";
 // Signals
 const char kLoginPromptVisibleSignal[] = "LoginPromptVisible";
 const char kSessionStateChangedSignal[] = "SessionStateChanged";
@@ -136,6 +139,27 @@ enum class ArcContainerStopReason {
   // Failed to upgrade ARC mini container into full container.
   // Note that this will be used if the reason is other than low-disk-space.
   UPGRADE_FAILURE = 5,
+};
+
+// The reason for stopping the session.
+enum class SessionStopReason {
+  // Force restart to restore active sessions.
+  RESTORE_ACTIVE_SESSIONS = 0,
+
+  // Stoped by user requesting sign out.
+  REQUEST_FROM_SESSION_MANAGER = 1,
+
+  // No owner found.
+  OWNER_REQUIRED = 2,
+
+  // Terms of service declined.
+  TERMS_DECLINED = 3,
+
+  // Failed to lock screen.
+  FAILED_TO_LOCK = 4,
+
+  // Suspend after Chrome restart.
+  SUSPEND_AFTER_RESTART = 5,
 };
 
 }  // namespace login_manager

@@ -20,20 +20,23 @@ public:
     uint32_t getFlags() const override;
 
 #if SK_SUPPORT_GPU
-    std::unique_ptr<GrFragmentProcessor> asFragmentProcessor(
-            GrRecordingContext*, const GrColorSpaceInfo&) const override;
+    std::unique_ptr<GrFragmentProcessor> asFragmentProcessor(GrRecordingContext*,
+                                                             const GrColorInfo&) const override;
 #endif
 
     static void RegisterFlattenables();
 
-protected:
+private:
     void flatten(SkWriteBuffer&) const override;
     bool onAsAColorMatrix(float matrix[20]) const override;
 
-private:
     SK_FLATTENABLE_HOOKS(SkColorFilter_Matrix)
 
     bool onAppendStages(const SkStageRec& rec, bool shaderIsOpaque) const override;
+    bool program(skvm::Builder*,
+                 SkColorSpace* dstCS,
+                 skvm::Uniforms* uniforms,
+                 skvm::F32* r, skvm::F32* g, skvm::F32* b, skvm::F32* a) const override;
 
     float       fMatrix[20];
     uint16_t    fFlags;

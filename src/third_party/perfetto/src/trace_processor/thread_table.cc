@@ -62,7 +62,7 @@ int ThreadTable::BestIndex(const QueryConstraints& qc, BestIndexInfo* info) {
   // because we can do that filter efficiently.
   const auto& constraints = qc.constraints();
   for (const auto& cs : qc.constraints()) {
-    if (cs.iColumn == Column::kUtid) {
+    if (cs.column == Column::kUtid) {
       info->estimated_cost = IsOpEq(constraints.front().op) ? 1 : 10;
     }
   }
@@ -73,43 +73,45 @@ ThreadTable::Cursor::Cursor(ThreadTable* table)
     : SqliteTable::Cursor(table), storage_(table->storage_), table_(table) {}
 
 int ThreadTable::Cursor::Filter(const QueryConstraints& qc,
-                                sqlite3_value** argv) {
+                                sqlite3_value** argv,
+                                FilterHistory) {
   *this = Cursor(table_);
 
-  min = 0;
-  max = static_cast<uint32_t>(storage_->thread_count()) - 1;
-  desc = false;
+  min_ = 0;
+  max_ = static_cast<uint32_t>(storage_->thread_count());
+  desc_ = false;
 
   for (size_t j = 0; j < qc.constraints().size(); j++) {
     const auto& cs = qc.constraints()[j];
-    if (cs.iColumn == Column::kUtid) {
+    if (cs.column == Column::kUtid) {
       UniqueTid constraint_utid =
           static_cast<UniqueTid>(sqlite3_value_int(argv[j]));
       // Filter the range of utids that we are interested in, based on the
-      // constraints in the query. Everything between min and max (inclusive)
+      // constraints in the query. Everything between min and max (exclusive)
       // will be returned.
       if (IsOpEq(cs.op)) {
-        min = constraint_utid;
-        max = constraint_utid;
+        min_ = constraint_utid;
+        max_ = constraint_utid + 1;
       } else if (IsOpGe(cs.op) || IsOpGt(cs.op)) {
-        min = IsOpGt(cs.op) ? constraint_utid + 1 : constraint_utid;
+        min_ = IsOpGt(cs.op) ? constraint_utid + 1 : constraint_utid;
       } else if (IsOpLe(cs.op) || IsOpLt(cs.op)) {
-        max = IsOpLt(cs.op) ? constraint_utid - 1 : constraint_utid;
+        max_ = IsOpLt(cs.op) ? constraint_utid : constraint_utid + 1;
       }
     }
   }
 
   for (const auto& ob : qc.order_by()) {
     if (ob.iColumn == Column::kUtid) {
-      desc = ob.desc;
+      desc_ = ob.desc;
     }
   }
-  current = desc ? max : min;
+  index_ = 0;
 
   return SQLITE_OK;
 }
 
 int ThreadTable::Cursor::Column(sqlite3_context* context, int N) {
+  uint32_t current = desc_ ? max_ - index_ - 1 : min_ + index_;
   const auto& thread = storage_->GetThread(current);
   switch (N) {
     case Column::kUtid: {
@@ -158,16 +160,12 @@ int ThreadTable::Cursor::Column(sqlite3_context* context, int N) {
 }
 
 int ThreadTable::Cursor::Next() {
-  if (desc) {
-    --current;
-  } else {
-    ++current;
-  }
+  ++index_;
   return SQLITE_OK;
 }
 
 int ThreadTable::Cursor::Eof() {
-  return desc ? current < min : current > max;
+  return index_ >= (max_ - min_);
 }
 }  // namespace trace_processor
 }  // namespace perfetto

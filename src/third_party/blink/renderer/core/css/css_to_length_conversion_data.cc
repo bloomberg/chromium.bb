@@ -47,8 +47,8 @@ CSSToLengthConversionData::FontSizes::FontSizes(float em,
 
 CSSToLengthConversionData::FontSizes::FontSizes(const ComputedStyle* style,
                                                 const ComputedStyle* root_style)
-    : FontSizes(style->ComputedFontSize(),
-                root_style ? root_style->ComputedFontSize() : 1.0f,
+    : FontSizes(style->SpecifiedFontSize(),
+                root_style ? root_style->SpecifiedFontSize() : 1.0f,
                 &style->GetFont(),
                 style->EffectiveZoom()) {}
 
@@ -127,6 +127,18 @@ float CSSToLengthConversionData::RemFontSize() const {
   return font_sizes_.Rem();
 }
 
+float CSSToLengthConversionData::ExFontSize() const {
+  if (style_)
+    const_cast<ComputedStyle*>(style_)->SetHasGlyphRelativeUnits();
+  return font_sizes_.Ex();
+}
+
+float CSSToLengthConversionData::ChFontSize() const {
+  if (style_)
+    const_cast<ComputedStyle*>(style_)->SetHasGlyphRelativeUnits();
+  return font_sizes_.Ch();
+}
+
 double CSSToLengthConversionData::ZoomedComputedPixels(
     double value,
     CSSPrimitiveValue::UnitType type) const {
@@ -175,13 +187,13 @@ double CSSToLengthConversionData::ZoomedComputedPixels(
     // as well as enforcing the implicit "smart minimum."
     case CSSPrimitiveValue::UnitType::kEms:
     case CSSPrimitiveValue::UnitType::kQuirkyEms:
-      return value * EmFontSize();
+      return value * EmFontSize() * Zoom();
 
     case CSSPrimitiveValue::UnitType::kExs:
       return value * ExFontSize();
 
     case CSSPrimitiveValue::UnitType::kRems:
-      return value * RemFontSize();
+      return value * RemFontSize() * Zoom();
 
     case CSSPrimitiveValue::UnitType::kChs:
       return value * ChFontSize();

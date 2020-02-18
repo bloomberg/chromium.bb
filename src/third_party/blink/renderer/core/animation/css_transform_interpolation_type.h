@@ -39,7 +39,11 @@ class CSSTransformInterpolationType : public CSSInterpolationType {
   InterpolationValue MaybeConvertValue(const CSSValue&,
                                        const StyleResolverState*,
                                        ConversionCheckers&) const final;
-  InterpolationValue MakeAdditive(InterpolationValue) const final;
+  InterpolationValue PreInterpolationCompositeIfNeeded(
+      InterpolationValue value,
+      const InterpolationValue& underlying,
+      EffectModel::CompositeOperation,
+      ConversionCheckers&) const final;
 };
 
 }  // namespace blink

@@ -119,10 +119,12 @@ const char kDelayDeliveryUntilVerdict[] =
 const char kAllowPasswordProtectedFiles[] =
     "safebrowsing.allow_password_protected_files";
 const char kCheckContentCompliance[] = "safebrowsing.check_content_compliance";
-const char kDomainsToCheckComplianceOfDownloadedContent[] =
-    "safebrowsing.domains_to_check_compliance_of_downloaded_content";
-const char kDomainsToCheckForMalwareOfUploadedContent[] =
-    "safebrowsing.domains_to_check_for_malware_of_uploaded_content";
+const char kURLsToCheckComplianceOfDownloadedContent[] =
+    "safebrowsing.urls_to_check_compliance_of_downloaded_content";
+const char kURLsToCheckForMalwareOfUploadedContent[] =
+    "safebrowsing.urls_to_check_for_malware_of_uploaded_content";
+const char kURLsToNotCheckComplianceOfUploadedContent[] =
+    "policy.urls_to_not_check_compliance_of_uploaded_content";
 
 }  // namespace prefs
 
@@ -188,20 +190,21 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(prefs::kSafeBrowsingRealTimeLookupEnabled,
                                 false);
   registry->RegisterIntegerPref(prefs::kSafeBrowsingSendFilesForMalwareCheck,
-                                0);
+                                DO_NOT_SCAN);
 }
 
 void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
   registry->RegisterDictionaryPref(prefs::kSafeBrowsingTriggerEventTimestamps);
   registry->RegisterBooleanPref(prefs::kUnsafeEventsReportingEnabled, false);
   registry->RegisterIntegerPref(prefs::kBlockLargeFileTransfer, 0);
-  registry->RegisterIntegerPref(prefs::kDelayDeliveryUntilVerdict, 0);
+  registry->RegisterIntegerPref(prefs::kDelayDeliveryUntilVerdict, DELAY_NONE);
   registry->RegisterIntegerPref(
       prefs::kAllowPasswordProtectedFiles,
       AllowPasswordProtectedFilesValues::ALLOW_UPLOADS_AND_DOWNLOADS);
-  registry->RegisterIntegerPref(prefs::kCheckContentCompliance, 0);
-  registry->RegisterListPref(
-      prefs::kDomainsToCheckComplianceOfDownloadedContent);
+  registry->RegisterIntegerPref(prefs::kCheckContentCompliance, CHECK_NONE);
+  registry->RegisterListPref(prefs::kURLsToCheckComplianceOfDownloadedContent);
+  registry->RegisterListPref(prefs::kURLsToNotCheckComplianceOfUploadedContent);
+  registry->RegisterListPref(prefs::kURLsToCheckForMalwareOfUploadedContent);
 }
 
 void SetExtendedReportingPrefAndMetric(
@@ -293,10 +296,9 @@ base::ListValue GetSafeBrowsingPreferencesList(PrefService* prefs) {
   // Add the status of the preferences if they are Enabled or Disabled for the
   // user.
   for (const char* preference : safe_browsing_preferences) {
-    preferences_list.GetList().push_back(base::Value(preference));
+    preferences_list.Append(base::Value(preference));
     bool enabled = prefs->GetBoolean(preference);
-    preferences_list.GetList().push_back(
-        base::Value(enabled ? "Enabled" : "Disabled"));
+    preferences_list.Append(base::Value(enabled ? "Enabled" : "Disabled"));
   }
   return preferences_list;
 }

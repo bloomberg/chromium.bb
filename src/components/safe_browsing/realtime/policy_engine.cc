@@ -6,58 +6,74 @@
 
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
+#include "build/build_config.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/features.h"
+#include "components/unified_consent/pref_names.h"
+#include "components/user_prefs/user_prefs.h"
+#include "content/public/browser/browser_context.h"
+
+#if defined(OS_ANDROID)
+#include "base/metrics/field_trial_params.h"
+#include "base/system/sys_info.h"
+#endif
 
 namespace safe_browsing {
 
-bool RealTimePolicyEngine::is_enabled_by_pref_ = false;
-
-// static
-bool RealTimePolicyEngine::IsFetchAllowlistEnabled() {
-  return base::FeatureList::IsEnabled(kRealTimeUrlLookupFetchAllowlist);
-}
+#if defined(OS_ANDROID)
+const int kDefaultMemoryThresholdMb = 4096;
+#endif
 
 // static
 bool RealTimePolicyEngine::IsUrlLookupEnabled() {
-  return base::FeatureList::IsEnabled(kRealTimeUrlLookupEnabled);
+  if (!base::FeatureList::IsEnabled(kRealTimeUrlLookupEnabled))
+    return false;
+#if defined(OS_ANDROID)
+  // On Android, performs real time URL lookup only if
+  // |kRealTimeUrlLookupEnabled| is enabled, and system memory is larger than
+  // threshold.
+  int memory_threshold_mb = base::GetFieldTrialParamByFeatureAsInt(
+      kRealTimeUrlLookupEnabled, kRealTimeUrlLookupMemoryThresholdMb,
+      kDefaultMemoryThresholdMb);
+  return base::SysInfo::AmountOfPhysicalMemoryMB() >= memory_threshold_mb;
+#else
+  return true;
+#endif
 }
 
 // static
-bool RealTimePolicyEngine::IsUserOptedIn() {
-  // TODO(crbug.com/991394): Implement this soon. For now, disabled.
+bool RealTimePolicyEngine::IsUserOptedIn(
+    content::BrowserContext* browser_context) {
+  PrefService* pref_service = user_prefs::UserPrefs::Get(browser_context);
+  return pref_service->GetBoolean(
+      unified_consent::prefs::kUrlKeyedAnonymizedDataCollectionEnabled);
+}
+
+// static
+bool RealTimePolicyEngine::IsEnabledByPolicy(
+    content::BrowserContext* browser_context) {
   return false;
 }
 
 // static
-bool RealTimePolicyEngine::CanPerformFullURLLookup() {
-  // TODO(crbug.com/991394): This should take into account whether the user is
-  // eligible for this service (see "Target Users" in the design doc).
-
-  if (!IsFetchAllowlistEnabled())
+bool RealTimePolicyEngine::CanPerformFullURLLookup(
+    content::BrowserContext* browser_context) {
+  if (browser_context->IsOffTheRecord())
     return false;
 
-  if (is_enabled_by_pref())
+  if (IsEnabledByPolicy(browser_context))
     return true;
 
-  return IsUrlLookupEnabled() && IsUserOptedIn();
+  return IsUrlLookupEnabled() && IsUserOptedIn(browser_context);
 }
 
 // static
 bool RealTimePolicyEngine::CanPerformFullURLLookupForResourceType(
     content::ResourceType resource_type) {
-  if (!CanPerformFullURLLookup())
-    return false;
-
   UMA_HISTOGRAM_ENUMERATION("SafeBrowsing.RT.ResourceTypes.Requested",
                             resource_type);
   return resource_type == content::ResourceType::kMainFrame;
-}
-
-// static
-void RealTimePolicyEngine::SetEnabled(bool is_enabled) {
-  is_enabled_by_pref_ = is_enabled;
 }
 
 }  // namespace safe_browsing

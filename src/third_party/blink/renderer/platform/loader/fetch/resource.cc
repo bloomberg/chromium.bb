@@ -42,6 +42,7 @@
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/loader/cors/cors.h"
 #include "third_party/blink/renderer/platform/loader/fetch/cached_metadata.h"
+#include "third_party/blink/renderer/platform/loader/fetch/cached_metadata_handler.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_initiator_type_names.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_parameters.h"
 #include "third_party/blink/renderer/platform/loader/fetch/integrity_metadata.h"
@@ -49,6 +50,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource_client.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_client_walker.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_finish_observer.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_load_timing.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader.h"
 #include "third_party/blink/renderer/platform/network/http_parsers.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
@@ -391,6 +393,8 @@ bool Resource::MustRefetchDueToIntegrityMetadata(
 const scoped_refptr<const SecurityOrigin>& Resource::GetOrigin() const {
   return LastResourceRequest().RequestorOrigin();
 }
+
+void Resource::DidDownloadToBlob(scoped_refptr<BlobDataHandle>) {}
 
 static base::TimeDelta CurrentAge(const ResourceResponse& response,
                                   base::Time response_timestamp) {
@@ -827,7 +831,7 @@ Resource::MatchStatus Resource::CanReuse(const FetchParameters& params) const {
 
 
   // Don't reuse an existing resource when the source origin is different.
-  if (!existing_origin->IsSameSchemeHostPort(new_origin.get()))
+  if (!existing_origin->IsSameOriginWith(new_origin.get()))
     return MatchStatus::kUnknownFailure;
 
   // securityOrigin has more complicated checks which callers are responsible
@@ -1256,6 +1260,15 @@ bool Resource::IsLoadEventBlockingResourceType() const {
 // static
 void Resource::SetClockForTesting(const base::Clock* clock) {
   g_clock_for_testing = clock;
+}
+
+size_t Resource::CodeCacheSize() const {
+  return cache_handler_ ? cache_handler_->GetCodeCacheSize() : 0;
+}
+
+CachedMetadataHandler* Resource::CreateCachedMetadataHandler(
+    std::unique_ptr<CachedMetadataSender> send_callback) {
+  return nullptr;
 }
 
 }  // namespace blink

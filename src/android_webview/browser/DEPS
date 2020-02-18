@@ -1,9 +1,9 @@
 include_rules = [
   "-android_webview",
   "+android_webview/browser",
+  "+android_webview/browser_jni_headers",
   "+android_webview/common",
   "+android_webview/grit",
-  "+android_webview/native_jni",
   "+android_webview/test/android_webview_unittests_jni",
   "+cc",
   "+components/autofill/android",
@@ -20,6 +20,7 @@ include_rules = [
   "+components/keyed_service/core",
   "+components/minidump_uploader",
   "+components/navigation_interception",
+  "+components/page_load_metrics/browser",
   "+components/policy/core/browser",
   "+components/policy/core/common",
   "+components/policy/content",
@@ -58,6 +59,8 @@ include_rules = [
   "+printing",
 
   "+services/network/public",
+  # This is needed for the CookieManager to configure the CookieStore directly.
+  "+services/network/cookie_access_delegate_impl.h",
   "+services/resource_coordinator/public/cpp",
   "+services/service_manager/public/cpp",
 
@@ -72,8 +75,10 @@ include_rules = [
   "+third_party/crashpad/crashpad/client",
   "+third_party/crashpad/crashpad/util",
 
+  "+ui/display",
   "+ui/gfx",
   "+ui/gl",
+  "+ui/native_theme",
   "+ui/touch_selection/touch_handle.h",
 
   # Temporary until we bundle our own favicon. See

@@ -142,7 +142,7 @@ FontFace* FontFace::Create(ExecutionContext* context,
   FontFace* font_face =
       MakeGarbageCollected<FontFace>(context, family, descriptors);
   font_face->InitCSSFontFace(static_cast<const unsigned char*>(source->Data()),
-                             source->ByteLength());
+                             source->ByteLengthAsSizeT());
   return font_face;
 }
 
@@ -154,7 +154,7 @@ FontFace* FontFace::Create(ExecutionContext* context,
       MakeGarbageCollected<FontFace>(context, family, descriptors);
   font_face->InitCSSFontFace(
       static_cast<const unsigned char*>(source->BaseAddress()),
-      source->byteLength());
+      source->byteLengthAsSizeT());
   return font_face;
 }
 
@@ -780,13 +780,8 @@ bool FontFace::HasPendingActivity() const {
   return status_ == kLoading && GetExecutionContext();
 }
 
-FontDisplay FontFace::GetFontDisplayWithFallback() const {
-  if (display_)
-    return CSSValueToFontDisplay(display_.Get());
-  ExecutionContext* context = GetExecutionContext();
-  if (!context || !context->IsDocument())
-    return kFontDisplayAuto;
-  return To<Document>(context)->GetStyleEngine().GetDefaultFontDisplay(family_);
+FontDisplay FontFace::GetFontDisplay() const {
+  return CSSValueToFontDisplay(display_.Get());
 }
 
 }  // namespace blink

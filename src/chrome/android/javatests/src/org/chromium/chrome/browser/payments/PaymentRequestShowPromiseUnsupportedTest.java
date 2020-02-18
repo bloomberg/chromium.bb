@@ -35,13 +35,13 @@ public class PaymentRequestShowPromiseUnsupportedTest implements MainActivitySta
             new PaymentRequestTestRule("show_promise/unsupported.html", this);
 
     @Override
-    public void onMainActivityStarted() throws InterruptedException, TimeoutException {}
+    public void onMainActivityStarted() {}
 
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testReject() throws InterruptedException, TimeoutException {
-        mRule.openPageAndClickNodeAndWait("buy", mRule.getDismissed());
+    public void testReject() throws TimeoutException {
+        mRule.openPageAndClickNodeAndWait("buy", mRule.getShowFailed());
         mRule.expectResultContains(
                 new String[] {"NotSupportedError: Payment method not supported"});
     }

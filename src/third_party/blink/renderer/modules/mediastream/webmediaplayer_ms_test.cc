@@ -344,8 +344,12 @@ void MockMediaStreamVideoRenderer::QueueFrames(
           frame_size, gfx::Rect(frame_size), frame_size,
           base::TimeDelta::FromMilliseconds(token));
 
-      frame->metadata()->SetRotation(media::VideoFrameMetadata::ROTATION,
-                                     rotation);
+      // MediaStreamRemoteVideoSource does not explicitly set the rotation
+      // for unrotated frames, so that is not done here either.
+      if (rotation != media::VIDEO_ROTATION_0) {
+        frame->metadata()->SetRotation(media::VideoFrameMetadata::ROTATION,
+                                       rotation);
+      }
       frame->metadata()->SetTimeTicks(
           media::VideoFrameMetadata::Key::REFERENCE_TIME,
           base::TimeTicks::Now() + base::TimeDelta::FromMilliseconds(token));
@@ -582,10 +586,11 @@ class WebMediaPlayerMSTest
   void ActivateViewportIntersectionMonitoring(bool activate) override {}
   void MediaRemotingStarted(
       const WebString& remote_device_friendly_name) override {}
-  void MediaRemotingStopped(WebLocalizedString::Name error_msg) override {}
+  void MediaRemotingStopped(int error_code) override {}
   void RequestPlay() override {}
   void RequestPause() override {}
   void RequestMuted(bool muted) override {}
+  Features GetFeatures() override { return Features(); }
 
   // Implementation of cc::VideoFrameProvider::Client
   void StopUsingProvider() override;
@@ -1066,6 +1071,24 @@ TEST_P(WebMediaPlayerMSTest, RotationChange) {
   EXPECT_EQ(kStandardHeight, natural_size.height);
   EXPECT_EQ(kStandardWidth, natural_size.width);
 
+  // Change rotation again.
+  tokens[0] = 66;
+  timestamps = std::vector<int>(tokens, tokens + base::size(tokens));
+  provider->QueueFrames(timestamps, false, false, 17, media::VIDEO_ROTATION_90);
+  if (enable_surface_layer_for_video_) {
+    EXPECT_CALL(*submitter_ptr_, SetRotation(media::VIDEO_ROTATION_90));
+  } else {
+    EXPECT_CALL(*this, DoSetCcLayer(true));
+    EXPECT_CALL(*this, DoStopRendering());
+    EXPECT_CALL(*this, DoStartRendering());
+  }
+  message_loop_controller_.RunAndWaitForStatus(
+      media::PipelineStatus::PIPELINE_OK);
+  base::RunLoop().RunUntilIdle();
+  natural_size = player_->NaturalSize();
+  EXPECT_EQ(kStandardHeight, natural_size.width);
+  EXPECT_EQ(kStandardWidth, natural_size.height);
+
   testing::Mock::VerifyAndClearExpectations(this);
   EXPECT_CALL(*this, DoSetCcLayer(false));
 
@@ -1341,7 +1364,7 @@ TEST_P(WebMediaPlayerMSTest, HiddenPlayerTests) {
 }
 #endif
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          WebMediaPlayerMSTest,
                          ::testing::Combine(::testing::Bool(),
                                             ::testing::Bool(),

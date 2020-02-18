@@ -72,15 +72,11 @@ class RtcpTransceiver : public RtcpFeedbackSenderInterface {
   // Stops sending REMB in following compound packets.
   void UnsetRemb() override;
 
-  // TODO(bugs.webrtc.org/8239): Remove SendFeedbackPacket and SSRC functions
+  // TODO(bugs.webrtc.org/8239): Remove SendCombinedRtcpPacket
   // and move generating of the TransportFeedback message inside
   // RtcpTransceiverImpl when there is one RtcpTransceiver per rtp transport.
-
-  // Returns ssrc to put as sender ssrc into rtcp::TransportFeedback.
-  uint32_t SSRC() const override;
-  bool SendFeedbackPacket(const rtcp::TransportFeedback& packet) override;
-  bool SendNetworkStateEstimatePacket(
-      const rtcp::RemoteEstimate& packet) override;
+  void SendCombinedRtcpPacket(
+      std::vector<std::unique_ptr<rtcp::RtcpPacket>> rtcp_packets) override;
 
   // Reports missing packets, https://tools.ietf.org/html/rfc4585#section-6.2.1
   void SendNack(uint32_t ssrc, std::vector<uint16_t> sequence_numbers);
@@ -89,7 +85,11 @@ class RtcpTransceiver : public RtcpFeedbackSenderInterface {
   // using PLI, https://tools.ietf.org/html/rfc4585#section-6.3.1.1
   void SendPictureLossIndication(uint32_t ssrc);
   // using FIR, https://tools.ietf.org/html/rfc5104#section-4.3.1.2
+  // Use the SendFullIntraRequest(ssrcs, true) instead.
   void SendFullIntraRequest(std::vector<uint32_t> ssrcs);
+  // If new_request is true then requested sequence no. will increase for each
+  // requested ssrc.
+  void SendFullIntraRequest(std::vector<uint32_t> ssrcs, bool new_request);
 
  private:
   rtc::TaskQueue* const task_queue_;

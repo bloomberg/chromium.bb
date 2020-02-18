@@ -15,7 +15,7 @@
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/optional.h"
-#include "base/threading/thread_checker.h"
+#include "base/sequence_checker.h"
 #include "base/values.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/engine_impl/loopback_server/loopback_server_entity.h"
@@ -50,10 +50,11 @@ class LoopbackServer {
   explicit LoopbackServer(const base::FilePath& persistent_file);
   virtual ~LoopbackServer();
 
-  // Handles a /command POST (with the given |request|) to the server.
-  // |*response| must not be null.
-  net::HttpStatusCode HandleCommand(const std::string& request,
-                                    std::string* response);
+  // Handles a /command POST (with the given |message|) to the server.
+  // |response| must not be null.
+  net::HttpStatusCode HandleCommand(
+      const sync_pb::ClientToServerMessage& message,
+      sync_pb::ClientToServerResponse* response);
 
   // Enables strong consistency model (i.e. server detects conflicts).
   void EnableStrongConsistencyWithConflictDetectionModel();
@@ -76,6 +77,8 @@ class LoopbackServer {
   const std::vector<std::string>& GetKeystoreKeysForTesting() const {
     return keystore_keys_;
   }
+
+  void AddNewKeystoreKeyForTesting();
 
  private:
   // Allow the FakeServer decorator to inspect the internals of this class.
@@ -235,8 +238,8 @@ class LoopbackServer {
   // The file used to store the local sync data.
   base::FilePath persistent_file_;
 
-  // Used to verify that LoopbackServer is only used from one thread.
-  base::ThreadChecker thread_checker_;
+  // Used to verify that LoopbackServer is only used from one sequence.
+  SEQUENCE_CHECKER(sequence_checker_);
 
   // Used to observe the completion of commit messages for the sake of testing.
   ObserverForTests* observer_for_tests_;

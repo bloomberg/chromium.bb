@@ -11,14 +11,16 @@
 #include "base/no_destructor.h"
 #include "chrome/browser/payments/chrome_payment_request_delegate.h"
 #include "components/payments/content/payment_request_web_contents_manager.h"
+#include "mojo/public/cpp/bindings/message.h"
+#include "third_party/blink/public/mojom/feature_policy/feature_policy_feature.mojom-shared.h"
 
 namespace payments {
 
 namespace {
 
-using PaymentRequestFactoryCallback =
-    base::RepeatingCallback<void(mojom::PaymentRequestRequest request,
-                                 content::RenderFrameHost* render_frame_host)>;
+using PaymentRequestFactoryCallback = base::RepeatingCallback<void(
+    mojo::PendingReceiver<mojom::PaymentRequest> receiver,
+    content::RenderFrameHost* render_frame_host)>;
 
 PaymentRequestFactoryCallback& GetTestingFactoryCallback() {
   static base::NoDestructor<PaymentRequestFactoryCallback> callback;
@@ -27,10 +29,17 @@ PaymentRequestFactoryCallback& GetTestingFactoryCallback() {
 
 }  // namespace
 
-void CreatePaymentRequest(mojom::PaymentRequestRequest request,
-                          content::RenderFrameHost* render_frame_host) {
+void CreatePaymentRequest(
+    content::RenderFrameHost* render_frame_host,
+    mojo::PendingReceiver<mojom::PaymentRequest> receiver) {
+  if (!render_frame_host->IsFeatureEnabled(
+          blink::mojom::FeaturePolicyFeature::kPayment)) {
+    mojo::ReportBadMessage("Feature policy blocks Payment");
+    return;
+  }
+
   if (GetTestingFactoryCallback()) {
-    return GetTestingFactoryCallback().Run(std::move(request),
+    return GetTestingFactoryCallback().Run(std::move(receiver),
                                            render_frame_host);
   }
 
@@ -42,7 +51,7 @@ void CreatePaymentRequest(mojom::PaymentRequestRequest request,
       ->CreatePaymentRequest(
           render_frame_host, web_contents,
           std::make_unique<ChromePaymentRequestDelegate>(web_contents),
-          std::move(request),
+          std::move(receiver),
           /*observer_for_testing=*/nullptr);
 }
 

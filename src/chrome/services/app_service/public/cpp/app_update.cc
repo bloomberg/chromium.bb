@@ -23,6 +23,14 @@ void CloneStrings(const std::vector<std::string>& clone_from,
   }
 }
 
+void CloneIntentFilters(
+    const std::vector<apps::mojom::IntentFilterPtr>& clone_from,
+    std::vector<apps::mojom::IntentFilterPtr>* clone_to) {
+  for (const auto& intent_filter : clone_from) {
+    clone_to->push_back(intent_filter->Clone());
+  }
+}
+
 }  // namespace
 
 namespace apps {
@@ -52,6 +60,9 @@ void AppUpdate::Merge(apps::mojom::App* state, const apps::mojom::App* delta) {
   if (delta->short_name.has_value()) {
     state->short_name = delta->short_name;
   }
+  if (delta->publisher_id.has_value()) {
+    state->publisher_id = delta->publisher_id;
+  }
   if (delta->description.has_value()) {
     state->description = delta->description;
   }
@@ -59,8 +70,6 @@ void AppUpdate::Merge(apps::mojom::App* state, const apps::mojom::App* delta) {
     state->version = delta->version;
   }
   if (!delta->additional_search_terms.empty()) {
-    DCHECK(state->permissions.empty() ||
-           (delta->permissions.size() == state->permissions.size()));
     state->additional_search_terms.clear();
     CloneStrings(delta->additional_search_terms,
                  &state->additional_search_terms);
@@ -100,6 +109,14 @@ void AppUpdate::Merge(apps::mojom::App* state, const apps::mojom::App* delta) {
   }
   if (delta->show_in_management != apps::mojom::OptionalBool::kUnknown) {
     state->show_in_management = delta->show_in_management;
+  }
+  if (delta->paused != apps::mojom::OptionalBool::kUnknown) {
+    state->paused = delta->paused;
+  }
+
+  if (!delta->intent_filters.empty()) {
+    state->intent_filters.clear();
+    CloneIntentFilters(delta->intent_filters, &state->intent_filters);
   }
 
   // When adding new fields to the App Mojo type, this function should also be
@@ -171,6 +188,21 @@ const std::string& AppUpdate::ShortName() const {
 bool AppUpdate::ShortNameChanged() const {
   return delta_ && delta_->short_name.has_value() &&
          (!state_ || (delta_->short_name != state_->short_name));
+}
+
+const std::string& AppUpdate::PublisherId() const {
+  if (delta_ && delta_->publisher_id.has_value()) {
+    return delta_->publisher_id.value();
+  }
+  if (state_ && state_->publisher_id.has_value()) {
+    return state_->publisher_id.value();
+  }
+  return base::EmptyString();
+}
+
+bool AppUpdate::PublisherIdChanged() const {
+  return delta_ && delta_->publisher_id.has_value() &&
+         (!state_ || (delta_->publisher_id != state_->publisher_id));
 }
 
 const std::string& AppUpdate::Description() const {
@@ -414,6 +446,38 @@ bool AppUpdate::ShowInManagementChanged() const {
          (delta_->show_in_management != apps::mojom::OptionalBool::kUnknown) &&
          (!state_ ||
           (delta_->show_in_management != state_->show_in_management));
+}
+
+apps::mojom::OptionalBool AppUpdate::Paused() const {
+  if (delta_ && (delta_->paused != apps::mojom::OptionalBool::kUnknown)) {
+    return delta_->paused;
+  }
+  if (state_) {
+    return state_->paused;
+  }
+  return apps::mojom::OptionalBool::kUnknown;
+}
+
+bool AppUpdate::PausedChanged() const {
+  return delta_ && (delta_->paused != apps::mojom::OptionalBool::kUnknown) &&
+         (!state_ || (delta_->paused != state_->paused));
+}
+
+std::vector<apps::mojom::IntentFilterPtr> AppUpdate::IntentFilters() const {
+  std::vector<apps::mojom::IntentFilterPtr> intent_filters;
+
+  if (delta_ && !delta_->intent_filters.empty()) {
+    CloneIntentFilters(delta_->intent_filters, &intent_filters);
+  } else if (state_ && !state_->intent_filters.empty()) {
+    CloneIntentFilters(state_->intent_filters, &intent_filters);
+  }
+
+  return intent_filters;
+}
+
+bool AppUpdate::IntentFiltersChanged() const {
+  return delta_ && !delta_->intent_filters.empty() &&
+         (!state_ || (delta_->intent_filters != state_->intent_filters));
 }
 
 }  // namespace apps

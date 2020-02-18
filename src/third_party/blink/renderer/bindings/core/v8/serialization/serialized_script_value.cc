@@ -67,7 +67,6 @@
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
-#include "third_party/blink/renderer/platform/wtf/dtoa/utils.h"
 #include "third_party/blink/renderer/platform/wtf/shared_buffer.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_buffer.h"
@@ -260,15 +259,13 @@ scoped_refptr<SerializedScriptValue> SerializedScriptValue::Create(
 }
 
 SerializedScriptValue::SerializedScriptValue()
-    : has_registered_external_allocation_(false),
-      transferables_need_external_allocation_registration_(false) {}
+    : has_registered_external_allocation_(false) {}
 
 SerializedScriptValue::SerializedScriptValue(DataBufferPtr data,
                                              size_t data_size)
     : data_buffer_(std::move(data)),
       data_buffer_size_(data_size),
-      has_registered_external_allocation_(false),
-      transferables_need_external_allocation_registration_(false) {}
+      has_registered_external_allocation_(false) {}
 
 void SerializedScriptValue::SetImageBitmapContentsArray(
     ImageBitmapContentsArray contents) {
@@ -518,7 +515,7 @@ bool SerializedScriptValue::ExtractTransferables(
   if (value.IsEmpty() || value->IsUndefined())
     return true;
 
-  const Vector<ScriptValue>& transferable_array =
+  const HeapVector<ScriptValue>& transferable_array =
       NativeValueTraits<IDLSequence<ScriptValue>>::NativeValue(isolate, value,
                                                                exception_state);
   if (exception_state.HadException())
@@ -530,7 +527,7 @@ bool SerializedScriptValue::ExtractTransferables(
 
 bool SerializedScriptValue::ExtractTransferables(
     v8::Isolate* isolate,
-    const Vector<ScriptValue>& object_sequence,
+    const HeapVector<ScriptValue>& object_sequence,
     Transferables& transferables,
     ExceptionState& exception_state) {
   // Validate the passed array of transferables.
@@ -705,6 +702,16 @@ SerializedScriptValue::TransferArrayBufferContents(
 
   contents.Grow(array_buffers.size());
   HeapHashSet<Member<DOMArrayBufferBase>> visited;
+  // The scope object to promptly free the backing store to avoid memory
+  // regressions.
+  // TODO(bikineev): Revisit after young generation is there.
+  struct PromptlyFreeSet {
+    // The void* is to avoid blink-gc-plugin error.
+    void* buffer;
+    ~PromptlyFreeSet() {
+      static_cast<HeapHashSet<Member<DOMArrayBufferBase>>*>(buffer)->clear();
+    }
+  } promptly_free_array_buffers{&visited};
   for (auto* it = array_buffers.begin(); it != array_buffers.end(); ++it) {
     DOMArrayBufferBase* array_buffer_base = *it;
     if (visited.Contains(array_buffer_base))
@@ -742,16 +749,6 @@ void SerializedScriptValue::
         -static_cast<int64_t>(DataLengthInBytes()));
     has_registered_external_allocation_ = false;
   }
-
-  // TODO: if other transferables start accounting for their external
-  // allocations with V8, extend this with corresponding cases.
-  if (!transferables_need_external_allocation_registration_) {
-    for (auto& buffer : array_buffer_contents_array_)
-      buffer.UnregisterExternalAllocationWithCurrentContext();
-    for (auto& buffer : shared_array_buffers_contents_)
-      buffer.UnregisterExternalAllocationWithCurrentContext();
-    transferables_need_external_allocation_registration_ = true;
-  }
 }
 
 void SerializedScriptValue::RegisterMemoryAllocatedWithCurrentScriptContext() {
@@ -762,15 +759,6 @@ void SerializedScriptValue::RegisterMemoryAllocatedWithCurrentScriptContext() {
   int64_t diff = static_cast<int64_t>(DataLengthInBytes());
   DCHECK_GE(diff, 0);
   v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(diff);
-
-  // Only (re)register allocation cost for transferables if this
-  // SerializedScriptValue has explicitly unregistered them before.
-  if (transferables_need_external_allocation_registration_) {
-    for (auto& buffer : array_buffer_contents_array_)
-      buffer.RegisterExternalAllocationWithCurrentContext();
-    for (auto& buffer : shared_array_buffers_contents_)
-      buffer.RegisterExternalAllocationWithCurrentContext();
-  }
 }
 
 // This ensures that the version number published in
@@ -780,5 +768,9 @@ void SerializedScriptValue::RegisterMemoryAllocatedWithCurrentScriptContext() {
 static_assert(kSerializedScriptValueVersion ==
                   SerializedScriptValue::kWireFormatVersion,
               "Update WebSerializedScriptValueVersion.h.");
+
+bool SerializedScriptValue::IsOriginCheckRequired() const {
+  return native_file_system_tokens_.size() > 0;
+}
 
 }  // namespace blink

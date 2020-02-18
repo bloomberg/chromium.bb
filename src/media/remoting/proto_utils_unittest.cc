@@ -114,8 +114,7 @@ TEST_F(ProtoUtilsTest, PassValidDecoderBuffer) {
 
 TEST_F(ProtoUtilsTest, AudioDecoderConfigConversionTest) {
   const std::string extra_data = "ACEG";
-  const EncryptionScheme encryption_scheme(
-      EncryptionScheme::CIPHER_MODE_AES_CTR, EncryptionPattern(20, 40));
+  const EncryptionScheme encryption_scheme = EncryptionScheme::kCenc;
   AudioDecoderConfig audio_config(
       kCodecAAC, kSampleFormatF32, CHANNEL_LAYOUT_MONO, 48000,
       std::vector<uint8_t>(extra_data.begin(), extra_data.end()),
@@ -165,14 +164,14 @@ TEST_F(ProtoUtilsTest, PipelineStatisticsConversion) {
   pb_video_info->set_decoder_name(original.video_decoder_info.decoder_name);
   pb_video_info->set_is_platform_decoder(
       original.video_decoder_info.is_platform_decoder);
-  pb_video_info->set_is_decrypting_demuxer_stream(
-      original.video_decoder_info.is_decrypting_demuxer_stream);
+  pb_video_info->set_has_decrypting_demuxer_stream(
+      original.video_decoder_info.has_decrypting_demuxer_stream);
 
   pb_audio_info->set_decoder_name(original.audio_decoder_info.decoder_name);
   pb_audio_info->set_is_platform_decoder(
       original.audio_decoder_info.is_platform_decoder);
-  pb_audio_info->set_is_decrypting_demuxer_stream(
-      original.audio_decoder_info.is_decrypting_demuxer_stream);
+  pb_audio_info->set_has_decrypting_demuxer_stream(
+      original.audio_decoder_info.has_decrypting_demuxer_stream);
 
   PipelineStatistics converted;
 

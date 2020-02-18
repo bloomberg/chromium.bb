@@ -6,6 +6,7 @@
 
 #include <map>
 #include <memory>
+#include <utility>
 #include <vector>
 
 #include "net/third_party/quiche/src/quic/core/crypto/aes_128_gcm_12_encrypter.h"
@@ -21,9 +22,9 @@
 #include "net/third_party/quiche/src/quic/core/quic_packets.h"
 #include "net/third_party/quiche/src/quic/core/quic_session.h"
 #include "net/third_party/quiche/src/quic/core/quic_utils.h"
+#include "net/third_party/quiche/src/quic/core/quic_versions.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_ptr_util.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_socket_address.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_test.h"
 #include "net/third_party/quiche/src/quic/test_tools/crypto_test_utils.h"
@@ -79,8 +80,8 @@ class QuicCryptoServerStreamTest : public QuicTestWithParam<bool> {
   // called multiple times.
   void InitializeServer() {
     TestQuicSpdyServerSession* server_session = nullptr;
-    helpers_.push_back(QuicMakeUnique<NiceMock<MockQuicConnectionHelper>>());
-    alarm_factories_.push_back(QuicMakeUnique<MockAlarmFactory>());
+    helpers_.push_back(std::make_unique<NiceMock<MockQuicConnectionHelper>>());
+    alarm_factories_.push_back(std::make_unique<MockAlarmFactory>());
     CreateServerSessionForTest(
         server_id_, QuicTime::Delta::FromSeconds(100000), supported_versions_,
         helpers_.back().get(), alarm_factories_.back().get(),
@@ -90,11 +91,19 @@ class QuicCryptoServerStreamTest : public QuicTestWithParam<bool> {
     server_session_.reset(server_session);
     EXPECT_CALL(*server_session_->helper(), CanAcceptClientHello(_, _, _, _, _))
         .Times(testing::AnyNumber());
+    EXPECT_CALL(*server_session_, SelectAlpn(_))
+        .WillRepeatedly([this](const std::vector<QuicStringPiece>& alpns) {
+          return std::find(
+              alpns.cbegin(), alpns.cend(),
+              AlpnForVersion(server_session_->connection()->version()));
+        });
     crypto_test_utils::SetupCryptoServerConfigForTest(
         server_connection_->clock(), server_connection_->random_generator(),
         &server_crypto_config_);
-    server_session_->GetMutableCryptoStream()->OnSuccessfulVersionNegotiation(
-        supported_versions_.front());
+    if (!GetQuicReloadableFlag(quic_version_negotiated_by_default_at_server)) {
+      server_session_->GetMutableCryptoStream()->OnSuccessfulVersionNegotiation(
+          supported_versions_.front());
+    }
   }
 
   QuicCryptoServerStream* server_stream() {
@@ -109,8 +118,8 @@ class QuicCryptoServerStreamTest : public QuicTestWithParam<bool> {
   // testing.  May be called multiple times.
   void InitializeFakeClient() {
     TestQuicSpdyClientSession* client_session = nullptr;
-    helpers_.push_back(QuicMakeUnique<NiceMock<MockQuicConnectionHelper>>());
-    alarm_factories_.push_back(QuicMakeUnique<MockAlarmFactory>());
+    helpers_.push_back(std::make_unique<NiceMock<MockQuicConnectionHelper>>());
+    alarm_factories_.push_back(std::make_unique<MockAlarmFactory>());
     CreateClientSessionForTest(
         server_id_, QuicTime::Delta::FromSeconds(100000), supported_versions_,
         helpers_.back().get(), alarm_factories_.back().get(),
@@ -125,7 +134,8 @@ class QuicCryptoServerStreamTest : public QuicTestWithParam<bool> {
 
     return crypto_test_utils::HandshakeWithFakeClient(
         helpers_.back().get(), alarm_factories_.back().get(),
-        server_connection_, server_stream(), server_id_, client_options_);
+        server_connection_, server_stream(), server_id_, client_options_,
+        /*alpn=*/"");
   }
 
   // Performs a single round of handshake message-exchange between the
@@ -170,7 +180,10 @@ class QuicCryptoServerStreamTest : public QuicTestWithParam<bool> {
   ParsedQuicVersionVector supported_versions_ = AllSupportedVersions();
 };
 
-INSTANTIATE_TEST_SUITE_P(Tests, QuicCryptoServerStreamTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(Tests,
+                         QuicCryptoServerStreamTest,
+                         ::testing::Bool(),
+                         ::testing::PrintToStringParamName());
 
 TEST_P(QuicCryptoServerStreamTest, NotInitiallyConected) {
   Initialize();
@@ -190,7 +203,7 @@ TEST_P(QuicCryptoServerStreamTest, ConnectedAfterCHLO) {
 }
 
 TEST_P(QuicCryptoServerStreamTest, ConnectedAfterTlsHandshake) {
-  SetQuicFlag(FLAGS_quic_supports_tls_handshake, true);
+  SetQuicReloadableFlag(quic_supports_tls_handshake, true);
   client_options_.only_tls_versions = true;
   supported_versions_.clear();
   for (QuicTransportVersion transport_version :
@@ -332,7 +345,8 @@ class QuicCryptoServerStreamTestWithFailingProofSource
 
 INSTANTIATE_TEST_SUITE_P(MoreTests,
                          QuicCryptoServerStreamTestWithFailingProofSource,
-                         testing::Bool());
+                         ::testing::Bool(),
+                         ::testing::PrintToStringParamName());
 
 TEST_P(QuicCryptoServerStreamTestWithFailingProofSource, Test) {
   Initialize();
@@ -366,7 +380,8 @@ class QuicCryptoServerStreamTestWithFakeProofSource
 
 INSTANTIATE_TEST_SUITE_P(YetMoreTests,
                          QuicCryptoServerStreamTestWithFakeProofSource,
-                         testing::Bool());
+                         ::testing::Bool(),
+                         ::testing::PrintToStringParamName());
 
 // Regression test for b/35422225, in which multiple CHLOs arriving on the same
 // connection in close succession could cause a crash, especially when the use

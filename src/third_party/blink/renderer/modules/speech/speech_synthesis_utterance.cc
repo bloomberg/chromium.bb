@@ -123,6 +123,8 @@ void SpeechSynthesisUtterance::Start(SpeechSynthesis* synthesis) {
       mojom_utterance_->Clone();
   if (mojom_utterance_to_send->voice.IsNull())
     mojom_utterance_to_send->voice = String("");
+  if (mojom_utterance_to_send->text.IsNull())
+    mojom_utterance_to_send->text = String("");
 
   receiver_.reset();
 
@@ -133,6 +135,10 @@ void SpeechSynthesisUtterance::Start(SpeechSynthesis* synthesis) {
   // Add a disconnect handler so we can cleanup appropriately.
   receiver_.set_disconnect_handler(WTF::Bind(
       &SpeechSynthesisUtterance::OnDisconnected, WrapWeakPersistent(this)));
+}
+
+void SpeechSynthesisUtterance::Dispose() {
+  receiver_.reset();
 }
 
 void SpeechSynthesisUtterance::OnDisconnected() {

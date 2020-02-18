@@ -10,6 +10,7 @@
 #include "base/stl_util.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/native_file_system/chrome_native_file_system_permission_context.h"
+#include "chrome/browser/native_file_system/native_file_system_permission_context_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -18,7 +19,7 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/toolbar_button_provider.h"
 #include "chrome/browser/ui/views/native_file_system/native_file_system_ui_helpers.h"
-#include "chrome/browser/ui/views/page_action/omnibox_page_action_icon_container_view.h"
+#include "chrome/browser/ui/views/page_action/page_action_icon_view.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/vector_icons/vector_icons.h"
@@ -137,12 +138,12 @@ class CollapsibleListView : public views::View, public views::ButtonListener {
     label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     label_layout->SetFlexForView(label, 1);
     auto button = views::CreateVectorToggleImageButton(this);
-    views::SetImageFromVectorIcon(button.get(), kCaretDownIcon,
-                                  ui::TableModel::kIconSize, icon_color);
+    views::SetImageFromVectorIconWithColor(
+        button.get(), kCaretDownIcon, ui::TableModel::kIconSize, icon_color);
     button->SetTooltipText(
         l10n_util::GetStringUTF16(IDS_NATIVE_FILE_SYSTEM_USAGE_EXPAND));
-    views::SetToggledImageFromVectorIcon(button.get(), kCaretUpIcon,
-                                         ui::TableModel::kIconSize, icon_color);
+    views::SetToggledImageFromVectorIconWithColor(
+        button.get(), kCaretUpIcon, ui::TableModel::kIconSize, icon_color);
     button->SetToggledTooltipText(
         l10n_util::GetStringUTF16(IDS_NATIVE_FILE_SYSTEM_USAGE_COLLAPSE));
     expand_collapse_button_ = label_container->AddChildView(std::move(button));
@@ -248,10 +249,8 @@ void NativeFileSystemUsageBubbleView::ShowBubble(
   if (!browser)
     return;
 
-  OmniboxPageActionIconContainerView* anchor_view =
-      BrowserView::GetBrowserViewForBrowser(browser)
-          ->toolbar_button_provider()
-          ->GetOmniboxPageActionIconContainerView();
+  ToolbarButtonProvider* button_provider =
+      BrowserView::GetBrowserViewForBrowser(browser)->toolbar_button_provider();
 
   // Writable directories are generally also readable, but we don't want to
   // display the same directory twice. So filter out any writable directories
@@ -265,10 +264,12 @@ void NativeFileSystemUsageBubbleView::ShowBubble(
   }
   usage.readable_directories = readable_directories;
 
-  bubble_ = new NativeFileSystemUsageBubbleView(anchor_view, web_contents,
-                                                origin, std::move(usage));
+  bubble_ = new NativeFileSystemUsageBubbleView(
+      button_provider->GetAnchorView(
+          PageActionIconType::kNativeFileSystemAccess),
+      web_contents, origin, std::move(usage));
 
-  bubble_->SetHighlightedButton(anchor_view->GetPageActionIconView(
+  bubble_->SetHighlightedButton(button_provider->GetPageActionIconView(
       PageActionIconType::kNativeFileSystemAccess));
   views::BubbleDialogDelegateView::CreateBubble(bubble_);
 
@@ -296,7 +297,10 @@ NativeFileSystemUsageBubbleView::NativeFileSystemUsageBubbleView(
       origin_(origin),
       usage_(std::move(usage)),
       writable_paths_model_(usage_.writable_files, usage_.writable_directories),
-      readable_paths_model_({}, usage_.readable_directories) {}
+      readable_paths_model_({}, usage_.readable_directories) {
+  DialogDelegate::set_button_label(ui::DIALOG_BUTTON_OK,
+                                   l10n_util::GetStringUTF16(IDS_DONE));
+}
 
 NativeFileSystemUsageBubbleView::~NativeFileSystemUsageBubbleView() = default;
 
@@ -307,26 +311,18 @@ base::string16 NativeFileSystemUsageBubbleView::GetAccessibleWindowTitle()
   if (!browser)
     return {};
 
-  OmniboxPageActionIconContainerView* page_action_icon_container_view =
-      BrowserView::GetBrowserViewForBrowser(browser)
-          ->toolbar_button_provider()
-          ->GetOmniboxPageActionIconContainerView();
-  if (!page_action_icon_container_view)
-    return {};
-
-  PageActionIconView* icon_view =
-      page_action_icon_container_view->GetPageActionIconView(
-          PageActionIconType::kNativeFileSystemAccess);
-  return icon_view->GetTextForTooltipAndAccessibleName();
-}
-
-int NativeFileSystemUsageBubbleView::GetDialogButtons() const {
-  return ui::DIALOG_BUTTON_OK;
+  return BrowserView::GetBrowserViewForBrowser(browser)
+      ->toolbar_button_provider()
+      ->GetPageActionIconView(PageActionIconType::kNativeFileSystemAccess)
+      ->GetTextForTooltipAndAccessibleName();
 }
 
 base::string16 NativeFileSystemUsageBubbleView::GetDialogButtonLabel(
     ui::DialogButton button) const {
-  return l10n_util::GetStringUTF16(IDS_DONE);
+  int message_id = IDS_DONE;
+  if (button == ui::DIALOG_BUTTON_CANCEL)
+    message_id = IDS_NATIVE_FILE_SYSTEM_USAGE_REMOVE_ACCESS;
+  return l10n_util::GetStringUTF16(message_id);
 }
 
 bool NativeFileSystemUsageBubbleView::ShouldShowCloseButton() const {
@@ -391,6 +387,29 @@ void NativeFileSystemUsageBubbleView::Init() {
   }
 }
 
+bool NativeFileSystemUsageBubbleView::Cancel() {
+  base::RecordAction(
+      base::UserMetricsAction("NativeFileSystemAPI.RevokePermissions"));
+
+  if (!web_contents())
+    return true;
+
+  content::BrowserContext* profile = web_contents()->GetBrowserContext();
+  auto* context =
+      NativeFileSystemPermissionContextFactory::GetForProfileIfExists(profile);
+  if (!context)
+    return true;
+
+  context->RevokeGrantsForOriginAndTab(
+      origin_, web_contents()->GetMainFrame()->GetProcess()->GetID(),
+      web_contents()->GetMainFrame()->GetRoutingID());
+  return true;
+}
+
+bool NativeFileSystemUsageBubbleView::Close() {
+  return true;  // Do not revoke permissions via Cancel() when closing normally.
+}
+
 void NativeFileSystemUsageBubbleView::WindowClosing() {
   // |bubble_| can be a new bubble by this point (as Close(); doesn't
   // call this right away). Only set to nullptr when it's this bubble.
@@ -416,27 +435,4 @@ void NativeFileSystemUsageBubbleView::ChildPreferredSizeChanged(
     views::View* child) {
   LocationBarBubbleDelegateView::ChildPreferredSizeChanged(child);
   SizeToContents();
-}
-
-std::unique_ptr<views::View>
-NativeFileSystemUsageBubbleView::CreateExtraView() {
-  return views::MdTextButton::CreateSecondaryUiButton(
-      this,
-      l10n_util::GetStringUTF16(IDS_NATIVE_FILE_SYSTEM_USAGE_REMOVE_ACCESS));
-}
-
-void NativeFileSystemUsageBubbleView::ButtonPressed(views::Button* sender,
-                                                    const ui::Event& event) {
-  base::RecordAction(
-      base::UserMetricsAction("NativeFileSystemAPI.RevokePermissions"));
-
-  if (!web_contents())
-    return;
-
-  content::BrowserContext* profile = web_contents()->GetBrowserContext();
-  ChromeNativeFileSystemPermissionContext::
-      RevokeGrantsForOriginAndTabFromUIThread(
-          profile, origin_,
-          web_contents()->GetMainFrame()->GetProcess()->GetID(),
-          web_contents()->GetMainFrame()->GetRoutingID());
 }

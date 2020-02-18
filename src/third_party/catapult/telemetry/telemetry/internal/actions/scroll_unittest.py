@@ -78,15 +78,17 @@ class ScrollActionTest(tab_test_case.TabTestCase):
 
     self.assertAlmostEqual(distance, actual, delta=maxError + urlBarError)
 
+  @decorators.Disabled('chromeos', 'linux')  # crbug.com/1006789
   def testScrollDistanceFastTouch(self):
     # Just pass the test on platforms that don't support touch (i.e. Mac)
     if not page_action.IsGestureSourceTypeSupported(self._tab, 'touch'):
       return
 
     # Scrolling distance for touch will have some error from the excess delta
-    # of the event that crosses the slop threshold but isn't applied.
+    # of the event that crosses the slop threshold but isn't applied, also
+    # scroll resampling can increase the error amount..
     self._RunScrollDistanceTest(
-        500000, 200000, page_action.GESTURE_SOURCE_TOUCH, 50)
+        500000, 200000, page_action.GESTURE_SOURCE_TOUCH, 200)
 
   @decorators.Disabled('android')  # crbug.com/934649
   def testScrollDistanceFastWheel(self):

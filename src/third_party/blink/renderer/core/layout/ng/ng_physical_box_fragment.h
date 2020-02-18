@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NGPhysicalBoxFragment_h
-#define NGPhysicalBoxFragment_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_NG_PHYSICAL_BOX_FRAGMENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_NG_PHYSICAL_BOX_FRAGMENT_H_
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_box_strut.h"
@@ -73,7 +73,7 @@ class CORE_EXPORT NGPhysicalBoxFragment final
   PhysicalRect OverflowClipRect(
       const PhysicalOffset& location,
       OverlayScrollbarClipBehavior = kIgnorePlatformOverlayScrollbarSize) const;
-  LayoutSize ScrolledContentOffset() const;
+  LayoutSize PixelSnappedScrolledContentOffset() const;
   PhysicalSize ScrollSize() const;
 
   // Compute visual overflow of this box in the local coordinate.
@@ -81,9 +81,9 @@ class CORE_EXPORT NGPhysicalBoxFragment final
 
   // Fragment offset is this fragment's offset from parent.
   // Needed to compensate for LayoutInline Legacy code offsets.
-  void AddSelfOutlineRects(Vector<PhysicalRect>* outline_rects,
-                           const PhysicalOffset& additional_offset,
-                           NGOutlineType include_block_overflows) const;
+  void AddSelfOutlineRects(const PhysicalOffset& additional_offset,
+                           NGOutlineType include_block_overflows,
+                           Vector<PhysicalRect>* outline_rects) const;
 
   UBiDiLevel BidiLevel() const;
 
@@ -140,4 +140,4 @@ struct DowncastTraits<NGPhysicalBoxFragment> {
 
 }  // namespace blink
 
-#endif  // NGPhysicalBoxFragment_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_NG_PHYSICAL_BOX_FRAGMENT_H_

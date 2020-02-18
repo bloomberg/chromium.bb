@@ -11,6 +11,7 @@
 #include <gtk/gtk.h>
 
 #include "base/memory/singleton.h"
+#include "chrome/browser/ui/libgtkui/gtk_util.h"
 #include "ui/events/platform/x11/x11_event_source.h"
 #include "ui/gfx/x/x11_types.h"
 
@@ -60,7 +61,8 @@ void GtkEventLoopX11::ProcessGdkEventKey(const GdkEventKey& gdk_event_key) {
   // corresponding key event in the X event queue.  So we have to handle this
   // case.  ibus-gtk is used through gtk-immodule to support IMEs.
 
-  XEvent x_event = {0};
+  XEvent x_event;
+  x_event.xkey = {};
   x_event.xkey.type =
       gdk_event_key.type == GDK_KEY_PRESS ? KeyPress : KeyRelease;
   x_event.xkey.send_event = gdk_event_key.send_event;
@@ -68,9 +70,10 @@ void GtkEventLoopX11::ProcessGdkEventKey(const GdkEventKey& gdk_event_key) {
   x_event.xkey.window = GDK_WINDOW_XID(gdk_event_key.window);
   x_event.xkey.root = DefaultRootWindow(x_event.xkey.display);
   x_event.xkey.time = gdk_event_key.time;
-  x_event.xkey.state = gdk_event_key.state;
   x_event.xkey.keycode = gdk_event_key.hardware_keycode;
   x_event.xkey.same_screen = true;
+  x_event.xkey.state =
+      BuildXkbStateFromGdkEvent(gdk_event_key.state, gdk_event_key.group);
 
   // We want to process the gtk event; mapped to an X11 event immediately
   // otherwise if we put it back on the queue we may get items out of order.

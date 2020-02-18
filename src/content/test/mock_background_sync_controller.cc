@@ -30,13 +30,25 @@ void MockBackgroundSyncController::NotifyOneShotBackgroundSyncRegistered(
   registration_origin_ = origin;
 }
 
-void MockBackgroundSyncController::ScheduleBrowserWakeUp(
-    blink::mojom::BackgroundSyncType sync_type) {
+void MockBackgroundSyncController::ScheduleBrowserWakeUpWithDelay(
+    blink::mojom::BackgroundSyncType sync_type,
+    base::TimeDelta delay) {
   if (sync_type == blink::mojom::BackgroundSyncType::PERIODIC) {
     run_in_background_for_periodic_sync_count_ += 1;
+    periodic_sync_browser_wakeup_delay_ = delay;
     return;
   }
   run_in_background_for_one_shot_sync_count_ += 1;
+  one_shot_sync_browser_wakeup_delay_ = delay;
+}
+
+void MockBackgroundSyncController::CancelBrowserWakeup(
+    blink::mojom::BackgroundSyncType sync_type) {
+  if (sync_type == blink::mojom::BackgroundSyncType::PERIODIC) {
+    periodic_sync_browser_wakeup_delay_ = base::TimeDelta::Max();
+  } else {
+    one_shot_sync_browser_wakeup_delay_ = base::TimeDelta::Max();
+  }
 }
 
 void MockBackgroundSyncController::ApplyFieldTrialParamsOverrides() {
@@ -105,9 +117,24 @@ MockBackgroundSyncController::CreateBackgroundSyncEventKeepAlive() {
 
 void MockBackgroundSyncController::NoteSuspendedPeriodicSyncOrigins(
     std::set<url::Origin> suspended_origins) {
-  for (auto& origin : suspended_origins) {
+  for (auto& origin : suspended_origins)
     suspended_periodic_sync_origins_.insert(std::move(origin));
-  }
+}
+
+void MockBackgroundSyncController::NoteRegisteredPeriodicSyncOrigins(
+    std::set<url::Origin> registered_origins) {
+  for (auto& origin : registered_origins)
+    suspended_periodic_sync_origins_.insert(std::move(origin));
+}
+
+void MockBackgroundSyncController::AddToTrackedOrigins(
+    const url::Origin& origin) {
+  periodic_sync_origins_.insert(origin);
+}
+
+void MockBackgroundSyncController::RemoveFromTrackedOrigins(
+    const url::Origin& origin) {
+  periodic_sync_origins_.erase(origin);
 }
 
 }  // namespace content

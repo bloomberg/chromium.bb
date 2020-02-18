@@ -421,8 +421,7 @@ TEST_F(LayoutBoxModelObjectTest, StickyPositionConstraintInvalidation) {
       scrollable_area->GetStickyConstraintsMap().Contains(sticky->Layer()));
   EXPECT_EQ(25.f, scrollable_area->GetStickyConstraintsMap()
                       .at(sticky->Layer())
-                      .scroll_container_relative_sticky_box_rect.Location()
-                      .X());
+                      .scroll_container_relative_sticky_box_rect.X());
   To<HTMLElement>(target->GetNode())->classList().Add("hide");
   GetDocument().View()->UpdateLifecycleToLayoutClean();
   // Layout should invalidate the sticky constraints of the sticky element and
@@ -435,8 +434,7 @@ TEST_F(LayoutBoxModelObjectTest, StickyPositionConstraintInvalidation) {
   UpdateAllLifecyclePhasesForTest();
   EXPECT_EQ(50.f, scrollable_area->GetStickyConstraintsMap()
                       .at(sticky->Layer())
-                      .scroll_container_relative_sticky_box_rect.Location()
-                      .X());
+                      .scroll_container_relative_sticky_box_rect.X());
 }
 
 // Verifies that the correct sticky-box shifting ancestor is found when
@@ -1080,8 +1078,8 @@ TEST_F(LayoutBoxModelObjectTest, InvalidatePaintLayerOnStackedChange) {
   GetDocument().View()->UpdateLifecycleToLayoutClean();
 
   EXPECT_FALSE(target->StyleRef().IsStacked());
-  EXPECT_TRUE(target->Layer()->NeedsRepaint());
-  EXPECT_TRUE(original_compositing_container->NeedsRepaint());
+  EXPECT_TRUE(target->Layer()->SelfNeedsRepaint());
+  EXPECT_TRUE(original_compositing_container->DescendantNeedsRepaint());
   auto* new_compositing_container = target->Layer()->CompositingContainer();
   EXPECT_EQ(parent, new_compositing_container->GetLayoutObject());
 
@@ -1090,8 +1088,8 @@ TEST_F(LayoutBoxModelObjectTest, InvalidatePaintLayerOnStackedChange) {
   GetDocument().View()->UpdateLifecycleToLayoutClean();
 
   EXPECT_TRUE(target->StyleRef().IsStacked());
-  EXPECT_TRUE(target->Layer()->NeedsRepaint());
-  EXPECT_TRUE(new_compositing_container->NeedsRepaint());
+  EXPECT_TRUE(target->Layer()->SelfNeedsRepaint());
+  EXPECT_TRUE(new_compositing_container->DescendantNeedsRepaint());
   EXPECT_EQ(original_compositing_container,
             target->Layer()->CompositingContainer());
 }
@@ -1154,20 +1152,20 @@ TEST_F(LayoutBoxModelObjectTest, BackfaceVisibilityChange) {
   auto* target_layer =
       ToLayoutBoxModelObject(target->GetLayoutObject())->Layer();
   ASSERT_NE(nullptr, target_layer);
-  EXPECT_FALSE(target_layer->NeedsRepaint());
+  EXPECT_FALSE(target_layer->SelfNeedsRepaint());
 
   target->setAttribute(html_names::kStyleAttr,
                        base_style + "; backface-visibility: hidden");
   GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
-  EXPECT_TRUE(target_layer->NeedsRepaint());
+  EXPECT_TRUE(target_layer->SelfNeedsRepaint());
   UpdateAllLifecyclePhasesForTest();
-  EXPECT_FALSE(target_layer->NeedsRepaint());
+  EXPECT_FALSE(target_layer->SelfNeedsRepaint());
 
   target->setAttribute(html_names::kStyleAttr, base_style);
   GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
-  EXPECT_TRUE(target_layer->NeedsRepaint());
+  EXPECT_TRUE(target_layer->SelfNeedsRepaint());
   UpdateAllLifecyclePhasesForTest();
-  EXPECT_FALSE(target_layer->NeedsRepaint());
+  EXPECT_FALSE(target_layer->SelfNeedsRepaint());
 }
 
 TEST_F(LayoutBoxModelObjectTest, UpdateStackingContextForOption) {
@@ -1198,4 +1196,35 @@ TEST_F(LayoutBoxModelObjectTest, UpdateStackingContextForOption) {
   EXPECT_TRUE(option_layout->StyleRef().HasCurrentOpacityAnimation());
 }
 
+// Tests that contain: layout changes cause compositing inputs update.
+TEST_F(LayoutBoxModelObjectTest,
+       LayoutContainmentChangeCausesCompositingInputsUpdate) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+    /* ensure we retain the paint layer after removing .contained class. */
+    div { position: relative; }
+    .contained { contain: layout; }
+    </style>
+    <div id=target class=contained></div>
+    <div id=unrelated class=contained></div>
+  )HTML");
+  LayoutBoxModelObject* target =
+      ToLayoutBoxModelObject(GetLayoutObjectByElementId("target"));
+  ASSERT_TRUE(target->Layer());
+
+  EXPECT_FALSE(target->Layer()->NeedsCompositingInputsUpdate());
+  EXPECT_EQ(target->Layer(), target->Layer()->NearestContainedLayoutLayer());
+
+  To<HTMLElement>(target->GetNode())->classList().Remove("contained");
+  GetDocument().View()->UpdateLifecycleToLayoutClean();
+
+  EXPECT_TRUE(target->Layer()->NeedsCompositingInputsUpdate());
+
+  // After updating compositing inputs we should have no contained layer
+  // ancestors.
+  UpdateAllLifecyclePhasesForTest();
+  ASSERT_TRUE(target->Layer());
+  EXPECT_FALSE(target->Layer()->NeedsCompositingInputsUpdate());
+  EXPECT_EQ(nullptr, target->Layer()->NearestContainedLayoutLayer());
+}
 }  // namespace blink

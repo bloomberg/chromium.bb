@@ -33,6 +33,10 @@ import gn_helpers
 DIR_SOURCE_ROOT = os.environ.get('CHECKOUT_SOURCE_ROOT',
     os.path.abspath(os.path.join(os.path.dirname(__file__),
                                  os.pardir, os.pardir, os.pardir, os.pardir)))
+JAVA_PATH = os.path.join(DIR_SOURCE_ROOT, 'third_party', 'jdk', 'current',
+                         'bin', 'java')
+RT_JAR_PATH = os.path.join(DIR_SOURCE_ROOT, 'third_party', 'jdk', 'extras',
+                           'java_8', 'jre', 'lib', 'rt.jar')
 
 try:
   string_types = basestring
@@ -70,7 +74,7 @@ def Touch(path, fail_if_missing=False):
     os.utime(path, None)
 
 
-def FindInDirectory(directory, filename_filter):
+def FindInDirectory(directory, filename_filter='*'):
   files = []
   for root, _dirnames, filenames in os.walk(directory):
     matched_files = fnmatch.filter(filenames, filename_filter)
@@ -204,6 +208,26 @@ def FilterLines(output, filter_string):
   re_filter = re.compile(filter_string)
   return '\n'.join(
       line for line in output.splitlines() if not re_filter.search(line))
+
+
+def FilterReflectiveAccessJavaWarnings(output):
+  """Filters out warnings about illegal reflective access operation.
+
+  These warnings were introduced in Java 9, and generally mean that dependencies
+  need to be updated.
+  """
+  #  WARNING: An illegal reflective access operation has occurred
+  #  WARNING: Illegal reflective access by ...
+  #  WARNING: Please consider reporting this to the maintainers of ...
+  #  WARNING: Use --illegal-access=warn to enable warnings of further ...
+  #  WARNING: All illegal access operations will be denied in a future release
+  return FilterLines(
+      output, r'WARNING: ('
+      'An illegal reflective|'
+      'Illegal reflective access|'
+      'Please consider reporting this to|'
+      'Use --illegal-access=warn|'
+      'All illegal access operations)')
 
 
 # This can be used in most cases like subprocess.check_output(). The output,
@@ -451,8 +475,6 @@ def MergeZips(output, input_zips, path_transform=None, compress=None):
   try:
     for in_file in input_zips:
       with zipfile.ZipFile(in_file, 'r') as in_zip:
-        # ijar creates zips with null CRCs.
-        in_zip._expected_crc = None
         for info in in_zip.infolist():
           # Ignore directories.
           if info.filename[-1] == '/':
@@ -511,7 +533,7 @@ def _ComputePythonDependencies():
   src/. The paths will be relative to the current directory.
   """
   _ForceLazyModulesToLoad()
-  module_paths = (m.__file__ for m in sys.modules.itervalues()
+  module_paths = (m.__file__ for m in sys.modules.values()
                   if m is not None and hasattr(m, '__file__'))
   abs_module_paths = map(os.path.abspath, module_paths)
 
@@ -634,15 +656,20 @@ def ReadSourcesList(sources_list_file_name):
     return [file_name.strip() for file_name in f]
 
 
-def CallAndWriteDepfileIfStale(function, options, record_path=None,
-                               input_paths=None, input_strings=None,
-                               output_paths=None, force=False,
-                               pass_changes=False, depfile_deps=None,
-                               add_pydeps=True):
+def CallAndWriteDepfileIfStale(on_stale_md5,
+                               options,
+                               record_path=None,
+                               input_paths=None,
+                               input_strings=None,
+                               output_paths=None,
+                               force=False,
+                               pass_changes=False,
+                               track_subpaths_whitelist=None,
+                               depfile_deps=None):
   """Wraps md5_check.CallAndRecordIfStale() and writes a depfile if applicable.
 
   Depfiles are automatically added to output_paths when present in the |options|
-  argument. They are then created after |function| is called.
+  argument. They are then created after |on_stale_md5| is called.
 
   By default, only python dependencies are added to the depfile. If there are
   other input paths that are not captured by GN deps, then they should be listed
@@ -656,21 +683,7 @@ def CallAndWriteDepfileIfStale(function, options, record_path=None,
   input_strings = list(input_strings or [])
   output_paths = list(output_paths or [])
 
-  python_deps = None
-  if hasattr(options, 'depfile') and options.depfile:
-    python_deps = _ComputePythonDependencies()
-    input_paths += python_deps
-    output_paths += [options.depfile]
-
-  def on_stale_md5(changes):
-    args = (changes,) if pass_changes else ()
-    function(*args)
-    if python_deps is not None:
-      all_depfile_deps = list(python_deps) if add_pydeps else []
-      if depfile_deps:
-        all_depfile_deps.extend(depfile_deps)
-      WriteDepfile(options.depfile, output_paths[0], all_depfile_deps,
-                   add_pydeps=False)
+  input_paths += _ComputePythonDependencies()
 
   md5_check.CallAndRecordIfStale(
       on_stale_md5,
@@ -679,4 +692,12 @@ def CallAndWriteDepfileIfStale(function, options, record_path=None,
       input_strings=input_strings,
       output_paths=output_paths,
       force=force,
-      pass_changes=True)
+      pass_changes=pass_changes,
+      track_subpaths_whitelist=track_subpaths_whitelist)
+
+  # Write depfile even when inputs have not changed to ensure build correctness
+  # on bots that build with & without patch, and the patch changes the depfile
+  # location.
+  if hasattr(options, 'depfile') and options.depfile:
+    WriteDepfile(
+        options.depfile, output_paths[0], depfile_deps, add_pydeps=False)

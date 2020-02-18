@@ -103,12 +103,12 @@ EnumTraits<media::mojom::VideoCapturePixelFormat,
       return media::mojom::VideoCapturePixelFormat::NV12;
     case media::VideoPixelFormat::PIXEL_FORMAT_NV21:
       return media::mojom::VideoCapturePixelFormat::NV21;
-    case media::VideoPixelFormat::PIXEL_FORMAT_UYVY:
-      return media::mojom::VideoCapturePixelFormat::UYVY;
     case media::VideoPixelFormat::PIXEL_FORMAT_YUY2:
       return media::mojom::VideoCapturePixelFormat::YUY2;
     case media::VideoPixelFormat::PIXEL_FORMAT_ARGB:
       return media::mojom::VideoCapturePixelFormat::ARGB;
+    case media::VideoPixelFormat::PIXEL_FORMAT_BGRA:
+      return media::mojom::VideoCapturePixelFormat::BGRA;
     case media::VideoPixelFormat::PIXEL_FORMAT_XRGB:
       return media::mojom::VideoCapturePixelFormat::XRGB;
     case media::VideoPixelFormat::PIXEL_FORMAT_RGB24:
@@ -141,6 +141,10 @@ EnumTraits<media::mojom::VideoCapturePixelFormat,
       return media::mojom::VideoCapturePixelFormat::XBGR;
     case media::VideoPixelFormat::PIXEL_FORMAT_P016LE:
       return media::mojom::VideoCapturePixelFormat::P016LE;
+    case media::VideoPixelFormat::PIXEL_FORMAT_XR30:
+      return media::mojom::VideoCapturePixelFormat::XR30;
+    case media::VideoPixelFormat::PIXEL_FORMAT_XB30:
+      return media::mojom::VideoCapturePixelFormat::XB30;
   }
   NOTREACHED();
   return media::mojom::VideoCapturePixelFormat::I420;
@@ -175,9 +179,6 @@ bool EnumTraits<media::mojom::VideoCapturePixelFormat,
       return true;
     case media::mojom::VideoCapturePixelFormat::NV21:
       *output = media::PIXEL_FORMAT_NV21;
-      return true;
-    case media::mojom::VideoCapturePixelFormat::UYVY:
-      *output = media::PIXEL_FORMAT_UYVY;
       return true;
     case media::mojom::VideoCapturePixelFormat::YUY2:
       *output = media::PIXEL_FORMAT_YUY2;
@@ -232,6 +233,15 @@ bool EnumTraits<media::mojom::VideoCapturePixelFormat,
       return true;
     case media::mojom::VideoCapturePixelFormat::P016LE:
       *output = media::PIXEL_FORMAT_P016LE;
+      return true;
+    case media::mojom::VideoCapturePixelFormat::XR30:
+      *output = media::PIXEL_FORMAT_XR30;
+      return true;
+    case media::mojom::VideoCapturePixelFormat::XB30:
+      *output = media::PIXEL_FORMAT_XB30;
+      return true;
+    case media::mojom::VideoCapturePixelFormat::BGRA:
+      *output = media::PIXEL_FORMAT_BGRA;
       return true;
   }
   NOTREACHED();

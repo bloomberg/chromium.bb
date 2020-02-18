@@ -5,13 +5,12 @@
 #include "chrome/browser/performance_manager/graph/policies/working_set_trimmer_policy_chromeos.h"
 
 #include "base/memory/memory_pressure_listener.h"
-#include "base/test/simple_test_tick_clock.h"
-#include "chrome/browser/performance_manager/graph/graph_impl_operations.h"
-#include "chrome/browser/performance_manager/graph/graph_test_harness.h"
-#include "chrome/browser/performance_manager/graph/mock_graphs.h"
-#include "chrome/browser/performance_manager/graph/page_node_impl.h"
-#include "chrome/browser/performance_manager/graph/process_node_impl.h"
-#include "chrome/browser/performance_manager/performance_manager.h"
+#include "components/performance_manager/graph/graph_impl_operations.h"
+#include "components/performance_manager/graph/page_node_impl.h"
+#include "components/performance_manager/graph/process_node_impl.h"
+#include "components/performance_manager/performance_manager_impl.h"
+#include "components/performance_manager/test_support/graph_test_harness.h"
+#include "components/performance_manager/test_support/mock_graphs.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -149,7 +148,7 @@ TEST_F(WorkingSetTrimmerPolicyChromeOSTest, DontTrimIfNotInvisibleLongEnough) {
   auto process_node = CreateNode<ProcessNodeImpl>();
   auto page_node = CreateNode<PageNodeImpl>();
   auto parent_frame =
-      CreateNode<FrameNodeImpl>(process_node.get(), page_node.get());
+      CreateFrameNodeAutoId(process_node.get(), page_node.get());
 
   // Since we've never walked the graph we should do so now.
   const base::TimeTicks clock_time = NowTicks();
@@ -201,7 +200,7 @@ TEST_F(WorkingSetTrimmerPolicyChromeOSTest, TrimIfInvisibleLongEnough) {
   auto process_node = CreateNode<ProcessNodeImpl>();
   auto page_node = CreateNode<PageNodeImpl>();
   auto parent_frame =
-      CreateNode<FrameNodeImpl>(process_node.get(), page_node.get());
+      CreateFrameNodeAutoId(process_node.get(), page_node.get());
 
   ASSERT_EQ(1u, graph()->GetAllPageNodes().size());
 

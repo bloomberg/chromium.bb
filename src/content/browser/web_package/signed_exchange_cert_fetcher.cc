@@ -18,7 +18,6 @@
 #include "content/browser/web_package/signed_exchange_devtools_proxy.h"
 #include "content/browser/web_package/signed_exchange_reporter.h"
 #include "content/browser/web_package/signed_exchange_utils.h"
-#include "content/common/throttling_url_loader.h"
 #include "content/public/common/resource_type.h"
 #include "ipc/ipc_message.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
@@ -27,6 +26,7 @@
 #include "net/http/http_status_code.h"
 #include "services/network/loader_util.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "third_party/blink/public/common/loader/throttling_url_loader.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
 
 namespace content {
@@ -149,7 +149,7 @@ void SignedExchangeCertFetcher::Start() {
             base::BindOnce(&SignedExchangeCertFetcher::OnDataURLRequest,
                            base::Unretained(this)));
   }
-  url_loader_ = ThrottlingURLLoader::CreateLoaderAndStart(
+  url_loader_ = blink::ThrottlingURLLoader::CreateLoaderAndStart(
       std::move(shared_url_loader_factory_), std::move(throttles_),
       0 /* routing_id */,
       signed_exchange_utils::MakeRequestID() /* request_id */,
@@ -231,7 +231,7 @@ void SignedExchangeCertFetcher::OnReceiveResponse(
   if (devtools_proxy_) {
     DCHECK(cert_request_id_);
     devtools_proxy_->CertificateResponseReceived(*cert_request_id_,
-                                                 resource_request_->url, head);
+                                                 resource_request_->url, *head);
   }
 
   if (reporter_)
@@ -330,12 +330,13 @@ void SignedExchangeCertFetcher::OnComplete(
 
 void SignedExchangeCertFetcher::OnDataURLRequest(
     const network::ResourceRequest& resource_request,
-    network::mojom::URLLoaderRequest url_loader_request,
-    network::mojom::URLLoaderClientPtr url_loader_client_ptr) {
+    mojo::PendingReceiver<network::mojom::URLLoader> url_loader_receiver,
+    mojo::PendingRemote<network::mojom::URLLoaderClient>
+        url_loader_client_remote) {
   data_url_loader_factory_ = std::make_unique<DataURLLoaderFactory>();
   data_url_loader_factory_->CreateLoaderAndStart(
-      std::move(url_loader_request), 0, 0, 0, resource_request,
-      std::move(url_loader_client_ptr),
+      std::move(url_loader_receiver), 0, 0, 0, resource_request,
+      std::move(url_loader_client_remote),
       net::MutableNetworkTrafficAnnotationTag(kCertFetcherTrafficAnnotation));
 }
 

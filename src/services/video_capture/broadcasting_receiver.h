@@ -13,14 +13,16 @@
 #include "build/build_config.h"
 #include "media/capture/video/video_frame_receiver.h"
 #include "media/capture/video_capture_types.h"
-#include "services/video_capture/public/mojom/receiver.mojom.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/video_capture/public/mojom/scoped_access_permission.mojom.h"
+#include "services/video_capture/public/mojom/video_frame_handler.mojom.h"
 
 namespace video_capture {
 
-// Implementation of mojom::VideoFrameReceiver that distributes frames to
+// Implementation of mojom::VideoFrameHandler that distributes frames to
 // potentially multiple clients.
-class BroadcastingReceiver : public mojom::Receiver {
+class BroadcastingReceiver : public mojom::VideoFrameHandler {
  public:
   class BufferContext {
    public:
@@ -32,8 +34,8 @@ class BroadcastingReceiver : public mojom::Receiver {
     int32_t buffer_context_id() const { return buffer_context_id_; }
     int32_t buffer_id() const { return buffer_id_; }
     void set_access_permission(
-        mojom::ScopedAccessPermissionPtr access_permission) {
-      access_permission_ = std::move(access_permission);
+        mojo::PendingRemote<mojom::ScopedAccessPermission> access_permission) {
+      access_permission_.Bind(std::move(access_permission));
     }
     void IncreaseConsumerCount();
     void DecreaseConsumerCount();
@@ -57,7 +59,7 @@ class BroadcastingReceiver : public mojom::Receiver {
     // |access_permission_|.
     int32_t consumer_hold_count_;
     bool is_retired_;
-    mojom::ScopedAccessPermissionPtr access_permission_;
+    mojo::Remote<mojom::ScopedAccessPermission> access_permission_;
   };
 
   BroadcastingReceiver();
@@ -75,20 +77,20 @@ class BroadcastingReceiver : public mojom::Receiver {
   void SetOnStoppedHandler(base::OnceClosure on_stopped_handler);
 
   // Returns a client_id that can be used for a call to Suspend/Resume/Remove.
-  int32_t AddClient(mojom::ReceiverPtr client,
+  int32_t AddClient(mojo::PendingRemote<mojom::VideoFrameHandler> client,
                     media::VideoCaptureBufferType target_buffer_type);
   void SuspendClient(int32_t client_id);
   void ResumeClient(int32_t client_id);
   // Returns ownership of the client back to the caller.
-  mojom::ReceiverPtr RemoveClient(int32_t client_id);
+  mojo::Remote<mojom::VideoFrameHandler> RemoveClient(int32_t client_id);
 
-  // video_capture::mojom::Receiver:
+  // video_capture::mojom::VideoFrameHandler:
   void OnNewBuffer(int32_t buffer_id,
                    media::mojom::VideoBufferHandlePtr buffer_handle) override;
   void OnFrameReadyInBuffer(
       int32_t buffer_id,
       int32_t frame_feedback_id,
-      mojom::ScopedAccessPermissionPtr access_permission,
+      mojo::PendingRemote<mojom::ScopedAccessPermission> access_permission,
       media::mojom::VideoFrameInfoPtr frame_info) override;
   void OnBufferRetired(int32_t buffer_id) override;
   void OnError(media::VideoCaptureError error) override;
@@ -113,7 +115,7 @@ class BroadcastingReceiver : public mojom::Receiver {
   // a client is suspended.
   class ClientContext {
    public:
-    ClientContext(mojom::ReceiverPtr client,
+    ClientContext(mojo::PendingRemote<mojom::VideoFrameHandler> client,
                   media::VideoCaptureBufferType target_buffer_type);
     ~ClientContext();
     ClientContext(ClientContext&& other);
@@ -121,7 +123,7 @@ class BroadcastingReceiver : public mojom::Receiver {
     void OnStarted();
     void OnStartedUsingGpuDecode();
 
-    mojom::ReceiverPtr& client() { return client_; }
+    mojo::Remote<mojom::VideoFrameHandler>& client() { return client_; }
     media::VideoCaptureBufferType target_buffer_type() {
       return target_buffer_type_;
     }
@@ -129,7 +131,7 @@ class BroadcastingReceiver : public mojom::Receiver {
     bool is_suspended() const { return is_suspended_; }
 
    private:
-    mojom::ReceiverPtr client_;
+    mojo::Remote<mojom::VideoFrameHandler> client_;
     media::VideoCaptureBufferType target_buffer_type_;
     bool is_suspended_;
     bool on_started_has_been_called_;

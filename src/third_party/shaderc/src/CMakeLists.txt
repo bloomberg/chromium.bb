@@ -35,17 +35,22 @@ include(cmake/setup_build.cmake)
 include(cmake/utils.cmake)
 include(CheckCXXCompilerFlag)
 
+set(SPIRV_CROSS_EXCEPTIONS_TO_ASSERTIONS ${DISABLE_EXCEPTIONS} CACHE BOOL "Coupling SPIRV-Cross exception conversion to DISABLE_EXCEPTIONS" FORCE)
+if(DISABLE_EXCEPTIONS)
+  # Need to set additional values here, since some of the wrapped code occurs in
+  # .h/.hpp files, so maybe included outside of the library.
+ add_definitions(-DSPIRV_CROSS_EXCEPTIONS_TO_ASSERTIONS)
+endif()
+
 # These flags are not supported on Windows and some older version of GCC
 # that our bots use.
 # Warning about implicit fallthrough in switch blocks
-unset(COMPILER_SUPPORTS_FALLTHROUGH_WARNING CACHE)
 check_cxx_compiler_flag(-Wimplicit-fallthrough COMPILER_SUPPORTS_FALLTHROUGH_WARNING)
 if (COMPILER_SUPPORTS_FALLTHROUGH_WARNING)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wimplicit-fallthrough")
 endif()
 
 # Warning about extra semi-colons
-unset(COMPILER_SUPPORTS_EXTRA_SEMI_WARNING CACHE)
 check_cxx_compiler_flag(-Wextra-semi COMPILER_SUPPORTS_EXTRA_SEMI_WARNING)
 if (COMPILER_SUPPORTS_EXTRA_SEMI_WARNING)
     add_compile_options("-Wextra-semi")
@@ -101,7 +106,7 @@ add_subdirectory(examples)
 add_custom_target(build-version
   ${PYTHON_EXECUTABLE}
   ${CMAKE_CURRENT_SOURCE_DIR}/utils/update_build_version.py
-  ${shaderc_SOURCE_DIR} ${spirv-tools_SOURCE_DIR} ${glslang_SOURCE_DIR}
+  ${shaderc_SOURCE_DIR} ${spirv-tools_SOURCE_DIR} ${glslang_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR}/build-version.inc
   COMMENT "Update build-version.inc in the Shaderc build directory (if necessary).")
 
 function(define_pkg_config_file NAME LIBS)

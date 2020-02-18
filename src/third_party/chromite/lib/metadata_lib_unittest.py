@@ -141,16 +141,6 @@ class MetadataTest(cros_test_lib.TestCase):
     ending_dict = metadata.GetDict()
     self.assertEqual(starting_dict, ending_dict)
 
-    # Test that RecordCLAction is process-safe
-    fake_change = metadata_lib.GerritPatchTuple(12345, 1, False)
-    fake_action = ('asdf,')
-    parallel.RunParallelSteps([lambda: metadata.RecordCLAction(fake_change,
-                                                               fake_action)])
-    ending_dict = metadata.GetDict()
-    # Assert that an action was recorded.
-    self.assertEqual(len(starting_dict['cl_actions']) + 1,
-                     len(ending_dict['cl_actions']))
-
   def testPerBoardDict(self):
     starting_per_board_dict = {
         'board-1': {'kubrick': 2001,

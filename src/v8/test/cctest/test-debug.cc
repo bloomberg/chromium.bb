@@ -36,7 +36,6 @@
 #include "src/deoptimizer/deoptimizer.h"
 #include "src/execution/frames.h"
 #include "src/objects/objects-inl.h"
-#include "src/snapshot/natives.h"
 #include "src/snapshot/snapshot.h"
 #include "src/utils/utils.h"
 #include "test/cctest/cctest.h"
@@ -893,7 +892,6 @@ TEST(BreakPointInlineBoundBuiltin) {
 
 TEST(BreakPointInlinedConstructorBuiltin) {
   i::FLAG_allow_natives_syntax = true;
-  i::FLAG_experimental_inline_promise_constructor = true;
   LocalContext env;
   v8::HandleScope scope(env->GetIsolate());
 
@@ -1032,8 +1030,6 @@ TEST(BreakPointBuiltinNewContext) {
   i::Handle<i::BreakPoint> bp;
 
 // === Test builtin from a new context ===
-// This does not work with no-snapshot build.
-#ifdef V8_USE_SNAPSHOT
   break_point_hit_count = 0;
   builtin = CompileRun("String.prototype.repeat").As<v8::Function>();
   CompileRun("'a'.repeat(10)");
@@ -1059,7 +1055,6 @@ TEST(BreakPointBuiltinNewContext) {
     CompileRun("'b'.repeat(10)");
     CHECK_EQ(2, break_point_hit_count);
   }
-#endif
 
   v8::debug::SetDebugDelegate(env->GetIsolate(), nullptr);
   CheckDebuggerUnloaded();
@@ -3135,8 +3130,8 @@ TEST(NoBreakWhenBootstrapping) {
   {
     // Create a context with an extension to make sure that some JavaScript
     // code is executed during bootstrapping.
-    v8::RegisterExtension(v8::base::make_unique<v8::Extension>(
-        "simpletest", kSimpleExtensionSource));
+    v8::RegisterExtension(
+        std::make_unique<v8::Extension>("simpletest", kSimpleExtensionSource));
     const char* extension_names[] = { "simpletest" };
     v8::ExtensionConfiguration extensions(1, extension_names);
     v8::HandleScope handle_scope(isolate);
@@ -4510,7 +4505,7 @@ UNINITIALIZED_TEST(LoadedAtStartupScripts) {
       }
     }
     CHECK_EQ(count_by_type[i::Script::TYPE_NATIVE], 0);
-    CHECK_EQ(count_by_type[i::Script::TYPE_EXTENSION], 2);
+    CHECK_EQ(count_by_type[i::Script::TYPE_EXTENSION], 1);
     CHECK_EQ(count_by_type[i::Script::TYPE_NORMAL], 1);
     CHECK_EQ(count_by_type[i::Script::TYPE_WASM], 0);
     CHECK_EQ(count_by_type[i::Script::TYPE_INSPECTOR], 0);

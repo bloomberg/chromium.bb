@@ -32,7 +32,7 @@ CookieSettings::CreateDeleteCookieOnExitPredicate() const {
 }
 
 void CookieSettings::GetSettingForLegacyCookieAccess(
-    const GURL& cookie_domain,
+    const std::string& cookie_domain,
     ContentSetting* setting) const {
   DCHECK(setting);
 
@@ -41,13 +41,66 @@ void CookieSettings::GetSettingForLegacyCookieAccess(
                  ? CONTENT_SETTING_BLOCK
                  : CONTENT_SETTING_ALLOW;
 
+  if (settings_for_legacy_cookie_access_.empty())
+    return;
+
+  // If there are no domain-specific settings, return early to avoid the cost of
+  // constructing a GURL to match against.
+  bool has_non_wildcard_setting = false;
   for (const auto& entry : settings_for_legacy_cookie_access_) {
-    if (entry.primary_pattern.Matches(cookie_domain)) {
+    if (!entry.primary_pattern.MatchesAllHosts()) {
+      has_non_wildcard_setting = true;
+      break;
+    }
+  }
+  if (!has_non_wildcard_setting) {
+    // Take the first entry because we know all entries match any host.
+    *setting = settings_for_legacy_cookie_access_[0].GetContentSetting();
+    DCHECK(IsValidSettingForLegacyAccess(*setting));
+    return;
+  }
+
+  // The content setting patterns are treated as domains, not URLs, so the
+  // scheme is irrelevant (so we can just arbitrarily pass false).
+  GURL cookie_domain_url = net::cookie_util::CookieOriginToURL(
+      cookie_domain, false /* secure scheme */);
+
+  for (const auto& entry : settings_for_legacy_cookie_access_) {
+    // TODO(crbug.com/1015611): This should ignore scheme and port, but
+    // currently takes them into account. It says in the policy description that
+    // specifying a scheme or port in the pattern may lead to undefined
+    // behavior, but this is not ideal.
+    if (entry.primary_pattern.Matches(cookie_domain_url)) {
       *setting = entry.GetContentSetting();
       DCHECK(IsValidSettingForLegacyAccess(*setting));
       return;
     }
   }
+}
+
+bool CookieSettings::ShouldIgnoreSameSiteRestrictions(
+    const GURL& url,
+    const GURL& site_for_cookies) const {
+  return base::Contains(secure_origin_cookies_allowed_schemes_,
+                        site_for_cookies.scheme()) &&
+         url.SchemeIsCryptographic();
+}
+
+bool CookieSettings::ShouldAlwaysAllowCookies(
+    const GURL& url,
+    const GURL& first_party_url) const {
+  if (base::Contains(secure_origin_cookies_allowed_schemes_,
+                     first_party_url.scheme()) &&
+      url.SchemeIsCryptographic()) {
+    return true;
+  }
+
+  if (base::Contains(matching_scheme_cookies_allowed_schemes_, url.scheme()) &&
+      url.SchemeIs(first_party_url.scheme_piece())) {
+    return true;
+  }
+
+  return false;
 }
 
 void CookieSettings::GetCookieSettingInternal(
@@ -57,15 +110,7 @@ void CookieSettings::GetCookieSettingInternal(
     content_settings::SettingSource* source,
     ContentSetting* cookie_setting) const {
   DCHECK(cookie_setting);
-  if (base::Contains(secure_origin_cookies_allowed_schemes_,
-                     first_party_url.scheme()) &&
-      url.SchemeIsCryptographic()) {
-    *cookie_setting = CONTENT_SETTING_ALLOW;
-    return;
-  }
-
-  if (base::Contains(matching_scheme_cookies_allowed_schemes_, url.scheme()) &&
-      url.SchemeIs(first_party_url.scheme_piece())) {
+  if (ShouldAlwaysAllowCookies(url, first_party_url)) {
     *cookie_setting = CONTENT_SETTING_ALLOW;
     return;
   }

@@ -33,11 +33,18 @@ using testing::ElementsAre;
 using testing::IsEmpty;
 using testing::Pair;
 using testing::SizeIs;
+using testing::UnorderedElementsAre;
 
 namespace {
 
 constexpr char kExampleCom[] = "https://example.com/";
 constexpr char kExampleOrg[] = "https://example.org/";
+constexpr char kNewPass[] = "new_pass";
+constexpr char kNewUser[] = "new_user";
+constexpr char kPassword[] = "pass";
+constexpr char kPassword2[] = "pass2";
+constexpr char kUsername[] = "user";
+constexpr char kUsername2[] = "user2";
 
 MATCHER(IsNotBlacklisted, "") {
   return !arg->blacklisted_by_user;
@@ -119,40 +126,6 @@ class PasswordManagerPresenterTest : public testing::Test {
     task_environment_.RunUntilIdle();
   }
 
-  int GetPasswordIndex(base::StringPiece origin,
-                       base::StringPiece old_username,
-                       base::StringPiece old_password) {
-    std::vector<std::unique_ptr<autofill::PasswordForm>> password_forms =
-        mock_controller_.GetPasswordManagerPresenter()->GetAllPasswords();
-    return std::find_if(
-               password_forms.begin(), password_forms.end(),
-               [origin, old_username, old_password](const auto& password_form) {
-                 return password_form->signon_realm ==
-                            GURL(origin).GetOrigin().spec() &&
-                        password_form->username_value ==
-                            base::ASCIIToUTF16(old_username) &&
-                        password_form->password_value ==
-                            base::ASCIIToUTF16(old_password);
-               }) -
-           password_forms.begin();
-  }
-
-  void ChangeSavedPasswordByIndex(
-      base::StringPiece origin,
-      base::StringPiece old_username,
-      base::StringPiece old_password,
-      base::StringPiece new_username,
-      base::Optional<base::StringPiece> new_password) {
-    mock_controller_.GetPasswordManagerPresenter()->ChangeSavedPassword(
-        GetPasswordIndex(origin, old_username, old_password),
-        base::ASCIIToUTF16(new_username),
-        new_password ? base::make_optional(base::ASCIIToUTF16(*new_password))
-                     : base::nullopt);
-    // The password store posts mutation tasks to a background thread, thus we
-    // need to spin the message loop here.
-    task_environment_.RunUntilIdle();
-  }
-
   void UpdatePasswordLists() {
     mock_controller_.GetPasswordManagerPresenter()->UpdatePasswordLists();
     task_environment_.RunUntilIdle();
@@ -183,209 +156,164 @@ namespace {
 
 TEST_F(PasswordManagerPresenterTest,
        ChangeSavedPasswordBySortKey_RejectEmptyPassword) {
-  AddPasswordEntry(GURL(kExampleCom), "user", "pass");
+  AddPasswordEntry(GURL(kExampleCom), kUsername, kPassword);
   EXPECT_CALL(GetUIController(), SetPasswordList(SizeIs(1)));
   EXPECT_CALL(GetUIController(), SetPasswordExceptionList(IsEmpty()));
   UpdatePasswordLists();
   EXPECT_THAT(GetUsernamesAndPasswords(GetStoredPasswordsForRealm(kExampleCom)),
-              ElementsAre(Pair("user", "pass")));
+              ElementsAre(Pair(kUsername, kPassword)));
   testing::Mock::VerifyAndClearExpectations(&GetUIController());
 
-  ChangeSavedPasswordBySortKey(kExampleCom, "user", "pass", "new_user", "");
+  ChangeSavedPasswordBySortKey(kExampleCom, kUsername, kPassword, kNewUser, "");
   EXPECT_THAT(GetUsernamesAndPasswords(GetStoredPasswordsForRealm(kExampleCom)),
-              ElementsAre(Pair("user", "pass")));
-}
-
-TEST_F(PasswordManagerPresenterTest,
-       ChangeSavedPasswordByIndex_RejectEmptyPassword) {
-  AddPasswordEntry(GURL(kExampleCom), "user", "pass");
-  EXPECT_CALL(GetUIController(), SetPasswordList(SizeIs(1)));
-  EXPECT_CALL(GetUIController(), SetPasswordExceptionList(IsEmpty()));
-  UpdatePasswordLists();
-  EXPECT_THAT(GetUsernamesAndPasswords(GetStoredPasswordsForRealm(kExampleCom)),
-              ElementsAre(Pair("user", "pass")));
-  testing::Mock::VerifyAndClearExpectations(&GetUIController());
-
-  ChangeSavedPasswordByIndex(kExampleCom, "user", "pass", "new_user", "");
-  EXPECT_THAT(GetUsernamesAndPasswords(GetStoredPasswordsForRealm(kExampleCom)),
-              ElementsAre(Pair("user", "pass")));
+              ElementsAre(Pair(kUsername, kPassword)));
 }
 
 TEST_F(PasswordManagerPresenterTest,
        ChangeSavedPasswordBySortKey_ChangeUsername) {
-  AddPasswordEntry(GURL(kExampleCom), "user", "pass");
+  AddPasswordEntry(GURL(kExampleCom), kUsername, kPassword);
   EXPECT_CALL(GetUIController(), SetPasswordList(SizeIs(1)));
   EXPECT_CALL(GetUIController(), SetPasswordExceptionList(IsEmpty()));
   UpdatePasswordLists();
   EXPECT_THAT(GetUsernamesAndPasswords(GetStoredPasswordsForRealm(kExampleCom)),
-              ElementsAre(Pair("user", "pass")));
+              ElementsAre(Pair(kUsername, kPassword)));
   testing::Mock::VerifyAndClearExpectations(&GetUIController());
 
-  ChangeSavedPasswordBySortKey(kExampleCom, "user", "pass", "new_user",
+  ChangeSavedPasswordBySortKey(kExampleCom, kUsername, kPassword, kNewUser,
                                base::nullopt);
   EXPECT_THAT(GetUsernamesAndPasswords(GetStoredPasswordsForRealm(kExampleCom)),
-              ElementsAre(Pair("new_user", "pass")));
-}
-
-TEST_F(PasswordManagerPresenterTest,
-       ChangeSavedPasswordByIndex_ChangeUsername) {
-  AddPasswordEntry(GURL(kExampleCom), "user", "pass");
-  EXPECT_CALL(GetUIController(), SetPasswordList(SizeIs(1)));
-  EXPECT_CALL(GetUIController(), SetPasswordExceptionList(IsEmpty()));
-  UpdatePasswordLists();
-  EXPECT_THAT(GetUsernamesAndPasswords(GetStoredPasswordsForRealm(kExampleCom)),
-              ElementsAre(Pair("user", "pass")));
-  testing::Mock::VerifyAndClearExpectations(&GetUIController());
-
-  ChangeSavedPasswordByIndex(kExampleCom, "user", "pass", "new_user",
-                             base::nullopt);
-  EXPECT_THAT(GetUsernamesAndPasswords(GetStoredPasswordsForRealm(kExampleCom)),
-              ElementsAre(Pair("new_user", "pass")));
+              ElementsAre(Pair(kNewUser, kPassword)));
 }
 
 TEST_F(PasswordManagerPresenterTest,
        ChangeSavedPasswordBySortKey_ChangeUsernameAndPassword) {
-  AddPasswordEntry(GURL(kExampleCom), "user", "pass");
+  AddPasswordEntry(GURL(kExampleCom), kUsername, kPassword);
   EXPECT_CALL(GetUIController(), SetPasswordList(SizeIs(1)));
   EXPECT_CALL(GetUIController(), SetPasswordExceptionList(IsEmpty()));
   UpdatePasswordLists();
   EXPECT_THAT(GetUsernamesAndPasswords(GetStoredPasswordsForRealm(kExampleCom)),
-              ElementsAre(Pair("user", "pass")));
+              ElementsAre(Pair(kUsername, kPassword)));
   testing::Mock::VerifyAndClearExpectations(&GetUIController());
 
-  ChangeSavedPasswordBySortKey(kExampleCom, "user", "pass", "new_user",
-                               "new_pass");
+  ChangeSavedPasswordBySortKey(kExampleCom, kUsername, kPassword, kNewUser,
+                               kNewPass);
   EXPECT_THAT(GetUsernamesAndPasswords(GetStoredPasswordsForRealm(kExampleCom)),
-              ElementsAre(Pair("new_user", "new_pass")));
-}
-
-TEST_F(PasswordManagerPresenterTest,
-       ChangeSavedPasswordByIndex_ChangeUsernameAndPassword) {
-  AddPasswordEntry(GURL(kExampleCom), "user", "pass");
-  EXPECT_CALL(GetUIController(), SetPasswordList(SizeIs(1)));
-  EXPECT_CALL(GetUIController(), SetPasswordExceptionList(IsEmpty()));
-  UpdatePasswordLists();
-  EXPECT_THAT(GetUsernamesAndPasswords(GetStoredPasswordsForRealm(kExampleCom)),
-              ElementsAre(Pair("user", "pass")));
-  testing::Mock::VerifyAndClearExpectations(&GetUIController());
-
-  ChangeSavedPasswordByIndex(kExampleCom, "user", "pass", "new_user",
-                             "new_pass");
-  EXPECT_THAT(GetUsernamesAndPasswords(GetStoredPasswordsForRealm(kExampleCom)),
-              ElementsAre(Pair("new_user", "new_pass")));
+              ElementsAre(Pair(kNewUser, kNewPass)));
 }
 
 TEST_F(PasswordManagerPresenterTest,
        ChangeSavedPasswordBySortKey_RejectSameUsernameForSameRealm) {
-  AddPasswordEntry(GURL(kExampleCom), "user", "pass");
-  AddPasswordEntry(GURL(kExampleCom), "user2", "pass2");
+  AddPasswordEntry(GURL(kExampleCom), kUsername, kPassword);
+  AddPasswordEntry(GURL(kExampleCom), kUsername2, kPassword2);
   EXPECT_CALL(GetUIController(), SetPasswordList(SizeIs(2)));
   EXPECT_CALL(GetUIController(), SetPasswordExceptionList(IsEmpty()));
   UpdatePasswordLists();
   EXPECT_THAT(GetUsernamesAndPasswords(GetStoredPasswordsForRealm(kExampleCom)),
-              ElementsAre(Pair("user", "pass"), Pair("user2", "pass2")));
+              UnorderedElementsAre(Pair(kUsername, kPassword),
+                                   Pair(kUsername2, kPassword2)));
   testing::Mock::VerifyAndClearExpectations(&GetUIController());
 
-  ChangeSavedPasswordBySortKey(kExampleCom, "user", "pass", "user2",
+  ChangeSavedPasswordBySortKey(kExampleCom, kUsername, kPassword, kUsername2,
                                base::nullopt);
   EXPECT_THAT(GetUsernamesAndPasswords(GetStoredPasswordsForRealm(kExampleCom)),
-              ElementsAre(Pair("user", "pass"), Pair("user2", "pass2")));
-}
-
-TEST_F(PasswordManagerPresenterTest,
-       ChangeSavedPasswordByIndex_RejectSameUsernameForSameRealm) {
-  AddPasswordEntry(GURL(kExampleCom), "user", "pass");
-  AddPasswordEntry(GURL(kExampleCom), "user2", "pass2");
-  EXPECT_CALL(GetUIController(), SetPasswordList(SizeIs(2)));
-  EXPECT_CALL(GetUIController(), SetPasswordExceptionList(IsEmpty()));
-  UpdatePasswordLists();
-  EXPECT_THAT(GetUsernamesAndPasswords(GetStoredPasswordsForRealm(kExampleCom)),
-              ElementsAre(Pair("user", "pass"), Pair("user2", "pass2")));
-  testing::Mock::VerifyAndClearExpectations(&GetUIController());
-
-  ChangeSavedPasswordByIndex(kExampleCom, "user", "pass", "user2",
-                             base::nullopt);
-  EXPECT_THAT(GetUsernamesAndPasswords(GetStoredPasswordsForRealm(kExampleCom)),
-              ElementsAre(Pair("user", "pass"), Pair("user2", "pass2")));
+              UnorderedElementsAre(Pair(kUsername, kPassword),
+                                   Pair(kUsername2, kPassword2)));
 }
 
 TEST_F(PasswordManagerPresenterTest,
        ChangeSavedPasswordBySortKey_DontRejectSameUsernameForDifferentRealm) {
-  AddPasswordEntry(GURL(kExampleCom), "user", "pass");
-  AddPasswordEntry(GURL(kExampleOrg), "user2", "pass2");
+  AddPasswordEntry(GURL(kExampleCom), kUsername, kPassword);
+  AddPasswordEntry(GURL(kExampleOrg), kUsername2, kPassword2);
   EXPECT_CALL(GetUIController(), SetPasswordList(SizeIs(2)));
   EXPECT_CALL(GetUIController(), SetPasswordExceptionList(IsEmpty()));
   UpdatePasswordLists();
   EXPECT_THAT(GetUsernamesAndPasswords(GetStoredPasswordsForRealm(kExampleCom)),
-              ElementsAre(Pair("user", "pass")));
+              ElementsAre(Pair(kUsername, kPassword)));
   EXPECT_THAT(GetUsernamesAndPasswords(GetStoredPasswordsForRealm(kExampleOrg)),
-              ElementsAre(Pair("user2", "pass2")));
+              ElementsAre(Pair(kUsername2, kPassword2)));
   testing::Mock::VerifyAndClearExpectations(&GetUIController());
 
-  ChangeSavedPasswordBySortKey(kExampleCom, "user", "pass", "user2",
+  ChangeSavedPasswordBySortKey(kExampleCom, kUsername, kPassword, kUsername2,
                                base::nullopt);
   EXPECT_THAT(GetUsernamesAndPasswords(GetStoredPasswordsForRealm(kExampleCom)),
-              ElementsAre(Pair("user2", "pass")));
+              ElementsAre(Pair(kUsername2, kPassword)));
   EXPECT_THAT(GetUsernamesAndPasswords(GetStoredPasswordsForRealm(kExampleOrg)),
-              ElementsAre(Pair("user2", "pass2")));
-}
-
-TEST_F(PasswordManagerPresenterTest,
-       ChangeSavedPasswordByIndex_DontRejectSameUsernameForDifferentRealm) {
-  AddPasswordEntry(GURL(kExampleCom), "user", "pass");
-  AddPasswordEntry(GURL(kExampleOrg), "user2", "pass2");
-  EXPECT_CALL(GetUIController(), SetPasswordList(SizeIs(2)));
-  EXPECT_CALL(GetUIController(), SetPasswordExceptionList(IsEmpty()));
-  UpdatePasswordLists();
-  EXPECT_THAT(GetUsernamesAndPasswords(GetStoredPasswordsForRealm(kExampleCom)),
-              ElementsAre(Pair("user", "pass")));
-  EXPECT_THAT(GetUsernamesAndPasswords(GetStoredPasswordsForRealm(kExampleOrg)),
-              ElementsAre(Pair("user2", "pass2")));
-  testing::Mock::VerifyAndClearExpectations(&GetUIController());
-
-  ChangeSavedPasswordByIndex(kExampleCom, "user", "pass", "user2",
-                             base::nullopt);
-  EXPECT_THAT(GetUsernamesAndPasswords(GetStoredPasswordsForRealm(kExampleCom)),
-              ElementsAre(Pair("user2", "pass")));
-  EXPECT_THAT(GetUsernamesAndPasswords(GetStoredPasswordsForRealm(kExampleOrg)),
-              ElementsAre(Pair("user2", "pass2")));
+              ElementsAre(Pair(kUsername2, kPassword2)));
 }
 
 TEST_F(PasswordManagerPresenterTest,
        ChangeSavedPasswordBySortKey_UpdateDuplicates) {
-  AddPasswordEntry(GURL(std::string(kExampleCom) + "pathA"), "user", "pass");
-  AddPasswordEntry(GURL(std::string(kExampleCom) + "pathB"), "user", "pass");
+  AddPasswordEntry(GURL(std::string(kExampleCom) + "pathA"), kUsername,
+                   kPassword);
+  AddPasswordEntry(GURL(std::string(kExampleCom) + "pathB"), kUsername,
+                   kPassword);
   EXPECT_CALL(GetUIController(), SetPasswordList(SizeIs(1)));
   EXPECT_CALL(GetUIController(), SetPasswordExceptionList(IsEmpty()));
   UpdatePasswordLists();
   EXPECT_THAT(GetUsernamesAndPasswords(GetStoredPasswordsForRealm(kExampleCom)),
-              ElementsAre(Pair("user", "pass"), Pair("user", "pass")));
+              UnorderedElementsAre(Pair(kUsername, kPassword),
+                                   Pair(kUsername, kPassword)));
   testing::Mock::VerifyAndClearExpectations(&GetUIController());
 
-  ChangeSavedPasswordBySortKey(kExampleCom, "user", "pass", "new_user",
-                               "new_pass");
+  ChangeSavedPasswordBySortKey(kExampleCom, kUsername, kPassword, kNewUser,
+                               kNewPass);
   EXPECT_THAT(
       GetUsernamesAndPasswords(GetStoredPasswordsForRealm(kExampleCom)),
-      ElementsAre(Pair("new_user", "new_pass"), Pair("new_user", "new_pass")));
+      UnorderedElementsAre(Pair(kNewUser, kNewPass), Pair(kNewUser, kNewPass)));
 }
 
 TEST_F(PasswordManagerPresenterTest,
-       ChangeSavedPasswordByIndex_UpdateDuplicates) {
-  AddPasswordEntry(GURL(std::string(kExampleCom) + "pathA"), "user", "pass");
-  AddPasswordEntry(GURL(std::string(kExampleCom) + "pathB"), "user", "pass");
-
-  EXPECT_CALL(GetUIController(), SetPasswordList(SizeIs(1)));
+       ChangeSavedPasswordBySortKey_EditUsernameForTheRightCredential) {
+  AddPasswordEntry(GURL(kExampleCom), kUsername, kPassword);
+  AddPasswordEntry(GURL(kExampleCom), kUsername2, kPassword);
+  AddPasswordEntry(GURL(kExampleOrg), kUsername, kPassword);
+  AddPasswordEntry(GURL(kExampleOrg), kUsername2, kPassword);
+  EXPECT_CALL(GetUIController(), SetPasswordList(SizeIs(4)));
   EXPECT_CALL(GetUIController(), SetPasswordExceptionList(IsEmpty()));
   UpdatePasswordLists();
   EXPECT_THAT(GetUsernamesAndPasswords(GetStoredPasswordsForRealm(kExampleCom)),
-              ElementsAre(Pair("user", "pass"), Pair("user", "pass")));
+              UnorderedElementsAre(Pair(kUsername, kPassword),
+                                   Pair(kUsername2, kPassword)));
+  EXPECT_THAT(GetUsernamesAndPasswords(GetStoredPasswordsForRealm(kExampleOrg)),
+              UnorderedElementsAre(Pair(kUsername, kPassword),
+                                   Pair(kUsername2, kPassword)));
   testing::Mock::VerifyAndClearExpectations(&GetUIController());
 
-  ChangeSavedPasswordByIndex(kExampleCom, "user", "pass", "new_user",
-                             "new_pass");
-  EXPECT_THAT(
-      GetUsernamesAndPasswords(GetStoredPasswordsForRealm(kExampleCom)),
-      ElementsAre(Pair("new_user", "new_pass"), Pair("new_user", "new_pass")));
+  ChangeSavedPasswordBySortKey(kExampleCom, kUsername, kPassword, kNewUser,
+                               kPassword);
+  EXPECT_THAT(GetUsernamesAndPasswords(GetStoredPasswordsForRealm(kExampleCom)),
+              UnorderedElementsAre(Pair(kNewUser, kPassword),
+                                   Pair(kUsername2, kPassword)));
+  EXPECT_THAT(GetUsernamesAndPasswords(GetStoredPasswordsForRealm(kExampleOrg)),
+              UnorderedElementsAre(Pair(kUsername, kPassword),
+                                   Pair(kUsername2, kPassword)));
+}
+
+TEST_F(PasswordManagerPresenterTest,
+       ChangeSavedPasswordBySortKey_EditPasswordForTheRightCredential) {
+  AddPasswordEntry(GURL(kExampleCom), kUsername, kPassword);
+  AddPasswordEntry(GURL(kExampleCom), kUsername2, kPassword);
+  AddPasswordEntry(GURL(kExampleOrg), kUsername, kPassword);
+  AddPasswordEntry(GURL(kExampleOrg), kUsername2, kPassword);
+  EXPECT_CALL(GetUIController(), SetPasswordList(SizeIs(4)));
+  EXPECT_CALL(GetUIController(), SetPasswordExceptionList(IsEmpty()));
+  UpdatePasswordLists();
+  EXPECT_THAT(GetUsernamesAndPasswords(GetStoredPasswordsForRealm(kExampleCom)),
+              UnorderedElementsAre(Pair(kUsername, kPassword),
+                                   Pair(kUsername2, kPassword)));
+  EXPECT_THAT(GetUsernamesAndPasswords(GetStoredPasswordsForRealm(kExampleOrg)),
+              UnorderedElementsAre(Pair(kUsername, kPassword),
+                                   Pair(kUsername2, kPassword)));
+  testing::Mock::VerifyAndClearExpectations(&GetUIController());
+
+  ChangeSavedPasswordBySortKey(kExampleCom, kUsername, kPassword, kUsername,
+                               kNewPass);
+  EXPECT_THAT(GetUsernamesAndPasswords(GetStoredPasswordsForRealm(kExampleCom)),
+              UnorderedElementsAre(Pair(kUsername, kNewPass),
+                                   Pair(kUsername2, kPassword)));
+  EXPECT_THAT(GetUsernamesAndPasswords(GetStoredPasswordsForRealm(kExampleOrg)),
+              UnorderedElementsAre(Pair(kUsername, kPassword),
+                                   Pair(kUsername2, kPassword)));
 }
 
 TEST_F(PasswordManagerPresenterTest, UIControllerIsCalled) {

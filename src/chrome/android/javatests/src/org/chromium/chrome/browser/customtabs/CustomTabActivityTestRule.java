@@ -9,14 +9,13 @@ import android.content.Intent;
 import android.support.test.InstrumentationRegistry;
 
 import org.junit.Assert;
-import org.junit.runner.Description;
-import org.junit.runners.model.Statement;
 
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.chrome.browser.DeferredStartupHandler;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabTestUtils;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
@@ -54,7 +53,7 @@ public class CustomTabActivityTestRule extends ChromeActivityTestRule<CustomTabA
      * Start a {@link CustomTabActivity} with given {@link Intent}, and wait till a tab is
      * initialized.
      */
-    public void startCustomTabActivityWithIntent(Intent intent) throws InterruptedException {
+    public void startCustomTabActivityWithIntent(Intent intent) {
         startActivityCompletely(intent);
         waitForActivityNativeInitializationComplete();
         CriteriaHelper.pollUiThread(new Criteria("Tab never selected/initialized.") {
@@ -85,11 +84,6 @@ public class CustomTabActivityTestRule extends ChromeActivityTestRule<CustomTabA
                 CriteriaHelper.DEFAULT_POLLING_INTERVAL);
         Assert.assertNotNull(tab);
         Assert.assertNotNull(tab.getView());
-        Assert.assertTrue(tab.isCurrentlyACustomTab());
-    }
-
-    @Override
-    public Statement apply(Statement base, Description description) {
-        return super.apply(base, description);
+        Assert.assertTrue(TabTestUtils.isCustomTab(tab));
     }
 }

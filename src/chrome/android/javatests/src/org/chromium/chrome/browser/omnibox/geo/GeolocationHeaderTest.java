@@ -14,8 +14,8 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
-import org.chromium.chrome.browser.preferences.website.ContentSettingValues;
-import org.chromium.chrome.browser.preferences.website.PermissionInfo;
+import org.chromium.chrome.browser.settings.website.ContentSettingValues;
+import org.chromium.chrome.browser.settings.website.PermissionInfo;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -197,25 +197,17 @@ public class GeolocationHeaderTest {
     }
 
     private void assertNullHeader(final String url, final boolean isIncognito) {
-        try {
-            final Tab tab = mActivityTestRule.loadUrlInNewTab("about:blank", isIncognito);
-            TestThreadUtils.runOnUiThreadBlocking(
-                    () -> { Assert.assertNull(GeolocationHeader.getGeoHeader(url, tab)); });
-        } catch (InterruptedException e) {
-            Assert.fail(e.getMessage());
-        }
+        final Tab tab = mActivityTestRule.loadUrlInNewTab("about:blank", isIncognito);
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { Assert.assertNull(GeolocationHeader.getGeoHeader(url, tab)); });
     }
 
     private void assertNonNullHeader(
             final String url, final boolean isIncognito, final long locationTime) {
-        try {
-            final Tab tab = mActivityTestRule.loadUrlInNewTab("about:blank", isIncognito);
-            TestThreadUtils.runOnUiThreadBlocking(() -> {
-                assertHeaderEquals(locationTime, GeolocationHeader.getGeoHeader(url, tab));
-            });
-        } catch (InterruptedException e) {
-            Assert.fail(e.getMessage());
-        }
+        final Tab tab = mActivityTestRule.loadUrlInNewTab("about:blank", isIncognito);
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            assertHeaderEquals(locationTime, GeolocationHeader.getGeoHeader(url, tab));
+        });
     }
 
     private void assertHeaderEquals(long locationTime, String header) {

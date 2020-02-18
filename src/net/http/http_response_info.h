@@ -31,7 +31,7 @@ class NET_EXPORT HttpResponseInfo {
   // Describes the kind of connection used to fetch this response.
   //
   // NOTE: Please keep in sync with ConnectionInfo enum in
-  // tools/metrics/histograms/enum.xml.
+  // tools/metrics/histograms/enums.xml.
   // Because of that, and also because these values are persisted to
   // the cache, please make sure not to delete or reorder values.
   enum ConnectionInfo {
@@ -57,14 +57,27 @@ class NET_EXPORT HttpResponseInfo {
     CONNECTION_INFO_QUIC_41 = 19,
     CONNECTION_INFO_QUIC_42 = 20,
     CONNECTION_INFO_QUIC_43 = 21,
-    CONNECTION_INFO_QUIC_99 = 22,
+    CONNECTION_INFO_QUIC_Q099 = 22,
     CONNECTION_INFO_QUIC_44 = 23,
     CONNECTION_INFO_QUIC_45 = 24,
     CONNECTION_INFO_QUIC_46 = 25,
     CONNECTION_INFO_QUIC_47 = 26,
     CONNECTION_INFO_QUIC_999 = 27,
-    CONNECTION_INFO_QUIC_48 = 28,
+    CONNECTION_INFO_QUIC_Q048 = 28,
+    CONNECTION_INFO_QUIC_Q049 = 29,
+    CONNECTION_INFO_QUIC_Q050 = 30,
+    CONNECTION_INFO_QUIC_T048 = 31,
+    CONNECTION_INFO_QUIC_T049 = 32,
+    CONNECTION_INFO_QUIC_T050 = 33,
+    CONNECTION_INFO_QUIC_T099 = 34,
     NUM_OF_CONNECTION_INFOS,
+  };
+
+  enum ConnectionInfoCoarse {
+    CONNECTION_INFO_COARSE_HTTP1,  // HTTP/0.9, 1.0 and 1.1
+    CONNECTION_INFO_COARSE_HTTP2,
+    CONNECTION_INFO_COARSE_QUIC,
+    CONNECTION_INFO_COARSE_OTHER,
   };
 
   // Used for categorizing transactions for reporting in histograms.
@@ -94,6 +107,10 @@ class NET_EXPORT HttpResponseInfo {
     ENTRY_CANT_CONDITIONALIZE,
     ENTRY_MAX,
   };
+
+  // Returns a more coarse-grained description of the protocol used to fetch the
+  // response.
+  static ConnectionInfoCoarse ConnectionInfoToCoarse(ConnectionInfo info);
 
   HttpResponseInfo();
   HttpResponseInfo(const HttpResponseInfo& rhs);

@@ -4,12 +4,18 @@
 
 package org.chromium.chrome.browser.autofill_assistant.user_data;
 
+import static org.chromium.chrome.browser.autofill_assistant.AssistantAccessibilityUtils.setAccessibility;
+
 import android.content.Context;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+
+import androidx.annotation.DrawableRes;
+
+import org.chromium.chrome.autofill_assistant.R;
 
 import java.util.List;
 
@@ -18,18 +24,19 @@ import java.util.List;
  */
 public class AssistantLoginSection extends AssistantCollectUserDataSection<AssistantLoginChoice> {
     AssistantLoginSection(Context context, ViewGroup parent) {
-        super(context, parent,
-                org.chromium.chrome.autofill_assistant.R.layout.autofill_assistant_login,
-                org.chromium.chrome.autofill_assistant.R.layout.autofill_assistant_login,
+        super(context, parent, R.layout.autofill_assistant_login, R.layout.autofill_assistant_login,
                 context.getResources().getDimensionPixelSize(
                         org.chromium.chrome.autofill_assistant.R.dimen
                                 .autofill_assistant_payment_request_title_padding),
-                /*titleAddButton=*/null, /*listAddButton=*/null, /*canEditItems=*/false);
+                /*titleAddButton=*/null, /*listAddButton=*/null);
     }
 
     @Override
     protected void createOrEditItem(@Nullable AssistantLoginChoice oldItem) {
-        // Nothing to do, this section currently does not support adding or creating items.
+        assert oldItem != null;
+        assert oldItem.getInfoPopup() != null;
+
+        oldItem.getInfoPopup().show(mContext);
     }
 
     @Override
@@ -39,9 +46,31 @@ public class AssistantLoginSection extends AssistantCollectUserDataSection<Assis
 
     @Override
     protected void updateSummaryView(View summaryView, AssistantLoginChoice option) {
-        TextView usernameView =
-                summaryView.findViewById(org.chromium.chrome.autofill_assistant.R.id.username);
-        usernameView.setText(option.getLabel());
+        TextView labelView = summaryView.findViewById(R.id.label);
+        labelView.setText(option.getLabel());
+        TextView sublabelView = summaryView.findViewById(R.id.sublabel);
+        if (TextUtils.isEmpty(option.getSublabel())) {
+            sublabelView.setVisibility(View.GONE);
+        } else {
+            sublabelView.setText(option.getSublabel());
+            setAccessibility(sublabelView, option.getSublabelAccessibilityHint());
+        }
+    }
+
+    @Override
+    protected boolean canEditOption(AssistantLoginChoice choice) {
+        return choice.getInfoPopup() != null;
+    }
+
+    @Override
+    protected @DrawableRes int getEditButtonDrawable(AssistantLoginChoice choice) {
+        return R.drawable.btn_info;
+    }
+
+    @Override
+    protected String getEditButtonContentDescription(AssistantLoginChoice choice) {
+        // TODO(b/143862732): Send this a11y string from the backend.
+        return mContext.getString(R.string.learn_more);
     }
 
     /**
